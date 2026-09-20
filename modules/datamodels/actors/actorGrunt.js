@@ -61,6 +61,9 @@ import {
 import {
   sr5ModsPartialModel 
 } from '../common/mods.js'
+import {
+  migrateLegacyBiographyKeys 
+} from '../common/biographyMigration.js'
 
 export class sr5ActorGruntDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
@@ -185,7 +188,7 @@ export class sr5ActorGruntDataModel extends foundry.abstract.TypeDataModel {
         }),
       }),
       biography: new fields.SchemaField({
-        characterMetatype: new fields.StringField({
+        metatype: new fields.StringField({
           initial: ''
         }),
         nickname: new fields.StringField({
@@ -227,5 +230,10 @@ export class sr5ActorGruntDataModel extends foundry.abstract.TypeDataModel {
         initial: 'magic'
       }),
     }
+  }
+
+  static migrateData(source) {
+    migrateLegacyBiographyKeys(source)
+    return super.migrateData(source)
   }
 }
