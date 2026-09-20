@@ -3479,6 +3479,7 @@ SR5.specialPropertiesList = {
   doublePenalties           : "SR5.PenaltyDouble",
   regeneration              : "SR5.SpiritPowerRegeneration",
   anticoagulant             : "SR5.Anticoagulant",
+  aggravatedWounds          : "SR5.AggravatedWounds",
   essenceDrain              : "SR5.EssenceDrain",
   naniteToxinResistance     : "SR5.NaniteToxinResistance",
 }
