@@ -3396,6 +3396,8 @@ SR5.effectTypes = {
   iceAttack                 : "SR5.EffectTypeIceAttack",
   electricityDamage         : "SR5.ElementalDamage",
   acidDamage                : "SR5.ElementalDamage",
+  iAmTheFirewall            : "SR5.MatrixActionIAmTheFirewall",
+  intervene                 : "SR5.MatrixActionIntervene",
   fireDamage                : "SR5.ElementalDamage",
   dumpshock                 : "SR5.Dumpshock",
   suppressiveFire           : "SR5.WeaponModeSF",
@@ -3459,6 +3461,7 @@ SR5.effectDuration = {
   minute                    : "SR5.Minutes",
   hour                      : "SR5.Hours",
   action                    : "SR5.Action",
+  initiativePass            : "SR5.InitiativePass",
 }
 
 SR5.specialProperties = {
