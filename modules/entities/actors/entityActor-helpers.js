@@ -830,6 +830,18 @@ export class SR5_ActorHelper {
     await SR5_ActorHelper.createSidekick(message.data.item, message.data.userId, message.data.actorId)
   }
 
+  /**
+   * Keep the token a dismissed actor was wearing, so the next summoning looks
+   * like the last one. dimissSidekick() is handed a plain object rather than a
+   * document, so nothing here may lean on toObject().
+   */
+  static rememberSidekickToken(modifiedItem, actor){
+    const proto = actor.prototypeToken
+    if (!proto) return
+    modifiedItem.system.sideKickPrototypeToken = (typeof proto.toObject === "function") ? proto.toObject() : foundry.utils.duplicate(proto)
+    modifiedItem.system.tokenImg = proto.texture?.src || ""
+  }
+
   //Dismiss sidekick : update his parent item and then delete actor
   static async dimissSidekick(actor){
     let ownerActor = SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId)
@@ -842,8 +854,7 @@ export class SR5_ActorHelper {
         if (a.type === "itemPower") powers.push(a)
       }
       modifiedItem.img = actor.img
-      modifiedItem.system.sideKickPrototypeToken = actor.prototypeToken?.toObject()
-      modifiedItem.system.tokenImg = actor.prototypeToken?.texture?.src || ""
+      SR5_ActorHelper.rememberSidekickToken(modifiedItem, actor)
       modifiedItem.system.services.value = actor.system.services.value
       modifiedItem.system.services.max = actor.system.services.max
       if (actor.system.type === "watcher" || actor.system.type === "homunculus"){
@@ -873,8 +884,7 @@ export class SR5_ActorHelper {
         if (a.type === "itemSpritePower") spritePowers.push(a)
       }
       modifiedItem.img = actor.img
-      modifiedItem.system.sideKickPrototypeToken = actor.prototypeToken?.toObject()
-      modifiedItem.system.tokenImg = actor.prototypeToken?.texture?.src || ""
+      SR5_ActorHelper.rememberSidekickToken(modifiedItem, actor)
       modifiedItem.system.decks = decks
       modifiedItem.system.spritePowers = spritePowers
       modifiedItem.system.tasks.value = actor.system.tasks.value
@@ -898,8 +908,7 @@ export class SR5_ActorHelper {
         if (a.type === "itemDevice") decks.push(a)
       }
       modifiedItem.img = actor.img
-      modifiedItem.system.sideKickPrototypeToken = actor.prototypeToken?.toObject()
-      modifiedItem.system.tokenImg = actor.prototypeToken?.texture?.src || ""
+      SR5_ActorHelper.rememberSidekickToken(modifiedItem, actor)
       modifiedItem.system.decks = decks
       if (actor.img != "systems/sr5/assets/img/actors/actorAgent.svg" && modifiedItem.system.gameEffect.includes(actor.img) === false) {
         if (modifiedItem.system.gameEffect.includes("SR-BioItemPortrait")) {
@@ -930,8 +939,7 @@ export class SR5_ActorHelper {
       }
       modifiedItem.name = actor.name
       modifiedItem.img = actor.img	
-      modifiedItem.system.sideKickPrototypeToken = actor.prototypeToken?.toObject()
-      modifiedItem.system.tokenImg = actor.prototypeToken?.texture?.src || ""
+      SR5_ActorHelper.rememberSidekickToken(modifiedItem, actor)
       modifiedItem.system.language = language,	
       modifiedItem.system.knowledge = knowledge,	
       modifiedItem.system.weapons = weapons,	
@@ -982,8 +990,7 @@ export class SR5_ActorHelper {
         if (a.type === "itemVehicleMod") vehiclesMod.push(a)
       }
       modifiedItem.img = actor.img
-      modifiedItem.system.sideKickPrototypeToken = actor.prototypeToken?.toObject()
-      modifiedItem.system.tokenImg = actor.prototypeToken?.texture?.src || ""
+      SR5_ActorHelper.rememberSidekickToken(modifiedItem, actor)
       modifiedItem.system.autosoft = autosoft
       modifiedItem.system.weapons = weapons
       modifiedItem.system.ammunitions = ammunitions
@@ -1037,12 +1044,7 @@ export class SR5_ActorHelper {
     if (actor.type === "actorStorage"){
       modifiedItem.system.isDeployed = false
       modifiedItem.system.deployedActorId = ""
-      // dimissSidekick() is handed a plain object, not a document, so nothing
-      // here may lean on toObject().
-      const proto = actor.prototypeToken
-      modifiedItem.system.sideKickPrototypeToken = typeof proto?.toObject === "function" ? proto.toObject() : (proto ?? {
-      })
-      modifiedItem.system.tokenImg = proto?.texture?.src || ""
+      SR5_ActorHelper.rememberSidekickToken(modifiedItem, actor)
       // Whatever is in it comes back to the character, still stored in it
       const contents = (actor.items ?? []).map(i => {
         const data = typeof i.toObject === "function" ? i.toObject(false) : foundry.utils.duplicate(i)
