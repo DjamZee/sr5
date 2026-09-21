@@ -1,3 +1,18 @@
+/**
+ * Icons of the system on the token HUD.
+ *
+ * The V13 TokenHUD builds its own parts from the core templates and never
+ * reads a system template, so the old srtoken-hud.hbs was dead weight: the
+ * only way back to the SR5 icons is to swap them once the HUD is rendered.
+ */
+const HUD_ICONS = {
+  config: "hud_configure.svg",
+  target: "hud_target.svg",
+  visibility: "hud_visibility.svg",
+  effects: "hud_effect.svg",
+  combat: "hud_combat.svg"
+}
+
 export default class SR5TokenHud extends foundry.applications.hud.TokenHUD {
   constructor(...args) {
     super(...args)
@@ -6,20 +21,38 @@ export default class SR5TokenHud extends foundry.applications.hud.TokenHUD {
   /** @override */
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
-      id: "token-hud",
-      template: "systems/sr5/templates/interface/srtoken-hud.hbs"
+      id: "token-hud"
     })
+  }
+
+  _onRender(context, options) {
+    super._onRender(context, options)
+    this.#dressControlIcons()
+    this.#addStorageButton()
+  }
+
+  /**
+   * Replace the Font Awesome glyph of each control by the SR5 drawing, and
+   * leave alone any control we have no drawing for.
+   */
+  #dressControlIcons() {
+    for (const [action, file] of Object.entries(HUD_ICONS)) {
+      for (const control of this.element?.querySelectorAll(`.control-icon[data-action="${action}"]`) ?? []) {
+        const glyph = control.querySelector(":scope > i")
+        if (!glyph) continue
+        const img = document.createElement("img")
+        img.src = `systems/sr5/assets/img/ui/${file}`
+        img.alt = ""
+        glyph.replaceWith(img)
+      }
+    }
   }
 
   /**
    * A way into a storage left on the ground that costs no selection: opening
    * it by clicking its own token would make the bag the one who takes.
-   *
-   * The button is built here rather than in srtoken-hud.hbs because the V13
-   * TokenHUD renders its own parts and never reads that template.
    */
-  _onRender(context, options) {
-    super._onRender(context, options)
+  #addStorageButton() {
     if (this.document?.actor?.type !== "actorStorage") return
 
     const middle = this.element?.querySelector(".col.middle")

@@ -10,6 +10,16 @@
     align-self: center;
   }
 
+  /* The SR5 drawings take the place of the Font Awesome glyphs: they have to
+     fill the button the same way, with no frame of their own. */
+  .control-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border: none;
+    filter: drop-shadow(0 0 3px var(--sr-text-color-dark));
+  }
+
   /* Posed over the map, which can be bright: keep a near-white icon and a dark
      halo, the way Foundry's own placeable HUD does. */
   --control-icon-color: var(--sr-text-color-grey-dark);
