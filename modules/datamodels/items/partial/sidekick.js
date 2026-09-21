@@ -10,6 +10,9 @@ export class sidekickPartialModel extends foundry.abstract.TypeDataModel {
     return {
       tokenImg: new fields.FilePathField({
         categories: ["IMAGE"],
+        // A FilePathField rejects the empty string unless it is told to accept
+        // it, and an item with no token picture of its own is the normal case.
+        blank: true,
         initial: ''
       }),
       // Written back when the actor is dismissed. May be empty or partial on
