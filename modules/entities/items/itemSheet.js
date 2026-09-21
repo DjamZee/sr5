@@ -276,6 +276,10 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     context.isPlay = this.isPlayMode
     // Items that unfold into an actor wear a second picture: their token's
     context.hasTokenImage = SR5ItemSheet.SIDEKICK_TYPES.includes(item.type)
+    // What the rule asks of a garage holding this kind of vehicle
+    if (item.type === "itemStorage" && item.system.type === "garage") {
+      context.garageRule = SR5.storageGarageRequirements[item.system.vehicleType] ?? null
+    }
 
     // Custom ammunition type choices for weapon ammo dropdown
     if (item.type === 'itemWeapon') {
