@@ -579,6 +579,8 @@ export class SR5_ActorHelper {
       "name": item.name,
       "type": petType,
       "img": img,
+      // The token picture picked on the item, or the portrait when left empty
+      "prototypeToken.texture.src": itemData.tokenImg || img,
     }
 
     // Give permission to player
@@ -795,7 +797,8 @@ export class SR5_ActorHelper {
         if (a.type === "itemPower") powers.push(a)
       }
       modifiedItem.img = actor.img
-      modifiedItem.system.sideKickPrototypeToken = actor.prototypeToken
+      modifiedItem.system.sideKickPrototypeToken = actor.prototypeToken?.toObject()
+      modifiedItem.system.tokenImg = actor.prototypeToken?.texture?.src || ""
       modifiedItem.system.services.value = actor.system.services.value
       modifiedItem.system.services.max = actor.system.services.max
       if (actor.system.type === "watcher" || actor.system.type === "homunculus"){
@@ -825,7 +828,8 @@ export class SR5_ActorHelper {
         if (a.type === "itemSpritePower") spritePowers.push(a)
       }
       modifiedItem.img = actor.img
-      modifiedItem.system.sideKickPrototypeToken = actor.prototypeToken
+      modifiedItem.system.sideKickPrototypeToken = actor.prototypeToken?.toObject()
+      modifiedItem.system.tokenImg = actor.prototypeToken?.texture?.src || ""
       modifiedItem.system.decks = decks
       modifiedItem.system.spritePowers = spritePowers
       modifiedItem.system.tasks.value = actor.system.tasks.value
@@ -849,7 +853,8 @@ export class SR5_ActorHelper {
         if (a.type === "itemDevice") decks.push(a)
       }
       modifiedItem.img = actor.img
-      modifiedItem.system.sideKickPrototypeToken = actor.prototypeToken
+      modifiedItem.system.sideKickPrototypeToken = actor.prototypeToken?.toObject()
+      modifiedItem.system.tokenImg = actor.prototypeToken?.texture?.src || ""
       modifiedItem.system.decks = decks
       if (actor.img != "systems/sr5/assets/img/actors/actorAgent.svg" && modifiedItem.system.gameEffect.includes(actor.img) === false) {
         if (modifiedItem.system.gameEffect.includes("SR-BioItemPortrait")) {
@@ -880,7 +885,8 @@ export class SR5_ActorHelper {
       }
       modifiedItem.name = actor.name
       modifiedItem.img = actor.img	
-      modifiedItem.system.sideKickPrototypeToken = actor.prototypeToken
+      modifiedItem.system.sideKickPrototypeToken = actor.prototypeToken?.toObject()
+      modifiedItem.system.tokenImg = actor.prototypeToken?.texture?.src || ""
       modifiedItem.system.language = language,	
       modifiedItem.system.knowledge = knowledge,	
       modifiedItem.system.weapons = weapons,	
@@ -931,7 +937,8 @@ export class SR5_ActorHelper {
         if (a.type === "itemVehicleMod") vehiclesMod.push(a)
       }
       modifiedItem.img = actor.img
-      modifiedItem.system.sideKickPrototypeToken = actor.prototypeToken
+      modifiedItem.system.sideKickPrototypeToken = actor.prototypeToken?.toObject()
+      modifiedItem.system.tokenImg = actor.prototypeToken?.texture?.src || ""
       modifiedItem.system.autosoft = autosoft
       modifiedItem.system.weapons = weapons
       modifiedItem.system.ammunitions = ammunitions

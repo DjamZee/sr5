@@ -1,4 +1,7 @@
 import {
+  sidekickPartialModel 
+} from './partial/sidekick.js'
+import {
   descriptionPartialModel 
 } from './partial/description.js'
 import {
@@ -10,6 +13,7 @@ export class sr5ItemStorageDataModel extends foundry.abstract.TypeDataModel {
     const fields = foundry.data.fields
     return {
       ...descriptionPartialModel.defineSchema(),
+      ...sidekickPartialModel.defineSchema(),
       ...boughtOrSoldPartialModel.defineSchema(),
       // Kind of storage: stash, safe, backpack, garage...
       type: new fields.StringField({
