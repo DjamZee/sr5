@@ -47,13 +47,16 @@ export function sr5DressTableDraw(html) {
 
   const rows = [...draw.querySelectorAll(".table-results > li")]
   const images = rows.map(row => row.querySelector(":scope > img")).filter(Boolean)
-  const sources = new Set(images.map(img => img.getAttribute("src")).filter(src => !isPlaceholder(src)))
+  const drawings = images.map(img => img.getAttribute("src")).filter(src => !isPlaceholder(src))
 
   const table = findTable(draw.dataset.tableId)
   const title = table?.name ?? ""
-  // A table whose results all wear the same icon is wearing the table's own:
-  // it belongs beside the title, not down the side of every line.
-  const icon = sources.size === 1 ? [...sources][0] : (isPlaceholder(table?.img) ? null : table?.img)
+  // The table's own drawing belongs beside the title. When the table has
+  // none, a drawing that several results repeat is its drawing by another
+  // name — but one that appears once is not: on a table that draws actors,
+  // that would be the portrait of the single contact that came up.
+  const repeated = new Set(drawings).size === 1 && drawings.length > 1 ? drawings[0] : null
+  const icon = isPlaceholder(table?.img) ? repeated : table.img
 
   if (title || icon) {
     const header = document.createElement("header")
@@ -74,8 +77,11 @@ export function sr5DressTableDraw(html) {
     draw.prepend(header)
   }
 
-  // Placeholders never earn their line; a shared icon has moved to the header
+  // A placeholder never earns its line, and neither does the drawing that is
+  // now in the header. An icon of its own — the portrait of an actor a result
+  // drew — stays where it says something.
   for (const img of images) {
-    if (isPlaceholder(img.getAttribute("src")) || sources.size === 1) img.remove()
+    const src = img.getAttribute("src")
+    if (isPlaceholder(src) || src === icon) img.remove()
   }
 }
