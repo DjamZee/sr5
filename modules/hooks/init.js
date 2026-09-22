@@ -303,7 +303,7 @@ export async function sr5HookInit() {
   CONFIG.ui.combat = SR5CombatTracker
   CONFIG.ui.items = SR5ItemDirectory
   CONFIG.Token.objectClass = SR5Token
-  CONFIG.Canvas.visionModes.astralvision = SRVision.astralVision
+  SRVision.registerVisionModes()
 
   // ACTIVATE HOOKS DEBUG
   CONFIG.debug.hooks = false
