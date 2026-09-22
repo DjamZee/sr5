@@ -337,11 +337,11 @@ function _buildCalledShotList(rollData){
     rollData.lists.calledShots.dirtyTrick = game.i18n.localize("SR5.CS_DirtyTrick")
   }
 
-  if ((ammoType === "special" || ammoType ==="bolt" || ammoType ==="boltInjection" || ammoType ==="arrow" || ammoType ==="arrowInjection") && rollData.combat.calledShot.martialArts.pin){
+  if ((ammoType === "special" || ammoType ==="bolt" || ammoType ==="boltInjection" || ammoType ==="arrow" || ammoType ==="arrowInjection") ){
     rollData.lists.calledShots.pin = game.i18n.localize("SR5.CS_Pin")
   }
     
-  if (rollData.combat.weaponType === "unarmedCombat" && rollData.combat.calledShot.martialArts.disarm){
+  if (rollData.combat.weaponType === "unarmedCombat"){
     rollData.lists.calledShots.disarm = game.i18n.localize("SR5.CS_Disarm")
   }
 
@@ -355,7 +355,7 @@ function _buildCalledShotList(rollData){
     rollData.lists.calledShots.shakeUp = game.i18n.localize("SR5.CS_ShakeUp")
   }
 
-  if (rollData.test.typeSub === "meleeWeapon" && rollData.combat.calledShot.martialArts.feint){
+  if (rollData.test.typeSub === "meleeWeapon"){
     rollData.lists.calledShots.feint = game.i18n.localize("SR5.CS_Feint")
   }
 
@@ -367,7 +367,7 @@ function _buildCalledShotList(rollData){
 
   rollData.lists.calledShots.trickShot = game.i18n.localize("SR5.CS_TrickShot")
 
-  if (rollData.test.typeSub === "meleeWeapon"){
+  if (rollData.test.typeSub === "meleeWeapon" && rollData.combat.calledShot.martialArts.reversal){
     rollData.lists.calledShots.reversal = game.i18n.localize("SR5.CS_Reversal")
   }
 
