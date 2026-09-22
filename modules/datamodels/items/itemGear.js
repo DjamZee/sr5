@@ -2,6 +2,9 @@ import {
   descriptionPartialModel 
 } from './partial/description.js'
 import {
+  storablePartialModel 
+} from './partial/storable.js'
+import {
   ratingPartialModel 
 } from './partial/rating.js'
 import {
@@ -28,6 +31,7 @@ export class sr5ItemGearDataModel extends foundry.abstract.TypeDataModel {
     const fields = foundry.data.fields
     return {
       ...descriptionPartialModel.defineSchema(),
+      ...storablePartialModel.defineSchema(),
       ...ratingPartialModel.defineSchema(),
       ...boughtOrSoldPartialModel.defineSchema(),
       ...wirelessPartialModel.defineSchema(),
@@ -38,11 +42,31 @@ export class sr5ItemGearDataModel extends foundry.abstract.TypeDataModel {
       quantity: new fields.NumberField({
         initial: 1
       }),
+      // A DocWagon contract, a licence, a subscription: owned, but not a
+      // thing that can be left in a stash.
+      isIntangible: new fields.BooleanField({
+        initial: false
+      }),
       charge: new fields.NumberField({
         initial: 0
       }),
       isMedkit: new fields.BooleanField({
         initial: false
+      }),
+      // A certified credstick carries money the way a magazine carries rounds:
+      // it is bearer cash, so it moves with the item (SR5 p. 445).
+      isCredstick: new fields.BooleanField({
+        initial: false
+      }),
+      funds: new fields.SchemaField({
+        // Nuyens currently loaded on the stick
+        value: new fields.NumberField({
+          initial: 0
+        }),
+        // Most it can be certified for. 0 means no ceiling.
+        max: new fields.NumberField({
+          initial: 0
+        }),
       }),
       isPlugged: new fields.BooleanField({
         initial: false

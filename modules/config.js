@@ -504,6 +504,25 @@ SR5.metatypes = {
 }
 
 // Lifestyle Types
+// Storage Types
+SR5.storageTypes = {
+  stash                     : "SR5.StorageTypeStash",
+  safe                      : "SR5.StorageTypeSafe",
+  backpack                  : "SR5.StorageTypeBackpack",
+  cache                     : "SR5.StorageTypeCache",
+  garage                    : "SR5.StorageTypeGarage",
+}
+
+// Garage vehicle categories (Run Faster p. 216)
+SR5.storageVehicleTypes = {
+  motorcycle                : "SR5.StorageVehicleMotorcycle",
+  carLight                  : "SR5.StorageVehicleCarLight",
+  carHeavy                  : "SR5.StorageVehicleCarHeavy",
+  boat                      : "SR5.StorageVehicleBoat",
+  plane                     : "SR5.StorageVehiclePlane",
+  helicopter                : "SR5.StorageVehicleHelicopter",
+}
+
 SR5.lifestyleTypes = {
   boltHole                  : "SR5.LifestyleBoltHole",
   streets                   : "SR5.LifestyleStreets",
@@ -2655,6 +2674,20 @@ SR5.spiritTypes = {
   water                     : "SR5.Water",
 }
 
+// Condition monitors a custom spirit type can ask for
+SR5.spiritTypeMonitors = {
+  ""                        : "SR5.SpiritTypeInherit",
+  standard                  : "SR5.SpiritTypeMonitorStandard",
+  single                    : "SR5.SpiritTypeMonitorSingle",
+}
+
+// How a custom spirit type rates the skills every spirit gets
+SR5.spiritTypeSkillRatios = {
+  ""                        : "SR5.SpiritTypeInherit",
+  full                      : "SR5.SpiritTypeRatioFull",
+  half                      : "SR5.SpiritTypeRatioHalf",
+}
+
 SR5.spiritBasePowersabomination = {
   animalControl              : "SR5.SpiritPowerAnimalControl",
   astralForm                 : "SR5.SpiritPowerAstralForm",
@@ -3687,6 +3720,7 @@ SR5.itemTypes = {
   itemComplexForm           : "TYPES.Item.itemComplexForm",
   itemContact               : "TYPES.Item.itemContact",
   itemDevice                : "TYPES.Item.itemDevice",
+  itemDrug                  : "TYPES.Item.itemDrug",
   itemEcho                  : "TYPES.Item.itemEcho",
   itemEffect                : "TYPES.Item.itemEffect",
   itemFocus                 : "TYPES.Item.itemFocus",
@@ -3708,8 +3742,10 @@ SR5.itemTypes = {
   itemSin                   : "TYPES.Item.itemSin",
   itemSpell                 : "TYPES.Item.itemSpell",
   itemSpirit                : "TYPES.Item.itemSpirit",
+  itemSpiritType            : "TYPES.Item.itemSpiritType",
   itemSprite                : "TYPES.Item.itemSprite",
   itemSpritePower           : "TYPES.Item.itemSpritePower",
+  itemStorage               : "TYPES.Item.itemStorage",
   itemTradition             : "TYPES.Item.itemTradition",
   itemVehicle               : "TYPES.Item.itemVehicle",
   itemVehicleMod            : "TYPES.Item.itemVehicleMod",
@@ -3727,6 +3763,7 @@ SR5.actorTypes = {
   actorPc                   : "TYPES.Actor.actorPc",
   actorSpirit               : "TYPES.Actor.actorSpirit",
   actorSprite               : "TYPES.Actor.actorSprite",
+  actorStorage              : "TYPES.Actor.actorStorage",
   actorAgent                : "TYPES.Actor.actorAgent",
 }
 

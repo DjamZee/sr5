@@ -163,6 +163,7 @@ const ITEM_LAYOUTS = {
   itemMartialArt:   () => _threeTabLayout('martialArtSummary', 'martialArtStat'),
   itemTradition:    () => _threeTabLayout('traditionSummary', 'traditionStat'),
   itemSpirit:       () => _threeTabLayout('spiritSummary', 'spiritStat'),
+  itemSpiritType:   () => _threeTabLayout('spiritTypeSummary', 'spiritTypeStat'),
   itemSprite:       () => _threeTabLayout('spriteSummary', 'spriteStat'),
   itemSpritePower:  () => _threeTabLayout('spritePowerSummary', 'spritePowerStat'),
   itemVehicleMod:   () => _threeTabLayout('vehicleModSummary', 'vehicleModStat'),
@@ -177,6 +178,7 @@ const ITEM_LAYOUTS = {
   // 2-tab: Description + Configuration (no effects)
   itemVehicle:      () => _descStatLayout('vehicleSummary', 'vehicleStat'),
   itemSin:          () => _descStatLayout('sinSummary', 'sinStat'),
+  itemStorage:      () => _descStatLayout('storageSummary', 'storageStat'),
   itemLifestyle:    () => _descStatLayout('lifestyleSummary', 'lifestyleStat'),
   itemContact:      () => _descStatLayout('contactSummary', 'contactStat'),
   itemAmmunition:     () => _descStatLayout('ammunitionSummary', 'ammunitionStat'),

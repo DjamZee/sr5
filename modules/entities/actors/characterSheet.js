@@ -1,6 +1,9 @@
 import {
   ActorSheetSR5 
 } from "./baseSheet.js"
+import {
+  SR5Credstick 
+} from "../../interface/credstick.js"
 
 /**
  * An Actor sheet for player character type actors in the Shadowrun 5 system.
@@ -117,6 +120,8 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     const programs = []
     const karmas = []
     const nuyens = []
+    // Cash the character carries, as opposed to the ledger below it
+    const credsticks = []
     const contacts = []
     const lifestyles = []
     const sins = []
@@ -133,6 +138,7 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     const traditions = []
     const rituals = []
     const reputations = []
+    const storages = []
 
     // Iterate through items, allocating to containers
     for (let i of actor.items) {
@@ -147,7 +153,11 @@ export class SR5ActorSheet extends ActorSheetSR5 {
       else if (i.type === "itemAdeptPower") adeptPowers.push(i)
       else if (i.type === "itemMartialArt") martialArts.push(i)
       else if (i.type === "itemMetamagic") metamagics.push(i)
-      else if (i.type === "itemGear") gears.push(i)
+      else if (i.type === "itemGear") {
+        gears.push(i)
+        // A credstick is gear like any other, and also the character's cash
+        if (i.system.isCredstick) credsticks.push(i)
+      }
       else if (i.type === "itemSpirit") spirits.push(i)
       else if (i.type === "itemDevice") cyberdecks.push(i)
       else if (i.type === "itemProgram") {
@@ -163,6 +173,7 @@ export class SR5ActorSheet extends ActorSheetSR5 {
       }
       else if (i.type === "itemContact") contacts.push(i)
       else if (i.type === "itemLifestyle") lifestyles.push(i)
+      else if (i.type === "itemStorage") storages.push(i)
       else if (i.type === "itemSin") sins.push(i)
       else if (i.type === "itemVehicle") vehicles.push(i)
       else if (i.type === "itemVehicleMod") vehiclesMod.push(i)
@@ -201,6 +212,8 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     actor.programs = programs
     actor.karmas = karmas
     actor.nuyens = nuyens
+    actor.credsticks = credsticks
+    actor.cashOnHand = SR5Credstick.cashOnHand(this.actor)
     actor.contacts = contacts
     actor.lifestyles = lifestyles
     actor.sins = sins
@@ -217,6 +230,83 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     actor.traditions = traditions
     actor.rituals = rituals
     actor.reputations = reputations
+    actor.storages = this._prepareStorages(actor, storages)
+    this._applyStoredGear(actor, storages)
+  }
+
+  /**
+   * Stored gear leaves the lists a player reads to act — Combat, Matrix,
+   * Magic — because none of it is within reach. It stays in the lists that
+   * say what the character owns, greyed out and saying where it sits, so
+   * nobody thinks their gear has gone missing.
+   */
+  _applyStoredGear(actor, storages) {
+    const names = new Map(storages.map(s => [s._id, s.name]))
+    const isStored = i => !!i.system?.storedIn
+
+    // Out of reach: these lists answer "what can I do right now?"
+    actor.weapons = actor.weapons.filter(i => !isStored(i))
+    actor.weaponAccessories = actor.weaponAccessories.filter(i => !isStored(i))
+    actor.armors = actor.armors.filter(i => !isStored(i))
+    actor.ammunitions = actor.ammunitions.filter(i => !isStored(i))
+    actor.cyberdecks = actor.cyberdecks.filter(i => !isStored(i))
+    actor.programs = actor.programs.filter(i => !isStored(i))
+    actor.focuses = actor.focuses.filter(i => !isStored(i))
+
+    // Still listed: these answer "what do I own?"
+    for (const list of [actor.gears, actor.vehicles, actor.augmentations]) {
+      for (const item of list) {
+        if (isStored(item)) item.storedInName = names.get(item.system.storedIn) ?? ""
+      }
+    }
+  }
+
+  /**
+   * Build the view model for the Storage tab: each storage with what sits
+   * inside it. Stored items are left in their usual lists on purpose — being
+   * stored does not yet take an item out of play.
+   */
+  // One icon per kind of storage. Font Awesome, so it takes the sheet's own
+  // text colour and stays readable on a light surface.
+  static STORAGE_ICONS = {
+    stash: "fa-house",
+    safe: "fa-vault",
+    backpack: "fa-suitcase",
+    cache: "fa-box-archive",
+    garage: "fa-warehouse",
+  }
+
+  _prepareStorages(actor, storages) {
+    const stored = actor.items.filter(i => i.system?.storedIn)
+    return storages
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(storage => {
+        const contents = stored
+          .filter(i => i.system.storedIn === storage._id)
+          .sort((a, b) => a.name.localeCompare(b.name))
+        const max = storage.system.capacity.value
+        // What the lot is worth. Item prices, not the actor's nuyen: that
+        // field sums every transaction and is not a balance.
+        const value = contents.reduce((total, i) => {
+          const price = i.system.price?.value ?? i.system.price?.base ?? 0
+          return total + price * (i.system.quantity ?? 1)
+        }, 0)
+        return {
+          _id: storage._id,
+          name: storage.name,
+          img: storage.img,
+          type: storage.system.type,
+          icon: SR5ActorSheet.STORAGE_ICONS[storage.system.type] ?? "fa-box",
+          isDeployable: storage.system.isDeployable,
+          isDeployed: storage.system.isDeployed,
+          contents: contents,
+          used: contents.length,
+          max: max,
+          value: value,
+          hasLimit: max > 0,
+          isFull: max > 0 && contents.length >= max,
+        }
+      })
   }
 
   /** @override */

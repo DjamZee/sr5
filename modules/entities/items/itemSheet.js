@@ -2,6 +2,12 @@ import {
   SR5 
 } from "../../config.js"
 import {
+  garageRequirement 
+} from "../../interface/storage-rules.js"
+import {
+  SR5_SpiritTypes
+} from "./spirit-types.js"
+import {
   SR5_EntityHelpers 
 } from "../helpers.js"
 import {
@@ -34,10 +40,16 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     PLAY: 1, EDIT: 2 
   })
 
+  /** The Force a spirit type's preview is computed at. */
+  static SPIRIT_PREVIEW_FORCE = 4
+
   _mode = SR5ItemSheet.MODES.EDIT
 
   get isPlayMode() { return this._mode === SR5ItemSheet.MODES.PLAY }
   get isEditMode() { return this._mode === SR5ItemSheet.MODES.EDIT }
+
+  // Item types that unfold into their own actor, and so carry a token picture
+  static SIDEKICK_TYPES = ["itemSpirit", "itemSprite", "itemVehicle", "itemProgram", "itemContact", "itemStorage"]
 
   static DEFAULT_OPTIONS = {
     classes: ["app", "window-app", "sr5", "SR-Item"],
@@ -271,6 +283,12 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     context.owner = this.document.isOwner
     context.lists = SR5_EntityHelpers.sortTranslations(SR5)
     context.isPlay = this.isPlayMode
+    // Items that unfold into an actor wear a second picture: their token's
+    context.hasTokenImage = SR5ItemSheet.SIDEKICK_TYPES.includes(item.type)
+    // What the rule asks of a garage holding this kind of vehicle
+    if (item.type === "itemStorage" && item.system.type === "garage") {
+      context.garageRule = garageRequirement(item)
+    }
 
     // Custom ammunition type choices for weapon ammo dropdown
     if (item.type === 'itemWeapon') {
@@ -301,6 +319,31 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       }
     }
     context.cssClass = this.document.isOwner ? "editable" : "locked"
+
+    // Custom spirit type: pickers, and labels for the read-only summary
+    if (item.type === "itemSpiritType") {
+      const official = {
+      }
+      for (const [key, label] of Object.entries(SR5.spiritTypes)) {
+        if (!SR5_SpiritTypes.registry.has(key)) official[key] = label
+      }
+      context.spiritTypeBaseChoices = official
+      context.spiritTypeKeyPlaceholder = SR5_SpiritTypes.keyOf(item)
+      context.spiritTypeAttributes = Object.keys(SR5.characterAttributes).map(key => ({
+        key,
+        label: SR5.characterAttributes[key],
+        modifier: item.system.attributes[key]?.modifier ?? 0,
+        override: item.system.attributes[key]?.override ?? null,
+      }))
+      const names = (list, table) => (list ?? []).map(k => game.i18n.localize(table[k] ?? k)).join(", ")
+      context.spiritTypeSkillsLabel = names(item.system.skills, SR5.skills)
+      context.spiritTypePowersLabel = names(item.system.powers, SR5.AllSpiritPowers)
+      // A key already taken means the type is ignored; the sheet says so.
+      context.spiritTypeKeyConflict = SR5_SpiritTypes.conflictFor(item)
+      // What a spirit built on this type would actually have.
+      context.spiritTypePreview = SR5_SpiritTypes.preview(item, SR5ItemSheet.SPIRIT_PREVIEW_FORCE)
+      context.spiritTypePreviewForce = SR5ItemSheet.SPIRIT_PREVIEW_FORCE
+    }
 
     // Weapon focus: populate weapon choices from parent actor
     if (item.type === "itemFocus" && item.system.type === "weapon" && item.actor) {

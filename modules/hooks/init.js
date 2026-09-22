@@ -41,6 +41,9 @@ import {
   SR5AgentSheet
 } from "../entities/actors/agentSheet.js"
 import {
+  SR5StorageSheet
+} from "../entities/actors/storageSheet.js"
+import {
   SR5Item
 } from "../entities/items/entityItem.js"
 import {
@@ -49,6 +52,9 @@ import {
 import {
   SR5Combat, _getInitiativeFormula
 } from "../system/srcombat.js"
+import {
+  SR5RollTable, SR5TableResult
+} from "../entities/rollTables/entityRollTable.js"
 import {
   SR5Token
 } from "../interface/token.js"
@@ -162,11 +168,20 @@ import {
   sr5ItemSpiritDataModel
 } from "../datamodels/items/itemSpirit.js"
 import {
+  sr5ItemSpiritTypeDataModel
+} from "../datamodels/items/itemSpiritType.js"
+import {
   sr5ItemSpriteDataModel
 } from "../datamodels/items/itemSprite.js"
 import {
   sr5ItemSpritePowerDataModel
 } from "../datamodels/items/itemSpritePower.js"
+import {
+  sr5ItemStorageDataModel
+} from "../datamodels/items/itemStorage.js"
+import {
+  sr5ActorStorageDataModel
+} from "../datamodels/actors/actorStorage.js"
 import {
   sr5ItemTraditionDataModel
 } from "../datamodels/items/itemTradition.js"
@@ -239,6 +254,7 @@ export async function sr5HookInit() {
     actorDevice: sr5ActorDeviceDataModel,
     actorSprite: sr5ActorSpriteDataModel,
     actorAgent: sr5ActorAgentDataModel,
+    actorStorage: sr5ActorStorageDataModel,
   })
   Object.assign(CONFIG.Item.dataModels, {
     itemAdeptPower: sr5ItemAdeptPowerDataModel,
@@ -271,8 +287,10 @@ export async function sr5HookInit() {
     itemSin: sr5ItemSinDataModel,
     itemSpell: sr5ItemSpellDataModel,
     itemSpirit: sr5ItemSpiritDataModel,
+    itemSpiritType: sr5ItemSpiritTypeDataModel,
     itemSprite: sr5ItemSpriteDataModel,
     itemSpritePower: sr5ItemSpritePowerDataModel,
+    itemStorage: sr5ItemStorageDataModel,
     itemTradition: sr5ItemTraditionDataModel,
     itemVehicle: sr5ItemVehicleDataModel,
     itemVehicleMod: sr5ItemVehicleModDataModel,
@@ -284,10 +302,12 @@ export async function sr5HookInit() {
   CONFIG.Actor.documentClass = SR5Actor
   CONFIG.Item.documentClass = SR5Item
   CONFIG.Combat.documentClass = SR5Combat
+  CONFIG.RollTable.documentClass = SR5RollTable
+  CONFIG.TableResult.documentClass = SR5TableResult
   CONFIG.ui.combat = SR5CombatTracker
   CONFIG.ui.items = SR5ItemDirectory
   CONFIG.Token.objectClass = SR5Token
-  CONFIG.Canvas.visionModes.astralvision = SRVision.astralVision
+  SRVision.registerVisionModes()
 
   // ACTIVATE HOOKS DEBUG
   CONFIG.debug.hooks = false
@@ -330,6 +350,11 @@ export async function sr5HookInit() {
     types: ["actorAgent"],
     makeDefault: true,
     label: "SR5.Sheet.Agent"
+  })
+  foundry.applications.apps.DocumentSheetConfig.registerSheet(foundry.documents.Actor, "SR5", SR5StorageSheet, {
+    types: ["actorStorage"],
+    makeDefault: true,
+    label: "SR5.Sheet.Storage"
   })
   foundry.applications.apps.DocumentSheetConfig.registerSheet(foundry.documents.Item, "SR5", SR5ItemSheet, {
     makeDefault: true,

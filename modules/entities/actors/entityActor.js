@@ -320,9 +320,18 @@ export class SR5Actor extends Actor {
         SR5_SystemHelpers.srLog(1, `Unknown '${this.type}' type in 'base _preCreate()'`)
     }
 
-    if (this.system.sideKickPrototypeToken) {
+    // A summoned actor wears the token kept when it was last dismissed. That
+    // token may be empty or half written on older items, so never let it erase
+    // the picture its item carries.
+    let rememberedToken = this.system.sideKickPrototypeToken
+    if (rememberedToken && Object.keys(rememberedToken).length) {
       foundry.utils.mergeObject(createData, {
-        "prototypeToken": this.system.sideKickPrototypeToken
+        "prototypeToken": rememberedToken
+      })
+    }
+    if (this.system.creatorItemId) {
+      foundry.utils.mergeObject(createData, {
+        "prototypeToken.texture.src": this.prototypeToken?.texture?.src || rememberedToken?.texture?.src || this.img
       })
     }
 
@@ -479,6 +488,19 @@ export class SR5Actor extends Actor {
     for (let i of actor.items) {
       let iData = i.system
       SR5_SystemHelpers.srLog(3, `Parsing '${i.type}' item named '${i.name}'`, i)
+
+      // Gear left in a storage is out of play: an armour at the stash protects
+      // nobody, a deck in the garage answers no call on the Matrix. Its own
+      // values are still computed so the storage can show it, but it is held
+      // inactive here rather than on the item, so taking it out gives it back
+      // exactly as it was.
+      if (iData.storedIn) {
+        i.prepareData()
+        iData.isActive = false
+        if (iData.wirelessTurnedOn !== undefined) iData.wirelessTurnedOn = false
+        continue
+      }
+
       switch (i.type) {
         case "itemGear":
           i.prepareData()
@@ -771,6 +793,8 @@ export class SR5Actor extends Actor {
     let actorData = actor.system
     for (let i of actor.items) {
       let iData = i.system
+      // Stored gear takes no part in what the character can do
+      if (iData.storedIn) continue
       switch (i.type){
         case "itemDevice":
           if (actor.type === "actorPc" || actor.type === "actorGrunt"){
