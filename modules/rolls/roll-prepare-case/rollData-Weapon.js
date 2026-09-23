@@ -204,7 +204,10 @@ async function handleTargetInfo(rollData, actor, item){
   //Handle Targets
   if (game.user.targets.size) {
     //For now, only allow one target for attack;
-    if (game.user.targets.size > 1) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_TargetTooMany")}`)
+    if (game.user.targets.size > 1) {
+      ui.notifications.warn(`${game.i18n.localize("SR5.WARN_TargetTooMany")}`)
+      return false
+    }
 
     //Get target actor
     let targetActor = await SR5_PrepareRollHelper.getTargetedActor()
@@ -221,9 +224,11 @@ async function handleTargetInfo(rollData, actor, item){
     const targeted = game.user.targets
     const targets = Array.from(targeted)
     for (let t of targets) {
+      // game.user.targets holds Token placeables, whose own x/y are the PIXI position and stay at 0 in V13.
+      // The grid coordinates live on the document, as they do for the attacker in getActorCanvasPosition.
       target = {
-        x: t.x,
-        y: t.y,
+        x: t.document.x,
+        y: t.document.y,
       }
     }
   }
@@ -244,7 +249,14 @@ async function handleTargetInfo(rollData, actor, item){
   //Handle Melee specifics
   if (itemData.category === "meleeWeapon") {
     rollData.combat.reach = itemData.reach.value
-    if (rollData.target.rangeInMeters > (itemData.reach.value + 1.41)) return ui.notifications.info(`${game.i18n.localize("SR5.INFO_TargetIsTooFar")}`)
+    // Melee range is expressed in grid squares, not in metres: getDistanceBetweenTwoPoint returns scene units,
+    // so a hard-coded distance would only work on a scene whose square is exactly that wide.
+    // An adjacent target is always within range, and each point of Reach (SR5 p. 186) adds one square.
+    const meleeRange = (itemData.reach.value + 1) * (canvas?.scene?.grid?.distance ?? 1)
+    if (rollData.target.rangeInMeters > meleeRange) {
+      ui.notifications.info(`${game.i18n.localize("SR5.INFO_TargetIsTooFar")}`)
+      return false
+    }
     sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(game.scenes.active, actor.system, true, areaEffect, true)
   } else { // Handle weapon ranged based on distance
     if (rollData.target.rangeInMeters < itemData.range.short.value) rollData.target.range = "short"
@@ -253,7 +265,8 @@ async function handleTargetInfo(rollData, actor, item){
     else if (rollData.target.rangeInMeters < itemData.range.extreme.value) rollData.target.range = "extreme"
     else if (rollData.target.rangeInMeters > itemData.range.extreme.value) {
       if (itemData.category === "grenade"|| itemData.type === "grenadeLauncher" || itemData.type === "missileLauncher") SR5_RollMessage.removeTemplate(null, item.id)
-      return ui.notifications.info(`${game.i18n.localize("SR5.INFO_TargetIsTooFar")}`)
+      ui.notifications.info(`${game.i18n.localize("SR5.INFO_TargetIsTooFar")}`)
+      return false
     }
     sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(game.scenes.active, actor.system, false, areaEffect)
   }
