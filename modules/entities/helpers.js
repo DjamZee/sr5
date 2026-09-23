@@ -332,6 +332,7 @@ export class SR5_EntityHelpers {
         case "qualityTypesShort":
         case "barrierTypes":
         case "matrixSearchInfoType":
+        case "watchdogInterruptionCost":
           break
         default:
           object[key] = this.sortByTranslatedTerm(object[key], key)
