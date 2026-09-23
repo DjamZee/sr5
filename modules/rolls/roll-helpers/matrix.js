@@ -367,6 +367,26 @@ export class SR5_MatrixHelpers {
     if (!allies.length) ui.notifications.warn(game.i18n.localize("SR5.WARN_MatrixSupportNoTarget"))
     return allies
   }
+  // Kill Code p. 43: Haywire disables every PAN function of the target persona until it succeeds an extended
+  // Computer + Logic [Data Processing] test against the hacker's hits, or reboots (one combat turn)
+  static async applyHaywireEffect(cardData, sourceActor, target){
+    let hackerHits = cardData.previousMessage.hits
+    let effect = {
+      name: game.i18n.localize('SR5.MatrixActionHaywire'),
+      type: "itemEffect",
+      "system.type": "matrixAction",
+      "system.ownerID": sourceActor.id,
+      "system.ownerName": sourceActor.name,
+      "system.duration": "",
+      "system.durationType": "special",
+      "system.target": game.i18n.localize('SR5.PAN'),
+      "system.value": hackerHits,
+      "system.gameEffect": game.i18n.localize("SR5.MatrixActionHaywire_GE"),
+    }
+    await target.createEmbeddedDocuments("Item", [effect])
+    ui.notifications.info(`${target.name}${game.i18n.format('SR5.Colons')} ${game.i18n.localize('SR5.MatrixActionHaywire')} (${hackerHits})`)
+  }
+
 
   //Create an effect on an ally, through the GM when the user does not own the ally.
   //A previous effect of the same kind from the same hacker is replaced, not stacked.
