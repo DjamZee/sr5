@@ -182,7 +182,7 @@ async function handleAstralCombat(rollData, actor, chatData){
 
 async function handleSpellAreaTemplate(rollData, actor, chatData){
   // Spell position
-  let spellPosition = SR5_SystemHelpers.getTemplateItemPosition(chatData.owner.itemId) 
+  let spellPosition = await SR5_SystemHelpers.getTemplateItemPosition(chatData.owner.itemId) 
     
   // Get defenser position
   let defenserPosition = SR5_EntityHelpers.getActorCanvasPosition(actor)

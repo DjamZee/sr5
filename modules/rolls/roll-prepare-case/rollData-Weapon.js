@@ -235,7 +235,7 @@ async function handleTargetInfo(rollData, actor, item){
 
   //Add specific data for grenade & missile
   if (itemData.category === "grenade"|| itemData.type === "grenadeLauncher" || itemData.type === "missileLauncher") {
-    target = SR5_SystemHelpers.getTemplateItemPosition(item.id)
+    target = await SR5_SystemHelpers.getTemplateItemPosition(item.id)
     rollData.test.typeSub = "grenade"
     rollData.chatCard.templateRemove = true
     rollData.combat.grenade.isGrenade = true
@@ -249,9 +249,10 @@ async function handleTargetInfo(rollData, actor, item){
   //Handle Melee specifics
   if (itemData.category === "meleeWeapon") {
     rollData.combat.reach = itemData.reach.value
-    // Melee range is expressed in grid squares, not in metres: getDistanceBetweenTwoPoint returns scene units,
-    // so a hard-coded distance would only work on a scene whose square is exactly that wide.
-    // An adjacent target is always within range, and each point of Reach (SR5 p. 186) adds one square.
+    // Melee range is a number of grid squares. getDistanceBetweenTwoPoint returns the scene's own distance
+    // units, and how far away the adjacent square is depends on the scene's scale, so no fixed distance can
+    // stand for "next to me". An adjacent target is always in range, and each point of Reach (SR5 p. 187)
+    // adds one square.
     const meleeRange = (itemData.reach.value + 1) * (canvas?.scene?.grid?.distance ?? 1)
     if (rollData.target.rangeInMeters > meleeRange) {
       ui.notifications.info(`${game.i18n.localize("SR5.INFO_TargetIsTooFar")}`)
