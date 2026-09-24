@@ -21,11 +21,11 @@ export class SR5_EffectArea {
    * device standing at exactly 100 m is jammed -- hence every comparison below is inclusive.
    *
    * This belongs to the ACTION and to nothing else. The physical jammer of SR5 p. 443 is a second rule,
-   * not a variant of this one: it has no distance limit at all. It generates noise equal to its Device
+   * not a variant of this one, and it has no constant radius. It generates noise equal to its Device
    * Rating, reduced by 1 every 5 meters in a sphere or every 20 meters in a 30-degree cone, so its reach
-   * falls out of its rating instead of a constant (a rating 6 sphere fades at 30 m, a rating 1 one at
-   * 5 m). Do not reuse this constant for it. That page also leaves walls to the gamemaster's discretion,
-   * which is a table call and not something to code.
+   * is derived from its rating rather than fixed: it stops where the noise reaches zero (a rating 6
+   * sphere fades at 30 m, a rating 1 one at 5 m). Do not reuse this constant for it. That page also
+   * leaves walls to the gamemaster's discretion, which is a table call and not something to code.
    */
   static JAM_SIGNALS_RADIUS_IN_METERS = 100
 
