@@ -5,6 +5,9 @@ import {
   SR5_SpiritTypes
 } from "./spirit-types.js"
 import {
+  garageRequirement
+} from "../../interface/storage-rules.js"
+import {
   SR5_EntityHelpers 
 } from "../helpers.js"
 import {
@@ -282,6 +285,10 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     context.isPlay = this.isPlayMode
     // Items that unfold into an actor wear a second picture: their token's
     context.hasTokenImage = SR5ItemSheet.SIDEKICK_TYPES.includes(item.type)
+    // What the rule asks of a garage holding this kind of vehicle
+    if (item.type === "itemStorage" && item.system.type === "garage") {
+      context.garageRule = garageRequirement(item)
+    }
 
     // Custom ammunition type choices for weapon ammo dropdown
     if (item.type === 'itemWeapon') {
