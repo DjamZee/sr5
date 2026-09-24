@@ -4,10 +4,16 @@ import {
 import {
   SR5 
 } from "../../config.js"
+import {
+  SR5_SpiritTypes
+} from "../items/spirit-types.js"
 
 export class SR5_CompendiumUtility extends Actor {
 
   static _warnedMissingCompendiums = new Set()
+
+  /** Actor sub types already reported as arriving with nothing. */
+  static _warnedEmptyBaseItems = new Set()
   static _compendiumCache = new Map()
   static _compendiumChoices = {
   }
@@ -120,7 +126,9 @@ export class SR5_CompendiumUtility extends Actor {
     if (actorType === "actorSpirit") {
       const weapons = await SR5_CompendiumUtility.getCategoryItems("baseWeapons")
       const powers = await SR5_CompendiumUtility.getCategoryItems("creaturePowers")
-      baseItems = await SR5_CompendiumUtility.findBaseItemInCompendium(baseItems, weapons, actorSubType)
+      // A custom type borrows the natural weapon of the type it is based on.
+      const weaponType = SR5_SpiritTypes.baseType(actorSubType) || actorSubType
+      baseItems = await SR5_CompendiumUtility.findBaseItemInCompendium(baseItems, weapons, weaponType)
       baseItems = await SR5_CompendiumUtility.findBaseSpiritPowersInCompendium(baseItems, powers, actorSubType)
       baseItems = await SR5_CompendiumUtility.modifyBaseSpiritWeapon(baseItems, actorLevel)
     }
@@ -130,7 +138,38 @@ export class SR5_CompendiumUtility extends Actor {
       baseItems = await SR5_CompendiumUtility.findBaseItemInCompendium(baseItems, spritePowers, actorSubType)
     }
 
+    // A spirit or a sprite that comes with nothing at all is almost always a
+    // missing or misdirected reference compendium, not a badly written type.
+    // Nothing on screen used to say so.
+    if (!baseItems.length && (actorType === "actorSpirit" || actorType === "actorSprite")) {
+      SR5_CompendiumUtility.warnEmptyBaseItems(actorType, actorSubType)
+    }
+
     return baseItems
+  }
+
+  /**
+	 * Tell the game master, once per compendium, that a reference compendium
+	 * could not be found. Players are not told: it is not theirs to fix.
+	 */
+  static warnMissingCompendium(compendiumName) {
+    if (!game.user?.isGM) return
+    if (SR5_CompendiumUtility._warnedMissingCompendiums.has(compendiumName)) return
+    SR5_CompendiumUtility._warnedMissingCompendiums.add(compendiumName)
+    ui.notifications.warn(game.i18n.format("SR5.WARN_MissingCompendium", {
+      name: compendiumName
+    }), {
+      permanent: true
+    })
+  }
+
+  /** Tell the game master, once per actor sub type, that nothing was found. */
+  static warnEmptyBaseItems(actorType, actorSubType) {
+    if (!game.user?.isGM) return
+    const key = `${actorType}.${actorSubType}`
+    if (SR5_CompendiumUtility._warnedEmptyBaseItems.has(key)) return
+    SR5_CompendiumUtility._warnedEmptyBaseItems.add(key)
+    ui.notifications.warn(game.i18n.localize("SR5.WARN_NoBaseItems"))
   }
 
   static async findBaseItemInCompendium(baseItems, compendium, actorType) {

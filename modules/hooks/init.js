@@ -159,6 +159,9 @@ import {
   sr5ItemSpiritDataModel
 } from "../datamodels/items/itemSpirit.js"
 import {
+  sr5ItemSpiritTypeDataModel
+} from "../datamodels/items/itemSpiritType.js"
+import {
   sr5ItemSpriteDataModel
 } from "../datamodels/items/itemSprite.js"
 import {
@@ -268,6 +271,7 @@ export async function sr5HookInit() {
     itemSin: sr5ItemSinDataModel,
     itemSpell: sr5ItemSpellDataModel,
     itemSpirit: sr5ItemSpiritDataModel,
+    itemSpiritType: sr5ItemSpiritTypeDataModel,
     itemSprite: sr5ItemSpriteDataModel,
     itemSpritePower: sr5ItemSpritePowerDataModel,
     itemTradition: sr5ItemTraditionDataModel,
