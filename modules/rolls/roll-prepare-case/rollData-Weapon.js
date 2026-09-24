@@ -269,7 +269,9 @@ async function handleTargetInfo(rollData, actor, item){
     else if (rollData.target.rangeInMeters <= itemData.range.long.value) rollData.target.range = "long"
     else if (rollData.target.rangeInMeters <= itemData.range.extreme.value) rollData.target.range = "extreme"
     else {
-      if (itemData.category === "grenade"|| itemData.type === "grenadeLauncher" || itemData.type === "missileLauncher") SR5_RollMessage.removeTemplate(null, item.id)
+      // removeTemplate matches on flags.sr5.itemUuid, which AbilityTemplate.fromItem fills from
+      // item.uuid; flags.sr5.item holds the id and is what getTemplateItemPosition looks up.
+      if (itemData.category === "grenade"|| itemData.type === "grenadeLauncher" || itemData.type === "missileLauncher") SR5_RollMessage.removeTemplate(null, item.uuid)
       ui.notifications.info(`${game.i18n.localize("SR5.INFO_TargetIsTooFar")}`)
       return false
     }

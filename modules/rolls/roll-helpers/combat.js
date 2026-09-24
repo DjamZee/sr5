@@ -27,9 +27,18 @@ export class SR5_CombatHelpers {
     let glareMod = Math.min(Math.max(parseInt(scene.getFlag("sr5", "environModGlare")) + areaEffect.glare + actorData.glare.value, 0), 4)
     let windMod = Math.min(Math.max(parseInt(scene.getFlag("sr5", "environModWind")) + areaEffect.wind + actorData.wind.value, 0), 4)
 
-    let arrayMod = [visibilityMod, lightMod, glareMod, windMod]
-    if (melee) arrayMod = [visibilityMod, lightMod]
-    else if (noWind) arrayMod = [visibilityMod, lightMod, glareMod]
+    // SR5 p. 176: Light and Glare are a single column of the Environmental Modifiers table,
+    // "LUMIERE / EBLOUISSEMENT", with one row per degree. The scene keeps them as two flags, so the
+    // worst of the two is that column's value.
+    let lightGlareMod = Math.max(lightMod, glareMod)
+
+    // Only then can the "equally severe" rule be applied, since it counts conditions and not flags:
+    // with light and glare listed apart, one condition was counted twice and dim light in moderate
+    // glare came out one row too far.
+    // Once the column is whole, the melee case is the same as noWind: p. 188 keeps Light and
+    // Visibility, and Glare belongs to the Light column, so there is nothing left for melee to drop.
+    let arrayMod = [visibilityMod, lightGlareMod, windMod]
+    if (melee || noWind) arrayMod = [visibilityMod, lightGlareMod]
     let finalMod = Math.max(...arrayMod)
 
     if (finalMod > 0 && finalMod < 4) {
