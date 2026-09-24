@@ -63,6 +63,17 @@ export class SR5_SystemHelpers {
       type: Boolean,
     })
 
+    // When someone dies, leave a bag on the body holding part of their gear.
+    // No rule says so, so it stays off until a table asks for it.
+    game.settings.register("sr5", "sr5StorageDropOnDeath", {
+      name: "SR5.SETTINGS_StorageDropOnDeath_T",
+      hint: "SR5.SETTINGS_StorageDropOnDeath_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+    })
+
     // What a bonus die costs on an availability test. SR5 p. 420 sells one
     // die per 25 % of the price, up to +12 (four times the price); both are
     // values a table may want to move.
@@ -128,6 +139,15 @@ export class SR5_SystemHelpers {
       config: true,
       default: "fixer, intermediaire, intermédiaire, receleur, recéleur, fourgue, marchand, armurier, talismonger, talismancien, dealer, trafiquant, contrebandier, smuggler, arms dealer",
       type: String,
+    })
+
+    game.settings.register("sr5", "sr5StorageDropOnDeathShare", {
+      name: "SR5.SETTINGS_StorageDropOnDeathShare_T",
+      hint: "SR5.SETTINGS_StorageDropOnDeathShare_D",
+      scope: "world",
+      config: true,
+      default: 50,
+      type: Number,
     })
 
     // A garage is a lifestyle Asset with a minimum lifestyle (Run Faster

@@ -154,7 +154,9 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/actors/_partials/right-tabs/gear/variousGear.hbs",
     "systems/sr5/templates/actors/_partials/right-tabs/gear/vehicles.hbs",
     "systems/sr5/templates/actors/_partials/right-tabs/storage/storages.hbs",
+    "systems/sr5/templates/actors/_partials/right-tabs/storage/storageContents.hbs",
     "systems/sr5/templates/interface/storage-put-in.hbs",
+    "systems/sr5/templates/interface/storage-loot-who.hbs",
     "systems/sr5/templates/actors/_partials/right-tabs/gear/money.hbs",
 
     //Right Tab - Augmentations partials

@@ -3743,6 +3743,7 @@ SR5.actorTypes = {
   actorPc                   : "TYPES.Actor.actorPc",
   actorSpirit               : "TYPES.Actor.actorSpirit",
   actorSprite               : "TYPES.Actor.actorSprite",
+  actorStorage              : "TYPES.Actor.actorStorage",
   actorAgent                : "TYPES.Actor.actorAgent",
 }
 
