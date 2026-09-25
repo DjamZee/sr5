@@ -18,7 +18,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: false,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
     // Developper Extra Logging Level
     game.settings.register("sr5", "sr5Log.level", {
@@ -34,7 +34,7 @@ export class SR5_SystemHelpers {
         2: "SR5.SETTINGS.LoggingLevelInfo",
         3: "SR5.SETTINGS.LoggingLevelDebug",
       },
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     //Choose CSS Style
@@ -49,7 +49,7 @@ export class SR5_SystemHelpers {
         "SR5": "SR5.SETTINGS.Sr5Style",
         "SR6": "SR5.SETTINGS.Sr6Style",
       },
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // When someone dies, leave a bag on the body holding part of their gear.
@@ -180,7 +180,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: true,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // Matrix Grid Rules
@@ -191,7 +191,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: true,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // Cybereyes replace the eyes the character was born with
@@ -202,7 +202,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: true,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // Token vision ranges, in scene units (0 = only what is lit)
@@ -232,7 +232,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: false,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // Run & Gun Rules
@@ -243,7 +243,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: true,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // Kill Code Rules
@@ -254,7 +254,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: false,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // Flight skill on player characters (in the Athletics skill group)
@@ -265,7 +265,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: false,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // Rigger 5 Rules
@@ -276,7 +276,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: false,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // Hide the die and its face on a random table's chat card
@@ -287,7 +287,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: false,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
   }
 
