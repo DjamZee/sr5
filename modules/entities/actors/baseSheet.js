@@ -21,7 +21,7 @@ import {
   SR5 
 } from "../../config.js"
 import {
-  STORABLE_TYPES, isStorable, garageRequirement, meetsGarageLifestyle 
+  STORABLE_TYPES, isStorable, isStoredAway, garageRequirement, meetsGarageLifestyle 
 } from "../../interface/storage-rules.js"
 import {
   SR5_ActorHelper 
@@ -1841,7 +1841,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     if (!storage) return
 
     const candidates = this.actor.items
-      .filter(i => !i.system.storedIn && ActorSheetSR5.isStorable(i, storage))
+      .filter(i => !isStoredAway(i, this.actor) && ActorSheetSR5.isStorable(i, storage))
       .sort((a, b) => a.name.localeCompare(b.name))
     if (!candidates.length) {
       const empty = storage.system.type === "garage" ?

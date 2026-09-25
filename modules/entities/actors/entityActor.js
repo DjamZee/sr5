@@ -31,6 +31,9 @@ import {
 import {
   SR5Combat 
 } from "../../system/srcombat.js"
+import {
+  isStoredAway 
+} from "../../interface/storage-rules.js"
 
 /**
  * Extend the base Actor class to implement additional logic specialized for Shadowrun 5.
@@ -500,7 +503,7 @@ export class SR5Actor extends Actor {
         i.prepareData()
         continue
       }
-      if (iData.storedIn) {
+      if (isStoredAway(i, actor)) {
         i.prepareData()
         iData.isActive = false
         if (iData.wirelessTurnedOn !== undefined) iData.wirelessTurnedOn = false
@@ -798,7 +801,7 @@ export class SR5Actor extends Actor {
     for (let i of actor.items) {
       let iData = i.system
       // Stored gear takes no part in what the character can do
-      if (iData.storedIn || actor.type === "actorStorage") continue
+      if (isStoredAway(i, actor) || actor.type === "actorStorage") continue
       switch (i.type){
         case "itemDevice":
           if (actor.type === "actorPc" || actor.type === "actorGrunt"){

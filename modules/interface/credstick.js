@@ -4,6 +4,9 @@ import {
 import {
   SR5_SystemHelpers
 } from '../system/utilitySystem.js'
+import {
+  isStoredAway
+} from './storage-rules.js'
 
 /**
  * Certified credsticks: cash a character carries.
@@ -35,7 +38,7 @@ export class SR5Credstick {
    * theirs, but it is not cash on hand: it stays at the stash with the rest.
    */
   static carried(actor) {
-    return actor?.items.filter(item => SR5Credstick.is(item) && !item.system.storedIn) ?? []
+    return actor?.items.filter(item => SR5Credstick.is(item) && !isStoredAway(item, actor)) ?? []
   }
 
   /** How much a stick holds. */
@@ -188,7 +191,7 @@ export class SR5Credstick {
       return false
     }
     // A stick left at the stash is out of reach until it is taken out
-    if (credstick.system?.storedIn) {
+    if (isStoredAway(credstick, actor)) {
       ui.notifications.warn(game.i18n.format('SR5.WARN_CredstickStored', {
         name: credstick.name
       }))

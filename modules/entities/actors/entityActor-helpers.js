@@ -5,7 +5,7 @@ import {
   SR5_EntityHelpers 
 } from "../helpers.js"
 import {
-  isStorable 
+  isStorable, isStoredAway 
 } from "../../interface/storage-rules.js"
 import {
   SR5Combat 
@@ -241,7 +241,7 @@ export class SR5_ActorHelper {
     const share = Number(game.settings.get("sr5", "sr5StorageDropOnDeathShare")) || 0
     if (share <= 0) return
 
-    const carried = actor.items.filter(i => isStorable(i, null) && !i.system.storedIn)
+    const carried = actor.items.filter(i => isStorable(i, null) && !isStoredAway(i, actor))
     const spoils = carried.filter(() => Math.random() * 100 < share)
     if (!spoils.length) return
 

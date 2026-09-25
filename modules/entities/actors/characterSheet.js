@@ -4,6 +4,9 @@ import {
 import {
   SR5Credstick 
 } from "../../interface/credstick.js"
+import {
+  isStoredAway 
+} from "../../interface/storage-rules.js"
 
 /**
  * An Actor sheet for player character type actors in the Shadowrun 5 system.
@@ -155,7 +158,7 @@ export class SR5ActorSheet extends ActorSheetSR5 {
         gears.push(i)
         // A credstick is gear like any other, and also the character's cash
         // while they carry it: one left in a storage is listed with the gear
-        if (i.system.isCredstick && !i.system.storedIn) credsticks.push(i)
+        if (i.system.isCredstick && !isStoredAway(i, this.actor)) credsticks.push(i)
       }
       else if (i.type === "itemSpirit") spirits.push(i)
       else if (i.type === "itemDevice") cyberdecks.push(i)
@@ -241,7 +244,7 @@ export class SR5ActorSheet extends ActorSheetSR5 {
    */
   _applyStoredGear(actor, storages) {
     const names = new Map(storages.map(s => [s._id, s.name]))
-    const isStored = i => !!i.system?.storedIn
+    const isStored = i => isStoredAway(i, this.actor)
 
     // Out of reach: these lists answer "what can I do right now?"
     actor.weapons = actor.weapons.filter(i => !isStored(i))
