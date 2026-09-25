@@ -154,7 +154,8 @@ export class SR5ActorSheet extends ActorSheetSR5 {
       else if (i.type === "itemGear") {
         gears.push(i)
         // A credstick is gear like any other, and also the character's cash
-        if (i.system.isCredstick) credsticks.push(i)
+        // while they carry it: one left in a storage is listed with the gear
+        if (i.system.isCredstick && !i.system.storedIn) credsticks.push(i)
       }
       else if (i.type === "itemSpirit") spirits.push(i)
       else if (i.type === "itemDevice") cyberdecks.push(i)

@@ -30,9 +30,12 @@ export class SR5Credstick {
     return item?.type === 'itemGear' && item.system?.isCredstick === true
   }
 
-  /** The credsticks an actor carries. */
+  /**
+   * The credsticks an actor carries. A stick left in a storage is still
+   * theirs, but it is not cash on hand: it stays at the stash with the rest.
+   */
   static carried(actor) {
-    return actor?.items.filter(item => SR5Credstick.is(item)) ?? []
+    return actor?.items.filter(item => SR5Credstick.is(item) && !item.system.storedIn) ?? []
   }
 
   /** How much a stick holds. */
