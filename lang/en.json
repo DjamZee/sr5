@@ -926,6 +926,7 @@
 	"SR5.WARN_CredstickNotEnoughFunds": "{name} does not have {amount}¥ to withdraw: {balance}¥ available.",
 	"SR5.WARN_CredstickNotEnoughOnStick": "{name} only holds {loaded}¥, not {amount}¥.",
 	"SR5.WARN_CredstickNotOwner": "You do not own this character.",
+	"SR5.WARN_CredstickNotTheirs": "{name} does not belong to {actor}: only its bearer can withdraw or deposit.",
 	"SR5.WARN_CredstickStored": "{name} is put away in a storage: take it out first.",
 	"SR5.WARN_ShopItemGone": "{name} is no longer in its compendium: line ignored.",
 	"SR5.WARN_ShopNoBuyer": "Select the character who is buying first.",
