@@ -103,6 +103,18 @@ export class SR5_SystemHelpers {
       })
     }
 
+    // Green tint of low-light vision : a visual convention, not a rule (SR5 p. 447 : it lets
+    // one see normally), hence off by default. Read when the vision modes are built, at init.
+    game.settings.register('sr5', 'sr5LowLightGreenTint', {
+      name: 'SR5.SETTINGS_LowLightGreenTint_T',
+      hint: 'SR5.SETTINGS_LowLightGreenTint_D',
+      scope: 'world',
+      config: true,
+      default: false,
+      type: Boolean,
+      onChange: () => window.location.reload()
+    })
+
     // Run & Gun Rules
     game.settings.register("sr5", "sr5CalledShotsRules", {
       name: "SR5.SETTINGS_CalledShotsRules_T",
