@@ -162,11 +162,17 @@ export class SR5_SpiritTypes {
     return table
   }
 
-  /** Rebuild the registry and let every open sheet catch up. */
+  /**
+	 * Rebuild the registry and let every open sheet catch up.
+	 *
+	 * Only spirits read the registry while preparing their data, so only they
+	 * are reset: resetting every actor made each edit of a type cost several
+	 * seconds in a large world. Other open sheets are redrawn for their pickers.
+	 */
   static async reload() {
     await SR5_SpiritTypes.refresh()
     for (const actor of game.actors) {
-      actor.reset()
+      if (actor.type === "actorSpirit") actor.reset()
       actor.sheet?.rendered && actor.sheet.render(false)
     }
   }
@@ -243,12 +249,43 @@ export class SR5_SpiritTypes {
       force,
       attributes,
       skills,
+      skillGroups: SR5_SpiritTypes.skillGroups(skills),
       powers,
       initiativeDice: data.initiatives?.physicalInit?.dice?.value ?? 0,
       astral: data.initiatives?.astralInit?.value ?? 0,
       astralDice: data.initiatives?.astralInit?.dice?.value ?? 0,
       singleMonitor: !data.conditionMonitors?.physical,
     }
+  }
+
+  /**
+	 * How many skills a spirit of the previewed type has at its Force and at
+	 * half its Force, inherited ones included.
+	 */
+  static skillCounts(preview) {
+    const skills = preview?.skills ?? []
+    const force = preview?.force ?? 0
+    return {
+      full: skills.filter(s => s.value === force).length,
+      half: skills.filter(s => s.value === Math.ceil(force / 2)).length,
+    }
+  }
+
+  /**
+	 * Skills gathered by rating, highest first: they share a handful of
+	 * ratings, so each one is stated once instead of after every skill.
+	 */
+  static skillGroups(skills) {
+    const groups = new Map()
+    for (const {
+      label, value 
+    } of skills) {
+      if (!groups.has(value)) groups.set(value, [])
+      groups.get(value).push(label)
+    }
+    return [...groups].sort((x, y) => y[0] - x[0]).map(([value, labels]) => ({
+      value, labels
+    }))
   }
 
   // -------------------------------------------------------------------------
