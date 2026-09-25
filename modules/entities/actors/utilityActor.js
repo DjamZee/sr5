@@ -813,6 +813,7 @@ export class SR5_CharacterUtility extends Actor {
       actorData.visions.astral.hasVision = true
       actorData.visions.astral.isActive = true
     }
+    this.settleMetatypeVision(actor)
     if (actorData.initiatives.astralInit.isActive) actorData.visions.augmented = true
     if (actorData.visions.astral.natural || actorData.visions.augmented) actorData.visions.astral.hasVision = true
     if (actorData.visions.astral.isActive) actorData.visions.astral.hasVision = true
@@ -940,6 +941,20 @@ export class SR5_CharacterUtility extends Actor {
       return
     }
     actorData.visions[vision].natural = true
+  }
+
+  //The cybereyes of the companion compendiums carry their own effects that switch every natural
+  //vision off, and item effects are applied after the metatype. Left alone, they overrule the
+  //world setting : unticked, the elf still lost its low-light vision. What becomes of the vision
+  //of the metatype under cybereyes is the setting's call, so it is settled again here.
+  static settleMetatypeVision(actor) {
+    const visions = actor.system?.visions
+    if (!visions?.cyberEyes?.hasCyberEyes) return
+    const vision = {
+      elf: "lowLight", ork: "lowLight", dwarf: "thermographic", troll: "thermographic"
+    }[this.getMetatype(actor)]
+    if (!vision) return
+    visions[vision].natural = !visions.cyberEyes.replacedNaturalVision.includes(vision)
   }
 
   //Return the metatype of a character. A player character holds it in 'metatype', which is the
