@@ -16,27 +16,28 @@ describe("SR5_CharacterUtility.handleAstralVision", () => {
 
   beforeEach(() => {
     saved = {
-      scene: globalThis.canvas.scene, get: globalThis.game.settings.get, isNumeric: Number.isNumeric
+      scenes: globalThis.game.scenes, get: globalThis.game.settings.get, isNumeric: Number.isNumeric
     }
     token = {
       id: "t1",
       actorId: "a1",
+      actorLink: true,
       sight: {
         visionMode: "astralvision", range: 0, enabled: true
       },
       detectionModes: [],
       update: vi.fn(),
     }
-    globalThis.canvas.scene = {
+    globalThis.game.scenes = [{
       tokens: [token]
-    }
+    }]
     globalThis.game.settings.get = (_system, key) => (key === "sr5VisionRangeAstral" ? 300 : 0)
     Number.isNumeric ??= (n) => Number.isFinite(Number(n))
     vi.spyOn(SR5_EntityHelpers, "addEffectToActor").mockResolvedValue()
   })
 
   afterEach(() => {
-    globalThis.canvas.scene = saved.scene
+    globalThis.game.scenes = saved.scenes
     globalThis.game.settings.get = saved.get
     Number.isNumeric = saved.isNumeric
     vi.restoreAllMocks()
