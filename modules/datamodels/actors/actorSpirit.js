@@ -127,6 +127,14 @@ export class sr5ActorSpiritDataModel extends foundry.abstract.TypeDataModel {
         }),
       }),
       conditionMonitors: new fields.SchemaField({
+        // Single condition monitor used by homunculi and watchers (updateConditionMonitors)
+        condition: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema(),
+          actual: new fields.SchemaField({
+            ...sr5ModsPartialModel.defineSchema()
+          }),
+          boxes: new fields.ArrayField(new fields.ObjectField()),
+        }),
         physical: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema(),
           actual: new fields.SchemaField({
@@ -143,6 +151,14 @@ export class sr5ActorSpiritDataModel extends foundry.abstract.TypeDataModel {
         }),
       }),
       statusBars: new fields.SchemaField({
+        condition: new fields.SchemaField({
+          value: new fields.NumberField({
+            initial: 0
+          }),
+          max: new fields.NumberField({
+            initial: 0
+          }),
+        }),
         physical: new fields.SchemaField({
           value: new fields.NumberField({
             initial: 0
