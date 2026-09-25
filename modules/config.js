@@ -2594,6 +2594,12 @@ SR5.vehicleModTools = {
   facility                  : "SR5.VehicleModToolsFacility",
 }
 
+SR5.rammingAngles = {
+  rear                      : "SR5.RammingAngle_rear",
+  side                      : "SR5.RammingAngle_side",
+  front                     : "SR5.RammingAngle_front",
+}
+
 SR5.vehicleSpeed = {
   speedRamming1							: "SR5.VehicleRelativeSpeed_1",
   speedRamming11						: "SR5.VehicleRelativeSpeed_11",

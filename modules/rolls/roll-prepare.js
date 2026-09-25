@@ -314,7 +314,11 @@ export class SR5_PrepareRollTest {
           defense: "",
           damageModify: 0,
         },
-        rammingHeadOn: false,
+        ramming: {
+          angle: "side",
+          attackerSpeed: 0,
+          targetSpeed: 0,
+        },
         reach: 0,
         recoil:{
           compensationWeapon: 0,

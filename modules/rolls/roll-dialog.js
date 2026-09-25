@@ -175,6 +175,8 @@ export default class SR5_RollDialog {
     element.querySelectorAll('.SR-ModSelect').forEach(el => el.addEventListener('change', ev => this._selectModifiers(ev, element, dialogData)))
     //General commands for select already filled by dialogData
     const filledSelects = element.querySelectorAll('.SR-ModSelectFilled'); if (filledSelects.length) this._filledSelectModifier(filledSelects, element, dialogData)
+    //Ramming: speeds and angle of the impact
+    element.querySelectorAll('.SR-RammingInput').forEach(el => el.addEventListener('change', () => this._updateRamming(element, dialogData)))
     //Manage Threshold
     element.querySelectorAll('.SR-ManageThreshold').forEach(el => el.addEventListener('change', ev => this._manageThreshold(ev, element, dialogData)))
     const thresholdEls = element.querySelectorAll('.SR-ManageThreshold'); if (thresholdEls.length) this._filledThreshold(thresholdEls, element, dialogData)
@@ -221,6 +223,19 @@ export default class SR5_RollDialog {
 
     position.height = "auto"
     this.dialog.setPosition(position)
+  }
+
+  //Ramming damage from the initiator's Structure and the speed of the impact (Rigger 5 p. 179)
+  _updateRamming(html, dialogData){
+    let actor = SR5_EntityHelpers.getRealActorFromID(dialogData.owner.actorId),
+      ramming = dialogData.combat.ramming
+    ramming.angle = html.querySelector('[name="rammingAngle"]').value
+    ramming.attackerSpeed = Math.max(0, parseInt(html.querySelector('[name="rammingAttackerSpeed"]').value) || 0)
+    ramming.targetSpeed = Math.max(0, parseInt(html.querySelector('[name="rammingTargetSpeed"]').value) || 0)
+    let speed = SR5_ConverterHelpers.rammingSpeed(ramming.angle, ramming.attackerSpeed, ramming.targetSpeed)
+    dialogData.damage.base = SR5_ConverterHelpers.collisionDamage(actor.system.attributes.body.augmented.value, speed)
+    dialogData.damage.value = dialogData.damage.base
+    html.querySelector('[name="modifiedDamage"]').value = dialogData.damage.value
   }
 
   //Add checkbox modifiers
@@ -285,9 +300,6 @@ export default class SR5_RollDialog {
         }
         this.drainModifier.recklessSpellcasting = value
         this.updateDrainValue(html)
-        return
-      case "rammingHeadOn":
-        dialogData.combat.rammingHeadOn = isChecked
         return
       case "spiritAid":
         value = dialogData.magic.spiritAid.modifier
@@ -1002,15 +1014,6 @@ export default class SR5_RollDialog {
           label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.healingSupplies[ev.target.value])})`
           this.updateLimitValue(html)
           break
-        case "speedRammingAttacker":
-          value = SR5_ConverterHelpers.speedToDamageValue(ev.target.value, actor.system.attributes.body.augmented.value)
-          dialogData.owner.speed = ev.target.value
-          dialogData.damage.value = value
-          html.querySelector('[name="modifiedDamage"]').value = value
-          return
-        case "speedRammingTarget":
-          dialogData.target.speed = ev.target.value
-          return
         case "targetEffect":
           dialogData.target.itemUuid = ev.target.value
           if (dialogData.test.typeSub === "counterspelling"){
@@ -1225,15 +1228,6 @@ export default class SR5_RollDialog {
         case "socialAttitude":
           inputValue = 0
           break
-        case "speedRammingAttacker":
-          selectValue = SR5_ConverterHelpers.speedToDamageValue(html.querySelector(name).value, actor.system.attributes.body.augmented.value)
-          dialogData.owner.speed = html.querySelector(name).value
-          dialogData.damage.value = selectValue
-          html.querySelector('[name="modifiedDamage"]').value = selectValue
-          continue
-        case "speedRammingTarget":
-          dialogData.target.speed = html.querySelector(name).value
-          continue
         case "targetEffect":
           selectValue = html.querySelector(name).value
           dialogData.target.itemUuid = selectValue
