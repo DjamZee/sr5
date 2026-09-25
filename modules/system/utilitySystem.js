@@ -115,7 +115,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: false,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
   }
 
