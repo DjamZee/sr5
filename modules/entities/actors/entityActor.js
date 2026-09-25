@@ -900,6 +900,7 @@ export class SR5Actor extends Actor {
     for (const mentor of mentorSpirits) SR5_CharacterUtility.applyMentorSpirit(mentor, actor)
     //Diseases: read from the GM's ledger, never from the actor (system/diseases.js)
     if (actor.type === "actorPc" || actor.type === "actorGrunt") applyDiseaseEffects(actor, SR5_EntityHelpers.updateModifier.bind(SR5_EntityHelpers), game.i18n.localize("SR5.Pathogen"))
+    SR5_CharacterUtility.keepStrongestFocus(actor)
   }
 
   sortLists(data) {
