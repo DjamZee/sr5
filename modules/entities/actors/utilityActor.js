@@ -868,43 +868,34 @@ export class SR5_CharacterUtility extends Actor {
     }
   }
 
-  //Give a token the vision its actor is currently using
+  //Every token that shows this actor : a synthetic actor has its own token, a linked actor has
+  //every linked token on every scene. A find on canvas.scene served the first token of the
+  //viewed scene only, and left the others blind.
+  static getTokensOfActor(actor) {
+    if (actor.token) return [actor.token]
+    return Array.from(game.scenes ?? []).flatMap((s) => s.tokens.filter((t) => t.actorId === actor.id && t.actorLink))
+  }
+
+  //Give the tokens the vision their actor is currently using
   static async applyVisionToToken(actor) {
-    if (!canvas.scene) return
-    let token
-    if (actor.token) token = canvas.scene.tokens.find((t) => t.id === actor.token.id)
-    else token = canvas.scene.tokens.find((t) => t.actorId === actor.id)
-    if (!token) return
-    const tokenData = await SR5_EntityHelpers.getVisionData(foundry.utils.duplicate(token), actor)
-    await token.update(tokenData)
+    for (let token of this.getTokensOfActor(actor)) {
+      const tokenData = await SR5_EntityHelpers.getVisionData(foundry.utils.duplicate(token), actor)
+      await token.update(tokenData)
+    }
   }
 
   //Handle astral vision
   static async handleAstralVision(actor) {
     let actorData = actor.system
-    let token, tokenData
 
-    if (actor.token) {
-      token = canvas.scene?.tokens.find((t) => t.id === actor.token.id)
-    } else {
-      token = canvas.scene?.tokens.find((t) => t.actorId === actor.id)
-    }
-
-    if (token) tokenData = foundry.utils.duplicate(token)
     if (actorData.visions.astral.isActive) {
       await SR5_EntityHelpers.addEffectToActor(actor, "astralVision")
-      if (canvas.scene && token) {
-        if (tokenData.sight.visionMode === 'astralvision') return
-        tokenData = await SR5_EntityHelpers.getVisionData(tokenData, actor)
-        await token.update(tokenData)
-      }
-    } else {
-      await SR5_EntityHelpers.deleteEffectOnActor(actor, "astralVision")
-      if (canvas.scene && token) {
-        tokenData = await SR5_EntityHelpers.getVisionData(tokenData, actor)
-        await token.update(tokenData)
-      }
-    }
+      //No early return on the vision mode alone : getVisionData also settles the range, the
+      //colour, the look and the detection modes, so a token whose document already carried
+      //'astralvision' kept a range of 0 and no astral detection mode. An update that changes
+      //nothing costs nothing.
+    } else await SR5_EntityHelpers.deleteEffectOnActor(actor, "astralVision")
+    await this.applyVisionToToken(actor)
   }
 
   static async switchVision(actor, vision) {
@@ -956,12 +947,22 @@ export class SR5_CharacterUtility extends Actor {
     actorData.visions[vision].natural = true
   }
 
+  //Return the metatype of a character. Every actor now holds it in 'metatype' ; 'characterMetatype'
+  //is the legacy key the migration renames, still read for an actor not migrated yet. Reading only
+  //one of the two leaves such a character without its metatype, and so without the vision that
+  //metatype is owed (SR5 p. 68). 'metatype' comes first : it is the field the sheets write.
+  static getMetatype(actor) {
+    const biography = actor?.system?.biography
+    return biography?.metatype || biography?.characterMetatype || ""
+  }
+
   static applyRacialModifers(actor) {
     let actorData = actor.system
-    if (!actorData.biography.metatype) return
-    let label = `${game.i18n.localize(SR5.metatypes[actorData.biography.metatype])}`
+    const metatype = this.getMetatype(actor)
+    if (!metatype) return
+    let label = `${game.i18n.localize(SR5.metatypes[metatype])}`
 
-    switch (actorData.biography.metatype) {
+    switch (metatype) {
       case "human":
         break
       case "elf":
@@ -1008,7 +1009,7 @@ export class SR5_CharacterUtility extends Actor {
         }
         break
       default:
-        SR5_SystemHelpers.srLog(1, `Unknown metatype '${actorData.biography.metatype}' in 'applyRacialModifers()'`)
+        SR5_SystemHelpers.srLog(1, `Unknown metatype '${metatype}' in 'applyRacialModifers()'`)
         return
     }
   }

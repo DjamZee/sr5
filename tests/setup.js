@@ -70,6 +70,14 @@ if (!globalThis.game.i18n.format) globalThis.game.i18n.format = (key, _data) => 
 // imports it — directly, or through a helper that does — needs this to exist before that import runs.
 if (!globalThis.CONFIG) globalThis.CONFIG = {
 }
+// An earlier stub may already have created CONFIG, so the vision tests' Canvas entries are added
+// on their own rather than inside a literal that would then never run.
+if (!globalThis.CONFIG.Canvas) globalThis.CONFIG.Canvas = {
+  visionModes: {
+  },
+  detectionModes: {
+  },
+}
 
 // UI notification stubs
 if (!globalThis.ui) globalThis.ui = {
