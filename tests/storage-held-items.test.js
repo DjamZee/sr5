@@ -185,6 +185,64 @@ describe('a weapon nobody holds', () => {
   })
 })
 
+describe('an accessory nobody holds', () => {
+  beforeEach(() => {
+    for (const name of ['_resetItemModifiers', 'applyItemEffects', '_handleArmorValue', '_handleAugmentation',
+      '_handleItemCapacity', '_handleItemPrice', '_handleItemAvailability', '_handleItemConcealment',
+      '_handleMatrixMonitor']) {
+      vi.spyOn(SR5_UtilityItem, name).mockImplementation(() => {})
+    }
+    vi.spyOn(SR5_EntityHelpers, 'GenerateMonitorBoxes').mockImplementation(() => {})
+  })
+  afterEach(() => vi.restoreAllMocks())
+
+  const accessory = () => ({
+    isAccessory: true, isPlugged: false, isActive: true, wirelessTurnedOn: true,
+    systemEffects: {
+    }, itemEffects: {
+    }, accessory: [], canRollTest: false,
+    conditionMonitors: {
+      matrix: {
+        value: 8, actual: {
+          value: 0
+        }
+      }
+    },
+  })
+
+  for (const [label, holder] of [['a storage', storage], ['a Matrix device', device]]) {
+    for (const type of ['itemGear', 'itemArmor', 'itemAugmentation']) {
+      it(`still finds whether a ${type} kept in ${label} is plugged`, async () => {
+        // The host it is plugged into is carried alongside it
+        const host = {
+          type: 'itemGear', system: {
+            wirelessTurnedOn: false, accessory: [{
+              _id: 'scope'
+            }]
+          }
+        }
+        const actor = {
+          ...holder, items: [host]
+        }
+        const item = makeItem(type, accessory(), actor)
+        Object.defineProperty(item, 'id', {
+          value: 'scope'
+        })
+        const original = SR5_UtilityItem._checkIfAccessoryIsPlugged
+        let checked
+        vi.spyOn(SR5_UtilityItem, '_checkIfAccessoryIsPlugged').mockImplementation((...args) => {
+          checked = original.apply(SR5_UtilityItem, args)
+          return checked
+        })
+
+        item.prepareData()
+        await expect(checked).resolves.toBeUndefined()
+        expect(item.system.isPlugged).toBe(true)
+      })
+    }
+  }
+})
+
 describe('a storage put down on the map', () => {
   afterEach(() => vi.restoreAllMocks())
 
