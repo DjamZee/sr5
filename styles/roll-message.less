@@ -649,9 +649,27 @@
     font-weight: bold;
   }
 
+  // Left to Foundry's variables, the theme painted these turquoise at 75 %
+  // on a half-transparent red, laid over the white card: about 1.1:1, hardly
+  // readable. They wear the colours of the system's other chat card buttons.
   button {
-    flex       : 0 0 auto;
-    line-height: normal;
-    width      : auto;
+    flex            : 0 0 auto;
+    line-height     : normal;
+    width           : auto;
+    background-color: var(--sr-text-color-dark);
+    border          : 0px;
+    border-radius   : 0px;
+    color           : var(--sr-text-color-light);
+    font-family     : var(--sr-font-body-bold);
+    text-transform  : uppercase;
+
+    &:hover:not(:disabled) {
+      color     : var(--sr-text-color-flash);
+      box-shadow: none;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+    }
   }
 }
