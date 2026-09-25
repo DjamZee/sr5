@@ -274,7 +274,14 @@ async function handleTargetInfo(rollData, actor, item){
     else if (rollData.target.rangeInMeters <= itemData.range.medium.value) rollData.target.range = "medium"
     else if (rollData.target.rangeInMeters <= itemData.range.long.value) rollData.target.range = "long"
     else if (rollData.target.rangeInMeters <= itemData.range.extreme.value) rollData.target.range = "extreme"
-    else {
+    // Only refuse a distance that was actually measured. A ranged attack does not require a designated
+    // target: suppressive fire (SR5 p. 181) is rolled with no target at all, and an actor with no token on
+    // the scene has no position either. In both cases the point stays 0, measurePath returns NaN, and NaN
+    // compares false against every band above - so without this condition the bare else would refuse the
+    // roll as "target too far", which is wrong twice over: there is no target, and nothing is far. An
+    // unmeasurable distance carries no range modifier, which is short range (+0, SR5 p. 186); the GM
+    // applies a band by hand if the fiction calls for one.
+    else if (Number.isFinite(rollData.target.rangeInMeters)) {
       // removeTemplate matches on flags.sr5.itemUuid, which AbilityTemplate.fromItem fills from
       // item.uuid; flags.sr5.item holds the id and is what getTemplateItemPosition looks up.
       if (itemData.category === "grenade"|| itemData.type === "grenadeLauncher" || itemData.type === "missileLauncher") SR5_RollMessage.removeTemplate(null, item.uuid)
