@@ -439,6 +439,12 @@ export class SR5_ConverterHelpers {
     return Math.ceil(damageValue/2)
   }
 
+  //Damage taken by the initiator when the target is not a vehicle (SR5 p. 204): relative speed and the target's Body, halved (rounded up)
+  static rammingNonVehicleDamage(targetBody, ramming){
+    let speed = this.rammingSpeed(ramming.angle, ramming.attackerSpeed || 0, ramming.targetSpeed || 0)
+    return Math.ceil(this.collisionDamage(targetBody, speed)/2)
+  }
+
   static barrierTypeToStructure(barrierType){
     switch(barrierType){
       case "fragile":

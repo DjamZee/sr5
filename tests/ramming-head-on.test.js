@@ -60,3 +60,24 @@ describe('rammingInitiatorDamage', () => {
     expect(SR5_ConverterHelpers.rammingInitiatorDamage(23, undefined)).toBe(12)
   })
 })
+
+// SR5 p. 204: against something that is not a vehicle, the initiator's damage comes from the relative speed and the target's Body, halved (rounded up)
+describe('rammingNonVehicleDamage', () => {
+  it('uses the target\'s Body, not the initiator\'s Structure', () => {
+    // Body 3, speed 5 (x2) -> 6, halved -> 3
+    expect(SR5_ConverterHelpers.rammingNonVehicleDamage(3, {
+      angle: 'side', attackerSpeed: 5, targetSpeed: 0
+    })).toBe(3)
+    // Body 5, speed 9 (x5) -> 25, halved and rounded up -> 13
+    expect(SR5_ConverterHelpers.rammingNonVehicleDamage(5, {
+      angle: 'side', attackerSpeed: 9, targetSpeed: 0
+    })).toBe(13)
+  })
+
+  it('stays halved head-on (SR5 has no head-on case)', () => {
+    // Body 4, speed 5 + 2 = 7 (x3) -> 12, halved -> 6
+    expect(SR5_ConverterHelpers.rammingNonVehicleDamage(4, {
+      angle: 'front', attackerSpeed: 5, targetSpeed: 2
+    })).toBe(6)
+  })
+})
