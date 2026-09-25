@@ -652,7 +652,9 @@
   // Left to Foundry's variables, the theme painted these turquoise at 75 %
   // on a half-transparent red, laid over the white card: about 1.1:1, hardly
   // readable. They wear the colours of the system's other chat card buttons.
-  button {
+  // Qualified by `.chat-message` to outweigh the theme's own
+  // `body[class*=" sr-theme-"] button`.
+  .chat-message & button {
     flex            : 0 0 auto;
     line-height     : normal;
     width           : auto;
