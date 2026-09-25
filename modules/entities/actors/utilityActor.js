@@ -11,8 +11,11 @@ import {
   SR5 
 } from "../../config.js"
 import {
-  _getSRStatusEffect 
+  _getSRStatusEffect
 } from "../../system/effectsList.js"
+import {
+  SR5_TOKEN_VISION_MODES
+} from "../../system/vision.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -845,6 +848,12 @@ export class SR5_CharacterUtility extends Actor {
         SR5_EntityHelpers.updateModifier(actorData.itemsProperties.environmentalMod.light, `${game.i18n.localize('SR5.UltrasoundVision')}`, "visionType", -3, false, false)
       }
     }
+    //A vision the character has lost (cybereyes put in, goggles taken off) is no longer in use,
+    //even if it was pinned : the dice read isActive, and the token and the pins must agree with them.
+    //The stored pin is kept, so the vision comes back in use if the character gets it back.
+    for (let key of ["lowLight", "thermographic", "ultrasound"]) {
+      if (!actorData.visions[key].hasVision) actorData.visions[key].isActive = false
+    }
     actorData.visions.hasActiveVision = Object.keys(SR5.visionActive).some(key => actorData.visions[key].isActive)
 
     //environmental modifiers
@@ -878,6 +887,16 @@ export class SR5_CharacterUtility extends Actor {
       const tokenData = await SR5_EntityHelpers.getVisionData(foundry.utils.duplicate(token), actor)
       await token.update(tokenData)
     }
+  }
+
+  //Serve the tokens again when the vision in use changed under them, without a pin being touched :
+  //cybereyes that take the pinned vision away, or give it back. Only called by the user who made
+  //the change, and a token already in the right mode is left alone.
+  static async refreshVisionOfTokens(actor) {
+    if (!["actorPc", "actorGrunt"].includes(actor?.type)) return
+    const mode = SR5_TOKEN_VISION_MODES[SR5_EntityHelpers.getActiveVisionType(actor)] ?? "basic"
+    if (this.getTokensOfActor(actor).every(t => t.sight?.visionMode === mode)) return
+    await this.applyVisionToToken(actor)
   }
 
   //Handle astral vision

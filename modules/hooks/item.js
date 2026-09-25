@@ -7,6 +7,20 @@ import {
 import {
   SR5_EffectArea
 } from "../system/effectArea.js"
+import {
+  SR5_CharacterUtility
+} from "../entities/actors/utilityActor.js"
+
+// An item can take the vision in use away, or give it back (cybereyes, goggles) : the tokens of
+// its actor follow, served by the user who made the change.
+export async function sr5HookItemVision(item, userId) {
+  if (userId !== game.user?.id || !item.isOwned) return
+  await SR5_CharacterUtility.refreshVisionOfTokens(item.parent)
+}
+
+export async function sr5HookCreateItem(item, _options, userId) {
+  await sr5HookItemVision(item, userId)
+}
 
 // Copy effect fields from an itemAmmunitionType into an effects snapshot
 function _copyAmmoTypeEffects(ammoTypeSystem) {
@@ -57,7 +71,9 @@ export function sr5HookPreUpdateItem(document, data, _options, _userId) {
   }
 }
 
-export async function sr5HookUpdateItem(document, data, _options, _userId) {
+export async function sr5HookUpdateItem(document, data, _options, userId) {
+  await sr5HookItemVision(document, userId)
+
   // When an itemAmmunitionType is edited, re-sync all itemAmmunition items referencing it
   if (document.type === 'itemAmmunitionType' && data.system) {
     const uuid = document.uuid
@@ -95,7 +111,8 @@ export async function sr5HookUpdateItem(document, data, _options, _userId) {
   }
 }
 
-export async function sr5HookDeleteItem(item) {
+export async function sr5HookDeleteItem(item, _options, userId) {
+  await sr5HookItemVision(item, userId)
   if (item.testUserPermission(game.user, 3) || (game.user?.isGM)){
     if (item.system.type === "signalJam"){
       let actorId = item.parent.id
