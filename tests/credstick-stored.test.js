@@ -38,4 +38,14 @@ describe('credsticks left in a storage', () => {
   it('count again once taken out', () => {
     expect(SR5Credstick.cashOnHand(actor(stick(100), stick(5000)))).toBe(5100)
   })
+
+  it('cannot move money until taken out', async () => {
+    const stored = stick(5000, 'stashId')
+    const bearer = {
+      ...actor(stored), isOwner: true
+    }
+    expect(await SR5Credstick.deposit(bearer, stored, 1000)).toBe(false)
+    expect(await SR5Credstick.withdraw(bearer, stored, 1000)).toBe(false)
+    expect(stored.system.funds.value).toBe(5000)
+  })
 })
