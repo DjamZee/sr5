@@ -51,9 +51,6 @@ const elfWhoLostItsPinnedVision = () => {
   SR5_CharacterUtility.handleVision(actor)
   return actor
 }
-const darkScene = {
-  getFlag: (_scope, key) => (key === "environModLight" ? 3 : 0)
-}
 const makeToken = (visionMode) => ({
   actorId: "a1", actorLink: true, sight: {
     visionMode, range: 0, enabled: true
@@ -81,16 +78,26 @@ describe("a pinned vision the character loses", () => {
     expect(actor.system.visions.hasActiveVision).toBe(false)
   })
 
-  it("no longer cancels the light penalty of a roll", () => {
+  // Whatever light levels low-light vision cancels (the combat group narrows them to partial and
+  // dim light, SR5 p. 177), the elf who lost it rolls as a character who never had it
+  it("no longer cancels the light penalty of a roll, at any light level", () => {
     const actor = elfWhoLostItsPinnedVision()
-    expect(SR5_CombatHelpers.handleEnvironmentalModifiers(darkScene, actor.system, true)).toBeLessThan(0)
+    const withoutVision = JSON.parse(JSON.stringify(actor.system))
+    withoutVision.visions.lowLight.isActive = false
+    for (const light of [1, 2, 3, 4]) {
+      const scene = {
+        getFlag: (_scope, key) => (key === "environModLight" ? light : 0)
+      }
+      expect(SR5_CombatHelpers.handleEnvironmentalModifiers(scene, actor.system, true))
+        .toBe(SR5_CombatHelpers.handleEnvironmentalModifiers(scene, withoutVision, true))
+    }
   })
 
   it("comes back in use when the character gets it back", () => {
     game.settings.get = () => false
     const actor = elfWhoLostItsPinnedVision()
     expect(actor.system.visions.lowLight.isActive).toBe(true)
-    expect(SR5_CombatHelpers.handleEnvironmentalModifiers(darkScene, actor.system, true)).toBe(0)
+    expect(actor.system.visions.hasActiveVision).toBe(true)
   })
 
   it("is taken off the tokens that still show it, and only those", async () => {
