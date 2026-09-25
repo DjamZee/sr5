@@ -54,8 +54,8 @@ import {
   sr5AddTableFormulaField, sr5AddResultQuantityField
 } from './interface/table-config.js'
 import {
-  sr5HookRenderTableNuyen
-} from './interface/table-nuyen.js'
+  sr5HookRenderTablePayout
+} from './interface/table-payout.js'
 import {
   sr5KeepSidebarSettingsLast
 } from './interface/sidebar-tab-order.js'
@@ -104,7 +104,7 @@ Hooks.on('renderCompendium', sr5HookRenderCompendium)
 Hooks.on('renderCompendiumDirectory', sr5HookRenderCompendiumDirectory)
 Hooks.on('renderRollTableSheet', sr5AddTableFormulaField)
 Hooks.on('renderTableResultConfig', sr5AddResultQuantityField)
-Hooks.on('renderChatMessageHTML', sr5HookRenderTableNuyen)
+Hooks.on('renderChatMessageHTML', sr5HookRenderTablePayout)
 Hooks.on('renderSidebar', sr5KeepSidebarSettingsLast)
 Hooks.on('drawMeasuredTemplate', sr5HookDrawMeasuredTemplate)
 Hooks.on('deleteMeasuredTemplate', sr5HookDeleteMeasuredTemplate)
