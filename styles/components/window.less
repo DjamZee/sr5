@@ -106,8 +106,6 @@
         padding: 4px 0;
         border: none;
         background: none;
-        /* Generic nav.tabs wraps; a vertical list must scroll instead of wrapping into a hidden column */
-        flex-wrap: nowrap;
 
         [data-tab] {
           padding: 8px 10px;
@@ -295,12 +293,13 @@
     }
 
     /* === Content-area buttons === */
-    .form-fields button:not(.inline-control):not(.fa-file-import):not(.file-picker) {
+    .form-fields button:not(.inline-control):not(.fa-file-import):not(.file-picker):not(document-tags > button) {
       .sr-button-light();
     }
 
-    /* === File picker / browse button === */
+    /* === File picker / browse button, and the add button of a document field === */
     .form-fields button.fa-file-import,
+    .form-fields document-tags > button,
     .form-fields button.file-picker {
       background      : none !important;
       border          : none !important;
