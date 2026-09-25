@@ -202,7 +202,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: true,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // Token vision ranges, in scene units (0 = only what is lit)
@@ -232,7 +232,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: false,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // Run & Gun Rules
@@ -265,7 +265,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: false,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // Rigger 5 Rules
@@ -287,7 +287,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: false,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
   }
 

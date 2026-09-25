@@ -43,6 +43,10 @@ describe('registerSystemSettings', () => {
       'sr5.sr5CalledShotsRules',
       'sr5.sr5KillCodeRules',
       'sr5.sr5Rigger5Actions',
+      'sr5.sr5CyberEyesReplaceNaturalVision',
+      'sr5.sr5LowLightGreenTint',
+      'sr5.sr5FlightSkill',
+      'sr5.sr5HideTableRoll',
     ]) {
       expect(registered.get(key)?.requiresReload, key).toBe(true)
     }
