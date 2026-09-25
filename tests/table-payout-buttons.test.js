@@ -18,7 +18,8 @@ const less = readFileSync(new URL("../styles/roll-message.less", import.meta.url
  */
 function payoutButtonBlock() {
   const footer = less.slice(less.indexOf(".SR-TablePayout {"))
-  const start = footer.indexOf("button {")
+  const start = footer.indexOf(".chat-message & button {")
+  if (start < 0) return ""
   let depth = 0
   for (let i = start; i < footer.length; i++) {
     if (footer[i] === "{") depth++
