@@ -25,9 +25,20 @@ export function sr5HookReady() {
   const NEEDS_MIGRATION_VERSION = "13.0.0-alpha.22"
   const needsMigration = !currentVersion || foundry.utils.isNewerVersion(NEEDS_MIGRATION_VERSION, currentVersion) //isNewerVersion(v0, v1)
 
-  // Perform the migration
-  if (needsMigration) new game.sr5.migration().migrateWorld()
+  // Perform the migration, then the migrations tied to a feature rather than to a version number
+  sr5RunMigrations(needsMigration)
 
   //Token hud
   canvas.hud.token = new SR5TokenHud()
+}
+
+/**
+ * The version migration runs first; a feature migration then runs once per world, flagged by its own setting,
+ * so that a world already migrated past the version threshold still gets it.
+ * @param {boolean} needsMigration   Whether the world is below the version migration threshold
+ */
+export async function sr5RunMigrations(needsMigration) {
+  const migration = new game.sr5.migration()
+  if (needsMigration) await migration.migrateWorld()
+  await migration.migrateHeadcaseNanite()
 }

@@ -77,6 +77,71 @@ export default class Migration {
   /* -------------------------------------------- */
 
   /**
+   * Head cases used to store their Nanite Volume in Resonance: move it to the dedicated special attribute.
+   * Idempotent: once moved, Resonance is 0 and the actor is left alone.
+   * @param actor   An Actor document or its data (type, system, items)
+   * @return {object} The update data, empty when nothing is to move
+   */
+  static migrateHeadcaseNaniteData(actor) {
+    const updateData = {
+    }
+    if (actor.type !== "actorPc" && actor.type !== "actorGrunt") return updateData
+    if (!actor.system?.specialAttributes?.resonance) return updateData
+    const items = actor.items ?? []
+    let hasHeadcaseDevice = false
+    for (const i of items) {
+      if (i.type === "itemDevice" && i.system?.type === "headcase") hasHeadcaseDevice = true
+    }
+    const resonanceBase = actor.system.specialAttributes.resonance.natural?.base ?? 0
+    const naniteBase = actor.system.specialAttributes.nanite?.natural?.base ?? 0
+    if (hasHeadcaseDevice && resonanceBase > 0 && naniteBase === 0) {
+      updateData["system.specialAttributes.nanite.natural.base"] = resonanceBase
+      updateData["system.specialAttributes.resonance.natural.base"] = 0
+      updateData["system.activeSpecialAttribute"] = "nanite"
+    }
+    return updateData
+  }
+
+  /**
+   * Run the head case migration once per world, whatever the system version the world was migrated to.
+   * World actors, unlinked tokens (their delta) and unlocked world compendiums; module packs are not touched.
+   * The world setting is only set when every update went through, so a failure is retried at the next load.
+   * @return {Promise<boolean>} true when the migration is done (now or before)
+   */
+  async migrateHeadcaseNanite() {
+    if (game.settings.get("sr5", "migrationHeadcaseNanite")) return true
+    const actors = [...game.actors.contents]
+    for (const s of game.scenes.contents) {
+      for (const t of s.tokens.contents) {
+        if (!t.actorLink && t.actor) actors.push(t.actor)
+      }
+    }
+    for (const p of game.packs) {
+      if (p.documentName !== "Actor" || p.metadata.packageType !== "world" || p.locked) continue
+      actors.push(...await p.getDocuments())
+    }
+
+    let failed = false
+    for (const a of actors) {
+      try {
+        const updateData = Migration.migrateHeadcaseNaniteData(a)
+        if (foundry.utils.isEmpty(updateData)) continue
+        SR5_SystemHelpers.srLog(2, `Migrating head case Nanite Volume of ${a.name}`)
+        await a.update(updateData)
+      } catch (err) {
+        failed = true
+        err.message = `Failed sr5 head case migration for Actor ${a.name}: ${err.message}`
+        console.error(err)
+      }
+    }
+    if (failed) return false
+    await game.settings.set("sr5", "migrationHeadcaseNanite", true)
+    return true
+  }
+
+  /* -------------------------------------------- */
+
+  /**
 	 * Apply migration rules to all Entities within a single Compendium pack
 	 * @param pack
 	 * @return {Promise}
@@ -249,21 +314,7 @@ export default class Migration {
         updateData["flags.sr5.-=vehicleControler"] = null
       }
 
-      //Head cases used to store their Nanite Volume in Resonance: move it to the dedicated special attribute
-      if ((actor.type === "actorPc" || actor.type === "actorGrunt") && actor.system.specialAttributes?.resonance) {
-        const items = actor.items ?? []
-        let hasHeadcaseDevice = false
-        for (const i of items) {
-          if (i.type === "itemDevice" && i.system?.type === "headcase") hasHeadcaseDevice = true
-        }
-        const resonanceBase = actor.system.specialAttributes.resonance.natural?.base ?? 0
-        const naniteBase = actor.system.specialAttributes.nanite?.natural?.base ?? 0
-        if (hasHeadcaseDevice && resonanceBase > 0 && naniteBase === 0) {
-          updateData["system.specialAttributes.nanite.natural.base"] = resonanceBase
-          updateData["system.specialAttributes.resonance.natural.base"] = 0
-          updateData["system.activeSpecialAttribute"] = "nanite"
-        }
-      }
+      Object.assign(updateData, Migration.migrateHeadcaseNaniteData(actor))
 
       //Change on hardened armors
       if (actor.system.specialProperties) {

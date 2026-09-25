@@ -10,6 +10,15 @@ export class SR5_SystemHelpers {
       default: 0
     })
 
+    // Head case Nanite Volume moved out of Resonance: done once per world, whatever its migration version
+    game.settings.register("sr5", "migrationHeadcaseNanite", {
+      name: "SR5.TEXT_TBD",
+      scope: "world",
+      config: false,
+      type: Boolean,
+      default: false
+    })
+
     // Developper Extra Logging Toggle
     game.settings.register("sr5", "sr5Log.active", {
       name: "SR5.SETTINGS_DevLogActive_T",
