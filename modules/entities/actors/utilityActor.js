@@ -4448,10 +4448,31 @@ export class SR5_CharacterUtility extends Actor {
 
     let customTargets = Object.values(item.system.customEffects || {
     }).map(e => e.target)
+    // SR5 p. 321: only one focus adds its Force to a given test, the strongest one is kept.
+    actor._sr5FocusTargets ??= new Set()
     for (let target of targets) {
+      actor._sr5FocusTargets.add(target.property)
       if (customTargets.includes(target.path)) continue
-      SR5_EntityHelpers.updateModifier(target.property, item.name, "itemFocus", force)
+      let modifiers = target.property.modifiers
+      if (!Array.isArray(modifiers)) continue
+      let index = modifiers.findIndex(m => m.type === "itemFocus" && m.value > 0 && !m.isMultiplier)
+      if (index === -1) SR5_EntityHelpers.updateModifier(target.property, item.name, "itemFocus", force)
+      else if (modifiers[index].value < force) modifiers[index] = {
+        source: item.name, type: "itemFocus", value: force, isMultiplier: false
+      }
     }
+  }
+
+  // A focus carrying its bonus as a custom effect is read after the automatic bonus of
+  // the foci before it: once all items are read, keep only the strongest focus per test.
+  static keepStrongestFocus(actor) {
+    for (let property of actor._sr5FocusTargets || []) {
+      let foci = property.modifiers.filter(m => m.type === "itemFocus" && m.value > 0 && !m.isMultiplier)
+      if (foci.length < 2) continue
+      let strongest = foci.reduce((a, b) => (b.value > a.value ? b : a))
+      for (let focus of foci) if (focus !== strongest) property.modifiers.splice(property.modifiers.indexOf(focus), 1)
+    }
+    delete actor._sr5FocusTargets
   }
 
   // SR5 p. 246-248: the rules of a program are known by its name. An active program named like one of the

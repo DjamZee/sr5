@@ -757,6 +757,7 @@ export class SR5Actor extends Actor {
           SR5_SystemHelpers.srLog(1, `Unknown '${i.type}' item type in prepareEmbeddedDocuments()`)
       }
     }
+    SR5_CharacterUtility.keepStrongestFocus(actor)
   }
 
   sortLists(data) {
