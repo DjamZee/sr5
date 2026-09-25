@@ -79,6 +79,17 @@ describe("Focus — a single focus adds its Force to a given test", () => {
     expect(actor.system.specialAttributes.magic.augmented.modifiers.map(m => m.value)).toEqual([2])
   })
 
+  // DjamZ, 2026-09-26: a power focus works through Magic (SR5 p. 322), so it stacks
+  // with a spell focus, but its Force never counts twice in the same pool.
+  it("lets a power focus stack with a spell focus, through Magic only", () => {
+    const actor = makeActor()
+    SR5_CharacterUtility.applyFocusBonus(makeFocus("Pouvoir 2", "power", "", 2), actor)
+    SR5_CharacterUtility.applyFocusBonus(makeFocus("Focus Combat 3", "spellcasting", "combat", 3), actor)
+    SR5_CharacterUtility.keepStrongestFocus(actor)
+    expect(actor.system.specialAttributes.magic.augmented.modifiers.map(m => m.source)).toEqual(["Pouvoir 2"])
+    expect(combatPool(actor).map(m => m.source)).toEqual(["Focus Combat 3"])
+  })
+
   // A focus from an older world carries its bonus as a custom effect, applied
   // after the automatic bonus of the foci read before it.
   it("keeps the strongest when a custom-effect focus comes after", () => {
