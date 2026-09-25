@@ -108,7 +108,7 @@ export class SR5Item extends Item {
         SR5_EntityHelpers.GenerateMonitorBoxes(itemData, 'matrix')
         if (itemData.conditionMonitors.matrix.actual.value >= itemData.conditionMonitors.matrix.value) itemData.wirelessTurnedOn = false
         if (this.actor && itemData.isAccessory){
-          SR5_UtilityItem._checkIfAccessoryIsPlugged(item, owner)
+          SR5_UtilityItem._checkIfAccessoryIsPlugged(item, this.actor)
           if (!itemData.isPlugged) {
             itemData.isActive = false
             itemData.wirelessTurnedOn = false
@@ -139,7 +139,7 @@ export class SR5Item extends Item {
         SR5_EntityHelpers.GenerateMonitorBoxes(itemData, 'matrix')
         if (itemData.conditionMonitors.matrix.actual.value >= itemData.conditionMonitors.matrix.value) itemData.wirelessTurnedOn = false
         if (this.actor && itemData.isAccessory){
-          SR5_UtilityItem._checkIfAccessoryIsPlugged(item, owner)
+          SR5_UtilityItem._checkIfAccessoryIsPlugged(item, this.actor)
           if (!itemData.isPlugged) {
             itemData.isActive = false
             itemData.wirelessTurnedOn = false
