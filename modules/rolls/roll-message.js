@@ -29,6 +29,9 @@ import {
   SR5_MatrixHelpers 
 } from "./roll-helpers/matrix.js"
 import {
+  isRolledByTarget
+} from "./roll-helpers/cardRoller.js"
+import {
   SR5_CombatHelpers 
 } from "./roll-helpers/combat.js"
 import {
@@ -168,10 +171,8 @@ export class SR5_RollMessage {
       let supportAction = (type === "iAmTheFirewall" || type === "intervene")
       if (actor == null && !supportAction) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
     } else if (action === "nonOpposedTest" && messageData) {
-      // The sprite or spirit handles its own buttons, but the fading is resisted by the technomancer (SR5 p. 254)
-      if (messageData.target.actorId && type !== "fading" && (messageData.test.typeSub === "banishing" ||
-              messageData.test.typeSub ==="binding" || messageData.test.typeSub ==="decompileSprite" ||
-              messageData.test.typeSub ==="registerSprite")) actor = SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId)
+      // The spirit or sprite handles its own buttons, but the drain and the fading are resisted by the card owner
+      if (isRolledByTarget(type, messageData.test.typeSub, messageData.target.actorId)) actor = SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId)
       else actor = SR5_EntityHelpers.getRealActorFromID(messageData.owner.speakerId)
     }
 
