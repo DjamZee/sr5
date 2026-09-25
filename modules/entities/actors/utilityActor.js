@@ -923,9 +923,11 @@ export class SR5_CharacterUtility extends Actor {
   }
 
   //Return the cybereyes the character wears, if any. Cybereyes are the only eyeware that
-  //holds a Capacity : everything else in that category plugs into them (SR5 p. 456).
+  //holds a Capacity : everything else in that category plugs into them (SR5 p. 456). The pin
+  //of an implant says it is worn : unpinned eyes took the vision away without their effects.
   static getCyberEyes(actor) {
     return actor.items?.find(i => i.type === "itemAugmentation" &&
+      i.system.isActive &&
       i.system.category === "eyeware" &&
       !i.system.isAccessory &&
       Number(i.system.capacity?.base ?? 0) > 0) ?? null
