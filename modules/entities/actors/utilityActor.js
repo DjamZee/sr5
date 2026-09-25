@@ -952,8 +952,9 @@ export class SR5_CharacterUtility extends Actor {
       Number(i.system.capacity?.base ?? 0) > 0) ?? null
   }
 
-  //Grant a vision the character owes to its metatype. The book does not say what becomes of it
-  //once the eyes it came with have been replaced by cybereyes, so a world setting decides.
+  //Grant a vision the character owes to its metatype. Cybereyes take it away : it has to be bought
+  //again as an enhancement of the eyes (SR5 p. 96). A world setting, on by default, lets a table
+  //keep it anyway.
   static grantMetatypeVision(actor, vision) {
     let actorData = actor.system
     const cyberEyes = actorData.visions?.cyberEyes
