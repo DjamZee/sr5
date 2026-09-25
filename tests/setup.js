@@ -54,13 +54,14 @@ if (!globalThis.game.settings) globalThis.game.settings = {
 if (!globalThis.game.i18n.format) globalThis.game.i18n.format = (key, _data) => key
 
 // CONFIG stub : config.js writes into it while it loads, so a test that imports any module
-// reaching config.js dies on that line before its first assertion.
+// reaching config.js dies on that line before its first assertion. The vision modes are added
+// to whatever CONFIG an earlier stub made, so the order of the stubs in this file does not matter.
 if (!globalThis.CONFIG) globalThis.CONFIG = {
-  Canvas: {
-    visionModes: {
-    },
-    detectionModes: {
-    },
+}
+if (!globalThis.CONFIG.Canvas) globalThis.CONFIG.Canvas = {
+  visionModes: {
+  },
+  detectionModes: {
   },
 }
 
