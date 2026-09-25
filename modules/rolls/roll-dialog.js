@@ -270,6 +270,9 @@ export default class SR5_RollDialog {
         this.drainModifier.recklessSpellcasting = value
         this.updateDrainValue(html)
         return
+      case "rammingHeadOn":
+        dialogData.combat.rammingHeadOn = isChecked
+        return
       case "spiritAid":
         value = dialogData.magic.spiritAid.modifier
         break
