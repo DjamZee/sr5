@@ -437,6 +437,41 @@ export class SR5_ConverterHelpers {
     }
   }
 
+  //Collision damage table (Rigger 5 p. 179, update of SR5 p. 203): damage value from the initiator's Structure and the speed of the impact
+  static collisionDamage(structure, speed){
+    if (speed <= 0) return 0
+    if (speed <= 2) return Math.ceil(structure/2)
+    if (speed <= 4) return structure
+    if (speed <= 6) return structure*2
+    if (speed <= 8) return structure*3
+    if (speed <= 10) return structure*5
+    return structure*10
+  }
+
+  //Speed of the impact, depending on its angle (Rigger 5 p. 179): speed difference from the rear, initiator's speed on the side, sum of both head-on
+  static rammingSpeed(angle, attackerSpeed, targetSpeed){
+    switch(angle){
+      case "rear":
+        return Math.abs(attackerSpeed - targetSpeed)
+      case "front":
+        return attackerSpeed + targetSpeed
+      default:
+        return attackerSpeed
+    }
+  }
+
+  //Damage taken by the initiator (Rigger 5 p. 179): half the attack's damage (rounded up) from the rear or the side, all of it head-on
+  static rammingInitiatorDamage(damageValue, angle){
+    if (angle === "front") return damageValue
+    return Math.ceil(damageValue/2)
+  }
+
+  //Damage taken by the initiator when the target is not a vehicle (SR5 p. 204): relative speed and the target's Body, halved (rounded up)
+  static rammingNonVehicleDamage(targetBody, ramming){
+    let speed = this.rammingSpeed(ramming.angle, ramming.attackerSpeed || 0, ramming.targetSpeed || 0)
+    return Math.ceil(this.collisionDamage(targetBody, speed)/2)
+  }
+
   static barrierTypeToStructure(barrierType){
     switch(barrierType){
       case "fragile":
