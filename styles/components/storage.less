@@ -20,14 +20,23 @@
     gap: 8px;
   }
 
-  .sr-storage-icon {
-    width: 18px;
-    height: 18px;
-    border: none;
-    vertical-align: middle;
-    margin-right: 4px;
-    object-fit: contain;
-  }
+}
+
+// Used on the character sheet and on the sheet of a storage put down on the
+// map, so it cannot live inside .sr-storage
+.sr-storage-icon {
+  width: 18px;
+  height: 18px;
+  border: none;
+  vertical-align: middle;
+  margin-right: 4px;
+  flex: 0 0 auto;
+  object-fit: contain;
+  // The system's own item pictures are white drawings, invisible on the light
+  // sheet. A dark disc behind them is what makes them readable at this size.
+  padding: 1px;
+  border-radius: 50%;
+  background: var(--sr-ui-border-color);
 }
 
 .sr-storage-full .sr-storage-head {
@@ -179,5 +188,59 @@
   .sr-stored-note {
     font-size: var(--sr-font-size-sheet-tag);
     font-style: italic;
+  }
+}
+
+// Sheet of a storage put down on the map
+.sr-dropped-storage {
+  li.item {
+    align-items: center;
+
+    // A row is worth noticing when the cursor is on it: this is a list people
+    // pick things out of.
+    &:hover {
+      background: color-mix(in srgb, var(--sr-ui-border-color) 12%, transparent);
+    }
+  }
+
+  // Icon and name on one line, never the name under the picture
+  .deplie {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
+
+// Same hover on the storages of a character sheet
+.sr-storage {
+  .sr-storage-list li.item:hover,
+  .sr-storage-head:hover {
+    background: color-mix(in srgb, var(--sr-ui-border-color) 12%, transparent);
+  }
+}
+
+// Taking something out of a storage is a real action, not an afterthought:
+// the sheet's faint 25 % link colour reads as disabled here.
+.storage-loot {
+  color: var(--sr-ui-border-color) !important;
+
+  &:hover {
+    color: var(--sr-text-color-flash) !important;
+  }
+}
+
+// Take everything sits on the dark header band, where the theme red it would
+// otherwise take is the band's own colour: it has to be light to be seen.
+.storage-loot-all {
+  color: var(--sr-text-color-light) !important;
+
+  &:hover {
+    color: var(--sr-text-color-flash) !important;
   }
 }
