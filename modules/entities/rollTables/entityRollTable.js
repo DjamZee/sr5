@@ -109,14 +109,20 @@ export class SR5RollTable extends foundry.documents.RollTable {
    *
    * Core's draw() takes one result; drawMany() takes several and builds the
    * pooled roll that goes on the card. So a table with a rolls formula is
-   * simply routed to the second — except when results were handed in, which
-   * is a redraw of something already decided.
+   * simply routed to the second.
+   *
+   * Results handed in come in two kinds. The sheet's "Draw Result" button
+   * rolls first, to animate the wheel, and hands over that roll with what it
+   * drew: that is the first of the draws, and the others still have to be
+   * made. The per-line button hands over a line without any roll: that one is
+   * chosen by hand, and is drawn as it is.
    *
    * @inheritDoc
    */
   async draw(options = {
   }) {
-    if (options.results?.length) return super.draw(options)
+    const handed = options.results?.length
+    if (handed && !options.roll) return super.draw(options)
 
     const amount = await sr5RollFormulaAmount(this.getFlag(NAMESPACE, ROLLS_FORMULA), this.name)
     if (amount <= 1) return super.draw(options)
@@ -124,9 +130,51 @@ export class SR5RollTable extends foundry.documents.RollTable {
     const {
       roll, recursive, displayChat, rollMode
     } = options
+    if (handed) return this.#drawAfter(amount, options)
     return this.drawMany(amount, {
       roll, recursive, displayChat, rollMode
     })
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Complete a draw the sheet has already begun.
+   *
+   * The line the sheet's wheel landed on is kept and marked the way core
+   * marks it, then the remaining draws are made by drawMany() without a card
+   * of their own, and a single card carries them all under one pooled roll.
+   *
+   * @param {number} amount   the whole number of draws the table asks for
+   * @param {object} options  what the sheet handed to draw()
+   * @returns {Promise<{roll: Roll, results: TableResult[]}>}
+   */
+  async #drawAfter(amount, {
+    roll, results, recursive, displayChat = true, rollMode
+  }) {
+    const first = await super.draw({
+      roll, results, recursive, displayChat: false, rollMode
+    })
+    const rest = await this.drawMany(amount - 1, {
+      recursive, displayChat: false, rollMode
+    })
+
+    const rolls = [first.roll, ...rest.roll.terms.flatMap(term => term.rolls ?? [])]
+    const pool = CONFIG.Dice.termTypes.PoolTerm.fromRolls(rolls)
+    const drawn = {
+      roll: Roll.defaultImplementation.fromTerms([pool]),
+      results: [...first.results, ...rest.results]
+    }
+
+    if (displayChat) {
+      await this.toMessage(drawn.results, {
+        roll: drawn.roll,
+        messageOptions: {
+          rollMode
+        }
+      })
+    }
+    return drawn
   }
 
   /* -------------------------------------------- */
