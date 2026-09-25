@@ -863,46 +863,34 @@ export class SR5_CharacterUtility extends Actor {
     }
   }
 
-  //Give a token the vision its actor is currently using
+  //Every token that shows this actor : a synthetic actor has its own token, a linked actor has
+  //every linked token on every scene. A find on canvas.scene served the first token of the
+  //viewed scene only, and left the others blind.
+  static getTokensOfActor(actor) {
+    if (actor.token) return [actor.token]
+    return Array.from(game.scenes ?? []).flatMap((s) => s.tokens.filter((t) => t.actorId === actor.id && t.actorLink))
+  }
+
+  //Give the tokens the vision their actor is currently using
   static async applyVisionToToken(actor) {
-    if (!canvas.scene) return
-    let token
-    if (actor.token) token = canvas.scene.tokens.find((t) => t.id === actor.token.id)
-    else token = canvas.scene.tokens.find((t) => t.actorId === actor.id)
-    if (!token) return
-    const tokenData = await SR5_EntityHelpers.getVisionData(foundry.utils.duplicate(token), actor)
-    await token.update(tokenData)
+    for (let token of this.getTokensOfActor(actor)) {
+      const tokenData = await SR5_EntityHelpers.getVisionData(foundry.utils.duplicate(token), actor)
+      await token.update(tokenData)
+    }
   }
 
   //Handle astral vision
   static async handleAstralVision(actor) {
     let actorData = actor.system
-    let token, tokenData
 
-    if (actor.token) {
-      token = canvas.scene?.tokens.find((t) => t.id === actor.token.id)
-    } else {
-      token = canvas.scene?.tokens.find((t) => t.actorId === actor.id)
-    }
-
-    if (token) tokenData = foundry.utils.duplicate(token)
     if (actorData.visions.astral.isActive) {
       await SR5_EntityHelpers.addEffectToActor(actor, "astralVision")
       //No early return on the vision mode alone : getVisionData also settles the range, the
       //colour, the look and the detection modes, so a token whose document already carried
       //'astralvision' kept a range of 0 and no astral detection mode. An update that changes
       //nothing costs nothing.
-      if (canvas.scene && token) {
-        tokenData = await SR5_EntityHelpers.getVisionData(tokenData, actor)
-        await token.update(tokenData)
-      }
-    } else {
-      await SR5_EntityHelpers.deleteEffectOnActor(actor, "astralVision")
-      if (canvas.scene && token) {
-        tokenData = await SR5_EntityHelpers.getVisionData(tokenData, actor)
-        await token.update(tokenData)
-      }
-    }
+    } else await SR5_EntityHelpers.deleteEffectOnActor(actor, "astralVision")
+    await this.applyVisionToToken(actor)
   }
 
   static async switchVision(actor, vision) {
