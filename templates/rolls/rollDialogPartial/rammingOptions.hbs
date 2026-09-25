@@ -2,33 +2,29 @@
 <li class="SR-LigneEnTete SR-PaddingTop10 grid SR-TextUppercase">
 	<div class="col-11">{{localize 'SR5.ModifiedDamage'}}</div>
   	<div class="col-1 SR-TextCenter">
-		<input disabled type="number" name="modifiedDamage" value="{{modifiedDamage}}" placeholder="0" data-dtype="Number" />
+		<input disabled type="number" name="modifiedDamage" value="{{damage.value}}" placeholder="0" data-dtype="Number" />
   	</div>
 </li>
 
-<!-- DAMAGE ON SPEED -->
+<!-- ANGLE OF IMPACT -->
 <li class="grid">
-    <div class="col-6">{{localize 'SR5.VehicleRelativeSpeedAttacker'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-6" title="{{localize 'SR5.RammingAngleHint'}}">{{localize 'SR5.RammingAngle'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-5 SR-TextRight">
-        <select class="SR-ModSelect SR-ModSelectFilled" data-target="" data-modifier="speedRammingAttacker">
-            {{selectOptions lists.vehicleSpeed selected=speedRammingAttacker localize=true sort=false}}
+        <select class="SR-RammingInput" name="rammingAngle">
+            {{selectOptions lists.rammingAngles selected=combat.ramming.angle localize=true sort=false}}
         </select>
     </div>
 </li>
-<!-- DAMAGE ON SPEED -->
+<!-- CURRENT SPEEDS -->
 <li class="grid">
-    <div class="col-6">{{localize 'SR5.VehicleRelativeSpeedTarget'}}{{localize 'SR5.Colons'}}</div>
-    <div class="col-5 SR-TextRight">
-        <select class="SR-ModSelect SR-ModSelectFilled" data-target="accidentValue" data-modifier="speedRammingTarget">
-            {{selectOptions lists.vehicleSpeed selected=speedRammingTarget localize=true sort=false}}
-        </select>
+    <div class="col-10">{{localize 'SR5.RammingAttackerSpeed'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1 SR-TextCenter">
+        <input class="SR-RammingInput" type="number" min="0" name="rammingAttackerSpeed" value="{{combat.ramming.attackerSpeed}}" data-dtype="Number" />
     </div>
-    <div class="col-1 SR-TextCenter"></div>
 </li>
-<!-- HEAD-ON COLLISION -->
 <li class="grid">
-    <div class="col-10" title="{{localize 'SR5.RammingHeadOnHint'}}">{{localize 'SR5.RammingHeadOn'}}{{localize 'SR5.Colons'}}</div>
-    <div class="col-1 SR-TextRight">
-        <input type="checkbox" class="SR-ModCheckbox" data-target="" data-modifier="rammingHeadOn">
+    <div class="col-10">{{localize 'SR5.RammingTargetSpeed'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1 SR-TextCenter">
+        <input class="SR-RammingInput" type="number" min="0" name="rammingTargetSpeed" value="{{combat.ramming.targetSpeed}}" data-dtype="Number" />
     </div>
 </li>

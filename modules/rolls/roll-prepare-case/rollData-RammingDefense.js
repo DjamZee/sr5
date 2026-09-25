@@ -37,7 +37,7 @@ export default function rammingDefense(rollData, actor, chatData){
   rollData.combat.activeDefenses.dodge = actor.system.skills?.gymnastics?.rating.value || 0
   rollData.owner.speed = chatData.target.speed
   rollData.target.speed = chatData.owner.speed
-  rollData.combat.rammingHeadOn = chatData.combat.rammingHeadOn || false
+  if (chatData.combat.ramming) rollData.combat.ramming = chatData.combat.ramming
 
   return rollData
 }
