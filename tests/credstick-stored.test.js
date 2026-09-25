@@ -56,6 +56,7 @@ const bearer = (...items) => {
       })
     }
   }
+  for (const item of items) item.parent = owner
   return owner
 }
 
@@ -92,6 +93,23 @@ describe('credsticks left in a storage', () => {
     expect(await SR5Credstick.withdraw(owner, stick1, 400)).toBe(true)
     expect(stick1.system.funds.value).toBe(4400)
     expect(SR5Credstick.ledgerBalance(owner)).toBe(600)
+  })
+})
+
+describe('a credstick someone else bears', () => {
+  it('cannot feed another ledger, stored or carried', async () => {
+    const stored = stick(5000, 'stashId')
+    const carried = stick(300)
+    bearer({
+      ...stash
+    }, stored, carried)
+    const other = bearer()
+    expect(await SR5Credstick.deposit(other, stored, 100)).toBe(false)
+    expect(await SR5Credstick.deposit(other, carried, 100)).toBe(false)
+    expect(await SR5Credstick.withdraw(other, carried, 100)).toBe(false)
+    expect(stored.system.funds.value).toBe(5000)
+    expect(carried.system.funds.value).toBe(300)
+    expect(SR5Credstick.ledgerBalance(other)).toBe(0)
   })
 })
 

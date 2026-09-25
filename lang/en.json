@@ -931,6 +931,7 @@
 	"SR5.DerivedAttributes": "Derived Attributes",
 	"SR5.DerivedAttributeTest": "Derived Attribute Test",
 	"SR5.DesactivateFocus": "Desactivate focus",
+	"SR5.WARN_CredstickNotTheirs": "{name} does not belong to {actor}: only its bearer can withdraw or deposit.",
 	"SR5.WARN_CredstickStored": "{name} is put away in a storage: take it out first.",
 	"SR5.WARN_ShopItemGone": "{name} is no longer in its compendium: line ignored.",
 	"SR5.WARN_ShopNoBuyer": "Select the character who is buying first.",

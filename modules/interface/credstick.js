@@ -190,8 +190,15 @@ export class SR5Credstick {
       ui.notifications.warn(game.i18n.localize('SR5.WARN_CredstickNotACredstick'))
       return false
     }
+    // The money moves between a stick and its own bearer's ledger, never another's
+    if (credstick.parent !== actor) {
+      ui.notifications.warn(game.i18n.format('SR5.WARN_CredstickNotTheirs', {
+        name: credstick.name, actor: actor.name
+      }))
+      return false
+    }
     // A stick left at the stash is out of reach until it is taken out
-    if (isStoredAway(credstick, actor)) {
+    if (isStoredAway(credstick, credstick.parent)) {
       ui.notifications.warn(game.i18n.format('SR5.WARN_CredstickStored', {
         name: credstick.name
       }))

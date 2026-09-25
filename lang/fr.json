@@ -931,6 +931,7 @@
 	"SR5.DerivedAttributes": "Attributs dérivés",
 	"SR5.DerivedAttributeTest": "Test d'attribut dérivé",
 	"SR5.DesactivateFocus": "Désactiver le focus",
+	"SR5.WARN_CredstickNotTheirs": "{name} n'est pas à {actor} : seul son porteur peut y retirer ou déposer.",
 	"SR5.WARN_CredstickStored": "{name} est rangé dans un stockage : sortez-le avant d'y toucher.",
 	"SR5.WARN_ShopItemGone": "{name} n'est plus dans son compendium : ligne ignorée.",
 	"SR5.WARN_ShopNoBuyer": "Choisissez d'abord le personnage qui achète.",
