@@ -34,7 +34,11 @@ export async function sr5HookCreateActor(actor) {
   }
 }
 
-export async function sr5HookUpdateActor(document, data, _options, _userId) {
+export async function sr5HookUpdateActor(document, data, _options, userId) {
+  //The sheet pins an item through the actor, items included : at that point the updateItem hook
+  //still reads the actor as it was, so the tokens are served again from here
+  if (data.items && userId === game.user?.id) await SR5_CharacterUtility.refreshVisionOfTokens(document)
+
   if (game.combat && game.user?.isGM && (data.system?.initiatives || data.system?.conditionMonitors || data.system?.matrix)) {
     let actorId = document.id
     if (document.isToken) actorId = document.token.id
