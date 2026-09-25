@@ -410,6 +410,12 @@ export class SR5_ConverterHelpers {
     }
   }
 
+  //Damage taken by the ramming vehicle: half (rounded up) from the rear or the side, full damage head-on (Rigger 5 p. 179)
+  static rammingAttackerDamage(speed, body, headOn){
+    if (headOn) return this.speedToDamageValue(speed, body)
+    return this.speedToAccidentValue(speed, body)
+  }
+
   static barrierTypeToStructure(barrierType){
     switch(barrierType){
       case "fragile":

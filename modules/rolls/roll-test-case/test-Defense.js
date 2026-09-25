@@ -241,7 +241,7 @@ async function handleRamming(cardData, actorData) {
   rollData.test.type = "falseTest"
   rollData.test.typeSub = "accident"
   rollData.test.title = game.i18n.localize("SR5.CrashDamageResistance")
-  rollData.damage.base = SR5_ConverterHelpers.speedToAccidentValue(cardData.owner.speed, actorData.attributes.body.augmented.value)
+  rollData.damage.base = SR5_ConverterHelpers.rammingAttackerDamage(cardData.owner.speed, actorData.attributes.body.augmented.value, cardData.combat.rammingHeadOn)
   rollData.damage.value = rollData.damage.base
   rollData.damage.type = "physical"
   rollData.damage.resistanceType = "physicalDamage"

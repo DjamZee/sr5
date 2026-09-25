@@ -2525,6 +2525,8 @@
 	"SR5.QuestionMark": " ?",
 	"SR5.Radiation": "Radiation",
 	"SR5.Ramming": "Percuter",
+	"SR5.RammingHeadOn": "Choc de face",
+	"SR5.RammingHeadOnHint": "Collision frontale : le véhicule qui percute encaisse les dégâts entiers. Décochée : par l'arrière ou le côté, il n'en encaisse que la moitié (Rigger 5 p. 179).",
 	"SR5.RammingWith": "Percuter avec ",
 	"SR5.Range": "Portée",
 	"SR5.RangeArea": "Ligne de vue (Zone)",
