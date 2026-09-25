@@ -57,9 +57,9 @@ describe("SR5_CharacterUtility vision on every token of an actor", () => {
     const viewed = {
       tokens: [first, second]
     }
-    globalThis.game.scenes = [viewed, {
+    globalThis.game.scenes = new Set([viewed, {
       tokens: [elsewhere]
-    }]
+    }])
     globalThis.canvas.scene = viewed
 
     await SR5_CharacterUtility.handleAstralVision(astralActor())
@@ -72,9 +72,9 @@ describe("SR5_CharacterUtility vision on every token of an actor", () => {
 
   it("leaves alone the unlinked tokens and the tokens of another actor", async () => {
     const unlinked = makeToken("t1", "a1", false), other = makeToken("t2", "b2", true)
-    globalThis.game.scenes = [{
+    globalThis.game.scenes = new Set([{
       tokens: [unlinked, other]
-    }]
+    }])
 
     await SR5_CharacterUtility.handleAstralVision(astralActor())
 
@@ -84,9 +84,9 @@ describe("SR5_CharacterUtility vision on every token of an actor", () => {
 
   it("serves a synthetic actor through its own token, even with no scene displayed", async () => {
     const own = makeToken("t1", "a1", false), sibling = makeToken("t2", "a1", false)
-    globalThis.game.scenes = [{
+    globalThis.game.scenes = new Set([{
       tokens: [own, sibling]
-    }]
+    }])
     globalThis.canvas.scene = null
 
     await SR5_CharacterUtility.handleAstralVision(astralActor(own))

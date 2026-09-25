@@ -868,7 +868,7 @@ export class SR5_CharacterUtility extends Actor {
   //viewed scene only, and left the others blind.
   static getTokensOfActor(actor) {
     if (actor.token) return [actor.token]
-    return (game.scenes ?? []).flatMap((s) => s.tokens.filter((t) => t.actorId === actor.id && t.actorLink))
+    return Array.from(game.scenes ?? []).flatMap((s) => s.tokens.filter((t) => t.actorId === actor.id && t.actorLink))
   }
 
   //Give the tokens the vision their actor is currently using

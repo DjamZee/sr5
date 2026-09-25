@@ -28,9 +28,9 @@ describe("SR5_CharacterUtility.handleAstralVision", () => {
       detectionModes: [],
       update: vi.fn(),
     }
-    globalThis.game.scenes = [{
+    globalThis.game.scenes = new Set([{
       tokens: [token]
-    }]
+    }])
     globalThis.game.settings.get = (_system, key) => (key === "sr5VisionRangeAstral" ? 300 : 0)
     Number.isNumeric ??= (n) => Number.isFinite(Number(n))
     vi.spyOn(SR5_EntityHelpers, "addEffectToActor").mockResolvedValue()
