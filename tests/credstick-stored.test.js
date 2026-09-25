@@ -9,11 +9,12 @@ import {
 } from '../modules/interface/storage-rules.js'
 
 // Moving money writes a ledger line and a chat line
+// (other tests may already have put their own documents there)
 globalThis.foundry.documents ??= {
-  ChatMessage: {
-    create: async () => {}, getSpeaker: () => ({
-    })
-  },
+}
+globalThis.foundry.documents.ChatMessage ??= {
+  create: async () => {}, getSpeaker: () => ({
+  })
 }
 
 const stash = {
