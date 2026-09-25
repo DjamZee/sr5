@@ -493,6 +493,13 @@ export class SR5Actor extends Actor {
       // values are still computed so the storage can show it, but it is held
       // inactive here rather than on the item, so taking it out gives it back
       // exactly as it was.
+      // A storage put down on the map has nobody to give a bonus to: what it
+      // carries computes its own values and nothing else. It is not switched
+      // off, because the storage hands its items over with their prepared data.
+      if (actor.type === "actorStorage") {
+        i.prepareData()
+        continue
+      }
       if (iData.storedIn) {
         i.prepareData()
         iData.isActive = false
@@ -791,7 +798,7 @@ export class SR5Actor extends Actor {
     for (let i of actor.items) {
       let iData = i.system
       // Stored gear takes no part in what the character can do
-      if (iData.storedIn) continue
+      if (iData.storedIn || actor.type === "actorStorage") continue
       switch (i.type){
         case "itemDevice":
           if (actor.type === "actorPc" || actor.type === "actorGrunt"){
