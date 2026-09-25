@@ -926,6 +926,7 @@
 	"SR5.WARN_CredstickNotEnoughFunds": "{name} n'a pas {amount}¥ à retirer : {balance}¥ disponibles.",
 	"SR5.WARN_CredstickNotEnoughOnStick": "{name} ne porte que {loaded}¥, pas {amount}¥.",
 	"SR5.WARN_CredstickNotOwner": "Vous n'êtes pas propriétaire de ce personnage.",
+	"SR5.WARN_CredstickStored": "{name} est rangé dans un stockage : sortez-le avant d'y toucher.",
 	"SR5.WARN_ShopItemGone": "{name} n'est plus dans son compendium : ligne ignorée.",
 	"SR5.WARN_ShopNoBuyer": "Choisissez d'abord le personnage qui achète.",
 	"SR5.WARN_ShopNoFence": "Choisissez le contact qui reprend le matériel.",

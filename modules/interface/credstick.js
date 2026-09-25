@@ -177,7 +177,7 @@ export class SR5Credstick {
     }
   }
 
-  /** Only a bearer who owns both ends may move the money. */
+  /** Only a bearer who owns both ends, stick in hand, may move the money. */
   static #canAct(actor, credstick) {
     if (!actor?.isOwner) {
       ui.notifications.warn(game.i18n.localize('SR5.WARN_CredstickNotOwner'))
@@ -185,6 +185,13 @@ export class SR5Credstick {
     }
     if (!SR5Credstick.is(credstick)) {
       ui.notifications.warn(game.i18n.localize('SR5.WARN_CredstickNotACredstick'))
+      return false
+    }
+    // A stick left at the stash is out of reach until it is taken out
+    if (credstick.system?.storedIn) {
+      ui.notifications.warn(game.i18n.format('SR5.WARN_CredstickStored', {
+        name: credstick.name
+      }))
       return false
     }
     return true
