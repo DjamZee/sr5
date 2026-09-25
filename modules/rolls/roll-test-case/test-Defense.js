@@ -29,6 +29,10 @@ export default async function defenseInfo(cardData, actorId){
   // SR5 p. 181: anyone caught in a suppressive fire zone suffers a penalty equal to the shooter's hits, whatever the outcome of the defense
   if (cardData.combat.firingMode.selected === "SF") await SR5_ActorHelper.suppressiveFireEffect(actorId, cardData.previousMessage.hits)
 
+  // Kill Code p. 44: the Intervene bonus applies to the current defense test only
+  let interveneEffects = actor.items.filter(i => i.type === "itemEffect" && i.system.type === "intervene").map(i => i.id)
+  if (interveneEffects.length) await actor.deleteEmbeddedDocuments("Item", interveneEffects)
+
   //Special case for injection ammo, need 3 net hits if armor is weared
   const injReq = cardData.combat.ammo.effects?.injectionNetHits || (cardData.combat.ammo.type === "injection" ? 3 : 0)
   if (injReq && actor.system.itemsProperties.armor.value > 0){
