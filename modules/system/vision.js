@@ -99,38 +99,29 @@ function buildAstralVision() {
   })
 }
 
-// Low-light vision : sees in dim light as if in full light, but not in total darkness (SR5 p. 176)
-function buildLowLightVision() {
-  const VisionMode = foundry.canvas.perception.VisionMode
-  const shaders = foundry.canvas.rendering.shaders
-  return new VisionMode({
+/**
+ * Definition of the low-light vision mode. Low-light vision sees in dim light as if in full
+ * light, but not in total darkness (SR5 p. 176-177, p. 447) : the book asks for nothing more
+ * than the lighting level it raises, so that is all the mode does by default.
+ *
+ * No exposure and no desaturation on the lighting layers : on a scene lit by its global light,
+ * those drew the whole scene brighter than full daylight and washed out (measured : mean
+ * luminance 79 against 67 in daylight, saturation 79 against 108).
+ *
+ * The green tint is a convention of night-vision goggles, not a rule : a world setting. It
+ * needs the lighting background layer switched off, otherwise the lit areas are drawn from the
+ * untinted picture and the green only shows where no light falls (the core software's own
+ * Light Amplification mode loses it the same way).
+ * @param {boolean} greenTint
+ * @param {object} VisionMode    foundry.canvas.perception.VisionMode, or its constants
+ * @param {object} shaders       foundry.canvas.rendering.shaders
+ * @returns {object}
+ */
+export function getLowLightVisionData(greenTint, VisionMode, shaders) {
+  const data = {
     id: "lowLight",
     label: "SR5.LowLightVision",
-    canvas: {
-      shader: shaders.AmplificationSamplerShader,
-      uniforms: {
-        saturation: -0.35, tint: [0.45, 0.82, 0.45]
-      }
-    },
     lighting: {
-      background: {
-        postProcessingModes: ["SATURATION", "EXPOSURE"],
-        uniforms: {
-          saturation: -0.35, exposure: 1.2, tint: [0.45, 0.82, 0.45]
-        }
-      },
-      illumination: {
-        postProcessingModes: ["SATURATION"],
-        uniforms: {
-          saturation: -0.35
-        }
-      },
-      coloration: {
-        postProcessingModes: ["SATURATION", "EXPOSURE"],
-        uniforms: {
-          saturation: -0.35, exposure: 1.2, tint: [0.45, 0.82, 0.45]
-        }
-      },
       levels: {
         [VisionMode.LIGHTING_LEVELS.DIM]: VisionMode.LIGHTING_LEVELS.BRIGHT
       }
@@ -140,15 +131,28 @@ function buildLowLightVision() {
         adaptive: false
       },
       defaults: {
-        attenuation: 0, contrast: 0, saturation: -0.35, brightness: 0.5
-      },
-      background: {
-        shader: shaders.AmplificationBackgroundVisionShader, uniforms: {
-          tint: [0.45, 0.82, 0.45]
-        }
+        attenuation: 0, contrast: 0, saturation: 0, brightness: 0
       }
     }
-  })
+  }
+  if (!greenTint) return data
+  // The tint itself comes from the shaders' default colour, unless the token has a vision colour
+  data.canvas = {
+    shader: shaders.AmplificationSamplerShader
+  }
+  data.lighting.background = {
+    visibility: VisionMode.LIGHTING_VISIBILITY.DISABLED
+  }
+  data.vision.background = {
+    shader: shaders.AmplificationBackgroundVisionShader
+  }
+  return data
+}
+
+function buildLowLightVision() {
+  const VisionMode = foundry.canvas.perception.VisionMode
+  const greenTint = game.settings.get("sr5", "sr5LowLightGreenTint")
+  return new VisionMode(getLowLightVisionData(greenTint, VisionMode, foundry.canvas.rendering.shaders))
 }
 
 // Thermographic vision : sees heat, so it works in the dark and through most smoke (SR5 p. 176)

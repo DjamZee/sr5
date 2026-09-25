@@ -2841,6 +2841,8 @@
 	"SR5.SETTINGS_HideTableRoll_T": "Masquer le jet sur les tables aléatoires",
 	"SR5.SETTINGS_KillCodeRules_D": "Activer ou désactiver les règles matricielles de Kill Code.",
 	"SR5.SETTINGS_KillCodeRules_T": "Utiliser les règles de Kill Code",
+	"SR5.SETTINGS_LowLightGreenTint_D": "Teinte verte de lunettes de vision nocturne sur ce que voit un jeton en vision nocturne. Convention visuelle et non règle : le livre dit seulement que la vision nocturne permet de voir normalement sous une lumière faible (SR5 p. 447). Désactivée, le jeton voit en couleurs naturelles. La teinte ne s'affiche que lorsqu'un seul jeton est sélectionné (limite de Foundry).",
+	"SR5.SETTINGS_LowLightGreenTint_T": "Vision nocturne teintée de vert",
 	"SR5.SETTINGS_MatrixGridRules_D": "Activer ou désactiver les règles de gestion des Grilles pour la Matrice (Livre de base, p.234-235).",
 	"SR5.SETTINGS_MatrixGridRules_T": "Utiliser les Grilles matricielles",
 	"SR5.SETTINGS_Rigger5Actions_D": "Activer ou désactiver les actions matricielles de Rigger 5.",

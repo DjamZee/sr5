@@ -2841,6 +2841,8 @@
 	"SR5.SETTINGS_HideTableRoll_T": "Hide the roll on random tables",
 	"SR5.SETTINGS_KillCodeRules_D": "Activate or desactivate Kill Code rules.",
 	"SR5.SETTINGS_KillCodeRules_T": "Use Kill Code",
+	"SR5.SETTINGS_LowLightGreenTint_D": "Night-vision goggles green tint on what a token using low-light vision sees. A visual convention, not a rule: the book only says low-light vision lets one see normally in dim light (SR5 p. 447). Off, the token sees in natural colours. The tint only shows while a single token is selected (a Foundry limit).",
+	"SR5.SETTINGS_LowLightGreenTint_T": "Green-tinted low-light vision",
 	"SR5.SETTINGS_MatrixGridRules_D": "Activate or desactivate Matrix grid rules (Core rulebook, p.233-234)",
 	"SR5.SETTINGS_MatrixGridRules_T": "Use Matrix Grids",
 	"SR5.SETTINGS_Rigger5Actions_D": "Activate or desactivate Rigger 5 Matrix Actions.",
