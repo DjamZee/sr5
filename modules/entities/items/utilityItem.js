@@ -1204,6 +1204,29 @@ export class SR5_UtilityItem extends Actor {
     }
   }
 
+  //Light rows taken off by a flashlight mounted on the weapon being used (0 or -1).
+  //Run & Gun p. 69: the flashlight lights "in the direction the weapon points", and a low-light (or infrared) one
+  //takes the light penalty one row down for a character using low-light (or thermographic) vision. So it only
+  //counts for a roll made with that weapon, not for the actor's other weapons; and a second flashlight on the
+  //same weapon does not take a second row.
+  static getWeaponLightCompensation(itemData, actor) {
+    if (!itemData?.isActive || !actor?.system?.visions) return 0
+    let accessories = itemData.accessory
+    if (accessories && typeof accessories === "object" && !Array.isArray(accessories)) accessories = Object.values(accessories)
+    if (!Array.isArray(accessories)) return 0
+
+    const visions = actor.system.visions
+    for (let a of accessories) {
+      if (!a?.isActive) continue
+      let effectType = null
+      if (a.system) effectType = a.system.weaponAccessory?.specialEffect
+      else effectType = WEAPON_ACCESSORY_CATALOG[a.name]?.systemEffects?.[0]?.value
+      if (effectType === "flashLightLowLight" && visions.lowLight?.isActive) return -1
+      if (effectType === "flashLightInfrared" && visions.thermographic?.isActive) return -1
+    }
+    return 0
+  }
+
   //Handle if an accessory gives environmental modifiers (actor-level effects)
   static _handleVisionAccessory(itemData, actor) {
     if (itemData.isActive && itemData.ammunition.type) {
@@ -1261,16 +1284,8 @@ export class SR5_UtilityItem extends Actor {
       if (!effectType) continue
 
       switch (effectType) {
-        case "flashLightInfrared":
-          if (actor.system.visions.thermographic.isActive && a.isActive && itemData.isActive) {
-            SR5_EntityHelpers.updateModifier(actor.system.itemsProperties.environmentalMod.light, label, "weaponAccessory", -1, false, true)
-          }
-          break
-        case "flashLightLowLight":
-          if (actor.system.visions.lowLight.isActive && a.isActive && itemData.isActive) {
-            SR5_EntityHelpers.updateModifier(actor.system.itemsProperties.environmentalMod.light, label, "weaponAccessory", -1, false, true)
-          }
-          break
+        // flashLightInfrared and flashLightLowLight light where the weapon points (Run & Gun p. 69): they are
+        // not written on the actor, see getWeaponLightCompensation
         case "imagingScope":
           if (a.isActive && itemData.isActive) {
             SR5_EntityHelpers.updateModifier(actor.system.itemsProperties.environmentalMod.range, label, "weaponAccessory", -1, false, false)

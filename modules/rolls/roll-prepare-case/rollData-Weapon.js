@@ -25,6 +25,9 @@ import {
 import {
   SR5_ConverterHelpers
 } from "../roll-helpers/converter.js"
+import {
+  SR5_UtilityItem
+} from "../../entities/items/utilityItem.js"
 
 //Add info for weapon Roll
 export default async function weapon(rollData, actor, item){
@@ -261,6 +264,9 @@ async function handleTargetInfo(rollData, actor, item){
   //Calcul distance between Attacker and Target
   rollData.target.rangeInMeters = await SR5_SystemHelpers.getDistanceBetweenTwoPoint(attacker, target)
 
+  //A flashlight lights where its own weapon points (Run & Gun p. 69): only this weapon's counts
+  const weaponLight = SR5_UtilityItem.getWeaponLightCompensation(itemData, actor)
+
   //Handle Melee specifics
   if (itemData.category === "meleeWeapon") {
     rollData.combat.reach = itemData.reach.value
@@ -273,7 +279,7 @@ async function handleTargetInfo(rollData, actor, item){
       ui.notifications.info(`${game.i18n.localize("SR5.INFO_TargetIsTooFar")}`)
       return false
     }
-    sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(game.scenes.active, actor.system, true, areaEffect, true)
+    sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(game.scenes.active, actor.system, true, areaEffect, true, weaponLight)
   } else { // Handle weapon ranged based on distance
     // SR5 p. 186: the range bands of the Weapon Ranges table are inclusive of their upper bound (0-5, 6-10,
     // 11-15, 16-20; 0-STR, up to STR x n for the Strength-based rows), so a target exactly at short range is at
@@ -297,7 +303,7 @@ async function handleTargetInfo(rollData, actor, item){
       ui.notifications.info(`${game.i18n.localize("SR5.INFO_TargetIsTooFar")}`)
       return false
     }
-    sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(game.scenes.active, actor.system, false, areaEffect)
+    sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(game.scenes.active, actor.system, false, areaEffect, false, weaponLight)
   }
 
   //Handle ranged weapon current firing mode
