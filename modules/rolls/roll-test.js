@@ -240,9 +240,11 @@ export class SR5_RollTest {
       if (d.result >= 5) realHits ++
     }
 
+    // SR5 p. 47: more than half the dice show 1 is a glitch; a glitch with no hit is a critical glitch.
+    // A serialized Die term has no total, so count the hits rolled (a limit never brings them to 0).
     if (totalGlitch > dicePool/2){
       glitchRoll = true
-      if (rollJSON.terms[0].total < 1) {
+      if (realHits === 0) {
         glitchRoll = false
         criticalGlitchRoll = true
       }
