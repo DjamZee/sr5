@@ -319,6 +319,9 @@ export class SR5Actor extends Actor {
           "prototypeToken.texture.src": this.img,
         })
         break
+      // Linked below, once any remembered token has been laid on
+      case "actorStorage":
+        break
       default :
         SR5_SystemHelpers.srLog(1, `Unknown '${this.type}' type in 'base _preCreate()'`)
     }
@@ -339,6 +342,14 @@ export class SR5Actor extends Actor {
     }
 
     this.updateSource(createData)
+
+    // A storage on the map is one bag, wherever it is opened from: what is
+    // taken through its token must leave the actor too, or picking it up
+    // gives back what has already been taken. Set last, so that a token
+    // remembered from a bag put down before this was so cannot unlink it.
+    if (this.type === "actorStorage") this.updateSource({
+      "prototypeToken.actorLink": true
+    })
   }
 
   prepareData() {
