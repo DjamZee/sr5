@@ -19,6 +19,9 @@ import {
 import {
   SR5_ActorHelper 
 } from "./entities/actors/entityActor-helpers.js"
+import {
+  SR5ShopFence
+} from "./interface/shop-fence.js"
 
 export class SR5_SocketHandler {
   static registerSocketListeners() {
@@ -49,6 +52,7 @@ export class SR5_SocketHandler {
       "updateActorData": [SR5_MiscellaneousHelpers._socketUpdateActorData],
       "takeDamage":[SR5_ActorHelper._socketTakeDamage],
       "actorRoll": [SR5Actor._socketRollTest],
+      "shopFenceCash": [SR5ShopFence.socketCash],
     }
 
     game.socket.on(`system.sr5`, async (message) => {
