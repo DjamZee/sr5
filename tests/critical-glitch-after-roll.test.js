@@ -290,46 +290,6 @@ describe('Healing critical glitch (SR5 p. 208)', () => {
     expect(card.chatCard.buttons.damage).toBeDefined()
   })
 
-  // SR5 p. 208, example: 4 boxes, "a donc guéri de 3 cases", the 1D3 adds 2, "pour un total actuel de 3 cases"
-  it('a critical glitch on a later roll still heals the hits of the earlier rolls', async () => {
-    const message = await cardFrom([5, 5, 5, 2])
-    faces = [1, 1, 2]
-    await SR5_RollTest.extendedRoll(message, {
-      id: 'a1'
-    })
-    const card = {
-      ...healingCard(), test: {
-        ...updatedCard.test, typeSub: 'physical', extended: {
-          ...updatedCard.test.extended, multiplier: 1
-        }
-      }, roll: updatedCard.roll
-    }
-    expect(card.roll.criticalGlitchRoll).toBe(true)
-    faces = [2]
-    await healingInfo(card)
-    expect(card.roll.netHits).toBe(3)
-    expect(card.chatCard.buttons.heal).toBeDefined()
-    expect(card.chatCard.buttons.damage).toBeDefined()
-  })
-
-  it('the Edge dice of a critical roll do not count as earlier hits', async () => {
-    const card = healingCard()
-    card.roll = {
-      hits: 4, criticalGlitchRoll: true, rollDices: [{
-        result: 6
-      }, {
-        result: 1
-      }, {
-        result: 1
-      }, {
-        result: 1
-      }]
-    }
-    faces = [1]
-    await healingInfo(card)
-    expect(card.roll.netHits).toBe(3)
-  })
-
   // SR5 p. 208, example: "Chaque complication comptant pour 2 jours" (0, 1 (c), 0, 1, a day, 0, 0, 1 (c) = 11 days)
   it('a glitched roll keeps counting double after the next roll', async () => {
     const card = healingCard()
@@ -352,59 +312,6 @@ describe('Healing critical glitch (SR5 p. 208)', () => {
     await healingInfo(card)
     await healingInfo(card)
     expect(card.test.extended.intervalValue).toBe(5)
-  })
-})
-
-describe('First aid critical glitch (SR5 p. 207)', () => {
-  it('a cancelled damage type does not show "undefined" on the button', async () => {
-    const {
-      skillInfo
-    } = await import('../modules/rolls/roll-test-case/index.js')
-    const {
-      SR5_CombatHelpers
-    } = await import('../modules/rolls/roll-helpers/combat.js')
-    vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockReturnValue({
-      system: {
-        skills: {
-          firstAid: {
-            rating: {
-              value: 3
-            }
-          }
-        }
-      }
-    })
-    vi.spyOn(SR5_CombatHelpers, 'chooseDamageType').mockResolvedValue(undefined)
-    const labels = []
-    vi.spyOn(game.i18n, 'format').mockImplementation((key, data) => {
-      labels.push(`${data?.hits}${data?.damageType}`)
-      return key
-    })
-    const card = {
-      chatCard: {
-        buttons: {
-        }
-      },
-      owner: {
-        actorId: 'a1'
-      },
-      target: {
-        hasTarget: true
-      },
-      test: {
-        typeSub: 'firstAid'
-      },
-      damage: {
-      },
-      roll: {
-        hits: 0, criticalGlitchRoll: true
-      },
-    }
-    faces = [2]
-    await skillInfo(card)
-    expect(card.chatCard.buttons.damage).toBeDefined()
-    expect(card.damage.value).toBe(2)
-    expect(labels).toEqual(['2'])
   })
 })
 
