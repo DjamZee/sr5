@@ -14,8 +14,11 @@ import {
   SR5 
 } from "../../config.js"
 import {
-  _getSRStatusEffect 
+  _getSRStatusEffect
 } from "../../system/effectsList.js"
+import {
+  SR5_TOKEN_VISION_MODES
+} from "../../system/vision.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -818,6 +821,7 @@ export class SR5_CharacterUtility extends Actor {
       actorData.visions.astral.hasVision = true
       actorData.visions.astral.isActive = true
     }
+    this.settleMetatypeVision(actor)
     if (actorData.initiatives.astralInit.isActive) actorData.visions.augmented = true
     if (actorData.visions.astral.natural || actorData.visions.augmented) actorData.visions.astral.hasVision = true
     if (actorData.visions.astral.isActive) actorData.visions.astral.hasVision = true
@@ -848,6 +852,12 @@ export class SR5_CharacterUtility extends Actor {
         SR5_EntityHelpers.updateModifier(actorData.itemsProperties.environmentalMod.visibility, `${game.i18n.localize('SR5.ThermographicVision')}`, "visionType", -1, false, false)
         SR5_EntityHelpers.updateModifier(actorData.itemsProperties.environmentalMod.light, `${game.i18n.localize('SR5.UltrasoundVision')}`, "visionType", -3, false, false)
       }
+    }
+    //A vision the character has lost (cybereyes put in, goggles taken off) is no longer in use,
+    //even if it was pinned : the dice read isActive, and the token and the pins must agree with them.
+    //The stored pin is kept, so the vision comes back in use if the character gets it back.
+    for (let key of ["lowLight", "thermographic", "ultrasound"]) {
+      if (!actorData.visions[key].hasVision) actorData.visions[key].isActive = false
     }
     actorData.visions.hasActiveVision = Object.keys(SR5.visionActive).some(key => actorData.visions[key].isActive)
 
@@ -882,6 +892,16 @@ export class SR5_CharacterUtility extends Actor {
       const tokenData = await SR5_EntityHelpers.getVisionData(foundry.utils.duplicate(token), actor)
       await token.update(tokenData)
     }
+  }
+
+  //Serve the tokens again when the vision in use changed under them, without a pin being touched :
+  //cybereyes that take the pinned vision away, or give it back. Only called by the user who made
+  //the change, and a token already in the right mode is left alone.
+  static async refreshVisionOfTokens(actor) {
+    if (!["actorPc", "actorGrunt"].includes(actor?.type)) return
+    const mode = SR5_TOKEN_VISION_MODES[SR5_EntityHelpers.getActiveVisionType(actor)] ?? "basic"
+    if (this.getTokensOfActor(actor).every(t => t.sight?.visionMode === mode)) return
+    await this.applyVisionToToken(actor)
   }
 
   //Handle astral vision
@@ -927,16 +947,19 @@ export class SR5_CharacterUtility extends Actor {
   }
 
   //Return the cybereyes the character wears, if any. Cybereyes are the only eyeware that
-  //holds a Capacity : everything else in that category plugs into them (SR5 p. 456).
+  //holds a Capacity : everything else in that category plugs into them (SR5 p. 456). The pin
+  //of an implant says it is worn : unpinned eyes took the vision away without their effects.
   static getCyberEyes(actor) {
     return actor.items?.find(i => i.type === "itemAugmentation" &&
+      i.system.isActive &&
       i.system.category === "eyeware" &&
       !i.system.isAccessory &&
       Number(i.system.capacity?.base ?? 0) > 0) ?? null
   }
 
-  //Grant a vision the character owes to its metatype. The book does not say what becomes of it
-  //once the eyes it came with have been replaced by cybereyes, so a world setting decides.
+  //Grant a vision the character owes to its metatype. Cybereyes take it away : it has to be bought
+  //again as an enhancement of the eyes (SR5 p. 96). A world setting, on by default, lets a table
+  //keep it anyway.
   static grantMetatypeVision(actor, vision) {
     let actorData = actor.system
     const cyberEyes = actorData.visions?.cyberEyes
@@ -945,6 +968,20 @@ export class SR5_CharacterUtility extends Actor {
       return
     }
     actorData.visions[vision].natural = true
+  }
+
+  //The cybereyes of the companion compendiums carry their own effects that switch every natural
+  //vision off, and item effects are applied after the metatype. Left alone, they overrule the
+  //world setting : unticked, the elf still lost its low-light vision. What becomes of the vision
+  //of the metatype under cybereyes is the setting's call, so it is settled again here.
+  static settleMetatypeVision(actor) {
+    const visions = actor.system?.visions
+    if (!visions?.cyberEyes?.hasCyberEyes) return
+    const vision = {
+      elf: "lowLight", ork: "lowLight", dwarf: "thermographic", troll: "thermographic"
+    }[this.getMetatype(actor)]
+    if (!vision) return
+    visions[vision].natural = !visions.cyberEyes.replacedNaturalVision.includes(vision)
   }
 
   //Return the metatype of a character. Every actor now holds it in 'metatype' ; 'characterMetatype'
