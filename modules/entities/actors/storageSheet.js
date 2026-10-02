@@ -104,7 +104,12 @@ export class SR5StorageSheet extends ActorSheetSR5 {
     return candidates.find(a => a.id === chosen) ?? null
   }
 
-  // Hand the items over, carried rather than stored: they have been picked up.
+  /**
+   * Hand the items over, carried rather than stored: they have been picked up.
+   *
+   * They leave the storage first, and only what did leave it is handed over:
+   * a second click on the same item finds it gone rather than taking it again.
+   */
   async _giveTo(looter, items) {
     if (!items.length) return
     const data = items.map(i => {
@@ -112,10 +117,19 @@ export class SR5StorageSheet extends ActorSheetSR5 {
       if (object.system.storedIn !== undefined) object.system.storedIn = ""
       return object
     })
-    await looter.createEmbeddedDocuments("Item", data)
-    await this.actor.deleteEmbeddedDocuments("Item", items.map(i => i.id))
+    let taken
+    try {
+      taken = await this.actor.deleteEmbeddedDocuments("Item", items.map(i => i.id))
+    } catch (error) {
+      console.warn("SR5 | Storage: nothing taken", error)
+      return
+    }
+    const takenIds = new Set((taken ?? []).map(i => i.id))
+    const given = data.filter(object => takenIds.has(object._id))
+    if (!given.length) return
+    await looter.createEmbeddedDocuments("Item", given)
     ui.notifications.info(game.i18n.format("SR5.StorageLooted", {
-      count: items.length, actor: looter.name, storage: this.actor.name,
+      count: given.length, actor: looter.name, storage: this.actor.name,
     }))
   }
 
