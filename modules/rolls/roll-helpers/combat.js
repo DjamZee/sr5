@@ -15,12 +15,13 @@ export class SR5_CombatHelpers {
 
   //Handle environmental modifiers
   //noWind: ignore the wind column (perception, melee); melee: SR5 p. 188, only the Light and Visibility columns apply
+  //weaponLight: light rows taken off by a flashlight on the weapon being used (SR5_UtilityItem.getWeaponLightCompensation)
   static handleEnvironmentalModifiers(scene, actor, noWind, areaEffect = {
     visibility:0, light:0, glare:0, wind:0
-  }, melee = false){
+  }, melee = false, weaponLight = 0){
     let actorData = actor.itemsProperties.environmentalMod
     let visibilityMod = Math.min(Math.max(parseInt(scene.getFlag("sr5", "environModVisibility")) + areaEffect.visibility + actorData.visibility.value, 0), 4)
-    let lightMod = Math.min(Math.max(parseInt(scene.getFlag("sr5", "environModLight")) + areaEffect.light + actorData.light.value, 0), 4)
+    let lightMod = Math.min(Math.max(parseInt(scene.getFlag("sr5", "environModLight")) + areaEffect.light + actorData.light.value + weaponLight, 0), 4)
     // SR5 p. 177: low-light vision treats partial light (1) and dim light (2) as full light; it does nothing in total darkness (3)
     let sceneLight = parseInt(scene.getFlag("sr5", "environModLight")) + areaEffect.light
     if (actor.visions.lowLight.isActive && sceneLight > 0 && sceneLight <= 2) lightMod = 0

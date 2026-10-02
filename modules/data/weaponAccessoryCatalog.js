@@ -439,7 +439,7 @@ export const WEAPON_ACCESSORY_CATALOG = {
     }],
   },
 
-  // ── Vision-related accessories (actor-level environmental mods) ───
+  // ── Vision-related accessories (environmental mods; flashlights count for their own weapon only) ───
 
   flashLightInfrared: {
     price: 400, slot: "", type: "accessory",
