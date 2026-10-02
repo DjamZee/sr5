@@ -833,11 +833,11 @@ export class SR5_CharacterUtility extends Actor {
       SR5_EntityHelpers.updateModifier(actorData.itemsProperties.environmentalMod.wind, game.i18n.localize('SR5.AstralPerception'), "visionType", -4, false, false)
     }
 
+    //Low-light vision takes no light row off : the roll treats partial and dim light as full light
+    //for it (SR5 p. 177), and it is of no help in complete darkness (SR5 p. 447). Two rows taken off
+    //here as well turned total darkness into partial light.
     if (actorData.visions.lowLight.natural || actorData.visions.lowLight.augmented) {
       actorData.visions.lowLight.hasVision = true
-      if (actorData.visions.lowLight.isActive) {
-        SR5_EntityHelpers.updateModifier(actorData.itemsProperties.environmentalMod.light, game.i18n.localize('SR5.LowLightVision'), "visionType", -2, false, false)
-      }
     }
     if (actorData.visions.thermographic.natural || actorData.visions.thermographic.augmented) {
       actorData.visions.thermographic.hasVision = true
