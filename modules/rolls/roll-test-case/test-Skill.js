@@ -73,11 +73,17 @@ export default async function skillInfo(cardData){
       }
       break
     case "firstAid":
+      //SR5 p. 207: a critical glitch adds 1D3 boxes, rolled once per test even if the card is refreshed (Edge)
       if (cardData.roll.criticalGlitchRoll) {
-        let failedDamage = new Roll(`1d3`)
-        await failedDamage.evaluate()
-        cardData.damage.value = failedDamage.total
-        cardData.damage.type = await SR5_CombatHelpers.chooseDamageType()
+        if (!cardData.roll.criticalGlitchDamage) {
+          let failedDamage = new Roll(`1d3`)
+          await failedDamage.evaluate()
+          cardData.roll.criticalGlitchDamage = {
+            value: failedDamage.total, type: await SR5_CombatHelpers.chooseDamageType()
+          }
+        }
+        cardData.damage.value = cardData.roll.criticalGlitchDamage.value
+        cardData.damage.type = cardData.roll.criticalGlitchDamage.type
         if (cardData.target.hasTarget) cardData.chatCard.buttons.damage = SR5_RollMessage.generateChatButton("nonOpposedTest", "damage", `${game.i18n.format('SR5.HealButtonFailed', {
           hits: cardData.damage.value, damageType: (game.i18n.localize(SR5.damageTypesShort[cardData.damage.type]))
         })}`)
