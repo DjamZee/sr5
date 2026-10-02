@@ -6,8 +6,10 @@ import {
 } from "../../config.js"
 
 export default async function healingInfo(cardData){
-  //SR5 p. 208: a glitch doubles the interval, computed from its base so a refreshed card does not double it again
-  if (cardData.roll.glitchRoll || cardData.roll.criticalGlitchRoll) cardData.test.extended.intervalValue = cardData.test.extended.multiplier * cardData.test.extended.roll * 2
+  //SR5 p. 208: a glitch doubles the rest time, "chaque complication comptant pour 2 jours" in the example, so every
+  //glitched roll of the test counts one more interval. Computed from its base so a refreshed card does not count it again
+  let glitchedRolls = (cardData.test.extended.glitchedRolls || 0) + (cardData.roll.glitchRoll || cardData.roll.criticalGlitchRoll ? 1 : 0)
+  cardData.test.extended.intervalValue = cardData.test.extended.multiplier * (cardData.test.extended.roll + glitchedRolls)
   //SR5 p. 208: a critical glitch adds 1D3 boxes, rolled once per test even if the card is refreshed (Edge)
   if (cardData.roll.criticalGlitchRoll) {
     if (!cardData.roll.criticalGlitchDamage) {

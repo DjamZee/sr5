@@ -1,6 +1,9 @@
 import {
   describe, it, expect, vi, beforeEach
 } from 'vitest'
+import {
+  readFileSync
+} from 'node:fs'
 
 vi.mock('../modules/socket.js', () => ({
   SR5_SocketHandler: {
@@ -48,8 +51,14 @@ const {
   SR5_RollMessage
 } = await import('../modules/rolls/roll-message.js')
 const {
-  healingInfo
+  healingInfo, matrixActionInfo
 } = await import('../modules/rolls/roll-test-case/index.js')
+const {
+  SR5_EntityHelpers
+} = await import('../modules/entities/helpers.js')
+const {
+  SR5_ActorHelper
+} = await import('../modules/entities/actors/entityActor-helpers.js')
 
 let updatedCard
 beforeEach(() => {
@@ -150,7 +159,12 @@ describe('Extended test (SR5 p. 51)', () => {
     expect(updatedCard.roll.criticalGlitchRoll).toBe(true)
   })
 
-  it('a critical glitch ends the extended test', async () => {
+  it('a critical glitch hides "New roll" on the card', () => {
+    const template = readFileSync(new URL('../templates/rolls/roll-card.hbs', import.meta.url), 'utf8')
+    expect(template).toMatch(/\{\{#if test\.isExtended\}\}\s*\{\{#unless roll\.criticalGlitchRoll\}\}\s*<button[^>]*data-type="extended"/)
+  })
+
+  it('a critical glitch erased by Push the limit reopens the test (SR5 p. 51, 58)', async () => {
     SR5_RollTest.addInfoToCard.mockRestore()
     const cardData = {
       chatCard: {
@@ -168,7 +182,20 @@ describe('Extended test (SR5 p. 51)', () => {
       },
     }
     await SR5_RollTest.addInfoToCard(cardData, 'a1')
-    expect(cardData.test.isExtended).toBe(false)
+    cardData.roll.criticalGlitchRoll = false
+    await SR5_RollTest.addInfoToCard(cardData, 'a1')
+    expect(cardData.test.isExtended).toBe(true)
+  })
+
+  it('a new roll remembers how many earlier rolls glitched', async () => {
+    const message = await cardFrom([1, 1, 1, 1, 5, 2])
+    expect(message.flags.sr5data.roll.glitchRoll).toBe(true)
+    faces = [5, 2, 2, 2, 2]
+    await SR5_RollTest.extendedRoll(message, {
+      id: 'a1'
+    })
+    expect(updatedCard.test.extended.glitchedRolls).toBe(1)
+    expect(updatedCard.roll.glitchRoll).toBe(false)
   })
 })
 
@@ -210,5 +237,77 @@ describe('Healing critical glitch (SR5 p. 208)', () => {
     await healingInfo(card)
     expect(card.chatCard.buttons.heal).toBeUndefined()
     expect(card.chatCard.buttons.damage).toBeDefined()
+  })
+
+  // SR5 p. 208, example: "Chaque complication comptant pour 2 jours" (0, 1 (c), 0, 1, a day, 0, 0, 1 (c) = 11 days)
+  it('a glitched roll keeps counting double after the next roll', async () => {
+    const card = healingCard()
+    card.roll = {
+      hits: 2, glitchRoll: false
+    }
+    card.test.extended.roll = 2
+    card.test.extended.glitchedRolls = 1
+    await healingInfo(card)
+    expect(card.test.extended.intervalValue).toBe(3)
+  })
+
+  it('a glitch counts once for its own roll, however often the card is refreshed', async () => {
+    const card = healingCard()
+    card.roll = {
+      hits: 2, glitchRoll: true
+    }
+    card.test.extended.roll = 3
+    card.test.extended.glitchedRolls = 1
+    await healingInfo(card)
+    await healingInfo(card)
+    expect(card.test.extended.intervalValue).toBe(5)
+  })
+})
+
+describe('Redefine Ownership (Data Trails p. 161)', () => {
+  it('a glitch raises the Overwatch Score once, even after Second Chance or Push the limit', async () => {
+    const actor = {
+      id: 'a1', name: 'IA', isOwner: true, system: {
+      }
+    }
+    vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockReturnValue(actor)
+    const raise = vi.spyOn(SR5_ActorHelper, 'overwatchIncrease').mockImplementation(async () => {})
+    game.user = {
+      isGM: true
+    }
+    const card = {
+      chatCard: {
+        buttons: {
+        }
+      },
+      previousMessage: {
+      },
+      test: {
+        typeSub: 'redefineOwnership', title: ''
+      },
+      threshold: {
+        value: 8
+      },
+      matrix: {
+        depth: 3
+      },
+      roll: {
+        hits: 1, glitchRoll: true
+      },
+    }
+    await matrixActionInfo(card, 'a1')
+    await matrixActionInfo(card, 'a1')
+    expect(raise).toHaveBeenCalledTimes(1)
+    expect(raise).toHaveBeenCalledWith(3, 'a1')
+  })
+
+  it('the next roll of the test can raise it again', async () => {
+    const message = await cardFrom([1, 1, 1, 5])
+    message.flags.sr5data.roll.overwatchRaised = true
+    faces = [5, 2]
+    await SR5_RollTest.extendedRoll(message, {
+      id: 'a1'
+    })
+    expect(updatedCard.roll.overwatchRaised).toBeUndefined()
   })
 })
