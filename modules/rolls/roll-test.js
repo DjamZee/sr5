@@ -284,6 +284,10 @@ export class SR5_RollTest {
     let newMessage = foundry.utils.duplicate(messageData)
     newMessage.roll.hits = messageData.roll.hits + newRoll.hits
     newMessage.roll.dices = dicesTotal
+    //Edge spent after this roll works on this roll alone (SR5 p. 58): keep its own dice and hits apart from the kept ones
+    newMessage.roll.rollDices = newRoll.dices
+    newMessage.roll.rollHits = newRoll.hits
+    newMessage.roll.realHits = messageData.roll.hits + newRoll.realHits
     //Earlier glitches stay counted for the whole test (SR5 p. 208: each glitched healing roll counts double)
     if (messageData.roll.glitchRoll || messageData.roll.criticalGlitchRoll) newMessage.test.extended.glitchedRolls = (messageData.test.extended.glitchedRolls || 0) + 1
     //Each roll of an extended test can glitch on its own (SR5 p. 47, 51)
@@ -316,10 +320,12 @@ export class SR5_RollTest {
   static async secondeChance(message, actor) {
     let messageData = message.flags.sr5data
 
-    //Re roll failed dices
-    let dicePool = messageData.dicePool.value - messageData.roll.hits
+    //Re roll failed dices (on a later roll of an extended test, the dice of that roll only)
+    let rollDices = messageData.roll.rollDices
+    let rollHits = messageData.roll.rollHits ?? messageData.roll.hits
+    let dicePool = rollDices ? rollDices.filter(d => d.result < 5).length : messageData.dicePool.value - messageData.roll.hits
     if (dicePool < 0) dicePool = 0
-    let limit = messageData.limit.value - messageData.roll.hits
+    let limit = messageData.limit.value - rollHits
     if (limit < 0) limit = 0
     let chance = await SR5_RollTest.rollDice({
       dicePool: dicePool, limit: limit, edgeRoll: true
@@ -334,6 +340,7 @@ export class SR5_RollTest {
     let newMessage = foundry.utils.duplicate(messageData)
     newMessage.roll.hits = messageData.roll.hits + chanceHit
     newMessage.roll.dices = dicesKeeped.concat(chance.dices)
+    if (rollDices) newMessage.roll.rollDices = rollDices.filter(d => d.result > 4).concat(chance.dices)
     newMessage.edge.hasUsedSecondChance = true
     newMessage.edge.canUseEdge = false
     await SR5_RollTest.addInfoToCard(newMessage, actor.id)
@@ -372,8 +379,11 @@ export class SR5_RollTest {
     newMessage.roll.hits = originalHits + newRoll.hits
     newMessage.roll.realHits = originalHits + newRoll.realHits
     newMessage.roll.dices = messageData.roll.dices.concat(newRoll.dices)
-    //The Edge dice join the pool: glitch is read again on every die rolled (SR5 p. 47, 58)
-    Object.assign(newMessage.roll, SR5_RollTest.glitchStatus(newMessage.roll.dices, messageData.dicePool.value + dicePool))
+    //The Edge dice join the pool: glitch is read again on every die rolled for this roll (SR5 p. 47, 58),
+    //without the hits kept from earlier rolls of an extended test
+    let rollDices = (messageData.roll.rollDices ?? messageData.roll.dices).concat(newRoll.dices)
+    if (messageData.roll.rollDices) newMessage.roll.rollDices = rollDices
+    Object.assign(newMessage.roll, SR5_RollTest.glitchStatus(rollDices, messageData.dicePool.value + dicePool))
     newMessage.edge.hasUsedPushTheLimit = true
     newMessage.edge.canUseEdge = false
     newMessage.dicePool.modifiers.push({

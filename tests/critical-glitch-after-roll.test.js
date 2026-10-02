@@ -199,6 +199,57 @@ describe('Extended test (SR5 p. 51)', () => {
   })
 })
 
+describe('Edge on a later roll of an extended test (SR5 p. 47, 58)', () => {
+  const actor = {
+    id: 'a1', type: 'actorPc', system: {
+      specialAttributes: {
+        edge: {
+          augmented: {
+            value: 2
+          }
+        }
+      }
+    }
+  }
+
+  /** Roll [5, 5, 2, 3] (2 hits), then a second roll showing these faces; its pool is 3 dice */
+  async function secondRoll(rolled) {
+    const message = await cardFrom([5, 5, 2, 3])
+    faces = [...rolled]
+    await SR5_RollTest.extendedRoll(message, actor)
+    updatedCard.dicePool.value = 3
+    return {
+      id: 'm1', flags: {
+        sr5data: JSON.parse(JSON.stringify(updatedCard))
+      }
+    }
+  }
+
+  it('hits of earlier rolls do not erase the critical glitch of this roll', async () => {
+    const message = await secondRoll([1, 1, 1])
+    expect(message.flags.sr5data.roll.criticalGlitchRoll).toBe(true)
+    faces = [2, 3]
+    await SR5_RollTest.pushTheLimit(message, actor)
+    expect(updatedCard.roll.criticalGlitchRoll).toBe(true)
+    expect(updatedCard.roll.hits).toBe(2)
+  })
+
+  it('Push the limit adds to the hits of every roll so far', async () => {
+    const message = await secondRoll([5, 2, 2])
+    expect(message.flags.sr5data.roll.hits).toBe(3)
+    faces = [5, 2]
+    await SR5_RollTest.pushTheLimit(message, actor)
+    expect(updatedCard.roll.hits).toBe(4)
+  })
+
+  it('Second Chance rerolls the dice of this roll that missed', async () => {
+    const message = await secondRoll([5, 2, 2])
+    faces = [5, 5]
+    await SR5_RollTest.secondeChance(message, actor)
+    expect(updatedCard.roll.hits).toBe(5)
+  })
+})
+
 describe('Healing critical glitch (SR5 p. 208)', () => {
   function healingCard() {
     return {
