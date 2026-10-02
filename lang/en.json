@@ -3924,6 +3924,7 @@
 	"SR5.WARN_MissingCompendium": "Compendium '{name}' not found: base items and powers could not be added. Enable the 'Shadowrun 5 - Compendiums' module in this world, or choose another compendium in the system settings.",
 	"SR5.WARN_NoBaseItems": "This actor was created with no power and no weapon: the reference compendium is missing, or does not carry the expected system effects.",
 	"SR5.WARN_NoActiveScene": "No active scene !",
+	"SR5.WARN_NoSceneForEnvironment": "No scene is displayed: environmental modifiers are not applied to this roll.",
 	"SR5.WARN_NotAnAmmunitionType": "Only Ammunition Type items can be dropped here.",
 	"SR5.WARN_NoActor": "You must select an Actor first.",
 	"SR5.WARN_RitualLeaderMissing": "Ritual leader not found: the ritual resistance cannot be rolled.",

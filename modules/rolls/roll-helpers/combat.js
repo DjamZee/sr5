@@ -13,17 +13,29 @@ import {
 
 export class SR5_CombatHelpers {
 
+  // SR5 p. 176: environmental modifiers "reflect the conditions surrounding the action". The action happens
+  // where the tokens stand and where the distance is measured, which is the scene on the canvas - not the
+  // active scene, which the GM may not be showing.
+  static environmentScene(){
+    return globalThis.canvas?.scene ?? null
+  }
+
   //Handle environmental modifiers
   //noWind: ignore the wind column (perception, melee); melee: SR5 p. 188, only the Light and Visibility columns apply
   static handleEnvironmentalModifiers(scene, actor, noWind, areaEffect = {
     visibility:0, light:0, glare:0, wind:0
   }, melee = false){
+    // With no scene there are no conditions to read: say so rather than roll as if all were normal.
+    if (!scene) {
+      globalThis.ui?.notifications?.warn(game.i18n.localize("SR5.WARN_NoSceneForEnvironment"))
+      return 0
+    }
     let actorData = actor.itemsProperties.environmentalMod
     // A scene whose SR5 tab was never saved has no flags, and an area effect may set a single column: a
     // missing value is the "normal" row of its column (0, SR5 p. 176). Left as NaN, it made Math.max return
     // NaN, which environmentalLineToMod turns into 0 - the whole modifier vanished, darkness included.
     const row = value => parseInt(value) || 0
-    const sceneRow = key => row(scene?.getFlag("sr5", key))
+    const sceneRow = key => row(scene.getFlag("sr5", key))
     let visibilityMod = Math.min(Math.max(sceneRow("environModVisibility") + row(areaEffect.visibility) + row(actorData.visibility.value), 0), 4)
     let lightMod = Math.min(Math.max(sceneRow("environModLight") + row(areaEffect.light) + row(actorData.light.value), 0), 4)
     // SR5 p. 177: low-light vision treats partial light (1) and dim light (2) as full light; it does nothing in total darkness (3)

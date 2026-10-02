@@ -87,6 +87,57 @@ describe("handleEnvironmentalModifiers on a scene that was never configured", ()
     })).toBe(-6)
   })
 
+  it("reads the scene on the canvas, not the active one", () => {
+    // SR5 p. 176: the conditions surrounding the action. The GM shows a dark scene while another is active.
+    const affichee = scene({
+      environModLight: "2", environModWind: "2"
+    })
+    const active = scene({
+    })
+    const avant = {
+      canvas: globalThis.canvas, game: globalThis.game
+    }
+    globalThis.canvas = {
+      scene: affichee
+    }
+    globalThis.game = {
+      scenes: {
+        active
+      }
+    }
+    try {
+      expect(SR5_CombatHelpers.environmentScene()).toBe(affichee)
+      expect(SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), acteur(), false)).toBe(-6)
+    } finally {
+      globalThis.canvas = avant.canvas
+      globalThis.game = avant.game
+    }
+  })
+
+  it("warns instead of rolling silently when there is no scene", () => {
+    const avertissements = []
+    const avant = {
+      ui: globalThis.ui, game: globalThis.game
+    }
+    globalThis.ui = {
+      notifications: {
+        warn: m => avertissements.push(m)
+      }
+    }
+    globalThis.game = {
+      i18n: {
+        localize: k => k
+      }
+    }
+    try {
+      expect(SR5_CombatHelpers.handleEnvironmentalModifiers(null, acteur(), false)).toBe(0)
+      expect(avertissements).toEqual(["SR5.WARN_NoSceneForEnvironment"])
+    } finally {
+      globalThis.ui = avant.ui
+      globalThis.game = avant.game
+    }
+  })
+
   it("survives an area effect that only sets one column", () => {
     const resultat = SR5_CombatHelpers.handleEnvironmentalModifiers(scene({
     }), acteur(), false, {
