@@ -999,7 +999,7 @@ export default class SR5_RollDialog {
               dialogData.dicePool.modifiers.push({
                 type: "environmentalSceneMod",
                 label: game.i18n.localize(SR5.dicePoolModTypes["environmentalSceneMod"]),
-                value: SR5_CombatHelpers.handleEnvironmentalModifiers(game.scenes.active, actor.system, true),
+                value: SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, true),
               })
               label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.perceptionTypes[ev.target.value])})`
             }

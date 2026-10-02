@@ -206,7 +206,11 @@ export default async function weapon(rollData, actor, item){
 
 async function handleTargetInfo(rollData, actor, item){
   let itemData = item.system
-  if (!canvas.scene) return rollData
+  // No scene on the canvas: no distance and no environment to read. Say so rather than roll as if all were normal.
+  if (!SR5_CombatHelpers.environmentScene()) {
+    ui.notifications.warn(game.i18n.localize("SR5.WARN_NoSceneForEnvironment"))
+    return rollData
+  }
   let target = 0,
     sceneEnvironmentalMod
   rollData.target.range = "short"
@@ -279,7 +283,7 @@ async function handleTargetInfo(rollData, actor, item){
       ui.notifications.info(`${game.i18n.localize("SR5.INFO_TargetIsTooFar")}`)
       return false
     }
-    sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(game.scenes.active, actor.system, true, areaEffect, true, weaponLight)
+    sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, true, areaEffect, true, weaponLight)
   } else { // Handle weapon ranged based on distance
     // SR5 p. 186: the range bands of the Weapon Ranges table are inclusive of their upper bound (0-5, 6-10,
     // 11-15, 16-20; 0-STR, up to STR x n for the Strength-based rows), so a target exactly at short range is at
@@ -303,7 +307,7 @@ async function handleTargetInfo(rollData, actor, item){
       ui.notifications.info(`${game.i18n.localize("SR5.INFO_TargetIsTooFar")}`)
       return false
     }
-    sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(game.scenes.active, actor.system, false, areaEffect, false, weaponLight)
+    sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, false, areaEffect, false, weaponLight)
   }
 
   //Handle ranged weapon current firing mode

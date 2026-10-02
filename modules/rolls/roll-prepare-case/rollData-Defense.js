@@ -151,12 +151,12 @@ async function handleMeleeWeaponModifiers(rollData, actor, chatData){
   }
     
   //Add environmental modifiers
-  let environmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(game.scenes.active, actor.system, true, undefined, true)
+  let environmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, true, undefined, true)
   if (environmentalMod !== 0){
     rollData.dicePool.modifiers.push({
-      type: "environmentalSceneMod", 
+      type: "environmentalSceneMod",
       label: game.i18n.localize("SR5.EnvironmentalModifiers"),
-      value: SR5_CombatHelpers.handleEnvironmentalModifiers(game.scenes.active, actor.system, true, undefined, true),
+      value: environmentalMod,
     })
   }
 
