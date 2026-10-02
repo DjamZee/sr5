@@ -4,6 +4,9 @@ import {
 import {
   SR5_CharacterUtility
 } from "../modules/entities/actors/utilityActor.js"
+import {
+  SR5_EntityHelpers
+} from "../modules/entities/helpers.js"
 
 function makeActor() {
   return {
@@ -72,6 +75,7 @@ describe("Focus — a single focus adds its Force to a given test", () => {
     expect(actor.system.skills.spellcasting.spellCategory.health.modifiers.map(m => m.value)).toEqual([2])
   })
 
+  // DjamZ, 2026-10-02: with two power foci, only the strongest counts (p. 321).
   it("keeps only the strongest of two power foci on Magic", () => {
     const actor = makeActor()
     SR5_CharacterUtility.applyFocusBonus(makeFocus("Pouvoir 1", "power", "", 1), actor)
@@ -100,5 +104,28 @@ describe("Focus — a single focus adds its Force to a given test", () => {
     })
     SR5_CharacterUtility.keepStrongestFocus(actor)
     expect(combatPool(actor).map(m => m.value)).toEqual([3])
+  })
+
+  // An older focus without a category carries its bonus only as a custom effect
+  // (the foci of the provided archetypes, once the GM adds the effect by hand).
+  // The pool is computed as the actor prepares it: automatic bonus, custom
+  // effects, then the comparison, then the dice pool.
+  it("keeps only the strongest of two custom-effect foci without a category", () => {
+    const actor = makeActor()
+    const combat = actor.system.skills.spellcasting.spellCategory.combat
+    combat.base = 15
+    const effect = () => ({
+      0: {
+        target: "system.skills.spellcasting.spellCategory.combat", type: "rating", multiplier: 1
+      }
+    })
+    for (const focus of [makeFocus("Ancien focus 3", "spellcasting", "", 3, effect()), makeFocus("Ancien focus 2", "spellcasting", "", 2, effect())]) {
+      SR5_CharacterUtility.applyFocusBonus(focus, actor)
+      SR5_CharacterUtility.applyCustomEffects(focus, actor)
+    }
+    SR5_CharacterUtility.keepStrongestFocus(actor)
+    SR5_EntityHelpers.updateDicePool(combat, 0)
+    expect(combat.dicePool).toBe(18)
+    expect(combatPool(actor).map(m => m.source)).toEqual(["Ancien focus 3"])
   })
 })

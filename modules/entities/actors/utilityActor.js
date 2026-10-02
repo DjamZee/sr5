@@ -4449,7 +4449,13 @@ export class SR5_CharacterUtility extends Actor {
     let customTargets = Object.values(item.system.customEffects || {
     }).map(e => e.target)
     // SR5 p. 321: only one focus adds its Force to a given test, the strongest one is kept.
+    // Two power foci fall under the same rule (DjamZ, 2026-10-02): the exception of p. 322 only lets a power focus stack with a spell focus.
     actor._sr5FocusTargets ??= new Set()
+    // An older focus without a category carries its bonus only as a custom effect: its tests are compared too.
+    for (let path of customTargets) {
+      let property = SR5_EntityHelpers.resolveObjectPath(path, actor)
+      if (Array.isArray(property?.modifiers)) actor._sr5FocusTargets.add(property)
+    }
     for (let target of targets) {
       actor._sr5FocusTargets.add(target.property)
       if (customTargets.includes(target.path)) continue
