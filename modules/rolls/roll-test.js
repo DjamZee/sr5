@@ -227,35 +227,18 @@ export class SR5_RollTest {
     let rollRoll = await roll.evaluate()
     let rollJSON = await roll.toJSON(rollRoll)
     //Glitch
-    let totalGlitch = 0,
-      glitchRoll = false,
-      criticalGlitchRoll = false,
-      realHits = 0
+    let realHits = 0
     for (let d of rollJSON.terms[0].results) {
-      if (d.result === 1) {
-        d.glitch = true
-        totalGlitch ++
-      }
+      if (d.result === 1) d.glitch = true
       if (edgeRoll) d.edge = true
       if (d.result >= 5) realHits ++
-    }
-
-    // SR5 p. 47: more than half the dice show 1 is a glitch; a glitch with no hit is a critical glitch.
-    // A serialized Die term has no total, so count the hits rolled (a limit never brings them to 0).
-    if (totalGlitch > dicePool/2){
-      glitchRoll = true
-      if (realHits === 0) {
-        glitchRoll = false
-        criticalGlitchRoll = true
-      }
     }
 
     let rollResult = {
       dicePool: dicePool,
       hits: rollRoll.total,
       realHits: realHits,
-      glitchRoll: glitchRoll,
-      criticalGlitchRoll: criticalGlitchRoll,
+      ...SR5_RollTest.glitchStatus(rollJSON.terms[0].results, dicePool),
       dices: rollJSON.terms[0].results,
       limit: limit,
       rollMode: rollMode,
@@ -264,6 +247,21 @@ export class SR5_RollTest {
     }
 
     return rollResult
+  }
+
+  /** SR5 p. 47: more than half the dice show 1 is a glitch; a glitch with no hit is a critical glitch.
+   * Hits are counted on the dice rolled (a serialized Die term has no total, and a limit never brings them to 0).
+   * @param {Array} dices - Results of every die rolled for the test
+   * @param {Number} dicePool - Number of dice in the pool
+   */
+  static glitchStatus(dices, dicePool) {
+    let ones = dices.filter(d => d.result === 1).length,
+      hits = dices.filter(d => d.result >= 5).length,
+      glitch = ones > dicePool/2
+    return {
+      glitchRoll: glitch && hits > 0,
+      criticalGlitchRoll: glitch && hits === 0,
+    }
   }
 
   //Handle extended roll
@@ -286,6 +284,10 @@ export class SR5_RollTest {
     let newMessage = foundry.utils.duplicate(messageData)
     newMessage.roll.hits = messageData.roll.hits + newRoll.hits
     newMessage.roll.dices = dicesTotal
+    //Each roll of an extended test can glitch on its own (SR5 p. 47, 51)
+    newMessage.roll.glitchRoll = newRoll.glitchRoll
+    newMessage.roll.criticalGlitchRoll = newRoll.criticalGlitchRoll
+    delete newMessage.roll.criticalGlitchDamage
     newMessage.test.extended.roll += 1
     if (typeof newMessage.originalModifiers === 'undefined') {
       newMessage.originalModifiers = messageData.dicePool.modifiersTotal
@@ -367,6 +369,8 @@ export class SR5_RollTest {
     newMessage.roll.hits = originalHits + newRoll.hits
     newMessage.roll.realHits = originalHits + newRoll.realHits
     newMessage.roll.dices = messageData.roll.dices.concat(newRoll.dices)
+    //The Edge dice join the pool: glitch is read again on every die rolled (SR5 p. 47, 58)
+    Object.assign(newMessage.roll, SR5_RollTest.glitchStatus(newMessage.roll.dices, messageData.dicePool.value + dicePool))
     newMessage.edge.hasUsedPushTheLimit = true
     newMessage.edge.canUseEdge = false
     newMessage.dicePool.modifiers.push({
@@ -480,6 +484,8 @@ export class SR5_RollTest {
       if (!cardData.test.extended.roll) cardData.test.extended.roll = 1
       cardData.test.extended.intervalValue = cardData.test.extended.multiplier * cardData.test.extended.roll
       if (cardData.dicePool.value <= 1) cardData.test.isExtended = false
+      //SR5 p. 51: a critical glitch fails the extended test, no more rolls
+      if (cardData.roll.criticalGlitchRoll) cardData.test.isExtended = false
     }
 
     switch (cardData.test.type) {
