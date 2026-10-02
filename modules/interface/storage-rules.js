@@ -78,8 +78,9 @@ export function isStoredAway(item, actor) {
 
 /**
  * Actors with nothing to take gear out of a bag with: another storage, a
- * device (a piece of electronics, SR5 p. 216), and the Matrix entities that
- * have no body in the physical world, sprites and agents.
+ * device (a piece of equipment working as part of a network, SR5 p. 215),
+ * and the Matrix entities that have no body in the physical world, agents
+ * (SR5 p. 215) and sprites (SR5 p. 216).
  */
 export const NOT_LOOTERS = ["actorStorage", "actorDevice", "actorSprite", "actorAgent"]
 

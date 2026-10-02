@@ -364,6 +364,59 @@ export class SR5ShopFence {
   }
 
   /**
+   * Have a sale card cashed by one browser only.
+   *
+   * A mark on the message cannot keep two browsers apart: each reads it
+   * before the other's has arrived, and a sale of part of a stack would be
+   * paid twice. A player may not even write that mark on a card the game
+   * master posted. So the work is always done by the game master core
+   * designates, `game.users.activeGM`, as for table payout cards; anyone
+   * else asks it through the system's socket.
+   *
+   * @param {ChatMessage} message
+   * @param {Actor} actor  the seller
+   */
+  static async requestCash(message, actor) {
+    const designated = game.users?.activeGM
+    if (designated?.isSelf) return SR5ShopFence.cash(message, actor)
+    if (!designated) {
+      // Nobody to ask: a seller may still cash a card they posted themselves
+      if (message.canUserModify?.(game.user, 'update') === false) {
+        ui.notifications.warn(game.i18n.localize('SR5.WARN_ShopNeedsGM'))
+        return false
+      }
+      return SR5ShopFence.cash(message, actor)
+    }
+    await game.socket.emit('system.sr5', {
+      type: 'shopFenceCash',
+      userId: designated.id,
+      data: {
+        messageId: message.id, actorId: actor.id, requesterId: game.user.id
+      }
+    })
+    return true
+  }
+
+  /**
+   * Cash a sale card a player asked for, on the designated game master.
+   * Only for the seller's own card, and only if the player owns the seller.
+   * @param {object} socketMessage
+   * @param {object} socketMessage.data
+   */
+  static async socketCash({
+    data
+  }) {
+    if (!game.user.isGM) return
+    const message = game.messages.get(data.messageId)
+    const actor = game.actors.get(data.actorId)
+    const requester = game.users.get(data.requesterId)
+    if (!message || !actor || !requester) return
+    if (message.flags?.sr5fence?.buyerId !== actor.id) return
+    if (!actor.testUserPermission(requester, 'OWNER')) return
+    await SR5ShopFence.cash(message, actor)
+  }
+
+  /**
    * Wire the "cash the sale" button of a fence card.
    *
    * The button is disabled as soon as it is clicked, before anything is
@@ -385,7 +438,7 @@ export class SR5ShopFence {
           return
         }
         el.disabled = true
-        await SR5ShopFence.cash(message, actor)
+        await SR5ShopFence.requestCash(message, actor)
       })
     })
   }
