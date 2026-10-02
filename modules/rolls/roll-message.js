@@ -264,8 +264,18 @@ export class SR5_RollMessage {
         break
       }
       case "damage":
-        if (messageData.test.typeSub === "firstAid") targetActor.takeDamage(messageData)
-        else if (messageData.combat.calledShot?.name === "splittingDamage") actor.takeSplitDamage(messageData)
+        if (messageData.test.typeSub === "firstAid") {
+          //SR5 p. 207: the 1D3 of a critical glitch needs a damage type, asked again if the first dialog was cancelled
+          if (!messageData.damage.type) {
+            let damageType = await SR5_CombatHelpers.chooseDamageType()
+            if (!damageType) return
+            messageData.damage.type = damageType
+          }
+          targetActor.takeDamage(messageData)
+          SR5_RollMessage.updateChatButtonHelper(messageId, type, messageData.damage.type)
+          break
+        }
+        if (messageData.combat.calledShot?.name === "splittingDamage") actor.takeSplitDamage(messageData)
         else actor.takeDamage(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
@@ -564,7 +574,7 @@ export class SR5_RollMessage {
           if (messageData.damage.splittedTwo){
             messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.damage.splittedOne}${game.i18n.localize('SR5.DamageTypeStunShort')} & ${messageData.damage.splittedTwo}${game.i18n.localize('SR5.DamageTypePhysicalShort')} ${game.i18n.localize("SR5.AppliedDamage")}`)
           } else messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.damage.splittedOne}${game.i18n.localize('SR5.DamageTypeStunShort')} ${game.i18n.localize("SR5.AppliedDamage")}`)
-        } else messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.damage.value}${game.i18n.localize(SR5.damageTypesShort[messageData.damage.type])} ${game.i18n.localize("SR5.AppliedDamage")}`)
+        } else messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.damage.value}${game.i18n.localize(SR5.damageTypesShort[firstOption ?? messageData.damage.type])} ${game.i18n.localize("SR5.AppliedDamage")}`)
         break
       case "takeMatrixDamage":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.damage.matrix.value} ${game.i18n.localize("SR5.AppliedDamage")}`)
@@ -660,7 +670,7 @@ export class SR5_RollMessage {
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.roll.netHits} ${game.i18n.localize("SR5.HealedBox")}`)
         break
       case "heal":
-        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.roll.hits}${game.i18n.localize(SR5.damageTypesShort[messageData.test.typeSub])} ${game.i18n.localize("SR5.Healed")}`)
+        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.roll.netHits}${game.i18n.localize(SR5.damageTypesShort[messageData.test.typeSub])} ${game.i18n.localize("SR5.Healed")}`)
         messageData.extendedTest = false
         break
       case "firstAid":

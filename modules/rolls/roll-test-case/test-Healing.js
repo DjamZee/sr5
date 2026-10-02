@@ -25,9 +25,17 @@ export default async function healingInfo(cardData){
       hits: cardData.damage.value, damageType: (game.i18n.localize(SR5.damageTypesShort[cardData.test.typeSub]))
     })}`)
   }
-  //SR5 p. 51: a critical glitch loses the extended test, nothing is healed
-  if (cardData.roll.hits > 0 && !cardData.roll.criticalGlitchRoll) cardData.chatCard.buttons.heal = SR5_RollMessage.generateChatButton("nonOpposedTest", "heal", `${game.i18n.format('SR5.HealButton', {
-    hits: cardData.roll.hits, damageType: (game.i18n.localize(SR5.damageTypesShort[cardData.test.typeSub]))
+  //SR5 p. 51: a critical glitch ends the test and its own roll heals nothing. But the boxes healed by the earlier
+  //rolls stay healed: in the example of p. 208, Full Deck "a donc guéri de 3 cases", then the 1D3 adds 2, "pour un total actuel de 3 cases"
+  cardData.roll.netHits = cardData.roll.criticalGlitchRoll ? earlierRollsHits(cardData.roll) : cardData.roll.hits
+  if (cardData.roll.netHits > 0) cardData.chatCard.buttons.heal = SR5_RollMessage.generateChatButton("nonOpposedTest", "heal", `${game.i18n.format('SR5.HealButton', {
+    hits: cardData.roll.netHits, damageType: (game.i18n.localize(SR5.damageTypesShort[cardData.test.typeSub]))
   })}`)
-  cardData.roll.netHits = cardData.roll.hits
+}
+
+//Hits kept from the earlier rolls of an extended test: the total less this roll's own dice, Edge dice included
+//(a later roll keeps its own dice in rollDices, the first roll has none)
+function earlierRollsHits(roll) {
+  if (!roll.rollDices) return 0
+  return Math.max(0, roll.hits - roll.rollDices.filter(d => d.result >= 5).length)
 }

@@ -84,11 +84,13 @@ export default async function skillInfo(cardData){
         }
         cardData.damage.value = cardData.roll.criticalGlitchDamage.value
         cardData.damage.type = cardData.roll.criticalGlitchDamage.type
+        //The type dialog may have been cancelled: the button then asks for it when clicked
+        let damageType = cardData.damage.type ? game.i18n.localize(SR5.damageTypesShort[cardData.damage.type]) : ""
         if (cardData.target.hasTarget) cardData.chatCard.buttons.damage = SR5_RollMessage.generateChatButton("nonOpposedTest", "damage", `${game.i18n.format('SR5.HealButtonFailed', {
-          hits: cardData.damage.value, damageType: (game.i18n.localize(SR5.damageTypesShort[cardData.damage.type]))
+          hits: cardData.damage.value, damageType: damageType
         })}`)
         else cardData.chatCard.buttons.damage = SR5_RollMessage.generateChatButton("opposedTest", "damage", `${game.i18n.format('SR5.HealButtonFailed', {
-          hits: cardData.damage.value, damageType: (game.i18n.localize(SR5.damageTypesShort[cardData.damage.type]))
+          hits: cardData.damage.value, damageType: damageType
         })}`)
       } else if (cardData.roll.hits > 2) {
         cardData.roll.netHits = cardData.roll.hits - 2
