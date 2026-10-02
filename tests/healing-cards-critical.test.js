@@ -85,7 +85,7 @@ async function cardFrom(rolled) {
           ...roll, originalRoll: null, r: null
         })),
         dicePool: {
-          value: rolled.length, modifiers: []
+          base: rolled.length, value: rolled.length, modifiers: []
         },
         limit: {
           value: 0
@@ -127,6 +127,8 @@ describe('Healing critical glitch (SR5 p. 208)', () => {
   // SR5 p. 208, example: 4 boxes, "a donc guéri de 3 cases", the 1D3 adds 2, "pour un total actuel de 3 cases"
   it('a critical glitch on a later roll still heals the hits of the earlier rolls', async () => {
     const message = await cardFrom([5, 5, 5, 2])
+    // The next roll rebuilds its pool from the base: 4 dice, minus 1 for the second roll (SR5 p. 50)
+    SR5_RollTestHelper.handleDicePoolModifiers.mockRestore()
     faces = [1, 1, 2]
     await SR5_RollTest.extendedRoll(message, {
       id: 'a1'
