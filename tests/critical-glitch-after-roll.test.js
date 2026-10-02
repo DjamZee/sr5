@@ -181,7 +181,7 @@ describe('Healing critical glitch (SR5 p. 208)', () => {
       },
       test: {
         typeSub: 'physical', extended: {
-          intervalValue: 1
+          intervalValue: 1, multiplier: 1, roll: 1
         }
       },
       damage: {
@@ -201,6 +201,7 @@ describe('Healing critical glitch (SR5 p. 208)', () => {
     }
     await healingInfo(card)
     expect(card.damage.value).toBe(2)
+    expect(card.test.extended.intervalValue).toBe(2)
   })
 
   it('offers no healing on a critical glitch', async () => {
