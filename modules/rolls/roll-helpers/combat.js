@@ -20,13 +20,18 @@ export class SR5_CombatHelpers {
     visibility:0, light:0, glare:0, wind:0
   }, melee = false, weaponLight = 0){
     let actorData = actor.itemsProperties.environmentalMod
-    let visibilityMod = Math.min(Math.max(parseInt(scene.getFlag("sr5", "environModVisibility")) + areaEffect.visibility + actorData.visibility.value, 0), 4)
-    let lightMod = Math.min(Math.max(parseInt(scene.getFlag("sr5", "environModLight")) + areaEffect.light + actorData.light.value + weaponLight, 0), 4)
+    // A scene whose SR5 tab was never saved has no flags, and an area effect may set a single column: a
+    // missing value is the "normal" row of its column (0, SR5 p. 176). Left as NaN, it made Math.max return
+    // NaN, which environmentalLineToMod turns into 0 - the whole modifier vanished, darkness included.
+    const row = value => parseInt(value) || 0
+    const sceneRow = key => row(scene?.getFlag("sr5", key))
+    let visibilityMod = Math.min(Math.max(sceneRow("environModVisibility") + row(areaEffect.visibility) + row(actorData.visibility.value), 0), 4)
+    let lightMod = Math.min(Math.max(sceneRow("environModLight") + row(areaEffect.light) + row(actorData.light.value) + weaponLight, 0), 4)
     // SR5 p. 177: low-light vision treats partial light (1) and dim light (2) as full light; it does nothing in total darkness (3)
-    let sceneLight = parseInt(scene.getFlag("sr5", "environModLight")) + areaEffect.light
+    let sceneLight = sceneRow("environModLight") + row(areaEffect.light)
     if (actor.visions.lowLight.isActive && sceneLight > 0 && sceneLight <= 2) lightMod = 0
-    let glareMod = Math.min(Math.max(parseInt(scene.getFlag("sr5", "environModGlare")) + areaEffect.glare + actorData.glare.value, 0), 4)
-    let windMod = Math.min(Math.max(parseInt(scene.getFlag("sr5", "environModWind")) + areaEffect.wind + actorData.wind.value, 0), 4)
+    let glareMod = Math.min(Math.max(sceneRow("environModGlare") + row(areaEffect.glare) + row(actorData.glare.value), 0), 4)
+    let windMod = Math.min(Math.max(sceneRow("environModWind") + row(areaEffect.wind) + row(actorData.wind.value), 0), 4)
 
     // SR5 p. 176: Light and Glare are a single column of the Environmental Modifiers table,
     // "LUMIERE / EBLOUISSEMENT", with one row per degree. The scene keeps them as two flags, so the
