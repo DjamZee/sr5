@@ -218,7 +218,8 @@ export class SR5ShopAvailability {
   }
 
   /**
-   * Roll `dice` d6 the SR5 way.
+   * Roll `dice` d6 the SR5 way. A glitch is more than half the dice showing
+   * 1, a critical glitch is a glitch with no hit (SR5 p. 47).
    * @returns {{hits: number, ones: number, glitch: boolean, criticalGlitch: boolean, faces: number[]}}
    */
   static async rollDice(dice) {
@@ -232,7 +233,7 @@ export class SR5ShopAvailability {
     const faces = roll.dice[0].results.map(r => r.result)
     const hits = faces.filter(f => f >= 5).length
     const ones = faces.filter(f => f === 1).length
-    const glitch = ones * 2 >= count
+    const glitch = ones * 2 > count
     return {
       hits, ones, glitch, criticalGlitch: glitch && hits === 0, faces, roll,
     }
