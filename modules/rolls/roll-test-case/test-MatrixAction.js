@@ -46,7 +46,11 @@ export default async function matrixActionInfo(cardData, actorId){
     cardData.test.title = `${game.i18n.localize("SR5.MatrixActionTest")}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize(SR5.matrixRolledActions.redefineOwnership)} (${threshold})`
     //A glitch adds Depth to the Overwatch Score, a critical glitch triggers convergence
     if (cardData.roll.criticalGlitchRoll) ui.notifications.warn(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.INFO_RedefineOwnershipConvergence")}`)
-    else if (cardData.roll.glitchRoll) await raiseOverwatchScore(depth, actor)
+    //Raised once per roll: Second Chance and Push the limit refresh the same roll (SR5 p. 58)
+    else if (cardData.roll.glitchRoll && !cardData.roll.overwatchRaised) {
+      cardData.roll.overwatchRaised = true
+      await raiseOverwatchScore(depth, actor)
+    }
     if (threshold > 0 && cardData.roll.hits >= threshold) {
       cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.format("SR5.MatrixActionRedefineOwnershipSuccess", {
         depth: depth

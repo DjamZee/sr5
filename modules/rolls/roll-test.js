@@ -284,10 +284,13 @@ export class SR5_RollTest {
     let newMessage = foundry.utils.duplicate(messageData)
     newMessage.roll.hits = messageData.roll.hits + newRoll.hits
     newMessage.roll.dices = dicesTotal
+    //Earlier glitches stay counted for the whole test (SR5 p. 208: each glitched healing roll counts double)
+    if (messageData.roll.glitchRoll || messageData.roll.criticalGlitchRoll) newMessage.test.extended.glitchedRolls = (messageData.test.extended.glitchedRolls || 0) + 1
     //Each roll of an extended test can glitch on its own (SR5 p. 47, 51)
     newMessage.roll.glitchRoll = newRoll.glitchRoll
     newMessage.roll.criticalGlitchRoll = newRoll.criticalGlitchRoll
     delete newMessage.roll.criticalGlitchDamage
+    delete newMessage.roll.overwatchRaised
     newMessage.test.extended.roll += 1
     if (typeof newMessage.originalModifiers === 'undefined') {
       newMessage.originalModifiers = messageData.dicePool.modifiersTotal
@@ -484,8 +487,8 @@ export class SR5_RollTest {
       if (!cardData.test.extended.roll) cardData.test.extended.roll = 1
       cardData.test.extended.intervalValue = cardData.test.extended.multiplier * cardData.test.extended.roll
       if (cardData.dicePool.value <= 1) cardData.test.isExtended = false
-      //SR5 p. 51: a critical glitch fails the extended test, no more rolls
-      if (cardData.roll.criticalGlitchRoll) cardData.test.isExtended = false
+      //SR5 p. 51: a critical glitch fails the extended test, no more rolls. The card hides "New roll" instead of
+      //ending the test here, so Edge spent after the roll (SR5 p. 58) can reopen it by erasing the critical glitch
     }
 
     switch (cardData.test.type) {
