@@ -831,7 +831,10 @@ export class SR5_ActorHelper {
         "prototypeToken.width": 0.5,
         "prototypeToken.height": 0.5,
         "prototypeToken.movementAction": "displace",
-        "items": storedItems.map(i => i.toObject(false)),
+        // Their source, not their prepared data: the character's preparation
+        // holds what is stored away inactive (an armour at the stash protects
+        // nobody), and that must not become what the item is
+        "items": storedItems.map(i => i.toObject()),
       })
     }
 
