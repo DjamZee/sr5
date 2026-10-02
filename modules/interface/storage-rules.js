@@ -77,6 +77,18 @@ export function isStoredAway(item, actor) {
 }
 
 /**
+ * Actors with nothing to take gear out of a bag with: another storage, a
+ * device (a piece of electronics, SR5 p. 216), and the Matrix entities that
+ * have no body in the physical world, sprites and agents.
+ */
+export const NOT_LOOTERS = ["actorStorage", "actorDevice", "actorSprite", "actorAgent"]
+
+/** Whether this actor can go through a storage put down on the map. */
+export function canLoot(actor) {
+  return Boolean(actor) && !NOT_LOOTERS.includes(actor.type)
+}
+
+/**
  * What the rule asks of this garage, from the vehicle it is meant to hold:
  * a minimum lifestyle, a monthly cost and a cost in lifestyle points
  * (Run Faster p. 216). Null when the storage asks nothing.
