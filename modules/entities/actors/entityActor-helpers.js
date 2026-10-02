@@ -890,6 +890,28 @@ export class SR5_ActorHelper {
     modifiedItem.system.tokenImg = proto.texture?.src || ""
   }
 
+  /**
+   * What a storage put down holds, as it lies on the map.
+   *
+   * Storages used to be put down as unlinked tokens: what was taken out
+   * through the token left the token only, and the actor in the sidebar still
+   * holds the lot. Such a bag is read from its token, the current scene's
+   * first, so picking it up gives back only what is still in it. A linked
+   * token is the actor itself.
+   *
+   * @param {object} actor  the storage, as a document or a plain object
+   * @returns {Array}
+   */
+  static storageContentsOnMap(actor){
+    const actorId = actor._id ?? actor.id
+    const scenes = [canvas?.scene, ...(game.scenes ?? [])].filter(Boolean)
+    for (const scene of scenes) {
+      const token = scene.tokens?.find(t => t.actorId === actorId && !t.actorLink && t.actor)
+      if (token) return [...token.actor.items]
+    }
+    return [...(actor.items ?? [])]
+  }
+
   //Dismiss sidekick : update his parent item and then delete actor
   static async dimissSidekick(actor){
     let ownerActor = SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId)
@@ -1094,7 +1116,7 @@ export class SR5_ActorHelper {
       modifiedItem.system.deployedActorId = ""
       SR5_ActorHelper.rememberSidekickToken(modifiedItem, actor)
       // Whatever is in it comes back to the character, still stored in it
-      const contents = (actor.items ?? []).map(i => {
+      const contents = SR5_ActorHelper.storageContentsOnMap(actor).map(i => {
         const data = typeof i.toObject === "function" ? i.toObject(false) : foundry.utils.duplicate(i)
         data.system.storedIn = actor.system.creatorItemId
         return data
