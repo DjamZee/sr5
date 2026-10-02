@@ -2584,6 +2584,7 @@ export class SR5_CharacterUtility extends Actor {
           actorData.skills[key].test.base = 0
           if (actorData.skills[key].rating.base > 0) SR5_EntityHelpers.updateModifier(actorData.skills[key].test, `${game.i18n.localize(SR5.skills[key])}`, "skillRating", actorData.skills[key].rating.base)
           actorData.skills[key].test.modifiers = actorData.skills[key].test.modifiers.concat(actorData.skills[key].rating.modifiers)
+          this.keepStrongestFocusOn(actorData.skills[key].test)
         } else {
           if (actorData.skills[key].canDefault) {
             actorData.skills[key].test.base = 0
@@ -2618,6 +2619,8 @@ export class SR5_CharacterUtility extends Actor {
         if (actorData.skills.counterspelling.rating.value > 0) actorData.skills.counterspelling.spellCategory[key].modifiers = actorData.skills.counterspelling.spellCategory[key].modifiers.concat(actorData.skills.counterspelling.test.modifiers)
         if (actorData.skills.ritualSpellcasting.rating.value > 0) actorData.skills.ritualSpellcasting.spellCategory[key].modifiers = actorData.skills.ritualSpellcasting.spellCategory[key].modifiers.concat(actorData.skills.ritualSpellcasting.test.modifiers)
         if (actorData.skills.alchemy.rating.value > 0) actorData.skills.alchemy.spellCategory[key].modifiers = actorData.skills.alchemy.spellCategory[key].modifiers.concat(actorData.skills.alchemy.test.modifiers)
+        // SR5 p. 321: a focus on the whole skill and a focus on this category add to the same test
+        for (let skill of ["spellcasting", "counterspelling", "ritualSpellcasting", "alchemy"]) this.keepStrongestFocusOn(actorData.skills[skill].spellCategory[key])
         SR5_EntityHelpers.updateDicePool(actorData.skills.spellcasting.spellCategory[key], 0)
         SR5_EntityHelpers.updateDicePool(actorData.skills.counterspelling.spellCategory[key], 0)
         SR5_EntityHelpers.updateDicePool(actorData.skills.ritualSpellcasting.spellCategory[key], 0)
@@ -2628,6 +2631,7 @@ export class SR5_CharacterUtility extends Actor {
         actorData.skills.summoning.spiritType[key].modifiers = actorData.skills.summoning.spiritType[key].modifiers.concat(actorData.skills.summoning.test.modifiers)
         actorData.skills.binding.spiritType[key].modifiers = actorData.skills.binding.spiritType[key].modifiers.concat(actorData.skills.binding.test.modifiers)
         actorData.skills.banishing.spiritType[key].modifiers = actorData.skills.banishing.spiritType[key].modifiers.concat(actorData.skills.banishing.test.modifiers)
+        for (let skill of ["summoning", "binding", "banishing"]) this.keepStrongestFocusOn(actorData.skills[skill].spiritType[key])
         SR5_EntityHelpers.updateDicePool(actorData.skills.summoning.spiritType[key], 0)
         SR5_EntityHelpers.updateDicePool(actorData.skills.binding.spiritType[key], 0)
         SR5_EntityHelpers.updateDicePool(actorData.skills.banishing.spiritType[key], 0)
@@ -4427,8 +4431,9 @@ export class SR5_CharacterUtility extends Actor {
         })
         break
       case "power":
+        // Natural and augmented Magic are the same rating for a focus: a custom effect on either replaces the automatic bonus.
         if (actorData.specialAttributes?.magic) targets.push({
-          path: "system.specialAttributes.magic.augmented", property: actorData.specialAttributes.magic.augmented
+          path: "system.specialAttributes.magic.augmented", property: actorData.specialAttributes.magic.augmented, aliases: ["system.specialAttributes.magic.natural"]
         })
         break
       case "centering":
@@ -4440,6 +4445,9 @@ export class SR5_CharacterUtility extends Actor {
         if (actorData.magic?.metamagics?.spellShapingValue) targets.push({
           path: "system.magic.metamagics.spellShapingValue", property: actorData.magic.metamagics.spellShapingValue
         })
+        break
+      case "":
+        // A focus whose type was never chosen has no automatic bonus, but its custom effects are compared below
         break
       default:
         // weapon, sustaining and qi foci have their own handling; masking and flexibleSignature have no pool in the system
@@ -4458,7 +4466,7 @@ export class SR5_CharacterUtility extends Actor {
     }
     for (let target of targets) {
       actor._sr5FocusTargets.add(target.property)
-      if (customTargets.includes(target.path)) continue
+      if ([target.path, ...(target.aliases || [])].some(path => customTargets.includes(path))) continue
       let modifiers = target.property.modifiers
       if (!Array.isArray(modifiers)) continue
       let index = modifiers.findIndex(m => m.type === "itemFocus" && m.value > 0 && !m.isMultiplier)
@@ -4471,14 +4479,23 @@ export class SR5_CharacterUtility extends Actor {
 
   // A focus carrying its bonus as a custom effect is read after the automatic bonus of
   // the foci before it: once all items are read, keep only the strongest focus per test.
+  // Natural Magic feeds augmented Magic: a focus on each would both count, so they are compared together.
   static keepStrongestFocus(actor) {
-    for (let property of actor._sr5FocusTargets || []) {
-      let foci = property.modifiers.filter(m => m.type === "itemFocus" && m.value > 0 && !m.isMultiplier)
-      if (foci.length < 2) continue
-      let strongest = foci.reduce((a, b) => (b.value > a.value ? b : a))
-      for (let focus of foci) if (focus !== strongest) property.modifiers.splice(property.modifiers.indexOf(focus), 1)
-    }
+    let targets = actor._sr5FocusTargets || new Set(), magic = actor.system.specialAttributes?.magic
+    let magicRatings = magic ? [magic.natural, magic.augmented].filter(p => Array.isArray(p?.modifiers)) : []
+    for (let property of targets) if (!magicRatings.includes(property)) this.keepStrongestFocusOn(property)
+    if (magicRatings.some(p => targets.has(p))) this.keepStrongestFocusOn(...magicRatings)
     delete actor._sr5FocusTargets
+  }
+
+  // SR5 p. 321: among the foci adding their Force to the same test, only the strongest is kept.
+  static keepStrongestFocusOn(...properties) {
+    let foci = properties.flatMap(property => property.modifiers.filter(m => m.type === "itemFocus" && m.value > 0 && !m.isMultiplier).map(modifier => ({
+      property, modifier
+    })))
+    if (foci.length < 2) return
+    let strongest = foci.reduce((a, b) => (b.modifier.value > a.modifier.value ? b : a))
+    for (let focus of foci) if (focus !== strongest) focus.property.modifiers.splice(focus.property.modifiers.indexOf(focus.modifier), 1)
   }
 
   // SR5 p. 246-248: the rules of a program are known by its name. An active program named like one of the

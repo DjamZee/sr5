@@ -7,6 +7,9 @@ import {
 import {
   SR5_EntityHelpers
 } from "../modules/entities/helpers.js"
+import {
+  SR5
+} from "../modules/config.js"
 
 function makeActor() {
   return {
@@ -127,5 +130,105 @@ describe("Focus — a single focus adds its Force to a given test", () => {
     SR5_EntityHelpers.updateDicePool(combat, 0)
     expect(combat.dicePool).toBe(18)
     expect(combatPool(actor).map(m => m.source)).toEqual(["Ancien focus 3"])
+  })
+})
+
+// The whole chain the actor runs: foci, custom effects, comparison, then Magic
+// and the skill pools. Magic 6, Spellcasting 5: a bare spell pool is 11.
+function makeMagician() {
+  const pools = keys => Object.fromEntries(Object.keys(keys).map(k => [k, {
+    base: 0, modifiers: []
+  }]))
+  const skill = rating => ({
+    skillGroup: "", linkedAttribute: "magic", canDefault: false, rating: {
+      base: rating, modifiers: []
+    }, test: {
+      base: 0, modifiers: []
+    }, limit: {
+      base: "astral", modifiers: []
+    },
+    spellCategory: pools(SR5.spellCategories), spiritType: pools(SR5.spiritTypes), perceptionType: Object.fromEntries(Object.keys(SR5.perceptionTypes).map(k => [k, {
+      test: {
+        base: 0, modifiers: []
+      }, limit: {
+        base: 0, modifiers: []
+      }
+    }])),
+  })
+  return {
+    type: "actorSpirit", system: {
+      specialAttributes: {
+        magic: {
+          natural: {
+            base: 6, modifiers: []
+          }, augmented: {
+            base: 0, modifiers: []
+          }
+        }
+      },
+      skills: Object.fromEntries(["spellcasting", "counterspelling", "ritualSpellcasting", "alchemy", "summoning", "binding", "banishing", "perception"].map(k => [k, skill(k === "spellcasting" ? 5 : 0)])),
+      magic: {
+        bgCount: {
+          value: 0
+        }
+      },
+      limits: {
+      },
+    },
+  }
+}
+
+function prepare(actor, foci) {
+  for (const focus of foci) {
+    SR5_CharacterUtility.applyFocusBonus(focus, actor)
+    SR5_CharacterUtility.applyCustomEffects(focus, actor)
+  }
+  SR5_CharacterUtility.keepStrongestFocus(actor)
+  SR5_CharacterUtility.updateSpecialAttributes(actor)
+  SR5_CharacterUtility.updateSkills(actor)
+  return actor.system
+}
+
+const onTarget = target => ({
+  0: {
+    target, type: "rating", multiplier: 1
+  }
+})
+const NATURAL_MAGIC = "system.specialAttributes.magic.natural"
+const SPELLCASTING = "system.skills.spellcasting.test"
+const COMBAT = "system.skills.spellcasting.spellCategory.combat"
+
+describe("Focus — the strongest is kept on every path to the same test", () => {
+
+  // DjamZ, 2026-09-26: a power focus never counts twice.
+  it("counts a power focus on natural Magic once", () => {
+    const data = prepare(makeMagician(), [makeFocus("Pouvoir 3", "power", "", 3, onTarget(NATURAL_MAGIC))])
+    expect(data.specialAttributes.magic.augmented.value).toBe(9)
+  })
+
+  it("keeps the strongest of two power foci on natural Magic", () => {
+    const data = prepare(makeMagician(), [makeFocus("Pouvoir 3", "power", "", 3, onTarget(NATURAL_MAGIC)), makeFocus("Pouvoir 2", "power", "", 2, onTarget(NATURAL_MAGIC))])
+    expect(data.specialAttributes.magic.augmented.value).toBe(9)
+  })
+
+  it("compares a power focus on natural Magic with one on augmented Magic", () => {
+    const data = prepare(makeMagician(), [makeFocus("Pouvoir 2", "power", "", 2), makeFocus("Pouvoir 3", "power", "", 3, onTarget(NATURAL_MAGIC))])
+    expect(data.specialAttributes.magic.augmented.value).toBe(9)
+  })
+
+  it("compares a focus on the whole skill with a focus on the category", () => {
+    const data = prepare(makeMagician(), [makeFocus("Ancien focus 3", "spellcasting", "", 3, onTarget(SPELLCASTING)), makeFocus("Focus Combat 2", "spellcasting", "combat", 2)])
+    expect(data.skills.spellcasting.spellCategory.combat.dicePool).toBe(14)
+  })
+
+  it("lets a weaker focus on the whole skill keep the other categories", () => {
+    const data = prepare(makeMagician(), [makeFocus("Ancien focus 2", "spellcasting", "", 2, onTarget(SPELLCASTING)), makeFocus("Focus Combat 3", "spellcasting", "combat", 3)])
+    expect(data.skills.spellcasting.spellCategory.combat.dicePool).toBe(14)
+    expect(data.skills.spellcasting.spellCategory.health.dicePool).toBe(13)
+  })
+
+  it("compares foci whose type was never chosen", () => {
+    const data = prepare(makeMagician(), [makeFocus("Focus sans type 3", "", "", 3, onTarget(COMBAT)), makeFocus("Focus sans type 2", "", "", 2, onTarget(COMBAT))])
+    expect(data.skills.spellcasting.spellCategory.combat.dicePool).toBe(14)
   })
 })
