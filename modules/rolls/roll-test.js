@@ -266,12 +266,25 @@ export class SR5_RollTest {
 
   //Handle extended roll
   static async extendedRoll(message, actor){
-    let messageData = message.flags.sr5data,
-      dicePool = messageData.dicePool.value - 1
+    let messageData = message.flags.sr5data
+
+    //Prepare new chat card: the base pool and its modifiers, minus one die per earlier roll (SR5 p. 50).
+    //Edge dice were added to the roll they were spent on, not to the next ones (SR5 p. 58)
+    let newMessage = foundry.utils.duplicate(messageData)
+    newMessage.test.extended.roll += 1
+    for (let type of ["edge", "pushTheLimit", "extendedTest"]) SR5_EntityHelpers.removeElementFromArray(newMessage.dicePool.modifiers, 'type', type)
+    delete newMessage.originalModifiers
+    newMessage.edge.hasUsedPushTheLimit = false
+    newMessage.dicePool.modifiers.push({
+      type: "extendedTest",
+      label: game.i18n.localize("SR5.ExtendedTest"),
+      value: -(newMessage.test.extended.roll - 1),
+    })
+    newMessage = await SR5_RollTestHelper.handleDicePoolModifiers(newMessage)
 
     //roll new test
     let newRoll = await SR5_RollTest.rollDice({
-      dicePool: dicePool, limit: messageData.limit.value 
+      dicePool: newMessage.dicePool.value, limit: messageData.limit.value
     })
 
     //Keep only original hits and concatenat with new hits
@@ -280,8 +293,6 @@ export class SR5_RollTest {
     })
     let dicesTotal = newRoll.dices.concat(dicesKeeped)
 
-    //Prepare new chat card
-    let newMessage = foundry.utils.duplicate(messageData)
     newMessage.roll.hits = messageData.roll.hits + newRoll.hits
     newMessage.roll.dices = dicesTotal
     //Edge spent after this roll works on this roll alone (SR5 p. 58): keep its own dice and hits apart from the kept ones
@@ -295,17 +306,6 @@ export class SR5_RollTest {
     newMessage.roll.criticalGlitchRoll = newRoll.criticalGlitchRoll
     delete newMessage.roll.criticalGlitchDamage
     delete newMessage.roll.overwatchRaised
-    newMessage.test.extended.roll += 1
-    if (typeof newMessage.originalModifiers === 'undefined') {
-      newMessage.originalModifiers = messageData.dicePool.modifiersTotal
-    }
-    SR5_EntityHelpers.removeElementFromArray(newMessage.dicePool.modifiers, 'type', 'extendedTest')
-    newMessage.dicePool.modifiers.push({
-      type: "extendedTest",
-      label: game.i18n.localize("SR5.ExtendedTest"),
-      value: -( - newMessage.originalModifiers + newMessage.test.extended.roll - 1),
-    })
-    newMessage = await SR5_RollTestHelper.handleDicePoolModifiers(newMessage)
     await SR5_RollTest.addInfoToCard(newMessage, actor.id)
 
     if (newMessage.owner.itemUuid) SR5_RollTestHelper.updateItemAfterRoll(newMessage, actor)

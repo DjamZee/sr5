@@ -67,7 +67,6 @@ beforeEach(() => {
   vi.restoreAllMocks()
   vi.spyOn(SR5_RollTest, 'addInfoToCard').mockImplementation(async () => {})
   vi.spyOn(SR5_RollTest, 'showDiceSoNice').mockImplementation(async () => {})
-  vi.spyOn(SR5_RollTestHelper, 'handleDicePoolModifiers').mockImplementation(async m => m)
   vi.spyOn(SR5_RollTestHelper, 'removeEdgeFromActor').mockImplementation(async () => {})
   vi.spyOn(SR5_RollMessage, 'updateRollCardHelper').mockImplementation(async (_id, m) => {
     updatedCard = m
@@ -89,7 +88,7 @@ async function cardFrom(rolled) {
           ...roll, originalRoll: null, r: null
         })),
         dicePool: {
-          value: rolled.length, modifiers: []
+          value: rolled.length, base: rolled.length, modifiers: []
         },
         limit: {
           value: 0
@@ -247,6 +246,76 @@ describe('Edge on a later roll of an extended test (SR5 p. 47, 58)', () => {
     faces = [5, 5]
     await SR5_RollTest.secondeChance(message, actor)
     expect(updatedCard.roll.hits).toBe(5)
+  })
+})
+
+describe('Dice pool of the next roll of an extended test (SR5 p. 50, 58)', () => {
+  const actor = {
+    id: 'a1', type: 'actorPc', system: {
+      specialAttributes: {
+        edge: {
+          augmented: {
+            value: 3
+          }
+        }
+      }
+    }
+  }
+
+  /** A first roll of `base` dice with these modifiers, its pool computed as the dialog does */
+  async function firstRoll(base, modifiers) {
+    const pool = base + modifiers.reduce((sum, m) => sum + m.value, 0)
+    const message = await cardFrom(Array(pool).fill(2))
+    Object.assign(message.flags.sr5data.dicePool, {
+      base, modifiers
+    })
+    await SR5_RollTestHelper.handleDicePoolModifiers(message.flags.sr5data)
+    return message
+  }
+
+  async function nextRoll(message) {
+    faces = Array(20).fill(2)
+    await SR5_RollTest.extendedRoll(message, actor)
+    return {
+      id: 'm1', flags: {
+        sr5data: JSON.parse(JSON.stringify(updatedCard))
+      }
+    }
+  }
+
+  it('Edge dice of a Push the limit after the roll are not rolled again', async () => {
+    let message = await firstRoll(6, [])
+    faces = [2, 2, 2]
+    await SR5_RollTest.pushTheLimit(message, actor)
+    message = await nextRoll({
+      id: 'm1', flags: {
+        sr5data: JSON.parse(JSON.stringify(updatedCard))
+      }
+    })
+    expect(message.flags.sr5data.roll.rollDices).toHaveLength(5)
+    expect(message.flags.sr5data.dicePool.value).toBe(5)
+    expect(message.flags.sr5data.edge.hasUsedPushTheLimit).toBe(false)
+  })
+
+  it('Edge dice of a Push the limit before the roll are not rolled again', async () => {
+    let message = await firstRoll(6, [{
+      type: 'edge', value: 3
+    }])
+    message = await nextRoll(message)
+    expect(message.flags.sr5data.roll.rollDices).toHaveLength(5)
+    expect(message.flags.sr5data.dicePool.value).toBe(5)
+  })
+
+  it('each later roll loses one die, other modifiers counted once', async () => {
+    let message = await firstRoll(8, [{
+      type: 'wounds', value: -2
+    }])
+    message = await nextRoll(message)
+    expect(message.flags.sr5data.roll.rollDices).toHaveLength(5)
+    expect(message.flags.sr5data.dicePool.value).toBe(5)
+    message = await nextRoll(message)
+    expect(message.flags.sr5data.roll.rollDices).toHaveLength(4)
+    expect(message.flags.sr5data.dicePool.value).toBe(4)
   })
 })
 
