@@ -253,6 +253,127 @@ describe('The card shows a pool below zero before the surcharge', () => {
   })
 })
 
+describe('Opposed social tests (SR5 p. 141-144)', async () => {
+  const {
+    default: skill
+  } = await import('../modules/rolls/roll-prepare-case/rollData-Skill.js')
+
+  const mod = (source, type, value) => ({
+    source, type, value
+  })
+  // A skill as the sheet prepares it: test.modifiers carries the linked
+  // attribute, the rating (or -1 for defaulting) and the penalties
+  const skillOf = (attribute, rating, wound = 0) => {
+    const modifiers = [mod('Attr', 'linkedAttribute', attribute),
+      rating ? mod('Skill', 'skillRating', rating) : mod('SR5.Defaulting', 'skillRating', -1)]
+    if (wound) modifiers.push(mod('Wounds', 'condition', wound))
+    return {
+      linkedAttribute: 'intuition',
+      rating: {
+        value: rating
+      },
+      test: {
+        modifiers
+      },
+      limit: {
+        value: 4, base: 'mentalLimit', modifiers: []
+      },
+    }
+  }
+  const actor = {
+    type: 'actorPc', name: 'Cible',
+    system: {
+      attributes: {
+        charisma: {
+          augmented: {
+            value: 4
+          }
+        },
+        willpower: {
+          augmented: {
+            value: 3
+          }
+        },
+        intuition: {
+          augmented: {
+            value: 5
+          }
+        },
+      },
+      limits: {
+        socialLimit: {
+          value: 5
+        }
+      },
+      skills: {
+        perception: skillOf(5, 0, -1),
+        leadership: skillOf(4, 0, -1),
+        intimidation: skillOf(4, 2, -1),
+        performance: skillOf(4, 0, -1),
+      },
+    },
+  }
+  const rollData = () => ({
+    test: {
+    },
+    dicePool: {
+      composition: [], modifiers: []
+    },
+    limit: {
+      modifiers: {
+      }
+    },
+    threshold: {
+    },
+    combat: {
+      actions: []
+    },
+    dialogSwitch: {
+    },
+    target: {
+    },
+    magic: {
+    },
+  })
+  const opposed = (typeSub, rollKey) => skill(rollData(), 'skillDicePool', rollKey, actor, {
+    test: {
+      isOpposed: true, typeSub
+    },
+    roll: {
+      hits: 2
+    },
+  })
+  const sources = data => data.dicePool.composition.map(m => m.source)
+  const woundsKept = data => data.dicePool.modifiers.some(m => m.type === 'condition' && m.value === -1)
+
+  it('Etiquette: Perception + Charisma, defaulting -1 kept, wounds kept', async () => {
+    const data = await opposed('etiquette', 'perception')
+    expect(data.dicePool.base).toBe(4 - 1)
+    expect(sources(data)).not.toContain('SR5.SkillPerception')
+    expect(sources(data)).toContain('SR5.Defaulting')
+    expect(woundsKept(data)).toBe(true)
+  })
+
+  it('Leadership: Leadership + Willpower, defaulting -1 kept, never labelled Perception', async () => {
+    const data = await opposed('leadership', 'leadership')
+    expect(data.dicePool.base).toBe(3 - 1)
+    expect(sources(data)).not.toContain('SR5.SkillPerception')
+    expect(woundsKept(data)).toBe(true)
+  })
+
+  it('Intimidation: Charisma + Willpower, as the title says', async () => {
+    const data = await opposed('intimidation', 'intimidation')
+    expect(data.dicePool.base).toBe(4 + 3)
+    expect(data.test.title).toContain('SR5.Charisma + SR5.Willpower')
+    expect(woundsKept(data)).toBe(true)
+  })
+
+  it('Performance: Charisma + Willpower', async () => {
+    const data = await opposed('performance', 'performance')
+    expect(data.dicePool.base).toBe(4 + 3)
+  })
+})
+
 describe('Delays take the singular: 1 jour, not 1 jours', () => {
   const read = name => JSON.parse(readFileSync(new URL(`../lang/${name}.json`, import.meta.url), 'utf8'))
   const delay = (lang, hours) => {
