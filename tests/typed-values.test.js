@@ -426,6 +426,48 @@ describe('drug interactions (Chrome Flesh p. 197)', () => {
     expect(written(actor, 'bliss').system.handleShot.duration).toBe(3)
   })
 
+  // Chrome Flesh p. 196: the interaction comes from ANOTHER drug, under effect or in its crash
+  const crashingBliss = () => drugItem('bliss', 'Bliss', 'bliss', {
+    wirelessTurnedOn: true,
+    handleShot: {
+      name: 'bliss', speed: 1, duration: 3, durationType: 'hour'
+    },
+  })
+  const activeJazz = () => drugItem('jazz', 'Jazz', 'jazz', {
+    isActive: true,
+    handleShot: {
+      name: 'jazz', duration: 30, durationType: 'minute', durationContrecoup: 30, durationContrecoupType: 'minute'
+    },
+    onUse: {
+      duration: '30 SR5.Minutes', contrecoup: ''
+    },
+  })
+
+  it('does not mix a drug retaken during its own crash with itself', async () => {
+    rollTotals()
+    const {
+      actor, sheet
+    } = drugSheet([crashingBliss()])
+
+    await take(sheet, 'bliss')
+
+    expect(rolled).toEqual([])
+    expect(written(actor, 'bliss').system.handleShot.duration).toBe(3)
+  })
+
+  it('doubles a drug retaken during its own crash only once, with one die for the other drug', async () => {
+    rollTotals(1)
+    const {
+      actor, sheet
+    } = drugSheet([crashingBliss(), activeJazz()])
+
+    await take(sheet, 'bliss')
+
+    expect(rolled).toEqual(['1d6'])
+    expect(written(actor, 'bliss').system.handleShot.duration).toBe(6)
+    expect(written(actor, 'jazz').system.handleShot.duration).toBe(60)
+  })
+
   // Every total of the table up to 13 has its own row: only 14+ inflicts 10P
   async function interactionDamage(total){
     rollTotals(30, total)

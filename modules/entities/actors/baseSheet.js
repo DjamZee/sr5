@@ -1252,8 +1252,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
               if (itemData.handleShot.speedType) speedType = game.i18n.localize(itemData.handleShot.speedType)
             }
 
-            // Handle interaction but reparsing so ...
-            let interactionDrug = actor.items.filter((d) => d.type === "itemDrug" && (d.system.isActive || d.system.wirelessTurnedOn))
+            //Chrome Flesh p. 196: an interaction comes from taking a drug while under the effect (or the crash) of
+            //ANOTHER one. The drug being taken is left out: retaken during its own crash, it is not another drug,
+            //and it would otherwise be counted twice in the mix, doubled twice and rolled one die too many
+            let interactionDrug = actor.items.filter((d) => d.type === "itemDrug" && d.id !== item._id && (d.system.isActive || d.system.wirelessTurnedOn))
             if (interactionDrug.length > 0) {
               let roll, interactionDiceResult, drugs = []
               roll = new Roll(`${interactionDrug.length}d6`)
