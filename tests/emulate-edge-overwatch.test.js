@@ -163,12 +163,29 @@ describe('Emulate and Edge (Data Trails p. 159, SR5 p. 57)', () => {
     expect(raise).toHaveBeenCalledWith(7, 'a1')
   })
 
-  it('Push the limit after the roll does not raise it by the rating again', async () => {
-    const message = await emulateCard([5, 2, 3, 1])
-    faces = [5, 2, 2]
+  it('Push the limit after the roll swaps the rating already added for the hits', async () => {
+    const message = await emulateCard([5, 5, 3, 1])
+    faces = [5, 6, 2]
     await SR5_RollTest.pushTheLimit(message, actor)
-    expect(updatedCard.roll.hits).toBe(2)
-    expect(raise).toHaveBeenCalledTimes(1)
-    expect(raise).toHaveBeenCalledWith(3, 'a1')
+    expect(updatedCard.roll.hits).toBe(4)
+    expect(raise.mock.calls).toEqual([[3, 'a1'], [1, 'a1']])
+    expect(updatedCard.roll.emulateRaised).toBe(4)
+    expect(updatedCard.test.title).toBe('Test (SR5.MatrixActionEmulate 3)')
+  })
+
+  it('the Overwatch Score goes down when the pushed test has fewer hits than the rating', async () => {
+    const message = await emulateCard([5, 2, 3, 1])
+    faces = [2, 2, 2]
+    await SR5_RollTest.pushTheLimit(message, actor)
+    expect(updatedCard.roll.hits).toBe(1)
+    expect(raise.mock.calls).toEqual([[3, 'a1'], [-2, 'a1']])
+  })
+
+  it('the card refreshed again after the push changes nothing more', async () => {
+    const message = await emulateCard([5, 5, 3, 1])
+    faces = [5, 6, 2]
+    await SR5_RollTest.pushTheLimit(message, actor)
+    await matrixActionInfo(updatedCard, 'a1')
+    expect(raise).toHaveBeenCalledTimes(2)
   })
 })
