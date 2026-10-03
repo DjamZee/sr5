@@ -120,3 +120,26 @@ describe('Emulate on a Matrix Search (Data Trails p. 159)', () => {
     expect(card.test.title).toBe('SR5.MatrixActionTestSR5.Colons SR5.MatrixActionMatrixSearch (2) (SR5.MatrixActionEmulate 3)')
   })
 })
+
+describe('The Overwatch Score never goes below 0 (SR5 p. 231)', () => {
+  it('a decrease larger than the score stops at 0', async () => {
+    await SR5_ActorHelper.overwatchIncrease(-4, 'a1')
+    expect(actor.system.matrix.overwatchScore).toBe(0)
+  })
+
+  it('a decrease within the score still lowers it', async () => {
+    actor.system.matrix.overwatchScore = 10
+    await SR5_ActorHelper.overwatchIncrease(-4, 'a1')
+    expect(actor.system.matrix.overwatchScore).toBe(6)
+  })
+
+  it('the GM side of the socket stops at 0 too', async () => {
+    actor.system.matrix.overwatchScore = 1
+    await SR5_ActorHelper._socketOverwatchIncrease({
+      data: {
+        defenseHits: -3, actorId: 'a1'
+      }
+    })
+    expect(actor.system.matrix.overwatchScore).toBe(0)
+  })
+})
