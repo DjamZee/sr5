@@ -1242,11 +1242,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
             let speedType = ""
 
-            if (!itemData.interact) {	
-              console.log("drug : " + item.name)						
-              // Generate the drug stat
-              drug = await SR5_CharacterUtility.handleDrugShots(item, drugType, actor.system)
-              itemData.handleShot = drug
+            //The stat above is the only one rolled: a second call rolled the random durations again
+            if (!itemData.interact) {
+              console.log("drug : " + item.name)
               itemData.onUse.duration = `${itemData.handleShot.duration} ${game.i18n.localize(SR5.extendedIntervals[itemData.handleShot.durationType])}`
               itemData.onUse.contrecoup = ""
 							
@@ -1261,73 +1259,43 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
               roll = new Roll(`${interactionDrug.length}d6`)
               interactionDiceResult = await roll.evaluate()
 
-              for (let d of interactionDrug){						
-                await d.update({
-                  "system.interact": true
-                })
+              //The drugs are changed in the item list, which the actor update below writes back: a separate
+              //update of each drug would be overwritten by it
+              let mixedDrugs = [item]
+              for (let d of interactionDrug){
+                let listedDrug = itemList.find(i => i._id === d.id)
+                listedDrug.system.interact = true
+                mixedDrugs.push(listedDrug)
                 drugs.push(d.name)
-                console.log("for (let d of interactionDrug) : " + JSON.stringify(d))
               }
 
               let damageInfo
 
               switch(interactionDiceResult.total){
                 case 1:
-                  // not working
+                  //Chrome Flesh p. 197: the durations of all the drugs are doubled
                   await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.toString().replace(",", ", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugDurationDoubled")}`)
 
-                  console.log(" before : " + JSON.stringify(interactionDrug))
-
-                  for (let d of interactionDrug){
-                    let duration, onUseDuration 
-                    if (d.system.handleShot.duration) duration = d.system.handleShot.duration * 2
-                    if (d.system.onUse.duration) onUseDuration = `${d.system.handleShot.duration * 2} ${game.i18n.localize(SR5.extendedIntervals[d.system.handleShot.durationType])}` 
-                    let updatedDrug = {
-                    }
-                    foundry.utils.mergeObject(updatedDrug, {
-                      "system.handleShot.duration": duration || 0,
-                      "system.onUse.duration": onUseDuration || 0,
-                    })
-										
-                    await d.updateSource(updatedDrug)
-                    await d.update(updatedDrug)										
-                    await actor.updateEmbeddedDocuments("Item", [d])
-                    await actor.updateItems(actor)
-                    //await d.update(updatedDrug);
-                    //await d.getExpandData({ secrets: this.actor.isOwner });
+                  for (let d of mixedDrugs){
+                    let shot = d.system.handleShot
+                    if (!shot?.duration) continue
+                    shot.duration *= 2
+                    if (d.system.onUse.duration) d.system.onUse.duration = `${shot.duration} ${game.i18n.localize(SR5.extendedIntervals[shot.durationType])}`
                   }
-								
-                  console.log(" after : " + JSON.stringify(interactionDrug))
                   break
                 case 2, 3, 4:
                   await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.toString().replace(",", ", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugNoInteractEffect")}`)
                   break
                 case 5, 6 :
-                  // not working
+                  //Chrome Flesh p. 197: the durations of all the crashes are doubled
                   await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.toString().replace(",", ", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugContrecoupDurationDoubled")}`)
 
-                  console.log(" before : " + JSON.stringify(interactionDrug))
-
-                  for (let d of interactionDrug){
-                    let contrecoup, onUseContrecoup 
-                    if (d.system.handleShot.durationContrecoup) contrecoup = d.system.handleShot.durationContrecoup * 2
-                    if (d.system.onUse.contrecoup) onUseContrecoup = `${d.system.handleShot.durationContrecoup} ${game.i18n.localize(SR5.extendedIntervals[d.system.handleShot.durationContrecoupType])}`
-                    let updatedDrug = {
-                    }
-                    foundry.utils.mergeObject(updatedDrug, {
-                      "system.handleShot.durationContrecoup": contrecoup || 0,
-                      "system.onUse.contrecoup": onUseContrecoup || 0,
-                    })
-										
-                    await d.updateSource(updatedDrug)
-                    await d.update(updatedDrug)										
-                    await actor.updateEmbeddedDocuments("Item", [d])
-                    await actor.updateItems(actor)
-                    //await d.update(updatedDrug);
-                    //await d.getExpandData({ secrets: this.actor.isOwner });
+                  for (let d of mixedDrugs){
+                    let shot = d.system.handleShot
+                    if (!shot?.durationContrecoup) continue
+                    shot.durationContrecoup *= 2
+                    if (d.system.onUse.contrecoup) d.system.onUse.contrecoup = `${shot.durationContrecoup} ${game.i18n.localize(SR5.extendedIntervals[shot.durationContrecoupType])}`
                   }
-								
-                  console.log(" after : " + JSON.stringify(interactionDrug))
                   break
                 case 7, 8, 9: {
                   //not working

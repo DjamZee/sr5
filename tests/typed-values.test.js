@@ -11,6 +11,54 @@ vi.hoisted(() => {
       _onRender(){}
     }
   }
+  globalThis.foundry.abstract.TypeDataModel.migrateData ??= (source) => source
+
+  // Stand-ins for Foundry's data fields. ArrayField and ObjectField cast a value as Foundry 13.351 does
+  // (common/data/fields.mjs, ObjectField#_cast and ArrayField#_cast)
+  class Field {
+    constructor(options) {
+      this.options = options
+    }
+    _cast(value) {
+      return value
+    }
+  }
+  class SchemaField extends Field {
+    constructor(fields, options) {
+      super(options)
+      this.fields = fields
+    }
+  }
+  class ObjectField extends Field {
+    _cast(value) {
+      return (value?.constructor === Object) ? value : {
+      }
+    }
+  }
+  class ArrayField extends Field {
+    constructor(element, options) {
+      super(options)
+      this.element = element
+    }
+    _cast(value) {
+      if (value?.constructor === Object) {
+        const arr = []
+        for (const [k, v] of Object.entries(value)) {
+          const i = Number(k)
+          if (Number.isInteger(i) && (i >= 0)) arr[i] = v
+        }
+        return arr
+      }
+      return value instanceof Array ? value : [value]
+    }
+  }
+  globalThis.foundry.data = {
+    fields: new Proxy({
+      SchemaField, ArrayField, ObjectField
+    }, {
+      get: (target, name) => target[name] ?? Field
+    })
+  }
 })
 
 import {
@@ -19,6 +67,12 @@ import {
 import {
   SR5_PrepareRollTest
 } from '../modules/rolls/roll-prepare.js'
+import {
+  ActorSheetSR5
+} from '../modules/entities/actors/baseSheet.js'
+import {
+  sr5ItemDrugDataModel
+} from '../modules/datamodels/items/itemDrug.js'
 
 // An embedded collection: iterable, with find and get as Foundry's Collection has them
 function collection(docs){
@@ -149,5 +203,223 @@ describe('acid damage drops by 1 each Combat Turn (SR5 p. 172)', () => {
 
     expect(actor.rollTest).not.toHaveBeenCalled()
     expect(actor.updateEmbeddedDocuments).not.toHaveBeenCalled()
+  })
+})
+
+describe('a drug keeps its stat (SR5 p. 411-413)', () => {
+  it('declares the stat as an object, not a list', () => {
+    const field = sr5ItemDrugDataModel.defineSchema().handleShot
+    expect(field.constructor.name).toBe('ObjectField')
+    // What the former ArrayField made of the stat: only integer keys survive, so nothing
+    const former = new foundry.data.fields.ArrayField(new foundry.data.fields.ObjectField())
+    expect(former._cast({
+      name: 'bliss', duration: 6, durationType: 'hour'
+    })).toEqual([])
+  })
+
+  it('loads a drug stored with the former empty list, and its other fields untouched', () => {
+    const source = sr5ItemDrugDataModel.migrateData({
+      handleShot: [], quantity: 2, interact: true, onUse: {
+        duration: '6 h', contrecoup: ''
+      }
+    })
+    expect(source).toEqual({
+      handleShot: {
+      }, quantity: 2, interact: true, onUse: {
+        duration: '6 h', contrecoup: ''
+      }
+    })
+    expect(sr5ItemDrugDataModel.defineSchema().handleShot._cast(source.handleShot)).toEqual({
+    })
+  })
+
+  it('keeps a stat already stored as an object', () => {
+    const stat = {
+      name: 'jazz', duration: 30, durationType: 'minute'
+    }
+    expect(sr5ItemDrugDataModel.migrateData({
+      handleShot: stat
+    }).handleShot).toBe(stat)
+  })
+})
+
+// A system data model as Foundry builds it: foundry.utils.duplicate(system) hands back its source
+class FakeSystem {
+  constructor(source, prepared){
+    Object.defineProperty(this, '_source', {
+      value: source, enumerable: false
+    })
+    Object.assign(this, prepared)
+  }
+  toJSON(){
+    return JSON.parse(JSON.stringify(this._source))
+  }
+}
+
+function drugItem(id, name, drug, extra = {
+}){
+  return {
+    _id: id, id, name, type: 'itemDrug',
+    system: {
+      isActive: false, wirelessTurnedOn: false, interact: false, quantity: 2, speed: 1,
+      systemEffects: {
+        0: {
+          category: 'drug', value: drug
+        }
+      },
+      addiction: {
+        rating: 5, threshold: 3
+      },
+      onUse: {
+        duration: '', contrecoup: ''
+      },
+      handleShot: {
+      },
+      ...extra,
+    },
+  }
+}
+
+// Body 3: Bliss lasts 6 - 3 = 3 hours
+function drugSheet(items){
+  const attributes = {
+    body: {
+      natural: {
+        value: 3
+      }, augmented: {
+        value: 3
+      }
+    }
+  }
+  const actor = {
+    id: 'a1', name: 'Test', isToken: false, effects: [], items,
+    system: new FakeSystem({
+      attributes, essence: {
+        value: 6
+      }, addictions: []
+    }, {
+      attributes, essence: {
+        value: 6
+      }, addictions: []
+    }),
+    update: vi.fn(async () => {}),
+    updateEmbeddedDocuments: vi.fn(async () => {}),
+  }
+  const sheet = Object.create(ActorSheetSR5.prototype)
+  Object.defineProperty(sheet, 'actor', {
+    value: actor
+  })
+  return {
+    actor, sheet
+  }
+}
+
+const takenBliss = () => drugItem('bliss', 'Bliss', 'bliss', {
+  isActive: true,
+  handleShot: {
+    name: 'bliss', speed: 1, duration: 3, durationType: 'hour'
+  },
+  onUse: {
+    duration: '3 SR5.Hours', contrecoup: ''
+  },
+})
+
+// Rolls answer from a list of totals, in order, and are counted
+let rolled
+function rollTotals(...totals){
+  rolled = []
+  globalThis.Roll = class {
+    constructor(formula){
+      this.formula = formula
+      rolled.push(formula)
+    }
+    async evaluate(){
+      return {
+        total: totals.shift()
+      }
+    }
+  }
+}
+
+async function take(sheet, id){
+  await sheet._onEditItemValue({
+    currentTarget: {
+      closest: () => ({
+        dataset: {
+          itemId: id
+        }
+      }),
+      dataset: {
+        binding: 'system.isActive', dtype: 'Boolean'
+      },
+    },
+    target: {
+      value: ''
+    },
+  })
+}
+
+const written = (actor, id) => actor.update.mock.calls.at(-1)[0].items.find(i => i._id === id)
+
+describe('taking a drug rolls its random duration once (SR5 p. 411-413)', () => {
+  it('rolls 10D6 once for Jazz and stores that duration', async () => {
+    rollTotals(30)
+    const {
+      actor, sheet
+    } = drugSheet([drugItem('jazz', 'Jazz', 'jazz')])
+
+    await take(sheet, 'jazz')
+
+    expect(rolled).toEqual(['10d6'])
+    const jazz = written(actor, 'jazz')
+    expect(jazz.system.handleShot.duration).toBe(30)
+    expect(jazz.system.onUse.duration).toBe('30 SR5.Minutes')
+  })
+})
+
+describe('drug interactions (Chrome Flesh p. 197)', () => {
+  it('rolls one die per drug past the first', async () => {
+    rollTotals(30, 4)
+    const {
+      sheet
+    } = drugSheet([takenBliss(), drugItem('jazz', 'Jazz', 'jazz')])
+
+    await take(sheet, 'jazz')
+
+    expect(rolled).toEqual(['10d6', '1d6'])
+  })
+
+  it('on 1, doubles the durations of all the drugs and writes them with the actor update', async () => {
+    rollTotals(30, 1)
+    const {
+      actor, sheet
+    } = drugSheet([takenBliss(), drugItem('jazz', 'Jazz', 'jazz')])
+
+    await take(sheet, 'jazz')
+
+    const bliss = written(actor, 'bliss')
+    expect(bliss.system.handleShot.duration).toBe(6)
+    expect(bliss.system.onUse.duration).toBe('6 SR5.Hours')
+    expect(bliss.system.interact).toBe(true)
+    const jazz = written(actor, 'jazz')
+    expect(jazz.system.isActive).toBe(true)
+    expect(jazz.system.handleShot.duration).toBe(60)
+    expect(jazz.system.onUse.duration).toBe('60 SR5.Minutes')
+    // no separate update that the actor update would overwrite (nor that throws on a document)
+    expect(actor.updateEmbeddedDocuments).not.toHaveBeenCalled()
+  })
+
+  it('on 6, doubles the durations of the crashes', async () => {
+    rollTotals(30, 6)
+    const {
+      actor, sheet
+    } = drugSheet([takenBliss(), drugItem('jazz', 'Jazz', 'jazz')])
+
+    await take(sheet, 'jazz')
+
+    const jazz = written(actor, 'jazz')
+    expect(jazz.system.handleShot.durationContrecoup).toBe(60)
+    expect(jazz.system.handleShot.duration).toBe(30)
+    expect(written(actor, 'bliss').system.handleShot.duration).toBe(3)
   })
 })
