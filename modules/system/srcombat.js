@@ -746,7 +746,11 @@ export class SR5Combat extends Combat {
         }
 
         //Special case : Acid Damage
-        if (itemData.type === "acidDamage") {
+        //SR5 p. 172: each Combat Turn the acid DV drops by 1 and the damage is applied again, and the acid eats
+        //1 more point of armor until its DV reaches 0. The effect value is a text field: convert it before
+        //subtracting, and store the reduced DV for the next turn
+        let acidValue = Number(itemData.value) - 1
+        if (itemData.type === "acidDamage" && acidValue > 0) {
           let armor = actor.items.find((i) => i.type === "itemArmor" && i.system.isActive && !i.system.isAccessory)
           if (armor){
             let updatedArmor = armor.toObject(false)
@@ -770,24 +774,29 @@ export class SR5Combat extends Combat {
             })}`)
           }
 
-          itemData.value -= 1
           damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
           damageInfo.damage.resistanceType = "physicalDamage"
-          damageInfo.damage.value = itemData.value
+          damageInfo.damage.value = acidValue
           damageInfo.damage.type = "physical"
           damageInfo.damage.element = "acid"
 
           actor.rollTest("resistanceCard", null, damageInfo)
+          if (actor.items.get(item.id)) await item.update({
+            "system.value": acidValue
+          })
         }
 
         //Apply Fire effect if any
+        //SR5 p. 173: the fire DV starts at 3 and goes up by 1 each Combat Turn. The effect value is a text field:
+        //adding 1 to it would append a digit ("3" + 1 = "31")
         if (itemData.type === "fireDamage") {
+          let fireValue = Number(itemData.value)
           damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
-          damageInfo.damage.value = itemData.value
+          damageInfo.damage.value = fireValue
           damageInfo.damage.type = "physical"
 
           await actor.takeDamage(damageInfo)
-          itemData.value += 1
+          itemData.value = fireValue + 1
           ui.notifications.info(`${combatant.name} ${game.i18n.format("SR5.INFO_FireDamageIncrease", {
             fire: itemData.value
           })}`)
