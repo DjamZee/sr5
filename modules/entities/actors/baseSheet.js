@@ -1281,10 +1281,15 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                     if (d.system.onUse.duration) d.system.onUse.duration = `${shot.duration} ${game.i18n.localize(SR5.extendedIntervals[shot.durationType])}`
                   }
                   break
-                case 2, 3, 4:
+                //Chrome Flesh p. 197. One label per total: "case 2, 3, 4" is the comma operator and only matched 4,
+                //so a 2 or a 3 fell to the default, 10P
+                case 2:
+                case 3:
+                case 4:
                   await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.toString().replace(",", ", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugNoInteractEffect")}`)
                   break
-                case 5, 6 :
+                case 5:
+                case 6:
                   //Chrome Flesh p. 197: the durations of all the crashes are doubled
                   await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.toString().replace(",", ", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugContrecoupDurationDoubled")}`)
 
@@ -1295,7 +1300,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                     if (d.system.onUse.contrecoup) d.system.onUse.contrecoup = `${shot.durationContrecoup} ${game.i18n.localize(SR5.extendedIntervals[shot.durationContrecoupType])}`
                   }
                   break
-                case 7, 8, 9: {
+                case 7:
+                case 8:
+                case 9: {
                   //not working
                   await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.toString().replace(",", ", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugContrecoupDurationDoubled")}`)
 
@@ -1320,7 +1327,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                   damageInfo.damage.type = "stun"
                   this.actor.takeDamage(damageInfo)
                   break
-                case 11, 12, 13:
+                case 11:
+                case 12:
+                case 13:
                   await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")}${game.i18n.format("SR5.Colons")} ${drugs.toString().replace(",", ", ")} ${interactionDiceResult.total}`)
                   break
                 default:
