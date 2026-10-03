@@ -149,10 +149,17 @@ export class SR5_RollTestHelper {
     }
 
         
-    if (game.user?.isGM || cardData.owner.actorId == game.user?.character?.id) item.update(newItem)
+    // Only the system fields the roll changed are written. The updateItem socket writes its info under
+    // `system`: sent the whole document, it turned system.type into "itemWeapon" and the grenade launcher
+    // lost its scatter (3D6 fell to 1D6, and the next shot offered Defend instead of Scatter).
+    const changes = foundry.utils.diffObject(item.toObject().system, newItem.system)
+    if (foundry.utils.isEmpty(changes)) return
+    if (game.user?.isGM || cardData.owner.actorId == game.user?.character?.id) item.update({
+      system: changes
+    })
     else SR5_SocketHandler.emitForGM("updateItem", {
       item: item.uuid,
-      info: newItem,
+      info: changes,
     })
   }
 }

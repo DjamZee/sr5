@@ -49,8 +49,14 @@ export class SR5_MiscellaneousHelpers {
   //Socket for updating an item
   static async _socketUpdateItem(message) {
     let target = await fromUuid(message.data.item)
+    if (!target) return
+    // info is a system object: only the fields that differ from the stored ones are written, so a
+    // caller sending its whole (prepared) system cannot overwrite what it did not change
+    const changes = foundry.utils.diffObject(target.toObject().system, message.data.info ?? {
+    })
+    if (foundry.utils.isEmpty(changes)) return
     await target.update({
-      'system': message.data.info
+      'system': changes
     })
   }
 
