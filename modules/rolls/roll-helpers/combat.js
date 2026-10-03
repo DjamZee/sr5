@@ -36,6 +36,13 @@ export class SR5_CombatHelpers {
     return ownMod === otherMod
   }
 
+  // The same option seen from the defense, against the attack card. Both fighters or neither: an attack rolled
+  // with no designated target had no one to compare with and kept its modifier, so the defense keeps its own.
+  static meleeDefenseEnvironmentBalanced(defenseMod, attackCard){
+    if (!attackCard?.target?.hasTarget) return false
+    return SR5_CombatHelpers.meleeEnvironmentBalanced(defenseMod, attackCard.combat?.environmentalMod)
+  }
+
   // The melee modifier (Light and Visibility, SR5 p. 188) of an actor who can see, or null for one who has no
   // environmental data (a device, a sprite).
   static meleeEnvironmentalMod(scene, actor){

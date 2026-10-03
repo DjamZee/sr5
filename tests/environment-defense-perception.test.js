@@ -124,7 +124,7 @@ describe("melee defense", () => {
         }, environmentalMod: attackerMod
       },
       target: {
-        sceneId
+        sceneId, hasTarget: true
       },
       test: {
         type: "weapon", typeSub: "meleeWeapon"
