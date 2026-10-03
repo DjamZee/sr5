@@ -29,7 +29,7 @@ import {
   SR5_MatrixHelpers 
 } from "./roll-helpers/matrix.js"
 import {
-  isRolledByTarget, firstAidPatient, patientMonitors, hasSingleMonitor
+  isRolledByTarget, firstAidPatient, patientMonitors, hasSingleMonitor, opposedTestActorId
 } from "./roll-helpers/cardRoller.js"
 import {
   SR5_CombatHelpers 
@@ -166,7 +166,7 @@ export class SR5_RollMessage {
     
     //Define actor for Opposed test or Non opposed tests
     if (action === "opposedTest") {
-      actor = SR5_EntityHelpers.getRealActorFromID(speaker.token)
+      actor = SR5_EntityHelpers.getRealActorFromID(opposedTestActorId(speaker))
       // Matrix support actions (Kill Code p. 43-44) go to the targeted tokens: no selected token needed
       let supportAction = (type === "iAmTheFirewall" || type === "intervene")
       if (actor == null && !supportAction) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)

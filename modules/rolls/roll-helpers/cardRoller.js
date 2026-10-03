@@ -12,6 +12,12 @@ export function isRolledByTarget(type, typeSub, targetActorId) {
   return TARGET_HANDLED_TESTS.includes(typeSub)
 }
 
+// The actor answering an opposed test card: the selected token, or else the user's assigned character.
+// ChatMessage.getSpeaker leaves the token empty when the character has no token on the viewed scene.
+export function opposedTestActorId(speaker) {
+  return speaker.token || speaker.actor
+}
+
 // The first aid patient (SR5 p. 207): the targeted token when the test had a target, the selected token otherwise.
 // Never the card owner: with a target, a missing patient stays missing instead of falling back to the healer.
 export function firstAidPatient(hasTarget, targetActor, selectedActor) {

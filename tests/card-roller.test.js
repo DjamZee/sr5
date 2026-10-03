@@ -2,8 +2,26 @@ import {
   describe, it, expect
 } from 'vitest'
 import {
-  isRolledByTarget
+  isRolledByTarget, opposedTestActorId
 } from '../modules/rolls/roll-helpers/cardRoller.js'
+
+describe('opposedTestActorId', () => {
+  it('takes the selected token first', () => {
+    expect(opposedTestActorId({
+      token: "tok", actor: "act"
+    })).toBe("tok")
+  })
+  it('falls back to the assigned character when no token is selected', () => {
+    expect(opposedTestActorId({
+      token: null, actor: "act"
+    })).toBe("act")
+  })
+  it('stays empty for a user with neither', () => {
+    expect(opposedTestActorId({
+      token: null, actor: null
+    })).toBeFalsy()
+  })
+})
 
 describe('isRolledByTarget', () => {
   it('lets the magician resist the binding and banishing drain (SR5 p. 304)', () => {
