@@ -344,6 +344,20 @@ export class SR5_SpiritTypes {
     return custom.system.conditionMonitor || ""
   }
 
+  /**
+	 * True when spirits of this type have a single condition monitor, like grunts (SR5 p. 301):
+	 * watchers and homunculi, and custom types set to "single" or based on them.
+	 * @param {string} type An actor's system.type
+	 * @returns {boolean}
+	 */
+  static hasSingleMonitor(type) {
+    const custom = SR5_SpiritTypes.get(type)
+    const monitorStyle = custom ? SR5_SpiritTypes.conditionMonitor(custom) : ""
+    if (monitorStyle) return monitorStyle === "single"
+    const baseType = SR5_SpiritTypes.baseType(type)
+    return baseType === "homunculus" || baseType === "watcher"
+  }
+
   // -------------------------------------------------------------------------
   //  Power list
   // -------------------------------------------------------------------------
