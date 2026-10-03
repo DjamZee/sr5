@@ -3952,6 +3952,7 @@
 	"SR5.WARN_NotAnAmmunitionType": "Seuls les objets Type de munition peuvent être déposés ici.",
 	"SR5.WARN_StunHealsFirst": "Les dommages physiques ne guérissent pas tant que le personnage a des dommages étourdissants : soignez d'abord l'étourdissant (SR5 p. 207).",
 	"SR5.WARN_NoActor": "Vous devez sélectionner un Acteur !",
+	"SR5.WARN_NoActiveGM": "Aucun MJ connecté : cette action doit passer par le MJ et n'a pas été appliquée.",
 	"SR5.WARN_PatientWithoutMonitor": "{name} n'a ni moniteur physique ni moniteur étourdissant : les premiers soins ne s'appliquent pas (SR5 p. 207).",
 	"SR5.WARN_RitualLeaderMissing": "Leader du rituel introuvable : la résistance du rituel ne peut pas être lancée.",
 	"SR5.WARN_ResistanceOwnerMissing": "Auteur du test introuvable (personnage supprimé) : la résistance ne peut pas être lancée.",

@@ -120,3 +120,42 @@ describe('First aid on a patient without condition monitor (SR5 p. 207)', () => 
     expect(SR5_RollMessage.updateChatButtonHelper).not.toHaveBeenCalled()
   })
 })
+
+describe('First aid without a GM connected', () => {
+  const monitors = {
+    physical: {
+    }, stun: {
+    }
+  }
+
+  it('heals an owned patient once: the author removes the used button itself', async () => {
+    patient = makePatient(monitors, true)
+    const updateChatButton = vi.spyOn(SR5_RollMessage, 'updateChatButton').mockImplementation(async () => {
+      delete card.flags.sr5data.chatCard.buttons.firstAid
+    })
+    await clickFirstAid()
+    expect(SR5_ActorHelper.heal).toHaveBeenCalledOnce()
+    expect(updateChatButton).toHaveBeenCalledWith('m1', 'firstAid', 'physical')
+    expect(emitForGM).not.toHaveBeenCalled()
+  })
+
+  it('warns and keeps the button for a patient only the GM can heal', async () => {
+    patient = makePatient(monitors, false)
+    const updateChatButton = vi.spyOn(SR5_RollMessage, 'updateChatButton').mockImplementation(async () => {})
+    await clickFirstAid()
+    expect(warn).toHaveBeenCalledWith('SR5.WARN_NoActiveGM')
+    expect(SR5_ActorHelper.heal).not.toHaveBeenCalled()
+    expect(emitForGM).not.toHaveBeenCalled()
+    expect(updateChatButton).not.toHaveBeenCalled()
+  })
+
+  it('still relays to a connected GM', async () => {
+    game.users = [{
+      isGM: true, active: true
+    }]
+    patient = makePatient(monitors, false)
+    await clickFirstAid()
+    expect(emitForGM).toHaveBeenCalledWith('heal', expect.anything())
+    expect(emitForGM).toHaveBeenCalledWith('updateChatButton', expect.anything())
+  })
+})

@@ -113,6 +113,10 @@ beforeEach(() => {
   game.user = {
     isGM: false
   }
+  //A GM is connected to relay what the player does not own
+  game.users = [{
+    isGM: true, active: true
+  }]
   speakerToken = 'selected'
   globalThis.ChatMessage = {
     getSpeaker: () => ({

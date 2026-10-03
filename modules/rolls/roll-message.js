@@ -44,6 +44,16 @@ import {
   SR5_ActorHelper 
 } from "../entities/actors/entityActor-helpers.js"
 
+// True when a GM is connected to relay what a player cannot do
+export function hasActiveGM() {
+  return !!game.users?.find(user => user.isGM && user.active)
+}
+
+// Without a GM to relay it, the author of a card updates it: otherwise a used button stays and can be clicked again
+export function updatesCardLocally(message) {
+  return !!message?.isOwner && !hasActiveGM()
+}
+
 export class SR5_RollMessage {
   //Handle reaction to roll ChatMessage
   static async chatListeners(html, message) {
@@ -265,11 +275,14 @@ export class SR5_RollMessage {
         if (!monitors.length) return ui.notifications.warn(game.i18n.format("SR5.WARN_PatientWithoutMonitor", {
           name: patient.name
         }))
+        //A patient the player does not own is healed by the GM: without one connected, nothing would happen
+        let healLocally = game.user.isGM || patient.testUserPermission(game.user, 3)
+        if (!healLocally && !hasActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActiveGM"))
         if (monitors.length > 1) healData.test.typeSub = await SR5_CombatHelpers.chooseDamageType()
         else healData.test.typeSub = monitors[0]
         if (!healData.test.typeSub) return
         let healedID = (patient.isToken ? patient.token.id : patient.id)
-        if (game.user.isGM || patient.testUserPermission(game.user, 3)) await SR5_ActorHelper.heal(healedID, healData)
+        if (healLocally) await SR5_ActorHelper.heal(healedID, healData)
         else await SR5_SocketHandler.emitForGM("heal", {
           targetActor: healedID,
           healData: healData,
@@ -745,7 +758,7 @@ export class SR5_RollMessage {
 
   //Update the stat of a chatMessage button
   static async updateChatButtonHelper(message, button, firstOption){
-    if (!game.user?.isGM) {
+    if (!game.user?.isGM && !updatesCardLocally(game.messages.get(message))) {
       await SR5_SocketHandler.emitForGM("updateChatButton", {
         message: message,
         buttonToUpdate: button,
@@ -796,7 +809,7 @@ export class SR5_RollMessage {
   }
 
   static async updateRollCardHelper(message, newMessage){
-    if (!game.user?.isGM) {
+    if (!game.user?.isGM && !updatesCardLocally(game.messages.get(message))) {
       await SR5_SocketHandler.emitForGM("updateRollCard", {
         message: message,
         newMessage: newMessage,

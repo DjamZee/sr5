@@ -88,7 +88,11 @@ export class SR5_SocketHandler {
     if (game.user.isGM) return SR5_SystemHelpers.srLog(1, 'Active user is GM, abort')
 
     const gmUser = game.users.find(user => user.isGM && user.active)
-    if (!gmUser) return SR5_SystemHelpers.srLog(1, 'No active GM user!')
+    //Nobody can relay the action: say so instead of dropping it silently
+    if (!gmUser) {
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActiveGM"))
+      return SR5_SystemHelpers.srLog(1, 'No active GM user!')
+    }
 
     const message = SR5_SocketHandler._createMessage(type, data, gmUser.id)
     await game.socket.emit(`system.sr5`, message)
