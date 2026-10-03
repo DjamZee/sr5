@@ -266,7 +266,7 @@ describe('Opposed social tests (SR5 p. 141-144)', async () => {
   const skillOf = (attribute, rating, wound = 0) => {
     const modifiers = [mod('Attr', 'linkedAttribute', attribute),
       rating ? mod('Skill', 'skillRating', rating) : mod('SR5.Defaulting', 'skillRating', -1)]
-    if (wound) modifiers.push(mod('Wounds', 'condition', wound))
+    if (wound) modifiers.push(mod('Wounds', 'penaltycondition', wound))
     return {
       linkedAttribute: 'intuition',
       rating: {
@@ -344,7 +344,7 @@ describe('Opposed social tests (SR5 p. 141-144)', async () => {
     },
   })
   const sources = data => data.dicePool.composition.map(m => m.source)
-  const woundsKept = data => data.dicePool.modifiers.some(m => m.type === 'condition' && m.value === -1)
+  const woundsKept = data => data.dicePool.modifiers.some(m => m.type === 'penaltycondition' && m.value === -1)
 
   it('Etiquette: Perception + Charisma, defaulting -1 kept, wounds kept', async () => {
     const data = await opposed('etiquette', 'perception')

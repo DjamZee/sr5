@@ -218,6 +218,9 @@ function getOpposedData(rollData, chatData, rollKey, actor){
     rollData.limit.base = 0
     rollData.limit.modifiers = {
     }
+    // Same for the dice: no skill is rolled, so no skill bonus applies. Only
+    // the general penalties (wounds, sustaining, special) stay.
+    rollData.dicePool.modifiers = rollData.dicePool.modifiers.filter(m => m.type?.startsWith("penalty"))
     rollData.test.title = `${game.i18n.localize("SR5.OpposedTest") + game.i18n.localize("SR5.Colons") + " " + game.i18n.localize("SR5.Charisma") + " + " + game.i18n.localize("SR5.Willpower") + " (" + chatData.roll.hits + ")"}`
     rollData.dicePool.base = actorData.attributes.charisma.augmented.value + actorData.attributes.willpower.augmented.value
     rollData.dicePool.composition = ([
@@ -231,7 +234,8 @@ function getOpposedData(rollData, chatData, rollKey, actor){
   }
 
   if (chatData.test.typeSub === "impersonation") rollData.test.title = `${game.i18n.localize("SR5.OpposedTest") + game.i18n.localize("SR5.Colons") + " " + game.i18n.localize(SR5.skills[rollKey]) + " + " + game.i18n.localize(SR5.allAttributes[actorData.skills[rollKey].linkedAttribute])  + " (" + chatData.roll.hits + ")"}`
-  if (chatData.test.typeSub === "negotiation") rollData.test.title = `${game.i18n.localize("SR5.OpposedTest") + game.i18n.localize("SR5.Colons") + " " + game.i18n.localize(SR5.skills[rollKey]) + " + " + game.i18n.localize(SR5.allAttributes[actorData.skills[rollKey].linkedAttribute])  + " (" + chatData.roll.hits + ")"}`
+  // SR5 p. 143: Con is resisted with Con + Charisma [Social]
+  if (chatData.test.typeSub === "negotiation" || chatData.test.typeSub === "con") rollData.test.title = `${game.i18n.localize("SR5.OpposedTest") + game.i18n.localize("SR5.Colons") + " " + game.i18n.localize(SR5.skills[rollKey]) + " + " + game.i18n.localize(SR5.allAttributes[actorData.skills[rollKey].linkedAttribute])  + " (" + chatData.roll.hits + ")"}`
 
   return rollData
 }
