@@ -417,6 +417,7 @@
 	"SR5.ShopPurchaseDone": "{name} acheté pour {price}¥.",
 	"SR5.ShopPurchaseLines": "{count} articles",
 	"SR5.ShopPurchaseOf": "Achat : {name}",
+	"SR5.ShopRawPool": "réserve brute",
 	"SR5.ShopRemoveFromCart": "Retirer du panier",
 	"SR5.ShopResult": "Résultat",
 	"SR5.ShopSaleCashed": "{name} vendu pour {price}¥.",

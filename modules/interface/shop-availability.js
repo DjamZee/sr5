@@ -414,6 +414,9 @@ export class SR5ShopAvailability {
       overridden: override !== null,
       connection: searcher.connection ?? null,
       pool,
+      // A pool below zero before the surcharge: the card shows it, or "1 die
+      // (+3 surcharge dice)" would hide where the other two went
+      negativePool: basePool < 0 ? basePool : null,
       bonusDice,
       surcharge,
       limit,
