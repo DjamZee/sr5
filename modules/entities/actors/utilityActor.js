@@ -1597,35 +1597,16 @@ export class SR5_CharacterUtility extends Actor {
       attributes = actorData.attributes,
       specialAttributes = actorData.specialAttributes
 
+    // Spirits keep both kinds of monitor in their source; the type decides which ones exist (SR5 p. 301)
     if (actor.type == "actorSpirit") {
-      const customMonitor = SR5_SpiritTypes.get(actorData.type)
-      const monitorStyle = customMonitor ? SR5_SpiritTypes.conditionMonitor(customMonitor) : ""
-      const baseMonitorType = SR5_SpiritTypes.baseType(actorData.type)
-      const singleMonitor = monitorStyle ?
-        monitorStyle === "single" :
-        (baseMonitorType === "homunculus" || baseMonitorType === "watcher")
-      if (singleMonitor) {
+      if (SR5_SpiritTypes.hasSingleMonitor(actorData.type)) {
         delete actorData.conditionMonitors.physical
         delete actorData.conditionMonitors.stun
         delete actorData.statusBars.physical
         delete actorData.statusBars.stun
-        if (!actorData.conditionMonitors.condition) {
-          actorData.conditionMonitors.condition = {
-            "value": 0,
-            "base": 0,
-            "modifiers": [],
-            "actual": {
-              "value": 0,
-              "base": 0,
-              "modifiers": [],
-            },
-            "boxes": []
-          }
-        }
-        actorData.statusBars.condition = {
-          "value": 0,
-          "max": 0
-        }
+      } else {
+        delete actorData.conditionMonitors.condition
+        delete actorData.statusBars.condition
       }
     }
 

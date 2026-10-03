@@ -32,8 +32,11 @@ import {
   SR5_SocketHandler 
 } from "../../socket.js"
 import {
-  _getSRStatusEffect 
+  _getSRStatusEffect
 } from "../../system/effectsList.js"
+import {
+  SR5_SpiritTypes
+} from "../items/spirit-types.js"
 
 export class SR5_ActorHelper {
     
@@ -670,6 +673,10 @@ export class SR5_ActorHelper {
         "system.conditionMonitors.stun.actual": itemData.conditionMonitors.stun.actual,
         "items": baseItems,
       })
+      // A single-monitor spirit's damage is kept in the item's Physical monitor (see dismissal)
+      if (SR5_SpiritTypes.hasSingleMonitor(itemData.type)) sideKickData = foundry.utils.mergeObject(sideKickData, {
+        "system.conditionMonitors.condition.actual": itemData.conditionMonitors.physical.actual,
+      })
     }
 
     if (item.type === "itemSprite") {
@@ -930,7 +937,7 @@ export class SR5_ActorHelper {
       SR5_ActorHelper.rememberSidekickToken(modifiedItem, actor)
       modifiedItem.system.services.value = actor.system.services.value
       modifiedItem.system.services.max = actor.system.services.max
-      if (actor.system.type === "watcher" || actor.system.type === "homunculus"){
+      if (SR5_SpiritTypes.hasSingleMonitor(actor.system.type)){
         modifiedItem.system.conditionMonitors.physical.actual = actor.system.conditionMonitors.condition.actual
         modifiedItem.system.conditionMonitors.stun.actual = actor.system.conditionMonitors.condition.actual
       } else {

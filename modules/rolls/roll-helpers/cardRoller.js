@@ -19,7 +19,7 @@ export function firstAidPatient(hasTarget, targetActor, selectedActor) {
 }
 
 // The damage monitors of a patient, as prepared on its sheet: Physical and Stun (PC, most spirits),
-// or a single condition monitor (grunt, AI core, homunculus, watcher). Empty when it has neither.
+// or a single condition monitor (grunt, AI core, homunculus and watcher, SR5 p. 301). Empty when it has neither.
 export function patientMonitors(patient) {
   let monitors = patient?.system?.conditionMonitors ?? {
   }
