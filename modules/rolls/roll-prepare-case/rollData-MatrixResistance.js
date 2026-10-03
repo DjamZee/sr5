@@ -1,18 +1,16 @@
 import {
   SR5_PrepareRollHelper 
 } from "../roll-prepare-helpers.js"
-import {
-  SR5_CharacterUtility
-} from "../../entities/actors/utilityActor.js"
 
 export default async function matrixResistance(rollData, actor, chatData){
   //Determine title
   rollData.test.title = `${game.i18n.localize("SR5.TakeOnDamageMatrix")} (${chatData.damage.matrix.value})`
 
   //Determine dicepool composition
-  // An AI outside any device resists with an attribute alone, which no device or Firewall carries (Data Trails p. 157)
-  let deviceless = SR5_CharacterUtility.isDevicelessAI(actor)
-  rollData.dicePool.composition = actor.system.matrix.resistances.matrixDamage.modifiers.filter(mod => (mod.type === "matrixAttribute" || mod.type === "deviceRating" || (deviceless && mod.type === "linkedAttribute")))
+  // The attribute standing for the device rating belongs to the base pool, as on every other roll: Resonance for a
+  // living persona (SR5 p. 103 and 230), Nanite Volume for a head case (Lockdown p. 206), and the attribute an AI
+  // outside any device resists with (Data Trails p. 157). getDicepoolModifiers leaves it out of the modifiers.
+  rollData.dicePool.composition = actor.system.matrix.resistances.matrixDamage.modifiers.filter(mod => (mod.type === "matrixAttribute" || mod.type === "deviceRating" || mod.type === "linkedAttribute"))
  
   //Determine base dicepool
   rollData.dicePool.base = SR5_PrepareRollHelper.getBaseDicepool(rollData)
