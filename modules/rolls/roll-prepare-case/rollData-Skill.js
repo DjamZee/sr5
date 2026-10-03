@@ -186,6 +186,7 @@ function getOpposedData(rollData, chatData, rollKey, actor){
   let actorData = actor.system
   rollData.dialogSwitch.extended = false
   rollData.test.isOpposed = true
+  rollData.test.isOpposedResistance = true
   rollData.threshold.value = chatData.roll.hits
   // SR5 p. 141-143: the target keeps the limit of the skill it rolls
   // (Con, Leadership, Negotiation [Social]; Perception [Mental] against
