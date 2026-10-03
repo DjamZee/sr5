@@ -112,6 +112,14 @@ export default class SR5_RollDialog {
     return false
   }
 
+  // SR5 p. 170 and 192: full defense (-10, once per turn) and an active defense (-5) are paid together,
+  // so the initiative must be higher than their combined cost
+  static defenseStanceCost(actor, fullDefense, defenseMode){
+    let cost = -SR5_ConverterHelpers.activeDefenseToInitMod(defenseMode)
+    if (fullDefense && !actor.effects.find(e => e.origin === "fullDefense")) cost += 10
+    return cost
+  }
+
   calculRecoil(html){
     let firingModeValue,
       dialogData = this.dialogData
@@ -270,7 +278,7 @@ export default class SR5_RollDialog {
         break
       case "fullDefense":
         value = actor.system.specialProperties.fullDefenseValue || 0
-        if (isChecked && !actor.effects.find(e => e.origin === "fullDefense") && !SR5_RollDialog.hasInitiativeForInterruption(actor, 10)) {
+        if (isChecked && !actor.effects.find(e => e.origin === "fullDefense") && !SR5_RollDialog.hasInitiativeForInterruption(actor, SR5_RollDialog.defenseStanceCost(actor, true, dialogData.combat.activeDefenseSelected))) {
           ev.target.checked = false
           isChecked = false
         }
@@ -883,7 +891,8 @@ export default class SR5_RollDialog {
           return
         }
         case "defenseMode": {
-          if (!SR5_RollDialog.hasInitiativeForInterruption(actor, -SR5_ConverterHelpers.activeDefenseToInitMod(ev.target.value))) ev.target.value = "none"
+          let fullDefense = dialogData.dicePool.modifiers.some(m => m.type === "fullDefense")
+          if (!SR5_RollDialog.hasInitiativeForInterruption(actor, SR5_RollDialog.defenseStanceCost(actor, fullDefense, ev.target.value))) ev.target.value = "none"
           value = SR5_ConverterHelpers.activeDefenseToMod(ev.target.value, dialogData.combat.activeDefenses)
           label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.characterDefenses[ev.target.value])})`
           dialogData.combat.activeDefenseSelected = ev.target.value

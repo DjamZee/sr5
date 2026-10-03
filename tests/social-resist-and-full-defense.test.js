@@ -224,6 +224,34 @@ describe('Full defense costs 10 initiative (SR5 p. 170, 189)', () => {
     expect(init).not.toHaveBeenCalled()
   })
 
+  it('the dialog checks the combined cost: 12 refuses full defense + parry, 20 allows it', async () => {
+    const {
+      default: SR5_RollDialog
+    } = await import('../modules/rolls/roll-dialog.js')
+    globalThis.ui.notifications = {
+      warn: vi.fn()
+    }
+    globalThis.game.combat = {
+    }
+    let initiative = 12
+    vi.spyOn(SR5Combat, 'getCombatantFromActor').mockImplementation(() => ({
+      initiative
+    }))
+    const cost = SR5_RollDialog.defenseStanceCost(target, true, 'parryClubs')
+    expect(cost).toBe(15)
+    expect(SR5_RollDialog.hasInitiativeForInterruption(target, cost)).toBe(false)
+    expect(SR5_RollDialog.hasInitiativeForInterruption(target, SR5_RollDialog.defenseStanceCost(target, false, 'parryClubs'))).toBe(true)
+    initiative = 20
+    expect(SR5_RollDialog.hasInitiativeForInterruption(target, cost)).toBe(true)
+    // Already in full defense: only the parry is paid
+    expect(SR5_RollDialog.defenseStanceCost({
+      effects: [{
+        origin: 'fullDefense'
+      }]
+    }, true, 'parryClubs')).toBe(5)
+    delete globalThis.game.combat
+  })
+
   it('no box, no active defense: nothing', () => {
     SR5_RollTest.applyDefenseStance(dialog([mod('Wounds', 'condition', -1)]), target)
     expect(effect).not.toHaveBeenCalled()
