@@ -197,3 +197,64 @@ describe('Shop availability with no dice (SR5 p. 58)', () => {
     }
   })
 })
+
+describe('Fence pools read off the sheet', () => {
+  it('the search pool is the sheet\'s Etiquette pool, wounds included', async () => {
+    const {
+      SR5ShopFence
+    } = await import('../modules/interface/shop-fence.js')
+    const gun = {
+      id: 'gun', name: 'Ares Predator V', system: {
+        price: {
+          value: 725
+        }, quantity: 1
+      }
+    }
+    // Charisma 3, no Etiquette, a -1 wound: the sheet says 3 - 1 - 1 = 1,
+    // where the raw defaulting would say 2
+    const actor = {
+      id: 'seller', name: 'Blessé',
+      items: {
+        get: id => (id === 'gun' ? gun : undefined)
+      },
+      system: {
+        attributes: {
+          charisma: {
+            augmented: {
+              value: 3
+            }
+          }
+        },
+        skills: {
+          etiquette: {
+            rating: {
+              value: 0
+            }, test: {
+              dicePool: 1
+            }
+          },
+          negotiation: {
+            rating: {
+              value: 0
+            }, test: {
+              dicePool: 1
+            }
+          },
+        },
+        limits: {
+          socialLimit: {
+            value: 4
+          }
+        },
+      },
+    }
+    queue = [2]
+    const card = await SR5ShopFence.sellOnMarket(actor, [{
+      itemId: 'gun', quantity: 1
+    }], {
+      useAvailability: false
+    })
+    expect(card.searchPool).toBe(1)
+    expect(rolls).toEqual(['1d6'])
+  })
+})

@@ -231,13 +231,16 @@ export class SR5ShopFence {
   /*  Internals                                   */
   /* -------------------------------------------- */
 
-  /** A character's pool for a social skill, defaulting when untrained. */
+  /**
+   * A character's pool for a social skill, defaulting when untrained. The
+   * sheet's computed pool already defaults (SR5 p. 55) and carries the wound
+   * penalties, so a zero there is a real zero.
+   */
   static #skillPool(actor, key) {
     const skill = actor.system.skills?.[key]
+    if (skill?.test) return Math.max(0, Number(skill.test.dicePool) || 0)
     const rating = Number(skill?.rating?.value ?? 0)
     const charisma = Number(actor.system.attributes?.charisma?.augmented?.value ?? 0)
-    const pool = Number(skill?.test?.value ?? 0)
-    if (pool) return pool
     // Defaulting, SR5 p. 55: an untrained social skill is Charisma - 1.
     return rating ? rating + charisma : Math.max(0, charisma - 1)
   }
