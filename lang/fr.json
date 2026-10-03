@@ -3965,6 +3965,7 @@
 	"SR5.WARN_ResetActionsGMOnly": "Seul le meneur de jeu peut rendre des actions.",
 	"SR5.WARN_NotEnoughInitiative": "{actor} n'a pas assez d'initiative ({initiative}) pour une action d'interruption qui en coûte {cost}.",
 	"SR5.WARN_NoTemplateInScene": "Pas de gabarit dans la scène !",
+	"SR5.WARN_TemplateNotYours": "Ce gabarit a été posé par quelqu'un d'autre : seul son auteur ou le MJ peut le déplacer ou le retirer.",
 	"SR5.WARN_NotEnoughAction": "Pas assez d'actions disponibles ! Vous devez posséder au moins {value} action {action}",
 	"SR5.WARN_NotPossibleInCombat": "Impossible en situation de combat.",
 	"SR5.WARN_OnlyOneTradition": "Vous ne pouvez avoir qu'une seule tradition.",

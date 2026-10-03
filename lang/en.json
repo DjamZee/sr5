@@ -3965,6 +3965,7 @@
 	"SR5.WARN_ResetActionsGMOnly": "Only the gamemaster can give actions back.",
 	"SR5.WARN_NotEnoughInitiative": "{actor} does not have enough initiative ({initiative}) for an interruption action costing {cost}.",
 	"SR5.WARN_NoTemplateInScene": "No template in scene !",
+	"SR5.WARN_TemplateNotYours": "This template was placed by someone else: only its author or the GM can move or remove it.",
 	"SR5.WARN_NotEnoughAction": "Not enough actions left ! You need at least {value} {action} action.",
 	"SR5.WARN_NotPossibleInCombat": "Not possible in combat.",
 	"SR5.WARN_OnlyOneTradition": "You can have only one tradition.",

@@ -36,7 +36,8 @@ function template(id, itemUuid){
       sr5: {
         itemUuid
       }
-    }
+    },
+    canUserModify: () => true,
   }
 }
 

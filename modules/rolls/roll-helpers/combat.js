@@ -190,6 +190,9 @@ export class SR5_CombatHelpers {
     // The template of this shot, not the first one the item ever left on the scene
     let template = SR5_SystemHelpers.findItemTemplate(cardData.owner.itemId, cardData.combat.grenade?.templateId)
     if (template === undefined) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoTemplateInScene")}`)
+    // The scatter belongs to the attacker: someone who cannot move this template would only roll dice and
+    // announce a distance that Foundry then refuses to apply, so warn before rolling anything
+    if (!template.canUserModify(game.user, "update")) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_TemplateNotYours")}`)
 
     let distanceDice = SR5_CombatHelpers.scatterDice(itemData, cardData.combat.ammo.effects)
 

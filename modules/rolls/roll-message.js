@@ -805,6 +805,9 @@ export class SR5_RollMessage {
       return
     }
     let template = SR5_SystemHelpers.findItemTemplate(itemUuid, templateId, "itemUuid")
+    // A template belongs to whoever placed it (and the GM): anyone else is refused by Foundry, so say it plainly
+    // and leave the button as it is for the one who can use it
+    if (template && !template.canUserModify(game.user, "delete")) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_TemplateNotYours")}`)
     if (template){
       canvas.scene.deleteEmbeddedDocuments("MeasuredTemplate", [template.id])
       if (message) SR5_RollMessage.updateChatButtonHelper(message, "templateRemove")
