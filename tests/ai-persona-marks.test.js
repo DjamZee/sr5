@@ -29,6 +29,9 @@ const {
 const {
   sr5HookPersonaMarks
 } = await import('../modules/hooks/item.js')
+const {
+  sr5HookPreUpdateActor, sr5HookUpdateActor
+} = await import('../modules/hooks/actor.js')
 
 /** A document whose update merges the flattened changes the way Foundry does */
 function documentWith(data) {
@@ -206,5 +209,81 @@ describe('Marks on a character with a device stay as they were', () => {
       }
     }, 'gm')
     expect(pc.update).not.toHaveBeenCalled()
+  })
+})
+
+describe('An AI on a device never keeps marks on its persona (Data Trails p. 157-158)', () => {
+  function onDevice() {
+    ai.items = [{
+      type: 'itemDevice', system: {
+        isActive: true
+      }
+    }]
+  }
+
+  it('drops the device marks an update copies from the prepared data', () => {
+    onDevice()
+    const changes = {
+      system: {
+        matrix: {
+          marks: [{
+            ownerId: 'hacker', value: 2
+          }], overwatchScore: 3
+        }
+      }
+    }
+    sr5HookPreUpdateActor(ai, changes)
+    expect(changes.system.matrix).toEqual({
+      marks: [], overwatchScore: 3
+    })
+  })
+
+  it('leaves the update of an AI without a device, or of any other character, as it is', () => {
+    const marks = [{
+      ownerId: 'hacker', value: 2
+    }]
+    const changes = {
+      system: {
+        matrix: {
+          marks
+        }
+      }
+    }
+    sr5HookPreUpdateActor(ai, changes)
+    expect(changes.system.matrix.marks).toBe(marks)
+    const pc = {
+      type: 'actorPc', items: [{
+        type: 'itemDevice', system: {
+          isActive: true
+        }
+      }], system: {
+        activeSpecialAttribute: 'magic'
+      }
+    }
+    sr5HookPreUpdateActor(pc, changes)
+    expect(changes.system.matrix.marks).toBe(marks)
+  })
+
+  it('clears the persona when the sheet loads the AI onto a device', async () => {
+    await SR5_MarkHelpers.markItem('ai', 'hacker', 2)
+    onDevice()
+    ai.testUserPermission = () => false
+    await sr5HookUpdateActor(ai, {
+      items: []
+    }, {
+    }, 'gm')
+    expect(ai.system.matrix.marks).toEqual([])
+    expect(deck.system.markedItems).toEqual([])
+  })
+})
+
+describe('Clearing the persona leaves the marks on its devices alone', () => {
+  it('forgets the persona on the hacker deck, not the device of the same actor', async () => {
+    await SR5_MarkHelpers.markItem('ai', 'hacker', 1)
+    deck.system.markedItems.unshift({
+      uuid: 'Actor.ai.Item.dev', value: 1, itemName: 'Commlink', itemOwner: 'IA'
+    })
+    await SR5_MarkHelpers.clearPersonaMarks(ai)
+    expect(deck.system.markedItems.map(m => m.uuid)).toEqual(['Actor.ai.Item.dev'])
   })
 })

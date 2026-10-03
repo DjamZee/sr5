@@ -568,7 +568,9 @@ export class SR5_ActorHelper {
   }
 
   //Delete Mark info from deck
-  static async deleteMarkInfo(actorId, item){
+  //exact: item is a whole uuid, matched as is. A persona's uuid begins the uuid of its own devices, so a
+  //partial match would also forget the marks placed on them
+  static async deleteMarkInfo(actorId, item, exact = false){
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
     if (!actor) return SR5_SystemHelpers.srLog(1, `No Actor in deleteMarkInfo()`)
 
@@ -578,7 +580,8 @@ export class SR5_ActorHelper {
     let deckData = foundry.utils.duplicate(deck.system),
       index=0
 
-    for (let m of deckData.markedItems){
+    if (exact) deckData.markedItems = deckData.markedItems.filter(m => m.uuid !== item)
+    else for (let m of deckData.markedItems){
       if (m.uuid.includes(item)){
         deckData.markedItems.splice(index, 1)
         index--
@@ -607,7 +610,7 @@ export class SR5_ActorHelper {
 
   //Socket for deletings marks info other actors;
   static async _socketDeleteMarkInfo(message) {
-    await SR5_ActorHelper.deleteMarkInfo(message.data.actorId, message.data.item)
+    await SR5_ActorHelper.deleteMarkInfo(message.data.actorId, message.data.item, message.data.exact)
   }
 
   //Create a Sidekick
