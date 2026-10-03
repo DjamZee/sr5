@@ -59,6 +59,11 @@ export class SR5_MatrixHelpers {
     let targetItem
     if (cardData.target.itemUuid && !defenderWin) targetItem = await fromUuid(cardData.target.itemUuid)
     if (!targetItem) targetItem = targetActor.items.find((item) => item.type === "itemDevice" && item.system.isActive)
+    //An AI outside any device only has its core condition monitor, which takes all its damage (Data Trails p. 161)
+    if (!targetItem) {
+      if (targetActor.system.activeSpecialAttribute === "depth") return targetActor.takeDamage(cardData)
+      return
+    }
     let newItem = foundry.utils.duplicate(targetItem)
 
     //targetActor.takeDamage(cardData);

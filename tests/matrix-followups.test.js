@@ -338,3 +338,51 @@ describe('Matrix damage against an AI without a device (Data Trails p. 157, 161)
     expect(card.damage.matrix.value).toBe(11)
   })
 })
+
+describe('Applying matrix damage without a device (Data Trails p. 161)', () => {
+  const card = () => ({
+    damage: {
+      matrix: {
+        value: 5
+      }
+    }, target: {
+    }
+  })
+
+  it('goes to the core condition monitor of an AI', async () => {
+    actor.system.activeSpecialAttribute = 'depth'
+    actor.takeDamage = vi.fn(async () => {})
+    await SR5_MatrixHelpers.applyDamageToDecK(actor, card())
+    expect(actor.takeDamage).toHaveBeenCalledTimes(1)
+  })
+
+  it('does nothing on a character who is not an AI', async () => {
+    actor.system.activeSpecialAttribute = 'magic'
+    actor.takeDamage = vi.fn(async () => {})
+    await SR5_MatrixHelpers.applyDamageToDecK(actor, card())
+    expect(actor.takeDamage).not.toHaveBeenCalled()
+  })
+
+  it('still damages the active device when there is one', async () => {
+    actor.system.activeSpecialAttribute = 'depth'
+    actor.takeDamage = vi.fn(async () => {})
+    actor.system.matrix.programs.virtualMachine = {
+      isActive: false
+    }
+    const update = vi.fn(async () => {})
+    actor.items = [{
+      type: 'itemDevice', name: 'Deck', uuid: 'Actor.a1.Item.d1', update, system: {
+        isActive: true, type: 'cyberdeck', conditionMonitors: {
+          matrix: {
+            value: 10, actual: {
+              base: 1, value: 1, modifiers: []
+            }
+          }
+        }
+      }
+    }]
+    await SR5_MatrixHelpers.applyDamageToDecK(actor, card())
+    expect(actor.takeDamage).not.toHaveBeenCalled()
+    expect(update.mock.calls[0][0].system.conditionMonitors.matrix.actual.base).toBe(6)
+  })
+})
