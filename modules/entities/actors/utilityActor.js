@@ -1277,7 +1277,7 @@ export class SR5_CharacterUtility extends Actor {
 
   // AI (Data Trails p. 152): an AI is a PC or grunt sheet whose active special attribute is Depth
   static isDepthActive(actor) {
-    return (actor.type === "actorPc" || actor.type === "actorGrunt") && actor.system.activeSpecialAttribute === "depth"
+    return (actor.type === "actorPc" || actor.type === "actorGrunt") && actor.system?.activeSpecialAttribute === "depth"
   }
 
   // AI outside any device (Data Trails p. 157): a persona alone, with no active device

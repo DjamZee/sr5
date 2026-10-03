@@ -142,9 +142,10 @@ export class SR5_MarkHelpers {
     for (let m of marks) {
       if (!game.user?.isGM) await SR5_SocketHandler.emitForGM("deleteMarkInfo", {
         actorId: m.ownerId,
-        item: actor.id,
+        item: actor.uuid,
+        exact: true,
       })
-      else await SR5_ActorHelper.deleteMarkInfo(m.ownerId, actor.id)
+      else await SR5_ActorHelper.deleteMarkInfo(m.ownerId, actor.uuid, true)
     }
     await actor.update({
       "system.matrix.marks": []
