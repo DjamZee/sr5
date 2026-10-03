@@ -425,6 +425,37 @@ describe('drug interactions (Chrome Flesh p. 197)', () => {
     expect(jazz.system.handleShot.duration).toBe(30)
     expect(written(actor, 'bliss').system.handleShot.duration).toBe(3)
   })
+
+  // Every total of the table up to 13 has its own row: only 14+ inflicts 10P
+  async function interactionDamage(total){
+    rollTotals(30, total)
+    const {
+      actor, sheet
+    } = drugSheet([takenBliss(), drugItem('jazz', 'Jazz', 'jazz')])
+    actor.rollTest = vi.fn()
+    actor.takeDamage = vi.fn()
+    vi.spyOn(SR5_PrepareRollTest, 'getBaseRollData').mockImplementation(() => ({
+      damage: {
+      }, combat: {
+      }
+    }))
+    await take(sheet, 'jazz')
+    return actor
+  }
+
+  it.each([2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13])('on %i, inflicts no 10P', async (total) => {
+    const actor = await interactionDamage(total)
+    expect(actor.rollTest).not.toHaveBeenCalled()
+  })
+
+  it('on 14, inflicts 10P resisted', async () => {
+    const actor = await interactionDamage(14)
+    expect(actor.rollTest).toHaveBeenCalledWith('resistanceCard', null, expect.objectContaining({
+      damage: expect.objectContaining({
+        value: 10, type: 'physical'
+      })
+    }))
+  })
 })
 
 describe('a bound spirit spends a service when it aids a test (SR5 p. 305-306)', () => {
