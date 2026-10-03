@@ -43,9 +43,10 @@ export class SR5_CombatHelpers {
   //Handle environmental modifiers
   //noWind: ignore the wind column (perception, melee); melee: SR5 p. 188, only the Light and Visibility columns apply
   //weaponLight: light rows taken off by a flashlight on the weapon being used (SR5_UtilityItem.getWeaponLightCompensation)
+  //weaponLightCap: light row a standard flashlight on that weapon brings the scene down to (SR5_UtilityItem.getWeaponLightCap)
   static handleEnvironmentalModifiers(scene, actor, noWind, areaEffect = {
     visibility:0, light:0, glare:0, wind:0
-  }, melee = false, weaponLight = 0){
+  }, melee = false, weaponLight = 0, weaponLightCap = null){
     // With no scene there are no conditions to read: say so rather than roll as if all were normal.
     if (!scene) {
       globalThis.ui?.notifications?.warn(game.i18n.localize("SR5.WARN_NoSceneForEnvironment"))
@@ -58,9 +59,11 @@ export class SR5_CombatHelpers {
     const row = value => parseInt(value) || 0
     const sceneRow = key => row(scene.getFlag("sr5", key))
     let visibilityMod = Math.min(Math.max(sceneRow("environModVisibility") + row(areaEffect.visibility) + row(actorData.visibility.value), 0), 4)
-    let lightMod = Math.min(Math.max(sceneRow("environModLight") + row(areaEffect.light) + row(actorData.light.value) + weaponLight, 0), 4)
-    // SR5 p. 177: low-light vision treats partial light (1) and dim light (2) as full light; it does nothing in total darkness (3)
     let sceneLight = sceneRow("environModLight") + row(areaEffect.light)
+    // A standard flashlight on the weapon brings the light where it points down to partial light (Run & Gun p. 69)
+    if (Number.isFinite(weaponLightCap)) sceneLight = Math.min(sceneLight, weaponLightCap)
+    let lightMod = Math.min(Math.max(sceneLight + row(actorData.light.value) + weaponLight, 0), 4)
+    // SR5 p. 177: low-light vision treats partial light (1) and dim light (2) as full light; it does nothing in total darkness (3)
     if (actor.visions.lowLight.isActive && sceneLight > 0 && sceneLight <= 2) lightMod = 0
     let glareMod = Math.min(Math.max(sceneRow("environModGlare") + row(areaEffect.glare) + row(actorData.glare.value), 0), 4)
     let windMod = Math.min(Math.max(sceneRow("environModWind") + row(areaEffect.wind) + row(actorData.wind.value), 0), 4)
