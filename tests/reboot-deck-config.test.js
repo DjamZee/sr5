@@ -181,6 +181,16 @@ describe('Rebooting a deck (SR5 p. 244)', () => {
     expect(call[1].actorData.matrix.markedItems.map(m => m.uuid)).toEqual([serverFile.uuid, commlink.uuid])
   })
 
+  it('keeps the deck configuration and resets only the Overwatch Score (SR5 p. 229, p. 244)', async () => {
+    await hacker.rebootDeck()
+    const matrix = hacker.update.mock.calls[0][0].system.matrix
+    expect(matrix.overwatchScore).toBe(0)
+    expect([matrix.attributes.attack.base, matrix.attributes.sleaze.base, matrix.attributes.dataProcessing.base, matrix.attributes.firewall.base]).toEqual([2, 5, 3, 4])
+    expect(matrix.attributesCollection).toEqual({
+      value1isSet: true, value2isSet: true, value3isSet: true, value4isSet: true
+    })
+  })
+
   it('spends one complex action', async () => {
     await hacker.rebootDeck()
     expect(hacker.update.mock.calls[0][0].system.specialProperties.actions.complex.current).toBe(0)
