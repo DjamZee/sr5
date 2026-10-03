@@ -53,6 +53,7 @@ import {
 import {
   SR5_EntityHelpers
 } from "../modules/entities/helpers.js"
+import SR5_RollDialog from "../modules/rolls/roll-dialog.js"
 
 beforeAll(() => {
   globalThis.game.i18n ??= {
@@ -266,5 +267,106 @@ describe("damage and healing on a watcher", () => {
     })
     expect(actor.system.conditionMonitors.condition.actual.base).toBe(2)
     vi.restoreAllMocks()
+  })
+})
+
+// The roll dialog checks "Patient Awakened or Emerged" (SR5 p. 208) from the target's attributes
+describe("first aid dialog on a target without Magic or Resonance", () => {
+  function openDialog(target) {
+    const fields = {
+    }
+    const html = {
+      querySelector: (sel) => (fields[sel] ??= {
+        value: 0, checked: false, style: {
+        }
+      })
+    }
+    const dialogData = {
+      owner: {
+        actorId: "healer"
+      },
+      target: {
+        actorId: "patient"
+      },
+      dicePool: {
+        base: 6, modifiers: []
+      },
+      limit: {
+        modifiers: {
+        }
+      },
+      various: {
+      },
+    }
+    const roll = new SR5_RollDialog({
+      position: {
+      }, setPosition: () => {}
+    }, null, dialogData)
+    roll.updateDicePoolValue = () => {}
+    const actors = {
+      healer: {
+        effects: []
+      }, patient: target
+    }
+    vi.spyOn(SR5_EntityHelpers, "getRealActorFromID").mockImplementation((id) => actors[id])
+    const checkbox = {
+      dataset: {
+        modifier: "patientAwakenedOrEmerged", target: "dicePoolModPatientAwakenedOrEmerged"
+      }
+    }
+    roll._filledCheckBox([checkbox], html, dialogData)
+    vi.restoreAllMocks()
+    return dialogData.dicePool.modifiers
+  }
+
+  it("a spirit without Resonance and no Magic does not break the dialog", () => {
+    const watcher = {
+      system: {
+        specialAttributes: {
+          magic: {
+            augmented: {
+              value: 0
+            }
+          }
+        }
+      }
+    }
+    expect(openDialog(watcher)).toEqual([])
+  })
+
+  it("an AI without Magic is still read for Resonance", () => {
+    const ai = {
+      system: {
+        specialAttributes: {
+          resonance: {
+            augmented: {
+              value: 0
+            }
+          }
+        }
+      }
+    }
+    expect(openDialog(ai)).toEqual([])
+  })
+
+  it("an awakened patient still gets the modifier", () => {
+    const mage = {
+      system: {
+        specialAttributes: {
+          magic: {
+            augmented: {
+              value: 3
+            }
+          }, resonance: {
+            augmented: {
+              value: 0
+            }
+          }
+        }
+      }
+    }
+    expect(openDialog(mage)).toEqual([expect.objectContaining({
+      type: "patientAwakenedOrEmerged", value: -2
+    })])
   })
 })
