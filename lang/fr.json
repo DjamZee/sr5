@@ -3953,6 +3953,7 @@
 	"SR5.WARN_StunHealsFirst": "Les dommages physiques ne guérissent pas tant que le personnage a des dommages étourdissants : soignez d'abord l'étourdissant (SR5 p. 207).",
 	"SR5.WARN_NoActor": "Vous devez sélectionner un Acteur !",
 	"SR5.WARN_RitualLeaderMissing": "Leader du rituel introuvable : la résistance du rituel ne peut pas être lancée.",
+	"SR5.WARN_ResistanceOwnerMissing": "Auteur du test introuvable (personnage supprimé) : la résistance ne peut pas être lancée.",
 	"SR5.WARN_NoEquippedWeapon": "Aucune arme équipée !",
 	"SR5.WARN_NoForce": "Vous n'avez pas défini de Puissance ! Par défaut Magie est appliquée.",
 	"SR5.WARN_NoLevel": "Vous n'avez pas défini de Niveau ! Par défaut Résonance est appliquée.",

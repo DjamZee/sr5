@@ -20,6 +20,12 @@ import {
   SR5_PrepareRollTest 
 } from "../roll-prepare.js"
 
+// The warning shown when the owner of a resistance card was deleted: the ritual names its leader,
+// every other resistance (summoning, compiling...) its author
+export function resistanceOwnerMissingWarning(testType) {
+  return testType === "ritual" ? "SR5.WARN_RitualLeaderMissing" : "SR5.WARN_ResistanceOwnerMissing"
+}
+
 export class SR5_ThirdPartyHelpers {
   /** Handle spirit, sprite or preparation resistance
     * @param {Object} cardData - The origin cardData
@@ -30,7 +36,7 @@ export class SR5_ThirdPartyHelpers {
     // The owner may have been deleted since the card was posted: stop here, the roll data needs it
     if (!actor) {
       SR5_SystemHelpers.srLog(1, `Resistance owner not found for '${cardData.owner.actorId}': resistance not rolled`)
-      if (cardData.test.type === "ritual") ui.notifications.warn(game.i18n.localize("SR5.WARN_RitualLeaderMissing"))
+      ui.notifications.warn(game.i18n.localize(resistanceOwnerMissingWarning(cardData.test.type)))
       return
     }
     let rollData = SR5_PrepareRollTest.getBaseRollData(null, actor)

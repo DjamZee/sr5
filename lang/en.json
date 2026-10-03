@@ -3953,6 +3953,7 @@
 	"SR5.WARN_StunHealsFirst": "Physical damage cannot heal while the character has Stun damage: heal Stun first (SR5 p. 207).",
 	"SR5.WARN_NoActor": "You must select an Actor first.",
 	"SR5.WARN_RitualLeaderMissing": "Ritual leader not found: the ritual resistance cannot be rolled.",
+	"SR5.WARN_ResistanceOwnerMissing": "Test author not found (deleted character): the resistance cannot be rolled.",
 	"SR5.WARN_NoEquippedWeapon": "No weapon equipped !",
 	"SR5.WARN_NoForce": "You don't have declared Force. Magic is applied by default.",
 	"SR5.WARN_NoLevel": "You don't have declared Level. Resonance is applied by default.",
