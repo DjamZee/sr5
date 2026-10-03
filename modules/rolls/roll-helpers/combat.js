@@ -16,8 +16,12 @@ export class SR5_CombatHelpers {
   // SR5 p. 176: environmental modifiers "reflect the conditions surrounding the action". The action happens
   // where the tokens stand and where the distance is measured, which is the scene on the canvas - not the
   // active scene, which the GM may not be showing.
-  static environmentScene(){
-    return globalThis.canvas?.scene ?? null
+  // sceneId: the scene an attack card was rolled on. A defense is clicked later, maybe by a player looking at
+  // another scene, and must read the conditions where the attack took place; if that scene is gone, fall back
+  // to the canvas.
+  static environmentScene(sceneId = null){
+    const scene = sceneId ? globalThis.game?.scenes?.get(sceneId) : null
+    return scene ?? globalThis.canvas?.scene ?? null
   }
 
   //Handle environmental modifiers
