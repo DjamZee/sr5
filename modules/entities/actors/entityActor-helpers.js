@@ -91,28 +91,10 @@ export class SR5_ActorHelper {
         if (realDamage > 0) ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${realDamage}${game.i18n.localize(SR5.damageTypesShort[damageType])} ${game.i18n.localize("SR5.Applied")}.`)
         if (damageType === "physical" && realDamage > 0) SR5_ActorHelper.addAggravatedWounds(realActor, actorData.conditionMonitors.physical, realDamage, options)
 
-        if (actorData.conditionMonitors.stun.actual.value > actorData.conditionMonitors.stun.value) {
-          // SR5 p. 171: half (rounded down) of the excess stun damage carries over to the physical monitor
-          let carriedDamage = Math.floor((actorData.conditionMonitors.stun.actual.value - actorData.conditionMonitors.stun.value) / 2)
-          actorData.conditionMonitors.physical.actual.base += carriedDamage
-          SR5_EntityHelpers.updateValue(actorData.conditionMonitors.physical.actual, 0)
-          actorData.conditionMonitors.stun.actual.base = actorData.conditionMonitors.stun.value
-          SR5_EntityHelpers.updateValue(actorData.conditionMonitors.stun.actual, 0)
-          if (carriedDamage > 0) ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${carriedDamage}${game.i18n.localize(SR5.damageTypesShort.physical)} ${game.i18n.localize("SR5.Applied")}.`)
-        }
-
-        if ((actorData.conditionMonitors.physical.actual.value > actorData.conditionMonitors.physical.value) && actor.type === "actorPc") {
-          let carriedDamage = actorData.conditionMonitors.physical.actual.value - actorData.conditionMonitors.physical.value
-          actorData.conditionMonitors.overflow.actual.base += carriedDamage
-          SR5_EntityHelpers.updateValue(actorData.conditionMonitors.overflow.actual, 0)
-          actorData.conditionMonitors.physical.actual.base = actorData.conditionMonitors.physical.value
-          SR5_EntityHelpers.updateValue(actorData.conditionMonitors.physical.actual, 0)
-          // SR5 p. 172: the character dies only when the overflow exceeds their Body
-          if (actorData.conditionMonitors.overflow.actual.value > actorData.conditionMonitors.overflow.value){
-            isDead = true
-            actorData.conditionMonitors.overflow.actual.base = actorData.conditionMonitors.overflow.value
-            SR5_EntityHelpers.updateValue(actorData.conditionMonitors.overflow.actual, 0)
-          }
+        {
+          const overflow = SR5_ActorHelper.carryMonitorOverflow(actorData.conditionMonitors, actor.type)
+          if (overflow.carriedDamage > 0) ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${overflow.carriedDamage}${game.i18n.localize(SR5.damageTypesShort.physical)} ${game.i18n.localize("SR5.Applied")}.`)
+          isDead = overflow.isDead
         }
         break
       case "actorGrunt":
@@ -209,6 +191,38 @@ export class SR5_ActorHelper {
     if (options.damage.element === "fire"){
       if (actorData.itemsProperties.armor.value <= 0) await SR5_ActorHelper.fireDamageEffect(actorId)
       else await SR5_ActorHelper.checkIfCatchFire(actorId, options.threshold.value, options.damage.source, options.combat.armorPenetration)
+    }
+  }
+
+  /**
+   * Carry damage beyond a full monitor, on prepared Stun/Physical monitors updated in place.
+   * SR5 p. 170: half (rounded down) of the excess Stun goes to Physical; p. 172: excess Physical
+   * fills a PC's overflow, and the character dies when it exceeds their Body.
+   * @return {{carriedDamage: number, isDead: boolean}} Physical boxes carried from Stun, and death
+   */
+  static carryMonitorOverflow(monitors, actorType) {
+    let carriedDamage = 0, isDead = false
+    if (monitors.stun.actual.value > monitors.stun.value) {
+      carriedDamage = Math.floor((monitors.stun.actual.value - monitors.stun.value) / 2)
+      monitors.physical.actual.base += carriedDamage
+      SR5_EntityHelpers.updateValue(monitors.physical.actual, 0)
+      monitors.stun.actual.base = monitors.stun.value
+      SR5_EntityHelpers.updateValue(monitors.stun.actual, 0)
+    }
+
+    if ((monitors.physical.actual.value > monitors.physical.value) && actorType === "actorPc") {
+      monitors.overflow.actual.base += monitors.physical.actual.value - monitors.physical.value
+      SR5_EntityHelpers.updateValue(monitors.overflow.actual, 0)
+      monitors.physical.actual.base = monitors.physical.value
+      SR5_EntityHelpers.updateValue(monitors.physical.actual, 0)
+      if (monitors.overflow.actual.value > monitors.overflow.value){
+        isDead = true
+        monitors.overflow.actual.base = monitors.overflow.value
+        SR5_EntityHelpers.updateValue(monitors.overflow.actual, 0)
+      }
+    }
+    return {
+      carriedDamage, isDead
     }
   }
 

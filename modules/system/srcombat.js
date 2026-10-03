@@ -736,22 +736,27 @@ export class SR5Combat extends Combat {
             //Head case Attribute Boost (Stolen Souls p. 201): Stun damage equal to the hits once the boost ends.
             //Applied straight to the monitor: this is not an attack, so no knockdown check
             if (itemData.type === "naniteAttributeBoost" && Number(itemData.value) > 0 && actor.system.conditionMonitors.stun) {
-              let stunData = foundry.utils.deepClone(actor.system.conditionMonitors.stun)
-              stunData.actual.base += Number(itemData.value)
-              SR5_EntityHelpers.updateValue(stunData.actual, 0)
-              await actor.update({
-                "system.conditionMonitors.stun.actual.base": stunData.actual.base
-              })
+              //Dynamic import: entityActor-helpers already imports this module
+              const {
+                SR5_ActorHelper
+              } = await import("../entities/actors/entityActor-helpers.js")
+              // Excess Stun carries over to Physical, then to overflow (SR5 p. 170, 172)
+              let monitors = foundry.utils.deepClone(actor.system.conditionMonitors)
+              monitors.stun.actual.base += Number(itemData.value)
+              SR5_EntityHelpers.updateValue(monitors.stun.actual, 0)
+              const overflow = SR5_ActorHelper.carryMonitorOverflow(monitors, actor.type)
+              let monitorUpdates = {
+              }
+              for (let key of ["stun", "physical", "overflow"]) {
+                if (monitors[key]?.actual) monitorUpdates[`system.conditionMonitors.${key}.actual.base`] = monitors[key].actual.base
+              }
+              await actor.update(monitorUpdates)
               ui.notifications.info(`${combatant.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_NaniteBoostDamage", {
                 damage: itemData.value
               })}`)
-              if (actor.system.conditionMonitors.stun.actual.value >= actor.system.conditionMonitors.stun.value) {
-                //Dynamic import: entityActor-helpers already imports this module
-                const {
-                  SR5_ActorHelper 
-                } = await import("../entities/actors/entityActor-helpers.js")
-                await SR5_ActorHelper.createKoEffect(actor.id)
-              }
+              if (overflow.carriedDamage > 0) ui.notifications.info(`${combatant.name}${game.i18n.localize("SR5.Colons")} ${overflow.carriedDamage}${game.i18n.localize(SR5.damageTypesShort.physical)} ${game.i18n.localize("SR5.Applied")}.`)
+              if (overflow.isDead) await SR5_ActorHelper.createDeadEffect(actor.id)
+              else if (monitors.stun.actual.value >= monitors.stun.value) await SR5_ActorHelper.createKoEffect(actor.id)
             }
           } else {
             await item.update({
