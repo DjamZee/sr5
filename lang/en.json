@@ -399,6 +399,7 @@
 	"SR5.ShopOutcome_common": "Common goods",
 	"SR5.ShopOutcome_criticalGlitch": "Critical glitch: out of reach",
 	"SR5.ShopOutcome_failure": "Not found",
+	"SR5.ShopOutcome_noPool": "No test: no dice",
 	"SR5.ShopOutcome_success": "Found",
 	"SR5.ShopOutcome_successGlitch": "Found, glitch",
 	"SR5.ShopOutcome_tie": "Found, twice the delay",

@@ -291,6 +291,20 @@ export class SR5ShopAvailability {
         continue
       }
 
+      // No die, no test: "Repousser les limites […] peut vous permettre de
+      // tenter des tests pour lesquels votre réserve de dés aurait été de zéro
+      // ou moins" (SR5 p. 58). Only Edge opens such a test, and the shop
+      // spends none, so nothing is rolled, not even the availability's dice.
+      if (!pool) {
+        results.push({
+          uuid: line.uuid, name: source.name, quantity, price, availability,
+          priceLabel: `${price.toLocaleString()}¥`,
+          outcome: 'noPool', obtained: false, untested: true, delayLabel: '—',
+          outcomeLabel: game.i18n.localize('SR5.ShopOutcome_noPool'),
+        })
+        continue
+      }
+
       const test = await SR5ShopAvailability.rollDice(pool)
       const opposition = await SR5ShopAvailability.rollDice(availability)
       const hits = limit ? Math.min(test.hits, limit) : test.hits
