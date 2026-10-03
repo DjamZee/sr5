@@ -262,8 +262,12 @@ export class SR5_MatrixHelpers {
     await actor.rebootDeck()
   }
 
+  //Jam Signals adds the hits to the Noise rating (SR5 p. 239). system.matrix.noise holds that rating as a
+  //positive number, turned into a dice pool malus when a matrix test reads it (rollData-MatrixAction.js),
+  //like the scene's own noise : a negative value here gave the jammer, and every jammed device, bonus dice.
   static async jamSignals(cardData){
     let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+    let noise = cardData.roll.hits
     let effect = {
       name: game.i18n.localize("SR5.EffectSignalJam"),
       type: "itemEffect",
@@ -273,19 +277,19 @@ export class SR5_MatrixHelpers {
       "system.duration": 0,
       "system.durationType": "permanent",
       "system.target": game.i18n.localize("SR5.MatrixNoise"),
-      "system.value": -cardData.roll.hits,
+      "system.value": noise,
       "system.customEffects": {
         "0": {
           "category": "matrixAttributes",
           "target": "system.matrix.noise",
           "type": "value",
-          "value": -cardData.roll.hits,
+          "value": noise,
           "forceAdd": true,
         }
       },
     }
     await actor.createEmbeddedDocuments("Item", [effect])
-    let statusEffect = await _getSRStatusEffect("signalJam", -cardData.roll.hits)
+    let statusEffect = await _getSRStatusEffect("signalJam", noise)
     await actor.createEmbeddedDocuments('ActiveEffect', [statusEffect])
   }
 
