@@ -17,7 +17,9 @@ export default async function matrixDefenseInfo(cardData, actorId){
     attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId),
     attackerData = attacker?.system,
     netHits = cardData.previousMessage.hits - cardData.roll.hits,
-    targetItem = await fromUuid(cardData.target.itemUuid)
+    targetItem = cardData.target.itemUuid ? await fromUuid(cardData.target.itemUuid) : null,
+    //An AI outside any device has no targeted item, it is the persona itself (Data Trails p. 157)
+    targetName = targetItem?.name || actor.name
 
   //Overwatch button if illegal action
   if (cardData.matrix.overwatchScore && cardData.roll.hits > 0) cardData.chatCard.buttons.overwatch = await SR5_RollMessage.generateChatButton("nonOpposedTest", "overwatch", `${game.i18n.format('SR5.IncreaseOverwatch', {
@@ -48,7 +50,7 @@ export default async function matrixDefenseInfo(cardData, actorId){
       }
     } else if (cardData.matrix.actionType === "sleaze") {
       cardData.chatCard.buttons.defenderPlaceMark = SR5_RollMessage.generateChatButton("nonOpposedTest", "defenderPlaceMark", `${game.i18n.format('SR5.DefenderPlaceMarkTo', {
-        key: cardData.matrix.mark, item: targetItem.name, name: attacker.name
+        key: cardData.matrix.mark, item: targetName, name: attacker.name
       })}`)
     }
   }
@@ -61,18 +63,18 @@ export default async function matrixDefenseInfo(cardData, actorId){
       case "watchdog":
         cardData.matrix.mark = 1
         cardData.chatCard.buttons.attackerPlaceMark = SR5_RollMessage.generateChatButton("nonOpposedTest", "attackerPlaceMark", `${game.i18n.format('SR5.AttackerPlaceMarkTo', {
-          key: cardData.matrix.mark, item: targetItem.name, name: cardData.owner.speakerActor
+          key: cardData.matrix.mark, item: targetName, name: cardData.owner.speakerActor
         })}`)
         break
       case "hackOnTheFly":
         cardData.chatCard.buttons.attackerPlaceMark = SR5_RollMessage.generateChatButton("nonOpposedTest", "attackerPlaceMark", `${game.i18n.format('SR5.AttackerPlaceMarkTo', {
-          key: cardData.matrix.mark, item: targetItem.name, name: cardData.owner.speakerActor
+          key: cardData.matrix.mark, item: targetName, name: cardData.owner.speakerActor
         })}`)
         break
       case "bruteForce":
         cardData.damage.matrix.value = Math.ceil(netHits / 2)
         cardData.chatCard.buttons.attackerPlaceMark = SR5_RollMessage.generateChatButton("nonOpposedTest", "attackerPlaceMark", `${game.i18n.format('SR5.AttackerPlaceMarkTo', {
-          key: cardData.matrix.mark, item: targetItem.name, name: cardData.owner.speakerActor
+          key: cardData.matrix.mark, item: targetName, name: cardData.owner.speakerActor
         })}`)
         if (actorData.matrix.deviceType !== "host") cardData.chatCard.buttons.matrixResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "matrixResistance", `${game.i18n.localize('SR5.TakeOnDamageMatrix')} (${cardData.damage.matrix.value})`)
         break
