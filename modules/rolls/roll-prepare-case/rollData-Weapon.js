@@ -261,7 +261,6 @@ async function handleTargetInfo(rollData, actor, item){
   //Add specific data for grenade & missile
   if (itemData.category === "grenade"|| itemData.type === "grenadeLauncher" || itemData.type === "missileLauncher") {
     target = await SR5_SystemHelpers.getTemplateItemPosition(item.id)
-    rollData.test.typeSub = "grenade"
     rollData.chatCard.templateRemove = true
     rollData.combat.grenade.isGrenade = true
     rollData.combat.grenade.damageFallOff = itemData.blast.damageFallOff

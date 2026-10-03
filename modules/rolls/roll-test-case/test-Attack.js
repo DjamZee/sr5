@@ -13,7 +13,10 @@ export default async function attackInfo(cardData){
     cardData.damage.base -= cardData.combat.choke.damageModify 
     cardData.damage.value -= cardData.combat.choke.damageModify 
   }
-  if (cardData.test.typeSub === "grenade") {
+  // A launcher keeps typeSub "rangedWeapon" for its dialog (range and every usual modifier apply, SR5 p. 182),
+  // so a hand grenade, a grenade launcher and a missile launcher are all told apart by combat.grenade.isGrenade:
+  // a simple test against a spot, scattering under 3 hits, with no defense test (SR5 p. 182-183)
+  if (cardData.test.typeSub === "grenade" || cardData.combat.grenade?.isGrenade) {
     cardData.damage.value = cardData.damage.base
     //Handle scatter
     if (cardData.roll.hits < 3) cardData.chatCard.buttons.scatter = SR5_RollMessage.generateChatButton("nonOpposedTest","scatter",game.i18n.localize("SR5.Scatter"))

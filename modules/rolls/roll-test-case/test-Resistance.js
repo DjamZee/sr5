@@ -128,7 +128,7 @@ function handlePreviousButtons(cardData) {
   }
 
   if (prevData?.test.type === "spell" && prevData?.magic.spell.range === "area");
-  else if (prevData?.test.typeSub === "grenade");
+  else if (prevData?.test.typeSub === "grenade" || prevData?.combat?.grenade?.isGrenade);
   else if (cardData.damage.isContinuous && cardData.test.typeSub === "continuousDamage");
   else if (cardData.damage.resistanceType === "fatiguedDamage") SR5_RollMessage.updateChatButtonHelper(cardData.previousMessage.messageId, "fatiguedCard") 
   else if (cardData.test.typeSub === "toxinDamage") SR5_RollMessage.updateChatButtonHelper(cardData.previousMessage.messageId, "resistanceToxin")
