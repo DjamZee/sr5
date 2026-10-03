@@ -106,3 +106,54 @@ describe("standard weapon flashlight (Run & Gun p. 69: partial light)", () => {
     expect(SR5_CombatHelpers.handleEnvironmentalModifiers(sceneWithLight(3), actor.system, true)).toBe(-6)
   })
 })
+
+describe("defense whose attack scene was deleted", () => {
+  const warnings = []
+  const displayed = sceneWithLight(3)
+  const attackScene = sceneWithLight(1)
+  beforeEach(() => {
+    warnings.length = 0
+    globalThis.ui = {
+      notifications: {
+        warn: m => warnings.push(m)
+      }
+    }
+    globalThis.game = {
+      i18n: {
+        localize: key => key
+      },
+      scenes: new Map([["attack", attackScene]]),
+    }
+    globalThis.canvas = {
+      scene: displayed
+    }
+  })
+  afterEach(() => {
+    delete globalThis.ui
+    delete globalThis.game
+    delete globalThis.canvas
+  })
+
+  it("reads the attack's scene while it exists, without a word", () => {
+    expect(SR5_CombatHelpers.environmentScene("attack")).toBe(attackScene)
+    expect(warnings).toEqual([])
+  })
+
+  it("falls back to the displayed scene and warns when it is gone", () => {
+    expect(SR5_CombatHelpers.environmentScene("deleted")).toBe(displayed)
+    expect(warnings).toEqual(["SR5.WARN_AttackSceneGone"])
+  })
+
+  it("leaves the no-scene warning alone when nothing is displayed either", () => {
+    globalThis.canvas = {
+      scene: null
+    }
+    expect(SR5_CombatHelpers.environmentScene("deleted")).toBeNull()
+    expect(warnings).toEqual([])
+  })
+
+  it("does not warn for a roll that has no attack scene to read (attack, perception)", () => {
+    expect(SR5_CombatHelpers.environmentScene()).toBe(displayed)
+    expect(warnings).toEqual([])
+  })
+})
