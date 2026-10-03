@@ -190,23 +190,26 @@ export class SR5_RollTest {
     }
 
     //Update combatant if Active defense or full defense is used.
-    if (dialogData.dicePool.modifiers.fullDefense || (dialogData.combat.activeDefenseSelected !== "none")){
-      let initModifier = 0
-      if (dialogData.dicePool.modifiers.fullDefense){
-        let isInFullDefense = actor.effects.find(e => e.origin === "fullDefense") ? true : false
-        if (!isInFullDefense){
-          initModifier += -10
-          SR5_CombatHelpers.applyFullDefenseEffect(actor)
-        }
-      }
-      if (dialogData.combat.activeDefenseSelected !== "") initModifier += SR5_ConverterHelpers.activeDefenseToInitMod(dialogData.combat.activeDefenseSelected)
-      if (initModifier < 0) SR5Combat.changeInitInCombatHelper(actor.id, initModifier)
-    }
+    SR5_RollTest.applyDefenseStance(dialogData, actor)
 
     //Change actions in combat tracker
     if (game.combat && dialogData.combat.actions.length){
       await SR5Combat.changeActionInCombat(dialogData.owner.actorId, dialogData.combat.actions)
     }
+  }
+
+  // Full defense (SR5 p. 170 and 189) costs 10 initiative and stays for the turn;
+  // dicePool.modifiers is an array, the checkbox adds a "fullDefense" entry
+  static applyDefenseStance(dialogData, actor){
+    let fullDefense = dialogData.dicePool.modifiers.some(m => m.type === "fullDefense")
+    if (!fullDefense && dialogData.combat.activeDefenseSelected === "none") return
+    let initModifier = 0
+    if (fullDefense && !actor.effects.find(e => e.origin === "fullDefense")){
+      initModifier += -10
+      SR5_CombatHelpers.applyFullDefenseEffect(actor)
+    }
+    if (dialogData.combat.activeDefenseSelected !== "") initModifier += SR5_ConverterHelpers.activeDefenseToInitMod(dialogData.combat.activeDefenseSelected)
+    if (initModifier < 0) SR5Combat.changeInitInCombatHelper(actor.id, initModifier)
   }
 
   /** Roll a shadowrun 5 test
