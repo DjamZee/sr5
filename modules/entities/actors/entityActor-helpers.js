@@ -538,7 +538,12 @@ export class SR5_ActorHelper {
   static async deleteMarksOnActor(actorData, actorId){
     for (let m of actorData.matrix.markedItems){
       let itemToClean = await fromUuid(m.uuid)
-      if (itemToClean) {
+      //The persona of an AI outside any device carries its marks itself (Data Trails p. 157)
+      if (itemToClean?.documentName === "Actor") {
+        await itemToClean.update({
+          "system.matrix.marks": (itemToClean._source.system.matrix.marks ?? []).filter(mark => mark.ownerId !== actorId)
+        })
+      } else if (itemToClean) {
         let cleanData = foundry.utils.duplicate(itemToClean.system)
         for (let i = 0; i < cleanData.marks.length; i++){
           if (cleanData.marks[i].ownerId === actorId) {
@@ -567,8 +572,10 @@ export class SR5_ActorHelper {
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
     if (!actor) return SR5_SystemHelpers.srLog(1, `No Actor in deleteMarkInfo()`)
 
-    let deck = actor.items.find(d => d.type === "itemDevice" && d.system.isActive),
-      deckData = foundry.utils.duplicate(deck.system),
+    let deck = actor.items.find(d => d.type === "itemDevice" && d.system.isActive)
+    //The marker has no deck any more: no trace of the mark is left to remove
+    if (!deck) return
+    let deckData = foundry.utils.duplicate(deck.system),
       index=0
 
     for (let m of deckData.markedItems){

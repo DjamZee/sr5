@@ -152,6 +152,9 @@ async function checkTargetMarks(rollData, matrixAction, actor){
         const mark = item.system.marks?.find(m => m.ownerId === rollData.owner.speakerId)
         if (mark?.value > marks) marks = mark.value
       }
+      //An AI outside any device carries the marks on its persona (Data Trails p. 157)
+      const personaMark = t.actor.system.matrix?.marks?.find(m => m.ownerId === rollData.owner.speakerId)
+      if (personaMark?.value > marks) marks = personaMark.value
       if (marks < neededMarks) {
         ui.notifications.info(game.i18n.localize("SR5.NotEnoughMarksOnTarget"))
         return false

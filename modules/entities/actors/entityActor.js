@@ -26,10 +26,13 @@ import {
   SR5_SocketHandler 
 } from "../../socket.js"
 import {
-  SR5_ActorHelper 
+  SR5_ActorHelper
 } from "./entityActor-helpers.js"
 import {
-  SR5Combat 
+  SR5_MarkHelpers
+} from "../../rolls/roll-helpers/mark.js"
+import {
+  SR5Combat
 } from "../../system/srcombat.js"
 import {
   isStoredAway 
@@ -957,6 +960,11 @@ export class SR5Actor extends Actor {
     actorData.matrix.attributesCollection.value3isSet = false
     actorData.matrix.attributesCollection.value4isSet = false
     actorData.matrix.overwatchScore = 0
+    //The marks placed on an AI's persona go too, with their trace on the decks of those who placed them (SR5 p. 244)
+    if (SR5_CharacterUtility.isDepthActive(this)) {
+      await SR5_MarkHelpers.clearPersonaMarks(this)
+      actorData.matrix.marks = []
+    }
 
     //Delete marks on others actors
     if (actorData.matrix.markedItems.length) {
