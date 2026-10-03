@@ -105,19 +105,37 @@ export class SR5_MiscellaneousHelpers {
   //kind of action the list asks for beyond what is left ({type, value, current}), or null. Manual adjustments,
   //interruptions (paid in initiative) and special actions are not counted
   static missingAction(actions, available){
+    let left = {
+    }
+    for (let type of ["free", "simple", "complex"]) left[type] = {
+      current: available?.[type]?.current ?? 0
+    }
     let needed = {
     }
     for (let a of actions ?? []){
       if (!a || a.source === "manual" || !["free", "simple", "complex"].includes(a.type) || !(a.value > 0)) continue
       needed[a.type] = (needed[a.type] ?? 0) + a.value
-    }
-    for (let [type, value] of Object.entries(needed)){
-      let current = available?.[type]?.current ?? 0
-      if (value > current) return {
-        type, value, current
+      if (a.value > left[a.type].current) return {
+        type: a.type, value: needed[a.type], current: available?.[a.type]?.current ?? 0
       }
+      SR5_MiscellaneousHelpers.spendActions(left, [a])
     }
     return null
+  }
+
+  //SR5 p. 164: two simple actions OR one complex action per action phase. Takes the actions off the counters
+  //(mutated in place) and keeps the two linked: a simple action spent leaves no complex one, a complex action
+  //leaves no simple one. Manual adjustments touch only their own counter; the other types are taken off as is
+  static spendActions(available, actions){
+    for (let a of actions ?? []){
+      if (!a || !available?.[a.type] || typeof a.value !== "number") continue
+      let simple = available.simple, complex = available.complex
+      available[a.type].current -= a.value
+      if (a.source === "manual" || !(a.value > 0) || !simple || !complex) continue
+      if (a.type === "simple") complex.current = Math.min(complex.current, Math.max(0, Math.floor(simple.current / 2)))
+      if (a.type === "complex") simple.current = Math.min(simple.current, Math.max(0, 2 * complex.current))
+    }
+    return available
   }
 
   //Remove an action from array

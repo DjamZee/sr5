@@ -27,6 +27,9 @@ import {
   SR5_ActorHelper 
 } from "./entityActor-helpers.js"
 import {
+  SR5_MiscellaneousHelpers
+} from "../../rolls/roll-helpers/miscellaneous.js"
+import {
   SR5_RollMessage 
 } from "../../rolls/roll-message.js"
 import {
@@ -1450,7 +1453,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         actions = [{
           type: "simple", value: 1, source: "activateFocus"
         }]
-        actorData.specialProperties.actions.simple.current -=1
+        SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
 
         // Handle focus addicition
         let alreadyTaken = actorData.addictions.find((d) => item.name === d.name)
@@ -1493,7 +1496,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       actions = [{
         type: actionType, value: 1, source: (oldValue === false) ? "turnOnWifi" : "turnOffWifi"
       }]
-      actorData.specialProperties.actions[actionType].current -=1
+      SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
     }
 
     //Special case for materialization
@@ -1729,8 +1732,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     await this.actor.rebootDeck()
 
     //Rebooting by choice is a complex action (SR5 p. 231); a reboot forced by an IC spends none
+    let actionsLeft = SR5_MiscellaneousHelpers.spendActions(foundry.utils.deepClone(this.actor.system.specialProperties.actions), [{
+      type: "complex", value: 1, source: "rebootDeck"
+    }])
     await this.actor.update({
-      "system.specialProperties.actions.complex.current": this.actor.system.specialProperties.actions.complex.current - 1
+      "system.specialProperties.actions.simple.current": actionsLeft.simple.current,
+      "system.specialProperties.actions.complex.current": actionsLeft.complex.current
     })
     if (game.combat){
       const actorId = this.actor.isToken ? this.actor.token.id : this.actor.id

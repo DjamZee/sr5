@@ -79,6 +79,9 @@ function preparedSystem(activeDeck) {
     },
     specialProperties: {
       actions: {
+        simple: {
+          current: 2
+        },
         complex: {
           current: 1
         }
@@ -241,7 +244,9 @@ describe('Rebooting a deck (SR5 p. 244)', () => {
     })
     // The reboot, then the complex action the character chose to spend on it (SR5 p. 231)
     expect(hacker.update).toHaveBeenCalledTimes(2)
+    // ... which leaves no simple action either (SR5 p. 164)
     expect(hacker.update.mock.calls[1][0]).toEqual({
+      "system.specialProperties.actions.simple.current": 0,
       "system.specialProperties.actions.complex.current": 0
     })
   })

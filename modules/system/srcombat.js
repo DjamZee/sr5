@@ -591,10 +591,8 @@ export class SR5Combat extends Combat {
 		
     //Update actor actions
     if (updateActor){
-      for (let action of actions){
-        if (action.type === "special") continue
-        actorData.specialProperties.actions[action.type].current -= action.value
-      }
+      //SR5 p. 164: a simple action spent leaves no complex one, and the reverse
+      SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions.filter(a => a.type !== "special"))
       await actor.update({
         system: actorData
       })
