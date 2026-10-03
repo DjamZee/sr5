@@ -68,7 +68,8 @@ export default async function defense(rollData, actor, chatData){
   rollData.combat.armorPenetration = chatData.combat.armorPenetration
   rollData.combat.firingMode.selected = chatData.combat.firingMode.selected
   rollData.target.actorType = chatData.target.actorType
-  rollData.target.rangeInMeters = chatData.target.rangeInMeters   
+  rollData.target.rangeInMeters = chatData.target.rangeInMeters
+  rollData.target.sceneId = chatData.target.sceneId ?? null
   rollData.target.range = chatData.target.range 
   rollData.combat.choke = chatData.combat.choke  
   rollData.combat.weaponType = chatData.combat.weaponType    
@@ -151,7 +152,7 @@ async function handleMeleeWeaponModifiers(rollData, actor, chatData){
   }
     
   //Add environmental modifiers
-  let environmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, true, undefined, true)
+  let environmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(chatData.target.sceneId), actor.system, true, undefined, true)
   if (environmentalMod !== 0){
     rollData.dicePool.modifiers.push({
       type: "environmentalSceneMod",

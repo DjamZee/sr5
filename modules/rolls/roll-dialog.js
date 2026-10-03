@@ -994,17 +994,19 @@ export default class SR5_RollDialog {
           if (ev.target.value === "sight") {
             const sightPerceptionEl = html.querySelector('#sightPerception')
             if (sightPerceptionEl) sightPerceptionEl.style.display = ''
-            if (canvas.scene) {
-              SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "environmentalSceneMod")
-              dialogData.dicePool.modifiers.push({
-                type: "environmentalSceneMod",
-                label: game.i18n.localize(SR5.dicePoolModTypes["environmentalSceneMod"]),
-                value: SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, true),
-              })
-              label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.perceptionTypes[ev.target.value])})`
-            }
-            html.querySelector('[data-modifier="environmentalSceneMod"]').value = dialogData.dicePool.modifiers.environmentalSceneMod.value
-            this.dicePoolModifier.environmental = dialogData.dicePool.modifiers.environmentalSceneMod.value
+            // dicePool.modifiers is an array: reading .environmentalSceneMod on it threw, and the end of this case
+            // (perception type and limit) never ran. With no scene, handleEnvironmentalModifiers warns and returns 0.
+            const environmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, true)
+            SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "environmentalSceneMod")
+            if (environmentalMod !== 0) dialogData.dicePool.modifiers.push({
+              type: "environmentalSceneMod",
+              label: game.i18n.localize(SR5.dicePoolModTypes["environmentalSceneMod"]),
+              value: environmentalMod,
+            })
+            label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.perceptionTypes[ev.target.value])})`
+            const environmentalInput = html.querySelector('[data-modifier="environmentalSceneMod"]')
+            if (environmentalInput) environmentalInput.value = environmentalMod
+            this.dicePoolModifier.environmental = environmentalMod
           } else {
             const sightPerceptionEl = html.querySelector('#sightPerception')
             if (sightPerceptionEl) sightPerceptionEl.style.display = 'none'

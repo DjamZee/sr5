@@ -504,6 +504,7 @@ export class SR5_PrepareRollTest {
         grid: "",
         rangeInMeters: 0,
         range: 0,
+        sceneId: null,
       },
       test: {
         actionType: "",

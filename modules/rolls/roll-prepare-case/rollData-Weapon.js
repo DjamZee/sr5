@@ -211,6 +211,8 @@ async function handleTargetInfo(rollData, actor, item){
     ui.notifications.warn(game.i18n.localize("SR5.WARN_NoSceneForEnvironment"))
     return rollData
   }
+  //Keep the scene the attack is rolled on, so the defense reads its conditions and not the clicker's canvas
+  rollData.target.sceneId = SR5_CombatHelpers.environmentScene().id
   let target = 0,
     sceneEnvironmentalMod
   rollData.target.range = "short"
