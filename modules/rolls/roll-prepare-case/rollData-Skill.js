@@ -187,7 +187,9 @@ function getOpposedData(rollData, chatData, rollKey, actor){
   rollData.dialogSwitch.extended = false
   rollData.test.isOpposed = true
   rollData.threshold.value = chatData.roll.hits
-  rollData.limit.base = 0
+  // SR5 p. 141-143: the target keeps the limit of the skill it rolls
+  // (Con, Leadership, Negotiation [Social]; Perception [Mental] against
+  // Impersonation). Etiquette, Intimidation and Performance are set below.
 
   // SR5 p. 143, table Tests de compétences sociales: Etiquette is resisted
   // with Perception + Charisma [Social]
@@ -210,6 +212,7 @@ function getOpposedData(rollData, chatData, rollKey, actor){
   // Charisma + Willpower, two attributes and no skill. (The example p. 142
   // gives a ganger Intimidation + Willpower; the rule and the table do not.)
   if (chatData.test.typeSub === "intimidation" || chatData.test.typeSub === "performance"){
+    rollData.limit.base = 0
     rollData.test.title = `${game.i18n.localize("SR5.OpposedTest") + game.i18n.localize("SR5.Colons") + " " + game.i18n.localize("SR5.Charisma") + " + " + game.i18n.localize("SR5.Willpower") + " (" + chatData.roll.hits + ")"}`
     rollData.dicePool.base = actorData.attributes.charisma.augmented.value + actorData.attributes.willpower.augmented.value
     rollData.dicePool.composition = ([
