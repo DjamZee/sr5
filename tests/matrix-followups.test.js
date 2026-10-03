@@ -143,3 +143,49 @@ describe('The Overwatch Score never goes below 0 (SR5 p. 231)', () => {
     expect(actor.system.matrix.overwatchScore).toBe(0)
   })
 })
+
+describe('Object resistance keeps the button of an area spell only', () => {
+  async function resist(area) {
+    game.messages = {
+      get: () => ({
+        flags: {
+          sr5data: {
+            test: {
+              type: 'spell'
+            }, magic: {
+              spell: {
+                area
+              }
+            }, owner: {
+            }
+          }
+        }
+      })
+    }
+    await testCases.objectResistanceResultInfo({
+      previousMessage: {
+        messageId: 'm1', hits: 0
+      },
+      roll: {
+        hits: 2
+      },
+      chatCard: {
+        buttons: {
+        }
+      },
+    })
+    return SR5_RollMessage.updateChatButtonHelper.mock.calls.length > 0
+  }
+
+  it('removes the button of a spell without area', async () => {
+    expect(await resist(0)).toBe(true)
+  })
+
+  it('keeps it on an area spell, other objects in the area may still resist', async () => {
+    expect(await resist(3)).toBe(false)
+  })
+
+  it('removes it whenever the area is not positive', async () => {
+    expect(await resist(-1)).toBe(true)
+  })
+})
