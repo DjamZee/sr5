@@ -1218,13 +1218,36 @@ export class SR5_UtilityItem extends Actor {
     const visions = actor.system.visions
     for (let a of accessories) {
       if (!a?.isActive) continue
-      let effectType = null
-      if (a.system) effectType = a.system.weaponAccessory?.specialEffect
-      else effectType = WEAPON_ACCESSORY_CATALOG[a.name]?.systemEffects?.[0]?.value
+      const effectType = SR5_UtilityItem.weaponAccessoryEffect(a)
       if (effectType === "flashLightLowLight" && visions.lowLight?.isActive) return -1
       if (effectType === "flashLightInfrared" && visions.thermographic?.isActive) return -1
     }
     return 0
+  }
+
+  //Light row a standard flashlight mounted on the weapon being used brings the scene down to, or null.
+  //Run & Gun p. 69: "standard flashlights provide partial light" (row 1 of the Light column, SR5 p. 176), in the
+  //direction the weapon points: like the other flashlights, only for a roll made with that weapon.
+  static getWeaponLightCap(itemData) {
+    if (!itemData?.isActive) return null
+    let accessories = itemData.accessory
+    if (accessories && typeof accessories === "object" && !Array.isArray(accessories)) accessories = Object.values(accessories)
+    if (!Array.isArray(accessories)) return null
+    return accessories.some(a => a?.isActive && SR5_UtilityItem.weaponAccessoryEffect(a) === "flashLight") ? 1 : null
+  }
+
+  //Special effect of a weapon accessory: an item carries it in weaponAccessory.specialEffect, a catalog entry
+  //(a weapon's built-in accessory, stored by name) in its systemEffects.
+  static weaponAccessoryEffect(a) {
+    if (!a) return null
+    if (!a.system) return WEAPON_ACCESSORY_CATALOG[a.name]?.systemEffects?.[0]?.value || null
+    const effect = a.system.weaponAccessory?.specialEffect
+    if (effect) return effect
+    // The compendium's standard flashlight was generated while its catalog entry had no effect, so its
+    // specialEffect is empty and the sheet offers no way to set it: recognise it by its name.
+    const i18n = globalThis.game?.i18n
+    if (i18n && a.name && a.name === i18n.localize("SR5.AccessoryFlashLight")) return "flashLight"
+    return null
   }
 
   //Handle if an accessory gives environmental modifiers (actor-level effects)

@@ -273,6 +273,7 @@ async function handleTargetInfo(rollData, actor, item){
 
   //A flashlight lights where its own weapon points (Run & Gun p. 69): only this weapon's counts
   const weaponLight = SR5_UtilityItem.getWeaponLightCompensation(itemData, actor)
+  const weaponLightCap = SR5_UtilityItem.getWeaponLightCap(itemData)
 
   //Handle Melee specifics
   if (itemData.category === "meleeWeapon") {
@@ -286,7 +287,7 @@ async function handleTargetInfo(rollData, actor, item){
       ui.notifications.info(`${game.i18n.localize("SR5.INFO_TargetIsTooFar")}`)
       return false
     }
-    sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, true, areaEffect, true, weaponLight)
+    sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, true, areaEffect, true, weaponLight, weaponLightCap)
     // Kept on the card for the defense to compare with (SR5 p. 188 option), before the option clears it here
     rollData.combat.environmentalMod = sceneEnvironmentalMod
     const targetMod = SR5_CombatHelpers.meleeEnvironmentalMod(SR5_CombatHelpers.environmentScene(), targetActor)
@@ -314,7 +315,7 @@ async function handleTargetInfo(rollData, actor, item){
       ui.notifications.info(`${game.i18n.localize("SR5.INFO_TargetIsTooFar")}`)
       return false
     }
-    sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, false, areaEffect, false, weaponLight)
+    sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, false, areaEffect, false, weaponLight, weaponLightCap)
   }
 
   //Handle ranged weapon current firing mode
