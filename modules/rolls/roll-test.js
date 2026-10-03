@@ -169,25 +169,7 @@ export class SR5_RollTest {
     if (dialogData.owner.itemUuid) SR5_RollTestHelper.updateItemAfterRoll(dialogData)
 
     //Update spirit if spirit aid is used
-    if (dialogData.dicePool.modifiers.spiritAid?.value > 0){
-      let spiritItem = await fromUuid(dialogData.magic.spiritAid.id)
-      let spiritItemData = foundry.utils.duplicate(spiritItem.system)
-      spiritItemData.services.value -= 1
-      await spiritItem.update({
-        'data': spiritItemData
-      })
-      ui.notifications.info(`${spiritItem.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format('SR5.INFO_ServicesReduced', {
-        service: 1
-      })}`)
-      let spiritActor = game.actors.find(a => a.system.creatorItemId === spiritItem.id)
-      if (spiritActor){
-        let spiritActorData = foundry.utils.duplicate(spiritActor.system)
-        spiritActorData.services.value -= 1
-        await spiritActor.update({
-          'data': spiritActorData
-        })
-      }
-    }
+    await SR5_RollTest.spendSpiritAidService(dialogData)
 
     //Update combatant if Active defense or full defense is used.
     if (dialogData.dicePool.modifiers.fullDefense || (dialogData.combat.activeDefenseSelected !== "none")){
@@ -206,6 +188,25 @@ export class SR5_RollTest {
     //Change actions in combat tracker
     if (game.combat && dialogData.combat.actions.length){
       await SR5Combat.changeActionInCombat(dialogData.owner.actorId, dialogData.combat.actions)
+    }
+  }
+
+  //SR5 p. 305-306: aiding a test is a service of a bound spirit. The dice pool modifiers are a list, and an
+  //update keyed 'data' (Foundry V9) is ignored: the service is written by its path
+  static async spendSpiritAidService(dialogData) {
+    if (!(dialogData.dicePool.modifiers.find(m => m.type === "spiritAid")?.value > 0)) return
+    let spiritItem = await fromUuid(dialogData.magic.spiritAid.id)
+    await spiritItem.update({
+      "system.services.value": spiritItem.system.services.value - 1
+    })
+    ui.notifications.info(`${spiritItem.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format('SR5.INFO_ServicesReduced', {
+      service: 1
+    })}`)
+    let spiritActor = game.actors.find(a => a.system.creatorItemId === spiritItem.id)
+    if (spiritActor){
+      await spiritActor.update({
+        "system.services.value": spiritActor.system.services.value - 1
+      })
     }
   }
 

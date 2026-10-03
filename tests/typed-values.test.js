@@ -73,6 +73,9 @@ import {
 import {
   sr5ItemDrugDataModel
 } from '../modules/datamodels/items/itemDrug.js'
+import {
+  SR5_RollTest
+} from '../modules/rolls/roll-test.js'
 
 // An embedded collection: iterable, with find and get as Foundry's Collection has them
 function collection(docs){
@@ -421,5 +424,67 @@ describe('drug interactions (Chrome Flesh p. 197)', () => {
     expect(jazz.system.handleShot.durationContrecoup).toBe(60)
     expect(jazz.system.handleShot.duration).toBe(30)
     expect(written(actor, 'bliss').system.handleShot.duration).toBe(3)
+  })
+})
+
+describe('a bound spirit spends a service when it aids a test (SR5 p. 305-306)', () => {
+  function spiritAid(modifiers){
+    const spiritItem = {
+      id: 's1', name: 'Esprit', system: {
+        services: {
+          value: 3
+        }
+      }, update: vi.fn(async () => {}),
+    }
+    const spiritActor = {
+      system: {
+        creatorItemId: 's1', services: {
+          value: 3
+        }
+      }, update: vi.fn(async () => {}),
+    }
+    globalThis.fromUuid = vi.fn(async () => spiritItem)
+    globalThis.game.actors = [spiritActor]
+    const dialogData = {
+      dicePool: {
+        modifiers
+      }, magic: {
+        spiritAid: {
+          id: 'Actor.a1.Item.s1', modifier: 4
+        }
+      }
+    }
+    return {
+      spiritItem, spiritActor, dialogData
+    }
+  }
+
+  it('reads the aid in the list of dice pool modifiers and writes the service by its path', async () => {
+    const {
+      spiritItem, spiritActor, dialogData
+    } = spiritAid([{
+      type: 'spiritAid', label: 'Assistance', value: 4
+    }])
+
+    await SR5_RollTest.spendSpiritAidService(dialogData)
+
+    expect(spiritItem.update).toHaveBeenCalledWith({
+      "system.services.value": 2
+    })
+    expect(spiritActor.update).toHaveBeenCalledWith({
+      "system.services.value": 2
+    })
+  })
+
+  it('spends nothing when the aid was not taken', async () => {
+    const {
+      spiritItem, dialogData
+    } = spiritAid([{
+      type: 'woundModifier', value: -1
+    }])
+
+    await SR5_RollTest.spendSpiritAidService(dialogData)
+
+    expect(spiritItem.update).not.toHaveBeenCalled()
   })
 })
