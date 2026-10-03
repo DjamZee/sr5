@@ -257,4 +257,77 @@ describe('Fence pools read off the sheet', () => {
     expect(card.searchPool).toBe(1)
     expect(rolls).toEqual(['1d6'])
   })
+
+  it('a buyer found, but no die to haggle with: nothing rolled, nothing sold (SR5 p. 58)', async () => {
+    const {
+      SR5ShopFence
+    } = await import('../modules/interface/shop-fence.js')
+    // Threshold 1 so one hit finds a buyer, and a buyer who rolls no die:
+    // haggling on zero dice would tie and sell at the base 25 %
+    const table = {
+      sr5ShopFenceThreshold: 1, sr5ShopFenceBuyerPool: 0
+    }
+    const settings = globalThis.game.settings.get
+    globalThis.game.settings.get = (_scope, key) => (key in table ? table[key] :
+      (/^sr5Shop(Fence|Contact)/.test(key) ? undefined : 25))
+    const gun = {
+      id: 'gun', name: 'Ares Predator V', system: {
+        price: {
+          value: 725
+        }, quantity: 1
+      }
+    }
+    // Charisma 1, Etiquette 1, no Negotiation: defaulting leaves 0
+    const actor = {
+      id: 'seller', name: 'Charisme 1',
+      items: {
+        get: id => (id === 'gun' ? gun : undefined)
+      },
+      system: {
+        attributes: {
+          charisma: {
+            augmented: {
+              value: 1
+            }
+          }
+        },
+        skills: {
+          etiquette: {
+            rating: {
+              value: 1
+            }, test: {
+              dicePool: 2
+            }
+          },
+          negotiation: {
+            rating: {
+              value: 0
+            }, test: {
+              dicePool: 0
+            }
+          },
+        },
+        limits: {
+          socialLimit: {
+            value: 2
+          }
+        },
+      },
+    }
+    try {
+      queue = [5, 2]
+      const card = await SR5ShopFence.sellOnMarket(actor, [{
+        itemId: 'gun', quantity: 1
+      }], {
+        useAvailability: false
+      })
+      expect(card.searchFailed).toBe(false)
+      expect(card.canSell).toBe(false)
+      expect(card.total).toBe(0)
+      expect(rolls).toEqual(['2d6'])
+      expect(card.haggleImpossible).toBe(true)
+    } finally {
+      globalThis.game.settings.get = settings
+    }
+  })
 })
