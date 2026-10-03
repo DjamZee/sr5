@@ -365,8 +365,10 @@ export class SR5_RollTest {
     let chance = await SR5_RollTest.rollDice({
       dicePool: dicePool, limit: limit, edgeRoll: true
     })
+    //SR5 p. 58: Second Chance has no effect on limits. A test whose hits already reached its limit gains nothing,
+    //only a test without limit (value 0) keeps every new hit
     let chanceHit = chance.hits
-    if (chance.hits > limit && (limit !== 0)) chanceHit = limit
+    if (messageData.limit.value > 0) chanceHit = Math.min(chance.hits, limit)
     let dicesKeeped = messageData.roll.dices.filter(function (d) {
       return d.result > 4
     })
