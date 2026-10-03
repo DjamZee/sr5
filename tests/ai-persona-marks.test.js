@@ -21,8 +21,8 @@ const {
   SR5_EntityHelpers
 } = await import('../modules/entities/helpers.js')
 const {
-  SR5_ActorHelper
-} = await import('../modules/entities/actors/entityActor-helpers.js')
+  SR5Actor
+} = await import('../modules/entities/actors/entityActor.js')
 const {
   checkTargetMarks
 } = await import('../modules/rolls/roll-prepare-case/rollData-MatrixAction.js')
@@ -120,18 +120,38 @@ describe('Marks on the persona of an AI without a device (Data Trails p. 157)', 
   })
 
   it('go away when the hacker reboots', async () => {
-    ai.system.matrix.marks = [{
-      ownerId: 'hacker', value: 2
-    }, {
+    await SR5_MarkHelpers.markItem('ai', 'hacker', 2)
+    ai.system.matrix.marks.push({
       ownerId: 'other', value: 1
-    }]
-    await SR5_ActorHelper.deleteMarksOnActor({
+    })
+    // The real reboot, on a system whose copy holds the source: markedItems is only prepared
+    const source = () => ({
       matrix: {
-        markedItems: [{
-          uuid: 'Actor.ai'
-        }]
+        attributes: {
+          attack: {
+          }, dataProcessing: {
+          }, firewall: {
+          }, sleaze: {
+          }
+        }, attributesCollection: {
+        }, markedItems: []
+      }, specialProperties: {
+        actions: {
+          complex: {
+            current: 1
+          }
+        }
       }
-    }, 'hacker')
+    })
+    const system = source()
+    system.matrix.markedItems = deck.system.markedItems
+    Object.defineProperty(system, 'toJSON', {
+      value: source
+    })
+    const rebooter = Object.assign(Object.create(SR5Actor.prototype), {
+      id: 'hacker', type: 'actorPc', isToken: false, items: [], system, update: vi.fn(), deleteEmbeddedDocuments: vi.fn()
+    })
+    await rebooter.rebootDeck()
     expect(ai.system.matrix.marks).toEqual([{
       ownerId: 'other', value: 1
     }])

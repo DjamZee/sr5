@@ -967,14 +967,21 @@ export class SR5Actor extends Actor {
     }
 
     //Delete marks on others actors
-    if (actorData.matrix.markedItems.length) {
+    //markedItems is prepared from the active device: the copy above holds the source, where it is always empty
+    let markedItems = foundry.utils.duplicate(this.system.matrix?.markedItems ?? [])
+    if (markedItems.length) {
+      let markData = {
+        matrix: {
+          markedItems: markedItems
+        }
+      }
       if (!game.user?.isGM) {
         await SR5_SocketHandler.emitForGM("deleteMarksOnActor", {
-          actorData: actorData,
+          actorData: markData,
           actorId: actorId,
         })
       } else {
-        await SR5_ActorHelper.deleteMarksOnActor(actorData, actorId)
+        await SR5_ActorHelper.deleteMarksOnActor(markData, actorId)
       }
     }
 
