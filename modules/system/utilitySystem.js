@@ -302,7 +302,8 @@ export class SR5_SystemHelpers {
     })
 
     // Data Trails p. 157: an AI outside any device defends with its Willpower or Intuition alone. The book does not
-    // say which one stands in for Logic: the higher one by default. Read while the actors are prepared, hence the reload.
+    // say which one stands in for Logic: the higher one by default. The same one resists matrix damage, which the book
+    // leaves unrated (Data Trails p. 157 and 161). Read while the actors are prepared, hence the reload.
     game.settings.register("sr5", "sr5DevicelessAILogicDefense", {
       name: "SR5.SETTINGS_DevicelessAILogicDefense_T",
       hint: "SR5.SETTINGS_DevicelessAILogicDefense_D",

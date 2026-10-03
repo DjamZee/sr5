@@ -897,8 +897,11 @@ export class SR5Actor extends Actor {
           break
       }
     }
-    // An AI outside any device still defends against matrix actions, with its persona alone (Data Trails p. 157)
-    if (SR5_CharacterUtility.isDevicelessAI(actor)) SR5_CharacterUtility.generateMatrixActionsDefenses(actor)
+    // An AI outside any device still defends against matrix actions, and resists matrix damage, with its persona alone (Data Trails p. 157)
+    if (SR5_CharacterUtility.isDevicelessAI(actor)) {
+      SR5_CharacterUtility.generateMatrixActionsDefenses(actor)
+      SR5_CharacterUtility.generateDevicelessAIMatrixResistance(actor)
+    }
   }
 
   //Roll a test

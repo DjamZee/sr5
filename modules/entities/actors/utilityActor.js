@@ -1304,6 +1304,16 @@ export class SR5_CharacterUtility extends Actor {
     }
   }
 
+  // An AI outside any device resists matrix damage with no device and no Firewall. The book gives it no pool
+  // (Data Trails p. 157 and 161): it resists with the attribute it defends with where the defense calls for Logic.
+  static generateDevicelessAIMatrixResistance(actor) {
+    let matrixDamage = actor.system.matrix.resistances.matrixDamage
+    let standIn = this.devicelessAILogicStandIn(actor.system)
+    matrixDamage.base = 0
+    SR5_EntityHelpers.updateModifier(matrixDamage, game.i18n.localize(standIn.label), "linkedAttribute", standIn.value)
+    SR5_EntityHelpers.updateDicePool(matrixDamage)
+  }
+
   // Update Actors Special Attributes
   static updateSpecialAttributes(actor) {
     let actorData = actor.system
