@@ -1029,7 +1029,9 @@ export default class SR5_RollDialog {
             label: `${game.i18n.localize(SR5.limitModTypes["limitModPerception"])} (${game.i18n.localize(SR5.perceptionTypes[ev.target.value])})`,
           }
           this.limitModifier.perceptionType = limitMod
-          html.querySelector('[name="limitModPerception"]').value = limitMod
+          // The limit block is not rendered when the base limit is 0 (roll-dialog.hbs): its fields may be missing
+          const perceptionLimitInput = html.querySelector('[name="limitModPerception"]')
+          if (perceptionLimitInput) perceptionLimitInput.value = limitMod
           this.updateLimitValue(html)
           break
         }
@@ -1051,11 +1053,13 @@ export default class SR5_RollDialog {
           label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.healingConditions[ev.target.value])})`
           dialogData.healingCondition = ev.target.value
           break
-        case "healingSupplies":
+        case "healingSupplies": {
           dialogData.limit.modifiers.healingSupplies = {
             value:0
           }
-          html.querySelector('[name="limitModHealingSupplies"]').value = 0
+          // Inside the limit block, which is not rendered when the base limit is 0
+          const suppliesLimitInput = html.querySelector('[name="limitModHealingSupplies"]')
+          if (suppliesLimitInput) suppliesLimitInput.value = 0
           switch(ev.target.value){
             case "noSupplies":
               value = -3
@@ -1070,7 +1074,7 @@ export default class SR5_RollDialog {
                 dialogData.owner.itemUuid = medkit.uuid
                 dialogData.limit.modifiers.healingSupplies.value = value
                 dialogData.limit.modifiers.healingSupplies.label = game.i18n.localize(SR5.dicePoolModTypes[modifierName])
-                html.querySelector('[name="limitModHealingSupplies"]').value = value
+                if (suppliesLimitInput) suppliesLimitInput.value = value
               } else {
                 ui.notifications.warn(game.i18n.format('SR5.WARN_NoMedkit'))
                 value = 0
@@ -1083,6 +1087,7 @@ export default class SR5_RollDialog {
           label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.healingSupplies[ev.target.value])})`
           this.updateLimitValue(html)
           break
+        }
         case "targetEffect":
           dialogData.target.itemUuid = ev.target.value
           if (dialogData.test.typeSub === "counterspelling"){
