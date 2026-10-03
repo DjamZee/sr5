@@ -494,7 +494,18 @@
                     }
                 }
 
+                //The select is replaced by the custom dropdown: light text, like the type label
+                .sr-dropdown-trigger {
+                    font-family: var(--sr-font-title);
+                    font-size  : 16px;
+                    color      : var(--sr-text-color-light);
+                    gap        : 4px;
+                }
 
+                .sr-dropdown-label,
+                .sr-dropdown-chevron {
+                    color: var(--sr-text-color-light);
+                }
             }
 
             .SR-AppareilType {
