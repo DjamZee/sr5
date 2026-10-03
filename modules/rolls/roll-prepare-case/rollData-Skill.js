@@ -213,7 +213,11 @@ function getOpposedData(rollData, chatData, rollKey, actor){
   // Charisma + Willpower, two attributes and no skill. (The example p. 142
   // gives a ganger Intimidation + Willpower; the rule and the table do not.)
   if (chatData.test.typeSub === "intimidation" || chatData.test.typeSub === "performance"){
+    // No limit at all: the defender's own Intimidation or Performance limit
+    // bonuses belong to whoever uses the skill, not to whoever resists it.
     rollData.limit.base = 0
+    rollData.limit.modifiers = {
+    }
     rollData.test.title = `${game.i18n.localize("SR5.OpposedTest") + game.i18n.localize("SR5.Colons") + " " + game.i18n.localize("SR5.Charisma") + " + " + game.i18n.localize("SR5.Willpower") + " (" + chatData.roll.hits + ")"}`
     rollData.dicePool.base = actorData.attributes.charisma.augmented.value + actorData.attributes.willpower.augmented.value
     rollData.dicePool.composition = ([
