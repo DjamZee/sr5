@@ -4,7 +4,7 @@ import {
 
 export function sr5HookCanvasReady(data) {
   for (let token of data.tokens.placeables.filter(t => t.isOwner)){
-    if (token.document.actorLink && (token.scene.flags.sr5?.backgroundCountValue !== 0)){
+    if (token.document.actorLink && ((Number(token.scene.flags.sr5?.backgroundCountValue) || 0) !== 0)){
       token.document.actor.prepareData()
     }
   }
