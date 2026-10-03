@@ -168,6 +168,45 @@ describe("melee defense", () => {
     expect(envMod(data)).toBe(-1)
   })
 
+  describe("defense against a shot (SR5 p. 176)", () => {
+    const tir = (sceneId, mode = "SA") => {
+      const card = attackCard(sceneId)
+      card.test.typeSub = "rangedWeapon"
+      card.combat.firingMode.selected = mode
+      return card
+    }
+    it("takes Light and Visibility from the attack's scene, without the wind", async () => {
+      // light 2 (-3) + wind 2 (-3): with the wind, two equal columns would make it -6
+      const data = await defense(rollData(), defender(), tir("attaque"))
+      expect(envMod(data)).toBe(-3)
+    })
+    it("falls back to the canvas for an old card", async () => {
+      const data = await defense(rollData(), defender(), tir(undefined))
+      expect(envMod(data)).toBe(-1)
+    })
+    it("leaves suppressive fire as it was", async () => {
+      const d = defender()
+      d.system.attributes = {
+        reaction: {
+          augmented: {
+            value: 4
+          }
+        }
+      }
+      const data = await defense(rollData(), d, tir("attaque", "SF"))
+      expect(envMod(data)).toBe(0)
+    })
+    it("is not touched by the p. 188 melee option", async () => {
+      globalThis.game.settings = {
+        get: () => true
+      }
+      const card = tir("attaque")
+      card.combat.environmentalMod = -3
+      const data = await defense(rollData(), defender(), card)
+      expect(envMod(data)).toBe(-3)
+    })
+  })
+
   describe("SR5 p. 188 option: ignore an environment equal for both fighters", () => {
     const option = active => {
       globalThis.game.settings = {
