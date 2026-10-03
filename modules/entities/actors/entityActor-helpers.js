@@ -520,8 +520,9 @@ export class SR5_ActorHelper {
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
     let actorData = foundry.utils.duplicate(actor.system)
 
-    if (actorData.matrix.overwatchScore === null) actorData.matrix.overwatchScore = 0
-    actorData.matrix.overwatchScore += defenseHits
+    //A negative value can lower the score (Emulate swapped for the hits, Data Trails p. 159), never below 0:
+    //the direct call and the GM side of the socket both end here
+    actorData.matrix.overwatchScore = Math.max(0, (actorData.matrix.overwatchScore || 0) + defenseHits)
     actor.update({
       system: actorData
     })
