@@ -157,7 +157,8 @@ export class SR5_ActorHelper {
     let monitorUpdates = {
     }
     for (let [key, monitor] of Object.entries(actorData.conditionMonitors)) {
-      if (monitor?.actual) monitorUpdates[`system.conditionMonitors.${key}.actual.base`] = monitor.actual.base
+      // Boxes beyond the monitor are not kept: they would eat the next healing (SR5 p. 171, 381)
+      if (monitor?.actual) monitorUpdates[`system.conditionMonitors.${key}.actual.base`] = Math.min(monitor.actual.base, monitor.value ?? monitor.actual.base)
     }
     await realActor.update(monitorUpdates)
 
