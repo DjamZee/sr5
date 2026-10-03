@@ -36,17 +36,23 @@ class FakeSquareGrid {
     throw new Error(`unsupported diagonal rule ${this.diagonals}`)
   }
 
+  // Same formula as SquareGrid#getTranslatedPoint in Foundry 13.351 (common/grid/square.mjs), for the three
+  // rules below: the scatter now follows the line of fire, so any angle can come up, not only multiples of 45.
   getTranslatedPoint(origin, direction, distance){
-    const radians = Math.toRadians ? Math.toRadians(direction) : direction * Math.PI / 180
+    const radians = direction * Math.PI / 180
     const dx = Math.cos(radians)
     const dy = Math.sin(radians)
-    // Only the axis-aligned and 45-degree cases matter here, which is all scatter ever asks for.
-    const diagonal = Math.abs(Math.abs(dx) - Math.abs(dy)) < 1e-9
-    const cost = diagonal ? this.#diagonalCost() : 1
-    const length = distance * this.#scale / cost
+    const adx = Math.abs(dx)
+    const ady = Math.abs(dy)
+    let s = distance / this.distance
+    if (this.diagonals === DIAGONALS.EQUIDISTANT) s /= Math.max(adx, ady)
+    else if (this.diagonals === DIAGONALS.EXACT) s /= Math.max(adx, ady) + (Math.SQRT2 - 1) * Math.min(adx, ady)
+    else if (this.diagonals === DIAGONALS.RECTILINEAR) s /= adx + ady
+    else throw new Error(`unsupported diagonal rule ${this.diagonals}`)
+    s *= this.size
     return {
-      x: origin.x + dx * length * (diagonal ? Math.SQRT2 : 1),
-      y: origin.y + dy * length * (diagonal ? Math.SQRT2 : 1),
+      x: origin.x + dx * s,
+      y: origin.y + dy * s,
     }
   }
 
@@ -125,55 +131,96 @@ const RULES = [
 const ORIGIN = {
   x: 0, y: 0
 }
+// Fire angles in screen degrees: east, south, north, and the south-east diagonal.
+const FIRE_ANGLES = [0, 90, -90, 45]
+
 const CARDINALS = [1, 3, 5, 7]
 const DIAGONAL_ROLLS = [2, 4, 6, 8]
 
 describe("SR5_CombatHelpers.scatterOffset — SR5 p. 183", () => {
   for (const scale of SCALES){
     for (const rule of RULES){
-      it(`lands at the announced distance in all eight directions (${scale.label}, ${rule.label})`, () => {
+      it(`lands at the announced distance for every 2D6 result and line of fire (${scale.label}, ${rule.label})`, () => {
         const grid = new FakeSquareGrid({
           ...scale, diagonals: rule.diagonals
         })
         for (const distance of [1, 6, 13]){
-          for (let direction = 1; direction <= 8; direction++){
-            const offset = SR5_CombatHelpers.scatterOffset(grid, direction, distance)
-            const read = grid.measurePath([ORIGIN, offset]).distance
-            expect(read, `direction ${direction}, ${distance} m`).toBeCloseTo(distance, 6)
+          for (const fire of FIRE_ANGLES){
+            for (let direction = 2; direction <= 12; direction++){
+              const offset = SR5_CombatHelpers.scatterOffset(grid, direction, distance, fire)
+              const read = grid.measurePath([ORIGIN, offset]).distance
+              expect(read, `2D6 = ${direction}, fire ${fire} deg, ${distance} m`).toBeCloseTo(distance, 6)
+            }
           }
         }
       })
     }
   }
+})
 
-  it("rolls the 1d8 as a compass: 7 is east, and the eight results are eight distinct points", () => {
-    const grid = new FakeSquareGrid({
-      size: 100, distance: 1.5, diagonals: DIAGONALS.EQUIDISTANT
-    })
-    const east = SR5_CombatHelpers.scatterOffset(grid, 7, 6)
-    expect(east.x).toBeCloseTo(400, 6)
-    expect(east.y).toBeCloseTo(0, 6)
+// The bearing an offset points at, in screen degrees within [0, 360).
+function bearing(o){
+  return ((Math.atan2(o.y, o.x) * 180 / Math.PI) % 360 + 360) % 360
+}
 
-    const seen = new Set()
-    for (let direction = 1; direction <= 8; direction++){
-      const o = SR5_CombatHelpers.scatterOffset(grid, direction, 6)
-      seen.add(`${Math.round(o.x)},${Math.round(o.y)}`)
-    }
-    expect(seen.size).toBe(8)
+describe("Scatter Diagram — SR5 p. 183: the 2D6 turns with the line of fire", () => {
+  const grid = new FakeSquareGrid({
+    size: 100, distance: 1.5, diagonals: DIAGONALS.EQUIDISTANT
   })
 
-  it("keeps the same eight directions the old code aimed at", () => {
-    const grid = new FakeSquareGrid({
-      size: 100, distance: 1, diagonals: DIAGONALS.EQUIDISTANT
+  // Expected turn from the line of fire for each 2D6, as read off the diagram: right of the attacker is
+  // clockwise on screen. 3 and 11 are drawn at 129.5 deg; 135 is the reading kept.
+  const TURN = {
+    2: 180, 3: -135, 4: -90, 5: -60, 6: -30, 7: 0, 8: 30, 9: 60, 10: 90, 11: 135, 12: 180
+  }
+
+  for (const fire of FIRE_ANGLES){
+    it(`points each result where the diagram says, firing at ${fire} deg`, () => {
+      for (let roll = 2; roll <= 12; roll++){
+        const o = SR5_CombatHelpers.scatterOffset(grid, roll, 6, fire)
+        const expected = ((fire + TURN[roll]) % 360 + 360) % 360
+        const got = bearing(o)
+        const gap = Math.min(Math.abs(got - expected), 360 - Math.abs(got - expected))
+        expect(gap, `2D6 = ${roll}, fire ${fire} deg`).toBeLessThan(1e-6)
+      }
     })
-    for (let direction = 1; direction <= 8; direction++){
-      const now = SR5_CombatHelpers.scatterOffset(grid, direction, 6)
-      const before = legacyOffset(grid, direction, 6)
-      // + 0 turns a -0 from the trigonometry back into 0, which Object.is tells apart.
-      expect(Math.sign(Math.round(now.x)) + 0, `direction ${direction}, x sign`).toBe(Math.sign(before.x) + 0)
-      expect(Math.sign(Math.round(now.y)) + 0, `direction ${direction}, y sign`).toBe(Math.sign(before.y) + 0)
-    }
+  }
+
+  it("7 carries on beyond the target, 2 and 12 come back toward the attacker", () => {
+    // Attacker west of the target, firing east: 7 goes further east, 2 and 12 go back west.
+    const fire = SR5_CombatHelpers.fireAngle({
+      x: 0, y: 0
+    }, {
+      x: 1000, y: 0
+    })
+    expect(fire).toBe(0)
+    expect(SR5_CombatHelpers.scatterOffset(grid, 7, 6, fire).x).toBeCloseTo(400, 6)
+    expect(SR5_CombatHelpers.scatterOffset(grid, 2, 6, fire).x).toBeCloseTo(-400, 6)
+    expect(SR5_CombatHelpers.scatterOffset(grid, 12, 6, fire).x).toBeCloseTo(-400, 6)
+    // Firing north (toward smaller y), 7 goes further north and 10 to the attacker's right, east.
+    const north = SR5_CombatHelpers.fireAngle({
+      x: 0, y: 1000
+    }, {
+      x: 0, y: 0
+    })
+    expect(SR5_CombatHelpers.scatterOffset(grid, 7, 6, north).y).toBeCloseTo(-400, 6)
+    expect(SR5_CombatHelpers.scatterOffset(grid, 10, 6, north).x).toBeCloseTo(400, 6)
+    expect(SR5_CombatHelpers.scatterOffset(grid, 4, 6, north).x).toBeCloseTo(-400, 6)
   })
+
+  it("has no line of fire without an attacker, and then reads 7 as east", () => {
+    expect(SR5_CombatHelpers.fireAngle(undefined, {
+      x: 5, y: 5
+    })).toBe(0)
+    expect(SR5_CombatHelpers.fireAngle({
+      x: 5, y: 5
+    }, {
+      x: 5, y: 5
+    })).toBe(0)
+  })
+})
+
+describe("SR5_CombatHelpers.scatterOffset — the old 1d8 compass", () => {
 
   it("the old code was wrong on the four diagonals under either reading, and right on the four cardinals", () => {
     const grid = new FakeSquareGrid({

@@ -403,7 +403,7 @@ async function handleFatiguedDamage(rollData, actorData, chatData){
 //               Helpers             //
 //-----------------------------------//
 async function handleGrenade(rollData, chatData, actor){
-  let grenadePosition = await SR5_SystemHelpers.getTemplateItemPosition(chatData.owner.itemId)          
+  let grenadePosition = await SR5_SystemHelpers.getTemplateItemPosition(chatData.owner.itemId, chatData.combat.grenade.templateId)          
   let defenserPosition = await SR5_EntityHelpers.getActorCanvasPosition(actor)
   // A blast loses its damage per meter travelled (SR5 p. 184), so the measured distance becomes meters
   // before it is multiplied by the fall-off.

@@ -126,10 +126,11 @@ export class SR5_CombatHelpers {
   //
   // It also converts meters to pixels on its own, from the scene's scale — the caller must not.
   //
-  // The 1d8 is read as a compass, screen-wise (y grows downward), with 7 pointing east:
-  // 7 = 0 deg, 8 = 45, 1 = 90, 2 = 135, 3 = 180, 4 = 225, 5 = 270, 6 = 315.
-  static scatterOffset(grid, direction, distance){
-    let angle = ((direction - 7) * 45 % 360 + 360) % 360
+  // The direction is the 2D6 of the Scatter Diagram (SR5 p. 183), which is drawn along the line of fire:
+  // 7 carries on beyond the target, 2 and 12 come back toward the attacker. `fireAngle` is the line of fire
+  // in screen degrees (0 = east, y grows downward, so a positive turn is clockwise on screen).
+  static scatterOffset(grid, direction, distance, fireAngle = 0){
+    let angle = ((fireAngle + SR5_CombatHelpers.SCATTER_DIAGRAM[direction]) % 360 + 360) % 360
     let origin = {
       x: 0, y: 0
     }
@@ -137,6 +138,23 @@ export class SR5_CombatHelpers {
     return {
       x: point.x, y: point.y
     }
+  }
+
+  // Each 2D6 result of the Scatter Diagram (SR5 p. 183) as a turn from the line of fire, in degrees, read off
+  // the diagram's own vector strokes in the PDF: 8 to 11 lie to the attacker's right (clockwise on screen),
+  // 3 to 6 to the left. 3 and 11 are drawn at 129.5 deg, neither 120 nor 135; 135 is kept, as the nearest
+  // regular reading (decided on 2026-10-03, not a rule: change this line to read the drawing otherwise).
+  static SCATTER_DIAGRAM = {
+    2: 180, 3: -135, 4: -90, 5: -60, 6: -30, 7: 0, 8: 30, 9: 60, 10: 90, 11: 135, 12: 180
+  }
+
+  // The line of fire, in screen degrees, from the attacker's point to the aiming point. With no attacker on the
+  // scene, or the attacker on the aiming point, there is no line: it falls back to east, as the old compass did.
+  static fireAngle(from, to){
+    if (!from || !to) return 0
+    let dx = to.x - from.x, dy = to.y - from.y
+    if (dx === 0 && dy === 0) return 0
+    return Math.atan2(dy, dx) * 180 / Math.PI
   }
 
   // Number of d6 in the deviation roll, from the Scatter table (SR5 p. 183): standard grenade 1D6,
@@ -169,12 +187,13 @@ export class SR5_CombatHelpers {
 
     let distanceMod = cardData.roll.hits
 
-    let template = canvas.scene.templates.find((t) => t.flags.sr5.item === cardData.owner.itemId)
+    // The template of this shot, not the first one the item ever left on the scene
+    let template = SR5_SystemHelpers.findItemTemplate(cardData.owner.itemId, cardData.combat.grenade?.templateId)
     if (template === undefined) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoTemplateInScene")}`)
-    
+
     let distanceDice = SR5_CombatHelpers.scatterDice(itemData, cardData.combat.ammo.effects)
 
-    let directionRoll = new Roll(`1d8`)
+    let directionRoll = new Roll(`2d6`)
     await directionRoll.evaluate()
     
     let distanceFormula = `${distanceDice}d6 - ${distanceMod}`
@@ -188,7 +207,10 @@ export class SR5_CombatHelpers {
         
     // The deviation table gives meters (SR5 p. 183); getTranslatedPoint takes the scene's own unit,
     // so the meters are converted first -- on a scene measured in feet they would otherwise be read as feet.
-    let coordinate = SR5_CombatHelpers.scatterOffset(canvas.grid, directionRoll.total, SR5_SystemHelpers.convertMetersToSceneUnits(distanceRoll.total))
+    // The diagram turns with the line of fire, from the attacker's token center to the template's center.
+    let shooter = actor.token ?? canvas.scene.tokens.find((t) => t.actorId === actor.id)
+    let fireAngle = SR5_CombatHelpers.fireAngle(shooter?.object?.center, template)
+    let coordinate = SR5_CombatHelpers.scatterOffset(canvas.grid, directionRoll.total, SR5_SystemHelpers.convertMetersToSceneUnits(distanceRoll.total), fireAngle)
 
     let newPosition = foundry.utils.duplicate(template)
     newPosition.x += coordinate.x

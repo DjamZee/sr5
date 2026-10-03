@@ -265,6 +265,8 @@ async function handleTargetInfo(rollData, actor, item){
     rollData.combat.grenade.isGrenade = true
     rollData.combat.grenade.damageFallOff = itemData.blast.damageFallOff
     rollData.combat.grenade.blastRadius = itemData.blast.radius
+    // The template just placed for this shot, so that scatter and blast later move and measure this one
+    rollData.combat.grenade.templateId = SR5_SystemHelpers.findItemTemplate(item.id)?.id ?? ""
   }
 
   //Calcul distance between Attacker and Target

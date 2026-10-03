@@ -306,6 +306,7 @@ export class SR5_PrepareRollTest {
           isGrenade: false,
           damageFallOff: 0,
           blastRadius: 0,
+          templateId: "",
         },
         range: {
           short: 0,

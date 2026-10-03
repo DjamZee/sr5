@@ -521,14 +521,38 @@ export class SR5_SystemHelpers {
   }
 
   /**
+	 * The template an item left on the active scene for a given shot. An item can leave several (a grenade thrown
+	 * twice without removing the first circle): the shot's own template when its id is known and still there,
+	 * otherwise the most recently created one, which is the shot being rolled right after its placement.
+	 * @param itemId        The item's id which has created the template
+	 * @param templateId    The template recorded on the shot's chat card, if any
+	 * @return {MeasuredTemplateDocument|undefined}
+	 */
+  static findItemTemplate(itemId, templateId){
+    let templates = canvas.scene?.templates
+    if (!templates) return undefined
+    if (templateId){
+      let own = templates.get(templateId)
+      if (own) return own
+    }
+    let latest
+    for (let t of templates){
+      if (t.flags.sr5?.item !== itemId) continue
+      if (!latest || (t._stats?.createdTime ?? 0) >= (latest._stats?.createdTime ?? 0)) latest = t
+    }
+    return latest
+  }
+
+  /**
 	 * Get the position of a template based on the id of the item which has created it
 	 * @param itemId                     The item's id which has created the template
+	 * @param templateId                 The shot's own template, if known (see findItemTemplate)
 	 * @return {templatePosition || 0}   The coordinates of the template on the grid scene
 	 */
-  static async getTemplateItemPosition(itemId){
+  static async getTemplateItemPosition(itemId, templateId){
     let gridUnit = canvas.scene.grid.size
     let templatePosition = 0
-    let templateItem = await canvas.scene.templates.find((template) => template.flags.sr5.item === itemId)
+    let templateItem = SR5_SystemHelpers.findItemTemplate(itemId, templateId)
     if (templateItem) {
       //token position is based on top left grid.
       //player will probably launch grenade on the token, so we need to tweak the position of the grenade template
