@@ -488,3 +488,56 @@ describe('a bound spirit spends a service when it aids a test (SR5 p. 305-306)',
     expect(spiritItem.update).not.toHaveBeenCalled()
   })
 })
+
+describe('switching the wireless of a device spends a free action (SR5 p. 165)', () => {
+  it('takes the free action it announces, not a simple one', async () => {
+    const actions = {
+      free: {
+        value: 1, current: 1
+      }, simple: {
+        value: 2, current: 2
+      }, complex: {
+        value: 1, current: 1
+      }
+    }
+    const system = {
+      specialProperties: {
+        actions
+      }
+    }
+    const gear = {
+      _id: 'g1', id: 'g1', name: 'Commlink', type: 'itemGear', system: {
+        wirelessTurnedOn: true, isActive: true
+      }
+    }
+    const actor = {
+      id: 'a1', name: 'Test', isToken: false, effects: [], items: [gear],
+      system: new FakeSystem(system, system),
+      update: vi.fn(async () => {}),
+    }
+    const sheet = Object.create(ActorSheetSR5.prototype)
+    Object.defineProperty(sheet, 'actor', {
+      value: actor
+    })
+
+    await sheet._onEditItemValue({
+      currentTarget: {
+        closest: () => ({
+          dataset: {
+            itemId: 'g1'
+          }
+        }),
+        dataset: {
+          binding: 'system.wirelessTurnedOn', dtype: 'Boolean'
+        },
+      },
+      target: {
+        value: ''
+      },
+    })
+
+    const written = actor.update.mock.calls.at(-1)[0].system.specialProperties.actions
+    expect(written.free.current).toBe(0)
+    expect(written.simple.current).toBe(2)
+  })
+})
