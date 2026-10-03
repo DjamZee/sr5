@@ -74,6 +74,21 @@ const defaultingContact = (charisma = 1) => ({
   },
 })
 
+// An untrained Negotiation as the sheet leaves it: base 0, then Charisma,
+// defaulting and wounds as modifiers, the total floored at 0
+const untrained = (...values) => ({
+  rating: {
+    value: 0
+  },
+  test: {
+    base: 0,
+    dicePool: Math.max(0, values.reduce((sum, v) => sum + v, 0)),
+    modifiers: values.map(value => ({
+      value, isMultiplier: false
+    })),
+  },
+})
+
 beforeEach(() => {
   rolls = []
   queue = []
@@ -126,13 +141,7 @@ describe('Shop availability with no dice (SR5 p. 58)', () => {
           }
         },
         skills: {
-          negotiation: {
-            rating: {
-              value: 0
-            }, test: {
-              dicePool: 1
-            }
-          }
+          negotiation: untrained(3, -1, -1)
         },
         limits: {
           socialLimit: {
@@ -156,13 +165,7 @@ describe('Shop availability with no dice (SR5 p. 58)', () => {
           }
         },
         skills: {
-          negotiation: {
-            rating: {
-              value: 0
-            }, test: {
-              dicePool: 0
-            }
-          }
+          negotiation: untrained(1, -1)
         },
         limits: {
           socialLimit: {
@@ -176,6 +179,62 @@ describe('Shop availability with no dice (SR5 p. 58)', () => {
     const card = await SR5ShopAvailability.testLines(actor, null, line)
     expect(rolls).toEqual([])
     expect(card.results[0].outcome).toBe('noPool')
+  })
+
+  it('a surcharge die does not lift a pool that is below zero (SR5 p. 58)', async () => {
+    // Charisma 1, defaulting -1, wounds -2: -2 on the sheet, floored to 0
+    // there. One surcharge die makes -1, still no test.
+    const actor = {
+      id: 'c', name: 'Charisme 1 blessé', items: [], system: {
+        attributes: {
+          charisma: {
+            augmented: {
+              value: 1
+            }
+          }
+        },
+        skills: {
+          negotiation: untrained(1, -1, -2)
+        },
+        limits: {
+          socialLimit: {
+            value: 2
+          }
+        },
+      }
+    }
+    queue = [5, 1, 2, 2, 3, 4]
+    const card = await SR5ShopAvailability.testLines(actor, null, line, 25)
+    expect(rolls).toEqual([])
+    expect(card.pool).toBe(0)
+    expect(card.results[0].outcome).toBe('noPool')
+  })
+
+  it('a surcharge die still opens the test on a pool at exactly zero', async () => {
+    const actor = {
+      id: 'd', name: 'Charisme 1', items: [], system: {
+        attributes: {
+          charisma: {
+            augmented: {
+              value: 1
+            }
+          }
+        },
+        skills: {
+          negotiation: untrained(1, -1)
+        },
+        limits: {
+          socialLimit: {
+            value: 2
+          }
+        },
+      }
+    }
+    queue = [5, 1, 2, 2, 3, 4]
+    const card = await SR5ShopAvailability.testLines(actor, null, line, 25)
+    expect(card.pool).toBe(1)
+    expect(rolls).toEqual(['1d6', '5d6'])
+    expect(card.results[0].outcome).toBe('success')
   })
 
   it('goods without availability are still bought with no die', async () => {
