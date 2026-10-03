@@ -1,5 +1,5 @@
 export default function banishingResistance(rollData, actor, chatData){
-  if (actor.type !== "actorSpirit") return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NotASpirit")}`)
+  if (actor.type !== "actorSpirit") return void ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NotASpirit")}`)
 
   //Determine title
   rollData.test.title = game.i18n.localize("SR5.ResistBanishing")

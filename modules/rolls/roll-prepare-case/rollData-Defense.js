@@ -101,7 +101,7 @@ export default async function defense(rollData, actor, chatData){
 
   //Handle Astral combat defense
   if (chatData.test.typeSub === "astralCombat"){
-    if ((actor.type === "actorDevice" || actor.type === "actorSprite") || !actorData.visions.astral.isActive) return ui.notifications.info(`${game.i18n.format("SR5.INFO_TargetIsNotInAstral", {
+    if ((actor.type === "actorDevice" || actor.type === "actorSprite") || !actorData.visions.astral.isActive) return void ui.notifications.info(`${game.i18n.format("SR5.INFO_TargetIsNotInAstral", {
       name:actor.name
     })}`)
     rollData = await handleAstralCombat(rollData, actor, chatData)

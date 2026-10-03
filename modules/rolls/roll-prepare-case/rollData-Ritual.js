@@ -6,7 +6,7 @@ import {
 } from "../roll-helpers/miscellaneous.js"
 
 export default function ritual(rollData, actor, item){
-  if (!actor.system.magic.reagents > 0) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoReagents")}`)
+  if (!actor.system.magic.reagents > 0) return void ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoReagents")}`)
   let itemData = item.system
 
   //Determine title

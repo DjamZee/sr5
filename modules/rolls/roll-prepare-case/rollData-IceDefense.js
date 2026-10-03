@@ -4,7 +4,7 @@ import {
 
 export default function iceDefense(rollData, actor, chatData){
   if (actor.type !== "actorPc" && actor.type !== "actorGrunt" && 
-      actor.type !== "actorAgent" && actor.type !== "actorSprite") return ui.notifications.warn(game.i18n.localize('SR5.WARN_InvalidActorType'))
+      actor.type !== "actorAgent" && actor.type !== "actorSprite") return void ui.notifications.warn(game.i18n.localize('SR5.WARN_InvalidActorType'))
 
   //Determine title
   rollData.test.title = game.i18n.localize("SR5.Defense")

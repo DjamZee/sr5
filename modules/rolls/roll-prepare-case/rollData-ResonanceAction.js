@@ -67,7 +67,7 @@ export default async function resonanceAction(rollData, rollKey, actor){
 
     //Decompiling / Register
     if (rollKey === "decompileSprite" || rollKey === "registerSprite"){
-      if (targetActor.type !== "actorSprite") return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NotASprite")}`)
+      if (targetActor.type !== "actorSprite") return void ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NotASprite")}`)
     }
   }
 
