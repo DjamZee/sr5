@@ -370,12 +370,12 @@ export class SR5_RollMessage {
         if (originalActionActor.type === "actorPc" || originalActionActor.type === "actorGrunt"){
           if (originalActionActor.items.find((item) => item.type === "itemDevice" && item.system.isActive && (item.system.type === "livingPersona" || item.system.type === "headcase"))){
             originalActionActor.takeDamage(messageData)
-          } else SR5_MatrixHelpers.applyDamageToDecK(originalActionActor, messageData, actor, true)
+          } else await SR5_MatrixHelpers.applyDamageToDecK(originalActionActor, messageData, actor, true)
         } else originalActionActor.takeDamage(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "takeMatrixDamage":
-        if (actor.type === "actorPc" || actor.type === "actorGrunt") SR5_MatrixHelpers.applyDamageToDecK(actor, messageData)
+        if (actor.type === "actorPc" || actor.type === "actorGrunt") await SR5_MatrixHelpers.applyDamageToDecK(actor, messageData)
         else actor.takeDamage(messageData)
         //Special case for Derezz Complex Form.
         if (messageData.test.typeSub === "derezz") SR5_MatrixHelpers.applyDerezzEffect(messageData, originalActionActor, actor)
