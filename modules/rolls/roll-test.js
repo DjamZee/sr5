@@ -22,8 +22,11 @@ import {
   SR5_ConverterHelpers 
 } from "./roll-helpers/converter.js"
 import {
-  SR5_CombatHelpers 
+  SR5_CombatHelpers
 } from "./roll-helpers/combat.js"
+import {
+  SR5_SocketHandler
+} from "../socket.js"
 
 export class SR5_RollTest {
   //Prepare the roll window
@@ -204,8 +207,18 @@ export class SR5_RollTest {
     })}`)
     let spiritActor = game.actors.find(a => a.system.creatorItemId === spiritItem.id)
     if (spiritActor){
-      await spiritActor.update({
-        "system.services.value": spiritActor.system.services.value - 1
+      let services = spiritActor.system.services.value - 1
+      //A summoned spirit is often the GM's: a player who does not own it hands the update to the GM
+      if (spiritActor.isOwner) await spiritActor.update({
+        "system.services.value": services
+      })
+      else await SR5_SocketHandler.emitForGM("updateActorData", {
+        actorId: spiritActor.id,
+        dataToUpdate: {
+          services: {
+            value: services
+          }
+        },
       })
     }
   }

@@ -76,6 +76,9 @@ import {
 import {
   SR5_RollTest
 } from '../modules/rolls/roll-test.js'
+import {
+  SR5_SocketHandler
+} from '../modules/socket.js'
 
 // An embedded collection: iterable, with find and get as Foundry's Collection has them
 function collection(docs){
@@ -539,7 +542,7 @@ describe('drug interactions (Chrome Flesh p. 197)', () => {
 })
 
 describe('a bound spirit spends a service when it aids a test (SR5 p. 305-306)', () => {
-  function spiritAid(modifiers){
+  function spiritAid(modifiers, isOwner = true){
     const spiritItem = {
       id: 's1', name: 'Esprit', system: {
         services: {
@@ -548,6 +551,7 @@ describe('a bound spirit spends a service when it aids a test (SR5 p. 305-306)',
       }, update: vi.fn(async () => {}),
     }
     const spiritActor = {
+      id: 'sa1', isOwner,
       system: {
         creatorItemId: 's1', services: {
           value: 3
@@ -584,6 +588,29 @@ describe('a bound spirit spends a service when it aids a test (SR5 p. 305-306)',
     })
     expect(spiritActor.update).toHaveBeenCalledWith({
       "system.services.value": 2
+    })
+  })
+
+  it('hands the summoned spirit update to the GM when the player does not own it', async () => {
+    const emit = vi.spyOn(SR5_SocketHandler, 'emitForGM').mockResolvedValue()
+    const {
+      spiritItem, spiritActor, dialogData
+    } = spiritAid([{
+      type: 'spiritAid', value: 4
+    }], false)
+
+    await SR5_RollTest.spendSpiritAidService(dialogData)
+
+    expect(spiritItem.update).toHaveBeenCalledWith({
+      "system.services.value": 2
+    })
+    expect(spiritActor.update).not.toHaveBeenCalled()
+    expect(emit).toHaveBeenCalledWith('updateActorData', {
+      actorId: 'sa1', dataToUpdate: {
+        services: {
+          value: 2
+        }
+      }
     })
   })
 
