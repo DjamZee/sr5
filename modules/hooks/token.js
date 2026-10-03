@@ -14,7 +14,8 @@ export async function sr5HookCreateToken(tokenDocument) {
 }
 
 export async function sr5HookUpdateToken(tokenDocument, change) {
-  if (change.x || change.y) {
+  // A coordinate of 0 is a move too (the left or top edge of the scene)
+  if ("x" in change || "y" in change) {
     SR5_EffectArea.tokenAura(tokenDocument)
     if (game.user.isGM) SR5_EffectArea.checkIfTokenIsInTemplate(tokenDocument)
   }
