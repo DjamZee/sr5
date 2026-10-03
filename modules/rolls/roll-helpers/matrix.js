@@ -159,7 +159,8 @@ export class SR5_MatrixHelpers {
       }
     }
     let dialogData = {
-      device: actor.system.matrix.deviceName,
+      //An AI outside any device has no device name: the choice names its persona (Data Trails p. 157)
+      device: actor.system.matrix.deviceName || actor.name,
       list: list,
     }
     const dlg = await foundry.applications.handlebars.renderTemplate("systems/sr5/templates/interface/itemMatrixTarget.hbs", dialogData)

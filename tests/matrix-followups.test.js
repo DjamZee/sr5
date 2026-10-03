@@ -486,3 +486,28 @@ describe('Matrix defense pool of an AI without a device (Data Trails p. 157)', a
     }
   })
 })
+
+describe('Matrix target choice of a character without a device', () => {
+  it('names the persona when there is no device name', async () => {
+    let shown
+    foundry.applications.handlebars = {
+      renderTemplate: vi.fn(async (_path, data) => {
+        shown = data
+        return ''
+      })
+    }
+    foundry.applications.api.DialogV2 = {
+      wait: vi.fn(async () => null)
+    }
+    actor.system.matrix.deviceName = ''
+    actor.system.matrix.connectedObject = {
+    }
+    await SR5_MatrixHelpers.chooseMatrixDefender({
+    }, actor)
+    expect(shown.device).toBe('IA')
+    actor.system.matrix.deviceName = 'Deck'
+    await SR5_MatrixHelpers.chooseMatrixDefender({
+    }, actor)
+    expect(shown.device).toBe('Deck')
+  })
+})
