@@ -15,6 +15,7 @@ globalThis.ui = {
 }
 globalThis.fromUuid = vi.fn(async () => null)
 const testCases = await import('../modules/rolls/roll-test-case/index.js')
+const prepareCases = await import('../modules/rolls/roll-prepare-case/index.js')
 const {
   SR5_EntityHelpers
 } = await import('../modules/entities/helpers.js')
@@ -187,5 +188,88 @@ describe('Object resistance keeps the button of an area spell only', () => {
 
   it('removes it whenever the area is not positive', async () => {
     expect(await resist(-1)).toBe(true)
+  })
+})
+
+describe('Matrix defense of an AI without a device (Data Trails p. 157)', () => {
+  const chatData = {
+    roll: {
+      hits: 3
+    },
+    target: {
+    },
+    matrix: {
+      mark: 1, actionType: 'attack'
+    },
+    owner: {
+      actorId: 'b1', messageId: 'm1'
+    },
+    previousMessage: {
+    },
+  }
+
+  function emptyRollData() {
+    return {
+      test: {
+      }, dicePool: {
+      }, target: {
+      }, combat: {
+        activeDefenses: {
+        }
+      }, matrix: {
+      }, previousMessage: {
+      }
+    }
+  }
+
+  it('prepares the defense with no targeted device', async () => {
+    const rollData = await prepareCases.matrixDefense(emptyRollData(), 'dataSpike', actor, chatData)
+    expect(rollData.target.itemUuid).toBeUndefined()
+    expect(rollData.dicePool.base).toBe(4)
+  })
+
+  it('still targets the active device when there is one', async () => {
+    actor.items = [{
+      type: 'itemDevice', uuid: 'Actor.a1.Item.d1', system: {
+        isActive: true
+      }
+    }]
+    const rollData = await prepareCases.matrixDefense(emptyRollData(), 'dataSpike', actor, chatData)
+    expect(rollData.target.itemUuid).toBe('Actor.a1.Item.d1')
+  })
+
+  it('names the AI on the mark button when the attacker wins', async () => {
+    const card = {
+      roll: {
+        hits: 0
+      },
+      target: {
+      },
+      matrix: {
+        mark: 1
+      },
+      test: {
+        typeSub: 'hackOnTheFly'
+      },
+      previousMessage: {
+        actorId: 'b1', hits: 3
+      },
+      owner: {
+        speakerActor: 'Decker'
+      },
+      damage: {
+        matrix: {
+        }
+      },
+      chatCard: {
+        buttons: {
+        }
+      },
+    }
+    const format = vi.spyOn(game.i18n, 'format')
+    await testCases.matrixDefenseInfo(card, 'a1')
+    expect(format).toHaveBeenCalledWith('SR5.AttackerPlaceMarkTo', expect.objectContaining({
+      item: 'IA'
+    }))
   })
 })
