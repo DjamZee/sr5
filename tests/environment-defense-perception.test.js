@@ -106,7 +106,7 @@ describe("melee defense", () => {
       type: "actorPc", system, items: [], getFlag: () => undefined, setFlag: () => {}
     }
   }
-  function attackCard(sceneId) {
+  function attackCard(sceneId, attackerMod) {
     return {
       roll: {
         hits: 2
@@ -121,7 +121,7 @@ describe("melee defense", () => {
         firingMode: {
         }, reach: 0, ammo: {
         }, calledShot: {
-        }
+        }, environmentalMod: attackerMod
       },
       target: {
         sceneId
@@ -166,6 +166,54 @@ describe("melee defense", () => {
   it("falls back to the canvas for a card rolled before the scene was kept", async () => {
     const data = await defense(rollData(), defender(), attackCard(undefined))
     expect(envMod(data)).toBe(-1)
+  })
+
+  describe("SR5 p. 188 option: ignore an environment equal for both fighters", () => {
+    const option = active => {
+      globalThis.game.settings = {
+        get: (ns, key) => ns === "sr5" && key === "sr5MeleeEnvironmentBalanced" && active
+      }
+    }
+    it("off by default: the modifier applies even when equal", async () => {
+      const data = await defense(rollData(), defender(), attackCard("attaque", -3))
+      expect(envMod(data)).toBe(-3)
+    })
+    it("on: an equal modifier is ignored", async () => {
+      option(true)
+      const data = await defense(rollData(), defender(), attackCard("attaque", -3))
+      expect(envMod(data)).toBe(0)
+    })
+    it("on: a different modifier still applies", async () => {
+      option(true)
+      const data = await defense(rollData(), defender(), attackCard("attaque", 0))
+      expect(envMod(data)).toBe(-3)
+    })
+    it("on: a card rolled before the option keeps the modifier", async () => {
+      option(true)
+      const data = await defense(rollData(), defender(), attackCard("attaque", null))
+      expect(envMod(data)).toBe(-3)
+    })
+    it("on the attack side, compares with the target's own modifier", () => {
+      option(true)
+      const cible = {
+        system: actorSystem()
+      }
+      const cibleVN = {
+        system: actorSystem()
+      }
+      cibleVN.system.visions.lowLight.isActive = true
+      const contre = SR5_CombatHelpers.meleeEnvironmentalMod(sceneAttaque, cible)
+      expect(contre).toBe(-3)
+      expect(SR5_CombatHelpers.meleeEnvironmentBalanced(-3, contre)).toBe(true)
+      // low-light vision treats dim light as full light (p. 177): the target sees, the attacker does not
+      expect(SR5_CombatHelpers.meleeEnvironmentBalanced(-3, SR5_CombatHelpers.meleeEnvironmentalMod(sceneAttaque, cibleVN))).toBe(false)
+      // a target with no environmental data (a device) is never balanced
+      expect(SR5_CombatHelpers.meleeEnvironmentalMod(sceneAttaque, {
+        system: {
+        }
+      })).toBe(null)
+      expect(SR5_CombatHelpers.meleeEnvironmentBalanced(-3, null)).toBe(false)
+    })
   })
 })
 

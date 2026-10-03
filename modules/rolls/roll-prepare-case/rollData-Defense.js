@@ -153,6 +153,8 @@ async function handleMeleeWeaponModifiers(rollData, actor, chatData){
     
   //Add environmental modifiers
   let environmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(chatData.target.sceneId), actor.system, true, undefined, true)
+  // SR5 p. 188 option: compared with the attacker's own modifier, kept on the attack card
+  if (SR5_CombatHelpers.meleeEnvironmentBalanced(environmentalMod, chatData.combat.environmentalMod)) environmentalMod = 0
   if (environmentalMod !== 0){
     rollData.dicePool.modifiers.push({
       type: "environmentalSceneMod",

@@ -257,6 +257,7 @@ export class SR5_PrepareRollTest {
       },
       combat: {
         actions: [],
+        environmentalMod: null,
         activeDefenses: {
           dodge: 0,
           block: 0,

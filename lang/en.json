@@ -2858,6 +2858,8 @@
 	"SR5.SETTINGS_LowLightGreenTint_T": "Green-tinted low-light vision",
 	"SR5.SETTINGS_MatrixGridRules_D": "Activate or desactivate Matrix grid rules (Core rulebook, p.233-234)",
 	"SR5.SETTINGS_MatrixGridRules_T": "Use Matrix Grids",
+	"SR5.SETTINGS_MeleeEnvironmentBalanced_D": "GM option for melee (SR5 p. 188): when the attacker and the defender suffer the same environmental modifier (light and visibility, worked out for each with their own vision), it is ignored on both sides. Unchecked, it applies to everyone.",
+	"SR5.SETTINGS_MeleeEnvironmentBalanced_T": "Melee: ignore the environment when it is equal for both",
 	"SR5.SETTINGS_Rigger5Actions_D": "Activate or desactivate Rigger 5 Matrix Actions.",
 	"SR5.SETTINGS_Rigger5Actions_T": "Use Rigger 5 Matrix Actions",
 	"SR5.SETTINGS_TokenGraphic_D": "Activate custom graphic layer on tokens",
