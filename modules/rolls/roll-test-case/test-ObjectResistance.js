@@ -27,5 +27,5 @@ export default async function objectResistanceResultInfo(cardData){
   }
 
   //Update previous chat button
-  if (!prevData?.magic.spell.area > 0) SR5_RollMessage.updateChatButtonHelper(cardData.previousMessage.messageId, "objectResistance")
+  if (!(prevData?.magic.spell.area > 0)) SR5_RollMessage.updateChatButtonHelper(cardData.previousMessage.messageId, "objectResistance")
 }
