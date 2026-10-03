@@ -1693,7 +1693,12 @@ export class SR5_ActorHelper {
 
     if (toxinEffects.length) await actor.createEmbeddedDocuments("Item", toxinEffects)
     if (statusEffects.length) await actor.createEmbeddedDocuments("ActiveEffect", statusEffects)
-    if (data.damage.type && data.damage.value > 0) await actor.takeDamage(data)
+    // A toxin's damage never knocks down (SR5 p. 195), even when a gas grenade delivered it
+    if (data.damage.type && data.damage.value > 0) await actor.takeDamage({
+      ...data, damage: {
+        ...data.damage, isAttack: false
+      }
+    })
   }
 
   static async applyCalledShotsEffect(actorId, data){
