@@ -1776,7 +1776,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     let controlerList = {
     }
     for (let a of game.actors){
-      if (a.system.type === "actorPc" || (a.system.type === "actorGrunt" && a.system.token.actorLink)){
+      if (a.type === "actorPc" || (a.type === "actorGrunt" && a.prototypeToken.actorLink)){
         if (game.user.isGM) {
           controlerList[a.id] = a.name
         } else {
