@@ -399,6 +399,7 @@
 	"SR5.ShopOutcome_common": "Bien courant",
 	"SR5.ShopOutcome_criticalGlitch": "Échec critique : hors d'atteinte",
 	"SR5.ShopOutcome_failure": "Introuvable",
+	"SR5.ShopOutcome_noPool": "Test impossible : aucun dé",
 	"SR5.ShopOutcome_success": "Trouvé",
 	"SR5.ShopOutcome_successGlitch": "Trouvé, complication",
 	"SR5.ShopOutcome_tie": "Trouvé, délai doublé",

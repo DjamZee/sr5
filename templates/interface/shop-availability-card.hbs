@@ -48,7 +48,7 @@
         <tr class="sr-shop-line sr-shop-line-{{this.outcome}}">
           <td>{{this.name}}{{#if (gt this.quantity 1)}} (x{{this.quantity}}){{/if}}</td>
           <td>{{#if this.availability}}{{this.availability}}{{else}}—{{/if}}</td>
-          <td>{{#if this.availability}}{{this.hits}} / {{this.opposition}}{{else}}—{{/if}}</td>
+          <td>{{#if this.untested}}—{{else if this.availability}}{{this.hits}} / {{this.opposition}}{{else}}—{{/if}}</td>
           <td>{{this.outcomeLabel}}</td>
           <td>{{this.delayLabel}}</td>
           <td>{{this.priceLabel}}</td>

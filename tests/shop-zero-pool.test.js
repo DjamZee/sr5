@@ -1,0 +1,135 @@
+import {
+  describe, it, expect, beforeEach
+} from 'vitest'
+
+// Every roll made, and the faces each one shows, in order
+let rolls = []
+let queue = []
+
+globalThis.Roll = class {
+  constructor(formula) {
+    this.formula = formula
+    rolls.push(formula)
+  }
+  async evaluate() {
+    const count = Number(this.formula.split('d')[0])
+    this.dice = [{
+      results: queue.splice(0, count).map(result => ({
+        result, active: true
+      }))
+    }]
+    return this
+  }
+}
+
+globalThis.fromUuid = async () => ({
+  name: 'Ares Predator V',
+  system: {
+    availability: {
+      value: 5
+    },
+    price: {
+      value: 725
+    },
+  },
+})
+globalThis.foundry.applications.handlebars = {
+  renderTemplate: async () => ''
+}
+globalThis.foundry.documents.ChatMessage = {
+  create: async () => null,
+  getSpeaker: () => ({
+  }),
+}
+globalThis.game.settings.get = () => 25
+
+const {
+  SR5ShopAvailability
+} = await import('../modules/interface/shop-availability.js')
+
+const buyer = {
+  id: 'buyer', name: 'Acheteur', items: [], system: {
+  }
+}
+const line = [{
+  uuid: 'Compendium.x.y.z', quantity: 1, name: 'Ares Predator V'
+}]
+
+// A contact who never learnt Negotiation and has Charisma 1: defaulting,
+// Charisma - 1 = 0 die (SR5 p. 55)
+const defaultingContact = (charisma = 1) => ({
+  name: 'Contact en défausse',
+  system: {
+    connection: 2,
+    type: 'Barman',
+    attributes: {
+      charisma: {
+        natural: {
+          base: charisma
+        }
+      }
+    },
+    skills: {
+    },
+  },
+})
+
+beforeEach(() => {
+  rolls = []
+  queue = []
+})
+
+describe('Shop availability with no dice (SR5 p. 58)', () => {
+  it('a contact defaulting at Charisma 1 has no die', () => {
+    const searcher = SR5ShopAvailability.contactPool(defaultingContact())
+    expect(searcher.defaulting).toBe(true)
+    expect(searcher.pool).toBe(0)
+  })
+
+  it('no die means no test: nothing is rolled and nothing is found', async () => {
+    // Availability dice that would tie at 0 hits if they were rolled
+    queue = [1, 2, 2, 3, 4]
+    const card = await SR5ShopAvailability.testLines(buyer, defaultingContact(), line)
+    expect(rolls).toEqual([])
+    expect(card.results[0].outcome).toBe('noPool')
+    expect(card.results[0].obtained).toBe(false)
+    expect(card.results[0].delayLabel).toBe('—')
+    expect(card.canBuy).toBe(false)
+  })
+
+  it('a die bought by a surcharge opens the test again', async () => {
+    // One die from +25 %, a 5 against an availability that rolls no hit
+    queue = [5, 1, 2, 2, 3, 4]
+    const card = await SR5ShopAvailability.testLines(buyer, defaultingContact(), line, 25)
+    expect(card.pool).toBe(1)
+    expect(rolls).toEqual(['1d6', '5d6'])
+    expect(card.results[0].outcome).toBe('success')
+  })
+
+  it('a single die is still a test, even a losing one', async () => {
+    queue = [2, 1, 2, 2, 3, 4]
+    const card = await SR5ShopAvailability.testLines(buyer, defaultingContact(2), line)
+    expect(card.pool).toBe(1)
+    expect(rolls).toEqual(['1d6', '5d6'])
+    expect(card.results[0].outcome).toBe('tie')
+  })
+
+  it('goods without availability are still bought with no die', async () => {
+    const free = globalThis.fromUuid
+    globalThis.fromUuid = async () => ({
+      name: 'Soykaf', system: {
+        price: {
+          value: 5
+        }
+      }
+    })
+    try {
+      const card = await SR5ShopAvailability.testLines(buyer, defaultingContact(), line)
+      expect(rolls).toEqual([])
+      expect(card.results[0].outcome).toBe('common')
+      expect(card.canBuy).toBe(true)
+    } finally {
+      globalThis.fromUuid = free
+    }
+  })
+})
