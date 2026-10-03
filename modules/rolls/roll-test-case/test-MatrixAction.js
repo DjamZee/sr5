@@ -32,7 +32,9 @@ export default async function matrixActionInfo(cardData, actorId){
     } else {
       cardData.chatCard.buttons.matrixSearchSuccess = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "matrixSearchSuccess", `${game.i18n.localize("SR5.MatrixSearchSuccess")} [${cardData.matrix.searchDuration}]`)
     }
-    return cardData.test.title = `${game.i18n.localize("SR5.MatrixActionTest")}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize(SR5.matrixRolledActions[cardData.test.typeSub])} (${cardData.threshold.value})`
+    //The search title is rebuilt at every refresh of the card, so Emulate is named again each time
+    cardData.test.title = `${game.i18n.localize("SR5.MatrixActionTest")}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize(SR5.matrixRolledActions[cardData.test.typeSub])} (${cardData.threshold.value})`
+    if (cardData.matrix.emulateRating > 0) cardData.test.title += emulateTitle(cardData)
   }
 
   //AI Depth actions (Data Trails p. 159-161)
@@ -41,13 +43,14 @@ export default async function matrixActionInfo(cardData, actorId){
   //emulateRaised keeps what this roll added: Second Chance refreshes the same roll and adds nothing (SR5 p. 57)
   if (cardData.matrix.emulateRating > 0) {
     let raised = cardData.roll.emulateRaised
-    if (raised === undefined) cardData.test.title += ` (${game.i18n.localize("SR5.MatrixActionEmulate")} ${cardData.matrix.emulateRating})`
+    if (raised === undefined && cardData.test.typeSub !== "matrixSearch") cardData.test.title += emulateTitle(cardData)
     let cost = cardData.edge.hasUsedPushTheLimit ? cardData.roll.hits : cardData.matrix.emulateRating
     if (raised === undefined || (cardData.edge.hasUsedPushTheLimit && cost !== raised)) {
       cardData.roll.emulateRaised = cost
       if (cost !== (raised || 0)) await raiseOverwatchScore(cost - (raised || 0), actor)
     }
   }
+  if (cardData.test.typeSub === "matrixSearch") return
   if (cardData.test.typeSub === "redefineOwnership") {
     let depth = cardData.matrix.depth || 0, threshold = Number(cardData.threshold.value) || 0
     cardData.test.title = `${game.i18n.localize("SR5.MatrixActionTest")}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize(SR5.matrixRolledActions.redefineOwnership)} (${threshold})`
@@ -79,6 +82,10 @@ export default async function matrixActionInfo(cardData, actorId){
   } else {
     cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.ActionFailure"))
   }
+}
+
+function emulateTitle(cardData){
+  return ` (${game.i18n.localize("SR5.MatrixActionEmulate")} ${cardData.matrix.emulateRating})`
 }
 
 //Raise the Overwatch Score of the acting AI (owner or GM)
