@@ -20,6 +20,11 @@
     </p>
     {{#if searchFailed}}
     <p class="sr-shop-card-note">{{localize 'SR5.ShopFenceNoBuyer'}}</p>
+    {{else if haggleImpossible}}
+    <p class="sr-shop-card-searcher">
+      {{localize 'SR5.ShopFenceHaggle'}}{{localize 'SR5.Colons'}}
+      {{localize 'SR5.ShopOutcome_noPool'}} ({{localize 'SR5.DicePool'}} 0)
+    </p>
     {{else}}
     <p class="sr-shop-card-searcher">
       {{localize 'SR5.ShopFenceHaggle'}}{{localize 'SR5.Colons'}}

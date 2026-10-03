@@ -187,6 +187,35 @@ export class SR5ShopFence {
       return SR5ShopFence.#postCard(actor, cardData)
     }
 
+    // No die, no haggling: only Edge opens a test whose pool would be zero or
+    // less (SR5 p. 58), and the shop spends none. The buyer is found, but
+    // nothing is rolled and nothing is sold.
+    if (!negotiation) {
+      const cardData = {
+        buyerId: actor.id,
+        sellerName: actor.name,
+        immediate: false,
+        searchFailed: false,
+        haggleImpossible: true,
+        searchPool: etiquette + teamwork,
+        teamwork,
+        threshold: rules.searchThreshold,
+        searchHits: search.hits,
+        searchRolls: search.rolls,
+        delayLabel: SR5ShopAvailability.formatDelay(interval * search.rolls),
+        hagglePool: 0,
+        override: override || null,
+        glitch: search.glitch,
+        criticalGlitch: search.criticalGlitch,
+        results: priced.map(line => ({
+          ...line, offerLabel: '—', total: 0
+        })),
+        total: 0,
+        totalLabel: '0¥',
+      }
+      return SR5ShopFence.#postCard(actor, cardData)
+    }
+
     // The haggling itself, against whatever pool the table gives the buyer.
     const mine = await SR5ShopAvailability.rollDice(negotiation)
     const theirs = await SR5ShopAvailability.rollDice(rules.buyerPool)
