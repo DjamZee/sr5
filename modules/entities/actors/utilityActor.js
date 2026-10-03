@@ -1689,8 +1689,12 @@ export class SR5_CharacterUtility extends Actor {
             return
         }
         SR5_EntityHelpers.updateValue(conditionMonitors[key], 1)
-        if (conditionMonitors[key].actual.value > conditionMonitors[key].value) conditionMonitors[key].actual.base = conditionMonitors[key].value
+        // A monitor never holds more boxes than it has: compare the stored damage, actual.value was reset above
         SR5_EntityHelpers.updateValue(conditionMonitors[key].actual, 0)
+        if (conditionMonitors[key].actual.value > conditionMonitors[key].value) {
+          conditionMonitors[key].actual.base = conditionMonitors[key].value
+          SR5_EntityHelpers.updateValue(conditionMonitors[key].actual, 0)
+        }
         SR5_EntityHelpers.GenerateMonitorBoxes(actorData, key)
         SR5_EntityHelpers.updateStatusBars(actor, key)
       }
