@@ -161,7 +161,8 @@ describe('Rebooting the hacker deck wipes the marks it had placed (SR5 p. 244)',
     expect(deck.system.markedItems).toEqual([])
     const system = hacker.update.mock.calls[0][0].system
     expect(system.matrix.overwatchScore).toBe(0)
-    expect(system.matrix.attributes.sleaze.base).toBe(0)
+    // The deck keeps its configuration (SR5 p. 229)
+    expect(system.matrix.attributes.sleaze.base).toBe(5)
   })
 
   it('through the GM, when the player who owns the hacker reboots', async () => {

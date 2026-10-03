@@ -953,15 +953,8 @@ export class SR5Actor extends Actor {
     let updatedItems = foundry.utils.duplicate(this.items)
 
     //Reset le SS à 0
+    //The deck keeps its configuration: attributes are assigned at its first start and only change by reconfiguring (SR5 p. 229)
     let actorData = foundry.utils.duplicate(this.system)
-    actorData.matrix.attributes.attack.base = 0
-    actorData.matrix.attributes.dataProcessing.base = 0
-    actorData.matrix.attributes.firewall.base = 0
-    actorData.matrix.attributes.sleaze.base = 0
-    actorData.matrix.attributesCollection.value1isSet = false
-    actorData.matrix.attributesCollection.value2isSet = false
-    actorData.matrix.attributesCollection.value3isSet = false
-    actorData.matrix.attributesCollection.value4isSet = false
     actorData.matrix.overwatchScore = 0
     //The marks placed on an AI's persona go too, with their trace on the decks of those who placed them (SR5 p. 244)
     if (SR5_CharacterUtility.isDepthActive(this)) {
