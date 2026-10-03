@@ -175,7 +175,11 @@ export class SR5_ActorHelper {
           // SR5 p. 172: a full physical monitor knocks the character out; death needs an overflow greater than Body
           if (isDead || actor.type === "actorSpirit") await SR5_ActorHelper.createDeadEffect(actorId)
           else await SR5_ActorHelper.createKoEffect(actorId)
-        } else if (actorData.conditionMonitors.stun.actual.value >= actorData.conditionMonitors.stun.value) await SR5_ActorHelper.createKoEffect(actorId)
+        } else if (actorData.conditionMonitors.stun.actual.value >= actorData.conditionMonitors.stun.value) {
+          // SR5 p. 305: a spirit is dissipated when either of its monitors is full, Stun included
+          if (actor.type === "actorSpirit") await SR5_ActorHelper.createDeadEffect(actorId)
+          else await SR5_ActorHelper.createKoEffect(actorId)
+        }
         else if ((damage > (actorData.limits.physicalLimit.value + gelAmmo) || damage >= 10) &&
                   actorData.conditionMonitors.stun.actual.value < actorData.conditionMonitors.stun.value &&
                   actorData.conditionMonitors.physical.actual.value < actorData.conditionMonitors.physical.value) await SR5_ActorHelper.createProneEffect(actorId, damage, gelAmmo)

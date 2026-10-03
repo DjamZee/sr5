@@ -294,6 +294,45 @@ describe("a full grunt is out of the fight, dead only above its Body (SR5 p. 381
   })
 })
 
+describe("a two-monitor spirit is dissipated by either monitor (SR5 p. 305)", () => {
+  async function hitAir(value, type) {
+    const a = actorOf("actorSpirit", {
+      condition: 0, physical: 0, stun: 0
+    }, {
+      type: "air"
+    })
+    SR5_CharacterUtility.updateConditionMonitors(a)
+    actor = document("actorSpirit", withLimits(a.system))
+    await SR5_ActorHelper.takeDamage("a1", hit(value, type))
+    return {
+      dead: SR5_ActorHelper.createDeadEffect.mock.calls.length, ko: SR5_ActorHelper.createKoEffect.mock.calls.length
+    }
+  }
+
+  it("full Stun: dissipated, not knocked out", async () => {
+    expect(await hitAir(10, "stun")).toEqual({
+      dead: 1, ko: 0
+    })
+  })
+
+  it("full Physical: dissipated", async () => {
+    expect(await hitAir(10, "physical")).toEqual({
+      dead: 1, ko: 0
+    })
+  })
+
+  it("a character with full Stun is only knocked out", async () => {
+    const a = actorOf("actorPc", {
+      physical: 0, stun: 0, overflow: 0
+    })
+    SR5_CharacterUtility.updateConditionMonitors(a)
+    actor = document("actorPc", withLimits(a.system))
+    await SR5_ActorHelper.takeDamage("a1", hit(10, "stun"))
+    expect(SR5_ActorHelper.createKoEffect).toHaveBeenCalledTimes(1)
+    expect(SR5_ActorHelper.createDeadEffect).not.toHaveBeenCalled()
+  })
+})
+
 describe("healing wakes up a character knocked out by damage", () => {
   function effect(id, origin, status) {
     return {
