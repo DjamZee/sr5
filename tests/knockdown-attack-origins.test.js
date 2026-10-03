@@ -150,3 +150,71 @@ describe('damage that is not an attack stays unmarked', () => {
     expect(takeDamage.mock.calls[0][0].damage.isAttack).toBe(false)
   })
 })
+
+describe('matrix attacks are attacks', () => {
+  const matrixCard = (typeSub, attackerHits, defenderHits) => ({
+    test: {
+      typeSub
+    },
+    previousMessage: {
+      hits: attackerHits, actorId: 'h1'
+    },
+    roll: {
+      hits: defenderHits
+    },
+    target: {
+    },
+    matrix: {
+      actionType: 'attack', mark: 1
+    },
+    owner: {
+    },
+    damage: {
+      isAttack: false, matrix: {
+      }
+    },
+    effects: {
+    },
+    chatCard: {
+      buttons: {
+      }
+    },
+  })
+  const persona = userMode => ({
+    id: 'x', name: 'X', type: 'actorPc', system: {
+      matrix: {
+        userMode, deviceType: 'device', programs: {
+          biofeedback: {
+            isActive: true
+          }, blackout: {
+            isActive: false
+          }
+        }
+      }
+    }
+  })
+
+  it('an offensive complex form that gets through is an attack', async () => {
+    const {
+      default: complexFormDefenseInfo
+    } = await import('../modules/rolls/roll-test-case/test-ComplexFormDefense.js')
+    const c = matrixCard('resonanceSpike', 4, 1)
+    await complexFormDefenseInfo(c)
+    expect(c.chatCard.buttons.takeMatrixDamage).toBeDefined()
+    expect(c.damage.isAttack).toBe(true)
+  })
+
+  it('a matrix attack that gets through is an attack, the biofeedback sent back is not', async () => {
+    const {
+      default: matrixDefenseInfo
+    } = await import('../modules/rolls/roll-test-case/test-MatrixDefense.js')
+    vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockImplementation(id => persona(id === 'h1' ? 'hotsim' : 'ar'))
+    const hit = matrixCard('hackOnTheFly', 4, 1)
+    await matrixDefenseInfo(hit, 'd1')
+    expect(hit.damage.isAttack).toBe(true)
+    const riposte = matrixCard('dataSpike', 1, 4)
+    await matrixDefenseInfo(riposte, 'd1')
+    expect(riposte.chatCard.buttons.defenderDoBiofeedbackDamage).toBeDefined()
+    expect(riposte.damage.isAttack).toBe(false)
+  })
+})

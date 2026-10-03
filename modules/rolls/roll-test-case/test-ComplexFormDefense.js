@@ -9,6 +9,8 @@ export default async function complexFormDefenseInfo(cardData){
   else {
     if (cardData.test.typeSub === "resonanceSpike" || cardData.test.typeSub === "derezz"){
       cardData.damage.matrix.value = cardData.roll.netHits
+      // An offensive complex form is an attack (SR5 p. 195)
+      cardData.damage.isAttack = true
       cardData.chatCard.buttons.takeMatrixDamage = SR5_RollMessage.generateChatButton("nonOpposedTest", "takeMatrixDamage", `${game.i18n.localize("SR5.ApplyDamage")} (${cardData.damage.matrix.value})`)
     } else {
       if (cardData.effects.canApplyEffect) {

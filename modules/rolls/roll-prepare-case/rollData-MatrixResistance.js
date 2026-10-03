@@ -42,6 +42,7 @@ export default async function matrixResistance(rollData, actor, chatData){
   rollData.previousMessage.messageId = chatData.owner.messageId
   rollData.damage.matrix.base = chatData.damage.matrix.value
   rollData.damage.type = chatData.damage.type
+  rollData.damage.isAttack = !!chatData.damage.isAttack
 
   return rollData
 }

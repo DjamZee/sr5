@@ -53,7 +53,10 @@ export default async function resistance(rollData, rollType, actor, chatData){
     rollData.damage.element = auraOwner.system.specialProperties.energyAura
     if (rollData.damage.element === "fire") rollData.threshold.value = auraOwner.system.specialAttributes.magic.augmented.value
   }
-    
+
+  //Dumpshock comes from being cut off, never from the attack card it reuses (SR5 p. 195)
+  if (chatData.damage.resistanceType === "dumpshock") rollData.damage.isAttack = false
+
   //handle distance between defenser and explosive device
   // handleGrenade aborts (undefined) when the blast cannot reach or cannot be measured: the test must stop there
   if (chatData.combat.grenade.isGrenade && !(await handleGrenade(rollData, chatData, actor))) return undefined

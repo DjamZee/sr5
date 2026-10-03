@@ -57,6 +57,8 @@ export default async function matrixDefenseInfo(cardData, actorId){
 
   //if attacker wins
   else {
+    // A matrix attack is an attack: the damage it leads to can knock a persona's owner down (SR5 p. 195)
+    cardData.damage.isAttack = true
     switch (cardData.test.typeSub) {
       // Kill Code p. 45: on a success the hacker puts one mark on the target. Watchdog has no mark
       // selector in its roll dialog, unlike Hack on the Fly, so nothing else sets the number.

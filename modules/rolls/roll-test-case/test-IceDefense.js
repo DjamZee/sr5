@@ -40,6 +40,8 @@ export default async function iceDefenseInfo(cardData, actorId){
     }
   } else {
     cardData.damage.matrix.value = netHits
+    // An IC attack is a matrix attack (SR5 p. 195)
+    cardData.damage.isAttack = true
     switch(cardData.test.typeSub){
       case "iceAcid":
         if (actorData.matrix.attributes.firewall.value > 0) cardData.chatCard.buttons.iceEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "iceEffect", game.i18n.localize("SR5.EffectReduceFirewall"))
