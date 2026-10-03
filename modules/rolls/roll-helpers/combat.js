@@ -70,6 +70,42 @@ export class SR5_CombatHelpers {
     return offScene
   }
 
+  // The scene an area spell was cast on: the one its chat card names, else one holding the caster's token
+  // (the canvas first). A defense is clicked later, maybe by someone looking at another scene.
+  static spellAreaScene(chatData){
+    const scenes = globalThis.game?.scenes
+    const canvasScene = globalThis.canvas?.scene ?? null
+    const messageScene = globalThis.game?.messages?.get(chatData.owner?.messageId)?.speaker?.scene
+    if (messageScene && scenes?.get(messageScene)) return scenes.get(messageScene)
+    const casterId = chatData.owner?.actorId
+    const holdsCaster = scene => !!scene?.tokens?.some(t => t.id === casterId || t.actorId === casterId)
+    if (holdsCaster(canvasScene)) return canvasScene
+    return scenes?.find(holdsCaster) ?? canvasScene
+  }
+
+  // Distance in meters between an area spell's template and a defender, on the scene of the cast;
+  // null when it cannot be measured (no template placed there, or no token of the defender on that scene).
+  // SR5 p. 283: the area is a sphere around the target point, its radius in meters equal to the Force.
+  static spellAreaDistance(chatData, actor){
+    const scene = SR5_CombatHelpers.spellAreaScene(chatData)
+    if (!scene?.templates) return null
+    let template
+    for (const t of scene.templates){
+      if (t.flags?.sr5?.item === chatData.owner?.itemId) template = t
+    }
+    if (!template) return null
+    const token = actor.token?.parent === scene ? actor.token : scene.tokens?.find(t => t.actorId === actor.id)
+    if (!token) return null
+    // A token's x, y is its top left corner: the template's center is moved by half a square to match
+    const half = scene.grid.size / 2
+    const units = scene.grid.measurePath([{
+      x: template.x - half, y: template.y - half
+    }, {
+      x: token.x, y: token.y
+    }]).distance
+    return units * SR5_SystemHelpers.getSceneUnitInMeters(scene)
+  }
+
   //Handle environmental modifiers
   //noWind: ignore the wind column (perception, melee); melee: SR5 p. 188, only the Light and Visibility columns apply
   //weaponLight: light rows taken off by a flashlight on the weapon being used (SR5_UtilityItem.getWeaponLightCompensation)

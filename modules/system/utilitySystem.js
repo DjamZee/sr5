@@ -448,7 +448,7 @@ export class SR5_SystemHelpers {
    * @param scene      The scene to read, the one on the canvas by default
    * @return {number}   Meters per scene unit (1 when the scene already measures in meters)
    */
-  static getSceneUnitInMeters(scene = canvas?.scene){
+  static getSceneUnitInMeters(scene = globalThis.canvas?.scene){
     const units = scene?.grid?.units
     if (typeof units !== "string") return 1
     const normalized = units.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\.$/, "")

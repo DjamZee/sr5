@@ -2,12 +2,6 @@ import {
   SR5_PrepareRollHelper 
 } from "../roll-prepare-helpers.js"
 import {
-  SR5_EntityHelpers 
-} from "../../entities/helpers.js"
-import {
-  SR5_SystemHelpers 
-} from "../../system/utilitySystem.js"
-import {
   SR5_CombatHelpers 
 } from "../roll-helpers/combat.js"
 
@@ -199,19 +193,12 @@ async function handleAstralCombat(rollData, actor, chatData){
 }
 
 async function handleSpellAreaTemplate(rollData, actor, chatData){
-  // Spell position
-  let spellPosition = await SR5_SystemHelpers.getTemplateItemPosition(chatData.owner.itemId) 
-    
-  // Get defenser position
-  let defenserPosition = SR5_EntityHelpers.getActorCanvasPosition(actor)
-    
-  // Calcul distance between grenade and defenser
-  // The spell's area is a radius in meters equal to its Force (SR5 p. 283), so the measured distance is
-  // converted to meters before the two are compared.
-  let distance = SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint(spellPosition, defenserPosition)
-    
-  //modify the damage based on distance and damage dropoff.
-  if (chatData.magic.spell.area < distance) {
+  // Measured on the scene of the cast, in meters: the spell's area is a radius in meters equal to its Force (SR5 p. 283)
+  let distance = SR5_CombatHelpers.spellAreaDistance(chatData, actor)
+
+  // No template to measure from: the GM rules, the defense goes on
+  if (distance === null) ui.notifications.warn(game.i18n.localize("SR5.WARN_SpellAreaNoTemplate"))
+  else if (chatData.magic.spell.area < distance) {
     ui.notifications.info(`${game.i18n.localize("SR5.INFO_TargetIsTooFar")}`)
     return false
   }
