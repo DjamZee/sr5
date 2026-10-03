@@ -468,6 +468,44 @@ describe('drug interactions (Chrome Flesh p. 197)', () => {
     expect(written(actor, 'jazz').system.handleShot.duration).toBe(60)
   })
 
+  it.each([7, 8, 9])('on %i, starts the crash of every drug under effect at once', async (total) => {
+    rollTotals(30, total)
+    const cram = drugItem('cram', 'Cram', 'cram', {
+      isActive: true,
+      handleShot: {
+        name: 'cram', duration: 9, durationType: 'hour', unresistedStunDamage: 6
+      },
+    })
+    const {
+      actor, sheet
+    } = drugSheet([cram, crashingBliss(), drugItem('jazz', 'Jazz', 'jazz')])
+    actor.takeDamage = vi.fn()
+    actor.rollTest = vi.fn()
+    vi.spyOn(SR5_PrepareRollTest, 'getBaseRollData').mockImplementation(() => ({
+      damage: {
+      }, combat: {
+      }
+    }))
+
+    await take(sheet, 'jazz')
+
+    for (const id of ['cram', 'jazz']) {
+      const d = written(actor, id)
+      expect(d.system.isActive).toBe(false)
+      expect(d.system.wirelessTurnedOn).toBe(true)
+      expect(d.system.onUse.duration).toBe('')
+    }
+    expect(written(actor, 'jazz').system.onUse.contrecoup).toBe('30 SR5.Minutes')
+    // the crash damage of Cram applies once; Bliss, already in its crash, does not start it again
+    expect(actor.takeDamage).toHaveBeenCalledTimes(1)
+    expect(actor.takeDamage.mock.calls[0][0].damage).toEqual({
+      value: 6, type: 'stun'
+    })
+    const said = ui.notifications.info.mock.calls.map(c => c[0]).join(' | ')
+    expect(said).toContain('SR5.DrugCrashImmediate')
+    expect(said).not.toContain('SR5.DrugContrecoupDurationDoubled')
+  })
+
   // Every total of the table up to 13 has its own row: only 14+ inflicts 10P
   async function interactionDamage(total){
     rollTotals(30, total)
