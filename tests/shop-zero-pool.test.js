@@ -114,6 +114,70 @@ describe('Shop availability with no dice (SR5 p. 58)', () => {
     expect(card.results[0].outcome).toBe('tie')
   })
 
+  it('the buyer\'s pool is the one the sheet computed, defaulting and wounds included', () => {
+    // Charisma 3, no Negotiation, a -1 wound: the sheet says 3 - 1 - 1 = 1
+    const actor = {
+      name: 'Blessé', system: {
+        attributes: {
+          charisma: {
+            augmented: {
+              value: 3
+            }
+          }
+        },
+        skills: {
+          negotiation: {
+            rating: {
+              value: 0
+            }, test: {
+              dicePool: 1
+            }
+          }
+        },
+        limits: {
+          socialLimit: {
+            value: 4
+          }
+        },
+      }
+    }
+    expect(SR5ShopAvailability.buyerPool(actor).pool).toBe(1)
+  })
+
+  it('a buyer whose sheet computes no die gets no die back', async () => {
+    // Charisma 1, no Negotiation: defaulting leaves 0 (SR5 p. 55)
+    const actor = {
+      id: 'b', name: 'Charisme 1', items: [], system: {
+        attributes: {
+          charisma: {
+            augmented: {
+              value: 1
+            }
+          }
+        },
+        skills: {
+          negotiation: {
+            rating: {
+              value: 0
+            }, test: {
+              dicePool: 0
+            }
+          }
+        },
+        limits: {
+          socialLimit: {
+            value: 2
+          }
+        },
+      }
+    }
+    expect(SR5ShopAvailability.buyerPool(actor).pool).toBe(0)
+    queue = [1, 2, 2, 3, 4]
+    const card = await SR5ShopAvailability.testLines(actor, null, line)
+    expect(rolls).toEqual([])
+    expect(card.results[0].outcome).toBe('noPool')
+  })
+
   it('goods without availability are still bought with no die', async () => {
     const free = globalThis.fromUuid
     globalThis.fromUuid = async () => ({

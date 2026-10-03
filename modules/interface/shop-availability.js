@@ -74,11 +74,17 @@ export class SR5ShopAvailability {
   /*  Dice pools                                  */
   /* -------------------------------------------- */
 
-  /** The buyer's own pool: Negotiation + Charisma, capped by the social limit. */
+  /**
+   * The buyer's own pool: Negotiation + Charisma, capped by the social limit.
+   * The sheet's computed pool already defaults an untrained buyer to
+   * Charisma - 1 (SR5 p. 55) and carries the wound penalties, so a zero there
+   * is a real zero, not a missing value.
+   */
   static buyerPool(actor) {
     const skill = actor.system.skills?.negotiation
-    const pool = Number(skill?.test?.value ?? 0) ||
-      (Number(skill?.rating?.value ?? 0) + Number(actor.system.attributes?.charisma?.augmented?.value ?? 0))
+    const pool = skill?.test ?
+      Math.max(0, Number(skill.test.dicePool) || 0) :
+      Number(actor.system.attributes?.charisma?.augmented?.value ?? 0)
     return {
       pool,
       limit: Number(actor.system.limits?.socialLimit?.value ?? 0),
