@@ -246,16 +246,24 @@ export class SR5_MatrixHelpers {
     SR5_RollTest.renderRollCard(rollData)
   }
 
+  //Jack out (SR5 p. 244): free of the link lock, the character reboots the device used
   static async jackOut(cardData){
     let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
-    await actor.deleteEmbeddedDocuments("Item", [cardData.previousMessage.itemUuid])
+    //Every link lock goes, whoever placed it: the jack out is resisted by all of them with one roll (SR5 p. 246)
+    let linkLocks = actor.items.filter(i => i.type === "itemEffect" && Object.values(i.system.customEffects ?? {
+    }).some(e => e.target === "system.matrix.isLinkLocked"))
+    if (linkLocks.length) await actor.deleteEmbeddedDocuments("Item", linkLocks.map(i => i.id))
     await SR5_EntityHelpers.deleteEffectOnActor(actor, "linkLock")
 
-    if (actor.system.matrix.userMode === "hotsim"){
+    //Dumpshock in VR, cold or hot sim (SR5 p. 231 and 244), as the IC reboots of this file
+    let userMode = actor.system.matrix.userMode
+    if (userMode && userMode !== "ar"){
       let dumpshockData = SR5_PrepareRollTest.getBaseRollData(null, actor)
       dumpshockData.damage.resistanceType = "dumpshock"
       actor.rollTest("resistanceCard", null, dumpshockData)
     }
+    //rebootDeck spends no action: the jack out has already paid for its own
+    await actor.rebootDeck()
   }
 
   static async jamSignals(cardData){

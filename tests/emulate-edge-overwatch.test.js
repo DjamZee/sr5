@@ -151,6 +151,20 @@ describe('Emulate and Edge (Data Trails p. 159, SR5 p. 57)', () => {
     expect(updatedCard.test.title).toBe('Test (SR5.MatrixActionEmulate 3)')
   })
 
+  it('raises the score of an unlinked token, not of its base actor', async () => {
+    actor.isToken = true
+    actor.token = {
+      id: 't1'
+    }
+    try {
+      await emulateCard([5, 2, 3, 1])
+      expect(raise).toHaveBeenCalledWith(3, 't1')
+    } finally {
+      delete actor.isToken
+      delete actor.token
+    }
+  })
+
   it('Push the limit before the roll raises it by the hits, not by the rating', async () => {
     await emulateCard([5, 5, 2, 3], true)
     expect(raise).toHaveBeenCalledTimes(1)

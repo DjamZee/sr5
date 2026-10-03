@@ -34,6 +34,9 @@ const {
 const {
   SR5_MatrixHelpers
 } = await import('../modules/rolls/roll-helpers/matrix.js')
+const {
+  SR5_PrepareRollTest
+} = await import('../modules/rolls/roll-prepare.js')
 
 /** A document whose update merges the flattened changes the way Foundry does */
 function documentWith(data) {
@@ -286,5 +289,68 @@ describe('Rebooting a deck (SR5 p. 244)', () => {
     await hacker.rebootDeck()
     expect(hacker.update).toHaveBeenCalledTimes(1)
     expect(hacker.update.mock.calls[0][0].system.specialProperties.actions.complex.current).toBe(1)
+  })
+})
+
+describe('Jacking out reboots the device used (SR5 p. 244)', () => {
+  let dumpshock
+  beforeEach(() => {
+    vi.spyOn(SR5_EntityHelpers, 'deleteEffectOnActor').mockResolvedValue()
+    vi.spyOn(SR5_PrepareRollTest, 'getBaseRollData').mockImplementation(() => ({
+      damage: {
+      }
+    }))
+    dumpshock = hacker.rollTest = vi.fn()
+  })
+
+  /** A link lock as applylinkLockEffect creates it */
+  function linkLock(id) {
+    return {
+      id, type: 'itemEffect', system: {
+        type: 'linkLock', customEffects: {
+          0: {
+            target: 'system.matrix.isLinkLocked'
+          }
+        }
+      }
+    }
+  }
+
+  it.each([
+    ['free, in AR', 'ar', false],
+    ['free, in cold sim', 'coldsim', true],
+    ['link-locked, in hot sim', 'hotsim', true],
+  ])('%s: Overwatch Score to 0, marks wiped, configuration kept, no action spent', async (_case, userMode, shocked) => {
+    hacker.system.matrix.userMode = userMode
+    await SR5_MatrixHelpers.jackOut({
+      owner: {
+        actorId: 'hacker'
+      }, previousMessage: {
+      }
+    })
+    const system = hacker.update.mock.calls[0][0].system
+    expect(system.matrix.overwatchScore).toBe(0)
+    expect(system.matrix.attributes.sleaze.base).toBe(5)
+    expect(system.specialProperties.actions.complex.current).toBe(1)
+    expect(activeDeck.system.markedItems).toEqual([])
+    expect(serverFile.system.marks).toEqual([])
+    expect(commlink.system.marks).toHaveLength(1)
+    // Dumpshock in VR only, cold sim included (SR5 p. 231)
+    expect(dumpshock).toHaveBeenCalledTimes(shocked ? 1 : 0)
+  })
+
+  it('frees every link lock, whoever placed it (SR5 p. 246)', async () => {
+    hacker.system.matrix.isLinkLocked = true
+    hacker.items.push(linkLock('lock1'), linkLock('lock2'))
+    await SR5_MatrixHelpers.jackOut({
+      owner: {
+        actorId: 'hacker'
+      }, previousMessage: {
+        itemUuid: 'lock2'
+      }
+    })
+    expect(hacker.deleteEmbeddedDocuments).toHaveBeenCalledWith('Item', ['lock1', 'lock2'])
+    expect(SR5_EntityHelpers.deleteEffectOnActor).toHaveBeenCalledWith(hacker, 'linkLock')
+    expect(hacker.update).toHaveBeenCalledTimes(1)
   })
 })

@@ -371,15 +371,18 @@ export class SR5_RollMessage {
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       }
-      case "overwatch":
+      case "overwatch": {
+        //An unlinked token has its own actor: its token id reaches it, the actor id would reach the base actor
+        let overwatchActorId = originalActionActor.isToken ? originalActionActor.token.id : originalActionActor.id
         if (!game.user?.isGM) {
           SR5_SocketHandler.emitForGM("overwatchIncrease", {
             defenseHits: messageData.roll.hits,
-            actorId: originalActionActor.id,
+            actorId: overwatchActorId,
           })
-        } else await SR5_ActorHelper.overwatchIncrease(messageData.roll.hits, originalActionActor.id)
+        } else await SR5_ActorHelper.overwatchIncrease(messageData.roll.hits, overwatchActorId)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      }
       case "defenderDoMatrixDamage":
         if (originalActionActor.type === "actorPc" || originalActionActor.type === "actorGrunt"){
           if (originalActionActor.items.find((item) => item.type === "itemDevice" && item.system.isActive && (item.system.type === "livingPersona" || item.system.type === "headcase"))){

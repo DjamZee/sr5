@@ -70,7 +70,9 @@ export default async function matrixActionInfo(cardData, actorId){
   }
 
   if (cardData.roll.hits > 0) {
-    if (cardData.test.typeSub === "jackOut" && actorData.matrix.isLinkLocked) cardData.chatCard.buttons.jackOut = SR5_RollMessage.generateChatButton("nonOpposedTest", "jackOut", game.i18n.localize("SR5.MatrixActionJackOutResistance"), true)
+    //The defense only applies under a link lock (SR5 p. 244): free, the character jacks out at once
+    if (cardData.test.typeSub === "jackOut" && !actorData.matrix.isLinkLocked) cardData.chatCard.buttons.jackOutSuccess = SR5_RollMessage.generateChatButton("nonOpposedTest", "jackOutSuccess", game.i18n.localize("SR5.MatrixActionJackOutSuccess"))
+    else if (cardData.test.typeSub === "jackOut" && actorData.matrix.isLinkLocked) cardData.chatCard.buttons.jackOut = SR5_RollMessage.generateChatButton("nonOpposedTest", "jackOut", game.i18n.localize("SR5.MatrixActionJackOutResistance"), true)
     else if (cardData.test.typeSub === "eraseMark") cardData.chatCard.buttons.eraseMark = SR5_RollMessage.generateChatButton("opposedTest", "eraseMark", game.i18n.localize("SR5.ChooseMarkToErase"))
     else if (cardData.test.typeSub === "checkOverwatchScore") cardData.chatCard.buttons.checkOverwatchScore = SR5_RollMessage.generateChatButton("nonOpposedTest", "checkOverwatchScore", game.i18n.localize("SR5.OverwatchResistance"), true)
     else if (cardData.test.typeSub === "jamSignals") cardData.chatCard.buttons.matrixJamSignals = SR5_RollMessage.generateChatButton("nonOpposedTest", "matrixJamSignals", game.i18n.localize("SR5.MatrixActionJamSignals"))
@@ -89,10 +91,12 @@ function emulateTitle(cardData){
 }
 
 //Raise the Overwatch Score of the acting AI (owner or GM)
+//An unlinked token has its own actor: its token id reaches it, the actor id would reach the base actor
 async function raiseOverwatchScore(value, actor){
-  if (game.user.isGM || actor.isOwner) await SR5_ActorHelper.overwatchIncrease(value, actor.id)
+  let actorId = actor.isToken ? actor.token.id : actor.id
+  if (game.user.isGM || actor.isOwner) await SR5_ActorHelper.overwatchIncrease(value, actorId)
   else SR5_SocketHandler.emitForGM("overwatchIncrease", {
     defenseHits: value,
-    actorId: actor.id,
+    actorId: actorId,
   })
 }
