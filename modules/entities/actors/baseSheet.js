@@ -1459,7 +1459,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       else actions = [{
         type: "free", value: 1, source: "turnOffWifi"
       }]
-      actorData.specialProperties.actions.simple.current -=1
+      //SR5 p. 165: changing the mode of a connected device is a free action, the one announced above
+      actorData.specialProperties.actions.free.current -=1
     }
 
     //Special case for materialization
