@@ -63,6 +63,17 @@ export class SR5_SystemHelpers {
       type: Boolean,
     })
 
+    // SR5 p. 165 and p. 167: switching a device is a free action through a DNI, a simple one otherwise. Off by
+    // default: the wireless switch stays free for everyone, the system not knowing who has a DNI
+    game.settings.register("sr5", "sr5WifiRequiresDNI", {
+      name: "SR5.SETTINGS_WifiRequiresDNI_T",
+      hint: "SR5.SETTINGS_WifiRequiresDNI_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+    })
+
     game.settings.register("sr5", "sr5StorageDropOnDeathShare", {
       name: "SR5.SETTINGS_StorageDropOnDeathShare_T",
       hint: "SR5.SETTINGS_StorageDropOnDeathShare_D",

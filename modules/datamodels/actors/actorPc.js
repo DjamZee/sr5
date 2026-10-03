@@ -89,6 +89,10 @@ export class sr5ActorPcDataModel extends foundry.abstract.TypeDataModel {
       ...itemsPropertiesPartialModel.defineSchema(),
       ...matrixPartialModel.defineSchema(),
       ...magicPartialModel.defineSchema(),
+      //Wired to a direct neural interface (DNI): switching a connected device is then a free action (SR5 p. 165)
+      hasDNI: new fields.BooleanField({
+        initial: false
+      }),
       specialAttributes: new fields.SchemaField({
         edge: new fields.SchemaField({
           natural: new fields.SchemaField({

@@ -627,7 +627,72 @@ describe('a bound spirit spends a service when it aids a test (SR5 p. 305-306)',
   })
 })
 
-describe('switching the wireless of a device spends a free action (SR5 p. 165)', () => {
+describe('switching the wireless of a device (SR5 p. 165 and p. 167)', () => {
+  async function switchWifi(requiresDNI, hasDNI){
+    vi.spyOn(game.settings, 'get').mockImplementation((scope, key) => (key === 'sr5WifiRequiresDNI') ? requiresDNI : null)
+    const actions = {
+      free: {
+        value: 1, current: 1
+      }, simple: {
+        value: 2, current: 2
+      }, complex: {
+        value: 1, current: 1
+      }
+    }
+    const system = {
+      hasDNI, specialProperties: {
+        actions
+      }
+    }
+    const actor = {
+      id: 'a1', name: 'Test', isToken: false, effects: [], items: [{
+        _id: 'g1', id: 'g1', name: 'Commlink', type: 'itemGear', system: {
+          wirelessTurnedOn: true, isActive: true
+        }
+      }],
+      system: new FakeSystem(system, system),
+      update: vi.fn(async () => {}),
+    }
+    const sheet = Object.create(ActorSheetSR5.prototype)
+    Object.defineProperty(sheet, 'actor', {
+      value: actor
+    })
+    await sheet._onEditItemValue({
+      currentTarget: {
+        closest: () => ({
+          dataset: {
+            itemId: 'g1'
+          }
+        }),
+        dataset: {
+          binding: 'system.wirelessTurnedOn', dtype: 'Boolean'
+        },
+      },
+      target: {
+        value: ''
+      },
+    })
+    return actor.update.mock.calls.at(-1)[0].system.specialProperties.actions
+  }
+
+  it('is a free action for everyone by default', async () => {
+    const written = await switchWifi(false, false)
+    expect(written.free.current).toBe(0)
+    expect(written.simple.current).toBe(2)
+  })
+
+  it('is a simple action without a DNI when the world requires one', async () => {
+    const written = await switchWifi(true, false)
+    expect(written.free.current).toBe(1)
+    expect(written.simple.current).toBe(1)
+  })
+
+  it('is a free action through a DNI when the world requires one', async () => {
+    const written = await switchWifi(true, true)
+    expect(written.free.current).toBe(0)
+    expect(written.simple.current).toBe(2)
+  })
+
   it('takes the free action it announces, not a simple one', async () => {
     const actions = {
       free: {

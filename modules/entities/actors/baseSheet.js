@@ -203,6 +203,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     context.items.sort((a, b) => (a.sort || 0) - (b.sort || 0))
 
     context.storageViewIsGrid = game.settings.get("sr5", "sr5StorageViewMode") !== "list"
+    //The "wired by DNI" box only matters when the world asks for a DNI to switch the wireless as a free action
+    context.showDNI = game.settings.get("sr5", "sr5WifiRequiresDNI") && ["actorPc", "actorGrunt"].includes(this.actor.type)
 
     // Compute dynamic layout (SR6-style panel/tab/block system)
     context.layout = this._computeSheetLayout(this.actor)
@@ -1457,14 +1459,13 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       actorData.specialProperties.actions.free.current -=1
     }
     if (target === "system.wirelessTurnedOn"){
-      if(oldValue === false) actions = [{
-        type: "free", value: 1, source: "turnOnWifi"
+      //Switching a device: a free action through a DNI (SR5 p. 165), a simple one otherwise (p. 167). The rule
+      //applies only when the world setting asks for it; the actor's "wired by DNI" box then decides
+      let actionType = (!game.settings.get("sr5", "sr5WifiRequiresDNI") || actor.system.hasDNI) ? "free" : "simple"
+      actions = [{
+        type: actionType, value: 1, source: (oldValue === false) ? "turnOnWifi" : "turnOffWifi"
       }]
-      else actions = [{
-        type: "free", value: 1, source: "turnOffWifi"
-      }]
-      //SR5 p. 165: changing the mode of a connected device is a free action, the one announced above
-      actorData.specialProperties.actions.free.current -=1
+      actorData.specialProperties.actions[actionType].current -=1
     }
 
     //Special case for materialization
