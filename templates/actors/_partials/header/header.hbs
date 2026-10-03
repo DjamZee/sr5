@@ -16,4 +16,16 @@
 	{{#if (eq actor.type "actorSpirit")}}
 		{{> systems/sr5/templates/actors/_partials/header/controls/actorSpirit.hbs}}
 	{{/if}}
+	{{#if (eq actor.type "actorSprite")}}
+		{{> systems/sr5/templates/actors/_partials/header/controls/actorSprite.hbs}}
+	{{/if}}
+	{{#if (eq actor.type "actorAgent")}}
+		{{> systems/sr5/templates/actors/_partials/header/controls/actorAgent.hbs}}
+	{{/if}}
+	{{#if (eq actor.type "actorDevice")}}
+		{{> systems/sr5/templates/actors/_partials/header/controls/actorDevice.hbs}}
+	{{/if}}
+	{{#if (eq actor.type "actorDrone")}}
+		{{> systems/sr5/templates/actors/_partials/header/controls/actorDrone.hbs}}
+	{{/if}}
 </div>

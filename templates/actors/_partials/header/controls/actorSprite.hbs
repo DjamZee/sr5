@@ -1,0 +1,14 @@
+{{!-- Sprite type and level, then the registered switch --}}
+<div class="SR-EspritType">
+  <p class="SRTextInBox">{{findTranslation 'spriteTypes' system.type}}</p>
+</div>
+<div class="SRemptyBox" title="{{localize 'SR5.Level'}}">
+  <input class="SRinputInBox" type="number" data-dtype="Number" name="system.level" value="{{system.level}}">
+</div>
+<div class="SR-Materialize"
+  data-helpTitle="{{localize 'SR5.HELP_RegisterButton'}}"
+  data-helpMessage="{{localize 'SR5.HELP_RegisterButtonMsg'}}"
+  >
+  <input id="registerIcon" type="checkbox" name="system.isRegistered" data-dtype="Boolean" {{checked system.isRegistered}}>
+  <label for="registerIcon"{{#if system.isRegistered}} class="active"{{/if}}>{{> systems/sr5/assets/img/icons/nav-link.svg}}</label>
+</div>

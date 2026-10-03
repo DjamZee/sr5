@@ -23,7 +23,7 @@ describe('spirit materialization switch', () => {
 
   it('hands the wanted initiative to the init-switch handler', () => {
     const control = fs.readFileSync(CONTROL, 'utf8')
-    const input = control.match(/<input[^>]*>/)[0]
+    const input = control.match(/<input[^>]*id="materializeIcon"[^>]*>/)[0]
     // _onInitiativeSwitch recognizes the materialization by this id, and reads the wanted initiative from data-binding
     expect(input).toContain('class="init-switch"')
     expect(input).toContain('id="materializeIcon"')
