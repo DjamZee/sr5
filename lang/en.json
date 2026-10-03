@@ -405,7 +405,7 @@
 	"SR5.ShopOutcome_tie": "Found, twice the delay",
 	"SR5.ShopOutcome_tieGlitch": "Found, twice the delay, glitch",
 	"SR5.ShopOverriddenPool": "Dice pool set by hand.",
-	"SR5.ShopOverrideLimitHint": "Limit that goes with the hand-typed pool. Empty means no limit.",
+	"SR5.ShopOverrideLimitHint": "Limit typed in by hand: replaces the computed one. Leave empty to compute it.",
 	"SR5.ShopOverridePoolHint": "Dice pool typed in by hand: replaces the computed one for the availability test. Leave empty to compute it.",
 	"SR5.ShopPartialPool": "Charisma missing from the contact sheet: read off its Connection (Run Faster p. 174).",
 	"SR5.ShopPoolShort": "Pool",
