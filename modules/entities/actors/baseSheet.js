@@ -724,7 +724,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
   async _onInitiativeSwitch(event) {
     let wantedInitiative = event.currentTarget.dataset.binding
     let isMaterializing = event.target.id === "materializeIcon"
-    //A refused switch (no action left) leaves the materialization as it is
+    //A refused switch (no action left) leaves the switch, and the materialization checkbox, as they are
+    if (!SR5_CharacterUtility.canSwitchToInitiative(this.actor, wantedInitiative)) {
+      event.preventDefault()
+      event.stopPropagation()
+      return
+    }
     if (await SR5_CharacterUtility.switchToInitiative(this.actor, wantedInitiative) === false) return
     //special case for materialization button on spirit sheet
     if (isMaterializing){
