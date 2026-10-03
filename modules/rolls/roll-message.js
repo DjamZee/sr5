@@ -261,6 +261,10 @@ export class SR5_RollMessage {
         }
         //The monitor to heal follows what the patient has: asked between Physical and Stun, or its single condition monitor
         let monitors = patientMonitors(patient)
+        //SR5 p. 207: first aid heals Physical or Stun damage; a device has neither
+        if (!monitors.length) return ui.notifications.warn(game.i18n.format("SR5.WARN_PatientWithoutMonitor", {
+          name: patient.name
+        }))
         if (monitors.length > 1) healData.test.typeSub = await SR5_CombatHelpers.chooseDamageType()
         else healData.test.typeSub = monitors[0]
         if (!healData.test.typeSub) return

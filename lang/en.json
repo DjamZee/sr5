@@ -3952,6 +3952,7 @@
 	"SR5.WARN_NotAnAmmunitionType": "Only Ammunition Type items can be dropped here.",
 	"SR5.WARN_StunHealsFirst": "Physical damage cannot heal while the character has Stun damage: heal Stun first (SR5 p. 207).",
 	"SR5.WARN_NoActor": "You must select an Actor first.",
+	"SR5.WARN_PatientWithoutMonitor": "{name} has neither a Physical nor a Stun condition monitor: first aid does not apply (SR5 p. 207).",
 	"SR5.WARN_RitualLeaderMissing": "Ritual leader not found: the ritual resistance cannot be rolled.",
 	"SR5.WARN_ResistanceOwnerMissing": "Test author not found (deleted character): the resistance cannot be rolled.",
 	"SR5.WARN_NoEquippedWeapon": "No weapon equipped !",
