@@ -289,6 +289,17 @@ export class SR5_SystemHelpers {
       type: Boolean,
       requiresReload: true
     })
+
+    // SR5 p. 188: in melee, when both fighters suffer the same environmental modifier, the GM may ignore it.
+    // Read at roll time, so no reload is needed.
+    game.settings.register("sr5", "sr5MeleeEnvironmentBalanced", {
+      name: "SR5.SETTINGS_MeleeEnvironmentBalanced_T",
+      hint: "SR5.SETTINGS_MeleeEnvironmentBalanced_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+    })
   }
 
   /* Display Shadowrun Themed Log Entries Based on Logging Level

@@ -214,7 +214,8 @@ async function handleTargetInfo(rollData, actor, item){
   //Keep the scene the attack is rolled on, so the defense reads its conditions and not the clicker's canvas
   rollData.target.sceneId = SR5_CombatHelpers.environmentScene().id
   let target = 0,
-    sceneEnvironmentalMod
+    sceneEnvironmentalMod,
+    targetActor
   rollData.target.range = "short"
     
   //Initialize area environmental modifiers
@@ -234,7 +235,7 @@ async function handleTargetInfo(rollData, actor, item){
     }
 
     //Get target actor
-    let targetActor = await SR5_PrepareRollHelper.getTargetedActor()
+    targetActor = await SR5_PrepareRollHelper.getTargetedActor()
 
     //check if actor is in a template effect
     areaEffect = await checkIfTargetIsInTemplate(actor, targetActor, areaEffect)
@@ -286,6 +287,10 @@ async function handleTargetInfo(rollData, actor, item){
       return false
     }
     sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, true, areaEffect, true, weaponLight)
+    // Kept on the card for the defense to compare with (SR5 p. 188 option), before the option clears it here
+    rollData.combat.environmentalMod = sceneEnvironmentalMod
+    const targetMod = SR5_CombatHelpers.meleeEnvironmentalMod(SR5_CombatHelpers.environmentScene(), targetActor)
+    if (SR5_CombatHelpers.meleeEnvironmentBalanced(sceneEnvironmentalMod, targetMod)) sceneEnvironmentalMod = 0
   } else { // Handle weapon ranged based on distance
     // SR5 p. 186: the range bands of the Weapon Ranges table are inclusive of their upper bound (0-5, 6-10,
     // 11-15, 16-20; 0-STR, up to STR x n for the Strength-based rows), so a target exactly at short range is at

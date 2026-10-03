@@ -24,6 +24,22 @@ export class SR5_CombatHelpers {
     return scene ?? globalThis.canvas?.scene ?? null
   }
 
+  // SR5 p. 188: "if both fighters have the same vision systems and therefore the same penalties, the GM may
+  // decide to ignore all environmental modifiers". A world setting, off by default (the modifier applies to
+  // everyone). Each side's modifier is worked out for that fighter, with their own vision.
+  static meleeEnvironmentBalanced(ownMod, otherMod){
+    if (!globalThis.game?.settings?.get?.("sr5", "sr5MeleeEnvironmentBalanced")) return false
+    if (!Number.isFinite(ownMod) || !Number.isFinite(otherMod)) return false
+    return ownMod === otherMod
+  }
+
+  // The melee modifier (Light and Visibility, SR5 p. 188) of an actor who can see, or null for one who has no
+  // environmental data (a device, a sprite).
+  static meleeEnvironmentalMod(scene, actor){
+    if (!scene || !actor?.system?.itemsProperties?.environmentalMod || !actor.system.visions) return null
+    return SR5_CombatHelpers.handleEnvironmentalModifiers(scene, actor.system, true, undefined, true)
+  }
+
   //Handle environmental modifiers
   //noWind: ignore the wind column (perception, melee); melee: SR5 p. 188, only the Light and Visibility columns apply
   //weaponLight: light rows taken off by a flashlight on the weapon being used (SR5_UtilityItem.getWeaponLightCompensation)
