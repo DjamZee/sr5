@@ -8,8 +8,11 @@ import {
   SR5_RollMessage 
 } from "../roll-message.js"
 import {
-  SR5_CombatHelpers 
+  SR5_CombatHelpers
 } from "../roll-helpers/combat.js"
+import {
+  hasSingleMonitor
+} from "../roll-helpers/cardRoller.js"
 
 export default async function skillInfo(cardData){
   let itemTarget
@@ -78,8 +81,10 @@ export default async function skillInfo(cardData){
         if (!cardData.roll.criticalGlitchDamage) {
           let failedDamage = new Roll(`1d3`)
           await failedDamage.evaluate()
+          //A targeted patient with a single condition monitor has no damage type to choose
+          let patient = cardData.target.hasTarget ? SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId) : null
           cardData.roll.criticalGlitchDamage = {
-            value: failedDamage.total, type: await SR5_CombatHelpers.chooseDamageType()
+            value: failedDamage.total, type: hasSingleMonitor(patient) ? "condition" : await SR5_CombatHelpers.chooseDamageType()
           }
         }
         cardData.damage.value = cardData.roll.criticalGlitchDamage.value
