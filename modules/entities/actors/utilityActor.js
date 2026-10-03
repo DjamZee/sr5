@@ -1110,7 +1110,11 @@ export class SR5_CharacterUtility extends Actor {
         attributes.body.natural.base = 0
         SR5_EntityHelpers.updateModifier(attributes.agility.natural, label, 'spiritType', -2)
         SR5_EntityHelpers.updateModifier(attributes.reaction.natural, label, 'spiritType', -2)
-        attributes.willpower.natural.base = 3
+        // Stat block (SR5 p. 301, VO p. 298): WIL, LOG and INT 1; the VF prints CHA 3, the VO has no CHA column
+        attributes.willpower.natural.base = 1
+        attributes.logic.natural.base = 1
+        attributes.intuition.natural.base = 1
+        attributes.charisma.natural.base = 3
         break
       case "air":
       case "noxious":
@@ -1746,8 +1750,13 @@ export class SR5_CharacterUtility extends Actor {
         break
       }
       case "actorSpirit": {
-        SR5_EntityHelpers.updateModifier(initPhy, game.i18n.localize('SR5.Intuition'), "linkedAttribute", attributes.intuition.augmented.value)
-        SR5_EntityHelpers.updateModifier(initPhy, game.i18n.localize('SR5.Reaction'), "linkedAttribute", attributes.reaction.augmented.value)
+        // The homunculus stat block prints (F + 1) + 1D6 (SR5 p. 301), not REA + INT, which would give F - 1
+        if (SR5_SpiritTypes.baseType(actorData.type) === "homunculus") {
+          SR5_EntityHelpers.updateModifier(initPhy, game.i18n.localize('SR5.SpiritForce'), "linkedAttribute", actorData.force.value + 1)
+        } else {
+          SR5_EntityHelpers.updateModifier(initPhy, game.i18n.localize('SR5.Intuition'), "linkedAttribute", attributes.intuition.augmented.value)
+          SR5_EntityHelpers.updateModifier(initPhy, game.i18n.localize('SR5.Reaction'), "linkedAttribute", attributes.reaction.augmented.value)
+        }
         initPhy.dice.base = 1
         const customType = SR5_SpiritTypes.get(actorData.type)
         const customDice = customType ? SR5_SpiritTypes.physicalDice(customType) : null
