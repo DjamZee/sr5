@@ -36,6 +36,23 @@ describe('progressive recoil carries over only in combat (SR5 p. 178)', () => {
     })).toBe(true)
   })
 
+  it('leaves out the base actor of an unlinked combatant token', () => {
+    expect(isRecoilCarriedOver(linkedActor, {
+      combatants: [{
+        actorId: "a1", tokenId: "t1", token: {
+          actorLink: false
+        }
+      }]
+    })).toBe(false)
+    expect(isRecoilCarriedOver(linkedActor, {
+      combatants: [{
+        actorId: "a1", tokenId: "t1", token: {
+          actorLink: true
+        }
+      }]
+    })).toBe(true)
+  })
+
   it('matches an unlinked token actor by its token, not its base actor', () => {
     expect(isRecoilCarriedOver(tokenActor, {
       combatants: [{
