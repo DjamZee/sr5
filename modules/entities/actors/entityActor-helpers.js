@@ -190,8 +190,9 @@ export class SR5_ActorHelper {
     }
 
     //Special Element Damage
-    if (options.damage.element === "electricity" && actorData.type !== "actorDrone") await SR5_ActorHelper.electricityDamageEffect(actorId)
-    if (options.damage.element === "anticoagulant" && actorData.type !== "actorDrone") await SR5_ActorHelper.anticoagulantDamageEffect(actorId)
+    // A drone's side effect from electricity is the matrix damage above (SR5 p. 173), not the dice and Initiative penalty
+    if (options.damage.element === "electricity" && actor.type !== "actorDrone") await SR5_ActorHelper.electricityDamageEffect(actorId)
+    if (options.damage.element === "anticoagulant" && actor.type !== "actorDrone") await SR5_ActorHelper.anticoagulantDamageEffect(actorId)
     if (options.damage.element === "acid") await SR5_ActorHelper.acidDamageEffect(actorId, damage, options.damage.source)
     if (options.damage.element === "fire"){
       if (actorData.itemsProperties.armor.value <= 0) await SR5_ActorHelper.fireDamageEffect(actorId)
