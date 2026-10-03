@@ -485,7 +485,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     })
 
     // Quick monitor reset on monitor's name right-click
-    on(".monitorReset", "mousedown", (e) => {
+    on(".monitorReset", "mousedown", async (e) => {
       e.preventDefault()
       let monitor = e.currentTarget.dataset.target
       if (e.which === 1){
@@ -497,12 +497,14 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         if (monitor === "physical" || monitor === "condition") foundry.utils.setProperty(actorData, `system.conditionMonitors.${monitor}.aggravated`, 0)
         // SR5 p. 171: no overflow without a full physical monitor; left in the source, it would come back with the last box
         if (monitor === "physical") foundry.utils.setProperty(actorData, 'system.conditionMonitors.overflow.actual.base', 0)
-        this.actor.update(actorData)
+        await this.actor.update(actorData)
+        // SR5 p. 171: the monitor is no longer full, the character knocked out by damage wakes up
+        await SR5_ActorHelper.clearDamageKnockout(this.actor)
       }
     })
 
     // Gestion des cases de dégats
-    on(".boxes:not(.box-disabled)", "click", (ev) => {
+    on(".boxes:not(.box-disabled)", "click", async (ev) => {
       let actorData = foundry.utils.duplicate(this.actor)
       let index = Number(ev.currentTarget.dataset.index)
       let target = ev.currentTarget.closest(".SR-MoniteurCases").dataset.target
@@ -528,8 +530,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         }
       }
 
-      this.actor.update(actorData)
-      // TODO clearDamageKnockout
+      await this.actor.update(actorData)
+      // SR5 p. 171: once no monitor is full any more, the character knocked out by damage wakes up
+      await SR5_ActorHelper.clearDamageKnockout(this.actor)
     })
 
     // Right-click on a filled box of the physical (or grunt condition) monitor: mark it as an aggravated wound
