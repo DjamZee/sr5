@@ -429,7 +429,8 @@ export default class SR5_RollDialog {
 
       switch (modifierName){
         case "patientAwakenedOrEmerged":
-          if (targetActor?.system.specialAttributes.magic.augmented.value > 0 || targetActor?.system.specialAttributes.resonance.augmented.value > 0){
+          // Spirits have no Resonance, an AI may have no Magic: read only what the patient has
+          if (targetActor?.system.specialAttributes?.magic?.augmented.value > 0 || targetActor?.system.specialAttributes?.resonance?.augmented.value > 0){
             html.querySelector(checkboxName).checked = true
             value = -2
             html.querySelector(inputName).value = value
