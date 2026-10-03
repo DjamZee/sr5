@@ -3944,6 +3944,7 @@
 	"SR5.WARN_NoSceneForEnvironment": "Aucune scène affichée : les modificateurs environnementaux ne sont pas appliqués à ce jet.",
 	"SR5.WARN_AttackSceneGone": "La scène de l’attaque n’existe plus : les modificateurs environnementaux de la défense sont lus sur la scène affichée.",
 	"SR5.WARN_NotAnAmmunitionType": "Seuls les objets Type de munition peuvent être déposés ici.",
+	"SR5.WARN_StunHealsFirst": "Les dommages physiques ne guérissent pas tant que le personnage a des dommages étourdissants : soignez d'abord l'étourdissant (SR5 p. 207).",
 	"SR5.WARN_NoActor": "Vous devez sélectionner un Acteur !",
 	"SR5.WARN_RitualLeaderMissing": "Leader du rituel introuvable : la résistance du rituel ne peut pas être lancée.",
 	"SR5.WARN_NoEquippedWeapon": "Aucune arme équipée !",

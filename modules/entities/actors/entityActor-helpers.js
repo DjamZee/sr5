@@ -1372,12 +1372,23 @@ export class SR5_ActorHelper {
     }
   }
 
+  // SR5 p. 207: Physical damage does not heal naturally while the character has Stun damage, Stun heals first.
+  // Natural recovery only: first aid (p. 206), Medicine (p. 208) and the Heal spell (p. 290) are not bound by this order
+  static stunBlocksNaturalHealing(system, testType, damageType){
+    return testType === "healing" && damageType === "physical" && (system?.conditionMonitors?.stun?.actual?.value || 0) > 0
+  }
+
   //Manage Healing
   static async heal(targetActorID, data){
     let damageToRemove = data.roll.netHits,
       damageType = data.test.typeSub,
       targetActor = SR5_EntityHelpers.getRealActorFromID(targetActorID),
       actorData = foundry.utils.deepClone(targetActor)
+    //The card may have been rolled before new Stun damage was taken
+    if (SR5_ActorHelper.stunBlocksNaturalHealing(targetActor.system, data.test.type, damageType)) {
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_StunHealsFirst"))
+      return false
+    }
 				
     actorData = actorData.toObject(false)
     if (damageType === "physical" || damageType === "condition") SR5_ActorHelper.healMonitorBoxes(actorData.system.conditionMonitors[damageType], damageToRemove)

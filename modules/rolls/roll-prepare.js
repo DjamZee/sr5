@@ -10,6 +10,9 @@ import {
 import {
   SR5_SystemHelpers 
 } from "../system/utilitySystem.js"
+import {
+  SR5_ActorHelper
+} from "../entities/actors/entityActor-helpers.js"
 import * as SR5_GetRollData from "./roll-prepare-case/index.js"
 
 export class SR5_PrepareRollTest {
@@ -86,6 +89,7 @@ export class SR5_PrepareRollTest {
         rollData = await SR5_GetRollData.fading(rollData, actor, chatData)
         break
       case "healing":
+        if (SR5_ActorHelper.stunBlocksNaturalHealing(actor.system, "healing", rollKey)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_StunHealsFirst"))
         rollData = await SR5_GetRollData.healing(rollData, rollKey, actor)
         break
       case "iceAttack":

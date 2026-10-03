@@ -519,7 +519,7 @@ export class SR5_RollMessage {
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "heal":
-        SR5_ActorHelper.heal(messageData.owner.actorId, messageData)
+        if (await SR5_ActorHelper.heal(messageData.owner.actorId, messageData) === false) return
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "decreaseReach":
