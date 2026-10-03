@@ -386,3 +386,103 @@ describe('Applying matrix damage without a device (Data Trails p. 161)', () => {
     expect(update.mock.calls[0][0].system.conditionMonitors.matrix.actual.base).toBe(6)
   })
 })
+
+describe('Matrix defense pool of an AI without a device (Data Trails p. 157)', async () => {
+  const {
+    SR5_CharacterUtility
+  } = await import('../modules/entities/actors/utilityActor.js')
+  const {
+    SR5
+  } = await import('../modules/config.js')
+  let previousGet
+
+  /** A character sheet with every matrix defense, prepared under the given setting */
+  function defenses({
+    depth = true, device = false, intuition = 5, willpower = 3, mode = 'highest'
+  } = {
+  }) {
+    const actions = {
+    }
+    for (const key of [...Object.keys(SR5.matrixActions), 'checkOverwatchScore']) actions[key] = {
+      defense: {
+        base: 0, dicePool: 0, modifiers: []
+      }
+    }
+    const value = v => ({
+      augmented: {
+        value: v
+      }
+    })
+    const sheet = {
+      type: 'actorPc', name: 'IA', items: device ? [{
+        type: 'itemDevice', system: {
+          isActive: true
+        }
+      }] : [],
+      system: {
+        activeSpecialAttribute: depth ? 'depth' : 'magic',
+        attributes: {
+          intuition: value(intuition), willpower: value(willpower), logic: value(6)
+        },
+        matrix: {
+          actions, attributes: {
+            firewall: {
+              value: 4
+            }, sleaze: {
+              value: 2
+            }, dataProcessing: {
+              value: 3
+            }, attack: {
+              value: 1
+            }
+          }
+        },
+      },
+    }
+    game.settings.get = (_ns, key) => key === 'sr5DevicelessAILogicDefense' ? mode : null
+    SR5_CharacterUtility.generateMatrixActionsDefenses(sheet)
+    game.settings.get = previousGet
+    return actions
+  }
+  const sources = defense => defense.modifiers.map(m => m.source)
+
+  beforeEach(() => {
+    previousGet = game.settings.get
+  })
+
+  it('stands the higher of Willpower and Intuition in for Logic, by default, with no matrix attribute', () => {
+    const actions = defenses()
+    expect(sources(actions.snoop.defense)).toEqual(['SR5.Intuition'])
+    expect(actions.snoop.defense.dicePool).toBe(5)
+    expect(defenses({
+      willpower: 7
+    }).snoop.defense.dicePool).toBe(7)
+  })
+
+  it('keeps Willpower and Intuition where the defense already uses them', () => {
+    const actions = defenses()
+    expect(actions.eraseMark.defense.dicePool).toBe(3)
+    expect(sources(actions.eraseMark.defense)).toEqual(['SR5.Willpower'])
+    expect(actions.dataSpike.defense.dicePool).toBe(5)
+  })
+
+  it('follows the world setting', () => {
+    expect(defenses({
+      mode: 'willpower'
+    }).snoop.defense.dicePool).toBe(3)
+    expect(defenses({
+      mode: 'intuition', willpower: 7
+    }).snoop.defense.dicePool).toBe(5)
+  })
+
+  it('leaves an AI with a device and any other character as they were', () => {
+    for (const actions of [defenses({
+      device: true
+    }), defenses({
+      depth: false
+    })]) {
+      expect(sources(actions.snoop.defense)).toEqual(['SR5.Logic', 'SR5.Firewall'])
+      expect(actions.snoop.defense.dicePool).toBe(10)
+    }
+  })
+})

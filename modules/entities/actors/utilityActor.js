@@ -1279,6 +1279,30 @@ export class SR5_CharacterUtility extends Actor {
     return (actor.type === "actorPc" || actor.type === "actorGrunt") && actor.system.activeSpecialAttribute === "depth"
   }
 
+  // AI outside any device (Data Trails p. 157): a persona alone, with no active device
+  static isDevicelessAI(actor) {
+    return this.isDepthActive(actor) && !actor.items.some(i => i.type === "itemDevice" && i.system.isActive)
+  }
+
+  // Data Trails p. 157: the attribute an AI outside any device defends with where the defense calls for Logic
+  static devicelessAILogicStandIn(actorData) {
+    let intuition = actorData.attributes.intuition.augmented.value,
+      willpower = actorData.attributes.willpower.augmented.value
+    switch (game.settings.get("sr5", "sr5DevicelessAILogicDefense")) {
+      case "intuition": return {
+        label: "SR5.Intuition", value: intuition
+      }
+      case "willpower": return {
+        label: "SR5.Willpower", value: willpower
+      }
+      default: return intuition >= willpower ? {
+        label: "SR5.Intuition", value: intuition
+      } : {
+        label: "SR5.Willpower", value: willpower
+      }
+    }
+  }
+
   // Update Actors Special Attributes
   static updateSpecialAttributes(actor) {
     let actorData = actor.system
@@ -3990,6 +4014,7 @@ export class SR5_CharacterUtility extends Actor {
     let modifierTypeAttack = "matrixAttribute"
     let modifierTypeSensor = "sensorAttribute"
     let modifierTypePilot = "pilotAttribute"
+    let logicLabel = 'SR5.Logic', deviceless = false
 
     if (actor.type === "actorPc" || actor.type === "actorGrunt" || actor.type === "actorAgent") {
       intuitionValue = actorData.attributes.intuition.augmented.value
@@ -3999,6 +4024,13 @@ export class SR5_CharacterUtility extends Actor {
       sleazeValue = matrixAttributes.sleaze.value
       dataProcessingValue = matrixAttributes.dataProcessing.value
       attackValue = matrixAttributes.attack.value
+      //Data Trails p. 157: an AI outside any device defends with its Willpower or Intuition alone, no matrix attribute
+      if (this.isDevicelessAI(actor)) {
+        let standIn = this.devicelessAILogicStandIn(actorData)
+        deviceless = true
+        logicValue = standIn.value
+        logicLabel = standIn.label
+      }
     } else if (actor.type === "actorSprite" || (actor.type === "actorDevice" && matrix.deviceType !== "slavedDevice")) {
       intuitionValue = matrix.deviceRating
       willpowerValue = matrix.deviceRating
@@ -4059,17 +4091,17 @@ export class SR5_CharacterUtility extends Actor {
     SR5_EntityHelpers.updateModifier(matrixActions.eraseMark.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.formatDevice.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.formatDevice.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.snoop.defense, game.i18n.localize('SR5.Logic'), modifierTypeLogic, logicValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.snoop.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.snoop.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.hackOnTheFly.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.hackOnTheFly.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.spoofCommand.defense, game.i18n.localize('SR5.Logic'), modifierTypeLogic, logicValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.spoofCommand.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.spoofCommand.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.garbageInGarbageOut.defense, game.i18n.localize('SR5.Logic'), modifierTypeLogic, logicValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.garbageInGarbageOut.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.garbageInGarbageOut.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.bruteForce.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.bruteForce.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.matrixPerception.defense, game.i18n.localize('SR5.Logic'), modifierTypeLogic, logicValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.matrixPerception.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.matrixPerception.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
     SR5_EntityHelpers.updateModifier(matrixActions.dataSpike.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.dataSpike.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
@@ -4081,7 +4113,7 @@ export class SR5_CharacterUtility extends Actor {
     SR5_EntityHelpers.updateModifier(matrixActions.rebootDevice.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.hide.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.hide.defense, game.i18n.localize('SR5.DataProcessing'), modifierTypeDataProcessing, dataProcessingValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.jackOut.defense, game.i18n.localize('SR5.Logic'), modifierTypeLogic, logicValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.jackOut.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.jackOut.defense, game.i18n.localize('SR5.MatrixAttack'), modifierTypeAttack, attackValue)
     SR5_EntityHelpers.updateModifier(matrixActions.traceIcon.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.traceIcon.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
@@ -4093,7 +4125,7 @@ export class SR5_CharacterUtility extends Actor {
       SR5_EntityHelpers.updateModifier(matrixActions.denialOfService.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
       SR5_EntityHelpers.updateModifier(matrixActions.haywire.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
       SR5_EntityHelpers.updateModifier(matrixActions.haywire.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.masquerade.defense, game.i18n.localize('SR5.Logic'), modifierTypeLogic, logicValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.masquerade.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
       SR5_EntityHelpers.updateModifier(matrixActions.masquerade.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
       SR5_EntityHelpers.updateModifier(matrixActions.popupHacking.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
       SR5_EntityHelpers.updateModifier(matrixActions.popupHacking.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
@@ -4105,7 +4137,7 @@ export class SR5_CharacterUtility extends Actor {
       SR5_EntityHelpers.updateModifier(matrixActions.subvertInfrastructure.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
       SR5_EntityHelpers.updateModifier(matrixActions.tag.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
       SR5_EntityHelpers.updateModifier(matrixActions.tag.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.watchdog.defense, game.i18n.localize('SR5.Logic'), modifierTypeLogic, logicValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.watchdog.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
       SR5_EntityHelpers.updateModifier(matrixActions.watchdog.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     }
 
@@ -4113,7 +4145,7 @@ export class SR5_CharacterUtility extends Actor {
       SR5_EntityHelpers.updateModifier(matrixActions.targetDevice.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
       SR5_EntityHelpers.updateModifier(matrixActions.targetDevice.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
       if (actor.type === "actorDrone") {	
-        SR5_EntityHelpers.updateModifier(matrixActions.breakTargetLock.defense, game.i18n.localize('SR5.Logic'), modifierTypeLogic, logicValue)
+        SR5_EntityHelpers.updateModifier(matrixActions.breakTargetLock.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
         SR5_EntityHelpers.updateModifier(matrixActions.breakTargetLock.defense, game.i18n.localize('SR5.VehicleStat_SensorFull'), modifierTypeSensor, actorData.attributes.sensor.augmented.value)
         SR5_EntityHelpers.updateModifier(matrixActions.confusePilot.defense, game.i18n.localize('SR5.VehicleStat_PilotFull'), modifierTypePilot, actorData.attributes.pilot.augmented.value)
         SR5_EntityHelpers.updateModifier(matrixActions.confusePilot.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
@@ -4123,6 +4155,11 @@ export class SR5_CharacterUtility extends Actor {
 
     matrixActions.checkOverwatchScore.defense.base = 6
 
+    if (deviceless) {
+      for (let key of Object.keys(SR5.matrixActions)) {
+        if (matrixActions[key].defense) matrixActions[key].defense.modifiers = matrixActions[key].defense.modifiers.filter(m => m.type !== "matrixAttribute")
+      }
+    }
 
     // handle final calculation
     for (let key of Object.keys(SR5.matrixActions)) {

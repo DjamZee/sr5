@@ -300,6 +300,23 @@ export class SR5_SystemHelpers {
       default: false,
       type: Boolean,
     })
+
+    // Data Trails p. 157: an AI outside any device defends with its Willpower or Intuition alone. The book does not
+    // say which one stands in for Logic: the higher one by default. Read while the actors are prepared, hence the reload.
+    game.settings.register("sr5", "sr5DevicelessAILogicDefense", {
+      name: "SR5.SETTINGS_DevicelessAILogicDefense_T",
+      hint: "SR5.SETTINGS_DevicelessAILogicDefense_D",
+      scope: "world",
+      config: true,
+      default: "highest",
+      type: String,
+      choices: {
+        "highest": "SR5.SETTINGS_DevicelessAILogicDefense_Highest",
+        "intuition": "SR5.SETTINGS_DevicelessAILogicDefense_Intuition",
+        "willpower": "SR5.SETTINGS_DevicelessAILogicDefense_Willpower",
+      },
+      requiresReload: true
+    })
   }
 
   /* Display Shadowrun Themed Log Entries Based on Logging Level
