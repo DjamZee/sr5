@@ -164,6 +164,45 @@ describe("defense whose attack scene was deleted", () => {
   })
 })
 
+describe("SR5 p. 188 option, defense against an attack with no designated target", () => {
+  const card = (hasTarget, environmentalMod) => ({
+    target: {
+      hasTarget
+    }, combat: {
+      environmentalMod
+    }
+  })
+  beforeEach(() => {
+    globalThis.game = {
+      settings: {
+        get: (scope, key) => scope === "sr5" && key === "sr5MeleeEnvironmentBalanced"
+      }
+    }
+  })
+  afterEach(() => {
+    delete globalThis.game
+  })
+
+  it("cancels both sides when the attack had a target and the modifiers are equal", () => {
+    expect(SR5_CombatHelpers.meleeDefenseEnvironmentBalanced(-3, card(true, -3))).toBe(true)
+    expect(SR5_CombatHelpers.meleeDefenseEnvironmentBalanced(-3, card(true, 0))).toBe(false)
+  })
+
+  it("keeps the defense's modifier when the attack, with no target, kept its own", () => {
+    expect(SR5_CombatHelpers.meleeDefenseEnvironmentBalanced(-6, card(false, -6))).toBe(false)
+    expect(SR5_CombatHelpers.meleeDefenseEnvironmentBalanced(-6, {
+      combat: {
+        environmentalMod: -6
+      }
+    })).toBe(false)
+  })
+
+  it("does nothing while the setting is off", () => {
+    globalThis.game.settings.get = () => false
+    expect(SR5_CombatHelpers.meleeDefenseEnvironmentBalanced(-3, card(true, -3))).toBe(false)
+  })
+})
+
 describe("limit modifier labels of the roll dialog", () => {
   // The perception limit was labelled "undefined (Visuelle)": it looked up a key the table does not have
   it("only name keys that SR5.limitModTypes has", () => {
