@@ -13,4 +13,7 @@
 			{{/each}}
 		{{/each}}
 	</nav>
+	{{#if (eq actor.type "actorSpirit")}}
+		{{> systems/sr5/templates/actors/_partials/header/controls/actorSpirit.hbs}}
+	{{/if}}
 </div>

@@ -1,0 +1,11 @@
+{{!-- Materialization switch: from the astral initiative to the physical one, and back (SR5 p. 401) --}}
+{{#ifne system.type 'watcher'}}
+<div class="SR-Materialize"
+  title="{{localize 'SR5.Materializing'}}"
+  data-helpTitle="{{localize 'SR5.HELP_MaterializingButton'}}"
+  data-helpMessage="{{localize 'SR5.HELP_MaterializingButtonMsg'}}"
+  >
+  <input class="init-switch" id="materializeIcon" type="checkbox" name="system.isMaterializing" data-dtype="Boolean" data-binding="{{#if system.isMaterializing}}astralInit{{else}}physicalInit{{/if}}" {{checked system.isMaterializing}} {{#ife system.type 'homunculus'}}disabled{{/ife}}>
+  <label for="materializeIcon"{{#if system.isMaterializing}} class="active"{{/if}}>{{> systems/sr5/assets/img/icons/nav-materialize.svg}}</label>
+</div>
+{{/ifne}}
