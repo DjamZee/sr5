@@ -18,10 +18,13 @@ export class SR5_CombatHelpers {
   // active scene, which the GM may not be showing.
   // sceneId: the scene an attack card was rolled on. A defense is clicked later, maybe by a player looking at
   // another scene, and must read the conditions where the attack took place; if that scene is gone, fall back
-  // to the canvas.
+  // to the canvas, and say so: those may not be the conditions of the attack.
   static environmentScene(sceneId = null){
     const scene = sceneId ? globalThis.game?.scenes?.get(sceneId) : null
-    return scene ?? globalThis.canvas?.scene ?? null
+    if (scene) return scene
+    const canvasScene = globalThis.canvas?.scene ?? null
+    if (sceneId && canvasScene) globalThis.ui?.notifications?.warn(game.i18n.localize("SR5.WARN_AttackSceneGone"))
+    return canvasScene
   }
 
   // SR5 p. 188: "if both fighters have the same vision systems and therefore the same penalties, the GM may
