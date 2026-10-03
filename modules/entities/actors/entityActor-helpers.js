@@ -180,8 +180,12 @@ export class SR5_ActorHelper {
                   actorData.conditionMonitors.stun.actual.value < actorData.conditionMonitors.stun.value &&
                   actorData.conditionMonitors.physical.actual.value < actorData.conditionMonitors.physical.value) await SR5_ActorHelper.createProneEffect(actorId, damage, gelAmmo)
         break
-      case "actorGrunt":        
-        if (actorData.conditionMonitors.condition.actual.value >= actorData.conditionMonitors.condition.value) await SR5_ActorHelper.createDeadEffect(actorId)
+      case "actorGrunt":
+        // SR5 p. 381: a full monitor puts the grunt out of the fight; it dies only from a final Physical attack above its Body
+        if (actorData.conditionMonitors.condition.actual.value >= actorData.conditionMonitors.condition.value) {
+          if (SR5_ActorHelper.killsGrunt(damage, damageType, actorData.attributes.body.augmented.value)) await SR5_ActorHelper.createDeadEffect(actorId)
+          else await SR5_ActorHelper.createKoEffect(actorId)
+        }
         else if (damage > (actorData.limits.physicalLimit.value + gelAmmo) || damage >= 10){ await SR5_ActorHelper.createProneEffect(actorId, damage, gelAmmo)}
         break
       case "actorDrone":
@@ -308,6 +312,30 @@ export class SR5_ActorHelper {
     let effect = await _getSRStatusEffect("unconscious")
     await actor.createEmbeddedDocuments('ActiveEffect', [effect])
     ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.INFO_DamageActorKo")}`)
+  }
+
+  /**
+   * SR5 p. 381: the grunt is dead when the attack that took it out was Physical and "plus importants"
+   * than its Body, alive when it was Stun or Physical "inférieure" to its Body. The book says nothing
+   * of damage equal to Body: read here as alive, like the overflow rule (p. 172) that needs more than Body.
+   */
+  static killsGrunt(damage, damageType, body){
+    return damageType === "physical" && damage > body
+  }
+
+  /**
+   * Wake up a character knocked out by damage once no monitor is full any more (SR5 p. 171: a full monitor
+   * knocks out). Only the effect laid by createKoEffect is removed, never one the GM set by hand, and death
+   * is never undone by healing (p. 209).
+   */
+  static async clearDamageKnockout(actor){
+    if (actor.effects.some(e => e.statuses.has("dead"))) return
+    let monitors = actor.system.conditionMonitors
+    let knockoutMonitors = monitors.physical ? ["physical", "stun"] : ["condition"]
+    if (knockoutMonitors.some(key => monitors[key] && monitors[key].actual.value >= monitors[key].value)) return
+    let knockouts = actor.effects.filter(e => e.origin === "unconscious" && e.statuses.has("unconscious")).map(e => e.id)
+    if (!knockouts.length) return
+    await actor.deleteEmbeddedDocuments('ActiveEffect', knockouts)
   }
 
   //Handle Elemental Damage : Electricity
@@ -1356,6 +1384,7 @@ export class SR5_ActorHelper {
     await targetActor.update({
       system: actorData.system
     })
+    await SR5_ActorHelper.clearDamageKnockout(targetActor)
   }
 
   // Aggravated Wounds (Howling Shadows p. 213): each box of Physical damage dealt by the critter is marked
@@ -1426,6 +1455,7 @@ export class SR5_ActorHelper {
     await actor.update({
       system: actorData.system
     })
+    await SR5_ActorHelper.clearDamageKnockout(actor)
   }
 
   //Apply an external effect to actor (such spell, complex form). Data is provided by chatMessage
