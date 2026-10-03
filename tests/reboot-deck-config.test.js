@@ -158,6 +158,7 @@ beforeEach(() => {
   })
   // The sheet's update writes the decks back from the copy of the items
   hacker.update = vi.fn(async changes => {
+    if (!changes.items) return
     for (const deck of [activeDeck, spareDeck]) deck.system.markedItems = changes.items.find(i => i._id === deck._id).system.markedItems
   })
   vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockImplementation(id => ({
@@ -238,7 +239,11 @@ describe('Rebooting a deck (SR5 p. 244)', () => {
     await sheet._onRebootDeck({
       preventDefault(){}
     })
-    expect(hacker.update).toHaveBeenCalledTimes(1)
+    // The reboot, then the complex action the character chose to spend on it (SR5 p. 231)
+    expect(hacker.update).toHaveBeenCalledTimes(2)
+    expect(hacker.update.mock.calls[1][0]).toEqual({
+      "system.specialProperties.actions.complex.current": 0
+    })
   })
 
   // An IC forces the reboot (SR5 p. 250): the link lock holds back the character, not the IC
@@ -271,8 +276,10 @@ describe('Rebooting a deck (SR5 p. 244)', () => {
     expect(serverFile.system.marks).toEqual([])
   })
 
-  it('spends one complex action', async () => {
+  // A reboot forced by an IC (SR5 p. 250) is no action of the character's: only the sheet button spends one
+  it('spends none of the character actions by itself', async () => {
     await hacker.rebootDeck()
-    expect(hacker.update.mock.calls[0][0].system.specialProperties.actions.complex.current).toBe(0)
+    expect(hacker.update).toHaveBeenCalledTimes(1)
+    expect(hacker.update.mock.calls[0][0].system.specialProperties.actions.complex.current).toBe(1)
   })
 })

@@ -1726,7 +1726,18 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     if (!SR5Combat.hasActionsLeft(this.actor, [{
       type: "complex", value: 1, source: "rebootDeck"
     }])) return false
-    return this.actor.rebootDeck()
+    await this.actor.rebootDeck()
+
+    //Rebooting by choice is a complex action (SR5 p. 231); a reboot forced by an IC spends none
+    await this.actor.update({
+      "system.specialProperties.actions.complex.current": this.actor.system.specialProperties.actions.complex.current - 1
+    })
+    if (game.combat){
+      const actorId = this.actor.isToken ? this.actor.token.id : this.actor.id
+      SR5Combat.changeActionInCombat(actorId, [{
+        type: "complex", value: 1, source: "rebootDeck"
+      }], false)
+    }
   }
 
   /* -------------------------------------------- */

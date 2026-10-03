@@ -32,9 +32,6 @@ import {
   SR5_MarkHelpers
 } from "../../rolls/roll-helpers/mark.js"
 import {
-  SR5Combat
-} from "../../system/srcombat.js"
-import {
   isStoredAway 
 } from "../../interface/storage-rules.js"
 
@@ -1004,8 +1001,8 @@ export class SR5Actor extends Actor {
       if (i.system.markedItems?.length) i.system.markedItems = []
     }
 
-    //Manage actions
-    actorData.specialProperties.actions.complex.current -=1
+    //No action is spent here: an IC that forces the reboot (SR5 p. 250) takes none of the character's actions.
+    //The sheet button spends the complex action of a reboot the character chooses
 
     dataToUpdate = foundry.utils.mergeObject(dataToUpdate, {
       "system": actorData,
@@ -1022,13 +1019,6 @@ export class SR5Actor extends Actor {
 
     //deviceName is prepared from the active device, the copy only holds the source
     ui.notifications.info(`${this.system.matrix.deviceName} ${game.i18n.localize("SR5.Rebooted")}.`)
-
-    //Manage action in combat
-    if(game.combat){
-      SR5Combat.changeActionInCombat(actorId, [{
-        type: "complex", value: 1, source: "rebootDeck"
-      }], false)
-    }
   }
 
   //Reset Cumulative Recoil (SR5 p. 178)
