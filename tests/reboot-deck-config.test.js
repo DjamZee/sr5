@@ -37,6 +37,9 @@ const {
 const {
   SR5_PrepareRollTest
 } = await import('../modules/rolls/roll-prepare.js')
+const {
+  SR5_RollTest
+} = await import('../modules/rolls/roll-test.js')
 
 /** A document whose update merges the flattened changes the way Foundry does */
 function documentWith(data) {
@@ -339,18 +342,66 @@ describe('Jacking out reboots the device used (SR5 p. 244)', () => {
     expect(dumpshock).toHaveBeenCalledTimes(shocked ? 1 : 0)
   })
 
-  it('frees every link lock, whoever placed it (SR5 p. 246)', async () => {
-    hacker.system.matrix.isLinkLocked = true
-    hacker.items.push(linkLock('lock1'), linkLock('lock2'))
-    await SR5_MatrixHelpers.jackOut({
+  // SR5 p. 246: one roll, compared to each lock; only the beaten ones go
+  describe('under two link locks', () => {
+    beforeEach(() => {
+      hacker.system.matrix.isLinkLocked = true
+      hacker.items.push(linkLock('lock1'), linkLock('lock2'))
+      hacker.deleteEmbeddedDocuments = vi.fn(async (_type, ids) => {
+        hacker.items = hacker.items.filter(i => !ids.includes(i.id))
+      })
+    })
+
+    /** The success button of the resistance card rolled against one lock */
+    const beat = itemUuid => SR5_MatrixHelpers.jackOut({
       owner: {
         actorId: 'hacker'
       }, previousMessage: {
-        itemUuid: 'lock2'
+        itemUuid
       }
     })
-    expect(hacker.deleteEmbeddedDocuments).toHaveBeenCalledWith('Item', ['lock1', 'lock2'])
-    expect(SR5_EntityHelpers.deleteEffectOnActor).toHaveBeenCalledWith(hacker, 'linkLock')
-    expect(hacker.update).toHaveBeenCalledTimes(1)
+
+    it('beating one lock removes it alone, and the device does not reboot', async () => {
+      await beat('lock2')
+      expect(hacker.items.map(i => i.id)).toContain('lock1')
+      expect(hacker.items.map(i => i.id)).not.toContain('lock2')
+      expect(SR5_EntityHelpers.deleteEffectOnActor).not.toHaveBeenCalled()
+      expect(hacker.update).not.toHaveBeenCalled()
+      expect(dumpshock).not.toHaveBeenCalled()
+    })
+
+    it('beating the last lock frees the character and reboots the device', async () => {
+      await beat('lock2')
+      await beat('lock1')
+      expect(hacker.items.some(i => i.type === 'itemEffect')).toBe(false)
+      expect(SR5_EntityHelpers.deleteEffectOnActor).toHaveBeenCalledWith(hacker, 'linkLock')
+      expect(hacker.update).toHaveBeenCalledTimes(1)
+      expect(hacker.update.mock.calls[0][0].system.matrix.overwatchScore).toBe(0)
+    })
+
+    it('rolls one resistance per lock, each against the same jack out hits', async () => {
+      hacker.items.find(i => i.id === 'lock1').system.value = 4
+      hacker.items.find(i => i.id === 'lock2').system.value = 6
+      vi.spyOn(SR5_PrepareRollTest, 'getBaseRollData').mockImplementation(() => ({
+        test: {
+        }, dicePool: {
+        }, previousMessage: {
+        }
+      }))
+      const rollDice = vi.spyOn(SR5_RollTest, 'rollDice').mockResolvedValue({
+      })
+      vi.spyOn(SR5_RollTest, 'addInfoToCard').mockResolvedValue()
+      const render = vi.spyOn(SR5_RollTest, 'renderRollCard').mockResolvedValue()
+      await SR5_MatrixHelpers.rollJackOut({
+        owner: {
+          actorId: 'hacker'
+        }, roll: {
+          hits: 3
+        }, previousMessage: {
+        }
+      })
+      expect(rollDice.mock.calls.map(c => c[0].dicePool)).toEqual([4, 6])
+      expect(render.mock.calls.map(c => [c[0].previousMessage.itemUuid, c[0].previousMessage.hits])).toEqual([['lock1', 3], ['lock2', 3]])
+    })
   })
 })
