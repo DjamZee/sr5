@@ -36,6 +36,11 @@ export class SR5_MarkHelpers {
 
     if (targetItem) item = await fromUuid(targetItem)
     else item = targetActor.items.find(i => i.type === "itemDevice" && i.system.isActive)
+    //An AI outside any device is marked on its persona, which no device carries (Data Trails p. 157)
+    if (!item) {
+      if (targetActor.system.activeSpecialAttribute === "depth") await SR5_MarkHelpers.markPersona(targetActor, attacker, attackerID, mark, isWatchdog)
+      return
+    }
     if (item.parent.type === "actorDevice" && item.parent.isToken) item = targetActor.items.find(i => i.type === "itemDevice" && i.system.isActive)
 
     let itemToMark = foundry.utils.duplicate(item.system)
@@ -91,6 +96,59 @@ export class SR5_MarkHelpers {
       if (itemToMark.isSlavedToPan) await SR5_MarkHelpers.markPanMaster(itemToMark, realAttackerID, mark)
       if (targetActor.system.matrix.deviceType === "host") await SR5_MarkHelpers.markSlavedDevice(targetActorID)
     }
+  }
+
+  /** Put a mark on the persona of an AI outside any device (Data Trails p. 157), kept in its own matrix data
+   * @param {Object} targetActor - The AI
+   * @param {Object} attacker - Actor who puts the mark
+   * @param {String} attackerID - ID of that actor
+   * @param {Number} mark - Number of Marks to put
+   * @param {Boolean} isWatchdog - Kill Code p. 45: the mark comes from a Watchdog action
+   */
+  static async markPersona(targetActor, attacker, attackerID, mark, isWatchdog = false) {
+    let realAttackerID = (attacker.system.matrix.deviceType === "ice" && attacker.isToken) ? attacker.id : attackerID,
+      marks = foundry.utils.duplicate(targetActor.system.matrix.marks || []),
+      existing = marks.find(m => m.ownerId === realAttackerID)
+
+    if (existing) {
+      existing.value = Math.min(existing.value + mark, 3)
+      if (isWatchdog) existing.watchdog = true
+    } else marks.push({
+      "ownerId": realAttackerID,
+      "value": mark,
+      "ownerName": attacker.name,
+      "watchdog": isWatchdog,
+    })
+    await targetActor.update({
+      "system.matrix.marks": marks
+    })
+
+    //Update attacker deck with info
+    if (!game.user?.isGM) await SR5_SocketHandler.emitForGM("updateDeckMarkedItems", {
+      ownerID: realAttackerID,
+      markedItem: targetActor.uuid,
+      mark: mark,
+    })
+    else await SR5_MarkHelpers.updateDeckMarkedItems(realAttackerID, targetActor.uuid, mark)
+  }
+
+  /** Erase the marks placed on the persona of an AI, and their trace on the decks of those who placed them:
+   * the AI loads onto a device, which restarts its persona (Data Trails p. 158), or reboots (SR5 p. 244)
+   * @param {Object} actor - The AI
+   */
+  static async clearPersonaMarks(actor) {
+    let marks = actor._source?.system?.matrix?.marks ?? []
+    if (!marks.length) return
+    for (let m of marks) {
+      if (!game.user?.isGM) await SR5_SocketHandler.emitForGM("deleteMarkInfo", {
+        actorId: m.ownerId,
+        item: actor.id,
+      })
+      else await SR5_ActorHelper.deleteMarkInfo(m.ownerId, actor.id)
+    }
+    await actor.update({
+      "system.matrix.marks": []
+    })
   }
 
   //Socket for adding marks to main Device;
@@ -153,7 +211,8 @@ export class SR5_MarkHelpers {
         "uuid": itemMarked.uuid,
         "value": mark,
         "itemName": itemMarked.name,
-        'itemOwner': itemMarked.actor.name,
+        //A persona marked directly is its own owner
+        'itemOwner': itemMarked.actor?.name ?? itemMarked.name,
       }
       deckData.markedItems.push(newMark)
     }

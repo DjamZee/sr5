@@ -472,7 +472,8 @@ export class SR5_CharacterUtility extends Actor {
       }
 
       // Reset Matrix Marks
-      if (actorData.matrix.marks) actorData.matrix.marks = []
+      // An AI outside any device keeps the marks placed on its persona, which no device carries (Data Trails p. 157)
+      if (actorData.matrix.marks && !this.isDevicelessAI(actor)) actorData.matrix.marks = []
 
       // Reset Matrix Actions
       if (actorData.matrix.actions) {
