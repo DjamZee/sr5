@@ -970,8 +970,12 @@ export class SR5Actor extends Actor {
     }
 
     //Delete marks on others actors
-    //markedItems is prepared from the active device: the copy above holds the source, where it is always empty
-    let markedItems = foundry.utils.duplicate(this.system.matrix?.markedItems ?? [])
+    //markedItems is prepared from the active device: the copy above holds the source, where it is always empty.
+    //The traces of every owned device are cleared below, so the marks they point to go too, or they would be left orphaned
+    let markedItems = []
+    for (let m of [...(this.system.matrix?.markedItems ?? []), ...Array.from(this.items).flatMap(i => i.system.markedItems ?? [])]){
+      if (!markedItems.some(e => e.uuid === m.uuid)) markedItems.push(foundry.utils.duplicate(m))
+    }
     if (markedItems.length) {
       let markData = {
         matrix: {
@@ -1023,7 +1027,8 @@ export class SR5Actor extends Actor {
       }
     }
 
-    ui.notifications.info(`${actorData.matrix.deviceName} ${game.i18n.localize("SR5.Rebooted")}.`)
+    //deviceName is prepared from the active device, the copy only holds the source
+    ui.notifications.info(`${this.system.matrix.deviceName} ${game.i18n.localize("SR5.Rebooted")}.`)
 
     //Manage action in combat
     if(game.combat){
