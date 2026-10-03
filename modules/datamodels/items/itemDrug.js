@@ -69,10 +69,18 @@ export class sr5ItemDrugDataModel extends foundry.abstract.TypeDataModel {
       interact: new fields.BooleanField({
         initial: false
       }),
-      handleShot: new fields.ArrayField(new fields.ObjectField()),
+      //The drug stat (duration, speed, crash) is an object: an ArrayField kept only its integer keys, so none
+      handleShot: new fields.ObjectField(),
       wirelessTurnedOn: new fields.BooleanField({
         initial: false
       }),
     }
+  }
+
+  static migrateData(source) {
+    //Stored by the former ArrayField: always an empty list, since it dropped every key of the stat
+    if (Array.isArray(source.handleShot)) source.handleShot = {
+    }
+    return super.migrateData(source)
   }
 }
