@@ -34,6 +34,7 @@ export default async function matrixResistanceInfo(cardData, actorId){
       if (((actor.type === "actorPc" || actor.type === "actorGrunt") && (actorData.matrix.userMode !== "ar") && (targetItem?.type === "itemDevice")) ||
               (actor.type === "actorDrone" && actorData.controlMode === "rigging")) {
         cardData.damage.resistanceType = "biofeedback"
+        cardData.damage.isAttack = true
         cardData.damage.value = cardData.damage.matrix.base
         if ((attackerData.matrix.programs.biofeedback.isActive && actorData.matrix.userMode === "hotsim") || (attackerData.matrix.deviceSubType === "iceBlack")) cardData.damage.type = "physical"
         else cardData.damage.type = "stun"

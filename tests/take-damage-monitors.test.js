@@ -67,12 +67,12 @@ function pcData(body, willpower, maxima = [8 + Math.ceil(body / 2), 8 + Math.cei
   }
 }
 
-function hit(value, type = 'physical'){
+function hit(value, type = 'physical', isAttack = true){
   return {
     damage: {
       value, type, matrix: {
         value: 0
-      }, element: ''
+      }, element: '', isAttack
     },
     combat: {
       ammo: {
@@ -126,6 +126,14 @@ describe('takeDamage reads computed condition monitor maxima', () => {
     actor = fakeActor('actorPc', pcData(4, 4), source)
     await SR5_ActorHelper.takeDamage('a1', hit(7))
     expect(status).toEqual(['prone'])
+  })
+
+  it('7S that do not come from an attack (a drug crash) leave the character standing (SR5 p. 195)', async () => {
+    const source = pcData(4, 4)
+    source.limits.physicalLimit.value = 0
+    actor = fakeActor('actorPc', pcData(4, 4), source)
+    await SR5_ActorHelper.takeDamage('a1', hit(7, 'stun', false))
+    expect(status).toEqual([])
   })
 
   it('a grunt (source maximum at 0) survives 3 damage', async () => {

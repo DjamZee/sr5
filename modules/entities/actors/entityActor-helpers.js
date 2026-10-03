@@ -180,7 +180,7 @@ export class SR5_ActorHelper {
           if (actor.type === "actorSpirit") await SR5_ActorHelper.createDeadEffect(actorId)
           else await SR5_ActorHelper.createKoEffect(actorId)
         }
-        else if ((damage > (actorData.limits.physicalLimit.value + gelAmmo) || damage >= 10) &&
+        else if (SR5_ActorHelper.knocksDown(damage, actorData.limits.physicalLimit.value, gelAmmo, options.damage.isAttack) &&
                   actorData.conditionMonitors.stun.actual.value < actorData.conditionMonitors.stun.value &&
                   actorData.conditionMonitors.physical.actual.value < actorData.conditionMonitors.physical.value) await SR5_ActorHelper.createProneEffect(actorId, damage, gelAmmo)
         break
@@ -190,7 +190,7 @@ export class SR5_ActorHelper {
           if (SR5_ActorHelper.killsGrunt(damage, damageType, actorData.attributes.body.augmented.value)) await SR5_ActorHelper.createDeadEffect(actorId)
           else await SR5_ActorHelper.createKoEffect(actorId)
         }
-        else if (damage > (actorData.limits.physicalLimit.value + gelAmmo) || damage >= 10){ await SR5_ActorHelper.createProneEffect(actorId, damage, gelAmmo)}
+        else if (SR5_ActorHelper.knocksDown(damage, actorData.limits.physicalLimit.value, gelAmmo, options.damage.isAttack)){ await SR5_ActorHelper.createProneEffect(actorId, damage, gelAmmo)}
         break
       case "actorDrone":
         if (actorData.conditionMonitors.condition.actual.value >= actorData.conditionMonitors.condition.value) await SR5_ActorHelper.createDeadEffect(actorId)
@@ -325,6 +325,16 @@ export class SR5_ActorHelper {
    */
   static killsGrunt(damage, damageType, body){
     return damageType === "physical" && damage > body
+  }
+
+  /**
+   * SR5 p. 195: a character is knocked down when a single attack deals, after the resistance test, more boxes
+   * than their Physical limit (lowered by gel rounds), or 10 boxes or more. Damage that does not come from an
+   * attack (drug crash, drain, fading, toxin, fall, burning, acid, dumpshock...) never knocks down.
+   */
+  static knocksDown(damage, physicalLimit, gelAmmo, isAttack){
+    if (!isAttack) return false
+    return damage > (physicalLimit + gelAmmo) || damage >= 10
   }
 
   /**

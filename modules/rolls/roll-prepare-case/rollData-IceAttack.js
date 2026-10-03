@@ -39,6 +39,7 @@ export default function iceAttack(rollData, actor){
     rollData.damage.value = rollData.damage.matrix.value 
     rollData.damage.type = "stun"
     rollData.damage.resistanceType = "physicalDamage"
+    rollData.damage.isAttack = true
   }
   return rollData
 }

@@ -345,6 +345,8 @@ export class SR5_PrepareRollTest {
         isContinuous: false,
         source: "",
         resistanceType: "",
+        // Only an attack can knock down (SR5 p. 195): set where an attack lands, never on other damage
+        isAttack: false,
         aggravated: false,
         matrix: {
           value: 0,

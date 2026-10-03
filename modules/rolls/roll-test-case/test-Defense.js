@@ -62,6 +62,7 @@ export default async function defenseInfo(cardData, actorId){
   //Handle astral combat damage
   if (cardData.test.typeSub === "astralCombat") cardData.damage.resistanceType = "astralDamage"
   else cardData.damage.resistanceType = "physicalDamage"
+  cardData.damage.isAttack = true
 
   //If Hardened Armor, check if damage do something
   if ((actorData.specialProperties?.hardenedArmors.normalWeapon.value > 0) && (cardData.damage.source !== "magical")) {

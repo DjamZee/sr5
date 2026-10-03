@@ -28,6 +28,7 @@ export default async function resistance(rollData, rollType, actor, chatData){
   rollData.damage.element = chatData.damage.element
   rollData.damage.source = chatData.damage.source
   rollData.damage.aggravated = chatData.damage.aggravated
+  rollData.damage.isAttack = !!chatData.damage.isAttack
   rollData.previousMessage.messageId = chatData.owner.messageId
   rollData.previousMessage.hits = chatData.roll.hits
   rollData.previousMessage.attackerNetHits = chatData.roll.netHits
@@ -40,11 +41,13 @@ export default async function resistance(rollData, rollType, actor, chatData){
     rollData.damage.base = chatData.damage.valueFatiguedBase
     rollData.damage.type = "stun"
     rollData.damage.resistanceType = "fatiguedDamage"
+    rollData.damage.isAttack = false
   }
 
   //Special case for Aura
   if (rollType === "resistanceCardAura") {
     let auraOwner = SR5_EntityHelpers.getRealActorFromID(chatData.owner.actorId)
+    rollData.damage.isAttack = false
     rollData.damage.base = auraOwner.system.specialAttributes.magic.augmented.value * 2
     rollData.combat.armorPenetration = -auraOwner.system.specialAttributes.magic.augmented.value
     rollData.damage.element = auraOwner.system.specialProperties.energyAura

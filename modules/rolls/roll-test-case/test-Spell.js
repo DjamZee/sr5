@@ -34,6 +34,7 @@ export default async function spellInfo(cardData){
         cardData.damage.value = cardData.roll.hits
         if (cardData.magic.spell.type === "mana") cardData.damage.resistanceType = "directSpellMana"
         else cardData.damage.resistanceType = "directSpellPhysical"
+        cardData.damage.isAttack = true
       }
       //Generate Resist spell chat button
       cardData.chatCard.buttons[actionType] = SR5_RollMessage.generateChatButton("opposedTest", actionType, label)
