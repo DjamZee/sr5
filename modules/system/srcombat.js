@@ -805,9 +805,9 @@ export class SR5Combat extends Combat {
       ui.notifications.info(`${combatant.name} ${game.i18n.localize("SR5.INFO_FullDefenseEnd")}`)
     }
 
-    //Read actor.system afresh: the damage and effect updates above have rebuilt it, and writing back a copy taken
-    //before them would erase them
-    //Reset Spell defense dice pool
+    //Reset Spell defense dice pool, by path: deepClone(actor.system) handed back the live data model, and an
+    //update given that model recorded nothing, so the pool was never reset
+    //Read actor.system afresh, as the damage and effect updates above have rebuilt it
     let counterSpellPool = actor.system.magic?.counterSpellPool
     if (counterSpellPool && counterSpellPool.current !== counterSpellPool.value){
       await actor.update({
