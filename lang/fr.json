@@ -3941,6 +3941,7 @@
 	"SR5.WARN_MissingCompendium": "Compendium « {name} » introuvable : les objets et pouvoirs de base n'ont pas pu être ajoutés. Activez le module « Shadowrun 5 - Compendiums » dans ce monde, ou choisissez un autre compendium dans les paramètres du système.",
 	"SR5.WARN_NoBaseItems": "Cet acteur a été créé sans aucun pouvoir ni arme : le compendium de référence est introuvable ou ne contient pas les effets système attendus.",
 	"SR5.WARN_NoActiveScene": "Pas de scène active !",
+	"SR5.WARN_RebootLinkLocked": "{name} : connexion verrouillée, l'appareil ne peut pas rebooter. Il faut d'abord se débrancher (SR5 p. 231 et 244).",
 	"SR5.WARN_NoSceneForEnvironment": "Aucune scène affichée : les modificateurs environnementaux ne sont pas appliqués à ce jet.",
 	"SR5.WARN_AttackSceneGone": "La scène de l’attaque n’existe plus : les modificateurs environnementaux de la défense sont lus sur la scène affichée.",
 	"SR5.WARN_NotAnAmmunitionType": "Seuls les objets Type de munition peuvent être déposés ici.",

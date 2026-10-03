@@ -1689,7 +1689,15 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
   //Reboot deck
   async _onRebootDeck(event) {
     event.preventDefault()
-    this.actor.rebootDeck()
+    //A link-locked character cannot reboot their device and must jack out (SR5 p. 231 and 244);
+    //the IC that force a reboot (p. 250) call rebootDeck directly and are not held back
+    if (this.actor.system.matrix?.isLinkLocked) {
+      ui.notifications.warn(game.i18n.format("SR5.WARN_RebootLinkLocked", {
+        name: this.actor.name
+      }))
+      return false
+    }
+    return this.actor.rebootDeck()
   }
 
   /* -------------------------------------------- */

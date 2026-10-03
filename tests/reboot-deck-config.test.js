@@ -2,6 +2,17 @@ import {
   describe, it, expect, vi, beforeEach
 } from 'vitest'
 
+// config.js writes into CONFIG at import time, and the sheet builds on Foundry's actor sheet
+vi.hoisted(() => {
+  globalThis.CONFIG ??= {
+  }
+  globalThis.foundry.applications.sheets ??= {
+    ActorSheetV2: class {
+      _onRender(){}
+    }
+  }
+})
+
 vi.mock('../modules/socket.js', () => ({
   SR5_SocketHandler: {
     emitForGM: vi.fn(),
@@ -17,6 +28,12 @@ const {
 const {
   SR5_EntityHelpers
 } = await import('../modules/entities/helpers.js')
+const {
+  ActorSheetSR5
+} = await import('../modules/entities/actors/baseSheet.js')
+const {
+  SR5_MatrixHelpers
+} = await import('../modules/rolls/roll-helpers/matrix.js')
 
 /** A document whose update merges the flattened changes the way Foundry does */
 function documentWith(data) {
@@ -189,6 +206,69 @@ describe('Rebooting a deck (SR5 p. 244)', () => {
     expect(matrix.attributesCollection).toEqual({
       value1isSet: true, value2isSet: true, value3isSet: true, value4isSet: true
     })
+  })
+
+  it('refuses the reboot button of a link-locked character and changes nothing (SR5 p. 231, p. 244)', async () => {
+    hacker.system.matrix.isLinkLocked = true
+    vi.spyOn(ui.notifications, 'warn').mockImplementation(() => {})
+    const sheet = Object.create(ActorSheetSR5.prototype)
+    Object.defineProperty(sheet, 'actor', {
+      get: () => hacker
+    })
+    for (const isGM of [true, false]) {
+      game.user = {
+        isGM, id: isGM ? 'gm' : 'player'
+      }
+      expect(await sheet._onRebootDeck({
+        preventDefault(){}
+      })).toBe(false)
+    }
+    expect(ui.notifications.warn).toHaveBeenCalledTimes(2)
+    expect(hacker.update).not.toHaveBeenCalled()
+    expect(SR5_SocketHandler.emitForGM).not.toHaveBeenCalled()
+    expect(commlink.system.marks).toHaveLength(2)
+    expect(spareDeck.system.markedItems).toHaveLength(1)
+  })
+
+  it('lets the reboot button through once the connection is free', async () => {
+    const sheet = Object.create(ActorSheetSR5.prototype)
+    Object.defineProperty(sheet, 'actor', {
+      get: () => hacker
+    })
+    await sheet._onRebootDeck({
+      preventDefault(){}
+    })
+    expect(hacker.update).toHaveBeenCalledTimes(1)
+  })
+
+  // An IC forces the reboot (SR5 p. 250): the link lock holds back the character, not the IC
+  it.each(['iceFlicker', 'iceScramble'])('lets %s reboot a link-locked deck', async typeSub => {
+    hacker.system.matrix.isLinkLocked = true
+    hacker.system.matrix.userMode = 'ar'
+    activeDeck.uuid = 'Actor.hacker.Item.deck'
+    activeDeck.system.marks = [{
+      ownerId: 'ice', value: 2
+    }]
+    globalThis.fromUuid.mockImplementation(async uuid => ({
+      [commlink.uuid]: commlink, [serverFile.uuid]: serverFile, [activeDeck.uuid]: activeDeck
+    })[uuid] ?? null)
+    vi.spyOn(SR5_MatrixHelpers, 'applylinkLockEffect').mockResolvedValue()
+    const reboot = vi.spyOn(hacker, 'rebootDeck')
+    await SR5_MatrixHelpers.applyIceEffect({
+      test: {
+        typeSub
+      }, target: {
+        itemUuid: activeDeck.uuid
+      }, damage: {
+      }
+    }, {
+      id: 'ice', name: 'CI'
+    }, hacker)
+    await reboot.mock.results[0].value
+    expect(reboot).toHaveBeenCalledTimes(1)
+    expect(hacker.update).toHaveBeenCalledTimes(1)
+    expect(activeDeck.system.markedItems).toEqual([])
+    expect(serverFile.system.marks).toEqual([])
   })
 
   it('spends one complex action', async () => {
