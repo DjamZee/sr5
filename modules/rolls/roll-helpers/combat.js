@@ -53,6 +53,23 @@ export class SR5_CombatHelpers {
     return SR5_CombatHelpers.handleEnvironmentalModifiers(scene, actor.system, true, undefined, true)
   }
 
+  // Environmental rows an actor carries from templates standing on another scene than `sceneId`, by column.
+  // A template's effect is an itemEffect whose ownerItem is the template's uuid (Scene.<id>.MeasuredTemplate.<id>).
+  static areaEffectsOffScene(actor, sceneId){
+    const offScene = {
+    }
+    for (const item of actor?.items ?? []){
+      if (item.type !== "itemEffect" || item.system?.type !== "areaEffect") continue
+      const templateScene = /^Scene\.([^.]+)\.MeasuredTemplate\./.exec(item.system.ownerItem ?? "")?.[1]
+      if (!templateScene || templateScene === sceneId) continue
+      for (const effect of item.system.customEffects ?? []){
+        const key = /^system\.itemsProperties\.environmentalMod\.(\w+)$/.exec(effect.target ?? "")?.[1]
+        if (key) offScene[key] = (offScene[key] || 0) + (parseInt(effect.value) || 0)
+      }
+    }
+    return offScene
+  }
+
   //Handle environmental modifiers
   //noWind: ignore the wind column (perception, melee); melee: SR5 p. 188, only the Light and Visibility columns apply
   //weaponLight: light rows taken off by a flashlight on the weapon being used (SR5_UtilityItem.getWeaponLightCompensation)
@@ -66,20 +83,24 @@ export class SR5_CombatHelpers {
       return 0
     }
     let actorData = actor.itemsProperties.environmentalMod
+    // A template's effect is an item on the actor, and a linked actor is the same on every scene: the smoke
+    // of one scene must not be counted on another (only where the template stands).
+    const offScene = SR5_CombatHelpers.areaEffectsOffScene(actor.parent, scene.id)
     // A scene whose SR5 tab was never saved has no flags, and an area effect may set a single column: a
     // missing value is the "normal" row of its column (0, SR5 p. 176). Left as NaN, it made Math.max return
     // NaN, which environmentalLineToMod turns into 0 - the whole modifier vanished, darkness included.
     const row = value => parseInt(value) || 0
     const sceneRow = key => row(scene.getFlag("sr5", key))
-    let visibilityMod = Math.min(Math.max(sceneRow("environModVisibility") + row(areaEffect.visibility) + row(actorData.visibility.value), 0), 4)
+    const actorRow = key => row(actorData[key]?.value) - (offScene[key] || 0)
+    let visibilityMod = Math.min(Math.max(sceneRow("environModVisibility") + row(areaEffect.visibility) + actorRow("visibility"), 0), 4)
     let sceneLight = sceneRow("environModLight") + row(areaEffect.light)
     // A standard flashlight on the weapon brings the light where it points down to partial light (Run & Gun p. 69)
     if (Number.isFinite(weaponLightCap)) sceneLight = Math.min(sceneLight, weaponLightCap)
-    let lightMod = Math.min(Math.max(sceneLight + row(actorData.light.value) + weaponLight, 0), 4)
+    let lightMod = Math.min(Math.max(sceneLight + actorRow("light") + weaponLight, 0), 4)
     // SR5 p. 177: low-light vision treats partial light (1) and dim light (2) as full light; it does nothing in total darkness (3)
     if (actor.visions.lowLight.isActive && sceneLight > 0 && sceneLight <= 2) lightMod = 0
-    let glareMod = Math.min(Math.max(sceneRow("environModGlare") + row(areaEffect.glare) + row(actorData.glare.value), 0), 4)
-    let windMod = Math.min(Math.max(sceneRow("environModWind") + row(areaEffect.wind) + row(actorData.wind.value), 0), 4)
+    let glareMod = Math.min(Math.max(sceneRow("environModGlare") + row(areaEffect.glare) + actorRow("glare"), 0), 4)
+    let windMod = Math.min(Math.max(sceneRow("environModWind") + row(areaEffect.wind) + actorRow("wind"), 0), 4)
 
     // SR5 p. 176: Light and Glare are a single column of the Environmental Modifiers table,
     // "LUMIERE / EBLOUISSEMENT", with one row per degree. The scene keeps them as two flags, so the
