@@ -36,10 +36,12 @@ export default async function matrixActionInfo(cardData, actorId){
   }
 
   //AI Depth actions (Data Trails p. 159-161)
-  if (cardData.matrix.emulateRating > 0) {
-    //Emulate: the emulated rating is added to the Overwatch Score at once
+  //Emulate: the emulated rating is added to the Overwatch Score at once, or the hits if Edge pushed the limit before the roll (Data Trails p. 159).
+  //Raised once per roll: Second Chance and Push the limit after the roll refresh the same roll (SR5 p. 58)
+  if (cardData.matrix.emulateRating > 0 && !cardData.roll.emulateRaised) {
+    cardData.roll.emulateRaised = true
     cardData.test.title += ` (${game.i18n.localize("SR5.MatrixActionEmulate")} ${cardData.matrix.emulateRating})`
-    await raiseOverwatchScore(cardData.matrix.emulateRating, actor)
+    await raiseOverwatchScore(cardData.edge.hasUsedPushTheLimit ? cardData.roll.hits : cardData.matrix.emulateRating, actor)
   }
   if (cardData.test.typeSub === "redefineOwnership") {
     let depth = cardData.matrix.depth || 0, threshold = Number(cardData.threshold.value) || 0
