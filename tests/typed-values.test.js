@@ -744,3 +744,102 @@ describe('switching the wireless of a device (SR5 p. 165 and p. 167)', () => {
     expect(written.simple.current).toBe(2)
   })
 })
+
+describe('toggles that cost an action, clicked twice before the server answers', () => {
+  function sheetWith(items, update){
+    const actions = {
+      free: {
+        value: 1, current: 1
+      }, simple: {
+        value: 2, current: 2
+      }, complex: {
+        value: 1, current: 1
+      }
+    }
+    const system = {
+      specialProperties: {
+        actions
+      }, addictions: []
+    }
+    const actor = {
+      id: 'a1', name: 'Test', isToken: false, effects: [], items,
+      system: new FakeSystem(system, system),
+      update,
+    }
+    const sheet = Object.create(ActorSheetSR5.prototype)
+    Object.defineProperty(sheet, 'actor', {
+      value: actor
+    })
+    return sheet
+  }
+  function click(sheet, itemId, binding){
+    return sheet._onEditItemValue({
+      currentTarget: {
+        closest: () => ({
+          dataset: {
+            itemId
+          }
+        }),
+        dataset: {
+          binding, dtype: 'Boolean'
+        },
+      },
+      target: {
+        value: ''
+      },
+    })
+  }
+  function pair(type, name, system){
+    return ['f1', 'f2'].map(id => ({
+      _id: id, id, name: `${name} ${id}`, type, system: {
+        ...system
+      }
+    }))
+  }
+
+  // The guard reads the counters before the first write lands: it says yes both times
+  beforeEach(() => vi.spyOn(SR5Combat, 'hasActionsLeft').mockReturnValue(true))
+  afterEach(() => vi.restoreAllMocks())
+
+  for (const [label, items, binding] of [
+    ['deactivating a focus', pair('itemFocus', 'Focus', {
+      isActive: true
+    }), 'system.isActive'],
+    ['unloading a program', pair('itemProgram', 'Program', {
+      isActive: true
+    }), 'system.isActive'],
+    ['switching off the wireless', pair('itemGear', 'Commlink', {
+      wirelessTurnedOn: true, isActive: true
+    }), 'system.wirelessTurnedOn'],
+  ]){
+    it(`${label}: the second click waits for the first one to be written`, async () => {
+      let answer
+      const update = vi.fn(() => new Promise(r => answer = r))
+      const sheet = sheetWith(items, update)
+
+      const first = click(sheet, 'f1', binding)
+      await click(sheet, 'f2', binding)
+      expect(update).toHaveBeenCalledTimes(1)
+      expect(update.mock.calls[0][0].system.specialProperties.actions.free.current).toBe(0)
+
+      answer()
+      await first
+      update.mockImplementation(async () => {})
+      await click(sheet, 'f2', binding)
+      expect(update).toHaveBeenCalledTimes(2)
+    })
+  }
+
+  it('lets the next click through when the write fails', async () => {
+    const update = vi.fn(async () => {
+      throw new Error('refused')
+    })
+    const sheet = sheetWith(pair('itemFocus', 'Focus', {
+      isActive: true
+    }), update)
+    await expect(click(sheet, 'f1', 'system.isActive')).rejects.toThrow('refused')
+    update.mockImplementation(async () => {})
+    await click(sheet, 'f2', 'system.isActive')
+    expect(update).toHaveBeenCalledTimes(2)
+  })
+})

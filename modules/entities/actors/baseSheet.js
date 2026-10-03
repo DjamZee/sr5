@@ -1180,7 +1180,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       oldValue = foundry.utils.getProperty(item, target)
       value = !oldValue
     }
-    if (!SR5Combat.hasActionsLeft(actor, this._itemValueActionCost(item, target, oldValue))) return
+    //The guard reads the actor's counters, which change only when the server answers: a second click before
+    //that would pass on the old count. Toggles that cost an action wait for the previous one to be written
+    let actionCost = this._itemValueActionCost(item, target, oldValue)
+    if (actionCost.length && this._spendingItemAction) return
+    if (!SR5Combat.hasActionsLeft(actor, actionCost)) return
+    if (actionCost.length) this._spendingItemAction = true
     foundry.utils.setProperty(item, target, value)
 
     //Spécial, pour les decks, désactiver les autres decks lorsque l'un d'entre eux et équipé
@@ -1476,7 +1481,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         actions = [{
           type: "free", value: 1, source: "desactivateFocus"
         }]
-        actorData.specialProperties.actions.free.current -=1
+        SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
 
       }
     }
@@ -1487,7 +1492,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       else actions = [{
         type: "free", value: 1, source: "unloadProgram"
       }]
-      actorData.specialProperties.actions.free.current -=1
+      SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
     }
     if (target === "system.wirelessTurnedOn"){
       //Switching a device: a free action through a DNI (SR5 p. 165), a simple one otherwise (p. 167). The rule
@@ -1507,10 +1512,14 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
 		
     //Update actor
-    await this.actor.update({
-      "system": actorData,
-      "items": itemList,
-    })
+    try {
+      await this.actor.update({
+        "system": actorData,
+        "items": itemList,
+      })
+    } finally {
+      if (actionCost.length) this._spendingItemAction = false
+    }
     if (this.actor.isToken) this.actor.sheet.render()
 
     //Delete effects linked to sustaining
