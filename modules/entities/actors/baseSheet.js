@@ -517,8 +517,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       let aggravatedPath = `${monitorPath}.aggravated`
       if (foundry.utils.getProperty(actorData, aggravatedPath) > foundry.utils.getProperty(actorData, target)) foundry.utils.setProperty(actorData, aggravatedPath, foundry.utils.getProperty(actorData, target))
 
-      if (target == 'system.conditionMonitors.physical.actual.base' && foundry.utils.getProperty(actorData, 'system.conditionMonitors.overflow.actual.value')) {
-        if (actorData.system.conditionMonitors.physical.actual.value < actorData.system.conditionMonitors.physical.value.value) {
+      // SR5 p. 171: overflow only exists past a full physical monitor, and healing clears it first (p. 402):
+      // once boxes are cleared below the full monitor, no overflow is left. The copy above holds the source,
+      // so the monitor size and the overflow are read on the prepared data
+      let monitors = this.actor.system.conditionMonitors
+      if (target == 'system.conditionMonitors.physical.actual.base' && monitors.overflow?.actual?.value) {
+        if (foundry.utils.getProperty(actorData, target) < monitors.physical.value) {
           foundry.utils.setProperty(actorData, 'system.conditionMonitors.overflow.actual.base', 0)
         }
       }
@@ -1229,16 +1233,17 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 						
             SR5_SystemHelpers.srLog(1, "Check drugType")
 
-            // Generate the drug stat
-            drug = await SR5_CharacterUtility.handleDrugShots(item, drugType, actorData)
+            // Generate the drug stat: durations read the augmented Body and the Essence, prepared values that
+            // the copy of system (its source) does not hold
+            drug = await SR5_CharacterUtility.handleDrugShots(item, drugType, actor.system)
             itemData.handleShot = drug
-						
+
             let speedType = ""
 
             if (!itemData.interact) {	
               console.log("drug : " + item.name)						
               // Generate the drug stat
-              drug = await SR5_CharacterUtility.handleDrugShots(item, drugType, actorData)
+              drug = await SR5_CharacterUtility.handleDrugShots(item, drugType, actor.system)
               itemData.handleShot = drug
               itemData.onUse.duration = `${itemData.handleShot.duration} ${game.i18n.localize(SR5.extendedIntervals[itemData.handleShot.durationType])}`
               itemData.onUse.contrecoup = ""
