@@ -7,6 +7,12 @@ import {
 import {
   SR5_CombatHelpers
 } from "../modules/rolls/roll-helpers/combat.js"
+import {
+  SR5
+} from "../modules/config.js"
+import {
+  readFileSync
+} from "fs"
 
 const modifier = () => ({
   base: 0, value: 0, modifiers: []
@@ -155,5 +161,15 @@ describe("defense whose attack scene was deleted", () => {
   it("does not warn for a roll that has no attack scene to read (attack, perception)", () => {
     expect(SR5_CombatHelpers.environmentScene()).toBe(displayed)
     expect(warnings).toEqual([])
+  })
+})
+
+describe("limit modifier labels of the roll dialog", () => {
+  // The perception limit was labelled "undefined (Visuelle)": it looked up a key the table does not have
+  it("only name keys that SR5.limitModTypes has", () => {
+    const source = readFileSync(new URL("../modules/rolls/roll-dialog.js", import.meta.url), "utf8")
+    const keys = [...source.matchAll(/SR5\.limitModTypes\["([^"]+)"\]/g)].map(m => m[1])
+    expect(keys).toContain("limitModPerception")
+    for (const key of keys) expect(SR5.limitModTypes[key], key).toBeTypeOf("string")
   })
 })

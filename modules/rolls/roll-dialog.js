@@ -1016,7 +1016,7 @@ export default class SR5_RollDialog {
           dialogData.various.perceptionType = ev.target.value
           dialogData.limit.modifiers.perception = {
             value: limitMod,
-            label: `${game.i18n.localize(SR5.limitModTypes["perception"])} (${game.i18n.localize(SR5.perceptionTypes[ev.target.value])})`,
+            label: `${game.i18n.localize(SR5.limitModTypes["limitModPerception"])} (${game.i18n.localize(SR5.perceptionTypes[ev.target.value])})`,
           }
           this.limitModifier.perceptionType = limitMod
           html.querySelector('[name="limitModPerception"]').value = limitMod
