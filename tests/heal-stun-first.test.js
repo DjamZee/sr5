@@ -8,6 +8,9 @@ const {
 const {
   SR5_EntityHelpers
 } = await import('../modules/entities/helpers.js')
+const {
+  SR5_RollTest
+} = await import('../modules/rolls/roll-test.js')
 
 // SR5 p. 207: Physical damage does not heal naturally while Stun damage remains, Stun heals first.
 // First aid (p. 206) and Medicine (p. 208) are not bound by this order.
@@ -107,5 +110,40 @@ describe('heal', () => {
     })
     expect(actor.update).toHaveBeenCalled()
     expect(actor.update.mock.calls[0][0].system.conditionMonitors.physical.actual.base).toBe(1)
+  })
+})
+
+describe('extendedRoll', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks()
+    globalThis.ui = {
+      notifications: {
+        warn: vi.fn()
+      }
+    }
+    globalThis.game ??= {
+    }
+    globalThis.game.i18n = {
+      localize: (k) => k
+    }
+  })
+
+  it('refuses the next roll of a natural physical recovery while Stun damage remains', async () => {
+    const rollDice = vi.spyOn(SR5_RollTest, 'rollDice')
+    const message = {
+      flags: {
+        sr5data: {
+          test: {
+            type: 'healing', typeSub: 'physical', extended: {
+              roll: 1
+            }
+          }
+        }
+      }
+    }
+    const result = await SR5_RollTest.extendedRoll(message, patient(2, 4))
+    expect(result).toBe(false)
+    expect(rollDice).not.toHaveBeenCalled()
+    expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_StunHealsFirst')
   })
 })

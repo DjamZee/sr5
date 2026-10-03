@@ -27,6 +27,9 @@ import {
 import {
   SR5_SocketHandler
 } from "../socket.js"
+import {
+  SR5_ActorHelper
+} from "../entities/actors/entityActor-helpers.js"
 
 export class SR5_RollTest {
   //Prepare the roll window
@@ -284,6 +287,11 @@ export class SR5_RollTest {
   //Handle extended roll
   static async extendedRoll(message, actor){
     let messageData = message.flags.sr5data
+    //SR5 p. 207: the next roll of a natural Physical recovery waits for the Stun damage to be healed, as the first one
+    if (SR5_ActorHelper.stunBlocksNaturalHealing(actor?.system, messageData.test.type, messageData.test.typeSub)) {
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_StunHealsFirst"))
+      return false
+    }
 
     //Prepare new chat card: the base pool and its modifiers, minus one die per earlier roll (SR5 p. 50).
     //Edge dice were added to the roll they were spent on, not to the next ones (SR5 p. 58)
