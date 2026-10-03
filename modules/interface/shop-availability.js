@@ -167,6 +167,16 @@ export class SR5ShopAvailability {
     }
   }
 
+  /**
+   * A number typed into a shop field, or null when the field was left empty.
+   * Empty and 0 are not the same answer: empty asks for the computed value.
+   */
+  static typedNumber(value) {
+    if (value === null || value === undefined || String(value).trim() === '') return null
+    const number = Number(value)
+    return Number.isFinite(number) ? Math.max(0, Math.floor(number)) : null
+  }
+
   /** A sheet field's computed value, or what was typed into it. */
   static sheetValue(field) {
     return Number(field?.value ?? 0) || Number(field?.base ?? 0) || 0
@@ -268,7 +278,8 @@ export class SR5ShopAvailability {
    * @param {number} [options.overridePool] a pool typed in by hand, which
    *   replaces the computed one — for a contact written up somewhere else, or
    *   a gamemaster who simply knows what the fixer is worth
-   * @param {number} [options.overrideLimit] the limit that goes with it
+   * @param {number|string} [options.overrideLimit] a limit typed in by hand;
+   *   left empty, the computed limit applies
    */
   static async testLines(actor, contact, lines, surcharge = 0, options = {
   }) {
@@ -286,9 +297,9 @@ export class SR5ShopAvailability {
     // unfloored pool, and only the total is floored (SR5 p. 58)
     const basePool = override || (searcher.raw ?? searcher.pool)
     const pool = Math.max(0, basePool + bonusDice)
-    const limit = override ?
-      Math.max(0, Math.floor(Number(options.overrideLimit) || 0)) :
-      searcher.limit
+    // A limit left empty is the computed one, not "no limit". There is no
+    // limit of 0 in SR5 either, so a typed 0 falls back the same way.
+    const limit = SR5ShopAvailability.typedNumber(options.overrideLimit) || searcher.limit
 
     const results = []
     for (const line of lines) {

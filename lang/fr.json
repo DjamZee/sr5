@@ -405,7 +405,7 @@
 	"SR5.ShopOutcome_tie": "Trouvé, délai doublé",
 	"SR5.ShopOutcome_tieGlitch": "Trouvé, délai doublé, complication",
 	"SR5.ShopOverriddenPool": "Réserve de dés imposée à la main.",
-	"SR5.ShopOverrideLimitHint": "Limite qui accompagne la réserve saisie. Vide = aucune limite.",
+	"SR5.ShopOverrideLimitHint": "Limite saisie à la main : remplace celle qui est calculée. Vide = limite calculée.",
 	"SR5.ShopOverridePoolHint": "Réserve de dés saisie à la main : remplace celle qui est calculée pour le test de Disponibilité. Vide = calcul automatique.",
 	"SR5.ShopPartialPool": "Charisme absent de la fiche du contact : déduit de son Influence (Run Faster p. 174).",
 	"SR5.ShopPoolShort": "Réserve",
