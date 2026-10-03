@@ -273,3 +273,68 @@ describe('Matrix defense of an AI without a device (Data Trails p. 157)', () => 
     }))
   })
 })
+
+describe('Matrix damage against an AI without a device (Data Trails p. 157, 161)', () => {
+  function spikeCard() {
+    return {
+      roll: {
+        hits: 0
+      },
+      target: {
+      },
+      matrix: {
+        mark: 0, actionType: 'attack'
+      },
+      test: {
+        typeSub: 'dataSpike'
+      },
+      previousMessage: {
+        actorId: 'b1', hits: 3
+      },
+      owner: {
+      },
+      damage: {
+        matrix: {
+        }
+      },
+      chatCard: {
+        buttons: {
+        }
+      },
+    }
+  }
+
+  beforeEach(() => {
+    Object.assign(actor.system.matrix.programs, {
+      mugger: {
+        isActive: false
+      }, guard: {
+        isActive: false
+      }, hammer: {
+        isActive: false
+      }
+    })
+    actor.system.matrix.attributes = {
+      attack: {
+        value: 4
+      }
+    }
+    actor.system.matrix.marks = []
+  })
+
+  it('a successful Data Spike yields its damage and the resistance button', async () => {
+    const card = spikeCard()
+    await testCases.matrixDefenseInfo(card, 'a1')
+    expect(card.damage.matrix.value).toBe(7)
+    expect(card.chatCard.buttons.matrixResistance).toBeDefined()
+  })
+
+  it('the marks on the persona add to the damage', async () => {
+    actor.system.matrix.marks = [{
+      ownerId: 'a1', value: 2
+    }]
+    const card = spikeCard()
+    await testCases.matrixDefenseInfo(card, 'a1')
+    expect(card.damage.matrix.value).toBe(11)
+  })
+})

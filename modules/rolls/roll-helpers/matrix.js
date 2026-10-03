@@ -104,12 +104,14 @@ export class SR5_MatrixHelpers {
     let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId),
       attackerData = attacker?.system,
       damage = cardData.damage.matrix.base,
-      item = await fromUuid(cardData.target.itemUuid),
-      mark = await SR5_MarkHelpers.findMarkValue(item.system, attacker.id)
+      item = cardData.target.itemUuid ? await fromUuid(cardData.target.itemUuid) : null,
+      //An AI outside any device has no targeted item: the marks are read on its persona (Data Trails p. 157)
+      markHolder = item?.system ?? defender.system.matrix,
+      mark = await SR5_MarkHelpers.findMarkValue(markHolder, attacker.id)
 
     if (attacker.type === "actorDevice"){
       if (attacker.system.matrix.deviceType === "ice"){
-        mark = await SR5_MarkHelpers.findMarkValue(item.system, attacker.id)
+        mark = await SR5_MarkHelpers.findMarkValue(markHolder, attacker.id)
       }
     }
     cardData.damage.matrix.modifiers = {
