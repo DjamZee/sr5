@@ -29,7 +29,7 @@ import {
   SR5_MatrixHelpers 
 } from "./roll-helpers/matrix.js"
 import {
-  isRolledByTarget, firstAidPatient
+  isRolledByTarget, firstAidPatient, patientMonitors, hasSingleMonitor
 } from "./roll-helpers/cardRoller.js"
 import {
   SR5_CombatHelpers 
@@ -259,8 +259,10 @@ export class SR5_RollMessage {
             netHits: messageData.roll.netHits
           },
         }
-        if (patient.type === "actorPc") healData.test.typeSub = await SR5_CombatHelpers.chooseDamageType()
-        else healData.test.typeSub = "condition"
+        //The monitor to heal follows what the patient has: asked between Physical and Stun, or its single condition monitor
+        let monitors = patientMonitors(patient)
+        if (monitors.length > 1) healData.test.typeSub = await SR5_CombatHelpers.chooseDamageType()
+        else healData.test.typeSub = monitors[0]
         if (!healData.test.typeSub) return
         let healedID = (patient.isToken ? patient.token.id : patient.id)
         if (game.user.isGM || patient.testUserPermission(game.user, 3)) await SR5_ActorHelper.heal(healedID, healData)
@@ -273,15 +275,16 @@ export class SR5_RollMessage {
       }
       case "damage":
         if (messageData.test.typeSub === "firstAid") {
-          //SR5 p. 207: the 1D3 of a critical glitch needs a damage type, asked again if the first dialog was cancelled
-          if (!messageData.damage.type) {
-            let damageType = await SR5_CombatHelpers.chooseDamageType()
-            if (!damageType) return
-            messageData.damage.type = damageType
-          }
           //The 1D3 goes to the patient, the selected token when the test had no target
           let patient = firstAidPatient(messageData.target.hasTarget, targetActor, actor)
           if (!patient) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+          //SR5 p. 207: the 1D3 of a critical glitch needs a damage type, asked again if the first dialog was cancelled,
+          //unless the patient only has a single condition monitor
+          if (!messageData.damage.type) {
+            let damageType = hasSingleMonitor(patient) ? "condition" : await SR5_CombatHelpers.chooseDamageType()
+            if (!damageType) return
+            messageData.damage.type = damageType
+          }
           await patient.takeDamage(messageData)
           SR5_RollMessage.updateChatButtonHelper(messageId, type, messageData.damage.type)
           break

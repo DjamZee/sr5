@@ -17,3 +17,19 @@ export function isRolledByTarget(type, typeSub, targetActorId) {
 export function firstAidPatient(hasTarget, targetActor, selectedActor) {
   return hasTarget ? targetActor : selectedActor
 }
+
+// The damage monitors of a patient, as prepared on its sheet: Physical and Stun (PC, most spirits),
+// or a single condition monitor (grunt, AI core, homunculus, watcher). Empty when it has neither.
+export function patientMonitors(patient) {
+  let monitors = patient?.system?.conditionMonitors ?? {
+  }
+  if (monitors.physical && monitors.stun) return ["physical", "stun"]
+  if (monitors.condition) return ["condition"]
+  return []
+}
+
+// True when the patient has a single condition monitor: no damage type to ask for
+export function hasSingleMonitor(patient) {
+  let monitors = patientMonitors(patient)
+  return monitors.length === 1 && monitors[0] === "condition"
+}
