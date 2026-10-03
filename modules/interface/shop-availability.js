@@ -4,6 +4,9 @@ import {
 import {
   SR5_SystemHelpers
 } from '../system/utilitySystem.js'
+import {
+  SR5_EntityHelpers
+} from '../entities/helpers.js'
 
 /**
  * The availability test of SR5 p. 420.
@@ -76,17 +79,26 @@ export class SR5ShopAvailability {
 
   /**
    * The buyer's own pool: Negotiation + Charisma, capped by the social limit.
-   * The sheet's computed pool already defaults an untrained buyer to
-   * Charisma - 1 (SR5 p. 55) and carries the wound penalties, so a zero there
-   * is a real zero, not a missing value.
+   * The sheet's modifiers already default an untrained buyer to Charisma - 1
+   * (SR5 p. 55) and carry the wound penalties.
+   *
+   * The sheet floors its pool at 0, but a test is impossible when the pool
+   * "aurait été de zéro ou moins" (SR5 p. 58) once every modifier is in, the
+   * surcharge dice included. So `raw` is the sheet's sum without that floor,
+   * and the floor only comes once the surcharge is added.
    */
   static buyerPool(actor) {
     const skill = actor.system.skills?.negotiation
-    const pool = skill?.test ?
-      Math.max(0, Number(skill.test.dicePool) || 0) :
+    const test = skill?.test
+    // The same sum as SR5_EntityHelpers.updatePropertyTotal, minus its floor
+    const raw = test ?
+      SR5_EntityHelpers.roundDecimal(((Number(test.base) || 0) +
+        (SR5_EntityHelpers.modifiersSum(test.modifiers ?? []) || 0)) *
+        SR5_EntityHelpers.modifiersProduct(test.modifiers ?? []), 2) :
       Number(actor.system.attributes?.charisma?.augmented?.value ?? 0)
     return {
-      pool,
+      raw,
+      pool: Math.max(0, raw),
       limit: Number(actor.system.limits?.socialLimit?.value ?? 0),
       label: actor.name,
       derived: false,
@@ -270,7 +282,9 @@ export class SR5ShopAvailability {
 
     const bonusDice = SR5ShopAvailability.surchargeDice(surcharge)
     const override = Math.max(0, Math.floor(Number(options.overridePool) || 0))
-    const basePool = override || searcher.pool
+    // The surcharge dice are one more modifier: they are added to the
+    // unfloored pool, and only the total is floored (SR5 p. 58)
+    const basePool = override || (searcher.raw ?? searcher.pool)
     const pool = Math.max(0, basePool + bonusDice)
     const limit = override ?
       Math.max(0, Math.floor(Number(options.overrideLimit) || 0)) :
