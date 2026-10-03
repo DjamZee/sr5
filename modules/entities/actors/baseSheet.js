@@ -1161,7 +1161,16 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     return []
   }
 
+  //The lock taken by a toggle that costs an action is given back however its handling ends, error included
   async _onEditItemValue(event) {
+    try {
+      await this._editItemValue(event)
+    } finally {
+      if (this._spendingItemAction === event) this._spendingItemAction = null
+    }
+  }
+
+  async _editItemValue(event) {
     let id = event.currentTarget.closest(".item")?.dataset.itemId
     let target = event.currentTarget.dataset.binding
     let actor = this.actor
@@ -1185,7 +1194,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     let actionCost = this._itemValueActionCost(item, target, oldValue)
     if (actionCost.length && this._spendingItemAction) return
     if (!SR5Combat.hasActionsLeft(actor, actionCost)) return
-    if (actionCost.length) this._spendingItemAction = true
+    if (actionCost.length) this._spendingItemAction = event
     foundry.utils.setProperty(item, target, value)
 
     //Spécial, pour les decks, désactiver les autres decks lorsque l'un d'entre eux et équipé
@@ -1512,14 +1521,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
 		
     //Update actor
-    try {
-      await this.actor.update({
-        "system": actorData,
-        "items": itemList,
-      })
-    } finally {
-      if (actionCost.length) this._spendingItemAction = false
-    }
+    await this.actor.update({
+      "system": actorData,
+      "items": itemList,
+    })
     if (this.actor.isToken) this.actor.sheet.render()
 
     //Delete effects linked to sustaining

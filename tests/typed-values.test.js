@@ -830,6 +830,21 @@ describe('toggles that cost an action, clicked twice before the server answers',
     })
   }
 
+  it('gives the lock back when the handling throws right after taking it', async () => {
+    const update = vi.fn(async () => {})
+    const sheet = sheetWith(pair('itemFocus', 'Focus', {
+      isActive: true
+    }), update)
+    vi.spyOn(foundry.utils, 'setProperty').mockImplementationOnce(() => {
+      throw new Error('broken')
+    })
+    await expect(click(sheet, 'f1', 'system.isActive')).rejects.toThrow('broken')
+    expect(update).not.toHaveBeenCalled()
+    expect(sheet._spendingItemAction).toBeFalsy()
+    await click(sheet, 'f2', 'system.isActive')
+    expect(update).toHaveBeenCalledTimes(1)
+  })
+
   it('lets the next click through when the write fails', async () => {
     const update = vi.fn(async () => {
       throw new Error('refused')
