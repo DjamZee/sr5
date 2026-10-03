@@ -88,6 +88,19 @@ export class SR5_ConverterHelpers {
     }
   }      
 
+  //SR5 p. 166-167: firing a bow or throwing a weapon is a simple action. A weapon with no firing mode
+  //never shows the dialog's firing mode select, which counts the action of the others
+  static rangedAttackAction(mode){
+    return this.firingModeToAction(mode) ?? {
+      type: "simple", value: 1, source: "attack"
+    }
+  }
+
+  //SR5 p. 182 gives no default spread: an unset choke is the narrow spread the weapon sheet shows for it
+  static chokeToCode(choke){
+    return choke?.current || "narrow"
+  }
+
   //Convert range  to environmental line
   static rangeToEnvironmentalLine(mode){
     switch(mode){

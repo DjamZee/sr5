@@ -88,6 +88,20 @@ describe('addActions', () => {
     expect(actions.some(a => a.type === "simple" || a.type === "complex")).toBe(false)
   })
 
+  it('counts a simple action for a ranged weapon with no firing mode (bow, thrown weapon)', () => {
+    expect(SR5_ConverterHelpers.rangedAttackAction(undefined)).toEqual({
+      type: "simple", value: 1, source: "attack"
+    })
+  })
+
+  it('lets the dialog replace the default action by the mode of the weapon', () => {
+    let actions = SR5_MiscellaneousHelpers.addActions([], SR5_ConverterHelpers.rangedAttackAction("SA"))
+    actions = SR5_MiscellaneousHelpers.addActions(actions, SR5_ConverterHelpers.firingModeToAction("FAc"))
+    expect(actions).toEqual([{
+      type: "complex", value: 1, source: "attack"
+    }])
+  })
+
   it('still replaces the action of the same source', () => {
     let actions = SR5_MiscellaneousHelpers.addActions([], SR5_ConverterHelpers.firingModeToAction("SA"))
     actions = SR5_MiscellaneousHelpers.addActions(actions, undefined)
@@ -95,5 +109,19 @@ describe('addActions', () => {
     expect(actions).toEqual([{
       type: "complex", value: 1, source: "attack"
     }])
+  })
+})
+
+describe('chokeToCode', () => {
+  it('reads an unset choke as the narrow spread the weapon sheet shows (SR5 p. 182)', () => {
+    expect(SR5_ConverterHelpers.chokeToCode({
+      current: "", value: []
+    })).toBe("narrow")
+    expect(SR5_ConverterHelpers.chokeToCode(undefined)).toBe("narrow")
+  })
+  it('keeps a chosen spread', () => {
+    expect(SR5_ConverterHelpers.chokeToCode({
+      current: "wide"
+    })).toBe("wide")
   })
 })

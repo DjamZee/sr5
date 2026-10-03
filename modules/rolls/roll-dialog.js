@@ -827,7 +827,7 @@ export default class SR5_RollDialog {
           }
           //actions
           weapon = await fromUuid(dialogData.owner.itemUuid)
-          if (weapon.system.choke.current !== dialogData.combat.choke.selected && !dialogData.combat.choke.actionSpent){
+          if (SR5_ConverterHelpers.chokeToCode(weapon.system.choke) !== dialogData.combat.choke.selected && !dialogData.combat.choke.actionSpent){
             action = [{
               type: "simple", value: 1, source: "changeChokeSettings"
             }]
@@ -836,7 +836,7 @@ export default class SR5_RollDialog {
             }]
             SR5Combat.changeActionInCombat(dialogData.owner.actorId, action)
             dialogData.combat.choke.actionSpent = true
-          } else if (weapon.system.choke.current === dialogData.combat.choke.selected && dialogData.combat.choke.actionSpent){
+          } else if (SR5_ConverterHelpers.chokeToCode(weapon.system.choke) === dialogData.combat.choke.selected && dialogData.combat.choke.actionSpent){
             action = [{
               type: "simple", value: -1, source: "changeChokeSettings"
             }]

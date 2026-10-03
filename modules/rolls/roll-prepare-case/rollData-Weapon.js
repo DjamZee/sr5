@@ -80,6 +80,8 @@ export default async function weapon(rollData, actor, item){
 
   //Handle ranged weapon current firing mode here too: handleTargetInfo skips it when no scene is viewed
   if (itemData.category === "rangedWeapon" && !rollData.combat.firingMode.selected) rollData.combat.firingMode.selected = SR5_ConverterHelpers.firingModeToCode(itemData.firingMode)
+  //With a firing mode, the dialog replaces this action by the mode's own (same source)
+  if (itemData.category === "rangedWeapon") rollData.combat.actions = SR5_MiscellaneousHelpers.addActions(rollData.combat.actions, SR5_ConverterHelpers.rangedAttackAction(rollData.combat.firingMode.selected))
 
   //Handle Toxin
   if (itemData.damageElement === "toxin") rollData.damage.toxin = itemData.toxin
@@ -332,8 +334,7 @@ async function handleTargetInfo(rollData, actor, item){
     
   //Handle shotgun current choke settings
   if (itemData.type === "shotgun") {
-    if (itemData.choke.current !== "") rollData.combat.choke.selected = itemData.choke.current
-    else rollData.combat.choke.selected = itemData.choke.value[0]
+    rollData.combat.choke.selected = SR5_ConverterHelpers.chokeToCode(itemData.choke)
   }
 
   //Add environmental modifiers
