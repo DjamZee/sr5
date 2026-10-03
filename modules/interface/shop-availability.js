@@ -230,18 +230,27 @@ export class SR5ShopAvailability {
       })
     }
     const days = hours / 24
-    if (days < 7) {
-      return game.i18n.format('SR5.ShopDelayDays', {
-        value: Math.round(days * 10) / 10
-      })
+    if (days < 7) return SR5ShopAvailability.#formatUnit('SR5.ShopDelayDays', days)
+    if (days < 30) return SR5ShopAvailability.#formatUnit('SR5.ShopDelayWeeks', days / 7)
+    return SR5ShopAvailability.#formatUnit('SR5.ShopDelayMonths', days / 30)
+  }
+
+  /**
+   * "1 jour", "2 jours": the singular key (the plural one without its final
+   * s) when the language puts that number in the singular. French does for
+   * 1.5, English does not.
+   */
+  static #formatUnit(pluralKey, amount) {
+    const value = Math.round(amount * 10) / 10
+    const lang = game.i18n?.lang || 'en'
+    let singular = value === 1
+    try {
+      singular = new Intl.PluralRules(lang).select(value) === 'one'
+    } catch {
+      // An unknown language code: keep the plain test on 1
     }
-    if (days < 30) {
-      return game.i18n.format('SR5.ShopDelayWeeks', {
-        value: Math.round(days / 7 * 10) / 10
-      })
-    }
-    return game.i18n.format('SR5.ShopDelayMonths', {
-      value: Math.round(days / 30 * 10) / 10
+    return game.i18n.format(singular ? pluralKey.slice(0, -1) : pluralKey, {
+      value
     })
   }
 

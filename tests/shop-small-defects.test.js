@@ -1,6 +1,9 @@
 import {
   describe, it, expect, beforeEach
 } from 'vitest'
+import {
+  readFileSync
+} from 'node:fs'
 
 // Every roll made, and the faces each one shows, in order
 let rolls = []
@@ -207,5 +210,42 @@ describe('An imposed pool of 0 is 0 dice, not "no override"', () => {
     expect(card.delayLabel).toBe('—')
     expect(card.overridden).toBe(true)
     expect(card.canSell).toBeFalsy()
+  })
+})
+
+describe('Delays take the singular: 1 jour, not 1 jours', () => {
+  const read = name => JSON.parse(readFileSync(new URL(`../lang/${name}.json`, import.meta.url), 'utf8'))
+  const delay = (lang, hours) => {
+    const i18n = globalThis.game.i18n
+    const saved = {
+      lang: i18n.lang, format: i18n.format
+    }
+    const strings = read(lang)
+    i18n.lang = lang
+    i18n.format = (key, data) => strings[key].replace('{value}', data.value)
+    try {
+      return SR5ShopAvailability.formatDelay(hours)
+    } finally {
+      Object.assign(i18n, saved)
+    }
+  }
+
+  it('French', () => {
+    expect(delay('fr', 24)).toBe('1 jour')
+    expect(delay('fr', 36)).toBe('1.5 jour')
+    expect(delay('fr', 48)).toBe('2 jours')
+    expect(delay('fr', 24 * 7)).toBe('1 semaine')
+    expect(delay('fr', 24 * 14)).toBe('2 semaines')
+    expect(delay('fr', 24 * 30)).toBe('1 mois')
+    expect(delay('fr', 6)).toBe('6 h')
+  })
+
+  it('English', () => {
+    expect(delay('en', 24)).toBe('1 day')
+    expect(delay('en', 36)).toBe('1.5 days')
+    expect(delay('en', 48)).toBe('2 days')
+    expect(delay('en', 24 * 7)).toBe('1 week')
+    expect(delay('en', 24 * 30)).toBe('1 month')
+    expect(delay('en', 24 * 60)).toBe('2 months')
   })
 })
