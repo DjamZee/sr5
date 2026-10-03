@@ -185,8 +185,8 @@ describe('Seize the Initiative and Blitz spend their Edge point by path', () => 
   }
 })
 
-describe('the end of a turn does not write back a system taken before its own updates', () => {
-  it('keeps the fire damage taken during the turn when it resets the counterspelling pool', async () => {
+describe('the end of a turn resets the counterspelling pool by path', () => {
+  it('resets the pool without sending a system object, and reads it after the damage of the turn', async () => {
     const monitors = (damage) => ({
       physical: {
         value: 10, actual: {
@@ -318,40 +318,50 @@ describe('drug durations read the augmented Body (SR5 p. 411-413)', () => {
   })
 })
 
-describe('clearing physical boxes clears the overflow (SR5 p. 171, p. 402)', () => {
-  function sheetWithDamagedActor(){
-    const monitors = (physicalMax) => ({
+describe('clearing physical boxes clears the overflow (SR5 p. 171, p. 209)', () => {
+  // physical: boxes filled in the source; the preparation shows no overflow below a full monitor
+  // (utilityActor, case "overflow"), while the source may still hold it: a ghost overflow
+  function sheetWithDamagedActor(physical = 10){
+    const monitors = (physicalMax, overflow) => ({
       physical: {
         value: physicalMax, actual: {
-          base: 10, value: 10, modifiers: []
+          base: physical, value: physical, modifiers: []
         }
       },
       overflow: {
         value: 4, actual: {
-          base: 2, value: 2, modifiers: []
+          base: overflow, value: overflow, modifiers: []
         }
       },
     })
     const actor = fakeActor(new FakeSystem({
-      conditionMonitors: monitors(0)
+      conditionMonitors: monitors(0, 2)
     }, {
-      conditionMonitors: monitors(10)
+      conditionMonitors: monitors(10, physical < 10 ? 0 : 2)
     }))
     actor.toJSON = () => ({
       system: actor.system.toJSON()
     })
 
-    let onBoxClick
+    let onBoxClick, onMonitorReset
     const element = {
       classList: {
         toggle(){}
       },
       querySelector: () => null,
-      querySelectorAll: (sel) => sel === '.boxes:not(.box-disabled)' ? [{
-        addEventListener: (evt, fn) => {
-          if (evt === 'click') onBoxClick = fn
-        }
-      }] : [],
+      querySelectorAll: (sel) => {
+        if (sel === '.boxes:not(.box-disabled)') return [{
+          addEventListener: (evt, fn) => {
+            if (evt === 'click') onBoxClick = fn
+          }
+        }]
+        if (sel === '.monitorReset') return [{
+          addEventListener: (evt, fn) => {
+            if (evt === 'mousedown') onMonitorReset = fn
+          }
+        }]
+        return []
+      },
     }
     // The select menus close on a click anywhere in the page
     globalThis.document ??= {
@@ -369,7 +379,15 @@ describe('clearing physical boxes clears the overflow (SR5 p. 171, p. 402)', () 
     }, {
     })
     return {
-      actor, click: (index, monitor = 'physical') => onBoxClick({
+      actor,
+      reset: (monitor) => onMonitorReset({
+        preventDefault(){}, which: 3, button: 2, currentTarget: {
+          dataset: {
+            target: monitor
+          }
+        }
+      }),
+      click: (index, monitor = 'physical') => onBoxClick({
         currentTarget: {
           dataset: {
             index: String(index)
@@ -402,5 +420,34 @@ describe('clearing physical boxes clears the overflow (SR5 p. 171, p. 402)', () 
     const changes = actor.update.mock.calls[0][0]
     expect(changes.system.conditionMonitors.overflow.actual.base).toBe(1)
     expect(changes.system.conditionMonitors.physical.actual.base).toBe(10)
+  })
+
+  it('clears a ghost overflow left in the source below a full monitor', () => {
+    const {
+      actor, click
+    } = sheetWithDamagedActor(5)
+    click(5)
+    const changes = actor.update.mock.calls[0][0]
+    expect(changes.system.conditionMonitors.physical.actual.base).toBe(6)
+    expect(changes.system.conditionMonitors.overflow.actual.base).toBe(0)
+  })
+
+  it('empties the overflow too when the physical monitor is reset by right-click', () => {
+    const {
+      actor, reset
+    } = sheetWithDamagedActor()
+    reset('physical')
+    const changes = actor.update.mock.calls[0][0]
+    expect(changes.system.conditionMonitors.physical.actual.base).toBe(0)
+    expect(changes.system.conditionMonitors.overflow.actual.base).toBe(0)
+  })
+
+  it('leaves the overflow alone when the stun monitor is reset', () => {
+    const {
+      actor, reset
+    } = sheetWithDamagedActor()
+    reset('stun')
+    const changes = actor.update.mock.calls[0][0]
+    expect(changes.system.conditionMonitors.overflow.actual.base).toBe(2)
   })
 })

@@ -495,6 +495,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         let actorData = foundry.utils.duplicate(this.actor)
         foundry.utils.setProperty(actorData, `system.conditionMonitors.${monitor}.actual.base`, 0)
         if (monitor === "physical" || monitor === "condition") foundry.utils.setProperty(actorData, `system.conditionMonitors.${monitor}.aggravated`, 0)
+        // SR5 p. 171: no overflow without a full physical monitor; left in the source, it would come back with the last box
+        if (monitor === "physical") foundry.utils.setProperty(actorData, 'system.conditionMonitors.overflow.actual.base', 0)
         this.actor.update(actorData)
       }
     })
@@ -517,17 +519,17 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       let aggravatedPath = `${monitorPath}.aggravated`
       if (foundry.utils.getProperty(actorData, aggravatedPath) > foundry.utils.getProperty(actorData, target)) foundry.utils.setProperty(actorData, aggravatedPath, foundry.utils.getProperty(actorData, target))
 
-      // SR5 p. 171: overflow only exists past a full physical monitor, and healing clears it first (p. 402):
-      // once boxes are cleared below the full monitor, no overflow is left. The copy above holds the source,
-      // so the monitor size and the overflow are read on the prepared data
-      let monitors = this.actor.system.conditionMonitors
-      if (target == 'system.conditionMonitors.physical.actual.base' && monitors.overflow?.actual?.value) {
-        if (foundry.utils.getProperty(actorData, target) < monitors.physical.value) {
+      // SR5 p. 171 and p. 209: overflow only exists past a full physical monitor, so once boxes are cleared below
+      // it, no overflow is left. The preparation already shows 0 then, but the source keeps it and it would come
+      // back with the last box: the overflow is read on the copy (the source), the monitor size on the prepared data
+      if (target == 'system.conditionMonitors.physical.actual.base' && foundry.utils.getProperty(actorData, 'system.conditionMonitors.overflow.actual.base')) {
+        if (foundry.utils.getProperty(actorData, target) < this.actor.system.conditionMonitors.physical.value) {
           foundry.utils.setProperty(actorData, 'system.conditionMonitors.overflow.actual.base', 0)
         }
       }
 
       this.actor.update(actorData)
+      // TODO clearDamageKnockout
     })
 
     // Right-click on a filled box of the physical (or grunt condition) monitor: mark it as an aggravated wound
