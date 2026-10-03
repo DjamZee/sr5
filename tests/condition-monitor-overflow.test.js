@@ -250,3 +250,105 @@ describe("healing is not eaten by stored excess", () => {
   })
 })
 
+describe("a full grunt is out of the fight, dead only above its Body (SR5 p. 381)", () => {
+  async function hitGrunt(stored, value, type) {
+    const a = actorOf("actorGrunt", {
+      condition: stored
+    })
+    SR5_CharacterUtility.updateConditionMonitors(a)
+    actor = document("actorGrunt", withLimits(a.system))
+    await SR5_ActorHelper.takeDamage("a1", hit(value, type))
+    return {
+      dead: SR5_ActorHelper.createDeadEffect.mock.calls.length, ko: SR5_ActorHelper.createKoEffect.mock.calls.length
+    }
+  }
+
+  it("filled by Stun: knocked out, alive", async () => {
+    expect(await hitGrunt(0, 12, "stun")).toEqual({
+      dead: 0, ko: 1
+    })
+  })
+
+  it("filled by Physical below its Body: knocked out, alive", async () => {
+    expect(await hitGrunt(7, 3, "physical")).toEqual({
+      dead: 0, ko: 1
+    })
+  })
+
+  it("filled by Physical equal to its Body: alive (the book only says below and above)", async () => {
+    expect(await hitGrunt(6, 4, "physical")).toEqual({
+      dead: 0, ko: 1
+    })
+  })
+
+  it("filled by Physical above its Body: dead", async () => {
+    expect(await hitGrunt(5, 5, "physical")).toEqual({
+      dead: 1, ko: 0
+    })
+  })
+
+  it("not full: neither", async () => {
+    expect(await hitGrunt(0, 5, "physical")).toEqual({
+      dead: 0, ko: 0
+    })
+  })
+})
+
+describe("healing wakes up a character knocked out by damage", () => {
+  function effect(id, origin, status) {
+    return {
+      id, origin, statuses: new Set([status])
+    }
+  }
+
+  function knockedOut(type, monitors, dead = false) {
+    const a = actorOf(type, monitors)
+    SR5_CharacterUtility.updateConditionMonitors(a)
+    const effects = [effect("k1", "unconscious", "unconscious"), effect("m1", null, "unconscious")]
+    if (dead) effects.push(effect("d1", "dead", "dead"))
+    return {
+      type, system: a.system, effects,
+      deleteEmbeddedDocuments: vi.fn(async () => {}),
+    }
+  }
+
+  it("a dead character is left as it is (SR5 p. 209)", async () => {
+    const a = knockedOut("actorPc", {
+      physical: 7, stun: 0, overflow: 4
+    }, true)
+    await SR5_ActorHelper.clearDamageKnockout(a)
+    expect(a.deleteEmbeddedDocuments).not.toHaveBeenCalled()
+  })
+
+  it("no full monitor left: removes the damage knockout only, never the GM's", async () => {
+    const a = knockedOut("actorPc", {
+      physical: 8, stun: 9, overflow: 0
+    })
+    await SR5_ActorHelper.clearDamageKnockout(a)
+    expect(a.deleteEmbeddedDocuments).toHaveBeenCalledWith("ActiveEffect", ["k1"])
+  })
+
+  it("Stun still full: stays knocked out", async () => {
+    const a = knockedOut("actorPc", {
+      physical: 2, stun: 10, overflow: 0
+    })
+    await SR5_ActorHelper.clearDamageKnockout(a)
+    expect(a.deleteEmbeddedDocuments).not.toHaveBeenCalled()
+  })
+
+  it("a grunt healed under its maximum comes back", async () => {
+    const a = knockedOut("actorGrunt", {
+      condition: 9
+    })
+    await SR5_ActorHelper.clearDamageKnockout(a)
+    expect(a.deleteEmbeddedDocuments).toHaveBeenCalledWith("ActiveEffect", ["k1"])
+  })
+
+  it("a grunt still full stays out", async () => {
+    const a = knockedOut("actorGrunt", {
+      condition: 10
+    })
+    await SR5_ActorHelper.clearDamageKnockout(a)
+    expect(a.deleteEmbeddedDocuments).not.toHaveBeenCalled()
+  })
+})
