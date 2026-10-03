@@ -58,6 +58,29 @@ import {
 import {
   sr5ModsPartialModel 
 } from '../common/mods.js'
+import {
+  SR5_SpiritTypes
+} from '../../entities/items/spirit-types.js'
+
+/**
+ * A watcher or homunculus summoned before conditionMonitors.condition existed kept its damage in
+ * Physical (and Stun), which preparation now drops. Its stored source has no condition.actual.base,
+ * which no spirit saved since can lack: read the old damage there, without writing anything.
+ * Once the condition monitor is written (damage, healing, dismissal), the key exists and this stops.
+ */
+export function migrateLegacySingleMonitor(source) {
+  const monitors = source?.conditionMonitors
+  if (!monitors || !SR5_SpiritTypes.hasSingleMonitor(source.type)) return source
+  if (monitors.condition?.actual?.base !== undefined) return source
+  const damage = Math.max(Number(monitors.physical?.actual?.base) || 0, Number(monitors.stun?.actual?.base) || 0)
+  if (!damage) return source
+  monitors.condition ??= {
+  }
+  monitors.condition.actual ??= {
+  }
+  monitors.condition.actual.base = damage
+  return source
+}
 
 export class sr5ActorSpiritDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
@@ -210,5 +233,10 @@ export class sr5ActorSpiritDataModel extends foundry.abstract.TypeDataModel {
         initial: false
       }),
     }
+  }
+
+  static migrateData(source) {
+    migrateLegacySingleMonitor(source)
+    return super.migrateData(source)
   }
 }
