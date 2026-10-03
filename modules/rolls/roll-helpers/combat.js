@@ -139,6 +139,26 @@ export class SR5_CombatHelpers {
     }
   }
 
+  // Number of d6 in the deviation roll, from the Scatter table (SR5 p. 183): standard grenade 1D6,
+  // aerodynamic grenade 2D6, grenade launcher 3D6, missile launcher 4D6, rocket launcher 5D6. An ammunition
+  // that sets its own scatterDice takes precedence.
+  static scatterDice(itemData, ammoEffects){
+    if (ammoEffects?.scatterDice) return ammoEffects.scatterDice
+    switch(itemData.ammunition?.type){
+      case "fragmentationRocket":
+      case "highlyExplosiveRocket":
+      case "antivehicleRocket":
+        return 5
+      case "fragmentationMissile":
+      case "highlyExplosiveMissile":
+      case "antivehicleMissile":
+        return 4
+    }
+    if (itemData.type === "grenadeLauncher") return 3
+    if (itemData.aerodynamic) return 2
+    return 1
+  }
+
   //Handle grenade scatter
   static async rollScatter(cardData){
     let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
@@ -152,26 +172,8 @@ export class SR5_CombatHelpers {
     let template = canvas.scene.templates.find((t) => t.flags.sr5.item === cardData.owner.itemId)
     if (template === undefined) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoTemplateInScene")}`)
     
-    let distanceDice = 1
-    if (itemData.aerodynamic) distanceDice = 2
+    let distanceDice = SR5_CombatHelpers.scatterDice(itemData, cardData.combat.ammo.effects)
 
-    if (cardData.combat.ammo.effects?.scatterDice) {
-      distanceDice = cardData.combat.ammo.effects.scatterDice
-    } else if (itemData.ammunition.type){
-      switch(itemData.ammunition.type){
-        case "fragmentationRocket":
-        case "highlyExplosiveRocket":
-        case "antivehicleRocket":
-          distanceDice = 5
-          break
-        case "fragmentationMissile":
-        case "highlyExplosiveMissile":
-        case "antivehicleMissile":
-          distanceDice = 4
-          break
-      }
-    }
-        
     let directionRoll = new Roll(`1d8`)
     await directionRoll.evaluate()
     
