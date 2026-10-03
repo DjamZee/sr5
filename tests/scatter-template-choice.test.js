@@ -44,7 +44,16 @@ describe("SR5_SystemHelpers.findItemTemplate", () => {
   it("otherwise takes the most recently created template of the item, not the first", () => {
     sceneWith([template("old", "grenade"), template("new", "grenade"), template("other", "spell")])
     expect(SR5_SystemHelpers.findItemTemplate("grenade").id).toBe("new")
-    expect(SR5_SystemHelpers.findItemTemplate("grenade", "gone").id).toBe("new")
+  })
+
+  it("finds nothing when the card's own template was removed, rather than an older circle of the item", () => {
+    sceneWith([template("old", "grenade"), template("new", "grenade")])
+    expect(SR5_SystemHelpers.findItemTemplate("grenade", "gone")).toBeUndefined()
+  })
+
+  it("does not take a recorded id that belongs to another item", () => {
+    sceneWith([template("old", "grenade"), template("other", "spell")])
+    expect(SR5_SystemHelpers.findItemTemplate("grenade", "other")).toBeUndefined()
   })
 
   it("finds nothing when the item left no template", () => {

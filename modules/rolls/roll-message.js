@@ -320,7 +320,7 @@ export class SR5_RollMessage {
         break
       }
       case "templateRemove":
-        SR5_RollMessage.removeTemplate(messageId, messageData.owner.itemUuid)
+        SR5_RollMessage.removeTemplate(messageId, messageData.owner.itemUuid, messageData.combat?.grenade?.templateId)
         break
       case "summonSpirit":
       case "compileSprite":
@@ -797,14 +797,14 @@ export class SR5_RollMessage {
     } else await SR5_RollMessage.updateRollCard(message, newMessage)
   }
 
-  //Remove a template from scene on click
-  static async removeTemplate(message, itemUuid){
+  //Remove a template from scene on click: the card's own template when it recorded one, not the item's first
+  static async removeTemplate(message, itemUuid, templateId){
     if (!canvas.scene){
       SR5_RollMessage.updateChatButtonHelper(message, "templateRemove")
       ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActiveScene")}`)
       return
     }
-    let template = canvas.scene.templates.find((t) => t.flags.sr5.itemUuid === itemUuid)
+    let template = SR5_SystemHelpers.findItemTemplate(itemUuid, templateId, "itemUuid")
     if (template){
       canvas.scene.deleteEmbeddedDocuments("MeasuredTemplate", [template.id])
       if (message) SR5_RollMessage.updateChatButtonHelper(message, "templateRemove")
