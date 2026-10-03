@@ -139,6 +139,9 @@ export class SR5Combat extends Combat {
       })
       await SR5Combat.decreaseInitiativePassEffects(combatant)
       await SR5Combat.manageTurnEnd(combatant)
+      //Update actor's action: done here, on the gamemaster's side, whoever started the new round
+      if (!combatant.actor.isToken) await SR5Combat.resetActionInCombat(combatant.actorId, combatant)
+      else await SR5Combat.resetActionInCombat(combatant.tokenId, combatant)
     }
     await SR5Combat.setInitiativePass(combat, 1)
     await combat.rollAll()
@@ -314,9 +317,6 @@ export class SR5Combat extends Combat {
     await super.nextRound()
     for (let combatant of this.combatants){
       await combatant.setFlag("sr5", "hasPlayed", combatant.isDefeated)
-      //Update actor's action
-      if (!combatant.actor.isToken) await SR5Combat.resetActionInCombat(combatant.actorId, combatant)
-      else await SR5Combat.resetActionInCombat(combatant.tokenId, combatant)
     }
 
     // Owner permissions are needed to change the shadowrun initiative round.
@@ -674,6 +674,8 @@ export class SR5Combat extends Combat {
 
   //Reset actions on actor
   static async resetActionInCombat(documentId, combatant){
+    //Only the gamemaster gives actions back (a new pass, a new round, or the tracker entry)
+    if (!game.user?.isGM) return ui.notifications.warn(game.i18n.localize("SR5.WARN_ResetActionsGMOnly"))
     let actor = SR5_EntityHelpers.getRealActorFromID(documentId)
     //The prepared value carries the extra actions granted by effects: a copy of system would hold the stored one
     let actions = actor.system.specialProperties.actions

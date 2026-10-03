@@ -1914,7 +1914,7 @@ export class SR5_CharacterUtility extends Actor {
     else if ((initiative === "matrixInit" || (initiative === "physicalInit" && currentInitiative === "matrixInit")) && actorData.matrix.userMode !== "ar") switchCost = [{
       type: "simple", value: 1
     }]
-    if (!SR5Combat.hasActionsLeft(actor, switchCost)) return
+    if (!SR5Combat.hasActionsLeft(actor, switchCost)) return false
 
     if (currentInitiative) initiatives[currentInitiative].isActive = false
     if (currentInitiative === "astralInit") actorData.visions.astral.isActive = false

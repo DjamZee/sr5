@@ -79,7 +79,7 @@ export class SR5_SystemHelpers {
     })
 
     // SR5 p. 164-165: one free action, and two simple or one complex, per initiative pass. Off by default: an action
-    // the character no longer has still goes through, the gamemaster being free to allow it (p. 165)
+    // the character no longer has still goes through, as before
     game.settings.register("sr5", "sr5BlockMissingActions", {
       name: "SR5.SETTINGS_BlockMissingActions_T",
       hint: "SR5.SETTINGS_BlockMissingActions_D",

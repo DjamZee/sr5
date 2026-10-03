@@ -111,8 +111,13 @@ describe('actions per turn keep the extra actions granted by an effect (SR5 p. 1
     const combatant = {
       update: vi.fn(async () => {})
     }
+    const user = game.user
+    game.user = {
+      isGM: true
+    }
 
     await SR5Combat.resetActionInCombat('a1', combatant)
+    game.user = user
 
     expect(combatant.update).toHaveBeenCalledWith({
       "flags.sr5.actions.free": 1,
@@ -123,6 +128,25 @@ describe('actions per turn keep the extra actions granted by an effect (SR5 p. 1
     expect(changes["system.specialProperties.actions.simple.current"]).toBe(3)
     expect(changes["system.specialProperties.actions.free.current"]).toBe(1)
     expect(changes.system).toBeUndefined()
+  })
+
+  it('refuses to give actions back when the call does not come from the gamemaster', async () => {
+    const actor = fakeActor(actionsSystem())
+    vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockReturnValue(actor)
+    const combatant = {
+      update: vi.fn(async () => {})
+    }
+    const user = game.user
+    game.user = {
+      isGM: false
+    }
+
+    await SR5Combat.resetActionInCombat('a1', combatant)
+    game.user = user
+
+    expect(combatant.update).not.toHaveBeenCalled()
+    expect(actor.update).not.toHaveBeenCalled()
+    expect(ui.notifications.warn).toHaveBeenCalledWith("SR5.WARN_ResetActionsGMOnly")
   })
 
   it('resets the actor to the prepared number of actions when the combat ends', async () => {

@@ -721,11 +721,13 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
   }
 
   // Handles initiative switching from the derived attributes tab
-  _onInitiativeSwitch(event) {
+  async _onInitiativeSwitch(event) {
     let wantedInitiative = event.currentTarget.dataset.binding
-    SR5_CharacterUtility.switchToInitiative(this.actor, wantedInitiative)
+    let isMaterializing = event.target.id === "materializeIcon"
+    //A refused switch (no action left) leaves the materialization as it is
+    if (await SR5_CharacterUtility.switchToInitiative(this.actor, wantedInitiative) === false) return
     //special case for materialization button on spirit sheet
-    if (event.target.id === "materializeIcon"){
+    if (isMaterializing){
       let item
       for (let i of this.actor.items){
         if (i.system.systemEffects.find(e => e.value === "materialization")) item = i
@@ -1715,6 +1717,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       }))
       return false
     }
+    //Same for an action the character no longer has, when the world setting asks for it
+    if (!SR5Combat.hasActionsLeft(this.actor, [{
+      type: "complex", value: 1, source: "rebootDeck"
+    }])) return false
     return this.actor.rebootDeck()
   }
 
