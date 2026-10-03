@@ -183,16 +183,25 @@ export class SR5_CombatHelpers {
     let item = actor.items.find(i => i.id === cardData.owner.itemId)
     let itemData = item.system
 
-    if (!canvas.scene) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActiveScene")}`)
+    if (!canvas.scene){
+      ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActiveScene")}`)
+      return false
+    }
 
     let distanceMod = cardData.roll.hits
 
     // The template of this shot, not the first one the item ever left on the scene
     let template = SR5_SystemHelpers.findItemTemplate(cardData.owner.itemId, cardData.combat.grenade?.templateId)
-    if (template === undefined) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoTemplateInScene")}`)
+    if (template === undefined){
+      ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoTemplateInScene")}`)
+      return false
+    }
     // The scatter belongs to the attacker: someone who cannot move this template would only roll dice and
     // announce a distance that Foundry then refuses to apply, so warn before rolling anything
-    if (!template.canUserModify(game.user, "update")) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_TemplateNotYours")}`)
+    if (!template.canUserModify(game.user, "update")){
+      ui.notifications.warn(`${game.i18n.localize("SR5.WARN_TemplateNotYours")}`)
+      return false
+    }
 
     let distanceDice = SR5_CombatHelpers.scatterDice(itemData, cardData.combat.ammo.effects)
 
@@ -203,7 +212,11 @@ export class SR5_CombatHelpers {
     let distanceRoll= new Roll(distanceFormula)
     await distanceRoll.evaluate()
 
-    if (distanceRoll.total < 1) return ui.notifications.info(`${game.i18n.localize("SR5.INFO_NoScattering")}`)
+    // Rolled and resolved: the scatter is done, even when it lands on target
+    if (distanceRoll.total < 1){
+      ui.notifications.info(`${game.i18n.localize("SR5.INFO_NoScattering")}`)
+      return true
+    }
     else ui.notifications.info(`${game.i18n.format("SR5.INFO_ScatterDistance", {
       distance: distanceRoll.total
     })}`)
@@ -219,7 +232,14 @@ export class SR5_CombatHelpers {
     newPosition.x += coordinate.x
     newPosition.y += coordinate.y
     
-    template.update(newPosition)
+    // Returns whether the scatter was applied, so the card only spends its button on a scatter that happened
+    try {
+      await template.update(newPosition)
+    } catch (err) {
+      console.error(err)
+      return false
+    }
+    return true
   }
 
   static async chooseDamageType(){

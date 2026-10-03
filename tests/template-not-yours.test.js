@@ -115,6 +115,57 @@ describe("someone else's template", () => {
     expect(warned).toEqual([])
   })
 
+  it("scatter tells the card whether it happened", async () => {
+    sceneWith([template("gm", false)])
+    expect(await SR5_CombatHelpers.rollScatter(card)).toBe(false)
+    sceneWith([])
+    expect(await SR5_CombatHelpers.rollScatter(card)).toBe(false)
+    sceneWith([template("gm", true)])
+    expect(await SR5_CombatHelpers.rollScatter(card)).toBe(true)
+  })
+
+  // A refused scatter used to spend the card's button anyway, for everyone, the GM included
+  it("a refused scatter leaves the card's button, an applied one spends it", async () => {
+    const spent = vi.spyOn(SR5_RollMessage, "updateChatButtonHelper").mockImplementation(async () => {})
+    globalThis.ChatMessage = {
+      getSpeaker: () => ({
+      })
+    }
+    game.messages = {
+      get: () => ({
+        flags: {
+          sr5data: structuredClone({
+            ...card, test: {
+              typeSub: "grenade"
+            }, target: {
+            }, previousMessage: {
+            }
+          })
+        }
+      })
+    }
+    const click = () => SR5_RollMessage.chatButtonAction({
+      preventDefault(){},
+      currentTarget: {
+        dataset: {
+          action: "nonOpposedTest", type: "scatter"
+        },
+        closest: () => ({
+          dataset: {
+            messageId: "m1"
+          }
+        }),
+      },
+    })
+    sceneWith([template("gm", false)])
+    await click()
+    expect(spent).not.toHaveBeenCalled()
+    sceneWith([template("gm", true)])
+    await click()
+    expect(spent).toHaveBeenCalledWith("m1", "scatter")
+    spent.mockRestore()
+  })
+
   it("remove warns and deletes nothing", async () => {
     sceneWith([template("gm", false)])
     await SR5_RollMessage.removeTemplate(null, "Actor.a.Item.grenade", "gm")

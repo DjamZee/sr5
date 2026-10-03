@@ -406,8 +406,8 @@ export class SR5_RollMessage {
         if (actor) actor.rollTest("resistanceCard", null, messageData)
         break
       case "scatter":
-        SR5_CombatHelpers.rollScatter(messageData)
-        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        // Only a scatter that happened spends the button: a refused one leaves it for the attacker or the GM
+        if (await SR5_CombatHelpers.rollScatter(messageData)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "iceEffect":
         SR5_MatrixHelpers.applyIceEffect(messageData, originalActionActor, actor)

@@ -52,7 +52,8 @@ export default async function resistance(rollData, rollType, actor, chatData){
   }
     
   //handle distance between defenser and explosive device
-  if (chatData.combat.grenade.isGrenade) await handleGrenade(rollData, chatData, actor)
+  // handleGrenade aborts (undefined) when the blast cannot reach or cannot be measured: the test must stop there
+  if (chatData.combat.grenade.isGrenade && !(await handleGrenade(rollData, chatData, actor))) return undefined
 
   //Iterate throught damage type and add corresponding info
   switch (chatData.damage.resistanceType){
@@ -403,7 +404,13 @@ async function handleFatiguedDamage(rollData, actorData, chatData){
 //               Helpers             //
 //-----------------------------------//
 async function handleGrenade(rollData, chatData, actor){
-  let grenadePosition = await SR5_SystemHelpers.getTemplateItemPosition(chatData.owner.itemId, chatData.combat.grenade.templateId)          
+  let grenadePosition = await SR5_SystemHelpers.getTemplateItemPosition(chatData.owner.itemId, chatData.combat.grenade.templateId)
+  // No template left (removed after the throw): there is no point to measure the blast from, and resisting at
+  // the base DV would hit a defender who may stand far outside it. Warn and do not open the resistance.
+  if (!grenadePosition){
+    ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoTemplateForBlast")}`)
+    return undefined
+  }
   let defenserPosition = await SR5_EntityHelpers.getActorCanvasPosition(actor)
   // A blast loses its damage per meter travelled (SR5 p. 184), so the measured distance becomes meters
   // before it is multiplied by the fall-off.
@@ -417,4 +424,5 @@ async function handleGrenade(rollData, chatData, actor){
   else ui.notifications.info(`${game.i18n.format("SR5.INFO_GrenadeTargetDistanceFallOff", {
     distance:distance, modifiedDamage: modToDamage, finalDamage: rollData.damage.base
   })}`)
+  return rollData
 }
