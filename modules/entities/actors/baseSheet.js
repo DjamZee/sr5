@@ -1310,21 +1310,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                 case 7:
                 case 8:
                 case 9: {
-                  //not working
-                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.toString().replace(",", ", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugContrecoupDurationDoubled")}`)
-
-                  console.log(" before : " + JSON.stringify(interactionDrug))
-
-                  let activeDrugs = actor.items.filter((d) => d.type === "itemDrug" && d.system.isActive)
-
-                  if (activeDrugs.length){										
-                    for (let d of activeDrugs){
-                      foundry.utils.setProperty(d, "system.isActive", false)
-                      foundry.utils.setProperty(d, "system.wirelessTurnedOn", true)
-                    }
+                  //Chrome Flesh p. 197: the crashes start immediately, for every drug of the mix still under
+                  //effect, the one being taken included. A drug already in its crash does not start it again
+                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.toString().replace(",", ", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugCrashImmediate")}`)
+                  for (let d of mixedDrugs){
+                    if (d.system.isActive) await this._startDrugCrash(d, actor)
                   }
-								
-                  console.log(" after : " + JSON.stringify(interactionDrug))
                   break
                 }
                 case 10:
@@ -1529,6 +1520,34 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       SR5Combat.changeActionInCombat(actorId, actions, false)
     }
 
+  }
+
+  /* -------------------------------------------- */
+  //Start the crash of a drug in the item list: as when its crash switch is turned on from the sheet, the effect
+  //ends, the crash duration is shown and its Stun damage applies
+  async _startDrugCrash(drug, actor) {
+    let data = drug.system, shot = data.handleShot ?? {
+    }
+    data.isActive = false
+    data.wirelessTurnedOn = true
+    data.onUse.duration = ""
+    if (shot.durationContrecoup) {
+      data.onUse.contrecoup = `${shot.durationContrecoup} ${game.i18n.localize(SR5.extendedIntervals[shot.durationContrecoupType])}`
+      await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugContrecoup")} (${game.i18n.localize(SR5.drugs[shot.name])})${game.i18n.format("SR5.Colons")} ${data.onUse.contrecoup}`)
+    }
+    if (shot.unresistedStunDamage) {
+      let damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
+      damageInfo.damage.value = shot.unresistedStunDamage
+      damageInfo.damage.type = "stun"
+      actor.takeDamage(damageInfo)
+    }
+    if (shot.resistedStunDamage) {
+      let damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
+      damageInfo.damage.value = shot.resistedStunDamage
+      damageInfo.damage.type = "stun"
+      damageInfo.damage.resistanceType = "physicalDamage"
+      actor.rollTest("resistanceCard", null, damageInfo)
+    }
   }
 
   /* -------------------------------------------- */
