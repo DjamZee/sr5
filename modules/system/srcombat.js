@@ -13,6 +13,9 @@ import {
 import {
   SR5_PrepareRollTest 
 } from "../rolls/roll-prepare.js"
+import {
+  SR5_MiscellaneousHelpers
+} from "../rolls/roll-helpers/miscellaneous.js"
 
 export class SR5Combat extends Combat {
   get initiativePass(){
@@ -654,6 +657,19 @@ export class SR5Combat extends Combat {
       }
     }
 
+  }
+
+  //When the world setting asks for it, refuses an action the character no longer has in this initiative pass,
+  //with a warning: nothing is spent (SR5 p. 164-165). Unchecked (default), or out of combat, every action goes through
+  static hasActionsLeft(actor, actions){
+    if (!actor || !game.combat || !game.settings.get("sr5", "sr5BlockMissingActions")) return true
+    if (!SR5Combat.getCombatantFromActor(actor)) return true
+    let missing = SR5_MiscellaneousHelpers.missingAction(actions, actor.system.specialProperties?.actions)
+    if (!missing) return true
+    ui.notifications.warn(game.i18n.format("SR5.WARN_NoActionLeft", {
+      actor: actor.name, value: missing.value, action: game.i18n.localize(SR5.actionTypes[missing.type]), current: missing.current
+    }))
+    return false
   }
 
   //Reset actions on actor

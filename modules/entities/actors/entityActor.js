@@ -947,6 +947,9 @@ export class SR5Actor extends Actor {
 
   //Reboot deck = reset Overwatch score and delete any marks on or from the actor
   async rebootDeck() {
+    if (!SR5Combat.hasActionsLeft(this, [{
+      type: "complex", value: 1, source: "rebootDeck"
+    }])) return
     let actorId = (this.isToken ? this.token.id : this.id)
     let dataToUpdate = {
     }

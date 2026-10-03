@@ -78,6 +78,17 @@ export class SR5_SystemHelpers {
       type: Boolean,
     })
 
+    // SR5 p. 164-165: one free action, and two simple or one complex, per initiative pass. Off by default: an action
+    // the character no longer has still goes through, the gamemaster being free to allow it (p. 165)
+    game.settings.register("sr5", "sr5BlockMissingActions", {
+      name: "SR5.SETTINGS_BlockMissingActions_T",
+      hint: "SR5.SETTINGS_BlockMissingActions_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+    })
+
     game.settings.register("sr5", "sr5StorageDropOnDeathShare", {
       name: "SR5.SETTINGS_StorageDropOnDeathShare_T",
       hint: "SR5.SETTINGS_StorageDropOnDeathShare_D",

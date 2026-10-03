@@ -84,6 +84,12 @@ export class SR5_RollTest {
         const element = dialog.element
         const rollDialog = new SR5_RollDialog(dialog, element, dialogData)
         rollDialog.activateListeners(element)
+        //An action the character no longer has keeps the dialog open, when the world setting asks for it
+        element.querySelectorAll('button[data-action="roll"], button[data-action="edge"]').forEach(b => b.addEventListener("click", ev => {
+          if (SR5Combat.hasActionsLeft(actor, dialogData.combat.actions)) return
+          ev.preventDefault()
+          ev.stopImmediatePropagation()
+        }))
       },
     })
 

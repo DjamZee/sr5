@@ -698,6 +698,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
     if (dropData.valueFromAttribute){
       if (!dropZone) return
+      if (!SR5Combat.hasActionsLeft(this.actor, [{
+        type: "free", value: 1, source: "switchAttributes"
+      }])) return
       const existingValue = parseInt(dropZone.dataset.droppedvalue)
       const draggedValue = parseInt(dropData.value)
       // Swap the two attribute slot values
@@ -1134,6 +1137,20 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
   /* -------------------------------------------- */
   // Edit Item value from Actor Sheet
+  //Actions spent by _onEditItemValue: activating a focus, (un)loading a program, switching a device's wireless
+  _itemValueActionCost(item, target, oldValue){
+    if (item.type === "itemFocus" && target === "system.isActive") return [{
+      type: (oldValue === false) ? "simple" : "free", value: 1
+    }]
+    if (item.type === "itemProgram" && target === "system.isActive") return [{
+      type: "free", value: 1
+    }]
+    if (target === "system.wirelessTurnedOn") return [{
+      type: (!game.settings.get("sr5", "sr5WifiRequiresDNI") || this.actor.system.hasDNI) ? "free" : "simple", value: 1
+    }]
+    return []
+  }
+
   async _onEditItemValue(event) {
     let id = event.currentTarget.closest(".item")?.dataset.itemId
     let target = event.currentTarget.dataset.binding
@@ -1153,6 +1170,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       oldValue = foundry.utils.getProperty(item, target)
       value = !oldValue
     }
+    if (!SR5Combat.hasActionsLeft(actor, this._itemValueActionCost(item, target, oldValue))) return
     foundry.utils.setProperty(item, target, value)
 
     //Spécial, pour les decks, désactiver les autres decks lorsque l'un d'entre eux et équipé
@@ -1984,6 +2002,17 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     })
   }	/* -------------------------------------------- */
 
+  //Loading an agent is a free action, calling or dismissing a sprite or a spirit a simple one
+  _sidekickActionCost(type){
+    if (type === "itemProgram") return [{
+      type: "free", value: 1
+    }]
+    if (type === "itemSprite" || type === "itemSpirit") return [{
+      type: "simple", value: 1
+    }]
+    return []
+  }
+
   //Handle the creation of a 'side kick'
   async _OnSidekickCreate(event){
     event.preventDefault()
@@ -1991,6 +2020,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     let item = this.actor.items.get(id)
     let actorId = this.actor.id
     if (this.actor.isToken) actorId = this.actor.token.id
+    if (!SR5Combat.hasActionsLeft(this.actor, this._sidekickActionCost(item.type))) return
     item = item.toObject(false)
     if (!game.user?.isGM) {
       await SR5_SocketHandler.emitForGM("createSidekick", {
@@ -2032,7 +2062,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     let sidekick
     let item = this.actor.items.get(id)
     let actorId = this.actor.id
-		
+    if (!SR5Combat.hasActionsLeft(this.actor, this._sidekickActionCost(item.type))) return
+
     for (let a of game.actors){
       if (a.system.creatorItemId === id) {
         sidekick = a.toObject(false)

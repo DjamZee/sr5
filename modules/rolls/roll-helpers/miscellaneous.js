@@ -101,6 +101,25 @@ export class SR5_MiscellaneousHelpers {
     return actions
   }
 
+  //SR5 p. 164-165: per initiative pass, one free action, and two simple or one complex. Returns the first
+  //kind of action the list asks for beyond what is left ({type, value, current}), or null. Manual adjustments,
+  //interruptions (paid in initiative) and special actions are not counted
+  static missingAction(actions, available){
+    let needed = {
+    }
+    for (let a of actions ?? []){
+      if (!a || a.source === "manual" || !["free", "simple", "complex"].includes(a.type) || !(a.value > 0)) continue
+      needed[a.type] = (needed[a.type] ?? 0) + a.value
+    }
+    for (let [type, value] of Object.entries(needed)){
+      let current = available?.[type]?.current ?? 0
+      if (value > current) return {
+        type, value, current
+      }
+    }
+    return null
+  }
+
   //Remove an action from array
   static removeActions(actions, actionToRemove){
     if (!actions.length) return actions

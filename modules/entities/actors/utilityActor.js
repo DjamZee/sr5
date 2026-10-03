@@ -926,6 +926,9 @@ export class SR5_CharacterUtility extends Actor {
     for (let key of Object.keys(SR5.visionActive)) {
       if (actorData.visions[key].isActive) currentVision = key
     }
+    if ((vision === "astral" || currentVision === "astral") && !SR5Combat.hasActionsLeft(actor, [{
+      type: "simple", value: 1, source: "switchPerception"
+    }])) return
 
     for (let key of Object.keys(SR5.visionActive)) {
       if (key === vision && key === currentVision) actorData.visions[key].isActive = false
@@ -1902,6 +1905,16 @@ export class SR5_CharacterUtility extends Actor {
       initiatives = actorData.initiatives,
       currentInitiative = this.findActiveInitiative(actor.system),
       actorId = (actor.isToken ? actor.token.id : actor.id)
+
+    //Switching to or from the astral initiative is a complex action, to or from the matrix one (not in AR) a simple one
+    let switchCost = []
+    if (initiative === "astralInit" || (initiative === "physicalInit" && currentInitiative === "astralInit")) switchCost = [{
+      type: "complex", value: 1
+    }]
+    else if ((initiative === "matrixInit" || (initiative === "physicalInit" && currentInitiative === "matrixInit")) && actorData.matrix.userMode !== "ar") switchCost = [{
+      type: "simple", value: 1
+    }]
+    if (!SR5Combat.hasActionsLeft(actor, switchCost)) return
 
     if (currentInitiative) initiatives[currentInitiative].isActive = false
     if (currentInitiative === "astralInit") actorData.visions.astral.isActive = false
