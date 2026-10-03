@@ -29,7 +29,7 @@ import {
   SR5_MatrixHelpers 
 } from "./roll-helpers/matrix.js"
 import {
-  isRolledByTarget
+  isRolledByTarget, firstAidPatient
 } from "./roll-helpers/cardRoller.js"
 import {
   SR5_CombatHelpers 
@@ -249,6 +249,9 @@ export class SR5_RollMessage {
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "firstAid": {
+        //SR5 p. 207: the patient is healed, never the card owner
+        let patient = firstAidPatient(messageData.target.hasTarget, targetActor, actor)
+        if (!patient) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
         let healData = {
           test: {
           },
@@ -256,10 +259,15 @@ export class SR5_RollMessage {
             netHits: messageData.roll.netHits
           },
         }
-        if (actor.type === "actorPc") healData.test.typeSub = await SR5_CombatHelpers.chooseDamageType()
+        if (patient.type === "actorPc") healData.test.typeSub = await SR5_CombatHelpers.chooseDamageType()
         else healData.test.typeSub = "condition"
-        let healedID = (actor.isToken ? actor.token.id : actor.id)
-        SR5_ActorHelper.heal(healedID, healData)
+        if (!healData.test.typeSub) return
+        let healedID = (patient.isToken ? patient.token.id : patient.id)
+        if (game.user.isGM || patient.testUserPermission(game.user, 3)) await SR5_ActorHelper.heal(healedID, healData)
+        else await SR5_SocketHandler.emitForGM("heal", {
+          targetActor: healedID,
+          healData: healData,
+        })
         SR5_RollMessage.updateChatButtonHelper(messageId, type, healData.test.typeSub)
         break
       }
@@ -271,7 +279,10 @@ export class SR5_RollMessage {
             if (!damageType) return
             messageData.damage.type = damageType
           }
-          targetActor.takeDamage(messageData)
+          //The 1D3 goes to the patient, the selected token when the test had no target
+          let patient = firstAidPatient(messageData.target.hasTarget, targetActor, actor)
+          if (!patient) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+          await patient.takeDamage(messageData)
           SR5_RollMessage.updateChatButtonHelper(messageId, type, messageData.damage.type)
           break
         }

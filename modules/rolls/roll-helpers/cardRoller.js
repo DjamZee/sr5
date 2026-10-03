@@ -11,3 +11,9 @@ export function isRolledByTarget(type, typeSub, targetActorId) {
   if (OWNER_RESISTANCES.includes(type)) return false
   return TARGET_HANDLED_TESTS.includes(typeSub)
 }
+
+// The first aid patient (SR5 p. 207): the targeted token when the test had a target, the selected token otherwise.
+// Never the card owner: with a target, a missing patient stays missing instead of falling back to the healer.
+export function firstAidPatient(hasTarget, targetActor, selectedActor) {
+  return hasTarget ? targetActor : selectedActor
+}
