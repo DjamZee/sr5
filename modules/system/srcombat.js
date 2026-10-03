@@ -511,8 +511,8 @@ export class SR5Combat extends Combat {
   }
 
   static getActorFromCombatant(combatant){
-    if (!combatant.actor.isToken) return SR5_EntityHelpers.getRealActorFromID(combatant.actorId)
-    else return SR5_EntityHelpers.getRealActorFromID(combatant.tokenId)
+    //The synthetic actor of an unlinked token, found without the canvas
+    return combatant.actor
   }
 
   static getCombatantFromActor(document){
@@ -584,6 +584,7 @@ export class SR5Combat extends Combat {
 
   static async changeActionInCombat(documentId, actions, updateActor = true){
     let actor = await SR5_EntityHelpers.getRealActorFromID(documentId)
+    if (!actor) return
     let actorData = foundry.utils.duplicate(actor.system)
     let combatant = await SR5Combat.getCombatantFromActor(actor)
     let initModifier
@@ -674,7 +675,8 @@ export class SR5Combat extends Combat {
   static async resetActionInCombat(documentId, combatant){
     //Only the gamemaster gives actions back (a new pass, a new round, or the tracker entry)
     if (!game.user?.isGM) return ui.notifications.warn(game.i18n.localize("SR5.WARN_ResetActionsGMOnly"))
-    let actor = SR5_EntityHelpers.getRealActorFromID(documentId)
+    let actor = combatant?.actor ?? SR5_EntityHelpers.getRealActorFromID(documentId)
+    if (!actor) return
     //The prepared value carries the extra actions granted by effects: a copy of system would hold the stored one
     let actions = actor.system.specialProperties.actions
     let actionsUpdate = {

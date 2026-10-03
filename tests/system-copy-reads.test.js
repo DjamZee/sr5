@@ -149,6 +149,25 @@ describe('actions per turn keep the extra actions granted by an effect (SR5 p. 1
     expect(ui.notifications.warn).toHaveBeenCalledWith("SR5.WARN_ResetActionsGMOnly")
   })
 
+  it('gives the actions back to the synthetic actor of an unlinked token, without the canvas', async () => {
+    const actor = fakeActor(actionsSystem())
+    //No canvas: the token id resolves to nothing
+    vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockReturnValue(undefined)
+    const combatant = {
+      actor, tokenId: 't1', update: vi.fn(async () => {})
+    }
+    const user = game.user
+    game.user = {
+      isGM: true
+    }
+
+    await SR5Combat.resetActionInCombat('t1', combatant)
+    game.user = user
+
+    expect(SR5Combat.getActorFromCombatant(combatant)).toBe(actor)
+    expect(actor.update.mock.calls[0][0]["system.specialProperties.actions.simple.current"]).toBe(3)
+  })
+
   it('resets the actor to the prepared number of actions when the combat ends', async () => {
     const actor = fakeActor(actionsSystem())
     vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockReturnValue(actor)

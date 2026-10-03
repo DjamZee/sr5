@@ -209,6 +209,8 @@ export class SR5_EntityHelpers {
         actor = tokenDocument.actor
       }
     }
+    //An unlinked token outside the viewed canvas (another scene, or no canvas at all): look for it in the scenes
+    if (!actor) actor = game.scenes?.find(s => s.tokens.has(actorId))?.tokens.get(actorId)?.actor
     return actor
   }
 
