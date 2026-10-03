@@ -523,7 +523,9 @@ export class SR5_SystemHelpers {
   /**
 	 * The template an item left on the active scene for a given shot. An item can leave several (a grenade thrown
 	 * twice without removing the first circle): the shot's own template when its id is known and still there,
-	 * otherwise the most recently created one, which is the shot being rolled right after its placement.
+	 * otherwise the most recently created one, which is the shot being rolled right after its placement. A
+	 * MeasuredTemplate carries no _stats in Foundry 13.351 (checked in game), so "most recent" is the last one in
+	 * the scene's collection, which keeps creation order.
 	 * @param itemId        The item's id which has created the template
 	 * @param templateId    The template recorded on the shot's chat card, if any
 	 * @return {MeasuredTemplateDocument|undefined}
@@ -537,8 +539,7 @@ export class SR5_SystemHelpers {
     }
     let latest
     for (let t of templates){
-      if (t.flags.sr5?.item !== itemId) continue
-      if (!latest || (t._stats?.createdTime ?? 0) >= (latest._stats?.createdTime ?? 0)) latest = t
+      if (t.flags.sr5?.item === itemId) latest = t
     }
     return latest
   }
