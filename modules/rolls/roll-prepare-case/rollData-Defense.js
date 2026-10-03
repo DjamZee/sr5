@@ -83,7 +83,22 @@ export default async function defense(rollData, actor, chatData){
   if (chatData.test.typeSub === "meleeWeapon"){
     rollData = await handleMeleeWeaponModifiers(rollData, actor, chatData)
   }
-    
+
+  //SR5 p. 176: "Les jets d'attaque et de défense sont sujets aux modificateurs environnementaux". The defender
+  //must see the shot coming: Visibility and Light/Glare, worked out with the defender's own vision. Wind is what
+  //"the shooter will have to compensate" and range is the attacker's, so neither applies (DjamZ, 2026-10-03).
+  //Suppressive fire has its own Reaction + Edge test (p. 181) and is left as it was.
+  if (chatData.test.typeSub === "rangedWeapon" && chatData.combat.firingMode.selected !== "SF"){
+    let environmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(chatData.target.sceneId), actor.system, true)
+    if (environmentalMod !== 0){
+      rollData.dicePool.modifiers.push({
+        type: "environmentalSceneMod",
+        label: game.i18n.localize("SR5.EnvironmentalModifiers"),
+        value: environmentalMod,
+      })
+    }
+  }
+
   //Handle Astral combat defense
   if (chatData.test.typeSub === "astralCombat"){
     if ((actor.type === "actorDevice" || actor.type === "actorSprite") || !actorData.visions.astral.isActive) return ui.notifications.info(`${game.i18n.format("SR5.INFO_TargetIsNotInAstral", {
