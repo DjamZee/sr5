@@ -124,3 +124,88 @@ describe('A limit left empty is the computed limit', () => {
     expect(card.results[0].hits).toBe(3)
   })
 })
+
+describe('An imposed pool of 0 is 0 dice, not "no override"', () => {
+  it('typedNumber tells an empty field from a 0', () => {
+    expect(SR5ShopAvailability.typedNumber('')).toBe(null)
+    expect(SR5ShopAvailability.typedNumber(undefined)).toBe(null)
+    expect(SR5ShopAvailability.typedNumber(null)).toBe(null)
+    expect(SR5ShopAvailability.typedNumber('0')).toBe(0)
+    expect(SR5ShopAvailability.typedNumber(0)).toBe(0)
+    expect(SR5ShopAvailability.typedNumber('4.7')).toBe(4)
+    expect(SR5ShopAvailability.typedNumber(-3)).toBe(0)
+  })
+
+  it('availability: an imposed 0 is "no test", nothing rolled', async () => {
+    queue = [5, 5, 5, 5, 5, 5, 5, 5, 1, 2, 2, 3, 4]
+    const card = await SR5ShopAvailability.testLines(buyer, null, line, 0, {
+      overridePool: 0
+    })
+    expect(rolls).toEqual([])
+    expect(card.pool).toBe(0)
+    expect(card.overridden).toBe(true)
+    expect(card.results[0].outcome).toBe('noPool')
+  })
+
+  it('availability: an empty pool field still computes the pool', async () => {
+    queue = [5, 5, 5, 5, 5, 5, 5, 5, 1, 2, 2, 3, 4]
+    const card = await SR5ShopAvailability.testLines(buyer, null, line, 0, {
+      overridePool: ''
+    })
+    expect(card.pool).toBe(8)
+    expect(card.overridden).toBe(false)
+  })
+
+  it('availability: an imposed 0 plus a surcharge die is a one-die test', async () => {
+    queue = [5, 1, 2, 2, 3, 4]
+    const card = await SR5ShopAvailability.testLines(buyer, null, line, 25, {
+      overridePool: 0
+    })
+    expect(rolls).toEqual(['1d6', '5d6'])
+    expect(card.results[0].outcome).toBe('success')
+  })
+
+  it('fence: an imposed 0 searches with no die, and says so', async () => {
+    const {
+      SR5ShopFence
+    } = await import('../modules/interface/shop-fence.js')
+    const gun = {
+      id: 'gun', name: 'Ares Predator V', system: {
+        price: {
+          value: 725
+        }, quantity: 1
+      }
+    }
+    const seller = {
+      ...buyer,
+      items: {
+        get: id => (id === 'gun' ? gun : undefined)
+      },
+    }
+    seller.system = {
+      ...buyer.system,
+      skills: {
+        etiquette: {
+          rating: {
+            value: 4
+          }, test: {
+            dicePool: 9
+          }
+        },
+        negotiation: buyer.system.skills.negotiation,
+      },
+    }
+    queue = [5, 5, 5, 5, 5, 5, 5, 5, 5]
+    const card = await SR5ShopFence.sellOnMarket(seller, [{
+      itemId: 'gun', quantity: 1
+    }], {
+      useAvailability: false, overridePool: 0
+    })
+    expect(rolls).toEqual([])
+    expect(card.searchFailed).toBe(true)
+    expect(card.searchImpossible).toBe(true)
+    expect(card.delayLabel).toBe('—')
+    expect(card.overridden).toBe(true)
+    expect(card.canSell).toBeFalsy()
+  })
+})

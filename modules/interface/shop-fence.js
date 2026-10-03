@@ -147,9 +147,10 @@ export class SR5ShopFence {
     if (!priced.length) return null
 
     const rules = SR5ShopFence.rules
-    const override = Math.max(0, Math.floor(Number(options.overridePool) || 0))
-    const etiquette = override || SR5ShopFence.#skillPool(actor, 'etiquette')
-    const negotiation = override || SR5ShopFence.#skillPool(actor, 'negotiation')
+    // null when the field was left empty; an imposed 0 stays 0 dice
+    const override = SR5ShopAvailability.typedNumber(options.overridePool)
+    const etiquette = override ?? SR5ShopFence.#skillPool(actor, 'etiquette')
+    const negotiation = override ?? SR5ShopFence.#skillPool(actor, 'negotiation')
     const limit = Number(actor.system.limits?.socialLimit?.value ?? 0)
 
     // Finding a buyer is easier for rare goods: the availability rating helps
@@ -165,17 +166,23 @@ export class SR5ShopFence {
     const search = await SR5ShopFence.#extendedTest(etiquette + teamwork, rules.searchThreshold, limit)
 
     if (!search.reached) {
+      // Not a single die to search with: no test was made (SR5 p. 58)
+      const searchImpossible = !search.rolls
       const cardData = {
         buyerId: actor.id,
         sellerName: actor.name,
         immediate: false,
         searchFailed: true,
+        searchImpossible,
         searchPool: etiquette + teamwork,
         teamwork,
         threshold: rules.searchThreshold,
         searchHits: search.hits,
         searchRolls: search.rolls,
-        delayLabel: SR5ShopAvailability.formatDelay(interval * search.rolls),
+        delayLabel: searchImpossible ? '—' :
+          SR5ShopAvailability.formatDelay(interval * search.rolls),
+        override,
+        overridden: override !== null,
         results: priced.map(line => ({
           ...line, offerLabel: '—', total: 0
         })),
@@ -204,7 +211,8 @@ export class SR5ShopFence {
         searchRolls: search.rolls,
         delayLabel: SR5ShopAvailability.formatDelay(interval * search.rolls),
         hagglePool: 0,
-        override: override || null,
+        override,
+        overridden: override !== null,
         glitch: search.glitch,
         criticalGlitch: search.criticalGlitch,
         results: priced.map(line => ({
@@ -246,7 +254,8 @@ export class SR5ShopFence {
       theirHits: theirs.hits,
       netHits,
       percent,
-      override: override || null,
+      override,
+      overridden: override !== null,
       glitch: search.glitch || mine.glitch,
       criticalGlitch: search.criticalGlitch || mine.criticalGlitch,
       results: priced,
