@@ -59,12 +59,12 @@ export class SR5Combat extends Combat {
   static async seizeInitiative(combatant){
     let actor = SR5Combat.getActorFromCombatant(combatant)
     if (!actor) return
-    let actorData = foundry.utils.deepClone(actor.system)
-    if (actorData.conditionMonitors.edge?.actual?.value < actorData.conditionMonitors.edge?.value){
+    //deepClone hands back the live data model: spend the Edge point by its path, as the roll tests do
+    let edge = actor.system.conditionMonitors.edge
+    if (edge?.actual?.value < edge?.value){
       await combatant.setFlag("sr5", "seizeInitiative", true)
-      actorData.conditionMonitors.edge.actual.base += 1
       await actor.update({
-        system: actorData
+        "system.conditionMonitors.edge.actual.base": edge.actual.base + 1
       })
       ui.notifications.info(`${actor.name} ${game.i18n.localize("SR5.INFO_ActorSeizeInitiative")}`)
     } else {
@@ -75,15 +75,14 @@ export class SR5Combat extends Combat {
   static async blitz(combatant){
     let actor = SR5Combat.getActorFromCombatant(combatant)
     if (!actor) return
-    let actorData = foundry.utils.deepClone(actor.system)
-    if (actorData.conditionMonitors.edge?.actual.value < actorData.conditionMonitors.edge?.value){
+    let edge = actor.system.conditionMonitors.edge
+    if (edge?.actual.value < edge?.value){
       await combatant.update({
         initiative: null,
         "flags.sr5.blitz": true,
       })
-      actorData.conditionMonitors.edge.actual.base += 1
       await actor.update({
-        system: actorData
+        "system.conditionMonitors.edge.actual.base": edge.actual.base + 1
       })
       ui.notifications.info(`${actor.name} ${game.i18n.localize("SR5.INFO_ActorUseBlitz")}`)
     } else {
@@ -660,20 +659,19 @@ export class SR5Combat extends Combat {
   //Reset actions on actor
   static async resetActionInCombat(documentId, combatant){
     let actor = SR5_EntityHelpers.getRealActorFromID(documentId)
-    let actorData = foundry.utils.duplicate(actor.system)
+    //The prepared value carries the extra actions granted by effects: a copy of system would hold the stored one
+    let actions = actor.system.specialProperties.actions
+    let actionsUpdate = {
+    }
     for (let key of Object.keys(SR5.actionTypes)) {
-      if (actorData.specialProperties.actions[key]) {
-        actorData.specialProperties.actions[key].current = actorData.specialProperties.actions[key].value
-      }
+      if (actions[key]) actionsUpdate[`system.specialProperties.actions.${key}.current`] = actions[key].value
     }
     await combatant.update({
-      "flags.sr5.actions.free": actorData.specialProperties.actions.free.current,
-      "flags.sr5.actions.simple": actorData.specialProperties.actions.simple.current,
-      "flags.sr5.actions.complex": actorData.specialProperties.actions.complex.current,
+      "flags.sr5.actions.free": actions.free.value,
+      "flags.sr5.actions.simple": actions.simple.value,
+      "flags.sr5.actions.complex": actions.complex.value,
     })
-    await actor.update({
-      system: actorData
-    })
+    await actor.update(actionsUpdate)
   }
 
   //Effects lasting until the next Initiative Pass (Kill Code p. 43, I Am the Firewall): counted down at each pass and each new round
@@ -699,7 +697,6 @@ export class SR5Combat extends Combat {
     let actor = SR5Combat.getActorFromCombatant(combatant)
     if (!actor) return
 
-    let actorData = foundry.utils.deepClone(actor.system)
     let damageInfo
 
     //Decrease external effect duration
@@ -808,17 +805,20 @@ export class SR5Combat extends Combat {
       ui.notifications.info(`${combatant.name} ${game.i18n.localize("SR5.INFO_FullDefenseEnd")}`)
     }
 
+    //Read actor.system afresh: the damage and effect updates above have rebuilt it, and writing back a copy taken
+    //before them would erase them
     //Reset Spell defense dice pool
-    if (actorData.magic?.counterSpellPool?.current !== actorData.magic?.counterSpellPool?.value){
-      actorData.magic.counterSpellPool.current = actorData.magic.counterSpellPool.value
+    let counterSpellPool = actor.system.magic?.counterSpellPool
+    if (counterSpellPool && counterSpellPool.current !== counterSpellPool.value){
       await actor.update({
-        system: actorData
+        "system.magic.counterSpellPool.current": counterSpellPool.value
       })
     }
 
     //Handle Regeneration
+    let actorData = actor.system
     if (actorData.specialProperties?.regeneration){
-      if (actorData.conditionMonitors.physical?.actual?.value > 0 || actorData.conditionMonitors.stun?.actual?.value > 0 || actorData.conditionMonitors.condition?.actual?.value > 0) 
+      if (actorData.conditionMonitors.physical?.actual?.value > 0 || actorData.conditionMonitors.stun?.actual?.value > 0 || actorData.conditionMonitors.condition?.actual?.value > 0)
         actor.rollTest("regeneration")
     }
   }

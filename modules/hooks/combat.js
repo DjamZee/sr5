@@ -61,20 +61,20 @@ export function sr5HookUpdateCombatant(combatant) {
 export async function sr5HookDeleteCombatActions(combat) {
   if (game.user.isGM){
     //Reset actions to default values
-    let actor, actorData
+    let actor
     for (let combatant of combat.combatants){
       if (!combatant.actor.isToken) actor = SR5_EntityHelpers.getRealActorFromID(combatant.actorId)
       else actor = SR5_EntityHelpers.getRealActorFromID(combatant.tokenId)
 
-      actorData = foundry.utils.duplicate(actor.system)
+      //The prepared value carries the extra actions granted by effects: a copy of system would hold the stored one
+      let actionsUpdate = {
+      }
       for (let key of Object.keys(SR5.actionTypes)) {
-        if (actorData.specialProperties.actions[key]) {
-          actorData.specialProperties.actions[key].current = actorData.specialProperties.actions[key].value
+        if (actor.system.specialProperties.actions[key]) {
+          actionsUpdate[`system.specialProperties.actions.${key}.current`] = actor.system.specialProperties.actions[key].value
         }
       }
-      await actor.update({
-        system: actorData
-      })
+      await actor.update(actionsUpdate)
     }
   }
 }
