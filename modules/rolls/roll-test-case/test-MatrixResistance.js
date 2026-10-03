@@ -31,7 +31,7 @@ export default async function matrixResistanceInfo(cardData, actorId){
     if ( attackerData.matrix.programs.biofeedback.isActive || attackerData.matrix.programs.blackout.isActive ||
           (attackerData.matrix.deviceSubType === "iceBlack") || (attackerData.matrix.deviceSubType === "iceBlaster") ||
           (attackerData.matrix.deviceSubType === "iceSparky") ) {
-      if (((actor.type === "actorPc" || actor.type === "actorGrunt") && (actorData.matrix.userMode !== "ar") && (targetItem.type === "itemDevice")) ||
+      if (((actor.type === "actorPc" || actor.type === "actorGrunt") && (actorData.matrix.userMode !== "ar") && (targetItem?.type === "itemDevice")) ||
               (actor.type === "actorDrone" && actorData.controlMode === "rigging")) {
         cardData.damage.resistanceType = "biofeedback"
         cardData.damage.value = cardData.damage.matrix.base
