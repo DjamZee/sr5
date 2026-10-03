@@ -112,8 +112,8 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
     this._contactId = null
     this._surcharge = 0
     // A pool typed in by hand, which replaces the computed one when set
-    this._overridePool = 0
-    this._overrideLimit = 0
+    this._overridePool = null
+    this._overrideLimit = null
   }
 
   /* -------------------------------------------- */
@@ -432,8 +432,8 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
       selected: c.id === this._contactId,
     }))
     context.hasContacts = contacts.length > 0
-    context.overridePool = this._overridePool || ''
-    context.overrideLimit = this._overrideLimit || ''
+    context.overridePool = this._overridePool ?? ''
+    context.overrideLimit = this._overrideLimit ?? ''
     context.surcharge = this._surcharge
     // The offer ladder follows the configured cost of a die, up to the cap:
     // a table that sells dice at 10 % gets a ladder in tens.
@@ -567,7 +567,8 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
     }
     el.querySelectorAll('[data-shop-override]').forEach(input => {
       input.addEventListener('change', (event) => {
-        const value = Math.max(0, Math.floor(Number(event.target.value) || 0))
+        // Left empty: null, the computed value. Typed 0: 0.
+        const value = SR5ShopAvailability.typedNumber(event.target.value)
         if (event.target.dataset.shopOverride === 'limit') this._overrideLimit = value
         else this._overridePool = value
         this.render()

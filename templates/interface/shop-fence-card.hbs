@@ -12,14 +12,23 @@
     </p>
     <p class="sr-shop-card-note">{{localize 'SR5.ShopFenceImmediate'}}</p>
     {{else}}
+    {{#if searchImpossible}}
+    <p class="sr-shop-card-searcher">
+      {{localize 'SR5.ShopFenceSearch'}}{{localize 'SR5.Colons'}}
+      {{localize 'SR5.ShopOutcome_noPool'}} ({{localize 'SR5.DicePool'}} 0)
+    </p>
+    {{else}}
     <p class="sr-shop-card-searcher">
       {{localize 'SR5.ShopFenceSearch'}}{{localize 'SR5.Colons'}}
       {{searchHits}} / {{threshold}} {{localize 'SR5.DiceHits'}}
       ({{localize 'SR5.DicePool'}} {{searchPool}}{{#if teamwork}}, +{{teamwork}} {{localize 'SR5.ShopFenceTeamwork'}}{{/if}},
       {{searchRolls}}× — {{delayLabel}})
     </p>
+    {{/if}}
     {{#if searchFailed}}
+    {{#unless searchImpossible}}
     <p class="sr-shop-card-note">{{localize 'SR5.ShopFenceNoBuyer'}}</p>
+    {{/unless}}
     {{else if haggleImpossible}}
     <p class="sr-shop-card-searcher">
       {{localize 'SR5.ShopFenceHaggle'}}{{localize 'SR5.Colons'}}
@@ -32,7 +41,7 @@
       ({{localize 'SR5.DicePool'}} {{hagglePool}} {{localize 'SR5.ShopVersus'}} {{buyerPool}})
     </p>
     {{/if}}
-    {{#if override}}
+    {{#if overridden}}
     <p class="sr-shop-card-note">{{localize 'SR5.ShopOverriddenPool'}}</p>
     {{/if}}
     {{#if criticalGlitch}}

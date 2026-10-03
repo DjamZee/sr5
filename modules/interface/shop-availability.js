@@ -292,10 +292,11 @@ export class SR5ShopAvailability {
     const searcher = contact ? SR5ShopAvailability.contactPool(contact) : SR5ShopAvailability.buyerPool(actor)
 
     const bonusDice = SR5ShopAvailability.surchargeDice(surcharge)
-    const override = Math.max(0, Math.floor(Number(options.overridePool) || 0))
+    // null when the field was left empty; an imposed 0 stays 0 dice
+    const override = SR5ShopAvailability.typedNumber(options.overridePool)
     // The surcharge dice are one more modifier: they are added to the
     // unfloored pool, and only the total is floored (SR5 p. 58)
-    const basePool = override || (searcher.raw ?? searcher.pool)
+    const basePool = override ?? (searcher.raw ?? searcher.pool)
     const pool = Math.max(0, basePool + bonusDice)
     // A limit left empty is the computed one, not "no limit". There is no
     // limit of 0 in SR5 either, so a typed 0 falls back the same way.
@@ -396,11 +397,12 @@ export class SR5ShopAvailability {
       isContact: !!contact,
       // A hand-typed pool owes nothing to the contact's sheet, so neither the
       // derivation note nor the specialization applies to it.
-      derived: !override && !!searcher.derived,
-      partial: !override && !!searcher.partial,
-      defaulting: !override && !!searcher.defaulting,
-      specialized: !override && !!searcher.specialized,
-      override: override || null,
+      derived: override === null && !!searcher.derived,
+      partial: override === null && !!searcher.partial,
+      defaulting: override === null && !!searcher.defaulting,
+      specialized: override === null && !!searcher.specialized,
+      override,
+      overridden: override !== null,
       connection: searcher.connection ?? null,
       pool,
       bonusDice,
