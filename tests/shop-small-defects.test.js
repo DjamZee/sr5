@@ -213,6 +213,46 @@ describe('An imposed pool of 0 is 0 dice, not "no override"', () => {
   })
 })
 
+describe('The card shows a pool below zero before the surcharge', () => {
+  // Charisma 1, defaulting -1, wounds -2: -2 on the sheet, floored to 0 there
+  const wounded = {
+    id: 'w', name: 'Charisme 1 blessé', items: [],
+    system: {
+      skills: {
+        negotiation: {
+          rating: {
+            value: 0
+          },
+          test: {
+            base: 0, dicePool: 0, modifiers: [1, -1, -2].map(value => ({
+              value, isMultiplier: false
+            })),
+          },
+        }
+      },
+      limits: {
+        socialLimit: {
+          value: 2
+        }
+      },
+    },
+  }
+
+  it('+75 %: 1 die, and the -2 it came from', async () => {
+    queue = [5, 1, 2, 2, 3, 4]
+    const card = await SR5ShopAvailability.testLines(wounded, null, line, 75)
+    expect(card.pool).toBe(1)
+    expect(card.bonusDice).toBe(3)
+    expect(card.negativePool).toBe(-2)
+  })
+
+  it('a pool at zero or above has nothing more to show', async () => {
+    queue = [5, 5, 5, 5, 5, 5, 5, 5, 1, 2, 2, 3, 4]
+    const card = await SR5ShopAvailability.testLines(buyer, null, line, 75)
+    expect(card.negativePool).toBe(null)
+  })
+})
+
 describe('Delays take the singular: 1 jour, not 1 jours', () => {
   const read = name => JSON.parse(readFileSync(new URL(`../lang/${name}.json`, import.meta.url), 'utf8'))
   const delay = (lang, hours) => {

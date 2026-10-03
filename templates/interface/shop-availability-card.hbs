@@ -13,7 +13,8 @@
         {{localize 'SR5.ShopSearchedSelf'}}{{localize 'SR5.Colons'}} <strong>{{searcherLabel}}</strong>
       {{/if}}
       — {{localize 'SR5.DicePool'}} {{pool}}{{#if limit}} [{{limit}}]{{/if}}
-      {{#if bonusDice}}<span class="sr-shop-bonus">(+{{bonusDice}} {{localize 'SR5.ShopSurchargeDice'}}, +{{surcharge}}%)</span>{{/if}}
+      {{#if negativePool}}<span class="sr-shop-bonus">({{localize 'SR5.ShopRawPool'}} {{negativePool}}{{#if bonusDice}}, +{{bonusDice}} {{localize 'SR5.ShopSurchargeDice'}}, +{{surcharge}}%{{/if}})</span>
+      {{else if bonusDice}}<span class="sr-shop-bonus">(+{{bonusDice}} {{localize 'SR5.ShopSurchargeDice'}}, +{{surcharge}}%)</span>{{/if}}
     </p>
 
     {{#if overridden}}
