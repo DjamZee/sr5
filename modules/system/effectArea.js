@@ -31,7 +31,10 @@ export class SR5_EffectArea {
 
   //Manage token aura
   static async tokenAura(token){
-    const scene = game.scenes.get(token._object.scene.id)
+    // The token's own scene, read from the document: a token moved on a scene the GM is not looking
+    // at has no placeable, and that scene's grid is the one to measure with.
+    const scene = token.parent
+    if (!scene) return
     for (let t of scene.tokens){
       if (t.id !== token.id) {
         // checkAuraJamming compares this to JAM_SIGNALS_RADIUS_IN_METERS, which SR5 p. 239 states in
@@ -40,7 +43,7 @@ export class SR5_EffectArea {
           x: token.x, y: token.y
         }, {
           x: t.x, y: t.y
-        })
+        }, scene)
         await SR5_EffectArea.checkAuraJamming(token, t, distance)
       }
     }
@@ -96,54 +99,63 @@ export class SR5_EffectArea {
   }
 
   //Start jamming
-  static async onJamCreation(actorId){
-    if (!canvas.scene) return
-    let activeActor = SR5_EntityHelpers.getRealActorFromID(actorId)
-    let activeToken
-    if (activeActor.isToken){
-      activeToken = canvas.tokens.placeables.find(t => t.id === actorId)
-    } else {
-      activeToken = canvas.tokens.placeables.find(t => t.actor.id === actorId)
+  //The tokens standing for a jammer, with their scene : an unlinked actor by its own token, a linked
+  //one on every scene it stands on. Read from the scene documents and never from the canvas, which
+  //only holds the scene the GM happens to be looking at, not necessarily the jammer's.
+  static getJammerTokens(actor, actorId){
+    let found = []
+    for (let scene of game.scenes ?? []){
+      let token = actor.isToken ? scene.tokens.get(actorId) : scene.tokens.find(t => t.actorLink && t.actorId === actor.id)
+      if (token) found.push({
+        scene, token
+      })
     }
-    if (!activeToken) return
-    let jamEffect =  activeActor.items.find(i => i.system.type === "signalJam" && i.system.ownerID === activeActor.id)
+    return found
+  }
 
-    for (let token of canvas.tokens.placeables){
-      if (token.id !== activeToken.id){
-        let tokenActor = SR5_EntityHelpers.getRealActorFromID(token.document.id)
-        // canvas.tokens.placeables holds Token objects, whose own x/y are the PIXI position and stay at 0
-        // in V13; the grid coordinates live on the document, as tokenAura already reads them above.
+  //Start jamming
+  static async onJamCreation(actorId){
+    if (!game.user?.isGM) return
+    let activeActor = SR5_EntityHelpers.getRealActorFromID(actorId)
+    if (!activeActor) return
+    let jamEffect =  activeActor.items.find(i => i.system.type === "signalJam" && i.system.ownerID === activeActor.id)
+    if (!jamEffect) return
+
+    for (let found of SR5_EffectArea.getJammerTokens(activeActor, actorId)){
+      let scene = found.scene, activeToken = found.token
+      for (let token of scene.tokens){
+        if (token.id === activeToken.id) continue
+        let tokenActor = token.actor
+        if (!tokenActor || tokenActor === activeActor) continue
         // The result is compared to JAM_SIGNALS_RADIUS_IN_METERS just below, which SR5 p. 239 states in
-        // meters, so the scene's own unit is converted first.
+        // meters, so the unit of the jammer's scene is converted first.
         let distance = SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint({
-          x: activeToken.document.x, y: activeToken.document.y
+          x: activeToken.x, y: activeToken.y
         }, {
-          x: token.document.x, y: token.document.y
-        })
-        let jammedEffect = tokenActor.items.find(i => i.system.type === "signalJammed" && i.system.ownerID === actorId)
+          x: token.x, y: token.y
+        }, scene)
+        let jammedEffect = tokenActor.items.find(i => i.system.type === "signalJammed" && i.system.ownerID === activeActor.id)
         if (distance <= SR5_EffectArea.JAM_SIGNALS_RADIUS_IN_METERS && !jammedEffect){
-          if (game.user?.isGM) await SR5_EffectArea.createJammedEffect(activeActor, tokenActor, jamEffect.system.value)
+          await SR5_EffectArea.createJammedEffect(activeActor, tokenActor, jamEffect.system.value)
         }
       }
     }
   }
 
-  //End jamming
+  //End jamming : lift the noise this jammer put on anyone, on every scene
   static async onJamEnd(actorId){
-    if (!canvas.scene) return
-    let activeToken = canvas.tokens.placeables.find(t => t.actor.id === actorId)
-    if (!activeToken) return
-    for (let token of canvas.tokens.placeables){
-      if (token.id !== activeToken.id){
-        let tokenActor = SR5_EntityHelpers.getRealActorFromID(token.document.id)
+    if (!game.user?.isGM) return
+    let cleared = new Set()
+    for (let scene of game.scenes ?? []){
+      for (let token of scene.tokens){
+        let tokenActor = token.actor
+        if (!tokenActor || cleared.has(tokenActor.uuid)) continue
+        cleared.add(tokenActor.uuid)
         let jammedEffect = tokenActor.items.find(i => i.system.type === "signalJammed" && i.system.ownerID === actorId)
-        if (jammedEffect) {
-          let jammedActiveEffect = tokenActor.effects.find(i => i.origin === "signalJammed")
-          if (game.user?.isGM){
-            await tokenActor.deleteEmbeddedDocuments("ActiveEffect", [jammedActiveEffect.id])
-            await tokenActor.deleteEmbeddedDocuments("Item", [jammedEffect.id])
-          }
-        }
+        if (!jammedEffect) continue
+        let jammedActiveEffect = tokenActor.effects.find(i => i.origin === "signalJammed")
+        if (jammedActiveEffect) await tokenActor.deleteEmbeddedDocuments("ActiveEffect", [jammedActiveEffect.id])
+        await tokenActor.deleteEmbeddedDocuments("Item", [jammedEffect.id])
       }
     }
   }

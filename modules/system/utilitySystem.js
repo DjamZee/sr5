@@ -424,10 +424,12 @@ export class SR5_SystemHelpers {
 	 * Return the distance between two documents on the canvas
 	 * @param firstDocument     The first document
 	 * @param secondDocument    The second document
+	 * @param scene             The scene both stand on, when it may not be the one on the canvas
 	 * @return {distance}       The distance between first and second document based on grid scene round to the nearest integrer.
 	 */
-  static getDistanceBetweenTwoPoint(firstDocument, secondDocument){
-    const distance = canvas.grid.measurePath([firstDocument, secondDocument])
+  static getDistanceBetweenTwoPoint(firstDocument, secondDocument, scene){
+    const grid = scene ? scene.grid : canvas.grid
+    const distance = grid.measurePath([firstDocument, secondDocument])
     return distance.distance
   }
 
@@ -443,10 +445,11 @@ export class SR5_SystemHelpers {
    * a label the GM typed -- is assumed to be meters and left alone, because guessing at an unknown unit
    * would trade a known wrong answer for an unpredictable one.
    *
+   * @param scene      The scene to read, the one on the canvas by default
    * @return {number}   Meters per scene unit (1 when the scene already measures in meters)
    */
-  static getSceneUnitInMeters(){
-    const units = canvas?.scene?.grid?.units
+  static getSceneUnitInMeters(scene = canvas?.scene){
+    const units = scene?.grid?.units
     if (typeof units !== "string") return 1
     const normalized = units.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\.$/, "")
     if (["ft", "feet", "foot", "'", "pi", "pied", "pieds"].includes(normalized)) return 0.3048
@@ -464,10 +467,11 @@ export class SR5_SystemHelpers {
   /**
    * Convert a distance measured on the canvas into the meters the rules are written in
    * @param value     A distance in the scene's own units
+   * @param scene     The scene it was measured on, the one on the canvas by default
    * @return {number} The same distance in meters
    */
-  static convertSceneUnitsToMeters(value){
-    return value * SR5_SystemHelpers.getSceneUnitInMeters()
+  static convertSceneUnitsToMeters(value, scene = canvas?.scene){
+    return value * SR5_SystemHelpers.getSceneUnitInMeters(scene)
   }
 
   /**
@@ -483,12 +487,13 @@ export class SR5_SystemHelpers {
 	 * Return the distance between two documents on the canvas, in meters
 	 * @param firstDocument     The first document
 	 * @param secondDocument    The second document
+	 * @param scene             The scene both stand on, when it may not be the one on the canvas
 	 * @return {distance}       The distance between first and second document, in meters, whatever unit the
 	 *                          scene measures in. Use this one, not getDistanceBetweenTwoPoint, whenever the
 	 *                          result is compared to a value taken from the rules.
 	 */
-  static getDistanceInMetersBetweenTwoPoint(firstDocument, secondDocument){
-    return SR5_SystemHelpers.convertSceneUnitsToMeters(SR5_SystemHelpers.getDistanceBetweenTwoPoint(firstDocument, secondDocument))
+  static getDistanceInMetersBetweenTwoPoint(firstDocument, secondDocument, scene){
+    return SR5_SystemHelpers.convertSceneUnitsToMeters(SR5_SystemHelpers.getDistanceBetweenTwoPoint(firstDocument, secondDocument, scene), scene ?? canvas?.scene)
   }
 
   /**
