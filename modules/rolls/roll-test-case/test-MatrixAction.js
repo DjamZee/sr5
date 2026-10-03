@@ -69,10 +69,15 @@ export default async function matrixActionInfo(cardData, actorId){
     return
   }
 
+  //The defense only applies under a link lock (SR5 p. 244): free, nothing opposes the jack out and it succeeds,
+  //whatever the hits (DjamZ's ruling of 2026-10-03)
+  if (cardData.test.typeSub === "jackOut" && !actorData.matrix.isLinkLocked) {
+    cardData.chatCard.buttons.jackOutSuccess = SR5_RollMessage.generateChatButton("nonOpposedTest", "jackOutSuccess", game.i18n.localize("SR5.MatrixActionJackOutSuccess"))
+    return
+  }
+
   if (cardData.roll.hits > 0) {
-    //The defense only applies under a link lock (SR5 p. 244): free, the character jacks out at once
-    if (cardData.test.typeSub === "jackOut" && !actorData.matrix.isLinkLocked) cardData.chatCard.buttons.jackOutSuccess = SR5_RollMessage.generateChatButton("nonOpposedTest", "jackOutSuccess", game.i18n.localize("SR5.MatrixActionJackOutSuccess"))
-    else if (cardData.test.typeSub === "jackOut" && actorData.matrix.isLinkLocked) cardData.chatCard.buttons.jackOut = SR5_RollMessage.generateChatButton("nonOpposedTest", "jackOut", game.i18n.localize("SR5.MatrixActionJackOutResistance"), true)
+    if (cardData.test.typeSub === "jackOut" && actorData.matrix.isLinkLocked) cardData.chatCard.buttons.jackOut = SR5_RollMessage.generateChatButton("nonOpposedTest", "jackOut", game.i18n.localize("SR5.MatrixActionJackOutResistance"), true)
     else if (cardData.test.typeSub === "eraseMark") cardData.chatCard.buttons.eraseMark = SR5_RollMessage.generateChatButton("opposedTest", "eraseMark", game.i18n.localize("SR5.ChooseMarkToErase"))
     else if (cardData.test.typeSub === "checkOverwatchScore") cardData.chatCard.buttons.checkOverwatchScore = SR5_RollMessage.generateChatButton("nonOpposedTest", "checkOverwatchScore", game.i18n.localize("SR5.OverwatchResistance"), true)
     else if (cardData.test.typeSub === "jamSignals") cardData.chatCard.buttons.matrixJamSignals = SR5_RollMessage.generateChatButton("nonOpposedTest", "matrixJamSignals", game.i18n.localize("SR5.MatrixActionJamSignals"))

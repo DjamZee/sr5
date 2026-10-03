@@ -151,6 +151,35 @@ describe('Emulate and Edge (Data Trails p. 159, SR5 p. 57)', () => {
     expect(updatedCard.test.title).toBe('Test (SR5.MatrixActionEmulate 3)')
   })
 
+  // SR5 p. 244: the defense only applies under a link lock. Free, nothing opposes the jack out (DjamZ's ruling)
+  it.each([
+    [false, 0, 'jackOutSuccess'],
+    [false, 2, 'jackOutSuccess'],
+    [true, 0, 'actionEnd'],
+    [true, 2, 'jackOut'],
+  ])('a jack out with link lock %s and %i hits offers %s', async (locked, hits, button) => {
+    actor.system.matrix.isLinkLocked = locked
+    try {
+      const card = {
+        roll: {
+          hits
+        }, test: {
+          type: 'matrixAction', typeSub: 'jackOut', title: 'Test'
+        }, matrix: {
+        }, chatCard: {
+          buttons: {
+          }
+        }, previousMessage: {
+        }, owner: {
+        },
+      }
+      await matrixActionInfo(card, 'a1')
+      expect(Object.keys(card.chatCard.buttons)).toEqual([button])
+    } finally {
+      delete actor.system.matrix.isLinkLocked
+    }
+  })
+
   it('raises the score of an unlinked token, not of its base actor', async () => {
     actor.isToken = true
     actor.token = {
