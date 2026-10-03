@@ -253,7 +253,7 @@ export class SR5_RollTest {
     let rollRoll = await roll.evaluate()
     let rollJSON = await roll.toJSON(rollRoll)
     //Glitch
-    //Rule of Six (SR5 p. 56-57): Die#explode adds the rerolled dice after the pool. Their 1s do not count
+    //Rule of Six (SR5 p. 58): Die#explode adds the rerolled dice after the pool. Their 1s do not count
     //for the glitch, only the first roll does (DjamZ's ruling B30)
     let realHits = 0
     for (let [i, d] of rollJSON.terms[0].results.entries()) {
@@ -280,7 +280,7 @@ export class SR5_RollTest {
 
   /** SR5 p. 47: more than half the dice show 1 is a glitch; a glitch with no hit is a critical glitch.
    * Hits are counted on the dice rolled (a serialized Die term has no total, and a limit never brings them to 0).
-   * The 1s of dice rerolled by the Rule of Six are left out, as they are out of the pool (SR5 p. 56-57).
+   * The 1s of dice rerolled by the Rule of Six are left out, as they are out of the pool (SR5 p. 58).
    * @param {Array} dices - Results of every die rolled for the test
    * @param {Number} dicePool - Number of dice in the pool
    */
