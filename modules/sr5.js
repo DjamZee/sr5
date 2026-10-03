@@ -36,10 +36,10 @@ import {
   sr5HookCloseCombatantConfig,
 } from './hooks/combat.js'
 import {
-  sr5HookCreateActor, sr5HookUpdateActor, sr5HookDeleteActor 
+  sr5HookCreateActor, sr5HookPreUpdateActor, sr5HookUpdateActor, sr5HookDeleteActor 
 } from './hooks/actor.js'
 import {
-  sr5HookPreUpdateItem, sr5HookUpdateItem, sr5HookDeleteItem
+  sr5HookPreUpdateItem, sr5HookCreateItem, sr5HookUpdateItem, sr5HookDeleteItem
 } from './hooks/item.js'
 import {
   sr5HookDeleteActiveEffect, sr5HookCreateActiveEffect 
@@ -62,6 +62,9 @@ import {
 import {
   sr5HookRenderTablePayout
 } from './interface/table-payout.js'
+import {
+  sr5KeepSidebarSettingsLast
+} from './interface/sidebar-tab-order.js'
 
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
@@ -98,9 +101,11 @@ Hooks.on('deleteCombat', sr5HookDeleteCombatCumulativeDefense)
 Hooks.on('deleteCombat', sr5HookDeleteCombatActions)
 Hooks.on('closeCombatantConfig', sr5HookCloseCombatantConfig)
 Hooks.on('preUpdateItem', sr5HookPreUpdateItem)
+Hooks.on('createItem', sr5HookCreateItem)
 Hooks.on('updateItem', sr5HookUpdateItem)
 Hooks.on('deleteItem', sr5HookDeleteItem)
 Hooks.on('createActor', sr5HookCreateActor)
+Hooks.on('preUpdateActor', sr5HookPreUpdateActor)
 Hooks.on('updateActor', sr5HookUpdateActor)
 Hooks.on('deleteActor', sr5HookDeleteActor)
 Hooks.on('createActiveEffect', sr5HookCreateActiveEffect)
@@ -110,6 +115,7 @@ Hooks.on('renderCompendiumDirectory', sr5HookRenderCompendiumDirectory)
 Hooks.on('renderRollTableSheet', sr5AddTableFormulaField)
 Hooks.on('renderTableResultConfig', sr5AddResultQuantityField)
 Hooks.on('renderChatMessageHTML', sr5HookRenderTablePayout)
+Hooks.on('renderSidebar', sr5KeepSidebarSettingsLast)
 Hooks.on('drawMeasuredTemplate', sr5HookDrawMeasuredTemplate)
 Hooks.on('deleteMeasuredTemplate', sr5HookDeleteMeasuredTemplate)
 Hooks.on('updateMeasuredTemplate', sr5HookUpdateMeasuredTemplate)

@@ -59,7 +59,8 @@ export default async function matrixDefense(rollData, rollKey, actor, chatData){
     } 
   } else {
     let deck = actor.items.find(d => d.type === "itemDevice" && d.system.isActive)
-    rollData.target.itemUuid = deck.uuid
+    //An AI outside any device defends with its persona alone, no device is targeted (Data Trails p. 157)
+    if (deck) rollData.target.itemUuid = deck.uuid
   }
     
   //Add others informations

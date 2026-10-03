@@ -4,22 +4,22 @@
 		 	<option value="device">{{device}}</option>
 		 	{{#if list.augmentations}}
 				<optgroup label="{{localize 'SR5.Augmentations'}}">
-					{{selectOptions lists.augmentations selected=item localize=false}}
+					{{selectOptions list.augmentations selected=item localize=false}}
 				</optgroup>
 		 	{{/if}}
 		 	{{#if list.weapons}}
 		 		<optgroup label="{{localize 'SR5.Weapons'}}">
-					{{selectOptions lists.weapons selected=item localize=false}}
+					{{selectOptions list.weapons selected=item localize=false}}
 		 		</optgroup>
 		 	{{/if}}
 		 	{{#if list.armors}}
 				<optgroup label="{{localize 'SR5.Armors'}}">
-					{{selectOptions lists.armors selected=item localize=false}}
+					{{selectOptions list.armors selected=item localize=false}}
 				</optgroup>
 		 	{{/if}}
 		 	{{#if list.gears}}
 		 		<optgroup label="{{localize 'SR5.Gear'}}">
-					{{selectOptions lists.gears selected=item localize=false}}
+					{{selectOptions list.gears selected=item localize=false}}
 	  		</optgroup>
 		 	{{/if}}
 		</select>

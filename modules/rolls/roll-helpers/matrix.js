@@ -59,6 +59,11 @@ export class SR5_MatrixHelpers {
     let targetItem
     if (cardData.target.itemUuid && !defenderWin) targetItem = await fromUuid(cardData.target.itemUuid)
     if (!targetItem) targetItem = targetActor.items.find((item) => item.type === "itemDevice" && item.system.isActive)
+    //An AI outside any device only has its core condition monitor, which takes all its damage (Data Trails p. 161)
+    if (!targetItem) {
+      if (targetActor.system.activeSpecialAttribute === "depth") return targetActor.takeDamage(cardData)
+      return
+    }
     let newItem = foundry.utils.duplicate(targetItem)
 
     //targetActor.takeDamage(cardData);
@@ -104,12 +109,14 @@ export class SR5_MatrixHelpers {
     let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId),
       attackerData = attacker?.system,
       damage = cardData.damage.matrix.base,
-      item = await fromUuid(cardData.target.itemUuid),
-      mark = await SR5_MarkHelpers.findMarkValue(item.system, attacker.id)
+      item = cardData.target.itemUuid ? await fromUuid(cardData.target.itemUuid) : null,
+      //An AI outside any device has no targeted item: the marks are read on its persona (Data Trails p. 157)
+      markHolder = item?.system ?? defender.system.matrix,
+      mark = await SR5_MarkHelpers.findMarkValue(markHolder, attacker.id)
 
     if (attacker.type === "actorDevice"){
       if (attacker.system.matrix.deviceType === "ice"){
-        mark = await SR5_MarkHelpers.findMarkValue(item.system, attacker.id)
+        mark = await SR5_MarkHelpers.findMarkValue(markHolder, attacker.id)
       }
     }
     cardData.damage.matrix.modifiers = {
@@ -152,7 +159,8 @@ export class SR5_MatrixHelpers {
       }
     }
     let dialogData = {
-      device: actor.system.matrix.deviceName,
+      //An AI outside any device has no device name: the choice names its persona (Data Trails p. 157)
+      device: actor.system.matrix.deviceName || actor.name,
       list: list,
     }
     const dlg = await foundry.applications.handlebars.renderTemplate("systems/sr5/templates/interface/itemMatrixTarget.hbs", dialogData)
@@ -207,47 +215,51 @@ export class SR5_MatrixHelpers {
 
   static async rollJackOut(cardData){
     let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
-    let dicePool
 
-    let itemEffectID
-    for (let i of actor.items){
-      if (i.type === "itemEffect"){
-        if (Object.keys(i.system.customEffects).length){
-          for (let e of Object.values(i.system.customEffects)){
-            if (e.target === "system.matrix.isLinkLocked"){
-              dicePool = i.system.value
-              itemEffectID = i.id
-            }
-          }
-        }
-      }
+    //One jack out roll, whose hits are compared to each link lock in turn (SR5 p. 246): one resistance card per lock
+    for (let lock of SR5_MatrixHelpers.getLinkLocks(actor)){
+      let dicePool = lock.system.value
+      let rollData = SR5_PrepareRollTest.getBaseRollData(null, actor)
+      rollData.test.type = "jackOutDefense"
+      rollData.test.title = `${game.i18n.localize("SR5.MatrixActionJackOutResistance")} (${cardData.roll.hits})`
+      rollData.dicePool.base = dicePool
+      rollData.dicePool.value = dicePool
+      rollData.previousMessage.hits = cardData.roll.hits
+      rollData.previousMessage.itemUuid = lock.id
+      rollData.roll = await SR5_RollTest.rollDice({
+        dicePool: dicePool
+      })
+
+      await SR5_RollTest.addInfoToCard(rollData, cardData.previousMessage.actorId)
+      await SR5_RollTest.renderRollCard(rollData)
     }
-
-    let rollData = SR5_PrepareRollTest.getBaseRollData(null, actor)
-    rollData.test.type = "jackOutDefense"
-    rollData.test.title = `${game.i18n.localize("SR5.MatrixActionJackOutResistance")} (${cardData.roll.hits})`
-    rollData.dicePool.base = dicePool
-    rollData.dicePool.value = dicePool
-    rollData.previousMessage.hits = cardData.roll.hits
-    rollData.previousMessage.itemUuid = itemEffectID
-    rollData.roll = await SR5_RollTest.rollDice({
-      dicePool: dicePool 
-    })
-
-    await SR5_RollTest.addInfoToCard(rollData, cardData.previousMessage.actorId)
-    SR5_RollTest.renderRollCard(rollData)
   }
 
+  //The link lock effects of an actor, one per icon that locked it
+  static getLinkLocks(actor){
+    return actor.items.filter(i => i.type === "itemEffect" && Object.values(i.system.customEffects ?? {
+    }).some(e => e.target === "system.matrix.isLinkLocked"))
+  }
+
+  //Jack out (SR5 p. 244): free of the link lock, the character reboots the device used
   static async jackOut(cardData){
     let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
-    await actor.deleteEmbeddedDocuments("Item", [cardData.previousMessage.itemUuid])
+    //Only the lock this card beat goes: each lock is beaten on its own (SR5 p. 246)
+    let beaten = cardData.previousMessage.itemUuid
+    if (beaten && actor.items.find(i => i.id === beaten)) await actor.deleteEmbeddedDocuments("Item", [beaten])
+    //While another lock holds, the character is not free and the device does not reboot
+    if (SR5_MatrixHelpers.getLinkLocks(actor).length) return
     await SR5_EntityHelpers.deleteEffectOnActor(actor, "linkLock")
 
-    if (actor.system.matrix.userMode === "hotsim"){
+    //Dumpshock in VR, cold or hot sim (SR5 p. 231 and 244), as the IC reboots of this file
+    let userMode = actor.system.matrix.userMode
+    if (userMode && userMode !== "ar"){
       let dumpshockData = SR5_PrepareRollTest.getBaseRollData(null, actor)
       dumpshockData.damage.resistanceType = "dumpshock"
       actor.rollTest("resistanceCard", null, dumpshockData)
     }
+    //rebootDeck spends no action: the jack out has already paid for its own
+    await actor.rebootDeck()
   }
 
   static async jamSignals(cardData){

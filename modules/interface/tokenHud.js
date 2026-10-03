@@ -2,8 +2,8 @@
  * Icons of the system on the token HUD.
  *
  * The V13 TokenHUD builds its own parts from the core templates and never
- * reads a system template, so srtoken-hud.hbs had been dead weight since the
- * port: the only way back to the SR5 icons is to swap them once rendered.
+ * reads a system template, so the old srtoken-hud.hbs was dead weight: the
+ * only way back to the SR5 icons is to swap them once the HUD is rendered.
  */
 const HUD_ICONS = {
   '[data-action="config"]': "hud_configure.svg",

@@ -99,8 +99,12 @@ export const WEAPON_ACCESSORY_CATALOG = {
   extremeEnvironment:       {
     price: 1500, slot: "", type: "modification" 
   },
+  // Standard flashlight: partial light where its weapon points (Run & Gun p. 69), see getWeaponLightCap
   flashLight:               {
-    price: 50, slot: "", type: "accessory" 
+    price: 50, slot: "", type: "accessory",
+    systemEffects: [{
+      value: "flashLight"
+    }],
   },
   geckoGrip:                {
     price: 100, slot: "", type: "accessory" 
@@ -439,7 +443,7 @@ export const WEAPON_ACCESSORY_CATALOG = {
     }],
   },
 
-  // ── Vision-related accessories (actor-level environmental mods) ───
+  // ── Vision-related accessories (environmental mods; flashlights count for their own weapon only) ───
 
   flashLightInfrared: {
     price: 400, slot: "", type: "accessory",

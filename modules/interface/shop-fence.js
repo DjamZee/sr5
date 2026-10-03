@@ -147,9 +147,10 @@ export class SR5ShopFence {
     if (!priced.length) return null
 
     const rules = SR5ShopFence.rules
-    const override = Math.max(0, Math.floor(Number(options.overridePool) || 0))
-    const etiquette = override || SR5ShopFence.#skillPool(actor, 'etiquette')
-    const negotiation = override || SR5ShopFence.#skillPool(actor, 'negotiation')
+    // null when the field was left empty; an imposed 0 stays 0 dice
+    const override = SR5ShopAvailability.typedNumber(options.overridePool)
+    const etiquette = override ?? SR5ShopFence.#skillPool(actor, 'etiquette')
+    const negotiation = override ?? SR5ShopFence.#skillPool(actor, 'negotiation')
     const limit = Number(actor.system.limits?.socialLimit?.value ?? 0)
 
     // Finding a buyer is easier for rare goods: the availability rating helps
@@ -165,17 +166,23 @@ export class SR5ShopFence {
     const search = await SR5ShopFence.#extendedTest(etiquette + teamwork, rules.searchThreshold, limit)
 
     if (!search.reached) {
+      // Not a single die to search with: no test was made (SR5 p. 58)
+      const searchImpossible = !search.rolls
       const cardData = {
         buyerId: actor.id,
         sellerName: actor.name,
         immediate: false,
         searchFailed: true,
+        searchImpossible,
         searchPool: etiquette + teamwork,
         teamwork,
         threshold: rules.searchThreshold,
         searchHits: search.hits,
         searchRolls: search.rolls,
-        delayLabel: SR5ShopAvailability.formatDelay(interval * search.rolls),
+        delayLabel: searchImpossible ? '—' :
+          SR5ShopAvailability.formatDelay(interval * search.rolls),
+        override,
+        overridden: override !== null,
         results: priced.map(line => ({
           ...line, offerLabel: '—', total: 0
         })),
@@ -183,6 +190,36 @@ export class SR5ShopFence {
         totalLabel: '0¥',
         glitch: search.glitch,
         criticalGlitch: search.criticalGlitch,
+      }
+      return SR5ShopFence.#postCard(actor, cardData)
+    }
+
+    // No die, no haggling: only Edge opens a test whose pool would be zero or
+    // less (SR5 p. 58), and the shop spends none. The buyer is found, but
+    // nothing is rolled and nothing is sold.
+    if (!negotiation) {
+      const cardData = {
+        buyerId: actor.id,
+        sellerName: actor.name,
+        immediate: false,
+        searchFailed: false,
+        haggleImpossible: true,
+        searchPool: etiquette + teamwork,
+        teamwork,
+        threshold: rules.searchThreshold,
+        searchHits: search.hits,
+        searchRolls: search.rolls,
+        delayLabel: SR5ShopAvailability.formatDelay(interval * search.rolls),
+        hagglePool: 0,
+        override,
+        overridden: override !== null,
+        glitch: search.glitch,
+        criticalGlitch: search.criticalGlitch,
+        results: priced.map(line => ({
+          ...line, offerLabel: '—', total: 0
+        })),
+        total: 0,
+        totalLabel: '0¥',
       }
       return SR5ShopFence.#postCard(actor, cardData)
     }
@@ -217,7 +254,8 @@ export class SR5ShopFence {
       theirHits: theirs.hits,
       netHits,
       percent,
-      override: override || null,
+      override,
+      overridden: override !== null,
       glitch: search.glitch || mine.glitch,
       criticalGlitch: search.criticalGlitch || mine.criticalGlitch,
       results: priced,
@@ -231,13 +269,16 @@ export class SR5ShopFence {
   /*  Internals                                   */
   /* -------------------------------------------- */
 
-  /** A character's pool for a social skill, defaulting when untrained. */
+  /**
+   * A character's pool for a social skill, defaulting when untrained. The
+   * sheet's computed pool already defaults (SR5 p. 55) and carries the wound
+   * penalties, so a zero there is a real zero.
+   */
   static #skillPool(actor, key) {
     const skill = actor.system.skills?.[key]
+    if (skill?.test) return Math.max(0, Number(skill.test.dicePool) || 0)
     const rating = Number(skill?.rating?.value ?? 0)
     const charisma = Number(actor.system.attributes?.charisma?.augmented?.value ?? 0)
-    const pool = Number(skill?.test?.value ?? 0)
-    if (pool) return pool
     // Defaulting, SR5 p. 55: an untrained social skill is Charisma - 1.
     return rating ? rating + charisma : Math.max(0, charisma - 1)
   }
@@ -309,25 +350,136 @@ export class SR5ShopFence {
   /*  Chat card                                   */
   /* -------------------------------------------- */
 
-  /** Wire the "cash the sale" button of a fence card. */
+  /**
+   * The sale cards this browser has started to cash, by message id.
+   *
+   * The mark written on the message only arrives with the server's answer,
+   * and a second click easily comes first. This set is what that click finds.
+   */
+  static #cashing = new Set()
+
+  /** Whether a sale card has already been cashed, or is being. */
+  static isCashed(message) {
+    return SR5ShopFence.#cashing.has(message.id) ||
+      Boolean(message.getFlag?.('sr5', 'fenceCashed'))
+  }
+
+  /**
+   * Claim a sale card before anything leaves the sheet.
+   *
+   * Only the first claim succeeds: the test and the claim are made with
+   * nothing awaited between them, and the claim is written on the message
+   * before a single item is touched, so a reloaded page finds the card
+   * already spent.
+   *
+   * @returns {Promise<boolean>} true when this call may cash the card
+   */
+  static async claim(message) {
+    if (SR5ShopFence.isCashed(message)) return false
+    SR5ShopFence.#cashing.add(message.id)
+    try {
+      await message.update({
+        'flags.sr5.fenceCashed': game.user.id
+      })
+    } catch (error) {
+      SR5ShopFence.#cashing.delete(message.id)
+      throw error
+    }
+    return true
+  }
+
+  /**
+   * Cash a sale card: claim it, hand the goods over, then close the card.
+   * @returns {Promise<boolean>} whether anything was sold
+   */
+  static async cash(message, actor) {
+    if (!await SR5ShopFence.claim(message)) return false
+    const sold = await SR5ShopFence.handOver(actor, message.flags.sr5fence)
+    await message.update({
+      content: message.content.replace(
+        /<footer class="sr-shop-card-footer">[\s\S]*?<\/footer>/,
+        `<footer class="sr-shop-card-footer"><span class="sr-shop-cashed">${
+          game.i18n.localize(sold ? 'SR5.ShopSaleDone' : 'SR5.ShopSaleGone')}</span></footer>`),
+    })
+    return sold
+  }
+
+  /**
+   * Have a sale card cashed by one browser only.
+   *
+   * A mark on the message cannot keep two browsers apart: each reads it
+   * before the other's has arrived, and a sale of part of a stack would be
+   * paid twice. A player may not even write that mark on a card the game
+   * master posted. So the work is always done by the game master core
+   * designates, `game.users.activeGM`, as for table payout cards; anyone
+   * else asks it through the system's socket.
+   *
+   * @param {ChatMessage} message
+   * @param {Actor} actor  the seller
+   */
+  static async requestCash(message, actor) {
+    const designated = game.users?.activeGM
+    if (designated?.isSelf) return SR5ShopFence.cash(message, actor)
+    if (!designated) {
+      // Nobody to ask: a seller may still cash a card they posted themselves
+      if (message.canUserModify?.(game.user, 'update') === false) {
+        ui.notifications.warn(game.i18n.localize('SR5.WARN_ShopNeedsGM'))
+        return false
+      }
+      return SR5ShopFence.cash(message, actor)
+    }
+    await game.socket.emit('system.sr5', {
+      type: 'shopFenceCash',
+      userId: designated.id,
+      data: {
+        messageId: message.id, actorId: actor.id, requesterId: game.user.id
+      }
+    })
+    return true
+  }
+
+  /**
+   * Cash a sale card a player asked for, on the designated game master.
+   * Only for the seller's own card, and only if the player owns the seller.
+   * @param {object} socketMessage
+   * @param {object} socketMessage.data
+   */
+  static async socketCash({
+    data
+  }) {
+    if (!game.user.isGM) return
+    const message = game.messages.get(data.messageId)
+    const actor = game.actors.get(data.actorId)
+    const requester = game.users.get(data.requesterId)
+    if (!message || !actor || !requester) return
+    if (message.flags?.sr5fence?.buyerId !== actor.id) return
+    if (!actor.testUserPermission(requester, 'OWNER')) return
+    await SR5ShopFence.cash(message, actor)
+  }
+
+  /**
+   * Wire the "cash the sale" button of a fence card.
+   *
+   * The button is disabled as soon as it is clicked, before anything is
+   * awaited, and comes back disabled on a card already cashed.
+   */
   static chatListeners(html, message) {
     html.querySelectorAll('[data-fence-action="sell"]').forEach(el => {
+      if (SR5ShopFence.isCashed(message)) {
+        el.disabled = true
+        return
+      }
       el.addEventListener('click', async (event) => {
         event.preventDefault()
+        if (el.disabled) return
         const data = message.flags?.sr5fence
         const actor = game.actors.get(data?.buyerId)
         if (!actor?.isOwner) {
           ui.notifications.warn(game.i18n.localize('SR5.WARN_ShopNotOwner'))
           return
         }
-        const sold = await SR5ShopFence.handOver(actor, data)
-        if (!sold) return
-        await message.update({
-          content: message.content.replace(
-            /<footer class="sr-shop-card-footer">[\s\S]*?<\/footer>/,
-            `<footer class="sr-shop-card-footer"><span class="sr-shop-cashed">${
-              game.i18n.localize('SR5.ShopSaleDone')}</span></footer>`),
-        })
+        el.disabled = true
+        await SR5ShopFence.requestCash(message, actor)
       })
     })
   }
@@ -337,14 +489,20 @@ export class SR5ShopFence {
    *
    * Selling removes gear from the sheet, so it only ever happens on this
    * explicit click, and only the quantity sold leaves the character.
+   *
+   * The buyer pays for what changes hands (SR5 p. 421): the goods leave the
+   * sheet first, and only the lines that did leave it are paid for. A line
+   * whose item is gone, or no longer there in the quantity sold, is not.
    */
   static async handOver(actor, data) {
-    const toDelete = [], toUpdate = []
-    for (const line of data.results) {
+    const toDelete = [], toUpdate = [], lines = []
+    for (const line of data.results ?? []) {
       if (!line.total) continue
       const item = actor.items.get(line.itemId)
       if (!item) continue
-      const owned = Number(item.system?.quantity ?? 0)
+      // Read as the card priced it: an item without a quantity is one piece
+      const owned = Math.max(1, Number(item.system?.quantity ?? 1))
+      if (owned < line.quantity) continue
       if (owned > line.quantity) {
         toUpdate.push({
           _id: item.id, 'system.quantity': owned - line.quantity
@@ -352,10 +510,29 @@ export class SR5ShopFence {
       } else {
         toDelete.push(item.id)
       }
+      lines.push(line)
     }
 
-    const sold = data.results.filter(line => line.total)
-    if (!sold.length) return false
+    const handed = new Set()
+    try {
+      if (toDelete.length) {
+        const deleted = await actor.deleteEmbeddedDocuments('Item', toDelete)
+        for (const item of deleted ?? []) handed.add(item.id)
+      }
+      if (toUpdate.length) {
+        const updated = await actor.updateEmbeddedDocuments('Item', toUpdate)
+        for (const item of updated ?? []) handed.add(item.id)
+      }
+    } catch (error) {
+      SR5_SystemHelpers.srLog(1, `Shop: ${actor.name} could not hand the goods over`, error)
+    }
+
+    const sold = lines.filter(line => handed.has(line.itemId))
+    if (!sold.length) {
+      ui.notifications.warn(game.i18n.localize('SR5.WARN_ShopSaleGone'))
+      return false
+    }
+    const total = sold.reduce((sum, line) => sum + line.total, 0)
 
     const label = sold.length === 1 ?
       SR5Shop.lineLabel(sold[0].name, sold[0].quantity) :
@@ -370,20 +547,18 @@ export class SR5ShopFence {
       type: 'itemNuyen',
       img: 'systems/sr5/assets/img/items/itemNuyen.svg',
       system: {
-        amount: data.total,
+        amount: total,
         type: 'gain',
         date: new Date().toISOString().slice(0, 10),
         description: game.i18n.format('SR5.ShopSaleDescription', {
           name: sold.map(line => SR5Shop.lineLabel(line.name, line.quantity)).join(', '),
-          price: data.total.toLocaleString(),
+          price: total.toLocaleString(),
         }),
       },
     }])
-    if (toUpdate.length) await actor.updateEmbeddedDocuments('Item', toUpdate)
-    if (toDelete.length) await actor.deleteEmbeddedDocuments('Item', toDelete)
 
     ui.notifications.info(game.i18n.format('SR5.ShopSaleCashed', {
-      name: label, price: data.total.toLocaleString()
+      name: label, price: total.toLocaleString()
     }))
     return true
   }

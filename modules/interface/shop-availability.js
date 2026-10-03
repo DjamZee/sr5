@@ -4,6 +4,9 @@ import {
 import {
   SR5_SystemHelpers
 } from '../system/utilitySystem.js'
+import {
+  SR5_EntityHelpers
+} from '../entities/helpers.js'
 
 /**
  * The availability test of SR5 p. 420.
@@ -74,13 +77,28 @@ export class SR5ShopAvailability {
   /*  Dice pools                                  */
   /* -------------------------------------------- */
 
-  /** The buyer's own pool: Negotiation + Charisma, capped by the social limit. */
+  /**
+   * The buyer's own pool: Negotiation + Charisma, capped by the social limit.
+   * The sheet's modifiers already default an untrained buyer to Charisma - 1
+   * (SR5 p. 55) and carry the wound penalties.
+   *
+   * The sheet floors its pool at 0, but a test is impossible when the pool
+   * "aurait été de zéro ou moins" (SR5 p. 58) once every modifier is in, the
+   * surcharge dice included. So `raw` is the sheet's sum without that floor,
+   * and the floor only comes once the surcharge is added.
+   */
   static buyerPool(actor) {
     const skill = actor.system.skills?.negotiation
-    const pool = Number(skill?.test?.value ?? 0) ||
-      (Number(skill?.rating?.value ?? 0) + Number(actor.system.attributes?.charisma?.augmented?.value ?? 0))
+    const test = skill?.test
+    // The same sum as SR5_EntityHelpers.updatePropertyTotal, minus its floor
+    const raw = test ?
+      SR5_EntityHelpers.roundDecimal(((Number(test.base) || 0) +
+        (SR5_EntityHelpers.modifiersSum(test.modifiers ?? []) || 0)) *
+        SR5_EntityHelpers.modifiersProduct(test.modifiers ?? []), 2) :
+      Number(actor.system.attributes?.charisma?.augmented?.value ?? 0)
     return {
-      pool,
+      raw,
+      pool: Math.max(0, raw),
       limit: Number(actor.system.limits?.socialLimit?.value ?? 0),
       label: actor.name,
       derived: false,
@@ -149,6 +167,16 @@ export class SR5ShopAvailability {
     }
   }
 
+  /**
+   * A number typed into a shop field, or null when the field was left empty.
+   * Empty and 0 are not the same answer: empty asks for the computed value.
+   */
+  static typedNumber(value) {
+    if (value === null || value === undefined || String(value).trim() === '') return null
+    const number = Number(value)
+    return Number.isFinite(number) ? Math.max(0, Math.floor(number)) : null
+  }
+
   /** A sheet field's computed value, or what was typed into it. */
   static sheetValue(field) {
     return Number(field?.value ?? 0) || Number(field?.base ?? 0) || 0
@@ -202,23 +230,33 @@ export class SR5ShopAvailability {
       })
     }
     const days = hours / 24
-    if (days < 7) {
-      return game.i18n.format('SR5.ShopDelayDays', {
-        value: Math.round(days * 10) / 10
-      })
+    if (days < 7) return SR5ShopAvailability.#formatUnit('SR5.ShopDelayDays', days)
+    if (days < 30) return SR5ShopAvailability.#formatUnit('SR5.ShopDelayWeeks', days / 7)
+    return SR5ShopAvailability.#formatUnit('SR5.ShopDelayMonths', days / 30)
+  }
+
+  /**
+   * "1 jour", "2 jours": the singular key (the plural one without its final
+   * s) when the language puts that number in the singular. French does for
+   * 1.5, English does not.
+   */
+  static #formatUnit(pluralKey, amount) {
+    const value = Math.round(amount * 10) / 10
+    const lang = game.i18n?.lang || 'en'
+    let singular = value === 1
+    try {
+      singular = new Intl.PluralRules(lang).select(value) === 'one'
+    } catch {
+      // An unknown language code: keep the plain test on 1
     }
-    if (days < 30) {
-      return game.i18n.format('SR5.ShopDelayWeeks', {
-        value: Math.round(days / 7 * 10) / 10
-      })
-    }
-    return game.i18n.format('SR5.ShopDelayMonths', {
-      value: Math.round(days / 30 * 10) / 10
+    return game.i18n.format(singular ? pluralKey.slice(0, -1) : pluralKey, {
+      value
     })
   }
 
   /**
-   * Roll `dice` d6 the SR5 way.
+   * Roll `dice` d6 the SR5 way. A glitch is more than half the dice showing
+   * 1, a critical glitch is a glitch with no hit (SR5 p. 47).
    * @returns {{hits: number, ones: number, glitch: boolean, criticalGlitch: boolean, faces: number[]}}
    */
   static async rollDice(dice) {
@@ -232,7 +270,7 @@ export class SR5ShopAvailability {
     const faces = roll.dice[0].results.map(r => r.result)
     const hits = faces.filter(f => f >= 5).length
     const ones = faces.filter(f => f === 1).length
-    const glitch = ones * 2 >= count
+    const glitch = ones * 2 > count
     return {
       hits, ones, glitch, criticalGlitch: glitch && hits === 0, faces, roll,
     }
@@ -249,7 +287,8 @@ export class SR5ShopAvailability {
    * @param {number} [options.overridePool] a pool typed in by hand, which
    *   replaces the computed one — for a contact written up somewhere else, or
    *   a gamemaster who simply knows what the fixer is worth
-   * @param {number} [options.overrideLimit] the limit that goes with it
+   * @param {number|string} [options.overrideLimit] a limit typed in by hand;
+   *   left empty, the computed limit applies
    */
   static async testLines(actor, contact, lines, surcharge = 0, options = {
   }) {
@@ -262,12 +301,15 @@ export class SR5ShopAvailability {
     const searcher = contact ? SR5ShopAvailability.contactPool(contact) : SR5ShopAvailability.buyerPool(actor)
 
     const bonusDice = SR5ShopAvailability.surchargeDice(surcharge)
-    const override = Math.max(0, Math.floor(Number(options.overridePool) || 0))
-    const basePool = override || searcher.pool
+    // null when the field was left empty; an imposed 0 stays 0 dice
+    const override = SR5ShopAvailability.typedNumber(options.overridePool)
+    // The surcharge dice are one more modifier: they are added to the
+    // unfloored pool, and only the total is floored (SR5 p. 58)
+    const basePool = override ?? (searcher.raw ?? searcher.pool)
     const pool = Math.max(0, basePool + bonusDice)
-    const limit = override ?
-      Math.max(0, Math.floor(Number(options.overrideLimit) || 0)) :
-      searcher.limit
+    // A limit left empty is the computed one, not "no limit". There is no
+    // limit of 0 in SR5 either, so a typed 0 falls back the same way.
+    const limit = SR5ShopAvailability.typedNumber(options.overrideLimit) || searcher.limit
 
     const results = []
     for (const line of lines) {
@@ -286,6 +328,20 @@ export class SR5ShopAvailability {
           priceLabel: `${price.toLocaleString()}¥`,
           outcome: 'common', obtained: true, delayLabel: '—',
           outcomeLabel: game.i18n.localize('SR5.ShopOutcome_common'),
+        })
+        continue
+      }
+
+      // No die, no test: "Repousser les limites […] peut vous permettre de
+      // tenter des tests pour lesquels votre réserve de dés aurait été de zéro
+      // ou moins" (SR5 p. 58). Only Edge opens such a test, and the shop
+      // spends none, so nothing is rolled, not even the availability's dice.
+      if (!pool) {
+        results.push({
+          uuid: line.uuid, name: source.name, quantity, price, availability,
+          priceLabel: `${price.toLocaleString()}¥`,
+          outcome: 'noPool', obtained: false, untested: true, delayLabel: '—',
+          outcomeLabel: game.i18n.localize('SR5.ShopOutcome_noPool'),
         })
         continue
       }
@@ -350,13 +406,17 @@ export class SR5ShopAvailability {
       isContact: !!contact,
       // A hand-typed pool owes nothing to the contact's sheet, so neither the
       // derivation note nor the specialization applies to it.
-      derived: !override && !!searcher.derived,
-      partial: !override && !!searcher.partial,
-      defaulting: !override && !!searcher.defaulting,
-      specialized: !override && !!searcher.specialized,
-      override: override || null,
+      derived: override === null && !!searcher.derived,
+      partial: override === null && !!searcher.partial,
+      defaulting: override === null && !!searcher.defaulting,
+      specialized: override === null && !!searcher.specialized,
+      override,
+      overridden: override !== null,
       connection: searcher.connection ?? null,
       pool,
+      // A pool below zero before the surcharge: the card shows it, or "1 die
+      // (+3 surcharge dice)" would hide where the other two went
+      negativePool: basePool < 0 ? basePool : null,
       bonusDice,
       surcharge,
       limit,

@@ -7,3 +7,14 @@
         <input class="changeSilentMode" type="checkbox" name="system.matrix.runningSilent" data-dtype="Boolean" {{checked system.matrix.runningSilent}}>
     </div>
 </li>
+{{#if showDNI}}
+<li class="grid">
+    <div class="col-10">{{localize 'SR5.DNIWired'}}</div>
+    <div class="col-2 SR-TextCenter"
+      data-helpTitle="{{localize 'SR5.DNIWired'}}"
+      data-helpMessage="{{localize 'SR5.HELP_DNIWiredMsg'}}"
+    >
+        <input type="checkbox" name="system.hasDNI" data-dtype="Boolean" {{checked system.hasDNI}}>
+    </div>
+</li>
+{{/if}}

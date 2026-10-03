@@ -70,7 +70,7 @@ export class SR5SellDialog extends foundry.applications.api.HandlebarsApplicatio
     this.actor = options.actor
     this._selection = new Map()
     this._contactId = null
-    this._overridePool = 0
+    this._overridePool = null
     this._useAvailability = true
     this._searchText = ''
   }
@@ -117,7 +117,7 @@ export class SR5SellDialog extends foundry.applications.api.HandlebarsApplicatio
     }))
     context.hasContacts = contacts.length > 0
     context.hasContact = !!contact
-    context.overridePool = this._overridePool || ''
+    context.overridePool = this._overridePool ?? ''
     context.useAvailability = this._useAvailability
     context.searchText = this._searchText
     context.rules = SR5ShopFence.rules
@@ -178,7 +178,8 @@ export class SR5SellDialog extends foundry.applications.api.HandlebarsApplicatio
     const override = el.querySelector('[data-sell-override]')
     if (override) {
       override.addEventListener('change', (event) => {
-        this._overridePool = Math.max(0, Math.floor(Number(event.target.value) || 0))
+        // Left empty: null, the computed pools. Typed 0: 0.
+        this._overridePool = SR5ShopAvailability.typedNumber(event.target.value)
         this.render()
       })
     }

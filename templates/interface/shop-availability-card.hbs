@@ -13,10 +13,11 @@
         {{localize 'SR5.ShopSearchedSelf'}}{{localize 'SR5.Colons'}} <strong>{{searcherLabel}}</strong>
       {{/if}}
       — {{localize 'SR5.DicePool'}} {{pool}}{{#if limit}} [{{limit}}]{{/if}}
-      {{#if bonusDice}}<span class="sr-shop-bonus">(+{{bonusDice}} {{localize 'SR5.ShopSurchargeDice'}}, +{{surcharge}}%)</span>{{/if}}
+      {{#if negativePool}}<span class="sr-shop-bonus">({{localize 'SR5.ShopRawPool'}} {{negativePool}}{{#if bonusDice}}, +{{bonusDice}} {{localize 'SR5.ShopSurchargeDice'}}, +{{surcharge}}%{{/if}})</span>
+      {{else if bonusDice}}<span class="sr-shop-bonus">(+{{bonusDice}} {{localize 'SR5.ShopSurchargeDice'}}, +{{surcharge}}%)</span>{{/if}}
     </p>
 
-    {{#if override}}
+    {{#if overridden}}
     <p class="sr-shop-card-note">{{localize 'SR5.ShopOverriddenPool'}}</p>
     {{/if}}
     {{#if derived}}
@@ -48,7 +49,7 @@
         <tr class="sr-shop-line sr-shop-line-{{this.outcome}}">
           <td>{{this.name}}{{#if (gt this.quantity 1)}} (x{{this.quantity}}){{/if}}</td>
           <td>{{#if this.availability}}{{this.availability}}{{else}}—{{/if}}</td>
-          <td>{{#if this.availability}}{{this.hits}} / {{this.opposition}}{{else}}—{{/if}}</td>
+          <td>{{#if this.untested}}—{{else if this.availability}}{{this.hits}} / {{this.opposition}}{{else}}—{{/if}}</td>
           <td>{{this.outcomeLabel}}</td>
           <td>{{this.delayLabel}}</td>
           <td>{{this.priceLabel}}</td>

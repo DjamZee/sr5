@@ -26,11 +26,14 @@ import {
   SR5_SocketHandler 
 } from "../../socket.js"
 import {
-  SR5_ActorHelper 
+  SR5_ActorHelper
 } from "./entityActor-helpers.js"
 import {
-  SR5Combat 
-} from "../../system/srcombat.js"
+  SR5_MarkHelpers
+} from "../../rolls/roll-helpers/mark.js"
+import {
+  isStoredAway 
+} from "../../interface/storage-rules.js"
 
 /**
  * Extend the base Actor class to implement additional logic specialized for Shadowrun 5.
@@ -316,6 +319,9 @@ export class SR5Actor extends Actor {
           "prototypeToken.texture.src": this.img,
         })
         break
+      // Linked below, once any remembered token has been laid on
+      case "actorStorage":
+        break
       default :
         SR5_SystemHelpers.srLog(1, `Unknown '${this.type}' type in 'base _preCreate()'`)
     }
@@ -336,6 +342,14 @@ export class SR5Actor extends Actor {
     }
 
     this.updateSource(createData)
+
+    // A storage on the map is one bag, wherever it is opened from: what is
+    // taken through its token must leave the actor too, or picking it up
+    // gives back what has already been taken. Set last, so that a token
+    // remembered from a bag put down before this was so cannot unlink it.
+    if (this.type === "actorStorage") this.updateSource({
+      "prototypeToken.actorLink": true
+    })
   }
 
   prepareData() {
@@ -494,7 +508,14 @@ export class SR5Actor extends Actor {
       // values are still computed so the storage can show it, but it is held
       // inactive here rather than on the item, so taking it out gives it back
       // exactly as it was.
-      if (iData.storedIn) {
+      // A storage put down on the map has nobody to give a bonus to: what it
+      // carries computes its own values and nothing else. It is not switched
+      // off, because the storage hands its items over with their prepared data.
+      if (actor.type === "actorStorage") {
+        i.prepareData()
+        continue
+      }
+      if (isStoredAway(i, actor)) {
         i.prepareData()
         iData.isActive = false
         if (iData.wirelessTurnedOn !== undefined) iData.wirelessTurnedOn = false
@@ -794,7 +815,7 @@ export class SR5Actor extends Actor {
     for (let i of actor.items) {
       let iData = i.system
       // Stored gear takes no part in what the character can do
-      if (iData.storedIn) continue
+      if (isStoredAway(i, actor) || actor.type === "actorStorage") continue
       switch (i.type){
         case "itemDevice":
           if (actor.type === "actorPc" || actor.type === "actorGrunt"){
@@ -843,6 +864,7 @@ export class SR5Actor extends Actor {
           break
         case "itemSpell":
           iData.casterMagic = actorData.specialAttributes.magic.augmented.value
+          SR5_UtilityItem._handleSpellRange(iData, iData.casterMagic)
           break
         case "itemSpirit":
           if (iData.isBounded){
@@ -871,6 +893,11 @@ export class SR5Actor extends Actor {
           // Agent data propagation is now handled by the updateActor hook
           break
       }
+    }
+    // An AI outside any device still defends against matrix actions, and resists matrix damage, with its persona alone (Data Trails p. 157)
+    if (SR5_CharacterUtility.isDevicelessAI(actor)) {
+      SR5_CharacterUtility.generateMatrixActionsDefenses(actor)
+      SR5_CharacterUtility.generateDevicelessAIMatrixResistance(actor)
     }
   }
 
@@ -923,26 +950,35 @@ export class SR5Actor extends Actor {
     let updatedItems = foundry.utils.duplicate(this.items)
 
     //Reset le SS à 0
+    //The deck keeps its configuration: attributes are assigned at its first start and only change by reconfiguring (SR5 p. 229)
     let actorData = foundry.utils.duplicate(this.system)
-    actorData.matrix.attributes.attack.base = 0
-    actorData.matrix.attributes.dataProcessing.base = 0
-    actorData.matrix.attributes.firewall.base = 0
-    actorData.matrix.attributes.sleaze.base = 0
-    actorData.matrix.attributesCollection.value1isSet = false
-    actorData.matrix.attributesCollection.value2isSet = false
-    actorData.matrix.attributesCollection.value3isSet = false
-    actorData.matrix.attributesCollection.value4isSet = false
     actorData.matrix.overwatchScore = 0
+    //The marks placed on an AI's persona go too, with their trace on the decks of those who placed them (SR5 p. 244)
+    if (SR5_CharacterUtility.isDepthActive(this)) {
+      await SR5_MarkHelpers.clearPersonaMarks(this)
+      actorData.matrix.marks = []
+    }
 
     //Delete marks on others actors
-    if (actorData.matrix.markedItems.length) {
+    //markedItems is prepared from the active device: the copy above holds the source, where it is always empty.
+    //The traces of every owned device are cleared below, so the marks they point to go too, or they would be left orphaned
+    let markedItems = []
+    for (let m of [...(this.system.matrix?.markedItems ?? []), ...Array.from(this.items).flatMap(i => i.system.markedItems ?? [])]){
+      if (!markedItems.some(e => e.uuid === m.uuid)) markedItems.push(foundry.utils.duplicate(m))
+    }
+    if (markedItems.length) {
+      let markData = {
+        matrix: {
+          markedItems: markedItems
+        }
+      }
       if (!game.user?.isGM) {
         await SR5_SocketHandler.emitForGM("deleteMarksOnActor", {
-          actorData: actorData,
+          actorData: markData,
           actorId: actorId,
         })
       } else {
-        await SR5_ActorHelper.deleteMarksOnActor(actorData, actorId)
+        await SR5_ActorHelper.deleteMarksOnActor(markData, actorId)
       }
     }
 
@@ -965,8 +1001,8 @@ export class SR5Actor extends Actor {
       if (i.system.markedItems?.length) i.system.markedItems = []
     }
 
-    //Manage actions
-    actorData.specialProperties.actions.complex.current -=1
+    //No action is spent here: an IC that forces the reboot (SR5 p. 250) takes none of the character's actions.
+    //The sheet button spends the complex action of a reboot the character chooses
 
     dataToUpdate = foundry.utils.mergeObject(dataToUpdate, {
       "system": actorData,
@@ -981,14 +1017,8 @@ export class SR5Actor extends Actor {
       }
     }
 
-    ui.notifications.info(`${actorData.matrix.deviceName} ${game.i18n.localize("SR5.Rebooted")}.`)
-
-    //Manage action in combat
-    if(game.combat){
-      SR5Combat.changeActionInCombat(actorId, [{
-        type: "complex", value: 1, source: "rebootDeck"
-      }], false)
-    }
+    //deviceName is prepared from the active device, the copy only holds the source
+    ui.notifications.info(`${this.system.matrix.deviceName} ${game.i18n.localize("SR5.Rebooted")}.`)
   }
 
   //Reset Cumulative Recoil (SR5 p. 178)

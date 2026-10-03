@@ -73,6 +73,96 @@ describe('SR5_SpiritTypes', () => {
     expect(Object.keys(SR5.spiritTypes)).toEqual(Object.keys(officialTypes))
   })
 
+  // An empty translation leaves a blank entry, and a stray comma, wherever
+  // a spirit's powers are listed.
+  it('names every spirit power in each language', async () => {
+    const {
+      readFileSync 
+    } = await import('node:fs')
+    for (const lang of ['fr', 'en']) {
+      const strings = JSON.parse(readFileSync(`lang/${lang}.json`, 'utf8'))
+      const blank = Object.values(SR5.AllSpiritPowers).filter(key => strings[key] === "")
+      expect(blank, lang).toEqual([])
+    }
+  })
+
+  it('groups skills by rating, highest first, keeping full and half apart', () => {
+    const groups = SR5_SpiritTypes.skillGroups([
+      {
+        label: 'a', value: 2 
+      }, {
+        label: 'b', value: 4 
+      }, {
+        label: 'c', value: 2 
+      }, {
+        label: 'd', value: 4 
+      },
+    ])
+    expect(groups).toEqual([
+      {
+        value: 4, labels: ['b', 'd'] 
+      }, {
+        value: 2, labels: ['a', 'c'] 
+      },
+    ])
+  })
+
+  it('counts the skills a spirit gets, inherited ones included', () => {
+    // One skill added by the type, two inherited from its base type.
+    const preview = {
+      force: 5,
+      skills: [{
+        label: 'added', value: 5 
+      }, {
+        label: 'inherited', value: 5 
+      },
+      {
+        label: 'half', value: 3 
+      }, {
+        label: 'other', value: 1 
+      }],
+    }
+    expect(SR5_SpiritTypes.skillCounts(preview)).toEqual({
+      full: 2, half: 1 
+    })
+    expect(SR5_SpiritTypes.skillCounts(null)).toEqual({
+      full: 0, half: 0 
+    })
+  })
+
+  describe('reload', () => {
+    it('resets only spirits, and redraws every open sheet', async () => {
+      const saved = {
+        items: game.items, packs: game.packs, actors: game.actors
+      }
+      const made = []
+      const actor = (type, rendered) => {
+        const a = {
+          type, resets: 0, renders: 0
+        }
+        a.reset = () => a.resets++
+        a.sheet = {
+          rendered, render: () => a.renders++
+        }
+        made.push(a)
+        return a
+      }
+      const spirit = actor('actorSpirit', false)
+      const pc = actor('actorPc', true)
+      const grunt = actor('actorGrunt', false)
+      Object.assign(game, {
+        items: [], packs: [], actors: made
+      })
+      try {
+        await SR5_SpiritTypes.reload()
+      } finally {
+        Object.assign(game, saved)
+      }
+      expect([spirit.resets, pc.resets, grunt.resets]).toEqual([1, 0, 0])
+      expect([spirit.renders, pc.renders, grunt.renders]).toEqual([0, 1, 0])
+    })
+  })
+
   describe('baseType', () => {
     it('leaves an official type alone', () => {
       expect(SR5_SpiritTypes.baseType('fire')).toBe('fire')

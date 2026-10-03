@@ -16,11 +16,20 @@ import {
 } from "../system/srcombat.js"
 import SR5_RollDialog from "./roll-dialog.js"
 import {
+  isRecoilCarriedOver
+} from "./roll-helpers/recoil.js"
+import {
   SR5_ConverterHelpers 
 } from "./roll-helpers/converter.js"
 import {
-  SR5_CombatHelpers 
+  SR5_CombatHelpers
 } from "./roll-helpers/combat.js"
+import {
+  SR5_SocketHandler
+} from "../socket.js"
+import {
+  SR5_ActorHelper
+} from "../entities/actors/entityActor-helpers.js"
 
 export class SR5_RollTest {
   //Prepare the roll window
@@ -75,6 +84,12 @@ export class SR5_RollTest {
         const element = dialog.element
         const rollDialog = new SR5_RollDialog(dialog, element, dialogData)
         rollDialog.activateListeners(element)
+        //An action the character no longer has keeps the dialog open, when the world setting asks for it
+        element.querySelectorAll('button[data-action="roll"], button[data-action="edge"]').forEach(b => b.addEventListener("click", ev => {
+          if (SR5Combat.hasActionsLeft(actor, dialogData.combat.actions)) return
+          ev.preventDefault()
+          ev.stopImmediatePropagation()
+        }))
       },
     })
 
@@ -132,8 +147,9 @@ export class SR5_RollTest {
 
     // SR5 p. 178: recoil builds up shot after shot until the character spends a simple or complex action on something other than firing
     // SR5 p. 180: single-shot (SS) and suppressive fire (SF) weapons neither build nor suffer progressive recoil
+    // Outside combat there are no action phases to carry recoil over: each shot stands alone
     if (dialogData.combat.ammo.fired > 0){
-      if (dialogData.combat.firingMode.selected !== "SS" && dialogData.combat.firingMode.selected !== "SF"){
+      if (dialogData.combat.firingMode.selected !== "SS" && dialogData.combat.firingMode.selected !== "SF" && isRecoilCarriedOver(actor)){
         let actualRecoil = actor.getFlag("sr5", "cumulativeRecoil") || 0
         actualRecoil += dialogData.combat.ammo.fired
         await actor.setFlag("sr5", "cumulativeRecoil", actualRecoil)
@@ -165,44 +181,58 @@ export class SR5_RollTest {
     if (dialogData.owner.itemUuid) SR5_RollTestHelper.updateItemAfterRoll(dialogData)
 
     //Update spirit if spirit aid is used
-    if (dialogData.dicePool.modifiers.spiritAid?.value > 0){
-      let spiritItem = await fromUuid(dialogData.magic.spiritAid.id)
-      let spiritItemData = foundry.utils.duplicate(spiritItem.system)
-      spiritItemData.services.value -= 1
-      await spiritItem.update({
-        'data': spiritItemData
-      })
-      ui.notifications.info(`${spiritItem.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format('SR5.INFO_ServicesReduced', {
-        service: 1
-      })}`)
-      let spiritActor = game.actors.find(a => a.system.creatorItemId === spiritItem.id)
-      if (spiritActor){
-        let spiritActorData = foundry.utils.duplicate(spiritActor.system)
-        spiritActorData.services.value -= 1
-        await spiritActor.update({
-          'data': spiritActorData
-        })
-      }
-    }
+    await SR5_RollTest.spendSpiritAidService(dialogData)
 
     //Update combatant if Active defense or full defense is used.
-    if (dialogData.dicePool.modifiers.fullDefense || (dialogData.combat.activeDefenseSelected !== "none")){
-      let initModifier = 0
-      if (dialogData.dicePool.modifiers.fullDefense){
-        let isInFullDefense = actor.effects.find(e => e.origin === "fullDefense") ? true : false
-        if (!isInFullDefense){
-          initModifier += -10
-          SR5_CombatHelpers.applyFullDefenseEffect(actor)
-        }
-      }
-      if (dialogData.combat.activeDefenseSelected !== "") initModifier += SR5_ConverterHelpers.activeDefenseToInitMod(dialogData.combat.activeDefenseSelected)
-      if (initModifier < 0) SR5Combat.changeInitInCombatHelper(actor.id, initModifier)
-    }
+    SR5_RollTest.applyDefenseStance(dialogData, actor)
 
     //Change actions in combat tracker
     if (game.combat && dialogData.combat.actions.length){
       await SR5Combat.changeActionInCombat(dialogData.owner.actorId, dialogData.combat.actions)
     }
+  }
+
+  //SR5 p. 305-306: aiding a test is a service of a bound spirit. The dice pool modifiers are a list, and an
+  //update keyed 'data' (Foundry V9) is ignored: the service is written by its path
+  static async spendSpiritAidService(dialogData) {
+    if (!(dialogData.dicePool.modifiers.find(m => m.type === "spiritAid")?.value > 0)) return
+    let spiritItem = await fromUuid(dialogData.magic.spiritAid.id)
+    await spiritItem.update({
+      "system.services.value": spiritItem.system.services.value - 1
+    })
+    ui.notifications.info(`${spiritItem.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format('SR5.INFO_ServicesReduced', {
+      service: 1
+    })}`)
+    let spiritActor = game.actors.find(a => a.system.creatorItemId === spiritItem.id)
+    if (spiritActor){
+      let services = spiritActor.system.services.value - 1
+      //A summoned spirit is often the GM's: a player who does not own it hands the update to the GM
+      if (spiritActor.isOwner) await spiritActor.update({
+        "system.services.value": services
+      })
+      else await SR5_SocketHandler.emitForGM("updateActorData", {
+        actorId: spiritActor.id,
+        dataToUpdate: {
+          services: {
+            value: services
+          }
+        },
+      })
+    }
+  }
+
+  // Full defense (SR5 p. 170 and 189) costs 10 initiative and stays for the turn;
+  // dicePool.modifiers is an array, the checkbox adds a "fullDefense" entry
+  static applyDefenseStance(dialogData, actor){
+    let fullDefense = dialogData.dicePool.modifiers.some(m => m.type === "fullDefense")
+    if (!fullDefense && dialogData.combat.activeDefenseSelected === "none") return
+    let initModifier = 0
+    if (fullDefense && !actor.effects.find(e => e.origin === "fullDefense")){
+      initModifier += -10
+      SR5_CombatHelpers.applyFullDefenseEffect(actor)
+    }
+    if (dialogData.combat.activeDefenseSelected !== "") initModifier += SR5_ConverterHelpers.activeDefenseToInitMod(dialogData.combat.activeDefenseSelected)
+    if (initModifier < 0) SR5Combat.changeInitInCombatHelper(actor.id, initModifier)
   }
 
   /** Roll a shadowrun 5 test
@@ -223,33 +253,18 @@ export class SR5_RollTest {
     let rollRoll = await roll.evaluate()
     let rollJSON = await roll.toJSON(rollRoll)
     //Glitch
-    let totalGlitch = 0,
-      glitchRoll = false,
-      criticalGlitchRoll = false,
-      realHits = 0
+    let realHits = 0
     for (let d of rollJSON.terms[0].results) {
-      if (d.result === 1) {
-        d.glitch = true
-        totalGlitch ++
-      }
+      if (d.result === 1) d.glitch = true
       if (edgeRoll) d.edge = true
       if (d.result >= 5) realHits ++
-    }
-
-    if (totalGlitch > dicePool/2){
-      glitchRoll = true
-      if (rollJSON.terms[0].total < 1) {
-        glitchRoll = false
-        criticalGlitchRoll = true
-      }
     }
 
     let rollResult = {
       dicePool: dicePool,
       hits: rollRoll.total,
       realHits: realHits,
-      glitchRoll: glitchRoll,
-      criticalGlitchRoll: criticalGlitchRoll,
+      ...SR5_RollTest.glitchStatus(rollJSON.terms[0].results, dicePool),
       dices: rollJSON.terms[0].results,
       limit: limit,
       rollMode: rollMode,
@@ -260,14 +275,47 @@ export class SR5_RollTest {
     return rollResult
   }
 
+  /** SR5 p. 47: more than half the dice show 1 is a glitch; a glitch with no hit is a critical glitch.
+   * Hits are counted on the dice rolled (a serialized Die term has no total, and a limit never brings them to 0).
+   * @param {Array} dices - Results of every die rolled for the test
+   * @param {Number} dicePool - Number of dice in the pool
+   */
+  static glitchStatus(dices, dicePool) {
+    let ones = dices.filter(d => d.result === 1).length,
+      hits = dices.filter(d => d.result >= 5).length,
+      glitch = ones > dicePool/2
+    return {
+      glitchRoll: glitch && hits > 0,
+      criticalGlitchRoll: glitch && hits === 0,
+    }
+  }
+
   //Handle extended roll
   static async extendedRoll(message, actor){
-    let messageData = message.flags.sr5data,
-      dicePool = messageData.dicePool.value - 1
+    let messageData = message.flags.sr5data
+    //SR5 p. 207: the next roll of a natural Physical recovery waits for the Stun damage to be healed, as the first one
+    if (SR5_ActorHelper.stunBlocksNaturalHealing(actor?.system, messageData.test.type, messageData.test.typeSub)) {
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_StunHealsFirst"))
+      return false
+    }
+
+    //Prepare new chat card: the base pool and its modifiers, minus one die per earlier roll (SR5 p. 50).
+    //Edge dice were added to the roll they were spent on, not to the next ones (SR5 p. 58)
+    let newMessage = foundry.utils.duplicate(messageData)
+    newMessage.test.extended.roll += 1
+    for (let type of ["edge", "pushTheLimit", "extendedTest"]) SR5_EntityHelpers.removeElementFromArray(newMessage.dicePool.modifiers, 'type', type)
+    delete newMessage.originalModifiers
+    newMessage.edge.hasUsedPushTheLimit = false
+    newMessage.dicePool.modifiers.push({
+      type: "extendedTest",
+      label: game.i18n.localize("SR5.ExtendedTest"),
+      value: -(newMessage.test.extended.roll - 1),
+    })
+    newMessage = await SR5_RollTestHelper.handleDicePoolModifiers(newMessage)
 
     //roll new test
     let newRoll = await SR5_RollTest.rollDice({
-      dicePool: dicePool, limit: messageData.limit.value 
+      dicePool: newMessage.dicePool.value, limit: messageData.limit.value
     })
 
     //Keep only original hits and concatenat with new hits
@@ -276,21 +324,19 @@ export class SR5_RollTest {
     })
     let dicesTotal = newRoll.dices.concat(dicesKeeped)
 
-    //Prepare new chat card
-    let newMessage = foundry.utils.duplicate(messageData)
     newMessage.roll.hits = messageData.roll.hits + newRoll.hits
     newMessage.roll.dices = dicesTotal
-    newMessage.test.extended.roll += 1
-    if (typeof newMessage.originalModifiers === 'undefined') {
-      newMessage.originalModifiers = messageData.dicePool.modifiersTotal
-    }
-    SR5_EntityHelpers.removeElementFromArray(newMessage.dicePool.modifiers, 'type', 'extendedTest')
-    newMessage.dicePool.modifiers.push({
-      type: "extendedTest",
-      label: game.i18n.localize("SR5.ExtendedTest"),
-      value: -( - newMessage.originalModifiers + newMessage.test.extended.roll - 1),
-    })
-    newMessage = await SR5_RollTestHelper.handleDicePoolModifiers(newMessage)
+    //Edge spent after this roll works on this roll alone (SR5 p. 58): keep its own dice and hits apart from the kept ones
+    newMessage.roll.rollDices = newRoll.dices
+    newMessage.roll.rollHits = newRoll.hits
+    newMessage.roll.realHits = messageData.roll.hits + newRoll.realHits
+    //Earlier glitches stay counted for the whole test (SR5 p. 208: each glitched healing roll counts double)
+    if (messageData.roll.glitchRoll || messageData.roll.criticalGlitchRoll) newMessage.test.extended.glitchedRolls = (messageData.test.extended.glitchedRolls || 0) + 1
+    //Each roll of an extended test can glitch on its own (SR5 p. 47, 51)
+    newMessage.roll.glitchRoll = newRoll.glitchRoll
+    newMessage.roll.criticalGlitchRoll = newRoll.criticalGlitchRoll
+    delete newMessage.roll.criticalGlitchDamage
+    delete newMessage.roll.overwatchRaised
     await SR5_RollTest.addInfoToCard(newMessage, actor.id)
 
     if (newMessage.owner.itemUuid) SR5_RollTestHelper.updateItemAfterRoll(newMessage, actor)
@@ -305,10 +351,12 @@ export class SR5_RollTest {
   static async secondeChance(message, actor) {
     let messageData = message.flags.sr5data
 
-    //Re roll failed dices
-    let dicePool = messageData.dicePool.value - messageData.roll.hits
+    //Re roll failed dices (on a later roll of an extended test, the dice of that roll only)
+    let rollDices = messageData.roll.rollDices
+    let rollHits = messageData.roll.rollHits ?? messageData.roll.hits
+    let dicePool = rollDices ? rollDices.filter(d => d.result < 5).length : messageData.dicePool.value - messageData.roll.hits
     if (dicePool < 0) dicePool = 0
-    let limit = messageData.limit.value - messageData.roll.hits
+    let limit = messageData.limit.value - rollHits
     if (limit < 0) limit = 0
     let chance = await SR5_RollTest.rollDice({
       dicePool: dicePool, limit: limit, edgeRoll: true
@@ -323,6 +371,7 @@ export class SR5_RollTest {
     let newMessage = foundry.utils.duplicate(messageData)
     newMessage.roll.hits = messageData.roll.hits + chanceHit
     newMessage.roll.dices = dicesKeeped.concat(chance.dices)
+    if (rollDices) newMessage.roll.rollDices = rollDices.filter(d => d.result > 4).concat(chance.dices)
     newMessage.edge.hasUsedSecondChance = true
     newMessage.edge.canUseEdge = false
     await SR5_RollTest.addInfoToCard(newMessage, actor.id)
@@ -361,6 +410,11 @@ export class SR5_RollTest {
     newMessage.roll.hits = originalHits + newRoll.hits
     newMessage.roll.realHits = originalHits + newRoll.realHits
     newMessage.roll.dices = messageData.roll.dices.concat(newRoll.dices)
+    //The Edge dice join the pool: glitch is read again on every die rolled for this roll (SR5 p. 47, 58),
+    //without the hits kept from earlier rolls of an extended test
+    let rollDices = (messageData.roll.rollDices ?? messageData.roll.dices).concat(newRoll.dices)
+    if (messageData.roll.rollDices) newMessage.roll.rollDices = rollDices
+    Object.assign(newMessage.roll, SR5_RollTest.glitchStatus(rollDices, messageData.dicePool.value + dicePool))
     newMessage.edge.hasUsedPushTheLimit = true
     newMessage.edge.canUseEdge = false
     newMessage.dicePool.modifiers.push({
@@ -474,6 +528,8 @@ export class SR5_RollTest {
       if (!cardData.test.extended.roll) cardData.test.extended.roll = 1
       cardData.test.extended.intervalValue = cardData.test.extended.multiplier * cardData.test.extended.roll
       if (cardData.dicePool.value <= 1) cardData.test.isExtended = false
+      //SR5 p. 51: a critical glitch fails the extended test, no more rolls. The card hides "New roll" instead of
+      //ending the test here, so Edge spent after the roll (SR5 p. 58) can reopen it by erasing the critical glitch
     }
 
     switch (cardData.test.type) {

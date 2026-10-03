@@ -1,0 +1,25 @@
+{{!-- Spirit type and Force, then the bound switch --}}
+<div class="SR-EspritType">
+  <p class="SRTextInBox">{{findTranslation 'spiritTypes' system.type}}</p>
+</div>
+<div class="SRemptyBox" title="{{localize 'SR5.Force'}}">
+  <input class="SRinputInBox" type="number" data-dtype="Number" name="system.force.base" value="{{system.force.base}}">
+</div>
+<div class="SR-Materialize"
+  data-helpTitle="{{localize 'SR5.HELP_BoundedButton'}}"
+  data-helpMessage="{{localize 'SR5.HELP_BoundedButtonMsg'}}"
+  >
+  <input id="boundedIcon" type="checkbox" name="system.isBounded" data-dtype="Boolean" {{checked system.isBounded}}>
+  <label for="boundedIcon"{{#if system.isBounded}} class="active"{{/if}}>{{> systems/sr5/assets/img/icons/nav-link.svg}}</label>
+</div>
+{{!-- Materialization switch: from the astral initiative to the physical one, and back (SR5 p. 401) --}}
+{{#ifne system.type 'watcher'}}
+<div class="SR-Materialize"
+  title="{{localize 'SR5.Materializing'}}"
+  data-helpTitle="{{localize 'SR5.HELP_MaterializingButton'}}"
+  data-helpMessage="{{localize 'SR5.HELP_MaterializingButtonMsg'}}"
+  >
+  <input class="init-switch" id="materializeIcon" type="checkbox" name="system.isMaterializing" data-dtype="Boolean" data-binding="{{#if system.isMaterializing}}astralInit{{else}}physicalInit{{/if}}" {{checked system.isMaterializing}} {{#ife system.type 'homunculus'}}disabled{{/ife}}>
+  <label for="materializeIcon"{{#if system.isMaterializing}} class="active"{{/if}}>{{> systems/sr5/assets/img/icons/nav-materialize.svg}}</label>
+</div>
+{{/ifne}}

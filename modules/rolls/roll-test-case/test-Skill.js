@@ -8,8 +8,11 @@ import {
   SR5_RollMessage 
 } from "../roll-message.js"
 import {
-  SR5_CombatHelpers 
+  SR5_CombatHelpers
 } from "../roll-helpers/combat.js"
+import {
+  hasSingleMonitor
+} from "../roll-helpers/cardRoller.js"
 
 export default async function skillInfo(cardData){
   let itemTarget
@@ -73,16 +76,26 @@ export default async function skillInfo(cardData){
       }
       break
     case "firstAid":
+      //SR5 p. 207: a critical glitch adds 1D3 boxes, rolled once per test even if the card is refreshed (Edge)
       if (cardData.roll.criticalGlitchRoll) {
-        let failedDamage = new Roll(`1d3`)
-        await failedDamage.evaluate()
-        cardData.damage.value = failedDamage.total
-        cardData.damage.type = await SR5_CombatHelpers.chooseDamageType()
+        if (!cardData.roll.criticalGlitchDamage) {
+          let failedDamage = new Roll(`1d3`)
+          await failedDamage.evaluate()
+          //A targeted patient with a single condition monitor has no damage type to choose
+          let patient = cardData.target.hasTarget ? SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId) : null
+          cardData.roll.criticalGlitchDamage = {
+            value: failedDamage.total, type: hasSingleMonitor(patient) ? "condition" : await SR5_CombatHelpers.chooseDamageType()
+          }
+        }
+        cardData.damage.value = cardData.roll.criticalGlitchDamage.value
+        cardData.damage.type = cardData.roll.criticalGlitchDamage.type
+        //The type dialog may have been cancelled: the button then asks for it when clicked
+        let damageType = cardData.damage.type ? game.i18n.localize(SR5.damageTypesShort[cardData.damage.type]) : ""
         if (cardData.target.hasTarget) cardData.chatCard.buttons.damage = SR5_RollMessage.generateChatButton("nonOpposedTest", "damage", `${game.i18n.format('SR5.HealButtonFailed', {
-          hits: cardData.damage.value, damageType: (game.i18n.localize(SR5.damageTypesShort[cardData.damage.type]))
+          hits: cardData.damage.value, damageType: damageType
         })}`)
         else cardData.chatCard.buttons.damage = SR5_RollMessage.generateChatButton("opposedTest", "damage", `${game.i18n.format('SR5.HealButtonFailed', {
-          hits: cardData.damage.value, damageType: (game.i18n.localize(SR5.damageTypesShort[cardData.damage.type]))
+          hits: cardData.damage.value, damageType: damageType
         })}`)
       } else if (cardData.roll.hits > 2) {
         cardData.roll.netHits = cardData.roll.hits - 2
@@ -136,7 +149,8 @@ export default async function skillInfo(cardData){
     case "intimidation":
     case "performance":
     case "leadership":
-      if (cardData.test.isOpposed && cardData.threshold.type !== null){
+      // The target's roll ends the opposed test; the actor's roll offers "Resist"
+      if (cardData.test.isOpposedResistance){
         if (cardData.roll.hits >= cardData.threshold.value) cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.SuccessfulDefense"))
         else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.FailedDefense"))
       } else {

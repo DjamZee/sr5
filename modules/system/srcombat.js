@@ -13,6 +13,9 @@ import {
 import {
   SR5_PrepareRollTest 
 } from "../rolls/roll-prepare.js"
+import {
+  SR5_MiscellaneousHelpers
+} from "../rolls/roll-helpers/miscellaneous.js"
 
 export class SR5Combat extends Combat {
   get initiativePass(){
@@ -59,12 +62,12 @@ export class SR5Combat extends Combat {
   static async seizeInitiative(combatant){
     let actor = SR5Combat.getActorFromCombatant(combatant)
     if (!actor) return
-    let actorData = foundry.utils.deepClone(actor.system)
-    if (actorData.conditionMonitors.edge?.actual?.value < actorData.conditionMonitors.edge?.value){
+    //deepClone hands back the live data model: spend the Edge point by its path, as the roll tests do
+    let edge = actor.system.conditionMonitors.edge
+    if (edge?.actual?.value < edge?.value){
       await combatant.setFlag("sr5", "seizeInitiative", true)
-      actorData.conditionMonitors.edge.actual.base += 1
       await actor.update({
-        system: actorData
+        "system.conditionMonitors.edge.actual.base": edge.actual.base + 1
       })
       ui.notifications.info(`${actor.name} ${game.i18n.localize("SR5.INFO_ActorSeizeInitiative")}`)
     } else {
@@ -75,15 +78,14 @@ export class SR5Combat extends Combat {
   static async blitz(combatant){
     let actor = SR5Combat.getActorFromCombatant(combatant)
     if (!actor) return
-    let actorData = foundry.utils.deepClone(actor.system)
-    if (actorData.conditionMonitors.edge?.actual.value < actorData.conditionMonitors.edge?.value){
+    let edge = actor.system.conditionMonitors.edge
+    if (edge?.actual.value < edge?.value){
       await combatant.update({
         initiative: null,
         "flags.sr5.blitz": true,
       })
-      actorData.conditionMonitors.edge.actual.base += 1
       await actor.update({
-        system: actorData
+        "system.conditionMonitors.edge.actual.base": edge.actual.base + 1
       })
       ui.notifications.info(`${actor.name} ${game.i18n.localize("SR5.INFO_ActorUseBlitz")}`)
     } else {
@@ -137,6 +139,9 @@ export class SR5Combat extends Combat {
       })
       await SR5Combat.decreaseInitiativePassEffects(combatant)
       await SR5Combat.manageTurnEnd(combatant)
+      //Update actor's action: done here, on the gamemaster's side, whoever started the new round
+      if (!combatant.actor.isToken) await SR5Combat.resetActionInCombat(combatant.actorId, combatant)
+      else await SR5Combat.resetActionInCombat(combatant.tokenId, combatant)
     }
     await SR5Combat.setInitiativePass(combat, 1)
     await combat.rollAll()
@@ -312,9 +317,6 @@ export class SR5Combat extends Combat {
     await super.nextRound()
     for (let combatant of this.combatants){
       await combatant.setFlag("sr5", "hasPlayed", combatant.isDefeated)
-      //Update actor's action
-      if (!combatant.actor.isToken) await SR5Combat.resetActionInCombat(combatant.actorId, combatant)
-      else await SR5Combat.resetActionInCombat(combatant.tokenId, combatant)
     }
 
     // Owner permissions are needed to change the shadowrun initiative round.
@@ -509,8 +511,8 @@ export class SR5Combat extends Combat {
   }
 
   static getActorFromCombatant(combatant){
-    if (!combatant.actor.isToken) return SR5_EntityHelpers.getRealActorFromID(combatant.actorId)
-    else return SR5_EntityHelpers.getRealActorFromID(combatant.tokenId)
+    //The synthetic actor of an unlinked token, found without the canvas
+    return combatant.actor
   }
 
   static getCombatantFromActor(document){
@@ -582,6 +584,7 @@ export class SR5Combat extends Combat {
 
   static async changeActionInCombat(documentId, actions, updateActor = true){
     let actor = await SR5_EntityHelpers.getRealActorFromID(documentId)
+    if (!actor) return
     let actorData = foundry.utils.duplicate(actor.system)
     let combatant = await SR5Combat.getCombatantFromActor(actor)
     let initModifier
@@ -589,10 +592,8 @@ export class SR5Combat extends Combat {
 		
     //Update actor actions
     if (updateActor){
-      for (let action of actions){
-        if (action.type === "special") continue
-        actorData.specialProperties.actions[action.type].current -= action.value
-      }
+      //SR5 p. 164: a simple action spent leaves no complex one, and the reverse
+      SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions.filter(a => a.type !== "special"))
       await actor.update({
         system: actorData
       })
@@ -616,8 +617,10 @@ export class SR5Combat extends Combat {
       else ui.notifications.info(`${game.i18n.format("SR5.INFO_TakeActions", {
         actor: actor.name, actionValue: action.value, actionType: game.i18n.localize(SR5.actionTypes[action.type]), actionSource: game.i18n.localize(SR5.actionSources[action.source])
       })}`) 
+      // SR5 p. 170: an interruption action lowers the Initiative score by its own cost — 5 by default,
+      // 10 for a Watchdog Haywire or Popup (Kill Code p. 45)
       if (action.type === "interruption") {
-        initModifier = -5
+        initModifier = -(action.initiativeCost || 5)
       }
     }
     if (initModifier) await SR5Combat.changeInitInCombatHelper(documentId, initModifier)
@@ -655,23 +658,38 @@ export class SR5Combat extends Combat {
 
   }
 
+  //When the world setting asks for it, refuses an action the character no longer has in this initiative pass,
+  //with a warning: nothing is spent (SR5 p. 164-165). Unchecked (default), or out of combat, every action goes through
+  static hasActionsLeft(actor, actions){
+    if (!actor || !game.combat || !game.settings.get("sr5", "sr5BlockMissingActions")) return true
+    if (!SR5Combat.getCombatantFromActor(actor)) return true
+    let missing = SR5_MiscellaneousHelpers.missingAction(actions, actor.system.specialProperties?.actions)
+    if (!missing) return true
+    ui.notifications.warn(game.i18n.format("SR5.WARN_NoActionLeft", {
+      actor: actor.name, value: missing.value, action: game.i18n.localize(SR5.actionTypes[missing.type]), current: missing.current
+    }))
+    return false
+  }
+
   //Reset actions on actor
   static async resetActionInCombat(documentId, combatant){
-    let actor = SR5_EntityHelpers.getRealActorFromID(documentId)
-    let actorData = foundry.utils.duplicate(actor.system)
+    //Only the gamemaster gives actions back (a new pass, a new round, or the tracker entry)
+    if (!game.user?.isGM) return ui.notifications.warn(game.i18n.localize("SR5.WARN_ResetActionsGMOnly"))
+    let actor = combatant?.actor ?? SR5_EntityHelpers.getRealActorFromID(documentId)
+    if (!actor) return
+    //The prepared value carries the extra actions granted by effects: a copy of system would hold the stored one
+    let actions = actor.system.specialProperties.actions
+    let actionsUpdate = {
+    }
     for (let key of Object.keys(SR5.actionTypes)) {
-      if (actorData.specialProperties.actions[key]) {
-        actorData.specialProperties.actions[key].current = actorData.specialProperties.actions[key].value
-      }
+      if (actions[key]) actionsUpdate[`system.specialProperties.actions.${key}.current`] = actions[key].value
     }
     await combatant.update({
-      "flags.sr5.actions.free": actorData.specialProperties.actions.free.current,
-      "flags.sr5.actions.simple": actorData.specialProperties.actions.simple.current,
-      "flags.sr5.actions.complex": actorData.specialProperties.actions.complex.current,
+      "flags.sr5.actions.free": actions.free.value,
+      "flags.sr5.actions.simple": actions.simple.value,
+      "flags.sr5.actions.complex": actions.complex.value,
     })
-    await actor.update({
-      system: actorData
-    })
+    await actor.update(actionsUpdate)
   }
 
   //Effects lasting until the next Initiative Pass (Kill Code p. 43, I Am the Firewall): counted down at each pass and each new round
@@ -697,7 +715,6 @@ export class SR5Combat extends Combat {
     let actor = SR5Combat.getActorFromCombatant(combatant)
     if (!actor) return
 
-    let actorData = foundry.utils.deepClone(actor.system)
     let damageInfo
 
     //Decrease external effect duration
@@ -747,7 +764,11 @@ export class SR5Combat extends Combat {
         }
 
         //Special case : Acid Damage
-        if (itemData.type === "acidDamage") {
+        //SR5 p. 172: each Combat Turn the acid DV drops by 1 and the damage is applied again, and the acid eats
+        //1 more point of armor until its DV reaches 0. The effect value is a text field: convert it before
+        //subtracting, and store the reduced DV for the next turn
+        let acidValue = Number(itemData.value) - 1
+        if (itemData.type === "acidDamage" && acidValue > 0) {
           let armor = actor.items.find((i) => i.type === "itemArmor" && i.system.isActive && !i.system.isAccessory)
           if (armor){
             let updatedArmor = armor.toObject(false)
@@ -771,24 +792,29 @@ export class SR5Combat extends Combat {
             })}`)
           }
 
-          itemData.value -= 1
           damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
           damageInfo.damage.resistanceType = "physicalDamage"
-          damageInfo.damage.value = itemData.value
+          damageInfo.damage.value = acidValue
           damageInfo.damage.type = "physical"
           damageInfo.damage.element = "acid"
 
           actor.rollTest("resistanceCard", null, damageInfo)
+          if (actor.items.get(item.id)) await item.update({
+            "system.value": acidValue
+          })
         }
 
         //Apply Fire effect if any
+        //SR5 p. 173: the fire DV starts at 3 and goes up by 1 each Combat Turn. The effect value is a text field:
+        //adding 1 to it would append a digit ("3" + 1 = "31")
         if (itemData.type === "fireDamage") {
+          let fireValue = Number(itemData.value)
           damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
-          damageInfo.damage.value = itemData.value
+          damageInfo.damage.value = fireValue
           damageInfo.damage.type = "physical"
 
           await actor.takeDamage(damageInfo)
-          itemData.value += 1
+          itemData.value = fireValue + 1
           ui.notifications.info(`${combatant.name} ${game.i18n.format("SR5.INFO_FireDamageIncrease", {
             fire: itemData.value
           })}`)
@@ -806,17 +832,20 @@ export class SR5Combat extends Combat {
       ui.notifications.info(`${combatant.name} ${game.i18n.localize("SR5.INFO_FullDefenseEnd")}`)
     }
 
-    //Reset Spell defense dice pool
-    if (actorData.magic?.counterSpellPool?.current !== actorData.magic?.counterSpellPool?.value){
-      actorData.magic.counterSpellPool.current = actorData.magic.counterSpellPool.value
+    //Reset Spell defense dice pool, by path: deepClone(actor.system) handed back the live data model, and an
+    //update given that model recorded nothing, so the pool was never reset
+    //Read actor.system afresh, as the damage and effect updates above have rebuilt it
+    let counterSpellPool = actor.system.magic?.counterSpellPool
+    if (counterSpellPool && counterSpellPool.current !== counterSpellPool.value){
       await actor.update({
-        system: actorData
+        "system.magic.counterSpellPool.current": counterSpellPool.value
       })
     }
 
     //Handle Regeneration
+    let actorData = actor.system
     if (actorData.specialProperties?.regeneration){
-      if (actorData.conditionMonitors.physical?.actual?.value > 0 || actorData.conditionMonitors.stun?.actual?.value > 0 || actorData.conditionMonitors.condition?.actual?.value > 0) 
+      if (actorData.conditionMonitors.physical?.actual?.value > 0 || actorData.conditionMonitors.stun?.actual?.value > 0 || actorData.conditionMonitors.condition?.actual?.value > 0)
         actor.rollTest("regeneration")
     }
   }

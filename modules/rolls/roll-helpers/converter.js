@@ -40,6 +40,33 @@ export class SR5_ConverterHelpers {
     }
   }
 
+  //Resolve the firing mode code (SS, SA, BF, FA...) to preselect for a ranged weapon.
+  //firingMode.value holds translated abbreviations for display ("CC", "TR", "TA" in French),
+  //and rolls made before this fix saved such an abbreviation in firingMode.current.
+  static firingModeToCode(firingMode, localize = key => game.i18n.localize(key)){
+    const baseModes = {
+      singleShot: "SS", semiAutomatic: "SA", burstFire: "BF", fullyAutomatic: "FA",
+    }
+    const enabled = Object.entries(baseModes).filter(([key]) => firingMode[key]).map(([, code]) => code)
+    const current = firingMode.current
+    if (current && this.firingModeToAction(current)) return current
+    if (current) {
+      const code = enabled.find(c => localize(`SR5.WeaponMode${c}Short`) === current)
+      if (code) return code
+    }
+    return enabled[0]
+  }
+
+  //Action spent (1) or given back (-1) when the roll dialog changes the firing mode, 0 otherwise.
+  //The weapon's saved mode is read through firingModeToCode, like the dialog's preselection:
+  //an empty or translated firingMode.current must count as the mode the dialog opened on.
+  static firingModeChangeCost(firingMode, selected, actionSpent, localize){
+    const current = this.firingModeToCode(firingMode, localize)
+    if (current !== selected && !actionSpent) return 1
+    if (current === selected && actionSpent) return -1
+    return 0
+  }
+
   //Conver firing mode choice to action type
   static firingModeToAction(mode){
     switch(mode){
@@ -408,6 +435,41 @@ export class SR5_ConverterHelpers {
         return Math.ceil(body*5)
       default:
     }
+  }
+
+  //Collision damage table (Rigger 5 p. 179, update of SR5 p. 203): damage value from the initiator's Structure and the speed of the impact
+  static collisionDamage(structure, speed){
+    if (speed <= 0) return 0
+    if (speed <= 2) return Math.ceil(structure/2)
+    if (speed <= 4) return structure
+    if (speed <= 6) return structure*2
+    if (speed <= 8) return structure*3
+    if (speed <= 10) return structure*5
+    return structure*10
+  }
+
+  //Speed of the impact, depending on its angle (Rigger 5 p. 179): speed difference from the rear, initiator's speed on the side, sum of both head-on
+  static rammingSpeed(angle, attackerSpeed, targetSpeed){
+    switch(angle){
+      case "rear":
+        return Math.abs(attackerSpeed - targetSpeed)
+      case "front":
+        return attackerSpeed + targetSpeed
+      default:
+        return attackerSpeed
+    }
+  }
+
+  //Damage taken by the initiator (Rigger 5 p. 179): half the attack's damage (rounded up) from the rear or the side, all of it head-on
+  static rammingInitiatorDamage(damageValue, angle){
+    if (angle === "front") return damageValue
+    return Math.ceil(damageValue/2)
+  }
+
+  //Damage taken by the initiator when the target is not a vehicle (SR5 p. 204): relative speed and the target's Body, halved (rounded up)
+  static rammingNonVehicleDamage(targetBody, ramming){
+    let speed = this.rammingSpeed(ramming.angle, ramming.attackerSpeed || 0, ramming.targetSpeed || 0)
+    return Math.ceil(this.collisionDamage(targetBody, speed)/2)
   }
 
   static barrierTypeToStructure(barrierType){

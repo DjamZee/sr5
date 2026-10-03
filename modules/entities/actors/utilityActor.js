@@ -14,8 +14,11 @@ import {
   SR5 
 } from "../../config.js"
 import {
-  _getSRStatusEffect 
+  _getSRStatusEffect
 } from "../../system/effectsList.js"
+import {
+  SR5_TOKEN_VISION_MODES
+} from "../../system/vision.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -469,7 +472,8 @@ export class SR5_CharacterUtility extends Actor {
       }
 
       // Reset Matrix Marks
-      if (actorData.matrix.marks) actorData.matrix.marks = []
+      // An AI outside any device keeps the marks placed on its persona, which no device carries (Data Trails p. 157)
+      if (actorData.matrix.marks && !this.isDevicelessAI(actor)) actorData.matrix.marks = []
 
       // Reset Matrix Actions
       if (actorData.matrix.actions) {
@@ -818,6 +822,7 @@ export class SR5_CharacterUtility extends Actor {
       actorData.visions.astral.hasVision = true
       actorData.visions.astral.isActive = true
     }
+    this.settleMetatypeVision(actor)
     if (actorData.initiatives.astralInit.isActive) actorData.visions.augmented = true
     if (actorData.visions.astral.natural || actorData.visions.augmented) actorData.visions.astral.hasVision = true
     if (actorData.visions.astral.isActive) actorData.visions.astral.hasVision = true
@@ -829,11 +834,11 @@ export class SR5_CharacterUtility extends Actor {
       SR5_EntityHelpers.updateModifier(actorData.itemsProperties.environmentalMod.wind, game.i18n.localize('SR5.AstralPerception'), "visionType", -4, false, false)
     }
 
+    //Low-light vision takes no light row off : the roll treats partial and dim light as full light
+    //for it (SR5 p. 177), and it is of no help in complete darkness (SR5 p. 447). Two rows taken off
+    //here as well turned total darkness into partial light.
     if (actorData.visions.lowLight.natural || actorData.visions.lowLight.augmented) {
       actorData.visions.lowLight.hasVision = true
-      if (actorData.visions.lowLight.isActive) {
-        SR5_EntityHelpers.updateModifier(actorData.itemsProperties.environmentalMod.light, game.i18n.localize('SR5.LowLightVision'), "visionType", -2, false, false)
-      }
     }
     if (actorData.visions.thermographic.natural || actorData.visions.thermographic.augmented) {
       actorData.visions.thermographic.hasVision = true
@@ -848,6 +853,12 @@ export class SR5_CharacterUtility extends Actor {
         SR5_EntityHelpers.updateModifier(actorData.itemsProperties.environmentalMod.visibility, `${game.i18n.localize('SR5.ThermographicVision')}`, "visionType", -1, false, false)
         SR5_EntityHelpers.updateModifier(actorData.itemsProperties.environmentalMod.light, `${game.i18n.localize('SR5.UltrasoundVision')}`, "visionType", -3, false, false)
       }
+    }
+    //A vision the character has lost (cybereyes put in, goggles taken off) is no longer in use,
+    //even if it was pinned : the dice read isActive, and the token and the pins must agree with them.
+    //The stored pin is kept, so the vision comes back in use if the character gets it back.
+    for (let key of ["lowLight", "thermographic", "ultrasound"]) {
+      if (!actorData.visions[key].hasVision) actorData.visions[key].isActive = false
     }
     actorData.visions.hasActiveVision = Object.keys(SR5.visionActive).some(key => actorData.visions[key].isActive)
 
@@ -868,43 +879,44 @@ export class SR5_CharacterUtility extends Actor {
     }
   }
 
-  //Give a token the vision its actor is currently using
+  //Every token that shows this actor : a synthetic actor has its own token, a linked actor has
+  //every linked token on every scene. A find on canvas.scene served the first token of the
+  //viewed scene only, and left the others blind.
+  static getTokensOfActor(actor) {
+    if (actor.token) return [actor.token]
+    return Array.from(game.scenes ?? []).flatMap((s) => s.tokens.filter((t) => t.actorId === actor.id && t.actorLink))
+  }
+
+  //Give the tokens the vision their actor is currently using
   static async applyVisionToToken(actor) {
-    if (!canvas.scene) return
-    let token
-    if (actor.token) token = canvas.scene.tokens.find((t) => t.id === actor.token.id)
-    else token = canvas.scene.tokens.find((t) => t.actorId === actor.id)
-    if (!token) return
-    const tokenData = await SR5_EntityHelpers.getVisionData(foundry.utils.duplicate(token), actor)
-    await token.update(tokenData)
+    for (let token of this.getTokensOfActor(actor)) {
+      const tokenData = await SR5_EntityHelpers.getVisionData(foundry.utils.duplicate(token), actor)
+      await token.update(tokenData)
+    }
+  }
+
+  //Serve the tokens again when the vision in use changed under them, without a pin being touched :
+  //cybereyes that take the pinned vision away, or give it back. Only called by the user who made
+  //the change, and a token already in the right mode is left alone.
+  static async refreshVisionOfTokens(actor) {
+    if (!["actorPc", "actorGrunt"].includes(actor?.type)) return
+    const mode = SR5_TOKEN_VISION_MODES[SR5_EntityHelpers.getActiveVisionType(actor)] ?? "basic"
+    if (this.getTokensOfActor(actor).every(t => t.sight?.visionMode === mode)) return
+    await this.applyVisionToToken(actor)
   }
 
   //Handle astral vision
   static async handleAstralVision(actor) {
     let actorData = actor.system
-    let token, tokenData
 
-    if (actor.token) {
-      token = canvas.scene?.tokens.find((t) => t.id === actor.token.id)
-    } else {
-      token = canvas.scene?.tokens.find((t) => t.actorId === actor.id)
-    }
-
-    if (token) tokenData = foundry.utils.duplicate(token)
     if (actorData.visions.astral.isActive) {
       await SR5_EntityHelpers.addEffectToActor(actor, "astralVision")
-      if (canvas.scene && token) {
-        if (tokenData.sight.visionMode === 'astralvision') return
-        tokenData = await SR5_EntityHelpers.getVisionData(tokenData, actor)
-        await token.update(tokenData)
-      }
-    } else {
-      await SR5_EntityHelpers.deleteEffectOnActor(actor, "astralVision")
-      if (canvas.scene && token) {
-        tokenData = await SR5_EntityHelpers.getVisionData(tokenData, actor)
-        await token.update(tokenData)
-      }
-    }
+      //No early return on the vision mode alone : getVisionData also settles the range, the
+      //colour, the look and the detection modes, so a token whose document already carried
+      //'astralvision' kept a range of 0 and no astral detection mode. An update that changes
+      //nothing costs nothing.
+    } else await SR5_EntityHelpers.deleteEffectOnActor(actor, "astralVision")
+    await this.applyVisionToToken(actor)
   }
 
   static async switchVision(actor, vision) {
@@ -914,6 +926,9 @@ export class SR5_CharacterUtility extends Actor {
     for (let key of Object.keys(SR5.visionActive)) {
       if (actorData.visions[key].isActive) currentVision = key
     }
+    if ((vision === "astral" || currentVision === "astral") && !SR5Combat.hasActionsLeft(actor, [{
+      type: "simple", value: 1, source: "switchPerception"
+    }])) return
 
     for (let key of Object.keys(SR5.visionActive)) {
       if (key === vision && key === currentVision) actorData.visions[key].isActive = false
@@ -936,16 +951,19 @@ export class SR5_CharacterUtility extends Actor {
   }
 
   //Return the cybereyes the character wears, if any. Cybereyes are the only eyeware that
-  //holds a Capacity : everything else in that category plugs into them (SR5 p. 456).
+  //holds a Capacity : everything else in that category plugs into them (SR5 p. 456). The pin
+  //of an implant says it is worn : unpinned eyes took the vision away without their effects.
   static getCyberEyes(actor) {
     return actor.items?.find(i => i.type === "itemAugmentation" &&
+      i.system.isActive &&
       i.system.category === "eyeware" &&
       !i.system.isAccessory &&
       Number(i.system.capacity?.base ?? 0) > 0) ?? null
   }
 
-  //Grant a vision the character owes to its metatype. The book does not say what becomes of it
-  //once the eyes it came with have been replaced by cybereyes, so a world setting decides.
+  //Grant a vision the character owes to its metatype. Cybereyes take it away : it has to be bought
+  //again as an enhancement of the eyes (SR5 p. 96). A world setting, on by default, lets a table
+  //keep it anyway.
   static grantMetatypeVision(actor, vision) {
     let actorData = actor.system
     const cyberEyes = actorData.visions?.cyberEyes
@@ -956,12 +974,36 @@ export class SR5_CharacterUtility extends Actor {
     actorData.visions[vision].natural = true
   }
 
+  //The cybereyes of the companion compendiums carry their own effects that switch every natural
+  //vision off, and item effects are applied after the metatype. Left alone, they overrule the
+  //world setting : unticked, the elf still lost its low-light vision. What becomes of the vision
+  //of the metatype under cybereyes is the setting's call, so it is settled again here.
+  static settleMetatypeVision(actor) {
+    const visions = actor.system?.visions
+    if (!visions?.cyberEyes?.hasCyberEyes) return
+    const vision = {
+      elf: "lowLight", ork: "lowLight", dwarf: "thermographic", troll: "thermographic"
+    }[this.getMetatype(actor)]
+    if (!vision) return
+    visions[vision].natural = !visions.cyberEyes.replacedNaturalVision.includes(vision)
+  }
+
+  //Return the metatype of a character. Every actor now holds it in 'metatype' ; 'characterMetatype'
+  //is the legacy key the migration renames, still read for an actor not migrated yet. Reading only
+  //one of the two leaves such a character without its metatype, and so without the vision that
+  //metatype is owed (SR5 p. 68). 'metatype' comes first : it is the field the sheets write.
+  static getMetatype(actor) {
+    const biography = actor?.system?.biography
+    return biography?.metatype || biography?.characterMetatype || ""
+  }
+
   static applyRacialModifers(actor) {
     let actorData = actor.system
-    if (!actorData.biography.metatype) return
-    let label = `${game.i18n.localize(SR5.metatypes[actorData.biography.metatype])}`
+    const metatype = this.getMetatype(actor)
+    if (!metatype) return
+    let label = `${game.i18n.localize(SR5.metatypes[metatype])}`
 
-    switch (actorData.biography.metatype) {
+    switch (metatype) {
       case "human":
         break
       case "elf":
@@ -1008,7 +1050,7 @@ export class SR5_CharacterUtility extends Actor {
         }
         break
       default:
-        SR5_SystemHelpers.srLog(1, `Unknown metatype '${actorData.biography.metatype}' in 'applyRacialModifers()'`)
+        SR5_SystemHelpers.srLog(1, `Unknown metatype '${metatype}' in 'applyRacialModifers()'`)
         return
     }
   }
@@ -1238,7 +1280,41 @@ export class SR5_CharacterUtility extends Actor {
 
   // AI (Data Trails p. 152): an AI is a PC or grunt sheet whose active special attribute is Depth
   static isDepthActive(actor) {
-    return (actor.type === "actorPc" || actor.type === "actorGrunt") && actor.system.activeSpecialAttribute === "depth"
+    return (actor.type === "actorPc" || actor.type === "actorGrunt") && actor.system?.activeSpecialAttribute === "depth"
+  }
+
+  // AI outside any device (Data Trails p. 157): a persona alone, with no active device
+  static isDevicelessAI(actor) {
+    return this.isDepthActive(actor) && !actor.items.some(i => i.type === "itemDevice" && i.system.isActive)
+  }
+
+  // Data Trails p. 157: the attribute an AI outside any device defends with where the defense calls for Logic
+  static devicelessAILogicStandIn(actorData) {
+    let intuition = actorData.attributes.intuition.augmented.value,
+      willpower = actorData.attributes.willpower.augmented.value
+    switch (game.settings.get("sr5", "sr5DevicelessAILogicDefense")) {
+      case "intuition": return {
+        label: "SR5.Intuition", value: intuition
+      }
+      case "willpower": return {
+        label: "SR5.Willpower", value: willpower
+      }
+      default: return intuition >= willpower ? {
+        label: "SR5.Intuition", value: intuition
+      } : {
+        label: "SR5.Willpower", value: willpower
+      }
+    }
+  }
+
+  // An AI outside any device resists matrix damage with no device and no Firewall. The book gives it no pool
+  // (Data Trails p. 157 and 161): it resists with the attribute it defends with where the defense calls for Logic.
+  static generateDevicelessAIMatrixResistance(actor) {
+    let matrixDamage = actor.system.matrix.resistances.matrixDamage
+    let standIn = this.devicelessAILogicStandIn(actor.system)
+    matrixDamage.base = 0
+    SR5_EntityHelpers.updateModifier(matrixDamage, game.i18n.localize(standIn.label), "linkedAttribute", standIn.value)
+    SR5_EntityHelpers.updateDicePool(matrixDamage)
   }
 
   // Update Actors Special Attributes
@@ -1559,35 +1635,16 @@ export class SR5_CharacterUtility extends Actor {
       attributes = actorData.attributes,
       specialAttributes = actorData.specialAttributes
 
+    // Spirits keep both kinds of monitor in their source; the type decides which ones exist (SR5 p. 301)
     if (actor.type == "actorSpirit") {
-      const customMonitor = SR5_SpiritTypes.get(actorData.type)
-      const monitorStyle = customMonitor ? SR5_SpiritTypes.conditionMonitor(customMonitor) : ""
-      const baseMonitorType = SR5_SpiritTypes.baseType(actorData.type)
-      const singleMonitor = monitorStyle ?
-        monitorStyle === "single" :
-        (baseMonitorType === "homunculus" || baseMonitorType === "watcher")
-      if (singleMonitor) {
+      if (SR5_SpiritTypes.hasSingleMonitor(actorData.type)) {
         delete actorData.conditionMonitors.physical
         delete actorData.conditionMonitors.stun
         delete actorData.statusBars.physical
         delete actorData.statusBars.stun
-        if (!actorData.conditionMonitors.condition) {
-          actorData.conditionMonitors.condition = {
-            "value": 0,
-            "base": 0,
-            "modifiers": [],
-            "actual": {
-              "value": 0,
-              "base": 0,
-              "modifiers": [],
-            },
-            "boxes": []
-          }
-        }
-        actorData.statusBars.condition = {
-          "value": 0,
-          "max": 0
-        }
+      } else {
+        delete actorData.conditionMonitors.condition
+        delete actorData.statusBars.condition
       }
     }
 
@@ -1635,8 +1692,12 @@ export class SR5_CharacterUtility extends Actor {
             return
         }
         SR5_EntityHelpers.updateValue(conditionMonitors[key], 1)
-        if (conditionMonitors[key].actual.value > conditionMonitors[key].value) conditionMonitors[key].actual.base = conditionMonitors[key].value
+        // A monitor never holds more boxes than it has: compare the stored damage, actual.value was reset above
         SR5_EntityHelpers.updateValue(conditionMonitors[key].actual, 0)
+        if (conditionMonitors[key].actual.value > conditionMonitors[key].value) {
+          conditionMonitors[key].actual.base = conditionMonitors[key].value
+          SR5_EntityHelpers.updateValue(conditionMonitors[key].actual, 0)
+        }
         SR5_EntityHelpers.GenerateMonitorBoxes(actorData, key)
         SR5_EntityHelpers.updateStatusBars(actor, key)
       }
@@ -1834,6 +1895,20 @@ export class SR5_CharacterUtility extends Actor {
     return false
   }
 
+  //Switching to or from the astral initiative is a complex action, to or from the matrix one (not in AR) a simple one.
+  //Synchronous, so that a sheet checkbox can be held back before it changes
+  static canSwitchToInitiative(actor, initiative) {
+    let currentInitiative = this.findActiveInitiative(actor.system),
+      switchCost = []
+    if (initiative === "astralInit" || (initiative === "physicalInit" && currentInitiative === "astralInit")) switchCost = [{
+      type: "complex", value: 1
+    }]
+    else if ((initiative === "matrixInit" || (initiative === "physicalInit" && currentInitiative === "matrixInit")) && actor.system.matrix?.userMode !== "ar") switchCost = [{
+      type: "simple", value: 1
+    }]
+    return SR5Combat.hasActionsLeft(actor, switchCost)
+  }
+
   // Switch Actor To New Initiative
   static async switchToInitiative(entity, initiative) {
     let actor
@@ -1844,6 +1919,8 @@ export class SR5_CharacterUtility extends Actor {
       initiatives = actorData.initiatives,
       currentInitiative = this.findActiveInitiative(actor.system),
       actorId = (actor.isToken ? actor.token.id : actor.id)
+
+    if (!this.canSwitchToInitiative(actor, initiative)) return false
 
     if (currentInitiative) initiatives[currentInitiative].isActive = false
     if (currentInitiative === "astralInit") actorData.visions.astral.isActive = false
@@ -3952,6 +4029,7 @@ export class SR5_CharacterUtility extends Actor {
     let modifierTypeAttack = "matrixAttribute"
     let modifierTypeSensor = "sensorAttribute"
     let modifierTypePilot = "pilotAttribute"
+    let logicLabel = 'SR5.Logic', deviceless = false
 
     if (actor.type === "actorPc" || actor.type === "actorGrunt" || actor.type === "actorAgent") {
       intuitionValue = actorData.attributes.intuition.augmented.value
@@ -3961,6 +4039,13 @@ export class SR5_CharacterUtility extends Actor {
       sleazeValue = matrixAttributes.sleaze.value
       dataProcessingValue = matrixAttributes.dataProcessing.value
       attackValue = matrixAttributes.attack.value
+      //Data Trails p. 157: an AI outside any device defends with its Willpower or Intuition alone, no matrix attribute
+      if (this.isDevicelessAI(actor)) {
+        let standIn = this.devicelessAILogicStandIn(actorData)
+        deviceless = true
+        logicValue = standIn.value
+        logicLabel = standIn.label
+      }
     } else if (actor.type === "actorSprite" || (actor.type === "actorDevice" && matrix.deviceType !== "slavedDevice")) {
       intuitionValue = matrix.deviceRating
       willpowerValue = matrix.deviceRating
@@ -4021,17 +4106,17 @@ export class SR5_CharacterUtility extends Actor {
     SR5_EntityHelpers.updateModifier(matrixActions.eraseMark.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.formatDevice.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.formatDevice.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.snoop.defense, game.i18n.localize('SR5.Logic'), modifierTypeLogic, logicValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.snoop.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.snoop.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.hackOnTheFly.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.hackOnTheFly.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.spoofCommand.defense, game.i18n.localize('SR5.Logic'), modifierTypeLogic, logicValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.spoofCommand.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.spoofCommand.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.garbageInGarbageOut.defense, game.i18n.localize('SR5.Logic'), modifierTypeLogic, logicValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.garbageInGarbageOut.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.garbageInGarbageOut.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.bruteForce.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.bruteForce.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.matrixPerception.defense, game.i18n.localize('SR5.Logic'), modifierTypeLogic, logicValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.matrixPerception.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.matrixPerception.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
     SR5_EntityHelpers.updateModifier(matrixActions.dataSpike.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.dataSpike.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
@@ -4043,7 +4128,7 @@ export class SR5_CharacterUtility extends Actor {
     SR5_EntityHelpers.updateModifier(matrixActions.rebootDevice.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.hide.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.hide.defense, game.i18n.localize('SR5.DataProcessing'), modifierTypeDataProcessing, dataProcessingValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.jackOut.defense, game.i18n.localize('SR5.Logic'), modifierTypeLogic, logicValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.jackOut.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.jackOut.defense, game.i18n.localize('SR5.MatrixAttack'), modifierTypeAttack, attackValue)
     SR5_EntityHelpers.updateModifier(matrixActions.traceIcon.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.traceIcon.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
@@ -4055,7 +4140,7 @@ export class SR5_CharacterUtility extends Actor {
       SR5_EntityHelpers.updateModifier(matrixActions.denialOfService.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
       SR5_EntityHelpers.updateModifier(matrixActions.haywire.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
       SR5_EntityHelpers.updateModifier(matrixActions.haywire.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.masquerade.defense, game.i18n.localize('SR5.Logic'), modifierTypeLogic, logicValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.masquerade.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
       SR5_EntityHelpers.updateModifier(matrixActions.masquerade.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
       SR5_EntityHelpers.updateModifier(matrixActions.popupHacking.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
       SR5_EntityHelpers.updateModifier(matrixActions.popupHacking.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
@@ -4067,7 +4152,7 @@ export class SR5_CharacterUtility extends Actor {
       SR5_EntityHelpers.updateModifier(matrixActions.subvertInfrastructure.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
       SR5_EntityHelpers.updateModifier(matrixActions.tag.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
       SR5_EntityHelpers.updateModifier(matrixActions.tag.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.watchdog.defense, game.i18n.localize('SR5.Logic'), modifierTypeLogic, logicValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.watchdog.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
       SR5_EntityHelpers.updateModifier(matrixActions.watchdog.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     }
 
@@ -4075,7 +4160,7 @@ export class SR5_CharacterUtility extends Actor {
       SR5_EntityHelpers.updateModifier(matrixActions.targetDevice.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
       SR5_EntityHelpers.updateModifier(matrixActions.targetDevice.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
       if (actor.type === "actorDrone") {	
-        SR5_EntityHelpers.updateModifier(matrixActions.breakTargetLock.defense, game.i18n.localize('SR5.Logic'), modifierTypeLogic, logicValue)
+        SR5_EntityHelpers.updateModifier(matrixActions.breakTargetLock.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
         SR5_EntityHelpers.updateModifier(matrixActions.breakTargetLock.defense, game.i18n.localize('SR5.VehicleStat_SensorFull'), modifierTypeSensor, actorData.attributes.sensor.augmented.value)
         SR5_EntityHelpers.updateModifier(matrixActions.confusePilot.defense, game.i18n.localize('SR5.VehicleStat_PilotFull'), modifierTypePilot, actorData.attributes.pilot.augmented.value)
         SR5_EntityHelpers.updateModifier(matrixActions.confusePilot.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
@@ -4085,6 +4170,11 @@ export class SR5_CharacterUtility extends Actor {
 
     matrixActions.checkOverwatchScore.defense.base = 6
 
+    if (deviceless) {
+      for (let key of Object.keys(SR5.matrixActions)) {
+        if (matrixActions[key].defense) matrixActions[key].defense.modifiers = matrixActions[key].defense.modifiers.filter(m => m.type !== "matrixAttribute")
+      }
+    }
 
     // handle final calculation
     for (let key of Object.keys(SR5.matrixActions)) {

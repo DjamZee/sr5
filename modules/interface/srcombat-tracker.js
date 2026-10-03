@@ -62,6 +62,20 @@ export class SR5CombatTracker extends foundry.applications.sidebar.tabs.CombatTr
         },
       },
       {
+        // The gamemaster gives back a fresh set of actions, as a new initiative pass does
+        name: game.i18n.localize('SR5.INIT_ResetActions'),
+        icon: '<i class="fas fa-rotate-left"></i>',
+        condition: (li) => game.user.isGM && !!getCombatant(li)?.actor,
+        callback: async (li) => {
+          const combatant = getCombatant(li)
+          if (!combatant) return
+          await SR5Combat.resetActionInCombat(combatant.actor.isToken ? combatant.tokenId : combatant.actorId, combatant)
+          ui.notifications.info(game.i18n.format('SR5.INFO_ActionsReset', {
+            actor: combatant.name
+          }))
+        },
+      },
+      {
         name: game.i18n.localize('SR5.INIT_Delaying'),
         icon: '<i class="fas fa-hourglass-end"></i>',
         condition: (li) => getCombatant(li)?.actor.permission > 0,

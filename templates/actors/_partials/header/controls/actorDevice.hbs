@@ -1,0 +1,7 @@
+{{!-- Device type --}}
+<div class="SR-EspritType">
+  <select name="system.matrix.deviceType" data-dtype="String" required>
+    <option class="SR-LightGreyColor" value="">{{localize 'SR5.ChooseOne'}}</option>
+    {{selectOptions lists.deviceTypes selected=system.matrix.deviceType localize=true}}
+  </select>
+</div>

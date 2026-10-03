@@ -6,18 +6,36 @@ import {
 } from "../../config.js"
 
 export default async function healingInfo(cardData){
-  if (cardData.roll.glitchRoll || cardData.roll.criticalGlitchRoll) cardData.test.extended.intervalValue = cardData.test.extended.intervalValue *2
+  //SR5 p. 208: a glitch doubles the rest time, "chaque complication comptant pour 2 jours" in the example, so every
+  //glitched roll of the test counts one more interval. Computed from its base so a refreshed card does not count it again
+  let glitchedRolls = (cardData.test.extended.glitchedRolls || 0) + (cardData.roll.glitchRoll || cardData.roll.criticalGlitchRoll ? 1 : 0)
+  cardData.test.extended.intervalValue = cardData.test.extended.multiplier * (cardData.test.extended.roll + glitchedRolls)
+  //SR5 p. 208: a critical glitch adds 1D3 boxes, rolled once per test even if the card is refreshed (Edge)
   if (cardData.roll.criticalGlitchRoll) {
-    let failedDamage = new Roll(`1d3`)
-    await failedDamage.evaluate()
-    cardData.damage.value = failedDamage.total
-    cardData.damage.type = cardData.test.typeSub
+    if (!cardData.roll.criticalGlitchDamage) {
+      let failedDamage = new Roll(`1d3`)
+      await failedDamage.evaluate()
+      cardData.roll.criticalGlitchDamage = {
+        value: failedDamage.total, type: cardData.test.typeSub
+      }
+    }
+    cardData.damage.value = cardData.roll.criticalGlitchDamage.value
+    cardData.damage.type = cardData.roll.criticalGlitchDamage.type
     cardData.chatCard.buttons.damage = SR5_RollMessage.generateChatButton("nonOpposedTest", "damage", `${game.i18n.format('SR5.HealButtonFailed', {
       hits: cardData.damage.value, damageType: (game.i18n.localize(SR5.damageTypesShort[cardData.test.typeSub]))
     })}`)
   }
-  if (cardData.roll.hits > 0) cardData.chatCard.buttons.heal = SR5_RollMessage.generateChatButton("nonOpposedTest", "heal", `${game.i18n.format('SR5.HealButton', {
-    hits: cardData.roll.hits, damageType: (game.i18n.localize(SR5.damageTypesShort[cardData.test.typeSub]))
+  //SR5 p. 51: a critical glitch ends the test and its own roll heals nothing. But the boxes healed by the earlier
+  //rolls stay healed: in the example of p. 208, Full Deck "a donc guéri de 3 cases", then the 1D3 adds 2, "pour un total actuel de 3 cases"
+  cardData.roll.netHits = cardData.roll.criticalGlitchRoll ? earlierRollsHits(cardData.roll) : cardData.roll.hits
+  if (cardData.roll.netHits > 0) cardData.chatCard.buttons.heal = SR5_RollMessage.generateChatButton("nonOpposedTest", "heal", `${game.i18n.format('SR5.HealButton', {
+    hits: cardData.roll.netHits, damageType: (game.i18n.localize(SR5.damageTypesShort[cardData.test.typeSub]))
   })}`)
-  cardData.roll.netHits = cardData.roll.hits
+}
+
+//Hits kept from the earlier rolls of an extended test: the total less this roll's own dice, Edge dice included
+//(a later roll keeps its own dice in rollDices, the first roll has none)
+function earlierRollsHits(roll) {
+  if (!roll.rollDices) return 0
+  return Math.max(0, roll.hits - roll.rollDices.filter(d => d.result >= 5).length)
 }

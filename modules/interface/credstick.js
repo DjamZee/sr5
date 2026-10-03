@@ -4,6 +4,9 @@ import {
 import {
   SR5_SystemHelpers
 } from '../system/utilitySystem.js'
+import {
+  isStoredAway
+} from './storage-rules.js'
 
 /**
  * Certified credsticks: cash a character carries.
@@ -30,9 +33,12 @@ export class SR5Credstick {
     return item?.type === 'itemGear' && item.system?.isCredstick === true
   }
 
-  /** The credsticks an actor carries. */
+  /**
+   * The credsticks an actor carries. A stick left in a storage is still
+   * theirs, but it is not cash on hand: it stays at the stash with the rest.
+   */
   static carried(actor) {
-    return actor?.items.filter(item => SR5Credstick.is(item)) ?? []
+    return actor?.items.filter(item => SR5Credstick.is(item) && !isStoredAway(item, actor)) ?? []
   }
 
   /** How much a stick holds. */
@@ -174,7 +180,7 @@ export class SR5Credstick {
     }
   }
 
-  /** Only a bearer who owns both ends may move the money. */
+  /** Only a bearer who owns both ends, stick in hand, may move the money. */
   static #canAct(actor, credstick) {
     if (!actor?.isOwner) {
       ui.notifications.warn(game.i18n.localize('SR5.WARN_CredstickNotOwner'))
@@ -182,6 +188,20 @@ export class SR5Credstick {
     }
     if (!SR5Credstick.is(credstick)) {
       ui.notifications.warn(game.i18n.localize('SR5.WARN_CredstickNotACredstick'))
+      return false
+    }
+    // The money moves between a stick and its own bearer's ledger, never another's
+    if (credstick.parent !== actor) {
+      ui.notifications.warn(game.i18n.format('SR5.WARN_CredstickNotTheirs', {
+        name: credstick.name, actor: actor.name
+      }))
+      return false
+    }
+    // A stick left at the stash is out of reach until it is taken out
+    if (isStoredAway(credstick, credstick.parent)) {
+      ui.notifications.warn(game.i18n.format('SR5.WARN_CredstickStored', {
+        name: credstick.name
+      }))
       return false
     }
     return true

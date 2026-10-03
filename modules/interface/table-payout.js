@@ -162,51 +162,81 @@ export function sr5SpendPayoutRow(content, kind, label) {
 }
 
 /**
- * Spend a row, on the card the reader sees and in the message that keeps it.
+ * Spend a row in the message that keeps it.
+ *
+ * The update re-renders the card, for every reader: the row turns into the
+ * line saying what was handed over, and its button goes with it.
+ *
  * @param {ChatMessage} message
- * @param {HTMLElement} html
  * @param {string} kind
  * @param {string} label
  */
-async function spendRow(message, html, kind, label) {
-  const rendered = html.querySelector(`.SR-TablePayoutRow[data-payout="${kind}"]`)
-  if (rendered) rendered.innerHTML = `<span class="SR-TablePayoutLabel">${label}</span>`
+async function spendRow(message, kind, label) {
   await message.update({
     content: sr5SpendPayoutRow(message.content, kind, label)
   })
   ui.notifications.info(label)
 }
 
+/** Where on a card the mark of a row already handed over is kept. */
+const SPENT_FLAG = "tablePayoutSpent"
+
 /**
- * The characters a money payment can go to: the selected tokens that hold a
- * purse and that the clicker may write on.
+ * The rows this browser has started to hand over, as `messageId.kind`.
  *
- * Only `actorPc` carries `system.nuyen`; an `itemNuyen` dropped on anything
- * else is accepted and stays inert, so the others are left out rather than
- * paid into a void.
- *
- * @returns {Actor[]}
+ * The mark written on the message only arrives with the server's answer, and
+ * a second click easily comes first. This set is what that click finds.
  */
-function nuyenPayees() {
-  return canvas.tokens?.controlled
-    .map(token => token.actor)
-    .filter(actor => actor?.type === "actorPc" && actor.isOwner) ?? []
+const HANDING_OVER = new Set()
+
+/**
+ * Whether a row of a card has already been handed over, or is being.
+ * @param {ChatMessage} message
+ * @param {string} kind  "loot" or "nuyen"
+ * @returns {boolean}
+ */
+export function sr5PayoutSpent(message, kind) {
+  return HANDING_OVER.has(`${message.id}.${kind}`) ||
+    Boolean(message.getFlag("sr5", `${SPENT_FLAG}.${kind}`))
 }
 
 /**
- * Pay a card's nuyen to the selected characters and spend that row.
+ * Claim a row of a card before anything is handed over.
+ *
+ * Only the first claim succeeds. The test and the claim are made with
+ * nothing awaited between them, so two clicks in the same browser cannot
+ * both pass; and the claim is written on the message before a single actor
+ * is touched, so a reloaded page, or another game master, finds the row
+ * already spent — never paid and still payable.
+ *
  * @param {ChatMessage} message
- * @param {HTMLElement} html
+ * @param {string} kind  "loot" or "nuyen"
+ * @returns {Promise<boolean>}  true when this call may hand the row over
  */
-async function payNuyen(message, html) {
-  const amount = message.getFlag("sr5", "tableNuyen")
-  if (!amount) return
-
-  const actors = nuyenPayees()
-  if (!actors.length) {
-    ui.notifications.warn(game.i18n.localize("SR5.TableNuyenNoTarget"))
-    return
+export async function sr5ClaimPayout(message, kind) {
+  if (sr5PayoutSpent(message, kind)) return false
+  const key = `${message.id}.${kind}`
+  HANDING_OVER.add(key)
+  try {
+    await message.update({
+      [`flags.sr5.${SPENT_FLAG}.${kind}`]: game.user.id
+    })
+  } catch (error) {
+    HANDING_OVER.delete(key)
+    throw error
   }
+  return true
+}
+
+/**
+ * Pay a card's nuyen to some characters, in equal shares, and spend the row.
+ * @param {ChatMessage} message
+ * @param {Actor[]} actors
+ */
+export async function sr5HandOverNuyen(message, actors) {
+  const amount = message.getFlag("sr5", "tableNuyen")
+  if (!amount || !actors.length) return
+  if (!await sr5ClaimPayout(message, "nuyen")) return
 
   const shares = sr5SplitNuyen(amount, actors.length)
   const date = new Date().toISOString().slice(0, 10)
@@ -226,39 +256,20 @@ async function payNuyen(message, html) {
     }])
   }
 
-  await spendRow(message, html, "nuyen", game.i18n.format("SR5.TableNuyenPaid", {
+  await spendRow(message, "nuyen", game.i18n.format("SR5.TableNuyenPaid", {
     amount: amount.toLocaleString(),
     names: actors.map(actor => actor.name).join(", ")
   }))
 }
 
 /**
- * Hand a card's gear to the one selected character and spend that row.
- *
- * Gear is not split: a single sword given to three characters would be three
- * swords. So exactly one recipient is asked for, and saying so is better than
- * quietly picking the first token of the selection.
- *
+ * Hand a card's gear to one character and spend the row.
  * @param {ChatMessage} message
- * @param {HTMLElement} html
+ * @param {Actor} actor
  */
-async function giveLoot(message, html) {
+export async function sr5HandOverLoot(message, actor) {
   const manifest = message.getFlag("sr5", "tableLoot") ?? []
-  if (!manifest.length) return
-
-  const actors = canvas.tokens?.controlled
-    .map(token => token.actor)
-    .filter(actor => actor?.isOwner) ?? []
-
-  if (!actors.length) {
-    ui.notifications.warn(game.i18n.localize("SR5.TableLootNoTarget"))
-    return
-  }
-  if (actors.length > 1) {
-    ui.notifications.warn(game.i18n.localize("SR5.TableLootOneTarget"))
-    return
-  }
-  const [actor] = actors
+  if (!manifest.length || !actor) return
 
   const payload = []
   const names = []
@@ -282,11 +293,118 @@ async function giveLoot(message, html) {
     }))
   }
   if (!payload.length) return
+  if (!await sr5ClaimPayout(message, "loot")) return
 
   await actor.createEmbeddedDocuments("Item", payload)
-  await spendRow(message, html, "loot", game.i18n.format("SR5.TableLootGiven", {
+  await spendRow(message, "loot", game.i18n.format("SR5.TableLootGiven", {
     names: names.join(", "), actor: actor.name
   }))
+}
+
+/**
+ * Have a row handed over by one browser only.
+ *
+ * Two game masters clicking the same card at the same moment are two
+ * browsers, and a mark on the message cannot keep them apart: each reads it
+ * before the other's has arrived. So the work is always done by the one
+ * game master core designates, `game.users.activeGM`, where the claim above
+ * is a plain test in a single browser. A game master who is not that one
+ * asks it through the system's socket.
+ *
+ * @param {ChatMessage} message
+ * @param {string} kind       "loot" or "nuyen"
+ * @param {Actor[]} actors    who receives it
+ */
+async function handOver(message, kind, actors) {
+  const designated = game.users.activeGM
+  if (!designated || designated.isSelf) {
+    return kind === "nuyen" ? sr5HandOverNuyen(message, actors) : sr5HandOverLoot(message, actors[0])
+  }
+  await game.socket.emit("system.sr5", {
+    type: "tablePayout",
+    userId: designated.id,
+    data: {
+      messageId: message.id, kind, actorUuids: actors.map(actor => actor.uuid)
+    }
+  })
+}
+
+/**
+ * Hand over a row another game master asked for.
+ * @param {object} socketMessage
+ * @param {object} socketMessage.data
+ */
+export async function sr5SocketTablePayout({
+  data
+}) {
+  if (!game.user.isGM) return
+  const message = game.messages.get(data.messageId)
+  if (!message) return
+  const actors = []
+  for (const uuid of data.actorUuids ?? []) {
+    const actor = await fromUuid(uuid)
+    if (actor) actors.push(actor)
+  }
+  if (data.kind === "nuyen") await sr5HandOverNuyen(message, actors)
+  else if (data.kind === "loot") await sr5HandOverLoot(message, actors[0])
+}
+
+/**
+ * The characters a money payment can go to: the selected tokens that hold a
+ * purse and that the clicker may write on.
+ *
+ * Only `actorPc` carries `system.nuyen`; an `itemNuyen` dropped on anything
+ * else is accepted and stays inert, so the others are left out rather than
+ * paid into a void.
+ *
+ * @returns {Actor[]}
+ */
+function nuyenPayees() {
+  return canvas.tokens?.controlled
+    .map(token => token.actor)
+    .filter(actor => actor?.type === "actorPc" && actor.isOwner) ?? []
+}
+
+/**
+ * The "Verser" button: pay the selected characters.
+ * @param {ChatMessage} message
+ * @param {HTMLButtonElement} button
+ */
+function payNuyen(message, button) {
+  const actors = nuyenPayees()
+  if (!actors.length) {
+    ui.notifications.warn(game.i18n.localize("SR5.TableNuyenNoTarget"))
+    return
+  }
+  button.disabled = true
+  return handOver(message, "nuyen", actors)
+}
+
+/**
+ * The "Donner" button: hand the gear to the one selected character.
+ *
+ * Gear is not split: a single sword given to three characters would be three
+ * swords. So exactly one recipient is asked for, and saying so is better than
+ * quietly picking the first token of the selection.
+ *
+ * @param {ChatMessage} message
+ * @param {HTMLButtonElement} button
+ */
+function giveLoot(message, button) {
+  const actors = canvas.tokens?.controlled
+    .map(token => token.actor)
+    .filter(actor => actor?.isOwner) ?? []
+
+  if (!actors.length) {
+    ui.notifications.warn(game.i18n.localize("SR5.TableLootNoTarget"))
+    return
+  }
+  if (actors.length > 1) {
+    ui.notifications.warn(game.i18n.localize("SR5.TableLootOneTarget"))
+    return
+  }
+  button.disabled = true
+  return handOver(message, "loot", actors)
 }
 
 /**
@@ -296,6 +414,9 @@ async function giveLoot(message, html) {
  * to the system's main one: the card carries its own flags and its own
  * buttons, and the general chat card handling expects a full `sr5data` and a
  * selected token before it will look at anything.
+ *
+ * A button is disabled as soon as it is clicked, before anything is awaited,
+ * and comes back disabled on a card whose row is already claimed.
  *
  * @param {ChatMessage} message
  * @param {HTMLElement} html
@@ -312,8 +433,18 @@ export function sr5HookRenderTablePayout(message, html) {
     return
   }
 
-  footer.querySelector('[data-action="sr5PayTableNuyen"]')
-    ?.addEventListener("click", () => payNuyen(message, html))
-  footer.querySelector('[data-action="sr5GiveTableLoot"]')
-    ?.addEventListener("click", () => giveLoot(message, html))
+  const wire = (kind, action, onClick) => {
+    const button = footer.querySelector(`[data-action="${action}"]`)
+    if (!button) return
+    if (sr5PayoutSpent(message, kind)) {
+      button.disabled = true
+      return
+    }
+    button.addEventListener("click", () => {
+      if (button.disabled) return
+      onClick(message, button)
+    })
+  }
+  wire("nuyen", "sr5PayTableNuyen", payNuyen)
+  wire("loot", "sr5GiveTableLoot", giveLoot)
 }

@@ -29,6 +29,9 @@ import {
   SR5_MatrixHelpers 
 } from "./roll-helpers/matrix.js"
 import {
+  isRolledByTarget, firstAidPatient, patientMonitors, hasSingleMonitor
+} from "./roll-helpers/cardRoller.js"
+import {
   SR5_CombatHelpers 
 } from "./roll-helpers/combat.js"
 import {
@@ -168,9 +171,8 @@ export class SR5_RollMessage {
       let supportAction = (type === "iAmTheFirewall" || type === "intervene")
       if (actor == null && !supportAction) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
     } else if (action === "nonOpposedTest" && messageData) {
-      if (messageData.target.actorId && (messageData.test.typeSub === "banishing" ||
-              messageData.test.typeSub ==="binding" || messageData.test.typeSub ==="decompileSprite" ||
-              messageData.test.typeSub ==="registerSprite")) actor = SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId)
+      // The spirit or sprite handles its own buttons, but the drain and the fading are resisted by the card owner
+      if (isRolledByTarget(type, messageData.test.typeSub, messageData.target.actorId)) actor = SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId)
       else actor = SR5_EntityHelpers.getRealActorFromID(messageData.owner.speakerId)
     }
 
@@ -247,6 +249,9 @@ export class SR5_RollMessage {
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "firstAid": {
+        //SR5 p. 207: the patient is healed, never the card owner
+        let patient = firstAidPatient(messageData.target.hasTarget, targetActor, actor)
+        if (!patient) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
         let healData = {
           test: {
           },
@@ -254,16 +259,37 @@ export class SR5_RollMessage {
             netHits: messageData.roll.netHits
           },
         }
-        if (actor.type === "actorPc") healData.test.typeSub = await SR5_CombatHelpers.chooseDamageType()
-        else healData.test.typeSub = "condition"
-        let healedID = (actor.isToken ? actor.token.id : actor.id)
-        SR5_ActorHelper.heal(healedID, healData)
+        //The monitor to heal follows what the patient has: asked between Physical and Stun, or its single condition monitor
+        let monitors = patientMonitors(patient)
+        if (monitors.length > 1) healData.test.typeSub = await SR5_CombatHelpers.chooseDamageType()
+        else healData.test.typeSub = monitors[0]
+        if (!healData.test.typeSub) return
+        let healedID = (patient.isToken ? patient.token.id : patient.id)
+        if (game.user.isGM || patient.testUserPermission(game.user, 3)) await SR5_ActorHelper.heal(healedID, healData)
+        else await SR5_SocketHandler.emitForGM("heal", {
+          targetActor: healedID,
+          healData: healData,
+        })
         SR5_RollMessage.updateChatButtonHelper(messageId, type, healData.test.typeSub)
         break
       }
       case "damage":
-        if (messageData.test.typeSub === "firstAid") targetActor.takeDamage(messageData)
-        else if (messageData.combat.calledShot?.name === "splittingDamage") actor.takeSplitDamage(messageData)
+        if (messageData.test.typeSub === "firstAid") {
+          //The 1D3 goes to the patient, the selected token when the test had no target
+          let patient = firstAidPatient(messageData.target.hasTarget, targetActor, actor)
+          if (!patient) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+          //SR5 p. 207: the 1D3 of a critical glitch needs a damage type, asked again if the first dialog was cancelled,
+          //unless the patient only has a single condition monitor
+          if (!messageData.damage.type) {
+            let damageType = hasSingleMonitor(patient) ? "condition" : await SR5_CombatHelpers.chooseDamageType()
+            if (!damageType) return
+            messageData.damage.type = damageType
+          }
+          await patient.takeDamage(messageData)
+          SR5_RollMessage.updateChatButtonHelper(messageId, type, messageData.damage.type)
+          break
+        }
+        if (messageData.combat.calledShot?.name === "splittingDamage") actor.takeSplitDamage(messageData)
         else actor.takeDamage(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
@@ -294,7 +320,7 @@ export class SR5_RollMessage {
         break
       }
       case "templateRemove":
-        SR5_RollMessage.removeTemplate(messageId, messageData.owner.itemUuid)
+        SR5_RollMessage.removeTemplate(messageId, messageData.owner.itemUuid, messageData.combat?.grenade?.templateId)
         break
       case "summonSpirit":
       case "compileSprite":
@@ -311,8 +337,10 @@ export class SR5_RollMessage {
       case "extended":
         SR5_RollTest.extendedRoll(message, actor)
         break
-      case "attackerPlaceMark":
-        await SR5_MarkHelpers.markItem(actor.id, messageData.previousMessage.actorId, messageData.matrix.mark, messageData.target.itemUuid)
+      case "attackerPlaceMark": {
+        // Kill Code p. 45: a mark placed by Watchdog is remembered as such, it opens the interruption actions
+        let isWatchdog = messageData.test.typeSub === "watchdog"
+        await SR5_MarkHelpers.markItem(actor.id, messageData.previousMessage.actorId, messageData.matrix.mark, messageData.target.itemUuid, isWatchdog)
         // if defender is a drone and is slaved, add mark to master
         if (actor.type === "actorDrone" && actor.system.slaved){
           if (!game.user?.isGM) {
@@ -320,13 +348,15 @@ export class SR5_RollMessage {
               targetActor: actor.system.vehicleOwner.id,
               attackerID: originalActionActor.id,
               mark: messageData.matrix.mark,
+              isWatchdog: isWatchdog,
             })
-          } else { 
-            await SR5_MarkHelpers.markItem(actor.system.vehicleOwner.id, messageData.previousMessage.actorId, messageData.matrix.mark)
+          } else {
+            await SR5_MarkHelpers.markItem(actor.system.vehicleOwner.id, messageData.previousMessage.actorId, messageData.matrix.mark, undefined, isWatchdog)
           }
         }
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      }
       case "defenderPlaceMark": {
         let attackerID
         if (actor.isToken) attackerID = actor.token.id
@@ -341,25 +371,28 @@ export class SR5_RollMessage {
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       }
-      case "overwatch":
+      case "overwatch": {
+        //An unlinked token has its own actor: its token id reaches it, the actor id would reach the base actor
+        let overwatchActorId = originalActionActor.isToken ? originalActionActor.token.id : originalActionActor.id
         if (!game.user?.isGM) {
           SR5_SocketHandler.emitForGM("overwatchIncrease", {
             defenseHits: messageData.roll.hits,
-            actorId: originalActionActor.id,
+            actorId: overwatchActorId,
           })
-        } else await SR5_ActorHelper.overwatchIncrease(messageData.roll.hits, originalActionActor.id)
+        } else await SR5_ActorHelper.overwatchIncrease(messageData.roll.hits, overwatchActorId)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      }
       case "defenderDoMatrixDamage":
         if (originalActionActor.type === "actorPc" || originalActionActor.type === "actorGrunt"){
           if (originalActionActor.items.find((item) => item.type === "itemDevice" && item.system.isActive && (item.system.type === "livingPersona" || item.system.type === "headcase"))){
             originalActionActor.takeDamage(messageData)
-          } else SR5_MatrixHelpers.applyDamageToDecK(originalActionActor, messageData, actor, true)
+          } else await SR5_MatrixHelpers.applyDamageToDecK(originalActionActor, messageData, actor, true)
         } else originalActionActor.takeDamage(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "takeMatrixDamage":
-        if (actor.type === "actorPc" || actor.type === "actorGrunt") SR5_MatrixHelpers.applyDamageToDecK(actor, messageData)
+        if (actor.type === "actorPc" || actor.type === "actorGrunt") await SR5_MatrixHelpers.applyDamageToDecK(actor, messageData)
         else actor.takeDamage(messageData)
         //Special case for Derezz Complex Form.
         if (messageData.test.typeSub === "derezz") SR5_MatrixHelpers.applyDerezzEffect(messageData, originalActionActor, actor)
@@ -376,8 +409,8 @@ export class SR5_RollMessage {
         if (actor) actor.rollTest("resistanceCard", null, messageData)
         break
       case "scatter":
-        SR5_CombatHelpers.rollScatter(messageData)
-        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        // Only a scatter that happened spends the button: a refused one leaves it for the attacker or the GM
+        if (await SR5_CombatHelpers.rollScatter(messageData)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "iceEffect":
         SR5_MatrixHelpers.applyIceEffect(messageData, originalActionActor, actor)
@@ -489,7 +522,7 @@ export class SR5_RollMessage {
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "heal":
-        SR5_ActorHelper.heal(messageData.owner.actorId, messageData)
+        if (await SR5_ActorHelper.heal(messageData.owner.actorId, messageData) === false) return
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "decreaseReach":
@@ -558,7 +591,7 @@ export class SR5_RollMessage {
           if (messageData.damage.splittedTwo){
             messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.damage.splittedOne}${game.i18n.localize('SR5.DamageTypeStunShort')} & ${messageData.damage.splittedTwo}${game.i18n.localize('SR5.DamageTypePhysicalShort')} ${game.i18n.localize("SR5.AppliedDamage")}`)
           } else messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.damage.splittedOne}${game.i18n.localize('SR5.DamageTypeStunShort')} ${game.i18n.localize("SR5.AppliedDamage")}`)
-        } else messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.damage.value}${game.i18n.localize(SR5.damageTypesShort[messageData.damage.type])} ${game.i18n.localize("SR5.AppliedDamage")}`)
+        } else messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.damage.value}${game.i18n.localize(SR5.damageTypesShort[firstOption ?? messageData.damage.type])} ${game.i18n.localize("SR5.AppliedDamage")}`)
         break
       case "takeMatrixDamage":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.damage.matrix.value} ${game.i18n.localize("SR5.AppliedDamage")}`)
@@ -654,7 +687,7 @@ export class SR5_RollMessage {
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.roll.netHits} ${game.i18n.localize("SR5.HealedBox")}`)
         break
       case "heal":
-        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.roll.hits}${game.i18n.localize(SR5.damageTypesShort[messageData.test.typeSub])} ${game.i18n.localize("SR5.Healed")}`)
+        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.roll.netHits}${game.i18n.localize(SR5.damageTypesShort[messageData.test.typeSub])} ${game.i18n.localize("SR5.Healed")}`)
         messageData.extendedTest = false
         break
       case "firstAid":
@@ -767,14 +800,17 @@ export class SR5_RollMessage {
     } else await SR5_RollMessage.updateRollCard(message, newMessage)
   }
 
-  //Remove a template from scene on click
-  static async removeTemplate(message, itemUuid){
+  //Remove a template from scene on click: the card's own template when it recorded one, not the item's first
+  static async removeTemplate(message, itemUuid, templateId){
     if (!canvas.scene){
       SR5_RollMessage.updateChatButtonHelper(message, "templateRemove")
       ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActiveScene")}`)
       return
     }
-    let template = canvas.scene.templates.find((t) => t.flags.sr5.itemUuid === itemUuid)
+    let template = SR5_SystemHelpers.findItemTemplate(itemUuid, templateId, "itemUuid")
+    // A template belongs to whoever placed it (and the GM): anyone else is refused by Foundry, so say it plainly
+    // and leave the button as it is for the one who can use it
+    if (template && !template.canUserModify(game.user, "delete")) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_TemplateNotYours")}`)
     if (template){
       canvas.scene.deleteEmbeddedDocuments("MeasuredTemplate", [template.id])
       if (message) SR5_RollMessage.updateChatButtonHelper(message, "templateRemove")

@@ -57,11 +57,12 @@ export default async function defenseInfo(cardData, actorId){
   }
 
   //Special case for ramming
-  if (cardData.test.type === "rammingDefense") await handleRamming(cardData, actorData)
+  if (cardData.test.type === "rammingDefense") await handleRamming(cardData, actor)
 
   //Handle astral combat damage
   if (cardData.test.typeSub === "astralCombat") cardData.damage.resistanceType = "astralDamage"
   else cardData.damage.resistanceType = "physicalDamage"
+  cardData.damage.isAttack = true
 
   //If Hardened Armor, check if damage do something
   if ((actorData.specialProperties?.hardenedArmors.normalWeapon.value > 0) && (cardData.damage.source !== "magical")) {
@@ -242,7 +243,7 @@ async function handleCalledShotDefenseInfo(cardData, actorData){
   return cardData
 }
 
-async function handleRamming(cardData, actorData) {
+async function handleRamming(cardData, defender) {
   //Get the attacker actor
   let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId)
 
@@ -251,7 +252,9 @@ async function handleRamming(cardData, actorData) {
   rollData.test.type = "falseTest"
   rollData.test.typeSub = "accident"
   rollData.test.title = game.i18n.localize("SR5.CrashDamageResistance")
-  rollData.damage.base = SR5_ConverterHelpers.speedToAccidentValue(cardData.owner.speed, actorData.attributes.body.augmented.value)
+  //Rigger 5 p. 179 between two vehicles; SR5 p. 204 when the target is not a vehicle (its Body instead of the initiator's Structure)
+  if (defender.type !== "actorDrone" && cardData.combat.ramming) rollData.damage.base = SR5_ConverterHelpers.rammingNonVehicleDamage(defender.system.attributes.body.augmented.value, cardData.combat.ramming)
+  else rollData.damage.base = SR5_ConverterHelpers.rammingInitiatorDamage(cardData.damage.base + cardData.roll.netHits, cardData.combat.ramming?.angle)
   rollData.damage.value = rollData.damage.base
   rollData.damage.type = "physical"
   rollData.damage.resistanceType = "physicalDamage"

@@ -40,6 +40,8 @@ export default async function iceDefenseInfo(cardData, actorId){
     }
   } else {
     cardData.damage.matrix.value = netHits
+    // An IC attack is a matrix attack (SR5 p. 195)
+    cardData.damage.isAttack = true
     switch(cardData.test.typeSub){
       case "iceAcid":
         if (actorData.matrix.attributes.firewall.value > 0) cardData.chatCard.buttons.iceEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "iceEffect", game.i18n.localize("SR5.EffectReduceFirewall"))
@@ -50,6 +52,8 @@ export default async function iceDefenseInfo(cardData, actorId){
         cardData.damage.value = netHits + existingMark                
         cardData.damage.type = "stun"
         cardData.damage.resistanceType = "physicalDamage"
+        // The Catapult IC attack: its resistance starts on this defense card (SR5 p. 195)
+        cardData.damage.isAttack = true
         cardData.chatCard.buttons.resistanceCard = SR5_RollMessage.generateChatButton("nonOpposedTest", "resistanceCard", `${game.i18n.localize("SR5.TakeOnDamageShort")} ${game.i18n.localize("SR5.DamageValueShort")}${game.i18n.localize("SR5.Colons")} ${cardData.damage.value}${game.i18n.localize(SR5.damageTypesShort[cardData.damage.type])}`)
         break
       case "iceBinder":

@@ -1,4 +1,8 @@
 export class SR5_SystemHelpers {
+
+  // Scene units already reported as unrecognised, so the warning is written once and not on every roll.
+  static _unknownSceneUnits = new Set()
+
   static registerSystemSettings() {
 
     // System Migration Version
@@ -18,7 +22,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: false,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
     // Developper Extra Logging Level
     game.settings.register("sr5", "sr5Log.level", {
@@ -34,7 +38,7 @@ export class SR5_SystemHelpers {
         2: "SR5.SETTINGS.LoggingLevelInfo",
         3: "SR5.SETTINGS.LoggingLevelDebug",
       },
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     //Choose CSS Style
@@ -49,7 +53,7 @@ export class SR5_SystemHelpers {
         "SR5": "SR5.SETTINGS.Sr5Style",
         "SR6": "SR5.SETTINGS.Sr6Style",
       },
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // When someone dies, leave a bag on the body holding part of their gear.
@@ -57,6 +61,28 @@ export class SR5_SystemHelpers {
     game.settings.register("sr5", "sr5StorageDropOnDeath", {
       name: "SR5.SETTINGS_StorageDropOnDeath_T",
       hint: "SR5.SETTINGS_StorageDropOnDeath_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+    })
+
+    // SR5 p. 165 and p. 167: switching a device is a free action through a DNI, a simple one otherwise. Off by
+    // default: the wireless switch stays free for everyone, the system not knowing who has a DNI
+    game.settings.register("sr5", "sr5WifiRequiresDNI", {
+      name: "SR5.SETTINGS_WifiRequiresDNI_T",
+      hint: "SR5.SETTINGS_WifiRequiresDNI_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+    })
+
+    // SR5 p. 164-165: one free action, and two simple or one complex, per initiative pass. Off by default: an action
+    // the character no longer has still goes through, as before
+    game.settings.register("sr5", "sr5BlockMissingActions", {
+      name: "SR5.SETTINGS_BlockMissingActions_T",
+      hint: "SR5.SETTINGS_BlockMissingActions_D",
       scope: "world",
       config: true,
       default: false,
@@ -180,7 +206,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: true,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // Matrix Grid Rules
@@ -191,7 +217,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: true,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // Cybereyes replace the eyes the character was born with
@@ -202,7 +228,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: true,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // Token vision ranges, in scene units (0 = only what is lit)
@@ -223,6 +249,18 @@ export class SR5_SystemHelpers {
       })
     }
 
+    // Green tint of low-light vision : a visual convention, not a rule (SR5 p. 447 : it lets
+    // one see normally), hence off by default. Read when the vision modes are built, at init.
+    game.settings.register('sr5', 'sr5LowLightGreenTint', {
+      name: 'SR5.SETTINGS_LowLightGreenTint_T',
+      hint: 'SR5.SETTINGS_LowLightGreenTint_D',
+      scope: 'world',
+      config: true,
+      default: false,
+      type: Boolean,
+      requiresReload: true
+    })
+
     // Run & Gun Rules
     game.settings.register("sr5", "sr5CalledShotsRules", {
       name: "SR5.SETTINGS_CalledShotsRules_T",
@@ -231,7 +269,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: true,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // Kill Code Rules
@@ -242,7 +280,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: false,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // Flight skill on player characters (in the Athletics skill group)
@@ -253,7 +291,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: false,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // Rigger 5 Rules
@@ -264,7 +302,7 @@ export class SR5_SystemHelpers {
       config: true,
       default: false,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
     })
 
     // Hide the die and its face on a random table's chat card
@@ -275,7 +313,36 @@ export class SR5_SystemHelpers {
       config: true,
       default: false,
       type: Boolean,
-      onChange: () => window.location.reload()
+      requiresReload: true
+    })
+
+    // SR5 p. 188: in melee, when both fighters suffer the same environmental modifier, the GM may ignore it.
+    // Read at roll time, so no reload is needed.
+    game.settings.register("sr5", "sr5MeleeEnvironmentBalanced", {
+      name: "SR5.SETTINGS_MeleeEnvironmentBalanced_T",
+      hint: "SR5.SETTINGS_MeleeEnvironmentBalanced_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+    })
+
+    // Data Trails p. 157: an AI outside any device defends with its Willpower or Intuition alone. The book does not
+    // say which one stands in for Logic: the higher one by default. The same one resists matrix damage, which the book
+    // leaves unrated (Data Trails p. 157 and 161). Read while the actors are prepared, hence the reload.
+    game.settings.register("sr5", "sr5DevicelessAILogicDefense", {
+      name: "SR5.SETTINGS_DevicelessAILogicDefense_T",
+      hint: "SR5.SETTINGS_DevicelessAILogicDefense_D",
+      scope: "world",
+      config: true,
+      default: "highest",
+      type: String,
+      choices: {
+        "highest": "SR5.SETTINGS_DevicelessAILogicDefense_Highest",
+        "intuition": "SR5.SETTINGS_DevicelessAILogicDefense_Intuition",
+        "willpower": "SR5.SETTINGS_DevicelessAILogicDefense_Willpower",
+      },
+      requiresReload: true
     })
   }
 
@@ -365,14 +432,130 @@ export class SR5_SystemHelpers {
   }
 
   /**
+   * How many meters one unit of the current scene's distance measurement is worth.
+   *
+   * SR5 states every range, radius and reach in meters: the weapon range table is headed "RANGE IN METERS"
+   * (SR5 p. 186), a blast loses damage per meter (p. 184) and an area spell covers a radius in meters equal
+   * to its Force (p. 283). A scene's unit, on the other hand, is a display setting the GM picks, and Foundry
+   * ships "ft" as its default. So the scene is read and converted, never constrained.
+   *
+   * grid.units is free text, so only the feet spellings are recognised. Anything else -- yards, kilometers,
+   * a label the GM typed -- is assumed to be meters and left alone, because guessing at an unknown unit
+   * would trade a known wrong answer for an unpredictable one.
+   *
+   * @return {number}   Meters per scene unit (1 when the scene already measures in meters)
+   */
+  static getSceneUnitInMeters(){
+    const units = canvas?.scene?.grid?.units
+    if (typeof units !== "string") return 1
+    const normalized = units.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\.$/, "")
+    if (["ft", "feet", "foot", "'", "pi", "pied", "pieds"].includes(normalized)) return 0.3048
+    if (normalized !== "" && !["m", "meter", "meters", "metre", "metres"].includes(normalized)) {
+      // Leaving an unknown unit alone is the safe choice, but doing it in complete silence would make the
+      // day someone plays in yards indistinguishable from a working scene. One line per unseen unit.
+      if (game?.settings && !SR5_SystemHelpers._unknownSceneUnits.has(normalized)) {
+        SR5_SystemHelpers._unknownSceneUnits.add(normalized)
+        SR5_SystemHelpers.srLog(1, `Scene unit "${units}" is not recognised: distances are taken as meters and left unconverted.`)
+      }
+    }
+    return 1
+  }
+
+  /**
+   * Convert a distance measured on the canvas into the meters the rules are written in
+   * @param value     A distance in the scene's own units
+   * @return {number} The same distance in meters
+   */
+  static convertSceneUnitsToMeters(value){
+    return value * SR5_SystemHelpers.getSceneUnitInMeters()
+  }
+
+  /**
+   * Convert a distance taken from the books into the units the scene draws with
+   * @param value     A distance in meters
+   * @return {number} The same distance in the scene's own units
+   */
+  static convertMetersToSceneUnits(value){
+    return value / SR5_SystemHelpers.getSceneUnitInMeters()
+  }
+
+  /**
+	 * Return the distance between two documents on the canvas, in meters
+	 * @param firstDocument     The first document
+	 * @param secondDocument    The second document
+	 * @return {distance}       The distance between first and second document, in meters, whatever unit the
+	 *                          scene measures in. Use this one, not getDistanceBetweenTwoPoint, whenever the
+	 *                          result is compared to a value taken from the rules.
+	 */
+  static getDistanceInMetersBetweenTwoPoint(firstDocument, secondDocument){
+    return SR5_SystemHelpers.convertSceneUnitsToMeters(SR5_SystemHelpers.getDistanceBetweenTwoPoint(firstDocument, secondDocument))
+  }
+
+  /**
+   * Tell whether a target stands within melee range: the adjacent square, plus one square per point of Reach
+   * (SR5 p. 187 gives Reach as a number, the book gives no distance, so the square is the convention).
+   *
+   * Counted in grid spaces, not in distance, and between the spaces each token covers, not from a corner.
+   * - A distance depends on the scene's diagonal rule: under the "exact" rule the adjacent diagonal square is
+   *   1.41 squares away, under "rectilinear" it is 2. On a square grid the number of squares between two
+   *   cells is the larger of the row and column gaps, whatever the rule.
+   * - On a hexagonal grid the cube distance counts hexes exactly. A measured distance between token corners
+   *   comes out a hair above one hex for two of the six neighbours, because token positions are rounded to
+   *   whole pixels; counting cells needs no tolerance to explain.
+   * - A token larger than one space (vehicle, drone, big critter) is in contact through any of its spaces:
+   *   the shortest gap between the two footprints counts.
+   * @param grid           The scene's grid (canvas.grid)
+   * @param attackerCells  The grid offsets the attacker covers (TokenDocument#getOccupiedGridSpaceOffsets)
+   * @param targetCells    The grid offsets the target covers
+   * @param reach          The weapon's Reach
+   * @return {boolean|null}  null on a gridless scene, where there is no space to count
+   */
+  static isInMeleeRange(grid, attackerCells, targetCells, reach){
+    if (!attackerCells?.length || !targetCells?.length) return null
+    const gap = grid.isSquare ?
+      (a, b) => Math.max(Math.abs(a.i - b.i), Math.abs(a.j - b.j)) :
+      (a, b) => grid.constructor.cubeDistance(grid.offsetToCube(a), grid.offsetToCube(b))
+    let shortest = Infinity
+    for (const a of attackerCells) for (const b of targetCells) shortest = Math.min(shortest, gap(a, b))
+    return shortest <= reach + 1
+  }
+
+  /**
+	 * The template an item left on the active scene for a given shot. An item can leave several (a grenade thrown
+	 * twice without removing the first circle). When the chat card recorded its template, that one or nothing: if
+	 * it was removed since, falling back would silently move or delete an older circle of the same item, so the
+	 * caller warns instead. Without a recorded id (a card from before the id was kept, or a roll being prepared
+	 * right after its placement), the most recently created one. A MeasuredTemplate carries no _stats in Foundry
+	 * 13.351 (checked in game), so "most recent" is the last one in the scene's collection, which keeps creation order.
+	 * @param itemKey       The item's id, or its uuid when `flag` is "itemUuid"
+	 * @param templateId    The template recorded on the shot's chat card, if any
+	 * @param flag          Which flags.sr5 field holds the item: "item" (its id) or "itemUuid"
+	 * @return {MeasuredTemplateDocument|undefined}
+	 */
+  static findItemTemplate(itemKey, templateId, flag = "item"){
+    let templates = canvas.scene?.templates
+    if (!templates) return undefined
+    if (templateId){
+      let own = templates.get(templateId)
+      return own?.flags.sr5?.[flag] === itemKey ? own : undefined
+    }
+    let latest
+    for (let t of templates){
+      if (t.flags.sr5?.[flag] === itemKey) latest = t
+    }
+    return latest
+  }
+
+  /**
 	 * Get the position of a template based on the id of the item which has created it
 	 * @param itemId                     The item's id which has created the template
+	 * @param templateId                 The shot's own template, if known (see findItemTemplate)
 	 * @return {templatePosition || 0}   The coordinates of the template on the grid scene
 	 */
-  static async getTemplateItemPosition(itemId){
+  static async getTemplateItemPosition(itemId, templateId){
     let gridUnit = canvas.scene.grid.size
     let templatePosition = 0
-    let templateItem = await canvas.scene.templates.find((template) => template.flags.sr5.item === itemId)
+    let templateItem = SR5_SystemHelpers.findItemTemplate(itemId, templateId)
     if (templateItem) {
       //token position is based on top left grid.
       //player will probably launch grenade on the token, so we need to tweak the position of the grenade template

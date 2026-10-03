@@ -5,7 +5,7 @@ import {
   SR5_EntityHelpers 
 } from "../helpers.js"
 import {
-  isStorable 
+  isStorable, isStoredAway 
 } from "../../interface/storage-rules.js"
 import {
   SR5Combat 
@@ -32,8 +32,11 @@ import {
   SR5_SocketHandler 
 } from "../../socket.js"
 import {
-  _getSRStatusEffect 
+  _getSRStatusEffect
 } from "../../system/effectsList.js"
+import {
+  SR5_SpiritTypes
+} from "../items/spirit-types.js"
 
 export class SR5_ActorHelper {
     
@@ -42,7 +45,8 @@ export class SR5_ActorHelper {
     let realActor = SR5_EntityHelpers.getRealActorFromID(actorId)
     let damage = options.damage.value,
       damageType = options.damage.type,
-      actor = foundry.utils.duplicate(realActor),
+      // Read prepared data: monitor maxima, limits and armor are computed, not stored in the source
+      actor = realActor.toObject(false),
       actorData = actor.system,
       gelAmmo = 0,
       damageReduction = 0,
@@ -149,9 +153,14 @@ export class SR5_ActorHelper {
         break
     }
 
-    await realActor.update({
-      system: actorData
-    })
+    // Only write the damage taken, so computed values never end up frozen in the source
+    let monitorUpdates = {
+    }
+    for (let [key, monitor] of Object.entries(actorData.conditionMonitors)) {
+      // Boxes beyond the monitor are not kept: they would eat the next healing (SR5 p. 171, 381)
+      if (monitor?.actual) monitorUpdates[`system.conditionMonitors.${key}.actual.base`] = Math.min(monitor.actual.base, monitor.value ?? monitor.actual.base)
+    }
+    await realActor.update(monitorUpdates)
 
     //Status
     switch (actor.type){
@@ -166,14 +175,22 @@ export class SR5_ActorHelper {
           // SR5 p. 172: a full physical monitor knocks the character out; death needs an overflow greater than Body
           if (isDead || actor.type === "actorSpirit") await SR5_ActorHelper.createDeadEffect(actorId)
           else await SR5_ActorHelper.createKoEffect(actorId)
-        } else if (actorData.conditionMonitors.stun.actual.value >= actorData.conditionMonitors.stun.value) await SR5_ActorHelper.createKoEffect(actorId)
-        else if ((damage > (actorData.limits.physicalLimit.value + gelAmmo) || damage >= 10) &&
+        } else if (actorData.conditionMonitors.stun.actual.value >= actorData.conditionMonitors.stun.value) {
+          // SR5 p. 305: a spirit is dissipated when either of its monitors is full, Stun included
+          if (actor.type === "actorSpirit") await SR5_ActorHelper.createDeadEffect(actorId)
+          else await SR5_ActorHelper.createKoEffect(actorId)
+        }
+        else if (SR5_ActorHelper.knocksDown(damage, actorData.limits.physicalLimit.value, gelAmmo, options.damage.isAttack) &&
                   actorData.conditionMonitors.stun.actual.value < actorData.conditionMonitors.stun.value &&
                   actorData.conditionMonitors.physical.actual.value < actorData.conditionMonitors.physical.value) await SR5_ActorHelper.createProneEffect(actorId, damage, gelAmmo)
         break
-      case "actorGrunt":        
-        if (actorData.conditionMonitors.condition.actual.value >= actorData.conditionMonitors.condition.value) await SR5_ActorHelper.createDeadEffect(actorId)
-        else if (damage > (actorData.limits.physicalLimit.value + gelAmmo) || damage >= 10){ await SR5_ActorHelper.createProneEffect(actorId, damage, gelAmmo)}
+      case "actorGrunt":
+        // SR5 p. 381: a full monitor puts the grunt out of the fight; it dies only from a final Physical attack above its Body
+        if (actorData.conditionMonitors.condition.actual.value >= actorData.conditionMonitors.condition.value) {
+          if (SR5_ActorHelper.killsGrunt(damage, damageType, actorData.attributes.body.augmented.value)) await SR5_ActorHelper.createDeadEffect(actorId)
+          else await SR5_ActorHelper.createKoEffect(actorId)
+        }
+        else if (SR5_ActorHelper.knocksDown(damage, actorData.limits.physicalLimit.value, gelAmmo, options.damage.isAttack)){ await SR5_ActorHelper.createProneEffect(actorId, damage, gelAmmo)}
         break
       case "actorDrone":
         if (actorData.conditionMonitors.condition.actual.value >= actorData.conditionMonitors.condition.value) await SR5_ActorHelper.createDeadEffect(actorId)
@@ -185,8 +202,9 @@ export class SR5_ActorHelper {
     }
 
     //Special Element Damage
-    if (options.damage.element === "electricity" && actorData.type !== "actorDrone") await SR5_ActorHelper.electricityDamageEffect(actorId)
-    if (options.damage.element === "anticoagulant" && actorData.type !== "actorDrone") await SR5_ActorHelper.anticoagulantDamageEffect(actorId)
+    // A drone's side effect from electricity is the matrix damage above (SR5 p. 173), not the dice and Initiative penalty
+    if (options.damage.element === "electricity" && actor.type !== "actorDrone") await SR5_ActorHelper.electricityDamageEffect(actorId)
+    if (options.damage.element === "anticoagulant" && actor.type !== "actorDrone") await SR5_ActorHelper.anticoagulantDamageEffect(actorId)
     if (options.damage.element === "acid") await SR5_ActorHelper.acidDamageEffect(actorId, damage, options.damage.source)
     if (options.damage.element === "fire"){
       if (actorData.itemsProperties.armor.value <= 0) await SR5_ActorHelper.fireDamageEffect(actorId)
@@ -265,7 +283,7 @@ export class SR5_ActorHelper {
     const share = Number(game.settings.get("sr5", "sr5StorageDropOnDeathShare")) || 0
     if (share <= 0) return
 
-    const carried = actor.items.filter(i => isStorable(i, null) && !i.system.storedIn)
+    const carried = actor.items.filter(i => isStorable(i, null) && !isStoredAway(i, actor))
     const spoils = carried.filter(() => Math.random() * 100 < share)
     if (!spoils.length) return
 
@@ -298,6 +316,40 @@ export class SR5_ActorHelper {
     let effect = await _getSRStatusEffect("unconscious")
     await actor.createEmbeddedDocuments('ActiveEffect', [effect])
     ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.INFO_DamageActorKo")}`)
+  }
+
+  /**
+   * SR5 p. 381: the grunt is dead when the attack that took it out was Physical and "plus importants"
+   * than its Body, alive when it was Stun or Physical "inférieure" to its Body. The book says nothing
+   * of damage equal to Body: read here as alive, like the overflow rule (p. 172) that needs more than Body.
+   */
+  static killsGrunt(damage, damageType, body){
+    return damageType === "physical" && damage > body
+  }
+
+  /**
+   * SR5 p. 195: a character is knocked down when a single attack deals, after the resistance test, more boxes
+   * than their Physical limit (lowered by gel rounds), or 10 boxes or more. Damage that does not come from an
+   * attack (drug crash, drain, fading, toxin, fall, burning, acid, dumpshock...) never knocks down.
+   */
+  static knocksDown(damage, physicalLimit, gelAmmo, isAttack){
+    if (!isAttack) return false
+    return damage > (physicalLimit + gelAmmo) || damage >= 10
+  }
+
+  /**
+   * Wake up a character knocked out by damage once no monitor is full any more (SR5 p. 171: a full monitor
+   * knocks out). Only the effect laid by createKoEffect is removed, never one the GM set by hand, and death
+   * is never undone by healing (p. 209).
+   */
+  static async clearDamageKnockout(actor){
+    if (actor.effects.some(e => e.statuses.has("dead"))) return
+    let monitors = actor.system.conditionMonitors
+    let knockoutMonitors = monitors.physical ? ["physical", "stun"] : ["condition"]
+    if (knockoutMonitors.some(key => monitors[key] && monitors[key].actual.value >= monitors[key].value)) return
+    let knockouts = actor.effects.filter(e => e.origin === "unconscious" && e.statuses.has("unconscious")).map(e => e.id)
+    if (!knockouts.length) return
+    await actor.deleteEmbeddedDocuments('ActiveEffect', knockouts)
   }
 
   //Handle Elemental Damage : Electricity
@@ -515,8 +567,9 @@ export class SR5_ActorHelper {
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
     let actorData = foundry.utils.duplicate(actor.system)
 
-    if (actorData.matrix.overwatchScore === null) actorData.matrix.overwatchScore = 0
-    actorData.matrix.overwatchScore += defenseHits
+    //A negative value can lower the score (Emulate swapped for the hits, Data Trails p. 159), never below 0, where it
+    //starts and where a reboot brings it back (SR5 p. 244): the direct call and the GM side of the socket both end here
+    actorData.matrix.overwatchScore = Math.max(0, (actorData.matrix.overwatchScore || 0) + defenseHits)
     actor.update({
       system: actorData
     })
@@ -532,7 +585,12 @@ export class SR5_ActorHelper {
   static async deleteMarksOnActor(actorData, actorId){
     for (let m of actorData.matrix.markedItems){
       let itemToClean = await fromUuid(m.uuid)
-      if (itemToClean) {
+      //The persona of an AI outside any device carries its marks itself (Data Trails p. 157)
+      if (itemToClean?.documentName === "Actor") {
+        await itemToClean.update({
+          "system.matrix.marks": (itemToClean._source.system.matrix.marks ?? []).filter(mark => mark.ownerId !== actorId)
+        })
+      } else if (itemToClean) {
         let cleanData = foundry.utils.duplicate(itemToClean.system)
         for (let i = 0; i < cleanData.marks.length; i++){
           if (cleanData.marks[i].ownerId === actorId) {
@@ -557,15 +615,20 @@ export class SR5_ActorHelper {
   }
 
   //Delete Mark info from deck
-  static async deleteMarkInfo(actorId, item){
+  //exact: item is a whole uuid, matched as is. A persona's uuid begins the uuid of its own devices, so a
+  //partial match would also forget the marks placed on them
+  static async deleteMarkInfo(actorId, item, exact = false){
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
     if (!actor) return SR5_SystemHelpers.srLog(1, `No Actor in deleteMarkInfo()`)
 
-    let deck = actor.items.find(d => d.type === "itemDevice" && d.system.isActive),
-      deckData = foundry.utils.duplicate(deck.system),
+    let deck = actor.items.find(d => d.type === "itemDevice" && d.system.isActive)
+    //The marker has no deck any more: no trace of the mark is left to remove
+    if (!deck) return
+    let deckData = foundry.utils.duplicate(deck.system),
       index=0
 
-    for (let m of deckData.markedItems){
+    if (exact) deckData.markedItems = deckData.markedItems.filter(m => m.uuid !== item)
+    else for (let m of deckData.markedItems){
       if (m.uuid.includes(item)){
         deckData.markedItems.splice(index, 1)
         index--
@@ -594,7 +657,7 @@ export class SR5_ActorHelper {
 
   //Socket for deletings marks info other actors;
   static async _socketDeleteMarkInfo(message) {
-    await SR5_ActorHelper.deleteMarkInfo(message.data.actorId, message.data.item)
+    await SR5_ActorHelper.deleteMarkInfo(message.data.actorId, message.data.item, message.data.exact)
   }
 
   //Create a Sidekick
@@ -664,6 +727,10 @@ export class SR5_ActorHelper {
         "system.conditionMonitors.physical.actual": itemData.conditionMonitors.physical.actual,
         "system.conditionMonitors.stun.actual": itemData.conditionMonitors.stun.actual,
         "items": baseItems,
+      })
+      // A single-monitor spirit's damage is kept in the item's Physical monitor (see dismissal)
+      if (SR5_SpiritTypes.hasSingleMonitor(itemData.type)) sideKickData = foundry.utils.mergeObject(sideKickData, {
+        "system.conditionMonitors.condition.actual": itemData.conditionMonitors.physical.actual,
       })
     }
 
@@ -826,7 +893,10 @@ export class SR5_ActorHelper {
         "prototypeToken.width": 0.5,
         "prototypeToken.height": 0.5,
         "prototypeToken.movementAction": "displace",
-        "items": storedItems.map(i => i.toObject(false)),
+        // Their source, not their prepared data: the character's preparation
+        // holds what is stored away inactive (an armour at the stash protects
+        // nobody), and that must not become what the item is
+        "items": storedItems.map(i => i.toObject()),
       })
     }
 
@@ -885,6 +955,28 @@ export class SR5_ActorHelper {
     modifiedItem.system.tokenImg = proto.texture?.src || ""
   }
 
+  /**
+   * What a storage put down holds, as it lies on the map.
+   *
+   * Storages used to be put down as unlinked tokens: what was taken out
+   * through the token left the token only, and the actor in the sidebar still
+   * holds the lot. Such a bag is read from its token, the current scene's
+   * first, so picking it up gives back only what is still in it. A linked
+   * token is the actor itself.
+   *
+   * @param {object} actor  the storage, as a document or a plain object
+   * @returns {Array}
+   */
+  static storageContentsOnMap(actor){
+    const actorId = actor._id ?? actor.id
+    const scenes = [canvas?.scene, ...(game.scenes ?? [])].filter(Boolean)
+    for (const scene of scenes) {
+      const token = scene.tokens?.find(t => t.actorId === actorId && !t.actorLink && t.actor)
+      if (token) return [...token.actor.items]
+    }
+    return [...(actor.items ?? [])]
+  }
+
   //Dismiss sidekick : update his parent item and then delete actor
   static async dimissSidekick(actor){
     let ownerActor = SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId)
@@ -900,7 +992,7 @@ export class SR5_ActorHelper {
       SR5_ActorHelper.rememberSidekickToken(modifiedItem, actor)
       modifiedItem.system.services.value = actor.system.services.value
       modifiedItem.system.services.max = actor.system.services.max
-      if (actor.system.type === "watcher" || actor.system.type === "homunculus"){
+      if (SR5_SpiritTypes.hasSingleMonitor(actor.system.type)){
         modifiedItem.system.conditionMonitors.physical.actual = actor.system.conditionMonitors.condition.actual
         modifiedItem.system.conditionMonitors.stun.actual = actor.system.conditionMonitors.condition.actual
       } else {
@@ -1089,7 +1181,7 @@ export class SR5_ActorHelper {
       modifiedItem.system.deployedActorId = ""
       SR5_ActorHelper.rememberSidekickToken(modifiedItem, actor)
       // Whatever is in it comes back to the character, still stored in it
-      const contents = (actor.items ?? []).map(i => {
+      const contents = SR5_ActorHelper.storageContentsOnMap(actor).map(i => {
         const data = typeof i.toObject === "function" ? i.toObject(false) : foundry.utils.duplicate(i)
         data.system.storedIn = actor.system.creatorItemId
         return data
@@ -1290,12 +1382,23 @@ export class SR5_ActorHelper {
     }
   }
 
+  // SR5 p. 207: Physical damage does not heal naturally while the character has Stun damage, Stun heals first.
+  // Natural recovery only: first aid (p. 206), Medicine (p. 208) and the Heal spell (p. 290) are not bound by this order
+  static stunBlocksNaturalHealing(system, testType, damageType){
+    return testType === "healing" && damageType === "physical" && (system?.conditionMonitors?.stun?.actual?.value || 0) > 0
+  }
+
   //Manage Healing
   static async heal(targetActorID, data){
     let damageToRemove = data.roll.netHits,
       damageType = data.test.typeSub,
       targetActor = SR5_EntityHelpers.getRealActorFromID(targetActorID),
       actorData = foundry.utils.deepClone(targetActor)
+    //The card may have been rolled before new Stun damage was taken
+    if (SR5_ActorHelper.stunBlocksNaturalHealing(targetActor.system, data.test.type, damageType)) {
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_StunHealsFirst"))
+      return false
+    }
 				
     actorData = actorData.toObject(false)
     if (damageType === "physical" || damageType === "condition") SR5_ActorHelper.healMonitorBoxes(actorData.system.conditionMonitors[damageType], damageToRemove)
@@ -1306,6 +1409,7 @@ export class SR5_ActorHelper {
     await targetActor.update({
       system: actorData.system
     })
+    await SR5_ActorHelper.clearDamageKnockout(targetActor)
   }
 
   // Aggravated Wounds (Howling Shadows p. 213): each box of Physical damage dealt by the critter is marked
@@ -1376,6 +1480,7 @@ export class SR5_ActorHelper {
     await actor.update({
       system: actorData.system
     })
+    await SR5_ActorHelper.clearDamageKnockout(actor)
   }
 
   //Apply an external effect to actor (such spell, complex form). Data is provided by chatMessage
@@ -1588,7 +1693,12 @@ export class SR5_ActorHelper {
 
     if (toxinEffects.length) await actor.createEmbeddedDocuments("Item", toxinEffects)
     if (statusEffects.length) await actor.createEmbeddedDocuments("ActiveEffect", statusEffects)
-    if (data.damage.type && data.damage.value > 0) await actor.takeDamage(data)
+    // A toxin's damage never knocks down (SR5 p. 195), even when a gas grenade delivered it
+    if (data.damage.type && data.damage.value > 0) await actor.takeDamage({
+      ...data, damage: {
+        ...data.damage, isAttack: false
+      }
+    })
   }
 
   static async applyCalledShotsEffect(actorId, data){

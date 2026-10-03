@@ -22,6 +22,12 @@ import {
 import {
   SR5Combat 
 } from "../system/srcombat.js"
+import {
+  SR5_SpiritTypes
+} from "../entities/items/spirit-types.js"
+import {
+  SR5_SystemHelpers
+} from "../system/utilitySystem.js"
 
 export default class SR5_RollDialog {
 
@@ -106,6 +112,14 @@ export default class SR5_RollDialog {
     return false
   }
 
+  // SR5 p. 170 and 192: full defense (-10, once per turn) and an active defense (-5) are paid together,
+  // so the initiative must be higher than their combined cost
+  static defenseStanceCost(actor, fullDefense, defenseMode){
+    let cost = -SR5_ConverterHelpers.activeDefenseToInitMod(defenseMode)
+    if (fullDefense && !actor.effects.find(e => e.origin === "fullDefense")) cost += 10
+    return cost
+  }
+
   calculRecoil(html){
     let firingModeValue,
       dialogData = this.dialogData
@@ -177,6 +191,8 @@ export default class SR5_RollDialog {
     element.querySelectorAll('.SR-ModSelect').forEach(el => el.addEventListener('change', ev => this._selectModifiers(ev, element, dialogData)))
     //General commands for select already filled by dialogData
     const filledSelects = element.querySelectorAll('.SR-ModSelectFilled'); if (filledSelects.length) this._filledSelectModifier(filledSelects, element, dialogData)
+    //Ramming: speeds and angle of the impact
+    element.querySelectorAll('.SR-RammingInput').forEach(el => el.addEventListener('change', () => this._updateRamming(element, dialogData)))
     //Manage Threshold
     element.querySelectorAll('.SR-ManageThreshold').forEach(el => el.addEventListener('change', ev => this._manageThreshold(ev, element, dialogData)))
     const thresholdEls = element.querySelectorAll('.SR-ManageThreshold'); if (thresholdEls.length) this._filledThreshold(thresholdEls, element, dialogData)
@@ -225,6 +241,19 @@ export default class SR5_RollDialog {
     this.dialog.setPosition(position)
   }
 
+  //Ramming damage from the initiator's Structure and the speed of the impact (Rigger 5 p. 179)
+  _updateRamming(html, dialogData){
+    let actor = SR5_EntityHelpers.getRealActorFromID(dialogData.owner.actorId),
+      ramming = dialogData.combat.ramming
+    ramming.angle = html.querySelector('[name="rammingAngle"]').value
+    ramming.attackerSpeed = Math.max(0, parseInt(html.querySelector('[name="rammingAttackerSpeed"]').value) || 0)
+    ramming.targetSpeed = Math.max(0, parseInt(html.querySelector('[name="rammingTargetSpeed"]').value) || 0)
+    let speed = SR5_ConverterHelpers.rammingSpeed(ramming.angle, ramming.attackerSpeed, ramming.targetSpeed)
+    dialogData.damage.base = SR5_ConverterHelpers.collisionDamage(actor.system.attributes.body.augmented.value, speed)
+    dialogData.damage.value = dialogData.damage.base
+    html.querySelector('[name="modifiedDamage"]').value = dialogData.damage.value
+  }
+
   //Add checkbox modifiers
   _checkboxModifier(ev, html, dialogData){
     let isChecked = ev.target.checked,
@@ -249,7 +278,7 @@ export default class SR5_RollDialog {
         break
       case "fullDefense":
         value = actor.system.specialProperties.fullDefenseValue || 0
-        if (isChecked && !actor.effects.find(e => e.origin === "fullDefense") && !SR5_RollDialog.hasInitiativeForInterruption(actor, 10)) {
+        if (isChecked && !actor.effects.find(e => e.origin === "fullDefense") && !SR5_RollDialog.hasInitiativeForInterruption(actor, SR5_RollDialog.defenseStanceCost(actor, true, dialogData.combat.activeDefenseSelected))) {
           ev.target.checked = false
           isChecked = false
         }
@@ -408,7 +437,8 @@ export default class SR5_RollDialog {
 
       switch (modifierName){
         case "patientAwakenedOrEmerged":
-          if (targetActor?.system.specialAttributes.magic.augmented.value > 0 || targetActor?.system.specialAttributes.resonance.augmented.value > 0){
+          // Spirits have no Resonance, an AI may have no Magic: read only what the patient has
+          if (targetActor?.system.specialAttributes?.magic?.augmented.value > 0 || targetActor?.system.specialAttributes?.resonance?.augmented.value > 0){
             html.querySelector(checkboxName).checked = true
             value = -2
             html.querySelector(inputName).value = value
@@ -430,13 +460,13 @@ export default class SR5_RollDialog {
           break
         }
         case "defenseProneClose":
-          if (isProned && dialogData.target.rangeInMeters <= 5){
+          if (isProned && SR5_MiscellaneousHelpers.proneDefenseRange(dialogData.target.rangeInMeters) === "close"){
             html.querySelector(checkboxName).checked = true
             value = -2
           }
           break
         case "defenseProneFar":
-          if (isProned && dialogData.target.rangeInMeters >= 20){
+          if (isProned && SR5_MiscellaneousHelpers.proneDefenseRange(dialogData.target.rangeInMeters) === "far"){
             html.querySelector(checkboxName).checked = true
             value = 4
           }
@@ -653,14 +683,25 @@ export default class SR5_RollDialog {
         case "level":
           this.updateFadingValue(html)
           continue
-        case "spiritType":
-          if (dialogData.target.actorId && (dialogData.test.typeSub === "binding")){
-            value = actor.system.skills.binding.spiritType[targetActor.system.type].dicePool - actor.system.skills.binding.test.dicePool
-            label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.spiritTypes[targetActor.system.type])})`
+        case "spiritType": {
+          // Binding reads the type off the targeted spirit, so the type may be
+          // one the list no longer holds: a custom type whose item was deleted
+          // leaves its spirits behind with a key nothing answers to.
+          const boundType = targetActor?.system.type
+          const boundSpiritPool = (dialogData.target.actorId && dialogData.test.typeSub === "binding") ?
+            actor.system.skills.binding.spiritType[boundType] :
+            null
+          if (boundSpiritPool) {
+            value = boundSpiritPool.dicePool - actor.system.skills.binding.test.dicePool
+            label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${SR5_SpiritTypes.label(boundType)})`
           } else {
+            if (boundType && dialogData.test.typeSub === "binding") {
+              SR5_SystemHelpers.srLog(2, `Unknown spirit type '${boundType}' on the bound spirit, no type modifier applied`)
+            }
             value = 0
           }
           break
+        }
         case "patientEssence": {
           let patientEssence = (targetActor?.system.essence.value ? targetActor.system.essence.value : 6)
           html.querySelector('[name="patientEssence"]').value = patientEssence
@@ -701,7 +742,7 @@ export default class SR5_RollDialog {
       actor = SR5_EntityHelpers.getRealActorFromID(dialogData.owner.actorId),
       label = game.i18n.localize(SR5.dicePoolModTypes[modifierName]),
       position = this.dialog.position,
-      chokeLimitModify, chokeLimitModified, weapon
+      chokeLimitModify, chokeLimitModified, weapon, changeCost
 
     position.height = "auto"
 
@@ -816,7 +857,8 @@ export default class SR5_RollDialog {
           label = game.i18n.localize(SR5.dicePoolModTypes[modifierName])
           //actions
           weapon = await fromUuid(dialogData.owner.itemUuid)
-          if (weapon.system.firingMode.current !== dialogData.combat.firingMode.selected && !dialogData.combat.firingMode.actionSpent){
+          changeCost = SR5_ConverterHelpers.firingModeChangeCost(weapon.system.firingMode, dialogData.combat.firingMode.selected, dialogData.combat.firingMode.actionSpent)
+          if (changeCost > 0){
             action = [{
               type: "simple", value: 1, source: "changeFiringMode"
             }]
@@ -825,7 +867,7 @@ export default class SR5_RollDialog {
             }]
             SR5Combat.changeActionInCombat(dialogData.owner.actorId, action)
             dialogData.combat.firingMode.actionSpent = true
-          } else if (weapon.system.firingMode.current === dialogData.combat.firingMode.selected && dialogData.combat.firingMode.actionSpent){
+          } else if (changeCost < 0){
             action = [{
               type: "simple", value: -1, source: "changeFiringMode"
             }]
@@ -838,16 +880,19 @@ export default class SR5_RollDialog {
           break
         case "matrixActionType": {
           // Kill Code p. 43: I Am the Firewall is a Complex action or an Interruption action (-5 Initiative)
+          // Kill Code p. 45: a Watchdog mark opens the same choice on Haywire, Popup (-10) and Squelch (-5)
+          let cost = dialogData.combat.interruptionInitiativeCost || 5
           let chosen = ev.target.value
-          if (chosen === "interruption" && !SR5_RollDialog.hasInitiativeForInterruption(actor, 5)) chosen = ev.target.value = "complex"
+          if (chosen === "interruption" && !SR5_RollDialog.hasInitiativeForInterruption(actor, cost)) chosen = ev.target.value = dialogData.combat.matrixActionTypeDefault
           dialogData.combat.matrixActionType = chosen
           dialogData.combat.actions = SR5_MiscellaneousHelpers.addActions(dialogData.combat.actions, {
-            type: chosen, value: 1, source: "matrixAction"
+            type: chosen, value: 1, source: "matrixAction", initiativeCost: cost
           })
           return
         }
         case "defenseMode": {
-          if (!SR5_RollDialog.hasInitiativeForInterruption(actor, -SR5_ConverterHelpers.activeDefenseToInitMod(ev.target.value))) ev.target.value = "none"
+          let fullDefense = dialogData.dicePool.modifiers.some(m => m.type === "fullDefense")
+          if (!SR5_RollDialog.hasInitiativeForInterruption(actor, SR5_RollDialog.defenseStanceCost(actor, fullDefense, ev.target.value))) ev.target.value = "none"
           value = SR5_ConverterHelpers.activeDefenseToMod(ev.target.value, dialogData.combat.activeDefenses)
           label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.characterDefenses[ev.target.value])})`
           dialogData.combat.activeDefenseSelected = ev.target.value
@@ -931,6 +976,8 @@ export default class SR5_RollDialog {
             html.querySelector(name).value = actor.system.skills.summoning.spiritType[ev.target.value].dicePool - actor.system.skills.summoning.test.dicePool
             dialogData.dicePool.composition = SR5_PrepareRollHelper.getDicepoolComposition(actor.system.skills.summoning.spiritType[ev.target.value].modifiers)
             dialogData.dicePool.base = SR5_PrepareRollHelper.getBaseDicepool(dialogData)
+            //The base dice pool field feeds updateDicePoolValue back: keep it in step with the recomputed base
+            html.querySelector('[name="baseDicePool"]').value = dialogData.dicePool.base
             dialogData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(dialogData, actor.system.skills.summoning.spiritType[ev.target.value].modifiers)
           }
           dialogData.magic.spiritType = ev.target.value
@@ -957,17 +1004,19 @@ export default class SR5_RollDialog {
           if (ev.target.value === "sight") {
             const sightPerceptionEl = html.querySelector('#sightPerception')
             if (sightPerceptionEl) sightPerceptionEl.style.display = ''
-            if (canvas.scene) {
-              SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "environmentalSceneMod")
-              dialogData.dicePool.modifiers.push({
-                type: "environmentalSceneMod",
-                label: game.i18n.localize(SR5.dicePoolModTypes["environmentalSceneMod"]),
-                value: SR5_CombatHelpers.handleEnvironmentalModifiers(game.scenes.active, actor.system, true),
-              })
-              label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.perceptionTypes[ev.target.value])})`
-            }
-            html.querySelector('[data-modifier="environmentalSceneMod"]').value = dialogData.dicePool.modifiers.environmentalSceneMod.value
-            this.dicePoolModifier.environmental = dialogData.dicePool.modifiers.environmentalSceneMod.value
+            // dicePool.modifiers is an array: reading .environmentalSceneMod on it threw, and the end of this case
+            // (perception type and limit) never ran. With no scene, handleEnvironmentalModifiers warns and returns 0.
+            const environmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, true)
+            SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "environmentalSceneMod")
+            if (environmentalMod !== 0) dialogData.dicePool.modifiers.push({
+              type: "environmentalSceneMod",
+              label: game.i18n.localize(SR5.dicePoolModTypes["environmentalSceneMod"]),
+              value: environmentalMod,
+            })
+            label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.perceptionTypes[ev.target.value])})`
+            const environmentalInput = html.querySelector('[data-modifier="environmentalSceneMod"]')
+            if (environmentalInput) environmentalInput.value = environmentalMod
+            this.dicePoolModifier.environmental = environmentalMod
           } else {
             const sightPerceptionEl = html.querySelector('#sightPerception')
             if (sightPerceptionEl) sightPerceptionEl.style.display = 'none'
@@ -977,7 +1026,7 @@ export default class SR5_RollDialog {
           dialogData.various.perceptionType = ev.target.value
           dialogData.limit.modifiers.perception = {
             value: limitMod,
-            label: `${game.i18n.localize(SR5.limitModTypes["perception"])} (${game.i18n.localize(SR5.perceptionTypes[ev.target.value])})`,
+            label: `${game.i18n.localize(SR5.limitModTypes["limitModPerception"])} (${game.i18n.localize(SR5.perceptionTypes[ev.target.value])})`,
           }
           this.limitModifier.perceptionType = limitMod
           html.querySelector('[name="limitModPerception"]').value = limitMod
@@ -1034,15 +1083,6 @@ export default class SR5_RollDialog {
           label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.healingSupplies[ev.target.value])})`
           this.updateLimitValue(html)
           break
-        case "speedRammingAttacker":
-          value = SR5_ConverterHelpers.speedToDamageValue(ev.target.value, actor.system.attributes.body.augmented.value)
-          dialogData.owner.speed = ev.target.value
-          dialogData.damage.value = value
-          html.querySelector('[name="modifiedDamage"]').value = value
-          return
-        case "speedRammingTarget":
-          dialogData.target.speed = ev.target.value
-          return
         case "targetEffect":
           dialogData.target.itemUuid = ev.target.value
           if (dialogData.test.typeSub === "counterspelling"){
@@ -1233,6 +1273,8 @@ export default class SR5_RollDialog {
           html.querySelector(targetInputName).value = actor.system.skills.summoning.spiritType[selectValue].dicePool - actor.system.skills.summoning.test.dicePool
           dialogData.dicePool.composition = SR5_PrepareRollHelper.getDicepoolComposition(actor.system.skills.summoning.spiritType[selectValue].modifiers)
           dialogData.dicePool.base = SR5_PrepareRollHelper.getBaseDicepool(dialogData)
+          //The base dice pool field feeds updateDicePoolValue back: keep it in step with the recomputed base
+          html.querySelector('[name="baseDicePool"]').value = dialogData.dicePool.base
           dialogData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(dialogData, actor.system.skills.summoning.spiritType[selectValue].modifiers)
           dialogData.magic.spiritType = selectValue
           this.updateDicePoolValue(html)
@@ -1265,15 +1307,6 @@ export default class SR5_RollDialog {
         case "socialAttitude":
           inputValue = 0
           break
-        case "speedRammingAttacker":
-          selectValue = SR5_ConverterHelpers.speedToDamageValue(html.querySelector(name).value, actor.system.attributes.body.augmented.value)
-          dialogData.owner.speed = html.querySelector(name).value
-          dialogData.damage.value = selectValue
-          html.querySelector('[name="modifiedDamage"]').value = selectValue
-          continue
-        case "speedRammingTarget":
-          dialogData.target.speed = html.querySelector(name).value
-          continue
         case "targetEffect":
           selectValue = html.querySelector(name).value
           dialogData.target.itemUuid = selectValue

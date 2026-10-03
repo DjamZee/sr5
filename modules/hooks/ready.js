@@ -11,6 +11,9 @@ import {
 import {
   SR5_SystemHelpers
 } from "../system/utilitySystem.js"
+import {
+  sr5DeepenModuleTableOfContents 
+} from "../interface/journal-heading-levels.js"
 
 export function sr5HookReady() {
   // Register the GM-authored spirit types, so that they are offered wherever
@@ -40,6 +43,9 @@ export function sr5HookReady() {
 
   // Translate the headers of the core "link matches" tooltip
   initLinkMatchesTooltip()
+
+  // The deeper table of contents also reaches the window of Monk's Enhanced Journal
+  sr5DeepenModuleTableOfContents()
 
   //game.settings.set("sr5", "systemMigrationVersion", "0.0.1");
   // Determine whether a system migration is required and feasible

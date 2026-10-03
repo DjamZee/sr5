@@ -1204,6 +1204,52 @@ export class SR5_UtilityItem extends Actor {
     }
   }
 
+  //Light rows taken off by a flashlight mounted on the weapon being used (0 or -1).
+  //Run & Gun p. 69: the flashlight lights "in the direction the weapon points", and a low-light (or infrared) one
+  //takes the light penalty one row down for a character using low-light (or thermographic) vision. So it only
+  //counts for a roll made with that weapon, not for the actor's other weapons; and a second flashlight on the
+  //same weapon does not take a second row.
+  static getWeaponLightCompensation(itemData, actor) {
+    if (!itemData?.isActive || !actor?.system?.visions) return 0
+    let accessories = itemData.accessory
+    if (accessories && typeof accessories === "object" && !Array.isArray(accessories)) accessories = Object.values(accessories)
+    if (!Array.isArray(accessories)) return 0
+
+    const visions = actor.system.visions
+    for (let a of accessories) {
+      if (!a?.isActive) continue
+      const effectType = SR5_UtilityItem.weaponAccessoryEffect(a)
+      if (effectType === "flashLightLowLight" && visions.lowLight?.isActive) return -1
+      if (effectType === "flashLightInfrared" && visions.thermographic?.isActive) return -1
+    }
+    return 0
+  }
+
+  //Light row a standard flashlight mounted on the weapon being used brings the scene down to, or null.
+  //Run & Gun p. 69: "standard flashlights provide partial light" (row 1 of the Light column, SR5 p. 176), in the
+  //direction the weapon points: like the other flashlights, only for a roll made with that weapon.
+  static getWeaponLightCap(itemData) {
+    if (!itemData?.isActive) return null
+    let accessories = itemData.accessory
+    if (accessories && typeof accessories === "object" && !Array.isArray(accessories)) accessories = Object.values(accessories)
+    if (!Array.isArray(accessories)) return null
+    return accessories.some(a => a?.isActive && SR5_UtilityItem.weaponAccessoryEffect(a) === "flashLight") ? 1 : null
+  }
+
+  //Special effect of a weapon accessory: an item carries it in weaponAccessory.specialEffect, a catalog entry
+  //(a weapon's built-in accessory, stored by name) in its systemEffects.
+  static weaponAccessoryEffect(a) {
+    if (!a) return null
+    if (!a.system) return WEAPON_ACCESSORY_CATALOG[a.name]?.systemEffects?.[0]?.value || null
+    const effect = a.system.weaponAccessory?.specialEffect
+    if (effect) return effect
+    // The compendium's standard flashlight was generated while its catalog entry had no effect, so its
+    // specialEffect is empty and the sheet offers no way to set it: recognise it by its name.
+    const i18n = globalThis.game?.i18n
+    if (i18n && a.name && a.name === i18n.localize("SR5.AccessoryFlashLight")) return "flashLight"
+    return null
+  }
+
   //Handle if an accessory gives environmental modifiers (actor-level effects)
   static _handleVisionAccessory(itemData, actor) {
     if (itemData.isActive && itemData.ammunition.type) {
@@ -1261,16 +1307,8 @@ export class SR5_UtilityItem extends Actor {
       if (!effectType) continue
 
       switch (effectType) {
-        case "flashLightInfrared":
-          if (actor.system.visions.thermographic.isActive && a.isActive && itemData.isActive) {
-            SR5_EntityHelpers.updateModifier(actor.system.itemsProperties.environmentalMod.light, label, "weaponAccessory", -1, false, true)
-          }
-          break
-        case "flashLightLowLight":
-          if (actor.system.visions.lowLight.isActive && a.isActive && itemData.isActive) {
-            SR5_EntityHelpers.updateModifier(actor.system.itemsProperties.environmentalMod.light, label, "weaponAccessory", -1, false, true)
-          }
-          break
+        // flashLightInfrared and flashLightLowLight light where the weapon points (Run & Gun p. 69): they are
+        // not written on the actor, see getWeaponLightCompensation
         case "imagingScope":
           if (a.isActive && itemData.isActive) {
             SR5_EntityHelpers.updateModifier(actor.system.itemsProperties.environmentalMod.range, label, "weaponAccessory", -1, false, false)
@@ -1371,6 +1409,25 @@ export class SR5_UtilityItem extends Actor {
 
   ////////////////// SORTS ////////////////////
 
+  //Spell area and detection range (SR5 p. 287): Force × caster's Magic metres, × 10 when extended.
+  //Called from the actor's second pass on items, once the caster's Magic is computed:
+  //in the first pass, magic.augmented.value is still 0.
+  static _handleSpellRange(itemData, magic) {
+    itemData.spellAreaOfEffect.base = 0
+    itemData.spellAreaOfEffect.modifiers = []
+    if (itemData.range === "area" || itemData.category === "detection"){
+      SR5_EntityHelpers.updateModifier(itemData.spellAreaOfEffect, game.i18n.localize('SR5.SpellForce'), "spell", parseInt(itemData.force || 0), false, true)
+    }
+    //Range for detection spell
+    if (itemData.category === "detection") {
+      SR5_EntityHelpers.updateModifier(itemData.spellAreaOfEffect, game.i18n.localize('SR5.SpellRangeShort'), "spell", magic, true, true)
+      if (itemData.spellAreaExtended === true) {
+        SR5_EntityHelpers.updateModifier(itemData.spellAreaOfEffect, game.i18n.localize('SR5.ExtendedRange'), "spell", 10, true, true)
+      }
+    }
+    SR5_EntityHelpers.updateValue(itemData.spellAreaOfEffect, 0)
+  }
+
   //Handle spell
   static _handleSpell(item, actor) {
     let itemData = item.system
@@ -1389,19 +1446,7 @@ export class SR5_UtilityItem extends Actor {
       }
     }
 
-    //Handle range
-    itemData.spellAreaOfEffect.base = 0
-    if (itemData.range === "area" || itemData.category === "detection"){
-      SR5_EntityHelpers.updateModifier(itemData.spellAreaOfEffect, game.i18n.localize('SR5.SpellForce'), "spell", parseInt(itemData.force || 0), false, true)
-    }
-    //Range for detection spell
-    if (itemData.category === "detection") {
-      SR5_EntityHelpers.updateModifier(itemData.spellAreaOfEffect, game.i18n.localize('SR5.SpellRangeShort'), "spell", actor.system.specialAttributes.magic.augmented.value, true, true)
-      if (itemData.spellAreaExtended === true) {
-        SR5_EntityHelpers.updateModifier(itemData.spellAreaOfEffect, game.i18n.localize('SR5.ExtendedRange'), "spell", 10, true, true)
-      } 
-    }
-    SR5_EntityHelpers.updateValue(itemData.spellAreaOfEffect, 0)
+    //Handle range: computed in the actor's second pass, see _handleSpellRange
 
     //Modified drain value
     itemData.drainValue.base = 0

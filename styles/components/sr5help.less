@@ -1,6 +1,8 @@
 #sr5help {
   z-index: 0;
   position: fixed;
+  // Display-only overlay: it must never catch the click meant for the element underneath
+  pointer-events: none;
   background: none;
   color: var(--sr-text-color-light);
   text-align: center;

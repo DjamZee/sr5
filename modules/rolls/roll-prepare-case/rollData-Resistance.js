@@ -28,6 +28,7 @@ export default async function resistance(rollData, rollType, actor, chatData){
   rollData.damage.element = chatData.damage.element
   rollData.damage.source = chatData.damage.source
   rollData.damage.aggravated = chatData.damage.aggravated
+  rollData.damage.isAttack = !!chatData.damage.isAttack
   rollData.previousMessage.messageId = chatData.owner.messageId
   rollData.previousMessage.hits = chatData.roll.hits
   rollData.previousMessage.attackerNetHits = chatData.roll.netHits
@@ -40,19 +41,25 @@ export default async function resistance(rollData, rollType, actor, chatData){
     rollData.damage.base = chatData.damage.valueFatiguedBase
     rollData.damage.type = "stun"
     rollData.damage.resistanceType = "fatiguedDamage"
+    rollData.damage.isAttack = false
   }
 
   //Special case for Aura
   if (rollType === "resistanceCardAura") {
     let auraOwner = SR5_EntityHelpers.getRealActorFromID(chatData.owner.actorId)
+    rollData.damage.isAttack = false
     rollData.damage.base = auraOwner.system.specialAttributes.magic.augmented.value * 2
     rollData.combat.armorPenetration = -auraOwner.system.specialAttributes.magic.augmented.value
     rollData.damage.element = auraOwner.system.specialProperties.energyAura
     if (rollData.damage.element === "fire") rollData.threshold.value = auraOwner.system.specialAttributes.magic.augmented.value
   }
-    
+
+  //Dumpshock comes from being cut off, never from the attack card it reuses (SR5 p. 195)
+  if (chatData.damage.resistanceType === "dumpshock") rollData.damage.isAttack = false
+
   //handle distance between defenser and explosive device
-  if (chatData.combat.grenade.isGrenade) await handleGrenade(rollData, chatData, actor)
+  // handleGrenade aborts (undefined) when the blast cannot reach or cannot be measured: the test must stop there
+  if (chatData.combat.grenade.isGrenade && !(await handleGrenade(rollData, chatData, actor))) return undefined
 
   //Iterate throught damage type and add corresponding info
   switch (chatData.damage.resistanceType){
@@ -403,9 +410,17 @@ async function handleFatiguedDamage(rollData, actorData, chatData){
 //               Helpers             //
 //-----------------------------------//
 async function handleGrenade(rollData, chatData, actor){
-  let grenadePosition = await SR5_SystemHelpers.getTemplateItemPosition(chatData.owner.itemId)          
+  let grenadePosition = await SR5_SystemHelpers.getTemplateItemPosition(chatData.owner.itemId, chatData.combat.grenade.templateId)
+  // No template left (removed after the throw): there is no point to measure the blast from, and resisting at
+  // the base DV would hit a defender who may stand far outside it. Warn and do not open the resistance.
+  if (!grenadePosition){
+    ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoTemplateForBlast")}`)
+    return undefined
+  }
   let defenserPosition = await SR5_EntityHelpers.getActorCanvasPosition(actor)
-  let distance = Math.round(SR5_SystemHelpers.getDistanceBetweenTwoPoint(grenadePosition, defenserPosition))
+  // A blast loses its damage per meter travelled (SR5 p. 184), so the measured distance becomes meters
+  // before it is multiplied by the fall-off.
+  let distance = Math.round(SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint(grenadePosition, defenserPosition))
   let modToDamage = distance * chatData.combat.grenade.damageFallOff
   rollData.damage.base  = chatData.damage.base + modToDamage
   if (rollData.damage.base <= 0 && chatData.damage.element !== "toxin") return abortWithInfo(`${game.i18n.localize("SR5.INFO_TargetIsTooFar")}`)  
@@ -415,4 +430,5 @@ async function handleGrenade(rollData, chatData, actor){
   else ui.notifications.info(`${game.i18n.format("SR5.INFO_GrenadeTargetDistanceFallOff", {
     distance:distance, modifiedDamage: modToDamage, finalDamage: rollData.damage.base
   })}`)
+  return rollData
 }

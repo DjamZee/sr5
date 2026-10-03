@@ -1,6 +1,9 @@
 import {
   ActorSheetSR5 
 } from "./baseSheet.js"
+import {
+  canLoot
+} from "../../interface/storage-rules.js"
 
 /**
  * An Actor sheet for a storage that has been put down on the map. It shows
@@ -51,12 +54,12 @@ export class SR5StorageSheet extends ActorSheetSR5 {
   async _looter() {
     const selected = (canvas.tokens?.controlled ?? [])
       .map(t => t.actor)
-      .filter(a => a && a.id !== this.actor.id && a.isOwner)
+      .filter(a => canLoot(a) && a.id !== this.actor.id && a.isOwner)
     if (selected.length === 1) return selected[0]
 
     const candidates = (canvas.tokens?.placeables ?? [])
       .map(t => t.actor)
-      .filter(a => a && a.id !== this.actor.id && a.isOwner && a.type !== "actorStorage")
+      .filter(a => canLoot(a) && a.id !== this.actor.id && a.isOwner)
       .filter((a, i, all) => all.findIndex(b => b.id === a.id) === i)
       .sort((a, b) => a.name.localeCompare(b.name))
 
@@ -101,7 +104,12 @@ export class SR5StorageSheet extends ActorSheetSR5 {
     return candidates.find(a => a.id === chosen) ?? null
   }
 
-  // Hand the items over, carried rather than stored: they have been picked up.
+  /**
+   * Hand the items over, carried rather than stored: they have been picked up.
+   *
+   * They leave the storage first, and only what did leave it is handed over:
+   * a second click on the same item finds it gone rather than taking it again.
+   */
   async _giveTo(looter, items) {
     if (!items.length) return
     const data = items.map(i => {
@@ -109,10 +117,19 @@ export class SR5StorageSheet extends ActorSheetSR5 {
       if (object.system.storedIn !== undefined) object.system.storedIn = ""
       return object
     })
-    await looter.createEmbeddedDocuments("Item", data)
-    await this.actor.deleteEmbeddedDocuments("Item", items.map(i => i.id))
+    let taken
+    try {
+      taken = await this.actor.deleteEmbeddedDocuments("Item", items.map(i => i.id))
+    } catch (error) {
+      console.warn("SR5 | Storage: nothing taken", error)
+      return
+    }
+    const takenIds = new Set((taken ?? []).map(i => i.id))
+    const given = data.filter(object => takenIds.has(object._id))
+    if (!given.length) return
+    await looter.createEmbeddedDocuments("Item", given)
     ui.notifications.info(game.i18n.format("SR5.StorageLooted", {
-      count: items.length, actor: looter.name, storage: this.actor.name,
+      count: given.length, actor: looter.name, storage: this.actor.name,
     }))
   }
 

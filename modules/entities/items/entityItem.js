@@ -47,7 +47,11 @@ export class SR5Item extends Item {
     const itemData = item.system
     let owner
 
-    if(this.actor?.system) owner = this.actor
+    // Only an actor with skills can hold an item and use it. A storage (a
+    // crate at the stash) or a Matrix device has no skills, attributes or
+    // limits: what it carries computes its own values, and no dice pool,
+    // since nobody is holding it.
+    if (this.actor?.system?.skills) owner = this.actor
 
     SR5_UtilityItem._resetItemModifiers(item)
     switch (item.type) {
@@ -103,8 +107,8 @@ export class SR5Item extends Item {
         SR5_UtilityItem._handleMatrixMonitor(item)
         SR5_EntityHelpers.GenerateMonitorBoxes(itemData, 'matrix')
         if (itemData.conditionMonitors.matrix.actual.value >= itemData.conditionMonitors.matrix.value) itemData.wirelessTurnedOn = false
-        if (owner && itemData.isAccessory){
-          SR5_UtilityItem._checkIfAccessoryIsPlugged(item, owner)
+        if (this.actor && itemData.isAccessory){
+          SR5_UtilityItem._checkIfAccessoryIsPlugged(item, this.actor)
           if (!itemData.isPlugged) {
             itemData.isActive = false
             itemData.wirelessTurnedOn = false
@@ -134,8 +138,8 @@ export class SR5Item extends Item {
         SR5_UtilityItem._handleMatrixMonitor(item)
         SR5_EntityHelpers.GenerateMonitorBoxes(itemData, 'matrix')
         if (itemData.conditionMonitors.matrix.actual.value >= itemData.conditionMonitors.matrix.value) itemData.wirelessTurnedOn = false
-        if (owner && itemData.isAccessory){
-          SR5_UtilityItem._checkIfAccessoryIsPlugged(item, owner)
+        if (this.actor && itemData.isAccessory){
+          SR5_UtilityItem._checkIfAccessoryIsPlugged(item, this.actor)
           if (!itemData.isPlugged) {
             itemData.isActive = false
             itemData.wirelessTurnedOn = false
