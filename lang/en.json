@@ -968,7 +968,7 @@
 	"SR5.DEVICE_Type_S": "Type",
 	"SR5.DEVICE_TYPE_SlavedDevice_F": "Slaved Device",
 	"SR5.DeviceAttributesArray": "Attribute Array",
-	"SR5.DeckUnconfigured": "Deck not configured: drag the attribute array values onto Attack, Sleaze, Data Processing and Firewall (SR5 p. 229). Until then, matrix tests use limits of 0.",
+	"SR5.DeckUnconfigured": "Deck not configured: drag the attribute array values onto Attack, Sleaze, Data Processing and Firewall (SR5 p. 229). An unassigned attribute is 0, and so is the limit that uses it.",
 	"SR5.DeviceAttributesArrayShort": "Att. Array",
 	"SR5.DeviceNew": "New Device",
 	"SR5.DeviceRating": "Device Rating",
