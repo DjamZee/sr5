@@ -1,0 +1,291 @@
+/* === Shop window (lot B) ===
+   DjamZ's choice (mock-up, revision 2, 2026-10-05): neutral greys everywhere,
+   and only the accent follows the system theme ("Style" setting): SR5 red or
+   SR6 violet, on lines, header, active shelf and buttons, never on surfaces.
+   --sr-shop-accent and --sr-shop-accent-line are set by the two themes. */
+.sr-shop-window {
+  --shop-bg: #14161b;
+  --shop-panel: #1c1f26;
+  --shop-line: #2a2e37;
+  --shop-button: #2a2e37;
+  --shop-text: #e6e6e6;
+  --shop-muted: #8b92a0;
+  // Legality and the odds dot, the same in both themes. A prohibited item is a
+  // filled red badge, so it never reads as the red accent of the SR5 theme.
+  --shop-restricted: #e0a526;
+  --shop-prohibited: #ff5c4d;
+  --shop-good: #4cc46a;
+  --shop-even: #e0a526;
+  --shop-poor: #ff5c4d;
+
+  font-size: 12px;
+
+  .window-header {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--sr-shop-accent) 55%, transparent), #0d0e11 60%) !important;
+    border-bottom: 2px solid var(--sr-shop-accent) !important;
+  }
+
+  .window-content {
+    padding: 0 !important;
+    background: var(--shop-bg) !important;
+    color: var(--shop-text) !important;
+  }
+
+  .muted { color: var(--shop-muted) !important; }
+
+  input[type="text"], input[type="number"] {
+    background: var(--shop-bg) !important;
+    border: 1px solid var(--shop-line) !important;
+    border-radius: 2px !important;
+    color: var(--shop-text) !important;
+    height: 22px;
+    font-size: 12px;
+  }
+  input[type="number"] { width: 64px; text-align: right; }
+
+  button {
+    background: var(--shop-button) !important;
+    border: 1px solid #3a3f4a !important;
+    color: var(--shop-text) !important;
+    border-radius: 3px;
+    line-height: 22px;
+    font-size: 12px;
+    &:hover:not([disabled]) { border-color: var(--sr-shop-accent-line) !important; }
+    &.accent {
+      background: var(--sr-shop-accent) !important;
+      border-color: var(--sr-shop-accent) !important;
+      color: #fffffe !important;
+      font-weight: bold;
+    }
+    &.too-expensive { outline: 1px solid var(--shop-prohibited); }
+  }
+
+  h4 {
+    margin: 10px 0 4px;
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--shop-muted) !important;
+    border: none;
+  }
+
+  .sr-shop {
+    display: grid;
+    grid-template-columns: 210px minmax(0, 1fr) 300px;
+    height: 100%;
+    min-height: 0;
+  }
+
+  /* ── Shelves ─────────────────────────── */
+  .sr-shop-shelves {
+    overflow-y: auto;
+    padding: 10px;
+    background: var(--shop-panel);
+    border-right: 1px solid var(--shop-line);
+  }
+  .sr-shop-shelf {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 5px 8px;
+    border-radius: 3px;
+    color: var(--shop-text) !important;
+    .count { color: var(--shop-muted); }
+    &:hover { background: var(--shop-line); }
+    &.active {
+      background: var(--sr-shop-accent);
+      color: #fffffe !important;
+      font-weight: bold;
+      .count { color: #fffffe; }
+    }
+    &.sub { padding-left: 22px; }
+  }
+
+  /* ── Filters ─────────────────────────── */
+  .sr-shop-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+  }
+  .sr-shop-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--shop-line);
+  }
+  .sr-shop-search {
+    flex: 1 1 220px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    input {
+      flex: 1;
+      background: none !important;
+      border: none !important;
+      border-bottom: 1px solid var(--shop-muted) !important;
+    }
+  }
+  .sr-shop-max { display: flex; align-items: center; gap: 4px; white-space: nowrap; input { width: 70px; } }
+  .sr-shop-chips { display: flex; gap: 6px; }
+  .sr-shop-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid var(--shop-line) !important;
+    border-radius: 12px !important;
+    padding: 0 10px;
+    line-height: 20px !important;
+    background: none !important;
+    color: var(--shop-muted) !important;
+    cursor: pointer;
+    input { display: none; }
+    &.active {
+      border-color: var(--sr-shop-accent-line) !important;
+      color: var(--shop-text) !important;
+    }
+  }
+  .sr-shop-filter-actions { display: flex; gap: 4px; margin-left: auto; button { width: 28px; padding: 0; } }
+
+  /* ── Rows ────────────────────────────── */
+  .sr-shop-head, .sr-shop-row {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) 108px 70px 92px 84px 104px;
+    gap: 8px;
+    align-items: center;
+    padding: 0 10px;
+  }
+  .sr-shop-head {
+    padding-top: 6px;
+    padding-bottom: 6px;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--shop-muted);
+    border-bottom: 1px solid var(--shop-line);
+    .right { text-align: right; }
+  }
+  .sr-shop-list {
+    flex: 1;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sr-shop-row {
+    min-height: 50px;
+    border-bottom: 1px solid var(--shop-line);
+    cursor: pointer;
+    &:hover { background: var(--shop-panel); }
+    &.dim { opacity: .45; }
+    img { width: 34px; height: 34px; border: none; object-fit: contain; }
+  }
+  .sr-shop-name {
+    padding: 4px 0;
+    min-width: 0;
+    b {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      font-size: 13px;
+    }
+    small { display: block; color: var(--shop-muted); font-size: 11px; }
+  }
+  .sr-shop-blocked { color: var(--shop-prohibited) !important; }
+  .sr-shop-tag {
+    font-size: 10px;
+    border: 1px solid var(--shop-muted);
+    border-radius: 3px;
+    padding: 0 4px;
+    color: var(--shop-muted);
+  }
+  .sr-shop-availability {
+    b { font-size: 13px; }
+    small { display: block; font-size: 11px; color: var(--shop-muted); }
+    .legality-R { color: var(--shop-restricted); }
+    .legality-F {
+      color: #fffffe;
+      background: var(--shop-prohibited);
+      border-radius: 3px;
+      padding: 0 4px;
+    }
+  }
+  .sr-shop-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+    &.odds-good { background: var(--shop-good); }
+    &.odds-even { background: var(--shop-even); }
+    &.odds-poor { background: var(--shop-poor); }
+  }
+  .sr-shop-price {
+    text-align: right;
+    font-weight: bold;
+    font-size: 13px;
+    &.too-expensive { color: var(--shop-prohibited); }
+  }
+  .sr-shop-row-buy {
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+    input[type="number"] { width: 34px; text-align: center; }
+    button { width: 28px; padding: 0; }
+  }
+  .sr-shop-grade select { width: 100%; }
+  .sr-shop-empty { padding: 20px; text-align: center; color: var(--shop-muted); }
+  .sr-shop-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 10px;
+    border-top: 1px solid var(--shop-line);
+    color: var(--shop-muted);
+    button { flex: 0 0 auto; padding: 0 10px; }
+  }
+
+  /* ── Till ────────────────────────────── */
+  .sr-shop-till {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: auto;
+    padding: 10px;
+    background: var(--shop-panel);
+    border-left: 1px solid var(--shop-line);
+    > button { width: 100%; }
+  }
+  .sr-shop-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px;
+    border: 1px solid var(--shop-line);
+    border-left: 2px solid var(--sr-shop-accent-line);
+    border-radius: 4px;
+    background: var(--shop-bg);
+    label { display: flex; align-items: center; gap: 6px; }
+  }
+  .sr-shop-balance b { font-size: 18px; }
+  .sr-shop-inline { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; input { width: 44px; } }
+  .sr-shop-cart-line {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 36px 72px 22px;
+    gap: 4px;
+    align-items: center;
+    padding: 3px 0;
+    border-bottom: 1px dashed var(--shop-line);
+    .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .price { text-align: right; }
+    input[type="number"] { width: 36px; text-align: center; }
+    button { padding: 0; }
+  }
+  .sr-shop-cart-total {
+    display: flex;
+    justify-content: space-between;
+    &.too-expensive { color: var(--shop-prohibited); }
+  }
+}

@@ -1,0 +1,194 @@
+<div class="sr-shop">
+
+  {{!-- Left: the shelves --}}
+  <nav class="sr-shop-shelves">
+    <h4>{{localize 'SR5.ShopShelves'}}</h4>
+    <a class="sr-shop-shelf {{#if allActive}}active{{/if}}" data-action="setShelf" data-shelf="">
+      <span><i class="fas fa-fw fa-store"></i> {{localize 'SR5.ShopShelfAll'}}</span><span class="count">{{allCount}}</span>
+    </a>
+    {{#each shelves}}
+    <a class="sr-shop-shelf {{#if this.active}}active{{/if}}" data-action="setShelf" data-shelf="{{this.key}}">
+      <span><i class="fas fa-fw {{this.icon}}"></i> {{this.label}}</span><span class="count">{{this.count}}</span>
+    </a>
+    {{#each this.subs}}
+    <a class="sr-shop-shelf sub {{#if this.active}}active{{/if}}" data-action="setShelf" data-shelf="{{../key}}" data-sub="{{this.key}}">
+      <span>{{this.label}}</span><span class="count">{{this.count}}</span>
+    </a>
+    {{/each}}
+    {{/each}}
+  </nav>
+
+  {{!-- Middle: filters and rows --}}
+  <section class="sr-shop-main">
+    <header class="sr-shop-filters">
+      <label class="sr-shop-search">
+        <i class="fas fa-search"></i>
+        <input type="text" data-shop-search value="{{search}}" placeholder="{{localize 'SR5.ShopSearch'}}" autocomplete="off">
+      </label>
+      <label class="sr-shop-max">{{localize 'SR5.ShopMaxPrice'}}
+        <input type="number" min="0" data-shop-max="price" value="{{maxPrice}}" placeholder="—"> &yen;
+      </label>
+      <label class="sr-shop-max">{{localize 'SR5.ShopMaxAvailability'}}
+        <input type="number" min="0" data-shop-max="availability" value="{{maxAvailability}}" placeholder="—">
+      </label>
+      <span class="sr-shop-chips">
+        {{#each legality}}
+        <button type="button" class="sr-shop-chip legality-{{#if this.key}}{{this.key}}{{else}}legal{{/if}} {{#if this.active}}active{{/if}}"
+                data-action="toggleLegality" data-legality="{{this.key}}" aria-pressed="{{this.active}}">{{this.label}}</button>
+        {{/each}}
+      </span>
+      <label class="sr-shop-chip {{#if affordable}}active{{/if}}">
+        <input type="checkbox" data-shop-affordable {{#if affordable}}checked{{/if}}> {{localize 'SR5.ShopAffordableOnly'}}
+      </label>
+      <span class="sr-shop-filter-actions">
+        <button type="button" data-action="clearFilters" data-tooltip="{{localize 'SR5.Clear'}}"><i class="fas fa-eraser"></i></button>
+        <button type="button" data-action="refresh" data-tooltip="{{localize 'SR5.ShopRefresh'}}"><i class="fas fa-sync"></i></button>
+      </span>
+    </header>
+
+    <div class="sr-shop-head">
+      <span></span>
+      <span>{{localize 'SR5.Name'}}</span>
+      <span>{{localize 'SR5.ShopAvailability'}}</span>
+      <span>{{localize 'SR5.ShopDelay'}}</span>
+      <span>{{localize 'SR5.ShopGrade'}}</span>
+      <span class="right">{{localize 'SR5.ShopPrice'}}</span>
+      <span></span>
+    </div>
+
+    <ol class="sr-shop-list">
+      {{#each rows}}
+      <li class="sr-shop-row {{#unless this.canBuy}}dim{{/unless}}" data-uuid="{{this.uuid}}" data-name="{{this.name}}" draggable="true" data-action="viewItem">
+        <img src="{{this.img}}" alt="">
+        <div class="sr-shop-name">
+          <b>{{this.name}}</b>
+          {{#if this.notForSale}}<span class="sr-shop-tag"><i class="fas fa-store-slash"></i> {{localize 'SR5.ShopNotForSale'}}</span>{{/if}}
+          <small>{{this.summary}}</small>
+          {{#if this.blocked}}<small class="sr-shop-blocked">{{this.blockedLabel}}</small>{{/if}}
+        </div>
+        <div class="sr-shop-availability">
+          <b class="legality-{{this.legality}}">{{this.availability}}</b>
+          {{#if this.common}}
+          <small>{{localize 'SR5.ShopCommonGoods'}}</small>
+          {{else if this.odds}}
+          <small data-tooltip="{{localize 'SR5.ShopOddsHint'}}"><span class="sr-shop-dot odds-{{this.odds}}"></span>{{this.oddsLabel}}</small>
+          {{/if}}
+        </div>
+        <div class="sr-shop-delay">{{this.delay}}</div>
+        <div class="sr-shop-grade sr-shop-row-buy">
+          {{#if this.grades.length}}
+          <select data-shop-grade aria-label="{{localize 'SR5.AugmentationGrade'}}">
+            {{#each this.grades}}<option value="{{this.key}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>{{/each}}
+          </select>
+          {{else}}—{{/if}}
+        </div>
+        <div class="sr-shop-price {{#if this.tooExpensive}}too-expensive{{/if}}">{{this.price}}</div>
+        <div class="sr-shop-row-buy">
+          {{#if this.canBuy}}
+          <input type="number" min="1" value="1" data-row-qty aria-label="{{localize 'SR5.Quantity'}}">
+          {{#unless this.common}}
+          <button type="button" data-action="testAvailability" data-tooltip="{{localize 'SR5.ShopTestAvailability'}}"><i class="fas fa-dice"></i></button>
+          {{/unless}}
+          <button type="button" class="accent" data-action="addToCart" data-tooltip="{{localize 'SR5.ShopAddToCart'}}"><i class="fas fa-cart-plus"></i></button>
+          {{/if}}
+        </div>
+      </li>
+      {{else}}
+      <li class="sr-shop-empty">{{localize 'SR5.NoResults'}}</li>
+      {{/each}}
+    </ol>
+
+    <footer class="sr-shop-footer">
+      <span>{{countLabel}}</span>
+      {{#if hasMore}}
+      <button type="button" data-action="loadMore">{{localize 'SR5.LoadMore'}} ({{shownCount}} / {{totalCount}})</button>
+      {{/if}}
+    </footer>
+  </section>
+
+  {{!-- Right: buyer, searcher, cart, till --}}
+  <aside class="sr-shop-till">
+    <h4>{{localize 'SR5.ShopBuyer'}}</h4>
+    <div class="sr-shop-box">
+      <select data-shop-buyer>
+        {{#unless buyer}}<option value="" selected>{{localize 'SR5.ShopChooseBuyer'}}</option>{{/unless}}
+        {{#each buyers}}<option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>{{this.name}}</option>{{/each}}
+      </select>
+      {{#if buyer}}
+      <div class="sr-shop-balance {{#if free}}muted{{/if}}">{{localize 'SR5.ShopBalance'}} <b>{{buyer.balance}}</b></div>
+      {{/if}}
+    </div>
+
+    {{#if buyer}}
+    <h4>{{localize 'SR5.ShopSearchedBy'}}</h4>
+    <div class="sr-shop-box">
+      <select data-shop-contact>
+        <option value="">{{localize 'SR5.ShopMyself'}}</option>
+        {{#each contacts}}<option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>{{this.name}} ({{this.connection}})</option>{{/each}}
+      </select>
+      <div class="sr-shop-inline">
+        <span>{{localize 'SR5.ShopSurcharge'}}</span>
+        <select data-shop-surcharge>
+          {{#each surchargeChoices}}<option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>{{/each}}
+        </select>
+      </div>
+      <div class="sr-shop-inline">
+        <input type="number" min="0" data-shop-override="pool" value="{{overridePool}}" placeholder="{{localize 'SR5.ShopPoolShort'}}" data-tooltip="{{localize 'SR5.ShopOverridePoolHint'}}">
+        <input type="number" min="0" data-shop-override="limit" value="{{overrideLimit}}" placeholder="{{localize 'SR5.ShopLimitShort'}}" data-tooltip="{{localize 'SR5.ShopOverrideLimitHint'}}">
+        <span class="muted">{{localize 'SR5.ShopPoolNow' pool=pool}}</span>
+      </div>
+    </div>
+    {{/if}}
+
+    <h4>{{localize 'SR5.ShopCart'}} ({{cartCount}})</h4>
+    <div class="sr-shop-box sr-shop-cart">
+      {{#each cart}}
+      <div class="sr-shop-cart-line" data-cart-key="{{this.key}}">
+        <span class="name">{{this.name}}</span>
+        <input type="number" min="1" value="{{this.quantity}}" data-cart-qty aria-label="{{localize 'SR5.Quantity'}}">
+        <span class="price">{{this.totalLabel}}</span>
+        <button type="button" data-action="removeFromCart" data-tooltip="{{localize 'SR5.ShopRemoveFromCart'}}"><i class="fas fa-xmark"></i></button>
+      </div>
+      {{else}}
+      <p class="muted">{{localize 'SR5.ShopCartEmpty'}}</p>
+      {{/each}}
+      {{#if cartCount}}
+      <div class="sr-shop-cart-total {{#unless cartAffordable}}too-expensive{{/unless}}">
+        <b>{{localize 'SR5.ShopTotal'}}</b><b>{{cartTotal}}</b>
+      </div>
+      <small class="muted">
+        {{#if cartLeft}}{{localize 'SR5.ShopLeftAfter' value=cartLeft}}{{/if}}
+        {{#if cartDelay}} · {{localize 'SR5.ShopLongestDelay' value=cartDelay}}{{/if}}
+        {{#if cartEssence}} · {{localize 'SR5.ShopEssenceTotal' value=cartEssence}}{{/if}}
+      </small>
+      {{/if}}
+    </div>
+
+    <button type="button" data-action="testCartAvailability" {{#unless canCheckout}}disabled{{/unless}}>
+      <i class="fas fa-dice"></i> {{localize 'SR5.ShopTestCart'}}
+    </button>
+    <button type="button" class="accent {{#unless cartAffordable}}too-expensive{{/unless}}" data-action="checkoutCart" {{#unless canCheckout}}disabled{{/unless}}>
+      <i class="fas fa-receipt"></i>
+      {{#if equipMode}}{{localize 'SR5.ShopEquipCheckout'}}{{else if creationMode}}{{localize 'SR5.ShopCheckoutFree'}}{{else}}{{localize 'SR5.ShopPay' price=cartTotal}}{{/if}}
+    </button>
+    {{#if buyer}}
+    <button type="button" data-action="openSell"><i class="fas fa-hand-holding-dollar"></i> {{localize 'SR5.ShopSell'}}</button>
+    {{/if}}
+
+    {{#if isGM}}
+    <h4>{{localize 'SR5.ShopGamemaster'}}</h4>
+    <div class="sr-shop-box">
+      <label data-tooltip="{{localize 'SR5.ShopCreationModeHint'}}">
+        <input type="checkbox" data-shop-creation {{#if creationMode}}checked{{/if}}> {{localize 'SR5.ShopCreationMode'}}
+        {{#if creationLimits}}<span class="muted">({{localize 'SR5.ShopCreationLimitsShort' availability=creationLimits.availability rating=creationLimits.rating}})</span>{{/if}}
+      </label>
+      <label data-tooltip="{{localize 'SR5.ShopEquipModeHint'}}">
+        <input type="checkbox" data-shop-equip {{#if equipMode}}checked{{/if}}> {{localize 'SR5.ShopEquipMode'}}
+      </label>
+    </div>
+    {{else if creationMode}}
+    <p class="muted" data-tooltip="{{localize 'SR5.ShopCreationModeHint'}}">{{localize 'SR5.ShopCreationMode'}}
+      ({{localize 'SR5.ShopCreationLimitsShort' availability=creationLimits.availability rating=creationLimits.rating}})</p>
+    {{/if}}
+  </aside>
+</div>

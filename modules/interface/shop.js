@@ -13,6 +13,9 @@ import {
 import {
   SR5ShopGrades
 } from './shop-grades.js'
+import {
+  SR5ShopCatalog
+} from './shop-catalog.js'
 
 /**
  * Purchases made from the compendium browser.
@@ -116,6 +119,16 @@ export class SR5Shop {
   }
 
   /**
+   * Availability and rating allowed at creation: the level the gamemaster chose in the
+   * world settings, the book's 12 and 6 by default (SR5 p. 66, p. 420; DjamZ's ruling, 2026-10-05).
+   */
+  static get creationLimits() {
+    return SR5ShopCatalog.creationLimits(game.settings.get('sr5', 'sr5ShopCreationLevel'), {
+      availability: game.settings.get('sr5', 'sr5ShopCreationMaxAvailability'),
+      rating: game.settings.get('sr5', 'sr5ShopCreationMaxRating'),
+    })
+  }
+  /**
    * The documents to create for `quantity` of `source`.
    *
    * Types that carry their own quantity become one stack; the others are
@@ -208,6 +221,17 @@ export class SR5Shop {
         equip
       })
       const grade = offered.includes(line.grade) ? line.grade : null
+      // Creation caps availability and rating (SR5 p. 66, p. 420), at the level the gamemaster
+      // set (DjamZ's ruling, 2026-10-05); Equip mode is how the gamemaster goes past them
+      const block = !equip && SR5Shop.creationMode ?
+        SR5ShopCatalog.creationBlock(SR5ShopCatalog.describe(source, grade), SR5Shop.creationLimits) :
+        null
+      if (block) {
+        ui.notifications.warn(game.i18n.format(`SR5.WARN_ShopCreationLimit_${block}`, {
+          name: SR5Shop.gradedName(source.name, grade), ...SR5Shop.creationLimits,
+        }))
+        continue
+      }
       const quantity = Math.max(1, Math.floor(Number(line.quantity) || 1))
       const unit = SR5Shop.gradedPrice(source.system, grade)
       resolved.push({

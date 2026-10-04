@@ -166,6 +166,7 @@ export class SR5ShopStock {
         if (label) label.innerText = game.i18n.localize(now.label)
         // An open shop drops what it had read of that entry and redraws, so the
         // buy button follows the flag without a refresh
+        game.sr5?.shop?.onFlagChanged(document)
         const browser = game.sr5?.compendiumBrowser?._instance
         const entry = browser?._indexCache?.find(e => e.uuid === document.uuid)
         if (entry) {

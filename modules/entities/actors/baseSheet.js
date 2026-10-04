@@ -87,6 +87,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     actions: {
       toggleMode: ActorSheetSR5._onToggleMode,
       customizeDisplay: ActorSheetSR5._onCustomizeDisplay,
+      // The shop window, this actor already chosen as the buyer (lot B)
+      openShop: function () {
+        game.sr5.shop.open({
+          actor: this.actor
+        })
+      },
     },
   }
 

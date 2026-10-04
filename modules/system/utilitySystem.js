@@ -200,6 +200,32 @@ export class SR5_SystemHelpers {
       scope: "world", config: true, default: false, type: Boolean,
     })
 
+    // Gear limits at creation, SR5 p. 66 and p. 420: the book's level by default, the other two
+    // levels of p. 66 as presets, or the table's own figures (DjamZ's ruling, 2026-10-05)
+    game.settings.register("sr5", "sr5ShopCreationLevel", {
+      name: "SR5.SETTINGS_ShopCreationLevel_T",
+      hint: "SR5.SETTINGS_ShopCreationLevel_D",
+      scope: "world", config: true, default: "standard", type: String,
+      choices: {
+        street: "SR5.SETTINGS_ShopCreationLevel_street",
+        standard: "SR5.SETTINGS_ShopCreationLevel_standard",
+        elite: "SR5.SETTINGS_ShopCreationLevel_elite",
+        custom: "SR5.SETTINGS_ShopCreationLevel_custom",
+      },
+    })
+
+    game.settings.register("sr5", "sr5ShopCreationMaxAvailability", {
+      name: "SR5.SETTINGS_ShopCreationMaxAvailability_T",
+      hint: "SR5.SETTINGS_ShopCreationMaxAvailability_D",
+      scope: "world", config: true, default: 12, type: Number,
+    })
+
+    game.settings.register("sr5", "sr5ShopCreationMaxRating", {
+      name: "SR5.SETTINGS_ShopCreationMaxRating_T",
+      hint: "SR5.SETTINGS_ShopCreationMaxRating_D",
+      scope: "world", config: true, default: 6, type: Number,
+    })
+
     // What a bonus die costs on an availability test. SR5 p. 420 sells one
     // die per 25 % of the price, up to +12 (four times the price); both are
     // values a table may want to move.

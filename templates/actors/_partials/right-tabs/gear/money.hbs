@@ -2,7 +2,10 @@
 <div class="SRBlockSheet">
 	<ul>
 		<li class="SR-LigneEnTete grid">
-			<div class="col-12 SR-TextUppercase">{{localize 'SR5.CharacterFinances'}}</div>
+			<div class="col-10 SR-TextUppercase">{{localize 'SR5.CharacterFinances'}}</div>
+			<div class="col-2 SR-TextRight">
+				<a class="sr5-open-shop" data-action="openShop" data-tooltip="{{localize 'SR5.ShopOpen'}}"><i class="fas fa-cart-shopping"></i> {{localize 'SR5.ShopWindow'}}</a>
+			</div>
 		</li>
 		<li class="grid">
 			<div class="col-2 SR-TextLeft {{#if (gt (lossModifiersSum system.nuyen) (gainModifiersSum system.nuyen))}}incomplete{{/if}}">{{localize 'SR5.CurrentNuyens'}}{{localize 'SR5.Colons'}}</div>

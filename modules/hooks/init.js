@@ -78,6 +78,9 @@ import Migration from "../migration.js"
 import {
   SR5CompendiumBrowser
 } from "../interface/compendium-browser.js"
+import {
+  SR5ShopWindow
+} from "../interface/shop-window.js"
 
 // Item DataModels
 import {
@@ -265,6 +268,7 @@ export async function sr5HookInit() {
     rollItemMacro: macros.rollItemMacro,
     rollMacro: macros.rollMacro,
     compendiumBrowser: SR5CompendiumBrowser,
+    shop: SR5ShopWindow,
   }
 
   // Register DataModels
