@@ -419,6 +419,9 @@ function _buildCalledShotList(rollData){
     
   if (rollData.combat.weaponType === "unarmedCombat"){
     rollData.lists.calledShots.disarm = game.i18n.localize("SR5.CS_Disarm")
+    //SR5 p. 195 (Maîtriser): a normal unarmed attack, not a called shot, hence no -4 (convertCalledShotToMod gives 0).
+    //Offered here because it shares the called shot's way to the defense card; grappling rules only.
+    if (game.settings.get("sr5", "sr5GrapplingRules")) rollData.lists.calledShots.subdue = game.i18n.localize("SR5.CS_Subdue")
   }
 
   if ((rollData.combat.weaponType === "exoticRangedWeapon" || rollData.combat.weaponType === "exoticMeleeWeapon") && rollData.combat.calledShot.martialArts.entanglement){

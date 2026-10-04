@@ -285,6 +285,18 @@ export class SR5_SystemHelpers {
       requiresReload: true
     })
 
+    // Grappling (SR5 p. 195-196, Run & Gun p. 126 and 133-138): token statuses, automatic thresholds and holds.
+    // Off by default, and off nothing changes. It adds token statuses, hence the reload.
+    game.settings.register("sr5", "sr5GrapplingRules", {
+      name: "SR5.SETTINGS_GrapplingRules_T",
+      hint: "SR5.SETTINGS_GrapplingRules_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+      requiresReload: true
+    })
+
     // Kill Code Rules
     game.settings.register("sr5", "sr5KillCodeRules", {
       name: "SR5.SETTINGS_KillCodeRules_T",

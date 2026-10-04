@@ -1242,7 +1242,8 @@ export default class SR5_RollDialog {
               break
           }
           //Manage actions
-          if (ev.target.value !== "") dialogData.combat.actions = SR5_MiscellaneousHelpers.addActions(dialogData.combat.actions, {
+          //Subduing is a normal attack (SR5 p. 195): it costs no free action
+          if (ev.target.value !== "" && ev.target.value !== "subdue") dialogData.combat.actions = SR5_MiscellaneousHelpers.addActions(dialogData.combat.actions, {
             type: "free", value: 1, source: "calledShot"
           })
           else dialogData.combat.actions = SR5_MiscellaneousHelpers.removeActions(dialogData.combat.actions, "calledShot")

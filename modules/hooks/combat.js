@@ -7,6 +7,9 @@ import {
 import {
   SR5_CharacterUtility
 } from "../entities/actors/utilityActor.js"
+import {
+  SR5_GrappleHelpers
+} from "../rolls/roll-helpers/grapple.js"
 export function sr5HookCanvasInit() {
   // Extend Diagonal Measurement
   //SquareGrid.prototype.measureDistances = measureDistances;
@@ -21,6 +24,13 @@ export function sr5HookDeleteCombatCumulativeDefense(combat) {
     actor.unsetFlag("sr5", "cumulativeDefense")
     actor.unsetFlag("sr5", "cumulativeRecoil")
   }
+}
+
+//The end of the combat ends every hold among its fighters (grappling rules only)
+export async function sr5HookDeleteCombatGrapple(combat) {
+  if (!game.user.isGM || !SR5_GrappleHelpers.isActive()) return
+  const actors = combat.combatants.map(c => SR5_EntityHelpers.getRealActorFromID(c.actor?.isToken ? c.tokenId : c.actorId))
+  await SR5_GrappleHelpers.releaseActors(actors)
 }
 
 export async function sr5HookCreateCombatant(combatant) {

@@ -7,6 +7,12 @@ import {
 import {
   SR5_Jammer
 } from "../system/jammer.js"
+import {
+  SR5_GrappleHelpers
+} from "../rolls/roll-helpers/grapple.js"
+import {
+  grappleHoldOf
+} from "../rolls/roll-helpers/grapple-rules.js"
 
 export async function sr5HookCreateToken(tokenDocument) {
   if (!game.user.isGM) return
@@ -30,6 +36,11 @@ export async function sr5HookUpdateToken(tokenDocument, change) {
 export function sr5HookDeleteToken(tokenDocument) {
   //An unlinked token's effects go with its synthetic actor: only the others are measured again
   SR5_Jammer.refreshScene(tokenDocument.parent)
+  //A fighter removed from the scene lets go of its hold, or is let go (grappling rules only)
+  if (game.user.isGM && SR5_GrappleHelpers.isActive()){
+    const data = grappleHoldOf(tokenDocument.actor?.effects)
+    if (data) SR5_GrappleHelpers.releaseActors([SR5_EntityHelpers.getRealActorFromID(data.partner)])
+  }
 }
 
 export function sr5HookPreDeleteToken(tokenDocument, _options, _userId) {

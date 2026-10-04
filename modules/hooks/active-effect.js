@@ -7,9 +7,13 @@ import {
 import {
   SR5_EffectArea
 } from "../system/effectArea.js"
+import {
+  SR5_GrappleHelpers
+} from "../rolls/roll-helpers/grapple.js"
 
 export async function sr5HookDeleteActiveEffect(effect) {
   if (!game.user.isGM ) return
+  if (effect.flags?.sr5?.grapple) await SR5_GrappleHelpers.onDeleteEffect(effect)
   if (effect.statuses.has("prone")){
     let itemEffect = effect.parent.items.find(i => i.type === "itemEffect" && i.system.type === "prone")
     let actorId = (effect.parent.isToken ? effect.parent.token.id : effect.parent.id)
@@ -22,6 +26,7 @@ export async function sr5HookDeleteActiveEffect(effect) {
 
 export function sr5HookCreateActiveEffect(effect) {
   if (!game.user.isGM ) return
+  if (SR5_GrappleHelpers.isActive()) SR5_GrappleHelpers.onCreateEffect(effect)
   let actorId = (effect.parent.isToken ? effect.parent.token.id : effect.parent.id)
   if (effect.statuses.has("signalJam")) SR5_EffectArea.onJamCreation(actorId)
   if ((effect.statuses.has("cover") || effect.statuses.has("coverFull")) && game.combat) SR5Combat.changeActionInCombat(actorId, [{

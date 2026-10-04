@@ -221,10 +221,15 @@ import {
   sr5ExtendJournalHeadingLevels,
   sr5DeepenJournalTableOfContents
 } from "../interface/journal-heading-levels.js"
+import {
+  SR5_GrappleHelpers
+} from "../rolls/roll-helpers/grapple.js"
 
 export async function sr5HookInit() {
   SR5_SystemHelpers.registerSystemSettings()
   SR5_CompendiumUtility.registerSettings()
+  //The grappling statuses exist only in a world that uses the grappling rules
+  if (SR5_GrappleHelpers.isActive()) CONFIG.statusEffects.push(...SR5_GrappleHelpers.statusEffects())
   sr5ExtendJournalHeadingLevels()
   sr5DeepenJournalTableOfContents()
   SR5_SystemHelpers.srLogPublic(`Welcome to the Sixth World, chummer!`)

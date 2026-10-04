@@ -46,6 +46,9 @@ import {
 import {
   ritualDrainActorId
 } from "./roll-helpers/ritualTeam.js"
+import {
+  SR5_GrappleHelpers
+} from "./roll-helpers/grapple.js"
 
 // True when a GM is connected to relay what a player cannot do
 export function hasActiveGM() {
@@ -346,7 +349,12 @@ export class SR5_RollMessage {
         actor.rollTest("skillDicePool", "perception", messageData)
         break
       case "calledShotEffect":
-        if (messageData.combat.calledShot.name === "trickShot") await originalActionActor.applyCalledShotsEffect(messageData)
+        //SR5 p. 195: the subdued defender and its attacker enter the hold, with the net hits of the attack
+        if (messageData.combat.calledShot.name === "subdue") {
+          const hold = Object.values(messageData.combat.calledShot.effects).find(e => e.name === "subdue")?.value ?? 0
+          await SR5_GrappleHelpers.startHold(messageData.previousMessage.actorId, SR5_GrappleHelpers.actorIdOf(actor), hold)
+        }
+        else if (messageData.combat.calledShot.name === "trickShot") await originalActionActor.applyCalledShotsEffect(messageData)
         else await actor.applyCalledShotsEffect(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break

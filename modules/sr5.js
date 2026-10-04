@@ -33,6 +33,7 @@ import {
   sr5HookCreateCombatant,
   sr5HookUpdateCombatant,
   sr5HookDeleteCombatActions,
+  sr5HookDeleteCombatGrapple,
   sr5HookCloseCombatantConfig,
 } from './hooks/combat.js'
 import {
@@ -100,6 +101,7 @@ Hooks.on('createCombatant', sr5HookCreateCombatant)
 Hooks.on('updateCombatant', sr5HookUpdateCombatant)
 Hooks.on('deleteCombat', sr5HookDeleteCombatCumulativeDefense)
 Hooks.on('deleteCombat', sr5HookDeleteCombatActions)
+Hooks.on('deleteCombat', sr5HookDeleteCombatGrapple)
 Hooks.on('closeCombatantConfig', sr5HookCloseCombatantConfig)
 Hooks.on('preUpdateItem', sr5HookPreUpdateItem)
 Hooks.on('createItem', sr5HookCreateItem)

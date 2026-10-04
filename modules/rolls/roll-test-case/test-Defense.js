@@ -22,6 +22,9 @@ import {
 import {
   SR5_PrepareRollTest 
 } from "../roll-prepare.js"
+import {
+  subdueTakesHold
+} from "../roll-helpers/grapple-rules.js"
 
 export default async function defenseInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
@@ -199,6 +202,18 @@ async function handleCalledShotDefenseInfo(cardData, actorData){
     case "feint":
       cardData.chatCard.calledShotButton = false
       cardData.chatCard.buttons.calledShotEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "calledShotEffect",`${game.i18n.localize("SR5.ApplyEffect")}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize(SR5.calledShotsEffects[cardData.combat.calledShot.name])}`)
+      break
+    case "subdue":
+      //SR5 p. 195: no damage; Strength + net hits above the defender's Physical limit, and the defender is held
+      cardData.damage.value = 0
+      if (subdueTakesHold(cardData.roll.netHits, attacker.system.attributes.strength.augmented.value, actorData.limits.physicalLimit.value)) {
+        cardData.combat.calledShot.effects = [{
+          name: "subdue", value: cardData.roll.netHits
+        }]
+        cardData.chatCard.buttons.calledShotEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "calledShotEffect", game.i18n.format("SR5.GrappleApplyHold", {
+          hold: cardData.roll.netHits
+        }))
+      } else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.GrappleNoHold"))
       break
     case "reversal":
       cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize('SR5.ReversedSituation'))

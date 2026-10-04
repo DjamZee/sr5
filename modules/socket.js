@@ -25,6 +25,9 @@ import {
 import {
   SR5ShopFence
 } from "./interface/shop-fence.js"
+import {
+  SR5_GrappleHelpers
+} from "./rolls/roll-helpers/grapple.js"
 
 export class SR5_SocketHandler {
   static registerSocketListeners() {
@@ -59,6 +62,8 @@ export class SR5_SocketHandler {
       "actorRoll": [SR5Actor._socketRollTest],
       "tablePayout": [sr5SocketTablePayout],
       "shopFenceCash": [SR5ShopFence.socketCash],
+      "grappleStartHold": [SR5_GrappleHelpers._socketStartHold],
+      "grappleReleaseHold": [SR5_GrappleHelpers._socketReleaseHold],
     }
 
     game.socket.on(`system.sr5`, async (message) => {

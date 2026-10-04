@@ -1,6 +1,9 @@
 import {
   SR5_PrepareRollHelper
 } from "../roll-prepare-helpers.js"
+import {
+  grappleEscapeThreshold
+} from "../roll-helpers/grapple-rules.js"
 
 //Run & Gun p. 135 and SR5 p. 195: Unarmed Combat + Strength [Physical], threshold = net hits of the grapple or subdue test
 export default function grappleEscape(rollData, actor){
@@ -27,6 +30,12 @@ export default function grappleEscape(rollData, actor){
 
   //Add others informations
   rollData.test.type = "grappleEscape"
+
+  //Grappling rules: the threshold is the hold the actor is caught in, still open to the GM in the dialog
+  if (game.settings.get("sr5", "sr5GrapplingRules")) {
+    const threshold = grappleEscapeThreshold(actor.effects)
+    if (threshold !== null) rollData.threshold.value = threshold
+  }
 
   return rollData
 }
