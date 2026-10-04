@@ -36,7 +36,7 @@
 				<!-- ATTACK - RECOIL COMPENSATION -->
 				{{> systems/sr5/templates/rolls/rollDialogPartial/recoilModifier.hbs}}
 			{{/if}}
-			{{#if (and (or (eq test.typeSub "rangedWeapon") (eq test.typeSub "meleeWeapon")) systemRules.calledShots )}}
+			{{#if (and (or (eq test.typeSub "rangedWeapon") (eq test.typeSub "meleeWeapon")) (or systemRules.calledShots systemRules.grappling) )}}
         		<!-- CALLED SHOTS -->
         		{{> systems/sr5/templates/rolls/rollDialogPartial/calledShots.hbs}}
         	{{/if}}

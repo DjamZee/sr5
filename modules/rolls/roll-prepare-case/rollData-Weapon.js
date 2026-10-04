@@ -31,6 +31,9 @@ import {
 import {
   SR5_UtilityItem
 } from "../../entities/items/utilityItem.js"
+import {
+  grapplingCalledShots, holdsTarget
+} from "../roll-helpers/grapple-rules.js"
 
 //Add info for weapon Roll
 export default async function weapon(rollData, actor, item){
@@ -199,8 +202,33 @@ export default async function weapon(rollData, actor, item){
   if (actorData.specialProperties?.aggravatedWounds) rollData.damage.aggravated = true
 
   _buildCalledShotList(rollData)
+  if (game.settings.get("sr5", "sr5GrapplingRules")) _addGrapplingCalledShots(rollData, actor)
 
   return rollData
+}
+
+//SR5 p. 195-196 (Maîtriser, renforcer sa prise): normal unarmed attacks, not called shots, hence no -4
+//(convertCalledShotToMod gives 0) and no free action. They share the called shot's way to the defense card.
+//Without the called shot rules, the list keeps only them: subduing belongs to the core book.
+function _addGrapplingCalledShots(rollData, actor){
+  const keys = grapplingCalledShots({
+    unarmed: rollData.combat.weaponType === "unarmedCombat",
+    holdingTarget: holdsTarget(actor.effects, rollData.target.actorId),
+  })
+  if (!keys.length) return
+  if (!rollData.systemRules.calledShots) {
+    rollData.lists.calledShots = {
+    }
+    rollData.lists.calledShotsSpecific = {
+    }
+  }
+  for (const key of keys) rollData.lists.calledShots[key] = game.i18n.localize(GRAPPLING_CALLED_SHOT_LABELS[key])
+  rollData.systemRules.grappling = true
+}
+
+const GRAPPLING_CALLED_SHOT_LABELS = {
+  subdue: "SR5.CS_Subdue",
+  strengthenHold: "SR5.CS_StrengthenHold",
 }
 
 
@@ -419,9 +447,6 @@ function _buildCalledShotList(rollData){
     
   if (rollData.combat.weaponType === "unarmedCombat"){
     rollData.lists.calledShots.disarm = game.i18n.localize("SR5.CS_Disarm")
-    //SR5 p. 195 (Maîtriser): a normal unarmed attack, not a called shot, hence no -4 (convertCalledShotToMod gives 0).
-    //Offered here because it shares the called shot's way to the defense card; grappling rules only.
-    if (game.settings.get("sr5", "sr5GrapplingRules")) rollData.lists.calledShots.subdue = game.i18n.localize("SR5.CS_Subdue")
   }
 
   if ((rollData.combat.weaponType === "exoticRangedWeapon" || rollData.combat.weaponType === "exoticMeleeWeapon") && rollData.combat.calledShot.martialArts.entanglement){

@@ -3,7 +3,8 @@ import {
 } from 'vitest'
 
 import {
-  subdueTakesHold, grappleHoldOf, grappleEscapeThreshold, canStartHold
+  subdueTakesHold, grappleHoldOf, grappleEscapeThreshold, canStartHold,
+  strengthenedHold, holdsTarget, isSubdued, grapplingCalledShots, crushDamage
 } from '../modules/rolls/roll-helpers/grapple-rules.js'
 
 const held = (hold) => [{
@@ -64,5 +65,56 @@ describe('canStartHold', () => {
   })
   it('reads the flag of the grappling effect', () => {
     expect(grappleHoldOf(holder).partner).toBe("b")
+  })
+})
+
+// SR5 p. 196 : the holder's options while keeping the hold
+describe('strengthenedHold', () => {
+  it('adds the attacker net hits to the hold', () => {
+    expect(strengthenedHold(4, 2)).toBe(6)
+  })
+  it('weakens the hold when the defender gets more hits', () => {
+    expect(strengthenedHold(4, -3)).toBe(1)
+  })
+  it('stops at 0 (ruling of DjamZ: only an escape frees)', () => {
+    expect(strengthenedHold(1, -5)).toBe(0)
+  })
+})
+
+describe('holdsTarget and isSubdued', () => {
+  it('knows the holder of this very target', () => {
+    expect(holdsTarget(holder, "b")).toBe(true)
+    expect(holdsTarget(holder, "c")).toBe(false)
+    expect(holdsTarget(held(2), "a")).toBe(false)
+  })
+  it('counts the subdued fighter as prone, not the holder', () => {
+    expect(isSubdued(held(2))).toBe(true)
+    expect(isSubdued(holder)).toBe(false)
+  })
+})
+
+describe('grapplingCalledShots', () => {
+  it('offers to subdue with an unarmed attack', () => {
+    expect(grapplingCalledShots({
+      unarmed: true, holdingTarget: false
+    })).toEqual(["subdue"])
+  })
+  it('offers to strengthen the hold against the held partner', () => {
+    expect(grapplingCalledShots({
+      unarmed: true, holdingTarget: true
+    })).toEqual(["strengthenHold"])
+  })
+  it('offers nothing with a weapon', () => {
+    expect(grapplingCalledShots({
+      unarmed: false, holdingTarget: true
+    })).toEqual([])
+  })
+})
+
+describe('crushDamage', () => {
+  it('deals Strength as Stun damage (Wombat: 5S)', () => {
+    expect(crushDamage(5)).toEqual({
+      value: 5, type: "stun"
+    })
   })
 })

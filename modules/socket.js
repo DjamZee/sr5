@@ -64,6 +64,7 @@ export class SR5_SocketHandler {
       "shopFenceCash": [SR5ShopFence.socketCash],
       "grappleStartHold": [SR5_GrappleHelpers._socketStartHold],
       "grappleReleaseHold": [SR5_GrappleHelpers._socketReleaseHold],
+      "grappleSetHold": [SR5_GrappleHelpers._socketSetHold],
     }
 
     game.socket.on(`system.sr5`, async (message) => {

@@ -1,5 +1,8 @@
 // Import hook handlers
 import {
+  SR5_GrappleHelpers
+} from './rolls/roll-helpers/grapple.js'
+import {
   sr5HookInit 
 } from './hooks/init.js'
 import {
@@ -102,6 +105,7 @@ Hooks.on('updateCombatant', sr5HookUpdateCombatant)
 Hooks.on('deleteCombat', sr5HookDeleteCombatCumulativeDefense)
 Hooks.on('deleteCombat', sr5HookDeleteCombatActions)
 Hooks.on('deleteCombat', sr5HookDeleteCombatGrapple)
+Hooks.on('renderChatMessageHTML', SR5_GrappleHelpers.onRenderHoldCard)
 Hooks.on('closeCombatantConfig', sr5HookCloseCombatantConfig)
 Hooks.on('preUpdateItem', sr5HookPreUpdateItem)
 Hooks.on('createItem', sr5HookCreateItem)

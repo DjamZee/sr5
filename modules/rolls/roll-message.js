@@ -354,6 +354,11 @@ export class SR5_RollMessage {
           const hold = Object.values(messageData.combat.calledShot.effects).find(e => e.name === "subdue")?.value ?? 0
           await SR5_GrappleHelpers.startHold(messageData.previousMessage.actorId, SR5_GrappleHelpers.actorIdOf(actor), hold)
         }
+        //SR5 p. 196: the strengthened (or weakened) hold, written on both fighters
+        else if (messageData.combat.calledShot.name === "strengthenHold") {
+          const hold = Object.values(messageData.combat.calledShot.effects).find(e => e.name === "strengthenHold")?.value ?? 0
+          await SR5_GrappleHelpers.setHold(SR5_GrappleHelpers.actorIdOf(actor), hold)
+        }
         else if (messageData.combat.calledShot.name === "trickShot") await originalActionActor.applyCalledShotsEffect(messageData)
         else await actor.applyCalledShotsEffect(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)

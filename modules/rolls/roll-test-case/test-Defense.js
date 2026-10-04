@@ -23,7 +23,7 @@ import {
   SR5_PrepareRollTest 
 } from "../roll-prepare.js"
 import {
-  subdueTakesHold
+  subdueTakesHold, strengthenedHold, grappleHoldOf
 } from "../roll-helpers/grapple-rules.js"
 
 export default async function defenseInfo(cardData, actorId){
@@ -50,6 +50,21 @@ export default async function defenseInfo(cardData, actorId){
 
   //Handle Energetic Aura
   if (actorData.specialProperties?.energyAura !== "" && cardData.test.typeSub === "meleeWeapon") await handleEnergeticAura(cardData, actorData)
+
+  //SR5 p. 196 (renforcer sa prise): no damage, the hold moves by the net hits, either way
+  if (cardData.combat.calledShot.name === "strengthenHold") {
+    cardData.damage.value = 0
+    const hold = grappleHoldOf(actor.effects)?.hold ?? 0
+    const newHold = strengthenedHold(hold, cardData.roll.netHits)
+    cardData.combat.calledShot.effects = [{
+      name: "strengthenHold", value: newHold
+    }]
+    cardData.chatCard.calledShotButton = true
+    cardData.chatCard.buttons.calledShotEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "calledShotEffect", game.i18n.format("SR5.GrappleApplyStrengthen", {
+      hold, newHold
+    }))
+    return
+  }
 
   //If Defenser win, return
   if (cardData.roll.netHits <= 0) {

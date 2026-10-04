@@ -31,6 +31,9 @@ import {
 import {
   SR5_SystemHelpers
 } from "../system/utilitySystem.js"
+import {
+  holdsTarget, isSubdued
+} from "./roll-helpers/grapple-rules.js"
 
 export default class SR5_RollDialog {
 
@@ -507,7 +510,10 @@ export default class SR5_RollDialog {
     let actor = SR5_EntityHelpers.getRealActorFromID(this.dialogData.owner.actorId),
       targetActor = SR5_EntityHelpers.getRealActorFromID(dialogData.target.actorId),
       label,
-      isProned = actor.effects.find(e => e.statuses.has("prone"))
+      isProned = actor.effects.find(e => e.statuses.has("prone")),
+      grappling = game.settings.get("sr5", "sr5GrapplingRules")
+    //SR5 p. 195: a subdued character counts as prone for any attack against them (grappling rules only)
+    if (grappling && isSubdued(actor.effects)) isProned = true
 
     for (let e of checkboxs){
       modifierName = e.dataset.modifier
@@ -560,6 +566,13 @@ export default class SR5_RollDialog {
         case "defenseTargetedByArea":
           html.querySelector(checkboxName).checked = true
           value = -2
+          break
+        case "attackSuperiorPosition":
+          //SR5 p. 188 and 196: the holder attacking the fighter they hold has the superior position (grappling rules only)
+          if (grappling && holdsTarget(actor.effects, dialogData.target.actorId)){
+            html.querySelector(checkboxName).checked = true
+            value = 2
+          }
           break
       }
 
@@ -1242,8 +1255,8 @@ export default class SR5_RollDialog {
               break
           }
           //Manage actions
-          //Subduing is a normal attack (SR5 p. 195): it costs no free action
-          if (ev.target.value !== "" && ev.target.value !== "subdue") dialogData.combat.actions = SR5_MiscellaneousHelpers.addActions(dialogData.combat.actions, {
+          //Subduing and strengthening a hold are normal attacks (SR5 p. 195-196): they cost no free action
+          if (ev.target.value !== "" && ev.target.value !== "subdue" && ev.target.value !== "strengthenHold") dialogData.combat.actions = SR5_MiscellaneousHelpers.addActions(dialogData.combat.actions, {
             type: "free", value: 1, source: "calledShot"
           })
           else dialogData.combat.actions = SR5_MiscellaneousHelpers.removeActions(dialogData.combat.actions, "calledShot")

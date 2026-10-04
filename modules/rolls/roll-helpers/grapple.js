@@ -5,7 +5,10 @@ import {
   SR5_SocketHandler
 } from "../../socket.js"
 import {
-  grappleHoldOf, canStartHold, GRAPPLE_STATUSES
+  SR5_PrepareRollTest
+} from "../roll-prepare.js"
+import {
+  grappleHoldOf, canStartHold, crushDamage, GRAPPLE_STATUSES
 } from "./grapple-rules.js"
 
 //Grappling (SR5 p. 195-196, Run & Gun p. 126 and 133-138), behind the world setting sr5GrapplingRules.
@@ -46,10 +49,91 @@ export class SR5_GrappleHelpers {
 
     await holder.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(kind, "holder", heldId, hold)])
     await held.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(kind, "held", holderId, hold)])
-    ChatMessage.create({
-      content: game.i18n.format("SR5.GrappleHoldTaken", {
-        holder: holder.name, held: held.name, hold
+    await SR5_GrappleHelpers.postHoldCard(holderId, heldId, hold, "SR5.GrappleHoldTaken")
+  }
+
+  //SR5 p. 196 : the hold strengthened or weakened, written on both fighters; actorId is either of them
+  static async setHold(actorId, hold){
+    if (!game.user.isGM) return SR5_SocketHandler.emitForGM("grappleSetHold", {
+      actorId, hold
+    })
+    const actor = SR5_EntityHelpers.getRealActorFromID(actorId)
+    const data = grappleHoldOf(actor?.effects)
+    if (!data) return
+    const partner = SR5_EntityHelpers.getRealActorFromID(data.partner)
+    for (const a of [actor, partner]){
+      const effect = a?.effects.find(e => e.flags?.sr5?.grapple)
+      if (effect) await effect.update({
+        "flags.sr5.grapple.hold": hold
       })
+    }
+    const [holderId, heldId] = data.role === "holder" ? [actorId, data.partner] : [data.partner, actorId]
+    await SR5_GrappleHelpers.postHoldCard(holderId, heldId, hold, "SR5.GrappleHoldChanged")
+  }
+
+  //The chat card of a hold : what it is, and the holder's buttons (SR5 p. 195-196)
+  static async postHoldCard(holderId, heldId, hold, messageKey){
+    const holder = SR5_EntityHelpers.getRealActorFromID(holderId),
+      held = SR5_EntityHelpers.getRealActorFromID(heldId)
+    const button = (action, label) => `<button type="button" class="sr5-grapple-button" data-grapple="${action}">${label}</button>`
+    const content = `<p>${game.i18n.format(messageKey, {
+      holder: holder.name, held: held.name, hold
+    })}</p>` +
+      button("crush", game.i18n.format("SR5.GrappleCrush", {
+        damage: crushDamage(holder.system.attributes.strength.augmented.value).value
+      })) +
+      button("release", game.i18n.localize("SR5.GrappleRelease"))
+    await ChatMessage.create({
+      content,
+      speaker: {
+        alias: holder.name
+      },
+      flags: {
+        sr5: {
+          grappleCard: {
+            holderId, heldId
+          }
+        }
+      }
+    })
+  }
+
+  //Bind the buttons of a hold card when it is rendered
+  static onRenderHoldCard(message, html){
+    const card = message.flags?.sr5?.grappleCard
+    if (!card) return
+    html.querySelectorAll(".sr5-grapple-button").forEach(el => el.addEventListener("click", async ev => {
+      ev.preventDefault()
+      const holder = SR5_EntityHelpers.getRealActorFromID(card.holderId)
+      if (!holder?.isOwner) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActor"))
+      //A card left from a hold that has since ended does nothing
+      if (grappleHoldOf(holder.effects)?.partner !== card.heldId) return ui.notifications.warn(game.i18n.localize("SR5.WARN_GrappleNoHold"))
+      if (el.dataset.grapple === "release") return SR5_GrappleHelpers.releaseHold(card.holderId)
+      if (el.dataset.grapple === "crush") return SR5_GrappleHelpers.crush(card.holderId, card.heldId)
+    }))
+  }
+
+  //SR5 p. 196 : damage the held fighter, Strength as Stun Damage Value, no test, resisted normally with armor
+  static async crush(holderId, heldId){
+    const holder = SR5_EntityHelpers.getRealActorFromID(holderId),
+      held = SR5_EntityHelpers.getRealActorFromID(heldId)
+    if (!holder || !held) return
+    const damage = crushDamage(holder.system.attributes.strength.augmented.value)
+    const chatData = SR5_PrepareRollTest.getBaseRollData(null, holder)
+    chatData.damage.value = damage.value
+    chatData.damage.type = damage.type
+    chatData.damage.isAttack = true
+    chatData.test.typeSub = "meleeWeapon"
+    chatData.owner.actorId = holderId
+    chatData.previousMessage.actorId = holderId
+
+    const user = SR5_EntityHelpers.getUserOwner(held)
+    if (user && user.id !== game.user.id && !user.isGM) return SR5_SocketHandler.emitForPlayer("actorRoll", {
+      actorId: heldId, rollType: "resistanceCard", rollKey: null, chatData
+    }, user.id)
+    if (held.isOwner) return held.rollTest("resistanceCard", null, chatData)
+    return SR5_SocketHandler.emitForGM("actorRoll", {
+      actorId: heldId, rollType: "resistanceCard", rollKey: null, chatData
     })
   }
 
@@ -83,6 +167,10 @@ export class SR5_GrappleHelpers {
   static async _socketStartHold(message){
     const d = message.data
     await SR5_GrappleHelpers.startHold(d.holderId, d.heldId, d.hold, d.kind)
+  }
+
+  static async _socketSetHold(message){
+    await SR5_GrappleHelpers.setHold(message.data.actorId, message.data.hold)
   }
 
   static async _socketReleaseHold(message){
