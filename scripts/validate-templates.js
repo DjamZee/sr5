@@ -11,8 +11,12 @@ const files = args.length > 0 ? args : globHbs('templates')  // scans .html and 
 
 let hasErrors = false
 
+// A {{> partial}} that modules/templates.js does not preload breaks the sheet at render time
+const preloaded = new Set(fs.readFileSync(path.join(__dirname, '..', 'modules', 'templates.js'), 'utf8')
+  .match(/systems\/sr5\/[^"'`\s]+/g) ?? [])
+
 for (const file of files) {
-  const errors = validateFile(file)
+  const errors = validateFile(file).concat(missingPartials(file, preloaded))
   if (errors.length > 0) {
     hasErrors = true
     for (const err of errors) {
@@ -84,6 +88,23 @@ function validateFile(filePath) {
     })
   }
 
+  return errors
+}
+
+// Static partials only: a {{> (expression)}} is resolved at render time
+function missingPartials(filePath, preloaded) {
+  const content = fs.readFileSync(filePath, 'utf8')
+  const errors = []
+  const partialRe = /\{\{~?>\s*["']?(systems\/sr5\/[^\s"'}]+)/g
+  let m
+  while ((m = partialRe.exec(content)) !== null) {
+    if (!preloaded.has(m[1])) {
+      errors.push({
+        line: content.slice(0, m.index).split('\n').length,
+        message: `Partial ${m[1]} is not preloaded in modules/templates.js`,
+      })
+    }
+  }
   return errors
 }
 

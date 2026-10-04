@@ -1,5 +1,17 @@
 export class SR5_SystemHelpers {
 
+  // A sheet render that throws (a missing partial, for instance) would otherwise fail without a word
+  static async renderSheetLoudly(document, options){
+    try {
+      return await document.sheet.render(options)
+    } catch (err) {
+      console.error(err)
+      ui.notifications.error(game.i18n.format("SR5.WARN_SheetRenderFailed", {
+        name: document.name
+      }))
+    }
+  }
+
   // Scene units already reported as unrecognised, so the warning is written once and not on every roll.
   static _unknownSceneUnits = new Set()
 

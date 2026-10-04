@@ -887,8 +887,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     // check window state
     const wasRendered = item.sheet.rendered
     SR5_SystemHelpers.srLog(3, "item.sheet", item.sheet)
-    item.sheet.render({
-      force: true 
+    SR5_SystemHelpers.renderSheetLoudly(item, {
+      force: true
     })
     SR5_SystemHelpers.srLog(3, "item.sheet", item.sheet)
     // if window already exists, bring it to top
