@@ -7,6 +7,9 @@ import {
 import {
   SR5
 } from '../modules/config.js'
+import {
+  SR5_UtilityItem
+} from '../modules/entities/items/utilityItem.js'
 
 function blankToxin(type = '', custom = null) {
   return {
@@ -130,7 +133,32 @@ describe('GM-authored toxin items', () => {
     SR5_Toxins.apply(a, back)
     SR5_Toxins.apply(b, SR5_Toxins.profileOf(b))
     expect(a).toMatchObject({
-      vector: b.vector, effect: b.effect, power: b.power, penetration: b.penetration, damageType: b.damageType, speed: b.speed 
+      vector: b.vector, effect: b.effect, power: b.power, penetration: b.penetration, damageType: b.damageType, speed: b.speed
     })
+  })
+
+  it('Gamma-scopolamine carries its truth serum as special text (SR5 p. 411)', () => {
+    expect(SR5_Toxins.bookItemData('gamma').system.special).toBe('SR5.ToxinGammaTruthSerum')
+  })
+
+  it('a book toxin name is trimmed, so the button does not create it twice', () => {
+    expect(SR5_Toxins.bookItemData('novaScorpionVenom', () => 'Venin de novascorpion ').name).toBe('Venin de novascorpion')
+  })
+})
+
+describe('a toxin weapon carried by an actor without Magic', () => {
+  it('a drone with a Narcoject weapon: P15 injection, no error', () => {
+    const drone = {
+      system: {
+      }
+    }
+    const itemData = {
+      toxin: blankToxin('narcoject')
+    }
+    expect(() => SR5_UtilityItem._handleWeaponToxin(itemData, drone)).not.toThrow()
+    expect(itemData.toxin).toMatchObject({
+      power: 15, damageType: 'stun'
+    })
+    expect(itemData.toxin.vector.injection).toBe(true)
   })
 })

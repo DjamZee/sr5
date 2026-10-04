@@ -20,7 +20,7 @@ export class SR5_Toxins {
       vector: ["inhalation"], speed: 0, powerMagic: 1, effect: ["nausea"], damageType: "stun" 
     },
     gamma:              {
-      vector: ["injection"], speed: 0, power: 12, effect: ["paralysis"], damageType: null 
+      vector: ["injection"], speed: 0, power: 12, effect: ["paralysis"], damageType: null, special: "SR5.ToxinGammaTruthSerum"
     },
     csTearGas:          {
       vector: ["contact", "inhalation"], speed: 1, power: 8, effect: ["disorientation", "nausea"], damageType: "stun" 
@@ -145,7 +145,7 @@ export class SR5_Toxins {
     const profile = SR5_Toxins.BOOK[key]
     const flag = (list, table) => Object.fromEntries(Object.keys(table).map(k => [k, (list ?? []).includes(k)]))
     return {
-      name: localize(SR5.toxinTypes[key] ?? key),
+      name: localize(SR5.toxinTypes[key] ?? key).trim(),
       type: "itemToxin",
       system: {
         vector: flag(profile.vector, SR5.propagationVectors),
@@ -155,6 +155,7 @@ export class SR5_Toxins {
         penetration: profile.penetration ?? 0,
         effect: flag(profile.effect, SR5.toxinEffects),
         damageType: profile.damageType ?? "",
+        special: profile.special ? localize(profile.special) : "",
       },
     }
   }
@@ -183,7 +184,7 @@ export class SR5_Toxins {
     if (!folder) folder = await Folder.create({
       name: folderName, type: "Item" 
     })
-    const existing = new Set(game.items.filter(i => i.type === "itemToxin").map(i => i.name))
+    const existing = new Set(game.items.filter(i => i.type === "itemToxin").map(i => i.name.trim()))
     const data = Object.keys(SR5_Toxins.BOOK)
       .filter(key => !SR5_Toxins.NOT_AN_ITEM.includes(key))
       .map(key => ({

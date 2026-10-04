@@ -770,7 +770,9 @@ export class SR5_UtilityItem extends Actor {
   static _handleWeaponToxin(itemData, actor) {
     const profile = SR5_Toxins.profileOf(itemData.toxin)
     if (!profile) return SR5_SystemHelpers.srLog(1, "_handleWeaponToxin", `Unknown toxin type: '${itemData.toxin.type}'`)
-    SR5_Toxins.apply(itemData.toxin, profile, actor?.system.specialAttributes.magic.augmented.value)
+    //Magic is read only for creature toxins: a drone has no special attributes
+    const needsMagic = profile.powerMagic || profile.penetrationMagic
+    SR5_Toxins.apply(itemData.toxin, profile, needsMagic ? actor?.system?.specialAttributes?.magic?.augmented?.value : undefined)
   }
 
   //Calcule la distance des armes de jet en fonction de la force

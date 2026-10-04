@@ -38,7 +38,7 @@ export class sr5ItemToxinDataModel extends foundry.abstract.TypeDataModel {
       //Venom and Noxious Breath: Power = Magic of the creature (SR5 p. 403)
       powerFromMagic: flag(),
       penetration: new fields.NumberField({
-        initial: 0, integer: true
+        initial: 0, integer: true, max: 0
       }),
       effect: new fields.SchemaField({
         disorientation: flag(),

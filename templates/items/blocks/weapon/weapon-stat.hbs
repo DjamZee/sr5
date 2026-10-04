@@ -29,6 +29,12 @@
 	<!-- Toxin block -->
 	{{#ife system.damageElement "toxin"}}
 		{{> systems/sr5/templates/items/_partial/editable/weapon/toxin-edit.hbs}}
+	{{else}}
+		<!-- Dropping a toxin here makes it a toxin weapon -->
+		<li class="grid sr5-toxin-drop SR-LightGreyColor">
+			<div class="col-5"></div>
+			<div class="col-7"><em class="fas fa-skull-crossbones"></em> {{localize 'SR5.ToxinDropHint'}}</div>
+		</li>
 	{{/ife}}
 
 	{{#if (or (eq system.category "rangedWeapon") (eq system.category "meleeWeapon"))}}

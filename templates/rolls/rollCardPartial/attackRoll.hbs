@@ -14,7 +14,7 @@
 {{#if (or (eq damage.element "toxin") (eq damage.elementSecond "toxin"))}}
 <li class="grid">
     <div class="col-8">{{localize 'SR5.Type'}}{{localize 'SR5.Colons'}} </div>
-    <div class="col-4 SR-TextRight">{{findTranslation 'toxinTypes' damage.toxin.type}}</div>
+    <div class="col-4 SR-TextRight">{{#ife damage.toxin.type "custom"}}{{damage.toxin.custom.name}}{{else}}{{findTranslation 'toxinTypes' damage.toxin.type}}{{/ife}}</div>
 </li>
 <li class="grid">
     <div class="col-8">{{localize 'SR5.ToxinPenetration'}}{{localize 'SR5.Colons'}} </div>
