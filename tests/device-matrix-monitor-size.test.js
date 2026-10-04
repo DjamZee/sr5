@@ -19,6 +19,9 @@ vi.mock('../modules/socket.js', () => ({
 const {
   SR5_MatrixHelpers
 } = await import('../modules/rolls/roll-helpers/matrix.js')
+const {
+  SR5_PrepareRollTest
+} = await import('../modules/rolls/roll-prepare.js')
 
 /** A commlink as Foundry gives it: prepared monitor of 10, a copy that holds the source (size 0) */
 function hacker(damage = 0) {
@@ -77,6 +80,12 @@ beforeEach(() => {
   game.user = {
     isGM: true
   }
+  vi.spyOn(SR5_PrepareRollTest, 'getBaseRollData').mockImplementation(() => ({
+    owner: {
+    }, roll: {
+    }, damage: {
+    }
+  }))
   ui.notifications = {
     info: vi.fn(), warn: vi.fn()
   }
