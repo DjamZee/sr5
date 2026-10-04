@@ -94,6 +94,16 @@ export class SR5_SystemHelpers {
       type: Boolean,
     })
 
+    // SR5 p. 450: picking a lock takes a lockpick kit. On by default, as the book has it
+    game.settings.register("sr5", "sr5LockpickRequiresKit", {
+      name: "SR5.SETTINGS_LockpickRequiresKit_T",
+      hint: "SR5.SETTINGS_LockpickRequiresKit_D",
+      scope: "world",
+      config: true,
+      default: true,
+      type: Boolean,
+    })
+
     // SR5 p. 165 and p. 167: switching a device is a free action through a DNI, a simple one otherwise. Off by
     // default: the wireless switch stays free for everyone, the system not knowing who has a DNI
     game.settings.register("sr5", "sr5WifiRequiresDNI", {

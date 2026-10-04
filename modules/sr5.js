@@ -73,6 +73,9 @@ import {
   sr5KeepSidebarSettingsLast
 } from './interface/sidebar-tab-order.js'
 import {
+  SR5StorageLock
+} from './interface/storage-lock-actions.js'
+import {
   SR5SharedVision, sr5HookUpdateTokenSharedVision, sr5HookUpdateActorSharedVision, sr5HookUpdateItemSharedVision,
   sr5HookResetJumpedInRiggers
 } from './interface/shared-vision.js'
@@ -160,4 +163,6 @@ Hooks.on('createActiveEffect', (effect) => {
   if (effect.parent instanceof Actor) SR5SharedVision.checkViewers(effect.parent)
 })
 Hooks.on('canvasReady', () => SR5SharedVision.checkViewers())
+// Locked storages: the other players' rights follow the lock (SR5 p. 365)
+SR5StorageLock.registerHooks()
 for (const hook of ['createActor', 'deleteActor', 'createToken', 'deleteToken', 'canvasReady']) Hooks.on(hook, sr5HookResetJumpedInRiggers)

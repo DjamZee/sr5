@@ -8,6 +8,9 @@ import {
   isStoredAway
 } from "../../interface/storage-rules.js"
 import {
+  isLocked
+} from "../../interface/storage-lock.js"
+import {
   SR5_CharacterUtility
 } from "./utilityActor.js"
 import {
@@ -314,6 +317,11 @@ export class SR5ActorSheet extends ActorSheetSR5 {
           icon: SR5ActorSheet.STORAGE_ICONS[storage.system.type] ?? "fa-box",
           isDeployable: storage.system.isDeployable,
           isDeployed: storage.system.isDeployed,
+          isLocked: isLocked(storage),
+          // Shut, its contents are not shown to a player who only looks at
+          // the sheet. A courtesy, not a protection: they are still in the
+          // actor's data that player's browser holds.
+          hideContents: isLocked(storage) && !this.actor.isOwner,
           contents: contents,
           used: contents.length,
           max: max,

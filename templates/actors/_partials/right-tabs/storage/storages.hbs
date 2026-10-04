@@ -29,6 +29,7 @@
 				<div class="col-4 deplie" data-helpTitle="{{localize 'SR5.HELP_MoreInfos'}}" data-helpMessage="{{localize 'SR5.HELP_MoreInfosMsg'}}">
 					<em class="fas fa-sm {{storage.icon}} sr-storage-type-icon"></em>
 					{{storage.name}}
+					{{#if storage.isLocked}}<em class="fas fa-xs fa-lock SR-GreyColor" data-title="{{localize 'SR5.StorageLocked'}}"></em>{{/if}}
 				</div>
 				<div class="col-2 SR-TextCenter SR-GreyColor">{{findTranslation 'storageTypes' storage.type}}</div>
 				<div class="col-2 SR-TextRight SR-GreyColor">{{#if storage.value}}{{nuyen storage.value}}{{/if}}</div>
@@ -64,7 +65,9 @@
 			</li>
 		</ul>
 
-		{{#if storage.contents.length}}
+		{{#if storage.hideContents}}
+		<p class="sr-storage-empty SR-GreyColor">{{localize 'SR5.StorageLockedHidden'}}</p>
+		{{else if storage.contents.length}}
 			{{#if ../storageViewIsGrid}}
 			<!-- Grid: icons in cells, like a game inventory -->
 			<div class="sr-storage-grid">

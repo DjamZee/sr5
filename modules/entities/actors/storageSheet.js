@@ -4,6 +4,12 @@ import {
 import {
   canLoot
 } from "../../interface/storage-rules.js"
+import {
+  isLocked
+} from "../../interface/storage-lock.js"
+import {
+  SR5StorageLock
+} from "../../interface/storage-lock-actions.js"
 
 /**
  * An Actor sheet for a storage that has been put down on the map. It shows
@@ -31,7 +37,28 @@ export class SR5StorageSheet extends ActorSheetSR5 {
   async _prepareContext(options) {
     const context = await super._prepareContext(options)
     this._prepareItems(context.actor)
+    context.storageLock = this._prepareLock()
     return context
+  }
+
+  /** What the sheet shows of the lock. Shut, the contents stay hidden from
+   * all but the GM: the key holder opens it first, like anyone else. */
+  _prepareLock() {
+    const storage = SR5StorageLock.base(this.actor)
+    const lock = storage.system.lock ?? {
+    }
+    const locked = isLocked(storage)
+    return {
+      hasLock: Boolean(lock.type),
+      locked,
+      typeLabel: lock.type === "maglock" ? "SR5.StorageLockMaglock" : "SR5.StorageLockMechanical",
+      rating: lock.rating,
+      wireless: lock.type === "maglock" && lock.wireless,
+      canHack: locked && lock.type === "maglock" && lock.wireless,
+      antiTamper: lock.antiTamper,
+      hasKey: SR5StorageLock.hasKey(storage),
+      hideContents: locked && !game.user.isGM,
+    }
   }
 
   /** @override */
@@ -41,6 +68,25 @@ export class SR5StorageSheet extends ActorSheetSR5 {
     const on = (sel, evt, fn) => element.querySelectorAll(sel).forEach(el => el.addEventListener(evt, fn))
     on(".storage-loot", "click", this._onStorageLoot.bind(this))
     on(".storage-loot-all", "click", this._onStorageLootAll.bind(this))
+    on(".storage-lock-toggle", "click", event => {
+      event.preventDefault(); SR5StorageLock.toggle(this.actor)
+    })
+    on(".storage-lock-pick", "click", this._onStorageLockPick.bind(this))
+    on(".storage-lock-hack", "click", this._onStorageLockHack.bind(this))
+  }
+
+  /** Pick it open, or shut again what is open: the same test either way. */
+  async _onStorageLockPick(event) {
+    event.preventDefault()
+    const relock = !isLocked(SR5StorageLock.base(this.actor))
+    const picker = await this._looter()
+    if (picker) await SR5StorageLock.requestPick(this.actor, picker, relock)
+  }
+
+  async _onStorageLockHack(event) {
+    event.preventDefault()
+    const picker = await this._looter()
+    if (picker) await SR5StorageLock.requestHack(this.actor, picker)
   }
 
   /**
@@ -112,6 +158,11 @@ export class SR5StorageSheet extends ActorSheetSR5 {
    */
   async _giveTo(looter, items) {
     if (!items.length) return
+    // Shut, nothing comes out. The rights do the real work: the other players
+    // are left at Limited, and the server refuses them the contents.
+    if (isLocked(SR5StorageLock.base(this.actor))) {
+      return ui.notifications.warn(game.i18n.localize("SR5.WARN_StorageLocked"))
+    }
     const data = items.map(i => {
       const object = i.toObject(false)
       if (object.system.storedIn !== undefined) object.system.storedIn = ""

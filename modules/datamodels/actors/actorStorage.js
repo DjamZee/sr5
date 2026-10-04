@@ -6,6 +6,9 @@
 import {
   sheetPreferencesPartialModel 
 } from './partial/sheetPreferences.js'
+import {
+  lockablePartialModel
+} from '../items/partial/lockable.js'
 
 export class sr5ActorStorageDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
@@ -38,6 +41,8 @@ export class sr5ActorStorageDataModel extends foundry.abstract.TypeDataModel {
         initial: ''
       }),
       sideKickPrototypeToken: new fields.ObjectField(),
+      // The lock it had in the character's hands, picked or opened here
+      ...lockablePartialModel.defineSchema(),
     }
   }
 }

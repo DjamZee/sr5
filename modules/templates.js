@@ -162,6 +162,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/actors/_partials/right-tabs/storage/storageContents.hbs",
     "systems/sr5/templates/interface/storage-put-in.hbs",
     "systems/sr5/templates/interface/storage-loot-who.hbs",
+    "systems/sr5/templates/interface/storage-lock-card.hbs",
     "systems/sr5/templates/actors/_partials/right-tabs/gear/money.hbs",
 
     //Right Tab - Augmentations partials
@@ -495,6 +496,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/items/_partial/editable/storage/type-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/storage/capacity-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/storage/deployable-edit.hbs",
+    "systems/sr5/templates/items/_partial/editable/storage/lock-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/storage/address-edit.hbs",
 
     //Spell

@@ -930,6 +930,9 @@ export class SR5_ActorHelper {
         "system.biography.description": itemData.description,
         "system.creatorId": actorId,
         "system.creatorItemId": item._id,
+        // Its lock goes with it: a safe put down is still shut
+        "system.lock": foundry.utils.duplicate(itemData.lock ?? {
+        }),
         // A bag on the floor takes half a square, not a whole one, and it is
         // pushed about rather than walking anywhere
         "prototypeToken.width": 0.5,
@@ -1294,6 +1297,8 @@ export class SR5_ActorHelper {
     if (actor.type === "actorStorage"){
       modifiedItem.system.isDeployed = false
       modifiedItem.system.deployedActorId = ""
+      // Picked open or shut again on the map, it comes back as it was left
+      if (actor.system.lock) modifiedItem.system.lock = foundry.utils.duplicate(actor.system.lock)
       SR5_ActorHelper.rememberSidekickToken(modifiedItem, actor)
       // Whatever is in it comes back to the character, still stored in it
       const contents = SR5_ActorHelper.storageContentsOnMap(actor).map(i => {
