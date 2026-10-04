@@ -276,7 +276,8 @@ export class SR5_PrepareRollTest {
       const attributeLabels = Object.fromEntries(Object.entries(SR5.allAttributes).map(([k, v]) => [k, game.i18n.localize(v)]))
       const {
         offers, always
-      } = extractSituational(rollData, actor?.situationalEffects || [], rollAttributes(rollData.dicePool.composition, attributeLabels))
+      } = extractSituational(rollData, actor?.situationalEffects || [], rollAttributes(rollData.dicePool.composition, attributeLabels),
+        actor?.system?.limits?.[rollData.limit?.type]?.modifiers)
       rollData.situational = offers
       if (always.length) rollData.dicePool.modifiers = (rollData.dicePool.modifiers || []).concat(always)
       SR5_RollTest.generateRollDialog(rollData)

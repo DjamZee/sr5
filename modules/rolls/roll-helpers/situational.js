@@ -48,7 +48,7 @@ export function rollAttributes(composition, attributeLabels){
 
 // Takes the situational markers out of a prepared roll and returns the boxes to offer, plus the
 // roll-wide effects that apply without a box (a non situational Pushed)
-export function extractSituational(rollData, effects, attributes){
+export function extractSituational(rollData, effects, attributes, limitSource){
   let offers = [], always = [], seen = new Set()
   let offer = (index, kind) => {
     let effect = effects[index]
@@ -73,6 +73,11 @@ export function extractSituational(rollData, effects, attributes){
     if (!isSituationalType(key)) continue
     offer(situationalIndex(key), "limit")
     delete rollData.limit.modifiers[key]
+  }
+  // A skill's limit is worked out from the actor's limit (Physical, Mental...) without copying its
+  // modifiers: the markers left on that limit are read there
+  for (let m of limitSource || []){
+    if (isSituationalType(m.type)) offer(situationalIndex(m.type), "limit")
   }
 
   effects.forEach((effect, index) => {

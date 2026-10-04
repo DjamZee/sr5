@@ -106,6 +106,28 @@ describe("situational effects (SR5 p. 462, Chrome Flesh p. 160-172)", () => {
     expect(Object.keys(r.limit.modifiers)).toEqual(["other"])
   })
 
+  it("reads the markers of the actor's limit a skill test relies on, once only", () => {
+    const effects = [{
+      source: "Articulations", value: 1, situational: true
+    }]
+    const marker = {
+      type: `${SITUATIONAL_PREFIX}0`, source: "Articulations", value: 0
+    }
+    // The skill's limit does not copy the Physical limit's modifiers
+    expect(extractSituational(roll(), effects, [], [marker]).offers).toHaveLength(1)
+    // A roll that copies them (grenade) does not get the box twice
+    const r = roll({
+      limit: {
+        [marker.type]: {
+          label: "Articulations", value: 0
+        }
+      }
+    })
+    expect(extractSituational(r, effects, [], [marker]).offers).toHaveLength(1)
+    // Counter-test: no marker on the limit, no box
+    expect(extractSituational(roll(), effects, [], []).offers).toHaveLength(0)
+  })
+
   it("applies Pushed to tests linked to Logic only (Chrome Flesh p. 167)", () => {
     const pushed = [{
       source: "Pushed", value: 1, scope: "logic", situational: false 
