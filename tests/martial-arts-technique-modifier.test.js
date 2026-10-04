@@ -63,7 +63,7 @@ describe('handleMartialArtsCalledShot', () => {
   })
 })
 
-// Jiao Di (Run & Gun p. 150) lowers the Knockdown penalty, Choquer (p. 149) the Shake Up one:
+// Jiao Di (Run & Gun p. 150) lowers the Knockdown penalty, Choquer (p. 148) the Shake Up one:
 // both need a modifier slot in the martial arts table, which feeds the effect editor
 describe('SR5.calledShotsMartialArts', () => {
   it('offers Knockdown and Shake Up to technique modifiers', async () => {
