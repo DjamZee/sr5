@@ -67,10 +67,15 @@ export default async function defenseInfo(cardData, actorId){
   else cardData.damage.resistanceType = "physicalDamage"
   cardData.damage.isAttack = true
 
-  //If Hardened Armor, check if damage do something
+  //Damage value calculation
+  if (cardData.combat.firingMode.selected === "SF") cardData.damage.value = cardData.damage.base
+  else if (cardData.magic.spell.areaThreshold) cardData.damage.value = SR5_CombatHelpers.indirectAreaSpellDamage(cardData.damage.base, cardData.roll.netHits, cardData.magic.spell.areaThreshold)
+  else cardData.damage.value = cardData.damage.base + cardData.roll.netHits
+
+  //If Hardened Armor, check if damage do something: SR5 p. 397 compares the modified DV, net hits already in it
   if ((actorData.specialProperties?.hardenedArmors.normalWeapon.value > 0) && (cardData.damage.source !== "magical")) {
     immunity = actorData.specialProperties.hardenedArmors.normalWeapon.value + cardData.combat.armorPenetration
-    if (cardData.damage.value + cardData.roll.netHits <= immunity) {
+    if (SR5_CombatHelpers.isStoppedByHardenedArmor(cardData.damage.value, actorData.specialProperties.hardenedArmors.normalWeapon.value, cardData.combat.armorPenetration)) {
       cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.NormalWeaponsImmunity"))
       return ui.notifications.info(`${game.i18n.format("SR5.INFO_ImmunityToNormalWeapons", {
         hardenedArmor: immunity, pa: cardData.combat.armorPenetration, damage: cardData.damage.value
@@ -78,11 +83,6 @@ export default async function defenseInfo(cardData, actorId){
     }
   }
 
-  //Damage value calculation
-  if (cardData.combat.firingMode.selected === "SF") cardData.damage.value = cardData.damage.base
-  else if (cardData.magic.spell.areaThreshold) cardData.damage.value = SR5_CombatHelpers.indirectAreaSpellDamage(cardData.damage.base, cardData.roll.netHits, cardData.magic.spell.areaThreshold)
-  else cardData.damage.value = cardData.damage.base + cardData.roll.netHits
-        
   //Handle Called Shot specifics
   if (cardData.combat.calledShot.name) cardData = await handleCalledShotDefenseInfo(cardData, actorData)
 
@@ -92,7 +92,7 @@ export default async function defenseInfo(cardData, actorId){
     //If Hardened Armor, check if damage do something
     if (actorData.specialProperties?.hardenedArmors.fire.value > 0) {
       immunity = actorData.specialProperties.hardenedArmors.fire.value + cardData.combat.armorPenetration
-      if (cardData.damage.value + cardData.roll.netHits <= immunity) {
+      if (SR5_CombatHelpers.isStoppedByHardenedArmor(cardData.damage.value, actorData.specialProperties.hardenedArmors.fire.value, cardData.combat.armorPenetration)) {
         cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.FireImmunity"))
         return ui.notifications.info(`${game.i18n.format("SR5.INFO_ImmunityToNormalWeapons", {
           hardenedArmor: immunity, pa: cardData.combat.armorPenetration, damage: cardData.damage.value

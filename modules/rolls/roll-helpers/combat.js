@@ -127,6 +127,12 @@ export class SR5_CombatHelpers {
   static indirectAreaSpellDamage(force, netHits, threshold){
     return force + Math.max(0, netHits - threshold)
   }
+
+  // SR5 p. 397 (Hardened Armor): if the attack's modified DV, net hits already in it, is less than or equal to
+  // the Hardened Armor rating modified by AP, the attack does no damage and calls for no resistance test
+  static isStoppedByHardenedArmor(modifiedDamage, rating, armorPenetration = 0){
+    return modifiedDamage <= rating + armorPenetration
+  }
   //Handle environmental modifiers
   //noWind: ignore the wind column (perception, melee); melee: SR5 p. 188, only the Light and Visibility columns apply
   //weaponLight: light rows taken off by a flashlight on the weapon being used (SR5_UtilityItem.getWeaponLightCompensation)
