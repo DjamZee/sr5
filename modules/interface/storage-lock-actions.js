@@ -1,5 +1,5 @@
 import {
-  isLocked, pickStages, pickPool, pickLimit, lockTools, extendedTest,
+  isLocked, pickStages, pickPool, pickLimit, lockTools, extendedTest, underLimit, antiTamperOf,
   isPickRequestAllowed, lockedOwnership, unlockedOwnership,
 } from "./storage-lock.js"
 import {
@@ -62,31 +62,40 @@ export class SR5StorageLock {
   /*  Rights follow the lock (active GM only)     */
   /* -------------------------------------------- */
 
+  /**
+   * The active GM keeps the rights in step with the lock: on creation, on any
+   * change of the lock or of the rights (a right granted while it is shut is
+   * held back at once), and on arriving in the game, for whatever changed
+   * while no GM was there.
+   */
   static registerHooks() {
     const sync = (actor, changes) => {
       if (actor.type !== "actorStorage" || !game.users.activeGM?.isSelf) return
-      if (changes && !foundry.utils.hasProperty(changes, "system.lock")) return
+      if (changes && !foundry.utils.hasProperty(changes, "system.lock") &&
+        !("ownership" in changes)) return
       SR5StorageLock.syncOwnership(actor)
     }
     Hooks.on("createActor", actor => sync(actor))
     Hooks.on("updateActor", (actor, changes) => sync(actor, changes))
+    Hooks.once("ready", () => {
+      if (!game.users.activeGM?.isSelf) return
+      for (const actor of game.actors.filter(a => a.type === "actorStorage")) SR5StorageLock.syncOwnership(actor)
+    })
   }
 
-  /** Bring the other players down to Limited while it is shut, and give them
-   * back what they had once it is open. */
+  /** Hold the other players at Limited while it is shut, and give them the
+   * rights the GM meant for them once it is open. */
   static async syncOwnership(actor) {
     const saved = actor.getFlag("sr5", "lockOwnership")
     if (isLocked(actor)) {
       const gms = game.users.filter(u => u.isGM).map(u => u.id)
-      const result = lockedOwnership(actor.ownership, [...SR5StorageLock.keyHolders(actor), ...gms])
-      if (!Object.keys(result.saved).length) return
+      const result = lockedOwnership(actor.ownership, saved, [...SR5StorageLock.keyHolders(actor), ...gms])
+      if (!result.changed) return
       await actor.update({
         ownership: result.ownership,
-        "flags.sr5.lockOwnership": {
-          ...(saved ?? {
-          }), ...result.saved
-        },
+        "flags.sr5.-=lockOwnership": null,
       })
+      await actor.setFlag("sr5", "lockOwnership", result.saved)
     }
     else if (saved) {
       await actor.update({
@@ -104,6 +113,9 @@ export class SR5StorageLock {
   static async toggle(actor) {
     const storage = SR5StorageLock.base(actor)
     if (!storage?.system?.lock?.type || !SR5StorageLock.hasKey(storage)) return
+    // Only with a GM there: the rights follow the lock from the GM's browser,
+    // and a lock shut with nobody to hold the others back would shut nothing
+    if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActiveGM"))
     await storage.update({
       "system.lock.locked": !storage.system.lock.locked
     })
@@ -173,8 +185,9 @@ export class SR5StorageLock {
 
     const lock = storage.system.lock
     const skill = picker.system.skills?.locksmith
-    const pool = pickPool(skill, picker.system.attributes?.agility?.augmented?.value)
-    const limit = pickLimit(skill?.limit?.value || picker.system.limits?.physicalLimit?.value, tools.autopicker)
+    const autopicker = lock.type === "mechanical" ? tools.autopicker : 0
+    const pool = pickPool(skill, picker.system.attributes?.agility?.augmented?.value, autopicker)
+    const limit = pickLimit(skill?.limit?.value || picker.system.limits?.physicalLimit?.value, autopicker, lock.type)
     // No die, no test: Locksmith cannot be defaulted
     if (!pool) return SR5StorageLock.#card(picker, storage, {
       noPool: true
@@ -183,7 +196,7 @@ export class SR5StorageLock {
 
     const stages = []
     let reached = true
-    for (const stage of pickStages(lock)) {
+    for (const stage of pickStages(lock, !!data.relock)) {
       const result = await extendedTest(pool, stage.threshold, limit, rollDice)
       stages.push({
         ...stage, ...result, label: game.i18n.localize(`SR5.StorageLockStage_${stage.key}`)
@@ -193,18 +206,25 @@ export class SR5StorageLock {
       }
     }
 
-    // The anti-tamper system: one more test, the alarm on a failure (SR5 p. 365)
-    let alarm = false
-    if (reached && !data.relock && lock.antiTamper > 0) {
-      const roll = await rollDice(Math.min(pool, limit || pool))
-      alarm = Math.min(roll.hits, limit || roll.hits) < lock.antiTamper || roll.criticalGlitch
+    // A maglock's anti-tamper system: one more test, the whole pool, hits
+    // capped by the limit; the alarm on a failure (SR5 p. 365)
+    let alarm = false, antiTamper = null
+    const antiTamperRating = antiTamperOf(lock)
+    if (reached && !data.relock && antiTamperRating > 0) {
+      const roll = await rollDice(pool)
+      const hits = underLimit(roll.hits, limit)
+      alarm = hits < antiTamperRating || roll.criticalGlitch
+      antiTamper = {
+        hits, threshold: antiTamperRating, glitch: roll.glitch, criticalGlitch: roll.criticalGlitch
+      }
     }
+    const glitched = stages.some(s => s.glitch && !s.criticalGlitch)
 
     if (reached) await storage.update({
       "system.lock.locked": !!data.relock
     })
     await SR5StorageLock.#card(picker, storage, {
-      stages, reached, alarm, relock: !!data.relock, pool, limit, autopicker: tools.autopicker,
+      stages, reached, alarm, antiTamper, glitched, relock: !!data.relock, pool, limit, autopicker,
       turns: stages.reduce((n, s) => n + s.rolls, 0),
     })
   }
@@ -220,10 +240,13 @@ export class SR5StorageLock {
         actor: picker
       }), content,
     })
-    if (result.alarm) {
+    // The anti-tamper test is the GM's to see: the player does not know an
+    // alarm went off
+    if (result.antiTamper) {
       await ChatMessage.create({
-        content: game.i18n.format("SR5.StorageLockAlarm", {
-          actor: picker.name, storage: storage.name
+        content: game.i18n.format(result.alarm ? "SR5.StorageLockAlarm" : "SR5.StorageLockAntiTamperHeld", {
+          actor: picker.name, storage: storage.name,
+          hits: result.antiTamper.hits, threshold: result.antiTamper.threshold,
         }),
         whisper: ChatMessage.getWhisperRecipients("GM").map(u => u.id),
       })

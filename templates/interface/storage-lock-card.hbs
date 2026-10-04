@@ -16,6 +16,9 @@
 		</li>
 		{{/each}}
 	</ul>
+	{{#if glitched}}
+	<p class="SR-TextSmall">{{localize 'SR5.StorageLockGlitchNote'}}</p>
+	{{/if}}
 	<p><strong>{{#if reached}}{{#if relock}}{{localize 'SR5.StorageLockRelocked'}}{{else}}{{localize 'SR5.StorageLockOpened'}}{{/if}}{{else}}{{localize 'SR5.StorageLockFailed'}}{{/if}}</strong>
 	&middot; {{turns}} {{localize 'SR5.StorageLockTurns'}}</p>
 	{{/if}}

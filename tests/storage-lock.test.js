@@ -2,21 +2,13 @@ import {
   describe, it, expect
 } from 'vitest'
 import {
-  defaultLockFor, isLocked, isLockedAway, pickStages, pickPool, pickLimit, lockTools,
+  defaultLockFor, isLocked, pickStages, pickPool, pickLimit, lockTools, underLimit, antiTamperOf,
   extendedTest, isPickRequestAllowed, lockedOwnership, unlockedOwnership,
 } from '../modules/interface/storage-lock.js'
 
 const lock = (over = {
 }) => ({
   type: 'maglock', rating: 4, wireless: false, antiTamper: 0, locked: true, ...over
-})
-const storageItem = (id, l) => ({
-  id, type: 'itemStorage', system: {
-    lock: l
-  }
-})
-const actorWith = (...items) => ({
-  items
 })
 
 describe('defaultLockFor', () => {
@@ -56,31 +48,6 @@ describe('isLocked / isLockedAway', () => {
       }
     })).toBe(false)
   })
-  it('tells an item in a locked storage from one in an open one', () => {
-    const actor = actorWith(storageItem('safe', lock()), storageItem('bag', lock({
-      locked: false
-    })))
-    expect(isLockedAway({
-      system: {
-        storedIn: 'safe'
-      }
-    }, actor)).toBe(true)
-    expect(isLockedAway({
-      system: {
-        storedIn: 'bag'
-      }
-    }, actor)).toBe(false)
-    expect(isLockedAway({
-      system: {
-        storedIn: ''
-      }
-    }, actor)).toBe(false)
-    expect(isLockedAway({
-      system: {
-        storedIn: 'safe'
-      }
-    }, null)).toBe(false)
-  })
 })
 
 describe('picking tests (SR5 p. 365)', () => {
@@ -115,6 +82,21 @@ describe('picking tests (SR5 p. 365)', () => {
       }
     }, 4)).toBe(7)
   })
+  it('an autopicker rating stands in for Locksmith when better (p. 365, arbitrage de DjamZ)', () => {
+    const untrained = {
+      rating: {
+        value: 0
+      }, canDefault: false
+    }
+    expect(pickPool(untrained, 4, 3)).toBe(7)
+    expect(pickPool({
+      rating: {
+        value: 5
+      }, test: {
+        dicePool: 9
+      }
+    }, 4, 3)).toBe(9)
+  })
   it('untrained, no dice unless the skill can be defaulted', () => {
     expect(pickPool({
       rating: {
@@ -127,9 +109,34 @@ describe('picking tests (SR5 p. 365)', () => {
       }, canDefault: true
     }, 4)).toBe(3)
   })
-  it('an autopicker adds its rating to the limit (gear table p. 450)', () => {
-    expect(pickLimit(5, 0)).toBe(5)
-    expect(pickLimit(5, 3)).toBe(8)
+  it('an autopicker adds its rating to the limit, on a mechanical lock only (p. 450)', () => {
+    expect(pickLimit(5, 0, 'mechanical')).toBe(5)
+    expect(pickLimit(5, 3, 'mechanical')).toBe(8)
+    expect(pickLimit(5, 3, 'maglock')).toBe(5)
+  })
+  it('shutting a maglock again is one test: the casing put back', () => {
+    expect(pickStages(lock({
+      rating: 3
+    }), true)).toEqual([{
+      key: 'casingBack', threshold: 6
+    }])
+    expect(pickStages(lock({
+      type: 'mechanical', rating: 3
+    }), true)).toEqual([{
+      key: 'lock', threshold: 3
+    }])
+  })
+  it('a limit of 0 lets no hit through', () => {
+    expect(underLimit(4, 0)).toBe(0)
+    expect(underLimit(4, 2)).toBe(2)
+  })
+  it('only a maglock has an anti-tamper system', () => {
+    expect(antiTamperOf(lock({
+      antiTamper: 3
+    }))).toBe(3)
+    expect(antiTamperOf(lock({
+      type: 'mechanical', antiTamper: 3
+    }))).toBe(0)
   })
 })
 
@@ -169,7 +176,7 @@ describe('extendedTest', () => {
   }
   it('rolls one die fewer each time until the threshold is met', async () => {
     const d = dice(2, 2, 2)
-    const r = await extendedTest(6, 5, 0, d.roll)
+    const r = await extendedTest(6, 5, 6, d.roll)
     expect(d.pools).toEqual([6, 5, 4])
     expect(r).toMatchObject({
       hits: 6, rolls: 3, reached: true
@@ -181,8 +188,14 @@ describe('extendedTest', () => {
       hits: 3, reached: false
     })
   })
+  it('a limit of 0 means no hit at all', async () => {
+    const r = await extendedTest(3, 1, 0, dice(3, 3, 3).roll)
+    expect(r).toMatchObject({
+      hits: 0, reached: false
+    })
+  })
   it('a critical glitch ends it on a failure', async () => {
-    const r = await extendedTest(5, 1, 0, async () => ({
+    const r = await extendedTest(5, 1, 5, async () => ({
       hits: 0, glitch: true, criticalGlitch: true
     }))
     expect(r).toMatchObject({
@@ -245,19 +258,69 @@ describe('isPickRequestAllowed (GM check of a socket request)', () => {
 })
 
 describe('ownership follows the lock', () => {
-  it('brings everyone but the key holders down to Limited, and gives it back', () => {
+  const keep = ['alice', 'gm']
+  it('holds everyone but the key holders and GMs at Limited, and gives it back', () => {
     const before = {
-      default: 2, alice: 3, bob: 3, carol: 0
+      default: 2, alice: 3, gm: 3, bob: 3, carol: 0
     }
     const {
       ownership, saved
-    } = lockedOwnership(before, ['alice'])
+    } = lockedOwnership(before, {
+    }, keep)
     expect(ownership).toEqual({
-      default: 1, alice: 3, bob: 1, carol: 0
+      default: 1, alice: 3, gm: 3, bob: 1, carol: 0
     })
     expect(saved).toEqual({
       default: 2, bob: 3
     })
     expect(unlockedOwnership(ownership, saved)).toEqual(before)
+  })
+  it('is idempotent: fed its own result, it changes nothing', () => {
+    const first = lockedOwnership({
+      default: 3, bob: 2
+    }, {
+    }, keep)
+    const again = lockedOwnership(first.ownership, first.saved, keep)
+    expect(again.changed).toBe(false)
+    expect(again.ownership).toEqual(first.ownership)
+  })
+  it('a right granted while it is shut is held back, and applies once open (Olive #1)', () => {
+    // Shut, nobody above Limited; then the GM grants Owner to all
+    const shut = lockedOwnership({
+      default: 0
+    }, {
+    }, keep)
+    const granted = lockedOwnership({
+      ...shut.ownership, default: 3
+    }, shut.saved, keep)
+    expect(granted.ownership.default).toBe(1)
+    expect(granted.saved.default).toBe(3)
+    expect(unlockedOwnership(granted.ownership, granted.saved).default).toBe(3)
+  })
+  it('a change the GM makes while it is shut survives the opening (Olive #2)', () => {
+    // Shut with default Observer kept aside, then the GM raises it to Owner
+    const shut = lockedOwnership({
+      default: 2
+    }, {
+    }, keep)
+    const raised = lockedOwnership({
+      ...shut.ownership, default: 3
+    }, shut.saved, keep)
+    expect(unlockedOwnership(raised.ownership, raised.saved).default).toBe(3)
+    // ...or takes it away: it stays away
+    const removed = lockedOwnership({
+      ...shut.ownership, default: 0
+    }, shut.saved, keep)
+    expect(removed.saved.default).toBeUndefined()
+    expect(unlockedOwnership(removed.ownership, removed.saved).default).toBe(0)
+  })
+  it('a right set by hand after opening is not overwritten', () => {
+    expect(unlockedOwnership({
+      default: 0, bob: 3
+    }, {
+      default: 2, bob: 2
+    })).toEqual({
+      default: 0, bob: 3
+    })
   })
 })
