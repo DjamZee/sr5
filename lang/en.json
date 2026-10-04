@@ -3973,6 +3973,7 @@
 	"SR5.WARN_NotASprite": "You must select a sprite !",
 	"SR5.WARN_NoActionLeft": "{actor} has no {action} action left in this pass ({current} left, {value} needed): nothing is spent.",
 	"SR5.WARN_ResetActionsGMOnly": "Only the gamemaster can give actions back.",
+	"SR5.WARN_ActiveDefenseNoSkill": "{actor} lacks the {skill} skill: this active defense is not available.",
 	"SR5.WARN_NotEnoughInitiative": "{actor} does not have enough initiative ({initiative}) for an interruption action costing {cost}.",
 	"SR5.WARN_NoTemplateForBlast": "This throw's template was removed: the distance to the blast cannot be measured. Place it again or settle the damage by hand.",
 	"SR5.WARN_NoTemplateInScene": "No template in scene !",

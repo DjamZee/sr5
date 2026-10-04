@@ -112,6 +112,20 @@ export default class SR5_RollDialog {
     return false
   }
 
+  // SR5 p. 191-192: block needs Unarmed Combat and parry the weapon's skill; dodge is open to anyone
+  static hasActiveDefenseSkill(actor, defenseMode){
+    let skillKey = SR5_RollDialog.activeDefenseSkills[defenseMode]
+    if (!skillKey || (actor?.system.skills?.[skillKey]?.rating.value || 0) > 0) return true
+    ui.notifications.warn(game.i18n.format("SR5.WARN_ActiveDefenseNoSkill", {
+      actor: actor.name, skill: game.i18n.localize(SR5.skills[skillKey])
+    }))
+    return false
+  }
+
+  static activeDefenseSkills = {
+    block: "unarmedCombat", parryClubs: "clubs", parryBlades: "blades"
+  }
+
   // SR5 p. 170 and 192: full defense (-10, once per turn) and an active defense (-5) are paid together,
   // so the initiative must be higher than their combined cost
   static defenseStanceCost(actor, fullDefense, defenseMode){
@@ -897,14 +911,20 @@ export default class SR5_RollDialog {
         }
         case "defenseMode": {
           let fullDefense = dialogData.dicePool.modifiers.some(m => m.type === "fullDefense")
-          if (!SR5_RollDialog.hasInitiativeForInterruption(actor, SR5_RollDialog.defenseStanceCost(actor, fullDefense, ev.target.value))) ev.target.value = "none"
+          if (!SR5_RollDialog.hasActiveDefenseSkill(actor, ev.target.value)) ev.target.value = "none"
+          else if (!SR5_RollDialog.hasInitiativeForInterruption(actor, SR5_RollDialog.defenseStanceCost(actor, fullDefense, ev.target.value))) ev.target.value = "none"
           value = SR5_ConverterHelpers.activeDefenseToMod(ev.target.value, dialogData.combat.activeDefenses)
           label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.characterDefenses[ev.target.value])})`
           dialogData.combat.activeDefenseSelected = ev.target.value
           // SR5 p. 191-192: dodge, block and parry use a skill, so the Physical limit applies to the defense test
           let usesSkill = ["dodge", "block", "parryClubs", "parryBlades"].includes(ev.target.value)
-          dialogData.limit.base = usesSkill ? (dialogData.combat.activeDefenses.limit || 0) : 0
-          dialogData.limit.type = usesSkill ? "physicalLimit" : ""
+          // A test that already had a limit (a ramming defense) gets it back when the active defense is dropped
+          dialogData.combat.activeDefenses.ownLimit ??= {
+            base: dialogData.limit.base || 0, type: dialogData.limit.type || ""
+          }
+          let ownLimit = dialogData.combat.activeDefenses.ownLimit
+          dialogData.limit.base = usesSkill ? (dialogData.combat.activeDefenses.limit || 0) : ownLimit.base
+          dialogData.limit.type = usesSkill ? "physicalLimit" : ownLimit.type
           let limitRow = html.querySelector('#activeDefenseLimit')
           if (limitRow) limitRow.style.display = usesSkill ? '' : 'none'
           break

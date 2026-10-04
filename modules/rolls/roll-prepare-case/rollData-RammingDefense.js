@@ -35,6 +35,8 @@ export default function rammingDefense(rollData, actor, chatData){
   rollData.previousMessage.messageId = chatData.owner.messageId
   rollData.combat.activeDefenses.full = actor.system.specialProperties.fullDefenseValue || 0
   rollData.combat.activeDefenses.dodge = SR5_PrepareRollHelper.getActiveDefenseValue(actor.system, "dodge", "gymnastics")
+  // SR5 p. 191-192: dodge adds a skill, so the Physical limit applies
+  rollData.combat.activeDefenses.limit = actor.system.limits?.physicalLimit?.value || 0
   rollData.owner.speed = chatData.target.speed
   rollData.target.speed = chatData.owner.speed
   if (chatData.combat.ramming) rollData.combat.ramming = chatData.combat.ramming
