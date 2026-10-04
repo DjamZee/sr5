@@ -1,9 +1,10 @@
+<div class="SR-Moniteur" style="--n: {{system.conditionMonitors.stun.boxes.length}}">
 <!-- Stun Monitor -->
       <div class="SR-TextUppercase SR-NeutralLightColor SR-Bold monitorReset" data-target="stun"
          data-helpTitle="{{localize 'SR5.ConditionMonitorStun'}}" data-helpMessage="{{localize 'SR5.HELP_MonitorNameMsg'}}">
             {{localize 'SR5.ConditionMonitorStunShort'}}
       </div>
-      <div class="SR-MoniteurCases flexrow" data-target="system.conditionMonitors.stun.actual.base"
+      <div class="SR-MoniteurCases flexrow" style="--n: {{system.conditionMonitors.stun.boxes.length}}" data-target="system.conditionMonitors.stun.actual.base"
         data-helpTitle="{{localize 'SR5.ConditionMonitorStun'}}" data-helpMessage="{{localize 'SR5.HELP_MonitorMsg'}}">
                   {{#each system.conditionMonitors.stun.boxes as |box index|}}
                         {{#if box.locked}}
@@ -21,3 +22,4 @@
                         {{/if}}
                   {{/each}}
       </div>
+</div>

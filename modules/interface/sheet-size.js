@@ -50,6 +50,8 @@ export function rememberSheetSize(document, {
 }, min = {
 }) {
   if (typeof width !== "number" || typeof height !== "number") return
+  // Never a size below the floor (a minimized window is a 36px-high strip)
+  if (width < (min.width ?? 0) || height < (min.height ?? 0)) return
   const key = sheetSizeKey(document)
   clearTimeout(pending.get(key))
   // A resize drag fires many times: only the last size is written
@@ -77,6 +79,8 @@ export function sheetSizeOptions(sheetClass, options) {
 }
 
 export function sheetSizeSetPosition(app, position, setPosition) {
+  // A minimized window (dragged around, then restored) is neither clamped nor remembered
+  if (app.minimized) return setPosition(position)
   const min = minSheetSize(app.constructor)
   if (position) Object.assign(position, clampSheetSize(position, min))
   const result = setPosition(position)

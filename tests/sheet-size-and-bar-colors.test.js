@@ -25,6 +25,14 @@ describe("token bar colors", () => {
     expect(tokenBarFilledColor("statusBars.stun")).not.toBe(physical)
     expect(tokenBarFilledColor("statusBars.matrix")).not.toBe(physical)
   })
+
+  it("a custom attribute on a bar is not drawn as a wound", () => {
+    const wounds = ["physical", "condition", "stun", "matrix"].map(k => tokenBarFilledColor(`statusBars.${k}`))
+    expect(tokenBarFilledColor("statusBars.overflow")).toBe(wounds[0])
+    for (const attr of ["statusBars.edge", "specialAttributes.edge.augmented", "physical", undefined]) {
+      expect(wounds).not.toContain(tokenBarFilledColor(attr))
+    }
+  })
 })
 
 describe("sheet size", () => {
@@ -117,8 +125,32 @@ describe("sheet size", () => {
     vi.runAllTimers()
     expect(store[SHEET_SIZE_SETTING]).toEqual({
       "Actor.actorPc": {
-        width: 800, height: 700 
-      } 
+        width: 800, height: 700
+      }
     })
+  })
+
+  it("a minimized window dragged around keeps the size chosen", () => {
+    store[SHEET_SIZE_SETTING] = {
+      "Actor.actorPc": {
+        width: 1000, height: 900
+      }
+    }
+    const app = {
+      constructor: Sheet, document: pc, position: {
+      }, minimized: true
+    }
+    const set = vi.fn(p => p)
+    sheetSizeSetPosition(app, {
+      left: 40, top: 30, width: 1000, height: 36
+    }, set)
+    vi.runAllTimers()
+    expect(set).toHaveBeenCalledWith({
+      left: 40, top: 30, width: 1000, height: 36
+    }) // not raised to the floor either
+    expect(store[SHEET_SIZE_SETTING]["Actor.actorPc"]).toEqual({
+      width: 1000, height: 900
+    })
+    expect(game.settings.set).not.toHaveBeenCalled()
   })
 })
