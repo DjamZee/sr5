@@ -4132,6 +4132,7 @@
 	"SR5.Willpower": "Volonté",
 	"SR5.WillpowerShort": "VOL",
 	"SR5.WirelessMode": "Connexion sans fil",
+	"SR5.WirelessHeldByDeployedDrone": "Sans-fil géré par le drone déployé",
 	"SR5.WorkingCondition": "Conditions de travail",
 	"SR5.WorkingConditionBad": "Mauvaises",
 	"SR5.WorkingConditionDistracting": "Le personnage est distrait",

@@ -907,6 +907,7 @@ export class SR5_ActorHelper {
         "system.offRoadMode": itemData.offRoadMode,
         "system.price": itemData.price.base,
         "system.slaved": itemData.slaved,
+        "system.wirelessTurnedOn": itemData.wirelessTurnedOn,
         "system.isSlavedToPan": itemData.isSlavedToPan,
         "system.panMaster": itemData.panMaster,
         "system.vehicleOwner.id": actorId,
@@ -982,6 +983,21 @@ export class SR5_ActorHelper {
   //Socket for creating sidekick;
   static async _socketCreateSidekick(message) {
     await SR5_ActorHelper.createSidekick(message.data.item, message.data.userId, message.data.actorId)
+  }
+
+  /**
+   * While a vehicle is deployed, its drone actor holds the wireless switch:
+   * the gear row shows that state, read-only (N83).
+   */
+  static markDeployedVehicles(vehicles, actors){
+    for (const vehicle of vehicles) {
+      if (!vehicle.system?.isCreated) continue
+      const drone = actors?.find(a => a.type === "actorDrone" && a.system.creatorItemId === vehicle._id)
+      if (!drone) continue
+      vehicle.deployedWireless = {
+        on: drone.system.wirelessTurnedOn
+      }
+    }
   }
 
   /**
@@ -1175,6 +1191,7 @@ export class SR5_ActorHelper {
       modifiedItem.system.vehiclesMod = vehiclesMod
       modifiedItem.system.model = actor.system.model
       modifiedItem.system.slaved = actor.system.slaved
+      modifiedItem.system.wirelessTurnedOn = actor.system.wirelessTurnedOn
       modifiedItem.system.controlMode = actor.system.controlMode
       modifiedItem.system.riggerInterface = actor.system.riggerInterface
       modifiedItem.system.offRoadMode = actor.system.offRoadMode 

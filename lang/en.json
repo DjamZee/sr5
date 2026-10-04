@@ -4132,6 +4132,7 @@
 	"SR5.Willpower": "Willpower",
 	"SR5.WillpowerShort": "WIL",
 	"SR5.WirelessMode": "Wireless Mode",
+	"SR5.WirelessHeldByDeployedDrone": "Wireless handled by the deployed drone",
 	"SR5.WorkingCondition": "Working Condition",
 	"SR5.WorkingConditionBad": "Bad",
 	"SR5.WorkingConditionDistracting": "Distracting",

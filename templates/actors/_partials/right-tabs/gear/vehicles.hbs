@@ -25,6 +25,10 @@
 				>
 					<em class="fas fa-sm fa-exclamation-triangle SR-popColor"></em>
 				</div>
+				{{else if item.deployedWireless}}
+				<div class="col-1 SR-TextCenter" data-title="{{localize 'SR5.WirelessHeldByDeployedDrone'}}">
+					<em class="fas fa-sm fa-wifi {{#if item.deployedWireless.on}}SR-GreyColor{{else}}SR-LightGreyColor{{/if}}"></em>
+				</div>
 				{{else}}
 				<div class="col-1 SR-TextCenter"
 				  data-helpTitle="{{localize 'SR5.HELP_WifiToggle' key=name}}"

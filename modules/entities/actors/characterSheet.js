@@ -10,6 +10,9 @@ import {
 import {
   SR5_CharacterUtility
 } from "./utilityActor.js"
+import {
+  SR5_ActorHelper
+} from "./entityActor-helpers.js"
 
 /**
  * An Actor sheet for player character type actors in the Shadowrun 5 system.
@@ -228,6 +231,7 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     actor.contacts = contacts
     actor.lifestyles = lifestyles
     actor.sins = sins
+    SR5_ActorHelper.markDeployedVehicles(vehicles, game.actors)
     actor.vehicles = vehicles
     actor.vehiclesMod = vehiclesMod
     actor.martialArts = martialArts

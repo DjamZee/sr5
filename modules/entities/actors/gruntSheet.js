@@ -4,6 +4,9 @@ import {
 import {
   SR5_CharacterUtility
 } from "./utilityActor.js"
+import {
+  SR5_ActorHelper
+} from "./entityActor-helpers.js"
 
 /**
  * An Actor sheet for grunt type actors in the Shadowrun 5 system.
@@ -181,6 +184,7 @@ export class SR5GruntSheet extends ActorSheetSR5 {
     actor.gears = gears
     actor.cyberdecks = cyberdecks
     actor.programs = programs
+    SR5_ActorHelper.markDeployedVehicles(vehicles, game.actors)
     actor.vehicles = vehicles
     actor.vehiclesMod = vehiclesMod
     actor.powers = powers
