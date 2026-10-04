@@ -332,14 +332,61 @@ export class SR5_EffectArea {
     else return false
   }
 
+  //Calls on one actor and one spell run one after the other: the hooks that start them are not awaited, and two
+  //templates entered or drawn at once each found no effect yet and each gave one
+  static SPELL_EFFECT_QUEUES = new Map()
+  static runForSpell(actor, itemUuid, fn){
+    const key = `${actor.uuid ?? actor.id}|${itemUuid}`
+    const next = (SR5_EffectArea.SPELL_EFFECT_QUEUES.get(key) ?? Promise.resolve()).catch(() => {}).then(fn)
+    SR5_EffectArea.SPELL_EFFECT_QUEUES.set(key, next)
+    const clear = () => {
+      if (SR5_EffectArea.SPELL_EFFECT_QUEUES.get(key) === next) SR5_EffectArea.SPELL_EFFECT_QUEUES.delete(key)
+    }
+    next.then(clear, clear)
+    return next
+  }
+
+  //A spell's effect on a token, whatever the number of its templates: a token covered by at least one template of
+  //the spell keeps exactly one copy, and loses it only when it leaves the last one. A copy is never lifted while
+  //the token stays covered, so a resisted spell is not resisted again. One copy is the itemEffects one apply gives
+  //(one per custom effect), all with the template that gave them as ownerID.
+  //excludedTemplateId: a template being deleted, which may still be listed on its scene
+  static async syncSpellEffect(tokenDocument, itemUuid, excludedTemplateId){
+    let actor = await SR5_EntityHelpers.getRealActorFromID(tokenDocument.id)
+    if (!actor) return
+    return SR5_EffectArea.runForSpell(actor, itemUuid, async () => {
+      let covering
+      for (let template of Array.from(tokenDocument.parent?.templates ?? [])){
+        if (template.id === excludedTemplateId || !template.flags?.sr5?.itemHasEffect || template.flags.sr5.itemUuid !== itemUuid) continue
+        if (await this.checkIfTemplateContainsToken(template, tokenDocument)){
+          covering = template
+          break
+        }
+      }
+      let effects = actor.items.filter(i => i.type === "itemEffect" && i.system.ownerItem === itemUuid)
+      if (!covering){
+        if (effects.length) await actor.deleteEmbeddedDocuments("Item", effects.map(i => i.id))
+        return
+      }
+      if (!effects.length) return await this.createTemplateEffect(tokenDocument, covering)
+      let kept = effects[0].system.ownerID
+      let extra = effects.filter(i => i.system.ownerID !== kept)
+      if (extra.length) await actor.deleteEmbeddedDocuments("Item", extra.map(i => i.id))
+    })
+  }
+
   //Iterate through canvas template to check if current token is inside
   static async checkIfTokenIsInTemplate(tokenDocument){
+    let spells = new Set()
     for (let templateDocument of tokenDocument.parent.templates){
-      if (templateDocument.flags.sr5?.environmentalModifiers || templateDocument.flags.sr5?.itemHasEffect){
+      if (templateDocument.flags.sr5?.itemHasEffect){
+        spells.add(templateDocument.flags.sr5.itemUuid)
+        continue
+      }
+      if (templateDocument.flags.sr5?.environmentalModifiers){
         let isInTemplate = await this.checkIfTemplateContainsToken(templateDocument, tokenDocument)
         let actor = await SR5_EntityHelpers.getRealActorFromID(tokenDocument.id)
         let effectID = templateDocument.uuid
-        if (templateDocument.flags.sr5.itemHasEffect) effectID = templateDocument.flags.sr5.itemUuid
         let hasEffect = await this.checkIfHasEffect(actor, effectID)
         //createTemplateEffect checks each effect on its own (light, noise, background count...): an effect set later
         //in the template's form, the Spam after the light, must be added although the token has the first one
@@ -349,6 +396,9 @@ export class SR5_EffectArea {
         }
       }
     }
+    //A spell is checked once against all its templates, not template by template: leaving one while inside
+    //another lifted the effect (and gave it back, resisted again, in the other order)
+    for (let itemUuid of spells) await this.syncSpellEffect(tokenDocument, itemUuid)
   }
 
   //Add effect on a token when a template is created
@@ -359,6 +409,10 @@ export class SR5_EffectArea {
     if (!templateDocument.id) return
     if (!templateDocument.flags.sr5?.environmentalModifiers && !templateDocument.flags.sr5?.itemHasEffect) return
     for (let t of templateDocument.parent.tokens){
+      if (templateDocument.flags.sr5.itemHasEffect){
+        await this.syncSpellEffect(t, templateDocument.flags.sr5.itemUuid)
+        continue
+      }
       let isInTemplate = await this.checkIfTemplateContainsToken(templateDocument, t)
       if (isInTemplate) await this.createTemplateEffect(t, templateDocument)
     }
@@ -373,30 +427,16 @@ export class SR5_EffectArea {
   static async removeTemplateEffect(templateDocument){
     if (!templateDocument.flags.sr5?.environmentalModifiers && !templateDocument.flags.sr5?.itemHasEffect) return
     for (let t of templateDocument.parent.tokens){
-      let actor = await SR5_EntityHelpers.getRealActorFromID(t.id)
-      let effectID = templateDocument.uuid
-      if (templateDocument.flags.sr5.itemHasEffect) effectID = templateDocument.flags.sr5.itemUuid
-      //A token with no actor leaves the next ones to clear
-      if (!actor) continue
-      //A spell's effect records the spell (ownerItem); the template that gave it is in ownerID. A token inside
-      //another template of the same spell keeps the spell's effect: only this template's own copy goes, and only
-      //if another copy is left (two templates drawn at once can give one each)
-      if (templateDocument.flags.sr5.itemHasEffect && await this.isInOtherTemplateOfItem(templateDocument, t)){
-        let effects = actor.items.filter(i => i.type === "itemEffect" && i.system.ownerItem === effectID)
-        let own = effects.filter(i => i.system.ownerID === templateDocument.id)
-        if (own.length && own.length < effects.length) await actor.deleteEmbeddedDocuments("Item", own.map(i => i.id))
+      //A spell's effect stays while another template of the spell still covers the token
+      if (templateDocument.flags.sr5.itemHasEffect){
+        await this.syncSpellEffect(t, templateDocument.flags.sr5.itemUuid, templateDocument.id)
         continue
       }
-      await this.deleteTemplateEffect(actor, effectID)
+      let actor = await SR5_EntityHelpers.getRealActorFromID(t.id)
+      //A token with no actor leaves the next ones to clear
+      if (!actor) continue
+      await this.deleteTemplateEffect(actor, templateDocument.uuid)
     }
-  }
-
-  static async isInOtherTemplateOfItem(templateDocument, token){
-    for (let other of Array.from(templateDocument.parent.templates ?? [])){
-      if (other.id === templateDocument.id || !other.flags?.sr5?.itemHasEffect || other.flags.sr5.itemUuid !== templateDocument.flags.sr5.itemUuid) continue
-      if (await this.checkIfTemplateContainsToken(other, token)) return true
-    }
-    return false
   }
 
   static async checkUpdatedTemplateEffect(templateDocument){
