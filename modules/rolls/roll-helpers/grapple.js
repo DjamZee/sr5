@@ -123,6 +123,7 @@ export class SR5_GrappleHelpers {
     chatData.damage.value = damage.value
     chatData.damage.type = damage.type
     chatData.damage.isAttack = true
+    chatData.damage.resistanceType = "physicalDamage"
     chatData.test.typeSub = "meleeWeapon"
     chatData.owner.actorId = holderId
     chatData.previousMessage.actorId = holderId
