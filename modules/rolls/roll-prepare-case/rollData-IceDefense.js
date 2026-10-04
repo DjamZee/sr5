@@ -22,9 +22,9 @@ export default function iceDefense(rollData, actor, chatData){
   ])
   rollData.dicePool.base = firstAttribute + secondAttribute
 
-  //Determine targeted device
+  //Determine targeted device: an AI outside any device has none, the IC targets its persona (Data Trails p. 157)
   let deck = actor.items.find(d => d.type === "itemDevice" && d.system.isActive)
-  rollData.target.itemUuid = deck.uuid
+  rollData.target.itemUuid = deck?.uuid
 
   //Add others informations
   rollData.test.type = "iceDefense"
