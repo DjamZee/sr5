@@ -93,14 +93,18 @@ export function registerRunningMovementActions(movementConfig) {
     icon: "fa-solid fa-person-running",
     img: "icons/svg/wingfoot.svg",
     order: 0.5,
-    deriveTerrainDifficulty: ({walk}) => walk
+    deriveTerrainDifficulty: ({
+      walk
+    }) => walk
   }
   movementConfig.actions.sprint = {
     label: "SR5.MovementActionSprint",
     icon: "fa-solid fa-person-running-fast",
     img: "icons/svg/wingfoot.svg",
     order: 0.6,
-    deriveTerrainDifficulty: ({walk}) => walk
+    deriveTerrainDifficulty: ({
+      walk
+    }) => walk
   }
 }
 
@@ -127,7 +131,7 @@ export function actorRates(actor) {
 //A move of a token: counts the meters of the Combat Turn and puts the running status on. Done by the active GM
 //only, who receives the hook as every client does
 export async function onMoveToken(tokenDocument, movement) {
-  if (!game.users.activeGM?.isSelf) return
+  if (!game.users?.activeGM?.isSelf) return
   const actor = tokenDocument.actor
   if (!actor?.system?.movements) return
   const combat = game.combat
@@ -139,20 +143,28 @@ export async function onMoveToken(tokenDocument, movement) {
   const units = tokenDocument.parent?.grid?.units ?? canvas?.scene?.grid?.units
   const moved = sceneUnitsToMeters(Number(movement?.passed?.distance) || 0, units)
   const total = roundMeters(tokenDocument.getFlag("sr5", "runDistance"), combat.id, combat.round) + moved
-  await tokenDocument.setFlag("sr5", "runDistance", {combatId: combat.id, round: combat.round, meters: total})
+  await tokenDocument.setFlag("sr5", "runDistance", {
+    combatId: combat.id, round: combat.round, meters: total
+  })
 
-  const {walk} = actorRates(actor)
+  const {
+    walk
+  } = actorRates(actor)
   const auto = game.settings.get("sr5", "sr5RunningFromDistance")
   if (moveMakesRunning(action, total, walk, auto) && !isRunning(actor)) {
-    await actor.toggleStatusEffect(RUNNING_STATUS, {active: true})
+    await actor.toggleStatusEffect(RUNNING_STATUS, {
+      active: true
+    })
   }
 }
 
 //The running status falls at the start of a Combat Turn and when the encounter ends
 export async function clearRunning(combat) {
-  if (!game.users.activeGM?.isSelf) return
+  if (!game.users?.activeGM?.isSelf) return
   for (const combatant of combat?.combatants ?? []) {
-    if (isRunning(combatant.actor)) await combatant.actor.toggleStatusEffect(RUNNING_STATUS, {active: false})
+    if (isRunning(combatant.actor)) await combatant.actor.toggleStatusEffect(RUNNING_STATUS, {
+      active: false
+    })
   }
 }
 
@@ -177,7 +189,9 @@ export function createRunningTokenRuler(BaseRuler) {
     #gaitColor(waypoint) {
       if (waypoint.stage === "passed") return null
       const document = this.token?.document
-      const {walk, run} = actorRates(document?.actor)
+      const {
+        walk, run
+      } = actorRates(document?.actor)
       if (!(walk > 0)) return null
       //The part of the path already done is in the meters of the Combat Turn
       let passed = waypoint

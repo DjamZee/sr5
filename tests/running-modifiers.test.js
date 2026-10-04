@@ -25,29 +25,57 @@ const template = (name) => readFileSync(new URL(`../templates/rolls/rollDialogPa
 
 describe('which tests take the running modifier (SR5 p. 164, 179, 190)', () => {
   it('a ranged attack uses the Attacker running box, a weapon defense the Defender running box', () => {
-    expect(runningModifierKind({type: 'attack', typeSub: 'rangedWeapon'})).toBe('rangedAttack')
-    expect(runningModifierKind({type: 'defense', typeSub: 'rangedWeapon'})).toBe('defenseBox')
-    expect(runningModifierKind({type: 'defense', typeSub: 'meleeWeapon'})).toBe('defenseBox')
+    expect(runningModifierKind({
+      type: 'attack', typeSub: 'rangedWeapon'
+    })).toBe('rangedAttack')
+    expect(runningModifierKind({
+      type: 'defense', typeSub: 'rangedWeapon'
+    })).toBe('defenseBox')
+    expect(runningModifierKind({
+      type: 'defense', typeSub: 'meleeWeapon'
+    })).toBe('defenseBox')
   })
 
   it('every other action takes -2: melee, spell, skill, perception, matrix action', () => {
-    for (const test of [{type: 'attack', typeSub: 'meleeWeapon'}, {type: 'spell'}, {type: 'skill', typeSub: 'perception'},
-      {type: 'skillDicePool'}, {type: 'matrixAction'}, {type: 'complexForm'}, {type: 'movement', typeSub: 'swim'}]) {
+    for (const test of [{
+      type: 'attack', typeSub: 'meleeWeapon'
+    }, {
+      type: 'spell'
+    }, {
+      type: 'skill', typeSub: 'perception'
+    },
+    {
+      type: 'skillDicePool'
+    }, {
+      type: 'matrixAction'
+    }, {
+      type: 'complexForm'
+    }, {
+      type: 'movement', typeSub: 'swim'
+    }]) {
       expect(runningModifierKind(test)).toBe('general')
     }
     expect(runningModifierValue('general')).toBe(-2)
   })
 
   it('the other defense tests take +2', () => {
-    expect(runningModifierKind({type: 'defenseSimple'})).toBe('defense')
-    expect(runningModifierKind({type: 'martialArtDefense'})).toBe('defense')
+    expect(runningModifierKind({
+      type: 'defenseSimple'
+    })).toBe('defense')
+    expect(runningModifierKind({
+      type: 'martialArtDefense'
+    })).toBe('defense')
     expect(runningModifierValue('defense')).toBe(2)
   })
 
   it('no modifier on Sprint (SR5 p. 164) nor on a resistance test (ruling of DjamZ)', () => {
-    expect(runningModifierKind({type: 'movement', typeSub: 'run'})).toBe(null)
+    expect(runningModifierKind({
+      type: 'movement', typeSub: 'run'
+    })).toBe(null)
     for (const type of ['resistanceCard', 'drain', 'fading', 'spellResistance', 'weaponResistance']) {
-      expect(runningModifierKind({type})).toBe(null)
+      expect(runningModifierKind({
+        type
+      })).toBe(null)
     }
   })
 })
@@ -67,7 +95,9 @@ describe('distances and gaits (SR5 p. 164)', () => {
   })
 
   it('the meters of another Combat Turn are not counted', () => {
-    const flag = {combatId: 'c1', round: 2, meters: 8}
+    const flag = {
+      combatId: 'c1', round: 2, meters: 8
+    }
     expect(roundMeters(flag, 'c1', 2)).toBe(8)
     expect(roundMeters(flag, 'c1', 3)).toBe(0)
     expect(roundMeters(flag, 'c2', 2)).toBe(0)
@@ -82,7 +112,12 @@ describe('distances and gaits (SR5 p. 164)', () => {
   })
 
   it('"Course" and "Sprint" join the movement actions of the token HUD', () => {
-    const movement = {actions: {walk: {}}}
+    const movement = {
+      actions: {
+        walk: {
+        }
+      }
+    }
     registerRunningMovementActions(movement)
     expect(movement.actions.run.label).toBe('SR5.MovementActionRun')
     expect(movement.actions.sprint.label).toBe('SR5.MovementActionSprint')
@@ -92,55 +127,128 @@ describe('distances and gaits (SR5 p. 164)', () => {
 describe('the running status follows the moves and the Combat Turns', () => {
   const actorWith = (statuses = []) => {
     const actor = {
-      effects: statuses.map(s => ({statuses: new Set([s])})),
-      system: {movements: {walk: {movement: {value: 10}}, run: {movement: {value: 20}}}},
-      toggleStatusEffect: vi.fn(async (id, {active}) => {
-        actor.effects = active ? [{statuses: new Set([id])}] : []
+      effects: statuses.map(s => ({
+        statuses: new Set([s])
+      })),
+      system: {
+        movements: {
+          walk: {
+            movement: {
+              value: 10
+            }
+          }, run: {
+            movement: {
+              value: 20
+            }
+          }
+        }
+      },
+      toggleStatusEffect: vi.fn(async (id, {
+        active
+      }) => {
+        actor.effects = active ? [{
+          statuses: new Set([id])
+        }] : []
       })
     }
     return actor
   }
   const tokenWith = (actor, flag) => ({
-    id: 't1', actor, movementAction: 'walk', parent: {grid: {units: 'm'}},
-    flags: {sr5: {runDistance: flag}},
+    id: 't1', actor, movementAction: 'walk', parent: {
+      grid: {
+        units: 'm'
+      }
+    },
+    flags: {
+      sr5: {
+        runDistance: flag
+      }
+    },
     getFlag(scope, key) { return this.flags[scope][key] },
     setFlag: vi.fn(async function (scope, key, value) { this.flags[scope][key] = value })
   })
 
   beforeEach(() => {
-    globalThis.game.users = {activeGM: {isSelf: true}}
-    globalThis.game.combat = {id: 'c1', round: 1, started: true, getCombatantByToken: () => ({})}
-    globalThis.game.settings = {get: () => false}
+    globalThis.game.users = {
+      activeGM: {
+        isSelf: true
+      }
+    }
+    globalThis.game.combat = {
+      id: 'c1', round: 1, started: true, getCombatantByToken: () => ({
+      })
+    }
+    globalThis.game.settings = {
+      get: () => false
+    }
   })
 
   it('a move with "Course" puts the status on', async () => {
     const actor = actorWith()
-    await onMoveToken(tokenWith(actor), {passed: {distance: 3, waypoints: [{action: 'run'}]}})
-    expect(actor.toggleStatusEffect).toHaveBeenCalledWith(RUNNING_STATUS, {active: true})
+    await onMoveToken(tokenWith(actor), {
+      passed: {
+        distance: 3, waypoints: [{
+          action: 'run'
+        }]
+      }
+    })
+    expect(actor.toggleStatusEffect).toHaveBeenCalledWith(RUNNING_STATUS, {
+      active: true
+    })
   })
 
   it('a walk beyond the walking rate puts it on only with the world setting', async () => {
     const actor = actorWith()
-    const token = tokenWith(actor, {combatId: 'c1', round: 1, meters: 9})
-    await onMoveToken(token, {passed: {distance: 3, waypoints: [{action: 'walk'}]}})
+    const token = tokenWith(actor, {
+      combatId: 'c1', round: 1, meters: 9
+    })
+    await onMoveToken(token, {
+      passed: {
+        distance: 3, waypoints: [{
+          action: 'walk'
+        }]
+      }
+    })
     expect(token.flags.sr5.runDistance.meters).toBe(12)
     expect(actor.toggleStatusEffect).not.toHaveBeenCalled()
 
-    globalThis.game.settings = {get: () => true}
-    await onMoveToken(token, {passed: {distance: 1.5, waypoints: [{action: 'walk'}]}})
-    expect(actor.toggleStatusEffect).toHaveBeenCalledWith(RUNNING_STATUS, {active: true})
+    globalThis.game.settings = {
+      get: () => true
+    }
+    await onMoveToken(token, {
+      passed: {
+        distance: 1.5, waypoints: [{
+          action: 'walk'
+        }]
+      }
+    })
+    expect(actor.toggleStatusEffect).toHaveBeenCalledWith(RUNNING_STATUS, {
+      active: true
+    })
   })
 
   it('outside an encounter nothing is put on', async () => {
     globalThis.game.combat = null
     const actor = actorWith()
-    await onMoveToken(tokenWith(actor), {passed: {distance: 30, waypoints: [{action: 'run'}]}})
+    await onMoveToken(tokenWith(actor), {
+      passed: {
+        distance: 30, waypoints: [{
+          action: 'run'
+        }]
+      }
+    })
     expect(actor.toggleStatusEffect).not.toHaveBeenCalled()
   })
 
   it('the status falls at the start of the next Combat Turn', async () => {
     const runner = actorWith([RUNNING_STATUS])
-    await clearRunning({combatants: [{actor: runner}, {actor: actorWith()}]})
+    await clearRunning({
+      combatants: [{
+        actor: runner
+      }, {
+        actor: actorWith()
+      }]
+    })
     expect(isRunning(runner)).toBe(false)
   })
 })
@@ -148,16 +256,28 @@ describe('the running status follows the moves and the Combat Turns', () => {
 describe('the roll dialog checks the running boxes of a runner', () => {
   //A tiny dialog: the boxes of the template, read by their data-modifier and their target input
   const fakeHtml = (modifiers) => {
-    const boxes = {}, inputs = {}
+    const boxes = {
+      }, inputs = {
+      }
     for (const m of modifiers) {
-      boxes[m] = {checked: false, dataset: {modifier: m, target: `in-${m}`}}
-      inputs[`in-${m}`] = {value: 0}
+      boxes[m] = {
+        checked: false, dataset: {
+          modifier: m, target: `in-${m}`
+        }
+      }
+      inputs[`in-${m}`] = {
+        value: 0
+      }
     }
-    const roll = {innerHTML: ''}
+    const roll = {
+      innerHTML: ''
+    }
     return {
       boxes, inputs,
       querySelector(sel) {
-        if (sel === '[name="baseDicePool"]') return {value: '8'}
+        if (sel === '[name="baseDicePool"]') return {
+          value: '8'
+        }
         if (sel === '[data-action="roll"]') return roll
         let m = sel.match(/^\[data-modifier=(\w+)\]$/)
         if (m) return boxes[m[1]]
@@ -169,48 +289,94 @@ describe('the roll dialog checks the running boxes of a runner', () => {
   }
   const dialogFor = (actor, running) => {
     vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockImplementation(id => (id === 'a1' ? actor : null))
-    const dialogData = {owner: {actorId: 'a1'}, target: {}, dialogSwitch: {running}, dicePool: {modifiers: []}}
-    return {dialog: new SR5_RollDialog(null, null, dialogData), dialogData}
+    const dialogData = {
+      owner: {
+        actorId: 'a1'
+      }, target: {
+      }, dialogSwitch: {
+        running
+      }, dicePool: {
+        modifiers: []
+      }
+    }
+    return {
+      dialog: new SR5_RollDialog(null, null, dialogData), dialogData
+    }
   }
 
   beforeEach(() => {
-    globalThis.game.settings = {get: () => false}
+    globalThis.game.settings = {
+      get: () => false
+    }
   })
 
   it('a runner casting a spell gets -2, defending gets +2', () => {
-    const actor = {effects: [{statuses: new Set([RUNNING_STATUS])}]}
-    let {dialog, dialogData} = dialogFor(actor, 'general')
+    const actor = {
+      effects: [{
+        statuses: new Set([RUNNING_STATUS])
+      }]
+    }
+    let {
+      dialog, dialogData
+    } = dialogFor(actor, 'general')
     let html = fakeHtml(['running'])
     dialog._filledCheckBox(Object.values(html.boxes), html, dialogData)
     expect(html.boxes.running.checked).toBe(true)
-    expect(dialogData.dicePool.modifiers).toEqual([expect.objectContaining({type: 'running', value: -2})])
+    expect(dialogData.dicePool.modifiers).toEqual([expect.objectContaining({
+      type: 'running', value: -2
+    })])
 
-    ;({dialog, dialogData} = dialogFor(actor, 'defense'))
+    ;({
+      dialog, dialogData
+    } = dialogFor(actor, 'defense'))
     html = fakeHtml(['running', 'defenseRunning'])
     dialog._filledCheckBox(Object.values(html.boxes), html, dialogData)
     expect(dialogData.dicePool.modifiers.find(m => m.type === 'running').value).toBe(2)
   })
 
   it('the Attacker running and Defender running boxes are checked for a runner, not for a walker', () => {
-    const runner = {effects: [{statuses: new Set([RUNNING_STATUS])}]}
-    let {dialog, dialogData} = dialogFor(runner, false)
+    const runner = {
+      effects: [{
+        statuses: new Set([RUNNING_STATUS])
+      }]
+    }
+    let {
+      dialog, dialogData
+    } = dialogFor(runner, false)
     let html = fakeHtml(['attackIsRunning', 'defenseRunning'])
     dialog._filledCheckBox(Object.values(html.boxes), html, dialogData)
     expect(dialogData.dicePool.modifiers.map(m => [m.type, m.value])).toEqual([['attackIsRunning', -2], ['defenseRunning', 2]])
 
-    ;({dialog, dialogData} = dialogFor({effects: []}, false))
+    ;({
+      dialog, dialogData
+    } = dialogFor({
+      effects: []
+    }, false))
     html = fakeHtml(['attackIsRunning', 'defenseRunning'])
     dialog._filledCheckBox(Object.values(html.boxes), html, dialogData)
     expect(dialogData.dicePool.modifiers).toEqual([])
   })
 
   it('a charge takes the -2 of running off (SR5 p. 164 and 188)', () => {
-    const actor = {effects: [{statuses: new Set([RUNNING_STATUS])}]}
-    const {dialog, dialogData} = dialogFor(actor, 'general')
+    const actor = {
+      effects: [{
+        statuses: new Set([RUNNING_STATUS])
+      }]
+    }
+    const {
+      dialog, dialogData
+    } = dialogFor(actor, 'general')
     const html = fakeHtml(['running', 'attackCharge'])
-    dialog._filledCheckBox([html.boxes.running], html, dialogData)
+    //The running box already checked, as the dialog opens for a runner
+    html.boxes.running.checked = true
+    html.inputs['in-running'].value = -2
+    dialogData.dicePool.modifiers.push({
+      type: 'running', label: '', value: -2
+    })
     html.boxes.attackCharge.checked = true
-    dialog._checkboxModifier({target: html.boxes.attackCharge, currentTarget: html.boxes.attackCharge}, html, dialogData)
+    dialog._checkboxModifier({
+      target: html.boxes.attackCharge, currentTarget: html.boxes.attackCharge
+    }, html, dialogData)
     expect(html.boxes.running.checked).toBe(false)
     expect(dialogData.dicePool.modifiers.map(m => [m.type, m.value])).toEqual([['attackCharge', 2]])
   })
