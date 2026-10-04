@@ -17,8 +17,11 @@ import {
   computeItemLayout 
 } from "../../interface/compute-item-layout.js"
 import {
-  enhanceSelects 
+  enhanceSelects
 } from "../../helpers/enhance-selects.js"
+import {
+  sheetSizeOptions, sheetSizeSetPosition
+} from "../../interface/sheet-size.js"
 
 // Item types that include a footer (condition monitors, price/availability)
 const ITEM_FOOTER_TYPES = new Set([
@@ -57,7 +60,7 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       width: 650, height: 445 
     },
     window: {
-      resizable: false 
+      resizable: true 
     },
     form: {
       submitOnChange: true 
@@ -67,6 +70,16 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       jammerSpareTargets: SR5ItemSheet._onJammerSpareTargets,
       jammerUnspare: SR5ItemSheet._onJammerUnspare,
     },
+  }
+
+  /** @override — reopen at the size last chosen for this item type (sheet-size.js) */
+  _initializeApplicationOptions(options) {
+    return sheetSizeOptions(this.constructor, super._initializeApplicationOptions(options))
+  }
+
+  /** @override — never below the default size, and remember the size chosen */
+  setPosition(position) {
+    return sheetSizeSetPosition(this, position, p => super.setPosition(p))
   }
 
   // A jammer in wireless mode spares the actors of the targeted tokens (SR5 p. 443)

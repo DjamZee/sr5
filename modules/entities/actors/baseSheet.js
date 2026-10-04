@@ -5,6 +5,9 @@ import {
   SR5_Jammer
 } from "../../system/jammer.js"
 import {
+  sheetSizeOptions, sheetSizeSetPosition
+} from "../../interface/sheet-size.js"
+import {
   SR5_EntityHelpers 
 } from "../helpers.js"
 import {
@@ -89,6 +92,16 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
   get title() {
     return this.document.name
+  }
+
+  /** @override — reopen at the size last chosen for this sheet type (sheet-size.js) */
+  _initializeApplicationOptions(options) {
+    return sheetSizeOptions(this.constructor, super._initializeApplicationOptions(options))
+  }
+
+  /** @override — never below the default size, and remember the size chosen */
+  setPosition(position) {
+    return sheetSizeSetPosition(this, position, p => super.setPosition(p))
   }
 
   /** @override — Foundry's _onClickTab uses event.target which misses when clicking SVG icons inside <a> */

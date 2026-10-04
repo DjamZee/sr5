@@ -23,7 +23,7 @@ export class SR5AgentSheet extends ActorSheetSR5 {
       width: 800, height: 618 
     },
     window: {
-      resizable: false 
+      resizable: true 
     },
   }
 

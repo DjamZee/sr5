@@ -757,12 +757,24 @@
             flex-direction: row;
         }
 
+        // The boxes share the width they are given: wider when few (12px), narrower when many,
+        // never under 6px; below that they wrap to a new line instead of overflowing
         .SR-MoniteurCases {
             padding-left  : 5px;
+            flex-wrap     : wrap;
+            min-width     : 0;
+            row-gap       : 2px;
+
+            .boxes {
+                flex     : 1 1 0;
+                min-width: 10px; // 6px box + its 2px margins
+                max-width: 16px;
+            }
 
             .SR-Case {
                 height: 15px;
-                width : 10px;
+                width : auto;
+                min-width: 6px;
                 margin: 0px 2px 0px 2px;
                 //display        : flex;
                 justify-content: center;
@@ -793,14 +805,16 @@
                 }
             }
 
+        // A box beyond the monitor: hatched grey, so it no longer melts into the dark footer
         .SR-CaseNeutralDarkColor {
-            background: var(--sr-text-color-dark);
-            border: 1px solid rgba(151,183,159, 1);
+            background: repeating-linear-gradient(45deg, #555 0 2px, #2a2a2a 2px 4px);
+            border: 1px solid #777;
         }
 
+        // A wounded box: a brighter red than the theme's border red, readable on the dark footer
         .SR-CaseMainColor {
-            background: var(--sr-ui-border-color);
-            border    : 1px solid var(--sr-ui-border-color);
+            background: #c8261b;
+            border    : 1px solid #c8261b;
         }
 
         // Aggravated wound box (Howling Shadows p. 213): hatched with the pop color
