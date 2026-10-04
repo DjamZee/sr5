@@ -2864,7 +2864,7 @@
 	"SR5.SETTINGS_ChooseStyle_T": "Apparence",
 	"SR5.SETTINGS_CompendiumBaseWeapons_D": "Compendium searched for the base weapons given to new actors (spirit natural attacks, unarmed strike...). Items are recognized by their system effects (baseOwnItem), not by their name.",
 	"SR5.SETTINGS_CompendiumBaseWeapons_T": "Base weapons compendium",
-	"SR5.SETTINGS_CompendiumCreaturePowers_D": "Compendium searched for the base and optional powers of spirits. Items are recognized by their system effects (spiritPower), not by their name.",
+	"SR5.SETTINGS_CompendiumCreaturePowers_D": "Compendium searched for the base and optional powers of spirits. Items are recognized by their system effects (spiritPower), not by their name. On automatic, a power missing from sr5-compendiums is looked for in the Megapack when it is active.",
 	"SR5.SETTINGS_CompendiumCreaturePowers_T": "Creature powers compendium",
 	"SR5.SETTINGS_CompendiumSpritePowers_D": "Compendium searched for the base and optional powers of sprites. Items are recognized by their system effects (baseOwnItem, spritePower), not by their name.",
 	"SR5.SETTINGS_CompendiumSpritePowers_T": "Sprite powers compendium",

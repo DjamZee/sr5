@@ -2864,7 +2864,7 @@
 	"SR5.SETTINGS_ChooseStyle_T": "Apparence",
 	"SR5.SETTINGS_CompendiumBaseWeapons_D": "Compendium où chercher les armes de base données aux nouveaux acteurs (attaques naturelles des esprits, mains nues...). Les objets sont reconnus par leurs effets système (baseOwnItem), pas par leur nom.",
 	"SR5.SETTINGS_CompendiumBaseWeapons_T": "Compendium des armes de base",
-	"SR5.SETTINGS_CompendiumCreaturePowers_D": "Compendium où chercher les pouvoirs de base et optionnels des esprits. Les objets sont reconnus par leurs effets système (spiritPower), pas par leur nom.",
+	"SR5.SETTINGS_CompendiumCreaturePowers_D": "Compendium où chercher les pouvoirs de base et optionnels des esprits. Les objets sont reconnus par leurs effets système (spiritPower), pas par leur nom. En automatique, un pouvoir absent de sr5-compendiums est cherché dans le Mégapack s'il est actif.",
 	"SR5.SETTINGS_CompendiumCreaturePowers_T": "Compendium des pouvoirs de créatures",
 	"SR5.SETTINGS_CompendiumSpritePowers_D": "Compendium où chercher les pouvoirs de base et optionnels des sprites. Les objets sont reconnus par leurs effets système (baseOwnItem, spritePower), pas par leur nom.",
 	"SR5.SETTINGS_CompendiumSpritePowers_T": "Compendium des pouvoirs de sprites",
