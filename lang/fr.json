@@ -4071,6 +4071,7 @@
 	"SR5.WARN_SpiritAlreadyBounded": "Cet esprit est déjà lié.",
 	"SR5.WARN_TargetChooseOne": "Vous devez sélectionner une cible (token)",
 	"SR5.WARN_EmulateMaxDepth": "L'indice émulé ne peut pas dépasser la Profondeur ({depth}).",
+	"SR5.WARN_TargetWirelessOff": "Ce drone a coupé son sans-fil : aucune action matricielle sans fil ne l'atteint (SR5 p. 424). Seule une connexion directe le peut (p. 234) : pour la jouer, rallumez son sans-fil le temps de l'action.",
 	"SR5.WARN_TargetTooMany": "Vous ne devez sélectionner qu'une seule cible (token)",
 	"SR5.WARN_TargetTroughAndInto": "Vous devez choisir la première des deux cibles (token).",
 	"SR5.Watcher": "Veilleur",

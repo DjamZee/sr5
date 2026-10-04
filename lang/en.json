@@ -4071,6 +4071,7 @@
 	"SR5.WARN_SpiritAlreadyBounded": "Spirit is already bounded.",
 	"SR5.WARN_TargetChooseOne": "You must choose a target (token)",
 	"SR5.WARN_EmulateMaxDepth": "The emulated rating cannot exceed Depth ({depth}).",
+	"SR5.WARN_TargetWirelessOff": "This drone has its wireless off: no wireless Matrix action reaches it (SR5 p. 424). Only a direct connection can (p. 234): to play one, switch its wireless on for the action.",
 	"SR5.WARN_TargetTooMany": "You must choose only one target (token)",
 	"SR5.WARN_TargetTroughAndInto": "You must choose the first of the two targets (token).",
 	"SR5.Watcher": "Watcher",
