@@ -17,6 +17,9 @@ import {
   augmentationCapExcess
 } from "./augmentationCap.js"
 import {
+  limitAttributeValue
+} from "./poolOnlyAttribute.js"
+import {
   situationalValue, isRollTestsTarget, ROLL_TESTS_PREFIX, SITUATIONAL_PREFIX, attributeRedirect, situationalReadable
 } from "../../rolls/roll-helpers/situational.js"
 import {
@@ -1794,7 +1797,7 @@ export class SR5_CharacterUtility extends Actor {
             conditionMonitors[key].base = Math.ceil((attributes.willpower.augmented.value / 2) + 8)
             break
           case "physical":
-            conditionMonitors[key].base = Math.ceil((attributes.body.augmented.value / 2) + 8)
+            conditionMonitors[key].base = Math.ceil((limitAttributeValue(attributes.body) / 2) + 8)
             break
           case "condition":
             if (actor.type == "actorDrone") {
@@ -2317,7 +2320,7 @@ export class SR5_CharacterUtility extends Actor {
           break
         case "physicalLimit":
           if (limits[key]) {
-            limits[key].base = Math.ceil((attributes.strength.augmented.value * 2 + attributes.body.augmented.value + attributes.reaction.augmented.value) / 3)
+            limits[key].base = Math.ceil((limitAttributeValue(attributes.strength) * 2 + limitAttributeValue(attributes.body) + limitAttributeValue(attributes.reaction)) / 3)
           }
           break
         case "socialLimit":
@@ -5000,6 +5003,12 @@ export class SR5_CharacterUtility extends Actor {
             break
           case "value":
             customEffect.value = (customEffect.value || 0)
+            //Attribute Boost (SR5 p. 312) only adds to dice pools: its modifier is marked, and limitAttributeValue() leaves it out
+            if (customEffect.poolOnly) {
+              SR5_EntityHelpers.updateModifier(targetObject, item.name, modifierType, customEffect.value * customEffect.multiplier, isMultiplier, true)
+              targetObject.modifiers[targetObject.modifiers.length - 1].poolOnly = true
+              break
+            }
             SR5_EntityHelpers.updateModifier(targetObject, item.name, modifierType, customEffect.value * customEffect.multiplier, isMultiplier, cumulative)
             break
           case "valueReplace": {

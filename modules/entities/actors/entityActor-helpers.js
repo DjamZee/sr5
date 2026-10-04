@@ -1689,6 +1689,11 @@ export class SR5_ActorHelper {
                 "type": "value",
                 "value": value,
                 "forceAdd": true,
+                //Attribute Boost (SR5 p. 312): dice pools only, see limitAttributeValue()
+                ...(e.poolOnly ? {
+                  "poolOnly": true
+                } : {
+                }),
               }
             },
           })
