@@ -101,10 +101,31 @@ describe('picking tests (SR5 p. 365)', () => {
       type: ''
     }))).toEqual([])
   })
-  it('Locksmith + Agility, Agility - 1 untrained', () => {
-    expect(pickPool(3, 4)).toBe(7)
-    expect(pickPool(0, 4)).toBe(3)
-    expect(pickPool(0, 0)).toBe(0)
+  it('takes the sheet pool, Locksmith + Agility otherwise', () => {
+    expect(pickPool({
+      rating: {
+        value: 3
+      }, test: {
+        dicePool: 6
+      }
+    }, 4)).toBe(6)
+    expect(pickPool({
+      rating: {
+        value: 3
+      }
+    }, 4)).toBe(7)
+  })
+  it('untrained, no dice unless the skill can be defaulted', () => {
+    expect(pickPool({
+      rating: {
+        value: 0
+      }, canDefault: false
+    }, 4)).toBe(0)
+    expect(pickPool({
+      rating: {
+        value: 0
+      }, canDefault: true
+    }, 4)).toBe(3)
   })
   it('an autopicker adds its rating to the limit (gear table p. 450)', () => {
     expect(pickLimit(5, 0)).toBe(5)

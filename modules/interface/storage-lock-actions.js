@@ -18,6 +18,9 @@ import {
   SR5_EntityHelpers
 } from "../entities/helpers.js"
 
+// How close the picker must stand, in squares, centre to centre: beside it
+const PICK_REACH = 2
+
 /**
  * Locks on storages put down on the map, in a running game.
  *
@@ -31,6 +34,17 @@ export class SR5StorageLock {
    * there, the token only holding what is inside. */
   static base(actor) {
     return actor?.isToken ? (actor.token?.baseActor ?? actor) : actor
+  }
+
+  /** Squares between two tokens of the same scene, centre to centre;
+   * Infinity when they are not on the same one. */
+  static squaresBetween(a, b) {
+    if (!a || !b || a.parent !== b.parent) return Infinity
+    const grid = a.parent.grid
+    const centre = t => t.object?.center ?? {
+      x: t.x + (t.width * grid.size) / 2, y: t.y + (t.height * grid.size) / 2
+    }
+    return grid.measurePath([centre(a), centre(b)]).distance / (grid.distance || 1)
   }
 
   /** Users holding the key: the owners of the character who put it down. */
@@ -63,7 +77,8 @@ export class SR5StorageLock {
   static async syncOwnership(actor) {
     const saved = actor.getFlag("sr5", "lockOwnership")
     if (isLocked(actor)) {
-      const result = lockedOwnership(actor.ownership, SR5StorageLock.keyHolders(actor))
+      const gms = game.users.filter(u => u.isGM).map(u => u.id)
+      const result = lockedOwnership(actor.ownership, [...SR5StorageLock.keyHolders(actor), ...gms])
       if (!Object.keys(result.saved).length) return
       await actor.update({
         ownership: result.ownership,
@@ -103,7 +118,8 @@ export class SR5StorageLock {
     const storageToken = actor.token ?? actor.getActiveTokens(false, true)[0]
     const pickerToken = picker?.token ?? picker?.getActiveTokens(false, true)
       .find(t => t.parent?.id === storageToken?.parent?.id)
-    if (!storageToken || !pickerToken) {
+    // Said here, since the GM refuses it without a word
+    if (!(SR5StorageLock.squaresBetween(storageToken, pickerToken) <= PICK_REACH)) {
       return ui.notifications.warn(game.i18n.localize("SR5.WARN_StorageLockTooFar"))
     }
     const data = {
@@ -141,14 +157,9 @@ export class SR5StorageLock {
     const storage = SR5StorageLock.base(storageToken?.actor)
     const picker = pickerToken?.actor
     const sender = game.users.get(senderId)
-    let distance = Infinity
-    if (storageToken && pickerToken && storageToken.parent === pickerToken.parent) {
-      const grid = storageToken.parent.grid
-      distance = grid.measurePath([storageToken.object?.center ?? storageToken, pickerToken.object?.center ?? pickerToken]).distance
-      distance = distance / (grid.distance || 1)
-    }
     const allowed = isPickRequestAllowed({
-      storage, picker, relock: !!data.relock, distance,
+      storage, picker, relock: !!data.relock, reach: PICK_REACH,
+      distance: SR5StorageLock.squaresBetween(storageToken, pickerToken),
       senderOwns: actor => !!sender && actor.testUserPermission(sender, "OWNER"),
     })
     if (!allowed) return SR5_SystemHelpers.srLog(1, `Lock pick refused for user '${senderId}'`, data)
@@ -162,8 +173,12 @@ export class SR5StorageLock {
 
     const lock = storage.system.lock
     const skill = picker.system.skills?.locksmith
-    const pool = pickPool(skill?.rating?.value, picker.system.attributes?.agility?.augmented?.value)
-    const limit = pickLimit(picker.system.limits?.physicalLimit?.value, tools.autopicker)
+    const pool = pickPool(skill, picker.system.attributes?.agility?.augmented?.value)
+    const limit = pickLimit(skill?.limit?.value || picker.system.limits?.physicalLimit?.value, tools.autopicker)
+    // No die, no test: Locksmith cannot be defaulted
+    if (!pool) return SR5StorageLock.#card(picker, storage, {
+      noPool: true
+    })
     const rollDice = dice => SR5ShopAvailability.rollDice(dice)
 
     const stages = []

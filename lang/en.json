@@ -3786,6 +3786,7 @@
 	"SR5.StorageLockRelocked": "The container is locked again.",
 	"SR5.StorageLockFailed": "The lock holds.",
 	"SR5.StorageLockNoKit": "Picking a lock takes a lockpick set (SR5 p. 450).",
+	"SR5.StorageLockNoPool": "Without the Locksmith skill, no lockpicking: it cannot be defaulted.",
 	"SR5.StorageLockAlarm": "Alarm: the anti-tamper system of {storage} went off while {actor} was picking it.",
 	"SR5.StorageLockHackCard": "{actor} wants to hack the wireless maglock of {storage} (rating {rating}): Control Device, 2 marks, Electronic Warfare + Intuition [Sleaze] vs Intuition + Firewall (SR5 p. 239-240). The GM opens the lock if the action succeeds.",
 	"SR5.WARN_StorageLocked": "This container is locked.",

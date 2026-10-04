@@ -4,8 +4,10 @@
 	</header>
 	{{#if noKit}}
 	<p>{{localize 'SR5.StorageLockNoKit'}}</p>
+	{{else if noPool}}
+	<p>{{localize 'SR5.StorageLockNoPool'}}</p>
 	{{else}}
-	<p class="SR-GreyColor SR-TextSmall">{{localize 'SR5.StorageLockTest'}} &middot; {{localize 'SR5.DicePool'}} {{pool}} &middot; {{localize 'SR5.Limit'}} {{limit}}{{#if autopicker}} ({{localize 'SR5.StorageLockAutopicker'}} +{{autopicker}}){{/if}}</p>
+	<p class="SR-GreyColor SR-TextSmall">{{localize 'SR5.StorageLockTest'}} &middot; {{localize 'SR5.DicePool'}} {{pool}} {{#if limit}}&middot; {{localize 'SR5.Limit'}} {{limit}}{{/if}}{{#if autopicker}} ({{localize 'SR5.StorageLockAutopicker'}} +{{autopicker}}){{/if}}</p>
 	<ul>
 		{{#each stages as |stage|}}
 		<li>

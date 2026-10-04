@@ -59,11 +59,18 @@ export function pickStages(lock) {
   return []
 }
 
-/** Locksmith + Agility; untrained, Agility - 1 (defaulting). */
-export function pickPool(skillRating, agility) {
-  const skill = Math.max(0, Number(skillRating) || 0)
-  const attribute = Math.max(0, Number(agility) || 0)
-  return skill ? skill + attribute : Math.max(0, attribute - 1)
+/**
+ * Locksmith + Agility, as the sheet computes it (wound modifiers included).
+ * Untrained, Agility - 1 only if the skill allows defaulting: the system's
+ * Locksmith does not (canDefault false), so an untrained character cannot pick a lock at all.
+ */
+export function pickPool(skill, agility) {
+  const rating = Math.max(0, Number(skill?.rating?.value) || 0)
+  if (rating) {
+    const sheetPool = Number(skill?.test?.dicePool)
+    return Math.max(0, Number.isFinite(sheetPool) && sheetPool > 0 ? sheetPool : rating + (Number(agility) || 0))
+  }
+  return skill?.canDefault ? Math.max(0, (Number(agility) || 0) - 1) : 0
 }
 
 /**
