@@ -4641,6 +4641,10 @@ export class SR5_CharacterUtility extends Actor {
         if (focus.subType && actorData.skills?.[focus.type]?.spellCategory?.[focus.subType]) targets.push({
           path: `system.skills.${focus.type}.spellCategory.${focus.subType}`, property: actorData.skills[focus.type].spellCategory[focus.subType]
         })
+        // SR5 p. 323: a counterspelling focus also adds its Force to the spell defense pool shared with allies
+        if (focus.type === "counterspelling" && actorData.magic?.counterSpellPool) targets.push({
+          path: "system.magic.counterSpellPool", property: actorData.magic.counterSpellPool
+        })
         break
       case "summoning":
       case "binding":
