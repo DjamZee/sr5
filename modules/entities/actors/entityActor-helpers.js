@@ -1774,7 +1774,7 @@ export class SR5_ActorHelper {
             statusEffects = statusEffects.concat(status)
           }
           if (data.damage.value > actor.system.attributes.willpower.augmented.value){
-            isStatusEffectOn = actor.effects.find(e => e.origin === "noAction")
+            isStatusEffectOn = actor.effects.find(e => e.origin === "noAction") || statusEffects.find(s => s.origin === "noAction")
             if (!isStatusEffectOn){
               status = await _getSRStatusEffect("noAction")
               statusEffects = statusEffects.concat(status)
@@ -1791,7 +1791,8 @@ export class SR5_ActorHelper {
         }
         //Paralysis Status Effect
         if (key === "paralysis" && (data.damage.value > actor.system.attributes.reaction.augmented.value)){
-          let isStatusEffectOn = actor.effects.find(e => e.origin === "noAction")
+          //Nausea may already have queued it in this same pass: one "cannot act" status, not two
+          let isStatusEffectOn = actor.effects.find(e => e.origin === "noAction") || statusEffects.find(s => s.origin === "noAction")
           if (!isStatusEffectOn){
             status = await _getSRStatusEffect("noAction")
             statusEffects = statusEffects.concat(status)
