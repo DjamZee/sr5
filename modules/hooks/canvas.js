@@ -2,6 +2,9 @@ import {
   SR5_EffectArea
 } from "../system/effectArea.js"
 import {
+  SR5_Jammer
+} from "../system/jammer.js"
+import {
   SR5_EntityHelpers
 } from "../entities/helpers.js"
 
@@ -41,12 +44,19 @@ export async function sr5HookDrawMeasuredTemplate(template) {
 
 export async function sr5HookDeleteMeasuredTemplate(templateDocument) {
   if ( !game.user.isGM ) return
+  if (templateDocument.flags?.sr5?.jammerUuid) return SR5_Jammer.refreshScene(templateDocument.parent)
   await SR5_EffectArea.removeTemplateEffect(templateDocument)
 }
 
 export async function sr5HookUpdateMeasuredTemplate(templateDocument) {
   if ( !game.user.isGM ) return
+  if (templateDocument.flags?.sr5?.jammerUuid) return SR5_Jammer.refreshScene(templateDocument.parent)
   await SR5_EffectArea.checkUpdatedTemplateEffect(templateDocument)
+}
+
+//The cone of a directional jammer (SR5 p. 443), on whatever scene it was placed, viewed or not
+export function sr5HookCreateMeasuredTemplate(templateDocument) {
+  if (templateDocument.flags?.sr5?.jammerUuid) SR5_Jammer.refreshScene(templateDocument.parent)
 }
 
 export async function sr5HookUpdateScene(data) {

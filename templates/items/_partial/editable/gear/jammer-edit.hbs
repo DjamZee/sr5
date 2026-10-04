@@ -1,0 +1,27 @@
+<li class="grid">
+    <div class="col-4">{{localize 'SR5.Jammer'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8">
+        <select name="system.jammer.type" data-dtype="String">
+            <option class="SR-LightGreyColor" value="">-</option>
+            {{selectOptions lists.jammerTypes selected=system.jammer.type localize=true}}
+        </select>
+    </div>
+</li>
+{{#if system.jammer.type}}
+<li class="grid">
+    <div class="col-12 SR-GreyColor SR-TextSmall">{{localize 'SR5.JammerHint'}}</div>
+</li>
+<li class="grid">
+    <div class="col-6">{{localize 'SR5.JammerSpared'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-6 SR-TextRight"><a data-action="jammerSpareTargets"><em class="fas fa-crosshairs"></em> {{localize 'SR5.JammerSpareTargets'}}</a></div>
+</li>
+{{#each jammerSpared as |spared|}}
+<li class="grid">
+    <div class="col-10 SR-MarginLeft10">{{spared.name}}</div>
+    <div class="col-2 SR-TextRight"><a data-action="jammerUnspare" data-actor-id="{{spared.id}}"><em class="fas fa-sm fa-times"></em></a></div>
+</li>
+{{/each}}
+<li class="grid">
+    <div class="col-12 SR-GreyColor SR-TextSmall">{{localize 'SR5.JammerSparedHint'}}</div>
+</li>
+{{/if}}

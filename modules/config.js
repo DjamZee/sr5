@@ -505,6 +505,13 @@ SR5.metatypes = {
 
 // Lifestyle Types
 // Storage Types
+// Physical jammers, SR5 p. 443
+SR5.jammerTypes = {
+  area                      : "SR5.JammerTypeArea",
+  directional               : "SR5.JammerTypeDirectional",
+  cranial                   : "SR5.JammerTypeCranial",
+}
+
 SR5.storageTypes = {
   stash                     : "SR5.StorageTypeStash",
   safe                      : "SR5.StorageTypeSafe",

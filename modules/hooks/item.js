@@ -8,6 +8,9 @@ import {
   SR5_EffectArea
 } from "../system/effectArea.js"
 import {
+  SR5_Jammer
+} from "../system/jammer.js"
+import {
   SR5_CharacterUtility
 } from "../entities/actors/utilityActor.js"
 
@@ -73,6 +76,10 @@ export function sr5HookPreUpdateItem(document, data, _options, _userId) {
 
 export async function sr5HookUpdateItem(document, data, _options, userId) {
   await sr5HookItemVision(document, userId)
+  //A physical jammer (SR5 p. 443) turned on or off, or changed: what it does is measured again
+  if (document.type === "itemGear" && (data.system?.jammer || (SR5_Jammer.isJammer(document) &&
+    ["deviceRating", "itemRating", "wirelessTurnedOn"].some(k => k in (data.system ?? {
+    }))))) SR5_Jammer.refreshItem(document)
 
   // When an itemAmmunitionType is edited, re-sync all itemAmmunition items referencing it
   if (document.type === 'itemAmmunitionType' && data.system) {
@@ -113,6 +120,7 @@ export async function sr5HookUpdateItem(document, data, _options, userId) {
 
 export async function sr5HookDeleteItem(item, _options, userId) {
   await sr5HookItemVision(item, userId)
+  if (SR5_Jammer.isJammer(item)) SR5_Jammer.refreshItem(item)
   if (item.testUserPermission(game.user, 3) || (game.user?.isGM)){
     if (item.system.type === "signalJam"){
       let actorId = item.parent.id

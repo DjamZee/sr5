@@ -1,6 +1,9 @@
 import {
   SR5_SystemHelpers
 } from "../system/utilitySystem.js"
+import {
+  JAMMER_CONE_ANGLE, jammerRating, jammerReachInMeters
+} from "../system/jammerRules.js"
 
 export default class SR5Template extends foundry.canvas.placeables.MeasuredTemplate {
   /**
@@ -71,8 +74,14 @@ export default class SR5Template extends foundry.canvas.placeables.MeasuredTempl
       }
     }
 
-    const templateShape = "circle"
-    if (!templateShape) return null
+    let templateShape = "circle", angle
+    //A directional jammer covers a 30-degree cone, as long as its noise lasts (SR5 p. 443)
+    if (item.type === "itemGear" && item.system.jammer?.type === "directional") {
+      templateShape = "cone"
+      angle = JAMMER_CONE_ANGLE
+      target = jammerReachInMeters("directional", jammerRating(item.system))
+      flags.sr5.jammerUuid = item.uuid
+    }
 
     // target holds a radius taken from the books, in meters: a blast radius (SR5 p. 184) or an area spell's
     // radius, equal in meters to its Force (SR5 p. 283). A MeasuredTemplate's distance is expressed in the
@@ -112,6 +121,10 @@ export default class SR5Template extends foundry.canvas.placeables.MeasuredTempl
       flags: flags,
       user: game.user.id,
       distance: target,
+      ...(angle ? {
+        angle
+      } : {
+      }),
       direction: 0,
       x: 0,
       y: 0,

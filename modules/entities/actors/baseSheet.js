@@ -2,6 +2,9 @@ import {
   SR5_SystemHelpers 
 } from "../../system/utilitySystem.js"
 import {
+  SR5_Jammer
+} from "../../system/jammer.js"
+import {
   SR5_EntityHelpers 
 } from "../helpers.js"
 import {
@@ -365,6 +368,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     on(".edit-value", "change", this._onEditItemValue.bind(this))
     on(".select-value", "change", this._onEditItemValue.bind(this))
     on(".toggle-value", "click", this._onEditItemValue.bind(this))
+    on(".jammer-toggle", "click", this._onToggleJammer.bind(this))
     on(".changeValueByClick", "mousedown", this._onChangeValueByClick.bind(this))
     //
     on(".toggle-actorValue", "click", this._onEditActorValue.bind(this))
@@ -979,7 +983,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
   async _onItemSummary(event) {
     // Don't expand/collapse when clicking interactive elements inside .deplie
-    if (event.target.closest(".toggle-value, .edit-value, .select-value, .changeValueByClick, .reload-ammo, .accessory-activate, .item-summary")) return
+    if (event.target.closest(".toggle-value, .edit-value, .select-value, .changeValueByClick, .reload-ammo, .accessory-activate, .item-summary, .jammer-toggle")) return
     event.preventDefault()
     let li = event.currentTarget.closest(".item")
     if (!li) return
@@ -2245,6 +2249,13 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     } else {
       SR5_ActorHelper.deleteItemFromPan(itemId, actor, index)
     }
+  }
+
+  //Turn a physical jammer on or off (SR5 p. 443)
+  async _onToggleJammer(event){
+    event.preventDefault()
+    let item = this.actor.items.get(event.target.closest(".item")?.dataset.itemId)
+    if (item) await SR5_Jammer.toggle(item)
   }
 
   async _onStopJamming(event){

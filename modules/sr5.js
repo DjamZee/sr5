@@ -25,7 +25,7 @@ import {
   sr5HookRenderMacroConfig,
 } from './hooks/render-ui.js'
 import {
-  sr5HookCreateToken, sr5HookUpdateToken, sr5HookPreDeleteToken 
+  sr5HookCreateToken, sr5HookUpdateToken, sr5HookPreDeleteToken, sr5HookDeleteToken 
 } from './hooks/token.js'
 import {
   sr5HookCanvasInit,
@@ -45,7 +45,7 @@ import {
   sr5HookDeleteActiveEffect, sr5HookCreateActiveEffect 
 } from './hooks/active-effect.js'
 import {
-  sr5HookCanvasReady, sr5HookCanvasReadyAreaEffects, sr5HookCanvasReadyVisionRanges, sr5HookDrawMeasuredTemplate, sr5HookDeleteMeasuredTemplate, sr5HookUpdateMeasuredTemplate, sr5HookUpdateScene 
+  sr5HookCanvasReady, sr5HookCanvasReadyAreaEffects, sr5HookCanvasReadyVisionRanges, sr5HookDrawMeasuredTemplate, sr5HookDeleteMeasuredTemplate, sr5HookUpdateMeasuredTemplate, sr5HookCreateMeasuredTemplate, sr5HookUpdateScene 
 } from './hooks/canvas.js'
 import {
   sr5HookRenderCompendium, sr5HookRenderCompendiumDirectory
@@ -95,6 +95,7 @@ Hooks.on('canvasInit', sr5HookCanvasInit)
 Hooks.on('createToken', sr5HookCreateToken)
 Hooks.on('updateToken', sr5HookUpdateToken)
 Hooks.on('preDeleteToken', sr5HookPreDeleteToken)
+Hooks.on('deleteToken', sr5HookDeleteToken)
 Hooks.on('createCombatant', sr5HookCreateCombatant)
 Hooks.on('updateCombatant', sr5HookUpdateCombatant)
 Hooks.on('deleteCombat', sr5HookDeleteCombatCumulativeDefense)
@@ -118,6 +119,7 @@ Hooks.on('renderChatMessageHTML', sr5HookRenderTablePayout)
 Hooks.on('renderSidebar', sr5KeepSidebarSettingsLast)
 Hooks.on('drawMeasuredTemplate', sr5HookDrawMeasuredTemplate)
 Hooks.on('deleteMeasuredTemplate', sr5HookDeleteMeasuredTemplate)
+Hooks.on('createMeasuredTemplate', sr5HookCreateMeasuredTemplate)
 Hooks.on('updateMeasuredTemplate', sr5HookUpdateMeasuredTemplate)
 Hooks.on('updateScene', sr5HookUpdateScene)
 Hooks.on('updateScene', sr5HookUpdateSceneIndicators)
