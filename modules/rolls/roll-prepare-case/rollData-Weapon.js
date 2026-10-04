@@ -327,7 +327,12 @@ async function handleTargetInfo(rollData, actor, item){
       ui.notifications.info(`${game.i18n.localize("SR5.INFO_TargetIsTooFar")}`)
       return false
     }
-    sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, false, areaEffect, false, weaponLight, weaponLightCap)
+    const environmentalColumns = SR5_CombatHelpers.environmentalColumns(SR5_CombatHelpers.environmentScene(), actor.system, false, areaEffect, false, weaponLight, weaponLightCap)
+    if (environmentalColumns) {
+      // Range is an environmental modifier (SR5 p. 176): the roll dialog weighs the range line against these
+      rollData.combat.environmentalColumns = environmentalColumns
+      sceneEnvironmentalMod = SR5_ConverterHelpers.environmentalLineToMod(SR5_CombatHelpers.environmentalLine(environmentalColumns))
+    }
   }
 
   //Handle ranged weapon current firing mode

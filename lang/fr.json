@@ -2689,6 +2689,8 @@
 	"SR5.RammingWith": "Percuter avec ",
 	"SR5.Range": "Portée",
 	"SR5.RangeArea": "Ligne de vue (Zone)",
+	"SR5.RangeWithEnvironment": "Portée (cumulée avec l'environnement)",
+	"SR5.RangeWithEnvironment_D": "La portée est un modificateur environnemental (SR5 p. 176) : seule la condition la plus pénalisante compte, un cran plus loin si plusieurs sont aussi sévères. Cette ligne donne ce que la portée ajoute à la ligne Environnement.",
 	"SR5.RangeAreaShort": "LdV(Z)",
 	"SR5.RangedWeapon": "Arme à distance",
 	"SR5.RangedWeapons": "Armes à distance",

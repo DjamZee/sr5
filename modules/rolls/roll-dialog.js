@@ -785,8 +785,8 @@ export default class SR5_RollDialog {
         case "targetRange": {
           let baseRange = SR5_ConverterHelpers.rangeToEnvironmentalLine(ev.target.value)
           baseRange += actor.system.itemsProperties.environmentalMod.range.value
-          value = SR5_ConverterHelpers.environmentalLineToMod(baseRange)
-          label = label = game.i18n.localize(SR5.dicePoolModTypes[modifierName])
+          value = SR5_CombatHelpers.rangeModifierWithEnvironment(baseRange, dialogData.combat.environmentalColumns)
+          label = game.i18n.localize(dialogData.combat.environmentalColumns ? "SR5.RangeWithEnvironment" : SR5.dicePoolModTypes[modifierName])
           dialogData.target.range = ev.target.value
           // Handle choke
           if (dialogData.combat.weaponType === "shotgun") {
@@ -1242,8 +1242,8 @@ export default class SR5_RollDialog {
           selectValue = dialogData.target.range
           let baseRange = SR5_ConverterHelpers.rangeToEnvironmentalLine(dialogData.target.range)
           baseRange += actor.system.itemsProperties.environmentalMod.range.value
-          inputValue = SR5_ConverterHelpers.environmentalLineToMod(baseRange)
-          label = game.i18n.localize(SR5.dicePoolModTypes[modifierName])
+          inputValue = SR5_CombatHelpers.rangeModifierWithEnvironment(baseRange, dialogData.combat.environmentalColumns)
+          label = game.i18n.localize(dialogData.combat.environmentalColumns ? "SR5.RangeWithEnvironment" : SR5.dicePoolModTypes[modifierName])
           break
         }
         case "chokeSettings": {

@@ -2689,6 +2689,8 @@
 	"SR5.RammingWith": "Ramming with ",
 	"SR5.Range": "Range",
 	"SR5.RangeArea": "Line of Sight (Area)",
+	"SR5.RangeWithEnvironment": "Range (combined with environment)",
+	"SR5.RangeWithEnvironment_D": "Range is an environmental modifier (SR5 p. 176): only the worst condition counts, one row further when several are equally severe. This line gives what range adds to the Environment line.",
 	"SR5.RangeAreaShort": "LOS (A)",
 	"SR5.RangedWeapon": "Ranged Weapon",
 	"SR5.RangedWeapons": "Ranged Weapons",

@@ -138,13 +138,24 @@ export class SR5_CombatHelpers {
   //noWind: ignore the wind column (perception, melee); melee: SR5 p. 188, only the Light and Visibility columns apply
   //weaponLight: light rows taken off by a flashlight on the weapon being used (SR5_UtilityItem.getWeaponLightCompensation)
   //weaponLightCap: light row a standard flashlight on that weapon brings the scene down to (SR5_UtilityItem.getWeaponLightCap)
-  static handleEnvironmentalModifiers(scene, actor, noWind, areaEffect = {
+  static handleEnvironmentalModifiers(scene, actor, noWind, areaEffect, melee = false, weaponLight = 0, weaponLightCap = null){
+    const columns = SR5_CombatHelpers.environmentalColumns(scene, actor, noWind, areaEffect, melee, weaponLight, weaponLightCap)
+    if (!columns) return 0
+    return SR5_ConverterHelpers.environmentalLineToMod(SR5_CombatHelpers.environmentalLine(columns))
+  }
+
+  //Rows (0 to 4) of the columns of the Environmental Modifiers table that apply (SR5 p. 176), before the
+  //"equally severe" rule. Same arguments as handleEnvironmentalModifiers; null when there is no scene.
+  static environmentalColumns(scene, actor, noWind, areaEffect = {
     visibility:0, light:0, glare:0, wind:0
   }, melee = false, weaponLight = 0, weaponLightCap = null){
     // With no scene there are no conditions to read: say so rather than roll as if all were normal.
     if (!scene) {
       globalThis.ui?.notifications?.warn(game.i18n.localize("SR5.WARN_NoSceneForEnvironment"))
-      return 0
+      return null
+    }
+    areaEffect ??= {
+      visibility:0, light:0, glare:0, wind:0
     }
     let actorData = actor.itemsProperties.environmentalMod
     // A template's effect is an item on the actor, and a linked actor is the same on every scene: the smoke
@@ -178,19 +189,37 @@ export class SR5_CombatHelpers {
     // Visibility, and Glare belongs to the Light column, so there is nothing left for melee to drop.
     let arrayMod = [visibilityMod, lightGlareMod, windMod]
     if (melee || noWind) arrayMod = [visibilityMod, lightGlareMod]
-    let finalMod = Math.max(...arrayMod)
+    return arrayMod
+  }
+
+  //SR5 p. 176: only the worst condition counts, one row further when several are equally severe, at most
+  //the -10 row
+  static environmentalLine(columns){
+    let finalMod = Math.max(0, ...columns)
 
     if (finalMod > 0 && finalMod < 4) {
       let nbrOfMaxValue = 0
-      for (let i = 0; i < arrayMod.length; i++) {
-        if (arrayMod[i] === finalMod) nbrOfMaxValue++
+      for (let i = 0; i < columns.length; i++) {
+        if (columns[i] === finalMod) nbrOfMaxValue++
       }
       if (nbrOfMaxValue > 1) finalMod++
     }
 
     if (finalMod > 4) finalMod = 4
-    let dicePoolMod = SR5_ConverterHelpers.environmentalLineToMod(finalMod)
-    return dicePoolMod
+    return finalMod
+  }
+
+  //SR5 p. 176: "range is an environmental modifier", so it joins the other columns instead of adding up with
+  //them: medium range (-1) in moderate fog (-3) is -3, and long range (-3) in moderate fog is -6. The
+  //environment keeps its own line on the roll; the range line carries what range adds on top of it, so that
+  //the two together give the book's figure.
+  //rangeLine: row of the Range column (SR5_ConverterHelpers.rangeToEnvironmentalLine, plus the actor's range
+  //modifier); columns: environmentalColumns of the attack, none when the environment was not read
+  static rangeModifierWithEnvironment(rangeLine, columns){
+    const range = Math.min(Math.max(parseInt(rangeLine) || 0, 0), 4)
+    if (!Array.isArray(columns)) return SR5_ConverterHelpers.environmentalLineToMod(range)
+    const total = SR5_ConverterHelpers.environmentalLineToMod(SR5_CombatHelpers.environmentalLine([...columns, range]))
+    return total - SR5_ConverterHelpers.environmentalLineToMod(SR5_CombatHelpers.environmentalLine(columns))
   }
 
   //Apply Full defense effect to an actor
