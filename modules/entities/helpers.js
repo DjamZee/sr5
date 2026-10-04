@@ -303,9 +303,25 @@ export class SR5_EntityHelpers {
     return `${game.i18n.localize('SR5.Custom')} (${typeKey})`
   }
 
+  // A table already sorted is the very object sortByTranslatedTerm returned, with as many keys, in the same language:
+  // sorting it again gives the same order, so it is skipped. Every actor's preparation asked for the whole sort.
+  static _sortedTables = new Map()
+
+  // To call when a table is changed in place without adding or removing a key (a renamed custom spirit type)
+  static invalidateSortedTranslations() {
+    SR5_EntityHelpers._sortedTables.clear()
+  }
+
+  static _isAlreadySorted(key, table) {
+    let sorted = SR5_EntityHelpers._sortedTables.get(key)
+    return !!sorted && sorted.table === table && sorted.size === Object.keys(table).length && sorted.lang === game.i18n?.lang
+  }
+
   // Here we sort all the tables except those mentionned in the switch
   static sortTranslations(object) {
+    let cache = object === SR5
     for (let key of Object.keys(object)) {
+      if (cache && SR5_EntityHelpers._isAlreadySorted(key, object[key])) continue
       switch (key) {
         case "powerActionTypes":
         case "augmentationGrades":
@@ -338,6 +354,10 @@ export class SR5_EntityHelpers {
         default:
           object[key] = this.sortByTranslatedTerm(object[key], key)
       }
+      let table = object[key]
+      if (cache && table && typeof table === "object") SR5_EntityHelpers._sortedTables.set(key, {
+        table, size: Object.keys(table).length, lang: game.i18n?.lang
+      })
     }
     return object
   }

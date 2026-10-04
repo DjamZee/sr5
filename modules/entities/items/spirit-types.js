@@ -150,6 +150,8 @@ export class SR5_SpiritTypes {
       SR5[`spiritOptionalPowers${key}`] = SR5_SpiritTypes._powerTable("spiritOptionalPowers", item, item.system.optionalPowers)
     }
     if (CONFIG.SR5) CONFIG.SR5.spiritTypes = SR5.spiritTypes
+    //A renamed type keeps the same number of keys: the sorted tables are sorted again
+    SR5_EntityHelpers.invalidateSortedTranslations()
   }
 
   /** The base type's powers, plus the ones this type adds. */
