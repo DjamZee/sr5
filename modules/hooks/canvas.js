@@ -10,6 +10,17 @@ export function sr5HookCanvasReady(data) {
   }
 }
 
+//The matrix noise and background count of a template only count on its own scene, and for a linked actor that
+//scene is read from the canvas when the actor is prepared (SR5_EffectArea.isPreparedAreaEffectOffScene): on
+//a scene change, prepare again the actors that carry one
+export function sr5HookCanvasReadyAreaEffects() {
+  for (let actor of game.actors ?? []){
+    if (!actor.items.some(i => i.system?.type === "areaEffect" && SR5_EffectArea.templateSceneId(i))) continue
+    actor.prepareData()
+    if (actor.sheet?.rendered) actor.sheet.render()
+  }
+}
+
 export async function sr5HookDrawMeasuredTemplate(template) {
   if ( !game.user.isGM ) return
   await SR5_EffectArea.initiateTemplateEffect(template)

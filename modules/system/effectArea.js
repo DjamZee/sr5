@@ -43,6 +43,18 @@ export class SR5_EffectArea {
     return SR5_EffectArea.templateSceneId(item) !== sceneId
   }
 
+  //The matrix noise and the background count a template puts on an actor are added to its data when it is
+  //prepared, and read later by every test: the environment rows have their own filter at roll time
+  //(SR5_CombatHelpers.areaEffectsOffScene), these two are left out here. The scene is the token's own for an
+  //unlinked actor, the one on the canvas for a linked one (canvasReady prepares the actor again).
+  static AREA_EFFECT_PREPARED_TARGETS = ["system.matrix.noise", "system.magic.bgCount"]
+  static isPreparedAreaEffectOffScene(item, actor){
+    if (!Object.values(item?.system?.customEffects ?? {
+    }).some(e => SR5_EffectArea.AREA_EFFECT_PREPARED_TARGETS.includes(e.target))) return false
+    let sceneId = actor?.isToken ? actor.token?.parent?.id : globalThis.canvas?.scene?.id
+    return SR5_EffectArea.isAreaEffectOffScene(item, sceneId)
+  }
+
   //Manage token aura
   static async tokenAura(token){
     // The token's own scene, read from the document: a token moved on a scene the GM is not looking

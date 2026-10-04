@@ -23,8 +23,11 @@ import {
   _getSRStatusEffect 
 } from "../../system/effectsList.js"
 import {
-  SR5_SocketHandler 
+  SR5_SocketHandler
 } from "../../socket.js"
+import {
+  SR5_EffectArea
+} from "../../system/effectArea.js"
 import {
   SR5_ActorHelper
 } from "./entityActor-helpers.js"
@@ -747,7 +750,7 @@ export class SR5Actor extends Actor {
 
         case "itemEffect":
           i.prepareData()
-          if (Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
+          if (Object.keys(iData.customEffects).length && !SR5_EffectArea.isPreparedAreaEffectOffScene(i, actor)) SR5_CharacterUtility.applyCustomEffects(i, actor)
           if (iData.type === "signalJam") actor.system.matrix.isJamming = true
           break
 

@@ -45,7 +45,7 @@ import {
   sr5HookDeleteActiveEffect, sr5HookCreateActiveEffect 
 } from './hooks/active-effect.js'
 import {
-  sr5HookCanvasReady, sr5HookDrawMeasuredTemplate, sr5HookDeleteMeasuredTemplate, sr5HookUpdateMeasuredTemplate, sr5HookUpdateScene 
+  sr5HookCanvasReady, sr5HookCanvasReadyAreaEffects, sr5HookDrawMeasuredTemplate, sr5HookDeleteMeasuredTemplate, sr5HookUpdateMeasuredTemplate, sr5HookUpdateScene 
 } from './hooks/canvas.js'
 import {
   sr5HookRenderCompendium, sr5HookRenderCompendiumDirectory
@@ -122,3 +122,4 @@ Hooks.on('updateMeasuredTemplate', sr5HookUpdateMeasuredTemplate)
 Hooks.on('updateScene', sr5HookUpdateScene)
 Hooks.on('updateScene', sr5HookUpdateSceneIndicators)
 Hooks.on('canvasReady', renderSceneIndicators)
+Hooks.on('canvasReady', sr5HookCanvasReadyAreaEffects)
