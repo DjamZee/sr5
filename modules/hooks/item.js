@@ -129,6 +129,12 @@ export async function sr5HookDeleteItem(item, _options, userId) {
     if (item.system.type === "signalJam"){
       let actorId = item.parent.id
       SR5_EffectArea.onJamEnd(actorId)
+      // The "Signal jamming" status goes with its item, however the item was deleted (the sheet's stop button
+      // or the item list). Only the user who deleted it does it, so no two clients delete the same status.
+      if (userId === game.user?.id && item.parent){
+        let status = item.parent.effects.find(e => e.origin === "signalJam")
+        if (status) await item.parent.deleteEmbeddedDocuments("ActiveEffect", [status.id])
+      }
     }
     if (item.type === "itemEffect"){
       if (item.system.hasEffectOnItem && item.parent){

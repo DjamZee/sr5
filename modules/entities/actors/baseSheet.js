@@ -901,7 +901,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     if (event.ctrlKey) {
       if ( item ) {
         await item.delete()
-        await SR5_EntityHelpers.deleteEffectOnActor(this.actor, item.system.type)
+        // A jammer's status goes with its item in sr5HookDeleteItem: deleting it here too would race the hook
+        if (item.system.type !== "signalJam") await SR5_EntityHelpers.deleteEffectOnActor(this.actor, item.system.type)
         return
       }
     } else {
@@ -915,7 +916,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       })
       if (confirmed) {
         item.delete()
-        if (item.type === "itemEffect"){
+        if (item.type === "itemEffect" && item.system.type !== "signalJam"){
           SR5_EntityHelpers.deleteEffectOnActor(this.actor, item.system.type)
         }
       }
@@ -2241,8 +2242,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
   async _onStopJamming(event){
     event.preventDefault()
     let jammingItem = this.actor.items.find(i => i.system.type === "signalJam")
+    // The status goes with the item (sr5HookDeleteItem)
     await this.actor.deleteEmbeddedDocuments("Item", [jammingItem.id])
-    await SR5_EntityHelpers.deleteEffectOnActor(this.actor, "signalJam")
   }
 
   _onChangeMatrixMode(_event){
