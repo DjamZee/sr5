@@ -890,7 +890,7 @@ export class SR5_CharacterUtility extends Actor {
   //Give the tokens the vision their actor is currently using
   static async applyVisionToToken(actor) {
     for (let token of this.getTokensOfActor(actor)) {
-      const tokenData = await SR5_EntityHelpers.getVisionData(foundry.utils.duplicate(token), actor)
+      const tokenData = await SR5_EntityHelpers.getVisionData(foundry.utils.duplicate(token), actor, token.parent)
       await token.update(tokenData)
     }
   }
@@ -1110,7 +1110,11 @@ export class SR5_CharacterUtility extends Actor {
         attributes.body.natural.base = 0
         SR5_EntityHelpers.updateModifier(attributes.agility.natural, label, 'spiritType', -2)
         SR5_EntityHelpers.updateModifier(attributes.reaction.natural, label, 'spiritType', -2)
-        attributes.willpower.natural.base = 3
+        // Stat block (SR5 p. 301, VO p. 298): WIL, LOG and INT 1; the VF prints CHA 3, the VO has no CHA column
+        attributes.willpower.natural.base = 1
+        attributes.logic.natural.base = 1
+        attributes.intuition.natural.base = 1
+        attributes.charisma.natural.base = 3
         break
       case "air":
       case "noxious":
@@ -1305,6 +1309,42 @@ export class SR5_CharacterUtility extends Actor {
         label: "SR5.Willpower", value: willpower
       }
     }
+  }
+
+  // The book sets no cap of its own on an AI's active programs (Data Trails p. 151-161 is silent).
+  // DjamZ's ruling: the smaller of Depth x 2 and the slots of the device the AI runs on
+  static aiProgramCap(depth, deviceSlots) {
+    return Math.min(depth * 2, deviceSlots)
+  }
+
+  // Apply DjamZ's ruling to an AI on a device: when Depth x 2 is the lower, it replaces the device as the cap
+  static applyAIProgramCap(actor) {
+    if (!this.isDepthActive(actor)) return
+    let max = actor.system.matrix.programsMaximumActive
+    let depth = actor.system.specialAttributes.depth?.augmented.value || 0
+    // generateMatrixAttributes runs first in prepareEmbeddedDocuments, before updateSpecialAttributes, so Depth is still 0;
+    // it runs again in updateItems with the real Depth: drop what the earlier call wrote
+    let others = max.modifiers.filter(m => m.details !== "aiProgramCap" && m.type !== "device" && m.type !== "deviceRating")
+    let deviceMods = max.modifiers.filter(m => m.type === "device" || m.type === "deviceRating")
+    let slots = deviceMods.reduce((sum, m) => sum + m.value, 0)
+    if (this.aiProgramCap(depth, slots) === slots) max.modifiers = [...deviceMods, ...others]
+    else {
+      max.modifiers = others
+      SR5_EntityHelpers.updateModifier(max, `${game.i18n.localize('SR5.Depth')} ${depth} × 2`, "linkedAttribute", depth * 2, false, true, "aiProgramCap")
+    }
+    SR5_EntityHelpers.updateValue(max, 0)
+  }
+
+  // Warning shown when an AI loads one program too many. DjamZ's ruling: it warns and does not block.
+  // An AI outside any device cannot load programs at all (Data Trails p. 157). Other actors are left alone
+  static aiProgramCapWarning(actor) {
+    if (!this.isDepthActive(actor)) return null
+    if (this.isDevicelessAI(actor)) return game.i18n.localize('SR5.AIProgramsNoDevice')
+    let current = actor.system.matrix.programsCurrentActive.value, max = actor.system.matrix.programsMaximumActive.value
+    if (current + 1 <= max) return null
+    return game.i18n.format('SR5.AIProgramsCapReached', {
+      current: current + 1, max
+    })
   }
 
   // An AI outside any device resists matrix damage with no device and no Firewall. The book gives it no pool
@@ -1746,8 +1786,13 @@ export class SR5_CharacterUtility extends Actor {
         break
       }
       case "actorSpirit": {
-        SR5_EntityHelpers.updateModifier(initPhy, game.i18n.localize('SR5.Intuition'), "linkedAttribute", attributes.intuition.augmented.value)
-        SR5_EntityHelpers.updateModifier(initPhy, game.i18n.localize('SR5.Reaction'), "linkedAttribute", attributes.reaction.augmented.value)
+        // The homunculus stat block prints (F + 1) + 1D6 (SR5 p. 301), not REA + INT, which would give F - 1
+        if (SR5_SpiritTypes.baseType(actorData.type) === "homunculus") {
+          SR5_EntityHelpers.updateModifier(initPhy, game.i18n.localize('SR5.SpiritForce'), "linkedAttribute", actorData.force.value + 1)
+        } else {
+          SR5_EntityHelpers.updateModifier(initPhy, game.i18n.localize('SR5.Intuition'), "linkedAttribute", attributes.intuition.augmented.value)
+          SR5_EntityHelpers.updateModifier(initPhy, game.i18n.localize('SR5.Reaction'), "linkedAttribute", attributes.reaction.augmented.value)
+        }
         initPhy.dice.base = 1
         const customType = SR5_SpiritTypes.get(actorData.type)
         const customDice = customType ? SR5_SpiritTypes.physicalDice(customType) : null
@@ -2903,8 +2948,8 @@ export class SR5_CharacterUtility extends Actor {
       magic.elements.health = itemData.spiritHealth
       magic.possession = itemData.possession
       if (itemData.systemEffects.length) {
-        let traditionType = itemData.systemEffects.find(i => i.category = "tradition")
-        magic.tradition = traditionType.value
+        let traditionType = itemData.systemEffects.find(i => i.category === "tradition")
+        if (traditionType) magic.tradition = traditionType.value
       }
     }
   }
@@ -3000,9 +3045,12 @@ export class SR5_CharacterUtility extends Actor {
       //check if actor already has a modifier on background count to avoid scene modifiers and prefer template modifier
       if (token && !actorData.magic.bgCount.modifiers.length) {
         let sceneData = scene.flags.sr5
-        if (sceneData && sceneData.backgroundCountValue !== 0) {
-          if (sceneData.backgroundCountAlignement === actorData.magic.tradition) SR5_EntityHelpers.updateModifier(actorData.magic.bgCount, game.i18n.localize("SR5.SceneBackgroundCount"), sceneData.backgroundCountAlignement, sceneData.backgroundCountValue, false, true)
-          else SR5_EntityHelpers.updateModifier(actorData.magic.bgCount, game.i18n.localize("SR5.SceneBackgroundCount"), sceneData.backgroundCountAlignement, -sceneData.backgroundCountValue, false, true)
+        //A scene whose background count was never set stores null, or nothing at all, and both
+        //differ from 0 : read the rating as a number so they add no empty modifier to the actor
+        let backgroundCount = Number(sceneData?.backgroundCountValue) || 0
+        if (backgroundCount !== 0) {
+          if (sceneData.backgroundCountAlignement === actorData.magic.tradition) SR5_EntityHelpers.updateModifier(actorData.magic.bgCount, game.i18n.localize("SR5.SceneBackgroundCount"), sceneData.backgroundCountAlignement, backgroundCount, false, true)
+          else SR5_EntityHelpers.updateModifier(actorData.magic.bgCount, game.i18n.localize("SR5.SceneBackgroundCount"), sceneData.backgroundCountAlignement, -backgroundCount, false, true)
         }
       }
     }
@@ -3782,6 +3830,7 @@ export class SR5_CharacterUtility extends Actor {
     SR5_EntityHelpers.updateValue(matrix.noise)
     SR5_EntityHelpers.updateValue(matrix.programsMaximumActive, 0)
     SR5_EntityHelpers.updateValue(matrix.programsCurrentActive, 0)
+    this.applyAIProgramCap(actor)
 
     for (let key of Object.keys(SR5.matrixAttributes)) {
       SR5_EntityHelpers.updateValue(matrixAttributes[key], 0)
@@ -4629,6 +4678,17 @@ export class SR5_CharacterUtility extends Actor {
         if (focus.subType && actorData.skills?.[focus.type]?.spellCategory?.[focus.subType]) targets.push({
           path: `system.skills.${focus.type}.spellCategory.${focus.subType}`, property: actorData.skills[focus.type].spellCategory[focus.subType]
         })
+        // SR5 p. 323: a counterspelling focus also adds its Force to the spell defense pool shared with allies.
+        // That pool has no spell category: only the most powerful focus counts, whatever its category,
+        // and the gamemaster takes it off by hand when the category of the spell does not match (DjamZ's call)
+        if (focus.type === "counterspelling" && actorData.magic?.counterSpellPool) {
+          let pool = actorData.magic.counterSpellPool
+          let current = pool.modifiers.find(m => m.type === "itemFocus")
+          if (!current) SR5_EntityHelpers.updateModifier(pool, item.name, "itemFocus", force)
+          else if (current.value < force) Object.assign(current, {
+            source: item.name, value: force
+          })
+        }
         break
       case "summoning":
       case "binding":

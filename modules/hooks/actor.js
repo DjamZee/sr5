@@ -7,9 +7,6 @@ import {
 import {
   SR5Combat
 } from "../system/srcombat.js"
-import {
-  SR5_MarkHelpers
-} from "../rolls/roll-helpers/mark.js"
 
 export async function sr5HookCreateActor(actor) {
   if ( !game.user.isGM ) return
@@ -39,16 +36,17 @@ export async function sr5HookCreateActor(actor) {
 
 // Data Trails p. 157-158: an AI's persona carries its own marks only while it has no device. Many updates write the
 // prepared data back, where an AI on a device shows the marks of that device: they must not land on the persona.
-export function sr5HookPreUpdateActor(document, changes) {
+// GM ruling (05/10): the marks left on the persona when the AI loaded onto a device stay there, so such an update
+// leaves them alone; only an update that means to change them (a hacker who reboots, the AI that reboots) goes through.
+export function sr5HookPreUpdateActor(document, changes, options = {
+}) {
+  if (options.sr5PersonaMarks) return
   if (!SR5_CharacterUtility.isDepthActive(document) || SR5_CharacterUtility.isDevicelessAI(document)) return
-  if ("system.matrix.marks" in changes) changes["system.matrix.marks"] = []
-  if (changes.system?.matrix?.marks) changes.system.matrix.marks = []
+  delete changes["system.matrix.marks"]
+  if (changes.system?.matrix) delete changes.system.matrix.marks
 }
 
 export async function sr5HookUpdateActor(document, data, _options, userId) {
-  //An AI that has just loaded onto a device restarts its persona (Data Trails p. 158): the marks placed on it go away
-  if (userId === game.user?.id && SR5_CharacterUtility.isDepthActive(document) && !SR5_CharacterUtility.isDevicelessAI(document)) await SR5_MarkHelpers.clearPersonaMarks(document)
-
   //The sheet pins an item through the actor, items included : at that point the updateItem hook
   //still reads the actor as it was, so the tokens are served again from here
   if (data.items && userId === game.user?.id) await SR5_CharacterUtility.refreshVisionOfTokens(document)

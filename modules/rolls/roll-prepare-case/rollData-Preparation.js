@@ -34,6 +34,8 @@ export default function preparation(rollData, actor, item){
   rollData.magic.spell.type = itemData.type
   rollData.magic.spell.category = itemData.category
   rollData.magic.spell.isResisted = itemData.resisted
+  // SR5 p. 307: same keywords as the spell, area (Z) included
+  rollData.magic.spell.range = itemData.range
   rollData.magic.force = itemData.force
   rollData.owner.itemUuid = item.uuid
 

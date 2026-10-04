@@ -16,7 +16,7 @@ import {
 } from "../system/srcombat.js"
 import SR5_RollDialog from "./roll-dialog.js"
 import {
-  isRecoilCarriedOver
+  isRecoilCarriedOver, buildsProgressiveRecoil
 } from "./roll-helpers/recoil.js"
 import {
   SR5_ConverterHelpers 
@@ -146,10 +146,11 @@ export class SR5_RollTest {
     dialogData = await SR5_RollTestHelper.handleDicePoolModifiers(dialogData)
 
     // SR5 p. 178: recoil builds up shot after shot until the character spends a simple or complex action on something other than firing
-    // SR5 p. 180: single-shot (SS) and suppressive fire (SF) weapons neither build nor suffer progressive recoil
+    // SR5 p. 180: single-shot (SS) and suppressive fire (SF) weapons neither build nor suffer progressive recoil,
+    // nor do weapons with no firing mode (bows, thrown weapons)
     // Outside combat there are no action phases to carry recoil over: each shot stands alone
     if (dialogData.combat.ammo.fired > 0){
-      if (dialogData.combat.firingMode.selected !== "SS" && dialogData.combat.firingMode.selected !== "SF" && isRecoilCarriedOver(actor)){
+      if (buildsProgressiveRecoil(dialogData.combat.firingMode.selected) && isRecoilCarriedOver(actor)){
         let actualRecoil = actor.getFlag("sr5", "cumulativeRecoil") || 0
         actualRecoil += dialogData.combat.ammo.fired
         await actor.setFlag("sr5", "cumulativeRecoil", actualRecoil)
@@ -253,9 +254,12 @@ export class SR5_RollTest {
     let rollRoll = await roll.evaluate()
     let rollJSON = await roll.toJSON(rollRoll)
     //Glitch
+    //Rule of Six (SR5 p. 58): Die#explode adds the rerolled dice after the pool. Their 1s do not count
+    //for the glitch, only the first roll does (DjamZ's ruling B30)
     let realHits = 0
-    for (let d of rollJSON.terms[0].results) {
-      if (d.result === 1) d.glitch = true
+    for (let [i, d] of rollJSON.terms[0].results.entries()) {
+      if (explose && i >= dicePool) d.ruleOfSix = true
+      if (d.result === 1 && !d.ruleOfSix) d.glitch = true
       if (edgeRoll) d.edge = true
       if (d.result >= 5) realHits ++
     }
@@ -277,11 +281,12 @@ export class SR5_RollTest {
 
   /** SR5 p. 47: more than half the dice show 1 is a glitch; a glitch with no hit is a critical glitch.
    * Hits are counted on the dice rolled (a serialized Die term has no total, and a limit never brings them to 0).
+   * The 1s of dice rerolled by the Rule of Six are left out, as they are out of the pool (SR5 p. 58).
    * @param {Array} dices - Results of every die rolled for the test
    * @param {Number} dicePool - Number of dice in the pool
    */
   static glitchStatus(dices, dicePool) {
-    let ones = dices.filter(d => d.result === 1).length,
+    let ones = dices.filter(d => d.result === 1 && !d.ruleOfSix).length,
       hits = dices.filter(d => d.result >= 5).length,
       glitch = ones > dicePool/2
     return {
@@ -300,12 +305,15 @@ export class SR5_RollTest {
     }
 
     //Prepare new chat card: the base pool and its modifiers, minus one die per earlier roll (SR5 p. 50).
-    //Edge dice were added to the roll they were spent on, not to the next ones (SR5 p. 58)
+    //GM ruling (05/10): Push the limit joins the starting pool of an extended test, every roll keeps its Edge dice
+    //(exploding, no limit) and the point is spent once. Edge is only offered on the first roll
+    //SR5 p. 58 says nothing of Edge during an extended test: DjamZ filled the gap. A ruling, not a house rule, so no setting
     let newMessage = foundry.utils.duplicate(messageData)
     newMessage.test.extended.roll += 1
-    for (let type of ["edge", "pushTheLimit", "extendedTest"]) SR5_EntityHelpers.removeElementFromArray(newMessage.dicePool.modifiers, 'type', type)
+    SR5_EntityHelpers.removeElementFromArray(newMessage.dicePool.modifiers, 'type', "extendedTest")
     delete newMessage.originalModifiers
-    newMessage.edge.hasUsedPushTheLimit = false
+    let pushedTheLimit = !!messageData.edge.hasUsedPushTheLimit
+    newMessage.edge.canUseEdge = false
     newMessage.dicePool.modifiers.push({
       type: "extendedTest",
       label: game.i18n.localize("SR5.ExtendedTest"),
@@ -315,7 +323,9 @@ export class SR5_RollTest {
 
     //roll new test
     let newRoll = await SR5_RollTest.rollDice({
-      dicePool: newMessage.dicePool.value, limit: messageData.limit.value
+      dicePool: newMessage.dicePool.value,
+      limit: pushedTheLimit ? undefined : messageData.limit.value,
+      explose: pushedTheLimit,
     })
 
     //Keep only original hits and concatenat with new hits
@@ -347,11 +357,21 @@ export class SR5_RollTest {
     SR5_RollMessage.updateRollCardHelper(message.id, newMessage)
   }
 
+  /** An extended test, even once its pool fell to one die (the card then stops offering a new roll) */
+  static isExtendedTest(data) {
+    return !!(data.test?.isExtended || data.test?.extended?.roll > 1)
+  }
+
   //Handle second chance : reroll failed dice and update message with new message
   static async secondeChance(message, actor) {
     let messageData = message.flags.sr5data
+    //GM ruling (05/10): during an extended test, Push the limit is the only use of Edge
+    if (SR5_RollTest.isExtendedTest(messageData)) {
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_EdgeExtendedTestPushOnly"))
+      return false
+    }
 
-    //Re roll failed dices (on a later roll of an extended test, the dice of that roll only)
+    //Re roll failed dices
     let rollDices = messageData.roll.rollDices
     let rollHits = messageData.roll.rollHits ?? messageData.roll.hits
     let dicePool = rollDices ? rollDices.filter(d => d.result < 5).length : messageData.dicePool.value - messageData.roll.hits
@@ -361,8 +381,10 @@ export class SR5_RollTest {
     let chance = await SR5_RollTest.rollDice({
       dicePool: dicePool, limit: limit, edgeRoll: true
     })
+    //SR5 p. 58: Second Chance has no effect on limits. A test whose hits already reached its limit gains nothing,
+    //only a test without limit (value 0) keeps every new hit
     let chanceHit = chance.hits
-    if (chance.hits > limit && (limit !== 0)) chanceHit = limit
+    if (messageData.limit.value > 0) chanceHit = Math.min(chance.hits, limit)
     let dicesKeeped = messageData.roll.dices.filter(function (d) {
       return d.result > 4
     })
@@ -391,6 +413,11 @@ export class SR5_RollTest {
   static async pushTheLimit(message, actor, fromCard = false) {
     let messageData = message.flags.sr5data
     let dicePool, creator
+    //GM ruling (05/10): Edge joins the starting pool of an extended test, once: not on a later roll
+    if (SR5_RollTest.isExtendedTest(messageData) && (messageData.test.extended?.roll > 1 || messageData.edge.hasUsedPushTheLimit)) {
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_EdgeExtendedTestStartOnly"))
+      return false
+    }
 
     //If roller is a bounder spirit, use actor Edge instead
     if (actor.type === "actorSpirit"){

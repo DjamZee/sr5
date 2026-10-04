@@ -37,6 +37,9 @@ import {
 import {
   SR5_SpiritTypes
 } from "../items/spirit-types.js"
+import {
+  isAreaSpellTemplateGone
+} from "../../system/areaEffectScene.js"
 
 export class SR5_ActorHelper {
     
@@ -65,10 +68,13 @@ export class SR5_ActorHelper {
       case "actorPc":
       case "actorSpirit":
         if (singleMonitor) {
-          if (options.damage.matrix.value > 0) damage = options.damage.matrix.value
+          // Matrix damage has no Physical or Stun letter: it fills the condition monitor as is
+          const isMatrixDamage = options.damage.matrix.value > 0
+          if (isMatrixDamage) damage = options.damage.matrix.value
           actorData.conditionMonitors.condition.actual.base += damage
           SR5_EntityHelpers.updateValue(actorData.conditionMonitors.condition.actual, 0)
-          ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${damage}${game.i18n.localize(SR5.damageTypesShort[damageType])} ${game.i18n.localize("SR5.Applied")}.`)
+          const unit = isMatrixDamage ? "" : game.i18n.localize(SR5.damageTypesShort[damageType] ?? "")
+          ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${damage}${unit} ${game.i18n.localize("SR5.Applied")}.`)
           break
         }
         if (options.damage.matrix.value > 0) {
@@ -91,28 +97,10 @@ export class SR5_ActorHelper {
         if (realDamage > 0) ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${realDamage}${game.i18n.localize(SR5.damageTypesShort[damageType])} ${game.i18n.localize("SR5.Applied")}.`)
         if (damageType === "physical" && realDamage > 0) SR5_ActorHelper.addAggravatedWounds(realActor, actorData.conditionMonitors.physical, realDamage, options)
 
-        if (actorData.conditionMonitors.stun.actual.value > actorData.conditionMonitors.stun.value) {
-          // SR5 p. 171: half (rounded down) of the excess stun damage carries over to the physical monitor
-          let carriedDamage = Math.floor((actorData.conditionMonitors.stun.actual.value - actorData.conditionMonitors.stun.value) / 2)
-          actorData.conditionMonitors.physical.actual.base += carriedDamage
-          SR5_EntityHelpers.updateValue(actorData.conditionMonitors.physical.actual, 0)
-          actorData.conditionMonitors.stun.actual.base = actorData.conditionMonitors.stun.value
-          SR5_EntityHelpers.updateValue(actorData.conditionMonitors.stun.actual, 0)
-          if (carriedDamage > 0) ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${carriedDamage}${game.i18n.localize(SR5.damageTypesShort.physical)} ${game.i18n.localize("SR5.Applied")}.`)
-        }
-
-        if ((actorData.conditionMonitors.physical.actual.value > actorData.conditionMonitors.physical.value) && actor.type === "actorPc") {
-          let carriedDamage = actorData.conditionMonitors.physical.actual.value - actorData.conditionMonitors.physical.value
-          actorData.conditionMonitors.overflow.actual.base += carriedDamage
-          SR5_EntityHelpers.updateValue(actorData.conditionMonitors.overflow.actual, 0)
-          actorData.conditionMonitors.physical.actual.base = actorData.conditionMonitors.physical.value
-          SR5_EntityHelpers.updateValue(actorData.conditionMonitors.physical.actual, 0)
-          // SR5 p. 172: the character dies only when the overflow exceeds their Body
-          if (actorData.conditionMonitors.overflow.actual.value > actorData.conditionMonitors.overflow.value){
-            isDead = true
-            actorData.conditionMonitors.overflow.actual.base = actorData.conditionMonitors.overflow.value
-            SR5_EntityHelpers.updateValue(actorData.conditionMonitors.overflow.actual, 0)
-          }
+        {
+          const overflow = SR5_ActorHelper.carryMonitorOverflow(actorData.conditionMonitors, actor.type)
+          if (overflow.carriedDamage > 0) ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${overflow.carriedDamage}${game.i18n.localize(SR5.damageTypesShort.physical)} ${game.i18n.localize("SR5.Applied")}.`)
+          isDead = overflow.isDead
         }
         break
       case "actorGrunt":
@@ -135,7 +123,8 @@ export class SR5_ActorHelper {
             controler.rollTest("resistanceCard", null, chatData)
           }
         }
-        if (options.damage.element === "electricity") options.damage.matrix.value = Math.floor(options.damage.value / 2)
+        // Drones short out (matrix damage); vehicles take the damage without side effect (SR5 p. 173)
+        if (options.damage.element === "electricity" && actorData.type !== "vehicle") options.damage.matrix.value = Math.floor(options.damage.value / 2)
         if (options.damage.matrix.value > 0) {
           actorData.conditionMonitors.matrix.actual.base += options.damage.matrix.value
           SR5_EntityHelpers.updateValue(actorData.conditionMonitors.matrix.actual, 0)
@@ -212,6 +201,38 @@ export class SR5_ActorHelper {
     }
   }
 
+  /**
+   * Carry damage beyond a full monitor, on prepared Stun/Physical monitors updated in place.
+   * SR5 p. 171: half (rounded down) of the excess Stun goes to Physical; p. 172: excess Physical
+   * fills a PC's overflow, and the character dies when it exceeds their Body.
+   * @return {{carriedDamage: number, isDead: boolean}} Physical boxes carried from Stun, and death
+   */
+  static carryMonitorOverflow(monitors, actorType) {
+    let carriedDamage = 0, isDead = false
+    if (monitors.stun.actual.value > monitors.stun.value) {
+      carriedDamage = Math.floor((monitors.stun.actual.value - monitors.stun.value) / 2)
+      monitors.physical.actual.base += carriedDamage
+      SR5_EntityHelpers.updateValue(monitors.physical.actual, 0)
+      monitors.stun.actual.base = monitors.stun.value
+      SR5_EntityHelpers.updateValue(monitors.stun.actual, 0)
+    }
+
+    if ((monitors.physical.actual.value > monitors.physical.value) && actorType === "actorPc") {
+      monitors.overflow.actual.base += monitors.physical.actual.value - monitors.physical.value
+      SR5_EntityHelpers.updateValue(monitors.overflow.actual, 0)
+      monitors.physical.actual.base = monitors.physical.value
+      SR5_EntityHelpers.updateValue(monitors.physical.actual, 0)
+      if (monitors.overflow.actual.value > monitors.overflow.value){
+        isDead = true
+        monitors.overflow.actual.base = monitors.overflow.value
+        SR5_EntityHelpers.updateValue(monitors.overflow.actual, 0)
+      }
+    }
+    return {
+      carriedDamage, isDead
+    }
+  }
+
   static async _socketTakeDamage(message){
     await SR5_ActorHelper.takeDamage(message.data.actorId, message.data.options)
   }
@@ -259,6 +280,23 @@ export class SR5_ActorHelper {
       damage: damage, limit: actorData.limits.physicalLimit.value
     })}`)
     else ui.notifications.info(`${actor.name} ${game.i18n.format("SR5.INFO_DropProne")}`)
+  }
+
+  //A player may not write on the actor that dies (an AI dissipated by matrix damage it was dealt): the GM does it
+  //The GM checks the request first: only an AI whose device has a full matrix monitor (Data Trails p. 161)
+  static async _socketCreateDeadEffect(message){
+    let actor = SR5_EntityHelpers.getRealActorFromID(message.data.actorId)
+    if (actor?.system.activeSpecialAttribute !== "depth") return
+    let device = message.data.itemUuid ? await fromUuid(message.data.itemUuid) : null
+    if (!device || device.actor?.id !== actor.id) return
+    //The update of the device was sent just before: give it a moment to land
+    const isFull = () => {
+      let monitor = device.system.conditionMonitors?.matrix
+      return !!monitor && monitor.value > 0 && monitor.actual.base >= monitor.value
+    }
+    for (let i = 0; i < 20 && !isFull(); i++) await new Promise(r => setTimeout(r, 100))
+    if (!isFull()) return
+    await SR5_ActorHelper.createDeadEffect(message.data.actorId)
   }
 
   //Handle death effect
@@ -371,6 +409,7 @@ export class SR5_ActorHelper {
         "system.value": -1,
         "system.durationType": "round",
         "system.duration": 1,
+        "system.gameEffect": game.i18n.localize("SR5.ElementalDamageElectricity_GE"),
         "system.customEffects": {
           "0": {
             "category": "penaltyTypes",
@@ -589,6 +628,8 @@ export class SR5_ActorHelper {
       if (itemToClean?.documentName === "Actor") {
         await itemToClean.update({
           "system.matrix.marks": (itemToClean._source.system.matrix.marks ?? []).filter(mark => mark.ownerId !== actorId)
+        }, {
+          sr5PersonaMarks: true
         })
       } else if (itemToClean) {
         let cleanData = foundry.utils.duplicate(itemToClean.system)
@@ -1485,6 +1526,8 @@ export class SR5_ActorHelper {
 
   //Apply an external effect to actor (such spell, complex form). Data is provided by chatMessage
   static async applyExternalEffect(actorId, data, effectType){
+    //An area spell whose template was deleted during the resistance: nothing would lift the effect
+    if (isAreaSpellTemplateGone(data)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_AreaSpellTemplateGone"))
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
     let item = await fromUuid(data.owner.itemUuid)
     let itemData = item.system
@@ -1501,6 +1544,9 @@ export class SR5_ActorHelper {
         else if (e.type === "netHits") value = Math.floor(data.roll.netHits * (e.multiplier || 1))
         else if (e.type === "value") value = Math.floor(e.value * (e.multiplier || 1))
         else if (e.type === "rating") value = Math.floor(item.system.itemRating * (e.multiplier || 1))
+        //An area spell resisted totally gets its effect at 0 (test-ResistanceResult), only to mark the token as
+        //having resisted inside the template: a fixed value or the resistor's hits must not apply the spell
+        if (data.test?.type === "spellResistance" && data.roll.netHits <= 0) value = 0
 
         //Handle heal effect
         if (e.target.includes("removeDamage")){

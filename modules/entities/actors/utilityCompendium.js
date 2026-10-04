@@ -20,9 +20,15 @@ export class SR5_CompendiumUtility extends Actor {
 
   // Compendiums used to build actors: each one can be chosen by the GM in the system settings.
   // "auto" uses the sr5-compendiums module packs for the world language.
+  // fallbacks: in "auto" only, packs of other modules, read when their module is active, for the items
+  // sr5-compendiums lacks (matched on their systemEffect of category fallbackEffect); sr5-compendiums comes first.
   static CATEGORIES = {
     creaturePowers: {
-      setting: "compendium.creaturePowers", itemType: "itemPower", defaults: ["powers-creatures"]
+      setting: "compendium.creaturePowers", itemType: "itemPower", defaults: ["powers-creatures"],
+      fallbacks: [{
+        module: "megapack-sr5-foundry-vtt", pack: "megapack-sr5-foundry-vtt.sr5-megapack-items"
+      }],
+      fallbackEffect: "spiritPower",
     },
     spritePowers: {
       setting: "compendium.spritePowers", itemType: "itemSpritePower", defaults: ["powers-sprites"]
@@ -78,7 +84,7 @@ export class SR5_CompendiumUtility extends Actor {
   //Return an array of items
   static async getCategoryItems(categoryKey) {
     const {
-      itemType
+      itemType, fallbacks, fallbackEffect
     } = SR5_CompendiumUtility.CATEGORIES[categoryKey]
     const items = []
     for (const compendiumId of SR5_CompendiumUtility.getCompendiumIds(categoryKey)) {
@@ -86,7 +92,40 @@ export class SR5_CompendiumUtility extends Actor {
       // A single compendium may hold every category: keep only the expected item type
       items.push(...documents.filter(i => i.type === itemType))
     }
+    if (fallbacks?.length && game.settings.get("sr5", SR5_CompendiumUtility.CATEGORIES[categoryKey].setting) === "auto") {
+      items.push(...await SR5_CompendiumUtility.getFallbackItems(items, fallbacks, itemType, fallbackEffect))
+    }
     return items
+  }
+
+  //The systemEffect values of category effectCategory an item carries
+  static effectKeys(item, effectCategory) {
+    return Object.values(item.system?.systemEffects ?? {
+    }).filter(e => e?.category === effectCategory && e.value).map(e => e.value)
+  }
+
+  //Items of the fallback packs (active modules only) whose effect no item already found provides
+  static async getFallbackItems(items, fallbacks, itemType, effectCategory) {
+    const provided = new Set(items.flatMap(i => SR5_CompendiumUtility.effectKeys(i, effectCategory)))
+    const added = []
+    for (const fallback of fallbacks) {
+      const pack = game.packs.get(fallback.pack)
+      if (!game.modules.get(fallback.module)?.active || !pack) continue
+      // A large pack (the Megapack holds every kind of item): read its index, load only what is missing
+      const index = await pack.getIndex({
+        fields: ["type", "system.systemEffects"]
+      })
+      for (const entry of index) {
+        if (entry.type !== itemType) continue
+        const keys = SR5_CompendiumUtility.effectKeys(entry, effectCategory)
+        if (!keys.length || keys.some(k => provided.has(k))) continue
+        const item = await pack.getDocument(entry._id)
+        if (!item) continue
+        for (const k of keys) provided.add(k)
+        added.push(item)
+      }
+    }
+    return added
   }
 
   static async getCompendiumDocuments(compendiumId) {

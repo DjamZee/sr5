@@ -11,6 +11,9 @@ import {
 import {
   _getSRStatusEffect 
 } from "../system/effectsList.js"
+import {
+  templateSceneId, isAreaEffectOffScene, isOrphanEnvironmentEffect
+} from "./areaEffectScene.js"
 
 export class SR5_EffectArea {
 
@@ -29,9 +32,39 @@ export class SR5_EffectArea {
    */
   static JAM_SIGNALS_RADIUS_IN_METERS = 100
 
+  //The rule itself lives in areaEffectScene.js, shared with SR5_CombatHelpers.areaEffectsOffScene
+  static templateSceneId(item){
+    return templateSceneId(item)
+  }
+
+  static isAreaEffectOffScene(item, sceneId){
+    return isAreaEffectOffScene(item, sceneId)
+  }
+
+  //The matrix noise and the background count a template puts on an actor are added to its data when it is
+  //prepared, and read later by every test: the environment rows have their own filter at roll time
+  //(SR5_CombatHelpers.areaEffectsOffScene), these two are left out here. The scene is the token's own for an
+  //unlinked actor, the one on the canvas for a linked one (canvasReady prepares the actor again).
+  static AREA_EFFECT_PREPARED_TARGETS = ["system.matrix.noise", "system.magic.bgCount"]
+  static isOrphanEnvironmentEffect(item){
+    return isOrphanEnvironmentEffect(item)
+  }
+  static isPreparedAreaEffectOffScene(item, actor){
+    //An environment row from no template (an orphan, ownerItem empty) counts in no roll: it is left out of the
+    //prepared data too, so the sheet does not show it, and areaEffectsOffScene no longer subtracts it
+    if (SR5_EffectArea.isOrphanEnvironmentEffect(item)) return true
+    if (!Object.values(item?.system?.customEffects ?? {
+    }).some(e => SR5_EffectArea.AREA_EFFECT_PREPARED_TARGETS.includes(e.target))) return false
+    let sceneId = actor?.isToken ? actor.token?.parent?.id : globalThis.canvas?.scene?.id
+    return SR5_EffectArea.isAreaEffectOffScene(item, sceneId)
+  }
+
   //Manage token aura
   static async tokenAura(token){
-    const scene = game.scenes.get(token._object.scene.id)
+    // The token's own scene, read from the document: a token moved on a scene the GM is not looking
+    // at has no placeable, and that scene's grid is the one to measure with.
+    const scene = token.parent
+    if (!scene) return
     for (let t of scene.tokens){
       if (t.id !== token.id) {
         // checkAuraJamming compares this to JAM_SIGNALS_RADIUS_IN_METERS, which SR5 p. 239 states in
@@ -40,7 +73,7 @@ export class SR5_EffectArea {
           x: token.x, y: token.y
         }, {
           x: t.x, y: t.y
-        })
+        }, scene)
         await SR5_EffectArea.checkAuraJamming(token, t, distance)
       }
     }
@@ -53,25 +86,20 @@ export class SR5_EffectArea {
 
     if(!actor || !passiveActor) return 
 
-    let actorJammedEffect = actor.items.find(i => i.system.type === "signalJammed")
+    //Each jammer leaves its own signalJammed item: look for the one of the jammer at hand, not the first one
+    let actorJammedEffect = actor.items.find(i => i.system.type === "signalJammed" && i.system.ownerID === passiveActor.id)
     let actorJamEffect = actor.items.find(i => i.system.type === "signalJam")
-    let passiveJammedEffect = passiveActor.items.find(i => i.system.type === "signalJammed")
+    let passiveJammedEffect = passiveActor.items.find(i => i.system.type === "signalJammed" && i.system.ownerID === actor.id)
     let passiveJamEffect = passiveActor.items.find(i => i.system.type === "signalJam")
     //passive token is jamming
     if (passiveJamEffect){
       //check distance
       if (distance > SR5_EffectArea.JAM_SIGNALS_RADIUS_IN_METERS) {
-        if (actorJammedEffect?.system?.ownerID === passiveActor.id){
-          if (game.user?.isGM) {
-            let jammedActiveEffect = actor.effects.find(i => i.origin === "signalJammed")
-            if (jammedActiveEffect){
-              await actor.deleteEmbeddedDocuments("ActiveEffect", [jammedActiveEffect.id])
-              await actor.deleteEmbeddedDocuments("Item", [actorJammedEffect.id])
-            }
-          }
+        if (actorJammedEffect){
+          if (game.user?.isGM) await SR5_EffectArea.removeJammedEffect(actor, actorJammedEffect)
         }
       } else {
-        if (actorJammedEffect?.system?.ownerID !== passiveActor.id){ 
+        if (!actorJammedEffect){
           if (game.user?.isGM) await SR5_EffectArea.createJammedEffect(passiveActor, actor, passiveJamEffect.system.value)
         }
       }
@@ -80,70 +108,83 @@ export class SR5_EffectArea {
     if (actorJamEffect){
       //check distance
       if (distance <= SR5_EffectArea.JAM_SIGNALS_RADIUS_IN_METERS) {
-        if (passiveJammedEffect?.system?.ownerID !== actor.id){
+        if (!passiveJammedEffect){
           if (game.user?.isGM) await SR5_EffectArea.createJammedEffect(actor, passiveActor, actorJamEffect.system.value)
         }
       } else {
-        if (passiveJammedEffect?.system?.ownerID === actor.id){
-          if (game.user?.isGM) {
-            let jammedActiveEffect = passiveActor.effects.find(i => i.origin === "signalJammed")
-            await passiveActor.deleteEmbeddedDocuments("ActiveEffect", [jammedActiveEffect.id])
-            await passiveActor.deleteEmbeddedDocuments("Item", [passiveJammedEffect.id])
-          }
+        if (passiveJammedEffect){
+          if (game.user?.isGM) await SR5_EffectArea.removeJammedEffect(passiveActor, passiveJammedEffect)
         }
       }
     }
+  }
+
+  //Lift the noise one jammer put on an actor, and one "jammed" status icon with it. The icons carry nothing
+  //that tells their jammer apart, so the last one stays as long as another jammer still jams the actor: with
+  //two jammers on one target, the one that stops must not hide the other.
+  static async removeJammedEffect(actor, jammedItem){
+    let otherJammer = actor.items.find(i => i.id !== jammedItem.id && i.system.type === "signalJammed")
+    let icons = actor.effects.filter(i => i.origin === "signalJammed")
+    await actor.deleteEmbeddedDocuments("Item", [jammedItem.id])
+    if (icons.length && (!otherJammer || icons.length > 1)) await actor.deleteEmbeddedDocuments("ActiveEffect", [icons[0].id])
+  }
+
+  //Start jamming
+  //The tokens standing for a jammer, with their scene : an unlinked actor by its own token, a linked
+  //one on every scene it stands on. Read from the scene documents and never from the canvas, which
+  //only holds the scene the GM happens to be looking at, not necessarily the jammer's.
+  static getJammerTokens(actor, actorId){
+    let found = []
+    for (let scene of game.scenes ?? []){
+      let token = actor.isToken ? scene.tokens.get(actorId) : scene.tokens.find(t => t.actorLink && t.actorId === actor.id)
+      if (token) found.push({
+        scene, token
+      })
+    }
+    return found
   }
 
   //Start jamming
   static async onJamCreation(actorId){
-    if (!canvas.scene) return
+    if (!game.user?.isGM) return
     let activeActor = SR5_EntityHelpers.getRealActorFromID(actorId)
-    let activeToken
-    if (activeActor.isToken){
-      activeToken = canvas.tokens.placeables.find(t => t.id === actorId)
-    } else {
-      activeToken = canvas.tokens.placeables.find(t => t.actor.id === actorId)
-    }
-    if (!activeToken) return
+    if (!activeActor) return
     let jamEffect =  activeActor.items.find(i => i.system.type === "signalJam" && i.system.ownerID === activeActor.id)
+    if (!jamEffect) return
 
-    for (let token of canvas.tokens.placeables){
-      if (token.id !== activeToken.id){
-        let tokenActor = SR5_EntityHelpers.getRealActorFromID(token.document.id)
-        // canvas.tokens.placeables holds Token objects, whose own x/y are the PIXI position and stay at 0
-        // in V13; the grid coordinates live on the document, as tokenAura already reads them above.
+    for (let found of SR5_EffectArea.getJammerTokens(activeActor, actorId)){
+      let scene = found.scene, activeToken = found.token
+      for (let token of scene.tokens){
+        if (token.id === activeToken.id) continue
+        let tokenActor = token.actor
+        if (!tokenActor || tokenActor === activeActor) continue
         // The result is compared to JAM_SIGNALS_RADIUS_IN_METERS just below, which SR5 p. 239 states in
-        // meters, so the scene's own unit is converted first.
+        // meters, so the unit of the jammer's scene is converted first.
         let distance = SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint({
-          x: activeToken.document.x, y: activeToken.document.y
+          x: activeToken.x, y: activeToken.y
         }, {
-          x: token.document.x, y: token.document.y
-        })
-        let jammedEffect = tokenActor.items.find(i => i.system.type === "signalJammed" && i.system.ownerID === actorId)
+          x: token.x, y: token.y
+        }, scene)
+        let jammedEffect = tokenActor.items.find(i => i.system.type === "signalJammed" && i.system.ownerID === activeActor.id)
         if (distance <= SR5_EffectArea.JAM_SIGNALS_RADIUS_IN_METERS && !jammedEffect){
-          if (game.user?.isGM) await SR5_EffectArea.createJammedEffect(activeActor, tokenActor, jamEffect.system.value)
+          await SR5_EffectArea.createJammedEffect(activeActor, tokenActor, jamEffect.system.value)
         }
       }
     }
   }
 
-  //End jamming
+  //End jamming : lift the noise this jammer put on anyone, on every scene
   static async onJamEnd(actorId){
-    if (!canvas.scene) return
-    let activeToken = canvas.tokens.placeables.find(t => t.actor.id === actorId)
-    if (!activeToken) return
-    for (let token of canvas.tokens.placeables){
-      if (token.id !== activeToken.id){
-        let tokenActor = SR5_EntityHelpers.getRealActorFromID(token.document.id)
+    if (!game.user?.isGM) return
+    let cleared = new Set()
+    for (let scene of game.scenes ?? []){
+      for (let token of scene.tokens){
+        let tokenActor = token.actor
+        if (!tokenActor || cleared.has(tokenActor.uuid)) continue
+        cleared.add(tokenActor.uuid)
         let jammedEffect = tokenActor.items.find(i => i.system.type === "signalJammed" && i.system.ownerID === actorId)
-        if (jammedEffect) {
-          let jammedActiveEffect = tokenActor.effects.find(i => i.origin === "signalJammed")
-          if (game.user?.isGM){
-            await tokenActor.deleteEmbeddedDocuments("ActiveEffect", [jammedActiveEffect.id])
-            await tokenActor.deleteEmbeddedDocuments("Item", [jammedEffect.id])
-          }
-        }
+        if (!jammedEffect) continue
+        await SR5_EffectArea.removeJammedEffect(tokenActor, jammedEffect)
       }
     }
   }
@@ -200,9 +241,13 @@ export class SR5_EffectArea {
       }
     }
     //matrix noise effect
+    //A spam or static zone adds its rating to the Noise (SR5 p. 232). system.matrix.noise holds that rating as a
+    //positive number, turned into a malus when a matrix test reads it, like the jam of SR5 p. 239 : a negative
+    //value here gave every device inside the template bonus dice.
     if (templateData.matrixNoise && templateData.matrixNoise !== 0){
-      effect = await SR5_EntityHelpers.generateItemEffect(sourceName, "areaEffect", template, `${game.i18n.localize("SR5.MatrixNoise")}`, -parseInt(templateData.matrixNoise), 0, "permanent")
-      customEffect = await SR5_EntityHelpers.generateCustomEffect("matrixAttributes", "system.matrix.noise", "value", -parseInt(templateData.matrixNoise), true)
+      let noise = parseInt(templateData.matrixNoise)
+      effect = await SR5_EntityHelpers.generateItemEffect(sourceName, "areaEffect", template, `${game.i18n.localize("SR5.MatrixNoise")}`, noise, 0, "permanent")
+      customEffect = await SR5_EntityHelpers.generateCustomEffect("matrixAttributes", "system.matrix.noise", "value", noise, true)
       effect.system.customEffects.push(customEffect)
       if (effect && effect.system.customEffects.length) {
         hasItem = actor.items.find(i => i.type === "itemEffect" && i.system.ownerID === effect.system.ownerID && i.system.customEffects?.find(e => e.target ==="system.matrix.noise"))
@@ -239,10 +284,16 @@ export class SR5_EffectArea {
         //If effect is not resisted, apply effect to actor
         if (!sourceItem.system.resisted) await actor.applyExternalEffect(data, "customEffects")
         else {
-          let message = game.messages.find(m => m.flags.sr5data?.test.type === "spell" && m.flags.sr5data?.owner.itemUuid === templateData.itemUuid)
+          //The cast this template comes from, when it says so; else the spell's card, as before
+          let message = (templateData.messageId && game.messages.get(templateData.messageId)) ||
+            game.messages.find(m => m.flags.sr5data?.test.type === "spell" && m.flags.sr5data?.owner.itemUuid === templateData.itemUuid)
           if (!message) return
           let messageData = message.flags.sr5data
+          //One request per actor, spell and cast while it waits: a move inside the area gives no other one
+          let pending = SR5_EffectArea.pendingResistanceKey(actor, templateData.itemUuid, message.id)
+          if (SR5_EffectArea.PENDING_RESISTANCES.has(pending)) return
           if (messageData) {
+            SR5_EffectArea.PENDING_RESISTANCES.add(pending)
             messageData.owner.messageId = message.id
             if (actor.hasPlayerOwner){
               let user = SR5_EntityHelpers.getUserOwner(actor)
@@ -287,43 +338,124 @@ export class SR5_EffectArea {
     else return false
   }
 
+  //Calls on one actor and one spell run one after the other: the hooks that start them are not awaited, and two
+  //templates entered or drawn at once each found no effect yet and each gave one
+  static SPELL_EFFECT_QUEUES = new Map()
+
+  //Resistance requests of a resisted area spell, sent and not yet answered by an effect (actor|spell|cast). A
+  //request stays until the effect is on, or the token has left every template of the spell
+  static PENDING_RESISTANCES = new Set()
+  static pendingResistanceKey(actor, itemUuid, messageId){
+    return `${actor.uuid ?? actor.id}|${itemUuid}|${messageId}`
+  }
+  static clearPendingResistances(actor, itemUuid){
+    const prefix = `${actor.uuid ?? actor.id}|${itemUuid}|`
+    for (const key of SR5_EffectArea.PENDING_RESISTANCES) if (key.startsWith(prefix)) SR5_EffectArea.PENDING_RESISTANCES.delete(key)
+  }
+  static runForSpell(actor, itemUuid, fn){
+    const key = `${actor.uuid ?? actor.id}|${itemUuid}`
+    const next = (SR5_EffectArea.SPELL_EFFECT_QUEUES.get(key) ?? Promise.resolve()).catch(() => {}).then(fn)
+    SR5_EffectArea.SPELL_EFFECT_QUEUES.set(key, next)
+    const clear = () => {
+      if (SR5_EffectArea.SPELL_EFFECT_QUEUES.get(key) === next) SR5_EffectArea.SPELL_EFFECT_QUEUES.delete(key)
+    }
+    next.then(clear, clear)
+    return next
+  }
+
+  //A spell's effect on a token, whatever the number of its templates: a token covered by at least one template of
+  //the spell keeps exactly one copy, and loses it only when it leaves the last one. A copy is never lifted while
+  //the token stays covered, so a resisted spell is not resisted again. One copy is the itemEffects one apply gives
+  //(one per custom effect), all with the template that gave them as ownerID.
+  //excludedTemplateId: a template being deleted, which may still be listed on its scene
+  static async syncSpellEffect(tokenDocument, itemUuid, excludedTemplateId){
+    let actor = await SR5_EntityHelpers.getRealActorFromID(tokenDocument.id)
+    if (!actor) return
+    return SR5_EffectArea.runForSpell(actor, itemUuid, async () => {
+      let covering
+      for (let template of Array.from(tokenDocument.parent?.templates ?? [])){
+        if (template.id === excludedTemplateId || !template.flags?.sr5?.itemHasEffect || template.flags.sr5.itemUuid !== itemUuid) continue
+        if (await this.checkIfTemplateContainsToken(template, tokenDocument)){
+          covering = template
+          break
+        }
+      }
+      let effects = actor.items.filter(i => i.type === "itemEffect" && i.system.ownerItem === itemUuid)
+      if (!covering){
+        //Out of every template: a resistance asked for is dropped, coming back in asks again
+        SR5_EffectArea.clearPendingResistances(actor, itemUuid)
+        if (effects.length) await actor.deleteEmbeddedDocuments("Item", effects.map(i => i.id))
+        return
+      }
+      if (!effects.length) return await this.createTemplateEffect(tokenDocument, covering)
+      SR5_EffectArea.clearPendingResistances(actor, itemUuid)
+      let kept = effects[0].system.ownerID
+      let extra = effects.filter(i => i.system.ownerID !== kept)
+      if (extra.length) await actor.deleteEmbeddedDocuments("Item", extra.map(i => i.id))
+    })
+  }
+
   //Iterate through canvas template to check if current token is inside
   static async checkIfTokenIsInTemplate(tokenDocument){
+    let spells = new Set()
     for (let templateDocument of tokenDocument.parent.templates){
-      if (templateDocument.flags.sr5?.environmentalModifiers || templateDocument.flags.sr5?.itemHasEffect){
+      if (templateDocument.flags.sr5?.itemHasEffect){
+        spells.add(templateDocument.flags.sr5.itemUuid)
+        continue
+      }
+      if (templateDocument.flags.sr5?.environmentalModifiers){
         let isInTemplate = await this.checkIfTemplateContainsToken(templateDocument, tokenDocument)
         let actor = await SR5_EntityHelpers.getRealActorFromID(tokenDocument.id)
         let effectID = templateDocument.uuid
-        if (templateDocument.flags.sr5.itemHasEffect) effectID = templateDocument.flags.sr5.itemUuid
         let hasEffect = await this.checkIfHasEffect(actor, effectID)
-        if (isInTemplate) {
-          if (!hasEffect) await this.createTemplateEffect(tokenDocument, templateDocument)
-        } else {
+        //createTemplateEffect checks each effect on its own (light, noise, background count...): an effect set later
+        //in the template's form, the Spam after the light, must be added although the token has the first one
+        if (isInTemplate) await this.createTemplateEffect(tokenDocument, templateDocument)
+        else {
           if (hasEffect) await this.deleteTemplateEffect(actor, effectID)
         }
       }
     }
+    //A spell is checked once against all its templates, not template by template: leaving one while inside
+    //another lifted the effect (and gave it back, resisted again, in the other order)
+    for (let itemUuid of spells) await this.syncSpellEffect(tokenDocument, itemUuid)
   }
 
   //Add effect on a token when a template is created
   static async initiateTemplateEffect(template){
     let templateDocument = template.document
+    //The preview a player drags before placing the template is drawn too, with no id: it is no template yet, and
+    //an effect from it would have no template (nor scene) to belong to, nor anything to lift it
+    if (!templateDocument.id) return
     if (!templateDocument.flags.sr5?.environmentalModifiers && !templateDocument.flags.sr5?.itemHasEffect) return
     for (let t of templateDocument.parent.tokens){
+      if (templateDocument.flags.sr5.itemHasEffect){
+        await this.syncSpellEffect(t, templateDocument.flags.sr5.itemUuid)
+        continue
+      }
       let isInTemplate = await this.checkIfTemplateContainsToken(templateDocument, t)
       if (isInTemplate) await this.createTemplateEffect(t, templateDocument)
     }
+    //A grenade thrown out of range has its template removed at once (rollData-Weapon, "target too far"), while
+    //the effects above were still being created: removeTemplateEffect found none to lift, and they stayed on
+    //every token inside. Lift them here once the template is gone.
+    let templates = templateDocument.parent.templates
+    if (templates && !templates.get(templateDocument.id)) await this.removeTemplateEffect(templateDocument)
   }
 
   //Remove effect on tokens when template is deleted
   static async removeTemplateEffect(templateDocument){
     if (!templateDocument.flags.sr5?.environmentalModifiers && !templateDocument.flags.sr5?.itemHasEffect) return
     for (let t of templateDocument.parent.tokens){
+      //A spell's effect stays while another template of the spell still covers the token
+      if (templateDocument.flags.sr5.itemHasEffect){
+        await this.syncSpellEffect(t, templateDocument.flags.sr5.itemUuid, templateDocument.id)
+        continue
+      }
       let actor = await SR5_EntityHelpers.getRealActorFromID(t.id)
-      let effectID = templateDocument.uuid
-      if (templateDocument.flags.sr5.itemHasEffect) effectID = templateDocument.flags.sr5.itemUuid
-      if (!actor) return
-      this.deleteTemplateEffect(actor, effectID)
+      //A token with no actor leaves the next ones to clear
+      if (!actor) continue
+      await this.deleteTemplateEffect(actor, templateDocument.uuid)
     }
   }
 

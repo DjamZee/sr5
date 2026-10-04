@@ -61,6 +61,14 @@ export default async function resistance(rollData, rollType, actor, chatData){
   // handleGrenade aborts (undefined) when the blast cannot reach or cannot be measured: the test must stop there
   if (chatData.combat.grenade.isGrenade && !(await handleGrenade(rollData, chatData, actor))) return undefined
 
+  // An indirect area spell that missed its threshold has no defense test (SR5 p. 285, see test-Spell.js):
+  // the area is checked here instead, from the template the card's Scatter button moved
+  if (chatData.magic?.spell?.missedThreshold && chatData.magic.spell.range === "area"){
+    const distance = SR5_CombatHelpers.spellAreaDistance(chatData, actor)
+    if (distance === null) ui.notifications.warn(game.i18n.localize("SR5.WARN_SpellAreaNoTemplate"))
+    else if (chatData.magic.spell.area < distance) return abortWithInfo(game.i18n.localize("SR5.INFO_TargetIsTooFar"))
+  }
+
   //Iterate throught damage type and add corresponding info
   switch (chatData.damage.resistanceType){
     case "physicalDamage":
@@ -282,9 +290,9 @@ async function handleSpiritDamage(rollData, actorData, chatData){
   } else {
     armor = actorData.itemsProperties.armor.value
 
-    //Check if AP is greater than Armor
-    if (rollData.damage.base < (armor + chatData.combat.armorPenetration)) return abortWithInfo(`${game.i18n.format("SR5.INFO_ImmunityToNormalWeapons", {
-      essence: armor, pa: chatData.combat.armorPenetration, damage: rollData.damage.base
+    //SR5 p. 397 and 400: a modified DV that does not exceed the rating (modified by AP) does nothing
+    if (SR5_CombatHelpers.isStoppedByHardenedArmor(rollData.damage.base, armor, chatData.combat.armorPenetration)) return abortWithInfo(`${game.i18n.format("SR5.INFO_ImmunityToNormalWeapons", {
+      hardenedArmor: armor + chatData.combat.armorPenetration, pa: chatData.combat.armorPenetration, damage: rollData.damage.base
     })}`)
         
     //Add AP modifiers to dicepool

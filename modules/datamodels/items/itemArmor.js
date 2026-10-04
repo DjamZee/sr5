@@ -51,6 +51,10 @@ export class sr5ItemArmorDataModel extends foundry.abstract.TypeDataModel {
       isCumulative: new fields.BooleanField({
         initial: false
       }),
+      //SR5 p. 207: a full armor halves the boxes healed by first aid
+      isFullArmor: new fields.BooleanField({
+        initial: false
+      }),
       accessory: new fields.ArrayField(new fields.ObjectField()),
     }
   }

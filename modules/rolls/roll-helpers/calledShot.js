@@ -11,6 +11,9 @@ import SR5_SpendDialog from "../../interface/spendNetHits-dialog.js"
 import {
   SR5_ActorHelper 
 } from "../../entities/actors/entityActor-helpers.js"
+import {
+  SR5_ConverterHelpers
+} from "./converter.js"
 
 export class SR5_CalledShotHelpers {
 
@@ -944,6 +947,14 @@ export class SR5_CalledShotHelpers {
       default:
         return 0
     }
+  }
+
+  // Run & Gun p. 130 (Coup double / Rafale dans le mille): the attack's AP rises by the weapon's base AP
+  // (without ammo) times the bullets of the burst, at most ×3. It hangs on the firing mode, so it is
+  // worked out again whenever that mode changes.
+  static bullsEyeArmorPenetration(armorPenetrationBeforeCalledShot, baseAP, firingMode){
+    const bullets = SR5_ConverterHelpers.firingModeToBullet(firingMode)
+    return armorPenetrationBeforeCalledShot + baseAP * Math.min(bullets, 3)
   }
 
   static convertCalledShotToLimitDV(calledShot, ammoType, ammoEffects = null){

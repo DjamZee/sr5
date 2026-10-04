@@ -13,6 +13,9 @@ import {
 import {
   SR5_ActorHelper 
 } from "../../entities/actors/entityActor-helpers.js"
+import {
+  SR5_CombatHelpers
+} from "../roll-helpers/combat.js"
 
 export default async function resistanceInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
@@ -60,14 +63,14 @@ export default async function resistanceInfo(cardData, actorId){
 
   //Add automatic succes for Hardened Armor.
   if ((actorData.specialProperties?.hardenedArmors.normalWeapon.value > 0) && (cardData.damage.source !== "magical")) {
-    hardenedArmor = Math.floor((actorData.specialProperties.hardenedArmors.normalWeapon.value + cardData.combat.armorPenetration) / 2)
+    hardenedArmor = SR5_CombatHelpers.hardenedArmorAutoHits(actorData.specialProperties.hardenedArmors.normalWeapon.value, cardData.combat.armorPenetration)
     if (hardenedArmor > 0) {
       ui.notifications.info(`${game.i18n.localize("SR5.HardenedArmor")}${game.i18n.localize("SR5.Colons")} ${hardenedArmor} ${game.i18n.localize("SR5.INFO_AutomaticHits")}`)
       cardData.roll.hits += hardenedArmor
     }
   }
   if ((actorData.specialProperties?.hardenedArmors.fire.value > 0) && (cardData.damage.element === "fire")) {
-    hardenedArmor = Math.floor((actorData.specialProperties.hardenedArmors.fire.value + cardData.combat.armorPenetration) / 2)
+    hardenedArmor = SR5_CombatHelpers.hardenedArmorAutoHits(actorData.specialProperties.hardenedArmors.fire.value, cardData.combat.armorPenetration)
     if (hardenedArmor > 0) {
       ui.notifications.info(`${game.i18n.localize("SR5.HardenedArmor")}${game.i18n.localize("SR5.Colons")} ${hardenedArmor} ${game.i18n.localize("SR5.INFO_AutomaticHits")}`)
       cardData.roll.hits += hardenedArmor
@@ -127,7 +130,7 @@ function handlePreviousButtons(cardData) {
     prevData = originalMessage.flags?.sr5data
   }
 
-  if (prevData?.test.type === "spell" && prevData?.magic.spell.range === "area");
+  if ((prevData?.test.type === "spell" || prevData?.test.type === "preparation") && prevData?.magic.spell.range === "area");
   else if (prevData?.test.typeSub === "grenade" || prevData?.combat?.grenade?.isGrenade);
   else if (cardData.damage.isContinuous && cardData.test.typeSub === "continuousDamage");
   else if (cardData.damage.resistanceType === "fatiguedDamage") SR5_RollMessage.updateChatButtonHelper(cardData.previousMessage.messageId, "fatiguedCard") 

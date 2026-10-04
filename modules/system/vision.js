@@ -6,7 +6,7 @@ export const SR5_TOKEN_VISION_MODES = {
   ultrasound: "ultrasound",
 }
 
-// Vision type of the actor -> world setting holding its range, in scene units
+// Vision type of the actor -> world setting holding its range, in meters
 export const SR5_VISION_RANGE_SETTINGS = {
   astral: "sr5VisionRangeAstral",
   lowLight: "sr5VisionRangeLowLight",
@@ -31,7 +31,7 @@ export const SR5_VISION_COLORS = {
 }
 
 /**
- * Range of a vision type, in scene units. 0 means "only what is lit".
+ * Range of a vision type, in meters. 0 means "only what is lit".
  * @param {string} vision key of SR5.visionTypes
  * @returns {number}
  */

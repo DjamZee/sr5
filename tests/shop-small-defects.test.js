@@ -1,5 +1,5 @@
 import {
-  describe, it, expect, beforeEach
+  describe, it, expect, beforeEach, vi
 } from 'vitest'
 import {
   readFileSync
@@ -408,5 +408,18 @@ describe('Delays take the singular: 1 jour, not 1 jours', () => {
     expect(delay('en', 24 * 7)).toBe('1 week')
     expect(delay('en', 24 * 30)).toBe('1 month')
     expect(delay('en', 24 * 60)).toBe('2 months')
+  })
+})
+
+describe('Search time, GM ruling of 05/10 (SR5 p. 420)', () => {
+  it('comes from the base price, not the price raised by the surcharge', async () => {
+    // 725¥ is a one-day search; raised by 75 % it would cost 1 269¥, a two-day one. 3 net hits divide it by 3
+    queue = [5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+    const delayFor = vi.spyOn(SR5ShopAvailability, 'delayFor')
+    const card = await SR5ShopAvailability.testLines(buyer, null, line, 75)
+    expect(card.results[0].price).toBe(1269)
+    expect(delayFor).toHaveBeenCalledWith(725)
+    expect(delayFor).not.toHaveBeenCalledWith(1269)
+    delayFor.mockRestore()
   })
 })

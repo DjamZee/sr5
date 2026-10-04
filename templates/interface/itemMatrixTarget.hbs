@@ -22,6 +22,11 @@
 					{{selectOptions list.gears selected=item localize=false}}
 	  		</optgroup>
 		 	{{/if}}
+		 	{{#if list.vehicles}}
+		 		<optgroup label="{{localize 'SR5.Vehicles'}}">
+					{{selectOptions list.vehicles selected=item localize=false}}
+		 		</optgroup>
+		 	{{/if}}
 		</select>
 	</div>
 </div>

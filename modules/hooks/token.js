@@ -9,12 +9,13 @@ export async function sr5HookCreateToken(tokenDocument) {
   if (!game.user.isGM) return
   let tokenData = foundry.utils.duplicate(tokenDocument)
   if (tokenData.texture.src == "") tokenData.texture.src = tokenDocument.actor.img
-  tokenData = await SR5_EntityHelpers.getVisionData(tokenData, tokenDocument.actor)
+  tokenData = await SR5_EntityHelpers.getVisionData(tokenData, tokenDocument.actor, tokenDocument.parent)
   await tokenDocument.update(tokenData)
 }
 
 export async function sr5HookUpdateToken(tokenDocument, change) {
-  if (change.x || change.y) {
+  // A coordinate of 0 is a move too (the left or top edge of the scene)
+  if ("x" in change || "y" in change) {
     SR5_EffectArea.tokenAura(tokenDocument)
     if (game.user.isGM) SR5_EffectArea.checkIfTokenIsInTemplate(tokenDocument)
   }

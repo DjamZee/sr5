@@ -350,7 +350,9 @@ export class SR5ShopAvailability {
       const opposition = await SR5ShopAvailability.rollDice(availability)
       const hits = limit ? Math.min(test.hits, limit) : test.hits
       const netHits = hits - opposition.hits
-      const baseDelay = SR5ShopAvailability.delayFor(price)
+      // GM ruling (05/10): the search time comes from the base price, not the one raised by the surcharge
+      // SR5 p. 420 does not say which price: DjamZ filled the gap. A ruling, not a house rule, so no setting
+      const baseDelay = SR5ShopAvailability.delayFor(SR5Shop.unitPrice(source.system) * quantity)
 
       let outcome, obtained, delay
       if (test.criticalGlitch) {

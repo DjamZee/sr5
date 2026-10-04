@@ -1,5 +1,9 @@
 <li class="grid">
+    {{#if combat.environmentalColumns}}
+    <div class="col-5" data-tooltip="{{localize 'SR5.RangeWithEnvironment_D'}}">{{localize 'SR5.RangeWithEnvironment'}}{{localize 'SR5.Colons'}}</div>
+    {{else}}
     <div class="col-5">{{localize 'SR5.WeaponRange'}}{{localize 'SR5.Colons'}}</div>
+    {{/if}}
     <div class="col-6 SR-TextRight">
         <select class="SR-ModSelect SR-ModSelectFilled" data-target="dicePoolModRange" data-modifier="targetRange">
             {{selectOptions lists.weaponRanges selected=targetRange localize=false}}

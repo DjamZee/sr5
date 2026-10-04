@@ -133,7 +133,7 @@ export class SR5_MarkHelpers {
   }
 
   /** Erase the marks placed on the persona of an AI, and their trace on the decks of those who placed them:
-   * the AI loads onto a device, which restarts its persona (Data Trails p. 158), or reboots (SR5 p. 244)
+   * the AI reboots (SR5 p. 244)
    * @param {Object} actor - The AI
    */
   static async clearPersonaMarks(actor) {
@@ -149,6 +149,8 @@ export class SR5_MarkHelpers {
     }
     await actor.update({
       "system.matrix.marks": []
+    }, {
+      sr5PersonaMarks: true
     })
   }
 

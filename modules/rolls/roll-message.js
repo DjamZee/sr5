@@ -29,7 +29,7 @@ import {
   SR5_MatrixHelpers 
 } from "./roll-helpers/matrix.js"
 import {
-  isRolledByTarget, firstAidPatient, patientMonitors, hasSingleMonitor
+  isRolledByTarget, firstAidPatient, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick
 } from "./roll-helpers/cardRoller.js"
 import {
   SR5_CombatHelpers 
@@ -43,6 +43,19 @@ import {
 import {
   SR5_ActorHelper 
 } from "../entities/actors/entityActor-helpers.js"
+import {
+  ritualDrainActorId
+} from "./roll-helpers/ritualTeam.js"
+
+// True when a GM is connected to relay what a player cannot do
+export function hasActiveGM() {
+  return !!game.users?.find(user => user.isGM && user.active)
+}
+
+// Without a GM to relay it, the author of a card updates it: otherwise a used button stays and can be clicked again
+export function updatesCardLocally(message) {
+  return !!message?.isOwner && !hasActiveGM()
+}
 
 export class SR5_RollMessage {
   //Handle reaction to roll ChatMessage
@@ -50,7 +63,6 @@ export class SR5_RollMessage {
     html.querySelectorAll(".messageAction").forEach(el => {
       el.addEventListener("click", (ev) => SR5_RollMessage.chatButtonAction(ev))
     })
-
     //Toggle Dice details
     html.querySelectorAll(".SR-CardHeader").forEach(el => {
       el.addEventListener("click", (ev) => {
@@ -63,6 +75,11 @@ export class SR5_RollMessage {
     if (!game.user.isGM) {
       // Hide GM stuff
       html.querySelectorAll(".chat-button-gm").forEach(el => el.remove())
+
+      // SR5 p. 299: each ritual participant only sees the button of their own Drain
+      html.querySelectorAll(".ritualDrain").forEach(el => {
+        if (!SR5_EntityHelpers.getRealActorFromID(ritualDrainActorId(el.dataset.type))?.isOwner) el.remove()
+      })
 
       // v13: use message document directly instead of data.message
       // Hide if player is not owner of the message
@@ -163,10 +180,18 @@ export class SR5_RollMessage {
       messageData = message.flags.sr5data
 
     messageData.owner.messageId = messageId
-    
+
+    //SR5 p. 299: a ritual participant resists their own Drain, named on the button
+    const ritualDrainId = ritualDrainActorId(type)
+    if (ritualDrainId) {
+      const participant = SR5_EntityHelpers.getRealActorFromID(ritualDrainId)
+      if (!participant?.isOwner) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+      return participant.rollTest("drain", null, messageData)
+    }
+
     //Define actor for Opposed test or Non opposed tests
     if (action === "opposedTest") {
-      actor = SR5_EntityHelpers.getRealActorFromID(speaker.token)
+      actor = SR5_EntityHelpers.getRealActorFromID(opposedTestActorId(speaker))
       // Matrix support actions (Kill Code p. 43-44) go to the targeted tokens: no selected token needed
       let supportAction = (type === "iAmTheFirewall" || type === "intervene")
       if (actor == null && !supportAction) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
@@ -252,20 +277,32 @@ export class SR5_RollMessage {
         //SR5 p. 207: the patient is healed, never the card owner
         let patient = firstAidPatient(messageData.target.hasTarget, targetActor, actor)
         if (!patient) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+        //SR5 p. 207: without a target, the full armor of the patient selected on click halves the effects here
+        let healed = firstAidBoxesOnClick(messageData, patient)
         let healData = {
           test: {
           },
           roll:{
-            netHits: messageData.roll.netHits
+            netHits: healed.boxes
           },
         }
         //The monitor to heal follows what the patient has: asked between Physical and Stun, or its single condition monitor
         let monitors = patientMonitors(patient)
+        //SR5 p. 207: first aid heals Physical or Stun damage; a device has neither
+        if (!monitors.length) return ui.notifications.warn(game.i18n.format("SR5.WARN_PatientWithoutMonitor", {
+          name: patient.name
+        }))
+        //A patient the player does not own is healed by the GM: without one connected, nothing would happen
+        let healLocally = game.user.isGM || patient.testUserPermission(game.user, 3)
+        if (!healLocally && !hasActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActiveGM"))
         if (monitors.length > 1) healData.test.typeSub = await SR5_CombatHelpers.chooseDamageType()
         else healData.test.typeSub = monitors[0]
         if (!healData.test.typeSub) return
+        if (healed.halvedOnClick) ui.notifications.info(game.i18n.format("SR5.INFO_FirstAidFullArmor", {
+          name: patient.name, hits: healed.boxes
+        }))
         let healedID = (patient.isToken ? patient.token.id : patient.id)
-        if (game.user.isGM || patient.testUserPermission(game.user, 3)) await SR5_ActorHelper.heal(healedID, healData)
+        if (healLocally) await SR5_ActorHelper.heal(healedID, healData)
         else await SR5_SocketHandler.emitForGM("heal", {
           targetActor: healedID,
           healData: healData,
@@ -278,6 +315,10 @@ export class SR5_RollMessage {
           //The 1D3 goes to the patient, the selected token when the test had no target
           let patient = firstAidPatient(messageData.target.hasTarget, targetActor, actor)
           if (!patient) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+          //SR5 p. 207: the 1D3 "increases the damage" being treated; a device or drone has none to worsen
+          if (!patientMonitors(patient).length) return ui.notifications.warn(game.i18n.format("SR5.WARN_PatientWithoutMonitor", {
+            name: patient.name
+          }))
           //SR5 p. 207: the 1D3 of a critical glitch needs a damage type, asked again if the first dialog was cancelled,
           //unless the patient only has a single condition monitor
           if (!messageData.damage.type) {
@@ -410,7 +451,11 @@ export class SR5_RollMessage {
         break
       case "scatter":
         // Only a scatter that happened spends the button: a refused one leaves it for the attacker or the GM
-        if (await SR5_CombatHelpers.rollScatter(messageData)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        // and leaves the distance on the card in its place
+        {
+          const distance = await SR5_CombatHelpers.rollScatter(messageData)
+          if (distance !== false) SR5_RollMessage.updateChatButtonHelper(messageId, type, distance)
+        }
         break
       case "iceEffect":
         SR5_MatrixHelpers.applyIceEffect(messageData, originalActionActor, actor)
@@ -635,6 +680,12 @@ export class SR5_RollMessage {
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.WeaponReachDecreased"))
         if (messageData.chatCard.buttons.decreaseAccuracy) delete messageData.chatCard.buttons.decreaseAccuracy
         break
+      case "scatter":
+        // The scatter rolled by the button stays on the card: distance in meters, or no scatter (SR5 p. 183, 285)
+        if (Number.isFinite(firstOption)) messageData.chatCard.buttons.scatterDone = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", firstOption > 0 ? game.i18n.format("SR5.INFO_ScatterDistance", {
+          distance: firstOption
+        }) : game.i18n.localize("SR5.INFO_NoScattering"))
+        break
       case "decreaseAccuracy":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.AccuracyDecreased"))
         if (messageData.chatCard.buttons.decreaseReach) delete messageData.chatCard.buttons.decreaseReach
@@ -677,7 +728,9 @@ export class SR5_RollMessage {
           messageData.chatCard.buttons.resistanceCard = SR5_RollMessage.generateChatButton("nonOpposedTest","resistanceCard",label)
           messageData.damage.resistanceType = "physicalDamage"
           let oldMessage = game.messages.get(messageData.previousMessage.messageId)
-          if (oldMessage) await oldMessage.delete()
+          // With no GM the player updates the card themselves (updatesCardLocally), and the previous card may not be
+          // theirs: Foundry refused the delete and the escape button was never added. That card then stays.
+          if (oldMessage?.canUserModify(game.user, "delete")) await oldMessage.delete()
           //Escape engulf
           messageData.chatCard.buttons.escapeEngulf = SR5_RollMessage.generateChatButton("nonOpposedTest","escapeEngulf", game.i18n.localize("SR5.EscapeEngulfAttempt"))
           messageData.previousMessage.messageId = message.id
@@ -741,7 +794,7 @@ export class SR5_RollMessage {
 
   //Update the stat of a chatMessage button
   static async updateChatButtonHelper(message, button, firstOption){
-    if (!game.user?.isGM) {
+    if (!game.user?.isGM && !updatesCardLocally(game.messages.get(message))) {
       await SR5_SocketHandler.emitForGM("updateChatButton", {
         message: message,
         buttonToUpdate: button,
@@ -792,7 +845,7 @@ export class SR5_RollMessage {
   }
 
   static async updateRollCardHelper(message, newMessage){
-    if (!game.user?.isGM) {
+    if (!game.user?.isGM && !updatesCardLocally(game.messages.get(message))) {
       await SR5_SocketHandler.emitForGM("updateRollCard", {
         message: message,
         newMessage: newMessage,

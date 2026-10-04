@@ -1,13 +1,37 @@
 import {
   SR5_EffectArea
 } from "../system/effectArea.js"
+import {
+  SR5_EntityHelpers
+} from "../entities/helpers.js"
 
 export function sr5HookCanvasReady(data) {
   for (let token of data.tokens.placeables.filter(t => t.isOwner)){
-    if (token.document.actorLink && (token.scene.flags.sr5?.backgroundCountValue !== 0)){
+    if (token.document.actorLink && ((Number(token.scene.flags.sr5?.backgroundCountValue) || 0) !== 0)){
       token.document.actor.prepareData()
     }
   }
+}
+
+//The matrix noise and background count of a template only count on its own scene, and for a linked actor that
+//scene is read from the canvas when the actor is prepared (SR5_EffectArea.isPreparedAreaEffectOffScene): on
+//a scene change, prepare again the actors that carry one
+export function sr5HookCanvasReadyAreaEffects() {
+  for (let actor of game.actors ?? []){
+    if (!actor.items.some(i => i.system?.type === "areaEffect" && SR5_EffectArea.templateSceneId(i))) continue
+    actor.prepareData()
+    if (actor.sheet?.rendered) actor.sheet.render()
+  }
+}
+
+//Tokens placed before the vision ranges were converted to the scene's units keep a range in meters until
+//their vision is switched again : fix those of the scene being shown, once, by a single GM
+export async function sr5HookCanvasReadyVisionRanges(canvasData) {
+  const designated = game.users?.activeGM
+  if (designated ? !designated.isSelf : !game.user.isGM) return
+  const scene = canvasData?.scene
+  const updates = SR5_EntityHelpers.visionRangeUpdatesOfScene(scene)
+  if (updates.length) await scene.updateEmbeddedDocuments("Token", updates)
 }
 
 export async function sr5HookDrawMeasuredTemplate(template) {

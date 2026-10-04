@@ -14,6 +14,9 @@ import {
   SR5_CombatHelpers 
 } from "../roll-helpers/combat.js"
 import {
+  SR5_EffectArea
+} from "../../system/effectArea.js"
+import {
   isRecoilCarriedOver
 } from "../roll-helpers/recoil.js"
 import {
@@ -80,6 +83,8 @@ export default async function weapon(rollData, actor, item){
 
   //Handle ranged weapon current firing mode here too: handleTargetInfo skips it when no scene is viewed
   if (itemData.category === "rangedWeapon" && !rollData.combat.firingMode.selected) rollData.combat.firingMode.selected = SR5_ConverterHelpers.firingModeToCode(itemData.firingMode)
+  //With a firing mode, the dialog replaces this action by the mode's own (same source)
+  if (itemData.category === "rangedWeapon") rollData.combat.actions = SR5_MiscellaneousHelpers.addActions(rollData.combat.actions, SR5_ConverterHelpers.rangedAttackAction(rollData.combat.firingMode.selected))
 
   //Handle Toxin
   if (itemData.damageElement === "toxin") rollData.damage.toxin = itemData.toxin
@@ -322,7 +327,12 @@ async function handleTargetInfo(rollData, actor, item){
       ui.notifications.info(`${game.i18n.localize("SR5.INFO_TargetIsTooFar")}`)
       return false
     }
-    sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, false, areaEffect, false, weaponLight, weaponLightCap)
+    const environmentalColumns = SR5_CombatHelpers.environmentalColumns(SR5_CombatHelpers.environmentScene(), actor.system, false, areaEffect, false, weaponLight, weaponLightCap)
+    if (environmentalColumns) {
+      // Range is an environmental modifier (SR5 p. 176): the roll dialog weighs the range line against these
+      rollData.combat.environmentalColumns = environmentalColumns
+      sceneEnvironmentalMod = SR5_ConverterHelpers.environmentalLineToMod(SR5_CombatHelpers.environmentalLine(environmentalColumns))
+    }
   }
 
   //Handle ranged weapon current firing mode
@@ -332,8 +342,7 @@ async function handleTargetInfo(rollData, actor, item){
     
   //Handle shotgun current choke settings
   if (itemData.type === "shotgun") {
-    if (itemData.choke.current !== "") rollData.combat.choke.selected = itemData.choke.current
-    else rollData.combat.choke.selected = itemData.choke.value[0]
+    rollData.combat.choke.selected = SR5_ConverterHelpers.chokeToCode(itemData.choke)
   }
 
   //Add environmental modifiers
@@ -348,8 +357,10 @@ async function handleTargetInfo(rollData, actor, item){
   return rollData
 }
 
-async function checkIfTargetIsInTemplate(actor, targetActor, areaEffect){
-  let targetActorItems = targetActor.items.filter(i => i.type === "itemEffect" && i.system.type === "areaEffect")
+//A linked target carries the effects of templates on every scene it stands on: only those of the scene the
+//attack is made on count (the scene on the canvas, the one handleEnvironmentalModifiers reads too)
+export async function checkIfTargetIsInTemplate(actor, targetActor, areaEffect, sceneId = SR5_CombatHelpers.environmentScene()?.id){
+  let targetActorItems = targetActor.items.filter(i => i.type === "itemEffect" && i.system.type === "areaEffect" && !SR5_EffectArea.isAreaEffectOffScene(i, sceneId))
   for (let i of targetActorItems){
     //Check if current actors is not inside the same area effect
     if (!actor.items.find(actorItem => actorItem.system.ownerID === i.system.ownerID)){
@@ -363,12 +374,11 @@ async function checkIfTargetIsInTemplate(actor, targetActor, areaEffect){
   return areaEffect
 }
 
-async function handleMartialArtsCalledShot(rollData, actor){
+export async function handleMartialArtsCalledShot(rollData, actor){
   for (let [key, value] of Object.entries(actor.system.itemsProperties.martialArts)){
-    if (value.isActive) {
-      rollData.combat.calledShot.martialArts[key] = true
-      if (value.modifier?.value) rollData.combat.calledShot.martialArtsModifiers[key] = value.modifier.value
-    }
+    if (value.isActive) rollData.combat.calledShot.martialArts[key] = true
+    // A technique lowers the penalty on its own (Run & Gun p. 125): no unlocking flag needed
+    if (value.modifier?.value) rollData.combat.calledShot.martialArtsModifiers[key] = value.modifier.value
   }
   return rollData
 }

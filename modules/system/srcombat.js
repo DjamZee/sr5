@@ -18,6 +18,9 @@ import {
 } from "../rolls/roll-helpers/miscellaneous.js"
 
 export class SR5Combat extends Combat {
+  //Pass effects whose deletion is under way (see endOwnerPassEffects)
+  static _endingPassEffects = new Set()
+
   get initiativePass(){
     return this.getFlag("sr5", "combatInitiativePass") || 1
   }
@@ -123,6 +126,7 @@ export class SR5Combat extends Combat {
     await combat.update({
       turn
     })
+    await SR5Combat.endOwnerPassEffects(combat, combat.combatant)
     return
   }
 
@@ -148,8 +152,10 @@ export class SR5Combat extends Combat {
 
     const turn = 0
     await combat.update({
-      turn 
+      turn
     })
+    //The new initiative order is known only now: this is the real start of the round's first turn
+    await SR5Combat.endOwnerPassEffects(combat, combat.combatant)
   }
 
   setupTurns(){
@@ -269,6 +275,7 @@ export class SR5Combat extends Combat {
           turn: nextTurn,
           combatants: updatedCombatants,
         })
+        await SR5Combat.endOwnerPassEffects(this, this.combatant)
       } else {
         SR5_SocketHandler.emitForGM("updateCombat", {
           combatId: this.id,
@@ -293,12 +300,24 @@ export class SR5Combat extends Combat {
     return this.nextRound()
   }
 
+  //Turn changed outside nextTurn (previous turn, turn set by hand in the tracker): the pass of the
+  //new current combatant starts too, so the effects it gave until that pass end (Kill Code p. 43)
+  _onUpdate(changed, options, userId){
+    super._onUpdate(changed, options, userId)
+    if (!("turn" in changed) || !game.user?.isActiveGM) return
+    //A new round (nextRound, then resetAll with turnEvents false) still holds the old order: its first turn
+    //starts once the initiative is rolled again, where handleNextRound ends the effects itself
+    if ("round" in changed || options.turnEvents === false) return
+    SR5Combat.endOwnerPassEffects(this, this.combatant).catch(e => console.error(e))
+  }
+
   static async _socketUpdateCombat(message){
     let combat = game.combats.get(message.data.combatId)
     await combat.update({
       turn: message.data.turn,
       combatants: message.data.combatants,
     })
+    await SR5Combat.endOwnerPassEffects(combat, combat.combatant)
   }
 
   async startCombat() {
@@ -698,6 +717,8 @@ export class SR5Combat extends Combat {
     if (!actor) return
     for (let item of actor.items){
       if (item.type !== "itemEffect" || item.system.durationType !== "initiativePass") continue
+      //Tied to its owner's next pass, even in the next round: ended when the owner's turn starts
+      if (SR5Combat.endsOnOwnerTurn(item, combatant.combat)) continue
       let duration = item.system.duration - 1
       if (duration <= 0){
         await actor.deleteEmbeddedDocuments("Item", [item.id])
@@ -709,6 +730,37 @@ export class SR5Combat extends Combat {
       })
     }
   }
+
+  //Kill Code p. 43: the I Am the Firewall bonus lasts until the start of the hacker's next Initiative Pass.
+  //Only when the hacker fights in this combat; otherwise the effect keeps its pass countdown
+  static endsOnOwnerTurn(item, combat){
+    if (item.system.type !== "iAmTheFirewall" || !combat) return false
+    return combat.combatants.some(c => c.actorId === item.system.ownerID)
+  }
+
+  //Turn start: the effects the starting combatant gave to its allies until its next pass are over
+  static async endOwnerPassEffects(combat, combatant){
+    let ownerId = combatant?.actorId
+    if (!ownerId) return
+    for (let c of combat.combatants){
+      let actor = SR5Combat.getActorFromCombatant(c)
+      if (!actor) continue
+      //An effect already being deleted by a concurrent call (turn set by hand and by the system) is skipped
+      let ended = actor.items.filter(i => i.type === "itemEffect" && i.system.durationType === "initiativePass" && i.system.ownerID === ownerId && SR5Combat.endsOnOwnerTurn(i, combat) && !SR5Combat._endingPassEffects.has(i.uuid ?? i.id))
+      if (!ended.length) continue
+      const keys = ended.map(i => i.uuid ?? i.id)
+      for (let k of keys) SR5Combat._endingPassEffects.add(k)
+      try {
+        await actor.deleteEmbeddedDocuments("Item", ended.map(i => i.id))
+      } finally {
+        for (let k of keys) SR5Combat._endingPassEffects.delete(k)
+      }
+      for (let item of ended) ui.notifications.info(`${c.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_DurationFinished", {
+        effect: item.name
+      })}`)
+    }
+  }
+
 
   //Do stuff on actor when turn is ending
   static async manageTurnEnd(combatant){
@@ -736,22 +788,27 @@ export class SR5Combat extends Combat {
             //Head case Attribute Boost (Stolen Souls p. 201): Stun damage equal to the hits once the boost ends.
             //Applied straight to the monitor: this is not an attack, so no knockdown check
             if (itemData.type === "naniteAttributeBoost" && Number(itemData.value) > 0 && actor.system.conditionMonitors.stun) {
-              let stunData = foundry.utils.deepClone(actor.system.conditionMonitors.stun)
-              stunData.actual.base += Number(itemData.value)
-              SR5_EntityHelpers.updateValue(stunData.actual, 0)
-              await actor.update({
-                "system.conditionMonitors.stun.actual.base": stunData.actual.base
-              })
+              //Dynamic import: entityActor-helpers already imports this module
+              const {
+                SR5_ActorHelper
+              } = await import("../entities/actors/entityActor-helpers.js")
+              // Excess Stun carries over to Physical, then to overflow (SR5 p. 171, 172)
+              let monitors = foundry.utils.deepClone(actor.system.conditionMonitors)
+              monitors.stun.actual.base += Number(itemData.value)
+              SR5_EntityHelpers.updateValue(monitors.stun.actual, 0)
+              const overflow = SR5_ActorHelper.carryMonitorOverflow(monitors, actor.type)
+              let monitorUpdates = {
+              }
+              for (let key of ["stun", "physical", "overflow"]) {
+                if (monitors[key]?.actual) monitorUpdates[`system.conditionMonitors.${key}.actual.base`] = monitors[key].actual.base
+              }
+              await actor.update(monitorUpdates)
               ui.notifications.info(`${combatant.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_NaniteBoostDamage", {
                 damage: itemData.value
               })}`)
-              if (actor.system.conditionMonitors.stun.actual.value >= actor.system.conditionMonitors.stun.value) {
-                //Dynamic import: entityActor-helpers already imports this module
-                const {
-                  SR5_ActorHelper 
-                } = await import("../entities/actors/entityActor-helpers.js")
-                await SR5_ActorHelper.createKoEffect(actor.id)
-              }
+              if (overflow.carriedDamage > 0) ui.notifications.info(`${combatant.name}${game.i18n.localize("SR5.Colons")} ${overflow.carriedDamage}${game.i18n.localize(SR5.damageTypesShort.physical)} ${game.i18n.localize("SR5.Applied")}.`)
+              if (overflow.isDead) await SR5_ActorHelper.createDeadEffect(actor.id)
+              else if (monitors.stun.actual.value >= monitors.stun.value) await SR5_ActorHelper.createKoEffect(actor.id)
             }
           } else {
             await item.update({

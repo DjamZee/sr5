@@ -208,6 +208,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     context.storageViewIsGrid = game.settings.get("sr5", "sr5StorageViewMode") !== "list"
     //The "wired by DNI" box only matters when the world asks for a DNI to switch the wireless as a free action
     context.showDNI = game.settings.get("sr5", "sr5WifiRequiresDNI") && ["actorPc", "actorGrunt"].includes(this.actor.type)
+    //An AI outside any device has nothing to reboot: it must load onto a device first (Data Trails p. 157)
+    context.canReboot = !SR5_CharacterUtility.isDevicelessAI(this.actor)
 
     // Compute dynamic layout (SR6-style panel/tab/block system)
     context.layout = this._computeSheetLayout(this.actor)
@@ -899,7 +901,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     if (event.ctrlKey) {
       if ( item ) {
         await item.delete()
-        await SR5_EntityHelpers.deleteEffectOnActor(this.actor, item.system.type)
+        // A jammer's status goes with its item in sr5HookDeleteItem: deleting it here too would race the hook
+        if (item.system.type !== "signalJam") await SR5_EntityHelpers.deleteEffectOnActor(this.actor, item.system.type)
         return
       }
     } else {
@@ -913,7 +916,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       })
       if (confirmed) {
         item.delete()
-        if (item.type === "itemEffect"){
+        if (item.type === "itemEffect" && item.system.type !== "signalJam"){
           SR5_EntityHelpers.deleteEffectOnActor(this.actor, item.system.type)
         }
       }
@@ -1495,6 +1498,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       }
     }
     if (item.type === "itemProgram" && target === "system.isActive"){
+      if (oldValue === false && ["common", "hacking", "autosoft", "agent"].includes(item.system.type)) {
+        let warning = SR5_CharacterUtility.aiProgramCapWarning(actor)
+        if (warning) ui.notifications.warn(warning)
+      }
       if(oldValue === false) actions = [{
         type: "free", value: 1, source: "loadProgram"
       }]
@@ -1731,6 +1738,13 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
   //Reboot deck
   async _onRebootDeck(event) {
     event.preventDefault()
+    //An AI outside any device has nothing to reboot (Data Trails p. 157)
+    if (SR5_CharacterUtility.isDevicelessAI(this.actor)) {
+      ui.notifications.warn(game.i18n.format("SR5.WARN_RebootNoDevice", {
+        name: this.actor.name
+      }))
+      return false
+    }
     //A link-locked character cannot reboot their device and must jack out (SR5 p. 231 and 244);
     //the IC that force a reboot (p. 250) call rebootDeck directly and are not held back
     if (this.actor.system.matrix?.isLinkLocked) {
@@ -2232,8 +2246,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
   async _onStopJamming(event){
     event.preventDefault()
     let jammingItem = this.actor.items.find(i => i.system.type === "signalJam")
+    // The status goes with the item (sr5HookDeleteItem)
     await this.actor.deleteEmbeddedDocuments("Item", [jammingItem.id])
-    await SR5_EntityHelpers.deleteEffectOnActor(this.actor, "signalJam")
   }
 
   _onChangeMatrixMode(_event){

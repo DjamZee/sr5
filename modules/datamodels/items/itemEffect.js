@@ -10,6 +10,13 @@ export class sr5ItemEffectDataModel extends foundry.abstract.TypeDataModel {
       type: new fields.StringField({
         initial: ''
       }),
+      gameEffect: new fields.HTMLField({
+        initial: ''
+      }),
+      // The effect sheet has a description editor too (descriptionGameEffect-edit.hbs)
+      description: new fields.HTMLField({
+        initial: ''
+      }),
       itemRating: new fields.StringField({
         initial: ''
       }),

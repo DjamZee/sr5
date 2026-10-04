@@ -666,7 +666,7 @@ export class SR5Item extends Item {
   async placeGabarit(messageId) {
     let actorPosition = SR5_EntityHelpers.getActorCanvasPosition(this.parent)
     if (canvas.scene && actorPosition !==0) {
-      const template = await AbilityTemplate.fromItem(this)
+      const template = await AbilityTemplate.fromItem(this, messageId)
       if (template) {
         await template.drawPreview()
         if (this.type === "itemWeapon") this.rollTest("weapon")

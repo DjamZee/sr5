@@ -303,9 +303,25 @@ export class SR5_EntityHelpers {
     return `${game.i18n.localize('SR5.Custom')} (${typeKey})`
   }
 
+  // A table already sorted is the very object sortByTranslatedTerm returned, with as many keys, in the same language:
+  // sorting it again gives the same order, so it is skipped. Every actor's preparation asked for the whole sort.
+  static _sortedTables = new Map()
+
+  // To call when a table is changed in place without adding or removing a key (a renamed custom spirit type)
+  static invalidateSortedTranslations() {
+    SR5_EntityHelpers._sortedTables.clear()
+  }
+
+  static _isAlreadySorted(key, table) {
+    let sorted = SR5_EntityHelpers._sortedTables.get(key)
+    return !!sorted && sorted.table === table && sorted.size === Object.keys(table).length && sorted.lang === game.i18n?.lang
+  }
+
   // Here we sort all the tables except those mentionned in the switch
   static sortTranslations(object) {
+    let cache = object === SR5
     for (let key of Object.keys(object)) {
+      if (cache && SR5_EntityHelpers._isAlreadySorted(key, object[key])) continue
       switch (key) {
         case "powerActionTypes":
         case "augmentationGrades":
@@ -338,6 +354,10 @@ export class SR5_EntityHelpers {
         default:
           object[key] = this.sortByTranslatedTerm(object[key], key)
       }
+      let table = object[key]
+      if (cache && table && typeof table === "object") SR5_EntityHelpers._sortedTables.set(key, {
+        table, size: Object.keys(table).length, lang: game.i18n?.lang
+      })
     }
     return object
   }
@@ -413,13 +433,16 @@ export class SR5_EntityHelpers {
   }
 
   //Return necessery data to update a token to the vision its actor is currently using
-  static async getVisionData(tokenDocument, actor){
+  //scene: the scene the token stands on. tokenDocument is often a plain copy, which has lost its parent.
+  static async getVisionData(tokenDocument, actor, scene = tokenDocument?.parent ?? canvas?.scene){
     if (!tokenDocument) return SR5_SystemHelpers.srLog(1, `Empty '${tokenDocument}' in 'getVisionData()'`)
     const vision = this.getActiveVisionType(actor)
     const mode = SR5_TOKEN_VISION_MODES[vision]
     tokenDocument.sight.enabled = true
     tokenDocument.sight.visionMode = mode ?? "basic"
-    tokenDocument.sight.range = mode ? getVisionRange(vision) : 0
+    //The settings are in meters (SR5 p. 176: ultrasound reaches 50 meters), the token draws in its scene's units
+    const range = SR5_SystemHelpers.convertMetersToSceneUnits(getVisionRange(vision), scene)
+    tokenDocument.sight.range = mode ? range : 0
     tokenDocument.sight.color = SR5_VISION_COLORS[vision] ?? null
     //Apply the look of the vision mode, as the token configuration does when it is picked by hand
     const defaults = CONFIG.Canvas.visionModes[tokenDocument.sight.visionMode]?.vision?.defaults ?? {
@@ -431,9 +454,41 @@ export class SR5_EntityHelpers {
     const visionDetections = Object.values(SR5_VISION_DETECTION_MODES)
     tokenDocument.detectionModes = (tokenDocument.detectionModes ?? []).filter(d => !visionDetections.includes(d.id))
     if (SR5_VISION_DETECTION_MODES[vision]) tokenDocument.detectionModes.push({
-      id: SR5_VISION_DETECTION_MODES[vision], enabled: true, range: getVisionRange(vision)
+      id: SR5_VISION_DETECTION_MODES[vision], enabled: true, range
     })
     return tokenDocument
+  }
+
+  //Tokens placed before the vision ranges were converted carry the setting's value in meters as if it were
+  //scene units (50 ft of ultrasound on a map in feet). Return the updates that give them their range in the
+  //scene's units. Only a range still equal to the bare setting is touched : one the GM typed by hand, or one
+  //already converted, is left as it is, so running this again changes nothing.
+  static visionRangeUpdatesOfScene(scene){
+    const updates = []
+    for (const document of scene?.tokens ?? []) {
+      //Read the stored data, not the prepared one : prepared detection modes carry derived values (lightPerception
+      //at Infinity where the source holds null), and an update built from them is refused without a word, the
+      //sight range with it
+      const token = document._source ?? document
+      const vision = Object.keys(SR5_TOKEN_VISION_MODES).find(k => SR5_TOKEN_VISION_MODES[k] === token.sight?.visionMode)
+      if (!vision) continue
+      const meters = getVisionRange(vision)
+      const range = SR5_SystemHelpers.convertMetersToSceneUnits(meters, scene)
+      if (range === meters) continue
+      const update = {
+      }
+      if (token.sight.range === meters) update["sight.range"] = range
+      const detectionModes = token.detectionModes ?? []
+      if (detectionModes.some(d => d.id === SR5_VISION_DETECTION_MODES[vision] && d.range === meters)) {
+        update.detectionModes = detectionModes.map(d => (d.id === SR5_VISION_DETECTION_MODES[vision] && d.range === meters ? {
+          ...d, range
+        } : d))
+      }
+      if (Object.keys(update).length) updates.push({
+        _id: token.id ?? token._id, ...update
+      })
+    }
+    return updates
   }
 
   //Add Effect to actor

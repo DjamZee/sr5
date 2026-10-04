@@ -198,58 +198,7 @@ describe('Extended test (SR5 p. 51)', () => {
   })
 })
 
-describe('Edge on a later roll of an extended test (SR5 p. 47, 58)', () => {
-  const actor = {
-    id: 'a1', type: 'actorPc', system: {
-      specialAttributes: {
-        edge: {
-          augmented: {
-            value: 2
-          }
-        }
-      }
-    }
-  }
-
-  /** Roll [5, 5, 2, 3] (2 hits), then a second roll showing these faces; its pool is 3 dice */
-  async function secondRoll(rolled) {
-    const message = await cardFrom([5, 5, 2, 3])
-    faces = [...rolled]
-    await SR5_RollTest.extendedRoll(message, actor)
-    updatedCard.dicePool.value = 3
-    return {
-      id: 'm1', flags: {
-        sr5data: JSON.parse(JSON.stringify(updatedCard))
-      }
-    }
-  }
-
-  it('hits of earlier rolls do not erase the critical glitch of this roll', async () => {
-    const message = await secondRoll([1, 1, 1])
-    expect(message.flags.sr5data.roll.criticalGlitchRoll).toBe(true)
-    faces = [2, 3]
-    await SR5_RollTest.pushTheLimit(message, actor)
-    expect(updatedCard.roll.criticalGlitchRoll).toBe(true)
-    expect(updatedCard.roll.hits).toBe(2)
-  })
-
-  it('Push the limit adds to the hits of every roll so far', async () => {
-    const message = await secondRoll([5, 2, 2])
-    expect(message.flags.sr5data.roll.hits).toBe(3)
-    faces = [5, 2]
-    await SR5_RollTest.pushTheLimit(message, actor)
-    expect(updatedCard.roll.hits).toBe(4)
-  })
-
-  it('Second Chance rerolls the dice of this roll that missed', async () => {
-    const message = await secondRoll([5, 2, 2])
-    faces = [5, 5]
-    await SR5_RollTest.secondeChance(message, actor)
-    expect(updatedCard.roll.hits).toBe(5)
-  })
-})
-
-describe('Dice pool of the next roll of an extended test (SR5 p. 50, 58)', () => {
+describe('Edge during an extended test, GM ruling of 05/10 (SR5 p. 58)', () => {
   const actor = {
     id: 'a1', type: 'actorPc', system: {
       specialAttributes: {
@@ -262,10 +211,19 @@ describe('Dice pool of the next roll of an extended test (SR5 p. 50, 58)', () =>
     }
   }
 
+  beforeEach(() => {
+    globalThis.ui = {
+      notifications: {
+        warn: vi.fn()
+      }
+    }
+  })
+
   /** A first roll of `base` dice with these modifiers, its pool computed as the dialog does */
-  async function firstRoll(base, modifiers) {
+  async function firstRoll(base, modifiers, rolled) {
     const pool = base + modifiers.reduce((sum, m) => sum + m.value, 0)
-    const message = await cardFrom(Array(pool).fill(2))
+    const message = await cardFrom(rolled ?? Array(pool).fill(2))
+    message.flags.sr5data.test.isExtended = true
     Object.assign(message.flags.sr5data.dicePool, {
       base, modifiers
     })
@@ -273,8 +231,8 @@ describe('Dice pool of the next roll of an extended test (SR5 p. 50, 58)', () =>
     return message
   }
 
-  async function nextRoll(message) {
-    faces = Array(20).fill(2)
+  async function nextRoll(message, rolled) {
+    faces = rolled ?? Array(20).fill(2)
     await SR5_RollTest.extendedRoll(message, actor)
     return {
       id: 'm1', flags: {
@@ -283,7 +241,7 @@ describe('Dice pool of the next roll of an extended test (SR5 p. 50, 58)', () =>
     }
   }
 
-  it('Edge dice of a Push the limit after the roll are not rolled again', async () => {
+  it('Push the limit after the first roll keeps its Edge dice on every later roll', async () => {
     let message = await firstRoll(6, [])
     faces = [2, 2, 2]
     await SR5_RollTest.pushTheLimit(message, actor)
@@ -292,33 +250,72 @@ describe('Dice pool of the next roll of an extended test (SR5 p. 50, 58)', () =>
         sr5data: JSON.parse(JSON.stringify(updatedCard))
       }
     })
-    expect(message.flags.sr5data.roll.rollDices).toHaveLength(5)
-    expect(message.flags.sr5data.dicePool.value).toBe(5)
-    expect(message.flags.sr5data.edge.hasUsedPushTheLimit).toBe(false)
+    expect(message.flags.sr5data.roll.rollDices).toHaveLength(8)
+    expect(message.flags.sr5data.dicePool.value).toBe(8)
+    expect(message.flags.sr5data.edge.hasUsedPushTheLimit).toBe(true)
+    message = await nextRoll(message)
+    expect(message.flags.sr5data.dicePool.value).toBe(7)
+    expect(SR5_RollTestHelper.removeEdgeFromActor).toHaveBeenCalledTimes(1)
   })
 
-  it('Edge dice of a Push the limit before the roll are not rolled again', async () => {
+  it('Push the limit before the roll keeps its Edge dice on every later roll', async () => {
     let message = await firstRoll(6, [{
       type: 'edge', value: 3
     }])
+    message.flags.sr5data.edge.hasUsedPushTheLimit = true
     message = await nextRoll(message)
-    expect(message.flags.sr5data.roll.rollDices).toHaveLength(5)
-    expect(message.flags.sr5data.dicePool.value).toBe(5)
+    expect(message.flags.sr5data.roll.rollDices).toHaveLength(8)
+    expect(message.flags.sr5data.dicePool.value).toBe(8)
   })
 
-  it('each later roll loses one die, other modifiers counted once', async () => {
+  it('the Edge dice of a later roll explode and ignore the limit', async () => {
+    let message = await firstRoll(2, [{
+      type: 'edge', value: 3
+    }])
+    message.flags.sr5data.edge.hasUsedPushTheLimit = true
+    message.flags.sr5data.limit.value = 1
+    const rollDice = vi.spyOn(SR5_RollTest, 'rollDice')
+    message = await nextRoll(message, [6, 6, 5, 2])
+    // 4 dice rolled: 3 hits kept despite a limit of 1, and the 6s explode
+    expect(message.flags.sr5data.roll.rollHits).toBe(3)
+    expect(rollDice).toHaveBeenCalledWith(expect.objectContaining({
+      dicePool: 4, explose: true, limit: undefined
+    }))
+  })
+
+  it('without Edge, each later roll loses one die and Edge is no longer offered', async () => {
     let message = await firstRoll(8, [{
       type: 'wounds', value: -2
     }])
+    message.flags.sr5data.edge.canUseEdge = true
     message = await nextRoll(message)
-    expect(message.flags.sr5data.roll.rollDices).toHaveLength(5)
     expect(message.flags.sr5data.dicePool.value).toBe(5)
+    expect(message.flags.sr5data.edge.canUseEdge).toBe(false)
     message = await nextRoll(message)
-    expect(message.flags.sr5data.roll.rollDices).toHaveLength(4)
     expect(message.flags.sr5data.dicePool.value).toBe(4)
   })
-})
 
+  it('Push the limit is refused on a later roll', async () => {
+    let message = await nextRoll(await firstRoll(6, []))
+    faces = [5, 5, 5]
+    expect(await SR5_RollTest.pushTheLimit(message, actor)).toBe(false)
+    expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_EdgeExtendedTestStartOnly')
+    expect(SR5_RollTestHelper.removeEdgeFromActor).not.toHaveBeenCalled()
+  })
+
+  it('Second Chance is refused during an extended test, first roll included', async () => {
+    const message = await firstRoll(4, [], [5, 2, 2, 2])
+    faces = [5, 5, 5]
+    expect(await SR5_RollTest.secondeChance(message, actor)).toBe(false)
+    expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_EdgeExtendedTestPushOnly')
+    expect(updatedCard).toBeUndefined()
+  })
+
+  it('the card offers no Second Chance on an extended test', () => {
+    const template = readFileSync(new URL('../templates/rolls/roll-card.hbs', import.meta.url), 'utf8')
+    expect(template).toMatch(/\{\{#unless test\.isExtended\}\}\s*<a[^>]*data-type="secondeChance"/)
+  })
+})
 describe('Healing critical glitch (SR5 p. 208)', () => {
   function healingCard() {
     return {

@@ -130,6 +130,46 @@ export class itemsPropertiesPartialModel extends foundry.abstract.TypeDataModel 
               ...sr5ModsPartialModel.defineSchema()
             }),
           }),
+          knockdown: new fields.SchemaField({
+            isActive: new fields.BooleanField({
+              initial: false
+            }),
+            modifier: new fields.SchemaField({
+              ...sr5ModsPartialModel.defineSchema()
+            }),
+          }),
+          shakeUp: new fields.SchemaField({
+            isActive: new fields.BooleanField({
+              initial: false
+            }),
+            modifier: new fields.SchemaField({
+              ...sr5ModsPartialModel.defineSchema()
+            }),
+          }),
+          blastOutOfHand: new fields.SchemaField({
+            isActive: new fields.BooleanField({
+              initial: false
+            }),
+            modifier: new fields.SchemaField({
+              ...sr5ModsPartialModel.defineSchema()
+            }),
+          }),
+          dirtyTrick: new fields.SchemaField({
+            isActive: new fields.BooleanField({
+              initial: false
+            }),
+            modifier: new fields.SchemaField({
+              ...sr5ModsPartialModel.defineSchema()
+            }),
+          }),
+          vitals: new fields.SchemaField({
+            isActive: new fields.BooleanField({
+              initial: false
+            }),
+            modifier: new fields.SchemaField({
+              ...sr5ModsPartialModel.defineSchema()
+            }),
+          }),
         }),
       }),
     }

@@ -23,8 +23,11 @@ import {
   _getSRStatusEffect 
 } from "../../system/effectsList.js"
 import {
-  SR5_SocketHandler 
+  SR5_SocketHandler
 } from "../../socket.js"
+import {
+  SR5_EffectArea
+} from "../../system/effectArea.js"
 import {
   SR5_ActorHelper
 } from "./entityActor-helpers.js"
@@ -747,7 +750,7 @@ export class SR5Actor extends Actor {
 
         case "itemEffect":
           i.prepareData()
-          if (Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
+          if (Object.keys(iData.customEffects).length && !SR5_EffectArea.isPreparedAreaEffectOffScene(i, actor)) SR5_CharacterUtility.applyCustomEffects(i, actor)
           if (iData.type === "signalJam") actor.system.matrix.isJamming = true
           break
 
@@ -779,7 +782,8 @@ export class SR5Actor extends Actor {
 
         case "itemVehicle":        
           i.prepareData()
-          actor.system.matrix.connectedObject.vehicles[i.uuid] = i.name
+          //An icon in the Matrix only with its wireless on, as other objects; slaved or not (SR5 p. 270)
+          if (iData.wirelessTurnedOn) actor.system.matrix.connectedObject.vehicles[i.uuid] = i.name
           if (!iData.isSlavedToPan) actor.system.matrix.potentialPanObject.vehicles[i.uuid] = i.name
           SR5_UtilityItem._handleVehicleSlots(iData)
           break
@@ -866,6 +870,12 @@ export class SR5Actor extends Actor {
           iData.casterMagic = actorData.specialAttributes.magic.augmented.value
           SR5_UtilityItem._handleSpellRange(iData, iData.casterMagic)
           break
+        case "itemPreparation":
+          i.prepareData()
+          // SR5 p. 307: an area like the spell's, without which its template was drawn with a radius of 0.
+          // SR5 p. 309: the preparation's Force stands for the Magic, and an area's radius is its Potency
+          SR5_UtilityItem._handleSpellRange(iData, parseInt(iData.force || 0), iData.potency || 0)
+          break
         case "itemSpirit":
           if (iData.isBounded){
             for (let [key, value] of Object.entries(actorData.magic.elements)){
@@ -886,7 +896,6 @@ export class SR5Actor extends Actor {
         case "itemAdeptPower":
         case "itemVehicle":
         case "itemMartialArt":
-        case "itemPreparation":
           i.prepareData()
           break
         case "itemProgram":
@@ -1054,7 +1063,8 @@ export class SR5Actor extends Actor {
   //Apply an external effect to actor (such spell, complex form). Data is provided by chatMessage
   async applyExternalEffect(data, effectType){
     let actorId = (this.isToken ? this.token.id : this.id)
-    SR5_ActorHelper.applyExternalEffect(actorId, data, effectType)
+    //Awaited: a template's spell effect is checked again on the next move, and must find the effect created
+    await SR5_ActorHelper.applyExternalEffect(actorId, data, effectType)
   }
 
   //Apply specific toxin effect

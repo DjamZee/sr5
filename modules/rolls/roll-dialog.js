@@ -112,6 +112,20 @@ export default class SR5_RollDialog {
     return false
   }
 
+  // SR5 p. 191-192: block needs Unarmed Combat and parry the weapon's skill; dodge is open to anyone
+  static hasActiveDefenseSkill(actor, defenseMode){
+    let skillKey = SR5_RollDialog.activeDefenseSkills[defenseMode]
+    if (!skillKey || !actor || (actor.system?.skills?.[skillKey]?.rating.value || 0) > 0) return true
+    ui.notifications.warn(game.i18n.format("SR5.WARN_ActiveDefenseNoSkill", {
+      actor: actor.name, skill: game.i18n.localize(SR5.skills[skillKey])
+    }))
+    return false
+  }
+
+  static activeDefenseSkills = {
+    block: "unarmedCombat", parryClubs: "clubs", parryBlades: "blades"
+  }
+
   // SR5 p. 170 and 192: full defense (-10, once per turn) and an active defense (-5) are paid together,
   // so the initiative must be higher than their combined cost
   static defenseStanceCost(actor, fullDefense, defenseMode){
@@ -563,7 +577,21 @@ export default class SR5_RollDialog {
           html.querySelector('#force').value = value
           dialogData.limit.base = value
         }
+        //The limit is the Force (spells SR5 p. 285, ritual sealing p. 299): show the new one with its modifiers.
+        //The ritual's Force field has no #force id: the limit is updated whatever field gave the Force
+        {
+          const baseLimit = html.querySelector('[name="baseLimit"]')
+          if (baseLimit) {
+            dialogData.limit.base = value
+            baseLimit.value = value
+            this.updateLimitValue(html)
+          }
+        }
         if (dialogData.test.type === "ritual") this._updateReagents(value, actor, html, dialogData)
+        //The participants rolled their assist at the Force announced on the circle card: they are not rolled again
+        if (dialogData.magic.ritualCircleForce && parseInt(value) !== dialogData.magic.ritualCircleForce) ui.notifications.warn(game.i18n.format("SR5.WARN_RitualForceChanged", {
+          force: dialogData.magic.ritualCircleForce
+        }))
         return
       case "reagentsSpent":
         this._updateReagents(value, actor, html, dialogData)
@@ -785,8 +813,8 @@ export default class SR5_RollDialog {
         case "targetRange": {
           let baseRange = SR5_ConverterHelpers.rangeToEnvironmentalLine(ev.target.value)
           baseRange += actor.system.itemsProperties.environmentalMod.range.value
-          value = SR5_ConverterHelpers.environmentalLineToMod(baseRange)
-          label = label = game.i18n.localize(SR5.dicePoolModTypes[modifierName])
+          value = SR5_CombatHelpers.rangeModifierWithEnvironment(baseRange, dialogData.combat.environmentalColumns)
+          label = game.i18n.localize(dialogData.combat.environmentalColumns ? "SR5.RangeWithEnvironment" : SR5.dicePoolModTypes[modifierName])
           dialogData.target.range = ev.target.value
           // Handle choke
           if (dialogData.combat.weaponType === "shotgun") {
@@ -827,7 +855,7 @@ export default class SR5_RollDialog {
           }
           //actions
           weapon = await fromUuid(dialogData.owner.itemUuid)
-          if (weapon.system.choke.current !== dialogData.combat.choke.selected && !dialogData.combat.choke.actionSpent){
+          if (SR5_ConverterHelpers.chokeToCode(weapon.system.choke) !== dialogData.combat.choke.selected && !dialogData.combat.choke.actionSpent){
             action = [{
               type: "simple", value: 1, source: "changeChokeSettings"
             }]
@@ -836,7 +864,7 @@ export default class SR5_RollDialog {
             }]
             SR5Combat.changeActionInCombat(dialogData.owner.actorId, action)
             dialogData.combat.choke.actionSpent = true
-          } else if (weapon.system.choke.current === dialogData.combat.choke.selected && dialogData.combat.choke.actionSpent){
+          } else if (SR5_ConverterHelpers.chokeToCode(weapon.system.choke) === dialogData.combat.choke.selected && dialogData.combat.choke.actionSpent){
             action = [{
               type: "simple", value: -1, source: "changeChokeSettings"
             }]
@@ -850,6 +878,11 @@ export default class SR5_RollDialog {
           break
         case "firingMode":
           dialogData.combat.firingMode.selected = ev.target.value
+          // Bull's Eye counts the bullets of the burst: picked before the mode, it kept the old mode's AP
+          if (dialogData.combat.calledShot?.name === "bullsEye" && dialogData.combat.armorPenetrationBeforeCalledShot !== undefined) {
+            const bullsEyeWeapon = await fromUuid(dialogData.owner.itemUuid)
+            dialogData.combat.armorPenetration = SR5_CalledShotHelpers.bullsEyeArmorPenetration(dialogData.combat.armorPenetrationBeforeCalledShot, bullsEyeWeapon?.system.armorPenetration.base ?? 0, ev.target.value)
+          }
           value = this.calculRecoil(html)
           action = SR5_ConverterHelpers.firingModeToAction(ev.target.value)
           dialogData.combat.actions = SR5_MiscellaneousHelpers.addActions(dialogData.combat.actions, action)
@@ -892,14 +925,20 @@ export default class SR5_RollDialog {
         }
         case "defenseMode": {
           let fullDefense = dialogData.dicePool.modifiers.some(m => m.type === "fullDefense")
-          if (!SR5_RollDialog.hasInitiativeForInterruption(actor, SR5_RollDialog.defenseStanceCost(actor, fullDefense, ev.target.value))) ev.target.value = "none"
+          if (!SR5_RollDialog.hasActiveDefenseSkill(actor, ev.target.value)) ev.target.value = "none"
+          else if (!SR5_RollDialog.hasInitiativeForInterruption(actor, SR5_RollDialog.defenseStanceCost(actor, fullDefense, ev.target.value))) ev.target.value = "none"
           value = SR5_ConverterHelpers.activeDefenseToMod(ev.target.value, dialogData.combat.activeDefenses)
           label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.characterDefenses[ev.target.value])})`
           dialogData.combat.activeDefenseSelected = ev.target.value
           // SR5 p. 191-192: dodge, block and parry use a skill, so the Physical limit applies to the defense test
           let usesSkill = ["dodge", "block", "parryClubs", "parryBlades"].includes(ev.target.value)
-          dialogData.limit.base = usesSkill ? (dialogData.combat.activeDefenses.limit || 0) : 0
-          dialogData.limit.type = usesSkill ? "physicalLimit" : ""
+          // A test that already had a limit (a ramming defense) gets it back when the active defense is dropped
+          dialogData.combat.activeDefenses.ownLimit ??= {
+            base: dialogData.limit.base || 0, type: dialogData.limit.type || ""
+          }
+          let ownLimit = dialogData.combat.activeDefenses.ownLimit
+          dialogData.limit.base = usesSkill ? (dialogData.combat.activeDefenses.limit || 0) : ownLimit.base
+          dialogData.limit.type = usesSkill ? "physicalLimit" : ownLimit.type
           let limitRow = html.querySelector('#activeDefenseLimit')
           if (limitRow) limitRow.style.display = usesSkill ? '' : 'none'
           break
@@ -1029,7 +1068,9 @@ export default class SR5_RollDialog {
             label: `${game.i18n.localize(SR5.limitModTypes["limitModPerception"])} (${game.i18n.localize(SR5.perceptionTypes[ev.target.value])})`,
           }
           this.limitModifier.perceptionType = limitMod
-          html.querySelector('[name="limitModPerception"]').value = limitMod
+          // The limit block is not rendered when the base limit is 0 (roll-dialog.hbs): its fields may be missing
+          const perceptionLimitInput = html.querySelector('[name="limitModPerception"]')
+          if (perceptionLimitInput) perceptionLimitInput.value = limitMod
           this.updateLimitValue(html)
           break
         }
@@ -1051,11 +1092,13 @@ export default class SR5_RollDialog {
           label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.healingConditions[ev.target.value])})`
           dialogData.healingCondition = ev.target.value
           break
-        case "healingSupplies":
+        case "healingSupplies": {
           dialogData.limit.modifiers.healingSupplies = {
             value:0
           }
-          html.querySelector('[name="limitModHealingSupplies"]').value = 0
+          // Inside the limit block, which is not rendered when the base limit is 0
+          const suppliesLimitInput = html.querySelector('[name="limitModHealingSupplies"]')
+          if (suppliesLimitInput) suppliesLimitInput.value = 0
           switch(ev.target.value){
             case "noSupplies":
               value = -3
@@ -1070,7 +1113,7 @@ export default class SR5_RollDialog {
                 dialogData.owner.itemUuid = medkit.uuid
                 dialogData.limit.modifiers.healingSupplies.value = value
                 dialogData.limit.modifiers.healingSupplies.label = game.i18n.localize(SR5.dicePoolModTypes[modifierName])
-                html.querySelector('[name="limitModHealingSupplies"]').value = value
+                if (suppliesLimitInput) suppliesLimitInput.value = value
               } else {
                 ui.notifications.warn(game.i18n.format('SR5.WARN_NoMedkit'))
                 value = 0
@@ -1083,10 +1126,11 @@ export default class SR5_RollDialog {
           label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.healingSupplies[ev.target.value])})`
           this.updateLimitValue(html)
           break
+        }
         case "targetEffect":
           dialogData.target.itemUuid = ev.target.value
-          if (dialogData.test.typeSub === "counterspelling"){
-            let spellCategory = await this.getTargetType(dialogData.targetEffect)
+          if (dialogData.test.typeSub === "counterspelling" && ev.target.value){
+            let spellCategory = await this.getTargetType(dialogData.target.itemUuid)
             value = parseInt(actor.system.skills.counterspelling.spellCategory[spellCategory].dicePool - actor.system.skills.counterspelling.test.dicePool)
             label = `${game.i18n.localize(SR5.dicePoolModTypes["spellCategory"])} (${game.i18n.localize(SR5.spellCategories[spellCategory])})`
           } else value = 0
@@ -1128,9 +1172,7 @@ export default class SR5_RollDialog {
               // Run & Gun p. 130 : la PA de l'attaque est augmentée de la PA de base de l'arme (sans munition)
               // multipliée par le nombre de balles de la rafale, au maximum ×3
               const bullsEyeWeapon = await fromUuid(dialogData.owner.itemUuid)
-              const baseAP = bullsEyeWeapon?.system.armorPenetration.base ?? 0
-              const bullets = SR5_ConverterHelpers.firingModeToBullet(dialogData.combat.firingMode.selected)
-              dialogData.combat.armorPenetration += baseAP * Math.min(bullets, 3)
+              dialogData.combat.armorPenetration = SR5_CalledShotHelpers.bullsEyeArmorPenetration(dialogData.combat.armorPenetrationBeforeCalledShot, bullsEyeWeapon?.system.armorPenetration.base ?? 0, dialogData.combat.firingMode.selected)
               break
             }
             case "hitEmWhereItCounts":
@@ -1234,8 +1276,8 @@ export default class SR5_RollDialog {
           selectValue = dialogData.target.range
           let baseRange = SR5_ConverterHelpers.rangeToEnvironmentalLine(dialogData.target.range)
           baseRange += actor.system.itemsProperties.environmentalMod.range.value
-          inputValue = SR5_ConverterHelpers.environmentalLineToMod(baseRange)
-          label = game.i18n.localize(SR5.dicePoolModTypes[modifierName])
+          inputValue = SR5_CombatHelpers.rangeModifierWithEnvironment(baseRange, dialogData.combat.environmentalColumns)
+          label = game.i18n.localize(dialogData.combat.environmentalColumns ? "SR5.RangeWithEnvironment" : SR5.dicePoolModTypes[modifierName])
           break
         }
         case "chokeSettings": {

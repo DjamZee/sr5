@@ -55,8 +55,11 @@ const selected = makeActor('selected', 'actorPc', TWO_MONITORS)
 const spiritPatient = makeActor('spiritPatient', 'actorSpirit', ['physical', 'stun'], false)
 const aiPatient = makeActor('aiPatient', 'actorPc', SINGLE_MONITOR, false)
 const watcherPatient = makeActor('watcherPatient', 'actorSpirit', SINGLE_MONITOR, false)
+// N42: a device has only a Matrix monitor, a drone a condition monitor that is its structure
+const devicePatient = makeActor('devicePatient', 'actorDevice', ['matrix'], false)
+const dronePatient = makeActor('dronePatient', 'actorDrone', ['condition', 'matrix'], false)
 const actors = {
-  healer, pcPatient, npcPatient, selected, spiritPatient, aiPatient, watcherPatient
+  healer, pcPatient, npcPatient, selected, spiritPatient, aiPatient, watcherPatient, devicePatient, dronePatient
 }
 
 let card, speakerToken
@@ -113,6 +116,10 @@ beforeEach(() => {
   game.user = {
     isGM: false
   }
+  //A GM is connected to relay what the player does not own
+  game.users = [{
+    isGM: true, active: true
+  }]
   speakerToken = 'selected'
   globalThis.ChatMessage = {
     getSpeaker: () => ({
@@ -291,5 +298,43 @@ describe('First aid critical glitch card', () => {
     await criticalCard('spiritPatient')
     await criticalCard()
     expect(SR5_CombatHelpers.chooseDamageType).toHaveBeenCalledTimes(2)
+  })
+
+  it('offers no 1D3 on a targeted device or drone (SR5 p. 150)', async () => {
+    for (const id of ['devicePatient', 'dronePatient']) {
+      const card = await criticalCard(id)
+      expect(card.chatCard.buttons.damage).toBeUndefined()
+      expect(card.chatCard.buttons.actionEnd).toBeDefined()
+    }
+    expect(SR5_CombatHelpers.chooseDamageType).not.toHaveBeenCalled()
+  })
+})
+
+describe('First aid on a device (N42)', () => {
+  it('a device or a drone is no patient', () => {
+    expect(patientMonitors(devicePatient)).toEqual([])
+    expect(patientMonitors(dronePatient)).toEqual([])
+  })
+
+  it('the 1D3 button damages neither, and asks no damage type', async () => {
+    for (const id of ['devicePatient', 'dronePatient']) {
+      card = {
+        ...firstAidCard(id), damage: {
+          value: 2
+        }
+      }
+      await clickButton('nonOpposedTest', 'damage')
+    }
+    expect(devicePatient.takeDamage).not.toHaveBeenCalled()
+    expect(dronePatient.takeDamage).not.toHaveBeenCalled()
+    expect(SR5_CombatHelpers.chooseDamageType).not.toHaveBeenCalled()
+    expect(ui.notifications.warn).toHaveBeenCalledTimes(2)
+  })
+
+  it('heals neither', async () => {
+    card = firstAidCard('dronePatient')
+    await clickButton('nonOpposedTest', 'firstAid')
+    expect(heal).not.toHaveBeenCalled()
+    expect(emitForGM).not.toHaveBeenCalled()
   })
 })

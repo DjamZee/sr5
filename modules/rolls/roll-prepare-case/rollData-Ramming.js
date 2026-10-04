@@ -44,6 +44,8 @@ export default function ramming(rollData, actor){
   rollData.combat.armorPenetration = -6
   rollData.combat.activeDefenses.full = actor.system.specialProperties.fullDefenseValue || 0
   rollData.combat.activeDefenses.dodge = SR5_PrepareRollHelper.getActiveDefenseValue(actor.system, "dodge", "gymnastics")
+  // SR5 p. 191-192: dodge adds a skill, so the Physical limit applies
+  rollData.combat.activeDefenses.limit = actor.system.limits?.physicalLimit?.value || 0
 
   //Handle Actions
   rollData.combat.actions = SR5_MiscellaneousHelpers.addActions(rollData.combat.actions, {

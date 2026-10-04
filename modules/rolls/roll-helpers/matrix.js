@@ -23,8 +23,11 @@ import {
   _getSRStatusEffect 
 } from "../../system/effectsList.js"
 import {
-  SR5_SystemHelpers 
+  SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
+import {
+  SR5_ActorHelper
+} from "../../entities/actors/entityActor-helpers.js"
 
 export class SR5_MatrixHelpers {
   //Get time spent on a matrix search
@@ -57,7 +60,11 @@ export class SR5_MatrixHelpers {
   static async applyDamageToDecK(targetActor, cardData, defender, defenderWin) {
     let damageValue = cardData.damage.matrix.value
     let targetItem
-    if (cardData.target.itemUuid && !defenderWin) targetItem = await fromUuid(cardData.target.itemUuid)
+    if (cardData.target.itemUuid && !defenderWin) {
+      targetItem = await fromUuid(cardData.target.itemUuid)
+      //The aimed device was deleted since the attack: the damage must not fall on another device
+      if (!targetItem) return ui.notifications.warn(game.i18n.localize("SR5.WARN_MatrixDamageDeviceMissing"))
+    }
     if (!targetItem) targetItem = targetActor.items.find((item) => item.type === "itemDevice" && item.system.isActive)
     //An AI outside any device only has its core condition monitor, which takes all its damage (Data Trails p. 161)
     if (!targetItem) {
@@ -73,15 +80,20 @@ export class SR5_MatrixHelpers {
         
     if (targetActor.system.matrix.programs.virtualMachine.isActive) damageValue += 1
 
-    newItem.system.conditionMonitors.matrix.actual.base += damageValue
-    SR5_EntityHelpers.updateValue(newItem.system.conditionMonitors.matrix.actual, 0, newItem.system.conditionMonitors.matrix.value)
-    if (newItem.system.conditionMonitors.matrix.actual.value >= newItem.system.conditionMonitors.matrix.value){
-      if (targetItem.type === "itemDevice" && targetActor.system.matrix.userMode !== "ar"){
-        let dumpshockData = {
-          damage:{
-            resistanceType: "dumpshock"
-          }
-        }
+    //The size of the monitor is prepared (SR5 p. 228): the copy above holds the source, where it is 0,
+    //and every first box used to brick the device. No box is kept beyond the monitor
+    let monitorSize = targetItem.system.conditionMonitors.matrix.value
+    newItem.system.conditionMonitors.matrix.actual.base = Math.min(newItem.system.conditionMonitors.matrix.actual.base + damageValue, monitorSize)
+    SR5_EntityHelpers.updateValue(newItem.system.conditionMonitors.matrix.actual, 0, monitorSize)
+    //An AI shares the matrix monitor of the device it is loaded on, and is dissipated when it fills (Data Trails p. 161)
+    let aiDissipated = false
+    if (newItem.system.conditionMonitors.matrix.actual.value >= monitorSize){
+      //No dumpshock for an AI: it is dissipated instead (decided by DjamZ, 04/10)
+      if (targetActor.system.activeSpecialAttribute === "depth") aiDissipated = true
+      else if (targetItem.type === "itemDevice" && targetActor.system.matrix.userMode !== "ar"){
+        //The resistance card reads owner and roll from the card it follows: a bare object crashed it (SR5 p. 229)
+        let dumpshockData = SR5_PrepareRollTest.getBaseRollData(null, targetActor)
+        dumpshockData.damage.resistanceType = "dumpshock"
         targetActor.rollTest("resistanceCard", null, dumpshockData)
         ui.notifications.info(`${targetActor.name} ${game.i18n.localize("SR5.INFO_IsDisconnected")}.`)
       }
@@ -95,6 +107,15 @@ export class SR5_MatrixHelpers {
       item: targetItem.uuid,
       info: newItem.system,
     })
+    if (aiDissipated) {
+      //A player who deals the damage cannot write on the AI: the GM lays the status, as for the device above
+      let actorId = targetActor.isToken ? targetActor.token.id : targetActor.id
+      if (game.user?.isGM) await SR5_ActorHelper.createDeadEffect(actorId)
+      else SR5_SocketHandler.emitForGM("createDeadEffect", {
+        actorId: actorId,
+        itemUuid: targetItem.uuid,
+      })
+    }
 
     if (defender) ui.notifications.info(`${defender.name} ${game.i18n.format("SR5.INFO_ActorDoMatrixDamage", {
       damageValue: damageValue
@@ -262,8 +283,12 @@ export class SR5_MatrixHelpers {
     await actor.rebootDeck()
   }
 
+  //Jam Signals adds the hits to the Noise rating (SR5 p. 239). system.matrix.noise holds that rating as a
+  //positive number, turned into a dice pool malus when a matrix test reads it (rollData-MatrixAction.js),
+  //like the scene's own noise : a negative value here gave the jammer, and every jammed device, bonus dice.
   static async jamSignals(cardData){
     let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+    let noise = cardData.roll.hits
     let effect = {
       name: game.i18n.localize("SR5.EffectSignalJam"),
       type: "itemEffect",
@@ -273,19 +298,19 @@ export class SR5_MatrixHelpers {
       "system.duration": 0,
       "system.durationType": "permanent",
       "system.target": game.i18n.localize("SR5.MatrixNoise"),
-      "system.value": -cardData.roll.hits,
+      "system.value": noise,
       "system.customEffects": {
         "0": {
           "category": "matrixAttributes",
           "target": "system.matrix.noise",
           "type": "value",
-          "value": -cardData.roll.hits,
+          "value": noise,
           "forceAdd": true,
         }
       },
     }
     await actor.createEmbeddedDocuments("Item", [effect])
-    let statusEffect = await _getSRStatusEffect("signalJam", -cardData.roll.hits)
+    let statusEffect = await _getSRStatusEffect("signalJam", noise)
     await actor.createEmbeddedDocuments('ActiveEffect', [statusEffect])
   }
 
@@ -339,20 +364,27 @@ export class SR5_MatrixHelpers {
     ui.notifications.info(`${target.name}${game.i18n.format('SR5.Colons')} ${game.i18n.localize('SR5.INFO_IsLinkLocked')} ${attacker.name}`)
   }
 
+  //Name of the device the card aimed at, or of the target when there is none
+  static async targetDeviceName(cardData, target){
+    let device = cardData.target?.itemUuid ? await fromUuid(cardData.target.itemUuid) : null
+    return device?.name ?? target.name
+  }
+
   //create denial of service Effect
   static async applyDenialOfServiceEffect(cardData, sourceActor, target){
         
     let netHits = cardData.previousMessage.hits - cardData.roll.hits
-    let deviceTarget = await fromUuid(cardData.target.itemUuid)
+    //No device behind the card (a persona targeted, a device deleted since): the effect names the target
+    let deviceName = await SR5_MatrixHelpers.targetDeviceName(cardData, target)
     let effect = {
-      name: `${game.i18n.localize('SR5.MatrixActionDenialOfService')} (${deviceTarget.name})`,
+      name: `${game.i18n.localize('SR5.MatrixActionDenialOfService')} (${deviceName})`,
       type: "itemEffect",
       "system.type": "matrixAction",
       "system.ownerID": sourceActor.id,
       "system.ownerName": sourceActor.name,
       "system.duration": 1,
       "system.durationType": "round",
-      "system.target": deviceTarget.name,
+      "system.target": deviceName,
       "system.value": (netHits * 2),
       "system.customEffects": {
         "0": {
@@ -366,7 +398,7 @@ export class SR5_MatrixHelpers {
       "system.gameEffect": game.i18n.localize("SR5.MatrixActionDenialOfService_GE"),
     }
     await target.createEmbeddedDocuments("Item", [effect])
-    ui.notifications.info(`${target.name}${game.i18n.format('SR5.Colons')} ${game.i18n.localize('SR5.MatrixActionDenialOfService')} (${deviceTarget.name})`)
+    ui.notifications.info(`${target.name}${game.i18n.format('SR5.Colons')} ${game.i18n.localize('SR5.MatrixActionDenialOfService')} (${deviceName})`)
   }
 
   //Allies receiving a matrix support effect: the tokens targeted by the user, or the selected token as a fallback
@@ -475,17 +507,18 @@ export class SR5_MatrixHelpers {
   //create popup Effect
   static async applyPopupEffect(cardData, sourceActor, target){
     let netHits = cardData.previousMessage.hits - cardData.roll.hits
-    let deviceTarget = await fromUuid(cardData.target.itemUuid)
+    //No device behind the card (a persona targeted, a device deleted since): the effect names the target
+    let deviceName = await SR5_MatrixHelpers.targetDeviceName(cardData, target)
     let action = cardData.test.typeSub
     let effect = {
-      name: `${game.i18n.localize(SR5.matrixKillCodeActions[action])} (${deviceTarget.name})`,
+      name: `${game.i18n.localize(SR5.matrixKillCodeActions[action])} (${deviceName})`,
       type: "itemEffect",
       "system.type": "matrixAction",
       "system.ownerID": sourceActor.id,
       "system.ownerName": sourceActor.name,
       "system.duration": 1,
       "system.durationType": "round",
-      "system.target": deviceTarget.name,
+      "system.target": deviceName,
       "system.value": netHits,
       "system.customEffects": {
         "0": {
@@ -642,8 +675,10 @@ export class SR5_MatrixHelpers {
         break
       case "iceFlicker": {
                 
-        let item = await fromUuid(cardData.target.itemUuid),
-          existingMark = await SR5_MarkHelpers.findMarkValue(item.system, ice.id)
+        let item = await fromUuid(cardData.target.itemUuid)
+        //The device may have been deleted since the attack: warn, no Flicker effect
+        if (!item?.system) return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetItemMissing"))
+        let existingMark = await SR5_MarkHelpers.findMarkValue(item.system, ice.id)
         if (!target.system.matrix.isLinkLocked) 
           await SR5_MatrixHelpers.applylinkLockEffect(ice, target)
         if (existingMark >= 2) {                    

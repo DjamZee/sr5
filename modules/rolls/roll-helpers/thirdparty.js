@@ -20,6 +20,12 @@ import {
   SR5_PrepareRollTest 
 } from "../roll-prepare.js"
 
+// The warning shown when the owner of a resistance card was deleted: the ritual names its leader,
+// every other resistance (summoning, compiling...) its author
+export function resistanceOwnerMissingWarning(testType) {
+  return testType === "ritual" ? "SR5.WARN_RitualLeaderMissing" : "SR5.WARN_ResistanceOwnerMissing"
+}
+
 export class SR5_ThirdPartyHelpers {
   /** Handle spirit, sprite or preparation resistance
     * @param {Object} cardData - The origin cardData
@@ -30,7 +36,7 @@ export class SR5_ThirdPartyHelpers {
     // The owner may have been deleted since the card was posted: stop here, the roll data needs it
     if (!actor) {
       SR5_SystemHelpers.srLog(1, `Resistance owner not found for '${cardData.owner.actorId}': resistance not rolled`)
-      if (cardData.test.type === "ritual") ui.notifications.warn(game.i18n.localize("SR5.WARN_RitualLeaderMissing"))
+      ui.notifications.warn(game.i18n.localize(resistanceOwnerMissingWarning(cardData.test.type)))
       return
     }
     let rollData = SR5_PrepareRollTest.getBaseRollData(null, actor)
@@ -69,6 +75,8 @@ export class SR5_ThirdPartyHelpers {
     //Spell Resistance
     else if (cardData.test.typeSub === "counterspelling"){
       targetItem = await fromUuid(cardData.target.itemUuid)
+      //The targeted item may have been deleted since the card was posted: warn, open no dialog
+      if (!targetItem?.system) return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetItemMissing"))
       rollData.dicePool.value = targetItem.system.casterMagic + targetItem.system.force
       rollData.dicePool.composition = ([
         {
@@ -93,6 +101,8 @@ export class SR5_ThirdPartyHelpers {
     //Enchantment Resistance
     else if (cardData.test.typeSub === "disenchanting"){
       targetItem = await fromUuid(cardData.target.itemUuid)
+      //The targeted item may have been deleted since the card was posted: warn, open no dialog
+      if (!targetItem?.system) return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetItemMissing"))
       if (targetItem.type === "itemFocus") {
         rollData.dicePool.value = targetItem.parent.system.specialAttributes.magic.augmented.value + targetItem.system.itemRating
         rollData.test.type = "enchantmentResistance"
@@ -153,6 +163,7 @@ export class SR5_ThirdPartyHelpers {
       rollData.owner.itemUuid = cardData.owner.itemUuid
       rollData.magic.force = cardData.magic.force
       rollData.magic.reagentsSpent = cardData.magic.reagentsSpent
+      rollData.magic.ritualParticipants = cardData.magic.ritualParticipants || []
       rollData.test.type = "ritualResistance"
       rollData.test.title = `${game.i18n.localize("SR5.RitualResistance")} (${rollData.previousMessage.hits})`
     }
@@ -160,6 +171,8 @@ export class SR5_ThirdPartyHelpers {
     //Complex form resistance
     else if (cardData.test.type === "resonanceAction" && cardData.test.typeSub === "killComplexForm"){
       targetItem = await fromUuid(cardData.target.itemUuid)
+      //The targeted item may have been deleted since the card was posted: warn, open no dialog
+      if (!targetItem?.system) return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetItemMissing"))
       rollData.dicePool.value = targetItem.system.threaderResonance + targetItem.system.level
       rollData.dicePool.base = rollData.dicePool.value
       rollData.dicePool.composition = ([
@@ -326,8 +339,9 @@ export class SR5_ThirdPartyHelpers {
   }
 
   static async desactivateFocus(cardData){
-    let item = await fromUuid(cardData.target.itemUuid),
-      itemData = foundry.utils.duplicate(item.system)
+    let item = await fromUuid(cardData.target.itemUuid)
+    if (!item?.system) return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetItemMissing"))
+    let itemData = foundry.utils.duplicate(item.system)
         
     itemData.isActive = false
     if (!game.user?.isGM){
@@ -341,8 +355,9 @@ export class SR5_ThirdPartyHelpers {
   }
 
   static async reduceTransferedEffect(cardData){
-    let targetedEffect = await fromUuid(cardData.target.itemUuid),
-      newEffect = foundry.utils.duplicate(targetedEffect.system),
+    let targetedEffect = await fromUuid(cardData.target.itemUuid)
+    if (!targetedEffect?.system) return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetItemMissing"))
+    let newEffect = foundry.utils.duplicate(targetedEffect.system),
       key = "hits"
 
     if (targetedEffect.type ==="itemPreparation") key = "potency"
@@ -413,6 +428,7 @@ export class SR5_ThirdPartyHelpers {
 
   static async applyEffectToItem(info, type){
     let item = await fromUuid(info.target.itemUuid)
+    if (!item) return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetItemMissing"))
     item = item.toObject(false)
     let actor = SR5_EntityHelpers.getRealActorFromID(info.target.actorId)
     let effect

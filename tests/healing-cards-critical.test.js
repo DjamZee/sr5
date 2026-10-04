@@ -177,6 +177,7 @@ describe('Healing critical glitch (SR5 p. 208)', () => {
 
 describe('First aid critical glitch (SR5 p. 207)', () => {
   it('a cancelled damage type does not show "undefined" on the button', async () => {
+    //The target is a patient with Physical and Stun: a device or drone ends the test (N42)
     vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockReturnValue({
       system: {
         skills: {
@@ -184,6 +185,11 @@ describe('First aid critical glitch (SR5 p. 207)', () => {
             rating: {
               value: 3
             }
+          }
+        },
+        conditionMonitors: {
+          physical: {
+          }, stun: {
           }
         }
       }

@@ -11,7 +11,7 @@ import {
   SR5_CombatHelpers
 } from "../roll-helpers/combat.js"
 import {
-  hasSingleMonitor
+  hasSingleMonitor, patientMonitors, wearsFullArmor, firstAidHealedBoxes
 } from "../roll-helpers/cardRoller.js"
 
 export default async function skillInfo(cardData){
@@ -75,7 +75,13 @@ export default async function skillInfo(cardData){
         cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.EscapeArtistFailed"))
       }
       break
-    case "firstAid":
+    case "firstAid": {
+      //SR5 p. 150: a targeted device or drone is no patient: no 1D3 to ask a type for, no box to heal
+      let targetActor = cardData.target.hasTarget ? SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId) : null
+      if (targetActor && !patientMonitors(targetActor).length) {
+        cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.HealingFailed"))
+        break
+      }
       //SR5 p. 207: a critical glitch adds 1D3 boxes, rolled once per test even if the card is refreshed (Edge)
       if (cardData.roll.criticalGlitchRoll) {
         if (!cardData.roll.criticalGlitchDamage) {
@@ -98,9 +104,12 @@ export default async function skillInfo(cardData){
           hits: cardData.damage.value, damageType: damageType
         })}`)
       } else if (cardData.roll.hits > 2) {
-        cardData.roll.netHits = cardData.roll.hits - 2
-        if (cardData.roll.netHits > actorData.skills.firstAid.rating.value) cardData.roll.netHits = actorData.skills.firstAid.rating.value
-        if (cardData.target.hasTarget) cardData.chatCard.buttons.firstAid = SR5_RollMessage.generateChatButton("nonOpposedTest", "firstAid", `${game.i18n.format('SR5.FirstAidButton', {
+        //SR5 p. 207: a targeted patient in full armor halves the effects, before the skill rating cap
+        //Without a target the patient is only known on click: the cap is kept for the halving done there (roll-message.js)
+        let fullArmor = wearsFullArmor(targetActor)
+        cardData.roll.firstAidCap = actorData.skills.firstAid.rating.value
+        cardData.roll.netHits = firstAidHealedBoxes(cardData.roll.hits, 2, actorData.skills.firstAid.rating.value, fullArmor)
+        if (cardData.target.hasTarget) cardData.chatCard.buttons.firstAid = SR5_RollMessage.generateChatButton("nonOpposedTest", "firstAid", `${game.i18n.format(fullArmor ? 'SR5.FirstAidButtonFullArmor' : 'SR5.FirstAidButton', {
           hits: cardData.roll.netHits
         })}`)
         else cardData.chatCard.buttons.firstAid = SR5_RollMessage.generateChatButton("opposedTest", "firstAid", `${game.i18n.format('SR5.FirstAidButton', {
@@ -110,6 +119,7 @@ export default async function skillInfo(cardData){
         cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.HealingFailed"))
       }
       break
+    }
     case "locksmith": {
       let targetActor = SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId)
       if (cardData.threshold.value > 0){

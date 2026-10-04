@@ -1,5 +1,5 @@
 export default function registeringResistance(rollData, actor, chatData){
-  if (actor.type !== "actorSprite") return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NotASprite")}`)
+  if (actor.type !== "actorSprite") return void ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NotASprite")}`)
 
   //Determine title
   rollData.test.title = game.i18n.localize("SR5.ResistRegistering")

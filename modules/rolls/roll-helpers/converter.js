@@ -88,6 +88,19 @@ export class SR5_ConverterHelpers {
     }
   }      
 
+  //SR5 p. 166-167: firing a bow or throwing a weapon is a simple action. A weapon with no firing mode
+  //never shows the dialog's firing mode select, which counts the action of the others
+  static rangedAttackAction(mode){
+    return this.firingModeToAction(mode) ?? {
+      type: "simple", value: 1, source: "attack"
+    }
+  }
+
+  //SR5 p. 182 gives no default spread: an unset choke is the narrow spread the weapon sheet shows for it
+  static chokeToCode(choke){
+    return choke?.current || "narrow"
+  }
+
   //Convert range  to environmental line
   static rangeToEnvironmentalLine(mode){
     switch(mode){
@@ -133,6 +146,8 @@ export class SR5_ConverterHelpers {
   }
 
   //convert matrix distance to dice mod
+  //Noise by distance (SR5 p. 232), as in the VO: 0 up to 100 m, 1 up to 1 km. The VF prints 0 for 101 m-1 km,
+  //and its errata ("jusqu'a 100 metres : 1") aims at that misprint, not at the 100 m row (DjamZ, 2026-10-04)
   static matrixDistanceToMod(distance){
     switch (distance){
       case "wired":

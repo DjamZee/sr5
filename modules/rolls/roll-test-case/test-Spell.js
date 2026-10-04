@@ -2,7 +2,7 @@ import {
   SR5_EntityHelpers 
 } from "../../entities/helpers.js"
 import {
-  SR5_RollMessage 
+  SR5_RollMessage
 } from "../roll-message.js"
 
 export default async function spellInfo(cardData){
@@ -28,6 +28,17 @@ export default async function spellInfo(cardData){
         cardData.damage.value = cardData.magic.force
         cardData.combat.armorPenetration = -cardData.magic.force
         cardData.damage.resistanceType = "physicalDamage"
+        // SR5 p. 285: an area is cast with a threshold of 3, like a grenade (p. 182)
+        if (cardData.magic.spell.range === "area" && cardData.roll.hits >= 3) cardData.magic.spell.areaThreshold = 3
+        else if (cardData.magic.spell.range === "area") {
+          // Threshold missed: the spell still explodes, at DV = Force, scattered as a grenade (2D6 m minus 1 m per
+          // hit, direction rolled, SR5 p. 182-183) by the card's Scatter button, which moves its template. As for a
+          // grenade that scatters, the targets get no defense test (ruled by DjamZ, the book does not say).
+          cardData.magic.spell.missedThreshold = true
+          cardData.chatCard.buttons.scatter = SR5_RollMessage.generateChatButton("nonOpposedTest", "scatter", game.i18n.localize("SR5.Scatter"))
+          actionType = "resistanceCard"
+          label = game.i18n.localize("SR5.TakeOnDamageShort")
+        }
       } else if (cardData.test.typeSub === "direct") {
         actionType = "resistanceCard"
         label = game.i18n.localize("SR5.ResistDirectSpell")
@@ -54,7 +65,9 @@ export default async function spellInfo(cardData){
     }
 			
     //Handle spell Area
-    if (cardData.magic.spell.range === "area"){
+    // A preparation's area is read from the item, where its Potency and Force take the place of the caster's (SR5 p. 309)
+    if (cardData.magic.spell.range === "area" && cardData.test.type === "preparation") cardData.magic.spell.area += item.system.spellAreaOfEffect.value
+    else if (cardData.magic.spell.range === "area"){
       cardData.magic.spell.area += cardData.magic.force
       if (item.system.category === "detection") {
         if (item.system.spellAreaExtended === true) cardData.magic.spell.area = cardData.magic.spell.area * actorData.specialAttributes.magic.augmented.value * 10

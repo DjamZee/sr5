@@ -1,6 +1,9 @@
 import {
-  SR5 
+  SR5
 } from "../../config.js"
+import {
+  SR5_EntityHelpers
+} from "../../entities/helpers.js"
 import {
   SR5_PrepareRollHelper 
 } from "../roll-prepare-helpers.js"
@@ -11,6 +14,13 @@ import SR5_RollDialog from "../roll-dialog.js"
 import {
   SR5_MarkHelpers, WATCHDOG_INTERRUPTION_COST
 } from "../roll-helpers/mark.js"
+
+// Actions whose marks are not checked on the target: the support actions target allies, not Matrix icons,
+// and Jack Out and Jam Signals ask for ownership of the hacker's own device (SR5 p. 239 and 244)
+const NO_TARGET_MARK_CHECK = ["iAmTheFirewall", "intervene", "jackOut", "jamSignals"]
+function checksTargetMarks(rollKey){
+  return !NO_TARGET_MARK_CHECK.includes(rollKey)
+}
 
 export default async function matrixAction(rollData, rollKey, actor){
   let matrixAction = actor.system.matrix.actions[rollKey]
@@ -102,8 +112,8 @@ export default async function matrixAction(rollData, rollKey, actor){
   //Add public grid switch
   if (actor.system.matrix.userGrid === "public") rollData.dialogSwitch.publicGrid = true
     
-  //Check target's Marks before rolling if a target is selected (the support actions target allies, not Matrix icons)
-  if (game.user.targets.size && rollKey !== "iAmTheFirewall" && rollKey !== "intervene") {
+  //Check target's Marks before rolling if a target is selected
+  if (game.user.targets.size && checksTargetMarks(rollKey)) {
     let canContinue = await checkTargetMarks(rollData, matrixAction, actor)
     if (!canContinue) return
   }
@@ -129,6 +139,19 @@ function hasWatchdogMarkOnTarget(rollData){
   return SR5_MarkHelpers.hasWatchdogMark(target.actor, rollData.owner.speakerId)
 }
 
+/** A drone created from an unlinked token records the token id as its creator: the token and its
+ * base actor are the same character, so both are recognised as owner (SR5 p. 238).
+ * Deployed from the base sheet, it records the base actor id: an unlinked token carries that same id but is
+ * a copy that deployed nothing, so only the base actor (its sheet or a linked token) owns it
+ */
+function isCreator(creatorId, actor, speakerId){
+  if (!creatorId) return false
+  if (creatorId === speakerId || (creatorId === actor.id && !actor.isToken)) return true
+  const creator = SR5_EntityHelpers.getRealActorFromID(creatorId)
+  // A synthetic actor carries the id of its base actor: only the base sheet takes this path, never another token copy
+  return !!creator && creator.id === actor.id && !actor.isToken
+}
+
 async function checkTargetMarks(rollData, matrixAction, actor){
   if (game.user.targets.size > 1) {
     ui.notifications.warn(`${game.i18n.localize("SR5.WARN_TargetTooMany")}`)
@@ -144,9 +167,15 @@ async function checkTargetMarks(rollData, matrixAction, actor){
     // "S" (special) is not a number and asks for no check here
     let neededMarks = Number(matrixAction.neededMarks)
     if (neededMarks > 0 && t.actor.id !== actor.id){
-      // SR5 p. 238: owning an icon counts as four marks. Ownership is not tracked here,
-      // so the owner-only actions keep asking for a single mark
-      if (neededMarks > 3) neededMarks = 1
+      // SR5 p. 238: owning an icon counts as four marks, more than anyone else can place.
+      // The creator of a drone, agent, sprite or spirit owns it and needs no mark
+      if (neededMarks > 3) {
+        const creatorId = t.actor.system.creatorId
+        if (isCreator(creatorId, actor, rollData.owner.speakerId)) return true
+        // Ownership is recorded nowhere else: the GM rules, and the roll goes on with a single mark
+        ui.notifications.warn(game.i18n.localize("SR5.WARN_OwnerOnlyAction"))
+        neededMarks = 1
+      }
       let marks = 0
       for (let item of t.actor.items){
         const mark = item.system.marks?.find(m => m.ownerId === rollData.owner.speakerId)
@@ -166,5 +195,5 @@ async function checkTargetMarks(rollData, matrixAction, actor){
 
 // Exported for the tests
 export {
-  checkTargetMarks
+  checkTargetMarks, checksTargetMarks
 }
