@@ -782,7 +782,8 @@ export class SR5Actor extends Actor {
 
         case "itemVehicle":        
           i.prepareData()
-          actor.system.matrix.connectedObject.vehicles[i.uuid] = i.name
+          //An icon in the Matrix only with its wireless on, as other objects; slaved or not (SR5 p. 270)
+          if (iData.wirelessTurnedOn) actor.system.matrix.connectedObject.vehicles[i.uuid] = i.name
           if (!iData.isSlavedToPan) actor.system.matrix.potentialPanObject.vehicles[i.uuid] = i.name
           SR5_UtilityItem._handleVehicleSlots(iData)
           break

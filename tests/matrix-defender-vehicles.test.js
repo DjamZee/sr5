@@ -20,4 +20,14 @@ describe('Choosing the device that defends in the Matrix', () => {
     expect(kinds).toContain('vehicles')
     for (const kind of kinds) expect(template).toContain(`list.${kind}`)
   })
+
+  // N74: a vehicle with its wireless off is no icon in the Matrix; slaved or not, a wireless one is (SR5 p. 270)
+  it('lists the vehicles with their wireless on, whether slaved or not', () => {
+    const source = readFileSync(new URL('../modules/entities/actors/entityActor.js', import.meta.url), 'utf8')
+    const start = source.indexOf('case "itemVehicle":')
+    const block = source.slice(start, source.indexOf('break', start))
+    const line = block.split('\n').find(l => l.includes('connectedObject.vehicles'))
+    expect(line).toMatch(/^\s*if \(iData\.wirelessTurnedOn\) actor\.system\.matrix\.connectedObject\.vehicles/)
+    expect(line).not.toMatch(/isSlavedToPan/)
+  })
 })
