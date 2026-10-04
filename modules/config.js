@@ -3983,6 +3983,13 @@ SR5.statusEffects = [
     name: "SR5.CoverFull",
     origin: "coverFull"
   },
+  //Read by the core as CONFIG.specialStatusEffects.INVISIBLE : ordinary sight no longer sees the token,
+  //ultrasound and astral perception still do (SR5 p. 294, p. 449). Put on by the GM.
+  {
+    img: "icons/svg/invisible.svg",
+    id: "invisible",
+    name: "SR5.STATUSES_Invisible",
+  },
 ]
 
 CONFIG.statusEffects = SR5.statusEffects

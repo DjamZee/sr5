@@ -3490,6 +3490,7 @@
 	"SR5.STATUSES_Pin": "Cloué",
 	"SR5.STATUSES_Pin_GE": "<p>Avec l’arme à distance appropriée, un personnage peut clouer un adversaire au plancher, au sol ou au mur. Si l’attaque réussit et que la VD dépasse l’indice d’Armure des vêtements de la cible (ce qui signifie que les augmentations telles que les armures dermiques ne sont pas prises en compte), la peau et les vêtements de la cible sont cloués à l’objet derrière elle. Les succès excédentaires déterminent la résistance de la prise. Tant que la cible est clouée, elle souffre d’une pénalité de -2 dés à ses tests de défense.</p><p>Se libérer requiert une action simple et un test de Force + Constitution [Physique] réussi, dont le seuil est égal au nombre de succès excédentaires de l’attaque initiale. Il est aussi possible de s’arracher du projectile en une action gratuite mais cela occasionne une case de dommages physiques par succès excédentaire au test d’attaque, sans résistance possible. Les deux actions peuvent être tentées lors de la même phase d’action : si l’action simple échoue, la différence entre les succès de l’action simple et ceux de l’attaque initiale est ajoutée aux dommages subis lors de l’action gratuite, la tentative échouée ayant empiré la situation.</p>",
 	"SR5.STATUSES_Prone": "À terre",
+	"SR5.STATUSES_Invisible": "Invisible",
 	"SR5.STATUSES_Shaked": "Ébranlé",
 	"SR5.STATUSES_Shaked_GE": "La cible subit un malus de -1 dé car elle est ébranlée.",
 	"SR5.STATUSES_SlowDeath": "Hémorragie interne",

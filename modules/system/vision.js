@@ -261,6 +261,18 @@ function buildUltrasoundVision() {
 /*  Detection modes                             */
 /* -------------------------------------------- */
 
+/**
+ * Whether ordinary sight sees a target. The core answer comes first : it refuses a token carrying the
+ * "invisible" status, which only ultrasound and astral perception then see (SR5 p. 449, p. 294).
+ * A body whose owner is projecting is hidden as well.
+ * @param {boolean} coreDetects       What the core detection mode answered
+ * @param {TokenDocument|null} token  The target, when it is a token
+ */
+export function basicSightDetects(coreDetects, token) {
+  if (!coreDetects) return false
+  return !token?.actor?.effects?.find(e => e.statuses.has("astralInit"))
+}
+
 function buildDetectionModes() {
   const DetectionMode = foundry.canvas.perception.DetectionMode
   const DetectionModeDarkvision = foundry.canvas.perception.DetectionModeDarkvision
@@ -278,13 +290,9 @@ function buildDetectionModes() {
 
     /** @override */
     _canDetect(visionSource, target) {
-      let detected = super._canDetect(visionSource, target)
       const tgt = target?.document
-      if ((tgt instanceof foundry.documents.TokenDocument)) {
-        //check if target has astral effect and hide it if true;
-        detected = tgt.actor?.effects?.find(e => e.statuses.has("astralInit"))
-        return !detected
-      } else return true
+      const token = tgt instanceof foundry.documents.TokenDocument ? tgt : null
+      return basicSightDetects(super._canDetect(visionSource, target), token)
     }
   }
 
