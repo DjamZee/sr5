@@ -2078,6 +2078,19 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     return []
   }
 
+  //From the deploy click on, the drone holds the wireless switch: grey the row at once,
+  //so a click before the sheet is drawn again cannot switch an item that no longer decides
+  static lockDeployedWireless(row){
+    const toggle = row?.querySelector('.toggle-value[data-binding="system.wirelessTurnedOn"]')
+    if (!toggle) return
+    const cell = toggle.parentElement
+    cell.inert = true
+    cell.dataset.title = game.i18n.localize("SR5.WirelessHeldByDeployedDrone")
+    const icon = toggle.querySelector("em")
+    if (icon?.classList.contains("SR-SubColor")) icon.classList.replace("SR-SubColor", "SR-GreyColor")
+    else icon?.classList.add("SR-LightGreyColor")
+  }
+
   //Handle the creation of a 'side kick'
   async _OnSidekickCreate(event){
     event.preventDefault()
@@ -2086,6 +2099,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     let actorId = this.actor.id
     if (this.actor.isToken) actorId = this.actor.token.id
     if (!SR5Combat.hasActionsLeft(this.actor, this._sidekickActionCost(item.type))) return
+    if (item.type === "itemVehicle") ActorSheetSR5.lockDeployedWireless(event.currentTarget.closest(".item"))
     item = item.toObject(false)
     if (!game.user?.isGM) {
       await SR5_SocketHandler.emitForGM("createSidekick", {

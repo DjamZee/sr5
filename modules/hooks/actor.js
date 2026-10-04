@@ -12,6 +12,7 @@ import {
 } from "../system/jammer.js"
 
 export async function sr5HookCreateActor(actor) {
+  SR5_ActorHelper.redrawCreatorSheet(actor)
   if ( !game.user.isGM ) return
 
   //Add itemDevice to Drone/Sprite/Agent if they have none.

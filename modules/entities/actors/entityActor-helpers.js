@@ -995,6 +995,13 @@ export class SR5_ActorHelper {
     return actors?.find(a => a.system.creatorItemId === itemId && a.system.creatorId === creatorId)
   }
 
+  //A deployed drone shows on its owner's gear row: draw that sheet again once the drone exists, on every client
+  static redrawCreatorSheet(actor){
+    if (actor.type !== "actorDrone" || !actor.system.creatorId) return
+    const owner = SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId)
+    if (owner?.sheet?.rendered) owner.sheet.render()
+  }
+
   /**
    * While a vehicle is deployed, its drone actor holds the wireless switch:
    * the gear row shows that state, read-only (N83). The row is read-only as
