@@ -30,12 +30,13 @@ describe("one rule for area effects off the scene", () => {
     expect(isAreaEffectOffScene(orphan, "A")).toBe(true)
   })
 
-  it("the environment rows subtract the orphan too", () => {
+  // N65: the orphan is now left out of the prepared rows (the sheet), so the roll must not subtract it again
+  it("the environment rows subtract another scene, not the orphan already left out", () => {
     const offScene = SR5_CombatHelpers.areaEffectsOffScene({
       items: [here, there, orphan]
     }, "A")
     expect(offScene).toEqual({
-      visibility: 6
+      visibility: 2
     })
   })
 })

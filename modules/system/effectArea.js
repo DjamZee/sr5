@@ -12,7 +12,7 @@ import {
   _getSRStatusEffect 
 } from "../system/effectsList.js"
 import {
-  templateSceneId, isAreaEffectOffScene
+  templateSceneId, isAreaEffectOffScene, isOrphanEnvironmentEffect
 } from "./areaEffectScene.js"
 
 export class SR5_EffectArea {
@@ -46,7 +46,13 @@ export class SR5_EffectArea {
   //(SR5_CombatHelpers.areaEffectsOffScene), these two are left out here. The scene is the token's own for an
   //unlinked actor, the one on the canvas for a linked one (canvasReady prepares the actor again).
   static AREA_EFFECT_PREPARED_TARGETS = ["system.matrix.noise", "system.magic.bgCount"]
+  static isOrphanEnvironmentEffect(item){
+    return isOrphanEnvironmentEffect(item)
+  }
   static isPreparedAreaEffectOffScene(item, actor){
+    //An environment row from no template (an orphan, ownerItem empty) counts in no roll: it is left out of the
+    //prepared data too, so the sheet does not show it, and areaEffectsOffScene no longer subtracts it
+    if (SR5_EffectArea.isOrphanEnvironmentEffect(item)) return true
     if (!Object.values(item?.system?.customEffects ?? {
     }).some(e => SR5_EffectArea.AREA_EFFECT_PREPARED_TARGETS.includes(e.target))) return false
     let sceneId = actor?.isToken ? actor.token?.parent?.id : globalThis.canvas?.scene?.id

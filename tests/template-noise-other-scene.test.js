@@ -63,6 +63,16 @@ describe("SR5_EffectArea.isPreparedAreaEffectOffScene", () => {
     expect(SR5_EffectArea.isPreparedAreaEffectOffScene(effect("system.matrix.noise"), unlinked)).toBe(false)
   })
 
+  // N65: an orphan (ownerItem empty) counts for 0 in the roll: the sheet must not show it either
+  it("leaves an orphan environment row out, on any scene or none", () => {
+    const orphan = effect("system.itemsProperties.environmentalMod.light")
+    orphan.system.ownerItem = ""
+    look("A")
+    expect(SR5_EffectArea.isPreparedAreaEffectOffScene(orphan, linked)).toBe(true)
+    globalThis.canvas = undefined
+    expect(SR5_EffectArea.isPreparedAreaEffectOffScene(orphan, linked)).toBe(true)
+  })
+
   it("applies everything when no scene is known yet", () => {
     globalThis.canvas = undefined
     expect(SR5_EffectArea.isPreparedAreaEffectOffScene(effect("system.matrix.noise"), linked)).toBe(false)

@@ -14,3 +14,11 @@ export function isAreaEffectOffScene(item, sceneId){
   if (item?.type !== "itemEffect" || item.system?.type !== "areaEffect" || !sceneId) return false
   return templateSceneId(item) !== sceneId
 }
+
+//An area effect from no template on a scene that sets an environment row (light, visibility...). The roll
+//counts it nowhere, so the prepared data leaves it out and the sheet does not show it either
+export function isOrphanEnvironmentEffect(item){
+  if (item?.type !== "itemEffect" || item.system?.type !== "areaEffect" || templateSceneId(item)) return false
+  return Object.values(item.system.customEffects ?? {
+  }).some(e => /^system\.itemsProperties\.environmentalMod\./.test(e?.target ?? ""))
+}
