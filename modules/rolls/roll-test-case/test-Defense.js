@@ -48,8 +48,8 @@ export default async function defenseInfo(cardData, actorId){
     }
   }
 
-  //Handle Energetic Aura
-  if (actorData.specialProperties?.energyAura !== "" && cardData.test.typeSub === "meleeWeapon") await handleEnergeticAura(cardData, actorData)
+  //Handle Energetic Aura: only a successful attack burns the attacker (SR5 p. 397)
+  if (actorData.specialProperties?.energyAura && cardData.test.typeSub === "meleeWeapon" && cardData.roll.netHits > 0) await handleEnergeticAura(cardData, actorData)
 
   //SR5 p. 196 (renforcer sa prise): no damage, the hold moves by the net hits, either way
   if (cardData.combat.calledShot.name === "strengthenHold") {
