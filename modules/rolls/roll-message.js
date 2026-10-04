@@ -295,6 +295,10 @@ export class SR5_RollMessage {
           //The 1D3 goes to the patient, the selected token when the test had no target
           let patient = firstAidPatient(messageData.target.hasTarget, targetActor, actor)
           if (!patient) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+          //SR5 p. 207: the 1D3 "increases the damage" being treated; a device or drone has none to worsen
+          if (!patientMonitors(patient).length) return ui.notifications.warn(game.i18n.format("SR5.WARN_PatientWithoutMonitor", {
+            name: patient.name
+          }))
           //SR5 p. 207: the 1D3 of a critical glitch needs a damage type, asked again if the first dialog was cancelled,
           //unless the patient only has a single condition monitor
           if (!messageData.damage.type) {

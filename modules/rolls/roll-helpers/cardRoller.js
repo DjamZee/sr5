@@ -26,7 +26,10 @@ export function firstAidPatient(hasTarget, targetActor, selectedActor) {
 
 // The damage monitors of a patient, as prepared on its sheet: Physical and Stun (PC, most spirits),
 // or a single condition monitor (grunt, AI core, homunculus and watcher, SR5 p. 301). Empty when it has neither.
+// SR5 p. 150: first aid is emergency medical care, it repairs nothing: a drone or vehicle, whose condition
+// monitor is its structure, is no patient, nor is a device with only a Matrix monitor
 export function patientMonitors(patient) {
+  if (patient?.type === "actorDrone") return []
   let monitors = patient?.system?.conditionMonitors ?? {
   }
   if (monitors.physical && monitors.stun) return ["physical", "stun"]

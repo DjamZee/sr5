@@ -11,7 +11,7 @@ import {
   SR5_CombatHelpers
 } from "../roll-helpers/combat.js"
 import {
-  hasSingleMonitor
+  hasSingleMonitor, patientMonitors
 } from "../roll-helpers/cardRoller.js"
 
 export default async function skillInfo(cardData){
@@ -75,7 +75,13 @@ export default async function skillInfo(cardData){
         cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.EscapeArtistFailed"))
       }
       break
-    case "firstAid":
+    case "firstAid": {
+      //SR5 p. 150: a targeted device or drone is no patient: no 1D3 to ask a type for, no box to heal
+      let targetActor = cardData.target.hasTarget ? SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId) : null
+      if (targetActor && !patientMonitors(targetActor).length) {
+        cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.HealingFailed"))
+        break
+      }
       //SR5 p. 207: a critical glitch adds 1D3 boxes, rolled once per test even if the card is refreshed (Edge)
       if (cardData.roll.criticalGlitchRoll) {
         if (!cardData.roll.criticalGlitchDamage) {
@@ -110,6 +116,7 @@ export default async function skillInfo(cardData){
         cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.HealingFailed"))
       }
       break
+    }
     case "locksmith": {
       let targetActor = SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId)
       if (cardData.threshold.value > 0){
