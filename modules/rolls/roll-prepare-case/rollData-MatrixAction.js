@@ -146,7 +146,8 @@ function isCreator(creatorId, actor, speakerId){
   if (!creatorId) return false
   if (creatorId === actor.id || creatorId === speakerId) return true
   const creator = SR5_EntityHelpers.getRealActorFromID(creatorId)
-  return !!creator && creator.id === actor.id
+  // A synthetic actor carries the id of its base actor: only the base sheet takes this path, never another token copy
+  return !!creator && creator.id === actor.id && !actor.isToken
 }
 
 async function checkTargetMarks(rollData, matrixAction, actor){

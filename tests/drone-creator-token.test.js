@@ -17,7 +17,7 @@ const {
 const BASE = 'rigger'
 const TOKEN = 'tokenOfRigger'
 
-function check(creatorId, speakerId){
+function check(creatorId, speakerId, isToken = false){
   game.user.targets = new Set([{
     actor: {
       id: 'drone', items: [], system: {
@@ -35,7 +35,7 @@ function check(creatorId, speakerId){
   }, {
     neededMarks: 4
   }, {
-    id: BASE
+    id: BASE, isToken
   })
 }
 
@@ -58,11 +58,16 @@ describe('Owner of a drone created from a token (SR5 p. 238)', () => {
   })
 
   it('still recognises the token itself', async () => {
-    expect(await check(TOKEN, TOKEN)).toBe(true)
+    expect(await check(TOKEN, TOKEN, true)).toBe(true)
   })
 
   it('does not recognise another character', async () => {
     expect(await check('someoneElse', BASE)).toBe(false)
+    expect(ui.notifications.warn).toHaveBeenCalled()
+  })
+
+  it('does not recognise another unlinked token of the same base actor', async () => {
+    expect(await check(TOKEN, 'otherTokenOfRigger', true)).toBe(false)
     expect(ui.notifications.warn).toHaveBeenCalled()
   })
 })
