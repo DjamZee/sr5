@@ -87,11 +87,13 @@ export class SR5GruntSheet extends ActorSheetSR5 {
     let rigger5Actions = game.settings.get("sr5", "sr5Rigger5Actions")
 
     for (let [key, matrixAction] of Object.entries(actor.system.matrix.actions)) {
+      //Depth actions need the AI loaded on the device it acts on (Data Trails p. 159)
+      if (emulates && matrixAction.source === "dataTrails") continue
       let linkedAttribute = matrixAction.limit?.linkedAttribute
-      if ( (matrixAction.source === "core" || (killCodeRules && matrixAction.source === "killCode") || (rigger5Actions && matrixAction.source === "rigger5") || (matrixAction.source === "dataTrails" && actor.system.activeSpecialAttribute === "depth")) &&   (matrixAction.test?.dicePool >= 0 && (linkedAttribute === "attack" && hasAttack) ) ||
+      if ( (matrixAction.source === "core" || (killCodeRules && matrixAction.source === "killCode") || (rigger5Actions && matrixAction.source === "rigger5") || (matrixAction.source === "dataTrails" && actor.system.activeSpecialAttribute === "depth")) && ((matrixAction.test?.dicePool >= 0 && (linkedAttribute === "attack" && hasAttack) ) ||
 			(matrixAction.test?.dicePool >= 0 && (linkedAttribute === "sleaze" && hasSleaze) ) ||
 			(matrixAction.test?.dicePool > 0 && (linkedAttribute === "firewall" || linkedAttribute === "dataProcessing" || linkedAttribute === "") ) ||
-			this._shownNonRollableMatrixActions) {
+			this._shownNonRollableMatrixActions)) {
         activeMatrixActions[key] = matrixAction
       }
     }
