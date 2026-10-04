@@ -136,6 +136,16 @@ export class SR5_MiscellaneousHelpers {
     return null
   }
 
+  //True when a combat is running and the character's action phase is not the current one. A skill test asked
+  //then can only be a reaction called by the gamemaster (SR5 p. 164: one acts in one's own phase): no action
+  static isOutOfPhase(actor){
+    let combat = globalThis.game?.combat
+    if (!actor || !combat?.started) return false
+    let combatant = actor.isToken ? combat.combatants.find(c => c.tokenId === actor.token?.id) : combat.combatants.find(c => c.actorId === actor.id)
+    if (!combatant || combatant.initiative === null || combatant.initiative === undefined) return false
+    return combat.combatant?.id !== combatant.id
+  }
+
   //SR5 p. 170: each interruption action lowers the Initiative score by its own cost, 5 unless stated otherwise
   //(10 for a Watchdog Haywire or Popup, Kill Code p. 45). Several interruptions in one list add up
   static interruptionInitiativeCost(actions){
