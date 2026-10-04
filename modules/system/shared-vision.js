@@ -92,17 +92,38 @@ export function isViewerStillValid(entry, actor) {
   return true
 }
 
+/** Tell whether a drone has a rigger jumped into it (SR5 p. 243): rigging control, with a controller
+ * @param {Object} actor - the actor to look at
+ * @return {Boolean}
+ */
+export function isJumpedInDrone(actor) {
+  return actor?.type === "actorDrone" && actor.system?.controlMode === "rigging" && !!actor.system?.vehicleOwner?.id
+}
+
+/** The ids of the riggers jumped into one of these drones
+ * @param {Array} drones - actors to look into
+ * @return {Set} ids of the controllers
+ */
+export function jumpedInRiggerIds(drones) {
+  return new Set((drones ?? []).filter(isJumpedInDrone).map(d => d.system.vehicleOwner.id))
+}
+
 /** Decide whether a token is a vision source for the user, before the core of Foundry decides
  * @param {Object} state
  * @param {Boolean} state.isGM - the user is a gamemaster
  * @param {Boolean} state.sharedWithMe - the token is in the user's shared vision list
- * @return {Boolean|null} true, or null to leave it to the core
+ * @param {Boolean} state.isMyJumpedInDrone - the token is a drone the user owns, with a rigger jumped into it
+ * @param {Boolean} state.isBlindBody - the token is the body of a rigger jumped into a drone
+ * @return {Boolean|null} true or false, or null to leave it to the core
  */
 export function decideVisionSource({
-  isGM, sharedWithMe
+  isGM, sharedWithMe, isMyJumpedInDrone = false, isBlindBody = false
 }) {
   //The gamemaster sees everything already: the core decides for him
   if (isGM) return null
-  if (sharedWithMe) return true
+  //Jumped in, the rigger is in VR: his body is inert and its physical senses are blocked (SR5 p. 231, 266)
+  if (isBlindBody) return false
+  //The sensors of the drone become his eyes (SR5 p. 266)
+  if (sharedWithMe || isMyJumpedInDrone) return true
   return null
 }

@@ -70,7 +70,7 @@ import {
   sr5KeepSidebarSettingsLast
 } from './interface/sidebar-tab-order.js'
 import {
-  SR5SharedVision, sr5HookUpdateTokenSharedVision
+  SR5SharedVision, sr5HookUpdateTokenSharedVision, sr5HookUpdateActorSharedVision
 } from './interface/shared-vision.js'
 
 /* -------------------------------------------- */
@@ -139,6 +139,6 @@ Hooks.on('canvasReady', sr5HookCanvasReadyVisionRanges)
 Hooks.on('updateToken', sr5HookUpdateTokenSharedVision)
 Hooks.on('canvasReady', () => SR5SharedVision.renderIndicator())
 Hooks.on('renderPlayers', () => SR5SharedVision.renderIndicator())
-Hooks.on('updateActor', () => SR5SharedVision.checkViewers())
+Hooks.on('updateActor', sr5HookUpdateActorSharedVision)
 Hooks.on('updateItem', () => SR5SharedVision.checkViewers())
 Hooks.on('createActiveEffect', () => SR5SharedVision.checkViewers())

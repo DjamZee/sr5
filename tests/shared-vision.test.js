@@ -156,4 +156,83 @@ describe('SR5Token gives the vision of a hidden camera to the player it is share
     expect(make({
     })._isVisionSource()).toBe(false)
   })
+
+  describe('jumped into a drone (SR5 p. 231, 266)', () => {
+    const drone = (controlMode, isOwner = true) => ({
+      id: 'drone1', type: 'actorDrone', isOwner, system: {
+        controlMode, vehicleOwner: {
+          id: 'rigger1'
+        }
+      }
+    })
+    const rigger = {
+      id: 'rigger1', type: 'actorPc', isOwner: true
+    }
+    const withActors = actors => {
+      globalThis.game.actors = actors
+      globalThis.canvas.tokens = {
+        placeables: []
+      }
+    }
+    const visible = actor => {
+      const t = make({
+        id: 'tok-' + actor.id
+      })
+      t.document.hidden = false
+      t.actor = actor
+      return t
+    }
+
+    it('the body of the rigger gives no vision while he is jumped in', () => {
+      withActors([drone('rigging')])
+      expect(visible(rigger)._isVisionSource()).toBe(false)
+    })
+
+    it('the drone he is jumped into is his eyes, though he keeps his body selected', () => {
+      withActors([drone('rigging')])
+      //The core refuses a token that is not selected while the player keeps another one selected
+      globalThis.foundry.canvas.placeables.Token.prototype._isVisionSource = function() {
+        return false
+      }
+      expect(visible(drone('rigging'))._isVisionSource()).toBe(true)
+    })
+
+    it('a drone of another player gives no vision', () => {
+      withActors([drone('rigging', false)])
+      globalThis.foundry.canvas.placeables.Token.prototype._isVisionSource = function() {
+        return false
+      }
+      expect(visible(drone('rigging', false))._isVisionSource()).toBe(false)
+    })
+
+    it('in remote control, the body sees again (SR5 p. 267)', () => {
+      withActors([drone('remote')])
+      expect(visible(rigger)._isVisionSource()).toBe(true)
+    })
+  })
+})
+
+describe('who is jumped in', () => {
+  it('a drone in rigging control with a controller', async () => {
+    const {
+      isJumpedInDrone, jumpedInRiggerIds
+    } = await import('../modules/system/shared-vision.js')
+    const d = {
+      type: 'actorDrone', system: {
+        controlMode: 'rigging', vehicleOwner: {
+          id: 'r1'
+        }
+      }
+    }
+    expect(isJumpedInDrone(d)).toBe(true)
+    expect(isJumpedInDrone({
+      ...d, system: {
+        ...d.system, controlMode: 'autopilot'
+      }
+    })).toBe(false)
+    expect([...jumpedInRiggerIds([d])]).toEqual(['r1'])
+    expect(decideVisionSource({
+      isGM: false, sharedWithMe: true, isBlindBody: true
+    })).toBe(false)
+  })
 })

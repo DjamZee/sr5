@@ -230,6 +230,12 @@ export class SR5SharedVision {
   }
 }
 
+//A rigger who jumps into a drone, or out of it, sees through other eyes (SR5 p. 266): draw the vision again
+export function sr5HookUpdateActorSharedVision(actor, change) {
+  if (actor?.type === "actorDrone" && (foundry.utils.hasProperty(change, "system.controlMode") || foundry.utils.hasProperty(change, "system.vehicleOwner"))) SR5SharedVision.refresh()
+  SR5SharedVision.checkViewers()
+}
+
 //A change of the list, on any client, draws the vision again
 export function sr5HookUpdateTokenSharedVision(tokenDocument, change) {
   if (foundry.utils.hasProperty(change, `flags.sr5.${SHARED_VISION_FLAG}`) || foundry.utils.hasProperty(change, `flags.sr5.-=${SHARED_VISION_FLAG}`)) SR5SharedVision.refresh()
