@@ -1322,7 +1322,8 @@ export class SR5_CharacterUtility extends Actor {
     if (!this.isDepthActive(actor)) return
     let max = actor.system.matrix.programsMaximumActive
     let depth = actor.system.specialAttributes.depth?.augmented.value || 0
-    // The actor is prepared twice and Depth is still 0 on the first pass: drop what an earlier pass wrote
+    // generateMatrixAttributes runs first in prepareEmbeddedDocuments, before updateSpecialAttributes, so Depth is still 0;
+    // it runs again in updateItems with the real Depth: drop what the earlier call wrote
     let others = max.modifiers.filter(m => m.details !== "aiProgramCap" && m.type !== "device" && m.type !== "deviceRating")
     let deviceMods = max.modifiers.filter(m => m.type === "device" || m.type === "deviceRating")
     let slots = deviceMods.reduce((sum, m) => sum + m.value, 0)
