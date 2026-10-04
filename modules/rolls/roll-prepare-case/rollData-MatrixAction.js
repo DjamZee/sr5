@@ -140,11 +140,13 @@ function hasWatchdogMarkOnTarget(rollData){
 }
 
 /** A drone created from an unlinked token records the token id as its creator: the token and its
- * base actor are the same character, so both are recognised as owner (SR5 p. 238)
+ * base actor are the same character, so both are recognised as owner (SR5 p. 238).
+ * Deployed from the base sheet, it records the base actor id: an unlinked token carries that same id but is
+ * a copy that deployed nothing, so only the base actor (its sheet or a linked token) owns it
  */
 function isCreator(creatorId, actor, speakerId){
   if (!creatorId) return false
-  if (creatorId === actor.id || creatorId === speakerId) return true
+  if (creatorId === speakerId || (creatorId === actor.id && !actor.isToken)) return true
   const creator = SR5_EntityHelpers.getRealActorFromID(creatorId)
   // A synthetic actor carries the id of its base actor: only the base sheet takes this path, never another token copy
   return !!creator && creator.id === actor.id && !actor.isToken

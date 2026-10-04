@@ -70,4 +70,15 @@ describe('Owner of a drone created from a token (SR5 p. 238)', () => {
     expect(await check(TOKEN, 'otherTokenOfRigger', true)).toBe(false)
     expect(ui.notifications.warn).toHaveBeenCalled()
   })
+
+  // N63: deployed from the BASE sheet, the drone records the base actor id. The unlinked tokens of that
+  // actor are copies that deployed nothing, though they carry the same actor id
+  it('recognises the base sheet as owner of a drone it deployed', async () => {
+    expect(await check(BASE, BASE)).toBe(true)
+  })
+
+  it('does not recognise an unlinked token as owner of a drone deployed from the base sheet', async () => {
+    expect(await check(BASE, TOKEN, true)).toBe(false)
+    expect(ui.notifications.warn).toHaveBeenCalled()
+  })
 })
