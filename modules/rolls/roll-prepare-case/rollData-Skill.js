@@ -11,7 +11,7 @@ import {
   SR5_MiscellaneousHelpers 
 } from "../roll-helpers/miscellaneous.js"
 import {
-  prepareSkillAttribute, SKILL_ATTRIBUTE_FLAG
+  prepareSkillAttribute, SKILL_ATTRIBUTE_FLAG, syncBackgroundCount, backgroundCountApplies
 } from "../roll-helpers/skillAttribute.js"
 
 //Add info for skill dicePool roll
@@ -63,6 +63,12 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
   //Determine limit modififiers
   rollData.limit.modifiers = SR5_PrepareRollHelper.getLimitModifiers(rollData, actor.system.skills[rollKey].limit.modifiers)
 
+  //The background count follows the attribute in use (Grimoire des Ombres p. 30)
+  if (rollData.skillAttribute){
+    rollData.skillAttribute.skillKey = rollKey
+    rollData = syncBackgroundCount(rollData, actor.system.magic?.bgCount, backgroundCountApplies(rollKey, rollData.skillAttribute.selected))
+  }
+
   //Handle Actions: resisting an opposed test is no action of the target's (SR5 p. 44-45), nor is a test the
   //gamemaster calls for outside the character's phase (SR5 p. 164)
   if (!chatData?.test?.isOpposed && !SR5_MiscellaneousHelpers.isOutOfPhase(actor)) rollData.combat.actions = SR5_MiscellaneousHelpers.addActions(rollData.combat.actions, {
@@ -82,7 +88,7 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
     if (actor.system.magic.reagents > 0 && rollKey !== "binding") rollData.dialogSwitch.reagents = true
     rollData.magic.elements = actor.system.magic.elements
     //Add background count limit modifiers if any
-    if (actor.system.magic.bgCount.value > 0){
+    if (actor.system.magic.bgCount.value > 0 && backgroundCountApplies(rollKey, rollData.skillAttribute?.selected ?? "magic")){
       rollData = SR5_PrepareRollHelper.addBackgroundCountLimitModifiers(rollData, actor)
     }
   }

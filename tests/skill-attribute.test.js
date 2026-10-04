@@ -3,8 +3,112 @@ import {
 } from 'vitest'
 
 import {
-  prepareSkillAttribute, skillAttributeChoices, swapLinkedAttribute, selectedSkillAttribute, skillAttributeFlagKey
+  prepareSkillAttribute, skillAttributeChoices, swapLinkedAttribute, selectedSkillAttribute, skillAttributeFlagKey,
+  syncBackgroundCount, backgroundCountApplies, setDialogWindowTitle, forgetKnowledgeAttribute
 } from '../modules/rolls/roll-helpers/skillAttribute.js'
+
+// Grimoire des Ombres p. 30: the background count follows the attribute in use
+describe('background count', () => {
+  const penalty = {
+    value: -3, modifiers: [{
+      source: "Champ magique de la scène", type: "toxic", value: -3
+    }]
+  }
+  const bonus = {
+    value: 2, modifiers: [{
+      source: "Champ magique de la scène", type: "hermetic", value: 2
+    }]
+  }
+  const rollData = (dice = [], limit = {
+  }) => ({
+    dicePool: {
+      modifiers: dice
+    }, limit: {
+      modifiers: limit
+    }
+  })
+
+  it('applies to Magic, and always to astral combat and assensing', () => {
+    expect(backgroundCountApplies("binding", "magic")).toBe(true)
+    expect(backgroundCountApplies("binding", "charisma")).toBe(false)
+    expect(backgroundCountApplies("assensing", "logic")).toBe(true)
+  })
+
+  it('adds the penalty to the dice when Magic is picked', () => {
+    let r = syncBackgroundCount(rollData([{
+      type: "wounds", label: "Blessures", value: -1
+    }]), penalty, true)
+    expect(r.dicePool.modifiers.map(m => m.value)).toEqual([-1, -3])
+  })
+
+  it('removes the penalty when Magic gives way to another attribute, and keeps the rest', () => {
+    let r = syncBackgroundCount(rollData([{
+      type: "wounds", label: "Blessures", value: -1
+    }, {
+      type: "toxic", label: "Champ magique de la scène", value: -3
+    }]), penalty, false)
+    expect(r.dicePool.modifiers).toEqual([{
+      type: "wounds", label: "Blessures", value: -1
+    }])
+  })
+
+  it('moves an aligned bonus on the limit in and out, without counting it twice', () => {
+    let r = syncBackgroundCount(rollData(), bonus, true)
+    r = syncBackgroundCount(r, bonus, true)
+    expect(r.limit.modifiers).toEqual({
+      hermetic: {
+        label: "Champ magique de la scène", value: 2
+      }
+    })
+    expect(syncBackgroundCount(r, bonus, false).limit.modifiers).toEqual({
+    })
+  })
+})
+
+describe('setDialogWindowTitle', () => {
+  it('writes the pair in use in the window title', () => {
+    let title = {
+      textContent: "Test de compétence : Gymnastique + Agilité"
+    }
+    let element = {
+      closest: () => ({
+        querySelector: () => title
+      })
+    }
+    expect(setDialogWindowTitle(element, "Test de compétence : Gymnastique + Force")).toBe(true)
+    expect(title.textContent).toBe("Test de compétence : Gymnastique + Force")
+  })
+})
+
+describe('forgetKnowledgeAttribute', () => {
+  const actor = flags => ({
+    unset: [],
+    getFlag: () => flags,
+    async unsetFlag(scope, key){
+      this.unset.push(`${scope}.${key}`)
+    },
+  })
+
+  it('erases the kept attribute of a deleted knowledge skill', async () => {
+    let parent = actor({
+      "knowledge-abc": "intuition", gymnastics: "strength"
+    })
+    expect(await forgetKnowledgeAttribute({
+      id: "abc", parent
+    })).toBe(true)
+    expect(parent.unset).toEqual(["sr5.skillAttributes.knowledge-abc"])
+  })
+
+  it('writes nothing when the skill kept no attribute', async () => {
+    let parent = actor({
+      gymnastics: "strength"
+    })
+    expect(await forgetKnowledgeAttribute({
+      id: "abc", parent
+    })).toBe(false)
+    expect(parent.unset).toEqual([])
+  })
+})
 
 // SR5 p. 130: the attribute paired with a skill is chosen at roll time; p. 137: Gymnastics + Strength to climb
 const labels = {

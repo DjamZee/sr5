@@ -3297,7 +3297,7 @@
 	"SR5.SkillAttribute": "Attribut du jet",
 	"SR5.SkillAttributeKeep": "Garder cet attribut pour cette compétence",
 	"SR5.SkillAttributeKept": "Attribut retenu au jet : {attribute}. La réserve affichée sur la fiche reste celle de l'attribut associé.",
-	"SR5.HELP_SkillAttributeMsg": "Une compétence ne se joue pas toujours avec son attribut associé (SR5 p. 130) : par exemple Gymnastique + Force pour l'escalade. Le meneur de jeu tranche ; la Limite reste celle de la compétence.",
+	"SR5.HELP_SkillAttributeMsg": "Une compétence ne se joue pas toujours avec son attribut associé (SR5 p. 130), par exemple Gymnastique + Force pour l'escalade. Le joueur choisit l'attribut ; le meneur de jeu arbitre à voix haute. La Limite reste celle de la compétence.",
 	"SR5.SkillTest": "Test de compétence",
 	"SR5.SkillThrowingWeapons": "Armes de jet",
 	"SR5.SkillTracking": "Pistage",

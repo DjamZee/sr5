@@ -3297,7 +3297,7 @@
 	"SR5.SkillAttribute": "Roll attribute",
 	"SR5.SkillAttributeKeep": "Keep this attribute for this skill",
 	"SR5.SkillAttributeKept": "Attribute kept for rolls: {attribute}. The dice pool shown on the sheet still uses the linked attribute.",
-	"SR5.HELP_SkillAttributeMsg": "A skill is not always used with its linked attribute (SR5 p. 130): Gymnastics + Strength to climb, for instance. The gamemaster decides; the limit stays the skill's.",
+	"SR5.HELP_SkillAttributeMsg": "A skill is not always used with its linked attribute (SR5 p. 130), Gymnastics + Strength to climb for instance. The player picks the attribute; the gamemaster rules on it out loud. The limit stays the skill's.",
 	"SR5.SkillTest": "Skill Test",
 	"SR5.SkillThrowingWeapons": "Throwing Weapons",
 	"SR5.SkillTracking": "Tracking",

@@ -38,7 +38,7 @@ import {
   isRunning, runningModifierValue
 } from "../system/running.js"
 import {
-  attributeValue, swapLinkedAttribute, skillAttributeTitle, SKILL_ATTRIBUTE_FLAG
+  attributeValue, swapLinkedAttribute, skillAttributeTitle, SKILL_ATTRIBUTE_FLAG, syncBackgroundCount, backgroundCountApplies, setDialogWindowTitle
 } from "./roll-helpers/skillAttribute.js"
 
 export default class SR5_RollDialog {
@@ -272,8 +272,13 @@ export default class SR5_RollDialog {
       row.querySelector('.SR-TextCenter').textContent = value
     }
     dialogData.test.title = skillAttributeTitle(choice, k => game.i18n.localize(k))
+    //The window title shows the pair in use, as the chat card will
+    setDialogWindowTitle(html, dialogData.test.title)
+    //The background count follows the attribute in use (Grimoire des Ombres p. 30)
+    if (choice.skillKey) syncBackgroundCount(dialogData, actor.system.magic?.bgCount, backgroundCountApplies(choice.skillKey, attributeKey))
     if (choice.keep) this._onKeepSkillAttribute(true, dialogData, actor)
     this.updateDicePoolValue(html)
+    this.updateLimitValue(html)
   }
 
   // Arbitrage de DjamZ: the choice is kept in an actor flag for that skill until the box is unchecked

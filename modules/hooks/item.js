@@ -13,6 +13,9 @@ import {
 import {
   SR5_CharacterUtility
 } from "../entities/actors/utilityActor.js"
+import {
+  forgetKnowledgeAttribute
+} from "../rolls/roll-helpers/skillAttribute.js"
 
 // An item can take the vision in use away, or give it back (cybereyes, goggles) : the tokens of
 // its actor follow, served by the user who made the change.
@@ -121,6 +124,8 @@ export async function sr5HookUpdateItem(document, data, _options, userId) {
 export async function sr5HookDeleteItem(item, _options, userId) {
   await sr5HookItemVision(item, userId)
   if (SR5_Jammer.isJammer(item)) SR5_Jammer.refreshItem(item)
+  //A deleted knowledge skill takes its kept roll attribute with it, by the user who deleted it
+  if (item.type === "itemKnowledge" && userId === game.user?.id) await forgetKnowledgeAttribute(item)
   if (item.testUserPermission(game.user, 3) || (game.user?.isGM)){
     if (item.system.type === "signalJam"){
       let actorId = item.parent.id

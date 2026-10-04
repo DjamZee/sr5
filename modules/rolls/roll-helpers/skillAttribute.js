@@ -56,6 +56,53 @@ export function skillAttributeTitle(choice, localize){
   return `${choice.titleBase} + ${localize(choice.choices[choice.selected])}`
 }
 
+// Grimoire des Ombres p. 30: the background count weighs on the magic used by an Awakened, i.e. here on the tests made with Magic. It follows the
+// attribute in use: added when Magic is picked, removed when Magic gives way to another one.
+// Astral combat and assensing carry it whatever the attribute, as on the sheet.
+export const ALWAYS_BACKGROUND_COUNT = ["astralCombat", "assensing"]
+
+export function backgroundCountApplies(skillKey, attributeKey){
+  return attributeKey === "magic" || ALWAYS_BACKGROUND_COUNT.includes(skillKey)
+}
+
+// Remove the background count from the dice and the limit, then put it back if it applies:
+// a penalty goes to the dice, a bonus to the limit (as utilityActor does for the sheet)
+export function syncBackgroundCount(rollData, bgCount, apply){
+  let mods = bgCount?.modifiers || []
+  if (!mods.length) return rollData
+  let isBg = m => mods.some(b => b.type === m.type && b.source === m.label)
+  rollData.dicePool.modifiers = rollData.dicePool.modifiers.filter(m => !isBg(m))
+  for (let b of mods){
+    if (rollData.limit.modifiers[b.type]?.label === b.source) delete rollData.limit.modifiers[b.type]
+  }
+  if (!apply) return rollData
+  for (let b of mods){
+    if (bgCount.value < 0) rollData.dicePool.modifiers.push({
+      type: b.type, label: b.source, value: b.value
+    })
+    else rollData.limit.modifiers[b.type] = {
+      label: b.source, value: b.value
+    }
+  }
+  return rollData
+}
+
+// The window title of the roll dialog follows the pair in use
+export function setDialogWindowTitle(element, title){
+  let windowTitle = element?.closest?.('.application, .app')?.querySelector('.window-title')
+  if (windowTitle) windowTitle.textContent = title
+  return !!windowTitle
+}
+
+// A deleted knowledge skill takes its kept attribute with it
+export async function forgetKnowledgeAttribute(item){
+  let actor = item?.parent
+  let key = skillAttributeFlagKey("knowledgeSkill", null, item)
+  if (actor?.getFlag?.("sr5", SKILL_ATTRIBUTE_FLAG)?.[key] === undefined) return false
+  await actor.unsetFlag("sr5", `${SKILL_ATTRIBUTE_FLAG}.${key}`)
+  return true
+}
+
 // Fill rollData.skillAttribute for the roll dialog and apply the kept attribute, if any
 export function prepareSkillAttribute(rollData, actorData, kept, {
   flagKey, linked, titleBase, alwaysInTitle, labels, localize
