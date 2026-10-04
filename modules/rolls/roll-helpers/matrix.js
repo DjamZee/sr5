@@ -73,9 +73,12 @@ export class SR5_MatrixHelpers {
         
     if (targetActor.system.matrix.programs.virtualMachine.isActive) damageValue += 1
 
-    newItem.system.conditionMonitors.matrix.actual.base += damageValue
-    SR5_EntityHelpers.updateValue(newItem.system.conditionMonitors.matrix.actual, 0, newItem.system.conditionMonitors.matrix.value)
-    if (newItem.system.conditionMonitors.matrix.actual.value >= newItem.system.conditionMonitors.matrix.value){
+    //The size of the monitor is prepared (SR5 p. 228): the copy above holds the source, where it is 0,
+    //and every first box used to brick the device. No box is kept beyond the monitor
+    let monitorSize = targetItem.system.conditionMonitors.matrix.value
+    newItem.system.conditionMonitors.matrix.actual.base = Math.min(newItem.system.conditionMonitors.matrix.actual.base + damageValue, monitorSize)
+    SR5_EntityHelpers.updateValue(newItem.system.conditionMonitors.matrix.actual, 0, monitorSize)
+    if (newItem.system.conditionMonitors.matrix.actual.value >= monitorSize){
       if (targetItem.type === "itemDevice" && targetActor.system.matrix.userMode !== "ar"){
         let dumpshockData = {
           damage:{
