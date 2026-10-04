@@ -1,6 +1,12 @@
 import {
   ActorSheetSR5 
 } from "./baseSheet.js"
+import {
+  SR5_CharacterUtility
+} from "./utilityActor.js"
+import {
+  SR5_ActorHelper
+} from "./entityActor-helpers.js"
 
 /**
  * An Actor sheet for grunt type actors in the Shadowrun 5 system.
@@ -76,17 +82,21 @@ export class SR5GruntSheet extends ActorSheetSR5 {
   _prepareMatrixActions(actor) {
     const activeMatrixActions = {
     }
-    let hasAttack = (actor.system.matrix.attributes.attack.value > 0) ? true : false
-    let hasSleaze = (actor.system.matrix.attributes.sleaze.value > 0) ? true : false
+    //An AI without a device emulates Attack and Sleaze (Data Trails p. 159)
+    let emulates = SR5_CharacterUtility.isDevicelessAI(this.actor)
+    let hasAttack = emulates || actor.system.matrix.attributes.attack.value > 0
+    let hasSleaze = emulates || actor.system.matrix.attributes.sleaze.value > 0
     let killCodeRules = game.settings.get("sr5", "sr5KillCodeRules")
     let rigger5Actions = game.settings.get("sr5", "sr5Rigger5Actions")
 
     for (let [key, matrixAction] of Object.entries(actor.system.matrix.actions)) {
+      //Depth actions need the AI loaded on the device it acts on (Data Trails p. 159)
+      if (emulates && matrixAction.source === "dataTrails") continue
       let linkedAttribute = matrixAction.limit?.linkedAttribute
-      if ( (matrixAction.source === "core" || (killCodeRules && matrixAction.source === "killCode") || (rigger5Actions && matrixAction.source === "rigger5") || (matrixAction.source === "dataTrails" && actor.system.activeSpecialAttribute === "depth")) &&   (matrixAction.test?.dicePool >= 0 && (linkedAttribute === "attack" && hasAttack) ) ||
+      if ( (matrixAction.source === "core" || (killCodeRules && matrixAction.source === "killCode") || (rigger5Actions && matrixAction.source === "rigger5") || (matrixAction.source === "dataTrails" && actor.system.activeSpecialAttribute === "depth")) && ((matrixAction.test?.dicePool >= 0 && (linkedAttribute === "attack" && hasAttack) ) ||
 			(matrixAction.test?.dicePool >= 0 && (linkedAttribute === "sleaze" && hasSleaze) ) ||
 			(matrixAction.test?.dicePool > 0 && (linkedAttribute === "firewall" || linkedAttribute === "dataProcessing" || linkedAttribute === "") ) ||
-			this._shownNonRollableMatrixActions) {
+			this._shownNonRollableMatrixActions)) {
         activeMatrixActions[key] = matrixAction
       }
     }
@@ -174,6 +184,7 @@ export class SR5GruntSheet extends ActorSheetSR5 {
     actor.gears = gears
     actor.cyberdecks = cyberdecks
     actor.programs = programs
+    SR5_ActorHelper.markDeployedVehicles(vehicles, game.actors, SR5_ActorHelper.sidekickCreatorId(this.actor))
     actor.vehicles = vehicles
     actor.vehiclesMod = vehiclesMod
     actor.powers = powers

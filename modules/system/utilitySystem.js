@@ -1,5 +1,17 @@
 export class SR5_SystemHelpers {
 
+  // A sheet render that throws (a missing partial, for instance) would otherwise fail without a word
+  static async renderSheetLoudly(document, options){
+    try {
+      return await document.sheet.render(options)
+    } catch (err) {
+      console.error(err)
+      ui.notifications.error(game.i18n.format("SR5.WARN_SheetRenderFailed", {
+        name: document.name
+      }))
+    }
+  }
+
   // Scene units already reported as unrecognised, so the warning is written once and not on every roll.
   static _unknownSceneUnits = new Set()
 
@@ -273,6 +285,30 @@ export class SR5_SystemHelpers {
       requiresReload: true
     })
 
+    // Grappling (SR5 p. 195-196, Run & Gun p. 126 and 133-138): token statuses, automatic thresholds and holds.
+    // Off by default, and off nothing changes. It adds token statuses, hence the reload.
+    game.settings.register("sr5", "sr5GrapplingRules", {
+      name: "SR5.SETTINGS_GrapplingRules_T",
+      hint: "SR5.SETTINGS_GrapplingRules_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+      requiresReload: true
+    })
+
+    // Running (SR5 p. 163-164): the running status is put on by the "Course" or "Sprint" movement action of the token.
+    // Checked, it is also put on when a token in combat has gone farther than its walking rate this Combat Turn.
+    // Off by default (ruling of DjamZ, 2026-10-04): a token moved by hand to tidy the map would count as running
+    game.settings.register("sr5", "sr5RunningFromDistance", {
+      name: "SR5.SETTINGS_RunningFromDistance_T",
+      hint: "SR5.SETTINGS_RunningFromDistance_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean
+    })
+
     // Kill Code Rules
     game.settings.register("sr5", "sr5KillCodeRules", {
       name: "SR5.SETTINGS_KillCodeRules_T",
@@ -343,6 +379,18 @@ export class SR5_SystemHelpers {
         "intuition": "SR5.SETTINGS_DevicelessAILogicDefense_Intuition",
         "willpower": "SR5.SETTINGS_DevicelessAILogicDefense_Willpower",
       },
+      requiresReload: true
+    })
+
+    // SR5 p. 301 gives a homunculus the Structure of its material as Body, and no Armor: off by default.
+    // On, it also gets the Armor of that material (SR5 p. 198). Read while the actors are prepared, hence the reload.
+    game.settings.register("sr5", "sr5HomunculusMaterialArmor", {
+      name: "SR5.SETTINGS_HomunculusMaterialArmor_T",
+      hint: "SR5.SETTINGS_HomunculusMaterialArmor_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
       requiresReload: true
     })
   }

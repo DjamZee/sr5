@@ -16,6 +16,9 @@ import {
 import {
   SR5_MiscellaneousHelpers
 } from "../rolls/roll-helpers/miscellaneous.js"
+import {
+  clearRunning
+} from "./running.js"
 
 export class SR5Combat extends Combat {
   //Pass effects whose deletion is under way (see endOwnerPassEffects)
@@ -134,6 +137,8 @@ export class SR5Combat extends Combat {
     //SR5_SystemHelpers.srLog(3, "New combat round");
     const combat = game.combats?.get(combatId)
     if (!combat) return
+    //SR5 p. 164: a character runs until the end of the Combat Turn
+    await clearRunning(combat)
     await combat.resetAll()
     for (let combatant of combat.combatants) {
       combatant.update({
@@ -636,12 +641,9 @@ export class SR5Combat extends Combat {
       else ui.notifications.info(`${game.i18n.format("SR5.INFO_TakeActions", {
         actor: actor.name, actionValue: action.value, actionType: game.i18n.localize(SR5.actionTypes[action.type]), actionSource: game.i18n.localize(SR5.actionSources[action.source])
       })}`) 
-      // SR5 p. 170: an interruption action lowers the Initiative score by its own cost — 5 by default,
-      // 10 for a Watchdog Haywire or Popup (Kill Code p. 45)
-      if (action.type === "interruption") {
-        initModifier = -(action.initiativeCost || 5)
-      }
     }
+    // SR5 p. 170: every interruption action of the list lowers the Initiative score by its own cost
+    initModifier = -SR5_MiscellaneousHelpers.interruptionInitiativeCost(actions)
     if (initModifier) await SR5Combat.changeInitInCombatHelper(documentId, initModifier)
 
     // SR5 p. 178: a simple or complex action spent on something other than firing ends the progressive recoil.
@@ -679,9 +681,23 @@ export class SR5Combat extends Combat {
 
   //When the world setting asks for it, refuses an action the character no longer has in this initiative pass,
   //with a warning: nothing is spent (SR5 p. 164-165). Unchecked (default), or out of combat, every action goes through
+  //A simple or complex action outside the character's phase, or with a score of 0 or less (SR5 p. 162 and 164), is
+  //only a warning; with the setting checked, a score of 0 or less refuses it like a missing action
   static hasActionsLeft(actor, actions){
-    if (!actor || !game.combat || !game.settings.get("sr5", "sr5BlockMissingActions")) return true
-    if (!SR5Combat.getCombatantFromActor(actor)) return true
+    if (!actor || !game.combat) return true
+    let combatant = SR5Combat.getCombatantFromActor(actor)
+    if (!combatant) return true
+    let block = game.settings.get("sr5", "sr5BlockMissingActions")
+    if (game.combat.started && combatant.initiative !== null && combatant.initiative !== undefined){
+      let problem = SR5_MiscellaneousHelpers.actionPhaseProblem(actions, {
+        initiative: combatant.initiative, isCurrent: game.combat.combatant?.id === combatant.id
+      })
+      if (problem) ui.notifications.warn(game.i18n.format(problem === "noInitiative" ? "SR5.WARN_ActionNoInitiative" : "SR5.WARN_ActionOutOfPhase", {
+        actor: actor.name, initiative: combatant.initiative
+      }))
+      if (problem === "noInitiative" && block) return false
+    }
+    if (!block) return true
     let missing = SR5_MiscellaneousHelpers.missingAction(actions, actor.system.specialProperties?.actions)
     if (!missing) return true
     ui.notifications.warn(game.i18n.format("SR5.WARN_NoActionLeft", {

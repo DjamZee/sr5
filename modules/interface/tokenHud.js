@@ -1,3 +1,7 @@
+import {
+  SR5SharedVision
+} from "./shared-vision.js"
+
 /**
  * Icons of the system on the token HUD.
  *
@@ -29,6 +33,7 @@ export default class SR5TokenHud extends foundry.applications.hud.TokenHUD {
     super._onRender(context, options)
     this.#dressControlIcons()
     this.#addStorageButton()
+    SR5SharedVision.addHudButton(this)
   }
 
   /**

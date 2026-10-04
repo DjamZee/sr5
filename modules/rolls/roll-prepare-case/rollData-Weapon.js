@@ -31,6 +31,9 @@ import {
 import {
   SR5_UtilityItem
 } from "../../entities/items/utilityItem.js"
+import {
+  grapplingCalledShots, holdKindOn, clinchAttackPenalty, clinchCancelsReach, isHeldBy, isClinchFirearm
+} from "../roll-helpers/grapple-rules.js"
 
 //Add info for weapon Roll
 export default async function weapon(rollData, actor, item){
@@ -199,8 +202,54 @@ export default async function weapon(rollData, actor, item){
   if (actorData.specialProperties?.aggravatedWounds) rollData.damage.aggravated = true
 
   _buildCalledShotList(rollData)
+  if (game.settings.get("sr5", "sr5GrapplingRules")) {
+    _addGrapplingCalledShots(rollData, actor)
+    _addClinchModifiers(rollData, actor)
+  }
 
   return rollData
+}
+
+//Run & Gun p. 133 (Saisie): melee weapons take a penalty equal to their Reach, firearms one equal to the net hits
+//of the clinch; between the two fighters, Reach is cancelled
+function _addClinchModifiers(rollData, actor){
+  const penalty = clinchAttackPenalty(actor.effects, {
+    category: rollData.test.typeSub,
+    reach: rollData.combat.reach,
+    isFirearm: isClinchFirearm(rollData.combat.weaponType),
+  })
+  if (penalty) rollData.dicePool.modifiers.push({
+    type: "grappleClinch", label: game.i18n.localize("SR5.GrappleClinchPenalty"), value: penalty
+  })
+  if (clinchCancelsReach(actor.effects, rollData.target.actorId)) rollData.combat.reach = 0
+}
+
+//SR5 p. 195-196 (Maîtriser, renforcer sa prise): normal unarmed attacks, not called shots, hence no -4
+//(convertCalledShotToMod gives 0) and no free action. They share the called shot's way to the defense card.
+//Without the called shot rules, the list keeps only them: subduing belongs to the core book.
+function _addGrapplingCalledShots(rollData, actor){
+  const keys = grapplingCalledShots({
+    unarmed: rollData.combat.weaponType === "unarmedCombat",
+    holdKind: holdKindOn(actor.effects, rollData.target.actorId),
+    melee: rollData.test.typeSub === "meleeWeapon",
+    heldByTarget: isHeldBy(actor.effects, rollData.target.actorId),
+    canReverse: !!rollData.combat.calledShot.martialArts.reversal,
+  })
+  if (!keys.length) return
+  if (!rollData.systemRules.calledShots) {
+    rollData.lists.calledShots = {
+    }
+    rollData.lists.calledShotsSpecific = {
+    }
+  }
+  for (const key of keys) rollData.lists.calledShots[key] = game.i18n.localize(GRAPPLING_CALLED_SHOT_LABELS[key])
+  rollData.systemRules.grappling = true
+}
+
+const GRAPPLING_CALLED_SHOT_LABELS = {
+  subdue: "SR5.CS_Subdue",
+  strengthenHold: "SR5.CS_StrengthenHold",
+  reversal: "SR5.CS_Reversal",
 }
 
 
@@ -383,7 +432,14 @@ export async function handleMartialArtsCalledShot(rollData, actor){
   return rollData
 }
 
-function _buildCalledShotList(rollData){
+// Run & Gun p. 125: Pin is a general called shot for bows, crossbows and throwing weapons only,
+// whatever the ammo; the Capture précise technique (p. 148) only lowers its penalty
+const PIN_WEAPON_TYPES = ["throwing", "bow", "lightCrossbow", "mediumCrossbow", "heavyCrossbow"]
+export function canPin(weaponType){
+  return PIN_WEAPON_TYPES.includes(weaponType)
+}
+
+export function _buildCalledShotList(rollData){
   rollData.lists.calledShots = {
   }
   rollData.lists.calledShotsSpecific = {
@@ -413,7 +469,7 @@ function _buildCalledShotList(rollData){
     rollData.lists.calledShots.dirtyTrick = game.i18n.localize("SR5.CS_DirtyTrick")
   }
 
-  if ((ammoType === "special" || ammoType ==="bolt" || ammoType ==="boltInjection" || ammoType ==="arrow" || ammoType ==="arrowInjection") ){
+  if (canPin(rollData.combat.weaponType)){
     rollData.lists.calledShots.pin = game.i18n.localize("SR5.CS_Pin")
   }
     
@@ -483,9 +539,7 @@ function _buildCalledShotList(rollData){
     if (tags.includes("shakeRattle")) {
       rollData.lists.calledShots.shakeUp = game.i18n.localize("SR5.CS_AS_ShakeRattle")
     }
-    if (tags.includes("pin") && rollData.combat.calledShot.martialArts.pin) {
-      rollData.lists.calledShots.pin = game.i18n.localize("SR5.CS_Pin")
-    }
+    // A "pin" tag adds nothing: Pin depends on the weapon, not on the ammo (Run & Gun p. 125)
   } else {
     // Legacy string-based called shot eligibility
     if (ammoType === "gel") rollData.lists.calledShotsSpecific.bellringer = game.i18n.localize("SR5.CS_AS_Bellringer")

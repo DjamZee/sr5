@@ -22,6 +22,9 @@ import {
 import {
   SR5_PrepareRollTest 
 } from "../roll-prepare.js"
+import {
+  subdueTakesHold, strengthenedHold, grappleHoldOf, isHeldBy, holdAfterReversal
+} from "../roll-helpers/grapple-rules.js"
 
 export default async function defenseInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
@@ -45,8 +48,29 @@ export default async function defenseInfo(cardData, actorId){
     }
   }
 
-  //Handle Energetic Aura
-  if (actorData.specialProperties?.energyAura !== "" && cardData.test.typeSub === "meleeWeapon") await handleEnergeticAura(cardData, actorData)
+  //Handle Energetic Aura: only a successful attack burns the attacker (SR5 p. 397)
+  if (actorData.specialProperties?.energyAura && cardData.test.typeSub === "meleeWeapon" && cardData.roll.netHits > 0) await handleEnergeticAura(cardData, actorData)
+
+  //SR5 p. 196 (renforcer sa prise): no damage, the hold moves by the net hits, either way
+  if (cardData.combat.calledShot.name === "strengthenHold") {
+    cardData.damage.value = 0
+    cardData.chatCard.calledShotButton = true
+    //Only the hold of this attacker on this defender can be strengthened
+    if (!isHeldBy(actor.effects, cardData.previousMessage.actorId)) {
+      cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.WARN_GrappleNoHold"))
+      return
+    }
+    const current = grappleHoldOf(actor.effects)
+    const hold = current.hold ?? 0
+    const newHold = strengthenedHold(hold, cardData.roll.netHits)
+    cardData.combat.calledShot.effects = [{
+      name: "strengthenHold", value: newHold, holdId: current.holdId
+    }]
+    cardData.chatCard.buttons.calledShotEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "calledShotEffect", game.i18n.format("SR5.GrappleApplyStrengthen", {
+      hold, newHold
+    }))
+    return
+  }
 
   //If Defenser win, return
   if (cardData.roll.netHits <= 0) {
@@ -60,7 +84,15 @@ export default async function defenseInfo(cardData, actorId){
   }
 
   //Special case for ramming
-  if (cardData.test.type === "rammingDefense") await handleRamming(cardData, actor)
+  if (cardData.test.type === "rammingDefense") {
+    let damages = SR5_ConverterHelpers.rammingDefenseDamages(cardData.combat.ramming || {
+    }, {
+      defenderIsVehicle: actor.type === "actorDrone", defenderBody: actor.system.attributes.body.augmented.value, damageBase: cardData.damage.base, netHits: cardData.roll.netHits
+    })
+    //No relative speed, no damage (a few scratches at most)
+    if (damages.target <= 0) return cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.RammingNoImpact"))
+    await handleRamming(cardData, damages.initiator, actor.type === "actorDrone")
+  }
 
   //Handle astral combat damage
   if (cardData.test.typeSub === "astralCombat") cardData.damage.resistanceType = "astralDamage"
@@ -192,8 +224,30 @@ async function handleCalledShotDefenseInfo(cardData, actorData){
       cardData.chatCard.calledShotButton = false
       cardData.chatCard.buttons.calledShotEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "calledShotEffect",`${game.i18n.localize("SR5.ApplyEffect")}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize(SR5.calledShotsEffects[cardData.combat.calledShot.name])}`)
       break
+    case "subdue":
+      //SR5 p. 195: no damage; Strength + net hits above the defender's Physical limit, and the defender is held
+      cardData.damage.value = 0
+      if (subdueTakesHold(cardData.roll.netHits, attacker.system.attributes.strength.augmented.value, actorData.limits.physicalLimit.value)) {
+        cardData.combat.calledShot.effects = [{
+          name: "subdue", value: cardData.roll.netHits
+        }]
+        cardData.chatCard.buttons.calledShotEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "calledShotEffect", game.i18n.format("SR5.GrappleApplyHold", {
+          hold: cardData.roll.netHits
+        }))
+      } else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.GrappleNoHold"))
+      break
     case "reversal":
-      cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize('SR5.ReversedSituation'))
+      //Grappling rules: the fighter held by the defender swaps the roles with them (Run & Gun p. 126)
+      if (game.settings.get("sr5", "sr5GrapplingRules") && isHeldBy(attacker.effects, cardData.owner.speakerId)) {
+        const hold = holdAfterReversal(cardData.roll.netHits)
+        cardData.combat.calledShot.effects = [{
+          name: "reversal", value: hold, holdId: grappleHoldOf(attacker.effects)?.holdId
+        }]
+        cardData.chatCard.buttons.calledShotEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "calledShotEffect", game.i18n.format("SR5.GrappleApplyReversal", {
+          hold
+        }))
+      }
+      else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize('SR5.ReversedSituation'))
       break
     case "onPinsAndNeedles":
       cardData.chatCard.buttons.calledShotEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "calledShotEffect",`${game.i18n.localize("SR5.ApplyEffect")}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize(SR5.calledShotsEffects[cardData.combat.calledShot.name])}`)
@@ -247,7 +301,7 @@ async function handleCalledShotDefenseInfo(cardData, actorData){
   return cardData
 }
 
-async function handleRamming(cardData, defender) {
+async function handleRamming(cardData, initiatorDamage, defenderIsVehicle) {
   //Get the attacker actor
   let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId)
 
@@ -257,8 +311,7 @@ async function handleRamming(cardData, defender) {
   rollData.test.typeSub = "accident"
   rollData.test.title = game.i18n.localize("SR5.CrashDamageResistance")
   //Rigger 5 p. 179 between two vehicles; SR5 p. 204 when the target is not a vehicle (its Body instead of the initiator's Structure)
-  if (defender.type !== "actorDrone" && cardData.combat.ramming) rollData.damage.base = SR5_ConverterHelpers.rammingNonVehicleDamage(defender.system.attributes.body.augmented.value, cardData.combat.ramming)
-  else rollData.damage.base = SR5_ConverterHelpers.rammingInitiatorDamage(cardData.damage.base + cardData.roll.netHits, cardData.combat.ramming?.angle)
+  rollData.damage.base = initiatorDamage
   rollData.damage.value = rollData.damage.base
   rollData.damage.type = "physical"
   rollData.damage.resistanceType = "physicalDamage"
@@ -272,8 +325,8 @@ async function handleRamming(cardData, defender) {
   })
   SR5_RollTest.renderRollCard(rollData)
 
-  //Add vehicle test to defender chat Message
-  cardData.chatCard.buttons.vehicleTest = SR5_RollMessage.generateChatButton("nonOpposedTest", "vehicleTest", `${game.i18n.localize("SR5.VehicleTest")} (3)`)
+  //Add vehicle test to defender chat Message: a pedestrian has nothing to pilot
+  if (defenderIsVehicle) cardData.chatCard.buttons.vehicleTest = SR5_RollMessage.generateChatButton("nonOpposedTest", "vehicleTest", `${game.i18n.localize("SR5.VehicleTest")} (3)`)
 }
 
 async function handleEnergeticAura(cardData, actorData){

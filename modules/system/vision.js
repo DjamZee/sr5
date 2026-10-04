@@ -42,6 +42,27 @@ export function getVisionRange(vision) {
   return Number.isNumeric(range) ? Math.max(0, Number(range)) : 0
 }
 
+/**
+ * The visions of a drone or a device come from its sensors: the vision enhancements of a camera
+ * (SR5 p. 446-447), an ultrasound sensor (SR5 p. 449). An item gives them, as goggles give a
+ * character his. No metatype, no astral sight, no environmental modifier here: only what the
+ * sensors see, and the vision in use, kept off once the sensor giving it is gone.
+ * @param {Object} visions - system.visions of the drone or device, changed in place
+ * @returns {Object} the same visions
+ */
+export function settleSensorVisions(visions) {
+  if (!visions) return visions
+  for (const key of ["lowLight", "thermographic", "ultrasound"]) {
+    const vision = visions[key]
+    if (!vision) continue
+    vision.hasVision = !!(vision.natural || vision.augmented)
+    if (!vision.hasVision) vision.isActive = false
+  }
+  if (visions.astral) visions.astral.isActive = false
+  visions.hasActiveVision = ["lowLight", "thermographic", "ultrasound"].some(key => visions[key]?.isActive)
+  return visions
+}
+
 /* -------------------------------------------- */
 /*  Vision modes                                */
 /* -------------------------------------------- */
@@ -261,6 +282,18 @@ function buildUltrasoundVision() {
 /*  Detection modes                             */
 /* -------------------------------------------- */
 
+/**
+ * Whether ordinary sight sees a target. The core answer comes first : it refuses a token carrying the
+ * "invisible" status, which only ultrasound and astral perception then see (SR5 p. 449, p. 294).
+ * A body whose owner is projecting is hidden as well.
+ * @param {boolean} coreDetects       What the core detection mode answered
+ * @param {TokenDocument|null} token  The target, when it is a token
+ */
+export function basicSightDetects(coreDetects, token) {
+  if (!coreDetects) return false
+  return !token?.actor?.effects?.find(e => e.statuses.has("astralInit"))
+}
+
 function buildDetectionModes() {
   const DetectionMode = foundry.canvas.perception.DetectionMode
   const DetectionModeDarkvision = foundry.canvas.perception.DetectionModeDarkvision
@@ -278,13 +311,9 @@ function buildDetectionModes() {
 
     /** @override */
     _canDetect(visionSource, target) {
-      let detected = super._canDetect(visionSource, target)
       const tgt = target?.document
-      if ((tgt instanceof foundry.documents.TokenDocument)) {
-        //check if target has astral effect and hide it if true;
-        detected = tgt.actor?.effects?.find(e => e.statuses.has("astralInit"))
-        return !detected
-      } else return true
+      const token = tgt instanceof foundry.documents.TokenDocument ? tgt : null
+      return basicSightDetects(super._canDetect(visionSource, target), token)
     }
   }
 

@@ -464,6 +464,20 @@ export class SR5_RollTest {
   }
 
   //Render the chat message
+  // The full speaker of a card: scene, token and world actor, so that Foundry finds an unlinked token's actor (N95)
+  static cardSpeaker(owner) {
+    const actor = SR5_EntityHelpers.getRealActorFromID(owner.speakerId)
+    if (!actor) return {
+      actor: owner.speakerId, token: owner.speakerId, alias: owner.speakerActor
+    }
+    return {
+      ...ChatMessage.getSpeaker({
+        actor, token: actor.token
+      }),
+      alias: owner.speakerActor,
+    }
+  }
+
   static async renderRollCard(cardData) {
     //Add button to edit result for GM
     //if (game.user.isGM) cardData.chatCard.canEditResult = true;
@@ -486,11 +500,7 @@ export class SR5_RollTest {
       rollMode: cardData.roll.rollMode,
       user: game.user.id,
       content: html,
-      speaker: {
-        actor: cardData.owner.speakerId,
-        token: cardData.owner.speakerId,
-        alias: cardData.owner.speakerActor,
-      },
+      speaker: SR5_RollTest.cardSpeaker(cardData.owner),
     }
 
     if (["gmroll", "blindroll"].includes(cardData.roll.rollMode)) chatData["whisper"] = ChatMessage.getWhisperRecipients("GM").map((u) => u.id)
@@ -585,6 +595,7 @@ export class SR5_RollTest {
       case "passThroughBarrier":
       case "escapeEngulf":
       case "ramming":
+      case "grappleClinch":
         await SR5_AddRollInfo.actionHitInfo(cardData, cardData.test.type)
         break
       case "power":
@@ -617,6 +628,12 @@ export class SR5_RollTest {
         break
       case "iceDefense":
         await SR5_AddRollInfo.iceDefenseInfo(cardData, actorId)
+        break
+      case "grappleEscape":
+        await SR5_AddRollInfo.grappleEscapeInfo(cardData, actorId)
+        break
+      case "grappleClinchDefense":
+        await SR5_AddRollInfo.grappleClinchDefenseInfo(cardData)
         break
       case "lift":
         await SR5_AddRollInfo.liftInfo(cardData, actorId)

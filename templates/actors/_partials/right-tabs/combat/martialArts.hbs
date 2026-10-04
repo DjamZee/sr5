@@ -2,7 +2,14 @@
 <div class="SRBlockSheet">
 	<ul>
 		<li class="SR-LigneEnTete grid">
-			<div class="col-4 SR-TextUppercase">{{localize 'SR5.MartialArts'}}</div>
+			<div class="col-4 SR-TextUppercase">{{localize 'SR5.MartialArts'}}
+				<a class="sr-roll" data-rolltype="grappleEscape" data-title="{{localize 'SR5.GrappleEscape'}}"
+				  data-helpTitle="{{localize 'SR5.GrappleEscape'}}" data-helpMessage="{{localize 'SR5.HELP_GrappleEscapeMsg'}}"><em class="fas fa-hands-bound"></em></a>
+				{{#if rulesGrappling}}
+				<a class="sr-roll" data-rolltype="grappleClinch" data-title="{{localize 'SR5.GrappleClinch'}}"
+				  data-helpTitle="{{localize 'SR5.GrappleClinch'}}" data-helpMessage="{{localize 'SR5.HELP_GrappleClinchMsg'}}"><em class="fas fa-handshake"></em></a>
+				{{/if}}
+			</div>
 			
 			<div class="col-1"><p class="SR-TextCenter" data-title="{{localize 'SR5.DicePool'}}">{{localize 'SR5.DicePoolShort'}}</p></div>
 			<div class="col-2 SR-TextCenter">{{localize 'SR5.MartialArtsType'}}</div>

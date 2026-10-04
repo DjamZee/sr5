@@ -7,8 +7,15 @@ import {
 import {
   SR5Combat
 } from "../system/srcombat.js"
+import {
+  SR5_Jammer
+} from "../system/jammer.js"
+import {
+  SR5_EntityHelpers
+} from "../entities/helpers.js"
 
 export async function sr5HookCreateActor(actor) {
+  SR5_ActorHelper.redrawCreatorSheet(actor)
   if ( !game.user.isGM ) return
 
   //Add itemDevice to Drone/Sprite/Agent if they have none.
@@ -47,6 +54,12 @@ export function sr5HookPreUpdateActor(document, changes, options = {
 }
 
 export async function sr5HookUpdateActor(document, data, _options, userId) {
+  //The sheet's wireless and equip toggles write the items through the actor, so no updateItem is sent: a
+  //physical jammer changed that way is measured again from here (SR5 p. 443)
+  for (let change of Array.isArray(data.items) ? data.items : []){
+    let item = document.items?.get?.(change._id)
+    if (SR5_Jammer.isJammer(item) && change.system) SR5_Jammer.refreshItem(item)
+  }
   //The sheet pins an item through the actor, items included : at that point the updateItem hook
   //still reads the actor as it was, so the tokens are served again from here
   if (data.items && userId === game.user?.id) await SR5_CharacterUtility.refreshVisionOfTokens(document)
@@ -66,6 +79,16 @@ export async function sr5HookUpdateActor(document, data, _options, userId) {
   //Keep edge monitor synchro with tokens
   if (document.type === "actorGrunt" && data.system?.conditionMonitors?.edge && (document.testUserPermission(game.user, 3) || (game.user?.isGM))){
     await SR5_ActorHelper.keepEdgeSynchroWithGrunt(document)
+  }
+
+  //A deployed drone switching its wireless leaves or joins its owner's connected objects, which the owner
+  //computes when prepared: prepare it again (N91)
+  if (document.type === "actorDrone" && data.system?.wirelessTurnedOn !== undefined) {
+    const owner = SR5_EntityHelpers.getRealActorFromID(document.system.creatorId)
+    if (owner) {
+      owner.reset()
+      if (owner.sheet?.rendered) owner.sheet.render()
+    }
   }
 
   //Propagate owner data changes to linked drones and agents

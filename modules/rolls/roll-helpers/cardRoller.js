@@ -18,6 +18,30 @@ export function opposedTestActorId(speaker) {
   return speaker.token || speaker.actor
 }
 
+// The actor defending against an attack card: the selected one, unless it is the attacker itself,
+// who cannot defend against their own attack; then the card's target defends (N93)
+export function defenseActorId(selectedId, card, resolveActor) {
+  const targetId = card?.target?.actorId
+  if (!selectedId || !targetId) return selectedId
+  const selected = resolveActor(selectedId), attacker = resolveActor(card.owner?.speakerId)
+  if (selected && attacker && selected.uuid === attacker.uuid && resolveActor(targetId)?.isOwner) return targetId
+  return selectedId
+}
+
+// The id that finds the actor who spoke a card: its token first, since an unlinked token's actor
+// only exists through its token and is unknown to game.actors (N95)
+export function cardSpeakerId(speaker) {
+  return speaker?.token || speaker?.actor
+}
+
+// True when the user owns the actor who spoke a card, an unlinked token included (N95).
+// A card without speaker keeps its buttons, as before.
+export function ownsCardSpeaker(speaker, resolveActor) {
+  const id = cardSpeakerId(speaker)
+  if (!id) return true
+  return resolveActor(id)?.isOwner === true
+}
+
 // The first aid patient (SR5 p. 207): the targeted token when the test had a target, the selected token otherwise.
 // Never the card owner: with a target, a missing patient stays missing instead of falling back to the healer.
 export function firstAidPatient(hasTarget, targetActor, selectedActor) {

@@ -78,6 +78,8 @@ export default async function matrixDefense(rollData, rollKey, actor, chatData){
   rollData.previousMessage.actorId = chatData.owner.actorId
   rollData.previousMessage.hits = chatData.roll.hits
   rollData.previousMessage.messageId = chatData.owner.messageId
+  //The hacker's user, who alone sees the buttons left to him on the defense card (Snoop, SR5 p. 241)
+  rollData.previousMessage.userId = chatData.owner.userId
 
   //Special case for erase Mark
   if (rollKey === "eraseMark" && chatData.previousMessage.actorId){

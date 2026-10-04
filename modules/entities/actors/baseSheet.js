@@ -2,6 +2,9 @@ import {
   SR5_SystemHelpers 
 } from "../../system/utilitySystem.js"
 import {
+  SR5_Jammer
+} from "../../system/jammer.js"
+import {
   SR5_EntityHelpers 
 } from "../helpers.js"
 import {
@@ -206,10 +209,16 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     context.items.sort((a, b) => (a.sort || 0) - (b.sort || 0))
 
     context.storageViewIsGrid = game.settings.get("sr5", "sr5StorageViewMode") !== "list"
+    //The clinch button of the martial arts block (Run & Gun p. 133) exists only with the grappling rules
+    context.rulesGrappling = game.settings.get("sr5", "sr5GrapplingRules")
     //The "wired by DNI" box only matters when the world asks for a DNI to switch the wireless as a free action
     context.showDNI = game.settings.get("sr5", "sr5WifiRequiresDNI") && ["actorPc", "actorGrunt"].includes(this.actor.type)
     //An AI outside any device has nothing to reboot: it must load onto a device first (Data Trails p. 157)
     context.canReboot = !SR5_CharacterUtility.isDevicelessAI(this.actor)
+    //Nor any matrix attribute: its actions are rolled through Emulate, whose rating (and so the limit) goes up to Depth (Data Trails p. 159)
+    context.emulateOnlyDepth = context.canReboot ? null : (this.actor.system.specialAttributes?.depth?.augmented?.value || 0)
+    //An active cyberdeck whose attribute array is not assigned rolls with matrix limits at 0 (SR5 p. 229)
+    context.deckUnconfigured = SR5_CharacterUtility.isDeckUnconfigured(this.actor.system)
 
     // Compute dynamic layout (SR6-style panel/tab/block system)
     context.layout = this._computeSheetLayout(this.actor)
@@ -361,6 +370,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     on(".edit-value", "change", this._onEditItemValue.bind(this))
     on(".select-value", "change", this._onEditItemValue.bind(this))
     on(".toggle-value", "click", this._onEditItemValue.bind(this))
+    on(".jammer-toggle", "click", this._onToggleJammer.bind(this))
     on(".changeValueByClick", "mousedown", this._onChangeValueByClick.bind(this))
     //
     on(".toggle-actorValue", "click", this._onEditActorValue.bind(this))
@@ -605,8 +615,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
   }
 
+  // No canvas guard: these drags land on the sheet itself or on the hotbar, never on a scene
   async _onDragStart(event) {
-    if (!canvas.ready) return
     let dragData = {
     }
     // v13: DragDrop uses event delegation, so event.currentTarget is the app root.
@@ -879,8 +889,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     // check window state
     const wasRendered = item.sheet.rendered
     SR5_SystemHelpers.srLog(3, "item.sheet", item.sheet)
-    item.sheet.render({
-      force: true 
+    SR5_SystemHelpers.renderSheetLoudly(item, {
+      force: true
     })
     SR5_SystemHelpers.srLog(3, "item.sheet", item.sheet)
     // if window already exists, bring it to top
@@ -975,7 +985,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
   async _onItemSummary(event) {
     // Don't expand/collapse when clicking interactive elements inside .deplie
-    if (event.target.closest(".toggle-value, .edit-value, .select-value, .changeValueByClick, .reload-ammo, .accessory-activate, .item-summary")) return
+    if (event.target.closest(".toggle-value, .edit-value, .select-value, .changeValueByClick, .reload-ammo, .accessory-activate, .item-summary, .jammer-toggle")) return
     event.preventDefault()
     let li = event.currentTarget.closest(".item")
     if (!li) return
@@ -1159,7 +1169,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       type: "free", value: 1
     }]
     if (target === "system.wirelessTurnedOn") return [{
-      type: (!game.settings.get("sr5", "sr5WifiRequiresDNI") || this.actor.system.hasDNI) ? "free" : "simple", value: 1
+      type: SR5_ActorHelper.wirelessSwitchActionType(!oldValue, game.settings.get("sr5", "sr5WifiRequiresDNI"), this.actor.system.hasDNI), value: 1
     }]
     return []
   }
@@ -1511,9 +1521,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
     }
     if (target === "system.wirelessTurnedOn"){
-      //Switching a device: a free action through a DNI (SR5 p. 165), a simple one otherwise (p. 167). The rule
-      //applies only when the world setting asks for it; the actor's "wired by DNI" box then decides
-      let actionType = (!game.settings.get("sr5", "sr5WifiRequiresDNI") || actor.system.hasDNI) ? "free" : "simple"
+      //Turning a device's wireless off is always a free action (SR5 p. 424). Turning it on is free through a
+      //DNI (p. 165), simple otherwise (p. 167), when the world setting asks for it; the actor's "wired by DNI" box decides
+      let actionType = SR5_ActorHelper.wirelessSwitchActionType(!oldValue, game.settings.get("sr5", "sr5WifiRequiresDNI"), actor.system.hasDNI)
       actions = [{
         type: actionType, value: 1, source: (oldValue === false) ? "turnOnWifi" : "turnOffWifi"
       }]
@@ -2070,6 +2080,19 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     return []
   }
 
+  //From the deploy click on, the drone holds the wireless switch: grey the row at once,
+  //so a click before the sheet is drawn again cannot switch an item that no longer decides
+  static lockDeployedWireless(row){
+    const toggle = row?.querySelector('.toggle-value[data-binding="system.wirelessTurnedOn"]')
+    if (!toggle) return
+    const cell = toggle.parentElement
+    cell.inert = true
+    cell.dataset.title = game.i18n.localize("SR5.WirelessHeldByDeployedDrone")
+    const icon = toggle.querySelector("em")
+    if (icon?.classList.contains("SR-SubColor")) icon.classList.replace("SR-SubColor", "SR-GreyColor")
+    else icon?.classList.add("SR-LightGreyColor")
+  }
+
   //Handle the creation of a 'side kick'
   async _OnSidekickCreate(event){
     event.preventDefault()
@@ -2078,6 +2101,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     let actorId = this.actor.id
     if (this.actor.isToken) actorId = this.actor.token.id
     if (!SR5Combat.hasActionsLeft(this.actor, this._sidekickActionCost(item.type))) return
+    if (item.type === "itemVehicle") ActorSheetSR5.lockDeployedWireless(event.currentTarget.closest(".item"))
     item = item.toObject(false)
     if (!game.user?.isGM) {
       await SR5_SocketHandler.emitForGM("createSidekick", {
@@ -2121,12 +2145,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     let actorId = this.actor.id
     if (!SR5Combat.hasActionsLeft(this.actor, this._sidekickActionCost(item.type))) return
 
-    for (let a of game.actors){
-      if (a.system.creatorItemId === id) {
-        sidekick = a.toObject(false)
-        break
-      }
-    }
+    sidekick = SR5_ActorHelper.findSidekick(game.actors, SR5_ActorHelper.sidekickCreatorId(this.actor), id)?.toObject(false)
 
     if(sidekick !== undefined) {
       if (!game.user?.isGM) {
@@ -2241,6 +2260,13 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     } else {
       SR5_ActorHelper.deleteItemFromPan(itemId, actor, index)
     }
+  }
+
+  //Turn a physical jammer on or off (SR5 p. 443)
+  async _onToggleJammer(event){
+    event.preventDefault()
+    let item = this.actor.items.get(event.target.closest(".item")?.dataset.itemId)
+    if (item) await SR5_Jammer.toggle(item)
   }
 
   async _onStopJamming(event){

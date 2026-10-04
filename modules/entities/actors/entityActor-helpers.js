@@ -907,6 +907,7 @@ export class SR5_ActorHelper {
         "system.offRoadMode": itemData.offRoadMode,
         "system.price": itemData.price.base,
         "system.slaved": itemData.slaved,
+        "system.wirelessTurnedOn": itemData.wirelessTurnedOn,
         "system.isSlavedToPan": itemData.isSlavedToPan,
         "system.panMaster": itemData.panMaster,
         "system.vehicleOwner.id": actorId,
@@ -982,6 +983,77 @@ export class SR5_ActorHelper {
   //Socket for creating sidekick;
   static async _socketCreateSidekick(message) {
     await SR5_ActorHelper.createSidekick(message.data.item, message.data.userId, message.data.actorId)
+  }
+
+  //The id a sidekick keeps as system.creatorId: the token's for an unlinked actor, as _OnSidekickCreate sets it
+  static sidekickCreatorId(actor){
+    return actor.isToken ? actor.token.id : actor.id
+  }
+
+  //A sidekick belongs to one item of one actor: a duplicated actor carries the same item ids
+  static findSidekick(actors, creatorId, itemId){
+    return actors?.find(a => a.system.creatorItemId === itemId && a.system.creatorId === creatorId)
+  }
+
+  //A deployed drone shows on its owner's gear row: draw that sheet again once the drone exists, on every client
+  static redrawCreatorSheet(actor){
+    if (actor.type !== "actorDrone" || !actor.system.creatorId) return
+    const owner = SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId)
+    if (owner?.sheet?.rendered) owner.sheet.render()
+  }
+
+  /**
+   * While a vehicle is deployed, its drone actor holds the wireless switch:
+   * the gear row shows that state, read-only (N83). The row is read-only as
+   * soon as the item says it is deployed, even before the drone actor exists,
+   * so a click in between is never silently lost.
+   */
+  static markDeployedVehicles(vehicles, actors, creatorId){
+    for (const vehicle of vehicles) {
+      if (!vehicle.system?.isCreated) continue
+      const drone = SR5_ActorHelper.findSidekick(actors, creatorId, vehicle._id)
+      vehicle.deployedWireless = {
+        on: (drone && drone.type === "actorDrone") ? drone.system.wirelessTurnedOn : vehicle.system.wirelessTurnedOn
+      }
+    }
+  }
+
+  /**
+   * A vehicle's wireless switch: its deployed drone holds it (N83), the item otherwise (N91).
+   * @param {Object} vehicle - the vehicle item
+   * @param {Array} actors - the actors to look the deployed drone up in
+   * @return {Boolean} true if the vehicle's wireless is on
+   */
+  static vehicleWirelessOn(vehicle, actors){
+    if (vehicle.system?.isCreated) {
+      const drone = actors?.find(a => a.type === "actorDrone" && a.system.creatorItemId === (vehicle._id ?? vehicle.id))
+      if (drone) return drone.system.wirelessTurnedOn !== false
+    }
+    return !!vehicle.system?.wirelessTurnedOn
+  }
+
+  /**
+   * Switching a drone's wireless from its sheet: the drone spends the action, its owner commands it (N91).
+   * Free through the owner's DNI (SR5 p. 165), simple otherwise (p. 167), when the world setting asks for it.
+   * @param {Boolean} requiresDNI - the "wireless requires a DNI" world setting
+   * @param {Object} owner - the drone's creator, if found
+   * @return {String} the action type
+   */
+  static droneWirelessActionType(requiresDNI, owner, turningOn = true){
+    return SR5_ActorHelper.wirelessSwitchActionType(turningOn, requiresDNI, owner?.system?.hasDNI)
+  }
+
+  /**
+   * The action a device's wireless switch costs. Turning it off is always a free action (SR5 p. 424).
+   * Turning it on is free through a DNI (p. 165), simple otherwise (p. 167), when the world setting asks for it
+   * @param {Boolean} turningOn - true when the wireless is switched on
+   * @param {Boolean} requiresDNI - the "wireless requires a DNI" world setting
+   * @param {Boolean} hasDNI - whether the one switching it has a DNI
+   * @return {String} the action type
+   */
+  static wirelessSwitchActionType(turningOn, requiresDNI, hasDNI){
+    if (!turningOn) return "free"
+    return (!requiresDNI || hasDNI) ? "free" : "simple"
   }
 
   /**
@@ -1175,6 +1247,8 @@ export class SR5_ActorHelper {
       modifiedItem.system.vehiclesMod = vehiclesMod
       modifiedItem.system.model = actor.system.model
       modifiedItem.system.slaved = actor.system.slaved
+      //A drone deployed before the field existed carries null: the item keeps its own switch
+      if (typeof actor.system.wirelessTurnedOn === "boolean") modifiedItem.system.wirelessTurnedOn = actor.system.wirelessTurnedOn
       modifiedItem.system.controlMode = actor.system.controlMode
       modifiedItem.system.riggerInterface = actor.system.riggerInterface
       modifiedItem.system.offRoadMode = actor.system.offRoadMode 

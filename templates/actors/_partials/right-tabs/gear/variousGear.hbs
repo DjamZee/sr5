@@ -73,7 +73,7 @@
 		{{else if (or (eq system.isPlugged false) (eq item.type 'itemDrug'))}}
 	  	<li class="item grid {{#if storedInName}}sr-stored{{/if}}" data-item-id="{{item._id}}" draggable="true">
 		  	<div class="col-4 deplie" data-helpTitle="{{localize 'SR5.HELP_MoreInfos'}}" data-helpMessage="{{localize 'SR5.HELP_MoreInfosMsg'}}">
-				{{item.name}}{{#if storedInName}} <span class="sr-stored-note">({{localize 'SR5.StoredIn' storage=storedInName}})</span>{{/if}}
+				{{#if item.system.jammer.type}}{{#if item.system.jammer.isActive}}<a class="jammer-toggle" data-title="{{localize 'SR5.JammerTurnOff'}}"><em class="fas fa-sm fa-tower-broadcast SR-SubColor"></em></a>{{else}}<a class="jammer-toggle" data-title="{{localize 'SR5.JammerTurnOn'}}"><em class="fas fa-sm fa-tower-broadcast SR-SubColor25"></em></a>{{/if}} {{/if}}{{item.name}}{{#if storedInName}} <span class="sr-stored-note">({{localize 'SR5.StoredIn' storage=storedInName}})</span>{{/if}}
 		  	</div>
 			<div class="col-2 SR-TextCenter changeValueByClick" data-binding="system.quantity"
 			  data-helpTitle="{{localize 'SR5.HELP_Quantity' key=name}}"

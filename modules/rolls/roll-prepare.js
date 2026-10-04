@@ -20,6 +20,16 @@ import {
 import {
   ritualAcceptsHelp
 } from "./roll-helpers/ritualTeam.js"
+import {
+  targetsWirelessOffDrone, isWirelessOffDrone
+} from "./roll-prepare-case/rollData-MatrixAction.js"
+import {
+  runningModifierKind
+} from "../system/running.js"
+
+// N91: matrix rolls aimed at a target besides matrixAction, which guards itself. Each refuses a drone
+// with its wireless off (SR5 p. 424)
+const WIRELESS_TARGETED_ROLLS = ["iceAttack", "complexForm", "resonanceAction"]
 
 export class SR5_PrepareRollTest {
 
@@ -36,7 +46,14 @@ export class SR5_PrepareRollTest {
     if (game.settings.get("sr5", "sr5CalledShotsRules")) rollData.systemRules.calledShots = true
     if (game.settings.get("sr5", "sr5MatrixGridRules")) rollData.systemRules.grid = true
 
- 
+    //A drone with its wireless off is reached by no wireless matrix action, an IC, a complex form or a
+    //resonance action included: only a direct connection does (p. 234), played by switching it on (N91)
+    //A roll relaunched from a chat card (Blue Goo's explosion) also checks the target the card knows
+    if (WIRELESS_TARGETED_ROLLS.includes(rollType) && (targetsWirelessOffDrone(actor) ||
+      (chatData?.target?.actorId && isWirelessOffDrone(SR5_EntityHelpers.getRealActorFromID(chatData.target.actorId), actor)))) {
+      return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetWirelessOff"))
+    }
+
     //Iterate through roll type and add data to rollData;
     switch (rollType){
       case "astralTracking":
@@ -90,6 +107,15 @@ export class SR5_PrepareRollTest {
         break
       case "escapeEngulf":
         rollData = await SR5_GetRollData.escapeEngulf(rollData, actor, chatData)
+        break
+      case "grappleEscape":
+        rollData = await SR5_GetRollData.grappleEscape(rollData, actor)
+        break
+      case "grappleClinch":
+        rollData = await SR5_GetRollData.grappleClinch(rollData, actor)
+        break
+      case "grappleClinchDefense":
+        rollData = await SR5_GetRollData.grappleClinchDefense(rollData, actor, chatData)
         break
       case "fading":
         rollData = await SR5_GetRollData.fading(rollData, actor, chatData)
@@ -230,7 +256,12 @@ export class SR5_PrepareRollTest {
         SR5_SystemHelpers.srLog(1, `Unknown ${rollType} roll type in 'actorRoll()'`)
     }
         
-    if (rollData) SR5_RollTest.generateRollDialog(rollData)
+    if (rollData) {
+      //Running (SR5 p. 164): the running box of the modifiers list, for the tests that have no box of their own
+      const runningKind = runningModifierKind(rollData.test)
+      rollData.dialogSwitch.running = (runningKind === "general" || runningKind === "defense") ? runningKind : false
+      SR5_RollTest.generateRollDialog(rollData)
+    }
   }
 
   //Get the base data to build a roll test
@@ -331,7 +362,12 @@ export class SR5_PrepareRollTest {
         ramming: {
           angle: "side",
           attackerSpeed: 0,
+          attackerLocomotion: "ground",
           targetSpeed: 0,
+          targetLocomotion: "ground",
+          targetIsVehicle: false,
+          gait: "walk",
+          relativeSpeed: 0,
         },
         reach: 0,
         recoil:{
@@ -434,7 +470,6 @@ export class SR5_PrepareRollTest {
         plansMaterial: actor.system.lists.plansMaterial,
         weaponRanges: actor.system.lists.weaponRanges,
         preparationTriggerTypes: actor.system.lists.preparationTriggerTypes,
-        vehicleSpeed: actor.system.lists.vehicleSpeed,
         socialAttitude: actor.system.lists.socialAttitude,
         socialResult: actor.system.lists.socialResult,
         survivalWeather: actor.system.lists.survivalWeather,

@@ -8,6 +8,9 @@ import {
   SR5_SpiritTypes
 } from "../items/spirit-types.js"
 import {
+  homunculusMaterialRatings
+} from "./homunculus.js"
+import {
   SR5Combat 
 } from "../../system/srcombat.js"
 import {
@@ -17,7 +20,7 @@ import {
   _getSRStatusEffect
 } from "../../system/effectsList.js"
 import {
-  SR5_TOKEN_VISION_MODES
+  SR5_TOKEN_VISION_MODES, settleSensorVisions
 } from "../../system/vision.js"
 
 
@@ -813,6 +816,11 @@ export class SR5_CharacterUtility extends Actor {
     }
   }
 
+  //The visions of a drone or a device are those of its sensors (SR5 p. 446-449)
+  static handleSensorVision(actor) {
+    settleSensorVisions(actor.system.visions)
+  }
+
   //Handle vision types and environmental modifiers
   static async handleVision(actor) {
     let actorData = actor.system
@@ -850,7 +858,7 @@ export class SR5_CharacterUtility extends Actor {
     if (actorData.visions.ultrasound.natural || actorData.visions.ultrasound.augmented) {
       actorData.visions.ultrasound.hasVision = true
       if (actorData.visions.ultrasound.isActive) {
-        SR5_EntityHelpers.updateModifier(actorData.itemsProperties.environmentalMod.visibility, `${game.i18n.localize('SR5.ThermographicVision')}`, "visionType", -1, false, false)
+        SR5_EntityHelpers.updateModifier(actorData.itemsProperties.environmentalMod.visibility, `${game.i18n.localize('SR5.UltrasoundVision')}`, "visionType", -1, false, false)
         SR5_EntityHelpers.updateModifier(actorData.itemsProperties.environmentalMod.light, `${game.i18n.localize('SR5.UltrasoundVision')}`, "visionType", -3, false, false)
       }
     }
@@ -899,7 +907,8 @@ export class SR5_CharacterUtility extends Actor {
   //cybereyes that take the pinned vision away, or give it back. Only called by the user who made
   //the change, and a token already in the right mode is left alone.
   static async refreshVisionOfTokens(actor) {
-    if (!["actorPc", "actorGrunt"].includes(actor?.type)) return
+    //A drone or a device sees with its sensors: a sensor item added or removed changes its token too
+    if (!["actorPc", "actorGrunt", "actorDrone", "actorDevice"].includes(actor?.type)) return
     const mode = SR5_TOKEN_VISION_MODES[SR5_EntityHelpers.getActiveVisionType(actor)] ?? "basic"
     if (this.getTokensOfActor(actor).every(t => t.sight?.visionMode === mode)) return
     await this.applyVisionToToken(actor)
@@ -1107,7 +1116,8 @@ export class SR5_CharacterUtility extends Actor {
         SR5_EntityHelpers.updateModifier(attributes.charisma.natural, label, 'spiritType', -2)
         break
       case "homunculus":
-        attributes.body.natural.base = 0
+        // SR5 p. 301: the Body is the Structure of the material it is made of (table SR5 p. 198)
+        attributes.body.natural.base = homunculusMaterialRatings(actorData.homunculusMaterial).structure
         SR5_EntityHelpers.updateModifier(attributes.agility.natural, label, 'spiritType', -2)
         SR5_EntityHelpers.updateModifier(attributes.reaction.natural, label, 'spiritType', -2)
         // Stat block (SR5 p. 301, VO p. 298): WIL, LOG and INT 1; the VF prints CHA 3, the VO has no CHA column
@@ -1290,6 +1300,14 @@ export class SR5_CharacterUtility extends Actor {
   // AI outside any device (Data Trails p. 157): a persona alone, with no active device
   static isDevicelessAI(actor) {
     return this.isDepthActive(actor) && !actor.items.some(i => i.type === "itemDevice" && i.system.isActive)
+  }
+
+  // SR5 p. 229: each value of the active cyberdeck's attribute array must be assigned to a matrix attribute
+  static isDeckUnconfigured(actorData) {
+    if (actorData.matrix?.deviceType !== "cyberdeck") return false
+    const collection = actorData.matrix.attributesCollection ?? {
+    }
+    return [1, 2, 3, 4].some(i => collection[`value${i}`] > 0 && !collection[`value${i}isSet`])
   }
 
   // Data Trails p. 157: the attribute an AI outside any device defends with where the defense calls for Logic
@@ -2079,6 +2097,12 @@ export class SR5_CharacterUtility extends Actor {
 
   // Generate Actors Armor
   static updateArmor(actor) {
+    // The book gives a homunculus no Armor (SR5 p. 301); a world setting lends it the one of its material (SR5 p. 198)
+    if (actor.type === "actorSpirit" && SR5_SpiritTypes.baseType(actor.system.type) === "homunculus" &&
+      game.settings.get("sr5", "sr5HomunculusMaterialArmor")) {
+      const armor = homunculusMaterialRatings(actor.system.homunculusMaterial).armor
+      if (armor) SR5_EntityHelpers.updateModifier(actor.system.itemsProperties.armor, game.i18n.localize("SR5.HomunculusMaterial"), "actorSpirit", armor)
+    }
     SR5_EntityHelpers.updateValue(actor.system.itemsProperties.armor, 0)
     for (let key of Object.keys(SR5.specialDamageTypes)) {
       SR5_EntityHelpers.updateValue(actor.system.itemsProperties.armor.specialDamage[key], 0)

@@ -1,3 +1,7 @@
+import {
+  SR5_BARRIER_RATINGS
+} from "../../config.js"
+
 export class SR5_ConverterHelpers {
 
   //Convert firing mode choice to  number of bullets
@@ -416,42 +420,6 @@ export class SR5_ConverterHelpers {
     }
   }
 
-  static speedToDamageValue(speed, body){
-    switch(speed) {
-      case "speedRamming1":
-        return Math.ceil(body/2)
-      case "speedRamming11":
-        return body
-      case "speedRamming51":
-        return body*2
-      case "speedRamming201":
-        return body*3
-      case "speedRamming301":
-        return body*5
-      case "speedRamming501":
-        return body*10
-      default:
-    }
-  }
-
-  static speedToAccidentValue(speed, body){
-    switch(speed) {
-      case "speedRamming1":
-        return Math.ceil(body/4)
-      case "speedRamming11":
-        return Math.ceil(body/2)
-      case "speedRamming51":
-        return body
-      case "speedRamming201":
-        return Math.ceil((body*3)/2)
-      case "speedRamming301":
-        return Math.ceil(body*2.5)
-      case "speedRamming501":
-        return Math.ceil(body*5)
-      default:
-    }
-  }
-
   //Collision damage table (Rigger 5 p. 179, update of SR5 p. 203): damage value from the initiator's Structure and the speed of the impact
   static collisionDamage(structure, speed){
     if (speed <= 0) return 0
@@ -481,57 +449,119 @@ export class SR5_ConverterHelpers {
     return Math.ceil(damageValue/2)
   }
 
-  //Damage taken by the initiator when the target is not a vehicle (SR5 p. 204): relative speed and the target's Body, halved (rounded up)
-  static rammingNonVehicleDamage(targetBody, ramming){
-    let speed = this.rammingSpeed(ramming.angle, ramming.attackerSpeed || 0, ramming.targetSpeed || 0)
-    return Math.ceil(this.collisionDamage(targetBody, speed)/2)
+  //Collision damage table in m/turn (SR5 p. 203): damage value from a Structure (or Body) and the relative speed
+  static collisionDamageMeters(structure, metersPerTurn){
+    if (metersPerTurn <= 0) return 0
+    if (metersPerTurn <= 10) return Math.ceil(structure/2)
+    if (metersPerTurn <= 50) return structure
+    if (metersPerTurn <= 200) return structure*2
+    if (metersPerTurn <= 300) return structure*3
+    if (metersPerTurn <= 500) return structure*5
+    return structure*10
   }
 
-  static barrierTypeToStructure(barrierType){
-    switch(barrierType){
-      case "fragile":
-        return 1
-      case "cheap":
-        return 2
-      case "average":
-        return 4
-      case "heavy":
-        return 6
-      case "reinforced":
-        return 8
-      case "structural":
-        return 10
-      case "structuralHeavy":
-        return 12
-      case "armored":
-        return 14
-      case "hardened":
-        return 16
-      default: return 6
+  //Vehicle movement rates (SR5 p. 203): 5 m walking and 10 m running at Speed 1, doubled at each Speed point
+  static vehicleMetersPerTurn(speed, gait){
+    if (!(speed > 0)) return 0
+    return (gait === "run" ? 10 : 5) * 2**(speed - 1)
+  }
+
+  //Speed multiplier by locomotion (Rigger 5 p. 184). Rigger 5 p. 179 says x3 for "an aircraft": DjamZ chose the jet's x4 of p. 184.
+  //Vector thrust x3 and airship x1 are not in the book: DjamZ's ruling (2026-10-04)
+  static rammingLocomotionMultiplier(locomotion){
+    switch(locomotion){
+      case "naval": return 0.8
+      case "rotor":
+      case "vectorThrust": return 3
+      case "jet": return 4
+      default: return 1
     }
+  }
+
+  //Speed used for a collision (Rigger 5 p. 184). The book does not round x0.8: nearest, at least 1 when moving (DjamZ's ruling, 2026-10-04)
+  static rammingEffectiveSpeed(speed, locomotion){
+    if (!(speed > 0)) return 0
+    return Math.max(1, Math.round(speed * this.rammingLocomotionMultiplier(locomotion)))
+  }
+
+  //What tells a vehicle's locomotion. The category is read on the vehicle's original item (creatorId, creatorItemId):
+  //vehicleOwner.items follows the controller and is replaced or emptied when it changes
+  static rammingLocomotionData(system, findItem){
+    let item = (system.creatorId && system.creatorItemId) ? findItem(system.creatorId, system.creatorItemId) : null
+    return {
+      category: item?.system?.category,
+      secondaryActive: system.isSecondaryPropulsionActivate,
+      secondaryType: system.secondaryPropulsionType,
+    }
+  }
+
+  //Locomotion of a vehicle, for the speed multiplier: active secondary propulsion, then category; ground (x1) when unknown, the safest
+  static rammingLocomotion({
+    category, secondaryActive, secondaryType
+  } = {
+  }){
+    if (secondaryActive && secondaryType){
+      if (secondaryType === "rotor") return "rotor"
+      if (secondaryType.startsWith("amphibious")) return "naval"
+      return "ground"
+    }
+    switch(category){
+      case "boat":
+      case "submarine": return "naval"
+      case "rotorCraft": return "rotor"
+      case "vectorThrustCraft": return "vectorThrust"
+      case "fixedWingAircraft": return "jet"
+      case "lta": return "lta"
+      default: return "ground"
+    }
+  }
+
+  //Relative speed in m/turn from the attacker's Speed and gait (SR5 p. 203), kept in step in both modes:
+  //the defender's type, known only at defense, picks the table
+  static rammingRefreshRelativeSpeed(ramming){
+    ramming.relativeSpeed = this.vehicleMetersPerTurn(ramming.attackerSpeed || 0, ramming.gait)
+    return ramming
+  }
+
+  //Speed of the impact: Rigger 5 p. 179 (Speed and angle) against a vehicle, SR5 p. 204 (m/turn) otherwise.
+  //A card older than the relative speed has none: rebuilt from its speeds; only an explicit 0 means no impact
+  static rammingImpactSpeed(ramming, targetIsVehicle = ramming.targetIsVehicle){
+    if (!targetIsVehicle){
+      if (ramming.relativeSpeed == null) return this.vehicleMetersPerTurn(this.rammingSpeed(ramming.angle, ramming.attackerSpeed || 0, ramming.targetSpeed || 0), ramming.gait)
+      return Math.max(0, ramming.relativeSpeed)
+    }
+    return this.rammingSpeed(ramming.angle, this.rammingEffectiveSpeed(ramming.attackerSpeed || 0, ramming.attackerLocomotion), this.rammingEffectiveSpeed(ramming.targetSpeed || 0, ramming.targetLocomotion))
+  }
+
+  //Base damage value of a ramming attack, from the initiator's Structure
+  static rammingAttackDamage(ramming, structure){
+    let speed = this.rammingImpactSpeed(ramming)
+    return ramming.targetIsVehicle ? this.collisionDamage(structure, speed) : this.collisionDamageMeters(structure, speed)
+  }
+
+  //Damage dealt to the target and to the initiator once the attack hits; the defender's actual type picks the table.
+  //No relative speed, no damage, net hits included (DjamZ, 2026-10-04)
+  static rammingDefenseDamages(ramming, {
+    defenderIsVehicle, defenderBody, damageBase, netHits
+  }){
+    let speed = this.rammingImpactSpeed(ramming, defenderIsVehicle)
+    if (speed <= 0) return {
+      target: 0, initiator: 0
+    }
+    let target = damageBase + netHits
+    //Rigger 5 p. 179 between two vehicles; SR5 p. 204 otherwise: the target's Body, halved (rounded up)
+    let initiator = defenderIsVehicle ? this.rammingInitiatorDamage(target, ramming.angle) : Math.ceil(this.collisionDamageMeters(defenderBody, speed)/2)
+    return {
+      target, initiator
+    }
+  }
+
+  // SR5 p. 198; an unknown material falls back on a heavy one, as before
+  static barrierTypeToStructure(barrierType){
+    return (SR5_BARRIER_RATINGS[barrierType] ?? SR5_BARRIER_RATINGS.heavy).structure
   }
 
   static barrierTypeToArmor(barrierType){
-    switch(barrierType){
-      case "fragile":
-        return 2
-      case "cheap":
-        return 4
-      case "average":
-        return 6
-      case "heavy":
-        return 8
-      case "reinforced":
-        return 12
-      case "structural":
-        return 16
-      case "structuralHeavy":
-        return 20
-      case "armored":
-        return 24
-      case "hardened":
-        return 32
-      default: return 8
-    }
+    return (SR5_BARRIER_RATINGS[barrierType] ?? SR5_BARRIER_RATINGS.heavy).armor
   }
 }

@@ -36,7 +36,7 @@
 				<!-- ATTACK - RECOIL COMPENSATION -->
 				{{> systems/sr5/templates/rolls/rollDialogPartial/recoilModifier.hbs}}
 			{{/if}}
-			{{#if (and (or (eq test.typeSub "rangedWeapon") (eq test.typeSub "meleeWeapon")) systemRules.calledShots )}}
+			{{#if (and (or (eq test.typeSub "rangedWeapon") (eq test.typeSub "meleeWeapon")) (or systemRules.calledShots systemRules.grappling) )}}
         		<!-- CALLED SHOTS -->
         		{{> systems/sr5/templates/rolls/rollDialogPartial/calledShots.hbs}}
         	{{/if}}
@@ -123,6 +123,11 @@
 		{{#if (and (and (ne test.typeSub 'summoning') (ne test.type 'preparationFormula') (ne test.type 'ritual') (ne test.type 'spell') ) dialogSwitch.reagents)}}
 			{{> systems/sr5/templates/rolls/rollDialogPartial/reagents.hbs}}
   		{{/if}}
+
+	  	<!-- GRAPPLE ESCAPE THRESHOLD-->
+	  	{{#if (eq test.type "grappleEscape")}}
+			{{> systems/sr5/templates/rolls/rollDialogPartial/grappleEscapeThreshold.hbs}}
+	  	{{/if}}
 
 	  	<!-- ESCAPE ARTIST THRESHOLD-->
 	  	{{#if (eq test.typeSub "escapeArtist")}}

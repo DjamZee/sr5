@@ -47,6 +47,10 @@ export function sr5HookReady() {
   // The deeper table of contents also reaches the window of Monk's Enhanced Journal
   sr5DeepenModuleTableOfContents()
 
+  //Token hud, for every user: a player owns tokens too (his drone shares its vision, SR5 p. 241).
+  //Each button of it checks the right of the user itself. No canvas (a window with no size), no HUD.
+  if (canvas?.hud) canvas.hud.token = new SR5TokenHud()
+
   //game.settings.set("sr5", "systemMigrationVersion", "0.0.1");
   // Determine whether a system migration is required and feasible
   if ( !game.user.isGM ) return
@@ -56,7 +60,4 @@ export function sr5HookReady() {
 
   // Perform the migration
   if (needsMigration) new game.sr5.migration().migrateWorld()
-
-  //Token hud
-  canvas.hud.token = new SR5TokenHud()
 }

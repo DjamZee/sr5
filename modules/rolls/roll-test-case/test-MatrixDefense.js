@@ -8,8 +8,11 @@ import {
   SR5_EntityHelpers 
 } from "../../entities/helpers.js"
 import {
-  SR5_MatrixHelpers 
+  SR5_MatrixHelpers
 } from "../roll-helpers/matrix.js"
+import {
+  SHARED_VISION_ACTOR_TYPES
+} from "../../system/shared-vision.js"
 
 export default async function matrixDefenseInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId),
@@ -100,6 +103,14 @@ export default async function matrixDefenseInfo(cardData, actorId){
         break
       case "haywire":
         cardData.chatCard.buttons.haywire = SR5_RollMessage.generateChatButton("nonOpposedTest", "haywire", game.i18n.localize("SR5.ApplyEffect"))
+        break
+      //SR5 p. 241: the hacker views the traffic of the target, as long as he keeps a mark on it.
+      //The button is the hacker's: the card belongs to the defender, its other buttons to whoever owns it
+      case "snoop":
+        if (SHARED_VISION_ACTOR_TYPES.includes(actor.type)) cardData.chatCard.buttons.snoopVision = SR5_RollMessage.generateChatButton("attackerTest", "snoopVision", game.i18n.format("SR5.SharedVisionSeeThrough", {
+          name: actor.name
+        }))
+        else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.DefenseFailure"))
         break
       default:
         cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.DefenseFailure"))

@@ -64,7 +64,28 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     },
     actions: {
       toggleMode: SR5ItemSheet._onToggleMode,
+      jammerSpareTargets: SR5ItemSheet._onJammerSpareTargets,
+      jammerUnspare: SR5ItemSheet._onJammerUnspare,
     },
+  }
+
+  // A jammer in wireless mode spares the actors of the targeted tokens (SR5 p. 443)
+  static async _onJammerSpareTargets(event) {
+    event.preventDefault()
+    let spared = new Set(this.document.system.jammer?.spared ?? [])
+    //An unlinked token by its uuid: the guards of one NPC share its actor id
+    for (let token of game.user.targets) if (token.actor) spared.add(token.document.actorLink ? token.actor.id : token.document.uuid)
+    await this.document.update({
+      "system.jammer.spared": [...spared]
+    })
+  }
+
+  static async _onJammerUnspare(event, target) {
+    event.preventDefault()
+    let spared = (this.document.system.jammer?.spared ?? []).filter(id => id !== target.dataset.actorId)
+    await this.document.update({
+      "system.jammer.spared": spared
+    })
   }
 
   static PARTS = {
@@ -283,6 +304,12 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     context.owner = this.document.isOwner
     context.lists = SR5_EntityHelpers.sortTranslations(SR5)
     context.isPlay = this.isPlayMode
+    // The actors a jammer in wireless mode leaves alone (SR5 p. 443), by name
+    if (item.type === "itemGear" && item.system.jammer?.type) {
+      context.jammerSpared = (item.system.jammer.spared ?? []).map(id => ({
+        id, name: (id.includes(".") ? fromUuidSync(id)?.name : game.actors.get(id)?.name) ?? id
+      }))
+    }
     // Items that unfold into an actor wear a second picture: their token's
     context.hasTokenImage = SR5ItemSheet.SIDEKICK_TYPES.includes(item.type)
     // What the rule asks of a garage holding this kind of vehicle

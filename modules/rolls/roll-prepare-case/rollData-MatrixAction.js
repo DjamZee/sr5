@@ -12,6 +12,9 @@ import {
 } from "../roll-helpers/miscellaneous.js"
 import SR5_RollDialog from "../roll-dialog.js"
 import {
+  SR5_CharacterUtility
+} from "../../entities/actors/utilityActor.js"
+import {
   SR5_MarkHelpers, WATCHDOG_INTERRUPTION_COST
 } from "../roll-helpers/mark.js"
 
@@ -67,6 +70,13 @@ export default async function matrixAction(rollData, rollKey, actor){
       rollData.dialogSwitch.emulate = true
       rollData.matrix.emulateMax = rollData.matrix.depth
       rollData.matrix.emulateAttributeValue = actor.system.matrix.attributes[matrixAction.limit.linkedAttribute]?.value || 0
+      // Without a device the AI has no matrix attribute to fall back on: Emulate is the only way to act (Data Trails p. 157),
+      // offered at Depth and never below 1
+      if (SR5_CharacterUtility.isDevicelessAI(actor)) {
+        rollData.matrix.emulateRequired = true
+        rollData.matrix.emulateAttributeValue = 0
+        rollData.matrix.emulateDefault = rollData.matrix.emulateMax
+      }
     }
   }
 
@@ -112,6 +122,14 @@ export default async function matrixAction(rollData, rollKey, actor){
   //Add public grid switch
   if (actor.system.matrix.userGrid === "public") rollData.dialogSwitch.publicGrid = true
     
+  //A drone with its wireless off can no longer be hacked wirelessly (SR5 p. 424): no wireless matrix
+  //action reaches it, hacking or not. Only a direct connection does (p. 234), which the GM plays by
+  //switching its wireless on for the action (N91). IC, complex forms and resonance actions: roll-prepare.js
+  if (checksTargetMarks(rollKey) && targetsWirelessOffDrone(actor)) {
+    ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetWirelessOff"))
+    return
+  }
+
   //Check target's Marks before rolling if a target is selected
   if (game.user.targets.size && checksTargetMarks(rollKey)) {
     let canContinue = await checkTargetMarks(rollData, matrixAction, actor)
@@ -137,6 +155,23 @@ function hasWatchdogMarkOnTarget(rollData){
   if (game.user.targets.size !== 1) return false
   const target = Array.from(game.user.targets)[0]
   return SR5_MarkHelpers.hasWatchdogMark(target.actor, rollData.owner.speakerId)
+}
+
+/** N91: tell whether a targeted icon is a drone whose wireless is off; an older drone with no switch recorded is on
+ * @param {Object} target - the targeted actor
+ * @param {Object} actor - the acting actor, who may target itself
+ * @return {Boolean} true if no wireless matrix action can reach it
+ */
+function isWirelessOffDrone(target, actor){
+  return target?.type === "actorDrone" && target.system?.wirelessTurnedOn === false && target !== actor
+}
+
+/** N91: tell whether one of the user's targets is a drone no wireless matrix action can reach
+ * @param {Object} actor - the acting actor
+ * @return {Boolean} true if the roll must be refused
+ */
+function targetsWirelessOffDrone(actor){
+  return Array.from(game.user.targets ?? []).some(t => isWirelessOffDrone(t.actor, actor))
 }
 
 /** A drone created from an unlinked token records the token id as its creator: the token and its
@@ -195,5 +230,5 @@ async function checkTargetMarks(rollData, matrixAction, actor){
 
 // Exported for the tests
 export {
-  checkTargetMarks, checksTargetMarks
+  checkTargetMarks, checksTargetMarks, isWirelessOffDrone, targetsWirelessOffDrone
 }

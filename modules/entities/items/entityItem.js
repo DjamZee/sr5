@@ -211,6 +211,8 @@ export class SR5Item extends Item {
         SR5_EntityHelpers.updateValue(itemData.conditionMonitors.condition.actual, 0)
         SR5_EntityHelpers.GenerateMonitorBoxes(itemData, 'condition')
         SR5_EntityHelpers.GenerateMonitorBoxes(itemData, 'matrix')
+        //A bricked device stops working (SR5 p. 229)
+        if (itemData.conditionMonitors.matrix.actual.value >= itemData.conditionMonitors.matrix.value) itemData.wirelessTurnedOn = false
         break
       case "itemDrug":
         SR5_UtilityItem._handleItemPrice(itemData)

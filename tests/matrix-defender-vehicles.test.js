@@ -27,7 +27,8 @@ describe('Choosing the device that defends in the Matrix', () => {
     const start = source.indexOf('case "itemVehicle":')
     const block = source.slice(start, source.indexOf('break', start))
     const line = block.split('\n').find(l => l.includes('connectedObject.vehicles'))
-    expect(line).toMatch(/^\s*if \(iData\.wirelessTurnedOn\) actor\.system\.matrix\.connectedObject\.vehicles/)
+    // N91: the switch is read through the deployed drone, which holds it
+    expect(line).toMatch(/^\s*if \(SR5_ActorHelper\.vehicleWirelessOn\(i, game\.actors\)\) actor\.system\.matrix\.connectedObject\.vehicles/)
     expect(line).not.toMatch(/isSlavedToPan/)
   })
 })

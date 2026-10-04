@@ -505,6 +505,13 @@ SR5.metatypes = {
 
 // Lifestyle Types
 // Storage Types
+// Physical jammers, SR5 p. 443
+SR5.jammerTypes = {
+  area                      : "SR5.JammerTypeArea",
+  directional               : "SR5.JammerTypeDirectional",
+  cranial                   : "SR5.JammerTypeCranial",
+}
+
 SR5.storageTypes = {
   stash                     : "SR5.StorageTypeStash",
   safe                      : "SR5.StorageTypeSafe",
@@ -839,6 +846,7 @@ SR5.actionSources = {
   switchInitToPhysical	  : "SR5.ActionSourceSwitchInitToPhysical",
   switchInitToMatrix		  : "SR5.ActionSourceSwitchInitToMatrix",
   switchPerception		  : "SR5.ActionSourceSwitchPerception",
+  inviteMark				  : "SR5.ActionSourceInviteMark",
   takeCover				  : "SR5.ActionSourceTakeCover",
   turnOnWifi				  : "SR5.ActionSourceTurnOnWifi",
   turnOffWifi				  : "SR5.ActionSourceTurnOffWifi",
@@ -1361,6 +1369,8 @@ SR5.calledShots = {
   feint                     : "SR5.CS_Feint",
   knockdown                 : "SR5.CS_Knockdown",
   reversal                  : "SR5.CS_Reversal",
+  subdue                    : "SR5.CS_Subdue",
+  strengthenHold            : "SR5.CS_StrengthenHold",
   extremeIntimidation       : "SR5.CS_AS_ExtremeIntimidation",
   ricochetShot              : "SR5.CS_AS_RicochetShot",
   warningShot               : "SR5.CS_AS_WarningShot",
@@ -2050,6 +2060,23 @@ SR5.calledShotsMartialArts = {
   reversal              : "SR5.CS_Reversal",
   shakeUp               : "SR5.CS_ShakeUp",
   vitals                : "SR5.CS_Vitals",
+  counterGrapple        : "SR5.MA_CounterGrapple",
+  locationAnkle         : "SR5.CS_MA_LocationAnkle",
+  locationEar           : "SR5.CS_MA_LocationEar",
+  locationEye           : "SR5.CS_MA_LocationEye",
+  locationFoot          : "SR5.CS_MA_LocationFoot",
+  locationForearm       : "SR5.CS_MA_LocationForearm",
+  locationGenitals      : "SR5.CS_MA_LocationGenitals",
+  locationGut           : "SR5.CS_MA_LocationGut",
+  locationHand          : "SR5.CS_MA_LocationHand",
+  locationHip           : "SR5.CS_MA_LocationHip",
+  locationJaw           : "SR5.CS_MA_LocationJaw",
+  locationKnee          : "SR5.CS_MA_LocationKnee",
+  locationNeck          : "SR5.CS_MA_LocationNeck",
+  locationShin          : "SR5.CS_MA_LocationShin",
+  locationShoulder      : "SR5.CS_MA_LocationShoulder",
+  locationSternum       : "SR5.CS_MA_LocationSternum",
+  locationThigh         : "SR5.CS_MA_LocationThigh",
 }
 
 //-----------------------------------//
@@ -2594,16 +2621,6 @@ SR5.vehicleActions = {
   stunt                     : "SR5.Stunt",
 }
 
-// Vehicle actions
-SR5.vehicleRelativeSpeed = {
-  vehicleRelativeSpeed_1    : "SR5.VehicleRelativeSpeed_1",   
-  vehicleRelativeSpeed_11   : "SR5.VehicleRelativeSpeed_11",  
-  vehicleRelativeSpeed_51   : "SR5.VehicleRelativeSpeed_51",
-  vehicleRelativeSpeed_201  : "SR5.VehicleRelativeSpeed_201", 
-  vehicleRelativeSpeed_301  : "SR5.VehicleRelativeSpeed_301", 
-  vehicleRelativeSpeed_501  : "SR5.VehicleRelativeSpeed_501", 
-}
-
 //Target signature
 SR5.targetSignature = {
   vehicleLarge              : "SR5.SignatureVehicleLarge",
@@ -2637,13 +2654,20 @@ SR5.rammingAngles = {
   front                     : "SR5.RammingAngle_front",
 }
 
-SR5.vehicleSpeed = {
-  speedRamming1							: "SR5.VehicleRelativeSpeed_1",
-  speedRamming11						: "SR5.VehicleRelativeSpeed_11",
-  speedRamming51						: "SR5.VehicleRelativeSpeed_51",
-  speedRamming201						: "SR5.VehicleRelativeSpeed_201",
-  speedRamming301						: "SR5.VehicleRelativeSpeed_301",
-  speedRamming501						: "SR5.VehicleRelativeSpeed_501",
+//Locomotion, for the collision speed multiplier (Rigger 5 p. 184)
+SR5.rammingLocomotions = {
+  ground                    : "SR5.RammingLocomotion_ground",
+  naval                     : "SR5.RammingLocomotion_naval",
+  rotor                     : "SR5.RammingLocomotion_rotor",
+  vectorThrust              : "SR5.RammingLocomotion_vectorThrust",
+  jet                       : "SR5.RammingLocomotion_jet",
+  lta                       : "SR5.RammingLocomotion_lta",
+}
+
+//Vehicle movement against a pedestrian (SR5 p. 203)
+SR5.rammingGaits = {
+  walk                      : "SR5.RammingGait_walk",
+  run                       : "SR5.RammingGait_run",
 }
 
 //-----------------------------------//
@@ -3574,6 +3598,7 @@ SR5.fullDefense = {
 SR5.dicePoolModTypes = {
   attribute                 : "SR5.Attribute",
   various                   : "SR5.VariousModifiers",
+  rammingRun                : "SR5.RammingGait_run",
   patientEssence            : "SR5.PatientEssence",
   specialization            : "SR5.Specialization",
   penalty                   : "SR5.Penalty",
@@ -3677,6 +3702,7 @@ SR5.dicePoolModTypes = {
   attackFromVehicle 		  : "SR5.AttackModFiringFromVehicle",
   attackWithImagingDevice	  : "SR5.AttackModFiringWithImagingDevice",
   attackIsRunning 		  : "SR5.AttackModRunning",
+  running                   : "SR5.DicePoolModRunning",
   attackTakeAim   		  : "SR5.AttackModTakeAim",
   chokeSettings             : "SR5.ChokeSettings",
 }
@@ -3712,6 +3738,41 @@ SR5.barrierTypes = {
   structuralHeavy           : "SR5.BarrierStructuralHeavyMaterial",
   armored                   : "SR5.BarrierArmoredMaterial",
   hardened                  : "SR5.BarrierHardenedMaterial",
+}
+
+// SR5 p. 198, Barrier Ratings table: Structure and Armor of each material, read by weapon breaking and by the
+// homunculus, whose Body is the Structure of its material (SR5 p. 301). The errata renames the last row "hardened".
+// Kept out of SR5, whose tables are all translations sorted at init. Same keys as SR5.barrierTypes.
+export const SR5_BARRIER_RATINGS = {
+  // Fragile Armor: the VO prints 2, the VF 1, no errata decides; the code kept the VO value
+  fragile                   : {
+    structure: 1, armor: 2
+  },
+  cheap                     : {
+    structure: 2, armor: 4
+  },
+  average                   : {
+    structure: 4, armor: 6
+  },
+  heavy                     : {
+    structure: 6, armor: 8
+  },
+  reinforced                : {
+    structure: 8, armor: 12
+  },
+  structural                : {
+    structure: 10, armor: 16
+  },
+  structuralHeavy           : {
+    structure: 12, armor: 20
+  },
+  armored                   : {
+    structure: 14, armor: 24
+  },
+  // The book prints 16+ and 32+: the table keeps 16 and 32, and a homunculus goes beyond with "other"
+  hardened                  : {
+    structure: 16, armor: 32
+  },
 }
 
 SR5.objectTypes = {
@@ -3942,6 +4003,16 @@ SR5.statusEffects = [
     id: "coverFull",
     name: "SR5.CoverFull",
     origin: "coverFull"
+  },
+  //Read by the core as CONFIG.specialStatusEffects.INVISIBLE : ordinary sight no longer sees the token,
+  //ultrasound and astral perception still do. Put on by the GM, who takes it off for whoever resisted.
+  //SR5 p. 449 : ultrasound sees "people hidden by an Invisibility spell" ; p. 294 : the aura stays visible,
+  //and Physical Invisibility also fools technological sensors. That ultrasound, which is not visual, sees
+  //through Physical Invisibility as well is a ruling of DjamZ (his reading of p. 449), not a quote.
+  {
+    img: "icons/svg/invisible.svg",
+    id: "invisible",
+    name: "SR5.STATUSES_Invisible",
   },
 ]
 

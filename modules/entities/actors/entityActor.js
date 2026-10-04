@@ -29,6 +29,9 @@ import {
   SR5_EffectArea
 } from "../../system/effectArea.js"
 import {
+  installLiveStatuses
+} from "./actor-statuses.js"
+import {
   SR5_ActorHelper
 } from "./entityActor-helpers.js"
 import {
@@ -43,6 +46,12 @@ import {
  */
 
 export class SR5Actor extends Actor {
+
+  constructor(...args) {
+    super(...args)
+    //The core fills statuses in applyActiveEffects, which this system never calls : hasStatusEffect reads them
+    installLiveStatuses(this)
+  }
 
   /** Overide Actor's create Dialog to hide certain type and sort them alphabetically*/
   static async createDialog(data={
@@ -412,6 +421,7 @@ export class SR5Actor extends Actor {
         SR5_CharacterUtility.generateVehicleTest(actor)        
         SR5_CharacterUtility.generateRammingTest(actor)
         SR5_CharacterUtility.updateVehicleSlots(actor)
+        SR5_CharacterUtility.handleSensorVision(actor)
         SR5_CharacterUtility.updateActions(actor)
         break
       case "actorSpirit":
@@ -451,6 +461,7 @@ export class SR5Actor extends Actor {
         break
       case "actorDevice":
         SR5_CharacterUtility.updateConditionMonitors(actor)
+        SR5_CharacterUtility.handleSensorVision(actor)
         SR5_CharacterUtility.updateActions(actor)
         SR5_CharacterUtility.updateMatrixEffect(actor)
         break
@@ -783,7 +794,8 @@ export class SR5Actor extends Actor {
         case "itemVehicle":        
           i.prepareData()
           //An icon in the Matrix only with its wireless on, as other objects; slaved or not (SR5 p. 270)
-          if (iData.wirelessTurnedOn) actor.system.matrix.connectedObject.vehicles[i.uuid] = i.name
+          //While deployed, the drone actor holds the switch (N91)
+          if (SR5_ActorHelper.vehicleWirelessOn(i, game.actors)) actor.system.matrix.connectedObject.vehicles[i.uuid] = i.name
           if (!iData.isSlavedToPan) actor.system.matrix.potentialPanObject.vehicles[i.uuid] = i.name
           SR5_UtilityItem._handleVehicleSlots(iData)
           break
@@ -904,7 +916,9 @@ export class SR5Actor extends Actor {
       }
     }
     // An AI outside any device still defends against matrix actions, and resists matrix damage, with its persona alone (Data Trails p. 157)
+    // It acts in the Matrix through Emulate alone (Data Trails p. 157 and 159): its actions are listed like a decker's
     if (SR5_CharacterUtility.isDevicelessAI(actor)) {
+      SR5_CharacterUtility.generateMatrixActions(actor)
       SR5_CharacterUtility.generateMatrixActionsDefenses(actor)
       SR5_CharacterUtility.generateDevicelessAIMatrixResistance(actor)
     }

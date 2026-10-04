@@ -53,6 +53,17 @@ export class sr5ItemGearDataModel extends foundry.abstract.TypeDataModel {
       isMedkit: new fields.BooleanField({
         initial: false
       }),
+      // A physical jammer (SR5 p. 443): area, directional or cranial, turned on from the actor's sheet. In
+      // wireless mode it spares the actors listed here.
+      jammer: new fields.SchemaField({
+        type: new fields.StringField({
+          initial: "", blank: true
+        }),
+        isActive: new fields.BooleanField({
+          initial: false
+        }),
+        spared: new fields.ArrayField(new fields.StringField()),
+      }),
       // A certified credstick carries money the way a magazine carries rounds:
       // it is bearer cash, so it moves with the item (SR5 p. 445).
       isCredstick: new fields.BooleanField({

@@ -1,6 +1,18 @@
 import {
   ActorSheetSR5 
 } from "./baseSheet.js"
+import {
+  SR5_ActorHelper
+} from "./entityActor-helpers.js"
+import {
+  SR5_EntityHelpers
+} from "../helpers.js"
+import {
+  SR5_MiscellaneousHelpers
+} from "../../rolls/roll-helpers/miscellaneous.js"
+import {
+  SR5Combat
+} from "../../system/srcombat.js"
 
 /**
  * An Actor sheet for drone type actors in the Shadowrun 5 system.
@@ -46,6 +58,38 @@ export class SR5DroneSheet extends ActorSheetSR5 {
     context.matrixActionsRigger5 = game.settings.get("sr5", "sr5Rigger5Actions")
 
     return context
+  }
+
+  _onRender(context, options) {
+    super._onRender(context, options)
+    this.element.querySelectorAll(".drone-wireless-toggle").forEach(el => el.addEventListener("click", this._onToggleDroneWireless.bind(this)))
+  }
+
+  //The deployed drone holds its vehicle's wireless switch (N83): switching it costs the drone an action (N91).
+  //Turning it off is always free (SR5 p. 424). Turning a switched-off drone back on stays a GM shortcut: the
+  //drone itself may do it, but nobody can reach it wirelessly to ask it to (p. 424, direct connection p. 234)
+  async _onToggleDroneWireless(event) {
+    event.preventDefault()
+    if (this._spendingWirelessAction) return
+    const actor = this.actor
+    const oldValue = actor.system.wirelessTurnedOn !== false
+    const owner = SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId)
+    const actions = [{
+      type: SR5_ActorHelper.droneWirelessActionType(game.settings.get("sr5", "sr5WifiRequiresDNI"), owner, !oldValue),
+      value: 1,
+      source: oldValue ? "turnOffWifi" : "turnOnWifi"
+    }]
+    if (!SR5Combat.hasActionsLeft(actor, actions)) return
+    this._spendingWirelessAction = true
+    try {
+      const actionsLeft = SR5_MiscellaneousHelpers.spendActions(foundry.utils.deepClone(actor.system.specialProperties.actions), actions)
+      await actor.update({
+        "system.wirelessTurnedOn": !oldValue,
+        "system.specialProperties.actions": actionsLeft,
+      })
+    } finally {
+      this._spendingWirelessAction = false
+    }
   }
 
   _prepareItems(actor) {

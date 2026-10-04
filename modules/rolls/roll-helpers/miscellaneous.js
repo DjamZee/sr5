@@ -123,6 +123,37 @@ export class SR5_MiscellaneousHelpers {
     return null
   }
 
+  //SR5 p. 162 and 164: a simple or complex action belongs to the character's own action phase, and a score of 0
+  //or less leaves only a free action. Returns "noInitiative", "outOfPhase" or null. Free actions, interruptions
+  //(p. 170, checked against their cost elsewhere) and manual adjustments are not concerned
+  static actionPhaseProblem(actions, {
+    initiative, isCurrent
+  }){
+    let phaseAction = (actions ?? []).some(a => a && a.source !== "manual" && ["simple", "complex"].includes(a.type) && a.value > 0)
+    if (!phaseAction) return null
+    if (typeof initiative === "number" && initiative <= 0) return "noInitiative"
+    if (!isCurrent) return "outOfPhase"
+    return null
+  }
+
+  //True when a combat is running and the character's action phase is not the current one. A skill test asked
+  //then can only be a reaction called by the gamemaster (SR5 p. 164: one acts in one's own phase): no action
+  static isOutOfPhase(actor){
+    let combat = globalThis.game?.combat
+    if (!actor || !combat?.started) return false
+    let combatant = actor.isToken ? combat.combatants.find(c => c.tokenId === actor.token?.id) : combat.combatants.find(c => c.actorId === actor.id)
+    if (!combatant || combatant.initiative === null || combatant.initiative === undefined) return false
+    return combat.combatant?.id !== combatant.id
+  }
+
+  //SR5 p. 170: each interruption action lowers the Initiative score by its own cost, 5 unless stated otherwise
+  //(10 for a Watchdog Haywire or Popup, Kill Code p. 45). Several interruptions in one list add up
+  static interruptionInitiativeCost(actions){
+    let cost = 0
+    for (let a of actions ?? []) if (a?.type === "interruption") cost += (a.initiativeCost || 5)
+    return cost
+  }
+
   //SR5 p. 164: two simple actions OR one complex action per action phase. Takes the actions off the counters
   //(mutated in place) and keeps the two linked: a simple action spent leaves no complex one, a complex action
   //leaves no simple one. Manual adjustments touch only their own counter; the other types are taken off as is

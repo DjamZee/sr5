@@ -4,6 +4,12 @@ import {
 import {
   SR5_EffectArea
 } from "../system/effectArea.js"
+import {
+  SR5_Jammer
+} from "../system/jammer.js"
+import {
+  SR5_GrappleHelpers
+} from "../rolls/roll-helpers/grapple.js"
 
 export async function sr5HookCreateToken(tokenDocument) {
   if (!game.user.isGM) return
@@ -18,7 +24,17 @@ export async function sr5HookUpdateToken(tokenDocument, change) {
   if ("x" in change || "y" in change) {
     SR5_EffectArea.tokenAura(tokenDocument)
     if (game.user.isGM) SR5_EffectArea.checkIfTokenIsInTemplate(tokenDocument)
+    //A physical jammer's noise depends on the distance (SR5 p. 443): measured again whoever moved
+    SR5_Jammer.refreshScene(tokenDocument.parent)
   }
+}
+
+//A token gone takes its area jammer with it, and leaves the noise others gave it behind
+export function sr5HookDeleteToken(tokenDocument) {
+  //An unlinked token's effects go with its synthetic actor: only the others are measured again
+  SR5_Jammer.refreshScene(tokenDocument.parent)
+  //A fighter removed from the scene lets go of its hold, or is let go (grappling rules only)
+  if (SR5_GrappleHelpers.isActive()) SR5_GrappleHelpers.onDeleteToken(tokenDocument)
 }
 
 export function sr5HookPreDeleteToken(tokenDocument, _options, _userId) {

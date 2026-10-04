@@ -29,7 +29,7 @@ import {
   SR5_MatrixHelpers 
 } from "./roll-helpers/matrix.js"
 import {
-  isRolledByTarget, firstAidPatient, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick
+  isRolledByTarget, firstAidPatient, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick, ownsCardSpeaker, defenseActorId
 } from "./roll-helpers/cardRoller.js"
 import {
   SR5_CombatHelpers 
@@ -46,6 +46,12 @@ import {
 import {
   ritualDrainActorId
 } from "./roll-helpers/ritualTeam.js"
+import {
+  SR5_GrappleHelpers
+} from "./roll-helpers/grapple.js"
+import {
+  SR5SharedVision
+} from "../interface/shared-vision.js"
 
 // True when a GM is connected to relay what a player cannot do
 export function hasActiveGM() {
@@ -83,7 +89,7 @@ export class SR5_RollMessage {
 
       // v13: use message document directly instead of data.message
       // Hide if player is not owner of the message
-      if (message.speaker?.actor && game.actors.get(message.speaker.actor)?.permission != 3) {
+      if (!ownsCardSpeaker(message.speaker, id => SR5_EntityHelpers.getRealActorFromID(id))) {
         html.querySelectorAll(".nonOpposedTest").forEach(el => el.remove())
         html.querySelectorAll(".owner").forEach(el => el.remove())
       }
@@ -210,6 +216,7 @@ export class SR5_RollMessage {
       case "defenseMeleeWeapon":
       case "defenseRangedWeapon":
       case "defenseAstralCombat":
+        actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id)))
         actor.rollTest("defense", null, messageData)
         break
       case "defenseThroughAndInto":
@@ -241,6 +248,7 @@ export class SR5_RollMessage {
       case "spellResistance":                                        
       case "rammingDefense":
       case "martialArtDefense":
+      case "grappleClinchDefense":
       case "drain":
       case "fading":
       case "objectResistance":
@@ -346,9 +354,38 @@ export class SR5_RollMessage {
         actor.rollTest("skillDicePool", "perception", messageData)
         break
       case "calledShotEffect":
-        if (messageData.combat.calledShot.name === "trickShot") await originalActionActor.applyCalledShotsEffect(messageData)
+        //SR5 p. 195: the subdued defender and its attacker enter the hold, with the net hits of the attack
+        if (messageData.combat.calledShot.name === "subdue") {
+          const hold = Object.values(messageData.combat.calledShot.effects).find(e => e.name === "subdue")?.value ?? 0
+          await SR5_GrappleHelpers.startHold(messageData.previousMessage.actorId, SR5_GrappleHelpers.actorIdOf(actor), hold)
+        }
+        //SR5 p. 196: the strengthened (or weakened) hold, written on both fighters
+        else if (messageData.combat.calledShot.name === "strengthenHold") {
+          const effect = Object.values(messageData.combat.calledShot.effects).find(e => e.name === "strengthenHold")
+          //The hold the card was rolled against: an older card is refused once a newer hold took its place
+          await SR5_GrappleHelpers.setHold(SR5_GrappleHelpers.actorIdOf(actor), effect?.value ?? 0, effect?.holdId)
+        }
+        //Run & Gun p. 126: the attacker who reversed the situation becomes the one who holds
+        else if (messageData.combat.calledShot.name === "reversal" && Object.values(messageData.combat.calledShot.effects).some(e => e.name === "reversal")) {
+          const effect = Object.values(messageData.combat.calledShot.effects).find(e => e.name === "reversal")
+          await SR5_GrappleHelpers.reverseHold(messageData.previousMessage.actorId, effect.value, effect.holdId)
+        }
+        else if (messageData.combat.calledShot.name === "trickShot") await originalActionActor.applyCalledShotsEffect(messageData)
         else await actor.applyCalledShotsEffect(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
+      //Run & Gun p. 133: the clinched defender and the attacker enter the clinch, with the net hits of the test
+      case "grappleClinchApply":
+        await SR5_GrappleHelpers.startHold(messageData.previousMessage.actorId, SR5_GrappleHelpers.actorIdOf(actor), messageData.roll.netHits, "clinch")
+        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
+      //Run & Gun p. 148-149: after an escape with Contre-prise, the escaper chooses to break free or to reverse
+      case "grappleEscapeFree":
+      case "grappleCounterGrapple":
+        if (type === "grappleEscapeFree") await SR5_GrappleHelpers.releaseHold(SR5_GrappleHelpers.actorIdOf(actor), messageData.various.grappleHoldId)
+        else await SR5_GrappleHelpers.reverseHold(SR5_GrappleHelpers.actorIdOf(actor), messageData.various.grappleNewHold, messageData.various.grappleHoldId)
+        await SR5_RollMessage.updateChatButtonHelper(messageId, "grappleEscapeFree")
+        await SR5_RollMessage.updateChatButtonHelper(messageId, "grappleCounterGrapple")
         break
       case "applyFearEffect":
       case "applyStunnedEffect":
@@ -600,6 +637,13 @@ export class SR5_RollMessage {
           actor = SR5_EntityHelpers.getRealActorFromID(messageData.previousMessage.actorId)
           await actor.applyCalledShotsEffect(messageData)
           break
+        //SR5 p. 241: Snoop succeeded, the hacker sees what the drone or device sees while his mark lasts.
+        //The card is the defender's: the hacker who rolled the Snoop clicks it, or the GM for him
+        case "snoopVision": {
+          let snooped = SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId)
+          if (await SR5SharedVision.startSnoop(snooped, messageData.previousMessage.actorId)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+          break
+        }
         default:
           SR5_SystemHelpers.srLog(1, `Unknown '${type}' type in chatButtonAction (attacker Test)`)
       }

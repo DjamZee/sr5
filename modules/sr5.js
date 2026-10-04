@@ -1,5 +1,8 @@
 // Import hook handlers
 import {
+  SR5_GrappleHelpers
+} from './rolls/roll-helpers/grapple.js'
+import {
   sr5HookInit 
 } from './hooks/init.js'
 import {
@@ -25,14 +28,18 @@ import {
   sr5HookRenderMacroConfig,
 } from './hooks/render-ui.js'
 import {
-  sr5HookCreateToken, sr5HookUpdateToken, sr5HookPreDeleteToken 
+  sr5HookCreateToken, sr5HookUpdateToken, sr5HookPreDeleteToken, sr5HookDeleteToken 
 } from './hooks/token.js'
+import {
+  onMoveToken, clearRunning
+} from './system/running.js'
 import {
   sr5HookCanvasInit,
   sr5HookDeleteCombatCumulativeDefense,
   sr5HookCreateCombatant,
   sr5HookUpdateCombatant,
   sr5HookDeleteCombatActions,
+  sr5HookDeleteCombatGrapple,
   sr5HookCloseCombatantConfig,
 } from './hooks/combat.js'
 import {
@@ -45,7 +52,7 @@ import {
   sr5HookDeleteActiveEffect, sr5HookCreateActiveEffect 
 } from './hooks/active-effect.js'
 import {
-  sr5HookCanvasReady, sr5HookCanvasReadyAreaEffects, sr5HookCanvasReadyVisionRanges, sr5HookDrawMeasuredTemplate, sr5HookDeleteMeasuredTemplate, sr5HookUpdateMeasuredTemplate, sr5HookUpdateScene 
+  sr5HookCanvasReady, sr5HookCanvasReadyAreaEffects, sr5HookCanvasReadyVisionRanges, sr5HookDrawMeasuredTemplate, sr5HookDeleteMeasuredTemplate, sr5HookUpdateMeasuredTemplate, sr5HookCreateMeasuredTemplate, sr5HookUpdateScene 
 } from './hooks/canvas.js'
 import {
   sr5HookRenderCompendium, sr5HookRenderCompendiumDirectory
@@ -65,6 +72,10 @@ import {
 import {
   sr5KeepSidebarSettingsLast
 } from './interface/sidebar-tab-order.js'
+import {
+  SR5SharedVision, sr5HookUpdateTokenSharedVision, sr5HookUpdateActorSharedVision, sr5HookUpdateItemSharedVision,
+  sr5HookResetJumpedInRiggers
+} from './interface/shared-vision.js'
 
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
@@ -95,10 +106,16 @@ Hooks.on('canvasInit', sr5HookCanvasInit)
 Hooks.on('createToken', sr5HookCreateToken)
 Hooks.on('updateToken', sr5HookUpdateToken)
 Hooks.on('preDeleteToken', sr5HookPreDeleteToken)
+Hooks.on('deleteToken', sr5HookDeleteToken)
 Hooks.on('createCombatant', sr5HookCreateCombatant)
 Hooks.on('updateCombatant', sr5HookUpdateCombatant)
 Hooks.on('deleteCombat', sr5HookDeleteCombatCumulativeDefense)
 Hooks.on('deleteCombat', sr5HookDeleteCombatActions)
+Hooks.on('deleteCombat', sr5HookDeleteCombatGrapple)
+//Running (SR5 p. 163-164): put on by a move, it falls when the encounter ends
+Hooks.on('moveToken', onMoveToken)
+Hooks.on('deleteCombat', clearRunning)
+Hooks.on('renderChatMessageHTML', SR5_GrappleHelpers.onRenderHoldCard)
 Hooks.on('closeCombatantConfig', sr5HookCloseCombatantConfig)
 Hooks.on('preUpdateItem', sr5HookPreUpdateItem)
 Hooks.on('createItem', sr5HookCreateItem)
@@ -118,9 +135,21 @@ Hooks.on('renderChatMessageHTML', sr5HookRenderTablePayout)
 Hooks.on('renderSidebar', sr5KeepSidebarSettingsLast)
 Hooks.on('drawMeasuredTemplate', sr5HookDrawMeasuredTemplate)
 Hooks.on('deleteMeasuredTemplate', sr5HookDeleteMeasuredTemplate)
+Hooks.on('createMeasuredTemplate', sr5HookCreateMeasuredTemplate)
 Hooks.on('updateMeasuredTemplate', sr5HookUpdateMeasuredTemplate)
 Hooks.on('updateScene', sr5HookUpdateScene)
 Hooks.on('updateScene', sr5HookUpdateSceneIndicators)
 Hooks.on('canvasReady', renderSceneIndicators)
 Hooks.on('canvasReady', sr5HookCanvasReadyAreaEffects)
 Hooks.on('canvasReady', sr5HookCanvasReadyVisionRanges)
+// Shared vision: through a drone or a device (SR5 p. 241)
+Hooks.on('updateToken', sr5HookUpdateTokenSharedVision)
+Hooks.on('canvasReady', () => SR5SharedVision.renderIndicator())
+Hooks.on('renderPlayers', () => SR5SharedVision.renderIndicator())
+Hooks.on('updateActor', sr5HookUpdateActorSharedVision)
+Hooks.on('updateItem', sr5HookUpdateItemSharedVision)
+Hooks.on('createActiveEffect', (effect) => {
+  if (effect.parent instanceof Actor) SR5SharedVision.checkViewers(effect.parent)
+})
+Hooks.on('canvasReady', () => SR5SharedVision.checkViewers())
+for (const hook of ['createActor', 'deleteActor', 'createToken', 'deleteToken', 'canvasReady']) Hooks.on(hook, sr5HookResetJumpedInRiggers)

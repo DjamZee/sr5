@@ -48,8 +48,9 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
   //Determine limit modififiers
   rollData.limit.modifiers = SR5_PrepareRollHelper.getLimitModifiers(rollData, actor.system.skills[rollKey].limit.modifiers)
 
-  //Handle Actions: resisting an opposed test is no action of the target's (SR5 p. 44-45)
-  if (!chatData?.test?.isOpposed) rollData.combat.actions = SR5_MiscellaneousHelpers.addActions(rollData.combat.actions, {
+  //Handle Actions: resisting an opposed test is no action of the target's (SR5 p. 44-45), nor is a test the
+  //gamemaster calls for outside the character's phase (SR5 p. 164)
+  if (!chatData?.test?.isOpposed && !SR5_MiscellaneousHelpers.isOutOfPhase(actor)) rollData.combat.actions = SR5_MiscellaneousHelpers.addActions(rollData.combat.actions, {
     type: "complex", value: 1, source: "useSkill"
   })
 

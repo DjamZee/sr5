@@ -20,6 +20,9 @@ import {
   SR5_CalledShotHelpers 
 } from "./roll-helpers/calledShot.js"
 import {
+  martialArtsLocationBonus
+} from "./roll-helpers/martialArtsLocation.js"
+import {
   SR5Combat 
 } from "../system/srcombat.js"
 import {
@@ -28,6 +31,12 @@ import {
 import {
   SR5_SystemHelpers
 } from "../system/utilitySystem.js"
+import {
+  holdsTarget, isSubdued
+} from "./roll-helpers/grapple-rules.js"
+import {
+  isRunning, runningModifierValue
+} from "../system/running.js"
 
 export default class SR5_RollDialog {
 
@@ -206,10 +215,14 @@ export default class SR5_RollDialog {
     //General commands for select already filled by dialogData
     const filledSelects = element.querySelectorAll('.SR-ModSelectFilled'); if (filledSelects.length) this._filledSelectModifier(filledSelects, element, dialogData)
     //Ramming: speeds and angle of the impact
-    element.querySelectorAll('.SR-RammingInput').forEach(el => el.addEventListener('change', () => this._updateRamming(element, dialogData)))
+    element.querySelectorAll('.SR-RammingInput').forEach(el => el.addEventListener('change', ev => this._updateRamming(element, dialogData, ev.target.name)))
     //Manage Threshold
     element.querySelectorAll('.SR-ManageThreshold').forEach(el => el.addEventListener('change', ev => this._manageThreshold(ev, element, dialogData)))
     const thresholdEls = element.querySelectorAll('.SR-ManageThreshold'); if (thresholdEls.length) this._filledThreshold(thresholdEls, element, dialogData)
+    //Grapple escape: the net hits of the grapple or subdue test, typed by hand (Run & Gun p. 135)
+    element.querySelectorAll('.SR-GrappleEscapeThreshold').forEach(el => el.addEventListener('change', ev => {
+      dialogData.threshold.value = Math.max(parseInt(ev.target.value) || 0, 0)
+    }))
 
     // Reset Recoil
     element.querySelectorAll(".resetRecoil").forEach(el => el.addEventListener('click', ev => this._onResetRecoil(ev, element, dialogData, actor)))
@@ -229,8 +242,50 @@ export default class SR5_RollDialog {
       const extendedBlockEl = element.querySelector('#extendedBlock')
       if (extendedBlockEl) extendedBlockEl.style.display = ''
     }
+    //AI Emulate: an AI without a device can only emulate, so the dialog opens at its default rating (Data Trails p. 157)
+    if (dialogData.matrix?.emulateRequired) this._applyEmulateRating(element, dialogData, dialogData.matrix.emulateDefault)
+    element.querySelectorAll('[name="emulateLegal"]').forEach(el => el.addEventListener('change', ev => {
+      dialogData.matrix.emulateLegal = ev.target.checked
+    }))
     //Toggle hidden div
     element.querySelectorAll(".SR-DialogToggle").forEach(el => el.addEventListener('click', ev => this._toggleDiv(ev, element)))
+  }
+
+  // AI Emulate (Data Trails p. 159): rating capped by Depth, -(rating / 2) dice, the limit becomes the emulated rating.
+  // Without a device the rating cannot drop below 1: there is no attribute to act with otherwise (Data Trails p. 157)
+  _applyEmulateRating(html, dialogData, value){
+    let max = dialogData.matrix.emulateMax || 0,
+      min = dialogData.matrix.emulateRequired ? Math.min(1, max) : 0
+    if (isNaN(value) || value < min) value = min
+    if (value > max) {
+      value = max
+      ui.notifications.warn(game.i18n.format('SR5.WARN_EmulateMaxDepth', {
+        depth: max
+      }))
+    }
+    html.querySelector('[name="emulateRating"]').value = value
+    dialogData.matrix.emulateRating = value
+    SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "emulate")
+    delete dialogData.limit.modifiers.limitModEmulate
+    delete this.limitModifier.limitModEmulate
+    let emulatePenalty = 0
+    if (value > 0) {
+      emulatePenalty = -Math.ceil(value / 2)
+      dialogData.dicePool.modifiers.push({
+        type: "emulate",
+        label: `${game.i18n.localize(SR5.dicePoolModTypes.emulate)} (${value})`,
+        value: emulatePenalty
+      })
+      let emulateLimit = value - (dialogData.matrix.emulateAttributeValue || 0)
+      dialogData.limit.modifiers.limitModEmulate = {
+        value: emulateLimit,
+        label: `${game.i18n.localize(SR5.limitModTypes.limitModEmulate)} (${value})`,
+      }
+      this.limitModifier.limitModEmulate = emulateLimit
+    }
+    html.querySelector('[name="dicePoolModEmulate"]').value = emulatePenalty
+    this.updateDicePoolValue(html)
+    this.updateLimitValue(html)
   }
 
   //Show or Hide section of the dialog
@@ -255,15 +310,32 @@ export default class SR5_RollDialog {
     this.dialog.setPosition(position)
   }
 
-  //Ramming damage from the initiator's Structure and the speed of the impact (Rigger 5 p. 179)
-  _updateRamming(html, dialogData){
+  //Ramming damage from the initiator's Structure and the speed of the impact: Rigger 5 p. 179 against a vehicle, SR5 p. 203-204 otherwise
+  _updateRamming(html, dialogData, changed){
     let actor = SR5_EntityHelpers.getRealActorFromID(dialogData.owner.actorId),
-      ramming = dialogData.combat.ramming
-    ramming.angle = html.querySelector('[name="rammingAngle"]').value
-    ramming.attackerSpeed = Math.max(0, parseInt(html.querySelector('[name="rammingAttackerSpeed"]').value) || 0)
-    ramming.targetSpeed = Math.max(0, parseInt(html.querySelector('[name="rammingTargetSpeed"]').value) || 0)
-    let speed = SR5_ConverterHelpers.rammingSpeed(ramming.angle, ramming.attackerSpeed, ramming.targetSpeed)
-    dialogData.damage.base = SR5_ConverterHelpers.collisionDamage(actor.system.attributes.body.augmented.value, speed)
+      ramming = dialogData.combat.ramming,
+      readNumber = name => Math.max(0, parseInt(html.querySelector(`[name="${name}"]`).value) || 0)
+    if (ramming.targetIsVehicle){
+      ramming.angle = html.querySelector('[name="rammingAngle"]').value
+      ramming.attackerSpeed = readNumber("rammingAttackerSpeed")
+      ramming.targetSpeed = readNumber("rammingTargetSpeed")
+      ramming.attackerLocomotion = html.querySelector('[name="rammingAttackerLocomotion"]').value
+      ramming.targetLocomotion = html.querySelector('[name="rammingTargetLocomotion"]').value
+      //Kept in step with the speeds, in case a pedestrian ends up defending
+      SR5_ConverterHelpers.rammingRefreshRelativeSpeed(ramming)
+    } else {
+      ramming.gait = html.querySelector('[name="rammingGait"]').value
+      //The gait fills in the relative speed, which the GM may then correct
+      if (changed === "rammingGait") html.querySelector('[name="rammingRelativeSpeed"]').value = SR5_ConverterHelpers.rammingRefreshRelativeSpeed(ramming).relativeSpeed
+      ramming.relativeSpeed = readNumber("rammingRelativeSpeed")
+      //SR5 p. 203: -3 dice when the vehicle has to reach its running rate
+      SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "rammingRun")
+      if (ramming.gait === "run") dialogData.dicePool.modifiers.push({
+        type: "rammingRun", label: game.i18n.localize(SR5.dicePoolModTypes.rammingRun), value: -3
+      })
+      this.updateDicePoolValue(html)
+    }
+    dialogData.damage.base = SR5_ConverterHelpers.rammingAttackDamage(ramming, actor.system.attributes.body.augmented.value)
     dialogData.damage.value = dialogData.damage.base
     html.querySelector('[name="modifiedDamage"]').value = dialogData.damage.value
   }
@@ -367,10 +439,18 @@ export default class SR5_RollDialog {
       case "socialFan":
       case "socialBlackmailed":
       case "defenseRunning":
-      case "attackCharge":
       case "attackSuperiorPosition":
       case "attackTouchOnly":
         value = 2
+        break
+      case "attackCharge":
+        //SR5 p. 164 and 188: a charge ignores the -2 of running, which comes back if the charge is unchecked
+        if (isChecked) this._uncheckModifier(html, dialogData, "running")
+        else if (isRunning(actor)) this._checkModifier(html, dialogData, "running", runningModifierValue(dialogData.dialogSwitch.running))
+        value = 2
+        break
+      case "running":
+        value = runningModifierValue(dialogData.dialogSwitch.running)
         break
       case "controlAvailable":
       case "socialIsDistracted":
@@ -433,6 +513,32 @@ export default class SR5_RollDialog {
     }
   }
 
+  //Uncheck a checkbox modifier and take its value off the dice pool
+  _uncheckModifier(html, dialogData, modifierName){
+    const checkbox = html.querySelector(`[data-modifier=${modifierName}]`)
+    if (!checkbox?.checked) return
+    checkbox.checked = false
+    const input = html.querySelector(`[name=${checkbox.dataset.target}]`)
+    if (input) input.value = 0
+    SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', modifierName)
+    this.updateDicePoolValue(html)
+  }
+
+  //Check a checkbox modifier and add its value to the dice pool
+  _checkModifier(html, dialogData, modifierName, value){
+    const checkbox = html.querySelector(`[data-modifier=${modifierName}]`)
+    if (!checkbox || checkbox.checked) return
+    checkbox.checked = true
+    const input = html.querySelector(`[name=${checkbox.dataset.target}]`)
+    if (input) input.value = value
+    dialogData.dicePool.modifiers.push({
+      type: modifierName,
+      label: game.i18n.localize(SR5.dicePoolModTypes[modifierName]),
+      value: value
+    })
+    this.updateDicePoolValue(html)
+  }
+
   //Auto check checkbox modifiers
   _filledCheckBox(checkboxs, html, dialogData){
     if (checkboxs.length === 0) return
@@ -441,7 +547,12 @@ export default class SR5_RollDialog {
     let actor = SR5_EntityHelpers.getRealActorFromID(this.dialogData.owner.actorId),
       targetActor = SR5_EntityHelpers.getRealActorFromID(dialogData.target.actorId),
       label,
-      isProned = actor.effects.find(e => e.statuses.has("prone"))
+      isProned = actor.effects.find(e => e.statuses.has("prone")),
+      grappling = game.settings.get("sr5", "sr5GrapplingRules")
+    //SR5 p. 195: a subdued character counts as prone for any attack against them (grappling rules only)
+    if (grappling && isSubdued(actor.effects)) isProned = true
+    //SR5 p. 164: the running status of the roller
+    const running = isRunning(actor)
 
     for (let e of checkboxs){
       modifierName = e.dataset.modifier
@@ -495,6 +606,32 @@ export default class SR5_RollDialog {
           html.querySelector(checkboxName).checked = true
           value = -2
           break
+        //SR5 p. 164, 179 and 190: running, -2 on an action, +2 on a defense test
+        case "running":
+          if (running){
+            html.querySelector(checkboxName).checked = true
+            value = runningModifierValue(dialogData.dialogSwitch.running)
+          }
+          break
+        case "attackIsRunning":
+          if (running){
+            html.querySelector(checkboxName).checked = true
+            value = -2
+          }
+          break
+        case "defenseRunning":
+          if (running){
+            html.querySelector(checkboxName).checked = true
+            value = 2
+          }
+          break
+        case "attackSuperiorPosition":
+          //SR5 p. 188 and 196: the holder attacking the fighter they hold has the superior position (grappling rules only)
+          if (grappling && holdsTarget(actor.effects, dialogData.target.actorId)){
+            html.querySelector(checkboxName).checked = true
+            value = 2
+          }
+          break
       }
 
       if (html.querySelector(checkboxName).checked){
@@ -536,41 +673,9 @@ export default class SR5_RollDialog {
     }
 
     switch (target){
-      case "emulateRating": {
-        // AI Emulate (Data Trails p. 159): rating capped by Depth, -(rating / 2) dice, the limit becomes the emulated rating
-        let max = dialogData.matrix.emulateMax || 0
-        if (isNaN(value) || value < 0) value = 0
-        if (value > max) {
-          value = max
-          ui.notifications.warn(game.i18n.format('SR5.WARN_EmulateMaxDepth', {
-            depth: max
-          }))
-        }
-        html.querySelector(name).value = value
-        dialogData.matrix.emulateRating = value
-        SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "emulate")
-        delete dialogData.limit.modifiers.limitModEmulate
-        delete this.limitModifier.limitModEmulate
-        let emulatePenalty = 0
-        if (value > 0) {
-          emulatePenalty = -Math.ceil(value / 2)
-          dialogData.dicePool.modifiers.push({
-            type: "emulate",
-            label: `${game.i18n.localize(SR5.dicePoolModTypes.emulate)} (${value})`,
-            value: emulatePenalty
-          })
-          let emulateLimit = value - (dialogData.matrix.emulateAttributeValue || 0)
-          dialogData.limit.modifiers.limitModEmulate = {
-            value: emulateLimit,
-            label: `${game.i18n.localize(SR5.limitModTypes.limitModEmulate)} (${value})`,
-          }
-          this.limitModifier.limitModEmulate = emulateLimit
-        }
-        html.querySelector('[name="dicePoolModEmulate"]').value = emulatePenalty
-        this.updateDicePoolValue(html)
-        this.updateLimitValue(html)
+      case "emulateRating":
+        this._applyEmulateRating(html, dialogData, value)
         return
-      }
       case "force":
         this.updateDrainValue(html)
         if (html.querySelector('#force')) {
@@ -1208,7 +1313,8 @@ export default class SR5_RollDialog {
               break
           }
           //Manage actions
-          if (ev.target.value !== "") dialogData.combat.actions = SR5_MiscellaneousHelpers.addActions(dialogData.combat.actions, {
+          //Subduing and strengthening a hold are normal attacks (SR5 p. 195-196): they cost no free action
+          if (ev.target.value !== "" && ev.target.value !== "subdue" && ev.target.value !== "strengthenHold") dialogData.combat.actions = SR5_MiscellaneousHelpers.addActions(dialogData.combat.actions, {
             type: "free", value: 1, source: "calledShot"
           })
           else dialogData.combat.actions = SR5_MiscellaneousHelpers.removeActions(dialogData.combat.actions, "calledShot")
@@ -1221,7 +1327,12 @@ export default class SR5_RollDialog {
             value = value - 4
             limitDV = limitDV * 2
           }
+          //Run & Gun p. 148-151: the location technique (Dim Mak, Choquer, Randori) lowers the location penalty
+          value += martialArtsLocationBonus(dialogData.combat.calledShot.martialArtsModifiers, html.querySelector('[data-modifier="calledShot"]').value, ev.target.value)
           dialogData.combat.calledShot = {
+            //keep the techniques read when the dialog opened, a second location pick needs them too
+            martialArts: dialogData.combat.calledShot.martialArts,
+            martialArtsModifiers: dialogData.combat.calledShot.martialArtsModifiers,
             limitDV: limitDV,
             location: ev.target.value,
             name: html.querySelector('[data-modifier="calledShot"]').value,

@@ -59,6 +59,14 @@ export class SR5_EffectArea {
     return SR5_EffectArea.isAreaEffectOffScene(item, sceneId)
   }
 
+  // Where a token ends up: Foundry V13 makes the document's x and y follow the move animation, while the
+  // source data holds the destination as soon as the update is made (same reading as jammer.js)
+  static tokenPosition(token){
+    return {
+      x: token._source?.x ?? token.x, y: token._source?.y ?? token.y
+    }
+  }
+
   //Manage token aura
   static async tokenAura(token){
     // The token's own scene, read from the document: a token moved on a scene the GM is not looking
@@ -69,11 +77,7 @@ export class SR5_EffectArea {
       if (t.id !== token.id) {
         // checkAuraJamming compares this to JAM_SIGNALS_RADIUS_IN_METERS, which SR5 p. 239 states in
         // meters, so the scene's own unit is converted before the comparison.
-        let distance = SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint({
-          x: token.x, y: token.y
-        }, {
-          x: t.x, y: t.y
-        }, scene)
+        let distance = SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint(SR5_EffectArea.tokenPosition(token), SR5_EffectArea.tokenPosition(t), scene)
         await SR5_EffectArea.checkAuraJamming(token, t, distance)
       }
     }
@@ -160,11 +164,7 @@ export class SR5_EffectArea {
         if (!tokenActor || tokenActor === activeActor) continue
         // The result is compared to JAM_SIGNALS_RADIUS_IN_METERS just below, which SR5 p. 239 states in
         // meters, so the unit of the jammer's scene is converted first.
-        let distance = SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint({
-          x: activeToken.x, y: activeToken.y
-        }, {
-          x: token.x, y: token.y
-        }, scene)
+        let distance = SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint(SR5_EffectArea.tokenPosition(activeToken), SR5_EffectArea.tokenPosition(token), scene)
         let jammedEffect = tokenActor.items.find(i => i.system.type === "signalJammed" && i.system.ownerID === activeActor.id)
         if (distance <= SR5_EffectArea.JAM_SIGNALS_RADIUS_IN_METERS && !jammedEffect){
           await SR5_EffectArea.createJammedEffect(activeActor, tokenActor, jamEffect.system.value)
