@@ -151,6 +151,21 @@ describe("SR5_Jammer on a scene", () => {
     expect(at(-10, 0)).toBeUndefined()
   })
 
+  it("measures from where a moving token ends up, not from where its animation is", () => {
+    const token = {
+      x: 1500, y: 0, width: 1, height: 1, _source: {
+        x: 4000, y: 0
+      }
+    }
+    expect(SR5_Jammer.tokenCenter(token, {
+      grid: {
+        size: 100
+      }
+    })).toEqual({
+      x: 4050, y: 50
+    })
+  })
+
   it("gives a cranial jammer to its wearer only, with no token needed", () => {
     const wearer = {
       id: "w", items: [jammerItem("Actor.w.Item.c", "cranial", 3)]

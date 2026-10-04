@@ -26,10 +26,14 @@ export class SR5_Jammer {
     return item.system?.type === "signalJammed" && String(item.system.ownerID ?? "").includes(".Item.")
   }
 
+  // Where the token ends up. While a move is animated, Foundry V13 makes the document's x and y follow the
+  // animation on the client that draws it (measured on 2026-10-04: x read 1500 in the updateToken hook of a
+  // move to 4000), so the source data is read: it holds the destination as soon as the update is made.
   static tokenCenter(token, scene){
     const size = scene.grid?.size ?? 100
+    const x = token._source?.x ?? token.x, y = token._source?.y ?? token.y
     return {
-      x: token.x + (token.width ?? 1) * size / 2, y: token.y + (token.height ?? 1) * size / 2
+      x: x + (token.width ?? 1) * size / 2, y: y + (token.height ?? 1) * size / 2
     }
   }
 
