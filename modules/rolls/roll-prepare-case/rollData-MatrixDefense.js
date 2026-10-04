@@ -27,6 +27,11 @@ export default async function matrixDefense(rollData, rollKey, actor, chatData){
   //Handle item targeted
   if (chatData.target.itemUuid){
     let targetItem = await fromUuid(chatData.target.itemUuid)
+    //The device may have been deleted since the attack card was posted: warn and abort, the caller opens no dialog
+    if (!targetItem?.system){
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_MatrixTargetDeviceMissing"))
+      return
+    }
     rollData.target.itemUuid = chatData.target.itemUuid
     if (targetItem.system.type !== "device"){
       if (!targetItem.system.isSlavedToPan){
