@@ -79,7 +79,7 @@ export function isHeldBy(effects, targetId){
 //Run & Gun p. 126 : after a reversal the roles are swapped, and Run & Gun p. 148-149 (Contre-prise) lets a successful
 //escape count as one. The book does not say what the new hold is worth. The one place to change it: the net hits of
 //the test (the reversal, or the escape above its threshold), as every other hold (SR5 p. 195, Run & Gun p. 133), at
-//least 1. Pending the ruling of DjamZ (Q7, Q8).
+//least 1. A ruling of DjamZ (2026-10-04, Q7 and Q8) that fills that silence.
 export function holdAfterReversal(netHits){
   return Math.max(netHits, 1)
 }

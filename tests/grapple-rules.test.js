@@ -35,7 +35,7 @@ describe('reversal', () => {
     expect(isHeldBy(clinch("holder", "b", 2), "b")).toBe(false)
     expect(isHeldBy(clinch("held", "a", 2), "z")).toBe(false)
   })
-  it('gives the new hold the net hits, at least 1 (pending the ruling of DjamZ, Q7-Q8)', () => {
+  it('gives the new hold the net hits, at least 1 (ruling of DjamZ, Q7-Q8)', () => {
     expect(holdAfterReversal(3)).toBe(3)
     expect(holdAfterReversal(0)).toBe(1)
   })
