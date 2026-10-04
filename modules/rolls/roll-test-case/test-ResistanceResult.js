@@ -65,9 +65,11 @@ export default async function resistanceResultInfo(cardData, type){
         ui.notifications.info(`${game.i18n.format("SR5.INFO_StructureGreaterThanDV", {
           structure: cardData.combat.structure, damage: cardData.damage.value
         })}`)
+        // The weapon is not damaged: end the test instead of offering the decrease buttons
+        cardData.roll.netHits = 0
       } else {
-        weapon = await fromUuid(cardData.target.itemUuid)
-        if (weapon.system.accuracy.value <= 3 && weapon.system.reach.value === 0){
+        weapon = cardData.target.itemUuid ? await fromUuid(cardData.target.itemUuid) : null
+        if (!weapon || weapon.system.accuracy.value <= 3 && weapon.system.reach.value === 0){
           applyEffect = false
           label = `${game.i18n.localize("SR5.NoEffectApplicable")}`
         }

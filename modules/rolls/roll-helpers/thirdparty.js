@@ -26,6 +26,16 @@ export function resistanceOwnerMissingWarning(testType) {
   return testType === "ritual" ? "SR5.WARN_RitualLeaderMissing" : "SR5.WARN_ResistanceOwnerMissing"
 }
 
+// Weapons offered to the weapon break dialog (SR5 p. 197). Plain {uuid, name} objects: selectOptions reads
+// valueAttr as a key of each choice, so the select stayed empty with documents and 'this.uuid'.
+export function weaponBreakChoices(actor) {
+  return actor.items
+    .filter(i => i.type === "itemWeapon" && i.system.isActive)
+    .map(i => ({
+      uuid: i.uuid, name: i.name
+    }))
+}
+
 export class SR5_ThirdPartyHelpers {
   /** Handle spirit, sprite or preparation resistance
     * @param {Object} cardData - The origin cardData
@@ -207,7 +217,7 @@ export class SR5_ThirdPartyHelpers {
 
     //Weapon break Resistance
     else if (cardData.test.type === "defense"){
-      let activeWeapons = actor.items.filter(i => i.type === "itemWeapon" && i.system.isActive)
+      let activeWeapons = weaponBreakChoices(actor)
       if (activeWeapons.length === 0) return ui.notifications.warn(game.i18n.localize('SR5.WARN_NoEquippedWeapon'))
 
       let dialogData = {
@@ -244,6 +254,7 @@ export class SR5_ThirdPartyHelpers {
       if (!tpResult || tpResult.action !== "ok") return
       barrierType = tpResult.element.querySelector("[name=barrierType]").value
       weapon = tpResult.element.querySelector("[name=weapon]").value
+      if (!weapon) return ui.notifications.warn(game.i18n.localize('SR5.WARN_NoEquippedWeapon'))
 
       let structure = SR5_ConverterHelpers.barrierTypeToStructure(barrierType)
       let armor = SR5_ConverterHelpers.barrierTypeToArmor(barrierType)
