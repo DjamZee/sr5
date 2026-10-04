@@ -275,10 +275,12 @@ export class SR5_PrepareRollTest {
       //Situational effects (SR5 p. 462, Chrome Flesh p. 160-172): offered as boxes, unticked
       const attributeLabels = Object.fromEntries(Object.entries(SR5.allAttributes).map(([k, v]) => [k, game.i18n.localize(v)]))
       const {
-        offers, always
+        offers, always, scoped
       } = extractSituational(rollData, actor?.situationalEffects || [], rollAttributes(rollData.dicePool.composition, attributeLabels),
         actor?.system?.limits?.[rollData.limit?.type]?.modifiers)
       rollData.situational = offers
+      //Kept for the dialog, which matches them again when the attribute is changed there
+      rollData.situationalScoped = scoped
       if (always.length) rollData.dicePool.modifiers = (rollData.dicePool.modifiers || []).concat(always)
       SR5_RollTest.generateRollDialog(rollData)
     }

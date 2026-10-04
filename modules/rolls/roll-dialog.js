@@ -40,6 +40,9 @@ import {
 import {
   attributeValue, swapLinkedAttribute, skillAttributeTitle, SKILL_ATTRIBUTE_FLAG, syncBackgroundCount, backgroundCountApplies, setDialogWindowTitle
 } from "./roll-helpers/skillAttribute.js"
+import {
+  rollAttributes, attributeTestsState, ROLL_TESTS_TYPE
+} from "./roll-helpers/situational.js"
 
 export default class SR5_RollDialog {
 
@@ -215,6 +218,11 @@ export default class SR5_RollDialog {
     element.querySelectorAll('.SR-ModCheckbox').forEach(el => el.addEventListener('change', ev => this._checkboxModifier(ev, element, dialogData)))
     //Situational effects, ticked by hand (roll-helpers/situational.js)
     element.querySelectorAll('.SR-SituationalCheckbox').forEach(el => el.addEventListener('change', ev => this._situationalModifier(ev, element, dialogData)))
+    //The attribute picked in the dialog brings its "tests linked to" effects (Pushed)
+    element.querySelectorAll('.SR-ModSelect[data-modifier="attribute"]').forEach(el => el.addEventListener('change', ev => {
+      dialogData.secondaryAttribute = ev.target.value
+      this._syncAttributeTests(element, dialogData)
+    }))
     //General commands for select
     element.querySelectorAll('.SR-ModSelect').forEach(el => el.addEventListener('change', ev => this._selectModifiers(ev, element, dialogData)))
     //General commands for select already filled by dialogData
@@ -279,6 +287,7 @@ export default class SR5_RollDialog {
     //The background count follows the attribute in use (Grimoire des Ombres p. 30)
     if (choice.skillKey) syncBackgroundCount(dialogData, actor.system.magic?.bgCount, backgroundCountApplies(choice.skillKey, attributeKey))
     if (choice.keep) this._onKeepSkillAttribute(true, dialogData, actor)
+    this._syncAttributeTests(html, dialogData)
     this.updateDicePoolValue(html)
     this.updateLimitValue(html)
   }
@@ -398,6 +407,30 @@ export default class SR5_RollDialog {
       })
       this.updateDicePoolValue(html)
     }
+  }
+
+  //Effects on "tests linked to an attribute" (Pushed, Chrome Flesh p. 167) follow the attributes in use:
+  //the one paired with the skill (SR5 p. 130) and the secondary one picked in the dialog
+  _syncAttributeTests(html, dialogData){
+    if (!dialogData.situationalScoped?.length) return
+    const labels = Object.fromEntries(Object.entries(SR5.allAttributes).map(([k, v]) => [k, game.i18n.localize(v)]))
+    const attributes = rollAttributes(dialogData.dicePool.composition, labels, dialogData.secondaryAttribute)
+    const {
+      always, visible
+    } = attributeTestsState(dialogData.situationalScoped, attributes)
+    dialogData.dicePool.modifiers = dialogData.dicePool.modifiers.filter(m => !m.type?.startsWith?.(ROLL_TESTS_TYPE)).concat(always)
+    dialogData.situational.forEach((offer, i) => {
+      if (!offer.attribute) return
+      offer.hidden = !visible.includes(offer.index)
+      const box = html.querySelector(`.SR-SituationalCheckbox[data-index="${i}"]`)
+      if (!box) return
+      box.closest('li').style.display = offer.hidden ? 'none' : ''
+      if (offer.hidden && box.checked){
+        box.checked = false
+        dialogData.dicePool.modifiers = dialogData.dicePool.modifiers.filter(m => m.type !== offer.key)
+      }
+    })
+    this.updateDicePoolValue(html)
   }
 
   //Add checkbox modifiers

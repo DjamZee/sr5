@@ -2,7 +2,8 @@ import {
   describe, it, expect 
 } from "vitest"
 import {
-  situationalValue, extractSituational, rollAttributes, isRollTestsTarget, SITUATIONAL_PREFIX
+  situationalValue, extractSituational, rollAttributes, isRollTestsTarget, SITUATIONAL_PREFIX,
+  attributeTestsState, situationalReadable, attributeRedirect
 } from "../modules/rolls/roll-helpers/situational.js"
 
 const labels = {
@@ -137,7 +138,7 @@ describe("situational effects (SR5 p. 462, Chrome Flesh p. 160-172)", () => {
     }], labels)
     expect(logicRoll).toEqual(["logic"])
     expect(extractSituational(roll(), pushed, logicRoll).always).toEqual([{
-      type: "rollTests", label: "Pushed", value: 1 
+      type: "rollTests_0", label: "Pushed", value: 1
     }])
     // Counter-test: a Body roll does not get it
     const bodyRoll = rollAttributes([{
@@ -159,6 +160,65 @@ describe("situational effects (SR5 p. 462, Chrome Flesh p. 160-172)", () => {
     expect(extractSituational(roll(), [{
       ...heat[0], situational: false 
     }], []).always).toEqual([])
+  })
+
+  it("follows the attribute picked in the dialog (Nina, point 1)", () => {
+    const effects = [{
+      source: "Pushed", value: 1, scope: "logic", situational: false
+    }, {
+      source: "Qualia", value: 1, scope: "intuition", situational: true, when: "x"
+    }]
+    // Skill rolled by its name: no attribute in the pool when the dialog opens
+    const opened = extractSituational(roll(), effects, rollAttributes([], labels))
+    expect(opened.always).toEqual([])
+    const qualia = opened.offers.find(o => o.attribute === "intuition")
+    expect(qualia.hidden).toBe(true)
+    // Logic picked in the select: Pushed comes in
+    let state = attributeTestsState(opened.scoped, rollAttributes([], labels, "logic"))
+    expect(state.always).toEqual([{
+      type: "rollTests_0", label: "Pushed", value: 1
+    }])
+    expect(state.visible).toEqual([])
+    // Intuition instead: Pushed goes, Qualia's box shows
+    state = attributeTestsState(opened.scoped, rollAttributes([], labels, "intuition"))
+    expect(state.always).toEqual([])
+    expect(state.visible).toEqual([1])
+    // Counter-test: "none" brings nothing
+    expect(attributeTestsState(opened.scoped, rollAttributes([], labels, "none")).always).toEqual([])
+  })
+
+  it("offers the box only for targets a roll reads, and turns an attribute into its tests (Nina, point 2)", () => {
+    expect(situationalReadable("system.skills.gymnastics.test")).toBe(true)
+    expect(situationalReadable("system.limits.physicalLimit")).toBe(true)
+    expect(situationalReadable("system.resistances.toxin.inhalation")).toBe(true)
+    expect(situationalReadable("system.defenses.dodge")).toBe(true)
+    expect(situationalReadable("system.rollTests.anyRoll")).toBe(true)
+    expect(situationalReadable("system.attributes.logic.augmented")).toBe(true)
+    // Counter-tests: nothing reads these in a roll dialog
+    expect(situationalReadable("system.initiatives.physicalInit.dice")).toBe(false)
+    expect(situationalReadable("system.conditionMonitors.physical")).toBe(false)
+    expect(situationalReadable("system.itemsProperties.armor")).toBe(false)
+    expect(situationalReadable("system.movements.walk.multiplier")).toBe(false)
+    expect(situationalReadable("system.skills.gymnastics.rating")).toBe(false)
+    expect(attributeRedirect("system.attributes.logic.augmented")).toBe("logic")
+    expect(attributeRedirect("system.attributes.logic.natural")).toBe("logic")
+    expect(attributeRedirect("system.skills.gymnastics.test")).toBeNull()
+  })
+
+  it("drops a marker that names another item than the effect at its place (Nina, point 4)", () => {
+    const r = roll({
+      modifiers: [{
+        type: `${SITUATIONAL_PREFIX}0`, label: "Objet du rigger", value: 0
+      }]
+    })
+    const {
+      offers 
+    } = extractSituational(r, [{
+      source: "Objet du drone", value: 2, situational: true
+    }], [])
+    expect(offers).toEqual([])
+    // The marker still leaves the pool
+    expect(r.dicePool.modifiers).toEqual([])
   })
 
   it("recognises the roll-wide targets", () => {

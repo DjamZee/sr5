@@ -17,7 +17,7 @@ import {
   augmentationCapExcess
 } from "./augmentationCap.js"
 import {
-  situationalValue, isRollTestsTarget, ROLL_TESTS_PREFIX, SITUATIONAL_PREFIX
+  situationalValue, isRollTestsTarget, ROLL_TESTS_PREFIX, SITUATIONAL_PREFIX, attributeRedirect, situationalReadable
 } from "../../rolls/roll-helpers/situational.js"
 import {
   SR5Combat 
@@ -4861,6 +4861,18 @@ export class SR5_CharacterUtility extends Actor {
     if (isRollTestsTarget(customEffect.target)) {
       effect.scope = customEffect.target.slice(ROLL_TESTS_PREFIX.length)
       actor.situationalEffects.push(effect)
+      return
+    }
+    // No roll reads an attribute's modifiers: a situational effect on one goes to the tests linked to it
+    let attribute = attributeRedirect(customEffect.target)
+    if (attribute) {
+      effect.scope = attribute
+      actor.situationalEffects.push(effect)
+      return
+    }
+    // A target no roll dialog reads: the item sheet warns about it, nothing is applied
+    if (!situationalReadable(customEffect.target)) {
+      SR5_SystemHelpers.srLog(2, `Situational effect of '${item.name}' on '${customEffect.target}', which no roll reads`)
       return
     }
     let targetObject = SR5_EntityHelpers.resolveObjectPath(customEffect.target, actor)

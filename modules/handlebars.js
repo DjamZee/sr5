@@ -7,8 +7,16 @@ import {
 import {
   SR5_EntityHelpers 
 } from "./entities/helpers.js"
+import {
+  situationalReadable
+} from "./rolls/roll-helpers/situational.js"
 
 export const registerHandlebarsHelpers = function () {
+
+  // Whether a roll dialog reads this effect target, so that a situational effect on it is offered
+  Handlebars.registerHelper("situationalReadable", function (target) {
+    return situationalReadable(target)
+  })
 
   // if equal
   Handlebars.registerHelper("ife", function (v1, v2, options) {

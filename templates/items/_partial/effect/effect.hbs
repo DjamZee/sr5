@@ -568,14 +568,19 @@
 					</div>
 				</div>
 
-				{{#if (or (eq type 'value') (eq type 'rating') (eq type 'hits'))}}
-				<!-- SITUATIONAL (SR5 p. 462, Chrome Flesh p. 160-172): offered in the roll dialog instead of applied -->
+				{{#if (and (or (eq type 'value') (eq type 'rating') (eq type 'hits')) (or situational (situationalReadable target)))}}
+				<!-- SITUATIONAL (SR5 p. 462, Chrome Flesh p. 160-172): offered in the roll dialog instead of applied,
+				     only for the targets a roll dialog reads -->
 				<div class="col-3 SR-PaddingRight5" data-title="{{localize 'SR5.SituationalEffectHint'}}">
 					<label><input type="checkbox" name="system.customEffects.{{@key}}.situational" data-dtype="Boolean" {{checked situational}}> {{localize 'SR5.SituationalEffect'}}</label>
 				</div>
 				<div class="col-9">
 					{{#if situational}}
-					<input type="text" data-dtype="String" name="system.customEffects.{{@key}}.when" value="{{when}}" placeholder="{{localize 'SR5.SituationalWhen'}}">
+						{{#if (situationalReadable target)}}
+						<input type="text" data-dtype="String" name="system.customEffects.{{@key}}.when" value="{{when}}" placeholder="{{localize 'SR5.SituationalWhen'}}">
+						{{else}}
+						<span class="SR-AlertColor">{{localize 'SR5.SituationalUnread'}}</span>
+						{{/if}}
 					{{/if}}
 				</div>
 				{{/if}}
