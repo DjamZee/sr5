@@ -10,6 +10,9 @@ import {
 import {
   fillStatuses
 } from "../modules/entities/actors/actor-statuses.js"
+import {
+  SR5Actor
+} from "../modules/entities/actors/entityActor.js"
 
 // Ultrasound sees "people hidden by an Invisibility spell" (SR5 p. 449). In Foundry, that is the
 // work of a detection mode built on seeInvisibility : it only ever detects a token carrying the
@@ -47,6 +50,21 @@ describe("Ultrason et invisibilité (SR5 p. 449, p. 294)", () => {
       },
     ])
     expect([...statuts]).toEqual(["invisible"])
+  })
+
+  it("un acteur du système lit ses états au moment où on les demande", () => {
+    // The synthetic actor of an unlinked token is prepared before its delta effects are attached :
+    // statuses filled at preparation stayed empty after a reload
+    const acteur = new SR5Actor()
+    const effets = []
+    acteur.allApplicableEffects = function* () {
+      yield* effets
+    }
+    expect([...acteur.statuses]).toEqual([])
+    effets.push({
+      active: true, statuses: new Set(["invisible"])
+    })
+    expect([...acteur.statuses]).toEqual(["invisible"])
   })
 
   it("la vision ordinaire voit un jeton sans état particulier", () => {

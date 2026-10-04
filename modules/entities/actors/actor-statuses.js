@@ -15,3 +15,21 @@ export function fillStatuses(statuses, effects) {
   }
   return statuses
 }
+
+/**
+ * Make actor.statuses read the effects at the moment it is asked, instead of when the actor is prepared.
+ * Filling it in prepareData was not enough : the synthetic actor of an unlinked token is prepared before
+ * the effects of its delta are attached, and after a reload its statuses stayed empty although the effect
+ * was there (an invisible grunt seen by all, a dead one no longer defeated).
+ * @param {Actor} actor
+ */
+export function installLiveStatuses(actor) {
+  const statuses = new Set()
+  Object.defineProperty(actor, "statuses", {
+    configurable: true,
+    get: () => fillStatuses(statuses, actor.allApplicableEffects?.()),
+    //The core only ever fills the set it is given, it never replaces it
+    set: () => {
+    }
+  })
+}

@@ -29,7 +29,7 @@ import {
   SR5_EffectArea
 } from "../../system/effectArea.js"
 import {
-  fillStatuses
+  installLiveStatuses
 } from "./actor-statuses.js"
 import {
   SR5_ActorHelper
@@ -46,6 +46,12 @@ import {
  */
 
 export class SR5Actor extends Actor {
+
+  constructor(...args) {
+    super(...args)
+    //The core fills statuses in applyActiveEffects, which this system never calls : hasStatusEffect reads them
+    installLiveStatuses(this)
+  }
 
   /** Overide Actor's create Dialog to hide certain type and sort them alphabetically*/
   static async createDialog(data={
@@ -362,8 +368,6 @@ export class SR5Actor extends Actor {
     if (!this.img) this.img = CONST.DEFAULT_TOKEN
     if (!this.name) this.name = "[" + game.i18n.localize("SR5.New") + "]" + this.documentName
     this.prepareBaseData()
-    //What the core would have filled in applyActiveEffects, which is never called here : hasStatusEffect reads it
-    fillStatuses(this.statuses, this.allApplicableEffects())
     this.prepareEmbeddedDocuments() // first pass on items to add bonuses from the items to the characters
     this.prepareDerivedData()
     this.sortLists(this.system)
