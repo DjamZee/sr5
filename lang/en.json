@@ -819,6 +819,8 @@
 	"SR5.CS_Subdue": "Subdue (grappling)",
 	"SR5.GrappleApplyClinch": "Clinch (hold: {hold})",
 	"SR5.GrappleApplyHold": "Pin down (hold: {hold})",
+	"SR5.GrappleApplyReversal": "Reverse the situation (hold: {hold})",
+	"SR5.GrappleReversed": "Situation reversed: {holder} now holds {held} (hold: {hold}). To break free: Escape, threshold {hold} (Run & Gun p. 126).",
 	"SR5.GrappleClinch": "Clinch",
 	"SR5.GrappleClinchPenalty": "Clinch (Run & Gun p. 133)",
 	"SR5.GrappleClinchTaken": "{holder} clinches {held} (hold: {hold}). To break free: Escape, threshold {hold}. {holder} has the superior position; Reach cancelled between them; melee weapons: penalty equal to their Reach, firearms: penalty of {hold}; they only move together, 2 m per action (Run & Gun p. 133).",

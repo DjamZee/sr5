@@ -58,12 +58,29 @@ export function holdKindOn(effects, targetId){
 //The grappling entries of the attack list. Subduing is a rule of the core book (SR5 p. 195) and the
 //holder's options come with it : offered with the grappling rules, whether or not the called shot rules are.
 //Run & Gun p. 134 : a clinch opens the way to subduing. Projecting the held fighter to the ground stays
-//the knockdown called shot (SR5 p. 196).
+//the knockdown called shot (SR5 p. 196). Run & Gun p. 126 : the fighter held by the target may reverse the
+//situation, a melee attack that asks for the martial arts technique, as the called shot already does.
 export function grapplingCalledShots({
-  unarmed, holdKind
+  unarmed, holdKind, heldByTarget = false, canReverse = false, melee = unarmed
 }){
-  if (!unarmed) return []
-  return holdKind === "subdue" ? ["strengthenHold"] : ["subdue"]
+  const keys = []
+  if (unarmed) keys.push(holdKind === "subdue" ? "strengthenHold" : "subdue")
+  if (melee && heldByTarget && canReverse) keys.push("reversal")
+  return keys
+}
+
+//The actor is held by this target
+export function isHeldBy(effects, targetId){
+  const data = grappleHoldOf(effects)
+  return !!targetId && data?.role === "held" && data.partner === targetId
+}
+
+//Run & Gun p. 126 : after a reversal the roles are swapped, and Run & Gun p. 148-149 (Contre-prise) lets a successful
+//escape count as one. The book does not say what the new hold is worth. The one place to change it: the net hits of
+//the test (the reversal, or the escape above its threshold), as every other hold (SR5 p. 195, Run & Gun p. 133), at
+//least 1. Pending the ruling of DjamZ (Q7, Q8).
+export function holdAfterReversal(netHits){
+  return Math.max(netHits, 1)
 }
 
 //Run & Gun p. 133 (Saisie) : Agility + Gymnastics [Physical] against Reaction + Intuition, the hold is the net hits

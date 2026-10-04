@@ -32,7 +32,7 @@ import {
   SR5_UtilityItem
 } from "../../entities/items/utilityItem.js"
 import {
-  grapplingCalledShots, holdKindOn, clinchAttackPenalty, clinchCancelsReach
+  grapplingCalledShots, holdKindOn, clinchAttackPenalty, clinchCancelsReach, isHeldBy
 } from "../roll-helpers/grapple-rules.js"
 
 //Add info for weapon Roll
@@ -231,6 +231,9 @@ function _addGrapplingCalledShots(rollData, actor){
   const keys = grapplingCalledShots({
     unarmed: rollData.combat.weaponType === "unarmedCombat",
     holdKind: holdKindOn(actor.effects, rollData.target.actorId),
+    melee: rollData.test.typeSub === "meleeWeapon",
+    heldByTarget: isHeldBy(actor.effects, rollData.target.actorId),
+    canReverse: !!rollData.combat.calledShot.martialArts.reversal,
   })
   if (!keys.length) return
   if (!rollData.systemRules.calledShots) {
@@ -246,6 +249,7 @@ function _addGrapplingCalledShots(rollData, actor){
 const GRAPPLING_CALLED_SHOT_LABELS = {
   subdue: "SR5.CS_Subdue",
   strengthenHold: "SR5.CS_StrengthenHold",
+  reversal: "SR5.CS_Reversal",
 }
 
 

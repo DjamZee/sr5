@@ -87,6 +87,26 @@ export class SR5_GrappleHelpers {
     ui.notifications.warn(game.i18n.localize(message.data.key))
   }
 
+  //Run & Gun p. 126 : the held fighter reverses the situation, and the roles are swapped in a hold of the same kind
+  static async reverseHold(reverserId, hold){
+    if (!game.user.isGM) return SR5_SocketHandler.emitForGM("grappleReverseHold", {
+      reverserId, hold
+    })
+    const reverser = SR5_EntityHelpers.getRealActorFromID(reverserId)
+    const data = grappleHoldOf(reverser?.effects)
+    if (data?.role !== "held") return
+    const formerHolder = SR5_EntityHelpers.getRealActorFromID(data.partner)
+    await Promise.all([reverser, formerHolder].map(a => deleteGrappleEffectOnce(a, PENDING_DELETIONS, data.holdId)))
+    const holdId = foundry.utils.randomID()
+    await reverser.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(data.kind, "holder", data.partner, hold, holdId)])
+    await formerHolder.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(data.kind, "held", reverserId, hold, holdId)])
+    await SR5_GrappleHelpers.postHoldCard(reverserId, data.partner, hold, "SR5.GrappleReversed")
+  }
+
+  static async _socketReverseHold(message){
+    await SR5_GrappleHelpers.reverseHold(message.data.reverserId, message.data.hold)
+  }
+
   //SR5 p. 196 : the hold strengthened or weakened, written on both fighters; actorId is either of them
   static async setHold(actorId, hold){
     if (!game.user.isGM) return SR5_SocketHandler.emitForGM("grappleSetHold", {

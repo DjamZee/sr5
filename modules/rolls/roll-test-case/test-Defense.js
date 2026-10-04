@@ -23,7 +23,7 @@ import {
   SR5_PrepareRollTest 
 } from "../roll-prepare.js"
 import {
-  subdueTakesHold, strengthenedHold, grappleHoldOf
+  subdueTakesHold, strengthenedHold, grappleHoldOf, isHeldBy, holdAfterReversal
 } from "../roll-helpers/grapple-rules.js"
 
 export default async function defenseInfo(cardData, actorId){
@@ -231,7 +231,17 @@ async function handleCalledShotDefenseInfo(cardData, actorData){
       } else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.GrappleNoHold"))
       break
     case "reversal":
-      cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize('SR5.ReversedSituation'))
+      //Grappling rules: the fighter held by the defender swaps the roles with them (Run & Gun p. 126)
+      if (game.settings.get("sr5", "sr5GrapplingRules") && isHeldBy(attacker.effects, cardData.owner.speakerId)) {
+        const hold = holdAfterReversal(cardData.roll.netHits)
+        cardData.combat.calledShot.effects = [{
+          name: "reversal", value: hold
+        }]
+        cardData.chatCard.buttons.calledShotEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "calledShotEffect", game.i18n.format("SR5.GrappleApplyReversal", {
+          hold
+        }))
+      }
+      else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize('SR5.ReversedSituation'))
       break
     case "onPinsAndNeedles":
       cardData.chatCard.buttons.calledShotEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "calledShotEffect",`${game.i18n.localize("SR5.ApplyEffect")}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize(SR5.calledShotsEffects[cardData.combat.calledShot.name])}`)

@@ -360,6 +360,11 @@ export class SR5_RollMessage {
           const hold = Object.values(messageData.combat.calledShot.effects).find(e => e.name === "strengthenHold")?.value ?? 0
           await SR5_GrappleHelpers.setHold(SR5_GrappleHelpers.actorIdOf(actor), hold)
         }
+        //Run & Gun p. 126: the attacker who reversed the situation becomes the one who holds
+        else if (messageData.combat.calledShot.name === "reversal" && Object.values(messageData.combat.calledShot.effects).some(e => e.name === "reversal")) {
+          const hold = Object.values(messageData.combat.calledShot.effects).find(e => e.name === "reversal").value
+          await SR5_GrappleHelpers.reverseHold(messageData.previousMessage.actorId, hold)
+        }
         else if (messageData.combat.calledShot.name === "trickShot") await originalActionActor.applyCalledShotsEffect(messageData)
         else await actor.applyCalledShotsEffect(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)

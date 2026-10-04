@@ -819,6 +819,8 @@
 	"SR5.CS_Subdue": "Maîtriser (lutte)",
 	"SR5.GrappleApplyClinch": "Saisir (prise : {hold})",
 	"SR5.GrappleApplyHold": "Immobiliser (prise : {hold})",
+	"SR5.GrappleApplyReversal": "Renverser la situation (prise : {hold})",
+	"SR5.GrappleReversed": "Situation renversée : {holder} tient désormais {held} (prise : {hold}). Pour se libérer : Évasion, seuil {hold} (Run & Gun p. 126).",
 	"SR5.GrappleClinch": "Saisie",
 	"SR5.GrappleClinchPenalty": "Saisie (Run & Gun p. 133)",
 	"SR5.GrappleClinchTaken": "{holder} saisit {held} (prise : {hold}). Pour se libérer : Évasion, seuil {hold}. {holder} a la position avantageuse ; Allonge annulée entre eux ; armes de mêlée : malus égal à leur Allonge, armes à feu : malus de {hold} ; ils ne se déplacent qu'ensemble, de 2 m par action (Run & Gun p. 133).",

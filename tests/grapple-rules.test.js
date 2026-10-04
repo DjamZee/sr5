@@ -5,8 +5,41 @@ import {
 import {
   subdueTakesHold, grappleHoldOf, grappleEscapeThreshold, canStartHold,
   strengthenedHold, holdsTarget, isSubdued, grapplingCalledShots, crushDamage,
-  clinchTakesHold, clinchAttackPenalty, clinchCancelsReach, holdReplacesClinch, holdKindOn
+  clinchTakesHold, clinchAttackPenalty, clinchCancelsReach, holdReplacesClinch, holdKindOn,
+  isHeldBy, holdAfterReversal
 } from '../modules/rolls/roll-helpers/grapple-rules.js'
+
+// Run & Gun p. 126 and 138, Renversement de situation; p. 148-149, Contre-prise
+describe('reversal', () => {
+  it('is offered to the fighter held by the target, with the technique, in melee', () => {
+    expect(grapplingCalledShots({
+      unarmed: true, holdKind: null, heldByTarget: true, canReverse: true
+    })).toEqual(["subdue", "reversal"])
+    expect(grapplingCalledShots({
+      unarmed: false, melee: true, holdKind: null, heldByTarget: true, canReverse: true
+    })).toEqual(["reversal"])
+  })
+  it('is not offered without the technique, outside a hold, or at range', () => {
+    expect(grapplingCalledShots({
+      unarmed: true, holdKind: null, heldByTarget: true, canReverse: false
+    })).toEqual(["subdue"])
+    expect(grapplingCalledShots({
+      unarmed: true, holdKind: null, heldByTarget: false, canReverse: true
+    })).toEqual(["subdue"])
+    expect(grapplingCalledShots({
+      unarmed: false, melee: false, holdKind: null, heldByTarget: true, canReverse: true
+    })).toEqual([])
+  })
+  it('knows who is held by whom', () => {
+    expect(isHeldBy(clinch("held", "a", 2), "a")).toBe(true)
+    expect(isHeldBy(clinch("holder", "b", 2), "b")).toBe(false)
+    expect(isHeldBy(clinch("held", "a", 2), "z")).toBe(false)
+  })
+  it('gives the new hold the net hits, at least 1 (pending the ruling of DjamZ, Q7-Q8)', () => {
+    expect(holdAfterReversal(3)).toBe(3)
+    expect(holdAfterReversal(0)).toBe(1)
+  })
+})
 
 const clinch = (role, partner, hold) => [{
   flags: {

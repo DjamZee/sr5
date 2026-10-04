@@ -5,7 +5,7 @@ import {
   SR5_CombatHelpers 
 } from "../roll-helpers/combat.js"
 import {
-  clinchCancelsReach
+  clinchCancelsReach, holdsTarget
 } from "../roll-helpers/grapple-rules.js"
 
 //Add info for Defense Roll
@@ -158,6 +158,14 @@ async function handleMeleeWeaponModifiers(rollData, actor, chatData){
   //Run & Gun p. 133 (Saisie): the Reach of both fighters is cancelled between them (grappling rules only)
   if (globalThis.game?.settings?.get?.("sr5", "sr5GrapplingRules") && clinchCancelsReach(actor.effects, chatData.owner.actorId)) reach = 0
   rollData.combat.reach = reach
+  //Run & Gun p. 126: against a reversal, the one who holds keeps the superior position (+2, SR5 p. 188)
+  if (globalThis.game?.settings?.get?.("sr5", "sr5GrapplingRules") && chatData.combat.calledShot?.name === "reversal" && holdsTarget(actor.effects, chatData.owner.actorId)){
+    rollData.dicePool.modifiers.push({
+      type: "defenseSuperiorPosition",
+      label: game.i18n.localize("SR5.AttackModSuperiorPosition"),
+      value: 2,
+    })
+  }
   if (reach !== 0){
     rollData.dicePool.modifiers.push({
       type: "reach", 
