@@ -29,7 +29,7 @@ import {
   SR5_MatrixHelpers 
 } from "./roll-helpers/matrix.js"
 import {
-  isRolledByTarget, firstAidPatient, patientMonitors, hasSingleMonitor, opposedTestActorId
+  isRolledByTarget, firstAidPatient, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick
 } from "./roll-helpers/cardRoller.js"
 import {
   SR5_CombatHelpers 
@@ -277,11 +277,13 @@ export class SR5_RollMessage {
         //SR5 p. 207: the patient is healed, never the card owner
         let patient = firstAidPatient(messageData.target.hasTarget, targetActor, actor)
         if (!patient) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+        //SR5 p. 207: without a target, the full armor of the patient selected on click halves the effects here
+        let healed = firstAidBoxesOnClick(messageData, patient)
         let healData = {
           test: {
           },
           roll:{
-            netHits: messageData.roll.netHits
+            netHits: healed.boxes
           },
         }
         //The monitor to heal follows what the patient has: asked between Physical and Stun, or its single condition monitor
@@ -296,6 +298,9 @@ export class SR5_RollMessage {
         if (monitors.length > 1) healData.test.typeSub = await SR5_CombatHelpers.chooseDamageType()
         else healData.test.typeSub = monitors[0]
         if (!healData.test.typeSub) return
+        if (healed.halvedOnClick) ui.notifications.info(game.i18n.format("SR5.INFO_FirstAidFullArmor", {
+          name: patient.name, hits: healed.boxes
+        }))
         let healedID = (patient.isToken ? patient.token.id : patient.id)
         if (healLocally) await SR5_ActorHelper.heal(healedID, healData)
         else await SR5_SocketHandler.emitForGM("heal", {

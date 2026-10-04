@@ -2,7 +2,7 @@ import {
   describe, it, expect
 } from 'vitest'
 import {
-  wearsFullArmor, firstAidHealedBoxes
+  wearsFullArmor, firstAidHealedBoxes, firstAidBoxesOnClick
 } from '../modules/rolls/roll-helpers/cardRoller.js'
 
 const armor = (isActive, isFullArmor) => ({
@@ -48,5 +48,41 @@ describe('firstAidHealedBoxes', () => {
   })
   it('heals nothing at or under the threshold', () => {
     expect(firstAidHealedBoxes(2, 2, 6, true)).toBe(0)
+  })
+})
+
+// Without a target the patient is selected on click: the halving happens there
+describe('firstAidBoxesOnClick', () => {
+  const inArmor = {
+    items: [armor(true, true)]
+  }
+  const card = (hasTarget, hits, netHits, firstAidCap) => ({
+    target: {
+      hasTarget
+    }, roll: {
+      hits, netHits, firstAidCap
+    }
+  })
+  it('halves for a selected patient in full armor (4 hits: 2 over the threshold, 1 healed)', () => {
+    expect(firstAidBoxesOnClick(card(false, 4, 2, 6), inArmor)).toEqual({
+      boxes: 1, halvedOnClick: true
+    })
+  })
+  it('halves before the cap on click', () => {
+    expect(firstAidBoxesOnClick(card(false, 10, 3, 3), inArmor).boxes).toBe(3)
+    expect(firstAidBoxesOnClick(card(false, 8, 6, 6), inArmor).boxes).toBe(3)
+  })
+  it('keeps the card value without full armor', () => {
+    expect(firstAidBoxesOnClick(card(false, 4, 2, 6), {
+      items: []
+    })).toEqual({
+      boxes: 2, halvedOnClick: false
+    })
+  })
+  it('never halves twice a targeted card', () => {
+    expect(firstAidBoxesOnClick(card(true, 4, 1, 6), inArmor).boxes).toBe(1)
+  })
+  it('keeps the value of a card rolled before the cap was stored', () => {
+    expect(firstAidBoxesOnClick(card(false, 4, 2, undefined), inArmor).boxes).toBe(2)
   })
 })

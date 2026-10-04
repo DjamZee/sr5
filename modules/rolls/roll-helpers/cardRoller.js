@@ -50,6 +50,19 @@ export function firstAidHealedBoxes(hits, threshold, skillRating, fullArmor) {
   return Math.min(boxes, skillRating)
 }
 
+// The boxes a first aid card heals on click (SR5 p. 207). With a target, the halving was done on the roll.
+// Without one, the patient is only known now: the hits are recomputed, halved through a full armor, then capped.
+// A card rolled before the cap was stored keeps its value.
+export function firstAidBoxesOnClick(messageData, patient) {
+  let boxes = messageData.roll.netHits
+  if (messageData.target.hasTarget || messageData.roll.firstAidCap === undefined || !wearsFullArmor(patient)) return {
+    boxes, halvedOnClick: false
+  }
+  return {
+    boxes: firstAidHealedBoxes(messageData.roll.hits, 2, messageData.roll.firstAidCap, true), halvedOnClick: true
+  }
+}
+
 // True when the patient has a single condition monitor: no damage type to ask for
 export function hasSingleMonitor(patient) {
   let monitors = patientMonitors(patient)

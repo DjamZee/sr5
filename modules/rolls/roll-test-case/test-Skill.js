@@ -105,7 +105,9 @@ export default async function skillInfo(cardData){
         })}`)
       } else if (cardData.roll.hits > 2) {
         //SR5 p. 207: a targeted patient in full armor halves the effects, before the skill rating cap
+        //Without a target the patient is only known on click: the cap is kept for the halving done there (roll-message.js)
         let fullArmor = wearsFullArmor(targetActor)
+        cardData.roll.firstAidCap = actorData.skills.firstAid.rating.value
         cardData.roll.netHits = firstAidHealedBoxes(cardData.roll.hits, 2, actorData.skills.firstAid.rating.value, fullArmor)
         if (cardData.target.hasTarget) cardData.chatCard.buttons.firstAid = SR5_RollMessage.generateChatButton("nonOpposedTest", "firstAid", `${game.i18n.format(fullArmor ? 'SR5.FirstAidButtonFullArmor' : 'SR5.FirstAidButton', {
           hits: cardData.roll.netHits

@@ -1776,6 +1776,7 @@
 	"SR5.IncludeSpecializationBonus": "Include Specialization Bonus",
 	"SR5.IncreaseOverwatch": "Increase {name} overwatch score by {score}",
 	"SR5.InfectedAttributesShort": "Inf.",
+	"SR5.INFO_FirstAidFullArmor": "{name} wears a full armor: first aid effects halved, {hits} box(es) healed.",
 	"SR5.INFO_AcidAlready": "is already suffering from acid damage.",
 	"SR5.INFO_AcidReduceArmor": "acide reduce {armor} armor rating by 1.",
 	"SR5.INFO_ActorDoMatrixDamage": "inflict {damageValue} matrix dammage to",
