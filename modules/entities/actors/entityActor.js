@@ -871,8 +871,9 @@ export class SR5Actor extends Actor {
           break
         case "itemPreparation":
           i.prepareData()
-          // SR5 p. 307: same area as the spell; without it, its template was drawn with a radius of 0
-          SR5_UtilityItem._handleSpellRange(iData, actorData.specialAttributes.magic.augmented.value)
+          // SR5 p. 307: an area like the spell's, without which its template was drawn with a radius of 0.
+          // SR5 p. 309: the preparation's Force stands for the Magic, and an area's radius is its Potency
+          SR5_UtilityItem._handleSpellRange(iData, parseInt(iData.force || 0), iData.potency || 0)
           break
         case "itemSpirit":
           if (iData.isBounded){

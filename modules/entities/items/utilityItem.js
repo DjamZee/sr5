@@ -1412,10 +1412,15 @@ export class SR5_UtilityItem extends Actor {
   //Spell area and detection range (SR5 p. 287): Force × caster's Magic metres, × 10 when extended.
   //Called from the actor's second pass on items, once the caster's Magic is computed:
   //in the first pass, magic.augmented.value is still 0.
-  static _handleSpellRange(itemData, magic) {
+  //A preparation passes its Force as magic and its Potency as areaRadius (SR5 p. 309): its Force stands for
+  //the Magic, and an area preparation's radius is its Potency in metres.
+  static _handleSpellRange(itemData, magic, areaRadius = null) {
     itemData.spellAreaOfEffect.base = 0
     itemData.spellAreaOfEffect.modifiers = []
-    if (itemData.range === "area" || itemData.category === "detection"){
+    if (areaRadius !== null && itemData.category !== "detection"){
+      if (itemData.range === "area") SR5_EntityHelpers.updateModifier(itemData.spellAreaOfEffect, game.i18n.localize('SR5.PreparationPotency'), "spell", parseInt(areaRadius || 0), false, true)
+    }
+    else if (itemData.range === "area" || itemData.category === "detection"){
       SR5_EntityHelpers.updateModifier(itemData.spellAreaOfEffect, game.i18n.localize('SR5.SpellForce'), "spell", parseInt(itemData.force || 0), false, true)
     }
     //Range for detection spell

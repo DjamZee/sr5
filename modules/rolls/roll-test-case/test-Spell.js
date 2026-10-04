@@ -65,7 +65,9 @@ export default async function spellInfo(cardData){
     }
 			
     //Handle spell Area
-    if (cardData.magic.spell.range === "area"){
+    // A preparation's area is read from the item, where its Potency and Force take the place of the caster's (SR5 p. 309)
+    if (cardData.magic.spell.range === "area" && cardData.test.type === "preparation") cardData.magic.spell.area += item.system.spellAreaOfEffect.value
+    else if (cardData.magic.spell.range === "area"){
       cardData.magic.spell.area += cardData.magic.force
       if (item.system.category === "detection") {
         if (item.system.spellAreaExtended === true) cardData.magic.spell.area = cardData.magic.spell.area * actorData.specialAttributes.magic.augmented.value * 10
