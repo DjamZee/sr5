@@ -708,7 +708,9 @@ export class SR5_RollMessage {
           messageData.chatCard.buttons.resistanceCard = SR5_RollMessage.generateChatButton("nonOpposedTest","resistanceCard",label)
           messageData.damage.resistanceType = "physicalDamage"
           let oldMessage = game.messages.get(messageData.previousMessage.messageId)
-          if (oldMessage) await oldMessage.delete()
+          // With no GM the player updates the card themselves (updatesCardLocally), and the previous card may not be
+          // theirs: Foundry refused the delete and the escape button was never added. That card then stays.
+          if (oldMessage?.canUserModify(game.user, "delete")) await oldMessage.delete()
           //Escape engulf
           messageData.chatCard.buttons.escapeEngulf = SR5_RollMessage.generateChatButton("nonOpposedTest","escapeEngulf", game.i18n.localize("SR5.EscapeEngulfAttempt"))
           messageData.previousMessage.messageId = message.id
