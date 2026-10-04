@@ -73,4 +73,14 @@ describe('SR5.calledShotsMartialArts', () => {
     expect(SR5.calledShotsMartialArts.knockdown).toBe('SR5.CS_Knockdown')
     expect(SR5.calledShotsMartialArts.shakeUp).toBe('SR5.CS_ShakeUp')
   })
+
+  // Percussion (Run & Gun p. 151) lowers Blast Out of Hand, Randori (p. 151) Dirty Trick or Vitals
+  it('offers Blast Out of Hand, Dirty Trick and Vitals to technique modifiers', async () => {
+    const {
+      SR5
+    } = await import('../modules/config.js')
+    expect(SR5.calledShotsMartialArts.blastOutOfHand).toBe('SR5.CS_BlastOutOfHand')
+    expect(SR5.calledShotsMartialArts.dirtyTrick).toBe('SR5.CS_DirtyTrick')
+    expect(SR5.calledShotsMartialArts.vitals).toBe('SR5.CS_Vitals')
+  })
 })

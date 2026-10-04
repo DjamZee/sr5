@@ -2039,7 +2039,9 @@ SR5.martialArtsTypes = {
 }
 
 SR5.calledShotsMartialArts = {
+  blastOutOfHand        : "SR5.CS_BlastOutOfHand",
   breakWeapon				  : "SR5.CS_BreakWeapon",
+  dirtyTrick            : "SR5.CS_DirtyTrick",
   disarm 					  : "SR5.CS_Disarm",
   entanglement			  : "SR5.CS_Entanglement",
   feint					  : "SR5.CS_Feint",
@@ -2047,6 +2049,7 @@ SR5.calledShotsMartialArts = {
   pin 					  : "SR5.CS_Pin",
   reversal              : "SR5.CS_Reversal",
   shakeUp               : "SR5.CS_ShakeUp",
+  vitals                : "SR5.CS_Vitals",
 }
 
 //-----------------------------------//
