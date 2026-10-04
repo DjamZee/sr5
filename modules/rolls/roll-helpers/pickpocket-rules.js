@@ -33,11 +33,10 @@ export const PERCEPTION_SITUATIONS = {
   diversion: -2,
 }
 
-//The concealability of an object, as the observer's pool takes it (SR5 p. 422). Only weapons get
-//their value worked out; on other gear it stays 0 next to the base typed on the sheet
+//The concealability of an object, as the observer's pool takes it (SR5 p. 422). Every object that
+//has one works its value out (base plus modifiers), so a modifier that brings it to 0 counts as 0
 export function concealmentOf(item) {
-  const concealment = item?.system?.concealment
-  return Number(concealment?.value) || Number(concealment?.base) || 0
+  return Number(item?.system?.concealment?.value) || 0
 }
 
 /**

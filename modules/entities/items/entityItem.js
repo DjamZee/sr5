@@ -154,6 +154,7 @@ export class SR5Item extends Item {
         SR5_UtilityItem._handleItemPrice(itemData)
         SR5_UtilityItem._handleItemAvailability(itemData)
         if (Object.keys(itemData.itemEffects).length) SR5_UtilityItem.applyItemEffects(item)
+        SR5_UtilityItem._handleItemConcealment(itemData)
         SR5_UtilityItem._handleMatrixMonitor(item)
         if ((itemData.conditionMonitors.matrix.actual.value >= itemData.conditionMonitors.matrix.value) && (itemData.type !== "baseDevice")) itemData.isActive = false
         SR5_EntityHelpers.GenerateMonitorBoxes(itemData, 'matrix')

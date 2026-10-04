@@ -38,10 +38,15 @@ describe('what can be lifted from a pocket (SR5 p. 135, 422)', () => {
     }))).toBe(false)
   })
 
-  it('reads the base when the value was never worked out (gear)', () => {
+  it('reads the worked-out value, not the base: a modifier down to 0 counts', () => {
     expect(isPickable(item("itemGear", {
       concealment: {
         base: 6, value: 0
+      }
+    }))).toBe(true)
+    expect(isPickable(item("itemDevice", {
+      concealment: {
+        base: 0, value: 6
       }
     }))).toBe(false)
   })
