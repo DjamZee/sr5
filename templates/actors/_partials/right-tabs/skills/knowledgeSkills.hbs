@@ -62,7 +62,7 @@
 					data-helpDetailsItem="system.test"
 				>
 					{{#if (gt system.test.dicePool 0)}}
-					<p class="SR-TextCenter roll-logo sr-roll" data-rolltype="knowledgeSkill">{{system.test.dicePool}}</p>
+					<p class="SR-TextCenter roll-logo sr-roll" data-rolltype="knowledgeSkill">{{system.test.dicePool}}{{#with (lookup ../actor.flags.sr5.skillAttributes (concat 'knowledge-' _id)) as |kept|}}<span class="SR-SkillAttributeKept SR-LightGreyColor" data-tooltip="{{localize 'SR5.SkillAttributeKept' attribute=(findTranslation 'allAttributes' kept)}}">({{attributeShort kept}})</span>{{/with}}</p>
 					{{else}}
 					<p class="SR-TextCenter">-</p>
 					{{/if}}

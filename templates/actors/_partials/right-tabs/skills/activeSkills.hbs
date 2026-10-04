@@ -30,6 +30,9 @@
 			  data-helpTitle="{{localize 'SR5.HELP_SkillTest' key=(findTranslation 'skills' @key)}}"
 			  data-helpMessage="{{localize 'SR5.HELP_SkillTestMsg'}}">
 				{{findTranslation 'skills' @key}}
+				{{#with (lookup ../actor.flags.sr5.skillAttributes @key) as |kept|}}
+				<span class="SR-SkillAttributeKept SR-LightGreyColor" data-tooltip="{{localize 'SR5.SkillAttributeKept' attribute=(findTranslation 'allAttributes' kept)}}">({{attributeShort kept}})</span>
+				{{/with}}
 			</div>
 		  {{#if (ne ../actor.type 'actorDrone')}}
 			<div class="col-5 SR-PaddingRight5"

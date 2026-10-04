@@ -8,6 +8,11 @@
 			{{> systems/sr5/templates/rolls/rollDialogPartial/dicePool.hbs}}
 	  	{{/if}}
 
+	  	<!-- ATTRIBUTE OF THE SKILL (SR5 p. 130) -->
+	  	{{#if skillAttribute}}
+			{{> systems/sr5/templates/rolls/rollDialogPartial/skillAttribute.hbs}}
+	  	{{/if}}
+
 	  	<!-- MODIFIERS -->
 		{{#if (ne test.type "passThroughDefense")}}
 	  		{{> systems/sr5/templates/rolls/rollDialogPartial/modifiers.hbs}}

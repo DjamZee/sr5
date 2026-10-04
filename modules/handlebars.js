@@ -235,6 +235,13 @@ export const registerHandlebarsHelpers = function () {
     return false
   })
 
+  //Short name of an attribute (FOR, INT...), or its full name when it has none
+  Handlebars.registerHelper('attributeShort', function (key) {
+    let label = SR5.allAttributes[key]
+    if (!label) return ""
+    return game.i18n.has(`${label}Short`) ? game.i18n.localize(`${label}Short`) : game.i18n.localize(label)
+  })
+
   //Concat multiple strings or data to one string
   Handlebars.registerHelper('concat', function() {
     var outStr = ''

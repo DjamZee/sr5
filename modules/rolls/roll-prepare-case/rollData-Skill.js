@@ -10,6 +10,9 @@ import {
 import {
   SR5_MiscellaneousHelpers 
 } from "../roll-helpers/miscellaneous.js"
+import {
+  prepareSkillAttribute, SKILL_ATTRIBUTE_FLAG
+} from "../roll-helpers/skillAttribute.js"
 
 //Add info for skill dicePool roll
 export default async function skill(rollData, rollType, rollKey, actor, chatData){
@@ -40,6 +43,18 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
         
     //Determine dicepool modififiers
     rollData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(rollData, actor.system.skills[rollKey].test.modifiers)
+
+    //SR5 p. 130: the attribute can be changed in the dialog, except on an opposed test whose pair the book sets
+    if (actor.type !== "actorDrone" && !chatData?.test?.isOpposed){
+      rollData = prepareSkillAttribute(rollData, actor.system, actor.getFlag?.("sr5", SKILL_ATTRIBUTE_FLAG)?.[rollKey], {
+        flagKey: rollKey,
+        linked: actor.system.skills[rollKey].linkedAttribute,
+        titleBase: `${game.i18n.localize("SR5.SkillTest") + game.i18n.localize("SR5.Colons") + " " + game.i18n.localize(SR5.skills[rollKey])}`,
+        alwaysInTitle: true,
+        labels: SR5.allAttributes,
+        localize: k => game.i18n.localize(k),
+      })
+    }
   }
 
   //Determine base limit

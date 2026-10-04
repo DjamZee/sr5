@@ -592,6 +592,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/rolls/rollDialogPartial/attackRangeModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/chokeSettingsModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/attributeChoice.hbs",
+    "systems/sr5/templates/rolls/rollDialogPartial/skillAttribute.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/force.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/summoningModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/defenseRangedModifier.hbs",

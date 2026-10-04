@@ -37,6 +37,9 @@ import {
 import {
   isRunning, runningModifierValue
 } from "../system/running.js"
+import {
+  attributeValue, swapLinkedAttribute, skillAttributeTitle, SKILL_ATTRIBUTE_FLAG
+} from "./roll-helpers/skillAttribute.js"
 
 export default class SR5_RollDialog {
 
@@ -249,6 +252,37 @@ export default class SR5_RollDialog {
     }))
     //Toggle hidden div
     element.querySelectorAll(".SR-DialogToggle").forEach(el => el.addEventListener('click', ev => this._toggleDiv(ev, element)))
+    //Attribute paired with the skill (SR5 p. 130)
+    element.querySelectorAll(".SR-SkillAttribute").forEach(el => el.addEventListener('change', ev => this._onChangeSkillAttribute(ev.target.value, element, dialogData, actor)))
+    element.querySelectorAll(".SR-SkillAttributeKeep").forEach(el => el.addEventListener('change', ev => this._onKeepSkillAttribute(ev.target.checked, dialogData, actor)))
+  }
+
+  // SR5 p. 130: another attribute replaces the linked one in the pool and the title; the limit stays the skill's
+  _onChangeSkillAttribute(attributeKey, html, dialogData, actor){
+    let choice = dialogData.skillAttribute
+    choice.selected = attributeKey
+    let source = game.i18n.localize(choice.choices[attributeKey])
+    let value = attributeValue(actor.system, attributeKey)
+    dialogData.dicePool.composition = swapLinkedAttribute(dialogData.dicePool.composition, source, value)
+    dialogData.dicePool.base = SR5_PrepareRollHelper.getBaseDicepool(dialogData)
+    html.querySelector('[name="baseDicePool"]').value = dialogData.dicePool.base
+    let row = html.querySelector('#dicePoolComposition [data-type="linkedAttribute"]')
+    if (row){
+      row.querySelector('span').textContent = source
+      row.querySelector('.SR-TextCenter').textContent = value
+    }
+    dialogData.test.title = skillAttributeTitle(choice, k => game.i18n.localize(k))
+    if (choice.keep) this._onKeepSkillAttribute(true, dialogData, actor)
+    this.updateDicePoolValue(html)
+  }
+
+  // Arbitrage de DjamZ: the choice is kept in an actor flag for that skill until the box is unchecked
+  async _onKeepSkillAttribute(keep, dialogData, actor){
+    let choice = dialogData.skillAttribute
+    choice.keep = keep
+    //Keeping the linked attribute is the default: nothing to remember
+    if (keep && choice.selected !== choice.linked) await actor.setFlag("sr5", `${SKILL_ATTRIBUTE_FLAG}.${choice.flagKey}`, choice.selected)
+    else await actor.unsetFlag("sr5", `${SKILL_ATTRIBUTE_FLAG}.${choice.flagKey}`)
   }
 
   // AI Emulate (Data Trails p. 159): rating capped by Depth, -(rating / 2) dice, the limit becomes the emulated rating.
