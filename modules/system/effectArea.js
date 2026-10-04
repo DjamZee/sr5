@@ -335,9 +335,10 @@ export class SR5_EffectArea {
         let effectID = templateDocument.uuid
         if (templateDocument.flags.sr5.itemHasEffect) effectID = templateDocument.flags.sr5.itemUuid
         let hasEffect = await this.checkIfHasEffect(actor, effectID)
-        if (isInTemplate) {
-          if (!hasEffect) await this.createTemplateEffect(tokenDocument, templateDocument)
-        } else {
+        //createTemplateEffect checks each effect on its own (light, noise, background count...): an effect set later
+        //in the template's form, the Spam after the light, must be added although the token has the first one
+        if (isInTemplate) await this.createTemplateEffect(tokenDocument, templateDocument)
+        else {
           if (hasEffect) await this.deleteTemplateEffect(actor, effectID)
         }
       }
