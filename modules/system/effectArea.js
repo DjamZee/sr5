@@ -284,10 +284,16 @@ export class SR5_EffectArea {
         //If effect is not resisted, apply effect to actor
         if (!sourceItem.system.resisted) await actor.applyExternalEffect(data, "customEffects")
         else {
-          let message = game.messages.find(m => m.flags.sr5data?.test.type === "spell" && m.flags.sr5data?.owner.itemUuid === templateData.itemUuid)
+          //The cast this template comes from, when it says so; else the spell's card, as before
+          let message = (templateData.messageId && game.messages.get(templateData.messageId)) ||
+            game.messages.find(m => m.flags.sr5data?.test.type === "spell" && m.flags.sr5data?.owner.itemUuid === templateData.itemUuid)
           if (!message) return
           let messageData = message.flags.sr5data
+          //One request per actor, spell and cast while it waits: a move inside the area gives no other one
+          let pending = SR5_EffectArea.pendingResistanceKey(actor, templateData.itemUuid, message.id)
+          if (SR5_EffectArea.PENDING_RESISTANCES.has(pending)) return
           if (messageData) {
+            SR5_EffectArea.PENDING_RESISTANCES.add(pending)
             messageData.owner.messageId = message.id
             if (actor.hasPlayerOwner){
               let user = SR5_EntityHelpers.getUserOwner(actor)
@@ -335,6 +341,17 @@ export class SR5_EffectArea {
   //Calls on one actor and one spell run one after the other: the hooks that start them are not awaited, and two
   //templates entered or drawn at once each found no effect yet and each gave one
   static SPELL_EFFECT_QUEUES = new Map()
+
+  //Resistance requests of a resisted area spell, sent and not yet answered by an effect (actor|spell|cast). A
+  //request stays until the effect is on, or the token has left every template of the spell
+  static PENDING_RESISTANCES = new Set()
+  static pendingResistanceKey(actor, itemUuid, messageId){
+    return `${actor.uuid ?? actor.id}|${itemUuid}|${messageId}`
+  }
+  static clearPendingResistances(actor, itemUuid){
+    const prefix = `${actor.uuid ?? actor.id}|${itemUuid}|`
+    for (const key of SR5_EffectArea.PENDING_RESISTANCES) if (key.startsWith(prefix)) SR5_EffectArea.PENDING_RESISTANCES.delete(key)
+  }
   static runForSpell(actor, itemUuid, fn){
     const key = `${actor.uuid ?? actor.id}|${itemUuid}`
     const next = (SR5_EffectArea.SPELL_EFFECT_QUEUES.get(key) ?? Promise.resolve()).catch(() => {}).then(fn)
@@ -365,10 +382,13 @@ export class SR5_EffectArea {
       }
       let effects = actor.items.filter(i => i.type === "itemEffect" && i.system.ownerItem === itemUuid)
       if (!covering){
+        //Out of every template: a resistance asked for is dropped, coming back in asks again
+        SR5_EffectArea.clearPendingResistances(actor, itemUuid)
         if (effects.length) await actor.deleteEmbeddedDocuments("Item", effects.map(i => i.id))
         return
       }
       if (!effects.length) return await this.createTemplateEffect(tokenDocument, covering)
+      SR5_EffectArea.clearPendingResistances(actor, itemUuid)
       let kept = effects[0].system.ownerID
       let extra = effects.filter(i => i.system.ownerID !== kept)
       if (extra.length) await actor.deleteEmbeddedDocuments("Item", extra.map(i => i.id))
