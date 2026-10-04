@@ -38,6 +38,12 @@ export default class SR5TokenHud extends foundry.applications.hud.TokenHUD {
     this.#addStorageButton()
     SR5SharedVision.addHudButton(this)
     SR5Pickpocket.addHudButton(this)
+    //Opened on someone else's token to pick his pocket: nothing else of his is the user's to touch
+    if (!this.document?.isOwner) {
+      for (const el of this.element?.querySelectorAll(".control-icon, .attribute, input, .palette") ?? []) {
+        if (!el.closest(".sr-hud-pickpocket")) el.remove()
+      }
+    }
   }
 
   /**

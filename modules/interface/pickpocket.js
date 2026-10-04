@@ -51,11 +51,17 @@ export class SR5Pickpocket {
     return canvas.tokens?.controlled.map(t => t.document).find(d => d !== targetDocument && d.isOwner && d.actor?.system?.skills?.palming)
   }
 
+  //Whether the user can pick this token's pocket now: someone with pockets, and his own thief within reach
+  static canPickFrom(target) {
+    if (!target?.actor || NOT_LOOTERS.includes(target.actor.type)) return false
+    const thief = SR5Pickpocket.thiefToken(target)
+    return !!thief && SR5Pickpocket.inReach(thief, target)
+  }
+
   static addHudButton(hud) {
     const target = hud.document
-    if (!target?.actor || NOT_LOOTERS.includes(target.actor.type)) return
+    if (!SR5Pickpocket.canPickFrom(target)) return
     const thief = SR5Pickpocket.thiefToken(target)
-    if (!thief || !SR5Pickpocket.inReach(thief, target)) return
 
     const left = hud.element?.querySelector(".col.left")
     if (!left || left.querySelector(".sr-hud-pickpocket")) return
@@ -136,7 +142,7 @@ export class SR5Pickpocket {
       return `<option value="${i.id}" ${i.id === chosen ? "selected" : ""}>${escape(i.name)} (${concealmentOf(i)})${large}</option>`
     }).join("")
     const locked = chosen ? "disabled" : ""
-    const box = key => `<label class="flexrow"><input type="checkbox" name="${key}"/> ${escape(game.i18n.localize(`SR5.Pickpocket${key.charAt(0).toUpperCase()}${key.slice(1)}`))}</label>`
+    const box = key => `<div class="form-group"><label>${escape(game.i18n.localize(`SR5.Pickpocket${key.charAt(0).toUpperCase()}${key.slice(1)}`))}</label><input type="checkbox" name="${key}"/></div>`
     const result = await foundry.applications.api.DialogV2.wait({
       window: {
         title: game.i18n.format("SR5.PickpocketTitle", {

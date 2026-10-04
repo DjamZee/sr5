@@ -33,9 +33,11 @@ export const PERCEPTION_SITUATIONS = {
   diversion: -2,
 }
 
-//The concealability of an object, as the observer's pool takes it (SR5 p. 422)
+//The concealability of an object, as the observer's pool takes it (SR5 p. 422). Only weapons get
+//their value worked out; on other gear it stays 0 next to the base typed on the sheet
 export function concealmentOf(item) {
-  return Number(item?.system?.concealment?.value) || 0
+  const concealment = item?.system?.concealment
+  return Number(concealment?.value) || Number(concealment?.base) || 0
 }
 
 /**

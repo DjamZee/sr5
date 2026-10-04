@@ -38,6 +38,14 @@ describe('what can be lifted from a pocket (SR5 p. 135, 422)', () => {
     }))).toBe(false)
   })
 
+  it('reads the base when the value was never worked out (gear)', () => {
+    expect(isPickable(item("itemGear", {
+      concealment: {
+        base: 6, value: 0
+      }
+    }))).toBe(false)
+  })
+
   it('leaves objects bigger than +2 out, unless the GM passes over', () => {
     expect(isPickable(item("itemGear", conceal(2)))).toBe(true)
     expect(isPickable(item("itemGear", conceal(4)))).toBe(false)

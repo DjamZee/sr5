@@ -4,8 +4,36 @@ import {
 import {
   TOKEN_BAR_EMPTY, tokenBarFilledColor 
 } from "./token-bar-colors.js"
+import {
+  SR5Pickpocket
+} from "./pickpocket.js"
 
 export class SR5Token extends foundry.canvas.placeables.Token {
+
+  /**
+   * The core opens the HUD to the token's owners only. A thief who has his own token selected,
+   * within reach, opens it on his target too, to pick a pocket (SR5 p. 422): the HUD then keeps
+   * that single button.
+   * @override
+   */
+  _canHUD(user, event) {
+    if (super._canHUD(user, event)) return true
+    if (!this.layer.active || this.isPreview || canvas.controls.ruler?.active) return false
+    return SR5Pickpocket.canPickFrom(this.document)
+  }
+
+  /**
+   * The core takes control of the token right-clicked, which releases the others: on a target the
+   * thief cannot control, his own token would be released and the pocket out of reach. The HUD
+   * opens on the target and the thief stays selected.
+   * @override
+   */
+  _onClickRight(event) {
+    if (this.document.isOwner || !this.layer.hud || !SR5Pickpocket.canPickFrom(this.document)) return super._onClickRight(event)
+    if (this.hasActiveHUD) this.layer.hud.close()
+    else this.layer.hud.bind(this)
+    event.stopPropagation()
+  }
 
   /**
    * A drone or a device shares what it sees with the users in its list (SR5 p. 241: Invite Mark,
