@@ -58,8 +58,10 @@ describe("a template's effect on a linked actor", () => {
     expect(SR5_CombatHelpers.handleEnvironmentalModifiers(scene("sceneB"), fumee, true)).toBe(0)
   })
 
-  it("leaves an effect that comes from no template alone", () => {
-    const sort = acteur(2, "Actor.x.Item.y")
-    expect(SR5_CombatHelpers.handleEnvironmentalModifiers(scene("sceneB"), sort, true)).toBe(-3)
+  // Only a template creates an areaEffect (effectArea.js): one with no template scene is an orphan, left by a
+  // preview before b685ff03, and counts nowhere, as in the prepared data (areaEffectScene.js)
+  it("does not count an orphan area effect", () => {
+    const orphelin = acteur(2, "Actor.x.Item.y")
+    expect(SR5_CombatHelpers.handleEnvironmentalModifiers(scene("sceneB"), orphelin, true)).toBe(0)
   })
 })

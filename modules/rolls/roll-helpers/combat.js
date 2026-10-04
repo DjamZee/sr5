@@ -13,6 +13,9 @@ import {
 import {
   _getSRStatusEffect 
 } from "../../system/effectsList.js"
+import {
+  isAreaEffectOffScene
+} from "../../system/areaEffectScene.js"
 
 export class SR5_CombatHelpers {
 
@@ -54,14 +57,12 @@ export class SR5_CombatHelpers {
   }
 
   // Environmental rows an actor carries from templates standing on another scene than `sceneId`, by column.
-  // A template's effect is an itemEffect whose ownerItem is the template's uuid (Scene.<id>.MeasuredTemplate.<id>).
+  // The same rule as the prepared data (areaEffectScene.js): an effect with no template scene counts nowhere.
   static areaEffectsOffScene(actor, sceneId){
     const offScene = {
     }
     for (const item of actor?.items ?? []){
-      if (item.type !== "itemEffect" || item.system?.type !== "areaEffect") continue
-      const templateScene = /^Scene\.([^.]+)\.MeasuredTemplate\./.exec(item.system.ownerItem ?? "")?.[1]
-      if (!templateScene || templateScene === sceneId) continue
+      if (!isAreaEffectOffScene(item, sceneId)) continue
       for (const effect of item.system.customEffects ?? []){
         const key = /^system\.itemsProperties\.environmentalMod\.(\w+)$/.exec(effect.target ?? "")?.[1]
         if (key) offScene[key] = (offScene[key] || 0) + (parseInt(effect.value) || 0)

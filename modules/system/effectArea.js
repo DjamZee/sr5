@@ -11,6 +11,9 @@ import {
 import {
   _getSRStatusEffect 
 } from "../system/effectsList.js"
+import {
+  templateSceneId, isAreaEffectOffScene
+} from "./areaEffectScene.js"
 
 export class SR5_EffectArea {
 
@@ -29,18 +32,13 @@ export class SR5_EffectArea {
    */
   static JAM_SIGNALS_RADIUS_IN_METERS = 100
 
-  //The scene of the template that put an area effect on an actor, read from its owner
-  //(Scene.<id>.MeasuredTemplate.<id>), or null when the effect comes from no template on a scene
+  //The rule itself lives in areaEffectScene.js, shared with SR5_CombatHelpers.areaEffectsOffScene
   static templateSceneId(item){
-    return /^Scene\.([^.]+)\.MeasuredTemplate\./.exec(item?.system?.ownerItem ?? "")?.[1] ?? null
+    return templateSceneId(item)
   }
 
-  //An area effect whose template stands on another scene than sceneId. A linked actor is the same on every
-  //scene, so the template of one scene must not count on another. An effect with no template scene (left by a
-  //template preview before b685ff03) counts nowhere a scene is known.
   static isAreaEffectOffScene(item, sceneId){
-    if (item?.type !== "itemEffect" || item.system?.type !== "areaEffect" || !sceneId) return false
-    return SR5_EffectArea.templateSceneId(item) !== sceneId
+    return isAreaEffectOffScene(item, sceneId)
   }
 
   //The matrix noise and the background count a template puts on an actor are added to its data when it is
