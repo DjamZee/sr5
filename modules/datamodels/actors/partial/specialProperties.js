@@ -10,6 +10,14 @@ export class specialPropertiesPartialModel extends foundry.abstract.TypeDataMode
         smartlink: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema()
         }),
+        // Dice on every addiction test (Chrome Flesh p. 58-59, The Complete Trog p. 180)
+        addictionResistance: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema()
+        }),
+        // Dice on every toxin resistance, whatever the vector (The Complete Trog p. 180)
+        toxinResistance: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema()
+        }),
         concentration: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema()
         }),

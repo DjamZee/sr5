@@ -662,6 +662,9 @@ export class SR5_RollTest {
       case "resistFire":
         await SR5_AddRollInfo.fireResistanceInfo(cardData)
         break
+      case "addictionTest":
+        await SR5_AddRollInfo.addictionInfo(cardData)
+        break
       case "preparationResistance":
       case "ritualResistance":
       case "summoningResistance":

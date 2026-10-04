@@ -2,13 +2,17 @@
 <div class="SRBlockSheet">
 	<ul>
 		<li class="grid SR-LigneEnTete">
-			<div class="col-5 SR-TextUppercase">{{localize 'SR5.Addiction'}}</div>
-            <div class="col-2 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_AddictionThresholdTitle'}}"
+			<div class="col-4 SR-TextUppercase">{{localize 'SR5.Addiction'}}</div>
+            <div class="col-2 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_AddictionTestTitle'}}"
+			data-helpMessage="{{localize 'SR5.HELP_AddictionTestMsg'}}">{{localize 'SR5.AddictionTestShort'}}</div>
+            <div class="col-1 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_AddictionThresholdTitle'}}"
 			data-helpMessage="{{localize 'SR5.HELP_AddictionThresholdMsg'}}">{{localize 'SR5.ThresholdShort'}}</div>
-            <div class="col-2 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_AddictionWeekTitle'}}"
+            <div class="col-2 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_AddictionLevelTitle'}}"
+			data-helpMessage="{{localize 'SR5.HELP_AddictionLevelMsg'}}">{{localize 'SR5.AddictionLevel'}}</div>
+            <div class="col-1 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_AddictionWeekTitle'}}"
 			data-helpMessage="{{localize 'SR5.HELP_AddictionWeekMsg'}}">{{localize 'SR5.WeeksShort'}}</div>
-            <div class="col-2 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_AddictionShotTitle'}}"
-			data-helpMessage="{{localize 'SR5.HELP_AddictionShotMsg'}}">{{localize 'SR5.ShotsShort'}}</div>            
+            <div class="col-1 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_AddictionShotTitle'}}"
+			data-helpMessage="{{localize 'SR5.HELP_AddictionShotMsg'}}">{{localize 'SR5.ShotsShort'}}</div>
             <div class="col-1 SR-TextRight" data-helpTitle="{{localize 'SR5.HELP_DrugDeleteAll'}}"
             data-helpMessage="{{localize 'SR5.HELP_DrugDeleteAllMsg'}}"><a class="resetAddiction"><i class="fas fa-trash"></i></a></div>
 
@@ -16,20 +20,38 @@
 		{{#each actor.system.addictions as |a i|}}
         {{#if (and (gt shot.value 0) (ne addiction.type '') )}}
 		<li class="subItemManagement grid" data-key="{{@key}}">
-			<div class="col-5">
+			<div class="col-4">
 				<p>{{name}} ({{findTranslation 'addictionTypesShort' addiction.type}})</p>
 			</div>
-			<div class="col-2 SR-TextCenter changeValueByClick" data-binding="system.addictions.{{i}}.addiction.threshold"
+			<!-- SR5 p. 415: Body + Willpower when physiological, Logic + Willpower when psychological, both tests when both -->
+			<div class="col-2 SR-TextCenter">
+				{{#if (ne addiction.type 'psychological')}}
+				<span class="roll-logo sr-roll" data-rolltype="addictionTest" data-rollkey="physiological_{{i}}"
+				  data-helpTitle="{{localize 'SR5.HELP_AddictionTest' key=name}}"
+				  data-helpMessage="{{localize 'SR5.AddictionPhysiological'}}"
+				  data-helpDetails="system.resistances.addiction.physiological">{{@root.actor.system.resistances.addiction.physiological.dicePool}}</span>
+				{{/if}}
+				{{#if (ne addiction.type 'physiological')}}
+				<span class="roll-logo sr-roll" data-rolltype="addictionTest" data-rollkey="psychological_{{i}}"
+				  data-helpTitle="{{localize 'SR5.HELP_AddictionTest' key=name}}"
+				  data-helpMessage="{{localize 'SR5.AddictionPsychological'}}"
+				  data-helpDetails="system.resistances.addiction.psychological">{{@root.actor.system.resistances.addiction.psychological.dicePool}}</span>
+				{{/if}}
+			</div>
+			<div class="col-1 SR-TextCenter changeValueByClick" data-binding="system.addictions.{{i}}.addiction.threshold"
 			data-helpTitle="{{localize 'SR5.HELP_AddictionThreshold' key=name}}"
 			data-helpMessage="{{localize 'SR5.HELP_AddictionThresholdMsg'}}">
                 <p>{{addiction.threshold}}</p>
 			</div>
-			<div class="col-2 SR-TextCenter" data-binding="weekAddiction.value" 
+			<div class="col-2 SR-TextCenter">
+                <p>{{findTranslation 'addictionLevels' level}}</p>
+			</div>
+			<div class="col-1 SR-TextCenter" data-binding="weekAddiction.value"
 			data-helpTitle="{{localize 'SR5.HELP_AddictionWeek' key=name}}"
 			data-helpMessage="{{localize 'SR5.HELP_AddictionWeekMsg'}}">
                 <p>{{weekAddiction.value}}</p>
 			</div>
-			<div class="col-2 SR-TextCenter" data-binding="shot.value" 
+			<div class="col-1 SR-TextCenter" data-binding="shot.value"
 			data-helpTitle="{{localize 'SR5.HELP_AddictionShot' key=name}}"
 			data-helpMessage="{{localize 'SR5.HELP_AddictionShotMsg'}}">
                 <p>{{shot.value}}</p>

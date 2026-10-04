@@ -110,9 +110,45 @@ export function situationalListShown(offers){
 }
 
 function offerOf(effect, index, kind){
-  return {
+  let offer = {
     key: `situational_${kind}_${index}`, kind, index, label: effect.source, when: effect.when || "",
     value: effect.value, isMalus: effect.value < 0
+  }
+  if (effect.targetMetatype) Object.assign(offer, {
+    targetMetatype: effect.targetMetatype, targetMetatypeMode: effect.targetMetatypeMode
+  })
+  return offer
+}
+
+// Metatype families a situational effect can aim at (The Complete Trog p. 179: "non-ork, non-troll"),
+// metavariants included since they share their metatype's key. A family of one is its metatype.
+export const METATYPE_FAMILIES = {
+  trog: ["ork", "troll"],
+}
+
+// The Complete Trog p. 179 ("+3 dice to Intimidation against non-ork, non-troll targets"): whether an
+// effect's condition on the target's metatype is met. A family groups metatypes (SR5.metatypeFamilies),
+// a metavariant shares the key of its metatype. null when there is no condition, or no metatype to
+// read (no target, a spirit, a drone): the box is then left to the player.
+export function targetMetatypeMet(effect, targetMetatype, families){
+  if (!effect?.targetMetatype || !targetMetatype) return null
+  let members = families?.[effect.targetMetatype] ?? [effect.targetMetatype]
+  let inFamily = members.includes(targetMetatype)
+  return effect.targetMetatypeMode === "isNot" ? !inFamily : inFamily
+}
+
+// Ticks the boxes whose condition on the target's metatype is met, as if the player had: the modifier
+// goes into the roll, the box shows ticked and can still be unticked in the dialog
+export function tickByTargetMetatype(rollData, targetMetatype, families){
+  for (let offer of rollData.situational || []){
+    if (offer.hidden || targetMetatypeMet(offer, targetMetatype, families) !== true) continue
+    offer.checked = true
+    if (offer.kind === "limit") rollData.limit.modifiers[offer.key] = {
+      label: offer.label, value: offer.value
+    }
+    else rollData.dicePool.modifiers = (rollData.dicePool.modifiers || []).concat({
+      type: offer.key, label: offer.label, value: offer.value
+    })
   }
 }
 

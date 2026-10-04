@@ -27,7 +27,7 @@ import {
   runningModifierKind
 } from "../system/running.js"
 import {
-  rollAttributes, extractSituational
+  rollAttributes, extractSituational, tickByTargetMetatype, METATYPE_FAMILIES
 } from "./roll-helpers/situational.js"
 import {
   SR5
@@ -225,6 +225,9 @@ export class SR5_PrepareRollTest {
       case "resistFire":
         rollData = await SR5_GetRollData.resistFire(rollData, actor, chatData)
         break
+      case "addictionTest":
+        rollData = await SR5_GetRollData.addictionTest(rollData, rollKey, actor)
+        break
       case "ritual":
         // SR5 p. 298: a ritual open to a group starts with the circle card, the roll comes when the leader seals it
         if (!chatData?.ritualCircle && ritualAcceptsHelp(item.system)) return SR5_RitualCircle.open(actor, item)
@@ -279,6 +282,12 @@ export class SR5_PrepareRollTest {
       } = extractSituational(rollData, actor?.situationalEffects || [], rollAttributes(rollData.dicePool.composition, attributeLabels),
         actor?.system?.limits?.[rollData.limit?.type]?.modifiers)
       rollData.situational = offers
+      //A condition on the target's metatype (The Complete Trog p. 179) ticks its box when it is met
+      if (offers.some(o => o.targetMetatype) && game.user.targets.size){
+        const target = await SR5_PrepareRollHelper.getTargetedActor()
+        const biography = target?.system?.biography
+        tickByTargetMetatype(rollData, biography?.metatype || biography?.characterMetatype || "", METATYPE_FAMILIES)
+      }
       //Kept for the dialog, which matches them again when the attribute is changed there
       rollData.situationalScoped = scoped
       if (always.length) rollData.dicePool.modifiers = (rollData.dicePool.modifiers || []).concat(always)

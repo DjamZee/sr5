@@ -51,8 +51,11 @@ import {
   SR5SheetConfigDialog 
 } from "../../interface/sheet-config-dialog.js"
 import {
-  enhanceSelects 
+  enhanceSelects
 } from "../../helpers/enhance-selects.js"
+import {
+  isMilkBrick, soothe
+} from "../items/milkBrick.js"
 
 /**
  * Extend the basic ActorSheet class to do all the SR5 things!
@@ -1270,6 +1273,16 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       }
     }
 
+    //Brick of milk (No Future p. 154): used up when switched on, on the targeted character or on its owner
+    if (target === "system.isActive" && item.system.isActive && isMilkBrick(item)) {
+      item.system.isActive = false
+      if (item.system.quantity > 0) {
+        item.system.quantity -= 1
+        let targetToken = game.user.targets.first()
+        await soothe(targetToken?.actor ?? actor)
+      } else ui.notifications.warn(game.i18n.localize("SR5.WARN_MilkBrickNone"))
+    }
+
     if (item.type === "itemDrug") {
       let drugType = "", drug = [], itemData = item.system
       if (Object.keys(itemData.systemEffects).length) {
@@ -1303,8 +1316,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
             addiction = SR5_CharacterUtility.generateDrugAddiction(item)
             actorData.addictions = actorData.addictions.concat(addiction)
             actorData.addictions = Object.values(actorData.addictions)
-          }		
-          
+          }
+          //Reminder of the addiction test (SR5 p. 415): rolled from the Addictions list, never on its own
+          if (item.system.addiction?.type && item.system.addiction?.rating > 0) ui.notifications.info(game.i18n.format("SR5.AddictionTestReminder", {
+            drug: item.name, threshold: item.system.addiction.threshold
+          }))
+
           SR5_SystemHelpers.srLog(1, "actorData.addictions : " + JSON.stringify(actorData.addictions))
           if (actorData.addictions.shot) SR5_EntityHelpers.updateValue(actorData.addictions.shot)
           if (actorData.addictions.weekAddiction) SR5_EntityHelpers.updateValue(actorData.addictions.weekAddiction)		

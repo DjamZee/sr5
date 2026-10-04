@@ -516,6 +516,10 @@ export class SR5_RollMessage {
         SR5_MatrixHelpers.applylinkLockEffect(originalActionActor, actor)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      case "addictionWorsen":
+        await actor.worsenAddiction(messageData)
+        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
       case "catchFire":
         SR5_ActorHelper.fireDamageEffect(actor.id)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)

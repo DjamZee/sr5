@@ -1,4 +1,7 @@
 export {
+  default as addictionTest
+} from "./rollData-Addiction.js"
+export {
   default as astralTracking
 } from "./rollData-AstralTracking.js"
 export {
