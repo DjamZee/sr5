@@ -30,10 +30,12 @@ export default class SR5Template extends foundry.canvas.placeables.MeasuredTempl
   /**
 	 * A factory method to create an AbilityTemplate instance using provided data from an Item5e instance
 	 * @param {Item5e} item               The Item object for which to construct the template
+	 * @param {string} messageId          The chat card the template is placed from, if any: it tells this cast's
+	 *                                    template from another cast of the same item
 	 * @return {AbilityTemplate|null}     The template object, or null if the item does not produce a template
 	 */
 
-  static fromItem(item) {
+  static fromItem(item, messageId) {
     let target = 0
     let flags = {
     }
@@ -43,6 +45,7 @@ export default class SR5Template extends foundry.canvas.placeables.MeasuredTempl
       "item": item.id,
       "itemUuid": item.uuid,
     }
+    if (messageId) flags.sr5.messageId = messageId
 
     if (item.system.category === "grenade" || item.system.type === "grenadeLauncher" || item.system.type === "missileLauncher") {
       target = item.system.blast.radius

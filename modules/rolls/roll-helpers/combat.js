@@ -70,39 +70,52 @@ export class SR5_CombatHelpers {
     return offScene
   }
 
-  // The scene an area spell was cast on: the one its chat card names, else one holding the caster's token
-  // (the canvas first). A defense is clicked later, maybe by someone looking at another scene.
-  static spellAreaScene(chatData){
-    const scenes = globalThis.game?.scenes
+  // The template of an area spell's cast, looked for on every scene: a defense is clicked later, maybe by
+  // someone looking at another scene, and a linked caster may stand on several. The template placed from this
+  // very chat card wins (flags.sr5.messageId); otherwise the most recent one of the spell, the scene on the
+  // canvas first. A MeasuredTemplate has no _stats in Foundry 13, so "most recent" is the last in its scene's
+  // collection, which keeps creation order; across scenes there is no order to read.
+  static spellAreaTemplate(chatData){
+    const owner = chatData.owner ?? {
+    }
+    const isSpell = t => (owner.itemUuid && t.flags?.sr5?.itemUuid === owner.itemUuid) || (owner.itemId && t.flags?.sr5?.item === owner.itemId)
     const canvasScene = globalThis.canvas?.scene ?? null
-    const messageScene = globalThis.game?.messages?.get(chatData.owner?.messageId)?.speaker?.scene
-    if (messageScene && scenes?.get(messageScene)) return scenes.get(messageScene)
-    const casterId = chatData.owner?.actorId
-    const holdsCaster = scene => !!scene?.tokens?.some(t => t.id === casterId || t.actorId === casterId)
-    if (holdsCaster(canvasScene)) return canvasScene
-    return scenes?.find(holdsCaster) ?? canvasScene
+    const scenes = [canvasScene, ...(globalThis.game?.scenes ?? [])].filter((s, i, all) => s && all.indexOf(s) === i)
+    let latest = null
+    for (const scene of scenes){
+      let last = null
+      for (const t of scene.templates ?? []){
+        if (!isSpell(t)) continue
+        if (owner.messageId && t.flags.sr5.messageId === owner.messageId) return t
+        last = t
+      }
+      if (last && !latest) latest = last
+    }
+    return latest
   }
 
-  // Distance in meters between an area spell's template and a defender, on the scene of the cast;
-  // null when it cannot be measured (no template placed there, or no token of the defender on that scene).
-  // SR5 p. 283: the area is a sphere around the target point, its radius in meters equal to the Force.
+  // Distance in meters between an area spell's template and a defender, on the template's scene; null when it
+  // cannot be measured (no template placed, or no token of the defender on that scene).
+  // SR5 p. 283: the area is a sphere around the target point, its radius in meters equal to the Force. A token
+  // larger than one square is in it as soon as one of its squares is: the square nearest the center is measured.
   static spellAreaDistance(chatData, actor){
-    const scene = SR5_CombatHelpers.spellAreaScene(chatData)
-    if (!scene?.templates) return null
-    let template
-    for (const t of scene.templates){
-      if (t.flags?.sr5?.item === chatData.owner?.itemId) template = t
-    }
-    if (!template) return null
+    const template = SR5_CombatHelpers.spellAreaTemplate(chatData)
+    const scene = template?.parent
+    if (!scene) return null
     const token = actor.token?.parent === scene ? actor.token : scene.tokens?.find(t => t.actorId === actor.id)
     if (!token) return null
-    // A token's x, y is its top left corner: the template's center is moved by half a square to match
-    const half = scene.grid.size / 2
-    const units = scene.grid.measurePath([{
-      x: template.x - half, y: template.y - half
-    }, {
-      x: token.x, y: token.y
-    }]).distance
+    const size = scene.grid.size
+    let units = Infinity
+    for (let i = 0; i < Math.max(1, Math.ceil(token.width ?? 1)); i++){
+      for (let j = 0; j < Math.max(1, Math.ceil(token.height ?? 1)); j++){
+        const square = {
+          x: token.x + (i + 0.5) * size, y: token.y + (j + 0.5) * size
+        }
+        units = Math.min(units, scene.grid.measurePath([{
+          x: template.x, y: template.y
+        }, square]).distance)
+      }
+    }
     return units * SR5_SystemHelpers.getSceneUnitInMeters(scene)
   }
 
