@@ -1143,6 +1143,7 @@
 	"SR5.ElementalDamageAcid": "Acid",
 	"SR5.ElementalDamageCold": "Cold",
 	"SR5.ElementalDamageElectricity": "Electricity",
+	"SR5.ElementalDamageElectricity_GE": "<p>An electrical attack that deals damage stuns the target: -1 die to all its actions and defense tests (not to damage resistance tests) for one combat turn, and an immediate -5 to its Initiative score.</p><p>These effects do not stack: each further electrical attack that deals damage while they last extends the penalty by one combat turn. An Initiative brought to 0 or less loses the last action; if it already was, the reduction applies at the start of the next combat turn (SR5 p. 170).</p>",
 	"SR5.ElementalDamageFire": "Fire",
 	"SR5.ElementalDamagePollution": "Pollution",
 	"SR5.ElementalDamageRadiation": "Radiation",

@@ -2,7 +2,7 @@ import {
   describe, it, expect, vi
 } from "vitest"
 
-// Effects are created with their rules text in system.gameEffect (anticoagulant, matrix actions, called shots...; not the electricity effect),
+// Effects are created with their rules text in system.gameEffect (anticoagulant, matrix actions, called shots, electricity...),
 // but the itemEffect schema had no such field: Foundry dropped the text on every write.
 
 // Recording stand-ins for Foundry's data fields: a field remembers its class name and options

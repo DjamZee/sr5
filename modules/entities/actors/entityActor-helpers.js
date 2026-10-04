@@ -403,6 +403,7 @@ export class SR5_ActorHelper {
         "system.value": -1,
         "system.durationType": "round",
         "system.duration": 1,
+        "system.gameEffect": game.i18n.localize("SR5.ElementalDamageElectricity_GE"),
         "system.customEffects": {
           "0": {
             "category": "penaltyTypes",

@@ -1143,6 +1143,7 @@
 	"SR5.ElementalDamageAcid": "Acide",
 	"SR5.ElementalDamageCold": "Froid",
 	"SR5.ElementalDamageElectricity": "Electricité",
+	"SR5.ElementalDamageElectricity_GE": "<p>Une attaque électrique qui inflige des dommages étourdit la cible : -1 dé à toutes ses actions et à ses tests de défense (pas aux tests de résistance aux dommages) pendant un tour de combat, et -5 immédiat à son score d'initiative.</p><p>Ces effets ne se cumulent pas : chaque nouvelle attaque électrique qui inflige des dommages pendant qu'ils durent prolonge le malus d'un tour de combat. Une initiative ramenée à 0 ou moins fait perdre la dernière action ; si elle l'était déjà, la réduction s'applique au début du tour de combat suivant (SR5 p. 172).</p>",
 	"SR5.ElementalDamageFire": "Feu",
 	"SR5.ElementalDamagePollution": "Pollution",
 	"SR5.ElementalDamageRadiation": "Radiation",
