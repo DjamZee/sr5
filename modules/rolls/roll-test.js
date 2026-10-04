@@ -305,12 +305,14 @@ export class SR5_RollTest {
     }
 
     //Prepare new chat card: the base pool and its modifiers, minus one die per earlier roll (SR5 p. 50).
-    //Edge dice were added to the roll they were spent on, not to the next ones (SR5 p. 58)
+    //GM ruling (05/10): Push the limit joins the starting pool of an extended test, every roll keeps its Edge dice
+    //(exploding, no limit) and the point is spent once. Edge is only offered on the first roll
     let newMessage = foundry.utils.duplicate(messageData)
     newMessage.test.extended.roll += 1
-    for (let type of ["edge", "pushTheLimit", "extendedTest"]) SR5_EntityHelpers.removeElementFromArray(newMessage.dicePool.modifiers, 'type', type)
+    SR5_EntityHelpers.removeElementFromArray(newMessage.dicePool.modifiers, 'type', "extendedTest")
     delete newMessage.originalModifiers
-    newMessage.edge.hasUsedPushTheLimit = false
+    let pushedTheLimit = !!messageData.edge.hasUsedPushTheLimit
+    newMessage.edge.canUseEdge = false
     newMessage.dicePool.modifiers.push({
       type: "extendedTest",
       label: game.i18n.localize("SR5.ExtendedTest"),
@@ -320,7 +322,9 @@ export class SR5_RollTest {
 
     //roll new test
     let newRoll = await SR5_RollTest.rollDice({
-      dicePool: newMessage.dicePool.value, limit: messageData.limit.value
+      dicePool: newMessage.dicePool.value,
+      limit: pushedTheLimit ? undefined : messageData.limit.value,
+      explose: pushedTheLimit,
     })
 
     //Keep only original hits and concatenat with new hits
@@ -352,11 +356,21 @@ export class SR5_RollTest {
     SR5_RollMessage.updateRollCardHelper(message.id, newMessage)
   }
 
+  /** An extended test, even once its pool fell to one die (the card then stops offering a new roll) */
+  static isExtendedTest(data) {
+    return !!(data.test?.isExtended || data.test?.extended?.roll > 1)
+  }
+
   //Handle second chance : reroll failed dice and update message with new message
   static async secondeChance(message, actor) {
     let messageData = message.flags.sr5data
+    //GM ruling (05/10): during an extended test, Push the limit is the only use of Edge
+    if (SR5_RollTest.isExtendedTest(messageData)) {
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_EdgeExtendedTestPushOnly"))
+      return false
+    }
 
-    //Re roll failed dices (on a later roll of an extended test, the dice of that roll only)
+    //Re roll failed dices
     let rollDices = messageData.roll.rollDices
     let rollHits = messageData.roll.rollHits ?? messageData.roll.hits
     let dicePool = rollDices ? rollDices.filter(d => d.result < 5).length : messageData.dicePool.value - messageData.roll.hits
@@ -398,6 +412,11 @@ export class SR5_RollTest {
   static async pushTheLimit(message, actor, fromCard = false) {
     let messageData = message.flags.sr5data
     let dicePool, creator
+    //GM ruling (05/10): Edge joins the starting pool of an extended test, once: not on a later roll
+    if (SR5_RollTest.isExtendedTest(messageData) && (messageData.test.extended?.roll > 1 || messageData.edge.hasUsedPushTheLimit)) {
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_EdgeExtendedTestStartOnly"))
+      return false
+    }
 
     //If roller is a bounder spirit, use actor Edge instead
     if (actor.type === "actorSpirit"){

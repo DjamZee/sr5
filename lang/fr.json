@@ -3970,6 +3970,8 @@
 	"SR5.WARN_SpellAreaNoTemplate": "Aucun gabarit posé pour ce sort de zone : distance non vérifiée.",
 	"SR5.WARN_AttackSceneGone": "La scène de l’attaque n’existe plus : les modificateurs environnementaux de la défense sont lus sur la scène affichée.",
 	"SR5.WARN_NotAnAmmunitionType": "Seuls les objets Type de munition peuvent être déposés ici.",
+	"SR5.WARN_EdgeExtendedTestPushOnly": "Pendant un test étendu, seule Repousser les limites est permise parmi les usages de la Chance.",
+	"SR5.WARN_EdgeExtendedTestStartOnly": "Pendant un test étendu, Repousser les limites s'ajoute à la réserve de départ, une seule fois : plus possible sur un jet suivant.",
 	"SR5.WARN_StunHealsFirst": "Les dommages physiques ne guérissent pas tant que le personnage a des dommages étourdissants : soignez d'abord l'étourdissant (SR5 p. 207).",
 	"SR5.WARN_NoActor": "Vous devez sélectionner un Acteur !",
 	"SR5.WARN_NoActiveGM": "Aucun MJ connecté : cette action doit passer par le MJ et n'a pas été appliquée.",

@@ -3970,6 +3970,8 @@
 	"SR5.WARN_SpellAreaNoTemplate": "No template placed for this area spell: distance not checked.",
 	"SR5.WARN_AttackSceneGone": "The attack's scene no longer exists: the defense reads environmental modifiers on the displayed scene.",
 	"SR5.WARN_NotAnAmmunitionType": "Only Ammunition Type items can be dropped here.",
+	"SR5.WARN_EdgeExtendedTestPushOnly": "During an extended test, Push the limit is the only use of Edge allowed.",
+	"SR5.WARN_EdgeExtendedTestStartOnly": "During an extended test, Push the limit is added to the starting pool, once: it is no longer possible on a later roll.",
 	"SR5.WARN_StunHealsFirst": "Physical damage cannot heal while the character has Stun damage: heal Stun first (SR5 p. 207).",
 	"SR5.WARN_NoActor": "You must select an Actor first.",
 	"SR5.WARN_NoActiveGM": "No GM connected: this action goes through the GM and was not applied.",

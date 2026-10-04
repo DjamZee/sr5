@@ -108,7 +108,9 @@
 		</div>
 			<div class="col-2">
 				{{#if (and edge.canUseEdge (ne test.type 'preparation'))}}
+				{{#unless test.isExtended}}
 				<a class="messageAction owner" data-action="nonOpposedTest" data-type="secondeChance" title="{{localize 'SR5.SecondChance'}}"><i class="fas fa-dice"></i></a>
+				{{/unless}}
 				<a class="messageAction owner" data-action="nonOpposedTest" data-type="pushLimit" title="{{localize 'SR5.PushTheLimit'}}"><i class="fas fa-bomb"></i></a>	
 				{{/if}}
 			</div>
