@@ -11,6 +11,9 @@ import {
   homunculusMaterialRatings
 } from "./homunculus.js"
 import {
+  augmentationCapExcess
+} from "./augmentationCap.js"
+import {
   SR5Combat 
 } from "../../system/srcombat.js"
 import {
@@ -1064,6 +1067,33 @@ export class SR5_CharacterUtility extends Actor {
     }
   }
 
+  //Cut what an attribute gains over its cap (world setting, SR5 p. 96 by default). The help of the
+  //augmented rating lists the cut with the real and the kept values. updateAttributes runs again
+  //after the armor encumbrance, so the previous cut is removed first.
+  static applyAugmentationCap(actor, key) {
+    let augmented = actor.system.attributes[key].augmented
+    augmented.modifiers = augmented.modifiers.filter(m => m.type !== "augmentationCap")
+    SR5_EntityHelpers.updateValue(augmented, 0)
+    let mode = "bonus"
+    try {
+      mode = game.settings.get("sr5", "sr5AugmentationCap")
+    } catch {
+      //setting not registered yet: the book
+    }
+    const real = augmented.value
+    const gain = augmented.modifiers.filter(m => !m.isMultiplier && m.value > 0).reduce((sum, m) => sum + m.value, 0)
+    const {
+      excess
+    } = augmentationCapExcess({
+      mode, metatype: this.getMetatype(actor), key, natural: actor.system.attributes[key].natural.value, gain
+    })
+    if (excess <= 0) return
+    SR5_EntityHelpers.updateModifier(augmented, game.i18n.format("SR5.AugmentationCapModifier", {
+      real, kept: real - excess, reason: game.i18n.localize(`SR5.AugmentationCapReason_${mode}`)
+    }), "augmentationCap", -excess)
+    SR5_EntityHelpers.updateValue(augmented, 0)
+  }
+
   // Update Attributes
   static updateAttributes(actor) {
     let actorData = actor.system, list
@@ -1078,6 +1108,7 @@ export class SR5_CharacterUtility extends Actor {
       SR5_EntityHelpers.updateValue(actorData.attributes[key].natural, 0)
       actorData.attributes[key].augmented.base = actorData.attributes[key].natural.value
       SR5_EntityHelpers.updateValue(actorData.attributes[key].augmented, 0)
+      if (actor.type === "actorPc" || actor.type === "actorGrunt") this.applyAugmentationCap(actor, key)
     }
 
     if (actorData.initiatives.astralInit?.isActive && (actor.type == "actorPc" || actor.type == "actorGrunt")) {

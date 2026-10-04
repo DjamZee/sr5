@@ -20,6 +20,9 @@ import {
 import {
   SR5Combat 
 } from "../../system/srcombat.js"
+import {
+  reloadIsFree
+} from "../actors/augmentationCap.js"
 
 /**
  * Override and extend the basic :class:`Item` implementation
@@ -513,8 +516,14 @@ export class SR5Item extends Item {
     if (ammoSpent < 1) return
     if (weaponData.ammunition.casing === "") return ui.notifications.warn(game.i18n.localize("SR5.WARN_MissingCasing"))
 
+    //House rule (world setting, off by default): with the right rounds in the inventory, reloading spends no action
+    let hasAmmo = actor.items.some((i) => i.type === "itemAmmunition" && (i.system.type === weaponData.ammunition.type) && (i.system.class === weaponData.type) && i.system.quantity > 0)
+    let freeReload = reloadIsFree({
+      houseRule: game.settings.get("sr5", "sr5FreeReload"), option, hasAmmo
+    })
+
     //Manage action in combat, eventually return if no action available
-    if (game.combat){
+    if (game.combat && !freeReload){
       switch (option){
         case "insert":
           if (weaponData.ammunition.casing === "clip") action = [{
@@ -659,7 +668,7 @@ export class SR5Item extends Item {
     }
 
     //Update actions in combat
-    if (game.combat){
+    if (game.combat && !freeReload){
       let actorId = (this.actor.isToken ? this.actor.token.id : this.actor.id)
       SR5Combat.changeActionInCombat(actorId, action)
     }

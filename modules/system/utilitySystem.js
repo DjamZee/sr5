@@ -393,6 +393,35 @@ export class SR5_SystemHelpers {
       type: Boolean,
       requiresReload: true
     })
+
+    // Cap of the mental and physical attributes. Book (SR5 p. 96): +4 at most from augmentations.
+    // Arbitrage de DjamZ: a table may cap only at the augmented maximum (metatype maximum + 4, SR5 p. 68,
+    // 290, 312), or not at all. Read while the actors are prepared, hence the reload.
+    game.settings.register("sr5", "sr5AugmentationCap", {
+      name: "SR5.SETTINGS_AugmentationCap_T",
+      hint: "SR5.SETTINGS_AugmentationCap_D",
+      scope: "world",
+      config: true,
+      default: "bonus",
+      type: String,
+      choices: {
+        bonus: "SR5.SETTINGS_AugmentationCap_bonus",
+        augmentedMax: "SR5.SETTINGS_AugmentationCap_augmentedMax",
+        none: "SR5.SETTINGS_AugmentationCap_none",
+      },
+      requiresReload: true
+    })
+
+    // House rule, off by default (book: SR5 p. 167 and 169): reloading spends no action
+    // when the right rounds are in the inventory. Read at the click, no reload needed.
+    game.settings.register("sr5", "sr5FreeReload", {
+      name: "SR5.SETTINGS_FreeReload_T",
+      hint: "SR5.SETTINGS_FreeReload_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean
+    })
   }
 
   /* Display Shadowrun Themed Log Entries Based on Logging Level
