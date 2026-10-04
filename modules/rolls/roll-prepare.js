@@ -20,6 +20,13 @@ import {
 import {
   ritualAcceptsHelp
 } from "./roll-helpers/ritualTeam.js"
+import {
+  targetsWirelessOffDrone, isWirelessOffDrone
+} from "./roll-prepare-case/rollData-MatrixAction.js"
+
+// N91: matrix rolls aimed at a target besides matrixAction, which guards itself. Each refuses a drone
+// with its wireless off (SR5 p. 424)
+const WIRELESS_TARGETED_ROLLS = ["iceAttack", "complexForm", "resonanceAction"]
 
 export class SR5_PrepareRollTest {
 
@@ -36,7 +43,14 @@ export class SR5_PrepareRollTest {
     if (game.settings.get("sr5", "sr5CalledShotsRules")) rollData.systemRules.calledShots = true
     if (game.settings.get("sr5", "sr5MatrixGridRules")) rollData.systemRules.grid = true
 
- 
+    //A drone with its wireless off is reached by no wireless matrix action, an IC, a complex form or a
+    //resonance action included: only a direct connection does (p. 234), played by switching it on (N91)
+    //A roll relaunched from a chat card (Blue Goo's explosion) also checks the target the card knows
+    if (WIRELESS_TARGETED_ROLLS.includes(rollType) && (targetsWirelessOffDrone(actor) ||
+      (chatData?.target?.actorId && isWirelessOffDrone(SR5_EntityHelpers.getRealActorFromID(chatData.target.actorId), actor)))) {
+      return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetWirelessOff"))
+    }
+
     //Iterate through roll type and add data to rollData;
     switch (rollType){
       case "astralTracking":

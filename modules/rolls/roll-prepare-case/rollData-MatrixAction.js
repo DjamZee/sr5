@@ -122,9 +122,10 @@ export default async function matrixAction(rollData, rollKey, actor){
   //Add public grid switch
   if (actor.system.matrix.userGrid === "public") rollData.dialogSwitch.publicGrid = true
     
-  //A drone with its wireless off can no longer be hacked wirelessly (SR5 p. 424): only a direct
-  //connection reaches it (p. 234), which the GM plays by switching its wireless on for the action (N91)
-  if (checksTargetMarks(rollKey) && Array.from(game.user.targets).some(t => isWirelessOffDrone(t.actor, actor))) {
+  //A drone with its wireless off can no longer be hacked wirelessly (SR5 p. 424): no wireless matrix
+  //action reaches it, hacking or not. Only a direct connection does (p. 234), which the GM plays by
+  //switching its wireless on for the action (N91). IC, complex forms and resonance actions: roll-prepare.js
+  if (checksTargetMarks(rollKey) && targetsWirelessOffDrone(actor)) {
     ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetWirelessOff"))
     return
   }
@@ -163,6 +164,14 @@ function hasWatchdogMarkOnTarget(rollData){
  */
 function isWirelessOffDrone(target, actor){
   return target?.type === "actorDrone" && target.system?.wirelessTurnedOn === false && target !== actor
+}
+
+/** N91: tell whether one of the user's targets is a drone no wireless matrix action can reach
+ * @param {Object} actor - the acting actor
+ * @return {Boolean} true if the roll must be refused
+ */
+function targetsWirelessOffDrone(actor){
+  return Array.from(game.user.targets ?? []).some(t => isWirelessOffDrone(t.actor, actor))
 }
 
 /** A drone created from an unlinked token records the token id as its creator: the token and its
@@ -221,5 +230,5 @@ async function checkTargetMarks(rollData, matrixAction, actor){
 
 // Exported for the tests
 export {
-  checkTargetMarks, checksTargetMarks, isWirelessOffDrone
+  checkTargetMarks, checksTargetMarks, isWirelessOffDrone, targetsWirelessOffDrone
 }
