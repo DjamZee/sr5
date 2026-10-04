@@ -1058,6 +1058,7 @@ export class SR5_CharacterUtility extends Actor {
           SR5_EntityHelpers.updateModifier(actorData.attributes.agility.natural, label, "metatype", -1)
           SR5_EntityHelpers.updateModifier(actorData.attributes.strength.natural, label, "metatype", 4)
           SR5_EntityHelpers.updateModifier(actorData.attributes.logic.natural, label, "metatype", -1)
+          SR5_EntityHelpers.updateModifier(actorData.attributes.intuition.natural, label, "metatype", -1)
           SR5_EntityHelpers.updateModifier(actorData.attributes.charisma.natural, label, "metatype", -2)
         }
         break
@@ -1081,16 +1082,35 @@ export class SR5_CharacterUtility extends Actor {
       //setting not registered yet: the book
     }
     const real = augmented.value
-    const gain = augmented.modifiers.filter(m => !m.isMultiplier && m.value > 0).reduce((sum, m) => sum + m.value, 0)
-    const {
-      excess
-    } = augmentationCapExcess({
-      mode, metatype: this.getMetatype(actor), key, natural: actor.system.attributes[key].natural.value, gain
+    const items = Array.from(actor.items ?? [])
+    const effectsOf = i => Object.values(i.system?.customEffects ?? {
     })
-    if (excess <= 0) return
-    SR5_EntityHelpers.updateModifier(augmented, game.i18n.format("SR5.AugmentationCapModifier", {
-      real, kept: real - excess, reason: game.i18n.localize(`SR5.AugmentationCapReason_${mode}`)
-    }), "augmentationCap", -excess)
+    //The Increase Attribute spell and the Attribute Boost adept power reach the attribute through an
+    //itemEffect named after them (applyExternalEffect), whose own type is the item that cast it
+    const boostNames = items.filter(i => i.type === "itemEffect" && ["itemSpell", "itemAdeptPower"].includes(i.system?.type) &&
+      effectsOf(i).some(e => e.target === `system.attributes.${key}.augmented`)).map(i => i.name)
+    //Exceptional Attribute (SR5 p. 68) raises the natural maximum by 1: the qualities of the
+    //compendiums carry it as a custom effect on system.attributes.<key>.maximum
+    const exceptional = items.filter(i => i.type === "itemQuality").flatMap(effectsOf)
+      .filter(e => e.target === `system.attributes.${key}.maximum`).reduce((sum, e) => sum + (Number(e.value) || 0), 0)
+    //Possession (choix technique d'Élise): the spirit's attributes replace the host's, it is not an
+    //augmentation in the sense of SR5 p. 96 (cyberware, bioware, magic), so it stays out of the cap
+    const gains = augmented.modifiers.filter(m => !m.isMultiplier && m.value > 0 && m.type !== "possession")
+    const gain = gains.reduce((sum, m) => sum + m.value, 0)
+    //Seen in game: the modifier carries the type of the casting item (itemSpell, itemAdeptPower), not itemEffect
+    const boostGain = gains.filter(m => ["itemEffect", "itemSpell", "itemAdeptPower"].includes(m.type) && boostNames.includes(m.source)).reduce((sum, m) => sum + m.value, 0)
+    const {
+      capExcess, boostExcess, unknownMetatype
+    } = augmentationCapExcess({
+      mode, metatype: this.getMetatype(actor), key, natural: actor.system.attributes[key].natural.value, gain, boostGain, exceptional
+    })
+    const cut = (value, reason) => SR5_EntityHelpers.updateModifier(augmented, game.i18n.format("SR5.AugmentationCapModifier", {
+      real, kept: real - capExcess - boostExcess, reason: game.i18n.localize(reason)
+    }), "augmentationCap", -value)
+    if (capExcess > 0) cut(capExcess, `SR5.AugmentationCapReason_${mode}`)
+    if (boostExcess > 0) cut(boostExcess, "SR5.AugmentationCapReason_boost")
+    //No table maximum for this metatype: nothing is cut, and the help says why
+    if (unknownMetatype && gain > 0) SR5_EntityHelpers.updateModifier(augmented, game.i18n.localize("SR5.AugmentationCapUnknownMetatype"), "augmentationCap", 0)
     SR5_EntityHelpers.updateValue(augmented, 0)
   }
 

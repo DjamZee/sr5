@@ -2979,6 +2979,8 @@
 	"SR5.SETTINGS_AugmentationCap_none": "Aucun plafond",
 	"SR5.AugmentationCapReason_bonus": "augmentations plafonnées à +4, SR5 p. 96",
 	"SR5.AugmentationCapReason_augmentedMax": "maximum augmenté du métatype, SR5 p. 68",
+	"SR5.AugmentationCapReason_boost": "sort ou pouvoir d'adepte borné au maximum augmenté, SR5 p. 290 et 312",
+	"SR5.AugmentationCapUnknownMetatype": "Plafond : métatype inconnu de la table (SR5 p. 68), aucun plafond appliqué",
 	"SR5.AugmentationCapModifier": "Plafond : valeur réelle {real}, retenue {kept} ({reason})",
 	"SR5.SETTINGS_FreeReload_T": "Recharger sans dépenser d'action (règle maison)",
 	"SR5.SETTINGS_FreeReload_D": "Le livre fait payer le rechargement en actions (SR5 p. 167 et table p. 169). Coché, recharger en combat ne coûte aucune action quand les munitions du bon type sont dans l'inventaire, et le remplissage complet devient possible. Éjecter seul un chargeur garde son coût.",

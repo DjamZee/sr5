@@ -39,21 +39,21 @@ afterEach(() => {
 
 /** A character whose Strength is natural 5 with the given augmented modifiers */
 function actor({
-  type = 'actorPc', metatype = 'troll', strength = []
+  type = 'actorPc', metatype = 'troll', strength = [], natural = 5, items = []
 } = {
 }) {
   const attributes = {
   }
   for (const key of KEYS) attributes[key] = {
     natural: {
-      base: 5, value: 0, modifiers: []
+      base: key === 'strength' ? natural : 5, value: 0, modifiers: []
     },
     augmented: {
       base: 0, value: 0, modifiers: key === 'strength' ? strength : []
     },
   }
   return {
-    type, system: {
+    type, items, system: {
       biography: {
         metatype
       }, attributes, initiatives: {
@@ -117,10 +117,99 @@ describe('augmentation cap (SR5 p. 96 by default, arbitrage de DjamZ for the oth
     expect(METATYPE_ATTRIBUTE_MAX.elf.charisma).toBe(8)
     expect(METATYPE_ATTRIBUTE_MAX.ork.body).toBe(9)
   })
+
+  //The spell and the adept power arrive as an itemEffect named after them (applyExternalEffect)
+  const boost = (name, castBy = 'itemSpell') => ({
+    type: 'itemEffect', name, system: {
+      type: castBy, customEffects: {
+        0: {
+          target: 'system.attributes.strength.augmented', value: 0
+        }
+      }
+    }
+  })
+  //Seen in game: the modifier carries the type of the casting item, not itemEffect
+  const fromEffect = (name, value, type = 'itemSpell') => ({
+    source: name, type, value
+  })
+
+  it('bounds the Increase Attribute spell at the augmented maximum even without a cap (SR5 p. 290)', () => {
+    settings.sr5AugmentationCap = 'none'
+    const a = actor({
+      metatype: 'human', natural: 6, items: [boost('Augmentation de Force')],
+      strength: [mod(3), fromEffect('Augmentation de Force', 4)]
+    })
+    //6 + 3 + 4 = 13, human augmented maximum 6 + 4 = 10: only the spell's points are cut
+    expect(strengthOf(a)).toBe(10)
+  })
+
+  it('bounds the Attribute Boost adept power the same way (SR5 p. 312)', () => {
+    settings.sr5AugmentationCap = 'none'
+    expect(strengthOf(actor({
+      metatype: 'human', natural: 6, items: [boost("Augmentation d'attribut (Force)", 'itemAdeptPower')],
+      strength: [fromEffect("Augmentation d'attribut (Force)", 6, 'itemAdeptPower')]
+    }))).toBe(10)
+  })
+
+  it('never cuts more than the spell brought', () => {
+    settings.sr5AugmentationCap = 'none'
+    expect(strengthOf(actor({
+      metatype: 'human', natural: 6, items: [boost('Augmentation de Force')],
+      strength: [mod(6), fromEffect('Augmentation de Force', 2)]
+    }))).toBe(12)
+  })
+
+  it('leaves possession out of the cap: it is not an augmentation of SR5 p. 96', () => {
+    expect(strengthOf(actor({
+      strength: [mod(7, 'possession')]
+    }))).toBe(12)
+  })
+
+  it('raises the metatype maximum by 1 with Exceptional Attribute (SR5 p. 68)', () => {
+    settings.sr5AugmentationCap = 'augmentedMax'
+    expect(strengthOf(actor({
+      metatype: 'human', natural: 6, strength: [mod(8)], items: [{
+        type: 'itemQuality', name: 'Attribut exceptionnel (Force)', system: {
+          customEffects: [{
+            target: 'system.attributes.strength.maximum', value: 1
+          }]
+        }
+      }]
+    }))).toBe(11)
+  })
+
+  it('caps nothing for a metatype the table does not know, and says so', () => {
+    settings.sr5AugmentationCap = 'augmentedMax'
+    const a = actor({
+      metatype: '', strength: [mod(8)]
+    })
+    expect(strengthOf(a)).toBe(13)
+    expect(a.system.attributes.strength.augmented.modifiers.find(m => m.type === 'augmentationCap')?.source)
+      .toBe('SR5.AugmentationCapUnknownMetatype')
+  })
+})
+
+describe('metatype modifiers of a grunt (SR5 p. 68)', () => {
+  it('gives the troll its -1 in Intuition', () => {
+    vi.spyOn(SR5_CharacterUtility, 'grantMetatypeVision').mockImplementation(() => {})
+    const a = actor({
+      type: 'actorGrunt', metatype: 'troll'
+    })
+    a.system.reach = {
+      modifiers: []
+    }
+    a.system.resistances = {
+      physicalDamage: {
+        modifiers: []
+      }
+    }
+    SR5_CharacterUtility.applyRacialModifers(a)
+    expect(a.system.attributes.intuition.natural.modifiers.map(m => m.value)).toEqual([-1])
+  })
 })
 
 describe('reload without spending an action (house rule, off by default)', () => {
-  function weapon(ammoQuantity) {
+  function weapon(...quantities) {
     const owner = {
       id: 'a1', isToken: false, name: 'Runner',
       system: {
@@ -146,11 +235,11 @@ describe('reload without spending an action (house rule, off by default)', () =>
           }
         },
       },
-      items: [{
+      items: quantities.map(quantity => ({
         type: 'itemAmmunition', system: {
-          type: 'regular', class: 'heavyPistol', quantity: ammoQuantity
+          type: 'regular', class: 'heavyPistol', quantity
         }, update: vi.fn()
-      }],
+      })),
     }
     const item = Object.create(SR5Item.prototype)
     Object.defineProperty(item, 'actor', {
@@ -195,6 +284,16 @@ describe('reload without spending an action (house rule, off by default)', () =>
     await item.reloadAmmo('insert')
     expect(item.update).toHaveBeenCalled()
     expect(SR5Combat.changeActionInCombat).not.toHaveBeenCalled()
+  })
+
+  it('draws from a pile that holds rounds, not from an empty one listed first', async () => {
+    settings.sr5FreeReload = true
+    const item = weapon(0, 30)
+    await item.reloadAmmo('insert')
+    expect(item.update).toHaveBeenCalled()
+    const [empty, full] = item.actor.items
+    expect(empty.update).not.toHaveBeenCalled()
+    expect(full.update.mock.calls[0][0].system.quantity).toBe(15)
   })
 
   it('keeps the action cost without rounds in the inventory', async () => {

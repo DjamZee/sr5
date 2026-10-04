@@ -602,8 +602,10 @@ export class SR5Item extends Item {
       return
     }
 
-    //Check if actor has good type of rounds in inventory
-    let ammo = actor.items.find((i) => i.type === "itemAmmunition" && (i.system.type === weaponData.ammunition.type) && (i.system.class === weaponData.type))
+    //Check if actor has good type of rounds in inventory: a pile that still holds rounds first,
+    //so an empty pile listed before it neither blocks the reload nor gets drawn from
+    const fits = (i) => i.type === "itemAmmunition" && (i.system.type === weaponData.ammunition.type) && (i.system.class === weaponData.type)
+    let ammo = actor.items.find((i) => fits(i) && i.system.quantity > 0) || actor.items.find(fits)
     let ammoData = ammo ? foundry.utils.duplicate(ammo.system) : {
     }
 

@@ -19,28 +19,34 @@ export const METATYPE_ATTRIBUTE_MAX = {
 
 export const AUGMENTATION_CAP_MODES = ["bonus", "augmentedMax", "none"]
 
+//Augmented maximum of an attribute: natural maximum of the metatype (SR5 p. 68), +1 with Exceptional
+//Attribute (SR5 p. 68), + 4 (SR5 p. 290, 312). null for a metatype the table does not know.
+export function augmentedMaximum(metatype, key, exceptional = 0) {
+  const max = METATYPE_ATTRIBUTE_MAX[metatype]?.[key]
+  return max === undefined ? null : max + exceptional + 4
+}
+
 //How many points of an attribute the cap takes away, and why.
 //"bonus" (book, SR5 p. 96): augmentations add +4 at most to the natural rating.
-//"augmentedMax" (arbitrage de DjamZ): only the augmented maximum binds, natural maximum of the metatype + 4 (SR5 p. 290, 312).
-//"none": no cap. gain is the sum of the positive modifiers only: penalties (wounds, encumbrance)
-//are never cut, they apply in full under the cap.
+//"augmentedMax" (arbitrage de DjamZ): only the augmented maximum binds.
+//"none": no cap (arbitrage de DjamZ).
+//gain is the sum of the positive modifiers only: penalties (wounds, encumbrance) are never cut, they
+//apply in full under the cap. boostGain is the part of gain brought by the Increase Attribute spell
+//or the Attribute Boost adept power: whatever the choice, even "none", the book bounds them at the
+//augmented maximum (SR5 p. 290 and 312), and only their own points are cut for it.
 export function augmentationCapExcess({
-  mode, metatype, key, natural, gain
+  mode, metatype, key, natural, gain, boostGain = 0, exceptional = 0
 }) {
-  if (!AUGMENTATION_CAP_MODES.includes(mode) || mode === "none") return {
-    cap: null, excess: 0
-  }
-  let cap
+  const augMax = augmentedMaximum(metatype, key, exceptional)
+  let cap = null
   if (mode === "bonus") cap = natural + 4
-  else {
-    const max = METATYPE_ATTRIBUTE_MAX[metatype]?.[key]
-    if (max === undefined) return {
-      cap: null, excess: 0
-    }
-    cap = max + 4
-  }
+  else if (mode === "augmentedMax") cap = augMax
+  const capExcess = cap === null ? 0 : Math.max(0, natural + gain - cap)
+  const boostExcess = (augMax === null || boostGain <= 0) ? 0 :
+    Math.min(boostGain, Math.max(0, natural + gain - capExcess - augMax))
   return {
-    cap, excess: Math.max(0, natural + gain - cap)
+    cap, augMax, capExcess, boostExcess, excess: capExcess + boostExcess,
+    unknownMetatype: mode === "augmentedMax" && augMax === null
   }
 }
 

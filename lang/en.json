@@ -2979,6 +2979,8 @@
 	"SR5.SETTINGS_AugmentationCap_none": "No cap",
 	"SR5.AugmentationCapReason_bonus": "augmentations capped at +4, SR5 p. 96",
 	"SR5.AugmentationCapReason_augmentedMax": "metatype augmented maximum, SR5 p. 68",
+	"SR5.AugmentationCapReason_boost": "spell or adept power bounded by the augmented maximum, SR5 p. 290 and 312",
+	"SR5.AugmentationCapUnknownMetatype": "Cap: metatype unknown to the table (SR5 p. 68), no cap applied",
 	"SR5.AugmentationCapModifier": "Cap: real value {real}, kept {kept} ({reason})",
 	"SR5.SETTINGS_FreeReload_T": "Reload without spending an action (house rule)",
 	"SR5.SETTINGS_FreeReload_D": "The book has reloading cost actions (SR5 p. 167 and table p. 169). Checked, reloading in combat costs no action when the right rounds are in the inventory, and a full refill becomes possible. Ejecting a clip alone keeps its cost.",
