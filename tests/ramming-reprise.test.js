@@ -4,6 +4,21 @@ import {
 import {
   SR5_ConverterHelpers
 } from '../modules/rolls/roll-helpers/converter.js'
+import {
+  SR5
+} from '../modules/config.js'
+import {
+  SR5_EntityHelpers
+} from '../modules/entities/helpers.js'
+
+// R4: the init sort (sortTranslations) must keep the book's order of these lists
+describe('ramming lists after the init sort', () => {
+  it('keeps the angles and gaits in the book\'s order', () => {
+    let sorted = SR5_EntityHelpers.sortTranslations(structuredClone(SR5))
+    expect(Object.keys(sorted.rammingAngles)).toEqual(['rear', 'side', 'front'])
+    expect(Object.keys(sorted.rammingGaits)).toEqual(['walk', 'run'])
+  })
+})
 
 // SR5 p. 203: vehicle movement rates, walking and running, from the Speed attribute
 describe('vehicleMetersPerTurn', () => {

@@ -350,6 +350,9 @@ export class SR5_EntityHelpers {
         case "qualityTypesShort":
         case "barrierTypes":
         case "matrixSearchInfoType":
+        case "rammingAngles":
+        case "rammingGaits":
+          //Book order for the last two: Rigger 5 p. 179, SR5 p. 203
           break
         default:
           object[key] = this.sortByTranslatedTerm(object[key], key)
