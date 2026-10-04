@@ -29,7 +29,7 @@ import {
   SR5_MatrixHelpers 
 } from "./roll-helpers/matrix.js"
 import {
-  isRolledByTarget, firstAidPatient, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick, ownsCardSpeaker
+  isRolledByTarget, firstAidPatient, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick, ownsCardSpeaker, defenseActorId
 } from "./roll-helpers/cardRoller.js"
 import {
   SR5_CombatHelpers 
@@ -213,6 +213,7 @@ export class SR5_RollMessage {
       case "defenseMeleeWeapon":
       case "defenseRangedWeapon":
       case "defenseAstralCombat":
+        actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id)))
         actor.rollTest("defense", null, messageData)
         break
       case "defenseThroughAndInto":

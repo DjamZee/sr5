@@ -18,6 +18,16 @@ export function opposedTestActorId(speaker) {
   return speaker.token || speaker.actor
 }
 
+// The actor defending against an attack card: the selected one, unless it is the attacker itself,
+// who cannot defend against their own attack; then the card's target defends (N93)
+export function defenseActorId(selectedId, card, resolveActor) {
+  const targetId = card?.target?.actorId
+  if (!selectedId || !targetId) return selectedId
+  const selected = resolveActor(selectedId), attacker = resolveActor(card.owner?.speakerId)
+  if (selected && attacker && selected.uuid === attacker.uuid && resolveActor(targetId)?.isOwner) return targetId
+  return selectedId
+}
+
 // The id that finds the actor who spoke a card: its token first, since an unlinked token's actor
 // only exists through its token and is unknown to game.actors (N95)
 export function cardSpeakerId(speaker) {
