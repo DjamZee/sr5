@@ -360,8 +360,9 @@ export class SR5_UtilityItem extends Actor {
     SR5_EntityHelpers.updateValue(item.availability, 0)
   }
 
+  //No floor at 0: what hides well goes down to -6, an RFID tag (SR5 p. 422)
   static _handleItemConcealment(item) {
-    SR5_EntityHelpers.updateValue(item.concealment, 0)
+    SR5_EntityHelpers.updateValue(item.concealment)
   }
 
   static _handleArmorValue(item) {
