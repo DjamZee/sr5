@@ -8,6 +8,9 @@ import {
   SR5_SpiritTypes
 } from "../items/spirit-types.js"
 import {
+  homunculusMaterialRatings
+} from "./homunculus.js"
+import {
   SR5Combat 
 } from "../../system/srcombat.js"
 import {
@@ -1107,7 +1110,8 @@ export class SR5_CharacterUtility extends Actor {
         SR5_EntityHelpers.updateModifier(attributes.charisma.natural, label, 'spiritType', -2)
         break
       case "homunculus":
-        attributes.body.natural.base = 0
+        // SR5 p. 301: the Body is the Structure of the material it is made of (table SR5 p. 198)
+        attributes.body.natural.base = homunculusMaterialRatings(actorData.homunculusMaterial).structure
         SR5_EntityHelpers.updateModifier(attributes.agility.natural, label, 'spiritType', -2)
         SR5_EntityHelpers.updateModifier(attributes.reaction.natural, label, 'spiritType', -2)
         // Stat block (SR5 p. 301, VO p. 298): WIL, LOG and INT 1; the VF prints CHA 3, the VO has no CHA column
@@ -2087,6 +2091,12 @@ export class SR5_CharacterUtility extends Actor {
 
   // Generate Actors Armor
   static updateArmor(actor) {
+    // The book gives a homunculus no Armor (SR5 p. 301); a world setting lends it the one of its material (SR5 p. 198)
+    if (actor.type === "actorSpirit" && SR5_SpiritTypes.baseType(actor.system.type) === "homunculus" &&
+      game.settings.get("sr5", "sr5HomunculusMaterialArmor")) {
+      const armor = homunculusMaterialRatings(actor.system.homunculusMaterial).armor
+      if (armor) SR5_EntityHelpers.updateModifier(actor.system.itemsProperties.armor, game.i18n.localize("SR5.HomunculusMaterial"), "actorSpirit", armor)
+    }
     SR5_EntityHelpers.updateValue(actor.system.itemsProperties.armor, 0)
     for (let key of Object.keys(SR5.specialDamageTypes)) {
       SR5_EntityHelpers.updateValue(actor.system.itemsProperties.armor.specialDamage[key], 0)

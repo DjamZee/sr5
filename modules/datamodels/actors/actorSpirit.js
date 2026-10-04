@@ -234,6 +234,18 @@ export class sr5ActorSpiritDataModel extends foundry.abstract.TypeDataModel {
       isBounded: new fields.BooleanField({
         initial: false
       }),
+      // Material of a homunculus (SR5 p. 301): a key of SR5.barrierTypes, or "other" with its values typed in
+      homunculusMaterial: new fields.SchemaField({
+        type: new fields.StringField({
+          initial: ''
+        }),
+        structure: new fields.NumberField({
+          initial: 0
+        }),
+        armor: new fields.NumberField({
+          initial: 0
+        }),
+      }),
     }
   }
 

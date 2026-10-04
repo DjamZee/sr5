@@ -1,6 +1,12 @@
 import {
   ActorSheetSR5 
 } from "./baseSheet.js"
+import {
+  SR5, SR5_BARRIER_RATINGS
+} from "../../config.js"
+import {
+  SR5_SpiritTypes
+} from "../items/spirit-types.js"
 
 /**
  * An Actor sheet for spirit type actors in the Shadowrun 5 system.
@@ -38,8 +44,22 @@ export class SR5SpiritSheet extends ActorSheetSR5 {
 
     this._prepareItems(context.actor)
     this._prepareSkills(context.actor)
+    this._prepareHomunculusMaterials(context)
 
     return context
+  }
+
+  // SR5 p. 301: a homunculus picks its material in the Barrier Ratings table (SR5 p. 198), each shown with its ratings
+  _prepareHomunculusMaterials(context) {
+    context.isHomunculus = SR5_SpiritTypes.baseType(this.actor.system.type) === "homunculus"
+    if (!context.isHomunculus) return
+    const structure = game.i18n.localize("SR5.Structure"), armor = game.i18n.localize("SR5.Armor")
+    context.homunculusMaterials = {
+    }
+    for (let [key, ratings] of Object.entries(SR5_BARRIER_RATINGS)) {
+      context.homunculusMaterials[key] = `${game.i18n.localize(SR5.barrierTypes[key])} (${structure} ${ratings.structure}, ${armor} ${ratings.armor})`
+    }
+    context.homunculusMaterials.other = game.i18n.localize("SR5.HomunculusMaterialOther")
   }
 
   _prepareSkills(actor) {

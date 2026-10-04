@@ -345,6 +345,18 @@ export class SR5_SystemHelpers {
       },
       requiresReload: true
     })
+
+    // SR5 p. 301 gives a homunculus the Structure of its material as Body, and no Armor: off by default.
+    // On, it also gets the Armor of that material (SR5 p. 198). Read while the actors are prepared, hence the reload.
+    game.settings.register("sr5", "sr5HomunculusMaterialArmor", {
+      name: "SR5.SETTINGS_HomunculusMaterialArmor_T",
+      hint: "SR5.SETTINGS_HomunculusMaterialArmor_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+      requiresReload: true
+    })
   }
 
   /* Display Shadowrun Themed Log Entries Based on Logging Level

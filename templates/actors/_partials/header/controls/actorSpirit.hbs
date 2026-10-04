@@ -5,6 +5,23 @@
 <div class="SRemptyBox" title="{{localize 'SR5.Force'}}">
   <input class="SRinputInBox" type="number" data-dtype="Number" name="system.force.base" value="{{system.force.base}}">
 </div>
+{{!-- Homunculus material: its Structure is the Body (SR5 p. 301, table SR5 p. 198) --}}
+{{#if isHomunculus}}
+<div class="SR-EspritType" title="{{localize 'SR5.HomunculusMaterial'}}">
+  <select name="system.homunculusMaterial.type" data-dtype="String">
+    <option class="SR-LightGreyColor" value="">{{localize 'SR5.HomunculusMaterialNone'}}</option>
+    {{selectOptions homunculusMaterials selected=system.homunculusMaterial.type}}
+  </select>
+</div>
+{{#ife system.homunculusMaterial.type 'other'}}
+<div class="SRemptyBox" title="{{localize 'SR5.Structure'}}">
+  <input class="SRinputInBox" type="number" min="0" data-dtype="Number" name="system.homunculusMaterial.structure" value="{{system.homunculusMaterial.structure}}">
+</div>
+<div class="SRemptyBox" title="{{localize 'SR5.Armor'}}">
+  <input class="SRinputInBox" type="number" min="0" data-dtype="Number" name="system.homunculusMaterial.armor" value="{{system.homunculusMaterial.armor}}">
+</div>
+{{/ife}}
+{{/if}}
 <div class="SR-Materialize"
   data-helpTitle="{{localize 'SR5.HELP_BoundedButton'}}"
   data-helpMessage="{{localize 'SR5.HELP_BoundedButtonMsg'}}"
