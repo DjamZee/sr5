@@ -67,6 +67,39 @@ describe("SR5_EntityHelpers.visionRangeUpdatesOfScene", () => {
     expect(updates).toEqual([])
   })
 
+  it("builds the update from the stored data, not from the prepared detection modes", () => {
+    // A placed token: the prepared document gives lightPerception an Infinity range where its source holds
+    // null, and Foundry silently refuses an update carrying that Infinity (the sight range is lost with it)
+    const source = {
+      _id: "old",
+      sight: {
+        visionMode: "ultrasound", range: 50
+      },
+      detectionModes: [{
+        id: "lightPerception", enabled: true, range: null
+      }, {
+        id: "ultrasound", enabled: true, range: 50
+      }]
+    }
+    const prepared = {
+      id: "old",
+      _source: source,
+      sight: {
+        ...source.sight
+      },
+      detectionModes: [{
+        id: "lightPerception", enabled: true, range: Infinity
+      }, {
+        id: "ultrasound", enabled: true, range: 50
+      }]
+    }
+    const [update] = SR5_EntityHelpers.visionRangeUpdatesOfScene(scene("ft", [prepared]))
+    expect(update._id).toBe("old")
+    expect(update["sight.range"]).toBeCloseTo(164.04, 2)
+    expect(update.detectionModes[0].range).toBe(null)
+    expect(update.detectionModes[1].range).toBeCloseTo(164.04, 2)
+  })
+
   it("is idempotent: applied updates give no further update", () => {
     const t = token("t", "thermographic", 30)
     const first = SR5_EntityHelpers.visionRangeUpdatesOfScene(scene("ft", [t]))

@@ -445,7 +445,11 @@ export class SR5_EntityHelpers {
   //already converted, is left as it is, so running this again changes nothing.
   static visionRangeUpdatesOfScene(scene){
     const updates = []
-    for (const token of scene?.tokens ?? []) {
+    for (const document of scene?.tokens ?? []) {
+      //Read the stored data, not the prepared one : prepared detection modes carry derived values (lightPerception
+      //at Infinity where the source holds null), and an update built from them is refused without a word, the
+      //sight range with it
+      const token = document._source ?? document
       const vision = Object.keys(SR5_TOKEN_VISION_MODES).find(k => SR5_TOKEN_VISION_MODES[k] === token.sight?.visionMode)
       if (!vision) continue
       const meters = getVisionRange(vision)
