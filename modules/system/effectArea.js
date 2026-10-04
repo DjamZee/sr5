@@ -56,25 +56,20 @@ export class SR5_EffectArea {
 
     if(!actor || !passiveActor) return 
 
-    let actorJammedEffect = actor.items.find(i => i.system.type === "signalJammed")
+    //Each jammer leaves its own signalJammed item: look for the one of the jammer at hand, not the first one
+    let actorJammedEffect = actor.items.find(i => i.system.type === "signalJammed" && i.system.ownerID === passiveActor.id)
     let actorJamEffect = actor.items.find(i => i.system.type === "signalJam")
-    let passiveJammedEffect = passiveActor.items.find(i => i.system.type === "signalJammed")
+    let passiveJammedEffect = passiveActor.items.find(i => i.system.type === "signalJammed" && i.system.ownerID === actor.id)
     let passiveJamEffect = passiveActor.items.find(i => i.system.type === "signalJam")
     //passive token is jamming
     if (passiveJamEffect){
       //check distance
       if (distance > SR5_EffectArea.JAM_SIGNALS_RADIUS_IN_METERS) {
-        if (actorJammedEffect?.system?.ownerID === passiveActor.id){
-          if (game.user?.isGM) {
-            let jammedActiveEffect = actor.effects.find(i => i.origin === "signalJammed")
-            if (jammedActiveEffect){
-              await actor.deleteEmbeddedDocuments("ActiveEffect", [jammedActiveEffect.id])
-              await actor.deleteEmbeddedDocuments("Item", [actorJammedEffect.id])
-            }
-          }
+        if (actorJammedEffect){
+          if (game.user?.isGM) await SR5_EffectArea.removeJammedEffect(actor, actorJammedEffect)
         }
       } else {
-        if (actorJammedEffect?.system?.ownerID !== passiveActor.id){ 
+        if (!actorJammedEffect){
           if (game.user?.isGM) await SR5_EffectArea.createJammedEffect(passiveActor, actor, passiveJamEffect.system.value)
         }
       }
@@ -83,19 +78,25 @@ export class SR5_EffectArea {
     if (actorJamEffect){
       //check distance
       if (distance <= SR5_EffectArea.JAM_SIGNALS_RADIUS_IN_METERS) {
-        if (passiveJammedEffect?.system?.ownerID !== actor.id){
+        if (!passiveJammedEffect){
           if (game.user?.isGM) await SR5_EffectArea.createJammedEffect(actor, passiveActor, actorJamEffect.system.value)
         }
       } else {
-        if (passiveJammedEffect?.system?.ownerID === actor.id){
-          if (game.user?.isGM) {
-            let jammedActiveEffect = passiveActor.effects.find(i => i.origin === "signalJammed")
-            await passiveActor.deleteEmbeddedDocuments("ActiveEffect", [jammedActiveEffect.id])
-            await passiveActor.deleteEmbeddedDocuments("Item", [passiveJammedEffect.id])
-          }
+        if (passiveJammedEffect){
+          if (game.user?.isGM) await SR5_EffectArea.removeJammedEffect(passiveActor, passiveJammedEffect)
         }
       }
     }
+  }
+
+  //Lift the noise one jammer put on an actor, and one "jammed" status icon with it. The icons carry nothing
+  //that tells their jammer apart, so the last one stays as long as another jammer still jams the actor: with
+  //two jammers on one target, the one that stops must not hide the other.
+  static async removeJammedEffect(actor, jammedItem){
+    let otherJammer = actor.items.find(i => i.id !== jammedItem.id && i.system.type === "signalJammed")
+    let icons = actor.effects.filter(i => i.origin === "signalJammed")
+    await actor.deleteEmbeddedDocuments("Item", [jammedItem.id])
+    if (icons.length && (!otherJammer || icons.length > 1)) await actor.deleteEmbeddedDocuments("ActiveEffect", [icons[0].id])
   }
 
   //Start jamming
@@ -153,9 +154,7 @@ export class SR5_EffectArea {
         cleared.add(tokenActor.uuid)
         let jammedEffect = tokenActor.items.find(i => i.system.type === "signalJammed" && i.system.ownerID === actorId)
         if (!jammedEffect) continue
-        let jammedActiveEffect = tokenActor.effects.find(i => i.origin === "signalJammed")
-        if (jammedActiveEffect) await tokenActor.deleteEmbeddedDocuments("ActiveEffect", [jammedActiveEffect.id])
-        await tokenActor.deleteEmbeddedDocuments("Item", [jammedEffect.id])
+        await SR5_EffectArea.removeJammedEffect(tokenActor, jammedEffect)
       }
     }
   }
