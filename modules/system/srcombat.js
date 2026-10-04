@@ -698,6 +698,8 @@ export class SR5Combat extends Combat {
     if (!actor) return
     for (let item of actor.items){
       if (item.type !== "itemEffect" || item.system.durationType !== "initiativePass") continue
+      //Tied to its owner's next pass, even in the next round: ended when the owner's turn starts
+      if (SR5Combat.endsOnOwnerTurn(item, combatant.combat)) continue
       let duration = item.system.duration - 1
       if (duration <= 0){
         await actor.deleteEmbeddedDocuments("Item", [item.id])
@@ -708,6 +710,34 @@ export class SR5Combat extends Combat {
         "system.duration": duration
       })
     }
+  }
+
+  //Kill Code p. 43: the I Am the Firewall bonus lasts until the start of the hacker's next Initiative Pass.
+  //Only when the hacker fights in this combat; otherwise the effect keeps its pass countdown
+  static endsOnOwnerTurn(item, combat){
+    if (item.system.type !== "iAmTheFirewall" || !combat) return false
+    return combat.combatants.some(c => c.actorId === item.system.ownerID)
+  }
+
+  //Turn start: the effects the starting combatant gave to its allies until its next pass are over
+  static async endOwnerPassEffects(combat, combatant){
+    let ownerId = combatant?.actorId
+    if (!ownerId) return
+    for (let c of combat.combatants){
+      let actor = SR5Combat.getActorFromCombatant(c)
+      if (!actor) continue
+      let ended = actor.items.filter(i => i.type === "itemEffect" && i.system.durationType === "initiativePass" && i.system.ownerID === ownerId && SR5Combat.endsOnOwnerTurn(i, combat))
+      if (!ended.length) continue
+      await actor.deleteEmbeddedDocuments("Item", ended.map(i => i.id))
+      for (let item of ended) ui.notifications.info(`${c.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_DurationFinished", {
+        effect: item.name
+      })}`)
+    }
+  }
+
+  async _onStartTurn(combatant, context){
+    await super._onStartTurn(combatant, context)
+    await SR5Combat.endOwnerPassEffects(this, combatant)
   }
 
   //Do stuff on actor when turn is ending
