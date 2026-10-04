@@ -290,9 +290,9 @@ async function handleSpiritDamage(rollData, actorData, chatData){
   } else {
     armor = actorData.itemsProperties.armor.value
 
-    //Check if AP is greater than Armor
-    if (rollData.damage.base < (armor + chatData.combat.armorPenetration)) return abortWithInfo(`${game.i18n.format("SR5.INFO_ImmunityToNormalWeapons", {
-      essence: armor, pa: chatData.combat.armorPenetration, damage: rollData.damage.base
+    //SR5 p. 397 and 400: a modified DV that does not exceed the rating (modified by AP) does nothing
+    if (SR5_CombatHelpers.isStoppedByHardenedArmor(rollData.damage.base, armor, chatData.combat.armorPenetration)) return abortWithInfo(`${game.i18n.format("SR5.INFO_ImmunityToNormalWeapons", {
+      hardenedArmor: armor + chatData.combat.armorPenetration, pa: chatData.combat.armorPenetration, damage: rollData.damage.base
     })}`)
         
     //Add AP modifiers to dicepool

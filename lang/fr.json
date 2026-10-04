@@ -1815,7 +1815,7 @@
 	"SR5.INFO_GrenadeTargetDistance": "Distance entre l'explosif et la cible : {distance}m.",
 	"SR5.INFO_GrenadeTargetDistanceFallOff": "Distance entre l'explosif et la cible : {distance}m. Dommages réduit de {modifiedDamage} pour un total final de {finalDamage}.",
 	"SR5.INFO_ImmunityToManaSpell": "Les acteur de type '{type}' sont immunisés aux sort Mana",
-	"SR5.INFO_ImmunityToNormalWeapons": "Armure renforcée ({hardenedArmor} [PA:{pa}]) supérieure à la VD modifiée ({damage})",
+	"SR5.INFO_ImmunityToNormalWeapons": "Armure renforcée ({hardenedArmor} [PA:{pa}]) supérieure ou égale à la VD modifiée ({damage})",
 	"SR5.INFO_ImmunityToPhysicalSpell": "Les acteur de de type '{type}' sont immunisés aux sort Physique",
 	"SR5.INFO_ImmunityToStunDamage": "Les Drones et vehicules sont immunisés aux dommages étourdissants",
 	"SR5.INFO_ImmunityToBiofeedback": "Les personnages en RA ne subissent pas de dommages de biofeedback",

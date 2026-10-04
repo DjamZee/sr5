@@ -1815,7 +1815,7 @@
 	"SR5.INFO_GrenadeTargetDistance": "Distance between explosiv and target : {distance}m.",
 	"SR5.INFO_GrenadeTargetDistanceFallOff": "Distance between explosiv and target : {distance}m. Damages reduce by {modifiedDamage}, final damages {finalDamage}.",
 	"SR5.INFO_ImmunityToManaSpell": "{type} actors type are immune to Mana spell",
-	"SR5.INFO_ImmunityToNormalWeapons": "Hardened armor ({hardenedArmor} [PA:{pa}]) greater than modified DV ({damage})",
+	"SR5.INFO_ImmunityToNormalWeapons": "Hardened armor ({hardenedArmor} [PA:{pa}]) greater than or equal to modified DV ({damage})",
 	"SR5.INFO_ImmunityToPhysicalSpell": "{type} actors type are immune to Physical spell",
 	"SR5.INFO_ImmunityToStunDamage": "Drones and vehicles are immune to Stun Damage",
 	"SR5.INFO_ImmunityToBiofeedback": "Characters in AR take no biofeedback damage",
