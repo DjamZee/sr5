@@ -113,7 +113,7 @@ describe('Device of an AI bricked (Data Trails p. 161)', () => {
     await SR5_MatrixHelpers.applyDamageToDecK(actor, card(14), null, false)
     expect(SR5_ActorHelper.createDeadEffect).not.toHaveBeenCalled()
     expect(SR5_SocketHandler.emitForGM).toHaveBeenCalledWith('createDeadEffect', {
-      actorId: 'a'
+      actorId: 'a', itemUuid: 'Actor.a.Item.cl',
     })
   })
 

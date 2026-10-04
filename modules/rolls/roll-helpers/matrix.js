@@ -108,7 +108,8 @@ export class SR5_MatrixHelpers {
       let actorId = targetActor.isToken ? targetActor.token.id : targetActor.id
       if (game.user?.isGM) await SR5_ActorHelper.createDeadEffect(actorId)
       else SR5_SocketHandler.emitForGM("createDeadEffect", {
-        actorId: actorId
+        actorId: actorId,
+        itemUuid: targetItem.uuid,
       })
     }
 

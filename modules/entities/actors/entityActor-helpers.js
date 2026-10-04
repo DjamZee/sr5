@@ -277,7 +277,19 @@ export class SR5_ActorHelper {
   }
 
   //A player may not write on the actor that dies (an AI dissipated by matrix damage it was dealt): the GM does it
+  //The GM checks the request first: only an AI whose device has a full matrix monitor (Data Trails p. 161)
   static async _socketCreateDeadEffect(message){
+    let actor = SR5_EntityHelpers.getRealActorFromID(message.data.actorId)
+    if (actor?.system.activeSpecialAttribute !== "depth") return
+    let device = message.data.itemUuid ? await fromUuid(message.data.itemUuid) : null
+    if (!device || device.actor?.id !== actor.id) return
+    //The update of the device was sent just before: give it a moment to land
+    const isFull = () => {
+      let monitor = device.system.conditionMonitors?.matrix
+      return !!monitor && monitor.value > 0 && monitor.actual.base >= monitor.value
+    }
+    for (let i = 0; i < 20 && !isFull(); i++) await new Promise(r => setTimeout(r, 100))
+    if (!isFull()) return
     await SR5_ActorHelper.createDeadEffect(message.data.actorId)
   }
 
