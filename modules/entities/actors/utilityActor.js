@@ -4641,10 +4641,17 @@ export class SR5_CharacterUtility extends Actor {
         if (focus.subType && actorData.skills?.[focus.type]?.spellCategory?.[focus.subType]) targets.push({
           path: `system.skills.${focus.type}.spellCategory.${focus.subType}`, property: actorData.skills[focus.type].spellCategory[focus.subType]
         })
-        // SR5 p. 323: a counterspelling focus also adds its Force to the spell defense pool shared with allies
-        if (focus.type === "counterspelling" && actorData.magic?.counterSpellPool) targets.push({
-          path: "system.magic.counterSpellPool", property: actorData.magic.counterSpellPool
-        })
+        // SR5 p. 323: a counterspelling focus also adds its Force to the spell defense pool shared with allies.
+        // That pool has no spell category: only the most powerful focus counts, whatever its category,
+        // and the gamemaster takes it off by hand when the category of the spell does not match (DjamZ's call)
+        if (focus.type === "counterspelling" && actorData.magic?.counterSpellPool) {
+          let pool = actorData.magic.counterSpellPool
+          let current = pool.modifiers.find(m => m.type === "itemFocus")
+          if (!current) SR5_EntityHelpers.updateModifier(pool, item.name, "itemFocus", force)
+          else if (current.value < force) Object.assign(current, {
+            source: item.name, value: force
+          })
+        }
         break
       case "summoning":
       case "binding":
