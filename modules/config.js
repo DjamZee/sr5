@@ -3714,6 +3714,21 @@ SR5.barrierTypes = {
   hardened                  : "SR5.BarrierHardenedMaterial",
 }
 
+// SR5 p. 198, Barrier Ratings table: Structure and Armor of each material, read by weapon breaking and by the
+// homunculus, whose Body is the Structure of its material (SR5 p. 301). The errata renames the last row "hardened".
+// Kept out of SR5, whose tables are all translations sorted at init. Same keys as SR5.barrierTypes.
+export const SR5_BARRIER_RATINGS = {
+  fragile                   : {structure: 1, armor: 1},
+  cheap                     : {structure: 2, armor: 4},
+  average                   : {structure: 4, armor: 6},
+  heavy                     : {structure: 6, armor: 8},
+  reinforced                : {structure: 8, armor: 12},
+  structural                : {structure: 10, armor: 16},
+  structuralHeavy           : {structure: 12, armor: 20},
+  armored                   : {structure: 14, armor: 24},
+  hardened                  : {structure: 16, armor: 32},
+}
+
 SR5.objectTypes = {
   3													: "SR5.ObjectTypeNatural",
   6													: "SR5.ObjectTypeManufacturedLow",

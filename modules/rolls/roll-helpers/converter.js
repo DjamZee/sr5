@@ -1,3 +1,7 @@
+import {
+  SR5_BARRIER_RATINGS
+} from "../../config.js"
+
 export class SR5_ConverterHelpers {
 
   //Convert firing mode choice to  number of bullets
@@ -487,51 +491,12 @@ export class SR5_ConverterHelpers {
     return Math.ceil(this.collisionDamage(targetBody, speed)/2)
   }
 
+  // SR5 p. 198; an unknown material falls back on a heavy one, as before
   static barrierTypeToStructure(barrierType){
-    switch(barrierType){
-      case "fragile":
-        return 1
-      case "cheap":
-        return 2
-      case "average":
-        return 4
-      case "heavy":
-        return 6
-      case "reinforced":
-        return 8
-      case "structural":
-        return 10
-      case "structuralHeavy":
-        return 12
-      case "armored":
-        return 14
-      case "hardened":
-        return 16
-      default: return 6
-    }
+    return (SR5_BARRIER_RATINGS[barrierType] ?? SR5_BARRIER_RATINGS.heavy).structure
   }
 
   static barrierTypeToArmor(barrierType){
-    switch(barrierType){
-      case "fragile":
-        return 2
-      case "cheap":
-        return 4
-      case "average":
-        return 6
-      case "heavy":
-        return 8
-      case "reinforced":
-        return 12
-      case "structural":
-        return 16
-      case "structuralHeavy":
-        return 20
-      case "armored":
-        return 24
-      case "hardened":
-        return 32
-      default: return 8
-    }
+    return (SR5_BARRIER_RATINGS[barrierType] ?? SR5_BARRIER_RATINGS.heavy).armor
   }
 }
