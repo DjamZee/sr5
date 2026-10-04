@@ -432,15 +432,14 @@ export async function handleMartialArtsCalledShot(rollData, actor){
   return rollData
 }
 
-// Run & Gun p. 125: Pin is a general called shot for bows, crossbows and throwing weapons only;
-// the technique (p. 148) only lowers its penalty
+// Run & Gun p. 125: Pin is a general called shot for bows, crossbows and throwing weapons only,
+// whatever the ammo; the Capture précise technique (p. 148) only lowers its penalty
 const PIN_WEAPON_TYPES = ["throwing", "bow", "lightCrossbow", "mediumCrossbow", "heavyCrossbow"]
-const PIN_AMMO_TYPES = ["special", "bolt", "boltInjection", "arrow", "arrowInjection"]
-export function canPin(weaponType, ammoType){
-  return PIN_WEAPON_TYPES.includes(weaponType) || PIN_AMMO_TYPES.includes(ammoType)
+export function canPin(weaponType){
+  return PIN_WEAPON_TYPES.includes(weaponType)
 }
 
-function _buildCalledShotList(rollData){
+export function _buildCalledShotList(rollData){
   rollData.lists.calledShots = {
   }
   rollData.lists.calledShotsSpecific = {
@@ -470,7 +469,7 @@ function _buildCalledShotList(rollData){
     rollData.lists.calledShots.dirtyTrick = game.i18n.localize("SR5.CS_DirtyTrick")
   }
 
-  if (canPin(rollData.combat.weaponType, ammoType)){
+  if (canPin(rollData.combat.weaponType)){
     rollData.lists.calledShots.pin = game.i18n.localize("SR5.CS_Pin")
   }
     
@@ -540,9 +539,7 @@ function _buildCalledShotList(rollData){
     if (tags.includes("shakeRattle")) {
       rollData.lists.calledShots.shakeUp = game.i18n.localize("SR5.CS_AS_ShakeRattle")
     }
-    if (tags.includes("pin")) {
-      rollData.lists.calledShots.pin = game.i18n.localize("SR5.CS_Pin")
-    }
+    // A "pin" tag adds nothing: Pin depends on the weapon, not on the ammo (Run & Gun p. 125)
   } else {
     // Legacy string-based called shot eligibility
     if (ammoType === "gel") rollData.lists.calledShotsSpecific.bellringer = game.i18n.localize("SR5.CS_AS_Bellringer")
