@@ -37,6 +37,7 @@ function defender(){
             'Actor.a.Item.gear': 'Medkit'
           },
           vehicles: {
+            'Actor.a.Item.drone': 'MCT Fly-Spy'
           },
         },
       },
