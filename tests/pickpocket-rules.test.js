@@ -3,8 +3,25 @@ import {
 } from 'vitest'
 
 const {
-  isPickable, pickableItems, randomPick, perceptionModifiers, pickpocketOutcome, transferEnds, isTransferAllowed, isLockedAway, splitPile, defaultTakeQuantity
+  isPickable, pickableItems, randomPick, perceptionModifiers, pickpocketOutcome, transferEnds, isTransferAllowed, isLockedAway, splitPile, defaultTakeQuantity,
+  perceptionDialogLocks
 } = await import('../modules/rolls/roll-helpers/pickpocket-rules.js')
+
+describe("the GM's Perception dialog (review of Xara)", () => {
+  it('planting, the thief chose the object and the quantity: both are locked', () => {
+    expect(perceptionDialogLocks("plant", "abc")).toEqual({
+      item: true, quantity: true
+    })
+  })
+  it('taking, the GM keeps the quantity, and the object unless the thief chose it', () => {
+    expect(perceptionDialogLocks("take", null)).toEqual({
+      item: false, quantity: false
+    })
+    expect(perceptionDialogLocks("take", "abc")).toEqual({
+      item: true, quantity: false
+    })
+  })
+})
 
 const item = (type, system = {
 }) => ({

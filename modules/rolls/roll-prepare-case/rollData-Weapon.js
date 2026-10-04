@@ -345,7 +345,7 @@ async function handleTargetInfo(rollData, actor, item){
     let inReach = SR5_SystemHelpers.isInMeleeRange(canvas.grid, attackerDocument?.getOccupiedGridSpaceOffsets(), targetDocument?.getOccupiedGridSpaceOffsets(), itemData.reach.value)
     if (inReach === null) inReach = rollData.target.rangeInMeters <= (itemData.reach.value + 1) * SR5_SystemHelpers.convertSceneUnitsToMeters(canvas.scene.grid.distance)
     if (Number.isFinite(rollData.target.rangeInMeters) && !inReach) {
-      ui.notifications.warn(game.i18n.localize("SR5.INFO_TargetIsTooFar"))
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetIsTooFar"))
       return false
     }
     sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, true, areaEffect, true, weaponLight, weaponLightCap)
@@ -373,7 +373,7 @@ async function handleTargetInfo(rollData, actor, item){
       // removeTemplate matches on flags.sr5.itemUuid, which AbilityTemplate.fromItem fills from
       // item.uuid; flags.sr5.item holds the id and is what getTemplateItemPosition looks up.
       if (itemData.category === "grenade"|| itemData.type === "grenadeLauncher" || itemData.type === "missileLauncher") SR5_RollMessage.removeTemplate(null, item.uuid)
-      ui.notifications.warn(game.i18n.localize("SR5.INFO_TargetIsTooFar"))
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetIsTooFar"))
       return false
     }
     const environmentalColumns = SR5_CombatHelpers.environmentalColumns(SR5_CombatHelpers.environmentScene(), actor.system, false, areaEffect, false, weaponLight, weaponLightCap)

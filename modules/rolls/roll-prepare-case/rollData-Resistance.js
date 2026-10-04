@@ -69,7 +69,7 @@ export default async function resistance(rollData, rollType, actor, chatData){
   if (chatData.magic?.spell?.missedThreshold && chatData.magic.spell.range === "area"){
     const distance = SR5_CombatHelpers.spellAreaDistance(chatData, actor)
     if (distance === null) ui.notifications.warn(game.i18n.localize("SR5.WARN_SpellAreaNoTemplate"))
-    else if (chatData.magic.spell.area < distance) return abortWithInfo(game.i18n.localize("SR5.INFO_TargetIsTooFar"))
+    else if (chatData.magic.spell.area < distance) return abortWithInfo(game.i18n.localize("SR5.WARN_TargetIsTooFar"))
   }
 
   //Iterate throught damage type and add corresponding info
@@ -441,7 +441,7 @@ async function handleGrenade(rollData, chatData, actor){
   let distance = Math.round(SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint(grenadePosition, defenserPosition))
   let modToDamage = distance * chatData.combat.grenade.damageFallOff
   rollData.damage.base  = chatData.damage.base + modToDamage
-  if (rollData.damage.base <= 0 && chatData.damage.element !== "toxin") return abortWithInfo(`${game.i18n.localize("SR5.INFO_TargetIsTooFar")}`)  
+  if (rollData.damage.base <= 0 && chatData.damage.element !== "toxin") return abortWithInfo(`${game.i18n.localize("SR5.WARN_TargetIsTooFar")}`)  
   if (modToDamage === 0) ui.notifications.info(`${game.i18n.format("SR5.INFO_GrenadeTargetDistance", {
     distance:distance
   })}`)

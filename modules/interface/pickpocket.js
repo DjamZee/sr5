@@ -1,5 +1,5 @@
 import {
-  pickableItems, randomPick, concealmentOf, transferEnds, pickpocketOutcome, isTransferAllowed,
+  pickableItems, randomPick, concealmentOf, transferEnds, pickpocketOutcome, isTransferAllowed, perceptionDialogLocks,
   PICKPOCKET_MAX_CONCEALMENT, pileSize, defaultTakeQuantity, splitPile
 } from "../rolls/roll-helpers/pickpocket-rules.js"
 import {
@@ -221,7 +221,8 @@ export class SR5Pickpocket {
       const pile = pileSize(i) > 1 ? ` ×${pileSize(i)}` : ""
       return `<option value="${i.id}" data-default="${defaultTakeQuantity(i)}" data-max="${pileSize(i)}" ${i.id === chosen ? "selected" : ""}>${escape(i.name)}${pile} (${concealmentOf(i)})${large}</option>`
     }).join("")
-    const locked = chosen ? "disabled" : ""
+    const locks = perceptionDialogLocks(mode, chosen)
+    const locked = locks.item ? "disabled" : ""
     const chosenItem = chosen ? giver.items.get(chosen) : null
     //When he plants, the thief already said how many
     const chosenQuantity = chosenItem ? (mode === "plant" && messageData.various.pickpocketQuantity ? messageData.various.pickpocketQuantity : defaultTakeQuantity(chosenItem)) : ""
@@ -234,7 +235,7 @@ export class SR5Pickpocket {
           name: SR5Pickpocket.tokenOf(messageData.target.actorId)?.name ?? target.name
         })
       },
-      content: `<div class="form-group"><label>${escape(game.i18n.localize("SR5.PickpocketItem"))}</label><select name="itemId" ${locked}><option value="">${escape(game.i18n.localize("SR5.PickpocketRandom"))}</option>${options}</select></div><div class="form-group"><label>${escape(game.i18n.localize(quantityKey))}</label><input type="number" name="quantity" min="1" step="1" value="${chosenQuantity}" placeholder="${escape(game.i18n.localize("SR5.PickpocketQuantityDefault"))}"/></div>${box("distracted")}${box("attentive")}${box("diversion")}`,
+      content: `<div class="form-group"><label>${escape(game.i18n.localize("SR5.PickpocketItem"))}</label><select name="itemId" ${locked}><option value="">${escape(game.i18n.localize("SR5.PickpocketRandom"))}</option>${options}</select></div><div class="form-group"><label>${escape(game.i18n.localize(quantityKey))}</label><input type="number" name="quantity" min="1" step="1" value="${chosenQuantity}" ${locks.quantity ? "disabled" : ""} placeholder="${escape(game.i18n.localize("SR5.PickpocketQuantityDefault"))}"/></div>${box("distracted")}${box("attentive")}${box("diversion")}`,
       buttons: [{
         action: "ok",
         label: game.i18n.localize("SR5.SkillPerception"),
@@ -244,7 +245,8 @@ export class SR5Pickpocket {
           return {
             itemId: chosen || f.itemId.value || null,
             situations: ["distracted", "attentive", "diversion"].filter(k => f[k].checked),
-            quantity: f.quantity.value === "" ? null : Number(f.quantity.value),
+            //Planting, the thief's quantity stands, whatever the field says
+            quantity: locks.quantity ? (messageData.various.pickpocketQuantity ?? null) : (f.quantity.value === "" ? null : Number(f.quantity.value)),
           }
         },
       }],
@@ -370,7 +372,7 @@ export class SR5Pickpocket {
     })
     if (!allowed || !receiver) {
       SR5_SystemHelpers.srLog(1, "Pickpocket transfer refused", messageData)
-      return ui.notifications.warn(game.i18n.localize("SR5.WARN_PickpocketRefused"))
+      return ui.notifications.warn(game.i18n.localize(mode === "plant" ? "SR5.WARN_PickpocketPlantRefused" : "SR5.WARN_PickpocketRefused"))
     }
 
     //Marked first: a second click finds the card done

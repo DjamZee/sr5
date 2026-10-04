@@ -213,7 +213,7 @@ async function handleSpellAreaTemplate(rollData, actor, chatData){
   // No template to measure from: the GM rules, the defense goes on
   if (distance === null) ui.notifications.warn(game.i18n.localize("SR5.WARN_SpellAreaNoTemplate"))
   else if (chatData.magic.spell.area < distance) {
-    ui.notifications.info(`${game.i18n.localize("SR5.INFO_TargetIsTooFar")}`)
+    ui.notifications.info(`${game.i18n.localize("SR5.WARN_TargetIsTooFar")}`)
     return false
   }
   rollData.magic.spell.range = chatData.magic.spell.range

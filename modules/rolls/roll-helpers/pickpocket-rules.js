@@ -169,6 +169,14 @@ export function pickpocketOutcome({
   return glitch ? "felt" : "taken"
 }
 
+//What the GM's Perception dialog locks: the object once someone chose it, and when he plants, the quantity too,
+//since the thief said how many of his own pile he puts on the target
+export function perceptionDialogLocks(mode, chosenItemId) {
+  return {
+    item: !!chosenItemId, quantity: mode === "plant"
+  }
+}
+
 //Who gives and who receives: the thief takes, or plants (second batch)
 export function transferEnds(mode, thief, target) {
   return mode === "plant" ? {

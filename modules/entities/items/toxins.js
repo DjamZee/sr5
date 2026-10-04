@@ -135,8 +135,8 @@ export class SR5_Toxins {
   }
 
   /**
-   * The antitoxin rating of a character (Chrome Flesh p. 154): the highest of its sources,
-   * since two antitoxins do not add up
+   * The antitoxin rating of a character. CF p. 154 ne tranche pas le cumul ; on retient le plus
+   * haut indice, en attendant l'arbitrage de DjamZ
    */
   static antitoxinRating(actorData) {
     const modifiers = actorData?.specialProperties?.antitoxin?.modifiers ?? []
