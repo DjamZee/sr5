@@ -103,7 +103,7 @@ export default async function defense(rollData, actor, chatData){
                 
   //Manage spell area templates
   // Measured on the template's own scene, so it does not need a scene on the canvas
-  if (chatData.test.type === "spell" && chatData.magic.spell.range === "area"){
+  if ((chatData.test.type === "spell" || chatData.test.type === "preparation") && chatData.magic.spell.range === "area"){
     rollData = await handleSpellAreaTemplate(rollData, actor, chatData)
     if (!rollData) return
   }

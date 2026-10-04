@@ -127,7 +127,7 @@ function handlePreviousButtons(cardData) {
     prevData = originalMessage.flags?.sr5data
   }
 
-  if (prevData?.test.type === "spell" && prevData?.magic.spell.range === "area");
+  if ((prevData?.test.type === "spell" || prevData?.test.type === "preparation") && prevData?.magic.spell.range === "area");
   else if (prevData?.test.typeSub === "grenade" || prevData?.combat?.grenade?.isGrenade);
   else if (cardData.damage.isContinuous && cardData.test.typeSub === "continuousDamage");
   else if (cardData.damage.resistanceType === "fatiguedDamage") SR5_RollMessage.updateChatButtonHelper(cardData.previousMessage.messageId, "fatiguedCard") 

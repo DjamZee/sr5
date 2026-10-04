@@ -869,6 +869,11 @@ export class SR5Actor extends Actor {
           iData.casterMagic = actorData.specialAttributes.magic.augmented.value
           SR5_UtilityItem._handleSpellRange(iData, iData.casterMagic)
           break
+        case "itemPreparation":
+          i.prepareData()
+          // SR5 p. 307: same area as the spell; without it, its template was drawn with a radius of 0
+          SR5_UtilityItem._handleSpellRange(iData, actorData.specialAttributes.magic.augmented.value)
+          break
         case "itemSpirit":
           if (iData.isBounded){
             for (let [key, value] of Object.entries(actorData.magic.elements)){
@@ -889,7 +894,6 @@ export class SR5Actor extends Actor {
         case "itemAdeptPower":
         case "itemVehicle":
         case "itemMartialArt":
-        case "itemPreparation":
           i.prepareData()
           break
         case "itemProgram":
