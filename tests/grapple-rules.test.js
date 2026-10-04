@@ -14,7 +14,7 @@ describe('reversal', () => {
   it('is offered to the fighter held by the target, with the technique, in melee', () => {
     expect(grapplingCalledShots({
       unarmed: true, holdKind: null, heldByTarget: true, canReverse: true
-    })).toEqual(["subdue", "reversal"])
+    })).toEqual(["reversal"])
     expect(grapplingCalledShots({
       unarmed: false, melee: true, holdKind: null, heldByTarget: true, canReverse: true
     })).toEqual(["reversal"])
@@ -22,7 +22,7 @@ describe('reversal', () => {
   it('is not offered without the technique, outside a hold, or at range', () => {
     expect(grapplingCalledShots({
       unarmed: true, holdKind: null, heldByTarget: true, canReverse: false
-    })).toEqual(["subdue"])
+    })).toEqual([])
     expect(grapplingCalledShots({
       unarmed: true, holdKind: null, heldByTarget: false, canReverse: true
     })).toEqual(["subdue"])

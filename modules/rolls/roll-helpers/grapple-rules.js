@@ -64,7 +64,8 @@ export function grapplingCalledShots({
   unarmed, holdKind, heldByTarget = false, canReverse = false, melee = unarmed
 }){
   const keys = []
-  if (unarmed) keys.push(holdKind === "subdue" ? "strengthenHold" : "subdue")
+  //The one held by the target cannot take a second hold on them (one hold per token): reversing is their way
+  if (unarmed && !heldByTarget) keys.push(holdKind === "subdue" ? "strengthenHold" : "subdue")
   if (melee && heldByTarget && canReverse) keys.push("reversal")
   return keys
 }
