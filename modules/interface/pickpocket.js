@@ -1,6 +1,6 @@
 import {
   pickableItems, randomPick, concealmentOf, transferEnds, pickpocketOutcome, isTransferAllowed,
-  PICKPOCKET_MAX_CONCEALMENT
+  PICKPOCKET_MAX_CONCEALMENT, pileSize, defaultTakeQuantity, splitPile
 } from "../rolls/roll-helpers/pickpocket-rules.js"
 import {
   NOT_LOOTERS
@@ -156,9 +156,11 @@ export class SR5Pickpocket {
     }).sort((a, b) => concealmentOf(a) - concealmentOf(b))
     const options = items.map(i => {
       const large = concealmentOf(i) > PICKPOCKET_MAX_CONCEALMENT ? ` — ${game.i18n.localize("SR5.PickpocketLarge")}` : ""
-      return `<option value="${i.id}" ${i.id === chosen ? "selected" : ""}>${escape(i.name)} (${concealmentOf(i)})${large}</option>`
+      const pile = pileSize(i) > 1 ? ` ×${pileSize(i)}` : ""
+      return `<option value="${i.id}" data-default="${defaultTakeQuantity(i)}" data-max="${pileSize(i)}" ${i.id === chosen ? "selected" : ""}>${escape(i.name)}${pile} (${concealmentOf(i)})${large}</option>`
     }).join("")
     const locked = chosen ? "disabled" : ""
+    const chosenItem = chosen ? giver.items.get(chosen) : null
     const box = key => `<div class="form-group"><label>${escape(game.i18n.localize(`SR5.Pickpocket${key.charAt(0).toUpperCase()}${key.slice(1)}`))}</label><input type="checkbox" name="${key}"/></div>`
     const result = await foundry.applications.api.DialogV2.wait({
       window: {
@@ -166,7 +168,7 @@ export class SR5Pickpocket {
           name: SR5Pickpocket.tokenOf(messageData.target.actorId)?.name ?? target.name
         })
       },
-      content: `<div class="form-group"><label>${escape(game.i18n.localize("SR5.PickpocketItem"))}</label><select name="itemId" ${locked}><option value="">${escape(game.i18n.localize("SR5.PickpocketRandom"))}</option>${options}</select></div>${box("distracted")}${box("attentive")}${box("diversion")}`,
+      content: `<div class="form-group"><label>${escape(game.i18n.localize("SR5.PickpocketItem"))}</label><select name="itemId" ${locked}><option value="">${escape(game.i18n.localize("SR5.PickpocketRandom"))}</option>${options}</select></div><div class="form-group"><label>${escape(game.i18n.localize("SR5.PickpocketQuantity"))}</label><input type="number" name="quantity" min="1" step="1" value="${chosenItem ? defaultTakeQuantity(chosenItem) : ""}" placeholder="${escape(game.i18n.localize("SR5.PickpocketQuantityDefault"))}"/></div>${box("distracted")}${box("attentive")}${box("diversion")}`,
       buttons: [{
         action: "ok",
         label: game.i18n.localize("SR5.SkillPerception"),
@@ -176,9 +178,20 @@ export class SR5Pickpocket {
           return {
             itemId: chosen || f.itemId.value || null,
             situations: ["distracted", "attentive", "diversion"].filter(k => f[k].checked),
+            quantity: f.quantity.value === "" ? null : Number(f.quantity.value),
           }
         },
       }],
+      render: (event, dialog) => {
+        const form = dialog.element.querySelector("form") ?? dialog.element
+        const select = form.querySelector("[name=itemId]"), field = form.querySelector("[name=quantity]")
+        select?.addEventListener("change", () => {
+          const option = select.selectedOptions[0]
+          field.value = option?.dataset.default ?? ""
+          if (option?.dataset.max) field.max = option.dataset.max
+          else field.removeAttribute("max")
+        })
+      },
       rejectClose: false,
     })
     if (!result) return
@@ -189,6 +202,8 @@ export class SR5Pickpocket {
     const data = foundry.utils.duplicate(messageData)
     data.various.pickpocketItemId = item.id
     data.various.pickpocketItemName = item.name
+    //Arbitrage de DjamZ (2026-10-05): the GM chooses how many units of a pile are taken
+    data.various.pickpocketQuantity = splitPile(item, result.quantity).quantity
     data.various.pickpocketConcealment = concealmentOf(item)
     data.various.pickpocketSituations = result.situations
     data.various.pickpocketAnswerId = foundry.utils.randomID()
@@ -295,15 +310,28 @@ export class SR5Pickpocket {
     await thiefMessage.update({
       "flags.sr5data.various.pickpocketDone": true
     })
+    //Arbitrage de DjamZ (2026-10-05): a pile is split, the giver keeps the rest, the units taken join an
+    //identical pile of the receiver if he has one
+    const split = splitPile(item, perceptionCard.various.pickpocketQuantity, receiver.items)
     const given = item.toObject(false)
     delete given._id
     if (given.system?.storedIn !== undefined) given.system.storedIn = ""
-    const deleted = await giver.deleteEmbeddedDocuments("Item", [item.id])
-    if (deleted?.length) await receiver.createEmbeddedDocuments("Item", [given])
+    if (given.system?.quantity !== undefined) given.system.quantity = split.quantity
+    let moved = true
+    if (split.leftOnGiver > 0) await item.update({
+      "system.quantity": split.leftOnGiver
+    })
+    else moved = !!(await giver.deleteEmbeddedDocuments("Item", [item.id]))?.length
+    if (moved) {
+      if (split.mergeInto) await split.mergeInto.update({
+        "system.quantity": pileSize(split.mergeInto) + split.quantity
+      })
+      else await receiver.createEmbeddedDocuments("Item", [given])
+    }
 
     await ChatMessage.create({
       content: `<p>${foundry.utils.escapeHTML(game.i18n.format("SR5.PickpocketDone", {
-        thief: SR5Pickpocket.tokenOf(thiefId)?.name ?? thief.name, item: item.name
+        thief: SR5Pickpocket.tokenOf(thiefId)?.name ?? thief.name, item: split.quantity > 1 || pileSize(item) > 1 ? `${item.name} ×${split.quantity}` : item.name
       }))}</p>`,
       whisper: SR5Pickpocket.whisperFor(thief),
     })

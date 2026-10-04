@@ -77,6 +77,36 @@ export function pickableItems(actor, options) {
   return Array.from(actor?.items ?? []).filter(i => isPickable(i, options))
 }
 
+//How many an item holds: a pile of ammunition, drugs, toxins, grenades... counts its units, anything else is one
+export function pileSize(item) {
+  return Math.max(1, Math.floor(Number(item?.system?.quantity) || 1))
+}
+
+//What the GM's field shows by default: one from a pile of consumables, the whole object otherwise (arbitrage de
+//DjamZ, 2026-10-05). A pile is an item holding more than one unit
+export function defaultTakeQuantity(item) {
+  return pileSize(item) > 1 ? 1 : pileSize(item)
+}
+
+/**
+ * How the pile is split: the giver keeps the rest, the receiver gets the
+ * units taken, merged into an identical pile of his (same type and name, not
+ * put away) when he has one (arbitrage de DjamZ, 2026-10-05).
+ * @param {Object} item - the object taken
+ * @param {Number|null} asked - the quantity the GM chose, null for the default
+ * @param {Array} receiverItems - what the receiver holds
+ * @returns {{quantity: number, leftOnGiver: number, mergeInto: Object|null}}
+ */
+export function splitPile(item, asked, receiverItems = []) {
+  const size = pileSize(item)
+  const wanted = Math.floor(Number(asked))
+  const quantity = Math.min(size, Math.max(1, Number.isFinite(wanted) && asked !== null && asked !== "" ? wanted : defaultTakeQuantity(item)))
+  const mergeInto = Array.from(receiverItems).find(i => i !== item && i.type === item.type && i.name === item.name && !i.system?.storedIn && i.system?.quantity !== undefined) ?? null
+  return {
+    quantity, leftOnGiver: size - quantity, mergeInto
+  }
+}
+
 //An object drawn by lot, `random` being a number in [0, 1[
 export function randomPick(items, random) {
   if (!items?.length) return null

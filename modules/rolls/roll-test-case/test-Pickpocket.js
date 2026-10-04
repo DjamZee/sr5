@@ -33,7 +33,7 @@ export async function pickpocketPerceptionInfo(cardData){
     cardData.chatCard.buttons.pickpocketNoticed = SR5_RollMessage.generateChatButton("nonOpposedTest", "pickpocketNoticed", game.i18n.localize("SR5.PickpocketNoticed"), true)
   } else {
     cardData.chatCard.buttons.pickpocketTransfer = SR5_RollMessage.generateChatButton("nonOpposedTest", "pickpocketTransfer", game.i18n.format("SR5.PickpocketTransfer", {
-      item: cardData.various.pickpocketItemName ?? ""
+      item: `${cardData.various.pickpocketItemName ?? ""}${cardData.various.pickpocketQuantity > 1 ? ` ×${cardData.various.pickpocketQuantity}` : ""}`
     }), true)
   }
 }

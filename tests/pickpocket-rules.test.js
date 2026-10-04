@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 
 const {
-  isPickable, pickableItems, randomPick, perceptionModifiers, pickpocketOutcome, transferEnds, isTransferAllowed, isLockedAway
+  isPickable, pickableItems, randomPick, perceptionModifiers, pickpocketOutcome, transferEnds, isTransferAllowed, isLockedAway, splitPile, defaultTakeQuantity
 } = await import('../modules/rolls/roll-helpers/pickpocket-rules.js')
 
 const item = (type, system = {
@@ -301,5 +301,37 @@ describe('a locked container keeps its content out of reach', () => {
       }
     }, "")))
       .toBe(true)
+  })
+})
+
+describe('a pile is split (arbitrage de DjamZ, 2026-10-05)', () => {
+  const pile = (n, name = "Balles", type = "itemAmmunition") => ({
+    type, name, system: {
+      quantity: n
+    }
+  })
+  it('takes one from a pile by default, the whole object otherwise', () => {
+    expect(defaultTakeQuantity(pile(20))).toBe(1)
+    expect(defaultTakeQuantity(item("itemDevice"))).toBe(1)
+    expect(splitPile(pile(20), null)).toEqual({
+      quantity: 1, leftOnGiver: 19, mergeInto: null
+    })
+  })
+  it('takes what the GM chose, within the pile', () => {
+    expect(splitPile(pile(20), 5).quantity).toBe(5)
+    expect(splitPile(pile(20), 50)).toMatchObject({
+      quantity: 20, leftOnGiver: 0
+    })
+    expect(splitPile(pile(20), 0).quantity).toBe(1)
+  })
+  it('merges into an identical pile of the receiver, not one put away', () => {
+    const mine = pile(3)
+    expect(splitPile(pile(20), 5, [pile(3, "Autre"), mine]).mergeInto).toBe(mine)
+    expect(splitPile(pile(20), 5, [{
+      ...pile(3), system: {
+        quantity: 3, storedIn: "bag"
+      }
+    }]).mergeInto).toBeNull()
+    expect(splitPile(pile(20), 5, [pile(3, "Balles", "itemGear")]).mergeInto).toBeNull()
   })
 })
