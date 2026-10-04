@@ -1,0 +1,12 @@
+<!-- SITUATIONAL EFFECTS (SR5 p. 462, Chrome Flesh p. 160-172): ticked by hand, only in their situation -->
+{{#each situational}}
+<li class="grid{{#if @first}} SR-TopSeparator{{/if}}" data-title="{{localize 'SR5.SituationalHint'}}">
+    <div class="col-10{{#if isMalus}} SR-AlertColor{{/if}}">
+        {{label}}{{#if when}} <em>({{when}})</em>{{/if}}{{#if (eq kind 'limit')}} [{{localize 'SR5.Limit'}}]{{/if}}{{localize 'SR5.Colons'}}
+    </div>
+    <div class="col-1 SR-TextRight"><input type="checkbox" class="SR-SituationalCheckbox" data-index="{{@index}}"></div>
+    <div class="col-1 SR-TextCenter">
+        <input disabled type="number" value="{{value}}" data-dtype="Number" />
+    </div>
+</li>
+{{/each}}

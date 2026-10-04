@@ -367,6 +367,8 @@ export class SR5Actor extends Actor {
   prepareData() {
     if (!this.img) this.img = CONST.DEFAULT_TOKEN
     if (!this.name) this.name = "[" + game.i18n.localize("SR5.New") + "]" + this.documentName
+    // Situational effects are gathered anew at each preparation (roll-helpers/situational.js)
+    this.situationalEffects = []
     this.prepareBaseData()
     this.prepareEmbeddedDocuments() // first pass on items to add bonuses from the items to the characters
     this.prepareDerivedData()

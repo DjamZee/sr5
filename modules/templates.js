@@ -590,6 +590,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/rolls/rollDialogPartial/dicePool.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/modifiers.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/customModifier.hbs",
+    "systems/sr5/templates/rolls/rollDialogPartial/situationalModifiers.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/woundModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/runningModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/specializationModifier.hbs",

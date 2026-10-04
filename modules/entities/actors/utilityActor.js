@@ -17,6 +17,9 @@ import {
   augmentationCapExcess
 } from "./augmentationCap.js"
 import {
+  situationalValue, isRollTestsTarget, ROLL_TESTS_PREFIX, SITUATIONAL_PREFIX
+} from "../../rolls/roll-helpers/situational.js"
+import {
   SR5Combat 
 } from "../../system/srcombat.js"
 import {
@@ -4845,6 +4848,27 @@ export class SR5_CharacterUtility extends Actor {
     return typeof english === "string" ? english.trim().toLowerCase() : ""
   }
 
+  // A situational effect leaves a zero-valued marker on its target, which the roll reading that target
+  // turns into a box of the roll dialog (roll-helpers/situational.js); an effect on "tests linked to an
+  // attribute" or on "any roll" has no target on the sheet and is matched at roll time
+  static registerSituationalEffect(item, actor, customEffect) {
+    let value = situationalValue(customEffect, item.system)
+    if (value === null) return
+    if (!actor.situationalEffects) actor.situationalEffects = []
+    let effect = {
+      source: item.name, value, when: customEffect.when || "", situational: !!customEffect.situational
+    }
+    if (isRollTestsTarget(customEffect.target)) {
+      effect.scope = customEffect.target.slice(ROLL_TESTS_PREFIX.length)
+      actor.situationalEffects.push(effect)
+      return
+    }
+    let targetObject = SR5_EntityHelpers.resolveObjectPath(customEffect.target, actor)
+    if (!targetObject?.modifiers) return
+    let index = actor.situationalEffects.push(effect) - 1
+    SR5_EntityHelpers.updateModifier(targetObject, item.name, `${SITUATIONAL_PREFIX}${index}`, 0)
+  }
+
   static applyCustomEffects(item, actor) {
     let itemData = item.system
 
@@ -4871,6 +4895,12 @@ export class SR5_CharacterUtility extends Actor {
         if (itemData.isActive && customEffect.wifi) skipCustomEffect = false
         else if (!itemData.isActive && customEffect.wifi) skipCustomEffect = false
         else if (!itemData.isActive) skipCustomEffect = true
+      }
+
+      // Situational effects and effects on tests linked to an attribute are offered at roll time
+      if (!skipCustomEffect && (customEffect.situational || isRollTestsTarget(customEffect.target))) {
+        SR5_CharacterUtility.registerSituationalEffect(item, actor, customEffect)
+        continue
       }
 
       let targetObject = SR5_EntityHelpers.resolveObjectPath(customEffect.target, actor)

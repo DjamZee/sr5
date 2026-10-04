@@ -213,6 +213,8 @@ export default class SR5_RollDialog {
     //General commands for checkbox
     const filledCheckboxes = element.querySelectorAll('.SR-ModCheckboxFilled'); if (filledCheckboxes.length) this._filledCheckBox(filledCheckboxes, element, dialogData)
     element.querySelectorAll('.SR-ModCheckbox').forEach(el => el.addEventListener('change', ev => this._checkboxModifier(ev, element, dialogData)))
+    //Situational effects, ticked by hand (roll-helpers/situational.js)
+    element.querySelectorAll('.SR-SituationalCheckbox').forEach(el => el.addEventListener('change', ev => this._situationalModifier(ev, element, dialogData)))
     //General commands for select
     element.querySelectorAll('.SR-ModSelect').forEach(el => el.addEventListener('change', ev => this._selectModifiers(ev, element, dialogData)))
     //General commands for select already filled by dialogData
@@ -377,6 +379,25 @@ export default class SR5_RollDialog {
     dialogData.damage.base = SR5_ConverterHelpers.rammingAttackDamage(ramming, actor.system.attributes.body.augmented.value)
     dialogData.damage.value = dialogData.damage.base
     html.querySelector('[name="modifiedDamage"]').value = dialogData.damage.value
+  }
+
+  //Tick or untick a situational effect: on the dice pool, or on the limit
+  _situationalModifier(ev, html, dialogData){
+    let offer = dialogData.situational?.[parseInt(ev.target.dataset.index)]
+    if (!offer) return
+    if (offer.kind === "limit"){
+      if (ev.target.checked) dialogData.limit.modifiers[offer.key] = {
+        label: offer.label, value: offer.value
+      }
+      else delete dialogData.limit.modifiers[offer.key]
+      this.updateLimitValue(html)
+    } else {
+      SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', offer.key)
+      if (ev.target.checked) dialogData.dicePool.modifiers.push({
+        type: offer.key, label: offer.label, value: offer.value
+      })
+      this.updateDicePoolValue(html)
+    }
   }
 
   //Add checkbox modifiers

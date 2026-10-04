@@ -26,6 +26,12 @@ import {
 import {
   runningModifierKind
 } from "../system/running.js"
+import {
+  rollAttributes, extractSituational
+} from "./roll-helpers/situational.js"
+import {
+  SR5
+} from "../config.js"
 
 // N91: matrix rolls aimed at a target besides matrixAction, which guards itself. Each refuses a drone
 // with its wireless off (SR5 p. 424)
@@ -266,6 +272,13 @@ export class SR5_PrepareRollTest {
       //Running (SR5 p. 164): the running box of the modifiers list, for the tests that have no box of their own
       const runningKind = runningModifierKind(rollData.test)
       rollData.dialogSwitch.running = (runningKind === "general" || runningKind === "defense") ? runningKind : false
+      //Situational effects (SR5 p. 462, Chrome Flesh p. 160-172): offered as boxes, unticked
+      const attributeLabels = Object.fromEntries(Object.entries(SR5.allAttributes).map(([k, v]) => [k, game.i18n.localize(v)]))
+      const {
+        offers, always
+      } = extractSituational(rollData, actor?.situationalEffects || [], rollAttributes(rollData.dicePool.composition, attributeLabels))
+      rollData.situational = offers
+      if (always.length) rollData.dicePool.modifiers = (rollData.dicePool.modifiers || []).concat(always)
       SR5_RollTest.generateRollDialog(rollData)
     }
   }

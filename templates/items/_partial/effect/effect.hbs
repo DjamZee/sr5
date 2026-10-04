@@ -88,6 +88,7 @@
 						<option value="actions">{{localize 'SR5.Actions'}}</option>
 					</optgroup>
 					<optgroup label="{{localize 'SR5.Special'}}">
+						<option value="rollTests">{{localize 'SR5.RollTests'}}</option>
 						<option value="specialProperties">{{localize 'SR5.SpecialCase'}}</option>
 						<option value="weaponEffectTargets">{{localize 'SR5.Weapons'}}</option>
 						<option value="custom">{{localize 'SR5.GENERAL_Custom'}}...</option>
@@ -113,6 +114,15 @@
 											<option value="system.attributes.{{@key}}.augmented">{{localize this}} [{{localize 'SR5.Augmented'}}]</option>
 										</optgroup>
 									{{/each}}
+
+					{{else ife category 'rollTests'}}
+						<!-- Chrome Flesh p. 167: "+1 die to tests linked to Logic"; "any roll" for situational effects only -->
+						<option value="system.rollTests.anyRoll">{{localize 'SR5.RollTestsAny'}}</option>
+						<optgroup label="{{localize 'SR5.RollTestsLinkedTo'}}">
+							{{#each ../lists.characterAttributes}}
+								<option value="system.rollTests.{{@key}}">{{localize this}}</option>
+							{{/each}}
+						</optgroup>
 
 					{{else ife category 'characterSpecialAttributes'}}
 						{{#each (lookup ../lists category)}}
@@ -558,6 +568,17 @@
 					</div>
 				</div>
 
+				{{#if (or (eq type 'value') (eq type 'rating') (eq type 'hits'))}}
+				<!-- SITUATIONAL (SR5 p. 462, Chrome Flesh p. 160-172): offered in the roll dialog instead of applied -->
+				<div class="col-3 SR-PaddingRight5" data-title="{{localize 'SR5.SituationalEffectHint'}}">
+					<label><input type="checkbox" name="system.customEffects.{{@key}}.situational" data-dtype="Boolean" {{checked situational}}> {{localize 'SR5.SituationalEffect'}}</label>
+				</div>
+				<div class="col-9">
+					{{#if situational}}
+					<input type="text" data-dtype="String" name="system.customEffects.{{@key}}.when" value="{{when}}" placeholder="{{localize 'SR5.SituationalWhen'}}">
+					{{/if}}
+				</div>
+				{{/if}}
 			</li>
 		{{/each}}
 	</ul>
