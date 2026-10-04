@@ -1,6 +1,9 @@
 import {
-  SR5_EntityHelpers 
+  SR5_EntityHelpers
 } from "../helpers.js"
+import {
+  SR5ShopGrades
+} from "../../interface/shop-grades.js"
 import {
   SR5_SystemHelpers 
 } from "../../system/utilitySystem.js"
@@ -1445,6 +1448,18 @@ export class SR5_CharacterUtility extends Actor {
           if (edgeLoss < 0) {
             SR5_EntityHelpers.updateModifier(actorData.specialAttributes[key].augmented, game.i18n.localize('SR5.EssenceLoss'), "augmentations", Math.floor(edgeLoss))
             SR5_EntityHelpers.updateValue(actorData.specialAttributes[key].augmented, 0)
+          }
+        }
+
+        // BTB p. 142: "en plus de la perte de Magie due à la réduction d'Essence, les personnages Éveillés
+        // perdent un point de Magie supplémentaire […] par implant GreyWare installé". On top of the Essence
+        // loss above, which already counts the implant's Essence, so nothing is counted twice. Derived from
+        // the implants themselves: removing one gives the point back (DjamZ's ruling, 2026-10-05).
+        if (key == 'magic' && actorData.specialAttributes.magic.natural.value > 0) {
+          const penalty = SR5ShopGrades.greywareMagicPenalty(actor.items)
+          if (penalty) {
+            SR5_EntityHelpers.updateModifier(actorData.specialAttributes.magic.augmented, game.i18n.localize('SR5.GreywareMagicLoss'), "greyware", -penalty)
+            SR5_EntityHelpers.updateValue(actorData.specialAttributes.magic.augmented, 0)
           }
         }
       }

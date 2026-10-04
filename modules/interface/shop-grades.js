@@ -103,11 +103,27 @@ export class SR5ShopGrades {
    * Greyware on an Awakened character: "en plus de la perte de Magie due à la
    * réduction d'Essence, les personnages Éveillés perdent un point de Magie
    * supplémentaire ainsi qu'une réduction d'un point de leur maximum de Magie,
-   * par implant GreyWare installé" (BTB p. 142). The shop warns and quotes that
-   * penalty; it does not apply it (awaiting DjamZ's ruling).
+   * par implant GreyWare installé" (BTB p. 142). DjamZ's ruling (2026-10-05):
+   * the shop asks for confirmation first, and the Magic point is taken by the
+   * actor's own computation (`updateSpecialAttributes`). The system keeps no
+   * Magic maximum, so that half of the penalty is announced, not applied.
+   * Natural Magic first: once the penalty is in, augmented Magic may read 0.
    */
   static isAwakened(actor) {
     const magic = actor?.system?.specialAttributes?.magic
-    return Number(magic?.augmented?.value ?? magic?.natural?.value ?? 0) > 0
+    return Number(magic?.natural?.value ?? magic?.augmented?.value ?? 0) > 0
+  }
+
+  /**
+   * Magic points lost to greyware, BTB p. 142: one per greyware implant
+   * installed. Accessories go uncounted, as they are for Essence
+   * (`entityActor.js`): they share their host's grade and are not a second implant.
+   */
+  static greywareMagicPenalty(items) {
+    let count = 0
+    for (const item of items ?? []) {
+      if (item.type === 'itemAugmentation' && item.system?.grade === 'greyware' && !item.system?.isAccessory) count++
+    }
+    return count
   }
 }

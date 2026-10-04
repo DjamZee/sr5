@@ -230,11 +230,22 @@ export class SR5Shop {
       return false
     }
 
-    // Greyware on an Awakened character: warned, not blocked (BTB p. 142, DjamZ's ruling)
-    if (resolved.some(line => line.grade === 'greyware') && SR5ShopGrades.isAwakened(actor)) {
-      ui.notifications.warn(game.i18n.format('SR5.WARN_ShopGreywareAwakened', {
-        name: actor.name
-      }))
+    // Greyware on an Awakened character costs Magic (BTB p. 142): the buyer, or the gamemaster in
+    // Equip mode, sees the penalty before anything is created and may cancel (DjamZ's ruling, 2026-10-05)
+    const greyware = resolved
+      .filter(line => line.grade === 'greyware')
+      .reduce((sum, line) => sum + (SR5Shop._itemPayload(line.source, line.quantity, line.grade).length), 0)
+    if (greyware && SR5ShopGrades.isAwakened(actor)) {
+      const confirmed = await foundry.applications.api.DialogV2.confirm({
+        window: {
+          title: game.i18n.localize('SR5.ShopGreywareConfirmTitle')
+        },
+        content: `<p>${game.i18n.format('SR5.WARN_ShopGreywareAwakened', {
+          name: actor.name, count: greyware
+        })}</p>`,
+        rejectClose: false,
+      })
+      if (!confirmed) return false
     }
 
     const payload = []

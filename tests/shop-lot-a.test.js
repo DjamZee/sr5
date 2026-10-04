@@ -328,3 +328,50 @@ describe('second review (Dana)', () => {
     }
   })
 })
+
+describe('greyware Magic penalty (BTB p. 142)', () => {
+  const aug = (grade, isAccessory = false) => ({
+    type: 'itemAugmentation', system: {
+      grade, isAccessory
+    }
+  })
+
+  it('costs one point per greyware implant installed', () => {
+    expect(SR5ShopGrades.greywareMagicPenalty([aug('greyware'), aug('greyware'), aug('alphaware')])).toBe(2)
+  })
+
+  it('counts neither an accessory nor another grade nor other items', () => {
+    expect(SR5ShopGrades.greywareMagicPenalty([aug('greyware', true), aug('standard'), {
+      type: 'itemGear', system: {
+        grade: 'greyware'
+      }
+    }])).toBe(0)
+  })
+
+  it('reads an Awakened character from natural Magic, penalty or not', () => {
+    expect(SR5ShopGrades.isAwakened({
+      system: {
+        specialAttributes: {
+          magic: {
+            natural: {
+              value: 1
+            }, augmented: {
+              value: 0
+            }
+          }
+        }
+      }
+    })).toBe(true)
+    expect(SR5ShopGrades.isAwakened({
+      system: {
+        specialAttributes: {
+          magic: {
+            natural: {
+              value: 0
+            }
+          }
+        }
+      }
+    })).toBe(false)
+  })
+})
