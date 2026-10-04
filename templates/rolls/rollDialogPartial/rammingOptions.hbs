@@ -26,8 +26,8 @@
     </div>
 </li>
 <li class="grid">
-    <div class="col-6" title="{{localize 'SR5.RammingLocomotionHint'}}">{{localize 'SR5.RammingAttackerLocomotion'}}{{localize 'SR5.Colons'}}</div>
-    <div class="col-5 SR-TextRight">
+    <div class="col-8" title="{{localize 'SR5.RammingLocomotionHint'}}">{{localize 'SR5.RammingAttackerLocomotion'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-3 SR-TextRight">
         <select class="SR-RammingInput" name="rammingAttackerLocomotion">
             {{#each lists.rammingLocomotions as |label key|}}
             <option value="{{key}}" {{#if (eq key ../combat.ramming.attackerLocomotion)}}selected{{/if}}>{{localize label}}</option>
@@ -42,8 +42,8 @@
     </div>
 </li>
 <li class="grid">
-    <div class="col-6" title="{{localize 'SR5.RammingLocomotionHint'}}">{{localize 'SR5.RammingTargetLocomotion'}}{{localize 'SR5.Colons'}}</div>
-    <div class="col-5 SR-TextRight">
+    <div class="col-8" title="{{localize 'SR5.RammingLocomotionHint'}}">{{localize 'SR5.RammingTargetLocomotion'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-3 SR-TextRight">
         <select class="SR-RammingInput" name="rammingTargetLocomotion">
             {{#each lists.rammingLocomotions as |label key|}}
             <option value="{{key}}" {{#if (eq key ../combat.ramming.targetLocomotion)}}selected{{/if}}>{{localize label}}</option>
