@@ -613,8 +613,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
   }
 
+  // No canvas guard: these drags land on the sheet itself or on the hotbar, never on a scene
   async _onDragStart(event) {
-    if (!canvas.ready) return
     let dragData = {
     }
     // v13: DragDrop uses event delegation, so event.currentTarget is the app root.
