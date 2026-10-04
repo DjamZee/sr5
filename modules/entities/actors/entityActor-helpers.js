@@ -37,6 +37,9 @@ import {
 import {
   SR5_SpiritTypes
 } from "../items/spirit-types.js"
+import {
+  isAreaSpellTemplateGone
+} from "../../system/areaEffectScene.js"
 
 export class SR5_ActorHelper {
     
@@ -1523,6 +1526,8 @@ export class SR5_ActorHelper {
 
   //Apply an external effect to actor (such spell, complex form). Data is provided by chatMessage
   static async applyExternalEffect(actorId, data, effectType){
+    //An area spell whose template was deleted during the resistance: nothing would lift the effect
+    if (isAreaSpellTemplateGone(data)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_AreaSpellTemplateGone"))
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
     let item = await fromUuid(data.owner.itemUuid)
     let itemData = item.system

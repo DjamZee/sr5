@@ -22,3 +22,24 @@ export function isOrphanEnvironmentEffect(item){
   return Object.values(item.system.customEffects ?? {
   }).some(e => /^system\.itemsProperties\.environmentalMod\./.test(e?.target ?? ""))
 }
+
+//The resistance to an area spell answers a template of its cast. When that template was deleted while the
+//resistance was rolled, an effect applied then would have no template to lift it, and its presence would stop
+//the next cast of the spell from asking for a resistance. True when the cast's template is gone.
+export function isAreaSpellTemplateGone(data, scenes = globalThis.game?.scenes ?? [], messages = globalThis.game?.messages){
+  if (data?.test?.type !== "spellResistance") return false
+  const messageId = data.previousMessage?.messageId
+  const spellData = messages?.get?.(messageId)?.flags?.sr5data
+  const area = spellData?.magic?.spell?.area ?? data.magic?.spell?.area
+  if (!(area > 0)) return false
+  const itemUuid = data.previousMessage?.itemUuid ?? data.owner?.itemUuid
+  for (const scene of scenes){
+    for (const t of scene.templates ?? []){
+      const flags = t.flags?.sr5
+      if (!flags?.itemHasEffect || flags.itemUuid !== itemUuid) continue
+      //A template placed outside a chat card carries no cast: it answers any cast of the spell
+      if (!messageId || !flags.messageId || flags.messageId === messageId) return false
+    }
+  }
+  return true
+}
