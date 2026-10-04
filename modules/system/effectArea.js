@@ -356,6 +356,11 @@ export class SR5_EffectArea {
       let isInTemplate = await this.checkIfTemplateContainsToken(templateDocument, t)
       if (isInTemplate) await this.createTemplateEffect(t, templateDocument)
     }
+    //A grenade thrown out of range has its template removed at once (rollData-Weapon, "target too far"), while
+    //the effects above were still being created: removeTemplateEffect found none to lift, and they stayed on
+    //every token inside. Lift them here once the template is gone.
+    let templates = templateDocument.parent.templates
+    if (templates && !templates.get(templateDocument.id)) await this.removeTemplateEffect(templateDocument)
   }
 
   //Remove effect on tokens when template is deleted
@@ -365,8 +370,9 @@ export class SR5_EffectArea {
       let actor = await SR5_EntityHelpers.getRealActorFromID(t.id)
       let effectID = templateDocument.uuid
       if (templateDocument.flags.sr5.itemHasEffect) effectID = templateDocument.flags.sr5.itemUuid
-      if (!actor) return
-      this.deleteTemplateEffect(actor, effectID)
+      //A token with no actor leaves the next ones to clear
+      if (!actor) continue
+      await this.deleteTemplateEffect(actor, effectID)
     }
   }
 
