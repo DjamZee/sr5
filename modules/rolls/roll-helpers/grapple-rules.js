@@ -117,3 +117,36 @@ export const GRAPPLE_STATUSES = {
 export function holdReplacesClinch(holderEffects, heldId, kind){
   return kind === "subdue" && holdKindOn(holderEffects, heldId) === "clinch"
 }
+
+//Delete the grappling effect of an actor once. Deleting one half makes the deleteActiveEffect hook delete the
+//other while a loop may reach it too : an effect already gone, or already being deleted, is left alone.
+//With a holdId, only the half of that very hold is deleted: a new hold taken meanwhile is left alone.
+//Returns true when this call deleted it.
+export async function deleteGrappleEffectOnce(actor, pending, holdId = null){
+  const effect = actor?.effects?.find(e => e.flags?.sr5?.grapple && (!holdId || e.flags.sr5.grapple.holdId === holdId))
+  if (!effect) return false
+  const key = effect.uuid ?? effect.id
+  if (pending.has(key)) return false
+  pending.add(key)
+  try {
+    await effect.delete()
+    return true
+  } finally {
+    pending.delete(key)
+  }
+}
+
+//The grappling hooks run on one client only : the active GM chosen by the core, not every GM connected
+export function isGrappleKeeper(users){
+  return users?.activeGM?.isSelf === true
+}
+
+//A linked actor may have tokens on several scenes : removing one of them ends the hold only when none is left
+export function tokenRemovalEndsHold(actorLink, remainingTokens){
+  return !actorLink || remainingTokens === 0
+}
+
+//A hold refused on the GM's client is told to the user who asked for it through the socket, not to the GM
+export function refusalRecipient(fromUserId, selfId){
+  return fromUserId && fromUserId !== selfId ? fromUserId : null
+}

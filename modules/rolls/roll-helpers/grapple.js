@@ -8,8 +8,12 @@ import {
   SR5_PrepareRollTest
 } from "../roll-prepare.js"
 import {
-  grappleHoldOf, canStartHold, crushDamage, holdReplacesClinch, GRAPPLE_STATUSES
+  grappleHoldOf, canStartHold, crushDamage, holdReplacesClinch, GRAPPLE_STATUSES,
+  deleteGrappleEffectOnce, isGrappleKeeper, tokenRemovalEndsHold, refusalRecipient
 } from "./grapple-rules.js"
+
+//The grappling effects being deleted on this client: each is deleted once (see deleteGrappleEffectOnce)
+const PENDING_DELETIONS = new Set()
 
 //The chat message that announces a new hold, by kind
 const HOLD_TAKEN_MESSAGES = {
@@ -49,27 +53,38 @@ export class SR5_GrappleHelpers {
     ]
   }
 
-  //SR5 p. 195 : put both fighters in the hold
-  static async startHold(holderId, heldId, hold, kind = "subdue"){
+  //SR5 p. 195 : put both fighters in the hold. fromUserId is the user who asked, when the GM acts for them
+  static async startHold(holderId, heldId, hold, kind = "subdue", fromUserId = null){
     if (!game.user.isGM) return SR5_SocketHandler.emitForGM("grappleStartHold", {
-      holderId, heldId, hold, kind
+      holderId, heldId, hold, kind, fromUserId: game.user.id
     })
     const holder = SR5_EntityHelpers.getRealActorFromID(holderId),
       held = SR5_EntityHelpers.getRealActorFromID(heldId)
     if (!holder || !held) return
     //Run & Gun p. 134: subduing the one you clinch turns the clinch into a hold; both halves go first
     if (holdReplacesClinch(holder.effects, heldId, kind)) {
-      //Deleting one half makes onDeleteEffect delete the other: the second delete may find it gone already
-      for (const a of [holder, held]){
-        const effect = a.effects.find(e => e.flags?.sr5?.grapple)
-        if (effect) await effect.delete().catch(() => null)
-      }
+      const holdId = grappleHoldOf(holder.effects).holdId
+      await Promise.all([holder, held].map(a => deleteGrappleEffectOnce(a, PENDING_DELETIONS, holdId)))
     }
-    else if (!canStartHold(holder.effects, held.effects)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_GrappleAlreadyHeld"))
+    else if (!canStartHold(holder.effects, held.effects)) return SR5_GrappleHelpers.warn("SR5.WARN_GrappleAlreadyHeld", fromUserId)
 
-    await holder.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(kind, "holder", heldId, hold)])
-    await held.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(kind, "held", holderId, hold)])
+    const holdId = foundry.utils.randomID()
+    await holder.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(kind, "holder", heldId, hold, holdId)])
+    await held.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(kind, "held", holderId, hold, holdId)])
     await SR5_GrappleHelpers.postHoldCard(holderId, heldId, hold, HOLD_TAKEN_MESSAGES[kind])
+  }
+
+  //A warning for the user who asked: here, or sent back through the socket when the GM acted for them
+  static warn(key, fromUserId = null){
+    const recipient = refusalRecipient(fromUserId, game.user.id)
+    if (recipient) return SR5_SocketHandler.emitForPlayer("grappleWarn", {
+      key
+    }, recipient)
+    ui.notifications.warn(game.i18n.localize(key))
+  }
+
+  static _socketWarn(message){
+    ui.notifications.warn(game.i18n.localize(message.data.key))
   }
 
   //SR5 p. 196 : the hold strengthened or weakened, written on both fighters; actorId is either of them
@@ -159,7 +174,8 @@ export class SR5_GrappleHelpers {
     })
   }
 
-  static _effect(kind, role, partner, hold){
+  //holdId names the hold both halves belong to, so that deleting one half never takes a newer hold away
+  static _effect(kind, role, partner, hold, holdId){
     const status = GRAPPLE_STATUSES[kind][role]
     const statusEffect = CONFIG.statusEffects.find(s => s.id === status)
     return {
@@ -169,7 +185,7 @@ export class SR5_GrappleHelpers {
       flags: {
         sr5: {
           grapple: {
-            role, kind, partner, hold
+            role, kind, partner, hold, holdId
           }
         }
       }
@@ -181,14 +197,17 @@ export class SR5_GrappleHelpers {
     if (!game.user.isGM) return SR5_SocketHandler.emitForGM("grappleReleaseHold", {
       actorId
     })
-    const actor = SR5_EntityHelpers.getRealActorFromID(actorId)
-    const effect = actor?.effects.find(e => e.flags?.sr5?.grapple)
-    if (effect) await effect.delete()
+    await deleteGrappleEffectOnce(SR5_EntityHelpers.getRealActorFromID(actorId), PENDING_DELETIONS)
+  }
+
+  //The grappling hooks run on the active GM's client only, not on every GM connected
+  static isKeeper(){
+    return isGrappleKeeper(game.users)
   }
 
   static async _socketStartHold(message){
     const d = message.data
-    await SR5_GrappleHelpers.startHold(d.holderId, d.heldId, d.hold, d.kind)
+    await SR5_GrappleHelpers.startHold(d.holderId, d.heldId, d.hold, d.kind, d.fromUserId)
   }
 
   static async _socketSetHold(message){
@@ -199,28 +218,39 @@ export class SR5_GrappleHelpers {
     await SR5_GrappleHelpers.releaseHold(message.data.actorId)
   }
 
-  //GM side : when one half of the hold goes, the other goes too
+  //Active GM side : when one half of the hold goes, the other half of the same hold goes too
   static async onDeleteEffect(effect){
+    if (!SR5_GrappleHelpers.isKeeper()) return
     const data = effect.flags?.sr5?.grapple
     if (!data) return
-    const partner = SR5_EntityHelpers.getRealActorFromID(data.partner)
-    const other = partner?.effects.find(e => e.flags?.sr5?.grapple)
-    if (other) await other.delete()
+    await deleteGrappleEffectOnce(SR5_EntityHelpers.getRealActorFromID(data.partner), PENDING_DELETIONS, data.holdId)
   }
 
-  //GM side : a fighter knocked out or killed leaves the hold
+  //Active GM side : a fighter knocked out or killed leaves the hold
   static async onCreateEffect(effect){
+    if (!SR5_GrappleHelpers.isKeeper()) return
     if (!(effect.statuses.has("unconscious") || effect.statuses.has("dead"))) return
-    const grapple = effect.parent?.effects?.find(e => e.flags?.sr5?.grapple)
-    if (grapple) await grapple.delete()
+    await deleteGrappleEffectOnce(effect.parent, PENDING_DELETIONS)
   }
 
-  //GM side : the end of the combat, or a token removed, ends every hold it takes part in
+  //Active GM side : the end of the combat ends every hold among its fighters
   static async releaseActors(actors){
     for (const actor of actors){
-      if (!actor || !grappleHoldOf(actor.effects)) continue
-      const grapple = actor.effects.find(e => e.flags?.sr5?.grapple)
-      if (grapple) await grapple.delete()
+      if (actor && grappleHoldOf(actor.effects)) await deleteGrappleEffectOnce(actor, PENDING_DELETIONS)
     }
+  }
+
+  //Active GM side : a fighter removed from the scene lets go of its hold, or is let go. A linked actor may still
+  //have a token on another scene: the hold ends only with its last token.
+  static async onDeleteToken(tokenDocument){
+    if (!SR5_GrappleHelpers.isKeeper()) return
+    const actor = tokenDocument.actor
+    const data = grappleHoldOf(actor?.effects)
+    if (!data) return
+    const remaining = tokenDocument.actorLink ? game.scenes.reduce((n, s) => n + s.tokens.filter(t => t.actorId === actor.id).length, 0) : 0
+    if (!tokenRemovalEndsHold(tokenDocument.actorLink, remaining)) return
+    //An unlinked token's effects went with it: only the partner's half is left. A linked actor keeps its half,
+    //whose deletion takes the partner's along (onDeleteEffect).
+    await SR5_GrappleHelpers.releaseActors([tokenDocument.actorLink ? actor : SR5_EntityHelpers.getRealActorFromID(data.partner)])
   }
 }

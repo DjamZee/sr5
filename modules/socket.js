@@ -65,6 +65,7 @@ export class SR5_SocketHandler {
       "grappleStartHold": [SR5_GrappleHelpers._socketStartHold],
       "grappleReleaseHold": [SR5_GrappleHelpers._socketReleaseHold],
       "grappleSetHold": [SR5_GrappleHelpers._socketSetHold],
+      "grappleWarn": [SR5_GrappleHelpers._socketWarn],
     }
 
     game.socket.on(`system.sr5`, async (message) => {

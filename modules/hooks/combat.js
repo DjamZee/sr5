@@ -28,7 +28,7 @@ export function sr5HookDeleteCombatCumulativeDefense(combat) {
 
 //The end of the combat ends every hold among its fighters (grappling rules only)
 export async function sr5HookDeleteCombatGrapple(combat) {
-  if (!game.user.isGM || !SR5_GrappleHelpers.isActive()) return
+  if (!SR5_GrappleHelpers.isActive() || !SR5_GrappleHelpers.isKeeper()) return
   const actors = combat.combatants.map(c => SR5_EntityHelpers.getRealActorFromID(c.actor?.isToken ? c.tokenId : c.actorId))
   await SR5_GrappleHelpers.releaseActors(actors)
 }
