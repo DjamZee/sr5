@@ -439,6 +439,12 @@ export class SR5_CombatHelpers {
     let effect = {
       name: SR5_Toxins.nameOf(info.damage.toxin, k => game.i18n.localize(k)) || game.i18n.localize("SR5.Toxin"),
       type: "itemEffect",
+      //The toxin it came from: a brick of milk only soothes some of them (No Future p. 154)
+      flags: {
+        sr5: {
+          toxinType: info.damage.toxin?.type ?? ""
+        }
+      },
     }
 
     switch (effecType){

@@ -38,8 +38,11 @@ import {
   SR5_MarkHelpers
 } from "../../rolls/roll-helpers/mark.js"
 import {
-  isStoredAway 
+  isStoredAway
 } from "../../interface/storage-rules.js"
+import {
+  worsenAddiction, burnoutAttribute
+} from "../../rolls/roll-helpers/addiction.js"
 
 /**
  * Extend the base Actor class to implement additional logic specialized for Shadowrun 5.
@@ -1068,6 +1071,38 @@ export class SR5Actor extends Actor {
     await this.update(dataToUpdate)
 
     ui.notifications.info(`${this.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.AddictionsSettoNone")}.`)
+  }
+
+  //A failed addiction test (SR5 p. 416): the addiction goes up one level. At burnout the lost point of Body
+  //or Willpower is told to the gamemaster, not applied
+  async worsenAddiction(messageData){
+    let index = messageData?.various?.addictionIndex
+    let addictions = foundry.utils.duplicate(this.system.addictions || [])
+    let addiction = addictions[index]
+    if (!addiction || addiction.name !== messageData.various.addictionName) return ui.notifications.warn(game.i18n.localize("SR5.WARN_AddictionNotFound"))
+    let {
+      level, attributeLoss
+    } = worsenAddiction(addiction.level)
+    let levelLabel = game.i18n.localize(SR5.addictionLevels[level])
+    if (attributeLoss) {
+      let attributes = this.system.attributes
+      let attribute = burnoutAttribute(attributes.body.augmented.value, attributes.willpower.augmented.value, addiction.addiction?.type)
+      let attributeLabel = attribute === "either" ? game.i18n.localize("SR5.AddictionBurnoutEither") : game.i18n.localize(SR5.allAttributes[attribute])
+      return ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({
+          actor: this
+        }),
+        whisper: ChatMessage.getWhisperRecipients("GM"),
+        content: game.i18n.format("SR5.AddictionBurnoutLoss", {
+          name: this.name, drug: addiction.name, attribute: attributeLabel
+        }),
+      })
+    }
+    addiction.level = level
+    await this.update({
+      "system.addictions": addictions
+    })
+    ui.notifications.info(`${this.name}${game.i18n.localize("SR5.Colons")} ${addiction.name}, ${levelLabel}`)
   }
 
   //Reset Cumulative Defense

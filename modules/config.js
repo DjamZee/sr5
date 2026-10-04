@@ -503,6 +503,13 @@ SR5.metatypes = {
   troll                     : "SR5.MetatypeTroll",
 }
 
+// Metatypes and families a situational effect can aim at (The Complete Trog p. 179), their members
+// in METATYPE_FAMILIES (roll-helpers/situational.js)
+SR5.metatypeFamilyLabels = {
+  ...SR5.metatypes,
+  trog                      : "SR5.MetatypeFamilyTrog",
+}
+
 // Lifestyle Types
 // Storage Types
 // Physical jammers, SR5 p. 443
@@ -1507,6 +1514,15 @@ SR5.addictionTypes = {
   both                      : "SR5.AddictionBoth",
   physiological             : "SR5.AddictionPhysiological",
   psychological             : "SR5.AddictionPsychological",
+}
+
+// Levels of the Addiction negative quality (SR5 p. 79-80)
+SR5.addictionLevels = {
+  ""                        : "SR5.AddictionLevelNone",
+  mild                      : "SR5.AddictionLevelMild",
+  moderate                  : "SR5.AddictionLevelModerate",
+  severe                    : "SR5.AddictionLevelSevere",
+  burnout                   : "SR5.AddictionLevelBurnout",
 }
 
 // Addiction types Shorts
@@ -3569,6 +3585,8 @@ SR5.effectDuration = {
 }
 
 SR5.specialProperties = {
+  addictionResistance       : "SR5.AddictionResistance",
+  toxinResistance           : "SR5.ToxinResistanceAll",
   concentration             : "SR5.Concentration",
   controlRig                : "SR5.ControlRig",
   smartlink                 : "SR5.Smartlink",
@@ -3577,6 +3595,8 @@ SR5.specialProperties = {
 }
 
 SR5.specialPropertiesList = {
+  addictionResistance       : "SR5.AddictionResistance",
+  toxinResistance           : "SR5.ToxinResistanceAll",
   concentration             : "SR5.Concentration",
   controlRig                : "SR5.ControlRig",
   smartlink                 : "SR5.Smartlink",

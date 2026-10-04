@@ -2,6 +2,9 @@ export {
   default as actionHitInfo
 } from "./test-ActionHit.js"
 export {
+  default as addictionInfo
+} from "./test-Addiction.js"
+export {
   default as attackInfo
 } from "./test-Attack.js"
 export {

@@ -7,7 +7,7 @@
     <div class="col-10{{#if isMalus}} SR-AlertColor{{/if}}">
         {{label}}{{#if when}} <em>({{when}})</em>{{/if}}{{#if (eq kind 'limit')}} [{{localize 'SR5.Limit'}}]{{/if}}{{localize 'SR5.Colons'}}
     </div>
-    <div class="col-1 SR-TextRight"><input type="checkbox" class="SR-SituationalCheckbox" data-index="{{@index}}"></div>
+    <div class="col-1 SR-TextRight"><input type="checkbox" class="SR-SituationalCheckbox" data-index="{{@index}}"{{#if checked}} checked{{/if}}></div>
     <div class="col-1 SR-TextCenter">
         <input disabled type="number" value="{{value}}" data-dtype="Number" />
     </div>

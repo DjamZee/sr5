@@ -578,6 +578,24 @@
 					{{#if situational}}
 						{{#if (situationalReadable target)}}
 						<input type="text" data-dtype="String" name="system.customEffects.{{@key}}.when" value="{{when}}" placeholder="{{localize 'SR5.SituationalWhen'}}">
+						<!-- The Complete Trog p. 179: the box ticks itself when the target's metatype matches -->
+						<div class="flexrow" data-title="{{localize 'SR5.SituationalTargetMetatypeHint'}}">
+							<label>{{localize 'SR5.SituationalTargetMetatype'}}</label>
+							<select name="system.customEffects.{{@key}}.targetMetatypeMode">
+								{{#select targetMetatypeMode}}
+								<option value="is">{{localize 'SR5.SituationalTargetIs'}}</option>
+								<option value="isNot">{{localize 'SR5.SituationalTargetIsNot'}}</option>
+								{{/select}}
+							</select>
+							<select name="system.customEffects.{{@key}}.targetMetatype">
+								{{#select targetMetatype}}
+								<option value="">{{localize 'SR5.SituationalTargetAny'}}</option>
+								{{#each @root.lists.metatypeFamilyLabels}}
+								<option value="{{@key}}">{{localize this}}</option>
+								{{/each}}
+								{{/select}}
+							</select>
+						</div>
 						{{else}}
 						<span class="SR-AlertColor">{{localize 'SR5.SituationalUnread'}}</span>
 						{{/if}}

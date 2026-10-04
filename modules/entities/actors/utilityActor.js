@@ -160,6 +160,12 @@ export class SR5_CharacterUtility extends Actor {
           }
         }
       }
+      if (actorData.resistances.addiction) {
+        for (let kind of ["physiological", "psychological"]) {
+          actorData.resistances.addiction[kind].dicePool = 0
+          actorData.resistances.addiction[kind].modifiers = []
+        }
+      }
     }
 
     // Reset itemsProperties
@@ -1559,6 +1565,13 @@ export class SR5_CharacterUtility extends Actor {
       }
     }
 
+    // Dice on every toxin resistance (Increased Stress, The Complete Trog p. 180), whatever the vector
+    if (actorData.resistances?.toxin && actorData.specialProperties.toxinResistance?.modifiers.length) {
+      for (let vector of Object.keys(SR5.propagationVectors)) {
+        actorData.resistances.toxin[vector].modifiers = actorData.resistances.toxin[vector].modifiers.concat(actorData.specialProperties.toxinResistance.modifiers)
+      }
+    }
+
     if (actorData.specialProperties.fullDefenseAttribute) {
       if (actorData.specialProperties.fullDefenseAttribute === "perception" || actorData.specialProperties.fullDefenseAttribute === "gymnastics") {
         actorData.specialProperties.fullDefenseValue = actorData.skills[actorData.specialProperties.fullDefenseAttribute].rating.value
@@ -1710,13 +1723,8 @@ export class SR5_CharacterUtility extends Actor {
           movements[key].movement.base = attributes.agility.augmented.value * movements[key].multiplier.value
           if (biography && (biography.metatype === "dwarf" || biography.metatype === "troll"))
             movements[key].extraMovement.base = 1
-          else {
-            if (actor.type == "actorSpirit") {
-              movements[key].extraMovement.base = 5
-            } else {
-              movements[key].extraMovement.base = 2
-            }
-          }
+          //Spirits sprint like everyone else: +2 m per hit (Aetherology p. 35)
+          else movements[key].extraMovement.base = 2
           break
         case "swim":
           SR5_EntityHelpers.updateModifier(movements[key].test, game.i18n.localize('SR5.Strength'), "linkedAttribute", attributes.strength.augmented.value)
@@ -1724,13 +1732,8 @@ export class SR5_CharacterUtility extends Actor {
           movements[key].movement.base = Math.ceil((attributes.strength.augmented.value + attributes.agility.augmented.value) / 2)
           if (biography && (biography.metatype === "elf" || biography.metatype === "troll"))
             movements[key].extraMovement.base = 2
-          else {
-            if (actor.type == "actorSpirit") {
-              movements[key].extraMovement.base = 5
-            } else {
-              movements[key].extraMovement.base = 1
-            }
-          }
+          //No swimming rule of their own for spirits: the general +1 m per hit
+          else movements[key].extraMovement.base = 1
           break
         case "treadWater":
           SR5_EntityHelpers.updateModifier(movements[key].test, game.i18n.localize('SR5.Strength'), "linkedAttribute", attributes.strength.augmented.value)
@@ -2184,6 +2187,21 @@ export class SR5_CharacterUtility extends Actor {
   // Generate Actors Resistances
   static updateResistances(actor) {
     let actorData = actor.system, resistances = actorData.resistances, attributes = actorData.attributes
+
+    // Addiction tests (SR5 p. 415): Body + Willpower when physiological, Logic + Willpower when psychological
+    if (resistances.addiction && attributes.logic && attributes.willpower) {
+      const pools = {
+        physiological: ["body", "SR5.Body"], psychological: ["logic", "SR5.Logic"]
+      }
+      for (let [kind, [attribute, label]] of Object.entries(pools)) {
+        let pool = resistances.addiction[kind]
+        pool.base = 0
+        SR5_EntityHelpers.updateModifier(pool, game.i18n.localize(label), "linkedAttribute", attributes[attribute].augmented.value)
+        SR5_EntityHelpers.updateModifier(pool, game.i18n.localize('SR5.Willpower'), "linkedAttribute", attributes.willpower.augmented.value)
+        if (actorData.specialProperties?.addictionResistance?.modifiers.length) pool.modifiers = pool.modifiers.concat(actorData.specialProperties.addictionResistance.modifiers)
+        SR5_EntityHelpers.updateDicePool(pool, 0)
+      }
+    }
 
     for (let key of Object.keys(SR5.characterResistances)) {
       if (resistances[key]) {
@@ -3179,8 +3197,11 @@ export class SR5_CharacterUtility extends Actor {
           "base": 1,
           "modifiers": []
         },
-        "addiction.type": "psychological",
-        "addiction.threshold": 2,
+        // Foci (SR5 p. 415): the rating is the Force, threshold 2. A nested object, so that the sheet and
+        // the addiction test read it (dotted keys stayed dotted in the array)
+        "addiction": {
+          "type": "psychological", "rating": item.system.itemRating, "threshold": 2
+        },
         "weekAddiction": {
           "value": 0,
           "base": 11 - item.system.itemRating,
@@ -4858,6 +4879,10 @@ export class SR5_CharacterUtility extends Actor {
     let effect = {
       source: item.name, value, when: customEffect.when || "", situational: !!customEffect.situational
     }
+    //Condition on the target's metatype (The Complete Trog p. 179), read when the roll is prepared
+    if (customEffect.situational && customEffect.targetMetatype) Object.assign(effect, {
+      targetMetatype: customEffect.targetMetatype, targetMetatypeMode: customEffect.targetMetatypeMode === "isNot" ? "isNot" : "is"
+    })
     if (isRollTestsTarget(customEffect.target)) {
       effect.scope = customEffect.target.slice(ROLL_TESTS_PREFIX.length)
       actor.situationalEffects.push(effect)
