@@ -255,6 +255,7 @@
 	"SR5.SharedVisionSeeingThrough": "You see through",
 	"SR5.SharedVisionStop": "Stop seeing through this device",
 	"SR5.SharedVisionSeeThrough": "See through {name}",
+	"SR5.SharedVisionNoMark": "No mark left on {name}: no traffic to intercept (Snoop, SR5 p. 241).",
 	"SR5.SharedVisionNoToken": "{name} has no token on an active scene: nothing to see through.",
 	"SR5.SharedVisionNoPlayerFor": "No player owns {name}: nobody to give the vision to.",
 	"SR5.ActionSourceTakeCover": "Take cover",

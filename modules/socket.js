@@ -73,7 +73,8 @@ export class SR5_SocketHandler {
       "sharedVisionSetViewer": [SR5SharedVision._socketSetViewer],
     }
 
-    game.socket.on(`system.sr5`, async (message) => {
+    //senderId is added by the server to every custom socket message: a client cannot forge it
+    game.socket.on(`system.sr5`, async (message, senderId) => {
       SR5_SystemHelpers.srLog(3,'Received Shadowrun 5 system socket message.', message)
       const handlers = hooks[message.type]
       if (!handlers || handlers.length === 0) return console.warn('System socket message without handler!', message)
@@ -81,7 +82,7 @@ export class SR5_SocketHandler {
       if (message.userId && game.user.id) SR5_SystemHelpers.srLog(3,'GM is handling Shadowrun 5 system socket message')
 
       for (const handler of handlers) {
-        await handler(message)
+        await handler(message, senderId)
       }
     })
   }

@@ -255,6 +255,7 @@
 	"SR5.SharedVisionSeeingThrough": "Vous voyez par",
 	"SR5.SharedVisionStop": "Arrêter de voir par cet appareil",
 	"SR5.SharedVisionSeeThrough": "Voir par {name}",
+	"SR5.SharedVisionNoMark": "Plus aucune mark sur {name} : rien à intercepter (Fureter, SR5 p. 241).",
 	"SR5.SharedVisionNoToken": "{name} n'a pas de jeton sur une scène active : rien à voir par lui.",
 	"SR5.SharedVisionNoPlayerFor": "Aucun joueur ne possède {name} : personne à qui donner la vision.",
 	"SR5.ActionSourceTakeCover": "Se mettre à couvert",

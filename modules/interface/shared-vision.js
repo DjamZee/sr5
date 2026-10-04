@@ -1,6 +1,13 @@
 import {
-  SHARED_VISION_FLAG, SHARED_VISION_ACTOR_TYPES, getSharedViewers, isSharedWith, withViewer, withoutViewer, isViewerStillValid
+  SHARED_VISION_FLAG, SHARED_VISION_ACTOR_TYPES, getSharedViewers, isSharedWith, withViewer, withoutViewer, isViewerStillValid,
+  isViewerRequestAllowed, hasMarkFrom
 } from "../system/shared-vision.js"
+import {
+  SR5_SystemHelpers
+} from "../system/utilitySystem.js"
+import {
+  SR5Token
+} from "./token.js"
 import {
   SR5_SocketHandler
 } from "../socket.js"
@@ -29,8 +36,19 @@ export class SR5SharedVision {
     await SR5SharedVision.setList(tokenDocument, remove ? withoutViewer(current, entry.userId) : withViewer(current, entry))
   }
 
-  static async _socketSetViewer(message) {
+  //The gamemaster writes only what the sender is allowed to ask: the server tells who sent it
+  static async _socketSetViewer(message, senderId) {
     const tokenDocument = await fromUuid(message.data.tokenUuid)
+    const sender = game.users.get(senderId)
+    const allowed = isViewerRequestAllowed({
+      actor: tokenDocument?.actor,
+      entry: message.data.entry,
+      remove: !!message.data.remove,
+      senderId,
+      senderOwns: actor => !!sender && !!actor?.testUserPermission(sender, "OWNER"),
+      getActor: id => SR5_EntityHelpers.getRealActorFromID(id),
+    })
+    if (!allowed) return SR5_SystemHelpers.srLog(1, `Shared vision request refused for user '${senderId}'`, message.data)
     await SR5SharedVision.setViewer(tokenDocument, message.data.entry, message.data.remove)
   }
 
@@ -120,6 +138,13 @@ export class SR5SharedVision {
       }))
       return false
     }
+    //No mark, no traffic to intercept (SR5 p. 241): the mark may have gone since the roll
+    if (!hasMarkFrom(target, hackerId)) {
+      ui.notifications.warn(game.i18n.format("SR5.SharedVisionNoMark", {
+        name: target.name
+      }))
+      return false
+    }
     const hacker = SR5_EntityHelpers.getRealActorFromID(hackerId)
     const userIds = game.user.isGM ?
       game.users.filter(u => !u.isGM && hacker?.testUserPermission(u, "OWNER")).map(u => u.id) :
@@ -156,10 +181,14 @@ export class SR5SharedVision {
   /** The gamemaster takes out every viewer whose source of vision is gone: the mark of a Snoop erased,
    * the wireless switched off, the device bricked or destroyed. Only one gamemaster does it.
    */
-  static async checkViewers() {
+  //actor: only its tokens are checked, when the change came from it. Only the active and the viewed
+  //scenes are read: a token elsewhere is checked again when its scene is shown
+  static async checkViewers(actor = null) {
     if (!game.user.isGM || game.users.activeGM?.id !== game.user.id) return
-    for (const scene of game.scenes ?? []) {
+    const scenes = new Set([game.scenes?.active, canvas?.scene].filter(Boolean))
+    for (const scene of scenes) {
       for (const tokenDocument of scene.tokens) {
+        if (actor && tokenDocument.actor !== actor && tokenDocument.actorId !== actor.id) continue
         const viewers = getSharedViewers(tokenDocument)
         if (!viewers.length) continue
         const kept = viewers.filter(e => isViewerStillValid(e, tokenDocument.actor))
@@ -240,11 +269,27 @@ export class SR5SharedVision {
 
 //A rigger who jumps into a drone, or out of it, sees through other eyes (SR5 p. 266): draw the vision again
 export function sr5HookUpdateActorSharedVision(actor, change) {
-  if (actor?.type === "actorDrone" && (foundry.utils.hasProperty(change, "system.controlMode") || foundry.utils.hasProperty(change, "system.vehicleOwner"))) SR5SharedVision.refresh()
-  SR5SharedVision.checkViewers()
+  if (actor?.type === "actorDrone" && (foundry.utils.hasProperty(change, "system.controlMode") || foundry.utils.hasProperty(change, "system.vehicleOwner"))) {
+    SR5Token.clearJumpedInRiggers()
+    SR5SharedVision.refresh()
+  }
+  if (SHARED_VISION_ACTOR_TYPES.includes(actor?.type)) SR5SharedVision.checkViewers(actor)
 }
 
-//A change of the list, on any client, draws the vision again
+//An item of a drone or device changed (its marks, its wireless): check who sees through it
+export function sr5HookUpdateItemSharedVision(item) {
+  if (SHARED_VISION_ACTOR_TYPES.includes(item?.parent?.type)) SR5SharedVision.checkViewers(item.parent)
+}
+
+//An actor or a token appeared or went, a scene was drawn: who is jumped in is to be read again
+export function sr5HookResetJumpedInRiggers() {
+  SR5Token.clearJumpedInRiggers()
+}
+
+//A change of the list, on any client, draws the vision again; the gamemaster checks what was written
 export function sr5HookUpdateTokenSharedVision(tokenDocument, change) {
-  if (foundry.utils.hasProperty(change, `flags.sr5.${SHARED_VISION_FLAG}`) || foundry.utils.hasProperty(change, `flags.sr5.-=${SHARED_VISION_FLAG}`)) SR5SharedVision.refresh()
+  if (foundry.utils.hasProperty(change, `flags.sr5.${SHARED_VISION_FLAG}`) || foundry.utils.hasProperty(change, `flags.sr5.-=${SHARED_VISION_FLAG}`)) {
+    SR5SharedVision.refresh()
+    SR5SharedVision.checkViewers(tokenDocument.actor)
+  }
 }

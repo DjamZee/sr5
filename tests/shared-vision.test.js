@@ -46,6 +46,7 @@ describe('shared vision list (SR5 p. 241)', () => {
 describe('the device keeps sending what it sees', () => {
   const camera = (system = {
   }, items = []) => ({
+    type: 'actorDevice',
     system: {
       wirelessTurnedOn: true, conditionMonitors: {
         condition: {
@@ -173,6 +174,8 @@ describe('SR5Token gives the vision of a hidden camera to the player it is share
       globalThis.canvas.tokens = {
         placeables: []
       }
+      //The riggers are read once and kept: a new set of actors is a change of them
+      SR5Token.clearJumpedInRiggers()
     }
     const visible = actor => {
       const t = make({
@@ -234,5 +237,185 @@ describe('who is jumped in', () => {
     expect(decideVisionSource({
       isGM: false, sharedWithMe: true, isBlindBody: true
     })).toBe(false)
+  })
+})
+
+describe('a request sent by socket (second review, Uma)', async () => {
+  const {
+    isViewerRequestAllowed, hidesItsOwnSight
+  } = await import('../modules/system/shared-vision.js')
+  const camera = {
+    id: 'cam', type: 'actorDevice', items: [{
+      type: 'itemDevice', system: {
+        isActive: true, marks: [{
+          ownerId: 'hacker', value: 1
+        }]
+      }
+    }], system: {
+    }
+  }
+  const hacker = {
+    id: 'hacker', type: 'actorPc'
+  }
+  const ask = (entry, {
+    remove = false, owns = [], actor = camera
+  } = {
+  }) => isViewerRequestAllowed({
+    actor, entry, remove, senderId: 'clo',
+    senderOwns: a => owns.includes(a?.id),
+    getActor: id => (id === 'hacker' ? hacker : undefined),
+  })
+
+  it('refuses a player who adds herself to a camera she does not own', () => {
+    expect(ask({
+      userId: 'clo', source: 'share'
+    })).toBe(false)
+  })
+  it('lets the owner invite', () => {
+    expect(ask({
+      userId: 'other', source: 'share'
+    }, {
+      owns: ['cam']
+    })).toBe(true)
+  })
+  it('refuses to take another user out, unless the sender owns the device', () => {
+    expect(ask({
+      userId: 'other'
+    }, {
+      remove: true
+    })).toBe(false)
+    expect(ask({
+      userId: 'other'
+    }, {
+      remove: true, owns: ['cam']
+    })).toBe(true)
+    expect(ask({
+      userId: 'clo'
+    }, {
+      remove: true
+    })).toBe(true)
+  })
+  it('refuses a Snoop for another user, for a hacker she does not own, or with no mark', () => {
+    expect(ask({
+      userId: 'other', source: 'snoop', markOwnerId: 'hacker'
+    }, {
+      owns: ['hacker']
+    })).toBe(false)
+    expect(ask({
+      userId: 'clo', source: 'snoop', markOwnerId: 'hacker'
+    })).toBe(false)
+    expect(ask({
+      userId: 'clo', source: 'snoop', markOwnerId: 'ghost'
+    }, {
+      owns: ['ghost']
+    })).toBe(false)
+    expect(ask({
+      userId: 'clo', source: 'snoop', markOwnerId: 'hacker'
+    }, {
+      owns: ['hacker']
+    })).toBe(true)
+  })
+  it('refuses any actor that is neither a drone nor a device', () => {
+    expect(ask({
+      userId: 'clo', source: 'share'
+    }, {
+      owns: ['pc'], actor: {
+        id: 'pc', type: 'actorPc'
+      }
+    })).toBe(false)
+  })
+
+  it('a device seen through hides its own sight from a viewer who does not own it', () => {
+    expect(hidesItsOwnSight({
+      isGM: false, sharedWithMe: true, isOwner: false
+    })).toBe(true)
+    expect(hidesItsOwnSight({
+      isGM: false, sharedWithMe: true, isOwner: true
+    })).toBe(false)
+    expect(hidesItsOwnSight({
+      isGM: true, sharedWithMe: true, isOwner: false
+    })).toBe(false)
+  })
+})
+
+describe('the wireless of a device is on its device item (second review, Uma)', () => {
+  it('a camera whose device has its wireless off sends nothing', () => {
+    const camera = wireless => ({
+      type: 'actorDevice', statuses: new Set(), system: {
+      }, items: [{
+        type: 'itemDevice', system: {
+          isActive: true, wirelessTurnedOn: wireless
+        }
+      }]
+    })
+    expect(canStreamVision(camera(true))).toBe(true)
+    expect(canStreamVision(camera(false))).toBe(false)
+  })
+})
+
+describe('the camera itself stays out of sight (second review, Uma)', () => {
+  it('seen through, it shows only if the viewer\'s other eyes see it', async () => {
+    //The core shows any token whose vision is active (Token#isVisible, V13)
+    Object.defineProperty(globalThis.foundry.canvas.placeables.Token.prototype, 'isVisible', {
+      configurable: true, get() {
+        return !Object.values(this.vision.suppression).includes(true)
+      }
+    })
+    globalThis.game = {
+      user: {
+        id: 'u1', isGM: false
+      }
+    }
+    const {
+      SR5Token
+    } = await import('../modules/interface/token.js')
+    const make = isOwner => {
+      const t = new SR5Token()
+      t.document = token([{
+        userId: 'u1'
+      }])
+      t.vision = {
+        suppression: {
+        }
+      }
+      t.actor = {
+        isOwner
+      }
+      return t
+    }
+    const seen = make(false)
+    expect(seen.isVisible).toBe(false)
+    expect(seen.vision.suppression).toEqual({
+    })
+    expect(make(true).isVisible).toBe(true)
+  })
+})
+
+describe('the riggers jumped in are read once (second review, Uma)', () => {
+  it('reads the actors once until cleared', async () => {
+    const {
+      SR5Token
+    } = await import('../modules/interface/token.js')
+    let reads = 0
+    globalThis.game = {
+      actors: {
+        filter: () => {
+          reads++
+          return []
+        }
+      }
+    }
+    globalThis.canvas = {
+      tokens: {
+        placeables: []
+      }
+    }
+    SR5Token.clearJumpedInRiggers()
+    SR5Token.getJumpedInRiggers()
+    SR5Token.getJumpedInRiggers()
+    expect(reads).toBe(1)
+    SR5Token.clearJumpedInRiggers()
+    SR5Token.getJumpedInRiggers()
+    expect(reads).toBe(2)
   })
 })

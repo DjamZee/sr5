@@ -73,7 +73,9 @@ export function canStreamVision(actor) {
   if (actor.statuses?.has?.("dead")) return false
   const system = actor.system ?? {
   }
+  //A drone carries its wireless switch itself (N91); a device such as a camera on its active device item
   if (system.wirelessTurnedOn === false) return false
+  if (Array.from(actor.items ?? []).some(i => i.type === "itemDevice" && i.system?.isActive && i.system.wirelessTurnedOn === false)) return false
   for (const key of ["condition", "matrix"]) {
     const monitor = system.conditionMonitors?.[key]
     if (monitor?.value > 0 && monitor.actual?.value >= monitor.value) return false
@@ -87,11 +89,49 @@ export function canStreamVision(actor) {
  * @return {Boolean}
  */
 export function isViewerStillValid(entry, actor) {
+  if (!SHARED_VISION_ACTOR_TYPES.includes(actor?.type)) return false
   if (!canStreamVision(actor)) return false
   //Snoop works as long as the snooper keeps at least one mark on the target (SR5 p. 241), with no
   //new roll each turn (arbitrage de DjamZ, 2026-10-04)
   if (entry.source === "snoop") return hasMarkFrom(actor, entry.markOwnerId)
   return true
+}
+
+/** Decide whether the gamemaster grants a request a user sent by socket. The sender comes from the
+ * server, not from the message: nobody can ask in another user's name.
+ * @param {Object} request
+ * @param {Object} request.actor - the actor of the token seen through
+ * @param {Object} request.entry - { userId, source, markOwnerId }
+ * @param {Boolean} request.remove - the request takes a user out
+ * @param {String} request.senderId - the user who sent it
+ * @param {Function} request.senderOwns - (actor) => true if the sender owns that actor
+ * @param {Function} request.getActor - (id) => the actor of that id
+ * @return {Boolean}
+ */
+export function isViewerRequestAllowed({
+  actor, entry, remove, senderId, senderOwns, getActor
+}) {
+  if (!SHARED_VISION_ACTOR_TYPES.includes(actor?.type) || !entry?.userId || !senderId) return false
+  //Anyone may stop seeing; the owner of the device may also stop someone else
+  if (remove) return entry.userId === senderId || senderOwns(actor)
+  //Only the owner invites (SR5 p. 241: Invite Mark asks for 4 marks, the owner's)
+  if (entry.source !== "snoop") return senderOwns(actor)
+  //A Snoop is the sender's own, for a hacker he owns, who holds a mark on the device (SR5 p. 241)
+  return entry.userId === senderId && senderOwns(getActor(entry.markOwnerId)) && hasMarkFrom(actor, entry.markOwnerId)
+}
+
+/** Tell whether a device the user sees through must hide from his own sight of it: he sees what the
+ * camera sees, not the camera, unless his other eyes see it (arbitrage de DjamZ, 2026-10-04)
+ * @param {Object} state
+ * @param {Boolean} state.isGM - the user is a gamemaster
+ * @param {Boolean} state.sharedWithMe - the token is in the user's shared vision list
+ * @param {Boolean} state.isOwner - the user owns the token's actor
+ * @return {Boolean}
+ */
+export function hidesItsOwnSight({
+  isGM, sharedWithMe, isOwner
+}) {
+  return !isGM && sharedWithMe && !isOwner
 }
 
 /** Tell whether a drone has a rigger jumped into it (SR5 p. 243): rigging control, with a controller

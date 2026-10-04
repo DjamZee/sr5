@@ -1,5 +1,5 @@
 import {
-  decideVisionSource, isSharedWith, isJumpedInDrone, jumpedInRiggerIds
+  decideVisionSource, isSharedWith, isJumpedInDrone, jumpedInRiggerIds, hidesItsOwnSight
 } from "../system/shared-vision.js"
 
 export class SR5Token extends foundry.canvas.placeables.Token {
@@ -25,14 +25,44 @@ export class SR5Token extends foundry.canvas.placeables.Token {
     return super._isVisionSource()
   }
 
+  /**
+   * A device seen through shows what it sees, not itself: the user sees it only if his other eyes do
+   * (arbitrage de DjamZ, 2026-10-04). The core shows any token whose vision is active, so its own
+   * source is suppressed for the test, through the public suppression record of the source.
+   * @override
+   */
+  get isVisible() {
+    const source = this.vision
+    if (!source || !hidesItsOwnSight({
+      isGM: game.user.isGM, sharedWithMe: isSharedWith(this.document, game.user.id), isOwner: !!this.actor?.isOwner
+    })) return super.isVisible
+    source.suppression.sr5SeenThrough = true
+    try {
+      return super.isVisible
+    } finally {
+      delete source.suppression.sr5SeenThrough
+    }
+  }
+
+  //The riggers jumped into a drone, read once and kept until an actor, a token or a drone changes
+  static #jumpedInRiggers = null
+
+  static clearJumpedInRiggers() {
+    SR5Token.#jumpedInRiggers = null
+  }
+
+  static getJumpedInRiggers() {
+    if (!SR5Token.#jumpedInRiggers) SR5Token.#jumpedInRiggers = jumpedInRiggerIds([
+      ...(game.actors?.filter(a => a.type === "actorDrone") ?? []),
+      ...(canvas.tokens?.placeables ?? []).map(t => t.actor).filter(a => a?.isToken && a.type === "actorDrone"),
+    ])
+    return SR5Token.#jumpedInRiggers
+  }
+
   //A rigger jumped into a drone, linked to it by his actor or, unlinked, by his token
   #isJumpedInRigger() {
     if (!["actorPc", "actorGrunt"].includes(this.actor?.type)) return false
-    const drones = [
-      ...(game.actors?.filter(a => a.type === "actorDrone") ?? []),
-      ...(canvas.tokens?.placeables ?? []).map(t => t.actor).filter(a => a?.isToken && a.type === "actorDrone"),
-    ]
-    const riggers = jumpedInRiggerIds(drones)
+    const riggers = SR5Token.getJumpedInRiggers()
     return riggers.has(this.actor.id) || riggers.has(this.document.id)
   }
 
