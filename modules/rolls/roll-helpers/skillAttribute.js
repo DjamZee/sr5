@@ -65,6 +65,13 @@ export function backgroundCountApplies(skillKey, attributeKey){
   return attributeKey === "magic" || ALWAYS_BACKGROUND_COUNT.includes(skillKey)
 }
 
+// Grimoire des Ombres p. 87: an aligned background count raises the limit of every test linked to
+// Magic (see p. 30). True when the skill already carries it among its limit modifiers, so that it
+// is not added a second time.
+export function backgroundCountInModifiers(bgCount, modifiers){
+  return (bgCount?.modifiers || []).some(b => (modifiers || []).some(m => m.type === b.type && m.source === b.source))
+}
+
 // Remove the background count from the dice and the limit, then put it back if it applies:
 // a penalty goes to the dice, a bonus to the limit (as utilityActor does for the sheet)
 export function syncBackgroundCount(rollData, bgCount, apply){
@@ -75,6 +82,8 @@ export function syncBackgroundCount(rollData, bgCount, apply){
   for (let b of mods){
     if (rollData.limit.modifiers[b.type]?.label === b.source) delete rollData.limit.modifiers[b.type]
   }
+  //The whole count added under one key by addBackgroundCountLimitModifiers goes too: it is put back below, once
+  delete rollData.limit.modifiers.backgroundCount
   if (!apply) return rollData
   for (let b of mods){
     if (bgCount.value < 0) rollData.dicePool.modifiers.push({

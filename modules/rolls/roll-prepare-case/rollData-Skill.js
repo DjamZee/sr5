@@ -11,7 +11,7 @@ import {
   SR5_MiscellaneousHelpers 
 } from "../roll-helpers/miscellaneous.js"
 import {
-  prepareSkillAttribute, SKILL_ATTRIBUTE_FLAG, syncBackgroundCount, backgroundCountApplies
+  prepareSkillAttribute, SKILL_ATTRIBUTE_FLAG, syncBackgroundCount, backgroundCountApplies, backgroundCountInModifiers
 } from "../roll-helpers/skillAttribute.js"
 
 //Add info for skill dicePool roll
@@ -87,8 +87,10 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
     rollData.dialogSwitch.extended = false
     if (actor.system.magic.reagents > 0 && rollKey !== "binding") rollData.dialogSwitch.reagents = true
     rollData.magic.elements = actor.system.magic.elements
-    //Add background count limit modifiers if any
-    if (actor.system.magic.bgCount.value > 0 && backgroundCountApplies(rollKey, rollData.skillAttribute?.selected ?? "magic")){
+    //Add background count limit modifiers if any, unless the skill already carries them (Grimoire des Ombres p. 87):
+    //counted once, not twice
+    if (actor.system.magic.bgCount.value > 0 && backgroundCountApplies(rollKey, rollData.skillAttribute?.selected ?? "magic") &&
+      !backgroundCountInModifiers(actor.system.magic.bgCount, actor.system.skills[rollKey].limit.modifiers)){
       rollData = SR5_PrepareRollHelper.addBackgroundCountLimitModifiers(rollData, actor)
     }
   }

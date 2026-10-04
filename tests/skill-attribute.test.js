@@ -4,8 +4,44 @@ import {
 
 import {
   prepareSkillAttribute, skillAttributeChoices, swapLinkedAttribute, selectedSkillAttribute, skillAttributeFlagKey,
-  syncBackgroundCount, backgroundCountApplies, setDialogWindowTitle, forgetKnowledgeAttribute
+  syncBackgroundCount, backgroundCountApplies, setDialogWindowTitle, forgetKnowledgeAttribute, backgroundCountInModifiers
 } from '../modules/rolls/roll-helpers/skillAttribute.js'
+
+// Grimoire des Ombres p. 87: an aligned count raises the limit of the Magic tests once, not twice
+describe('aligned background count on the limit of magic skills', () => {
+  const bonus = {
+    value: 3, modifiers: [{
+      source: "Champ magique de la scène", type: "hermetic", value: 3
+    }]
+  }
+
+  it('sees the count the skill already carries, so it is not added again', () => {
+    expect(backgroundCountInModifiers(bonus, [{
+      source: "Champ magique de la scène", type: "hermetic", value: 3
+    }])).toBe(true)
+    expect(backgroundCountInModifiers(bonus, [])).toBe(false)
+  })
+
+  it('takes the single-key count away when Magic gives way, and counts it once when Magic comes back', () => {
+    let rollData = {
+      dicePool: {
+        modifiers: []
+      }, limit: {
+        modifiers: {
+          backgroundCount: {
+            label: "Champ magique", value: 3
+          }
+        }
+      }
+    }
+    syncBackgroundCount(rollData, bonus, false)
+    expect(rollData.limit.modifiers).toEqual({
+    })
+    syncBackgroundCount(rollData, bonus, true)
+    let total = Object.values(rollData.limit.modifiers).reduce((t, m) => t + m.value, 0)
+    expect(total).toBe(3)
+  })
+})
 
 // Grimoire des Ombres p. 30: the background count follows the attribute in use
 describe('background count', () => {
