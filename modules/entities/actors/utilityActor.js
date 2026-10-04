@@ -1311,6 +1311,35 @@ export class SR5_CharacterUtility extends Actor {
     }
   }
 
+  // The book sets no cap of its own on an AI's active programs (Data Trails p. 151-161 is silent).
+  // DjamZ's ruling: the smaller of Depth x 2 and the slots of the device the AI runs on
+  static aiProgramCap(depth, deviceSlots) {
+    return Math.min(depth * 2, deviceSlots)
+  }
+
+  // Apply DjamZ's ruling to an AI on a device: when Depth x 2 is the lower, it replaces the device as the cap
+  static applyAIProgramCap(actor) {
+    if (!this.isDepthActive(actor)) return
+    let max = actor.system.matrix.programsMaximumActive
+    let depth = actor.system.specialAttributes.depth?.augmented.value || 0
+    if (this.aiProgramCap(depth, max.value) === max.value) return
+    max.modifiers = []
+    SR5_EntityHelpers.updateModifier(max, `${game.i18n.localize('SR5.Depth')} ${depth} × 2`, "linkedAttribute", depth * 2)
+    SR5_EntityHelpers.updateValue(max, 0)
+  }
+
+  // Warning shown when an AI loads one program too many. DjamZ's ruling: it warns and does not block.
+  // An AI outside any device cannot load programs at all (Data Trails p. 157). Other actors are left alone
+  static aiProgramCapWarning(actor) {
+    if (!this.isDepthActive(actor)) return null
+    if (this.isDevicelessAI(actor)) return game.i18n.localize('SR5.AIProgramsNoDevice')
+    let current = actor.system.matrix.programsCurrentActive.value, max = actor.system.matrix.programsMaximumActive.value
+    if (current + 1 <= max) return null
+    return game.i18n.format('SR5.AIProgramsCapReached', {
+      current: current + 1, max
+    })
+  }
+
   // An AI outside any device resists matrix damage with no device and no Firewall. The book gives it no pool
   // (Data Trails p. 157 and 161): it resists with the attribute it defends with where the defense calls for Logic.
   static generateDevicelessAIMatrixResistance(actor) {
@@ -3794,6 +3823,7 @@ export class SR5_CharacterUtility extends Actor {
     SR5_EntityHelpers.updateValue(matrix.noise)
     SR5_EntityHelpers.updateValue(matrix.programsMaximumActive, 0)
     SR5_EntityHelpers.updateValue(matrix.programsCurrentActive, 0)
+    this.applyAIProgramCap(actor)
 
     for (let key of Object.keys(SR5.matrixAttributes)) {
       SR5_EntityHelpers.updateValue(matrixAttributes[key], 0)

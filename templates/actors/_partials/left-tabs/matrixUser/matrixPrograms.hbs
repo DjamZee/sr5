@@ -19,6 +19,11 @@
                 </div>
             </div>
         </li>
+        {{#if (eq system.activeSpecialAttribute 'depth')}}{{#unless system.matrix.deviceType}}
+        <li class="grid">
+            <div class="col-12">{{localize 'SR5.AIProgramsNoDevice'}}</div>
+        </li>
+        {{/unless}}{{/if}}
     </ul>
 </div>
 {{/if}}

@@ -1498,6 +1498,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       }
     }
     if (item.type === "itemProgram" && target === "system.isActive"){
+      if (oldValue === false && ["common", "hacking", "autosoft", "agent"].includes(item.system.type)) {
+        let warning = SR5_CharacterUtility.aiProgramCapWarning(actor)
+        if (warning) ui.notifications.warn(warning)
+      }
       if(oldValue === false) actions = [{
         type: "free", value: 1, source: "loadProgram"
       }]

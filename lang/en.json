@@ -931,6 +931,8 @@
 	"SR5.DEPENDENCIES_UpdateDescription": "The mentioned {type} is currently installed but is out of date. To update it, head over the 'Add-on Modules' tab from the 'Configuration and Setup' screen.",
 	"SR5.DEPENDENCIES_UpdateTitle": "Update the '{name}' {type}.",
 	"SR5.DepthEdgeMax": "Depth (Edge maximum)",
+	"SR5.AIProgramsNoDevice": "No programs outside a device (Data Trails p. 157)",
+	"SR5.AIProgramsCapReached": "Active program cap exceeded ({current}/{max})",
 	"SR5.Depth": "Depth",
 	"SR5.Derezz": "Derezz",
 	"SR5.Derived": "Derived",

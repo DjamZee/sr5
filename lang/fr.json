@@ -931,6 +931,8 @@
 	"SR5.DEPENDENCIES_UpdateDescription": "Le {type} mentionné est actuellement installé, mais dans une version trop ancienne. Afin de procéder à sa mise à jour, rendez vous directement dans l'onglet 'Modules' de l'écran 'Configuration et Paramètres'.",
 	"SR5.DEPENDENCIES_UpdateTitle": "Mettre à jour le {type} '{name}'.",
 	"SR5.DepthEdgeMax": "Profondeur (maximum de Chance)",
+	"SR5.AIProgramsNoDevice": "Aucun programme hors appareil (Data Trails p. 157)",
+	"SR5.AIProgramsCapReached": "Plafond de programmes actifs dépassé ({current}/{max})",
 	"SR5.Depth": "Profondeur",
 	"SR5.Derezz": "Derezz",
 	"SR5.Derived": "Dérivés",
