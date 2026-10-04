@@ -43,6 +43,9 @@ import {
 import {
   SR5_ActorHelper 
 } from "../entities/actors/entityActor-helpers.js"
+import {
+  ritualDrainActorId
+} from "./roll-helpers/ritualTeam.js"
 
 // True when a GM is connected to relay what a player cannot do
 export function hasActiveGM() {
@@ -60,7 +63,6 @@ export class SR5_RollMessage {
     html.querySelectorAll(".messageAction").forEach(el => {
       el.addEventListener("click", (ev) => SR5_RollMessage.chatButtonAction(ev))
     })
-
     //Toggle Dice details
     html.querySelectorAll(".SR-CardHeader").forEach(el => {
       el.addEventListener("click", (ev) => {
@@ -73,6 +75,11 @@ export class SR5_RollMessage {
     if (!game.user.isGM) {
       // Hide GM stuff
       html.querySelectorAll(".chat-button-gm").forEach(el => el.remove())
+
+      // SR5 p. 299: each ritual participant only sees the button of their own Drain
+      html.querySelectorAll(".ritualDrain").forEach(el => {
+        if (!SR5_EntityHelpers.getRealActorFromID(ritualDrainActorId(el.dataset.type))?.isOwner) el.remove()
+      })
 
       // v13: use message document directly instead of data.message
       // Hide if player is not owner of the message
@@ -173,7 +180,15 @@ export class SR5_RollMessage {
       messageData = message.flags.sr5data
 
     messageData.owner.messageId = messageId
-    
+
+    //SR5 p. 299: a ritual participant resists their own Drain, named on the button
+    const ritualDrainId = ritualDrainActorId(type)
+    if (ritualDrainId) {
+      const participant = SR5_EntityHelpers.getRealActorFromID(ritualDrainId)
+      if (!participant?.isOwner) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+      return participant.rollTest("drain", null, messageData)
+    }
+
     //Define actor for Opposed test or Non opposed tests
     if (action === "opposedTest") {
       actor = SR5_EntityHelpers.getRealActorFromID(opposedTestActorId(speaker))

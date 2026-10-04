@@ -10,6 +10,9 @@ import {
 import {
   SR5_EntityHelpers 
 } from "../../entities/helpers.js"
+import {
+  ritualDrainRecipients, ritualDrainKey
+} from "../roll-helpers/ritualTeam.js"
 
 export default async function defenseResultInfo(cardData, type){
   let key, label, labelEnd, successTestType = "nonOpposedTest", failedTestType = "SR-CardButtonHit endTest", failedKey = ""
@@ -73,7 +76,15 @@ export default async function defenseResultInfo(cardData, type){
       }
       key = "ritualSealed"
       if (cardData.magic.drain.value < 2) cardData.magic.drain.value = 2
-      cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("opposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${cardData.magic.drain.value})`)
+      //SR5 p. 299: with participants, each of them takes the Drain, one button per name
+      if (cardData.magic.ritualParticipants?.length) {
+        let leader = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+        for (let recipient of ritualDrainRecipients({
+          actorId: cardData.owner.actorId, name: leader?.name
+        }, cardData.magic.ritualParticipants)) {
+          cardData.chatCard.buttons[ritualDrainKey(recipient.actorId)] = SR5_RollMessage.generateChatButton("ritualDrain", ritualDrainKey(recipient.actorId), `${game.i18n.localize("SR5.ResistDrain")} ${recipient.name} (${cardData.magic.drain.value})`)
+        }
+      } else cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("opposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${cardData.magic.drain.value})`)
 
       let item = await fromUuid(cardData.owner.itemUuid)
       if (item.system.durationMultiplier === "netHits"){

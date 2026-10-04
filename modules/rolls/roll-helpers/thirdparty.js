@@ -163,6 +163,7 @@ export class SR5_ThirdPartyHelpers {
       rollData.owner.itemUuid = cardData.owner.itemUuid
       rollData.magic.force = cardData.magic.force
       rollData.magic.reagentsSpent = cardData.magic.reagentsSpent
+      rollData.magic.ritualParticipants = cardData.magic.ritualParticipants || []
       rollData.test.type = "ritualResistance"
       rollData.test.title = `${game.i18n.localize("SR5.RitualResistance")} (${rollData.previousMessage.hits})`
     }

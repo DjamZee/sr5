@@ -10,6 +10,9 @@ import {
 import {
   sr5DressTableDraw
 } from "../interface/table-draw.js"
+import {
+  SR5_RitualCircle
+} from "../rolls/roll-helpers/ritualCircle.js"
 
 export function sr5HookRenderChatMessageHTML(message, html, _data) {
   // A table draw is rendered by core and wears no SR5 header of its own
@@ -40,6 +43,8 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   // Availability cards carry their own data and their own button
   if (message.flags?.sr5shop) SR5ShopAvailability.chatListeners(html, message)
   if (message.flags?.sr5fence) SR5ShopFence.chatListeners(html, message)
+  // Ritual circle card: join and seal (SR5 p. 298-299)
+  if (message.flags?.sr5?.ritualCircle) SR5_RitualCircle.activateListeners(html, message)
 }
 
 // v13: keep chat scrolled to bottom when SR5 roll messages change height.

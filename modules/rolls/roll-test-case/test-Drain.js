@@ -4,6 +4,9 @@ import {
 import {
   SR5 
 } from "../../config.js"
+import {
+  ritualDrainKey
+} from "../roll-helpers/ritualTeam.js"
 
 export default async function drainInfo(cardData, _actorId){
   let damageValue = cardData.magic.drain.value - cardData.roll.hits
@@ -24,5 +27,8 @@ export default async function drainInfo(cardData, _actorId){
   }
   if (prevData?.test.type !== "ritualResistance") {
     SR5_RollMessage.updateChatButtonHelper(cardData.previousMessage.messageId, "drain")
+  } else if (prevData.chatCard.buttons?.[ritualDrainKey(cardData.owner.actorId)]) {
+    //SR5 p. 299: a ritual participant resists their Drain once, the other names stay on the card
+    SR5_RollMessage.updateChatButtonHelper(cardData.previousMessage.messageId, ritualDrainKey(cardData.owner.actorId))
   }
 }

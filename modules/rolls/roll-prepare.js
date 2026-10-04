@@ -14,6 +14,12 @@ import {
   SR5_ActorHelper
 } from "../entities/actors/entityActor-helpers.js"
 import * as SR5_GetRollData from "./roll-prepare-case/index.js"
+import {
+  SR5_RitualCircle
+} from "./roll-helpers/ritualCircle.js"
+import {
+  ritualAcceptsHelp
+} from "./roll-helpers/ritualTeam.js"
 
 export class SR5_PrepareRollTest {
 
@@ -182,7 +188,9 @@ export class SR5_PrepareRollTest {
         rollData = await SR5_GetRollData.resistFire(rollData, actor, chatData)
         break
       case "ritual":
-        rollData = await SR5_GetRollData.ritual(rollData, actor, item)
+        // SR5 p. 298: a ritual open to a group starts with the circle card, the roll comes when the leader seals it
+        if (!chatData?.ritualCircle && ritualAcceptsHelp(item.system)) return SR5_RitualCircle.open(actor, item)
+        rollData = await SR5_GetRollData.ritual(rollData, actor, item, chatData)
         break
       case "sensorTarget":
         if (game.user.targets.size) rollData = await SR5_PrepareRollHelper.getTargetData(rollData)

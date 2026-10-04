@@ -5,7 +5,7 @@ import {
   SR5_MiscellaneousHelpers 
 } from "../roll-helpers/miscellaneous.js"
 
-export default function ritual(rollData, actor, item){
+export default function ritual(rollData, actor, item, chatData){
   if (!(actor.system.magic.reagents > 0)) return void ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoReagents")}`)
   let itemData = item.system
 
@@ -43,6 +43,20 @@ export default function ritual(rollData, actor, item){
   rollData.dialogSwitch.reagents = true
   rollData.dialogSwitch.specialization = true
   rollData.owner.itemUuid = item.uuid
+
+  //SR5 p. 299 and p. 51: the participants' teamwork test, rolled on the circle card at the Force chosen there
+  const circle = chatData?.ritualCircle
+  if (circle) {
+    rollData.magic.force = circle.force
+    rollData.limit.base = circle.force
+    if (circle.bonus.dice > 0) rollData.dicePool.modifiers.push({
+      type: "ritualTeamwork", label: game.i18n.localize("SR5.RitualTeamwork"), value: circle.bonus.dice
+    })
+    if (circle.bonus.limit > 0) rollData.limit.modifiers.ritualTeamwork = {
+      value: circle.bonus.limit, label: game.i18n.localize("SR5.RitualTeamwork")
+    }
+    rollData.magic.ritualParticipants = circle.participants
+  }
 
   return rollData
 }
