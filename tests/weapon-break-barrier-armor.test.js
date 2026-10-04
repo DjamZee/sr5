@@ -77,3 +77,44 @@ describe('Break weapon: the modified DV must beat the Armor modified by AP', () 
     expect(cardData.chatCard.buttons.actionEnd).toBeDefined()
   })
 })
+
+// N86: a weapon that cannot lose Accuracy or Reach used to file its button under the "undefined" key
+describe('Break weapon: no applicable effect', () => {
+  it('files the "no effect" button under a named key', async () => {
+    globalThis.ui = {
+      notifications: {
+        info: vi.fn()
+      }
+    }
+    globalThis.game = {
+      i18n: {
+        localize: k => k, format: k => k
+      }, messages: {
+        get: () => null
+      }
+    }
+    const cardData = {
+      previousMessage: {
+        hits: 0
+      }, roll: {
+        hits: 0
+      }, damage: {
+        value: 9
+      }, combat: {
+        barrierArmor: 2, armorPenetration: 0
+      }, target: {
+      }, magic: {
+        drain: {
+          value: 0
+        }
+      }, chatCard: {
+        buttons: {
+        }
+      }, effects: {
+      },
+    }
+    await resistanceResultInfo(cardData, "weaponResistance")
+    expect(Object.keys(cardData.chatCard.buttons)).not.toContain("undefined")
+    expect(cardData.chatCard.buttons.noEffectApplicable.label).toBe("SR5.NoEffectApplicable")
+  })
+})

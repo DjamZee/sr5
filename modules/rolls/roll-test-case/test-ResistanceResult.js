@@ -81,6 +81,7 @@ export default async function resistanceResultInfo(cardData, type){
         if (!weapon || weapon.system.accuracy.value <= 3 && weapon.system.reach.value === 0){
           applyEffect = false
           label = `${game.i18n.localize("SR5.NoEffectApplicable")}`
+          key = "noEffectApplicable"
         }
       }
       break
