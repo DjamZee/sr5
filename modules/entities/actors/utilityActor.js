@@ -2912,8 +2912,8 @@ export class SR5_CharacterUtility extends Actor {
       magic.elements.health = itemData.spiritHealth
       magic.possession = itemData.possession
       if (itemData.systemEffects.length) {
-        let traditionType = itemData.systemEffects.find(i => i.category = "tradition")
-        magic.tradition = traditionType.value
+        let traditionType = itemData.systemEffects.find(i => i.category === "tradition")
+        if (traditionType) magic.tradition = traditionType.value
       }
     }
   }
