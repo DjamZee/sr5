@@ -2043,8 +2043,10 @@ SR5.calledShotsMartialArts = {
   disarm 					  : "SR5.CS_Disarm",
   entanglement			  : "SR5.CS_Entanglement",
   feint					  : "SR5.CS_Feint",
+  knockdown             : "SR5.CS_Knockdown",
   pin 					  : "SR5.CS_Pin",
   reversal              : "SR5.CS_Reversal",
+  shakeUp               : "SR5.CS_ShakeUp",
 }
 
 //-----------------------------------//
