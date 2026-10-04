@@ -1368,6 +1368,8 @@ SR5.calledShots = {
   feint                     : "SR5.CS_Feint",
   knockdown                 : "SR5.CS_Knockdown",
   reversal                  : "SR5.CS_Reversal",
+  subdue                    : "SR5.CS_Subdue",
+  strengthenHold            : "SR5.CS_StrengthenHold",
   extremeIntimidation       : "SR5.CS_AS_ExtremeIntimidation",
   ricochetShot              : "SR5.CS_AS_RicochetShot",
   warningShot               : "SR5.CS_AS_WarningShot",

@@ -32,7 +32,7 @@ import {
   SR5_UtilityItem
 } from "../../entities/items/utilityItem.js"
 import {
-  grapplingCalledShots, holdKindOn, clinchAttackPenalty, clinchCancelsReach, isHeldBy
+  grapplingCalledShots, holdKindOn, clinchAttackPenalty, clinchCancelsReach, isHeldBy, isClinchFirearm
 } from "../roll-helpers/grapple-rules.js"
 
 //Add info for weapon Roll
@@ -216,7 +216,7 @@ function _addClinchModifiers(rollData, actor){
   const penalty = clinchAttackPenalty(actor.effects, {
     category: rollData.test.typeSub,
     reach: rollData.combat.reach,
-    isFirearm: Object.keys(SR5.rangedWeaponFireTypes).includes(rollData.combat.weaponType),
+    isFirearm: isClinchFirearm(rollData.combat.weaponType),
   })
   if (penalty) rollData.dicePool.modifiers.push({
     type: "grappleClinch", label: game.i18n.localize("SR5.GrappleClinchPenalty"), value: penalty

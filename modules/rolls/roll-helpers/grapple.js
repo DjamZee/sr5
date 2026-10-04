@@ -142,10 +142,12 @@ export class SR5_GrappleHelpers {
     const stale = staleHoldWarning(data, holdId)
     if (stale) return SR5_GrappleHelpers.warn(stale, fromUserId)
     const partner = SR5_EntityHelpers.getRealActorFromID(data.partner)
+    //A changed hold is a new state of the hold: the cards rolled against the former one no longer apply
+    const newHoldId = foundry.utils.randomID()
     for (const a of [actor, partner]){
-      const effect = a?.effects.find(e => e.flags?.sr5?.grapple)
+      const effect = a?.effects.find(e => e.flags?.sr5?.grapple?.holdId === data.holdId)
       if (effect) await effect.update({
-        "flags.sr5.grapple.hold": hold
+        "flags.sr5.grapple.hold": hold, "flags.sr5.grapple.holdId": newHoldId
       })
     }
     const [holderId, heldId] = data.role === "holder" ? [actorId, data.partner] : [data.partner, actorId]
@@ -173,7 +175,7 @@ export class SR5_GrappleHelpers {
       flags: {
         sr5: {
           grappleCard: {
-            holderId, heldId
+            holderId, heldId, holdId: grappleHoldOf(holder.effects)?.holdId
           }
         }
       }
@@ -191,8 +193,10 @@ export class SR5_GrappleHelpers {
       ev.preventDefault()
       const holder = SR5_EntityHelpers.getRealActorFromID(card.holderId)
       if (!canUseHoldCard(game.user.isGM, holder?.isOwner)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_GrappleNotYourHold"))
-      //A card left from a hold that has since ended does nothing
-      if (grappleHoldOf(holder.effects)?.partner !== card.heldId) return ui.notifications.warn(game.i18n.localize("SR5.WARN_GrappleNoHold"))
+      //A card left from a hold that has since ended, or changed (a clinch turned into a subdue, a hold strengthened), does nothing
+      const current = grappleHoldOf(holder.effects)
+      const stale = current?.partner === card.heldId ? staleHoldWarning(current, card.holdId) : "SR5.WARN_GrappleNoHold"
+      if (stale) return ui.notifications.warn(game.i18n.localize(stale))
       if (el.dataset.grapple === "release") return SR5_GrappleHelpers.releaseHold(card.holderId)
       if (el.dataset.grapple === "crush") return SR5_GrappleHelpers.crush(card.holderId, card.heldId)
     }))

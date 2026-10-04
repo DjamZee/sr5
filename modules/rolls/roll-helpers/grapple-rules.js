@@ -95,8 +95,16 @@ export function clinchOf(effects){
   return data?.kind === "clinch" ? data : null
 }
 
+//Run & Gun p. 133 : the firearms of the clinch penalty. Every ranged weapon that fires counts, tasers included
+//(SR5 p. 135 and 427 rank them among firearms), heavy weapons too. Bows, crossbows and throwing weapons do not,
+//nor exoticRangedWeapon, which mostly covers exotic bows and crossbows. Ruling of Juniper's review (2026-10-04).
+const CLINCH_NON_FIREARM_TYPES = ["bow", "lightCrossbow", "mediumCrossbow", "heavyCrossbow", "throwing", "exoticRangedWeapon"]
+export function isClinchFirearm(rangedWeaponType){
+  return !!rangedWeaponType && !CLINCH_NON_FIREARM_TYPES.includes(rangedWeaponType)
+}
+
 //Run & Gun p. 133 : in a clinch, melee weapons take a penalty equal to their Reach, firearms one equal to the
-//net hits of the clinch, for both fighters. The book names firearms : bows and throwing weapons are left out.
+//net hits of the clinch. A reading of Run & Gun p. 133-134: for both fighters, whatever their target.
 export function clinchAttackPenalty(effects, {
   category, reach, isFirearm
 }){
