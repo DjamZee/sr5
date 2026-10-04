@@ -146,6 +146,8 @@ export class SR5_ConverterHelpers {
   }
 
   //convert matrix distance to dice mod
+  //Noise by distance (SR5 p. 232), as in the VO: 0 up to 100 m, 1 up to 1 km. The VF prints 0 for 101 m-1 km,
+  //and its errata ("jusqu'a 100 metres : 1") aims at that misprint, not at the 100 m row (DjamZ, 2026-10-04)
   static matrixDistanceToMod(distance){
     switch (distance){
       case "wired":
