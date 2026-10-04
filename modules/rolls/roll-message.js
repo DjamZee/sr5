@@ -415,10 +415,6 @@ export class SR5_RollMessage {
       case "extended":
         SR5_RollTest.extendedRoll(message, actor)
         break
-      //SR5 p. 241: Snoop succeeded, the hacker sees what the drone or device sees while his mark lasts
-      case "snoopVision":
-        if (await SR5SharedVision.startSnoop(actor, messageData.previousMessage.actorId)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
-        break
       case "attackerPlaceMark": {
         // Kill Code p. 45: a mark placed by Watchdog is remembered as such, it opens the interruption actions
         let isWatchdog = messageData.test.typeSub === "watchdog"
@@ -641,6 +637,13 @@ export class SR5_RollMessage {
           actor = SR5_EntityHelpers.getRealActorFromID(messageData.previousMessage.actorId)
           await actor.applyCalledShotsEffect(messageData)
           break
+        //SR5 p. 241: Snoop succeeded, the hacker sees what the drone or device sees while his mark lasts.
+        //The card is the defender's: the hacker who rolled the Snoop clicks it, or the GM for him
+        case "snoopVision": {
+          let snooped = SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId)
+          if (await SR5SharedVision.startSnoop(snooped, messageData.previousMessage.actorId)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+          break
+        }
         default:
           SR5_SystemHelpers.srLog(1, `Unknown '${type}' type in chatButtonAction (attacker Test)`)
       }

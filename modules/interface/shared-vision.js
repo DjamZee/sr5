@@ -172,9 +172,16 @@ export class SR5SharedVision {
 
   //Draw again what the user sees, and the list of what he sees through
   static refresh() {
-    if (canvas?.ready) canvas.perception.update({
-      initializeVision: true, refreshLighting: true
-    })
+    if (canvas?.ready) {
+      //A flag is no sight change for the core: each token whose answer changed builds or drops its source,
+      //as the core does itself when a token is controlled (Token#_onControl)
+      for (const token of canvas.tokens.placeables) {
+        if (!token.vision === token._isVisionSource()) token.initializeVisionSource()
+      }
+      canvas.perception.update({
+        initializeVision: true, refreshLighting: true
+      })
+    }
     SR5SharedVision.renderIndicator()
   }
 
@@ -196,7 +203,7 @@ export class SR5SharedVision {
     indicator.innerHTML = `<label>${escape(game.i18n.localize("SR5.SharedVisionSeeingThrough"))}</label>` + tokens.map(t => `
       <div class="sr5-shared-vision-row flexrow">
         <span class="value">${escape(t.name)}</span>
-        <button type="button" data-token-uuid="${t.uuid}" data-tooltip="${escape(game.i18n.localize("SR5.SharedVisionStop"))}"><i class="fas fa-eye-slash"></i></button>
+        <button type="button" data-token-uuid="${t.uuid}" data-tooltip="${escape(game.i18n.localize("SR5.SharedVisionStop"))}" aria-label="${escape(game.i18n.localize("SR5.SharedVisionStop"))}"><i class="fas fa-eye-slash"></i></button>
       </div>`).join("")
     for (const button of indicator.querySelectorAll("button[data-token-uuid]")) {
       button.addEventListener("click", async event => {
@@ -220,6 +227,7 @@ export class SR5SharedVision {
     button.className = "control-icon sr-hud-shared-vision"
     if (getSharedViewers(tokenDocument).length) button.classList.add("active")
     button.dataset.tooltip = game.i18n.localize("SR5.SharedVisionShare")
+    button.setAttribute("aria-label", button.dataset.tooltip)
     button.innerHTML = "<i class=\"fas fa-eye\"></i>"
     button.addEventListener("click", event => {
       event.preventDefault()

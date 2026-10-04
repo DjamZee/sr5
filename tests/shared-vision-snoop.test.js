@@ -77,6 +77,8 @@ describe('Snoop on a drone or a device (SR5 p. 241)', () => {
     const card = snoopCard(4, 1)
     await matrixDefenseInfo(card, 'd1')
     expect(card.chatCard.buttons.snoopVision?.action).toBe('snoopVision')
+    //The card is the camera's: only a button of the attacker reaches the hacker's player
+    expect(card.chatCard.buttons.snoopVision?.type).toBe('attackerTest')
   })
 
   it('on a drone as well', async () => {

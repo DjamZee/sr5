@@ -104,9 +104,10 @@ export default async function matrixDefenseInfo(cardData, actorId){
       case "haywire":
         cardData.chatCard.buttons.haywire = SR5_RollMessage.generateChatButton("nonOpposedTest", "haywire", game.i18n.localize("SR5.ApplyEffect"))
         break
-      //SR5 p. 241: the hacker views the traffic of the target, as long as he keeps a mark on it
+      //SR5 p. 241: the hacker views the traffic of the target, as long as he keeps a mark on it.
+      //The button is the hacker's: the card belongs to the defender, its other buttons to whoever owns it
       case "snoop":
-        if (SHARED_VISION_ACTOR_TYPES.includes(actor.type)) cardData.chatCard.buttons.snoopVision = SR5_RollMessage.generateChatButton("nonOpposedTest", "snoopVision", game.i18n.format("SR5.SharedVisionSeeThrough", {
+        if (SHARED_VISION_ACTOR_TYPES.includes(actor.type)) cardData.chatCard.buttons.snoopVision = SR5_RollMessage.generateChatButton("attackerTest", "snoopVision", game.i18n.format("SR5.SharedVisionSeeThrough", {
           name: actor.name
         }))
         else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.DefenseFailure"))
