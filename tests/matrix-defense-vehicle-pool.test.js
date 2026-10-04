@@ -12,7 +12,7 @@ const {
   SR5_UtilityItem
 } = await import('../modules/entities/items/utilityItem.js')
 
-// GM ruling (05/10): a slaved vehicle is an icon that can be attacked. SR5 p. 266: its Device Rating is its Pilot
+// GM ruling (05/10): a slaved vehicle is an icon that can be attacked. SR5 p. 271: its Device Rating is its Pilot
 // rating, a car's as well as a drone's
 describe('Matrix defense of a vehicle', () => {
   beforeEach(() => {
