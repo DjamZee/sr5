@@ -69,3 +69,19 @@ describe('missingAction with the shared budget', () => {
   })
   it('lets two simple actions through', () => expect(SR5_MiscellaneousHelpers.missingAction([S, S], left(1, 2, 1))).toBeNull())
 })
+
+// N36: putting the choke setting back refunds the simple action, and the complex one with it
+describe('spendActions refund', () => {
+  const chokeBack = {
+    type: "simple", value: -1, source: "changeChokeSettings"
+  }
+  const choke = {
+    ...chokeBack, value: 1
+  }
+  it('S2 C1 -> S1 C0 -> S2 C1', () => expect(spend([choke, chokeBack])).toEqual([1, 2, 1]))
+  it('gives no complex action back after a real complex one', () => expect(spend([C, chokeBack])).toEqual([1, 1, 0]))
+  it('keeps a second complex action granted by an effect', () => expect(spend([choke, chokeBack], left(1, 4, 2))).toEqual([1, 4, 2]))
+  it('a refunded complex action gives the simple ones back', () => expect(spend([C, {
+    type: "complex", value: -1, source: "rebootDeck"
+  }])).toEqual([1, 2, 1]))
+})

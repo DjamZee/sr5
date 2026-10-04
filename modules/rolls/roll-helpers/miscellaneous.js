@@ -131,7 +131,13 @@ export class SR5_MiscellaneousHelpers {
       if (!a || !available?.[a.type] || typeof a.value !== "number") continue
       let simple = available.simple, complex = available.complex
       available[a.type].current -= a.value
-      if (a.source === "manual" || !(a.value > 0) || !simple || !complex) continue
+      if (a.source === "manual" || !a.value || !simple || !complex) continue
+      //A refunded action (negative value, e.g. a choke setting put back) gives the linked one back too
+      if (a.value < 0){
+        if (a.type === "simple") complex.current = Math.max(complex.current, Math.floor(simple.current / 2))
+        if (a.type === "complex") simple.current = Math.max(simple.current, 2 * complex.current)
+        continue
+      }
       if (a.type === "simple") complex.current = Math.min(complex.current, Math.max(0, Math.floor(simple.current / 2)))
       if (a.type === "complex") simple.current = Math.min(simple.current, Math.max(0, 2 * complex.current))
     }
