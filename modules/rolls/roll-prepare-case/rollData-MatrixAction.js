@@ -12,6 +12,13 @@ import {
   SR5_MarkHelpers, WATCHDOG_INTERRUPTION_COST
 } from "../roll-helpers/mark.js"
 
+// Actions whose marks are not checked on the target: the support actions target allies, not Matrix icons,
+// and Jack Out and Jam Signals ask for ownership of the hacker's own device (SR5 p. 239 and 244)
+const NO_TARGET_MARK_CHECK = ["iAmTheFirewall", "intervene", "jackOut", "jamSignals"]
+function checksTargetMarks(rollKey){
+  return !NO_TARGET_MARK_CHECK.includes(rollKey)
+}
+
 export default async function matrixAction(rollData, rollKey, actor){
   let matrixAction = actor.system.matrix.actions[rollKey]
 
@@ -102,8 +109,8 @@ export default async function matrixAction(rollData, rollKey, actor){
   //Add public grid switch
   if (actor.system.matrix.userGrid === "public") rollData.dialogSwitch.publicGrid = true
     
-  //Check target's Marks before rolling if a target is selected (the support actions target allies, not Matrix icons)
-  if (game.user.targets.size && rollKey !== "iAmTheFirewall" && rollKey !== "intervene") {
+  //Check target's Marks before rolling if a target is selected
+  if (game.user.targets.size && checksTargetMarks(rollKey)) {
     let canContinue = await checkTargetMarks(rollData, matrixAction, actor)
     if (!canContinue) return
   }
@@ -172,5 +179,5 @@ async function checkTargetMarks(rollData, matrixAction, actor){
 
 // Exported for the tests
 export {
-  checkTargetMarks
+  checkTargetMarks, checksTargetMarks
 }
