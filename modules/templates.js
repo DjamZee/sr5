@@ -585,6 +585,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/rolls/rollDialogPartial/modifiers.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/customModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/woundModifier.hbs",
+    "systems/sr5/templates/rolls/rollDialogPartial/runningModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/specializationModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/firingModeModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/recoilModifier.hbs",

@@ -3702,6 +3702,7 @@ SR5.dicePoolModTypes = {
   attackFromVehicle 		  : "SR5.AttackModFiringFromVehicle",
   attackWithImagingDevice	  : "SR5.AttackModFiringWithImagingDevice",
   attackIsRunning 		  : "SR5.AttackModRunning",
+  running                   : "SR5.DicePoolModRunning",
   attackTakeAim   		  : "SR5.AttackModTakeAim",
   chokeSettings             : "SR5.ChokeSettings",
 }

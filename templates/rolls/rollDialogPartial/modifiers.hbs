@@ -39,6 +39,11 @@
     {{> systems/sr5/templates/rolls/rollDialogPartial/woundModifier.hbs}}
     {{/if}}
 
+    <!-- RUNNING (SR5 p. 164) -->
+    {{#if dialogSwitch.running}}
+    {{> systems/sr5/templates/rolls/rollDialogPartial/runningModifier.hbs}}
+    {{/if}}
+
     <!-- SPECIALIZATION -->
     {{#if dialogSwitch.specialization}}
         {{> systems/sr5/templates/rolls/rollDialogPartial/specializationModifier.hbs}}

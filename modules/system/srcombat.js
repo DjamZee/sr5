@@ -16,6 +16,9 @@ import {
 import {
   SR5_MiscellaneousHelpers
 } from "../rolls/roll-helpers/miscellaneous.js"
+import {
+  clearRunning
+} from "./running.js"
 
 export class SR5Combat extends Combat {
   //Pass effects whose deletion is under way (see endOwnerPassEffects)
@@ -134,6 +137,8 @@ export class SR5Combat extends Combat {
     //SR5_SystemHelpers.srLog(3, "New combat round");
     const combat = game.combats?.get(combatId)
     if (!combat) return
+    //SR5 p. 164: a character runs until the end of the Combat Turn
+    await clearRunning(combat)
     await combat.resetAll()
     for (let combatant of combat.combatants) {
       combatant.update({

@@ -31,6 +31,9 @@ import {
   sr5HookCreateToken, sr5HookUpdateToken, sr5HookPreDeleteToken, sr5HookDeleteToken 
 } from './hooks/token.js'
 import {
+  onMoveToken, clearRunning
+} from './system/running.js'
+import {
   sr5HookCanvasInit,
   sr5HookDeleteCombatCumulativeDefense,
   sr5HookCreateCombatant,
@@ -109,6 +112,9 @@ Hooks.on('updateCombatant', sr5HookUpdateCombatant)
 Hooks.on('deleteCombat', sr5HookDeleteCombatCumulativeDefense)
 Hooks.on('deleteCombat', sr5HookDeleteCombatActions)
 Hooks.on('deleteCombat', sr5HookDeleteCombatGrapple)
+//Running (SR5 p. 163-164): put on by a move, it falls when the encounter ends
+Hooks.on('moveToken', onMoveToken)
+Hooks.on('deleteCombat', clearRunning)
 Hooks.on('renderChatMessageHTML', SR5_GrappleHelpers.onRenderHoldCard)
 Hooks.on('closeCombatantConfig', sr5HookCloseCombatantConfig)
 Hooks.on('preUpdateItem', sr5HookPreUpdateItem)

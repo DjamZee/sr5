@@ -23,6 +23,9 @@ import {
 import {
   targetsWirelessOffDrone, isWirelessOffDrone
 } from "./roll-prepare-case/rollData-MatrixAction.js"
+import {
+  runningModifierKind
+} from "../system/running.js"
 
 // N91: matrix rolls aimed at a target besides matrixAction, which guards itself. Each refuses a drone
 // with its wireless off (SR5 p. 424)
@@ -253,7 +256,12 @@ export class SR5_PrepareRollTest {
         SR5_SystemHelpers.srLog(1, `Unknown ${rollType} roll type in 'actorRoll()'`)
     }
         
-    if (rollData) SR5_RollTest.generateRollDialog(rollData)
+    if (rollData) {
+      //Running (SR5 p. 164): the running box of the modifiers list, for the tests that have no box of their own
+      const runningKind = runningModifierKind(rollData.test)
+      rollData.dialogSwitch.running = (runningKind === "general" || runningKind === "defense") ? runningKind : false
+      SR5_RollTest.generateRollDialog(rollData)
+    }
   }
 
   //Get the base data to build a roll test

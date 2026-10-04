@@ -34,6 +34,9 @@ import {
 import {
   holdsTarget, isSubdued
 } from "./roll-helpers/grapple-rules.js"
+import {
+  isRunning, runningModifierValue
+} from "../system/running.js"
 
 export default class SR5_RollDialog {
 
@@ -435,8 +438,15 @@ export default class SR5_RollDialog {
       case "socialObliviousToDanger":
       case "socialFan":
       case "socialBlackmailed":
-      case "defenseRunning":
       case "attackCharge":
+        //SR5 p. 164 and 188: a charge ignores the -2 of running
+        if (isChecked) this._uncheckModifier(html, dialogData, "running")
+        value = 2
+        break
+      case "running":
+        value = runningModifierValue(dialogData.dialogSwitch.running)
+        break
+      case "defenseRunning":
       case "attackSuperiorPosition":
       case "attackTouchOnly":
         value = 2
@@ -502,6 +512,17 @@ export default class SR5_RollDialog {
     }
   }
 
+  //Uncheck a checkbox modifier and take its value off the dice pool
+  _uncheckModifier(html, dialogData, modifierName){
+    const checkbox = html.querySelector(`[data-modifier=${modifierName}]`)
+    if (!checkbox?.checked) return
+    checkbox.checked = false
+    const input = html.querySelector(`[name=${checkbox.dataset.target}]`)
+    if (input) input.value = 0
+    SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', modifierName)
+    this.updateDicePoolValue(html)
+  }
+
   //Auto check checkbox modifiers
   _filledCheckBox(checkboxs, html, dialogData){
     if (checkboxs.length === 0) return
@@ -514,6 +535,8 @@ export default class SR5_RollDialog {
       grappling = game.settings.get("sr5", "sr5GrapplingRules")
     //SR5 p. 195: a subdued character counts as prone for any attack against them (grappling rules only)
     if (grappling && isSubdued(actor.effects)) isProned = true
+    //SR5 p. 164: the running status of the roller
+    const running = isRunning(actor)
 
     for (let e of checkboxs){
       modifierName = e.dataset.modifier
@@ -566,6 +589,25 @@ export default class SR5_RollDialog {
         case "defenseTargetedByArea":
           html.querySelector(checkboxName).checked = true
           value = -2
+          break
+        //SR5 p. 164, 179 and 190: running, -2 on an action, +2 on a defense test
+        case "running":
+          if (running){
+            html.querySelector(checkboxName).checked = true
+            value = runningModifierValue(dialogData.dialogSwitch.running)
+          }
+          break
+        case "attackIsRunning":
+          if (running){
+            html.querySelector(checkboxName).checked = true
+            value = -2
+          }
+          break
+        case "defenseRunning":
+          if (running){
+            html.querySelector(checkboxName).checked = true
+            value = 2
+          }
           break
         case "attackSuperiorPosition":
           //SR5 p. 188 and 196: the holder attacking the fighter they hold has the superior position (grappling rules only)

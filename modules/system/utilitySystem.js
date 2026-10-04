@@ -297,6 +297,18 @@ export class SR5_SystemHelpers {
       requiresReload: true
     })
 
+    // Running (SR5 p. 163-164): the running status is put on by the "Course" or "Sprint" movement action of the token.
+    // Checked, it is also put on when a token in combat has gone farther than its walking rate this Combat Turn.
+    // Off by default (ruling of DjamZ, 2026-10-04): a token moved by hand to tidy the map would count as running
+    game.settings.register("sr5", "sr5RunningFromDistance", {
+      name: "SR5.SETTINGS_RunningFromDistance_T",
+      hint: "SR5.SETTINGS_RunningFromDistance_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean
+    })
+
     // Kill Code Rules
     game.settings.register("sr5", "sr5KillCodeRules", {
       name: "SR5.SETTINGS_KillCodeRules_T",

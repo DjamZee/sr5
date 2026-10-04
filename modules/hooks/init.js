@@ -224,12 +224,19 @@ import {
 import {
   SR5_GrappleHelpers
 } from "../rolls/roll-helpers/grapple.js"
+import {
+  registerRunningMovementActions, createRunningTokenRuler, runningStatusEffect
+} from "../system/running.js"
 
 export async function sr5HookInit() {
   SR5_SystemHelpers.registerSystemSettings()
   SR5_CompendiumUtility.registerSettings()
   //The grappling statuses exist only in a world that uses the grappling rules
   if (SR5_GrappleHelpers.isActive()) CONFIG.statusEffects.push(...SR5_GrappleHelpers.statusEffects())
+  //Running (SR5 p. 163-164): the "running" status, "Course" and "Sprint" in the movement selector, a ruler colored by gait
+  CONFIG.statusEffects.push(runningStatusEffect)
+  registerRunningMovementActions(CONFIG.Token.movement)
+  CONFIG.Token.rulerClass = createRunningTokenRuler(CONFIG.Token.rulerClass)
   sr5ExtendJournalHeadingLevels()
   sr5DeepenJournalTableOfContents()
   SR5_SystemHelpers.srLogPublic(`Welcome to the Sixth World, chummer!`)
