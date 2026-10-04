@@ -633,6 +633,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/rolls/rollDialogPartial/healingModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/escapeArtistModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/escapeArtistThreshold.hbs",
+    "systems/sr5/templates/rolls/rollDialogPartial/grappleEscapeThreshold.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/perceptionThreshold.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/survivalModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/survivalThreshold.hbs",

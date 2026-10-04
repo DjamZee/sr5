@@ -91,6 +91,9 @@ export class SR5_PrepareRollTest {
       case "escapeEngulf":
         rollData = await SR5_GetRollData.escapeEngulf(rollData, actor, chatData)
         break
+      case "grappleEscape":
+        rollData = await SR5_GetRollData.grappleEscape(rollData, actor)
+        break
       case "fading":
         rollData = await SR5_GetRollData.fading(rollData, actor, chatData)
         break

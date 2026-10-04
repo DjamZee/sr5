@@ -618,6 +618,9 @@ export class SR5_RollTest {
       case "iceDefense":
         await SR5_AddRollInfo.iceDefenseInfo(cardData, actorId)
         break
+      case "grappleEscape":
+        await SR5_AddRollInfo.grappleEscapeInfo(cardData, actorId)
+        break
       case "lift":
         await SR5_AddRollInfo.liftInfo(cardData, actorId)
         break

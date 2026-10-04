@@ -124,6 +124,11 @@
 			{{> systems/sr5/templates/rolls/rollDialogPartial/reagents.hbs}}
   		{{/if}}
 
+	  	<!-- GRAPPLE ESCAPE THRESHOLD-->
+	  	{{#if (eq test.type "grappleEscape")}}
+			{{> systems/sr5/templates/rolls/rollDialogPartial/grappleEscapeThreshold.hbs}}
+	  	{{/if}}
+
 	  	<!-- ESCAPE ARTIST THRESHOLD-->
 	  	{{#if (eq test.typeSub "escapeArtist")}}
 			{{> systems/sr5/templates/rolls/rollDialogPartial/escapeArtistThreshold.hbs}}

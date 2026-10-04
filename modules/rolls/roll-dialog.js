@@ -213,6 +213,10 @@ export default class SR5_RollDialog {
     //Manage Threshold
     element.querySelectorAll('.SR-ManageThreshold').forEach(el => el.addEventListener('change', ev => this._manageThreshold(ev, element, dialogData)))
     const thresholdEls = element.querySelectorAll('.SR-ManageThreshold'); if (thresholdEls.length) this._filledThreshold(thresholdEls, element, dialogData)
+    //Grapple escape: the net hits of the grapple or subdue test, typed by hand (Run & Gun p. 135)
+    element.querySelectorAll('.SR-GrappleEscapeThreshold').forEach(el => el.addEventListener('change', ev => {
+      dialogData.threshold.value = Math.max(parseInt(ev.target.value) || 0, 0)
+    }))
 
     // Reset Recoil
     element.querySelectorAll(".resetRecoil").forEach(el => el.addEventListener('click', ev => this._onResetRecoil(ev, element, dialogData, actor)))

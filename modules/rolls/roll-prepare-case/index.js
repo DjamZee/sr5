@@ -53,6 +53,9 @@ export {
   default as escapeEngulf
 } from "./rollData-EscapeEngulf.js"
 export {
+  default as grappleEscape
+} from "./rollData-GrappleEscape.js"
+export {
   default as fading
 } from "./rollData-Fading.js"
 export {
