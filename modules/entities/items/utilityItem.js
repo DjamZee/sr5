@@ -2394,8 +2394,8 @@ export class SR5_UtilityItem extends Actor {
       SR5_EntityHelpers.updateModifier(itemData.price, `${vehicleMod.name}`, 'vehicleMod', vehicleMod.system.price.value)
     }
 
-    if (itemData.type === "drone") itemData.deviceRating = itemData.attributes.pilot
-    else itemData.deviceRating = 2
+    // SR5 p. 266: a vehicle's Device Rating is its Pilot rating, for every vehicle and not only drones
+    itemData.deviceRating = itemData.attributes.pilot
   }
 
   static _handleVehicleSlots(itemData) {
