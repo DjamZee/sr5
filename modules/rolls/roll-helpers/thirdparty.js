@@ -272,6 +272,8 @@ export class SR5_ThirdPartyHelpers {
       rollData.damage.value = cardData.damage.value
       rollData.test.type = "weaponResistance"
       rollData.combat.structure = structure
+      rollData.combat.barrierArmor = armor
+      rollData.combat.armorPenetration = cardData.combat.armorPenetration ?? 0
       rollData.target.itemUuid = weapon
       rollData.target.actorId = cardData.owner.actorId
     }

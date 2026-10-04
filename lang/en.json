@@ -1842,7 +1842,7 @@
 	"SR5.INFO_SpendHitsOnEffects": "You have spent {checkedEffects} net hits on effects.",
 	"SR5.INFO_SpiritBounded": "is bounded. Services augmented by {service}",
 	"SR5.INFO_SpriteRegistered": "is registered. Tasks augmented by {task}",
-	"SR5.INFO_StructureGreaterThanDV": "Structure ({structure}) greater than modified DV ({damage}).",
+	"SR5.INFO_BarrierArmorGreaterThanDV": "Modified DV ({damage}) lower than or equal to the weapon Armor modified by AP ({armor}): the attack fails.",
 	"SR5.INFO_Stunned": "is stunned ! Initiative reduced by {initiative}.",
 	"SR5.INFO_SummonSpirit": "has summoned a spirit of type:",
 	"SR5.INFO_TakeActions": "{actor} spend {actionValue} {actionType} action for : {actionSource}.",

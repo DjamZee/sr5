@@ -1842,7 +1842,7 @@
 	"SR5.INFO_SpendHitsOnEffects": "Vous avez dépensé {checkedEffects} succès excédentaires en effets.",
 	"SR5.INFO_SpiritBounded": "est lié. Services augmentés de {service}",
 	"SR5.INFO_SpriteRegistered": "est inscrit. Tâches augmentées de {task}",
-	"SR5.INFO_StructureGreaterThanDV": "Structure ({structure}) supérieure à la VD modifiée ({damage}).",
+	"SR5.INFO_BarrierArmorGreaterThanDV": "VD modifiée ({damage}) inférieure ou égale au Blindage de l’arme modifié par la PA ({armor}) : l’attaque échoue.",
 	"SR5.INFO_Stunned": "est sonné ! Initiative réduite de {initiative}.",
 	"SR5.INFO_SummonSpirit": "a invoqué un esprit de type :",
 	"SR5.INFO_TakeActions": "{actor} dépense {actionValue} action {actionType} pour {actionSource}.",

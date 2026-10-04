@@ -5,6 +5,13 @@ import {
   SR5_RollMessage 
 } from "../roll-message.js"
 
+// SR5 p. 198: a modified DV lower than or equal to the barrier Armor, modified by the AP, cannot pierce it
+export function weaponBreakFails({
+  damage, armor, armorPenetration = 0
+}){
+  return damage <= Math.max(0, armor + armorPenetration)
+}
+
 export default async function resistanceResultInfo(cardData, type){
   let key, label, labelEnd, applyEffect = true, actor, weapon, originalMessage, prevData
   cardData.roll.netHits = cardData.previousMessage.hits- cardData.roll.hits
@@ -61,9 +68,11 @@ export default async function resistanceResultInfo(cardData, type){
     case "weaponResistance":
       labelEnd = game.i18n.localize("SR5.ObjectResistanceSuccess")
       cardData.roll.netHits = cardData.damage.value - cardData.roll.hits
-      if (cardData.combat.structure > (cardData.damage.value)) {
-        ui.notifications.info(`${game.i18n.format("SR5.INFO_StructureGreaterThanDV", {
-          structure: cardData.combat.structure, damage: cardData.damage.value
+      if (weaponBreakFails({
+        damage: cardData.damage.value, armor: cardData.combat.barrierArmor ?? 0, armorPenetration: cardData.combat.armorPenetration ?? 0
+      })) {
+        ui.notifications.info(`${game.i18n.format("SR5.INFO_BarrierArmorGreaterThanDV", {
+          armor: Math.max(0, (cardData.combat.barrierArmor ?? 0) + (cardData.combat.armorPenetration ?? 0)), damage: cardData.damage.value
         })}`)
         // The weapon is not damaged: end the test instead of offering the decrease buttons
         cardData.roll.netHits = 0

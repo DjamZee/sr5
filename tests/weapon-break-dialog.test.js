@@ -86,7 +86,7 @@ describe('Weapon break', () => {
     expect(cardData.chatCard.buttons.decreaseAccuracy).toBeUndefined()
   })
 
-  it('ends the test without crashing when the Structure exceeds the DV', async () => {
+  it('ends the test without crashing when the DV does not beat the Armor', async () => {
     globalThis.fromUuid = vi.fn(async () => null)
     const cardData = {
       previousMessage: {
@@ -96,7 +96,7 @@ describe('Weapon break', () => {
       }, damage: {
         value: 3
       }, combat: {
-        structure: 6
+        structure: 6, barrierArmor: 8
       }, target: {
         itemUuid: "Actor.a.Item.k"
       }, magic: {
