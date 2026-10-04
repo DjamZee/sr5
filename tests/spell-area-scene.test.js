@@ -115,6 +115,18 @@ describe("spellAreaDistance", () => {
     expect(SR5_CombatHelpers.spellAreaTemplate(card).x).toBe(150)
   })
 
+  it("never borrows the template of another cast (N44): no template of its own, no measure", () => {
+    const A = scene("A", {
+      templates: [gabarit(1050, 1050, "other")],
+      tokens: [{
+        actorId: "def", x: 1600, y: 1000
+      }]
+    })
+    monde([A], A)
+    expect(SR5_CombatHelpers.spellAreaTemplate(card)).toBeNull()
+    expect(SR5_CombatHelpers.spellAreaDistance(card, defender)).toBeNull()
+  })
+
   it("measures a 2x2 token from its square nearest the center, on either side", () => {
     // Center at (1050, 1050). Left target covers x 700-900: its nearest square is centered at 850, 200 px = 3 m.
     // Right target covers x 1200-1400: nearest square centered at 1250, 200 px = 3 m as well.

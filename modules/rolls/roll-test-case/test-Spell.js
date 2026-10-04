@@ -4,9 +4,6 @@ import {
 import {
   SR5_RollMessage
 } from "../roll-message.js"
-import {
-  SR5_CombatHelpers
-} from "../roll-helpers/combat.js"
 
 export default async function spellInfo(cardData){
   let actionType, label, item
@@ -34,14 +31,11 @@ export default async function spellInfo(cardData){
         // SR5 p. 285: an area is cast with a threshold of 3, like a grenade (p. 182)
         if (cardData.magic.spell.range === "area" && cardData.roll.hits >= 3) cardData.magic.spell.areaThreshold = 3
         else if (cardData.magic.spell.range === "area") {
-          // Threshold missed: the spell still explodes, 2D6 m away minus 1 m per hit, at DV = Force. As for a
+          // Threshold missed: the spell still explodes, at DV = Force, scattered as a grenade (2D6 m minus 1 m per
+          // hit, direction rolled, SR5 p. 182-183) by the card's Scatter button, which moves its template. As for a
           // grenade that scatters, the targets get no defense test (ruled by DjamZ, the book does not say).
-          const scatterRoll = new Roll("2d6")
-          await scatterRoll.evaluate()
-          cardData.magic.spell.scatter = SR5_CombatHelpers.indirectAreaSpellScatter(scatterRoll.total, cardData.roll.hits)
-          cardData.chatCard.buttons.spellScatter = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.format("SR5.INFO_ScatterDistance", {
-            distance: cardData.magic.spell.scatter
-          }))
+          cardData.magic.spell.missedThreshold = true
+          cardData.chatCard.buttons.scatter = SR5_RollMessage.generateChatButton("nonOpposedTest", "scatter", game.i18n.localize("SR5.Scatter"))
           actionType = "resistanceCard"
           label = game.i18n.localize("SR5.TakeOnDamageShort")
         }

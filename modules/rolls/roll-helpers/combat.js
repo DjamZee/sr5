@@ -87,7 +87,9 @@ export class SR5_CombatHelpers {
       for (const t of scene.templates ?? []){
         if (!isSpell(t)) continue
         if (owner.messageId && t.flags.sr5.messageId === owner.messageId) return t
-        last = t
+        // The fallback only takes a template placed outside a chat card: one that belongs to another cast
+        // must not stand in for a card that never placed its own (it then warns instead)
+        if (!t.flags.sr5.messageId) last = t
       }
       if (last && !latest) latest = last
     }
@@ -125,12 +127,6 @@ export class SR5_CombatHelpers {
   static indirectAreaSpellDamage(force, netHits, threshold){
     return force + Math.max(0, netHits - threshold)
   }
-
-  // SR5 p. 285: below the threshold, each hit takes 1 m off the 2D6 m scatter
-  static indirectAreaSpellScatter(diceTotal, hits){
-    return Math.max(0, diceTotal - hits)
-  }
-
   //Handle environmental modifiers
   //noWind: ignore the wind column (perception, melee); melee: SR5 p. 188, only the Light and Visibility columns apply
   //weaponLight: light rows taken off by a flashlight on the weapon being used (SR5_UtilityItem.getWeaponLightCompensation)
@@ -259,11 +255,11 @@ export class SR5_CombatHelpers {
     return 1
   }
 
-  //Handle grenade scatter
+  //Handle grenade scatter, and that of an indirect area spell under its threshold (SR5 p. 285: 2D6 m, as a grenade)
+  //Returns the distance scattered in meters (0 when it lands on target), or false when no scatter was applied
   static async rollScatter(cardData){
     let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
-    let item = actor.items.find(i => i.id === cardData.owner.itemId)
-    let itemData = item.system
+    const isSpell = cardData.test?.type === "spell" || cardData.test?.type === "preparation"
 
     if (!canvas.scene){
       ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActiveScene")}`)
@@ -272,8 +268,9 @@ export class SR5_CombatHelpers {
 
     let distanceMod = cardData.roll.hits
 
-    // The template of this shot, not the first one the item ever left on the scene
-    let template = SR5_SystemHelpers.findItemTemplate(cardData.owner.itemId, cardData.combat.grenade?.templateId)
+    // The template of this shot, not the first one the item ever left on the scene; a spell's is the one its card placed
+    let template = isSpell ? SR5_CombatHelpers.spellAreaTemplate(cardData) : SR5_SystemHelpers.findItemTemplate(cardData.owner.itemId, cardData.combat.grenade?.templateId)
+    if (isSpell && template?.parent !== canvas.scene) template = undefined
     if (template === undefined){
       ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoTemplateInScene")}`)
       return false
@@ -285,7 +282,7 @@ export class SR5_CombatHelpers {
       return false
     }
 
-    let distanceDice = SR5_CombatHelpers.scatterDice(itemData, cardData.combat.ammo.effects)
+    let distanceDice = isSpell ? 2 : SR5_CombatHelpers.scatterDice(actor.items.find(i => i.id === cardData.owner.itemId).system, cardData.combat.ammo.effects)
 
     let directionRoll = new Roll(`2d6`)
     await directionRoll.evaluate()
@@ -297,7 +294,7 @@ export class SR5_CombatHelpers {
     // Rolled and resolved: the scatter is done, even when it lands on target
     if (distanceRoll.total < 1){
       ui.notifications.info(`${game.i18n.localize("SR5.INFO_NoScattering")}`)
-      return true
+      return 0
     }
     else ui.notifications.info(`${game.i18n.format("SR5.INFO_ScatterDistance", {
       distance: distanceRoll.total
@@ -321,7 +318,7 @@ export class SR5_CombatHelpers {
       console.error(err)
       return false
     }
-    return true
+    return distanceRoll.total
   }
 
   static async chooseDamageType(){

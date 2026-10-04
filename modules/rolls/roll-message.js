@@ -427,7 +427,11 @@ export class SR5_RollMessage {
         break
       case "scatter":
         // Only a scatter that happened spends the button: a refused one leaves it for the attacker or the GM
-        if (await SR5_CombatHelpers.rollScatter(messageData)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        // and leaves the distance on the card in its place
+        {
+          const distance = await SR5_CombatHelpers.rollScatter(messageData)
+          if (distance !== false) SR5_RollMessage.updateChatButtonHelper(messageId, type, distance)
+        }
         break
       case "iceEffect":
         SR5_MatrixHelpers.applyIceEffect(messageData, originalActionActor, actor)
@@ -651,6 +655,12 @@ export class SR5_RollMessage {
       case "decreaseReach":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.WeaponReachDecreased"))
         if (messageData.chatCard.buttons.decreaseAccuracy) delete messageData.chatCard.buttons.decreaseAccuracy
+        break
+      case "scatter":
+        // The scatter rolled by the button stays on the card: distance in meters, or no scatter (SR5 p. 183, 285)
+        if (Number.isFinite(firstOption)) messageData.chatCard.buttons.scatterDone = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", firstOption > 0 ? game.i18n.format("SR5.INFO_ScatterDistance", {
+          distance: firstOption
+        }) : game.i18n.localize("SR5.INFO_NoScattering"))
         break
       case "decreaseAccuracy":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.AccuracyDecreased"))

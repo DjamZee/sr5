@@ -18,7 +18,7 @@ const {
 // someone else's card used to roll the dice, announce a distance, and then be refused by Foundry with a raw
 // permission error. Both buttons now warn first, and the scatter rolls nothing.
 
-let warned, deleted, updated, rolls
+let warned, deleted, updated, rolls, formulas
 
 function template(id, owned){
   return {
@@ -55,14 +55,16 @@ beforeEach(() => {
   deleted = []
   updated = []
   rolls = 0
+  formulas = []
   globalThis.ui = {
     notifications: {
       warn: (m) => warned.push(m), info: () => {}
     }
   }
   globalThis.Roll = class {
-    constructor(){
+    constructor(formula){
       rolls++
+      formulas.push(formula)
     }
     async evaluate(){
       this.total = 7
@@ -121,7 +123,41 @@ describe("someone else's template", () => {
     sceneWith([])
     expect(await SR5_CombatHelpers.rollScatter(card)).toBe(false)
     sceneWith([template("gm", true)])
-    expect(await SR5_CombatHelpers.rollScatter(card)).toBe(true)
+    // The distance scattered, in meters: 2D6 (rolled 7 here) minus 0 hits
+    expect(await SR5_CombatHelpers.rollScatter(card)).toBe(7)
+  })
+
+  // SR5 p. 285: an indirect area spell under its threshold scatters like a grenade, 2D6 m minus its hits, and
+  // moves the template its own card placed, never that of another cast
+  it("an area spell scatters its own card's template by 2D6 minus its hits", async () => {
+    const spellTemplate = (id, messageId) => ({
+      ...template(id, true), flags: {
+        sr5: {
+          item: "fireball", itemUuid: "Actor.a.Item.fireball", messageId
+        }
+      }
+    })
+    const own = spellTemplate("own", "m-spell")
+    sceneWith([spellTemplate("other", "m-other"), own])
+    game.scenes = [canvas.scene]
+    // Not enumerable, like a document's parent, so that duplicating the template does not walk back up to it
+    for (const t of canvas.scene.templates) Object.defineProperty(t, "parent", {
+      value: canvas.scene
+    })
+    const spellCard = {
+      ...card, test: {
+        type: "preparation"
+      }, roll: {
+        hits: 2
+      }, owner: {
+        actorId: "a", itemId: "fireball", itemUuid: "Actor.a.Item.fireball", messageId: "m-spell"
+      }
+    }
+    // The Roll here always totals 7: what matters is the formula it was given, and which template moved
+    expect(await SR5_CombatHelpers.rollScatter(spellCard)).toBe(7)
+    expect(formulas).toEqual(["2d6", "2d6 - 2"])
+    expect(updated.length).toBe(1)
+    expect(warned).toEqual([])
   })
 
   // A refused scatter used to spend the card's button anyway, for everyone, the GM included
@@ -162,7 +198,7 @@ describe("someone else's template", () => {
     expect(spent).not.toHaveBeenCalled()
     sceneWith([template("gm", true)])
     await click()
-    expect(spent).toHaveBeenCalledWith("m1", "scatter")
+    expect(spent).toHaveBeenCalledWith("m1", "scatter", 7)
     spent.mockRestore()
   })
 

@@ -15,11 +15,6 @@ describe("Sort indirect de zone, seuil de 3", () => {
     expect(SR5_CombatHelpers.indirectAreaSpellDamage(5, 2, 3)).toBe(5)
     expect(SR5_CombatHelpers.indirectAreaSpellDamage(5, 3, 3)).toBe(5)
   })
-  it("seuil manqué : 2D6 m de déviation, moins 1 m par succès, jamais négatif", () => {
-    expect(SR5_CombatHelpers.indirectAreaSpellScatter(9, 2)).toBe(7)
-    expect(SR5_CombatHelpers.indirectAreaSpellScatter(2, 2)).toBe(0)
-    expect(SR5_CombatHelpers.indirectAreaSpellScatter(2, 1 + 2)).toBe(0)
-  })
   it("l'ancien calcul, Puissance + succès nets, aurait donné 10", () => {
     expect(SR5_CombatHelpers.indirectAreaSpellDamage(5, 5, 3)).not.toBe(10)
   })

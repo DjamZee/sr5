@@ -62,8 +62,8 @@ export default async function resistance(rollData, rollType, actor, chatData){
   if (chatData.combat.grenade.isGrenade && !(await handleGrenade(rollData, chatData, actor))) return undefined
 
   // An indirect area spell that missed its threshold has no defense test (SR5 p. 285, see test-Spell.js):
-  // the area is checked here instead, from the template the GM moved by the scatter
-  if (chatData.magic?.spell?.scatter !== undefined && chatData.magic.spell.range === "area"){
+  // the area is checked here instead, from the template the card's Scatter button moved
+  if (chatData.magic?.spell?.missedThreshold && chatData.magic.spell.range === "area"){
     const distance = SR5_CombatHelpers.spellAreaDistance(chatData, actor)
     if (distance === null) ui.notifications.warn(game.i18n.localize("SR5.WARN_SpellAreaNoTemplate"))
     else if (chatData.magic.spell.area < distance) return abortWithInfo(game.i18n.localize("SR5.INFO_TargetIsTooFar"))
