@@ -22,7 +22,7 @@ export default async function matrixResistance(rollData, actor, chatData){
     let matrixTargetItem = await fromUuid(chatData.target.itemUuid)
     //The device may have been deleted since the attack card was posted: warn and abort, the caller opens no dialog
     if (!matrixTargetItem?.system){
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_MatrixTargetDeviceMissing"))
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_MatrixResistanceDeviceMissing"))
       return
     }
     if (matrixTargetItem.system.type !== "baseDevice" && matrixTargetItem.system.type !== "livingPersona" && matrixTargetItem.system.type !== "headcase" && matrixTargetItem.system.type !== "cyberdeck" && matrixTargetItem.system.type !== "commlink"){ 

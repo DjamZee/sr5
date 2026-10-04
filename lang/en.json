@@ -3961,6 +3961,7 @@
 	"SR5.WARN_NoActiveGM": "No GM connected: this action goes through the GM and was not applied.",
 	"SR5.WARN_PatientWithoutMonitor": "{name} has neither a Physical nor a Stun condition monitor: first aid does not apply (SR5 p. 207).",
 	"SR5.WARN_TargetItemMissing": "Targeted item not found (deleted since the test): the action cannot be applied.",
+	"SR5.WARN_MatrixResistanceDeviceMissing": "Targeted device not found (deleted since the attack): the matrix damage resistance cannot be rolled.",
 	"SR5.WARN_MatrixDamageDeviceMissing": "Targeted device not found (deleted since the attack): the matrix damage is applied to no device.",
 	"SR5.WARN_MatrixTargetDeviceMissing": "Targeted device not found (deleted since the attack): the matrix defense cannot be rolled.",
 	"SR5.WARN_RitualLeaderMissing": "Ritual leader not found: the ritual resistance cannot be rolled.",

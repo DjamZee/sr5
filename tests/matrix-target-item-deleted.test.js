@@ -85,7 +85,7 @@ describe('a targeted item deleted before the next button', () => {
       }
     }
     await expect(matrixResistance(rollData, actor, chatData)).resolves.toBeUndefined()
-    expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_MatrixTargetDeviceMissing')
+    expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_MatrixResistanceDeviceMissing')
   })
 
   it('a Flicker IC warns instead of throwing', async () => {
@@ -103,7 +103,7 @@ describe('a targeted item deleted before the next button', () => {
     }, {
       id: 'ice'
     }, target)
-    expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_MatrixTargetDeviceMissing')
+    expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_TargetItemMissing')
   })
 
   it.each([
