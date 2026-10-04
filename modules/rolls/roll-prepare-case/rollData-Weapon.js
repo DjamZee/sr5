@@ -369,12 +369,11 @@ export async function checkIfTargetIsInTemplate(actor, targetActor, areaEffect, 
   return areaEffect
 }
 
-async function handleMartialArtsCalledShot(rollData, actor){
+export async function handleMartialArtsCalledShot(rollData, actor){
   for (let [key, value] of Object.entries(actor.system.itemsProperties.martialArts)){
-    if (value.isActive) {
-      rollData.combat.calledShot.martialArts[key] = true
-      if (value.modifier?.value) rollData.combat.calledShot.martialArtsModifiers[key] = value.modifier.value
-    }
+    if (value.isActive) rollData.combat.calledShot.martialArts[key] = true
+    // A technique lowers the penalty on its own (Run & Gun p. 125): no unlocking flag needed
+    if (value.modifier?.value) rollData.combat.calledShot.martialArtsModifiers[key] = value.modifier.value
   }
   return rollData
 }
