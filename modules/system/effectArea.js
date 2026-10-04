@@ -323,6 +323,9 @@ export class SR5_EffectArea {
   //Add effect on a token when a template is created
   static async initiateTemplateEffect(template){
     let templateDocument = template.document
+    //The preview a player drags before placing the template is drawn too, with no id: it is no template yet, and
+    //an effect from it would have no template (nor scene) to belong to, nor anything to lift it
+    if (!templateDocument.id) return
     if (!templateDocument.flags.sr5?.environmentalModifiers && !templateDocument.flags.sr5?.itemHasEffect) return
     for (let t of templateDocument.parent.tokens){
       let isInTemplate = await this.checkIfTemplateContainsToken(templateDocument, t)
