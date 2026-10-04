@@ -968,6 +968,7 @@
 	"SR5.DEVICE_Type_S": "Type",
 	"SR5.DEVICE_TYPE_SlavedDevice_F": "Appareil asservi",
 	"SR5.DeviceAttributesArray": "Collection d'attributs",
+	"SR5.DeckUnconfigured": "Deck non configuré : glissez les valeurs de la collection d'attributs sur Attaque, Corruption, Traitement de données et Firewall (SR5 p. 229). Sans cela, les jets matriciels utilisent des Limites à 0.",
 	"SR5.DeviceAttributesArrayShort": "Collection d'att.",
 	"SR5.DeviceNew": "Nouvel appareil",
 	"SR5.DeviceRating": "Indice d'appareil",

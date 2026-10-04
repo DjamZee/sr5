@@ -1292,6 +1292,14 @@ export class SR5_CharacterUtility extends Actor {
     return this.isDepthActive(actor) && !actor.items.some(i => i.type === "itemDevice" && i.system.isActive)
   }
 
+  // SR5 p. 229: each value of the active cyberdeck's attribute array must be assigned to a matrix attribute
+  static isDeckUnconfigured(actorData) {
+    if (actorData.matrix?.deviceType !== "cyberdeck") return false
+    const collection = actorData.matrix.attributesCollection ?? {
+    }
+    return [1, 2, 3, 4].some(i => collection[`value${i}`] > 0 && !collection[`value${i}isSet`])
+  }
+
   // Data Trails p. 157: the attribute an AI outside any device defends with where the defense calls for Logic
   static devicelessAILogicStandIn(actorData) {
     let intuition = actorData.attributes.intuition.augmented.value,

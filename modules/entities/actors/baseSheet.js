@@ -210,6 +210,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     context.showDNI = game.settings.get("sr5", "sr5WifiRequiresDNI") && ["actorPc", "actorGrunt"].includes(this.actor.type)
     //An AI outside any device has nothing to reboot: it must load onto a device first (Data Trails p. 157)
     context.canReboot = !SR5_CharacterUtility.isDevicelessAI(this.actor)
+    //An active cyberdeck whose attribute array is not assigned rolls with matrix limits at 0 (SR5 p. 229)
+    context.deckUnconfigured = SR5_CharacterUtility.isDeckUnconfigured(this.actor.system)
 
     // Compute dynamic layout (SR6-style panel/tab/block system)
     context.layout = this._computeSheetLayout(this.actor)

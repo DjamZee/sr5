@@ -5,6 +5,11 @@
 			<div class="col-12">{{localize 'SR5.MatrixAttributes'}}</div>
 		</li>
 
+		<!-- Unconfigured deck warning (SR5 p. 229) -->
+		{{#if deckUnconfigured}}
+		<li class="SR-DeckUnconfigured">{{localize 'SR5.DeckUnconfigured'}}</li>
+		{{/if}}
+
 		<!-- Attributes collection -->
 		{{#if (or (eq system.matrix.deviceType "cyberdeck") 
 		(and (eq actor.type "actorDevice") (eq system.matrix.deviceType "host"))
