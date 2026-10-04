@@ -8,8 +8,14 @@ import {
   SR5_PrepareRollTest
 } from "../roll-prepare.js"
 import {
-  grappleHoldOf, canStartHold, crushDamage, GRAPPLE_STATUSES
+  grappleHoldOf, canStartHold, crushDamage, holdReplacesClinch, GRAPPLE_STATUSES
 } from "./grapple-rules.js"
+
+//The chat message that announces a new hold, by kind
+const HOLD_TAKEN_MESSAGES = {
+  subdue: "SR5.GrappleHoldTaken",
+  clinch: "SR5.GrappleClinchTaken",
+}
 
 //Grappling (SR5 p. 195-196, Run & Gun p. 126 and 133-138), behind the world setting sr5GrapplingRules.
 //Each fighter carries one active effect : its status shows on the token, its flag holds the role,
@@ -34,6 +40,12 @@ export class SR5_GrappleHelpers {
       {
         img: "icons/svg/net.svg", id: "subdued", name: "SR5.STATUSES_Subdued"
       },
+      {
+        img: "icons/svg/mystery-man.svg", id: "clinching", name: "SR5.STATUSES_Clinching"
+      },
+      {
+        img: "icons/svg/padlock.svg", id: "clinched", name: "SR5.STATUSES_Clinched"
+      },
     ]
   }
 
@@ -45,11 +57,19 @@ export class SR5_GrappleHelpers {
     const holder = SR5_EntityHelpers.getRealActorFromID(holderId),
       held = SR5_EntityHelpers.getRealActorFromID(heldId)
     if (!holder || !held) return
-    if (!canStartHold(holder.effects, held.effects)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_GrappleAlreadyHeld"))
+    //Run & Gun p. 134: subduing the one you clinch turns the clinch into a hold; both halves go first
+    if (holdReplacesClinch(holder.effects, heldId, kind)) {
+      //Deleting one half makes onDeleteEffect delete the other: the second delete may find it gone already
+      for (const a of [holder, held]){
+        const effect = a.effects.find(e => e.flags?.sr5?.grapple)
+        if (effect) await effect.delete().catch(() => null)
+      }
+    }
+    else if (!canStartHold(holder.effects, held.effects)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_GrappleAlreadyHeld"))
 
     await holder.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(kind, "holder", heldId, hold)])
     await held.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(kind, "held", holderId, hold)])
-    await SR5_GrappleHelpers.postHoldCard(holderId, heldId, hold, "SR5.GrappleHoldTaken")
+    await SR5_GrappleHelpers.postHoldCard(holderId, heldId, hold, HOLD_TAKEN_MESSAGES[kind])
   }
 
   //SR5 p. 196 : the hold strengthened or weakened, written on both fighters; actorId is either of them
@@ -79,9 +99,10 @@ export class SR5_GrappleHelpers {
     const content = `<p>${game.i18n.format(messageKey, {
       holder: holder.name, held: held.name, hold
     })}</p>` +
-      button("crush", game.i18n.format("SR5.GrappleCrush", {
+      //Crushing is an option of the one who subdues (SR5 p. 196), not of a clinch (Run & Gun p. 133)
+      (grappleHoldOf(holder.effects)?.kind === "subdue" ? button("crush", game.i18n.format("SR5.GrappleCrush", {
         damage: crushDamage(holder.system.attributes.strength.augmented.value).value
-      })) +
+      })) : "") +
       button("release", game.i18n.localize("SR5.GrappleRelease"))
     await ChatMessage.create({
       content,

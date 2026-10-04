@@ -56,6 +56,12 @@ export {
   default as grappleEscape
 } from "./rollData-GrappleEscape.js"
 export {
+  default as grappleClinch
+} from "./rollData-GrappleClinch.js"
+export {
+  default as grappleClinchDefense
+} from "./rollData-GrappleClinchDefense.js"
+export {
   default as fading
 } from "./rollData-Fading.js"
 export {

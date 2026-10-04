@@ -108,6 +108,12 @@ export class SR5_PrepareRollTest {
       case "grappleEscape":
         rollData = await SR5_GetRollData.grappleEscape(rollData, actor)
         break
+      case "grappleClinch":
+        rollData = await SR5_GetRollData.grappleClinch(rollData, actor)
+        break
+      case "grappleClinchDefense":
+        rollData = await SR5_GetRollData.grappleClinchDefense(rollData, actor, chatData)
+        break
       case "fading":
         rollData = await SR5_GetRollData.fading(rollData, actor, chatData)
         break

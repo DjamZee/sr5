@@ -35,6 +35,9 @@ export {
   default as grappleEscapeInfo
 } from "./test-GrappleEscape.js"
 export {
+  default as grappleClinchDefenseInfo
+} from "./test-GrappleClinchDefense.js"
+export {
   default as liftInfo
 } from "./test-Lift.js"
 export {

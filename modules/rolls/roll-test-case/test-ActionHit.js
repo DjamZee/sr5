@@ -70,6 +70,13 @@ export default async function actionHitInfo(cardData, type){
       key = "escapeEngulfDefense"
       testType = "nonOpposedTest"
       break
+    //Run & Gun p. 133 (Saisie): the clinched character defends with Reaction + Intuition
+    case "grappleClinch":
+      label = game.i18n.localize("SR5.Defend")
+      labelEnd = game.i18n.localize("SR5.ActionFailure")
+      key = "grappleClinchDefense"
+      testType = "opposedTest"
+      break
     default:
   }
 

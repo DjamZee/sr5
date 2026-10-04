@@ -595,6 +595,7 @@ export class SR5_RollTest {
       case "passThroughBarrier":
       case "escapeEngulf":
       case "ramming":
+      case "grappleClinch":
         await SR5_AddRollInfo.actionHitInfo(cardData, cardData.test.type)
         break
       case "power":
@@ -630,6 +631,9 @@ export class SR5_RollTest {
         break
       case "grappleEscape":
         await SR5_AddRollInfo.grappleEscapeInfo(cardData, actorId)
+        break
+      case "grappleClinchDefense":
+        await SR5_AddRollInfo.grappleClinchDefenseInfo(cardData)
         break
       case "lift":
         await SR5_AddRollInfo.liftInfo(cardData, actorId)

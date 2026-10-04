@@ -209,6 +209,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     context.items.sort((a, b) => (a.sort || 0) - (b.sort || 0))
 
     context.storageViewIsGrid = game.settings.get("sr5", "sr5StorageViewMode") !== "list"
+    //The clinch button of the martial arts block (Run & Gun p. 133) exists only with the grappling rules
+    context.rulesGrappling = game.settings.get("sr5", "sr5GrapplingRules")
     //The "wired by DNI" box only matters when the world asks for a DNI to switch the wireless as a free action
     context.showDNI = game.settings.get("sr5", "sr5WifiRequiresDNI") && ["actorPc", "actorGrunt"].includes(this.actor.type)
     //An AI outside any device has nothing to reboot: it must load onto a device first (Data Trails p. 157)

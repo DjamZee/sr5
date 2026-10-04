@@ -244,6 +244,7 @@ export class SR5_RollMessage {
       case "spellResistance":                                        
       case "rammingDefense":
       case "martialArtDefense":
+      case "grappleClinchDefense":
       case "drain":
       case "fading":
       case "objectResistance":
@@ -361,6 +362,11 @@ export class SR5_RollMessage {
         }
         else if (messageData.combat.calledShot.name === "trickShot") await originalActionActor.applyCalledShotsEffect(messageData)
         else await actor.applyCalledShotsEffect(messageData)
+        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
+      //Run & Gun p. 133: the clinched defender and the attacker enter the clinch, with the net hits of the test
+      case "grappleClinchApply":
+        await SR5_GrappleHelpers.startHold(messageData.previousMessage.actorId, SR5_GrappleHelpers.actorIdOf(actor), messageData.roll.netHits, "clinch")
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "applyFearEffect":

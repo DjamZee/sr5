@@ -50,14 +50,49 @@ export function isSubdued(effects){
   return data?.role === "held" && data.kind === "subdue"
 }
 
+//The kind of hold the actor has on this target ("subdue", "clinch"), or null
+export function holdKindOn(effects, targetId){
+  return holdsTarget(effects, targetId) ? grappleHoldOf(effects).kind : null
+}
+
 //The grappling entries of the attack list. Subduing is a rule of the core book (SR5 p. 195) and the
 //holder's options come with it : offered with the grappling rules, whether or not the called shot rules are.
-//Projecting the held fighter to the ground stays the knockdown called shot (SR5 p. 196).
+//Run & Gun p. 134 : a clinch opens the way to subduing. Projecting the held fighter to the ground stays
+//the knockdown called shot (SR5 p. 196).
 export function grapplingCalledShots({
-  unarmed, holdingTarget
+  unarmed, holdKind
 }){
   if (!unarmed) return []
-  return holdingTarget ? ["strengthenHold"] : ["subdue"]
+  return holdKind === "subdue" ? ["strengthenHold"] : ["subdue"]
+}
+
+//Run & Gun p. 133 (Saisie) : Agility + Gymnastics [Physical] against Reaction + Intuition, the hold is the net hits
+export function clinchTakesHold(netHits){
+  return netHits > 0
+}
+
+//The clinch this actor is in, whatever its role, or null
+export function clinchOf(effects){
+  const data = grappleHoldOf(effects)
+  return data?.kind === "clinch" ? data : null
+}
+
+//Run & Gun p. 133 : in a clinch, melee weapons take a penalty equal to their Reach, firearms one equal to the
+//net hits of the clinch, for both fighters. The book names firearms : bows and throwing weapons are left out.
+export function clinchAttackPenalty(effects, {
+  category, reach, isFirearm
+}){
+  const clinch = clinchOf(effects)
+  if (!clinch) return 0
+  if (category === "meleeWeapon") return -Math.max(reach ?? 0, 0)
+  if (category === "rangedWeapon" && isFirearm) return -Math.max(clinch.hold ?? 0, 0)
+  return 0
+}
+
+//Run & Gun p. 133 : the Reach of both fighters is cancelled between them
+export function clinchCancelsReach(effects, otherId){
+  const clinch = clinchOf(effects)
+  return !!clinch && !!otherId && clinch.partner === otherId
 }
 
 //SR5 p. 196 : Strength as the Damage Value, Stun, resisted normally with armor, without any test
@@ -72,4 +107,13 @@ export const GRAPPLE_STATUSES = {
   subdue: {
     holder: "subduing", held: "subdued"
   },
+  clinch: {
+    holder: "clinching", held: "clinched"
+  },
+}
+
+//Run & Gun p. 134 : the clincher may go on to subdue the one they clinch, which replaces the clinch.
+//Any other second hold is refused (one hold per token, ruling of DjamZ).
+export function holdReplacesClinch(holderEffects, heldId, kind){
+  return kind === "subdue" && holdKindOn(holderEffects, heldId) === "clinch"
 }

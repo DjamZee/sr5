@@ -4,8 +4,19 @@ import {
 
 import {
   subdueTakesHold, grappleHoldOf, grappleEscapeThreshold, canStartHold,
-  strengthenedHold, holdsTarget, isSubdued, grapplingCalledShots, crushDamage
+  strengthenedHold, holdsTarget, isSubdued, grapplingCalledShots, crushDamage,
+  clinchTakesHold, clinchAttackPenalty, clinchCancelsReach, holdReplacesClinch, holdKindOn
 } from '../modules/rolls/roll-helpers/grapple-rules.js'
+
+const clinch = (role, partner, hold) => [{
+  flags: {
+    sr5: {
+      grapple: {
+        role, kind: "clinch", partner, hold
+      }
+    }
+  }
+}]
 
 const held = (hold) => [{
   flags: {
@@ -96,18 +107,62 @@ describe('holdsTarget and isSubdued', () => {
 describe('grapplingCalledShots', () => {
   it('offers to subdue with an unarmed attack', () => {
     expect(grapplingCalledShots({
-      unarmed: true, holdingTarget: false
+      unarmed: true, holdKind: null
     })).toEqual(["subdue"])
   })
-  it('offers to strengthen the hold against the held partner', () => {
+  it('offers to strengthen the hold against the subdued partner', () => {
     expect(grapplingCalledShots({
-      unarmed: true, holdingTarget: true
+      unarmed: true, holdKind: "subdue"
     })).toEqual(["strengthenHold"])
+  })
+  it('offers to subdue the clinched partner (Run & Gun p. 134)', () => {
+    expect(grapplingCalledShots({
+      unarmed: true, holdKind: "clinch"
+    })).toEqual(["subdue"])
   })
   it('offers nothing with a weapon', () => {
     expect(grapplingCalledShots({
-      unarmed: false, holdingTarget: true
+      unarmed: false, holdKind: "subdue"
     })).toEqual([])
+  })
+})
+
+// Run & Gun p. 133-134, Saisie
+describe('clinch', () => {
+  it('holds with at least one net hit', () => {
+    expect(clinchTakesHold(1)).toBe(true)
+    expect(clinchTakesHold(0)).toBe(false)
+  })
+  it('gives melee weapons a penalty equal to their Reach, for both fighters', () => {
+    expect(clinchAttackPenalty(clinch("holder", "b", 3), {
+      category: "meleeWeapon", reach: 2
+    })).toBe(-2)
+    expect(clinchAttackPenalty(clinch("held", "a", 3), {
+      category: "meleeWeapon", reach: 1
+    })).toBe(-1)
+  })
+  it('gives firearms a penalty equal to the net hits of the clinch', () => {
+    expect(clinchAttackPenalty(clinch("held", "a", 3), {
+      category: "rangedWeapon", isFirearm: true
+    })).toBe(-3)
+  })
+  it('leaves other weapons and fighters out of a clinch alone', () => {
+    expect(clinchAttackPenalty(clinch("held", "a", 3), {
+      category: "rangedWeapon", isFirearm: false
+    })).toBe(0)
+    expect(clinchAttackPenalty(held(3), {
+      category: "meleeWeapon", reach: 2
+    })).toBe(0)
+  })
+  it('cancels Reach between the two fighters only', () => {
+    expect(clinchCancelsReach(clinch("held", "a", 3), "a")).toBe(true)
+    expect(clinchCancelsReach(clinch("held", "a", 3), "z")).toBe(false)
+  })
+  it('lets the clincher subdue their partner, replacing the clinch', () => {
+    expect(holdKindOn(clinch("holder", "b", 2), "b")).toBe("clinch")
+    expect(holdReplacesClinch(clinch("holder", "b", 2), "b", "subdue")).toBe(true)
+    expect(holdReplacesClinch(clinch("held", "a", 2), "a", "subdue")).toBe(false)
+    expect(holdReplacesClinch(holder, "b", "subdue")).toBe(false)
   })
 })
 

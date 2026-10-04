@@ -32,7 +32,7 @@ import {
   SR5_UtilityItem
 } from "../../entities/items/utilityItem.js"
 import {
-  grapplingCalledShots, holdsTarget
+  grapplingCalledShots, holdKindOn, clinchAttackPenalty, clinchCancelsReach
 } from "../roll-helpers/grapple-rules.js"
 
 //Add info for weapon Roll
@@ -202,9 +202,26 @@ export default async function weapon(rollData, actor, item){
   if (actorData.specialProperties?.aggravatedWounds) rollData.damage.aggravated = true
 
   _buildCalledShotList(rollData)
-  if (game.settings.get("sr5", "sr5GrapplingRules")) _addGrapplingCalledShots(rollData, actor)
+  if (game.settings.get("sr5", "sr5GrapplingRules")) {
+    _addGrapplingCalledShots(rollData, actor)
+    _addClinchModifiers(rollData, actor)
+  }
 
   return rollData
+}
+
+//Run & Gun p. 133 (Saisie): melee weapons take a penalty equal to their Reach, firearms one equal to the net hits
+//of the clinch; between the two fighters, Reach is cancelled
+function _addClinchModifiers(rollData, actor){
+  const penalty = clinchAttackPenalty(actor.effects, {
+    category: rollData.test.typeSub,
+    reach: rollData.combat.reach,
+    isFirearm: Object.keys(SR5.rangedWeaponFireTypes).includes(rollData.combat.weaponType),
+  })
+  if (penalty) rollData.dicePool.modifiers.push({
+    type: "grappleClinch", label: game.i18n.localize("SR5.GrappleClinchPenalty"), value: penalty
+  })
+  if (clinchCancelsReach(actor.effects, rollData.target.actorId)) rollData.combat.reach = 0
 }
 
 //SR5 p. 195-196 (Maîtriser, renforcer sa prise): normal unarmed attacks, not called shots, hence no -4
@@ -213,7 +230,7 @@ export default async function weapon(rollData, actor, item){
 function _addGrapplingCalledShots(rollData, actor){
   const keys = grapplingCalledShots({
     unarmed: rollData.combat.weaponType === "unarmedCombat",
-    holdingTarget: holdsTarget(actor.effects, rollData.target.actorId),
+    holdKind: holdKindOn(actor.effects, rollData.target.actorId),
   })
   if (!keys.length) return
   if (!rollData.systemRules.calledShots) {
