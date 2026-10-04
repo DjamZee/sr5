@@ -20,6 +20,9 @@ const {
   SR5_MatrixHelpers
 } = await import('../modules/rolls/roll-helpers/matrix.js')
 const {
+  SR5_PrepareRollTest
+} = await import('../modules/rolls/roll-prepare.js')
+const {
   SR5_ActorHelper
 } = await import('../modules/entities/actors/entityActor-helpers.js')
 
@@ -71,6 +74,12 @@ beforeEach(() => {
   game.user = {
     isGM: true
   }
+  vi.spyOn(SR5_PrepareRollTest, 'getBaseRollData').mockImplementation(() => ({
+    owner: {
+    }, roll: {
+    }, damage: {
+    }
+  }))
   ui.notifications = {
     info: vi.fn(), warn: vi.fn()
   }

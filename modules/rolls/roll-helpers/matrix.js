@@ -87,11 +87,9 @@ export class SR5_MatrixHelpers {
       //No dumpshock for an AI: it is dissipated instead (decided by DjamZ, 04/10)
       if (targetActor.system.activeSpecialAttribute === "depth") aiDissipated = true
       else if (targetItem.type === "itemDevice" && targetActor.system.matrix.userMode !== "ar"){
-        let dumpshockData = {
-          damage:{
-            resistanceType: "dumpshock"
-          }
-        }
+        //The resistance card reads owner and roll from the card it follows: a bare object crashed it (SR5 p. 229)
+        let dumpshockData = SR5_PrepareRollTest.getBaseRollData(null, targetActor)
+        dumpshockData.damage.resistanceType = "dumpshock"
         targetActor.rollTest("resistanceCard", null, dumpshockData)
         ui.notifications.info(`${targetActor.name} ${game.i18n.localize("SR5.INFO_IsDisconnected")}.`)
       }
