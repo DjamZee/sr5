@@ -117,7 +117,8 @@ export class SR5_ActorHelper {
             controler.rollTest("resistanceCard", null, chatData)
           }
         }
-        if (options.damage.element === "electricity") options.damage.matrix.value = Math.floor(options.damage.value / 2)
+        // Drones short out (matrix damage); vehicles take the damage without side effect (SR5 p. 173)
+        if (options.damage.element === "electricity" && actorData.type !== "vehicle") options.damage.matrix.value = Math.floor(options.damage.value / 2)
         if (options.damage.matrix.value > 0) {
           actorData.conditionMonitors.matrix.actual.base += options.damage.matrix.value
           SR5_EntityHelpers.updateValue(actorData.conditionMonitors.matrix.actual, 0)

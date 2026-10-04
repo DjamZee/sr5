@@ -105,6 +105,17 @@ describe('electricity and anticoagulant side effects read the actor type (SR5 p.
     expect(actor.update.mock.calls[0][0]['system.conditionMonitors.matrix.actual.base']).toBe(2)
   })
 
+  it('a vehicle is damaged by electricity but suffers no side effect, matrix damage included', async () => {
+    actor = fakeActor('actorDrone', {
+      ...droneData(), type: 'vehicle'
+    })
+    await SR5_ActorHelper.takeDamage('a1', hit('electricity'))
+    expect(SR5_ActorHelper.electricityDamageEffect).not.toHaveBeenCalled()
+    const update = actor.update.mock.calls[0][0]
+    expect(update['system.conditionMonitors.condition.actual.base']).toBe(4)
+    expect(update['system.conditionMonitors.matrix.actual.base']).toBe(0)
+  })
+
   it('a drone does not bleed from an anticoagulant', async () => {
     actor = fakeActor('actorDrone', droneData())
     await SR5_ActorHelper.takeDamage('a1', hit('anticoagulant'))

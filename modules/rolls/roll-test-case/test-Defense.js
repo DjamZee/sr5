@@ -101,8 +101,8 @@ export default async function defenseInfo(cardData, actorId){
     }
   }
 
-  //Special case for Drone and vehicle
-  if (actor.type === "actorDrone" || actor.type === "actorVehicle") {
+  //Special case for Drone and vehicle (both are actorDrone, told apart by system.type)
+  if (actor.type === "actorDrone") {
     if (cardData.damage.type === "stun" && cardData.damage.element === "electricity") {
       cardData.damage.type = "physical"
       ui.notifications.info(`${game.i18n.localize("SR5.INFO_ElectricityChangeDamage")}`)
