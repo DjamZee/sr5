@@ -157,6 +157,7 @@ const ITEM_LAYOUTS = {
   itemProgram:      () => _threeTabLayout('programSummary', 'programStat'),
   itemFocus:        () => _threeTabLayout('focusSummary', 'focusStat'),
   itemDrug:         () => _threeTabLayout('drugSummary', 'drugStat'),
+  itemToxin:        () => _threeTabLayout('toxinSummary', 'toxinStat'),
   itemRitual:       () => _threeTabLayout('ritualSummary', 'ritualStat'),
   itemPreparation:  () => _threeTabLayout('preparationSummary', 'preparationStat'),
   itemPower:        () => _threeTabLayout('powerSummary', 'powerStat'),

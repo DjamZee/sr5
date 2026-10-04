@@ -56,7 +56,9 @@ export default async function resistanceInfo(cardData, actorId){
         })}`
       }
       if (cardData.damage.toxin.type === "airEngulf") return cardData.chatCard.buttons.toxinEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "toxinEffect",`${game.i18n.localize("SR5.ApplyDamage")} ${cardData.damage.value}${game.i18n.localize(SR5.damageTypesShort[cardData.damage.type])}`)
-      else return cardData.chatCard.buttons.toxinEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "toxinEffect",`${game.i18n.localize("SR5.ApplyToxinEffect")} ${damage}<br> ${speed}`)
+      //A toxin item's special effect is shown as is, the GM applies it
+      let special = cardData.damage.toxin.type === "custom" && cardData.damage.toxin.custom?.special ? `<br> ${Handlebars.escapeExpression(cardData.damage.toxin.custom.special)}` : ""
+      return cardData.chatCard.buttons.toxinEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "toxinEffect",`${game.i18n.localize("SR5.ApplyToxinEffect")} ${damage}<br> ${speed}${special}`)
     }
     else return cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.NoDamage"))
   }

@@ -8,6 +8,9 @@ import {
   SR5_SpiritTypes
 } from "./spirit-types.js"
 import {
+  SR5_Toxins
+} from "./toxins.js"
+import {
   SR5_EntityHelpers 
 } from "../helpers.js"
 import {
@@ -27,7 +30,7 @@ import {
 const ITEM_FOOTER_TYPES = new Set([
   'SRItem-vierge', 'itemAdeptPower', 'itemAmmunition', 'itemArmor',
   'itemAugmentation', 'itemComplexForm', 'itemContact', 'itemDevice',
-  'itemDrug', 'itemFocus', 'itemGear', 'itemKarma', 'itemNuyen', 'itemReputation',
+  'itemDrug', 'itemFocus', 'itemGear', 'itemKarma', 'itemNuyen', 'itemReputation', 'itemToxin',
   'itemPreparation', 'itemProgram', 'itemQuality', 'itemSin',
   'itemSpell', 'itemSprite', 'itemVehicleMod', 'itemWeapon',
 ])
@@ -360,6 +363,10 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     }
     context.cssClass = this.document.isOwner ? "editable" : "locked"
 
+    // Toxin: damage choices, and on a weapon the name of a dropped toxin
+    if (item.type === "itemToxin") context.toxinDamageTypes = SR5.damageTypes
+    if (item.type === "itemWeapon") context.weaponToxinName = SR5_Toxins.nameOf(item.system.toxin, k => game.i18n.localize(k))
+
     // Custom spirit type: pickers, and labels for the read-only summary
     if (item.type === "itemSpiritType") {
       const official = {
@@ -422,6 +429,17 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
   _onRender(context, options) {
     super._onRender(context, options)
     const el = this.element
+
+    // Weapon toxin: drop a toxin item, resync it, or go back to the book list
+    const toxinDrop = el.querySelector('.sr5-toxin-drop')
+    if (toxinDrop && this.isEditable) {
+      toxinDrop.addEventListener('dragover', ev => ev.preventDefault())
+      toxinDrop.addEventListener('drop', ev => this.#onDropToxin(ev))
+      el.querySelector('.sr5-toxin-resync')?.addEventListener('click', () => this.#linkToxin(this.document.system.toxin.custom?.uuid))
+      el.querySelector('.sr5-toxin-unlink')?.addEventListener('click', () => this.document.update({
+        "system.toxin.type": "", "system.toxin.custom": null
+      }))
+    }
 
     // Ammunition type select: handle "Custom" selection
     el.querySelectorAll('.sr-ammo-type-select').forEach(select => {
@@ -620,6 +638,25 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       })
       this._savedScrollPositions = null
     }
+  }
+
+  async #onDropToxin(event) {
+    event.preventDefault()
+    event.stopPropagation()
+    const data = foundry.applications.ux.TextEditor.implementation.getDragEventData(event)
+    if (data?.type !== "Item") return
+    return this.#linkToxin(data.uuid)
+  }
+
+  // Copy a toxin item onto the weapon: the roll and the chat card read the copy (SR5_Toxins.profileOf)
+  async #linkToxin(uuid) {
+    const toxin = uuid ? await fromUuid(uuid) : null
+    if (toxin?.type !== "itemToxin") return ui.notifications.warn(game.i18n.localize("SR5.WARN_NotAToxin"))
+    await this.document.update({
+      "system.damageElement": "toxin",
+      "system.toxin.type": "custom",
+      "system.toxin.custom": SR5_Toxins.profileFromItem(toxin),
+    })
   }
 
   // Manage "Sub Item", accessory, licenses, effects...

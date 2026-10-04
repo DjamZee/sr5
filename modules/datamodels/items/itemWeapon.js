@@ -195,6 +195,10 @@ export class sr5ItemWeaponDataModel extends foundry.abstract.TypeDataModel {
         damageType: new fields.StringField({
           nullable: true, initial: null
         }),
+        //Profile copied from a dropped itemToxin, read when type is "custom" (SR5_Toxins.profileFromItem)
+        custom: new fields.ObjectField({
+          nullable: true, initial: null
+        }),
       }),
       isLinkedToFocus: new fields.BooleanField({
         initial: false

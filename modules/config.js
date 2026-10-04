@@ -3851,6 +3851,7 @@ SR5.itemTypes = {
   itemSpell                 : "TYPES.Item.itemSpell",
   itemSpirit                : "TYPES.Item.itemSpirit",
   itemSpiritType            : "TYPES.Item.itemSpiritType",
+  itemToxin                 : "TYPES.Item.itemToxin",
   itemSprite                : "TYPES.Item.itemSprite",
   itemSpritePower           : "TYPES.Item.itemSpritePower",
   itemStorage               : "TYPES.Item.itemStorage",

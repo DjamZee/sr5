@@ -201,6 +201,9 @@ export const BROWSER_FILTERS = {
       },
     ]
   },
+  itemToxin:       {
+    label: 'TYPES.Item.itemToxin', icon: 'fa-skull-crossbones', filters: []
+  },
   itemContact:     {
     label: 'TYPES.Item.itemContact', icon: 'fa-address-book', filters: [] 
   },

@@ -14,7 +14,7 @@ export class SR5ShopStock {
    */
   static SELLABLE_TYPES = [
     'itemAmmunition', 'itemArmor', 'itemAugmentation', 'itemDevice', 'itemDrug', 'itemFocus',
-    'itemGear', 'itemProgram', 'itemSin', 'itemStorage', 'itemVehicle', 'itemVehicleMod', 'itemWeapon',
+    'itemGear', 'itemProgram', 'itemSin', 'itemStorage', 'itemToxin', 'itemVehicle', 'itemVehicleMod', 'itemWeapon',
   ]
 
   /** Who may buy: the four choices of the `sr5ShopBuyerMode` setting. */

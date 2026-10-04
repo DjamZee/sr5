@@ -37,7 +37,7 @@ export const GARAGE_REQUIREMENTS = {
 // Item types a character can leave behind in a storage.
 export const STORABLE_TYPES = [
   "itemGear", "itemWeapon", "itemArmor", "itemAmmunition",
-  "itemDevice", "itemDrug", "itemFocus", "itemVehicle",
+  "itemDevice", "itemDrug", "itemFocus", "itemToxin", "itemVehicle",
   "itemAugmentation",
 ]
 

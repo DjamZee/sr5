@@ -1,13 +1,26 @@
-<li class="grid">
+<li class="grid sr5-toxin-drop" data-tooltip="{{localize 'SR5.ToxinDropHint'}}">
     <div class="col-5"></div>
     <div class="col-3">{{localize 'SR5.ToxinType'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-4">
+        {{#ife system.toxin.type "custom"}}
+            {{weaponToxinName}}
+            <a class="sr5-toxin-resync" data-tooltip="{{localize 'SR5.ToxinResync'}}"><em class="fas fa-sync"></em></a>
+            <a class="sr5-toxin-unlink" data-tooltip="{{localize 'SR5.ToxinUnlink'}}"><em class="fas fa-unlink"></em></a>
+        {{else}}
         <select name="system.toxin.type" required>
             <option class="SR-LightGreyColor" value="">{{localize 'SR5.ChooseOne'}}</option>
             {{selectOptions lists.toxinTypes selected=system.toxin.type localize=true}}
         </select>
+        {{/ife}}
     </div>
 </li>
+{{#if system.toxin.custom.special}}{{#ife system.toxin.type "custom"}}
+<li class="grid">
+    <div class="col-5"></div>
+    <div class="col-3">{{localize 'SR5.ToxinSpecial'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-4">{{system.toxin.custom.special}}</div>
+</li>
+{{/ife}}{{/if}}
 <li class="grid">
     <div class="col-5"></div>
     <div class="col-3">{{localize 'SR5.ToxinVector'}}{{localize 'SR5.Colons'}}</div>

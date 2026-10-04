@@ -756,6 +756,16 @@ export default class SR5_RollDialog {
         }
         dialogData.magic.spell.area = -value
         break
+      case "toxinDoses": {
+        //Several doses at once: +1 Power per extra dose (SR5 p. 410)
+        let doses = Math.max(1, parseInt(html.querySelector('[name="toxinDoses"]').value) || 1)
+        html.querySelector('[name="toxinDoses"]').value = doses
+        dialogData.toxinDoses = doses
+        dialogData.damage.toxin.power = dialogData.damage.toxin.basePower + doses - 1
+        //The title shows the Power: [10P] becomes [12P]
+        dialogData.test.title = dialogData.test.title.replace(/\[\d+/, `[${dialogData.damage.toxin.power}`)
+        return
+      }
       case "manaBarrierRating": {
         let barrierRating = parseInt((html.querySelector('[name="manaBarrierRating"]').value || 1))
         html.querySelector('[name="baseDicePool"]').value = barrierRating * 2

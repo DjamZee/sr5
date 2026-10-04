@@ -2,6 +2,9 @@ import {
   SR5 
 } from "../../config.js"
 import {
+  SR5_Toxins
+} from "../../entities/items/toxins.js"
+import {
   SR5_EntityHelpers 
 } from "../../entities/helpers.js"
 import {
@@ -431,11 +434,10 @@ export class SR5_CombatHelpers {
 
   static async getToxinEffect(effecType, info, actor){
     let itemEffects = []
-    let toxinType = info.damage.toxin.type
     let hasEffect
 
     let effect = {
-      name: game.i18n.localize(SR5.toxinTypes[toxinType]),
+      name: SR5_Toxins.nameOf(info.damage.toxin, k => game.i18n.localize(k)) || game.i18n.localize("SR5.Toxin"),
       type: "itemEffect",
     }
 

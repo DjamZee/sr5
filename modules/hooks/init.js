@@ -174,6 +174,12 @@ import {
   sr5ItemSpiritTypeDataModel
 } from "../datamodels/items/itemSpiritType.js"
 import {
+  sr5ItemToxinDataModel
+} from "../datamodels/items/itemToxin.js"
+import {
+  SR5_Toxins
+} from "../entities/items/toxins.js"
+import {
   sr5ItemSpriteDataModel
 } from "../datamodels/items/itemSprite.js"
 import {
@@ -304,6 +310,7 @@ export async function sr5HookInit() {
     itemSpell: sr5ItemSpellDataModel,
     itemSpirit: sr5ItemSpiritDataModel,
     itemSpiritType: sr5ItemSpiritTypeDataModel,
+    itemToxin: sr5ItemToxinDataModel,
     itemSprite: sr5ItemSpriteDataModel,
     itemSpritePower: sr5ItemSpritePowerDataModel,
     itemStorage: sr5ItemStorageDataModel,
@@ -389,6 +396,9 @@ export async function sr5HookInit() {
 
   //Socket
   SR5_SocketHandler.registerSocketListeners()
+
+  //Book toxins button in the Items tab
+  SR5_Toxins.registerHooks()
 
   // Patch creation dialog buttons with document-type icons
   const docTypes = ["Actor", "Item", "Scene", "JournalEntry", "RollTable", "Cards", "Playlist", "Macro"]

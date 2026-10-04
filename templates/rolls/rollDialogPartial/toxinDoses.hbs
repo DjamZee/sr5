@@ -1,0 +1,10 @@
+<li class="grid" data-tooltip="{{localize 'SR5.ToxinDosesHint'}}">
+    <div class="col-10">{{localize 'SR5.ToxinDoses'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1 SR-TextRight">
+		<a class="SR-ModControl" data-target="toxinDoses" data-type="minus" data-modifier="toxinDoses"><em class="fas fa-minus-circle"></em></a>
+		<a class="SR-ModControl" data-target="toxinDoses" data-type="plus" data-modifier="toxinDoses"><em class="fas fa-plus-circle"></em></a>
+	</div>
+    <div class="col-1 SR-TextCenter">
+        <input type="number" class="SR-ModInput" data-modifier="toxinDoses" name="toxinDoses" value="{{toxinDoses}}" data-dtype="Number" min="1" />
+    </div>
+</li>

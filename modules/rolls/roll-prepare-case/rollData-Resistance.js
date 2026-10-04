@@ -8,8 +8,11 @@ import {
   SR5_CombatHelpers 
 } from "../roll-helpers/combat.js"
 import {
-  SR5 
+  SR5
 } from "../../config.js"
+import {
+  SR5_Toxins
+} from "../../entities/items/toxins.js"
 
 // Show a notification and return undefined so the caller aborts the test.
 // In Foundry V13, ui.notifications.info() returns a Notification object: returning it directly
@@ -225,7 +228,10 @@ async function handleToxinDamage(rollData, actorData, chatData){
   if (chatData.damage.toxin.type === "airEngulf") rollData.damage.toxin.power = chatData.damage.toxin.power + (chatData.roll.netHits || 0)
 
   //Determine title
-  rollData.test.title = `${game.i18n.localize("SR5.TakeOnDamageShort")} ${game.i18n.localize(SR5.toxinTypes[rollData.damage.toxin.type])}`
+  rollData.test.title = `${game.i18n.localize("SR5.TakeOnDamageShort")} ${SR5_Toxins.nameOf(rollData.damage.toxin, k => game.i18n.localize(k))}`
+  //Several doses at once: +1 Power per extra dose (SR5 p. 410), set in the dialog
+  rollData.damage.toxin.basePower = rollData.damage.toxin.power
+  rollData.toxinDoses = 1
   if (rollData.damage.toxin.damageType) rollData.test.title += ` [${rollData.damage.toxin.power}${game.i18n.localize(SR5.damageTypesShort[rollData.damage.toxin.damageType])}]`
     
   //If more than one vector is present, open dialog box
@@ -237,9 +243,9 @@ async function handleToxinDamage(rollData, actorData, chatData){
   }
   if (vectors.length > 1) toxinType = await SR5_CombatHelpers.chooseToxinVector(vectors)
 
-  //Check if toxin penetration is greater than armor
+  //Penetration only cancels the protection's bonus, never more (SR5 p. 410)
   let armor = actorData.itemsProperties.armor.toxin[toxinType].value
-  if (-rollData.damage.toxin.penetration > armor) rollData.damage.toxin.penetration = armor
+  if (-rollData.damage.toxin.penetration > armor) rollData.damage.toxin.penetration = -armor
 
   //Add toxin penetration modifiers to dicepool
   rollData.dicePool.modifiers.push({

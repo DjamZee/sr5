@@ -161,7 +161,7 @@ export class SR5GruntSheet extends ActorSheetSR5 {
       else if (i.type === "itemEcho") echoes.push(i)
       else if (i.type === "itemAmmunition") ammunitions.push(i)
       else if (i.type === "itemEffect") externalEffects.push(i)
-      else if (i.type === "itemDrug") gears.push(i)
+      else if (i.type === "itemDrug" || i.type === "itemToxin") gears.push(i)
       else if (i.type === "itemTradition") traditions.push(i)
       else if (i.type === "itemRitual") rituals.push(i)
     }

@@ -4,6 +4,9 @@ import {
 import {
   SR5 
 } from "../../config.js"
+import {
+  SR5_Toxins
+} from "../../entities/items/toxins.js"
 
 export default async function attackInfo(cardData){
   cardData.damage.resistanceType = "physicalDamage"
@@ -25,7 +28,7 @@ export default async function attackInfo(cardData){
     //Handle Grenade Resistant chat button
     let label = `${game.i18n.localize("SR5.TakeOnDamageShort")} ${game.i18n.localize("SR5.DamageValueShort")}${game.i18n.localize("SR5.Colons")} ${cardData.damage.value}${game.i18n.localize(SR5.damageTypesShort[cardData.damage.type])}`
     if (cardData.combat.armorPenetration) label += ` / ${game.i18n.localize("SR5.ArmorPenetrationShort")}${game.i18n.localize("SR5.Colons")} ${cardData.combat.armorPenetration}`
-    if (cardData.damage.element === "toxin") label = `${game.i18n.localize("SR5.TakeOnDamageShort")} ${game.i18n.localize("SR5.Toxin")}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize(SR5.toxinTypes[cardData.damage.toxinType])}`
+    if (cardData.damage.element === "toxin") label = `${game.i18n.localize("SR5.TakeOnDamageShort")} ${game.i18n.localize("SR5.Toxin")}${game.i18n.localize("SR5.Colons")} ${SR5_Toxins.nameOf(cardData.damage.toxin, k => game.i18n.localize(k))}`
     if (cardData.damage.value > 0) cardData.chatCard.buttons.resistanceCard = SR5_RollMessage.generateChatButton("opposedTest","resistanceCard",label)
   } else if (cardData.roll.hits > 0) {
     if (cardData.test.typeSub === "rangedWeapon") cardData.chatCard.buttons.defenseRangedWeapon = SR5_RollMessage.generateChatButton("opposedTest","defenseRangedWeapon",game.i18n.localize("SR5.Defend"))

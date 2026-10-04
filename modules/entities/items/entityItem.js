@@ -225,6 +225,10 @@ export class SR5Item extends Item {
           if (itemData.vector[key]) itemData.vector.value.push(game.i18n.localize(SR5.propagationVectors[key]))
         }
         break
+      case "itemToxin":
+        SR5_UtilityItem._handleItemPrice(itemData)
+        SR5_UtilityItem._handleItemAvailability(itemData)
+        break
       default:
     }
 

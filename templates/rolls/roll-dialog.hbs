@@ -134,6 +134,11 @@
 			{{> systems/sr5/templates/rolls/rollDialogPartial/grappleEscapeThreshold.hbs}}
 	  	{{/if}}
 
+	  	<!-- TOXIN DOSES -->
+	  	{{#if (eq test.typeSub "toxinDamage")}}
+			{{> systems/sr5/templates/rolls/rollDialogPartial/toxinDoses.hbs}}
+	  	{{/if}}
+
 	  	<!-- ESCAPE ARTIST THRESHOLD-->
 	  	{{#if (eq test.typeSub "escapeArtist")}}
 			{{> systems/sr5/templates/rolls/rollDialogPartial/escapeArtistThreshold.hbs}}
