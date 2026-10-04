@@ -53,7 +53,7 @@ export class SR5SpiritSheet extends ActorSheetSR5 {
   _prepareHomunculusMaterials(context) {
     context.isHomunculus = SR5_SpiritTypes.baseType(this.actor.system.type) === "homunculus"
     if (!context.isHomunculus) return
-    const structure = game.i18n.localize("SR5.Structure"), armor = game.i18n.localize("SR5.Armor")
+    const structure = game.i18n.localize("SR5.Structure"), armor = game.i18n.localize("SR5.VehicleStat_ArmorShort")
     context.homunculusMaterials = {
     }
     for (let [key, ratings] of Object.entries(SR5_BARRIER_RATINGS)) {
