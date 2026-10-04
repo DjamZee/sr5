@@ -375,6 +375,14 @@ export class SR5_RollMessage {
         await SR5_GrappleHelpers.startHold(messageData.previousMessage.actorId, SR5_GrappleHelpers.actorIdOf(actor), messageData.roll.netHits, "clinch")
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      //Run & Gun p. 148-149: after an escape with Contre-prise, the escaper chooses to break free or to reverse
+      case "grappleEscapeFree":
+      case "grappleCounterGrapple":
+        if (type === "grappleEscapeFree") await SR5_GrappleHelpers.releaseHold(SR5_GrappleHelpers.actorIdOf(actor), messageData.various.grappleHoldId)
+        else await SR5_GrappleHelpers.reverseHold(SR5_GrappleHelpers.actorIdOf(actor), messageData.various.grappleNewHold, messageData.various.grappleHoldId)
+        await SR5_RollMessage.updateChatButtonHelper(messageId, "grappleEscapeFree")
+        await SR5_RollMessage.updateChatButtonHelper(messageId, "grappleCounterGrapple")
+        break
       case "applyFearEffect":
       case "applyStunnedEffect":
         SR5Combat.changeInitInCombatHelper(actor.id, -messageData.combat.calledShot.initiative)

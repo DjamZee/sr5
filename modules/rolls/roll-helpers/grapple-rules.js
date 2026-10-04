@@ -84,6 +84,20 @@ export function holdAfterReversal(netHits){
   return Math.max(netHits, 1)
 }
 
+//Contre-prise: the hits above the threshold of the stored hold, not the threshold typed in the dialog, which the
+//roller may change (review of lot 4)
+export function counterGrappleHold(hits, storedHold){
+  return holdAfterReversal(hits - Math.max(storedHold ?? 0, 0))
+}
+
+//Run & Gun p. 126: the roles after a reversal, in a hold of the same kind; null when the reverser is not held
+export function reversalRoles(data, reverserId){
+  if (data?.role !== "held") return null
+  return {
+    holderId: reverserId, heldId: data.partner, kind: data.kind
+  }
+}
+
 //Run & Gun p. 133 (Saisie) : Agility + Gymnastics [Physical] against Reaction + Intuition, the hold is the net hits
 export function clinchTakesHold(netHits){
   return netHits > 0

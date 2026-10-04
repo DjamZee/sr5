@@ -11,7 +11,7 @@ import {
   SR5_GrappleHelpers
 } from "../roll-helpers/grapple.js"
 import {
-  holdAfterReversal
+  grappleHoldOf, counterGrappleHold
 } from "../roll-helpers/grapple-rules.js"
 
 export default async function grappleEscapeInfo(cardData, actorId){
@@ -19,11 +19,24 @@ export default async function grappleEscapeInfo(cardData, actorId){
   let hasCounterGrapple = actor?.system.itemsProperties?.martialArts?.counterGrapple?.isActive ?? false
   let outcome = grappleEscapeOutcome(cardData.roll.hits, cardData.threshold.value, hasCounterGrapple)
 
-  //Grappling rules: a successful escape ends the hold for both fighters. With Contre-prise it counts as a
-  //successful reversal (Run & Gun p. 148-149): the roles are swapped, the hits above the threshold as the new hold.
   if (game.settings.get("sr5", "sr5GrapplingRules")) {
+    //Grappling rules: a successful escape ends the hold for both fighters
     if (outcome === "success") await SR5_GrappleHelpers.releaseHold(actorId)
-    else if (outcome === "counterGrapple") await SR5_GrappleHelpers.reverseHold(actorId, holdAfterReversal(cardData.roll.hits - cardData.threshold.value))
+    //Run & Gun p. 148-149: with Contre-prise, the escape MAY count as a reversal (« peut la traiter »). The card offers
+    //both, and the reversal card comes only once chosen. The new hold reads the stored hold, not the typed threshold.
+    else if (outcome === "counterGrapple") {
+      const current = grappleHoldOf(actor?.effects)
+      if (current?.role === "held") {
+        const newHold = counterGrappleHold(cardData.roll.hits, current.hold)
+        cardData.various.grappleHoldId = current.holdId
+        cardData.various.grappleNewHold = newHold
+        cardData.chatCard.buttons.grappleEscapeFree = SR5_RollMessage.generateChatButton("nonOpposedTest", "grappleEscapeFree", game.i18n.localize("SR5.GrappleEscapeFree"))
+        cardData.chatCard.buttons.grappleCounterGrapple = SR5_RollMessage.generateChatButton("nonOpposedTest", "grappleCounterGrapple", game.i18n.format("SR5.GrappleCounterGrappleApply", {
+          hold: newHold
+        }))
+        return
+      }
+    }
   }
 
   cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize(GRAPPLE_ESCAPE_LABELS[outcome]))

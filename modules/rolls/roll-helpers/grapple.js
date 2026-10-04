@@ -10,7 +10,7 @@ import {
 import {
   grappleHoldOf, canStartHold, crushDamage, holdReplacesClinch, GRAPPLE_STATUSES,
   deleteGrappleEffectOnce, isGrappleKeeper, tokenRemovalEndsHold, refusalRecipient,
-  canUseHoldCard, staleHoldWarning, tokenForBaseActor
+  canUseHoldCard, staleHoldWarning, tokenForBaseActor, reversalRoles
 } from "./grapple-rules.js"
 
 //The grappling effects being deleted on this client: each is deleted once (see deleteGrappleEffectOnce)
@@ -103,12 +103,13 @@ export class SR5_GrappleHelpers {
     const data = grappleHoldOf(reverser?.effects)
     const stale = staleHoldWarning(data?.role === "held" ? data : null, holdId)
     if (stale) return SR5_GrappleHelpers.warn(stale, fromUserId)
-    const formerHolder = SR5_EntityHelpers.getRealActorFromID(data.partner)
+    const roles = reversalRoles(data, reverserId)
+    const formerHolder = SR5_EntityHelpers.getRealActorFromID(roles.heldId)
     await Promise.all([reverser, formerHolder].map(a => deleteGrappleEffectOnce(a, PENDING_DELETIONS, data.holdId)))
     const newHoldId = foundry.utils.randomID()
-    await reverser.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(data.kind, "holder", data.partner, hold, newHoldId)])
-    await formerHolder.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(data.kind, "held", reverserId, hold, newHoldId)])
-    await SR5_GrappleHelpers.postHoldCard(reverserId, data.partner, hold, "SR5.GrappleReversed")
+    await reverser.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(roles.kind, "holder", roles.heldId, hold, newHoldId)])
+    await formerHolder.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(roles.kind, "held", roles.holderId, hold, newHoldId)])
+    await SR5_GrappleHelpers.postHoldCard(roles.holderId, roles.heldId, hold, "SR5.GrappleReversed")
   }
 
   static async _socketReverseHold(message){
@@ -197,7 +198,7 @@ export class SR5_GrappleHelpers {
       const current = grappleHoldOf(holder.effects)
       const stale = current?.partner === card.heldId ? staleHoldWarning(current, card.holdId) : "SR5.WARN_GrappleNoHold"
       if (stale) return ui.notifications.warn(game.i18n.localize(stale))
-      if (el.dataset.grapple === "release") return SR5_GrappleHelpers.releaseHold(card.holderId)
+      if (el.dataset.grapple === "release") return SR5_GrappleHelpers.releaseHold(card.holderId, card.holdId)
       if (el.dataset.grapple === "crush") return SR5_GrappleHelpers.crush(card.holderId, card.heldId)
     }))
   }
@@ -246,11 +247,17 @@ export class SR5_GrappleHelpers {
   }
 
   //Leave the hold : both fighters lose their grappling effect (deleting one deletes the other, see onDeleteEffect)
-  static async releaseHold(actorId){
+  //With a holdId (a card button), only the hold the card was rolled against is released
+  static async releaseHold(actorId, holdId = null, fromUserId = null){
     if (!game.user.isGM) return SR5_SocketHandler.emitForGM("grappleReleaseHold", {
-      actorId
+      actorId, holdId, fromUserId: game.user.id
     })
-    await deleteGrappleEffectOnce(SR5_EntityHelpers.getRealActorFromID(actorId), PENDING_DELETIONS)
+    const actor = SR5_EntityHelpers.getRealActorFromID(actorId)
+    if (holdId) {
+      const stale = staleHoldWarning(grappleHoldOf(actor?.effects), holdId)
+      if (stale) return SR5_GrappleHelpers.warn(stale, fromUserId)
+    }
+    await deleteGrappleEffectOnce(actor, PENDING_DELETIONS)
   }
 
   //The grappling hooks run on the active GM's client only, not on every GM connected
@@ -269,7 +276,8 @@ export class SR5_GrappleHelpers {
   }
 
   static async _socketReleaseHold(message){
-    await SR5_GrappleHelpers.releaseHold(message.data.actorId)
+    const d = message.data
+    await SR5_GrappleHelpers.releaseHold(d.actorId, d.holdId, d.fromUserId)
   }
 
   //Active GM side : when one half of the hold goes, the other half of the same hold goes too

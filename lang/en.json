@@ -1330,6 +1330,8 @@
 	"SR5.GrappleEscape": "Escape (clinch or subdue)",
 	"SR5.GrappleEscapeCounterGrapple": "Counter-grapple: escape succeeded, treated as a successful reversal (roles switch, you have the superior position)",
 	"SR5.GrappleEscapeFailed": "Escape failed: still clinched or subdued",
+	"SR5.GrappleEscapeFree": "Escape succeeded: break free",
+	"SR5.GrappleCounterGrappleApply": "Counter-grapple: reverse the situation (hold: {hold})",
 	"SR5.GrappleEscapeSuccess": "Escape succeeded: free",
 	"SR5.GrappleEscapeThreshold": "Net hits of the clinch or subdue test",
 	"SR5.HELP_GrappleEscapeMsg": "Complex action: Unarmed Combat + Strength [Physical], threshold equal to the opponent's net hits (Run & Gun p. 135, SR5 p. 195). With the Counter-grapple technique, a successful escape counts as a successful reversal (Run & Gun p. 148-149).",

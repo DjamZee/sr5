@@ -1330,6 +1330,8 @@
 	"SR5.GrappleEscape": "Évasion (saisie ou immobilisation)",
 	"SR5.GrappleEscapeCounterGrapple": "Contre-prise : évasion réussie, traitée comme un renversement de situation réussi (les rôles s’inversent, vous avez la position avantageuse)",
 	"SR5.GrappleEscapeFailed": "Évasion ratée : toujours saisi ou immobilisé",
+	"SR5.GrappleEscapeFree": "Évasion réussie : se libérer",
+	"SR5.GrappleCounterGrappleApply": "Contre-prise : renverser la situation (prise : {hold})",
 	"SR5.GrappleEscapeSuccess": "Évasion réussie : libéré",
 	"SR5.GrappleEscapeThreshold": "Succès excédentaires de la saisie ou de l’immobilisation",
 	"SR5.HELP_GrappleEscapeMsg": "Action complexe : Combat à mains nues + Force [Physique], seuil égal aux succès excédentaires de l’adversaire (Run & Gun p. 135, SR5 p. 195). Avec la technique Contre-prise, une évasion réussie compte comme un renversement de situation réussi (Run & Gun p. 148-149).",
