@@ -184,7 +184,7 @@ export class SR5GruntSheet extends ActorSheetSR5 {
     actor.gears = gears
     actor.cyberdecks = cyberdecks
     actor.programs = programs
-    SR5_ActorHelper.markDeployedVehicles(vehicles, game.actors)
+    SR5_ActorHelper.markDeployedVehicles(vehicles, game.actors, SR5_ActorHelper.sidekickCreatorId(this.actor))
     actor.vehicles = vehicles
     actor.vehiclesMod = vehiclesMod
     actor.powers = powers

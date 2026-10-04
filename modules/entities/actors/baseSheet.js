@@ -2129,12 +2129,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     let actorId = this.actor.id
     if (!SR5Combat.hasActionsLeft(this.actor, this._sidekickActionCost(item.type))) return
 
-    for (let a of game.actors){
-      if (a.system.creatorItemId === id) {
-        sidekick = a.toObject(false)
-        break
-      }
-    }
+    sidekick = SR5_ActorHelper.findSidekick(game.actors, SR5_ActorHelper.sidekickCreatorId(this.actor), id)?.toObject(false)
 
     if(sidekick !== undefined) {
       if (!game.user?.isGM) {

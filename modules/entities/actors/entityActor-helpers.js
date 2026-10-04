@@ -985,17 +985,28 @@ export class SR5_ActorHelper {
     await SR5_ActorHelper.createSidekick(message.data.item, message.data.userId, message.data.actorId)
   }
 
+  //The id a sidekick keeps as system.creatorId: the token's for an unlinked actor, as _OnSidekickCreate sets it
+  static sidekickCreatorId(actor){
+    return actor.isToken ? actor.token.id : actor.id
+  }
+
+  //A sidekick belongs to one item of one actor: a duplicated actor carries the same item ids
+  static findSidekick(actors, creatorId, itemId){
+    return actors?.find(a => a.system.creatorItemId === itemId && a.system.creatorId === creatorId)
+  }
+
   /**
    * While a vehicle is deployed, its drone actor holds the wireless switch:
-   * the gear row shows that state, read-only (N83).
+   * the gear row shows that state, read-only (N83). The row is read-only as
+   * soon as the item says it is deployed, even before the drone actor exists,
+   * so a click in between is never silently lost.
    */
-  static markDeployedVehicles(vehicles, actors){
+  static markDeployedVehicles(vehicles, actors, creatorId){
     for (const vehicle of vehicles) {
       if (!vehicle.system?.isCreated) continue
-      const drone = actors?.find(a => a.type === "actorDrone" && a.system.creatorItemId === vehicle._id)
-      if (!drone) continue
+      const drone = SR5_ActorHelper.findSidekick(actors, creatorId, vehicle._id)
       vehicle.deployedWireless = {
-        on: drone.system.wirelessTurnedOn
+        on: (drone && drone.type === "actorDrone") ? drone.system.wirelessTurnedOn : vehicle.system.wirelessTurnedOn
       }
     }
   }
@@ -1191,7 +1202,8 @@ export class SR5_ActorHelper {
       modifiedItem.system.vehiclesMod = vehiclesMod
       modifiedItem.system.model = actor.system.model
       modifiedItem.system.slaved = actor.system.slaved
-      modifiedItem.system.wirelessTurnedOn = actor.system.wirelessTurnedOn
+      //A drone deployed before the field existed carries null: the item keeps its own switch
+      if (typeof actor.system.wirelessTurnedOn === "boolean") modifiedItem.system.wirelessTurnedOn = actor.system.wirelessTurnedOn
       modifiedItem.system.controlMode = actor.system.controlMode
       modifiedItem.system.riggerInterface = actor.system.riggerInterface
       modifiedItem.system.offRoadMode = actor.system.offRoadMode 

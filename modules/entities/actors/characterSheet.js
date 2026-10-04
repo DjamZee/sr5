@@ -231,7 +231,7 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     actor.contacts = contacts
     actor.lifestyles = lifestyles
     actor.sins = sins
-    SR5_ActorHelper.markDeployedVehicles(vehicles, game.actors)
+    SR5_ActorHelper.markDeployedVehicles(vehicles, game.actors, SR5_ActorHelper.sidekickCreatorId(this.actor))
     actor.vehicles = vehicles
     actor.vehiclesMod = vehiclesMod
     actor.martialArts = martialArts

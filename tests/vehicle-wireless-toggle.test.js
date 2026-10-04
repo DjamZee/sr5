@@ -25,7 +25,7 @@ describe('vehicle wireless toggle', () => {
     expect(row).toContain("SR5.HELP_WifiToggle")
   })
 
-  // SR5 p. 228: a device whose matrix monitor is full is bricked; the row shows it as the armors do
+  // SR5 p. 229: a device whose matrix monitor is full is bricked; the row shows it as the armors do
   it('shows a bricked vehicle with a warning triangle instead of the toggle', () => {
     const bricked = row.match(/\{\{#if \(gte system\.conditionMonitors\.matrix\.actual\.value system\.conditionMonitors\.matrix\.value\)\}\}([\s\S]*?)\{\{else\}\}/)
     expect(bricked).not.toBeNull()
