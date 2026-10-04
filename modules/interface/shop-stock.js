@@ -170,6 +170,8 @@ export class SR5ShopStock {
         const browser = game.sr5?.compendiumBrowser?._instance
         const entry = browser?._indexCache?.find(e => e.uuid === document.uuid)
         if (entry) {
+          // The browser's index carries the flag too: a player's list follows at once
+          if (flag === 'notForSale') foundry.utils.setProperty(entry, 'flags.sr5.notForSale', !active)
           entry._detailed = false
           if (browser.rendered) browser.render()
         }

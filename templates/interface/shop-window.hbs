@@ -58,8 +58,8 @@
 
     <ol class="sr-shop-list">
       {{#each rows}}
-      <li class="sr-shop-row {{#unless this.canBuy}}dim{{/unless}}" data-uuid="{{this.uuid}}" data-name="{{this.name}}" draggable="true" data-action="viewItem">
-        <img src="{{this.img}}" alt="">
+      <li class="sr-shop-row {{#if this.dim}}dim{{/if}}" data-uuid="{{this.uuid}}" data-name="{{this.name}}" draggable="true" data-action="viewItem">
+        <img src="{{this.img}}" alt="" loading="lazy" decoding="async">
         <div class="sr-shop-name">
           <b>{{this.name}}</b>
           {{#if this.notForSale}}<span class="sr-shop-tag"><i class="fas fa-store-slash"></i> {{localize 'SR5.ShopNotForSale'}}</span>{{/if}}
@@ -94,7 +94,11 @@
         </div>
       </li>
       {{else}}
+      {{#if loading}}
+      <li class="sr-shop-empty"><i class="fas fa-spinner fa-spin"></i> <span data-shop-progress>{{loadingLabel}}</span></li>
+      {{else}}
       <li class="sr-shop-empty">{{localize 'SR5.NoResults'}}</li>
+      {{/if}}
       {{/each}}
     </ol>
 
@@ -143,7 +147,7 @@
     <h4>{{localize 'SR5.ShopCart'}} ({{cartCount}})</h4>
     <div class="sr-shop-box sr-shop-cart">
       {{#each cart}}
-      <div class="sr-shop-cart-line" data-cart-key="{{this.key}}">
+      <div class="sr-shop-cart-line {{#if this.blocked}}blocked{{/if}}" data-cart-key="{{this.key}}" {{#if this.blocked}}data-tooltip="{{this.blockedLabel}}"{{/if}}>
         <span class="name">{{this.name}}</span>
         <input type="number" min="1" value="{{this.quantity}}" data-cart-qty aria-label="{{localize 'SR5.Quantity'}}">
         <span class="price">{{this.totalLabel}}</span>
@@ -156,6 +160,7 @@
       <div class="sr-shop-cart-total {{#unless cartAffordable}}too-expensive{{/unless}}">
         <b>{{localize 'SR5.ShopTotal'}}</b><b>{{cartTotal}}</b>
       </div>
+      {{#if cartBlocked}}<small class="sr-shop-blocked"><i class="fas fa-triangle-exclamation"></i> {{localize 'SR5.ShopCartBlocked'}}</small>{{/if}}
       <small class="muted">
         {{#if cartLeft}}{{localize 'SR5.ShopLeftAfter' value=cartLeft}}{{/if}}
         {{#if cartDelay}} · {{localize 'SR5.ShopLongestDelay' value=cartDelay}}{{/if}}
@@ -180,7 +185,7 @@
     <div class="sr-shop-box">
       <label data-tooltip="{{localize 'SR5.ShopCreationModeHint'}}">
         <input type="checkbox" data-shop-creation {{#if creationMode}}checked{{/if}}> {{localize 'SR5.ShopCreationMode'}}
-        {{#if creationLimits}}<span class="muted">({{localize 'SR5.ShopCreationLimitsShort' availability=creationLimits.availability rating=creationLimits.rating}})</span>{{/if}}
+        {{#if creationLimits}}<span class="muted">({{creationLimitsLabel}})</span>{{/if}}
       </label>
       <label data-tooltip="{{localize 'SR5.ShopEquipModeHint'}}">
         <input type="checkbox" data-shop-equip {{#if equipMode}}checked{{/if}}> {{localize 'SR5.ShopEquipMode'}}
@@ -188,7 +193,7 @@
     </div>
     {{else if creationMode}}
     <p class="muted" data-tooltip="{{localize 'SR5.ShopCreationModeHint'}}">{{localize 'SR5.ShopCreationMode'}}
-      ({{localize 'SR5.ShopCreationLimitsShort' availability=creationLimits.availability rating=creationLimits.rating}})</p>
+      ({{creationLimitsLabel}})</p>
     {{/if}}
   </aside>
 </div>

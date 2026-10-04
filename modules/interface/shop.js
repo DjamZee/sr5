@@ -65,11 +65,15 @@ export class SR5Shop {
     return grade ? SR5ShopGrades.price(system, grade) : SR5Shop.unitPrice(system)
   }
 
-  /** The default buyer: the user's character, else the only actor they own. */
+  /**
+   * The default buyer: the user's character, else the actor of the token they
+   * control (how a gamemaster points at someone), else the only actor they own.
+   */
   static defaultBuyerId(buyers) {
-    if (game.user.character && buyers.some(a => a.id === game.user.character.id)) {
-      return game.user.character.id
-    }
+    const ids = new Set(buyers.map(a => a.id))
+    if (game.user.character && ids.has(game.user.character.id)) return game.user.character.id
+    const controlled = canvas?.tokens?.controlled?.map(t => t.actor?.id).find(id => ids.has(id))
+    if (controlled) return controlled
     return buyers.length === 1 ? buyers[0].id : null
   }
 
@@ -229,6 +233,7 @@ export class SR5Shop {
       if (block) {
         ui.notifications.warn(game.i18n.format(`SR5.WARN_ShopCreationLimit_${block}`, {
           name: SR5Shop.gradedName(source.name, grade), ...SR5Shop.creationLimits,
+          source: game.i18n.localize(`SR5.ShopCreationSource_${SR5Shop.creationLimits.source}`),
         }))
         continue
       }

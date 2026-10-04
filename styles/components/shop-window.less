@@ -9,7 +9,8 @@
   --shop-line: #2a2e37;
   --shop-button: #2a2e37;
   --shop-text: #e6e6e6;
-  --shop-muted: #8b92a0;
+  // #a9b0bd on #14161b: 8.6:1, readable for the small summary line (WCAG AA asks 4.5:1)
+  --shop-muted: #a9b0bd;
   // Legality and the odds dot, the same in both themes. A prohibited item is a
   // filled red badge, so it never reads as the red accent of the SR5 theme.
   --shop-restricted: #e0a526;
@@ -18,7 +19,14 @@
   --shop-even: #e0a526;
   --shop-poor: #ff5c4d;
 
+  // The validated mock-up's type: Signika at 12 px, names at 13 px. The SR5 theme's narrow
+  // display face made the rows hard to read.
+  font-family: var(--font-body, "Signika"), sans-serif;
   font-size: 12px;
+  // Icons keep their own face: only text elements are reset
+  .window-content :is(input, select, button, label, span, b, small, a, h4, p, li, div):not([class*="fa-"]) {
+    font-family: inherit;
+  }
 
   .window-header {
     background: linear-gradient(90deg, color-mix(in srgb, var(--sr-shop-accent) 55%, transparent), #0d0e11 60%) !important;
@@ -39,7 +47,14 @@
     border-radius: 2px !important;
     color: var(--shop-text) !important;
     height: 22px;
-    font-size: 12px;
+    // The validated mock-up's type: Signika at 12 px, names at 13 px. The SR5 theme's narrow
+  // display face made the rows hard to read.
+  font-family: var(--font-body, "Signika"), sans-serif;
+  font-size: 12px;
+  // Icons keep their own face: only text elements are reset
+  .window-content :is(input, select, button, label, span, b, small, a, h4, p, li, div):not([class*="fa-"]) {
+    font-family: inherit;
+  }
   }
   input[type="number"] { width: 64px; text-align: right; }
 
@@ -49,7 +64,14 @@
     color: var(--shop-text) !important;
     border-radius: 3px;
     line-height: 22px;
-    font-size: 12px;
+    // The validated mock-up's type: Signika at 12 px, names at 13 px. The SR5 theme's narrow
+  // display face made the rows hard to read.
+  font-family: var(--font-body, "Signika"), sans-serif;
+  font-size: 12px;
+  // Icons keep their own face: only text elements are reset
+  .window-content :is(input, select, button, label, span, b, small, a, h4, p, li, div):not([class*="fa-"]) {
+    font-family: inherit;
+  }
     &:hover:not([disabled]) { border-color: var(--sr-shop-accent-line) !important; }
     &.accent {
       background: var(--sr-shop-accent) !important;
@@ -191,7 +213,7 @@
       overflow: hidden;
       font-size: 13px;
     }
-    small { display: block; color: var(--shop-muted); font-size: 11px; }
+    small { display: block; color: var(--shop-muted) !important; font-size: 11px; opacity: 1; }
   }
   .sr-shop-blocked { color: var(--shop-prohibited) !important; }
   .sr-shop-tag {
@@ -235,7 +257,16 @@
     input[type="number"] { width: 34px; text-align: center; }
     button { width: 28px; padding: 0; }
   }
-  .sr-shop-grade select { width: 100%; }
+  .sr-shop-grade select {
+    width: 100%;
+    height: 22px;
+    background: var(--shop-bg) !important;
+    color: var(--shop-text) !important;
+    border: 1px solid var(--shop-line) !important;
+    border-radius: 2px;
+    font-size: 12px;
+    option { background: var(--shop-panel); color: var(--shop-text); }
+  }
   .sr-shop-empty { padding: 20px; text-align: center; color: var(--shop-muted); }
   .sr-shop-footer {
     display: flex;
@@ -279,6 +310,7 @@
     padding: 3px 0;
     border-bottom: 1px dashed var(--shop-line);
     .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    &.blocked .name { color: var(--shop-prohibited); text-decoration: line-through; }
     .price { text-align: right; }
     input[type="number"] { width: 36px; text-align: center; }
     button { padding: 0; }

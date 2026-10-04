@@ -432,7 +432,7 @@ export class SR5ShopFence {
       type: 'shopFenceCash',
       userId: designated.id,
       data: {
-        messageId: message.id, actorId: actor.id, requesterId: game.user.id
+        messageId: message.id, actorId: actor.id
       }
     })
     return true
@@ -441,16 +441,21 @@ export class SR5ShopFence {
   /**
    * Cash a sale card a player asked for, on the designated game master.
    * Only for the seller's own card, and only if the player owns the seller.
+   *
+   * The requester is the sender the server stamps on the message, never an id
+   * the client wrote in it: a player cannot cash in someone else's name (the
+   * same rule as the shared vision and lock-picking requests).
    * @param {object} socketMessage
    * @param {object} socketMessage.data
+   * @param {string} senderId added by the server to every custom socket message
    */
   static async socketCash({
     data
-  }) {
+  }, senderId) {
     if (!game.user.isGM) return
-    const message = game.messages.get(data.messageId)
-    const actor = game.actors.get(data.actorId)
-    const requester = game.users.get(data.requesterId)
+    const message = game.messages.get(data?.messageId)
+    const actor = game.actors.get(data?.actorId)
+    const requester = game.users.get(senderId)
     if (!message || !actor || !requester) return
     if (message.flags?.sr5fence?.buyerId !== actor.id) return
     if (!actor.testUserPermission(requester, 'OWNER')) return

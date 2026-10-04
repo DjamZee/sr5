@@ -4,6 +4,7 @@ import {
 import {
   SR5ShopCatalog
 } from '../modules/interface/shop-catalog.js'
+import items from './fixtures/shop-prepared-items.json' with { type: 'json' }
 
 const item = (type, system = {
 }, extra = {
@@ -45,25 +46,34 @@ describe('shop shelves', () => {
 describe('creation limits, SR5 p. 66 and p. 420', () => {
   it('has the book level by default and the two other levels of p. 66', () => {
     expect(SR5ShopCatalog.creationLimits('standard')).toEqual({
-      availability: 12, rating: 6
+      availability: 12, rating: 6, source: 'p420'
     })
     expect(SR5ShopCatalog.creationLimits('street')).toEqual({
-      availability: 10, rating: 4
+      availability: 10, rating: 4, source: 'p66'
     })
     expect(SR5ShopCatalog.creationLimits('elite')).toEqual({
-      availability: 15, rating: 6
+      availability: 15, rating: 6, source: 'p66'
     })
     expect(SR5ShopCatalog.creationLimits('nonsense')).toEqual({
-      availability: 12, rating: 6
+      availability: 12, rating: 6, source: 'p420'
     })
   })
 
-  it('takes the free values as the gamemaster typed them', () => {
-    expect(SR5ShopCatalog.creationLimits('custom', {
-      availability: '14', rating: 0
-    })).toEqual({
-      availability: 14, rating: 0
+  it('takes the free values as the gamemaster typed them, 0 being no limit on either', () => {
+    const limits = SR5ShopCatalog.creationLimits('custom', {
+      availability: '0', rating: 0
     })
+    expect(limits).toEqual({
+      availability: 0, rating: 0, source: 'custom'
+    })
+    expect(SR5ShopCatalog.creationBlock(row({
+      availability: 30, rating: 12
+    }), limits)).toBeNull()
+    expect(SR5ShopCatalog.creationBlock(row({
+      availability: 30
+    }), {
+      availability: 14, rating: 0
+    })).toBe('availability')
   })
 
   it('blocks above the availability, above the rating, and a rating of 0 means none', () => {
@@ -189,5 +199,35 @@ describe('filters run on the whole catalogue', () => {
         availability: 10, rating: 6
       }
     }).map(r => r.name)).toEqual(['Épée', 'Predator', 'Soda'])
+  })
+})
+
+describe('what the window shows is what the till charges (second review, Kira)', () => {
+  // Real items of the Megapack 2.0.12, read as stored in the compendium and as prepared by
+  // the system: an ammunition sold by the pack, a weapon priced with its accessories, an armour
+  // priced by rating, a vehicle whose Device Rating only exists once prepared
+  for (const item of items) {
+    it(`keeps every figure of ${item.name} through the shop's copy`, () => {
+      const charged = SR5ShopCatalog.describe({
+        type: item.type, system: item.prepared
+      })
+      const shown = SR5ShopCatalog.describe({
+        type: item.type, system: SR5ShopCatalog.essentials(item.prepared)
+      })
+      expect(shown).toEqual(charged)
+    })
+  }
+
+  it('would be wrong from the stored data: the reason each entry is prepared first', () => {
+    const wrong = items.filter(item => {
+      const stored = SR5ShopCatalog.describe({
+        type: item.type, system: SR5ShopCatalog.essentials(item.stored)
+      })
+      const charged = SR5ShopCatalog.describe({
+        type: item.type, system: item.prepared
+      })
+      return JSON.stringify(stored) !== JSON.stringify(charged)
+    })
+    expect(wrong.map(item => item.name)).toEqual(items.map(item => item.name))
   })
 })

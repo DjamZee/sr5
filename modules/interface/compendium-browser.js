@@ -125,7 +125,8 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
 
     const otherDocTypes = Object.keys(OTHER_BROWSER_FILTERS)
     const promises = [
-      ...game.packs.filter(p => p.documentName === 'Item').map(p => indexPack(p, 'Item', SUBTYPE_FIELDS)),
+      // The prototype flag rides in the index, so a player's lists and counts never see one (lot A)
+      ...game.packs.filter(p => p.documentName === 'Item').map(p => indexPack(p, 'Item', [...SUBTYPE_FIELDS, 'flags.sr5.notForSale'])),
       ...game.packs.filter(p => p.documentName === 'Actor').map(p => indexPack(p, 'Actor', SUBTYPE_FIELDS)),
       ...game.packs.filter(p => otherDocTypes.includes(p.documentName)).map(p => indexPack(p, p.documentName, [], true)),
     ]
@@ -260,7 +261,8 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
 
     // Load indices if not cached
     if (!this._indexCache) await this._loadAllIndices()
-    const allEntries = this._indexCache
+    // A prototype is the gamemaster's (Élise's choice, 2026-10-05): a player never sees it, nor counts it
+    const allEntries = game.user.isGM ? this._indexCache : this._indexCache.filter(e => e.flags?.sr5?.notForSale !== true)
 
     // Build type/subtype counts
     const typeCounts = {

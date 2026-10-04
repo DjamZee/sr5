@@ -1,0 +1,84 @@
+[
+  {
+    "name": "Balles E0-E0, (Fusil d'assaut)",
+    "type": "itemAmmunition",
+    "uuid": "Compendium.megapack-sr5-foundry-vtt.sr5-megapack-items.Item.26jiQdxEXV0OPDjV",
+    "stored": {
+      "availability": { "base": 5, "modifiers": [], "multiplier": "", "value": 0 },
+      "legality": "R",
+      "price": { "base": 10, "modifiers": [], "multiplier": "", "value": 0 },
+      "quantity": 10,
+      "type": "special"
+    },
+    "prepared": {
+      "availability": { "base": 5, "value": 5 },
+      "legality": "R",
+      "price": { "base": 10, "value": 100 },
+      "type": "special"
+    }
+  },
+  {
+    "name": "Morrissey Alta",
+    "type": "itemWeapon",
+    "uuid": "Compendium.megapack-sr5-foundry-vtt.sr5-megapack-items.Item.0OPcNSESGMUPA4ho",
+    "stored": {
+      "availability": { "base": 7, "modifiers": [], "multiplier": "", "value": 0 },
+      "category": "rangedWeapon",
+      "deviceRating": 2,
+      "itemRating": 0,
+      "legality": "F",
+      "price": { "base": 800, "modifiers": [], "multiplier": "", "value": 0 },
+      "quantity": 1,
+      "type": "heavyPistol"
+    },
+    "prepared": {
+      "availability": { "base": 7, "value": 7 },
+      "category": "rangedWeapon",
+      "deviceRating": 2,
+      "itemRating": 0,
+      "legality": "F",
+      "price": { "base": 800, "value": 950 },
+      "type": "heavyPistol"
+    }
+  },
+  {
+    "name": "Mana gris intégré (4-6)",
+    "type": "itemArmor",
+    "uuid": "Compendium.megapack-sr5-foundry-vtt.sr5-megapack-items.Item.fWT6wj8rTryc0Z9V",
+    "stored": {
+      "availability": { "base": 6, "modifiers": [], "multiplier": "", "value": 0 },
+      "deviceRating": 0,
+      "itemRating": 4,
+      "legality": "F",
+      "price": { "base": 1000, "modifiers": [], "multiplier": "rating", "value": 0 }
+    },
+    "prepared": {
+      "availability": { "base": 6, "value": 6 },
+      "deviceRating": 0,
+      "itemRating": 4,
+      "legality": "F",
+      "price": { "base": 1000, "value": 4000 }
+    }
+  },
+  {
+    "name": "Ares Venture (VTOL)",
+    "type": "itemVehicle",
+    "uuid": "Compendium.megapack-sr5-foundry-vtt.sr5-megapack-items.Item.03TFaWIyvsikYF3W",
+    "stored": {
+      "availability": { "base": 12, "modifiers": [], "multiplier": "", "value": 0 },
+      "category": "vectorThrustCraft",
+      "deviceRating": 0,
+      "legality": "F",
+      "price": { "base": 400000, "modifiers": [], "multiplier": "", "value": 0 },
+      "type": "vehicle"
+    },
+    "prepared": {
+      "availability": { "base": 12, "value": 12 },
+      "category": "vectorThrustCraft",
+      "deviceRating": 4,
+      "legality": "F",
+      "price": { "base": 400000, "value": 400000 },
+      "type": "vehicle"
+    }
+  }
+]

@@ -116,13 +116,19 @@ export class SR5ShopCatalog {
   static creationLimits(level, custom = {
   }) {
     if (level === 'custom') {
+      // The table's own figures; 0 in either field is no limit on it
       return {
         availability: Math.max(0, Number(custom.availability) || 0),
         rating: Math.max(0, Number(custom.rating) || 0),
+        source: 'custom',
       }
     }
+    const known = SR5ShopCatalog.CREATION_LEVELS[level] ? level : 'standard'
     return {
-      ...(SR5ShopCatalog.CREATION_LEVELS[level] ?? SR5ShopCatalog.CREATION_LEVELS.standard)
+      ...SR5ShopCatalog.CREATION_LEVELS[known],
+      // Where the figures come from, for the message: the standard runner's 12 and 6 are
+      // SR5 p. 420, the other two levels SR5 p. 66
+      source: known === 'standard' ? 'p420' : 'p66',
     }
   }
 
@@ -131,10 +137,15 @@ export class SR5ShopCatalog {
     return Math.max(Number(system?.itemRating) || 0, Number(system?.deviceRating) || 0)
   }
 
-  /** Why a line is out of reach at creation, or null when it is allowed. */
+  /**
+   * Why a line is out of reach at creation, or null when it is allowed. A limit of 0
+   * is no limit. The rating limit reads the rating or the Device Rating, the higher,
+   * at every level: SR5 p. 420 says "indice (ou Indice d'appareil)", and Élise reads
+   * the street level of p. 66 ("Indices d'appareil de 4 au maximum") the same way.
+   */
   static creationBlock(line, limits) {
     if (!limits) return null
-    if (line.availability > limits.availability) return 'availability'
+    if (limits.availability && line.availability > limits.availability) return 'availability'
     if (limits.rating && line.rating > limits.rating) return 'rating'
     return null
   }
@@ -142,6 +153,28 @@ export class SR5ShopCatalog {
   /* -------------------------------------------- */
   /*  A row                                       */
   /* -------------------------------------------- */
+
+  /**
+   * The fields of a prepared item the shop reads, copied: the prepared item
+   * itself is not kept alive. Prices, availability and Essence carry their
+   * derived value (what the till charges) and their base.
+   */
+  static essentials(system) {
+    const pair = field => ({
+      value: Number(field?.value ?? 0) || 0, base: Number(field?.base ?? 0) || 0,
+    })
+    return {
+      type: system?.type,
+      category: system?.category,
+      grade: system?.grade,
+      legality: system?.legality,
+      itemRating: Number(system?.itemRating) || 0,
+      deviceRating: Number(system?.deviceRating) || 0,
+      price: system?.price === undefined ? undefined : pair(system.price),
+      availability: pair(system?.availability),
+      essenceCost: pair(system?.essenceCost),
+    }
+  }
 
   /**
    * What a row shows of an entry at a given grade: price, availability,

@@ -79,7 +79,7 @@ import {
   SR5CompendiumBrowser
 } from "../interface/compendium-browser.js"
 import {
-  SR5ShopWindow
+  SR5ShopWindow, SR5ShopWorldSource
 } from "../interface/shop-window.js"
 
 // Item DataModels
@@ -269,6 +269,8 @@ export async function sr5HookInit() {
     rollMacro: macros.rollMacro,
     compendiumBrowser: SR5CompendiumBrowser,
     shop: SR5ShopWindow,
+    // The shop against the till, item by item: should answer no difference
+    shopAudit: () => SR5ShopWorldSource.audit(),
   }
 
   // Register DataModels

@@ -147,7 +147,8 @@ describe('cashing a sale through the designated game master (SR5 p. 421: the fen
     at(player)
     await clickOn(playerBrowser, message)
     at(gm)
-    for (const request of sent) await gmBrowser.socketCash(request)
+    // The server stamps the sender: here, the player's browser
+    for (const request of sent) await gmBrowser.socketCash(request, player.id)
 
     expect(actor.paid).toEqual([200])
     expect(actor.items.get('vest')).toBeUndefined()
@@ -172,7 +173,8 @@ describe('cashing a sale through the designated game master (SR5 p. 421: the fen
     at(gm)
     const fromGm = clickOn(gmBrowser, message)
     await Promise.allSettled([fromPlayer, fromGm])
-    for (const request of sent) await gmBrowser.socketCash(request)
+    // The server stamps the sender: here, the player's browser
+    for (const request of sent) await gmBrowser.socketCash(request, player.id)
 
     expect(actor.paid).toEqual([20])
     expect(actor.items.get('grenades').system.quantity).toBe(4)
@@ -191,6 +193,35 @@ describe('cashing a sale through the designated game master (SR5 p. 421: the fen
     const gmBrowser = await browser()
 
     at(gm)
+    await gmBrowser.socketCash({
+      data: {
+        messageId: 'card', actorId: 'sellerId'
+      }
+    }, player.id)
+
+    expect(actor.paid).toEqual([])
+    expect(actor.items.get('vest')).toBeDefined()
+  })
+
+  it('believes the sender the server stamps, not a requester written in the message', async () => {
+    const actor = seller({
+      id: 'vest', system: {
+      }
+    })
+    const message = saleCard(gm, [{
+      itemId: 'vest', name: 'Gilet', quantity: 1, total: 200
+    }])
+    world(actor, message)
+    const gmBrowser = await browser()
+
+    at(gm)
+    // A stranger, who does not own the seller, writes the owner's id in the request
+    await gmBrowser.socketCash({
+      data: {
+        messageId: 'card', actorId: 'sellerId', requesterId: player.id
+      }
+    }, 'stranger')
+    // ...or sends nothing the server could vouch for
     await gmBrowser.socketCash({
       data: {
         messageId: 'card', actorId: 'sellerId', requesterId: player.id

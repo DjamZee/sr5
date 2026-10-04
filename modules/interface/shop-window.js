@@ -36,94 +36,198 @@ export class SR5ShopWorldSource {
 
   key = 'world'
 
-  /** Index of every item compendium, shared by every window of this client. */
+  /** The reading of the shelves, a promise shared by every window of this client. */
   static _index = null
+
+  /** How far the reading has got, for the window to show. */
+  static progress = {
+    done: 0, total: 0
+  }
+
+  static #ready = false
 
   get label() {
     return game.i18n.localize('SR5.ShopSourceWorld')
   }
 
+  /** Has the reading finished? Until then the window shows its progress. */
+  isReady() {
+    return SR5ShopWorldSource.#ready
+  }
+
+  /** Read the shelves, once; `onProgress` is called as items are prepared. */
+  load(onProgress) {
+    SR5ShopWorldSource._onProgress = onProgress
+    return SR5ShopWorldSource.index()
+  }
+
   /** Forget the index: the next window reads the compendiums again. */
   static reset() {
     SR5ShopWorldSource._index = null
+    SR5ShopWorldSource.#ready = false
   }
 
   static index() {
     // One reading at a time: two windows opening together share it
-    SR5ShopWorldSource._index ??= SR5ShopWorldSource.#read()
+    SR5ShopWorldSource._index ??= SR5ShopWorldSource.#read().then(entries => {
+      SR5ShopWorldSource.#ready = true
+      return entries
+    })
     return SR5ShopWorldSource._index
   }
 
+  /**
+   * Read every sellable item of every item compendium, prepared as the till
+   * will see it.
+   *
+   * An index carries stored fields only: the derived ones (`price.value`,
+   * `availability.value`, a vehicle's rating…) are computed when an item is
+   * prepared, from fields scattered all over its data — a pack's quantity, a
+   * weapon's accessories, a vehicle's attributes. So the index asks for the
+   * whole `system` (and the effects), and the system's own item class prepares
+   * each entry: what the row shows is what `SR5Shop.checkout` charges (second
+   * review, Kira: 449 rows out of 4 919 used to differ). An entry the class
+   * refuses (invalid stored data) is read as the full document instead.
+   *
+   * Measured on the Megapack 2.0.12 (36 item packs, 4 919 sellable items):
+   * index 1.0 s, preparation 2.6 s, once per session and in slices, the window
+   * showing the progress. Only a few fields are kept from each prepared item.
+   */
   static async #read() {
-    const entries = []
+    const raw = []
     await Promise.all(game.packs.filter(p => p.documentName === 'Item').map(async pack => {
       try {
         const index = await pack.getIndex({
-          fields: SR5ShopCatalog.INDEX_FIELDS
+          fields: ['system', 'effects', 'flags']
         })
         for (const entry of index) {
-          if (!SR5ShopStock.isSellableType(entry.type)) continue
-          entries.push({
-            ...entry,
-            docName: 'Item',
-            uuid: `Compendium.${pack.collection}.Item.${entry._id}`,
-            packId: pack.collection,
+          if (SR5ShopStock.isSellableType(entry.type)) raw.push({
+            pack, entry
           })
         }
       } catch (err) {
         console.warn(`SR5 Shop: failed to index pack ${pack.collection}`, err)
       }
     }))
-    await SR5ShopWorldSource.prepare(entries)
-    return entries
-  }
-
-  /**
-   * An index holds the stored fields only: `price.value` is still 0 there, the
-   * system derives it when an item is prepared (rating, capacity, vehicle
-   * multipliers, grade). Each entry is prepared by the system's own item class,
-   * so the shop shows the price the buyer will be charged. Measured on the
-   * Megapack 2.0.10 (4 900 sellable items): 0.9 s once per session, in slices
-   * so the screen does not freeze.
-   */
-  static async prepare(entries) {
-    const Item = CONFIG.Item.documentClass
-    for (let i = 0; i < entries.length; i++) {
-      const entry = entries[i]
-      try {
-        const item = new Item({
-          name: entry.name, type: entry.type, system: foundry.utils.deepClone(entry.system ?? {
-          }),
-        })
-        entry.system = item.system
-      } catch (err) {
-        // Left as stored: the row reads the base values
-        console.debug(`SR5 Shop: ${entry.name} could not be prepared`, err)
+    const progress = SR5ShopWorldSource.progress
+    progress.total = raw.length
+    progress.done = 0
+    const lists = SR5_EntityHelpers.sortTranslations(SR5)
+    const entries = []
+    for (const {
+      pack, entry
+    } of raw) {
+      const prepared = await SR5ShopWorldSource.#prepare(pack, entry, lists)
+      if (prepared) entries.push(prepared)
+      progress.done++
+      if (progress.done % 250 === 0) {
+        SR5ShopWorldSource._onProgress?.(progress)
+        await new Promise(resolve => setTimeout(resolve, 0))
       }
-      if (i % 500 === 499) await new Promise(resolve => setTimeout(resolve, 0))
     }
+    // Sorted once: the filters keep the order, so a redraw never sorts again
+    const collator = new Intl.Collator(game.i18n.lang)
+    return entries.sort((a, b) => collator.compare(a.name, b.name))
+  }
+
+  /** One entry, prepared by the system and cut down to what the shop reads. */
+  static async #prepare(pack, entry, lists) {
+    let system
+    try {
+      const Item = CONFIG.Item.documentClass
+      system = new Item({
+        name: entry.name, type: entry.type, system: entry.system, effects: entry.effects ?? [],
+      }).system
+    } catch {
+      // The stored data does not validate (Heritage (12) in the Megapack 2.0.12): the
+      // document loads anyway, cleaned by Foundry, and it is what the till reads
+      try {
+        system = (await pack.getDocument(entry._id))?.system
+      } catch (err) {
+        console.warn(`SR5 Shop: ${entry.name} could not be read`, err)
+      }
+    }
+    if (!system) return null
+    const kept = {
+      _id: entry._id,
+      name: entry.name,
+      img: entry.img,
+      type: entry.type,
+      docName: 'Item',
+      uuid: `Compendium.${pack.collection}.Item.${entry._id}`,
+      packId: pack.collection,
+      flags: {
+        sr5: {
+          notForSale: entry.flags?.sr5?.notForSale === true
+        }
+      },
+      system: SR5ShopCatalog.essentials(system),
+      // The summary line, from the stored data; its price and grade are the row's own columns
+      info: getEntryInfo({
+        type: entry.type, system: {
+          ...entry.system, price: undefined, grade: undefined
+        }
+      }, lists),
+    }
+    kept.shelf = SR5ShopCatalog.shelfOf(kept)
+    kept.sub = SR5ShopCatalog.subOf(kept)
+    return kept
   }
 
   /**
-   * The entries on offer. A prototype stays in the list for the gamemaster,
-   * marked and not for sale; the window drops it for a player before
-   * counting anything. An item at 0¥ — templates, critter weapons, notes — is
-   * not goods and stays off the counter; Equip mode still places it.
+   * The entries on offer, in name order. A prototype stays in the list for
+   * the gamemaster, marked and not for sale; the window drops it for a player
+   * before counting anything. An item at 0¥ — templates, critter weapons,
+   * notes — is not goods and stays off the counter; Equip mode still places it.
    */
   async entries({
     equip = false
   } = {
   }) {
     const index = await SR5ShopWorldSource.index()
+    const excluded = SR5ShopStock.excludedPacks
+    const isGM = game.user.isGM
     return index.filter(entry => {
       if (!equip && !(SR5ShopCatalog.describe(entry).price > 0)) return false
-      return SR5ShopStock.canSell(entry, {
-        equip
-      }) || (game.user.isGM && SR5ShopStock.isNotForSale(entry) && SR5ShopStock.canSell({
+      if (SR5ShopStock.canSell(entry, {
+        equip, excluded
+      })) return true
+      return isGM && SR5ShopStock.isNotForSale(entry) && SR5ShopStock.canSell({
         ...entry, flags: {
         }
-      }))
+      }, {
+        excluded
+      })
     })
+  }
+
+  /**
+   * Check the shop against the till: every entry is compared with its full
+   * document, as `SR5Shop.checkout` reads it. Run from the console by the
+   * gamemaster (`game.sr5.shopAudit()`), it should answer no difference.
+   */
+  static async audit() {
+    const entries = await SR5ShopWorldSource.index()
+    const differences = []
+    // The documents are read a compendium at a time: one request per pack, not per item
+    const documents = new Map()
+    for (const packId of new Set(entries.map(entry => entry.packId))) {
+      for (const document of await game.packs.get(packId)?.getDocuments() ?? []) documents.set(document.uuid, document)
+    }
+    for (const entry of entries) {
+      const document = documents.get(entry.uuid)
+      if (!document) continue
+      const shown = SR5ShopCatalog.describe(entry)
+      const charged = SR5ShopCatalog.describe(document)
+      for (const key of ['price', 'availability', 'legality', 'essence', 'rating']) {
+        if (shown[key] !== charged[key]) differences.push({
+          name: entry.name, uuid: entry.uuid, key, shown: shown[key], charged: charged[key]
+        })
+      }
+    }
+    return {
+      checked: entries.length, differences
+    }
   }
 }
 
@@ -207,7 +311,8 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     this._legality = ['', 'R', 'F']
     this._affordable = false
     this._page = 0
-    this._pageSize = 100
+    // 50 wide rows fill the window twice over; more only slows every redraw (second review: < 100 ms)
+    this._pageSize = 50
     this._buyerId = null
     this._equipMode = false
     // The grade chosen on each implant row, by uuid. Never overwritten by a
@@ -232,35 +337,14 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
   /* -------------------------------------------- */
 
   /**
-   * The full documents of the entries about to be shown, for their summary
-   * line (damage, armour…). The filters never need them: the index carries
-   * every field they read.
+   * A row's figures at a grade, worked out once per entry and grade: a redraw
+   * only filters (second review, Kira: a redraw used to take 0.45 s).
    */
-  async _ensureDetails(entries) {
-    const missing = entries.filter(e => !e._detailed)
-    if (!missing.length) return
-    const byPack = new Map()
-    for (const entry of missing) {
-      if (!byPack.has(entry.packId)) byPack.set(entry.packId, [])
-      byPack.get(entry.packId).push(entry)
-    }
-    await Promise.all([...byPack].map(async ([packId, list]) => {
-      const pack = game.packs.get(packId)
-      try {
-        const documents = pack ? await pack.getDocuments({
-          _id__in: list.map(e => e._id)
-        }) : []
-        const byId = new Map(documents.map(d => [d.id, d]))
-        for (const entry of list) {
-          const document = byId.get(entry._id)
-          if (document) entry.details = document.system
-          entry._detailed = true
-        }
-      } catch (err) {
-        console.warn(`SR5 Shop: failed to load details from ${packId}`, err)
-        for (const entry of list) entry._detailed = true
-      }
-    }))
+  static #described(entry, grade) {
+    entry._described ??= new Map()
+    const key = grade ?? ''
+    if (!entry._described.has(key)) entry._described.set(key, SR5ShopCatalog.describe(entry, grade))
+    return entry._described.get(key)
   }
 
   /** The grade a row shows: the one chosen, while it is offered; else the entry's own, else standard. */
@@ -278,6 +362,21 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     const searcher = contact ? SR5ShopAvailability.contactPool(contact) : SR5ShopAvailability.buyerPool(buyer)
     const base = this._overridePool ?? (searcher.raw ?? searcher.pool)
     return Math.max(0, base + SR5ShopAvailability.surchargeDice(this._surcharge))
+  }
+
+  /** Read the shelves, showing the progress in the window, then draw again. */
+  async #loadSource() {
+    if (this._loading) return
+    this._loading = true
+    try {
+      await this._source.load(progress => {
+        const label = this.element?.querySelector('[data-shop-progress]')
+        if (label) label.textContent = game.i18n.format('SR5.ShopLoading', progress)
+      })
+    } finally {
+      this._loading = false
+    }
+    if (this.rendered) this.render()
   }
 
   async _prepareContext(options) {
@@ -298,22 +397,32 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     const limits = creationMode && !equip ? SR5Shop.creationLimits : null
     const pool = this.#searchPool(buyer)
 
-    // Every row of the catalogue, described at the grade it shows
-    const entries = await this._source.entries({
+    // The shelves are read once per session; until then the window shows how far it has got
+    const ready = this._source.isReady?.() ?? true
+    if (!ready) this.#loadSource()
+    context.loading = !ready
+    context.loadingLabel = game.i18n.format('SR5.ShopLoading', SR5ShopWorldSource.progress)
+
+    // Every row of the catalogue, described at the grade it shows. The grades on
+    // offer depend on the implant's kind only, so they are asked once per kind.
+    const entries = ready ? await this._source.entries({
       equip
-    })
+    }) : []
+    const offeredByKind = new Map()
     const rows = entries.map(entry => {
-      const offered = SR5Shop.gradesFor(entry.type, entry.system, {
+      const kind = `${entry.type}|${entry.system?.type ?? ''}`
+      if (!offeredByKind.has(kind)) offeredByKind.set(kind, SR5Shop.gradesFor(entry.type, entry.system, {
         equip
-      })
+      }))
+      const offered = offeredByKind.get(kind)
       const grade = this.#gradeOf(entry, offered)
       return {
         entry, offered, grade,
         name: entry.name,
-        shelf: SR5ShopCatalog.shelfOf(entry),
-        sub: SR5ShopCatalog.subOf(entry),
+        shelf: entry.shelf ?? SR5ShopCatalog.shelfOf(entry),
+        sub: entry.sub ?? SR5ShopCatalog.subOf(entry),
         notForSale: SR5ShopStock.isNotForSale(entry),
-        ...SR5ShopCatalog.describe(entry, grade),
+        ...SR5ShopWindow.#described(entry, grade),
       }
     })
 
@@ -322,24 +431,36 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     let cartTotal = 0
     let cartEssence = 0
     let cartDelay = 0
+    let cartBlocked = false
     const cart = this._cart.map(line => {
       const row = byUuid.get(line.uuid)
-      const described = row ? SR5ShopCatalog.describe(row.entry, line.grade) : null
+      const described = row ? SR5ShopWindow.#described(row.entry, line.grade) : null
       const unit = described?.price ?? line.unit ?? 0
       line.unit = unit
       const total = unit * line.quantity
       cartTotal += total
       if (described?.essence) cartEssence += described.essence * line.quantity
       if (described?.availability) cartDelay = Math.max(cartDelay, SR5ShopAvailability.delayFor(total))
+      // A line put in the cart before creation was switched on, or at another grade, is out of reach
+      const blocked = described ? SR5ShopCatalog.creationBlock(described, limits) : null
+      // ...and so is a grade the shop no longer offers (creation offers no betaware): the till
+      // would sell the item at no grade, a price and an Essence the cart does not show
+      const gradeGone = row && line.grade && !row.offered.includes(line.grade)
+      if (blocked || gradeGone) cartBlocked = true
       return {
         ...line, key: SR5ShopWindow.#cartKey(line), totalLabel: SR5ShopWindow.#nuyen(total),
+        blocked: !!(blocked || gradeGone),
+        blockedLabel: blocked ? SR5ShopWindow.#creationMessage(blocked, line.name, limits) :
+          gradeGone ? game.i18n.format('SR5.ShopGradeGone', {
+            name: line.name
+          }) : '',
       }
     })
     // No buyer yet: nothing is too dear, there is no purse to compare with
     const budget = free || !buyer ? Infinity : balance - cartTotal
 
     // Filters first, on the whole catalogue, then the page (lot A review: the
-    // count no longer gives a hidden prototype away)
+    // count no longer gives a hidden prototype away). The entries come sorted.
     const visible = SR5ShopCatalog.filter(rows, {
       prototypes: isGM,
     })
@@ -354,13 +475,11 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       affordable: this._affordable,
       budget,
       creation: limits,
-    }).sort((a, b) => a.name.localeCompare(b.name))
+    })
     const shown = filtered.slice(0, (this._page + 1) * this._pageSize)
-    await this._ensureDetails(shown.map(r => r.entry))
 
-    const lists = SR5_EntityHelpers.sortTranslations(SR5)
     context.rows = shown.map(row => this.#rowContext(row, {
-      buyer, budget, limits, pool, equip, free, lists
+      buyer, budget, limits, pool, equip, free
     }))
     context.totalCount = filtered.length
     context.countLabel = game.i18n.format(filtered.length === 1 ? 'SR5.ShopCountOne' : 'SR5.ShopCount', {
@@ -447,30 +566,41 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     context.cartCount = cart.length
     context.cartTotal = SR5ShopWindow.#nuyen(cartTotal)
     context.cartAffordable = free || cartTotal <= balance
+    context.cartBlocked = cartBlocked
     context.cartLeft = free ? null : SR5ShopWindow.#nuyen(balance - cartTotal)
     context.cartEssence = cartEssence ? (Math.round(cartEssence * 100) / 100).toLocaleString() : null
     context.cartDelay = cartDelay ? SR5ShopAvailability.formatDelay(cartDelay) : null
     context.canCheckout = buyer !== null && cart.length > 0
     context.creationMode = creationMode
     context.creationLimits = limits
+    context.creationLimitsLabel = limits ? SR5ShopWindow.#limitsLabel(limits) : ''
     context.equipMode = equip
     context.free = free
     context.isGM = isGM
     return context
   }
 
+  /** "Dispo ≤ 12, indice ≤ 6"; a limit of 0 is no limit and is left out. */
+  static #limitsLabel(limits) {
+    const parts = []
+    if (limits.availability) parts.push(game.i18n.format('SR5.ShopLimitAvailability', limits))
+    if (limits.rating) parts.push(game.i18n.format('SR5.ShopLimitRating', limits))
+    return parts.join(', ') || game.i18n.localize('SR5.ShopLimitNone')
+  }
+
+  /** Why creation refuses an item, with the source of the limit (SR5 p. 420, p. 66, or the table's own). */
+  static #creationMessage(blocked, name, limits) {
+    return game.i18n.format(`SR5.WARN_ShopCreationLimit_${blocked}`, {
+      name, ...limits, source: game.i18n.localize(`SR5.ShopCreationSource_${limits.source}`),
+    })
+  }
+
   /** What one row of the list shows. */
   #rowContext(row, {
-    buyer, budget, limits, pool, equip, free, lists
+    buyer, budget, limits, pool, equip, free
   }) {
     const entry = row.entry
-    // The summary reads the full document; its price and grade are left out, the row has its own
-    const details = {
-      ...(entry.details ?? entry.system), price: undefined, grade: undefined,
-    }
-    const summary = [getEntryInfo({
-      ...entry, system: details
-    }, lists)]
+    const summary = [entry.info]
     if (row.essence) summary.push(game.i18n.format('SR5.ShopEssenceShort', {
       value: row.essence.toLocaleString()
     }))
@@ -500,11 +630,11 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       price: SR5ShopWindow.#nuyen(row.price),
       tooExpensive: !free && row.price > budget,
       blocked: !!blocked,
-      blockedLabel: blocked ? game.i18n.format(`SR5.WARN_ShopCreationLimit_${blocked}`, {
-        name: entry.name, ...limits
-      }) : '',
+      blockedLabel: blocked ? SR5ShopWindow.#creationMessage(blocked, entry.name, limits) : '',
       notForSale: row.notForSale,
       canBuy: buyer !== null && forSale && !blocked,
+      // Without a buyer the list stays readable: only what cannot be sold at all is dimmed
+      dim: !forSale || !!blocked,
     }
   }
 
@@ -521,34 +651,49 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
   /*  Rendering                                   */
   /* -------------------------------------------- */
 
+  async _preRender(context, options) {
+    await super._preRender(context, options)
+    this._redrawing = true
+  }
+
   _onRender(context, options) {
     super._onRender(context, options)
     const el = this.element
-    enhanceSelects(el)
+    // The till's menus get the system's dropdown; the grade menus of the rows stay native: a hundred
+    // enhanced dropdowns were half the time of a redraw (second review, Kira: under 100 ms)
+    el.querySelectorAll('.sr-shop-till, .sr-shop-filters').forEach(part => enhanceSelects(part))
 
     const rerender = () => {
       this._page = 0
       this.render()
     }
+    // The search field is drawn anew with the list: it gets its focus and caret back. The
+    // field being removed by the redraw blurs it too, so a blur only counts outside one.
     const search = el.querySelector('[data-shop-search]')
     if (search) {
       if (this._searchFocused) {
+        const caret = Math.min(this._searchCaret ?? search.value.length, search.value.length)
         search.focus()
-        search.setSelectionRange(search.value.length, search.value.length)
+        search.setSelectionRange(caret, caret)
       }
       let debounce = null
+      search.addEventListener('focus', () => {
+        this._searchFocused = true
+      })
       search.addEventListener('input', event => {
+        this._searchCaret = event.target.selectionStart
         clearTimeout(debounce)
         debounce = setTimeout(() => {
           this._search = event.target.value
-          this._searchFocused = true
+          this._searchCaret = event.target.selectionStart
           rerender()
         }, 300)
       })
       search.addEventListener('blur', () => {
-        this._searchFocused = false
+        if (!this._redrawing) this._searchFocused = false
       })
     }
+    this._redrawing = false
     el.querySelectorAll('[data-shop-max]').forEach(input => input.addEventListener('change', event => {
       const value = SR5ShopAvailability.typedNumber(event.target.value)
       if (event.target.dataset.shopMax === 'price') this._maxPrice = value
