@@ -1322,9 +1322,15 @@ export class SR5_CharacterUtility extends Actor {
     if (!this.isDepthActive(actor)) return
     let max = actor.system.matrix.programsMaximumActive
     let depth = actor.system.specialAttributes.depth?.augmented.value || 0
-    if (this.aiProgramCap(depth, max.value) === max.value) return
-    max.modifiers = []
-    SR5_EntityHelpers.updateModifier(max, `${game.i18n.localize('SR5.Depth')} ${depth} × 2`, "linkedAttribute", depth * 2)
+    // The actor is prepared twice and Depth is still 0 on the first pass: drop what an earlier pass wrote
+    let others = max.modifiers.filter(m => m.details !== "aiProgramCap" && m.type !== "device" && m.type !== "deviceRating")
+    let deviceMods = max.modifiers.filter(m => m.type === "device" || m.type === "deviceRating")
+    let slots = deviceMods.reduce((sum, m) => sum + m.value, 0)
+    if (this.aiProgramCap(depth, slots) === slots) max.modifiers = [...deviceMods, ...others]
+    else {
+      max.modifiers = others
+      SR5_EntityHelpers.updateModifier(max, `${game.i18n.localize('SR5.Depth')} ${depth} × 2`, "linkedAttribute", depth * 2, false, true, "aiProgramCap")
+    }
     SR5_EntityHelpers.updateValue(max, 0)
   }
 

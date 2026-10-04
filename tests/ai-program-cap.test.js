@@ -83,6 +83,23 @@ describe("AI program cap (DjamZ's ruling: min of Depth x 2 and the device's slot
     expect(a.system.matrix.programsMaximumActive.modifiers[0].source).toBe("Cyberdeck")
   })
 
+  it("forgets what a first pass wrote while Depth was still 0", () => {
+    const a = actor({
+      depth: 0, slots: 5
+    })
+    SR5_CharacterUtility.applyAIProgramCap(a)
+    expect(a.system.matrix.programsMaximumActive.value).toBe(0)
+    // second pass: Depth is known and the device writes its slots again
+    a.system.specialAttributes.depth.augmented.value = 3
+    a.system.matrix.programsMaximumActive.modifiers.push({
+      source: "Commlink", type: "deviceRating", value: 5
+    })
+    SR5_CharacterUtility.applyAIProgramCap(a)
+    const max = a.system.matrix.programsMaximumActive
+    expect(max.value).toBe(5)
+    expect(max.modifiers.map(m => m.source)).toEqual(["Commlink"])
+  })
+
   it("leaves a character who is not an AI alone", () => {
     const a = actor({
       special: "magic", depth: 1, slots: 5
