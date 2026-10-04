@@ -846,6 +846,7 @@ SR5.actionSources = {
   switchInitToPhysical	  : "SR5.ActionSourceSwitchInitToPhysical",
   switchInitToMatrix		  : "SR5.ActionSourceSwitchInitToMatrix",
   switchPerception		  : "SR5.ActionSourceSwitchPerception",
+  inviteMark				  : "SR5.ActionSourceInviteMark",
   takeCover				  : "SR5.ActionSourceTakeCover",
   turnOnWifi				  : "SR5.ActionSourceTurnOnWifi",
   turnOffWifi				  : "SR5.ActionSourceTurnOffWifi",

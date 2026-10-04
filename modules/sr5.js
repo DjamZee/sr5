@@ -69,6 +69,9 @@ import {
 import {
   sr5KeepSidebarSettingsLast
 } from './interface/sidebar-tab-order.js'
+import {
+  SR5SharedVision, sr5HookUpdateTokenSharedVision
+} from './interface/shared-vision.js'
 
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
@@ -132,3 +135,10 @@ Hooks.on('updateScene', sr5HookUpdateSceneIndicators)
 Hooks.on('canvasReady', renderSceneIndicators)
 Hooks.on('canvasReady', sr5HookCanvasReadyAreaEffects)
 Hooks.on('canvasReady', sr5HookCanvasReadyVisionRanges)
+// Shared vision: through a drone or a device (SR5 p. 241)
+Hooks.on('updateToken', sr5HookUpdateTokenSharedVision)
+Hooks.on('canvasReady', () => SR5SharedVision.renderIndicator())
+Hooks.on('renderPlayers', () => SR5SharedVision.renderIndicator())
+Hooks.on('updateActor', () => SR5SharedVision.checkViewers())
+Hooks.on('updateItem', () => SR5SharedVision.checkViewers())
+Hooks.on('createActiveEffect', () => SR5SharedVision.checkViewers())

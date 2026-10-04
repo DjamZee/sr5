@@ -1,4 +1,25 @@
+import {
+  decideVisionSource, isSharedWith
+} from "../system/shared-vision.js"
+
 export class SR5Token extends foundry.canvas.placeables.Token {
+
+  /**
+   * A drone or a device shares what it sees with the users in its list (SR5 p. 241: Invite Mark,
+   * Snoop), even when it is hidden and while they keep their own token selected. Everything
+   * else is left to the core.
+   * @override
+   */
+  _isVisionSource() {
+    if (canvas.visibility.tokenVision && this.hasSight) {
+      const decision = decideVisionSource({
+        isGM: game.user.isGM,
+        sharedWithMe: isSharedWith(this.document, game.user.id),
+      })
+      if (decision !== null) return decision
+    }
+    return super._isVisionSource()
+  }
 
   /** @override */
   _drawBar(number, bar, data) {

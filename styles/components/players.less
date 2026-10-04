@@ -70,4 +70,38 @@
       font-weight: bold;
     }
   }
+
+  /* The drones and devices the player sees through (SR5 p. 241) */
+  #sr5-shared-vision {
+    .sr-block-slot();
+    border-radius: 8px;
+    padding: 6px 8px;
+    pointer-events: all;
+    font-family: var(--font-monospace);
+    color: var(--sr-text-color-light);
+
+    .sr5-shared-vision-row {
+      align-items: center;
+      gap: 4px;
+    }
+
+    .value {
+      color: var(--sr-text-color-flash);
+    }
+
+    button {
+      flex: none;
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      line-height: 20px;
+      background: none;
+      border: none;
+      color: var(--sr-text-color-light);
+
+      &:hover {
+        color: var(--sr-ui-color-active);
+      }
+    }
+  }
 }

@@ -28,6 +28,9 @@ import {
 import {
   SR5_GrappleHelpers
 } from "./rolls/roll-helpers/grapple.js"
+import {
+  SR5SharedVision
+} from "./interface/shared-vision.js"
 
 export class SR5_SocketHandler {
   static registerSocketListeners() {
@@ -67,6 +70,7 @@ export class SR5_SocketHandler {
       "grappleSetHold": [SR5_GrappleHelpers._socketSetHold],
       "grappleWarn": [SR5_GrappleHelpers._socketWarn],
       "grappleReverseHold": [SR5_GrappleHelpers._socketReverseHold],
+      "sharedVisionSetViewer": [SR5SharedVision._socketSetViewer],
     }
 
     game.socket.on(`system.sr5`, async (message) => {
