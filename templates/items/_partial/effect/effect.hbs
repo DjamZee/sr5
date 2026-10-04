@@ -632,6 +632,10 @@
 							{{selectOptions ../lists.indirectAuraWho selected=auraWho localize=true}}
 						</select>
 					</div>
+					{{else}}
+					<!-- Kept while the effect is not an area, so that switching back finds them -->
+					<input type="hidden" name="system.customEffects.{{@key}}.auraRange" value="{{auraRange}}">
+					<input type="hidden" name="system.customEffects.{{@key}}.auraWho" value="{{auraWho}}">
 					{{/if}}
 					<div class="{{#if (eq applyTo 'aura')}}col-5{{else}}col-12{{/if}}">
 						<input type="text" data-dtype="String" name="system.customEffects.{{@key}}.when" value="{{when}}" placeholder="{{localize 'SR5.SituationalWhen'}}">

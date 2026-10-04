@@ -56,7 +56,8 @@ export function addIndirectEffects(rollData, actor){
       const isBearer = t === roller || t.actor === actor
       auras.push({
         name: t.name, effects: t.actor.indirectEffects, isBearer, disposition: t.document.disposition,
-        distance: isBearer ? 0 : SR5_SystemHelpers.getDistanceBetweenTwoPoint(roller.center, t.center) * meters,
+        // The documents' positions, not the placeables': a token still sliding to its new place is already there
+        distance: isBearer ? 0 : SR5_SystemHelpers.getDistanceBetweenTwoPoint(roller.document.getCenterPoint(), t.document.getCenterPoint()) * meters,
       })
     }
   }
