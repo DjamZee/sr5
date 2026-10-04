@@ -19,7 +19,7 @@ describe('homunculus material (SR5 p. 301)', () => {
     expect(homunculusMaterialRatings({
       type: 'fragile'
     })).toEqual({
-      structure: 1, armor: 1
+      structure: 1, armor: 2
     })
     expect(homunculusMaterialRatings({
       type: 'hardened'

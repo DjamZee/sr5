@@ -3718,8 +3718,9 @@ SR5.barrierTypes = {
 // homunculus, whose Body is the Structure of its material (SR5 p. 301). The errata renames the last row "hardened".
 // Kept out of SR5, whose tables are all translations sorted at init. Same keys as SR5.barrierTypes.
 export const SR5_BARRIER_RATINGS = {
+  // Fragile Armor: the VO prints 2, the VF 1, no errata decides; the code kept the VO value
   fragile                   : {
-    structure: 1, armor: 1
+    structure: 1, armor: 2
   },
   cheap                     : {
     structure: 2, armor: 4
@@ -3742,6 +3743,7 @@ export const SR5_BARRIER_RATINGS = {
   armored                   : {
     structure: 14, armor: 24
   },
+  // The book prints 16+ and 32+: the table keeps 16 and 32, and a homunculus goes beyond with "other"
   hardened                  : {
     structure: 16, armor: 32
   },
