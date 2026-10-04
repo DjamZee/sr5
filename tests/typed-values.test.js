@@ -627,8 +627,8 @@ describe('a bound spirit spends a service when it aids a test (SR5 p. 305-306)',
   })
 })
 
-describe('switching the wireless of a device (SR5 p. 165 and p. 167)', () => {
-  async function switchWifi(requiresDNI, hasDNI){
+describe('switching the wireless of a device (SR5 p. 165, 167 and 424)', () => {
+  async function switchWifi(requiresDNI, hasDNI, wasOn = true){
     vi.spyOn(game.settings, 'get').mockImplementation((scope, key) => (key === 'sr5WifiRequiresDNI') ? requiresDNI : null)
     const actions = {
       free: {
@@ -647,7 +647,7 @@ describe('switching the wireless of a device (SR5 p. 165 and p. 167)', () => {
     const actor = {
       id: 'a1', name: 'Test', isToken: false, effects: [], items: [{
         _id: 'g1', id: 'g1', name: 'Commlink', type: 'itemGear', system: {
-          wirelessTurnedOn: true, isActive: true
+          wirelessTurnedOn: wasOn, isActive: true
         }
       }],
       system: new FakeSystem(system, system),
@@ -681,10 +681,17 @@ describe('switching the wireless of a device (SR5 p. 165 and p. 167)', () => {
     expect(written.simple.current).toBe(2)
   })
 
-  it('is a simple action without a DNI when the world requires one', async () => {
-    const written = await switchWifi(true, false)
+  it('turning it on is a simple action without a DNI when the world requires one', async () => {
+    const written = await switchWifi(true, false, false)
     expect(written.free.current).toBe(1)
     expect(written.simple.current).toBe(1)
+  })
+
+  // SR5 p. 424: turning it off is always free, DNI or not
+  it('turning it off is a free action even without a DNI when the world requires one', async () => {
+    const written = await switchWifi(true, false, true)
+    expect(written.free.current).toBe(0)
+    expect(written.simple.current).toBe(2)
   })
 
   it('is a free action through a DNI when the world requires one', async () => {

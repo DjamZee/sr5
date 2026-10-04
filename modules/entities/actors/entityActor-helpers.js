@@ -1039,8 +1039,21 @@ export class SR5_ActorHelper {
    * @param {Object} owner - the drone's creator, if found
    * @return {String} the action type
    */
-  static droneWirelessActionType(requiresDNI, owner){
-    return (!requiresDNI || owner?.system?.hasDNI) ? "free" : "simple"
+  static droneWirelessActionType(requiresDNI, owner, turningOn = true){
+    return SR5_ActorHelper.wirelessSwitchActionType(turningOn, requiresDNI, owner?.system?.hasDNI)
+  }
+
+  /**
+   * The action a device's wireless switch costs. Turning it off is always a free action (SR5 p. 424).
+   * Turning it on is free through a DNI (p. 165), simple otherwise (p. 167), when the world setting asks for it
+   * @param {Boolean} turningOn - true when the wireless is switched on
+   * @param {Boolean} requiresDNI - the "wireless requires a DNI" world setting
+   * @param {Boolean} hasDNI - whether the one switching it has a DNI
+   * @return {String} the action type
+   */
+  static wirelessSwitchActionType(turningOn, requiresDNI, hasDNI){
+    if (!turningOn) return "free"
+    return (!requiresDNI || hasDNI) ? "free" : "simple"
   }
 
   /**

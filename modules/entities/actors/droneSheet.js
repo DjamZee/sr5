@@ -65,7 +65,9 @@ export class SR5DroneSheet extends ActorSheetSR5 {
     this.element.querySelectorAll(".drone-wireless-toggle").forEach(el => el.addEventListener("click", this._onToggleDroneWireless.bind(this)))
   }
 
-  //The deployed drone holds its vehicle's wireless switch (N83): switching it costs the drone an action (N91)
+  //The deployed drone holds its vehicle's wireless switch (N83): switching it costs the drone an action (N91).
+  //Turning it off is always free (SR5 p. 424). Turning a switched-off drone back on stays a GM shortcut: the
+  //drone itself may do it, but nobody can reach it wirelessly to ask it to (p. 424, direct connection p. 234)
   async _onToggleDroneWireless(event) {
     event.preventDefault()
     if (this._spendingWirelessAction) return
@@ -73,7 +75,7 @@ export class SR5DroneSheet extends ActorSheetSR5 {
     const oldValue = actor.system.wirelessTurnedOn !== false
     const owner = SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId)
     const actions = [{
-      type: SR5_ActorHelper.droneWirelessActionType(game.settings.get("sr5", "sr5WifiRequiresDNI"), owner),
+      type: SR5_ActorHelper.droneWirelessActionType(game.settings.get("sr5", "sr5WifiRequiresDNI"), owner, !oldValue),
       value: 1,
       source: oldValue ? "turnOffWifi" : "turnOnWifi"
     }]

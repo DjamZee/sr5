@@ -1167,7 +1167,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       type: "free", value: 1
     }]
     if (target === "system.wirelessTurnedOn") return [{
-      type: (!game.settings.get("sr5", "sr5WifiRequiresDNI") || this.actor.system.hasDNI) ? "free" : "simple", value: 1
+      type: SR5_ActorHelper.wirelessSwitchActionType(!oldValue, game.settings.get("sr5", "sr5WifiRequiresDNI"), this.actor.system.hasDNI), value: 1
     }]
     return []
   }
@@ -1519,9 +1519,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
     }
     if (target === "system.wirelessTurnedOn"){
-      //Switching a device: a free action through a DNI (SR5 p. 165), a simple one otherwise (p. 167). The rule
-      //applies only when the world setting asks for it; the actor's "wired by DNI" box then decides
-      let actionType = (!game.settings.get("sr5", "sr5WifiRequiresDNI") || actor.system.hasDNI) ? "free" : "simple"
+      //Turning a device's wireless off is always a free action (SR5 p. 424). Turning it on is free through a
+      //DNI (p. 165), simple otherwise (p. 167), when the world setting asks for it; the actor's "wired by DNI" box decides
+      let actionType = SR5_ActorHelper.wirelessSwitchActionType(!oldValue, game.settings.get("sr5", "sr5WifiRequiresDNI"), actor.system.hasDNI)
       actions = [{
         type: actionType, value: 1, source: (oldValue === false) ? "turnOnWifi" : "turnOffWifi"
       }]
