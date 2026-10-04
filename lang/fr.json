@@ -3947,6 +3947,7 @@
 	"SR5.WARN_NoBaseItems": "Cet acteur a été créé sans aucun pouvoir ni arme : le compendium de référence est introuvable ou ne contient pas les effets système attendus.",
 	"SR5.WARN_NoActiveScene": "Pas de scène active !",
 	"SR5.WARN_RebootLinkLocked": "{name} : connexion verrouillée, l'appareil ne peut pas rebooter. Il faut d'abord se débrancher (SR5 p. 231 et 244).",
+	"SR5.WARN_RebootNoDevice": "{name} : aucun appareil à rebooter. Une IA hors appareil doit d'abord se charger sur un appareil (Data Trails p. 157).",
 	"SR5.WARN_NoSceneForEnvironment": "Aucune scène affichée : les modificateurs environnementaux ne sont pas appliqués à ce jet.",
 	"SR5.WARN_SpellAreaNoTemplate": "Aucun gabarit posé pour ce sort de zone : distance non vérifiée.",
 	"SR5.WARN_AttackSceneGone": "La scène de l’attaque n’existe plus : les modificateurs environnementaux de la défense sont lus sur la scène affichée.",
