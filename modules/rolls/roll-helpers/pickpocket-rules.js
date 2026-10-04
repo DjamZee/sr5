@@ -88,10 +88,39 @@ export function defaultTakeQuantity(item) {
   return pileSize(item) > 1 ? 1 : pileSize(item)
 }
 
+//What tells two piles apart is everything but how many there are, where they are put and whether they are in use
+const PILE_STATE_KEYS = ["quantity", "storedIn", "isActive", "isEquipped"]
+
+function pileData(item) {
+  const system = typeof item?.system?.toObject === "function" ? item.system.toObject() : item?.system ?? {
+  }
+  const data = {
+    ...system
+  }
+  for (const key of PILE_STATE_KEYS) delete data[key]
+  return data
+}
+
+//Same keys in any order: a key order never makes two piles different
+function sameData(a, b) {
+  if (a === b) return true
+  if (typeof a !== "object" || typeof b !== "object" || a === null || b === null) return false
+  if (Array.isArray(a) !== Array.isArray(b)) return false
+  const keys = Object.keys(a)
+  if (keys.length !== Object.keys(b).length) return false
+  return keys.every(k => Object.hasOwn(b, k) && sameData(a[k], b[k]))
+}
+
+export function sameButQuantity(a, b) {
+  return sameData(pileData(a), pileData(b))
+}
+
 /**
  * How the pile is split: the giver keeps the rest, the receiver gets the
  * units taken, merged into an identical pile of his (same type and name, not
- * put away) when he has one (arbitrage de DjamZ, 2026-10-05).
+ * put away, and the same data but for the quantity) when he has one
+ * (arbitrage de DjamZ, 2026-10-05). A namesake that differs (a credstick
+ * holding another balance) stays a separate object.
  * @param {Object} item - the object taken
  * @param {Number|null} asked - the quantity the GM chose, null for the default
  * @param {Array} receiverItems - what the receiver holds
@@ -101,7 +130,8 @@ export function splitPile(item, asked, receiverItems = []) {
   const size = pileSize(item)
   const wanted = Math.floor(Number(asked))
   const quantity = Math.min(size, Math.max(1, Number.isFinite(wanted) && asked !== null && asked !== "" ? wanted : defaultTakeQuantity(item)))
-  const mergeInto = Array.from(receiverItems).find(i => i !== item && i.type === item.type && i.name === item.name && !i.system?.storedIn && i.system?.quantity !== undefined) ?? null
+  const mergeInto = Array.from(receiverItems).find(i => i !== item && i.type === item.type && i.name === item.name &&
+    !i.system?.storedIn && i.system?.quantity !== undefined && sameButQuantity(i, item)) ?? null
   return {
     quantity, leftOnGiver: size - quantity, mergeInto
   }

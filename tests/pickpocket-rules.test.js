@@ -335,3 +335,34 @@ describe('a pile is split (arbitrage de DjamZ, 2026-10-05)', () => {
     expect(splitPile(pile(20), 5, [pile(3, "Balles", "itemGear")]).mergeInto).toBeNull()
   })
 })
+
+describe('only an identical pile swallows what is taken (review of Jade)', () => {
+  const credstick = balance => ({
+    type: "itemGear", name: "Créditube", system: {
+      quantity: 1, value: balance, concealment: {
+        base: -4
+      }
+    }
+  })
+  it('a namesake credstick with another balance stays apart', () => {
+    expect(splitPile(credstick(500), null, [credstick(20)]).mergeInto).toBeNull()
+  })
+  it('identical bullets merge, whatever their count, place or key order', () => {
+    const taken = {
+      type: "itemAmmunition", name: "Balles", system: {
+        quantity: 20, class: "regular", damage: 0
+      }
+    }
+    const mine = {
+      type: "itemAmmunition", name: "Balles", system: {
+        damage: 0, quantity: 3, class: "regular", isActive: true
+      }
+    }
+    expect(splitPile(taken, 5, [mine]).mergeInto).toBe(mine)
+    expect(splitPile(taken, 5, [{
+      ...mine, system: {
+        ...mine.system, class: "explosive"
+      }
+    }]).mergeInto).toBeNull()
+  })
+})
