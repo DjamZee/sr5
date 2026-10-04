@@ -26,6 +26,8 @@ export default function rammingDefense(rollData, actor, chatData){
 
   //Add others informations
   rollData.test.type = "rammingDefense"
+  //The active defense block of the dialog is keyed on the sub type
+  rollData.test.typeSub = "ramming"
   rollData.damage.base =  chatData.damage.base
   rollData.damage.value = chatData.damage.value
   rollData.damage.type = chatData.damage.type
@@ -34,9 +36,13 @@ export default function rammingDefense(rollData, actor, chatData){
   rollData.previousMessage.actorId = chatData.owner.actorId
   rollData.previousMessage.messageId = chatData.owner.messageId
   rollData.combat.activeDefenses.full = actor.system.specialProperties.fullDefenseValue || 0
-  rollData.combat.activeDefenses.dodge = SR5_PrepareRollHelper.getActiveDefenseValue(actor.system, "dodge", "gymnastics")
-  // SR5 p. 191-192: dodge adds a skill, so the Physical limit applies
-  rollData.combat.activeDefenses.limit = actor.system.limits?.physicalLimit?.value || 0
+  // SR5 p. 203: a pedestrian defends with Reaction + Intuition and may dodge (p. 191-192, Gymnastics, Physical limit).
+  // A vehicle defends with Reaction + Intuition [Handling]: it has no Gymnastics to dodge with, so no active defense
+  if (actor.type !== "actorDrone"){
+    rollData.combat.activeDefenses.canDodge = true
+    rollData.combat.activeDefenses.dodge = SR5_PrepareRollHelper.getActiveDefenseValue(actor.system, "dodge", "gymnastics")
+    rollData.combat.activeDefenses.limit = actor.system.limits?.physicalLimit?.value || 0
+  }
   rollData.owner.speed = chatData.target.speed
   rollData.target.speed = chatData.owner.speed
   if (chatData.combat.ramming) rollData.combat.ramming = chatData.combat.ramming

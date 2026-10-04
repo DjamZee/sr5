@@ -115,7 +115,7 @@ export default class SR5_RollDialog {
   // SR5 p. 191-192: block needs Unarmed Combat and parry the weapon's skill; dodge is open to anyone
   static hasActiveDefenseSkill(actor, defenseMode){
     let skillKey = SR5_RollDialog.activeDefenseSkills[defenseMode]
-    if (!skillKey || (actor?.system.skills?.[skillKey]?.rating.value || 0) > 0) return true
+    if (!skillKey || !actor || (actor.system?.skills?.[skillKey]?.rating.value || 0) > 0) return true
     ui.notifications.warn(game.i18n.format("SR5.WARN_ActiveDefenseNoSkill", {
       actor: actor.name, skill: game.i18n.localize(SR5.skills[skillKey])
     }))

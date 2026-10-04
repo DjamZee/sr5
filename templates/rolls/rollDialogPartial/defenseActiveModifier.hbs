@@ -3,7 +3,7 @@
     <div class="col-6 SR-TextRight">
         <select class="SR-ModSelect" data-target="dicePoolModDefenseActive" data-modifier="defenseMode">
             <option value="none">{{localize 'SR5.DefenseNone'}}</option>
-            {{#if (eq type "rammingDefense")}}
+            {{#if (eq test.type "rammingDefense")}}
                 {{selectOptions lists.characterSpecialDefensesDodge selected=defenseMode localize=true sort=false}}
             {{else}}
                 {{selectOptions lists.characterSpecialDefenses selected=defenseMode localize=true sort=false}}

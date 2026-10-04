@@ -101,5 +101,57 @@ describe("ramming defense", () => {
     }
     await rammingDefense(rollData, actor, chatData)
     expect(rollData.combat.activeDefenses.limit).toBe(5)
+    // the dialog shows the active defense block only for this sub type
+    expect(rollData.test.typeSub).toBe("ramming")
+    expect(rollData.combat.activeDefenses.canDodge).toBe(true)
+  })
+
+  it("offers no dodge to a drone, which keeps its Handling limit (SR5 p. 203)", async () => {
+    const drone = {
+      type: "actorDrone", system: {
+        vehicleTest: {
+          limit: {
+            value: 4, modifiers: []
+          }
+        },
+        defenses: {
+          defend: {
+            modifiers: []
+          }
+        },
+        specialProperties: {
+          fullDefenseValue: 0
+        }
+      }
+    }
+    const rollData = {
+      dicePool: {
+      }, limit: {
+        modifiers: {
+        }
+      }, test: {
+      }, damage: {
+      }, combat: {
+        activeDefenses: {
+        }
+      }, previousMessage: {
+      }, owner: {
+      }, target: {
+      }
+    }
+    await rammingDefense(rollData, drone, {
+      damage: {
+      }, combat: {
+      }, roll: {
+      }, owner: {
+      }, target: {
+      }
+    })
+    expect(rollData.limit.base).toBe(4)
+    expect(rollData.combat.activeDefenses.canDodge).toBeUndefined()
+  })
+
+  it("does not fail without an actor", () => {
+    expect(SR5_RollDialog.hasActiveDefenseSkill(null, "block")).toBe(true)
   })
 })
