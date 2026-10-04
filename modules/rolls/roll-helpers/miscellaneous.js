@@ -131,11 +131,19 @@ export class SR5_MiscellaneousHelpers {
       if (!a || !available?.[a.type] || typeof a.value !== "number") continue
       let simple = available.simple, complex = available.complex
       available[a.type].current -= a.value
+      //A refund never gives more than the pass grants (p. 164): the setting may have been changed in an
+      //earlier pass, with the dialog left open, so the action refunded was never spent in this one
+      const cap = (counter) => {
+        if (counter && typeof counter.value === "number") counter.current = Math.min(counter.current, counter.value)
+      }
+      if (a.value < 0 && a.source !== "manual") cap(available[a.type])
       if (a.source === "manual" || !a.value || !simple || !complex) continue
       //A refunded action (negative value, e.g. a choke setting put back) gives the linked one back too
       if (a.value < 0){
         if (a.type === "simple") complex.current = Math.max(complex.current, Math.floor(simple.current / 2))
         if (a.type === "complex") simple.current = Math.max(simple.current, 2 * complex.current)
+        cap(simple)
+        cap(complex)
         continue
       }
       if (a.type === "simple") complex.current = Math.min(complex.current, Math.max(0, Math.floor(simple.current / 2)))
