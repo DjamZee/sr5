@@ -636,12 +636,9 @@ export class SR5Combat extends Combat {
       else ui.notifications.info(`${game.i18n.format("SR5.INFO_TakeActions", {
         actor: actor.name, actionValue: action.value, actionType: game.i18n.localize(SR5.actionTypes[action.type]), actionSource: game.i18n.localize(SR5.actionSources[action.source])
       })}`) 
-      // SR5 p. 170: an interruption action lowers the Initiative score by its own cost — 5 by default,
-      // 10 for a Watchdog Haywire or Popup (Kill Code p. 45)
-      if (action.type === "interruption") {
-        initModifier = -(action.initiativeCost || 5)
-      }
     }
+    // SR5 p. 170: every interruption action of the list lowers the Initiative score by its own cost
+    initModifier = -SR5_MiscellaneousHelpers.interruptionInitiativeCost(actions)
     if (initModifier) await SR5Combat.changeInitInCombatHelper(documentId, initModifier)
 
     // SR5 p. 178: a simple or complex action spent on something other than firing ends the progressive recoil.

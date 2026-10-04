@@ -123,6 +123,14 @@ export class SR5_MiscellaneousHelpers {
     return null
   }
 
+  //SR5 p. 170: each interruption action lowers the Initiative score by its own cost, 5 unless stated otherwise
+  //(10 for a Watchdog Haywire or Popup, Kill Code p. 45). Several interruptions in one list add up
+  static interruptionInitiativeCost(actions){
+    let cost = 0
+    for (let a of actions ?? []) if (a?.type === "interruption") cost += (a.initiativeCost || 5)
+    return cost
+  }
+
   //SR5 p. 164: two simple actions OR one complex action per action phase. Takes the actions off the counters
   //(mutated in place) and keeps the two linked: a simple action spent leaves no complex one, a complex action
   //leaves no simple one. Manual adjustments touch only their own counter; the other types are taken off as is
