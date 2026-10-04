@@ -307,6 +307,7 @@ export class SR5_RollTest {
     //Prepare new chat card: the base pool and its modifiers, minus one die per earlier roll (SR5 p. 50).
     //GM ruling (05/10): Push the limit joins the starting pool of an extended test, every roll keeps its Edge dice
     //(exploding, no limit) and the point is spent once. Edge is only offered on the first roll
+    //SR5 p. 58 says nothing of Edge during an extended test: DjamZ filled the gap. A ruling, not a house rule, so no setting
     let newMessage = foundry.utils.duplicate(messageData)
     newMessage.test.extended.roll += 1
     SR5_EntityHelpers.removeElementFromArray(newMessage.dicePool.modifiers, 'type', "extendedTest")
