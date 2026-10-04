@@ -17,7 +17,8 @@ const READ_BY_ROLLS = [
   /^system\.skills\.[^.]+\.(test|limit)$/,
   /^system\.skills\.perception\.perceptionType\.[^.]+\.(test|limit)$/,
   /^system\.limits\.[^.]+$/,
-  /^system\.defenses\.[^.]+$/,
+  // Not the active defenses: an opposed defense adds them up in getActiveDefenseValue, past the markers
+  /^system\.defenses\.(?!(dodge|block|parryBlades|parryClubs)$)[^.]+$/,
   /^system\.resistances\.[^.]+(\.[^.]+)?$/,
   /^system\.derivedAttributes\.[^.]+$/,
   /^system\.movements\.[^.]+\.(test|limit)$/,
@@ -101,6 +102,11 @@ export function attributeTestsState(scoped, attributes){
   return {
     always, visible
   }
+}
+
+// Whether the list of boxes shows at all: not when every box is hidden (an attribute not in use)
+export function situationalListShown(offers){
+  return (offers || []).some(o => !o.hidden)
 }
 
 function offerOf(effect, index, kind){

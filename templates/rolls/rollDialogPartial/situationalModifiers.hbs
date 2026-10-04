@@ -1,6 +1,9 @@
-<!-- SITUATIONAL EFFECTS (SR5 p. 462, Chrome Flesh p. 160-172): ticked by hand, only in their situation -->
+<!-- SITUATIONAL EFFECTS (SR5 p. 462, Chrome Flesh p. 160-172): ticked by hand, only in their situation.
+     The separator sits on the list, so that it stays when the first box is hidden -->
+{{#if situational.length}}
+<div class="SR-TopSeparator SR-SituationalList">
 {{#each situational}}
-<li class="grid{{#if @first}} SR-TopSeparator{{/if}}"{{#if hidden}} style="display: none;"{{/if}} data-title="{{localize 'SR5.SituationalHint'}}">
+<li class="grid"{{#if hidden}} style="display: none;"{{/if}} data-title="{{localize 'SR5.SituationalHint'}}">
     <div class="col-10{{#if isMalus}} SR-AlertColor{{/if}}">
         {{label}}{{#if when}} <em>({{when}})</em>{{/if}}{{#if (eq kind 'limit')}} [{{localize 'SR5.Limit'}}]{{/if}}{{localize 'SR5.Colons'}}
     </div>
@@ -10,3 +13,5 @@
     </div>
 </li>
 {{/each}}
+</div>
+{{/if}}

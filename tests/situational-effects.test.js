@@ -3,7 +3,7 @@ import {
 } from "vitest"
 import {
   situationalValue, extractSituational, rollAttributes, isRollTestsTarget, SITUATIONAL_PREFIX,
-  attributeTestsState, situationalReadable, attributeRedirect
+  attributeTestsState, situationalReadable, attributeRedirect, situationalListShown
 } from "../modules/rolls/roll-helpers/situational.js"
 
 const labels = {
@@ -191,7 +191,9 @@ describe("situational effects (SR5 p. 462, Chrome Flesh p. 160-172)", () => {
     expect(situationalReadable("system.skills.gymnastics.test")).toBe(true)
     expect(situationalReadable("system.limits.physicalLimit")).toBe(true)
     expect(situationalReadable("system.resistances.toxin.inhalation")).toBe(true)
-    expect(situationalReadable("system.defenses.dodge")).toBe(true)
+    expect(situationalReadable("system.defenses.defend")).toBe(true)
+    // The active defenses are summed past the markers in an opposed defense (getActiveDefenseValue)
+    for (let d of ["dodge", "block", "parryBlades", "parryClubs"]) expect(situationalReadable(`system.defenses.${d}`)).toBe(false)
     expect(situationalReadable("system.rollTests.anyRoll")).toBe(true)
     expect(situationalReadable("system.attributes.logic.augmented")).toBe(true)
     // Counter-tests: nothing reads these in a roll dialog
@@ -219,6 +221,19 @@ describe("situational effects (SR5 p. 462, Chrome Flesh p. 160-172)", () => {
     expect(offers).toEqual([])
     // The marker still leaves the pool
     expect(r.dicePool.modifiers).toEqual([])
+  })
+
+  it("hides the list and its separator only when every box is hidden", () => {
+    expect(situationalListShown([{
+      hidden: true
+    }, {
+      hidden: false
+    }])).toBe(true)
+    // Counter-tests: all hidden, or none at all
+    expect(situationalListShown([{
+      hidden: true
+    }])).toBe(false)
+    expect(situationalListShown([])).toBe(false)
   })
 
   it("recognises the roll-wide targets", () => {

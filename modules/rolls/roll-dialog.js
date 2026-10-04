@@ -41,7 +41,7 @@ import {
   attributeValue, swapLinkedAttribute, skillAttributeTitle, SKILL_ATTRIBUTE_FLAG, syncBackgroundCount, backgroundCountApplies, setDialogWindowTitle
 } from "./roll-helpers/skillAttribute.js"
 import {
-  rollAttributes, attributeTestsState, ROLL_TESTS_TYPE
+  rollAttributes, attributeTestsState, ROLL_TESTS_TYPE, situationalListShown
 } from "./roll-helpers/situational.js"
 
 export default class SR5_RollDialog {
@@ -218,6 +218,7 @@ export default class SR5_RollDialog {
     element.querySelectorAll('.SR-ModCheckbox').forEach(el => el.addEventListener('change', ev => this._checkboxModifier(ev, element, dialogData)))
     //Situational effects, ticked by hand (roll-helpers/situational.js)
     element.querySelectorAll('.SR-SituationalCheckbox').forEach(el => el.addEventListener('change', ev => this._situationalModifier(ev, element, dialogData)))
+    this._toggleSituationalList(element, dialogData)
     //The attribute picked in the dialog brings its "tests linked to" effects (Pushed)
     element.querySelectorAll('.SR-ModSelect[data-modifier="attribute"]').forEach(el => el.addEventListener('change', ev => {
       dialogData.secondaryAttribute = ev.target.value
@@ -430,7 +431,14 @@ export default class SR5_RollDialog {
         dialogData.dicePool.modifiers = dialogData.dicePool.modifiers.filter(m => m.type !== offer.key)
       }
     })
+    this._toggleSituationalList(html, dialogData)
     this.updateDicePoolValue(html)
+  }
+
+  //The list of situational boxes, and its separator, only shows when one box does
+  _toggleSituationalList(html, dialogData){
+    const list = html.querySelector('.SR-SituationalList')
+    if (list) list.style.display = situationalListShown(dialogData.situational) ? '' : 'none'
   }
 
   //Add checkbox modifiers
