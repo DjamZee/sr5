@@ -29,6 +29,9 @@ import {
   SR5_EffectArea
 } from "../../system/effectArea.js"
 import {
+  fillStatuses
+} from "./actor-statuses.js"
+import {
   SR5_ActorHelper
 } from "./entityActor-helpers.js"
 import {
@@ -359,6 +362,8 @@ export class SR5Actor extends Actor {
     if (!this.img) this.img = CONST.DEFAULT_TOKEN
     if (!this.name) this.name = "[" + game.i18n.localize("SR5.New") + "]" + this.documentName
     this.prepareBaseData()
+    //What the core would have filled in applyActiveEffects, which is never called here : hasStatusEffect reads it
+    fillStatuses(this.statuses, this.allApplicableEffects())
     this.prepareEmbeddedDocuments() // first pass on items to add bonuses from the items to the characters
     this.prepareDerivedData()
     this.sortLists(this.system)

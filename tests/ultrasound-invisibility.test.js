@@ -7,6 +7,9 @@ import {
 import {
   basicSightDetects
 } from "../modules/system/vision.js"
+import {
+  fillStatuses
+} from "../modules/entities/actors/actor-statuses.js"
 
 // Ultrasound sees "people hidden by an Invisibility spell" (SR5 p. 449). In Foundry, that is the
 // work of a detection mode built on seeInvisibility : it only ever detects a token carrying the
@@ -32,6 +35,18 @@ describe("Ultrason et invisibilité (SR5 p. 449, p. 294)", () => {
 
   it("la vision ordinaire ne voit toujours pas un corps en projection astrale", () => {
     expect(basicSightDetects(true, jeton("astralInit"))).toBe(false)
+  })
+
+  it("l'acteur porte les états de ses effets actifs, que hasStatusEffect lit", () => {
+    const statuts = fillStatuses(new Set(["périmé"]), [
+      {
+        active: true, statuses: new Set(["invisible"])
+      },
+      {
+        active: false, statuses: new Set(["prone"])
+      },
+    ])
+    expect([...statuts]).toEqual(["invisible"])
   })
 
   it("la vision ordinaire voit un jeton sans état particulier", () => {
