@@ -29,7 +29,7 @@ import {
   SR5_MatrixHelpers 
 } from "./roll-helpers/matrix.js"
 import {
-  isRolledByTarget, firstAidPatient, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick
+  isRolledByTarget, firstAidPatient, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick, ownsCardSpeaker
 } from "./roll-helpers/cardRoller.js"
 import {
   SR5_CombatHelpers 
@@ -83,7 +83,7 @@ export class SR5_RollMessage {
 
       // v13: use message document directly instead of data.message
       // Hide if player is not owner of the message
-      if (message.speaker?.actor && game.actors.get(message.speaker.actor)?.permission != 3) {
+      if (!ownsCardSpeaker(message.speaker, id => SR5_EntityHelpers.getRealActorFromID(id))) {
         html.querySelectorAll(".nonOpposedTest").forEach(el => el.remove())
         html.querySelectorAll(".owner").forEach(el => el.remove())
       }
