@@ -23,8 +23,11 @@ import {
   _getSRStatusEffect 
 } from "../../system/effectsList.js"
 import {
-  SR5_SystemHelpers 
+  SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
+import {
+  SR5_ActorHelper
+} from "../../entities/actors/entityActor-helpers.js"
 
 export class SR5_MatrixHelpers {
   //Get time spent on a matrix search
@@ -78,8 +81,12 @@ export class SR5_MatrixHelpers {
     let monitorSize = targetItem.system.conditionMonitors.matrix.value
     newItem.system.conditionMonitors.matrix.actual.base = Math.min(newItem.system.conditionMonitors.matrix.actual.base + damageValue, monitorSize)
     SR5_EntityHelpers.updateValue(newItem.system.conditionMonitors.matrix.actual, 0, monitorSize)
+    //An AI shares the matrix monitor of the device it is loaded on, and is dissipated when it fills (Data Trails p. 161)
+    let aiDissipated = false
     if (newItem.system.conditionMonitors.matrix.actual.value >= monitorSize){
-      if (targetItem.type === "itemDevice" && targetActor.system.matrix.userMode !== "ar"){
+      //No dumpshock for an AI: it is dissipated instead (decided by DjamZ, 04/10)
+      if (targetActor.system.activeSpecialAttribute === "depth") aiDissipated = true
+      else if (targetItem.type === "itemDevice" && targetActor.system.matrix.userMode !== "ar"){
         let dumpshockData = {
           damage:{
             resistanceType: "dumpshock"
@@ -98,6 +105,7 @@ export class SR5_MatrixHelpers {
       item: targetItem.uuid,
       info: newItem.system,
     })
+    if (aiDissipated) await SR5_ActorHelper.createDeadEffect(targetActor.isToken ? targetActor.token.id : targetActor.id)
 
     if (defender) ui.notifications.info(`${defender.name} ${game.i18n.format("SR5.INFO_ActorDoMatrixDamage", {
       damageValue: damageValue
