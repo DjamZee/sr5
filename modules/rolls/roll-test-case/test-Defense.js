@@ -67,7 +67,7 @@ export default async function defenseInfo(cardData, actorId){
     })
     //No relative speed, no damage (a few scratches at most)
     if (damages.target <= 0) return cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.RammingNoImpact"))
-    await handleRamming(cardData, damages.initiator)
+    await handleRamming(cardData, damages.initiator, actor.type === "actorDrone")
   }
 
   //Handle astral combat damage
@@ -255,7 +255,7 @@ async function handleCalledShotDefenseInfo(cardData, actorData){
   return cardData
 }
 
-async function handleRamming(cardData, initiatorDamage) {
+async function handleRamming(cardData, initiatorDamage, defenderIsVehicle) {
   //Get the attacker actor
   let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId)
 
@@ -279,8 +279,8 @@ async function handleRamming(cardData, initiatorDamage) {
   })
   SR5_RollTest.renderRollCard(rollData)
 
-  //Add vehicle test to defender chat Message
-  cardData.chatCard.buttons.vehicleTest = SR5_RollMessage.generateChatButton("nonOpposedTest", "vehicleTest", `${game.i18n.localize("SR5.VehicleTest")} (3)`)
+  //Add vehicle test to defender chat Message: a pedestrian has nothing to pilot
+  if (defenderIsVehicle) cardData.chatCard.buttons.vehicleTest = SR5_RollMessage.generateChatButton("nonOpposedTest", "vehicleTest", `${game.i18n.localize("SR5.VehicleTest")} (3)`)
 }
 
 async function handleEnergeticAura(cardData, actorData){
