@@ -123,6 +123,19 @@ export class SR5_MiscellaneousHelpers {
     return null
   }
 
+  //SR5 p. 162 and 164: a simple or complex action belongs to the character's own action phase, and a score of 0
+  //or less leaves only a free action. Returns "noInitiative", "outOfPhase" or null. Free actions, interruptions
+  //(p. 170, checked against their cost elsewhere) and manual adjustments are not concerned
+  static actionPhaseProblem(actions, {
+    initiative, isCurrent
+  }){
+    let phaseAction = (actions ?? []).some(a => a && a.source !== "manual" && ["simple", "complex"].includes(a.type) && a.value > 0)
+    if (!phaseAction) return null
+    if (typeof initiative === "number" && initiative <= 0) return "noInitiative"
+    if (!isCurrent) return "outOfPhase"
+    return null
+  }
+
   //SR5 p. 170: each interruption action lowers the Initiative score by its own cost, 5 unless stated otherwise
   //(10 for a Watchdog Haywire or Popup, Kill Code p. 45). Several interruptions in one list add up
   static interruptionInitiativeCost(actions){

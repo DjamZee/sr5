@@ -676,9 +676,23 @@ export class SR5Combat extends Combat {
 
   //When the world setting asks for it, refuses an action the character no longer has in this initiative pass,
   //with a warning: nothing is spent (SR5 p. 164-165). Unchecked (default), or out of combat, every action goes through
+  //A simple or complex action outside the character's phase, or with a score of 0 or less (SR5 p. 162 and 164), is
+  //only a warning; with the setting checked, a score of 0 or less refuses it like a missing action
   static hasActionsLeft(actor, actions){
-    if (!actor || !game.combat || !game.settings.get("sr5", "sr5BlockMissingActions")) return true
-    if (!SR5Combat.getCombatantFromActor(actor)) return true
+    if (!actor || !game.combat) return true
+    let combatant = SR5Combat.getCombatantFromActor(actor)
+    if (!combatant) return true
+    let block = game.settings.get("sr5", "sr5BlockMissingActions")
+    if (game.combat.started && combatant.initiative !== null && combatant.initiative !== undefined){
+      let problem = SR5_MiscellaneousHelpers.actionPhaseProblem(actions, {
+        initiative: combatant.initiative, isCurrent: game.combat.combatant?.id === combatant.id
+      })
+      if (problem) ui.notifications.warn(game.i18n.format(problem === "noInitiative" ? "SR5.WARN_ActionNoInitiative" : "SR5.WARN_ActionOutOfPhase", {
+        actor: actor.name, initiative: combatant.initiative
+      }))
+      if (problem === "noInitiative" && block) return false
+    }
+    if (!block) return true
     let missing = SR5_MiscellaneousHelpers.missingAction(actions, actor.system.specialProperties?.actions)
     if (!missing) return true
     ui.notifications.warn(game.i18n.format("SR5.WARN_NoActionLeft", {
