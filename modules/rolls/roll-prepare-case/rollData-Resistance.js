@@ -232,7 +232,11 @@ async function handleToxinDamage(rollData, actorData, chatData){
   //Several doses at once: +1 Power per extra dose (SR5 p. 410), set in the dialog
   rollData.damage.toxin.basePower = rollData.damage.toxin.power
   rollData.toxinDoses = 1
+  //An antitoxin takes its rating off the Power before the test (Chrome Flesh p. 154)
+  rollData.damage.toxin.antitoxin = SR5_Toxins.antitoxinRating(actorData)
+  rollData.damage.toxin.power = SR5_Toxins.effectivePower(rollData.damage.toxin.basePower, rollData.damage.toxin.antitoxin)
   if (rollData.damage.toxin.damageType) rollData.test.title += ` [${rollData.damage.toxin.power}${game.i18n.localize(SR5.damageTypesShort[rollData.damage.toxin.damageType])}]`
+  if (rollData.damage.toxin.antitoxin) rollData.test.title += ` (${game.i18n.localize("SR5.Antitoxin")} −${rollData.damage.toxin.antitoxin})`
     
   //If more than one vector is present, open dialog box
   for (let [key, value] of Object.entries(rollData.damage.toxin.vector)){

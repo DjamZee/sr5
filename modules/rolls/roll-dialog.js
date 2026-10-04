@@ -29,6 +29,9 @@ import {
   SR5_SpiritTypes
 } from "../entities/items/spirit-types.js"
 import {
+  SR5_Toxins
+} from "../entities/items/toxins.js"
+import {
   SR5_SystemHelpers
 } from "../system/utilitySystem.js"
 import {
@@ -823,7 +826,8 @@ export default class SR5_RollDialog {
         let doses = Math.max(1, parseInt(html.querySelector('[name="toxinDoses"]').value) || 1)
         html.querySelector('[name="toxinDoses"]').value = doses
         dialogData.toxinDoses = doses
-        dialogData.damage.toxin.power = dialogData.damage.toxin.basePower + doses - 1
+        //The antitoxin comes off after the doses (Chrome Flesh p. 154)
+        dialogData.damage.toxin.power = SR5_Toxins.effectivePower(dialogData.damage.toxin.basePower + doses - 1, dialogData.damage.toxin.antitoxin)
         //The title shows the Power: [10P] becomes [12P]
         dialogData.test.title = dialogData.test.title.replace(/\[\d+/, `[${dialogData.damage.toxin.power}`)
         return

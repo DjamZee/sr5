@@ -3573,6 +3573,7 @@ SR5.specialProperties = {
   controlRig                : "SR5.ControlRig",
   smartlink                 : "SR5.Smartlink",
   damageReduction           : "SR5.DamageReduction",
+  antitoxin                 : "SR5.Antitoxin",
 }
 
 SR5.specialPropertiesList = {
@@ -3580,6 +3581,7 @@ SR5.specialPropertiesList = {
   controlRig                : "SR5.ControlRig",
   smartlink                 : "SR5.Smartlink",
   damageReduction           : "SR5.DamageReduction",
+  antitoxin                 : "SR5.Antitoxin",
   doublePenalties           : "SR5.PenaltyDouble",
   regeneration              : "SR5.SpiritPowerRegeneration",
   anticoagulant             : "SR5.Anticoagulant",

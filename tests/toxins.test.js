@@ -11,6 +11,29 @@ import {
   SR5_UtilityItem
 } from '../modules/entities/items/utilityItem.js'
 
+describe('antitoxin (Chrome Flesh p. 154)', () => {
+  const withAntitoxin = (...values) => ({
+    specialProperties: {
+      antitoxin: {
+        modifiers: values.map(value => ({
+          value
+        }))
+      }
+    }
+  })
+  it('takes the highest rating, two antitoxins do not add up', () => {
+    expect(SR5_Toxins.antitoxinRating(withAntitoxin(2, 4))).toBe(4)
+    expect(SR5_Toxins.antitoxinRating(withAntitoxin())).toBe(0)
+    expect(SR5_Toxins.antitoxinRating({
+    })).toBe(0)
+  })
+  it('takes its rating off the Power, never below 0', () => {
+    expect(SR5_Toxins.effectivePower(12, 4)).toBe(8)
+    expect(SR5_Toxins.effectivePower(3, 4)).toBe(0)
+    expect(SR5_Toxins.effectivePower(9)).toBe(9)
+  })
+})
+
 function blankToxin(type = '', custom = null) {
   return {
     type, custom, speed: '', power: 0, penetration: 0, damageType: null,

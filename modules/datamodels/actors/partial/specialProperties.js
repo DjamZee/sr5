@@ -19,6 +19,10 @@ export class specialPropertiesPartialModel extends foundry.abstract.TypeDataMode
         damageReduction: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema()
         }),
+        // Antitoxin nanoware (Chrome Flesh p. 154): its rating comes from the implant's custom effect
+        antitoxin: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema()
+        }),
         hardenedArmors: new fields.SchemaField({
           normalWeapon: new fields.SchemaField({
             type: new fields.StringField({

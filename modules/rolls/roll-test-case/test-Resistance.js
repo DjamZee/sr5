@@ -60,6 +60,8 @@ export default async function resistanceInfo(cardData, actorId){
       let special = cardData.damage.toxin.type === "custom" && cardData.damage.toxin.custom?.special ? `<br> ${Handlebars.escapeExpression(cardData.damage.toxin.custom.special)}` : ""
       return cardData.chatCard.buttons.toxinEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "toxinEffect",`${game.i18n.localize("SR5.ApplyToxinEffect")} ${damage}<br> ${speed}${special}`)
     }
+    //Power brought below 1 by an antitoxin: every effect stops (Chrome Flesh p. 154)
+    else if (cardData.damage.toxin.antitoxin && cardData.damage.toxin.power < 1) return cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.AntitoxinNeutralized"))
     else return cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.NoDamage"))
   }
 

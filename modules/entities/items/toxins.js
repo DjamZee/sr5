@@ -134,6 +134,20 @@ export class SR5_Toxins {
     }
   }
 
+  /**
+   * The antitoxin rating of a character (Chrome Flesh p. 154): the highest of its sources,
+   * since two antitoxins do not add up
+   */
+  static antitoxinRating(actorData) {
+    const modifiers = actorData?.specialProperties?.antitoxin?.modifiers ?? []
+    return Math.max(0, ...modifiers.map(m => Number(m.value) || 0))
+  }
+
+  /** The Power left once the antitoxin took its rating off; below 1 the toxin does nothing (Chrome Flesh p. 154) */
+  static effectivePower(power, antitoxin = 0) {
+    return Math.max(0, (Number(power) || 0) - (Number(antitoxin) || 0))
+  }
+
   /** The display name of a weapon's toxin */
   static nameOf(toxin, localize = (key) => key) {
     if (toxin?.type === "custom") return toxin.custom?.name ?? ""
