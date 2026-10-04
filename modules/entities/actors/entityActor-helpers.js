@@ -1019,6 +1019,17 @@ export class SR5_ActorHelper {
   }
 
   /**
+   * Switching a drone's wireless from its sheet: the drone spends the action, its owner commands it (N91).
+   * Free through the owner's DNI (SR5 p. 165), simple otherwise (p. 167), when the world setting asks for it.
+   * @param {Boolean} requiresDNI - the "wireless requires a DNI" world setting
+   * @param {Object} owner - the drone's creator, if found
+   * @return {String} the action type
+   */
+  static droneWirelessActionType(requiresDNI, owner){
+    return (!requiresDNI || owner?.system?.hasDNI) ? "free" : "simple"
+  }
+
+  /**
    * Keep the token a dismissed actor was wearing, so the next summoning looks
    * like the last one. dimissSidekick() is handed a plain object rather than a
    * document, so nothing here may lean on toObject().

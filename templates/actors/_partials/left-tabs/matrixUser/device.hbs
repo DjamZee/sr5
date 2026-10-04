@@ -19,6 +19,19 @@
 				<div class="col-2 SR-TextCenter">{{system.matrix.deviceRating}}</div>
 			{{/if}}
 		</li>
+
+		{{#if (eq actor.type 'actorDrone')}}
+		<li class="grid">
+			<div class="col-10">{{localize 'SR5.WirelessMode'}}</div>
+			<div class="col-2 SR-TextCenter">
+				{{#if system.wirelessTurnedOn}}
+				<a class="drone-wireless-toggle" data-title="{{localize 'SR5.DisableWirelessMode'}}"><em class="fas fa-sm fa-wifi SR-SubColor"></em></a>
+				{{else}}
+				<a class="drone-wireless-toggle" data-title="{{localize 'SR5.EnableWirelessMode'}}"><em class="fas fa-sm fa-wifi"></em></a>
+				{{/if}}
+			</div>
+		</li>
+		{{/if}}
 		
 		{{#if_g system.specialAttributes.resonance.augmented.value 0}}
 			<li class="grid">
