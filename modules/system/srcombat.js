@@ -617,7 +617,7 @@ export class SR5Combat extends Combat {
       else ui.notifications.info(`${game.i18n.format("SR5.INFO_TakeActions", {
         actor: actor.name, actionValue: action.value, actionType: game.i18n.localize(SR5.actionTypes[action.type]), actionSource: game.i18n.localize(SR5.actionSources[action.source])
       })}`) 
-      // SR5 p. 170: an interruption action lowers the Initiative score by its own cost — 5 by default,
+      // SR5 p. 171: an interruption action lowers the Initiative score by its own cost — 5 by default,
       // 10 for a Watchdog Haywire or Popup (Kill Code p. 45)
       if (action.type === "interruption") {
         initModifier = -(action.initiativeCost || 5)
@@ -740,7 +740,7 @@ export class SR5Combat extends Combat {
               const {
                 SR5_ActorHelper
               } = await import("../entities/actors/entityActor-helpers.js")
-              // Excess Stun carries over to Physical, then to overflow (SR5 p. 170, 172)
+              // Excess Stun carries over to Physical, then to overflow (SR5 p. 171, 172)
               let monitors = foundry.utils.deepClone(actor.system.conditionMonitors)
               monitors.stun.actual.base += Number(itemData.value)
               SR5_EntityHelpers.updateValue(monitors.stun.actual, 0)

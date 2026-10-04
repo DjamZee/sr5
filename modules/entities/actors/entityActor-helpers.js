@@ -196,7 +196,7 @@ export class SR5_ActorHelper {
 
   /**
    * Carry damage beyond a full monitor, on prepared Stun/Physical monitors updated in place.
-   * SR5 p. 170: half (rounded down) of the excess Stun goes to Physical; p. 172: excess Physical
+   * SR5 p. 171: half (rounded down) of the excess Stun goes to Physical; p. 172: excess Physical
    * fills a PC's overflow, and the character dies when it exceeds their Body.
    * @return {{carriedDamage: number, isDead: boolean}} Physical boxes carried from Stun, and death
    */

@@ -1,5 +1,5 @@
 // Head case Attribute Boost (Stolen Souls p. 201): Stun equal to the hits once it ends. Excess Stun
-// carries half (rounded down) to Physical (SR5 p. 170), excess Physical to a PC's overflow (p. 172).
+// carries half (rounded down) to Physical (SR5 p. 171), excess Physical to a PC's overflow (p. 172).
 import {
   describe, it, expect, vi, beforeEach, afterEach
 } from 'vitest'
