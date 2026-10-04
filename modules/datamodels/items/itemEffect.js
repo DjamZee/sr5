@@ -10,6 +10,9 @@ export class sr5ItemEffectDataModel extends foundry.abstract.TypeDataModel {
       type: new fields.StringField({
         initial: ''
       }),
+      gameEffect: new fields.HTMLField({
+        initial: ''
+      }),
       itemRating: new fields.StringField({
         initial: ''
       }),
