@@ -850,6 +850,11 @@ export default class SR5_RollDialog {
           break
         case "firingMode":
           dialogData.combat.firingMode.selected = ev.target.value
+          // Bull's Eye counts the bullets of the burst: picked before the mode, it kept the old mode's AP
+          if (dialogData.combat.calledShot?.name === "bullsEye" && dialogData.combat.armorPenetrationBeforeCalledShot !== undefined) {
+            const bullsEyeWeapon = await fromUuid(dialogData.owner.itemUuid)
+            dialogData.combat.armorPenetration = SR5_CalledShotHelpers.bullsEyeArmorPenetration(dialogData.combat.armorPenetrationBeforeCalledShot, bullsEyeWeapon?.system.armorPenetration.base ?? 0, ev.target.value)
+          }
           value = this.calculRecoil(html)
           action = SR5_ConverterHelpers.firingModeToAction(ev.target.value)
           dialogData.combat.actions = SR5_MiscellaneousHelpers.addActions(dialogData.combat.actions, action)
@@ -1133,9 +1138,7 @@ export default class SR5_RollDialog {
               // Run & Gun p. 130 : la PA de l'attaque est augmentée de la PA de base de l'arme (sans munition)
               // multipliée par le nombre de balles de la rafale, au maximum ×3
               const bullsEyeWeapon = await fromUuid(dialogData.owner.itemUuid)
-              const baseAP = bullsEyeWeapon?.system.armorPenetration.base ?? 0
-              const bullets = SR5_ConverterHelpers.firingModeToBullet(dialogData.combat.firingMode.selected)
-              dialogData.combat.armorPenetration += baseAP * Math.min(bullets, 3)
+              dialogData.combat.armorPenetration = SR5_CalledShotHelpers.bullsEyeArmorPenetration(dialogData.combat.armorPenetrationBeforeCalledShot, bullsEyeWeapon?.system.armorPenetration.base ?? 0, dialogData.combat.firingMode.selected)
               break
             }
             case "hitEmWhereItCounts":
