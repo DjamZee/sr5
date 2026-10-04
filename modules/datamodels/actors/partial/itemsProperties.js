@@ -1,6 +1,9 @@
 import {
   sr5ModsPartialModel 
 } from '../../common/mods.js'
+import {
+  MARTIAL_ARTS_LOCATIONS, martialArtsLocationKey
+} from '../../../rolls/roll-helpers/martialArtsLocation.js'
 
 export class itemsPropertiesPartialModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
@@ -170,6 +173,23 @@ export class itemsPropertiesPartialModel extends foundry.abstract.TypeDataModel 
               ...sr5ModsPartialModel.defineSchema()
             }),
           }),
+          counterGrapple: new fields.SchemaField({
+            isActive: new fields.BooleanField({
+              initial: false
+            }),
+            modifier: new fields.SchemaField({
+              ...sr5ModsPartialModel.defineSchema()
+            }),
+          }),
+          //Run & Gun p. 149 (Dim Mak), p. 148 (Choquer), p. 151 (Randori): a technique lowers the penalty of one location
+          ...Object.fromEntries(MARTIAL_ARTS_LOCATIONS.map(location => [martialArtsLocationKey(location), new fields.SchemaField({
+            isActive: new fields.BooleanField({
+              initial: false
+            }),
+            modifier: new fields.SchemaField({
+              ...sr5ModsPartialModel.defineSchema()
+            }),
+          })])),
         }),
       }),
     }

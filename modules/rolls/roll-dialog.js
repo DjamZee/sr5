@@ -20,6 +20,9 @@ import {
   SR5_CalledShotHelpers 
 } from "./roll-helpers/calledShot.js"
 import {
+  martialArtsLocationBonus
+} from "./roll-helpers/martialArtsLocation.js"
+import {
   SR5Combat 
 } from "../system/srcombat.js"
 import {
@@ -1248,7 +1251,12 @@ export default class SR5_RollDialog {
             value = value - 4
             limitDV = limitDV * 2
           }
+          //Run & Gun p. 148-151: the location technique (Dim Mak, Choquer, Randori) lowers the location penalty
+          value += martialArtsLocationBonus(dialogData.combat.calledShot.martialArtsModifiers, html.querySelector('[data-modifier="calledShot"]').value, ev.target.value)
           dialogData.combat.calledShot = {
+            //keep the techniques read when the dialog opened, a second location pick needs them too
+            martialArts: dialogData.combat.calledShot.martialArts,
+            martialArtsModifiers: dialogData.combat.calledShot.martialArtsModifiers,
             limitDV: limitDV,
             location: ev.target.value,
             name: html.querySelector('[data-modifier="calledShot"]').value,

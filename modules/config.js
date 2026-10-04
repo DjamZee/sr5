@@ -2057,6 +2057,23 @@ SR5.calledShotsMartialArts = {
   reversal              : "SR5.CS_Reversal",
   shakeUp               : "SR5.CS_ShakeUp",
   vitals                : "SR5.CS_Vitals",
+  counterGrapple        : "SR5.MA_CounterGrapple",
+  locationAnkle         : "SR5.CS_MA_LocationAnkle",
+  locationEar           : "SR5.CS_MA_LocationEar",
+  locationEye           : "SR5.CS_MA_LocationEye",
+  locationFoot          : "SR5.CS_MA_LocationFoot",
+  locationForearm       : "SR5.CS_MA_LocationForearm",
+  locationGenitals      : "SR5.CS_MA_LocationGenitals",
+  locationGut           : "SR5.CS_MA_LocationGut",
+  locationHand          : "SR5.CS_MA_LocationHand",
+  locationHip           : "SR5.CS_MA_LocationHip",
+  locationJaw           : "SR5.CS_MA_LocationJaw",
+  locationKnee          : "SR5.CS_MA_LocationKnee",
+  locationNeck          : "SR5.CS_MA_LocationNeck",
+  locationShin          : "SR5.CS_MA_LocationShin",
+  locationShoulder      : "SR5.CS_MA_LocationShoulder",
+  locationSternum       : "SR5.CS_MA_LocationSternum",
+  locationThigh         : "SR5.CS_MA_LocationThigh",
 }
 
 //-----------------------------------//
