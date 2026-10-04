@@ -853,7 +853,7 @@ export class SR5_CharacterUtility extends Actor {
     if (actorData.visions.ultrasound.natural || actorData.visions.ultrasound.augmented) {
       actorData.visions.ultrasound.hasVision = true
       if (actorData.visions.ultrasound.isActive) {
-        SR5_EntityHelpers.updateModifier(actorData.itemsProperties.environmentalMod.visibility, `${game.i18n.localize('SR5.ThermographicVision')}`, "visionType", -1, false, false)
+        SR5_EntityHelpers.updateModifier(actorData.itemsProperties.environmentalMod.visibility, `${game.i18n.localize('SR5.UltrasoundVision')}`, "visionType", -1, false, false)
         SR5_EntityHelpers.updateModifier(actorData.itemsProperties.environmentalMod.light, `${game.i18n.localize('SR5.UltrasoundVision')}`, "visionType", -3, false, false)
       }
     }
