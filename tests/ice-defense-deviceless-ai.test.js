@@ -48,6 +48,14 @@ function ai({
           augmented: {
             value: 5
           }
+        }, willpower: {
+          augmented: {
+            value: 3
+          }
+        }, logic: {
+          augmented: {
+            value: 1
+          }
         }
       },
       matrix: {
@@ -133,6 +141,45 @@ describe('IC defense of an AI without a device (Data Trails p. 157)', () => {
     expect(() => iceDefense(rollData, ai(), chatData)).not.toThrow()
     expect(rollData.target.itemUuid).toBeUndefined()
     expect(rollData.dicePool.base).toBe(5)
+  })
+
+  it('defends against a Logic IC with the attribute the world sets, and no Firewall', () => {
+    const roll = (mode, device = false) => {
+      game.settings.get = vi.fn((_ns, key) => key === 'sr5DevicelessAILogicDefense' ? mode : null)
+      const rollData = {
+        test: {
+        }, dicePool: {
+        }, target: {
+        }, previousMessage: {
+        }, damage: {
+          matrix: {
+          }
+        }
+      }
+      const actor = ai({
+        device
+      })
+      actor.system.matrix.attributes.firewall.value = 4
+      iceDefense(rollData, actor, {
+        various: {
+          defenseFirstAttribute: 'logic', defenseSecondAttribute: 'firewall'
+        }, test: {
+          typeSub: 'iceBlaster'
+        }, roll: {
+          hits: 3
+        }, owner: {
+          actorId: 'ice'
+        }
+      })
+      return rollData.dicePool
+    }
+    expect(roll('highest').base).toBe(5)
+    expect(roll('highest').composition.map(m => m.source)).toEqual(['SR5.Intuition'])
+    expect(roll('willpower').base).toBe(3)
+    expect(roll('intuition').base).toBe(5)
+    // An AI on a device keeps Logic + Firewall
+    expect(roll('highest', true).base).toBe(5)
+    expect(roll('highest', true).composition.map(m => m.type)).toEqual(['linkedAttribute', 'matrixAttribute'])
   })
 
   it('still targets the active device of an AI that has one', () => {
