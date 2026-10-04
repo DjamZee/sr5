@@ -466,7 +466,8 @@ export class SR5_ConverterHelpers {
     return (gait === "run" ? 10 : 5) * 2**(speed - 1)
   }
 
-  //Speed multiplier by locomotion (Rigger 5 p. 184). Vector thrust x3 and airship x1 are not in the book: DjamZ's ruling (2026-10-04)
+  //Speed multiplier by locomotion (Rigger 5 p. 184). Rigger 5 p. 179 says x3 for "an aircraft": DjamZ chose the jet's x4 of p. 184.
+  //Vector thrust x3 and airship x1 are not in the book: DjamZ's ruling (2026-10-04)
   static rammingLocomotionMultiplier(locomotion){
     switch(locomotion){
       case "naval": return 0.8
@@ -483,9 +484,20 @@ export class SR5_ConverterHelpers {
     return Math.max(1, Math.round(speed * this.rammingLocomotionMultiplier(locomotion)))
   }
 
-  //Locomotion of a vehicle, for the speed multiplier: active secondary propulsion, then category, then pilot skill
+  //What tells a vehicle's locomotion. The category is read on the vehicle's original item (creatorId, creatorItemId):
+  //vehicleOwner.items follows the controller and is replaced or emptied when it changes
+  static rammingLocomotionData(system, findItem){
+    let item = (system.creatorId && system.creatorItemId) ? findItem(system.creatorId, system.creatorItemId) : null
+    return {
+      category: item?.system?.category,
+      secondaryActive: system.isSecondaryPropulsionActivate,
+      secondaryType: system.secondaryPropulsionType,
+    }
+  }
+
+  //Locomotion of a vehicle, for the speed multiplier: active secondary propulsion, then category; ground (x1) when unknown, the safest
   static rammingLocomotion({
-    category, pilotSkill, secondaryActive, secondaryType
+    category, secondaryActive, secondaryType
   } = {
   }){
     if (secondaryActive && secondaryType){
@@ -500,21 +512,24 @@ export class SR5_ConverterHelpers {
       case "vectorThrustCraft": return "vectorThrust"
       case "fixedWingAircraft": return "jet"
       case "lta": return "lta"
-      case "car":
-      case "bike":
-      case "truck": return "ground"
-    }
-    switch(pilotSkill){
-      case "pilotWatercraft": return "naval"
-      case "pilotAircraft": return "rotor"
-      case "pilotAerospace": return "jet"
       default: return "ground"
     }
   }
 
-  //Speed of the impact: Rigger 5 p. 179 (Speed and angle) against a vehicle, SR5 p. 204 (m/turn) otherwise
+  //Relative speed in m/turn from the attacker's Speed and gait (SR5 p. 203), kept in step in both modes:
+  //the defender's type, known only at defense, picks the table
+  static rammingRefreshRelativeSpeed(ramming){
+    ramming.relativeSpeed = this.vehicleMetersPerTurn(ramming.attackerSpeed || 0, ramming.gait)
+    return ramming
+  }
+
+  //Speed of the impact: Rigger 5 p. 179 (Speed and angle) against a vehicle, SR5 p. 204 (m/turn) otherwise.
+  //A card older than the relative speed has none: rebuilt from its speeds; only an explicit 0 means no impact
   static rammingImpactSpeed(ramming, targetIsVehicle = ramming.targetIsVehicle){
-    if (!targetIsVehicle) return Math.max(0, ramming.relativeSpeed || 0)
+    if (!targetIsVehicle){
+      if (ramming.relativeSpeed == null) return this.vehicleMetersPerTurn(this.rammingSpeed(ramming.angle, ramming.attackerSpeed || 0, ramming.targetSpeed || 0), ramming.gait)
+      return Math.max(0, ramming.relativeSpeed)
+    }
     return this.rammingSpeed(ramming.angle, this.rammingEffectiveSpeed(ramming.attackerSpeed || 0, ramming.attackerLocomotion), this.rammingEffectiveSpeed(ramming.targetSpeed || 0, ramming.targetLocomotion))
   }
 

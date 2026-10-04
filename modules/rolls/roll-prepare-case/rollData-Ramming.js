@@ -41,7 +41,7 @@ export default function ramming(rollData, actor){
   ramming.attackerLocomotion = SR5_ConverterHelpers.rammingLocomotion(locomotionData(actor))
   ramming.targetSpeed = ramming.targetIsVehicle ? vehicleSpeed(target) : 0
   ramming.targetLocomotion = ramming.targetIsVehicle ? SR5_ConverterHelpers.rammingLocomotion(locomotionData(target)) : "ground"
-  ramming.relativeSpeed = SR5_ConverterHelpers.vehicleMetersPerTurn(ramming.attackerSpeed, ramming.gait)
+  SR5_ConverterHelpers.rammingRefreshRelativeSpeed(ramming)
   rollData.damage.base = SR5_ConverterHelpers.rammingAttackDamage(ramming, actor.system.attributes.body.augmented.value)
   rollData.damage.value = rollData.damage.base
   rollData.lists.rammingAngles = SR5.rammingAngles
@@ -69,13 +69,7 @@ function vehicleSpeed(vehicle){
   return attributes.speed?.augmented.value || 0
 }
 
-//What tells a vehicle's locomotion: its item's category (kept on the owner), its pilot skill, its secondary propulsion
+//What tells a vehicle's locomotion, from its original item on the actor that created it
 function locomotionData(vehicle){
-  let system = vehicle.system
-  return {
-    category: system.vehicleOwner?.items?.find(i => i._id === system.creatorItemId)?.system?.category,
-    pilotSkill: system.pilotSkill,
-    secondaryActive: system.isSecondaryPropulsionActivate,
-    secondaryType: system.secondaryPropulsionType,
-  }
+  return SR5_ConverterHelpers.rammingLocomotionData(vehicle.system, (actorId, itemId) => game.actors.get(actorId)?.items.get(itemId))
 }

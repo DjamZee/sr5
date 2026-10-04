@@ -95,18 +95,38 @@ describe('rammingLocomotion', () => {
     })).toBe('ground')
   })
 
-  it('falls back on the pilot skill', () => {
-    expect(SR5_ConverterHelpers.rammingLocomotion({
-      pilotSkill: 'pilotWatercraft'
-    })).toBe('naval')
+  // Review, point 1: without a category, ground (x1), the safest; the pilot skill guessed rotor for a jet
+  it('falls back on ground without a category', () => {
     expect(SR5_ConverterHelpers.rammingLocomotion({
       pilotSkill: 'pilotAircraft'
-    })).toBe('rotor')
-    expect(SR5_ConverterHelpers.rammingLocomotion({
-      pilotSkill: 'pilotAerospace'
-    })).toBe('jet')
+    })).toBe('ground')
     expect(SR5_ConverterHelpers.rammingLocomotion({
     })).toBe('ground')
+  })
+
+  // Review, point 1: the category comes from the vehicle's original item (creatorId, creatorItemId),
+  // not from vehicleOwner.items, which a change of controller replaces or empties
+  it('reads the category from the original item, whoever controls the vehicle', () => {
+    const items = {
+      owner1: {
+        item1: {
+          system: {
+            category: 'fixedWingAircraft'
+          }
+        }
+      }
+    }
+    const findItem = (actorId, itemId) => items[actorId]?.[itemId]
+    const system = {
+      creatorId: 'owner1', creatorItemId: 'item1', pilotSkill: 'pilotAircraft', vehicleOwner: {
+        id: 'owner2', items: []
+      }
+    }
+    const data = SR5_ConverterHelpers.rammingLocomotionData(system, findItem)
+    expect(SR5_ConverterHelpers.rammingLocomotion(data)).toBe('jet')
+    expect(SR5_ConverterHelpers.rammingLocomotion(SR5_ConverterHelpers.rammingLocomotionData({
+      ...system, creatorId: ''
+    }, findItem))).toBe('ground')
   })
 
   it('follows an active secondary propulsion', () => {
@@ -197,5 +217,34 @@ describe('rammingDefenseDamages', () => {
       .toEqual({
         target: 0, initiator: 0
       })
+  })
+
+  // Review, point 2: a card made before the relative speed existed still hits a pedestrian,
+  // its relative speed rebuilt from the card's speeds; only an explicit 0 means no damage
+  it('rebuilds a missing relative speed from an older card', () => {
+    const oldCard = {
+      angle: 'side', attackerSpeed: 3, targetSpeed: 0
+    }
+    expect(SR5_ConverterHelpers.rammingDefenseDamages(oldCard, {
+      defenderIsVehicle: false, defenderBody: 4, damageBase: 15, netHits: 2
+    }))
+      .toEqual({
+        target: 17, initiator: 2
+      })
+  })
+})
+
+// Review, point 3: the relative speed follows the speeds whatever the target, so a vehicle's card
+// that ends up defended by a pedestrian carries the current speed, not the prefilled one
+describe('rammingRefreshRelativeSpeed', () => {
+  it('follows the attacker\'s Speed and gait in both modes', () => {
+    const vehicle = {
+      targetIsVehicle: true, attackerSpeed: 5, gait: 'walk', relativeSpeed: 20
+    }
+    expect(SR5_ConverterHelpers.rammingRefreshRelativeSpeed(vehicle).relativeSpeed).toBe(80)
+    const pedestrian = {
+      targetIsVehicle: false, attackerSpeed: 3, gait: 'run', relativeSpeed: 20
+    }
+    expect(SR5_ConverterHelpers.rammingRefreshRelativeSpeed(pedestrian).relativeSpeed).toBe(40)
   })
 })

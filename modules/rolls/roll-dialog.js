@@ -308,10 +308,12 @@ export default class SR5_RollDialog {
       ramming.targetSpeed = readNumber("rammingTargetSpeed")
       ramming.attackerLocomotion = html.querySelector('[name="rammingAttackerLocomotion"]').value
       ramming.targetLocomotion = html.querySelector('[name="rammingTargetLocomotion"]').value
+      //Kept in step with the speeds, in case a pedestrian ends up defending
+      SR5_ConverterHelpers.rammingRefreshRelativeSpeed(ramming)
     } else {
       ramming.gait = html.querySelector('[name="rammingGait"]').value
       //The gait fills in the relative speed, which the GM may then correct
-      if (changed === "rammingGait") html.querySelector('[name="rammingRelativeSpeed"]').value = SR5_ConverterHelpers.vehicleMetersPerTurn(ramming.attackerSpeed, ramming.gait)
+      if (changed === "rammingGait") html.querySelector('[name="rammingRelativeSpeed"]').value = SR5_ConverterHelpers.rammingRefreshRelativeSpeed(ramming).relativeSpeed
       ramming.relativeSpeed = readNumber("rammingRelativeSpeed")
       //SR5 p. 203: -3 dice when the vehicle has to reach its running rate
       SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "rammingRun")
