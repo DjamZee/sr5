@@ -2,15 +2,17 @@
   <fieldset>
     <legend>{{localize 'SR5.ShopConfigShelves'}}</legend>
     <p class="hint">{{localize 'SR5.ShopConfigShelvesHint'}}</p>
-    {{#each packs}}
-    <label class="sr-shop-config-pack">
-      <input type="checkbox" name="pack.{{id}}" {{#if checked}}checked{{/if}}>
-      <span>{{label}}</span>
-      {{#if source}}<span class="hint">{{source}}</span>{{/if}}
-    </label>
-    {{else}}
-    <p class="hint">{{localize 'SR5.ShopConfigNoPack'}}</p>
-    {{/each}}
+    <div class="sr-shop-config-packs">
+      {{#each packs}}
+      <label class="sr-shop-config-pack">
+        <input type="checkbox" name="pack.{{id}}" {{#if checked}}checked{{/if}}>
+        <span class="sr-shop-config-label">{{label}}</span>
+        {{#if source}}<span class="sr-shop-config-source">{{source}}</span>{{/if}}
+      </label>
+      {{else}}
+      <p class="hint">{{localize 'SR5.ShopConfigNoPack'}}</p>
+      {{/each}}
+    </div>
   </fieldset>
 
   <fieldset>

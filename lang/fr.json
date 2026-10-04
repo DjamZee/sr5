@@ -1031,7 +1031,7 @@
 	"SR5.WARN_CredstickNotTheirs": "{name} n'est pas à {actor} : seul son porteur peut y retirer ou déposer.",
 	"SR5.WARN_CredstickStored": "{name} est rangé dans un stockage : sortez-le avant d'y toucher.",
 	"SR5.WARN_ShopFlagLocked": "Compendium verrouillé : déverrouillez-le pour changer ce réglage.",
-	"SR5.WARN_ShopGreywareAwakened": "{name} est Éveillé : la GreyWare est incompatible avec la physiologie des Éveillés (Better Than Bad p. 142).",
+	"SR5.WARN_ShopGreywareAwakened": "{name} : personnage Éveillé. La GreyWare est incompatible avec la physiologie des Éveillés (Better Than Bad p. 142).",
 	"SR5.WARN_ShopItemGone": "{name} n'est plus dans son compendium : ligne ignorée.",
 	"SR5.WARN_SheetRenderFailed": "La fiche de {name} n'a pas pu s'ouvrir ; le détail est dans la console (F12).",
 	"SR5.WARN_ShopNoBuyer": "Choisissez d'abord le personnage qui achète.",

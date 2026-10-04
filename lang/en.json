@@ -1031,7 +1031,7 @@
 	"SR5.WARN_CredstickNotTheirs": "{name} does not belong to {actor}: only its bearer can withdraw or deposit.",
 	"SR5.WARN_CredstickStored": "{name} is put away in a storage: take it out first.",
 	"SR5.WARN_ShopFlagLocked": "Locked compendium: unlock it to change this setting.",
-	"SR5.WARN_ShopGreywareAwakened": "{name} is Awakened: greyware is incompatible with Awakened physiology (Better Than Bad p. 142).",
+	"SR5.WARN_ShopGreywareAwakened": "{name}: Awakened character. Greyware is incompatible with Awakened physiology (Better Than Bad p. 142).",
 	"SR5.WARN_ShopItemGone": "{name} is no longer in its compendium: line ignored.",
 	"SR5.WARN_SheetRenderFailed": "The sheet of {name} could not open; details are in the console (F12).",
 	"SR5.WARN_ShopNoBuyer": "Select the character who is buying first.",

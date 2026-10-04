@@ -141,12 +141,17 @@ export class SR5ShopStock {
     } else if (document?.documentName === 'Actor') {
       flag = 'canShop'; on = 'SR5.ShopCanShopOff'; off = 'SR5.ShopCanShopOn'
     } else return
-    const active = document.getFlag('sr5', flag) === true
+    const look = (active) => ({
+      icon: active ? 'fas fa-store-slash' : 'fas fa-store', label: active ? on : off,
+    })
     controls.push({
-      icon: active ? 'fas fa-store-slash' : 'fas fa-store',
-      label: active ? on : off,
+      ...look(document.getFlag('sr5', flag) === true),
       action: `sr5Shop-${flag}`,
-      onClick: async () => {
+      onClick: async (event) => {
+        // Read at click time: the header menu is built once, with the window
+        const active = document.getFlag('sr5', flag) === true
+        // currentTarget is gone once the event has been dispatched, so it is taken now
+        const button = event?.currentTarget ?? app.element?.querySelector(`[data-action="sr5Shop-${flag}"] button`)
         try {
           await document.setFlag('sr5', flag, !active)
         } catch (_err) {
@@ -154,7 +159,11 @@ export class SR5ShopStock {
           ui.notifications.warn(game.i18n.localize('SR5.WARN_ShopFlagLocked'))
           return
         }
-        app.render()
+        // ...and a render does not rebuild it, so the entry is relabelled in place
+        const now = look(!active)
+        button?.querySelector('.control-icon')?.setAttribute('class', `control-icon fa-fw ${now.icon}`)
+        const label = button?.querySelector('.control-label')
+        if (label) label.innerText = game.i18n.localize(now.label)
       },
     })
   }
