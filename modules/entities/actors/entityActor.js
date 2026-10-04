@@ -421,6 +421,7 @@ export class SR5Actor extends Actor {
         SR5_CharacterUtility.generateVehicleTest(actor)        
         SR5_CharacterUtility.generateRammingTest(actor)
         SR5_CharacterUtility.updateVehicleSlots(actor)
+        SR5_CharacterUtility.handleSensorVision(actor)
         SR5_CharacterUtility.updateActions(actor)
         break
       case "actorSpirit":
@@ -460,6 +461,7 @@ export class SR5Actor extends Actor {
         break
       case "actorDevice":
         SR5_CharacterUtility.updateConditionMonitors(actor)
+        SR5_CharacterUtility.handleSensorVision(actor)
         SR5_CharacterUtility.updateActions(actor)
         SR5_CharacterUtility.updateMatrixEffect(actor)
         break

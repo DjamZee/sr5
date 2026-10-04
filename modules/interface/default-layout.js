@@ -185,6 +185,7 @@ function _droneDefaultLayout() {
         _tab('Core', 'core', [
           _block('attributes'), _block('resistances'),
           _block('defenses'), _block('controlMode'), _block('initiatives'),
+          _block('visions'),
         ]),
         _tab('Matrix', 'matrix', [
           _block('matrixDevice'), _block('matrixSilentMode'),
@@ -250,6 +251,7 @@ function _deviceDefaultLayout() {
           _block('matrixAttributes'), _block('initiatives'),
           _block('matrixSilentMode'), _block('matrixGrid'),
           _block('matrixMarksControled'), _block('matrixMarks'),
+          _block('visions'),
         ]),
       ]),
       _panel('MAIN', 2, [

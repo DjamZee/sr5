@@ -20,7 +20,7 @@ import {
   _getSRStatusEffect
 } from "../../system/effectsList.js"
 import {
-  SR5_TOKEN_VISION_MODES
+  SR5_TOKEN_VISION_MODES, settleSensorVisions
 } from "../../system/vision.js"
 
 
@@ -816,6 +816,11 @@ export class SR5_CharacterUtility extends Actor {
     }
   }
 
+  //The visions of a drone or a device are those of its sensors (SR5 p. 446-449)
+  static handleSensorVision(actor) {
+    settleSensorVisions(actor.system.visions)
+  }
+
   //Handle vision types and environmental modifiers
   static async handleVision(actor) {
     let actorData = actor.system
@@ -902,7 +907,8 @@ export class SR5_CharacterUtility extends Actor {
   //cybereyes that take the pinned vision away, or give it back. Only called by the user who made
   //the change, and a token already in the right mode is left alone.
   static async refreshVisionOfTokens(actor) {
-    if (!["actorPc", "actorGrunt"].includes(actor?.type)) return
+    //A drone or a device sees with its sensors: a sensor item added or removed changes its token too
+    if (!["actorPc", "actorGrunt", "actorDrone", "actorDevice"].includes(actor?.type)) return
     const mode = SR5_TOKEN_VISION_MODES[SR5_EntityHelpers.getActiveVisionType(actor)] ?? "basic"
     if (this.getTokensOfActor(actor).every(t => t.sight?.visionMode === mode)) return
     await this.applyVisionToToken(actor)

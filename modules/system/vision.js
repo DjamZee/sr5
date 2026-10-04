@@ -42,6 +42,27 @@ export function getVisionRange(vision) {
   return Number.isNumeric(range) ? Math.max(0, Number(range)) : 0
 }
 
+/**
+ * The visions of a drone or a device come from its sensors: the vision enhancements of a camera
+ * (SR5 p. 446-447), an ultrasound sensor (SR5 p. 449). An item gives them, as goggles give a
+ * character his. No metatype, no astral sight, no environmental modifier here: only what the
+ * sensors see, and the vision in use, kept off once the sensor giving it is gone.
+ * @param {Object} visions - system.visions of the drone or device, changed in place
+ * @returns {Object} the same visions
+ */
+export function settleSensorVisions(visions) {
+  if (!visions) return visions
+  for (const key of ["lowLight", "thermographic", "ultrasound"]) {
+    const vision = visions[key]
+    if (!vision) continue
+    vision.hasVision = !!(vision.natural || vision.augmented)
+    if (!vision.hasVision) vision.isActive = false
+  }
+  if (visions.astral) visions.astral.isActive = false
+  visions.hasActiveVision = ["lowLight", "thermographic", "ultrasound"].some(key => visions[key]?.isActive)
+  return visions
+}
+
 /* -------------------------------------------- */
 /*  Vision modes                                */
 /* -------------------------------------------- */
