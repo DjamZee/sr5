@@ -622,6 +622,8 @@ export class SR5_ActorHelper {
       if (itemToClean?.documentName === "Actor") {
         await itemToClean.update({
           "system.matrix.marks": (itemToClean._source.system.matrix.marks ?? []).filter(mark => mark.ownerId !== actorId)
+        }, {
+          sr5PersonaMarks: true
         })
       } else if (itemToClean) {
         let cleanData = foundry.utils.duplicate(itemToClean.system)

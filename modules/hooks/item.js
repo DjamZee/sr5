@@ -10,16 +10,6 @@ import {
 import {
   SR5_CharacterUtility
 } from "../entities/actors/utilityActor.js"
-import {
-  SR5_MarkHelpers
-} from "../rolls/roll-helpers/mark.js"
-
-// An AI that loads onto a device restarts its persona (Data Trails p. 158): the marks placed on it while it had
-// no device go away, served by the user who made the change.
-export async function sr5HookPersonaMarks(item, userId) {
-  if (userId !== game.user?.id || item.type !== "itemDevice" || !item.system.isActive || !item.parent) return
-  if (SR5_CharacterUtility.isDepthActive(item.parent)) await SR5_MarkHelpers.clearPersonaMarks(item.parent)
-}
 
 // An item can take the vision in use away, or give it back (cybereyes, goggles) : the tokens of
 // its actor follow, served by the user who made the change.
@@ -30,7 +20,6 @@ export async function sr5HookItemVision(item, userId) {
 
 export async function sr5HookCreateItem(item, _options, userId) {
   await sr5HookItemVision(item, userId)
-  await sr5HookPersonaMarks(item, userId)
 }
 
 // Copy effect fields from an itemAmmunitionType into an effects snapshot
@@ -84,7 +73,6 @@ export function sr5HookPreUpdateItem(document, data, _options, _userId) {
 
 export async function sr5HookUpdateItem(document, data, _options, userId) {
   await sr5HookItemVision(document, userId)
-  if (data.system?.isActive) await sr5HookPersonaMarks(document, userId)
 
   // When an itemAmmunitionType is edited, re-sync all itemAmmunition items referencing it
   if (document.type === 'itemAmmunitionType' && data.system) {
