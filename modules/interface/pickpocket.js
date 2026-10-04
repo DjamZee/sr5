@@ -91,6 +91,56 @@ export class SR5Pickpocket {
       SR5Pickpocket.start(thief, target)
     })
     left.appendChild(button)
+
+    //Putting an object on someone: the same test the other way round (SR5 p. 422), when the thief has something small
+    if (!pickableItems(thief.actor).length) return
+    const plant = document.createElement("button")
+    plant.type = "button"
+    plant.className = "control-icon sr-hud-pickpocket-plant"
+    plant.dataset.tooltip = game.i18n.localize("SR5.PickpocketPlant")
+    plant.innerHTML = "<i class=\"fas fa-hand-holding-hand\"></i>"
+    plant.addEventListener("click", event => {
+      event.preventDefault()
+      event.stopPropagation()
+      SR5Pickpocket.start(thief, target, "plant")
+    })
+    left.appendChild(plant)
+  }
+
+  //The thief's side when he plants: he always chooses, it is his own object, and how many of a pile
+  static async askPlant(thief, targetDocument) {
+    const escape = foundry.utils.escapeHTML
+    const items = pickableItems(thief)
+    if (!items.length) return ui.notifications.warn(game.i18n.localize("SR5.WARN_PickpocketNothingToPlant"))
+    const options = items.map(i => `<option value="${i.id}" data-default="${defaultTakeQuantity(i)}" data-max="${pileSize(i)}">${escape(i.name)}${pileSize(i) > 1 ? ` ×${pileSize(i)}` : ""}</option>`).join("")
+    return foundry.applications.api.DialogV2.wait({
+      window: {
+        title: game.i18n.format("SR5.PickpocketPlantTitle", {
+          name: targetDocument.name
+        })
+      },
+      content: `<div class="form-group"><label>${escape(game.i18n.localize("SR5.PickpocketItem"))}</label><select name="itemId">${options}</select></div><div class="form-group"><label>${escape(game.i18n.localize("SR5.PickpocketQuantityPlanted"))}</label><input type="number" name="quantity" min="1" step="1" value="${defaultTakeQuantity(items[0])}" max="${pileSize(items[0])}"/></div>`,
+      buttons: [{
+        action: "ok",
+        label: game.i18n.localize("SR5.PickpocketPlant"),
+        default: true,
+        callback: (event, button) => ({
+          aim: "",
+          itemId: button.form.elements.itemId.value,
+          quantity: Number(button.form.elements.quantity.value) || null,
+        }),
+      }],
+      render: (event, dialog) => {
+        const form = dialog.element.querySelector("form") ?? dialog.element
+        const select = form.querySelector("[name=itemId]"), field = form.querySelector("[name=quantity]")
+        select?.addEventListener("change", () => {
+          const option = select.selectedOptions[0]
+          field.value = option?.dataset.default ?? ""
+          field.max = option?.dataset.max ?? ""
+        })
+      },
+      rejectClose: false,
+    })
   }
 
   //The thief's side: what he says he is after, the object itself if the world lets him choose, then his roll
@@ -98,6 +148,18 @@ export class SR5Pickpocket {
     const thief = thiefDocument.actor
     //SR5 p. 135: Palming cannot be used untrained
     if (!(thief.system.skills.palming.rating?.value > 0)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_PickpocketNeedsPalming"))
+
+    if (mode === "plant") {
+      const planted = await SR5Pickpocket.askPlant(thief, targetDocument)
+      if (!planted?.itemId) return
+      return thief.rollTest("pickpocket", null, {
+        targetActorId: SR5Pickpocket.actorIdOf(targetDocument),
+        mode,
+        aim: "",
+        itemId: planted.itemId,
+        quantity: planted.quantity,
+      })
+    }
 
     const escape = foundry.utils.escapeHTML
     const thiefChooses = game.settings.get("sr5", "sr5PickpocketThiefChooses")
@@ -161,14 +223,18 @@ export class SR5Pickpocket {
     }).join("")
     const locked = chosen ? "disabled" : ""
     const chosenItem = chosen ? giver.items.get(chosen) : null
+    //When he plants, the thief already said how many
+    const chosenQuantity = chosenItem ? (mode === "plant" && messageData.various.pickpocketQuantity ? messageData.various.pickpocketQuantity : defaultTakeQuantity(chosenItem)) : ""
+    const titleKey = mode === "plant" ? "SR5.PickpocketPlantTitle" : "SR5.PickpocketTitle"
+    const quantityKey = mode === "plant" ? "SR5.PickpocketQuantityPlanted" : "SR5.PickpocketQuantity"
     const box = key => `<div class="form-group"><label>${escape(game.i18n.localize(`SR5.Pickpocket${key.charAt(0).toUpperCase()}${key.slice(1)}`))}</label><input type="checkbox" name="${key}"/></div>`
     const result = await foundry.applications.api.DialogV2.wait({
       window: {
-        title: game.i18n.format("SR5.PickpocketTitle", {
+        title: game.i18n.format(titleKey, {
           name: SR5Pickpocket.tokenOf(messageData.target.actorId)?.name ?? target.name
         })
       },
-      content: `<div class="form-group"><label>${escape(game.i18n.localize("SR5.PickpocketItem"))}</label><select name="itemId" ${locked}><option value="">${escape(game.i18n.localize("SR5.PickpocketRandom"))}</option>${options}</select></div><div class="form-group"><label>${escape(game.i18n.localize("SR5.PickpocketQuantity"))}</label><input type="number" name="quantity" min="1" step="1" value="${chosenItem ? defaultTakeQuantity(chosenItem) : ""}" placeholder="${escape(game.i18n.localize("SR5.PickpocketQuantityDefault"))}"/></div>${box("distracted")}${box("attentive")}${box("diversion")}`,
+      content: `<div class="form-group"><label>${escape(game.i18n.localize("SR5.PickpocketItem"))}</label><select name="itemId" ${locked}><option value="">${escape(game.i18n.localize("SR5.PickpocketRandom"))}</option>${options}</select></div><div class="form-group"><label>${escape(game.i18n.localize(quantityKey))}</label><input type="number" name="quantity" min="1" step="1" value="${chosenQuantity}" placeholder="${escape(game.i18n.localize("SR5.PickpocketQuantityDefault"))}"/></div>${box("distracted")}${box("attentive")}${box("diversion")}`,
       buttons: [{
         action: "ok",
         label: game.i18n.localize("SR5.SkillPerception"),
@@ -239,13 +305,16 @@ export class SR5Pickpocket {
     return game.users.filter(u => u.isGM || (actor && actor.testUserPermission(u, "OWNER"))).map(u => u.id)
   }
 
-  //The target learns of it: with the thief's name when caught or noticed, without when he only felt something
-  static async alertTarget(targetId, thiefId, named) {
+  //The target learns of it: with the thief's name when caught or noticed, without when he only felt something.
+  //Planting, a critical glitch drops the object at the target's feet (arbitrage de DjamZ, 2026-10-05)
+  static async alertTarget(targetId, thiefId, named, mode = "take", dropped = false) {
     const target = SR5_EntityHelpers.getRealActorFromID(targetId)
     const thief = SR5_EntityHelpers.getRealActorFromID(thiefId)
     const name = SR5Pickpocket.tokenOf(targetId)?.name ?? target?.name ?? ""
     const thiefName = SR5Pickpocket.tokenOf(thiefId)?.name ?? thief?.name ?? ""
-    const text = named ? game.i18n.format("SR5.PickpocketAlertNamed", {
+    let namedKey = "SR5.PickpocketAlertNamed"
+    if (mode === "plant") namedKey = dropped ? "SR5.PickpocketPlantAlertDropped" : "SR5.PickpocketPlantAlertNamed"
+    const text = named ? game.i18n.format(namedKey, {
       name, thief: thiefName
     }) : game.i18n.format("SR5.PickpocketAlertFelt", {
       name
@@ -261,7 +330,8 @@ export class SR5Pickpocket {
     if (!game.user.isGM) return
     const thiefId = type === "pickpocketCaught" ? messageData.owner.actorId : messageData.previousMessage.actorId
     const targetId = type === "pickpocketCaught" ? messageData.target.actorId : messageData.owner.actorId
-    await SR5Pickpocket.alertTarget(targetId, thiefId, true)
+    //The object dropped stays the thief's in the system: where it lands is the GM's call
+    await SR5Pickpocket.alertTarget(targetId, thiefId, true, messageData.various?.pickpocketMode ?? "take", type === "pickpocketCaught")
     await game.messages.get(type === "pickpocketCaught" ? messageId : messageData.previousMessage.messageId)?.update({
       "flags.sr5data.various.pickpocketDone": true
     })
@@ -330,8 +400,10 @@ export class SR5Pickpocket {
     }
 
     await ChatMessage.create({
-      content: `<p>${foundry.utils.escapeHTML(game.i18n.format("SR5.PickpocketDone", {
-        thief: SR5Pickpocket.tokenOf(thiefId)?.name ?? thief.name, item: split.quantity > 1 || pileSize(item) > 1 ? `${item.name} ×${split.quantity}` : item.name
+      content: `<p>${foundry.utils.escapeHTML(game.i18n.format(mode === "plant" ? "SR5.PickpocketPlantDone" : "SR5.PickpocketDone", {
+        thief: SR5Pickpocket.tokenOf(thiefId)?.name ?? thief.name,
+        target: SR5Pickpocket.tokenOf(targetId)?.name ?? target.name,
+        item: split.quantity > 1 || pileSize(item) > 1 ? `${item.name} ×${split.quantity}` : item.name
       }))}</p>`,
       whisper: SR5Pickpocket.whisperFor(thief),
     })

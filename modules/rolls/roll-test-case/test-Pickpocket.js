@@ -12,7 +12,9 @@ import {
 //2026-10-05); anything else goes to the target's Perception, which notices on a tie, even against no hit
 export default async function pickpocketInfo(cardData){
   if (cardData.roll.criticalGlitchRoll) {
-    cardData.chatCard.buttons.pickpocketCaught = SR5_RollMessage.generateChatButton("nonOpposedTest", "pickpocketCaught", game.i18n.localize("SR5.PickpocketCaught"), true)
+    //Planting, the object falls next to the target instead (arbitrage de DjamZ, 2026-10-05)
+    const caughtKey = cardData.various?.pickpocketMode === "plant" ? "SR5.PickpocketPlantCaught" : "SR5.PickpocketCaught"
+    cardData.chatCard.buttons.pickpocketCaught = SR5_RollMessage.generateChatButton("nonOpposedTest", "pickpocketCaught", game.i18n.localize(caughtKey), true)
     return
   }
   let label = game.i18n.localize("SR5.PickpocketPerceptionButton")
@@ -32,7 +34,7 @@ export async function pickpocketPerceptionInfo(cardData){
   if (outcome === "noticed") {
     cardData.chatCard.buttons.pickpocketNoticed = SR5_RollMessage.generateChatButton("nonOpposedTest", "pickpocketNoticed", game.i18n.localize("SR5.PickpocketNoticed"), true)
   } else {
-    cardData.chatCard.buttons.pickpocketTransfer = SR5_RollMessage.generateChatButton("nonOpposedTest", "pickpocketTransfer", game.i18n.format("SR5.PickpocketTransfer", {
+    cardData.chatCard.buttons.pickpocketTransfer = SR5_RollMessage.generateChatButton("nonOpposedTest", "pickpocketTransfer", game.i18n.format(cardData.various.pickpocketMode === "plant" ? "SR5.PickpocketPlantTransfer" : "SR5.PickpocketTransfer", {
       item: `${cardData.various.pickpocketItemName ?? ""}${cardData.various.pickpocketQuantity > 1 ? ` ×${cardData.various.pickpocketQuantity}` : ""}`
     }), true)
   }

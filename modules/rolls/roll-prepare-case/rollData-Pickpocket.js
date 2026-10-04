@@ -37,6 +37,8 @@ export default async function pickpocket(rollData, actor, chatData){
   rollData.various.pickpocketMode = chatData?.mode === "plant" ? "plant" : "take"
   //Only when the world lets the thief choose on his own; otherwise the GM chooses
   rollData.various.pickpocketItemId = chatData?.itemId ?? null
+  //Planting, the thief says how many of a pile; the GM's field starts from it
+  if (rollData.various.pickpocketMode === "plant") rollData.various.pickpocketQuantity = chatData?.quantity ?? null
 
   return rollData
 }

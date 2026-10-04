@@ -18,7 +18,7 @@ export default function pickpocketPerception(rollData, actor, chatData){
   const skill = actor.system.skills?.perception
   const skillModifiers = skill?.test?.modifiers ?? []
 
-  rollData.test.title = `${game.i18n.localize("SR5.SkillPerception")} ${game.i18n.localize("SR5.Against")} ${game.i18n.localize("SR5.Pickpocket")} (${chatData.roll.hits})`
+  rollData.test.title = `${game.i18n.localize("SR5.SkillPerception")} ${game.i18n.localize("SR5.Against")} ${game.i18n.localize(chatData.various?.pickpocketMode === "plant" ? "SR5.PickpocketPlant" : "SR5.Pickpocket")} (${chatData.roll.hits})`
 
   //Perception and Intuition; a creature without skills uses Intuition alone
   if (skill) rollData.dicePool.composition = skillModifiers.filter(mod => (mod.type === "skillRating" || mod.type === "skillGroup" || mod.type === "linkedAttribute"))
