@@ -22,6 +22,9 @@ import {
 import {
   SR5ShopGrades
 } from './shop-grades.js'
+import {
+  SR5ShopStock
+} from './shop-stock.js'
 
 const ALL_FILTERS = {
   ...BROWSER_FILTERS, ...ACTOR_BROWSER_FILTERS, ...OTHER_BROWSER_FILTERS
@@ -396,7 +399,10 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
     const maxItems = (this._page + 1) * this._pageSize
     const page = filtered.slice(0, maxItems)
     await this._ensureDetails(page)
-    const results = page.map(e => {
+    // A prototype is hidden from the players and shown to the gamemaster (Élise's choice, 2026-10-05).
+    // The flag lives in the details, so it is filtered once the page is fetched.
+    const shown = game.user.isGM ? page : page.filter(e => !SR5ShopStock.isNotForSale(e))
+    const results = shown.map(e => {
       const def = ALL_FILTERS[e.type]
       let typeLabel = game.i18n.localize(def?.label || e.type)
       if (def?.subtypes) {
@@ -422,7 +428,14 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
         ...e,
         typeLabel,
         typeIcon: def?.icon || 'fa-cube',
-        info: getEntryInfo(e, lists),
+        // The summary line follows the grade chosen: its grade and its price
+        info: getEntryInfo(grade ? {
+          ...e, system: {
+            ...e.system, grade, price: {
+              ...e.system.price, base: price
+            }
+          }
+        } : e, lists),
         canBuy: buyer !== null && price !== null,
         priceLabel: price === null ? '' : `${price.toLocaleString()}¥`,
         tooExpensive: !free && price !== null && buyer !== null && price > buyerFunds,
@@ -431,7 +444,7 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
           key, label: game.i18n.localize(SR5.augmentationGrades[key]), selected: key === grade,
         })),
         gradeInfo: grade ? game.i18n.format('SR5.ShopGradeInfo', {
-          availability: SR5ShopGrades.availability(e.system, grade),
+          availability: SR5ShopGrades.availabilityLabel(e.system, grade),
           essence: SR5ShopGrades.essence(e.system, grade).toLocaleString(),
         }) : '',
         notForSale: game.user.isGM && e.flags?.sr5?.notForSale === true,

@@ -152,18 +152,26 @@ export class SR5ShopStock {
         const active = document.getFlag('sr5', flag) === true
         // currentTarget is gone once the event has been dispatched, so it is taken now
         const button = event?.currentTarget ?? app.element?.querySelector(`[data-action="sr5Shop-${flag}"] button`)
-        try {
-          await document.setFlag('sr5', flag, !active)
-        } catch (_err) {
-          // A locked compendium refuses the write: say so instead of nothing
+        // A locked compendium refuses the write: one message of ours, rather than
+        // letting Foundry raise its own error on top of it
+        if (document.pack && game.packs.get(document.pack)?.locked) {
           ui.notifications.warn(game.i18n.localize('SR5.WARN_ShopFlagLocked'))
           return
         }
+        await document.setFlag('sr5', flag, !active)
         // ...and a render does not rebuild it, so the entry is relabelled in place
         const now = look(!active)
         button?.querySelector('.control-icon')?.setAttribute('class', `control-icon fa-fw ${now.icon}`)
         const label = button?.querySelector('.control-label')
         if (label) label.innerText = game.i18n.localize(now.label)
+        // An open shop drops what it had read of that entry and redraws, so the
+        // buy button follows the flag without a refresh
+        const browser = game.sr5?.compendiumBrowser?._instance
+        const entry = browser?._indexCache?.find(e => e.uuid === document.uuid)
+        if (entry) {
+          entry._detailed = false
+          if (browser.rendered) browser.render()
+        }
       },
     })
   }

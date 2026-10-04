@@ -10,6 +10,9 @@ import {
 import {
   SR5ShopStock
 } from '../modules/interface/shop-stock.js'
+import {
+  SR5_EntityHelpers
+} from '../modules/entities/helpers.js'
 
 describe('implant grade table', () => {
   it('holds SR5 p. 454 for the five core grades', () => {
@@ -274,5 +277,54 @@ describe('buyers', () => {
     expect(SR5ShopStock.buyers(all, player, {
       equip: true
     })).toEqual([])
+  })
+})
+
+describe('second review (Dana)', () => {
+  it('places every grade in Equip mode, greyware still cyberware only (BTB p. 142)', () => {
+    const cyber = SR5ShopGrades.available({
+      augmentationType: 'cyberware', all: true
+    })
+    expect(cyber).toContain('gamma')
+    expect(cyber).toContain('greyware')
+    for (const augmentationType of ['bioware', 'culturedBioware']) {
+      const grades = SR5ShopGrades.available({
+        augmentationType, all: true, greyware: true
+      })
+      expect(grades).toContain('gamma')
+      expect(grades).not.toContain('greyware')
+    }
+  })
+
+  it('keeps the legality letter on the regraded availability', () => {
+    const localize = globalThis.game.i18n.localize
+    globalThis.game.i18n.localize = (key) => ({
+      'SR5.RestrictedShort': 'R', 'SR5.ForbiddenShort': 'P'
+    }[key] ?? key)
+    try {
+      const item = (legality) => ({
+        grade: 'standard', legality, availability: {
+          value: 3
+        }
+      })
+      expect(SR5ShopGrades.availabilityLabel(item('R'), 'alphaware')).toBe('5R')
+      expect(SR5ShopGrades.availabilityLabel(item('F'), 'deltaware')).toBe('11P')
+      expect(SR5ShopGrades.availabilityLabel(item(''), 'used')).toBe('0')
+    } finally {
+      globalThis.game.i18n.localize = localize
+    }
+  })
+
+  it('announces the Essence the created item will carry, rounded the same way', () => {
+    for (const base of [0.1, 0.2, 0.3, 0.05, 1, 0.15]) {
+      for (const grade of Object.keys(AUGMENTATION_GRADE_TABLE)) {
+        const item = SR5_EntityHelpers.roundDecimal(base * AUGMENTATION_GRADE_TABLE[grade].essence, 2)
+        expect(SR5ShopGrades.essence({
+          grade: 'standard', essenceCost: {
+            value: base
+          }
+        }, grade), `${base} ${grade}`).toBe(item)
+      }
+    }
   })
 })

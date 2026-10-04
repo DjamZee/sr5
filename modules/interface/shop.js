@@ -5,7 +5,7 @@ import {
   SR5_SystemHelpers 
 } from '../system/utilitySystem.js'
 import {
-  SR5, AUGMENTATION_GRADE_TABLE
+  SR5
 } from '../config.js'
 import {
   SR5ShopStock
@@ -47,10 +47,10 @@ export class SR5Shop {
   } = {
   }) {
     if (!SR5ShopGrades.isGraded(type, system)) return []
-    // Equip mode places anything the table knows, gamma and greyware included
-    if (equip) return Object.keys(AUGMENTATION_GRADE_TABLE)
     return SR5ShopGrades.available({
       augmentationType: system.type,
+      // Equip mode places every grade, the world options aside — greyware still cyberware only
+      all: equip,
       creation: SR5Shop.creationMode,
       gamma: game.settings.get('sr5', 'sr5ShopGradeGamma') === true,
       greyware: game.settings.get('sr5', 'sr5ShopGradeGreyware') === true,
@@ -171,6 +171,15 @@ export class SR5Shop {
     }
     if (!lines?.length) return false
     equip = equip && game.user.isGM
+    // The buyer list is only a display: the gamemaster's rule is checked again at the till,
+    // so a card cashed later or a call from a macro cannot spend for an actor outside it
+    // (Élise's choice, 2026-10-05). Equip mode is the gamemaster's and skips it.
+    if (!equip && !SR5ShopStock.isBuyer(actor, SR5ShopStock.buyerRule)) {
+      ui.notifications.warn(game.i18n.format('SR5.WARN_ShopNotABuyer', {
+        name: actor.name
+      }))
+      return false
+    }
 
     // A line whose source has vanished from its compendium is dropped rather
     // than silently charged for; so is one the shop does not sell.

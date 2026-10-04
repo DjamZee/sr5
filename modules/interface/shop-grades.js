@@ -1,5 +1,5 @@
 import {
-  AUGMENTATION_GRADE_TABLE
+  SR5, AUGMENTATION_GRADE_TABLE
 } from '../config.js'
 
 /**
@@ -34,12 +34,16 @@ export class SR5ShopGrades {
    * @param {boolean} options.creation the shop's creation mode
    * @param {boolean} options.gamma world option, Chrome Flesh p. 74
    * @param {boolean} options.greyware world option, Better Than Bad p. 142
+   * @param {boolean} options.all the gamemaster's Equip mode: every grade
    */
   static available({
-    augmentationType, creation = false, gamma = false, greyware = false
+    augmentationType, creation = false, gamma = false, greyware = false, all = false
   } = {
   }) {
     if (!SR5ShopGrades.GRADED_TYPES.includes(augmentationType)) return ['standard']
+    // The gamemaster's Equip mode places every grade the book knows, whatever the world
+    // options; greyware stays cyberware only even there (BTB p. 142)
+    if (all) return [...SR5ShopGrades.CORE, 'gamma', ...(augmentationType === 'cyberware' ? ['greyware'] : [])]
     const grades = [...(creation ? SR5ShopGrades.CREATION : SR5ShopGrades.CORE)]
     // Gamma ware is a prototype: never at creation (DjamZ's ruling, 2026-10-05)
     if (gamma && !creation) grades.push('gamma')
@@ -74,17 +78,33 @@ export class SR5ShopGrades {
     return Math.max(0, value - from + SR5ShopGrades.row(grade).availability)
   }
 
-  /** The Essence cost of `system` once regraded to `grade`. */
-  static essence(system, grade) {
-    const value = Number(system?.essenceCost?.value ?? system?.essenceCost?.base ?? 0) || 0
-    const from = SR5ShopGrades.row(system?.grade).essence
-    return Math.round(value / from * SR5ShopGrades.row(grade).essence * 10000) / 10000
+  /**
+   * The regraded availability as the books print it: the rating, then the
+   * legality letter — `5R`, `12P`, or a bare number for legal gear.
+   */
+  static availabilityLabel(system, grade) {
+    const letter = SR5.legalTypesShort[system?.legality]
+    return `${SR5ShopGrades.availability(system, grade)}${letter ? game.i18n.localize(letter) : ''}`
   }
 
   /**
-   * Greyware is "incompatible avec la physiologie des personnages Éveillés"
-   * (BTB p. 142). The book gives no mechanism, so the shop warns and does not
-   * block (DjamZ's ruling, 2026-10-05).
+   * The Essence cost of `system` once regraded to `grade`, rounded as the item
+   * itself rounds it (`SR5_EntityHelpers.updateValue`, two decimals): the cost
+   * announced at the counter is the one the sheet will show.
+   */
+  static essence(system, grade) {
+    const value = Number(system?.essenceCost?.value ?? system?.essenceCost?.base ?? 0) || 0
+    const from = SR5ShopGrades.row(system?.grade).essence
+    const standard = from === 1 ? value : value / from
+    return Math.round(standard * SR5ShopGrades.row(grade).essence * 100) / 100
+  }
+
+  /**
+   * Greyware on an Awakened character: "en plus de la perte de Magie due à la
+   * réduction d'Essence, les personnages Éveillés perdent un point de Magie
+   * supplémentaire ainsi qu'une réduction d'un point de leur maximum de Magie,
+   * par implant GreyWare installé" (BTB p. 142). The shop warns and quotes that
+   * penalty; it does not apply it (awaiting DjamZ's ruling).
    */
   static isAwakened(actor) {
     const magic = actor?.system?.specialAttributes?.magic
