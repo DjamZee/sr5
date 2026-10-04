@@ -57,7 +57,7 @@
   <section class="sr-browser-results">
     <header class="sr-browser-results-header">
       <span class="sr-browser-count">{{shownCount}} / {{totalCount}}</span>
-      {{#if buyers.length}}
+      {{#if (or buyers.length isGM)}}
       <div class="sr-browser-shop">
         <i class="fas fa-sm fa-cart-shopping"></i>
         <select data-shop-buyer>
@@ -69,7 +69,7 @@
           {{/each}}
         </select>
         {{#if buyer}}
-        <span class="sr-browser-shop-funds {{#if creationMode}}muted{{/if}}">{{buyer.funds}}&yen;</span>
+        <span class="sr-browser-shop-funds {{#if free}}muted{{/if}}">{{buyer.funds}}&yen;</span>
         {{/if}}
         {{#if hasContacts}}
         <select data-shop-contact data-tooltip="{{localize 'SR5.ShopSearchedBy'}}">
@@ -96,10 +96,18 @@
           <i class="fas fa-sm fa-hand-holding-dollar"></i>
         </button>
         {{/if}}
+        {{#if isGM}}
         <label class="sr-browser-shop-creation" data-tooltip="{{localize 'SR5.ShopCreationModeHint'}}">
           <input type="checkbox" data-shop-creation {{#if creationMode}}checked{{/if}}>
           <span>{{localize 'SR5.ShopCreationMode'}}</span>
         </label>
+        <label class="sr-browser-shop-creation" data-tooltip="{{localize 'SR5.ShopEquipModeHint'}}">
+          <input type="checkbox" data-shop-equip {{#if equipMode}}checked{{/if}}>
+          <span>{{localize 'SR5.ShopEquipMode'}}</span>
+        </label>
+        {{else if creationMode}}
+        <span class="sr-browser-shop-creation" data-tooltip="{{localize 'SR5.ShopCreationModeHint'}}">{{localize 'SR5.ShopCreationMode'}}</span>
+        {{/if}}
       </div>
       {{/if}}
       <div class="sr-browser-sort">
@@ -133,9 +141,24 @@
           {{#if this.info}}
           <div class="sr-browser-result-info">{{this.info}}</div>
           {{/if}}
+          {{#if this.gradeInfo}}
+          <div class="sr-browser-result-info">{{this.gradeInfo}}</div>
+          {{/if}}
+          {{#if this.notForSale}}
+          <div class="sr-browser-result-info"><i class="fas fa-sm fa-store-slash"></i> {{localize 'SR5.ShopNotForSale'}}</div>
+          {{/if}}
         </div>
         {{#if this.canBuy}}
         <div class="sr-browser-result-buy">
+          {{#if this.grades.length}}
+          <span class="sr-browser-buy-grade" data-tooltip="{{localize 'SR5.AugmentationGrade'}}">
+            <select data-shop-grade aria-label="{{localize 'SR5.AugmentationGrade'}}">
+              {{#each this.grades}}
+              <option value="{{this.key}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+              {{/each}}
+            </select>
+          </span>
+          {{/if}}
           <input type="number" class="sr-browser-buy-qty" min="1" value="1" aria-label="{{localize 'SR5.Quantity'}}">
           <button type="button" data-action="addToCart" class="sr-browser-cart-add"
                   data-tooltip="{{localize 'SR5.ShopAddToCart'}}">
@@ -172,7 +195,7 @@
       </header>
       <ul class="sr-browser-cart-list">
         {{#each cart}}
-        <li class="sr-browser-cart-line" data-uuid="{{this.uuid}}">
+        <li class="sr-browser-cart-line" data-uuid="{{this.uuid}}" data-cart-key="{{this.uuid}}|{{this.grade}}">
           <img src="{{this.img}}" alt="">
           <span class="sr-browser-cart-name">{{this.name}}</span>
           <input type="number" class="sr-browser-cart-qty" min="1" value="{{this.quantity}}"
@@ -192,7 +215,7 @@
         <button type="button" data-action="checkoutCart" {{#unless canCheckout}}disabled{{/unless}}
                 class="{{#unless cartAffordable}}too-expensive{{/unless}}">
           <i class="fas fa-sm fa-receipt"></i>
-          {{#if creationMode}}{{localize 'SR5.ShopCheckoutFree'}}{{else}}{{localize 'SR5.ShopCheckout'}}{{/if}}
+          {{#if equipMode}}{{localize 'SR5.ShopEquipCheckout'}}{{else if creationMode}}{{localize 'SR5.ShopCheckoutFree'}}{{else}}{{localize 'SR5.ShopCheckout'}}{{/if}}
         </button>
       </footer>
     </section>

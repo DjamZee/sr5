@@ -1,5 +1,5 @@
 import {
-  SR5 
+  SR5, AUGMENTATION_GRADE_TABLE 
 } from "../../config.js"
 import {
   SR5_SystemHelpers 
@@ -1349,41 +1349,16 @@ export class SR5_UtilityItem extends Actor {
       SR5_EntityHelpers.updateModifier(itemData.price, game.i18n.localize('SR5.AugmentationCyberlimbs'), 'CustomCyberlimb', cyberlimbsPriceMod)
     }
 
-    switch (itemData.grade){
-      case "standard":
-        essenceMultiplier = 1
-        deviceRating = 2
-        availabilityModifier = 0
-        priceMultiplier = 1
-        break
-      case "alphaware":
-        essenceMultiplier = 0.8
-        deviceRating = 3
-        availabilityModifier = 2
-        priceMultiplier = 1.2
-        break
-      case "betaware":
-        essenceMultiplier = 0.7
-        deviceRating = 4
-        availabilityModifier = 4
-        priceMultiplier = 1.5
-        break
-      case "deltaware":
-        essenceMultiplier = 0.5
-        deviceRating = 5
-        availabilityModifier = 8
-        priceMultiplier = 2.5
-        break
-      case "used":
-        essenceMultiplier = 1.25
-        deviceRating = 2
-        availabilityModifier = -4
-        priceMultiplier = 0.75
-        break
-      default:
-        SR5_SystemHelpers.srLog(1, `Unknown '${itemData.grade}' grade in _handleAugmentation()`)
-        return
+    // One table for the sheet and the shop: AUGMENTATION_GRADE_TABLE (SR5 p. 454, CF p. 74, BTB p. 142)
+    const grade = AUGMENTATION_GRADE_TABLE[itemData.grade]
+    if (!grade) {
+      SR5_SystemHelpers.srLog(1, `Unknown '${itemData.grade}' grade in _handleAugmentation()`)
+      return
     }
+    essenceMultiplier = grade.essence
+    deviceRating = grade.deviceRating
+    availabilityModifier = grade.availability
+    priceMultiplier = grade.price
     itemData.deviceRating = deviceRating
     modifierSource = `${game.i18n.localize(SR5.augmentationGrades[itemData.grade])}`
     SR5_EntityHelpers.updateModifier(itemData.availability, modifierSource, "augmentationGrade", availabilityModifier, false, false)

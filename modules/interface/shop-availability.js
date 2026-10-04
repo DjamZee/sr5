@@ -2,6 +2,9 @@ import {
   SR5Shop
 } from './shop.js'
 import {
+  SR5ShopGrades
+} from './shop-grades.js'
+import {
   SR5_SystemHelpers
 } from '../system/utilitySystem.js'
 import {
@@ -316,15 +319,19 @@ export class SR5ShopAvailability {
       const source = await fromUuid(line.uuid)
       if (!source) continue
       const quantity = Math.max(1, Math.floor(Number(line.quantity) || 1))
-      const availability = SR5ShopAvailability.availabilityOf(source.system)
-      const unit = Math.round(SR5Shop.unitPrice(source.system) * (1 + Math.max(0, surcharge) / 100))
+      // An implant is looked for at the grade chosen: price and availability follow it (SR5 p. 454)
+      const grade = SR5Shop.gradesFor(source.type, source.system).includes(line.grade) ? line.grade : null
+      const name = SR5Shop.gradedName(source.name, grade)
+      const listed = SR5Shop.gradedPrice(source.system, grade)
+      const availability = grade ? SR5ShopGrades.availability(source.system, grade) : SR5ShopAvailability.availabilityOf(source.system)
+      const unit = Math.round(listed * (1 + Math.max(0, surcharge) / 100))
       const price = unit * quantity
 
       // No availability rating: "Les objets sans Disponibilité peuvent être
       // achetés sans soucis" (SR5 p. 419). No test, straight to the counter.
       if (!availability) {
         results.push({
-          uuid: line.uuid, name: source.name, quantity, price, availability: 0,
+          uuid: line.uuid, grade, name, quantity, price, availability: 0,
           priceLabel: `${price.toLocaleString()}¥`,
           outcome: 'common', obtained: true, delayLabel: '—',
           outcomeLabel: game.i18n.localize('SR5.ShopOutcome_common'),
@@ -338,7 +345,7 @@ export class SR5ShopAvailability {
       // spends none, so nothing is rolled, not even the availability's dice.
       if (!pool) {
         results.push({
-          uuid: line.uuid, name: source.name, quantity, price, availability,
+          uuid: line.uuid, grade, name, quantity, price, availability,
           priceLabel: `${price.toLocaleString()}¥`,
           outcome: 'noPool', obtained: false, untested: true, delayLabel: '—',
           outcomeLabel: game.i18n.localize('SR5.ShopOutcome_noPool'),
@@ -352,7 +359,7 @@ export class SR5ShopAvailability {
       const netHits = hits - opposition.hits
       // GM ruling (05/10): the search time comes from the base price, not the one raised by the surcharge
       // SR5 p. 420 does not say which price: DjamZ filled the gap. A ruling, not a house rule, so no setting
-      const baseDelay = SR5ShopAvailability.delayFor(SR5Shop.unitPrice(source.system) * quantity)
+      const baseDelay = SR5ShopAvailability.delayFor(listed * quantity)
 
       let outcome, obtained, delay
       if (test.criticalGlitch) {
@@ -381,7 +388,8 @@ export class SR5ShopAvailability {
 
       results.push({
         uuid: line.uuid,
-        name: source.name,
+        grade,
+        name,
         quantity,
         price,
         priceLabel: `${price.toLocaleString()}¥`,
@@ -459,7 +467,7 @@ export class SR5ShopAvailability {
         if (!data) return
         const actor = game.actors.get(data.buyerId)
         const lines = data.results.filter(r => r.obtained).map(r => ({
-          uuid: r.uuid, quantity: r.quantity, name: r.name,
+          uuid: r.uuid, quantity: r.quantity, name: r.name, grade: r.grade,
         }))
         const bought = await SR5Shop.checkout(actor, lines)
         // The goods are cashed once: the button goes, the card stays.

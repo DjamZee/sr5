@@ -17,8 +17,11 @@ import {
   SR5ShopAvailability 
 } from './shop-availability.js'
 import {
-  SR5SellDialog 
+  SR5SellDialog
 } from './shop-sell-dialog.js'
+import {
+  SR5ShopGrades
+} from './shop-grades.js'
 
 const ALL_FILTERS = {
   ...BROWSER_FILTERS, ...ACTOR_BROWSER_FILTERS, ...OTHER_BROWSER_FILTERS
@@ -107,7 +110,12 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
     this._page = 0
     this._pageSize = 100
     this._buyerId = null
-    // Shopping list, kept while the window lives: [{uuid, name, img, quantity}]
+    // The gamemaster's Equip mode: any actor, free, no transaction
+    this._equipMode = false
+    // The grade chosen on each implant row, by uuid
+    this._grades = {
+    }
+    // Shopping list, kept while the window lives: [{uuid, grade, name, img, quantity}]
     this._cart = []
     this._contactId = null
     this._surcharge = 0
@@ -182,7 +190,11 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
         const byId = new Map(documents.map(d => [d.id, d]))
         for (const entry of list) {
           const document = byId.get(entry._id)
-          if (document) entry.system = document.system
+          if (document) {
+            entry.system = document.system
+            // the "not for sale / prototype" flag lives there, not in the light index
+            entry.flags = document.flags
+          }
           entry._detailed = true
         }
       } catch (err) {
@@ -367,12 +379,17 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
     const totalCount = filtered.length
 
     // Who is spending, and how much is left to spend
-    const buyers = SR5Shop.getBuyers()
+    const equip = this._equipMode && game.user.isGM
+    const buyers = SR5Shop.getBuyers({
+      equip
+    })
     if (this._buyerId && !buyers.some(a => a.id === this._buyerId)) this._buyerId = null
     if (!this._buyerId) this._buyerId = SR5Shop.defaultBuyerId(buyers)
     const buyer = buyers.find(a => a.id === this._buyerId) || null
     const buyerFunds = buyer ? SR5Shop.balance(buyer) : 0
     const creationMode = SR5Shop.creationMode
+    // Nothing is charged in creation mode or in Equip mode
+    const free = creationMode || equip
 
     // Paginate, then fetch the details of that page alone
     const lists = SR5_EntityHelpers.sortTranslations(SR5)
@@ -388,7 +405,19 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
         }
         if (subVal && optionsMap[subVal]) typeLabel = game.i18n.localize(optionsMap[subVal])
       }
-      const price = SR5Shop.isPurchasable(e) ? SR5Shop.unitPrice(e.system) : null
+      const sellable = SR5Shop.isPurchasable(e, {
+        equip
+      })
+      // Implants are sold in grades (SR5 p. 454): the row carries the choice
+      const offered = sellable ? SR5Shop.gradesFor(e.type, e.system, {
+        equip
+      }) : []
+      let grade = null
+      if (offered.length) {
+        if (!offered.includes(this._grades[e.uuid])) this._grades[e.uuid] = offered.includes(e.system?.grade) ? e.system.grade : 'standard'
+        grade = this._grades[e.uuid]
+      }
+      const price = sellable ? SR5Shop.gradedPrice(e.system, grade) : null
       return {
         ...e,
         typeLabel,
@@ -396,7 +425,16 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
         info: getEntryInfo(e, lists),
         canBuy: buyer !== null && price !== null,
         priceLabel: price === null ? '' : `${price.toLocaleString()}¥`,
-        tooExpensive: !creationMode && price !== null && buyer !== null && price > buyerFunds,
+        tooExpensive: !free && price !== null && buyer !== null && price > buyerFunds,
+        grade,
+        grades: offered.map(key => ({
+          key, label: game.i18n.localize(SR5.augmentationGrades[key]), selected: key === grade,
+        })),
+        gradeInfo: grade ? game.i18n.format('SR5.ShopGradeInfo', {
+          availability: SR5ShopGrades.availability(e.system, grade),
+          essence: SR5ShopGrades.essence(e.system, grade).toLocaleString(),
+        }) : '',
+        notForSale: game.user.isGM && e.flags?.sr5?.notForSale === true,
       }
     })
 
@@ -409,7 +447,7 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
     let cartTotal = 0
     for (const line of this._cart) {
       const entry = allEntries.find(e => e.uuid === line.uuid)
-      const unit = entry?.system ? SR5Shop.unitPrice(entry.system) : line.unit ?? 0
+      const unit = entry?.system ? SR5Shop.gradedPrice(entry.system, line.grade) : line.unit ?? 0
       const total = unit * line.quantity
       cartTotal += total
       cartLines.push({
@@ -420,7 +458,7 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
     context.cartCount = cartLines.length
     context.cartTotal = cartTotal
     context.cartTotalLabel = `${cartTotal.toLocaleString()}¥`
-    context.cartAffordable = creationMode || cartTotal <= buyerFunds
+    context.cartAffordable = free || cartTotal <= buyerFunds
     context.canCheckout = buyer !== null && cartLines.length > 0
     // Who does the looking, and how much is offered on top of the price
     const contacts = SR5ShopAvailability.getContacts(buyer)
@@ -450,6 +488,9 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
       selected: value === this._surcharge,
     }))
     context.creationMode = creationMode
+    context.equipMode = equip
+    context.free = free
+    context.isGM = game.user.isGM
     context.buyer = buyer ? {
       id: buyer.id, name: buyer.name, funds: buyerFunds.toLocaleString() 
     } : null
@@ -533,10 +574,10 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
     // Quantity fields inside the cart panel
     el.querySelectorAll('.sr-browser-cart-qty').forEach(input => {
       input.addEventListener('change', (event) => {
-        const uuid = event.target.closest('[data-uuid]')?.dataset.uuid
-        const line = this._cart.find(l => l.uuid === uuid)
+        const key = event.target.closest('[data-cart-key]')?.dataset.cartKey
+        const line = this._cart.find(l => SR5CompendiumBrowser.#cartKey(l) === key)
         if (!line) return
-        line.quantity = Math.max(1, Math.floor(Number(event.target.value) || 1))
+        line.quantity= Math.max(1, Math.floor(Number(event.target.value) || 1))
         this.render()
       })
       input.addEventListener('click', (event) => event.stopPropagation())
@@ -548,14 +589,37 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
       input.addEventListener('dragstart', (event) => event.preventDefault())
     })
 
-    // Creation mode
+    // Creation mode: a world setting, the gamemaster's alone (DjamZ's ruling, 2026-10-05)
     const creationToggle = el.querySelector('[data-shop-creation]')
     if (creationToggle) {
       creationToggle.addEventListener('change', async (event) => {
+        if (!game.user.isGM) return
         await game.settings.set('sr5', 'sr5ShopCreationMode', event.target.checked)
         this.render()
       })
     }
+
+    // Equip mode, gamemaster only
+    const equipToggle = el.querySelector('[data-shop-equip]')
+    if (equipToggle) {
+      equipToggle.addEventListener('change', (event) => {
+        this._equipMode = game.user.isGM && event.target.checked
+        this._buyerId = null
+        this.render()
+      })
+    }
+
+    // Grade of an implant row. The dropdown sits inside a row that opens the sheet when clicked.
+    el.querySelectorAll('.sr-browser-buy-grade').forEach(wrap => {
+      wrap.addEventListener('click', (event) => event.stopPropagation())
+    })
+    el.querySelectorAll('[data-shop-grade]').forEach(select => {
+      select.addEventListener('change', (event) => {
+        const uuid = event.target.closest('[data-uuid]')?.dataset.uuid
+        if (uuid) this._grades[uuid] = event.target.value
+        this.render()
+      })
+    })
 
     // Contact and surcharge selectors
     const contactSelect = el.querySelector('[data-shop-contact]')
@@ -649,14 +713,16 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
     const uuid = row?.dataset.uuid
     if (!uuid) return
     const quantity = SR5CompendiumBrowser.#rowQuantity(row)
-    const existing = this._cart.find(line => line.uuid === uuid)
+    const grade = this._grades[uuid] ?? null
+    const existing = this._cart.find(line => line.uuid === uuid && line.grade === grade)
     if (existing) {
       existing.quantity += quantity
     } else {
       this._cart.push({
         uuid,
+        grade,
         quantity,
-        name: row.querySelector('.sr-browser-result-name')?.textContent.trim() ?? uuid,
+        name: SR5Shop.gradedName(row.querySelector('.sr-browser-result-name')?.textContent.trim() ?? uuid, grade),
         img: row.querySelector('.sr-browser-result-img')?.getAttribute('src') ?? '',
       })
     }
@@ -666,9 +732,14 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
 
   static #onRemoveFromCart(event, target) {
     event.stopPropagation()
-    const uuid = target.closest('[data-uuid]')?.dataset.uuid
-    this._cart = this._cart.filter(line => line.uuid !== uuid)
+    const key = target.closest('[data-cart-key]')?.dataset.cartKey
+    this._cart = this._cart.filter(line => SR5CompendiumBrowser.#cartKey(line) !== key)
     this.render()
+  }
+
+  /** One cart line per item and grade: alphaware and standard eyes are two lines. */
+  static #cartKey(line) {
+    return `${line.uuid}|${line.grade ?? ''}`
   }
 
   static #onClearCart() {
@@ -679,8 +750,10 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
   static async #onCheckoutCart() {
     const actor = game.actors.get(this._buyerId)
     const bought = await SR5Shop.checkout(actor, this._cart.map(line => ({
-      uuid: line.uuid, quantity: line.quantity, name: line.name 
-    })))
+      uuid: line.uuid, quantity: line.quantity, name: line.name, grade: line.grade
+    })), {
+      equip: this._equipMode
+    })
     if (bought) this._cart = []
     this.render()
   }
@@ -710,6 +783,7 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
     const actor = game.actors.get(this._buyerId)
     await SR5ShopAvailability.testLines(actor, this.#searchingContact(), [{
       uuid,
+      grade: this._grades[uuid] ?? null,
       quantity: SR5CompendiumBrowser.#rowQuantity(row),
       name: row.querySelector('.sr-browser-result-name')?.textContent.trim(),
     }], this._surcharge, this.#overrides())
@@ -719,7 +793,7 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
     if (!this._cart.length) return
     const actor = game.actors.get(this._buyerId)
     await SR5ShopAvailability.testLines(actor, this.#searchingContact(), this._cart.map(line => ({
-      uuid: line.uuid, quantity: line.quantity, name: line.name,
+      uuid: line.uuid, quantity: line.quantity, name: line.name, grade: line.grade,
     })), this._surcharge, this.#overrides())
   }
 
@@ -730,7 +804,9 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
     if (!uuid) return
     const quantity = SR5CompendiumBrowser.#rowQuantity(row)
     const actor = game.actors.get(this._buyerId)
-    const bought = await SR5Shop.buy(actor, uuid, quantity)
+    const bought = await SR5Shop.buy(actor, uuid, quantity, {
+      grade: this._grades[uuid] ?? null, equip: this._equipMode
+    })
     if (bought) this.render()
   }
 

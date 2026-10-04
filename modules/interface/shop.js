@@ -4,6 +4,15 @@ import {
 import {
   SR5_SystemHelpers 
 } from '../system/utilitySystem.js'
+import {
+  SR5, AUGMENTATION_GRADE_TABLE
+} from '../config.js'
+import {
+  SR5ShopStock
+} from './shop-stock.js'
+import {
+  SR5ShopGrades
+} from './shop-grades.js'
 
 /**
  * Purchases made from the compendium browser.
@@ -19,13 +28,38 @@ export class SR5Shop {
   static STACKABLE_TYPES = ['itemAmmunition', 'itemDrug', 'itemGear', 'itemWeapon']
 
   /**
-   * The actors the current user may spend for: their own character and anything
-   * they own, the whole roster for a gamemaster.
+   * The actors the current user may spend for, by the gamemaster's buyer rule
+   * (`SR5ShopStock.isBuyer`); a player only sees those they own. In Equip mode,
+   * every actor of the world for the gamemaster.
    */
-  static getBuyers() {
-    const actors = game.actors.filter(a => a.type === 'actorPc' &&
-      (game.user.isGM || a.isOwner))
-    return actors.sort((a, b) => a.name.localeCompare(b.name))
+  static getBuyers({
+    equip = false
+  } = {
+  }) {
+    return SR5ShopStock.buyers(game.actors, game.user, {
+      equip: equip && game.user.isGM, ...SR5ShopStock.buyerRule,
+    })
+  }
+
+  /** The grades offered for an augmentation, by the shop's mode and the world options. */
+  static gradesFor(type, system, {
+    equip = false
+  } = {
+  }) {
+    if (!SR5ShopGrades.isGraded(type, system)) return []
+    // Equip mode places anything the table knows, gamma and greyware included
+    if (equip) return Object.keys(AUGMENTATION_GRADE_TABLE)
+    return SR5ShopGrades.available({
+      augmentationType: system.type,
+      creation: SR5Shop.creationMode,
+      gamma: game.settings.get('sr5', 'sr5ShopGradeGamma') === true,
+      greyware: game.settings.get('sr5', 'sr5ShopGradeGreyware') === true,
+    })
+  }
+
+  /** Unit price of `system`, regraded when a grade is chosen. */
+  static gradedPrice(system, grade) {
+    return grade ? SR5ShopGrades.price(system, grade) : SR5Shop.unitPrice(system)
   }
 
   /** The default buyer: the user's character, else the only actor they own. */
@@ -36,9 +70,17 @@ export class SR5Shop {
     return buyers.length === 1 ? buyers[0].id : null
   }
 
-  /** Anything with a price can be bought; that is what `boughtOrSold` marks. */
-  static isPurchasable(entry) {
-    return entry.docName === 'Item' && entry.system?.price !== undefined
+  /**
+   * Can this entry go on the counter? A sellable type with a price, on one of
+   * the shelves, and not flagged as a prototype — Equip mode skips the last two.
+   */
+  static isPurchasable(entry, {
+    equip = false
+  } = {
+  }) {
+    return SR5ShopStock.canSell(entry, {
+      equip
+    })
   }
 
   /**
@@ -66,8 +108,8 @@ export class SR5Shop {
    *
    * A character built outside Foundry arrives with its purchases already paid
    * for on paper, and a player fixing a badly entered item would be charged a
-   * second time. The switch is remembered per user, not per world, so a
-   * gamemaster equipping a character does not change anything for the table.
+   * second time. DjamZ's ruling (2026-10-05): a world setting, in the
+   * gamemaster's hands only — per user, a player could take free alphaware.
    */
   static get creationMode() {
     return game.settings.get('sr5', 'sr5ShopCreationMode') === true
@@ -79,9 +121,11 @@ export class SR5Shop {
    * Types that carry their own quantity become one stack; the others are
    * created as that many separate items.
    */
-  static _itemPayload(source, quantity) {
+  static _itemPayload(source, quantity, grade = null) {
     const itemData = source.toObject()
     delete itemData._id
+    // The item computes Essence, price and availability from its grade itself
+    if (grade) itemData.system.grade = grade
     const stackable = SR5Shop.STACKABLE_TYPES.includes(itemData.type) &&
       itemData.system.quantity !== undefined
     if (stackable) {
@@ -107,10 +151,16 @@ export class SR5Shop {
    * `itemNuyen` of type `loss` carrying the total.
    *
    * @param {Actor} actor
-   * @param {Array<{uuid: string, quantity: number}>} lines
+   * @param {Array<{uuid: string, quantity: number, grade?: string}>} lines
+   * @param {object} [options]
+   * @param {boolean} [options.equip] the gamemaster's Equip mode: free, no
+   *   transaction, any actor, prototypes and every grade allowed
    * @returns {Promise<boolean>} whether the gear was added
    */
-  static async checkout(actor, lines) {
+  static async checkout(actor, lines, {
+    equip = false
+  } = {
+  }) {
     if (!actor) {
       ui.notifications.warn(game.i18n.localize('SR5.WARN_ShopNoBuyer'))
       return false
@@ -120,29 +170,47 @@ export class SR5Shop {
       return false
     }
     if (!lines?.length) return false
+    equip = equip && game.user.isGM
 
     // A line whose source has vanished from its compendium is dropped rather
-    // than silently charged for.
+    // than silently charged for; so is one the shop does not sell.
     const resolved = []
     for (const line of lines) {
       const source = await fromUuid(line.uuid)
       if (!source) {
         ui.notifications.warn(game.i18n.format('SR5.WARN_ShopItemGone', {
-          name: line.name ?? line.uuid 
+          name: line.name ?? line.uuid
         }))
         continue
       }
+      if (!SR5ShopStock.canSell({
+        documentName: 'Item', type: source.type, system: source.system, flags: source.flags,
+        packId: source.pack
+      }, {
+        equip
+      })) {
+        ui.notifications.warn(game.i18n.format('SR5.WARN_ShopNotForSale', {
+          name: source.name
+        }))
+        continue
+      }
+      // A grade the shop does not offer here falls back to none, never to a free upgrade
+      const offered = SR5Shop.gradesFor(source.type, source.system, {
+        equip
+      })
+      const grade = offered.includes(line.grade) ? line.grade : null
       const quantity = Math.max(1, Math.floor(Number(line.quantity) || 1))
-      const unit = SR5Shop.unitPrice(source.system)
+      const unit = SR5Shop.gradedPrice(source.system, grade)
       resolved.push({
-        source, quantity, unit, total: unit * quantity 
+        source, quantity, unit, grade, total: unit * quantity,
+        name: SR5Shop.gradedName(source.name, grade),
       })
     }
     if (!resolved.length) return false
 
     const total = resolved.reduce((sum, line) => sum + line.total, 0)
     const balance = SR5Shop.balance(actor)
-    const free = SR5Shop.creationMode
+    const free = equip || SR5Shop.creationMode
 
     if (!free && total > balance) {
       ui.notifications.warn(game.i18n.format('SR5.WARN_ShopNotEnoughNuyen', {
@@ -153,19 +221,26 @@ export class SR5Shop {
       return false
     }
 
-    const payload = []
-    for (const line of resolved) payload.push(...SR5Shop._itemPayload(line.source, line.quantity))
+    // Greyware on an Awakened character: warned, not blocked (BTB p. 142, DjamZ's ruling)
+    if (resolved.some(line => line.grade === 'greyware') && SR5ShopGrades.isAwakened(actor)) {
+      ui.notifications.warn(game.i18n.format('SR5.WARN_ShopGreywareAwakened', {
+        name: actor.name
+      }))
+    }
 
-    const labels = resolved.map(line => SR5Shop.lineLabel(line.source.name, line.quantity))
+    const payload = []
+    for (const line of resolved) payload.push(...SR5Shop._itemPayload(line.source, line.quantity, line.grade))
+
+    const labels = resolved.map(line => SR5Shop.lineLabel(line.name, line.quantity))
     const label = labels.length === 1 ?
       labels[0] :
       game.i18n.format('SR5.ShopPurchaseLines', {
-        count: labels.length 
+        count: labels.length
       })
 
     if (!free) payload.push({
       name: game.i18n.format('SR5.ShopPurchaseOf', {
-        name: label 
+        name: label
       }),
       type: 'itemNuyen',
       img: 'systems/sr5/assets/img/items/itemNuyen.svg',
@@ -174,22 +249,33 @@ export class SR5Shop {
         type: 'loss',
         date: new Date().toISOString().slice(0, 10),
         description: game.i18n.format('SR5.ShopPurchaseDescription', {
-          name: labels.join(', '), price: total.toLocaleString() 
+          name: labels.join(', '), price: total.toLocaleString()
         }),
       },
     })
 
-    SR5_SystemHelpers.srLog(3, `Shop: ${actor.name} ${free ? 'receives' : 'buys'} ${label} (${total})`)
+    SR5_SystemHelpers.srLog(3, `Shop: ${actor.name} ${equip ? 'is equipped with' : free ? 'receives' : 'buys'} ${label} (${total})`)
     await actor.createEmbeddedDocuments('Item', payload)
 
-    // Creation mode charges nothing, so it says nothing to the table either.
-    if (!free) {
-      const rows = resolved.map(line =>
-        `<li>${SR5Shop.lineLabel(line.source.name, line.quantity)} — ${line.total.toLocaleString()}&yen;</li>`).join('')
-      const detail = resolved.length > 1 ? `<ul>${rows}</ul>` : ''
+    const rows = resolved.map(line =>
+      `<li>${SR5Shop.lineLabel(line.name, line.quantity)} — ${line.total.toLocaleString()}&yen;</li>`).join('')
+    const detail = resolved.length > 1 ? `<ul>${rows}</ul>` : ''
+    if (equip) {
+      // Equip mode leaves a trace for the gamemaster alone (DjamZ's ruling, 2026-10-05)
       await foundry.documents.ChatMessage.create({
         speaker: foundry.documents.ChatMessage.getSpeaker({
-          actor 
+          actor
+        }),
+        whisper: game.users.filter(u => u.isGM).map(u => u.id),
+        content: `<p>${game.i18n.format('SR5.ShopEquipChat', {
+          actor: actor.name, name: label,
+        })}</p>${detail}`,
+      })
+    } else if (!free) {
+      // Creation mode charges nothing, so it says nothing to the table either.
+      await foundry.documents.ChatMessage.create({
+        speaker: foundry.documents.ChatMessage.getSpeaker({
+          actor
         }),
         content: `<p>${game.i18n.format('SR5.ShopPurchaseChat', {
           actor: actor.name,
@@ -200,20 +286,34 @@ export class SR5Shop {
       })
     }
 
-    ui.notifications.info(free ?
-      game.i18n.format('SR5.ShopCreationDone', {
-        name: label 
+    ui.notifications.info(equip ?
+      game.i18n.format('SR5.ShopEquipDone', {
+        name: label, actor: actor.name
       }) :
-      game.i18n.format('SR5.ShopPurchaseDone', {
-        name: label, price: total.toLocaleString() 
-      }))
+      free ?
+        game.i18n.format('SR5.ShopCreationDone', {
+          name: label
+        }) :
+        game.i18n.format('SR5.ShopPurchaseDone', {
+          name: label, price: total.toLocaleString()
+        }))
     return true
   }
 
+  /** `Nom (Alphaware)` when a grade was chosen. */
+  static gradedName(name, grade) {
+    return grade ? `${name} (${game.i18n.localize(SR5.augmentationGrades[grade])})` : name
+  }
+
   /** Buy a single line — the buy button on a result row. */
-  static async buy(actor, uuid, quantity = 1) {
+  static async buy(actor, uuid, quantity = 1, {
+    grade = null, equip = false
+  } = {
+  }) {
     return SR5Shop.checkout(actor, [{
-      uuid, quantity 
-    }])
+      uuid, quantity, grade
+    }], {
+      equip
+    })
   }
 }

@@ -1,0 +1,39 @@
+<div class="sr-shop-config-body">
+  <fieldset>
+    <legend>{{localize 'SR5.ShopConfigShelves'}}</legend>
+    <p class="hint">{{localize 'SR5.ShopConfigShelvesHint'}}</p>
+    {{#each packs}}
+    <label class="sr-shop-config-pack">
+      <input type="checkbox" name="pack.{{id}}" {{#if checked}}checked{{/if}}>
+      <span>{{label}}</span>
+      {{#if source}}<span class="hint">{{source}}</span>{{/if}}
+    </label>
+    {{else}}
+    <p class="hint">{{localize 'SR5.ShopConfigNoPack'}}</p>
+    {{/each}}
+  </fieldset>
+
+  <fieldset>
+    <legend>{{localize 'SR5.ShopConfigBuyers'}}</legend>
+    <p class="hint">{{localize 'SR5.ShopConfigBuyersHint'}}</p>
+    {{#each modes}}
+    <label class="sr-shop-config-mode">
+      <input type="radio" name="buyerMode" value="{{key}}" {{#if checked}}checked{{/if}}>
+      <span>{{localize label}}</span>
+    </label>
+    {{/each}}
+    <div class="form-group">
+      <label>{{localize 'SR5.ShopConfigBuyerFolder'}}</label>
+      <select name="buyerFolder">
+        <option value="">—</option>
+        {{#each folders}}
+        <option value="{{id}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+        {{/each}}
+      </select>
+    </div>
+  </fieldset>
+
+  <footer class="form-footer">
+    <button type="submit"><i class="fas fa-save"></i> {{localize 'SR5.ShopConfigSave'}}</button>
+  </footer>
+</div>

@@ -76,6 +76,9 @@ import {
   SR5SharedVision, sr5HookUpdateTokenSharedVision, sr5HookUpdateActorSharedVision, sr5HookUpdateItemSharedVision,
   sr5HookResetJumpedInRiggers
 } from './interface/shared-vision.js'
+import {
+  SR5ShopStock
+} from './interface/shop-stock.js'
 
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
@@ -133,6 +136,7 @@ Hooks.on('renderRollTableSheet', sr5AddTableFormulaField)
 Hooks.on('renderTableResultConfig', sr5AddResultQuantityField)
 Hooks.on('renderChatMessageHTML', sr5HookRenderTablePayout)
 Hooks.on('renderSidebar', sr5KeepSidebarSettingsLast)
+Hooks.on('getHeaderControlsDocumentSheetV2', SR5ShopStock.onHeaderControls)
 Hooks.on('drawMeasuredTemplate', sr5HookDrawMeasuredTemplate)
 Hooks.on('deleteMeasuredTemplate', sr5HookDeleteMeasuredTemplate)
 Hooks.on('createMeasuredTemplate', sr5HookCreateMeasuredTemplate)

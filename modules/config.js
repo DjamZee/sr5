@@ -1568,6 +1568,38 @@ SR5.augmentationGrades = {
   alphaware                 : "SR5.GradeAlphaware",
   betaware                  : "SR5.GradeBetaware",
   deltaware                 : "SR5.GradeDeltaware",
+  gamma                     : "SR5.GradeGamma",
+  greyware                  : "SR5.GradeGreyware",
+}
+
+// What each grade does to an implant: Essence and price are multipliers, availability is added.
+// SR5 p. 454 for the five core grades; gamma is an optional rule of Chrome Flesh p. 74 and
+// greyware comes from Better Than Bad p. 142 (cyberware only). Neither book gives a device
+// rating for them: gamma follows the alpha/beta/delta ladder (6), greyware keeps the standard 2
+// (DjamZ's ruling, 2026-10-05).
+// Kept off SR5 itself: the SR5 tables are translation keys, sorted at startup.
+export const AUGMENTATION_GRADE_TABLE = {
+  used: {
+    essence: 1.25, availability: -4, price: 0.75, deviceRating: 2
+  },
+  standard: {
+    essence: 1, availability: 0, price: 1, deviceRating: 2
+  },
+  alphaware: {
+    essence: 0.8, availability: 2, price: 1.2, deviceRating: 3
+  },
+  betaware: {
+    essence: 0.7, availability: 4, price: 1.5, deviceRating: 4
+  },
+  deltaware: {
+    essence: 0.5, availability: 8, price: 2.5, deviceRating: 5
+  },
+  gamma: {
+    essence: 0.4, availability: 12, price: 5, deviceRating: 6
+  },
+  greyware: {
+    essence: 0.75, availability: 0, price: 1.3, deviceRating: 2
+  },
 }
 
 //-----------------------------------//

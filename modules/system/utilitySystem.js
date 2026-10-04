@@ -1,3 +1,7 @@
+import {
+  SR5ShopConfig
+} from "../interface/shop-config.js"
+
 export class SR5_SystemHelpers {
 
   // A sheet render that throws (a missing partial, for instance) would otherwise fail without a word
@@ -133,14 +137,56 @@ export class SR5_SystemHelpers {
     })
 
     // Compendium browser: add gear without charging it (character creation,
-    // or fixing an entry a player already paid for). Remembered per user.
+    // or fixing an entry a player already paid for).
+    // DjamZ's ruling (2026-10-05): a world setting the gamemaster alone switches. It used to be a client
+    // setting, which let a player take free gear; that old per-user value is dropped, not carried over.
     game.settings.register("sr5", "sr5ShopCreationMode", {
       name: "SR5.SETTINGS_ShopCreationMode_T",
       hint: "SR5.SETTINGS_ShopCreationMode_D",
-      scope: "client",
+      scope: "world",
       config: false,
       default: false,
       type: Boolean,
+    })
+    try {
+      localStorage.removeItem("sr5.sr5ShopCreationMode")
+    } catch (_err) { /* storage blocked: the world value applies anyway */ }
+
+    // Shop shelves and buyers, set from one gamemaster menu (SR5ShopConfig)
+    game.settings.registerMenu("sr5", "sr5ShopConfigMenu", {
+      name: "SR5.SETTINGS_ShopConfig_T",
+      label: "SR5.SETTINGS_ShopConfig_L",
+      hint: "SR5.SETTINGS_ShopConfig_D",
+      icon: "fas fa-store",
+      type: SR5ShopConfig,
+      restricted: true,
+    })
+
+    // Compendiums left off the shelves: stored as exclusions, so a new compendium is sold by default
+    game.settings.register("sr5", "sr5ShopExcludedPacks", {
+      scope: "world", config: false, default: [], type: Array,
+    })
+
+    // Who may buy: player characters (as before), a folder, the actor's "Can shop" box, or folder or box
+    game.settings.register("sr5", "sr5ShopBuyerMode", {
+      scope: "world", config: false, default: "owned", type: String,
+    })
+
+    game.settings.register("sr5", "sr5ShopBuyerFolder", {
+      scope: "world", config: false, default: "", type: String,
+    })
+
+    // Optional implant grades, off by default: not every table owns these supplements
+    game.settings.register("sr5", "sr5ShopGradeGamma", {
+      name: "SR5.SETTINGS_ShopGradeGamma_T",
+      hint: "SR5.SETTINGS_ShopGradeGamma_D",
+      scope: "world", config: true, default: false, type: Boolean,
+    })
+
+    game.settings.register("sr5", "sr5ShopGradeGreyware", {
+      name: "SR5.SETTINGS_ShopGradeGreyware_T",
+      hint: "SR5.SETTINGS_ShopGradeGreyware_D",
+      scope: "world", config: true, default: false, type: Boolean,
     })
 
     // What a bonus die costs on an availability test. SR5 p. 420 sells one
