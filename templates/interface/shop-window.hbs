@@ -2,6 +2,12 @@
 
   {{!-- Left: the shelves --}}
   <nav class="sr-shop-shelves">
+    {{#if (gt sources.length 1)}}
+    <h4>{{localize 'SR5.ShopWhere'}}</h4>
+    <select class="sr-shop-source" data-shop-source aria-label="{{localize 'SR5.ShopWhere'}}">
+      {{#each sources}}<option value="{{this.key}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>{{/each}}
+    </select>
+    {{/if}}
     <h4>{{localize 'SR5.ShopShelves'}}</h4>
     <a class="sr-shop-shelf {{#if allActive}}active{{/if}}" data-action="setShelf" data-shelf="">
       <span><i class="fas fa-fw fa-store"></i> {{localize 'SR5.ShopShelfAll'}}</span><span class="count">{{allCount}}</span>
@@ -20,6 +26,20 @@
 
   {{!-- Middle: filters and rows --}}
   <section class="sr-shop-main">
+    {{#if vendor}}
+    {{!-- The vendor's sign: banner 3:1 and portrait (lot C; the templates of part 2 bring the banners) --}}
+    <header class="sr-shop-vendor {{#if vendor.banner}}has-banner{{/if}}">
+      {{#if vendor.banner}}<img class="sr-shop-banner" src="{{vendor.banner}}" alt="">{{/if}}
+      <div class="sr-shop-vendor-id">
+        {{#if vendor.portrait}}<img class="sr-shop-portrait" src="{{vendor.portrait}}" alt="">{{/if}}
+        <div>
+          <b>{{vendor.label}}</b>
+          <small>{{vendor.name}}{{#if vendor.marginLabel}} · {{localize 'SR5.ShopVendorMarginShort' value=vendor.marginLabel}}{{/if}}</small>
+          {{#if vendor.closed}}<small class="sr-shop-blocked"><i class="fas fa-door-closed"></i> {{localize 'SR5.ShopVendorClosedHint'}}</small>{{/if}}
+        </div>
+      </div>
+    </header>
+    {{/if}}
     <header class="sr-shop-filters">
       <label class="sr-shop-search">
         <i class="fas fa-search"></i>
@@ -62,6 +82,8 @@
         <img src="{{this.img}}" alt="" loading="lazy" decoding="async">
         <div class="sr-shop-name">
           <b>{{this.name}}</b>
+          {{#if this.stock}}<span class="sr-shop-tag stock">{{localize 'SR5.ShopVendorInStock' count=this.stock}}</span>{{/if}}
+          {{#if this.onOrder}}<span class="sr-shop-tag on-order"><i class="fas fa-truck"></i> {{localize 'SR5.ShopVendorOnOrder'}}</span>{{/if}}
           {{#if this.notForSale}}<span class="sr-shop-tag"><i class="fas fa-store-slash"></i> {{localize 'SR5.ShopNotForSale'}}</span>{{/if}}
           <small>{{this.summary}}</small>
           {{#if this.blocked}}<small class="sr-shop-blocked">{{this.blockedLabel}}</small>{{/if}}
@@ -86,15 +108,17 @@
         <div class="sr-shop-row-buy">
           {{#if this.canBuy}}
           <input type="number" min="1" value="1" data-row-qty aria-label="{{localize 'SR5.Quantity'}}">
-          {{#unless this.common}}
-          <button type="button" data-action="testAvailability" data-tooltip="{{localize 'SR5.ShopTestAvailability'}}"><i class="fas fa-dice"></i></button>
-          {{/unless}}
-          <button type="button" class="accent" data-action="addToCart" data-tooltip="{{localize 'SR5.ShopAddToCart'}}"><i class="fas fa-cart-plus"></i></button>
+          {{#unless this.common}}{{#if this.tested}}
+          <button type="button" data-action="testAvailability" data-tooltip="{{localize 'SR5.ShopTestAvailability'}}" aria-label="{{localize 'SR5.ShopTestAvailability'}}"><i class="fas fa-dice"></i></button>
+          {{/if}}{{/unless}}
+          <button type="button" class="accent" data-action="addToCart" data-tooltip="{{localize 'SR5.ShopAddToCart'}}" aria-label="{{localize 'SR5.ShopAddToCart'}}"><i class="fas fa-cart-plus"></i></button>
           {{/if}}
         </div>
       </li>
       {{else}}
-      {{#if loading}}
+      {{#if marketClosed}}
+      <li class="sr-shop-empty"><i class="fas fa-store-slash"></i> {{localize 'SR5.ShopMarketClosed'}}</li>
+      {{else if loading}}
       <li class="sr-shop-empty"><i class="fas fa-spinner fa-spin"></i> <span data-shop-progress>{{loadingLabel}}</span></li>
       {{else}}
       <li class="sr-shop-empty">{{localize 'SR5.NoResults'}}</li>
@@ -119,17 +143,29 @@
         {{#each buyers}}<option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>{{this.name}}</option>{{/each}}
       </select>
       {{#if buyer}}
-      <div class="sr-shop-balance {{#if free}}muted{{/if}}">{{localize 'SR5.ShopBalance'}} <b>{{buyer.balance}}</b></div>
+      {{#if payChoices}}
+      <div class="sr-shop-inline">
+        <span>{{localize 'SR5.ShopVendorPayWith'}}</span>
+        <select data-shop-pay>
+          {{#each payChoices}}<option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>{{/each}}
+        </select>
+      </div>
+      {{/if}}
+      <div class="sr-shop-balance {{#if free}}muted{{/if}}">{{balanceLabel}} <b>{{buyer.balance}}</b></div>
       {{/if}}
     </div>
 
     {{#if buyer}}
     <h4>{{localize 'SR5.ShopSearchedBy'}}</h4>
     <div class="sr-shop-box">
+      {{#if vendor}}
+      <p class="muted">{{localize 'SR5.ShopVendorSearches' name=vendor.name}}</p>
+      {{else}}
       <select data-shop-contact>
         <option value="">{{localize 'SR5.ShopMyself'}}</option>
         {{#each contacts}}<option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>{{this.name}} ({{this.connection}})</option>{{/each}}
       </select>
+      {{/if}}
       <div class="sr-shop-inline">
         <span>{{localize 'SR5.ShopSurcharge'}}</span>
         <select data-shop-surcharge>
@@ -176,7 +212,7 @@
       <i class="fas fa-receipt"></i>
       {{#if equipMode}}{{localize 'SR5.ShopEquipCheckout'}}{{else if creationMode}}{{localize 'SR5.ShopCheckoutFree'}}{{else}}{{localize 'SR5.ShopPay' price=cartTotal}}{{/if}}
     </button>
-    {{#if buyer}}
+    {{#if (and buyer (not vendor))}}
     <button type="button" data-action="openSell"><i class="fas fa-hand-holding-dollar"></i> {{localize 'SR5.ShopSell'}}</button>
     {{/if}}
 

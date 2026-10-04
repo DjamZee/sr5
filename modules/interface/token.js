@@ -7,6 +7,9 @@ import {
 import {
   SR5Pickpocket
 } from "./pickpocket.js"
+import {
+  vendorShopOfToken
+} from "./shop-vendor-rules.js"
 
 export class SR5Token extends foundry.canvas.placeables.Token {
 
@@ -30,6 +33,20 @@ export class SR5Token extends foundry.canvas.placeables.Token {
    * opens on the target and the thief stays selected.
    * @override
    */
+  /**
+   * A vendor's token opens its shop to whoever does not own it: the players never see the
+   * Grunt's sheet, they walk up to the counter (shop lot C).
+   * @override
+   */
+  _onClickLeft2(event) {
+    const vendor = vendorShopOfToken(this.document)
+    if (!vendor) return super._onClickLeft2(event)
+    // Loaded on demand: the shop is heavy, and a token is drawn long before anyone buys
+    import("./shop-vendor.js").then(({
+      SR5ShopVendor
+    }) => SR5ShopVendor.openShop(vendor.actor, vendor.storage))
+  }
+
   _onClickRight(event) {
     if (this.document.isOwner || !this.layer.hud || !SR5Pickpocket.canPickFrom(this.document)) return super._onClickRight(event)
     if (this.hasActiveHUD) this.layer.hud.close()

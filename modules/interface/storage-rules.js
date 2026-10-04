@@ -48,10 +48,14 @@ export const STORABLE_TYPES = [
  * licence is not a thing you can leave in a box.
  * A garage holds vehicles and drones; every other storage holds the rest.
  */
+// What a vendor's stock takes on top: goods with nothing to leave in a box elsewhere (shop lot C)
+export const SHOP_EXTRA_TYPES = ["itemProgram", "itemSin", "itemVehicleMod"]
+
 export function isStorable(item, storage) {
   const data = item?.system ?? {
   }
-  if (!STORABLE_TYPES.includes(item?.type)) return false
+  const isShop = storage?.system?.type === "shop"
+  if (!STORABLE_TYPES.includes(item?.type) && !(isShop && SHOP_EXTRA_TYPES.includes(item?.type))) return false
   if (data.isAccessory && data.isPlugged) return false
   if (item.type === "itemWeapon" && data.type === "unarmedCombat") return false
   if (item.type === "itemGear" && data.isIntangible) return false
@@ -59,6 +63,8 @@ export function isStorable(item, storage) {
 
   if (!storage) return true
   const isVehicle = item.type === "itemVehicle"
+  // A vendor's counter holds cars as well as pistols
+  if (isShop) return true
   return storage.system?.type === "garage" ? isVehicle : !isVehicle
 }
 

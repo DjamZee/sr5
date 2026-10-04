@@ -34,6 +34,9 @@ import {
 import {
   SR5StorageLock
 } from "./interface/storage-lock-actions.js"
+import {
+  SR5ShopVendor
+} from "./interface/shop-vendor.js"
 
 export class SR5_SocketHandler {
   static registerSocketListeners() {
@@ -75,6 +78,8 @@ export class SR5_SocketHandler {
       "grappleReverseHold": [SR5_GrappleHelpers._socketReverseHold],
       "sharedVisionSetViewer": [SR5SharedVision._socketSetViewer],
       "storageLockPick": [SR5StorageLock._socketPick],
+      "shopVendorBuy": [SR5ShopVendor._socketBuy],
+      "shopVendorNotice": [SR5ShopVendor._socketNotice],
     }
 
     //senderId is added by the server to every custom socket message: a client cannot forge it

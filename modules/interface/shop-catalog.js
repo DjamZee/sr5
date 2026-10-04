@@ -1,6 +1,9 @@
 import {
   SR5ShopGrades
 } from './shop-grades.js'
+import {
+  vendorPrice
+} from './shop-vendor-rules.js'
 
 /**
  * The shop window's catalogue: shelves, filters, creation limits and the
@@ -179,6 +182,8 @@ export class SR5ShopCatalog {
   /**
    * What a row shows of an entry at a given grade: price, availability,
    * legality letter, Essence and rating. A grade only applies to implants.
+   * An entry of a vendor carries its `margin`: the price is the vendor's, as
+   * its till charges it (lot C; SR5 p. 419, the gamemaster adjusts the price).
    */
   static describe(entry, grade = null) {
     const system = entry.system ?? {
@@ -186,9 +191,10 @@ export class SR5ShopCatalog {
     const availability = grade ?
       SR5ShopGrades.availability(system, grade) :
       Number(system.availability?.value ?? system.availability?.base ?? 0) || 0
-    const price = grade ?
+    const listed = grade ?
       SR5ShopGrades.price(system, grade) :
       Number(system.price?.value ?? system.price?.base ?? 0) || 0
+    const price = entry.margin ? vendorPrice(listed, entry.margin) : listed
     const essence = entry.type === 'itemAugmentation' ?
       SR5ShopGrades.essence(system, grade ?? system.grade) :
       null

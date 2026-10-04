@@ -546,6 +546,7 @@ SR5.storageTypes = {
   backpack                  : "SR5.StorageTypeBackpack",
   cache                     : "SR5.StorageTypeCache",
   garage                    : "SR5.StorageTypeGarage",
+  shop                      : "SR5.StorageTypeShop",
 }
 
 // Garage vehicle categories (Run Faster p. 216)

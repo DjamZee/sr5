@@ -25,6 +25,15 @@ import {
 import {
   SR5ShopCatalog
 } from './shop-catalog.js'
+import {
+  SR5ShopVendor, SR5ShopVendorSource
+} from './shop-vendor.js'
+import {
+  SR5Credstick
+} from './credstick.js'
+import {
+  shopSettings
+} from './shop-vendor-rules.js'
 
 /**
  * Where the shop's goods come from: the world's shelves, the compendiums the
@@ -249,14 +258,17 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
    * @param {Actor} [options.actor] the buyer to select, from a character sheet
    */
   static open({
-    actor = null
+    actor = null, source = null
   } = {
   }) {
     let shop = SR5ShopWindow._instance
     if (!shop?.rendered) {
-      shop = new SR5ShopWindow()
+      shop = new SR5ShopWindow(source ? {
+        source
+      } : {
+      })
       SR5ShopWindow._instance = shop
-    }
+    } else if (source && shop._source?.key !== source.key) shop.setSource(source)
     if (actor) shop._buyerId = actor.id
     shop.render(true).then(() => shop.bringToFront?.()).catch(err => {
       console.error('SR5 Shop: failed to open', err)
@@ -302,7 +314,9 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
   constructor(options = {
   }) {
     super(options)
-    this._source = options.source ?? new SR5ShopWorldSource()
+    this._source = options.source ?? SR5ShopWindow.#defaultSource()
+    // How the buyer pays a vendor: '' the accounts, else one of their credsticks (SR5 p. 445)
+    this._payWith = ''
     this._shelf = ''
     this._sub = ''
     this._search = ''
@@ -325,6 +339,26 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     this._surcharge = 0
     this._overridePool = null
     this._overrideLimit = null
+  }
+
+  /**
+   * Where a window opens: the world's shelves, unless the gamemaster closed
+   * them to the players; then the first vendor open to them, if any.
+   */
+  static #defaultSource() {
+    if (game.user.isGM || SR5ShopVendor.marketOpen) return new SR5ShopWorldSource()
+    const first = SR5ShopVendor.vendors()[0]
+    return first ? new SR5ShopVendorSource(first.actor, first.storage) : new SR5ShopWorldSource()
+  }
+
+  /** Change shop: the cart and the filters of the last one are left behind. */
+  setSource(source) {
+    this._source = source
+    this._cart = []
+    this._shelf = ''
+    this._sub = ''
+    this._page = 0
+    this._payWith = ''
   }
 
   get title() {
@@ -358,6 +392,12 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
   /** Who is looking, with what pool: the buyer, or a contact (SR5 p. 420), plus the bought dice. */
   #searchPool(buyer) {
     if (!buyer) return null
+    // At a vendor's, the vendor is who looks for what it has not got (SR5 p. 420)
+    const vendor = this._source?.vendor ? this._source.actor : null
+    if (vendor) {
+      const searcher = SR5ShopAvailability.buyerPool(vendor)
+      return Math.max(0, (this._overridePool ?? (searcher.raw ?? searcher.pool)) + SR5ShopAvailability.surchargeDice(this._surcharge))
+    }
     const contact = this._contactId ? buyer.items.get(this._contactId) : null
     const searcher = contact ? SR5ShopAvailability.contactPool(contact) : SR5ShopAvailability.buyerPool(buyer)
     const base = this._overridePool ?? (searcher.raw ?? searcher.pool)
@@ -391,7 +431,12 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     if (this._buyerId && !buyers.some(a => a.id === this._buyerId)) this._buyerId = null
     if (!this._buyerId) this._buyerId = SR5Shop.defaultBuyerId(buyers)
     const buyer = buyers.find(a => a.id === this._buyerId) || null
-    const balance = buyer ? SR5Shop.balance(buyer) : 0
+    // At a vendor's, cash on a carried credstick pays too (SR5 p. 445)
+    const vendorSource = this._source?.vendor ? this._source : null
+    const sticks = vendorSource && buyer ? SR5Credstick.carried(buyer) : []
+    if (this._payWith && !sticks.some(s => s.id === this._payWith)) this._payWith = ''
+    const stick = this._payWith ? sticks.find(s => s.id === this._payWith) : null
+    const balance = stick ? SR5Credstick.funds(stick) : buyer ? SR5Shop.balance(buyer) : 0
     const creationMode = SR5Shop.creationMode
     const free = creationMode || equip
     const limits = creationMode && !equip ? SR5Shop.creationLimits : null
@@ -405,16 +450,27 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
 
     // Every row of the catalogue, described at the grade it shows. The grades on
     // offer depend on the implant's kind only, so they are asked once per kind.
-    const entries = ready ? await this._source.entries({
+    // The world's shelves closed to the players: they buy from the vendors only
+    const marketClosed = !vendorSource && !isGM && !SR5ShopVendor.marketOpen
+    const entries = ready && !marketClosed ? await this._source.entries({
       equip
     }) : []
+    context.marketClosed = marketClosed
+    context.sources = this.#sourcesContext()
+    context.vendor = vendorSource ? this.#vendorContext(vendorSource) : null
+    context.payChoices = sticks.length ? [{
+      id: '', label: game.i18n.localize('SR5.ShopVendorPayAccounts'), selected: !this._payWith
+    }, ...sticks.map(s => ({
+      id: s.id, label: `${s.name} (${SR5Credstick.funds(s).toLocaleString()}¥)`, selected: s.id === this._payWith,
+    }))] : null
     const offeredByKind = new Map()
     const rows = entries.map(entry => {
       const kind = `${entry.type}|${entry.system?.type ?? ''}`
       if (!offeredByKind.has(kind)) offeredByKind.set(kind, SR5Shop.gradesFor(entry.type, entry.system, {
         equip
       }))
-      const offered = offeredByKind.get(kind)
+      // An implant on a vendor's counter is of the grade it is: the vendor has what it has
+      const offered = entry.vendor && !entry.onOrder ? [] : offeredByKind.get(kind)
       const grade = this.#gradeOf(entry, offered)
       return {
         entry, offered, grade,
@@ -434,6 +490,8 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     let cartBlocked = false
     const cart = this._cart.map(line => {
       const row = byUuid.get(line.uuid)
+      // No more than the counter holds
+      if (row?.entry.stock && line.quantity > row.entry.stock) line.quantity = row.entry.stock
       const described = row ? SR5ShopWindow.#described(row.entry, line.grade) : null
       const unit = described?.price ?? line.unit ?? 0
       line.unit = unit
@@ -541,6 +599,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     context.buyer = buyer ? {
       id: buyer.id, name: buyer.name, balance: SR5ShopWindow.#nuyen(balance),
     } : null
+    context.balanceLabel = game.i18n.localize(stick ? 'SR5.ShopVendorOnStick' : 'SR5.ShopBalance')
     context.pool = pool
     const contacts = SR5ShopAvailability.getContacts(buyer)
     if (this._contactId && !contacts.some(c => c.id === this._contactId)) this._contactId = null
@@ -580,6 +639,45 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     return context
   }
 
+  /** The shops this user may choose from: the world's shelves, then each vendor. */
+  #sourcesContext() {
+    const sources = []
+    if (game.user.isGM || SR5ShopVendor.marketOpen) sources.push({
+      key: 'world', label: game.i18n.localize('SR5.ShopSourceWorld'), selected: !this._source?.vendor,
+    })
+    for (const {
+      actor, storage
+    } of SR5ShopVendor.vendors()) {
+      const key = `vendor:${actor.uuid}:${storage.id}`
+      const closed = !shopSettings(storage).isOpen
+      sources.push({
+        key, selected: this._source?.key === key,
+        label: `${SR5ShopVendor.labelOf(storage)}${closed ? ` (${game.i18n.localize('SR5.ShopVendorClosedShort')})` : ''}`,
+      })
+    }
+    // The vendor shown may have closed, or be on another scene: it stays in the list
+    if (this._source?.vendor && !sources.some(s => s.selected)) sources.push({
+      key: this._source.key, label: this._source.label, selected: true
+    })
+    return sources
+  }
+
+  /** The vendor's header: banner 3:1, portrait, name; the templates of part 2 fill them. */
+  #vendorContext(source) {
+    const actor = source.actor
+    const shop = source.shop
+    return {
+      label: source.label,
+      name: actor?.name ?? '',
+      portrait: shop.portrait || actor?.img || '',
+      banner: shop.banner,
+      accent: shop.accent,
+      closed: !shop.isOpen,
+      margin: shop.margin,
+      marginLabel: shop.margin ? `${shop.margin > 0 ? '+' : ''}${shop.margin}%` : '',
+    }
+  }
+
   /** "Dispo ≤ 12, indice ≤ 6"; a limit of 0 is no limit and is left out. */
   static #limitsLabel(limits) {
     const parts = []
@@ -606,8 +704,14 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     }))
     const blocked = SR5ShopCatalog.creationBlock(row, limits)
     const forSale = !row.notForSale || equip
-    const odds = pool === null ? null : SR5ShopCatalog.odds(pool, row.availability)
+    // On a vendor's counter the item is there: no search, no test, unless the table wants one
+    const onCounter = entry.vendor && !entry.onOrder
+    const tested = !onCounter || SR5ShopVendor.testInStock
+    const odds = pool === null || !tested ? null : SR5ShopCatalog.odds(pool, row.availability)
     return {
+      stock: onCounter ? entry.stock : null,
+      onOrder: !!entry.onOrder,
+      tested,
       uuid: entry.uuid,
       img: entry.img,
       name: entry.name,
@@ -620,7 +724,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       oddsLabel: odds ? game.i18n.format('SR5.ShopOdds', {
         pool, availability: row.availability
       }) : '',
-      delay: row.availability ?
+      delay: row.availability && tested ?
         SR5ShopAvailability.formatDelay(SR5ShopAvailability.delayFor(row.price)) :
         game.i18n.localize('SR5.ShopDelayNow'),
       grades: row.offered.map(key => ({
@@ -694,6 +798,24 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       })
     }
     this._redrawing = false
+    // A vendor's banner gives the window its accent; the theme's comes back elsewhere
+    if (context.vendor?.accent) el.style.setProperty('--sr-shop-accent', context.vendor.accent)
+    else el.style.removeProperty('--sr-shop-accent')
+    el.querySelector('[data-shop-source]')?.addEventListener('change', event => {
+      const key = event.target.value
+      if (key === 'world') this.setSource(new SR5ShopWorldSource())
+      else {
+        const found = SR5ShopVendor.vendors().find(({
+          actor, storage
+        }) => `vendor:${actor.uuid}:${storage.id}` === key)
+        if (found) this.setSource(new SR5ShopVendorSource(found.actor, found.storage))
+      }
+      this.render()
+    })
+    el.querySelector('[data-shop-pay]')?.addEventListener('change', event => {
+      this._payWith = event.target.value || ''
+      this.render()
+    })
     el.querySelectorAll('[data-shop-max]').forEach(input => input.addEventListener('change', event => {
       const value = SR5ShopAvailability.typedNumber(event.target.value)
       if (event.target.dataset.shopMax === 'price') this._maxPrice = value
@@ -785,7 +907,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
   }
 
   static #onRefresh() {
-    SR5ShopWorldSource.reset()
+    if (!this._source?.vendor || this._source.shop.onOrder) SR5ShopWorldSource.reset()
     this._page = 0
     this.render()
   }
@@ -840,6 +962,21 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
   }
 
   static async #onCheckoutCart() {
+    if (this._source?.vendor) {
+      const sent = await SR5ShopVendor.purchase({
+        vendorUuid: this._source.actorUuid,
+        storageId: this._source.storageId,
+        buyerId: this._buyerId,
+        payWith: this._payWith,
+        equip: this._equipMode,
+        lines: this._cart.map(line => ({
+          uuid: line.uuid, quantity: line.quantity, name: line.name, grade: line.grade,
+        })),
+      })
+      if (sent) this._cart = []
+      this.render()
+      return
+    }
     const bought = await SR5Shop.checkout(game.actors.get(this._buyerId), this._cart.map(line => ({
       uuid: line.uuid, quantity: line.quantity, name: line.name, grade: line.grade,
     })), {
@@ -855,8 +992,17 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
   }
 
   #overrides() {
+    const source = this._source?.vendor ? this._source : null
     return {
-      overridePool: this._overridePool, overrideLimit: this._overrideLimit
+      overridePool: this._overridePool, overrideLimit: this._overrideLimit,
+      // At a vendor's, the vendor searches and its margin is on the price (lot C)
+      ...(source ? {
+        searcher: source.actor, margin: source.shop.margin,
+        vendor: {
+          uuid: source.actorUuid, storageId: source.storageId
+        },
+      } : {
+      }),
     }
   }
 
@@ -864,7 +1010,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     event.stopPropagation()
     const row = target.closest('[data-uuid]')
     if (!row) return
-    await SR5ShopAvailability.testLines(game.actors.get(this._buyerId), this.#searchingContact(), [{
+    await SR5ShopAvailability.testLines(game.actors.get(this._buyerId), this._source?.vendor ? null : this.#searchingContact(), [{
       uuid: row.dataset.uuid,
       grade: row.querySelector('[data-shop-grade]')?.value || null,
       quantity: SR5ShopWindow.#rowQuantity(row),
@@ -874,7 +1020,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
 
   static async #onTestCartAvailability() {
     if (!this._cart.length) return
-    await SR5ShopAvailability.testLines(game.actors.get(this._buyerId), this.#searchingContact(), this._cart.map(line => ({
+    await SR5ShopAvailability.testLines(game.actors.get(this._buyerId), this._source?.vendor ? null : this.#searchingContact(), this._cart.map(line => ({
       uuid: line.uuid, quantity: line.quantity, name: line.name, grade: line.grade,
     })), this._surcharge, this.#overrides())
   }

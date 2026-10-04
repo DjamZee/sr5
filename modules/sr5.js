@@ -85,6 +85,9 @@ import {
 import {
   SR5ShopWindow
 } from './interface/shop-window.js'
+import {
+  SR5ShopVendor
+} from './interface/shop-vendor.js'
 
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
@@ -142,6 +145,8 @@ Hooks.on('renderRollTableSheet', sr5AddTableFormulaField)
 Hooks.on('renderTableResultConfig', sr5AddResultQuantityField)
 Hooks.on('renderChatMessageHTML', sr5HookRenderTablePayout)
 Hooks.on('renderSidebar', SR5ShopWindow.onRenderSidebar)
+// A sale or a restock on a vendor: its open shop window redraws
+for (const hook of ['createItem', 'updateItem', 'deleteItem', 'updateActor']) Hooks.on(hook, SR5ShopVendor.onVendorChanged)
 Hooks.on('renderSidebar', sr5KeepSidebarSettingsLast)
 Hooks.on('getHeaderControlsDocumentSheetV2', SR5ShopStock.onHeaderControls)
 Hooks.on('drawMeasuredTemplate', sr5HookDrawMeasuredTemplate)

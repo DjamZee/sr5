@@ -14,6 +14,11 @@
 	{{> systems/sr5/templates/items/_partial/editable/storage/address-edit.hbs}}
 </ul>
 
+<!-- A vendor's stock (shop lot C) -->
+{{#if (eq system.type "shop")}}
+{{> systems/sr5/templates/items/_partial/editable/storage/shop-edit.hbs}}
+{{/if}}
+
 <!-- Price & Availability: only for a storage you actually buy.
      A stash or a garage is paid through the lifestyle rent (Run Faster p. 216). -->
 {{#if (or (eq system.type "safe") (eq system.type "backpack") (eq system.type "cache"))}}

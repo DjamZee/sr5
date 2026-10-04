@@ -2,6 +2,9 @@ import {
   SR5Shop
 } from './shop.js'
 import {
+  SR5ShopCatalog
+} from './shop-catalog.js'
+import {
   SR5ShopGrades
 } from './shop-grades.js'
 import {
@@ -301,7 +304,9 @@ export class SR5ShopAvailability {
     }
     if (!lines?.length) return null
 
-    const searcher = contact ? SR5ShopAvailability.contactPool(contact) : SR5ShopAvailability.buyerPool(actor)
+    // A vendor looks for what it has not got with its own Negotiation and Charisma (SR5 p. 420)
+    const searcher = contact ? SR5ShopAvailability.contactPool(contact) :
+      SR5ShopAvailability.buyerPool(options.searcher ?? actor)
 
     const bonusDice = SR5ShopAvailability.surchargeDice(surcharge)
     // null when the field was left empty; an imposed 0 stays 0 dice
@@ -322,7 +327,10 @@ export class SR5ShopAvailability {
       // An implant is looked for at the grade chosen: price and availability follow it (SR5 p. 454)
       const grade = SR5Shop.gradesFor(source.type, source.system).includes(line.grade) ? line.grade : null
       const name = SR5Shop.gradedName(source.name, grade)
-      const listed = SR5Shop.gradedPrice(source.system, grade)
+      // A vendor's price carries its margin, as its till charges it (lot C)
+      const listed = SR5ShopCatalog.describe({
+        type: source.type, system: source.system, margin: options.margin
+      }, grade).price
       const availability = grade ? SR5ShopGrades.availability(source.system, grade) : SR5ShopAvailability.availabilityOf(source.system)
       const unit = Math.round(listed * (1 + Math.max(0, surcharge) / 100))
       const price = unit * quantity
@@ -434,6 +442,7 @@ export class SR5ShopAvailability {
       total,
       totalLabel: `${total.toLocaleString()}¥`,
       canBuy: obtained.length > 0,
+      vendor: options.vendor ?? null,
     }
 
     SR5_SystemHelpers.srLog(3, `Shop: availability test for ${actor.name} (pool ${pool})`, cardData)
@@ -469,7 +478,12 @@ export class SR5ShopAvailability {
         const lines = data.results.filter(r => r.obtained).map(r => ({
           uuid: r.uuid, quantity: r.quantity, name: r.name, grade: r.grade,
         }))
-        const bought = await SR5Shop.checkout(actor, lines)
+        // Bought at a vendor's: its till, on the gamemaster's browser
+        // Loaded on demand: the vendor's till brings the socket, which the tests do without
+        const SR5ShopVendor = data.vendor ? (await import('./shop-vendor.js')).SR5ShopVendor : null
+        const bought = data.vendor ? await SR5ShopVendor.purchase({
+          vendorUuid: data.vendor.uuid, storageId: data.vendor.storageId, buyerId: actor?.id, lines,
+        }) : await SR5Shop.checkout(actor, lines)
         // The goods are cashed once: the button goes, the card stays.
         if (bought) {
           await message.update({

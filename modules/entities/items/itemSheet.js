@@ -5,6 +5,9 @@ import {
   garageRequirement 
 } from "../../interface/storage-rules.js"
 import {
+  SR5ShopVendor
+} from "../../interface/shop-vendor.js"
+import {
   SR5_SpiritTypes
 } from "./spirit-types.js"
 import {
@@ -72,6 +75,10 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       toggleMode: SR5ItemSheet._onToggleMode,
       jammerSpareTargets: SR5ItemSheet._onJammerSpareTargets,
       jammerUnspare: SR5ItemSheet._onJammerUnspare,
+      shopRestock: SR5ItemSheet._onShopAction,
+      shopClear: SR5ItemSheet._onShopAction,
+      shopCashbox: SR5ItemSheet._onShopAction,
+      shopOpen: SR5ItemSheet._onShopAction,
     },
   }
 
@@ -94,6 +101,21 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     await this.document.update({
       "system.jammer.spared": [...spared]
     })
+  }
+
+  // The vendor's shop (lot C): restock, empty, give a cashbox, open the window
+  static async _onShopAction(event, target) {
+    event.preventDefault()
+    const item = this.document
+    const actor = item.parent
+    if (!actor) return
+    const action = target.dataset.action
+    if (action === 'shopOpen') return SR5ShopVendor.openShop(actor, item)
+    if (!game.user.isGM) return
+    if (action === 'shopRestock') await SR5ShopVendor.restock(actor, item)
+    else if (action === 'shopClear') await SR5ShopVendor.clearStock(actor, item)
+    else if (action === 'shopCashbox') await SR5ShopVendor.createCashbox(actor, item)
+    this.render()
   }
 
   static async _onJammerUnspare(event, target) {
@@ -331,6 +353,10 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     // What the rule asks of a garage holding this kind of vehicle
     if (item.type === "itemStorage" && item.system.type === "garage") {
       context.garageRule = garageRequirement(item)
+    }
+    // A vendor's stock: its shelves, legality, cashbox
+    if (item.type === "itemStorage" && item.system.type === "shop") {
+      context.shop = SR5ShopVendor.sheetContext(item)
     }
 
     // Custom ammunition type choices for weapon ammo dropdown

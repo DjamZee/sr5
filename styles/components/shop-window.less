@@ -320,4 +320,44 @@
     justify-content: space-between;
     &.too-expensive { color: var(--shop-prohibited); }
   }
+
+  /* -- The vendor (lot C): its sign over the list, banner 3:1 and portrait -- */
+  .sr-shop-source { width: 100%; margin-bottom: 8px; }
+  .sr-shop-vendor {
+    position: relative;
+    flex: none;
+    border-bottom: 2px solid var(--sr-shop-accent);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--sr-shop-accent) 35%, var(--shop-panel)), var(--shop-panel) 70%);
+    .sr-shop-banner {
+      display: block;
+      width: 100%;
+      aspect-ratio: 3 / 1;
+      max-height: 180px;
+      object-fit: cover;
+      border: none;
+    }
+    .sr-shop-vendor-id {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      b { font-size: 16px; }
+      small { display: block; color: var(--shop-muted) !important; }
+    }
+    &.has-banner .sr-shop-vendor-id {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      background: linear-gradient(0deg, rgba(0, 0, 0, 0.85), transparent);
+      b, small { text-shadow: 0 1px 2px #000; }
+    }
+    .sr-shop-portrait {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      border: 2px solid var(--sr-shop-accent);
+      border-radius: 4px;
+    }
+  }
+  .sr-shop-tag.stock { border-color: var(--shop-good); color: var(--shop-good); }
+  .sr-shop-tag.on-order { border-color: var(--shop-restricted); color: var(--shop-restricted); }
 }

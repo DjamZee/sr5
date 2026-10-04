@@ -62,6 +62,65 @@ export class sr5ItemStorageDataModel extends foundry.abstract.TypeDataModel {
         initial: ''
       }),
       ...lockablePartialModel.defineSchema(),
+      // A storage of type "shop" is a vendor's stock (shop lot C): the actor carrying it
+      // sells what is stored in it. Unused on every other kind of storage.
+      shop: new fields.SchemaField({
+        // The name over the counter; empty, the storage's own name
+        label: new fields.StringField({
+          initial: ''
+        }),
+        // Players may come in; the gamemasters always can
+        isOpen: new fields.BooleanField({
+          initial: false
+        }),
+        // Percent on the book price: the gamemaster's adjustment of SR5 p. 419
+        margin: new fields.NumberField({
+          initial: 0, integer: true, min: -100
+        }),
+        // Ceiling of the automatic restock; an item placed by hand goes past it
+        maxAvailability: new fields.NumberField({
+          initial: 12, integer: true, min: 0
+        }),
+        // Legalities the restock takes: 'legal', 'R' (restricted), 'F' (forbidden: Prohibé in French)
+        legality: new fields.ArrayField(new fields.StringField(), {
+          initial: ['legal', 'R']
+        }),
+        // Shelves of the shop window (SR5ShopCatalog.SHELVES) the restock fills
+        shelves: new fields.ArrayField(new fields.StringField(), {
+          initial: []
+        }),
+        perShelf: new fields.NumberField({
+          initial: 10, integer: true, min: 0
+        }),
+        stackQuantity: new fields.NumberField({
+          initial: 5, integer: true, min: 1
+        }),
+        // The credstick of the vendor the takings go on
+        cashboxId: new fields.StringField({
+          initial: ''
+        }),
+        // Items of its shelves it has not got, looked for on demand (SR5 p. 420)
+        onOrder: new fields.BooleanField({
+          initial: false
+        }),
+        // The gamemaster accepts or refuses each sale by hand
+        approve: new fields.BooleanField({
+          initial: false
+        }),
+        // Left for the vendor templates (lot C, part 2): banner 3:1, accent, portrait, template key
+        banner: new fields.StringField({
+          initial: ''
+        }),
+        accent: new fields.StringField({
+          initial: ''
+        }),
+        portrait: new fields.StringField({
+          initial: ''
+        }),
+        template: new fields.StringField({
+          initial: ''
+        }),
+      }),
     }
   }
 

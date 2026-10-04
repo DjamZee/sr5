@@ -291,6 +291,22 @@ export class SR5_SystemHelpers {
       scope: "world", config: true, default: 6, type: Number,
     })
 
+    // The gamemaster's vendors (shop lot C). The world's shelves stay open to the
+    // players unless the table wants every purchase to go through a vendor.
+    game.settings.register("sr5", "sr5ShopMarketOpen", {
+      name: "SR5.SETTINGS_ShopMarketOpen_T",
+      hint: "SR5.SETTINGS_ShopMarketOpen_D",
+      scope: "world", config: true, default: true, type: Boolean,
+    })
+
+    // An item on a vendor's counter has been found already: no availability test
+    // (SR5 p. 420, the test is the search). A table may want it all the same.
+    game.settings.register("sr5", "sr5ShopVendorTest", {
+      name: "SR5.SETTINGS_ShopVendorTest_T",
+      hint: "SR5.SETTINGS_ShopVendorTest_D",
+      scope: "world", config: true, default: false, type: Boolean,
+    })
+
     // Which contact types deal in goods, for the Bargaining specialization
     // on availability tests. Free text on the contact sheet, so this is a
     // keyword list the table can edit.
