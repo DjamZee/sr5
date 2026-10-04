@@ -204,6 +204,7 @@ async function handleSpellAreaTemplate(rollData, actor, chatData){
     return false
   }
   rollData.magic.spell.range = chatData.magic.spell.range
+  rollData.magic.spell.areaThreshold = chatData.magic.spell.areaThreshold
 
   return rollData
 }

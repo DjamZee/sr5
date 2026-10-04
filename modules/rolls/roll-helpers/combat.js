@@ -119,6 +119,18 @@ export class SR5_CombatHelpers {
     return units * SR5_SystemHelpers.getSceneUnitInMeters(scene)
   }
 
+  // SR5 p. 285: an indirect area spell is cast with a threshold of 3, like a grenade (p. 182), and the target
+  // defends normally, with Reaction + Intuition. Once the threshold is reached, the DV is the Force plus the
+  // hits above the threshold, counted after the defense: net hits up to the threshold add nothing.
+  static indirectAreaSpellDamage(force, netHits, threshold){
+    return force + Math.max(0, netHits - threshold)
+  }
+
+  // SR5 p. 285: below the threshold, each hit takes 1 m off the 2D6 m scatter
+  static indirectAreaSpellScatter(diceTotal, hits){
+    return Math.max(0, diceTotal - hits)
+  }
+
   //Handle environmental modifiers
   //noWind: ignore the wind column (perception, melee); melee: SR5 p. 188, only the Light and Visibility columns apply
   //weaponLight: light rows taken off by a flashlight on the weapon being used (SR5_UtilityItem.getWeaponLightCompensation)

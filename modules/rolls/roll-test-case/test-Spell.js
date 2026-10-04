@@ -2,8 +2,11 @@ import {
   SR5_EntityHelpers 
 } from "../../entities/helpers.js"
 import {
-  SR5_RollMessage 
+  SR5_RollMessage
 } from "../roll-message.js"
+import {
+  SR5_CombatHelpers
+} from "../roll-helpers/combat.js"
 
 export default async function spellInfo(cardData){
   let actionType, label, item
@@ -28,6 +31,20 @@ export default async function spellInfo(cardData){
         cardData.damage.value = cardData.magic.force
         cardData.combat.armorPenetration = -cardData.magic.force
         cardData.damage.resistanceType = "physicalDamage"
+        // SR5 p. 285: an area is cast with a threshold of 3, like a grenade (p. 182)
+        if (cardData.magic.spell.range === "area" && cardData.roll.hits >= 3) cardData.magic.spell.areaThreshold = 3
+        else if (cardData.magic.spell.range === "area") {
+          // Threshold missed: the spell still explodes, 2D6 m away minus 1 m per hit, at DV = Force. As for a
+          // grenade that scatters, the targets get no defense test (ruled by DjamZ, the book does not say).
+          const scatterRoll = new Roll("2d6")
+          await scatterRoll.evaluate()
+          cardData.magic.spell.scatter = SR5_CombatHelpers.indirectAreaSpellScatter(scatterRoll.total, cardData.roll.hits)
+          cardData.chatCard.buttons.spellScatter = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.format("SR5.INFO_ScatterDistance", {
+            distance: cardData.magic.spell.scatter
+          }))
+          actionType = "resistanceCard"
+          label = game.i18n.localize("SR5.TakeOnDamageShort")
+        }
       } else if (cardData.test.typeSub === "direct") {
         actionType = "resistanceCard"
         label = game.i18n.localize("SR5.ResistDirectSpell")

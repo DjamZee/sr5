@@ -11,8 +11,11 @@ import {
   SR5 
 } from "../../config.js"
 import {
-  SR5_ConverterHelpers 
+  SR5_ConverterHelpers
 } from "../roll-helpers/converter.js"
+import {
+  SR5_CombatHelpers
+} from "../roll-helpers/combat.js"
 import {
   SR5_RollTest 
 } from "../roll-test.js"
@@ -77,6 +80,7 @@ export default async function defenseInfo(cardData, actorId){
 
   //Damage value calculation
   if (cardData.combat.firingMode.selected === "SF") cardData.damage.value = cardData.damage.base
+  else if (cardData.magic.spell.areaThreshold) cardData.damage.value = SR5_CombatHelpers.indirectAreaSpellDamage(cardData.damage.base, cardData.roll.netHits, cardData.magic.spell.areaThreshold)
   else cardData.damage.value = cardData.damage.base + cardData.roll.netHits
         
   //Handle Called Shot specifics
