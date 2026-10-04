@@ -65,10 +65,13 @@ export class SR5_ActorHelper {
       case "actorPc":
       case "actorSpirit":
         if (singleMonitor) {
-          if (options.damage.matrix.value > 0) damage = options.damage.matrix.value
+          // Matrix damage has no Physical or Stun letter: it fills the condition monitor as is
+          const isMatrixDamage = options.damage.matrix.value > 0
+          if (isMatrixDamage) damage = options.damage.matrix.value
           actorData.conditionMonitors.condition.actual.base += damage
           SR5_EntityHelpers.updateValue(actorData.conditionMonitors.condition.actual, 0)
-          ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${damage}${game.i18n.localize(SR5.damageTypesShort[damageType])} ${game.i18n.localize("SR5.Applied")}.`)
+          const unit = isMatrixDamage ? "" : game.i18n.localize(SR5.damageTypesShort[damageType] ?? "")
+          ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${damage}${unit} ${game.i18n.localize("SR5.Applied")}.`)
           break
         }
         if (options.damage.matrix.value > 0) {
