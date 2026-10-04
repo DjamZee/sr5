@@ -30,10 +30,17 @@
 <li class="grid">
     <div class="col-8">{{localize 'SR5.MatrixActionEmulateRating' max=matrix.emulateMax}}{{localize 'SR5.Colons'}}</div>
     <div class="col-3 SR-TextRight">
-        <input type="number" class="SR-ModInput" name="emulateRating" data-modifier="emulate" value="0" min="0" max="{{matrix.emulateMax}}" data-dtype="Number" />
+        <input type="number" class="SR-ModInput" name="emulateRating" data-modifier="emulate" value="0" min="{{#if matrix.emulateRequired}}1{{else}}0{{/if}}" max="{{matrix.emulateMax}}" data-dtype="Number" />
     </div>
     <div class="col-1 SR-TextCenter">
         <input disabled type="number" name="dicePoolModEmulate" value="0" placeholder="0" data-dtype="Number" />
+    </div>
+</li>
+<!-- Data Trails p. 157: emulating for a legal action raises no Overwatch Score -->
+<li class="grid">
+    <div class="col-11">{{localize 'SR5.MatrixActionEmulateLegal'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1 SR-TextCenter">
+        <input type="checkbox" name="emulateLegal" />
     </div>
 </li>
 {{/if}}

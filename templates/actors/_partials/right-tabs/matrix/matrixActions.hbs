@@ -53,7 +53,7 @@
 					<!--End Jamming Signal Icon-->
 					{{findTranslation 'matrixActions' @key}}
 				</div>
-				{{#if (or (and (eq limit.linkedAttribute 'sleaze') (lt ../system.matrix.attributes.sleaze.value 1)) (and (eq limit.linkedAttribute 'attack') (lt ../system.matrix.attributes.attack.value 1)) )}}
+				{{#if (and (not @root.emulateOnlyDepth) (or (and (eq limit.linkedAttribute 'sleaze') (lt ../system.matrix.attributes.sleaze.value 1)) (and (eq limit.linkedAttribute 'attack') (lt ../system.matrix.attributes.attack.value 1)) ))}}
 				<div class="col-2 SR-TextCenter">-</div>
 				<div class="col-1 SR-TextCenter">-</div>
 				<div class="col-1 SR-TextCenter">-</div>
@@ -70,7 +70,7 @@
 				<div class="col-1 SR-TextCenter"
 				  data-helpTitle="{{localize 'SR5.Limit'}}"
 				  data-helpDetails="system.matrix.actions.{{@key}}.limit">
-				  	{{valueOrDash limit.value}}
+				  	{{#if (and @root.emulateOnlyDepth (ne source 'dataTrails'))}}{{localize 'SR5.MatrixActionEmulateLimit' depth=@root.emulateOnlyDepth}}{{else}}{{valueOrDash limit.value}}{{/if}}
 				</div>
 				{{/if}}
 				{{#if_ge defense.dicePool 1}}

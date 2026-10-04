@@ -12,6 +12,9 @@ import {
 } from "../roll-helpers/miscellaneous.js"
 import SR5_RollDialog from "../roll-dialog.js"
 import {
+  SR5_CharacterUtility
+} from "../../entities/actors/utilityActor.js"
+import {
   SR5_MarkHelpers, WATCHDOG_INTERRUPTION_COST
 } from "../roll-helpers/mark.js"
 
@@ -67,6 +70,13 @@ export default async function matrixAction(rollData, rollKey, actor){
       rollData.dialogSwitch.emulate = true
       rollData.matrix.emulateMax = rollData.matrix.depth
       rollData.matrix.emulateAttributeValue = actor.system.matrix.attributes[matrixAction.limit.linkedAttribute]?.value || 0
+      // Without a device the AI has no matrix attribute to fall back on: Emulate is the only way to act (Data Trails p. 157),
+      // offered at Depth and never below 1
+      if (SR5_CharacterUtility.isDevicelessAI(actor)) {
+        rollData.matrix.emulateRequired = true
+        rollData.matrix.emulateAttributeValue = 0
+        rollData.matrix.emulateDefault = rollData.matrix.emulateMax
+      }
     }
   }
 

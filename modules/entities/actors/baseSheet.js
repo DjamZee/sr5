@@ -210,6 +210,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     context.showDNI = game.settings.get("sr5", "sr5WifiRequiresDNI") && ["actorPc", "actorGrunt"].includes(this.actor.type)
     //An AI outside any device has nothing to reboot: it must load onto a device first (Data Trails p. 157)
     context.canReboot = !SR5_CharacterUtility.isDevicelessAI(this.actor)
+    //Nor any matrix attribute: its actions are rolled through Emulate, whose rating (and so the limit) goes up to Depth (Data Trails p. 159)
+    context.emulateOnlyDepth = context.canReboot ? null : (this.actor.system.specialAttributes?.depth?.augmented?.value || 0)
     //An active cyberdeck whose attribute array is not assigned rolls with matrix limits at 0 (SR5 p. 229)
     context.deckUnconfigured = SR5_CharacterUtility.isDeckUnconfigured(this.actor.system)
 

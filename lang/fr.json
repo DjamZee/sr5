@@ -2211,6 +2211,8 @@
 	"SR5.MatrixActionRedefineOwnershipSuccess": "Propriété redéfinie : l'appareil redémarre, son propriétaire est éjecté, et l'IA subit -2 à toutes ses actions pendant {depth} tour(s)",
 	"SR5.MatrixActionEmulate": "Émuler",
 	"SR5.MatrixActionEmulateRating": "Indice émulé (maximum {max}, ajouté au Score de Surveillance)",
+	"SR5.MatrixActionEmulateLegal": "Action légale (l'émulation n'augmente pas le Score de Surveillance)",
+	"SR5.MatrixActionEmulateLimit": "Émul. ≤ {depth}",
 	"SR5.MatrixActionCheckOverwatchScore": "Vérifier son score de surveillance",
 	"SR5.MatrixActionCheckOverwatchScore_GE": "<P>Cette action permet de connaître le niveau du risque de convergence sur son icône.</p>",
 	"SR5.MatrixActionCheckOverwatchScoreFailed": "Échec de la vérification",

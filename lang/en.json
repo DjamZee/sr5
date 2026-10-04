@@ -2211,6 +2211,8 @@
 	"SR5.MatrixActionRedefineOwnershipSuccess": "Ownership redefined: the device reboots, its owner is ejected, and the AI suffers -2 to all actions for {depth} turn(s)",
 	"SR5.MatrixActionEmulate": "Emulate",
 	"SR5.MatrixActionEmulateRating": "Emulated rating (maximum {max}, added to the Overwatch Score)",
+	"SR5.MatrixActionEmulateLegal": "Legal action (emulating raises no Overwatch Score)",
+	"SR5.MatrixActionEmulateLimit": "Emul. ≤ {depth}",
 	"SR5.MatrixActionCheckOverwatchScore": "Check Overwatch Score",
 	"SR5.MatrixActionCheckOverwatchScore_GE": "<P>You find out how close the grid is to converging on you.</p>",
 	"SR5.MatrixActionCheckOverwatchScoreFailed": "Failed Overwatch check",

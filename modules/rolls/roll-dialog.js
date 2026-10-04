@@ -229,8 +229,50 @@ export default class SR5_RollDialog {
       const extendedBlockEl = element.querySelector('#extendedBlock')
       if (extendedBlockEl) extendedBlockEl.style.display = ''
     }
+    //AI Emulate: an AI without a device can only emulate, so the dialog opens at its default rating (Data Trails p. 157)
+    if (dialogData.matrix?.emulateRequired) this._applyEmulateRating(element, dialogData, dialogData.matrix.emulateDefault)
+    element.querySelectorAll('[name="emulateLegal"]').forEach(el => el.addEventListener('change', ev => {
+      dialogData.matrix.emulateLegal = ev.target.checked
+    }))
     //Toggle hidden div
     element.querySelectorAll(".SR-DialogToggle").forEach(el => el.addEventListener('click', ev => this._toggleDiv(ev, element)))
+  }
+
+  // AI Emulate (Data Trails p. 159): rating capped by Depth, -(rating / 2) dice, the limit becomes the emulated rating.
+  // Without a device the rating cannot drop below 1: there is no attribute to act with otherwise (Data Trails p. 157)
+  _applyEmulateRating(html, dialogData, value){
+    let max = dialogData.matrix.emulateMax || 0,
+      min = dialogData.matrix.emulateRequired ? Math.min(1, max) : 0
+    if (isNaN(value) || value < min) value = min
+    if (value > max) {
+      value = max
+      ui.notifications.warn(game.i18n.format('SR5.WARN_EmulateMaxDepth', {
+        depth: max
+      }))
+    }
+    html.querySelector('[name="emulateRating"]').value = value
+    dialogData.matrix.emulateRating = value
+    SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "emulate")
+    delete dialogData.limit.modifiers.limitModEmulate
+    delete this.limitModifier.limitModEmulate
+    let emulatePenalty = 0
+    if (value > 0) {
+      emulatePenalty = -Math.ceil(value / 2)
+      dialogData.dicePool.modifiers.push({
+        type: "emulate",
+        label: `${game.i18n.localize(SR5.dicePoolModTypes.emulate)} (${value})`,
+        value: emulatePenalty
+      })
+      let emulateLimit = value - (dialogData.matrix.emulateAttributeValue || 0)
+      dialogData.limit.modifiers.limitModEmulate = {
+        value: emulateLimit,
+        label: `${game.i18n.localize(SR5.limitModTypes.limitModEmulate)} (${value})`,
+      }
+      this.limitModifier.limitModEmulate = emulateLimit
+    }
+    html.querySelector('[name="dicePoolModEmulate"]').value = emulatePenalty
+    this.updateDicePoolValue(html)
+    this.updateLimitValue(html)
   }
 
   //Show or Hide section of the dialog
@@ -536,41 +578,9 @@ export default class SR5_RollDialog {
     }
 
     switch (target){
-      case "emulateRating": {
-        // AI Emulate (Data Trails p. 159): rating capped by Depth, -(rating / 2) dice, the limit becomes the emulated rating
-        let max = dialogData.matrix.emulateMax || 0
-        if (isNaN(value) || value < 0) value = 0
-        if (value > max) {
-          value = max
-          ui.notifications.warn(game.i18n.format('SR5.WARN_EmulateMaxDepth', {
-            depth: max
-          }))
-        }
-        html.querySelector(name).value = value
-        dialogData.matrix.emulateRating = value
-        SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "emulate")
-        delete dialogData.limit.modifiers.limitModEmulate
-        delete this.limitModifier.limitModEmulate
-        let emulatePenalty = 0
-        if (value > 0) {
-          emulatePenalty = -Math.ceil(value / 2)
-          dialogData.dicePool.modifiers.push({
-            type: "emulate",
-            label: `${game.i18n.localize(SR5.dicePoolModTypes.emulate)} (${value})`,
-            value: emulatePenalty
-          })
-          let emulateLimit = value - (dialogData.matrix.emulateAttributeValue || 0)
-          dialogData.limit.modifiers.limitModEmulate = {
-            value: emulateLimit,
-            label: `${game.i18n.localize(SR5.limitModTypes.limitModEmulate)} (${value})`,
-          }
-          this.limitModifier.limitModEmulate = emulateLimit
-        }
-        html.querySelector('[name="dicePoolModEmulate"]').value = emulatePenalty
-        this.updateDicePoolValue(html)
-        this.updateLimitValue(html)
+      case "emulateRating":
+        this._applyEmulateRating(html, dialogData, value)
         return
-      }
       case "force":
         this.updateDrainValue(html)
         if (html.querySelector('#force')) {
