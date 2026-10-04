@@ -3296,6 +3296,7 @@ SR5.spiritOptionalPowerswater = {
 
 SR5.spiritBasePowerswatcher = {
   astralForm                 : "SR5.SpiritPowerAstralForm",
+  manifestation              : "SR5.SpiritPowerManifestation",
   sapience                   : "SR5.SpiritPowerSapience",
   search                     : "SR5.SpiritPowerSearch",
 }
