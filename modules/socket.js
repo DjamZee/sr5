@@ -34,6 +34,7 @@ export class SR5_SocketHandler {
       "updateCombat": [SR5Combat._socketUpdateCombat],
       "changeInitInCombat": [SR5Combat._socketChangeInitInCombat],
       "createSidekick": [SR5_ActorHelper._socketCreateSidekick],
+      "createDeadEffect": [SR5_ActorHelper._socketCreateDeadEffect],
       "dismissSidekick": [SR5_ActorHelper._socketDismissSidekick],
       "addItemToPan": [SR5_ActorHelper._socketAddItemToPan],
       "deleteItemFromPan": [SR5_ActorHelper._socketDeleteItemFromPan],

@@ -105,7 +105,14 @@ export class SR5_MatrixHelpers {
       item: targetItem.uuid,
       info: newItem.system,
     })
-    if (aiDissipated) await SR5_ActorHelper.createDeadEffect(targetActor.isToken ? targetActor.token.id : targetActor.id)
+    if (aiDissipated) {
+      //A player who deals the damage cannot write on the AI: the GM lays the status, as for the device above
+      let actorId = targetActor.isToken ? targetActor.token.id : targetActor.id
+      if (game.user?.isGM) await SR5_ActorHelper.createDeadEffect(actorId)
+      else SR5_SocketHandler.emitForGM("createDeadEffect", {
+        actorId: actorId
+      })
+    }
 
     if (defender) ui.notifications.info(`${defender.name} ${game.i18n.format("SR5.INFO_ActorDoMatrixDamage", {
       damageValue: damageValue

@@ -90,6 +90,24 @@ describe('Device of an AI bricked (Data Trails p. 161)', () => {
     expect(actor.rollTest).not.toHaveBeenCalled()
   })
 
+  it('asks the GM to dissipate the AI when a player deals the damage', async () => {
+    const {
+      SR5_SocketHandler
+    } = await import('../modules/socket.js')
+    SR5_SocketHandler.emitForGM.mockClear()
+    game.user = {
+      isGM: false
+    }
+    const {
+      actor
+    } = target(true)
+    await SR5_MatrixHelpers.applyDamageToDecK(actor, card(14), null, false)
+    expect(SR5_ActorHelper.createDeadEffect).not.toHaveBeenCalled()
+    expect(SR5_SocketHandler.emitForGM).toHaveBeenCalledWith('createDeadEffect', {
+      actorId: 'a'
+    })
+  })
+
   it('leaves an AI whose device is not full alone', async () => {
     const {
       actor

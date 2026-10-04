@@ -275,6 +275,11 @@ export class SR5_ActorHelper {
     else ui.notifications.info(`${actor.name} ${game.i18n.format("SR5.INFO_DropProne")}`)
   }
 
+  //A player may not write on the actor that dies (an AI dissipated by matrix damage it was dealt): the GM does it
+  static async _socketCreateDeadEffect(message){
+    await SR5_ActorHelper.createDeadEffect(message.data.actorId)
+  }
+
   //Handle death effect
   static async createDeadEffect(actorId){
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
