@@ -1278,8 +1278,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       item.system.isActive = false
       if (item.system.quantity > 0) {
         item.system.quantity -= 1
-        let targetToken = game.user.targets.first()
-        await soothe(targetToken?.actor ?? actor)
+        let soothed = game.user.targets.first()?.actor ?? actor
+        let removed = await soothe(soothed)
+        //The item list is written back below: the removed effects must leave it, or they come back
+        if (soothed === actor) itemList = itemList.filter(i => !removed.includes(i._id))
       } else ui.notifications.warn(game.i18n.localize("SR5.WARN_MilkBrickNone"))
     }
 
