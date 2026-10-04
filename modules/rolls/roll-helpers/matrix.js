@@ -360,20 +360,27 @@ export class SR5_MatrixHelpers {
     ui.notifications.info(`${target.name}${game.i18n.format('SR5.Colons')} ${game.i18n.localize('SR5.INFO_IsLinkLocked')} ${attacker.name}`)
   }
 
+  //Name of the device the card aimed at, or of the target when there is none
+  static async targetDeviceName(cardData, target){
+    let device = cardData.target?.itemUuid ? await fromUuid(cardData.target.itemUuid) : null
+    return device?.name ?? target.name
+  }
+
   //create denial of service Effect
   static async applyDenialOfServiceEffect(cardData, sourceActor, target){
         
     let netHits = cardData.previousMessage.hits - cardData.roll.hits
-    let deviceTarget = await fromUuid(cardData.target.itemUuid)
+    //No device behind the card (a persona targeted, a device deleted since): the effect names the target
+    let deviceName = await SR5_MatrixHelpers.targetDeviceName(cardData, target)
     let effect = {
-      name: `${game.i18n.localize('SR5.MatrixActionDenialOfService')} (${deviceTarget.name})`,
+      name: `${game.i18n.localize('SR5.MatrixActionDenialOfService')} (${deviceName})`,
       type: "itemEffect",
       "system.type": "matrixAction",
       "system.ownerID": sourceActor.id,
       "system.ownerName": sourceActor.name,
       "system.duration": 1,
       "system.durationType": "round",
-      "system.target": deviceTarget.name,
+      "system.target": deviceName,
       "system.value": (netHits * 2),
       "system.customEffects": {
         "0": {
@@ -387,7 +394,7 @@ export class SR5_MatrixHelpers {
       "system.gameEffect": game.i18n.localize("SR5.MatrixActionDenialOfService_GE"),
     }
     await target.createEmbeddedDocuments("Item", [effect])
-    ui.notifications.info(`${target.name}${game.i18n.format('SR5.Colons')} ${game.i18n.localize('SR5.MatrixActionDenialOfService')} (${deviceTarget.name})`)
+    ui.notifications.info(`${target.name}${game.i18n.format('SR5.Colons')} ${game.i18n.localize('SR5.MatrixActionDenialOfService')} (${deviceName})`)
   }
 
   //Allies receiving a matrix support effect: the tokens targeted by the user, or the selected token as a fallback
@@ -496,17 +503,18 @@ export class SR5_MatrixHelpers {
   //create popup Effect
   static async applyPopupEffect(cardData, sourceActor, target){
     let netHits = cardData.previousMessage.hits - cardData.roll.hits
-    let deviceTarget = await fromUuid(cardData.target.itemUuid)
+    //No device behind the card (a persona targeted, a device deleted since): the effect names the target
+    let deviceName = await SR5_MatrixHelpers.targetDeviceName(cardData, target)
     let action = cardData.test.typeSub
     let effect = {
-      name: `${game.i18n.localize(SR5.matrixKillCodeActions[action])} (${deviceTarget.name})`,
+      name: `${game.i18n.localize(SR5.matrixKillCodeActions[action])} (${deviceName})`,
       type: "itemEffect",
       "system.type": "matrixAction",
       "system.ownerID": sourceActor.id,
       "system.ownerName": sourceActor.name,
       "system.duration": 1,
       "system.durationType": "round",
-      "system.target": deviceTarget.name,
+      "system.target": deviceName,
       "system.value": netHits,
       "system.customEffects": {
         "0": {
