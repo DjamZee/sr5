@@ -35,4 +35,11 @@ describe("an effect keeps its rules text", () => {
     expect(schema.gameEffect?.kind).toBe("HTMLField")
     expect(schema.gameEffect.options.initial).toBe("")
   })
+
+  // The effect sheet edits system.description too, which the schema dropped on every save
+  it("the itemEffect schema stores the description as HTML, empty by default", () => {
+    const schema = sr5ItemEffectDataModel.defineSchema()
+    expect(schema.description?.kind).toBe("HTMLField")
+    expect(schema.description.options.initial).toBe("")
+  })
 })
