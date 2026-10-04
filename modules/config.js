@@ -3886,6 +3886,7 @@ SR5.modifiersTypes = {
   armorAccessory			  : "SR5.ArmorAccessory",
   augmentations 			  : "SR5.Augmentations",
   augmentationGrade		  : "SR5.AugmentationGrade",
+  augmentationCap		  : "SR5.SETTINGS_AugmentationCap_T",
   areaEffect 				  : "SR5.AreaEffect",
   armorEncumbrance		  : "SR5.ArmorEncumbrance",
   armorMain 				  : "SR5.Armor",

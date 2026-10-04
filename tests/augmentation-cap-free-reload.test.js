@@ -14,6 +14,9 @@ import {
   SR5Combat
 } from '../modules/system/srcombat.js'
 import {
+  SR5
+} from '../modules/config.js'
+import {
   METATYPE_ATTRIBUTE_MAX
 } from '../modules/entities/actors/augmentationCap.js'
 
@@ -71,6 +74,8 @@ describe('augmentation cap (SR5 p. 96 by default, arbitrage de DjamZ for the oth
     expect(strengthOf(a)).toBe(9)
     const cut = a.system.attributes.strength.augmented.modifiers.find(m => m.type === 'augmentationCap')
     expect(cut.value).toBe(-3)
+    //the help of the attribute names the kind of every modifier: this one must have its label
+    expect(SR5.modifiersTypes[cut.type]).toBeDefined()
   })
 
   it('never cuts a penalty: it applies under the cap', () => {
