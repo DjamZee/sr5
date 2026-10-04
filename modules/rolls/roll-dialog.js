@@ -1119,8 +1119,8 @@ export default class SR5_RollDialog {
         }
         case "targetEffect":
           dialogData.target.itemUuid = ev.target.value
-          if (dialogData.test.typeSub === "counterspelling"){
-            let spellCategory = await this.getTargetType(dialogData.targetEffect)
+          if (dialogData.test.typeSub === "counterspelling" && ev.target.value){
+            let spellCategory = await this.getTargetType(dialogData.target.itemUuid)
             value = parseInt(actor.system.skills.counterspelling.spellCategory[spellCategory].dicePool - actor.system.skills.counterspelling.test.dicePool)
             label = `${game.i18n.localize(SR5.dicePoolModTypes["spellCategory"])} (${game.i18n.localize(SR5.spellCategories[spellCategory])})`
           } else value = 0
