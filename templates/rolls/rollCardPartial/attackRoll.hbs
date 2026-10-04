@@ -57,7 +57,7 @@
 <li class="grid">
     <div class="col-4">{{localize 'SR5.CS_CalledShots'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-8 SR-TextRight">{{findTranslation 'calledShotsAll' combat.calledShot.name}}
-        {{#if (isdefined combat.calledShot.location)}} 
+        {{#if combat.calledShot.location}}
             ({{findTranslation 'calledShotsSpecifics' combat.calledShot.location}})
         {{/if}}
     </div>
