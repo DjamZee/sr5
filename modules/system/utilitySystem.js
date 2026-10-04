@@ -72,8 +72,6 @@ export class SR5_SystemHelpers {
       requiresReload: true
     })
 
-    // When someone dies, leave a bag on the body holding part of their gear.
-    // No rule says so, so it stays off until a table asks for it.
     // SR5 p. 422 leaves the object to the GM. A table can let the thief choose it himself,
     // a ruling of DjamZ (2026-10-05): off by default, the book's way
     game.settings.register("sr5", "sr5PickpocketThiefChooses", {
@@ -85,6 +83,8 @@ export class SR5_SystemHelpers {
       type: Boolean,
     })
 
+    // When someone dies, leave a bag on the body holding part of their gear.
+    // No rule says so, so it stays off until a table asks for it.
     game.settings.register("sr5", "sr5StorageDropOnDeath", {
       name: "SR5.SETTINGS_StorageDropOnDeath_T",
       hint: "SR5.SETTINGS_StorageDropOnDeath_D",

@@ -12,7 +12,8 @@ export default async function pickpocket(rollData, actor, chatData){
 
   //Determine title: what the thief says he is after, if anything
   rollData.test.title = game.i18n.localize(chatData?.mode === "plant" ? "SR5.PickpocketPlant" : "SR5.Pickpocket")
-  if (chatData?.aim) rollData.test.title += ` (${foundry.utils.escapeHTML(String(chatData.aim))})`
+  //The card template escapes the title: escaping here too would print &amp; for &
+  if (chatData?.aim) rollData.test.title += ` (${String(chatData.aim)})`
 
   //Determine dicepool composition: Palming and its linked attribute, Agility
   rollData.dicePool.composition = skillModifiers.filter(mod => (mod.type === "skillRating" || mod.type === "skillGroup" || mod.type === "linkedAttribute"))

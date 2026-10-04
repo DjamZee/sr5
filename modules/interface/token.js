@@ -18,7 +18,9 @@ export class SR5Token extends foundry.canvas.placeables.Token {
    */
   _canHUD(user, event) {
     if (super._canHUD(user, event)) return true
-    if (!this.layer.active || this.isPreview || canvas.controls.ruler?.active) return false
+    //The core's own guards, before its ownership test
+    if (this.layer._draggedToken || !this.layer.active || this.isPreview) return false
+    if (canvas.controls.ruler?.active || (CONFIG.Canvas.rulerClass.canMeasure && (event?.type === "pointerdown"))) return false
     return SR5Pickpocket.canPickFrom(this.document)
   }
 
@@ -32,7 +34,7 @@ export class SR5Token extends foundry.canvas.placeables.Token {
     if (this.document.isOwner || !this.layer.hud || !SR5Pickpocket.canPickFrom(this.document)) return super._onClickRight(event)
     if (this.hasActiveHUD) this.layer.hud.close()
     else this.layer.hud.bind(this)
-    event.stopPropagation()
+    if (!this._propagateRightClick(event)) event.stopPropagation()
   }
 
   /**

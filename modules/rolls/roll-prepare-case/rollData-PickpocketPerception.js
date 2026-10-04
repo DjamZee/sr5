@@ -45,6 +45,9 @@ export default function pickpocketPerception(rollData, actor, chatData){
   rollData.various.pickpocketMode = chatData.various.pickpocketMode
   rollData.various.pickpocketItemId = chatData.various.pickpocketItemId
   rollData.various.pickpocketItemName = chatData.various.pickpocketItemName
+  rollData.various.pickpocketAnswerId = chatData.various.pickpocketAnswerId
+  rollData.various.pickpocketThiefGlitch = chatData.various.pickpocketThiefGlitch
+  rollData.various.pickpocketThiefCriticalGlitch = chatData.various.pickpocketThiefCriticalGlitch
 
   return rollData
 }

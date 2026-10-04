@@ -32,10 +32,25 @@ export class SR5Pickpocket {
     return tokenDocument?.actorLink ? tokenDocument.actorId : tokenDocument?.id
   }
 
-  //The token of an actor named by a card, on the scene viewed
-  static tokenOf(actorId) {
+  //The tokens of an actor named by a card, on the scene viewed: an unlinked one by its own id, a linked actor
+  //may stand there several times
+  static tokensOf(actorId) {
     const tokens = canvas.scene?.tokens
-    return tokens?.get(actorId) ?? tokens?.find(t => t.actorLink && t.actorId === actorId)
+    const own = tokens?.get(actorId)
+    if (own) return [own]
+    return tokens?.filter(t => t.actorLink && t.actorId === actorId) ?? []
+  }
+
+  //The one to name: the token the user has selected, else the first on the scene
+  static tokenOf(actorId) {
+    const list = SR5Pickpocket.tokensOf(actorId)
+    return list.find(t => t.object?.controlled) ?? list[0]
+  }
+
+  //Whether any token of the thief stands within reach of any token of the target
+  static actorsInReach(thiefId, targetId) {
+    const targets = SR5Pickpocket.tokensOf(targetId)
+    return SR5Pickpocket.tokensOf(thiefId).some(a => targets.some(b => a !== b && SR5Pickpocket.inReach(a, b)))
   }
 
   //Within reach: adjacent spaces, diagonal included (SR5 p. 187, Reach 0); a gridless scene counts one grid unit
@@ -128,6 +143,8 @@ export class SR5Pickpocket {
     const target = SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId)
     const thief = SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId)
     if (!target || !thief) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActor"))
+    //One Perception per thief card: a second click would give a second roll, and a second object
+    if (SR5Pickpocket.isAnswered(messageData.owner.messageId)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_PickpocketAnswered"))
     const mode = messageData.various.pickpocketMode ?? "take"
     const giver = mode === "plant" ? thief : target
 
@@ -146,7 +163,7 @@ export class SR5Pickpocket {
     const result = await foundry.applications.api.DialogV2.wait({
       window: {
         title: game.i18n.format("SR5.PickpocketTitle", {
-          name: target.name
+          name: SR5Pickpocket.tokenOf(messageData.target.actorId)?.name ?? target.name
         })
       },
       content: `<div class="form-group"><label>${escape(game.i18n.localize("SR5.PickpocketItem"))}</label><select name="itemId" ${locked}><option value="">${escape(game.i18n.localize("SR5.PickpocketRandom"))}</option>${options}</select></div>${box("distracted")}${box("attentive")}${box("diversion")}`,
@@ -174,7 +191,32 @@ export class SR5Pickpocket {
     data.various.pickpocketItemName = item.name
     data.various.pickpocketConcealment = concealmentOf(item)
     data.various.pickpocketSituations = result.situations
+    data.various.pickpocketAnswerId = foundry.utils.randomID()
+    //The thief's roll as it is now, kept on the GM's card: the hits go through previousMessage.hits
+    data.various.pickpocketThiefGlitch = !!messageData.roll.glitchRoll
+    data.various.pickpocketThiefCriticalGlitch = !!messageData.roll.criticalGlitchRoll
+    //Checked again after the dialog: another click may have answered meanwhile
+    if (SR5Pickpocket.isAnswered(messageData.owner.messageId)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_PickpocketAnswered"))
     await target.rollTest("pickpocketPerception", null, data)
+  }
+
+  static isAnswered(thiefMessageId) {
+    const various = game.messages.get(thiefMessageId)?.flags?.sr5data?.various
+    return !!(various?.pickpocketAnswerId || various?.pickpocketDone)
+  }
+
+  /** The Perception card is being written: the thief card it answers is spent, its button goes
+   * @param {String} thiefMessageId - the thief card
+   * @param {String} answerId - the id the Perception card carries
+   */
+  static async markAnswered(thiefMessageId, answerId) {
+    if (!game.user.isGM) return
+    const message = game.messages.get(thiefMessageId)
+    if (!message || message.flags?.sr5data?.various?.pickpocketAnswerId) return
+    await message.update({
+      "flags.sr5data.various.pickpocketAnswerId": answerId
+    })
+    await SR5_RollMessage.updateChatButtonHelper(thiefMessageId, "pickpocketPerception")
   }
 
   //Users who play an actor, and the GMs: whom a warning about that actor goes to
@@ -205,6 +247,9 @@ export class SR5Pickpocket {
     const thiefId = type === "pickpocketCaught" ? messageData.owner.actorId : messageData.previousMessage.actorId
     const targetId = type === "pickpocketCaught" ? messageData.target.actorId : messageData.owner.actorId
     await SR5Pickpocket.alertTarget(targetId, thiefId, true)
+    await game.messages.get(type === "pickpocketCaught" ? messageId : messageData.previousMessage.messageId)?.update({
+      "flags.sr5data.various.pickpocketDone": true
+    })
     await SR5_RollMessage.updateChatButtonHelper(messageId, type)
   }
 
@@ -235,7 +280,7 @@ export class SR5Pickpocket {
       authorOwnsThief: !!thiefMessage?.author && !!thief?.testUserPermission(thiefMessage.author, "OWNER"),
       item,
       itemOnGiver: !!item && item.parent === giver,
-      inReach: SR5Pickpocket.inReach(SR5Pickpocket.tokenOf(thiefId), SR5Pickpocket.tokenOf(targetId)),
+      inReach: SR5Pickpocket.actorsInReach(thiefId, targetId),
       allowLarge: true,
     })
     if (!allowed || !receiver) {
@@ -245,6 +290,9 @@ export class SR5Pickpocket {
 
     //Marked first: a second click finds the card done
     await perceptionMessage.update({
+      "flags.sr5data.various.pickpocketDone": true
+    })
+    await thiefMessage.update({
       "flags.sr5data.various.pickpocketDone": true
     })
     const given = item.toObject(false)
@@ -260,7 +308,7 @@ export class SR5Pickpocket {
       whisper: SR5Pickpocket.whisperFor(thief),
     })
     const outcome = pickpocketOutcome({
-      thiefHits: thiefCard.roll.hits, perceptionHits: perceptionCard.roll.hits, glitch: thiefCard.roll.glitchRoll
+      thiefHits: perceptionCard.previousMessage.hits, perceptionHits: perceptionCard.roll.hits, glitch: perceptionCard.various.pickpocketThiefGlitch
     })
     if (outcome === "felt") await SR5Pickpocket.alertTarget(targetId, thiefId, false)
     await SR5_RollMessage.updateChatButtonHelper(messageId, "pickpocketTransfer")

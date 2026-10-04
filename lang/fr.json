@@ -3724,6 +3724,7 @@
 	"SR5.PickpocketAlertFelt": "{name} a senti quelque chose, sans voir qui.",
 	"SR5.PickpocketDone": "{thief} a subtilisé : {item}.",
 	"SR5.WARN_PickpocketNeedsPalming": "L'Escamotage ne peut pas s'utiliser sans l'avoir appris (SR5 p. 135).",
+	"SR5.WARN_PickpocketAnswered": "Cette carte de vol à la tire a déjà reçu sa Perception.",
 	"SR5.WARN_PickpocketNothing": "Aucun objet à subtiliser.",
 	"SR5.WARN_PickpocketRefused": "Vol à la tire refusé : la carte, la portée ou l'objet ne convient plus.",
 	"SR5.HUD.OpenStorage": "Ouvrir le stockage",

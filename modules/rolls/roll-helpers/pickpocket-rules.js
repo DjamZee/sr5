@@ -41,6 +41,21 @@ export function concealmentOf(item) {
 }
 
 /**
+ * Whether an object sits in a locked storage of its owner: a lock counts when
+ * it has a type ("mechanical", "maglock") and is locked. Out of reach of a
+ * pocket; in a bag left open, it stays the GM's call. A storage without the
+ * lock fields (before the containers' lock) is open.
+ */
+export function isLockedAway(item) {
+  const storageId = item?.system?.storedIn
+  if (!storageId) return false
+  const items = item.parent?.items
+  const storage = items?.get?.(storageId) ?? items?.find?.(i => (i.id ?? i._id) === storageId)
+  const lock = storage?.type === "itemStorage" ? storage.system?.lock : null
+  return !!lock?.type && lock.locked === true
+}
+
+/**
  * Whether an object can be lifted from a pocket. What can be put in a bag can
  * be lifted, a vehicle aside; what is worn or held (an armor on, a weapon
  * ready) is not in a pocket. Bigger than +2 is no small object: the GM can
@@ -52,6 +67,7 @@ export function isPickable(item, {
 }) {
   if (!isStorable(item)) return false
   if (item.type === "itemVehicle") return false
+  if (isLockedAway(item)) return false
   if ((item.type === "itemArmor" || item.type === "itemWeapon") && item.system?.isActive) return false
   if (!allowLarge && concealmentOf(item) > PICKPOCKET_MAX_CONCEALMENT) return false
   return true
@@ -108,7 +124,7 @@ export function transferEnds(mode, thief, target) {
  * themselves: the perception card answers this thief card, about this thief
  * and this target; the thief card was written by a user who owns the thief;
  * the object still is on the giver and can be lifted; the two are still
- * within reach; and nothing moved yet from this perception card.
+ * within reach; and nothing moved yet from either card.
  */
 export function isTransferAllowed({
   thiefCard, thiefMessageId, perceptionCard, authorOwnsThief, item, itemOnGiver, inReach, allowLarge = false
@@ -118,16 +134,19 @@ export function isTransferAllowed({
   if (perceptionCard.previousMessage?.messageId !== thiefMessageId) return false
   if (!thiefCard.owner?.actorId || perceptionCard.previousMessage?.actorId !== thiefCard.owner.actorId) return false
   if (!thiefCard.target?.actorId || perceptionCard.owner?.actorId !== thiefCard.target.actorId) return false
-  if (perceptionCard.various?.pickpocketDone) return false
+  if (perceptionCard.various?.pickpocketDone || thiefCard.various?.pickpocketDone) return false
+  //One thief card, one Perception: the one the thief card was answered by, never a second one
+  if (!perceptionCard.various?.pickpocketAnswerId || thiefCard.various?.pickpocketAnswerId !== perceptionCard.various.pickpocketAnswerId) return false
   if (!authorOwnsThief || !inReach || !itemOnGiver) return false
   if (!isPickable(item, {
     allowLarge
   })) return false
+  //The thief's hits as the GM's card froze them on the first click: a later touch-up of the thief card does not count
   const outcome = pickpocketOutcome({
-    thiefHits: thiefCard.roll?.hits,
+    thiefHits: perceptionCard.previousMessage?.hits,
     perceptionHits: perceptionCard.roll?.hits,
-    glitch: thiefCard.roll?.glitchRoll,
-    criticalGlitch: thiefCard.roll?.criticalGlitchRoll,
+    glitch: perceptionCard.various?.pickpocketThiefGlitch,
+    criticalGlitch: perceptionCard.various?.pickpocketThiefCriticalGlitch,
   })
   return outcome === "taken" || outcome === "felt"
 }

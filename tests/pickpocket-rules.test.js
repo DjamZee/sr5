@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 
 const {
-  isPickable, pickableItems, randomPick, perceptionModifiers, pickpocketOutcome, transferEnds, isTransferAllowed
+  isPickable, pickableItems, randomPick, perceptionModifiers, pickpocketOutcome, transferEnds, isTransferAllowed, isLockedAway
 } = await import('../modules/rolls/roll-helpers/pickpocket-rules.js')
 
 const item = (type, system = {
@@ -120,26 +120,40 @@ describe('the GM reads the cards again before moving anything', () => {
       actorId: "thief"
     }, target: {
       actorId: "victim"
-    }, roll: {
+    },
+    roll: {
       hits: 3
-    }
+    }, various: {
+      pickpocketAnswerId: "a1"
+    },
   }
+  //The GM's card froze the thief's hits (3) and glitch on the first click
   const perceptionCard = {
     test: {
       type: "pickpocketPerception"
     }, owner: {
       actorId: "victim"
-    }, previousMessage: {
-      messageId: "m1", actorId: "thief"
-    }, various: {
-    }, roll: {
+    },
+    previousMessage: {
+      messageId: "m1", actorId: "thief", hits: 3
+    },
+    various: {
+      pickpocketAnswerId: "a1", pickpocketThiefGlitch: false, pickpocketThiefCriticalGlitch: false
+    },
+    roll: {
       hits: 1
-    }
+    },
   }
   const ok = {
     thiefCard, thiefMessageId: "m1", perceptionCard, authorOwnsThief: true,
     item: item("itemGear", conceal(-4)), itemOnGiver: true, inReach: true,
   }
+  const perception = various => ({
+    ...ok, perceptionCard: {
+      ...perceptionCard, ...various
+    }
+  })
+
   it('allows a won pocket', () => {
     expect(isTransferAllowed(ok)).toBe(true)
   })
@@ -159,27 +173,16 @@ describe('the GM reads the cards again before moving anything', () => {
     expect(isTransferAllowed({
       ...ok, perceptionCard: null
     })).toBe(false)
-    expect(isTransferAllowed({
-      ...ok, perceptionCard: {
-        ...perceptionCard, various: {
-          pickpocketDone: true
-        }
+    expect(isTransferAllowed(perception({
+      owner: {
+        actorId: "someoneElse"
       }
-    })).toBe(false)
-    expect(isTransferAllowed({
-      ...ok, perceptionCard: {
-        ...perceptionCard, owner: {
-          actorId: "someoneElse"
-        }
+    }))).toBe(false)
+    expect(isTransferAllowed(perception({
+      previousMessage: {
+        messageId: "m1", actorId: "intruder", hits: 3
       }
-    })).toBe(false)
-    expect(isTransferAllowed({
-      ...ok, perceptionCard: {
-        ...perceptionCard, previousMessage: {
-          messageId: "m1", actorId: "intruder"
-        }
-      }
-    })).toBe(false)
+    }))).toBe(false)
     expect(isTransferAllowed({
       ...ok, thiefCard: {
         ...thiefCard, test: {
@@ -191,20 +194,112 @@ describe('the GM reads the cards again before moving anything', () => {
       ...ok, item: item("itemSpell")
     })).toBe(false)
   })
-  it('refuses a lost or caught pocket', () => {
+  it('one thief card, one Perception, one object (replay)', () => {
+    //A second Perception on the same thief card carries another answer id
+    expect(isTransferAllowed(perception({
+      various: {
+        ...perceptionCard.various, pickpocketAnswerId: "a2"
+      }
+    }))).toBe(false)
+    expect(isTransferAllowed(perception({
+      various: {
+        ...perceptionCard.various, pickpocketAnswerId: undefined
+      }
+    }))).toBe(false)
+    expect(isTransferAllowed(perception({
+      various: {
+        ...perceptionCard.various, pickpocketDone: true
+      }
+    }))).toBe(false)
     expect(isTransferAllowed({
-      ...ok, perceptionCard: {
-        ...perceptionCard, roll: {
-          hits: 3
+      ...ok, thiefCard: {
+        ...thiefCard, various: {
+          pickpocketAnswerId: "a1", pickpocketDone: true
         }
       }
     })).toBe(false)
+  })
+  it('reads the hits the GM froze, not the thief card touched up afterwards', () => {
     expect(isTransferAllowed({
       ...ok, thiefCard: {
         ...thiefCard, roll: {
-          hits: 0, criticalGlitchRoll: true
+          hits: 0
+        }
+      }
+    })).toBe(true)
+    expect(isTransferAllowed({
+      ...ok, thiefCard: {
+        ...thiefCard, roll: {
+          hits: 9
+        }
+      }, perceptionCard: {
+        ...perceptionCard, previousMessage: {
+          ...perceptionCard.previousMessage, hits: 1
         }
       }
     })).toBe(false)
+  })
+  it('refuses a lost or caught pocket', () => {
+    expect(isTransferAllowed(perception({
+      roll: {
+        hits: 3
+      }
+    }))).toBe(false)
+    expect(isTransferAllowed(perception({
+      various: {
+        ...perceptionCard.various, pickpocketThiefCriticalGlitch: true
+      }
+    }))).toBe(false)
+  })
+})
+
+describe('a locked container keeps its content out of reach', () => {
+  const owned = (storageSystem, storedIn = "bag") => {
+    const bag = {
+      id: "bag", type: "itemStorage", system: storageSystem
+    }
+    const thing = {
+      type: "itemGear", system: {
+        storedIn, ...conceal(-4)
+      }
+    }
+    thing.parent = {
+      items: {
+        get: id => (id === "bag" ? bag : undefined)
+      }
+    }
+    return thing
+  }
+  it('a locked bag protects it', () => {
+    expect(isLockedAway(owned({
+      lock: {
+        type: "maglock", locked: true
+      }
+    }))).toBe(true)
+    expect(isPickable(owned({
+      lock: {
+        type: "mechanical", locked: true
+      }
+    }))).toBe(false)
+  })
+  it('an open bag, a bag without a lock, or no lock fields yet: the GM judges', () => {
+    expect(isPickable(owned({
+      lock: {
+        type: "maglock", locked: false
+      }
+    }))).toBe(true)
+    expect(isPickable(owned({
+      lock: {
+        type: "", locked: true
+      }
+    }))).toBe(true)
+    expect(isPickable(owned({
+    }))).toBe(true)
+    expect(isPickable(owned({
+      lock: {
+        type: "maglock", locked: true
+      }
+    }, "")))
+      .toBe(true)
   })
 })
