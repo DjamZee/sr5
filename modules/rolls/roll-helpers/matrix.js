@@ -671,8 +671,10 @@ export class SR5_MatrixHelpers {
         break
       case "iceFlicker": {
                 
-        let item = await fromUuid(cardData.target.itemUuid),
-          existingMark = await SR5_MarkHelpers.findMarkValue(item.system, ice.id)
+        let item = await fromUuid(cardData.target.itemUuid)
+        //The device may have been deleted since the attack: warn, no Flicker effect
+        if (!item?.system) return ui.notifications.warn(game.i18n.localize("SR5.WARN_MatrixTargetDeviceMissing"))
+        let existingMark = await SR5_MarkHelpers.findMarkValue(item.system, ice.id)
         if (!target.system.matrix.isLinkLocked) 
           await SR5_MatrixHelpers.applylinkLockEffect(ice, target)
         if (existingMark >= 2) {                    

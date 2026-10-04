@@ -20,6 +20,11 @@ export default async function matrixResistance(rollData, actor, chatData){
 
   if (chatData.target.itemUuid){
     let matrixTargetItem = await fromUuid(chatData.target.itemUuid)
+    //The device may have been deleted since the attack card was posted: warn and abort, the caller opens no dialog
+    if (!matrixTargetItem?.system){
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_MatrixTargetDeviceMissing"))
+      return
+    }
     if (matrixTargetItem.system.type !== "baseDevice" && matrixTargetItem.system.type !== "livingPersona" && matrixTargetItem.system.type !== "headcase" && matrixTargetItem.system.type !== "cyberdeck" && matrixTargetItem.system.type !== "commlink"){ 
       rollData.test.title = `${matrixTargetItem.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.TakeOnDamageShort")} (${chatData.damage.matrix.value})`
       rollData.dicePool.composition = ([
