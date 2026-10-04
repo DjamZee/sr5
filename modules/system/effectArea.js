@@ -29,6 +29,20 @@ export class SR5_EffectArea {
    */
   static JAM_SIGNALS_RADIUS_IN_METERS = 100
 
+  //The scene of the template that put an area effect on an actor, read from its owner
+  //(Scene.<id>.MeasuredTemplate.<id>), or null when the effect comes from no template on a scene
+  static templateSceneId(item){
+    return /^Scene\.([^.]+)\.MeasuredTemplate\./.exec(item?.system?.ownerItem ?? "")?.[1] ?? null
+  }
+
+  //An area effect whose template stands on another scene than sceneId. A linked actor is the same on every
+  //scene, so the template of one scene must not count on another. An effect with no template scene (left by a
+  //template preview before b685ff03) counts nowhere a scene is known.
+  static isAreaEffectOffScene(item, sceneId){
+    if (item?.type !== "itemEffect" || item.system?.type !== "areaEffect" || !sceneId) return false
+    return SR5_EffectArea.templateSceneId(item) !== sceneId
+  }
+
   //Manage token aura
   static async tokenAura(token){
     // The token's own scene, read from the document: a token moved on a scene the GM is not looking

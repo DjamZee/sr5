@@ -14,6 +14,9 @@ import {
   SR5_CombatHelpers 
 } from "../roll-helpers/combat.js"
 import {
+  SR5_EffectArea
+} from "../../system/effectArea.js"
+import {
   isRecoilCarriedOver
 } from "../roll-helpers/recoil.js"
 import {
@@ -349,8 +352,10 @@ async function handleTargetInfo(rollData, actor, item){
   return rollData
 }
 
-async function checkIfTargetIsInTemplate(actor, targetActor, areaEffect){
-  let targetActorItems = targetActor.items.filter(i => i.type === "itemEffect" && i.system.type === "areaEffect")
+//A linked target carries the effects of templates on every scene it stands on: only those of the scene the
+//attack is made on count (the scene on the canvas, the one handleEnvironmentalModifiers reads too)
+export async function checkIfTargetIsInTemplate(actor, targetActor, areaEffect, sceneId = SR5_CombatHelpers.environmentScene()?.id){
+  let targetActorItems = targetActor.items.filter(i => i.type === "itemEffect" && i.system.type === "areaEffect" && !SR5_EffectArea.isAreaEffectOffScene(i, sceneId))
   for (let i of targetActorItems){
     //Check if current actors is not inside the same area effect
     if (!actor.items.find(actorItem => actorItem.system.ownerID === i.system.ownerID)){
