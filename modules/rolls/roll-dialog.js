@@ -577,6 +577,16 @@ export default class SR5_RollDialog {
           html.querySelector('#force').value = value
           dialogData.limit.base = value
         }
+        //The limit is the Force (spells SR5 p. 285, ritual sealing p. 299): show the new one with its modifiers.
+        //The ritual's Force field has no #force id: the limit is updated whatever field gave the Force
+        {
+          const baseLimit = html.querySelector('[name="baseLimit"]')
+          if (baseLimit) {
+            dialogData.limit.base = value
+            baseLimit.value = value
+            this.updateLimitValue(html)
+          }
+        }
         if (dialogData.test.type === "ritual") this._updateReagents(value, actor, html, dialogData)
         //The participants rolled their assist at the Force announced on the circle card: they are not rolled again
         if (dialogData.magic.ritualCircleForce && parseInt(value) !== dialogData.magic.ritualCircleForce) ui.notifications.warn(game.i18n.format("SR5.WARN_RitualForceChanged", {
