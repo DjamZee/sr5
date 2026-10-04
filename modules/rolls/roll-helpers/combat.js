@@ -134,6 +134,11 @@ export class SR5_CombatHelpers {
   static isStoppedByHardenedArmor(modifiedDamage, rating, armorPenetration = 0){
     return modifiedDamage <= rating + armorPenetration
   }
+
+  // SR5 p. 397 (Hardened Armor): otherwise half the rating modified by AP, rounded up, counts as automatic hits
+  static hardenedArmorAutoHits(rating, armorPenetration = 0){
+    return Math.max(0, Math.ceil((rating + armorPenetration) / 2))
+  }
   //Handle environmental modifiers
   //noWind: ignore the wind column (perception, melee); melee: SR5 p. 188, only the Light and Visibility columns apply
   //weaponLight: light rows taken off by a flashlight on the weapon being used (SR5_UtilityItem.getWeaponLightCompensation)
