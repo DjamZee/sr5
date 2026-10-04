@@ -1544,6 +1544,9 @@ export class SR5_ActorHelper {
         else if (e.type === "netHits") value = Math.floor(data.roll.netHits * (e.multiplier || 1))
         else if (e.type === "value") value = Math.floor(e.value * (e.multiplier || 1))
         else if (e.type === "rating") value = Math.floor(item.system.itemRating * (e.multiplier || 1))
+        //An area spell resisted totally gets its effect at 0 (test-ResistanceResult), only to mark the token as
+        //having resisted inside the template: a fixed value or the resistor's hits must not apply the spell
+        if (data.test?.type === "spellResistance" && data.roll.netHits <= 0) value = 0
 
         //Handle heal effect
         if (e.target.includes("removeDamage")){
