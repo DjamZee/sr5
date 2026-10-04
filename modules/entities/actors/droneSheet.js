@@ -70,7 +70,7 @@ export class SR5DroneSheet extends ActorSheetSR5 {
     event.preventDefault()
     if (this._spendingWirelessAction) return
     const actor = this.actor
-    const oldValue = actor.system.wirelessTurnedOn
+    const oldValue = actor.system.wirelessTurnedOn !== false
     const owner = SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId)
     const actions = [{
       type: SR5_ActorHelper.droneWirelessActionType(game.settings.get("sr5", "sr5WifiRequiresDNI"), owner),

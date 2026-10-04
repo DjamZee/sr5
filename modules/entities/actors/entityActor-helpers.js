@@ -1019,6 +1019,20 @@ export class SR5_ActorHelper {
   }
 
   /**
+   * A vehicle's wireless switch: its deployed drone holds it (N83), the item otherwise (N91).
+   * @param {Object} vehicle - the vehicle item
+   * @param {Array} actors - the actors to look the deployed drone up in
+   * @return {Boolean} true if the vehicle's wireless is on
+   */
+  static vehicleWirelessOn(vehicle, actors){
+    if (vehicle.system?.isCreated) {
+      const drone = actors?.find(a => a.type === "actorDrone" && a.system.creatorItemId === (vehicle._id ?? vehicle.id))
+      if (drone) return drone.system.wirelessTurnedOn !== false
+    }
+    return !!vehicle.system?.wirelessTurnedOn
+  }
+
+  /**
    * Switching a drone's wireless from its sheet: the drone spends the action, its owner commands it (N91).
    * Free through the owner's DNI (SR5 p. 165), simple otherwise (p. 167), when the world setting asks for it.
    * @param {Boolean} requiresDNI - the "wireless requires a DNI" world setting

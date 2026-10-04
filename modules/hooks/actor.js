@@ -10,6 +10,9 @@ import {
 import {
   SR5_Jammer
 } from "../system/jammer.js"
+import {
+  SR5_EntityHelpers
+} from "../entities/helpers.js"
 
 export async function sr5HookCreateActor(actor) {
   SR5_ActorHelper.redrawCreatorSheet(actor)
@@ -76,6 +79,16 @@ export async function sr5HookUpdateActor(document, data, _options, userId) {
   //Keep edge monitor synchro with tokens
   if (document.type === "actorGrunt" && data.system?.conditionMonitors?.edge && (document.testUserPermission(game.user, 3) || (game.user?.isGM))){
     await SR5_ActorHelper.keepEdgeSynchroWithGrunt(document)
+  }
+
+  //A deployed drone switching its wireless leaves or joins its owner's connected objects, which the owner
+  //computes when prepared: prepare it again (N91)
+  if (document.type === "actorDrone" && data.system?.wirelessTurnedOn !== undefined) {
+    const owner = SR5_EntityHelpers.getRealActorFromID(document.system.creatorId)
+    if (owner) {
+      owner.reset()
+      if (owner.sheet?.rendered) owner.sheet.render()
+    }
   }
 
   //Propagate owner data changes to linked drones and agents
