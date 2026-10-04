@@ -58,19 +58,21 @@ import {
 import {
   sr5ModsPartialModel 
 } from '../common/mods.js'
-import {
-  SR5_SpiritTypes
-} from '../../entities/items/spirit-types.js'
 
 /**
  * A watcher or homunculus summoned before conditionMonitors.condition existed kept its damage in
  * Physical (and Stun), which preparation now drops. Its stored source has no condition.actual.base,
  * which no spirit saved since can lack: read the old damage there, without writing anything.
  * Once the condition monitor is written (damage, healing, dismissal), the key exists and this stops.
+ *
+ * The spirit type is not checked: custom types are only known once the registry is built at ready,
+ * after this runs. A spirit with Physical and Stun monitors drops the condition monitor at preparation.
+ * Only a whole stored source is read: update diffs go through migrateData too, and a partial
+ * conditionMonitors there must not become a write to the condition monitor.
  */
 export function migrateLegacySingleMonitor(source) {
   const monitors = source?.conditionMonitors
-  if (!monitors || !SR5_SpiritTypes.hasSingleMonitor(source.type)) return source
+  if (!monitors?.physical?.actual || !monitors.stun?.actual || !source.attributes || !source.skills) return source
   if (monitors.condition?.actual?.base !== undefined) return source
   const damage = Math.max(Number(monitors.physical?.actual?.base) || 0, Number(monitors.stun?.actual?.base) || 0)
   if (!damage) return source

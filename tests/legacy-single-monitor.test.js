@@ -30,6 +30,10 @@ import {
 function legacySource(type, physical, stun = physical) {
   return {
     type,
+    attributes: {
+    },
+    skills: {
+    },
     conditionMonitors: {
       physical: {
         actual: {
@@ -61,11 +65,31 @@ describe("watchers stored before the single condition monitor", () => {
     expect(migrateLegacySingleMonitor(source).conditionMonitors.condition.actual.base).toBe(0)
   })
 
-  it("leave other spirits alone", () => {
-    const source = migrateLegacySingleMonitor(legacySource("air", 4))
-    expect(source.conditionMonitors.condition).toBeUndefined()
+  it("read a custom type based on watcher before the registry is built (ready)", () => {
+    // The registry of custom spirit types is empty while documents are constructed
+    const source = migrateLegacySingleMonitor(legacySource("myCustomWatcherId", 5))
+    expect(source.conditionMonitors.condition.actual.base).toBe(5)
   })
 
+  it("leave update diffs alone: a partial conditionMonitors is not a stored spirit", () => {
+    const diff = {
+      type: "watcher", conditionMonitors: {
+        physical: {
+          actual: {
+            base: 6
+          }
+        }
+      }
+    }
+    expect(migrateLegacySingleMonitor(diff).conditionMonitors.condition).toBeUndefined()
+  })
+
+  it("leave a diff carrying both monitors alone, without the rest of the spirit", () => {
+    const diff = legacySource("watcher", 6)
+    delete diff.attributes
+    delete diff.skills
+    expect(migrateLegacySingleMonitor(diff).conditionMonitors.condition).toBeUndefined()
+  })
   it("add nothing to an unharmed watcher", () => {
     const source = migrateLegacySingleMonitor(legacySource("homunculus", 0))
     expect(source.conditionMonitors.condition).toBeUndefined()
