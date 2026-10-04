@@ -2455,6 +2455,7 @@
 	"SR5.None": "None",
 	"SR5.NormalWeaponsImmunity": "Immunity to normal weapons",
 	"SR5.NotEnoughMarksOnTarget": "The target does not have enough marks",
+	"SR5.WARN_OwnerOnlyAction": "Owner-only action (SR5 p. 238): the GM rules.",
 	"SR5.Notes": "Notes",
 	"SR5.NotResisted": "Not Resisted",
 	"SR5.Noxious": "Noxious",

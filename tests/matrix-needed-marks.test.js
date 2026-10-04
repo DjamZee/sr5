@@ -12,11 +12,12 @@ const {
 const HACKER = 'hacker'
 
 // A targeted token whose actor carries the given marks on its device
-function target(marks){
+function target(marks, creatorId = ''){
   return {
     actor: {
       id: 'target',
       system: {
+        creatorId,
         matrix: {
           userGrid: 'local'
         }
@@ -33,8 +34,8 @@ function target(marks){
   }
 }
 
-function check(neededMarks, marks){
-  game.user.targets = new Set([target(marks)])
+function check(neededMarks, marks, creatorId){
+  game.user.targets = new Set([target(marks, creatorId)])
   const rollData = {
     owner: {
       speakerId: HACKER
@@ -54,6 +55,7 @@ describe('Marks needed before a matrix action (SR5 p. 238-244)', () => {
     game.user = {
     }
     ui.notifications.info = vi.fn()
+    ui.notifications.warn = vi.fn()
   })
 
   it('refuses Reboot Device (3 marks) with a single mark', async () => {
@@ -97,10 +99,17 @@ describe('Marks needed before a matrix action (SR5 p. 238-244)', () => {
     expect(await check('S', [])).toBe(true)
   })
 
-  it('keeps asking one mark for the owner-only actions, ownership not being tracked', async () => {
+  it('lets the creator of a drone through an owner-only action without any mark', async () => {
+    expect(await check(4, [], HACKER)).toBe(true)
+    expect(ui.notifications.warn).not.toHaveBeenCalled()
+  })
+
+  it('warns that only the owner may act, then still asks one mark from anyone else', async () => {
     expect(await check(4, [{
       ownerId: HACKER, value: 1
-    }])).toBe(true)
+    }], 'someoneElse')).toBe(true)
+    expect(ui.notifications.warn).toHaveBeenCalledTimes(1)
     expect(await check(4, [])).toBe(false)
+    expect(ui.notifications.warn).toHaveBeenCalledTimes(2)
   })
 })

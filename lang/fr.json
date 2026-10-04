@@ -2455,6 +2455,7 @@
 	"SR5.None": "Aucun(e)",
 	"SR5.NormalWeaponsImmunity": "Immunité aux armes normales",
 	"SR5.NotEnoughMarksOnTarget": "La cible n'a pas assez de marks",
+	"SR5.WARN_OwnerOnlyAction": "Action réservée au propriétaire (SR5 p. 238) : le MJ arbitre.",
 	"SR5.Notes": "Notes",
 	"SR5.NotResisted": "Non résisté",
 	"SR5.Noxious": "Délétère",

@@ -144,9 +144,15 @@ async function checkTargetMarks(rollData, matrixAction, actor){
     // "S" (special) is not a number and asks for no check here
     let neededMarks = Number(matrixAction.neededMarks)
     if (neededMarks > 0 && t.actor.id !== actor.id){
-      // SR5 p. 238: owning an icon counts as four marks. Ownership is not tracked here,
-      // so the owner-only actions keep asking for a single mark
-      if (neededMarks > 3) neededMarks = 1
+      // SR5 p. 238: owning an icon counts as four marks, more than anyone else can place.
+      // The creator of a drone, agent, sprite or spirit owns it and needs no mark
+      if (neededMarks > 3) {
+        const creatorId = t.actor.system.creatorId
+        if (creatorId && (creatorId === actor.id || creatorId === rollData.owner.speakerId)) return true
+        // Ownership is recorded nowhere else: the GM rules, and the roll goes on with a single mark
+        ui.notifications.warn(game.i18n.localize("SR5.WARN_OwnerOnlyAction"))
+        neededMarks = 1
+      }
       let marks = 0
       for (let item of t.actor.items){
         const mark = item.system.marks?.find(m => m.ownerId === rollData.owner.speakerId)
