@@ -18,6 +18,9 @@ import {
 } from "../rolls/roll-helpers/miscellaneous.js"
 
 export class SR5Combat extends Combat {
+  //Pass effects whose deletion is under way (see endOwnerPassEffects)
+  static _endingPassEffects = new Set()
+
   get initiativePass(){
     return this.getFlag("sr5", "combatInitiativePass") || 1
   }
@@ -295,6 +298,17 @@ export class SR5Combat extends Combat {
     }
 
     return this.nextRound()
+  }
+
+  //Turn changed outside nextTurn (previous turn, turn set by hand in the tracker): the pass of the
+  //new current combatant starts too, so the effects it gave until that pass end (Kill Code p. 43)
+  _onUpdate(changed, options, userId){
+    super._onUpdate(changed, options, userId)
+    if (!("turn" in changed) || !game.user?.isActiveGM) return
+    //A new round (nextRound, then resetAll with turnEvents false) still holds the old order: its first turn
+    //starts once the initiative is rolled again, where handleNextRound ends the effects itself
+    if ("round" in changed || options.turnEvents === false) return
+    SR5Combat.endOwnerPassEffects(this, this.combatant).catch(e => console.error(e))
   }
 
   static async _socketUpdateCombat(message){
@@ -731,9 +745,16 @@ export class SR5Combat extends Combat {
     for (let c of combat.combatants){
       let actor = SR5Combat.getActorFromCombatant(c)
       if (!actor) continue
-      let ended = actor.items.filter(i => i.type === "itemEffect" && i.system.durationType === "initiativePass" && i.system.ownerID === ownerId && SR5Combat.endsOnOwnerTurn(i, combat))
+      //An effect already being deleted by a concurrent call (turn set by hand and by the system) is skipped
+      let ended = actor.items.filter(i => i.type === "itemEffect" && i.system.durationType === "initiativePass" && i.system.ownerID === ownerId && SR5Combat.endsOnOwnerTurn(i, combat) && !SR5Combat._endingPassEffects.has(i.uuid ?? i.id))
       if (!ended.length) continue
-      await actor.deleteEmbeddedDocuments("Item", ended.map(i => i.id))
+      const keys = ended.map(i => i.uuid ?? i.id)
+      for (let k of keys) SR5Combat._endingPassEffects.add(k)
+      try {
+        await actor.deleteEmbeddedDocuments("Item", ended.map(i => i.id))
+      } finally {
+        for (let k of keys) SR5Combat._endingPassEffects.delete(k)
+      }
       for (let item of ended) ui.notifications.info(`${c.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_DurationFinished", {
         effect: item.name
       })}`)
