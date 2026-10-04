@@ -17,7 +17,7 @@ const {
   default: resistanceResultInfo
 } = await import('../modules/rolls/roll-test-case/test-ResistanceResult.js')
 
-// SR5 p. 197: a melee weapon that hits a barrier may break. The dialog offered no weapon (selectOptions
+// Run & Gun p. 125 (Break Weapon, melee only): the weapon resists as a barrier (SR5 p. 198). The dialog offered no weapon (selectOptions
 // reads valueAttr as a key of each choice, 'this.uuid' matched nothing), so the uuid sent was "" and the
 // result card crashed on fromUuid("") as soon as the DV reached the Structure.
 describe('Weapon break', () => {

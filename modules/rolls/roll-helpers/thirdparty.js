@@ -26,7 +26,7 @@ export function resistanceOwnerMissingWarning(testType) {
   return testType === "ritual" ? "SR5.WARN_RitualLeaderMissing" : "SR5.WARN_ResistanceOwnerMissing"
 }
 
-// Weapons offered to the weapon break dialog (SR5 p. 197). Plain {uuid, name} objects: selectOptions reads
+// Weapons offered to the weapon break dialog (Run & Gun p. 125, the weapon resists as a barrier, SR5 p. 198). Plain {uuid, name} objects: selectOptions reads
 // valueAttr as a key of each choice, so the select stayed empty with documents and 'this.uuid'.
 export function weaponBreakChoices(actor) {
   return actor.items
