@@ -2871,7 +2871,8 @@ SR5.spiritBasePowersguidance = {
   shadowCloak                : "SR5.SpiritPowerShadowCloak",
 }
 
-SR5.spiritBasePowershomonculus = {
+// SR5 p. 301: Sapience and Dual Natured. The list is found by the spirit type key, spelt "homunculus"
+SR5.spiritBasePowershomunculus = {
   dualNatured                : "SR5.SpiritPowerDualNatured",
   sapience                   : "SR5.SpiritPowerSapience",
 }
@@ -3235,7 +3236,7 @@ SR5.spiritOptionalPowersshedimMaster = {
   silence                    : "SR5.SpiritPowerSilence",
 }
 
-SR5.spiritBasePowersludge = {
+SR5.spiritBasePowerssludge = {
   astralForm                 : "SR5.SpiritPowerAstralForm",
   binding                    : "SR5.SpiritPowerBinding",
   elementalAttackPolluant    : "SR5.SpiritPowerElementalAttackPolluant",
@@ -3248,7 +3249,7 @@ SR5.spiritBasePowersludge = {
   allergyWater               : "SR5.SpiritPowerAllergyWater",
 }
 
-SR5.spiritOptionalPowersludge = {
+SR5.spiritOptionalPowerssludge = {
   accident                   : "SR5.SpiritPowerAccident",
   concealment                : "SR5.SpiritPowerConcealment",
   confusion                  : "SR5.SpiritPowerConfusion",
