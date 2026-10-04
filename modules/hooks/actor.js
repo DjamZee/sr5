@@ -7,6 +7,9 @@ import {
 import {
   SR5Combat
 } from "../system/srcombat.js"
+import {
+  SR5_Jammer
+} from "../system/jammer.js"
 
 export async function sr5HookCreateActor(actor) {
   if ( !game.user.isGM ) return
@@ -47,6 +50,12 @@ export function sr5HookPreUpdateActor(document, changes, options = {
 }
 
 export async function sr5HookUpdateActor(document, data, _options, userId) {
+  //The sheet's wireless and equip toggles write the items through the actor, so no updateItem is sent: a
+  //physical jammer changed that way is measured again from here (SR5 p. 443)
+  for (let change of Array.isArray(data.items) ? data.items : []){
+    let item = document.items?.get?.(change._id)
+    if (SR5_Jammer.isJammer(item) && change.system) SR5_Jammer.refreshItem(item)
+  }
   //The sheet pins an item through the actor, items included : at that point the updateItem hook
   //still reads the actor as it was, so the tokens are served again from here
   if (data.items && userId === game.user?.id) await SR5_CharacterUtility.refreshVisionOfTokens(document)

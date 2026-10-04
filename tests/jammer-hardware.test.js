@@ -193,4 +193,64 @@ describe("SR5_Jammer on a scene", () => {
     expect(removed.mock.calls.map(c => c[1])).toEqual([stale, gone])
     expect(created.mock.calls.map(c => [c[0].id, c[2]])).toEqual([["Actor.a.Item.y", 2]])
   })
+
+  it("leaves alone an effect whose noise is stored as a string and has not changed", async () => {
+    const removed = vi.spyOn(SR5_EffectArea, "removeJammedEffect").mockImplementation(async () => {})
+    const created = vi.spyOn(SR5_EffectArea, "createJammedEffect").mockImplementation(async () => {})
+    const actor = {
+      items: [{
+        system: {
+          type: "signalJammed", ownerID: "Actor.a.Item.x", value: "4"
+        }
+      }]
+    }
+    await SR5_Jammer.syncActor(actor, new Map([["Actor.a.Item.x", {
+      name: "x", noise: 4
+    }]]))
+    expect(removed).not.toHaveBeenCalled()
+    expect(created).not.toHaveBeenCalled()
+  })
+
+  it("spares one unlinked guard, not every token of the same NPC", () => {
+    flatMeters()
+    const guard = uuid => ({
+      id: "npc", isToken: true, token: {
+        uuid
+      }, items: []
+    })
+    const source = {
+      item: jammerItem("Actor.me.Item.a", "area", 4, {
+        wirelessTurnedOn: true, jammer: {
+          type: "area", isActive: true, spared: ["Scene.s.Token.g1"]
+        }
+      }), carrier: {
+        id: "me"
+      }, origin: {
+        x: 0, y: 0
+      }
+    }
+    const noiseOf = actor => SR5_Jammer.desiredNoise(actor, {
+      x: 1, y: 0
+    }, [source], {
+    }).get("Actor.me.Item.a")?.noise
+    expect(noiseOf(guard("Scene.s.Token.g1"))).toBeUndefined()
+    expect(noiseOf(guard("Scene.s.Token.g2"))).toBe(4)
+  })
+
+  it("lets only the designated GM write", () => {
+    const saved = globalThis.game
+    globalThis.game = {
+      user: {
+        isGM: true
+      }, users: {
+        activeGM: {
+          isSelf: false
+        }
+      }
+    }
+    expect(SR5_Jammer.isDesignatedGM()).toBe(false)
+    globalThis.game.users.activeGM.isSelf = true
+    expect(SR5_Jammer.isDesignatedGM()).toBe(true)
+    globalThis.game = saved
+  })
 })

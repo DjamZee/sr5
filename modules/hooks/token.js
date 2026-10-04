@@ -28,8 +28,8 @@ export async function sr5HookUpdateToken(tokenDocument, change) {
 
 //A token gone takes its area jammer with it, and leaves the noise others gave it behind
 export function sr5HookDeleteToken(tokenDocument) {
+  //An unlinked token's effects go with its synthetic actor: only the others are measured again
   SR5_Jammer.refreshScene(tokenDocument.parent)
-  if (tokenDocument.actor && !tokenDocument.actorLink) SR5_Jammer.syncActor(tokenDocument.actor, new Map())
 }
 
 export function sr5HookPreDeleteToken(tokenDocument, _options, _userId) {

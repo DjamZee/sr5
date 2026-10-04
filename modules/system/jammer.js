@@ -13,6 +13,19 @@ import {
 // jammer ITEM's uuid, where the action uses the jamming actor's id, so the two never take one another's effect.
 export class SR5_Jammer {
 
+  // The one client that writes the jammers' effects: with several GMs connected, all of them would otherwise
+  // lift and give the same effects at once (same rule as sr5HookCanvasReadyVisionRanges)
+  static isDesignatedGM(){
+    const designated = game.users?.activeGM
+    return designated ? !!designated.isSelf : !!game.user?.isGM
+  }
+
+  // How a jammer in wireless mode names the actor it spares: the unlinked tokens of one NPC share its actor id,
+  // so such a token is named by its own uuid, and a linked actor by its id
+  static actorKey(actor){
+    return actor?.isToken ? (actor.token?.uuid ?? actor.id) : actor?.id
+  }
+
   static isJammer(item){
     return item?.type === "itemGear" && !!item.system?.jammer?.type
   }
@@ -65,7 +78,8 @@ export class SR5_Jammer {
     let desired = new Map()
     //A cranial jammer works on its wearer only, wherever the wearer stands
     for (let item of actor.items){
-      if (SR5_Jammer.isOn(item) && item.system.jammer.type === "cranial" && !jammerSpares(item.system, actor.id, actor.id)){
+      let key = SR5_Jammer.actorKey(actor)
+      if (SR5_Jammer.isOn(item) && item.system.jammer.type === "cranial" && !jammerSpares(item.system, key, key)){
         desired.set(item.uuid, {
           name: item.name, noise: jammerRating(item.system)
         })
@@ -74,7 +88,7 @@ export class SR5_Jammer {
     if (!point) return desired
     for (let source of sources){
       let system = source.item.system
-      if (jammerSpares(system, source.carrier.id, actor.id)) continue
+      if (jammerSpares(system, SR5_Jammer.actorKey(source.carrier), SR5_Jammer.actorKey(actor))) continue
       if (source.template){
         let t = source.template
         if (!isWithinConeAngle(source.origin, t.direction, t.angle, point)) continue
@@ -93,7 +107,9 @@ export class SR5_Jammer {
   static async syncActor(actor, desired){
     for (let effect of actor.items.filter(i => SR5_Jammer.isHardwareJammedEffect(i))){
       let want = desired.get(effect.system.ownerID)
-      if (want && want.noise === effect.system.value){
+      //The effect stores its value as a string ("4"): compared as is, it never matched, and every move of any
+      //token lifted and gave every effect again
+      if (want && want.noise === Number(effect.system.value)){
         desired.delete(effect.system.ownerID)
         continue
       }
@@ -139,14 +155,14 @@ export class SR5_Jammer {
   }
 
   static refreshScene(scene){
-    if (!game.user?.isGM || !scene) return
+    if (!SR5_Jammer.isDesignatedGM() || !scene) return
     return SR5_Jammer.enqueue(() => SR5_Jammer._refreshScene(scene))
   }
 
   // A jammer changed (turned on or off, rating, type, spared actors, deleted): lift what it gave, then measure again
   // on every scene its carrier stands on, and for a cranial one on its wearer
   static refreshItem(item){
-    if (!game.user?.isGM || item?.type !== "itemGear") return
+    if (!SR5_Jammer.isDesignatedGM() || item?.type !== "itemGear") return
     let uuid = item.uuid, actor = item.parent
     return SR5_Jammer.enqueue(async () => {
       await SR5_Jammer._purge(uuid)
@@ -172,6 +188,16 @@ export class SR5_Jammer {
     await item.update({
       "system.jammer.isActive": on
     })
-    if (on && item.system.jammer.type === "directional") await item.placeGabarit()
+    if (on && item.system.jammer.type === "directional"){
+      //Right click cancels the aim: with no cone placed, the jammer goes back off
+      try {
+        await item.placeGabarit()
+      } catch {
+        //cancelled
+      }
+      if (!canvas.scene?.templates.some(t => t.flags?.sr5?.jammerUuid === item.uuid)) await item.update({
+        "system.jammer.isActive": false
+      })
+    }
   }
 }
