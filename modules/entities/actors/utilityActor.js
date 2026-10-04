@@ -23,6 +23,9 @@ import {
   situationalValue, isRollTestsTarget, ROLL_TESTS_PREFIX, SITUATIONAL_PREFIX, attributeRedirect, situationalReadable
 } from "../../rolls/roll-helpers/situational.js"
 import {
+  isIndirect, indirectEffectOf
+} from "../../rolls/roll-helpers/indirect.js"
+import {
   SR5Combat 
 } from "../../system/srcombat.js"
 import {
@@ -4911,6 +4914,17 @@ export class SR5_CharacterUtility extends Actor {
     SR5_EntityHelpers.updateModifier(targetObject, item.name, `${SITUATIONAL_PREFIX}${index}`, 0)
   }
 
+  // An effect on the rolls of whoever targets the bearer, or of whoever is within its aura: kept on the
+  // bearer, read by the other actors' rolls when they are prepared (roll-helpers/indirect.js)
+  static registerIndirectEffect(item, actor, customEffect) {
+    let value = situationalValue(customEffect, item.system)
+    if (value === null) return
+    let effect = indirectEffectOf(customEffect, item.name, value)
+    if (!effect) return
+    if (!actor.indirectEffects) actor.indirectEffects = []
+    actor.indirectEffects.push(effect)
+  }
+
   static applyCustomEffects(item, actor) {
     let itemData = item.system
 
@@ -4937,6 +4951,12 @@ export class SR5_CharacterUtility extends Actor {
         if (itemData.isActive && customEffect.wifi) skipCustomEffect = false
         else if (!itemData.isActive && customEffect.wifi) skipCustomEffect = false
         else if (!itemData.isActive) skipCustomEffect = true
+      }
+
+      // Effects on other actors' rolls (whoever targets me, an aura) are never applied to the bearer
+      if (isIndirect(customEffect)) {
+        if (!skipCustomEffect) SR5_CharacterUtility.registerIndirectEffect(item, actor, customEffect)
+        continue
       }
 
       // Situational effects and effects on tests linked to an attribute are offered at roll time

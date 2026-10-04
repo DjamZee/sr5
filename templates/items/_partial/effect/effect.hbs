@@ -89,6 +89,7 @@
 					</optgroup>
 					<optgroup label="{{localize 'SR5.Special'}}">
 						<option value="rollTests">{{localize 'SR5.RollTests'}}</option>
+						<option value="indirectEffects">{{localize 'SR5.IndirectEffects'}}</option>
 						<option value="specialProperties">{{localize 'SR5.SpecialCase'}}</option>
 						<option value="weaponEffectTargets">{{localize 'SR5.Weapons'}}</option>
 						<option value="custom">{{localize 'SR5.GENERAL_Custom'}}...</option>
@@ -270,6 +271,14 @@
 						<optgroup label="{{localize 'SR5.KnowledgeSkills'}}">
 							<option value="system.knowledgeSkills">{{localize 'SR5.Knowledges'}}</option>
 						</optgroup>
+
+					{{else ife category 'indirectEffects'}}
+						{{#each (lookup ../lists category)}}
+						<optgroup label="{{localize this}}">
+							<option value="indirect.{{@key}}.test">{{localize this}} [{{localize 'SR5.DicePool'}}]</option>
+							<option value="indirect.{{@key}}.limit">{{localize this}} [{{localize 'SR5.Limit'}}]</option>
+						</optgroup>
+						{{/each}}
 
 					{{else ife category 'matrixAttributes'}}
 						{{#each (lookup ../lists category)}}
@@ -606,6 +615,29 @@
 				<!-- Chrome Flesh p. 58: Drug Resistance only covers natural and synthetic drugs -->
 				<div class="col-12 SR-SubColor"><em>{{localize 'SR5.AddictionResistanceNote'}}</em></div>
 				{{/if}}
+				{{#if (eq category 'indirectEffects')}}{{#if target}}
+				<!-- ON OTHER ACTORS' ROLLS (roll-helpers/indirect.js): whoever targets the bearer, or an aura around it -->
+				<div class="col-3 SR-PaddingRight5" data-title="{{localize 'SR5.IndirectApplyToHint'}}">
+					<select name="system.customEffects.{{@key}}.applyTo">
+						{{selectOptions ../lists.indirectApplyTo selected=applyTo localize=true}}
+					</select>
+				</div>
+				<div class="col-9 grid">
+					{{#if (eq applyTo 'aura')}}
+					<div class="col-3 SR-PaddingRight5">
+						<input type="text" data-dtype="Number" name="system.customEffects.{{@key}}.auraRange" value="{{auraRange}}" placeholder="{{localize 'SR5.IndirectAuraRange'}}">
+					</div>
+					<div class="col-4 SR-PaddingRight5">
+						<select name="system.customEffects.{{@key}}.auraWho">
+							{{selectOptions ../lists.indirectAuraWho selected=auraWho localize=true}}
+						</select>
+					</div>
+					{{/if}}
+					<div class="{{#if (eq applyTo 'aura')}}col-5{{else}}col-12{{/if}}">
+						<input type="text" data-dtype="String" name="system.customEffects.{{@key}}.when" value="{{when}}" placeholder="{{localize 'SR5.SituationalWhen'}}">
+					</div>
+				</div>
+				{{/if}}{{/if}}
 			</li>
 		{{/each}}
 	</ul>

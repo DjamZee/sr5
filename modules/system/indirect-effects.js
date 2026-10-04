@@ -1,0 +1,73 @@
+// Indirect effects on the canvas: who is targeted, which auras reach the roller (roll-helpers/indirect.js
+// holds the rules, this file only reads Foundry)
+import {
+  SR5_SystemHelpers
+} from "./utilitySystem.js"
+import {
+  SR5
+} from "../config.js"
+import {
+  rollKinds, gatherIndirectOffers, applyOffer
+} from "../rolls/roll-helpers/indirect.js"
+
+export const INDIRECT_DISPLAY_SETTING = "sr5IndirectEffectDisplay"
+
+// What the roller sees of an effect another actor carries. The books never hide it: shown by default
+export function registerIndirectEffectSetting() {
+  game.settings.register("sr5", INDIRECT_DISPLAY_SETTING, {
+    name: "SR5.SETTINGS_IndirectDisplay_T",
+    hint: "SR5.SETTINGS_IndirectDisplay_D",
+    scope: "world",
+    config: true,
+    type: String,
+    default: "name",
+    choices: {
+      name: "SR5.SETTINGS_IndirectDisplayName",
+      neutral: "SR5.SETTINGS_IndirectDisplayNeutral",
+      hidden: "SR5.SETTINGS_IndirectDisplayHidden",
+    },
+  })
+}
+
+function rollerToken(actor){
+  if (!actor) return null
+  if (actor.isToken) return actor.token?.object ?? null
+  return actor.getActiveTokens?.()[0] ?? null
+}
+
+// Adds to a prepared roll the boxes of the effects carried by its target and by the auras around the roller,
+// already ticked and already counted in the pool or the limit
+export function addIndirectEffects(rollData, actor){
+  const kinds = rollKinds(rollData.test, SR5.socialSkills)
+  // A device targeted as an item of its owner (a commlink) is not its owner: the persona's effects stay out
+  const targetToken = game.user.targets.first?.() ?? Array.from(game.user.targets)[0]
+  let target = null
+  if (targetToken?.actor && targetToken.actor !== actor && !rollData.target?.itemUuid){
+    target = {
+      name: targetToken.name, effects: targetToken.actor.indirectEffects
+    }
+  }
+  const roller = rollerToken(actor)
+  let auras = []
+  if (roller && globalThis.canvas?.tokens){
+    const meters = SR5_SystemHelpers.getSceneUnitInMeters()
+    for (let t of canvas.tokens.placeables){
+      if (!t.actor?.indirectEffects?.length) continue
+      const isBearer = t === roller || t.actor === actor
+      auras.push({
+        name: t.name, effects: t.actor.indirectEffects, isBearer, disposition: t.document.disposition,
+        distance: isBearer ? 0 : SR5_SystemHelpers.getDistanceBetweenTwoPoint(roller.center, t.center) * meters,
+      })
+    }
+  }
+  const offers = gatherIndirectOffers({
+    kinds, target, auras, rollerDisposition: roller?.document?.disposition,
+    display: game.settings.get("sr5", INDIRECT_DISPLAY_SETTING),
+    labels: {
+      targeter: game.i18n.localize("SR5.IndirectTargeterShort"), aura: game.i18n.localize("SR5.IndirectAuraShort"),
+      neutral: game.i18n.localize("SR5.IndirectNeutral"),
+    },
+  })
+  for (let offer of offers) applyOffer(rollData, offer)
+  rollData.situational = (rollData.situational || []).concat(offers)
+}

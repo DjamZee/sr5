@@ -30,6 +30,9 @@ import {
   rollAttributes, extractSituational, tickByTargetMetatype, METATYPE_FAMILIES
 } from "./roll-helpers/situational.js"
 import {
+  addIndirectEffects
+} from "../system/indirect-effects.js"
+import {
   SR5
 } from "../config.js"
 
@@ -291,6 +294,8 @@ export class SR5_PrepareRollTest {
       //Kept for the dialog, which matches them again when the attribute is changed there
       rollData.situationalScoped = scoped
       if (always.length) rollData.dicePool.modifiers = (rollData.dicePool.modifiers || []).concat(always)
+      //Effects other actors carry on this roll: its target's, the auras around the roller (roll-helpers/indirect.js)
+      addIndirectEffects(rollData, actor)
       SR5_RollTest.generateRollDialog(rollData)
     }
   }

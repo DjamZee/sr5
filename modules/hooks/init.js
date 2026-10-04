@@ -1,6 +1,9 @@
 import {
-  registerSheetSizeSetting 
+  registerSheetSizeSetting
 } from "../interface/sheet-size.js"
+import {
+  registerIndirectEffectSetting
+} from "../system/indirect-effects.js"
 import {
   SR5
 } from "../config.js"
@@ -244,6 +247,7 @@ export async function sr5HookInit() {
   SR5_SystemHelpers.registerSystemSettings()
   SR5_CompendiumUtility.registerSettings()
   registerSheetSizeSetting()
+  registerIndirectEffectSetting()
   //The grappling statuses exist only in a world that uses the grappling rules
   if (SR5_GrappleHelpers.isActive()) CONFIG.statusEffects.push(...SR5_GrappleHelpers.statusEffects())
   //Running (SR5 p. 163-164): the "running" status, "Course" and "Sprint" in the movement selector, a ruler colored by gait

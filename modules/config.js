@@ -363,6 +363,27 @@ SR5.socialSkills = {
   performance               : "SR5.SkillPerformance",
 }
 
+// Effects on other actors' rolls (roll-helpers/indirect.js): the rolls concerned, who is reached
+SR5.indirectEffects = {
+  all                       : "SR5.IndirectRollsAll",
+  attack                    : "SR5.IndirectRollsAttack",
+  rangedAttack              : "SR5.IndirectRollsRangedAttack",
+  meleeAttack               : "SR5.IndirectRollsMeleeAttack",
+  spell                     : "SR5.IndirectRollsSpell",
+  matrix                    : "SR5.IndirectRollsMatrix",
+  perception                : "SR5.IndirectRollsPerception",
+  social                    : "SR5.IndirectRollsSocial",
+}
+SR5.indirectApplyTo = {
+  targeter                  : "SR5.IndirectApplyToTargeter",
+  aura                      : "SR5.IndirectApplyToAura",
+}
+SR5.indirectAuraWho = {
+  all                       : "SR5.IndirectAuraWhoAll",
+  allies                    : "SR5.IndirectAuraWhoAllies",
+  enemies                   : "SR5.IndirectAuraWhoEnemies",
+}
+
 // Special Skills
 SR5.specialSkills = {
   flight                    : "SR5.SkillFly"

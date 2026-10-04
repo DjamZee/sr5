@@ -372,6 +372,8 @@ export class SR5Actor extends Actor {
     if (!this.name) this.name = "[" + game.i18n.localize("SR5.New") + "]" + this.documentName
     // Situational effects are gathered anew at each preparation (roll-helpers/situational.js)
     this.situationalEffects = []
+    // So are the effects on other actors' rolls (roll-helpers/indirect.js)
+    this.indirectEffects = []
     this.prepareBaseData()
     this.prepareEmbeddedDocuments() // first pass on items to add bonuses from the items to the characters
     this.prepareDerivedData()
