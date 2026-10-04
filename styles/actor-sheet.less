@@ -690,7 +690,9 @@
         .SR-footer {
             padding: 10px;
             display: flex;
-            flex-wrap: wrap;
+            // One line: the monitor boxes shrink (down to 6px) rather than wrapping the footer
+            flex-wrap: nowrap;
+            min-width: 0; // a grid item: without it, it grows with its boxes instead of shrinking them
             align-items: center;
             background-image: var(--sr-img-actor-sheet-bottom);
             background-size: auto 100%;
@@ -757,18 +759,18 @@
             flex-direction: row;
         }
 
-        // The boxes share the width they are given: wider when few (12px), narrower when many,
-        // never under 6px; below that they wrap to a new line instead of overflowing
-        .SR-MoniteurCases {
+        // Each box aims at 12px and shrinks down to 6px when the footer lacks room; past that,
+        // the footer (flex-wrap) sends the whole monitor to the next line
+        .SR-MoniteurCases, .SR-MoniteurCases.flexrow {
             padding-left  : 5px;
-            flex-wrap     : wrap;
+            flex          : 0 1 auto;
+            flex-wrap     : nowrap;
             min-width     : 0;
-            row-gap       : 2px;
 
             .boxes {
-                flex     : 1 1 0;
-                min-width: 10px; // 6px box + its 2px margins
-                max-width: 16px;
+                flex     : 0 1 auto;
+                width    : 16px; // 12px box + its 2px margins
+                min-width: 10px;
             }
 
             .SR-Case {
