@@ -3977,6 +3977,7 @@
 	"SR5.WARN_MatrixDamageDeviceMissing": "Targeted device not found (deleted since the attack): the matrix damage is applied to no device.",
 	"SR5.WARN_MatrixTargetDeviceMissing": "Targeted device not found (deleted since the attack): the matrix defense cannot be rolled.",
 	"SR5.WARN_RitualLeaderMissing": "Ritual leader not found: the ritual resistance cannot be rolled.",
+	"SR5.WARN_RitualForceChanged": "The participants' assist rolls were made at Force {force}: they are not rolled again.",
 	"SR5.WARN_RitualItemMissing": "Ritual not found: it was removed from the leader's sheet.",
 	"SR5.WARN_RitualAlreadySealed": "The ritual is already sealed: too late to join it.",
 	"SR5.WARN_RitualLeaderJoins": "The leader already leads the ritual: they do not join it as well.",

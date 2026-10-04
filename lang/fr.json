@@ -3977,6 +3977,7 @@
 	"SR5.WARN_MatrixDamageDeviceMissing": "Appareil visé introuvable (supprimé depuis l'attaque) : les dommages matriciels ne sont appliqués à aucun appareil.",
 	"SR5.WARN_MatrixTargetDeviceMissing": "Appareil visé introuvable (supprimé depuis l'attaque) : la défense matricielle ne peut pas être lancée.",
 	"SR5.WARN_RitualLeaderMissing": "Leader du rituel introuvable : la résistance du rituel ne peut pas être lancée.",
+	"SR5.WARN_RitualForceChanged": "Les jets d'aide des participants ont été faits à Puissance {force} : ils ne sont pas relancés.",
 	"SR5.WARN_RitualItemMissing": "Rituel introuvable : il a été retiré de la fiche du leader.",
 	"SR5.WARN_RitualAlreadySealed": "Le rituel est déjà scellé : il est trop tard pour y participer.",
 	"SR5.WARN_RitualLeaderJoins": "Le leader mène déjà le rituel : il ne participe pas en plus.",

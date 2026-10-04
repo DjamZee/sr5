@@ -578,6 +578,10 @@ export default class SR5_RollDialog {
           dialogData.limit.base = value
         }
         if (dialogData.test.type === "ritual") this._updateReagents(value, actor, html, dialogData)
+        //The participants rolled their assist at the Force announced on the circle card: they are not rolled again
+        if (dialogData.magic.ritualCircleForce && parseInt(value) !== dialogData.magic.ritualCircleForce) ui.notifications.warn(game.i18n.format("SR5.WARN_RitualForceChanged", {
+          force: dialogData.magic.ritualCircleForce
+        }))
         return
       case "reagentsSpent":
         this._updateReagents(value, actor, html, dialogData)

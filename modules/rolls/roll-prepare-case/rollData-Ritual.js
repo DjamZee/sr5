@@ -48,6 +48,7 @@ export default function ritual(rollData, actor, item, chatData){
   const circle = chatData?.ritualCircle
   if (circle) {
     rollData.magic.force = circle.force
+    rollData.magic.ritualCircleForce = circle.force
     rollData.limit.base = circle.force
     if (circle.bonus.dice > 0) rollData.dicePool.modifiers.push({
       type: "ritualTeamwork", label: game.i18n.localize("SR5.RitualTeamwork"), value: circle.bonus.dice
