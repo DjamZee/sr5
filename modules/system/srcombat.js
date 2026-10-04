@@ -123,6 +123,7 @@ export class SR5Combat extends Combat {
     await combat.update({
       turn
     })
+    await SR5Combat.endOwnerPassEffects(combat, combat.combatant)
     return
   }
 
@@ -148,8 +149,10 @@ export class SR5Combat extends Combat {
 
     const turn = 0
     await combat.update({
-      turn 
+      turn
     })
+    //The new initiative order is known only now: this is the real start of the round's first turn
+    await SR5Combat.endOwnerPassEffects(combat, combat.combatant)
   }
 
   setupTurns(){
@@ -269,6 +272,7 @@ export class SR5Combat extends Combat {
           turn: nextTurn,
           combatants: updatedCombatants,
         })
+        await SR5Combat.endOwnerPassEffects(this, this.combatant)
       } else {
         SR5_SocketHandler.emitForGM("updateCombat", {
           combatId: this.id,
@@ -299,6 +303,7 @@ export class SR5Combat extends Combat {
       turn: message.data.turn,
       combatants: message.data.combatants,
     })
+    await SR5Combat.endOwnerPassEffects(combat, combat.combatant)
   }
 
   async startCombat() {
@@ -735,10 +740,6 @@ export class SR5Combat extends Combat {
     }
   }
 
-  async _onStartTurn(combatant, context){
-    await super._onStartTurn(combatant, context)
-    await SR5Combat.endOwnerPassEffects(this, combatant)
-  }
 
   //Do stuff on actor when turn is ending
   static async manageTurnEnd(combatant){

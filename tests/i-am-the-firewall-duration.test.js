@@ -68,3 +68,62 @@ describe("I Am the Firewall lasts until the hacker's next pass", () => {
     expect(ally.items.map(i => i.id)).not.toContain("iatf")
   })
 })
+
+// The real paths: a new Initiative Pass (handleIniPass) and a new round (handleNextRound, after the new initiative roll)
+describe("I Am the Firewall through the combat flow", () => {
+  let grunt, flow
+  beforeEach(() => {
+    grunt = actor("grunt", [])
+    const make = (id, a, initiative) => ({
+      id, actorId: id, name: id, actor: a, initiative, isDefeated: false, update: vi.fn(async function (d){
+        if ("initiative" in d) this.initiative = d.initiative
+      })
+    })
+    const list = [make("hacker", hacker, 20), make("ally", ally, 15), make("grunt", grunt, 5)]
+    flow = {
+      id: "c1", combatants: list, turn: 0,
+      get turns(){
+        return [...list].sort((a, b) => b.initiative - a.initiative)
+      },
+      get combatant(){
+        return this.turns[this.turn]
+      },
+      update: vi.fn(async function (d){
+        if ("turn" in d) this.turn = d.turn
+      }),
+      resetAll: vi.fn(),
+      rollAll: vi.fn(),
+    }
+    for (let c of list) c.combat = flow
+    globalThis.game.combats = {
+      get: () => flow
+    }
+    vi.spyOn(SR5Combat, "setInitiativePass").mockResolvedValue()
+    vi.spyOn(SR5Combat, "resetActionInCombat").mockResolvedValue()
+    vi.spyOn(SR5Combat, "manageTurnEnd").mockResolvedValue()
+  })
+
+  it("ends at the hacker's turn in the next pass, not later", async () => {
+    // hacker 20 / ally 15 / grunt 5: in pass 2 the hacker (10) acts first again
+    await SR5Combat.handleIniPass("c1")
+    expect(flow.combatant.actorId).toBe("hacker")
+    expect(ally.items.map(i => i.id)).not.toContain("iatf")
+  })
+
+  it("survives a pass the hacker does not reach", async () => {
+    flow.combatants[0].initiative = 8
+    await SR5Combat.handleIniPass("c1")
+    expect(flow.combatant.actorId).toBe("ally")
+    expect(ally.items.map(i => i.id)).toContain("iatf")
+  })
+
+  it("is still there in a new round where the ally rolls ahead of the hacker", async () => {
+    flow.rollAll.mockImplementation(async () => {
+      flow.combatants[0].initiative = 9
+      flow.combatants[1].initiative = 18
+    })
+    await SR5Combat.handleNextRound("c1")
+    expect(flow.combatant.actorId).toBe("ally")
+    expect(ally.items.map(i => i.id)).toContain("iatf")
+  })
+})
