@@ -1,6 +1,9 @@
 import {
   SR5_EffectArea
 } from "../system/effectArea.js"
+import {
+  SR5_EntityHelpers
+} from "../entities/helpers.js"
 
 export function sr5HookCanvasReady(data) {
   for (let token of data.tokens.placeables.filter(t => t.isOwner)){
@@ -19,6 +22,16 @@ export function sr5HookCanvasReadyAreaEffects() {
     actor.prepareData()
     if (actor.sheet?.rendered) actor.sheet.render()
   }
+}
+
+//Tokens placed before the vision ranges were converted to the scene's units keep a range in meters until
+//their vision is switched again : fix those of the scene being shown, once, by a single GM
+export async function sr5HookCanvasReadyVisionRanges(canvasData) {
+  const designated = game.users?.activeGM
+  if (designated ? !designated.isSelf : !game.user.isGM) return
+  const scene = canvasData?.scene
+  const updates = SR5_EntityHelpers.visionRangeUpdatesOfScene(scene)
+  if (updates.length) await scene.updateEmbeddedDocuments("Token", updates)
 }
 
 export async function sr5HookDrawMeasuredTemplate(template) {

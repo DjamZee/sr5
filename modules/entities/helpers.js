@@ -439,6 +439,34 @@ export class SR5_EntityHelpers {
     return tokenDocument
   }
 
+  //Tokens placed before the vision ranges were converted carry the setting's value in meters as if it were
+  //scene units (50 ft of ultrasound on a map in feet). Return the updates that give them their range in the
+  //scene's units. Only a range still equal to the bare setting is touched : one the GM typed by hand, or one
+  //already converted, is left as it is, so running this again changes nothing.
+  static visionRangeUpdatesOfScene(scene){
+    const updates = []
+    for (const token of scene?.tokens ?? []) {
+      const vision = Object.keys(SR5_TOKEN_VISION_MODES).find(k => SR5_TOKEN_VISION_MODES[k] === token.sight?.visionMode)
+      if (!vision) continue
+      const meters = getVisionRange(vision)
+      const range = SR5_SystemHelpers.convertMetersToSceneUnits(meters, scene)
+      if (range === meters) continue
+      const update = {
+      }
+      if (token.sight.range === meters) update["sight.range"] = range
+      const detectionModes = token.detectionModes ?? []
+      if (detectionModes.some(d => d.id === SR5_VISION_DETECTION_MODES[vision] && d.range === meters)) {
+        update.detectionModes = detectionModes.map(d => (d.id === SR5_VISION_DETECTION_MODES[vision] && d.range === meters ? {
+          ...d, range
+        } : d))
+      }
+      if (Object.keys(update).length) updates.push({
+        _id: token.id ?? token._id, ...update
+      })
+    }
+    return updates
+  }
+
   //Add Effect to actor
   static async addEffectToActor(actor, effect){
     let hasEffect = actor.effects.find(e => e.origin === effect)
