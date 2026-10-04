@@ -65,8 +65,8 @@ export class SR5_RitualCircle {
     const leader = game.i18n.format("SR5.RitualCircleLeader", {
       name: circle.leaderName
     })
-    if (circle.sealed) return `<div class="sr5-ritual-circle"><h3>${title}</h3><p>${leader}</p><p><em>${game.i18n.localize("SR5.RitualCircleSealed")}</em></p></div>`
-    return `<div class="sr5-ritual-circle"><h3>${title}</h3><p>${leader}</p>` +
+    if (circle.sealed) return `<div class="sr5-ritual-circle"><p><strong>${title}</strong></p><p>${leader}</p><p><em>${game.i18n.localize("SR5.RitualCircleSealed")}</em></p></div>`
+    return `<div class="sr5-ritual-circle"><p><strong>${title}</strong></p><p>${leader}</p>` +
       `<button type="button" class="sr5-ritual-action" data-ritual-action="join">${game.i18n.localize("SR5.RitualJoin")}</button>` +
       `<button type="button" class="sr5-ritual-action ritual-leader" data-ritual-action="seal">${game.i18n.localize("SR5.RitualSeal")}</button></div>`
   }

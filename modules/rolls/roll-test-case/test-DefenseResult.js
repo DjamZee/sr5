@@ -82,7 +82,7 @@ export default async function defenseResultInfo(cardData, type){
         for (let recipient of ritualDrainRecipients({
           actorId: cardData.owner.actorId, name: leader?.name
         }, cardData.magic.ritualParticipants)) {
-          cardData.chatCard.buttons[ritualDrainKey(recipient.actorId)] = SR5_RollMessage.generateChatButton("ritualDrain", ritualDrainKey(recipient.actorId), `${game.i18n.localize("SR5.ResistDrain")} ${recipient.name} (${cardData.magic.drain.value})`)
+          cardData.chatCard.buttons[ritualDrainKey(recipient.actorId)] = SR5_RollMessage.generateChatButton("opposedTest ritualDrain", ritualDrainKey(recipient.actorId), `${game.i18n.localize("SR5.ResistDrain")} ${recipient.name} (${cardData.magic.drain.value})`)
         }
       } else cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("opposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${cardData.magic.drain.value})`)
 
