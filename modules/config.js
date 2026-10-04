@@ -3984,7 +3984,10 @@ SR5.statusEffects = [
     origin: "coverFull"
   },
   //Read by the core as CONFIG.specialStatusEffects.INVISIBLE : ordinary sight no longer sees the token,
-  //ultrasound and astral perception still do (SR5 p. 294, p. 449). Put on by the GM.
+  //ultrasound and astral perception still do. Put on by the GM, who takes it off for whoever resisted.
+  //SR5 p. 449 : ultrasound sees "people hidden by an Invisibility spell" ; p. 294 : the aura stays visible,
+  //and Physical Invisibility also fools technological sensors. That ultrasound, which is not visual, sees
+  //through Physical Invisibility as well is a ruling of DjamZ (his reading of p. 449), not a quote.
   {
     img: "icons/svg/invisible.svg",
     id: "invisible",
