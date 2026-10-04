@@ -60,7 +60,11 @@ export class SR5_MatrixHelpers {
   static async applyDamageToDecK(targetActor, cardData, defender, defenderWin) {
     let damageValue = cardData.damage.matrix.value
     let targetItem
-    if (cardData.target.itemUuid && !defenderWin) targetItem = await fromUuid(cardData.target.itemUuid)
+    if (cardData.target.itemUuid && !defenderWin) {
+      targetItem = await fromUuid(cardData.target.itemUuid)
+      //The aimed device was deleted since the attack: the damage must not fall on another device
+      if (!targetItem) return ui.notifications.warn(game.i18n.localize("SR5.WARN_MatrixDamageDeviceMissing"))
+    }
     if (!targetItem) targetItem = targetActor.items.find((item) => item.type === "itemDevice" && item.system.isActive)
     //An AI outside any device only has its core condition monitor, which takes all its damage (Data Trails p. 161)
     if (!targetItem) {

@@ -3961,6 +3961,7 @@
 	"SR5.WARN_NoActiveGM": "Aucun MJ connecté : cette action doit passer par le MJ et n'a pas été appliquée.",
 	"SR5.WARN_PatientWithoutMonitor": "{name} n'a ni moniteur physique ni moniteur étourdissant : les premiers soins ne s'appliquent pas (SR5 p. 207).",
 	"SR5.WARN_TargetItemMissing": "Objet visé introuvable (supprimé depuis le test) : l'action ne peut pas être appliquée.",
+	"SR5.WARN_MatrixDamageDeviceMissing": "Appareil visé introuvable (supprimé depuis l'attaque) : les dommages matriciels ne sont appliqués à aucun appareil.",
 	"SR5.WARN_MatrixTargetDeviceMissing": "Appareil visé introuvable (supprimé depuis l'attaque) : la défense matricielle ne peut pas être lancée.",
 	"SR5.WARN_RitualLeaderMissing": "Leader du rituel introuvable : la résistance du rituel ne peut pas être lancée.",
 	"SR5.WARN_ResistanceOwnerMissing": "Auteur du test introuvable (personnage supprimé) : la résistance ne peut pas être lancée.",
