@@ -37,6 +37,19 @@ export function patientMonitors(patient) {
   return []
 }
 
+// True when the patient wears a full armor (SR5 p. 207): an active armor flagged as such
+export function wearsFullArmor(patient) {
+  return !!patient?.items?.some(i => i.type === "itemArmor" && i.system?.isActive && i.system?.isFullArmor)
+}
+
+// The boxes healed by first aid (SR5 p. 207): the hits over the threshold, halved (rounded up) through a full armor,
+// then capped by the First Aid skill rating
+export function firstAidHealedBoxes(hits, threshold, skillRating, fullArmor) {
+  let boxes = Math.max(hits - threshold, 0)
+  if (fullArmor) boxes = Math.ceil(boxes / 2)
+  return Math.min(boxes, skillRating)
+}
+
 // True when the patient has a single condition monitor: no damage type to ask for
 export function hasSingleMonitor(patient) {
   let monitors = patientMonitors(patient)

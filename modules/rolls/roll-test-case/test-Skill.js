@@ -11,7 +11,7 @@ import {
   SR5_CombatHelpers
 } from "../roll-helpers/combat.js"
 import {
-  hasSingleMonitor, patientMonitors
+  hasSingleMonitor, patientMonitors, wearsFullArmor, firstAidHealedBoxes
 } from "../roll-helpers/cardRoller.js"
 
 export default async function skillInfo(cardData){
@@ -104,9 +104,10 @@ export default async function skillInfo(cardData){
           hits: cardData.damage.value, damageType: damageType
         })}`)
       } else if (cardData.roll.hits > 2) {
-        cardData.roll.netHits = cardData.roll.hits - 2
-        if (cardData.roll.netHits > actorData.skills.firstAid.rating.value) cardData.roll.netHits = actorData.skills.firstAid.rating.value
-        if (cardData.target.hasTarget) cardData.chatCard.buttons.firstAid = SR5_RollMessage.generateChatButton("nonOpposedTest", "firstAid", `${game.i18n.format('SR5.FirstAidButton', {
+        //SR5 p. 207: a targeted patient in full armor halves the effects, before the skill rating cap
+        let fullArmor = wearsFullArmor(targetActor)
+        cardData.roll.netHits = firstAidHealedBoxes(cardData.roll.hits, 2, actorData.skills.firstAid.rating.value, fullArmor)
+        if (cardData.target.hasTarget) cardData.chatCard.buttons.firstAid = SR5_RollMessage.generateChatButton("nonOpposedTest", "firstAid", `${game.i18n.format(fullArmor ? 'SR5.FirstAidButtonFullArmor' : 'SR5.FirstAidButton', {
           hits: cardData.roll.netHits
         })}`)
         else cardData.chatCard.buttons.firstAid = SR5_RollMessage.generateChatButton("opposedTest", "firstAid", `${game.i18n.format('SR5.FirstAidButton', {

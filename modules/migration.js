@@ -352,6 +352,11 @@ export default class Migration {
       updateData["system.isActive"] = true
     }
 
+    //SR5 p. 207: armors gain the full armor flag, unchecked
+    if (item.type === "itemArmor" && item.system?.isFullArmor === undefined) {
+      updateData["system.isFullArmor"] = false
+    }
+
     if (item.type == "itemWeapon") {
       if (item.system?.type === "amt_special") updateData["system.type"] = "exoticMeleeWeapon"
       if (item.system?.type === "adt_special") updateData["system.type"] = "exoticRangedWeapon"
