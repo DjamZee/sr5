@@ -1,5 +1,5 @@
 import {
-  SHARED_VISION_FLAG, getSharedViewers, isSharedWith, withViewer, withoutViewer, isViewerStillValid
+  SHARED_VISION_FLAG, SHARED_VISION_ACTOR_TYPES, getSharedViewers, isSharedWith, withViewer, withoutViewer, isViewerStillValid
 } from "../system/shared-vision.js"
 import {
   SR5_SocketHandler
@@ -10,9 +10,6 @@ import {
 import {
   SR5_EntityHelpers
 } from "../entities/helpers.js"
-
-//Actors one can see through: a drone, or a device such as a camera (SR5 p. 446)
-export const SHARED_VISION_ACTOR_TYPES = ["actorDrone", "actorDevice"]
 
 export class SR5SharedVision {
 
@@ -106,6 +103,37 @@ export class SR5SharedVision {
     //A device carries no sight until someone looks through it
     if (list.length) update["sight.enabled"] = true
     await tokenDocument.update(update)
+  }
+
+  /** Snoop succeeded (SR5 p. 241): the players of the hacker see through the drone or device
+   * as long as the hacker keeps a mark on it. Clicked by the hacker, or by the GM for him.
+   * @param {Object} target - the snooped drone or device
+   * @param {String} hackerId - id of the hacker's actor
+   * @return {Boolean} true if someone now sees through it
+   */
+  static async startSnoop(target, hackerId) {
+    if (!SHARED_VISION_ACTOR_TYPES.includes(target?.type)) return false
+    const tokenDocument = target.isToken ? target.token : target.getActiveTokens?.(false, true)?.[0]
+    if (!tokenDocument) {
+      ui.notifications.warn(game.i18n.format("SR5.SharedVisionNoToken", {
+        name: target.name
+      }))
+      return false
+    }
+    const hacker = SR5_EntityHelpers.getRealActorFromID(hackerId)
+    const userIds = game.user.isGM ?
+      game.users.filter(u => !u.isGM && hacker?.testUserPermission(u, "OWNER")).map(u => u.id) :
+      [game.user.id]
+    if (!userIds.length) {
+      ui.notifications.warn(game.i18n.format("SR5.SharedVisionNoPlayerFor", {
+        name: hacker?.name ?? ""
+      }))
+      return false
+    }
+    for (const userId of userIds) await SR5SharedVision.setViewer(tokenDocument, {
+      userId, source: "snoop", markOwnerId: hackerId
+    })
+    return true
   }
 
   //The one whose action it is: the rigger who controls the drone, or the user's own character

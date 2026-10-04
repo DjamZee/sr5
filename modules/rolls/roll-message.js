@@ -49,6 +49,9 @@ import {
 import {
   SR5_GrappleHelpers
 } from "./roll-helpers/grapple.js"
+import {
+  SR5SharedVision
+} from "../interface/shared-vision.js"
 
 // True when a GM is connected to relay what a player cannot do
 export function hasActiveGM() {
@@ -411,6 +414,10 @@ export class SR5_RollMessage {
         break
       case "extended":
         SR5_RollTest.extendedRoll(message, actor)
+        break
+      //SR5 p. 241: Snoop succeeded, the hacker sees what the drone or device sees while his mark lasts
+      case "snoopVision":
+        if (await SR5SharedVision.startSnoop(actor, messageData.previousMessage.actorId)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "attackerPlaceMark": {
         // Kill Code p. 45: a mark placed by Watchdog is remembered as such, it opens the interruption actions

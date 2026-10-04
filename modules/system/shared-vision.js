@@ -7,6 +7,9 @@
 
 export const SHARED_VISION_FLAG = "sharedVision"
 
+//Actors one can see through: a drone, or a device such as a camera (SR5 p. 446)
+export const SHARED_VISION_ACTOR_TYPES = ["actorDrone", "actorDevice"]
+
 /** The users who see through a token
  * @param {Object} tokenDocument - token document, or its source
  * @return {Array} entries { userId, source, markOwnerId }
