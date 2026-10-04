@@ -432,6 +432,14 @@ export async function handleMartialArtsCalledShot(rollData, actor){
   return rollData
 }
 
+// Run & Gun p. 125: Pin is a general called shot for bows, crossbows and throwing weapons only;
+// the technique (p. 148) only lowers its penalty
+const PIN_WEAPON_TYPES = ["throwing", "bow", "lightCrossbow", "mediumCrossbow", "heavyCrossbow"]
+const PIN_AMMO_TYPES = ["special", "bolt", "boltInjection", "arrow", "arrowInjection"]
+export function canPin(weaponType, ammoType){
+  return PIN_WEAPON_TYPES.includes(weaponType) || PIN_AMMO_TYPES.includes(ammoType)
+}
+
 function _buildCalledShotList(rollData){
   rollData.lists.calledShots = {
   }
@@ -462,7 +470,7 @@ function _buildCalledShotList(rollData){
     rollData.lists.calledShots.dirtyTrick = game.i18n.localize("SR5.CS_DirtyTrick")
   }
 
-  if ((ammoType === "special" || ammoType ==="bolt" || ammoType ==="boltInjection" || ammoType ==="arrow" || ammoType ==="arrowInjection") ){
+  if (canPin(rollData.combat.weaponType, ammoType)){
     rollData.lists.calledShots.pin = game.i18n.localize("SR5.CS_Pin")
   }
     
@@ -532,7 +540,7 @@ function _buildCalledShotList(rollData){
     if (tags.includes("shakeRattle")) {
       rollData.lists.calledShots.shakeUp = game.i18n.localize("SR5.CS_AS_ShakeRattle")
     }
-    if (tags.includes("pin") && rollData.combat.calledShot.martialArts.pin) {
+    if (tags.includes("pin")) {
       rollData.lists.calledShots.pin = game.i18n.localize("SR5.CS_Pin")
     }
   } else {
