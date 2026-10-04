@@ -33,13 +33,20 @@ export default function ramming(rollData, actor){
 
   //Add others informations
   rollData.test.type = "ramming"
-  //Rigger 5 p. 179: damage from the initiator's Structure and the speed of the impact, side impact by default
-  let target = game.user.targets.first()?.actor
-  rollData.combat.ramming.attackerSpeed = actor.system.attributes.speed?.augmented.value || 0
-  rollData.combat.ramming.targetSpeed = (target?.type === "actorDrone") ? (target.system.attributes.speed?.augmented.value || 0) : 0
-  rollData.damage.base = SR5_ConverterHelpers.collisionDamage(actor.system.attributes.body.augmented.value, SR5_ConverterHelpers.rammingSpeed(rollData.combat.ramming.angle, rollData.combat.ramming.attackerSpeed, rollData.combat.ramming.targetSpeed))
+  //Rigger 5 p. 179 against a vehicle (Speed, angle, locomotion p. 184), SR5 p. 203-204 against anything else (m/turn), side impact by default
+  let target = game.user.targets.first()?.actor,
+    ramming = rollData.combat.ramming
+  ramming.targetIsVehicle = target?.type === "actorDrone"
+  ramming.attackerSpeed = vehicleSpeed(actor)
+  ramming.attackerLocomotion = SR5_ConverterHelpers.rammingLocomotion(locomotionData(actor))
+  ramming.targetSpeed = ramming.targetIsVehicle ? vehicleSpeed(target) : 0
+  ramming.targetLocomotion = ramming.targetIsVehicle ? SR5_ConverterHelpers.rammingLocomotion(locomotionData(target)) : "ground"
+  ramming.relativeSpeed = SR5_ConverterHelpers.vehicleMetersPerTurn(ramming.attackerSpeed, ramming.gait)
+  rollData.damage.base = SR5_ConverterHelpers.rammingAttackDamage(ramming, actor.system.attributes.body.augmented.value)
   rollData.damage.value = rollData.damage.base
   rollData.lists.rammingAngles = SR5.rammingAngles
+  rollData.lists.rammingLocomotions = SR5.rammingLocomotions
+  rollData.lists.rammingGaits = SR5.rammingGaits
   rollData.damage.type = "physical"
   rollData.combat.armorPenetration = -6
   rollData.combat.activeDefenses.full = actor.system.specialProperties.fullDefenseValue || 0
@@ -53,4 +60,22 @@ export default function ramming(rollData, actor){
   })
 
   return rollData
+}
+
+//Current Speed of a vehicle, from its secondary propulsion when it is active
+function vehicleSpeed(vehicle){
+  let attributes = vehicle.system.attributes
+  if (vehicle.system.isSecondaryPropulsionActivate) return attributes.secondaryPropulsionSpeed?.augmented.value || 0
+  return attributes.speed?.augmented.value || 0
+}
+
+//What tells a vehicle's locomotion: its item's category (kept on the owner), its pilot skill, its secondary propulsion
+function locomotionData(vehicle){
+  let system = vehicle.system
+  return {
+    category: system.vehicleOwner?.items?.find(i => i._id === system.creatorItemId)?.system?.category,
+    pilotSkill: system.pilotSkill,
+    secondaryActive: system.isSecondaryPropulsionActivate,
+    secondaryType: system.secondaryPropulsionType,
+  }
 }

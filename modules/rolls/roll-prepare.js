@@ -331,7 +331,12 @@ export class SR5_PrepareRollTest {
         ramming: {
           angle: "side",
           attackerSpeed: 0,
+          attackerLocomotion: "ground",
           targetSpeed: 0,
+          targetLocomotion: "ground",
+          targetIsVehicle: false,
+          gait: "walk",
+          relativeSpeed: 0,
         },
         reach: 0,
         recoil:{
@@ -434,7 +439,6 @@ export class SR5_PrepareRollTest {
         plansMaterial: actor.system.lists.plansMaterial,
         weaponRanges: actor.system.lists.weaponRanges,
         preparationTriggerTypes: actor.system.lists.preparationTriggerTypes,
-        vehicleSpeed: actor.system.lists.vehicleSpeed,
         socialAttitude: actor.system.lists.socialAttitude,
         socialResult: actor.system.lists.socialResult,
         survivalWeather: actor.system.lists.survivalWeather,

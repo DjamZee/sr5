@@ -6,20 +6,33 @@
   	</div>
 </li>
 
-<!-- ANGLE OF IMPACT -->
+{{#if combat.ramming.targetIsVehicle}}
+<!-- ANGLE OF IMPACT: options written in the book's order, selectOptions would sort them -->
 <li class="grid">
     <div class="col-6" title="{{localize 'SR5.RammingAngleHint'}}">{{localize 'SR5.RammingAngle'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-5 SR-TextRight">
         <select class="SR-RammingInput" name="rammingAngle">
-            {{selectOptions lists.rammingAngles selected=combat.ramming.angle localize=true sort=false}}
+            {{#each lists.rammingAngles as |label key|}}
+            <option value="{{key}}" {{#if (eq key ../combat.ramming.angle)}}selected{{/if}}>{{localize label}}</option>
+            {{/each}}
         </select>
     </div>
 </li>
-<!-- CURRENT SPEEDS -->
+<!-- CURRENT SPEEDS AND LOCOMOTION (Rigger 5 p. 179, 184) -->
 <li class="grid">
     <div class="col-10">{{localize 'SR5.RammingAttackerSpeed'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-1 SR-TextCenter">
         <input class="SR-RammingInput" type="number" min="0" name="rammingAttackerSpeed" value="{{combat.ramming.attackerSpeed}}" data-dtype="Number" />
+    </div>
+</li>
+<li class="grid">
+    <div class="col-6" title="{{localize 'SR5.RammingLocomotionHint'}}">{{localize 'SR5.RammingAttackerLocomotion'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-5 SR-TextRight">
+        <select class="SR-RammingInput" name="rammingAttackerLocomotion">
+            {{#each lists.rammingLocomotions as |label key|}}
+            <option value="{{key}}" {{#if (eq key ../combat.ramming.attackerLocomotion)}}selected{{/if}}>{{localize label}}</option>
+            {{/each}}
+        </select>
     </div>
 </li>
 <li class="grid">
@@ -28,3 +41,32 @@
         <input class="SR-RammingInput" type="number" min="0" name="rammingTargetSpeed" value="{{combat.ramming.targetSpeed}}" data-dtype="Number" />
     </div>
 </li>
+<li class="grid">
+    <div class="col-6" title="{{localize 'SR5.RammingLocomotionHint'}}">{{localize 'SR5.RammingTargetLocomotion'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-5 SR-TextRight">
+        <select class="SR-RammingInput" name="rammingTargetLocomotion">
+            {{#each lists.rammingLocomotions as |label key|}}
+            <option value="{{key}}" {{#if (eq key ../combat.ramming.targetLocomotion)}}selected{{/if}}>{{localize label}}</option>
+            {{/each}}
+        </select>
+    </div>
+</li>
+{{else}}
+<!-- PEDESTRIAN OR OBJECT: gait and relative speed in m/turn (SR5 p. 203-204) -->
+<li class="grid">
+    <div class="col-6" title="{{localize 'SR5.RammingGaitHint'}}">{{localize 'SR5.RammingGait'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-5 SR-TextRight">
+        <select class="SR-RammingInput" name="rammingGait">
+            {{#each lists.rammingGaits as |label key|}}
+            <option value="{{key}}" {{#if (eq key ../combat.ramming.gait)}}selected{{/if}}>{{localize label}}</option>
+            {{/each}}
+        </select>
+    </div>
+</li>
+<li class="grid">
+    <div class="col-10" title="{{localize 'SR5.RammingRelativeSpeedHint'}}">{{localize 'SR5.VehicleRelativeSpeed'}} (m){{localize 'SR5.Colons'}}</div>
+    <div class="col-1 SR-TextCenter">
+        <input class="SR-RammingInput" type="number" min="0" name="rammingRelativeSpeed" value="{{combat.ramming.relativeSpeed}}" data-dtype="Number" />
+    </div>
+</li>
+{{/if}}

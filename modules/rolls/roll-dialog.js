@@ -206,7 +206,7 @@ export default class SR5_RollDialog {
     //General commands for select already filled by dialogData
     const filledSelects = element.querySelectorAll('.SR-ModSelectFilled'); if (filledSelects.length) this._filledSelectModifier(filledSelects, element, dialogData)
     //Ramming: speeds and angle of the impact
-    element.querySelectorAll('.SR-RammingInput').forEach(el => el.addEventListener('change', () => this._updateRamming(element, dialogData)))
+    element.querySelectorAll('.SR-RammingInput').forEach(el => el.addEventListener('change', ev => this._updateRamming(element, dialogData, ev.target.name)))
     //Manage Threshold
     element.querySelectorAll('.SR-ManageThreshold').forEach(el => el.addEventListener('change', ev => this._manageThreshold(ev, element, dialogData)))
     const thresholdEls = element.querySelectorAll('.SR-ManageThreshold'); if (thresholdEls.length) this._filledThreshold(thresholdEls, element, dialogData)
@@ -297,15 +297,30 @@ export default class SR5_RollDialog {
     this.dialog.setPosition(position)
   }
 
-  //Ramming damage from the initiator's Structure and the speed of the impact (Rigger 5 p. 179)
-  _updateRamming(html, dialogData){
+  //Ramming damage from the initiator's Structure and the speed of the impact: Rigger 5 p. 179 against a vehicle, SR5 p. 203-204 otherwise
+  _updateRamming(html, dialogData, changed){
     let actor = SR5_EntityHelpers.getRealActorFromID(dialogData.owner.actorId),
-      ramming = dialogData.combat.ramming
-    ramming.angle = html.querySelector('[name="rammingAngle"]').value
-    ramming.attackerSpeed = Math.max(0, parseInt(html.querySelector('[name="rammingAttackerSpeed"]').value) || 0)
-    ramming.targetSpeed = Math.max(0, parseInt(html.querySelector('[name="rammingTargetSpeed"]').value) || 0)
-    let speed = SR5_ConverterHelpers.rammingSpeed(ramming.angle, ramming.attackerSpeed, ramming.targetSpeed)
-    dialogData.damage.base = SR5_ConverterHelpers.collisionDamage(actor.system.attributes.body.augmented.value, speed)
+      ramming = dialogData.combat.ramming,
+      readNumber = name => Math.max(0, parseInt(html.querySelector(`[name="${name}"]`).value) || 0)
+    if (ramming.targetIsVehicle){
+      ramming.angle = html.querySelector('[name="rammingAngle"]').value
+      ramming.attackerSpeed = readNumber("rammingAttackerSpeed")
+      ramming.targetSpeed = readNumber("rammingTargetSpeed")
+      ramming.attackerLocomotion = html.querySelector('[name="rammingAttackerLocomotion"]').value
+      ramming.targetLocomotion = html.querySelector('[name="rammingTargetLocomotion"]').value
+    } else {
+      ramming.gait = html.querySelector('[name="rammingGait"]').value
+      //The gait fills in the relative speed, which the GM may then correct
+      if (changed === "rammingGait") html.querySelector('[name="rammingRelativeSpeed"]').value = SR5_ConverterHelpers.vehicleMetersPerTurn(ramming.attackerSpeed, ramming.gait)
+      ramming.relativeSpeed = readNumber("rammingRelativeSpeed")
+      //SR5 p. 203: -3 dice when the vehicle has to reach its running rate
+      SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "rammingRun")
+      if (ramming.gait === "run") dialogData.dicePool.modifiers.push({
+        type: "rammingRun", label: game.i18n.localize(SR5.dicePoolModTypes.rammingRun), value: -3
+      })
+      this.updateDicePoolValue(html)
+    }
+    dialogData.damage.base = SR5_ConverterHelpers.rammingAttackDamage(ramming, actor.system.attributes.body.augmented.value)
     dialogData.damage.value = dialogData.damage.base
     html.querySelector('[name="modifiedDamage"]').value = dialogData.damage.value
   }

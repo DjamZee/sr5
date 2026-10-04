@@ -2594,16 +2594,6 @@ SR5.vehicleActions = {
   stunt                     : "SR5.Stunt",
 }
 
-// Vehicle actions
-SR5.vehicleRelativeSpeed = {
-  vehicleRelativeSpeed_1    : "SR5.VehicleRelativeSpeed_1",   
-  vehicleRelativeSpeed_11   : "SR5.VehicleRelativeSpeed_11",  
-  vehicleRelativeSpeed_51   : "SR5.VehicleRelativeSpeed_51",
-  vehicleRelativeSpeed_201  : "SR5.VehicleRelativeSpeed_201", 
-  vehicleRelativeSpeed_301  : "SR5.VehicleRelativeSpeed_301", 
-  vehicleRelativeSpeed_501  : "SR5.VehicleRelativeSpeed_501", 
-}
-
 //Target signature
 SR5.targetSignature = {
   vehicleLarge              : "SR5.SignatureVehicleLarge",
@@ -2637,13 +2627,20 @@ SR5.rammingAngles = {
   front                     : "SR5.RammingAngle_front",
 }
 
-SR5.vehicleSpeed = {
-  speedRamming1							: "SR5.VehicleRelativeSpeed_1",
-  speedRamming11						: "SR5.VehicleRelativeSpeed_11",
-  speedRamming51						: "SR5.VehicleRelativeSpeed_51",
-  speedRamming201						: "SR5.VehicleRelativeSpeed_201",
-  speedRamming301						: "SR5.VehicleRelativeSpeed_301",
-  speedRamming501						: "SR5.VehicleRelativeSpeed_501",
+//Locomotion, for the collision speed multiplier (Rigger 5 p. 184)
+SR5.rammingLocomotions = {
+  ground                    : "SR5.RammingLocomotion_ground",
+  naval                     : "SR5.RammingLocomotion_naval",
+  rotor                     : "SR5.RammingLocomotion_rotor",
+  vectorThrust              : "SR5.RammingLocomotion_vectorThrust",
+  jet                       : "SR5.RammingLocomotion_jet",
+  lta                       : "SR5.RammingLocomotion_lta",
+}
+
+//Vehicle movement against a pedestrian (SR5 p. 203)
+SR5.rammingGaits = {
+  walk                      : "SR5.RammingGait_walk",
+  run                       : "SR5.RammingGait_run",
 }
 
 //-----------------------------------//
@@ -3574,6 +3571,7 @@ SR5.fullDefense = {
 SR5.dicePoolModTypes = {
   attribute                 : "SR5.Attribute",
   various                   : "SR5.VariousModifiers",
+  rammingRun                : "SR5.RammingGait_run",
   patientEssence            : "SR5.PatientEssence",
   specialization            : "SR5.Specialization",
   penalty                   : "SR5.Penalty",
