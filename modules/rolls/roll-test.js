@@ -11,6 +11,8 @@ import {
   SR5_RollTestHelper 
 } from "./roll-test-helper.js"
 import * as SR5_AddRollInfo from "./roll-test-case/index.js"
+
+const PICKPOCKET_TESTS = ["pickpocket", "pickpocketPerception"]
 import {
   SR5Combat 
 } from "../system/srcombat.js"
@@ -495,6 +497,9 @@ export class SR5_RollTest {
     }
     html = temp.innerHTML
 
+    //A pocket is picked in secret: the target hears of it only if he notices, so both cards go to the GM
+    if (PICKPOCKET_TESTS.includes(cardData.test.type) && !["gmroll", "blindroll"].includes(cardData.roll.rollMode)) cardData.roll.rollMode = "gmroll"
+
     let chatData = {
       roll: cardData.roll.r,
       rollMode: cardData.roll.rollMode,
@@ -634,6 +639,12 @@ export class SR5_RollTest {
         break
       case "grappleClinchDefense":
         await SR5_AddRollInfo.grappleClinchDefenseInfo(cardData)
+        break
+      case "pickpocket":
+        await SR5_AddRollInfo.pickpocketInfo(cardData)
+        break
+      case "pickpocketPerception":
+        await SR5_AddRollInfo.pickpocketPerceptionInfo(cardData)
         break
       case "lift":
         await SR5_AddRollInfo.liftInfo(cardData, actorId)

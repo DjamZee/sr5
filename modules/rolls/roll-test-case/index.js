@@ -38,6 +38,9 @@ export {
   default as grappleClinchDefenseInfo
 } from "./test-GrappleClinchDefense.js"
 export {
+  default as pickpocketInfo, pickpocketPerceptionInfo
+} from "./test-Pickpocket.js"
+export {
   default as liftInfo
 } from "./test-Lift.js"
 export {

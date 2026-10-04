@@ -1,4 +1,7 @@
 import {
+  SR5Pickpocket
+} from "../interface/pickpocket.js"
+import {
   SR5 
 } from "../config.js"
 import {
@@ -373,6 +376,17 @@ export class SR5_RollMessage {
         else if (messageData.combat.calledShot.name === "trickShot") await originalActionActor.applyCalledShotsEffect(messageData)
         else await actor.applyCalledShotsEffect(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
+      //SR5 p. 422: the GM rolls the target's Perception, moves the object, or tells the target who tried
+      case "pickpocketPerception":
+        await SR5Pickpocket.openPerception(messageData)
+        break
+      case "pickpocketCaught":
+      case "pickpocketNoticed":
+        await SR5Pickpocket.caught(messageData, messageId, type)
+        break
+      case "pickpocketTransfer":
+        await SR5Pickpocket.transfer(messageData, messageId)
         break
       //Run & Gun p. 133: the clinched defender and the attacker enter the clinch, with the net hits of the test
       case "grappleClinchApply":

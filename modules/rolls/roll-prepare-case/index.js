@@ -62,6 +62,12 @@ export {
   default as grappleClinchDefense
 } from "./rollData-GrappleClinchDefense.js"
 export {
+  default as pickpocket
+} from "./rollData-Pickpocket.js"
+export {
+  default as pickpocketPerception
+} from "./rollData-PickpocketPerception.js"
+export {
   default as fading
 } from "./rollData-Fading.js"
 export {

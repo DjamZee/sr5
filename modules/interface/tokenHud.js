@@ -1,6 +1,9 @@
 import {
   SR5SharedVision
 } from "./shared-vision.js"
+import {
+  SR5Pickpocket
+} from "./pickpocket.js"
 
 /**
  * Icons of the system on the token HUD.
@@ -34,6 +37,7 @@ export default class SR5TokenHud extends foundry.applications.hud.TokenHUD {
     this.#dressControlIcons()
     this.#addStorageButton()
     SR5SharedVision.addHudButton(this)
+    SR5Pickpocket.addHudButton(this)
   }
 
   /**

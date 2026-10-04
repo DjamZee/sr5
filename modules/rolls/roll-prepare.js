@@ -117,6 +117,12 @@ export class SR5_PrepareRollTest {
       case "grappleClinchDefense":
         rollData = await SR5_GetRollData.grappleClinchDefense(rollData, actor, chatData)
         break
+      case "pickpocket":
+        rollData = await SR5_GetRollData.pickpocket(rollData, actor, chatData)
+        break
+      case "pickpocketPerception":
+        rollData = await SR5_GetRollData.pickpocketPerception(rollData, actor, chatData)
+        break
       case "fading":
         rollData = await SR5_GetRollData.fading(rollData, actor, chatData)
         break

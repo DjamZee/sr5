@@ -14,7 +14,7 @@ const DEFENSE_TESTS = ["defense", "defenseSimple", "martialArtDefense", "powerDe
 //Actions: -2 dice (SR5 p. 164). Ruling of DjamZ (2026-10-04): resistance tests (damage, drain, fading...) are not
 //actions and keep their dice
 const ACTION_TESTS = ["attack", "skill", "skillDicePool", "attributeOnly", "lift", "spell", "preparation",
-  "complexForm", "matrixAction", "resonanceAction", "grappleClinch", "grappleEscape", "escapeEngulf",
+  "complexForm", "matrixAction", "resonanceAction", "grappleClinch", "grappleEscape", "escapeEngulf", "pickpocket",
   "healing", "movement"]
 
 /**
