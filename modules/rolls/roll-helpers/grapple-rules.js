@@ -168,3 +168,27 @@ export function tokenRemovalEndsHold(actorLink, remainingTokens){
 export function refusalRecipient(fromUserId, selfId){
   return fromUserId && fromUserId !== selfId ? fromUserId : null
 }
+
+//The buttons of a hold card (Crush, Let go) belong to the one who holds: the GM or the holder's owner
+export function canUseHoldCard(isGM, isHolderOwner){
+  return !!(isGM || isHolderOwner)
+}
+
+//A button left on an older card must not touch a newer hold. Returns the warning to give, or null when the hold
+//it was rolled against is still the one in progress.
+export function staleHoldWarning(currentHold, cardHoldId){
+  if (!currentHold) return "SR5.WARN_GrappleNoHold"
+  if (cardHoldId && currentHold.holdId !== cardHoldId) return "SR5.WARN_GrappleHoldChanged"
+  return null
+}
+
+//An unlinked token rolled from its base actor's sheet: the hold goes on the token's own actor. The token is the
+//controlled one of that actor, or its only token on the scene; null when it cannot be told (the base actor stays).
+export function tokenForBaseActor({
+  isToken, actorLink, tokenIds = [], controlledIds = []
+}){
+  if (isToken || actorLink) return null
+  const controlled = tokenIds.filter(id => controlledIds.includes(id))
+  if (controlled.length === 1) return controlled[0]
+  return tokenIds.length === 1 ? tokenIds[0] : null
+}

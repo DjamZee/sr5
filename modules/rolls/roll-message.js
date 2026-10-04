@@ -357,13 +357,14 @@ export class SR5_RollMessage {
         }
         //SR5 p. 196: the strengthened (or weakened) hold, written on both fighters
         else if (messageData.combat.calledShot.name === "strengthenHold") {
-          const hold = Object.values(messageData.combat.calledShot.effects).find(e => e.name === "strengthenHold")?.value ?? 0
-          await SR5_GrappleHelpers.setHold(SR5_GrappleHelpers.actorIdOf(actor), hold)
+          const effect = Object.values(messageData.combat.calledShot.effects).find(e => e.name === "strengthenHold")
+          //The hold the card was rolled against: an older card is refused once a newer hold took its place
+          await SR5_GrappleHelpers.setHold(SR5_GrappleHelpers.actorIdOf(actor), effect?.value ?? 0, effect?.holdId)
         }
         //Run & Gun p. 126: the attacker who reversed the situation becomes the one who holds
         else if (messageData.combat.calledShot.name === "reversal" && Object.values(messageData.combat.calledShot.effects).some(e => e.name === "reversal")) {
-          const hold = Object.values(messageData.combat.calledShot.effects).find(e => e.name === "reversal").value
-          await SR5_GrappleHelpers.reverseHold(messageData.previousMessage.actorId, hold)
+          const effect = Object.values(messageData.combat.calledShot.effects).find(e => e.name === "reversal")
+          await SR5_GrappleHelpers.reverseHold(messageData.previousMessage.actorId, effect.value, effect.holdId)
         }
         else if (messageData.combat.calledShot.name === "trickShot") await originalActionActor.applyCalledShotsEffect(messageData)
         else await actor.applyCalledShotsEffect(messageData)

@@ -9,7 +9,8 @@ import {
 } from "../roll-prepare.js"
 import {
   grappleHoldOf, canStartHold, crushDamage, holdReplacesClinch, GRAPPLE_STATUSES,
-  deleteGrappleEffectOnce, isGrappleKeeper, tokenRemovalEndsHold, refusalRecipient
+  deleteGrappleEffectOnce, isGrappleKeeper, tokenRemovalEndsHold, refusalRecipient,
+  canUseHoldCard, staleHoldWarning, tokenForBaseActor
 } from "./grapple-rules.js"
 
 //The grappling effects being deleted on this client: each is deleted once (see deleteGrappleEffectOnce)
@@ -55,6 +56,11 @@ export class SR5_GrappleHelpers {
 
   //SR5 p. 195 : put both fighters in the hold. fromUserId is the user who asked, when the GM acts for them
   static async startHold(holderId, heldId, hold, kind = "subdue", fromUserId = null){
+    //On the client that clicked, where the controlled tokens are known: an unlinked token's base actor becomes the token
+    if (!fromUserId) {
+      holderId = SR5_GrappleHelpers.resolveFighterId(holderId)
+      heldId = SR5_GrappleHelpers.resolveFighterId(heldId)
+    }
     if (!game.user.isGM) return SR5_SocketHandler.emitForGM("grappleStartHold", {
       holderId, heldId, hold, kind, fromUserId: game.user.id
     })
@@ -88,33 +94,53 @@ export class SR5_GrappleHelpers {
   }
 
   //Run & Gun p. 126 : the held fighter reverses the situation, and the roles are swapped in a hold of the same kind
-  static async reverseHold(reverserId, hold){
+  static async reverseHold(reverserId, hold, holdId = null, fromUserId = null){
+    if (!fromUserId) reverserId = SR5_GrappleHelpers.resolveFighterId(reverserId)
     if (!game.user.isGM) return SR5_SocketHandler.emitForGM("grappleReverseHold", {
-      reverserId, hold
+      reverserId, hold, holdId, fromUserId: game.user.id
     })
     const reverser = SR5_EntityHelpers.getRealActorFromID(reverserId)
     const data = grappleHoldOf(reverser?.effects)
-    if (data?.role !== "held") return
+    const stale = staleHoldWarning(data?.role === "held" ? data : null, holdId)
+    if (stale) return SR5_GrappleHelpers.warn(stale, fromUserId)
     const formerHolder = SR5_EntityHelpers.getRealActorFromID(data.partner)
     await Promise.all([reverser, formerHolder].map(a => deleteGrappleEffectOnce(a, PENDING_DELETIONS, data.holdId)))
-    const holdId = foundry.utils.randomID()
-    await reverser.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(data.kind, "holder", data.partner, hold, holdId)])
-    await formerHolder.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(data.kind, "held", reverserId, hold, holdId)])
+    const newHoldId = foundry.utils.randomID()
+    await reverser.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(data.kind, "holder", data.partner, hold, newHoldId)])
+    await formerHolder.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(data.kind, "held", reverserId, hold, newHoldId)])
     await SR5_GrappleHelpers.postHoldCard(reverserId, data.partner, hold, "SR5.GrappleReversed")
   }
 
   static async _socketReverseHold(message){
-    await SR5_GrappleHelpers.reverseHold(message.data.reverserId, message.data.hold)
+    const d = message.data
+    await SR5_GrappleHelpers.reverseHold(d.reverserId, d.hold, d.holdId, d.fromUserId)
+  }
+
+  //An actor id as the cards carry it. An unlinked token rolled from its base actor's sheet gives the base actor's id:
+  //the hold must go on the token's own actor instead (see tokenForBaseActor)
+  static resolveFighterId(actorId){
+    const actor = game.actors?.get(actorId)
+    if (!actor || !canvas?.scene) return actorId
+    const tokenIds = canvas.scene.tokens.filter(t => t.actorId === actorId && !t.actorLink).map(t => t.id)
+    const tokenId = tokenForBaseActor({
+      isToken: false,
+      actorLink: actor.prototypeToken?.actorLink,
+      tokenIds,
+      controlledIds: canvas.tokens?.controlled?.map(t => t.id) ?? [],
+    })
+    return tokenId ?? actorId
   }
 
   //SR5 p. 196 : the hold strengthened or weakened, written on both fighters; actorId is either of them
-  static async setHold(actorId, hold){
+  //holdId is the hold the card was rolled against: an older card never touches a newer hold
+  static async setHold(actorId, hold, holdId = null, fromUserId = null){
     if (!game.user.isGM) return SR5_SocketHandler.emitForGM("grappleSetHold", {
-      actorId, hold
+      actorId, hold, holdId, fromUserId: game.user.id
     })
     const actor = SR5_EntityHelpers.getRealActorFromID(actorId)
     const data = grappleHoldOf(actor?.effects)
-    if (!data) return
+    const stale = staleHoldWarning(data, holdId)
+    if (stale) return SR5_GrappleHelpers.warn(stale, fromUserId)
     const partner = SR5_EntityHelpers.getRealActorFromID(data.partner)
     for (const a of [actor, partner]){
       const effect = a?.effects.find(e => e.flags?.sr5?.grapple)
@@ -158,10 +184,13 @@ export class SR5_GrappleHelpers {
   static onRenderHoldCard(message, html){
     const card = message.flags?.sr5?.grappleCard
     if (!card) return
+    const holder = SR5_EntityHelpers.getRealActorFromID(card.holderId)
+    //The buttons belong to the one who holds: hidden from the other players
+    if (!canUseHoldCard(game.user.isGM, holder?.isOwner)) return html.querySelectorAll(".sr5-grapple-button").forEach(el => el.remove())
     html.querySelectorAll(".sr5-grapple-button").forEach(el => el.addEventListener("click", async ev => {
       ev.preventDefault()
       const holder = SR5_EntityHelpers.getRealActorFromID(card.holderId)
-      if (!holder?.isOwner) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActor"))
+      if (!canUseHoldCard(game.user.isGM, holder?.isOwner)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_GrappleNotYourHold"))
       //A card left from a hold that has since ended does nothing
       if (grappleHoldOf(holder.effects)?.partner !== card.heldId) return ui.notifications.warn(game.i18n.localize("SR5.WARN_GrappleNoHold"))
       if (el.dataset.grapple === "release") return SR5_GrappleHelpers.releaseHold(card.holderId)
@@ -231,7 +260,8 @@ export class SR5_GrappleHelpers {
   }
 
   static async _socketSetHold(message){
-    await SR5_GrappleHelpers.setHold(message.data.actorId, message.data.hold)
+    const d = message.data
+    await SR5_GrappleHelpers.setHold(d.actorId, d.hold, d.holdId, d.fromUserId)
   }
 
   static async _socketReleaseHold(message){

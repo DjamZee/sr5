@@ -839,6 +839,8 @@
 	"SR5.STATUSES_Subduing": "Maîtrise un adversaire",
 	"SR5.WARN_GrappleAlreadyHeld": "Un des deux combattants est déjà engagé dans une prise : une seule prise par jeton.",
 	"SR5.WARN_GrappleNoHold": "Cette prise n'existe plus.",
+	"SR5.WARN_GrappleHoldChanged": "La prise a changé depuis ce jet : ce bouton ne s'applique plus.",
+	"SR5.WARN_GrappleNotYourHold": "Seuls le MJ et le propriétaire de celui qui tient la prise peuvent utiliser ces boutons.",
 	"SR5.WARN_GrappleNeedsMartialArts": "La saisie demande un entraînement aux arts martiaux (Run & Gun p. 133) : ce personnage n'en a aucun. Au MJ de trancher.",
 	"SR5.CS_Entanglement": "Enchevêtrer",
 	"SR5.CS_Feint": "Feinte",

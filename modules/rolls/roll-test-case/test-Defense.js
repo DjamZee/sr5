@@ -54,12 +54,18 @@ export default async function defenseInfo(cardData, actorId){
   //SR5 p. 196 (renforcer sa prise): no damage, the hold moves by the net hits, either way
   if (cardData.combat.calledShot.name === "strengthenHold") {
     cardData.damage.value = 0
-    const hold = grappleHoldOf(actor.effects)?.hold ?? 0
+    cardData.chatCard.calledShotButton = true
+    //Only the hold of this attacker on this defender can be strengthened
+    if (!isHeldBy(actor.effects, cardData.previousMessage.actorId)) {
+      cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.WARN_GrappleNoHold"))
+      return
+    }
+    const current = grappleHoldOf(actor.effects)
+    const hold = current.hold ?? 0
     const newHold = strengthenedHold(hold, cardData.roll.netHits)
     cardData.combat.calledShot.effects = [{
-      name: "strengthenHold", value: newHold
+      name: "strengthenHold", value: newHold, holdId: current.holdId
     }]
-    cardData.chatCard.calledShotButton = true
     cardData.chatCard.buttons.calledShotEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "calledShotEffect", game.i18n.format("SR5.GrappleApplyStrengthen", {
       hold, newHold
     }))
@@ -235,7 +241,7 @@ async function handleCalledShotDefenseInfo(cardData, actorData){
       if (game.settings.get("sr5", "sr5GrapplingRules") && isHeldBy(attacker.effects, cardData.owner.speakerId)) {
         const hold = holdAfterReversal(cardData.roll.netHits)
         cardData.combat.calledShot.effects = [{
-          name: "reversal", value: hold
+          name: "reversal", value: hold, holdId: grappleHoldOf(attacker.effects)?.holdId
         }]
         cardData.chatCard.buttons.calledShotEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "calledShotEffect", game.i18n.format("SR5.GrappleApplyReversal", {
           hold

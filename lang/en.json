@@ -839,6 +839,8 @@
 	"SR5.STATUSES_Subduing": "Subduing an opponent",
 	"SR5.WARN_GrappleAlreadyHeld": "One of the fighters is already in a hold: one hold per token.",
 	"SR5.WARN_GrappleNoHold": "This hold no longer exists.",
+	"SR5.WARN_GrappleHoldChanged": "The hold has changed since this roll: this button no longer applies.",
+	"SR5.WARN_GrappleNotYourHold": "Only the GM and the owner of the one holding can use these buttons.",
 	"SR5.WARN_GrappleNeedsMartialArts": "The clinch requires martial arts training (Run & Gun p. 133): this character has none. The GM decides.",
 	"SR5.CS_Entanglement": "Entanglement",
 	"SR5.CS_Feint": "Feint",
