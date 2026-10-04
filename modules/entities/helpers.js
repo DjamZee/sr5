@@ -413,13 +413,16 @@ export class SR5_EntityHelpers {
   }
 
   //Return necessery data to update a token to the vision its actor is currently using
-  static async getVisionData(tokenDocument, actor){
+  //scene: the scene the token stands on. tokenDocument is often a plain copy, which has lost its parent.
+  static async getVisionData(tokenDocument, actor, scene = tokenDocument?.parent ?? canvas?.scene){
     if (!tokenDocument) return SR5_SystemHelpers.srLog(1, `Empty '${tokenDocument}' in 'getVisionData()'`)
     const vision = this.getActiveVisionType(actor)
     const mode = SR5_TOKEN_VISION_MODES[vision]
     tokenDocument.sight.enabled = true
     tokenDocument.sight.visionMode = mode ?? "basic"
-    tokenDocument.sight.range = mode ? getVisionRange(vision) : 0
+    //The settings are in meters (SR5 p. 176: ultrasound reaches 50 meters), the token draws in its scene's units
+    const range = SR5_SystemHelpers.convertMetersToSceneUnits(getVisionRange(vision), scene)
+    tokenDocument.sight.range = mode ? range : 0
     tokenDocument.sight.color = SR5_VISION_COLORS[vision] ?? null
     //Apply the look of the vision mode, as the token configuration does when it is picked by hand
     const defaults = CONFIG.Canvas.visionModes[tokenDocument.sight.visionMode]?.vision?.defaults ?? {
@@ -431,7 +434,7 @@ export class SR5_EntityHelpers {
     const visionDetections = Object.values(SR5_VISION_DETECTION_MODES)
     tokenDocument.detectionModes = (tokenDocument.detectionModes ?? []).filter(d => !visionDetections.includes(d.id))
     if (SR5_VISION_DETECTION_MODES[vision]) tokenDocument.detectionModes.push({
-      id: SR5_VISION_DETECTION_MODES[vision], enabled: true, range: getVisionRange(vision)
+      id: SR5_VISION_DETECTION_MODES[vision], enabled: true, range
     })
     return tokenDocument
   }

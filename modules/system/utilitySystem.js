@@ -231,7 +231,8 @@ export class SR5_SystemHelpers {
       requiresReload: true
     })
 
-    // Token vision ranges, in scene units (0 = only what is lit)
+    // Token vision ranges, in meters as the rules give them (0 = only what is lit). getVisionData turns them
+    // into the units of the token's scene: written as is, 30 m of thermographic vision drew 30 ft on a map in feet.
     const visionRanges = {
       sr5VisionRangeLowLight: 0,
       sr5VisionRangeThermographic: 30,
@@ -477,10 +478,11 @@ export class SR5_SystemHelpers {
   /**
    * Convert a distance taken from the books into the units the scene draws with
    * @param value     A distance in meters
+   * @param scene     The scene it is drawn on, the one on the canvas by default
    * @return {number} The same distance in the scene's own units
    */
-  static convertMetersToSceneUnits(value){
-    return value / SR5_SystemHelpers.getSceneUnitInMeters()
+  static convertMetersToSceneUnits(value, scene = canvas?.scene){
+    return value / SR5_SystemHelpers.getSceneUnitInMeters(scene)
   }
 
   /**

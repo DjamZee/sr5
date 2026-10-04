@@ -890,7 +890,7 @@ export class SR5_CharacterUtility extends Actor {
   //Give the tokens the vision their actor is currently using
   static async applyVisionToToken(actor) {
     for (let token of this.getTokensOfActor(actor)) {
-      const tokenData = await SR5_EntityHelpers.getVisionData(foundry.utils.duplicate(token), actor)
+      const tokenData = await SR5_EntityHelpers.getVisionData(foundry.utils.duplicate(token), actor, token.parent)
       await token.update(tokenData)
     }
   }
