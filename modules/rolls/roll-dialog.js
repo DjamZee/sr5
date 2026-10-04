@@ -438,18 +438,19 @@ export default class SR5_RollDialog {
       case "socialObliviousToDanger":
       case "socialFan":
       case "socialBlackmailed":
-      case "attackCharge":
-        //SR5 p. 164 and 188: a charge ignores the -2 of running
-        if (isChecked) this._uncheckModifier(html, dialogData, "running")
-        value = 2
-        break
-      case "running":
-        value = runningModifierValue(dialogData.dialogSwitch.running)
-        break
       case "defenseRunning":
       case "attackSuperiorPosition":
       case "attackTouchOnly":
         value = 2
+        break
+      case "attackCharge":
+        //SR5 p. 164 and 188: a charge ignores the -2 of running, which comes back if the charge is unchecked
+        if (isChecked) this._uncheckModifier(html, dialogData, "running")
+        else if (isRunning(actor)) this._checkModifier(html, dialogData, "running", runningModifierValue(dialogData.dialogSwitch.running))
+        value = 2
+        break
+      case "running":
+        value = runningModifierValue(dialogData.dialogSwitch.running)
         break
       case "controlAvailable":
       case "socialIsDistracted":
@@ -520,6 +521,21 @@ export default class SR5_RollDialog {
     const input = html.querySelector(`[name=${checkbox.dataset.target}]`)
     if (input) input.value = 0
     SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', modifierName)
+    this.updateDicePoolValue(html)
+  }
+
+  //Check a checkbox modifier and add its value to the dice pool
+  _checkModifier(html, dialogData, modifierName, value){
+    const checkbox = html.querySelector(`[data-modifier=${modifierName}]`)
+    if (!checkbox || checkbox.checked) return
+    checkbox.checked = true
+    const input = html.querySelector(`[name=${checkbox.dataset.target}]`)
+    if (input) input.value = value
+    dialogData.dicePool.modifiers.push({
+      type: modifierName,
+      label: game.i18n.localize(SR5.dicePoolModTypes[modifierName]),
+      value: value
+    })
     this.updateDicePoolValue(html)
   }
 

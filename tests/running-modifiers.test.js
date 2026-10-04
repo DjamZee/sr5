@@ -21,6 +21,10 @@ const {
   SR5_EntityHelpers
 } = await import('../modules/entities/helpers.js')
 
+const {
+  SR5Combat
+} = await import('../modules/system/srcombat.js')
+
 const template = (name) => readFileSync(new URL(`../templates/rolls/rollDialogPartial/${name}`, import.meta.url), 'utf8')
 
 describe('which tests take the running modifier (SR5 p. 164, 179, 190)', () => {
@@ -251,6 +255,86 @@ describe('the running status follows the moves and the Combat Turns', () => {
     })
     expect(isRunning(runner)).toBe(false)
   })
+
+  it('a teleport (blink, displace) is neither counted nor running, even with the world setting', async () => {
+    globalThis.CONFIG.Token = {
+      movement: {
+        actions: {
+          walk: {
+          }, run: {
+          }, blink: {
+            teleport: true
+          }, displace: {
+            teleport: true
+          }
+        }
+      }
+    }
+    globalThis.game.settings = {
+      get: () => true
+    }
+    const actor = actorWith()
+    const token = tokenWith(actor, {
+      combatId: 'c1', round: 1, meters: 9
+    })
+    for (const action of ['blink', 'displace']) {
+      await onMoveToken(token, {
+        passed: {
+          distance: 30, waypoints: [{
+            action
+          }]
+        }
+      })
+    }
+    expect(token.flags.sr5.runDistance.meters).toBe(9)
+    expect(actor.toggleStatusEffect).not.toHaveBeenCalled()
+    delete globalThis.CONFIG.Token
+  })
+
+  it('only the active GM counts the moves and takes the status off', async () => {
+    globalThis.game.users = {
+      activeGM: {
+        isSelf: false
+      }
+    }
+    const walker = actorWith()
+    const token = tokenWith(walker)
+    await onMoveToken(token, {
+      passed: {
+        distance: 3, waypoints: [{
+          action: 'run'
+        }]
+      }
+    })
+    expect(token.setFlag).not.toHaveBeenCalled()
+    expect(walker.toggleStatusEffect).not.toHaveBeenCalled()
+
+    const runner = actorWith([RUNNING_STATUS])
+    await clearRunning({
+      combatants: [{
+        actor: runner
+      }]
+    })
+    expect(isRunning(runner)).toBe(true)
+  })
+
+  it('a new Combat Turn takes the status off (SR5Combat.handleNextRound)', async () => {
+    const runner = actorWith([RUNNING_STATUS])
+    const combatant = {
+      id: 'k1', actorId: 'a1', actor: runner, isDefeated: false, update: vi.fn()
+    }
+    const combat = {
+      id: 'c1', combatants: [combatant], turns: [combatant], combatant, update: vi.fn(), resetAll: vi.fn(), rollAll: vi.fn()
+    }
+    globalThis.game.combats = {
+      get: () => combat
+    }
+    for (const helper of ['setInitiativePass', 'resetActionInCombat', 'manageTurnEnd', 'decreaseInitiativePassEffects', 'endOwnerPassEffects']) {
+      vi.spyOn(SR5Combat, helper).mockResolvedValue()
+    }
+    await SR5Combat.handleNextRound('c1')
+    expect(isRunning(runner)).toBe(false)
+  })
 })
 
 describe('the roll dialog checks the running boxes of a runner', () => {
@@ -379,6 +463,50 @@ describe('the roll dialog checks the running boxes of a runner', () => {
     }, html, dialogData)
     expect(html.boxes.running.checked).toBe(false)
     expect(dialogData.dicePool.modifiers.map(m => [m.type, m.value])).toEqual([['attackCharge', 2]])
+
+    //The charge unchecked: the -2 of running comes back
+    html.boxes.attackCharge.checked = false
+    dialog._checkboxModifier({
+      target: html.boxes.attackCharge, currentTarget: html.boxes.attackCharge
+    }, html, dialogData)
+    expect(html.boxes.running.checked).toBe(true)
+    expect(html.inputs['in-running'].value).toBe(-2)
+    expect(dialogData.dicePool.modifiers.map(m => [m.type, m.value])).toEqual([['running', -2]])
+  })
+
+  it('a walker who unchecks the charge gets no running box back', () => {
+    const {
+      dialog, dialogData
+    } = dialogFor({
+      effects: []
+    }, 'general')
+    const html = fakeHtml(['running', 'attackCharge'])
+    dialog._checkboxModifier({
+      target: html.boxes.attackCharge, currentTarget: html.boxes.attackCharge
+    }, html, dialogData)
+    expect(html.boxes.running.checked).toBe(false)
+    expect(dialogData.dicePool.modifiers).toEqual([])
+  })
+
+  it('another +2 box (blackmailed) leaves the running box alone', () => {
+    const {
+      dialog, dialogData
+    } = dialogFor({
+      effects: [{
+        statuses: new Set([RUNNING_STATUS])
+      }]
+    }, 'general')
+    const html = fakeHtml(['running', 'socialBlackmailed'])
+    html.boxes.running.checked = true
+    dialogData.dicePool.modifiers.push({
+      type: 'running', label: '', value: -2
+    })
+    html.boxes.socialBlackmailed.checked = true
+    dialog._checkboxModifier({
+      target: html.boxes.socialBlackmailed, currentTarget: html.boxes.socialBlackmailed
+    }, html, dialogData)
+    expect(html.boxes.running.checked).toBe(true)
+    expect(dialogData.dicePool.modifiers.map(m => [m.type, m.value])).toEqual([['running', -2], ['socialBlackmailed', 2]])
   })
 
   it('the templates show the running box and let the boxes be checked automatically', () => {

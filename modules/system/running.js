@@ -140,6 +140,8 @@ export async function onMoveToken(tokenDocument, movement) {
   if (!combatant) return
 
   const action = movement?.passed?.waypoints?.at(-1)?.action ?? tokenDocument.movementAction
+  //A teleport (blink, displace: the GM tidying the map) is no move on foot: neither counted nor running
+  if (CONFIG.Token?.movement?.actions?.[action]?.teleport) return
   const units = tokenDocument.parent?.grid?.units ?? canvas?.scene?.grid?.units
   const moved = sceneUnitsToMeters(Number(movement?.passed?.distance) || 0, units)
   const total = roundMeters(tokenDocument.getFlag("sr5", "runDistance"), combat.id, combat.round) + moved
