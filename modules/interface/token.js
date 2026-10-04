@@ -6,9 +6,10 @@ export class SR5Token extends foundry.canvas.placeables.Token {
 
   /**
    * A drone or a device shares what it sees with the users in its list (SR5 p. 241: Invite Mark,
-   * Snoop), even when it is hidden and while they keep their own token selected. A rigger jumped
-   * into a drone sees through the drone, and no longer through his body (SR5 p. 231, 266).
-   * Everything else is left to the core.
+   * Snoop), even when it is hidden and while they keep their own token selected: they see both at
+   * once, and exactly what the device's own vision reveals, nothing more (arbitrage de DjamZ,
+   * 2026-10-04). A rigger jumped into a drone sees through the drone, and no longer through his
+   * body (SR5 p. 231, 266; arbitrage de DjamZ, 2026-10-04). Everything else is left to the core.
    * @override
    */
   _isVisionSource() {

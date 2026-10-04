@@ -75,7 +75,7 @@ export class SR5SharedVision {
     const chosen = users.filter(u => result.element.querySelector(`input[name="${u.id}"]`)?.checked).map(u => u.id)
     const before = getSharedViewers(tokenDocument)
     const added = chosen.filter(id => !before.some(e => e.userId === id))
-    //Inviting costs the owner a simple action, in combat only (SR5 p. 241, arbitrated by the GM)
+    //Inviting costs the owner a simple action (SR5 p. 241), counted in combat only (arbitrage de DjamZ, 2026-10-04)
     if (added.length && !game.user.isGM) {
       const owner = SR5SharedVision.getActingActor(actor)
       const action = [{

@@ -63,7 +63,8 @@ export function hasMarkFrom(actor, ownerId) {
 }
 
 /** Tell whether a device can still send what it sees: it is not destroyed, not bricked (SR5 p. 229)
- * and its wireless is on (SR5 p. 424)
+ * and its wireless is on (SR5 p. 424). Distance never cuts it: the book plays distance as noise on
+ * the rolls (SR5 p. 231), not as a loss of signal (arbitrage de DjamZ, 2026-10-04)
  * @param {Object} actor - the drone or device
  * @return {Boolean}
  */
@@ -87,7 +88,8 @@ export function canStreamVision(actor) {
  */
 export function isViewerStillValid(entry, actor) {
   if (!canStreamVision(actor)) return false
-  //Snoop works as long as the snooper keeps at least one mark on the target (SR5 p. 241)
+  //Snoop works as long as the snooper keeps at least one mark on the target (SR5 p. 241), with no
+  //new roll each turn (arbitrage de DjamZ, 2026-10-04)
   if (entry.source === "snoop") return hasMarkFrom(actor, entry.markOwnerId)
   return true
 }
