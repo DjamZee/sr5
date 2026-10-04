@@ -212,9 +212,13 @@ export class SR5_EffectArea {
       }
     }
     //matrix noise effect
+    //A spam or static zone adds its rating to the Noise (SR5 p. 232). system.matrix.noise holds that rating as a
+    //positive number, turned into a malus when a matrix test reads it, like the jam of SR5 p. 239 : a negative
+    //value here gave every device inside the template bonus dice.
     if (templateData.matrixNoise && templateData.matrixNoise !== 0){
-      effect = await SR5_EntityHelpers.generateItemEffect(sourceName, "areaEffect", template, `${game.i18n.localize("SR5.MatrixNoise")}`, -parseInt(templateData.matrixNoise), 0, "permanent")
-      customEffect = await SR5_EntityHelpers.generateCustomEffect("matrixAttributes", "system.matrix.noise", "value", -parseInt(templateData.matrixNoise), true)
+      let noise = parseInt(templateData.matrixNoise)
+      effect = await SR5_EntityHelpers.generateItemEffect(sourceName, "areaEffect", template, `${game.i18n.localize("SR5.MatrixNoise")}`, noise, 0, "permanent")
+      customEffect = await SR5_EntityHelpers.generateCustomEffect("matrixAttributes", "system.matrix.noise", "value", noise, true)
       effect.system.customEffects.push(customEffect)
       if (effect && effect.system.customEffects.length) {
         hasItem = actor.items.find(i => i.type === "itemEffect" && i.system.ownerID === effect.system.ownerID && i.system.customEffects?.find(e => e.target ==="system.matrix.noise"))
