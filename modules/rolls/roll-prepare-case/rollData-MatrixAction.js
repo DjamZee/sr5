@@ -1,6 +1,9 @@
 import {
-  SR5 
+  SR5
 } from "../../config.js"
+import {
+  SR5_EntityHelpers
+} from "../../entities/helpers.js"
 import {
   SR5_PrepareRollHelper 
 } from "../roll-prepare-helpers.js"
@@ -136,6 +139,16 @@ function hasWatchdogMarkOnTarget(rollData){
   return SR5_MarkHelpers.hasWatchdogMark(target.actor, rollData.owner.speakerId)
 }
 
+/** A drone created from an unlinked token records the token id as its creator: the token and its
+ * base actor are the same character, so both are recognised as owner (SR5 p. 238)
+ */
+function isCreator(creatorId, actor, speakerId){
+  if (!creatorId) return false
+  if (creatorId === actor.id || creatorId === speakerId) return true
+  const creator = SR5_EntityHelpers.getRealActorFromID(creatorId)
+  return !!creator && creator.id === actor.id
+}
+
 async function checkTargetMarks(rollData, matrixAction, actor){
   if (game.user.targets.size > 1) {
     ui.notifications.warn(`${game.i18n.localize("SR5.WARN_TargetTooMany")}`)
@@ -155,7 +168,7 @@ async function checkTargetMarks(rollData, matrixAction, actor){
       // The creator of a drone, agent, sprite or spirit owns it and needs no mark
       if (neededMarks > 3) {
         const creatorId = t.actor.system.creatorId
-        if (creatorId && (creatorId === actor.id || creatorId === rollData.owner.speakerId)) return true
+        if (isCreator(creatorId, actor, rollData.owner.speakerId)) return true
         // Ownership is recorded nowhere else: the GM rules, and the roll goes on with a single mark
         ui.notifications.warn(game.i18n.localize("SR5.WARN_OwnerOnlyAction"))
         neededMarks = 1

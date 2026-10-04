@@ -55,6 +55,9 @@ describe('Marks needed before a matrix action (SR5 p. 238-244)', () => {
     game.user = {
     }
     ui.notifications.info = vi.fn()
+    // No actor in the world: a creator id resolves to nobody
+    game.actors = new Map()
+    game.scenes = undefined
     ui.notifications.warn = vi.fn()
   })
 
