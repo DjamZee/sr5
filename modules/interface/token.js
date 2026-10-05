@@ -34,6 +34,19 @@ export class SR5Token extends foundry.canvas.placeables.Token {
    * @override
    */
   /**
+   * The core lets a double-click through to those who may see the actor (Limited at least). A
+   * vendor whose shop is open lets anyone in: the double-click opens the shop, never the sheet.
+   * @override
+   */
+  _canView(user, event) {
+    if (super._canView(user, event)) return true
+    //The core's own guards, before its permission test
+    if (this.layer._draggedToken || !this.layer.active || this.isPreview) return false
+    if (canvas.controls.ruler?.active || (CONFIG.Canvas.rulerClass.canMeasure && (event?.type === "pointerdown"))) return false
+    return !!vendorShopOfToken(this.document)
+  }
+
+  /**
    * A vendor's token opens its shop to whoever does not own it: the players never see the
    * Grunt's sheet, they walk up to the counter (shop lot C).
    * @override

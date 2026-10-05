@@ -90,7 +90,8 @@ export class SR5ShopVendor {
         })
       }
     }
-    for (const actor of game.actors ?? []) add(actor)
+    // An unlinked Grunt is a shop per token: it is listed through the tokens of the scene, not twice
+    for (const actor of game.actors ?? []) if (actor.prototypeToken?.actorLink !== false) add(actor)
     for (const token of canvas?.scene?.tokens ?? []) if (!token.actorLink) add(token.actor)
     return found
   }

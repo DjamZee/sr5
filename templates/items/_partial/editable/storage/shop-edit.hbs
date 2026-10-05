@@ -1,6 +1,6 @@
 <!-- A vendor's shop (shop lot C): what it sells, at what price, where the money goes -->
 <ul class="SR-PaddingTop10 sr-shop-edit">
-    <li class="grid"><div class="col-12"><h3 class="SR-TextBold">{{localize 'SR5.ShopVendor'}}</h3></div></li>
+    <li class="SR-EnTete"><p class="SR-TextUppercase">{{localize 'SR5.ShopVendor'}}</p></li>
     {{#unless shop.hasActor}}
     <li class="grid"><div class="col-12 SR-GreyColor SR-TextSmall">{{localize 'SR5.ShopVendorNoActor'}}</div></li>
     {{/unless}}
@@ -35,7 +35,7 @@
         <div class="col-4"><input type="checkbox" data-dtype="Boolean" name="system.shop.approve" {{checked system.shop.approve}}/></div>
     </li>
 
-    <li class="grid"><div class="col-12"><h3 class="SR-TextBold">{{localize 'SR5.ShopVendorRestock'}}</h3></div></li>
+    <li class="SR-EnTete"><p class="SR-TextUppercase">{{localize 'SR5.ShopVendorRestock'}}</p></li>
     <li class="grid">
         <div class="col-12">
             <multi-checkbox name="system.shop.shelves" class="sr-shop-edit-checks">
@@ -80,7 +80,7 @@
         </div>
     </li>
 
-    <li class="grid"><div class="col-12"><h3 class="SR-TextBold">{{localize 'SR5.ShopVendorSign'}}</h3></div></li>
+    <li class="SR-EnTete"><p class="SR-TextUppercase">{{localize 'SR5.ShopVendorSign'}}</p></li>
     <li class="grid" data-tooltip="{{localize 'SR5.ShopVendorBannerHint'}}">
         <div class="col-4">{{localize 'SR5.ShopVendorBanner'}}{{localize 'SR5.Colons'}}</div>
         <div class="col-8"><file-picker name="system.shop.banner" type="image" value="{{system.shop.banner}}"></file-picker></div>

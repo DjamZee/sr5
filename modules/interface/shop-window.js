@@ -498,7 +498,9 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       const total = unit * line.quantity
       cartTotal += total
       if (described?.essence) cartEssence += described.essence * line.quantity
-      if (described?.availability) cartDelay = Math.max(cartDelay, SR5ShopAvailability.delayFor(total))
+      // An item on a vendor's counter is there: it adds no search time (SR5 p. 420)
+      const onCounter = row?.entry.vendor && !row.entry.onOrder && !SR5ShopVendor.testInStock
+      if (described?.availability && !onCounter) cartDelay = Math.max(cartDelay, SR5ShopAvailability.delayFor(total))
       // A line put in the cart before creation was switched on, or at another grade, is out of reach
       const blocked = described ? SR5ShopCatalog.creationBlock(described, limits) : null
       // ...and so is a grade the shop no longer offers (creation offers no betaware): the till

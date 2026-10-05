@@ -361,3 +361,21 @@
   .sr-shop-tag.stock { border-color: var(--shop-good); color: var(--shop-good); }
   .sr-shop-tag.on-order { border-color: var(--shop-restricted); color: var(--shop-restricted); }
 }
+
+/* The vendor's block on the storage sheet (lot C): the shelves and legality boxes, readable on the light sheet */
+.sr-shop-edit {
+  .sr-shop-edit-checks {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px 8px;
+    label { display: flex; align-items: center; gap: 4px; color: var(--sr-text-color-dark, #222) !important; font-size: 12px; }
+  }
+  .sr-shop-edit-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    button { flex: 0 0 auto; width: auto; }
+  }
+  .sr-shop-blocked { color: #c0392b; }
+}
