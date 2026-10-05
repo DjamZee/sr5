@@ -613,6 +613,9 @@ export class SR5_PrepareRollTest {
           interval: "",
           intervalValue: 0,
           multiplier: 1,
+          //Intervals already put on the world clock (system/extended-clock.js): a card rolled before the calendar
+          //has no such field and offers no clock button
+          clockAdvanced: 0,
         },
         title: "",
         type: "",

@@ -19,6 +19,8 @@ export const INTERVAL_SECONDS = {
 
 // Intervals spent on the test and not yet put on the clock
 export function pendingIntervals(extended){
+  //A card rolled before the calendar knew nothing of the clock: its time is long spent, no button
+  if (extended?.clockAdvanced === undefined || extended?.clockAdvanced === null) return 0
   const spent = Number(extended?.intervalValue) || 0
   const done = Number(extended?.clockAdvanced) || 0
   if (!extended?.interval || (!INTERVAL_SECONDS[extended.interval] && extended.interval !== "month")) return 0
