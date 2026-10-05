@@ -1897,7 +1897,8 @@ export class SR5_CharacterUtility extends Actor {
       }
       default:
         SR5_EntityHelpers.updateModifier(initPhy, game.i18n.localize('SR5.Intuition'), "linkedAttribute", attributes.intuition.augmented.value)
-        SR5_EntityHelpers.updateModifier(initPhy, game.i18n.localize('SR5.Reaction'), "linkedAttribute", attributes.reaction.augmented.value)
+        //Attribute Boost (SR5 p. 312) leaves the Initiative attribute alone; the AR matrix initiative copies these modifiers
+        SR5_EntityHelpers.updateModifier(initPhy, game.i18n.localize('SR5.Reaction'), "linkedAttribute", limitAttributeValue(attributes.reaction))
         initPhy.dice.base = 1
     }
 

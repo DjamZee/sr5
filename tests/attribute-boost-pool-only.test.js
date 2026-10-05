@@ -86,6 +86,41 @@ describe("Physical limit with an Attribute Boost (SR5 p. 312)", () => {
   })
 })
 
+describe("Physical initiative with a Reaction boost (SR5 p. 312)", () => {
+  //Natural Reaction 4, 5 hits, cut to +4 by the augmentation cap: the Initiative keeps Reaction 4
+  const actorWith = reactionMods => ({
+    type: "actorPc", system: {
+      attributes: {
+        reaction: attribute(4, reactionMods), intuition: attribute(4),
+      },
+      initiatives: {
+        physicalInit: {
+          base: 0, value: 0, modifiers: [], dice: {
+            base: 0, value: 0, modifiers: []
+          }
+        }
+      },
+    }
+  })
+  it("reads the Reaction without the boost, even cut by the cap", () => {
+    const boosted = actorWith([{
+      source: "Augmentation d'attribut (Réaction)", type: "itemAdeptPower", value: 5, poolOnly: true
+    }, {
+      source: "cap", type: "augmentationCap", value: -1
+    }])
+    expect(boosted.system.attributes.reaction.augmented.value).toBe(8)
+    SR5_CharacterUtility.updateInitiativePhysical(boosted)
+    expect(boosted.system.initiatives.physicalInit.value).toBe(8)
+  })
+  it("still moves with an ordinary augmentation (counter-proof)", () => {
+    const wired = actorWith([{
+      source: "Réflexes câblés", type: "itemAugmentation", value: 2
+    }])
+    SR5_CharacterUtility.updateInitiativePhysical(wired)
+    expect(wired.system.initiatives.physicalInit.value).toBe(10)
+  })
+})
+
 describe("applyCustomEffects marks the boost", () => {
   it("poolOnly effect leaves a marked modifier", () => {
     const actor = {
