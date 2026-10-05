@@ -49,6 +49,17 @@ describe("effects counted on the world clock", () => {
     }, 2070))
   })
 
+  it("ends a month effect on the last day of a shorter month (Ursula)", () => {
+    const start = componentsToWorldTime({
+      year: 2070, month: 0, dayOfMonth: 30
+    }, 2070)
+    expect(expiryTime({
+      durationType: "month", duration: 1, startTime: start
+    }, 2070)).toBe(componentsToWorldTime({
+      year: 2070, month: 1, dayOfMonth: 27
+    }, 2070))
+  })
+
   it("never ends an effect that has no start", () => {
     expect(expiryTime({
       durationType: "hour", duration: 1, startTime: null
