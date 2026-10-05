@@ -5,6 +5,9 @@ import {
   registerIndirectEffectSetting
 } from "../system/indirect-effects.js"
 import {
+  registerCalendarSettings
+} from "../system/calendar.js"
+import {
   SR5
 } from "../config.js"
 import {
@@ -248,6 +251,8 @@ export async function sr5HookInit() {
   SR5_CompendiumUtility.registerSettings()
   registerSheetSizeSetting()
   registerIndirectEffectSetting()
+  //Sixth World calendar and 3 s per Combat Turn (SR5 p. 51)
+  registerCalendarSettings()
   //The grappling statuses exist only in a world that uses the grappling rules
   if (SR5_GrappleHelpers.isActive()) CONFIG.statusEffects.push(...SR5_GrappleHelpers.statusEffects())
   //Running (SR5 p. 163-164): the "running" status, "Course" and "Sprint" in the movement selector, a ruler colored by gait
