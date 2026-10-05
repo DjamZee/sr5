@@ -2562,6 +2562,7 @@
 	"SR5.CALENDAR_ExpiryIntro": "By the world clock ({date}), these effects have outlasted their duration. Nothing is removed until you click.",
 	"SR5.CALENDAR_ExpiryRemove": "Remove",
 	"SR5.CALENDAR_ExpiryRemoveAll": "Remove all",
+	"SR5.CALENDAR_AdvanceExtended": "Advance the clock: {n} × {unit}",
 	"SR5.CALENDAR_GoTo":"Go to a date",
 	"SR5.CALENDAR_GoToLabel": "World date and time",
 	"SR5.CALENDAR_GoToConfirm": "Set the clock",
