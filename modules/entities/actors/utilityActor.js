@@ -1501,6 +1501,8 @@ export class SR5_CharacterUtility extends Actor {
         actorData.specialAttributes[key].augmented.base = actorData.specialAttributes[key].natural.value
         SR5_EntityHelpers.updateValue(actorData.specialAttributes[key].augmented, 0)
 
+        // KEEP IN STEP with mentorMagic() (modules/entities/items/mentor-spirits.js), which works out the same Magic
+        // earlier, to tell whether a mentor lies dormant: never change one of the two without the other
         if ((key == 'magic' || key == 'resonance') && actorData.essence) {
           let edgeLoss = 0
           for (let m of actorData.essence.modifiers) {

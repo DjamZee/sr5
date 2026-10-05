@@ -60,6 +60,8 @@ export function isFollowedMentor(item, items){
 
 // The Magic a mentor reads (SR5 p. 324: dormant at 0). The mentor is applied once every item is parsed but
 // before the augmented Magic is computed, so it is worked out here from the same pieces (review R1).
+// KEEP IN STEP with SR5_CharacterUtility.updateSpecialAttributes (utilityActor.js): same calculation, made here
+// before it runs. Never change one of the two without the other.
 export function mentorMagic(specialMagic, essence, greywarePenalty = 0){
   const sum = list => (list || []).reduce((total, m) => total + (Number(m?.value) || 0), 0)
   // Same steps as updateSpecialAttributes, which runs after the items: natural, augmented, then the Magic
