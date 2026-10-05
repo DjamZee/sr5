@@ -43,11 +43,18 @@ export class SR5FactionRegistry {
    * Applies a change to a copy of the registry and saves it. Refused, with a warning, off the active GM.
    * @param {(data:object) => void} mutate
    */
+  /**
+   * True, with a warning, when this user may not write the registry (not the active gamemaster).
+   * Every action that changes something calls it first, before any other effect.
+   */
+  static refuse(){
+    if (this.canWrite) return false
+    ui.notifications?.warn(game.i18n.localize("SR5.FACTION_OnlyGM"))
+    return true
+  }
+
   static async update(mutate){
-    if (!this.canWrite){
-      ui.notifications?.warn(game.i18n.localize("SR5.FACTION_OnlyGM"))
-      return false
-    }
+    if (this.refuse()) return false
     const data = foundry.utils.deepClone(this.data)
     mutate(data)
     await game.settings.set("sr5", FACTIONS_SETTING, data)

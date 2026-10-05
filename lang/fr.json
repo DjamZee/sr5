@@ -5027,7 +5027,7 @@
 	"SR5.FACTION_ContactNotInFaction": "Ce contact doit appartenir à ce personnage et à cette faction.",
 	"SR5.FACTION_OnceAMonth": "L'Influence de ce contact a déjà été augmentée ce mois-ci (une fois par mois, p. 159). Continuer quand même ?",
 	"SR5.FACTION_Influence": "Influence",
-	"SR5.FACTION_RollLabel": "réputation de faction {faction} : {score}",
+	"SR5.FACTION_RollLabel": "réputation de faction",
 	"SR5.FACTION_Standing": "Réputation de faction",
 	"SR5.FACTION_Shift": "attitude {shift}",
 	"SR5.FACTION_Type_gang": "Gang",

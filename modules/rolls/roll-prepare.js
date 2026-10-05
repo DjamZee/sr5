@@ -260,7 +260,10 @@ export class SR5_PrepareRollTest {
         // Faction Reputation moves the default NPC attitude (Cutting Aces p. 160); the list stays free
         if (rollData.target?.actorId && SOCIAL_FACTION_SKILLS.includes(rollData.test?.typeSub)){
           const faction = SR5FactionRegistry.attitudeFor(actor.id, SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId))
-          if (faction) rollData.social = faction
+          // Only the attitude travels with the roll: the faction and the score stay the gamemaster's
+          if (faction) rollData.social = {
+            attitude: faction.attitude
+          }
         }
         break
       case "spell":

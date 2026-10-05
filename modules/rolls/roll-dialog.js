@@ -1530,6 +1530,8 @@ export default class SR5_RollDialog {
 
     for (let e of ev){
       modifierName = e.dataset.modifier
+      // Each modifier writes its own label: none carries over from the previous one
+      label = undefined
       targetInput = e.dataset.target
       targetInputName = `[name=${targetInput}]`
       name = `[data-modifier=${modifierName}]`
@@ -1633,9 +1635,8 @@ export default class SR5_RollDialog {
           if (dialogData.social?.attitude){
             selectValue = dialogData.social.attitude
             inputValue = SR5_ConverterHelpers.socialAttitudeToMod(selectValue)
-            label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.format("SR5.FACTION_RollLabel", {
-              faction: dialogData.social.faction, score: dialogData.social.score
-            })})`
+            // Neither the faction nor the score: the chat card is read by every player (Q9)
+            label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize("SR5.FACTION_RollLabel")})`
           } else inputValue = 0
           break
         case "targetEffect":

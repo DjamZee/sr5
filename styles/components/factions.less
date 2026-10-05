@@ -19,6 +19,11 @@
     display: flex;
     gap: 0.5rem;
   }
+  // Not the active gamemaster: read only
+  a[data-action].disabled {
+    pointer-events: none;
+    opacity: 0.4;
+  }
   .sr-faction-row {
     display: flex;
     flex-wrap: wrap;

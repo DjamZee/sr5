@@ -119,6 +119,11 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
 
   _onRender(context, options){
     super._onRender?.(context, options)
+    // A gamemaster who is not the active one reads, but cannot act: every control is off
+    if (!SR5FactionRegistry.canWrite){
+      for (const el of this.element.querySelectorAll("button, input, select, textarea")) el.disabled = true
+      for (const el of this.element.querySelectorAll("a[data-action]")) el.classList.add("disabled")
+    }
     // The reason prefills the points with the book's value (p. 157); the gamemaster may change them
     const reason = this.element.querySelector("[name=reason]")
     const delta = this.element.querySelector("[name=delta]")
@@ -136,6 +141,7 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
   }
 
   static async #createFaction(){
+    if (SR5FactionRegistry.refuse()) return
     const name = this.#value("newName").trim()
     if (!name) return
     const type = this.#value("newType") || "other"
@@ -145,6 +151,7 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
   }
 
   static async #deleteFaction(event, target){
+    if (SR5FactionRegistry.refuse()) return
     const id = target.dataset.faction
     const ok = await foundry.applications.api.DialogV2.confirm({
       window: {
@@ -164,6 +171,7 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
 
   // Name, type, enemies (p. 157: the gamemaster decides which factions are enemies) and a note
   static async #editFaction(event, target){
+    if (SR5FactionRegistry.refuse()) return
     const id = target.dataset.faction
     const f = SR5FactionRegistry.faction(id)
     if (!f) return
@@ -208,6 +216,7 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
 
   // The selected tokens join the faction; a non-player character has one main faction only (p. 156)
   static async #addTokens(event, target){
+    if (SR5FactionRegistry.refuse()) return
     const id = target.dataset.faction
     const ids = [...new Set((canvas.tokens?.controlled ?? []).map(t => t.document.actorId).filter(Boolean))]
       .filter(a => game.actors.get(a)?.type !== "actorPc")
@@ -220,6 +229,7 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
   }
 
   static async #removeMember(event, target){
+    if (SR5FactionRegistry.refuse()) return
     const {
       faction, member
     } = target.dataset
@@ -230,6 +240,7 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
   }
 
   static async #addContact(event, target){
+    if (SR5FactionRegistry.refuse()) return
     const id = target.dataset.faction
     const uuid = this.element.querySelector(`[name="contact-${id}"]`)?.value
     if (!uuid) return
@@ -240,6 +251,7 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
   }
 
   static async #removeContact(event, target){
+    if (SR5FactionRegistry.refuse()) return
     const {
       faction, contact
     } = target.dataset
@@ -252,6 +264,7 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
   // A movement of the p. 157 table, for one or several characters. Pending by default:
   // "apply the effects at the end of a typical mission, at the same time as Karma".
   static async #addMovement(){
+    if (SR5FactionRegistry.refuse()) return
     const factionId = this.#value("mvFaction")
     const actors = this.#checked("mvActor")
     const reason = this.#value("reason") || "custom"
@@ -280,12 +293,14 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
   }
 
   static async #applyPending(){
+    if (SR5FactionRegistry.refuse()) return
     await SR5FactionRegistry.update(d => {
       for (const e of d.log) e.pending = false
     })
   }
 
   static async #deleteEntry(event, target){
+    if (SR5FactionRegistry.refuse()) return
     const id = target.dataset.entry
     await SR5FactionRegistry.update(d => {
       d.log = d.log.filter(e => e.id !== id)
@@ -294,6 +309,7 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
 
   // Spending positive Faction Reputation (p. 159-160): never below zero
   static async #spend(){
+    if (SR5FactionRegistry.refuse()) return
     const factionId = this.#value("spFaction")
     const actorId = this.#value("spActor")
     const kind = this.#value("spKind")
