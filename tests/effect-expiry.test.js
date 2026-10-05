@@ -2,7 +2,7 @@ import {
   describe, it, expect
 } from "vitest"
 import {
-  isTimedEffect, expiryTime, sortExpiries, stampEffectStart, onPreCreateItem
+  isTimedEffect, expiryTime, sortExpiries, stampEffectStart, onPreCreateItem, extendTimedEffect
 } from "../modules/system/effect-expiry.js"
 import {
   componentsToWorldTime
@@ -125,6 +125,19 @@ describe("effects counted on the world clock", () => {
     }
     expect(stampEffectStart(worldEffect, 5000)).toBe(false)
     expect(worldEffect.system.startTime).toBe(null)
+  })
+
+  it("restarts a dumpshock taken again from now, never shortening the one running (Ursula)", () => {
+    //5 minutes from t=0; at t=240 a new 3-minute dumpshock: 1 minute was left, it now runs 3 minutes from 240
+    expect(extendTimedEffect({
+      durationType: "minute", duration: 5, startTime: 0
+    }, 3, 240, 2070)).toEqual({
+      "system.duration": 3, "system.startTime": 240, "flags.sr5.expiryNotified": false
+    })
+    //At t=60 a new 2-minute one: 4 minutes are still left, they are kept
+    expect(extendTimedEffect({
+      durationType: "minute", duration: 5, startTime: 0
+    }, 2, 60, 2070)["system.duration"]).toBe(4)
   })
 
   it("never cancels the creation of another item (a false from a pre-hook would)", () => {
