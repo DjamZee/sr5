@@ -26,11 +26,20 @@ import {
 import {
   reloadIsFree
 } from "../actors/augmentationCap.js"
+import {
+  migrateNegotiationTargets
+} from "../../datamodels/common/negotiationMigration.js"
 
 /**
  * Override and extend the basic :class:`Item` implementation
  */
 export class SR5Item extends Item {
+  //Effects aimed at the former key of the Negotiation skill (datamodels/common/negotiationMigration.js)
+  static migrateData(source) {
+    migrateNegotiationTargets(source?.system)
+    return super.migrateData(source)
+  }
+
   static async create(data, options) {
     if (!data.img) data.img = `systems/sr5/assets/img/items/${data.type}.svg`
     return super.create(data, options)
