@@ -2075,6 +2075,17 @@ SR5.metamagics = {
   harmoniousDefense        : "SR5.MetamagicHarmoniousDefense",
 }
 
+//Magical masteries (Forbidden Arcana p. 30-41): level = quality rating
+SR5.magicMasteries = {
+  archivist                : "SR5.MagicMasteryArchivist",
+  arcaneBodyguard          : "SR5.MagicMasteryArcaneBodyguard",
+  conjuringSpecialist      : "SR5.MagicMasteryConjuringSpecialist",
+  deathSower               : "SR5.MagicMasteryDeathSower",
+  illusionist              : "SR5.MagicMasteryIllusionist",
+  mageHunter               : "SR5.MagicMasteryMageHunter",
+  masterManipulator        : "SR5.MagicMasteryMasterManipulator",
+}
+
 //-----------------------------------//
 //             MARTIAL ARTS          //
 //-----------------------------------//
@@ -3800,6 +3811,8 @@ SR5.drainModTypes = {
   ritualResistance          : "SR5.Force",
   spell                     : "SR5.DrainModifier",
   structuredSpellcasting    : "SR5.MetamagicStructuredSpellcasting",
+  mageHunter                : "SR5.MagicMasteryMageHunter",
+  deathSower                : "SR5.MagicMasteryDeathSower",
 }
 
 SR5.limitModTypes = {

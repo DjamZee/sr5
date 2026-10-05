@@ -135,6 +135,13 @@ export class magicPartialModel extends foundry.abstract.TypeDataModel {
             ...sr5ModsPartialModel.defineSchema()
           }),
         }),
+        // Magical masteries (Forbidden Arcana p. 30-41): level = quality rating
+        masteries: new fields.SchemaField(Object.fromEntries(
+          ["archivist", "arcaneBodyguard", "conjuringSpecialist", "deathSower", "illusionist", "mageHunter", "masterManipulator"]
+            .map(key => [key, new fields.SchemaField({
+              ...sr5ModsPartialModel.defineSchema()
+            })])
+        )),
         bgCount: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema()
         }),

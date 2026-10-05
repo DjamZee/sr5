@@ -14,6 +14,9 @@ import {
   SR5_SpiritTypes
 } from "../items/spirit-types.js"
 import {
+  masteryFreeSustainedSpells
+} from "../items/magic-masteries.js"
+import {
   homunculusMaterialRatings
 } from "./homunculus.js"
 import {
@@ -645,6 +648,13 @@ export class SR5_CharacterUtility extends Actor {
       actorData.magic.metamagics.spellShapingValue.value = 0
       actorData.magic.metamagics.spellShapingValue.modifiers = []
 
+      //Reset magical masteries (Forbidden Arcana p. 30-41)
+      for (let mastery of Object.values(actorData.magic.masteries || {
+      })) {
+        mastery.value = 0
+        mastery.modifiers = []
+      }
+
       //Reset background count
       actorData.magic.bgCount.value = 0
       actorData.magic.bgCount.modifiers = []
@@ -838,6 +848,20 @@ export class SR5_CharacterUtility extends Actor {
     if (itemType === "itemSpell" && actor.system.magic?.metamagics?.quickening) {
       for (let i of actor.items) {
         if (i.type === "itemSpell" && i.system.quickening) i.system.freeSustain = true
+      }
+    }
+
+    //Illusionist and Master Manipulator (Forbidden Arcana p. 37, 38): one spell per level sustained without penalty, Force <= Magic
+    if (itemType === "itemSpell" && actor.system.magic?.masteries) {
+      const masteries = this.updateMagicMasteries(actor.system.magic)
+      if (masteries.illusionist > 0 || masteries.masterManipulator > 0) {
+        const candidates = actor.items.filter(i => i.type === "itemSpell" && i.system.isActive && !i.system.freeSustain)
+        const freed = masteryFreeSustainedSpells(
+          candidates.map(i => ({
+            id: i.id, category: i.system.category, subCategory: i.system.subCategory, force: i.system.force
+          })),
+          actor.system.specialAttributes.magic.augmented.value, masteries)
+        for (let i of candidates) if (freed.has(i.id)) i.system.freeSustain = true
       }
     }
 
@@ -3174,6 +3198,24 @@ export class SR5_CharacterUtility extends Actor {
     if (magic.metamagics.harmoniousDefense) SR5_EntityHelpers.updateModifier(magic.counterSpellPool, `${game.i18n.localize('SR5.MetamagicHarmoniousDefense')}`, "metamagic",
       harmoniousDefensePool(actorData.attributes.willpower.augmented.value, actorData.specialAttributes.magic.augmented.value, magic.initiationGrade))
     SR5_EntityHelpers.updateValue(magic.counterSpellPool)
+    //Arcane Bodyguard (Forbidden Arcana p. 36): spell defense dice doubled, applied last
+    //(never more than dice / 3 to protect himself: left to the players)
+    if (magic.masteries && this.updateMagicMasteries(magic).arcaneBodyguard > 0 && magic.counterSpellPool.value > 0) {
+      SR5_EntityHelpers.updateModifier(magic.counterSpellPool, `${game.i18n.localize('SR5.MagicMasteryArcaneBodyguard')}`, "metamagic", magic.counterSpellPool.value)
+      SR5_EntityHelpers.updateValue(magic.counterSpellPool)
+    }
+  }
+
+  //Magical masteries (Forbidden Arcana p. 30-41): computes each level from its effects, returns {key: level}
+  static updateMagicMasteries(magic) {
+    const levels = {
+    }
+    for (let [key, mastery] of Object.entries(magic?.masteries || {
+    })) {
+      SR5_EntityHelpers.updateValue(mastery, 0)
+      levels[key] = mastery.value
+    }
+    return levels
   }
 
   // Background count calcultations

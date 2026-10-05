@@ -537,6 +537,8 @@ export class SR5_PrepareRollTest {
           range: 0,
           area: 0,
           type: "",
+          // Death Sower (Forbidden Arcana p. 40): DV bonus of a combat spell
+          damageBonus: 0,
         },
         spiritAid: {
           id: "",

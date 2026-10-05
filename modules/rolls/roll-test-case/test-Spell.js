@@ -27,8 +27,9 @@ export default async function spellInfo(cardData){
         actionType = "defenseRangedWeapon"
         label = game.i18n.localize("SR5.Defend")
         // Defense computes DV from damage.base + net hits (like ranged weapons): DV = Force + net hits, AP = -Force
-        cardData.damage.base = cardData.magic.force
-        cardData.damage.value = cardData.magic.force
+        // Death Sower (Forbidden Arcana p. 40): DV +1 per level
+        cardData.damage.base = cardData.magic.force + (cardData.magic.spell.damageBonus || 0)
+        cardData.damage.value = cardData.damage.base
         cardData.combat.armorPenetration = -cardData.magic.force
         cardData.damage.resistanceType = "physicalDamage"
         // SR5 p. 285: an area is cast with a threshold of 3, like a grenade (p. 182)
@@ -45,7 +46,8 @@ export default async function spellInfo(cardData){
       } else if (cardData.test.typeSub === "direct") {
         actionType = "resistanceCard"
         label = game.i18n.localize("SR5.ResistDirectSpell")
-        cardData.damage.value = cardData.roll.hits
+        // Death Sower (Forbidden Arcana p. 40): DV +1 per level
+        cardData.damage.value = cardData.roll.hits + (cardData.magic.spell.damageBonus || 0)
         if (cardData.magic.spell.type === "mana") cardData.damage.resistanceType = "directSpellMana"
         else cardData.damage.resistanceType = "directSpellPhysical"
         cardData.damage.isAttack = true

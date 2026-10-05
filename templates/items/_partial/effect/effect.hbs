@@ -77,6 +77,7 @@
 					<optgroup label="{{localize 'SR5.Magic'}}">
 						<option value="astralValues">{{localize 'SR5.Magic'}}</option>
 						<option value="metamagics">{{localize 'SR5.Metamagic'}}</option>
+						<option value="magicMasteries">{{localize 'SR5.MagicMasteries'}}</option>
 					</optgroup>
 					<optgroup label="{{localize 'SR5.Vehicle'}}">
 						<option value="vehicle">{{localize 'SR5.VehicleTest'}}</option>
@@ -335,6 +336,11 @@
 						<option value="system.magic.metamagics.centeringValue">{{localize 'SR5.MetamagicCentering'}} ({{localize 'SR5.Modifier'}})</option>
 						<option value="system.magic.metamagics.spellShapingValue">{{localize 'SR5.MetamagicSpellShaping'}} ({{localize 'SR5.Modifier'}})</option>
 
+					{{else ife category 'magicMasteries'}}
+						{{#each (lookup ../lists category)}}
+							<option value="system.magic.masteries.{{@key}}">{{localize this}}</option>
+						{{/each}}
+
 					{{else ife category 'characterConditionMonitors'}}
 						{{#each (lookup ../lists category)}}
 							<optgroup label="{{localize this}}">
@@ -482,6 +488,12 @@
 								{{#each ../lists.specialDamageTypes}}
 									<option value="{{@key}}">{{localize this}}</option>
 								{{/each}}
+							{{/select}}
+						</select>
+					{{else if (eq this.category 'magicMasteries')}}
+						<select name="system.customEffects.{{@key}}.type" required>
+							{{#select type}}
+								{{dropdownOptions 'rating' 'value'}}
 							{{/select}}
 						</select>
 					{{else if (eq this.category 'metamagics')}}

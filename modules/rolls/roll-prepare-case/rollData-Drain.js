@@ -10,6 +10,9 @@ import {
 import {
   maskedDrain, drainFloor
 } from "../../entities/items/mentor-spirits.js"
+import {
+  magicForDrainType
+} from "../../entities/items/magic-masteries.js"
 
 export default function drain(rollData, actor, chatData){
   let maskApplied = false
@@ -28,15 +31,20 @@ export default function drain(rollData, actor, chatData){
   //Determine drain damage type
   if (chatData?.test?.type) {
     // Drain from a previous roll (spellcasting, summoning, binding, banishing)
-    if (isSpiritForceDrain(chatData)){
-      if (chatData.magic.force > actor.system.specialAttributes.magic.augmented.value) rollData.magic.drain.type = "physical"
+    // Archivist and Conjuring Specialist (Forbidden Arcana p. 32, 40): Magic counted higher to decide the drain type
+    const masteries = actor.system.magic?.masteries
+    const isConjuring = isSpiritForceDrain(chatData)
+    const drainTypeMagic = magicForDrainType(actor.system.specialAttributes.magic.augmented.value,
+      masteries?.archivist?.value, masteries?.conjuringSpecialist?.value, isConjuring)
+    if (isConjuring){
+      if (chatData.magic.force > drainTypeMagic) rollData.magic.drain.type = "physical"
       else rollData.magic.drain.type = "stun"
     } else if (chatData.test.type === "ritualResistance") {
       // SR5 p. 299 (errata): physical if the leader's hits exceed their Magic; computed when the ritual is sealed,
       // the hits on this card are those of the opposing Force x 2 pool
       rollData.magic.drain.type = chatData.magic.drain.type || "stun"
     } else {
-      if (chatData.roll.hits > actor.system.specialAttributes.magic.augmented.value) rollData.magic.drain.type = "physical"
+      if (chatData.roll.hits > drainTypeMagic) rollData.magic.drain.type = "physical"
       else rollData.magic.drain.type = "stun"
     }
     rollData.magic.drain.value = chatData.magic.drain.value

@@ -10,6 +10,9 @@ import {
 import {
   SR5
 } from "../../config.js"
+import {
+  combatSpellMasteryBonus
+} from "../../entities/items/magic-masteries.js"
 
 //Add info for skill dicePool roll
 export default async function spell(rollData, actor, item){
@@ -67,6 +70,18 @@ export default async function spell(rollData, actor, item){
     }
     rollData.dialogSwitch.reagents = false
   }
+  //Mage Hunter (Forbidden Arcana p. 34): Drain +1 per level ; Death Sower (p. 40): DV and Drain +1 per level, combat spells only
+  const masteries = actorData.magic.masteries
+  const masteryBonus = combatSpellMasteryBonus(spellCategory, masteries?.mageHunter?.value, masteries?.deathSower?.value)
+  if (masteryBonus.drainMageHunter) rollData.magic.drain.modifiers.mageHunter = {
+    value: masteryBonus.drainMageHunter,
+    label: game.i18n.localize(SR5.drainModTypes.mageHunter),
+  }
+  if (masteryBonus.drainDeathSower) rollData.magic.drain.modifiers.deathSower = {
+    value: masteryBonus.drainDeathSower,
+    label: game.i18n.localize(SR5.drainModTypes.deathSower),
+  }
+  rollData.magic.spell.damageBonus = masteryBonus.damage
   rollData.dialogSwitch.specialization = true
   rollData.owner.itemUuid = item.uuid
 
