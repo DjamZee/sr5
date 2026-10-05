@@ -13,6 +13,9 @@ import {
 import {
   prepareSkillAttribute, SKILL_ATTRIBUTE_FLAG, syncBackgroundCount, backgroundCountApplies, backgroundCountInModifiers
 } from "../roll-helpers/skillAttribute.js"
+import {
+  isSituationalType
+} from "../roll-helpers/situational.js"
 
 //Add info for skill dicePool roll
 export default async function skill(rollData, rollType, rollKey, actor, chatData){
@@ -25,6 +28,14 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
 
     //Determine dicepool composition
     rollData.dicePool.composition = actor.system.skills[rollKey].rating.modifiers
+
+    //The situational effects on this skill's test (SR5 p. 462) leave their marker on the test, not on the
+    //rating: carried over so that the dialog offers their boxes, as on the skill + attribute button
+    rollData.dicePool.modifiers = actor.system.skills[rollKey].test.modifiers
+      .filter(m => isSituationalType(m.type))
+      .map(m => ({
+        type: m.type, label: m.source, source: m.source, value: m.value
+      }))
 
     //Add others informations
     rollData.dialogSwitch.attribute = true

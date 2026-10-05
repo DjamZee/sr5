@@ -304,22 +304,25 @@ function makeBuyer(balance = 10000) {
 }
 
 let SR5ShopVendor, SR5Shop
-const sent = []
+const sent = vi.hoisted(() => [])
 const notes = []
+
+// The real socket module brings the whole system; the till only needs its two calls. Mocked for the whole
+// file (hoisted), not test by test: a mock set in beforeEach left a window in which a late import found the
+// real module, which then kept loading the system after the file was torn down.
+vi.mock('../modules/socket.js', () => ({
+  SR5_SocketHandler: {
+    emitForPlayer: async (type, data, userId) => sent.push({
+      type, data, userId
+    }),
+    emitForGM: async (type, data) => sent.push({
+      type, data
+    }),
+  },
+}))
 
 beforeEach(async () => {
   vi.resetModules()
-  // The real socket module brings the whole system; the till only needs its two calls
-  vi.doMock('../modules/socket.js', () => ({
-    SR5_SocketHandler: {
-      emitForPlayer: async (type, data, userId) => sent.push({
-        type, data, userId
-      }),
-      emitForGM: async (type, data) => sent.push({
-        type, data
-      }),
-    },
-  }))
   ;({
     SR5ShopVendor 
   } = await import('../modules/interface/shop-vendor.js'))

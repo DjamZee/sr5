@@ -143,6 +143,16 @@ export class SR5_Toxins {
     return Math.max(0, ...modifiers.map(m => Number(m.value) || 0))
   }
 
+  /**
+   * A drug's duration under an antitoxin (Chrome Flesh p. 154: "divisez la durée d'effet par l'indice de
+   * l'antitoxine"), rounded up as any division (SR5 p. 50). The crash is not the effect: left as it is.
+   */
+  static drugDuration(duration, antitoxin = 0) {
+    const rating = Number(antitoxin) || 0
+    if (rating <= 1 || typeof duration !== "number") return duration
+    return Math.ceil(duration / rating)
+  }
+
   /** The Power left once the antitoxin took its rating off; below 1 the toxin does nothing (Chrome Flesh p. 154) */
   static effectivePower(power, antitoxin = 0) {
     return Math.max(0, (Number(power) || 0) - (Number(antitoxin) || 0))

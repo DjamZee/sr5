@@ -5,6 +5,9 @@ import {
   SR5ShopGrades
 } from "../../interface/shop-grades.js"
 import {
+  SR5_Toxins
+} from "../items/toxins.js"
+import {
   SR5_SystemHelpers 
 } from "../../system/utilitySystem.js"
 import {
@@ -3891,6 +3894,12 @@ export class SR5_CharacterUtility extends Actor {
         SR5_SystemHelpers.srLog(1, `Unknown '${drugType.value}' drug type in handleDrugShots()`)
         return
     }
+    //An antitoxin divides the duration of the effect by its rating (Chrome Flesh p. 154)
+    const antitoxin = SR5_Toxins.antitoxinRating(actorData)
+    if (antitoxin > 1) {
+      drugStat.duration = SR5_Toxins.drugDuration(drugStat.duration, antitoxin)
+      drugStat.antitoxin = antitoxin
+    }
     return drugStat
   }
 
@@ -4989,7 +4998,17 @@ export class SR5_CharacterUtility extends Actor {
             continue
           }
           if (customEffect.target === "system.itemsProperties.weapon.damageValue") {
+            //A bonus read from the item's rating with an offset: bone density adds its rating − 1 (SR5 p. 463)
+            if (typeof customEffect.ratingOffset === "number") customEffect.value = Math.max(0, (Number(item.system.itemRating) || 0) + customEffect.ratingOffset)
             customEffect.value = (customEffect.value || 0)
+            //Damage that turns physical: (STR + n)P of the bone augmentations (SR5 p. 458 and 463). Kept apart,
+            //never merged with another item's bonus: the weapon keeps the highest of them (utilityItem.js)
+            if (customEffect.damageType === "physical") {
+              targetObject.modifiers.push({
+                source: item.name, type: item.type, value: customEffect.value * customEffect.multiplier, isMultiplier, details: customEffect.type, damageType: "physical"
+              })
+              continue
+            }
             SR5_EntityHelpers.updateModifier(targetObject, `${item.name}`, item.type, customEffect.value * customEffect.multiplier, isMultiplier, cumulative, customEffect.type)
             continue
           }

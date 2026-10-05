@@ -502,7 +502,17 @@ export class SR5_UtilityItem extends Actor {
           if (modifier.details === itemData.weaponSkill.category) itemData.accuracy.modifiers = itemData.accuracy.modifiers.concat(modifier)
         }
         for (let modifier of actor.system.itemsProperties.weapon.damageValue.modifiers) {
-          if (modifier.details === itemData.weaponSkill.category) itemData.damageValue.modifiers = itemData.damageValue.modifiers.concat(modifier)
+          if (modifier.details !== itemData.weaponSkill.category) continue
+          if (!modifier.damageType) itemData.damageValue.modifiers = itemData.damageValue.modifiers.concat(modifier)
+        }
+        //The bone augmentations (SR5 p. 458 and 463) are not compatible with each other: should several be
+        //carried anyway, only the highest counts, as for any SR5 bonus. A weapon without a category takes none.
+        const bones = itemData.weaponSkill.category ? actor.system.itemsProperties.weapon.damageValue.modifiers
+          .filter(m => m.damageType && m.details === itemData.weaponSkill.category) : []
+        if (bones.length) {
+          const highest = bones.reduce((a, b) => (b.value > a.value ? b : a))
+          itemData.damageValue.modifiers = itemData.damageValue.modifiers.concat(highest)
+          itemData.damageType = highest.damageType
         }
       }
 
