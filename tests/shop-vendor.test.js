@@ -205,12 +205,12 @@ const stranger = {
 const tick = () => new Promise(resolve => setTimeout(resolve, 5))
 
 function makeVendor({
-  isOpen = true, margin = 0, cash = 0, room = 0 
+  isOpen = true, margin = 0, cash = 0, room = 0, vendorId = 'vendor'
 } = {
 }) {
   const owned = new Map()
   const vendor = {
-    id: 'vendor', uuid: 'Actor.vendor', name: 'Doc', created: [],
+    id: vendorId, uuid: `Actor.${vendorId}`, name: vendorId, created: [],
     items: {
       get: id => owned.get(id),
       filter: fn => [...owned.values()].filter(fn),
@@ -231,7 +231,7 @@ function makeVendor({
   }
   const item = (id, data) => {
     const doc = {
-      id, uuid: `Actor.vendor.Item.${id}`, parent: vendor, flags: {
+      id, uuid: `Actor.${vendorId}.Item.${id}`, parent: vendor, flags: {
       }, ...data,
       toObject: () => JSON.parse(JSON.stringify({
         _id: id, name: data.name, type: data.type, system: data.system 
@@ -575,5 +575,58 @@ describe('the vendor till (socket, validated by the gamemaster)', () => {
       } 
     }, gm.id)
     expect(notes).toHaveLength(1)
+  })
+
+  it('never lets a buyer spend the same money at two vendors at once (review R1)', async () => {
+    const first = makeVendor({
+      vendorId: 'docA'
+    })
+    const second = makeVendor({
+      vendorId: 'docB'
+    })
+    for (const {
+      vendor
+    } of [first, second]) {
+      vendor.items.get('gun').system.price = {
+        value: 800, base: 800
+      }
+    }
+    const buyer = makeBuyer()
+    // The real balance: what the ledger holds, minus what was already spent
+    vi.spyOn(SR5Shop, 'balance').mockImplementation(actor => 1390 - actor.created
+      .filter(doc => doc.type === 'itemNuyen' && doc.system.type === 'loss')
+      .reduce((sum, doc) => sum + doc.system.amount, 0))
+    // Both vendors, and the creation of the goods taking its time like the server's
+    buyer.createEmbeddedDocuments = async (_t, docs) => {
+      await tick()
+      buyer.created.push(...docs)
+    }
+    globalThis.game.actors = {
+      get: id => (id === buyer.id ? buyer : null)
+    }
+    globalThis.fromUuidSync = uuid => ({
+      'Actor.docA': first.vendor, 'Actor.docB': second.vendor
+    })[uuid] ?? null
+    const results = await Promise.all(['docA', 'docB'].map(id => SR5ShopVendor.sell({
+      vendorUuid: `Actor.${id}`, storageId: 'shop', buyerId: 'buyer', lines: [{
+        uuid: `Actor.${id}.Item.gun`, quantity: 1
+      }],
+    }, player.id)))
+    expect(results.filter(Boolean)).toHaveLength(1)
+    expect(SR5Shop.balance(buyer)).toBe(590)
+  })
+
+  it('refuses a vendor whose uuid no longer resolves, without throwing (review R4)', async () => {
+    const {
+      vendor
+    } = makeVendor()
+    const buyer = makeBuyer()
+    world(vendor, buyer)
+    globalThis.fromUuidSync = () => {
+      throw new Error('Scene.gone does not exist')
+    }
+    await expect(SR5ShopVendor.sell(request([{
+      uuid: 'Actor.vendor.Item.gun', quantity: 1
+    }]), player.id)).resolves.toBe(false)
   })
 })

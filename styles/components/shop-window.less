@@ -188,6 +188,20 @@
     border-bottom: 1px solid var(--shop-line);
     .right { text-align: right; }
   }
+  // A narrow window (under ~1 100 px) left the name column at 0 px: below 700 px of list, the name
+  // takes a line of its own over the figures, and the header row, which no longer matches, goes
+  .sr-shop-main { container-type: inline-size; }
+  @container (max-width: 700px) {
+    .sr-shop-head { display: none; }
+    .sr-shop-row {
+      grid-template-columns: 36px 84px 64px 84px minmax(60px, 1fr) 104px;
+      row-gap: 2px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      > img { grid-row: 1 / span 2; }
+      .sr-shop-name { grid-column: 2 / -1; grid-row: 1; }
+    }
+  }
   .sr-shop-list {
     flex: 1;
     overflow-y: auto;

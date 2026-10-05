@@ -28,12 +28,6 @@ export class SR5Token extends foundry.canvas.placeables.Token {
   }
 
   /**
-   * The core takes control of the token right-clicked, which releases the others: on a target the
-   * thief cannot control, his own token would be released and the pocket out of reach. The HUD
-   * opens on the target and the thief stays selected.
-   * @override
-   */
-  /**
    * The core lets a double-click through to those who may see the actor (Limited at least). A
    * vendor whose shop is open lets anyone in: the double-click opens the shop, never the sheet.
    * @override
@@ -60,6 +54,12 @@ export class SR5Token extends foundry.canvas.placeables.Token {
     }) => SR5ShopVendor.openShop(vendor.actor, vendor.storage))
   }
 
+  /**
+   * The core takes control of the token right-clicked, which releases the others: on a target the
+   * thief cannot control, his own token would be released and the pocket out of reach. The HUD
+   * opens on the target and the thief stays selected.
+   * @override
+   */
   _onClickRight(event) {
     if (this.document.isOwner || !this.layer.hud || !SR5Pickpocket.canPickFrom(this.document)) return super._onClickRight(event)
     if (this.hasActiveHUD) this.layer.hud.close()

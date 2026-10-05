@@ -98,7 +98,13 @@ export class SR5ShopVendor {
 
   /** The vendor and its storage, from what a request carries. */
   static resolve(actorUuid, storageId) {
-    const actor = actorUuid ? fromUuidSync(actorUuid) : null
+    // A vendor gone (token deleted, scene removed) throws on some uuids: refused, not crashed
+    let actor = null
+    try {
+      actor = typeof actorUuid === 'string' && actorUuid ? fromUuidSync(actorUuid) : null
+    } catch {
+      return null
+    }
     const storage = actor?.items?.get(storageId)
     if (!actor || !isShopStorage(storage)) return null
     return {
@@ -316,17 +322,17 @@ export class SR5ShopVendor {
     }, requester.id)
   }
 
-  /** One sale at a time per vendor: two buyers never get the last piece both. */
-  static #queues = new Map()
+  /**
+   * One sale at a time on the gamemaster's browser, whatever the vendor: two purchases checked at
+   * once would both see the same balance, and a buyer could spend it twice at two vendors
+   * (Bella's review, R1). A sale is a few writes; the line is never long.
+   */
+  static #queue = Promise.resolve()
 
   static sell(request, senderId) {
-    const key = request?.vendorUuid ?? ''
-    const previous = SR5ShopVendor.#queues.get(key) ?? Promise.resolve()
-    const next = previous.catch(() => {}).then(() => SR5ShopVendor.#sell(request, senderId))
-    SR5ShopVendor.#queues.set(key, next)
-    return next.finally(() => {
-      if (SR5ShopVendor.#queues.get(key) === next) SR5ShopVendor.#queues.delete(key)
-    })
+    const next = SR5ShopVendor.#queue.catch(() => {}).then(() => SR5ShopVendor.#sell(request, senderId))
+    SR5ShopVendor.#queue = next
+    return next
   }
 
   /**
