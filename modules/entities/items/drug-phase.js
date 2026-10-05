@@ -6,6 +6,15 @@
 
 export const DRUG_PHASES = ["", "rise", "crash"]
 
+// A duration or a speed of 1 takes the singular: "1 Minute", not "1 Minutes"
+const SINGULAR_UNITS = {
+  "SR5.Minutes": "SR5.Minute", "SR5.Hours": "SR5.Hour", "SR5.Days": "SR5.Day", "SR5.Weeks": "SR5.Week",
+  "SR5.Months": "SR5.Month", "SR5.CombatTurns": "SR5.CombatTurn"
+}
+export function unitKey(key, value) {
+  return (Number(value) === 1 && SINGULAR_UNITS[key]) || key
+}
+
 export function drugPhaseFlags(phase) {
   return {
     isActive: phase === "rise", wirelessTurnedOn: phase === "crash"

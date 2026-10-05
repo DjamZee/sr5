@@ -20,6 +20,9 @@ import {
 import {
   startDrugCrash
 } from '../modules/entities/items/drug-crash.js'
+import {
+  unitKey
+} from '../modules/entities/items/drug-phase.js'
 
 // A Roll that keeps its formula and always totals 30: "1d6 * 10" and "10d6" can both give 30, so the formula is
 // what tells one die times ten from the sum of ten dice
@@ -78,12 +81,14 @@ describe('drug durations rolled as the book says', () => {
     })
   }
 
-  for (const [key, duration] of [['eX', 4], ['galak', 5]]) {
+  // Body 2: the effect (8 - 2 = 6 hours for eX, 9 - 2 = 7 for galak) and the Body (2) differ, so the test
+  // tells a disorientation as long as the effect from one of (Body) hours (Body 4 gave 4 both ways for eX)
+  for (const [key, duration] of [['eX', 6], ['galak', 7]]) {
     it(`${key}: the disorientation lasts as the effect, the social Limit (Body) hours`, async () => {
-      const stat = await shots(key, 4)
+      const stat = await shots(key, 2)
       expect(stat.duration).toBe(duration)
       expect(stat.durationContrecoup).toBe(duration)
-      expect(stat.socialLimitContrecoup).toBe(4)
+      expect(stat.socialLimitContrecoup).toBe(2)
     })
   }
 })
@@ -112,5 +117,30 @@ describe('the crash shows the social Limit duration of eX and galak', () => {
       name: 'Kara'
     })
     expect(data.onUse.contrecoup).toBe('5 SR5.Hours ; SR5.DrugSocialLimitCrash 4 SR5.Hours')
+  })
+
+  it('says 1 Hour, not 1 Hours', async () => {
+    const data = {
+      onUse: {
+        duration: '', contrecoup: ''
+      }, handleShot: {
+        name: 'galak', durationContrecoup: 1, durationContrecoupType: 'hour', socialLimitContrecoup: 1
+      }
+    }
+    await startDrugCrash(data, {
+      name: 'Kara'
+    })
+    expect(data.onUse.contrecoup).toBe('1 SR5.Hour ; SR5.DrugSocialLimitCrash 1 SR5.Hour')
+  })
+})
+
+describe('a duration or a speed of 1 takes the singular', () => {
+  it('picks the singular unit for 1 only', () => {
+    expect(unitKey('SR5.Minutes', 1)).toBe('SR5.Minute')
+    expect(unitKey('SR5.Minutes', '1')).toBe('SR5.Minute')
+    expect(unitKey('SR5.CombatTurns', 1)).toBe('SR5.CombatTurn')
+    expect(unitKey('SR5.Minutes', 2)).toBe('SR5.Minutes')
+    expect(unitKey('SR5.Minute', 1)).toBe('SR5.Minute')
+    expect(unitKey('SR5.Immediate', 1)).toBe('SR5.Immediate')
   })
 })

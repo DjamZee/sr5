@@ -4,6 +4,9 @@ import {
 import {
   SR5_PrepareRollTest
 } from "../../rolls/roll-prepare.js"
+import {
+  unitKey
+} from "./drug-phase.js"
 
 // The crash of a drug, "the negative effects that follow the effect of the drug" (Chrome Flesh p. 194).
 // One path for all: the switch of the sheet, an interaction (Chrome Flesh p. 197) and the calendar
@@ -18,10 +21,10 @@ export async function startDrugCrash(data, actor) {
   data.phase = "crash"
   data.onUse.duration = ""
   if (shot.durationContrecoup) {
-    data.onUse.contrecoup = `${shot.durationContrecoup} ${game.i18n.localize(SR5.extendedIntervals[shot.durationContrecoupType])}`
+    data.onUse.contrecoup = `${shot.durationContrecoup} ${game.i18n.localize(unitKey(SR5.extendedIntervals[shot.durationContrecoupType], shot.durationContrecoup))}`
     //eX and galak: the -2 social Limit of the crash has its own duration, (Body) hours (Chrome Flesh p. 186)
     if (shot.socialLimitContrecoup) data.onUse.contrecoup += ` ; ${game.i18n.format("SR5.DrugSocialLimitCrash", {
-      duration: `${shot.socialLimitContrecoup} ${game.i18n.localize(SR5.extendedIntervals.hour)}`
+      duration: `${shot.socialLimitContrecoup} ${game.i18n.localize(unitKey(SR5.extendedIntervals.hour, shot.socialLimitContrecoup))}`
     })}`
     await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugContrecoup")} (${game.i18n.localize(SR5.drugs[shot.name])})${game.i18n.format("SR5.Colons")} ${data.onUse.contrecoup}`)
   }

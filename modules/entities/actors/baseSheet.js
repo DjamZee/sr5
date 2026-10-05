@@ -5,7 +5,7 @@ import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
-  phaseFromFlags
+  phaseFromFlags, unitKey
 } from "../items/drug-phase.js"
 import {
   startDrugCrash, resetDrugPhase
@@ -1368,11 +1368,11 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
             //The stat above is the only one rolled: a second call rolled the random durations again
             if (!itemData.interact) {
               console.log("drug : " + item.name)
-              itemData.onUse.duration = `${itemData.handleShot.duration} ${game.i18n.localize(SR5.extendedIntervals[itemData.handleShot.durationType])}`
+              itemData.onUse.duration = `${itemData.handleShot.duration} ${game.i18n.localize(unitKey(SR5.extendedIntervals[itemData.handleShot.durationType], itemData.handleShot.duration))}`
               itemData.onUse.contrecoup = ""
-							
+
               // Generate the speed type if not pure text
-              if (itemData.handleShot.speedType) speedType = game.i18n.localize(itemData.handleShot.speedType)
+              if (itemData.handleShot.speedType) speedType = game.i18n.localize(unitKey(itemData.handleShot.speedType, itemData.handleShot.speed))
             }
 
             //Chrome Flesh p. 196: an interaction comes from taking a drug while under the effect (or the crash) of
@@ -1464,7 +1464,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
             }
 						
             // Notify info drug taken
-            await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.localize(SR5.drugs[itemData.handleShot.name])}${game.i18n.format("SR5.Colons")}<ul><li>${game.i18n.format("SR5.ToxinSpeed")}${game.i18n.format("SR5.Colons")} ${itemData.handleShot.speed} ${speedType}</li><li>${game.i18n.format("SR5.Duration")}${game.i18n.format("SR5.Colons")} ${itemData.handleShot.duration} ${game.i18n.localize(SR5.extendedIntervals[itemData.handleShot.durationType])}</li></ul>`)
+            await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.localize(SR5.drugs[itemData.handleShot.name])}${game.i18n.format("SR5.Colons")}<ul><li>${game.i18n.format("SR5.ToxinSpeed")}${game.i18n.format("SR5.Colons")} ${itemData.handleShot.speed} ${speedType}</li><li>${game.i18n.format("SR5.Duration")}${game.i18n.format("SR5.Colons")} ${itemData.handleShot.duration} ${game.i18n.localize(unitKey(SR5.extendedIntervals[itemData.handleShot.durationType], itemData.handleShot.duration))}</li></ul>`)
 						
             // Notify info on effect for Laes/Leal
             if (itemData.handleShot.effectDuration) await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.ErasedMemoryFor")} ${itemData.handleShot.effectDuration} ${game.i18n.localize(itemData.handleShot.effectDurationType)}`)
