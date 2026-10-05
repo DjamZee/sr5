@@ -141,6 +141,8 @@ export class SR5Shop {
   static _itemPayload(source, quantity, grade = null) {
     const itemData = source.toObject()
     delete itemData._id
+    // Where it was bought: a vendor buying it back reads its price there, not on the copy (lot C)
+    if (source.pack) foundry.utils.setProperty(itemData, 'flags.sr5.shopSource', source.uuid)
     // The item computes Essence, price and availability from its grade itself
     if (grade) itemData.system.grade = grade
     const stackable = SR5Shop.STACKABLE_TYPES.includes(itemData.type) &&

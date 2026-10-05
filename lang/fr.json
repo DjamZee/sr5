@@ -651,6 +651,7 @@
 	"SR5.ShopVendorNoBannerFolder": "Pas de dossier de bannières : réglez « Boutique : dossier des bannières » dans les paramètres du monde.",
 	"SR5.ShopVendorNoCashboxShort": "aucune caisse : rien ne se vend",
 	"SR5.ShopVendorOfferAccept": "Accepter l'offre",
+	"SR5.ShopVendorOfferByName": "prix du compendium d'après le nom ({price}¥), à confirmer par le MJ",
 	"SR5.ShopVendorOfferCancelled": "Annulée par le MJ",
 	"SR5.ShopVendorOfferContact": "Contact {name}, Loyauté {loyalty} : {percent} % du prix listé, sans test (SR5 p. 421).",
 	"SR5.ShopVendorOfferCriticalGlitch": "Échec critique : le vendeur est insulté, et peut-être pire (SR5 p. 421).",

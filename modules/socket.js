@@ -34,9 +34,14 @@ import {
 import {
   SR5StorageLock
 } from "./interface/storage-lock-actions.js"
-import {
-  SR5ShopVendor
-} from "./interface/shop-vendor.js"
+// The gamemaster's vendor is loaded when one of its messages comes in: the socket is imported by
+// half the system, and the shop brings the other half (lot C)
+const vendor = method => async (message, senderId) => {
+  const {
+    SR5ShopVendor
+  } = await import("./interface/shop-vendor.js")
+  return SR5ShopVendor[method](message, senderId)
+}
 
 export class SR5_SocketHandler {
   static registerSocketListeners() {
@@ -78,11 +83,11 @@ export class SR5_SocketHandler {
       "grappleReverseHold": [SR5_GrappleHelpers._socketReverseHold],
       "sharedVisionSetViewer": [SR5SharedVision._socketSetViewer],
       "storageLockPick": [SR5StorageLock._socketPick],
-      "shopVendorBuy": [SR5ShopVendor._socketBuy],
-      "shopVendorNotice": [SR5ShopVendor._socketNotice],
-      "shopVendorOffer": [SR5ShopVendor._socketOffer],
-      "shopVendorAccept": [SR5ShopVendor._socketAccept],
-      "shopVendorDecline": [SR5ShopVendor._socketDecline],
+      "shopVendorBuy": [vendor('_socketBuy')],
+      "shopVendorNotice": [vendor('_socketNotice')],
+      "shopVendorOffer": [vendor('_socketOffer')],
+      "shopVendorAccept": [vendor('_socketAccept')],
+      "shopVendorDecline": [vendor('_socketDecline')],
     }
 
     //senderId is added by the server to every custom socket message: a client cannot forge it

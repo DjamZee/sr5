@@ -315,6 +315,42 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
     expect(seller.items.get('gun')).toBeDefined()
   })
 
+  it('without a source, takes the shelf price of that name, and still asks the gamemaster', async () => {
+    vi.doMock('../modules/interface/shop-window.js', () => ({
+      SR5ShopWorldSource: {
+        index: async () => [{
+          uuid: 'Compendium.megapack.weapons.Item.f', type: 'itemWeapon', name: 'Fichetti Security 600',
+          system: {
+            price: {
+              value: 350, base: 350
+            }
+          },
+        }],
+      },
+    }))
+    const {
+      vendor
+    } = world({
+      sellerItems: [gun(25000, {
+        _stats: {
+          compendiumSource: 'Compendium.gone.pack.Item.x'
+        }
+      })]
+    })
+    noHits()
+    await SR5ShopVendor.offer(offerFor([{
+      itemId: 'gun', quantity: 1
+    }]), player.id)
+    expect(messages.get('m0').flags.sr5vendorOffer.results[0]).toMatchObject({
+      listed: 350, verified: false, byName: true
+    })
+    await SR5ShopVendor.accept({
+      messageId: 'm0'
+    }, player.id)
+    expect(confirmations).toBe(1)
+    expect(vendor.created[0].system.price.base).toBe(350)
+  })
+
   it('does not trust a source whose name is not the item\'s (a cheap item pointed at a dear one)', async () => {
     world({
       sellerItems: [gun(25000, {

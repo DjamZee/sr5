@@ -29,9 +29,6 @@ import {
   SR5ShopFence
 } from './shop-fence.js'
 import {
-  SR5_CompendiumUtility
-} from '../entities/actors/utilityCompendium.js'
-import {
   VENDOR_TEMPLATES, VENDOR_FAMILIES, vendorTemplate, templateBanners, templateShop
 } from './shop-vendor-templates.js'
 import {
@@ -339,6 +336,13 @@ export class SR5ShopVendor {
     // One creation with every item: SR5Actor.create returns the actor only when the data carries
     // its items (otherwise it adds the base items itself and returns nothing), so the Grunt's base
     // items are fetched here, as it would, and the shop and its cashbox come with them
+    // Loaded on demand: the compendium helpers bring half the system, which the sheets and the tests do without
+    const baseItems = async () => {
+      const {
+        SR5_CompendiumUtility
+      } = await import('../entities/actors/utilityCompendium.js')
+      return await SR5_CompendiumUtility.getBaseItems('actorGrunt') ?? []
+    }
     const storageId = foundry.utils.randomID()
     const cashboxId = foundry.utils.randomID()
     const shop = templateShop(template, {
@@ -346,7 +350,7 @@ export class SR5ShopVendor {
     })
     shop.cashboxId = cashboxId
     const items = [
-      ...(await SR5_CompendiumUtility.getBaseItems('actorGrunt') ?? []),
+      ...(await baseItems()),
       {
         _id: storageId, name: label, type: 'itemStorage', system: {
           type: 'shop', shop
@@ -921,24 +925,56 @@ export class SR5ShopVendor {
    * the price is the seller's own, marked as not verified, and the gamemaster confirms it.
    */
   static async referencePrice(item) {
-    const uuid = item?.flags?.sr5?.shopSource ?? item?._stats?.compendiumSource ?? item?.flags?.core?.sourceId
-    let source = null
-    if (typeof uuid === 'string' && uuid.startsWith('Compendium.')) {
+    // The source the item says it came from: the shop's mark first, then Foundry's own
+    for (const uuid of [item?.flags?.sr5?.shopSource, item?._stats?.compendiumSource, item?.flags?.core?.sourceId]) {
+      if (typeof uuid !== 'string' || !uuid.startsWith('Compendium.')) continue
+      let source = null
       try {
         source = await fromUuid(uuid)
       } catch {
         source = null
       }
-    }
-    if (source && source.type === item.type && source.name === item.name) {
-      return {
-        listed: SR5ShopFence.listedPrice(source), verified: true, sourceUuid: uuid,
-        basePrice: source._source?.system?.price?.base ?? source.system?.price?.base,
+      if (source && source.type === item.type && source.name === item.name) {
+        return {
+          listed: SR5ShopFence.listedPrice(source), verified: true, byName: false, sourceUuid: uuid,
+          basePrice: source._source?.system?.price?.base ?? source.system?.price?.base,
+        }
       }
     }
-    return {
-      listed: SR5ShopFence.listedPrice(item), verified: false, sourceUuid: null, basePrice: undefined,
+    // No source to read (an item bought before the shop marked them, or whose compendium is gone):
+    // the price of the item of that name on the world's shelves, which no player writes — but a
+    // renamed item would take it too, so the gamemaster still confirms it
+    const byName = await SR5ShopVendor.#shelfPriceByName(item)
+    if (byName) return {
+      ...byName, verified: false, byName: true
     }
+    return {
+      listed: SR5ShopFence.listedPrice(item), verified: false, byName: false, sourceUuid: null, basePrice: undefined,
+    }
+  }
+
+  /** The cheapest item of this type and name on the world's shelves, if any. */
+  static async #shelfPriceByName(item) {
+    let index = []
+    try {
+      const {
+        SR5ShopWorldSource
+      } = await import('./shop-window.js')
+      index = await SR5ShopWorldSource.index()
+    } catch {
+      return null
+    }
+    const found = index.filter(entry => entry.type === item?.type && entry.name === item?.name)
+      .map(entry => ({
+        entry, price: Number(entry.system?.price?.value ?? entry.system?.price?.base ?? 0) || 0
+      }))
+      .filter(({
+        price
+      }) => price > 0)
+      .sort((a, b) => a.price - b.price)[0]
+    return found ? {
+      listed: found.price, sourceUuid: found.entry.uuid, basePrice: found.entry.system?.price?.base ?? null,
+    } : null
   }
 
   /** An offer still waiting for an answer: not taken, not declined, not cancelled. */
@@ -1080,12 +1116,12 @@ export class SR5ShopVendor {
       }
     }
     const results = lines.map(({
-      item, quantity, listed, verified, sourceUuid, basePrice
+      item, quantity, listed, verified, byName, sourceUuid, basePrice
     }) => {
       const unit = Math.round(listed * percent / 100)
       return {
-        itemId: item.id, name: item.name, quantity, listed, unit, total: unit * quantity, verified, sourceUuid,
-        basePrice: basePrice ?? null,
+        itemId: item.id, name: item.name, quantity, listed, unit, total: unit * quantity, verified, byName: !!byName,
+        sourceUuid, basePrice: basePrice ?? null,
       }
     })
     const total = results.reduce((sum, line) => sum + line.total, 0)
@@ -1095,9 +1131,10 @@ export class SR5ShopVendor {
     }
     const rows = results.map(line => `<li>${SR5Shop.lineLabel(line.name, line.quantity)} — ${
       line.total.toLocaleString()}&yen; <small>(${line.listed.toLocaleString()}&yen; × ${percent}%)</small>${
-      line.verified ? '' : ` <small class="sr-shop-blocked">${game.i18n.format('SR5.ShopVendorOfferUnverified', {
-        price: line.listed.toLocaleString()
-      })}</small>`}</li>`).join('')
+      line.verified ? '' : ` <small class="sr-shop-blocked">${game.i18n.format(
+        line.byName ? 'SR5.ShopVendorOfferByName' : 'SR5.ShopVendorOfferUnverified', {
+          price: line.listed.toLocaleString()
+        })}</small>`}</li>`).join('')
     const how = viaContact ?
       game.i18n.format('SR5.ShopVendorOfferContact', {
         name: seller.name, loyalty, percent
@@ -1183,7 +1220,9 @@ export class SR5ShopVendor {
       if (stocked.system.isActive !== undefined) stocked.system.isActive = false
       if (stocked.system.quantity !== undefined) stocked.system.quantity = line.quantity
       // On the counter at the source's price, whatever the seller wrote on her copy
-      if (line.verified && line.basePrice !== null && stocked.system.price) stocked.system.price.base = line.basePrice
+      if ((line.verified || line.byName) && line.basePrice !== null && stocked.system.price) {
+        stocked.system.price.base = line.basePrice
+      }
       if (line.sourceUuid) foundry.utils.setProperty(stocked, 'flags.sr5.shopSource', line.sourceUuid)
       payload.push(stocked)
     }

@@ -651,6 +651,7 @@
 	"SR5.ShopVendorNoBannerFolder": "No banner folder: set \"Shop: banner folder\" in the world settings.",
 	"SR5.ShopVendorNoCashboxShort": "no cashbox: nothing sells",
 	"SR5.ShopVendorOfferAccept": "Accept the offer",
+	"SR5.ShopVendorOfferByName": "compendium price by name ({price}¥), for the GM to confirm",
 	"SR5.ShopVendorOfferCancelled": "Cancelled by the GM",
 	"SR5.ShopVendorOfferContact": "Contact {name}, Loyalty {loyalty}: {percent}% of the listed price, no test (SR5 p. 421).",
 	"SR5.ShopVendorOfferCriticalGlitch": "Critical glitch: the vendor is insulted, and maybe worse (SR5 p. 421).",

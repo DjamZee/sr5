@@ -5,9 +5,6 @@ import {
   garageRequirement 
 } from "../../interface/storage-rules.js"
 import {
-  SR5ShopVendor
-} from "../../interface/shop-vendor.js"
-import {
   SR5_SpiritTypes
 } from "./spirit-types.js"
 import {
@@ -112,6 +109,9 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     const actor = item.parent
     if (!actor) return
     const action = target.dataset.action
+    const {
+      SR5ShopVendor
+    } = await import("../../interface/shop-vendor.js")
     if (action === 'shopOpen') return SR5ShopVendor.openShop(actor, item)
     if (!game.user.isGM) return
     if (action === 'shopRestock') await SR5ShopVendor.restock(actor, item)
@@ -363,6 +363,9 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     }
     // A vendor's stock: its shelves, legality, cashbox
     if (item.type === "itemStorage" && item.system.type === "shop") {
+      const {
+        SR5ShopVendor
+      } = await import("../../interface/shop-vendor.js")
       context.shop = SR5ShopVendor.sheetContext(item)
     }
 
