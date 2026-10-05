@@ -1449,6 +1449,8 @@ export default class SR5_RollDialog {
             value = value - 4
             limitDV = limitDV * 2
           }
+          // Aim for Perfection (Assassin's Primer p. 15): "all Called Shots", a specific location included
+          if (SR5_EntityHelpers.getRealActorFromID(dialogData.owner.actorId)?.system.specialProperties?.calledShotHalved) value = halveCalledShot(value)
           //Run & Gun p. 148-151: the location technique (Dim Mak, Choquer, Randori) lowers the location penalty
           value += martialArtsLocationBonus(dialogData.combat.calledShot.martialArtsModifiers, html.querySelector('[data-modifier="calledShot"]').value, ev.target.value)
           dialogData.combat.calledShot = {
