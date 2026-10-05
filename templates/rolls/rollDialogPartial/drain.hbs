@@ -19,8 +19,8 @@
 
     {{> systems/sr5/templates/rolls/rollDialogPartial/drainBase.hbs}}
     
-    {{#if (eq test.type "spell")}}
-    <!--RECKLESS SPELLCASTING-->
+    {{#if (and (eq test.type "spell") (not magic.structured))}}
+    <!--RECKLESS SPELLCASTING: none for Structured Spellcasting (Forbidden Arcana p. 43)-->
     <li class="grid">
         <div class="col-11">{{localize 'SR5.RecklessSpellcasting'}}{{localize 'SR5.Colons'}}</div>
         <div class="col-1 SR-TextCenter">
