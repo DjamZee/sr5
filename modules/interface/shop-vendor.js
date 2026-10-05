@@ -1325,8 +1325,13 @@ export class SR5ShopVendor {
    */
   static async confirmBuyBack(review) {
     const figuresLabel = figures => figures ? [
-      game.i18n.localize(`TYPES.Item.${figures.type}`), figures.category,
-      figures.damage ? game.i18n.format('SR5.ShopVendorFiguresWeapon', figures) : '',
+      game.i18n.localize(`TYPES.Item.${figures.type}`),
+      // The category and the damage type in words: "Pistolet lourd", "P"
+      figures.category ? game.i18n.localize(SR5.weaponCategories?.[figures.category] ?? figures.category) : '',
+      figures.damage ? game.i18n.format('SR5.ShopVendorFiguresWeapon', {
+        ...figures,
+        damage: `${figures.damageBase}${game.i18n.localize(SR5.damageTypesShort?.[figures.damageType] ?? figures.damageType)}`,
+      }) : '',
       'rating' in figures ? game.i18n.format('SR5.ShopVendorFiguresRating', figures) : '',
     ].filter(Boolean).join(' · ') : '—'
     const rows = review.lines.map((line, index) => {

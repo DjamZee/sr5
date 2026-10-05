@@ -184,7 +184,9 @@ export function itemFigures(item) {
   if (item?.type === 'itemWeapon') {
     const modes = system.firingMode ?? {
     }
-    figures.damage = `${system.damageValue?.base ?? ''}${system.damageType ?? ''}`
+    figures.damageBase = system.damageValue?.base ?? ''
+    figures.damageType = system.damageType ?? ''
+    figures.damage = `${figures.damageBase}${figures.damageType}`
     figures.ap = Number(system.armorPenetration?.base ?? 0) || 0
     figures.modes = [['singleShot', 'CC'], ['semiAutomatic', 'SA'], ['burstFire', 'TR'], ['fullyAutomatic', 'TA']]
       .filter(([key]) => modes[key]).map(([, label]) => label).join('/')
