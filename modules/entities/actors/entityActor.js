@@ -43,6 +43,9 @@ import {
 import {
   worsenAddiction, burnoutAttribute
 } from "../../rolls/roll-helpers/addiction.js"
+import {
+  isNecroSpirit
+} from "../../system/necro-spirits.js"
 
 /**
  * Extend the base Actor class to implement additional logic specialized for Shadowrun 5.
@@ -619,6 +622,8 @@ export class SR5Actor extends Actor {
           //i.prepareData();
           if (iData.isBounded) actor.system.magic.boundedSpirit.current ++
           if (iData.isActive) SR5_CharacterUtility._actorModifPossession(i, actor)
+          //Forbidden Arcana p. 50: each necro spirit under control lowers the mage's Magic by 1
+          if (isNecroSpirit(iData.type) && actor.system.specialAttributes?.magic) SR5_EntityHelpers.updateModifier(actor.system.specialAttributes.magic.augmented, i.name, "itemSpirit", -1)
           break
 
         case "itemDevice":
