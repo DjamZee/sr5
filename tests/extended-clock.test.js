@@ -11,13 +11,19 @@ import {
 describe("extended tests move the clock (SR5 p. 50, 207-208)", () => {
   it("offers the intervals spent and not yet put on the clock", () => {
     expect(pendingIntervals({
-      interval: "hour", intervalValue: 3
+      interval: "hour", intervalValue: 3, clockAdvanced: 0
     })).toBe(3)
     expect(pendingIntervals({
       interval: "hour", intervalValue: 3, clockAdvanced: 2
     })).toBe(1)
     expect(pendingIntervals({
       interval: "hour", intervalValue: 3, clockAdvanced: 3
+    })).toBe(0)
+  })
+
+  it("offers nothing on a card rolled before the calendar, whose time is long spent", () => {
+    expect(pendingIntervals({
+      interval: "hour", intervalValue: 5
     })).toBe(0)
   })
 
