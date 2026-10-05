@@ -20,6 +20,9 @@ import {
 import {
   initEffectExpiry
 } from "../system/effect-expiry.js"
+import {
+  initDeadlines
+} from "../system/deadlines.js"
 
 export function sr5HookReady() {
   // Register the GM-authored spirit types, so that they are offered wherever
@@ -54,6 +57,8 @@ export function sr5HookReady() {
   initCalendarClock()
   // Effects in minutes, hours, days, weeks, months: counted on the clock, the GM removes them
   initEffectExpiry()
+  // Dated deadlines: withdrawal tests (SR5 p. 79-80), months of rent paid (SR5 p. 377)
+  initDeadlines()
 
   // The deeper table of contents also reaches the window of Monk's Enhanced Journal
   sr5DeepenModuleTableOfContents()
