@@ -2,6 +2,11 @@
 // A mastery is a quality; its level is the quality rating, carried by the custom effect onto
 // system.magic.masteries.<key>.
 
+// Master Manipulator (p. 38): "cannot benefit from this mastery if he sustains spells whose Force exceeds his
+// Magic". Read as written, arbitrage de DjamZ (2026-10-05): one sustained spell above Magic, whatever its kind,
+// and no mental Manipulation spell is freed. One switch, to turn back to a per-spell reading.
+export const MANIPULATOR_LOST_ABOVE_MAGIC = true
+
 const isIllusion = spell => spell.category === "illusion"
 const isMentalManipulation = spell => spell.category === "manipulation" && spell.subCategory === "mental"
 
@@ -39,7 +44,8 @@ export function masteryFreeSustainedSpells(spells, magic, levels = {
     pools.push([byType[type], spell => isIllusion(spell) && (type === "any" || spell.type === type)])
   }
   else pools.push([levels.illusionist, isIllusion])
-  pools.push([levels.masterManipulator, isMentalManipulation])
+  const manipulatorLost = MANIPULATOR_LOST_ABOVE_MAGIC && sorted.some(spell => (spell.force || 0) > magic)
+  if (!manipulatorLost) pools.push([levels.masterManipulator, isMentalManipulation])
 
   for (const [level, eligible] of pools) {
     let slots = Math.max(0, Math.floor(level || 0))
