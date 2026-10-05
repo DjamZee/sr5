@@ -154,6 +154,11 @@ export function applyResult(entry, hits, power, startYear){
   }
 }
 
+// A card claiming more hits than it rolled dice was written by hand
+export function hitsAboveDice(hits, pool){
+  return (Number(hits) || 0) > Math.max(0, Number(pool) || 0)
+}
+
 // One day of recovery more (Bullets & Bandages p. 21)
 export function applyRecovery(entry){
   const recovery = Math.max(0, (Number(entry.recovery) || 0) - 1)
@@ -488,6 +493,9 @@ async function applyFromCard(message, button){
   if (!entry?.request || entry.request.token !== ref.token) return button.remove()
   const suggested = Math.max(0, Number(message.flags?.sr5data?.roll?.hits) || 0)
   const power = entry.request.power
+  //The card is the player's: its pool is shown beside the hits, and more hits than dice is flagged
+  const pool = Math.max(0, Number(message.flags?.sr5data?.dicePool?.value) || 0)
+  const alert = hitsAboveDice(suggested, pool) ? `<p class="sr5-disease-alert" style="color: #c00; font-weight: bold;">${game.i18n.localize("SR5.DISEASE_HitsAbovePool")}</p>` : ""
   const hits = await foundry.applications.api.DialogV2.prompt({
     window: {
       title: "SR5.DISEASE_Apply"
@@ -495,6 +503,9 @@ async function applyFromCard(message, button){
     content: `<p>${game.i18n.format("SR5.DISEASE_ApplyText", {
       actor: escape(entry.actorName), name: escape(entry.profile.name), power
     })}</p>
+      <p>${game.i18n.format("SR5.DISEASE_CardPool", {
+    pool, hits: suggested
+  })}</p>${alert}
       <div class="form-group"><label>${game.i18n.localize("SR5.DISEASE_Hits")}</label><input type="number" name="hits" value="${suggested}" min="0"></div>`,
     ok: {
       callback: (event, b) => Number(b.form.elements.hits.value) || 0

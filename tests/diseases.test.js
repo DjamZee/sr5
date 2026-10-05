@@ -5,7 +5,7 @@ import {
 const {
   afterInterval, profileFromToxin, newInfection, reexpose, testPower, testModifiers, penetrationModifier, protectionOf,
   applyResult, applyRecovery, currentEffects, effectsFor, dueEntries, openInfectionOf, applyDiseaseEffects,
-  addDiseaseApplyButton, activateDiseaseRequestListeners, checkDiseases, DISEASE_UNITS
+  addDiseaseApplyButton, activateDiseaseRequestListeners, checkDiseases, DISEASE_UNITS, hitsAboveDice
 } = await import("../modules/system/diseases.js")
 
 const DAY = DISEASE_UNITS.day
@@ -64,6 +64,14 @@ describe("the pathogen of a toxin item (Run Faster p. 111-112, Bullets & Bandage
     expect(p.effects).toEqual(["disorientation"])
     expect(p.pathogenEffects).toEqual(["reducedAttributes"])
     expect(p.penetration).toBe(-2)
+  })
+})
+
+describe("the GM's Apply window flags a card claiming more hits than dice (Élise, Q1)", () => {
+  it("more hits than dice is an edited card", () => {
+    expect(hitsAboveDice(10, 8)).toBe(true)
+    expect(hitsAboveDice(8, 8)).toBe(false)
+    expect(hitsAboveDice(2, 0)).toBe(true)
   })
 })
 

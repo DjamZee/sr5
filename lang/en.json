@@ -3118,6 +3118,8 @@
 	"SR5.DISEASE_Apply": "Apply to the disease",
 	"SR5.DISEASE_ApplyText": "{actor}, {name}: Power {power}. Hits to keep:",
 	"SR5.DISEASE_Hits": "Hits",
+	"SR5.DISEASE_CardPool": "The card says: {hits} hits on {pool} dice.",
+	"SR5.DISEASE_HitsAbovePool": "More hits than dice: the card was edited.",
 	"SR5.DISEASE_Outcome": "{actor}, {name}: Power {power}, {hits} hits, {residual} left. Tests made: {n} / {min}.",
 	"SR5.DISEASE_Cured": "The disease is beaten.",
 	"SR5.DISEASE_Recovering": "Disease beaten: {n} Essence to recover, 1 every 24 hours.",
