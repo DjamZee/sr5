@@ -1,4 +1,7 @@
 import {
+  replacedValue
+} from "../../entities/actors/effect-replace.js"
+import {
   SR5_PrepareRollHelper 
 } from "../roll-prepare-helpers.js"
 import {
@@ -93,6 +96,8 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
   rollData.test.type = "skillDicePool"
   rollData.test.typeSub = rollKey
   rollData.limit.type = actor.system.skills[rollKey].limit.base
+  //A Limit an effect replaced (No Future instruments, Animal Sense) is no longer the linked one: the card says so
+  if (replacedValue(actor.system.skills[rollKey].limit.modifiers) !== undefined) rollData.limit.type = "replaced"
   rollData.dialogSwitch.extended = true
   rollData.dialogSwitch.specialization = true
 

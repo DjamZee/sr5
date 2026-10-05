@@ -794,6 +794,7 @@
 	"SR5.WARN_CapBallRoundByRound": "Cap & Ball: in combat this weapon reloads round by round (3 Complex Actions per round).",
 	"SR5.INFO_CapBallStep": "Cap & Ball: reloading {done}/{total}. Stopping before the end means starting over.",
 	"SR5.StreetCredDivisor": "Street Cred: Karma divisor (+)",
+	"SR5.LimitReplaced": "replaced",
 	"SR5.ThresholdModifier": "Threshold of all tests (+)",
 	"SR5.ThresholdModifierHint": "added to the threshold of the test if it has one, no effect on a test without threshold.",
 	"SR5.DiceHitsReplace": "Hits (replace)",

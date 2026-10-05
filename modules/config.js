@@ -1700,6 +1700,7 @@ SR5.testLimits = {
   sharing                   : "SR5.Sharing",
   sleaze                    : "SR5.Sleaze",
   reagents                  : "SR5.Reagents",
+  replaced                  : "SR5.LimitReplaced",
   level					  : "SR5.Level",
   handling				  : "SR5.VehicleStat_HandlingShort",
 }

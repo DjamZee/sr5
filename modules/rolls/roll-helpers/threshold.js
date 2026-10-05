@@ -13,6 +13,21 @@ export function thresholdModifierOf(actorData){
   }
 }
 
+//Whether the threshold a test carries is its own. Not for the damage resistance card, whose threshold only travels to
+//the "catch fire" test that follows (raised there, once), nor for the resistance to a social skill, an opposed test
+//carrying the opponent's hits (SR5 p. 141-143)
+export function hasOwnThreshold(test){
+  return !test?.isOpposedResistance && test?.type !== "resistanceCard"
+}
+
+//A bare threshold raised for this character: the extended tests rolled outside the roll dialog (search for a buyer,
+//lock picking, anti-tamper) read it there
+export function raisedThreshold(value, actorData){
+  return applyThresholdModifier({
+    value
+  }, thresholdModifierOf(actorData)).value
+}
+
 //The threshold of the test once the modifier is added: a test without threshold (0) keeps none, and a raised
 //or lowered threshold never falls under 1, a test with a threshold keeping one
 export function applyThresholdModifier(threshold, modifier){

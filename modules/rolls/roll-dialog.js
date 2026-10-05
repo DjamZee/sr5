@@ -1327,6 +1327,7 @@ export default class SR5_RollDialog {
           let limitMod = 0
           value = 0
           delete dialogData.limit.replace
+          if (dialogData.limit.typeBeforeReplace !== undefined) dialogData.limit.type = dialogData.limit.typeBeforeReplace
           if (ev.target.value !== ""){
             value = actor.system.skills.perception.perceptionType[ev.target.value].test.value
             limitMod = actor.system.skills.perception.perceptionType[ev.target.value].limit.value
@@ -1334,6 +1335,8 @@ export default class SR5_RollDialog {
             const replaced = replacedValue(actor.system.skills.perception.perceptionType[ev.target.value].limit.modifiers)
             if (replaced !== undefined) {
               dialogData.limit.replace = replaced
+              dialogData.limit.typeBeforeReplace ??= dialogData.limit.type
+              dialogData.limit.type = "replaced"
               limitMod = 0
             }
           }

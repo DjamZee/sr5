@@ -5,7 +5,7 @@ import {
   SR5_CharacterUtility
 } from '../modules/entities/actors/utilityActor.js'
 import {
-  thresholdModifierOf, applyThresholdModifier
+  thresholdModifierOf, applyThresholdModifier, raisedThreshold, hasOwnThreshold
 } from '../modules/rolls/roll-helpers/threshold.js'
 import {
   isReplaceEffectType, replacedValue, replaceModifierValue
@@ -68,6 +68,28 @@ describe("threshold modifier", () => {
     expect(applyThresholdModifier(threshold, thresholdModifierOf(actorData([])))).toBe(threshold)
     expect(thresholdModifierOf({
     }).value).toBe(0)
+  })
+  it("raises a bare threshold (buyer search, lock picking)", () => {
+    expect(raisedThreshold(10, actorData([{
+      source: "Bliss", value: 1
+    }]))).toBe(11)
+    expect(raisedThreshold(0, actorData([{
+      source: "Bliss", value: 1
+    }]))).toBe(0)
+    expect(raisedThreshold(4, {
+    })).toBe(4)
+  })
+  it("leaves out a carried or opposed threshold", () => {
+    expect(hasOwnThreshold({
+      type: "skillDicePool"
+    })).toBe(true)
+    expect(hasOwnThreshold({
+      type: "resistanceCard"
+    })).toBe(false)
+    expect(hasOwnThreshold({
+      type: "skillDicePool", isOpposedResistance: true
+    })).toBe(false)
+    expect(SR5.testLimits.replaced).toBe("SR5.LimitReplaced")
   })
   it("is a property an effect can target", () => {
     expect(SR5.specialPropertiesList.thresholdModifier).toBe("SR5.ThresholdModifier")

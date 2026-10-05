@@ -18,7 +18,7 @@ import {
 } from "../system/srcombat.js"
 import SR5_RollDialog from "./roll-dialog.js"
 import {
-  thresholdModifierOf, applyThresholdModifier
+  thresholdModifierOf, applyThresholdModifier, hasOwnThreshold
 } from "./roll-helpers/threshold.js"
 import {
   isStructuredSpell, pushedHits
@@ -92,7 +92,9 @@ export class SR5_RollTest {
     }
 
     //Threshold modifier of the character (Bliss, Purple Orchid), shown in the dialog and added once it closes
-    dialogData.thresholdModifier = thresholdModifierOf(actorData)
+    dialogData.thresholdModifier = hasOwnThreshold(dialogData.test) ? thresholdModifierOf(actorData) : {
+      value: 0, sources: []
+    }
 
     // Render template and show dialog
     const dlg = await foundry.applications.handlebars.renderTemplate(template, dialogData)
@@ -202,7 +204,7 @@ export class SR5_RollTest {
     }
 
     //Raise the threshold of the test, if it has one (Bliss SR5 p. 412, Purple Orchid Chrome Flesh p. 190)
-    dialogData.threshold = applyThresholdModifier(dialogData.threshold, dialogData.thresholdModifier)
+    if (hasOwnThreshold(dialogData.test)) dialogData.threshold = applyThresholdModifier(dialogData.threshold, dialogData.thresholdModifier)
 
     //Add limit modifiers
     dialogData = await SR5_RollTestHelper.handleLimitModifiers(dialogData)
