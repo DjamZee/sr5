@@ -8,6 +8,9 @@ import {
 import {
   SR5_SystemHelpers
 } from "./utilitySystem.js"
+import {
+  markRowDoneInMessage, cardFromGM
+} from "./card-rows.js"
 
 // Seconds of each unit a drug duration is given in (keys of SR5.extendedIntervals); a Combat Turn is 3 s (SR5 p. 51)
 export const DRUG_UNITS = {
@@ -157,13 +160,15 @@ async function act(row){
   return resetDrugPhase(item)
 }
 
-export function activateDrugCardListeners(html){
-  if (!game.user.isGM) return html.querySelectorAll("[data-sr5-drug]").forEach(b => b.remove())
+// The GM only, on a card a GM posted; a row done is written in the card, so its button does not come back
+export function activateDrugCardListeners(html, message){
+  if (!game.user.isGM || !cardFromGM(message)) return html.querySelectorAll("[data-sr5-drug]").forEach(b => b.remove())
   html.querySelectorAll("[data-sr5-drug]").forEach(button => button.addEventListener("click", async (event) => {
     const btn = event.currentTarget
+    const row = btn.closest(".sr5-drug-row")
     btn.disabled = true
-    const done = await act(btn.closest(".sr5-drug-row")).catch(e => SR5_SystemHelpers.srLog(1, `Drug phase not moved: ${e}`))
-    if (done) btn.remove()
+    const done = await act(row).catch(e => SR5_SystemHelpers.srLog(1, `Drug phase not moved: ${e}`))
+    if (done) await markRowDoneInMessage(row, "[data-sr5-drug]", game.i18n.localize("SR5.CALENDAR_RowDone"))
     else btn.disabled = false
   }))
 }
