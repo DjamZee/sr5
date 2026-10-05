@@ -323,7 +323,7 @@ export function addRadiationApplyButton(message, html){
   const button = document.createElement("button")
   button.type = "button"
   button.classList.add("sr5-radiation-apply")
-  button.innerHTML = `<i class="fa-solid fa-radiation"></i> ${game.i18n.localize("SR5.DISEASE_Apply")}`
+  button.innerHTML = `<i class="fa-solid fa-radiation"></i> ${game.i18n.localize("SR5.RADIATION_Apply")}`
   button.addEventListener("click", () => applyFromCard(message, button).catch(e => SR5_SystemHelpers.srLog(1, `Radiation test not applied: ${e}`)))
   const anchor = html.querySelector("#srButtonTest") ?? html.querySelector(".message-content")
   anchor?.after?.(button)
@@ -341,7 +341,7 @@ async function applyFromCard(message, button){
   const power = entry.request.power
   const hits = await foundry.applications.api.DialogV2.prompt({
     window: {
-      title: "SR5.DISEASE_Apply"
+      title: "SR5.RADIATION_Apply"
     },
     content: `<p>${game.i18n.format("SR5.RADIATION_ApplyText", {
       actor: escape(entry.actorName), power 

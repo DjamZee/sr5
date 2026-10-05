@@ -817,6 +817,7 @@
 	"SR5.RADIATION_End": "Fin d'exposition",
 	"SR5.RADIATION_Ended": "{actor} : fin d'exposition aux radiations.",
 	"SR5.RADIATION_RequestText": "{actor} résiste aux radiations : Constitution + Volonté (Puissance {power}).",
+	"SR5.RADIATION_Apply": "Appliquer le test de radiations",
 	"SR5.RADIATION_ApplyText": "{actor} contre les radiations, Puissance {power}.",
 	"SR5.RADIATION_OutcomeNone": "{actor} : Puissance {power}, {hits} succès, aucun effet.",
 	"SR5.RADIATION_OutcomeNausea": "{actor} : Puissance {power}, {hits} succès, Nausée (Puissance {remaining}).",

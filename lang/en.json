@@ -817,6 +817,7 @@
 	"SR5.RADIATION_End": "End exposure",
 	"SR5.RADIATION_Ended": "{actor}: radiation exposure ended.",
 	"SR5.RADIATION_RequestText": "{actor} resists the radiation: Body + Willpower (Power {power}).",
+	"SR5.RADIATION_Apply": "Apply the radiation test",
 	"SR5.RADIATION_ApplyText": "{actor} against radiation, Power {power}.",
 	"SR5.RADIATION_OutcomeNone": "{actor}: Power {power}, {hits} hits, no effect.",
 	"SR5.RADIATION_OutcomeNausea": "{actor}: Power {power}, {hits} hits, Nausea (Power {remaining}).",
