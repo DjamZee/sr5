@@ -17,6 +17,17 @@ export function diagnosisBonus(roll, threshold){
   return roll?.glitchRoll ? 1 : 2
 }
 
+// BB p. 15, diagnosis thresholds for wounds: 1-2 boxes 1, 3-5 boxes 2, 6-9 boxes 3, 10+ boxes 5. The GM sets the
+// threshold (an illness has its own row): this is only the value offered to him
+export const DIAGNOSIS_THRESHOLDS = [1, 2, 3, 5]
+export function woundDiagnosisThreshold(boxes){
+  const n = Number(boxes) || 0
+  if (n >= 10) return 5
+  if (n >= 6) return 3
+  if (n >= 3) return 2
+  return 1
+}
+
 // Physical boxes taken by one update, overflow included
 export function physicalTotal(system){
   const m = system?.conditionMonitors ?? {

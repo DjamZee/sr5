@@ -928,7 +928,8 @@ export class SR5_RollMessage {
       temp.innerHTML = html
       const divButtons = temp.querySelector('[id="srButtonTest"]')
       for (let button in newMessage.chatCard.buttons){
-        divButtons.insertAdjacentHTML("beforeend", `<button class="messageAction ${newMessage.chatCard.buttons[button].testType}" data-action="${newMessage.chatCard.buttons[button].testType}" data-type="${newMessage.chatCard.buttons[button].actionType}">${newMessage.chatCard.buttons[button].label}</button>`)
+        //The GM-only class too, as on the first render (roll-test.js): a refreshed card would show GM buttons to players
+        divButtons.insertAdjacentHTML("beforeend", `<button class="messageAction ${newMessage.chatCard.buttons[button].testType} ${newMessage.chatCard.buttons[button].gmAction ?? ""}" data-action="${newMessage.chatCard.buttons[button].testType}" data-type="${newMessage.chatCard.buttons[button].actionType}">${newMessage.chatCard.buttons[button].label}</button>`)
       }
       html = temp.innerHTML
       messageToUpdate.update({

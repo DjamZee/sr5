@@ -6,7 +6,7 @@ import {
   diagnosisBonus, physicalTotal, canBleed, ledgerAfterWound, ledgerAfterRound, stabilizationThreshold,
   stabilizationReduction, stabilizedTreatmentBoxes, penaltyReduction, ledgerAfterStabilization,
   ledgerWithDiagnosis, ledgerWithoutDiagnosis, ledgerCleaned, advancedMedkitDice, ledgerAfterBleedBox,
-  isStabilizeSpell, stabilizeSpellDrain,
+  isStabilizeSpell, stabilizeSpellDrain, woundDiagnosisThreshold,
 } from '../modules/system/bb-healing-rules.js'
 
 const pc = (physical, overflow = 0, stun = 0) => ({
@@ -135,6 +135,10 @@ describe('Balles et Pansements p. 15-16 : diagnostic et traitement', () => {
     expect(diagnosisBonus({
       hits: 1
     }, 2)).toBe(0)
+  })
+
+  it('seuil proposé au MJ selon les cases (table p. 15)', () => {
+    expect([0, 2, 3, 5, 6, 9, 10].map(woundDiagnosisThreshold)).toEqual([1, 1, 2, 2, 3, 3, 5])
   })
 
   it('le bonus ne sert qu\'une fois', () => {

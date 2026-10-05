@@ -5,7 +5,7 @@
 import {
   BB_UNDER_FIRE, BB_ADVANCED_MEDKITS, BB_LEDGER, BB_WOUND_THRESHOLD, refreshPatients,
   physicalTotal, canBleed, ledgerAfterWound, ledgerAfterBleedBox, isStabilizeSpell, stabilizeSpellDrain, ledgerAfterRound, ledgerAfterStabilization,
-  ledgerWithDiagnosis, ledgerWithoutDiagnosis, ledgerCleaned, penaltyReduction, stabilizationThreshold,
+  ledgerWithDiagnosis, ledgerWithoutDiagnosis, diagnosisBonus, woundDiagnosisThreshold, DIAGNOSIS_THRESHOLDS, ledgerCleaned, penaltyReduction, stabilizationThreshold,
 } from "./bb-healing-rules.js"
 import {
   SR5_SystemHelpers
@@ -189,8 +189,15 @@ async function confirm(text){
   })
 }
 
+// False for anyone but the active GM, who alone writes the ledger: the card button then stays as it is
+function writerOrWarn(){
+  if (isWriter()) return true
+  ui.notifications.warn(game.i18n.localize("SR5.BB_ActiveGMOnly"))
+  return false
+}
+
 export async function applyStabilization(messageData, patient, medic){
-  if (!isWriter()) return ui.notifications.warn(game.i18n.localize("SR5.BB_ActiveGMOnly"))
+  if (!writerOrWarn()) return false
   const reduction = Number(messageData.roll.bbReduction) || 0
   const hours = Number(medic?.system?.skills?.firstAid?.rating?.value) || 0
   const ok = await confirm(game.i18n.format("SR5.BB_StabilizeConfirm", {
@@ -202,13 +209,28 @@ export async function applyStabilization(messageData, patient, medic){
 }
 
 export async function applyDiagnosis(messageData, patient){
-  if (!isWriter()) return ui.notifications.warn(game.i18n.localize("SR5.BB_ActiveGMOnly"))
-  const bonus = Number(messageData.roll.bbDiagnosis) || 0
-  const ok = await confirm(game.i18n.format("SR5.BB_DiagnoseConfirm", {
-    name: escape(patient.name), bonus
+  if (!writerOrWarn()) return false
+  const offered = woundDiagnosisThreshold(stabilizationThreshold(patient.system, false))
+  const options = DIAGNOSIS_THRESHOLDS.map(t => `<option value="${t}" ${t === offered ? "selected" : ""}>${t}</option>`).join("")
+  const threshold = await foundry.applications.api.DialogV2.prompt({
+    window: {
+      title: "SR5.BB_Title"
+    },
+    content: `<p>${game.i18n.format("SR5.BB_DiagnoseConfirm", {
+      name: escape(patient.name), hits: Number(messageData.roll.hits) || 0
+    })}</p><div class="form-group"><label>${game.i18n.localize("SR5.BB_DiagnoseThreshold")}</label><select name="bbThreshold">${options}</select></div>`,
+    ok: {
+      callback: (event, button) => Number(button.form.elements.bbThreshold.value)
+    },
+    rejectClose: false,
+  })
+  if (!threshold) return false
+  const bonus = diagnosisBonus(messageData.roll, threshold)
+  ui.notifications.info(game.i18n.format("SR5.BB_DiagnoseResult", {
+    name: patient.name, bonus: bonus > 0 ? `+${bonus}` : `${bonus}`
   }))
-  if (!ok) return false
-  await writeLedger(ledgerWithDiagnosis(bbLedger(), patient.uuid, bonus))
+  //A diagnosis without result leaves no bonus: nothing to write
+  if (bonus) await writeLedger(ledgerWithDiagnosis(bbLedger(), patient.uuid, bonus))
   return true
 }
 

@@ -35,17 +35,19 @@ function bbCard(cardData, patient){
     end("SR5.BB_NeedTarget")
     return true
   }
+  //The threshold is the GM's (BB p. 15): he sets it when he applies the result, the card only shows the hits
   if (mode === "diagnosis"){
-    const bonus = diagnosisBonus(cardData.roll, cardData.threshold.value)
-    cardData.roll.bbDiagnosis = bonus
-    if (bonus) cardData.chatCard.buttons.bbDiagnose = SR5_RollMessage.generateChatButton("nonOpposedTest", "bbDiagnose", game.i18n.format("SR5.BB_DiagnoseButton", {
-      bonus: bonus > 0 ? `+${bonus}` : `${bonus}`
+    if (diagnosisBonus(cardData.roll, 1)) cardData.chatCard.buttons.bbDiagnose = SR5_RollMessage.generateChatButton("nonOpposedTest", "bbDiagnose", game.i18n.format("SR5.BB_DiagnoseButton", {
+      hits: cardData.roll.hits
     }), {
       gmAction: true
     })
     else end("SR5.BB_DiagnoseFailed")
     return true
   }
+  //A new roll of the extended test rewrites the card: the button of the previous roll goes
+  delete cardData.chatCard.buttons.actionEnd
+  delete cardData.chatCard.buttons.bbStabilize
   //SR5 p. 51: a critical glitch ends an extended test
   if (cardData.roll.criticalGlitchRoll) {
     end("SR5.BB_StabilizeFailed")
