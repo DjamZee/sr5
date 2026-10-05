@@ -93,8 +93,8 @@ export function sr5CalendarConfig(){
     },
     months: {
       values: MONTHS.map((m, i) => ({
-        name: `CALENDAR.GREGORIAN.${m}`,
-        abbreviation: `CALENDAR.GREGORIAN.${m}Abbr`,
+        name: `SR5.CALENDAR_${m}`,
+        abbreviation: `SR5.CALENDAR_${m}Abbr`,
         ordinal: i + 1,
         days: [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][i],
         leapDays: i === 1 ? 29 : null,
@@ -102,8 +102,8 @@ export function sr5CalendarConfig(){
     },
     days: {
       values: WEEKDAYS.map((w, i) => ({
-        name: `CALENDAR.GREGORIAN.${w}`,
-        abbreviation: `CALENDAR.GREGORIAN.${w}Abbr`,
+        name: `SR5.CALENDAR_${w}`,
+        abbreviation: `SR5.CALENDAR_${w}Abbr`,
         ordinal: i + 1,
       })),
       daysPerYear: 365,

@@ -51,7 +51,7 @@ export function dateTimeInputValue(c){
 }
 
 function names(list){
-  return list.map(v => game.i18n.localize(v.name).toLowerCase())
+  return list.map(v => game.i18n.localize(v.name))
 }
 
 function render(){
@@ -67,7 +67,7 @@ function render(){
   const text = formatClock(game.time.components, names(cal.months.values), names(cal.days.values))
   const steps = game.user.isGM ? `<div class="sr5-clock-steps">${CLOCK_STEPS.map(s =>
     `<button type="button" data-sr5-clock-step="${s.seconds}" data-tooltip="${game.i18n.localize(s.label)}">+${game.i18n.localize(s.label + "Abbr")}</button>`).join("")}
-    <button type="button" data-sr5-clock-goto data-tooltip="${game.i18n.localize("SR5.CALENDAR_GoTo")}"><i class="fa-solid fa-calendar-day"></i></button></div>` : ""
+    <button type="button" data-sr5-clock-goto data-tooltip="${game.i18n.localize("SR5.CALENDAR_GoTo")}" aria-label="${game.i18n.localize("SR5.CALENDAR_GoTo")}"><i class="fa-solid fa-calendar-day"></i></button></div>` : ""
   el.innerHTML = `<div class="sr5-clock-display"><span class="sr5-clock-date">${text.date}</span><span class="sr5-clock-time">${text.time}</span></div>${steps}`
 }
 
