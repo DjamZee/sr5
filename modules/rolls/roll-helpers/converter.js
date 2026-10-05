@@ -56,7 +56,8 @@ export class SR5_ConverterHelpers {
     }
     const enabled = Object.entries(baseModes).filter(([key]) => firingMode[key]).map(([, code]) => code)
     const current = firingMode.current
-    if (current && this.firingModeToAction(current)) return current
+    //The flamethrower sweep (FN) is chosen by the targets of each attack, never carried over from the last one
+    if (current && current !== "FN" && this.firingModeToAction(current)) return current
     if (current) {
       const code = enabled.find(c => localize(`SR5.WeaponMode${c}Short`) === current)
       if (code) return code
@@ -72,6 +73,11 @@ export class SR5_ConverterHelpers {
     if (current !== selected && !actionSpent) return 1
     if (current === selected && actionSpent) return -1
     return 0
+  }
+
+  //Several targets for a flamethrower: the sweep (Gun H(e)aven 3 p. 3), whatever mode the weapon kept
+  static initialFiringMode(firingMode, fanning){
+    return fanning ? "FN" : this.firingModeToCode(firingMode)
   }
 
   //Conver firing mode choice to action type

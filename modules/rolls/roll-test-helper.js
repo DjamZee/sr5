@@ -119,7 +119,8 @@ export class SR5_RollTestHelper {
     if (newItem.type === "itemWeapon" && newItem.system.category === "rangedWeapon") {
       newItem.system.ammunition.value -= firedAmmo
       if (newItem.system.ammunition.value < 0) newItem.system.ammunition.value = 0
-      if (newItem.system.firingMode.current !== cardData.combat.firingMode.selected){
+      //The sweep (FN) is never kept: the next attack picks its mode from its own targets
+      if (cardData.combat.firingMode.selected !== "FN" && newItem.system.firingMode.current !== cardData.combat.firingMode.selected){
         newItem.system.firingMode.current = cardData.combat.firingMode.selected
       }
       if (newItem.system.choke.current !== cardData.combat.choke.selected){
