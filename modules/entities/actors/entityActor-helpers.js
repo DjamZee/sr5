@@ -44,6 +44,9 @@ import {
   SR5_SpiritTypes
 } from "../items/spirit-types.js"
 import {
+  isReplaceEffectType
+} from "./effect-replace.js"
+import {
   isAreaSpellTemplateGone
 } from "../../system/areaEffectScene.js"
 
@@ -1624,10 +1627,14 @@ export class SR5_ActorHelper {
     for (let e of Object.values(itemData[effectType])){
       if (e.transfer) {
         let value, key, newData
-        if (e.type === "hits") value = Math.floor(data.roll.hits * (e.multiplier || 1))
-        else if (e.type === "netHits") value = Math.floor(data.roll.netHits * (e.multiplier || 1))
-        else if (e.type === "value") value = Math.floor(e.value * (e.multiplier || 1))
-        else if (e.type === "rating") value = Math.floor(item.system.itemRating * (e.multiplier || 1))
+        //A "replace" type gives the target this value instead of adding it: the Limit of Animal Sense and Eyes of the Pack
+        //becomes the net hits (Street Grimoire p. 106)
+        const replaces = isReplaceEffectType(e.type)
+        const baseType = replaces ? e.type.replace("Replace", "") : e.type
+        if (baseType === "hits") value = Math.floor(data.roll.hits * (e.multiplier || 1))
+        else if (baseType === "netHits") value = Math.floor(data.roll.netHits * (e.multiplier || 1))
+        else if (baseType === "value") value = Math.floor(e.value * (e.multiplier || 1))
+        else if (baseType === "rating") value = Math.floor(item.system.itemRating * (e.multiplier || 1))
         //An area spell resisted totally gets its effect at 0 (test-ResistanceResult), only to mark the token as
         //having resisted inside the template: a fixed value or the resistor's hits must not apply the spell
         if (data.test?.type === "spellResistance" && data.roll.netHits <= 0) value = 0
@@ -1691,7 +1698,7 @@ export class SR5_ActorHelper {
               "0": {
                 "category": e.category,
                 "target": e.target,
-                "type": "value",
+                "type": replaces ? "valueReplace" : "value",
                 "value": value,
                 "forceAdd": true,
                 //Attribute Boost (SR5 p. 312): dice pools only, see limitAttributeValue()

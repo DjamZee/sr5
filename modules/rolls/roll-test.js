@@ -18,6 +18,9 @@ import {
 } from "../system/srcombat.js"
 import SR5_RollDialog from "./roll-dialog.js"
 import {
+  thresholdModifierOf, applyThresholdModifier
+} from "./roll-helpers/threshold.js"
+import {
   isStructuredSpell, pushedHits
 } from "./roll-helpers/arcana-metamagics.js"
 import {
@@ -87,6 +90,9 @@ export class SR5_RollTest {
         callback: (event, button, dialog) => captureResult("edge", dialog),
       })
     }
+
+    //Threshold modifier of the character (Bliss, Purple Orchid), shown in the dialog and added once it closes
+    dialogData.thresholdModifier = thresholdModifierOf(actorData)
 
     // Render template and show dialog
     const dlg = await foundry.applications.handlebars.renderTemplate(template, dialogData)
@@ -194,6 +200,9 @@ export class SR5_RollTest {
       dialogData.limit.base = dialogData.matrix.level
       dialogData.limit.type = "level"
     }
+
+    //Raise the threshold of the test, if it has one (Bliss SR5 p. 412, Purple Orchid Chrome Flesh p. 190)
+    dialogData.threshold = applyThresholdModifier(dialogData.threshold, dialogData.thresholdModifier)
 
     //Add limit modifiers
     dialogData = await SR5_RollTestHelper.handleLimitModifiers(dialogData)

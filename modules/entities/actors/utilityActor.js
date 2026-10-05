@@ -44,6 +44,9 @@ import {
   drugEffectApplies, phaseFromFlags
 } from "../items/drug-phase.js"
 import {
+  replacedValue, replaceModifierValue
+} from "./effect-replace.js"
+import {
   SR5 
 } from "../../config.js"
 import {
@@ -805,6 +808,8 @@ export class SR5_CharacterUtility extends Actor {
       const bbReduction = Math.min(bbPenaltyReduction(actor), -actorData.penalties.condition.actual.base)
       if (bbReduction > 0) SR5_EntityHelpers.updateModifier(actorData.penalties.condition.actual, game.i18n.localize("SR5.BB_Stabilized"), "bbStabilization", bbReduction)
       SR5_EntityHelpers.updateValue(actorData.penalties.condition.actual)
+      //A wound modifier reduced by an effect (trauma damper, Chrome Flesh p. 123) never turns into a bonus
+      if (actorData.penalties.condition.actual.value > 0) actorData.penalties.condition.actual.value = 0
     }
 
     if (actor.type === "actorDrone") {
@@ -3018,7 +3023,12 @@ export class SR5_CharacterUtility extends Actor {
 
         // limit calculation
         let linkedLimit = actorData.skills[key].limit.base
-        if (actorData.limits[linkedLimit]) {
+        //An effect may give the skill its own Limit (No Future instruments, Animal Sense): it stands in for the linked
+        //one, and the other modifiers still add to it (a Synthlink, No Future p. 152)
+        const replacedLimit = replacedValue(actorData.skills[key].limit.modifiers)
+        if (replacedLimit !== undefined) {
+          actorData.skills[key].limit.value = replacedLimit + SR5_EntityHelpers.modifiersSum(actorData.skills[key].limit.modifiers.filter(m => !m.replace))
+        } else if (actorData.limits[linkedLimit]) {
           actorData.skills[key].limit.value = actorData.limits[linkedLimit].value + SR5_EntityHelpers.modifiersSum(actorData.skills[key].limit.modifiers)
         }
       }
@@ -5234,19 +5244,20 @@ export class SR5_CharacterUtility extends Actor {
             }
             SR5_EntityHelpers.updateModifier(targetObject, item.name, modifierType, customEffect.value * customEffect.multiplier, isMultiplier, cumulative)
             break
-          case "valueReplace": {
-            targetObject.modifiers = []
-            if (targetObject.base < 1) targetObject.base = 0
-            let modValue = -targetObject.base + (customEffect.value || 0)
-            SR5_EntityHelpers.updateModifier(targetObject, item.name, modifierType, modValue * customEffect.multiplier, isMultiplier, cumulative)
-            break
-          }
-          case "ratingReplace": {
-            targetObject.modifiers = []
-            customEffect.value = (itemData.itemRating || 0)
-            if (targetObject.base < 1) targetObject.base = 0
-            let modRating = -targetObject.base + customEffect.value
-            SR5_EntityHelpers.updateModifier(targetObject, item.name, modifierType, modRating * customEffect.multiplier, isMultiplier, cumulative)
+          case "valueReplace":
+          case "ratingReplace":
+          case "hitsReplace": {
+            //The target takes this value. A skill Limit, whose base is the key of its linked Limit, reads it back through
+            //skillLimitValue(): the value stands in for the linked Limit, and the other effects on the skill Limit still
+            //add to it (No Future p. 152: an instrument gives the Limit, a Synthlink raises it)
+            if (typeof targetObject.base === "number") targetObject.modifiers = []
+            if (customEffect.type === "ratingReplace") customEffect.value = (itemData.itemRating || 0)
+            if (customEffect.type === "hitsReplace") customEffect.value = (itemData.hits || 0)
+            if (typeof targetObject.base === "number" && targetObject.base < 1) targetObject.base = 0
+            let modValue = replaceModifierValue(targetObject.base, (customEffect.value || 0)) * customEffect.multiplier
+            SR5_EntityHelpers.updateModifier(targetObject, item.name, modifierType, modValue, isMultiplier, cumulative)
+            const replacing = targetObject.modifiers[targetObject.modifiers.length - 1]
+            if (replacing) replacing.replace = true
             break
           }
           case "boolean": {
