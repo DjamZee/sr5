@@ -2568,6 +2568,7 @@
 	"SR5.CALENDAR_DrugCrashOver": "end of the crash",
 	"SR5.CALENDAR_DrugStartCrash": "Start the crash",
 	"SR5.CALENDAR_DrugEndCrash": "End the crash",
+	"SR5.CALENDAR_AdvanceExtended": "Advance the clock: {n} × {unit}",
 	"SR5.CALENDAR_GoTo":"Go to a date",
 	"SR5.CALENDAR_GoToLabel": "World date and time",
 	"SR5.CALENDAR_GoToConfirm": "Set the clock",
