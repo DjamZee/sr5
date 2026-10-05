@@ -18,7 +18,8 @@ beforeAll(async () => {
   ;({
     SR5Actor 
   } = await import('../modules/entities/actors/entityActor.js'))
-})
+// The actor pulls in most of the system: under the full parallel suite, more than the 5 s a hook is given
+}, 60000)
 
 function spell({
   force, category = "detection", range = "los", extended = false 

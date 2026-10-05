@@ -136,7 +136,8 @@ describe('SR5Token gives the vision of a hidden camera to the player it is share
       }
     }
     SR5Token = (await import('../modules/interface/token.js')).SR5Token
-  })
+    // The token pulls in most of the system: under the full parallel suite, more than the 5 s a hook is given
+  }, 60000)
 
   const make = (flags) => {
     const t = new SR5Token()
