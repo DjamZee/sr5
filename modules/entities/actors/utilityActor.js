@@ -851,22 +851,25 @@ export class SR5_CharacterUtility extends Actor {
       }
     }
 
-    //Illusionist and Master Manipulator (Forbidden Arcana p. 37, 38): one spell per level sustained without penalty, Force <= Magic
+    //Illusionist and Master Manipulator (Forbidden Arcana p. 37, 38): one spell per level sustained without penalty, Force <= Magic.
+    //Worked out again at every preparation and never written on the item: a flag left on the item outlived a Force raised
+    //above Magic (measured in play)
+    let freedByMastery = new Set()
     if (itemType === "itemSpell" && actor.system.magic?.masteries) {
       const masteries = this.updateMagicMasteries(actor.system.magic)
       if (masteries.illusionist > 0 || masteries.masterManipulator > 0) {
         const candidates = actor.items.filter(i => i.type === "itemSpell" && i.system.isActive && !i.system.freeSustain)
-        const freed = masteryFreeSustainedSpells(
+        freedByMastery = masteryFreeSustainedSpells(
           candidates.map(i => ({
             id: i.id, category: i.system.category, subCategory: i.system.subCategory, force: i.system.force
           })),
           actor.system.specialAttributes.magic.augmented.value, masteries)
-        for (let i of candidates) if (freed.has(i.id)) i.system.freeSustain = true
       }
     }
 
     //Apply sustaining malus.
     for (let i of actor.items) {
+      if (freedByMastery.has(i.id)) continue
       if (i.system.isActive && i.type === itemType && !i.system.freeSustain) SR5_EntityHelpers.updateModifier(actor.system.penalties[concentrationType].actual, `${i.name}`, i.type, -sustainedMod)
 
       //Except if concentration is active.
