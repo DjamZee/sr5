@@ -32,3 +32,9 @@
     </div>
     <div class="col-1"></div>
 </li>
+{{#if combat.calledShot.aimForPerfection}}
+<!-- Aim for Perfection (Assassin's Primer p. 15): a reminder, the GM judges when a Called Shot does not fit -->
+<li class="grid">
+    <div class="col-11 SR-SubColor"><em>{{localize 'SR5.AimForPerfectionReminder'}}</em></div>
+</li>
+{{/if}}

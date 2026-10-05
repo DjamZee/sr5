@@ -215,6 +215,8 @@ export default async function weapon(rollData, actor, item){
   if (actorData.specialProperties?.aggravatedWounds) rollData.damage.aggravated = true
 
   _buildCalledShotList(rollData)
+  //Aim for Perfection (Assassin's Primer p. 15): the dialog reminds that a Called Shot is expected
+  rollData.combat.calledShot.aimForPerfection = aimForPerfectionReminder(actorData)
   if (game.settings.get("sr5", "sr5GrapplingRules")) {
     _addGrapplingCalledShots(rollData, actor)
     _addClinchModifiers(rollData, actor)
@@ -650,4 +652,9 @@ async function checkFanningTargets(tokens, attacker, maxRange){
     actorIds: tokens.map(t => t.actor.isToken ? t.actor.token.id : t.actor.id),
     farthest: points[farthest],
   }
+}
+
+//Aim for Perfection (Assassin's Primer p. 15): only a reminder, the book leaves the exceptions to the GM
+export function aimForPerfectionReminder(actorData){
+  return !!actorData?.specialProperties?.calledShotHalved
 }
