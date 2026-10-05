@@ -3487,6 +3487,16 @@ SR5.AllSpiritPowers = {
   venom                      : "SR5.SpiritPowerVenom",
   wealth                     : "SR5.SpiritPowerWealth",
   weatherControl             : "SR5.SpiritPowerWeatherControl",
+  armor                      : "SR5.SpiritPowerArmor",
+  diveAttack                 : "SR5.SpiritPowerDiveAttack",
+  evasion                    : "SR5.SpiritPowerEvasion",
+  haunt                      : "SR5.SpiritPowerHaunt",
+  maneuvering                : "SR5.SpiritPowerManeuvering",
+  reinforcement              : "SR5.SpiritPowerReinforcement",
+  skill                      : "SR5.SpiritPowerSkill",
+  stealth                    : "SR5.SpiritPowerStealth",
+  storm                      : "SR5.SpiritPowerStorm",
+  toughness                  : "SR5.SpiritPowerToughness",
 }
 
 //-----------------------------------//
