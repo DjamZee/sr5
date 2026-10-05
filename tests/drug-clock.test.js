@@ -8,8 +8,52 @@ vi.mock("../modules/entities/items/drug-crash.js", () => ({
 }))
 
 const {
-  speedSeconds, durationSeconds, phaseEnd, phaseStartFlags, onPreUpdateDrug, onPreUpdateActorDrugs
+  speedSeconds, durationSeconds, phaseEnd, phaseStartFlags, onPreUpdateDrug, onPreUpdateActorDrugs, activateDrugCardListeners
 } = await import("../modules/system/drug-clock.js")
+
+describe("drug cards are believed from a GM only (as the cards of lots 3 and 5, review of Ursula)", () => {
+  const html = () => {
+    const buttons = [{
+      removed: false, remove(){
+        this.removed = true
+      }, addEventListener: vi.fn()
+    }]
+    return {
+      buttons, querySelectorAll: () => buttons
+    }
+  }
+
+  it("takes the buttons off a card a player posted, even for the GM", () => {
+    globalThis.game = {
+      ...globalThis.game, user: {
+        isGM: true
+      }
+    }
+    const h = html()
+    activateDrugCardListeners(h, {
+      author: {
+        isGM: false
+      }
+    })
+    expect(h.buttons[0].removed).toBe(true)
+  })
+
+  it("wires the buttons of a card a GM posted", () => {
+    globalThis.game = {
+      ...globalThis.game, user: {
+        isGM: true
+      }
+    }
+    const h = html()
+    activateDrugCardListeners(h, {
+      author: {
+        isGM: true
+      }
+    })
+    expect(h.buttons[0].removed).toBe(false)
+    expect(h.buttons[0].addEventListener).toHaveBeenCalled()
+  })
+})
 
 describe("drugs on the world clock (SR5 p. 411-412, Chrome Flesh p. 194)", () => {
   it("reads the Speed in Combat Turns of 3 s", () => {
