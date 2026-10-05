@@ -42,7 +42,7 @@ export default function drain(rollData, actor, chatData){
     rollData.magic.drain.value = chatData.magic.drain.value
     // Mask of the mentor: Drain reduced by 1, never under its floor (Forbidden Arcana p. 176 ; floors SR5 p. 284, 299, 303, 304)
     if (actor.system.magic.mentorMask) {
-      const masked = maskedDrain(chatData.magic.drain.value, drainFloor(chatData.test))
+      const masked = maskedDrain(chatData.magic.drain.value, drainFloor(chatData.test, chatData.magic))
       if (masked !== rollData.magic.drain.value) maskApplied = true
       rollData.magic.drain.value = masked
     }

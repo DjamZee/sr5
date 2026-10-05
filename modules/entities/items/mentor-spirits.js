@@ -2,6 +2,10 @@
 // type itemMentorSpirit carries its effects in one customEffects list, each tagged with the block it
 // belongs to (mentorPath): "all", "magician", "adept", or "drawback".
 
+import {
+  STRUCTURED_DRAIN_FLOOR
+} from "../../rolls/roll-helpers/arcana-metamagics.js"
+
 export const MENTOR_PATHS = ["all", "magician", "adept", "drawback"]
 
 // The block an Awakened character draws on (SR5 p. 324): a mystic adept picks Magician or Adept once
@@ -27,8 +31,10 @@ export function mentorEffectApplies(effectPath, actorPath, magic){
 
 // SR5 p. 284 (spells), 299 (rituals), 303 (summoning), 304 (binding, banishing): a Drain Value is never
 // below 2. The tests whose Drain has that floor; the others (disenchanting...) keep their own value.
-export function drainFloor(test){
+export function drainFloor(test, magic){
   if (!test) return 0
+  // Structured Spellcasting (Forbidden Arcana p. 43): "always with a minimum of 1" for that magician's spells
+  if (test.type === "spell" && magic?.structured) return STRUCTURED_DRAIN_FLOOR
   if (["spell", "preparationFormula", "summoningResistance", "ritualResistance"].includes(test.type)) return 2
   if (["binding", "banishing"].includes(test.typeSub)) return 2
   return 0

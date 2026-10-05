@@ -18,6 +18,9 @@ import {
 } from "../system/srcombat.js"
 import SR5_RollDialog from "./roll-dialog.js"
 import {
+  isStructuredSpell, pushedHits
+} from "./roll-helpers/arcana-metamagics.js"
+import {
   isRecoilCarriedOver, buildsProgressiveRecoil
 } from "./roll-helpers/recoil.js"
 import {
@@ -167,9 +170,11 @@ export class SR5_RollTest {
     // Roll dices
     if (edge) {
       // push the limits
+      //Structured Spellcasting (Forbidden Arcana p. 43): Edge no longer lifts the limit of the spell
       dialogData.roll = await SR5_RollTest.rollDice({
         dicePool: dialogData.dicePool.value,
         explose: edge,
+        limit: isStructuredSpell(dialogData) ? dialogData.limit.value : undefined,
       })
       dialogData.edge.hasUsedPushTheLimit = true
     } else {
@@ -441,7 +446,9 @@ export class SR5_RollTest {
     // SR5 p. 58: pushing the limit ignores the test limit, so start from the unlimited hits of the original roll
     let originalHits = messageData.roll.realHits ?? messageData.roll.hits
     let newMessage = foundry.utils.duplicate(messageData)
-    newMessage.roll.hits = originalHits + newRoll.hits
+    //Structured Spellcasting (Forbidden Arcana p. 43): the limit of the spell still holds
+    newMessage.roll.hits = pushedHits(isStructuredSpell(messageData) ? messageData.roll.hits : originalHits, newRoll.hits,
+      messageData.limit.value, isStructuredSpell(messageData))
     newMessage.roll.realHits = originalHits + newRoll.realHits
     newMessage.roll.dices = messageData.roll.dices.concat(newRoll.dices)
     //The Edge dice join the pool: glitch is read again on every die rolled for this roll (SR5 p. 47, 58),

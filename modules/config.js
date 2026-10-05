@@ -2070,6 +2070,9 @@ SR5.metamagics = {
   quickening               : "SR5.MetamagicQuickening",
   shielding                : "SR5.MetamagicShielding",
   spellShaping             : "SR5.MetamagicSpellShaping",
+  // Forbidden Arcana p. 43, 45
+  structuredSpellcasting   : "SR5.MetamagicStructuredSpellcasting",
+  harmoniousDefense        : "SR5.MetamagicHarmoniousDefense",
 }
 
 //-----------------------------------//
@@ -3796,6 +3799,7 @@ SR5.drainModTypes = {
   hits                      : "SR5.DiceHits",
   ritualResistance          : "SR5.Force",
   spell                     : "SR5.DrainModifier",
+  structuredSpellcasting    : "SR5.MetamagicStructuredSpellcasting",
 }
 
 SR5.limitModTypes = {

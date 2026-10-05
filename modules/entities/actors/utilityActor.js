@@ -46,6 +46,9 @@ import {
 import {
   mentorPathFor, mentorEffectApplies, isFollowedMentor, mentorMagic, mentorPowerPoints, mentorMaskOn
 } from "../items/mentor-spirits.js"
+import {
+  harmoniousDefensePool
+} from "../../rolls/roll-helpers/arcana-metamagics.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -635,6 +638,8 @@ export class SR5_CharacterUtility extends Actor {
       actorData.magic.metamagics.quickening = false
       actorData.magic.metamagics.shielding = false
       actorData.magic.metamagics.spellShaping = false
+      actorData.magic.metamagics.structuredSpellcasting = false
+      actorData.magic.metamagics.harmoniousDefense = false
       actorData.magic.metamagics.centeringValue.value = 0
       actorData.magic.metamagics.centeringValue.modifiers = []
       actorData.magic.metamagics.spellShapingValue.value = 0
@@ -3165,6 +3170,9 @@ export class SR5_CharacterUtility extends Actor {
     let actorData = actor.system, magic = actorData.magic, skills = actorData.skills
     magic.counterSpellPool.base = skills.counterspelling.rating.value
     if (magic.metamagics.shielding) SR5_EntityHelpers.updateModifier(magic.counterSpellPool, `${game.i18n.localize('SR5.MetamagicShielding')}`, "metamagic", magic.initiationGrade)
+    //Harmonious Defense (Forbidden Arcana p. 45): Willpower + Magic + initiate grade, used as spell defense dice
+    if (magic.metamagics.harmoniousDefense) SR5_EntityHelpers.updateModifier(magic.counterSpellPool, `${game.i18n.localize('SR5.MetamagicHarmoniousDefense')}`, "metamagic",
+      harmoniousDefensePool(actorData.attributes.willpower.augmented.value, actorData.specialAttributes.magic.augmented.value, magic.initiationGrade))
     SR5_EntityHelpers.updateValue(magic.counterSpellPool)
   }
 

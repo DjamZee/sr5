@@ -6,7 +6,9 @@
 {{> systems/sr5/templates/rolls/rollDialogPartial/force.hbs}}
 
 <!--RECKLESS SPELLCASTING-->
+{{#unless magic.structured}}
 {{> systems/sr5/templates/rolls/rollDialogPartial/recklessSpellcasting.hbs}}
+{{/unless}}
 
 <!-- SPIRIT AID -->
 {{#if dialogSwitch.spiritAid}}

@@ -124,6 +124,13 @@ export class magicPartialModel extends foundry.abstract.TypeDataModel {
           spellShaping: new fields.BooleanField({
             initial: false
           }),
+          // Forbidden Arcana p. 43, 45
+          structuredSpellcasting: new fields.BooleanField({
+            initial: false
+          }),
+          harmoniousDefense: new fields.BooleanField({
+            initial: false
+          }),
           spellShapingValue: new fields.SchemaField({
             ...sr5ModsPartialModel.defineSchema()
           }),

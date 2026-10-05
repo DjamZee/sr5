@@ -4,6 +4,12 @@ import {
 import {
   SR5_MiscellaneousHelpers 
 } from "../roll-helpers/miscellaneous.js"
+import {
+  STRUCTURED_DRAIN_FLOOR
+} from "../roll-helpers/arcana-metamagics.js"
+import {
+  SR5
+} from "../../config.js"
 
 //Add info for skill dicePool roll
 export default async function spell(rollData, actor, item){
@@ -50,6 +56,17 @@ export default async function spell(rollData, actor, item){
   rollData.magic.spell.range = itemData.range
   rollData.magic.force = actorData.specialAttributes.magic.augmented.value
   rollData.dialogSwitch.reagents = true
+  //Structured Spellcasting (Forbidden Arcana p. 43): Drain -1 (minimum 1), no reckless casting, and reagents
+  //cannot stand in for the limit
+  if (actorData.magic.metamagics?.structuredSpellcasting){
+    rollData.magic.structured = true
+    rollData.magic.drainFloor = STRUCTURED_DRAIN_FLOOR
+    rollData.magic.drain.modifiers.structuredSpellcasting = {
+      value: -1,
+      label: game.i18n.localize(SR5.drainModTypes.structuredSpellcasting),
+    }
+    rollData.dialogSwitch.reagents = false
+  }
   rollData.dialogSwitch.specialization = true
   rollData.owner.itemUuid = item.uuid
 

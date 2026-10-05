@@ -101,7 +101,9 @@ export default class SR5_RollDialog {
         drainModifier += key.value
       }
       let drainFinalValue = parseInt(html.querySelector('[name="force"]').value) + drainModifier
-      if (drainFinalValue < 2) drainFinalValue = 2
+      //SR5 p. 284: never under 2; Structured Spellcasting (Forbidden Arcana p. 43): never under 1
+      const drainFloor = this.dialogData.magic.drainFloor ?? 2
+      if (drainFinalValue < drainFloor) drainFinalValue = drainFloor
       html.querySelector('[name="drainValue"]').value = drainFinalValue
       this.dialogData.magic.drain.value = drainFinalValue
     }
