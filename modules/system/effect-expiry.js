@@ -186,8 +186,13 @@ async function backfillStarts(){
   }
 }
 
+// The preCreateItem handler: it must return nothing, a false would cancel the creation of every other item
+export function onPreCreateItem(item, now){
+  stampEffectStart(item, now)
+}
+
 export function initEffectExpiry(){
-  Hooks.on("preCreateItem", (item) => stampEffectStart(item, game.time.worldTime))
+  Hooks.on("preCreateItem", (item) => onPreCreateItem(item, game.time.worldTime))
   Hooks.on("updateWorldTime", () => queueCheck())
   if (isWriter()) backfillStarts().then(() => queueCheck())
     .catch(e => SR5_SystemHelpers.srLog(1, `Effect starts not set: ${e}`))
