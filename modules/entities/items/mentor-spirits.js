@@ -38,7 +38,9 @@ export function mentorEffectApplies(effectPath, actorPath, magic){
 // below 2. The tests whose Drain has that floor; the others (disenchanting...) keep their own value.
 export function drainFloor(test, magic){
   if (!test) return 0
-  // Structured Spellcasting (Forbidden Arcana p. 43): "always with a minimum of 1" for that magician's spells
+  // Structured Spellcasting (Forbidden Arcana p. 43): "always with a minimum of 1" for that magician's spells.
+  // With the Mask of the mentor too, the Drain of a spell may go down to 1: the supplement prevails over the floor
+  // of 2 of SR5 p. 284 (arbitrage de DjamZ, 2026-10-05)
   if (test.type === "spell" && magic?.structured) return STRUCTURED_DRAIN_FLOOR
   if (["spell", "preparationFormula", "summoningResistance", "ritualResistance"].includes(test.type)) return 2
   if (["binding", "banishing"].includes(test.typeSub)) return 2
