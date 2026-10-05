@@ -169,3 +169,44 @@ export function vendorShopOfToken(token) {
     actor, storage
   } : null
 }
+
+/**
+ * What the gamemaster needs to see of an item before buying it back (Élise's ruling after Nora's
+ * second review): its kind, its category, and its key figures — damage, armor penetration and
+ * firing modes for a weapon, the rating for anything else.
+ */
+export function itemFigures(item) {
+  const system = item?.system ?? {
+  }
+  const figures = {
+    type: item?.type ?? '', category: system.category ?? system.type ?? '',
+  }
+  if (item?.type === 'itemWeapon') {
+    const modes = system.firingMode ?? {
+    }
+    figures.damage = `${system.damageValue?.base ?? ''}${system.damageType ?? ''}`
+    figures.ap = Number(system.armorPenetration?.base ?? 0) || 0
+    figures.modes = [['singleShot', 'CC'], ['semiAutomatic', 'SA'], ['burstFire', 'TR'], ['fullyAutomatic', 'TA']]
+      .filter(([key]) => modes[key]).map(([, label]) => label).join('/')
+  } else {
+    figures.rating = Number(system.itemRating ?? system.deviceRating ?? 0) || 0
+  }
+  return figures
+}
+
+/**
+ * Where an item and the source it claims differ: its name, its kind, its category, its figures.
+ * A source the seller's copy declares proves nothing (its owner writes it): a difference is shown
+ * to the gamemaster, who decides.
+ */
+export function figureMismatches(item, source) {
+  if (!source) return []
+  const differences = []
+  if ((item?.name ?? '') !== (source.name ?? '')) differences.push('name')
+  const mine = itemFigures(item)
+  const theirs = itemFigures(source)
+  for (const key of ['type', 'category', 'damage', 'ap', 'modes', 'rating']) {
+    if (key in mine && key in theirs && String(mine[key]) !== String(theirs[key])) differences.push(key)
+  }
+  return differences
+}

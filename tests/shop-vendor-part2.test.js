@@ -55,6 +55,7 @@ const player = {
   id: 'player', isGM: false, name: 'Joueur'
 }
 const SOURCE = 'Compendium.sr5.weapons.Item.fichetti'
+const PANTHER = 'Compendium.sr5.weapons.Item.panther'
 
 function makeActor(id, items, owner = null) {
   const owned = new Map(items.map(item => [item.id, item]))
@@ -145,8 +146,11 @@ const compendiumFichetti = {
 
 let SR5ShopVendor, SR5ShopAvailability
 const messages = new Map()
-let confirmAnswer = true
+let confirmAnswer = {
+  accepted: true
+}
 let confirmations = 0
+let reviews = []
 
 beforeEach(async () => {
   vi.resetModules()
@@ -181,13 +185,16 @@ beforeEach(async () => {
     find: fn => [...messages.values()].find(fn),
   }
   globalThis.fromUuid = async uuid => (uuid === SOURCE ? compendiumFichetti : null)
-  confirmAnswer = true
+  confirmAnswer = {
+    accepted: true
+  }
   confirmations = 0
-  globalThis.foundry.applications.api.DialogV2 = {
-    confirm: async () => {
-      confirmations++
-      return confirmAnswer
-    }
+  reviews = []
+  // The gamemaster's look at every buy-back: an answer chosen by each test
+  SR5ShopVendor.confirmBuyBack = async review => {
+    confirmations++
+    reviews.push(review)
+    return typeof confirmAnswer === 'function' ? confirmAnswer(review) : confirmAnswer
   }
   globalThis.foundry.documents.ChatMessage = {
     getSpeaker: () => ({
@@ -268,7 +275,7 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
     })
   })
 
-  it('prices on the compendium source, not on a price the player wrote on her copy (Nora\'s review)', async () => {
+  it('proposes the price of the source, never the one the player wrote on her copy', async () => {
     const {
       vendor
     } = world({
@@ -280,42 +287,137 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
     }]), player.id)
     const offer = messages.get('m0').flags.sr5vendorOffer
     expect(offer.results[0]).toMatchObject({
-      listed: 350, verified: true
+      listed: 350, origin: 'source'
     })
     expect(offer.total).toBe(88)
     await SR5ShopVendor.accept({
       messageId: 'm0'
     }, player.id)
-    // And it reaches the counter at the source's price
     expect(vendor.created[0].system.price.base).toBe(350)
-    expect(confirmations).toBe(0)
   })
 
-  it('asks the gamemaster before paying a price no source confirms, and pays nothing on a no', async () => {
+  it('asks the gamemaster for every buy-back, even one whose source looks right (Élise, B1 final)', async () => {
+    const {
+      vendor
+    } = world()
+    noHits()
+    await SR5ShopVendor.offer(offerFor([{
+      itemId: 'gun', quantity: 1
+    }]), player.id)
+    await SR5ShopVendor.accept({
+      messageId: 'm0'
+    }, player.id)
+    expect(confirmations).toBe(1)
+    expect(reviews[0].lines[0]).toMatchObject({
+      name: 'Fichetti Security 600', origin: 'source', mismatches: []
+    })
+    expect(vendor.items.get('till').system.funds.value).toBe(50000 - 88)
+  })
+
+  it('shows a forged shopSource for what it is: the figures of the item against those of its source', async () => {
+    // Nora's second attack: a Fichetti renamed after the Panther, its shopSource written by hand
+    const panther = {
+      uuid: PANTHER, name: 'Panther XXL', type: 'itemWeapon',
+      system: {
+        price: {
+          value: 43000, base: 43000
+        }, category: 'heavyWeapon', damageValue: {
+          base: 17
+        }, damageType: 'P', armorPenetration: {
+          base: -6
+        }, firingMode: {
+          singleShot: true
+        }
+      },
+    }
+    globalThis.fromUuid = async uuid => (uuid === PANTHER ? panther : uuid === SOURCE ? compendiumFichetti : null)
     const {
       vendor, seller
     } = world({
-      sellerItems: [gun(25000, {
-        name: 'Fichetti en or', _stats: {
-        }
+      sellerItems: [gun(350, {
+        name: 'Panther XXL',
+        flags: {
+          sr5: {
+            shopSource: PANTHER
+          }
+        },
+        system: {
+          storedIn: '', price: {
+            value: 350, base: 350
+          }, category: 'lightPistol', damageValue: {
+            base: 6
+          }, damageType: 'P', armorPenetration: {
+            base: 0
+          }, firingMode: {
+            semiAutomatic: true
+          }
+        },
       })]
     })
     noHits()
     await SR5ShopVendor.offer(offerFor([{
       itemId: 'gun', quantity: 1
     }]), player.id)
-    expect(messages.get('m0').flags.sr5vendorOffer.results[0].verified).toBe(false)
-    expect(messages.get('m0').content).toContain('SR5.ShopVendorOfferUnverified')
-    confirmAnswer = false
+    confirmAnswer = {
+      accepted: false
+    }
     expect(await SR5ShopVendor.accept({
       messageId: 'm0'
     }, player.id)).toBe(false)
     expect(confirmations).toBe(1)
+    expect(reviews[0].lines[0].mismatches).toEqual(expect.arrayContaining(['category', 'damage', 'ap', 'modes']))
     expect(vendor.items.get('till').system.funds.value).toBe(50000)
     expect(seller.items.get('gun')).toBeDefined()
   })
 
-  it('without a source, takes the shelf price of that name, and still asks the gamemaster', async () => {
+  it('pays the price the gamemaster corrected, and checks the cashbox against it', async () => {
+    const {
+      vendor, seller
+    } = world()
+    noHits()
+    await SR5ShopVendor.offer(offerFor([{
+      itemId: 'gun', quantity: 1
+    }]), player.id)
+    confirmAnswer = {
+      accepted: true, units: [40]
+    }
+    expect(await SR5ShopVendor.accept({
+      messageId: 'm0'
+    }, player.id)).toBe(true)
+    expect(vendor.items.get('till').system.funds.value).toBe(50000 - 40)
+    expect(seller.created[0].system.amount).toBe(40)
+  })
+
+  it('keeps the queue moving while the gamemaster reads the buy-back', async () => {
+    world()
+    noHits()
+    await SR5ShopVendor.offer(offerFor([{
+      itemId: 'gun', quantity: 1
+    }]), player.id)
+    let answer
+    confirmAnswer = () => new Promise(resolve => {
+      answer = resolve
+    })
+    const accepting = SR5ShopVendor.accept({
+      messageId: 'm0'
+    }, player.id)
+    await tick()
+    await tick()
+    // Another request goes through the queue while the dialog is open: it is not held up
+    const other = await Promise.race([
+      SR5ShopVendor.offer(offerFor([{
+        itemId: 'gun', quantity: 1
+      }]), player.id).then(() => 'answered'),
+      new Promise(resolve => setTimeout(() => resolve('held up'), 500)),
+    ])
+    expect(other).toBe('answered')
+    answer({
+      accepted: true
+    })
+    expect(await accepting).toBe(true)
+  })
+
+  it('without any source, proposes the shelf price of that name', async () => {
     vi.doMock('../modules/interface/shop-window.js', () => ({
       SR5ShopWorldSource: {
         index: async () => [{
@@ -328,9 +430,7 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
         }],
       },
     }))
-    const {
-      vendor
-    } = world({
+    world({
       sellerItems: [gun(25000, {
         _stats: {
           compendiumSource: 'Compendium.gone.pack.Item.x'
@@ -342,26 +442,8 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
       itemId: 'gun', quantity: 1
     }]), player.id)
     expect(messages.get('m0').flags.sr5vendorOffer.results[0]).toMatchObject({
-      listed: 350, verified: false, byName: true
+      listed: 350, origin: 'name'
     })
-    await SR5ShopVendor.accept({
-      messageId: 'm0'
-    }, player.id)
-    expect(confirmations).toBe(1)
-    expect(vendor.created[0].system.price.base).toBe(350)
-  })
-
-  it('does not trust a source whose name is not the item\'s (a cheap item pointed at a dear one)', async () => {
-    world({
-      sellerItems: [gun(25000, {
-        name: 'Canon d\'assaut'
-      })]
-    })
-    noHits()
-    await SR5ShopVendor.offer(offerFor([{
-      itemId: 'gun', quantity: 1
-    }]), player.id)
-    expect(messages.get('m0').flags.sr5vendorOffer.results[0].verified).toBe(false)
   })
 
   it('gives the contact rate to the vendor\'s client contacts only, at the Loyalty the gamemaster set', async () => {
@@ -409,7 +491,7 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
     })
   })
 
-  it('keeps one open offer per item: asking again rolls nothing until it is answered', async () => {
+  it('keeps one open offer per item, and after the seller\'s no only the gamemaster unlocks it (Élise, B1 final)', async () => {
     world()
     const roll = noHits()
     await SR5ShopVendor.offer(offerFor([{
@@ -419,18 +501,25 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
       itemId: 'gun', quantity: 1
     }]), player.id)).toBe(false)
     expect(messages.size).toBe(1)
-    const rolls = roll.mock.calls.length
-    // Declined by the seller: a new offer may be asked
+    // The seller declines: the item stays locked at this vendor
     expect(await SR5ShopVendor.decline({
       messageId: 'm0'
     }, player.id)).toBe(true)
-    expect(await SR5ShopVendor.accept({
+    const rolls = roll.mock.calls.length
+    expect(await SR5ShopVendor.offer(offerFor([{
+      itemId: 'gun', quantity: 1
+    }]), player.id)).toBe(false)
+    expect(roll.mock.calls.length).toBe(rolls)
+    // A player cannot lift the lock; the gamemaster can
+    expect(await SR5ShopVendor.unlock({
       messageId: 'm0'
     }, player.id)).toBe(false)
+    expect(await SR5ShopVendor.unlock({
+      messageId: 'm0'
+    }, gm.id)).toBe(true)
     expect(await SR5ShopVendor.offer(offerFor([{
       itemId: 'gun', quantity: 1
     }]), player.id)).toBe(true)
-    expect(roll.mock.calls.length).toBeGreaterThan(rolls)
   })
 
   it('refuses what is not on its shelves, unless it buys everything', async () => {
