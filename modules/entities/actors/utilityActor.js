@@ -3424,7 +3424,7 @@ export class SR5_CharacterUtility extends Actor {
         drugStat = {
           "name": drugType.value,
           "speed": 1,
-          "speedUnit": "SR5.Minute",
+          "speedType": "SR5.Minute",
           "duration": duration,
           "durationType": "hour",
           "unresistedStunDamage": 6,
@@ -3448,7 +3448,7 @@ export class SR5_CharacterUtility extends Actor {
         drugStat = {
           "name": drugType.value,
           "speed": 1,
-          "speedUnit": "SR5.CombatTurn",
+          "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "hour",
           "unresistedStunDamage": 6,
@@ -3485,7 +3485,7 @@ export class SR5_CharacterUtility extends Actor {
         drugStat = {
           "name": drugType.value,
           "speed": 1,
-          "speedUnit": "SR5.CombatTurn",
+          "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "hour",
         }
@@ -3511,7 +3511,7 @@ export class SR5_CharacterUtility extends Actor {
         drugStat = {
           "name": drugType.value,
           "speed": 1,
-          "speedUnit": "SR5.Hour",
+          "speedType": "SR5.Hour",
           "duration": duration,
           "durationType": "hour",
         }
@@ -3790,7 +3790,7 @@ export class SR5_CharacterUtility extends Actor {
         drugStat = {
           "name": drugType.value,
           "speed": 1,
-          "speedUnit": "SR5.Minute",
+          "speedType": "SR5.Minute",
           "duration": duration,
           "durationType": "minute",
           "durationContrecoup": duration * 2,
@@ -3804,7 +3804,7 @@ export class SR5_CharacterUtility extends Actor {
         drugStat = {
           "name": drugType.value,
           "speed": 1,
-          "speedUnit": "SR5.CombatTurn",
+          "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "minute",
         }
@@ -3843,7 +3843,7 @@ export class SR5_CharacterUtility extends Actor {
         drugStat = {
           "name": drugType.value,
           "speed": 1,
-          "speedUnit": "SR5.CombatTurn",
+          "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "minute",
           "durationContrecoup": 10 * duration,

@@ -69,6 +69,15 @@ describe('drug durations rolled as the book says', () => {
   }
 
   // Chrome Flesh p. 186: disorientation as long as the effect, -2 social Limit for (Body) hours
+  // The sheet reads the unit of the speed from speedType: under another key, the speed showed without its unit
+  for (const key of ['betameth', 'crimsonOrchid', 'forgetMeNot', 'g3', 'snuff', 'soberTime', 'woad']) {
+    it(`${key}: the unit of the speed is where the sheet reads it`, async () => {
+      const stat = await shots(key)
+      expect(stat.speedType).toMatch(/^SR5\./)
+      expect(stat).not.toHaveProperty('speedUnit')
+    })
+  }
+
   for (const [key, duration] of [['eX', 4], ['galak', 5]]) {
     it(`${key}: the disorientation lasts as the effect, the social Limit (Body) hours`, async () => {
       const stat = await shots(key, 4)
