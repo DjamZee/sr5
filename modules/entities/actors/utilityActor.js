@@ -8,6 +8,9 @@ import {
   SR5_Toxins
 } from "../items/toxins.js"
 import {
+  applyDrugQuality
+} from "../items/drug-stat.js"
+import {
   SR5_SystemHelpers 
 } from "../../system/utilitySystem.js"
 import {
@@ -3981,6 +3984,54 @@ export class SR5_CharacterUtility extends Actor {
           "durationType": "hour",
         }
         break
+      //Chrome Flesh p. 194: speed "Immédiate", 48 hours, no crash
+      case "psychochip":
+        drugStat = {
+          "name": drugType.value,
+          "speed": item.system.speed,
+          "duration": 48,
+          "durationType": "hour",
+        }
+        break
+      //Bullets & Bandages p. 19: (30 - Body) minutes, no speed given
+      case "cryo":
+        drugStat = {
+          "name": drugType.value,
+          "speed": item.system.speed,
+          "duration": Math.max(30 - actorData.attributes.body.augmented.value, 1),
+          "durationType": "minute",
+        }
+        break
+      //Bullets & Bandages p. 19: (Body) Combat Turns
+      case "hemoSynth":
+        drugStat = {
+          "name": drugType.value,
+          "speed": item.system.speed,
+          "duration": Math.max(actorData.attributes.body.augmented.value, 1),
+          "durationType": "combatTurn",
+        }
+        break
+      //Bullets & Bandages p. 19-20: 24 hours
+      case "nanoScan":
+        drugStat = {
+          "name": drugType.value,
+          "speed": item.system.speed,
+          "duration": 24,
+          "durationType": "hour",
+        }
+        break
+      //Bullets & Bandages p. 20: 1D6 × 10 minutes, one die times ten
+      case "neostigmine":
+      case "ondansetron":
+        roll = new Roll(`1d6 * 10`)
+        rollRoll = await roll.evaluate()
+        drugStat = {
+          "name": drugType.value,
+          "speed": item.system.speed,
+          "duration": rollRoll.total,
+          "durationType": "minute",
+        }
+        break
       default:
         SR5_SystemHelpers.srLog(1, `Unknown '${drugType.value}' drug type in handleDrugShots()`)
         return
@@ -3988,6 +4039,8 @@ export class SR5_CharacterUtility extends Actor {
     //An antitoxin divides the duration of the effect by its rating (Chrome Flesh p. 154)
     const antitoxin = SR5_Toxins.antitoxinRating(actorData)
     if (antitoxin > 1) drugStat.duration = SR5_Toxins.drugDuration(drugStat.duration, antitoxin)
+    //The quality of the drug changes the duration of its crash (Chrome Flesh p. 194)
+    applyDrugQuality(drugStat, item.system?.quality)
     return drugStat
   }
 

@@ -50,6 +50,10 @@ export class sr5ItemDrugDataModel extends foundry.abstract.TypeDataModel {
       duration: new fields.StringField({
         initial: ''
       }),
+      //Street, standard, pharmaceutical or custom (Chrome Flesh p. 194): it changes the crash duration
+      quality: new fields.StringField({
+        initial: 'standard'
+      }),
       addiction: new fields.SchemaField({
         type: new fields.StringField({
           initial: ''

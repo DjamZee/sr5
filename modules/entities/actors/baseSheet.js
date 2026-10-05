@@ -68,6 +68,9 @@ import {
 import {
   addictionWeeks, focusAddictionRating
 } from "../../rolls/roll-helpers/addiction.js"
+import {
+  warnDrugWithoutStat
+} from "../items/drug-stat.js"
 
 /**
  * Extend the basic ActorSheet class to do all the SR5 things!
@@ -1353,14 +1356,18 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
           if (actorData.addictions.shot) SR5_EntityHelpers.updateValue(actorData.addictions.shot)
           if (actorData.addictions.weekAddiction) SR5_EntityHelpers.updateValue(actorData.addictions.weekAddiction)		
 					
-          // Check if the drug is set on systemEffect					
-          if (drugType) {
-						
+          // Generate the drug stat from the drug systemEffect: durations read the augmented Body and the
+          // Essence, prepared values that the copy of system (its source) does not hold
+          drug = drugType ? await SR5_CharacterUtility.handleDrugShots(item, drugType, actor.system) : null
+
+          // Without a stat (no drug systemEffect, or a key the system does not know), nothing is counted: the GM
+          // is told, instead of a drug that silently never ends
+          if (!drug) await warnDrugWithoutStat(actor, item)
+
+          if (drug) {
+
             SR5_SystemHelpers.srLog(1, "Check drugType")
 
-            // Generate the drug stat: durations read the augmented Body and the Essence, prepared values that
-            // the copy of system (its source) does not hold
-            drug = await SR5_CharacterUtility.handleDrugShots(item, drugType, actor.system)
             itemData.handleShot = drug
 
             let speedType = ""

@@ -184,6 +184,20 @@ SR5.drugs = {
   zero                      : "SR5.DrugZero",
   zombieDust                : "SR5.DrugZombieDust",
   zone                      : "SR5.DrugZone",
+  psychochip                : "SR5.DrugPsychochip",
+  cryo                      : "SR5.DrugCryo",
+  hemoSynth                 : "SR5.DrugHemoSynth",
+  nanoScan                  : "SR5.DrugNanoScan",
+  neostigmine               : "SR5.DrugNeostigmine",
+  ondansetron               : "SR5.DrugOndansetron",
+}
+
+// Drug qualities (Chrome Flesh p. 194)
+SR5.drugQualities = {
+  street                    : "SR5.DrugQualityStreet",
+  standard                  : "SR5.DrugQualityStandard",
+  pharmaceutical            : "SR5.DrugQualityPharmaceutical",
+  custom                    : "SR5.DrugQualityCustom",
 }
 
 

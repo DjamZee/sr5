@@ -22,4 +22,13 @@
         <div class="col-4">{{localize 'SR5.Duration'}}{{localize 'SR5.Colons'}}</div>
         <div class="col-8"><input type="text" data-dtype="text" name="system.duration" value="{{system.duration}}" placeholder="" /></div>
     </li>
+
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.DrugQuality'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-8">
+            <select name="system.quality" data-dtype="String">
+                {{selectOptions lists.drugQualities selected=system.quality localize=true}}
+            </select>
+        </div>
+    </li>
 </ul>
