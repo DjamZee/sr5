@@ -35,6 +35,17 @@ export class specialPropertiesPartialModel extends foundry.abstract.TypeDataMode
         antitoxin: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema()
         }),
+        // Immunity to a toxin vector (SR5 p. 409-410 and 439): gas mask (inhalation), chemical seal (contact and inhalation)
+        toxinImmunityContact: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema()
+        }),
+        toxinImmunityInhalation: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema()
+        }),
+        // Levels taken off a radiation zone (Antirad, Chrome Flesh p. 151; Radiation tolerance, p. 170), added up
+        antirad: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema()
+        }),
         hardenedArmors: new fields.SchemaField({
           normalWeapon: new fields.SchemaField({
             type: new fields.StringField({

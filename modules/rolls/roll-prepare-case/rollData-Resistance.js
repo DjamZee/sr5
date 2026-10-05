@@ -246,11 +246,18 @@ async function handleToxinDamage(rollData, actorData, chatData){
     
   //If more than one vector is present, open dialog box
   for (let [key, value] of Object.entries(rollData.damage.toxin.vector)){
-    if (value) {
-      toxinType = key
-      vectors.push(key)
-    }
+    if (value) vectors.push(key)
   }
+  //A gas mask or a chemical seal makes the vector harmless (SR5 p. 409-410): only the other vectors are left
+  const open = SR5_Toxins.openVectors(actorData, vectors)
+  if (vectors.length && !open.length) {
+    const sources = [...new Set(vectors.flatMap(v => SR5_Toxins.immunitySources(actorData, v)))].join(", ")
+    return abortWithInfo(game.i18n.format("SR5.INFO_ToxinImmune", {
+      source: sources 
+    }))
+  }
+  vectors = open
+  toxinType = vectors[vectors.length - 1]
   if (vectors.length > 1) toxinType = await SR5_CombatHelpers.chooseToxinVector(vectors)
 
   //Penetration only cancels the protection's bonus, never more (SR5 p. 410)

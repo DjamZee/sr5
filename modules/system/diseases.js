@@ -13,6 +13,9 @@ import {
 import {
   markRowDoneInMessage, cardFromGM
 } from "./card-rows.js"
+import {
+  SR5_Toxins
+} from "../entities/items/toxins.js"
 
 export const DISEASE_LEDGER = "sr5DiseaseLedger"
 export const REVEAL_DISEASES_SETTING = "sr5RevealDiseases"
@@ -333,7 +336,14 @@ export async function infectWith(item){
   const startYear = calendarStartYear()
   const actors = candidates.filter(a => data.actors.includes(a.uuid))
   if (!actors.length) return ui.notifications.warn(game.i18n.localize("SR5.DISEASE_NoTarget"))
+  const immune = []
   for (const actor of actors){
+    //A gas mask or a chemical seal also keeps a pathogen out by its vector (SR5 p. 410)
+    const sources = SR5_Toxins.immunitySources(actor.system, data.vector)
+    if (sources.length) {
+      immune.push(`${actor.name} (${sources.join(", ")})`)
+      continue
+    }
     const open = openInfectionOf(diseaseLedger(), actor.uuid, profile.name)
     if (open) await writeEntry(reexpose(open, data.doses))
     else await writeEntry(newInfection(profile, {
@@ -341,8 +351,11 @@ export async function infectWith(item){
       vector: data.vector, doses: data.doses, volunteer: data.volunteer,
     }))
   }
+  if (immune.length) ui.notifications.info(game.i18n.format("SR5.DISEASE_Immune", {
+    names: immune.join(" ; ")
+  }))
   ui.notifications.info(game.i18n.format("SR5.DISEASE_Infected", {
-    name: item.name, count: actors.length
+    name: item.name, count: actors.length - immune.length
   }))
 }
 

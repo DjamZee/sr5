@@ -10,6 +10,9 @@ import {
 import {
   penetrationModifier, protectionOf
 } from "../../system/diseases.js"
+import {
+  radiationModifiers
+} from "../../system/radiation.js"
 
 //Add info for Resistance Roll
 export default async function resistanceSimple(rollData, rollKey, actor){
@@ -81,6 +84,30 @@ export async function resistanceDisease(rollData, vector, actor, chatData){
   })
   rollData.disease = {
     infectionId: disease.infectionId, token: disease.token
+  }
+  return rollData
+}
+
+// A radiation zone test asked by the GM (Run & Gun p. 164-165): Body + Willpower, with the radiation shielding
+// and the Radiation tolerance; the ledger reference rides on the card, the GM alone applies it (system/radiation.js)
+export async function resistanceRadiation(rollData, actor, chatData){
+  const radiation = chatData?.radiation
+  if (!radiation) return
+  const attributes = actor.system.attributes
+  rollData.test.title = `${game.i18n.localize("SR5.RADIATION_Title")} (${radiation.power})`
+  rollData.test.typeSub = "radiation"
+  rollData.dicePool.composition = [
+    {
+      source: game.i18n.localize("SR5.Body"), type: "linkedAttribute", value: attributes.body.augmented.value 
+    },
+    {
+      source: game.i18n.localize("SR5.Willpower"), type: "linkedAttribute", value: attributes.willpower.augmented.value 
+    },
+  ]
+  rollData.dicePool.base = attributes.body.augmented.value + attributes.willpower.augmented.value
+  rollData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(rollData, radiationModifiers(actor.system))
+  rollData.radiation = {
+    exposureId: radiation.exposureId, token: radiation.token
   }
   return rollData
 }

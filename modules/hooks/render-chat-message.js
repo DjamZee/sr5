@@ -29,6 +29,9 @@ import {
   activateDiseaseDueListeners, activateDiseaseRequestListeners, addDiseaseApplyButton
 } from "../system/diseases.js"
 import {
+  activateRadiationDueListeners, activateRadiationRequestListeners, addRadiationApplyButton
+} from "../system/radiation.js"
+import {
   activateBleedCardListeners
 } from "../system/bb-healing.js"
 
@@ -81,6 +84,10 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   if (message.flags?.sr5?.diseaseDue) activateDiseaseDueListeners(html, message)
   if (message.flags?.sr5?.diseaseRequest) activateDiseaseRequestListeners(html, message)
   if (message.flags?.sr5data?.disease) addDiseaseApplyButton(message, html)
+  // Radiation zones (Run & Gun p. 164-165): same three steps
+  if (message.flags?.sr5?.radiationDue) activateRadiationDueListeners(html, message)
+  if (message.flags?.sr5?.radiationRequest) activateRadiationRequestListeners(html, message)
+  if (message.flags?.sr5data?.radiation) addRadiationApplyButton(message, html)
 }
 
 // v13: keep chat scrolled to bottom when SR5 roll messages change height.

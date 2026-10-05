@@ -3662,6 +3662,16 @@ SR5.effectDuration = {
   initiativePass            : "SR5.InitiativePass",
 }
 
+// Radiation zones (Run & Gun p. 164-165)
+SR5.radiationLevels = {
+  ""                        : "SR5.None",
+  light                     : "SR5.RadiationLight",
+  moderate                  : "SR5.RadiationModerate",
+  severe                    : "SR5.RadiationSevere",
+  extreme                   : "SR5.RadiationExtreme",
+  deadly                    : "SR5.RadiationDeadly",
+}
+
 SR5.specialProperties = {
   addictionResistance       : "SR5.AddictionResistance",
   toxinResistance           : "SR5.ToxinResistanceAll",
@@ -3670,6 +3680,9 @@ SR5.specialProperties = {
   smartlink                 : "SR5.Smartlink",
   damageReduction           : "SR5.DamageReduction",
   antitoxin                 : "SR5.Antitoxin",
+  toxinImmunityContact      : "SR5.ToxinImmunityContact",
+  toxinImmunityInhalation   : "SR5.ToxinImmunityInhalation",
+  antirad                   : "SR5.Antirad",
   streetCredDivisor         : "SR5.StreetCredDivisor",
 }
 
@@ -3682,6 +3695,9 @@ SR5.specialPropertiesList = {
   smartlink                 : "SR5.Smartlink",
   damageReduction           : "SR5.DamageReduction",
   antitoxin                 : "SR5.Antitoxin",
+  toxinImmunityContact      : "SR5.ToxinImmunityContact",
+  toxinImmunityInhalation   : "SR5.ToxinImmunityInhalation",
+  antirad                   : "SR5.Antirad",
   doublePenalties           : "SR5.PenaltyDouble",
   calledShotHalved          : "SR5.CalledShotHalved",
   regeneration              : "SR5.SpiritPowerRegeneration",

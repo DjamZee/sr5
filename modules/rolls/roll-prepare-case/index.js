@@ -152,7 +152,7 @@ export {
   default as resistance
 } from "./rollData-Resistance.js"
 export {
-  default as resistanceSimple, resistanceDisease
+  default as resistanceSimple, resistanceDisease, resistanceRadiation
 } from "./rollData-ResistanceSimple.js"
 export {
   default as resistFire

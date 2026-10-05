@@ -10,6 +10,9 @@ import {
 import {
   removeManaShift
 } from "../system/mana-shift.js"
+import {
+  exposeToRadiation
+} from "../system/radiation.js"
 
 export default class SR5SceneConfig extends foundry.applications.sheets.SceneConfig {
 
@@ -120,5 +123,11 @@ export default class SR5SceneConfig extends foundry.applications.sheets.SceneCon
     for (const button of this.element.querySelectorAll(".sr5-mana-shift-remove")) {
       button.addEventListener("click", ev => removeManaShift(this.document, ev.currentTarget.dataset.id))
     }
+    //Run & Gun p. 164-165: the GM exposes the characters of the scene, with the level chosen in the form
+    this.element.querySelector(".sr5-radiation-expose")?.addEventListener("click", async () => {
+      const level = this.element.querySelector('[name="flags.sr5.environRadiation"]')?.value
+      if (level !== undefined && level !== this.document.flags.sr5?.environRadiation) await this.document.setFlag("sr5", "environRadiation", level)
+      exposeToRadiation(this.document)
+    })
   }
 }

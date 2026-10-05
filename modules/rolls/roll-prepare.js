@@ -242,6 +242,9 @@ export class SR5_PrepareRollTest {
       case "resistanceDisease":
         rollData = await SR5_GetRollData.resistanceDisease(rollData, rollKey, actor, chatData)
         break
+      case "resistanceRadiation":
+        rollData = await SR5_GetRollData.resistanceRadiation(rollData, actor, chatData)
+        break
       case "resistFire":
         rollData = await SR5_GetRollData.resistFire(rollData, actor, chatData)
         break

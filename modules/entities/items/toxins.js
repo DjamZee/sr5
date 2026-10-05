@@ -152,6 +152,24 @@ export class SR5_Toxins {
   }
 
   /**
+   * What makes a character immune to a vector (SR5 p. 409-410 and 439): the gas mask against inhalation, the
+   * chemical seal against contact and inhalation, as long as the item is active (the GM unticks it once the
+   * hour is over or the seal is damaged). Also used for pathogens (SR5 p. 410 table). Names of the sources, or [].
+   */
+  static immunitySources(actorData, vector) {
+    const key = {
+      contact: "toxinImmunityContact", inhalation: "toxinImmunityInhalation" 
+    }[vector]
+    const modifiers = key ? (actorData?.specialProperties?.[key]?.modifiers ?? []) : []
+    return modifiers.filter(m => (Number(m.value) || 0) > 0).map(m => m.source ?? m.name ?? "")
+  }
+
+  /** The vectors of a toxin the character is not immune to */
+  static openVectors(actorData, vectors = []) {
+    return vectors.filter(v => !this.immunitySources(actorData, v).length)
+  }
+
+  /**
    * A drug's duration under an antitoxin (Chrome Flesh p. 154: "divisez la durée d'effet par l'indice de
    * l'antitoxine"), rounded up as any division (SR5 p. 50). The crash is not the effect: left as it is.
    */
