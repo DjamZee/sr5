@@ -86,6 +86,6 @@ export function mentorMaskOn(actorPath, system, maskRule, magic, magicType){
   return MYSTIC_ADEPT_MASK_DRAIN && actorPath === "adept" && magicType === "mysticalAdept"
 }
 
-// Question put to DjamZ (review of 2a): does a mystic adept on the Adept path, who casts spells, also get
-// the -1 Drain of the Mask? The book gives the Adept side +1 Power Point only, hence false. One switch.
-export const MYSTIC_ADEPT_MASK_DRAIN = false
+// A mystic adept on the Adept path also gets the -1 Drain of the Mask when casting a spell, on top of the
+// +1 Power Point: arbitrage de DjamZ (2026-10-05), the book being silent on mystic adepts. One switch.
+export const MYSTIC_ADEPT_MASK_DRAIN = true

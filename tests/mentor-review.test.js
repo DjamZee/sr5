@@ -37,7 +37,8 @@ describe("mentor spirits, review points", () => {
     }
   })
 
-  it("keeps the mystic adept on the Adept path out of the Mask's Drain unless the switch says so", () => {
+  it("gives the Mask's Drain to a mystic adept on the Adept path (arbitrage de DjamZ), not to a pure adept", () => {
+    expect(MYSTIC_ADEPT_MASK_DRAIN).toBe(true)
     const system = {
       mask: true
     }
