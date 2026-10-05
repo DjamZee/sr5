@@ -2,7 +2,7 @@ import {
   describe, it, expect
 } from "vitest"
 import {
-  isTimedEffect, expiryTime, sortExpiries, stampEffectStart
+  isTimedEffect, expiryTime, sortExpiries, stampEffectStart, onPreCreateItem
 } from "../modules/system/effect-expiry.js"
 import {
   componentsToWorldTime
@@ -98,5 +98,17 @@ describe("effects counted on the world clock", () => {
       durationType: "hour", duration: 2, startTime: 10
     })
     expect(stampEffectStart(already, 5000)).toBe(false)
+  })
+
+  it("never cancels the creation of another item (a false from a pre-hook would)", () => {
+    expect(onPreCreateItem({
+      type: "itemLifestyle", system: {
+      }
+    }, 0)).not.toBe(false)
+    expect(onPreCreateItem({
+      type: "itemEffect", system: {
+        durationType: "round", duration: 1
+      }
+    }, 0)).not.toBe(false)
   })
 })
