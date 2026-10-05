@@ -1,6 +1,9 @@
 import {
   SR5
 } from "../config.js"
+import {
+  BACKGROUND_COUNT_PHENOMENA
+} from "./background-count-phenomena.js"
 
 // Players panel layout: players list (expand button on the own player row), then scene noise / background count, then latency / FPS
 export function arrangePlayersPanel() {
@@ -36,6 +39,13 @@ export function renderSceneIndicators() {
   let backgroundCountLabel = String(backgroundCount)
   const alignment = SR5.traditionTypes[flags.backgroundCountAlignement]
   if (backgroundCount && alignment) backgroundCountLabel += ` (${game.i18n.localize(alignment)})`
+  //Aetherologie p. 33-35: the phenomenon's name, and in the tooltip what the system leaves to the GM
+  const phenomenon = BACKGROUND_COUNT_PHENOMENA[flags.backgroundCountPhenomenon] ? flags.backgroundCountPhenomenon : ""
+  let backgroundCountTooltip = game.i18n.localize("SR5.SceneBackgroundCountRating")
+  if (phenomenon) {
+    backgroundCountLabel = `${game.i18n.localize(`SR5.BGPhenomenon_${phenomenon}`)} ${backgroundCountLabel}`
+    backgroundCountTooltip = game.i18n.localize(`SR5.BGPhenomenonHint_${phenomenon}`)
+  }
 
   const escape = foundry.utils.escapeHTML
   indicators.innerHTML = `
@@ -43,7 +53,7 @@ export function renderSceneIndicators() {
       <label>${escape(game.i18n.localize("SR5.Noise"))}</label>
       <span class="value">${noise}</span>
     </div>
-    <div id="sr5-scene-background-count" class="${backgroundCount ? "active" : ""}" data-tooltip="${escape(game.i18n.localize("SR5.SceneBackgroundCountRating"))}">
+    <div id="sr5-scene-background-count" class="${backgroundCount || phenomenon ? "active" : ""}" data-tooltip="${escape(backgroundCountTooltip)}">
       <label>${escape(game.i18n.localize("SR5.SceneBackgroundCount"))}</label>
       <span class="value">${escape(backgroundCountLabel)}</span>
     </div>
