@@ -1403,8 +1403,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
               let damageInfo
 
-              //Chrome Flesh p. 196: +1 for each street drug of the mix, -1 when all of them are custom.
-              //The table has no row below 1: a lower total reads row 1, not the default one (14+, 10P). This floor
+              //Chrome Flesh p. 194: +1 for each street drug of the mix, -1 when all of them are custom.
+              //The table (Chrome Flesh p. 197) has no row below 1: a lower total reads row 1, not the default one (14+, 10P). This floor
               //is a reading by Élise, the coordinator, not a text of the book
               const interactionTotal = Math.max(1, interactionDiceResult.total + drugInteractionModifier(mixedDrugs.map(d => d.system.quality)))
 

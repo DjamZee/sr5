@@ -136,7 +136,7 @@ describe('the keys read in the book', () => {
   })
 })
 
-describe('the other rules of the quality (Chrome Flesh p. 194, 196)', () => {
+describe('the other rules of the quality (Chrome Flesh p. 194; interaction table p. 197)', () => {
   it('pharmaceutical: addiction threshold -1, never below 0', () => {
     expect(drugAddictionThreshold({
       quality: 'pharmaceutical', addiction: {

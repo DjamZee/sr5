@@ -75,7 +75,7 @@ export function drugAddictionThreshold(system){
   return system?.quality === "pharmaceutical" ? Math.max(0, threshold - 1) : threshold
 }
 
-// The modifier of the interaction roll (Chrome Flesh p. 196): +1 for each street drug of the mix, -1 when all
+// The modifier of the interaction roll (Chrome Flesh p. 194, read on the table of p. 197): +1 for each street drug of the mix, -1 when all
 // of them are custom
 export function drugInteractionModifier(qualities){
   const street = qualities.filter(q => q === "street").length
