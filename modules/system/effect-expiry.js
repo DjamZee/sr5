@@ -164,11 +164,12 @@ export function activateExpiryCardListeners(html){
   })
 }
 
-// A timed effect starts at the world time it is created at
+// A timed effect starts at the world time it is put on an actor. An effect of the world (the Items tab) is a
+// model and never starts; the date it may carry from an earlier copy is replaced, or it would be born expired
 export function stampEffectStart(item, now){
-  if (item.type !== "itemEffect") return false
+  if (item.type !== "itemEffect" || !item.parent) return false
   const system = item.system
-  if (!isTimedEffect(system) || (system.startTime !== null && system.startTime !== undefined)) return false
+  if (!isTimedEffect(system) || system.startTime === now) return false
   item.updateSource({
     "system.startTime": now
   })
