@@ -17,8 +17,11 @@ import {
   SR5_CharacterUtility
 } from '../modules/entities/actors/utilityActor.js'
 import {
-  applyDrugQuality, scaleDuration, warnDrugWithoutStat
+  applyDrugQuality, scaleDuration, warnDrugWithoutStat, drugAddictionThreshold, drugInteractionModifier, drugHasCrash
 } from '../modules/entities/items/drug-stat.js'
+import {
+  startDrugCrash
+} from '../modules/entities/items/drug-crash.js'
 import {
   SR5
 } from '../modules/config.js'
@@ -130,6 +133,96 @@ describe('the keys read in the book', () => {
   })
   it('an unknown key gives no stat', async () => {
     expect(await shots('kamiPlus')).toBeUndefined()
+  })
+})
+
+describe('the other rules of the quality (Chrome Flesh p. 194, 196)', () => {
+  it('pharmaceutical: addiction threshold -1, never below 0', () => {
+    expect(drugAddictionThreshold({
+      quality: 'pharmaceutical', addiction: {
+        threshold: 3
+      }
+    })).toBe(2)
+    expect(drugAddictionThreshold({
+      quality: 'pharmaceutical', addiction: {
+        threshold: 0
+      }
+    })).toBe(0)
+    expect(drugAddictionThreshold({
+      quality: 'street', addiction: {
+        threshold: 3
+      }
+    })).toBe(3)
+  })
+  it('interaction: +1 for each street drug, -1 when all are custom', () => {
+    expect(drugInteractionModifier(['street', 'street', 'standard'])).toBe(2)
+    expect(drugInteractionModifier(['custom', 'custom'])).toBe(-1)
+    expect(drugInteractionModifier(['custom', 'standard'])).toBe(0)
+    expect(drugInteractionModifier(['custom', 'street'])).toBe(1)
+  })
+  it('galak street: the -2 social Limit lasts twice its (Body) hours', async () => {
+    const stat = await shots('galak', 'street', 3)
+    expect(stat.socialLimitContrecoup).toBe(6)
+    expect(stat.socialLimitContrecoupType).toBe('hour')
+  })
+  it('eX custom: (Body) 2 hours / 4 = 30 minutes', async () => {
+    const stat = await shots('eX', 'custom', 2)
+    expect(stat.socialLimitContrecoup).toBe(30)
+    expect(stat.socialLimitContrecoupType).toBe('minute')
+  })
+})
+
+describe('a drug without crash is over when its effect ends', () => {
+  beforeEach(() => {
+    globalThis.game.i18n = {
+      localize: k => k, format: k => k
+    }
+    globalThis.ui = {
+      notifications: {
+        info: vi.fn()
+      }
+    }
+  })
+  const data = (handleShot, customEffects = {
+  }) => ({
+    isActive: true, phase: 'rise', wirelessTurnedOn: false, interact: true, handleShot, customEffects, onUse: {
+      duration: '48 h', contrecoup: ''
+    }
+  })
+  it('psychochip: back to not taken', async () => {
+    const d = data({
+      name: 'psychochip', duration: 48, durationType: 'hour'
+    })
+    await startDrugCrash(d, {
+      name: 'Yara'
+    })
+    expect(d).toMatchObject({
+      phase: '', isActive: false, wirelessTurnedOn: false, interact: false
+    })
+  })
+  it('a crash effect without duration still goes to the crash', async () => {
+    const d = data({
+      name: 'bliss', duration: 2, durationType: 'hour'
+    }, {
+      0: {
+        phase: 'crash'
+      }
+    })
+    await startDrugCrash(d, {
+      name: 'Yara'
+    })
+    expect(d.phase).toBe('crash')
+  })
+  it('a crash duration goes to the crash', () => {
+    expect(drugHasCrash({
+      handleShot: {
+        durationContrecoup: 30
+      }
+    })).toBe(true)
+    expect(drugHasCrash({
+      handleShot: {
+      }
+    })).toBe(false)
   })
 })
 

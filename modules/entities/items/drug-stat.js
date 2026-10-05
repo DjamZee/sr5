@@ -1,3 +1,7 @@
+import {
+  effectPhase
+} from "./drug-phase.js"
+
 // The quality of a drug changes the duration of its crash (Chrome Flesh p. 194): street drugs double it,
 // pharmaceutical ones halve it, custom ones divide it by four. Standard is the default
 export const DRUG_QUALITY_CRASH_FACTORS = {
@@ -49,9 +53,41 @@ export function applyDrugQuality(shot, quality){
   const factor = DRUG_QUALITY_CRASH_FACTORS[quality] ?? 1
   if (!shot || factor === 1) return shot
   const n = Number(shot.durationContrecoup)
-  if (!Number.isFinite(n) || n <= 0 || !shot.durationContrecoupType) return shot
-  const scaled = scaleDuration(n, shot.durationContrecoupType, factor)
-  shot.durationContrecoup = scaled.value
-  shot.durationContrecoupType = scaled.unit
+  if (Number.isFinite(n) && n > 0 && shot.durationContrecoupType){
+    const scaled = scaleDuration(n, shot.durationContrecoupType, factor)
+    shot.durationContrecoup = scaled.value
+    shot.durationContrecoupType = scaled.unit
+  }
+  //eX and galak: the -2 social Limit is part of the crash, its (Body) hours follow the quality too
+  const social = Number(shot.socialLimitContrecoup)
+  if (Number.isFinite(social) && social > 0){
+    const scaled = scaleDuration(social, shot.socialLimitContrecoupType ?? "hour", factor)
+    shot.socialLimitContrecoup = scaled.value
+    shot.socialLimitContrecoupType = scaled.unit
+  }
   return shot
+}
+
+// Pharmaceutical drugs lower the addiction threshold by 1 (Chrome Flesh p. 194); at 0 the user is free of it
+// (SR5 p. 415), so it goes no lower
+export function drugAddictionThreshold(system){
+  const threshold = Number(system?.addiction?.threshold) || 0
+  return system?.quality === "pharmaceutical" ? Math.max(0, threshold - 1) : threshold
+}
+
+// The modifier of the interaction roll (Chrome Flesh p. 196): +1 for each street drug of the mix, -1 when all
+// of them are custom
+export function drugInteractionModifier(qualities){
+  const street = qualities.filter(q => q === "street").length
+  const allCustom = qualities.length > 0 && qualities.every(q => q === "custom")
+  return street - (allCustom ? 1 : 0)
+}
+
+// A drug has a crash when its stat gives it a duration or damage, or when one of its effects applies then
+export function drugHasCrash(data){
+  const shot = data.handleShot ?? {
+  }
+  if (Number(shot.durationContrecoup) > 0 || shot.unresistedStunDamage || shot.resistedStunDamage) return true
+  return Object.values(data.customEffects ?? {
+  }).some(e => e && typeof e === "object" && effectPhase(e) === "crash")
 }

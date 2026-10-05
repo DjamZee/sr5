@@ -69,7 +69,7 @@ import {
   addictionWeeks, focusAddictionRating
 } from "../../rolls/roll-helpers/addiction.js"
 import {
-  warnDrugWithoutStat
+  warnDrugWithoutStat, drugAddictionThreshold, drugInteractionModifier
 } from "../items/drug-stat.js"
 
 /**
@@ -1338,7 +1338,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
             // Add one take
             alreadyTaken.shot.value += 1
             // Reset the threshold
-            alreadyTaken.addiction.threshold = item.system.addiction.threshold
+            alreadyTaken.addiction.threshold = drugAddictionThreshold(item.system)
           }
           else {
             // Generate and populate the drug addiction
@@ -1348,7 +1348,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
           }
           //Reminder of the addiction test (SR5 p. 415): rolled from the Addictions list, never on its own
           if (item.system.addiction?.type && item.system.addiction?.rating > 0) ui.notifications.info(game.i18n.format("SR5.AddictionTestReminder", {
-            drug: item.name, threshold: item.system.addiction.threshold, rating: item.system.addiction.rating,
+            drug: item.name, threshold: drugAddictionThreshold(item.system), rating: item.system.addiction.rating,
             weeks: addictionWeeks(item.system.addiction.rating)
           }))
 
@@ -1403,7 +1403,11 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
               let damageInfo
 
-              switch(interactionDiceResult.total){
+              //Chrome Flesh p. 196: +1 for each street drug of the mix, -1 when all of them are custom. The table
+              //starts at 1: a total below it reads the first row, not the default one (14+, 10P)
+              const interactionTotal = Math.max(1, interactionDiceResult.total + drugInteractionModifier(mixedDrugs.map(d => d.system.quality)))
+
+              switch(interactionTotal){
                 case 1:
                   //Chrome Flesh p. 197: the durations of all the drugs are doubled
                   await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.toString().replace(",", ", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugDurationDoubled")}`)
@@ -1455,10 +1459,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                 case 11:
                 case 12:
                 case 13:
-                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")}${game.i18n.format("SR5.Colons")} ${drugs.toString().replace(",", ", ")} ${interactionDiceResult.total}`)
+                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")}${game.i18n.format("SR5.Colons")} ${drugs.toString().replace(",", ", ")} ${interactionTotal}`)
                   break
                 default:
-                  console.log(interactionDiceResult.total)
+                  console.log(interactionTotal)
                   await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")}${game.i18n.format("SR5.Colons")} ${drugs.toString().replace(",", ", ")}`)
                   damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
                   damageInfo.damage.value = 10

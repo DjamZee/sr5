@@ -7,6 +7,9 @@ import {
 import {
   unitKey
 } from "./drug-phase.js"
+import {
+  drugHasCrash
+} from "./drug-stat.js"
 
 // The crash of a drug, "the negative effects that follow the effect of the drug" (Chrome Flesh p. 194).
 // One path for all: the switch of the sheet, an interaction (Chrome Flesh p. 197) and the calendar
@@ -17,14 +20,24 @@ export async function startDrugCrash(data, actor) {
   let shot = data.handleShot ?? {
   }
   data.isActive = false
+  data.onUse.duration = ""
+  //A drug without crash (a psychochip, a medicine) is over when its effect ends: left in a crash with no
+  //duration, the calendar never counted its end and its switch stayed on the crash
+  if (!drugHasCrash(data)) {
+    data.wirelessTurnedOn = false
+    data.phase = ""
+    data.interact = false
+    data.onUse.contrecoup = ""
+    return
+  }
   data.wirelessTurnedOn = true
   data.phase = "crash"
-  data.onUse.duration = ""
   if (shot.durationContrecoup) {
     data.onUse.contrecoup = `${shot.durationContrecoup} ${game.i18n.localize(unitKey(SR5.extendedIntervals[shot.durationContrecoupType], shot.durationContrecoup))}`
-    //eX and galak: the -2 social Limit of the crash has its own duration, (Body) hours (Chrome Flesh p. 186)
+    //eX and galak: the -2 social Limit of the crash has its own duration, (Body) hours (Chrome Flesh p. 186),
+    //changed by the quality of the drug (entities/items/drug-stat.js)
     if (shot.socialLimitContrecoup) data.onUse.contrecoup += ` ; ${game.i18n.format("SR5.DrugSocialLimitCrash", {
-      duration: `${shot.socialLimitContrecoup} ${game.i18n.localize(unitKey(SR5.extendedIntervals.hour, shot.socialLimitContrecoup))}`
+      duration: `${shot.socialLimitContrecoup} ${game.i18n.localize(unitKey(SR5.extendedIntervals[shot.socialLimitContrecoupType ?? "hour"], shot.socialLimitContrecoup))}`
     })}`
     await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugContrecoup")} (${game.i18n.localize(SR5.drugs[shot.name])})${game.i18n.format("SR5.Colons")} ${data.onUse.contrecoup}`)
   }

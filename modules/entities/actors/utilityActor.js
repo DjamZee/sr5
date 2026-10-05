@@ -8,7 +8,7 @@ import {
   SR5_Toxins
 } from "../items/toxins.js"
 import {
-  applyDrugQuality
+  applyDrugQuality, drugAddictionThreshold
 } from "../items/drug-stat.js"
 import {
   SR5_SystemHelpers 
@@ -3284,7 +3284,10 @@ export class SR5_CharacterUtility extends Actor {
           "base": 1,
           "modifiers": []
         },
-        "addiction": item.system.addiction,
+        //Pharmaceutical drugs: threshold -1 (Chrome Flesh p. 194)
+        "addiction": {
+          ...item.system.addiction, "threshold": drugAddictionThreshold(item.system)
+        },
         "weekAddiction": {
           "value": 0,
           "base": 11 - item.system.addiction.rating,

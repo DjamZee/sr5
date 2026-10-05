@@ -696,7 +696,12 @@ describe('switching the wireless of a device (SR5 p. 165, 167 and 424)', () => {
       const actor = {
         id: 'a1', name: 'Test', isToken: false, effects: [], items: [{
           _id: 'd1', id: 'd1', name: 'Jazz', type: 'itemDrug', system: {
-            phase, isActive: !wasOn, wirelessTurnedOn: wasOn, systemEffects: [], handleShot: {
+            //An effect of its crash, as Jazz has: a drug without any crash is over at the end of its effect
+            phase, isActive: !wasOn, wirelessTurnedOn: wasOn, systemEffects: [], customEffects: {
+              0: {
+                phase: 'crash'
+              }
+            }, handleShot: {
             }, onUse: {
               duration: '', contrecoup: ''
             }
