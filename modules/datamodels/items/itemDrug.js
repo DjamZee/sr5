@@ -13,6 +13,9 @@ import {
 import {
   effectsPartialModel 
 } from './partial/effects.js'
+import {
+  migrateDrugSource
+} from '../../entities/items/drug-phase.js'
 
 export class sr5ItemDrugDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
@@ -74,6 +77,10 @@ export class sr5ItemDrugDataModel extends foundry.abstract.TypeDataModel {
       wirelessTurnedOn: new fields.BooleanField({
         initial: false
       }),
+      //"", "rise" or "crash" (entities/items/drug-phase.js): isActive and wirelessTurnedOn follow it
+      phase: new fields.StringField({
+        initial: ''
+      }),
     }
   }
 
@@ -81,6 +88,8 @@ export class sr5ItemDrugDataModel extends foundry.abstract.TypeDataModel {
     //Stored by the former ArrayField: always an empty list, since it dropped every key of the stat
     if (Array.isArray(source.handleShot)) source.handleShot = {
     }
+    //The crash was the "wireless" box of an effect, and the wireless switch of the drug
+    migrateDrugSource(source)
     return super.migrateData(source)
   }
 }

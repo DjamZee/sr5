@@ -1,6 +1,9 @@
 import {
-  SR5_SystemHelpers 
+  SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
+import {
+  phaseFromFlags
+} from "../items/drug-phase.js"
 import {
   SR5_Jammer
 } from "../../system/jammer.js"
@@ -1495,6 +1498,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
           itemData.onUse.contrecoup = ""
         }
       }
+      //The phase is what is kept: the two switches only lead to it (entities/items/drug-phase.js)
+      itemData.phase = phaseFromFlags(itemData.isActive, itemData.wirelessTurnedOn)
     }
 
     if (item.type === "itemProgram" && target === "system.isCreated"){
@@ -1641,6 +1646,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
     data.isActive = false
     data.wirelessTurnedOn = true
+    data.phase = "crash"
     data.onUse.duration = ""
     if (shot.durationContrecoup) {
       data.onUse.contrecoup = `${shot.durationContrecoup} ${game.i18n.localize(SR5.extendedIntervals[shot.durationContrecoupType])}`

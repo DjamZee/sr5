@@ -26,8 +26,11 @@ import {
   isIndirect, indirectEffectOf
 } from "../../rolls/roll-helpers/indirect.js"
 import {
-  SR5Combat 
+  SR5Combat
 } from "../../system/srcombat.js"
+import {
+  drugEffectApplies, phaseFromFlags
+} from "../items/drug-phase.js"
 import {
   SR5 
 } from "../../config.js"
@@ -4943,8 +4946,10 @@ export class SR5_CharacterUtility extends Actor {
       // For transferable effect
       if (customEffect.transfer) skipCustomEffect = true
       // Drugs
+      // Drugs: an effect applies in its own phase, the rise or the crash (entities/items/drug-phase.js)
       if (item.type === "itemDrug") {
-        if (!itemData.isActive && !customEffect.wifi) skipCustomEffect = true
+        skipCustomEffect = !customEffect.target || !customEffect.type || !!customEffect.transfer ||
+          !drugEffectApplies(customEffect, phaseFromFlags(itemData.isActive, itemData.wirelessTurnedOn))
       }
       // Quality : if an effect has "wifi on" check box to true, effect is always turned on, even if quality is not "equiped"
       if (item.type === "itemQuality") {
