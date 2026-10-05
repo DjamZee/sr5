@@ -19,6 +19,8 @@ import {
 import {
   activateDeadlineCardListeners
 } from "../system/deadlines.js"
+  activateDrugCardListeners
+} from "../system/drug-clock.js"
 
 export function sr5HookRenderChatMessageHTML(message, html, _data) {
   // A table draw is rendered by core and wears no SR5 header of its own
@@ -59,6 +61,8 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   if (message.flags?.sr5?.effectExpiry) activateExpiryCardListeners(html, message)
   // Withdrawal tests and rent fall due: the GM acts
   if (message.flags?.sr5?.deadlines) activateDeadlineCardListeners(html, message)
+  // Drugs whose effect or crash is over on the clock: the GM moves them on
+  if (message.flags?.sr5?.drugClock) activateDrugCardListeners(html)
 }
 
 // v13: keep chat scrolled to bottom when SR5 roll messages change height.
