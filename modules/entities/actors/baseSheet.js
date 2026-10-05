@@ -427,8 +427,15 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     //Move money between the ledger and a credstick
     on(".credstick-withdraw", "click", this._onCredstickMove.bind(this, "withdraw"))
     on(".credstick-deposit", "click", this._onCredstickMove.bind(this, "deposit"))
-    //Shop orders: delivery and cancellation for the GM, a cancellation request for a player
-    on("[data-shop-order]", "click", this._onShopOrder.bind(this))
+    //Shop orders: delivery and cancellation for the GM, a cancellation request for a player.
+    //Delegated once on the window: the block may be drawn after these listeners (lazy tabs)
+    if (!this._shopOrderListener && typeof element.addEventListener === "function") {
+      this._shopOrderListener = true
+      element.addEventListener("click", event => {
+        const target = event.target.closest("[data-shop-order]")
+        if (target) this._onShopOrder(event, target)
+      })
+    }
     //Reboot le deck
     on(".reset-deck", "click", this._onRebootDeck.bind(this))
     // Déplie les infos
@@ -873,12 +880,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
    * @param {Event} event
    * @private
    */
-  async _onShopOrder(event) {
+  async _onShopOrder(event, target) {
     event.preventDefault()
-    const id = event.currentTarget.closest("[data-order-id]")?.dataset.orderId
+    const id = target.closest("[data-order-id]")?.dataset.orderId
     if (!id) return
     const orders = await import("../../interface/shop-orders.js")
-    const action = event.currentTarget.dataset.shopOrder
+    const action = target.dataset.shopOrder
     if (action === "deliver") return orders.deliverOrder(this.actor, id)
     if (action === "cancel") return orders.cancelFromSheet(this.actor, id)
   }
