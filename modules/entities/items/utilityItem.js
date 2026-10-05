@@ -1,4 +1,7 @@
 import {
+  applyVintageWireless, vintageAccessoryPrice
+} from './weaponTraits.js'
+import {
   SR5, AUGMENTATION_GRADE_TABLE 
 } from "../../config.js"
 import {
@@ -823,10 +826,13 @@ export class SR5_UtilityItem extends Actor {
       itemData.accessory = Object.values(itemData.accessory)
     }
 
+    // Vintage (Gun H(e)aven 3 p. 3): never wireless, physical upgrades cost twice the listed amount
+    const isVintage = applyVintageWireless(itemData)
+
     for (let a of itemData.accessory) {
       // Item-based accessory (has a.system from a cloned itemGear)
       if (a.system) {
-        SR5_UtilityItem._handleItemBasedWeaponAccessory(a, itemData, actor)
+        SR5_UtilityItem._handleItemBasedWeaponAccessory(a, itemData, actor, isVintage)
         continue
       }
 
@@ -848,6 +854,7 @@ export class SR5_UtilityItem extends Actor {
       } else {
         a.price = catalog.price || 0
       }
+      a.price = vintageAccessoryPrice(a.price, catalog.type, isVintage)
 
       // Apply standard item effects (modifiers)
       if (a.isActive && catalog.itemEffects) {
@@ -951,7 +958,7 @@ export class SR5_UtilityItem extends Actor {
   }
 
   /** Handle an item-based weapon accessory (cloned itemWeapon with system data) */
-  static _handleItemBasedWeaponAccessory(a, itemData, actor) {
+  static _handleItemBasedWeaponAccessory(a, itemData, actor, isVintage = false) {
     const accData = a.system
     const label = a.name || 'Accessory'
 
@@ -972,6 +979,7 @@ export class SR5_UtilityItem extends Actor {
     } else {
       a.price = accData.price?.base || 0
     }
+    a.price = vintageAccessoryPrice(a.price, accData.weaponAccessory?.type, isVintage)
 
     // Apply itemEffects from the accessory item
     if (a.isActive && accData.itemEffects) {

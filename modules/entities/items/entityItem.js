@@ -1,4 +1,7 @@
 import {
+  hasWeaponTrait, capBallReloadStep, CAP_BALL_STEPS
+} from './weaponTraits.js'
+import {
   SR5_UtilityItem 
 } from "./utilityItem.js"
 import {
@@ -528,8 +531,19 @@ export class SR5Item extends Item {
     })
 
     //Manage action in combat, eventually return if no action available
+    //Cap & Ball (Gun H(e)aven 3 p. 3): round by round, three Complex Actions each, one per click
+    const isCapBall = hasWeaponTrait(weaponData, "capBall") && game.combat && !freeReload
+    if (isCapBall && option !== "insertRound") return ui.notifications.warn(game.i18n.localize("SR5.WARN_CapBallRoundByRound"))
+
     if (game.combat && !freeReload){
+      if (isCapBall) option = "capBall"
       switch (option){
+        case "capBall":
+          action = [{
+            type: "complex", value: 1, source: "insertRound"
+          }]
+          option = "insertRound"
+          break
         case "insert":
           if (weaponData.ammunition.casing === "clip") action = [{
             type: "simple", value: 1, source: "insertClip"
@@ -591,6 +605,18 @@ export class SR5Item extends Item {
       }
     }
 
+    if (isCapBall) {
+      const reload = capBallReloadStep(this.getFlag("sr5", "capBallStep"))
+      if (!reload.loaded) {
+        await this.setFlag("sr5", "capBallStep", reload.step)
+        SR5Combat.changeActionInCombat(this.actor.isToken ? this.actor.token.id : this.actor.id, action)
+        return ui.notifications.info(game.i18n.format("SR5.INFO_CapBallStep", {
+          done: reload.done, total: CAP_BALL_STEPS
+        }))
+      }
+      await this.unsetFlag("sr5", "capBallStep")
+    }
+
     //Manage removing clip/belt/drum
     if (option === "remove"){
       weaponData.ammunition.value = 0
@@ -648,7 +674,8 @@ export class SR5Item extends Item {
         weaponData.ammunition.clipInserted = true
         break
       case "insertRound":
-        if (weaponData.ammunition.casing === "breakAction"){
+        if (isCapBall) ammoNeeded = Math.min(1, ammoData.quantity)
+        else if (weaponData.ammunition.casing === "breakAction"){
           if (ammoData.quantity < 2) ammoNeeded = ammoData.quantity
           else ammoNeeded = 2
         } else {
