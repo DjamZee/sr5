@@ -831,6 +831,7 @@
 	"SR5.RADIATION_ApplyText": "{actor} against radiation, Power {power}.",
 	"SR5.RADIATION_OutcomeNone": "{actor}: Power {power}, {hits} hits, no effect.",
 	"SR5.RADIATION_OutcomeNausea": "{actor}: Power {power}, {hits} hits, Nausea (Power {remaining}).",
+	"SR5.RADIATION_OutcomeStunOne": "{actor}: Power {power}, {hits} hits, 1 Stun box and Nausea.",
 	"SR5.RADIATION_OutcomeStun": "{actor}: Power {power}, {hits} hits, {remaining} Stun boxes and Nausea.",
 	"SR5.RADIATION_Reminders": "Reminders (Run & Gun p. 165), not automated: after a Severe or worse exposure the character radiates within 10 m himself. No healing test in a radioactive zone. Moderate: unconscious after 72 h, dead 72 h later.",
 	"SR5.AntitoxinNeutralized": "Neutralized by the antitoxin: no effect",

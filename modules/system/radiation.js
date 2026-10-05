@@ -243,6 +243,8 @@ export async function checkRadiation(){
 // The GM asks for the test: a card to the player, with the roll button. The ledger keeps a token of the request;
 // only a roll carrying it can be applied, and only once
 async function requestTest(entryId){
+  //The ledger is the active GM's: another GM's request would carry no token
+  if (!isActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.DISEASE_ActiveGMOnly"))
   const entry = radiationLedger().exposures?.[entryId]
   if (!entry || entry.state !== "open") return
   const actor = await fromUuid(entry.actorUuid)
@@ -272,11 +274,15 @@ async function requestTest(entryId){
 }
 
 async function endExposure(entryId){
+  if (!isActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.DISEASE_ActiveGMOnly"))
   const entry = radiationLedger().exposures?.[entryId]
   if (!entry || entry.state !== "open") return
   await writeEntry({
     ...entry, state: "ended", request: null
   })
+  //The Nausea of the zone lasts while the exposure does (Run & Gun p. 164-165): it stops with it
+  const actor = await fromUuid(entry.actorUuid)
+  if (actor) await removeRadiationNausea(actor)
   ui.notifications.info(game.i18n.format("SR5.RADIATION_Ended", {
     actor: entry.actorName 
   }))
@@ -288,6 +294,7 @@ export function activateRadiationDueListeners(html, message){
     const btn = event.currentTarget
     const id = btn.closest(".sr5-radiation-row")?.dataset.exposureId
     if (!id) return
+    if (!isActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.DISEASE_ActiveGMOnly"))
     btn.disabled = true
     if (btn.dataset.sr5Radiation === "end") await endExposure(id)
     else await requestTest(id)
@@ -337,7 +344,8 @@ async function applyFromCard(message, button){
   if (!actor) return
   const pool = radiationPool(actor.system)
   const suggested = Math.max(0, Number(message.flags?.sr5data?.roll?.hits) || 0)
-  const alert = hitsAboveDice(suggested, pool) ? `<p class="sr5-disease-alert" style="color: #c00; font-weight: bold;">${game.i18n.localize("SR5.DISEASE_HitsAbovePool")}</p>` : ""
+  const modified = hitsAboveDice(suggested, pool)
+  const alert = modified ? `<p class="sr5-disease-alert" style="color: #c00; font-weight: bold;">${game.i18n.localize("SR5.DISEASE_HitsAbovePool")}</p>` : ""
   const power = entry.request.power
   const hits = await foundry.applications.api.DialogV2.prompt({
     window: {
@@ -349,7 +357,7 @@ async function applyFromCard(message, button){
       <p>${game.i18n.format("SR5.DISEASE_CardPool", {
     pool, hits: suggested 
   })}</p>${alert}
-      <div class="form-group"><label>${game.i18n.localize("SR5.DISEASE_Hits")}</label><input type="number" name="hits" value="${Math.min(suggested, pool)}" min="0" max="${pool}"></div>`,
+      <div class="form-group"><label>${game.i18n.localize("SR5.DISEASE_Hits")}</label><input type="number" name="hits" value="${modified ? "" : Math.min(suggested, pool)}" min="0" max="${pool}"></div>`,
     ok: {
       callback: (event, b) => Number(b.form.elements.hits.value) || 0
     },
@@ -365,9 +373,11 @@ async function applyFromCard(message, button){
     ...fresh, testsDone: fresh.testsDone + 1, notified: false, request: null
   })
   button.remove()
+  //The Nausea of the last test gives way to this one's (Run & Gun p. 164-165: it lasts and grows while exposed)
+  await removeRadiationNausea(actor)
   if (outcome.remaining > 0) await applyOutcome(actor, outcome)
   await ChatMessage.create({
-    content: `<div class="sr5-radiation-card"><h3>${game.i18n.localize("SR5.RADIATION_Title")}</h3><p>${game.i18n.format(outcome.remaining > 0 ? (outcome.stun ? "SR5.RADIATION_OutcomeStun" : "SR5.RADIATION_OutcomeNausea") : "SR5.RADIATION_OutcomeNone", {
+    content: `<div class="sr5-radiation-card"><h3>${game.i18n.localize("SR5.RADIATION_Title")}</h3><p>${game.i18n.format(outcome.remaining > 0 ? (outcome.stun ? (outcome.stun === 1 ? "SR5.RADIATION_OutcomeStunOne" : "SR5.RADIATION_OutcomeStun") : "SR5.RADIATION_OutcomeNausea") : "SR5.RADIATION_OutcomeNone", {
       actor: escape(fresh.actorName), power: fresh.request.power, hits: Math.min(Math.max(0, hits), pool), remaining: outcome.remaining
     })}</p></div>`,
     whisper: [...playerOwners(actor), ...gmIds()],
@@ -389,7 +399,26 @@ async function applyOutcome(actor, outcome){
       nausea: true 
     }
   }
-  await actor.applyToxinEffect(data)
+  const {
+    SR5_ActorHelper
+  } = await import("../entities/actors/entityActor-helpers.js")
+  await SR5_ActorHelper.applyToxinEffect(actor.isToken ? actor.token.id : actor.id, data)
+  //Not the 10 minutes of a toxin: the Nausea of a zone lasts until the next test or the end of the exposure
+  //(Run & Gun p. 164-165, the Power rising with the time spent there)
+  const nausea = actor.items.filter(i => i.system.type === "toxinEffectNausea" && i.name === data.damage.toxin.custom.name && !i.getFlag("sr5", "radiationNausea"))
+  if (nausea.length) await actor.updateEmbeddedDocuments("Item", nausea.map(i => ({
+    _id: i.id, "system.duration": "", "system.durationType": "special", "flags.sr5.radiationNausea": true
+  })))
+}
+
+// Takes off the Nausea a radiation zone gave, and its state once no other Nausea is left
+export async function removeRadiationNausea(actor){
+  const mine = actor.items.filter(i => i.getFlag("sr5", "radiationNausea")).map(i => i.id)
+  if (!mine.length) return
+  await actor.deleteEmbeddedDocuments("Item", mine)
+  if (actor.items.some(i => i.system.type === "toxinEffectNausea")) return
+  const states = actor.effects.filter(e => e.origin === "toxinEffectNausea").map(e => e.id)
+  if (states.length) await actor.deleteEmbeddedDocuments("ActiveEffect", states)
 }
 
 /* -------------------------------------------- */

@@ -831,6 +831,7 @@
 	"SR5.RADIATION_ApplyText": "{actor} contre les radiations, Puissance {power}.",
 	"SR5.RADIATION_OutcomeNone": "{actor} : Puissance {power}, {hits} succès, aucun effet.",
 	"SR5.RADIATION_OutcomeNausea": "{actor} : Puissance {power}, {hits} succès, Nausée (Puissance {remaining}).",
+	"SR5.RADIATION_OutcomeStunOne": "{actor} : Puissance {power}, {hits} succès, 1 case étourdissante et Nausée.",
 	"SR5.RADIATION_OutcomeStun": "{actor} : Puissance {power}, {hits} succès, {remaining} cases étourdissantes et Nausée.",
 	"SR5.RADIATION_Reminders": "Rappels (Run & Gun p. 165), non automatisés : après une exposition Sévère ou plus, le personnage irradie lui-même à 10 m (Modérée 24 h après Sévère ; Modérée puis Légère après Extrême ; Sévère puis Modérée après Mortelle). Aucun test de guérison dans une zone radioactive. Modérée : inconscience au bout de 72 h, mort 72 h plus tard.",
 	"SR5.AntitoxinNeutralized": "Neutralisée par l'antitoxine : aucun effet",

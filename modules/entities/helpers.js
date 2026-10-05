@@ -324,6 +324,7 @@ export class SR5_EntityHelpers {
       if (cache && SR5_EntityHelpers._isAlreadySorted(key, object[key])) continue
       switch (key) {
         case "powerActionTypes":
+        case "radiationLevels":
         case "augmentationGrades":
         case "characterAttributes":
         case "characterDefenses":
