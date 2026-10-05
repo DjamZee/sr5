@@ -19,6 +19,12 @@ export default async function spellInfo(cardData){
     cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${drainShown(cardData, cardData.owner.actorId)})`)
   }
 
+  //Mage Hunter (Forbidden Arcana p. 34): the counterspelling against this spell loses 2 dice per level, for the GM
+  if (cardData.magic.mageHunter?.used) cardData.chatCard.buttons.mageHunter = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "",
+    game.i18n.format("SR5.MageHunterCounterspell", {
+      value: 2 * (cardData.magic.mageHunter.level || 0)
+    }))
+
   //Roll Succeed
   if (cardData.roll.hits > 0) {
     //Handle Attack spell type

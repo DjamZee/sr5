@@ -2850,6 +2850,8 @@
 	"SR5.MagicMasteryDeathSower": "Semeur de mort",
 	"SR5.MagicMasteryIllusionist": "Illusionniste",
 	"SR5.MagicMasteryMageHunter": "Chasseur de mage",
+	"SR5.MageHunterTrade": "Drain +{level}, Contresort adverse -2 × {level}",
+	"SR5.MageHunterCounterspell": "Chasseur de mage : Contresort adverse -{value}",
 	"SR5.MagicMasteryMasterManipulator": "Maître manipulateur",
 	"SR5.MetamagicCentering": "Centrage",
 	"SR5.MetamagicNew": "Nouvelle métamagie",

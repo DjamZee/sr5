@@ -73,9 +73,12 @@ export default async function spell(rollData, actor, item){
   //Mage Hunter (Forbidden Arcana p. 34): Drain +1 per level ; Death Sower (p. 40): DV and Drain +1 per level, combat spells only
   const masteries = actorData.magic.masteries
   const masteryBonus = combatSpellMasteryBonus(spellCategory, masteries?.mageHunter?.value, masteries?.deathSower?.value)
-  if (masteryBonus.drainMageHunter) rollData.magic.drain.modifiers.mageHunter = {
-    value: masteryBonus.drainMageHunter,
-    label: game.i18n.localize(SR5.drainModTypes.mageHunter),
+  //Mage Hunter is a trade the player chooses at each casting (review M1): a box in the dialog, unticked
+  if (masteryBonus.drainMageHunter){
+    rollData.magic.mageHunter = {
+      level: masteryBonus.drainMageHunter, used: false
+    }
+    rollData.dialogSwitch.mageHunter = true
   }
   if (masteryBonus.drainDeathSower) rollData.magic.drain.modifiers.deathSower = {
     value: masteryBonus.drainDeathSower,

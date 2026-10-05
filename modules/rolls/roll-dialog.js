@@ -532,6 +532,20 @@ export default class SR5_RollDialog {
         this.drainModifier.recklessSpellcasting = value
         this.updateDrainValue(html)
         return
+      case "mageHunter": {
+        //Mage Hunter (Forbidden Arcana p. 34): the Drain is paid only when the trade is made
+        const level = dialogData.magic.mageHunter?.level || 0
+        value = isChecked ? level : 0
+        dialogData.magic.mageHunter.used = isChecked
+        const input = html.querySelector(name)
+        if (input) input.value = value
+        if (isChecked) dialogData.magic.drain.modifiers.mageHunter = {
+          value, label: game.i18n.localize(SR5.drainModTypes.mageHunter),
+        }
+        else delete dialogData.magic.drain.modifiers.mageHunter
+        this.updateDrainValue(html)
+        return
+      }
       case "spiritAid":
         value = dialogData.magic.spiritAid.modifier
         break
