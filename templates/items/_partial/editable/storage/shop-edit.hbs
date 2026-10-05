@@ -47,6 +47,30 @@
             {{else}}<span class="SR-GreyColor SR-TextSmall">{{localize 'SR5.ShopVendorContactEmpty'}}</span>{{/if}}
         </div>
     </li>
+    <li class="grid" data-tooltip="{{localize 'SR5.ShopVendorPoolHint'}}">
+        <div class="col-8">{{localize 'SR5.ShopVendorPool'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-4"><input type="number" name="system.shop.negotiationPool" value="{{system.shop.negotiationPool}}" min="0" data-dtype="Number"/></div>
+    </li>
+    <li class="grid" data-tooltip="{{localize 'SR5.ShopVendorClientsHint'}}">
+        <div class="col-12">{{localize 'SR5.ShopVendorClients'}}{{localize 'SR5.Colons'}}</div>
+    </li>
+    {{#each shop.clients}}
+    <li class="grid">
+        <div class="col-8">{{this.name}} — {{localize 'SR5.ContactLoyaltyShort'}} {{this.loyalty}}</div>
+        <div class="col-4">{{#if ../shop.isGM}}<button type="button" data-action="shopClientRemove" data-actor-id="{{this.actorId}}" aria-label="{{localize 'SR5.ShopVendorClientRemove'}}"><i class="fas fa-xmark"></i></button>{{/if}}</div>
+    </li>
+    {{/each}}
+    {{#if shop.isGM}}
+    <li class="grid">
+        <div class="col-6">
+            <select data-shop-client-actor aria-label="{{localize 'SR5.ShopVendorClients'}}">
+                {{#each shop.clientCandidates}}<option value="{{this.id}}">{{this.name}}</option>{{/each}}
+            </select>
+        </div>
+        <div class="col-2"><input type="number" data-shop-client-loyalty value="1" min="1" max="6" aria-label="{{localize 'SR5.ContactLoyaltyShort'}}"/></div>
+        <div class="col-4"><button type="button" data-action="shopClientAdd">{{localize 'SR5.ShopVendorClientAdd'}}</button></div>
+    </li>
+    {{/if}}
     <li class="grid" data-tooltip="{{localize 'SR5.ShopVendorBuyAllHint'}}">
         <div class="col-8">{{localize 'SR5.ShopVendorBuyAll'}}{{localize 'SR5.Colons'}}</div>
         <div class="col-4"><input type="checkbox" data-dtype="Boolean" name="system.shop.buyAll" {{checked system.shop.buyAll}}/></div>

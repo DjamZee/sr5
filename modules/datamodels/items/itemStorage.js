@@ -125,6 +125,22 @@ export class sr5ItemStorageDataModel extends foundry.abstract.TypeDataModel {
         contactId: new fields.StringField({
           initial: ''
         }),
+        // The player characters for whom the vendor is a contact, with their Loyalty: kept on the
+        // gamemaster's vendor, never read off a player's sheet (SR5 p. 421; Nora's review)
+        clients: new fields.ArrayField(new fields.SchemaField({
+          actorId: new fields.StringField({
+            initial: ''
+          }),
+          loyalty: new fields.NumberField({
+            initial: 1, integer: true, min: 1, max: 6
+          }),
+        }), {
+          initial: []
+        }),
+        // The vendor's Negotiation + Charisma when its sheet has none; 0 = the sheet
+        negotiationPool: new fields.NumberField({
+          initial: 0, integer: true, min: 0
+        }),
         // The vendor buys back what is not on its shelves too (SR5 p. 421)
         buyAll: new fields.BooleanField({
           initial: false

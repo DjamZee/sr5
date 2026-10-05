@@ -82,6 +82,7 @@ export class SR5_SocketHandler {
       "shopVendorNotice": [SR5ShopVendor._socketNotice],
       "shopVendorOffer": [SR5ShopVendor._socketOffer],
       "shopVendorAccept": [SR5ShopVendor._socketAccept],
+      "shopVendorDecline": [SR5ShopVendor._socketDecline],
     }
 
     //senderId is added by the server to every custom socket message: a client cannot forge it

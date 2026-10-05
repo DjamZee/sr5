@@ -54,6 +54,7 @@ const gm = {
 const player = {
   id: 'player', isGM: false, name: 'Joueur'
 }
+const SOURCE = 'Compendium.sr5.weapons.Item.fichetti'
 
 function makeActor(id, items, owner = null) {
   const owned = new Map(items.map(item => [item.id, item]))
@@ -83,7 +84,8 @@ function makeActor(id, items, owner = null) {
   for (const item of items) {
     item.parent = actor
     item.toObject = () => JSON.parse(JSON.stringify({
-      _id: item.id, name: item.name, type: item.type, system: item.system
+      _id: item.id, name: item.name, type: item.type, system: item.system, flags: item.flags ?? {
+      }
     }))
     item.update = async changes => {
       await tick()
@@ -109,18 +111,42 @@ const till = funds => ({
     }, storedIn: ''
   }
 })
-const gun = () => ({
-  id: 'gun', name: 'Ares Predator', type: 'itemWeapon', system: {
+// The seller's copy of a Fichetti listed 350¥ in the compendium; its owner may write any price on it
+const gun = (price = 350, extra = {
+}) => ({
+  id: 'gun', name: 'Fichetti Security 600', type: 'itemWeapon',
+  _stats: {
+    compendiumSource: SOURCE
+  },
+  system: {
     storedIn: '', price: {
-      value: 1000, base: 1000
+      value: price, base: price
     }, availability: {
-      value: 5
+      value: 4
     }
-  }
+  },
+  ...extra,
 })
+const compendiumFichetti = {
+  uuid: SOURCE, name: 'Fichetti Security 600', type: 'itemWeapon',
+  system: {
+    price: {
+      value: 350, base: 350
+    }
+  },
+  _source: {
+    system: {
+      price: {
+        base: 350
+      }
+    }
+  },
+}
 
 let SR5ShopVendor, SR5ShopAvailability
 const messages = new Map()
+let confirmAnswer = true
+let confirmations = 0
 
 beforeEach(async () => {
   vi.resetModules()
@@ -151,7 +177,17 @@ beforeEach(async () => {
     registerMenu: () => {},
   }
   globalThis.game.messages = {
-    get: key => messages.get(key)
+    get: key => messages.get(key),
+    find: fn => [...messages.values()].find(fn),
+  }
+  globalThis.fromUuid = async uuid => (uuid === SOURCE ? compendiumFichetti : null)
+  confirmAnswer = true
+  confirmations = 0
+  globalThis.foundry.applications.api.DialogV2 = {
+    confirm: async () => {
+      confirmations++
+      return confirmAnswer
+    }
   }
   globalThis.foundry.documents.ChatMessage = {
     getSpeaker: () => ({
@@ -177,11 +213,12 @@ afterEach(() => {
   messages.clear()
   for (const key of ['actors', 'users', 'user', 'messages']) delete globalThis.game[key]
   delete globalThis.fromUuidSync
+  delete globalThis.fromUuid
   vi.restoreAllMocks()
 })
 
 function world({
-  funds = 5000, shop = {
+  funds = 50000, shop = {
   }, sellerItems = [gun()]
 } = {
 }) {
@@ -200,6 +237,9 @@ const offerFor = (lines, extra = {
 }) => ({
   vendorUuid: 'Actor.vendor', storageId: 'shop', sellerId: 'seller', lines, ...extra,
 })
+const noHits = () => vi.spyOn(SR5ShopAvailability, 'rollDice').mockResolvedValue({
+  hits: 0, glitch: false, criticalGlitch: false
+})
 
 describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
   it('offers 25 % ± 5 % per net hit, rolled on the gamemaster\'s browser, and pays from its cashbox', async () => {
@@ -216,27 +256,90 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
     expect(await SR5ShopVendor.offer(offerFor([{
       itemId: 'gun', quantity: 1, total: 99999
     }]), player.id)).toBe(true)
-    const message = messages.get('m0')
-    expect(message.flags.sr5vendorOffer.total).toBe(350)
+    expect(messages.get('m0').flags.sr5vendorOffer.total).toBe(123)
     expect(await SR5ShopVendor.accept({
       messageId: 'm0'
     }, player.id)).toBe(true)
-    expect(vendor.items.get('till').system.funds.value).toBe(4650)
+    expect(vendor.items.get('till').system.funds.value).toBe(50000 - 123)
     expect(seller.items.get('gun')).toBeUndefined()
     expect(vendor.created[0].system.storedIn).toBe('shop')
     expect(seller.created[0].system).toMatchObject({
-      amount: 350, type: 'gain'
+      amount: 123, type: 'gain'
     })
   })
 
-  it('takes a contact standing for the vendor at 5 % × Loyalty, without a test', async () => {
-    const contact = {
-      id: 'c', name: 'Clinique', type: 'itemContact', system: {
-        loyalty: 3
+  it('prices on the compendium source, not on a price the player wrote on her copy (Nora\'s review)', async () => {
+    const {
+      vendor
+    } = world({
+      sellerItems: [gun(25000)]
+    })
+    noHits()
+    await SR5ShopVendor.offer(offerFor([{
+      itemId: 'gun', quantity: 1
+    }]), player.id)
+    const offer = messages.get('m0').flags.sr5vendorOffer
+    expect(offer.results[0]).toMatchObject({
+      listed: 350, verified: true
+    })
+    expect(offer.total).toBe(88)
+    await SR5ShopVendor.accept({
+      messageId: 'm0'
+    }, player.id)
+    // And it reaches the counter at the source's price
+    expect(vendor.created[0].system.price.base).toBe(350)
+    expect(confirmations).toBe(0)
+  })
+
+  it('asks the gamemaster before paying a price no source confirms, and pays nothing on a no', async () => {
+    const {
+      vendor, seller
+    } = world({
+      sellerItems: [gun(25000, {
+        name: 'Fichetti en or', _stats: {
+        }
+      })]
+    })
+    noHits()
+    await SR5ShopVendor.offer(offerFor([{
+      itemId: 'gun', quantity: 1
+    }]), player.id)
+    expect(messages.get('m0').flags.sr5vendorOffer.results[0].verified).toBe(false)
+    expect(messages.get('m0').content).toContain('SR5.ShopVendorOfferUnverified')
+    confirmAnswer = false
+    expect(await SR5ShopVendor.accept({
+      messageId: 'm0'
+    }, player.id)).toBe(false)
+    expect(confirmations).toBe(1)
+    expect(vendor.items.get('till').system.funds.value).toBe(50000)
+    expect(seller.items.get('gun')).toBeDefined()
+  })
+
+  it('does not trust a source whose name is not the item\'s (a cheap item pointed at a dear one)', async () => {
+    world({
+      sellerItems: [gun(25000, {
+        name: 'Canon d\'assaut'
+      })]
+    })
+    noHits()
+    await SR5ShopVendor.offer(offerFor([{
+      itemId: 'gun', quantity: 1
+    }]), player.id)
+    expect(messages.get('m0').flags.sr5vendorOffer.results[0].verified).toBe(false)
+  })
+
+  it('gives the contact rate to the vendor\'s client contacts only, at the Loyalty the gamemaster set', async () => {
+    const forged = {
+      id: 'c', name: 'vendor', type: 'itemContact', system: {
+        loyalty: 40
       }
     }
     world({
-      sellerItems: [gun(), contact]
+      sellerItems: [gun(), forged], shop: {
+        clients: [{
+          actorId: 'seller', loyalty: 2
+        }]
+      }
     })
     const roll = vi.spyOn(SR5ShopAvailability, 'rollDice')
     await SR5ShopVendor.offer(offerFor([{
@@ -245,27 +348,53 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
       contactId: 'c'
     }), player.id)
     expect(roll).not.toHaveBeenCalled()
-    expect(messages.get('m0').flags.sr5vendorOffer.total).toBe(150)
+    expect(messages.get('m0').flags.sr5vendorOffer).toMatchObject({
+      viaContact: true, percent: 10, total: 35
+    })
   })
 
-  it('does not take Loyalty from a contact who is someone else', async () => {
-    const contact = {
-      id: 'c', name: 'Joe le fixer', type: 'itemContact', system: {
-        loyalty: 6
+  it('ignores a contact the player made herself, whatever its name and Loyalty (Nora\'s review)', async () => {
+    const forged = {
+      id: 'c', name: 'Clinique', type: 'itemContact', system: {
+        loyalty: 40
       }
     }
     world({
-      sellerItems: [gun(), contact]
+      sellerItems: [gun(), forged]
     })
-    vi.spyOn(SR5ShopAvailability, 'rollDice').mockResolvedValue({
-      hits: 0, glitch: false, criticalGlitch: false
-    })
+    noHits()
     await SR5ShopVendor.offer(offerFor([{
       itemId: 'gun', quantity: 1
     }], {
       contactId: 'c'
     }), player.id)
-    expect(messages.get('m0').flags.sr5vendorOffer.viaContact).toBe(false)
+    expect(messages.get('m0').flags.sr5vendorOffer).toMatchObject({
+      viaContact: false, percent: 25
+    })
+  })
+
+  it('keeps one open offer per item: asking again rolls nothing until it is answered', async () => {
+    world()
+    const roll = noHits()
+    await SR5ShopVendor.offer(offerFor([{
+      itemId: 'gun', quantity: 1
+    }]), player.id)
+    expect(await SR5ShopVendor.offer(offerFor([{
+      itemId: 'gun', quantity: 1
+    }]), player.id)).toBe(false)
+    expect(messages.size).toBe(1)
+    const rolls = roll.mock.calls.length
+    // Declined by the seller: a new offer may be asked
+    expect(await SR5ShopVendor.decline({
+      messageId: 'm0'
+    }, player.id)).toBe(true)
+    expect(await SR5ShopVendor.accept({
+      messageId: 'm0'
+    }, player.id)).toBe(false)
+    expect(await SR5ShopVendor.offer(offerFor([{
+      itemId: 'gun', quantity: 1
+    }]), player.id)).toBe(true)
+    expect(roll.mock.calls.length).toBeGreaterThan(rolls)
   })
 
   it('refuses what is not on its shelves, unless it buys everything', async () => {
@@ -289,7 +418,7 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
         sr5vendorOffer: {
           vendorUuid: 'Actor.vendor', storageId: 'shop', sellerId: 'seller', shop: 'Clinique', total: 5000,
           results: [{
-            itemId: 'gun', name: 'Ares Predator', quantity: 1, total: 5000
+            itemId: 'gun', name: 'Fichetti Security 600', quantity: 1, total: 5000, verified: true
           }],
         }
       },
@@ -298,7 +427,7 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
     expect(await SR5ShopVendor.accept({
       messageId: 'forged'
     }, player.id)).toBe(false)
-    expect(vendor.items.get('till').system.funds.value).toBe(5000)
+    expect(vendor.items.get('till').system.funds.value).toBe(50000)
     expect(seller.items.get('gun')).toBeDefined()
   })
 
@@ -306,9 +435,7 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
     const {
       vendor
     } = world()
-    vi.spyOn(SR5ShopAvailability, 'rollDice').mockResolvedValue({
-      hits: 0, glitch: false, criticalGlitch: false
-    })
+    noHits()
     await SR5ShopVendor.offer(offerFor([{
       itemId: 'gun', quantity: 1
     }]), player.id)
@@ -316,18 +443,16 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
       messageId: 'm0'
     }, player.id)))
     expect(results.filter(Boolean)).toHaveLength(1)
-    expect(vendor.items.get('till').system.funds.value).toBe(4750)
+    expect(vendor.items.get('till').system.funds.value).toBe(50000 - 88)
   })
 
   it('cannot pay more than its cashbox holds', async () => {
     const {
       seller
     } = world({
-      funds: 100
+      funds: 10
     })
-    vi.spyOn(SR5ShopAvailability, 'rollDice').mockResolvedValue({
-      hits: 0, glitch: false, criticalGlitch: false
-    })
+    noHits()
     await SR5ShopVendor.offer(offerFor([{
       itemId: 'gun', quantity: 1
     }]), player.id)
@@ -347,5 +472,18 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
     expect(await SR5ShopVendor.offer(offerFor([{
       itemId: 'gun', quantity: 1
     }]), 'intruder')).toBe(false)
+  })
+})
+
+describe('a vendor made from a template haggles (Nora\'s review)', () => {
+  it('uses the pool set on the shop when its sheet has none', async () => {
+    const {
+      vendor
+    } = world({
+      shop: {
+        negotiationPool: 8
+      }
+    })
+    expect(SR5ShopVendor.searcherOf(vendor, vendor.items.get('shop')).pool.pool).toBe(8)
   })
 })

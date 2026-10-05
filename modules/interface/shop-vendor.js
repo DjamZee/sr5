@@ -148,6 +148,15 @@ export class SR5ShopVendor {
       contacts: actor ? actor.items.filter(i => i.type === 'itemContact').map(i => ({
         id: i.id, name: i.name, selected: i.id === shop.contactId,
       })) : [],
+      clients: (shop.clients ?? []).map(client => ({
+        actorId: client.actorId, loyalty: client.loyalty,
+        name: game.actors?.get(client.actorId)?.name ?? client.actorId,
+      })),
+      clientCandidates: (game.actors?.filter(a => a.type === 'actorPc') ?? [])
+        .filter(a => !(shop.clients ?? []).some(c => c.actorId === a.id))
+        .map(a => ({
+          id: a.id, name: a.name
+        })),
       templateLabel: shop.template ? game.i18n.localize(`SR5.ShopTemplate_${shop.template}`) : '',
       cashbox: cashbox ? {
         name: cashbox.name, funds: SR5Credstick.funds(cashbox).toLocaleString(),
@@ -270,10 +279,19 @@ export class SR5ShopVendor {
    * own pool (Run Faster p. 174), else the vendor's sheet.
    */
   static searcherOf(actor, storage) {
-    const contact = actor?.items?.get(shopSettings(storage).contactId)
-    return contact?.type === 'itemContact' ? {
+    const shop = shopSettings(storage)
+    const contact = actor?.items?.get(shop.contactId)
+    if (contact?.type === 'itemContact') return {
       contact, pool: SR5ShopAvailability.contactPool(contact)
-    } : {
+    }
+    // A pool set on the shop (a template gives one): a Grunt never written up still haggles
+    const set = Math.max(0, Math.floor(Number(shop.negotiationPool) || 0))
+    if (set) return {
+      contact: null, pool: {
+        raw: set, pool: set, limit: 0, label: actor?.name ?? '', derived: false
+      }
+    }
+    return {
       contact: null, pool: actor ? SR5ShopAvailability.buyerPool(actor) : null
     }
   }
@@ -356,6 +374,27 @@ export class SR5ShopVendor {
     return {
       actor, storage: actor.items.get(storageId)
     }
+  }
+
+  /** Add a client contact to the shop, or change its Loyalty (gamemaster only). */
+  static async setClient(storage, actorId, loyalty) {
+    if (!game.user.isGM || !isShopStorage(storage) || !actorId) return
+    const value = Math.max(1, Math.min(6, Math.floor(Number(loyalty) || 1)))
+    const clients = (shopSettings(storage).clients ?? []).filter(c => c.actorId !== actorId)
+    clients.push({
+      actorId, loyalty: value
+    })
+    await storage.update({
+      'system.shop.clients': clients
+    })
+  }
+
+  /** Take a client contact off the shop (gamemaster only). */
+  static async removeClient(storage, actorId) {
+    if (!game.user.isGM || !isShopStorage(storage)) return
+    await storage.update({
+      'system.shop.clients': (shopSettings(storage).clients ?? []).filter(c => c.actorId !== actorId)
+    })
   }
 
   /** The gamemaster's "New vendor" dialog: template, name, banner, linked or not. */
@@ -481,6 +520,13 @@ export class SR5ShopVendor {
   static async _socketOffer(message, senderId) {
     if (!game.user.isGM) return
     await SR5ShopVendor.offer(message?.data ?? {
+    }, senderId)
+  }
+
+  /** The gamemaster's browser receives a declined offer. */
+  static async _socketDecline(message, senderId) {
+    if (!game.user.isGM) return
+    await SR5ShopVendor.decline(message?.data ?? {
     }, senderId)
   }
 
@@ -851,14 +897,13 @@ export class SR5ShopVendor {
   /* -------------------------------------------- */
 
   /**
-   * Does this contact of the seller's stand for the vendor? Its name is the vendor's, or the
-   * name of the contact the gamemaster gave the vendor (lot C, part 2).
+   * The Loyalty of a seller who is one of the vendor's client contacts, from the list the
+   * gamemaster keeps on the shop (Nora's review: a player can write anything on her own sheet,
+   * never on the gamemaster's vendor). 0: not a client contact.
    */
-  static isVendorContact(contact, actor, storage) {
-    if (contact?.type !== 'itemContact') return false
-    const names = [actor?.name, SR5ShopVendor.labelOf(storage), SR5ShopVendor.searcherOf(actor, storage).contact?.name]
-      .filter(Boolean).map(name => name.trim().toLowerCase())
-    return names.includes(contact.name.trim().toLowerCase())
+  static clientLoyalty(storage, sellerId) {
+    const client = (shopSettings(storage).clients ?? []).find(entry => entry?.actorId === sellerId)
+    return Math.max(0, Number(client?.loyalty) || 0)
   }
 
   /** What the vendor buys: its shelves, or everything with a price when the gamemaster says so. */
@@ -866,6 +911,49 @@ export class SR5ShopVendor {
     if (!SR5ShopStock.isSellableType(item?.type) || item.system?.price === undefined) return false
     const shop = shopSettings(storage)
     return shop.buyAll || shop.shelves.includes(SR5ShopCatalog.shelfOf(item))
+  }
+
+  /**
+   * The listed price of an item a seller brings, as the gamemaster's browser trusts it: read on
+   * the compendium item it came from (`flags.sr5.shopSource` for one bought at a shop, else the
+   * compendium source Foundry keeps), never on the seller's copy, which its owner can edit (Nora's
+   * review). The source counts only when it is the same kind of item under the same name; else
+   * the price is the seller's own, marked as not verified, and the gamemaster confirms it.
+   */
+  static async referencePrice(item) {
+    const uuid = item?.flags?.sr5?.shopSource ?? item?._stats?.compendiumSource ?? item?.flags?.core?.sourceId
+    let source = null
+    if (typeof uuid === 'string' && uuid.startsWith('Compendium.')) {
+      try {
+        source = await fromUuid(uuid)
+      } catch {
+        source = null
+      }
+    }
+    if (source && source.type === item.type && source.name === item.name) {
+      return {
+        listed: SR5ShopFence.listedPrice(source), verified: true, sourceUuid: uuid,
+        basePrice: source._source?.system?.price?.base ?? source.system?.price?.base,
+      }
+    }
+    return {
+      listed: SR5ShopFence.listedPrice(item), verified: false, sourceUuid: null, basePrice: undefined,
+    }
+  }
+
+  /** An offer still waiting for an answer: not taken, not declined, not cancelled. */
+  static isOfferOpen(message) {
+    return !!message?.flags?.sr5vendorOffer && !message.flags?.sr5?.vendorOfferTaken && !message.flags?.sr5?.vendorOfferClosed
+  }
+
+  /** The open offer of this vendor on one of these items of this seller, if any. */
+  static openOfferOn(vendorUuid, sellerId, itemIds) {
+    return game.messages?.find?.(message => {
+      if (!message.author?.isGM || !SR5ShopVendor.isOfferOpen(message)) return false
+      const data = message.flags.sr5vendorOffer
+      return data.vendorUuid === vendorUuid && data.sellerId === sellerId &&
+        (data.results ?? []).some(line => itemIds.includes(line.itemId))
+    }) ?? null
   }
 
   /** Ask the vendor for an offer: the gamemaster's browser rolls and posts it. */
@@ -892,6 +980,20 @@ export class SR5ShopVendor {
     return true
   }
 
+  /** Decline an offer (the seller) or cancel it (the gamemaster). */
+  static async requestDecline(message) {
+    if (game.user.isGM) return SR5ShopVendor.decline({
+      messageId: message.id
+    }, game.user.id)
+    const {
+      SR5_SocketHandler
+    } = await import('../socket.js')
+    await SR5_SocketHandler.emitForGM('shopVendorDecline', {
+      messageId: message.id
+    })
+    return true
+  }
+
   static offer(request, senderId) {
     return SR5ShopVendor.#serial(() => SR5ShopVendor.#offer(request, senderId))
   }
@@ -900,12 +1002,17 @@ export class SR5ShopVendor {
     return SR5ShopVendor.#serial(() => SR5ShopVendor.#accept(request, senderId))
   }
 
+  static decline(request, senderId) {
+    return SR5ShopVendor.#serial(() => SR5ShopVendor.#decline(request, senderId))
+  }
+
   /**
    * The vendor's offer, worked out on the gamemaster's browser so that no client writes its own
    * price. SR5 p. 421: a contact of the seller's takes the goods on the spot for 5 % of the listed
    * price per point of Loyalty; anyone else haggles, an opposed Negotiation + Charisma test, 25 %
    * of the listed price, 5 % more or less per net hit. The vendor is there: the "find a buyer"
-   * step is skipped (DjamZ's ruling, 2026-10-05).
+   * step is skipped (DjamZ's ruling, 2026-10-05). One open offer per item: asking again rolls
+   * nothing until the last one is accepted, declined or cancelled.
    */
   static async #offer(request, senderId) {
     const requester = game.users.get(senderId)
@@ -942,16 +1049,23 @@ export class SR5ShopVendor {
       if (already + quantity > piecesOf(item)) continue
       taken.set(item.id, already + quantity)
       lines.push({
-        item, quantity, listed: SR5ShopFence.listedPrice(item)
+        item, quantity, ...(await SR5ShopVendor.referencePrice(item))
       })
     }
     if (!lines.length) return false
+    const open = SR5ShopVendor.openOfferOn(actor.uuid, seller.id, lines.map(line => line.item.id))
+    if (open) {
+      SR5ShopVendor.#notify(requester, 'warn', 'SR5.WARN_ShopVendorOfferOpen', {
+        shop: label
+      })
+      return false
+    }
 
-    const contact = seller.items.get(request.contactId)
-    const viaContact = SR5ShopVendor.isVendorContact(contact, actor, storage)
+    const loyalty = SR5ShopVendor.clientLoyalty(storage, seller.id)
+    const viaContact = loyalty > 0
     let percent, test = null
     if (viaContact) {
-      percent = SR5ShopFence.rules.contactPercent * Number(contact.system.loyalty ?? 0)
+      percent = SR5ShopFence.rules.contactPercent * loyalty
     } else {
       const own = SR5ShopAvailability.buyerPool(seller)
       const theirs = SR5ShopVendor.searcherOf(actor, storage).pool
@@ -966,23 +1080,27 @@ export class SR5ShopVendor {
       }
     }
     const results = lines.map(({
-      item, quantity, listed
+      item, quantity, listed, verified, sourceUuid, basePrice
     }) => {
       const unit = Math.round(listed * percent / 100)
       return {
-        itemId: item.id, name: item.name, quantity, listed, unit, total: unit * quantity,
+        itemId: item.id, name: item.name, quantity, listed, unit, total: unit * quantity, verified, sourceUuid,
+        basePrice: basePrice ?? null,
       }
     })
     const total = results.reduce((sum, line) => sum + line.total, 0)
     const data = {
       vendorUuid: actor.uuid, storageId: storage.id, sellerId: seller.id, shop: label,
-      viaContact, contactName: viaContact ? contact.name : '', percent, test, results, total,
+      viaContact, loyalty, percent, test, results, total,
     }
     const rows = results.map(line => `<li>${SR5Shop.lineLabel(line.name, line.quantity)} — ${
-      line.total.toLocaleString()}&yen; <small>(${line.listed.toLocaleString()}&yen; × ${percent}%)</small></li>`).join('')
+      line.total.toLocaleString()}&yen; <small>(${line.listed.toLocaleString()}&yen; × ${percent}%)</small>${
+      line.verified ? '' : ` <small class="sr-shop-blocked">${game.i18n.format('SR5.ShopVendorOfferUnverified', {
+        price: line.listed.toLocaleString()
+      })}</small>`}</li>`).join('')
     const how = viaContact ?
       game.i18n.format('SR5.ShopVendorOfferContact', {
-        name: contact.name, loyalty: contact.system.loyalty, percent
+        name: seller.name, loyalty, percent
       }) :
       game.i18n.format('SR5.ShopVendorOfferHaggle', {
         hits: test.hits, pool: test.pool, vendorHits: test.vendorHits, vendorPool: test.vendorPool, percent,
@@ -997,7 +1115,8 @@ export class SR5ShopVendor {
         shop: label, seller: seller.name, price: total.toLocaleString()
       })}</p><p class="muted">${how}</p>${warning ? `<p class="sr-shop-blocked">${warning}</p>` : ''}<ul>${rows}</ul>` +
         `<footer class="sr-shop-card-footer"><button type="button" data-vendor-offer="accept">${
-          game.i18n.localize('SR5.ShopVendorOfferAccept')}</button></footer></div>`,
+          game.i18n.localize('SR5.ShopVendorOfferAccept')}</button><button type="button" data-vendor-offer="decline">${
+          game.i18n.localize('SR5.ShopVendorOfferDecline')}</button></footer></div>`,
       flags: {
         sr5vendorOffer: data
       },
@@ -1005,17 +1124,28 @@ export class SR5ShopVendor {
     return true
   }
 
+  /** Close a card: its footer says how, and its buttons go. */
+  static async #closeCard(message, flags, labelKey) {
+    await message.update({
+      ...flags,
+      content: message.content.replace(/<footer class="sr-shop-card-footer">[\s\S]*?<\/footer>/,
+        `<footer class="sr-shop-card-footer"><span class="sr-shop-cashed">${game.i18n.localize(labelKey)}</span></footer>`),
+    })
+  }
+
   /**
    * The seller takes the offer: checked again on the gamemaster's browser — the card is the
-   * gamemaster's own (a player cannot write its price), not taken yet, the goods still there, the
-   * cashbox able to pay. The goods go into the vendor's stock, the money out of its cashbox.
+   * gamemaster's own (a player cannot write its price), still open, the goods still there, the
+   * cashbox able to pay; a price that could not be checked against its source waits for the
+   * gamemaster's yes. The goods go into the vendor's stock at their source's price, the money out
+   * of its cashbox.
    */
   static async #accept(request, senderId) {
     const requester = game.users.get(senderId)
     const message = game.messages.get(request?.messageId)
     const data = message?.flags?.sr5vendorOffer
     if (!requester || !data || !message.author?.isGM) return false
-    if (message.flags?.sr5?.vendorOfferTaken) return false
+    if (!SR5ShopVendor.isOfferOpen(message)) return false
     const seller = game.actors.get(data.sellerId)
     const vendor = SR5ShopVendor.resolve(data.vendorUuid, data.storageId)
     if (!seller || !vendor || !seller.testUserPermission(requester, 'OWNER')) {
@@ -1052,13 +1182,35 @@ export class SR5ShopVendor {
       stocked.system.storedIn = storage.id
       if (stocked.system.isActive !== undefined) stocked.system.isActive = false
       if (stocked.system.quantity !== undefined) stocked.system.quantity = line.quantity
+      // On the counter at the source's price, whatever the seller wrote on her copy
+      if (line.verified && line.basePrice !== null && stocked.system.price) stocked.system.price.base = line.basePrice
+      if (line.sourceUuid) foundry.utils.setProperty(stocked, 'flags.sr5.shopSource', line.sourceUuid)
       payload.push(stocked)
     }
-    await message.update({
-      'flags.sr5.vendorOfferTaken': requester.id,
-      content: message.content.replace(/<footer class="sr-shop-card-footer">[\s\S]*?<\/footer>/,
-        `<footer class="sr-shop-card-footer"><span class="sr-shop-cashed">${game.i18n.localize('SR5.ShopVendorOfferTaken')}</span></footer>`),
-    })
+    const unverified = data.results.filter(line => !line.verified)
+    if (unverified.length) {
+      const confirmed = await foundry.applications.api.DialogV2.confirm({
+        window: {
+          title: game.i18n.format('SR5.ShopVendorUnverifiedTitle', {
+            name: data.shop
+          })
+        },
+        content: `<p>${game.i18n.format('SR5.ShopVendorUnverifiedText', {
+          seller: seller.name, price: data.total.toLocaleString(),
+        })}</p><ul>${unverified.map(line => `<li>${line.name} — ${line.listed.toLocaleString()}&yen;</li>`).join('')}</ul>`,
+        rejectClose: false,
+      })
+      if (!confirmed) {
+        SR5ShopVendor.#notify(requester, 'warn', 'SR5.WARN_ShopVendorRefused', {
+          name: data.shop
+        })
+        return false
+      }
+      if (!SR5ShopVendor.isOfferOpen(game.messages.get(message.id))) return false
+    }
+    await SR5ShopVendor.#closeCard(message, {
+      'flags.sr5.vendorOfferTaken': requester.id
+    }, 'SR5.ShopVendorOfferTaken')
     if (toUpdate.length) await seller.updateEmbeddedDocuments('Item', toUpdate)
     if (toDelete.length) await seller.deleteEmbeddedDocuments('Item', toDelete)
     await actor.createEmbeddedDocuments('Item', payload)
@@ -1075,10 +1227,24 @@ export class SR5ShopVendor {
     return true
   }
 
-  /** Wire the "accept" button of an offer card. */
+  /** The seller says no, or the gamemaster withdraws the offer: the next request may roll again. */
+  static async #decline(request, senderId) {
+    const requester = game.users.get(senderId)
+    const message = game.messages.get(request?.messageId)
+    const data = message?.flags?.sr5vendorOffer
+    if (!requester || !data || !message.author?.isGM || !SR5ShopVendor.isOfferOpen(message)) return false
+    const seller = game.actors.get(data.sellerId)
+    if (!requester.isGM && !seller?.testUserPermission(requester, 'OWNER')) return false
+    await SR5ShopVendor.#closeCard(message, {
+      'flags.sr5.vendorOfferClosed': requester.id
+    }, requester.isGM ? 'SR5.ShopVendorOfferCancelled' : 'SR5.ShopVendorOfferDeclined')
+    return true
+  }
+
+  /** Wire the buttons of an offer card. */
   static chatListeners(html, message) {
-    html.querySelectorAll('[data-vendor-offer="accept"]').forEach(button => {
-      if (message.flags?.sr5?.vendorOfferTaken) {
+    html.querySelectorAll('[data-vendor-offer]').forEach(button => {
+      if (!SR5ShopVendor.isOfferOpen(message)) {
         button.disabled = true
         return
       }
@@ -1086,12 +1252,18 @@ export class SR5ShopVendor {
         event.preventDefault()
         if (button.disabled) return
         const seller = game.actors.get(message.flags?.sr5vendorOffer?.sellerId)
-        if (!seller?.isOwner) {
+        if (!game.user.isGM && !seller?.isOwner) {
           ui.notifications.warn(game.i18n.localize('SR5.WARN_ShopNotOwner'))
           return
         }
         button.disabled = true
-        await SR5ShopVendor.requestAccept(message)
+        if (button.dataset.vendorOffer === 'decline') await SR5ShopVendor.requestDecline(message)
+        else await SR5ShopVendor.requestAccept(message)
+        // A refusal leaves the card as it was: the button comes back once the answer had time to
+        // arrive (Nora's review); a card taken or closed is drawn again without it
+        setTimeout(() => {
+          if (SR5ShopVendor.isOfferOpen(game.messages?.get(message.id) ?? message)) button.disabled = false
+        }, 1500)
       })
     })
   }

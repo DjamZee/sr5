@@ -26,6 +26,8 @@ export const SHOP_DEFAULTS = {
   template: '',
   contactId: '',
   buyAll: false,
+  clients: [],
+  negotiationPool: 0,
 }
 
 /** Is this item a vendor's stock? */

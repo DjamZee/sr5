@@ -79,6 +79,8 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       shopClear: SR5ItemSheet._onShopAction,
       shopCashbox: SR5ItemSheet._onShopAction,
       shopOpen: SR5ItemSheet._onShopAction,
+      shopClientAdd: SR5ItemSheet._onShopAction,
+      shopClientRemove: SR5ItemSheet._onShopAction,
     },
   }
 
@@ -115,6 +117,11 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     if (action === 'shopRestock') await SR5ShopVendor.restock(actor, item)
     else if (action === 'shopClear') await SR5ShopVendor.clearStock(actor, item)
     else if (action === 'shopCashbox') await SR5ShopVendor.createCashbox(actor, item)
+    else if (action === 'shopClientAdd') {
+      const el = this.element
+      await SR5ShopVendor.setClient(item, el.querySelector('[data-shop-client-actor]')?.value,
+        el.querySelector('[data-shop-client-loyalty]')?.value)
+    } else if (action === 'shopClientRemove') await SR5ShopVendor.removeClient(item, target.dataset.actorId)
     this.render()
   }
 

@@ -31,7 +31,8 @@ const L = 'legal', R = 'R', F = 'F'
 
 const t = (key, family, banners, shelves, legality, margin, maxAvailability, extra = {
 }) => ({
-  key, family, banners, shelves, legality, margin, maxAvailability, perShelf: 10, extra: [], ...extra,
+  // Negotiation 4 + Charisma 4: a professional Grunt (rating 3-4, SR5 p. 381), a choice of play
+  key, family, banners, shelves, legality, margin, maxAvailability, perShelf: 10, negotiationPool: 8, extra: [], ...extra,
 })
 
 export const VENDOR_TEMPLATES = [
@@ -136,6 +137,7 @@ export function templateShop(template, {
     margin: template.margin,
     maxAvailability: template.maxAvailability,
     perShelf: template.perShelf,
+    negotiationPool: template.negotiationPool,
     accent: templateAccent(template),
     banner,
   }

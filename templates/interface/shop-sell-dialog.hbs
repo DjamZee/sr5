@@ -31,7 +31,7 @@
 
   <footer class="sr-sell-footer">
     <div class="sr-sell-options">
-      {{#if hasContacts}}
+      {{#if (and hasContacts (not vendor))}}
       <select data-sell-contact data-tooltip="{{localize 'SR5.ShopFencedBy'}}">
         <option value="">{{localize 'SR5.ShopNoFence'}}</option>
         {{#each contacts}}
@@ -53,7 +53,7 @@
               data-tooltip="{{localize 'SR5.ShopVendorSellHint'}}">
         <i class="fas fa-sm fa-store"></i>
         {{localize 'SR5.ShopVendorSell' shop=vendor.label}}
-        ({{#if vendor.contact}}{{rules.contactPercent}}% × {{localize 'SR5.ContactLoyaltyShort'}}{{else}}{{rules.basePercent}}% ± {{rules.stepPercent}}%{{/if}})
+        ({{#if vendor.contact}}{{rules.contactPercent}}% × {{localize 'SR5.ContactLoyaltyShort'}} {{vendor.loyalty}}{{else}}{{rules.basePercent}}% ± {{rules.stepPercent}}%{{/if}})
       </button>
       {{else}}
       <button type="button" data-action="sellToContact" {{#unless hasContact}}disabled{{/unless}}

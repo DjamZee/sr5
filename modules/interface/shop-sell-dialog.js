@@ -92,7 +92,8 @@ export class SR5SellDialog extends foundry.applications.api.HandlebarsApplicatio
     const actor = this.actor
     const contacts = SR5ShopAvailability.getContacts(actor)
     if (this._contactId && !contacts.some(c => c.id === this._contactId)) this._contactId = null
-    const contact = this._contactId ? actor.items.get(this._contactId) : null
+    // At a vendor's, the seller's own contacts do not count: the vendor's client list does
+    const contact = this._contactId && !this.vendor ? actor.items.get(this._contactId) : null
 
     const needle = this._searchText.toLowerCase()
     // At a vendor's: only what it buys, and only a contact that stands for it gives its Loyalty
@@ -121,9 +122,9 @@ export class SR5SellDialog extends foundry.applications.api.HandlebarsApplicatio
       })
       .sort((a, b) => a.name.localeCompare(b.name))
 
+    const loyalty = vendor ? SR5ShopVendor.clientLoyalty(vendor.storage, actor.id) : 0
     context.vendor = vendor ? {
-      label: SR5ShopVendor.labelOf(vendor.storage),
-      contact: contact && SR5ShopVendor.isVendorContact(contact, vendor.actor, vendor.storage),
+      label: SR5ShopVendor.labelOf(vendor.storage), contact: loyalty > 0, loyalty,
     } : null
     context.actorName = actor.name
     context.items = items
@@ -234,7 +235,7 @@ export class SR5SellDialog extends foundry.applications.api.HandlebarsApplicatio
     } = await import('./shop-vendor.js')
     await SR5ShopVendor.requestOffer({
       vendorUuid: this.vendor.uuid, storageId: this.vendor.storageId, sellerId: this.actor.id,
-      contactId: this._contactId, lines: this.#lines(),
+      lines: this.#lines(),
     })
     this._selection.clear()
     this.render()
