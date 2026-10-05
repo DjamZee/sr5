@@ -39,6 +39,9 @@ import {
   reagentSystem, reagentChoices, reagentLimit, reagentTestKind, drainReduction, normalizeTier, tierStock, tierPath,
   effectiveDrachms, stockAfterSpending, TIER_LABELS
 } from "../system/reagents.js"
+import {
+  rollLimitValue, secondChanceLimit
+} from "./roll-helpers/limit.js"
 
 export class SR5_RollTest {
   //Prepare the roll window
@@ -221,10 +224,11 @@ export class SR5_RollTest {
       })
       dialogData.edge.hasUsedPushTheLimit = true
     } else {
-      //Radical reagents lift the limit (Forbidden Arcana p. 181)
+      //Radical reagents lift the limit (Forbidden Arcana p. 181): the card shows none either
+      if (dialogData.limit.unlimited) dialogData.limit.value = rollLimitValue(dialogData.limit)
       dialogData.roll = await SR5_RollTest.rollDice({
         dicePool: dialogData.dicePool.value,
-        limit: dialogData.limit.unlimited ? undefined : dialogData.limit.value,
+        limit: dialogData.limit.value,
       })
     }
 
@@ -432,15 +436,14 @@ export class SR5_RollTest {
     let rollHits = messageData.roll.rollHits ?? messageData.roll.hits
     let dicePool = rollDices ? rollDices.filter(d => d.result < 5).length : messageData.dicePool.value - messageData.roll.hits
     if (dicePool < 0) dicePool = 0
-    let limit = messageData.limit.value - rollHits
-    if (limit < 0) limit = 0
-    let chance = await SR5_RollTest.rollDice({
-      dicePool: dicePool, limit: limit, edgeRoll: true
-    })
     //SR5 p. 58: Second Chance has no effect on limits. A test whose hits already reached its limit gains nothing,
-    //only a test without limit (value 0) keeps every new hit
+    //only a test without limit (value 0, or lifted by radical reagents) keeps every new hit
+    let limit = secondChanceLimit(messageData.limit, rollHits)
+    let chance = await SR5_RollTest.rollDice({
+      dicePool: dicePool, limit: limit ?? 0, edgeRoll: true
+    })
     let chanceHit = chance.hits
-    if (messageData.limit.value > 0) chanceHit = Math.min(chance.hits, limit)
+    if (limit !== null) chanceHit = Math.min(chance.hits, limit)
     let dicesKeeped = messageData.roll.dices.filter(function (d) {
       return d.result > 4
     })
