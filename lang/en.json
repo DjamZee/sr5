@@ -2849,6 +2849,8 @@
 	"SR5.MagicMasteryConjuringSpecialist": "Conjuring Specialist",
 	"SR5.MagicMasteryDeathSower": "Death Sower",
 	"SR5.MagicMasteryIllusionist": "Illusionist",
+	"SR5.MasteryIllusionType": "Illusion spell type",
+	"SR5.MasteryIllusionTypeAny": "Not chosen (any)",
 	"SR5.MagicMasteryMageHunter": "Mage Hunter",
 	"SR5.MageHunterTrade": "Drain +{level}, opposing Counterspelling -2 × {level}",
 	"SR5.MageHunterCounterspell": "Mage Hunter: opposing Counterspelling -{value}",

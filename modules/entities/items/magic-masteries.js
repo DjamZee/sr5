@@ -2,23 +2,47 @@
 // A mastery is a quality; its level is the quality rating, carried by the custom effect onto
 // system.magic.masteries.<key>.
 
-// Masteries that let a spell be sustained without penalty: one spell per level, Force <= Magic
-// Illusionist (p. 37): Illusion spells ; Master Manipulator (p. 38): mental Manipulation spells
-const SUSTAIN_MASTERIES = {
-  illusionist: spell => spell.category === "illusion",
-  masterManipulator: spell => spell.category === "manipulation" && spell.subCategory === "mental",
+const isIllusion = spell => spell.category === "illusion"
+const isMentalManipulation = spell => spell.category === "manipulation" && spell.subCategory === "mental"
+
+// Illusionist levels by the spell type chosen when each level was bought (p. 37: "Physical or Mana"), from the
+// active qualities whose effect aims at the mastery. A quality with no type chosen frees either type.
+// items: [{type, system: {isActive, itemRating, masteryOption, customEffects}}]
+export function illusionistLevelsByType(items){
+  const levels = {
+    physical: 0, mana: 0, any: 0
+  }
+  for (const item of items || []){
+    if (item.type !== "itemQuality" || !item.system?.isActive) continue
+    for (const effect of item.system.customEffects || []){
+      if (effect?.target !== "system.magic.masteries.illusionist") continue
+      const level = effect.type === "rating" ? (Number(item.system.itemRating) || 0) : (Number(effect.value) || 0)
+      const option = item.system.masteryOption
+      levels[option === "physical" || option === "mana" ? option : "any"] += level * (Number(effect.multiplier) || 1)
+    }
+  }
+  return levels
 }
 
 // Returns the ids of the sustained spells freed from the sustaining penalty.
-// spells: [{id, category, subCategory, force}] (already free spells must be left out by the caller)
-// levels: {illusionist, masterManipulator}
+// spells: [{id, category, subCategory, type, force}], the spells sustained (already free spells left out by the caller)
+// levels: {illusionist, masterManipulator, illusionistByType?: {physical, mana, any}}
 // The most powerful eligible spells are freed first.
 export function masteryFreeSustainedSpells(spells, magic, levels = {
 }) {
   const freed = new Set()
   const sorted = [...(spells || [])].sort((a, b) => (b.force || 0) - (a.force || 0))
-  for (const [key, eligible] of Object.entries(SUSTAIN_MASTERIES)) {
-    let slots = Math.max(0, Math.floor(levels[key] || 0))
+  const pools = []
+  // Illusionist (p. 37): one Illusion of the type chosen per level; without types, any Illusion
+  const byType = levels.illusionistByType
+  if (byType) for (const type of ["physical", "mana", "any"]){
+    pools.push([byType[type], spell => isIllusion(spell) && (type === "any" || spell.type === type)])
+  }
+  else pools.push([levels.illusionist, isIllusion])
+  pools.push([levels.masterManipulator, isMentalManipulation])
+
+  for (const [level, eligible] of pools) {
+    let slots = Math.max(0, Math.floor(level || 0))
     for (const spell of sorted) {
       if (slots <= 0) break
       if (freed.has(spell.id)) continue

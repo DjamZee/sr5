@@ -418,6 +418,9 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
         value: m.id, label: m.name
       }))
     }
+    // Illusionist (Forbidden Arcana p. 37): the spell type chosen with each level
+    if (item.type === "itemQuality") context.showMasteryOption = (item.system.customEffects || [])
+      .some(e => e?.target === "system.magic.masteries.illusionist")
 
     // Custom spirit type: pickers, and labels for the read-only summary
     if (item.type === "itemSpiritType") {

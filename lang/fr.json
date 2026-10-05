@@ -2849,6 +2849,8 @@
 	"SR5.MagicMasteryConjuringSpecialist": "Spécialiste de la conjuration",
 	"SR5.MagicMasteryDeathSower": "Semeur de mort",
 	"SR5.MagicMasteryIllusionist": "Illusionniste",
+	"SR5.MasteryIllusionType": "Type de sort d'Illusion",
+	"SR5.MasteryIllusionTypeAny": "Non choisi (tous)",
 	"SR5.MagicMasteryMageHunter": "Chasseur de mage",
 	"SR5.MageHunterTrade": "Drain +{level}, Contresort adverse -2 × {level}",
 	"SR5.MageHunterCounterspell": "Chasseur de mage : Contresort adverse -{value}",

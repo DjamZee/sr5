@@ -29,6 +29,10 @@ export class sr5ItemQualityDataModel extends foundry.abstract.TypeDataModel {
       linkedMentor: new fields.StringField({
         initial: "", blank: true
       }),
+      // Illusionist (Forbidden Arcana p. 37): the spell type, Physical or Mana, chosen for this level
+      masteryOption: new fields.StringField({
+        initial: "", blank: true
+      }),
     }
   }
 }

@@ -14,7 +14,7 @@ import {
   SR5_SpiritTypes
 } from "../items/spirit-types.js"
 import {
-  masteryFreeSustainedSpells
+  masteryFreeSustainedSpells, illusionistLevelsByType
 } from "../items/magic-masteries.js"
 import {
   homunculusMaterialRatings
@@ -861,9 +861,11 @@ export class SR5_CharacterUtility extends Actor {
         const candidates = actor.items.filter(i => i.type === "itemSpell" && i.system.isActive && !i.system.freeSustain)
         freedByMastery = masteryFreeSustainedSpells(
           candidates.map(i => ({
-            id: i.id, category: i.system.category, subCategory: i.system.subCategory, force: i.system.force
+            id: i.id, category: i.system.category, subCategory: i.system.subCategory, type: i.system.type, force: i.system.force
           })),
-          actor.system.specialAttributes.magic.augmented.value, masteries)
+          actor.system.specialAttributes.magic.augmented.value, {
+            ...masteries, illusionistByType: illusionistLevelsByType(actor.items)
+          })
       }
     }
 
