@@ -29,7 +29,7 @@ import {
   SR5ShopFence
 } from './shop-fence.js'
 import {
-  VENDOR_TEMPLATES, VENDOR_FAMILIES, vendorTemplate, templateBanners, templateShop
+  VENDOR_TEMPLATES, VENDOR_FAMILIES, vendorTemplate, templateBanners, templateShop, bannerFolderOf
 } from './shop-vendor-templates.js'
 import {
   isStoredAway
@@ -297,13 +297,15 @@ export class SR5ShopVendor {
   /*  Templates (lot C, part 2)                   */
   /* -------------------------------------------- */
 
-  /** The banner folder set by the gamemaster; empty, none. */
+  /** The banner folder set by the gamemaster; empty, the Megapack's when it is active, else none. */
   static get bannerFolder() {
+    let setting = ''
     try {
-      return String(game.settings.get('sr5', 'sr5ShopBannerFolder') ?? '').trim()
+      setting = game.settings.get('sr5', 'sr5ShopBannerFolder')
     } catch {
-      return ''
+      setting = ''
     }
+    return bannerFolderOf(setting, !!game.modules?.get('megapack-sr5-foundry-vtt')?.active)
   }
 
   /** The files of the banner folder, read once a session. */

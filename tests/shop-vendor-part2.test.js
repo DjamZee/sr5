@@ -2,7 +2,7 @@ import {
   describe, it, expect, beforeEach, afterEach, vi
 } from 'vitest'
 import {
-  VENDOR_TEMPLATES, VENDOR_FAMILIES, templateBanners, templateShop, vendorTemplate
+  VENDOR_TEMPLATES, VENDOR_FAMILIES, templateBanners, templateShop, vendorTemplate, bannerFolderOf, MEGAPACK_BANNER_FOLDER
 } from '../modules/interface/shop-vendor-templates.js'
 import {
   SR5ShopCatalog
@@ -30,6 +30,15 @@ describe('vendor templates (shop lot C, part 2)', () => {
     expect(banners).toEqual(["banners/Atelier-d'armurerie-1.webp", "banners/Atelier-d'armurerie-2.webp", 'banners/Atelier.webp'])
     // "Atelier d'enchantement - loge magique 1" is numbered with a space
     expect(templateBanners(vendorTemplate('enchanterLodge'), ["b/Atelier d'enchantement - loge magique 3.webp"])).toHaveLength(1)
+  })
+
+  it('reads the Megapack banners when the setting is empty and the Megapack is active', () => {
+    expect(bannerFolderOf('', true)).toBe('modules/megapack-sr5-foundry-vtt/assets/banners-shop')
+    expect(bannerFolderOf('  ', true)).toBe(MEGAPACK_BANNER_FOLDER)
+    expect(bannerFolderOf('', false)).toBe('')
+    expect(bannerFolderOf(null, false)).toBe('')
+    // The gamemaster's own folder always wins
+    expect(bannerFolderOf(' mes/bannieres ', true)).toBe('mes/bannieres')
   })
 
   it('gives a new vendor the template settings and its accent', () => {

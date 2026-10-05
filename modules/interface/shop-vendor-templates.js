@@ -96,6 +96,21 @@ export function templateAccent(template) {
   return template?.accent ?? FAMILY_ACCENTS[template?.family] ?? ''
 }
 
+/** Where the Megapack ships the banners (megapack-sr5-foundry-vtt, assets/banners-shop). */
+export const MEGAPACK_BANNER_FOLDER = 'modules/megapack-sr5-foundry-vtt/assets/banners-shop'
+
+/**
+ * The banner folder to read: the one the gamemaster set, else the Megapack's when it is active, else none.
+ *
+ * @param {string} setting the world setting "banner folder"
+ * @param {boolean} megapackActive
+ */
+export function bannerFolderOf(setting, megapackActive) {
+  const folder = String(setting ?? '').trim()
+  if (folder) return folder
+  return megapackActive ? MEGAPACK_BANNER_FOLDER : ''
+}
+
 /**
  * The banners of a template among the files of the banner folder: "Prefix-1.webp",
  * "Prefix 2.png", and the whole names of its single images. A WebP is preferred

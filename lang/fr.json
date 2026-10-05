@@ -255,7 +255,7 @@
 	"SR5.GradeGamma": "Gamma",
 	"SR5.GradeGreyware": "GreyWare",
 	"SR5.GreywareMagicLoss": "GreyWare (BTB p. 142)",
-	"SR5.SETTINGS_ShopBannerFolder_D": "Dossier des bannières des vendeurs (images 3:1 nommées comme les modèles, « Armurier-des-ombres-1.webp »…). Vide : pas de bannière.",
+	"SR5.SETTINGS_ShopBannerFolder_D": "Dossier des bannières des vendeurs (images 3:1 nommées comme les modèles, « Armurier-des-ombres-1.webp »…). Vide : celles du Mégapack s’il est actif, sinon pas de bannière.",
 	"SR5.SETTINGS_ShopBannerFolder_T": "Boutique : dossier des bannières",
 	"SR5.SETTINGS_ShopConfig_D": "Les compendiums d'objets que la boutique vend, et qui peut acheter.",
 	"SR5.SETTINGS_ShopConfig_L": "Configurer la boutique",

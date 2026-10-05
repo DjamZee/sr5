@@ -255,7 +255,7 @@
 	"SR5.GradeGamma": "Gamma",
 	"SR5.GradeGreyware": "Greyware",
 	"SR5.GreywareMagicLoss": "Greyware (BTB p. 142)",
-	"SR5.SETTINGS_ShopBannerFolder_D": "Folder of the vendor banners (3:1 images named after the templates, \"Armurier-des-ombres-1.webp\"…). Empty: no banner.",
+	"SR5.SETTINGS_ShopBannerFolder_D": "Folder of the vendor banners (3:1 images named after the templates, \"Armurier-des-ombres-1.webp\"…). Empty: the Megapack ones when it is active, else no banner.",
 	"SR5.SETTINGS_ShopBannerFolder_T": "Shop: banner folder",
 	"SR5.SETTINGS_ShopConfig_D": "The item compendiums the shop sells, and who may buy.",
 	"SR5.SETTINGS_ShopConfig_L": "Configure the shop",
