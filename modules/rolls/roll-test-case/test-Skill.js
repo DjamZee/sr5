@@ -20,7 +20,7 @@ import {
   underFireRules, bbPatientEntry, bbThreshold
 } from "../../system/bb-healing.js"
 import {
-  diagnosisBonus, stabilizationReduction, stabilizedTreatmentBoxes
+  diagnosisBonus, stabilizedTreatmentBoxes, believedHits, believedStabilizationReduction
 } from "../../system/bb-healing-rules.js"
 
 // Bullets & Bandages p. 14-15, world setting: the stabilization (extended) and the diagnosis of the targeted patient.
@@ -45,7 +45,8 @@ function bbCard(cardData, patient){
     else end("SR5.BB_DiagnoseFailed")
     return true
   }
-  //A new roll of the extended test rewrites the card: the button of the previous roll goes
+  //A new roll of the extended test rewrites the card: the button of the previous roll goes. Taken out of the
+  //card's data here, and out of the message's flags by the "-=" keys of updateRollCard (roll-message.js)
   delete cardData.chatCard.buttons.actionEnd
   delete cardData.chatCard.buttons.bbStabilize
   //SR5 p. 51: a critical glitch ends an extended test
@@ -54,11 +55,12 @@ function bbCard(cardData, patient){
     return true
   }
   const threshold = bbThreshold(patient)
-  const hits = Number(cardData.roll.hits) || 0
+  const hits = believedHits(cardData.roll.hits, cardData.dicePool?.value, cardData.test?.extended?.roll)
   if (hits >= threshold){
-    cardData.roll.bbReduction = stabilizationReduction(hits, threshold)
+    //The count the GM makes again when he applies it (bb-healing.js, stabilizationCardReduction)
+    const reduction = believedStabilizationReduction(cardData.roll, cardData.dicePool?.value, cardData.test?.extended?.roll, threshold)
     cardData.chatCard.buttons.bbStabilize = SR5_RollMessage.generateChatButton("nonOpposedTest", "bbStabilize", game.i18n.format("SR5.BB_StabilizeButton", {
-      reduction: cardData.roll.bbReduction
+      reduction
     }), {
       gmAction: true
     })
@@ -170,7 +172,6 @@ export default async function skillInfo(cardData){
         }
         if (bbEntry.stabilized) cardData.roll.netHits = stabilizedTreatmentBoxes(cardData.roll.hits, 2, actorData.skills.firstAid.rating.value, cardData.test.bbMedkitRating, fullArmor)
         if (bbEntry.bleeding && !(targetActor.system.conditionMonitors.overflow?.actual?.value > 0)) {
-          cardData.roll.bbReduction = 0
           cardData.chatCard.buttons.bbStabilize = SR5_RollMessage.generateChatButton("nonOpposedTest", "bbStabilize", game.i18n.format("SR5.BB_StabilizeButton", {
             reduction: 0
           }), {

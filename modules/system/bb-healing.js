@@ -5,6 +5,7 @@
 import {
   BB_UNDER_FIRE, BB_ADVANCED_MEDKITS, BB_LEDGER, BB_WOUND_THRESHOLD, refreshPatients,
   physicalTotal, canBleed, ledgerAfterWound, ledgerAfterBleedBox, isStabilizeSpell, stabilizeSpellDrain, ledgerAfterRound, ledgerAfterStabilization,
+  spellStabilizes, believedStabilizationReduction,
   ledgerWithDiagnosis, ledgerWithoutDiagnosis, diagnosisBonus, woundDiagnosisThreshold, DIAGNOSIS_THRESHOLDS, ledgerCleaned, penaltyReduction, stabilizationThreshold,
 } from "./bb-healing-rules.js"
 import {
@@ -196,16 +197,41 @@ function writerOrWarn(){
   return false
 }
 
+// The reduction of the wound modifiers a stabilization card is worth, as the GM counts it: never read from the card
+// (its author wrote it), but from its hits bounded by the dice rolled and the patient's threshold now. The card's
+// button shows the same count (test-Skill.js). A spell or a treatment stabilizes without reduction
+export function stabilizationCardReduction(messageData, patient){
+  if (messageData?.test?.bbMode !== "stabilization" || messageData?.test?.type === "spell") return 0
+  return believedStabilizationReduction(messageData.roll, messageData.dicePool?.value, messageData.test?.extended?.roll, bbThreshold(patient))
+}
+
+// BB p. 15-16: does the spell of the card stabilize the patient? The spell's name is read from the item, the Force
+// is capped at twice the caster's Magic (SR5 p. 281), the patient is read now
+export async function spellCardStabilizes(messageData, patient, caster){
+  if (messageData?.test?.type !== "spell" || !messageData.owner?.itemUuid) return false
+  const spell = await fromUuid(messageData.owner.itemUuid)
+  const magic = Number(caster?.system?.specialAttributes?.magic?.augmented?.value) || 0
+  const force = Math.min(Number(messageData.magic?.force) || 0, 2 * magic)
+  return spellStabilizes(spell?.name, force, bbPatientEntry(patient), patient?.system?.conditionMonitors?.overflow?.actual?.value)
+}
+
+// Returns the reduction applied (0 or more), false when nothing was written
 export async function applyStabilization(messageData, patient, medic){
   if (!writerOrWarn()) return false
-  const reduction = Number(messageData.roll.bbReduction) || 0
+  if (messageData?.test?.type === "spell" && !(await spellCardStabilizes(messageData, patient, medic))) {
+    ui.notifications.warn(game.i18n.format("SR5.BB_SpellDoesNotStabilize", {
+      name: patient.name
+    }))
+    return false
+  }
+  const reduction = stabilizationCardReduction(messageData, patient)
   const hours = Number(medic?.system?.skills?.firstAid?.rating?.value) || 0
   const ok = await confirm(game.i18n.format("SR5.BB_StabilizeConfirm", {
     name: escape(patient.name), reduction, hours
   }))
   if (!ok) return false
   await writeLedger(ledgerAfterStabilization(bbLedger(), patient.uuid, reduction, game.time.worldTime + hours * 3600))
-  return true
+  return reduction
 }
 
 export async function applyDiagnosis(messageData, patient){
@@ -231,7 +257,7 @@ export async function applyDiagnosis(messageData, patient){
   }))
   //A diagnosis without result leaves no bonus: nothing to write
   if (bonus) await writeLedger(ledgerWithDiagnosis(bbLedger(), patient.uuid, bonus))
-  return true
+  return bonus
 }
 
 // BB p. 15: the diagnosis counts for one test. A card that used it, the active GM takes it out of the ledger

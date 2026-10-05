@@ -5,7 +5,7 @@ import {
   bbPatientEntry, advancedMedkitRules
 } from "../system/bb-healing.js"
 import {
-  advancedMedkitDice
+  advancedMedkitDice, bbModeDiagnosisDice
 } from "../system/bb-healing-rules.js"
 import {
   SR5 
@@ -245,6 +245,12 @@ export default class SR5_RollDialog {
     element.querySelectorAll('.SR-ModSelect').forEach(el => el.addEventListener('change', ev => this._selectModifiers(ev, element, dialogData)))
     //General commands for select already filled by dialogData
     const filledSelects = element.querySelectorAll('.SR-ModSelectFilled'); if (filledSelects.length) this._filledSelectModifier(filledSelects, element, dialogData)
+    //Bullets & Bandages: the care selected when the window opens counts at once (the diagnosis bonus of a treatment
+    //rolled without touching the list)
+    const bbModeSelect = element.querySelector('.SR-ModSelect[data-modifier="bbMode"]')
+    if (bbModeSelect) this._selectModifiers({
+      currentTarget: bbModeSelect, target: bbModeSelect
+    }, element, dialogData)
     //Ramming: speeds and angle of the impact
     element.querySelectorAll('.SR-RammingInput').forEach(el => el.addEventListener('change', ev => this._updateRamming(element, dialogData, ev.target.name)))
     //Manage Threshold
@@ -1362,9 +1368,8 @@ export default class SR5_RollDialog {
           value = 0
           const patient = dialogData.target.hasTarget ? SR5_EntityHelpers.getRealActorFromID(dialogData.target.actorId) : null
           //BB p. 15: the diagnosis bonus goes to the next stabilization or treatment of that patient
-          const bonus = Number(bbPatientEntry(patient).diagnosis) || 0
-          if (bonus && (ev.target.value === "treatment" || ev.target.value === "stabilization")){
-            value = bonus
+          value = bbModeDiagnosisDice(ev.target.value, bbPatientEntry(patient).diagnosis)
+          if (value){
             dialogData.test.bbDiagnosisPatient = patient.uuid
           }
           label = game.i18n.localize("SR5.BB_DiagnosisBonus")

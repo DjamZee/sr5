@@ -38,7 +38,7 @@ import {
   SR5_MatrixHelpers 
 } from "./roll-helpers/matrix.js"
 import {
-  isRolledByTarget, firstAidPatient, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick, ownsCardSpeaker, defenseActorId
+  isRolledByTarget, firstAidPatient, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick, ownsCardSpeaker, defenseActorId, removedButtonKeys
 } from "./roll-helpers/cardRoller.js"
 import {
   SR5_CombatHelpers 
@@ -339,10 +339,11 @@ export class SR5_RollMessage {
         const done = type === "bbStabilize" ?
           await applyStabilization(messageData, targetActor, SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId)) :
           await applyDiagnosis(messageData, targetActor)
-        if (!done) return
+        //The figure applied (0 is one) comes back, false when nothing was written
+        if (done === false || done === undefined || done === null) return
         //BB p. 18-19: one use of the supplies per patient, taken when the stabilization test is applied
         if (type === "bbStabilize" && messageData.test.bbMode === "stabilization") await useMedkitSupplies(messageData.test.bbMedkitUuid)
-        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        SR5_RollMessage.updateChatButtonHelper(messageId, type, done)
         break
       }
       case "damage":
@@ -872,6 +873,19 @@ export class SR5_RollMessage {
       case "applyReagents":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.ReagentApplied"))
         break
+      //Bullets & Bandages p. 15: what the GM applied, marked done
+      case "bbStabilize":
+        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.format("SR5.BB_StabilizeDone", {
+          reduction: Number(firstOption) || 0
+        }))
+        break
+      case "bbDiagnose": {
+        const bonus = Number(firstOption) || 0
+        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.format("SR5.BB_DiagnoseDone", {
+          bonus: bonus > 0 ? `+${bonus}` : `${bonus}`
+        }))
+        break
+      }
       default:
     }
 
@@ -932,8 +946,19 @@ export class SR5_RollMessage {
         divButtons.insertAdjacentHTML("beforeend", `<button class="messageAction ${newMessage.chatCard.buttons[button].testType} ${newMessage.chatCard.buttons[button].gmAction ?? ""}" data-action="${newMessage.chatCard.buttons[button].testType}" data-type="${newMessage.chatCard.buttons[button].actionType}">${newMessage.chatCard.buttons[button].label}</button>`)
       }
       html = temp.innerHTML
-      messageToUpdate.update({
-        "flags.sr5data": newMessage,
+      //An update merges into the flags: a button the new card no longer has would stay in them and come back on the
+      //next refresh (updateChatButton). It is removed by Foundry's "-=" key
+      return messageToUpdate.update({
+        "flags.sr5data": {
+          ...newMessage,
+          chatCard: {
+            ...newMessage.chatCard,
+            buttons: {
+              ...newMessage.chatCard.buttons,
+              ...removedButtonKeys(messageToUpdate.flags.sr5data?.chatCard?.buttons, newMessage.chatCard.buttons),
+            },
+          },
+        },
         content: html,
       })
     })

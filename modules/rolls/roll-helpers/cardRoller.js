@@ -5,6 +5,17 @@ const TARGET_HANDLED_TESTS = ["banishing", "binding", "decompileSprite", "regist
 // the drain goes to the magician (SR5 p. 304), the fading to the technomancer (SR5 p. 254)
 const OWNER_RESISTANCES = ["drain", "fading"]
 
+// The Foundry "-=" keys that remove from a card's flags the buttons its refreshed version no longer has
+// (an update merges, a key left out would stay)
+export function removedButtonKeys(oldButtons, newButtons){
+  const removed = {
+  }
+  for (const key of Object.keys(oldButtons ?? {
+  })) if (!key.startsWith("-=") && !(key in (newButtons ?? {
+  }))) removed[`-=${key}`] = null
+  return removed
+}
+
 // True when a non-opposed button of the card must be rolled by the target instead of the card owner
 export function isRolledByTarget(type, typeSub, targetActorId) {
   if (!targetActorId) return false

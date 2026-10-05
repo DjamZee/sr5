@@ -117,6 +117,35 @@ export function isStabilizeSpell(name){
   return n === "stabilize" || n === "stabilisation" || n === "stabilization"
 }
 
+// The Heal spell, known by its name in English or French
+export function isHealSpell(name){
+  const n = String(name ?? "").trim().toLowerCase()
+  return n === "heal" || n === "soins"
+}
+
+// BB p. 15-16, which spell cast on the patient stabilizes him. Stabilize: a Force at least the boxes of bleeding and
+// overflow, on a patient who bleeds or is in the overflow. Heal: stabilizes of itself out of the overflow
+export function spellStabilizes(spellName, force, entry, overflow){
+  const over = Number(overflow) || 0
+  if (isStabilizeSpell(spellName)){
+    if (!entry?.bleeding && over <= 0) return false
+    return (Number(force) || 0) >= (Number(entry?.bleeding?.boxes) || 0) + over
+  }
+  if (isHealSpell(spellName)) return !!entry?.bleeding && over <= 0
+  return false
+}
+
+// The hits the GM believes on a card: never more than the dice rolled, the pool times the rolls of an extended test
+export function believedHits(hits, dicePool, rolls = 1){
+  const cap = Math.max(0, Number(dicePool) || 0) * Math.max(1, Number(rolls) || 1)
+  return Math.max(0, Math.min(Number(hits) || 0, cap))
+}
+
+// BB p. 15: the reduction of the wound modifiers, from the believed hits and the patient's threshold now
+export function believedStabilizationReduction(roll, dicePool, rolls, threshold){
+  return stabilizationReduction(believedHits(roll?.hits, dicePool, rolls), threshold)
+}
+
 // BB p. 15, Stabilize spell: the VO gives a Drain of (boxes of bleeding + overflow) / 2 rounded up, which the VF
 // leaves out; the VO is the original text and wins (arbitrage de DjamZ, 2026-10-05). The Drain floor of SR5 p. 284
 // still applies
@@ -160,6 +189,12 @@ export function ledgerWithDiagnosis(ledger, uuid, bonus){
   return next
 }
 
+// The dice the diagnosis adds to a care chosen in the dialog: stabilization and treatment only
+export function bbModeDiagnosisDice(mode, diagnosis){
+  if (mode !== "treatment" && mode !== "stabilization") return 0
+  return Number(diagnosis) || 0
+}
+
 export function ledgerWithoutDiagnosis(ledger, uuid){
   const next = foundry.utils.deepClone(ledger ?? {
   })
@@ -167,13 +202,16 @@ export function ledgerWithoutDiagnosis(ledger, uuid){
   return next
 }
 
-// Entries left with nothing are dropped, so the ledger does not grow with every patient
+// Entries left with nothing are dropped, so the ledger does not grow with every patient. A stabilized patient stays
+// stabilized (BB p. 16, the treatment heals him 2 boxes a hit) until a new wound of 5+: only his reduction runs out
 export function ledgerCleaned(ledger, now){
   const next = {
   }
   for (const [uuid, entry] of Object.entries(ledger ?? {
   })){
-    const stabilized = penaltyReduction(entry, now) > 0 ? entry.stabilized : null
+    const stabilized = entry?.stabilized ? {
+      ...entry.stabilized, reduction: penaltyReduction(entry, now)
+    } : null
     if (entry?.bleeding || stabilized || entry?.diagnosis) next[uuid] = {
       ...entry, stabilized
     }
