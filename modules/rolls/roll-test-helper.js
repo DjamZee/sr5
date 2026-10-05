@@ -100,6 +100,8 @@ export class SR5_RollTestHelper {
       dialogData.limit.hasModifier = true
     }
     dialogData.limit.value = dialogData.limit.base + dialogData.limit.modifiersTotal
+    //A Limit replaced by an effect (Eyes of the Pack, Street Grimoire p. 106) takes the place of every other
+    if (dialogData.limit.replace !== undefined) dialogData.limit.value = dialogData.limit.replace
     //Debug limit can't be negative
     if (dialogData.limit.value < 0) dialogData.limit.value = 0
     return dialogData

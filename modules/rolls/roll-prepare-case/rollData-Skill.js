@@ -1,4 +1,7 @@
 import {
+  replacedValue
+} from "../../entities/actors/effect-replace.js"
+import {
   SR5_PrepareRollHelper 
 } from "../roll-prepare-helpers.js"
 import {
@@ -72,10 +75,13 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
   }
 
   //Determine base limit
-  rollData.limit.base = SR5_PrepareRollHelper.getBaseLimit(actor.system.skills[rollKey].limit.value, actor.system.skills[rollKey].limit.modifiers)
+  //A Limit an effect replaced (No Future instruments, Animal Sense) has the replacing value as its base, and the other
+  //modifiers on top: the replacing modifier is neither taken off the base nor shown as a modifier
+  const skillLimitModifiers = actor.system.skills[rollKey].limit.modifiers.filter(m => !m.replace)
+  rollData.limit.base = SR5_PrepareRollHelper.getBaseLimit(actor.system.skills[rollKey].limit.value, skillLimitModifiers)
 
   //Determine limit modififiers
-  rollData.limit.modifiers = SR5_PrepareRollHelper.getLimitModifiers(rollData, actor.system.skills[rollKey].limit.modifiers)
+  rollData.limit.modifiers = SR5_PrepareRollHelper.getLimitModifiers(rollData, skillLimitModifiers)
 
   //The background count follows the attribute in use (Grimoire des Ombres p. 30)
   if (rollData.skillAttribute){
@@ -93,6 +99,8 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
   rollData.test.type = "skillDicePool"
   rollData.test.typeSub = rollKey
   rollData.limit.type = actor.system.skills[rollKey].limit.base
+  //A Limit an effect replaced (No Future instruments, Animal Sense) is no longer the linked one: the card says so
+  if (replacedValue(actor.system.skills[rollKey].limit.modifiers) !== undefined) rollData.limit.type = "replaced"
   rollData.dialogSwitch.extended = true
   rollData.dialogSwitch.specialization = true
 

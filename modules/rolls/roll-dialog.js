@@ -41,6 +41,9 @@ import {
   SR5_Toxins
 } from "../entities/items/toxins.js"
 import {
+  replacedValue
+} from "../entities/actors/effect-replace.js"
+import {
   SR5_SystemHelpers
 } from "../system/utilitySystem.js"
 import {
@@ -96,6 +99,7 @@ export default class SR5_RollDialog {
         //if (key === "reagents") modifiedLimit = value;
       }
       modifiedLimit += limitModifier
+      if (this.dialogData.limit.replace !== undefined) modifiedLimit = this.dialogData.limit.replace
       if (modifiedLimit < 0) modifiedLimit = 0
       html.querySelector('[name="modifiedLimit"]').value = modifiedLimit
       this.dialogData.limit.base = parseInt(html.querySelector('[name="baseLimit"]').value)
@@ -423,7 +427,18 @@ export default class SR5_RollDialog {
     if (!offer) return
     //The chat card keeps the box as it was left
     offer.checked = ev.target.checked
-    if (offer.kind === "limit"){
+    if (offer.kind === "limit" && offer.replace){
+      //A replacing box: the limit becomes its value while ticked (AutoVoice for singing, No Future p. 157)
+      if (ev.target.checked){
+        dialogData.limit.replace = offer.value
+        dialogData.limit.typeBeforeReplace ??= dialogData.limit.type
+        dialogData.limit.type = "replaced"
+      } else {
+        delete dialogData.limit.replace
+        if (dialogData.limit.typeBeforeReplace !== undefined) dialogData.limit.type = dialogData.limit.typeBeforeReplace
+      }
+      this.updateLimitValue(html)
+    } else if (offer.kind === "limit"){
       if (ev.target.checked) dialogData.limit.modifiers[offer.key] = {
         label: offer.label, value: offer.value
       }
@@ -1322,9 +1337,19 @@ export default class SR5_RollDialog {
         case "perceptionType": {
           let limitMod = 0
           value = 0
+          delete dialogData.limit.replace
+          if (dialogData.limit.typeBeforeReplace !== undefined) dialogData.limit.type = dialogData.limit.typeBeforeReplace
           if (ev.target.value !== ""){
             value = actor.system.skills.perception.perceptionType[ev.target.value].test.value
             limitMod = actor.system.skills.perception.perceptionType[ev.target.value].limit.value
+            //Eyes of the Pack (Street Grimoire p. 106): the sense borrowed has the net hits as its Limit, in place of any other
+            const replaced = replacedValue(actor.system.skills.perception.perceptionType[ev.target.value].limit.modifiers)
+            if (replaced !== undefined) {
+              dialogData.limit.replace = replaced
+              dialogData.limit.typeBeforeReplace ??= dialogData.limit.type
+              dialogData.limit.type = "replaced"
+              limitMod = 0
+            }
           }
           if (ev.target.value === "sight") {
             const sightPerceptionEl = html.querySelector('#sightPerception')

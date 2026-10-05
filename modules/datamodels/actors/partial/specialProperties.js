@@ -22,6 +22,10 @@ export class specialPropertiesPartialModel extends foundry.abstract.TypeDataMode
         streetCredDivisor: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema()
         }),
+        // Added to the threshold of every test that has one (Bliss SR5 p. 412, Purple Orchid Chrome Flesh p. 190)
+        thresholdModifier: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema()
+        }),
         concentration: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema()
         }),

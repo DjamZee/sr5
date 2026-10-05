@@ -17,6 +17,9 @@ import {
 import {
   SR5_EntityHelpers
 } from "../entities/helpers.js"
+import {
+  raisedThreshold
+} from "../rolls/roll-helpers/threshold.js"
 
 // How close the picker must stand, in squares, centre to centre: beside it
 const PICK_REACH = 2
@@ -196,7 +199,10 @@ export class SR5StorageLock {
 
     const stages = []
     let reached = true
-    for (const stage of pickStages(lock, !!data.relock)) {
+    //Bliss, Purple Orchid: +1 to all thresholds (SR5 p. 412), each stage and the anti-tamper test included
+    for (const stage of pickStages(lock, !!data.relock).map(s => ({
+      ...s, threshold: raisedThreshold(s.threshold, picker.system)
+    }))) {
       const result = await extendedTest(pool, stage.threshold, limit, rollDice)
       stages.push({
         ...stage, ...result, label: game.i18n.localize(`SR5.StorageLockStage_${stage.key}`)
@@ -211,11 +217,12 @@ export class SR5StorageLock {
     let alarm = false, antiTamper = null
     const antiTamperRating = antiTamperOf(lock)
     if (reached && !data.relock && antiTamperRating > 0) {
+      const antiTamperThreshold = raisedThreshold(antiTamperRating, picker.system)
       const roll = await rollDice(pool)
       const hits = underLimit(roll.hits, limit)
-      alarm = hits < antiTamperRating || roll.criticalGlitch
+      alarm = hits < antiTamperThreshold || roll.criticalGlitch
       antiTamper = {
-        hits, threshold: antiTamperRating, glitch: roll.glitch, criticalGlitch: roll.criticalGlitch
+        hits, threshold: antiTamperThreshold, glitch: roll.glitch, criticalGlitch: roll.criticalGlitch
       }
     }
     const glitched = stages.some(s => s.glitch && !s.criticalGlitch)

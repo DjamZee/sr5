@@ -1700,6 +1700,7 @@ SR5.testLimits = {
   sharing                   : "SR5.Sharing",
   sleaze                    : "SR5.Sleaze",
   reagents                  : "SR5.Reagents",
+  replaced                  : "SR5.LimitReplaced",
   level					  : "SR5.Level",
   handling				  : "SR5.VehicleStat_HandlingShort",
 }
@@ -3585,7 +3586,9 @@ SR5.customEffectsTypes = {
   ratingReplace             : "SR5.RatingReplace",
   hits                      : "SR5.DiceHits",
   netHits                   : "SR5.NetHits",
-  boolean                   : "SR5.Boolean",
+  hitsReplace               : "SR5.DiceHitsReplace",
+  netHitsReplace            : "SR5.NetHitsReplace",
+  boolean                  : "SR5.Boolean",
   divide                    : "SR5.Divide",
 }
 
@@ -3684,10 +3687,12 @@ SR5.specialProperties = {
   toxinImmunityInhalation   : "SR5.ToxinImmunityInhalation",
   antirad                   : "SR5.Antirad",
   streetCredDivisor         : "SR5.StreetCredDivisor",
+  thresholdModifier         : "SR5.ThresholdModifier",
 }
 
 SR5.specialPropertiesList = {
   streetCredDivisor         : "SR5.StreetCredDivisor",
+  thresholdModifier         : "SR5.ThresholdModifier",
   addictionResistance       : "SR5.AddictionResistance",
   toxinResistance           : "SR5.ToxinResistanceAll",
   concentration             : "SR5.Concentration",

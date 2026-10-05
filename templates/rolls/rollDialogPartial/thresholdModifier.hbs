@@ -1,0 +1,10 @@
+<li class="SR-LigneEnTete SR-PaddingTop10 grid SR-TextUppercase">
+    <div class="col-10">{{localize 'SR5.ThresholdModifier'}}</div>
+    <div class="col-2 SR-TextRight">{{#if (gt thresholdModifier.value 0)}}+{{/if}}{{thresholdModifier.value}}</div>
+</li>
+<li class="grid">
+    <div class="col-12">
+        {{#each thresholdModifier.sources}}{{this.source}} ({{#if (gt this.value 0)}}+{{/if}}{{this.value}}){{#unless @last}}, {{/unless}}{{/each}}{{localize 'SR5.Colons'}}
+        {{localize 'SR5.ThresholdModifierHint'}}
+    </div>
+</li>

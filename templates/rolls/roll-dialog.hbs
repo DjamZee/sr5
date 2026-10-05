@@ -164,6 +164,11 @@
 			{{> systems/sr5/templates/rolls/rollDialogPartial/matrixSearchThreshold.hbs}}
 	  	{{/if}}
 
+	  	<!-- THRESHOLD MODIFIER (Bliss, Purple Orchid) -->
+	  	{{#if thresholdModifier.value}}
+			{{> systems/sr5/templates/rolls/rollDialogPartial/thresholdModifier.hbs}}
+	  	{{/if}}
+
 	  	<!-- EXTENDED TEST -->
 	  	{{#if dialogSwitch.extended}}
 			{{> systems/sr5/templates/rolls/rollDialogPartial/extendedTest.hbs}}
