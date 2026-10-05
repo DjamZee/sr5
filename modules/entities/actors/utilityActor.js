@@ -3896,10 +3896,7 @@ export class SR5_CharacterUtility extends Actor {
     }
     //An antitoxin divides the duration of the effect by its rating (Chrome Flesh p. 154)
     const antitoxin = SR5_Toxins.antitoxinRating(actorData)
-    if (antitoxin > 1) {
-      drugStat.duration = SR5_Toxins.drugDuration(drugStat.duration, antitoxin)
-      drugStat.antitoxin = antitoxin
-    }
+    if (antitoxin > 1) drugStat.duration = SR5_Toxins.drugDuration(drugStat.duration, antitoxin)
     return drugStat
   }
 

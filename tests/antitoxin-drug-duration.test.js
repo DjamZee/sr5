@@ -48,7 +48,6 @@ describe("a drug's duration under an antitoxin", () => {
       }
     }, zone, runner([2, 4]))
     expect(stat.duration).toBe(3)
-    expect(stat.antitoxin).toBe(4)
   })
 
   it("leaves the crash alone and never goes below 1", () => {
