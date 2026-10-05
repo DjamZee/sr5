@@ -4995,7 +4995,7 @@ export class SR5_CharacterUtility extends Actor {
             continue
           }
           if (customEffect.target === "system.itemsProperties.weapon.damageValue") {
-            //A bonus read from the item's rating with an offset: bone density adds its rating − 1 (SR5 p. 463)
+            //A bonus read from the item's rating with an offset: bone density adds its rating − 1 (SR5 p. 463 ; arbitrage de DjamZ : table VF)
             //(worked out apart: the effect itself is left untouched, it is read again at each preparation)
             const rated = typeof customEffect.ratingOffset === "number"
             if (!rated) customEffect.value = (customEffect.value || 0)
