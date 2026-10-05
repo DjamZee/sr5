@@ -4524,5 +4524,5 @@
 	"SR5.MilkBrickNothing": "{name} : la brique de lait est bue, mais n'a rien retiré : aucune Nausée ni Désorientation qu'elle soigne (No Future p. 154).",
 	"SR5.WARN_MilkBrickNotOwner": "Vous ne contrôlez pas {name} : la brique de lait n'est pas utilisée. Demandez au MJ.",
 	"SR5.WARN_MilkBrickNone": "Plus de brique de lait.",
-	"SR5.AddictionResistanceNote": "S'applique à tous les tests d'addiction. Résistance aux drogues (Chrome Flesh p. 58) ne vaut que pour les drogues naturelles et de synthèse."
+	"SR5.AddictionResistanceNote": "S'applique à tous les tests d'addiction. Tolérance à la drogue (Chrome Flesh p. 58) ne vaut que pour les drogues naturelles et de synthèse."
 }

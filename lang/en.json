@@ -4524,5 +4524,5 @@
 	"SR5.MilkBrickNothing": "{name}: the brick of milk is drunk but removes nothing: no Nausea or Disorientation it soothes (No Future p. 154).",
 	"SR5.WARN_MilkBrickNotOwner": "You do not own {name}: the brick of milk is not used. Ask the gamemaster.",
 	"SR5.WARN_MilkBrickNone": "No brick of milk left.",
-	"SR5.AddictionResistanceNote": "Applies to every addiction test. Drug Resistance (Chrome Flesh p. 58) only covers natural and synthetic drugs."
+	"SR5.AddictionResistanceNote": "Applies to every addiction test. Drug Tolerant (Chrome Flesh p. 58) only covers natural and synthetic drugs."
 }
