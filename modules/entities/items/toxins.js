@@ -85,6 +85,14 @@ export class SR5_Toxins {
     voidWaspVenom:      {
       vector: ["injection"], speed: 3, power: 10, penetration: -4, effect: ["arcaneInhibitor"], damageType: "stun" 
     },
+    //Better Than Bad p. 141: cuts an Awakened from the manasphere
+    blight:             {
+      vector: ["injection"], speed: 0, power: 12, effect: ["manasphereCut"], damageType: null, special: "SR5.ToxinBlightSpecial"
+    },
+    //With DMSO it gains the contact vector, and the Awakened resist it with their Drain resistance
+    blightDmso:         {
+      vector: ["contact", "injection"], speed: 0, power: 12, effect: ["manasphereCut"], damageType: "stun", special: "SR5.ToxinBlightDmsoSpecial"
+    },
   }
 
   /** Book toxins that are not substances a GM would hand out as an item */
@@ -156,6 +164,18 @@ export class SR5_Toxins {
   /** The Power left once the antitoxin took its rating off; below 1 the toxin does nothing (Chrome Flesh p. 154) */
   static effectivePower(power, antitoxin = 0) {
     return Math.max(0, (Number(power) || 0) - (Number(antitoxin) || 0))
+  }
+
+  /** Better Than Bad p. 141: hours cut from the manasphere, 12 - (Body or Magic, the higher), at least 1 */
+  static blightHours(body, magic) {
+    return Math.max(1, 12 - Math.max(Number(body) || 0, Number(magic) || 0))
+  }
+
+  /** A dual-natured being: one of its powers carries the dualNatured spirit power key */
+  static isDualNatured(actor) {
+    return !!actor?.items?.some(i => i.type === "itemPower" &&
+      Object.values(i.system?.systemEffects ?? {
+      }).some(e => e?.category === "spiritPower" && e?.value === "dualNatured"))
   }
 
   /** The display name of a weapon's toxin */

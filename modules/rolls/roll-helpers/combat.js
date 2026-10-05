@@ -531,6 +531,44 @@ export class SR5_CombatHelpers {
           itemEffects.push(effect)
         }
         break
+      //Better Than Bad p. 141: no magic of any kind for [12 - (Body or Magic, the higher)] hours, Magic
+      //being brought to 0; a dual-natured being also takes -4 dice to every action
+      case "manasphereCut": {
+        const magic = actor.system.specialAttributes?.magic?.augmented?.value ?? 0
+        const dual = SR5_Toxins.isDualNatured(actor)
+        if (magic <= 0 && !dual) break
+        hasEffect = actor.items.find(i => i.system.type === "toxinEffectManasphereCut")
+        if (!hasEffect){
+          const customEffects = {
+            "0": {
+              "category": "characterSpecialAttributes",
+              "target": "system.specialAttributes.magic.augmented",
+              "type": "rating",
+              "multiplier": -1,
+              "forceAdd": true,
+            }
+          }
+          if (dual) customEffects["1"] = {
+            "category": "penaltyTypes",
+            "target": "system.penalties.special.actual",
+            "type": "value",
+            "value": -4,
+            "forceAdd": true,
+          }
+          effect = foundry.utils.mergeObject(effect, {
+            "system.target": game.i18n.localize("SR5.Magic"),
+            "system.type": "toxinEffectManasphereCut",
+            "system.itemRating": magic,
+            "system.value": dual ? -4 : "",
+            "system.duration": SR5_Toxins.blightHours(actor.system.attributes?.body?.augmented?.value, magic),
+            "system.durationType": "hour",
+            "system.customEffects": customEffects,
+            "system.gameEffect": game.i18n.localize("SR5.ToxinEffectManasphereCut_GE"),
+          })
+          itemEffects.push(effect)
+        }
+        break
+      }
       case "arcaneInhibitor": {
         let value = info.damage.base
         hasEffect = actor.items.find(i => i.system.type === "toxinEffectArcaneInhibitor")

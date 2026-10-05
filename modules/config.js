@@ -1344,6 +1344,8 @@ SR5.weaponAccessorySlots = {
 // Toxins
 SR5.toxinTypes = {
   airEngulf                 : "SR5.SpiritPowerEngulfAir",
+  blight                    : "SR5.ToxinBlight",
+  blightDmso                : "SR5.ToxinBlightDmso",
   gamma                     : "SR5.ToxinGamma",
   csTearGas                 : "SR5.ToxinCSTearGas",
   pepperPunch               : "SR5.ToxinPepperPunch",
@@ -1376,6 +1378,7 @@ SR5.toxinEffects = {
   paralysis                 : "SR5.ToxinEffectParalysis",
   agony                     : "SR5.ToxinEffectAgony",
   arcaneInhibitor			  : "SR5.ToxinEffectArcaneInhibitor",
+  manasphereCut             : "SR5.ToxinEffectManasphereCut",
 }
 
 //Cover

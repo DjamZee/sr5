@@ -188,6 +188,9 @@ export class sr5ItemWeaponDataModel extends foundry.abstract.TypeDataModel {
           arcaneInhibitor: new fields.BooleanField({
             initial: false
           }),
+          manasphereCut: new fields.BooleanField({
+            initial: false
+          }),
         }),
         penetration: new fields.NumberField({
           initial: 0

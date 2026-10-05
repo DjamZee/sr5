@@ -61,7 +61,7 @@ describe('book toxins as data (SR5 p. 409-412)', () => {
       speed: 1, power: 12, penetration: -2, damageType: 'physical' 
     })
     expect(t.effect).toEqual({
-      disorientation: true, nausea: true, paralysis: false, agony: false, arcaneInhibitor: false 
+      disorientation: true, nausea: true, paralysis: false, agony: false, arcaneInhibitor: false, manasphereCut: false
     })
   })
 

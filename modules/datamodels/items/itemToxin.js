@@ -46,6 +46,7 @@ export class sr5ItemToxinDataModel extends foundry.abstract.TypeDataModel {
         paralysis: flag(),
         agony: flag(),
         arcaneInhibitor: flag(),
+        manasphereCut: flag(),
       }),
       damageType: new fields.StringField({
         initial: ''
