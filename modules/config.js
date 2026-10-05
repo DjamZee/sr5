@@ -973,6 +973,7 @@ SR5.weaponModesCode = {
   FA                        : "SR5.WeaponModeFAShort",
   FAc                       : "SR5.WeaponModeFAcShort",
   SF                        : "SR5.WeaponModeSFShort",
+  FN                        : "SR5.WeaponModeFNShort",
 }
 
 // Weapon Ranges

@@ -64,3 +64,29 @@ export function halveCalledShot(value) {
   if (!(value < 0)) return value
   return Math.ceil(value / 2)
 }
+
+/**
+ * Flamethrower fanning (Gun H(e)aven 3 p. 3): "striking up to three targets (as long as they are all within
+ * the weapon's range and each target is within four meters of the others). This uses two units" of ammo.
+ * Read as a chain: every target within 4 m of at least one other, all of them linked together.
+ */
+export const FANNING_MAX_TARGETS = 3
+export const FANNING_LINK_METERS = 4
+export const FANNING_AMMO = 2
+
+/** distances: square matrix of meters between the targets. */
+export function fanningTargetsLinked(distances) {
+  const count = distances.length
+  if (count < 2) return true
+  const reached = new Set([0]), queue = [0]
+  while (queue.length) {
+    const from = queue.shift()
+    for (let to = 0; to < count; to++) {
+      if (!reached.has(to) && distances[from][to] <= FANNING_LINK_METERS) {
+        reached.add(to)
+        queue.push(to)
+      }
+    }
+  }
+  return reached.size === count
+}

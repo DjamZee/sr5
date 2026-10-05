@@ -32,6 +32,9 @@ import {
   SR5_UtilityItem
 } from "../../entities/items/utilityItem.js"
 import {
+  hasWeaponTrait, fanningTargetsLinked, FANNING_AMMO, FANNING_MAX_TARGETS
+} from "../../entities/items/weaponTraits.js"
+import {
   grapplingCalledShots, holdKindOn, clinchAttackPenalty, clinchCancelsReach, isHeldBy, isClinchFirearm
 } from "../roll-helpers/grapple-rules.js"
 
@@ -167,6 +170,16 @@ export default async function weapon(rollData, actor, item){
     rollData.lists.firingModes.SF = `${game.i18n.localize("SR5.WeaponModeSF")} (${game.i18n.localize("SR5.WeaponModeSFShort")} [-20 ${game.i18n.localize("SR5.Bullets")}]`
   }
     
+  //Flamethrower (Gun H(e)aven 3 p. 3): Suppressive Fire and the fanning sweep; several targets leave only the sweep
+  if (hasWeaponTrait(itemData, "flamethrower")) {
+    if (!rollData.combat.firingMode.fullyAutomatic) rollData.lists.firingModes.SF = `${game.i18n.localize("SR5.WeaponModeSF")} (${game.i18n.localize("SR5.WeaponModeSFShort")}`
+    const fanningLabel = `${game.i18n.localize("SR5.WeaponModeFN")} (${game.i18n.localize("SR5.WeaponModeFNShort")} [-${FANNING_AMMO} ${game.i18n.localize("SR5.Bullets")}]`
+    if (rollData.target.fanning) rollData.lists.firingModes = {
+      FN: fanningLabel
+    }
+    else rollData.lists.firingModes.FN = fanningLabel
+  }
+
   rollData.combat.range.short = itemData.range.short.value
   rollData.combat.range.medium = itemData.range.medium.value
   rollData.combat.range.long = itemData.range.long.value
@@ -282,8 +295,18 @@ async function handleTargetInfo(rollData, actor, item){
 
   //Handle Targets
   if (game.user.targets.size) {
-    //For now, only allow one target for attack;
-    if (game.user.targets.size > 1) {
+    //Flamethrower fanning (Gun H(e)aven 3 p. 3): up to three targets, linked within 4 m, all in range
+    const isFanning = game.user.targets.size > 1 && hasWeaponTrait(itemData, "flamethrower")
+    if (isFanning) {
+      const fanning = await checkFanningTargets(Array.from(game.user.targets), attacker, itemData.range.extreme.value)
+      if (!fanning) return false
+      rollData.target.fanning = fanning.actorIds
+      rollData.target.fanningFarthest = fanning.farthest
+      rollData.combat.firingMode.selected = "FN"
+      rollData.combat.ammo.fired = FANNING_AMMO
+    }
+    //Otherwise, only allow one target for attack;
+    else if (game.user.targets.size > 1) {
       ui.notifications.warn(`${game.i18n.localize("SR5.WARN_TargetTooMany")}`)
       return false
     }
@@ -310,6 +333,8 @@ async function handleTargetInfo(rollData, actor, item){
         y: t.document.y,
       }
     }
+    //Fanning: the range modifier is the farthest target's
+    if (rollData.target.fanning) target = rollData.target.fanningFarthest
   }
 
   //Add specific data for grenade & missile
@@ -593,4 +618,36 @@ export function _buildCalledShotList(rollData){
   }
 
   return rollData
+}
+//Flamethrower fanning (Gun H(e)aven 3 p. 3): at most three targets, all in range, linked within 4 m of one another.
+//Distances are measured on the scene in meters, a grid space being 1.5 m.
+async function checkFanningTargets(tokens, attacker, maxRange){
+  if (tokens.length > FANNING_MAX_TARGETS) {
+    ui.notifications.warn(game.i18n.localize("SR5.WARN_FanningTooMany"))
+    return false
+  }
+  const points = tokens.map(t => ({
+    x: t.document.x, y: t.document.y
+  }))
+  const fromAttacker = []
+  for (const point of points) fromAttacker.push(await SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint(attacker, point))
+  if (fromAttacker.some(d => d > maxRange)) {
+    ui.notifications.warn(game.i18n.localize("SR5.WARN_FanningOutOfRange"))
+    return false
+  }
+  const distances = []
+  for (const a of points) {
+    const row = []
+    for (const b of points) row.push(a === b ? 0 : await SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint(a, b))
+    distances.push(row)
+  }
+  if (!fanningTargetsLinked(distances)) {
+    ui.notifications.warn(game.i18n.localize("SR5.WARN_FanningTooFar"))
+    return false
+  }
+  const farthest = fromAttacker.indexOf(Math.max(...fromAttacker))
+  return {
+    actorIds: tokens.map(t => t.actor.isToken ? t.actor.token.id : t.actor.id),
+    farthest: points[farthest],
+  }
 }
