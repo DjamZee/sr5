@@ -443,6 +443,8 @@
 	"SR5.WARN_ShopOrderGone": "Cette commande n'existe plus.",
 	"SR5.CALENDAR_DeadlineDelivery": "<strong>{actor}</strong> : commande arrivée, {name}",
 	"SR5.CALENDAR_DeadlineDeliver": "Livrer",
+	"SR5.ShopOrderCancelVendor": "Le vendeur <strong>{vendor}</strong> rend la somme : sa caisse d'abord, ses comptes pour le reste.",
+	"SR5.ShopOrderCancelNoVendor": "Aucun vendeur au registre du MJ : seule la fiche est remboursée.",
 	"SR5.ShopCashPurchase": "Encaisser l'achat",
 	"SR5.ShopCashSale": "Encaisser la vente",
 	"SR5.ShopCheckout": "Acheter le panier",

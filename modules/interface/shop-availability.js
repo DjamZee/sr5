@@ -503,16 +503,18 @@ export class SR5ShopAvailability {
         if (!data) return
         const actor = game.actors.get(data.buyerId)
         const lines = data.results.filter(r => r.obtained).map(r => ({
-          uuid: r.uuid, quantity: r.quantity, name: r.name, grade: r.grade, delayHours: r.delayHours ?? null,
+          uuid: r.uuid, quantity: r.quantity, name: r.name, grade: r.grade,
         }))
+        // The till reads the test from this card itself, never a time sent along with the lines
+        const messageId = message.id
         const express = !!data.express && !!html.querySelector('[data-shop-express]')?.checked
         // Bought at a vendor's: its till, on the gamemaster's browser
         // Loaded on demand: the vendor's till brings the socket, which the tests do without
         const SR5ShopVendor = data.vendor ? (await import('./shop-vendor.js')).SR5ShopVendor : null
         const bought = data.vendor ? await SR5ShopVendor.purchase({
-          vendorUuid: data.vendor.uuid, storageId: data.vendor.storageId, buyerId: actor?.id, lines, express,
+          vendorUuid: data.vendor.uuid, storageId: data.vendor.storageId, buyerId: actor?.id, lines, express, messageId,
         }) : await SR5Shop.checkout(actor, lines, {
-          express
+          express, messageId
         })
         // The goods are cashed once: the button goes, the card stays.
         if (bought) {

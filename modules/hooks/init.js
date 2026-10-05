@@ -11,7 +11,7 @@ import {
   registerDeadlineSettings
 } from "../system/deadlines.js"
 import {
-  registerOrderSettings
+  registerOrderSettings, registerOrderLedger
 } from "../interface/shop-orders.js"
 import {
   registerExtendedClockSetting
@@ -270,6 +270,7 @@ export async function sr5HookInit() {
   registerCalendarSettings()
   registerDeadlineSettings()
   registerOrderSettings()
+  registerOrderLedger()
   registerExtendedClockSetting()
   //The grappling statuses exist only in a world that uses the grappling rules
   if (SR5_GrappleHelpers.isActive()) CONFIG.statusEffects.push(...SR5_GrappleHelpers.statusEffects())

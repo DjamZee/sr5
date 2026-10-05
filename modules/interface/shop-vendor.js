@@ -39,7 +39,7 @@ import {
   checkStockLines
 } from './shop-vendor-rules.js'
 import {
-  lineWaits, deliveryDelayed, currentExpress, expressCost, orderHours, newOrder, addOrders
+  lineWaits, deliveryDelayed, currentExpress, expressCost, orderHours, newOrder, addOrders, ledgerOrders
 } from './shop-orders.js'
 
 /**
@@ -723,7 +723,6 @@ export class SR5ShopVendor {
       resolved.push({
         source, grade, quantity, unit: described.price, total, extra, waits,
         name: SR5Shop.gradedName(source.name, grade),
-        delayHours: typeof line.delayHours === 'number' ? line.delayHours : null,
       })
     }
     if (!resolved.length) return false
@@ -800,10 +799,13 @@ export class SR5ShopVendor {
     for (const line of resolved) {
       if (line.waits) {
         line.order = newOrder(line, {
-          hours: orderHours(SR5Shop.searchHours(line), line.extra ? terms : null),
+          // The time from the requester's own card, worked out here on the GM's browser
+          hours: orderHours(SR5Shop.searchHours(line, typeof request.messageId === 'string' ? request.messageId : null, senderId),
+            line.extra ? terms : null),
           express: !!line.extra, extra: line.extra, now: game.time.worldTime,
+          // Shown on the sheet only: the money follows the GM's ledger, not this
           vendor: {
-            uuid: actor.uuid, storageId: storage.id, label
+            label
           },
         })
         orders.push(line.order)
@@ -834,6 +836,11 @@ export class SR5ShopVendor {
     }
     if (payload.length) await buyer.createEmbeddedDocuments('Item', payload)
     await addOrders(buyer, orders)
+    // The GM's till writes what each order cost and who took the money: a cancellation follows this alone
+    await ledgerOrders(Object.fromEntries(orders.map(o => [o.id, {
+      actorUuid: buyer.uuid, paid: free ? 0 : o.paid, vendorUuid: free ? null : actor.uuid, storageId: storage.id,
+      vendorLabel: label,
+    }])))
     let overflow = 0
     if (!free) {
       const split = splitTakings(total, SR5Credstick.room(cashbox))

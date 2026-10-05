@@ -39,6 +39,9 @@ import {
   STORABLE_TYPES, isStorable, isStoredAway, garageRequirement, meetsGarageLifestyle 
 } from "../../interface/storage-rules.js"
 import {
+  bindOrderClicks
+} from "../../interface/shop-orders.js"
+import {
   SR5_ActorHelper 
 } from "./entityActor-helpers.js"
 import {
@@ -428,14 +431,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     on(".credstick-withdraw", "click", this._onCredstickMove.bind(this, "withdraw"))
     on(".credstick-deposit", "click", this._onCredstickMove.bind(this, "deposit"))
     //Shop orders: delivery and cancellation for the GM, a cancellation request for a player.
-    //Delegated once on the window: the block may be drawn after these listeners (lazy tabs)
-    if (!this._shopOrderListener && typeof element.addEventListener === "function") {
-      this._shopOrderListener = true
-      element.addEventListener("click", event => {
-        const target = event.target.closest("[data-shop-order]")
-        if (target) this._onShopOrder(event, target)
-      })
-    }
+    //Delegated on the window element, once per element: the block may be drawn after these listeners
+    //(lazy tabs), and a sheet closed then opened again gets a new element
+    bindOrderClicks(element, (event, target) => this._onShopOrder(event, target))
     //Reboot le deck
     on(".reset-deck", "click", this._onRebootDeck.bind(this))
     // Déplie les infos

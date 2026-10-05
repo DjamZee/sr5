@@ -209,6 +209,93 @@ async function tell(actor, key, order) {
   })
 }
 
+/* -------------------------------------------- */
+/*  The gamemaster's ledger                     */
+/* -------------------------------------------- */
+
+// The flag is the player's; the ledger is the GM's. An order paid at a vendor's is written here by the
+// GM's till, with its amount and its vendor: a cancellation refunds and debits only what is written here,
+// and an order missing from it never touches a vendor (Quitterie's review, Élise's decision, 05/10)
+export const ORDER_LEDGER = 'sr5ShopOrderLedger'
+
+function isWriter() {
+  return game.user.isGM && game.users.activeGM?.id === game.user.id
+}
+
+export function orderLedger() {
+  try {
+    return game.settings.get('sr5', ORDER_LEDGER) ?? {
+    }
+  } catch {
+    return {
+    }
+  }
+}
+
+export async function ledgerOrders(entries) {
+  if (!isWriter() || !Object.keys(entries).length) return
+  await game.settings.set('sr5', ORDER_LEDGER, {
+    ...orderLedger(), ...entries
+  })
+}
+
+async function ledgerDrop(id) {
+  const ledger = orderLedger()
+  if (!isWriter() || !(id in ledger)) return
+  delete ledger[id]
+  await game.settings.set('sr5', ORDER_LEDGER, ledger)
+}
+
+export function registerOrderLedger() {
+  game.settings.register('sr5', ORDER_LEDGER, {
+    scope: 'world',
+    config: false,
+    type: Object,
+    default: {
+    },
+  })
+}
+
+/**
+ * What a cancellation moves. The amount is the ledger's when the order is in
+ * it, the flag's otherwise; only a ledger entry names a vendor, and the vendor
+ * gives back from the cashbox that took the money first, its accounts for
+ * the rest (what the cashbox could not hold went there at the sale).
+ */
+export function cancelPlan(order, entry, cashboxFunds = 0) {
+  const refund = Math.max(0, Number(entry ? entry.paid : order?.paid) || 0)
+  if (!entry?.vendorUuid) return {
+    refund, vendorUuid: null, fromCashbox: 0, fromAccounts: 0
+  }
+  const fromCashbox = Math.min(refund, Math.max(0, Number(cashboxFunds) || 0))
+  return {
+    refund, vendorUuid: entry.vendorUuid, fromCashbox, fromAccounts: refund - fromCashbox
+  }
+}
+
+/**
+ * The search time of a line, from the test the card recorded (SR5 p. 420):
+ * net hits divide the time of the table, a tie doubles it. No test found for
+ * the line, or a line the test did not find: the time of the table.
+ * Never a time sent by the player.
+ */
+export function testedHours(baseHours, result) {
+  const base = Math.max(0, Number(baseHours) || 0)
+  if (!result?.obtained) return base
+  if (String(result.outcome).startsWith('tie')) return base * 2
+  const net = Number(result.netHits)
+  return net > 0 ? base / net : base
+}
+
+/** The test of an availability card for a line: the card must be the requester's own. */
+export function cardResult(messageId, uuid, userId) {
+  const message = messageId ? game.messages?.get(messageId) : null
+  if (!message || (userId && message.author?.id !== userId)) return null
+  return message.flags?.sr5shop?.results?.find(r => r.uuid === uuid) ?? null
+}
+
+/* -------------------------------------------- */
+
 /** The gamemaster hands an order over: the goods reach the sheet, the order goes. */
 export async function deliverOrder(actor, id) {
   if (!game.user.isGM || !actor) return false
@@ -228,6 +315,7 @@ export async function deliverOrder(actor, id) {
     SR5Shop
   } = await import('./shop.js')
   await removeOrder(actor, id)
+  await ledgerDrop(id)
   await actor.createEmbeddedDocuments('Item', SR5Shop._itemPayload(source, order.quantity, order.grade))
   await tell(actor, 'SR5.ShopOrderDelivered', order)
   return true
@@ -236,19 +324,47 @@ export async function deliverOrder(actor, id) {
 /** The gamemaster cancels an order: everything paid comes back, express included. */
 export async function cancelOrder(actor, id) {
   if (!game.user.isGM || !actor) return false
+  const entry = orderLedger()[id]
+  // A ledger entry belongs to one buyer: an order id copied onto another sheet refunds nothing of it
+  if (entry && entry.actorUuid !== actor.uuid) return false
   const order = await removeOrder(actor, id)
   if (!order) return false
   const name = game.i18n.format('SR5.ShopOrderRefundOf', {
     name: lineLabel(order)
   })
-  if (order.paid > 0) {
-    await actor.createEmbeddedDocuments('Item', [transaction('gain', order.paid, name)])
-    // At a vendor's, the money it took goes back out of its accounts
-    const vendor = order.vendor?.uuid ? await fromUuid(order.vendor.uuid) : null
-    if (vendor?.createEmbeddedDocuments) await vendor.createEmbeddedDocuments('Item', [transaction('loss', order.paid, name)])
+  const vendor = await vendorOf(entry)
+  const plan = cancelPlan(order, entry, vendor?.cashbox ? creditFunds(vendor.cashbox) : 0)
+  if (plan.refund > 0) {
+    await actor.createEmbeddedDocuments('Item', [transaction('gain', plan.refund, name)])
+    // The vendor gives back from the cashbox that took the money, then from its accounts
+    if (vendor && plan.fromCashbox) await vendor.cashbox.update({
+      'system.funds.value': creditFunds(vendor.cashbox) - plan.fromCashbox
+    })
+    if (vendor && plan.fromAccounts) await vendor.actor.createEmbeddedDocuments('Item', [transaction('loss', plan.fromAccounts, name)])
   }
-  await tell(actor, 'SR5.ShopOrderCancelled', order)
+  await ledgerDrop(id)
+  await tell(actor, 'SR5.ShopOrderCancelled', {
+    ...order, paid: plan.refund
+  })
   return true
+}
+
+function creditFunds(item) {
+  return Number(item?.system?.funds?.value ?? 0) || 0
+}
+
+/** The vendor of a ledger entry, its actor and its cashbox; never read from the player's flag. */
+async function vendorOf(entry) {
+  if (!entry?.vendorUuid) return null
+  const actor = await fromUuid(entry.vendorUuid)
+  if (!actor) return null
+  const {
+    SR5ShopVendor
+  } = await import('./shop-vendor.js')
+  const storage = actor.items?.get(entry.storageId)
+  return {
+    actor, cashbox: storage ? SR5ShopVendor.cashboxOf(actor, storage) : null, label: entry.vendorLabel ?? actor.name,
+  }
 }
 
 /** A player asks; the gamemaster's browser asks the gamemaster. */
@@ -266,14 +382,20 @@ export async function requestCancel(actor, id) {
 async function confirmCancel(actor, id, requester) {
   const order = ordersOf(actor).find(o => o.id === id)
   if (!order) return false
+  const entry = orderLedger()[id]
+  const plan = cancelPlan(order, entry?.actorUuid === actor.uuid ? entry : null)
+  const vendor = plan.vendorUuid ? await vendorOf(entry) : null
+  const esc = foundry.utils.escapeHTML
   const ok = await foundry.applications.api.DialogV2.confirm({
     window: {
       title: game.i18n.localize('SR5.ShopOrderCancelTitle')
     },
     content: `<p>${game.i18n.format('SR5.ShopOrderCancelText', {
-      user: foundry.utils.escapeHTML(requester?.name ?? '?'), actor: foundry.utils.escapeHTML(actor.name),
-      name: foundry.utils.escapeHTML(lineLabel(order)), price: Number(order.paid).toLocaleString(),
-    })}</p>`,
+      user: esc(requester?.name ?? '?'), actor: esc(actor.name),
+      name: esc(lineLabel(order)), price: plan.refund.toLocaleString(),
+    })}</p><p>${vendor ? game.i18n.format('SR5.ShopOrderCancelVendor', {
+      vendor: esc(vendor.label)
+    }) : game.i18n.localize('SR5.ShopOrderCancelNoVendor')}</p>`,
     rejectClose: false,
   })
   if (!ok) {
@@ -300,6 +422,22 @@ export function ordersForSheet(actor) {
     gm: game.user.isGM,
     cancelLabel: game.i18n.localize(game.user.isGM ? 'SR5.ShopOrderCancel' : 'SR5.ShopOrderAskCancel'),
   }))
+}
+
+/**
+ * Bind the sheet's order buttons on this element, once per element: V13 draws
+ * a new element when a sheet is closed and opened again, and a mark kept on
+ * the sheet instance would leave the new one deaf (Quitterie's review).
+ */
+const boundElements = new WeakSet()
+export function bindOrderClicks(element, handler) {
+  if (!element || typeof element.addEventListener !== 'function' || boundElements.has(element)) return false
+  boundElements.add(element)
+  element.addEventListener('click', event => {
+    const target = event.target?.closest?.('[data-shop-order]')
+    if (target) handler(event, target)
+  })
+  return true
 }
 
 /** The cancel button of the sheet: the gamemaster confirms at once, a player asks. */

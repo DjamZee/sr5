@@ -20,7 +20,7 @@ import {
   SR5ShopAvailability
 } from './shop-availability.js'
 import {
-  lineWaits, deliveryDelayed, currentExpress, expressCost, orderHours, newOrder, addOrders
+  lineWaits, deliveryDelayed, currentExpress, expressCost, orderHours, newOrder, addOrders, testedHours, cardResult
 } from './shop-orders.js'
 
 /**
@@ -183,7 +183,7 @@ export class SR5Shop {
    * @returns {Promise<boolean>} whether the gear was added
    */
   static async checkout(actor, lines, {
-    equip = false, express = false
+    equip = false, express = false, messageId = null
   } = {
   }) {
     if (!actor) {
@@ -251,7 +251,7 @@ export class SR5Shop {
       resolved.push({
         source, quantity, unit, grade, total: unit * quantity,
         name: SR5Shop.gradedName(source.name, grade),
-        availability: Number(described.availability) || 0, delayHours: line.delayHours,
+        availability: Number(described.availability) || 0,
       })
     }
     if (!resolved.length) return false
@@ -304,7 +304,7 @@ export class SR5Shop {
         continue
       }
       const order = newOrder(line, {
-        hours: orderHours(SR5Shop.searchHours(line), line.extra ? terms : null),
+        hours: orderHours(SR5Shop.searchHours(line, messageId, game.user.id), line.extra ? terms : null),
         express: !!line.extra, extra: line.extra, now,
       })
       line.order = order
@@ -383,14 +383,13 @@ export class SR5Shop {
   }
 
   /**
-   * The search time of a line that waits: the one the availability test gave,
-   * or, bought without a test, the time of the table (SR5 p. 420) as for one
-   * net hit.
+   * The search time of a line that waits, worked out here from the line's
+   * price and the test its card recorded (SR5 p. 420), never from a time the
+   * player sends. Bought without a test, the time of the table, as for one
+   * net hit (Élise's decision, 05/10).
    */
-  static searchHours(line) {
-    const tested = Number(line.delayHours)
-    if (line.delayHours !== null && line.delayHours !== undefined && Number.isFinite(tested)) return tested
-    return SR5ShopAvailability.delayFor(line.total)
+  static searchHours(line, messageId = null, userId = null) {
+    return testedHours(SR5ShopAvailability.delayFor(line.total), cardResult(messageId, line.source.uuid, userId))
   }
 
   /** " — on order, arrives on …" after a line that waits. */

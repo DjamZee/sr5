@@ -443,6 +443,8 @@
 	"SR5.WARN_ShopOrderGone": "This order no longer exists.",
 	"SR5.CALENDAR_DeadlineDelivery": "<strong>{actor}</strong>: order arrived, {name}",
 	"SR5.CALENDAR_DeadlineDeliver": "Deliver",
+	"SR5.ShopOrderCancelVendor": "The vendor <strong>{vendor}</strong> pays it back: its cashbox first, its accounts for the rest.",
+	"SR5.ShopOrderCancelNoVendor": "No vendor in the GM's ledger: only the sheet is refunded.",
 	"SR5.ShopCashPurchase": "Cash the purchase",
 	"SR5.ShopCashSale": "Cash the sale",
 	"SR5.ShopCheckout": "Buy the cart",
