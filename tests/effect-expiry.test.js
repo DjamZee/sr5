@@ -78,8 +78,10 @@ describe("effects counted on the world clock", () => {
   })
 
   it("stamps a new timed effect with the world time, and leaves the others alone", () => {
-    const make = (system) => ({
-      type: "itemEffect", system: {
+    const make = (system, parent = {
+      name: "actor"
+    }) => ({
+      type: "itemEffect", parent, system: {
         ...system
       }, updateSource(d){
         this.system.startTime = d["system.startTime"]
@@ -94,10 +96,24 @@ describe("effects counted on the world clock", () => {
       durationType: "round", duration: 2, startTime: null
     })
     expect(stampEffectStart(round, 5000)).toBe(false)
-    const already = make({
+    //Copied from an effect that carried a date: it starts again, now
+    const copied = make({
       durationType: "hour", duration: 2, startTime: 10
     })
-    expect(stampEffectStart(already, 5000)).toBe(false)
+    expect(stampEffectStart(copied, 5000)).toBe(true)
+    expect(copied.system.startTime).toBe(5000)
+  })
+
+  it("never dates an effect of the world, which would be born expired once put on an actor (Ursula)", () => {
+    const worldEffect = {
+      type: "itemEffect", parent: null, system: {
+        durationType: "hour", duration: 2, startTime: null
+      }, updateSource(d){
+        this.system.startTime = d["system.startTime"]
+      }
+    }
+    expect(stampEffectStart(worldEffect, 5000)).toBe(false)
+    expect(worldEffect.system.startTime).toBe(null)
   })
 
   it("never cancels the creation of another item (a false from a pre-hook would)", () => {
