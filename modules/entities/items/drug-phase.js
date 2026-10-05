@@ -23,9 +23,11 @@ export function nextDrugPhase(phase) {
   return DRUG_PHASES[(DRUG_PHASES.indexOf(phase ?? "") + 1) % DRUG_PHASES.length]
 }
 
-// The phase of an effect not yet migrated follows the former convention
+// The phase of an effect not yet migrated follows the former convention. The "crash" box of the effect
+// editor sends a boolean
 export function effectPhase(customEffect) {
   if (customEffect.phase === "rise" || customEffect.phase === "crash") return customEffect.phase
+  if (typeof customEffect.phase === "boolean") return customEffect.phase ? "crash" : "rise"
   return customEffect.wifi ? "crash" : "rise"
 }
 

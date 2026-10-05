@@ -121,6 +121,13 @@ describe("Bascule montée / descente", () => {
     expect(drugEffectApplies({
       phase: "crash"
     }, "")).toBe(false)
+    //The box of the effect editor
+    expect(drugEffectApplies({
+      phase: true
+    }, "crash")).toBe(true)
+    expect(drugEffectApplies({
+      phase: false, wifi: true
+    }, "rise")).toBe(true)
     //Not yet migrated: the former convention
     expect(drugEffectApplies({
       wifi: true
