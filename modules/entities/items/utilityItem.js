@@ -1,5 +1,5 @@
 import {
-  applyVintageWireless, vintageAccessoryPrice
+  applyVintageWireless, vintageAccessoryPrice, hasWeaponTrait, osmiumProfile
 } from './weaponTraits.js'
 import {
   SR5, AUGMENTATION_GRADE_TABLE 
@@ -487,6 +487,15 @@ export class SR5_UtilityItem extends Actor {
       if (itemData.damageValue.isStrengthBased && actor.type !=="actorDrone") {
         if ((actor.system.initiatives.astralInit.isActive || itemData.isUsedAsFocus) && itemData.isLinkedToFocus) SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.Charisma'), "linkedAttribute", actor.system.attributes.charisma.augmented.value)
         else SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.Strength'), "linkedAttribute", actor.system.attributes.strength.augmented.value)
+      }
+      //Osmium mace (The Complete Trog p. 177): the listed profile only holds for Strength 5-6
+      if (hasWeaponTrait(itemData, "osmium") && actor.type !== "actorDrone") {
+        const profile = osmiumProfile(actor.system.attributes.strength.augmented.value)
+        if (profile) {
+          const label = game.i18n.localize('SR5.AccessoryOsmium')
+          SR5_EntityHelpers.updateModifier(itemData.accuracy, label, "weaponAccessory", profile.accuracy - (itemData.accuracy.base || 0), false, true)
+          SR5_EntityHelpers.updateModifier(itemData.damageValue, label, "weaponAccessory", profile.damageBonus - (itemData.damageValue.base || 0), false, true)
+        }
       }
       if (actor.system.itemsProperties?.weapon) {
         for (let modifier of actor.system.itemsProperties.weapon.accuracy.modifiers) {
