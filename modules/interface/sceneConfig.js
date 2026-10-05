@@ -55,19 +55,31 @@ export default class SR5SceneConfig extends foundry.applications.sheets.SceneCon
     return context
   }
 
-  updateMatrixNoise(element) {
-    //The form's values when it is open (not yet saved), the scene's otherwise
-    const read = (name) => element.querySelector(`[name="flags.sr5.${name}"]`)?.value ?? this.document.flags.sr5?.[name]
-    let matrixNoise = (parseInt(read("matrixSpam")) || 0) + (parseInt(read("matrixStatic")) || 0) +
+  //The form's values when it is open (not yet saved), the scene's otherwise
+  computeMatrixNoise(element) {
+    const read = (name) => element?.querySelector(`[name="flags.sr5.${name}"]`)?.value ?? this.document.flags.sr5?.[name]
+    return (parseInt(read("matrixSpam")) || 0) + (parseInt(read("matrixStatic")) || 0) +
       phenomenonNoise(read("backgroundCountPhenomenon"), read("backgroundCountValue"))
+  }
+
+  //Shows the noise; it is only saved with the form (or here on render, from saved values): saving it
+  //on a field change redrew the sheet and lost every value not yet saved
+  updateMatrixNoise(element, save = false) {
+    const matrixNoise = this.computeMatrixNoise(element)
     const noiseField = element.querySelector('[name="sceneNoiseRating"]')
     if (noiseField) noiseField.value = matrixNoise
-    this.document.setFlag("sr5", "matrixNoise", matrixNoise)
+    if (save && matrixNoise !== this.document.flags.sr5?.matrixNoise) this.document.setFlag("sr5", "matrixNoise", matrixNoise)
+  }
+
+  _prepareSubmitData(event, form, formData, updateData) {
+    const submitData = super._prepareSubmitData(event, form, formData, updateData)
+    foundry.utils.setProperty(submitData, "flags.sr5.matrixNoise", this.computeMatrixNoise(form))
+    return submitData
   }
 
   async _onRender(context, options) {
     await super._onRender(context, options)
-    this.updateMatrixNoise(this.element)
+    this.updateMatrixNoise(this.element, true)
 
     const matrixSpam = this.element.querySelector('[name="flags.sr5.matrixSpam"]')
     if (matrixSpam) matrixSpam.addEventListener("change", _ev => {
