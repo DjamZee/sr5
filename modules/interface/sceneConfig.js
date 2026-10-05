@@ -58,8 +58,8 @@ export default class SR5SceneConfig extends foundry.applications.sheets.SceneCon
   updateMatrixNoise(element) {
     //The form's values when it is open (not yet saved), the scene's otherwise
     const read = (name) => element.querySelector(`[name="flags.sr5.${name}"]`)?.value ?? this.document.flags.sr5?.[name]
-    let matrixNoise = (parseInt(read("matrixSpam")) || 0) + (parseInt(read("matrixStatic")) || 0)
-      + phenomenonNoise(read("backgroundCountPhenomenon"), read("backgroundCountValue"))
+    let matrixNoise = (parseInt(read("matrixSpam")) || 0) + (parseInt(read("matrixStatic")) || 0) +
+      phenomenonNoise(read("backgroundCountPhenomenon"), read("backgroundCountValue"))
     const noiseField = element.querySelector('[name="sceneNoiseRating"]')
     if (noiseField) noiseField.value = matrixNoise
     this.document.setFlag("sr5", "matrixNoise", matrixNoise)
