@@ -3412,6 +3412,7 @@
 	"SR5.WARN_NotOwnMentor": "Only a mentor spirit of this same character can be dropped here.",
 	"SR5.MentorWarning_missingQuality": "Mentor Spirit quality missing for {mentor} (SR5 p. 76)",
 	"SR5.MentorWarning_missingMentor": "{quality}: choose a mentor",
+	"SR5.MentorWarning_mysticPath": "{mentor}: mystic adept, choose the mentor's path (SR5 p. 324)",
 	"SR5.MentorWarning_double": "{quality} and {mentor}: bonuses counted twice — convert the quality (macro) or remove its effects",
 	"SR5.MentorConversionTitle": "Mentor spirit conversion",
 	"SR5.MentorRevertTitle": "Mentor spirit conversion undone",

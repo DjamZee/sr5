@@ -3412,6 +3412,7 @@
 	"SR5.WARN_NotOwnMentor": "Seul un esprit mentor de ce même personnage peut être déposé ici.",
 	"SR5.MentorWarning_missingQuality": "Avantage Esprit mentor manquant pour {mentor} (SR5 p. 76)",
 	"SR5.MentorWarning_missingMentor": "{quality} : choisir un mentor",
+	"SR5.MentorWarning_mysticPath": "{mentor} : adepte mystique, choisir la voie du mentor (SR5 p. 324)",
 	"SR5.MentorWarning_double": "{quality} et {mentor} : bonus comptés deux fois — convertir la qualité (macro) ou retirer ses effets",
 	"SR5.MentorConversionTitle": "Conversion des esprits mentors",
 	"SR5.MentorRevertTitle": "Annulation de la conversion des esprits mentors",

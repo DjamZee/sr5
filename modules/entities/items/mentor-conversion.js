@@ -12,7 +12,7 @@ const plainItems = actor => actor.items.map(i => ({
 // One localized line per warning, for the "Mentor spirits" block of the character sheet
 export function mentorWarningLines(actor){
   if (!actor?.items) return []
-  return mentorLinkWarnings(plainItems(actor)).map(w => game.i18n.format(`SR5.MentorWarning_${w.kind}`, {
+  return mentorLinkWarnings(plainItems(actor), actor.system?.magic?.magicType).map(w => game.i18n.format(`SR5.MentorWarning_${w.kind}`, {
     mentor: w.mentor ?? "", quality: w.quality ?? ""
   }))
 }
@@ -76,7 +76,7 @@ export async function convertMentorQualities(options = {
     const created = plan.create.length ? await actor.createEmbeddedDocuments("Item", plan.create.map(c => ({
       name: c.name, type: "itemMentorSpirit",
       system: {
-        description: c.description, gameEffect: c.gameEffect, customEffects: c.customEffects
+        description: c.description, gameEffect: c.gameEffect, customEffects: c.customEffects, mysticPath: c.mysticPath ?? ""
       },
       flags: {
         sr5: {
