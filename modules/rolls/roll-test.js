@@ -721,6 +721,7 @@ export class SR5_RollTest {
         await SR5_AddRollInfo.vehicleTestInfo(cardData, actorId)
         break
       case "attributeOnly":
+      case "mentorDrawback":
       case "languageSkill":
       case "knowledgeSkill":
       case "defenseSimple":

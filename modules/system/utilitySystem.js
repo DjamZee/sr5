@@ -540,6 +540,16 @@ export class SR5_SystemHelpers {
       default: false,
       type: Boolean
     })
+
+    // Optional rule (Forbidden Arcana p. 176), off as in the core book: Mask of the mentor
+    game.settings.register("sr5", "mentorMask", {
+      name: "SR5.SETTINGS_MentorMask_T",
+      hint: "SR5.SETTINGS_MentorMask_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean
+    })
   }
 
   /* Display Shadowrun Themed Log Entries Based on Logging Level

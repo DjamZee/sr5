@@ -53,6 +53,9 @@ export {
   default as drainSimple
 } from "./rollData-DrainSimple.js"
 export {
+  default as mentorDrawback
+} from "./rollData-MentorDrawback.js"
+export {
   default as escapeEngulf
 } from "./rollData-EscapeEngulf.js"
 export {

@@ -403,6 +403,10 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     if (item.type === "itemToxin") context.toxinDamageTypes = SR5.damageTypes
     if (item.type === "itemWeapon") context.weaponToxinName = SR5_Toxins.nameOf(item.system.toxin, k => game.i18n.localize(k))
 
+    // Mentor spirit: each effect picks its block, the Mask shows only with its optional rule
+    context.isMentorSpirit = item.type === "itemMentorSpirit"
+    if (context.isMentorSpirit) context.mentorMaskRule = game.settings.get("sr5", "mentorMask")
+
     // Custom spirit type: pickers, and labels for the read-only summary
     if (item.type === "itemSpiritType") {
       const official = {

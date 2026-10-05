@@ -194,6 +194,9 @@ export const BROWSER_FILTERS = {
   itemTradition:   {
     label: 'TYPES.Item.itemTradition', icon: 'fa-scroll', filters: [] 
   },
+  itemMentorSpirit: {
+    label: 'TYPES.Item.itemMentorSpirit', icon: 'fa-paw', filters: []
+  },
   itemSpiritType:  {
     label: 'TYPES.Item.itemSpiritType', icon: 'fa-wind', filters: [
       {

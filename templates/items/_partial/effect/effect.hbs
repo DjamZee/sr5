@@ -651,6 +651,20 @@
 					</div>
 				</div>
 				{{/if}}{{/if}}
+				{{#if @root.isMentorSpirit}}
+				<!-- SR5 p. 324: the block of the mentor this effect belongs to -->
+				<div class="col-3 SR-PaddingRight5">{{localize 'SR5.MentorPath'}}{{localize 'SR5.Colons'}}</div>
+				<div class="col-9">
+					<select name="system.customEffects.{{@key}}.mentorPath">
+						{{#select mentorPath}}
+						<option value="all">{{localize 'SR5.MentorPathAll'}}</option>
+						<option value="magician">{{localize 'SR5.MentorPathMagician'}}</option>
+						<option value="adept">{{localize 'SR5.MentorPathAdept'}}</option>
+						<option value="drawback">{{localize 'SR5.MentorPathDrawback'}}</option>
+						{{/select}}
+					</select>
+				</div>
+				{{/if}}
 			</li>
 		{{/each}}
 	</ul>

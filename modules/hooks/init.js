@@ -147,6 +147,9 @@ import {
   sr5ItemMartialArtDataModel
 } from "../datamodels/items/itemMartialArt.js"
 import {
+  sr5ItemMentorSpiritDataModel
+} from "../datamodels/items/itemMentorSpirit.js"
+import {
   sr5ItemMetamagicDataModel
 } from "../datamodels/items/itemMetamagic.js"
 import {
@@ -313,6 +316,7 @@ export async function sr5HookInit() {
     itemLifestyle: sr5ItemLifestyleDataModel,
     itemMark: sr5ItemMarkDataModel,
     itemMartialArt: sr5ItemMartialArtDataModel,
+    itemMentorSpirit: sr5ItemMentorSpiritDataModel,
     itemMetamagic: sr5ItemMetamagicDataModel,
     itemNuyen: sr5ItemNuyenDataModel,
     itemPower: sr5ItemPowerDataModel,

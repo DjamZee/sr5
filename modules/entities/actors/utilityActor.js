@@ -43,6 +43,9 @@ import {
 import {
   SR5_TOKEN_VISION_MODES, settleSensorVisions
 } from "../../system/vision.js"
+import {
+  mentorPathFor, mentorEffectApplies, isFollowedMentor, mentorMagic, mentorPowerPoints, mentorMaskOn
+} from "../items/mentor-spirits.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -618,6 +621,7 @@ export class SR5_CharacterUtility extends Actor {
 
       // Reset Possession
       actorData.magic.possession = false
+      actorData.magic.mentorMask = false
 
       // Reset counterspelling
       actorData.magic.counterSpellPool.value = 0
@@ -4946,8 +4950,28 @@ export class SR5_CharacterUtility extends Actor {
     actor.indirectEffects.push(effect)
   }
 
+  // Mentor spirit (SR5 p. 76, 323-324): only the first one counts; its effects follow the actor's block,
+  // the Adept block gives Power Points, and the Mask (Forbidden Arcana p. 176) is an optional rule
+  static applyMentorSpirit(item, actor) {
+    if (!actor.system.magic) return
+    if (!isFollowedMentor(item, actor.items)) {
+      SR5_SystemHelpers.srLog(2, `Mentor spirit '${item.name}' ignored: '${actor.name}' already follows a mentor`)
+      return
+    }
+    const magic = mentorMagic(actor.system.specialAttributes?.magic)
+    const path = mentorPathFor(actor.system.magic?.magicType, item.system.mysticPath)
+    const maskRule = game.settings.get("sr5", "mentorMask")
+    if (Object.keys(item.system.customEffects).length) SR5_CharacterUtility.applyCustomEffects(item, actor)
+    if (mentorMaskOn(path, item.system, maskRule, magic)) actor.system.magic.mentorMask = true
+    const powerPoints = mentorPowerPoints(path, item.system, maskRule, magic)
+    if (powerPoints) SR5_EntityHelpers.updateModifier(actor.system.magic.powerPoints.maximum, item.name, item.type, powerPoints)
+  }
+
   static applyCustomEffects(item, actor) {
     let itemData = item.system
+    // Mentor spirit: the effects of the actor's own block only, nothing with a Magic of 0 (SR5 p. 324)
+    const mentorPath = item.type === "itemMentorSpirit" ? mentorPathFor(actor.system.magic?.magicType, itemData.mysticPath) : null
+    const mentorMagicValue = item.type === "itemMentorSpirit" ? mentorMagic(actor.system.specialAttributes?.magic) : 0
 
     for (let customEffect of Object.values(itemData.customEffects)) {
       let skipCustomEffect = false,
@@ -4975,6 +4999,7 @@ export class SR5_CharacterUtility extends Actor {
         else if (!itemData.isActive && customEffect.wifi) skipCustomEffect = false
         else if (!itemData.isActive) skipCustomEffect = true
       }
+      if (item.type === "itemMentorSpirit" && !mentorEffectApplies(customEffect.mentorPath, mentorPath, mentorMagicValue)) continue
 
       // Effects on other actors' rolls (whoever targets me, an aura) are never applied to the bearer
       if (isIndirect(customEffect)) {

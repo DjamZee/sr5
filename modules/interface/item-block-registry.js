@@ -127,6 +127,9 @@ export const ITEM_BLOCK_REGISTRY = {
   spiritTypeSummary:   {
     partial: `${PARTIAL_ROOT}/blocks/spiritType/spiritType-summary.hbs`,     label: 'SR5.Summary', size: ITEM_BLOCK_SIZE.SINGLE 
   },
+  mentorSpiritSummary: {
+    partial: `${PARTIAL_ROOT}/blocks/mentorSpirit/mentorSpirit-summary.hbs`, label: 'SR5.Summary', size: ITEM_BLOCK_SIZE.SINGLE
+  },
   spriteSummary:       {
     partial: `${PARTIAL_ROOT}/blocks/sprite/sprite-summary.hbs`,             label: 'SR5.Summary', size: ITEM_BLOCK_SIZE.SINGLE 
   },
@@ -248,6 +251,9 @@ export const ITEM_BLOCK_REGISTRY = {
   },
   spiritTypeStat:      {
     partial: `${PARTIAL_ROOT}/blocks/spiritType/spiritType-stat.hbs`,        label: 'SR5.ItemConfiguration', size: ITEM_BLOCK_SIZE.DOUBLE 
+  },
+  mentorSpiritStat:    {
+    partial: `${PARTIAL_ROOT}/blocks/mentorSpirit/mentorSpirit-stat.hbs`,    label: 'SR5.ItemConfiguration', size: ITEM_BLOCK_SIZE.DOUBLE
   },
   spriteStat:          {
     partial: `${PARTIAL_ROOT}/blocks/sprite/sprite-stat.hbs`,                label: 'SR5.ItemConfiguration', size: ITEM_BLOCK_SIZE.DOUBLE 

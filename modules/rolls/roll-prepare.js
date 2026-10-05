@@ -27,7 +27,8 @@ import {
   runningModifierKind
 } from "../system/running.js"
 import {
-  rollAttributes, extractSituational, tickByTargetMetatype, METATYPE_FAMILIES
+  rollAttributes, extractSituational, tickByTargetMetatype, METATYPE_FAMILIES, SPIRIT_TYPE_SKILLS, spiritTypeOffers,
+  spiritTypeVisible
 } from "./roll-helpers/situational.js"
 import {
   addIndirectEffects
@@ -231,6 +232,9 @@ export class SR5_PrepareRollTest {
       case "addictionTest":
         rollData = await SR5_GetRollData.addictionTest(rollData, rollKey, actor)
         break
+      case "mentorDrawback":
+        rollData = await SR5_GetRollData.mentorDrawback(rollData, actor, item)
+        break
       case "ritual":
         // SR5 p. 298: a ritual open to a group starts with the circle card, the roll comes when the leader seals it
         if (!chatData?.ritualCircle && ritualAcceptsHelp(item.system)) return SR5_RitualCircle.open(actor, item)
@@ -285,6 +289,12 @@ export class SR5_PrepareRollTest {
       } = extractSituational(rollData, actor?.situationalEffects || [], rollAttributes(rollData.dicePool.composition, attributeLabels),
         actor?.system?.limits?.[rollData.limit?.type]?.modifiers)
       rollData.situational = offers
+      //Forbidden Arcana p. 90-95: the boxes of a spirit type, shown once the type is known (dialog, or the targeted spirit)
+      if (rollData.test.type === "skillDicePool" && SPIRIT_TYPE_SKILLS.includes(rollData.test.typeSub)){
+        rollData.situational = offers.concat(spiritTypeOffers(actor.system.skills[rollData.test.typeSub]?.spiritType, actor.situationalEffects || []))
+        const targetType = rollData.target?.actorId ? SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId)?.system?.type : null
+        spiritTypeVisible(rollData.situational, targetType || rollData.magic?.spiritType)
+      }
       //A condition on the target's metatype (The Complete Trog p. 179) ticks its box when it is met
       if (offers.some(o => o.targetMetatype) && game.user.targets.size){
         const target = await SR5_PrepareRollHelper.getTargetedActor()

@@ -25,7 +25,15 @@ const READ_BY_ROLLS = [
   /^system\.weightActions\.[^.]+\.test$/,
   /^system\.matrix\.(actions|resonanceActions)\.[^.]+\.(test|limit|defense)$/,
   /^system\.matrix\.resistances\.[^.]+$/,
+  // Forbidden Arcana p. 90-95 (mentor spirits): spell categories, Drain, and the spirit types a summoning,
+  // binding or banishing picks in the dialog (offered hidden, shown for that type: spiritTypeOffers)
+  /^system\.skills\.(spellcasting|ritualSpellcasting|alchemy)\.spellCategory\.[^.]+$/,
+  /^system\.skills\.(summoning|binding|banishing)\.spiritType\.[^.]+$/,
+  /^system\.magic\.drainResistance$/,
 ]
+
+// The skills whose dice pool depends on a spirit type picked in the dialog or read off the target
+export const SPIRIT_TYPE_SKILLS = ["summoning", "binding", "banishing"]
 const ATTRIBUTE_TARGET = /^system\.attributes\.([^.]+)\.(augmented|natural)$/
 
 // The attribute a situational effect on an attribute is turned into: "tests linked to that attribute"
@@ -208,4 +216,45 @@ export function extractSituational(rollData, effects, attributes, limitSource){
   return {
     offers, always, scoped
   }
+}
+
+// Forbidden Arcana p. 90-95 ("+2 dice to summon spirits of Air"): the spirit type of a summoning is only
+// known in the dialog, so the boxes of every type are offered hidden, each tagged with its type, and
+// spiritTypeVisible shows those of the type picked. spiritTypes is the skill's spiritType object.
+export function spiritTypeOffers(spiritTypes, effects){
+  let offers = [], seen = new Set()
+  for (let [spiritType, data] of Object.entries(spiritTypes || {
+  })){
+    for (let m of data?.modifiers || []){
+      if (!isSituationalType(m.type)) continue
+      let index = situationalIndex(m.type), effect = effects[index]
+      if (!effect || effect.scope || seen.has(index) || effect.source !== m.source) continue
+      seen.add(index)
+      offers.push({
+        ...offerOf(effect, index, "dicePool"), spiritType, hidden: true
+      })
+    }
+  }
+  return offers
+}
+
+// Shows the boxes of the spirit type in use and hides the others; returns the keys of the boxes hidden
+// while ticked, whose modifier the dialog must take out of the dice pool
+export function spiritTypeVisible(offers, spiritType){
+  let unticked = []
+  for (let offer of offers || []){
+    if (!offer.spiritType) continue
+    offer.hidden = offer.spiritType !== spiritType
+    if (offer.hidden && offer.checked){
+      offer.checked = false
+      unticked.push(offer.key)
+    }
+  }
+  return unticked
+}
+
+// The modifiers of a spirit type, as copied into a dialog: the situational markers are left out, their
+// boxes standing for them
+export function withoutSituationalMarkers(modifiers){
+  return (modifiers || []).filter(m => !isSituationalType(m.type))
 }

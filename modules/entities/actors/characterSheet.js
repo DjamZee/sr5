@@ -152,6 +152,7 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     const ammunitions = []
     const externalEffects = []
     const traditions = []
+    const mentorSpirits = []
     const rituals = []
     const reputations = []
     const storages = []
@@ -203,6 +204,7 @@ export class SR5ActorSheet extends ActorSheetSR5 {
       else if (i.type === "itemEffect") externalEffects.push(i)
       else if (i.type === "itemDrug" || i.type === "itemToxin") gears.push(i)
       else if (i.type === "itemTradition") traditions.push(i)
+      else if (i.type === "itemMentorSpirit") mentorSpirits.push(i)
       else if (i.type === "itemRitual") rituals.push(i)
       else if (i.type === "itemReputation") {
         if (i.system.type == "gain" && this._shownReputationGains) reputations.push(i)
@@ -246,6 +248,7 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     actor.ammunitions = ammunitions
     actor.externalEffects = externalEffects
     actor.traditions = traditions
+    actor.mentorSpirits = mentorSpirits
     actor.rituals = rituals
     actor.reputations = reputations
     actor.storages = this._prepareStorages(actor, storages)

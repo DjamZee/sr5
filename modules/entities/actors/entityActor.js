@@ -564,6 +564,12 @@ export class SR5Actor extends Actor {
           if (Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
           break
 
+        // SR5 p. 76, 323-324: only the first mentor counts, the sheet warns about the others
+        case "itemMentorSpirit":
+          i.prepareData()
+          SR5_CharacterUtility.applyMentorSpirit(i, actor)
+          break
+
         case "itemSpell":
           i.prepareData()
           if (!iData.freeSustain && !iData.preparation) actor.system.magic.spellList[i.id] = i.name

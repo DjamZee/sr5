@@ -7,8 +7,12 @@ import {
 import {
   isSpiritForceDrain
 } from "../roll-helpers/drainType.js"
+import {
+  maskedDrain, drainFloor
+} from "../../entities/items/mentor-spirits.js"
 
 export default function drain(rollData, actor, chatData){
+  let maskApplied = false
   //Determine title
   rollData.test.title = game.i18n.localize("SR5.DrainResistanceTest")
 
@@ -36,6 +40,12 @@ export default function drain(rollData, actor, chatData){
       else rollData.magic.drain.type = "stun"
     }
     rollData.magic.drain.value = chatData.magic.drain.value
+    // Mask of the mentor: Drain reduced by 1, never under its floor (Forbidden Arcana p. 176 ; floors SR5 p. 284, 299, 303, 304)
+    if (actor.system.magic.mentorMask) {
+      const masked = maskedDrain(chatData.magic.drain.value, drainFloor(chatData.test))
+      if (masked !== rollData.magic.drain.value) maskApplied = true
+      rollData.magic.drain.value = masked
+    }
     rollData.previousMessage.hits = chatData.roll.hits
     rollData.previousMessage.messageId = chatData.owner.messageId
   } else {
@@ -46,6 +56,7 @@ export default function drain(rollData, actor, chatData){
 
   //Add details to title
   if (rollData.magic.drain.value >= 0) rollData.test.title += ` (${rollData.magic.drain.value}${game.i18n.localize(SR5.damageTypesShort[rollData.magic.drain.type])})`
+  if (maskApplied) rollData.test.title += ` [${game.i18n.localize("SR5.MentorMaskDrain")} -1]`
 
   //Add others informations
   rollData.test.type = "drain"

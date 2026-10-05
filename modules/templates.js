@@ -279,6 +279,8 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/items/blocks/spirit/spirit-stat.hbs",
     "systems/sr5/templates/items/blocks/spiritType/spiritType-stat.hbs",
     "systems/sr5/templates/items/blocks/spiritType/spiritType-summary.hbs",
+    "systems/sr5/templates/items/blocks/mentorSpirit/mentorSpirit-stat.hbs",
+    "systems/sr5/templates/items/blocks/mentorSpirit/mentorSpirit-summary.hbs",
     "systems/sr5/templates/items/blocks/toxin/toxin-stat.hbs",
     "systems/sr5/templates/items/blocks/toxin/toxin-summary.hbs",
     "systems/sr5/templates/items/_partial/summary/toxin-summary.hbs",
@@ -537,6 +539,8 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/items/_partial/editable/spiritType/powers-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/spiritType/preview-edit.hbs",
     "systems/sr5/templates/items/_partial/summary/spiritType-summary.hbs",
+    "systems/sr5/templates/items/_partial/editable/mentorSpirit/mentorSpirit-edit.hbs",
+    "systems/sr5/templates/items/_partial/summary/mentorSpirit-summary.hbs",
 
     //Preparation
     "systems/sr5/templates/items/_partial/editable/preparation/lynchpin-edit.hbs",

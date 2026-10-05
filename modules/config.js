@@ -3889,6 +3889,7 @@ SR5.itemTypes = {
   itemLifestyle             : "TYPES.Item.itemLifestyle",
   itemMark                  : "TYPES.Item.itemMark",
   itemMartialArt            : "TYPES.Item.itemMartialArt",
+  itemMentorSpirit          : "TYPES.Item.itemMentorSpirit",
   itemMetamagic             : "TYPES.Item.itemMetamagic",
   itemNuyen                 : "TYPES.Item.itemNuyen",
   itemPower                 : "TYPES.Item.itemPower",

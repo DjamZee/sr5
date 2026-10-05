@@ -130,6 +130,7 @@ export class SR5GruntSheet extends ActorSheetSR5 {
     const ammunitions = []
     const externalEffects = []
     const traditions = []
+    const mentorSpirits = []
     const rituals = []
 
     // Iterate through items, allocating to containers
@@ -163,6 +164,7 @@ export class SR5GruntSheet extends ActorSheetSR5 {
       else if (i.type === "itemEffect") externalEffects.push(i)
       else if (i.type === "itemDrug" || i.type === "itemToxin") gears.push(i)
       else if (i.type === "itemTradition") traditions.push(i)
+      else if (i.type === "itemMentorSpirit") mentorSpirits.push(i)
       else if (i.type === "itemRitual") rituals.push(i)
     }
 
@@ -195,6 +197,7 @@ export class SR5GruntSheet extends ActorSheetSR5 {
     actor.ammunitions = ammunitions
     actor.externalEffects = externalEffects
     actor.traditions = traditions
+    actor.mentorSpirits = mentorSpirits
     actor.rituals = rituals
   }
 

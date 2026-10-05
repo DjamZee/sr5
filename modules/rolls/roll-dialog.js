@@ -47,7 +47,7 @@ import {
   attributeValue, swapLinkedAttribute, skillAttributeTitle, SKILL_ATTRIBUTE_FLAG, syncBackgroundCount, backgroundCountApplies, setDialogWindowTitle
 } from "./roll-helpers/skillAttribute.js"
 import {
-  rollAttributes, attributeTestsState, ROLL_TESTS_TYPE, situationalListShown
+  rollAttributes, attributeTestsState, ROLL_TESTS_TYPE, situationalListShown, spiritTypeVisible, withoutSituationalMarkers
 } from "./roll-helpers/situational.js"
 
 export default class SR5_RollDialog {
@@ -441,6 +441,24 @@ export default class SR5_RollDialog {
     })
     this._toggleSituationalList(html, dialogData)
     this.updateDicePoolValue(html)
+  }
+
+  //Forbidden Arcana p. 90-95: a spirit type picked in the dialog shows its own boxes and hides the others'.
+  //The type's modifiers are copied without their markers, which the boxes stand for; boxes ticked
+  //elsewhere in the dialog are kept
+  _syncSpiritTypeOffers(html, dialogData, spiritType, typeModifiers){
+    const kept = (dialogData.dicePool.modifiers || []).filter(m => m.type?.startsWith?.("situational_"))
+    dialogData.dicePool.modifiers = withoutSituationalMarkers(typeModifiers).concat(kept)
+    const unticked = spiritTypeVisible(dialogData.situational, spiritType)
+    dialogData.dicePool.modifiers = dialogData.dicePool.modifiers.filter(m => !unticked.includes(m.type))
+    ;(dialogData.situational || []).forEach((offer, i) => {
+      if (!offer.spiritType) return
+      const box = html.querySelector(`.SR-SituationalCheckbox[data-index="${i}"]`)
+      if (!box) return
+      box.closest('li').style.display = offer.hidden ? 'none' : ''
+      if (offer.hidden) box.checked = false
+    })
+    this._toggleSituationalList(html, dialogData)
   }
 
   //The list of situational boxes, and its separator, only shows when one box does
@@ -1242,7 +1260,11 @@ export default class SR5_RollDialog {
             dialogData.dicePool.base = SR5_PrepareRollHelper.getBaseDicepool(dialogData)
             //The base dice pool field feeds updateDicePoolValue back: keep it in step with the recomputed base
             html.querySelector('[name="baseDicePool"]').value = dialogData.dicePool.base
-            dialogData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(dialogData, actor.system.skills.summoning.spiritType[ev.target.value].modifiers)
+            this._syncSpiritTypeOffers(html, dialogData, ev.target.value,
+              SR5_PrepareRollHelper.getDicepoolModifiers({
+                dicePool: {
+                }
+              }, actor.system.skills.summoning.spiritType[ev.target.value].modifiers))
           }
           dialogData.magic.spiritType = ev.target.value
           this.updateDicePoolValue(html)
@@ -1552,7 +1574,11 @@ export default class SR5_RollDialog {
           dialogData.dicePool.base = SR5_PrepareRollHelper.getBaseDicepool(dialogData)
           //The base dice pool field feeds updateDicePoolValue back: keep it in step with the recomputed base
           html.querySelector('[name="baseDicePool"]').value = dialogData.dicePool.base
-          dialogData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(dialogData, actor.system.skills.summoning.spiritType[selectValue].modifiers)
+          this._syncSpiritTypeOffers(html, dialogData, selectValue,
+            SR5_PrepareRollHelper.getDicepoolModifiers({
+              dicePool: {
+              }
+            }, actor.system.skills.summoning.spiritType[selectValue].modifiers))
           dialogData.magic.spiritType = selectValue
           this.updateDicePoolValue(html)
           continue

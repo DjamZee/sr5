@@ -83,6 +83,10 @@ export class magicPartialModel extends foundry.abstract.TypeDataModel {
         possession: new fields.BooleanField({
           initial: false
         }),
+        // Mask of the mentor (Forbidden Arcana p. 176): set while preparing the actor, read by the Drain roll
+        mentorMask: new fields.BooleanField({
+          initial: false
+        }),
         hasAstralProjection: new fields.BooleanField({
           initial: false
         }),
