@@ -1722,7 +1722,7 @@
 	"SR5.HELP_DrugToggle": "Drug Effect<br>({key})",
 	"SR5.HELP_DrugToggleMsg": "Activate or desactivate drug effect.",
 	"SR5.HELP_DrugPhase": "Drug: taken, effect, crash<br>({key})",
-	"SR5.HELP_DrugPhaseMsg": "Each click moves the drug one step: taken (effect), then crash, then over. Going to the crash removes the effect bonuses, applies the crash ones and its damage.",
+	"SR5.HELP_DrugPhaseMsg": "Each click moves the drug one step: taken (effect), then crash, then over. Going to the crash removes the effect bonuses, applies the crash ones and its damage. Right click (GM): reset the drug, with no crash nor damage, to correct a mistake.",
 	"SR5.DrugPhaseToRise": "Take the drug (effect)",
 	"SR5.DrugPhaseToCrash": "End of the effect: start the crash",
 	"SR5.DrugPhaseToNone": "End of the crash",

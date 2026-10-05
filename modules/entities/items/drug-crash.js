@@ -36,6 +36,20 @@ export async function startDrugCrash(data, actor) {
   }
 }
 
+// The gamemaster puts a drug back to "not taken", without crash, damage nor effect: it corrects a mistake
+// (the book wants a crash when the effect wears off, which the usual click does)
+export async function resetDrugPhase(item) {
+  if (!game.user?.isGM || item?.type !== "itemDrug" || !item.system.phase) return false
+  await item.update({
+    system: {
+      phase: "", isActive: false, wirelessTurnedOn: false, interact: false, onUse: {
+        duration: "", contrecoup: ""
+      }
+    }
+  })
+  return true
+}
+
 // End the rise of a drug owned by an actor, without any sheet open (the calendar calls it when the duration
 // is over). Does nothing, and says so, for a drug that is not in its rise
 export async function endDrugRise(item) {

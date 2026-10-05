@@ -21,8 +21,42 @@ vi.mock("../modules/rolls/roll-prepare.js", () => ({
 }))
 
 const {
-  endDrugRise, startDrugCrash
+  endDrugRise, startDrugCrash, resetDrugPhase
 } = await import("../modules/entities/items/drug-crash.js")
+
+describe("Remise à zéro d'une drogue par le MJ (correction d'une erreur)", () => {
+  it("le MJ remet une drogue en descente à « pas prise », sans dommages ni message", async () => {
+    game.user = {
+      isGM: true
+    }
+    const owner = actor(), item = drug("crash", owner)
+    expect(await resetDrugPhase(item)).toBe(true)
+    expect(item.system).toMatchObject({
+      phase: "", isActive: false, wirelessTurnedOn: false
+    })
+    expect(item.system.onUse).toEqual({
+      duration: "", contrecoup: ""
+    })
+    expect(owner.takeDamage).not.toHaveBeenCalled()
+    expect(owner.rollTest).not.toHaveBeenCalled()
+    expect(ui.notifications.info).not.toHaveBeenCalled()
+  })
+
+  it("un joueur ne le peut pas, et une drogue pas prise n'est pas touchée", async () => {
+    game.user = {
+      isGM: false
+    }
+    const item = drug("rise")
+    expect(await resetDrugPhase(item)).toBe(false)
+    game.user = {
+      isGM: true
+    }
+    const idle = drug("")
+    expect(await resetDrugPhase(idle)).toBe(false)
+    expect(item.update).not.toHaveBeenCalled()
+    expect(idle.update).not.toHaveBeenCalled()
+  })
+})
 
 beforeEach(() => {
   globalThis.game = {

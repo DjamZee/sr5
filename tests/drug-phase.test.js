@@ -26,7 +26,8 @@ function oldDrug({
 describe("Migration des drogues vers la phase montée / descente", () => {
   it("une drogue rangée devient sans phase, ses effets « sans fil » deviennent la descente", () => {
     const s = migrateDrugSource(oldDrug())
-    expect(s.phase).toBe("")
+    //No phase stored: the field takes its initial value, ""
+    expect(s.phase ?? "").toBe("")
     expect(s.customEffects.map(e => e.phase)).toEqual(["rise", "crash"])
     expect(s.customEffects.every(e => e.wifi === false)).toBe(true)
   })
@@ -63,6 +64,38 @@ describe("Migration des drogues vers la phase montée / descente", () => {
     expect(s.phase).toBe("rise")
     expect(s.isActive).toBe(true)
     expect(s.wirelessTurnedOn).toBe(false)
+  })
+
+  it("une phase vide ne l'emporte pas sur un drapeau levé (source ancienne, macro)", () => {
+    expect(migrateDrugSource({
+      phase: "", isActive: true
+    })).toMatchObject({
+      phase: "rise", isActive: true, wirelessTurnedOn: false
+    })
+    expect(migrateDrugSource({
+      phase: "", isActive: false, wirelessTurnedOn: true
+    })).toMatchObject({
+      phase: "crash", isActive: false, wirelessTurnedOn: true
+    })
+  })
+
+  it("une mise à jour partielle {isActive: false} n'efface pas une descente", () => {
+    expect(migrateDrugSource({
+      isActive: false
+    })).toEqual({
+      isActive: false
+    })
+  })
+
+  it("une drogue sans phase ni drapeau reste sans phase", () => {
+    expect(migrateDrugSource({
+      phase: "", isActive: false, wirelessTurnedOn: false
+    }).phase).toBe("")
+    expect(migrateDrugSource({
+      isActive: false, wirelessTurnedOn: false
+    })).toEqual({
+      isActive: false, wirelessTurnedOn: false
+    })
   })
 
   it("une mise à jour partielle sans état ne remet pas la drogue à zéro", () => {

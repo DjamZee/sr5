@@ -675,6 +675,62 @@ describe('switching the wireless of a device (SR5 p. 165, 167 and 424)', () => {
     return actor.update.mock.calls.at(-1)[0].system.specialProperties.actions
   }
 
+  // A drug has no wireless: its switch moves it into its crash, then out of it, and costs no action
+  it('spends no action on the crash switch of a drug, in or out', async () => {
+    vi.spyOn(game.settings, 'get').mockImplementation((scope, key) => (key === 'sr5WifiRequiresDNI') ? true : null)
+    for (const [phase, wasOn] of [['rise', false], ['crash', true]]) {
+      const actions = {
+        free: {
+          value: 1, current: 1
+        }, simple: {
+          value: 2, current: 2
+        }, complex: {
+          value: 1, current: 1
+        }
+      }
+      const system = {
+        hasDNI: false, specialProperties: {
+          actions
+        }, addictions: []
+      }
+      const actor = {
+        id: 'a1', name: 'Test', isToken: false, effects: [], items: [{
+          _id: 'd1', id: 'd1', name: 'Jazz', type: 'itemDrug', system: {
+            phase, isActive: !wasOn, wirelessTurnedOn: wasOn, systemEffects: [], handleShot: {
+            }, onUse: {
+              duration: '', contrecoup: ''
+            }
+          }
+        }],
+        system: new FakeSystem(system, system),
+        update: vi.fn(async () => {}),
+      }
+      const sheet = Object.create(ActorSheetSR5.prototype)
+      Object.defineProperty(sheet, 'actor', {
+        value: actor
+      })
+      await sheet._onEditItemValue({
+        currentTarget: {
+          closest: () => ({
+            dataset: {
+              itemId: 'd1'
+            }
+          }),
+          dataset: {
+            binding: 'system.wirelessTurnedOn', dtype: 'Boolean'
+          },
+        },
+        target: {
+          value: ''
+        },
+      })
+      const written = actor.update.mock.calls.at(-1)[0]
+      expect(written.system.specialProperties.actions.free.current).toBe(1)
+      expect(written.system.specialProperties.actions.simple.current).toBe(2)
+      expect(written.items[0].system.phase).toBe(wasOn ? '' : 'crash')
+    }
+  })
+
   it('is a free action for everyone by default', async () => {
     const written = await switchWifi(false, false)
     expect(written.free.current).toBe(0)

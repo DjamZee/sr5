@@ -35,13 +35,18 @@ export function drugEffectApplies(customEffect, phase) {
   return !!phase && effectPhase(customEffect) === phase
 }
 
-// Can run any number of times: a phase already set is kept, and wins over the former flags. A partial
-// update that holds none of the three fields leaves the state alone
+// Can run any number of times. A rise or a crash already set wins over the flags; an empty phase does not:
+// a flag turned on (an old source, a macro) says the drug is taken. A partial update that only turns flags
+// off ({isActive: false} on a drug in its crash) carries no state and leaves it alone
 export function migrateDrugSource(source) {
-  if (["phase", "isActive", "wirelessTurnedOn"].some(key => key in source)) {
-    if (!DRUG_PHASES.includes(source.phase)) source.phase = phaseFromFlags(source.isActive, source.wirelessTurnedOn)
-    Object.assign(source, drugPhaseFlags(source.phase))
-  }
+  const flagPhase = phaseFromFlags(source.isActive, source.wirelessTurnedOn)
+  if (source.phase === "rise" || source.phase === "crash") Object.assign(source, drugPhaseFlags(source.phase))
+  else if (flagPhase) Object.assign(source, {
+    phase: flagPhase
+  }, drugPhaseFlags(flagPhase))
+  else if ("phase" in source) Object.assign(source, {
+    phase: ""
+  }, drugPhaseFlags(""))
   if (source.customEffects && typeof source.customEffects === "object") {
     for (let customEffect of Object.values(source.customEffects)) {
       if (!customEffect || typeof customEffect !== "object") continue

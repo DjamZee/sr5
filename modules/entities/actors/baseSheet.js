@@ -5,7 +5,7 @@ import {
   phaseFromFlags
 } from "../items/drug-phase.js"
 import {
-  startDrugCrash
+  startDrugCrash, resetDrugPhase
 } from "../items/drug-crash.js"
 import {
   SR5_Jammer
@@ -397,6 +397,11 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     on(".item-delete", "click", this._onItemDelete.bind(this))
     on(".item-management", "mousedown", this._onItemManagement.bind(this))
     on(".subItem", "click", this._onManageSubItem.bind(this))
+    //The gamemaster puts a drug back to "not taken" by a right click on its switch (entities/items/drug-crash.js)
+    on(".drug-phase", "contextmenu", ev => {
+      ev.preventDefault()
+      resetDrugPhase(this.actor.items.get(ev.currentTarget.closest(".item")?.dataset.itemId))
+    })
     //Edit item value from actor sheet
     on(".edit-value", "change", this._onEditItemValue.bind(this))
     on(".select-value", "change", this._onEditItemValue.bind(this))
@@ -1193,6 +1198,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
   // Edit Item value from Actor Sheet
   //Actions spent by _onEditItemValue: activating a focus, (un)loading a program, switching a device's wireless
   _itemValueActionCost(item, target, oldValue){
+    //A drug has no wireless: its switch moves its phase (entities/items/drug-phase.js) and costs no action
+    if (item.type === "itemDrug") return []
     if (item.type === "itemFocus" && target === "system.isActive") return [{
       type: (oldValue === false) ? "simple" : "free", value: 1
     }]
@@ -1554,7 +1561,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       }]
       SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
     }
-    if (target === "system.wirelessTurnedOn"){
+    //A drug has no wireless: its switch moves its phase, as in _itemValueActionCost
+    if (target === "system.wirelessTurnedOn" && item.type !== "itemDrug"){
       //Turning a device's wireless off is always a free action (SR5 p. 424). Turning it on is free through a
       //DNI (p. 165), simple otherwise (p. 167), when the world setting asks for it; the actor's "wired by DNI" box decides
       let actionType = SR5_ActorHelper.wirelessSwitchActionType(!oldValue, game.settings.get("sr5", "sr5WifiRequiresDNI"), actor.system.hasDNI)
