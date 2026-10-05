@@ -789,6 +789,7 @@ export class SR5_RollTest {
       case "matrixDefenseSimple":
       case "astralTracking":
       case "derivedAttribute":
+      case "illusionResistance": //The active GM compares it with the threshold in his ledger (system/illusion.js)
       case "itemRoll":
         break
       default:

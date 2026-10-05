@@ -116,6 +116,8 @@ export default async function spellInfo(cardData){
         gmAction: true
       })
     }
+    //Invisibility, Mask (SR5 p. 294): whoever perceives the subject resists first, the hits are his threshold
+    if (cardData.test.type === "spell" && item?.system?.illusionPierce) cardData.chatCard.buttons.illusionResistance = SR5_RollMessage.generateChatButton("opposedTest", "illusionResistance", game.i18n.localize("SR5.IllusionResist"))
 
     //Generate apply effect on Actor chat button
     if (cardData.effects.canApplyEffect) cardData.chatCard.buttons.applyEffect = SR5_RollMessage.generateChatButton("opposedTest", "applyEffect", game.i18n.localize("SR5.ApplyEffect"))

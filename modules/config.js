@@ -397,6 +397,18 @@ SR5.indirectAuraWho = {
   allies                    : "SR5.IndirectAuraWhoAllies",
   enemies                   : "SR5.IndirectAuraWhoEnemies",
 }
+// An illusion to resist before perceiving its subject (SR5 p. 294, system/illusion.js)
+SR5.illusionPierce = {
+  invisibility              : "SR5.IllusionPierceInvisibility",
+  mask                      : "SR5.IllusionPierceMask",
+}
+// The levels of an RP-Tac unit (Run & Gun p. 118-119, system/tacnet.js)
+SR5.tacnetLevels = {
+  0                         : "SR5.TacnetLevel0",
+  1                         : "SR5.TacnetLevel1",
+  2                         : "SR5.TacnetLevel2",
+  3                         : "SR5.TacnetLevel3",
+}
 
 // Special Skills
 SR5.specialSkills = {

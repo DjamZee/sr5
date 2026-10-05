@@ -236,6 +236,10 @@ export default class SR5_RollDialog {
     //Situational effects, ticked by hand (roll-helpers/situational.js)
     element.querySelectorAll('.SR-SituationalCheckbox').forEach(el => el.addEventListener('change', ev => this._situationalModifier(ev, element, dialogData)))
     this._toggleSituationalList(element, dialogData)
+    //An invisible target already brings its blind fire box (system/illusion.js): the hand-ticked one would count -6 twice
+    if (dialogData.situational?.some(o => o.blindFire)) element.querySelectorAll('[data-modifier="attackBlindFire"]').forEach(el => {
+      el.disabled = true
+    })
     //The attribute picked in the dialog brings its "tests linked to" effects (Pushed)
     element.querySelectorAll('.SR-ModSelect[data-modifier="attribute"]').forEach(el => el.addEventListener('change', ev => {
       dialogData.secondaryAttribute = ev.target.value

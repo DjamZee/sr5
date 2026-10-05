@@ -1,0 +1,30 @@
+<li class="grid">
+    <div class="col-4">{{localize 'SR5.Tacnet'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8">
+        <select name="system.tacnetLevel" data-dtype="Number">
+            {{selectOptions lists.tacnetLevels selected=system.tacnetLevel localize=true}}
+        </select>
+    </div>
+</li>
+{{#if tacnet.level}}
+<li class="grid">
+    <div class="col-12 SR-GreyColor SR-TextSmall">{{localize 'SR5.TacnetHint'}}{{#unless tacnet.active}} {{localize 'SR5.TacnetInactive'}}{{/unless}}</div>
+</li>
+<li class="grid">
+    <div class="col-6">{{localize 'SR5.TacnetMembers'}} ({{tacnet.members.length}} / {{tacnet.capacity}}){{localize 'SR5.Colons'}}</div>
+    <div class="col-6 SR-TextRight">{{#if isEmbedded}}<a data-action="tacnetAddTargets"><em class="fas fa-crosshairs"></em> {{localize 'SR5.TacnetAddTargets'}}</a>{{/if}}</div>
+</li>
+{{#each tacnet.members as |member|}}
+<li class="grid">
+    <div class="col-6 SR-MarginLeft10">{{member.name}}{{#if member.isBearer}} ({{localize 'SR5.TacnetBearer'}}){{/if}}</div>
+    <div class="col-4">{{#if member.canPick}}<select data-tacnet-combat="{{member.uuid}}">
+        <option value="">{{localize 'SR5.TacnetCombatNone'}}</option>
+        {{selectOptions ../tacnetCombatSkills selected=member.combat localize=true}}
+    </select>{{/if}}</div>
+    <div class="col-2 SR-TextRight">{{#unless member.isBearer}}<a data-action="tacnetRemove" data-member="{{member.uuid}}"><em class="fas fa-sm fa-times"></em></a>{{/unless}}</div>
+</li>
+{{/each}}
+<li class="grid">
+    <div class="col-12 SR-GreyColor SR-TextSmall">{{localize 'SR5.TacnetRosterHint'}}</div>
+</li>
+{{/if}}

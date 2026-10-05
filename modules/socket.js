@@ -97,6 +97,7 @@ export class SR5_SocketHandler {
       "shopVendorAccept": [vendor('_socketAccept')],
       "shopVendorDecline": [vendor('_socketDecline')],
       "shopOrderCancel": [orderCancel],
+      "tacnetRoster": [async (message, senderId) => (await import("./system/tacnet.js"))._socketTacnetRoster(message, senderId)],
     }
 
     //senderId is added by the server to every custom socket message: a client cannot forge it

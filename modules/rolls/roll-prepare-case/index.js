@@ -179,6 +179,9 @@ export {
   default as spellResistance
 } from "./rollData-SpellResistance.js"
 export {
+  default as illusionResistance
+} from "./rollData-IllusionResistance.js"
+export {
   default as spritePower
 } from "./rollData-SpritePower.js"
 export {

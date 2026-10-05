@@ -53,6 +53,10 @@ export class sr5ItemGearDataModel extends foundry.abstract.TypeDataModel {
       isMedkit: new fields.BooleanField({
         initial: false
       }),
+      // An RP-Tac unit (Run & Gun p. 118-119): its level, 0 for none. Its members are in the GM's ledger
+      tacnetLevel: new fields.NumberField({
+        initial: 0
+      }),
       // A physical jammer (SR5 p. 443): area, directional or cranial, turned on from the actor's sheet. In
       // wireless mode it spares the actors listed here.
       jammer: new fields.SchemaField({

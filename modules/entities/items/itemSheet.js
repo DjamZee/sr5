@@ -34,6 +34,12 @@ import {
 import {
   sheetSizeOptions, sheetSizeSetPosition
 } from "../../interface/sheet-size.js"
+import {
+  tacnetSheetContext, requestRoster, tokenActorUuid, TACNET_COMBAT_FLAG
+} from "../../system/tacnet.js"
+import {
+  TACNET_COMBAT_SKILLS
+} from "../../rolls/roll-helpers/tacnet.js"
 
 // Item types that include a footer (condition monitors, price/availability)
 const ITEM_FOOTER_TYPES = new Set([
@@ -81,6 +87,8 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       toggleMode: SR5ItemSheet._onToggleMode,
       jammerSpareTargets: SR5ItemSheet._onJammerSpareTargets,
       jammerUnspare: SR5ItemSheet._onJammerUnspare,
+      tacnetAddTargets: SR5ItemSheet._onTacnetAddTargets,
+      tacnetRemove: SR5ItemSheet._onTacnetRemove,
       shopRestock: SR5ItemSheet._onShopAction,
       shopClear: SR5ItemSheet._onShopAction,
       shopCashbox: SR5ItemSheet._onShopAction,
@@ -109,6 +117,20 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     await this.document.update({
       "system.jammer.spared": [...spared]
     })
+  }
+
+  // The bearer of an RP-Tac asks for the targeted tokens to join, the active GM writes the roster
+  static async _onTacnetAddTargets(event) {
+    event.preventDefault()
+    for (let token of game.user.targets) {
+      const uuid = tokenActorUuid(token)
+      if (uuid) await requestRoster(this.document, uuid, "join")
+    }
+  }
+
+  static async _onTacnetRemove(event, target) {
+    event.preventDefault()
+    await requestRoster(this.document, target.dataset.member, "leave")
   }
 
   // The vendor's shop (lot C): restock, empty, give a cashbox, open the window
@@ -365,6 +387,16 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       context.jammerSpared = (item.system.jammer.spared ?? []).map(id => ({
         id, name: (id.includes(".") ? fromUuidSync(id)?.name : game.actors.get(id)?.name) ?? id
       }))
+    }
+    // An RP-Tac unit (Run & Gun p. 118-119): its members, from the GM's ledger; each member's combat mode skill
+    if (item.type === "itemGear" && item.system.tacnetLevel) {
+      context.tacnet = tacnetSheetContext(item)
+      context.tacnetCombatSkills = Object.fromEntries(TACNET_COMBAT_SKILLS.map(k => [k, SR5.combatSkills[k]]))
+      for (const member of context.tacnet.members) {
+        const actor = fromUuidSync(member.uuid)
+        member.canPick = context.tacnet.level >= 2 && !!actor?.isOwner
+        member.combat = actor?.getFlag?.("sr5", TACNET_COMBAT_FLAG) ?? ""
+      }
     }
     // Items that unfold into an actor wear a second picture: their token's
     context.hasTokenImage = SR5ItemSheet.SIDEKICK_TYPES.includes(item.type)
@@ -672,6 +704,12 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
 
     // Item-based accessory checkbox toggles (avoid form submission destroying item data)
     el.querySelectorAll(".accessory-toggle").forEach(node => node.addEventListener("change", this.#onAccessoryToggle.bind(this)))
+    //The combat mode skill of an RP-Tac member (Run & Gun p. 119): his own pick, kept on his actor
+    el.querySelectorAll("[data-tacnet-combat]").forEach(node => node.addEventListener("change", async (ev) => {
+      ev.stopPropagation()
+      const actor = await fromUuid(ev.target.dataset.tacnetCombat)
+      if (actor?.isOwner) await actor.setFlag("sr5", TACNET_COMBAT_FLAG, ev.target.value)
+    }))
 
     // Help Display (mouseover/mouseout — cannot use data-action)
     el.querySelectorAll("[data-helpTitle]").forEach(node => {

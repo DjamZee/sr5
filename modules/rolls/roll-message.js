@@ -257,7 +257,8 @@ export class SR5_RollMessage {
       case "registeringResistance":
       case "banishingResistance":
       case "iceDefense":
-      case "spellResistance":                                        
+      case "spellResistance":
+      case "illusionResistance":
       case "rammingDefense":
       case "martialArtDefense":
       case "grappleClinchDefense":

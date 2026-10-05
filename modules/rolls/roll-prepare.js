@@ -283,6 +283,9 @@ export class SR5_PrepareRollTest {
       case "spellResistance":
         rollData = await SR5_GetRollData.spellResistance(rollData, actor, chatData)
         break
+      case "illusionResistance":
+        rollData = await SR5_GetRollData.illusionResistance(rollData, actor, chatData)
+        break
       case "spritePower":
         if (game.user.targets.size) rollData = await SR5_PrepareRollHelper.getTargetData(rollData)
         rollData = await SR5_GetRollData.spritePower(rollData, actor, item)

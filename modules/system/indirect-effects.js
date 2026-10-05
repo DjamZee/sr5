@@ -9,6 +9,12 @@ import {
 import {
   rollKinds, gatherIndirectOffers, applyOffer
 } from "../rolls/roll-helpers/indirect.js"
+import {
+  illusionOffer
+} from "./illusion.js"
+import {
+  tacnetOfferFor
+} from "./tacnet.js"
 
 export const INDIRECT_DISPLAY_SETTING = "sr5IndirectEffectDisplay"
 
@@ -69,6 +75,11 @@ export function addIndirectEffects(rollData, actor){
       neutral: game.i18n.localize("SR5.IndirectNeutral"),
     },
   })
+  //Invisibility the roller has not seen through (SR5 p. 294), the RP-Tac network he is a member of (Run & Gun p. 119)
+  const blindFire = illusionOffer(kinds, actor, target ? targetToken.actor : null, targetToken?.name)
+  if (blindFire) offers.push(blindFire)
+  const tacnet = tacnetOfferFor(rollData, actor)
+  if (tacnet) offers.push(tacnet)
   for (let offer of offers) applyOffer(rollData, offer)
   rollData.situational = (rollData.situational || []).concat(offers)
 }

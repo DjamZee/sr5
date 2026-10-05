@@ -20,6 +20,12 @@ import {
   registerDiseaseSettings
 } from "../system/diseases.js"
 import {
+  registerIllusionSetting
+} from "../system/illusion.js"
+import {
+  registerTacnetSetting
+} from "../system/tacnet.js"
+import {
   SR5
 } from "../config.js"
 import {
@@ -277,6 +283,9 @@ export async function sr5HookInit() {
   registerExtendedClockSetting()
   //Diseases (Run Faster p. 111-112): the GM's ledger of infections, and what the player is shown
   registerDiseaseSettings()
+  //The GM's ledgers of the illusions seen through (SR5 p. 294) and of the RP-Tac rosters (Run & Gun p. 119)
+  registerIllusionSetting()
+  registerTacnetSetting()
   //The grappling statuses exist only in a world that uses the grappling rules
   if (SR5_GrappleHelpers.isActive()) CONFIG.statusEffects.push(...SR5_GrappleHelpers.statusEffects())
   //Running (SR5 p. 163-164): the "running" status, "Course" and "Sprint" in the movement selector, a ruler colored by gait
