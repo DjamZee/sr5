@@ -14,6 +14,9 @@ import {
 import {
   sr5DeepenModuleTableOfContents 
 } from "../interface/journal-heading-levels.js"
+import {
+  initCalendarClock
+} from "../interface/calendar-clock.js"
 
 export function sr5HookReady() {
   // Register the GM-authored spirit types, so that they are offered wherever
@@ -43,6 +46,9 @@ export function sr5HookReady() {
 
   // Translate the headers of the core "link matches" tooltip
   initLinkMatchesTooltip()
+
+  // The Sixth World clock: date and time for all, advance and "go to" for the GM
+  initCalendarClock()
 
   // The deeper table of contents also reaches the window of Monk's Enhanced Journal
   sr5DeepenModuleTableOfContents()
