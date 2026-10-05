@@ -5064,6 +5064,7 @@ export class SR5_CharacterUtility extends Actor {
     let effect = {
       source: item.name, value, when: customEffect.when || "", situational: !!customEffect.situational
     }
+    if (typeof customEffect.type === "string" && customEffect.type.endsWith("Replace")) effect.replace = true
     //Condition on the target's metatype (The Complete Trog p. 179), read when the roll is prepared
     if (customEffect.situational && customEffect.targetMetatype) Object.assign(effect, {
       targetMetatype: customEffect.targetMetatype, targetMetatypeMode: customEffect.targetMetatypeMode === "isNot" ? "isNot" : "is"
@@ -5255,9 +5256,11 @@ export class SR5_CharacterUtility extends Actor {
             if (customEffect.type === "hitsReplace") customEffect.value = (itemData.hits || 0)
             if (typeof targetObject.base === "number" && targetObject.base < 1) targetObject.base = 0
             let modValue = replaceModifierValue(targetObject.base, (customEffect.value || 0)) * customEffect.multiplier
-            SR5_EntityHelpers.updateModifier(targetObject, item.name, modifierType, modValue, isMultiplier, cumulative)
-            const replacing = targetObject.modifiers[targetObject.modifiers.length - 1]
-            if (replacing) replacing.replace = true
+            //Pushed as it is, marked from the start: updateModifier() may merge it into another modifier of the same
+            //type, and the last one of the list is not always the one just made
+            if (!isNaN(modValue)) targetObject.modifiers.push({
+              source: item.name, type: modifierType, value: modValue, isMultiplier, replace: true
+            })
             break
           }
           case "boolean": {

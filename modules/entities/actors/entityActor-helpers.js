@@ -47,6 +47,9 @@ import {
   isReplaceEffectType
 } from "./effect-replace.js"
 import {
+  readsRoll, effectCardVerdict
+} from "../../rolls/roll-helpers/effect-card.js"
+import {
   isAreaSpellTemplateGone
 } from "../../system/areaEffectScene.js"
 
@@ -1612,12 +1615,81 @@ export class SR5_ActorHelper {
   }
 
   //Apply an external effect to actor (such spell, complex form). Data is provided by chatMessage
+  //The hits and net hits of a casting card written by a player and applied by someone else (the GM, or the owner of
+  //the target), counted again (roll-helpers/effect-card.js), and confirmed when the GM applies it. The card's own
+  //figures when its author applies it himself (his own actor), or when it is the GM's. null when the card is
+  //rejected or the GM declines
+  static async checkEffectCard(data, item){
+    const claimed = {
+      hits: data.roll?.hits, netHits: data.roll?.netHits
+    }
+    const message = game.messages?.get(data.owner?.messageId)
+    const author = message?.author
+    //Never filtered on the test type the card states: a flag its author writes. A card whose dice are not the caster's
+    //(another player's resistance card) is rejected, the GM warned, and applied by hand
+    if (!author || author.isGM || author.id === game.user?.id) return claimed
+    const caster = SR5_EntityHelpers.getRealActorFromID(data.owner.actorId)
+    const isForm = item.type === "itemComplexForm"
+    const pool = isForm ? caster?.system?.matrix?.resonanceActions?.threadComplexForm?.test?.dicePool :
+      (caster?.system?.skills?.spellcasting?.spellCategory?.[item.system.category]?.dicePool ?? caster?.system?.skills?.spellcasting?.test?.dicePool)
+    const verdict = effectCardVerdict({
+      authorOwnsCaster: !!caster && caster.testUserPermission?.(author, "OWNER"),
+      itemOnCaster: !!caster && (item.parent === caster || item.parent?.id === caster.id),
+      rollJSON: data.roll?.r, pool, edge: caster?.system?.specialAttributes?.edge?.augmented?.value ?? 0,
+      force: isForm ? data.matrix?.level : data.magic?.force,
+      magic: isForm ? caster?.system?.specialAttributes?.resonance?.augmented?.value : caster?.system?.specialAttributes?.magic?.augmented?.value,
+      claimedHits: claimed.hits, claimedNetHits: claimed.netHits,
+    })
+    if (!verdict.ok) {
+      await ChatMessage.create({
+        whisper: game.users.filter(u => u.isGM).map(u => u.id),
+        content: `<p>${game.i18n.format("SR5.EffectCardRejected", {
+          user: author.name, item: item.name
+        })}</p>`,
+      })
+      return null
+    }
+    //A player applying it to his own character gets the hits counted again, without a dialog
+    if (!game.user?.isGM) return {
+      hits: verdict.hits, netHits: verdict.netHits
+    }
+    const notes = []
+    if (verdict.mismatch) notes.push(game.i18n.format("SR5.EffectCardMismatch", {
+      hits: claimed.hits ?? "?", netHits: claimed.netHits ?? "?"
+    }))
+    if (verdict.overPool) notes.push(game.i18n.format("SR5.EffectCardOverPool", {
+      allowed: verdict.allowed
+    }))
+    const ok = await foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: "SR5.EffectCardConfirmTitle"
+      },
+      content: `<p>${game.i18n.format("SR5.EffectCardConfirm", {
+        user: author.name, caster: caster.name, item: item.name, hits: verdict.hits, netHits: verdict.netHits
+      })}</p>${notes.map(n => `<p><strong>${n}</strong></p>`).join("")}`,
+      rejectClose: false,
+    })
+    return ok ? {
+      hits: verdict.hits, netHits: verdict.netHits
+    } : null
+  }
+
   static async applyExternalEffect(actorId, data, effectType){
     //An area spell whose template was deleted during the resistance: nothing would lift the effect
     if (isAreaSpellTemplateGone(data)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_AreaSpellTemplateGone"))
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
     let item = await fromUuid(data.owner.itemUuid)
     let itemData = item.system
+    //An effect whose value reads the roll (hits, net hits): the GM does not believe a player's card as it is written
+    if (readsRoll(itemData[effectType])) {
+      const roll = await SR5_ActorHelper.checkEffectCard(data, item)
+      if (!roll) return
+      data = {
+        ...data, roll: {
+          ...data.roll, ...roll
+        }
+      }
+    }
     // Head case Attribute Boost (Stolen Souls p. 201): lasts a number of combat turns equal to the hits,
     // then the head case takes as many boxes of Stun damage (applied when the effect expires, see SR5Combat.manageTurnEnd)
     let isNaniteBoost = Object.values(itemData.systemEffects || {

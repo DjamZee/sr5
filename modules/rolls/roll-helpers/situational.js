@@ -50,10 +50,13 @@ export function situationalReadable(target){
 // The value an effect brings, by its type; null when the type has no meaning outside the sheet
 export function situationalValue(customEffect, itemData){
   let base
+  //A replacing box only on a Limit, where the dialog replaces; anywhere else it would be added like a bonus
+  if (/Replace$/.test(customEffect.type ?? "") && !/limit$/i.test(customEffect.target ?? "")) return null
   switch (customEffect.type){
-    case "value": base = parseFloat(customEffect.value) || 0; break
-    case "rating": base = itemData?.itemRating || 0; break
-    case "hits": base = itemData?.hits || 0; break
+    //A "replace" type gives its value in place of the limit once its box is ticked (AutoVoice, No Future p. 157)
+    case "value": case "valueReplace": base = parseFloat(customEffect.value) || 0; break
+    case "rating": case "ratingReplace": base = itemData?.itemRating || 0; break
+    case "hits": case "hitsReplace": base = itemData?.hits || 0; break
     default: return null
   }
   let multiplier = parseFloat(customEffect.multiplier) || 1
@@ -122,6 +125,7 @@ function offerOf(effect, index, kind){
     key: `situational_${kind}_${index}`, kind, index, label: effect.source, when: effect.when || "",
     value: effect.value, isMalus: effect.value < 0
   }
+  if (effect.replace) offer.replace = true
   if (effect.targetMetatype) Object.assign(offer, {
     targetMetatype: effect.targetMetatype, targetMetatypeMode: effect.targetMetatypeMode
   })

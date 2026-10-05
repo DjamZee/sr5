@@ -427,7 +427,18 @@ export default class SR5_RollDialog {
     if (!offer) return
     //The chat card keeps the box as it was left
     offer.checked = ev.target.checked
-    if (offer.kind === "limit"){
+    if (offer.kind === "limit" && offer.replace){
+      //A replacing box: the limit becomes its value while ticked (AutoVoice for singing, No Future p. 157)
+      if (ev.target.checked){
+        dialogData.limit.replace = offer.value
+        dialogData.limit.typeBeforeReplace ??= dialogData.limit.type
+        dialogData.limit.type = "replaced"
+      } else {
+        delete dialogData.limit.replace
+        if (dialogData.limit.typeBeforeReplace !== undefined) dialogData.limit.type = dialogData.limit.typeBeforeReplace
+      }
+      this.updateLimitValue(html)
+    } else if (offer.kind === "limit"){
       if (ev.target.checked) dialogData.limit.modifiers[offer.key] = {
         label: offer.label, value: offer.value
       }
