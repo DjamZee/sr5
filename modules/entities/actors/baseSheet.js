@@ -5,6 +5,9 @@ import {
   phaseFromFlags
 } from "../items/drug-phase.js"
 import {
+  startDrugCrash
+} from "../items/drug-crash.js"
+import {
   SR5_Jammer
 } from "../../system/jammer.js"
 import {
@@ -1464,36 +1467,11 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         }
 
       } else if (target === "system.wirelessTurnedOn"){
-        foundry.utils.setProperty(item, "system.isActive", false)
-
-								
-        itemData.onUse.duration = ""
-        if (itemData.handleShot.durationContrecoup) itemData.onUse.contrecoup = `${itemData.handleShot.durationContrecoup} ${game.i18n.localize(SR5.extendedIntervals[itemData.handleShot.durationContrecoupType])}`
-				
-        // Check if the item is a drug set on systemEffect and has contrecoup duration
-        if (item.system.wirelessTurnedOn && drugType && itemData.handleShot.durationContrecoup) {
-          // Notify info on contrecoup				
-          await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugContrecoup")} (${game.i18n.localize(SR5.drugs[itemData.handleShot.name])})${game.i18n.format("SR5.Colons")} ${itemData.handleShot.durationContrecoup} ${game.i18n.localize(SR5.extendedIntervals[itemData.handleShot.durationContrecoupType])}`)
-        }
-				
-        // Handle if the item is a drug set on systemEffect and has untresisted stun contrecoup
-        if (item.system.wirelessTurnedOn && drugType && itemData.handleShot.unresistedStunDamage) {
-          let damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
-          damageInfo.damage.value = itemData.handleShot.unresistedStunDamage
-          damageInfo.damage.type = "stun"
-          this.actor.takeDamage(damageInfo)
-        }
-				
-        // Handle if the item is a drug set on systemEffect and has resisted stun contrecoup
-        if (item.system.wirelessTurnedOn && drugType && itemData.handleShot.resistedStunDamage) {
-          let damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
-          damageInfo.damage.value = itemData.handleShot.resistedStunDamage
-          damageInfo.damage.type = "stun"
-          damageInfo.damage.resistanceType = "physicalDamage"
-          this.actor.rollTest("resistanceCard", null, damageInfo)
-        }
-
-        if (!item.system.wirelessTurnedOn) {
+        //The crash takes the same path as the calendar (entities/items/drug-crash.js)
+        if (itemData.wirelessTurnedOn) await startDrugCrash(itemData, actor)
+        else {
+          itemData.isActive = false
+          itemData.onUse.duration = ""
           itemData.interact = false
           itemData.onUse.contrecoup = ""
         }
@@ -1642,29 +1620,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
   //Start the crash of a drug in the item list: as when its crash switch is turned on from the sheet, the effect
   //ends, the crash duration is shown and its Stun damage applies
   async _startDrugCrash(drug, actor) {
-    let data = drug.system, shot = data.handleShot ?? {
-    }
-    data.isActive = false
-    data.wirelessTurnedOn = true
-    data.phase = "crash"
-    data.onUse.duration = ""
-    if (shot.durationContrecoup) {
-      data.onUse.contrecoup = `${shot.durationContrecoup} ${game.i18n.localize(SR5.extendedIntervals[shot.durationContrecoupType])}`
-      await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugContrecoup")} (${game.i18n.localize(SR5.drugs[shot.name])})${game.i18n.format("SR5.Colons")} ${data.onUse.contrecoup}`)
-    }
-    if (shot.unresistedStunDamage) {
-      let damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
-      damageInfo.damage.value = shot.unresistedStunDamage
-      damageInfo.damage.type = "stun"
-      actor.takeDamage(damageInfo)
-    }
-    if (shot.resistedStunDamage) {
-      let damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
-      damageInfo.damage.value = shot.resistedStunDamage
-      damageInfo.damage.type = "stun"
-      damageInfo.damage.resistanceType = "physicalDamage"
-      actor.rollTest("resistanceCard", null, damageInfo)
-    }
+    await startDrugCrash(drug.system, actor)
   }
 
   /* -------------------------------------------- */

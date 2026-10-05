@@ -1,0 +1,49 @@
+import {
+  SR5
+} from "../../config.js"
+import {
+  SR5_PrepareRollTest
+} from "../../rolls/roll-prepare.js"
+
+// The crash of a drug, "the negative effects that follow the effect of the drug" (Chrome Flesh p. 194).
+// One path for all: the switch of the sheet, an interaction (Chrome Flesh p. 197) and the calendar
+
+// Start the crash on the system data of a drug (changed in place, written by the caller): the effect ends,
+// the crash duration is shown and its Stun damage applies
+export async function startDrugCrash(data, actor) {
+  let shot = data.handleShot ?? {
+  }
+  data.isActive = false
+  data.wirelessTurnedOn = true
+  data.phase = "crash"
+  data.onUse.duration = ""
+  if (shot.durationContrecoup) {
+    data.onUse.contrecoup = `${shot.durationContrecoup} ${game.i18n.localize(SR5.extendedIntervals[shot.durationContrecoupType])}`
+    await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugContrecoup")} (${game.i18n.localize(SR5.drugs[shot.name])})${game.i18n.format("SR5.Colons")} ${data.onUse.contrecoup}`)
+  }
+  if (shot.unresistedStunDamage) {
+    let damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
+    damageInfo.damage.value = shot.unresistedStunDamage
+    damageInfo.damage.type = "stun"
+    actor.takeDamage(damageInfo)
+  }
+  if (shot.resistedStunDamage) {
+    let damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
+    damageInfo.damage.value = shot.resistedStunDamage
+    damageInfo.damage.type = "stun"
+    damageInfo.damage.resistanceType = "physicalDamage"
+    actor.rollTest("resistanceCard", null, damageInfo)
+  }
+}
+
+// End the rise of a drug owned by an actor, without any sheet open (the calendar calls it when the duration
+// is over). Does nothing, and says so, for a drug that is not in its rise
+export async function endDrugRise(item) {
+  if (item?.type !== "itemDrug" || item.system.phase !== "rise" || !item.parent) return false
+  let data = item.toObject().system
+  await startDrugCrash(data, item.parent)
+  await item.update({
+    system: data
+  })
+  return true
+}
