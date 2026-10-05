@@ -23,6 +23,8 @@ import {
 import {
   initDeadlines
 } from "../system/deadlines.js"
+  initDrugClock
+} from "../system/drug-clock.js"
 
 export function sr5HookReady() {
   // Register the GM-authored spirit types, so that they are offered wherever
@@ -59,6 +61,8 @@ export function sr5HookReady() {
   initEffectExpiry()
   // Dated deadlines: withdrawal tests (SR5 p. 79-80), months of rent paid (SR5 p. 377)
   initDeadlines()
+  // Drugs: end of the effect and of the crash on the clock (SR5 p. 411-412, Chrome Flesh p. 194)
+  initDrugClock()
 
   // The deeper table of contents also reaches the window of Monk's Enhanced Journal
   sr5DeepenModuleTableOfContents()
