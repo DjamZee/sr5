@@ -398,6 +398,8 @@ export default class SR5_RollDialog {
   _situationalModifier(ev, html, dialogData){
     let offer = dialogData.situational?.[parseInt(ev.target.dataset.index)]
     if (!offer) return
+    //The chat card keeps the box as it was left
+    offer.checked = ev.target.checked
     if (offer.kind === "limit"){
       if (ev.target.checked) dialogData.limit.modifiers[offer.key] = {
         label: offer.label, value: offer.value

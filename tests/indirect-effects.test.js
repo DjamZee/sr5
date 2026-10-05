@@ -40,7 +40,7 @@ describe("indirect effects: reading the item's effect", () => {
   it("can be an aura on the limit, for allies", () => {
     let e = indirectEffectOf({
       target: "indirect.perception.limit", applyTo: "aura", auraRange: "10", auraWho: "allies"
-    }, "Tacnet", 1)
+    }, "Bannière du chef", 1)
     expect(e).toMatchObject({
       applyTo: "aura", kind: "limit", range: "10", who: "allies"
     })
@@ -196,5 +196,71 @@ describe("indirect effects: ticked beforehand", () => {
       ...dice, kind: "limit", key: "k"
     })
     expect(rollData.limit.modifiers.k.value).toBe(-2)
+  })
+})
+
+describe("indirect effects: review of Alma", () => {
+  const enemiesAura = indirectEffectOf({
+    target: "indirect.all.test", applyTo: "aura", auraRange: "", auraWho: "enemies"
+  }, "Malédiction", -4)
+  const gmRoll = (display, playerOwned) => gatherIndirectOffers({
+    kinds: rollKinds({
+      type: "attack", typeSub: "rangedWeapon"
+    }), display, labels: LABELS,
+    auras: [{
+      key: "Actor.pj", name: "PJ", effects: [enemiesAura], distance: 5, disposition: 1, playerOwned
+    }], rollerDisposition: -1,
+  })
+  it("R1: a player's character's effect is always shown with its name in the GM's rolls", () => {
+    for (let display of ["hidden", "neutral"]){
+      let [offer] = gmRoll(display, true)
+      expect(offer.hidden).toBe(false)
+      expect(offer.label).toBe("Malédiction (zone : PJ)")
+    }
+    expect(gatherIndirectOffers({
+      kinds: rollKinds({
+        type: "matrixAction"
+      }), display: "hidden", labels: LABELS, target: {
+        name: "Kiko", effects: [rascal], playerOwned: true
+      },
+    })[0].hidden).toBe(false)
+  })
+  it("R1: the GM's own characters can still be hidden", () => {
+    expect(gmRoll("hidden", false)[0].hidden).toBe(true)
+  })
+  it("R3: an actor with several tokens counts once, by its nearest token", () => {
+    const area = indirectEffectOf({
+      target: "indirect.all.test", applyTo: "aura", auraRange: "10", auraWho: "all"
+    }, "Zone", 1)
+    let offers = gatherIndirectOffers({
+      kinds: rollKinds({
+        type: "defense"
+      }), labels: LABELS, rollerDisposition: 1,
+      auras: [
+        {
+          key: "Actor.a", name: "Loin", effects: [area], distance: 50, disposition: 1
+        },
+        {
+          key: "Actor.a", name: "Près", effects: [area], distance: 2, disposition: 1
+        },
+        {
+          key: "Actor.a", name: "Près bis", effects: [area], distance: 3, disposition: 1
+        },
+      ],
+    })
+    expect(offers.map(o => o.label)).toEqual(["Zone (zone : Près)"])
+  })
+  it("(b) a neutral token is neither an ally nor an enemy", () => {
+    const allies = indirectEffectOf({
+      target: "indirect.all.test", applyTo: "aura", auraWho: "allies"
+    }, "A", 1)
+    expect(auraReaches(allies, 1, 0, 0, false)).toBe(false)
+    expect(auraReaches(enemiesAura, 1, 0, -1, false)).toBe(false)
+  })
+  it("(c) a radius of 0 is the whole scene", () => {
+    const zero = indirectEffectOf({
+      target: "indirect.all.test", applyTo: "aura", auraRange: "0"
+    }, "Z", 1)
+    expect(auraReaches(zero, 1000, 1, 1, false)).toBe(true)
   })
 })

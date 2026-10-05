@@ -67,15 +67,19 @@ export function auraReaches(effect, distanceInMeters, bearerDisposition, rollerD
   let range = parseFloat(effect.range)
   if (Number.isFinite(range) && range > 0 && !(distanceInMeters <= range)) return false
   switch (effect.who || "all"){
-    case "allies": return isBearer || bearerDisposition === rollerDisposition
+    // A neutral (or secret) token is nobody's ally and nobody's enemy
+    case "allies": return isBearer || (Math.abs(bearerDisposition) === 1 && bearerDisposition === rollerDisposition)
     case "enemies": return !isBearer && bearerDisposition * rollerDisposition === -1
     default: return true
   }
 }
 
 // The boxes an indirect effect becomes in the roll dialog.
-// display: "name" (the source and its bearer), "neutral" (a plain label), "hidden" (no box, applied as is)
-export function indirectOffer(effect, bearerName, index, display, labels){
+// display: "name" (the source and its bearer), "neutral" (a plain label), "hidden" (no box, applied as is).
+// An effect a player's character carries is always shown with its name: neither setting may let a player
+// slip an unseen modifier into the GM's rolls
+export function indirectOffer(effect, bearerName, index, display, labels, playerOwned = false){
+  if (playerOwned) display = "name"
   let reach = effect.applyTo === APPLY_AURA ? labels.aura : labels.targeter
   let label = display === "name" ? `${effect.source} (${reach} : ${bearerName})` : labels.neutral
   return {
@@ -85,21 +89,27 @@ export function indirectOffer(effect, bearerName, index, display, labels){
 }
 
 // Every box a roll gets from other actors' effects.
-// target: the targeted actor's {name, effects} (null when no actor is targeted)
-// auras: one {name, effects, distance (meters), disposition, isBearer} per token on the scene
+// target: the targeted actor's {name, effects, playerOwned} (null when no actor is targeted)
+// auras: one {key (the actor), name, effects, distance (meters), disposition, isBearer, playerOwned} per token
+// on the scene. An actor with several tokens counts once, by its nearest token
 export function gatherIndirectOffers({
   kinds, target, auras = [], rollerDisposition, display = "name", labels
 }){
   let offers = [], index = 0
   for (let effect of kinds.has("aimed") ? target?.effects || [] : []){
     if (effect.applyTo !== APPLY_TARGETER || !rollMatches(effect, kinds)) continue
-    offers.push(indirectOffer(effect, target.name, index++, display, labels))
+    offers.push(indirectOffer(effect, target.name, index++, display, labels, target.playerOwned))
   }
-  for (let source of auras){
+  let seen = new Set()
+  for (let source of [...auras].sort((a, b) => (b.isBearer - a.isBearer) || (a.distance - b.distance))){
+    if (source.key !== undefined){
+      if (seen.has(source.key)) continue
+      seen.add(source.key)
+    }
     for (let effect of source.effects || []){
       if (effect.applyTo !== APPLY_AURA || !rollMatches(effect, kinds)) continue
       if (!auraReaches(effect, source.distance, source.disposition, rollerDisposition, source.isBearer)) continue
-      offers.push(indirectOffer(effect, source.name, index++, display, labels))
+      offers.push(indirectOffer(effect, source.name, index++, display, labels, source.playerOwned))
     }
   }
   return offers

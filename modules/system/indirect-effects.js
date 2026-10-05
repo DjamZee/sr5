@@ -44,7 +44,7 @@ export function addIndirectEffects(rollData, actor){
   let target = null
   if (targetToken?.actor && targetToken.actor !== actor && !rollData.target?.itemUuid){
     target = {
-      name: targetToken.name, effects: targetToken.actor.indirectEffects
+      name: targetToken.name, effects: targetToken.actor.indirectEffects, playerOwned: !!targetToken.actor.hasPlayerOwner
     }
   }
   const roller = rollerToken(actor)
@@ -55,7 +55,7 @@ export function addIndirectEffects(rollData, actor){
       if (!t.actor?.indirectEffects?.length) continue
       const isBearer = t === roller || t.actor === actor
       auras.push({
-        name: t.name, effects: t.actor.indirectEffects, isBearer, disposition: t.document.disposition,
+        key: t.actor.uuid, playerOwned: !!t.actor.hasPlayerOwner, name: t.name, effects: t.actor.indirectEffects, isBearer, disposition: t.document.disposition,
         // The documents' positions, not the placeables': a token still sliding to its new place is already there
         distance: isBearer ? 0 : SR5_SystemHelpers.getDistanceBetweenTwoPoint(roller.document.getCenterPoint(), t.document.getCenterPoint()) * meters,
       })
