@@ -1622,12 +1622,13 @@ export default class SR5_RollDialog {
         case "damageType":
           dialogData.damage.type = html.querySelector(name).value
           continue
+        // The list shown must match the 0 applied: "of no value" and "neutral" are the 0 lines of SR5 p. 142
         case "socialResult":
-          selectValue = html.querySelector(name).value
+          selectValue = "ofNoValue"
           inputValue = 0
           break
         case "socialAttitude":
-          selectValue = html.querySelector(name).value
+          selectValue = "neutral"
           // Faction Reputation of the character with the target's faction (Cutting Aces p. 160)
           if (dialogData.social?.attitude){
             selectValue = dialogData.social.attitude

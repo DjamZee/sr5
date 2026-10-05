@@ -3,6 +3,11 @@
 	{{> systems/sr5/templates/items/_partial/title/summary.hbs}}
 	<!-- Contact summary -->
 	{{> systems/sr5/templates/items/_partial/summary/contact-summary.hbs}}
+	<!-- Faction (Cutting Aces p. 157), read only: set in the gamemaster's Factions window -->
+	<li class="grid">
+		<div class="col-4">{{localize 'SR5.FACTION_Faction'}}{{localize 'SR5.Colons'}}</div>
+		<div class="col-8">{{#if contactFaction}}{{contactFaction}}{{else}}—{{/if}}</div>
+	</li>
 	<!-- Source -->
 	{{> systems/sr5/templates/items/_partial/summary/_common/source-summary.hbs}}
 </ul>

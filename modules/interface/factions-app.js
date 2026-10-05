@@ -95,9 +95,9 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
       scores: pcs.map(pc => {
         const score = SR5FactionRegistry.score(f.id, pc.id)
         return {
-          name: pc.name, score, shift: attitudeShift(score)
+          id: pc.id, name: pc.name, score, shift: attitudeShift(score) 
         }
-      }).filter(s => s.score !== 0 || log.some(e => e.factionId === f.id)),
+      }).filter(s => log.some(e => e.factionId === f.id && e.actorId === s.id)),
     }))
     context.characters = pcs.map(pc => ({
       id: pc.id, name: pc.name
