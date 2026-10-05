@@ -1,4 +1,7 @@
 import {
+  drainShown
+} from "../roll-helpers/mentorMaskDrain.js"
+import {
   SR5_EntityHelpers 
 } from "../../entities/helpers.js"
 import {
@@ -13,7 +16,7 @@ export default async function spellInfo(cardData){
 
   //Add Resist Drain chat button
   if (cardData.test.type === "spell" || (cardData.test.type === "adeptPower" && cardData.magic.drain > 0)) {
-    cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${cardData.magic.drain.value})`)
+    cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${drainShown(cardData, cardData.owner.actorId)})`)
   }
 
   //Roll Succeed

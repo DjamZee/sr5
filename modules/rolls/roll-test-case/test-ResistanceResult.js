@@ -1,4 +1,7 @@
 import {
+  drainShown
+} from "../roll-helpers/mentorMaskDrain.js"
+import {
   SR5_EntityHelpers 
 } from "../../entities/helpers.js"
 import {
@@ -107,5 +110,5 @@ export default async function resistanceResultInfo(cardData, type){
     else cardData.chatCard.buttons[key] = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", label)
   }
 
-  if (cardData.magic.drain.value > 0) cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${cardData.magic.drain.value})`)
+  if (cardData.magic.drain.value > 0) cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${drainShown(cardData, cardData.owner.actorId)})`)
 }

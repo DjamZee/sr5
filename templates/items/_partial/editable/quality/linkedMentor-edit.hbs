@@ -1,0 +1,11 @@
+{{#if showLinkedMentor}}
+<li class="grid sr5-mentor-drop" data-tooltip="{{localize 'SR5.LinkedMentorHint'}}">
+    <div class="col-4">{{localize 'SR5.LinkedMentor'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8">
+        <select name="system.linkedMentor" data-dtype="String">
+            <option value=""></option>
+            {{selectOptions linkedMentorChoices selected=system.linkedMentor valueAttr="value" labelAttr="label"}}
+        </select>
+    </div>
+</li>
+{{/if}}

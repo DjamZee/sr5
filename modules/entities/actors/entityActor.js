@@ -520,6 +520,7 @@ export class SR5Actor extends Actor {
     const lists = SR5
 
     // Iterate through items, allocating to containers
+    const mentorSpirits = []
     for (let i of actor.items) {
       let iData = i.system
       SR5_SystemHelpers.srLog(3, `Parsing '${i.type}' item named '${i.name}'`, i)
@@ -567,7 +568,8 @@ export class SR5Actor extends Actor {
         // SR5 p. 76, 323-324: only the first mentor counts, the sheet warns about the others
         case "itemMentorSpirit":
           i.prepareData()
-          SR5_CharacterUtility.applyMentorSpirit(i, actor)
+          // Applied once every item is parsed: the Essence lost to augmentations decides whether it lies dormant
+          mentorSpirits.push(i)
           break
 
         case "itemSpell":
@@ -830,6 +832,7 @@ export class SR5Actor extends Actor {
           SR5_SystemHelpers.srLog(1, `Unknown '${i.type}' item type in prepareEmbeddedDocuments()`)
       }
     }
+    for (const mentor of mentorSpirits) SR5_CharacterUtility.applyMentorSpirit(mentor, actor)
   }
 
   sortLists(data) {

@@ -61,6 +61,9 @@
 				{{#if (gt actor.mentorSpirits.length 1)}}
 				<li class="grid"><div class="col-12 SR-AlertColor">{{localize 'SR5.MentorExtraWarning'}}</div></li>
 				{{/if}}
+				{{#each actor.mentorWarnings}}
+				<li class="grid mentor-warning"><div class="col-12 SR-AlertColor">{{this}}</div></li>
+				{{/each}}
 				{{/ifne}}
 				{{#ifne system.magic.magicType 'spirit'}}
 				{{#ifne system.magic.magicType 'adept'}}

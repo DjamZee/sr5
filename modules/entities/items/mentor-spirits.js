@@ -52,12 +52,18 @@ export function isFollowedMentor(item, items){
   return !!first && first.id === item.id
 }
 
-// The Magic a mentor reads. Items are applied while preparing the base data, before the augmented
-// Magic is computed (it is still 0 then): the natural rating the player entered stands in for it.
-export function mentorMagic(specialMagic){
-  const augmented = specialMagic?.augmented?.value
-  if (augmented > 0) return augmented
-  return Number(specialMagic?.natural?.base) || 0
+// The Magic a mentor reads (SR5 p. 324: dormant at 0). The mentor is applied once every item is parsed but
+// before the augmented Magic is computed, so it is worked out here from the same pieces (review R1).
+export function mentorMagic(specialMagic, essence, greywarePenalty = 0){
+  const sum = list => (list || []).reduce((total, m) => total + (Number(m?.value) || 0), 0)
+  // Same steps as updateSpecialAttributes, which runs after the items: natural, augmented, then the Magic
+  // lost with the Essence of augmentations (rounded down) and the GreyWare point per implant (BTB p. 142)
+  const natural = (Number(specialMagic?.natural?.base) || 0) + sum(specialMagic?.natural?.modifiers)
+  let magic = natural + sum(specialMagic?.augmented?.modifiers)
+  const essenceLoss = sum((essence?.modifiers || []).filter(m => m?.type === "itemAugmentation"))
+  if (essenceLoss < 0) magic += Math.floor(essenceLoss)
+  if (natural > 0) magic -= greywarePenalty || 0
+  return magic
 }
 
 // Power Points an adept draws from the mentor: the free points of the Adept block, plus 1 with the
@@ -68,6 +74,12 @@ export function mentorPowerPoints(actorPath, system, maskRule, magic){
 }
 
 // Whether a magician wears the Mask of the mentor (Forbidden Arcana p. 176): reduced Drain
-export function mentorMaskOn(actorPath, system, maskRule, magic){
-  return !!(maskRule && system?.mask && actorPath === "magician" && magic > 0)
+export function mentorMaskOn(actorPath, system, maskRule, magic, magicType){
+  if (!(maskRule && system?.mask && magic > 0)) return false
+  if (actorPath === "magician") return true
+  return MYSTIC_ADEPT_MASK_DRAIN && actorPath === "adept" && magicType === "mysticalAdept"
 }
+
+// Question put to DjamZ (review of 2a): does a mystic adept on the Adept path, who casts spells, also get
+// the -1 Drain of the Mask? The book gives the Adept side +1 Power Point only, hence false. One switch.
+export const MYSTIC_ADEPT_MASK_DRAIN = false

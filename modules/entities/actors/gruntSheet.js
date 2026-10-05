@@ -1,6 +1,9 @@
 import {
-  ActorSheetSR5 
+  ActorSheetSR5
 } from "./baseSheet.js"
+import {
+  mentorWarningLines
+} from "../items/mentor-conversion.js"
 import {
   SR5_CharacterUtility
 } from "./utilityActor.js"
@@ -198,6 +201,7 @@ export class SR5GruntSheet extends ActorSheetSR5 {
     actor.externalEffects = externalEffects
     actor.traditions = traditions
     actor.mentorSpirits = mentorSpirits
+    actor.mentorWarnings = mentorWarningLines(this.actor)
     actor.rituals = rituals
   }
 

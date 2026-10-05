@@ -248,6 +248,9 @@ import {
 import {
   registerRunningMovementActions, createRunningTokenRuler, runningStatusEffect
 } from "../system/running.js"
+import {
+  convertMentorQualities, revertMentorConversion
+} from "../entities/items/mentor-conversion.js"
 
 export async function sr5HookInit() {
   SR5_SystemHelpers.registerSystemSettings()
@@ -283,6 +286,9 @@ export async function sr5HookInit() {
     shop: SR5ShopWindow,
     // The shop against the till, item by item: should answer no difference
     shopAudit: () => SR5ShopWorldSource.audit(),
+    // GM macro: old-style Mentor Spirit qualities -> quality linked to a mentor item (SR5 p. 76), and back
+    convertMentorQualities,
+    revertMentorConversion,
   }
 
   // Register DataModels

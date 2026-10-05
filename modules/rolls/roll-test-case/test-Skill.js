@@ -1,4 +1,7 @@
 import {
+  drainShown
+} from "../roll-helpers/mentorMaskDrain.js"
+import {
   SR5
 } from "../../config.js"
 import {
@@ -44,7 +47,7 @@ export default async function skillInfo(cardData){
         if (itemTarget.system.force > actorData.specialAttributes.magic.augmented.value) cardData.magic.drain.type = "physical"
         else cardData.magic.drain.type = "stun"
         //Add buttons to chat
-        cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${cardData.magic.drain.value})`)
+        cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${drainShown(cardData, cardData.owner.actorId)})`)
         if (cardData.roll.hits > 0) cardData.chatCard.buttons.dispellResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "dispellResistance", game.i18n.localize("SR5.SpellResistance"), {
           gmAction: true
         })
@@ -56,7 +59,7 @@ export default async function skillInfo(cardData){
           cardData.magic.drain.value = itemTarget.system.drainValue.value
           if (cardData.roll.hits > actorData.specialAttributes.magic.augmented.value) cardData.magic.drain.type = "physical"
           else cardData.magic.drain.type = "stun"
-          cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${cardData.magic.drain.value})`)
+          cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${drainShown(cardData, cardData.owner.actorId)})`)
         }
         if (cardData.roll.hits > 0) {
           if (itemTarget.type === "itemFocus") cardData.chatCard.buttons.enchantmentResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "enchantmentResistance", game.i18n.localize("SR5.EnchantmentResistance"), {

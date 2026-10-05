@@ -4958,11 +4958,11 @@ export class SR5_CharacterUtility extends Actor {
       SR5_SystemHelpers.srLog(2, `Mentor spirit '${item.name}' ignored: '${actor.name}' already follows a mentor`)
       return
     }
-    const magic = mentorMagic(actor.system.specialAttributes?.magic)
+    const magic = mentorMagic(actor.system.specialAttributes?.magic, actor.system.essence, SR5ShopGrades.greywareMagicPenalty(actor.items))
     const path = mentorPathFor(actor.system.magic?.magicType, item.system.mysticPath)
     const maskRule = game.settings.get("sr5", "mentorMask")
     if (Object.keys(item.system.customEffects).length) SR5_CharacterUtility.applyCustomEffects(item, actor)
-    if (mentorMaskOn(path, item.system, maskRule, magic)) actor.system.magic.mentorMask = true
+    if (mentorMaskOn(path, item.system, maskRule, magic, actor.system.magic?.magicType)) actor.system.magic.mentorMask = true
     const powerPoints = mentorPowerPoints(path, item.system, maskRule, magic)
     if (powerPoints) SR5_EntityHelpers.updateModifier(actor.system.magic.powerPoints.maximum, item.name, item.type, powerPoints)
   }
@@ -4971,7 +4971,7 @@ export class SR5_CharacterUtility extends Actor {
     let itemData = item.system
     // Mentor spirit: the effects of the actor's own block only, nothing with a Magic of 0 (SR5 p. 324)
     const mentorPath = item.type === "itemMentorSpirit" ? mentorPathFor(actor.system.magic?.magicType, itemData.mysticPath) : null
-    const mentorMagicValue = item.type === "itemMentorSpirit" ? mentorMagic(actor.system.specialAttributes?.magic) : 0
+    const mentorMagicValue = item.type === "itemMentorSpirit" ? mentorMagic(actor.system.specialAttributes?.magic, actor.system.essence, SR5ShopGrades.greywareMagicPenalty(actor.items)) : 0
 
     for (let customEffect of Object.values(itemData.customEffects)) {
       let skipCustomEffect = false,

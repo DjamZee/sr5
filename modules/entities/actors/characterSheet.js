@@ -1,6 +1,9 @@
 import {
-  ActorSheetSR5 
+  ActorSheetSR5
 } from "./baseSheet.js"
+import {
+  mentorWarningLines
+} from "../items/mentor-conversion.js"
 import {
   SR5Credstick 
 } from "../../interface/credstick.js"
@@ -249,6 +252,7 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     actor.externalEffects = externalEffects
     actor.traditions = traditions
     actor.mentorSpirits = mentorSpirits
+    actor.mentorWarnings = mentorWarningLines(this.actor)
     actor.rituals = rituals
     actor.reputations = reputations
     actor.storages = this._prepareStorages(actor, storages)

@@ -60,21 +60,32 @@ describe("mentor spirit on the actor (SR5 p. 76, 324; Forbidden Arcana p. 176)",
     expect(isFollowedMentor(items[2], items)).toBe(false)
   })
 
-  it("reads the natural Magic while the augmented one is not computed yet", () => {
-    expect(mentorMagic({
+  it("reads the Magic left after the Essence lost to augmentations (review R1)", () => {
+    const magic = {
       natural: {
-        base: 4
+        base: 2, modifiers: []
       }, augmented: {
-        value: 0
+        value: 0, modifiers: []
       }
-    })).toBe(4)
+    }
+    expect(mentorMagic(magic)).toBe(2)
+    // 1.5 Essence of cyberware: 2 points of Magic lost, the mentor lies dormant as the sheet says
+    const essence = {
+      modifiers: [{
+        type: "itemAugmentation", value: -1.5
+      }, {
+        type: "base", value: 6
+      }]
+    }
+    expect(mentorMagic(magic, essence)).toBe(0)
+    // A stale augmented value from the previous preparation is not read
     expect(mentorMagic({
-      natural: {
-        base: 6
-      }, augmented: {
-        value: 5
+      ...magic, augmented: {
+        value: 5, modifiers: []
       }
-    })).toBe(5)
+    }, essence)).toBe(0)
+    // GreyWare: one more point per implant (BTB p. 142)
+    expect(mentorMagic(magic, undefined, 1)).toBe(1)
     expect(mentorMagic(undefined)).toBe(0)
   })
 

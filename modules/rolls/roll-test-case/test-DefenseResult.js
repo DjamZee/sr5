@@ -1,4 +1,7 @@
 import {
+  drainShown
+} from "../roll-helpers/mentorMaskDrain.js"
+import {
   SR5 
 } from "../../config.js"
 import {
@@ -52,7 +55,7 @@ export default async function defenseResultInfo(cardData, type){
       key = "summonSpirit"
       cardData.magic.drain.value = cardData.roll.hits * 2
       if (cardData.magic.drain.value < 2) cardData.magic.drain.value = 2
-      cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${cardData.magic.drain.value})`)
+      cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${drainShown(cardData, cardData.owner.actorId)})`)
       break
     case "ritualResistance": {
       label = game.i18n.localize("SR5.RitualSuccess")
@@ -82,9 +85,9 @@ export default async function defenseResultInfo(cardData, type){
         for (let recipient of ritualDrainRecipients({
           actorId: cardData.owner.actorId, name: leader?.name
         }, cardData.magic.ritualParticipants)) {
-          cardData.chatCard.buttons[ritualDrainKey(recipient.actorId)] = SR5_RollMessage.generateChatButton("opposedTest ritualDrain", ritualDrainKey(recipient.actorId), `${game.i18n.localize("SR5.ResistDrain")} ${recipient.name} (${cardData.magic.drain.value})`)
+          cardData.chatCard.buttons[ritualDrainKey(recipient.actorId)] = SR5_RollMessage.generateChatButton("opposedTest ritualDrain", ritualDrainKey(recipient.actorId), `${game.i18n.localize("SR5.ResistDrain")} ${recipient.name} (${drainShown(cardData, recipient.actorId)})`)
         }
-      } else cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("opposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${cardData.magic.drain.value})`)
+      } else cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("opposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${drainShown(cardData, cardData.owner.actorId)})`)
 
       let item = await fromUuid(cardData.owner.itemUuid)
       if (item.system.durationMultiplier === "netHits"){

@@ -8,6 +8,9 @@ import {
   SR5_SpiritTypes
 } from "./spirit-types.js"
 import {
+  isMentorQuality
+} from "./mentor-link.js"
+import {
   SR5_Toxins
 } from "./toxins.js"
 import {
@@ -407,6 +410,15 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     context.isMentorSpirit = item.type === "itemMentorSpirit"
     if (context.isMentorSpirit) context.mentorMaskRule = game.settings.get("sr5", "mentorMask")
 
+    // Mentor Spirit quality (SR5 p. 76): the mentor item of the same actor that carries its bonuses
+    if (item.type === "itemQuality" && item.actor) {
+      const mentors = item.actor.items.filter(i => i.type === "itemMentorSpirit")
+      context.showLinkedMentor = mentors.length > 0 || isMentorQuality(item)
+      context.linkedMentorChoices = mentors.map(m => ({
+        value: m.id, label: m.name
+      }))
+    }
+
     // Custom spirit type: pickers, and labels for the read-only summary
     if (item.type === "itemSpiritType") {
       const official = {
@@ -469,6 +481,13 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
   _onRender(context, options) {
     super._onRender(context, options)
     const el = this.element
+
+    // Mentor Spirit quality: drop a mentor item of the same actor to link it
+    const mentorDrop = el.querySelector('.sr5-mentor-drop')
+    if (mentorDrop && this.isEditable) {
+      mentorDrop.addEventListener('dragover', ev => ev.preventDefault())
+      mentorDrop.addEventListener('drop', ev => this.#onDropMentor(ev))
+    }
 
     // Weapon toxin: drop a toxin item, resync it, or go back to the book list
     const toxinDrop = el.querySelector('.sr5-toxin-drop')
@@ -686,6 +705,18 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     const data = foundry.applications.ux.TextEditor.implementation.getDragEventData(event)
     if (data?.type !== "Item") return
     return this.#linkToxin(data.uuid)
+  }
+
+  async #onDropMentor(event) {
+    event.preventDefault()
+    event.stopPropagation()
+    const data = foundry.applications.ux.TextEditor.implementation.getDragEventData(event)
+    if (data?.type !== "Item") return
+    const mentor = await fromUuid(data.uuid)
+    if (mentor?.type !== "itemMentorSpirit" || !this.document.actor || mentor.parent?.id !== this.document.actor.id) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NotOwnMentor"))
+    await this.document.update({
+      "system.linkedMentor": mentor.id
+    })
   }
 
   // Copy a toxin item onto the weapon: the roll and the chat card read the copy (SR5_Toxins.profileOf)

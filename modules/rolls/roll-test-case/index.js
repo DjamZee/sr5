@@ -26,6 +26,9 @@ export {
   default as fadingInfo
 } from "./test-Fading.js"
 export {
+  default as mentorDrawbackInfo
+} from "./test-MentorDrawback.js"
+export {
   default as fireResistanceInfo
 } from "./test-FireResistance.js"
 export {
