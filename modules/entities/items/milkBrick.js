@@ -7,6 +7,13 @@ export const MILK_BRICK_SOOTHES = {
   toxinEffectDisorientation: ["csTearGas"],
 }
 
+// Labels of what a brick can take off, for the message
+export const MILK_BRICK_LABELS = {
+  toxinEffectNausea: "SR5.ToxinEffectNausea",
+  toxinEffectDisorientation: "SR5.ToxinEffectDisorientation",
+  noAction: "SR5.EffectNoAction",
+}
+
 // Whether an item is a brick of milk: its system effect "Specific item: brick of milk"
 export function isMilkBrick(item){
   return Object.values(item?.system?.systemEffects ?? {
@@ -23,30 +30,59 @@ export function milkBrickRemoves(effectType, toxinType){
   return soothed.includes(toxinType)
 }
 
-// Removes the soothed toxin effects of an actor, with their status icons; returns the ids of the
-// removed effects
+// What the brick takes off an actor, from its effect items ({id, type, toxinType}) and its statuses
+// ({id, origin}). A status only goes when no remaining effect still puts it there. The "No action"
+// a heavy Nausea puts (damage over Willpower) goes with the Nausea, unless a Paralysis, which puts it
+// too, is still there.
+export function milkBrickPlan(effects, statuses){
+  let items = effects.filter(e => milkBrickRemoves(e.type, e.toxinType))
+  let removedTypes = new Set(items.map(e => e.type))
+  let keptTypes = new Set(effects.filter(e => !items.includes(e)).map(e => e.type))
+  let goneTypes = [...removedTypes].filter(t => !keptTypes.has(t))
+  if (goneTypes.includes("toxinEffectNausea") && !keptTypes.has("toxinEffectParalysis")) goneTypes.push("noAction")
+  let statusIds = statuses.filter(s => goneTypes.includes(s.origin)).map(s => s.id)
+  let removed = [...removedTypes]
+  if (goneTypes.includes("noAction") && statuses.some(s => s.origin === "noAction")) removed.push("noAction")
+  return {
+    itemIds: items.map(e => e.id), statusIds, removed
+  }
+}
+
+// Uses a brick on an actor. Returns { used, itemIds }: not used when the actor is not the user's
+// (nothing is spent), used even when there was nothing to take off (the milk is drunk all the same)
 export async function soothe(actor){
-  if (!actor) return []
-  let items = actor.items.filter(i => i.type === "itemEffect" && milkBrickRemoves(i.system.type, i.getFlag?.("sr5", "toxinType")))
-  let removed = new Set(items.map(i => i.system.type))
-  // A status is only taken off when no remaining effect still puts it there
-  let kept = actor.items.filter(i => i.type === "itemEffect" && removed.has(i.system.type) && !items.includes(i)).map(i => i.system.type)
-  let statuses = actor.effects.filter(e => removed.has(e.origin) && !kept.includes(e.origin)).map(e => e.id)
-  if (!items.length) {
+  if (!actor) return {
+    used: false, itemIds: []
+  }
+  if (!actor.isOwner) {
+    ui.notifications.warn(game.i18n.format("SR5.WARN_MilkBrickNotOwner", {
+      name: actor.name
+    }))
+    return {
+      used: false, itemIds: []
+    }
+  }
+  let plan = milkBrickPlan(
+    actor.items.filter(i => i.type === "itemEffect").map(i => ({
+      id: i.id, type: i.system.type, toxinType: i.getFlag?.("sr5", "toxinType")
+    })),
+    actor.effects.map(e => ({
+      id: e.id, origin: e.origin
+    })))
+  if (!plan.itemIds.length) {
     ui.notifications.info(game.i18n.format("SR5.MilkBrickNothing", {
       name: actor.name
     }))
-    return []
+    return {
+      used: true, itemIds: []
+    }
   }
-  if (!actor.isOwner) {
-    ui.notifications.warn(game.i18n.localize("SR5.WARN_MilkBrickNotOwner"))
-    return []
-  }
-  let ids = items.map(i => i.id)
-  await actor.deleteEmbeddedDocuments("Item", ids)
-  if (statuses.length) await actor.deleteEmbeddedDocuments("ActiveEffect", statuses)
+  await actor.deleteEmbeddedDocuments("Item", plan.itemIds)
+  if (plan.statusIds.length) await actor.deleteEmbeddedDocuments("ActiveEffect", plan.statusIds)
   ui.notifications.info(game.i18n.format("SR5.MilkBrickUsed", {
-    name: actor.name
+    name: actor.name, removed: plan.removed.map(t => game.i18n.localize(MILK_BRICK_LABELS[t])).join(", ")
   }))
-  return ids
+  return {
+    used: true, itemIds: plan.itemIds
+  }
 }

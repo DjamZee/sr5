@@ -602,6 +602,10 @@
 					{{/if}}
 				</div>
 				{{/if}}
+				{{#if (eq target 'system.specialProperties.addictionResistance')}}
+				<!-- Chrome Flesh p. 58: Drug Resistance only covers natural and synthetic drugs -->
+				<div class="col-12 SR-SubColor"><em>{{localize 'SR5.AddictionResistanceNote'}}</em></div>
+				{{/if}}
 			</li>
 		{{/each}}
 	</ul>

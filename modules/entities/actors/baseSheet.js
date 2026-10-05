@@ -56,6 +56,9 @@ import {
 import {
   isMilkBrick, soothe
 } from "../items/milkBrick.js"
+import {
+  addictionWeeks, focusAddictionRating
+} from "../../rolls/roll-helpers/addiction.js"
 
 /**
  * Extend the basic ActorSheet class to do all the SR5 things!
@@ -1277,11 +1280,14 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     if (target === "system.isActive" && item.system.isActive && isMilkBrick(item)) {
       item.system.isActive = false
       if (item.system.quantity > 0) {
-        item.system.quantity -= 1
         let soothed = game.user.targets.first()?.actor ?? actor
-        let removed = await soothe(soothed)
+        let {
+          used, itemIds
+        } = await soothe(soothed)
+        //Not spent on a character the user does not own: the gamemaster does it
+        if (used) item.system.quantity -= 1
         //The item list is written back below: the removed effects must leave it, or they come back
-        if (soothed === actor) itemList = itemList.filter(i => !removed.includes(i._id))
+        if (soothed === actor) itemList = itemList.filter(i => !itemIds.includes(i._id))
       } else ui.notifications.warn(game.i18n.localize("SR5.WARN_MilkBrickNone"))
     }
 
@@ -1321,7 +1327,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
           }
           //Reminder of the addiction test (SR5 p. 415): rolled from the Addictions list, never on its own
           if (item.system.addiction?.type && item.system.addiction?.rating > 0) ui.notifications.info(game.i18n.format("SR5.AddictionTestReminder", {
-            drug: item.name, threshold: item.system.addiction.threshold
+            drug: item.name, threshold: item.system.addiction.threshold, rating: item.system.addiction.rating,
+            weeks: addictionWeeks(item.system.addiction.rating)
           }))
 
           SR5_SystemHelpers.srLog(1, "actorData.addictions : " + JSON.stringify(actorData.addictions))
@@ -1524,13 +1531,19 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         let alreadyTaken = actorData.addictions.find((d) => item.name === d.name)
         let addiction = []
         if (item.system.isActive){
+          //SR5 p. 416: the rating is the total Force of the active foci, this one included
+          let rating = focusAddictionRating(itemList)
           if (alreadyTaken) {
             alreadyTaken.shot.value += 1
-            alreadyTaken.weekAddiction.value = 11 - item.system.itemRating
-            alreadyTaken.addiction.threshold = 2
+            alreadyTaken.weekAddiction.value = addictionWeeks(rating)
+            //An entry written before with dotted keys has no addiction object: it gets one
+            alreadyTaken.addiction = {
+              ...(alreadyTaken.addiction ?? {
+              }), type: "psychological", rating, threshold: 2
+            }
           }
           else {
-            addiction = SR5_CharacterUtility.generateDrugAddiction(item)
+            addiction = SR5_CharacterUtility.generateDrugAddiction(item, rating)
             actorData.addictions = actorData.addictions.concat(addiction)
           }		
           if (actorData.addictions.shot) SR5_EntityHelpers.updateValue(actorData.addictions.shot)
