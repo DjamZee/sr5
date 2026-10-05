@@ -88,7 +88,12 @@ export class SR5_RollTest {
         rollDialog.activateListeners(element)
         //An action the character no longer has keeps the dialog open, when the world setting asks for it
         element.querySelectorAll('button[data-action="roll"], button[data-action="edge"]').forEach(b => b.addEventListener("click", ev => {
-          if (SR5Combat.hasActionsLeft(actor, dialogData.combat.actions)) return
+          //Suppressive fire and the flamethrower sweep need all their rounds (SR5 p. 179, Gun H(e)aven 3 p. 3)
+          const missingAmmo = dialogData.test.typeSub === "rangedWeapon" && SR5_ConverterHelpers.missingAmmo(dialogData.combat.firingMode.selected, dialogData.combat.ammo.value)
+          if (missingAmmo) ui.notifications.warn(game.i18n.format("SR5.WARN_FiringModeAmmo", {
+            needed: SR5_ConverterHelpers.firingModeToBullet(dialogData.combat.firingMode.selected), left: dialogData.combat.ammo.value ?? 0
+          }))
+          else if (SR5Combat.hasActionsLeft(actor, dialogData.combat.actions)) return
           ev.preventDefault()
           ev.stopImmediatePropagation()
         }))

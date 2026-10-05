@@ -928,6 +928,11 @@ export class SR5_UtilityItem extends Actor {
         }
         break
 
+      //Flamethrowers deal Fire damage (Gun H(e)aven 3 p. 3, SR5 p. 171)
+      case "flamethrower":
+        itemData.damageElement = "fire"
+        break
+
       case "silencerSuppressor":
         // No weapon-level effects; handled elsewhere if needed
         break
