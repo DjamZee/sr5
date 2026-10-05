@@ -7,6 +7,9 @@ import {
 import {
   SR5_SystemHelpers
 } from "./utilitySystem.js"
+import {
+  markRowDoneInMessage, cardFromGM
+} from "./card-rows.js"
 
 export const REVEAL_DEADLINES_SETTING = "sr5CalendarRevealDeadlines"
 const DAY = 86400
@@ -239,8 +242,31 @@ async function rollWithdrawal(row){
   const a = addictions[index]
   if (!a || a.name !== row.dataset.name) return ui.notifications.warn(game.i18n.localize("SR5.WARN_AddictionNotFound"))
   const pools = a.addiction?.type === "both" ? ["physiological", "psychological"] : [a.addiction?.type || "physiological"]
-  for (const pool of pools) await actor.rollTest("addictionTest", `${pool}_${index}`)
-  // The next test comes one interval after this one
+  // The deadline moves on once a withdrawal roll is in the chat, not when its window opens: a window closed
+  // without rolling leaves the deadline where it is
+  const done = new Promise(resolve => {
+    const hookId = Hooks.on("createChatMessage", (message) => {
+      if (!isWithdrawalRollOf(message.flags?.sr5data, index, a.name)) return
+      Hooks.off("createChatMessage", hookId)
+      resolve(advanceWithdrawal(actor, index, a.name).then(() => markRowDone(row)))
+    })
+  })
+  for (const pool of pools) await actor.rollTest("addictionTest", `${pool}_${index}_withdrawal`)
+  done.catch(e => SR5_SystemHelpers.srLog(1, `Withdrawal deadline not moved: ${e}`))
+  return false
+}
+
+// The card of a withdrawal roll for this addiction
+export function isWithdrawalRollOf(data, index, name){
+  return data?.test?.type === "addictionTest" && !!data?.various?.withdrawal &&
+    data.various.addictionIndex === index && data.various.addictionName === name
+}
+
+// The next withdrawal test comes one interval after this one (SR5 p. 79-80)
+async function advanceWithdrawal(actor, index, name){
+  const addictions = foundry.utils.duplicate(actor.system?.addictions ?? [])
+  const a = addictions[index]
+  if (!a || a.name !== name) return
   const interval = WITHDRAWAL_INTERVALS[a.level]
   if (interval) a.nextWithdrawal = addInterval(a.nextWithdrawal ?? game.time.worldTime, interval, calendarStartYear())
   a.withdrawalNotified = false
@@ -249,7 +275,6 @@ async function rollWithdrawal(row){
   }, {
     sr5Calendar: true
   })
-  return true
 }
 
 // One month of rent, taken from the character's nuyen as the shop does it (a "loss" transaction)
@@ -293,15 +318,22 @@ async function revealRow(row){
   return true
 }
 
-export function activateDeadlineCardListeners(html){
-  if (!game.user.isGM) return html.querySelectorAll("[data-sr5-deadline]").forEach(b => b.remove())
+// The action of a row ran: written in the card, so the button does not come back at the next render
+function markRowDone(row){
+  return markRowDoneInMessage(row, "[data-sr5-deadline=act]", game.i18n.localize("SR5.CALENDAR_RowDone"))
+}
+
+export function activateDeadlineCardListeners(html, message){
+  if (!game.user.isGM || !cardFromGM(message)) return html.querySelectorAll("[data-sr5-deadline]").forEach(b => b.remove())
   html.querySelectorAll("[data-sr5-deadline]").forEach(button => button.addEventListener("click", async (event) => {
     const btn = event.currentTarget
     const row = btn.closest(".sr5-deadline-row")
+    const reveal = btn.dataset.sr5Deadline === "reveal"
     btn.disabled = true
-    const action = btn.dataset.sr5Deadline === "reveal" ? revealRow : (row.dataset.kind === "addiction" ? rollWithdrawal : payRent)
+    const action = reveal ? revealRow : (row.dataset.kind === "addiction" ? rollWithdrawal : payRent)
     const done = await action(row).catch(e => SR5_SystemHelpers.srLog(1, `Deadline action failed: ${e}`))
-    if (done) btn.remove()
+    if (done && !reveal) await markRowDone(row)
+    else if (done) btn.remove()
     else btn.disabled = false
   }))
 }
@@ -314,6 +346,20 @@ export function registerDeadlineSettings(){
     config: true,
     type: Boolean,
     default: false,
+  })
+  // SR5 p. 417 asks for "the appropriate modifiers for the level of addiction" and never gives them.
+  // Arbitrage de DjamZ (05/10): a world setting, none by default; the craving penalty of p. 79 as an option
+  game.settings.register("sr5", "sr5WithdrawalModifier", {
+    name: "SR5.SETTINGS_WithdrawalModifier_T",
+    hint: "SR5.SETTINGS_WithdrawalModifier_D",
+    scope: "world",
+    config: true,
+    type: String,
+    default: "none",
+    choices: {
+      none: "SR5.SETTINGS_WithdrawalModifierNone",
+      craving: "SR5.SETTINGS_WithdrawalModifierCraving",
+    },
   })
 }
 

@@ -7,6 +7,9 @@ import {
 import {
   SR5_SystemHelpers
 } from "./utilitySystem.js"
+import {
+  markRowDoneInMessage, cardFromGM
+} from "./card-rows.js"
 
 export const TIMED_DURATIONS = {
   minute: 60,
@@ -151,16 +154,18 @@ async function postExpiryCard(rows){
   })
 }
 
+// The effect goes, and the card says so in its own content: "Remove" does not come back at the next render
 async function removeRow(row){
   const effect = await fromUuid(row.dataset.effectUuid)
   if (effect) await effect.delete()
   row.classList.add("sr5-expiry-done")
   row.querySelector("button")?.remove()
+  await markRowDoneInMessage(row, "[data-sr5-expiry=remove]", game.i18n.localize("SR5.CALENDAR_RowRemoved"), "[data-sr5-expiry=removeAll]")
 }
 
-// The card's buttons: the GM only, and an effect already gone is skipped
-export function activateExpiryCardListeners(html){
-  if (!game.user.isGM) return html.querySelectorAll("[data-sr5-expiry]").forEach(b => b.remove())
+// The card's buttons: the GM only, on a card a GM posted, and an effect already gone is skipped
+export function activateExpiryCardListeners(html, message){
+  if (!game.user.isGM || !cardFromGM(message)) return html.querySelectorAll("[data-sr5-expiry]").forEach(b => b.remove())
   html.querySelectorAll("[data-sr5-expiry=remove]").forEach(button => button.addEventListener("click", (event) => {
     removeRow(event.currentTarget.closest(".sr5-expiry-row")).catch(e => SR5_SystemHelpers.srLog(1, `Expired effect not removed: ${e}`))
   }))

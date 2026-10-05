@@ -5,6 +5,31 @@
 // Levels of the Addiction negative quality (SR5 p. 79-80), from none to burnout
 export const ADDICTION_LEVELS = ["", "mild", "moderate", "severe", "burnout"]
 
+// The craving after a failed withdrawal test (SR5 p. 79): dice pool modifier to the tests on mental attributes
+// (psychological) or physical ones (physiological), until the next fix
+export const WITHDRAWAL_PENALTIES = {
+  mild: -2, moderate: -4, severe: -4, burnout: -6
+}
+
+// The modifier of the withdrawal test itself (SR5 p. 417: "the appropriate modifiers for the level of addiction",
+// a number the book never gives). Arbitrage de DjamZ (05/10): a world setting, none by default; "craving" takes
+// the craving penalty of p. 79 as the modifier of the test
+export function withdrawalModifier(level, setting){
+  if (setting !== "craving") return 0
+  return WITHDRAWAL_PENALTIES[level] ?? 0
+}
+
+// The outcome of a withdrawal test: resisted, or the craving with its penalty and the attributes it weighs on
+export function withdrawalOutcome(hits, threshold, level, addictionType){
+  if (hits >= threshold) return {
+    resisted: true
+  }
+  const attributes = addictionType === "psychological" ? "mental" : addictionType === "both" ? "both" : "physical"
+  return {
+    resisted: false, penalty: WITHDRAWAL_PENALTIES[level] ?? 0, attributes
+  }
+}
+
 // The pools an addiction is tested with: both pools for an addiction both physiological and
 // psychological, a failure at either one is enough (SR5 p. 415)
 export function addictionPools(type){

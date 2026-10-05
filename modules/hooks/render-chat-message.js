@@ -52,9 +52,9 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   // Ritual circle card: join and seal (SR5 p. 298-299)
   if (message.flags?.sr5?.ritualCircle) SR5_RitualCircle.activateListeners(html, message)
   // Effects run out on the world clock: the GM removes them
-  if (message.flags?.sr5?.effectExpiry) activateExpiryCardListeners(html)
+  if (message.flags?.sr5?.effectExpiry) activateExpiryCardListeners(html, message)
   // Withdrawal tests and rent fall due: the GM acts
-  if (message.flags?.sr5?.deadlines) activateDeadlineCardListeners(html)
+  if (message.flags?.sr5?.deadlines) activateDeadlineCardListeners(html, message)
 }
 
 // v13: keep chat scrolled to bottom when SR5 roll messages change height.
