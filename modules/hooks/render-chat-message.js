@@ -19,6 +19,9 @@ import {
 import {
   activateDeadlineCardListeners
 } from "../system/deadlines.js"
+import {
+  addExtendedClockButton
+} from "../system/extended-clock.js"
 
 export function sr5HookRenderChatMessageHTML(message, html, _data) {
   // A table draw is rendered by core and wears no SR5 header of its own
@@ -59,6 +62,8 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   if (message.flags?.sr5?.effectExpiry) activateExpiryCardListeners(html, message)
   // Withdrawal tests and rent fall due: the GM acts
   if (message.flags?.sr5?.deadlines) activateDeadlineCardListeners(html, message)
+  // Extended tests and healing (SR5 p. 50, 207-208): the GM moves the clock on by the time spent
+  if (message.flags?.sr5data?.test?.extended?.intervalValue) addExtendedClockButton(message, html)
 }
 
 // v13: keep chat scrolled to bottom when SR5 roll messages change height.
