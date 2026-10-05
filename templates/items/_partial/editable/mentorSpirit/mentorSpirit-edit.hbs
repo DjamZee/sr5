@@ -20,6 +20,24 @@
     <div class="col-4">{{localize 'SR5.MentorResistThreshold'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-8"><input type="number" data-dtype="Number" name="system.resistThreshold" value="{{system.resistThreshold}}" placeholder="3" onfocus="this.select()"/></div>
 </li>
+<!-- Charisma + Willpower (SR5 p. 325) unless the book says otherwise (Street Grimoire p. 200-201) -->
+<li class="grid">
+    <div class="col-4">{{localize 'SR5.MentorResistAttributes'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-4">
+        <select name="system.resistAttributes.first" data-dtype="String">
+            {{#select system.resistAttributes.first}}
+            {{#each @root.lists.characterAttributes}}<option value="{{@key}}">{{localize this}}</option>{{/each}}
+            {{/select}}
+        </select>
+    </div>
+    <div class="col-4">
+        <select name="system.resistAttributes.second" data-dtype="String">
+            {{#select system.resistAttributes.second}}
+            {{#each @root.lists.characterAttributes}}<option value="{{@key}}">{{localize this}}</option>{{/each}}
+            {{/select}}
+        </select>
+    </div>
+</li>
 <li class="grid">
     <div class="col-4">{{localize 'SR5.MentorFreePowerPoints'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-8"><input type="number" data-dtype="Number" step="0.25" name="system.freePowerPoints" value="{{system.freePowerPoints}}" placeholder="0" onfocus="this.select()"/></div>

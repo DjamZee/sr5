@@ -24,7 +24,16 @@ export class sr5ItemMentorSpiritDataModel extends foundry.abstract.TypeDataModel
       drawback: new fields.HTMLField({
         initial: ''
       }),
-      // SR5 p. 325: Charisma + Willpower test to resist the drawback
+      // SR5 p. 325: Charisma + Willpower test to resist the drawback; a few mentors use others (Street Grimoire
+      // p. 200-201: Chaos and Oracle Willpower + Intuition, Peacemaker Charisma + Intuition)
+      resistAttributes: new fields.SchemaField({
+        first: new fields.StringField({
+          initial: "charisma"
+        }),
+        second: new fields.StringField({
+          initial: "willpower"
+        }),
+      }),
       resistThreshold: new fields.NumberField({
         initial: 3
       }),

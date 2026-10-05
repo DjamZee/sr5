@@ -6,6 +6,11 @@ import {
   STRUCTURED_DRAIN_FLOOR
 } from "../../rolls/roll-helpers/arcana-metamagics.js"
 
+// The two attributes of the test against the drawback (SR5 p. 325): Charisma + Willpower when unset
+export function drawbackAttributes(resistAttributes){
+  return [resistAttributes?.first || "charisma", resistAttributes?.second || "willpower"]
+}
+
 export const MENTOR_PATHS = ["all", "magician", "adept", "drawback"]
 
 // The block an Awakened character draws on (SR5 p. 324): a mystic adept picks Magician or Adept once
