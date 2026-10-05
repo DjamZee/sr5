@@ -95,6 +95,9 @@ export {
   default as lift
 } from "./rollData-Lift.js"
 export {
+  default as reagentWork
+} from "./rollData-Reagent.js"
+export {
   default as martialArtsDefense
 } from "./rollData-MartialArtsDefense.js"
 export {

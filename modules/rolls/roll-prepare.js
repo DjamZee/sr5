@@ -163,6 +163,10 @@ export class SR5_PrepareRollTest {
       case "lift":
         rollData = await SR5_GetRollData.lift(rollData, rollKey, actor)
         break
+      case "reagentHarvest":
+      case "reagentRefine":
+        rollData = await SR5_GetRollData.reagentWork(rollData, rollType, rollKey, actor)
+        break
       case "martialArtDefense":
         rollData = await SR5_GetRollData.martialArtsDefense(rollData, actor, chatData)
         break
@@ -544,6 +548,9 @@ export class SR5_PrepareRollTest {
         },
         force: null,
         hasUsedReagents: false,
+        //Reagent tier spent and reagents of another tradition (modules/system/reagents.js)
+        reagentTier: "raw",
+        reagentForeign: false,
         spell: {
           category: "",
           isResisted: false,

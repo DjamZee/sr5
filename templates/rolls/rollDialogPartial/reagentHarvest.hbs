@@ -1,0 +1,10 @@
+<li class="grid" data-tooltip="{{localize 'SR5.ReagentHarvestZoneHint'}}">
+    <div class="col-6">{{localize 'SR5.ReagentHarvestZone'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-6 SR-TextRight">
+        <select name="harvestZone">
+            {{#each magic.reagentHarvestZones}}
+            <option value="{{this}}">{{localize (concat 'SR5.ReagentHarvestZone_' this)}}</option>
+            {{/each}}
+        </select>
+    </div>
+</li>

@@ -635,6 +635,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/rolls/rollDialogPartial/matrixSearchThreshold.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/chooseTargetEffect.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/reagents.hbs",
+    "systems/sr5/templates/rolls/rollDialogPartial/reagentHarvest.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/spiritAidCommand.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/spiritAidModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/targetTypeModifier.hbs",

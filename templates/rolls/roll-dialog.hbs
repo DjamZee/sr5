@@ -129,6 +129,11 @@
 			{{> systems/sr5/templates/rolls/rollDialogPartial/reagents.hbs}}
   		{{/if}}
 
+		<!-- REAGENT HARVEST: THE AREA -->
+		{{#if (eq test.type "reagentHarvest")}}
+			{{> systems/sr5/templates/rolls/rollDialogPartial/reagentHarvest.hbs}}
+		{{/if}}
+
 	  	<!-- GRAPPLE ESCAPE THRESHOLD-->
 	  	{{#if (eq test.type "grappleEscape")}}
 			{{> systems/sr5/templates/rolls/rollDialogPartial/grappleEscapeThreshold.hbs}}

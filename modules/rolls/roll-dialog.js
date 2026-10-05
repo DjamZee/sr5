@@ -49,6 +49,9 @@ import {
 import {
   rollAttributes, attributeTestsState, ROLL_TESTS_TYPE, situationalListShown, spiritTypeVisible, withoutSituationalMarkers
 } from "./roll-helpers/situational.js"
+import {
+  normalizeTier, tierStock
+} from "../system/reagents.js"
 
 export default class SR5_RollDialog {
 
@@ -208,12 +211,10 @@ export default class SR5_RollDialog {
     this.updateLimitValue(element)
 
     //Show some block on initial draw
-    if (dialogData.test.type === "ritual") {
-      const useReagentsEl = element.querySelector('#useReagents')
-      if (useReagentsEl) useReagentsEl.style.display = ''
-      const reagentsModControlEl = element.querySelector('#reagentsModControl')
-      if (reagentsModControlEl) reagentsModControlEl.style.display = ''
-    }
+    if (dialogData.test.type === "ritual") this._showReagents(element, true)
+    //Binding: the (Force x 25) drachms are spent from the start (SR5 p. 304)
+    if (dialogData.magic.bindingReagents > 0 && element.querySelector('[name="reagentsSpent"]')) this._updateReagents(dialogData.magic.bindingReagents, actor, element, dialogData)
+    element.querySelectorAll('.SR-ReagentTier, .SR-ReagentForeign').forEach(el => el.addEventListener('change', () => this._onReagentOption(element, dialogData, actor)))
 
     //General commands for input
     element.querySelectorAll('.SR-ModInput').forEach(el => el.addEventListener('change', ev => this._manualInputModifier(ev, element, dialogData)))
@@ -499,18 +500,9 @@ export default class SR5_RollDialog {
         }
         break
       case "reagents":
-        if (isChecked) {
-          const useReagentsEl = html.querySelector('#useReagents')
-          if (useReagentsEl) useReagentsEl.style.display = ''
-          const reagentsModControlEl = html.querySelector('#reagentsModControl')
-          if (reagentsModControlEl) reagentsModControlEl.style.display = ''
-        }
-        else {
-          const useReagentsEl = html.querySelector('#useReagents')
-          if (useReagentsEl) useReagentsEl.style.display = 'none'
-          const reagentsModControlEl = html.querySelector('#reagentsModControl')
-          if (reagentsModControlEl) reagentsModControlEl.style.display = 'none'
-        }
+        this._showReagents(html, isChecked)
+        //Unticked, no reagent is spent
+        dialogData.magic.hasUsedReagents = isChecked && (parseInt(html.querySelector('[name="reagentsSpent"]')?.value) || 0) > 0
         return
       case "recklessSpellcasting":
         dialogData.combat.actions = []
@@ -1716,9 +1708,23 @@ export default class SR5_RollDialog {
     dialogData.threshold.type = label
   }
 
+  _showReagents(html, shown){
+    const display = shown ? '' : 'none'
+    html.querySelectorAll('#useReagents, #reagentsModControl, .SR-ReagentOptions').forEach(el => el.style.display = display)
+  }
+
+  //The tier picked and its stock (modules/system/reagents.js)
+  _onReagentOption(html, dialogData, actor){
+    dialogData.magic.reagentTier = normalizeTier(html.querySelector('[name="reagentTier"]')?.value)
+    dialogData.magic.reagentForeign = !!html.querySelector('[name="reagentForeign"]')?.checked
+    const spent = parseInt(html.querySelector('[name="reagentsSpent"]')?.value) || 0
+    if (spent > 0) this._updateReagents(spent, actor, html, dialogData)
+  }
+
   _updateReagents(value, actor, html, dialogData){
-    if (value > actor.system.magic.reagents){
-      value = actor.system.magic.reagents
+    const stock = tierStock(actor.system.magic, normalizeTier(dialogData.magic.reagentTier))
+    if (value > stock){
+      value = stock
       ui.notifications.warn(game.i18n.format('SR5.WARN_MaxReagents', {
         reagents: value
       }))
@@ -1727,7 +1733,8 @@ export default class SR5_RollDialog {
     html.querySelector('[data-modifier="reagents"]').checked = true
     html.querySelector('[name="reagentsSpent"]').value = value
     dialogData.magic.hasUsedReagents = true
-    if (dialogData.test.type !== "ritual"){
+    this._showReagents(html, true)
+    if (dialogData.test.type !== "ritual" && dialogData.test.typeSub !== "binding"){
       this.limitModifier.reagents = value
       this.updateLimitValue(html)
     }

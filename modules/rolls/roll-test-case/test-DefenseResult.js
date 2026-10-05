@@ -19,6 +19,9 @@ import {
 import {
   manaShiftKind
 } from "../../system/background-count.js"
+import {
+  applyReagentDrainReduction
+} from "../../system/reagents.js"
 
 export default async function defenseResultInfo(cardData, type){
   let key, label, labelEnd, successTestType = "nonOpposedTest", failedTestType = "SR-CardButtonHit endTest", failedKey = ""
@@ -57,6 +60,7 @@ export default async function defenseResultInfo(cardData, type){
       labelEnd = game.i18n.localize("SR5.FailedSummon")
       key = "summonSpirit"
       cardData.magic.drain.value = cardData.roll.hits * 2
+      applyReagentDrainReduction(cardData.magic, prevData?.magic?.reagentDrainReduction, prevData?.magic?.reagentTier)
       if (cardData.magic.drain.value < 2) cardData.magic.drain.value = 2
       cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${drainShown(cardData, cardData.owner.actorId)})`)
       break
@@ -66,12 +70,14 @@ export default async function defenseResultInfo(cardData, type){
       cardData.magic.drain.value = cardData.roll.hits * 2
       if (prevData.test.realHits > prevData.actorMagic) cardData.magic.drain.type = "physical"
       else cardData.magic.drain.type = "stun"
-      if (cardData.magic.reagentsSpent > cardData.magic.force) {
+      //Another tradition's reagents count for half (SR5 p. 320); cards made before keep their drachms spent
+      const reagents = cardData.magic.reagentsEffective ?? cardData.magic.reagentsSpent
+      if (reagents > cardData.magic.force) {
         cardData.magic.drain.modifiers.hits = {
           value: cardData.roll.hits * 2,
           label: game.i18n.localize(SR5.drainModTypes["hits"]),
         }
-        let reagentsMod = Math.floor(cardData.magic.reagentsSpent / cardData.magic.force) - 1
+        let reagentsMod = Math.floor(reagents / cardData.magic.force) - 1
         if (reagentsMod > 0) {
           cardData.magic.drain.value -= reagentsMod
           cardData.magic.drain.modifiers.reagents = {
@@ -80,6 +86,7 @@ export default async function defenseResultInfo(cardData, type){
           }
         }
       }
+      applyReagentDrainReduction(cardData.magic, cardData.magic.reagentDrainReduction, cardData.magic.reagentTier)
       key = "ritualSealed"
       if (cardData.magic.drain.value < 2) cardData.magic.drain.value = 2
       //SR5 p. 299: with participants, each of them takes the Drain, one button per name

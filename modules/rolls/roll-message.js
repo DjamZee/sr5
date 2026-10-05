@@ -2,6 +2,9 @@ import {
   SR5Pickpocket
 } from "../interface/pickpocket.js"
 import {
+  reagentWorkUpdate
+} from "../system/reagents.js"
+import {
   SR5 
 } from "../config.js"
 import {
@@ -590,6 +593,12 @@ export class SR5_RollMessage {
         SR5_ThirdPartyHelpers.sealRitual(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      case "applyReagents":
+        if (!actor?.isOwner) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+        await actor.update(reagentWorkUpdate(actor.system.magic, messageData.magic.reagentWorkChanges ?? {
+        }))
+        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
       case "manaShift":
         if (await applyManaShift(messageData, messageId)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
@@ -841,6 +850,9 @@ export class SR5_RollMessage {
         break
       case "ritualSealed":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.RitualSealed"))
+        break
+      case "applyReagents":
+        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.ReagentApplied"))
         break
       default:
     }

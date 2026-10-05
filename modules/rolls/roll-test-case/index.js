@@ -50,6 +50,9 @@ export {
   default as liftInfo
 } from "./test-Lift.js"
 export {
+  default as reagentWorkInfo
+} from "./test-Reagent.js"
+export {
   default as matrixActionInfo
 } from "./test-MatrixAction.js"
 export {

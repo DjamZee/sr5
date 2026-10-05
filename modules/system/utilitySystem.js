@@ -420,6 +420,23 @@ export class SR5_SystemHelpers {
       requiresReload: true
     })
 
+    // Reagents: the core rules by default, Shadow Spells or Forbidden Arcana at the GM's choice
+    // (modules/system/reagents.js). DjamZ's ruling, 2026-10-05
+    game.settings.register("sr5", "sr5ReagentSystem", {
+      name: "SR5.SETTINGS_ReagentSystem_T",
+      hint: "SR5.SETTINGS_ReagentSystem_D",
+      scope: "world",
+      config: true,
+      default: "core",
+      type: String,
+      choices: {
+        "core": "SR5.SETTINGS.ReagentSystemCore",
+        "shadowSpells": "SR5.SETTINGS.ReagentSystemShadowSpells",
+        "forbiddenArcana": "SR5.SETTINGS.ReagentSystemForbiddenArcana",
+      },
+      requiresReload: true
+    })
+
     // Grappling (SR5 p. 195-196, Run & Gun p. 126 and 133-138): token statuses, automatic thresholds and holds.
     // Off by default, and off nothing changes. It adds token statuses, hence the reload.
     game.settings.register("sr5", "sr5GrapplingRules", {

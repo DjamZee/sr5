@@ -4,9 +4,12 @@ import {
 import {
   SR5_MiscellaneousHelpers 
 } from "../roll-helpers/miscellaneous.js"
+import {
+  spendableStock
+} from "../../system/reagents.js"
 
 export default function ritual(rollData, actor, item, chatData){
-  if (!(actor.system.magic.reagents > 0)) return void ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoReagents")}`)
+  if (!(spendableStock(actor.system.magic) > 0)) return void ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoReagents")}`)
   let itemData = item.system
 
   //Determine title

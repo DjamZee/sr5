@@ -35,6 +35,10 @@ import {
 import {
   SR5_ActorHelper
 } from "../entities/actors/entityActor-helpers.js"
+import {
+  reagentSystem, reagentChoices, reagentLimit, reagentTestKind, drainReduction, normalizeTier, tierStock, tierPath,
+  effectiveDrachms, stockAfterSpending, TIER_LABELS
+} from "../system/reagents.js"
 
 export class SR5_RollTest {
   //Prepare the roll window
@@ -51,7 +55,16 @@ export class SR5_RollTest {
     const captureResult = (action, dialog) => ({
       action,
       reagentsSpent: parseInt(dialog.element.querySelector('[name="reagentsSpent"]')?.value || 0),
+      reagentTier: dialog.element.querySelector('[name="reagentTier"]')?.value || "raw",
+      reagentForeign: !!dialog.element.querySelector('[name="reagentForeign"]')?.checked,
+      harvestZone: dialog.element.querySelector('[name="harvestZone"]')?.value,
     })
+
+    //Reagent tiers offered in the dialog (Shadow Spells, Forbidden Arcana)
+    dialogData.magic.reagentChoices = reagentChoices(actorData.magic)
+    if (dialogData.magic.reagentChoices.hasTiers && !(tierStock(actorData.magic, dialogData.magic.reagentTier) > 0)) {
+      dialogData.magic.reagentTier = dialogData.magic.reagentChoices.tiers.find(t => t.stock > 0)?.key ?? "raw"
+    }
 
     // Build DialogV2 buttons
     let buttons = [
@@ -113,12 +126,19 @@ export class SR5_RollTest {
     }
 
     //Verify if reagents are used, if so, remove from actor
-    if (dialogData.magic.hasUsedReagents) {
-      dialogData.magic.reagentsSpent = result.reagentsSpent
-      actor.update({
-        "system.magic.reagents": actorData.magic.reagents - dialogData.magic.reagentsSpent
+    if (dialogData.magic.hasUsedReagents && result.reagentsSpent > 0) {
+      const tier = normalizeTier(result.reagentTier)
+      const spent = Math.min(result.reagentsSpent, tierStock(actorData.magic, tier))
+      dialogData.magic.reagentsSpent = spent
+      dialogData.magic.reagentTier = tier
+      dialogData.magic.reagentForeign = result.reagentForeign
+      //Another tradition's reagents work at half their Power (SR5 p. 320)
+      dialogData.magic.reagentsEffective = effectiveDrachms(spent, result.reagentForeign)
+      await actor.update({
+        [tierPath(tier)]: stockAfterSpending(tierStock(actorData.magic, tier), spent)
       })
-    }
+    } else dialogData.magic.hasUsedReagents = false
+    if (result.harvestZone) dialogData.magic.reagentHarvestZone = result.harvestZone
 
     //Rename chatCard title for extended test
     if (dialogData.test.isExtended) dialogData.test.title = dialogData.test.title.replace("Test", game.i18n.localize("SR5.ExtendedTest"))
@@ -139,9 +159,32 @@ export class SR5_RollTest {
         dialogData.limit.base = dialogData.magic.force
         dialogData.limit.type = "force"
       }
-      if (dialogData.magic.hasUsedReagents && dialogData.test.type !== "ritual") {
-        dialogData.limit.base = dialogData.magic.reagentsSpent
-        dialogData.limit.type = "reagents"
+      if (dialogData.magic.hasUsedReagents) {
+        const magic = actorData.specialAttributes?.magic?.augmented?.value ?? 0
+        const system = reagentSystem()
+        const reagents = reagentLimit({
+          system, test: dialogData.test, tier: dialogData.magic.reagentTier, effective: dialogData.magic.reagentsEffective,
+          spent: dialogData.magic.reagentsSpent, baseLimit: dialogData.limit.base, magic
+        })
+        if (reagents.base !== dialogData.limit.base) {
+          dialogData.limit.base = reagents.base
+          dialogData.limit.type = "reagents"
+        }
+        if (reagents.bonus) dialogData.limit.modifiers.reagentTier = {
+          value: reagents.bonus, label: game.i18n.localize(TIER_LABELS[dialogData.magic.reagentTier]),
+        }
+        dialogData.limit.unlimited = reagents.unlimited
+        //Forbidden Arcana p. 181: the Drain the tier takes off, within what the limit bonus left of the Magic
+        dialogData.magic.reagentDrainReduction = drainReduction({
+          system, tier: dialogData.magic.reagentTier, testKind: reagentTestKind(dialogData.test),
+          spent: dialogData.magic.reagentsSpent, magic, limitBonusUsed: reagents.bonus
+        })
+        if (dialogData.magic.reagentDrainReduction && dialogData.test.type === "spell") {
+          dialogData.magic.drain.modifiers.reagentTier = {
+            value: -dialogData.magic.reagentDrainReduction, label: game.i18n.localize(TIER_LABELS[dialogData.magic.reagentTier]),
+          }
+          dialogData.magic.drain.value = Math.max(dialogData.magic.drainFloor ?? 2, dialogData.magic.drain.value - dialogData.magic.reagentDrainReduction)
+        }
       }
     }
     if (dialogData.matrix.level) {
@@ -178,9 +221,10 @@ export class SR5_RollTest {
       })
       dialogData.edge.hasUsedPushTheLimit = true
     } else {
+      //Radical reagents lift the limit (Forbidden Arcana p. 181)
       dialogData.roll = await SR5_RollTest.rollDice({
         dicePool: dialogData.dicePool.value,
-        limit: dialogData.limit.value,
+        limit: dialogData.limit.unlimited ? undefined : dialogData.limit.value,
       })
     }
 
@@ -663,6 +707,10 @@ export class SR5_RollTest {
         break
       case "movement":
         await SR5_AddRollInfo.movementInfo(cardData, actorId)
+        break
+      case "reagentHarvest":
+      case "reagentRefine":
+        await SR5_AddRollInfo.reagentWorkInfo(cardData)
         break
       case "skill":
       case "skillDicePool":

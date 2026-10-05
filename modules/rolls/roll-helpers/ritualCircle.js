@@ -10,6 +10,9 @@ import {
 import {
   ritualTraditionPenalty, ritualAssistPool, readAssistDice, teamworkBonus, contractualLacksParticipant, uniqueAssists
 } from "./ritualTeam.js"
+import {
+  spendableStock
+} from "../../system/reagents.js"
 
 // The id the roll cards give an actor (roll-prepare.js getBaseRollData): its token for an unlinked token, itself otherwise
 export function rollCardActorId(actor) {
@@ -22,7 +25,7 @@ export class SR5_RitualCircle {
 
   // Step 3: the Force is chosen before anyone rolls, the participants roll against it
   static async open(actor, item) {
-    if (!(actor.system.magic.reagents > 0)) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_NoReagents"))
+    if (!(spendableStock(actor.system.magic) > 0)) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_NoReagents"))
     const force = await foundry.applications.api.DialogV2.prompt({
       window: {
         title: `${game.i18n.localize("SR5.PerformRitual")} ${item.name}`

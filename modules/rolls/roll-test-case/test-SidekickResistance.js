@@ -4,6 +4,9 @@ import {
 import {
   SR5_EntityHelpers
 } from "../../entities/helpers.js"
+import {
+  applyReagentDrainReduction
+} from "../../system/reagents.js"
 
 export default async function sidekickResistanceInfo(cardData, type){
   let originalMessage = game.messages.get(cardData.previousMessage.messageId)
@@ -56,6 +59,7 @@ export default async function sidekickResistanceInfo(cardData, type){
     // Keep the spirit's Force on the card: it decides if the drain is physical (SR5 p. 303-304)
     newMessage.magic.force = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)?.system.force.value
     newMessage.magic.drain.value = cardData.roll.hits * 2
+    applyReagentDrainReduction(newMessage.magic, newMessage.magic.reagentDrainReduction, newMessage.magic.reagentTier)
     if (newMessage.magic.drain.value < 2) newMessage.magic.drain.value = 2
     newMessage.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${newMessage.magic.drain.value})`)
   }

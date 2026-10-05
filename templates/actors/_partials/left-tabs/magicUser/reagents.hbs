@@ -2,11 +2,40 @@
 <div class="SRBlockSheet">
 	<ul>
 		<li class="grid SR-LigneEnTete SR-TextUppercase">
-			<div class="col-10">{{localize 'SR5.Reagents'}}</div>
+			<div class="col-8">{{localize 'SR5.Reagents'}}{{#if reagentTiers}} ({{localize 'SR5.ReagentRaw'}}){{/if}}</div>
+			<div class="col-2 SR-TextCenter roll-logo sr-roll" data-rolltype="reagentHarvest"
+			  data-tooltip="{{localize 'SR5.ReagentHarvest'}}"><em class="fas fa-seedling"></em></div>
 			<div class="col-2 SR-TextCenter SR-NeutralLightColor changeValueByClick" data-binding="system.magic.reagents"
 			  data-helpTitle="{{localize 'SR5.Reagents'}}"
               data-helpMessage="{{localize 'SR5.HELP_ReagentsEditMsg'}}">
 				{{system.magic.reagents}}</div>
 		</li>
+		{{#if reagentTiers}}
+		<li class="grid">
+			<div class="col-8">{{localize 'SR5.ReagentRefined'}}</div>
+			<div class="col-2 SR-TextCenter roll-logo sr-roll" data-rolltype="reagentRefine" data-rollkey="raw"
+			  data-tooltip="{{localize 'SR5.ReagentRefineRaw'}}"><em class="fas fa-flask"></em></div>
+			<div class="col-2 SR-TextCenter SR-NeutralLightColor changeValueByClick" data-binding="system.magic.reagentsRefined"
+			  data-helpTitle="{{localize 'SR5.ReagentRefined'}}"
+              data-helpMessage="{{localize 'SR5.HELP_ReagentsEditMsg'}}">
+				{{system.magic.reagentsRefined}}</div>
+		</li>
+		<li class="grid">
+			<div class="col-8">{{localize 'SR5.ReagentRadical'}}</div>
+			<div class="col-2 SR-TextCenter roll-logo sr-roll" data-rolltype="reagentRefine" data-rollkey="refined"
+			  data-tooltip="{{localize 'SR5.ReagentRefineRefined'}}"><em class="fas fa-flask"></em></div>
+			<div class="col-2 SR-TextCenter SR-NeutralLightColor changeValueByClick" data-binding="system.magic.reagentsRadical"
+			  data-helpTitle="{{localize 'SR5.ReagentRadical'}}"
+              data-helpMessage="{{localize 'SR5.HELP_ReagentsEditMsg'}}">
+				{{system.magic.reagentsRadical}}</div>
+		</li>
+		<li class="grid">
+			<div class="col-10">{{localize 'SR5.Orichalcum'}}</div>
+			<div class="col-2 SR-TextCenter SR-NeutralLightColor changeValueByClick" data-binding="system.magic.orichalcum"
+			  data-helpTitle="{{localize 'SR5.Orichalcum'}}"
+              data-helpMessage="{{localize 'SR5.HELP_OrichalcumEditMsg'}}">
+				{{system.magic.orichalcum}}</div>
+		</li>
+		{{/if}}
 	</ul>
 </div>

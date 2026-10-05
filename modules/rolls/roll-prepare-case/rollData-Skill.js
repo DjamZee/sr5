@@ -11,6 +11,9 @@ import {
   SR5_MiscellaneousHelpers 
 } from "../roll-helpers/miscellaneous.js"
 import {
+  spendableStock, bindingCost
+} from "../../system/reagents.js"
+import {
   prepareSkillAttribute, SKILL_ATTRIBUTE_FLAG, syncBackgroundCount, backgroundCountApplies, backgroundCountInModifiers
 } from "../roll-helpers/skillAttribute.js"
 import {
@@ -96,7 +99,8 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
   //Special case for magical skills
   if(rollKey === "banishing" || rollKey === "binding" || rollKey === "counterspelling" || rollKey === "disenchanting" || rollKey === "summoning"){
     rollData.dialogSwitch.extended = false
-    if (actor.system.magic.reagents > 0 && rollKey !== "binding") rollData.dialogSwitch.reagents = true
+    //Binding spends reagents too (SR5 p. 304): (Force x 25) drachms, set once the spirit is known below
+    if (spendableStock(actor.system.magic) > 0) rollData.dialogSwitch.reagents = true
     rollData.magic.elements = actor.system.magic.elements
     //Add background count limit modifiers if any, unless the skill already carries them (Grimoire des Ombres p. 87):
     //counted once, not twice
@@ -125,7 +129,7 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
 
   //If roll has target, add special info to roll
   if (rollData.target.hasTarget){
-    rollData = await getTargetedData(rollData, rollKey)
+    rollData = await getTargetedData(rollData, rollKey, actor)
   }
 
   //If roll is opposed, add special info to roll
@@ -154,7 +158,7 @@ function skillWithAttribute(actorData, skillKey, attributeKey, attributeLabel){
   }].concat(skillPart)
 }
 
-async function getTargetedData(rollData, rollKey){
+async function getTargetedData(rollData, rollKey, actor){
   let targetActor = SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId)
 
   switch (rollKey){
@@ -173,7 +177,14 @@ async function getTargetedData(rollData, rollKey){
         ui.notifications.warn(`${game.i18n.localize("SR5.WARN_SpiritAlreadyBounded")}`)
         return
       }
-      else rollData.limit.base = targetActor.system.force.value
+      else {
+        rollData.limit.base = targetActor.system.force.value
+        //SR5 p. 304: (Force x 25) drachms spent on the attempt. They do not change the limit
+        rollData.magic.bindingReagents = bindingCost(targetActor.system.force.value)
+        if (spendableStock(actor.system.magic) < rollData.magic.bindingReagents) ui.notifications.warn(game.i18n.format("SR5.WARN_BindingReagents", {
+          reagents: rollData.magic.bindingReagents
+        }))
+      }
       break
     case "counterspelling": {
       let spellList = targetActor.items.filter(i => i.type === "itemSpell" && i.system.isActive)

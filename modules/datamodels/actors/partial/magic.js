@@ -99,6 +99,15 @@ export class magicPartialModel extends foundry.abstract.TypeDataModel {
         reagents: new fields.NumberField({
           initial: 0
         }),
+        reagentsRefined: new fields.NumberField({
+          initial: 0
+        }),
+        reagentsRadical: new fields.NumberField({
+          initial: 0
+        }),
+        orichalcum: new fields.NumberField({
+          initial: 0
+        }),
         boundedSpirit: new fields.SchemaField({
           current: new fields.NumberField({
             initial: 0

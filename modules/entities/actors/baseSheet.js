@@ -74,6 +74,9 @@ import {
 import {
   warnDrugWithoutStat, drugAddictionThreshold, drugInteractionModifier
 } from "../items/drug-stat.js"
+import {
+  reagentSystem, hasTiers
+} from "../../system/reagents.js"
 
 /**
  * Extend the basic ActorSheet class to do all the SR5 things!
@@ -238,6 +241,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
     context.lists = this.actor.system.lists
     context.isPlay = this.isPlayMode
+    //Reagent stocks shown: the raw one alone in the core rules (modules/system/reagents.js)
+    context.reagentSystem = reagentSystem()
+    context.reagentTiers = hasTiers(context.reagentSystem)
     // Provide cssClass for template compatibility
     context.cssClass = this.document.isOwner ? "editable" : "locked"
 
@@ -1678,7 +1684,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     entity = original.toObject(false)
     let value = foundry.utils.getProperty(entity, target)
     let step = 1
-    if (event.shiftKey && target === "system.magic.reagents") step = 10
+    if (event.shiftKey && ["system.magic.reagents", "system.magic.reagentsRefined", "system.magic.reagentsRadical"].includes(target)) step = 10
     else if (event.ctrlKey && target === "system.quantity") step = 10
 
     switch (event.button) {
