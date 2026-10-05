@@ -601,6 +601,7 @@
 	"SR5.AggravatedWoundBox": "Aggravated wound: counts double for healing (right-click to remove the mark)",
 	"SR5.Anticoagulant": "Anti-coagulant",
 	"SR5.Antitoxin": "Antitoxin",
+	"SR5.StreetCredDivisor": "Street Cred: Karma divisor (+)",
 	"SR5.AntitoxinNeutralized": "Neutralized by the antitoxin: no effect",
 	"SR5.Anticoagulant_GE": "The critter’s attack carries some form of anti-coagulant that keeps the target’s blood from clotting. Once hit with this power, the victim’s blood continues to flow, causing two boxes of Stun damage every minute that cannot be resisted. The bleeding can be stopped with a medkit (or better medical equipment) and a First Aid + Logic [Mental] (3) Test.",
 	"SR5.Applied": "applied",

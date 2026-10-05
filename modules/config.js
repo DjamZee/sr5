@@ -3613,9 +3613,11 @@ SR5.specialProperties = {
   smartlink                 : "SR5.Smartlink",
   damageReduction           : "SR5.DamageReduction",
   antitoxin                 : "SR5.Antitoxin",
+  streetCredDivisor         : "SR5.StreetCredDivisor",
 }
 
 SR5.specialPropertiesList = {
+  streetCredDivisor         : "SR5.StreetCredDivisor",
   addictionResistance       : "SR5.AddictionResistance",
   toxinResistance           : "SR5.ToxinResistanceAll",
   concentration             : "SR5.Concentration",
