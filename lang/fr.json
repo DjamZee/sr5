@@ -4499,9 +4499,9 @@
 	"SR5.AddictionTestShort": "Test",
 	"SR5.AddictionWorsen": "Échec : l'addiction s'aggrave d'un niveau",
 	"SR5.AddictionResisted": "Addiction évitée",
-	"SR5.AddictionBurnoutEither": "Constitution ou Volonté, au choix du MJ",
+	"SR5.AddictionBurnoutEither": "Constitution ou Volonté, à pile ou face (égalité, SR5 p. 416)",
 	"SR5.AddictionBurnoutLoss": "{name} rate un test d'addiction ({drug}) au niveau Dévorante : 1 point de {attribute} est perdu définitivement, et 1 point de son maximum (SR5 p. 416). À 0, coma : les deux moniteurs sont remplis, plus 1 case de surplus physique. À appliquer à la main.",
-	"SR5.AddictionTestReminder": "{drug} : un test d'addiction est à faire (seuil {threshold}), avec le bouton de la liste des addictions, onglet Qualités (SR5 p. 415).",
+	"SR5.AddictionTestReminder": "{drug} : un test d'addiction sera dû après {weeks} semaines d'usage (11 − indice {rating}), seuil {threshold}. Il se lance depuis la liste des addictions, onglet Qualités (SR5 p. 415).",
 	"SR5.WARN_AddictionNotFound": "Cette addiction n'est plus sur la fiche.",
 	"SR5.HELP_AddictionTestTitle": "Test d'addiction",
 	"SR5.HELP_AddictionTestMsg": "Constitution + Volonté si l'addiction est physiologique, Logique + Volonté si elle est psychologique, les deux tests si elle est les deux : un seul échec suffit (SR5 p. 415). Le seuil est le Seuil d'addiction.",
@@ -4509,8 +4509,9 @@
 	"SR5.HELP_AddictionLevelTitle": "Niveau d'addiction",
 	"SR5.HELP_AddictionLevelMsg": "Le défaut Addiction (SR5 p. 79-80) : Légère, Modérée, Grave, Dévorante. Chaque test raté le monte d'un niveau.",
 	"SR5.MilkBrick": "Brique de lait",
-	"SR5.MilkBrickUsed": "{name} : la brique de lait retire la Nausée et la Désorientation du gaz (No Future p. 154).",
-	"SR5.MilkBrickNothing": "{name} : aucune Nausée ni Désorientation que la brique de lait puisse retirer.",
-	"SR5.WARN_MilkBrickNotOwner": "Vous ne contrôlez pas ce personnage : demandez au MJ d'utiliser la brique de lait.",
-	"SR5.WARN_MilkBrickNone": "Plus de brique de lait."
+	"SR5.MilkBrickUsed": "{name} : la brique de lait retire {removed} (No Future p. 154).",
+	"SR5.MilkBrickNothing": "{name} : la brique de lait est bue, mais n'a rien retiré : aucune Nausée ni Désorientation qu'elle soigne (No Future p. 154).",
+	"SR5.WARN_MilkBrickNotOwner": "Vous ne contrôlez pas {name} : la brique de lait n'est pas utilisée. Demandez au MJ.",
+	"SR5.WARN_MilkBrickNone": "Plus de brique de lait.",
+	"SR5.AddictionResistanceNote": "S'applique à tous les tests d'addiction. Résistance aux drogues (Chrome Flesh p. 58) ne vaut que pour les drogues naturelles et de synthèse."
 }

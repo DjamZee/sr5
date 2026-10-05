@@ -13,6 +13,17 @@ export function addictionPools(type){
   return []
 }
 
+// The weeks of use after which an addiction test is due: 11 − Addiction Rating (SR5 p. 415), never below 1
+export function addictionWeeks(rating){
+  return Math.max(1, 11 - (Number(rating) || 0))
+}
+
+// The addiction rating of foci (SR5 p. 416): the total Force of the active foci
+export function focusAddictionRating(items){
+  return (items || []).filter(i => i?.type === "itemFocus" && i.system?.isActive)
+    .reduce((total, i) => total + (Number(i.system.itemRating) || 0), 0)
+}
+
 // Index of a level, 0 when there is no addiction yet
 export function addictionLevelIndex(level){
   return Math.max(0, ADDICTION_LEVELS.indexOf(level || ""))

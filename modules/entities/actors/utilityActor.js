@@ -3169,7 +3169,8 @@ export class SR5_CharacterUtility extends Actor {
   }
 
   // Generate Drug addiction
-  static generateDrugAddiction(item) {
+  // focusRating: for a focus, the total Force of the active foci (SR5 p. 416), its own Force by default
+  static generateDrugAddiction(item, focusRating = item.system.itemRating) {
     let addiction = [], drugTaken
 
     if (item.type === "itemDrug") {
@@ -3197,14 +3198,14 @@ export class SR5_CharacterUtility extends Actor {
           "base": 1,
           "modifiers": []
         },
-        // Foci (SR5 p. 415): the rating is the Force, threshold 2. A nested object, so that the sheet and
-        // the addiction test read it (dotted keys stayed dotted in the array)
+        // Foci (SR5 p. 416): the rating is the total Force of the active foci, threshold 2. A nested
+        // object, so that the sheet and the addiction test read it (dotted keys stayed dotted in the array)
         "addiction": {
-          "type": "psychological", "rating": item.system.itemRating, "threshold": 2
+          "type": "psychological", "rating": focusRating, "threshold": 2
         },
         "weekAddiction": {
           "value": 0,
-          "base": 11 - item.system.itemRating,
+          "base": Math.max(1, 11 - focusRating),
           "modifiers": []
         },
       }

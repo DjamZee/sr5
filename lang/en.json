@@ -4499,9 +4499,9 @@
 	"SR5.AddictionTestShort": "Test",
 	"SR5.AddictionWorsen": "Failed: the addiction worsens by one level",
 	"SR5.AddictionResisted": "Addiction resisted",
-	"SR5.AddictionBurnoutEither": "Body or Willpower, gamemaster's pick",
+	"SR5.AddictionBurnoutEither": "Body or Willpower, by a coin toss (tie, SR5 p. 416)",
 	"SR5.AddictionBurnoutLoss": "{name} fails an addiction test ({drug}) at Burnout: 1 point of {attribute} is lost for good, and 1 point of its maximum (SR5 p. 416). At 0, coma: both monitors filled, plus 1 box of physical overflow. To apply by hand.",
-	"SR5.AddictionTestReminder": "{drug}: an addiction test is due (threshold {threshold}), from the Addictions list, Qualities tab (SR5 p. 415).",
+	"SR5.AddictionTestReminder": "{drug}: an addiction test will be due after {weeks} weeks of use (11 − rating {rating}), threshold {threshold}. Roll it from the Addictions list, Qualities tab (SR5 p. 415).",
 	"SR5.WARN_AddictionNotFound": "This addiction is no longer on the sheet.",
 	"SR5.HELP_AddictionTestTitle": "Addiction test",
 	"SR5.HELP_AddictionTestMsg": "Body + Willpower when physiological, Logic + Willpower when psychological, both tests when both: one failure is enough (SR5 p. 415). The threshold is the Addiction Threshold.",
@@ -4509,8 +4509,9 @@
 	"SR5.HELP_AddictionLevelTitle": "Addiction level",
 	"SR5.HELP_AddictionLevelMsg": "The Addiction quality (SR5 p. 79-80): Mild, Moderate, Severe, Burnout. Each failed test raises it one level.",
 	"SR5.MilkBrick": "Brick of milk",
-	"SR5.MilkBrickUsed": "{name}: the brick of milk removes the Nausea and Disorientation of the gas (No Future p. 154).",
-	"SR5.MilkBrickNothing": "{name}: no Nausea or Disorientation the brick of milk can remove.",
-	"SR5.WARN_MilkBrickNotOwner": "You do not own this character: ask the gamemaster to use the brick of milk.",
-	"SR5.WARN_MilkBrickNone": "No brick of milk left."
+	"SR5.MilkBrickUsed": "{name}: the brick of milk removes {removed} (No Future p. 154).",
+	"SR5.MilkBrickNothing": "{name}: the brick of milk is drunk but removes nothing: no Nausea or Disorientation it soothes (No Future p. 154).",
+	"SR5.WARN_MilkBrickNotOwner": "You do not own {name}: the brick of milk is not used. Ask the gamemaster.",
+	"SR5.WARN_MilkBrickNone": "No brick of milk left.",
+	"SR5.AddictionResistanceNote": "Applies to every addiction test. Drug Resistance (Chrome Flesh p. 58) only covers natural and synthetic drugs."
 }
