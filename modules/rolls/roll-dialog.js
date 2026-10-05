@@ -160,7 +160,7 @@ export default class SR5_RollDialog {
       dialogData = this.dialogData
 
     // SR5 p. 180: single-shot (SS) and suppressive fire (SF) weapons neither build nor suffer progressive recoil
-    let noRecoil = dialogData.combat.firingMode.selected === "SS" || dialogData.combat.firingMode.selected === "SF"
+    let noRecoil = dialogData.combat.firingMode.selected === "SS" || dialogData.combat.firingMode.selected === "SF" || dialogData.combat.firingMode.selected === "FN"
     let cumulativeRecoil = noRecoil ? 0 : dialogData.combat.recoil.cumulative
     if (noRecoil) firingModeValue = 0
     else firingModeValue = SR5_ConverterHelpers.firingModeToBullet(dialogData.combat.firingMode.selected)

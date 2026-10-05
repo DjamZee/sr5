@@ -20,6 +20,9 @@ export class SR5_ConverterHelpers {
         return 10
       case "SF":
         return 20
+      //Flamethrower fanning (Gun H(e)aven 3 p. 3): two units of ammo
+      case "FN":
+        return 2
       default: return 0
     }
   }
@@ -85,6 +88,7 @@ export class SR5_ConverterHelpers {
       case "LB":
       case "FAc":
       case "SF":
+      case "FN":
         return {
           type: "complex", value: 1, source: "attack"
         }
