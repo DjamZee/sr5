@@ -1,4 +1,7 @@
 import {
+  bbPenaltyReduction
+} from "../../system/bb-healing.js"
+import {
   SR5_EntityHelpers
 } from "../helpers.js"
 import {
@@ -798,6 +801,9 @@ export class SR5_CharacterUtility extends Actor {
 
     if ((actor.type === "actorPc" || actor.type === "actorSpirit") && actorData.conditionMonitors.physical && actorData.conditionMonitors.stun) {
       actorData.penalties.condition.actual.base = actorData.penalties.physical.actual.base + actorData.penalties.stun.actual.base
+      // Bullets & Bandages p. 15: a stabilization lowers the wound modifiers for a while, never above 0
+      const bbReduction = Math.min(bbPenaltyReduction(actor), -actorData.penalties.condition.actual.base)
+      if (bbReduction > 0) SR5_EntityHelpers.updateModifier(actorData.penalties.condition.actual, game.i18n.localize("SR5.BB_Stabilized"), "bbStabilization", bbReduction)
       SR5_EntityHelpers.updateValue(actorData.penalties.condition.actual)
     }
 

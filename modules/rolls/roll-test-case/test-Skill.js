@@ -16,6 +16,55 @@ import {
 import {
   hasSingleMonitor, patientMonitors, wearsFullArmor, firstAidHealedBoxes
 } from "../roll-helpers/cardRoller.js"
+import {
+  underFireRules, bbPatientEntry, bbThreshold
+} from "../../system/bb-healing.js"
+import {
+  diagnosisBonus, stabilizationReduction, stabilizedTreatmentBoxes
+} from "../../system/bb-healing-rules.js"
+
+// Bullets & Bandages p. 14-15, world setting: the stabilization (extended) and the diagnosis of the targeted patient.
+// The GM applies the result (chat-button-gm): the ledger is his. Returns true when the card is one of those
+function bbCard(cardData, patient){
+  if (!underFireRules()) return false
+  const mode = cardData.test.bbMode
+  if (mode !== "stabilization" && mode !== "diagnosis") return false
+  const end = (key, data) => cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.format(key, data ?? {
+  }))
+  if (!patient) {
+    end("SR5.BB_NeedTarget")
+    return true
+  }
+  if (mode === "diagnosis"){
+    const bonus = diagnosisBonus(cardData.roll, cardData.threshold.value)
+    cardData.roll.bbDiagnosis = bonus
+    if (bonus) cardData.chatCard.buttons.bbDiagnose = SR5_RollMessage.generateChatButton("nonOpposedTest", "bbDiagnose", game.i18n.format("SR5.BB_DiagnoseButton", {
+      bonus: bonus > 0 ? `+${bonus}` : `${bonus}`
+    }), {
+      gmAction: true
+    })
+    else end("SR5.BB_DiagnoseFailed")
+    return true
+  }
+  //SR5 p. 51: a critical glitch ends an extended test
+  if (cardData.roll.criticalGlitchRoll) {
+    end("SR5.BB_StabilizeFailed")
+    return true
+  }
+  const threshold = bbThreshold(patient)
+  const hits = Number(cardData.roll.hits) || 0
+  if (hits >= threshold){
+    cardData.roll.bbReduction = stabilizationReduction(hits, threshold)
+    cardData.chatCard.buttons.bbStabilize = SR5_RollMessage.generateChatButton("nonOpposedTest", "bbStabilize", game.i18n.format("SR5.BB_StabilizeButton", {
+      reduction: cardData.roll.bbReduction
+    }), {
+      gmAction: true
+    })
+  } else end("SR5.BB_StabilizeProgress", {
+    hits, threshold
+  })
+  return true
+}
 
 export default async function skillInfo(cardData){
   let itemTarget
@@ -85,6 +134,7 @@ export default async function skillInfo(cardData){
         cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.HealingFailed"))
         break
       }
+      if (bbCard(cardData, targetActor)) break
       //SR5 p. 207: a critical glitch adds 1D3 boxes, rolled once per test even if the card is refreshed (Edge)
       if (cardData.roll.criticalGlitchRoll) {
         if (!cardData.roll.criticalGlitchDamage) {
@@ -112,6 +162,19 @@ export default async function skillInfo(cardData){
         let fullArmor = wearsFullArmor(targetActor)
         cardData.roll.firstAidCap = actorData.skills.firstAid.rating.value
         cardData.roll.netHits = firstAidHealedBoxes(cardData.roll.hits, 2, actorData.skills.firstAid.rating.value, fullArmor)
+        //Bullets & Bandages p. 16: a stabilized patient heals 2 boxes per net hit; a bleeding one out of the overflow
+        //is stabilized too, which the GM applies
+        const bbEntry = underFireRules() ? bbPatientEntry(targetActor) : {
+        }
+        if (bbEntry.stabilized) cardData.roll.netHits = stabilizedTreatmentBoxes(cardData.roll.hits, 2, actorData.skills.firstAid.rating.value, cardData.test.bbMedkitRating, fullArmor)
+        if (bbEntry.bleeding && !(targetActor.system.conditionMonitors.overflow?.actual?.value > 0)) {
+          cardData.roll.bbReduction = 0
+          cardData.chatCard.buttons.bbStabilize = SR5_RollMessage.generateChatButton("nonOpposedTest", "bbStabilize", game.i18n.format("SR5.BB_StabilizeButton", {
+            reduction: 0
+          }), {
+            gmAction: true
+          })
+        }
         if (cardData.target.hasTarget) cardData.chatCard.buttons.firstAid = SR5_RollMessage.generateChatButton("nonOpposedTest", "firstAid", `${game.i18n.format(fullArmor ? 'SR5.FirstAidButtonFullArmor' : 'SR5.FirstAidButton', {
           hits: cardData.roll.netHits
         })}`)
@@ -123,6 +186,10 @@ export default async function skillInfo(cardData){
       }
       break
     }
+    //Bullets & Bandages p. 15: Medicine diagnoses too
+    case "medecine":
+      bbCard(cardData, cardData.target.hasTarget ? SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId) : null)
+      break
     case "locksmith": {
       let targetActor = SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId)
       if (cardData.threshold.value > 0){

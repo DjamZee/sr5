@@ -7,6 +7,9 @@ import {
 import {
   SR5FactionsApp
 } from "../interface/factions-app.js"
+import {
+  registerBBHealingSettings
+} from "./bb-healing-rules.js"
 
 export class SR5_SystemHelpers {
 
@@ -471,6 +474,9 @@ export class SR5_SystemHelpers {
       type: Boolean,
       requiresReload: true
     })
+
+    // Bullets & Bandages: healing under fire and advanced medkits (BB p. 14-19), off by default
+    registerBBHealingSettings()
 
     // Flight skill on player characters (in the Athletics skill group)
     game.settings.register("sr5", "sr5FlightSkill", {

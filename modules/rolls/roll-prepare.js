@@ -1,6 +1,9 @@
 import {
-  SR5_RollTest 
+  SR5_RollTest
 } from "./roll-test.js"
+import {
+  underFireRules, bbStabilizeDrain
+} from "../system/bb-healing.js"
 import {
   SR5_PrepareRollHelper 
 } from "./roll-prepare-helpers.js"
@@ -327,6 +330,12 @@ export class SR5_PrepareRollTest {
       if (always.length) rollData.dicePool.modifiers = (rollData.dicePool.modifiers || []).concat(always)
       //Effects other actors carry on this roll: its target's, the auras around the roller (roll-helpers/indirect.js)
       addIndirectEffects(rollData, actor)
+      //Bullets & Bandages p. 14-16: the dialog of First Aid and Medicine asks what the test is for
+      if (underFireRules() && (rollData.test.typeSub === "firstAid" || rollData.test.typeSub === "medecine")) rollData.various.bbUnderFire = true
+      if (rollData.test.type === "spell" && rollData.target?.hasTarget){
+        const drain = bbStabilizeDrain(rollData.owner?.itemUuid ? fromUuidSync(rollData.owner.itemUuid)?.name : null, SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId), rollData.magic.drainFloor ?? 2)
+        if (drain !== null) rollData.magic.bbStabilizeDrain = drain
+      }
       SR5_RollTest.generateRollDialog(rollData)
     }
   }

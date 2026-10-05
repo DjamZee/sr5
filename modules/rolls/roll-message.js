@@ -5,6 +5,9 @@ import {
   reagentWorkUpdate
 } from "../system/reagents.js"
 import {
+  applyStabilization, applyDiagnosis, useMedkitSupplies
+} from "../system/bb-healing.js"
+import {
   SR5 
 } from "../config.js"
 import {
@@ -324,7 +327,22 @@ export class SR5_RollMessage {
           targetActor: healedID,
           healData: healData,
         })
+        //Bullets & Bandages p. 18-19: one use of the medkit supplies per patient treated
+        await useMedkitSupplies(messageData.test.bbMedkitUuid)
         SR5_RollMessage.updateChatButtonHelper(messageId, type, healData.test.typeSub)
+        break
+      }
+      //Bullets & Bandages p. 14-15: the GM writes the stabilization and the diagnosis in his ledger
+      case "bbStabilize":
+      case "bbDiagnose": {
+        if (!targetActor) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+        const done = type === "bbStabilize" ?
+          await applyStabilization(messageData, targetActor, SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId)) :
+          await applyDiagnosis(messageData, targetActor)
+        if (!done) return
+        //BB p. 18-19: one use of the supplies per patient, taken when the stabilization test is applied
+        if (type === "bbStabilize" && messageData.test.bbMode === "stabilization") await useMedkitSupplies(messageData.test.bbMedkitUuid)
+        SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       }
       case "damage":

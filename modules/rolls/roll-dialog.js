@@ -2,6 +2,12 @@ import {
   halveCalledShot
 } from '../entities/items/weaponTraits.js'
 import {
+  bbPatientEntry, advancedMedkitRules
+} from "../system/bb-healing.js"
+import {
+  advancedMedkitDice
+} from "../system/bb-healing-rules.js"
+import {
   SR5 
 } from "../config.js"
 import {
@@ -107,6 +113,8 @@ export default class SR5_RollDialog {
       //SR5 p. 284: never under 2; Structured Spellcasting (Forbidden Arcana p. 43): never under 1
       const drainFloor = this.dialogData.magic.drainFloor ?? 2
       if (drainFinalValue < drainFloor) drainFinalValue = drainFloor
+      //Bullets & Bandages p. 15 (VO): the Drain of Stabilize follows the patient's wounds, not the Force
+      if (Number.isFinite(this.dialogData.magic.bbStabilizeDrain)) drainFinalValue = this.dialogData.magic.bbStabilizeDrain
       html.querySelector('[name="drainValue"]').value = drainFinalValue
       this.dialogData.magic.drain.value = drainFinalValue
     }
@@ -1347,6 +1355,28 @@ export default class SR5_RollDialog {
           label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.healingConditions[ev.target.value])})`
           dialogData.healingCondition = ev.target.value
           break
+        case "bbMode": {
+          //Bullets & Bandages p. 14-16: treatment, stabilization (an extended test) or diagnosis of the targeted patient
+          dialogData.test.bbMode = ev.target.value
+          dialogData.test.bbDiagnosisPatient = null
+          value = 0
+          const patient = dialogData.target.hasTarget ? SR5_EntityHelpers.getRealActorFromID(dialogData.target.actorId) : null
+          //BB p. 15: the diagnosis bonus goes to the next stabilization or treatment of that patient
+          const bonus = Number(bbPatientEntry(patient).diagnosis) || 0
+          if (bonus && (ev.target.value === "treatment" || ev.target.value === "stabilization")){
+            value = bonus
+            dialogData.test.bbDiagnosisPatient = patient.uuid
+          }
+          label = game.i18n.localize("SR5.BB_DiagnosisBonus")
+          const extendedToggle = html.querySelector('[name="toggleExtendedTest"]')
+          if (ev.target.value === "stabilization" && extendedToggle && !extendedToggle.checked){
+            const intervalSelect = html.querySelector('[name="extendedTime"]')
+            if (intervalSelect) intervalSelect.value = "combatTurn"
+            extendedToggle.checked = true
+            this._onToggleExtendedTest(true, dialogData, html)
+          }
+          break
+        }
         case "healingSupplies": {
           dialogData.limit.modifiers.healingSupplies = {
             value:0
@@ -1362,10 +1392,24 @@ export default class SR5_RollDialog {
               value = -1
               break
             case "medkit": {
+              //Bullets & Bandages p. 18-19: the rating is bonus dice, and a medkit without supplies still adds it, with -3
+              const advancedKit = advancedMedkitRules() ? actor.items.find(i => i.system.isMedkit) : null
+              if (advancedKit){
+                value = advancedMedkitDice(advancedKit.system.itemRating, advancedKit.system.charge)
+                dialogData.owner.itemUuid = advancedKit.uuid
+                dialogData.test.bbMedkitUuid = advancedKit.uuid
+                dialogData.test.bbMedkitRating = Number(advancedKit.system.itemRating) || 0
+                dialogData.limit.modifiers.healingSupplies.value = dialogData.test.bbMedkitRating
+                dialogData.limit.modifiers.healingSupplies.label = game.i18n.localize(SR5.dicePoolModTypes[modifierName])
+                if (suppliesLimitInput) suppliesLimitInput.value = dialogData.test.bbMedkitRating
+                if (!(Number(advancedKit.system.charge) > 0)) ui.notifications.warn(game.i18n.localize("SR5.BB_MedkitEmpty"))
+                break
+              }
               let medkit = SR5_MiscellaneousHelpers.findMedkitRating(actor)
               if (medkit){
                 value = medkit.rating
                 dialogData.owner.itemUuid = medkit.uuid
+                dialogData.test.bbMedkitRating = medkit.rating
                 dialogData.limit.modifiers.healingSupplies.value = value
                 dialogData.limit.modifiers.healingSupplies.label = game.i18n.localize(SR5.dicePoolModTypes[modifierName])
                 if (suppliesLimitInput) suppliesLimitInput.value = value

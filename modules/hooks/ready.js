@@ -1,5 +1,8 @@
 import SR5TokenHud from "../interface/tokenHud.js"
 import {
+  initBBHealing
+} from "../system/bb-healing.js"
+import {
   SR5_CompendiumUtility
 } from "../entities/actors/utilityCompendium.js"
 import {
@@ -69,6 +72,8 @@ export function sr5HookReady() {
   initDrugClock()
   // Diseases: incubation and resistance tests on the clock (Run Faster p. 111-112)
   initDiseases()
+  // Bullets & Bandages p. 14-16: wounds of 5+ bleed by Combat Turn, the GM adds each box
+  initBBHealing()
 
   // The deeper table of contents also reaches the window of Monk's Enhanced Journal
   sr5DeepenModuleTableOfContents()
