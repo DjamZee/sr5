@@ -149,9 +149,26 @@ export function applyResult(entry, hits, power, startYear){
       ...base, carry: 0, residual: 0, state: "cured", nextTest: null
     }
   }
+  //The Power left is added to the next test only up to the least number of tests; past it, each test starts
+  //again from the base Power until one brings it to 0 (lecture d'Élise, RF p. 112)
   return {
-    ...base, carry: residual, residual, state: "active", nextTest: afterInterval(entry.nextTest, entry.profile.interval, startYear)
+    ...base, carry: testsDone < entry.profile.minTests ? residual : 0, residual, state: "active",
+    nextTest: afterInterval(entry.nextTest, entry.profile.interval, startYear),
   }
+}
+
+// The least number of tests made and some Power left: the final effect falls due (RF p. 112), written, never applied
+export function finalEffectDue(entry){
+  return entry?.state === "active" && entry.testsDone >= entry.profile.minTests && entry.residual > 0
+}
+
+// Strength, Logic, Willpower or Essence down to 0 on the prepared actor
+export function reachedZero(actor){
+  const s = actor?.system
+  if (!s) return false
+  const values = ["strength", "logic", "willpower"].map(k => s.attributes?.[k]?.augmented?.value)
+  if (s.essence) values.push(s.essence.value)
+  return values.some(v => typeof v === "number" && v <= 0)
 }
 
 // A card claiming more hits than it rolled dice was written by hand
@@ -513,11 +530,15 @@ async function applyFromCard(message, button){
     rejectClose: false,
   })
   if (hits === null || hits === undefined) return
+  //Read again after the window: a second click, or another card, may have applied it meanwhile
+  const fresh = diseaseLedger().infections?.[ref.infectionId]
+  if (!fresh?.request || fresh.request.token !== ref.token || button.disabled) return button.remove()
   button.disabled = true
-  const next = applyResult(entry, hits, power, calendarStartYear())
+  const testedPower = fresh.request.power
+  const next = applyResult(fresh, hits, testedPower, calendarStartYear())
   await writeEntry(next)
   button.remove()
-  await postOutcome(next, hits, power)
+  await postOutcome(next, hits, testedPower)
 }
 
 // The GM reads the outcome; the player of the character reads what he feels, the numbers only if revealed
@@ -537,7 +558,9 @@ async function postOutcome(entry, hits, power){
   if (entry.state === "active" && p.pathogenEffects.includes("memoryLoss") && entry.residual > (actor?.system?.attributes?.logic?.augmented?.value ?? 0)) lines.push(game.i18n.format("SR5.DISEASE_MemoryLoss", {
     threshold: entry.residual - (actor?.system?.attributes?.logic?.augmented?.value ?? 0)
   }))
-  if (entry.state === "active" && entry.testsDone >= p.minTests && p.finalEffect) lines.push(`${game.i18n.localize("SR5.DISEASE_FinalEffect")} ${escape(p.finalEffect)}`)
+  if (finalEffectDue(entry) && p.finalEffect) lines.push(`${game.i18n.localize("SR5.DISEASE_FinalEffect")} ${escape(p.finalEffect)}`)
+  //An attribute or the Essence down to 0, at any test: death or incapacity (B&P p. 21), for the GM to rule
+  if (entry.state === "active" && reachedZero(actor)) lines.push(`<strong>${game.i18n.localize("SR5.DISEASE_ZeroReached")}</strong>${p.finalEffect && !finalEffectDue(entry) ? ` ${escape(p.finalEffect)}` : ""}`)
   if (p.special) lines.push(escape(p.special))
   await ChatMessage.create({
     content: `<div class="sr5-disease-card"><h3>${game.i18n.localize("SR5.DISEASE_Title")}</h3>${lines.map(l => `<p>${l}</p>`).join("")}</div>`,

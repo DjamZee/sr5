@@ -5,7 +5,7 @@ import {
 const {
   afterInterval, profileFromToxin, newInfection, reexpose, testPower, testModifiers, penetrationModifier, protectionOf,
   applyResult, applyRecovery, currentEffects, effectsFor, dueEntries, openInfectionOf, applyDiseaseEffects,
-  addDiseaseApplyButton, activateDiseaseRequestListeners, checkDiseases, DISEASE_UNITS, hitsAboveDice
+  addDiseaseApplyButton, activateDiseaseRequestListeners, checkDiseases, DISEASE_UNITS, hitsAboveDice, finalEffectDue, reachedZero
 } = await import("../modules/system/diseases.js")
 
 const DAY = DISEASE_UNITS.day
@@ -192,6 +192,59 @@ describe("applying a test (Run Faster p. 111-112)", () => {
     const next = applyResult(e, 6, 6, 2075)
     expect(next.state).toBe("cured")
     expect(next.nextTest).toBeNull()
+  })
+
+  it("carries the Power left only up to the least number of tests (lecture d'Élise, RF p. 112)", () => {
+    //HMHVV strain I: 1 test, Power 13; 2 hits each time must not make the Power climb
+    const strain = {
+      ...redMask(), power: 13, minTests: 1
+    }
+    let e = infect(strain)
+    e = applyResult(e, 2, testPower(e), 2075)
+    expect(e.residual).toBe(11)
+    expect(e.carry).toBe(0)
+    expect(finalEffectDue(e)).toBe(true)
+    e = applyResult(e, 2, testPower(e), 2075)
+    expect(testPower(e)).toBe(13)
+    expect(e.history.map(h => h.power)).toEqual([13, 13])
+    e = applyResult(e, 13, testPower(e), 2075)
+    expect(e.state).toBe("cured")
+  })
+
+  it("still carries before the least number is reached", () => {
+    const e = applyResult({
+      ...infect(redMask()), testsDone: 4
+    }, 1, 4, 2075)
+    expect(e.carry).toBe(3)
+    const last = applyResult(e, 1, testPower(e), 2075)
+    expect(last.carry).toBe(0)
+  })
+
+  it("an attribute or the Essence down to 0 is flagged at any test", () => {
+    const actor = (str, ess) => ({
+      system: {
+        attributes: {
+          strength: {
+            augmented: {
+              value: str
+            }
+          }, logic: {
+            augmented: {
+              value: 3
+            }
+          }, willpower: {
+            augmented: {
+              value: 3
+            }
+          }
+        }, essence: {
+          value: ess
+        }
+      }
+    })
+    expect(reachedZero(actor(0, 6))).toBe(true)
+    expect(reachedZero(actor(2, 0))).toBe(true)
+    expect(reachedZero(actor(2, 6))).toBe(false)
   })
 
   it("goes on past the least number while some Power is left", () => {
