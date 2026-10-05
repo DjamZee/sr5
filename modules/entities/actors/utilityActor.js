@@ -695,7 +695,10 @@ export class SR5_CharacterUtility extends Actor {
   static updateKarmas(actor) {
     SR5_EntityHelpers.updateValue(actor.system.karma)
     let karmaGained = SR5_EntityHelpers.modifiersOnlyPositivesSum(actor.system.karma.modifiers)
-    if (karmaGained > 9) SR5_EntityHelpers.updateModifier(actor.system.streetCred, `${game.i18n.localize('SR5.KarmaGained')}`, "karma", Math.floor(karmaGained / 10), false, true)
+    // Karma / 10 (SR5 p. 372); a quality can raise the divisor (Assassin's Primer p. 15, Consummate Professional: / 20)
+    let divisor = 10 + SR5_EntityHelpers.modifiersSum(actor.system.specialProperties?.streetCredDivisor?.modifiers || [])
+    if (divisor < 1) divisor = 1
+    if (karmaGained >= divisor) SR5_EntityHelpers.updateModifier(actor.system.streetCred, `${game.i18n.localize('SR5.KarmaGained')}`, "karma", Math.floor(karmaGained / divisor), false, true)
   }
 
   static updateNotoriety(actor) {

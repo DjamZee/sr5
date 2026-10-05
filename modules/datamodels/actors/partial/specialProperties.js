@@ -18,6 +18,10 @@ export class specialPropertiesPartialModel extends foundry.abstract.TypeDataMode
         toxinResistance: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema()
         }),
+        // Added to the Karma divisor of Street Cred (Assassin's Primer p. 15, Consummate Professional: 10 more, so Karma / 20)
+        streetCredDivisor: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema()
+        }),
         concentration: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema()
         }),
