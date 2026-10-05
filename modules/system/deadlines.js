@@ -2,7 +2,7 @@
 // the months of rent paid in advance (SR5 p. 377). When the clock passes one, the GM gets one card listing them,
 // with the action to take as a button. Nothing is rolled or debited without that click.
 import {
-  calendarStartYear, worldTimeToComponents, componentsToWorldTime
+  calendarStartYear, addCalendarMonths
 } from "./calendar.js"
 import {
   SR5_SystemHelpers
@@ -27,12 +27,9 @@ export const WITHDRAWAL_INTERVALS = {
   },
 }
 
+// Calendar months, capped at the last day of the month (calendar.js)
 export function addMonths(time, n, startYear){
-  const c = worldTimeToComponents(time, startYear)
-  const months = c.month + n
-  return componentsToWorldTime({
-    ...c, year: c.year + Math.floor(months / 12), month: ((months % 12) + 12) % 12
-  }, startYear)
+  return addCalendarMonths(time, n, startYear)
 }
 
 export function addInterval(time, interval, startYear){

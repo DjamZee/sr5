@@ -2,7 +2,7 @@
 // An effect notes the world time it began at; when the clock passes its end, the GM gets one chat card
 // listing every effect that ran out, with a button to remove each. Nothing is removed without that click.
 import {
-  calendarStartYear, worldTimeToComponents, componentsToWorldTime
+  calendarStartYear, addCalendarMonths
 } from "./calendar.js"
 import {
   SR5_SystemHelpers
@@ -29,13 +29,7 @@ export function expiryTime(system, startYear){
   const start = system.startTime
   if (start === null || start === undefined || !Number.isFinite(Number(start))) return null
   const n = Number(system.duration)
-  if (system.durationType === "month"){
-    const c = worldTimeToComponents(Number(start), startYear)
-    const months = c.month + n
-    return componentsToWorldTime({
-      ...c, year: c.year + Math.floor(months / 12), month: months % 12
-    }, startYear)
-  }
+  if (system.durationType === "month") return addCalendarMonths(Number(start), n, startYear)
   return Number(start) + n * TIMED_DURATIONS[system.durationType]
 }
 

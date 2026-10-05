@@ -81,6 +81,22 @@ export function durationToSeconds(delta){
   return ((((c.year ?? 0) * 365 + (c.day ?? 0)) * 24 + (c.hour ?? 0)) * 60 + (c.minute ?? 0)) * 60 + (c.second ?? 0)
 }
 
+export function daysInMonth(year, month){
+  return [31, isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month]
+}
+
+// n calendar months later, same day and hour; a day the month has not got falls on its last day
+// (31 January + 1 month = 28 or 29 February)
+export function addCalendarMonths(time, n, startYear){
+  const c = worldTimeToComponents(time, startYear)
+  const total = c.month + n
+  const year = c.year + Math.floor(total / 12)
+  const month = ((total % 12) + 12) % 12
+  return componentsToWorldTime({
+    ...c, year, month, dayOfMonth: Math.min(c.dayOfMonth, daysInMonth(year, month) - 1)
+  }, startYear)
+}
+
 export function sr5CalendarConfig(){
   return {
     name: "SR5.CALENDAR_Name",
