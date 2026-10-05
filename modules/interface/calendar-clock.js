@@ -90,10 +90,32 @@ async function goTo(){
   await game.time.set(time)
 }
 
+// Quick clicks: game.time.advance reads worldTime before the server has answered the previous click, and the
+// click is lost. Each click aims at the target of the clicks still in flight, plus its step
+export function createClockAdvancer(time){
+  let target = null
+  let inFlight = 0
+  return async (seconds) => {
+    target = (target ?? time.worldTime) + seconds
+    inFlight++
+    try {
+      await time.set(target)
+    } finally {
+      inFlight--
+      if (!inFlight) target = null
+    }
+  }
+}
+
+let advanceClock = null
+
 function onClick(event){
   if (!game.user.isGM) return
   const step = event.target.closest("[data-sr5-clock-step]")
-  if (step) return game.time.advance(Number(step.dataset.sr5ClockStep))
+  if (step){
+    advanceClock ??= createClockAdvancer(game.time)
+    return advanceClock(Number(step.dataset.sr5ClockStep))
+  }
   if (event.target.closest("[data-sr5-clock-goto]")) return goTo()
 }
 

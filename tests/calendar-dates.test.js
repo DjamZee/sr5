@@ -3,7 +3,7 @@ import {
 } from "vitest"
 import {
   worldTimeToComponents, componentsToWorldTime, durationToSeconds, isLeapYear, thirdPartyCalendarModule,
-  combatRoundSeconds, sr5CalendarConfig, DEFAULT_START_YEAR, COMBAT_ROUND_SECONDS
+  combatRoundSeconds, roundTimeFor,sr5CalendarConfig, DEFAULT_START_YEAR, COMBAT_ROUND_SECONDS
 } from "../modules/system/calendar.js"
 
 const DAY = 86400
@@ -71,6 +71,12 @@ describe("Sixth World calendar", () => {
     expect(COMBAT_ROUND_SECONDS).toBe(3)
     expect(combatRoundSeconds(true)).toBe(3)
     expect(combatRoundSeconds(false)).toBe(0)
+  })
+
+  it("leaves the combat time to a third-party calendar module, so no turn counts twice", () => {
+    expect(roundTimeFor(true, "seasons-and-stars", 6)).toBe(6)
+    expect(roundTimeFor(false, "seasons-and-stars", 0)).toBe(0)
+    expect(roundTimeFor(true, null, 0)).toBe(3)
   })
 
   it("steps aside when a third-party calendar module is active", () => {

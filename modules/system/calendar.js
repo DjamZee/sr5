@@ -165,8 +165,15 @@ export function combatRoundSeconds(enabled){
   return enabled ? COMBAT_ROUND_SECONDS : 0
 }
 
+// A calendar module advances the clock in combat its own way: the system leaves roundTime to it, or each turn
+// would be counted twice
+export function roundTimeFor(enabled, thirdParty, current){
+  if (thirdParty) return current
+  return combatRoundSeconds(enabled)
+}
+
 function applyCombatTime(){
-  CONFIG.time.roundTime = combatRoundSeconds(game.settings.get("sr5", CALENDAR_COMBAT_TIME_SETTING))
+  CONFIG.time.roundTime = roundTimeFor(game.settings.get("sr5", CALENDAR_COMBAT_TIME_SETTING), thirdPartyCalendarModule(), CONFIG.time.roundTime)
 }
 
 function applyCalendar(){

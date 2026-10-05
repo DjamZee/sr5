@@ -2,7 +2,7 @@ import {
   describe, it, expect
 } from "vitest"
 import {
-  formatClock, parseDateTimeInput, dateTimeInputValue, CLOCK_STEPS
+  formatClock, parseDateTimeInput, dateTimeInputValue, CLOCK_STEPS, createClockAdvancer
 } from "../modules/interface/calendar-clock.js"
 import {
   worldTimeToComponents
@@ -17,6 +17,26 @@ describe("Sixth World clock", () => {
     expect(text).toEqual({
       date: "mercredi 1 janvier 2070", time: "00:00:09"
     })
+  })
+
+  it("keeps every quick click: three clicks of one minute before the server answers give three minutes", async () => {
+    //A server that answers late: worldTime moves only once each write has come back
+    const time = {
+      worldTime: 0,
+      set(t){
+        return new Promise(resolve => setTimeout(() => {
+          this.worldTime = t
+          resolve(t)
+        }, 10))
+      },
+    }
+    const advance = createClockAdvancer(time)
+    await Promise.all([advance(60), advance(60), advance(60)])
+    expect(time.worldTime).toBe(180)
+    //Once everything has landed, the next click starts from the clock again (a combat may have moved it)
+    time.worldTime = 1000
+    await advance(60)
+    expect(time.worldTime).toBe(1060)
   })
 
   it("offers the GM one minute, ten minutes, one hour, one day and one week", () => {
