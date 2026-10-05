@@ -25,7 +25,16 @@ export function isAwakened(actorData){
   return (actorData?.specialAttributes?.magic?.augmented?.value ?? 0) > 0
 }
 
-// Dice against magic: always against harmful magic, against a beneficial spell only for the armor
+// Better Than Bad p. 140: the dice count against spells and targeted magical powers. A weapon focus
+// (isMagical weapon) deals magical damage but stays a physical attack: no dice against it (review of Tess).
+export function greyManaAppliesTo(damage){
+  if (damage?.resistanceType?.startsWith("directSpell")) return true
+  return damage?.source === "magical" && !damage?.weaponFocus
+}
+
+// Dice against magic: always against harmful magic, against a beneficial spell only for the armor.
+// `beneficial` is never set yet: the armor's effect against beneficial spells (Better Than Bad p. 140)
+// waits for a resistance test against beneficial spells, which the system does not have.
 export function greyManaResistanceDice(greyMana, beneficial = false){
   if (!greyMana?.value) return 0
   if (beneficial && !greyMana.fromArmor) return 0

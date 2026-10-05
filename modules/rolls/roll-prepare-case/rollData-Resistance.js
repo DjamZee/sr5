@@ -14,7 +14,7 @@ import {
   SR5_Toxins
 } from "../../entities/items/toxins.js"
 import {
-  addGreyManaResistance
+  addGreyManaResistance, greyManaAppliesTo
 } from "../../system/grey-mana.js"
 
 // Show a notification and return undefined so the caller aborts the test.
@@ -110,8 +110,8 @@ export default async function resistance(rollData, rollType, actor, chatData){
     
   if(!rollData) return
 
-  //Better Than Bad p. 140-141: grey mana adds its rating against magical damage, direct spells included
-  if (chatData.damage.source === "magical" || chatData.damage.resistanceType?.startsWith("directSpell")) rollData = addGreyManaResistance(rollData, actor, game.i18n.localize("SR5.GreyMana"))
+  //Better Than Bad p. 140-141: grey mana adds its rating against spells and magical powers, not a weapon focus
+  if (greyManaAppliesTo(chatData.damage)) rollData = addGreyManaResistance(rollData, actor, game.i18n.localize("SR5.GreyMana"))
 
   //Add general information
   rollData.combat.armorPenetration = chatData.combat.armorPenetration

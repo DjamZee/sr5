@@ -111,6 +111,8 @@ export default async function weapon(rollData, actor, item){
   rollData.damage.type = itemData.damageType
   rollData.damage.element = itemData.damageElement
   if (itemData.isMagical) rollData.damage.source = "magical"
+  //A weapon focus stays a physical attack: grey mana does not resist it (Better Than Bad p. 140)
+  if (itemData.isMagical) rollData.damage.weaponFocus = true
   rollData.combat.armorPenetration = itemData.armorPenetration.value
   rollData.combat.ammo.type = itemData.ammunition.type
   rollData.combat.ammo.value = itemData.ammunition.value

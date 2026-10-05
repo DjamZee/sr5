@@ -2,8 +2,29 @@ import {
   describe, it, expect
 } from "vitest"
 import {
-  greyManaOf, greyManaResistanceDice, greyManaSustainedPenalty, updateGreyMana, addGreyManaResistance
+  greyManaOf, greyManaResistanceDice, greyManaSustainedPenalty, updateGreyMana, addGreyManaResistance, greyManaAppliesTo
 } from "../modules/system/grey-mana.js"
+
+// Better Than Bad p. 140, review of Tess: against spells and magical powers, not a weapon focus
+describe("what grey mana resists", () => {
+  it("resists direct spells, indirect spells and magical powers", () => {
+    expect(greyManaAppliesTo({
+      resistanceType: "directSpellMana"
+    })).toBe(true)
+    expect(greyManaAppliesTo({
+      resistanceType: "physicalDamage", source: "magical"
+    })).toBe(true)
+  })
+
+  it("does not resist a weapon focus, which stays a physical attack, nor a mundane attack", () => {
+    expect(greyManaAppliesTo({
+      resistanceType: "physicalDamage", source: "magical", weaponFocus: true
+    })).toBe(false)
+    expect(greyManaAppliesTo({
+      resistanceType: "physicalDamage", source: ""
+    })).toBe(false)
+  })
+})
 
 // Better Than Bad p. 140-141, GM ruling of 05/10 (Q7)
 describe("grey mana", () => {
