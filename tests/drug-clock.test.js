@@ -125,6 +125,33 @@ describe("drugs on the world clock (SR5 p. 411-412, Chrome Flesh p. 194)", () =>
     expect(phaseStartFlags("rise", "rise", 10)).toBe(null)
   })
 
+  it("starts the crash at the end of the effect, not at the GM's click (SR5 p. 411, Élise)", () => {
+    //Effect of 30 minutes from 0: over at 1800. The GM clicks at 1860; a crash of 30 minutes ends at 3600
+    const drug = {
+      type: "itemDrug", system: {
+        phase: "rise", handleShot: {
+          duration: 30, durationType: "minute", durationContrecoup: 30, durationContrecoupType: "minute"
+        }
+      }, flags: {
+        sr5: {
+          riseStart: 0
+        }
+      }
+    }
+    const changes = {
+      system: {
+        phase: "crash"
+      }
+    }
+    onPreUpdateDrug(drug, changes, 1860)
+    expect(changes.flags.sr5.crashStart).toBe(1800)
+    expect(phaseEnd({
+      ...drug.system, phase: "crash"
+    }, changes.flags.sr5)).toBe(3600)
+    //Ended before its end (the sheet, an interaction): the crash starts now
+    expect(phaseStartFlags("rise", "crash", 900, 1800).crashStart).toBe(900)
+  })
+
   it("stamps a drug taken through the sheet, which writes the whole item list through the actor", () => {
     const drug = {
       type: "itemDrug", system: {

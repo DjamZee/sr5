@@ -58,14 +58,16 @@ export function phaseEnd(system, flags){
   return null
 }
 
-// The flags to write with a change of phase: the start of the new phase, the alert of the old one forgotten
-export function phaseStartFlags(oldPhase, newPhase, now){
+// The flags to write with a change of phase: the start of the new phase, the alert of the old one forgotten.
+// The crash follows the effect (SR5 p. 411): it starts when the effect ended, even if the GM clicks later.
+// Ended early (an interaction, the sheet before the end), it starts now
+export function phaseStartFlags(oldPhase, newPhase, now, riseEnd = null){
   if (newPhase === oldPhase) return null
   if (newPhase === "rise") return {
     riseStart: now, crashStart: null, drugNotified: false
   }
   if (newPhase === "crash") return {
-    crashStart: now, drugNotified: false
+    crashStart: (oldPhase === "rise" && Number.isFinite(riseEnd) && riseEnd <= now) ? riseEnd : now, drugNotified: false
   }
   return {
     riseStart: null, crashStart: null, drugNotified: false
@@ -178,7 +180,9 @@ export function onPreUpdateDrug(item, changes, now){
   if (item.type !== "itemDrug") return
   const newPhase = changes?.system?.phase
   if (newPhase === undefined) return
-  const flags = phaseStartFlags(item.system.phase ?? "", newPhase, now)
+  const oldPhase = item.system.phase ?? ""
+  const riseEnd = oldPhase === "rise" ? phaseEnd(item.system, item.flags?.sr5) : null
+  const flags = phaseStartFlags(oldPhase, newPhase, now, riseEnd)
   if (!flags) return
   foundry.utils.setProperty(changes, "flags.sr5", {
     ...(changes.flags?.sr5 ?? {
