@@ -43,6 +43,10 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   // Availability cards carry their own data and their own button
   if (message.flags?.sr5shop) SR5ShopAvailability.chatListeners(html, message)
   if (message.flags?.sr5fence) SR5ShopFence.chatListeners(html, message)
+  // A vendor's buy-back offer (shop lot C, part 2): loaded on demand, the vendor brings the socket
+  if (message.flags?.sr5vendorOffer) import("../interface/shop-vendor.js").then(({
+    SR5ShopVendor
+  }) => SR5ShopVendor.chatListeners(html, message))
   // Ritual circle card: join and seal (SR5 p. 298-299)
   if (message.flags?.sr5?.ritualCircle) SR5_RitualCircle.activateListeners(html, message)
 }

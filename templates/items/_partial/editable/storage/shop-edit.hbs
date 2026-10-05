@@ -30,6 +30,27 @@
             {{#if (and shop.isGM shop.hasActor)}}<button type="button" data-action="shopCashbox">{{localize 'SR5.ShopVendorCreateCashbox'}}</button>{{/if}}
         </div>
     </li>
+    {{#if shop.templateLabel}}
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.ShopVendorTemplate'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-8 SR-GreyColor">{{shop.templateLabel}}</div>
+    </li>
+    {{/if}}
+    <li class="grid" data-tooltip="{{localize 'SR5.ShopVendorContactHint'}}">
+        <div class="col-4">{{localize 'SR5.ShopVendorContact'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-8">
+            {{#if shop.contacts.length}}
+            <select name="system.shop.contactId">
+                <option value="">{{localize 'SR5.ShopVendorContactNone'}}</option>
+                {{#each shop.contacts}}<option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>{{this.name}}</option>{{/each}}
+            </select>
+            {{else}}<span class="SR-GreyColor SR-TextSmall">{{localize 'SR5.ShopVendorContactEmpty'}}</span>{{/if}}
+        </div>
+    </li>
+    <li class="grid" data-tooltip="{{localize 'SR5.ShopVendorBuyAllHint'}}">
+        <div class="col-8">{{localize 'SR5.ShopVendorBuyAll'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-4"><input type="checkbox" data-dtype="Boolean" name="system.shop.buyAll" {{checked system.shop.buyAll}}/></div>
+    </li>
     <li class="grid">
         <div class="col-8">{{localize 'SR5.ShopVendorApprove'}}{{localize 'SR5.Colons'}}</div>
         <div class="col-4"><input type="checkbox" data-dtype="Boolean" name="system.shop.approve" {{checked system.shop.approve}}/></div>

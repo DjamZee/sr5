@@ -301,6 +301,15 @@ export class SR5_SystemHelpers {
 
     // An item on a vendor's counter has been found already: no availability test
     // (SR5 p. 420, the test is the search). A table may want it all the same.
+    // Where the vendor banners are (lot C, part 2): never shipped with the system, the table
+    // points at its own folder. Empty, vendors have the plain sign of part 1.
+    game.settings.register("sr5", "sr5ShopBannerFolder", {
+      name: "SR5.SETTINGS_ShopBannerFolder_T",
+      hint: "SR5.SETTINGS_ShopBannerFolder_D",
+      scope: "world", config: true, default: "", type: String,
+      filePicker: "folder",
+    })
+
     game.settings.register("sr5", "sr5ShopVendorTest", {
       name: "SR5.SETTINGS_ShopVendorTest_T",
       hint: "SR5.SETTINGS_ShopVendorTest_D",

@@ -24,6 +24,8 @@ export const SHOP_DEFAULTS = {
   accent: '',
   portrait: '',
   template: '',
+  contactId: '',
+  buyAll: false,
 }
 
 /** Is this item a vendor's stock? */

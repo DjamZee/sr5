@@ -305,8 +305,10 @@ export class SR5ShopAvailability {
     if (!lines?.length) return null
 
     // A vendor looks for what it has not got with its own Negotiation and Charisma (SR5 p. 420)
+    // ...or through the contact the gamemaster gave the vendor (lot C, part 2)
     const searcher = contact ? SR5ShopAvailability.contactPool(contact) :
-      SR5ShopAvailability.buyerPool(options.searcher ?? actor)
+      options.searcherContact ? SR5ShopAvailability.contactPool(options.searcherContact) :
+        SR5ShopAvailability.buyerPool(options.searcher ?? actor)
 
     const bonusDice = SR5ShopAvailability.surchargeDice(surcharge)
     // null when the field was left empty; an imposed 0 stays 0 dice

@@ -212,13 +212,14 @@
       <i class="fas fa-receipt"></i>
       {{#if equipMode}}{{localize 'SR5.ShopEquipCheckout'}}{{else if creationMode}}{{localize 'SR5.ShopCheckoutFree'}}{{else}}{{localize 'SR5.ShopPay' price=cartTotal}}{{/if}}
     </button>
-    {{#if (and buyer (not vendor))}}
+    {{#if buyer}}
     <button type="button" data-action="openSell"><i class="fas fa-hand-holding-dollar"></i> {{localize 'SR5.ShopSell'}}</button>
     {{/if}}
 
     {{#if isGM}}
     <h4>{{localize 'SR5.ShopGamemaster'}}</h4>
     <div class="sr-shop-box">
+      <button type="button" data-action="newVendor"><i class="fas fa-store"></i> {{localize 'SR5.ShopVendorNew'}}</button>
       <label data-tooltip="{{localize 'SR5.ShopCreationModeHint'}}">
         <input type="checkbox" data-shop-creation {{#if creationMode}}checked{{/if}}> {{localize 'SR5.ShopCreationMode'}}
         {{#if creationLimits}}<span class="muted">({{creationLimitsLabel}})</span>{{/if}}

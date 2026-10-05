@@ -498,6 +498,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/items/_partial/editable/storage/deployable-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/storage/lock-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/storage/shop-edit.hbs",
+    "systems/sr5/templates/interface/shop-new-vendor.hbs",
     "systems/sr5/templates/items/_partial/editable/storage/address-edit.hbs",
 
     //Spell

@@ -393,3 +393,22 @@
   }
   .sr-shop-blocked { color: #c0392b; }
 }
+
+/* The "New vendor" dialog (lot C, part 2): the banners of the template, as 3:1 thumbnails */
+.sr-shop-new-vendor {
+  .sr-shop-banner-choices {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .sr-shop-banner-choice {
+    position: relative;
+    cursor: pointer;
+    input { position: absolute; opacity: 0; }
+    img { display: block; width: 100%; aspect-ratio: 3 / 1; object-fit: cover; border: 3px solid transparent; border-radius: 3px; }
+    input:checked + img { border-color: var(--color-warm-2, #ff6400); }
+    input:focus-visible + img { outline: 2px solid var(--color-text-hyperlink, #ff6400); }
+  }
+}

@@ -48,6 +48,14 @@
     </div>
 
     <div class="sr-sell-buttons">
+      {{#if vendor}}
+      <button type="button" data-action="sellToVendor" {{#unless hasSelection}}disabled{{/unless}}
+              data-tooltip="{{localize 'SR5.ShopVendorSellHint'}}">
+        <i class="fas fa-sm fa-store"></i>
+        {{localize 'SR5.ShopVendorSell' shop=vendor.label}}
+        ({{#if vendor.contact}}{{rules.contactPercent}}% × {{localize 'SR5.ContactLoyaltyShort'}}{{else}}{{rules.basePercent}}% ± {{rules.stepPercent}}%{{/if}})
+      </button>
+      {{else}}
       <button type="button" data-action="sellToContact" {{#unless hasContact}}disabled{{/unless}}
               data-tooltip="{{localize 'SR5.ShopSellToContactHint'}}">
         <i class="fas fa-sm fa-user-tie"></i>
@@ -58,6 +66,7 @@
         <i class="fas fa-sm fa-magnifying-glass-dollar"></i>
         {{localize 'SR5.ShopSellOnMarket'}} ({{rules.basePercent}}%)
       </button>
+      {{/if}}
       <button type="button" data-action="clearSelection" {{#unless hasSelection}}disabled{{/unless}}>
         <i class="fas fa-sm fa-eraser"></i>
       </button>

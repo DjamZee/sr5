@@ -120,6 +120,15 @@ export class sr5ItemStorageDataModel extends foundry.abstract.TypeDataModel {
         template: new fields.StringField({
           initial: ''
         }),
+        // A contact of the vendor's (an itemContact on the same actor): it searches what is on
+        // order with its own pool, Run Faster p. 174 (lot C, part 2)
+        contactId: new fields.StringField({
+          initial: ''
+        }),
+        // The vendor buys back what is not on its shelves too (SR5 p. 421)
+        buyAll: new fields.BooleanField({
+          initial: false
+        }),
       }),
     }
   }

@@ -302,6 +302,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       testAvailability: SR5ShopWindow.#onTestAvailability,
       testCartAvailability: SR5ShopWindow.#onTestCartAvailability,
       openSell: SR5ShopWindow.#onOpenSell,
+      newVendor: SR5ShopWindow.#onNewVendor,
     },
   }
 
@@ -395,7 +396,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     // At a vendor's, the vendor is who looks for what it has not got (SR5 p. 420)
     const vendor = this._source?.vendor ? this._source.actor : null
     if (vendor) {
-      const searcher = SR5ShopAvailability.buyerPool(vendor)
+      const searcher = SR5ShopVendor.searcherOf(vendor, this._source.storage).pool
       return Math.max(0, (this._overridePool ?? (searcher.raw ?? searcher.pool)) + SR5ShopAvailability.surchargeDice(this._surcharge))
     }
     const contact = this._contactId ? buyer.items.get(this._contactId) : null
@@ -1000,6 +1001,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       // At a vendor's, the vendor searches and its margin is on the price (lot C)
       ...(source ? {
         searcher: source.actor, margin: source.shop.margin,
+        searcherContact: SR5ShopVendor.searcherOf(source.actor, source.storage).contact,
         vendor: {
           uuid: source.actorUuid, storageId: source.storageId
         },
@@ -1027,8 +1029,22 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     })), this._surcharge, this.#overrides())
   }
 
+  /** The gamemaster creates a vendor from a template, then the window shows its shop (lot C, part 2). */
+  static async #onNewVendor() {
+    const created = await SR5ShopVendor.newVendorDialog()
+    if (!created) return
+    this.setSource(new SR5ShopVendorSource(created.actor, created.storage))
+    this.render()
+  }
+
   static #onOpenSell() {
-    SR5SellDialog.open(game.actors.get(this._buyerId))
+    // At a vendor's, the vendor buys (lot C, part 2); elsewhere, a contact or the open market
+    const source = this._source?.vendor ? this._source : null
+    SR5SellDialog.open(game.actors.get(this._buyerId), {
+      vendor: source ? {
+        uuid: source.actorUuid, storageId: source.storageId
+      } : null
+    })
   }
 
   /* -------------------------------------------- */
