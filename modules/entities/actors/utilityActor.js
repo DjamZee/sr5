@@ -3199,7 +3199,9 @@ export class SR5_CharacterUtility extends Actor {
     let actorData = actor.system, magic = actorData.magic, skills = actorData.skills
     magic.counterSpellPool.base = skills.counterspelling.rating.value
     if (magic.metamagics.shielding) SR5_EntityHelpers.updateModifier(magic.counterSpellPool, `${game.i18n.localize('SR5.MetamagicShielding')}`, "metamagic", magic.initiationGrade)
-    //Harmonious Defense (Forbidden Arcana p. 45): Willpower + Magic + initiate grade, used as spell defense dice
+    //Harmonious Defense (Forbidden Arcana p. 45): Willpower + Magic + initiate grade, used as spell defense dice.
+    //Accepted approximation (review H2): the pool is always there, with no free action to declare it and no switch to
+    //astral perception, which the book ties to its use
     if (magic.metamagics.harmoniousDefense) SR5_EntityHelpers.updateModifier(magic.counterSpellPool, `${game.i18n.localize('SR5.MetamagicHarmoniousDefense')}`, "metamagic",
       harmoniousDefensePool(actorData.attributes.willpower.augmented.value, actorData.specialAttributes.magic.augmented.value, magic.initiationGrade))
     SR5_EntityHelpers.updateValue(magic.counterSpellPool)
