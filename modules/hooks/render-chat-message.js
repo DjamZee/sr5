@@ -16,6 +16,9 @@ import {
 import {
   activateExpiryCardListeners
 } from "../system/effect-expiry.js"
+import {
+  activateDeadlineCardListeners
+} from "../system/deadlines.js"
 
 export function sr5HookRenderChatMessageHTML(message, html, _data) {
   // A table draw is rendered by core and wears no SR5 header of its own
@@ -54,6 +57,8 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   if (message.flags?.sr5?.ritualCircle) SR5_RitualCircle.activateListeners(html, message)
   // Effects run out on the world clock: the GM removes them
   if (message.flags?.sr5?.effectExpiry) activateExpiryCardListeners(html)
+  // Withdrawal tests and rent fall due: the GM acts
+  if (message.flags?.sr5?.deadlines) activateDeadlineCardListeners(html)
 }
 
 // v13: keep chat scrolled to bottom when SR5 roll messages change height.
