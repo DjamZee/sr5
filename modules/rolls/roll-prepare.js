@@ -8,8 +8,14 @@ import {
   SR5_EntityHelpers 
 } from "../entities/helpers.js"
 import {
-  SR5_SystemHelpers 
+  SR5_SystemHelpers
 } from "../system/utilitySystem.js"
+import {
+  SR5FactionRegistry
+} from "../interface/faction-registry.js"
+
+// The social tests whose dialog shows the NPC attitude (rollDialogPartial/modifiers.hbs)
+const SOCIAL_FACTION_SKILLS = ["etiquette", "con", "intimidation", "leadership", "negotiation", "impersonation", "performance"]
 import {
   SR5_ActorHelper
 } from "../entities/actors/entityActor-helpers.js"
@@ -251,6 +257,11 @@ export class SR5_PrepareRollTest {
       case "skillDicePool":
         if (game.user.targets.size) rollData = await SR5_PrepareRollHelper.getTargetData(rollData)
         rollData = await SR5_GetRollData.skill(rollData, rollType, rollKey, actor, chatData)
+        // Faction Reputation moves the default NPC attitude (Cutting Aces p. 160); the list stays free
+        if (rollData.target?.actorId && SOCIAL_FACTION_SKILLS.includes(rollData.test?.typeSub)){
+          const faction = SR5FactionRegistry.attitudeFor(actor.id, SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId))
+          if (faction) rollData.social = faction
+        }
         break
       case "spell":
         if (game.user.targets.size) rollData = await SR5_PrepareRollHelper.getTargetData(rollData)

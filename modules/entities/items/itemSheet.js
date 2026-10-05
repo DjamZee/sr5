@@ -1,4 +1,7 @@
 import {
+  SR5FactionRegistry
+} from "../../interface/faction-registry.js"
+import {
   SR5 
 } from "../../config.js"
 import {
@@ -352,6 +355,8 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     context.owner = this.document.isOwner
     context.lists = SR5_EntityHelpers.sortTranslations(SR5)
     context.isPlay = this.isPlayMode
+    // Faction of a contact (Cutting Aces p. 157), kept in the gamemaster's registry
+    if (item.type === "itemContact") context.contactFaction = SR5FactionRegistry.factionOfContact(item.uuid)?.name ?? ""
     // The actors a jammer in wireless mode leaves alone (SR5 p. 443), by name
     if (item.type === "itemGear" && item.system.jammer?.type) {
       context.jammerSpared = (item.system.jammer.spared ?? []).map(id => ({

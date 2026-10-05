@@ -1623,8 +1623,19 @@ export default class SR5_RollDialog {
           dialogData.damage.type = html.querySelector(name).value
           continue
         case "socialResult":
-        case "socialAttitude":
+          selectValue = html.querySelector(name).value
           inputValue = 0
+          break
+        case "socialAttitude":
+          selectValue = html.querySelector(name).value
+          // Faction Reputation of the character with the target's faction (Cutting Aces p. 160)
+          if (dialogData.social?.attitude){
+            selectValue = dialogData.social.attitude
+            inputValue = SR5_ConverterHelpers.socialAttitudeToMod(selectValue)
+            label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.format("SR5.FACTION_RollLabel", {
+              faction: dialogData.social.faction, score: dialogData.social.score
+            })})`
+          } else inputValue = 0
           break
         case "targetEffect":
           selectValue = html.querySelector(name).value

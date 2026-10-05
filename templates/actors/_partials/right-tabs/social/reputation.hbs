@@ -36,6 +36,29 @@
 	</ul>
 </div>
 
+<!-- FACTION REPUTATION (Cutting Aces p. 157), read only: the gamemaster's window writes it -->
+{{#if (or factionStanding.length isGM)}}
+<div class="SRBlockSheet">
+	<ul>
+		<li class="SR-LigneEnTete grid">
+			<div class="col-11 SR-TextUppercase">{{localize 'SR5.FACTION_Standing'}}</div>
+			{{#if isGM}}
+			<div class="col-1 SR-TextCenter"><a data-action="openFactions" data-tooltip="{{localize 'SR5.FACTION_Open'}}"><i class="fas fa-people-group"></i></a></div>
+			{{/if}}
+		</li>
+		{{#each factionStanding}}
+		<li class="grid">
+			<div class="col-6 SR-TextLeft">{{name}}</div>
+			<div class="col-3 SR-TextCenter">{{score}}{{#if pending}} ({{localize 'SR5.FACTION_PendingTag'}} {{pending}}){{/if}}</div>
+			<div class="col-3 SR-TextRight">{{localize 'SR5.FACTION_Shift' shift=shift}}</div>
+		</li>
+		{{else}}
+		<li class="grid"><div class="col-12 SR-TextLeft">—</div></li>
+		{{/each}}
+	</ul>
+</div>
+{{/if}}
+
 <!-- REPUTATION GAINS -->
 <div class="SRBlockSheet">
 	<ul>

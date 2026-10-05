@@ -1,6 +1,12 @@
 import {
   SR5ShopConfig
 } from "../interface/shop-config.js"
+import {
+  SR5FactionRegistry
+} from "../interface/faction-registry.js"
+import {
+  SR5FactionsApp
+} from "../interface/factions-app.js"
 
 export class SR5_SystemHelpers {
 
@@ -172,6 +178,17 @@ export class SR5_SystemHelpers {
     try {
       localStorage.removeItem("sr5.sr5ShopCreationMode")
     } catch (_err) { /* storage blocked: the world value applies anyway */ }
+
+    // Faction Reputation (Cutting Aces p. 156-160): the gamemaster's registry and window
+    SR5FactionRegistry.register()
+    game.settings.registerMenu("sr5", "sr5FactionsMenu", {
+      name: "SR5.FACTION_Title",
+      label: "SR5.FACTION_Open",
+      hint: "SR5.FACTION_MenuHint",
+      icon: "fas fa-people-group",
+      type: SR5FactionsApp,
+      restricted: true,
+    })
 
     // Shop shelves and buyers, set from one gamemaster menu (SR5ShopConfig)
     game.settings.registerMenu("sr5", "sr5ShopConfigMenu", {

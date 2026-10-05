@@ -22,6 +22,12 @@ import {
 import {
   SR5_ActorHelper
 } from "./entityActor-helpers.js"
+import {
+  SR5FactionRegistry
+} from "../../interface/faction-registry.js"
+import {
+  SR5FactionsApp
+} from "../../interface/factions-app.js"
 
 /**
  * An Actor sheet for player character type actors in the Shadowrun 5 system.
@@ -52,7 +58,11 @@ export class SR5ActorSheet extends ActorSheetSR5 {
       width: 800, height: 618 
     },
     window: {
-      resizable: true 
+      resizable: true
+    },
+    actions: {
+      // Faction Reputation, gamemaster's window (Cutting Aces p. 156)
+      openFactions: () => SR5FactionsApp.open(),
     },
   }
 
@@ -76,6 +86,9 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     context.rulesCalledShot = game.settings.get("sr5", "sr5CalledShotsRules")
     context.rulesKillCode = game.settings.get("sr5", "sr5KillCodeRules")
     context.matrixActionsRigger5 = game.settings.get("sr5", "sr5Rigger5Actions")
+    // Faction Reputation (Cutting Aces p. 157): read here, written by the gamemaster's window only
+    context.factionStanding = SR5FactionRegistry.standing(this.actor.id)
+    context.isGM = game.user.isGM
 
     return context
   }

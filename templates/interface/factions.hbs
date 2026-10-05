@@ -1,0 +1,109 @@
+<div class="sr-factions-body">
+  <p class="hint">{{localize 'SR5.FACTION_Hint'}}</p>
+
+  <fieldset>
+    <legend>{{localize 'SR5.FACTION_List'}}</legend>
+    {{#each factions}}
+    <section class="sr-faction">
+      <header class="sr-faction-head">
+        <strong>{{name}}</strong> <span class="hint">{{localize typeLabel}}</span>
+        {{#if enemyNames}}<span class="hint">— {{localize 'SR5.FACTION_Enemies'}} : {{enemyNames}}</span>{{/if}}
+        <span class="sr-faction-tools">
+          <a data-action="editFaction" data-faction="{{id}}" data-tooltip="{{localize 'SR5.FACTION_Edit'}}"><i class="fas fa-pen"></i></a>
+          <a data-action="deleteFaction" data-faction="{{id}}" data-tooltip="{{localize 'SR5.FACTION_Delete'}}"><i class="fas fa-trash"></i></a>
+        </span>
+      </header>
+      {{#if note}}<p class="hint">{{note}}</p>{{/if}}
+      <div class="sr-faction-row">
+        <span>{{localize 'SR5.FACTION_Members'}} :</span>
+        {{#each memberList}}<span class="sr-faction-tag">{{name}} <a data-action="removeMember" data-faction="{{../id}}" data-member="{{id}}"><i class="fas fa-xmark"></i></a></span>{{/each}}
+        <button type="button" data-action="addTokens" data-faction="{{id}}"><i class="fas fa-user-plus"></i> {{localize 'SR5.FACTION_AddTokens'}}</button>
+      </div>
+      <div class="sr-faction-row">
+        <span>{{localize 'SR5.FACTION_Contacts'}} :</span>
+        {{#each contactList}}<span class="sr-faction-tag">{{label}} <a data-action="removeContact" data-faction="{{../id}}" data-contact="{{uuid}}"><i class="fas fa-xmark"></i></a></span>{{/each}}
+        <select name="contact-{{id}}">
+          <option value="">—</option>
+          {{#each ../contacts}}<option value="{{uuid}}">{{label}}</option>{{/each}}
+        </select>
+        <button type="button" data-action="addContact" data-faction="{{id}}"><i class="fas fa-address-book"></i> {{localize 'SR5.FACTION_AddContact'}}</button>
+      </div>
+      {{#if scores.length}}
+      <div class="sr-faction-row">
+        <span>{{localize 'SR5.FACTION_Scores'}} :</span>
+        {{#each scores}}<span class="sr-faction-tag">{{name}} {{score}} ({{shift}})</span>{{/each}}
+      </div>
+      {{/if}}
+    </section>
+    {{else}}
+    <p class="hint">{{localize 'SR5.FACTION_None'}}</p>
+    {{/each}}
+    <div class="sr-faction-row">
+      <input type="text" name="newName" placeholder="{{localize 'SR5.FACTION_Name'}}">
+      <select name="newType">{{selectOptions types localize=true}}</select>
+      <button type="button" data-action="createFaction"><i class="fas fa-plus"></i> {{localize 'SR5.FACTION_Create'}}</button>
+    </div>
+  </fieldset>
+
+  {{#if factions.length}}
+  <fieldset>
+    <legend>{{localize 'SR5.FACTION_Movement'}}</legend>
+    <div class="form-group">
+      <label>{{localize 'SR5.FACTION_Faction'}}</label>
+      <select name="mvFaction">{{#each factions}}<option value="{{id}}">{{name}}</option>{{/each}}</select>
+    </div>
+    <div class="sr-faction-row">
+      {{#each characters}}<label class="checkbox"><input type="checkbox" name="mvActor" value="{{id}}"> {{name}}</label>{{/each}}
+    </div>
+    <div class="form-group">
+      <label>{{localize 'SR5.FACTION_Reason'}}</label>
+      <select name="reason">{{#each reasons}}<option value="{{key}}">{{localize label}} ({{value}})</option>{{/each}}</select>
+      <input type="number" name="delta" value="1" data-tooltip="{{localize 'SR5.FACTION_Points'}}">
+    </div>
+    <div class="form-group">
+      <label>{{localize 'SR5.FACTION_LongConDays'}}</label>
+      <input type="number" name="days" value="0" min="0">
+    </div>
+    <div class="form-group">
+      <label>{{localize 'SR5.FACTION_Note'}}</label>
+      <input type="text" name="mvNote">
+    </div>
+    <label class="checkbox"><input type="checkbox" name="pending" checked> {{localize 'SR5.FACTION_Pending'}}</label>
+    <label class="checkbox"><input type="checkbox" name="enemiesToo" checked> {{localize 'SR5.FACTION_EnemiesToo'}}</label>
+    <button type="button" data-action="addMovement"><i class="fas fa-plus"></i> {{localize 'SR5.FACTION_AddMovement'}}</button>
+  </fieldset>
+
+  <fieldset>
+    <legend>{{localize 'SR5.FACTION_Spending'}}</legend>
+    <div class="sr-faction-row">
+      <select name="spFaction">{{#each factions}}<option value="{{id}}">{{name}}</option>{{/each}}</select>
+      <select name="spActor">{{#each characters}}<option value="{{id}}">{{name}}</option>{{/each}}</select>
+      <select name="spKind">{{#each spends}}<option value="{{key}}">{{localize label}} ({{value}})</option>{{/each}}</select>
+    </div>
+    <div class="form-group">
+      <label>{{localize 'SR5.FACTION_ContactToRaise'}}</label>
+      <select name="spContact"><option value="">—</option>{{#each contacts}}<option value="{{uuid}}">{{label}}</option>{{/each}}</select>
+    </div>
+    <button type="button" data-action="spend"><i class="fas fa-coins"></i> {{localize 'SR5.FACTION_Spend'}}</button>
+  </fieldset>
+  {{/if}}
+
+  <fieldset>
+    <legend>{{localize 'SR5.FACTION_Journal'}}</legend>
+    {{#if pendingCount}}
+    <button type="button" data-action="applyPending"><i class="fas fa-check-double"></i> {{localize 'SR5.FACTION_ApplyPending'}} ({{pendingCount}})</button>
+    {{/if}}
+    <ul class="sr-faction-log">
+      {{#each log}}
+      <li class="{{#if pending}}pending{{/if}}">
+        <span>{{faction}} — {{actor}} : {{localize reasonLabel}} <strong>{{delta}}</strong></span>
+        {{#if pending}}<em>{{localize 'SR5.FACTION_PendingTag'}}</em>{{/if}}
+        {{#if note}}<span class="hint">{{note}}</span>{{/if}}
+        <a data-action="deleteEntry" data-entry="{{id}}"><i class="fas fa-xmark"></i></a>
+      </li>
+      {{else}}
+      <li class="hint">—</li>
+      {{/each}}
+    </ul>
+  </fieldset>
+</div>
