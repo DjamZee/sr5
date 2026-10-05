@@ -400,6 +400,7 @@ export class SR5_CharacterUtility extends Actor {
         }
       }
       actorData.specialProperties.doublePenalties = false
+      actorData.specialProperties.calledShotHalved = false
       actorData.specialProperties.energyAura = ""
       actorData.specialProperties.regeneration = ""
       actorData.specialProperties.naniteToxinResistance = false

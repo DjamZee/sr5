@@ -465,7 +465,7 @@
 								{{/each}}
 							{{/select}}
 						</select>
-					{{else if (or (eq this.target 'system.specialProperties.doublePenalties') (eq this.target 'system.specialProperties.regeneration')(eq this.target 'system.specialProperties.anticoagulant')(eq this.target 'system.specialProperties.essenceDrain'))}}
+					{{else if (or (eq this.target 'system.specialProperties.doublePenalties') (eq this.target 'system.specialProperties.calledShotHalved') (eq this.target 'system.specialProperties.regeneration')(eq this.target 'system.specialProperties.anticoagulant')(eq this.target 'system.specialProperties.essenceDrain'))}}
 						<select name="system.customEffects.{{@key}}.type" required>
 							{{#select type}}
 								{{dropdownOptions 'boolean'}}

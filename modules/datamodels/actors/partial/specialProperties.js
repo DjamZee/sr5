@@ -73,6 +73,10 @@ export class specialPropertiesPartialModel extends foundry.abstract.TypeDataMode
             ...sr5ModsPartialModel.defineSchema(),
           }),
         }),
+        // Aim for Perfection (Assassin's Primer p. 15): Called Shot modifiers halved
+        calledShotHalved: new fields.BooleanField({
+          initial: false
+        }),
         doublePenalties: new fields.BooleanField({
           initial: false
         }),

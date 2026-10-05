@@ -55,3 +55,12 @@ export function osmiumProfile(strength) {
   }
   return null
 }
+
+/**
+ * Aim for Perfection (Assassin's Primer p. 15): "Called Shots […] only -2 dice instead of -4".
+ * A Called Shot penalty is halved, rounded toward zero; bonuses (Trick Shot…) are left alone.
+ */
+export function halveCalledShot(value) {
+  if (!(value < 0)) return value
+  return Math.ceil(value / 2)
+}
