@@ -273,11 +273,13 @@ function isImmunodeficient(actor){
 
 /* Infecting ---------------------------------- */
 
-// The GM infects the tokens he selected, or targeted, with a pathogen item
+// The GM infects the tokens he selected or targeted with a pathogen item; with none, he ticks characters in a list
+// (a character off the scene can fall ill too)
 export async function infectWith(item){
   if (!isActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.DISEASE_ActiveGMOnly"))
-  const actors = [...new Set([...game.user.targets, ...(canvas.tokens?.controlled ?? [])].map(t => t.actor).filter(Boolean))]
-  if (!actors.length) return ui.notifications.warn(game.i18n.localize("SR5.DISEASE_NoTarget"))
+  const picked = [...new Set([...game.user.targets, ...(canvas?.tokens?.controlled ?? [])].map(t => t.actor).filter(Boolean))]
+  const candidates = picked.length ? picked : game.actors.filter(a => a.type === "actorPc" || a.type === "actorGrunt")
+  if (!candidates.length) return ui.notifications.warn(game.i18n.localize("SR5.DISEASE_NoTarget"))
   const profile = profileFromToxin(item)
   const vectors = profile.vectors.length ? profile.vectors : ["contact"]
   const vectorOptions = vectors.map(v => `<option value="${v}">${escape(game.i18n.localize(CONFIG.SR5.propagationVectors?.[v] ?? v))}</option>`).join("")
@@ -290,7 +292,7 @@ export async function infectWith(item){
         name: item.name
       })
     },
-    content: `<p>${actors.map(a => escape(a.name)).join(", ")}</p>
+    content: `<div class="sr5-disease-actors">${candidates.map(a => `<label><input type="checkbox" name="actor" value="${a.uuid}" ${picked.length ? "checked" : ""}> ${escape(a.name)}</label>`).join("<br>")}</div>
       <div class="form-group"><label>${game.i18n.localize("SR5.ToxinVector")}</label><select name="vector">${vectorOptions}</select></div>
       <div class="form-group"><label>${game.i18n.localize("SR5.DISEASE_Doses")}</label><input type="number" name="doses" value="1" min="1"></div>
       ${volunteer}`,
@@ -299,6 +301,7 @@ export async function infectWith(item){
         vector: button.form.elements.vector.value,
         doses: Number(button.form.elements.doses.value) || 1,
         volunteer: !!button.form.elements.volunteer?.checked,
+        actors: [...button.form.querySelectorAll("input[name=actor]:checked")].map(i => i.value),
       })
     },
     rejectClose: false,
@@ -306,11 +309,14 @@ export async function infectWith(item){
   if (!data) return
   const now = game.time.worldTime
   const startYear = calendarStartYear()
+  const actors = candidates.filter(a => data.actors.includes(a.uuid))
+  if (!actors.length) return ui.notifications.warn(game.i18n.localize("SR5.DISEASE_NoTarget"))
   for (const actor of actors){
     const open = openInfectionOf(diseaseLedger(), actor.uuid, profile.name)
     if (open) await writeEntry(reexpose(open, data.doses))
     else await writeEntry(newInfection(profile, {
-      id: foundry.utils.randomID(), actorUuid: actor.uuid, actorName: actor.name, now, startYear, ...data
+      id: foundry.utils.randomID(), actorUuid: actor.uuid, actorName: actor.name, now, startYear,
+      vector: data.vector, doses: data.doses, volunteer: data.volunteer,
     }))
   }
   ui.notifications.info(game.i18n.format("SR5.DISEASE_Infected", {
