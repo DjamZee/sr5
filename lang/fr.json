@@ -2569,6 +2569,8 @@
 	"SR5.CALENDAR_DrugStartCrash": "Passer en descente",
 	"SR5.CALENDAR_DrugEndCrash": "Terminer la descente",
 	"SR5.CALENDAR_AdvanceExtended": "Avancer l'horloge : {n} × {unit}",
+	"SR5.CALENDAR_AdvanceExtendedTitle": "Avancer l'horloge",
+	"SR5.CALENDAR_AdvanceExtendedConfirm": "{what} ?",
 	"SR5.CALENDAR_GoTo":"Aller à une date",
 	"SR5.CALENDAR_GoToLabel": "Date et heure du monde",
 	"SR5.CALENDAR_GoToConfirm": "Régler l'horloge",
