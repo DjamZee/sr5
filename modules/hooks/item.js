@@ -1,4 +1,13 @@
 import {
+  electronicAddedToVintage
+} from '../entities/items/weaponTraits.js'
+import {
+  WEAPON_ACCESSORY_CATALOG
+} from '../data/weaponAccessoryCatalog.js'
+import {
+  SR5
+} from '../config.js'
+import {
   SR5Combat
 } from "../system/srcombat.js"
 import {
@@ -55,7 +64,15 @@ function _copyAmmoTypeEffects(ammoTypeSystem) {
 }
 
 // When an itemAmmunition's ammunitionTypeUuid changes, copy effects from the referenced type
-export function sr5HookPreUpdateItem(document, data, _options, _userId) {
+export function sr5HookPreUpdateItem(document, data, _options, userId) {
+  //Vintage (Gun H(e)aven 3 p. 3): an electronic accessory is allowed but warned about, it gets no wireless
+  if (document.type === 'itemWeapon' && data.system?.accessory !== undefined && userId === game.user?.id) {
+    for (const a of electronicAddedToVintage(document.system.accessory, data.system.accessory, WEAPON_ACCESSORY_CATALOG)) {
+      ui.notifications.warn(game.i18n.format('SR5.WARN_VintageElectronic', {
+        weapon: document.name, accessory: a.system ? a.name : game.i18n.localize(SR5.weaponAccessories[a.name] ?? a.name)
+      }))
+    }
+  }
   if (document.type !== 'itemAmmunition') return
   const newUuid = data.system?.ammunitionTypeUuid
   if (newUuid === undefined) return // UUID not being changed
