@@ -1,4 +1,7 @@
 import {
+  halveCalledShot
+} from '../entities/items/weaponTraits.js'
+import {
   SR5 
 } from "../config.js"
 import {
@@ -1369,6 +1372,8 @@ export default class SR5_RollDialog {
           } else {
             value = SR5_CalledShotHelpers.convertCalledShotToMod(ev.target.value, dialogData.combat.ammo.type, false, dialogData.combat.ammo.effects)
           }
+          // Aim for Perfection (Assassin's Primer p. 15): Called Shot penalties halved
+          if (SR5_EntityHelpers.getRealActorFromID(dialogData.owner.actorId)?.system.specialProperties?.calledShotHalved) value = halveCalledShot(value)
           // Apply martial arts modifier bonus if available for this called shot
           if (dialogData.combat.calledShot.martialArtsModifiers?.[ev.target.value]) {
             value += dialogData.combat.calledShot.martialArtsModifiers[ev.target.value]

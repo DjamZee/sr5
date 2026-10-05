@@ -3629,6 +3629,7 @@ SR5.specialPropertiesList = {
   damageReduction           : "SR5.DamageReduction",
   antitoxin                 : "SR5.Antitoxin",
   doublePenalties           : "SR5.PenaltyDouble",
+  calledShotHalved          : "SR5.CalledShotHalved",
   regeneration              : "SR5.SpiritPowerRegeneration",
   anticoagulant             : "SR5.Anticoagulant",
   aggravatedWounds          : "SR5.AggravatedWounds",
