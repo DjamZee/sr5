@@ -27,6 +27,10 @@ export class sr5ItemLifestyleDataModel extends foundry.abstract.TypeDataModel {
         bought: new fields.BooleanField({
           initial: false
         }),
+        // World time (seconds) the months paid in advance run out at (SR5 p. 377): duration counts down to it
+        paidUntil: new fields.NumberField({
+          initial: null, nullable: true
+        }),
       }),
       streetAddress: new fields.StringField({
         initial: ''
