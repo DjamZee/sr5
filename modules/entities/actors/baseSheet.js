@@ -1,4 +1,7 @@
 import {
+  hasWeaponTrait
+} from '../items/weaponTraits.js'
+import {
   SR5_SystemHelpers 
 } from "../../system/utilitySystem.js"
 import {
@@ -1227,6 +1230,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       oldValue = foundry.utils.getProperty(item, target)
       value = !oldValue
     }
+    //Vintage (Gun H(e)aven 3 p. 3): never wireless, so no switch and no action spent
+    if (target === "system.wirelessTurnedOn" && realItem?.type === "itemWeapon" && hasWeaponTrait(realItem.system, "vintage")) return ui.notifications.warn(game.i18n.localize("SR5.WARN_VintageNoWireless"))
     //The guard reads the actor's counters, which change only when the server answers: a second click before
     //that would pass on the old count. Toggles that cost an action wait for the previous one to be written
     let actionCost = this._itemValueActionCost(item, target, oldValue)
