@@ -88,7 +88,7 @@ export default async function weapon(rollData, actor, item){
   rollData = await handleMartialArtsCalledShot(rollData, actor)
 
   //Handle ranged weapon current firing mode here too: handleTargetInfo skips it when no scene is viewed
-  if (itemData.category === "rangedWeapon" && !rollData.combat.firingMode.selected) rollData.combat.firingMode.selected = SR5_ConverterHelpers.firingModeToCode(itemData.firingMode)
+  if (itemData.category === "rangedWeapon" && !rollData.combat.firingMode.selected) rollData.combat.firingMode.selected = SR5_ConverterHelpers.initialFiringMode(itemData.firingMode, rollData.target.fanning)
   //With a firing mode, the dialog replaces this action by the mode's own (same source)
   if (itemData.category === "rangedWeapon") rollData.combat.actions = SR5_MiscellaneousHelpers.addActions(rollData.combat.actions, SR5_ConverterHelpers.rangedAttackAction(rollData.combat.firingMode.selected))
 
@@ -412,8 +412,8 @@ async function handleTargetInfo(rollData, actor, item){
   }
 
   //Handle ranged weapon current firing mode (several targets for a flamethrower: the sweep, set above)
-  if (itemData.category === "rangedWeapon" && !rollData.target.fanning) {
-    rollData.combat.firingMode.selected = SR5_ConverterHelpers.firingModeToCode(itemData.firingMode)
+  if (itemData.category === "rangedWeapon") {
+    rollData.combat.firingMode.selected = SR5_ConverterHelpers.initialFiringMode(itemData.firingMode, rollData.target.fanning)
   }
     
   //Handle shotgun current choke settings
