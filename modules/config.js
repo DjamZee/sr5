@@ -1313,6 +1313,8 @@ SR5.weaponAccessories = {
   underbarrelChainsaw       : "SR5.AccessoryUnderbarrelChainsaw",
   underbarrelLaser          : "SR5.AccessoryUnderbarrelLaser",
   underbarrelFlamethrower   : "SR5.AccessoryUnderbarrelFlamethrower",
+  flamethrower              : "SR5.AccessoryFlamethrower",
+  osmium                    : "SR5.AccessoryOsmium",
   underbarrelGrappleGun     : "SR5.AccessoryUnderbarrelGrappleGun",
   underbarrelGrenadeLauncher : "SR5.AccessoryUnderbarrelGrenadeLauncher",
   underbarrelShotgun        : "SR5.AccessoryUnderbarrelShotgun",
