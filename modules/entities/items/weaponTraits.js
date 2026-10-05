@@ -20,6 +20,7 @@ export function vintageAccessoryPrice(price, accessoryType, isVintage) {
 
 /** Vintage weapons can never go wireless: their wireless bonuses never apply. */
 export function applyVintageWireless(weaponData) {
+  weaponData.isVintage = false
   if (!hasWeaponTrait(weaponData, "vintage")) return false
   weaponData.isWireless = false
   weaponData.wirelessTurnedOn = false

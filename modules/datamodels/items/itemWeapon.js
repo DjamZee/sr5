@@ -206,6 +206,10 @@ export class sr5ItemWeaponDataModel extends foundry.abstract.TypeDataModel {
       isUsedAsFocus: new fields.BooleanField({
         initial: false
       }),
+      // Derived from the Vintage trait (Gun H(e)aven 3 p. 3), recomputed on each preparation: the sheet greys the wireless icon
+      isVintage: new fields.BooleanField({
+        initial: false
+      }),
       isLinkedToMount: new fields.BooleanField({
         initial: false
       }),
