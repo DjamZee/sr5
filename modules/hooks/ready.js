@@ -35,6 +35,9 @@ import {
 import {
   initIllusions
 } from "../system/illusion.js"
+import {
+  initTacnet
+} from "../system/tacnet.js"
 
 export function sr5HookReady() {
   // Register the GM-authored spirit types, so that they are offered wherever
@@ -79,6 +82,8 @@ export function sr5HookReady() {
   initBBHealing()
   // Invisibility and Mask: the active GM keeps the thresholds and who has seen through (SR5 p. 294)
   initIllusions()
+  // RP-Tac: a lowered Device Rating trims the roster (Run & Gun p. 119)
+  initTacnet()
 
   // The deeper table of contents also reaches the window of Monk's Enhanced Journal
   sr5DeepenModuleTableOfContents()

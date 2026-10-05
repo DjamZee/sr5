@@ -3,10 +3,10 @@ import {
 } from "vitest"
 import {
   illusionResistanceAttributes, isFooledBy, ledgerAfterCast, ledgerAfterResistance, ledgerWithout,
-  unpiercedIllusions, blindFireOffer, BLIND_FIRE
+  unpiercedIllusions, blindFireOffer, BLIND_FIRE, countHits, resistanceVerdict, castVerdict, messageUsed, ledgerAfterSustain
 } from "../modules/rolls/roll-helpers/illusion.js"
 import {
-  tacnetCapacity, tacnetMembers, ledgerAfterJoin, ledgerAfterLeave, tacnetBonus, isTacticsKnowledge, tacnetOffer
+  tacnetCapacity, tacnetMembers, ledgerAfterJoin, ledgerAfterLeave, ledgerTrimmed, tacnetBonus, isTacticsKnowledge, tacnetOffer
 } from "../modules/rolls/roll-helpers/tacnet.js"
 import {
   rollKinds
@@ -238,5 +238,118 @@ describe("RP-Tac: the bonuses (Run & Gun p. 119, Street Lethal p. 176)", () => {
     }, "RP-Tac")).toMatchObject({
       value: 2, checked: true, kind: "dicePool", indirect: true
     })
+  })
+})
+
+// A card's dice as roll-test.js writes them in flags.sr5data.roll.r
+const dice = (...faces) => ({
+  terms: [{
+    results: faces.map(result => ({
+      result, active: true
+    }))
+  }]
+})
+
+describe("forged cards: the GM counts again (review of Béatrice)", () => {
+  it("counts the 5s and 6s on the dice, never the number written beside them", () => {
+    expect(countHits(dice(6, 5, 1, 3))).toBe(2)
+    expect(countHits(dice(6, 6, 6, 6), 3)).toBe(3)
+    expect(countHits({
+    })).toBeNull()
+  })
+  it("a resistance card from someone who does not own the observer is refused", () => {
+    expect(resistanceVerdict({
+      authorOwnsObserver: false, rollJSON: dice(6, 6), pool: 8
+    })).toMatchObject({
+      ok: false, reason: "owner"
+    })
+  })
+  it("a resistance with hits:99 but no dice, or more dice than the observer has, is refused", () => {
+    expect(resistanceVerdict({
+      authorOwnsObserver: true, rollJSON: undefined, pool: 8
+    }).ok).toBe(false)
+    const tooMany = dice(...Array(99).fill(6))
+    expect(resistanceVerdict({
+      authorOwnsObserver: true, rollJSON: tooMany, pool: 8, edge: 3
+    })).toMatchObject({
+      ok: false, reason: "pool"
+    })
+  })
+  it("a fair resistance passes with the hits of its dice; Chance may add dice, the Rule of Six rerolls do not count", () => {
+    const pushed = dice(6, 5, 5, 1, 2, 3, 4, 6, 6, 5, 1)
+    pushed.terms[0].results.push({
+      result: 6, active: true, ruleOfSix: true
+    })
+    expect(resistanceVerdict({
+      authorOwnsObserver: true, rollJSON: pushed, pool: 8, edge: 3
+    })).toEqual({
+      ok: true, hits: 7
+    })
+  })
+  it("a casting card from a player who does not own the caster, or a spell not his, is refused", () => {
+    const base = {
+      authorOwnsCaster: true, spellOnCaster: true, messageUsed: false, rollJSON: dice(6, 6, 5), force: 6, magic: 6, claimedHits: 3
+    }
+    expect(castVerdict({
+      ...base, authorOwnsCaster: false
+    }).reason).toBe("owner")
+    expect(castVerdict({
+      ...base, spellOnCaster: false
+    }).reason).toBe("owner")
+  })
+  it("a message counts once", () => {
+    const ledger = cast()
+    expect(messageUsed(ledger, "m1")).toBe(true)
+    expect(castVerdict({
+      authorOwnsCaster: true, spellOnCaster: true, messageUsed: messageUsed(ledger, "m1"), rollJSON: dice(6), force: 6, magic: 6
+    }).reason).toBe("message")
+  })
+  it("hits:99 written on a card: the dice decide, within Force and twice the Magic, and the GM sees the gap", () => {
+    expect(castVerdict({
+      authorOwnsCaster: true, spellOnCaster: true, messageUsed: false, rollJSON: dice(6, 5, 2), force: 6, magic: 5, claimedHits: 99
+    })).toMatchObject({
+      ok: true, hits: 2, mismatch: true
+    })
+    expect(castVerdict({
+      authorOwnsCaster: true, spellOnCaster: true, messageUsed: false, rollJSON: dice(...Array(30).fill(6)), force: 40, magic: 3, claimedHits: 30
+    })).toMatchObject({
+      hits: 6, limit: 6
+    })
+  })
+})
+
+describe("illusions: dropping the sustain (second round, point 6)", () => {
+  it("keeps a spell cast but not yet sustained, marks it once sustained, forgets it when dropped", () => {
+    const {
+      ledger
+    } = ledgerAfterResistance(cast(), "Spell.inv", guard.uuid, 4)
+    expect(ledgerAfterSustain(ledger, () => false)).toBeNull()
+    const seen = ledgerAfterSustain(ledger, () => true)
+    expect(seen["Spell.inv"].wasSustained).toBe(true)
+    expect(ledgerAfterSustain(seen, () => true)).toBeNull()
+    expect(ledgerAfterSustain(seen, () => false)).toEqual({
+    })
+  })
+})
+
+describe("RP-Tac: a lowered Device Rating", () => {
+  it("lets the last ones in leave, the bearer stays", () => {
+    const roster = {
+      "Item.t": ["Actor.1", "Actor.2", "Actor.3", "Actor.4", "Actor.5", "Actor.6"]
+    }
+    const {
+      ledger, removed
+    } = ledgerTrimmed(roster, "Item.t", {
+      deviceRating: 3, bearerUuid: "Actor.a"
+    })
+    expect(ledger["Item.t"]).toEqual(["Actor.1", "Actor.2", "Actor.3"])
+    expect(removed).toEqual(["Actor.4", "Actor.5", "Actor.6"])
+  })
+  it("changes nothing while there is room", () => {
+    expect(ledgerTrimmed({
+      "Item.t": ["Actor.1"]
+    }, "Item.t", {
+      deviceRating: 4, bearerUuid: "Actor.a"
+    }).removed).toEqual([])
   })
 })

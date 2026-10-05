@@ -237,9 +237,8 @@ export default class SR5_RollDialog {
     element.querySelectorAll('.SR-SituationalCheckbox').forEach(el => el.addEventListener('change', ev => this._situationalModifier(ev, element, dialogData)))
     this._toggleSituationalList(element, dialogData)
     //An invisible target already brings its blind fire box (system/illusion.js): the hand-ticked one would count -6 twice
-    if (dialogData.situational?.some(o => o.blindFire)) element.querySelectorAll('[data-modifier="attackBlindFire"]').forEach(el => {
-      el.disabled = true
-    })
+    this._syncBlindFire(element, dialogData)
+    element.querySelectorAll('[data-modifier="attackBlindFire"]').forEach(el => el.addEventListener('change', () => this._syncBlindFire(element, dialogData)))
     //The attribute picked in the dialog brings its "tests linked to" effects (Pushed)
     element.querySelectorAll('.SR-ModSelect[data-modifier="attribute"]').forEach(el => el.addEventListener('change', ev => {
       dialogData.secondaryAttribute = ev.target.value
@@ -437,6 +436,20 @@ export default class SR5_RollDialog {
       })
       this.updateDicePoolValue(html)
     }
+    if (offer.blindFire) this._syncBlindFire(html, dialogData)
+  }
+
+  //Blind fire counts once (SR5 p. 180): the invisibility box ticked greys the hand one, and the other way round
+  _syncBlindFire(html, dialogData){
+    const index = (dialogData.situational || []).findIndex(o => o.blindFire)
+    if (index < 0) return
+    const manual = html.querySelectorAll('[data-modifier="attackBlindFire"]')
+    const manualTicked = [...manual].some(el => el.checked)
+    manual.forEach(el => {
+      el.disabled = !!dialogData.situational[index].checked
+    })
+    const box = html.querySelector(`.SR-SituationalCheckbox[data-index="${index}"]`)
+    if (box) box.disabled = manualTicked
   }
 
   //Effects on "tests linked to an attribute" (Pushed, Chrome Flesh p. 167) follow the attributes in use:

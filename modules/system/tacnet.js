@@ -8,7 +8,7 @@ import {
   SR5_SocketHandler
 } from "../socket.js"
 import {
-  tacnetLevel, tacnetMembers, tacnetCapacity, ledgerAfterJoin, ledgerAfterLeave, tacnetBonus, tacnetOffer
+  tacnetLevel, tacnetMembers, tacnetCapacity, ledgerAfterJoin, ledgerAfterLeave, ledgerTrimmed, tacnetBonus, tacnetOffer
 } from "../rolls/roll-helpers/tacnet.js"
 
 export const TACNET_LEDGER = "sr5TacnetLedger"
@@ -21,6 +21,10 @@ export function registerTacnetSetting(){
     type: Object,
     default: {
     },
+    //The open sheets of RP-Tac units show the roster as the GM just wrote it
+    onChange: () => foundry.applications.instances.forEach(app => {
+      if (app.document?.type === "itemGear" && app.document.system?.tacnetLevel) app.render()
+    }),
   })
 }
 
@@ -155,6 +159,27 @@ export async function _socketTacnetRoster(message, senderId){
     })}</p>`
   })
   await applyRoster(data, senderId).catch(e => SR5_SystemHelpers.srLog(1, `Tacnet roster not written: ${e}`))
+}
+
+// A Device Rating lowered below the roster: the last ones in leave the network, the GM is told
+export function initTacnet(){
+  Hooks.on("updateItem", (item, changes) => {
+    if (!isActiveGM() || item.type !== "itemGear" || changes?.system?.deviceRating === undefined) return
+    if (!tacnetLevel(item.system.tacnetLevel)) return
+    const {
+      ledger: next, removed
+    } = ledgerTrimmed(ledger(), item.uuid, {
+      deviceRating: item.system.deviceRating, bearerUuid: item.parent?.uuid
+    })
+    if (!removed.length) return
+    game.settings.set("sr5", TACNET_LEDGER, next).then(() => ChatMessage.create({
+      whisper: game.users.filter(u => u.isGM).map(u => u.id),
+      content: `<p>${game.i18n.format("SR5.TacnetTrimmed", {
+        network: item.name, max: tacnetCapacity(item.system.deviceRating),
+        members: removed.map(u => globalThis.fromUuidSync?.(u)?.name ?? u).join(", ")
+      })}</p>`,
+    })).catch(e => SR5_SystemHelpers.srLog(1, `Tacnet roster not trimmed: ${e}`))
+  })
 }
 
 // What the sheet shows: the members by name, the places left (read-only for all, Q10 of 06/10)

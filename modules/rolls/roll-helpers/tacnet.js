@@ -69,6 +69,25 @@ export function ledgerAfterJoin(ledger, deviceUuid, memberUuid, {
   }
 }
 
+// The roster once the Device Rating went down: the last ones in leave first, the bearer always stays
+export function ledgerTrimmed(ledger, deviceUuid, {
+  deviceRating, bearerUuid
+}){
+  const roster = (ledger?.[deviceUuid] ?? []).filter(u => u !== bearerUuid)
+  const room = Math.max(0, tacnetCapacity(deviceRating) - (bearerUuid ? 1 : 0))
+  if (roster.length <= room) return {
+    ledger: {
+      ...(ledger ?? {
+      })
+    }, removed: []
+  }
+  return {
+    ledger: {
+      ...ledger, [deviceUuid]: roster.slice(0, room)
+    }, removed: roster.slice(room)
+  }
+}
+
 export function ledgerAfterLeave(ledger, deviceUuid, memberUuid){
   const next = {
     ...(ledger ?? {
