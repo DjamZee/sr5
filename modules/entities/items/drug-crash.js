@@ -19,6 +19,10 @@ export async function startDrugCrash(data, actor) {
   data.onUse.duration = ""
   if (shot.durationContrecoup) {
     data.onUse.contrecoup = `${shot.durationContrecoup} ${game.i18n.localize(SR5.extendedIntervals[shot.durationContrecoupType])}`
+    //eX and galak: the -2 social Limit of the crash has its own duration, (Body) hours (Chrome Flesh p. 186)
+    if (shot.socialLimitContrecoup) data.onUse.contrecoup += ` ; ${game.i18n.format("SR5.DrugSocialLimitCrash", {
+      duration: `${shot.socialLimitContrecoup} ${game.i18n.localize(SR5.extendedIntervals.hour)}`
+    })}`
     await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugContrecoup")} (${game.i18n.localize(SR5.drugs[shot.name])})${game.i18n.format("SR5.Colons")} ${data.onUse.contrecoup}`)
   }
   if (shot.unresistedStunDamage) {

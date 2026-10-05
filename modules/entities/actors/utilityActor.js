@@ -3272,7 +3272,8 @@ export class SR5_CharacterUtility extends Actor {
         }
         break
       case "jazz":
-        roll = new Roll(`10d6`)
+        //(10 × 1D6) minutes, one die times ten (SR5 p. 413-414), not the sum of ten dice
+        roll = new Roll(`1d6 * 10`)
         rollRoll = await roll.evaluate()
         drugStat = {
           "name": drugType.value,
@@ -3284,7 +3285,8 @@ export class SR5_CharacterUtility extends Actor {
         }
         break
       case "kamikaze":
-        roll = new Roll(`10d6`)
+        //(10 × 1D6) minutes, one die times ten (SR5 p. 413-414), not the sum of ten dice
+        roll = new Roll(`1d6 * 10`)
         rollRoll = await roll.evaluate()
         drugStat = {
           "name": drugType.value,
@@ -3310,7 +3312,8 @@ export class SR5_CharacterUtility extends Actor {
         }
         break
       case "nitro":
-        roll = new Roll(`10d6`)
+        //(10 × 1D6) minutes, one die times ten (SR5 p. 413), not the sum of ten dice
+        roll = new Roll(`1d6 * 10`)
         rollRoll = await roll.evaluate()
         drugStat = {
           "name": drugType.value,
@@ -3346,7 +3349,8 @@ export class SR5_CharacterUtility extends Actor {
         }
         break
       case "zen":
-        roll = new Roll(`10d6`)
+        //(10 × 1D6) minutes, one die times ten (SR5 p. 413-414), not the sum of ten dice
+        roll = new Roll(`1d6 * 10`)
         rollRoll = await roll.evaluate()
         drugStat = {
           "name": drugType.value,
@@ -3470,8 +3474,10 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.Minutes",
           "duration": duration,
           "durationType": "hour",
-          "durationContrecoup": actorData.attributes.body.augmented.value,
+          //Chrome Flesh p. 186: disorientation as long as the effect, and -2 social Limit for (Body) hours
+          "durationContrecoup": duration,
           "durationContrecoupType": "hour",
+          "socialLimitContrecoup": actorData.attributes.body.augmented.value,
         }
         break
       case "forgetMeNot":
@@ -3494,8 +3500,10 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.Minutes",
           "duration": duration,
           "durationType": "hour",
+          //Chrome Flesh p. 186, as eX: disorientation as long as the effect, and -2 social Limit for (Body) hours
           "durationContrecoup": duration,
           "durationContrecoupType": "hour",
+          "socialLimitContrecoup": actorData.attributes.body.augmented.value,
         }
         break
       case "g3":

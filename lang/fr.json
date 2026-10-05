@@ -1403,6 +1403,7 @@
 	"SR5.DrugBliss": "Bliss",
 	"SR5.DrugCeteprax": "Cereprax",
 	"SR5.DrugContrecoup": "Contrecoup de la drogue",
+	"SR5.DrugSocialLimitCrash": "Limite sociale -2 : {duration}",
 	"SR5.DrugContrecoupDuration": "Durée du contrecoup",
 	"SR5.DrugContrecoupDurationDoubled": "Durées des contrecoups doublées",
 	"SR5.DrugCram": "Cram",

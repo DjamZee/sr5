@@ -368,7 +368,7 @@ async function take(sheet, id){
 const written = (actor, id) => actor.update.mock.calls.at(-1)[0].items.find(i => i._id === id)
 
 describe('taking a drug rolls its random duration once (SR5 p. 411-413)', () => {
-  it('rolls 10D6 once for Jazz and stores that duration', async () => {
+  it('rolls (10 × 1D6) once for Jazz and stores that duration', async () => {
     rollTotals(30)
     const {
       actor, sheet
@@ -376,7 +376,7 @@ describe('taking a drug rolls its random duration once (SR5 p. 411-413)', () => 
 
     await take(sheet, 'jazz')
 
-    expect(rolled).toEqual(['10d6'])
+    expect(rolled).toEqual(['1d6 * 10'])
     const jazz = written(actor, 'jazz')
     expect(jazz.system.handleShot.duration).toBe(30)
     expect(jazz.system.onUse.duration).toBe('30 SR5.Minutes')
@@ -392,7 +392,7 @@ describe('drug interactions (Chrome Flesh p. 197)', () => {
 
     await take(sheet, 'jazz')
 
-    expect(rolled).toEqual(['10d6', '1d6'])
+    expect(rolled).toEqual(['1d6 * 10', '1d6'])
   })
 
   it('on 1, doubles the durations of all the drugs and writes them with the actor update', async () => {
