@@ -17,6 +17,9 @@ import {
 import {
   initCalendarClock
 } from "../interface/calendar-clock.js"
+import {
+  initEffectExpiry
+} from "../system/effect-expiry.js"
 
 export function sr5HookReady() {
   // Register the GM-authored spirit types, so that they are offered wherever
@@ -49,6 +52,8 @@ export function sr5HookReady() {
 
   // The Sixth World clock: date and time for all, advance and "go to" for the GM
   initCalendarClock()
+  // Effects in minutes, hours, days, weeks, months: counted on the clock, the GM removes them
+  initEffectExpiry()
 
   // The deeper table of contents also reaches the window of Monk's Enhanced Journal
   sr5DeepenModuleTableOfContents()
