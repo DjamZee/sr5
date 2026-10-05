@@ -75,6 +75,13 @@ export class SR5_ConverterHelpers {
     return 0
   }
 
+  //Suppressive fire fires 20 rounds (SR5 p. 179) and the flamethrower sweep two units (Gun H(e)aven 3 p. 3): with fewer
+  //left the attack cannot be made. Other modes keep firing what is left.
+  static missingAmmo(mode, ammoLeft){
+    if (mode !== "SF" && mode !== "FN") return false
+    return (ammoLeft ?? 0) < this.firingModeToBullet(mode)
+  }
+
   //Several targets for a flamethrower: the sweep (Gun H(e)aven 3 p. 3), whatever mode the weapon kept
   static initialFiringMode(firingMode, fanning){
     return fanning ? "FN" : this.firingModeToCode(firingMode)

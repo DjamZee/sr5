@@ -155,25 +155,26 @@ export default async function weapon(rollData, actor, item){
 
   rollData.lists.firingModes = {
   }
-  if (rollData.combat.firingMode.singleShot) rollData.lists.firingModes.SS = `${game.i18n.localize("SR5.WeaponModeSS")} (${game.i18n.localize("SR5.WeaponModeSSShort")} [-1 ${game.i18n.localize("SR5.Bullet")}]`
+  if (rollData.combat.firingMode.singleShot) rollData.lists.firingModes.SS = `${game.i18n.localize("SR5.WeaponModeSS")} (${game.i18n.localize("SR5.WeaponModeSSShort")} [-1 ${game.i18n.localize("SR5.Bullet")}])`
   if (rollData.combat.firingMode.semiAutomatic) {
-    rollData.lists.firingModes.SA = `${game.i18n.localize("SR5.WeaponModeSA")} (${game.i18n.localize("SR5.WeaponModeSAShort")} [-1 ${game.i18n.localize("SR5.Bullet")}]`
-    rollData.lists.firingModes.SB = `${game.i18n.localize("SR5.WeaponModeSB")} (${game.i18n.localize("SR5.WeaponModeSBShort")} [-3 ${game.i18n.localize("SR5.Bullets")}]`
+    rollData.lists.firingModes.SA = `${game.i18n.localize("SR5.WeaponModeSA")} (${game.i18n.localize("SR5.WeaponModeSAShort")} [-1 ${game.i18n.localize("SR5.Bullet")}])`
+    rollData.lists.firingModes.SB = `${game.i18n.localize("SR5.WeaponModeSB")} (${game.i18n.localize("SR5.WeaponModeSBShort")} [-3 ${game.i18n.localize("SR5.Bullets")}])`
   }
   if (rollData.combat.firingMode.burstFire) {
-    rollData.lists.firingModes.BF = `${game.i18n.localize("SR5.WeaponModeBF")} (${game.i18n.localize("SR5.WeaponModeBFShort")} [-3 ${game.i18n.localize("SR5.Bullets")}]`
-    rollData.lists.firingModes.LB = `${game.i18n.localize("SR5.WeaponModeLB")} (${game.i18n.localize("SR5.WeaponModeLBShort")} [-6 ${game.i18n.localize("SR5.Bullets")}]`
+    rollData.lists.firingModes.BF = `${game.i18n.localize("SR5.WeaponModeBF")} (${game.i18n.localize("SR5.WeaponModeBFShort")} [-3 ${game.i18n.localize("SR5.Bullets")}])`
+    rollData.lists.firingModes.LB = `${game.i18n.localize("SR5.WeaponModeLB")} (${game.i18n.localize("SR5.WeaponModeLBShort")} [-6 ${game.i18n.localize("SR5.Bullets")}])`
   }
   if (rollData.combat.firingMode.fullyAutomatic) {
-    rollData.lists.firingModes.FA = `${game.i18n.localize("SR5.WeaponModeFA")} (${game.i18n.localize("SR5.WeaponModeFAShort")} [-6 ${game.i18n.localize("SR5.Bullets")}]`
-    rollData.lists.firingModes.FAc = `${game.i18n.localize("SR5.WeaponModeFA")} (${game.i18n.localize("SR5.WeaponModeFAShort")} [-10 ${game.i18n.localize("SR5.Bullets")}]`
-    rollData.lists.firingModes.SF = `${game.i18n.localize("SR5.WeaponModeSF")} (${game.i18n.localize("SR5.WeaponModeSFShort")} [-20 ${game.i18n.localize("SR5.Bullets")}]`
+    rollData.lists.firingModes.FA = `${game.i18n.localize("SR5.WeaponModeFA")} (${game.i18n.localize("SR5.WeaponModeFAShort")} [-6 ${game.i18n.localize("SR5.Bullets")}])`
+    rollData.lists.firingModes.FAc = `${game.i18n.localize("SR5.WeaponModeFA")} (${game.i18n.localize("SR5.WeaponModeFAShort")} [-10 ${game.i18n.localize("SR5.Bullets")}])`
+    rollData.lists.firingModes.SF = `${game.i18n.localize("SR5.WeaponModeSF")} (${game.i18n.localize("SR5.WeaponModeSFShort")} [-20 ${game.i18n.localize("SR5.Bullets")}])`
   }
     
   //Flamethrower (Gun H(e)aven 3 p. 3): Suppressive Fire and the fanning sweep; several targets leave only the sweep
   if (hasWeaponTrait(itemData, "flamethrower")) {
-    if (!rollData.combat.firingMode.fullyAutomatic) rollData.lists.firingModes.SF = `${game.i18n.localize("SR5.WeaponModeSF")} (${game.i18n.localize("SR5.WeaponModeSFShort")}`
-    const fanningLabel = `${game.i18n.localize("SR5.WeaponModeFN")} (${game.i18n.localize("SR5.WeaponModeFNShort")} [-${FANNING_AMMO} ${game.i18n.localize("SR5.Bullets")}]`
+    //Suppressive Fire (SR5 p. 179) with its 20 units, fuel rather than rounds
+    rollData.lists.firingModes.SF = `${game.i18n.localize("SR5.WeaponModeSF")} (${game.i18n.localize("SR5.WeaponModeSFShort")} [-20 ${game.i18n.localize("SR5.FuelUnits")}])`
+    const fanningLabel = `${game.i18n.localize("SR5.WeaponModeFN")} (${game.i18n.localize("SR5.WeaponModeFNShort")} [-${FANNING_AMMO} ${game.i18n.localize("SR5.FuelUnits")}])`
     if (rollData.target.fanning) rollData.lists.firingModes = {
       FN: fanningLabel
     }
