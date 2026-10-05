@@ -51,6 +51,12 @@ describe("months of rent paid in advance (SR5 p. 377)", () => {
     expect(addMonths(at(2070, 10, 5), 3, 2070)).toBe(at(2071, 1, 5))
   })
 
+  it("fall on the last day of a shorter month: 31 January + 1 month = 28 or 29 February (Ursula)", () => {
+    expect(addMonths(at(2070, 0, 30), 1, 2070)).toBe(at(2070, 1, 27))
+    expect(addMonths(at(2072, 0, 30), 1, 2070)).toBe(at(2072, 1, 28))
+    expect(addMonths(at(2070, 4, 30), 1, 2070)).toBe(at(2070, 5, 29))
+  })
+
   it("count down as the clock moves", () => {
     const start = at(2070, 0, 1)
     const end = addMonths(start, 3, 2070)
