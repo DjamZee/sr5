@@ -23,6 +23,20 @@ export function isTimedEffect(system){
   return Object.hasOwn(TIMED_DURATIONS, system?.durationType) && Number(system?.duration) > 0
 }
 
+// An effect taken again while it runs (dumpshock): it now ends at the later of its old end and "now + new
+// duration", counted from now. Returns the update to write, in the effect's own unit (rounded up)
+export function extendTimedEffect(system, newDuration, now, startYear){
+  const unit = TIMED_DURATIONS[system?.durationType]
+  if (!unit) return {
+    "system.duration": newDuration
+  }
+  const oldEnd = expiryTime(system, startYear)
+  const remaining = oldEnd === null ? 0 : Math.ceil(Math.max(0, oldEnd - now) / unit)
+  return {
+    "system.duration": Math.max(Number(newDuration) || 0, remaining), "system.startTime": now, "flags.sr5.expiryNotified": false
+  }
+}
+
 // The world time an effect ends at, null when it does not count on the clock or never started
 export function expiryTime(system, startYear){
   if (!isTimedEffect(system)) return null

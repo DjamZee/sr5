@@ -11,8 +11,14 @@ import {
   SR5Combat 
 } from "../../system/srcombat.js"
 import {
-  SR5_SystemHelpers 
+  SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
+import {
+  extendTimedEffect
+} from "../../system/effect-expiry.js"
+import {
+  calendarStartYear
+} from "../../system/calendar.js"
 import {
   SR5_CompendiumUtility 
 } from "./utilityCompendium.js"
@@ -436,9 +442,8 @@ export class SR5_ActorHelper {
     let existingEffect = actor.items.find((item) => item.type === "itemEffect" && item.system.type === "dumpshock")
 
     if (existingEffect){
-      if (existingEffect.system.duration < duration) await existingEffect.update({
-        "system.duration": duration
-      })
+      //A new dumpshock restarts the count from now on the world clock, never shortening the one running
+      await existingEffect.update(extendTimedEffect(existingEffect.system, duration, game.time.worldTime, calendarStartYear()))
       return
     }
 
