@@ -29,6 +29,10 @@ export class sr5ItemEffectDataModel extends foundry.abstract.TypeDataModel {
       durationType: new fields.StringField({
         initial: ''
       }),
+      // World time (seconds) a minute, hour, day, week or month effect began at: its end is counted from it
+      startTime: new fields.NumberField({
+        initial: null, nullable: true
+      }),
       value: new fields.StringField({
         initial: ''
       }),
