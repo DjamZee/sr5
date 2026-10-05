@@ -409,8 +409,8 @@ async function handleTargetInfo(rollData, actor, item){
     }
   }
 
-  //Handle ranged weapon current firing mode
-  if (itemData.category === "rangedWeapon") {
+  //Handle ranged weapon current firing mode (several targets for a flamethrower: the sweep, set above)
+  if (itemData.category === "rangedWeapon" && !rollData.target.fanning) {
     rollData.combat.firingMode.selected = SR5_ConverterHelpers.firingModeToCode(itemData.firingMode)
   }
     
