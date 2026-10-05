@@ -103,6 +103,37 @@ describe("unarmed damage of the bone augmentations", () => {
     expect(w.damageType).toBe("physical")
   })
 
+  it("reads the rating again at each preparation, without writing it into the effect", () => {
+    const effect = {
+      category: "weaponEffectTargets", target: "system.itemsProperties.weapon.damageValue", type: "unarmedCombat",
+      wifi: false, value: 0, ratingOffset: -1, damageType: "physical"
+    }
+    const item = {
+      name: "Densité", type: "itemAugmentation", system: {
+        itemRating: 4, isActive: true, customEffects: [effect]
+      }
+    }
+    const prepare = () => {
+      const target = {
+        modifiers: []
+      }
+      SR5_CharacterUtility.applyCustomEffects(item, {
+        system: {
+          itemsProperties: {
+            weapon: {
+              damageValue: target
+            }
+          }
+        }
+      })
+      return target.modifiers[0].value
+    }
+    expect(prepare()).toBe(3)
+    item.system.itemRating = 2
+    expect(prepare()).toBe(1)
+    expect(effect.value).toBe(0)
+  })
+
   it("rating 1 still turns the damage physical, with no bonus", () => {
     const w = weapon()
     SR5_UtilityItem._generateWeaponDamage(w, actorWith(prepared("Densité", 1, {

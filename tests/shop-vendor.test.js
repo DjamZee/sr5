@@ -307,9 +307,10 @@ let SR5ShopVendor, SR5Shop
 const sent = vi.hoisted(() => [])
 const notes = []
 
-// The real socket module brings the whole system; the till only needs its two calls. Mocked for the whole
-// file (hoisted), not test by test: a mock set in beforeEach left a window in which a late import found the
-// real module, which then kept loading the system after the file was torn down.
+// The real socket module brings the whole system; the till only needs its two calls. The till tells the
+// buyer without waiting (#notify is not awaited), so its import of the socket can still be running when a
+// test ends: each test waits for it (afterEach), or the last one resolved after the file was torn down, the
+// mock gone, and loaded the real system ("EnvironmentTeardownError").
 vi.mock('../modules/socket.js', () => ({
   SR5_SocketHandler: {
     emitForPlayer: async (type, data, userId) => sent.push({
@@ -356,7 +357,8 @@ beforeEach(async () => {
   }
 })
 
-afterEach(() => {
+afterEach(async () => {
+  await vi.dynamicImportSettled()
   sent.length = 0
   notes.length = 0
   for (const key of ['actors', 'users', 'socket', 'user']) delete globalThis.game[key]

@@ -4996,17 +4996,19 @@ export class SR5_CharacterUtility extends Actor {
           }
           if (customEffect.target === "system.itemsProperties.weapon.damageValue") {
             //A bonus read from the item's rating with an offset: bone density adds its rating − 1 (SR5 p. 463)
-            if (typeof customEffect.ratingOffset === "number") customEffect.value = Math.max(0, (Number(item.system.itemRating) || 0) + customEffect.ratingOffset)
-            customEffect.value = (customEffect.value || 0)
+            //(worked out apart: the effect itself is left untouched, it is read again at each preparation)
+            const rated = typeof customEffect.ratingOffset === "number"
+            if (!rated) customEffect.value = (customEffect.value || 0)
+            const value = rated ? Math.max(0, (Number(item.system.itemRating) || 0) + customEffect.ratingOffset) : customEffect.value
             //Damage that turns physical: (STR + n)P of the bone augmentations (SR5 p. 458 and 463). Kept apart,
             //never merged with another item's bonus: the weapon keeps the highest of them (utilityItem.js)
             if (customEffect.damageType === "physical") {
               targetObject.modifiers.push({
-                source: item.name, type: item.type, value: customEffect.value * customEffect.multiplier, isMultiplier, details: customEffect.type, damageType: "physical"
+                source: item.name, type: item.type, value: value * customEffect.multiplier, isMultiplier, details: customEffect.type, damageType: "physical"
               })
               continue
             }
-            SR5_EntityHelpers.updateModifier(targetObject, `${item.name}`, item.type, customEffect.value * customEffect.multiplier, isMultiplier, cumulative, customEffect.type)
+            SR5_EntityHelpers.updateModifier(targetObject, `${item.name}`, item.type, value * customEffect.multiplier, isMultiplier, cumulative, customEffect.type)
             continue
           }
         }
