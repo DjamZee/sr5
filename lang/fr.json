@@ -690,7 +690,7 @@
 	"SR5.ShopVendorTakings": "Recette : {name}",
 	"SR5.ShopVendorTemplate": "Modèle",
 	"SR5.ShopVendorTemplateHint": "Le modèle règle les rayons, la légalité, la marge et la Disponibilité max : des choix de jeu, pas des règles. Tout reste modifiable sur la fiche du stockage. Le rayon Magie ne contient que les foci, seuls objets magiques vendus par les compendiums.",
-	"SR5.ShopVendorUnverifiedText": "{seller} vend pour {price}¥ des objets dont le prix n'a pas pu être relu sur leur source (compendium) : c'est celui de sa fiche. Accepter la vente ?",
+	"SR5.ShopVendorUnverifiedText": "{seller} vend pour {price}¥ des objets dont le prix n'a pas pu être relu sur leur source (compendium) : prix trouvé par leur nom dans les rayons, ou celui de sa fiche. Accepter la vente ?",
 	"SR5.ShopVendorUnverifiedTitle": "Rachat chez {name} : prix non vérifié",
 	"SR5.ShopVersus": "contre",
 	"SR5.ShopWhere": "Où acheter",

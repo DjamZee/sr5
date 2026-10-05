@@ -690,7 +690,7 @@
 	"SR5.ShopVendorTakings": "Takings: {name}",
 	"SR5.ShopVendorTemplate": "Template",
 	"SR5.ShopVendorTemplateHint": "The template sets shelves, legality, margin and max availability: choices of play, not rules. Everything stays editable on the storage sheet. The Magic shelf holds foci only, the only magic goods the compendiums sell.",
-	"SR5.ShopVendorUnverifiedText": "{seller} sells for {price}¥ items whose price could not be read on their source (compendium): it is the one on her sheet. Accept the sale?",
+	"SR5.ShopVendorUnverifiedText": "{seller} sells for {price}¥ items whose price could not be read on their source (compendium): a price found by their name on the shelves, or the one on her sheet. Accept the sale?",
 	"SR5.ShopVendorUnverifiedTitle": "Buy-back at {name}: price not verified",
 	"SR5.ShopVersus": "vs",
 	"SR5.ShopWhere": "Where to buy",
