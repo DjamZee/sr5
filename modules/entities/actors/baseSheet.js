@@ -427,6 +427,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     //Move money between the ledger and a credstick
     on(".credstick-withdraw", "click", this._onCredstickMove.bind(this, "withdraw"))
     on(".credstick-deposit", "click", this._onCredstickMove.bind(this, "deposit"))
+    //Shop orders: delivery and cancellation for the GM, a cancellation request for a player
+    on("[data-shop-order]", "click", this._onShopOrder.bind(this))
     //Reboot le deck
     on(".reset-deck", "click", this._onRebootDeck.bind(this))
     // Déplie les infos
@@ -871,6 +873,16 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
    * @param {Event} event
    * @private
    */
+  async _onShopOrder(event) {
+    event.preventDefault()
+    const id = event.currentTarget.closest("[data-order-id]")?.dataset.orderId
+    if (!id) return
+    const orders = await import("../../interface/shop-orders.js")
+    const action = event.currentTarget.dataset.shopOrder
+    if (action === "deliver") return orders.deliverOrder(this.actor, id)
+    if (action === "cancel") return orders.cancelFromSheet(this.actor, id)
+  }
+
   async _onCredstickMove(way, event) {
     event.preventDefault()
     // Read the dataset before the first await: currentTarget is null afterwards

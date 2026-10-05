@@ -10,6 +10,9 @@ import {
 import {
   markRowDoneInMessage, cardFromGM
 } from "./card-rows.js"
+import {
+  ORDERS_FLAG, freshlyDue, deliverOrder
+} from "../interface/shop-orders.js"
 
 export const REVEAL_DEADLINES_SETTING = "sr5CalendarRevealDeadlines"
 const DAY = 86400
@@ -132,6 +135,20 @@ async function collect(actor, now, startYear){
       sr5Calendar: true
     })
   }
+
+  // Shop orders (SR5 p. 420): once found, the goods wait for the GM's click to reach the sheet
+  const orders = actor.getFlag?.("sr5", ORDERS_FLAG) ?? []
+  const arrived = freshlyDue(orders, now)
+  if (arrived.length){
+    for (const order of arrived) rows.push({
+      kind: "delivery", actor, orderId: order.id, label: order.quantity > 1 ? `${order.name} (x${order.quantity})` : order.name,
+      due: order.due,
+    })
+    const ids = new Set(arrived.map(o => o.id))
+    await actor.setFlag("sr5", ORDERS_FLAG, orders.map(o => ids.has(o.id) ? {
+      ...o, notified: true
+    } : o))
+  }
   return rows
 }
 
@@ -173,6 +190,9 @@ function rowText(r){
   if (r.kind === "addiction") return game.i18n.format("SR5.CALENDAR_DeadlineAddiction", {
     actor: escape(r.actor.name), name: escape(r.label), level: game.i18n.localize(CONFIG.SR5?.addictionLevels?.[r.level] ?? r.level)
   })
+  if (r.kind === "delivery") return game.i18n.format("SR5.CALENDAR_DeadlineDelivery", {
+    actor: escape(r.actor.name), name: escape(r.label)
+  })
   return game.i18n.format("SR5.CALENDAR_DeadlineRent", {
     actor: escape(r.actor.name), name: escape(r.label), price: r.price.toLocaleString()
   })
@@ -180,7 +200,14 @@ function rowText(r){
 
 function rowData(r){
   const base = `data-kind="${r.kind}" data-actor-uuid="${r.actor.uuid}"`
+  if (r.kind === "delivery") return `${base} data-order-id="${r.orderId}"`
   return r.kind === "addiction" ? `${base} data-index="${r.index}" data-name="${escape(r.label)}"` : `${base} data-item-id="${r.item.id}"`
+}
+
+const ACTION_LABELS = {
+  addiction: "SR5.CALENDAR_DeadlineRollWithdrawal",
+  rent: "SR5.CALENDAR_DeadlinePayRent",
+  delivery: "SR5.CALENDAR_DeadlineDeliver",
 }
 
 async function postDeadlineCard(rows){
@@ -188,7 +215,7 @@ async function postDeadlineCard(rows){
       <span class="sr5-deadline-text">${rowText(r)}</span>
       <span class="sr5-deadline-due">${fmt(r.due)}</span>
       <span class="sr5-deadline-buttons">
-        <button type="button" data-sr5-deadline="act">${game.i18n.localize(r.kind === "addiction" ? "SR5.CALENDAR_DeadlineRollWithdrawal" : "SR5.CALENDAR_DeadlinePayRent")}</button>
+        <button type="button" data-sr5-deadline="act">${game.i18n.localize(ACTION_LABELS[r.kind])}</button>
         <button type="button" data-sr5-deadline="reveal">${game.i18n.localize("SR5.CALENDAR_DeadlineReveal")}</button>
       </span>
     </li>`).join("")
@@ -323,6 +350,15 @@ function markRowDone(row){
   return markRowDoneInMessage(row, "[data-sr5-deadline=act]", game.i18n.localize("SR5.CALENDAR_RowDone"))
 }
 
+// The goods of a shop order reach the sheet (SR5 p. 420)
+async function deliverRow(row){
+  return deliverOrder(await fromUuid(row.dataset.actorUuid), row.dataset.orderId)
+}
+
+const ROW_ACTIONS = {
+  addiction: rollWithdrawal, rent: payRent, delivery: deliverRow,
+}
+
 export function activateDeadlineCardListeners(html, message){
   if (!game.user.isGM || !cardFromGM(message)) return html.querySelectorAll("[data-sr5-deadline]").forEach(b => b.remove())
   html.querySelectorAll("[data-sr5-deadline]").forEach(button => button.addEventListener("click", async (event) => {
@@ -330,7 +366,7 @@ export function activateDeadlineCardListeners(html, message){
     const row = btn.closest(".sr5-deadline-row")
     const reveal = btn.dataset.sr5Deadline === "reveal"
     btn.disabled = true
-    const action = reveal ? revealRow : (row.dataset.kind === "addiction" ? rollWithdrawal : payRent)
+    const action = reveal ? revealRow : ROW_ACTIONS[row.dataset.kind]
     const done = await action(row).catch(e => SR5_SystemHelpers.srLog(1, `Deadline action failed: ${e}`))
     if (done && !reveal) await markRowDone(row)
     else if (done) btn.remove()
@@ -378,7 +414,7 @@ export function initDeadlines(){
   })
   // A new addiction or lifestyle gets its date at once, not at the next move of the clock
   Hooks.on("updateActor", (actor, changes, options) => {
-    if (!options?.sr5Calendar && changes.system?.addictions) queueCheck()
+    if (!options?.sr5Calendar && (changes.system?.addictions || changes.flags?.sr5?.[ORDERS_FLAG])) queueCheck()
   })
   Hooks.on("createActor", (actor) => {
     if (actor.system?.addictions?.length) queueCheck()

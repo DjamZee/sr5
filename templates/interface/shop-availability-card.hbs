@@ -61,6 +61,9 @@
 
   <footer class="sr-shop-card-footer">
     {{#if canBuy}}
+    {{#if express}}
+    <label class="sr-shop-express"><input type="checkbox" data-shop-express> {{express}}</label>
+    {{/if}}
     <button type="button" data-shop-action="checkout">
       <i class="fas fa-sm fa-receipt"></i>
       {{localize 'SR5.ShopCashPurchase'}} ({{totalLabel}})

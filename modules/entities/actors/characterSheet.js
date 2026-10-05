@@ -11,6 +11,9 @@ import {
   isStoredAway
 } from "../../interface/storage-rules.js"
 import {
+  ordersForSheet
+} from "../../interface/shop-orders.js"
+import {
   isLocked
 } from "../../interface/storage-lock.js"
 import {
@@ -236,6 +239,8 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     actor.nuyens = nuyens
     actor.credsticks = credsticks
     actor.cashOnHand = SR5Credstick.cashOnHand(this.actor)
+    // Bought, paid, not delivered yet (SR5 p. 420)
+    actor.shopOrders = ordersForSheet(this.actor)
     actor.contacts = contacts
     actor.lifestyles = lifestyles
     actor.sins = sins

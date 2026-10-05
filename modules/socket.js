@@ -43,6 +43,14 @@ const vendor = method => async (message, senderId) => {
   return SR5ShopVendor[method](message, senderId)
 }
 
+// A player asks the gamemaster to cancel a shop order (SR5 p. 420)
+const orderCancel = async (message, senderId) => {
+  const {
+    socketCancel
+  } = await import("./interface/shop-orders.js")
+  return socketCancel(message, senderId)
+}
+
 export class SR5_SocketHandler {
   static registerSocketListeners() {
     const hooks = {
@@ -88,6 +96,7 @@ export class SR5_SocketHandler {
       "shopVendorOffer": [vendor('_socketOffer')],
       "shopVendorAccept": [vendor('_socketAccept')],
       "shopVendorDecline": [vendor('_socketDecline')],
+      "shopOrderCancel": [orderCancel],
     }
 
     //senderId is added by the server to every custom socket message: a client cannot forge it

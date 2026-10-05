@@ -13,6 +13,9 @@ import {
 import {
   SR5_EntityHelpers
 } from '../entities/helpers.js'
+import {
+  currentExpress, deliveryDelayed
+} from './shop-orders.js'
 
 /**
  * The availability test of SR5 p. 420.
@@ -410,6 +413,7 @@ export class SR5ShopAvailability {
         outcome,
         obtained,
         glitch: test.glitch,
+        delayHours: delay,
         delayLabel: delay === null ? '—' : SR5ShopAvailability.formatDelay(delay),
         outcomeLabel: game.i18n.localize(`SR5.ShopOutcome_${outcome}`),
       })
@@ -445,6 +449,8 @@ export class SR5ShopAvailability {
       totalLabel: `${total.toLocaleString()}¥`,
       canBuy: obtained.length > 0,
       vendor: options.vendor ?? null,
+      // Express delivery, a house rule off by default (arbitrage de DjamZ, 05/10): offered when a line waits
+      express: SR5ShopAvailability.expressOffer(obtained),
     }
 
     SR5_SystemHelpers.srLog(3, `Shop: availability test for ${actor.name} (pool ${pool})`, cardData)
@@ -465,6 +471,15 @@ export class SR5ShopAvailability {
     return cardData
   }
 
+  /** What the express box of the card says, or null when it has no reason to be there. */
+  static expressOffer(obtained) {
+    const terms = currentExpress()
+    if (!terms || !deliveryDelayed() || !obtained.some(r => r.availability > 0)) return null
+    return game.i18n.format('SR5.ShopExpressLabel', {
+      surcharge: terms.surcharge, factor: terms.factor
+    })
+  }
+
   /* -------------------------------------------- */
   /*  Chat card                                   */
   /* -------------------------------------------- */
@@ -478,14 +493,17 @@ export class SR5ShopAvailability {
         if (!data) return
         const actor = game.actors.get(data.buyerId)
         const lines = data.results.filter(r => r.obtained).map(r => ({
-          uuid: r.uuid, quantity: r.quantity, name: r.name, grade: r.grade,
+          uuid: r.uuid, quantity: r.quantity, name: r.name, grade: r.grade, delayHours: r.delayHours ?? null,
         }))
+        const express = !!data.express && !!html.querySelector('[data-shop-express]')?.checked
         // Bought at a vendor's: its till, on the gamemaster's browser
         // Loaded on demand: the vendor's till brings the socket, which the tests do without
         const SR5ShopVendor = data.vendor ? (await import('./shop-vendor.js')).SR5ShopVendor : null
         const bought = data.vendor ? await SR5ShopVendor.purchase({
-          vendorUuid: data.vendor.uuid, storageId: data.vendor.storageId, buyerId: actor?.id, lines,
-        }) : await SR5Shop.checkout(actor, lines)
+          vendorUuid: data.vendor.uuid, storageId: data.vendor.storageId, buyerId: actor?.id, lines, express,
+        }) : await SR5Shop.checkout(actor, lines, {
+          express
+        })
         // The goods are cashed once: the button goes, the card stays.
         if (bought) {
           await message.update({

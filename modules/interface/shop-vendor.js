@@ -38,6 +38,9 @@ import {
   isShopStorage, shopSettings, stockOf, itemFigures, figureMismatches, piecesOf, fitsRestock, restockPicks, splitTakings,
   checkStockLines
 } from './shop-vendor-rules.js'
+import {
+  lineWaits, deliveryDelayed, currentExpress, expressCost, orderHours, newOrder, addOrders
+} from './shop-orders.js'
 
 /**
  * The gamemaster's vendor (shop lot C, part 1).
@@ -655,6 +658,7 @@ export class SR5ShopVendor {
       })
     }
     const free = equip || SR5Shop.creationMode
+    const terms = request.express === true ? currentExpress() : null
     const limits = !equip && SR5Shop.creationMode ? SR5Shop.creationLimits : null
     const resolved = []
     for (const {
@@ -710,13 +714,20 @@ export class SR5ShopVendor {
       }
       const block = limits ? SR5ShopCatalog.creationBlock(described, limits) : null
       if (block) continue
+      // An order is searched for (SR5 p. 420): it waits on the buyer; the counter's stock does not
+      const waits = lineWaits({
+        delayed: deliveryDelayed(), availability: described.availability, free
+      })
+      const total = described.price * quantity
+      const extra = waits ? expressCost(total, terms) : 0
       resolved.push({
-        source, grade, quantity, unit: described.price, total: described.price * quantity,
+        source, grade, quantity, unit: described.price, total, extra, waits,
         name: SR5Shop.gradedName(source.name, grade),
+        delayHours: typeof line.delayHours === 'number' ? line.delayHours : null,
       })
     }
     if (!resolved.length) return false
-    const total = resolved.reduce((sum, line) => sum + line.total, 0)
+    const total = resolved.reduce((sum, line) => sum + line.total + (line.extra ?? 0), 0)
 
     // How the buyer pays: the accounts, or a credstick carried on them (SR5 p. 445)
     let stick = null
@@ -785,9 +796,18 @@ export class SR5ShopVendor {
     }
 
     // The goods leave the counter first, then reach the buyer
-    const toDelete = [], toUpdate = [], payload = []
+    const toDelete = [], toUpdate = [], payload = [], orders = []
     for (const line of resolved) {
-      if (line.item) {
+      if (line.waits) {
+        line.order = newOrder(line, {
+          hours: orderHours(SR5Shop.searchHours(line), line.extra ? terms : null),
+          express: !!line.extra, extra: line.extra, now: game.time.worldTime,
+          vendor: {
+            uuid: actor.uuid, storageId: storage.id, label
+          },
+        })
+        orders.push(line.order)
+      } else if (line.item) {
         const left = piecesOf(line.item) - line.quantity
         if (left > 0) toUpdate.push({
           _id: line.item.id, 'system.quantity': left
@@ -812,7 +832,8 @@ export class SR5ShopVendor {
         name: labels.join(', '), price: total.toLocaleString(), shop: label,
       })))
     }
-    await buyer.createEmbeddedDocuments('Item', payload)
+    if (payload.length) await buyer.createEmbeddedDocuments('Item', payload)
+    await addOrders(buyer, orders)
     let overflow = 0
     if (!free) {
       const split = splitTakings(total, SR5Credstick.room(cashbox))
@@ -827,7 +848,8 @@ export class SR5ShopVendor {
     }
 
     const rows = resolved.map(line =>
-      `<li>${SR5Shop.lineLabel(line.name, line.quantity)} — ${line.total.toLocaleString()}&yen;</li>`).join('')
+      `<li>${SR5Shop.lineLabel(line.name, line.quantity)} — ${(line.total + (line.extra ?? 0)).toLocaleString()}&yen;${
+        SR5Shop.orderNote(line.order)}</li>`).join('')
     await foundry.documents.ChatMessage.create({
       speaker: foundry.documents.ChatMessage.getSpeaker({
         actor: buyer
@@ -835,7 +857,7 @@ export class SR5ShopVendor {
       whisper: equip ? game.users.filter(u => u.isGM).map(u => u.id) : [],
       content: `<p>${game.i18n.format(free ? 'SR5.ShopVendorChatFree' : 'SR5.ShopVendorChat', {
         actor: buyer.name, name: summary, shop: label, price: total.toLocaleString(),
-      })}</p>${resolved.length > 1 ? `<ul>${rows}</ul>` : ''}${overflow ? `<p>${game.i18n.format('SR5.ShopVendorOverflow', {
+      })}</p>${resolved.length > 1 || orders.length ? `<ul>${rows}</ul>` : ''}${overflow ? `<p>${game.i18n.format('SR5.ShopVendorOverflow', {
         amount: overflow.toLocaleString()
       })}</p>` : ''}`,
     })

@@ -11,6 +11,9 @@ import {
   registerDeadlineSettings
 } from "../system/deadlines.js"
 import {
+  registerOrderSettings
+} from "../interface/shop-orders.js"
+import {
   registerExtendedClockSetting
 } from "../system/extended-clock.js"
 import {
@@ -266,6 +269,7 @@ export async function sr5HookInit() {
   //Sixth World calendar and 3 s per Combat Turn (SR5 p. 51)
   registerCalendarSettings()
   registerDeadlineSettings()
+  registerOrderSettings()
   registerExtendedClockSetting()
   //The grappling statuses exist only in a world that uses the grappling rules
   if (SR5_GrappleHelpers.isActive()) CONFIG.statusEffects.push(...SR5_GrappleHelpers.statusEffects())

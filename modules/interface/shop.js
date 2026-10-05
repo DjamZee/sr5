@@ -16,6 +16,12 @@ import {
 import {
   SR5ShopCatalog
 } from './shop-catalog.js'
+import {
+  SR5ShopAvailability
+} from './shop-availability.js'
+import {
+  lineWaits, deliveryDelayed, currentExpress, expressCost, orderHours, newOrder, addOrders
+} from './shop-orders.js'
 
 /**
  * Purchases made from the compendium browser.
@@ -177,7 +183,7 @@ export class SR5Shop {
    * @returns {Promise<boolean>} whether the gear was added
    */
   static async checkout(actor, lines, {
-    equip = false
+    equip = false, express = false
   } = {
   }) {
     if (!actor) {
@@ -229,8 +235,9 @@ export class SR5Shop {
       const grade = offered.includes(line.grade) ? line.grade : null
       // Creation caps availability and rating (SR5 p. 66, p. 420), at the level the gamemaster
       // set (DjamZ's ruling, 2026-10-05); Equip mode is how the gamemaster goes past them
+      const described = SR5ShopCatalog.describe(source, grade)
       const block = !equip && SR5Shop.creationMode ?
-        SR5ShopCatalog.creationBlock(SR5ShopCatalog.describe(source, grade), SR5Shop.creationLimits) :
+        SR5ShopCatalog.creationBlock(described, SR5Shop.creationLimits) :
         null
       if (block) {
         ui.notifications.warn(game.i18n.format(`SR5.WARN_ShopCreationLimit_${block}`, {
@@ -244,13 +251,23 @@ export class SR5Shop {
       resolved.push({
         source, quantity, unit, grade, total: unit * quantity,
         name: SR5Shop.gradedName(source.name, grade),
+        availability: Number(described.availability) || 0, delayHours: line.delayHours,
       })
     }
     if (!resolved.length) return false
 
-    const total = resolved.reduce((sum, line) => sum + line.total, 0)
-    const balance = SR5Shop.balance(actor)
     const free = equip || SR5Shop.creationMode
+    // SR5 p. 420: what has an availability is found after the search time, and waits on the buyer
+    const delayed = deliveryDelayed()
+    const terms = express ? currentExpress() : null
+    for (const line of resolved) {
+      line.waits = lineWaits({
+        delayed, availability: line.availability, free
+      })
+      line.extra = line.waits ? expressCost(line.total, terms) : 0
+    }
+    const total = resolved.reduce((sum, line) => sum + line.total + line.extra, 0)
+    const balance = SR5Shop.balance(actor)
 
     if (!free && total > balance) {
       ui.notifications.warn(game.i18n.format('SR5.WARN_ShopNotEnoughNuyen', {
@@ -279,8 +296,20 @@ export class SR5Shop {
       if (!confirmed) return false
     }
 
-    const payload = []
-    for (const line of resolved) payload.push(...SR5Shop._itemPayload(line.source, line.quantity, line.grade))
+    const payload = [], orders = []
+    const now = game.time.worldTime
+    for (const line of resolved) {
+      if (!line.waits) {
+        payload.push(...SR5Shop._itemPayload(line.source, line.quantity, line.grade))
+        continue
+      }
+      const order = newOrder(line, {
+        hours: orderHours(SR5Shop.searchHours(line), line.extra ? terms : null),
+        express: !!line.extra, extra: line.extra, now,
+      })
+      line.order = order
+      orders.push(order)
+    }
 
     const labels = resolved.map(line => SR5Shop.lineLabel(line.name, line.quantity))
     const label = labels.length === 1 ?
@@ -306,11 +335,13 @@ export class SR5Shop {
     })
 
     SR5_SystemHelpers.srLog(3, `Shop: ${actor.name} ${equip ? 'is equipped with' : free ? 'receives' : 'buys'} ${label} (${total})`)
-    await actor.createEmbeddedDocuments('Item', payload)
+    if (payload.length) await actor.createEmbeddedDocuments('Item', payload)
+    await addOrders(actor, orders)
 
     const rows = resolved.map(line =>
-      `<li>${SR5Shop.lineLabel(line.name, line.quantity)} — ${line.total.toLocaleString()}&yen;</li>`).join('')
-    const detail = resolved.length > 1 ? `<ul>${rows}</ul>` : ''
+      `<li>${SR5Shop.lineLabel(line.name, line.quantity)} — ${(line.total + line.extra).toLocaleString()}&yen;${
+        SR5Shop.orderNote(line.order)}</li>`).join('')
+    const detail = resolved.length > 1 || orders.length ? `<ul>${rows}</ul>` : ''
     if (equip) {
       // Equip mode leaves a trace for the gamemaster alone (DjamZ's ruling, 2026-10-05)
       await foundry.documents.ChatMessage.create({
@@ -349,6 +380,25 @@ export class SR5Shop {
           name: label, price: total.toLocaleString()
         }))
     return true
+  }
+
+  /**
+   * The search time of a line that waits: the one the availability test gave,
+   * or, bought without a test, the time of the table (SR5 p. 420) as for one
+   * net hit.
+   */
+  static searchHours(line) {
+    const tested = Number(line.delayHours)
+    if (line.delayHours !== null && line.delayHours !== undefined && Number.isFinite(tested)) return tested
+    return SR5ShopAvailability.delayFor(line.total)
+  }
+
+  /** " — on order, arrives on …" after a line that waits. */
+  static orderNote(order) {
+    if (!order) return ''
+    return ` — ${game.i18n.format(order.express ? 'SR5.ShopOrderNoteExpress' : 'SR5.ShopOrderNote', {
+      date: game.time.calendar?.format?.(order.due) ?? ''
+    })}`
   }
 
   /** `Nom (Alphaware)` when a grade was chosen. */
