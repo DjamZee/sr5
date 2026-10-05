@@ -90,6 +90,10 @@ export class specialPropertiesPartialModel extends foundry.abstract.TypeDataMode
         naniteToxinResistance: new fields.BooleanField({
           initial: false
         }),
+        // Immunodeficiency (SR5 p. 83): the Power of any disease is +2 for every resistance test
+        immunodeficiency: new fields.BooleanField({
+          initial: false
+        }),
         essenceDrain: new fields.BooleanField({
           initial: false
         }),

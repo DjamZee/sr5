@@ -428,6 +428,7 @@ export class SR5_CharacterUtility extends Actor {
       actorData.specialProperties.energyAura = ""
       actorData.specialProperties.regeneration = ""
       actorData.specialProperties.naniteToxinResistance = false
+      actorData.specialProperties.immunodeficiency = false
       actorData.specialProperties.anticoagulant = ""
       actorData.specialProperties.aggravatedWounds = false
       actorData.specialProperties.essenceDrain = ""

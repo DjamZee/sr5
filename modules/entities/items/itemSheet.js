@@ -5,8 +5,11 @@ import {
   SR5 
 } from "../../config.js"
 import {
-  garageRequirement 
+  garageRequirement
 } from "../../interface/storage-rules.js"
+import {
+  infectWith
+} from "../../system/diseases.js"
 import {
   SR5_SpiritTypes
 } from "./spirit-types.js"
@@ -409,6 +412,10 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
 
     // Toxin: damage choices, and on a weapon the name of a dropped toxin
     if (item.type === "itemToxin") context.toxinDamageTypes = SR5.damageTypes
+    if (item.type === "itemToxin") context.pathogenUnits = {
+      minute: "SR5.Minutes", hour: "SR5.Hours", day: "SR5.Days", week: "SR5.Weeks", month: "SR5.Months"
+    }
+    context.isActiveGM = game.user.isGM && game.users.activeGM?.id === game.user.id
     if (item.type === "itemWeapon") context.weaponToxinName = SR5_Toxins.nameOf(item.system.toxin, k => game.i18n.localize(k))
 
     // Mentor spirit: each effect picks its block, the Mask shows only with its optional rule
@@ -496,6 +503,9 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       mentorDrop.addEventListener('dragover', ev => ev.preventDefault())
       mentorDrop.addEventListener('drop', ev => this.#onDropMentor(ev))
     }
+
+    // Pathogen: the active GM infects the tokens he selected or targeted (system/diseases.js)
+    el.querySelector('.sr5-pathogen-infect')?.addEventListener('click', () => infectWith(this.document))
 
     // Weapon toxin: drop a toxin item, resync it, or go back to the book list
     const toxinDrop = el.querySelector('.sr5-toxin-drop')

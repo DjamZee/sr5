@@ -26,6 +26,9 @@ import {
 import {
   initDrugClock
 } from "../system/drug-clock.js"
+import {
+  initDiseases
+} from "../system/diseases.js"
 
 export function sr5HookReady() {
   // Register the GM-authored spirit types, so that they are offered wherever
@@ -64,6 +67,8 @@ export function sr5HookReady() {
   initDeadlines()
   // Drugs: end of the effect and of the crash on the clock (SR5 p. 411-412, Chrome Flesh p. 194)
   initDrugClock()
+  // Diseases: incubation and resistance tests on the clock (Run Faster p. 111-112)
+  initDiseases()
 
   // The deeper table of contents also reaches the window of Monk's Enhanced Journal
   sr5DeepenModuleTableOfContents()

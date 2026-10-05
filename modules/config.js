@@ -3677,6 +3677,7 @@ SR5.specialPropertiesList = {
   aggravatedWounds          : "SR5.AggravatedWounds",
   essenceDrain              : "SR5.EssenceDrain",
   naniteToxinResistance     : "SR5.NaniteToxinResistance",
+  immunodeficiency          : "SR5.Immunodeficiency",
 }
 
 SR5.transactionsTypes = {

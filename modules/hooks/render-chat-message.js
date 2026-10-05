@@ -25,6 +25,9 @@ import {
 import {
   addExtendedClockButton
 } from "../system/extended-clock.js"
+import {
+  activateDiseaseDueListeners, activateDiseaseRequestListeners, addDiseaseApplyButton
+} from "../system/diseases.js"
 
 export function sr5HookRenderChatMessageHTML(message, html, _data) {
   // A table draw is rendered by core and wears no SR5 header of its own
@@ -69,6 +72,10 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   if (message.flags?.sr5?.drugClock) activateDrugCardListeners(html, message)
   // Extended tests and healing (SR5 p. 50, 207-208): the GM moves the clock on by the time spent
   if (message.flags?.sr5data?.test?.extended?.intervalValue) addExtendedClockButton(message, html)
+  // Diseases (Run Faster p. 111-112): the GM's due card, the roll asked of the player, the GM applies the roll
+  if (message.flags?.sr5?.diseaseDue) activateDiseaseDueListeners(html, message)
+  if (message.flags?.sr5?.diseaseRequest) activateDiseaseRequestListeners(html, message)
+  if (message.flags?.sr5data?.disease) addDiseaseApplyButton(message, html)
 }
 
 // v13: keep chat scrolled to bottom when SR5 roll messages change height.

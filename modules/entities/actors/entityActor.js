@@ -5,8 +5,11 @@ import {
   SR5_EntityHelpers 
 } from "../helpers.js"
 import {
-  SR5_SystemHelpers 
+  SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
+import {
+  applyDiseaseEffects
+} from "../../system/diseases.js"
 import {
   SR5_UtilityItem 
 } from "../items/utilityItem.js"
@@ -839,6 +842,8 @@ export class SR5Actor extends Actor {
       }
     }
     for (const mentor of mentorSpirits) SR5_CharacterUtility.applyMentorSpirit(mentor, actor)
+    //Diseases: read from the GM's ledger, never from the actor (system/diseases.js)
+    if (actor.type === "actorPc" || actor.type === "actorGrunt") applyDiseaseEffects(actor, SR5_EntityHelpers.updateModifier.bind(SR5_EntityHelpers), game.i18n.localize("SR5.Pathogen"))
   }
 
   sortLists(data) {

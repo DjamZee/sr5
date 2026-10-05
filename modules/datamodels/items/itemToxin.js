@@ -59,6 +59,38 @@ export class sr5ItemToxinDataModel extends foundry.abstract.TypeDataModel {
       inertia: new fields.StringField({
         initial: ''
       }),
+      //A disease is a toxin that comes back (Run Faster p. 111-112): its Speed is an interval, with a least
+      //number of resistance tests; the effects below come from Bullets & Bandages p. 21
+      pathogen: new fields.SchemaField({
+        isPathogen: flag(),
+        interval: new fields.SchemaField({
+          value: new fields.NumberField({
+            initial: 1, integer: true, min: 1
+          }),
+          unit: new fields.StringField({
+            initial: 'day'
+          }),
+        }),
+        minTests: new fields.NumberField({
+          initial: 1, integer: true, min: 1
+        }),
+        //Dice off the first test of a willing subject (Cypher)
+        volunteerPenalty: new fields.NumberField({
+          initial: 0, integer: true, min: 0
+        }),
+        nature: new fields.StringField({
+          initial: ''
+        }),
+        effect: new fields.SchemaField({
+          reducedAttributes: flag(),
+          essenceLoss: flag(),
+          memoryLoss: flag(),
+        }),
+        //Written on the GM's card, never applied (transformation, death)
+        finalEffect: new fields.StringField({
+          initial: ''
+        }),
+      }),
     }
   }
 }

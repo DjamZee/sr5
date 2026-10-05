@@ -17,6 +17,9 @@ import {
   registerExtendedClockSetting
 } from "../system/extended-clock.js"
 import {
+  registerDiseaseSettings
+} from "../system/diseases.js"
+import {
   SR5
 } from "../config.js"
 import {
@@ -272,6 +275,8 @@ export async function sr5HookInit() {
   registerOrderSettings()
   registerOrderLedger()
   registerExtendedClockSetting()
+  //Diseases (Run Faster p. 111-112): the GM's ledger of infections, and what the player is shown
+  registerDiseaseSettings()
   //The grappling statuses exist only in a world that uses the grappling rules
   if (SR5_GrappleHelpers.isActive()) CONFIG.statusEffects.push(...SR5_GrappleHelpers.statusEffects())
   //Running (SR5 p. 163-164): the "running" status, "Course" and "Sprint" in the movement selector, a ruler colored by gait
