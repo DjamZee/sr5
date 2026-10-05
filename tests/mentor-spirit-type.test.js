@@ -16,6 +16,11 @@ describe("itemMentorSpirit declaration", () => {
     expect(existsSync("assets/img/items/itemMentorSpirit.svg")).toBe(true)
   })
 
+  it("has a default name, without which the sheet's + creates nothing", () => {
+    expect(readFileSync("modules/entities/items/utilityItem.js", "utf8")).toContain('case "itemMentorSpirit":')
+    expect(JSON.parse(readFileSync("lang/fr.json", "utf8"))["SR5.MentorSpiritNew"]).toBe("Nouvel esprit mentor")
+  })
+
   it("has its blocks, its layout and preloaded templates that exist", () => {
     const registry = readFileSync("modules/interface/item-block-registry.js", "utf8")
     expect(registry).toContain("mentorSpiritSummary")

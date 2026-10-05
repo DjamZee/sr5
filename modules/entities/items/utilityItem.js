@@ -128,6 +128,9 @@ export class SR5_UtilityItem extends Actor {
       case "itemTradition":
         displayName = game.i18n.localize("SR5.TraditionNew")
         break
+      case "itemMentorSpirit":
+        displayName = game.i18n.localize("SR5.MentorSpiritNew")
+        break
       case "itemRitual":
         displayName = game.i18n.localize("SR5.RitualNew")
         break
