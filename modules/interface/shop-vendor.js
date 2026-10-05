@@ -29,6 +29,9 @@ import {
   SR5ShopFence
 } from './shop-fence.js'
 import {
+  SR5_CompendiumUtility
+} from '../entities/actors/utilityCompendium.js'
+import {
   VENDOR_TEMPLATES, VENDOR_FAMILIES, vendorTemplate, templateBanners, templateShop
 } from './shop-vendor-templates.js'
 import {
@@ -315,22 +318,43 @@ export class SR5ShopVendor {
     const template = vendorTemplate(templateKey)
     if (!template) return null
     const label = name || game.i18n.localize(`SR5.ShopTemplate_${template.key}`)
+    // One creation with every item: SR5Actor.create returns the actor only when the data carries
+    // its items (otherwise it adds the base items itself and returns nothing), so the Grunt's base
+    // items are fetched here, as it would, and the shop and its cashbox come with them
+    const storageId = foundry.utils.randomID()
+    const cashboxId = foundry.utils.randomID()
+    const shop = templateShop(template, {
+      label, banner
+    })
+    shop.cashboxId = cashboxId
+    const items = [
+      ...(await SR5_CompendiumUtility.getBaseItems('actorGrunt') ?? []),
+      {
+        _id: storageId, name: label, type: 'itemStorage', system: {
+          type: 'shop', shop
+        }
+      },
+      {
+        _id: cashboxId, name: game.i18n.localize('SR5.ShopVendorCashboxName'), type: 'itemGear',
+        img: 'systems/sr5/assets/img/items/itemNuyen.svg',
+        system: {
+          isCredstick: true, funds: {
+            value: 0, max: 0
+          }
+        },
+      },
+    ]
     const actor = await Actor.implementation.create({
-      name: label, type: 'actorGrunt', prototypeToken: {
+      name: label, type: 'actorGrunt', items, prototypeToken: {
         actorLink: linked, name: label
       },
+    }, {
+      keepEmbeddedIds: true
     })
-    const [storage] = await actor.createEmbeddedDocuments('Item', [{
-      name: label, type: 'itemStorage', system: {
-        type: 'shop', shop: templateShop(template, {
-          label, banner
-        })
-      },
-    }])
-    await SR5ShopVendor.createCashbox(actor, storage)
-    if (restock) await SR5ShopVendor.restock(actor, actor.items.get(storage.id))
+    if (!actor) return null
+    if (restock) await SR5ShopVendor.restock(actor, actor.items.get(storageId))
     return {
-      actor, storage: actor.items.get(storage.id)
+      actor, storage: actor.items.get(storageId)
     }
   }
 

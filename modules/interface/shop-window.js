@@ -355,6 +355,9 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
   /** Change shop: the cart and the filters of the last one are left behind. */
   setSource(source) {
     this._source = source
+    // The title is drawn once with the window frame: it follows the shop by hand
+    const title = this.window?.title
+    if (title) title.textContent = this.title
     this._cart = []
     this._shelf = ''
     this._sub = ''
