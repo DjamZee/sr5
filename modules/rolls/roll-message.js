@@ -55,6 +55,9 @@ import {
 import {
   SR5SharedVision
 } from "../interface/shared-vision.js"
+import {
+  applyManaShift
+} from "../system/mana-shift.js"
 
 // True when a GM is connected to relay what a player cannot do
 export function hasActiveGM() {
@@ -586,6 +589,9 @@ export class SR5_RollMessage {
       case "ritualSealed":
         SR5_ThirdPartyHelpers.sealRitual(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
+      case "manaShift":
+        if (await applyManaShift(messageData, messageId)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "killComplexFormResistance":
       case "dispellResistance":

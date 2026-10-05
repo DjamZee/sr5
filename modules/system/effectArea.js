@@ -6,8 +6,11 @@ import {
   SR5_SystemHelpers 
 } from "./utilitySystem.js"
 import {
-  SR5_SocketHandler 
+  SR5_SocketHandler
 } from "../socket.js"
+import {
+  backgroundCountFor
+} from "./background-count.js"
 import {
   _getSRStatusEffect 
 } from "../system/effectsList.js"
@@ -257,7 +260,8 @@ export class SR5_EffectArea {
     //Background count
     if (templateData.backgroundCountValue && templateData.backgroundCountValue !== 0){
       sourceName = game.i18n.localize("SR5.SceneBackgroundCount")
-      let effectValue = actor.system.magic?.tradition === templateData.backgroundCountAlignement ? templateData.backgroundCountValue : -templateData.backgroundCountValue
+      //Aetherologie p. 34: a negative count (ebb) is a penalty for everyone, not a bonus for the non-aligned
+      let effectValue = backgroundCountFor(templateData.backgroundCountValue, templateData.backgroundCountAlignement, actor.system.magic?.tradition)
       effect = await SR5_EntityHelpers.generateItemEffect(sourceName, "areaEffect", template, `${game.i18n.localize("SR5.Magic")}`, effectValue, 0, "permanent")
       effect.system.customEffects.push(await SR5_EntityHelpers.generateCustomEffect("astralValues", "system.magic.bgCount", "value", effectValue, true))
       if (effect && effect.system.customEffects.length) {

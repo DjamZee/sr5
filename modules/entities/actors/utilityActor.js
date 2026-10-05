@@ -52,6 +52,9 @@ import {
 import {
   harmoniousDefensePool
 } from "../../rolls/roll-helpers/arcana-metamagics.js"
+import {
+  effectiveSceneBackgroundCount, backgroundCountFor
+} from "../../system/background-count.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -3238,13 +3241,12 @@ export class SR5_CharacterUtility extends Actor {
         let sceneData = scene.flags.sr5
         //A scene whose background count was never set stores null, or nothing at all, and both
         //differ from 0 : read the rating as a number so they add no empty modifier to the actor
-        //Aetherologie p. 34: the count runs from -24 to +24, and below 0 (mana ebb or void) its absolute
-        //value is a penalty for everyone, whatever the alignment
-        let backgroundCount = Math.max(-24, Math.min(24, Number(sceneData?.backgroundCountValue) || 0))
-        if (backgroundCount < 0) SR5_EntityHelpers.updateModifier(actorData.magic.bgCount, game.i18n.localize("SR5.SceneBackgroundCount"), "", backgroundCount, false, true)
-        else if (backgroundCount !== 0) {
-          if (sceneData.backgroundCountAlignement === actorData.magic.tradition) SR5_EntityHelpers.updateModifier(actorData.magic.bgCount, game.i18n.localize("SR5.SceneBackgroundCount"), sceneData.backgroundCountAlignement, backgroundCount, false, true)
-          else SR5_EntityHelpers.updateModifier(actorData.magic.bgCount, game.i18n.localize("SR5.SceneBackgroundCount"), sceneData.backgroundCountAlignement, -backgroundCount, false, true)
+        //Aetherologie p. 34 and Shadow Spells p. 25: the count of the scene with its running Mana Flux / Ebb,
+        //from -24 to +24, below 0 a penalty for everyone whatever the alignment
+        let backgroundCount = effectiveSceneBackgroundCount(sceneData, game.time?.worldTime ?? 0)
+        if (backgroundCount !== 0) {
+          const alignment = backgroundCount < 0 ? "" : sceneData.backgroundCountAlignement
+          SR5_EntityHelpers.updateModifier(actorData.magic.bgCount, game.i18n.localize("SR5.SceneBackgroundCount"), alignment, backgroundCountFor(backgroundCount, alignment, actorData.magic.tradition), false, true)
         }
       }
     }

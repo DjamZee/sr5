@@ -61,6 +61,9 @@ import {
   renderSceneIndicators, sr5HookUpdateSceneIndicators
 } from './interface/scene-indicators.js'
 import {
+  sr5HookExpireManaShifts
+} from './system/mana-shift.js'
+import {
   sr5PlaceChatJumpToBottom 
 } from './interface/chat-jump-to-bottom.js'
 import {
@@ -155,6 +158,7 @@ Hooks.on('createMeasuredTemplate', sr5HookCreateMeasuredTemplate)
 Hooks.on('updateMeasuredTemplate', sr5HookUpdateMeasuredTemplate)
 Hooks.on('updateScene', sr5HookUpdateScene)
 Hooks.on('updateScene', sr5HookUpdateSceneIndicators)
+Hooks.on('updateWorldTime', sr5HookExpireManaShifts)
 Hooks.on('canvasReady', renderSceneIndicators)
 Hooks.on('canvasReady', sr5HookCanvasReadyAreaEffects)
 Hooks.on('canvasReady', sr5HookCanvasReadyVisionRanges)

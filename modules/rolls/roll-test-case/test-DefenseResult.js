@@ -16,6 +16,9 @@ import {
 import {
   ritualDrainRecipients, ritualDrainKey
 } from "../roll-helpers/ritualTeam.js"
+import {
+  manaShiftKind
+} from "../../system/background-count.js"
 
 export default async function defenseResultInfo(cardData, type){
   let key, label, labelEnd, successTestType = "nonOpposedTest", failedTestType = "SR-CardButtonHit endTest", failedKey = ""
@@ -168,4 +171,18 @@ export default async function defenseResultInfo(cardData, type){
 
   if (cardData.roll.hits < cardData.previousMessage.hits) cardData.chatCard.buttons[key] = SR5_RollMessage.generateChatButton(successTestType, key, label)
   else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton(failedTestType, failedKey, labelEnd)
+
+  //Shadow Spells p. 25: a sealed Mana Flux / Mana Ebb shifts the scene's background count, applied by the GM
+  if (type === "ritualResistance" && cardData.roll.hits < cardData.previousMessage.hits){
+    const ritual = await fromUuid(cardData.owner.itemUuid)
+    const kind = manaShiftKind(ritual?.name)
+    if (kind){
+      cardData.magic.manaShift = {
+        kind, force: cardData.magic.force, name: ritual.name
+      }
+      cardData.chatCard.buttons.manaShift = SR5_RollMessage.generateChatButton("nonOpposedTest", "manaShift", game.i18n.format(`SR5.ManaShiftApply_${kind}`, {
+        hours: cardData.magic.force
+      }), true)
+    }
+  }
 }

@@ -85,5 +85,17 @@
             </select>
         </div>
     </div>
+    {{#if sr5manaShifts.length}}
+    <div class="form-group stacked">
+        <label>{{localize 'SR5.ManaShiftRunning'}}</label>
+        {{#each sr5manaShifts}}
+        <div class="form-fields">
+            <span>{{this.name}} ({{this.shift}}, {{this.hours}} h)</span>
+            <button type="button" class="sr5-mana-shift-remove" data-id="{{this.id}}" data-tooltip="{{localize 'SR5.ManaShiftRemove'}}"><i class="fas fa-trash"></i></button>
+        </div>
+        {{/each}}
+        <p class="hint">{{localize 'SR5.ManaShiftHint'}}</p>
+    </div>
+    {{/if}}
 </div>
 </div>

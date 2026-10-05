@@ -4,6 +4,12 @@ import {
 import {
   BACKGROUND_COUNT_PHENOMENA, phenomenonOptions, phenomenonNoise
 } from "./background-count-phenomena.js"
+import {
+  activeManaShifts
+} from "../system/background-count.js"
+import {
+  removeManaShift
+} from "../system/mana-shift.js"
 
 export default class SR5SceneConfig extends foundry.applications.sheets.SceneConfig {
 
@@ -51,6 +57,11 @@ export default class SR5SceneConfig extends foundry.applications.sheets.SceneCon
       }
       context.sr5lists = SR5
       context.sr5phenomena = phenomenonOptions()
+      //Shadow Spells p. 25: the Mana Flux / Ebb running on this scene
+      const now = game.time?.worldTime ?? 0
+      context.sr5manaShifts = activeManaShifts(this.document.flags.sr5, now).map(s => ({
+        id: s.id, name: s.name, shift: s.kind === "flux" ? "+1" : "-1", hours: Math.ceil((s.expires - now) / 3600)
+      }))
     }
     return context
   }
@@ -106,5 +117,8 @@ export default class SR5SceneConfig extends foundry.applications.sheets.SceneCon
     if (countField) countField.addEventListener("change", _ev => {
       this.updateMatrixNoise(this.element)
     })
+    for (const button of this.element.querySelectorAll(".sr5-mana-shift-remove")) {
+      button.addEventListener("click", ev => removeManaShift(this.document, ev.currentTarget.dataset.id))
+    }
   }
 }
