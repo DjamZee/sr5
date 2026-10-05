@@ -333,6 +333,16 @@ export function initDeadlines(){
       sr5Calendar: true
     })
   })
+  // A new addiction or lifestyle gets its date at once, not at the next move of the clock
+  Hooks.on("updateActor", (actor, changes, options) => {
+    if (!options?.sr5Calendar && changes.system?.addictions) queueCheck()
+  })
+  Hooks.on("createActor", (actor) => {
+    if (actor.system?.addictions?.length) queueCheck()
+  })
+  Hooks.on("createItem", (item) => {
+    if (item.type === "itemLifestyle" && item.parent) queueCheck()
+  })
   Hooks.on("updateWorldTime", () => queueCheck())
   if (isWriter()) queueCheck()
 }
