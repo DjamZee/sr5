@@ -22,6 +22,9 @@ import {
 import {
   activateDrugCardListeners
 } from "../system/drug-clock.js"
+import {
+  addExtendedClockButton
+} from "../system/extended-clock.js"
 
 export function sr5HookRenderChatMessageHTML(message, html, _data) {
   // A table draw is rendered by core and wears no SR5 header of its own
@@ -64,6 +67,8 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   if (message.flags?.sr5?.deadlines) activateDeadlineCardListeners(html, message)
   // Drugs whose effect or crash is over on the clock: the GM moves them on
   if (message.flags?.sr5?.drugClock) activateDrugCardListeners(html, message)
+  // Extended tests and healing (SR5 p. 50, 207-208): the GM moves the clock on by the time spent
+  if (message.flags?.sr5data?.test?.extended?.intervalValue) addExtendedClockButton(message, html)
 }
 
 // v13: keep chat scrolled to bottom when SR5 roll messages change height.
