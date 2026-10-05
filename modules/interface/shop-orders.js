@@ -60,6 +60,15 @@ export function dueTime(now, hours) {
   return Math.round(now + hours * HOUR)
 }
 
+/**
+ * What express adds to an availability card: the lines found that wait, each
+ * at its base price (the surcharge dice not counted), as the till charges it.
+ */
+export function cardExpressExtra(results, terms) {
+  return (results ?? []).filter(r => r.obtained && Number(r.availability) > 0)
+    .reduce((sum, r) => sum + expressCost(Number(r.basePrice) || 0, terms), 0)
+}
+
 /** The orders the clock has passed and the gamemaster has not been told of yet. */
 export function freshlyDue(orders, now) {
   return (orders ?? []).filter(o => now >= o.due && !o.notified)
@@ -126,6 +135,8 @@ export function registerOrderSettings() {
 /*  Orders on the buyer                         */
 /* -------------------------------------------- */
 
+// The orders live in a flag of the buyer, which its owner can write. Not guarded on purpose (Élise's
+// choice, 05/10): a player can already create any item on her own sheet, so guarding it would protect nothing
 export function ordersOf(actor) {
   return foundry.utils.deepClone(actor?.getFlag?.('sr5', ORDERS_FLAG) ?? [])
 }

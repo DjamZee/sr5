@@ -66,7 +66,7 @@
     {{/if}}
     <button type="button" data-shop-action="checkout">
       <i class="fas fa-sm fa-receipt"></i>
-      {{localize 'SR5.ShopCashPurchase'}} ({{totalLabel}})
+      {{localize 'SR5.ShopCashPurchase'}} (<span data-shop-total>{{totalLabel}}</span>)
     </button>
     {{else}}
     <span class="sr-shop-cashed">{{localize 'SR5.ShopNothingFound'}}</span>

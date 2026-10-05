@@ -14,7 +14,7 @@ import {
   SR5_EntityHelpers
 } from '../entities/helpers.js'
 import {
-  currentExpress, deliveryDelayed
+  currentExpress, deliveryDelayed, cardExpressExtra
 } from './shop-orders.js'
 
 /**
@@ -401,6 +401,8 @@ export class SR5ShopAvailability {
 
       results.push({
         uuid: line.uuid,
+        // The base of an express surcharge: the listed price, without the surcharge dice
+        basePrice: listed * quantity,
         grade,
         name,
         quantity,
@@ -451,6 +453,8 @@ export class SR5ShopAvailability {
       vendor: options.vendor ?? null,
       // Express delivery, a house rule off by default (arbitrage de DjamZ, 05/10): offered when a line waits
       express: SR5ShopAvailability.expressOffer(obtained),
+      // The checkout button shows this total once the express box is ticked
+      expressTotalLabel: `${(total + cardExpressExtra(obtained, currentExpress())).toLocaleString()}¥`,
     }
 
     SR5_SystemHelpers.srLog(3, `Shop: availability test for ${actor.name} (pool ${pool})`, cardData)
@@ -486,6 +490,12 @@ export class SR5ShopAvailability {
 
   /** Wire the "cash the purchase" button of an availability card. */
   static chatListeners(html, message) {
+    // Ticking express shows the total the till will charge, surcharge included
+    html.querySelectorAll('[data-shop-express]').forEach(box => box.addEventListener('change', () => {
+      const data = message.flags?.sr5shop
+      const total = html.querySelector('[data-shop-total]')
+      if (data && total) total.textContent = box.checked && data.expressTotalLabel ? data.expressTotalLabel : data.totalLabel
+    }))
     html.querySelectorAll('[data-shop-action="checkout"]').forEach(el => {
       el.addEventListener('click', async (event) => {
         event.preventDefault()

@@ -2,8 +2,34 @@ import {
   describe, it, expect
 } from "vitest"
 import {
-  lineWaits, expressTerms, expressCost, orderHours, dueTime, freshlyDue
+  lineWaits, expressTerms, expressCost, orderHours, dueTime, freshlyDue, cardExpressExtra
 } from "../modules/interface/shop-orders.js"
+
+describe("the card's total with express ticked", () => {
+  const terms = expressTerms({
+    enabled: true, surcharge: 25, factor: 2
+  })
+  const results = [
+    {
+      obtained: true, availability: 4, basePrice: 150
+    },
+    {
+      obtained: true, availability: 0, basePrice: 1000
+    },
+    {
+      obtained: false, availability: 8, basePrice: 5000
+    },
+    {
+      obtained: true, availability: 6, basePrice: 10000
+    },
+  ]
+  it("adds the surcharge of the lines found that wait, at their base price", () => {
+    expect(cardExpressExtra(results, terms)).toBe(38 + 2500)
+  })
+  it("adds nothing when express is off", () => {
+    expect(cardExpressExtra(results, null)).toBe(0)
+  })
+})
 
 describe("which lines wait for the search time (SR5 p. 419-420)", () => {
   it("an item with an availability waits when delivery is delayed", () => {
