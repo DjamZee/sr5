@@ -7,12 +7,25 @@ import {
 import {
   SR5_RollMessage
 } from "../roll-message.js"
+import {
+  greyManaSustainedPenalty
+} from "../../system/grey-mana.js"
 
 export default async function spellInfo(cardData){
   let actionType, label, item
   let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
   let actorData = actor.system
   if (cardData.owner.itemUuid) item = await fromUuid(cardData.owner.itemUuid)
+
+  //Better Than Bad p. 140-141: a sustained spell cast while wearing grey mana loses 1 Force and 1 hit (GM ruling of 05/10)
+  if (cardData.test.type === "spell" && !cardData.magic.greyManaPenalty && greyManaSustainedPenalty(actorData, item?.system?.duration)) {
+    cardData.magic.force = Math.max(1, (cardData.magic.force || 0) - 1)
+    cardData.roll.hits = Math.max(0, (cardData.roll.hits || 0) - 1)
+    cardData.magic.greyManaPenalty = true
+    ui.notifications.info(game.i18n.format("SR5.GreyManaSustainedSpell", {
+      spell: item.name
+    }))
+  }
 
   //Add Resist Drain chat button
   if (cardData.test.type === "spell" || (cardData.test.type === "adeptPower" && cardData.magic.drain > 0)) {

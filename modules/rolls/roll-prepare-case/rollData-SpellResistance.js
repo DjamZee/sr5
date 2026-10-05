@@ -4,6 +4,9 @@ import {
 import {
   SR5_PrepareRollHelper 
 } from "../roll-prepare-helpers.js"
+import {
+  addGreyManaResistance
+} from "../../system/grey-mana.js"
 
 //The attributes a spell is resisted with: one or two, a blank one is skipped
 export function spellResistanceAttributes(spellData) {
@@ -38,6 +41,9 @@ export default async function spellResistance(rollData, actor, chatData){
   rollData.previousMessage.hits = chatData.roll.hits
   rollData.previousMessage.itemUuid = chatData.owner.itemUuid
   rollData.previousMessage.messageId = chatData.owner.messageId
+
+  //Better Than Bad p. 140-141: grey mana adds its rating against any targeted magic
+  rollData = addGreyManaResistance(rollData, actor, game.i18n.localize("SR5.GreyMana"))
 
   //Add transferable effects
   rollData = SR5_PrepareRollHelper.addTransferableEffect(rollData, spellItem)

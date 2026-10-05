@@ -3387,6 +3387,8 @@
 	"SR5.ManaShiftRunning": "Running rituals (Mana Flux / Ebb)",
 	"SR5.ManaShiftRemove": "Remove this ritual",
 	"SR5.ManaShiftHint": "Shadow Spells p. 25: each one moves the count by 1 toward 0 for [Force] hours of game time, never past 0. A ritual that has run out goes away when game time passes.",
+	"SR5.GreyMana": "Grey mana",
+	"SR5.GreyManaSustainedSpell": "Grey mana (Better Than Bad p. 140): {spell} is sustained with 1 less Force and 1 less hit.",
 	"SR5.SceneEnvironmentalMsg": "Configure environmental modifiers for this scene",
 	"SR5.SceneMatrixNoise": "Matrix noise",
 	"SR5.SceneMatrixNoiseMsg": "Configure Matrix noise for this scene",

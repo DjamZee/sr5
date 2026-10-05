@@ -482,6 +482,7 @@ export class SR5Actor extends Actor {
         SR5_CharacterUtility.updateEssence(actor)
         SR5_CharacterUtility.updateSpecialAttributes(actor)
         SR5_CharacterUtility.updateBackgroundCount(actor)
+        SR5_CharacterUtility.updateGreyMana(actor)
         SR5_CharacterUtility.updateConditionMonitors(actor)
         SR5_CharacterUtility.updateSpecialProperties(actor)
         SR5_CharacterUtility.updatePenalties(actor)

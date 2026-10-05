@@ -145,6 +145,13 @@ export class magicPartialModel extends foundry.abstract.TypeDataModel {
         bgCount: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema()
         }),
+        // Better Than Bad p. 140-141: the highest grey mana rating worn, and whether it is the armor's
+        greyMana: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema(),
+          fromArmor: new fields.BooleanField({
+            initial: false
+          }),
+        }),
       }),
     }
   }

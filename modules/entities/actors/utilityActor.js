@@ -55,6 +55,9 @@ import {
 import {
   effectiveSceneBackgroundCount, backgroundCountFor
 } from "../../system/background-count.js"
+import {
+  updateGreyMana
+} from "../../system/grey-mana.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -661,6 +664,13 @@ export class SR5_CharacterUtility extends Actor {
       //Reset background count
       actorData.magic.bgCount.value = 0
       actorData.magic.bgCount.modifiers = []
+
+      //Reset grey mana (Better Than Bad p. 140)
+      if (actorData.magic.greyMana) {
+        actorData.magic.greyMana.value = 0
+        actorData.magic.greyMana.modifiers = []
+        actorData.magic.greyMana.fromArmor = false
+      }
     }
 
     // Reset Monitors
@@ -3228,6 +3238,11 @@ export class SR5_CharacterUtility extends Actor {
       levels[key] = mastery.value
     }
     return levels
+  }
+
+  // Better Than Bad p. 140-141: the grey mana worn, and its penalty on tests using Magic
+  static updateGreyMana(actor) {
+    updateGreyMana(actor, game.i18n.localize("SR5.GreyMana"))
   }
 
   // Background count calcultations

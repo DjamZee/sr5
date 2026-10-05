@@ -3387,6 +3387,8 @@
 	"SR5.ManaShiftRunning": "Rituels en cours (Flux / Creux mana)",
 	"SR5.ManaShiftRemove": "Retirer ce rituel",
 	"SR5.ManaShiftHint": "Shadow Spells p. 25 : chacun déplace le champ de 1 vers 0 pendant [Puissance] heures de jeu, sans jamais le faire passer de l'autre côté de 0. Un rituel expiré disparaît quand le temps de jeu avance.",
+	"SR5.GreyMana": "Mana gris",
+	"SR5.GreyManaSustainedSpell": "Mana gris (Better Than Bad p. 140) : {spell} est maintenu avec 1 de Puissance et 1 succès de moins.",
 	"SR5.SceneEnvironmentalMsg": "Configurez les modificateurs environnementaux de la scène",
 	"SR5.SceneMatrixNoise": "Bruit matriciel",
 	"SR5.SceneMatrixNoiseMsg": "Configurez le bruit matriciel de cette scène",
