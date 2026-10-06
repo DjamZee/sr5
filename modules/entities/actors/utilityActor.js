@@ -141,24 +141,8 @@ export class SR5_CharacterUtility extends Actor {
       }
     }
     if (!this.findActiveInitiative(actorData)) {
-      switch (actor.type) {
-        case "actorPc":
-        case "actorGrunt":
-          actorData.initiatives.physicalInit.isActive = true
-          break
-        case "actorSpirit":
-          if (actorData.initiatives.astralInit)
-            actorData.initiatives.astralInit.isActive = true
-          else
-            actorData.initiatives.physicalInit.isActive = true
-          break
-        case "actorDevice":
-          actorData.initiatives.matrixInit.isActive = true
-          break
-        case "actorDrone":
-          actorData.initiatives.physicalInit.isActive = true
-          break
-      }
+      const initiative = this.defaultInitiative(actor)
+      if (initiative && actorData.initiatives[initiative]) actorData.initiatives[initiative].isActive = true
     }
 
     // Reset Limits
@@ -2218,6 +2202,24 @@ export class SR5_CharacterUtility extends Actor {
   }
 
   // Find Actor Active Initiative
+  //The initiative an actor plays when none is set yet
+  static defaultInitiative(actor) {
+    switch (actor.type) {
+      case "actorPc":
+      case "actorGrunt":
+        // An AI outside any device is a persona alone: matrix initiative (Data Trails p. 157-158, decision G11 of
+        // DjamZ); in a device or a body it starts physical like any character
+        return this.isDevicelessAI(actor) ? "matrixInit" : "physicalInit"
+      case "actorSpirit":
+        return actor.system.initiatives?.astralInit ? "astralInit" : "physicalInit"
+      case "actorDevice":
+        return "matrixInit"
+      case "actorDrone":
+        return "physicalInit"
+    }
+    return null
+  }
+
   static findActiveInitiative(actor) {
     for (let [key, value] of Object.entries(actor.initiatives)) {
       if (value.isActive) return key
