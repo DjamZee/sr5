@@ -5246,7 +5246,7 @@
 	"SR5.RelayKindDamage": "damage",
 	"SR5.RelayKindHeal": "healing",
 	"SR5.RelayKindAction": "action",
-	"SR5.DefenseRepeated":"Second defense of {name} against the same attack (card by {author}): the first one stands.",
+	"SR5.DefenseRepeated": "Second defense of {name} against the same attack (card by {author}): the first one stands.",
 	"SR5.WARN_PatientWithoutMonitor": "{name} has neither a Physical nor a Stun condition monitor: first aid does not apply (SR5 p. 207).",
 	"SR5.WARN_TargetItemMissing": "Targeted item not found (deleted since the test): the action cannot be applied.",
 	"SR5.WARN_MatrixResistanceDeviceMissing": "Targeted device not found (deleted since the attack): the matrix damage resistance cannot be rolled.",
