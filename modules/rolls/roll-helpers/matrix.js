@@ -32,7 +32,7 @@ import {
   SR5_MiscellaneousHelpers
 } from "./miscellaneous.js"
 import {
-  recountHits
+  recountHits, consumedKey
 } from "./socket-guard.js"
 
 export class SR5_MatrixHelpers {
@@ -267,6 +267,14 @@ export class SR5_MatrixHelpers {
     //The GM rolls the locks against the card read again from the chat log, never against the hits it claims
     const jackOut = SR5_MatrixHelpers.jackOutHits(cardData)
     if (!jackOut) return ui.notifications.warn(game.i18n.localize("SR5.WARN_JackOutCardRefused"))
+    //A card serves once: its button, written back in its content, rolled the locks again at every click (Anke's
+    //review). The spent cards are the active GM's ledger
+    if (!game.users?.activeGM?.isSelf) return ui.notifications.warn(game.i18n.localize("SR5.WARN_JackOutActiveGMOnly"))
+    if (!(await SR5_MiscellaneousHelpers.consume(consumedKey(jackOut.card.id, "jackOut")))) return ui.notifications.warn(game.i18n.localize("SR5.WARN_JackOutCardSpent"))
+    //Pushing the limit lifts the Firewall cap, and the card says so itself: the GM checks the Chance was spent
+    if (!jackOut.card.byGM && jackOut.card.data.edge?.hasUsedPushTheLimit) ui.notifications.info(game.i18n.format("SR5.INFO_JackOutPushed", {
+      hits: jackOut.hits
+    }))
     let actor = jackOut.card.roller, hits = jackOut.hits
 
     //One jack out roll, whose hits are compared to each link lock in turn (SR5 p. 246): one resistance card per lock

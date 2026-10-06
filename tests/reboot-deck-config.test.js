@@ -353,6 +353,14 @@ describe('Jacking out reboots the device used (SR5 p. 244)', () => {
       hacker.deleteEmbeddedDocuments = vi.fn(async (_type, ids) => {
         hacker.items = hacker.items.filter(i => !ids.includes(i.id))
       })
+      // The active GM rolls the locks, once per card (Anke's review)
+      game.users = {
+        activeGM: {
+          isSelf: true
+        }
+      }
+      const spent = new Set()
+      vi.spyOn(SR5_MiscellaneousHelpers, 'consume').mockImplementation(async key => !spent.has(key) && !!spent.add(key))
     })
 
     /** The success button of the resistance card rolled against one lock */
@@ -490,6 +498,34 @@ describe('Jacking out reboots the device used (SR5 p. 244)', () => {
         playerCard(3, [6, 5, 6, 1])
         await jackOutWith(3)
         expect(render.mock.calls.map(c => c[0].previousMessage.hits)).toEqual([1, 1])
+      })
+
+      // Anke's review: the button written back in the card's content rolled the locks at every click
+      it('rolls the locks once per card, never on a second click', async () => {
+        playerCard(3, [6, 5, 6, 1])
+        await jackOutWith(3)
+        await jackOutWith(3)
+        expect(render).toHaveBeenCalledTimes(2)
+        expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_JackOutCardSpent')
+      })
+
+      it('rolls nothing on a GM who is not the active one', async () => {
+        game.users.activeGM.isSelf = false
+        playerCard(3, [6, 5, 6, 1])
+        await jackOutWith(3)
+        expect(render).not.toHaveBeenCalled()
+        expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_JackOutActiveGMOnly')
+      })
+
+      it('tells the GM when the card says it pushed the limit', async () => {
+        const info = vi.spyOn(ui.notifications, 'info').mockImplementation(() => {})
+        playerCard(3, [6, 5, 6, 1], {
+          edge: {
+            hasUsedPushTheLimit: true
+          }
+        })
+        await jackOutWith(3)
+        expect(info).toHaveBeenCalled()
       })
 
       it('rolls nothing for a card nobody can stand by', async () => {
