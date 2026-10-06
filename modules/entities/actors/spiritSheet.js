@@ -1,4 +1,7 @@
 import {
+  isAlwaysActive
+} from "../items/always-active.js"
+import {
   ActorSheetSR5 
 } from "./baseSheet.js"
 import {
@@ -112,7 +115,7 @@ export class SR5SpiritSheet extends ActorSheetSR5 {
         item.system.isActive = true
         return super._onDropItemCreate(item)
       case "itemPower":
-        if (item.system.actionType === "permanent") item.system.isActive = true
+        if (isAlwaysActive(item)) item.system.isActive = true
         return super._onDropItemCreate(item)
       case "itemSpell":
       case "itemEffect":

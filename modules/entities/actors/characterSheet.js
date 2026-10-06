@@ -1,4 +1,7 @@
 import {
+  isAlwaysActive
+} from "../items/always-active.js"
+import {
   ActorSheetSR5
 } from "./baseSheet.js"
 import {
@@ -402,7 +405,7 @@ export class SR5ActorSheet extends ActorSheetSR5 {
       case "itemAdeptPower":
       case "itemPower":
       case "itemMartialArt" :
-        if (itemData.system.actionType === "permanent") itemData.system.isActive = true
+        if (isAlwaysActive(itemData)) itemData.system.isActive = true
         return super._onDropItemCreate(itemData)
       case "itemVehicleMod":
         return ui.notifications.info(game.i18n.localize('SR5.INFO_ForbiddenItemType'))
