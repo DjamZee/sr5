@@ -67,6 +67,16 @@ export function withBanishTotal(ledger, key, total, messageId){
 }
 
 // Values left on an actor by the first version of this feature (never published): moved to the ledger once
+// The actors that read the ledger and must be prepared again when it changes, on every client: the world actors,
+// and the synthetic actors of the unlinked tokens of every scene, which game.actors does not hold
+export function ledgerReaders(actors, scenes){
+  const found = [...(actors ?? [])]
+  for (const scene of scenes ?? []) for (const token of scene.tokens ?? []) {
+    if (!token.actorLink && token.actor) found.push(token.actor)
+  }
+  return found.filter(a => a.system?.magic || a.type === "actorSpirit")
+}
+
 export function legacyValues(magic){
   const found = {
   }
@@ -119,6 +129,14 @@ export function banishKey(actor){
   return actor?.isToken ? actor.token.uuid : actor?.id
 }
 
+// The traits of a spirit: those of its world actor, then those of its own unlinked token when the gamemaster set
+// some there, which win
+export function spiritTraitsFor(ledger, baseId, tokenKey){
+  const traits = spiritEntry(ledger, baseId)
+  if (tokenKey && ledger?.spirits?.[tokenKey]) Object.assign(traits, spiritEntry(ledger, tokenKey))
+  return traits
+}
+
 async function writeLedger(next){
   if (!isActiveGM()) {
     ui.notifications.warn(game.i18n.localize("SR5.SpiritLedgerActiveGMOnly"))
@@ -157,7 +175,9 @@ export function applyCharacterLedger(actor, elementalTypes){
 export function applySpiritLedger(actor, elementalTypes){
   const ledger = readLedger()
   const key = banishKey(actor)
-  const traits = spiritEntry(ledger, key)
+  //An unlinked token takes the traits ticked on its world actor, unless the gamemaster ticked some on this very token;
+  //its banishing total stays its own
+  const traits = spiritTraitsFor(ledger, actor.id, actor.isToken ? key : null)
   const summoner = characterEntry(ledger, actor.system.creatorId)
   if (summoner.hermeticElementalist && elementalTypes.includes(actor.system.type)) traits.isElemental = true
   Object.assign(actor.system, traits)
@@ -206,8 +226,7 @@ export function registerSpiritLedger(){
     default: emptyLedger(),
     //Every client prepares the reputations again when the ledger changes
     onChange: () => {
-      for (const actor of game.actors ?? []) {
-        if (!actor.system?.magic) continue
+      for (const actor of ledgerReaders(game.actors, game.scenes)) {
         actor.reset()
         if (actor.sheet?.rendered) actor.sheet.render()
       }

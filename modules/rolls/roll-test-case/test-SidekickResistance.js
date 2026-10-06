@@ -50,7 +50,8 @@ export default async function sidekickResistanceInfo(cardData, type){
   const spirit = type === "banishingResistance" ? SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId) : null
   if (spirit?.system?.isWild){
     key = "wildBanish"
-    label = `${game.i18n.localize("SR5.WildBanishAdd")} (${cardData.roll.netHits})`
+    //No count on the button: the card's figures are not the ones the gamemaster will keep
+    label = game.i18n.localize("SR5.WildBanishAdd")
   }
 
   if (cardData.roll.hits < cardData.previousMessage.hits) cardData.chatCard.buttons[key] = SR5_RollMessage.generateChatButton("nonOpposedTest", key, label)
