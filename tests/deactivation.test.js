@@ -4,7 +4,7 @@ import {
 import {
   hasDefragmentation, targetKind, targetStrength, deactivationPool, bestMethod, resolveDeactivation,
   deactivationFading, fadingIsPhysical, activateDeactivationListeners, glitchKey, isFadingCardOf,
-  edgeLeft, gmPool, hitsCap, boundHits, requestAnswered
+  edgeLeft, gmPool, hitsCap, boundHits, requestAnswered, confirmPushed
 } from "../modules/system/deactivation.js"
 import {
   SR5
@@ -268,6 +268,20 @@ describe("The player rolls, the GM counts again (arbitrage de DjamZ, 2026-10-06)
     expect(boundHits("9", gmPool(tm({
       charisma: 1, willpower: 1
     }), "charisma", 0, false))).toBe(2)
+  })
+
+  it("believes a push of the limit only while the technomancer has Edge left (Rolf's forged card)", () => {
+    expect(confirmPushed(true, edgeLeft(tm()))).toBe(true)
+    expect(confirmPushed(true, edgeLeft(tm({
+      edgeSpent: 3
+    })))).toBe(false)
+    expect(confirmPushed(false, 3)).toBe(false)
+    // Edge gone: the forged {pushed: true, modifier: 40, hits: 50} is held to the limit, the modifier being the GM's
+    const exhausted = tm({
+      edgeSpent: 3
+    })
+    const pool = gmPool(exhausted, "charisma", 0, confirmPushed(true, edgeLeft(exhausted)))
+    expect(boundHits(50, pool)).toBe(6)
   })
 
   it("answers a request once, and only a GM's card answers it", () => {

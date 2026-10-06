@@ -361,10 +361,7 @@ export async function launchDeactivation(tm){
   const method = methodFor(tm, data.method)
   const pushed = data.push && edgeLeft(tm) > 0
   const pool = gmPool(tm, method, data.modifier, pushed)
-  // Pushing the limit spends 1 point of Edge, as the system's own tests do
-  if (pushed) await tm.update({
-    "system.conditionMonitors.edge.actual.base": (Number(tm.system.conditionMonitors.edge.actual.base) || 0) + 1
-  })
+  // The point of Edge is spent by the GM when he confirms, from the Edge he reads then: a card cannot claim it
   const roll = await rollPool(pool.dicePool, pool.limit || undefined, pushed)
   const row = game.i18n.format("SR5.DEFRAG_OwnRoll", {
     tm: escape(tm.name), test: testLabelOf(method), pool: pool.dicePool, limit: limitText(pool.limit), dice: diceText(roll), hits: roll.hits ?? 0
@@ -399,6 +396,15 @@ export function requestAnswered(requestId, messages){
   return !!requestId && [...(messages ?? [])].some(m => m?.author?.isGM && m.flags?.sr5?.deactivation?.requestId === requestId)
 }
 
+// Pushing the limit counts only if the technomancer still has Edge when the GM confirms: the card's word is not enough
+export function confirmPushed(asked, edge){
+  return !!asked && num(edge) > 0
+}
+
+// The requests being confirmed on this client: a second dialog on the same request, opened before the first one has
+// posted its result, is refused (the result card is written only after the dice of the resistance)
+const confirming = new Set()
+
 // The GM counts the hits again within the pool he works out from the sheet, confirms them, then rolls the resistance
 async function confirmRequest(message){
   const req = message.flags?.sr5?.deactivationRequest
@@ -407,6 +413,22 @@ async function confirmRequest(message){
     ui.notifications.warn(game.i18n.localize("SR5.DEFRAG_AlreadyDone"))
     return true
   }
+  if (confirming.has(message.id)) {
+    ui.notifications.warn(game.i18n.localize("SR5.DEFRAG_InProgress"))
+    return true
+  }
+  confirming.add(message.id)
+  let done = false
+  try {
+    done = await confirmLocked(message, req)
+  } finally {
+    // Kept once answered; freed when the GM cancels or a check refuses, so that he can try again
+    if (!done) confirming.delete(message.id)
+  }
+  return true
+}
+
+async function confirmLocked(message, req){
   const tm = req.tmUuid ? await fromUuid(req.tmUuid) : null
   const target = req.targetUuid ? await fromUuid(req.targetUuid) : null
   if (!tm || !hasDefragmentation(tm)) return void ui.notifications.warn(game.i18n.localize("SR5.DEFRAG_NoTechnomancer"))
@@ -417,17 +439,21 @@ async function confirmRequest(message){
   const strength = targetStrength(target)
   if (strength <= 0) return void ui.notifications.warn(game.i18n.localize(kind === "monad" ? "SR5.DEFRAG_NoCem" : "SR5.DEFRAG_NoDepth"))
   const method = req.method === "decompiling" && decompilingRating(tm) > 0 ? "decompiling" : "charisma"
-  const pushed = !!req.pushed
+  // Neither the modifier nor the Edge of the card is taken on trust: the GM types the modifier he keeps (0 to start
+  // with), and the push counts only if the technomancer has Edge left, which the GM spends himself on confirming
+  const asked = !!req.pushed
+  let pushed = confirmPushed(asked, edgeLeft(tm))
+  const pushedText = () => pushed ? ` ${game.i18n.localize("SR5.DEFRAG_Pushed")}` : (asked ? ` ${game.i18n.localize("SR5.DEFRAG_PushRefused")}` : "")
   const announced = Math.max(0, Math.floor(num(req.hits)))
-  const base = gmPool(tm, method, num(req.modifier), pushed)
+  const base = gmPool(tm, method, 0, pushed)
   const content = `<div class="sr5-defrag-dialog">
     <p>${game.i18n.format("SR5.DEFRAG_ConfirmIntro", {
     tm: escape(tm.name), target: escape(target.name), hits: announced, test: testLabelOf(method),
     modifier: num(req.modifier), pool: base.dicePool, limit: limitText(base.limit), cap: hitsCap(base),
-    pushed: pushed ? ` ${game.i18n.localize("SR5.DEFRAG_Pushed")}` : ""
+    pushed: pushedText()
   })}</p>
     <div class="form-group"><label>${game.i18n.localize("SR5.DEFRAG_ModifierKept")}</label>
-      <input type="number" name="modifier" value="${num(req.modifier)}" step="1"></div>
+      <input type="number" name="modifier" value="0" step="1"></div>
     <div class="form-group"><label>${game.i18n.localize("SR5.DEFRAG_HitsKept")}</label>
       <input type="number" name="hits" value="${boundHits(announced, base)}" min="0" step="1"></div>
     <p class="notes">${game.i18n.localize("SR5.DEFRAG_ConfirmNote")}</p>
@@ -447,13 +473,18 @@ async function confirmRequest(message){
     rejectClose: false,
   })
   if (!data) return false
-  // Checked again after the dialog: another GM's click, or a second click, may have answered it meanwhile
+  // Checked again after the dialog: another GM may have answered it meanwhile
   if (requestAnswered(message.id, game.messages?.contents)) return true
+  // The Edge is read again and spent now, by the GM: if it ran out meanwhile, the push does not count
+  pushed = confirmPushed(asked, edgeLeft(tm))
+  if (pushed) await tm.update({
+    "system.conditionMonitors.edge.actual.base": (Number(tm.system.conditionMonitors.edge.actual.base) || 0) + 1
+  })
   const pool = gmPool(tm, method, data.modifier, pushed)
   const hits = boundHits(Math.min(data.hits, announced), pool)
   const ownRow = game.i18n.format("SR5.DEFRAG_Confirmed", {
     tm: escape(tm.name), test: testLabelOf(method), announced, pool: pool.dicePool, limit: limitText(pool.limit), hits,
-    pushed: pushed ? ` ${game.i18n.localize("SR5.DEFRAG_Pushed")}` : ""
+    pushed: pushedText()
   })
   await resolveAgainst({
     target, tm, kind, strength, ownHits: hits, ownRow, requestId: message.id
