@@ -3,6 +3,9 @@ import {
   runSourceModifiersMigration
 } from "../migration-source-modifiers.js"
 import {
+  runLegacyBiographyMigration
+} from "../migration-legacy-biography.js"
+import {
   initBBHealing
 } from "../system/bb-healing.js"
 import {
@@ -142,6 +145,9 @@ export function sr5HookReady() {
 
   // Computed modifiers written in the source by a prepared copy: emptied once per world
   runSourceModifiersMigration().catch(err => console.error("SR5 | source modifiers migration failed", err))
+
+  // The v12 biography keys the database still holds: unset once per world
+  runLegacyBiographyMigration().catch(err => console.error("SR5 | legacy biography migration failed", err))
 
   // The spent cards whose card left the chat log: the registry is written whole at every card spent
   import("../rolls/roll-helpers/miscellaneous.js")

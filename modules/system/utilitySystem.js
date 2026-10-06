@@ -60,6 +60,15 @@ export class SR5_SystemHelpers {
       default: 0
     })
 
+    // Legacy biography keys unset in the database (migration-legacy-biography.js): the version run on this world
+    game.settings.register("sr5", "legacyBiographyMigration", {
+      name: "SR5.TEXT_TBD",
+      scope: "world",
+      config: false,
+      type: Number,
+      default: 0
+    })
+
     // Developper Extra Logging Toggle
     game.settings.register("sr5", "sr5Log.active", {
       name: "SR5.SETTINGS_DevLogActive_T",
