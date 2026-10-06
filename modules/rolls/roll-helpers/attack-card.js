@@ -597,7 +597,17 @@ export async function rebuildCrossCard(chatData, actor, helpers = null) {
   const netHits = Math.min(Number(defense.data.roll?.netHits) || 0, Math.max(0, Number(attack.data.roll?.hits) || 0))
   if (netHits <= 0) return null
   const defender = defense.roller
-  const data = foundry.utils.deepClone(chatData)
+  //A blank roll for the attacker, as test-Defense.js builds these cards: nothing else the player wrote on hers (an
+  //element, a toxin, a called shot, a limit…) is kept, only what links and names it (Élise's review)
+  const base = helpers?.baseRollData ?? (await import("../roll-prepare.js")).SR5_PrepareRollTest.getBaseRollData
+  const data = foundry.utils.deepClone(base(null, actor))
+  data.test.type = "falseTest"
+  data.test.typeSub = kind
+  data.test.title = typeof chatData.test?.title === "string" ? chatData.test.title : ""
+  data.owner.messageId = chatData.owner?.messageId ?? null
+  data.previousMessage = {
+    ...data.previousMessage, messageId: attackId, actorId: defenderId
+  }
   if (kind === "energeticAura") {
     const aura = defender?.system?.specialProperties?.energyAura
     if (!aura || attack.data.test?.typeSub !== "meleeWeapon") return null

@@ -910,6 +910,25 @@ describe('rebuildCrossCard: energy aura and ramming crash', () => {
         }
       })[id] ?? null,
       messages: [defense],
+      //A blank roll, as getBaseRollData builds it for the attacker
+      baseRollData: () => ({
+        test: {
+        }, owner: {
+          actorId: 'npc', messageId: null
+        }, previousMessage: {
+          messageId: null, actorId: null
+        },
+        damage: {
+          base: 0, value: 0, type: '', source: '', element: '', toxin: {
+          }, resistanceType: ''
+        }, combat: {
+          armorPenetration: 0, calledShot: {
+            name: ''
+          }
+        }, limit: {
+          value: 0
+        },
+      }),
     }
   }
   //The aura card, as the player's defense writes it in the NPC's name: its values are those of a forger
@@ -934,6 +953,43 @@ describe('rebuildCrossCard: energy aura and ramming crash', () => {
       base: 8, value: 8, type: 'physical', source: 'magical'
     })
     expect(data.combat.armorPenetration).toBe(-4)
+  })
+  it('keeps nothing else a forger wrote on the aura card: element, toxin, called shot, limit (Élise\'s review)', async () => {
+    const forged = {
+      ...auraCard(), test: {
+        type: 'falseTest', typeSub: 'energeticAura', title: 'Aura énergétique'
+      },
+      damage: {
+        base: 40, value: 40, type: 'stun', source: '', element: 'electricity', toxin: {
+          type: 'nerve', power: 30, effect: {
+            paralysis: true
+          }
+        }
+      },
+      combat: {
+        armorPenetration: -30, calledShot: {
+          name: 'vitals', limitDV: 0
+        }
+      }, limit: {
+        value: 99
+      },
+    }
+    const data = await rebuildCrossCard(forged, gmNpc, lookups(2))
+    expect(data.damage.element).toBe('')
+    expect(data.damage.toxin).toEqual({
+    })
+    expect(data.combat.calledShot.name).toBe('')
+    expect(data.limit.value).toBe(0)
+    expect(data.damage).toMatchObject({
+      base: 8, value: 8, type: 'physical', source: 'magical', resistanceType: 'physicalDamage'
+    })
+    expect(data.test).toMatchObject({
+      type: 'falseTest', typeSub: 'energeticAura', title: 'Aura énergétique'
+    })
+    expect(data.owner.messageId).toBe('f1')
+    expect(data.previousMessage).toMatchObject({
+      messageId: 'a1', actorId: 'pc'
+    })
   })
   it('no aura without a defense that hit through, nor a melee attack', async () => {
     expect(await rebuildCrossCard(auraCard(), gmNpc, lookups(0))).toBe(null)
