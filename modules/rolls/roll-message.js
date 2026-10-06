@@ -47,7 +47,7 @@ import {
   SR5_MatrixHelpers 
 } from "./roll-helpers/matrix.js"
 import {
-  isRolledByTarget, firstAidPatient, healPatient, healsDamage, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick, ownsCardSpeaker, defenseActorId, removedButtonKeys
+  isRolledByTarget, firstAidPatient, healPatient, healsDamage, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick, ownsCardSpeaker, defenseActorId, matrixDefenseActorId, removedButtonKeys
 } from "./roll-helpers/cardRoller.js"
 import {
   SR5_CombatHelpers 
@@ -271,6 +271,11 @@ export class SR5_RollMessage {
     //Define actor for Opposed test or Non opposed tests
     if (action === "opposedTest") {
       actor = SR5_EntityHelpers.getRealActorFromID(opposedTestActorId(speaker))
+      //A matrix defense goes to the card's target, never to its author still selected (Anatole's matrix trial)
+      if (type === "matrixDefense") {
+        actor = SR5_EntityHelpers.getRealActorFromID(matrixDefenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids)
+        if (!actor) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoMatrixDefender"))
+      }
       // Matrix support actions (Kill Code p. 43-44) go to the targeted tokens: no selected token needed
       let supportAction = (type === "iAmTheFirewall" || type === "intervene")
       //A spell effect may go to a targeted token without any token selected (Heal, below)

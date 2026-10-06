@@ -129,3 +129,18 @@ export function electronicAddedToVintage(before, after, catalog = {
   const had = new Set(list(before).map(a => a?._id || a?.name))
   return next.filter(a => !had.has(a?._id || a?.name) && isElectronicAccessory(a, catalog))
 }
+
+/**
+ * Ejecting a clip, changing the firing mode or the choke as a free action: a wireless firearm with its wireless on, and a
+ * DNI (SR5 p. 427, every firearm, smartgun or not; p. 435 for the smartgun). Wired, the smartgun only gives its Accuracy.
+ * The DNI follows the wireless ruling of 2026-10-03 (decision H21): assumed unless the world setting asks for the
+ * character's "linked by DNI" box.
+ * @param {Object} weaponData - the weapon's system
+ * @param {Object} actor - the one holding it
+ * @param {Boolean} requiresDNI - the "wireless requires a DNI" world setting
+ * @return {Boolean}
+ */
+export function firearmCommandIsFree(weaponData, actor, requiresDNI) {
+  if (!weaponData?.isWireless || !weaponData.wirelessTurnedOn) return false
+  return !requiresDNI || !!actor?.system?.hasDNI
+}

@@ -363,11 +363,22 @@ describe('Applying matrix damage without a device (Data Trails p. 161)', () => {
     expect(actor.takeDamage).toHaveBeenCalledTimes(1)
   })
 
-  it('does nothing on a character who is not an AI', async () => {
-    actor.system.activeSpecialAttribute = 'magic'
+  it('writes nothing on a character who is not an AI, and tells the GM so', async () => {
+    actor.system.activeSpecialAttribute = 'resonance'
     actor.takeDamage = vi.fn(async () => {})
+    const create = vi.fn(async () => {})
+    globalThis.ChatMessage = {
+      create, getWhisperRecipients: () => [{
+        id: 'gm1'
+      }]
+    }
+    foundry.utils.escapeHTML ??= s => s
     await SR5_MatrixHelpers.applyDamageToDecK(actor, card())
     expect(actor.takeDamage).not.toHaveBeenCalled()
+    expect(create).toHaveBeenCalledTimes(1)
+    expect(create.mock.calls[0][0].whisper).toEqual(['gm1'])
+    expect(ui.notifications.warn).toHaveBeenCalled()
+    delete globalThis.ChatMessage
   })
 
   it('still damages the active device when there is one', async () => {

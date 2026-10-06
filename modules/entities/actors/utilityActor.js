@@ -483,11 +483,12 @@ export class SR5_CharacterUtility extends Actor {
       actorData.modificationSlots.cosmetic.modifiers = []
     }
 
-    // Reset Vehicule Secondary Propulsion
+    // Reset Vehicule Secondary Propulsion: the activation stays off unless an active secondary propulsion
+    // mod reads it again from the source (handleSecondaryAttributes)
+    if (actor.type === "actorDrone") actorData.isSecondaryPropulsionActivate = false
     if (actorData.isSecondaryPropulsion) {
       actorData.isSecondaryPropulsion = false
       actorData.secondaryPropulsionType = ""
-      actorData.isSecondaryPropulsionActivate = false
     }
 
     if (actorData.matrix) {
@@ -2799,6 +2800,8 @@ export class SR5_CharacterUtility extends Actor {
 
     actorData.isSecondaryPropulsion = itemData.secondaryPropulsion.isSecondaryPropulsion
     actorData.secondaryPropulsionType = itemData.secondaryPropulsion.type
+    // The sheet checkbox writes the source; the reset turned the prepared value off (Rigger 5 p. 158)
+    actorData.isSecondaryPropulsionActivate = actor._source?.system?.isSecondaryPropulsionActivate === true
 
     switch (actorData.secondaryPropulsionType) {
       case "amphibiousSurface":
@@ -3486,7 +3489,9 @@ export class SR5_CharacterUtility extends Actor {
 
   // Handle drug stats
   //`consumer`: who takes it. The sheet passes a copy of the item, without a parent (Liesel's D4)
-  static async handleDrugShots(item, drugType, actorData, consumer = item.parent) {
+  //`addictions`: the doses counted so far, this one included. The sheet passes its working list: the prepared
+  //system does not hold the dose being taken yet (M7 D1)
+  static async handleDrugShots(item, drugType, actorData, consumer = item.parent, addictions = actorData.addictions) {
     let drugStat
     let roll, rollRoll, rollSpeed, rollRollSpeed, duration, effect
 
@@ -3847,6 +3852,9 @@ export class SR5_CharacterUtility extends Actor {
           "effectDurationType": "SR5.Hours",
         }
         break
+      //Stolen Souls p. 192 rather than Chrome Flesh p. 190 (arbitrage de DjamZ, H20): Power 10, and drowsiness
+      //rather than unconsciousness, which the book does not quantify. Stolen Souls gives no duration: 5 × 1D6
+      //minutes stays the one of Chrome Flesh p. 190
       case "leal":
         roll = new Roll(`1d6`)
         rollRoll = await roll.evaluate()
@@ -3858,7 +3866,8 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "minute",
-          "resistedStunDamage": 12,
+          "resistedStunDamage": 10,
+          "drowsy": true,
           "effectDuration": effect,
           "effectDurationType": "SR5.Minutes",
         }
@@ -3947,17 +3956,17 @@ export class SR5_CharacterUtility extends Actor {
           "unresistedStunDamage": 8,
         }
         break
+      //Chrome Flesh p. 191: +1 Charisma and Perception, Pain Tolerance 1, memory loss; no damage, on taking or after
       case "pixieDust":
         roll = new Roll(`1d6`)
         rollRoll = await roll.evaluate()
         rollSpeed = new Roll(`1d6`)
-        rollRollSpeed = await roll.evaluate()
+        rollRollSpeed = await rollSpeed.evaluate()
         drugStat = {
           "name": drugType.value,
           "speed": item.system.speed,
           "duration": rollRoll.total,
           "durationType": "minute",
-          "resistedStunDamage": 12,
           "effectDuration": rollRollSpeed.total,
           "effectDurationType": "SR5.Minutes",
         }
@@ -4063,16 +4072,17 @@ export class SR5_CharacterUtility extends Actor {
         break
       case "soothsayer": {
         duration = Math.max(12 - actorData.attributes.body.augmented.value, 1)
-        let alreadyTaken = actorData.addictions.find((d) => item.name === d.name)
+        //Each further application lowers the DV by 1 (Chrome Flesh p. 186)
+        let alreadyTaken = (addictions ?? []).find((d) => item.name === d.name)
         let malus = 0
-        if (alreadyTaken.shot.value) malus = alreadyTaken.shot.value - 1
+        if (alreadyTaken?.shot?.value) malus = alreadyTaken.shot.value - 1
         drugStat = {
           "name": drugType.value,
           "speed": 1,
           "speedType": "SR5.Minute",
           "duration": duration,
           "durationType": "hour",
-          "resistedStunDamage": 8 - malus,
+          "resistedStunDamage": Math.max(8 - malus, 0),
         }
         break
       }

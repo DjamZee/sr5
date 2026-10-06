@@ -1,5 +1,5 @@
 import {
-  hasWeaponTrait, capBallReloadStep, CAP_BALL_STEPS
+  hasWeaponTrait, capBallReloadStep, CAP_BALL_STEPS, firearmCommandIsFree
 } from './weaponTraits.js'
 import {
   cleanCreatedSource
@@ -179,7 +179,8 @@ export class SR5Item extends Item {
       case "itemArmor":
       case "itemGear":
         if (item.type === "itemGear"){
-          if (Object.keys(itemData.systemEffects).length) SR5_UtilityItem.applyItemEffects(item)
+          //Its item effects too: read only behind a system effect, one on the matrix monitor of a plain gear was lost
+          if (Object.keys(itemData.systemEffects).length || Object.keys(itemData.itemEffects).length) SR5_UtilityItem.applyItemEffects(item)
         }
         if (item.type === "itemArmor"){ 
           if (Object.keys(itemData.itemEffects).length) SR5_UtilityItem.applyItemEffects(item)
@@ -605,7 +606,8 @@ export class SR5Item extends Item {
           break
         case "replace":
           if (weaponData.ammunition.casing === "clip") {
-            if (weaponData.isWireless && (weaponData.accessory.find(a => a.name === "smartgunSystemInternal" || a.name === "smartgunSystemExternal")) && (actor.system.specialProperties.smartlink.value > 0)){
+            //SR5 p. 427 and 435: a wireless firearm and a DNI eject the clip as a free action (decision H21)
+            if (firearmCommandIsFree(weaponData, actor, game.settings.get("sr5", "sr5WifiRequiresDNI"))){
               action = [{
                 type: "free", value: 1, source: "removeClip"
               }, {
@@ -635,7 +637,7 @@ export class SR5Item extends Item {
           break
         case "remove":
           if (weaponData.ammunition.casing === "clip") {
-            if (weaponData.isWireless && (weaponData.accessory.find(a => a.name === "smartgunSystemInternal" || a.name === "smartgunSystemExternal")) && (actor.system.specialProperties.smartlink.value > 0)) action = [{
+            if (firearmCommandIsFree(weaponData, actor, game.settings.get("sr5", "sr5WifiRequiresDNI"))) action = [{
               type: "free", value: 1, source: "removeClip"
             }]
             else action = [{

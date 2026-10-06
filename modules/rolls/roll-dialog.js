@@ -1,5 +1,5 @@
 import {
-  halveCalledShot
+  halveCalledShot, firearmCommandIsFree
 } from '../entities/items/weaponTraits.js'
 import {
   calledShotItemBonus, easeCalledShotPenalty
@@ -141,11 +141,9 @@ export default class SR5_RollDialog {
     }
   }
 
-  //SR5 p. 427, 435: a wireless smartgun with a smartlink changes the firing mode or the choke as a free action
+  //SR5 p. 427 and 435: a wireless firearm and a DNI change the firing mode or the choke as a free action (decision H21)
   static changeIsFree(weapon, actor){
-    return !!(weapon?.system?.isWireless &&
-      weapon.system.accessory?.find(a => a.name === "smartgunSystemInternal" || a.name === "smartgunSystemExternal") &&
-      actor?.system?.specialProperties?.smartlink?.value > 0)
+    return firearmCommandIsFree(weapon?.system, actor, game.settings.get("sr5", "sr5WifiRequiresDNI"))
   }
 
   // SR5 p. 170: an interruption action can only be taken if the initiative score is higher than its cost

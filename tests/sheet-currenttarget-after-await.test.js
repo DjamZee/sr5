@@ -217,7 +217,9 @@ function lateCurrentTargetReads(dir){
 }
 
 describe('no handler reads event.currentTarget after an await', () => {
+  // Parses every module of the system: 0.9 s alone, 5.1 to 5.2 s inside `npm run check` on a loaded machine
+  // (measured 2026-10-06, two passes out of three past the default 5 s)
   it('in any module of the system', () => {
     expect(lateCurrentTargetReads('modules')).toEqual([])
-  })
+  }, 60000)
 })
