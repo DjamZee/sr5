@@ -882,19 +882,23 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       event.stopPropagation()
       return
     }
-    if (await SR5_CharacterUtility.switchToInitiative(this.actor, wantedInitiative) === false) return
-    //special case for materialization button on spirit sheet
+    //Materialization button on a spirit sheet: the Materialization power follows the initiative, physical when
+    //materialized. Written and awaited BEFORE the switch: the actions the switch spends write the token again with
+    //its item list, which undid a power toggled afterwards on an unlinked token in combat (M4 D1)
+    let power, wasActive
     if (isMaterializing){
-      let item
-      for (let i of this.actor.items){
-        if (i.system.systemEffects.find(e => e.value === "materialization")) item = i
-      }
-      if (item){
-        let value = foundry.utils.getProperty(item, "system.isActive")
-        item.update({
-          "system.isActive": !value
-        })
-      }
+      power = this.actor.items.find(i => Object.values(i.system.systemEffects ?? {
+      }).find(e => e?.value === "materialization"))
+      wasActive = !!power?.system.isActive
+      const active = wantedInitiative === "physicalInit"
+      if (power && wasActive !== active) await power.update({
+        "system.isActive": active
+      })
+    }
+    if (await SR5_CharacterUtility.switchToInitiative(this.actor, wantedInitiative) === false) {
+      if (power && !!power.system.isActive !== wasActive) await power.update({
+        "system.isActive": wasActive
+      })
     }
   }
 
