@@ -118,6 +118,31 @@ describe("an attribute change moves the initiative at once", () => {
     expect(combatant.initiative).toBe(7)
   })
 
+  // Ambroise: an item created or deleted in combat (wired reflexes dropped or removed) left the fighter where it was
+  it("an item created or deleted on the actor adjusts the fighter, by the active GM alone", async () => {
+    const {
+      sr5HookCreateItem, sr5HookDeleteItem
+    } = await import("../modules/hooks/item.js")
+    const item = {
+      type: "itemAugmentation", name: "wr", isOwned: true, actor, parent: actor, system: {
+      }, testUserPermission: () => true
+    }
+    await sr5HookCreateItem(item, {
+    }, "other")
+    expect(combatant.initiative).toBe(7)
+    actor.system.initiatives.physicalInit.value = 3
+    await sr5HookDeleteItem(item, {
+    }, "other")
+    expect(combatant.initiative).toBe(5)
+    game.users.activeGM = {
+      id: "another-gm"
+    }
+    actor.system.initiatives.physicalInit.value = 1
+    await sr5HookCreateItem(item, {
+    }, "other")
+    expect(combatant.initiative).toBe(5)
+  })
+
   it("an update that cannot change the initiative is not compared", () => {
     expect(SR5Combat.updateMovesInitiative({
       name: "x"

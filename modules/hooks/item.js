@@ -42,8 +42,17 @@ export async function sr5HookItemVision(item, userId) {
   await SR5_CharacterUtility.refreshVisionOfTokens(item.parent)
 }
 
+//Any owned item created, changed or deleted can move the initiative (a sustained spell, wired reflexes switched from the
+//item sheet, added or removed): the active GM alone compares, each fighter of the actor once
+async function moveInitiativeOf(item) {
+  if (item.isOwned && game.combat && game.user?.isGM && game.users?.activeGM?.id === game.user.id) {
+    for (const id of SR5Combat.initTargetsOfActor(item.actor)) await SR5Combat.changeInitInCombatHelper(id)
+  }
+}
+
 export async function sr5HookCreateItem(item, options, userId) {
   await sr5HookItemVision(item, userId)
+  await moveInitiativeOf(item)
   //Séance H, H3 (decision of DjamZ): a player may still add an item that carries effects to a sheet (a drop from a
   //compendium, createEmbeddedDocuments), but the active gamemaster is told with the lasting warning, an itemEffect
   //included (Victoire's review: a state forged in the console added +4 Reaction unseen). Nothing the player's client
@@ -170,11 +179,7 @@ export async function sr5HookUpdateItem(document, data, options, userId) {
     }
   }
 
-  //Any owned item can move the initiative (a sustained spell, wired reflexes switched from the item sheet): the active GM
-  //alone compares, each fighter of the actor once
-  if (document.isOwned && game.combat && game.user?.isGM && game.users?.activeGM?.id === game.user.id) {
-    for (const id of SR5Combat.initTargetsOfActor(document.actor)) await SR5Combat.changeInitInCombatHelper(id)
-  }
+  await moveInitiativeOf(document)
 
   //Keep agent condition monitor synchro with owner deck
   if(document.type === "itemDevice" && data.system?.conditionMonitors?.matrix && (document.testUserPermission(game.user, 3) || game.user?.isGM)){
@@ -188,6 +193,7 @@ export async function sr5HookUpdateItem(document, data, options, userId) {
 
 export async function sr5HookDeleteItem(item, _options, userId) {
   await sr5HookItemVision(item, userId)
+  await moveInitiativeOf(item)
   if (SR5_Jammer.isJammer(item)) SR5_Jammer.refreshItem(item)
   //A deleted knowledge skill takes its kept roll attribute with it, by the user who deleted it
   if (item.type === "itemKnowledge" && userId === game.user?.id) await forgetKnowledgeAttribute(item)
