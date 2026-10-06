@@ -142,6 +142,9 @@ async function resolveDissipation(row, message){
         name: actor.name
       })
     },
+    position: {
+      width: 480
+    },
     content: `<p>${game.i18n.localize("SR5.AIDISSIPATION_Rule")}</p>
       <p>${game.i18n.format("SR5.AIDISSIPATION_Pool", {
     pool: escape(poolLabel(parts))
