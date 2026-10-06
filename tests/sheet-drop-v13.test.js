@@ -67,7 +67,9 @@ beforeEach(() => {
         created.push({
           data, options
         })
-        return data
+        return {
+          ...data, documentName: 'Item'
+        }
       })
     }
   }
@@ -110,6 +112,20 @@ describe('the base sheet', () => {
         uuid: 'Actor.a'
       }), keepId: true
     })
+  })
+
+  // Évariste's review: a refusal returned the notification, where an item or null is expected
+  it('returns the created item, or null when the sheet refuses it', async () => {
+    ui.notifications.info = vi.fn(() => ({
+      message: 'refused'
+    }))
+    expect(await drop(sheetOf(SR5ActorSheet), dropped('itemVehicleMod'))).toBeNull()
+    ui.notifications.warn = vi.fn(() => ({
+      message: 'refused'
+    }))
+    expect(await drop(sheetOf(SR5ActorSheet, [owned('itemTradition')]), dropped('itemTradition'))).toBeNull()
+    expect(await drop(sheetOf(SR5SpriteSheet), dropped('itemWeapon'))).toBeNull()
+    expect((await drop(sheetOf(SR5ActorSheet), dropped('itemSpell')))?.type).toBe('itemSpell')
   })
 
   it('leaves a move within the same sheet to Foundry', async () => {

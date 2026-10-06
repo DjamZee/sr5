@@ -890,7 +890,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     // The id is kept unless the actor already has an item with it (Foundry's own rule)
     this._dropKeepId = !this.actor.items.has(item.id)
     try {
-      return (await this._onDropItemCreate(item.toObject())) ?? null
+      // A sheet that refuses an item says so and returns its notification, or nothing: the drop created no item
+      const created = await this._onDropItemCreate(item.toObject())
+      return created?.documentName === "Item" ? created : null
     } finally {
       delete this._dropKeepId
     }
