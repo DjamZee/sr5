@@ -1628,7 +1628,8 @@ export class SR5_CharacterUtility extends Actor {
   // Generate spirit values
   static updateSpiritValues(actor) {
     SR5_EntityHelpers.updateValue(actor.system.force)
-    if (actor.system.type == "homunculus") {
+    // A homunculus is always physical, custom types based on it included
+    if (SR5_SpiritTypes.baseType(actor.system.type) === "homunculus") {
       actor.system.isMaterializing = true
     }
   }
@@ -1841,6 +1842,9 @@ export class SR5_CharacterUtility extends Actor {
           SR5_EntityHelpers.updateModifier(movements[key].test, game.i18n.localize('SR5.SkillRunning'), "skillRating", skills.running.rating.value)
           movements[key].movement.base = attributes.agility.augmented.value * movements[key].multiplier.value
           if (biography && (biography.metatype === "dwarf" || biography.metatype === "troll"))
+            movements[key].extraMovement.base = 1
+          // A homunculus prints x2/x4/+1 (SR5 p. 301)
+          else if (actor.type === "actorSpirit" && SR5_SpiritTypes.baseType(actor.system.type) === "homunculus")
             movements[key].extraMovement.base = 1
           //Spirits sprint like everyone else: +2 m per hit (Aetherology p. 35)
           else movements[key].extraMovement.base = 2
@@ -3234,8 +3238,9 @@ export class SR5_CharacterUtility extends Actor {
     magic.astralDamage.base = 0
     if ((actor.type === "actorPc") || (actor.type === "actorGrunt")) SR5_EntityHelpers.updateModifier(magic.astralDamage, `${game.i18n.localize('SR5.Charisma')}`, "linkedAttribute", attributes.charisma.augmented.value)
     if (actor.type === "actorSpirit") {
-      if ((actorData.type === "homunculus") || (actorData.type === "watcher")) {
-        SR5_EntityHelpers.updateModifier(magic.astralDamage, `${game.i18n.localize(SR5.spiritTypes[actorData.type])}`, "actorSpirit", 1)
+      // Watchers and homunculi deal 1 astral damage (SR5 p. 315), custom types based on them included
+      if (["homunculus", "watcher"].includes(SR5_SpiritTypes.baseType(actorData.type))) {
+        SR5_EntityHelpers.updateModifier(magic.astralDamage, SR5_SpiritTypes.label(actorData.type), "actorSpirit", 1)
       } else {
         SR5_EntityHelpers.updateModifier(magic.astralDamage, `${game.i18n.localize('SR5.SpiritForceShort')}`, "linkedAttribute", actorData.force.value)
       }

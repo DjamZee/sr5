@@ -24,17 +24,17 @@
     {{/if}}
 </div>
 
-{{#ifne system.type 'watcher'}}
+{{#ifne spiritBaseType 'watcher'}}
 <div class="SR-Materialize" 
   title="{{localize 'SR5.Materializing'}}" 
   data-helpTitle="{{localize 'SR5.HELP_MaterializingButton'}}" 
   data-helpMessage="{{localize 'SR5.HELP_MaterializingButtonMsg'}}"
   >
   {{#if system.isMaterializing}}
-  <input class="init-switch" id="materializeIcon" type="checkbox" name="system.isMaterializing" data-dtype="Boolean" data-binding="astralInit" {{checked system.isMaterializing}} {{#ife system.type 'homunculus'}}disabled{{/ife}}>
+  <input class="init-switch" id="materializeIcon" type="checkbox" name="system.isMaterializing" data-dtype="Boolean" data-binding="astralInit" {{checked system.isMaterializing}} {{#if isHomunculus}}disabled{{/if}}>
   <label for="materializeIcon" class="active">{{> systems/sr5/assets/img/icons/nav-materialize.svg}}</label>
   {{else}}
-  <input class="init-switch" id="materializeIcon" type="checkbox" name="system.isMaterializing" data-dtype="Boolean" data-binding="physicalInit" {{checked system.isMaterializing}} {{#ife system.type 'homunculus'}}disabled{{/ife}}>
+  <input class="init-switch" id="materializeIcon" type="checkbox" name="system.isMaterializing" data-dtype="Boolean" data-binding="physicalInit" {{checked system.isMaterializing}} {{#if isHomunculus}}disabled{{/if}}>
   <label for="materializeIcon">{{> systems/sr5/assets/img/icons/nav-materialize.svg}}</label>
   {{/if}}
 </div>

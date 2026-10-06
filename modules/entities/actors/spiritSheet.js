@@ -51,7 +51,10 @@ export class SR5SpiritSheet extends ActorSheetSR5 {
 
   // SR5 p. 301: a homunculus picks its material in the Barrier Ratings table (SR5 p. 198), each shown with its ratings
   _prepareHomunculusMaterials(context) {
-    context.isHomunculus = SR5_SpiritTypes.baseType(this.actor.system.type) === "homunculus"
+    // The templates read the base type, so that custom types based on a watcher or a homunculus behave like them
+    context.spiritBaseType = SR5_SpiritTypes.baseType(this.actor.system.type)
+    context.singleMonitor = SR5_SpiritTypes.hasSingleMonitor(this.actor.system.type)
+    context.isHomunculus = context.spiritBaseType === "homunculus"
     if (!context.isHomunculus) return
     const structure = game.i18n.localize("SR5.Structure"), armor = game.i18n.localize("SR5.VehicleStat_ArmorShort")
     context.homunculusMaterials = {
