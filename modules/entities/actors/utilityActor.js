@@ -11,7 +11,7 @@ import {
   SR5_Toxins
 } from "../items/toxins.js"
 import {
-  applyDrugQuality, drugAddictionThreshold
+  applyDrugQuality, drugAddictionThreshold, effectiveDrugQuality
 } from "../items/drug-stat.js"
 import {
   SR5_SystemHelpers 
@@ -4094,7 +4094,7 @@ export class SR5_CharacterUtility extends Actor {
     const antitoxin = SR5_Toxins.antitoxinRating(actorData)
     if (antitoxin > 1) drugStat.duration = SR5_Toxins.drugDuration(drugStat.duration, antitoxin)
     //The quality of the drug changes the duration of its crash (Chrome Flesh p. 194)
-    applyDrugQuality(drugStat, item.system?.quality)
+    applyDrugQuality(drugStat, effectiveDrugQuality(item.system, item.parent))
     return drugStat
   }
 

@@ -54,6 +54,10 @@ export class sr5ItemDrugDataModel extends foundry.abstract.TypeDataModel {
       quality: new fields.StringField({
         initial: 'standard'
       }),
+      //The actor a custom drug was made for (Chrome Flesh p. 194): anyone else takes it as a street drug
+      preparedFor: new fields.StringField({
+        initial: ''
+      }),
       addiction: new fields.SchemaField({
         type: new fields.StringField({
           initial: ''

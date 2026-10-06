@@ -31,4 +31,14 @@
             </select>
         </div>
     </li>
+    {{#if (eq system.quality "custom")}}
+    <li class="grid">
+        <div class="col-4" title="{{localize 'SR5.DrugPreparedForHint'}}">{{localize 'SR5.DrugPreparedFor'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-8">
+            <select name="system.preparedFor" data-dtype="String">
+                {{selectOptions drugRecipients selected=system.preparedFor blank=(localize 'SR5.DrugPreparedForAnyone')}}
+            </select>
+        </div>
+    </li>
+    {{/if}}
 </ul>

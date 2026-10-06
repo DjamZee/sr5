@@ -382,6 +382,14 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     context.isPlay = this.isPlayMode
     // Faction of a contact (Cutting Aces p. 157), kept in the gamemaster's registry
     if (item.type === "itemContact") context.contactFaction = SR5FactionRegistry.factionOfContact(item.uuid)?.name ?? ""
+    // Whom a custom drug can be made for (Chrome Flesh p. 194): the actors this user sees, and the one already named
+    if (item.type === "itemDrug" && item.system.quality === "custom") {
+      const recipients = Object.fromEntries((game.actors?.contents ?? []).filter(a => ["actorPc", "actorGrunt"].includes(a.type))
+        .map(a => [a.id, a.name]))
+      const named = item.system.preparedFor
+      if (named && !recipients[named]) recipients[named] = game.actors?.get(named)?.name ?? named
+      context.drugRecipients = recipients
+    }
     // The actors a jammer in wireless mode leaves alone (SR5 p. 443), by name
     if (item.type === "itemGear" && item.system.jammer?.type) {
       context.jammerSpared = (item.system.jammer.spared ?? []).map(id => ({

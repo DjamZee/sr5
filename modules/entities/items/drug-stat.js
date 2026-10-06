@@ -48,6 +48,15 @@ export async function warnDrugWithoutStat(actor, item){
   })
 }
 
+// A custom drug made for someone else is a street drug for whoever takes it (Chrome Flesh p. 194: "Si quelqu'un
+// utilise une drogue sur mesure prévue pour quelqu'un d'autre, considérez-la comme ayant été préparée dans les
+// rues"). Nobody named: custom for anyone, as before the field existed
+export function effectiveDrugQuality(system, consumer){
+  const quality = system?.quality || "standard"
+  if (quality !== "custom" || !system?.preparedFor || !consumer?.id) return quality
+  return system.preparedFor === consumer.id ? quality : "street"
+}
+
 // The drug stat (handleShot) with the crash duration of its quality, changed in place
 export function applyDrugQuality(shot, quality){
   const factor = DRUG_QUALITY_CRASH_FACTORS[quality] ?? 1

@@ -75,7 +75,7 @@ import {
   addictionWeeks, focusAddictionRating
 } from "../../rolls/roll-helpers/addiction.js"
 import {
-  warnDrugWithoutStat, drugAddictionThreshold, drugInteractionModifier
+  warnDrugWithoutStat, drugAddictionThreshold, drugInteractionModifier, effectiveDrugQuality
 } from "../items/drug-stat.js"
 import {
   reagentSystem, hasTiers
@@ -1453,7 +1453,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
               //Chrome Flesh p. 194: +1 for each street drug of the mix, -1 when all of them are custom.
               //The table (Chrome Flesh p. 197) has no row below 1: a lower total reads row 1, not the default one (14+, 10P). This floor
               //is a reading by Élise, the coordinator, not a text of the book
-              const interactionTotal = Math.max(1, interactionDiceResult.total + drugInteractionModifier(mixedDrugs.map(d => d.system.quality)))
+              const interactionTotal = Math.max(1, interactionDiceResult.total + drugInteractionModifier(mixedDrugs.map(d => effectiveDrugQuality(d.system, actor))))
 
               switch(interactionTotal){
                 case 1:
