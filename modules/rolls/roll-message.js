@@ -47,7 +47,7 @@ import {
   SR5_MatrixHelpers 
 } from "./roll-helpers/matrix.js"
 import {
-  isRolledByTarget, firstAidPatient, healPatient, healsDamage, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick, ownsCardSpeaker, defenseActorId, matrixDefenseActorId, removedButtonKeys
+  isRolledByTarget, firstAidPatient, healPatient, healsDamage, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick, ownsCardSpeaker, defenseActorId, matrixDefenseActorId, TARGET_RESISTS_CARD, removedButtonKeys
 } from "./roll-helpers/cardRoller.js"
 import {
   SR5_CombatHelpers 
@@ -349,6 +349,9 @@ export class SR5_RollMessage {
       case "matrixResistance":
       case "vehicleTest":
       case "resistanceToxin":
+        //The caster selected does not resist their own spell, complex form or power: the card's target does, as for a weapon (N93, MESURES-M7 D3).
+        //Not for an area spell: a caster caught in their own area resists it
+        if (TARGET_RESISTS_CARD.includes(type) && messageData.magic?.spell?.range !== "area") actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids) ?? actor
         //A defense among them: once per target and attack (system/defense-once.js)
         if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest(type, null, messageData)
         break

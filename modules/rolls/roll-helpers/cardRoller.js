@@ -53,6 +53,10 @@ export function matrixDefenseActorId(selectedId, card, resolveActor) {
   return null
 }
 
+// The resistances a card's owner forces on its target (spell, illusion, complex form, critter power): a selected
+// owner does not resist them, defenseActorId hands the button to the card's target (MESURES-M7 D3)
+export const TARGET_RESISTS_CARD = ["spellResistance", "illusionResistance", "complexFormDefense", "powerDefense"]
+
 // The id that finds the actor who spoke a card: its token first, since an unlinked token's actor
 // only exists through its token and is unknown to game.actors (N95)
 export function cardSpeakerId(speaker) {
