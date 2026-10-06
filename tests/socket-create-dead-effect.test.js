@@ -65,7 +65,7 @@ describe('createDeadEffect socket (Data Trails p. 161)', () => {
     setup()
     await ask()
     expect(SR5_ActorHelper.createDeadEffect).toHaveBeenCalledWith('a', {
-      surplus: undefined, itemUuid: 'Actor.a.Item.d'
+      surplus: undefined, itemUuid: 'Actor.a.Item.d', fromPlayer: true
     })
   })
 

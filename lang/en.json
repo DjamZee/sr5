@@ -1396,6 +1396,7 @@
 	"SR5.AIDISSIPATION_Rule": "The AI always loses 1 point of Essence, plus 1 per box of overflow damage not resisted. It also loses 1 point of Depth (minimum 1).",
 	"SR5.AIDISSIPATION_Pool": "Pool: {pool}",
 	"SR5.AIDISSIPATION_Surplus": "Overflow damage (boxes beyond the monitor, to check)",
+	"SR5.AIDISSIPATION_SurplusFromPlayer": "This overflow was worked out by a player's client: check it.",
 	"SR5.AIDISSIPATION_DeviceRatingAdded": "+ {rating} (rating of the bricked device) to resist",
 	"SR5.AIDISSIPATION_Extra": "Extra dice, or fewer (HELLO WORLD!: +1 per rank, Data Trails p. 153)",
 	"SR5.AIDISSIPATION_Roll": "Roll and apply",

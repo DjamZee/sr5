@@ -1396,6 +1396,7 @@
 	"SR5.AIDISSIPATION_Rule": "L'IA perd toujours 1 point d'Essence, plus 1 par case du Surplus de dommages non résistée. Elle perd aussi 1 point de Profondeur (minimum 1).",
 	"SR5.AIDISSIPATION_Pool": "Réserve : {pool}",
 	"SR5.AIDISSIPATION_Surplus": "Surplus de dommages (cases au-delà du moniteur, à vérifier)",
+	"SR5.AIDISSIPATION_SurplusFromPlayer": "Ce surplus a été calculé par le poste d'un joueur ou d'une joueuse : vérifiez-le.",
 	"SR5.AIDISSIPATION_DeviceRatingAdded": "+ {rating} (indice de l'appareil brické) à résister",
 	"SR5.AIDISSIPATION_Extra": "Dés en plus ou en moins (HELLO WORLD ! : +1 par niveau, Data Trails p. 153)",
 	"SR5.AIDISSIPATION_Roll": "Lancer et appliquer",

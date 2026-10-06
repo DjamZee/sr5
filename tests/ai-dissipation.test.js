@@ -3,8 +3,94 @@ import {
 } from "vitest"
 import {
   boundCount, dissipationPool, essenceToResist, dissipationEssenceLoss, essenceBaseAfterLoss, depthBaseAfterLoss, isAI,
-  dissipationContext
+  dissipationContext, poolParts, surplusFromPlayer, alreadyDissipated
 } from "../modules/system/ai-dissipation.js"
+import {
+  cardFromGM
+} from "../modules/system/card-rows.js"
+
+describe("AI dissipation, what the GM can trust (Paul's review)", () => {
+  const ai = {
+    system: {
+      attributes: {
+        willpower: {
+          augmented: {
+            value: 4
+          }
+        }
+      }, specialAttributes: {
+        depth: {
+          augmented: {
+            value: 5
+          }
+        }
+      }, matrix: {
+        attributes: {
+          firewall: {
+            value: 6
+          }
+        }
+      }
+    }
+  }
+
+  it("the Firewall counts only on a device that is not bricked", () => {
+    expect(poolParts(ai, {
+      onDevice: true, bricked: false
+    }).firewall).toBe(6)
+    expect(poolParts(ai, {
+      onDevice: true, bricked: true
+    }).firewall).toBe(0)
+    expect(poolParts(ai, {
+      onDevice: false, bricked: false
+    }).firewall).toBe(0)
+  })
+
+  it("an overflow from a player's client is said so, even under a GM's status", () => {
+    expect(surplusFromPlayer({
+    }, false)).toBe(true)
+    expect(surplusFromPlayer({
+      fromPlayer: true
+    }, true)).toBe(true)
+    expect(surplusFromPlayer({
+    }, true)).toBe(false)
+  })
+
+  it("a second dead status on a dissipated AI offers nothing", () => {
+    const dead = (id) => ({
+      id, statuses: new Set(["dead"])
+    })
+    expect(alreadyDissipated({
+      effects: [dead("a"), dead("b")]
+    }, dead("b"))).toBe(true)
+    expect(alreadyDissipated({
+      effects: [dead("b")]
+    }, dead("b"))).toBe(false)
+  })
+
+  it("a card is believed only from a GM", () => {
+    expect(cardFromGM({
+      author: {
+        isGM: false
+      }
+    })).toBe(false)
+    expect(cardFromGM({
+      author: {
+        isGM: true
+      }
+    })).toBe(true)
+  })
+
+  it("a natural Depth of 1 raised by a bonus does not fall to 0", () => {
+    expect(depthBaseAfterLoss({
+      natural: {
+        base: 1
+      }, augmented: {
+        value: 2
+      }
+    })).toBe(1)
+  })
+})
 
 describe("AI dissipation (Data Trails p. 161)", () => {
   it("resists with Willpower + Depth, plus the Firewall of a device that is not bricked", () => {

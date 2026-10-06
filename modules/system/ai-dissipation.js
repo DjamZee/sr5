@@ -43,9 +43,10 @@ export function essenceBaseAfterLoss(essence, loss){
   return num(essence?.base) - Math.min(num(loss), Math.max(0, num(essence?.value)))
 }
 
-// The Depth base after the loss of one point, the value never under 1
+// The Depth base after the loss of one point, the value never under 1, nor the base itself
 export function depthBaseAfterLoss(depth){
-  return num(depth?.augmented?.value) > 1 ? num(depth?.natural?.base) - 1 : num(depth?.natural?.base)
+  const base = num(depth?.natural?.base)
+  return num(depth?.augmented?.value) > 1 ? Math.max(1, base - 1) : base
 }
 
 export function isAI(actor){
@@ -84,7 +85,7 @@ export async function dissipationContext(actor, hint = {
 }
 
 // The pool, read from the actor when the GM rolls
-function poolParts(actor, context){
+export function poolParts(actor, context){
   const willpower = num(actor.system.attributes?.willpower?.augmented?.value)
   const depth = num(actor.system.specialAttributes?.depth?.augmented?.value)
   const firewall = (context.onDevice && !context.bricked) ? num(actor.system.matrix?.attributes?.firewall?.value) : 0
@@ -99,13 +100,25 @@ function poolLabel(parts){
   return label
 }
 
+// The overflow a player's client worked out (the status laid by a player, or a damage sent by socket) is said so on
+// the GM's dialog: a player cheats it downwards, and the GM must know where the number comes from
+export function surplusFromPlayer(hint, creatorIsGM){
+  return !creatorIsGM || !!hint?.fromPlayer
+}
+
+// A second "dead" status on an AI already dissipated (a forged one, the token HUD) is not a second dissipation
+export function alreadyDissipated(actor, effect){
+  return actor.effects.some(e => e.id !== effect.id && e.statuses?.has?.("dead"))
+}
+
 // A "dead" status lands on an AI: the active GM is offered the dissipation, once per status
-async function offerDissipation(effect){
+async function offerDissipation(effect, userId){
   if (!isActiveGM() || !effect?.statuses?.has?.("dead")) return
   const actor = effect.parent
-  if (!(actor instanceof Actor) || !isAI(actor)) return
+  if (!(actor instanceof Actor) || !isAI(actor) || alreadyDissipated(actor, effect)) return
   const hint = effect.flags?.sr5?.aiDissipation ?? {
   }
+  const fromPlayer = surplusFromPlayer(hint, !!game.users.get(userId)?.isGM)
   const context = await dissipationContext(actor, hint)
   const where = context.bricked ? game.i18n.format("SR5.AIDISSIPATION_Bricked", {
     device: escape(context.deviceName), rating: context.deviceRating
@@ -115,7 +128,7 @@ async function offerDissipation(effect){
       name: escape(actor.name)
     })}</h3>
       <p>${where}</p><p>${game.i18n.localize("SR5.AIDISSIPATION_EdgeEscape")}</p><ul>
-      <li class="sr5-ai-dissipation-row" data-actor-uuid="${escape(actor.uuid)}" data-surplus="${boundCount(hint.surplus)}" data-bricked="${context.bricked ? 1 : 0}" data-device-rating="${context.deviceRating}" data-on-device="${context.onDevice ? 1 : 0}">
+      <li class="sr5-ai-dissipation-row" data-actor-uuid="${escape(actor.uuid)}" data-surplus="${boundCount(hint.surplus)}" data-bricked="${context.bricked ? 1 : 0}" data-device-rating="${context.deviceRating}" data-on-device="${context.onDevice ? 1 : 0}" data-from-player="${fromPlayer ? 1 : 0}">
       <button type="button" data-sr5-ai-dissipation="resolve">${game.i18n.localize("SR5.AIDISSIPATION_Resolve")}</button></li></ul></div>`,
     whisper: gmIds(),
     flags: {
@@ -150,6 +163,7 @@ async function resolveDissipation(row, message){
     pool: escape(poolLabel(parts))
   })}</p>
       <div class="form-group"><label>${game.i18n.localize("SR5.AIDISSIPATION_Surplus")}</label><input type="number" name="surplus" min="0" value="${boundCount(row.dataset.surplus)}"></div>
+      ${row.dataset.fromPlayer === "1" ? `<p><em>${game.i18n.localize("SR5.AIDISSIPATION_SurplusFromPlayer")}</em></p>` : ""}
       ${context.bricked ? `<p>${game.i18n.format("SR5.AIDISSIPATION_DeviceRatingAdded", {
     rating: context.deviceRating
   })}</p>` : ""}
@@ -228,5 +242,5 @@ export function activateAIDissipationListeners(html, message){
 }
 
 export function initAIDissipation(){
-  Hooks.on("createActiveEffect", (effect) => offerDissipation(effect).catch(e => SR5_SystemHelpers.srLog(1, `AI dissipation not offered: ${e}`)))
+  Hooks.on("createActiveEffect", (effect, options, userId) => offerDissipation(effect, userId).catch(e => SR5_SystemHelpers.srLog(1, `AI dissipation not offered: ${e}`)))
 }

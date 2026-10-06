@@ -367,7 +367,8 @@ export class SR5_ActorHelper {
     for (let i = 0; i < 20 && !isFull(); i++) await new Promise(r => setTimeout(r, 100))
     if (!isFull()) return
     await SR5_ActorHelper.createDeadEffect(message.data.actorId, {
-      surplus: message.data.surplus, itemUuid: message.data.itemUuid
+      //The overflow was worked out by the player's client: the GM's card says so
+      surplus: message.data.surplus, itemUuid: message.data.itemUuid, fromPlayer: true
     })
   }
 
@@ -381,7 +382,8 @@ export class SR5_ActorHelper {
     let effect = await _getSRStatusEffect("dead")
     if (aiDissipation && actor.system.activeSpecialAttribute === "depth") effect.flags.sr5 = {
       aiDissipation: {
-        surplus: Math.max(0, Math.trunc(Number(aiDissipation.surplus) || 0)), itemUuid: aiDissipation.itemUuid ?? null
+        surplus: Math.max(0, Math.trunc(Number(aiDissipation.surplus) || 0)), itemUuid: aiDissipation.itemUuid ?? null,
+        fromPlayer: !game.user?.isGM || !!aiDissipation.fromPlayer
       }
     }
     await actor.createEmbeddedDocuments('ActiveEffect', [effect])
