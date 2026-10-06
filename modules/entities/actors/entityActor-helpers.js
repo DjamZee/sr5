@@ -1946,9 +1946,13 @@ export class SR5_ActorHelper {
       }
     }
 
-    await actor.update({
-      system: actorData.system
-    })
+    //Only the stored fields of the monitors, as in heal(): the whole prepared copy put the computed values in the source
+    let updates = {
+    }
+    for (let key of ["condition", "overflow", "physical", "stun"]) {
+      if (actorData.system.conditionMonitors[key]?.actual) Object.assign(updates, SR5_ActorHelper.monitorSourceUpdate(key, actorData.system.conditionMonitors[key]))
+    }
+    await actor.update(updates)
     await SR5_ActorHelper.clearDamageKnockout(actor)
   }
 

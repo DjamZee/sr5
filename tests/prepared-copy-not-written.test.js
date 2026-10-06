@@ -69,7 +69,7 @@ function doc(source, prepared, extra = {
       system: structuredClone(source)
     },
     toObject: (fromSource = true) => ({
-      _id: extra.id, system: structuredClone(fromSource ? source : prepared)
+      _id: extra.id, type: extra.type, system: structuredClone(fromSource ? source : prepared)
     }),
   })
 }
@@ -274,6 +274,139 @@ describe("electricity extends the stored duration only", () => {
     expect(actor.updateEmbeddedDocuments.mock.calls[0][1]).toEqual([{
       _id: "elec", "system.duration": 3
     }])
+  })
+})
+
+describe("regeneration writes the monitors only", () => {
+  function regenerating(type, monitors){
+    const source = {
+      conditionMonitors: structuredClone(monitors), resistances: {
+        fatigue: {
+          value: 0, modifiers: []
+        }
+      }
+    }
+    const prepared = structuredClone(source)
+    for (let m of Object.values(prepared.conditionMonitors)) m.actual.value = m.actual.base
+    prepared.resistances.fatigue.modifiers.push(linked)
+    return Object.assign(doc(source, prepared, {
+      id: "r", name: "Troll", type
+    }), {
+      update: vi.fn(async () => {}),
+    })
+  }
+  const monitor = (boxes, extra = {
+  }) => ({
+    value: 10, ...extra, actual: {
+      base: boxes, value: 0, modifiers: []
+    }
+  })
+
+  beforeEach(() => {
+    vi.spyOn(SR5_ActorHelper, "clearDamageKnockout").mockResolvedValue()
+    vi.spyOn(foundry.utils, "deepClone").mockImplementation(o => o)
+  })
+
+  it("a character, 3 net hits on 2 Physical and 4 Stun: 0 and 3, nothing of the prepared resistances", async () => {
+    const r = regenerating("actorPc", {
+      overflow: monitor(0), physical: monitor(2, {
+        aggravated: 0
+      }), stun: monitor(4)
+    })
+    vi.spyOn(SR5_EntityHelpers, "getRealActorFromID").mockReturnValue(r)
+    await SR5_ActorHelper.regenerate("r", {
+      roll: {
+        netHits: 3
+      }
+    })
+    const update = r.update.mock.calls[0][0]
+    expect(update).not.toHaveProperty("system")
+    expect(JSON.stringify(update)).not.toContain("linkedAttribute")
+    expect(update["system.conditionMonitors.physical.actual.base"]).toBe(0)
+    expect(update["system.conditionMonitors.stun.actual.base"]).toBe(3)
+    for (let key of Object.keys(update)) expect(key.startsWith("system.conditionMonitors.")).toBe(true)
+  })
+
+  it("a grunt heals its condition monitor, nothing else written", async () => {
+    const r = regenerating("actorGrunt", {
+      condition: monitor(5, {
+        aggravated: 0
+      })
+    })
+    vi.spyOn(SR5_EntityHelpers, "getRealActorFromID").mockReturnValue(r)
+    await SR5_ActorHelper.regenerate("r", {
+      roll: {
+        netHits: 2
+      }
+    })
+    expect(r.update.mock.calls[0][0]).toEqual({
+      "system.conditionMonitors.condition.actual.base": 3, "system.conditionMonitors.condition.aggravated": 0
+    })
+  })
+})
+
+describe("an effect put on a device (Redundancy) writes the device effects only", () => {
+  it("adds the effect to the stored effects, never the prepared device", async () => {
+    const source = {
+      isActive: true, price: {
+        base: 5000, value: 0
+      }, itemEffects: []
+    }
+    const prepared = structuredClone(source)
+    prepared.price.value = 5000
+    prepared.itemEffects.push({
+      name: "injected", target: "system.matrix.attributes.firewall", type: "value", value: 1
+    })
+    const device = doc(source, prepared, {
+      id: "deck", type: "itemDevice", name: "Deck"
+    })
+    const items = collection([device])
+    const actor = {
+      id: "a1", name: "Test", isToken: false, items,
+      createEmbeddedDocuments: vi.fn(async (_, [data]) => {
+        items.push({
+          id: "fx", uuid: "Item.fx", system: {
+            ownerItem: data["system.ownerItem"]
+          }
+        })
+      }),
+      updateEmbeddedDocuments: vi.fn(async () => {}),
+    }
+    vi.spyOn(SR5_EntityHelpers, "getRealActorFromID").mockReturnValue(actor)
+    vi.spyOn(SR5_EntityHelpers, "getLabelByKey").mockReturnValue("Moniteur matriciel")
+    vi.spyOn(SR5_ActorHelper, "linkEffectToSource").mockResolvedValue()
+    globalThis.game = {
+      ...globalThis.game, user: {
+        isGM: true
+      }
+    }
+    globalThis.fromUuid = async () => ({
+      name: "Redondance", type: "itemComplexForm", system: {
+        targetOfEffect: {
+        }, itemEffects: {
+          0: {
+            name: "red", transfer: true, target: "system.conditionMonitors.matrix", type: "value", value: 1, multiplier: 1
+          }
+        }
+      }
+    })
+    await SR5_ActorHelper.applyExternalEffect("a1", {
+      owner: {
+        itemUuid: "Item.red", actorId: "a1", messageId: "m1"
+      }, roll: {
+        hits: 2, netHits: 0
+      }, magic: {
+      }, test: {
+        typeSub: "redundancy"
+      },
+    }, "itemEffects")
+    const written = actor.updateEmbeddedDocuments.mock.calls[0][1]
+    expect(written).toHaveLength(1)
+    expect(Object.keys(written[0]).sort()).toEqual(["_id", "system.itemEffects"])
+    expect(written[0]._id).toBe("deck")
+    expect(written[0]["system.itemEffects"]).toEqual([expect.objectContaining({
+      target: "system.conditionMonitors.matrix", value: 1, ownerItem: "Item.red"
+    })])
   })
 })
 
