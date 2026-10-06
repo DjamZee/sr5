@@ -1119,7 +1119,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     // Don't expand/collapse when clicking interactive elements inside .deplie
     if (event.target.closest(".toggle-value, .edit-value, .select-value, .changeValueByClick, .reload-ammo, .accessory-activate, .item-summary, .jammer-toggle")) return
     event.preventDefault()
-    let li = event.currentTarget.closest(".item")
+    // The browser clears currentTarget once the handler yields: keep the clicked element before any await
+    const clicked = event.currentTarget
+    let li = clicked.closest(".item")
     if (!li) return
     let item = this.actor.items.get(li.dataset.itemId)
     if (!item) return
@@ -1133,7 +1135,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       let summary = li.querySelector(":scope > .item-summary")
       if (summary) summary.remove()
     } else {
-      let accessoryClass = (event.currentTarget.classList.contains("SR-MarginLeft10") ? "SR-MarginLeft10" : "")
+      let accessoryClass = (clicked.classList.contains("SR-MarginLeft10") ? "SR-MarginLeft10" : "")
       let div = document.createElement("div")
       div.className = `col-x item-summary ${accessoryClass}`
       div.innerHTML = expandData.gameEffect
@@ -2366,6 +2368,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
   async _onDeleteItemFromPan(event){
     event.preventDefault()
+    // The browser clears currentTarget once the handler yields: read the button before any await
+    let index = event.currentTarget.dataset.index
+    let itemId = event.currentTarget.dataset.key
     // Submit any unsaved changes
     if (this.isEditable) {
       const formData = new foundry.applications.ux.FormDataExtended(this.element)
@@ -2374,8 +2379,6 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         await this.document.update(submitData)
       }
     }
-    let index = event.currentTarget.dataset.index
-    let itemId = event.currentTarget.dataset.key
     let actor = this.actor.id
     if (this.actor.isToken) actor = this.actor.token.id
 
