@@ -59,7 +59,7 @@ beforeAll(async () => {
   ({
     SR5StorageSheet
   } = await import('../modules/entities/actors/storageSheet.js'))
-}, 60000)
+})
 
 const click = itemId => ({
   preventDefault: () => {}, currentTarget: {
