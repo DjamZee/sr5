@@ -26,7 +26,7 @@ export function dissipationPool({
 }
 
 // What must be resisted: the overflow, plus the Device Rating of a bricked device. The book says the AI resists "also"
-// a loss equal to the Device Rating: read as added to the overflow (reading to be confirmed by DjamZ)
+// a loss equal to the Device Rating: added to the overflow (DjamZ's ruling, 06/10)
 export function essenceToResist({
   surplus, bricked = false, deviceRating = 0
 }){
