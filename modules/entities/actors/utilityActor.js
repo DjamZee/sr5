@@ -3953,6 +3953,7 @@ export class SR5_CharacterUtility extends Actor {
           "unresistedStunDamage": 8,
         }
         break
+      //Chrome Flesh p. 191: +1 Charisma and Perception, Pain Tolerance 1, memory loss; no damage, on taking or after
       case "pixieDust":
         roll = new Roll(`1d6`)
         rollRoll = await roll.evaluate()
@@ -3963,7 +3964,6 @@ export class SR5_CharacterUtility extends Actor {
           "speed": item.system.speed,
           "duration": rollRoll.total,
           "durationType": "minute",
-          "resistedStunDamage": 12,
           "effectDuration": rollRollSpeed.total,
           "effectDurationType": "SR5.Minutes",
         }

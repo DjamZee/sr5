@@ -141,4 +141,11 @@ describe('Pixie Dust (Chrome Flesh p. 191): two separate dice', () => {
     expect(stat.duration).toBe(3)
     expect(stat.effectDuration).toBe(3)
   })
+  it('deals no damage', async () => {
+    const stat = await SR5_CharacterUtility.handleDrugShots(drug('Poussière de fée'), {
+      value: 'pixieDust'
+    }, actorData([]))
+    expect(stat.resistedStunDamage).toBeUndefined()
+    expect(stat.unresistedStunDamage).toBeUndefined()
+  })
 })

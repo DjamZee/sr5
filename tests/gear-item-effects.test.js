@@ -1,53 +1,60 @@
 import {
-  describe, it, expect, vi
+  describe, it, expect, vi, afterEach
 } from 'vitest'
-import fs from 'node:fs'
 
-// config.js writes into CONFIG at import time, and the sheets build on Foundry's classes
+// config.js writes into CONFIG at import time
 vi.hoisted(() => {
   globalThis.CONFIG ??= {
   }
-  globalThis.foundry.applications.sheets ??= {
-    ActorSheetV2: class {
-      _onRender(){}
-    }
-  }
-  globalThis.foundry.abstract.TypeDataModel.migrateData ??= (source) => source
 })
 
-const {
+import {
+  SR5Item
+} from '../modules/entities/items/entityItem.js'
+import {
   SR5_UtilityItem
-} = await import('../modules/entities/items/utilityItem.js')
+} from '../modules/entities/items/utilityItem.js'
 
-// The item sheet offers a gear one item effect target, its matrix monitor; it was read only when the gear also
-// carried a system effect, so a plain gear lost it
-describe('gear item effects', () => {
-  it('applies them without a system effect', () => {
-    const ITEM = fs.readFileSync('modules/entities/items/entityItem.js', 'utf8')
-    const gearCase = ITEM.match(/case "itemGear":\r?\n([\s\S]*?)break/)[1]
-    expect(gearCase).toMatch(/Object\.keys\(itemData\.itemEffects\)\.length\) SR5_UtilityItem\.applyItemEffects\(item\)/)
-  })
+Object.getPrototypeOf(SR5Item.prototype).prepareData ??= () => {}
+afterEach(() => vi.restoreAllMocks())
 
-  it('adds an item effect to the matrix monitor of a gear', () => {
-    const item = {
-      type: 'itemGear', name: 'Gadget', system: {
-        itemRating: 3, deviceRating: 3, wirelessTurnedOn: true, systemEffects: {
-        }, itemEffects: {
-          0: {
-            name: 'Blindage', target: 'system.conditionMonitors.matrix', type: 'value', value: 2, multiplier: 1, cumulative: true
-          }
-        },
-        conditionMonitors: {
-          matrix: {
-            base: 0, value: 0, modifiers: [], actual: {
-              base: 0, value: 0, modifiers: []
-            }
-          }
-        },
+// A plain gear, without system effect, with the one item effect the sheet offers it: on its matrix monitor
+const gear = () => ({
+  type: 'itemGear', name: 'Gadget', system: {
+    itemRating: 3, deviceRating: 3, wirelessTurnedOn: true, isAccessory: false, canRollTest: false,
+    systemEffects: [], itemEffects: [{
+      name: 'Blindage', target: 'system.conditionMonitors.matrix', type: 'value', value: 2, multiplier: 1, cumulative: true
+    }],
+    price: {
+      base: 0, modifiers: []
+    }, availability: {
+      base: 0, modifiers: []
+    }, concealability: {
+      base: 0, modifiers: []
+    }, capacityTaken: {
+      base: 0, modifiers: []
+    },
+    conditionMonitors: {
+      matrix: {
+        base: 0, value: 0, modifiers: [], actual: {
+          base: 0, value: 0, modifiers: []
+        }
       }
+    },
+  }
+})
+
+// The item effects of a gear were read only behind a system effect: the one on the matrix monitor of a plain gear
+// was lost. The real preparation runs here, its side computations stubbed
+describe('gear item effects', () => {
+  it('a gear without system effect applies its item effects at preparation', () => {
+    const apply = vi.spyOn(SR5_UtilityItem, 'applyItemEffects')
+    for (const f of ['_handleItemCapacity', '_handleItemPrice', '_handleItemAvailability', '_handleItemConcealment']) {
+      vi.spyOn(SR5_UtilityItem, f).mockImplementation(() => {})
     }
-    SR5_UtilityItem.applyItemEffects(item)
-    SR5_UtilityItem._handleMatrixMonitor(item)
+    const item = gear()
+    SR5Item.prototype.prepareData.call(item)
+    expect(apply).toHaveBeenCalledOnce()
     // SR5 p. 228: 8 + half the Device rating rounded up, then the effect
     expect(item.system.conditionMonitors.matrix.value).toBe(12)
   })
