@@ -16,7 +16,7 @@ vi.mock("../modules/socket.js", () => ({
 }))
 
 const {
-  screenRejectedImplants, isBoneLacing, activeBoneLacing
+  screenRejectedImplants, isBoneLacing, isBoneDensity, activeBoneClash
 } = await import("../modules/system/implant-essence.js")
 
 // As in both compendiums (the system's and the Megapack's)
@@ -187,8 +187,26 @@ describe("a second one is refused before it moves", () => {
       isGM: false, warn: () => {}
     })).refused).toEqual([])
   })
-  it("bone density beside a lacing is not this decision", async () => {
-    expect((await screenRejectedImplants(body([lacing("Ossature renforcée (Titane)")]), [boneDensity()], {
+  // SR5 p. 458 and 462: a lacing and a bone density augmentation are incompatible, both ways (same decision as H5)
+  it("bone density beside a lacing is refused, and a lacing beside bone density, with their own words", async () => {
+    const warned = []
+    const warn = (key, data) => warned.push([key, data.lacing])
+    const density = boneDensity(), titane = lacing("Ossature renforcée (Titane)")
+    expect((await screenRejectedImplants(body([lacing("Ossature renforcée (Titane)")]), [density], {
+      isGM: false, warn
+    })).refused).toEqual([density])
+    expect((await screenRejectedImplants(body([boneDensity()]), [titane], {
+      isGM: false, warn
+    })).refused).toEqual([titane])
+    expect(warned).toEqual([["SR5.WARN_BoneDensityClash", "Ossature renforcée (Titane)"],
+      ["SR5.WARN_BoneDensityClash", "Augmentation de densité osseuse"]])
+  })
+  it("in the same batch, the one after the other is refused; two bone densities are left alone (no page says it)", async () => {
+    const density = boneDensity()
+    expect((await screenRejectedImplants(body([]), [lacing("Ossature renforcée (Titane)"), density], {
+      isGM: false, warn: () => {}
+    })).refused).toEqual([density])
+    expect((await screenRejectedImplants(body([boneDensity()]), [boneDensity()], {
       isGM: false, warn: () => {}
     })).refused).toEqual([])
   })
@@ -209,17 +227,41 @@ describe("switching one on", () => {
     const titane = lacing("Ossature renforcée (Titane)", 3, {
       isActive: false
     })
-    expect(activeBoneLacing(body([alu, titane]), titane)).toBe(alu)
-    expect(activeBoneLacing(body([alu]), alu)).toBe(null)
-    expect(activeBoneLacing(body([{
+    expect(activeBoneClash(body([alu, titane]), titane)).toBe(alu)
+    expect(activeBoneClash(body([alu]), alu)).toBe(null)
+    expect(activeBoneClash(body([{
       ...alu, system: {
         ...alu.system, isActive: false
       }
     }, titane]), titane)).toBe(null)
-    expect(activeBoneLacing(body([{
+    expect(activeBoneClash(body([{
       ...alu, system: {
         ...alu.system, storedIn: "stash"
       }
     }, titane]), titane)).toBe(null)
+  })
+  it("finds a lacing switched on for a bone density, and the reverse", () => {
+    const alu = lacing("Ossature renforcée (Aluminium)", 2), density = boneDensity()
+    expect(activeBoneClash(body([alu, density]), density)).toBe(alu)
+    expect(activeBoneClash(body([alu, density]), alu)).toBe(density)
+    expect(activeBoneClash(body([alu, dermal()]), dermal())).toBe(null)
+  })
+})
+
+describe("what an Augmentation de densité osseuse is", () => {
+  it("the bioware of that name, in any language, or from either compendium", () => {
+    expect(isBoneDensity(boneDensity())).toBe(true)
+    expect(isBoneDensity({
+      ...boneDensity(), name: "Bone Density Augmentation"
+    })).toBe(true)
+    expect(isBoneDensity({
+      ...boneDensity(), name: "Renamed", _stats: {
+        compendiumSource: "Compendium.megapack-sr5-foundry-vtt.sr5-megapack-items.Item.H6bRPeyZzxEFIC7S"
+      }
+    })).toBe(true)
+    expect(isBoneDensity(lacing("Ossature renforcée (Titane)"))).toBe(false)
+    expect(isBoneDensity({
+      ...boneDensity(), name: "Augmentation musculaire"
+    })).toBe(false)
   })
 })

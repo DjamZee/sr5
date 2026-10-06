@@ -346,12 +346,43 @@ export function isBoneLacing(data) {
   return effects.some(e => e?.category === "itemArmor") && effects.some(e => unarmed(e) || resistance(e))
 }
 
+/** The Augmentations de densité osseuse of the compendiums: sr5-compendiums fr_bioware, then the Megapack (and (NE)). */
+const BONE_DENSITY_SOURCES = ["J3aTcMzhQgzjhL5T", "vRsjmjPwxyoQszgl", "H6bRPeyZzxEFIC7S"]
+
+/** Augmentation de densité osseuse (SR5 p. 462), told by the compendium it was taken from, then by its name. */
+export function isBoneDensity(data) {
+  if (data?.type !== "itemAugmentation" || data.system?.isAccessory || implantFamily(data.system?.type) !== "bioware") return false
+  const source = data._stats?.compendiumSource ?? data.flags?.core?.sourceId ?? ""
+  if (BONE_DENSITY_SOURCES.some(id => source.endsWith(`.${id}`))) return true
+  const name = (data.name ?? "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim()
+  return /^(augmentation de densite osseuse|bone density augmentation)\b/.test(name)
+}
+
 /**
- * The bone lacing `actor` already has switched on, other than `item`: the one a second must not join (SR5 p. 458).
- * Switching one on is where two lacings installed before the screening, or kept by the gamemaster, would add up.
+ * Whether `a` cannot be installed beside `b`: two Ossatures renforcées ("un seul type pouvant être installé à la fois",
+ * SR5 p. 458), or an Ossature renforcée and an Augmentation de densité osseuse, incompatible both ways (SR5 p. 458 and
+ * 462). The same decision as two lacings (H5 of DjamZ). Two bone density augmentations are left alone: no page says it.
  */
-export function activeBoneLacing(actor, item) {
-  return listOf(actor?.items).find(i => i !== item && !(i.id && i.id === item?.id) && isInstalled(i) && i.system?.isActive && isBoneLacing(i)) ?? null
+export function bonesClash(a, b) {
+  if (isBoneLacing(a)) return isBoneLacing(b) || isBoneDensity(b)
+  return isBoneDensity(a) && isBoneLacing(b)
+}
+
+/**
+ * The bone augmentation `actor` already has switched on, other than `item`, that `item` must not join (SR5 p. 458,
+ * 462). Switching one on is where two installed before the screening, or kept by the gamemaster, would add up.
+ */
+export function activeBoneClash(actor, item) {
+  return listOf(actor?.items).find(i => i !== item && !(i.id && i.id === item?.id) && isInstalled(i) && i.system?.isActive && bonesClash(item, i)) ?? null
+}
+
+/** The message key for a bone augmentation refused: two lacings keep DjamZ's words, a lacing and a density their own */
+export function boneClashKey(lacings, kind) {
+  return {
+    player: lacings ? "SR5.WARN_BoneLacingSecond" : "SR5.WARN_BoneDensityClash",
+    gm: lacings ? "SR5.WARN_BoneLacingGMPast" : "SR5.WARN_BoneDensityClashGMPast",
+    confirm: lacings ? "SR5.BoneLacingConfirmText" : "SR5.BoneDensityClashConfirmText",
+  }[kind]
 }
 
 /**
@@ -373,21 +404,21 @@ export async function screenRejectedImplants(actor, incoming, {
 } = {
 }) {
   const body = [...listOf(actor?.items), ...(incoming ?? [])]
-  // Ossature renforcée (SR5 p. 458): one installed already, or earlier in the same batch, and a second is refused
-  const lacings = listOf(actor?.items).filter(i => isInstalled(i) && isBoneLacing(i)).map(i => i.name)
+  // Ossature renforcée and densité osseuse (SR5 p. 458, 462): one installed already, or earlier in the same batch,
+  // and one that clashes with it is refused
+  const bones = listOf(actor?.items).filter(i => isInstalled(i) && (isBoneLacing(i) || isBoneDensity(i)))
   const rejected = []
   for (const data of incoming ?? []) {
     if (!isInstalled(data)) continue
     const quality = implantEssenceEffects(body, data.system?.type).rejectedBy
+    const clash = bones.find(b => bonesClash(data, b))
     if (quality) rejected.push({
       data, quality
     })
-    else if (isBoneLacing(data)) {
-      if (lacings.length) rejected.push({
-        data, lacing: lacings[0]
-      })
-      else lacings.push(data.name)
-    }
+    else if (clash) rejected.push({
+      data, lacing: clash.name, twoLacings: isBoneLacing(data) && isBoneLacing(clash)
+    })
+    else if (isBoneLacing(data) || isBoneDensity(data)) bones.push(data)
   }
   if (!rejected.length) return {
     refused: [], confirmed: false
@@ -397,15 +428,19 @@ export async function screenRejectedImplants(actor, incoming, {
     const paragraph = (key, list, data) => list.length ? `<p>${game.i18n.format(key, {
       actor: escape(actor?.name), names: list.map(r => escape(r.data.name)).join(", "), ...data
     })}</p>` : ""
-    const bioware = rejected.filter(r => r.quality), bones = rejected.filter(r => r.lacing)
+    const bioware = rejected.filter(r => r.quality)
+    const lacings = rejected.filter(r => r.lacing && r.twoLacings), clashes = rejected.filter(r => r.lacing && !r.twoLacings)
+    const title = bioware.length ? "SR5.ImplantRejectedConfirmTitle" : lacings.length ? "SR5.BoneLacingConfirmTitle" : "SR5.BoneDensityClashConfirmTitle"
     const kept = await foundry.applications.api.DialogV2.confirm({
       window: {
-        title: game.i18n.localize(bioware.length ? "SR5.ImplantRejectedConfirmTitle" : "SR5.BoneLacingConfirmTitle")
+        title: game.i18n.localize(title)
       },
       content: paragraph("SR5.ImplantRejectedConfirmText", bioware, {
         quality: bioware[0]?.quality
-      }) + paragraph("SR5.BoneLacingConfirmText", bones, {
-        lacing: escape(bones[0]?.lacing)
+      }) + paragraph("SR5.BoneLacingConfirmText", lacings, {
+        lacing: escape(lacings[0]?.lacing)
+      }) + paragraph("SR5.BoneDensityClashConfirmText", clashes, {
+        lacing: escape(clashes[0]?.lacing)
       }),
       rejectClose: false,
     }) === true
@@ -417,7 +452,7 @@ export async function screenRejectedImplants(actor, incoming, {
       if (r.quality) warn("SR5.WARN_ImplantRejected", {
         name: r.data.name, actor: actor?.name, quality: r.quality
       })
-      else warn("SR5.WARN_BoneLacingSecond", {
+      else warn(boneClashKey(r.twoLacings, "player"), {
         name: r.data.name, actor: actor?.name, lacing: r.lacing
       })
     }

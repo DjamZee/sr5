@@ -5,7 +5,7 @@ import {
   SR5_Toxins
 } from '../items/toxins.js'
 import {
-  activeBoneLacing, isBoneLacing
+  activeBoneClash, boneClashKey, isBoneLacing
 } from '../../system/implant-essence.js'
 import {
   SR5_SystemHelpers
@@ -1432,12 +1432,14 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     if (target === "system.wirelessTurnedOn" && realItem?.type === "itemWeapon" && hasWeaponTrait(realItem.system, "vintage")) return ui.notifications.warn(game.i18n.localize("SR5.WARN_VintageNoWireless"))
     //Better Than Bad p. 141: under Blight no adept power, focus nor sustained spell is switched on (decisions of DjamZ)
     if (target === "system.isActive" && value && ["itemAdeptPower", "itemFocus", "itemSpell"].includes(realItem?.type) && SR5_Toxins.isCutFromManasphere(actor)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
-    //Ossature renforcée (SR5 p. 458): "un seul type pouvant être installé à la fois". A second one switched on is
-    //refused to a player; the gamemaster is warned and goes past it (decision H5 of DjamZ)
-    if (target === "system.isActive" && value === true && isBoneLacing(realItem)) {
-      const lacing = activeBoneLacing(actor, realItem)
+    //Ossature renforcée (SR5 p. 458): "un seul type pouvant être installé à la fois", and never beside an Augmentation
+    //de densité osseuse (p. 458, 462). One switched on beside another is refused to a player; the gamemaster is warned
+    //and goes past it (decision H5 of DjamZ)
+    if (target === "system.isActive" && value === true) {
+      const lacing = activeBoneClash(actor, realItem)
       if (lacing) {
-        ui.notifications.warn(game.i18n.format(game.user.isGM ? "SR5.WARN_BoneLacingGMPast" : "SR5.WARN_BoneLacingSecond", {
+        const key = boneClashKey(isBoneLacing(realItem) && isBoneLacing(lacing), game.user.isGM ? "gm" : "player")
+        ui.notifications.warn(game.i18n.format(key, {
           name: realItem.name, actor: actor.name, lacing: lacing.name
         }))
         if (!game.user.isGM) return
