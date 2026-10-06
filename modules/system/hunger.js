@@ -302,14 +302,16 @@ export function initHunger(){
   Hooks.on("updateWorldTime", () => queueCheck())
   Hooks.on("createChatMessage", (message) => offerHasten(message).catch(e => SR5_SystemHelpers.srLog(1, `Hunger offer failed: ${e}`)))
   //The sheets of the tracked creatures show the next loss
-  Hooks.on("updateSetting", (setting) => {
+  //(the first write of the ledger creates the setting: "createSetting", not "updateSetting")
+  const redraw = (setting) => {
     if (setting.key !== `sr5.${HUNGER_LEDGER}`) return
-    for (const uuid of Object.keys(hungerLedger().creatures ?? {
-    })) {
-      const actor = fromUuidSync(uuid)
-      actor?.sheet?.rendered && actor.sheet.render(false)
+    for (const actor of Object.values(ui.windows ?? {
+    }).concat([...foundry.applications.instances.values()]).map(app => app.actor).filter(Boolean)) {
+      actor.sheet?.rendered && actor.sheet.render(false)
     }
-  })
+  }
+  Hooks.on("updateSetting", redraw)
+  Hooks.on("createSetting", redraw)
 }
 
 export function registerHungerSettings(){
