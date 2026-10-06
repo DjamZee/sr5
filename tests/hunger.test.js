@@ -2,8 +2,84 @@ import {
   describe, it, expect
 } from "vitest"
 import {
-  monthSeconds, newHunger, hasten, lossesDue, essenceAfter, deadlineFrom, powerHastens, DAY, WEEK, LUNAR_MONTH_DAYS
+  monthSeconds, newHunger, hasten, lossesDue, essenceAfter, deadlineFrom, powerHastens, DAY, WEEK, LUNAR_MONTH_DAYS,
+  activeGMOrWarn, canHunger
 } from "../modules/system/hunger.js"
+
+describe("who may use the hunger buttons", () => {
+  const warnings = []
+  const setUser = (isGM, active) => {
+    globalThis.ui = {
+      notifications: {
+        warn: (m) => warnings.push(m)
+      }
+    }
+    globalThis.game = {
+      user: {
+        id: "me", isGM
+      },
+      users: {
+        activeGM: {
+          id: active ? "me" : "other"
+        }
+      },
+      i18n: {
+        localize: (k) => k
+      },
+    }
+  }
+
+  it("a GM who is not the active one is told, not refused in silence", () => {
+    warnings.length = 0
+    setUser(true, false)
+    expect(activeGMOrWarn()).toBe(false)
+    expect(warnings).toEqual(["SR5.HUNGER_ActiveGMOnly"])
+  })
+
+  it("the active GM goes through without a warning", () => {
+    warnings.length = 0
+    setUser(true, true)
+    expect(activeGMOrWarn()).toBe(true)
+    expect(warnings).toEqual([])
+  })
+})
+
+describe("who can be tracked", () => {
+  it("the Essence Drain power or the Essence Loss weakness (SR5 p. 403)", () => {
+    expect(canHunger({
+      system: {
+        specialProperties: {
+          essenceDrain: true
+        }
+      }, items: []
+    })).toBe(true)
+    expect(canHunger({
+      system: {
+        specialProperties: {
+        }
+      }, items: [{
+        type: "itemPower", system: {
+          systemEffects: {
+            0: {
+              category: "spiritPower", value: "essenceLoss"
+            }
+          }
+        }
+      }]
+    })).toBe(true)
+    expect(canHunger({
+      system: {
+        specialProperties: {
+        }
+      }, items: [{
+        type: "itemPower", system: {
+          systemEffects: {
+          }
+        }
+      }]
+    })).toBe(false)
+  })
+})
 
 // Essence Loss (SR5 p. 403)
 describe("hunger of the Infected", () => {

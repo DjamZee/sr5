@@ -78,7 +78,7 @@ import {
   reagentSystem, hasTiers
 } from "../../system/reagents.js"
 import {
-  hungerStatus, toggleHunger, hastenHunger
+  hungerStatus, toggleHunger, hastenHunger, canHunger
 } from "../../system/hunger.js"
 
 /**
@@ -258,9 +258,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     context.items.sort((a, b) => (a.sort || 0) - (b.sort || 0))
 
     //Essence Loss of the Infected (SR5 p. 403): the GM alone sees the clock of the hunger, from his ledger
-    context.hunger = game.user.isGM && this.actor.system.specialProperties?.essenceDrain ? hungerStatus(this.actor) : null
+    context.hunger = game.user.isGM && canHunger(this.actor) ? hungerStatus(this.actor) : null
 
-    context.storageViewIsGrid =game.settings.get("sr5", "sr5StorageViewMode") !== "list"
+    context.storageViewIsGrid = game.settings.get("sr5", "sr5StorageViewMode") !== "list"
     //The clinch button of the martial arts block (Run & Gun p. 133) exists only with the grappling rules
     context.rulesGrappling = game.settings.get("sr5", "sr5GrapplingRules")
     //The "wired by DNI" box only matters when the world asks for a DNI to switch the wireless as a free action

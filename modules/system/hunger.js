@@ -69,6 +69,21 @@ function isActiveGM(){
   return game.user.isGM && game.users.activeGM?.id === game.user.id
 }
 
+// A GM who is not the active one clicks a button: told why nothing happens, instead of a silent refusal
+export function activeGMOrWarn(){
+  if (isActiveGM()) return true
+  ui.notifications.warn(game.i18n.localize("SR5.HUNGER_ActiveGMOnly"))
+  return false
+}
+
+// The clock is offered to a creature with the Essence Drain power (its effect) or the Essence Loss weakness
+// (SR5 p. 403: "certain creatures"), the latter known by its system effect
+export function canHunger(actor){
+  if (actor?.system?.specialProperties?.essenceDrain) return true
+  return !!actor?.items?.some?.(i => i.type === "itemPower" && Object.values(i.system?.systemEffects ?? {
+  }).some(e => e?.value === "essenceLoss"))
+}
+
 export function hungerLedger(){
   try {
     return game.settings.get("sr5", HUNGER_LEDGER) ?? {
@@ -271,6 +286,7 @@ export function activateHungerListeners(html, message){
   buttons.forEach(button => button.addEventListener("click", async (event) => {
     const btn = event.currentTarget
     const row = btn.closest(".sr5-hunger-row")
+    if (!activeGMOrWarn()) return
     btn.disabled = true
     const act = btn.dataset.sr5HungerApply === "hasten" ? hastenByUuid : applyPending
     const done = await act(row.dataset.actorUuid).catch(e => SR5_SystemHelpers.srLog(1, `Hunger not applied: ${e}`))
