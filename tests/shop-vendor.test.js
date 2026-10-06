@@ -347,8 +347,11 @@ beforeEach(async () => {
     })[key] ?? null, registerMenu: () => {} 
   }
   globalThis.game.socket = {
-    emit: async (_c, payload) => sent.push(payload) 
+    emit: async (_c, payload) => sent.push(payload)
   }
+  // The till names the debit it writes before writing it
+  let ids = 0
+  globalThis.foundry.utils.randomID = () => `id${++ids}`
   globalThis.foundry.documents.ChatMessage = {
     create: async () => ({
     }), getSpeaker: () => ({
@@ -760,5 +763,81 @@ describe('the counter, without a gamemaster and while restocking (Quitterie, S7 
     // Once done, the shop can be restocked again
     expect(await SR5ShopVendor.restock(vendor, storage)).toBe(2)
     vi.doUnmock('../modules/interface/shop-window.js')
+  })
+})
+
+describe('an order paid at the counter on the accounts (Firmin\'s review)', () => {
+  it('names its debit in the ledger: deleted, the cancellation refunds nothing, and it backs no forged order', async () => {
+    const {
+      vendor
+    } = makeVendor()
+    const storage = vendor.items.get('shop')
+    Object.assign(storage.system.shop, {
+      onOrder: true, shelves: ['gear'], legality: ['legal']
+    })
+    const buyer = makeBuyer()
+    const items = new Map()
+    buyer.items = {
+      get: id => items.get(id)
+    }
+    buyer.createEmbeddedDocuments = async (_t, docs, options) => {
+      for (const doc of docs) {
+        const id = options?.keepId && doc._id ? doc._id : `x${items.size}`
+        items.set(id, {
+          ...doc, id
+        })
+        buyer.created.push(doc)
+      }
+      return docs
+    }
+    let flag = []
+    buyer.getFlag = () => flag
+    buyer.setFlag = async (_s, _k, value) => {
+      flag = value
+    }
+    vi.spyOn(SR5Shop, 'balance').mockReturnValue(10000)
+    world(vendor, buyer)
+    const SCANNER = 'Compendium.x.gear.Item.scanner'
+    globalThis.fromUuid = async uuid => uuid === SCANNER ? {
+      uuid, name: 'Scanner', type: 'itemGear', pack: 'x.gear', flags: {
+      },
+      system: {
+        price: {
+          value: 500, base: 500
+        }, availability: {
+          value: 4
+        }
+      },
+    } : null
+    const stored = {
+    }
+    globalThis.game.settings = {
+      get: (_s, key) => key in stored ? stored[key] : ({
+        sr5ShopBuyerMode: 'owned', sr5ShopBuyerFolder: '', sr5ShopCreationMode: false, sr5ShopDelivery: 'delayed',
+      })[key] ?? null,
+      set: async (_s, key, value) => {
+        stored[key] = value
+      },
+      registerMenu: () => {},
+    }
+    globalThis.game.users.activeGM = gm
+    globalThis.game.time = {
+      worldTime: 0
+    }
+    expect(await SR5ShopVendor.sell(request([{
+      uuid: SCANNER, quantity: 1, name: 'Scanner'
+    }]), player.id)).toBe(true)
+    const [order] = flag
+    expect(order).toBeDefined()
+    const entry = stored.sr5ShopOrderLedger?.[order.id]
+    const debit = [...items.values()].find(item => item.type === 'itemNuyen' && item.system.type === 'loss')
+    expect(entry.transactionId).toBe(debit.id)
+    expect(stored.sr5ShopOrderDebits?.[`${buyer.uuid}.${debit.id}`]).toBe(true)
+    const {
+      debitLeft, cancelPlan
+    } = await import('../modules/interface/shop-orders.js')
+    expect(cancelPlan(order, entry, 0, debitLeft(buyer, entry)).refund).toBe(500)
+    items.delete(debit.id)
+    expect(cancelPlan(order, entry, 0, debitLeft(buyer, entry)).refund).toBe(0)
   })
 })

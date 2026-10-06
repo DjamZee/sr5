@@ -240,6 +240,13 @@ export async function ledgerOrders(entries) {
   await updateLedger(ORDER_LEDGER, ledger => ({
     ...ledger, ...entries
   }))
+  // The debit behind entries (a vendor's sale paid on the accounts too) stands behind nothing else, even
+  // once the entries are gone: no forged order of the shop without vendor is entered against it (Georg)
+  const debits = Object.values(entries).filter(entry => entry?.transactionId && entry?.actorUuid)
+    .map(entry => `${entry.actorUuid}.${entry.transactionId}`)
+  if (debits.length) await updateLedger(USED_DEBITS, used => debits.every(key => used[key]) ? null : ({
+    ...used, ...Object.fromEntries(debits.map(key => [key, true]))
+  }))
 }
 
 async function ledgerDrop(id) {

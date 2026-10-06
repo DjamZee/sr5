@@ -904,17 +904,27 @@ export class SR5ShopVendor {
     if (toDelete.length) await actor.deleteEmbeddedDocuments('Item', toDelete)
 
     // The money: out of the buyer's accounts or stick, into the cashbox
+    let debitId = null
     if (!free) {
       if (stick) await stick.update({
         'system.funds.value': SR5Credstick.funds(stick) - total
       })
-      else payload.push(SR5ShopVendor.#transaction('loss', total, game.i18n.format('SR5.ShopPurchaseOf', {
-        name: summary
-      }), game.i18n.format('SR5.ShopVendorPurchaseDescription', {
-        name: labels.join(', '), price: total.toLocaleString(), shop: label,
-      })))
+      else {
+        // Its id is known before it is written: the ledger names the debit behind the orders, and a
+        // cancellation refunds no more than what is left of it (Georg, Firmin's review)
+        debitId = foundry.utils.randomID()
+        payload.push({
+          ...SR5ShopVendor.#transaction('loss', total, game.i18n.format('SR5.ShopPurchaseOf', {
+            name: summary
+          }), game.i18n.format('SR5.ShopVendorPurchaseDescription', {
+            name: labels.join(', '), price: total.toLocaleString(), shop: label,
+          })), _id: debitId,
+        })
+      }
     }
-    if (payload.length) await buyer.createEmbeddedDocuments('Item', payload)
+    if (payload.length) await buyer.createEmbeddedDocuments('Item', payload, {
+      keepId: true
+    })
     await addOrders(buyer, orders)
     // The GM's till writes what each order cost and who took the money: a cancellation follows this alone
     await ledgerOrders(Object.fromEntries(orders.map(o => [o.id, {
@@ -922,6 +932,10 @@ export class SR5ShopVendor {
       vendorLabel: label,
       // What was sold, as the till saw it: the GM is shown this, never the order the sheet carries
       name: o.name, quantity: o.quantity, uuid: o.uuid,
+      ...(debitId ? {
+        transactionId: debitId
+      } : {
+      }),
     }])))
     let overflow = 0
     if (!free) {
