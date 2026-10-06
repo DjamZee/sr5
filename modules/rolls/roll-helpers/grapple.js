@@ -249,7 +249,7 @@ export class SR5_GrappleHelpers {
     }
     if (!kind || !(value > 0)) return null
     return {
-      card, key: consumedKey(card.id, "grappleStartHold", held.uuid), label: "grappleStartHold", target: held.name, value, kind,
+      card, key: consumedKey(card.id, "grappleStartHold"), label: "grappleStartHold", target: held.name, value, kind,
     }
   }
 
@@ -264,7 +264,7 @@ export class SR5_GrappleHelpers {
     const value = Number(effect.value)
     if (!Number.isFinite(value) || value < 0) return null
     return {
-      card, key: consumedKey(card.id, "grappleSetHold", effect.holdId), label: "grappleSetHold", target: actor.name, value, holdId: effect.holdId,
+      card, key: consumedKey(card.id, "grappleSetHold"), label: "grappleSetHold", target: actor.name, value, holdId: effect.holdId,
     }
   }
 
@@ -279,7 +279,7 @@ export class SR5_GrappleHelpers {
       if (!effect || !hold || !sameFighter(hold.held, reverser) || !sameFighter(SR5_EntityHelpers.getRealActorFromID(card.data.previousMessage?.actorId), reverser) ||
         hold.data.holdId !== effect.holdId || !(Number(effect.value) > 0)) return null
       return {
-        card, key: consumedKey(card.id, "grappleReverseHold", hold.data.holdId), label: "grappleReverseHold", target: hold.holder.name,
+        card, key: consumedKey(card.id, "grappleReverseHold"), label: "grappleReverseHold", target: hold.holder.name,
         value: Number(effect.value), holdId: hold.data.holdId,
       }
     }

@@ -229,6 +229,24 @@ describe('the markItem socket', () => {
     expect(SR5_MarkHelpers.markItem).toHaveBeenCalledTimes(1)
     expect(SR5_MarkHelpers.markItem.mock.calls[0][2]).toBe(1)
   })
+  it("serves a card once, even on the unlinked token's actor after its base actor (measured in game)", async () => {
+    const messageId = defenseCard(3)
+    // the token's synthetic actor shares the id of its base actor, not its uuid
+    actors.set('hackerToken', {
+      ...actors.get('hacker'), uuid: 'Scene.s.Token.hackerToken.Actor.hacker'
+    })
+    await SR5_MarkHelpers._socketMarkItem({
+      data: {
+        targetActor: 'hacker', attackerID: 'pc', mark: 1, messageId
+      }
+    }, 'owner')
+    await SR5_MarkHelpers._socketMarkItem({
+      data: {
+        targetActor: 'hackerToken', attackerID: 'pc', mark: 1, messageId
+      }
+    }, 'owner')
+    expect(SR5_MarkHelpers.markItem).toHaveBeenCalledTimes(1)
+  })
   it('refuses a defense card whose dice exceed the defense pool of the sheet', async () => {
     const messageId = card(users.owner, {
       test: {

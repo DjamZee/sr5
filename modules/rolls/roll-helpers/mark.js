@@ -241,7 +241,7 @@ export class SR5_MarkHelpers {
     const hits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, await SR5_MarkHelpers.defenseCap(defense))
     if (!(hits > 0)) return null
     return {
-      card: defense, key: consumedKey(defense.id, "overwatch", actor.uuid), label: "overwatch", target: actor.name, value: hits,
+      card: defense, key: consumedKey(defense.id, "overwatch"), label: "overwatch", target: actor.name, value: hits,
     }
   }
 
@@ -260,7 +260,7 @@ export class SR5_MarkHelpers {
       sameActor(target, SR5_EntityHelpers.getRealActorFromID(defender.system.vehicleOwner?.id))
     if (!allowed) return null
     return {
-      card: pair.card, key: consumedKey(pair.card.id, "markItem", target.uuid),
+      card: pair.card, key: consumedKey(pair.card.id, "markItem"),
       label: "markItem", target: target.name, value: outcome.marks, watchdog: outcome.watchdog,
     }
   }
@@ -303,7 +303,7 @@ export class SR5_MarkHelpers {
     if (!pair || pair.outcome.winner !== "attacker" || pair.defense.data.target?.itemUuid !== item.uuid ||
       !sameActor(SR5_EntityHelpers.getRealActorFromID(data.attackerID), pair.attacker)) return refuse("markPanMaster", senderId, data)
     const use = {
-      card: pair.card, key: consumedKey(pair.card.id, "markPanMaster", master.uuid),
+      card: pair.card, key: consumedKey(pair.card.id, "markPanMaster"),
       label: "markItem", target: master.name, value: pair.outcome.marks,
     }
     if (!(await SR5_MiscellaneousHelpers.grant(use, sender))) return refuse("markPanMaster", senderId, data)
