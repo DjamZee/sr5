@@ -580,12 +580,13 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
     }]), player.id)).toBe(true)
   })
 
-  it('keeps the lock on a copy of the declined item: a new id rolls nothing (Georg)', async () => {
+  it('keeps the lock on a renamed copy of the declined item: its reference source is the same (Georg, Firmin)', async () => {
     const {
       seller
     } = world({
+      // A new id and a new name; the source the price comes from stays the Fichetti's
       sellerItems: [gun(), gun(350, {
-        id: 'copy'
+        id: 'copy', name: 'Mon flingue'
       })]
     })
     const roll = noHits()

@@ -1096,12 +1096,14 @@ export class SR5ShopVendor {
 
   /**
    * The open offer of this vendor on one of these items of this seller, if any. An item is known by its
-   * id, and by its kind and name too: a copy the seller makes on her sheet gets a new id, and would
-   * otherwise roll the declined offer again (Georg).
-   * @param {Item[]} items the seller's items
+   * id, by the reference source its price comes from (the one the gamemaster reads), and by its kind and
+   * name: a copy the seller makes on her sheet gets a new id, renamed or not, and would otherwise roll the
+   * declined offer again (Georg, Firmin's review).
+   * @param {{id: string, name: string, type: string, sourceUuid: ?string}[]} items the seller's lines
    */
   static openOfferOn(vendorUuid, sellerId, items) {
     const same = (line, item) => line.itemId === item.id ||
+      (!!line.sourceUuid && line.sourceUuid === item.sourceUuid) ||
       (line.name === item.name && (!line.type || line.type === item.type))
     return game.messages?.find?.(message => {
       // Open, or declined by the seller and not unlocked by the gamemaster
@@ -1209,7 +1211,9 @@ export class SR5ShopVendor {
       })
     }
     if (!lines.length) return false
-    const open = SR5ShopVendor.openOfferOn(actor.uuid, seller.id, lines.map(line => line.item))
+    const open = SR5ShopVendor.openOfferOn(actor.uuid, seller.id, lines.map(line => ({
+      id: line.item.id, name: line.item.name, type: line.item.type, sourceUuid: line.sourceUuid,
+    })))
     if (open) {
       // Still open: answer it; declined: locked until the gamemaster lifts it (S9, Quitterie)
       const key = SR5ShopVendor.isOfferOpen(open) ? 'SR5.WARN_ShopVendorOfferOpen' : 'SR5.WARN_ShopVendorOfferLocked'
