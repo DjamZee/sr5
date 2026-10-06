@@ -800,6 +800,7 @@
 	"SR5.EffectCardConfirm": "{user} : {caster}, {item}. Succès recomptés sur les dés : {hits}, succès excédentaires : {netHits}. Appliquer l'effet avec ces valeurs ?",
 	"SR5.EffectCardMismatch": "La carte annonçait {hits} succès et {netHits} succès excédentaires.",
 	"SR5.EffectCardOverPool": "La carte montre plus de dés que la réserve recalculée ({allowed}, Chance comprise) : seuls les premiers comptent.",
+	"SR5.EffectCardItemMismatch": "{item} : la fiche du lanceur porte {written} succès, les dés de sa carte en donnent {hits}. Le gabarit applique {hits}.",
 	"SR5.ThresholdModifier": "Seuil de tous les tests (+)",
 	"SR5.ThresholdModifierHint": "s'ajoute au seuil du test s'il en a un, sans effet sur un test sans seuil.",
 	"SR5.DiceHitsReplace": "Succès (remplace)",

@@ -17,6 +17,12 @@ import {
 import {
   templateSceneId, isAreaEffectOffScene, isOrphanEnvironmentEffect
 } from "./areaEffectScene.js"
+import {
+  SR5_ActorHelper
+} from "../entities/actors/entityActor-helpers.js"
+import {
+  readsRoll
+} from "../rolls/roll-helpers/effect-card.js"
 
 export class SR5_EffectArea {
 
@@ -285,6 +291,13 @@ export class SR5_EffectArea {
             hits: sourceItem.system.hits
           },
         }
+        //An effect whose value reads the hits: the hits written on the caster's item are his owner's to change.
+        //Counted again on the cast's card, as for a card applied by hand (checkEffectCard)
+        if (readsRoll(sourceItem.system.customEffects)) {
+          const roll = await SR5_EffectArea.templateRoll(sourceItem, templateData, template, actor)
+          if (!roll) return
+          data.roll = roll
+        }
         //If effect is not resisted, apply effect to actor
         if (!sourceItem.system.resisted) await actor.applyExternalEffect(data, "customEffects")
         else {
@@ -315,6 +328,47 @@ export class SR5_EffectArea {
         }
       }
     }
+  }
+
+  //The hits of a cast, counted again once per template and cast, on the GM's client only (he alone applies the
+  //templates' effects). null when the effect must not apply (refused, declined)
+  static TEMPLATE_ROLLS = new Map()
+  static async templateRoll(sourceItem, templateData, template, actor){
+    const caster = sourceItem.actor
+    const players = game.users?.filter(u => !u.isGM && caster?.testUserPermission?.(u, "OWNER")) ?? []
+    const itemRoll = {
+      hits: sourceItem.system.hits, netHits: sourceItem.system.hits
+    }
+    //A caster no player owns: the item is the GM's. A target his player owns too: nothing she could not do herself
+    if (!players.length || players.some(u => actor.testUserPermission?.(u, "OWNER"))) return itemRoll
+    //The cast this template comes from: only its identity is read off the template, the dice are on the card
+    const message = (templateData.messageId && game.messages.get(templateData.messageId)) ||
+      [...(game.messages?.contents ?? [])].reverse().find(m => m.flags?.sr5data?.test?.type === "spell" && m.flags.sr5data.owner?.itemUuid === templateData.itemUuid)
+    const key = `${template.id}|${message?.id}`
+    if (SR5_EffectArea.TEMPLATE_ROLLS.has(key)) return SR5_EffectArea.TEMPLATE_ROLLS.get(key)
+    let roll = null
+    const cast = message?.flags?.sr5data
+    //checkEffectCard believes a card the GM wrote: here the cast must be one a player rolled with this item
+    if (cast && message.author && !message.author.isGM && cast.owner?.itemUuid === templateData.itemUuid) {
+      roll = await SR5_ActorHelper.checkEffectCard({
+        ...cast, owner: {
+          ...cast.owner, messageId: message.id
+        }
+      }, sourceItem)
+      //The item says otherwise: the GM sees it
+      if (roll && Number(sourceItem.system.hits) !== roll.hits) ui.notifications?.warn(game.i18n.format("SR5.EffectCardItemMismatch", {
+        item: sourceItem.name, written: sourceItem.system.hits, hits: roll.hits
+      }))
+    } else {
+      await ChatMessage.create({
+        whisper: game.users.filter(u => u.isGM).map(u => u.id),
+        content: `<p>${game.i18n.format("SR5.EffectCardRejected", {
+          user: players.map(u => u.name).join(", "), item: sourceItem.name
+        })}</p>`,
+      })
+    }
+    SR5_EffectArea.TEMPLATE_ROLLS.set(key, roll)
+    return roll
   }
 
   //Delete an effect applied by a template on actor
