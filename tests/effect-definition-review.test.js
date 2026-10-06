@@ -119,6 +119,16 @@ describe('a player sheet spell applied by the GM to an NPC', () => {
     expect(created).toBeUndefined()
   })
 
+  it('opens one window when the GM\'s caller already showed the review (heal by socket)', async () => {
+    const data = card()
+    delete data.owner.messageId
+    const review = await SR5_ActorHelper.definitionReview(spell, target, 'customEffects', data)
+    review.shown = true
+    await SR5_ActorHelper.applyExternalEffect('target', data, 'customEffects', review).catch(() => {})
+    expect(confirm).not.toHaveBeenCalled()
+    expect(created['system.value']).toBe(4)
+  })
+
   it('says when no reference is found', async () => {
     globalThis.game.packs = Object.assign([], {
       get: () => null

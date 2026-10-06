@@ -2175,14 +2175,15 @@ export class SR5_ActorHelper {
     return !!ok
   }
 
-  static async applyExternalEffect(actorId, data, effectType){
+  //`reviewed`: a definitionReview the GM's caller already showed (its own checkEffectCard), never read from a card
+  static async applyExternalEffect(actorId, data, effectType, reviewed = null){
     //An area spell whose template was deleted during the resistance: nothing would lift the effect
     if (isAreaSpellTemplateGone(data)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_AreaSpellTemplateGone"))
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
     let item = await fromUuid(data.owner.itemUuid)
     let itemData = item.system
     //A player's item applied to an actor she does not own: the GM sees what its sheet defines, against the reference
-    const review = await SR5_ActorHelper.definitionReview(item, actor, effectType, data)
+    const review = reviewed ?? await SR5_ActorHelper.definitionReview(item, actor, effectType, data)
     //An effect whose value reads the roll (hits, net hits): the GM does not believe a player's card as it is written
     if (readsRoll(itemData[effectType])) {
       const roll = await SR5_ActorHelper.checkEffectCard(data, item, review)
