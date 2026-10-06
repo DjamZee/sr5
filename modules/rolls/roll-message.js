@@ -10,6 +10,18 @@ import {
 import {
   trustedDefenderDamage, cardStandsFor, damageReachable
 } from "./roll-helpers/matrix-card.js"
+
+//The GM is told when a defender's card announced more damage than its dice give (matrix-card.js)
+async function tellDefenderDamage(claimed, value, attacker) {
+  if ((Number(claimed) || 0) === value) return
+  const text = game.i18n.format("SR5.MatrixCardDefenderDamage", {
+    name: attacker?.name ?? "?", value, claimed: Number(claimed) || 0
+  })
+  if (game.user?.isGM) ui.notifications.warn(text, {
+    permanent: true
+  })
+  await SR5_ActorHelper.whisperGM(text)
+}
 import {
   applyStabilization, applyDiagnosis, useMedkitSupplies
 } from "../system/bb-healing.js"
@@ -621,6 +633,7 @@ export class SR5_RollMessage {
         const value = await trustedDefenderDamage(messageId, messageData.damage.matrix.value)
         if (!value) return ui.notifications.warn(game.i18n.localize(value === null ? "SR5.MatrixCardRefused" : "SR5.MatrixCardNoDamage"))
         if (!damageReachable(originalActionActor)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActiveGM"))
+        await tellDefenderDamage(messageData.damage.matrix.value, value, originalActionActor)
         const damageData = foundry.utils.deepClone(messageData)
         damageData.damage.matrix.value = value
         let done = true
@@ -648,9 +661,10 @@ export class SR5_RollMessage {
         actor.rollTest("iceAttack", null, messageData)
         break
       case "defenderDoBiofeedbackDamage": {
-        //Biofeedback deals the defender's net hits (SR5 p. 238), counted again on both cards (matrix-card.js)
+        //Biofeedback deals the defender's net hits (SR5 p. 232), counted again on both cards (matrix-card.js)
         const value = await trustedDefenderDamage(messageId, messageData.damage.value)
         if (!value) return ui.notifications.warn(game.i18n.localize(value === null ? "SR5.MatrixCardRefused" : "SR5.MatrixCardNoDamage"))
+        await tellDefenderDamage(messageData.damage.value, value, originalActionActor)
         const damageData = foundry.utils.deepClone(messageData)
         damageData.damage.value = value
         damageData.damage.base = value

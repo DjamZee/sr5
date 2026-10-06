@@ -16,7 +16,7 @@ export function cardHits(byGM, claimed, counted) {
 }
 
 /**
- * The boxes a defender who wins deals back to the attacker (SR5 p. 238: the net hits), or that the attacker's
+ * The boxes a defender who wins deals back to the attacker (SR5 p. 232: the net hits), or that the attacker's
  * Biofeedback-free resistance reads: the defender's hits over the attack's, both counted again, never above the claim.
  */
 export function defenderNetHits({

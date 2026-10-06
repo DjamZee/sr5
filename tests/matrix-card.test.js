@@ -44,7 +44,7 @@ describe('rules', () => {
     expect(cardHits(false, 2, 4)).toBe(2)
     expect(cardHits(false, 9, null)).toBe(0)
   })
-  it('deals back the net hits of the defense (SR5 p. 238)', () => {
+  it('deals back the net hits of the defense (SR5 p. 232)', () => {
     expect(defenderNetHits({
       claimed: 50, defenseHits: 6, attackHits: 2
     })).toBe(4)
