@@ -462,6 +462,8 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       minute: "SR5.Minutes", hour: "SR5.Hours", day: "SR5.Days", week: "SR5.Weeks", month: "SR5.Months"
     }
     context.isActiveGM = game.user.isGM && game.users.activeGM?.id === game.user.id
+    // The strain of a head case is the GM's choice (Dark Terrors p. 91, monad-matrix.js)
+    context.userIsGM = game.user.isGM
     if (item.type === "itemWeapon") context.weaponToxinName = SR5_Toxins.nameOf(item.system.toxin, k => game.i18n.localize(k))
 
     // Mentor spirit: each effect picks its block, the Mask shows only with its optional rule

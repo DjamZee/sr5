@@ -14,8 +14,65 @@ vi.mock("../modules/entities/helpers.js", () => ({
 import {
   monitorSize, corePenalty, activeHeadcase, strainOf, isOriginalStrainMonad, suggestedCoreBoxes, coreAfterDamage,
   authorMayActFor, addMonadCoreButton, coreDissipationPool, naniteLossOnDissipation, sleepHours, mentalLoss,
-  baseAfterLoss, naniteBaseAfterLoss, surplusHint, activateMonadListeners, MENTAL_ATTRIBUTES
+  baseAfterLoss, naniteBaseAfterLoss, surplusHint, activateMonadListeners, MENTAL_ATTRIBUTES, strainChangeRefused,
+  strainBefore, isCardTarget
 } from "../modules/system/monad-matrix.js"
+
+describe("The strain is the GM's choice (relecture de Dirk)", () => {
+  const hasProperty = foundry.utils.hasProperty
+  afterEach(() => {
+    foundry.utils.hasProperty = hasProperty
+  })
+
+  it("refuses a strain change from anybody but a GM, and nothing else", () => {
+    foundry.utils.hasProperty = (o, k) => foundry.utils.getProperty(o, k) !== undefined
+    expect(strainChangeRefused({
+      isGM: false
+    }, {
+      system: {
+        strain: "lockdown"
+      }
+    })).toBe(true)
+    expect(strainChangeRefused(null, {
+      system: {
+        strain: "lockdown"
+      }
+    })).toBe(true)
+    expect(strainChangeRefused({
+      isGM: true
+    }, {
+      system: {
+        strain: "lockdown"
+      }
+    })).toBe(false)
+    expect(strainChangeRefused({
+      isGM: false
+    }, {
+      system: {
+        isActive: false
+      }
+    })).toBe(false)
+  })
+
+  it("puts back the other strain", () => {
+    expect(strainBefore("lockdown")).toBe("darkTerrors")
+    expect(strainBefore("darkTerrors")).toBe("lockdown")
+    expect(strainBefore("forged")).toBe("darkTerrors")
+  })
+
+  it("resolves a GM's card on a character whatever its strain has become", () => {
+    expect(isCardTarget({
+      type: "actorPc"
+    })).toBe(true)
+    expect(isCardTarget({
+      type: "actorGrunt"
+    })).toBe(true)
+    expect(isCardTarget({
+      type: "actorSpirit"
+    })).toBe(false)
+    expect(isCardTarget(null)).toBe(false)
+  })
+})
 import {
   SR5
 } from "../modules/config.js"

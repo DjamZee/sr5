@@ -74,7 +74,8 @@ export function isOriginalStrainMonad(actor){
 }
 
 // The boxes a matrix damage card offers to put on the Core: the card is the defender's, who may be a player, so the
-// number is only a suggestion, never above the damage the attack carried; the GM confirms it
+// number is only a suggestion. The bound by the attack's damage is read on the same card: a forged card forges it
+// too (relecture de Dirk), so it proves nothing; the GM's confirmation is the guard, warned when a player wrote the card
 export function suggestedCoreBoxes(cardData){
   const value = Math.trunc(num(cardData?.damage?.matrix?.value))
   const base = Math.trunc(num(cardData?.damage?.matrix?.base))
@@ -195,6 +196,9 @@ async function coreFromCard(message, button){
         })
       },
       content: `<p>${game.i18n.localize("SR5.MONAD_CoreRule")}</p>
+        ${fresh.author?.isGM ? "" : `<p><em>${game.i18n.format("SR5.MONAD_CoreFromPlayer", {
+    user: foundry.utils.escapeHTML(fresh.author?.name ?? "?")
+  })}</em></p>`}
         <div class="form-group"><label>${game.i18n.localize("SR5.MONAD_CoreBoxes")}</label><input type="number" name="boxes" min="0" value="${suggestedCoreBoxes(data)}"></div>`,
       ok: {
         label: game.i18n.localize("SR5.MONAD_CoreApply"),
@@ -298,10 +302,12 @@ async function resultCard(actor, html){
   })
 }
 
+// The swarm's Firewall is its Nanite Volume (arbitrage de DjamZ, 06/10): read as such, never from the prepared matrix,
+// which follows the strain of the moment, a field the owner could change between the card and the roll
 function coreParts(actor){
   return {
     willpower: num(actor.system.attributes?.willpower?.augmented?.value),
-    firewall: num(actor.system.matrix?.attributes?.firewall?.value),
+    firewall: naniteVolume(actor),
     cem: matrixEntityConcentration(actor),
   }
 }
@@ -400,7 +406,9 @@ export function activateMonadListeners(html, message){
     btn.disabled = true
     try {
       const actor = await fromUuid(row.dataset.actorUuid)
-      if (!isOriginalStrainMonad(actor)) return ui.notifications.warn(game.i18n.localize("SR5.MONAD_Gone"))
+      //The card was laid by a GM for a Monad of the original strain: its resolution does not depend on the strain of
+      //the moment, which the owner might have changed meanwhile (relecture de Dirk)
+      if (!isCardTarget(actor)) return ui.notifications.warn(game.i18n.localize("SR5.MONAD_Gone"))
       const done = row.dataset.kind === "core" ? await resolveCore(row, message, actor) : await resolveSwarm(message, actor)
       if (done) await markRowDoneInMessage(row, "[data-sr5-monad]", game.i18n.localize("SR5.CALENDAR_RowDone"))
     } catch (e) {
@@ -412,7 +420,46 @@ export function activateMonadListeners(html, message){
   }))
 }
 
+export function isCardTarget(actor){
+  return ["actorPc", "actorGrunt"].includes(actor?.type)
+}
+
+// The strain is the GM's choice (Dark Terrors p. 91): the owner of a Monad, its enemy's host, must not switch it to
+// escape a dissipation or the loss of its Core (relecture de Dirk). Refused on the player's client, and undone by the
+// active GM if an update gets through anyway (a console can bypass a client hook)
+export function strainChangeRefused(user, changes){
+  return !user?.isGM && foundry.utils.hasProperty(changes ?? {
+  }, "system.strain")
+}
+
+// Only two strains: the one before a refused change is the other one
+export function strainBefore(changed){
+  return strainOf({
+    system: {
+      strain: changed
+    }
+  }) === "darkTerrors" ? "lockdown" : "darkTerrors"
+}
+
+function refuseStrain(item, changes){
+  if (item?.type !== "itemDevice" || !strainChangeRefused(game.user, changes)) return
+  ui.notifications.warn(game.i18n.localize("SR5.MONAD_StrainGMOnly"))
+  return false
+}
+
+async function undoStrain(item, changes, userId){
+  if (!isActiveGM() || item?.type !== "itemDevice" || !strainChangeRefused(game.users.get(userId), changes)) return
+  await item.update({
+    "system.strain": strainBefore(foundry.utils.getProperty(changes, "system.strain"))
+  })
+  ui.notifications.warn(game.i18n.format("SR5.MONAD_StrainUndone", {
+    name: item.parent?.name ?? item.name, user: game.users.get(userId)?.name ?? "?"
+  }))
+}
+
 export function initMonadMatrix(){
+  Hooks.on("preUpdateItem", (item, changes) => refuseStrain(item, changes))
+  Hooks.on("updateItem", (item, changes, options, userId) => undoStrain(item, changes, userId).catch(e => SR5_SystemHelpers.srLog(1, `Monad strain not restored: ${e}`)))
   Hooks.on("updateActor", (actor, changes, options, userId) => offerCore(actor, changes, options, userId)?.catch?.(e => SR5_SystemHelpers.srLog(1, `Monad Core card not offered: ${e}`)))
   Hooks.on("updateItem", (item, changes) => offerSwarm(item, changes)?.catch?.(e => SR5_SystemHelpers.srLog(1, `Monad swarm card not offered: ${e}`)))
 }
