@@ -73,8 +73,10 @@ export function deactivationPool(actor, method, modifier = 0){
   }
 }
 
+// The larger pool; the Decompiling test only with the skill
 export function bestMethod(actor){
-  return decompilingRating(actor) > 0 ? "decompiling" : "charisma"
+  if (decompilingRating(actor) <= 0) return "charisma"
+  return deactivationPool(actor, "decompiling").dicePool >= deactivationPool(actor, "charisma").dicePool ? "decompiling" : "charisma"
 }
 
 // The outcome of the opposed test

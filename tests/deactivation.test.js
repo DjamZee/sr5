@@ -140,11 +140,14 @@ describe("Deactivation (Dark Terrors p. 89-90)", () => {
     expect(deactivationPool(hurt, "charisma", -20).dicePool).toBe(0)
   })
 
-  it("takes the Decompiling test only with the skill", () => {
+  it("takes the larger pool, and the Decompiling test only with the skill", () => {
     expect(bestMethod(tm())).toBe("charisma")
     expect(bestMethod(tm({
       decompiling: 1
     }))).toBe("decompiling")
+    expect(bestMethod(tm({
+      decompiling: 1, resonance: 1, charisma: 6
+    }))).toBe("charisma")
   })
 
   it("expels with net hits equal to the Depth or the MEC", () => {
