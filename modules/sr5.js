@@ -89,6 +89,9 @@ import {
   recordDefense
 } from './system/defense-once.js'
 import {
+  onUserConnected
+} from './system/relay-watch.js'
+import {
   SR5ShopStock
 } from './interface/shop-stock.js'
 import {
@@ -154,6 +157,8 @@ Hooks.on('renderChatMessageHTML', SR5_GrappleHelpers.onRenderHoldCard)
 Hooks.on('createChatMessage', message => SR5_GrappleHelpers.onEscapeCard(message))
 Hooks.on('updateChatMessage', message => SR5_GrappleHelpers.onEscapeCard(message))
 //A target defends once against one attack: the active GM records each defense card (system/defense-once.js)
+//A GM who leaves takes the requests still waiting on him: their senders are told to click again (system/relay-watch.js)
+Hooks.on('userConnected', onUserConnected)
 Hooks.on('createChatMessage', message => recordDefense(message).catch(e => console.error("SR5 | defense not recorded", e)))
 Hooks.on('closeCombatantConfig', sr5HookCloseCombatantConfig)
 Hooks.on('preUpdateItem', sr5HookPreUpdateItem)

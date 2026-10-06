@@ -34,6 +34,9 @@ import {
 import {
   SR5StorageLock
 } from "./interface/storage-lock-actions.js"
+import {
+  trackRelay, relayDone
+} from "./system/relay-watch.js"
 // The gamemaster's vendor is loaded when one of its messages comes in: the socket is imported by
 // half the system, and the shop brings the other half (lot C)
 const vendor = method => async (message, senderId) => {
@@ -94,6 +97,8 @@ export class SR5_SocketHandler {
       "createItemEffect": [SR5_MiscellaneousHelpers._socketCreateItemEffect],
       "updateChatButton": [SR5_RollMessage._socketUpdateChatButton],
       "updateRollCard": [SR5_RollMessage._socketUpdateRollCard],
+      //The GM's browser is done with a request this browser relayed (system/relay-watch.js)
+      "relayDone": [relayDone],
       "heal": [SR5_ActorHelper._socketHeal],
       "applyHealEffect": [SR5_ActorHelper._socketApplyHealEffect],
       "updateActorData": [SR5_MiscellaneousHelpers._socketUpdateActorData],
@@ -130,8 +135,15 @@ export class SR5_SocketHandler {
       if (game.user.id !== message.userId) return
       if (message.userId && game.user.id) SR5_SystemHelpers.srLog(3,'GM is handling Shadowrun 5 system socket message')
 
-      for (const handler of handlers) {
-        await handler(message, senderId)
+      try {
+        for (const handler of handlers) {
+          await handler(message, senderId)
+        }
+      } finally {
+        //A relayed request is done, the GM's answer included: its sender stops waiting on this GM (relay-watch.js)
+        if (message.relayId && senderId) SR5_SocketHandler.emitForPlayer("relayDone", {
+          relayId: message.relayId
+        }, senderId)
       }
     })
   }
@@ -159,6 +171,7 @@ export class SR5_SocketHandler {
     }
 
     const message = SR5_SocketHandler._createMessage(type, data, gmUser.id)
+    message.relayId = trackRelay(type, gmUser.id)
     await game.socket.emit(`system.sr5`, message)
   }
 
