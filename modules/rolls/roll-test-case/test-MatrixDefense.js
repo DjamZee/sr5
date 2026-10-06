@@ -29,7 +29,8 @@ export default async function matrixDefenseInfo(cardData, actorId){
 
   //Overwatch button if illegal action
   if (cardData.matrix.overwatchScore && cardData.roll.hits > 0) cardData.chatCard.buttons.overwatch = await SR5_RollMessage.generateChatButton("nonOpposedTest", "overwatch", `${game.i18n.format('SR5.IncreaseOverwatch', {
-    name: attacker.name, score: cardData.roll.hits
+    //An unlinked token carries its own name, and the score is written to it
+    name: attacker.token?.name || attacker.name, score: cardData.roll.hits
   })}`)
 
   //if defender wins
