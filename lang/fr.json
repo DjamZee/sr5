@@ -892,6 +892,7 @@
 	"SR5.ToxinImmunityContact": "Immunité aux toxines de contact",
 	"SR5.ToxinImmunityInhalation": "Immunité aux toxines inhalées",
 	"SR5.INFO_ToxinImmune": "Immunisé ({source}) : aucun effet",
+	"SR5.INFO_EngulfSourceMissing": "Engloutissement : l’attaque de l’esprit est introuvable, la VD ne peut être recalculée. Faites encaisser à la main (Magie de l’esprit × 2, SR5 p. 399).",
 	"SR5.Antirad": "Antirad (niveaux de radiations en moins)",
 	"SR5.RadiationLight": "Légère",
 	"SR5.RadiationModerate": "Modérée",

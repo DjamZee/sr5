@@ -944,9 +944,11 @@ export class SR5_RollMessage {
         break
       case "toxinEffect":
         if (messageData.damage.toxin.type === "airEngulf"){
-          //Generate Resistance chat button
-          let label = `${game.i18n.localize("SR5.TakeOnDamageShort")} ${game.i18n.localize("SR5.DamageValueShort")}${game.i18n.localize("SR5.Colons")} ${messageData.damage.base}${game.i18n.localize(SR5.damageTypesShort[messageData.damage.type])}`
-          if (messageData.combat.armorPenetration) label += ` / ${game.i18n.localize("SR5.ArmorPenetrationShort")}${game.i18n.localize("SR5.Colons")} ${messageData.combat.armorPenetration}`
+          //Generate Resistance chat button: the damage is worked out on the engulfing spirit, never read on this card (Ivo)
+          messageData.damage.engulfSourceId = messageData.previousMessage.messageId
+          const engulf = await SR5_ActorHelper.engulfDamageOf(messageData.damage.engulfSourceId)
+          let label = `${game.i18n.localize("SR5.TakeOnDamageShort")} ${game.i18n.localize("SR5.DamageValueShort")}${game.i18n.localize("SR5.Colons")} ${engulf ? `${engulf.value}${game.i18n.localize(SR5.damageTypesShort[engulf.type])}` : "?"}`
+          if (engulf?.armorPenetration) label += ` / ${game.i18n.localize("SR5.ArmorPenetrationShort")}${game.i18n.localize("SR5.Colons")} ${engulf.armorPenetration}`
           messageData.chatCard.buttons.resistanceCard = SR5_RollMessage.generateChatButton("nonOpposedTest","resistanceCard",label)
           messageData.damage.resistanceType = "physicalDamage"
           let oldMessage = game.messages.get(messageData.previousMessage.messageId)

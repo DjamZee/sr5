@@ -2614,6 +2614,23 @@ export class SR5_ActorHelper {
     return null
   }
 
+  //The damage of an air engulf at the spirit's following phases (SR5 p. 399), from the attack card the toxin card
+  //answered (kept as damage.engulfSourceId): read on the engulfing spirit, as toxinSourceOf checks it. null when lost
+  static async engulfDamageOf(sourceMessageId){
+    const source = SR5_ActorHelper.toxinSourceOf({
+      previousMessage: {
+        messageId: sourceMessageId
+      }
+    })
+    if (source?.weapon?.system?.toxin?.type !== "airEngulf") return null
+    const spirit = SR5_EntityHelpers.getRealActorFromID(source.card.owner?.actorId, source.card.actorUuids)
+    if (!spirit) return null
+    const {
+      engulfDamage
+    } = await import("../../rolls/roll-helpers/toxin-card.js")
+    return engulfDamage(spirit.system.specialAttributes?.magic?.augmented?.value)
+  }
+
   //The toxin card a player wrote, applied by the GM (SR5 p. 409-410; Liesel's D1): nothing comes from its flags. The
   //author must own the actor it lands on; the toxin is read on the weapon, its Power worked out again, the hits counted
   //again within the resister's pool, and the GM confirms. The card serves once, written in the active GM's registry.

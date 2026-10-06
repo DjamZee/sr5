@@ -892,6 +892,7 @@
 	"SR5.ToxinImmunityContact": "Contact toxin immunity",
 	"SR5.ToxinImmunityInhalation": "Inhaled toxin immunity",
 	"SR5.INFO_ToxinImmune": "Immune ({source}): no effect",
+	"SR5.INFO_EngulfSourceMissing": "Engulf: the spirit's attack cannot be found, the DV cannot be worked out again. Resist it by hand (spirit's Magic × 2, SR5 p. 399).",
 	"SR5.Antirad": "Antirad (radiation levels off)",
 	"SR5.RadiationLight": "Light",
 	"SR5.RadiationModerate": "Moderate",

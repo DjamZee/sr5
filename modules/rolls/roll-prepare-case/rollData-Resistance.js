@@ -28,6 +28,20 @@ function abortWithInfo(message){
 //Add info for Resistance Roll
 export default async function resistance(rollData, rollType, actor, chatData){
   let actorData = actor.system
+  //Air engulf, at the spirit's following phases (SR5 p. 399): the damage is worked out again on the engulfing spirit,
+  //never read on the flags of the victim's card (Ivo)
+  if (rollType === "resistanceCard" && chatData.damage?.toxin?.type === "airEngulf"){
+    const {
+      SR5_ActorHelper
+    } = await import("../../entities/actors/entityActor-helpers.js")
+    const engulf = await SR5_ActorHelper.engulfDamageOf(chatData.damage.engulfSourceId)
+    if (!engulf) return abortWithInfo(game.i18n.localize("SR5.INFO_EngulfSourceMissing"))
+    chatData = foundry.utils.deepClone(chatData)
+    chatData.damage.value = engulf.value
+    chatData.damage.type = engulf.type
+    chatData.damage.resistanceType = "physicalDamage"
+    chatData.combat.armorPenetration = engulf.armorPenetration
+  }
   //Transfert necessary info from chatCard
   rollData.damage.base = chatData.damage.value
   rollData.damage.type = chatData.damage.type
