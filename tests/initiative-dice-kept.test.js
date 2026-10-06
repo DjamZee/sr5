@@ -60,13 +60,30 @@ describe("initiative dice kept through the round", () => {
     expect(fresh.mock.calls.map(c => c[0])).toEqual([1, 0, 1])
   })
 
-  it("the memory of another round, another initiative or with values a d6 cannot give is not read", () => {
-    const stored = {
-      round: 2, initKey: "physicalInit", added: [6, 6], removed: [9, 0, 2.5, "6", 3]
+  it("physical <-> astral (1D6 <-> 3D6) rolls the two dice once, then gives them back", async () => {
+    // Measured by Florentin before this fix: 14 -> 21 -> 15 -> 21 -> 16 -> 24, the memory being emptied at each switch
+    const fresh = roller(3, 4)
+    let kept = empty
+    const sums = []
+    for (const delta of [2, -2, 2, -2, 2]) {
+      const {
+        values, memory
+      } = await SR5Combat.takeInitDice(kept, delta, fresh)
+      sums.push(values.reduce((s, v) => s + v, 0))
+      kept = SR5Combat.initDiceKept({
+        ...memory, round: 1
+      }, 1)
     }
-    expect(SR5Combat.initDiceKept(stored, 3, "physicalInit")).toEqual(empty)
-    expect(SR5Combat.initDiceKept(stored, 2, "astralInit")).toEqual(empty)
-    expect(SR5Combat.initDiceKept(stored, 2, "physicalInit")).toEqual({
+    expect(sums).toEqual([7, 7, 7, 7, 7])
+    expect(fresh.mock.calls.map(c => c[0])).toEqual([2, 0, 0, 0, 0])
+  })
+
+  it("the memory of another round or with values a d6 cannot give is not read", () => {
+    const stored = {
+      round: 2, added: [6, 6], removed: [9, 0, 2.5, "6", 3]
+    }
+    expect(SR5Combat.initDiceKept(stored, 3)).toEqual(empty)
+    expect(SR5Combat.initDiceKept(stored, 2)).toEqual({
       added: [6, 6], removed: [3]
     })
   })

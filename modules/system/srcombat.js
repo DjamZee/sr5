@@ -630,11 +630,12 @@ export class SR5Combat extends Combat {
     return [...ids]
   }
 
-  //The dice kept for a fighter: only this round's and this initiative's, and only values a d6 can give (a new round rolls
-  //the initiative again, SR5 p. 159)
-  static initDiceKept(stored, round, initKey){
+  //The dice kept for a fighter: only this round's, and only values a d6 can give (a new round rolls the initiative again,
+  //SR5 p. 159). One pool whatever the active initiative: the magician who goes astral keeps her roll and rolls only the
+  //dice she gains (SR5 p. 162), so going back to physical gives back those same dice, never fresh ones
+  static initDiceKept(stored, round){
     const clean = list => Array.isArray(list) ? list.filter(v => Number.isInteger(v) && v >= 1 && v <= 6).slice(0, 10) : []
-    if (!stored || stored.round !== round || stored.initKey !== initKey) return {
+    if (!stored || stored.round !== round) return {
       added: [], removed: []
     }
     return {
@@ -686,7 +687,7 @@ export class SR5Combat extends Combat {
         //switching wired reflexes off and on again gives back the same die, it does not roll it again. The memory lives on
         //the combat, which the GM alone writes, never on the combatant a player owns
         const combat = combatant.combat
-        const kept = SR5Combat.initDiceKept(combat?.flags?.sr5?.initDiceKept?.[combatant.id], combat?.round, initKey)
+        const kept = SR5Combat.initDiceKept(combat?.flags?.sr5?.initDiceKept?.[combatant.id], combat?.round)
         const fresh = async n => n > 0 ? (await new Roll(`${n}d6`).evaluate()).dice[0].results.map(r => r.result) : []
         const {
           values, memory
@@ -694,7 +695,7 @@ export class SR5Combat extends Combat {
         diceResult = values.reduce((sum, v) => sum + v, 0)
         if (combat && game.users?.activeGM?.isSelf) await combat.update({
           [`flags.sr5.initDiceKept.${combatant.id}`]: {
-            ...memory, round: combat.round, initKey
+            ...memory, round: combat.round
           }
         })
       }
