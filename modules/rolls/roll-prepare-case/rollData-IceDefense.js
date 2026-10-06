@@ -43,6 +43,8 @@ export default function iceDefense(rollData, actor, chatData){
   rollData.test.typeSub = chatData.test.typeSub
   rollData.previousMessage.hits = chatData.roll.hits
   rollData.previousMessage.actorId = chatData.owner.actorId
+  //The IC's card, read again by the GM when a player relays the marks it puts (mark.js)
+  rollData.previousMessage.messageId = chatData.owner.messageId
   rollData.damage.matrix.base = rollData.damage.matrix.value
 
   return rollData

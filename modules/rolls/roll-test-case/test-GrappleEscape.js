@@ -21,7 +21,11 @@ export default async function grappleEscapeInfo(cardData, actorId){
 
   if (game.settings.get("sr5", "sr5GrapplingRules")) {
     //Grappling rules: a successful escape ends the hold for both fighters
-    if (outcome === "success") await SR5_GrappleHelpers.releaseHold(actorId)
+    //A player's card is the request: the active GM reads it again once posted (grapple.js, onEscapeCard)
+    if (outcome === "success") {
+      if (game.user.isGM) await SR5_GrappleHelpers.releaseHold(actorId)
+      else cardData.various.grappleEscaped = true
+    }
     //Run & Gun p. 148-149: with Contre-prise, the escape MAY count as a reversal (« peut la traiter »). The card offers
     //both, and the reversal card comes only once chosen. The new hold reads the stored hold, not the typed threshold.
     else if (outcome === "counterGrapple") {

@@ -19,6 +19,12 @@ import {
 import {
   clearRunning
 } from "./running.js"
+import {
+  SR5_SystemHelpers
+} from "./utilitySystem.js"
+import {
+  turnStepAllowed, passAllowed, initChangeAllowed
+} from "../rolls/roll-helpers/socket-senders.js"
 
 export class SR5Combat extends Combat {
   //Pass effects whose deletion is under way (see endOwnerPassEffects)
@@ -265,29 +271,13 @@ export class SR5Combat extends Combat {
 
     // Just step from one combatant to the next!
     if (nextTurn < this.turns.length) {
-      let updatedCombatants = this.combatants.toObject(false)
-      for (let combatant of updatedCombatants){
-        if (combatant.flags.sr5.delayedAction){
-          combatant.flags.sr5.delayedAction = false
-          continue
-        }
-        if (combatant.id === this.current.combatantId) {
-          combatant.flags.sr5.hasPlayed = true
-        }
-      }
-      if (game.user?.isGM){
-        await this.update({
-          turn: nextTurn,
-          combatants: updatedCombatants,
-        })
-        await SR5Combat.endOwnerPassEffects(this, this.combatant)
-      } else {
-        SR5_SocketHandler.emitForGM("updateCombat", {
-          combatId: this.id,
-          turn: nextTurn,
-          combatants: updatedCombatants,
-        })
-      }
+      //The GM works out the combatants himself: a player only asks for the turn (security lot, Thomas)
+      if (game.user?.isGM) await this.stepTurn(nextTurn)
+      else SR5_SocketHandler.emitForGM("updateCombat", {
+        combatId: this.id,
+        round: this.round,
+        turn: nextTurn,
+      })
       return
     }
 
@@ -316,13 +306,55 @@ export class SR5Combat extends Combat {
     SR5Combat.endOwnerPassEffects(this, this.combatant).catch(e => console.error(e))
   }
 
-  static async _socketUpdateCombat(message){
-    let combat = game.combats.get(message.data.combatId)
-    await combat.update({
-      turn: message.data.turn,
-      combatants: message.data.combatants,
+  /** The next turn position, as nextTurn reads it */
+  get nextTurnPosition(){
+    return this.settings?.skipDefeated ? this.nextUndefeatedTurnPosition : this.nextViableTurnPosition
+  }
+
+  /** Step from the current combatant to the one at nextTurn: the current one has played, a delayed
+   * action is spent. On the GM's browser. */
+  async stepTurn(nextTurn){
+    let updatedCombatants = this.combatants.toObject(false)
+    for (let combatant of updatedCombatants){
+      if (combatant.flags.sr5.delayedAction){
+        combatant.flags.sr5.delayedAction = false
+        continue
+      }
+      if (combatant.id === this.current.combatantId) {
+        combatant.flags.sr5.hasPlayed = true
+      }
+    }
+    await this.update({
+      turn: nextTurn,
+      combatants: updatedCombatants,
     })
-    await SR5Combat.endOwnerPassEffects(combat, combat.combatant)
+    await SR5Combat.endOwnerPassEffects(this, this.combatant)
+  }
+
+  /** Whether the sender is a GM or owns the combatant whose turn it is: the one who may end it */
+  static ownsCurrentTurn(combat, sender){
+    return !!sender && (sender.isGM || !!combat?.combatant?.testUserPermission?.(sender, "OWNER"))
+  }
+
+  static #refuse(kind, senderId, data){
+    SR5_SystemHelpers.srLog(1, `Socket ${kind} refused from ${game.users.get(senderId)?.name ?? senderId}`, data)
+    return false
+  }
+
+  //A player ends her turn: believed from the owner of the current combatant, and only for the turn the
+  //GM finds next himself; the combatants are the GM's, never the request's (security lot, Thomas)
+  static async _socketUpdateCombat(message, senderId){
+    const sender = game.users.get(senderId),
+      data = message?.data ?? {
+      },
+      combat = game.combats?.get(data.combatId)
+    if (!sender || !combat) return false
+    const nextTurn = combat.nextTurnPosition
+    if (!turnStepAllowed({
+      senderIsGM: sender.isGM, ownsCurrent: SR5Combat.ownsCurrentTurn(combat, sender), askedTurn: data.turn, nextTurn, turns: combat.turns.length
+    }) || data.round !== combat.round) return SR5Combat.#refuse("updateCombat", senderId, data)
+    await combat.stepTurn(nextTurn)
+    return true
   }
 
   async startCombat() {
@@ -337,18 +369,16 @@ export class SR5Combat extends Combat {
   }
 
   async nextRound(){
+    // Owner permissions are needed to change the shadowrun initiative round: the GM does it all, once he
+    // finds the round over himself (security lot, Thomas)
+    if (!game.user?.isGM) return this._createDoNextRoundSocketMessage()
+
     // Let Foundry handle time and some other things.
     await super.nextRound()
     for (let combatant of this.combatants){
       await combatant.setFlag("sr5", "hasPlayed", combatant.isDefeated)
     }
-
-    // Owner permissions are needed to change the shadowrun initiative round.
-    if (!game.user?.isGM) {
-      await this._createDoNextRoundSocketMessage()
-    } else {
-      await SR5Combat.handleNextRound(this.id)
-    }
+    await SR5Combat.handleNextRound(this.id)
   }
 
   /**
@@ -504,33 +534,47 @@ export class SR5Combat extends Combat {
     return Math.max(score -10, 0)
   }
 
-  static async _socketDoNextRound(message) {
-    if (!Object.hasOwn(message.data, 'id') && typeof message.data.id !== 'string') {
-      console.error(`SR5Combat Socket Message 'DoNextRound' data.id must be a string (combat id) but is ${typeof message.data} (${message.data})!`)
-      return
-    }
-
-    return await SR5Combat.handleNextRound(message.data.id)
+  //A new round, asked by the owner of the current combatant once nobody has a turn left in the round
+  //and no initiative pass is due, as the GM finds it himself (security lot, Thomas): a player's console
+  //reset every initiative of the fight
+  static async _socketDoNextRound(message, senderId) {
+    const sender = game.users.get(senderId),
+      data = message?.data ?? {
+      },
+      combat = typeof data.id === "string" ? game.combats?.get(data.id) : null
+    if (!sender || !combat) return SR5Combat.#refuse("doNextRound", senderId, data)
+    const nextTurn = combat.nextTurnPosition
+    const due = data.round === combat.round && nextTurn >= combat.turns.length && !combat.doIniPass(nextTurn)
+    if (!passAllowed({
+      senderIsGM: sender.isGM, ownsCurrent: SR5Combat.ownsCurrentTurn(combat, sender), due
+    })) return SR5Combat.#refuse("doNextRound", senderId, data)
+    return combat.nextRound()
   }
 
-  static async _socketDoInitPass(message) {
-    if (!Object.hasOwn(message.data, 'id') && typeof message.data.id !== 'string') {
-      console.error(`SR5Combat Socket Message 'DoInitPass' data.id must be a string (combat id) but is ${typeof message.data} (${message.data})!`)
-      return
-    }
-
-    return await SR5Combat.handleIniPass(message.data.id)
+  //A new initiative pass (SR5 p. 159), on the same terms, once the GM finds it due
+  static async _socketDoInitPass(message, senderId) {
+    const sender = game.users.get(senderId),
+      data = message?.data ?? {
+      },
+      combat = typeof data.id === "string" ? game.combats?.get(data.id) : null
+    if (!sender || !combat) return SR5Combat.#refuse("doInitPass", senderId, data)
+    const due = data.round === combat.round && data.pass === combat.initiativePass && combat.doIniPass(combat.nextTurnPosition)
+    if (!passAllowed({
+      senderIsGM: sender.isGM, ownsCurrent: SR5Combat.ownsCurrentTurn(combat, sender), due
+    })) return SR5Combat.#refuse("doInitPass", senderId, data)
+    return await SR5Combat.handleIniPass(combat.id)
   }
 
+  //The round and the pass the request was made in: a request repeated after the GM moved on is refused
   async _createDoNextRoundSocketMessage() {
     await SR5_SocketHandler.emitForGM("doNextRound", {
-      id: this.id
+      id: this.id, round: this.round
     })
   }
 
   async _createDoIniPassSocketMessage() {
     await SR5_SocketHandler.emitForGM("doInitPass", {
-      id: this.id
+      id: this.id, round: this.round, pass: this.initiativePass
     })
   }
 
@@ -593,8 +637,19 @@ export class SR5Combat extends Combat {
     }
   }
 
-  static async _socketChangeInitInCombat(message){
-    await SR5Combat.changeInitInCombat(message.data.documentId, message.data.initChange)
+  //A change of initiative: from a GM or the owner of the fighter (her own fear, stun, full defense or
+  //interruption); anyone else only gets the sheet read again, no change of hers (security lot, Thomas)
+  static async _socketChangeInitInCombat(message, senderId){
+    const sender = game.users.get(senderId),
+      data = message?.data ?? {
+      },
+      document = SR5_EntityHelpers.getRealActorFromID(data.documentId)
+    if (!sender || !document) return SR5Combat.#refuse("changeInitInCombat", senderId, data)
+    if (!initChangeAllowed({
+      senderIsGM: sender.isGM, ownsActor: !!document.testUserPermission?.(sender, "OWNER"), initChange: data.initChange
+    })) return SR5Combat.#refuse("changeInitInCombat", senderId, data)
+    const initChange = Number.isFinite(data.initChange) ? data.initChange : undefined
+    await SR5Combat.changeInitInCombat(data.documentId, initChange)
   }
 
   static async changeInitInCombatHelper(documentId, initChange){

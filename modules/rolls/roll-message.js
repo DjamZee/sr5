@@ -64,6 +64,26 @@ import {
 import {
   applyManaShift
 } from "../system/mana-shift.js"
+import {
+  chatButtonAllowed
+} from "./roll-helpers/socket-senders.js"
+
+// The button a card stores under this key; the template buttons are flags of their own (removeTemplate)
+export function storedButton(cardData, key) {
+  const button = cardData?.chatCard?.buttons?.[key]
+  if (button) return button
+  if ((key === "templateRemove" || key === "templatePlace") && cardData?.chatCard?.[key]) return {
+    testType: "nonOpposedTest"
+  }
+  return null
+}
+
+// The actors a card names: the one who rolled it, the one who spoke it, its target, the one it answers
+// (who resists a biofeedback the defense card returns, for one)
+function cardActors(cardData) {
+  return [cardData.owner?.actorId, cardData.owner?.speakerId, cardData.target?.actorId, cardData.previousMessage?.actorId].filter(Boolean)
+    .map(id => SR5_EntityHelpers.getRealActorFromID(id)).filter(Boolean)
+}
 
 // True when a GM is connected to relay what a player cannot do
 export function hasActiveGM() {
@@ -422,18 +442,18 @@ export class SR5_RollMessage {
         //SR5 p. 195: the subdued defender and its attacker enter the hold, with the net hits of the attack
         if (messageData.combat.calledShot.name === "subdue") {
           const hold = Object.values(messageData.combat.calledShot.effects).find(e => e.name === "subdue")?.value ?? 0
-          await SR5_GrappleHelpers.startHold(messageData.previousMessage.actorId, SR5_GrappleHelpers.actorIdOf(actor), hold)
+          await SR5_GrappleHelpers.startHold(messageData.previousMessage.actorId, SR5_GrappleHelpers.actorIdOf(actor), hold, "subdue", null, messageId)
         }
         //SR5 p. 196: the strengthened (or weakened) hold, written on both fighters
         else if (messageData.combat.calledShot.name === "strengthenHold") {
           const effect = Object.values(messageData.combat.calledShot.effects).find(e => e.name === "strengthenHold")
           //The hold the card was rolled against: an older card is refused once a newer hold took its place
-          await SR5_GrappleHelpers.setHold(SR5_GrappleHelpers.actorIdOf(actor), effect?.value ?? 0, effect?.holdId)
+          await SR5_GrappleHelpers.setHold(SR5_GrappleHelpers.actorIdOf(actor), effect?.value ?? 0, effect?.holdId, null, messageId)
         }
         //Run & Gun p. 126: the attacker who reversed the situation becomes the one who holds
         else if (messageData.combat.calledShot.name === "reversal" && Object.values(messageData.combat.calledShot.effects).some(e => e.name === "reversal")) {
           const effect = Object.values(messageData.combat.calledShot.effects).find(e => e.name === "reversal")
-          await SR5_GrappleHelpers.reverseHold(messageData.previousMessage.actorId, effect.value, effect.holdId)
+          await SR5_GrappleHelpers.reverseHold(messageData.previousMessage.actorId, effect.value, effect.holdId, null, messageId)
         }
         else if (messageData.combat.calledShot.name === "trickShot") await originalActionActor.applyCalledShotsEffect(messageData)
         else await actor.applyCalledShotsEffect(messageData)
@@ -452,14 +472,14 @@ export class SR5_RollMessage {
         break
       //Run & Gun p. 133: the clinched defender and the attacker enter the clinch, with the net hits of the test
       case "grappleClinchApply":
-        await SR5_GrappleHelpers.startHold(messageData.previousMessage.actorId, SR5_GrappleHelpers.actorIdOf(actor), messageData.roll.netHits, "clinch")
+        await SR5_GrappleHelpers.startHold(messageData.previousMessage.actorId, SR5_GrappleHelpers.actorIdOf(actor), messageData.roll.netHits, "clinch", null, messageId)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       //Run & Gun p. 148-149: after an escape with Contre-prise, the escaper chooses to break free or to reverse
       case "grappleEscapeFree":
       case "grappleCounterGrapple":
-        if (type === "grappleEscapeFree") await SR5_GrappleHelpers.releaseHold(SR5_GrappleHelpers.actorIdOf(actor), messageData.various.grappleHoldId)
-        else await SR5_GrappleHelpers.reverseHold(SR5_GrappleHelpers.actorIdOf(actor), messageData.various.grappleNewHold, messageData.various.grappleHoldId)
+        if (type === "grappleEscapeFree") await SR5_GrappleHelpers.releaseHold(SR5_GrappleHelpers.actorIdOf(actor), messageData.various.grappleHoldId, null, messageId)
+        else await SR5_GrappleHelpers.reverseHold(SR5_GrappleHelpers.actorIdOf(actor), messageData.various.grappleNewHold, messageData.various.grappleHoldId, null, messageId)
         await SR5_RollMessage.updateChatButtonHelper(messageId, "grappleEscapeFree")
         await SR5_RollMessage.updateChatButtonHelper(messageId, "grappleCounterGrapple")
         break
@@ -494,7 +514,7 @@ export class SR5_RollMessage {
       case "attackerPlaceMark": {
         // Kill Code p. 45: a mark placed by Watchdog is remembered as such, it opens the interruption actions
         let isWatchdog = messageData.test.typeSub === "watchdog"
-        await SR5_MarkHelpers.markItem(actor.id, messageData.previousMessage.actorId, messageData.matrix.mark, messageData.target.itemUuid, isWatchdog)
+        await SR5_MarkHelpers.markItem(actor.id, messageData.previousMessage.actorId, messageData.matrix.mark, messageData.target.itemUuid, isWatchdog, messageId)
         // if defender is a drone and is slaved, add mark to master
         if (actor.type === "actorDrone" && actor.system.slaved){
           if (!game.user?.isGM) {
@@ -503,6 +523,8 @@ export class SR5_RollMessage {
               attackerID: originalActionActor.id,
               mark: messageData.matrix.mark,
               isWatchdog: isWatchdog,
+              //The GM reads the marks again on this card and the attack it answers (mark.js)
+              messageId,
             })
           } else {
             await SR5_MarkHelpers.markItem(actor.system.vehicleOwner.id, messageData.previousMessage.actorId, messageData.matrix.mark, undefined, isWatchdog)
@@ -520,6 +542,7 @@ export class SR5_RollMessage {
             targetActor: originalActionActor.id,
             attackerID: attackerID,
             mark: 1,
+            messageId,
           })
         } else await SR5_MarkHelpers.markItem(originalActionActor.id, attackerID, 1)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
@@ -604,7 +627,8 @@ export class SR5_RollMessage {
       case "eraseMarkSuccess":
         if (!game.user?.isGM) {
           SR5_SocketHandler.emitForGM("eraseMark", {
-            cardData: messageData
+            //The GM erases what this card says, read again from the chat log (mark.js)
+            messageId
           })
         } else SR5_MarkHelpers.eraseMark(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
@@ -962,8 +986,22 @@ export class SR5_RollMessage {
     } else await SR5_RollMessage.updateChatButton(message, button, firstOption)
   }
 
-  static async _socketUpdateChatButton(message){
-    await SR5_RollMessage.updateChatButton(message.data.message, message.data.buttonToUpdate, message.data.firstOption)
+  //Believed for a button on the stored card that the sender could have clicked (security lot, Thomas):
+  //a player's console used to strip the buttons of any card, the GM's included
+  static async _socketUpdateChatButton(message, senderId){
+    const sender = game.users.get(senderId),
+      data = message?.data ?? {
+      },
+      card = game.messages.get(data.message),
+      cardData = card?.flags?.sr5data
+    if (!sender || !cardData) return SR5_SystemHelpers.srLog(1, `updateChatButton refused from ${senderId}`)
+    if (!chatButtonAllowed({
+      senderIsGM: sender.isGM,
+      button: storedButton(cardData, data.buttonToUpdate),
+      ownsCardActor: card.author?.id === sender.id || cardActors(cardData).some(a => a.testUserPermission?.(sender, "OWNER")),
+      answeredCard: [...game.messages.values()].some(m => m.author?.id === sender.id && m.flags?.sr5data?.previousMessage?.messageId === card.id),
+    })) return SR5_SystemHelpers.srLog(1, `updateChatButton refused from ${sender.name}`, data)
+    await SR5_RollMessage.updateChatButton(data.message, data.buttonToUpdate, data.firstOption)
   }
 
   //Return data for a chat button

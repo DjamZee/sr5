@@ -11,9 +11,9 @@ import {
   SR5_GrappleHelpers
 } from "../rolls/roll-helpers/grapple.js"
 
-export async function sr5HookDeleteActiveEffect(effect) {
+export async function sr5HookDeleteActiveEffect(effect, options, userId) {
   if (!game.user.isGM ) return
-  if (effect.flags?.sr5?.grapple) await SR5_GrappleHelpers.onDeleteEffect(effect)
+  if (effect.flags?.sr5?.grapple) await SR5_GrappleHelpers.onDeleteEffect(effect, userId)
   if (effect.statuses.has("prone")){
     let itemEffect = effect.parent.items.find(i => i.type === "itemEffect" && i.system.type === "prone")
     let actorId = (effect.parent.isToken ? effect.parent.token.id : effect.parent.id)

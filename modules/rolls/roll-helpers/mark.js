@@ -7,6 +7,26 @@ import {
 import {
   SR5_ActorHelper 
 } from "../../entities/actors/entityActor-helpers.js"
+import {
+  SR5_MiscellaneousHelpers
+} from "./miscellaneous.js"
+import {
+  SR5_SystemHelpers
+} from "../../system/utilitySystem.js"
+import {
+  ownsTarget, recountHits, consumedKey
+} from "./socket-guard.js"
+import {
+  MARK_DEFENSE_TESTS, attackerMarks, markPenalty, markOutcome, eraseWins
+} from "./socket-senders.js"
+
+//The same fighter, whether the card names its token or its actor (a token's actor shares the actor's id)
+const sameActor = (a, b) => !!a && !!b && (a === b || a.id === b.id)
+const hitsWritten = card => Math.max(0, Number(card.data.roll?.hits) || 0)
+const refuse = (kind, senderId, data) => {
+  SR5_SystemHelpers.srLog(1, `Socket ${kind} refused from ${game.users.get(senderId)?.name ?? senderId}`, data)
+  return false
+}
 
 /** Kill Code p. 45: Initiative cost of the actions a Watchdog mark can turn into an Interruption action.
  * It lives here rather than in config.js, which holds translation tables only.
@@ -27,7 +47,7 @@ export class SR5_MarkHelpers {
    * @param {Object} targetItem - Target item
    * @param {Boolean} isWatchdog - Kill Code p. 45: the mark comes from a Watchdog action
    */
-  static async markItem(targetActorID, attackerID, mark, targetItem, isWatchdog = false) {
+  static async markItem(targetActorID, attackerID, mark, targetItem, isWatchdog = false, messageId = null) {
     let attacker = await SR5_EntityHelpers.getRealActorFromID(attackerID),
       targetActor = await SR5_EntityHelpers.getRealActorFromID(targetActorID),
       realAttackerID = attackerID,
@@ -80,10 +100,12 @@ export class SR5_MarkHelpers {
         mark: mark,
       })
       if (itemToMark.isSlavedToPan){
+        //The GM reads the slaved item and the card again: the item's system is no longer sent
         await SR5_SocketHandler.emitForGM("markPanMaster", {
-          itemToMark: itemToMark,
+          itemUuid: item.uuid,
           attackerID: realAttackerID,
           mark: mark,
+          messageId,
         })
       }
       if (targetActor.system.matrix.deviceType === "host"){
@@ -154,9 +176,92 @@ export class SR5_MarkHelpers {
     })
   }
 
-  //Socket for adding marks to main Device;
-  static async _socketMarkItem(message) {
-    await SR5_MarkHelpers.markItem(message.data.targetActor, message.data.attackerID, message.data.mark, undefined, message.data.isWatchdog)
+  /* -------------------------------------------- */
+  /*  The mark sockets, on the GM's browser         */
+  /* -------------------------------------------- */
+  // Security lot (Thomas, before the djamz.11): a GM, or the owner of the icon marked, writes as
+  // before. Anyone else only puts the marks the cards allow: the defense card the button stood on and
+  // the attack card it answers, read again from the chat log, their hits counted again on their dice
+  // within the pools of the sheets (SR5 p. 240, 242: one to three marks chosen before the test, -4 or
+  // -10 dice; p. 232: a failed Sleaze action gives the defender one mark). A card serves once per
+  // target, and a card a player wrote is confirmed by the GM.
+
+  /** The cap of a defense card's dice: the best pool the defender could roll against this action
+   * (its own, the device's rating x2, or its PAN master's, as rollData-MatrixDefense.js), plus Chance. */
+  static async defenseCap(defense) {
+    const key = defense.data.test?.typeSub,
+      pools = [Number(foundry.utils.getProperty(defense.roller?.system ?? {
+      }, `matrix.actions.${key}.defense.dicePool`)) || 0]
+    const item = defense.data.target?.itemUuid ? await fromUuid(defense.data.target.itemUuid) : null
+    if (item?.system) {
+      pools.push((Number(item.system.deviceRating) || 0) * 2)
+      const master = item.system.isSlavedToPan ? SR5_EntityHelpers.getRealActorFromID(item.system.panMaster) : null
+      pools.push(Number(foundry.utils.getProperty(master?.system ?? {
+      }, `matrix.actions.${key}.defense.dicePool`)) || 0)
+    }
+    return Math.max(...pools) + (Number(defense.roller?.system?.specialAttributes?.edge?.augmented?.value) || 0)
+  }
+
+  /** The defense card behind a mark request, the attack card it answers, and what they allow: null
+   * unless both are trusted (cardOf) and the attack card was rolled by the attacker the defense names. */
+  static async markCards(messageId) {
+    const defense = SR5_MiscellaneousHelpers.cardOf(messageId)
+    if (!defense || !MARK_DEFENSE_TESTS.includes(defense.data.test?.type)) return null
+    const attack = SR5_MiscellaneousHelpers.cardOf(defense.data.previousMessage?.messageId)
+    if (!attack || !sameActor(attack.roller, SR5_EntityHelpers.getRealActorFromID(defense.data.previousMessage?.actorId))) return null
+    const typeSub = defense.data.test.typeSub,
+      chosen = attack.data.matrix?.mark,
+      marks = attackerMarks(typeSub, chosen)
+    //The attacker's dice within its pool for this action, less the dice the marks cost
+    const attackerHits = attack.byGM ? hitsWritten(attack) :
+      recountHits(attack.data.roll?.r, SR5_MiscellaneousHelpers.poolCap(attack.roller, `matrix.actions.${typeSub}.test.dicePool`) + markPenalty(marks))
+    const defenderHits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, await SR5_MarkHelpers.defenseCap(defense))
+    //Sleaze or Attack is read on the attacker's sheet, not on a card
+    const actionType = attack.roller?.system?.matrix?.actions?.[typeSub]?.actionType
+    const outcome = markOutcome({
+      typeSub, actionType, attackerHits, defenderHits, chosen
+    })
+    if (!outcome) return null
+    return {
+      defense, attack, outcome, attacker: attack.roller, defender: defense.roller,
+      card: {
+        id: defense.id, byGM: defense.byGM && attack.byGM
+      },
+    }
+  }
+
+  /** A markItem request the cards allow: the defender's mark on the attacker who failed a Sleaze
+   * action, or the attacker's marks on the master of a slaved drone it marked. null if refused. */
+  static async markUse(data, target) {
+    const pair = await SR5_MarkHelpers.markCards(data.messageId)
+    if (!pair) return null
+    const {
+      outcome, attacker, defender
+    } = pair
+    const marker = SR5_EntityHelpers.getRealActorFromID(data.attackerID)
+    let allowed
+    if (outcome.winner === "defender") allowed = sameActor(target, attacker) && sameActor(marker, defender)
+    else allowed = defender?.type === "actorDrone" && !!defender.system?.slaved && sameActor(marker, attacker) &&
+      sameActor(target, SR5_EntityHelpers.getRealActorFromID(defender.system.vehicleOwner?.id))
+    if (!allowed) return null
+    return {
+      card: pair.card, key: consumedKey(pair.card.id, "markItem", target.uuid),
+      label: "markItem", target: target.name, value: outcome.marks, watchdog: outcome.watchdog,
+    }
+  }
+
+  //Socket for adding marks to main Device
+  static async _socketMarkItem(message, senderId) {
+    const sender = game.users.get(senderId),
+      data = message?.data ?? {
+      },
+      target = SR5_EntityHelpers.getRealActorFromID(data.targetActor)
+    if (!sender || !target) return false
+    if (ownsTarget(sender, target)) return SR5_MarkHelpers.markItem(data.targetActor, data.attackerID, data.mark, undefined, data.isWatchdog)
+    const use = await SR5_MarkHelpers.markUse(data, target)
+    if (!use || !(await SR5_MiscellaneousHelpers.grant(use, sender))) return refuse("markItem", senderId, data)
+    await SR5_MarkHelpers.markItem(data.targetActor, data.attackerID, use.value, undefined, use.watchdog)
+    return true
   }
 
   //Add mark to pan Master of the item
@@ -166,9 +271,29 @@ export class SR5_MarkHelpers {
     await SR5_MarkHelpers.markItem(itemToMark.panMaster, attackerID, mark, masterDevice.uuid)
   }
 
-  //Socket for adding marks to pan Master of the item
-  static async _socketMarkPanMaster(message) {
-    await SR5_MarkHelpers.markPanMaster(message.data.itemToMark, message.data.attackerID, message.data.mark)
+  //Socket for adding marks to pan Master of the item. The slaved item is read again by the GM, never
+  //sent: its master must list it in its PAN (a player can write the panMaster of her own item), and
+  //the marks are those of the card that marked it (SR5 p. 234), unless the sender owns the master
+  static async _socketMarkPanMaster(message, senderId) {
+    const sender = game.users.get(senderId),
+      data = message?.data ?? {
+      },
+      item = await fromUuid(data.itemUuid ?? "")
+    if (!sender || !item?.system?.isSlavedToPan) return refuse("markPanMaster", senderId, data)
+    const master = SR5_EntityHelpers.getRealActorFromID(item.system.panMaster),
+      masterDevice = master?.items.find(d => d.type === "itemDevice" && d.system.isActive)
+    if (!masterDevice?.system?.pan?.content?.some(p => p.uuid === item.uuid)) return refuse("markPanMaster", senderId, data)
+    if (ownsTarget(sender, master)) return SR5_MarkHelpers.markPanMaster(item.system, data.attackerID, data.mark)
+    const pair = await SR5_MarkHelpers.markCards(data.messageId)
+    if (!pair || pair.outcome.winner !== "attacker" || pair.defense.data.target?.itemUuid !== item.uuid ||
+      !sameActor(SR5_EntityHelpers.getRealActorFromID(data.attackerID), pair.attacker)) return refuse("markPanMaster", senderId, data)
+    const use = {
+      card: pair.card, key: consumedKey(pair.card.id, "markPanMaster", master.uuid),
+      label: "markItem", target: master.name, value: pair.outcome.marks,
+    }
+    if (!(await SR5_MiscellaneousHelpers.grant(use, sender))) return refuse("markPanMaster", senderId, data)
+    await SR5_MarkHelpers.markPanMaster(item.system, data.attackerID, use.value)
+    return true
   }
 
   //Mark slaved device: for host, update all unlinked token with same marks
@@ -188,13 +313,19 @@ export class SR5_MarkHelpers {
     }
   }
 
-  //Socket for marking slaved device
-  static async _socketMarkSlavedDevice(message) {
+  //Socket for marking slaved device: only from a GM or the owner of the host, the one who could mark
+  //its device in the first place
+  static async _socketMarkSlavedDevice(message, senderId) {
+    const sender = game.users.get(senderId),
+      host = SR5_EntityHelpers.getRealActorFromID(message?.data?.targetActorID)
+    if (!sender || !host || host.system?.matrix?.deviceType !== "host" || !ownsTarget(sender, host)) return refuse("markSlavedDevice", senderId, message?.data)
     await SR5_MarkHelpers.markSlavedDevice(message.data.targetActorID)
+    return true
   }
 
-  //Add mark info to attacker deck
-  static async updateDeckMarkedItems(ownerID, markedItem, mark){
+  //Add mark info to attacker deck. exact, when given, is the value the record takes (what the marked
+  //icon carries), instead of adding mark to it
+  static async updateDeckMarkedItems(ownerID, markedItem, mark, exact = null){
     let owner = SR5_EntityHelpers.getRealActorFromID(ownerID),
       ownerDeck = owner.items.find(i => i.type === "itemDevice" && i.system.isActive),
       deckData = foundry.utils.duplicate(ownerDeck.system),
@@ -204,7 +335,7 @@ export class SR5_MarkHelpers {
     //If item is already marked, update value
     for (let m of deckData.markedItems){
       if (m.uuid === itemMarked.uuid) {
-        m.value += mark
+        m.value = exact ?? (m.value + mark)
         if (m.value > 3) m.value = 3
         alreadyMarked = true
       }
@@ -212,7 +343,7 @@ export class SR5_MarkHelpers {
     if (!alreadyMarked){
       let newMark = {
         "uuid": itemMarked.uuid,
-        "value": mark,
+        "value": Math.min(exact ?? mark, 3),
         "itemName": itemMarked.name,
         //A persona marked directly is its own owner
         'itemOwner': itemMarked.actor?.name ?? itemMarked.name,
@@ -239,8 +370,21 @@ export class SR5_MarkHelpers {
   }
 
   //Socket for updating marks items on other actors;
-  static async _socketUpdateDeckMarkedItems(message) {
-    await SR5_MarkHelpers.updateDeckMarkedItems(message.data.ownerID, message.data.markedItem, message.data.mark)
+  //Sent by the owner of the icon just marked, for the marker's deck she does not own: the record takes
+  //the marks the icon really carries from that marker, never the number sent
+  static async _socketUpdateDeckMarkedItems(message, senderId) {
+    const sender = game.users.get(senderId),
+      data = message?.data ?? {
+      },
+      marked = await fromUuid(data.markedItem ?? "")
+    if (!sender || !marked || !SR5_EntityHelpers.getRealActorFromID(data.ownerID)) return refuse("updateDeckMarkedItems", senderId, data)
+    if (sender.isGM) return SR5_MarkHelpers.updateDeckMarkedItems(data.ownerID, data.markedItem, data.mark)
+    const isItem = marked.documentName === "Item"
+    if (!ownsTarget(sender, marked)) return refuse("updateDeckMarkedItems", senderId, data)
+    const carried = (isItem ? marked.system?.marks : marked.system?.matrix?.marks)?.find(m => m.ownerId === data.ownerID)?.value ?? 0
+    if (!(carried > 0)) return refuse("updateDeckMarkedItems", senderId, data)
+    await SR5_MarkHelpers.updateDeckMarkedItems(data.ownerID, data.markedItem, 0, carried)
+    return true
   }
 
   /** Find if an Actor has a Mark item with the same ID as the attacker
@@ -346,7 +490,39 @@ export class SR5_MarkHelpers {
     await SR5_ActorHelper.deleteMarkInfo(cardData.owner.actorId, cardData.previousMessage.itemUuid)
   }
 
-  static async _socketEraseMark(message){
-    await SR5_MarkHelpers.eraseMark(message.data.cardData)
+  /** The Erase Mark the cards allow (SR5 p. 240): the defense card the button stood on (rolled by the
+   * marker), and the eraser's action card it answers, its hits counted again within its pool. null if
+   * refused. The card's data, as the chat log keeps it, is what is erased: never the request's. */
+  static async eraseUse(messageId) {
+    const defense = SR5_MiscellaneousHelpers.cardOf(messageId)
+    if (!defense || defense.data.test?.type !== "eraseMark") return null
+    const action = SR5_MiscellaneousHelpers.cardOf(defense.data.previousMessage?.messageId)
+    if (!action || action.data.test?.type !== "matrixAction" || action.data.test?.typeSub !== "eraseMark") return null
+    const eraserHits = action.byGM ? hitsWritten(action) :
+      recountHits(action.data.roll?.r, SR5_MiscellaneousHelpers.poolCap(action.roller, "matrix.actions.eraseMark.test.dicePool"))
+    const defenderHits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, Infinity)
+    if (!eraseWins(eraserHits, defenderHits)) return null
+    //The item erased belongs to the actor the card names, and carries a mark of the defender
+    const item = await fromUuid(defense.data.previousMessage?.itemUuid ?? "")
+    if (!item || !sameActor(item.parent, SR5_EntityHelpers.getRealActorFromID(defense.data.previousMessage?.actorId))) return null
+    if (!item.system?.marks?.some(m => m.ownerId === defense.data.owner?.actorId && m.value > 0)) return null
+    return {
+      card: {
+        id: defense.id, byGM: defense.byGM && action.byGM
+      },
+      key: consumedKey(defense.id, "eraseMark", item.uuid), label: "eraseMark", target: item.name, value: eraserHits,
+      cardData: defense.data,
+    }
+  }
+
+  static async _socketEraseMark(message, senderId){
+    const sender = game.users.get(senderId),
+      data = message?.data ?? {
+      }
+    if (!sender) return false
+    const use = await SR5_MarkHelpers.eraseUse(data.messageId)
+    if (!use || !(await SR5_MiscellaneousHelpers.grant(use, sender))) return refuse("eraseMark", senderId, data)
+    await SR5_MarkHelpers.eraseMark(use.cardData)
+    return true
   }
 }
