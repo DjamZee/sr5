@@ -69,5 +69,10 @@
 			<div class="col-12 SR-TextRight"><a data-sr5-defrag-start>{{localize 'SR5.DEFRAG_Link'}}</a></div>
 		</li>
 		{{/if}}
+		{{#if @root.deactivationLauncher}}
+		<li class="grid sr5-defrag">
+			<div class="col-12 SR-TextRight"><a data-sr5-defrag-launch>{{localize 'SR5.DEFRAG_Launch'}}</a></div>
+		</li>
+		{{/if}}
 	</ul>
 </div>

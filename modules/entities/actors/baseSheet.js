@@ -96,7 +96,7 @@ import {
   cfdStatus, startTreatmentDialog, resolveOverwritersNow, stopTreatment
 } from "../../system/cfd-treatment.js"
 import {
-  deactivationStatus, deactivationDialog
+  deactivationStatus, deactivationDialog, deactivationLauncher, launchDeactivation
 } from "../../system/deactivation.js"
 
 /**
@@ -289,8 +289,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }))
     //Treating CFD (Dark Terrors p. 87): the GM alone gives a treatment and sees where it stands, from his ledger
     context.cfd = cfdStatus(this.actor)
-    //Deactivation (Dark Terrors p. 89-90): the GM alone expels an AI or a Monad, rolled on his client
+    //Deactivation (Dark Terrors p. 89-90): the owner of a technomancer with the echo rolls it from its sheet, the GM
+    //confirms; the GM can also run it from the target's sheet for a GM's technomancer
     context.deactivation = deactivationStatus(this.actor)
+    context.deactivationLauncher = deactivationLauncher(this.actor)
 
     context.storageViewIsGrid = game.settings.get("sr5", "sr5StorageViewMode") !== "list"
     //The clinch button of the martial arts block (Run & Gun p. 133) exists only with the grappling rules
@@ -419,6 +421,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     element.querySelectorAll("[data-sr5-defrag-start]").forEach(b => b.addEventListener("click", (event) => {
       event.preventDefault()
       deactivationDialog(this.actor)
+    }))
+    element.querySelectorAll("[data-sr5-defrag-launch]").forEach(b => b.addEventListener("click", (event) => {
+      event.preventDefault()
+      launchDeactivation(this.actor)
     }))
 
     // Show/hide config button based on mode
