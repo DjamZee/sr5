@@ -107,7 +107,7 @@ export class SR5_MiscellaneousHelpers {
     const message = messageId ? game.messages?.get(messageId) : null
     const data = message?.flags?.sr5data
     if (!data) return null
-    const roller = SR5_EntityHelpers.getRealActorFromID(data.owner?.actorId)
+    const roller = SR5_EntityHelpers.getRealActorFromID(data.owner?.actorId, data.actorUuids)
     const author = message.author
     if (!cardTrusted(author, !!roller && !!author && roller.testUserPermission(author, "OWNER"))) return null
     return {
@@ -207,7 +207,7 @@ export class SR5_MiscellaneousHelpers {
   static maglockUse(data, actor, changes) {
     const card = SR5_MiscellaneousHelpers.cardOf(data.messageId)
     if (!card || !testAllowed("maglock", card.data.test)) return null
-    if (SR5_EntityHelpers.getRealActorFromID(card.data.target?.actorId) !== actor) return null
+    if (SR5_EntityHelpers.getRealActorFromID(card.data.target?.actorId, card.data.actorUuids) !== actor) return null
     const hits = SR5_MiscellaneousHelpers.hitsOf(card, "skills.locksmith.test.dicePool")
     if (hits === null || hits < Math.max(1, Number(card.data.threshold?.value) || 1)) return null
     if (!maglockAllowed(changes, actor._source?.system?.maglock)) return null
@@ -298,7 +298,7 @@ export class SR5_MiscellaneousHelpers {
     const holder = item.parent
     const claimed = Math.max(0, Number(card.data.damage?.matrix?.value) || 0)
     if (card.data.test?.type === "matrixDefense") {
-      const attacker = SR5_EntityHelpers.getRealActorFromID(card.data.previousMessage?.actorId)
+      const attacker = SR5_EntityHelpers.getRealActorFromID(card.data.previousMessage?.actorId, card.data.actorUuids)
       if (!holder || holder !== attacker) return 0
       if (card.byGM) return claimed
       const attack = SR5_MiscellaneousHelpers.cardOf(card.data.previousMessage?.messageId)

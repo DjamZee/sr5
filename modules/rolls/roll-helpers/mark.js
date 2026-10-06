@@ -208,7 +208,7 @@ export class SR5_MarkHelpers {
     const defense = SR5_MiscellaneousHelpers.cardOf(messageId)
     if (!defense || !MARK_DEFENSE_TESTS.includes(defense.data.test?.type)) return null
     const attack = SR5_MiscellaneousHelpers.cardOf(defense.data.previousMessage?.messageId)
-    if (!attack || !sameActor(attack.roller, SR5_EntityHelpers.getRealActorFromID(defense.data.previousMessage?.actorId))) return null
+    if (!attack || !sameActor(attack.roller, SR5_EntityHelpers.getRealActorFromID(defense.data.previousMessage?.actorId, defense.data.actorUuids))) return null
     const typeSub = defense.data.test.typeSub,
       chosen = attack.data.matrix?.mark,
       marks = attackerMarks(typeSub, chosen)
@@ -246,7 +246,7 @@ export class SR5_MarkHelpers {
   static async overwatchUse(messageId, actor) {
     const defense = SR5_MiscellaneousHelpers.cardOf(messageId)
     if (!defense || defense.data.test?.type !== "matrixDefense" || !defense.data.matrix?.overwatchScore) return null
-    if (!sameActor(actor, SR5_EntityHelpers.getRealActorFromID(defense.data.previousMessage?.actorId))) return null
+    if (!sameActor(actor, SR5_EntityHelpers.getRealActorFromID(defense.data.previousMessage?.actorId, defense.data.actorUuids))) return null
     const hits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, await SR5_MarkHelpers.defenseCap(defense))
     if (!(hits > 0)) return null
     return {
@@ -528,7 +528,7 @@ export class SR5_MarkHelpers {
     if (!eraseWins(eraserHits, defenderHits)) return null
     //The item erased belongs to the actor the card names, and carries a mark of the defender
     const item = await fromUuid(defense.data.previousMessage?.itemUuid ?? "")
-    if (!item || !sameActor(item.parent, SR5_EntityHelpers.getRealActorFromID(defense.data.previousMessage?.actorId))) return null
+    if (!item || !sameActor(item.parent, SR5_EntityHelpers.getRealActorFromID(defense.data.previousMessage?.actorId, defense.data.actorUuids))) return null
     if (!item.system?.marks?.some(m => m.ownerId === defense.data.owner?.actorId && m.value > 0)) return null
     return {
       card: {
