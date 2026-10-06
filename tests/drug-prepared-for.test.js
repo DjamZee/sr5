@@ -63,6 +63,26 @@ describe('a custom drug prepared for someone', () => {
     expect(stat.durationContrecoupType).toBe('minute')
   })
 
+  //Liesel's D4: the sheet passes a copy of the item, without a parent, and the consumer beside it
+  it('the copy the sheet passes: the consumer it names decides', async () => {
+    const copy = drug('pcA', null)
+    const take = consumerId => SR5_CharacterUtility.handleDrugShots(copy, {
+      value: 'jazz'
+    }, {
+      attributes: {
+        body: {
+          augmented: {
+            value: 4
+          }
+        }
+      }
+    }, {
+      id: consumerId
+    })
+    expect((await take('pcB')).durationContrecoup).toBe(60)
+    expect((await take('pcA')).durationContrecoup).toBe(150)
+  })
+
   it('nobody named: stays custom for anyone (old drugs unchanged)', async () => {
     expect((await shots(drug('', 'pcB'))).durationContrecoup).toBe(150)
   })

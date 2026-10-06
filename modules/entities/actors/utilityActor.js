@@ -3398,7 +3398,8 @@ export class SR5_CharacterUtility extends Actor {
   }
 
   // Handle drug stats
-  static async handleDrugShots(item, drugType, actorData) {
+  //`consumer`: who takes it. The sheet passes a copy of the item, without a parent (Liesel's D4)
+  static async handleDrugShots(item, drugType, actorData, consumer = item.parent) {
     let drugStat
     let roll, rollRoll, rollSpeed, rollRollSpeed, duration, effect
 
@@ -4118,7 +4119,7 @@ export class SR5_CharacterUtility extends Actor {
     const antitoxin = SR5_Toxins.antitoxinRating(actorData)
     if (antitoxin > 1) drugStat.duration = SR5_Toxins.drugDuration(drugStat.duration, antitoxin)
     //The quality of the drug changes the duration of its crash (Chrome Flesh p. 194)
-    applyDrugQuality(drugStat, effectiveDrugQuality(item.system, item.parent))
+    applyDrugQuality(drugStat, effectiveDrugQuality(item.system, consumer))
     return drugStat
   }
 
