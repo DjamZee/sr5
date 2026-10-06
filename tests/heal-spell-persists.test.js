@@ -75,15 +75,15 @@ describe("Soins écrit la guérison", () => {
     vi.spyOn(SR5_EntityHelpers, "getRealActorFromID").mockReturnValue(p)
     await SR5_ActorHelper.applyExternalEffect("p", card(2), "customEffects")
     expect(p.update).toHaveBeenCalledTimes(1)
-    const written = p.update.mock.calls[0][0].system
-    expect(written).not.toBe(p.system)
-    expect(written.conditionMonitors.physical.actual.base).toBe(4)
+    // Written by path: a whole prepared copy put the computed values in the source (prepared-copy-not-written.test.js)
+    const written = p.update.mock.calls[0][0]
+    expect(written["system.conditionMonitors.physical.actual.base"]).toBe(4)
     expect(p.system.conditionMonitors.physical.actual.base).toBe(6)
   })
   it("2 cases, 5 succès : 0, jamais en dessous", async () => {
     const p = patient(2)
     vi.spyOn(SR5_EntityHelpers, "getRealActorFromID").mockReturnValue(p)
     await SR5_ActorHelper.applyExternalEffect("p", card(5), "customEffects")
-    expect(p.update.mock.calls[0][0].system.conditionMonitors.physical.actual.base).toBe(0)
+    expect(p.update.mock.calls[0][0]["system.conditionMonitors.physical.actual.base"]).toBe(0)
   })
 })

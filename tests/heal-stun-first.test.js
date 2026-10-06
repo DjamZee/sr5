@@ -109,7 +109,7 @@ describe('heal', () => {
       }
     })
     expect(actor.update).toHaveBeenCalled()
-    expect(actor.update.mock.calls[0][0].system.conditionMonitors.physical.actual.base).toBe(1)
+    expect(actor.update.mock.calls[0][0]["system.conditionMonitors.physical.actual.base"]).toBe(1)
   })
 })
 

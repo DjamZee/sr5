@@ -460,9 +460,10 @@ export class SR5_ActorHelper {
     let existingEffect = actor.items.find((item) => item.type === "itemEffect" && item.system.type === "electricityDamage")
 
     if (existingEffect){
-      let updatedEffect = existingEffect.toObject(false)
-      updatedEffect.system.duration += 1
-      await actor.updateEmbeddedDocuments("Item", [updatedEffect])
+      //Only the duration, read from the source: the prepared item written back would put its computed values in the source
+      await actor.updateEmbeddedDocuments("Item", [{
+        _id: existingEffect.id, "system.duration": (Number(existingEffect.toObject().system.duration) || 0) + 1
+      }])
       ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${existingEffect.name} ${game.i18n.localize("SR5.INFO_DurationExtendOneRound")}.`)
     } else {
       let effect = {
@@ -591,7 +592,9 @@ export class SR5_ActorHelper {
 
     let armor = actor.items.find((item) => item.type === "itemArmor" && item.system.isActive && !item.system.isAccessory)
     if (armor){
-      let updatedArmor = armor.toObject(false)
+      //Only the effects, copied from the source: the prepared armor written back put its computed values (price,
+      //availability, matrix monitor) in the source, with the effects other items had injected into it
+      let itemEffects = SR5_ActorHelper.sourceItemEffects(armor)
       let armorEffect = {
         "name": `${game.i18n.localize("SR5.ElementalDamage")} (${game.i18n.localize("SR5.ElementalDamageAcid")})`,
         "target": "system.armorValue",
@@ -600,8 +603,10 @@ export class SR5_ActorHelper {
         "value": -1,
         "multiplier": 1
       }
-      updatedArmor.system.itemEffects.push(armorEffect)
-      await actor.updateEmbeddedDocuments("Item", [updatedArmor])
+      itemEffects.push(armorEffect)
+      await actor.updateEmbeddedDocuments("Item", [{
+        _id: armor.id, "system.itemEffects": itemEffects
+      }])
       ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_AcidReduceArmor", {
         armor: armor.name
       })}`)
@@ -1714,9 +1719,9 @@ export class SR5_ActorHelper {
       actorData.system.conditionMonitors[damageType].actual.base -= damageToRemove
       await SR5_EntityHelpers.updateValue(actorData.system.conditionMonitors[damageType].actual, 0)
     }
-    await targetActor.update({
-      system: actorData.system
-    })
+    //Only the stored fields of the monitor: the whole prepared system written back put every computed value in the
+    //source, and the next preparation added its modifiers again (fatigue resistance 7, then 14, then 21)
+    await targetActor.update(SR5_ActorHelper.monitorSourceUpdate(damageType, actorData.system.conditionMonitors[damageType]))
     await SR5_ActorHelper.clearDamageKnockout(targetActor)
   }
 
@@ -1734,6 +1739,23 @@ export class SR5_ActorHelper {
 
   // Remove boxes from a monitor, aggravated boxes first costing two hits each (Howling Shadows p. 213):
   // the first hit turns the aggravated box into a normal one, the second removes it. Returns the unused hits.
+  //The stored fields of a condition monitor, for an update by path. A prepared copy of the system (toObject(false))
+  //must never be written back whole: its modifiers would be in the source, and the next preparation adds them again
+  static monitorSourceUpdate(key, monitor){
+    let updates = {
+      [`system.conditionMonitors.${key}.actual.base`]: monitor.actual.base
+    }
+    if (monitor.aggravated !== undefined) updates[`system.conditionMonitors.${key}.aggravated`] = monitor.aggravated
+    return updates
+  }
+
+  //The custom effects of an item as stored (an object in older data), never the prepared ones: the preparation may add
+  //effects to them (a weapon focus) that would then be written in the source
+  static sourceItemEffects(item){
+    let effects = item.toObject().system.itemEffects ?? []
+    return Array.isArray(effects) ? effects : Object.values(effects)
+  }
+
   static healMonitorBoxes(monitor, hits){
     let aggravated = Math.min(monitor.aggravated || 0, monitor.actual.value)
     let normal = Math.max(monitor.actual.value - aggravated, 0)
@@ -2093,9 +2115,8 @@ export class SR5_ActorHelper {
             if (key === "physical" || key === "condition") SR5_ActorHelper.healMonitorBoxes(newData.conditionMonitors[key], value)
             else newData.conditionMonitors[key].actual.base = Math.max(newData.conditionMonitors[key].actual.base - value, 0)
             SR5_EntityHelpers.updateValue(newData.conditionMonitors[key].actual, 0)
-            await actor.update({
-              "system": newData
-            })
+            //Only the stored fields of the monitor, as in heal(): the whole prepared copy put the computed values in the source
+            await actor.update(SR5_ActorHelper.monitorSourceUpdate(key, newData.conditionMonitors[key]))
             continue
           } else continue
         }
@@ -2203,7 +2224,8 @@ export class SR5_ActorHelper {
           }
           //Add effect to Item
           if (itemToUpdate){
-            let newItem = itemToUpdate.toObject(false)
+            //Only the effects, copied from the source: the prepared device written back put its computed values in the source
+            let itemEffects = SR5_ActorHelper.sourceItemEffects(itemToUpdate)
             let effectItem ={
               "name": itemData.name,
               "target": e.target,
@@ -2213,8 +2235,10 @@ export class SR5_ActorHelper {
               "multiplier": 1,
               "ownerItem": data.owner.itemUuid,
             }
-            newItem.system.itemEffects.push(effectItem)
-            await actor.updateEmbeddedDocuments("Item", [newItem])
+            itemEffects.push(effectItem)
+            await actor.updateEmbeddedDocuments("Item", [{
+              _id: itemToUpdate.id, "system.itemEffects": itemEffects
+            }])
           }
         }
       }

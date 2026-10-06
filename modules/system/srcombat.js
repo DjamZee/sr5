@@ -844,8 +844,9 @@ export class SR5Combat extends Combat {
         if (itemData.type === "acidDamage" && acidValue > 0) {
           let armor = actor.items.find((i) => i.type === "itemArmor" && i.system.isActive && !i.system.isAccessory)
           if (armor){
-            let updatedArmor = armor.toObject(false)
-            let itemEffect = updatedArmor.system.itemEffects.find((e) => e.target === "system.armorValue")
+            //Only the effects, copied from the source: the prepared armor written back put its computed values in the source
+            let itemEffects = Object.values(armor.toObject().system.itemEffects ?? [])
+            let itemEffect = itemEffects.find((e) => e.target === "system.armorValue")
             if (itemEffect){
               itemEffect.value -= 1
             } else {
@@ -857,9 +858,11 @@ export class SR5Combat extends Combat {
                 "value": -1,
                 "multiplier": 1
               }
-              updatedArmor.system.itemEffects.push(armorEffect)
+              itemEffects.push(armorEffect)
             }
-            await actor.updateEmbeddedDocuments("Item", [updatedArmor])
+            await actor.updateEmbeddedDocuments("Item", [{
+              _id: armor.id, "system.itemEffects": itemEffects
+            }])
             ui.notifications.info(`${combatant.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_AcidReduceArmor", {
               armor: armor.name
             })}`)

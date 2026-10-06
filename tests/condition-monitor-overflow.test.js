@@ -246,7 +246,7 @@ describe("healing is not eaten by stored excess", () => {
         typeSub: "condition"
       }
     })
-    expect(actor.update.mock.calls[0][0].system.conditionMonitors.condition.actual.base).toBe(6)
+    expect(actor.update.mock.calls[0][0]["system.conditionMonitors.condition.actual.base"]).toBe(6)
   })
 })
 

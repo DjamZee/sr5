@@ -186,7 +186,7 @@ describe('acid damage drops by 1 each Combat Turn (SR5 p. 172)', () => {
       "system.value": 5
     })
     // and it eats one more point of armor
-    expect(actor.updateEmbeddedDocuments.mock.calls[0][1][0].system.itemEffects[0].value).toBe(-2)
+    expect(actor.updateEmbeddedDocuments.mock.calls[0][1][0]["system.itemEffects"][0].value).toBe(-2)
   })
 
   it('applies DV 4 on the turn after', async () => {
