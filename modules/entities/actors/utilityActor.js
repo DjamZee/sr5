@@ -2180,17 +2180,17 @@ export class SR5_CharacterUtility extends Actor {
       case "actorSprite":
         SR5_EntityHelpers.updateModifier(initMat, game.i18n.localize('SR5.Level'), "linkedAttribute", actorData.level)
         SR5_EntityHelpers.updateModifier(initMat, game.i18n.localize('SR5.DataProcessing'), "linkedAttribute", matrixAttributes.dataProcessing.value)
-        SR5_EntityHelpers.updateModifier(initMat.dice, game.i18n.localize(SR5.spriteTypes[actorData.type]), `${game.i18n.localize('TYPES.Actor.actorsprite')}`, 4)
+        SR5_EntityHelpers.updateModifier(initMat.dice, game.i18n.localize(SR5.spriteTypes[actorData.type]), `${game.i18n.localize('TYPES.Actor.actorSprite')}`, 4)
         break
       case "actorAgent":
         SR5_EntityHelpers.updateModifier(initMat, `${game.i18n.localize('SR5.Rating')}`, "linkedAttribute", actorData.rating)
         SR5_EntityHelpers.updateModifier(initMat, `${game.i18n.localize('SR5.DataProcessing')}`, "linkedAttribute", matrixAttributes.dataProcessing.value)
-        SR5_EntityHelpers.updateModifier(initMat.dice, game.i18n.localize(SR5.spriteTypes[actorData.type]), `${game.i18n.localize('TYPES.Actor.actoragent')}`, 4)
+        SR5_EntityHelpers.updateModifier(initMat.dice, game.i18n.localize(SR5.spriteTypes[actorData.type]), `${game.i18n.localize('TYPES.Actor.actorAgent')}`, 4)
         break
       case "actorDevice":
         SR5_EntityHelpers.updateModifier(initMat, `${game.i18n.localize('SR5.DeviceRating')}`, "linkedAttribute", actorData.matrix.deviceRating)
         SR5_EntityHelpers.updateModifier(initMat, `${game.i18n.localize('SR5.DataProcessing')}`, "linkedAttribute", matrixAttributes.dataProcessing.value)
-        SR5_EntityHelpers.updateModifier(initMat.dice, `${game.i18n.localize(SR5.deviceTypes[actorData.matrix.deviceType])}`, `${game.i18n.localize('TYPES.Actor.actordevice')}`, 4)
+        SR5_EntityHelpers.updateModifier(initMat.dice, `${game.i18n.localize(SR5.deviceTypes[actorData.matrix.deviceType])}`, `${game.i18n.localize('TYPES.Actor.actorDevice')}`, 4)
         break
       default:
         SR5_SystemHelpers.srLog(1, `Unknown actor type '${actor.type}' in 'updateInitiativeMatrix()'`)
@@ -4505,6 +4505,7 @@ export class SR5_CharacterUtility extends Actor {
     let modifierTypeSensor = "sensorAttribute"
     let modifierTypePilot = "pilotAttribute"
     let logicLabel = 'SR5.Logic', deviceless = false
+    let intuitionLabel = 'SR5.Intuition', willpowerLabel = 'SR5.Willpower'
 
     if (actor.type === "actorPc" || actor.type === "actorGrunt" || actor.type === "actorAgent") {
       intuitionValue = actorData.attributes.intuition.augmented.value
@@ -4525,6 +4526,7 @@ export class SR5_CharacterUtility extends Actor {
       intuitionValue = matrix.deviceRating
       willpowerValue = matrix.deviceRating
       logicValue = matrix.deviceRating
+      intuitionLabel = willpowerLabel = logicLabel = 'SR5.DeviceRating'
       firewallValue = matrixAttributes.firewall.value
       sleazeValue = matrixAttributes.sleaze.value
       dataProcessingValue = matrixAttributes.dataProcessing.value
@@ -4534,17 +4536,26 @@ export class SR5_CharacterUtility extends Actor {
       if (controler.attributes.intuition.augmented.value > matrix.deviceRating) {
         intuitionValue = controler.attributes.intuition.augmented.value
         modifierTypeIntuition = "controler"
-      } else intuitionValue = matrix.deviceRating
+      } else {
+        intuitionValue = matrix.deviceRating
+        intuitionLabel = 'SR5.DeviceRating'
+      }
 
       if (controler.attributes.willpower.augmented.value > matrix.deviceRating) {
         willpowerValue = controler.attributes.willpower.augmented.value
         modifierTypeWillpower = "controler"
-      } else willpowerValue = matrix.deviceRating
+      } else {
+        willpowerValue = matrix.deviceRating
+        willpowerLabel = 'SR5.DeviceRating'
+      }
 
       if (controler.attributes.logic.augmented.value > matrix.deviceRating) {
         logicValue = controler.attributes.logic.augmented.value
         modifierTypeLogic = "controler"
-      } else logicValue = matrix.deviceRating
+      } else {
+        logicValue = matrix.deviceRating
+        logicLabel = 'SR5.DeviceRating'
+      }
 
       if (controler.matrix.attributes.firewall.value > matrix.deviceRating) {
         firewallValue = controler.matrix.attributes.firewall.value
@@ -4569,73 +4580,74 @@ export class SR5_CharacterUtility extends Actor {
       intuitionValue = matrix.deviceRating
       willpowerValue = matrix.deviceRating
       logicValue = matrix.deviceRating
+      intuitionLabel = willpowerLabel = logicLabel = 'SR5.DeviceRating'
       firewallValue = matrix.deviceRating
       sleazeValue = matrix.deviceRating
       dataProcessingValue = matrix.deviceRating
       attackValue = matrix.deviceRating
     }
 
-    SR5_EntityHelpers.updateModifier(matrixActions.editFile.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.editFile.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.editFile.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.eraseMark.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.eraseMark.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.eraseMark.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.formatDevice.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.formatDevice.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.formatDevice.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     // A Monad adds its Nanite Volume to resist Format Device (Dark Terrors p. 88); kept for the Lockdown strain too, as
     // the sidebar p. 91 recommends (arbitrage de DjamZ, 06/10)
     if (activeHeadcase(actor)) SR5_EntityHelpers.updateModifier(matrixActions.formatDevice.defense, game.i18n.localize('SR5.NaniteVolume'), "linkedAttribute", naniteVolume(actor))
     SR5_EntityHelpers.updateModifier(matrixActions.snoop.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.snoop.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.hackOnTheFly.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.hackOnTheFly.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.hackOnTheFly.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.spoofCommand.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.spoofCommand.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.garbageInGarbageOut.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.garbageInGarbageOut.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.bruteForce.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.bruteForce.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.bruteForce.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.matrixPerception.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.matrixPerception.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.dataSpike.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.dataSpike.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.dataSpike.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.crashProgram.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.crashProgram.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.crashProgram.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.jumpIntoRiggedDevice.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.jumpIntoRiggedDevice.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.jumpIntoRiggedDevice.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.rebootDevice.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.rebootDevice.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.rebootDevice.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.hide.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.hide.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.hide.defense, game.i18n.localize('SR5.DataProcessing'), modifierTypeDataProcessing, dataProcessingValue)
     SR5_EntityHelpers.updateModifier(matrixActions.jackOut.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.jackOut.defense, game.i18n.localize('SR5.MatrixAttack'), modifierTypeAttack, attackValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.traceIcon.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.traceIcon.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.traceIcon.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.controlDevice.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.controlDevice.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.controlDevice.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
 
     if (game.settings.get("sr5", "sr5KillCodeRules")) {
-      SR5_EntityHelpers.updateModifier(matrixActions.denialOfService.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.denialOfService.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
       SR5_EntityHelpers.updateModifier(matrixActions.denialOfService.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.haywire.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.haywire.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
       SR5_EntityHelpers.updateModifier(matrixActions.haywire.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
       SR5_EntityHelpers.updateModifier(matrixActions.masquerade.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
       SR5_EntityHelpers.updateModifier(matrixActions.masquerade.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.popupHacking.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.popupHacking.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
       SR5_EntityHelpers.updateModifier(matrixActions.popupHacking.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.popupCybercombat.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.popupCybercombat.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
       SR5_EntityHelpers.updateModifier(matrixActions.popupCybercombat.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.squelch.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.squelch.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
       SR5_EntityHelpers.updateModifier(matrixActions.squelch.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.subvertInfrastructure.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.subvertInfrastructure.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
       SR5_EntityHelpers.updateModifier(matrixActions.subvertInfrastructure.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.tag.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.tag.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
       SR5_EntityHelpers.updateModifier(matrixActions.tag.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
       SR5_EntityHelpers.updateModifier(matrixActions.watchdog.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
       SR5_EntityHelpers.updateModifier(matrixActions.watchdog.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     }
 
     if (game.settings.get("sr5", "sr5Rigger5Actions")) {
-      SR5_EntityHelpers.updateModifier(matrixActions.targetDevice.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.targetDevice.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
       SR5_EntityHelpers.updateModifier(matrixActions.targetDevice.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
       if (actor.type === "actorDrone") {	
         SR5_EntityHelpers.updateModifier(matrixActions.breakTargetLock.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
@@ -4729,9 +4741,9 @@ export class SR5_CharacterUtility extends Actor {
           SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, item.name, "deviceRating", actorData.matrix.deviceRating)
           SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, game.i18n.localize('SR5.Firewall'), "matrixAttribute", actorData.matrix.attributes.firewall.value)
         } else if (actor.type === "actorSprite") {
-          SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, game.i18n.localize('TYPES.Actor.actorsprite'), "level", matrix.deviceRating)
+          SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, game.i18n.localize('SR5.Level'), "level", matrix.deviceRating)
           SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, game.i18n.localize('SR5.Firewall'), "matrixAttribute", matrixAttributes.firewall.value)
-          SR5_EntityHelpers.updateModifier(matrixResistances.dataBomb, game.i18n.localize('TYPES.Actor.actorsprite'), "level", matrix.deviceRating)
+          SR5_EntityHelpers.updateModifier(matrixResistances.dataBomb, game.i18n.localize('SR5.Level'), "level", matrix.deviceRating)
           SR5_EntityHelpers.updateModifier(matrixResistances.dataBomb, game.i18n.localize('SR5.Firewall'), "matrixAttribute", matrixAttributes.firewall.value)
         } else if (actor.type === "actorAgent") {
           SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, `${game.i18n.localize('SR5.ProgramTypeAgent')}`, "itemRating", actorData.rating)
