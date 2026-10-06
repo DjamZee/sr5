@@ -179,7 +179,8 @@ export class SR5Item extends Item {
       case "itemArmor":
       case "itemGear":
         if (item.type === "itemGear"){
-          if (Object.keys(itemData.systemEffects).length) SR5_UtilityItem.applyItemEffects(item)
+          //Its item effects too: read only behind a system effect, one on the matrix monitor of a plain gear was lost
+          if (Object.keys(itemData.systemEffects).length || Object.keys(itemData.itemEffects).length) SR5_UtilityItem.applyItemEffects(item)
         }
         if (item.type === "itemArmor"){ 
           if (Object.keys(itemData.itemEffects).length) SR5_UtilityItem.applyItemEffects(item)
