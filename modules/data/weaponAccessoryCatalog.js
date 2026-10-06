@@ -299,11 +299,12 @@ export const WEAPON_ACCESSORY_CATALOG = {
     ],
   },
 
+  // Hidden arm slide (SR5 p. 434): "un modificateur de -1 à la Dissimulation de l'arme"
   hiddenArmSlide: {
     price: 350, slot: "", type: "accessory",
     itemEffects: [
       {
-        target: "system.concealment", type: "value", value: 1 
+        target: "system.concealment", type: "value", value: -1
       },
     ],
   },
