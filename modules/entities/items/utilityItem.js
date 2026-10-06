@@ -16,6 +16,9 @@ import {
 import {
   SR5_Toxins
 } from "./toxins.js"
+import {
+  deathSowerAdeptDamage
+} from "./magic-masteries.js"
 
 export class SR5_UtilityItem extends Actor {
   //************************************************//
@@ -493,6 +496,9 @@ export class SR5_UtilityItem extends Actor {
         if ((actor.system.initiatives.astralInit.isActive || itemData.isUsedAsFocus) && itemData.isLinkedToFocus) SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.Charisma'), "linkedAttribute", actor.system.attributes.charisma.augmented.value)
         else SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.Strength'), "linkedAttribute", actor.system.attributes.strength.augmented.value)
       }
+      //Death Sower, adept side (Forbidden Arcana p. 40): +1 DV with the melee skills
+      const deathSower = deathSowerAdeptDamage(actor.system.magic?.magicType, actor.system.magic?.masteries?.deathSower?.value, itemData.category)
+      if (deathSower) SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.MagicMasteryDeathSower'), "itemQuality", deathSower)
       //Osmium mace (The Complete Trog p. 177): the listed profile only holds for Strength 5-6
       if (hasWeaponTrait(itemData, "osmium") && actor.type !== "actorDrone") {
         const profile = osmiumProfile(actor.system.attributes.strength.augmented.value)

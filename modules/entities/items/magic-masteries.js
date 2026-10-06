@@ -71,8 +71,6 @@ export function magicForDrainType(magic, archivistLevel = 0, conjuringSpecialist
 
 // Bonuses on a combat spell cast by a character with masteries.
 // Mage Hunter (p. 34): Drain +1 per level ; Death Sower (p. 40): DV +1 and Drain +1 per level.
-// Death Sower, adept side (p. 40: "+1 DV to any attack with a skill Critical Strike applies to", level 1 only):
-// left to the text of the quality, not automated (review M4) - the GM adds it to the attack.
 export function combatSpellMasteryBonus(category, mageHunter = 0, deathSower = 0) {
   if (category !== "combat") return {
     drainMageHunter: 0, drainDeathSower: 0, damage: 0
@@ -82,4 +80,12 @@ export function combatSpellMasteryBonus(category, mageHunter = 0, deathSower = 0
     drainDeathSower: Math.max(0, deathSower || 0),
     damage: Math.max(0, deathSower || 0),
   }
+}
+
+// Death Sower, adept side (p. 40): "+1 DV to any attack made with a skill Critical Strike can be applied to", i.e.
+// every melee skill (SR5 p. 310: Blades, Clubs, Unarmed Combat, Astral Combat, exotic melee), whether the adept bought
+// Critical Strike for it or not. Adepts buy the first level only: +1 whatever the level.
+export function deathSowerAdeptDamage(magicType, level, weaponCategory) {
+  if (weaponCategory !== "meleeWeapon" || (magicType !== "adept" && magicType !== "mysticalAdept")) return 0
+  return (Number(level) || 0) > 0 ? 1 : 0
 }

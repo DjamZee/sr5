@@ -5,7 +5,7 @@ import {
   readFileSync
 } from "node:fs"
 import {
-  masteryFreeSustainedSpells, magicForDrainType, combatSpellMasteryBonus
+  masteryFreeSustainedSpells, magicForDrainType, combatSpellMasteryBonus, deathSowerAdeptDamage
 } from "../modules/entities/items/magic-masteries.js"
 import {
   SR5
@@ -53,6 +53,14 @@ describe("Mage Hunter and Death Sower (p. 34, 40)", () => {
     expect(combatSpellMasteryBonus("illusion", 2, 3)).toEqual({
       drainMageHunter: 0, drainDeathSower: 0, damage: 0
     })
+  })
+  it("give an adept +1 DV with every melee skill Critical Strike can apply to, whatever the level (p. 40)", () => {
+    expect(deathSowerAdeptDamage("adept", 1, "meleeWeapon")).toBe(1)
+    expect(deathSowerAdeptDamage("mysticalAdept", 3, "meleeWeapon")).toBe(1)
+    expect(deathSowerAdeptDamage("adept", 0, "meleeWeapon")).toBe(0)
+    expect(deathSowerAdeptDamage("adept", 1, "rangedWeapon")).toBe(0)
+    expect(deathSowerAdeptDamage("magician", 2, "meleeWeapon")).toBe(0)
+    expect(read("modules/entities/items/utilityItem.js")).toMatch(/deathSowerAdeptDamage\(/)
   })
   it("are wired in the spell roll and the spell card", () => {
     expect(read("modules/rolls/roll-prepare-case/rollData-Spell.js")).toMatch(/drain\.modifiers\.deathSower/)
