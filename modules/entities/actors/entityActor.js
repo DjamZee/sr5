@@ -418,6 +418,15 @@ export class SR5Actor extends Actor {
     })
   }
 
+  //An unlinked token inherits the effects of its world actor: switched to astral perception, that actor showed the
+  //"Astral perception" icon on every unlinked token of it, which does not have the vision (M4 D3). Shown only where
+  //the vision is on; the effect carries no modifier and nothing reads it
+  get temporaryEffects() {
+    const effects = super.temporaryEffects
+    if (!this.isToken || this.system?.visions?.astral?.isActive) return effects
+    return effects.filter(e => e.origin !== "astralVision")
+  }
+
   prepareData() {
     if (!this.img) this.img = CONST.DEFAULT_TOKEN
     if (!this.name) this.name = "[" + game.i18n.localize("SR5.New") + "]" + this.documentName
