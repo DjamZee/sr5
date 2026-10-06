@@ -74,7 +74,7 @@ describe('the active GM records each defense card', () => {
     // the same defense rolled again, from the button or the console
     expect(await recordDefense(defenseCard('d2', 'attack1', 'diego'))).toBe(false)
     expect(whispers).toHaveLength(1)
-    expect(whispers[0].whisper).toEqual([gm])
+    expect(whispers[0].whisper).toEqual(['gm'])
     expect(whispers[0].content).toContain('SR5.DefenseRepeated')
   })
 

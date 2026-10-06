@@ -121,7 +121,7 @@ export async function recordDefense(message) {
     content: `<p>${game.i18n.format("SR5.DefenseRepeated", {
       name: data.owner.speakerActor ?? message.speaker?.alias ?? "", author: message.author?.name ?? ""
     })}</p>`,
-    whisper: ChatMessage.getWhisperRecipients("GM"),
+    whisper: ChatMessage.getWhisperRecipients("GM").map(u => u.id),
   })
   return !repeat
 }
