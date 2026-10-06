@@ -278,7 +278,7 @@
 	"SR5.SETTINGS_ShopMarketOpen_T": "Boutique : le marché est ouvert aux joueurs",
 	"SR5.SETTINGS_ShopVendorTest_D": "Par défaut, un objet en rayon est déjà trouvé et s'achète sans test (SR5 p. 420 : le test sert à trouver). Coché, le test et la pastille reviennent sur le stock.",
 	"SR5.SETTINGS_ShopVendorTest_T": "Boutique : test de Disponibilité aussi chez un vendeur",
-	"SR5.SETTINGS_SpiritDrainAttribute_D": "Les créatures et les esprits résistent au Drain d'un sort inné avec l'Intuition ou le Charisme, à la discrétion du meneur de jeu (SR5 p. 403). L'attribut choisi s'ajoute à la Volonté. Charisme par défaut.",
+	"SR5.SETTINGS_SpiritDrainAttribute_D": "Le livre fait résister les créatures et les esprits au Drain d'un sort inné « en utilisant Intuition ou Charisme », à la discrétion du meneur de jeu (SR5 p. 403). Le système ajoute l'attribut choisi à la Volonté, comme l'attribut de tradition d'un magicien (Shadow Spells p. 19) : c'est une lecture, le livre ne nomme pas la Volonté. Vaut pour les fiches d'esprit seulement. Charisme par défaut.",
 	"SR5.SETTINGS_SpiritDrainAttribute_T": "Esprits : attribut de résistance au Drain d'un sort inné",
 	"SR5.SharedVisionShare": "Partager la vision",
 	"SR5.SharedVisionShareTitle": "Partager ce que voit {name}",

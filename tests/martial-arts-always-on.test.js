@@ -1,5 +1,5 @@
 import {
-  describe, it, expect
+  describe, it, expect, vi
 } from "vitest"
 
 // F7 (DjamZ's ruling, 2026-10-06): a martial arts technique the character has learned applies on its own,
@@ -9,6 +9,12 @@ import {
 const {
   martialArtNeedsSwitch, martialArtApplies
 } = await import("../modules/system/martial-arts-technique.js")
+const {
+  SR5Actor
+} = await import("../modules/entities/actors/entityActor.js")
+const {
+  SR5_CharacterUtility
+} = await import("../modules/entities/actors/utilityActor.js")
 
 const effect = (target, type = "value", value = 1) => ({
   target, type, value
@@ -59,6 +65,38 @@ describe("a learned martial arts technique applies on its own", () => {
     expect(martialArtApplies({
       ...outrance, isActive: true
     })).toBe(true)
+  })
+
+  // The actor's preparation reads the rule: an unpinned technique hands its effects over (entityActor.js)
+  it("is applied by the actor's preparation without being pinned", () => {
+    const applied = vi.spyOn(SR5_CharacterUtility, "applyCustomEffects").mockImplementation(() => {})
+    const item = (name, system) => ({
+      type: "itemMartialArt", name, id: name, system
+    })
+    const learned = [item("Choquer", choquer), item("Main", {
+      ...outrance, isActive: false
+    })]
+    const actor = Object.create(SR5Actor.prototype)
+    Object.defineProperty(actor, "type", {
+      value: "actorPc"
+    })
+    Object.defineProperty(actor, "items", {
+      value: learned
+    })
+    Object.defineProperty(actor, "system", {
+      value: {
+        matrix: {
+        }
+      }
+    })
+    //What follows the items loop reads a full sheet: only the loop is under test here
+    try {
+      actor.prepareEmbeddedDocuments()
+    } catch {
+      //the rest of the preparation needs a full character sheet
+    }
+    expect(applied.mock.calls.map(c => c[0].name)).toEqual(["Choquer"])
+    applied.mockRestore()
   })
 
   it("reads an array of effects as well as an object", () => {

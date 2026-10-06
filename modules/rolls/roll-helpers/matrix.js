@@ -98,8 +98,10 @@ export class SR5_MatrixHelpers {
     if (newItem.system.conditionMonitors.matrix.actual.value >= monitorSize){
       //No dumpshock for an AI: it is dissipated instead (decided by DjamZ, 04/10)
       if (targetActor.system.activeSpecialAttribute === "depth") aiDissipated = true
-      //A bricked device throws a character in VR out of the Matrix, with dumpshock (SR5 p. 229)
-      else if (targetItem.type === "itemDevice" && SR5_ActorHelper.dumpshockIfInVR(targetActor)){
+      //A bricked device throws a character in VR out of the Matrix, with dumpshock resisted by Willpower alone (SR5 p. 229, 231)
+      else if (targetItem.type === "itemDevice" && SR5_ActorHelper.dumpshockIfInVR(targetActor, {
+        bricked: true
+      })){
         ui.notifications.info(`${targetActor.name} ${game.i18n.localize("SR5.INFO_IsDisconnected")}.`)
       }
       newItem.system.isActive = false

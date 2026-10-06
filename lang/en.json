@@ -278,7 +278,7 @@
 	"SR5.SETTINGS_ShopMarketOpen_T": "Shop: the market is open to players",
 	"SR5.SETTINGS_ShopVendorTest_D": "By default an item on the shelf has already been found and is bought without a test (SR5 p. 420: the test is the search). Ticked, the test and the dot come back on the stock.",
 	"SR5.SETTINGS_ShopVendorTest_T": "Shop: availability test at a vendor's too",
-	"SR5.SETTINGS_SpiritDrainAttribute_D": "Critters and spirits resist the Drain of an innate spell with Intuition or Charisma, at the gamemaster's discretion (SR5 p. 403). The chosen attribute is added to Willpower. Charisma by default.",
+	"SR5.SETTINGS_SpiritDrainAttribute_D": "The book has critters and spirits resist the Drain of an innate spell \"with either Intuition or Charisma\", at the gamemaster's discretion (SR5 p. 403). The system adds the chosen attribute to Willpower, as a magician's tradition attribute is (Shadow Spells p. 19): a reading, the book does not name Willpower. Spirit sheets only. Charisma by default.",
 	"SR5.SETTINGS_SpiritDrainAttribute_T": "Spirits: attribute resisting the Drain of an innate spell",
 	"SR5.SharedVisionShare": "Share vision",
 	"SR5.SharedVisionShareTitle": "Share what {name} sees",

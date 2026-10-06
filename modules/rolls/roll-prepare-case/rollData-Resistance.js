@@ -96,7 +96,7 @@ export default async function resistance(rollData, rollType, actor, chatData){
       rollData = await handleBiofeedbackDamage(rollData, actorData, chatData)
       break
     case "dumpshock":
-      rollData = await handleDumpshockDamage(rollData, actorData)
+      rollData = await handleDumpshockDamage(rollData, actorData, chatData)
       break
     case "astralDamage":
       rollData = await handleAstralDamage(rollData, actorData, chatData)
@@ -392,13 +392,18 @@ async function handleBiofeedbackDamage(rollData, actorData, chatData){
   return rollData
 }
 
-async function handleDumpshockDamage(rollData, actorData){
+async function handleDumpshockDamage(rollData, actorData, chatData){
   //Determine title
   rollData.test.title = `${game.i18n.localize("SR5.ResistDumpshock")} (6)`
 
   //Determine base dicepool & composition
   rollData.dicePool.base = actorData.matrix.resistances.dumpshock.dicePool
   rollData.dicePool.composition = actorData.matrix.resistances.dumpshock.modifiers
+  //A bricked deck has no Firewall left: Willpower alone resists (SR5 p. 231)
+  if (chatData?.damage?.bricked){
+    rollData.dicePool.composition = rollData.dicePool.composition.filter(m => m.type !== "matrixAttribute")
+    rollData.dicePool.base = rollData.dicePool.composition.reduce((sum, m) => sum + (m.value || 0), 0)
+  }
 
   //Determine damage type & value
   if (actorData.matrix.userMode === "coldsim") rollData.damage.type = "stun"

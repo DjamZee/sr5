@@ -553,7 +553,8 @@ export class SR5_SystemHelpers {
     })
 
     // SR5 p. 403: critters and spirits resist the Drain of an innate spell with Intuition or Charisma, at the GM's
-    // discretion, added to Willpower. Charisma by default (DjamZ's ruling, 2026-10-06). Read while the actors are prepared
+    // discretion; added to Willpower as a tradition attribute is (Shadow Spells p. 19), a reading: the book does not
+    // name Willpower. Spirit sheets only. Charisma by default (DjamZ's ruling, 2026-10-06). Read while the actors are prepared
     game.settings.register("sr5", "sr5SpiritDrainAttribute", {
       name: "SR5.SETTINGS_SpiritDrainAttribute_T",
       hint: "SR5.SETTINGS_SpiritDrainAttribute_D",

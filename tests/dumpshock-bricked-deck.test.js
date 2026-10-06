@@ -90,5 +90,57 @@ describe('Dumpshock when a deck is bricked in VR (SR5 p. 229)', () => {
     expect(chatData.damage.resistanceType).toBe('dumpshock')
     expect(chatData.owner).toBeDefined()
     expect(chatData.roll).toBeDefined()
+    // SR5 p. 231: "you don't have a functional Firewall attribute any more, so only use your Willpower"
+    expect(chatData.damage.bricked).toBe(true)
+  })
+
+  it('resists a bricked deck dumpshock with Willpower alone, the other dumpshocks with Willpower + Firewall', async () => {
+    const {
+      resistance
+    } = await import('../modules/rolls/roll-prepare-case/index.js')
+    const actor = hacker()
+    actor.type = 'actorPc'
+    actor.system.matrix.resistances.dumpshock.modifiers = [{
+      source: 'Volonté', type: 'linkedAttribute', value: 4
+    }, {
+      source: 'Firewall', type: 'matrixAttribute', value: 3
+    }]
+    const pool = async (bricked) => {
+      const rollData = {
+        test: {
+        }, dicePool: {
+        }, damage: {
+        }, combat: {
+          grenade: {
+          }
+        }, threshold: {
+        }, owner: {
+        }, target: {
+        }, magic: {
+        }, matrix: {
+        }, previousMessage: {
+        },
+      }
+      const chatData = {
+        damage: {
+          resistanceType: 'dumpshock', ...(bricked ? {
+            bricked: true
+          } : {
+          })
+        }, combat: {
+          grenade: {
+          }
+        }, owner: {
+        }, target: {
+        }, roll: {
+        }, test: {
+        }, previousMessage: {
+        },
+      }
+      const prepared = await resistance(rollData, 'resistanceCard', actor, chatData)
+      return [prepared.dicePool.base, prepared.dicePool.composition.map(m => m.source)]
+    }
+    expect(await pool(true)).toEqual([4, ['Volonté']])
+    expect(await pool(false)).toEqual([7, ['Volonté', 'Firewall']])
   })
 })

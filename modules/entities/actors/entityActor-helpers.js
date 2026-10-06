@@ -689,13 +689,18 @@ export class SR5_ActorHelper {
   //6P in hot sim), link lock or not: jack out, reboot, brick, convergence, any forced stop. Nothing once in AR.
   //DjamZ's ruling, 2026-10-06: "ce sont les débranchements d'urgence qui provoquent le choc". An AI (Depth active,
   //Data Trails p. 152) has no dumpshock, it is dissipated instead (decided by DjamZ, 04/10)
-  static dumpshockIfInVR(actor) {
+  //bricked: the deck threw the character out by bricking, Willpower alone resists (SR5 p. 231)
+  static dumpshockIfInVR(actor, {
+    bricked = false
+  } = {
+  }) {
     let userMode = actor?.system.matrix?.userMode
     if (!userMode || userMode === "ar") return false
     if ((actor.type === "actorPc" || actor.type === "actorGrunt") && actor.system.activeSpecialAttribute === "depth") return false
     //The resistance card reads owner and roll from the card it follows: a bare object crashed it (SR5 p. 229)
     let dumpshockData = SR5_PrepareRollTest.getBaseRollData(null, actor)
     dumpshockData.damage.resistanceType = "dumpshock"
+    if (bricked) dumpshockData.damage.bricked = true
     actor.rollTest("resistanceCard", null, dumpshockData)
     return true
   }
