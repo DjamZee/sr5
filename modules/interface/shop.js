@@ -178,7 +178,11 @@ export class SR5Shop {
     const stackable = SR5Shop.STACKABLE_TYPES.includes(itemData.type) &&
       itemData.system.quantity !== undefined
     if (stackable) {
-      itemData.system.quantity = quantity
+      // Ammunition is sold by its entry: the compendiums hold boxes of 10 rounds, whose computed price is the
+      // box's (utilityItem.js _handleAmmoPrice). One bought is one box, not one round for the box's price.
+      const perEntry = itemData.type === 'itemAmmunition' ?
+        Math.max(1, Math.floor(Number(source.system?.quantity) || 1)) : 1
+      itemData.system.quantity = quantity * perEntry
       return [itemData]
     }
     const payload = []

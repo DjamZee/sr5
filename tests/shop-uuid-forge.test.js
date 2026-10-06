@@ -118,6 +118,24 @@ describe('R1: the shop sells its shelves, never what an actor carries', () => {
     expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_ShopNotForSale')
   })
 
+  it('a box of ammunition from the shelves brings its rounds: paid for 10, 10 received', () => {
+    const box = {
+      name: 'Balles APDS', type: 'itemAmmunition', pack: 'sr5.gear',
+      system: {
+        quantity: 10, price: {
+          base: 12, value: 120
+        }
+      },
+      toObject() {
+        return JSON.parse(JSON.stringify({
+          _id: 'x', name: this.name, type: this.type, system: this.system
+        }))
+      },
+    }
+    expect(SR5Shop._itemPayload(box, 1)[0].system.quantity).toBe(10)
+    expect(SR5Shop._itemPayload(box, 3)[0].system.quantity).toBe(30)
+  })
+
   it('a credstick from the shelves comes empty, whatever its entry holds', () => {
     const [data] = SR5Shop._itemPayload(docs['Compendium.sr5.gear.Item.stick'], 1)
     expect(data.system.funds.value).toBe(0)
