@@ -91,6 +91,45 @@ describe("what an Ossature renforcée is", () => {
     delete old.system.customEffects[2]
     expect(isBoneLacing(old)).toBe(true)
   })
+  it("by its compendium source, whatever its shape or its name (Élise's request after Honoré's review)", () => {
+    const bare = {
+      type: "itemAugmentation", name: "Renamed", system: {
+        type: "cyberware", customEffects: []
+      }
+    }
+    expect(isBoneLacing({
+      ...bare, _stats: {
+        compendiumSource: "Compendium.sr5-compendiums.fr_cyberware.Item.Nj3jLafLvOphTlME"
+      }
+    })).toBe(true)
+    expect(isBoneLacing({
+      ...bare, flags: {
+        core: {
+          sourceId: "Compendium.megapack-sr5-foundry-vtt.sr5-megapack-items.Item.b8B5FzSIQUJvW7KM"
+        }
+      }
+    })).toBe(true)
+    expect(isBoneLacing({
+      ...bare, _stats: {
+        compendiumSource: "Compendium.x.y.Item.someOtherImplant"
+      }
+    })).toBe(false)
+  })
+  it("by its name, accents and case aside, with no effect at all", () => {
+    const named = name => ({
+      type: "itemAugmentation", name, system: {
+        type: "cyberware", customEffects: []
+      }
+    })
+    expect(isBoneLacing(named("OSSATURE RENFORCEE (titane) (NE)"))).toBe(true)
+    expect(isBoneLacing(named("Bone Lacing (Plastic)"))).toBe(true)
+    expect(isBoneLacing(named("Armure dermique"))).toBe(false)
+    expect(isBoneLacing({
+      ...named("Augmentation de densité osseuse"), system: {
+        type: "bioware", customEffects: []
+      }
+    })).toBe(false)
+  })
   it("not a laser pointer: it touches the unarmed attacks, but its accuracy, and gives no Armor", () => {
     expect(isBoneLacing({
       type: "itemAugmentation", name: "Pointeur laser", system: {

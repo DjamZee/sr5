@@ -311,16 +311,28 @@ function isInstalled(data) {
   return data?.type === "itemAugmentation" && !data.system?.storedIn
 }
 
+/** The Ossatures renforcées of the compendiums: sr5-compendiums fr_cyberware, then the Megapack (variants (NE) included). */
+const BONE_LACING_SOURCES = [
+  "Nj3jLafLvOphTlME", "ZSIXAd5KV3vdKQGU", "nwtmpWKzw69HUMEA",
+  "QFTX44TmaAx5kpZb", "4fZI72EAOzZcSov8", "YXUnTc3aGHPeEfWp", "9DnyDIvH5TvK08Om", "RLnJVDeqiG0aB9aZ", "b8B5FzSIQUJvW7KM",
+]
+
 /**
- * Ossature renforcée (SR5 p. 458): "un seul type pouvant être installé à la fois". Told by what it does, in every
- * language and in both compendiums (the system's and the Megapack's, variants (NE) included): the only cyberware
- * that gives Armor and either changes the unarmed damage or adds to the damage resistance. Either one, as the copies
- * already on sheets come in several shapes: sr5-compendiums up to 13.0.0-alpha.6 gives Armor and resistance only,
- * the Megapack before 2.0.16 its unarmed effect without damageType (Honoré's review). Dermal armor gives Armor
- * alone, the laser pointers touch the unarmed attacks without Armor, bone density is bioware.
+ * Ossature renforcée (SR5 p. 458): "un seul type pouvant être installé à la fois". Told, in this order, by the
+ * compendium it was taken from, by its name (French or English), then by what it does, for a copy renamed or made
+ * by hand: the only cyberware that gives Armor and either changes the unarmed damage or adds to the damage
+ * resistance. The copies already on sheets come in several shapes: sr5-compendiums up to 13.0.0-alpha.6 gives Armor
+ * and resistance only, the Megapack before 2.0.16 its unarmed effect without damageType (Honoré's review). Dermal
+ * armor gives Armor alone, the laser pointers touch the unarmed attacks without Armor, bone density is bioware.
  */
 export function isBoneLacing(data) {
   if (data?.type !== "itemAugmentation" || data.system?.isAccessory || implantFamily(data.system?.type) !== "cyberware") return false
+  // What it comes from first: the lacings of both compendiums, whatever the shape of the copy on the sheet
+  const source = data._stats?.compendiumSource ?? data.flags?.core?.sourceId ?? ""
+  if (BONE_LACING_SOURCES.some(id => source.endsWith(`.${id}`))) return true
+  // Then its name, in French or English, accents and case aside
+  const name = (data.name ?? "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim()
+  if (/^(ossature renforcee|bone lacing)\b/.test(name)) return true
   const raw = data.system?.customEffects
   const effects = Array.isArray(raw) ? raw : raw && typeof raw === "object" ? Object.values(raw) : []
   const unarmed = e => e?.category === "weaponEffectTargets" && e.target === "system.itemsProperties.weapon.damageValue" &&
