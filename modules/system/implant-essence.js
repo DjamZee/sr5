@@ -106,14 +106,16 @@ export function hasAdapsine(items) {
  *   roundDownTenth: boolean, rejectedBy: string|null}} `gradeReduction`: taken off the grade's multiplier
  */
 export function implantEssenceEffects(items, augmentationType, {
-  underAdapsine = false, bundle = false
+  underAdapsine = false, bundle = false, reversibleEssence = false
 } = {
 }) {
   const family = implantFamily(augmentationType)
   const result = {
     multipliers: [], gradeReduction: 0, roundDownTenth: false, rejectedBy: null
   }
-  if (!family) return result
+  // A Tatouage de mana gris is neither cyberware nor bioware: "à toutes fins utiles", 0.1 per rating (Better Than Bad
+  // p. 140-141). Kept as cyberware for want of a category, it takes nothing from the body (decided with Isidore, 06/10)
+  if (!family || reversibleEssence) return result
   // Added to the grade's percentage: alphaware 0.8 becomes 0.7 (Chrome Flesh p. 165)
   if (underAdapsine && family === "cyberware") {
     result.gradeReduction = 0.1
@@ -178,9 +180,11 @@ export function essenceAfterPurchase(essence, items, lines, {
   const underAdapsine = hasAdapsine(items)
   for (const line of lines ?? []) {
     if (line?.type !== "itemAugmentation" || line.system?.isAccessory) continue
-    const grade = line.grade ?? line.system?.grade
+    // A Tatouage de mana gris costs the Essence of its data, whatever grade (Better Than Bad p. 141)
+    const fixed = line.system?.reversibleEssence === true
+    const grade = fixed ? "standard" : line.grade ?? line.system?.grade
     const effects = implantEssenceEffects(items, line.system?.type, {
-      underAdapsine
+      underAdapsine, reversibleEssence: fixed
     })
     const graded = SR5ShopGrades.essence(line.system, grade)
     const cost = implantEssence(graded, effects, SR5ShopGrades.row(grade).essence) * Math.max(1, Math.floor(Number(line.quantity) || 1))

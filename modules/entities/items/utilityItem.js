@@ -1215,7 +1215,10 @@ export class SR5_UtilityItem extends Actor {
     const bodyEffects = implantEssenceEffects(actor?.items ?? [], itemData.type, {
       underAdapsine: itemData.underAdapsine,
       bundle: itemData.augmentationBundle && essenceSettingOn(AUGMENTATION_BUNDLE_SETTING),
+      reversibleEssence: itemData.reversibleEssence,
     })
+    // A Tatouage de mana gris costs the Essence of its data, whatever its grade (Better Than Bad p. 141)
+    if (itemData.reversibleEssence) essenceMultiplier = 1
     for (const m of bodyEffects.multipliers) SR5_EntityHelpers.updateModifier(itemData.essenceCost, m.name, m.type, m.value, true, false)
     if (bodyEffects.gradeReduction) {
       essenceMultiplier = Math.max(0, Math.round((essenceMultiplier - bodyEffects.gradeReduction) * 100) / 100)

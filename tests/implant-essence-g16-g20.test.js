@@ -586,6 +586,45 @@ describe("G20 — Faille d'Essence (Chrome Flesh p. 74)", () => {
   })
 })
 
+describe("Tatouage de mana gris: the Essence of its data, nothing from the body (Better Than Bad p. 140-141)", () => {
+  const tattoo = (grade = "standard", extra = {
+  }) => implant("cyberware", 0.1, grade, {
+    reversibleEssence: true, ...extra
+  })
+  it("ignores Système sensible, Biocompatibilité, Adapsine, the grade and the lot", () => {
+    withSettings({
+      sr5AugmentationBundles: true
+    })
+    expect(onActor(tattoo(), [sensitive])).toBe(0.1)
+    expect(onActor(tattoo(), [bioCyber])).toBe(0.1)
+    expect(onActor(tattoo("standard", {
+      underAdapsine: true
+    }), [adapsine])).toBe(0.1)
+    expect(onActor(tattoo("alphaware"), [])).toBe(0.1)
+    expect(onActor(tattoo("used"), [sensitive, bioCyber])).toBe(0.1)
+    expect(onActor(tattoo("standard", {
+      augmentationBundle: true
+    }), [])).toBe(0.1)
+    // Without the mark, the same implant is cyberware
+    expect(onActor(implant("cyberware", 0.1), [sensitive])).toBe(0.2)
+  })
+  it("is never rejected, and the till counts it as its data", () => {
+    expect(implantEssenceEffects([sensitive], "cyberware", {
+      reversibleEssence: true
+    })).toEqual({
+      multipliers: [], gradeReduction: 0, roundDownTenth: false, rejectedBy: null
+    })
+    const line = {
+      type: "itemAugmentation", name: "Tatouage", grade: "alphaware", quantity: 1, system: {
+        type: "cyberware", grade: "standard", reversibleEssence: true, essenceCost: {
+          value: 0.1, base: 0.1
+        }
+      }
+    }
+    expect(essenceAfterPurchase(6, [sensitive, bioCyber, adapsine], [line]).essence).toBe(5.9)
+  })
+})
+
 describe("G20 — lots d'augmentations (Chrome Flesh p. 96)", () => {
   it("× 0.9 on a marked implant, with its world setting on only", () => {
     withSettings({

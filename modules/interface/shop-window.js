@@ -480,6 +480,10 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     const bodyEffects = new Map()
     const underAdapsine = !!buyer && hasAdapsine(buyer.items)
     const essenceFor = (entry, essence, grade) => {
+      // A Tatouage de mana gris costs the Essence of its data, whatever grade or body (Better Than Bad p. 141)
+      if (entry.type === 'itemAugmentation' && entry.system?.reversibleEssence === true && typeof essence === 'number') {
+        return SR5ShopGrades.essence(entry.system, 'standard')
+      }
       if (!buyer || entry.type !== 'itemAugmentation' || typeof essence !== 'number') return essence
       const kind = entry.system?.type
       if (!bodyEffects.has(kind)) bodyEffects.set(kind, implantEssenceEffects(buyer.items, kind, {
