@@ -457,6 +457,44 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
     })
   })
 
+  it('R6: ammunition found by its name is priced by the round, not by the box of the shelf', async () => {
+    // The shelf entry is a box of 10 rounds: its computed price is the box's (10 x 10 ¥)
+    vi.doMock('../modules/interface/shop-window.js', () => ({
+      SR5ShopWorldSource: {
+        index: async () => [{
+          uuid: 'Compendium.megapack.ammo.Item.e0', type: 'itemAmmunition', name: 'Balles E0-E0',
+          system: {
+            price: {
+              value: 100, base: 10
+            }
+          },
+        }],
+      },
+    }))
+    world({
+      shop: {
+        buyAll: true
+      },
+      sellerItems: [{
+        id: 'gun', name: 'Balles E0-E0', type: 'itemAmmunition',
+        system: {
+          storedIn: '', quantity: 10, price: {
+            value: 100, base: 10
+          }, availability: {
+            value: 0
+          }
+        },
+      }]
+    })
+    noHits()
+    await SR5ShopVendor.offer(offerFor([{
+      itemId: 'gun', quantity: 10
+    }]), player.id)
+    expect(messages.get('m0').flags.sr5vendorOffer.results[0]).toMatchObject({
+      listed: 10, origin: 'name'
+    })
+  })
+
   it('gives the contact rate to the vendor\'s client contacts only, at the Loyalty the gamemaster set', async () => {
     const forged = {
       id: 'c', name: 'vendor', type: 'itemContact', system: {

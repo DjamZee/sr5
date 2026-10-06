@@ -1034,7 +1034,11 @@ export class SR5ShopVendor {
     }
     const found = index.filter(entry => entry.type === item?.type && entry.name === item?.name)
       .map(entry => ({
-        entry, price: Number(entry.system?.price?.value ?? entry.system?.price?.base ?? 0) || 0
+        // A shelf's ammunition is a box (10 rounds in the compendiums), its computed price the box's: the
+        // base is the price of one round, which is what a seller's stack is counted in (R6, Anton)
+        entry, price: entry.type === 'itemAmmunition' && Number(entry.system?.price?.base) > 0 ?
+          Number(entry.system.price.base) :
+          Number(entry.system?.price?.value ?? entry.system?.price?.base ?? 0) || 0
       }))
       .filter(({
         price
