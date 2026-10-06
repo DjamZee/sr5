@@ -249,8 +249,25 @@ export class SR5_EffectArea {
     await jammed.createEmbeddedDocuments('ActiveEffect', [statusEffect])
   }    
 
-  //Add effect on a token moving inside a template
+  //The calls running for one token and one template, by "token.template"
+  static #templateEffectRuns = new Map()
+
+  //Add effect on a token moving inside a template. The template hook and the token hook can ask at the same moment
+  //(a template changed while a token moves): the calls for one token and one template run one after the other, so
+  //the second one finds the effect the first one created instead of creating it again (M1 D-M1-2)
   static async createTemplateEffect(token, template){
+    const key = `${token?.id}.${template?.id}`
+    const previous = SR5_EffectArea.#templateEffectRuns.get(key) ?? Promise.resolve()
+    const run = previous.catch(() => {}).then(() => SR5_EffectArea._createTemplateEffect(token, template))
+    SR5_EffectArea.#templateEffectRuns.set(key, run)
+    try {
+      return await run
+    } finally {
+      if (SR5_EffectArea.#templateEffectRuns.get(key) === run) SR5_EffectArea.#templateEffectRuns.delete(key)
+    }
+  }
+
+  static async _createTemplateEffect(token, template){
     let actor = await SR5_EntityHelpers.getRealActorFromID(token.id),
       templateData = template.flags.sr5,
       effect, customEffect, hasItem, sourceItem
