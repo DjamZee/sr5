@@ -718,7 +718,7 @@ describe('updateActorData', () => {
     item('bound', summoner, 'itemSpirit', {
     })
     const spirit = actor('spirit', {
-      creatorItemId: 'bound', services: {
+      creatorId: 'summoner', creatorItemId: 'bound', services: {
         value: 3
       }
     }, [])
@@ -736,6 +736,36 @@ describe('updateActorData', () => {
     await ask(2, 'stranger')
     expect(spirit.update).not.toHaveBeenCalled()
     await ask(2)
+    expect(spirit.update).toHaveBeenCalledTimes(1)
+  })
+  // l. 738: a duplicated character carries the same item ids
+  it("reads the summoner by the spirit's creator, not by a twin that carries the same item id", async () => {
+    const twin = actor('twin', {
+    }, ['stranger'])
+    item('bound', twin, 'itemSpirit', {
+    })
+    const summoner = actor('summoner', {
+    }, ['owner'])
+    item('bound', summoner, 'itemSpirit', {
+    })
+    const spirit = actor('spirit', {
+      creatorId: 'summoner', creatorItemId: 'bound', services: {
+        value: 3
+      }
+    }, [])
+    register(twin, summoner, spirit)
+    const ask = who => SR5_MiscellaneousHelpers._socketUpdateActorData({
+      data: {
+        actorId: 'spirit', use: 'spiritService', dataToUpdate: {
+          services: {
+            value: 2
+          }
+        }
+      }
+    }, who)
+    await ask('stranger')
+    expect(spirit.update).not.toHaveBeenCalled()
+    await ask('owner')
     expect(spirit.update).toHaveBeenCalledTimes(1)
   })
   // Zélia's review, B2: a Perception at 0 hits took the anti-tamper off

@@ -212,9 +212,11 @@ export class SR5_MiscellaneousHelpers {
     let allowed = false
     if (data.use === "spiritService") {
       //No card: the service is spent as the summoner's test is rolled. The sender must own the
-      //summoner, the actor holding the item this spirit was called from
-      const creatorId = actor.system?.creatorItemId
-      const summoner = creatorId ? game.actors.find(a => a.items.get(creatorId)) : null
+      //summoner, the actor holding the item this spirit was called from. Read by the spirit's creator:
+      //a duplicated character carries the same item ids
+      const creatorItemId = actor.system?.creatorItemId
+      const creator = creatorItemId ? SR5_EntityHelpers.getRealActorFromID(actor.system?.creatorId) : null
+      const summoner = creator?.items?.get(creatorItemId) ? creator : null
       allowed = !!summoner?.testUserPermission(sender, "OWNER") &&
         serviceSpentAllowed(changes, actor._source?.system?.services?.value)
     } else if (data.use === "maglock") {
