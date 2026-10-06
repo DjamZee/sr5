@@ -64,6 +64,9 @@ import {
 import {
   migrateNegotiationSkill
 } from "../../datamodels/common/negotiationMigration.js"
+import {
+  missingBaseDevice
+} from "./base-device.js"
 
 /**
  * Extend the base Actor class to implement additional logic specialized for Shadowrun 5.
@@ -392,6 +395,19 @@ export class SR5Actor extends Actor {
     }
 
     this.updateSource(createData)
+
+    // A device, drone or agent created by script without its base device (base-device.js)
+    const baseDevice = missingBaseDevice(this.type, this._source?.items)
+    if (baseDevice) {
+      const update = {
+        items: [...this._source.items, baseDevice]
+      }
+      if (!this._source.effects.some(e => e.statuses?.includes("matrixInit"))) {
+        const initiativeEffect = new CONFIG.ActiveEffect.documentClass(await _getSRStatusEffect("matrixInit"))
+        update.effects = [...this._source.effects, initiativeEffect.toObject()]
+      }
+      this.updateSource(update)
+    }
 
     // A storage on the map is one bag, wherever it is opened from: what is
     // taken through its token must leave the actor too, or picking it up
