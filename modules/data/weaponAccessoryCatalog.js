@@ -142,8 +142,16 @@ export const WEAPON_ACCESSORY_CATALOG = {
   reducedWeight:            {
     price: 0, slot: "", type: "modification" 
   },
+  // Red dot sight (Street Lethal p. 49): 750 nuyen, +1 Accuracy, not compatible with a smartlink, a laser sight, a
+  // holographic sight or any zoom. Its +1 Accuracy only counts at short and medium range, with +1 die at short range:
+  // the item preparation skips it and the attack adds it for the range chosen (weapon-accessory-rules.js)
   redDotSight:              {
-    price: 75, slot: "top", type: "accessory" 
+    price: 750, slot: "top", type: "accessory",
+    itemEffects: [
+      {
+        target: "system.accuracy", type: "value", value: 1, cumulative: false
+      },
+    ],
   },
   retractibleBayonet:       {
     price: 200, slot: "", type: "accessory" 
@@ -166,8 +174,14 @@ export const WEAPON_ACCESSORY_CATALOG = {
   tracker:                  {
     price: 150, slot: "", type: "accessory" 
   },
+  // Trigger removal (Hard Targets p. 182): +1 Accuracy, not cumulative with the other modifications that raise it
   triggerRemoval:           {
-    price: 50, slot: "", type: "modification" 
+    price: 50, slot: "", type: "modification",
+    itemEffects: [
+      {
+        target: "system.accuracy", type: "value", value: 1, cumulative: false
+      },
+    ],
   },
   trollAdaptation:          {
     price: 0, slot: "", type: "modification" 
@@ -204,7 +218,11 @@ export const WEAPON_ACCESSORY_CATALOG = {
     price: 600, slot: "underneath", type: "accessory" 
   },
   vintage:                  {
-    price: 0, slot: "", type: "trait" 
+    price: 0, slot: "", type: "trait"
+  },
+  // Laser weapon (Run & Gun p. 64): its DV falls with range and visibility (weapon-attack-rules.js)
+  laserWeapon:              {
+    price: 0, slot: "", type: "trait"
   },
   weaponCommlink:           {
     price: 200, slot: "", type: "accessory" 
@@ -299,11 +317,12 @@ export const WEAPON_ACCESSORY_CATALOG = {
     ],
   },
 
+  // Hidden arm slide (SR5 p. 434): "un modificateur de -1 à la Dissimulation de l'arme"
   hiddenArmSlide: {
     price: 350, slot: "", type: "accessory",
     itemEffects: [
       {
-        target: "system.concealment", type: "value", value: 1 
+        target: "system.concealment", type: "value", value: -1
       },
     ],
   },
@@ -359,13 +378,9 @@ export const WEAPON_ACCESSORY_CATALOG = {
     ],
   },
 
+  // Slide mount (Run & Gun p. 70): mounting an accessory becomes a Simple Action; it gives no recoil compensation
   slideMount: {
-    price: 500, slot: "", type: "accessory",
-    itemEffects: [
-      {
-        target: "system.recoilCompensation", type: "value", value: 1 
-      },
-    ],
+    price: 500, slot: "", type: "accessory"
   },
 
   stockRemoval: {

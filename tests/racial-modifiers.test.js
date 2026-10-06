@@ -164,6 +164,19 @@ describe('migrateLegacyBiographyKeys', () => {
     expect(source.biography.characterMetatype).toBeUndefined()
   })
 
+  // Albertine: an archetype of the Megapack, imported, came with an empty gender (the v12 sheet wrote characterGender)
+  it('moves the rest of the v12 biography, the gender included, over the empty current keys', () => {
+    const source = {
+      biography: {
+        gender: '', characterGender: 'female', age: '', characterAge: 34, characterSkin: 'mate', characterHeight: null
+      }
+    }
+    migrateLegacyBiographyKeys(source)
+    expect(source.biography).toEqual({
+      gender: 'female', age: 34, skin: 'mate', characterHeight: null
+    })
+  })
+
   it('leaves already-migrated and empty sources alone', () => {
     const source = {
       biography: {

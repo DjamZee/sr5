@@ -63,13 +63,13 @@ export default function ramming(rollData, actor){
 }
 
 //Current Speed of a vehicle, from its secondary propulsion when it is active
-function vehicleSpeed(vehicle){
+export function vehicleSpeed(vehicle){
   let attributes = vehicle.system.attributes
   if (vehicle.system.isSecondaryPropulsionActivate) return attributes.secondaryPropulsionSpeed?.augmented.value || 0
   return attributes.speed?.augmented.value || 0
 }
 
 //What tells a vehicle's locomotion, from its original item on the actor that created it
-function locomotionData(vehicle){
+export function locomotionData(vehicle){
   return SR5_ConverterHelpers.rammingLocomotionData(vehicle.system, (actorId, itemId) => game.actors.get(actorId)?.items.get(itemId))
 }

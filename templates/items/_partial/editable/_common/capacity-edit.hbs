@@ -37,6 +37,7 @@
 {{#if (eq system.isPlugged false)}}
 <li class="grid">
     <div class="col-5">{{localize 'SR5.ItemIsAnAccessory'}}{{localize 'SR5.Colons'}}</div>
-    <div class="col-1 SR-TextLeft"><input type="checkbox" name="system.isAccessory" data-dtype="Boolean" {{checked system.isAccessory}} /></div>
+    {{!-- On an implant the gamemaster's: an accessory costs no Essence (implant-register.js) --}}
+    <div class="col-1 SR-TextLeft"><input type="checkbox" name="system.isAccessory" data-dtype="Boolean" {{checked system.isAccessory}} {{#if (and (eq item.type 'itemAugmentation') (not userIsGM))}}disabled{{/if}} /></div>
 </li>
 {{/if}}

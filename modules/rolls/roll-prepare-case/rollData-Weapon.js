@@ -37,6 +37,12 @@ import {
 import {
   grapplingCalledShots, holdKindOn, clinchAttackPenalty, clinchCancelsReach, isHeldBy, isClinchFirearm
 } from "../roll-helpers/grapple-rules.js"
+import {
+  energyAuraApplies, LASER_TRAIT
+} from "../roll-helpers/weapon-attack-rules.js"
+import {
+  redDotSightWorks, scopeVision, nonCumulativeAccessoryAccuracy
+} from "../../entities/items/weapon-accessory-rules.js"
 
 //Add info for weapon Roll
 export default async function weapon(rollData, actor, item){
@@ -208,13 +214,25 @@ export default async function weapon(rollData, actor, item){
     }
   }
 
-  //Special case for Energy aura and melee weapon
-  if (actorData.specialProperties.energyAura){
+  //Energy aura (SR5 p. 397): only for a melee attack
+  if (actorData.specialProperties.energyAura && energyAuraApplies(itemData.category)){
     rollData.damage.base = itemData.damageValue.value + actorData.specialAttributes.magic.augmented.value
     rollData.damage.value = itemData.damageValue.value + actorData.specialAttributes.magic.augmented.value
     rollData.combat.armorPenetration = -actorData.specialAttributes.magic.augmented.value
     rollData.damage.element = actorData.specialProperties.energyAura
     if (actorData.specialProperties.energyAura !== "electricity") rollData.damage.type = "physical"
+  }
+
+  //What depends on the range the dialog picks: red dot sight (Street Lethal p. 49), laser weapon (Run & Gun p. 64)
+  if (itemData.category === "rangedWeapon") {
+    const smartlink = actor.type !== "actorDrone" && !!actorData.specialProperties?.smartlink?.value
+    //The sight's +1 Accuracy still competes with the other non-cumulative accessory bonuses (helpers.js updateModifier)
+    rollData.combat.redDotSight = {
+      works: redDotSightWorks(itemData, smartlink), accuracyAlready: nonCumulativeAccessoryAccuracy(itemData)
+    }
+    rollData.combat.laser = {
+      isLaser: hasWeaponTrait(itemData, LASER_TRAIT), damageModify: 0, visibility: rollData.combat.airVisibility ?? 0
+    }
   }
 
   // Aggravated Wounds (Howling Shadows p. 213): the critter's attacks leave boxes that count double for healing
@@ -364,6 +382,9 @@ async function handleTargetInfo(rollData, actor, item){
   //A flashlight lights where its own weapon points (Run & Gun p. 69): only this weapon's counts
   const weaponLight = SR5_UtilityItem.getWeaponLightCompensation(itemData, actor)
   const weaponLightCap = SR5_UtilityItem.getWeaponLightCap(itemData)
+  //So do the vision enhancements and the zoom of its scope (SR5 p. 434; arbitrage de DjamZ, 06/10)
+  const weaponVision = scopeVision(itemData, id => actor.items.get(id))
+  rollData.combat.scopeRangeMod = weaponVision.zoom ? -1 : 0
 
   //Handle Melee specifics
   if (itemData.category === "meleeWeapon") {
@@ -381,7 +402,7 @@ async function handleTargetInfo(rollData, actor, item){
       ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetIsTooFar"))
       return false
     }
-    sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, true, areaEffect, true, weaponLight, weaponLightCap)
+    sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, true, areaEffect, true, weaponLight, weaponLightCap, weaponVision)
     // Kept on the card for the defense to compare with (SR5 p. 188 option), before the option clears it here
     rollData.combat.environmentalMod = sceneEnvironmentalMod
     const targetMod = SR5_CombatHelpers.meleeEnvironmentalMod(SR5_CombatHelpers.environmentScene(), targetActor)
@@ -409,7 +430,9 @@ async function handleTargetInfo(rollData, actor, item){
       ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetIsTooFar"))
       return false
     }
-    const environmentalColumns = SR5_CombatHelpers.environmentalColumns(SR5_CombatHelpers.environmentScene(), actor.system, false, areaEffect, false, weaponLight, weaponLightCap)
+    const environmentalColumns = SR5_CombatHelpers.environmentalColumns(SR5_CombatHelpers.environmentScene(), actor.system, false, areaEffect, false, weaponLight, weaponLightCap, weaponVision)
+    //A laser loses DV to the particles in the air, whatever the shooter sees through (Run & Gun p. 64)
+    rollData.combat.airVisibility = SR5_CombatHelpers.airVisibilityRow(SR5_CombatHelpers.environmentScene(), actor, areaEffect)
     if (environmentalColumns) {
       // Range is an environmental modifier (SR5 p. 176): the roll dialog weighs the range line against these
       rollData.combat.environmentalColumns = environmentalColumns

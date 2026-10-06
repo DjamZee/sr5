@@ -192,6 +192,7 @@ SR5.drugs = {
   nanoScan                  : "SR5.DrugNanoScan",
   neostigmine               : "SR5.DrugNeostigmine",
   ondansetron               : "SR5.DrugOndansetron",
+  kamiPlus                  : "SR5.DrugKamiPlus",
 }
 
 // Drug qualities (Chrome Flesh p. 194)
@@ -1245,12 +1246,19 @@ SR5.ammunitionCaseType = {
 SR5.damageTypesShort = {
   stun                      : "SR5.DamageTypeStunShort",
   physical                  : "SR5.DamageTypePhysicalShort",
+  matrix                    : "SR5.DamageTypeMatrixShort",
   condition                 : "",
 }
 
 SR5.damageTypes = {
   stun                      : "SR5.DamageTypeStun",
   physical                  : "SR5.DamageTypePhysical",
+}
+
+// A weapon may also deal matrix damage: the DSP weapons (Street Lethal p. 57, roll-helpers/weapon-matrix-damage.js)
+SR5.weaponDamageTypes = {
+  ...SR5.damageTypes,
+  matrix                    : "SR5.DamageTypeMatrix",
 }
 
 // Données d'armes modifiables par un customEffect
@@ -1312,6 +1320,7 @@ SR5.weaponAccessories = {
   krimePack                 : "SR5.AccessoryKrimePack",
   krimeStunONet             : "SR5.AccessoryKrimeStunONet",
   laserSight                : "SR5.AccessoryLaserSight",
+  laserWeapon               : "SR5.AccessoryLaserWeapon",
   longbarrel                : "SR5.AccessoryLongbarrel",
   meleeHardening            : "SR5.AccessoryMeleeHardening",
   mountedCrossbow           : "SR5.AccessoryMountedCrossbow",
@@ -3112,8 +3121,9 @@ SR5.spiritBasePowersinsectQueen = {
   sapience                   : "SR5.SpiritPowerSapience",
   search                     : "SR5.SpiritPowerSearch",
   wealth                     : "SR5.SpiritPowerWealth",
+  // Her only weakness: Allergy (Insecticides, Severe); no Evanescence, every Queen/Mother is a free spirit
+  // (Grimoire des Ombres p. 100)
   allergyInsecticides        : "SR5.SpiritPowerAllergyInsecticides",
-  evanescence                : "SR5.SpiritPowerEvanescence",
 }
 
 SR5.spiritOptionalPowersinsectQueen = {
@@ -3538,6 +3548,9 @@ SR5.AllSpiritPowers = {
   hemoragy                   : "SR5.SpiritPowerHemoragy",
   hiveMind                   : "SR5.SpiritPowerHiveMind",
   immunity                   : "SR5.SpiritPowerImmunity",
+  // The necro spirits' own Immunity (Arcanes Interdites p. 50: normal weapons, pathogens, toxins), apart from
+  // the shedims' (Grimoire des Ombres p. 93: age, pathogens, toxins) that "immunity" gives
+  immunityNecro              : "SR5.SpiritPowerImmunityNecro",
   influence                  : "SR5.SpiritPowerInfluence",
   inhabitation               : "SR5.SpiritPowerInhabitation",
   innateSpell                : "SR5.SpiritPowerInnateSpell",

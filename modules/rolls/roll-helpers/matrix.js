@@ -41,6 +41,12 @@ import {
   SR5_CharacterUtility
 } from "../../entities/actors/utilityActor.js"
 
+//A warning, and false: nothing was written, the card's button stays
+function warned(key) {
+  ui.notifications.warn(game.i18n.localize(key))
+  return false
+}
+
 export class SR5_MatrixHelpers {
   //Get time spent on a matrix search
   static async getMatrixSearchDuration(cardData, netHits){
@@ -68,20 +74,36 @@ export class SR5_MatrixHelpers {
     * @param {Object} targetActor - The Target Actor who owns the deck/item
     * @param {Object} cardData - Message data
     * @param {Object} attacker - Actor who do the damage
+    * @param {string} button - The card's button that asked for it: relayed, the GM spends it once he writes the damage
+    * @returns {Promise<boolean|string>} true once the damage is written or told to the GM to write by hand; "relayed" when
+    *   asked of the active GM, who may refuse it, the button left for him to spend (Hyacinthe's review, D5); false when
+    *   nothing could be done, so that the card's button stays (Joachim's finding: no GM connected)
     */
-  static async applyDamageToDecK(targetActor, cardData, defender, defenderWin) {
+  static async applyDamageToDecK(targetActor, cardData, defender, defenderWin, button = "") {
     let damageValue = cardData.damage.matrix.value
     let targetItem
     if (cardData.target.itemUuid && !defenderWin) {
       targetItem = await fromUuid(cardData.target.itemUuid)
       //The aimed device was deleted since the attack: the damage must not fall on another device
-      if (!targetItem) return ui.notifications.warn(game.i18n.localize("SR5.WARN_MatrixDamageDeviceMissing"))
+      if (!targetItem) return warned("SR5.WARN_MatrixDamageDeviceMissing")
     }
     if (!targetItem) targetItem = targetActor.items.find((item) => item.type === "itemDevice" && item.system.isActive)
     //An AI outside any device only has its core condition monitor, which takes all its damage (Data Trails p. 161)
     if (!targetItem) {
-      if (targetActor.system.activeSpecialAttribute === "depth") return targetActor.takeDamage(cardData)
-      return
+      if (targetActor.system.activeSpecialAttribute === "depth") {
+        await targetActor.takeDamage(cardData)
+        return true
+      }
+      //No active device nor living persona item: the damage is written nowhere, the GM is told so (Anatole's matrix trial).
+      //A technomancer takes it as Stun (SR5 p. 230), to be written by hand
+      const content = game.i18n.format("SR5.WARN_MatrixDamageNowhere", {
+        name: targetActor.name, value: damageValue,
+      })
+      ui.notifications.warn(content)
+      await ChatMessage.create({
+        content: `<p>${foundry.utils.escapeHTML(content)}</p>`, whisper: ChatMessage.getWhisperRecipients("GM").map(u => u.id),
+      })
+      return true
     }
     let newItem = foundry.utils.duplicate(targetItem)
 
@@ -89,9 +111,14 @@ export class SR5_MatrixHelpers {
     //A Monad of the original strain takes matrix damage on its nanite swarm, as an AI on its device (Dark Terrors p. 88)
     let swarm = !!targetItem.id && originalStrainDevice(targetActor)?.id === targetItem.id
     if (!swarm && (targetItem.system.type === "livingPersona" || targetItem.system.type === "headcase")){
-      return targetActor.takeDamage(cardData)
+      await targetActor.takeDamage(cardData)
+      return true
     }
-        
+    //A player's browser only asks the active GM, who reads the card again and may refuse it (socket-guard.js): with no
+    //GM connected, nothing is written and the button stays
+    const relayed = !game.user?.isGM
+    if (relayed && !(game.users?.activeGM ?? game.users?.find?.(u => u.isGM && u.active))) return warned("SR5.WARN_NoActiveGM")
+
     if (targetActor.system.matrix.programs.virtualMachine.isActive) damageValue += 1
 
     //The size of the monitor is prepared (SR5 p. 228): the copy above holds the source, where it is 0,
@@ -123,7 +150,7 @@ export class SR5_MatrixHelpers {
       item: targetItem.uuid,
       info: newItem.system,
       //The GM reads this card again and bounds the boxes by it (socket-guard.js)
-      use: "matrixDamage", messageId: cardData.owner?.messageId,
+      use: "matrixDamage", messageId: cardData.owner?.messageId, button,
     })
     if (aiDissipated) {
       //A player who deals the damage cannot write on the AI: the GM lays the status, as for the device above
@@ -138,10 +165,15 @@ export class SR5_MatrixHelpers {
       })
     }
 
-    if (defender) ui.notifications.info(`${defender.name} ${game.i18n.format("SR5.INFO_ActorDoMatrixDamage", {
+    //Relayed, the damage is only asked for: the GM's browser may still refuse it
+    if (relayed) ui.notifications.info(game.i18n.format("SR5.INFO_MatrixDamageRelayed", {
+      name: targetActor.name, item: targetItem.name, value: damageValue
+    }))
+    else if (defender) ui.notifications.info(`${defender.name} ${game.i18n.format("SR5.INFO_ActorDoMatrixDamage", {
       damageValue: damageValue
-    })} ${targetActor.name}.`) 
+    })} ${targetActor.name}.`)
     else ui.notifications.info(`${targetActor.name} (${targetItem.name})${game.i18n.localize("SR5.Colons")} ${damageValue} ${game.i18n.localize("SR5.AppliedMatrixDamage")}.`)
+    return relayed ? "relayed" : true
   }
 
 

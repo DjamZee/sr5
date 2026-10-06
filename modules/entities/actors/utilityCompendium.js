@@ -7,6 +7,9 @@ import {
 import {
   SR5_SpiritTypes
 } from "../items/spirit-types.js"
+import {
+  isAlwaysActive
+} from "../items/always-active.js"
 
 export class SR5_CompendiumUtility extends Actor {
 
@@ -19,16 +22,33 @@ export class SR5_CompendiumUtility extends Actor {
   }
 
   // Compendiums used to build actors: each one can be chosen by the GM in the system settings.
-  // "auto" uses the sr5-compendiums module packs for the world language.
-  // fallbacks: in "auto" only, packs of other modules, read when their module is active, for the items
-  // sr5-compendiums lacks (matched on their systemEffect of category fallbackEffect); sr5-compendiums comes first.
+  // "auto" reads the Megapack first (megapack-sr5-foundry-vtt, every kind of item in one pack), then the
+  // sr5-compendiums packs of the world language as a fallback (arbitrage de DjamZ, séance H, H18).
+  // Items are recognized by their systemEffects (KEY_CATEGORIES), never by their name.
+  static MEGAPACK = {
+    module: "megapack-sr5-foundry-vtt", pack: "megapack-sr5-foundry-vtt.sr5-megapack-items"
+  }
+
+  // The systemEffect categories that name what an item gives an actor. A spirit or sprite power key is
+  // given once: the first item found with it wins, so a power the Megapack holds twice is not doubled.
+  static KEY_CATEGORIES = ["baseOwnItem", "spiritPower", "spritePower"]
+  static UNIQUE_CATEGORIES = ["spiritPower", "spritePower"]
+
+  // What the index must carry to choose the items without loading them
+  static INDEX_FIELDS = ["type", "system.systemEffects", "system.source"]
+
+  // The order in which a compendium's items are read, so that "first found" is never left to the order of the
+  // ids: the core rulebook first (a supplement's namesake gives way to it: Arme naturelle, SR5 p. 396, before
+  // Dard caudal, Howling Shadows p. 188), then by name, then by id
+  static inKeyOrder(index) {
+    const core = entry => (entry.system?.source === "core" ? 0 : 1)
+    return [...index].sort((a, b) => core(a) - core(b) ||
+      String(a.name ?? "").localeCompare(String(b.name ?? ""), "fr") || String(a._id).localeCompare(String(b._id)))
+  }
+
   static CATEGORIES = {
     creaturePowers: {
-      setting: "compendium.creaturePowers", itemType: "itemPower", defaults: ["powers-creatures"],
-      fallbacks: [{
-        module: "megapack-sr5-foundry-vtt", pack: "megapack-sr5-foundry-vtt.sr5-megapack-items"
-      }],
-      fallbackEffect: "spiritPower",
+      setting: "compendium.creaturePowers", itemType: "itemPower", defaults: ["powers-creatures"]
     },
     spritePowers: {
       setting: "compendium.spritePowers", itemType: "itemSpritePower", defaults: ["powers-sprites"]
@@ -71,86 +91,100 @@ export class SR5_CompendiumUtility extends Actor {
     }
   }
 
+  // The compendiums read for a category, in order: the first that provides a key wins
   static getCompendiumIds(categoryKey) {
     const category = SR5_CompendiumUtility.CATEGORIES[categoryKey]
     const chosen = game.settings.get("sr5", category.setting)
     if (chosen && chosen !== "auto") return [chosen]
+    const ids = []
+    const megapack = SR5_CompendiumUtility.MEGAPACK
+    if (game.modules?.get(megapack.module)?.active) ids.push(megapack.pack)
     const language = game.settings.get("core", "language")
     if (!language) SR5_SystemHelpers.srLog(0, "Could not determine core language used in getCompendiumIds()")
-    return category.defaults.map(name => `sr5-compendiums.${language}_${name}`)
+    return ids.concat(category.defaults.map(name => `sr5-compendiums.${language}_${name}`))
   }
 
   //Get the items of a category from its configured compendium(s)
   //Return an array of items
   static async getCategoryItems(categoryKey) {
+    // One actor creation asks for the same category several times: read the compendiums once
+    const cached = SR5_CompendiumUtility._compendiumCache.get(categoryKey)
+    if (cached && (Date.now() - cached.time < 10000)) return cached.documents
+
     const {
-      itemType, fallbacks, fallbackEffect
+      itemType
     } = SR5_CompendiumUtility.CATEGORIES[categoryKey]
-    const items = []
-    for (const compendiumId of SR5_CompendiumUtility.getCompendiumIds(categoryKey)) {
-      const documents = await SR5_CompendiumUtility.getCompendiumDocuments(compendiumId)
-      // A single compendium may hold every category: keep only the expected item type
-      items.push(...documents.filter(i => i.type === itemType))
-    }
-    if (fallbacks?.length && game.settings.get("sr5", SR5_CompendiumUtility.CATEGORIES[categoryKey].setting) === "auto") {
-      items.push(...await SR5_CompendiumUtility.getFallbackItems(items, fallbacks, itemType, fallbackEffect))
-    }
-    return items
-  }
-
-  //The systemEffect values of category effectCategory an item carries
-  static effectKeys(item, effectCategory) {
-    return Object.values(item.system?.systemEffects ?? {
-    }).filter(e => e?.category === effectCategory && e.value).map(e => e.value)
-  }
-
-  //Items of the fallback packs (active modules only) whose effect no item already found provides
-  static async getFallbackItems(items, fallbacks, itemType, effectCategory) {
-    const provided = new Set(items.flatMap(i => SR5_CompendiumUtility.effectKeys(i, effectCategory)))
-    const added = []
-    for (const fallback of fallbacks) {
-      const pack = game.packs.get(fallback.pack)
-      if (!game.modules.get(fallback.module)?.active || !pack) continue
-      // A large pack (the Megapack holds every kind of item): read its index, load only what is missing
-      const index = await pack.getIndex({
-        fields: ["type", "system.systemEffects"]
-      })
-      for (const entry of index) {
-        if (entry.type !== itemType) continue
-        const keys = SR5_CompendiumUtility.effectKeys(entry, effectCategory)
-        if (!keys.length || keys.some(k => provided.has(k))) continue
-        const item = await pack.getDocument(entry._id)
-        if (!item) continue
-        for (const k of keys) provided.add(k)
-        added.push(item)
-      }
-    }
-    return added
-  }
-
-  static async getCompendiumDocuments(compendiumId) {
-    const compendiumPack = game.packs.get(compendiumId)
-    if (!compendiumPack) {
-      SR5_SystemHelpers.srLog(1, `No compendium named '${compendiumId}' found, could not add items to actor`)
+    const ids = SR5_CompendiumUtility.getCompendiumIds(categoryKey)
+    const packs = ids.map(id => game.packs.get(id)).filter(Boolean)
+    if (!packs.length) {
       // Tell the GM once per session: without it, actors are created without their base items/powers
-      if (game.user.isGM && !SR5_CompendiumUtility._warnedMissingCompendiums.has(compendiumId)) {
-        SR5_CompendiumUtility._warnedMissingCompendiums.add(compendiumId)
-        ui.notifications.warn(game.i18n.format("SR5.WARN_MissingCompendium", {
-          name: compendiumId
-        }), {
-          permanent: true
-        })
-      }
+      SR5_SystemHelpers.srLog(1, `No compendium among '${ids.join(", ")}' found, could not add items to actor`)
+      SR5_CompendiumUtility.warnMissingCompendium(ids[0] ?? SR5_CompendiumUtility.MEGAPACK.pack)
       return []
     }
-    // The same compendium can back several categories during one actor creation: load it once
-    const cached = SR5_CompendiumUtility._compendiumCache.get(compendiumId)
-    if (cached && (Date.now() - cached.time < 10000)) return cached.documents
-    const documents = await compendiumPack.getDocuments()
-    SR5_CompendiumUtility._compendiumCache.set(compendiumId, {
+
+    const documents = []
+    const provided = new Set()
+    for (const [rank, pack] of packs.entries()) {
+      // The Megapack holds every kind of item: read the index, load only the items that give something
+      let index
+      try {
+        index = await pack.getIndex({
+          fields: SR5_CompendiumUtility.INDEX_FIELDS
+        })
+      } catch (err) {
+        SR5_SystemHelpers.srLog(1, `Compendium ${pack.collection} could not be indexed: ${err.message}`)
+        continue
+      }
+      // Chosen on the index, then loaded in one request: one request per item took 26 s for the 85 creature powers
+      // of a cold Megapack (measured), against half a second for the whole lot
+      const chosen = []
+      for (const entry of SR5_CompendiumUtility.inKeyOrder(index)) {
+        if (entry.type !== itemType) continue
+        const keys = SR5_CompendiumUtility.itemKeys(entry)
+        if (!keys.length) continue
+        // A fallback compendium only adds what the ones before it lack
+        if (rank > 0 && keys.every(k => provided.has(k))) continue
+        // A power is given once: first found wins
+        if (keys.some(k => provided.has(k) && SR5_CompendiumUtility.UNIQUE_CATEGORIES.includes(k.split(":")[0]))) continue
+        for (const k of keys) provided.add(k)
+        chosen.push(entry._id)
+      }
+      if (!chosen.length) continue
+      const loaded = new Map((await pack.getDocuments({
+        _id__in: chosen
+      })).map(d => [d.id ?? d._id, d]))
+      for (const id of chosen) if (loaded.has(id)) documents.push(loaded.get(id))
+    }
+    SR5_CompendiumUtility._compendiumCache.set(categoryKey, {
       time: Date.now(), documents
     })
     return documents
+  }
+
+  //The data of an item given to a new spirit or creature: a power that is always active (always-active.js)
+  //comes switched on (arbitrage de DjamZ, H39), so that its effects (Immunity, Armor, Toughness…) count without a click
+  static givenItem(item) {
+    const data = item.toObject(false)
+    if (isAlwaysActive(data)) data.system.isActive = true
+    return data
+  }
+
+  // The first spirit created after the world loads waited for the Megapack's index (more than 15 s, 4 900 items).
+  // The active GM reads it once on ready, in the background: nothing waits for it
+  static preloadIndexes() {
+    if (!game.user?.isGM || game.users?.activeGM?.id !== game.user.id) return null
+    const ids = new Set(Object.keys(SR5_CompendiumUtility.CATEGORIES).flatMap(k => SR5_CompendiumUtility.getCompendiumIds(k)))
+    const started = Date.now()
+    return Promise.all([...ids].map(id => game.packs.get(id)?.getIndex({
+      fields: SR5_CompendiumUtility.INDEX_FIELDS
+    }).catch(() => null))).then(() => SR5_SystemHelpers.srLog(3, `Reference compendiums indexed in ${Date.now() - started} ms`))
+  }
+
+  //The "category:value" keys an item (or an index entry) carries in its systemEffects
+  static itemKeys(item) {
+    return Object.values(item.system?.systemEffects ?? {
+    }).filter(e => SR5_CompendiumUtility.KEY_CATEGORIES.includes(e?.category) && e.value).map(e => `${e.category}:${e.value}`)
   }
 
   //Get base items
@@ -217,7 +251,7 @@ export class SR5_CompendiumUtility extends Actor {
       if (systemEffects.length) {
         for (let systemEffect of Object.values(systemEffects)) {
           if ((systemEffect.category === "baseOwnItem") && (systemEffect.value === actorType)) {
-            let iObject = i.toObject(false)
+            let iObject = SR5_CompendiumUtility.givenItem(i)
             baseItems.push(iObject)
           }
         }
@@ -257,7 +291,7 @@ export class SR5_CompendiumUtility extends Actor {
         if (systemEffects.length) {
           for (let systemEffect of Object.values(systemEffects)) {
             if ((systemEffect.category === "spiritPower") && (systemEffect.value === key)) {
-              let iObject = i.toObject(false)
+              let iObject = SR5_CompendiumUtility.givenItem(i)
               baseItems.push(iObject)
             }
           }
@@ -279,7 +313,7 @@ export class SR5_CompendiumUtility extends Actor {
           if (systemEffects.length) {
             for (let systemEffect of Object.values(systemEffects)) {
               if ((systemEffect.category === "spiritPower") && (systemEffect.value === value)) {
-                let iObject = i.toObject(false)
+                let iObject = SR5_CompendiumUtility.givenItem(i)
                 baseItems.push(iObject)
               }
             }
@@ -305,7 +339,7 @@ export class SR5_CompendiumUtility extends Actor {
           if (systemEffects.length) {
             for (let systemEffect of Object.values(systemEffects)) {
               if ((systemEffect.category === "spritePower") && (systemEffect.value === value)) {
-                let iObject = i.toObject(false)
+                let iObject = SR5_CompendiumUtility.givenItem(i)
                 baseItems.push(iObject)
               }
             }

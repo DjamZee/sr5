@@ -1,8 +1,15 @@
 import {
   SR5_PrepareRollHelper 
 } from "../roll-prepare-helpers.js"
+import {
+  trustedAttackCard
+} from "../roll-helpers/attack-card.js"
 
-export default function rammingDefense(rollData, actor, chatData){
+export default async function rammingDefense(rollData, actor, chatData){
+  //The ramming card read again: its speeds bounded by the vehicles' sheets, its hits by the driver's pool (attack-card.js)
+  chatData = await trustedAttackCard(chatData, actor)
+  if (!chatData) return
+
   //Determine title
   rollData.test.title = `${game.i18n.localize("SR5.PhysicalDefenseTest")} (${chatData.roll.hits})`
 

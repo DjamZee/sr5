@@ -175,18 +175,27 @@ export default async function defenseResultInfo(cardData, type){
       label = game.i18n.localize("SR5.EscapeEngulfSuccess")
       labelEnd = game.i18n.localize("SR5.EscapeEngulfFailed")
       successTestType = "SR-CardButtonHit endTest"
+      //An end label, as a failure has: the button had no key and was stored as "undefined" (Victoire's review)
+      key = "actionEnd"
       if (cardData.roll.hits < cardData.previousMessage.hits) {
-        let parentMessage = game.messages.find(m => m.flags.sr5data.chatCard.buttons.escapeEngulf && m.flags.sr5data.owner.actorId === cardData.owner.actorId)
+        //A plain chat message has no sr5data: it is skipped, it stopped the search (and the escape) before
+        let parentMessage = game.messages.find(m => m.flags?.sr5data?.chatCard?.buttons?.escapeEngulf && m.flags.sr5data.owner?.actorId === cardData.owner.actorId)
         if (parentMessage) prevData = parentMessage.flags?.sr5data
-        if (prevData.chatCard.buttons?.escapeEngulf) {
+        if (parentMessage && prevData?.chatCard?.buttons?.escapeEngulf) {
           SR5_RollMessage.updateChatButtonHelper(parentMessage.id, "escapeEngulf")
           SR5_RollMessage.updateChatButtonHelper(parentMessage.id, "resistanceCard")
         }
+        //Broken free (SR5 p. 399): the active GM forgets the attack card kept for the victim
+        const {
+          SR5_ActorHelper
+        } = await import("../../entities/actors/entityActor-helpers.js")
+        await SR5_ActorHelper.forgetEngulf(SR5_EntityHelpers.getRealActorFromID(cardData.owner.speakerId ?? cardData.owner.actorId, cardData.actorUuids))
       }
       break
   }
 
-  if (cardData.roll.hits < cardData.previousMessage.hits) cardData.chatCard.buttons[key] = SR5_RollMessage.generateChatButton(successTestType, key, label)
+  //An end label does nothing when clicked, as the failure's (its action stays empty)
+  if (cardData.roll.hits < cardData.previousMessage.hits) cardData.chatCard.buttons[key] = SR5_RollMessage.generateChatButton(successTestType, key === "actionEnd" ? failedKey : key, label)
   else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton(failedTestType, failedKey, labelEnd)
 
   //Shadow Spells p. 25: a sealed Mana Flux / Mana Ebb shifts the scene's background count, applied by the GM

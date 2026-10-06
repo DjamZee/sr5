@@ -4,6 +4,15 @@ import {
 
 export default class Migration {
 
+  // Modules whose compendiums are kept up to date at their source, for the current system: the migration
+  // leaves them alone instead of unlocking and rewriting them in each world (Megapack: arbitrage de DjamZ,
+  // séance H, H19)
+  static SOURCE_MAINTAINED_PACKAGES = ["sr5-compendiums", "megapack-sr5-foundry-vtt"]
+
+  static isMaintainedAtSource(pack) {
+    return Migration.SOURCE_MAINTAINED_PACKAGES.includes(pack?.metadata?.packageName)
+  }
+
   async migrateWorld() {
     ui.notifications.info(`Applying SR5 System Migration for version ${game.system.version}. Please be patient and do not close your game or shut down your server.`, {
       permanent: true 
@@ -27,7 +36,7 @@ export default class Migration {
 
     // Migrate World Compendium Packs
     for (let p of game.packs) {
-      if (p.metadata.packageName === "sr5-compendiums") continue
+      if (Migration.isMaintainedAtSource(p)) continue
       if (!["Actor", "Item", "Scene"].includes(p.documentName)) continue
       await this.migrateCompendium(p)
     }

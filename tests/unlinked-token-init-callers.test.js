@@ -67,8 +67,13 @@ describe('no change of initiative is sent with the id an unlinked token shares w
     'modules/rolls/roll-test-case/test-Resistance.js'
   ]
   for (const file of files) it(file, () => {
-    const calls = readFileSync(file, 'utf8').match(/changeInitInCombatHelper\([^,)]*/g) ?? []
+    const source = readFileSync(file, 'utf8')
+    const calls = source.match(/changeInitInCombatHelper\([^,)]*/g) ?? []
     expect(calls.length).toBeGreaterThan(0)
-    for (const call of calls) expect(call).toMatch(/fighterIdOf\(/)
+    // Either the fighter's id, or each id of initTargetsOfActor (every fighter of the actor, as in hooks/actor.js)
+    for (const call of calls) {
+      if (call === 'changeInitInCombatHelper(id') expect(source).toMatch(/for \(const id of SR5Combat\.initTargetsOfActor\(/)
+      else expect(call).toMatch(/fighterIdOf\(/)
+    }
   })
 })

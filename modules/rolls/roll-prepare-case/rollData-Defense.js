@@ -7,10 +7,16 @@ import {
 import {
   clinchCancelsReach, holdsTarget
 } from "../roll-helpers/grapple-rules.js"
+import {
+  trustedAttackCard
+} from "../roll-helpers/attack-card.js"
 
 //Add info for Defense Roll
 export default async function defense(rollData, actor, chatData){
   if (actor.type === "actorDevice" || actor.type === "actorSprite") return
+  //The attack card read again from the chat log: a player's card never sets the DV, AP or hits (attack-card.js)
+  chatData = await trustedAttackCard(chatData, actor)
+  if (!chatData) return
   let actorData = actor.system
 
   //Determine title

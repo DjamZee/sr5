@@ -8,6 +8,50 @@ import {
   mayDefend
 } from "../system/defense-once.js"
 import {
+  trustedDefenderDamage, cardStandsFor, damageReachable
+} from "./roll-helpers/matrix-card.js"
+import {
+  vouch, throughAndIntoData
+} from "./roll-helpers/attack-card.js"
+
+//The attack a second target of Through and Into defends against, from the chat log (attack-card.js), or null
+function throughAndIntoAttack(defenseMessageId, defenseData) {
+  const cardOf = id => SR5_MiscellaneousHelpers.cardOf(id)
+  return throughAndIntoData(defenseMessageId, defenseData, {
+    cardOf, messageOf: id => game.messages.get(id),
+  })
+}
+
+//The type of the biofeedback a winning defender deals back (as test-MatrixDefense.js works it out), read
+//on the attacker's sheet (his user mode) and the defender's (her programs); null when no biofeedback is dealt
+export function biofeedbackType(attacker, defender) {
+  const mode = attacker?.system?.matrix?.userMode
+  if (!mode || mode === "ar" || (attacker.type !== "actorPc" && attacker.type !== "actorGrunt")) return null
+  const programs = defender?.system?.matrix?.programs ?? {
+  }
+  if (!programs.biofeedback?.isActive && !programs.blackout?.isActive) return null
+  return programs.biofeedback?.isActive && mode === "hotsim" ? "physical" : "stun"
+}
+
+//Damage written here, or asked of the active GM ("relayed": he spends the button once he writes it, Hyacinthe's D5)
+async function takeDamageOrRelay(actor, damageData) {
+  const relayed = !game.user?.isGM && !actor.testUserPermission?.(game.user, 3)
+  await actor.takeDamage(damageData)
+  return relayed ? "relayed" : true
+}
+
+//The GM is told when a defender's card announced more damage than its dice give (matrix-card.js)
+async function tellDefenderDamage(claimed, value, attacker) {
+  if ((Number(claimed) || 0) === value) return
+  const text = game.i18n.format("SR5.MatrixCardDefenderDamage", {
+    name: attacker?.name ?? "?", value, claimed: Number(claimed) || 0
+  })
+  if (game.user?.isGM) ui.notifications.warn(text, {
+    permanent: true
+  })
+  await SR5_ActorHelper.whisperGM(text)
+}
+import {
   applyStabilization, applyDiagnosis, useMedkitSupplies
 } from "../system/bb-healing.js"
 import {
@@ -47,7 +91,7 @@ import {
   SR5_MatrixHelpers 
 } from "./roll-helpers/matrix.js"
 import {
-  isRolledByTarget, firstAidPatient, healPatient, healsDamage, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick, ownsCardSpeaker, defenseActorId, removedButtonKeys
+  isRolledByTarget, firstAidPatient, healPatient, healsDamage, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick, ownsCardSpeaker, defenseActorId, matrixDefenseActorId, TARGET_RESISTS_CARD, removedButtonKeys
 } from "./roll-helpers/cardRoller.js"
 import {
   SR5_CombatHelpers 
@@ -271,6 +315,11 @@ export class SR5_RollMessage {
     //Define actor for Opposed test or Non opposed tests
     if (action === "opposedTest") {
       actor = SR5_EntityHelpers.getRealActorFromID(opposedTestActorId(speaker))
+      //A matrix defense goes to the card's target, never to its author still selected (Anatole's matrix trial)
+      if (type === "matrixDefense") {
+        actor = SR5_EntityHelpers.getRealActorFromID(matrixDefenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids)
+        if (!actor) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoMatrixDefender"))
+      }
       // Matrix support actions (Kill Code p. 43-44) go to the targeted tokens: no selected token needed
       let supportAction = (type === "iAmTheFirewall" || type === "intervene")
       //A spell effect may go to a targeted token without any token selected (Heal, below)
@@ -294,9 +343,15 @@ export class SR5_RollMessage {
         actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids)
         if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest("defense", null, messageData)
         break
-      case "defenseThroughAndInto":
-        if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest("defense", null, messageData.originalAttackMessage)
+      case "defenseThroughAndInto": {
+        //Through and Into (Run & Gun p. 131): the second target defends against the attack card itself, read again from
+        //the chat log, never against the copy a defense card carries (Apollinaire's review, D2). The defense card must
+        //stand for its first target, and the attack be one, with this called shot
+        const attackData = throughAndIntoAttack(messageId, messageData)
+        if (!attackData) return ui.notifications.warn(game.i18n.localize("SR5.ResistanceCardRefused"))
+        if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest("defense", null, attackData)
         break
+      }
       case "matrixDefense":
         if (!await mayDefend(type, messageId, messageData, actor)) break
         if ((messageData.test.typeSub === "dataSpike" || 
@@ -344,6 +399,9 @@ export class SR5_RollMessage {
       case "matrixResistance":
       case "vehicleTest":
       case "resistanceToxin":
+        //The caster selected does not resist their own spell, complex form or power: the card's target does, as for a weapon (N93, MESURES-M7 D3).
+        //Not for an area spell: a caster caught in their own area resists it
+        if (TARGET_RESISTS_CARD.includes(type) && messageData.magic?.spell?.range !== "area") actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids) ?? actor
         //A defense among them: once per target and attack (system/defense-once.js)
         if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest(type, null, messageData)
         break
@@ -597,28 +655,62 @@ export class SR5_RollMessage {
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       }
-      case "defenderDoMatrixDamage":
+      case "defenderDoMatrixDamage": {
+        //The boxes the defender's card deals back, its net hits counted again on both cards (matrix-card.js)
+        const value = await trustedDefenderDamage(messageId, messageData.damage.matrix.value)
+        if (!value) return ui.notifications.warn(game.i18n.localize(value === null ? "SR5.MatrixCardRefused" : "SR5.MatrixCardNoDamage"))
+        if (!damageReachable(originalActionActor)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActiveGM"))
+        await tellDefenderDamage(messageData.damage.matrix.value, value, originalActionActor)
+        const damageData = foundry.utils.deepClone(messageData)
+        damageData.damage.matrix.value = value
+        //Relayed to the GM, the button is his to spend once he writes the damage: a refusal leaves it (Hyacinthe's D5)
+        damageData.relayButton = type
+        let done = true
         if (originalActionActor.type === "actorPc" || originalActionActor.type === "actorGrunt"){
           //A living persona or a Lockdown head case takes it as Stun there, the swarm of an original strain Monad on itself
-          await SR5_MatrixHelpers.applyDamageToDecK(originalActionActor, messageData, actor, true)
-        } else originalActionActor.takeDamage(messageData)
-        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+          done = await SR5_MatrixHelpers.applyDamageToDecK(originalActionActor, damageData, actor, true, type)
+        } else done = await takeDamageOrRelay(originalActionActor, damageData)
+        if (done === true) SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
-      case "takeMatrixDamage":
-        if (actor.type === "actorPc" || actor.type === "actorGrunt") await SR5_MatrixHelpers.applyDamageToDecK(actor, messageData)
-        else actor.takeDamage(messageData)
+      }
+      case "takeMatrixDamage": {
+        //Only the actor the resistance was rolled for takes it, from a card a GM or one of its owners wrote (matrix-card.js)
+        if (!(await cardStandsFor(messageId, actor))) return ui.notifications.warn(game.i18n.localize("SR5.ResistanceCardRefused"))
+        if (!damageReachable(actor)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActiveGM"))
+        let done = true
+        const damageData = foundry.utils.deepClone(messageData)
+        damageData.relayButton = type
+        if (actor.type === "actorPc" || actor.type === "actorGrunt") done = await SR5_MatrixHelpers.applyDamageToDecK(actor, damageData, null, false, type)
+        else done = await takeDamageOrRelay(actor, damageData)
+        if (done !== true) break
         //Special case for Derezz Complex Form.
         if (messageData.test.typeSub === "derezz") SR5_MatrixHelpers.applyDerezzEffect(messageData, originalActionActor, actor)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
-      case "blueGooExplosion":                
+      }
+      case "blueGooExplosion":
         actor.rollTest("iceAttack", null, messageData)
         break
-      case "defenderDoBiofeedbackDamage":
-        originalActionActor.rollTest("resistanceCard", null, messageData)
+      case "defenderDoBiofeedbackDamage": {
+        //Biofeedback deals the defender's net hits (SR5 p. 232), counted again on both cards (matrix-card.js)
+        const value = await trustedDefenderDamage(messageId, messageData.damage.value)
+        if (!value) return ui.notifications.warn(game.i18n.localize(value === null ? "SR5.MatrixCardRefused" : "SR5.MatrixCardNoDamage"))
+        //Its type read on the sheets, never on the card (Hyacinthe's limit 3, test-MatrixDefense.js): only against an
+        //attacker in VR, with the defender's Biofeedback or Blackout running; Physical for Biofeedback against hot sim
+        const type = biofeedbackType(originalActionActor, actor)
+        if (!type) return ui.notifications.warn(game.i18n.localize("SR5.MatrixCardRefused"))
+        await tellDefenderDamage(messageData.damage.value, value, originalActionActor)
+        const damageData = foundry.utils.deepClone(messageData)
+        damageData.damage.value = value
+        damageData.damage.base = value
+        damageData.damage.type = type
+        originalActionActor.rollTest("resistanceCard", null, vouch(damageData))
         break
+      }
       case "attackerDoBiofeedbackDamage":
         if (actor.type === "actorDrone") actor = SR5_EntityHelpers.getRealActorFromID(actor.system.vehicleOwner.id)
+        //Resisted by the one whose resistance card it is (or the rigger of that drone), from a card a GM or an owner wrote
+        if (actor && !(await cardStandsFor(messageId, actor))) return ui.notifications.warn(game.i18n.localize("SR5.ResistanceCardRefused"))
         if (actor) actor.rollTest("resistanceCard", null, messageData)
         break
       case "scatter":
@@ -775,6 +867,9 @@ export class SR5_RollMessage {
         break
       case "decreaseReach":
       case "decreaseAccuracy":
+        //Only on the weapon of the actor the resistance was rolled for, from a card a GM or an owner wrote (matrix-card.js)
+        if (!(await cardStandsFor(messageId, SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId, messageData.actorUuids)))) return ui.notifications.warn(game.i18n.localize("SR5.ResistanceCardRefused"))
+        if (messageData.target.itemUuid && fromUuidSync(messageData.target.itemUuid)?.parent?.id !== SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId, messageData.actorUuids)?.id) return ui.notifications.warn(game.i18n.localize("SR5.ResistanceCardRefused"))
         await SR5_ThirdPartyHelpers.applyEffectToItem(messageData, type)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
@@ -846,6 +941,9 @@ export class SR5_RollMessage {
 
     switch (buttonToUpdate) {
       case "damage":
+        //An engulf (earth, water, fire) applied at its first phase: the active GM keeps the attack card for the victim,
+        //which the following phases read (SR5 p. 399, Victoire's review)
+        if (messageData.damage?.isContinuous && messageData.test?.typeSub !== "continuousDamage") await SR5_ActorHelper.keepEngulfFirstPhase(messageData)
         if (messageData.combat.calledShot.name === "splittingDamage") {
           if (messageData.damage.splittedTwo){
             messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.damage.splittedOne}${game.i18n.localize('SR5.DamageTypeStunShort')} & ${messageData.damage.splittedTwo}${game.i18n.localize('SR5.DamageTypePhysicalShort')} ${game.i18n.localize("SR5.AppliedDamage")}`)
@@ -936,9 +1034,12 @@ export class SR5_RollMessage {
         break
       case "toxinEffect":
         if (messageData.damage.toxin.type === "airEngulf"){
-          //Generate Resistance chat button
-          let label = `${game.i18n.localize("SR5.TakeOnDamageShort")} ${game.i18n.localize("SR5.DamageValueShort")}${game.i18n.localize("SR5.Colons")} ${messageData.damage.base}${game.i18n.localize(SR5.damageTypesShort[messageData.damage.type])}`
-          if (messageData.combat.armorPenetration) label += ` / ${game.i18n.localize("SR5.ArmorPenetrationShort")}${game.i18n.localize("SR5.Colons")} ${messageData.combat.armorPenetration}`
+          //Generate Resistance chat button: the damage is worked out on the engulfing spirit, never read on this card (Ivo).
+          //The first phase keeps the attack card in the active GM's ledger, for the victim (before the defense card is
+          //deleted just below); a following phase reads it there (Victoire's review)
+          const engulf = await SR5_ActorHelper.engulfDamageOf(await SR5_ActorHelper.keepEngulfFirstPhase(messageData))
+          let label = `${game.i18n.localize("SR5.TakeOnDamageShort")} ${game.i18n.localize("SR5.DamageValueShort")}${game.i18n.localize("SR5.Colons")} ${engulf ? `${engulf.value}${game.i18n.localize(SR5.damageTypesShort[engulf.type])}` : "?"}`
+          //No AP shown: armor does not protect against an air engulf, its −Magic only weighs on gas masks (SR5 p. 399, 410)
           messageData.chatCard.buttons.resistanceCard = SR5_RollMessage.generateChatButton("nonOpposedTest","resistanceCard",label)
           messageData.damage.resistanceType = "physicalDamage"
           let oldMessage = game.messages.get(messageData.previousMessage.messageId)

@@ -294,8 +294,14 @@ import {
   registerRunningMovementActions, createRunningTokenRuler, runningStatusEffect
 } from "../system/running.js"
 import {
+  agilityZeroStatusEffect
+} from "../system/agility-zero.js"
+import {
   convertMentorQualities, revertMentorConversion
 } from "../entities/items/mentor-conversion.js"
+import {
+  activateAutomaticPowers
+} from "../entities/items/always-active-macro.js"
 
 export async function sr5HookInit() {
   SR5_SystemHelpers.registerSystemSettings()
@@ -334,6 +340,8 @@ export async function sr5HookInit() {
   if (SR5_GrappleHelpers.isActive()) CONFIG.statusEffects.push(...SR5_GrappleHelpers.statusEffects())
   //Running (SR5 p. 163-164): the "running" status, "Course" and "Sprint" in the movement selector, a ruler colored by gait
   CONFIG.statusEffects.push(runningStatusEffect)
+  //Agility brought to 0 (séance H, H8): "immobilized", laid and taken off by the active gamemaster (system/agility-zero.js)
+  CONFIG.statusEffects.push(agilityZeroStatusEffect)
   registerRunningMovementActions(CONFIG.Token.movement)
   CONFIG.Token.rulerClass = createRunningTokenRuler(CONFIG.Token.rulerClass)
   sr5ExtendJournalHeadingLevels()
@@ -360,6 +368,8 @@ export async function sr5HookInit() {
     // GM macro: old-style Mentor Spirit qualities -> quality linked to a mentor item (SR5 p. 76), and back
     convertMentorQualities,
     revertMentorConversion,
+    // GM macro: switch on the always active powers of the sheets made before (SR5 p. 396, H39)
+    activateAutomaticPowers,
   }
 
   // Register DataModels

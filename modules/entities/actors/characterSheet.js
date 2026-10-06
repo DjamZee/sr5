@@ -1,4 +1,7 @@
 import {
+  isAlwaysActive
+} from "../items/always-active.js"
+import {
   ActorSheetSR5
 } from "./baseSheet.js"
 import {
@@ -28,6 +31,9 @@ import {
 import {
   SR5FactionsApp
 } from "../../interface/factions-app.js"
+import {
+  clearEssenceHole
+} from "../../system/essence-hole.js"
 
 /**
  * An Actor sheet for player character type actors in the Shadowrun 5 system.
@@ -63,6 +69,10 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     actions: {
       // Faction Reputation, gamemaster's window (Cutting Aces p. 156)
       openFactions: () => SR5FactionsApp.open(),
+      // Essence lost to a removed implant (SR5 p. 53): the gamemaster gives it back when the removal was a mistake
+      clearEssenceHole: function () {
+        return clearEssenceHole(this.actor)
+      },
     },
   }
 
@@ -89,6 +99,8 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     // Faction Reputation (Cutting Aces p. 157): read here, written by the gamemaster's window only
     context.factionStanding = SR5FactionRegistry.standing(this.actor.id)
     context.isGM = game.user.isGM
+    // Faille d'Essence (Chrome Flesh p. 74): derived, so not in the plain copy of the actor
+    context.essenceHole = this.actor.system.essence?.hole ?? 0
     // Spirit Domination (Forbidden Arcana p. 176), optional rule: the leash toggle of the summoned spirits
     context.leashRule = game.settings.get("sr5", "spiritLeash")
 
@@ -370,28 +382,13 @@ export class SR5ActorSheet extends ActorSheetSR5 {
         }
         return super._onDropItemCreate(itemData)
       case "itemDevice":
-        for (let i of this.actor.items){
-          if (i.type === "itemDevice" && i.system.isActive) {
-            return super._onDropItemCreate(itemData)
-          }
-        }
-        itemData.system.isActive = true
+        this._activeUnlessOneIs(itemData, i => i.type === "itemDevice")
         return super._onDropItemCreate(itemData)
       case "itemArmor":
-        for (let i of this.actor.items){
-          if (i.type === "itemArmor" && i.system.isActive) {
-            return super._onDropItemCreate(itemData)
-          }
-        }
-        itemData.system.isActive = true
+        this._activeUnlessOneIs(itemData, i => i.type === "itemArmor")
         return super._onDropItemCreate(itemData)
       case "itemWeapon":
-        for (let i of this.actor.items){
-          if (i.type === "itemWeapon" && i.system.isActive && (i.system.category === itemData.system.category)) {
-            return super._onDropItemCreate(itemData)
-          }
-        }
-        itemData.system.isActive = true
+        this._activeUnlessOneIs(itemData, i => i.type === "itemWeapon" && i.system.category === itemData.system.category)
         return super._onDropItemCreate(itemData)
       case "itemFocus":
       case "itemAugmentation":
@@ -402,7 +399,7 @@ export class SR5ActorSheet extends ActorSheetSR5 {
       case "itemAdeptPower":
       case "itemPower":
       case "itemMartialArt" :
-        if (itemData.system.actionType === "permanent") itemData.system.isActive = true
+        if (isAlwaysActive(itemData)) itemData.system.isActive = true
         return super._onDropItemCreate(itemData)
       case "itemVehicleMod":
         return ui.notifications.info(game.i18n.localize('SR5.INFO_ForbiddenItemType'))

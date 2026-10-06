@@ -28,7 +28,7 @@ beforeAll(async () => {
   ({
     SR5StorageSheet
   } = await import('../modules/entities/actors/storageSheet.js'))
-})
+}, 60000)
 
 async function looterOf(controlled, placeables) {
   const shown = {

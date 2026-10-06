@@ -48,11 +48,17 @@ beforeEach(() => {
 const cram = (extra = {
 }) => ({
   phase: "rise", isActive: true, wirelessTurnedOn: false, interact: true,
+  //The damage is read off the drug key (drug-damage.js)
+  systemEffects: {
+    0: {
+      category: "drug", value: extra.name ?? "cram"
+    }
+  },
   onUse: {
     duration: "8 SR5.Hours", contrecoup: ""
   },
   handleShot: {
-    name: "cram", duration: 8, durationType: "hour", unresistedStunDamage: 6, ...extra
+    name: "cram", duration: 8, durationType: "hour", ...extra
   },
   customEffects: {
   },
@@ -108,7 +114,7 @@ describe("the crash of the Cram", () => {
   })
   it("a resisted crash (Hurlg) is Physical too after it", async () => {
     const actor = owner(), data = cram({
-      unresistedStunDamage: 0, resistedStunDamage: 9, crashPhysical: true
+      name: "hurlg", crashPhysical: true
     })
     await startDrugCrash(data, actor)
     expect(actor.rollTest.mock.calls[0][2].damage).toMatchObject({

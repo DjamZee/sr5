@@ -1,6 +1,9 @@
 import {
-  hasWeaponTrait, capBallReloadStep, CAP_BALL_STEPS
+  hasWeaponTrait, capBallReloadStep, CAP_BALL_STEPS, firearmCommandIsFree
 } from './weaponTraits.js'
+import {
+  accessoryCapacity, capacityTaken
+} from './weapon-accessory-rules.js'
 import {
   cleanCreatedSource
 } from "../../migration-source-modifiers.js"
@@ -8,8 +11,11 @@ import {
   SR5_UtilityItem
 } from "./utilityItem.js"
 import {
-  screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED
+  screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED, installationFlags, GM_ONLY_FIELDS
 } from "../../system/implant-essence.js"
+import {
+  reservedChangedBy
+} from "../../system/reserved-fields.js"
 import {
   SR5_CharacterUtility 
 } from "../actors/utilityActor.js"
@@ -85,12 +91,32 @@ export class SR5Item extends Item {
     await super._preCreate(data, options, user)
     // An item exported prepared, or dragged from a prepared sheet, arrives without its computed modifiers
     cleanCreatedSource(this)
+    // Chrome Flesh (séance G, G16, G19): Adapsine and Prototype de transhumain read on the body at the installation
+    if (this.type === "itemAugmentation" && this.parent instanceof Actor) {
+      const flags = installationFlags(this.parent, this.system, {
+        isGM: game.user.isGM, creation: game.settings.get("sr5", "sr5ShopCreationMode") === true
+      })
+      this.updateSource(Object.fromEntries(Object.entries(flags).map(([key, value]) => [`system.${key}`, value])))
+    } else if (!game.user.isGM && this.type === "itemQuality") this.updateSource({
+      "system.transhumanEssence": 1
+    })
     const defaultImg = `systems/sr5/assets/img/items/${data.type}.svg`
     if (!data.img || data.img === "icons/svg/item-bag.svg") {
       this.updateSource({
         img: defaultImg 
       })
     }
+  }
+
+  async _preUpdate(changes, options, user) {
+    // Chrome Flesh (séance G): the Adapsine box, the lot and Prototype de transhumain's counter are the gamemaster's.
+    // Read after the merge, every form of update counts; the whole update is refused. The active GM checks again
+    // what gets through (implant-register.js)
+    if (!game.user.isGM && reservedChangedBy(this._source, changes, GM_ONLY_FIELDS[this.type], options).length) {
+      ui.notifications?.warn(game.i18n.localize("SR5.WARN_GMOnlyField"))
+      return false
+    }
+    return super._preUpdate(changes, options, user)
   }
 
   prepareData() {
@@ -115,6 +141,11 @@ export class SR5Item extends Item {
         if (itemData.ammunition.value > itemData.ammunition.max) itemData.ammunition.value = itemData.ammunition.max
         //A weapon accessory left marked plugged on no weapon can be mounted again
         if (this.actor && itemData.isAccessory) itemData.isPlugged = !!SR5_UtilityItem.accessoryHost(item.id, this.actor)
+        //Capacity for vision enhancements and what the mounted ones take (SR5 p. 434-435, 447), for the sheets
+        if (itemData.category === "weaponAccessory") {
+          itemData.weaponAccessory.capacityTotal = accessoryCapacity(item)
+          itemData.weaponAccessory.capacityUsed = capacityTaken(itemData.weaponAccessory.visionEnhancements)
+        }
         if (itemData.category === "meleeWeapon" && owner){
           SR5_UtilityItem._checkIfWeaponIsFocus(this, owner)
           if (itemData.isLinkedToFocus) SR5_UtilityItem._handleWeaponFocus(item, owner)
@@ -179,7 +210,8 @@ export class SR5Item extends Item {
       case "itemArmor":
       case "itemGear":
         if (item.type === "itemGear"){
-          if (Object.keys(itemData.systemEffects).length) SR5_UtilityItem.applyItemEffects(item)
+          //Its item effects too: read only behind a system effect, one on the matrix monitor of a plain gear was lost
+          if (Object.keys(itemData.systemEffects).length || Object.keys(itemData.itemEffects).length) SR5_UtilityItem.applyItemEffects(item)
         }
         if (item.type === "itemArmor"){ 
           if (Object.keys(itemData.itemEffects).length) SR5_UtilityItem.applyItemEffects(item)
@@ -605,7 +637,8 @@ export class SR5Item extends Item {
           break
         case "replace":
           if (weaponData.ammunition.casing === "clip") {
-            if (weaponData.isWireless && (weaponData.accessory.find(a => a.name === "smartgunSystemInternal" || a.name === "smartgunSystemExternal")) && (actor.system.specialProperties.smartlink.value > 0)){
+            //SR5 p. 427 and 435: a wireless firearm and a DNI eject the clip as a free action (decision H21)
+            if (firearmCommandIsFree(weaponData, actor, game.settings.get("sr5", "sr5WifiRequiresDNI"))){
               action = [{
                 type: "free", value: 1, source: "removeClip"
               }, {
@@ -635,7 +668,7 @@ export class SR5Item extends Item {
           break
         case "remove":
           if (weaponData.ammunition.casing === "clip") {
-            if (weaponData.isWireless && (weaponData.accessory.find(a => a.name === "smartgunSystemInternal" || a.name === "smartgunSystemExternal")) && (actor.system.specialProperties.smartlink.value > 0)) action = [{
+            if (firearmCommandIsFree(weaponData, actor, game.settings.get("sr5", "sr5WifiRequiresDNI"))) action = [{
               type: "free", value: 1, source: "removeClip"
             }]
             else action = [{

@@ -74,8 +74,16 @@ describe("Système sensible (SR5 p. 89)", () => {
     expect(implantEssenceEffects([sensitive], "culturedBioware").rejectedBy).toBe("Système sensible")
     expect(implantEssenceEffects([sensitive], "cyberware").rejectedBy).toBe(null)
   })
-  it("does nothing while the quality is inactive", () => {
-    expect(onActor(implant("cyberware", 2), [quality("Système sensible", "doubleEssenceCost", false)])).toBe(2)
+  it("acts while on the sheet, active or not; not from a storage", () => {
+    expect(onActor(implant("cyberware", 2), [quality("Système sensible", "doubleEssenceCost", false)])).toBe(4)
+    expect(implantEssenceEffects([quality("Système sensible", "doubleEssenceCost", false)], "bioware").rejectedBy)
+      .toBe("Système sensible")
+    const stored = quality("Système sensible", "doubleEssenceCost")
+    stored.system.storedIn = "coffre"
+    expect(onActor(implant("cyberware", 2), [stored])).toBe(2)
+  })
+  it("Biocompatibilité acts without its box ticked too", () => {
+    expect(onActor(implant("cyberware", 2), [quality("Biocompatibilité (cyberware)", "biocompatibilityCyberware", false)])).toBe(1.8)
   })
 })
 

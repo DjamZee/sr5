@@ -134,6 +134,37 @@ describe("The candidates of the repair window", () => {
     })).toEqual([])
   })
 
+  // Barthélemy, measured: the Megapack carries the contacts of fr_contacts with the same ids and names. With
+  // both modules, the Megapack answers (arbitrage de DjamZ, séance H, H18), whatever the order of the packs
+  it("prefers the Megapack's twin to sr5-compendiums', by id and by name", async () => {
+    const coder = (uuid, value) => doc(uuid, "itemContact", "Codeuse folle boutonneuse", negotiation(value))
+    const frCoder = coder("Compendium.sr5-compendiums.fr_contacts.Item.coder", 0)
+    const mpCoder = coder("Compendium.megapack-sr5-foundry-vtt.sr5-megapack-items.Item.coder", 2)
+    const packOf = (packageName, d) => ({
+      documentName: "Item", metadata: {
+        packageName
+      },
+      getIndex: async () => new Map([["coder", {
+        _id: "coder", type: "itemContact", name: d.name
+      }]]),
+      getDocument: async id => (id === "coder" ? d : null),
+    })
+    const itemPacks = [packOf("sr5-compendiums", frCoder), packOf("megapack-sr5-foundry-vtt", mpCoder)]
+    const dropped = doc("Actor.pc.Item.coder", "itemContact", "Codeuse folle boutonneuse", negotiation(0), from(STALE))
+    const second = doc("Actor.pc.Item.newId", "itemContact", "Codeuse folle boutonneuse", negotiation(0), from(STALE))
+    const pc = doc("Actor.pc", "actorPc", "Runner", negotiation(3), {
+      items: [dropped, second]
+    })
+    const found = await SR5NegotiationRepair.findCandidates({
+      actors: [pc], items: [], resolve, itemPacks, applied: {
+      }
+    })
+    expect(found.map(c => [c.uuid, c.value, c.source])).toEqual([
+      ["Actor.pc.Item.coder", 2, mpCoder.uuid],
+      ["Actor.pc.Item.newId", 2, mpCoder.uuid],
+    ])
+  })
+
   it("does not offer again a sheet already corrected, and keeps offering the others", async () => {
     const face = doc("Actor.face", "actorPc", "Face", negotiation(0), from("Compendium.mp.actors.Actor.face"))
     const dealer = doc("Item.dealer", "itemContact", "Vendeur d'armes", negotiation(0), from("Compendium.sr5.fr_contacts.Item.dealer"))

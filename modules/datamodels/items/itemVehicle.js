@@ -115,6 +115,10 @@ export class sr5ItemVehicleDataModel extends foundry.abstract.TypeDataModel {
         isSecondaryPropulsion: new fields.BooleanField({
           initial: false
         }),
+        //The drone sheet's "secondary propulsion activated" box, kept while the drone is recalled
+        isActivated: new fields.BooleanField({
+          initial: false
+        }),
         type: new fields.StringField({
           initial: ''
         }),

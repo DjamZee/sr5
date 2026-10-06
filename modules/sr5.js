@@ -34,6 +34,12 @@ import {
   onMoveToken, clearRunning
 } from './system/running.js'
 import {
+  registerAgilityZeroHooks
+} from './system/agility-zero.js'
+import {
+  onBlightCreated, sweepBlight
+} from './system/blight-strikes.js'
+import {
   onSprintCard
 } from './system/sprint-fatigue.js'
 import {
@@ -104,6 +110,18 @@ import {
   seedOverwatch, sr5HookOverwatchDrop, sr5HookPreUpdateTokenOverwatch, sr5HookPreUpdateActorDeltaOverwatch,
   sr5HookUpdateTokenOverwatch
 } from './system/overwatch-guard.js'
+import {
+  registerEssenceHoleHooks
+} from './system/essence-hole.js'
+import {
+  registerImplantRegisterHooks
+} from './system/implant-register.js'
+import {
+  registerPreparationRegisterHooks
+} from './system/preparation-register.js'
+import {
+  registerBoneAugmentationGuard
+} from './system/bone-augmentation-guard.js'
 
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
@@ -205,4 +223,18 @@ Hooks.on('createActiveEffect', (effect) => {
 Hooks.on('canvasReady', () => SR5SharedVision.checkViewers())
 // Locked storages: the other players' rights follow the lock (SR5 p. 365)
 SR5StorageLock.registerHooks()
+// Essence lost to a removed implant (SR5 p. 53, Faille d'Essence CF p. 74): the active GM keeps the hole
+registerEssenceHoleHooks()
+// The reserved implant fields: the active GM puts back what a player's client let through (system/implant-register.js)
+registerImplantRegisterHooks()
+// A preparation's start and pace: the active GM puts back what a player's client let through (system/preparation-register.js)
+registerPreparationRegisterHooks()
+// Two bone lacings, or a lacing and bone density, switched on by a player: the active GM switches it off (SR5 p. 458, 462)
+registerBoneAugmentationGuard()
+// Agility brought to 0: the "immobilized" status follows it (séance H, H8)
+registerAgilityZeroHooks()
+// Blight strikes: sustained spells, active foci and astral fall (Better Than Bad p. 141)
+Hooks.on('createItem', onBlightCreated)
+// ...and an actor under Blight is put in order at the world's load, by the active GM (Clémence's review)
+Hooks.once('ready', () => sweepBlight().catch(e => console.error("SR5 | Blight", e)))
 for (const hook of ['createActor', 'deleteActor', 'createToken', 'deleteToken', 'canvasReady']) Hooks.on(hook, sr5HookResetJumpedInRiggers)

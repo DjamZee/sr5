@@ -1,0 +1,33 @@
+{{#ife system.category "weaponAccessory"}}
+<div class="SR-PaddingTop10">
+    <ul>
+        <li class="grid SR-EnTete">
+            <div class="col-8 SR-TextUppercase" data-tooltip="{{localize 'SR5.VisionEnhancements_D'}}">{{localize 'SR5.VisionEnhancements'}}</div>
+            <div class="col-3 SR-TextCenter">{{localize 'SR5.CapacityUsed'}}</div>
+            <div class="col-1 SR-TextRight">
+                {{#if owner}}{{#if isEmbedded}}
+                <a class="visionEnhancementChoice" data-title="{{localize 'SR5.Add'}}"><em class="fas fa-plus"></em></a>
+                {{/if}}{{/if}}
+            </div>
+        </li>
+        <li class="grid">
+            <div class="col-8">{{localize 'SR5.Capacity'}}{{localize 'SR5.Colons'}}</div>
+            <div class="col-2 SR-TextCenter">
+                <input type="number" name="system.weaponAccessory.capacity" value="{{system.weaponAccessory.capacity}}" min="0" data-dtype="Number" {{#unless owner}}disabled{{/unless}} />
+            </div>
+            <div class="col-2 SR-TextCenter">[{{system.weaponAccessory.capacityUsed}}/{{system.weaponAccessory.capacityTotal}}]</div>
+        </li>
+        {{#each system.weaponAccessory.visionEnhancements as |e i|}}
+        <li class="grid">
+            <div class="col-8">{{e.name}}</div>
+            <div class="col-3 SR-TextCenter">[{{valueOrDash e.system.capacityTaken.value}}]</div>
+            <div class="col-1 SR-TextRight">
+                {{#if ../owner}}
+                <a class="visionEnhancementRemove" data-title="{{localize 'SR5.Delete'}}" data-index="{{i}}"><i class="fas fa-trash"></i></a>
+                {{/if}}
+            </div>
+        </li>
+        {{/each}}
+    </ul>
+</div>
+{{/ife}}

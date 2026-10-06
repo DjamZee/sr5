@@ -7,9 +7,23 @@ import {
 import {
   SR5_EntityHelpers 
 } from "../../entities/helpers.js"
+import {
+  trustedMatrixAction, tellMatrixCard
+} from "../roll-helpers/matrix-card.js"
 
 export default async function matrixDefense(rollData, rollKey, actor, chatData){
   if (actor.type === "actorSpirit") return
+  //The hacker's card read again: its hits counted on its dice within his pool, its action type on his sheet (matrix-card.js)
+  const attack = await trustedMatrixAction(chatData)
+  if (!attack) return void ui.notifications.warn(game.i18n.localize("SR5.MatrixCardRefused"))
+  await tellMatrixCard(attack, chatData.roll?.hits)
+  chatData = {
+    ...chatData, roll: {
+      ...chatData.roll, hits: attack.hits
+    }, matrix: {
+      ...chatData.matrix, actionType: attack.actionType
+    }
+  }
   let matrixAction = actor.system.matrix.actions[rollKey]
 
   //Determine title

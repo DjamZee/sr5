@@ -50,6 +50,22 @@ export class sr5ItemAugmentationDataModel extends foundry.abstract.TypeDataModel
       isPlugged: new fields.BooleanField({
         initial: false
       }),
+      // Chrome Flesh: posé sous Adapsine (p. 165), part of a lot d'augmentations (p. 96), bioware given by
+      // Prototype de transhumain (p. 57). The gamemaster's alone once installed (entityItem.js, GM_ONLY_IMPLANT_FIELDS)
+      underAdapsine: new fields.BooleanField({
+        initial: false
+      }),
+      augmentationBundle: new fields.BooleanField({
+        initial: false
+      }),
+      transhumanGift: new fields.BooleanField({
+        initial: false
+      }),
+      // Essence lost while it is worn and given back when it is removed: the Tatouage de mana gris (Better Than Bad
+      // p. 141), no hole left (essence-hole.js). The gamemaster's, or the compendium's (implant-register.js)
+      reversibleEssence: new fields.BooleanField({
+        initial: false
+      }),
       essenceCost: new fields.SchemaField({
         ...sr5ModsPartialModel.defineSchema(),
         multiplier: new fields.StringField({

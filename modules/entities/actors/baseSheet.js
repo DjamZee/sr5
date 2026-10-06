@@ -2,14 +2,23 @@ import {
   hasWeaponTrait
 } from '../items/weaponTraits.js'
 import {
+  SR5_Toxins
+} from '../items/toxins.js'
+import {
+  activeBoneClash, boneClashKey, isBoneLacing
+} from '../../system/implant-essence.js'
+import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
   phaseFromFlags, unitKey
 } from "../items/drug-phase.js"
 import {
-  startDrugCrash, resetDrugPhase
+  startDrugCrash, resetDrugPhase, applyDrugDamage, askDrugDoses
 } from "../items/drug-crash.js"
+import {
+  DRUG_DAMAGE, DRUG_INTERACTION_DAMAGE, intakeDamageOf, dosesTaken, overdoseOf
+} from "../items/drug-damage.js"
 import {
   setCharacterField, setSpiritTrait, banishKey
 } from "../../system/spirit-ledger.js"
@@ -75,7 +84,7 @@ import {
   addictionWeeks, focusAddictionRating
 } from "../../rolls/roll-helpers/addiction.js"
 import {
-  warnDrugWithoutStat, drugAddictionThreshold, drugInteractionModifier, effectiveDrugQuality, drugCrashIsInstant, drugHasCrash
+  warnDrugWithoutStat, drugAddictionThreshold, drugInteractionModifier, effectiveDrugQuality, drugCrashIsInstant, drugHasCrash, isSameDrug, distinctDrugs
 } from "../items/drug-stat.js"
 import {
   reagentSystem, hasTiers
@@ -872,6 +881,65 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     await super._onDrop(event)
   }
 
+  /**
+   * An item dropped on the sheet. The V13 migration lost the sheets' own rules: ActorSheetV2._onDropItem creates
+   * the item itself and never calls _onDropItemCreate (measured, Foundry 13.351). They are wired back here: the
+   * sheet's _onDropItemCreate decides (types refused, a single tradition, items switched on), and the base one
+   * below creates the item. A move within the same sheet stays Foundry's sort.
+   */
+  async _onDropItem(event, item) {
+    if (!this.actor.isOwner) return null
+    if (this.actor.uuid === item.parent?.uuid) return super._onDropItem(event, item)
+    // The id is kept unless the actor already has an item with it (Foundry's own rule)
+    this._dropKeepId = !this.actor.items.has(item.id)
+    try {
+      // A sheet that refuses an item says so and returns its notification, or nothing: the drop created no item
+      const created = await this._onDropItemCreate(item.toObject())
+      return created?.documentName === "Item" ? created : null
+    } finally {
+      delete this._dropKeepId
+    }
+  }
+
+  /**
+   * A folder of items dropped on the sheet: V13's ActorSheetV2._onDropFolder does nothing, where V12 created its items.
+   * Each item of the folder (its own, not its subfolders', as in V12) goes through _onDropItem in turn, so the sheet's
+   * rules apply to it and see the items created before it (a second armor of the folder arrives switched off).
+   */
+  async _onDropFolder(event, folder) {
+    if (!this.actor.isOwner || folder?.type !== "Item") return null
+    let createdAny = false
+    for (let entry of folder.contents) {
+      // A compendium folder lists index entries, not documents
+      const item = entry.documentName === "Item" ? entry : await fromUuid(entry.uuid)
+      if (item && await this._onDropItem(event, item)) createdAny = true
+    }
+    return createdAny ? folder : null
+  }
+
+  /**
+   * Switch a dropped item on unless the actor already has one of its kind switched on; then it arrives switched off,
+   * even when it was on where it came from (copied from another sheet): one rule for a new drop and a copy (decision of
+   * DjamZ, djamz.12)
+   * @param {object} itemData     the dropped item's data
+   * @param {Function} sameKind   whether an owned item is of the same kind
+   */
+  _activeUnlessOneIs(itemData, sameKind) {
+    let oneIsActive = false
+    for (let i of this.actor.items) if (i.system.isActive && sameKind(i)) oneIsActive = true
+    itemData.system.isActive = !oneIsActive
+  }
+
+  /**
+   * Create a dropped item, once the sheet's rules have accepted it (the end of every sheet's _onDropItemCreate).
+   * @param {object} itemData  the item's data, as the sheet left it
+   */
+  async _onDropItemCreate(itemData) {
+    return (await Item.implementation.create(itemData, {
+      parent: this.actor, keepId: this._dropKeepId ?? false
+    })) ?? null
+  }
+
   // Handles initiative switching from the derived attributes tab
   async _onInitiativeSwitch(event) {
     let wantedInitiative = event.currentTarget.dataset.binding
@@ -1353,6 +1421,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     let item = itemList.find((i) => i._id === id)
     let realItem = this.actor.items.find(i => i.id === id)
     let oldValue, actions
+    //Drug damage, applied once the actor is written below: applied before, the update wrote the condition monitor back
+    let drugDamages = []
     let actorId = actor.id
     if (actor.isToken) actorId = actor.token.id
 		
@@ -1365,6 +1435,21 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
     //Vintage (Gun H(e)aven 3 p. 3): never wireless, so no switch and no action spent
     if (target === "system.wirelessTurnedOn" && realItem?.type === "itemWeapon" && hasWeaponTrait(realItem.system, "vintage")) return ui.notifications.warn(game.i18n.localize("SR5.WARN_VintageNoWireless"))
+    //Better Than Bad p. 141: under Blight no adept power, focus nor sustained spell is switched on (decisions of DjamZ)
+    if (target === "system.isActive" && value && ["itemAdeptPower", "itemFocus", "itemSpell"].includes(realItem?.type) && SR5_Toxins.isCutFromManasphere(actor)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
+    //Ossature renforcée (SR5 p. 458): "un seul type pouvant être installé à la fois", and never beside an Augmentation
+    //de densité osseuse (p. 458, 462). One switched on beside another is refused to a player; the gamemaster is warned
+    //and goes past it (decision H5 of DjamZ)
+    if (target === "system.isActive" && value === true) {
+      const lacing = activeBoneClash(actor, realItem)
+      if (lacing) {
+        const key = boneClashKey(isBoneLacing(realItem) && isBoneLacing(lacing), game.user.isGM ? "gm" : "player")
+        ui.notifications.warn(game.i18n.format(key, {
+          name: realItem.name, actor: actor.name, lacing: lacing.name
+        }))
+        if (!game.user.isGM) return
+      }
+    }
     //The guard reads the actor's counters, which change only when the server answers: a second click before
     //that would pass on the old count. Toggles that cost an action wait for the previous one to be written
     let actionCost = this._itemValueActionCost(item, target, oldValue)
@@ -1455,6 +1540,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
         // Check if the drug is activated
         if (item.system.isActive) {
+          //A Long Haul taken again during its crash (SR5 p. 413) starts a new dose: the mix of the former one is over
+          if (item.system.phase === "crash") itemData.interact = false
           // Check if the drug has already been taken
           if (alreadyTaken) {
             // Add one take
@@ -1490,7 +1577,38 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
             SR5_SystemHelpers.srLog(1, "Check drugType")
 
+            //The stat of this dose replaces the former one, but Foundry merges objects: a key of the former dose (a
+            //second dose of Long Haul, a crash made Physical by an interaction) stayed on this one. Each one is cleared
+            for (const key of Object.keys(realItem?.system?.handleShot ?? {
+            })) if (!(key in drug)) drug[key] = null
             itemData.handleShot = drug
+
+            //The damage on intake (Laés, Leäl, Soothsayer, Slab), read off the drug key and the doses counted, this one
+            //included (drug-damage.js)
+            const intake = intakeDamageOf(drugType.value, dosesTaken(actorData.addictions, item.name))
+            if (intake) drugDamages.push({
+              ...intake, phase: "intake", itemId: item._id
+            })
+            //SR5 p. 417: taken under its own effect, or under a drug with a common or opposed effect, an overdose,
+            //resisted with Body + Willpower (drug-damage.js)
+            const overdose = overdoseOf(item, actor)
+            if (overdose) {
+              await ui.notifications.info(game.i18n.format("SR5.DrugOverdoseInfo", {
+                actor: actor.name, drugs: overdose.drugs.join(", "), value: overdose.value
+              }))
+              drugDamages.push(overdose)
+            }
+            //Chrome Flesh p. 185: Aisa, 4S more per extra dose taken at once, unresisted
+            const extraDose = DRUG_DAMAGE[drugType.value]?.extraDose
+            if (extraDose && itemData.quantity > 0) {
+              const extra = await askDrugDoses(item.name, itemData.quantity)
+              if (extra > 0) {
+                itemData.quantity -= extra
+                drugDamages.push({
+                  value: extra * extraDose, type: "stun", resist: "none"
+                })
+              }
+            }
 
             let speedType = ""
 
@@ -1508,10 +1626,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
             //ANOTHER one. The drug being taken is left out: retaken during its own crash, it is not another drug,
             //and it would otherwise be counted twice in the mix, doubled twice and rolled one die too many
             //A crash that is only damage is over (drug-stat.js): one left in it before is not in the mix (Liesel's D3)
-            let interactionDrug = actor.items.filter((d) => d.type === "itemDrug" && d.id !== item._id && (d.system.isActive || (d.system.wirelessTurnedOn && !drugCrashIsInstant(d.system))))
+            //Another copy of the same drug is not another drug either (Chrome Flesh p. 183, isSameDrug)
+            let interactionDrug = actor.items.filter((d) => d.type === "itemDrug" && d.id !== item._id && !isSameDrug(d, item) && (d.system.isActive || (d.system.wirelessTurnedOn && !drugCrashIsInstant(d.system))))
             if (interactionDrug.length > 0) {
               let roll, interactionDiceResult, drugs = []
-              roll = new Roll(`${interactionDrug.length}d6`)
+              //"1D6 pour chaque drogue en plus de la première" (Chrome Flesh p. 197): two copies of Jazz under effect are one drug
+              roll = new Roll(`${distinctDrugs(interactionDrug).length}d6`)
               interactionDiceResult = await roll.evaluate()
 
               //The drugs are changed in the item list, which the actor update below writes back: a separate
@@ -1521,15 +1641,15 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                 let listedDrug = itemList.find(i => i._id === d.id)
                 listedDrug.system.interact = true
                 mixedDrugs.push(listedDrug)
-                drugs.push(d.name)
+                //Two copies of Jazz are named once ("Jazz, Jazz" read as two drugs, Isaure's review)
+                if (!drugs.includes(d.name)) drugs.push(d.name)
               }
 
-              let damageInfo
 
               //Chrome Flesh p. 194: +1 for each street drug of the mix, -1 when all of them are custom.
               //The table (Chrome Flesh p. 197) has no row below 1: a lower total reads row 1, not the default one (14+, 10P). This floor
               //is a reading by Élise, the coordinator, not a text of the book
-              const interactionTotal = Math.max(1, interactionDiceResult.total + drugInteractionModifier(mixedDrugs.map(d => effectiveDrugQuality(d.system, actor))))
+              const interactionTotal = Math.max(1, interactionDiceResult.total + drugInteractionModifier(distinctDrugs(mixedDrugs).map(d => effectiveDrugQuality(d.system, actor))))
 
               switch(interactionTotal){
                 case 1:
@@ -1571,16 +1691,16 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                   //A drug without crash keeps its effect until its normal end: the book starts the crashes, it does
                   //not stop a drug that has none (DjamZ's ruling, 06/10)
                   for (let d of mixedDrugs){
-                    if (d.system.isActive && drugHasCrash(d.system)) await this._startDrugCrash(d, actor)
+                    if (d.system.isActive && drugHasCrash(d.system)) await this._startDrugCrash(d, actor, drugDamages)
                   }
                   break
                 }
                 case 10:
+                  //Chrome Flesh p. 197: 10S at once, unresisted
                   await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")}${game.i18n.format("SR5.Colons")} ${drugs.join(", ")}`)
-                  damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
-                  damageInfo.damage.value = 10
-                  damageInfo.damage.type = "stun"
-                  this.actor.takeDamage(damageInfo)
+                  drugDamages.push({
+                    value: 10, type: "stun", resist: "none"
+                  })
                   break
                 case 11:
                 case 12:
@@ -1595,13 +1715,11 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                   break
                 default:
                   console.log(interactionTotal)
+                  //Chrome Flesh p. 197, 14+: 10P at once, "résistés uniquement avec la Constitution" (drug-damage.js)
                   await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")}${game.i18n.format("SR5.Colons")} ${drugs.join(", ")}`)
-                  damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
-                  damageInfo.damage.value = 10
-                  damageInfo.damage.type = "physical"
-                  damageInfo.damage.resistanceType = "physicalDamage"
-                  damageInfo.combat.armorPenetration = -20
-                  this.actor.rollTest("resistanceCard", null, damageInfo)
+                  drugDamages.push({
+                    ...DRUG_INTERACTION_DAMAGE, interaction: true
+                  })
                   break
               }
             }
@@ -1610,7 +1728,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
             await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.localize(SR5.drugs[itemData.handleShot.name])}${game.i18n.format("SR5.Colons")}<ul><li>${game.i18n.format("SR5.ToxinSpeed")}${game.i18n.format("SR5.Colons")} ${itemData.handleShot.speed} ${speedType}</li><li>${game.i18n.format("SR5.Duration")}${game.i18n.format("SR5.Colons")} ${itemData.handleShot.duration} ${game.i18n.localize(unitKey(SR5.extendedIntervals[itemData.handleShot.durationType], itemData.handleShot.duration))}</li></ul>`)
 						
             // Notify info on effect for Laes/Leal
-            if (itemData.handleShot.effectDuration) await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.ErasedMemoryFor")} ${itemData.handleShot.effectDuration} ${game.i18n.localize(itemData.handleShot.effectDurationType)}`)
+            //Stolen Souls p. 192: the Leäl erases the memory only if at least one box is taken
+            if (itemData.handleShot.effectDuration) await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.format(drugType.value === "leal" ? "SR5.ErasedMemoryForIfDamaged" : "SR5.ErasedMemoryFor")} ${itemData.handleShot.effectDuration} ${game.i18n.localize(itemData.handleShot.effectDurationType)}`)
+            if (itemData.handleShot.drowsy) await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.localize("SR5.DrugDrowsy")}`)
 
           }
 
@@ -1623,7 +1743,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
       } else if (target === "system.wirelessTurnedOn"){
         //The crash takes the same path as the calendar (entities/items/drug-crash.js)
-        if (itemData.wirelessTurnedOn) await startDrugCrash(itemData, actor)
+        if (itemData.wirelessTurnedOn) await startDrugCrash(itemData, actor, item._id, {
+          deferDamage: drugDamages
+        })
         else {
           itemData.isActive = false
           itemData.onUse.duration = ""
@@ -1733,6 +1855,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       "items": itemList,
     })
     if (this.actor.isToken) this.actor.sheet.render()
+    for (const damage of drugDamages) await applyDrugDamage(this.actor, damage)
 
     //Switching off the device in use, or equipping another, leaves the Matrix: dumpshock in VR (SR5 p. 231,
     //DjamZ's ruling, 2026-10-06). The character switches to AR first to leave it cleanly
@@ -1779,8 +1902,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
   /* -------------------------------------------- */
   //Start the crash of a drug in the item list: as when its crash switch is turned on from the sheet, the effect
   //ends, the crash duration is shown and its Stun damage applies
-  async _startDrugCrash(drug, actor) {
-    await startDrugCrash(drug.system, actor)
+  async _startDrugCrash(drug, actor, deferDamage) {
+    await startDrugCrash(drug.system, actor, drug._id, {
+      deferDamage
+    })
   }
 
   /* -------------------------------------------- */

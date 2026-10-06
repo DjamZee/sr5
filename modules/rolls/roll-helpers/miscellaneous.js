@@ -12,7 +12,7 @@ import {
 } from "../../system/gm-ledger.js"
 import {
   ownsTarget, cardTrusted, matrixDamageAllowed, deactivateAllowed, reduceAllowed, supportEffectAllowed,
-  serviceSpentAllowed, maglockAllowed, testAllowed, recountHits, consumedKey, REDUCER_POOLS
+  serviceSpentAllowed, maglockAllowed, testAllowed, recountHits, consumedKey, REDUCER_POOLS, hitsUnderPush, edgeSpentOn
 } from "./socket-guard.js"
 import {
   linkedEntryOf, effectHits
@@ -147,6 +147,19 @@ export class SR5_MiscellaneousHelpers {
     return pool + (Number(roller?.system?.specialAttributes?.edge?.augmented?.value) || 0)
   }
 
+  /** The hits of a card the GM stands by, the push of the limit counted only when the roller's sheet shows Edge spent
+   * (hitsUnderPush, SR5 p. 58): a GM's card as written. null when a player's card shows no dice. */
+  static pushAwareHits(card, path, limit = 0) {
+    if (card.byGM) return Math.max(0, Number(card.data.roll?.hits) || 0)
+    const pool = Number(foundry.utils.getProperty(card.roller?.system ?? {
+    }, path)) || 0
+    const pushed = !!card.data.edge?.hasUsedPushTheLimit && edgeSpentOn(card.roller)
+    const counted = hitsUnderPush({
+      rollJSON: card.data.roll?.r, pool, edge: Number(card.roller?.system?.specialAttributes?.edge?.augmented?.value) || 0, limit, pushed,
+    })
+    return counted === null ? null : Math.min(counted, Math.max(0, Number(card.data.roll?.hits) || 0))
+  }
+
   /** The hits of a card the GM stands by: a GM's card as written, a player's counted again on its dice
    * within the pool at `path` (null when it shows no dice). */
   static hitsOf(card, path) {
@@ -172,7 +185,11 @@ export class SR5_MiscellaneousHelpers {
         asked = SR5_MiscellaneousHelpers.confirmUse(use, sender)
         SR5_MiscellaneousHelpers.#confirmations.set(use.card.id, asked)
       }
-      if (!(await asked)) return false
+      //A refusal is not kept: the card's button stays (Hyacinthe's D5), and its next click asks the GM again (D5b)
+      if (!(await asked)) {
+        if (SR5_MiscellaneousHelpers.#confirmations.get(use.card.id) === asked) SR5_MiscellaneousHelpers.#confirmations.delete(use.card.id)
+        return false
+      }
     }
     return SR5_MiscellaneousHelpers.consume(use.key)
   }
@@ -265,6 +282,13 @@ export class SR5_MiscellaneousHelpers {
     await target.update({
       'system': changes
     })
+    //The button the player's browser left for the GM is spent once the damage is written (Hyacinthe's review, D5)
+    if (data.use === "matrixDamage" && data.button) {
+      const {
+        spendRelayedButton
+      } = await import("./matrix-card.js")
+      await spendRelayedButton(data.messageId, data.button)
+    }
     return true
   }
 
@@ -330,8 +354,13 @@ export class SR5_MiscellaneousHelpers {
       if (card.byGM) return claimed
       const attack = SR5_MiscellaneousHelpers.cardOf(card.data.previousMessage?.messageId)
       if (!attack || attack.roller !== attacker) return 0
-      const attackHits = SR5_MiscellaneousHelpers.hitsOf(attack, `matrix.actions.${attack.data.test?.typeSub}.test.dicePool`)
-      const defenseHits = SR5_MiscellaneousHelpers.hitsOf(card, `matrix.actions.${card.data.test?.typeSub}.defense.dicePool`)
+      //The attack this defense answers, same action (Hyacinthe's review, D3); the Rule of Six only for a push the sheet
+      //shows Edge spent for, within the test's limit otherwise (D1, SR5 p. 58). The GM confirms the boxes after this
+      const typeSub = attack.data.test?.typeSub
+      if (attack.data.test?.type !== "matrixAction" || !typeSub || card.data.test?.typeSub !== typeSub) return 0
+      const attackHits = SR5_MiscellaneousHelpers.pushAwareHits(attack, `matrix.actions.${typeSub}.test.dicePool`,
+        Number(attack.roller?.system?.matrix?.actions?.[typeSub]?.limit?.value) || 0)
+      const defenseHits = SR5_MiscellaneousHelpers.pushAwareHits(card, `matrix.actions.${typeSub}.defense.dicePool`, 0)
       if (attackHits === null || defenseHits === null) return 0
       return Math.min(claimed, Math.max(0, defenseHits - attackHits))
     }

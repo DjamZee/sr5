@@ -70,8 +70,12 @@ export const REDUCER_POOLS = {
 /**
  * The hits of a card counted again on its dice (SR5 p. 44): only the first `allowed` dice of the pool
  * count, the rerolls of the Rule of Six after them (p. 58). null when the card shows no dice.
+ * `rerolls` false: no Rule of Six at all, for a test that did not push the limit (SR5 p. 58: only Edge brings it).
  */
-export function recountHits(rollJSON, allowed) {
+export function recountHits(rollJSON, allowed, {
+  rerolls = true
+} = {
+}) {
   let roll = rollJSON
   if (typeof roll === "string") {
     try {
@@ -83,20 +87,45 @@ export function recountHits(rollJSON, allowed) {
   const results = roll?.terms?.[0]?.results
   if (!Array.isArray(results)) return null
   const kept = results.filter(d => !d.ruleOfSix).slice(0, Math.max(0, Math.floor(Number(allowed)) || 0))
-  return [...kept, ...earnedRerolls(kept, results.filter(d => d.ruleOfSix))]
+  return [...kept, ...(rerolls ? earnedRerolls(kept, results.filter(d => d.ruleOfSix)) : [])]
     .filter(d => d.active !== false && d.discarded !== true && Number(d.result) >= 5).length
+}
+
+/**
+ * The hits a card may count, with or without the Edge it says it spent (SR5 p. 58, Push the Limit: Edge added to the
+ * pool, Rule of Six, no limit). Without Edge: the first `pool` dice, no reroll, within the test's `limit` (0: none).
+ * With it: `pool` + `edge` dice, the rerolls they earn (never more than the dice), no limit. null without dice.
+ */
+export function hitsUnderPush({
+  rollJSON, pool, edge = 0, limit = 0, pushed = false
+}) {
+  const base = Math.max(0, Math.floor(Number(pool)) || 0)
+  if (pushed) return recountHits(rollJSON, base + Math.max(0, Math.floor(Number(edge)) || 0))
+  const hits = recountHits(rollJSON, base, {
+    rerolls: false
+  })
+  if (hits === null) return null
+  const cap = Math.floor(Number(limit)) || 0
+  return cap > 0 ? Math.min(hits, cap) : hits
+}
+
+/** Whether the sheet shows Edge spent (the card's push is only believed then, and the GM still confirms it). */
+export function edgeSpentOn(actor) {
+  return (Number(actor?.system?.conditionMonitors?.edge?.actual?.value) || 0) > 0
 }
 
 /**
  * The rerolls of the Rule of Six a card really earned (SR5 p. 56 VO, p. 58 VF): one per six, the sixes of the
  * rerolls included, as Foundry's explosion rolls them; the dice a card writes past them count for nothing (Bodo's
- * review, 06/10: thirty forged rerolls prefilled 42 hits).
+ * review, 06/10: thirty forged rerolls prefilled 42 hits). A chain of sixes has no end in the dice a card may write:
+ * never more rerolls than dice in the pool (Hyacinthe's review, 06/10), which a true roll all but never reaches
+ * (about one die in five).
  */
 export function earnedRerolls(kept, rerolls) {
   let owed = kept.filter(d => Number(d.result) === 6).length
   const earned = []
   for (const die of rerolls) {
-    if (owed <= 0) break
+    if (owed <= 0 || earned.length >= kept.length) break
     owed--
     earned.push(die)
     if (Number(die.result) === 6) owed++
@@ -158,9 +187,17 @@ export function matrixDamageAllowed(changes, stored, size, damage) {
   if (!monitor.matrix || Object.keys(monitor.matrix).some(key => key !== "actual")) return false
   const before = stored?.conditionMonitors?.matrix?.actual ?? {
   }
-  for (const [key, value] of Object.entries(monitor.matrix.actual ?? {
-  })) {
+  const actual = monitor.matrix.actual ?? {
+  }
+  for (const [key, value] of Object.entries(actual)) {
     if (!["base", "value"].includes(key)) return false
+    //The value is worked out from the base when the item is prepared, and stored as 0: a player's browser sends the
+    //prepared one (Hortense, measured: every relay was refused). It stands only as the new base, within the monitor
+    if (key === "value") {
+      const base = "base" in actual ? actual.base : before.base
+      if (!isNumber(value) || value !== Number(base) || value > size) return false
+      continue
+    }
     const was = Number(before[key]) || 0
     if (!isNumber(value) || value < was || value > size || value - was > damage) return false
   }

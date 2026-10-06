@@ -65,8 +65,9 @@ export default async function resistanceInfo(cardData, actorId){
     else return cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.NoDamage"))
   }
 
-  //Add automatic succes for Hardened Armor. Fatigue is resisted without any armor (SR5 p. 174)
-  if ((actorData.specialProperties?.hardenedArmors.normalWeapon.value > 0) && (cardData.damage.source !== "magical") && (cardData.test.typeSub !== "fatigue")) {
+  //Add automatic succes for Hardened Armor. Fatigue is resisted without any armor (SR5 p. 174), a drug with Body only or
+  //as a toxin (entities/items/drug-damage.js)
+  if ((actorData.specialProperties?.hardenedArmors.normalWeapon.value > 0) && (cardData.damage.source !== "magical") && !["fatigue", "drugDamage"].includes(cardData.test.typeSub)) {
     hardenedArmor = SR5_CombatHelpers.hardenedArmorAutoHits(actorData.specialProperties.hardenedArmors.normalWeapon.value, cardData.combat.armorPenetration)
     if (hardenedArmor > 0) {
       ui.notifications.info(`${game.i18n.localize("SR5.HardenedArmor")}${game.i18n.localize("SR5.Colons")} ${hardenedArmor} ${game.i18n.localize("SR5.INFO_AutomaticHits")}`)
@@ -139,6 +140,9 @@ function handlePreviousButtons(cardData) {
   else if (prevData?.test.typeSub === "grenade" || prevData?.combat?.grenade?.isGrenade);
   else if (cardData.damage.isContinuous && cardData.test.typeSub === "continuousDamage");
   else if (cardData.damage.resistanceType === "fatiguedDamage") SR5_RollMessage.updateChatButtonHelper(cardData.previousMessage.messageId, "fatiguedCard") 
+  //An air engulf's following phase answers the previous phase's card: its "Take on" button goes, or the same phase
+  //could be resisted twice before it is applied (Victoire's review)
+  else if (cardData.test.typeSub === "toxinDamage" && prevData?.damage?.toxin?.type === "airEngulf" && prevData?.chatCard?.buttons?.resistanceCard) SR5_RollMessage.updateChatButtonHelper(cardData.previousMessage.messageId, "resistanceCard")
   else if (cardData.test.typeSub === "toxinDamage") SR5_RollMessage.updateChatButtonHelper(cardData.previousMessage.messageId, "resistanceToxin")
   else SR5_RollMessage.updateChatButtonHelper(cardData.previousMessage.messageId, "resistanceCard")
 

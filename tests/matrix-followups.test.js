@@ -2,6 +2,17 @@ import {
   describe, it, expect, vi, beforeEach
 } from 'vitest'
 
+//The matrix card as a GM wrote it: its reading again is tested in matrix-card.test.js
+vi.mock('../modules/rolls/roll-helpers/matrix-card.js', () => ({
+  trustedMatrixAction: async chatData => ({
+    hits: chatData?.roll?.hits, actionType: chatData?.matrix?.actionType
+  }),
+  cardStandsFor: async () => true,
+  trustedDefenderDamage: async (id, claimed) => claimed,
+  damageReachable: () => true,
+  tellMatrixCard: async () => {},
+}))
+
 vi.mock('../modules/socket.js', () => ({
   SR5_SocketHandler: {
     emitForGM: vi.fn(),
@@ -363,11 +374,22 @@ describe('Applying matrix damage without a device (Data Trails p. 161)', () => {
     expect(actor.takeDamage).toHaveBeenCalledTimes(1)
   })
 
-  it('does nothing on a character who is not an AI', async () => {
-    actor.system.activeSpecialAttribute = 'magic'
+  it('writes nothing on a character who is not an AI, and tells the GM so', async () => {
+    actor.system.activeSpecialAttribute = 'resonance'
     actor.takeDamage = vi.fn(async () => {})
+    const create = vi.fn(async () => {})
+    globalThis.ChatMessage = {
+      create, getWhisperRecipients: () => [{
+        id: 'gm1'
+      }]
+    }
+    foundry.utils.escapeHTML ??= s => s
     await SR5_MatrixHelpers.applyDamageToDecK(actor, card())
     expect(actor.takeDamage).not.toHaveBeenCalled()
+    expect(create).toHaveBeenCalledTimes(1)
+    expect(create.mock.calls[0][0].whisper).toEqual(['gm1'])
+    expect(ui.notifications.warn).toHaveBeenCalled()
+    delete globalThis.ChatMessage
   })
 
   it('still damages the active device when there is one', async () => {

@@ -8,7 +8,7 @@ import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
-  implantEssenceEffects, roundImplantEssence
+  implantEssenceEffects, roundImplantEssence, essenceSettingOn, AUGMENTATION_BUNDLE_SETTING
 } from "../../system/implant-essence.js"
 import {
   SR5_EntityHelpers 
@@ -17,11 +17,27 @@ import {
   WEAPON_ACCESSORY_CATALOG 
 } from "../../data/weaponAccessoryCatalog.js"
 import {
+  isAccessoryKind, ignoredRecoilAccessories, accessoryCapacity, capacityTaken
+} from "./weapon-accessory-rules.js"
+import {
   SR5_Toxins
 } from "./toxins.js"
 import {
   deathSowerAdeptDamage
 } from "./magic-masteries.js"
+
+// The implants whose unknown grade the gamemaster was told of, once each per session
+const unknownGradesTold = new Set()
+function warnUnknownGrade(itemData, actor) {
+  // Told with the character it is on: the item alone is also computed, without it
+  if (!actor || !globalThis.game?.user?.isGM || !globalThis.ui?.notifications) return
+  const key = `${actor?.id ?? ""}|${itemData.grade}|${itemData.type}|${itemData.essenceCost?.base}`
+  if (unknownGradesTold.has(key)) return
+  unknownGradesTold.add(key)
+  ui.notifications.warn(game.i18n.format("SR5.WARN_UnknownAugmentationGrade", {
+    grade: String(itemData.grade), actor: actor?.name ?? ""
+  }))
+}
 
 export class SR5_UtilityItem extends Actor {
   //************************************************//
@@ -863,10 +879,14 @@ export class SR5_UtilityItem extends Actor {
     // Vintage (Gun H(e)aven 3 p. 3): never wireless, physical upgrades cost twice the listed amount
     const isVintage = applyVintageWireless(itemData)
 
+    for (let a of itemData.accessory) if (a.system) SR5_UtilityItem._syncAccessoryActive(a, actor)
+    // Run & Gun p. 71: within a group of recoil systems, only the one that compensates the most counts
+    const ignoredRecoil = ignoredRecoilAccessories(itemData, SR5_UtilityItem._accessoryRecoil)
+
     for (let a of itemData.accessory) {
       // Item-based accessory (has a.system from a cloned itemGear)
       if (a.system) {
-        SR5_UtilityItem._handleItemBasedWeaponAccessory(a, itemData, actor, isVintage)
+        SR5_UtilityItem._handleItemBasedWeaponAccessory(a, itemData, actor, isVintage, ignoredRecoil.has(a))
         continue
       }
 
@@ -895,6 +915,7 @@ export class SR5_UtilityItem extends Actor {
         for (const effect of catalog.itemEffects) {
           // Skip wifi-only effects if wireless is off
           if (effect.wifi && !itemData.wirelessTurnedOn) continue
+          if (SR5_UtilityItem._skipAccessoryEffect(a, effect, ignoredRecoil.has(a))) continue
 
           const targetObject = SR5_EntityHelpers.resolveObjectPath(effect.target.replace(/^system\./, ''), itemData)
           if (targetObject) {
@@ -997,17 +1018,11 @@ export class SR5_UtilityItem extends Actor {
   }
 
   /** Handle an item-based weapon accessory (cloned itemWeapon with system data) */
-  static _handleItemBasedWeaponAccessory(a, itemData, actor, isVintage = false) {
+  static _handleItemBasedWeaponAccessory(a, itemData, actor, isVintage = false, recoilIgnored = false) {
     const accData = a.system
     const label = a.name || 'Accessory'
 
-    // Sync isActive from the actor's live item (the actor sheet toggles the item, not the clone)
-    if (actor && a._id) {
-      const liveItem = actor.items.get(a._id)
-      if (liveItem) {
-        a.isActive = liveItem.system.isActive
-      }
-    }
+    SR5_UtilityItem._syncAccessoryActive(a, actor)
 
     // Slot from item data
     if (!a.slot && accData.weaponAccessory?.slot) a.slot = accData.weaponAccessory.slot
@@ -1026,6 +1041,7 @@ export class SR5_UtilityItem extends Actor {
       for (const effect of effects) {
         if (!effect.target || !effect.type) continue
         if (effect.wifi && !itemData.wirelessTurnedOn) continue
+        if (SR5_UtilityItem._skipAccessoryEffect(a, effect, recoilIgnored)) continue
 
         const targetObject = SR5_EntityHelpers.resolveObjectPath(effect.target.replace(/^system\./, ''), itemData)
         if (targetObject) {
@@ -1048,6 +1064,36 @@ export class SR5_UtilityItem extends Actor {
     if (!a.isFree) {
       SR5_EntityHelpers.updateModifier(itemData.price, label, "weaponAccessory", a.price)
     }
+  }
+
+  //Sync isActive of an item-based accessory from the actor's live item (the actor sheet toggles the item, not the clone)
+  static _syncAccessoryActive(a, actor) {
+    if (!actor || !a._id) return
+    const liveItem = actor.items?.get(a._id)
+    if (!liveItem) return
+    a.isActive = liveItem.system.isActive
+    //Its Capacity and the vision enhancements mounted in it since it was put on the weapon (SR5 p. 434), for the sheets
+    let mounted = liveItem.system.weaponAccessory?.visionEnhancements ?? []
+    if (!Array.isArray(mounted)) mounted = Object.values(mounted)
+    a.capacityTotal = accessoryCapacity(liveItem)
+    a.capacityUsed = capacityTaken(mounted)
+    a.visionEnhancementNames = mounted.map(e => e?.name).filter(Boolean).join(", ")
+  }
+
+  //The recoil compensation an accessory brings (catalog entry or item), for Run & Gun p. 71
+  static _accessoryRecoil(a) {
+    let effects = a.system ? a.system.itemEffects : WEAPON_ACCESSORY_CATALOG[a.name]?.itemEffects
+    if (effects && !Array.isArray(effects)) effects = Object.values(effects)
+    return (effects ?? []).filter(e => e?.target === "system.recoilCompensation").reduce((sum, e) => sum + (Number(e.value) || 0), 0)
+  }
+
+  //An accessory effect left to the roll or cancelled by another accessory:
+  //- the red dot sight's Accuracy depends on the range (Street Lethal p. 49): the attack adds it (rollData-Weapon.js)
+  //- a recoil system that does not stack with a better one on the weapon (Run & Gun p. 71)
+  static _skipAccessoryEffect(a, effect, recoilIgnored) {
+    if (effect.target === "system.accuracy" && isAccessoryKind(a, "redDotSight")) return true
+    if (recoilIgnored && effect.target === "system.recoilCompensation") return true
+    return false
   }
 
   //Light rows taken off by a flashlight mounted on the weapon being used (0 or -1).
@@ -1140,26 +1186,20 @@ export class SR5_UtilityItem extends Actor {
     for (let a of itemData.accessory) {
       // Determine special effect: from item data or from catalog
       let effectType = null
-      let label = a.name || 'Accessory'
       if (a.system) {
         effectType = a.system.weaponAccessory?.specialEffect
-        label = a.name
       } else {
         const catalog = WEAPON_ACCESSORY_CATALOG[a.name]
         if (!catalog?.systemEffects) continue
         effectType = catalog.systemEffects[0]?.value
-        label = game.i18n.localize(SR5.weaponAccessories[a.name]) || a.name
       }
       if (!effectType) continue
 
       switch (effectType) {
         // flashLightInfrared and flashLightLowLight light where the weapon points (Run & Gun p. 69): they are
         // not written on the actor, see getWeaponLightCompensation
-        case "imagingScope":
-          if (a.isActive && itemData.isActive) {
-            SR5_EntityHelpers.updateModifier(actor.system.itemsProperties.environmentalMod.range, label, "weaponAccessory", -1, false, false)
-          }
-          break
+        // imagingScope: its zoom takes a row off range for the shots of its own weapon only, not for the actor's
+        // other weapons (scopeVision, rollData-Weapon.js)
         case "smartgunInternal":
         case "smartgunExternal": {
           let hasSmartlink = false
@@ -1196,30 +1236,47 @@ export class SR5_UtilityItem extends Actor {
     }
 
     // One table for the sheet and the shop: AUGMENTATION_GRADE_TABLE (SR5 p. 454, CF p. 74, BTB p. 142)
-    const grade = AUGMENTATION_GRADE_TABLE[itemData.grade]
+    // A grade the table does not know (written by hand, "alpha" for "alphaware") is read as standard, never as an
+    // implant that costs nothing; the gamemaster is told once per implant (Apollinaire's review)
+    let grade = AUGMENTATION_GRADE_TABLE[itemData.grade]
     if (!grade) {
-      SR5_SystemHelpers.srLog(1, `Unknown '${itemData.grade}' grade in _handleAugmentation()`)
-      return
+      SR5_SystemHelpers.srLog(1, `Unknown '${itemData.grade}' grade in _handleAugmentation(): read as standard`)
+      warnUnknownGrade(itemData, actor)
+      grade = AUGMENTATION_GRADE_TABLE.standard
     }
     essenceMultiplier = grade.essence
     deviceRating = grade.deviceRating
     availabilityModifier = grade.availability
     priceMultiplier = grade.price
     itemData.deviceRating = deviceRating
-    modifierSource = `${game.i18n.localize(SR5.augmentationGrades[itemData.grade])}`
+    modifierSource = `${game.i18n.localize(SR5.augmentationGrades[itemData.grade] ?? SR5.augmentationGrades.standard)}`
     SR5_EntityHelpers.updateModifier(itemData.availability, modifierSource, "augmentationGrade", availabilityModifier, false, false)
     SR5_EntityHelpers.updateModifier(itemData.price, modifierSource, "augmentationGrade", priceMultiplier, true, false)
 
-    // Système sensible, Biocompatibilité: the same function prices the implant at the shop (implant-essence.js)
-    const bodyEffects = actor ? implantEssenceEffects(actor.items, itemData.type) : null
-    for (const m of bodyEffects?.multipliers ?? []) SR5_EntityHelpers.updateModifier(itemData.essenceCost, m.name, m.type, m.value, true, false)
+    // Système sensible, Biocompatibilité, Adapsine, lot: the same function prices the implant at the shop
+    // (implant-essence.js). Adapsine lowers the grade's multiplier itself (Chrome Flesh p. 165).
+    const bodyEffects = implantEssenceEffects(actor?.items ?? [], itemData.type, {
+      underAdapsine: itemData.underAdapsine,
+      bundle: itemData.augmentationBundle && essenceSettingOn(AUGMENTATION_BUNDLE_SETTING),
+      reversibleEssence: itemData.reversibleEssence,
+    })
+    // A Tatouage de mana gris costs the Essence of its data, whatever its grade (Better Than Bad p. 141)
+    if (itemData.reversibleEssence) {
+      essenceMultiplier = 1
+      modifierSource = game.i18n.localize("SR5.GradeNoEffectTattoo")
+    }
+    for (const m of bodyEffects.multipliers) SR5_EntityHelpers.updateModifier(itemData.essenceCost, m.name, m.type, m.value, true, false)
+    if (bodyEffects.gradeReduction) {
+      essenceMultiplier = Math.max(0, Math.round((essenceMultiplier - bodyEffects.gradeReduction) * 100) / 100)
+      modifierSource += ` + ${game.i18n.localize("SR5.UnderAdapsine")}`
+    }
 
     SR5_EntityHelpers.updateModifier(itemData.essenceCost, modifierSource, "augmentationGrade", (itemData.isRatingBased ? essenceMultiplier * itemData.itemRating : essenceMultiplier), true, false)
     this._handleItemCapacity(itemData)
     this._handleItemPrice(itemData)
     this._handleItemAvailability(itemData)
     this._handleItemEssenceCost(itemData)
-    if (bodyEffects) itemData.essenceCost.value = roundImplantEssence(itemData.essenceCost.value, bodyEffects)
+    if (actor || bodyEffects.roundDownTenth || bodyEffects.multipliers.length) itemData.essenceCost.value = roundImplantEssence(itemData.essenceCost.value, bodyEffects)
   }
 
   ////////////////// SORTS ////////////////////
@@ -2619,8 +2676,21 @@ export class SR5_UtilityItem extends Actor {
   }
 
   //The item of the actor that carries the given accessory in its list, a weapon included
+  //The weapon accessory a vision enhancement is mounted in (SR5 p. 434), or undefined
+  static weaponAccessoryHost(itemId, actor){
+    for (let i of actor?.items ?? []){
+      if (i.type !== "itemWeapon") continue
+      let enhancements = i.system.weaponAccessory?.visionEnhancements
+      if (enhancements && !Array.isArray(enhancements)) enhancements = Object.values(enhancements)
+      if (enhancements?.some(e => e?._id === itemId)) return i
+    }
+  }
+
   static accessoryHost(itemId, actor){
     for (let i of actor.items){
+      if (i.type === "itemWeapon" && SR5_UtilityItem.weaponAccessoryHost(itemId, {
+        items: [i]
+      })) return i
       if (!["itemGear", "itemArmor", "itemAugmentation", "itemWeapon"].includes(i.type) || !i.system.accessory) continue
       if (typeof i.system.accessory === "object") i.system.accessory = Object.values(i.system.accessory)
       if (i.system.accessory.find(a => a?._id === itemId)) return i

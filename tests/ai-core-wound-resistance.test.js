@@ -2,6 +2,17 @@ import {
   describe, it, expect, vi, beforeEach, afterEach
 } from 'vitest'
 
+//The matrix card as a GM wrote it: its reading again is tested in matrix-card.test.js
+vi.mock('../modules/rolls/roll-helpers/matrix-card.js', () => ({
+  trustedMatrixAction: async chatData => ({
+    hits: chatData?.roll?.hits, actionType: chatData?.matrix?.actionType
+  }),
+  cardStandsFor: async () => true,
+  trustedDefenderDamage: async (id, claimed) => claimed,
+  damageReachable: () => true,
+  tellMatrixCard: async () => {},
+}))
+
 // The core damage of an AI gives wound modifiers "the same way as physical and stun damage"
 // (Data Trails p. 161), and wound modifiers apply to every test except those that resist the damage
 // about to be taken (SR5 p. 171). So the core penalty weighs on matrix defenses, never on matrix

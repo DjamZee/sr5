@@ -4,9 +4,31 @@ import {
 import {
   SR5_PrepareRollHelper 
 } from "../roll-prepare-helpers.js"
+import {
+  trustedComplexForm, tellMatrixCard
+} from "../roll-helpers/matrix-card.js"
 
 export default async function complexFormDefense(rollData, actor, chatData){
   if (actor.type === "actorSpirit") return
+  //The technomancer's card read again: the form on his sheet, its hits counted on its dice within his pool (matrix-card.js)
+  const form = await trustedComplexForm(chatData)
+  if (!form) return void ui.notifications.warn(game.i18n.localize("SR5.MatrixCardRefused"))
+  await tellMatrixCard(form, chatData.roll?.hits)
+  chatData = {
+    ...chatData,
+    roll: {
+      ...chatData.roll, hits: form.hits
+    },
+    test: {
+      ...chatData.test, typeSub: form.typeSub
+    },
+    various: {
+      ...chatData.various, defenseFirstAttribute: form.defenseFirstAttribute, defenseSecondAttribute: form.defenseSecondAttribute
+    },
+    owner: {
+      ...chatData.owner, itemUuid: form.item?.uuid ?? chatData.owner.itemUuid
+    },
+  }
   let actorData = actor.system,
     defenseAttribute, defenseMatrixAttribute, 
     firstLabel = game.i18n.localize("SR5.DeviceRating"),

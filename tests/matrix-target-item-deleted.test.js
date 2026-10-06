@@ -2,6 +2,17 @@ import {
   describe, it, expect, vi, beforeEach
 } from 'vitest'
 
+//The matrix card as a GM wrote it: its reading again is tested in matrix-card.test.js
+vi.mock('../modules/rolls/roll-helpers/matrix-card.js', () => ({
+  trustedMatrixAction: async chatData => ({
+    hits: chatData?.roll?.hits, actionType: chatData?.matrix?.actionType
+  }),
+  cardStandsFor: async () => true,
+  trustedDefenderDamage: async (id, claimed) => claimed,
+  damageReachable: () => true,
+  tellMatrixCard: async () => {},
+}))
+
 // N67: the item a card aims at may be deleted before the next button is clicked. fromUuid() then
 // returns null and reading .system threw. Every reader now warns and stops, opening no dialog.
 

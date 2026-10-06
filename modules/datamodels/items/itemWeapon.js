@@ -242,6 +242,12 @@ export class sr5ItemWeaponDataModel extends foundry.abstract.TypeDataModel {
         specialEffect: new fields.StringField({
           initial: ''
         }),
+        //Capacity for vision enhancements (SR5 p. 434-435, 447): 0 takes the book's for a known accessory
+        capacity: new fields.NumberField({
+          initial: 0, min: 0, integer: true
+        }),
+        //The vision enhancements (itemGear) mounted in it, as copies of the actor's items
+        visionEnhancements: new fields.ArrayField(new fields.ObjectField()),
       }),
     }
   }

@@ -20,6 +20,9 @@ import {
   ownsTarget, bounded, consumedKey
 } from "../../rolls/roll-helpers/socket-guard.js"
 import {
+  vouch
+} from "../../rolls/roll-helpers/attack-card.js"
+import {
   isStorable, isStoredAway 
 } from "../../interface/storage-rules.js"
 import {
@@ -169,7 +172,8 @@ export class SR5_ActorHelper {
             chatData.damage.resistanceType = "biofeedback"
             chatData.damage.value = Math.ceil(damage/2)
             chatData.owner.messageId = options.owner.messageId
-            controler.rollTest("resistanceCard", null, chatData)
+            //Worked out here for the rigger, not the card's actor: vouched for (attack-card.js, trustedResistanceCard)
+            controler.rollTest("resistanceCard", null, vouch(chatData))
           }
         }
         // Drones short out (matrix damage); vehicles take the damage without side effect (SR5 p. 173)
@@ -293,7 +297,20 @@ export class SR5_ActorHelper {
     const actor = SR5_EntityHelpers.getRealActorFromID(message.data?.actorId)
     const sender = game.users.get(senderId)
     if (!actor || !sender) return
-    if (!relayNeedsConfirmation(actor, sender)) return SR5_ActorHelper.takeDamage(message.data.actorId, message.data.options)
+    //The button a player's browser left for the GM is spent once he writes the damage, never on a refusal (D5)
+    const spend = async () => {
+      const options = message.data.options ?? {
+      }
+      if (!options.relayButton) return
+      const {
+        spendRelayedButton
+      } = await import("../../rolls/roll-helpers/matrix-card.js")
+      await spendRelayedButton(options.owner?.messageId, options.relayButton)
+    }
+    if (!relayNeedsConfirmation(actor, sender)) {
+      await SR5_ActorHelper.takeDamage(message.data.actorId, message.data.options)
+      return spend()
+    }
     const damage = message.data.options?.damage ?? {
     }
     const amount = Number(damage.matrix?.value) > 0 ? `${damage.matrix.value} ${game.i18n.localize("SR5.MatrixDamage")}` : `${Number(damage.value) || 0}${game.i18n.localize(SR5.damageTypesShort[damage.type] ?? "")}`
@@ -311,7 +328,10 @@ export class SR5_ActorHelper {
         label: game.i18n.localize("SR5.No")
       },
     }).catch(() => false)
-    if (ok) return SR5_ActorHelper.takeDamage(message.data.actorId, message.data.options)
+    if (ok) {
+      await SR5_ActorHelper.takeDamage(message.data.actorId, message.data.options)
+      return spend()
+    }
     await ChatMessage.create({
       content: foundry.utils.escapeHTML(game.i18n.format("SR5.DamageRelayRefused", {
         user: sender.name, actor: actor.name, amount
@@ -1069,6 +1089,7 @@ export class SR5_ActorHelper {
         "system.conditionMonitors.matrix.actual": itemData.conditionMonitors.matrix.actual,
         "system.isSecondaryPropulsion": itemData.secondaryPropulsion.isSecondaryPropulsion,
         "system.secondaryPropulsionType": itemData.secondaryPropulsion.type,
+        "system.isSecondaryPropulsionActivate": itemData.secondaryPropulsion.isActivated === true,
         "system.pilotSkill": itemData.pilotSkill,
         "system.riggerInterface": itemData.riggerInterface,
         "system.offRoadMode": itemData.offRoadMode,
@@ -1121,6 +1142,14 @@ export class SR5_ActorHelper {
 
     //Create actor
     const created = await Actor.createDocuments([sideKickData])
+
+    //The summoner who may lend his Edge to the spirit (SR5 p. 306), kept by the active GM, who creates it from the item
+    if (item.type === "itemSpirit" && created[0]) {
+      const {
+        setSpiritSummoner
+      } = await import("../../system/spirit-ledger.js")
+      await setSpiritSummoner(created[0].id, actorId)
+    }
 
     if (item.type === "itemStorage") {
       const dropped = created[0]
@@ -1487,6 +1516,8 @@ export class SR5_ActorHelper {
       modifiedItem.system.conditionMonitors.matrix.actual = actor.system.conditionMonitors.matrix.actual
       modifiedItem.system.secondaryPropulsion.isSecondaryPropulsion = actor.system.isSecondaryPropulsion
       modifiedItem.system.secondaryPropulsion.type = actor.system.secondaryPropulsionType
+      //The sheet's box (prepared from the source while an active secondary propulsion mod reads it, Rigger 5 p. 158)
+      modifiedItem.system.secondaryPropulsion.isActivated = actor.system.isSecondaryPropulsionActivate === true
       modifiedItem.system.isCreated = false
       modifiedItem.img = actor.img
       if (actor.img != "systems/sr5/assets/img/actors/actorDrone.svg" && modifiedItem.system.gameEffect.includes(actor.img) === false) {
@@ -2086,8 +2117,10 @@ export class SR5_ActorHelper {
     if (!author || author.isGM || author.id === game.user?.id) return claimed
     const caster = SR5_EntityHelpers.getRealActorFromID(data.owner.actorId, data.actorUuids)
     const isForm = item.type === "itemComplexForm"
-    const pool = isForm ? caster?.system?.matrix?.resonanceActions?.threadComplexForm?.test?.dicePool :
-      (caster?.system?.skills?.spellcasting?.spellCategory?.[item.system.category]?.dicePool ?? caster?.system?.skills?.spellcasting?.test?.dicePool)
+    //The wounds taken since the roll (its Drain, typically) are given back to the pool (attack-card.js, woundAllowance)
+    const pool = (Number(isForm ? caster?.system?.matrix?.resonanceActions?.threadComplexForm?.test?.dicePool :
+      (caster?.system?.skills?.spellcasting?.spellCategory?.[item.system.category]?.dicePool ?? caster?.system?.skills?.spellcasting?.test?.dicePool)) || 0) +
+      Math.max(0, -(Number(caster?.system?.penalties?.condition?.actual?.value) || 0))
     const verdict = effectCardVerdict({
       authorOwnsCaster: !!caster && caster.testUserPermission?.(author, "OWNER"),
       itemOnCaster: !!caster && (item.parent === caster || item.parent?.id === caster.id),
@@ -2606,12 +2639,100 @@ export class SR5_ActorHelper {
         if (!roller || !author || (!author.isGM && !roller.testUserPermission(author, "OWNER"))) return null
         if (weapon.parent !== roller && weapon.parent?.uuid !== roller.uuid) return null
         return {
-          card, weapon, answered: game.messages.get(data.previousMessage.messageId)?.flags?.sr5data
+          card, weapon, answered: game.messages.get(data.previousMessage.messageId)?.flags?.sr5data, messageId
         }
       }
       messageId = card.previousMessage?.messageId
     }
     return null
+  }
+
+  static ENGULF_EFFECTS = ["engulfAir", "engulfWater", "engulfFire", "engulfEarth"]
+
+  //An engulf attack card (SR5 p. 399): written by a GM or an owner of its roller, with an engulf weapon of that roller.
+  //{card, weapon, roller, messageId}, or null
+  static engulfSourceOf(messageId){
+    const message = messageId ? game.messages?.get(messageId) : null
+    const card = message?.flags?.sr5data
+    if (!card?.owner?.itemUuid) return null
+    const weapon = fromUuidSync(card.owner.itemUuid)
+    if (!Object.values(weapon?.system?.systemEffects ?? {
+    }).some(e => SR5_ActorHelper.ENGULF_EFFECTS.includes(e?.value))) return null
+    const roller = SR5_EntityHelpers.getRealActorFromID(card.owner?.actorId, card.actorUuids)
+    const author = message.author
+    if (!roller || !author || (!author.isGM && !roller.testUserPermission(author, "OWNER"))) return null
+    if (weapon.parent !== roller && weapon.parent?.uuid !== roller.uuid) return null
+    return {
+      card, weapon, roller, messageId
+    }
+  }
+
+  //The victim of a first engulf phase and the attack card, from the card that resists it (an air engulf's toxin card,
+  //the resistance card of the others): it answers a defense card, which answers the engulf attack, and the defense was
+  //written by a GM or an owner of the defender, who is the actor resisting. null otherwise: nothing to keep
+  static engulfFirstPhase(card){
+    const defenseMessage = card?.previousMessage?.messageId ? game.messages?.get(card.previousMessage.messageId) : null
+    const defense = defenseMessage?.flags?.sr5data
+    if (defense?.test?.type !== "defense") return null
+    const source = SR5_ActorHelper.engulfSourceOf(defense.previousMessage?.messageId)
+    if (!source) return null
+    const defender = SR5_EntityHelpers.getRealActorFromID(defense.owner?.speakerId ?? defense.owner?.actorId, defense.actorUuids)
+    const victim = SR5_EntityHelpers.getRealActorFromID(card.owner?.speakerId ?? card.owner?.actorId, card.actorUuids)
+    const author = defenseMessage.author
+    if (!defender || !victim || defender.uuid !== victim.uuid) return null
+    if (!author || (!author.isGM && !defender.testUserPermission(author, "OWNER"))) return null
+    return {
+      victim, attackId: source.messageId
+    }
+  }
+
+  //At a first engulf phase, the active GM keeps the attack card for the victim; at a following one, nothing changes.
+  //The attack card of the spirit engulfing the actor of this card, or null
+  static async keepEngulfFirstPhase(card){
+    const first = SR5_ActorHelper.engulfFirstPhase(card)
+    if (first) {
+      const {
+        setEngulfSource, banishKey
+      } = await import("../../system/spirit-ledger.js")
+      await setEngulfSource(banishKey(first.victim), first.attackId)
+      return first.attackId
+    }
+    const victimId = card?.owner?.speakerId ?? card?.owner?.actorId
+    return victimId ? SR5_ActorHelper.engulfAttackFor(SR5_EntityHelpers.getRealActorFromID(victimId, card.actorUuids)) : null
+  }
+
+  //The engulf ends for the victim who broke free (SR5 p. 399): the active GM forgets the attack card
+  static async forgetEngulf(victim){
+    if (!victim) return
+    const {
+      setEngulfSource, banishKey
+    } = await import("../../system/spirit-ledger.js")
+    await setEngulfSource(banishKey(victim), null)
+  }
+
+  //The attack card of the spirit engulfing this actor, in the active GM's ledger (spirit-ledger.js); null if none
+  static async engulfAttackFor(actor){
+    const {
+      readLedger, engulfSource, banishKey
+    } = await import("../../system/spirit-ledger.js")
+    return actor ? engulfSource(readLedger(), banishKey(actor)) : null
+  }
+
+  //The damage of an engulf at the spirit's following phases, without the hits of the first attack, read on the
+  //engulfing spirit, never on the weapon's data: Magic × 2, AP −Magic (SR5 p. 399); Stun for air and water,
+  //Physical for earth and fire (p. 399-400), fire keeping its element. null when lost
+  static async engulfDamageOf(attackId){
+    const source = SR5_ActorHelper.engulfSourceOf(attackId)
+    if (!source) return null
+    const {
+      engulfDamage
+    } = await import("../../rolls/roll-helpers/toxin-card.js")
+    const damage = engulfDamage(source.roller.system.specialAttributes?.magic?.augmented?.value)
+    const effect = Object.values(source.weapon.system.systemEffects ?? {
+    }).map(e => e?.value).find(v => SR5_ActorHelper.ENGULF_EFFECTS.includes(v))
+    if (effect === "engulfEarth" || effect === "engulfFire") damage.type = "physical"
+    if (effect === "engulfFire") damage.element = "fire"
+    return damage
   }
 
   //The toxin card a player wrote, applied by the GM (SR5 p. 409-410; Liesel's D1): nothing comes from its flags. The
@@ -2632,7 +2753,17 @@ export class SR5_ActorHelper {
     const {
       healCardDiceKey
     } = await import("../../system/heal-ledger.js")
-    const source = SR5_ActorHelper.toxinSourceOf(data)
+    //An air engulf's following phase answers the previous phase's card: its source is the attack card of the spirit
+    //engulfing this actor, in the active GM's ledger, and the hits of the first attack no longer count (SR5 p. 399)
+    let source = SR5_ActorHelper.toxinSourceOf(data)
+    const engulfAttack = source ? null : await SR5_ActorHelper.engulfAttackFor(actor)
+    const engulfPhase = !!engulfAttack
+    if (engulfPhase) source = SR5_ActorHelper.toxinSourceOf({
+      previousMessage: {
+        messageId: engulfAttack
+      }
+    })
+    if (engulfPhase && source?.weapon?.system?.toxin?.type !== "airEngulf") source = null
     const toxin = source ? foundry.utils.deepClone(source.weapon.system.toxin) : null
     const open = toxin ? SR5_Toxins.openVectors(actor.system, toxinVectors(toxin)) : []
     const pool = Math.max(0, ...open.map(v => Number(actor.system.resistances?.toxin?.[v]?.dicePool) || 0))
@@ -2640,7 +2771,7 @@ export class SR5_ActorHelper {
       power: toxin.power,
       toxinType: toxin.type,
       calledShot: source.card.combat?.calledShot?.name,
-      engulfNetHits: bounded(source.answered?.roll?.netHits, source.card.roll?.hits),
+      engulfNetHits: engulfPhase ? 0 : bounded(source.answered?.roll?.netHits, source.card.roll?.hits),
       doses: data.toxinDoses,
       antitoxin: SR5_Toxins.antitoxinRating(actor.system),
     }) : 0

@@ -11,11 +11,17 @@ import {
   SR5ShopGrades
 } from "../../interface/shop-grades.js"
 import {
+  transhumanGift, currentEssenceHole, essenceAdjustment
+} from "../../system/implant-essence.js"
+import {
   SR5_Toxins
 } from "../items/toxins.js"
 import {
   applyDrugQuality, drugAddictionThreshold, effectiveDrugQuality
 } from "../items/drug-stat.js"
+import {
+  longHaulDoseKind
+} from "../items/drug-damage.js"
 import {
   SR5_SystemHelpers 
 } from "../../system/utilitySystem.js"
@@ -69,7 +75,7 @@ import {
   ELEMENTAL_MENTAL_ATTRIBUTES, ELEMENTAL_SPIRIT_TYPES, elementalReduction, astralReputation, wildReputation
 } from "../items/spirit-bonds.js"
 import {
-  applyCharacterLedger, applySpiritLedger
+  applyCharacterLedger, applySpiritLedger, freeSpiritEdge
 } from "../../system/spirit-ledger.js"
 import {
   harmoniousDefensePool
@@ -483,11 +489,12 @@ export class SR5_CharacterUtility extends Actor {
       actorData.modificationSlots.cosmetic.modifiers = []
     }
 
-    // Reset Vehicule Secondary Propulsion
+    // Reset Vehicule Secondary Propulsion: the activation stays off unless an active secondary propulsion
+    // mod reads it again from the source (handleSecondaryAttributes)
+    if (actor.type === "actorDrone") actorData.isSecondaryPropulsionActivate = false
     if (actorData.isSecondaryPropulsion) {
       actorData.isSecondaryPropulsion = false
       actorData.secondaryPropulsionType = ""
-      actorData.isSecondaryPropulsionActivate = false
     }
 
     if (actorData.matrix) {
@@ -1077,6 +1084,8 @@ export class SR5_CharacterUtility extends Actor {
     for (let key of Object.keys(SR5.visionActive)) {
       if (actorData.visions[key].isActive) currentVision = key
     }
+    //Better Than Bad p. 141: cut from the manasphere by Blight, no astral perception (decision of DjamZ); leaving it stays free
+    if (vision === "astral" && currentVision !== "astral" && SR5_Toxins.blightBlocksAstral(actor)) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
     if ((vision === "astral" || currentVision === "astral") && !SR5Combat.hasActionsLeft(actor, [{
       type: "simple", value: 1, source: "switchPerception"
     }])) return
@@ -1295,6 +1304,15 @@ export class SR5_CharacterUtility extends Actor {
     actorData.activeSpecialAttribute = "magic"
     specialAttributes.magic.natural.base = actorData.force.value
     SR5_EntityHelpers.updateValue(specialAttributes.magic.natural)
+    //Only a free spirit has Edge of its own (SR5 p. 306-307); a summoned or bound one has none, its summoner lends his (p. 306)
+    if (actorData.isFree && specialAttributes.edge) {
+      specialAttributes.edge.natural.base = freeSpiritEdge(actorData.force.value, actorData.freeEdge)
+      SR5_EntityHelpers.updateValue(specialAttributes.edge.natural)
+    } else {
+      delete specialAttributes.edge
+      delete actorData.conditionMonitors?.edge
+      delete actorData.statusBars?.edge
+    }
     essence.base = actorData.force.value
     SR5_EntityHelpers.updateValue(essence)
     const customType = SR5_SpiritTypes.get(actorData.type)
@@ -1649,7 +1667,16 @@ export class SR5_CharacterUtility extends Actor {
 
   // Generate Essence
   static updateEssence(actor) {
-    SR5_EntityHelpers.updateValue(actor.system.essence)
+    const essence = actor.system.essence
+    // Typed as the implants are, so the Magic and Resonance lost with the Essence count them (updateSpecialAttributes)
+    // Prototype de transhumain (Chrome Flesh p. 57): its bioware costs no Essence, up to its point
+    // KEEP IN STEP with essenceAdjustment() (implant-essence.js), which mentorMagic() reads earlier
+    const gift = transhumanGift(actor.items)
+    if (gift?.used) SR5_EntityHelpers.updateModifier(essence, gift.name, "itemAugmentation", gift.used)
+    // Faille d'Essence what a removed implant took stays lost (SR5 p. 53), filled under the Faille d'Essence (Chrome Flesh p. 74)
+    essence.hole = currentEssenceHole(actor)
+    if (essence.hole)SR5_EntityHelpers.updateModifier(essence, game.i18n.localize("SR5.EssenceHole"), "itemAugmentation", -essence.hole)
+    SR5_EntityHelpers.updateValue(essence)
   }
 
   // Generate spirit values
@@ -2240,6 +2267,11 @@ export class SR5_CharacterUtility extends Actor {
   static canSwitchToInitiative(actor, initiative) {
     let currentInitiative = this.findActiveInitiative(actor.system),
       switchCost = []
+    //Better Than Bad p. 141: cut from the manasphere by Blight, no astral projection (decision of DjamZ)
+    if (initiative === "astralInit" && currentInitiative !== "astralInit" && SR5_Toxins.blightBlocksAstral(actor)) {
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
+      return false
+    }
     if (initiative === "astralInit" || (initiative === "physicalInit" && currentInitiative === "astralInit")) switchCost = [{
       type: "complex", value: 1
     }]
@@ -2799,6 +2831,8 @@ export class SR5_CharacterUtility extends Actor {
 
     actorData.isSecondaryPropulsion = itemData.secondaryPropulsion.isSecondaryPropulsion
     actorData.secondaryPropulsionType = itemData.secondaryPropulsion.type
+    // The sheet checkbox writes the source; the reset turned the prepared value off (Rigger 5 p. 158)
+    actorData.isSecondaryPropulsionActivate = actor._source?.system?.isSecondaryPropulsionActivate === true
 
     switch (actorData.secondaryPropulsionType) {
       case "amphibiousSurface":
@@ -3377,6 +3411,12 @@ export class SR5_CharacterUtility extends Actor {
   // Counterspell pool
   static updateCounterSpellPool(actor) {
     let actorData = actor.system, magic = actorData.magic, skills = actorData.skills
+    //Better Than Bad p. 141: under Blight no counterspelling, no spell defense dice (decision H1 of DjamZ)
+    if (SR5_Toxins.isCutFromManasphere(actor)) {
+      magic.counterSpellPool.base = 0
+      magic.counterSpellPool.value = 0
+      return
+    }
     magic.counterSpellPool.base = skills.counterspelling.rating.value
     if (magic.metamagics.shielding) SR5_EntityHelpers.updateModifier(magic.counterSpellPool, `${game.i18n.localize('SR5.MetamagicShielding')}`, "metamagic", magic.initiationGrade)
     //Harmonious Defense (Forbidden Arcana p. 45): Willpower + Magic + initiate grade, used as spell defense dice.
@@ -3486,6 +3526,7 @@ export class SR5_CharacterUtility extends Actor {
 
   // Handle drug stats
   //`consumer`: who takes it. The sheet passes a copy of the item, without a parent (Liesel's D4)
+  //The doses counted (Soothsayer) are read by the sheet on its working list (entities/items/drug-damage.js, M7 D1)
   static async handleDrugShots(item, drugType, actorData, consumer = item.parent) {
     let drugStat
     let roll, rollRoll, rollSpeed, rollRollSpeed, duration, effect
@@ -3509,7 +3550,6 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.Minutes",
           "duration": duration,
           "durationType": "hour",
-          "unresistedStunDamage": 6,
         }
         break
       case "deepweed":
@@ -3547,10 +3587,9 @@ export class SR5_CharacterUtility extends Actor {
           "durationType": "minute",
           "durationContrecoup": rollRoll.total,
           "durationContrecoupType": "minute",
-          "unresistedStunDamage": 6,
         }
         break
-      case "longHaul":
+      case "longHaul": {
         roll = new Roll(`8d6`)
         rollRoll = await roll.evaluate()
         drugStat = {
@@ -3561,6 +3600,38 @@ export class SR5_CharacterUtility extends Actor {
           "durationType": "day",
           "durationContrecoup": rollRoll.total,
           "durationContrecoupType": "hour",
+        }
+        //SR5 p. 413: a second dose taken after the first one wore off (in its crash) keeps awake (1D6/2) days more,
+        //(12 × 1D6) hours, then 10S unresisted and the same crash (drug-damage.js). No further dose keeps awake. Counted
+        //for the actor, the same pile taken during its own crash or another Long Haul item (Eudoxie's review, D1)
+        const kind = longHaulDoseKind(item, consumer)
+        if (kind === "noMore") {
+          ui.notifications.warn(game.i18n.localize("SR5.DrugLongHaulNoMore"))
+          //One Combat Turn, the shortest the drug clock counts (0 is never counted): back to its crash at once
+          drugStat.duration = 1
+          drugStat.durationType = "combatTurn"
+          drugStat.longHaulNoMore = true
+        } else if (kind === "second") {
+          rollSpeed = new Roll(`1d6 * 12`)
+          rollRollSpeed = await rollSpeed.evaluate()
+          drugStat.duration = rollRollSpeed.total
+          drugStat.durationType = "hour"
+          drugStat.longHaulSecondDose = true
+          ui.notifications.info(`${item.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.DrugLongHaulSecondDose")}`)
+        }
+        break
+      }
+      //KAMI+, custom drug of the Megapack (Chrome Flesh p. 194-196): base duration (10 × 1D6) minutes, base Speed of
+      //3 Combat Turns brought to 1 by its two Speed enhancers; crash 10S (drug-damage.js)
+      case "kamiPlus":
+        roll = new Roll(`1d6 * 10`)
+        rollRoll = await roll.evaluate()
+        drugStat = {
+          "name": drugType.value,
+          "speed": 1,
+          "speedType": "SR5.CombatTurn",
+          "duration": rollRoll.total,
+          "durationType": "minute",
         }
         break
       case "nitro":
@@ -3575,7 +3646,6 @@ export class SR5_CharacterUtility extends Actor {
           "durationType": "minute",
           "durationContrecoup": rollRoll.total,
           "durationContrecoupType": "minute",
-          "unresistedStunDamage": 9,
         }
         break
       case "novacoke":
@@ -3630,7 +3700,6 @@ export class SR5_CharacterUtility extends Actor {
           "speed": item.system.speed,
           "duration": 20 * rollRoll.total,
           "durationType": "minute",
-          "unresistedStunDamage": 2,
         }
         break
       case "animalTongue":
@@ -3679,7 +3748,6 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.Minute",
           "duration": duration,
           "durationType": "hour",
-          "unresistedStunDamage": 6,
         }
         break
       case "cereprax":
@@ -3692,7 +3760,6 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.Minutes",
           "duration": duration,
           "durationType": "hour",
-          "unresistedStunDamage": 5,
         }
         break
       case "crimsonOrchid":
@@ -3703,7 +3770,6 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "hour",
-          "unresistedStunDamage": 6,
         }
         break
       case "dopadrine":
@@ -3800,23 +3866,19 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.Minutes",
           "duration": duration,
           "durationType": "hour",
-          "resistedStunDamage": 9,
         }
         break
       case "immortalFlower":
         roll = new Roll(`1d6`)
         rollRoll = await roll.evaluate()
         duration = Math.min(rollRoll.total + actorData.essence.value, 12)
-        rollSpeed = new Roll(`2d6`)
-        rollRollSpeed = await rollSpeed.evaluate()
-        duration = Math.min(rollRoll.total + actorData.essence.value, 12)
+        //Its 2D6 Physical at the crash, for the characters with implants, are in entities/items/drug-damage.js
         drugStat = {
           "name": drugType.value,
           "speed": 16,
           "speedType": "SR5.CombatTurns",
           "duration": duration,
           "durationType": "hour",
-          "unresistedStunDamage": rollRollSpeed.total,
         }
         break
       case "k10":
@@ -3828,7 +3890,6 @@ export class SR5_CharacterUtility extends Actor {
           "speed": item.system.speed,
           "duration": duration,
           "durationType": "minute",
-          "unresistedStunDamage": 18,
         }
         break
       case "laes":
@@ -3842,11 +3903,13 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "minute",
-          "resistedStunDamage": 12,
           "effectDuration": effect,
           "effectDurationType": "SR5.Hours",
         }
         break
+      //Stolen Souls p. 192 rather than Chrome Flesh p. 190 (arbitrage de DjamZ, H20): Power 10, and drowsiness
+      //rather than unconsciousness, which the book does not quantify. Stolen Souls gives no duration: 5 × 1D6
+      //minutes stays the one of Chrome Flesh p. 190
       case "leal":
         roll = new Roll(`1d6`)
         rollRoll = await roll.evaluate()
@@ -3858,7 +3921,7 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "minute",
-          "resistedStunDamage": 12,
+          "drowsy": true,
           "effectDuration": effect,
           "effectDurationType": "SR5.Minutes",
         }
@@ -3944,20 +4007,19 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "hour",
-          "unresistedStunDamage": 8,
         }
         break
+      //Chrome Flesh p. 191: +1 Charisma and Perception, Pain Tolerance 1, memory loss; no damage, on taking or after
       case "pixieDust":
         roll = new Roll(`1d6`)
         rollRoll = await roll.evaluate()
         rollSpeed = new Roll(`1d6`)
-        rollRollSpeed = await roll.evaluate()
+        rollRollSpeed = await rollSpeed.evaluate()
         drugStat = {
           "name": drugType.value,
           "speed": item.system.speed,
           "duration": rollRoll.total,
           "durationType": "minute",
-          "resistedStunDamage": 12,
           "effectDuration": rollRollSpeed.total,
           "effectDurationType": "SR5.Minutes",
         }
@@ -3993,7 +4055,6 @@ export class SR5_CharacterUtility extends Actor {
           "speed": item.system.speed,
           "duration": duration,
           "durationType": "minute",
-          "unresistedStunDamage": 2,
         }
         break
       case "rockLizardBlood":
@@ -4008,7 +4069,6 @@ export class SR5_CharacterUtility extends Actor {
           "durationType": "hour",
           "durationContrecoup": duration,
           "durationContrecoupType": "hour",
-          "unresistedStunDamage": 2,
         }
         break
       case "shade":
@@ -4020,7 +4080,6 @@ export class SR5_CharacterUtility extends Actor {
           "speed": item.system.speed,
           "duration": duration,
           "durationType": "hour",
-          "unresistedStunDamage": 10,
         }
         break
       case "slab":
@@ -4063,16 +4122,13 @@ export class SR5_CharacterUtility extends Actor {
         break
       case "soothsayer": {
         duration = Math.max(12 - actorData.attributes.body.augmented.value, 1)
-        let alreadyTaken = actorData.addictions.find((d) => item.name === d.name)
-        let malus = 0
-        if (alreadyTaken.shot.value) malus = alreadyTaken.shot.value - 1
+        //Its 8S on intake, 1 less per application already made, are in entities/items/drug-damage.js
         drugStat = {
           "name": drugType.value,
           "speed": 1,
           "speedType": "SR5.Minute",
           "duration": duration,
           "durationType": "hour",
-          "resistedStunDamage": 8 - malus,
         }
         break
       }
@@ -4202,6 +4258,9 @@ export class SR5_CharacterUtility extends Actor {
         SR5_SystemHelpers.srLog(1, `Unknown '${drugType.value}' drug type in handleDrugShots()`)
         return
     }
+    //"ESS + 1D6 heures" (Chrome Flesh p. 191-193) gives 9.9 hours with a datajack: the book rounds up when it does not
+    //say otherwise (SR5 p. 50, written for divisions: its use for a sum is a reading). Rounded to the hundredth first, or an Essence of 5 stored as 5.0000001 would give one hour more
+    if (typeof drugStat.duration === "number") drugStat.duration = Math.ceil(Math.round(drugStat.duration * 100) / 100)
     //An antitoxin divides the duration of the effect by its rating (Chrome Flesh p. 154)
     const antitoxin = SR5_Toxins.antitoxinRating(actorData)
     if (antitoxin > 1) drugStat.duration = SR5_Toxins.drugDuration(drugStat.duration, antitoxin)
@@ -5336,7 +5395,7 @@ export class SR5_CharacterUtility extends Actor {
       SR5_SystemHelpers.srLog(2, `Mentor spirit '${item.name}' ignored: '${actor.name}' already follows a mentor`)
       return
     }
-    const magic = mentorMagic(actor.system.specialAttributes?.magic, actor.system.essence, SR5ShopGrades.greywareMagicPenalty(actor.items))
+    const magic = mentorMagic(actor.system.specialAttributes?.magic, actor.system.essence, SR5ShopGrades.greywareMagicPenalty(actor.items), essenceAdjustment(actor))
     const path = mentorPathFor(actor.system.magic?.magicType, item.system.mysticPath)
     const maskRule = game.settings.get("sr5", "mentorMask")
     if (Object.keys(item.system.customEffects).length) SR5_CharacterUtility.applyCustomEffects(item, actor)
@@ -5349,7 +5408,7 @@ export class SR5_CharacterUtility extends Actor {
     let itemData = item.system
     // Mentor spirit: the effects of the actor's own block only, nothing with a Magic of 0 (SR5 p. 324)
     const mentorPath = item.type === "itemMentorSpirit" ? mentorPathFor(actor.system.magic?.magicType, itemData.mysticPath) : null
-    const mentorMagicValue = item.type === "itemMentorSpirit" ? mentorMagic(actor.system.specialAttributes?.magic, actor.system.essence, SR5ShopGrades.greywareMagicPenalty(actor.items)) : 0
+    const mentorMagicValue = item.type === "itemMentorSpirit" ? mentorMagic(actor.system.specialAttributes?.magic, actor.system.essence, SR5ShopGrades.greywareMagicPenalty(actor.items), essenceAdjustment(actor)) : 0
 
     for (let [effectKey, customEffect] of Object.entries(itemData.customEffects)) {
       let skipCustomEffect = false,

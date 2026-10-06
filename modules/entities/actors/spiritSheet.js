@@ -1,4 +1,7 @@
 import {
+  isAlwaysActive
+} from "../items/always-active.js"
+import {
   ActorSheetSR5 
 } from "./baseSheet.js"
 import {
@@ -106,13 +109,10 @@ export class SR5SpiritSheet extends ActorSheetSR5 {
         }
         return super._onDropItemCreate(item)
       case "itemWeapon":
-        for (let i of this.actor.items){
-          if (i.type === "itemWeapon" && i.system.isActive && (i.system.category === item.system.category)) return super._onDropItemCreate(item)
-        }
-        item.system.isActive = true
+        this._activeUnlessOneIs(item, i => i.type === "itemWeapon" && i.system.category === item.system.category)
         return super._onDropItemCreate(item)
       case "itemPower":
-        if (item.system.actionType === "permanent") item.system.isActive = true
+        if (isAlwaysActive(item)) item.system.isActive = true
         return super._onDropItemCreate(item)
       case "itemSpell":
       case "itemEffect":

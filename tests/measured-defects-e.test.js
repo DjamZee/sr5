@@ -2,6 +2,12 @@ import {
   describe, it, expect, vi, beforeAll, beforeEach
 } from "vitest"
 
+//The card as a GM wrote it: its reading again is tested in attack-card.test.js and vd-carte-branchement.test.js
+vi.mock('../modules/rolls/roll-helpers/attack-card.js', async (importOriginal) => ({
+  ...(await importOriginal()),
+  trustedResistanceCard: async () => true,
+}))
+
 // Défauts mesurés en jeu par Bruno (mesures E, 06/10) :
 // D1 : deux bonus de Limite du même type (Armure SWAT : +2 et +1 sans fil à l'Intimidation) s'écrasaient dans la
 //      fenêtre de jet : Limite 9 sur la fiche, 7 dans le jet.

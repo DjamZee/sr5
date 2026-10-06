@@ -34,7 +34,18 @@ describe("the rerolls of the Rule of Six a card may count", () => {
   })
 
   it("a six rerolled earns one reroll more, as Foundry's explosion does", () => {
-    expect(recountHits(roll([6, 1], [6, 6, 5, 5]), 2)).toBe(4)
+    expect(recountHits(roll([6, 1, 1, 1], [6, 6, 5, 5]), 4)).toBe(4)
+  })
+
+  // Hyacinthe's review (06/10): a chain of sixes a card writes has no end; never more rerolls than dice in the pool
+  it("never counts more rerolls than dice in the pool", () => {
+    expect(recountHits(roll([6, 1], [6, 6, 5, 5]), 2)).toBe(3)
+    expect(recountHits(roll(new Array(12).fill(6), new Array(30).fill(6)), 12)).toBe(24)
+  })
+  it("counts no reroll at all for a test that did not push the limit", () => {
+    expect(recountHits(roll([6, 6, 1], [6, 6]), 3, {
+      rerolls: false
+    })).toBe(2)
   })
 
   it("a true roll keeps all its hits", () => {

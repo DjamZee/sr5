@@ -1,3 +1,5 @@
+{{!-- Only a maglock has a lock type: a host or any other device has none --}}
+{{#if (eq system.matrix.deviceType "maglock")}}
 <div class="SRBlockSheet">
 	<ul>
 		<li class="grid SR-LigneEnTete">
@@ -43,3 +45,4 @@
 		{{/if}}
     </ul>
 </div>
+{{/if}}

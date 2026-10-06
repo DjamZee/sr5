@@ -5,7 +5,7 @@ import {
   GM_ONLY_ITEM_PATHS, stripGMOnlyChanges
 } from '../entities/items/spirit-bonds.js'
 import {
-  gmOnlyItemEffects, isSystemEffectWrite, stripEffectChanges, touchesItemEffects
+  carriesItemEffects, gmOnlyItemEffects, isSystemEffectWrite, stripEffectChanges, touchesItemEffects
 } from '../system/effect-editor.js'
 import {
   GM_ONLY_PREPARATION_PATHS
@@ -42,8 +42,29 @@ export async function sr5HookItemVision(item, userId) {
   await SR5_CharacterUtility.refreshVisionOfTokens(item.parent)
 }
 
-export async function sr5HookCreateItem(item, _options, userId) {
+//Any owned item created, changed or deleted can move the initiative (a sustained spell, wired reflexes switched from the
+//item sheet, added or removed): the active GM alone compares, each fighter of the actor once
+async function moveInitiativeOf(item) {
+  if (item.isOwned && game.combat && game.user?.isGM && game.users?.activeGM?.id === game.user.id) {
+    for (const id of SR5Combat.initTargetsOfActor(item.actor)) await SR5Combat.changeInitInCombatHelper(id)
+  }
+}
+
+export async function sr5HookCreateItem(item, options, userId) {
   await sr5HookItemVision(item, userId)
+  await moveInitiativeOf(item)
+  //Séance H, H3 (decision of DjamZ): a player may still add an item that carries effects to a sheet (a drop from a
+  //compendium, createEmbeddedDocuments), but the active gamemaster is told with the lasting warning, an itemEffect
+  //included (Victoire's review: a state forged in the console added +4 Reaction unseen). Nothing the player's client
+  //sends (the option of a system write) makes it quieter
+  if (game.users?.activeGM?.isSelf && gmOnlyItemEffects() && item.isOwned &&
+    !game.users.get(userId)?.isGM && carriesItemEffects(item.system)) {
+    ui.notifications.warn(game.i18n.format('SR5.WARN_ItemEffectsAddedByPlayer', {
+      user: game.users.get(userId)?.name ?? userId, item: item.name, actor: item.parent?.name ?? ""
+    }), {
+      permanent: true
+    })
+  }
 }
 
 // Copy effect fields from an itemAmmunitionType into an effects snapshot
@@ -79,12 +100,15 @@ export function sr5HookPreUpdateItem(document, data, options, userId) {
     ui.notifications.warn(game.i18n.localize('SR5.WARN_ItemEffectsGMOnly'))
   }
   //The Elemental trait of a spirit is the gamemaster's (Forbidden Arcana p. 175): refused to a player before writing
-  if (document.type === 'itemSpirit' && !game.user?.isGM && stripGMOnlyChanges(data, document, GM_ONLY_ITEM_PATHS).length) {
+  //Whatever its form (flat, nested, "==" replacement, "-=" deletion), such an update is refused whole
+  if (document.type === 'itemSpirit' && !game.user?.isGM && stripGMOnlyChanges(data, document, GM_ONLY_ITEM_PATHS, options).length) {
     ui.notifications.warn(game.i18n.localize('SR5.WARN_SpiritBondsGMOnly'))
+    return false
   }
   //The start and the pace of a preparation's loss of Potency are the gamemaster's (SR5 p. 309)
-  if (document.type === 'itemPreparation' && !game.user?.isGM && stripGMOnlyChanges(data, document, GM_ONLY_PREPARATION_PATHS).length) {
+  if (document.type === 'itemPreparation' && !game.user?.isGM && stripGMOnlyChanges(data, document, GM_ONLY_PREPARATION_PATHS, options).length) {
     ui.notifications.warn(game.i18n.localize('SR5.WARN_PreparationDecayGMOnly'))
+    return false
   }
   //Vintage (Gun H(e)aven 3 p. 3): an electronic accessory is allowed but warned about, it gets no wireless
   if (document.type === 'itemWeapon' && data.system?.accessory !== undefined && userId === game.user?.id) {
@@ -118,14 +142,13 @@ export function sr5HookPreUpdateItem(document, data, options, userId) {
 export async function sr5HookUpdateItem(document, data, options, userId) {
   await sr5HookItemVision(document, userId)
   //A player's client can be made to skip the refusal above: the active gamemaster is told of every write of effects by a
-  //player. The option of a system write (acid, Apply to item) comes from that same client and can be forged: it only
-  //turns the lasting warning into a passing line, "system write announced" (Gustave's second review)
+  //player. The option of a system write (acid, Apply to item) comes from that same client and can be forged: it no
+  //longer changes the warning, always the lasting one (Victoire's review of séance H; Gustave's second review before)
   if (game.users?.activeGM?.isSelf && gmOnlyItemEffects() && !game.users.get(userId)?.isGM && touchesItemEffects(data)) {
-    const announced = isSystemEffectWrite(options)
-    ui.notifications.warn(game.i18n.format(announced ? 'SR5.WARN_ItemEffectsSystemWrite' : 'SR5.WARN_ItemEffectsChangedByPlayer', {
+    ui.notifications.warn(game.i18n.format('SR5.WARN_ItemEffectsChangedByPlayer', {
       user: game.users.get(userId)?.name ?? userId, item: document.name, actor: document.parent?.name ?? ""
     }), {
-      permanent: !announced
+      permanent: true
     })
   }
   //A physical jammer (SR5 p. 443) turned on or off, or changed: what it does is measured again
@@ -156,9 +179,7 @@ export async function sr5HookUpdateItem(document, data, options, userId) {
     }
   }
 
-  if (document.isOwned && game.combat && game.user?.isGM) {
-    if (document.type === "itemSpell" || document.type === "itemComplexForm") SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(document.actor))
-  }
+  await moveInitiativeOf(document)
 
   //Keep agent condition monitor synchro with owner deck
   if(document.type === "itemDevice" && data.system?.conditionMonitors?.matrix && (document.testUserPermission(game.user, 3) || game.user?.isGM)){
@@ -172,6 +193,7 @@ export async function sr5HookUpdateItem(document, data, options, userId) {
 
 export async function sr5HookDeleteItem(item, _options, userId) {
   await sr5HookItemVision(item, userId)
+  await moveInitiativeOf(item)
   if (SR5_Jammer.isJammer(item)) SR5_Jammer.refreshItem(item)
   //A deleted knowledge skill takes its kept roll attribute with it, by the user who deleted it
   if (item.type === "itemKnowledge" && userId === game.user?.id) await forgetKnowledgeAttribute(item)

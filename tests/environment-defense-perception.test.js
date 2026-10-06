@@ -1,6 +1,11 @@
 import {
-  describe, it, expect, beforeEach, afterEach
+  describe, it, expect, beforeEach, afterEach, vi
 } from "vitest"
+
+//The attack card as a GM wrote it: its reading again is tested in attack-card.test.js
+vi.mock("../modules/rolls/roll-helpers/attack-card.js", () => ({
+  trustedAttackCard: async chatData => chatData,
+}))
 import SR5_RollDialog from "../modules/rolls/roll-dialog.js"
 import defense from "../modules/rolls/roll-prepare-case/rollData-Defense.js"
 import {

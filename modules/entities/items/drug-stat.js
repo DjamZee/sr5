@@ -1,6 +1,9 @@
 import {
   effectPhase
 } from "./drug-phase.js"
+import {
+  drugHasCrashDamage, drugKeyOf
+} from "./drug-damage.js"
 
 // The quality of a drug changes the duration of its crash (Chrome Flesh p. 194): street drugs double it,
 // pharmaceutical ones halve it, custom ones divide it by four. Standard is the default
@@ -107,7 +110,28 @@ export function drugCrashIsInstant(data){
 export function drugHasCrash(data){
   const shot = data.handleShot ?? {
   }
-  if (Number(shot.durationContrecoup) > 0 || shot.unresistedStunDamage || shot.resistedStunDamage) return true
+  if (Number(shot.durationContrecoup) > 0 || drugHasCrashDamage(drugKeyOf(data), shot)) return true
   return Object.values(data.customEffects ?? {
   }).some(e => e && typeof e === "object" && effectPhase(e) === "crash")
+}
+
+// The key of a drug: the value of its "drug" system effect (jazz, cram…), "" when it has none
+const drugKey = system => Object.values(system?.systemEffects ?? {
+}).find(e => e?.category === "drug")?.value ?? ""
+
+// Two copies of the same drug are not a mix: the interaction comes from taking a drug under the effect of ANOTHER one
+// (Chrome Flesh p. 183). The same key is the same drug, whatever its quality; two custom drugs on the same base are
+// two drugs (their blocks differ, Chrome Flesh p. 194), told apart by their name. Taken again under its own effect, it
+// is an overdose (SR5 p. 417), not an interaction
+export function isSameDrug(a, b){
+  const key = drugKey(a?.system)
+  if (!key || key !== drugKey(b?.system)) return false
+  const custom = a.system?.quality === "custom" || b.system?.quality === "custom"
+  return !custom || a.name === b.name
+}
+
+// The drugs of a mix, each counted once: the roll has one die per drug and the street modifier +1 per drug
+// (Chrome Flesh p. 197), however many copies of it are under effect. Every copy still undergoes the result
+export function distinctDrugs(drugs){
+  return drugs.filter((d, i) => !drugs.slice(0, i).some(o => isSameDrug(o, d)))
 }

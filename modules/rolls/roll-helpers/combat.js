@@ -62,6 +62,22 @@ export class SR5_CombatHelpers {
   // Environmental rows an actor carries from templates standing on another scene than `sceneId`, by column.
   // The same rule as the prepared data (areaEffectScene.js): an effect with no template scene counts nowhere,
   // and is already left out of the prepared rows, so it is not subtracted here a second time.
+  //The Visibility row of the air between the shooter and the target, before any vision compensates it: the scene's,
+  //plus the smoke and fog of the templates the target and the shooter stand in. A laser's DV reads this one (Run &
+  //Gun p. 64: "les particules dans l'air"), not what the shooter sees through thermographic, ultrasound or astral sight.
+  static airVisibilityRow(scene, actor, areaEffect = null){
+    if (!scene) return 0
+    let row = (parseInt(scene.getFlag("sr5", "environModVisibility")) || 0) + (parseInt(areaEffect?.visibility) || 0)
+    for (const item of actor?.items ?? []){
+      if (item.type !== "itemEffect" || item.system?.type !== "areaEffect" || isAreaEffectOffScene(item, scene.id)) continue
+      for (const effect of Object.values(item.system.customEffects ?? {
+      })){
+        if (effect?.target === "system.itemsProperties.environmentalMod.visibility") row += parseInt(effect.value) || 0
+      }
+    }
+    return Math.min(Math.max(row, 0), 4)
+  }
+
   static areaEffectsOffScene(actor, sceneId){
     const offScene = {
     }
@@ -153,8 +169,9 @@ export class SR5_CombatHelpers {
   //noWind: ignore the wind column (perception, melee); melee: SR5 p. 188, only the Light and Visibility columns apply
   //weaponLight: light rows taken off by a flashlight on the weapon being used (SR5_UtilityItem.getWeaponLightCompensation)
   //weaponLightCap: light row a standard flashlight on that weapon brings the scene down to (SR5_UtilityItem.getWeaponLightCap)
-  static handleEnvironmentalModifiers(scene, actor, noWind, areaEffect, melee = false, weaponLight = 0, weaponLightCap = null){
-    const columns = SR5_CombatHelpers.environmentalColumns(scene, actor, noWind, areaEffect, melee, weaponLight, weaponLightCap)
+  //weaponVision: vision enhancements mounted in that weapon's scope (weapon-accessory-rules.js scopeVision)
+  static handleEnvironmentalModifiers(scene, actor, noWind, areaEffect, melee = false, weaponLight = 0, weaponLightCap = null, weaponVision = null){
+    const columns = SR5_CombatHelpers.environmentalColumns(scene, actor, noWind, areaEffect, melee, weaponLight, weaponLightCap, weaponVision)
     if (!columns) return 0
     return SR5_ConverterHelpers.environmentalLineToMod(SR5_CombatHelpers.environmentalLine(columns))
   }
@@ -163,7 +180,7 @@ export class SR5_CombatHelpers {
   //"equally severe" rule. Same arguments as handleEnvironmentalModifiers; null when there is no scene.
   static environmentalColumns(scene, actor, noWind, areaEffect = {
     visibility:0, light:0, glare:0, wind:0
-  }, melee = false, weaponLight = 0, weaponLightCap = null){
+  }, melee = false, weaponLight = 0, weaponLightCap = null, weaponVision = null){
     // With no scene there are no conditions to read: say so rather than roll as if all were normal.
     if (!scene) {
       globalThis.ui?.notifications?.warn(game.i18n.localize("SR5.WARN_NoSceneForEnvironment"))
@@ -182,14 +199,20 @@ export class SR5_CombatHelpers {
     const row = value => parseInt(value) || 0
     const sceneRow = key => row(scene.getFlag("sr5", key))
     const actorRow = key => row(actorData[key]?.value) - (offScene[key] || 0)
-    let visibilityMod = Math.min(Math.max(sceneRow("environModVisibility") + row(areaEffect.visibility) + actorRow("visibility"), 0), 4)
+    // Vision enhancements in the weapon's scope count for its shots only (SR5 p. 434, 447; arbitrage de DjamZ, 06/10):
+    // thermographic as the character's own (-1 light and visibility), unless a vision of the character already
+    // takes those rows off; low-light as below; flare compensation instead of the character's if it is better
+    const visionsOn = actor.visions?.thermographic?.isActive || actor.visions?.ultrasound?.isActive
+    const scopeThermo = weaponVision?.thermographic && !visionsOn ? 1 : 0
+    let visibilityMod = Math.min(Math.max(sceneRow("environModVisibility") + row(areaEffect.visibility) + actorRow("visibility") - scopeThermo, 0), 4)
     let sceneLight = sceneRow("environModLight") + row(areaEffect.light)
     // A standard flashlight on the weapon brings the light where it points down to partial light (Run & Gun p. 69)
     if (Number.isFinite(weaponLightCap)) sceneLight = Math.min(sceneLight, weaponLightCap)
-    let lightMod = Math.min(Math.max(sceneLight + actorRow("light") + weaponLight, 0), 4)
+    let lightMod = Math.min(Math.max(sceneLight + actorRow("light") + weaponLight - scopeThermo, 0), 4)
     // SR5 p. 177: low-light vision treats partial light (1) and dim light (2) as full light; it does nothing in total darkness (3)
-    if (actor.visions.lowLight.isActive && sceneLight > 0 && sceneLight <= 2) lightMod = 0
-    let glareMod = Math.min(Math.max(sceneRow("environModGlare") + row(areaEffect.glare) + actorRow("glare"), 0), 4)
+    if ((actor.visions.lowLight.isActive || weaponVision?.lowLight) && sceneLight > 0 && sceneLight <= 2) lightMod = 0
+    const glareOffset = actorRow("glare") + Math.min(0, (Number(weaponVision?.glare) || 0) - Math.min(actorRow("glare"), 0))
+    let glareMod = Math.min(Math.max(sceneRow("environModGlare") + row(areaEffect.glare) + glareOffset, 0), 4)
     let windMod = Math.min(Math.max(sceneRow("environModWind") + row(areaEffect.wind) + actorRow("wind"), 0), 4)
 
     // SR5 p. 176: Light and Glare are a single column of the Environmental Modifiers table,

@@ -4,7 +4,7 @@
         <div class="col-1"><input type="text" value="None" disabled /></div>
         <div class="col-2"></div>
     {{else}}
-        <div class="col-1 SR-Textleft"><input type="number" data-dtype="Number" name="system.essenceCost.base" value="{{system.essenceCost.base}}" onfocus="this.select()"/></div>
+        <div class="col-1 SR-Textleft"><input type="number" data-dtype="Number" name="system.essenceCost.base" value="{{system.essenceCost.base}}" onfocus="this.select()" {{#unless userIsGM}}disabled{{/unless}}/></div>
         {{#if system.essenceCost.multiplier}}
             <div class="col-2 SR-Textleft">&nbsp;(x {{findMultiplierValue system.essenceCost.multiplier this}})</div>
         {{else}}
@@ -12,10 +12,46 @@
         {{/if}}
         <div class="col-2 SR-TextRight">{{localize 'SR5.Multiplier'}}{{localize 'SR5.Colons'}}&nbsp;</div>
         <div class="col-2 SR-TextRight">
-            <select name="system.essenceCost.multiplier" data-dtype="{{system.essenceCost.multiplier}}" required>
+            <select name="system.essenceCost.multiplier" data-dtype="{{system.essenceCost.multiplier}}" required {{#unless userIsGM}}disabled{{/unless}}>
                 <option value="">{{localize 'SR5.None'}}</option>
                 {{selectOptions lists.valueMultipliersNoCapacity selected=system.essenceCost.multiplier localize=true}}
             </select>
         </div>
     {{/if}}
 </li>
+{{!-- The highest Essence the implant took (Chrome Flesh p. 74), and the active GM's gesture that gives back a peak
+      set by mistake (implant-register.js) --}}
+{{#if essencePeak}}
+<li class="grid">
+    <div class="col-5" data-title="{{localize 'SR5.EssencePeakHint'}}">{{localize 'SR5.EssencePeak'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-2">{{essencePeak}}</div>
+    <div class="col-5 SR-TextRight"><a data-action="resetEssencePeak"><em class="fas fa-sm fa-rotate-left"></em> {{localize 'SR5.EssencePeakReset'}}</a></div>
+</li>
+{{/if}}
+{{!-- Chrome Flesh (séance G): Adapsine (p. 165), lot d'augmentations (p. 96), Prototype de transhumain (p. 57).
+      Set at the installation from the buyer's body; the gamemaster alone changes them afterwards --}}
+{{#unless system.isAccessory}}
+{{#if (or (eq system.type "cyberware") (eq system.type "nanocyber"))}}
+<li class="grid">
+    <div class="col-5" data-title="{{localize 'SR5.UnderAdapsineHint'}}">{{localize 'SR5.UnderAdapsine'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="checkbox" name="system.underAdapsine" data-dtype="Boolean" {{checked system.underAdapsine}} {{#if (or (not userIsGM) system.reversibleEssence)}}disabled{{/if}} /></div>
+</li>
+{{/if}}
+{{#if (or (eq system.type "bioware") (eq system.type "culturedBioware"))}}
+<li class="grid">
+    <div class="col-5" data-title="{{localize 'SR5.TranshumanGiftHint'}}">{{localize 'SR5.TranshumanGift'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="checkbox" name="system.transhumanGift" data-dtype="Boolean" {{checked system.transhumanGift}} {{#unless userIsGM}}disabled{{/unless}} /></div>
+</li>
+{{/if}}
+{{#if augmentationBundleRule}}
+<li class="grid">
+    <div class="col-5" data-title="{{localize 'SR5.AugmentationBundleHint'}}">{{localize 'SR5.AugmentationBundle'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="checkbox" name="system.augmentationBundle" data-dtype="Boolean" {{checked system.augmentationBundle}} {{#unless userIsGM}}disabled{{/unless}} /></div>
+</li>
+{{/if}}
+{{!-- Better Than Bad p. 141: an Essence given back when the implant is removed (Tatouage de mana gris) --}}
+<li class="grid">
+    <div class="col-5" data-title="{{localize 'SR5.ReversibleEssenceHint'}}">{{localize 'SR5.ReversibleEssence'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="checkbox" name="system.reversibleEssence" data-dtype="Boolean" {{checked system.reversibleEssence}} {{#unless userIsGM}}disabled{{/unless}} /></div>
+</li>
+{{/unless}}

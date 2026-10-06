@@ -16,6 +16,12 @@ import {
 import {
   addGreyManaResistance, greyManaAppliesTo
 } from "../../system/grey-mana.js"
+import {
+  attackFamily, trustedAttackCard, trustedResistanceCard, rebuildCrossCard, CROSS_CARDS
+} from "../roll-helpers/attack-card.js"
+import {
+  drugResistance
+} from "../../entities/items/drug-damage.js"
 
 // Show a notification and return undefined so the caller aborts the test.
 // In Foundry V13, ui.notifications.info() returns a Notification object: returning it directly
@@ -25,9 +31,67 @@ function abortWithInfo(message){
   return undefined
 }
 
+function abortWithWarn(message){
+  ui.notifications.warn(message)
+  return undefined
+}
+
 //Add info for Resistance Roll
 export default async function resistance(rollData, rollType, actor, chatData){
+  //An attack card resisted without a defense (grenade, direct spell, spell that missed its threshold) is read again
+  //as for the defense; a defense or a resistance card stands only when its author owns the actor who resists
+  //(attack-card.js). The aura is read on its owner's sheet
+  if (attackFamily(chatData)) {
+    chatData = await trustedAttackCard(chatData, actor)
+    if (!chatData) return undefined
+  } else if (chatData?.test?.type === "falseTest" && CROSS_CARDS.includes(chatData.test.typeSub)) {
+    //A card a defense wrote in the attacker's name (aura, ramming crash): rebuilt from the attack and the defense
+    chatData = await rebuildCrossCard(chatData, actor)
+    if (!chatData) return abortWithWarn(game.i18n.localize("SR5.ResistanceCardRefused"))
+  } else if (!(await trustedResistanceCard(chatData, actor, rollType))) {
+    const text = game.i18n.localize("SR5.ResistanceCardRefused")
+    ui.notifications.warn(text)
+    return undefined
+  }
   let actorData = actor.system
+  //An engulf, at the spirit's following phases (SR5 p. 399): the damage is worked out again on the spirit engulfing the
+  //actor who resists, whose attack card the active GM keeps; never read on the flags of a card (Ivo, Victoire)
+  const airPhase = rollType === "resistanceCard" && chatData.damage?.toxin?.type === "airEngulf"
+  const continuousPhase = rollType === "resistanceCard" && chatData.test?.typeSub === "continuousDamage"
+  let engulf
+  if (airPhase || continuousPhase){
+    const {
+      SR5_ActorHelper
+    } = await import("../../entities/actors/entityActor-helpers.js")
+    engulf = await SR5_ActorHelper.engulfDamageOf(await SR5_ActorHelper.engulfAttackFor(actor))
+    if (!engulf) return abortWithInfo(game.i18n.localize("SR5.INFO_EngulfSourceMissing"))
+  }
+  if (continuousPhase){
+    chatData = foundry.utils.deepClone(chatData)
+    chatData.damage.originalValue = engulf.value
+    chatData.damage.value = engulf.value
+    chatData.damage.type = engulf.type
+    chatData.damage.resistanceType = "physicalDamage"
+    chatData.damage.element = engulf.element ?? ""
+    chatData.roll.netHits = 0
+    chatData.combat.armorPenetration = engulf.armorPenetration
+  }
+  if (airPhase){
+    chatData = foundry.utils.deepClone(chatData)
+    chatData.damage.value = engulf.value
+    chatData.damage.type = engulf.type
+    chatData.damage.resistanceType = "physicalDamage"
+    chatData.damage.element = "toxin"
+    //Resisted "comme pour une attaque par une toxine dont le vecteur est l'inhalation", armor does not protect but
+    //protective gear does (p. 399, 410): the toxin path, its Power the damage, its penetration −Magic, no hits added
+    chatData.damage.toxin.power = engulf.value
+    chatData.damage.toxin.penetration = engulf.armorPenetration
+    chatData.damage.toxin.damageType = engulf.type
+    chatData.damage.isContinuous = false
+    chatData.roll.netHits = 0
+    chatData.combat.armorPenetration = 0
+    rollType = "resistanceToxin"
+  }
   //Transfert necessary info from chatCard
   rollData.damage.base = chatData.damage.value
   rollData.damage.type = chatData.damage.type
@@ -106,6 +170,10 @@ export default async function resistance(rollData, rollType, actor, chatData){
       break
     case "fatigue":
       rollData = await handleFatigueDamage(rollData, actorData)
+      break
+    //A drug's damage, worked out again from the drug of the sheet, never from a card (entities/items/drug-damage.js)
+    case "drugDamage":
+      rollData = drugResistance(rollData, actor, chatData)
       break
     default:
       SR5_SystemHelpers.srLog(1, `Unknown '${chatData.damage.resistanceType}' Damage Resistance Type in roll`)

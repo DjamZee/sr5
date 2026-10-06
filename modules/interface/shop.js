@@ -17,7 +17,7 @@ import {
   SR5ShopCatalog
 } from './shop-catalog.js'
 import {
-  essenceAfterPurchase, screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED
+  essenceAfterPurchase, screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED, essenceSettingOn, ESSENCE_HOLE_SETTING
 } from '../system/implant-essence.js'
 import {
   SR5ShopAvailability
@@ -508,7 +508,10 @@ export class SR5Shop {
     if (typeof current !== 'number') return true
     const {
       essence
-    } = essenceAfterPurchase(current, actor.items, lines)
+    } = essenceAfterPurchase(current, actor.items, lines, {
+      // The hole is credited to the new implants under the Faille d'Essence only (Chrome Flesh p. 74)
+      creation: SR5Shop.creationMode, hole: essenceSettingOn(ESSENCE_HOLE_SETTING) ? actor.system.essence.hole : 0
+    })
     if (essence > 0 || essence >= current) return true
     const data = {
       name: actor.name, essence: essence.toLocaleString()
