@@ -1480,7 +1480,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 					
           // Generate the drug stat from the drug systemEffect: durations read the augmented Body and the
           // Essence, prepared values that the copy of system (its source) does not hold
-          drug = drugType ? await SR5_CharacterUtility.handleDrugShots(item, drugType, actor.system, actor) : null
+          drug = drugType ? await SR5_CharacterUtility.handleDrugShots(item, drugType, actor.system, actor, actorData.addictions) : null
 
           // Without a stat (no drug systemEffect, or a key the system does not know), nothing is counted: the GM
           // is told, instead of a drug that silently never ends
