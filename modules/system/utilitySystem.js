@@ -825,7 +825,9 @@ export class SR5_SystemHelpers {
       (a, b) => grid.constructor.cubeDistance(grid.offsetToCube(a), grid.offsetToCube(b))
     let shortest = Infinity
     for (const a of attackerCells) for (const b of targetCells) shortest = Math.min(shortest, gap(a, b))
-    return shortest <= reach + 1
+    //SR5 p. 187: Reach lengthens the range, never shortens it. A negative Reach (Crystal Jaw, -1) only counts in the
+    //Reach comparison: the weapon still strikes the adjacent space
+    return shortest <= Math.max(Number(reach) || 0, 0) + 1
   }
 
   /**

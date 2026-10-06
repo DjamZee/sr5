@@ -42,6 +42,13 @@ describe('isInMeleeRange on a square grid', () => {
     expect(reach(me, footprint(13, 13), 2)).toBe(true)
   })
 
+  //SR5 p. 184-186: a negative Reach (Crystal Jaw, -1) is a penalty in the Reach comparison, not a shorter
+  //range: the weapon still strikes in contact
+  it('reaches the adjacent squares with a negative Reach, and no further', () => {
+    expect(reach(me, footprint(11, 11), -1)).toBe(true)
+    expect(reach(me, footprint(12, 10), -1)).toBe(false)
+  })
+
   // A 2x2 target touching the attacker on any side: its top-left space is two squares away on the right and
   // below, which a corner-to-corner count refused.
   it('reaches a 2x2 target touching the attacker on each of its four sides and corners', () => {

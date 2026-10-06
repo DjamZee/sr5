@@ -376,7 +376,7 @@ async function handleTargetInfo(rollData, actor, item){
     const attackerDocument = actor.token ?? canvas.scene.tokens.find(t => t.actorId === actor.id)
     const targetDocument = Array.from(game.user.targets).at(-1)?.document
     let inReach = SR5_SystemHelpers.isInMeleeRange(canvas.grid, attackerDocument?.getOccupiedGridSpaceOffsets(), targetDocument?.getOccupiedGridSpaceOffsets(), itemData.reach.value)
-    if (inReach === null) inReach = rollData.target.rangeInMeters <= (itemData.reach.value + 1) * SR5_SystemHelpers.convertSceneUnitsToMeters(canvas.scene.grid.distance)
+    if (inReach === null) inReach = rollData.target.rangeInMeters <= (Math.max(itemData.reach.value, 0) + 1) * SR5_SystemHelpers.convertSceneUnitsToMeters(canvas.scene.grid.distance)
     if (Number.isFinite(rollData.target.rangeInMeters) && !inReach) {
       ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetIsTooFar"))
       return false
