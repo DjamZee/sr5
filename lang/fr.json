@@ -1791,6 +1791,8 @@
 	"SR5.AugmentationBundleHint": "Chrome Flesh p. 96 (règle optionnelle) : un implant d'un lot complet coûte 0,9 fois son Essence. Seul le MJ coche cette case.",
 	"SR5.ReversibleEssence": "Essence rendue au retrait",
 	"SR5.ReversibleEssenceHint": "Better Than Bad p. 141 : la perte d'Essence de cet implant (Tatouage de mana gris) est rendue dès qu'il est retiré ; il ne laisse aucune Essence perdue. Seul le MJ coche cette case ; un implant pris dans un compendium qui la porte la garde.",
+	"SR5.GradeNoEffectTattoo": "Gamme : sans effet (tatouage)",
+	"SR5.WARN_UnknownAugmentationGrade": "Implant de {actor} : la gamme « {grade} » n'existe pas, il est compté en standard. Corrigez sa gamme.",
 	"SR5.TranshumanEssence": "Essence de bioware offerte",
 	"SR5.TranshumanEssenceHint": "Chrome Flesh p. 57 : jusqu'à 1 point d'Essence de bioware ne coûte rien, à la création seulement. Dépensé par la boutique en mode création, figé ensuite ; le reliquat est perdu. Seul le MJ change ce nombre.",
 	"SR5.TranshumanEssenceLeft": "dépensé : {used}, reste : {remaining}",

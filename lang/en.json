@@ -1791,6 +1791,8 @@
 	"SR5.AugmentationBundleHint": "Chrome Flesh p. 96 (optional rule): an implant of a complete bundle costs 0.9 times its Essence. Only the GM ticks this box.",
 	"SR5.ReversibleEssence": "Essence given back on removal",
 	"SR5.ReversibleEssenceHint": "Better Than Bad p. 141: the Essence lost to this implant (grey mana tattoo) comes back as soon as it is removed; it leaves no Essence lost. Only the GM ticks this box; an implant taken from a compendium entry that carries it keeps it.",
+	"SR5.GradeNoEffectTattoo": "Grade: no effect (tattoo)",
+	"SR5.WARN_UnknownAugmentationGrade": "Implant of {actor}: the grade \"{grade}\" does not exist, it is counted as standard. Correct its grade.",
 	"SR5.TranshumanEssence": "Bioware Essence given",
 	"SR5.TranshumanEssenceHint": "Chrome Flesh p. 57: up to 1 point of bioware Essence costs nothing, at creation only. Spent by the shop in creation mode, frozen afterwards; what is left is lost. Only the GM changes this number.",
 	"SR5.TranshumanEssenceLeft": "spent: {used}, left: {remaining}",

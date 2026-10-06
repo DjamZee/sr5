@@ -10,6 +10,7 @@ export const RESERVED_DEFAULTS = {
   augmentationBundle: false,
   transhumanGift: false,
   reversibleEssence: false,
+  isAccessory: false,
   transhumanEssence: 1,
   "essence.holeAmount": 0,
   "essence.holeBase": 0,

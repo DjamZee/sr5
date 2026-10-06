@@ -12,7 +12,7 @@ import {
   reservedChangedBy, valueAfterUpdate, reservedMismatches
 } from "../modules/system/reserved-fields.js"
 import {
-  expectedAtCreation, expectedValues, reservedFieldsOf, sourceReversible
+  expectedAtCreation, expectedValues, reservedFieldsOf, sourceReversible, vouchedMarks
 } from "../modules/system/implant-register.js"
 import {
   mentorMagic
@@ -404,7 +404,7 @@ describe("the active gamemaster's register", () => {
     expect(await expectedAtCreation(implant({
       type: "cyberware", underAdapsine: true, augmentationBundle: true, reversibleEssence: true
     }), GM_ONLY_FIELDS.itemAugmentation)).toEqual({
-      underAdapsine: false, augmentationBundle: false, transhumanGift: false, reversibleEssence: false
+      underAdapsine: false, augmentationBundle: false, transhumanGift: false, reversibleEssence: false, isAccessory: false
     })
     expect((await expectedAtCreation(implant({
       type: "cyberware"
@@ -622,6 +622,90 @@ describe("Tatouage de mana gris: the Essence of its data, nothing from the body 
       }
     }
     expect(essenceAfterPurchase(6, [sensitive, bioCyber, adapsine], [line]).essence).toBe(5.9)
+  })
+})
+
+describe("Apollinaire's review: the marks of a removed implant, an accessory, an unknown grade", () => {
+  const doc = (system = {
+  }, extra = {
+  }) => ({
+    documentName: "Item", type: "itemAugmentation", uuid: "Actor.a.Item.i", id: "i", system: {
+      type: "cyberware", essenceCost: {
+        base: 1, multiplier: ""
+      }, ...system
+    }, parent: {
+      items: []
+    }, ...extra
+  })
+  const noSource = async () => null
+  it("reads the marks of a removed implant in the register, never on the deleted document", async () => {
+    // The player set both marks a moment before removing it; the register still says no
+    const forged = doc({
+      reversibleEssence: true, isAccessory: true
+    })
+    const marks = await vouchedMarks(forged, {
+      "Actor.a.Item.i": {
+        reversibleEssence: false, isAccessory: false
+      }
+    }, noSource)
+    expect(marks).toEqual({
+      isAccessory: false, reversibleEssence: false
+    })
+    expect(leavesHole(forged, marks)).toBe(true)
+    expect(leavesHole(forged)).toBe(false)
+  })
+  it("reads an implant the register does not know on its compendium entry, else as leaving a hole", async () => {
+    const tattoo = {
+      type: "itemAugmentation", system: {
+        type: "cyberware", reversibleEssence: true, isAccessory: false, essenceCost: {
+          base: 1, multiplier: ""
+        }
+      }
+    }
+    expect(await vouchedMarks(doc({
+      reversibleEssence: true
+    }, {
+      _stats: {
+        compendiumSource: "Compendium.m.i.Item.t"
+      }
+    }), {
+    }, async () => tattoo)).toEqual({
+      isAccessory: false, reversibleEssence: true
+    })
+    expect(await vouchedMarks(doc({
+      reversibleEssence: true, isAccessory: true
+    }), {
+    }, noSource)).toEqual({
+      isAccessory: false, reversibleEssence: false
+    })
+  })
+  it("refuses a player the accessory box, and works it out from the compendium entry", async () => {
+    expect(GM_ONLY_FIELDS.itemAugmentation).toContain("isAccessory")
+    expect((await expectedAtCreation(doc({
+      isAccessory: true
+    }), GM_ONLY_FIELDS.itemAugmentation, {
+      resolve: noSource
+    })).isAccessory).toBe(false)
+  })
+  it("completes an entry made before a field was reserved: as it stands at the GM's arrival, worked out on a player's write", async () => {
+    const accessory = doc({
+      isAccessory: true
+    })
+    const register = {
+      "Actor.a.Item.i": {
+        underAdapsine: false, augmentationBundle: false, transhumanGift: false
+      }
+    }
+    expect((await expectedValues(accessory, GM_ONLY_FIELDS.itemAugmentation, register, {
+      firstSight: true, resolve: noSource
+    })).isAccessory).toBe(true)
+    expect((await expectedValues(accessory, GM_ONLY_FIELDS.itemAugmentation, register, {
+      resolve: noSource
+    })).isAccessory).toBe(false)
+  })
+  it("reads an unknown grade as standard, never as an implant that costs nothing", () => {
+    expect(onActor(implant("cyberware", 2, "alpha"), [])).toBe(2)
+    expect(onActor(implant("cyberware", 2, "alphaware"), [])).toBe(1.6)
   })
 })
 

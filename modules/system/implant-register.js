@@ -41,17 +41,43 @@ export function reservedFieldsOf(doc) {
  * `doc` is still that implant (same kind, same Essence): a compendium is the gamemaster's, a player cannot write it.
  * @param {Function} [resolve] how a uuid is read (fromUuid)
  */
-export async function sourceReversible(doc, resolve = uuid => fromUuid(uuid)) {
-  // A drag from a compendium notes compendiumSource; the shop notes where it sold from (shop.js, shopSource)
+export async function sourceReversible(doc, resolve) {
+  return !!(await sourceEntry(doc, resolve))?.system?.reversibleEssence
+}
+
+/**
+ * The compendium entry `doc` was taken from, while `doc` is still that implant (same kind, same Essence and
+ * multiplier); null otherwise. A drag from a compendium notes compendiumSource; the shop notes where it sold from
+ * (shop.js, shopSource).
+ */
+export async function sourceEntry(doc, resolve = uuid => fromUuid(uuid)) {
   const uuid = [doc?._stats?.compendiumSource, doc?.flags?.core?.sourceId, doc?.flags?.sr5?.shopSource]
     .find(u => typeof u === "string" && u.startsWith("Compendium."))
-  if (!uuid) return false
+  if (!uuid) return null
   const source = await resolve(uuid)
   const cost = system => system?.essenceCost ?? {
   }
-  return !!source?.system?.reversibleEssence && source.type === doc.type && source.system?.type === doc.system?.type &&
+  const same = source && source.type === doc.type && source.system?.type === doc.system?.type &&
     Number(cost(source.system).base) === Number(cost(doc.system).base) &&
     (cost(source.system).multiplier ?? "") === (cost(doc.system).multiplier ?? "")
+  return same ? source : null
+}
+
+/**
+ * The marks the gamemaster vouches for on an implant being removed (Apollinaire's review): read in his register, never
+ * on the deleted document, whose last write may be a player's the GM has not put back yet. An implant the register
+ * does not know is read on its compendium entry, else as an implant that leaves a hole.
+ */
+export async function vouchedMarks(doc, register, resolve) {
+  const entry = register?.[doc?.uuid]
+  if (entry && "isAccessory" in entry && "reversibleEssence" in entry) return {
+    isAccessory: entry.isAccessory === true, reversibleEssence: entry.reversibleEssence === true
+  }
+  const source = await sourceEntry(doc, resolve)
+  return {
+    isAccessory: entry && "isAccessory" in entry ? entry.isAccessory === true : !!source?.system?.isAccessory,
+    reversibleEssence: entry && "reversibleEssence" in entry ? entry.reversibleEssence === true : !!source?.system?.reversibleEssence,
+  }
 }
 
 /**
@@ -65,13 +91,16 @@ export async function expectedAtCreation(doc, fields, {
 }) {
   if (doc?.type === "itemAugmentation" && doc.parent?.items) {
     const others = doc.parent.items.filter(i => i.id !== doc.id)
+    const source = await sourceEntry(doc, resolve)
     return {
       ...installationFlags({
         items: others
       }, doc.system, {
         creation
       }),
-      reversibleEssence: await sourceReversible(doc, resolve),
+      reversibleEssence: !!source?.system?.reversibleEssence,
+      // An accessory costs no Essence (entityActor.js): only a compendium entry says so for a player's implant
+      isAccessory: !!source?.system?.isAccessory,
     }
   }
   return Object.fromEntries(fields.map(f => [f, RESERVED_DEFAULTS[f]]))
@@ -80,13 +109,20 @@ export async function expectedAtCreation(doc, fields, {
 /**
  * The values to expect of a document: the register's, or, for a document it does not know yet (saved before it
  * existed, created while no gamemaster was connected), what it holds when that is the default, else what the body
- * gives now.
+ * gives now. A field the register entry does not hold yet (one added to the reserved fields after the entry was made,
+ * isAccessory or reversibleEssence) is taken as the document holds it at the gamemaster's first sight: an accessory
+ * entered before is not unticked.
  */
-export async function expectedValues(doc, fields, register, options) {
-  if (register?.[doc.uuid]) return {
-    ...Object.fromEntries(fields.map(f => [f, RESERVED_DEFAULTS[f]])), ...register[doc.uuid]
-  }
+export async function expectedValues(doc, fields, register, options = {
+}) {
   const current = reservedValues(doc.system, fields)
+  const entry = register?.[doc.uuid]
+  if (entry) {
+    if (fields.every(f => f in entry)) return Object.fromEntries(fields.map(f => [f, entry[f]]))
+    // At the GM's arrival (firstSight), the document as it stands; on a player's write, what the GM works out
+    const missing = options.firstSight ? current : await expectedAtCreation(doc, fields, options)
+    return Object.fromEntries(fields.map(f => [f, f in entry ? entry[f] : (missing[f] ?? RESERVED_DEFAULTS[f])]))
+  }
   const worked = await expectedAtCreation(doc, fields, options)
   return Object.fromEntries(fields.map(f => [f, current[f] === RESERVED_DEFAULTS[f] ? current[f] : (worked[f] ?? RESERVED_DEFAULTS[f])]))
 }
@@ -151,7 +187,7 @@ async function onUpdate(doc, _changes, _options, userId) {
   const expected = await expectedValues(doc, fields, register, {
     creation: creationMode()
   })
-  if (!register[doc.uuid]) await record(doc, expected)
+  if (!register[doc.uuid] || !fields.every(f => f in register[doc.uuid])) await record(doc, expected)
   const mismatches = reservedMismatches(current, expected)
   if (Object.keys(mismatches).length) await restore(doc, mismatches, userId)
 }
@@ -174,9 +210,9 @@ export async function reconcileImplantRegister() {
   const register = game.settings.get("sr5", IMPLANT_REGISTER) ?? {
   }
   const options = {
-    creation: creationMode()
+    creation: creationMode(), firstSight: true
   }
-  // The implants the register does not know yet are entered in one write
+  // The implants the register does not know yet, and the entries missing a field added since, are written in one go
   const unknown = {
   }
   for (const actor of game.actors) {
@@ -184,14 +220,20 @@ export async function reconcileImplantRegister() {
       const fields = reservedFieldsOf(doc)
       if (!fields.length) continue
       const expected = await expectedValues(doc, fields, register, options)
-      if (!register[doc.uuid] && doc.type === "itemAugmentation") unknown[doc.uuid] = expected
+      const entry = register[doc.uuid]
+      if ((!entry && doc.type === "itemAugmentation") || (entry && !fields.every(f => f in entry))) unknown[doc.uuid] = expected
       const mismatches = reservedMismatches(reservedValues(doc.system, fields), expected)
       if (Object.keys(mismatches).length) await restore(doc, mismatches, null)
     }
   }
-  if (Object.keys(unknown).length) await updateLedger(IMPLANT_REGISTER, latest => ({
-    ...unknown, ...latest
-  }))
+  if (Object.keys(unknown).length) await updateLedger(IMPLANT_REGISTER, latest => {
+    // What the register holds wins; the fields it lacks are added
+    for (const [uuid, values] of Object.entries(unknown)) latest[uuid] = {
+      ...values, ...(latest[uuid] ?? {
+      })
+    }
+    return latest
+  })
 }
 
 export function registerImplantRegisterHooks() {

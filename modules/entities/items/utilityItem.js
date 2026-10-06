@@ -23,6 +23,19 @@ import {
   deathSowerAdeptDamage
 } from "./magic-masteries.js"
 
+// The implants whose unknown grade the gamemaster was told of, once each per session
+const unknownGradesTold = new Set()
+function warnUnknownGrade(itemData, actor) {
+  // Told with the character it is on: the item alone is also computed, without it
+  if (!actor || !globalThis.game?.user?.isGM || !globalThis.ui?.notifications) return
+  const key = `${actor?.id ?? ""}|${itemData.grade}|${itemData.type}|${itemData.essenceCost?.base}`
+  if (unknownGradesTold.has(key)) return
+  unknownGradesTold.add(key)
+  ui.notifications.warn(game.i18n.format("SR5.WARN_UnknownAugmentationGrade", {
+    grade: String(itemData.grade), actor: actor?.name ?? ""
+  }))
+}
+
 export class SR5_UtilityItem extends Actor {
   //************************************************//
   //                     ITEMS                      //
@@ -1196,17 +1209,20 @@ export class SR5_UtilityItem extends Actor {
     }
 
     // One table for the sheet and the shop: AUGMENTATION_GRADE_TABLE (SR5 p. 454, CF p. 74, BTB p. 142)
-    const grade = AUGMENTATION_GRADE_TABLE[itemData.grade]
+    // A grade the table does not know (written by hand, "alpha" for "alphaware") is read as standard, never as an
+    // implant that costs nothing; the gamemaster is told once per implant (Apollinaire's review)
+    let grade = AUGMENTATION_GRADE_TABLE[itemData.grade]
     if (!grade) {
-      SR5_SystemHelpers.srLog(1, `Unknown '${itemData.grade}' grade in _handleAugmentation()`)
-      return
+      SR5_SystemHelpers.srLog(1, `Unknown '${itemData.grade}' grade in _handleAugmentation(): read as standard`)
+      warnUnknownGrade(itemData, actor)
+      grade = AUGMENTATION_GRADE_TABLE.standard
     }
     essenceMultiplier = grade.essence
     deviceRating = grade.deviceRating
     availabilityModifier = grade.availability
     priceMultiplier = grade.price
     itemData.deviceRating = deviceRating
-    modifierSource = `${game.i18n.localize(SR5.augmentationGrades[itemData.grade])}`
+    modifierSource = `${game.i18n.localize(SR5.augmentationGrades[itemData.grade] ?? SR5.augmentationGrades.standard)}`
     SR5_EntityHelpers.updateModifier(itemData.availability, modifierSource, "augmentationGrade", availabilityModifier, false, false)
     SR5_EntityHelpers.updateModifier(itemData.price, modifierSource, "augmentationGrade", priceMultiplier, true, false)
 
@@ -1218,7 +1234,10 @@ export class SR5_UtilityItem extends Actor {
       reversibleEssence: itemData.reversibleEssence,
     })
     // A Tatouage de mana gris costs the Essence of its data, whatever its grade (Better Than Bad p. 141)
-    if (itemData.reversibleEssence) essenceMultiplier = 1
+    if (itemData.reversibleEssence) {
+      essenceMultiplier = 1
+      modifierSource = game.i18n.localize("SR5.GradeNoEffectTattoo")
+    }
     for (const m of bodyEffects.multipliers) SR5_EntityHelpers.updateModifier(itemData.essenceCost, m.name, m.type, m.value, true, false)
     if (bodyEffects.gradeReduction) {
       essenceMultiplier = Math.max(0, Math.round((essenceMultiplier - bodyEffects.gradeReduction) * 100) / 100)

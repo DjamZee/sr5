@@ -11,6 +11,9 @@
 import {
   implantsEssenceLost, essenceHole, essenceSettingOn, ESSENCE_HOLE_SETTING
 } from "./implant-essence.js"
+import {
+  IMPLANT_REGISTER, vouchedMarks
+} from "./implant-register.js"
 
 /**
  * The hole kept after an implant is removed.
@@ -30,22 +33,38 @@ export function holeAfterRemoval(essence, lostBefore, lostAfter, fills = true) {
 
 /**
  * Whether removing `item` leaves Essence lost: an implant, not an accessory, and not one whose loss "est réversible dès
- * que le tatouage est retiré" (Better Than Bad p. 141; the mark is the gamemaster's, checked against the compendium,
- * implant-register.js).
+ * que le tatouage est retiré" (Better Than Bad p. 141).
+ * @param {{isAccessory: boolean, reversibleEssence: boolean}} [marks] the marks the gamemaster vouches for (his
+ *   register, implant-register.js vouchedMarks); without them, the item's own
  */
-export function leavesHole(item) {
-  return item?.type === "itemAugmentation" && !item.system?.isAccessory && !item.system?.reversibleEssence
+export function leavesHole(item, marks = item?.system) {
+  return item?.type === "itemAugmentation" && !marks?.isAccessory && !marks?.reversibleEssence
 }
 
 /** The deleteItem hook: an implant removed from a character. */
 async function onImplantDeleted(item) {
-  if (!leavesHole(item) || !(item.parent instanceof Actor)) return
+  if (item?.type !== "itemAugmentation" || !(item.parent instanceof Actor)) return
   if (!game.users.activeGM?.isSelf) return
+  // Read before anything waits: the register still holds the entry the deletion is about to remove
+  const register = game.settings.get("sr5", IMPLANT_REGISTER) ?? {
+  }
   if (game.settings.get("sr5", "sr5ShopCreationMode") === true) return
   const actor = item.parent
   if (!actor.system?.essence) return
+  // Never the deleted document's marks: a player's write the GM has not put back yet would open no hole
+  // (Apollinaire's review)
+  const marks = await vouchedMarks(item, register)
+  if (!leavesHole(item, marks)) return
+  const removed = {
+    type: item.type, system: {
+      type: item.system?.type, isAccessory: false, transhumanGift: item.system?.transhumanGift,
+      essenceCost: {
+        value: item.system?.essenceCost?.value
+      }
+    }
+  }
   const others = actor.items.filter(i => i.id !== item.id)
-  const next = holeAfterRemoval(actor.system.essence, implantsEssenceLost([...others, item]), implantsEssenceLost(others),
+  const next = holeAfterRemoval(actor.system.essence, implantsEssenceLost([...others, removed]), implantsEssenceLost(others),
     essenceSettingOn(ESSENCE_HOLE_SETTING))
   await actor.update({
     "system.essence.holeAmount": next.holeAmount, "system.essence.holeBase": next.holeBase
