@@ -594,6 +594,19 @@ export class SR5Combat extends Combat {
     return combatant
   }
 
+  //The ids to compare again after an update of this actor: an unlinked token's own, or every fighter of a base actor,
+  //each unlinked token by its own id (its synthetic actor is prepared again from the base) and the linked ones by the actor's
+  static initTargetsOfActor(document){
+    if (!game.combat || !document) return []
+    if (document.isToken) return document.token?.id ? [document.token.id] : []
+    const ids = new Set()
+    for (const combatant of game.combat.combatants){
+      if (combatant.actorId !== document.id) continue
+      ids.add(combatant.token?.actorLink === false ? combatant.tokenId : document.id)
+    }
+    return [...ids]
+  }
+
   static async changeInitInCombat(documentId, initChange){
     if (!game.combat) return
     let document = SR5_EntityHelpers.getRealActorFromID(documentId)
@@ -602,7 +615,9 @@ export class SR5Combat extends Combat {
 
     if (!combatant) return
     if (combatant.initiative <= 0) return
-			
+    //The fighter's own actor: an unlinked token's, not the base actor whose id it shares (SR5 p. 162 and 171)
+    document = combatant.actor ?? document
+
     let initKey = SR5_CharacterUtility.findActiveInitiative(document.system),
       initRatingChange = (initChange ||0), 
       initDiceChange = 0, 

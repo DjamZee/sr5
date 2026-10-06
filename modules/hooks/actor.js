@@ -80,10 +80,7 @@ export async function sr5HookUpdateActor(document, data, _options, userId) {
   if (data.items && userId === game.user?.id) await SR5_CharacterUtility.refreshVisionOfTokens(document)
 
   if (game.combat && game.user?.isGM && (data.system?.initiatives || data.system?.conditionMonitors || data.system?.matrix)) {
-    let actorId = document.id
-    if (document.isToken) actorId = document.token.id
-
-    if (actorId) await SR5Combat.changeInitInCombatHelper(actorId)
+    for (const id of SR5Combat.initTargetsOfActor(document)) await SR5Combat.changeInitInCombatHelper(id)
   }
 
   //Keep deck condition monitor synchro with agent condition monitor
