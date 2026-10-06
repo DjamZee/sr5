@@ -98,11 +98,8 @@ export class SR5_MatrixHelpers {
     if (newItem.system.conditionMonitors.matrix.actual.value >= monitorSize){
       //No dumpshock for an AI: it is dissipated instead (decided by DjamZ, 04/10)
       if (targetActor.system.activeSpecialAttribute === "depth") aiDissipated = true
-      else if (targetItem.type === "itemDevice" && targetActor.system.matrix.userMode !== "ar"){
-        //The resistance card reads owner and roll from the card it follows: a bare object crashed it (SR5 p. 229)
-        let dumpshockData = SR5_PrepareRollTest.getBaseRollData(null, targetActor)
-        dumpshockData.damage.resistanceType = "dumpshock"
-        targetActor.rollTest("resistanceCard", null, dumpshockData)
+      //A bricked device throws a character in VR out of the Matrix, with dumpshock (SR5 p. 229)
+      else if (targetItem.type === "itemDevice" && SR5_ActorHelper.dumpshockIfInVR(targetActor)){
         ui.notifications.info(`${targetActor.name} ${game.i18n.localize("SR5.INFO_IsDisconnected")}.`)
       }
       newItem.system.isActive = false
@@ -340,14 +337,8 @@ export class SR5_MatrixHelpers {
     if (SR5_MatrixHelpers.getLinkLocks(actor).length) return
     await SR5_EntityHelpers.deleteEffectOnActor(actor, "linkLock")
 
-    //Dumpshock in VR, cold or hot sim (SR5 p. 231 and 244), as the IC reboots of this file
-    let userMode = actor.system.matrix.userMode
-    if (userMode && userMode !== "ar"){
-      let dumpshockData = SR5_PrepareRollTest.getBaseRollData(null, actor)
-      dumpshockData.damage.resistanceType = "dumpshock"
-      actor.rollTest("resistanceCard", null, dumpshockData)
-    }
-    //rebootDeck spends no action: the jack out has already paid for its own
+    //rebootDeck spends no action: the jack out has already paid for its own. It deals the dumpshock
+    //in VR, cold or hot sim, link lock or not (SR5 p. 231 and 244)
     await actor.rebootDeck()
   }
 
@@ -718,11 +709,8 @@ export class SR5_MatrixHelpers {
         })
         target.createEmbeddedDocuments("Item", [effect])
         break
+      //The forced reboot deals the dumpshock in VR (rebootDeck, SR5 p. 244)
       case "iceScramble": {
-        if (target.system.matrix.userMode !== "ar"){
-          cardData.damage.resistanceType = "dumpshock"
-          target.rollTest("resistanceCard", null, cardData)
-        }
         let deck = target.items.find((item) => item.type === "itemDevice" && item.system.isActive)
         target.rebootDeck(deck)
         break
@@ -749,11 +737,8 @@ export class SR5_MatrixHelpers {
         let existingMark = await SR5_MarkHelpers.findMarkValue(item.system, ice.id)
         if (!target.system.matrix.isLinkLocked) 
           await SR5_MatrixHelpers.applylinkLockEffect(ice, target)
-        if (existingMark >= 2) {                    
-          if (target.system.matrix.userMode !== "ar"){
-            cardData.damage.resistanceType = "dumpshock"
-            target.rollTest("resistanceCard", null, cardData)
-          }
+        //The forced reboot deals the dumpshock in VR (rebootDeck, SR5 p. 244)
+        if (existingMark >= 2) {
           let deck_iceFlicker = target.items.find((item) => item.type === "itemDevice" && item.system.isActive)
           target.rebootDeck(deck_iceFlicker)
         }

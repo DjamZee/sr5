@@ -586,3 +586,76 @@ describe('Jacking out reboots the device used (SR5 p. 244)', () => {
     })
   })
 })
+
+// E4 (DjamZ's ruling, 2026-10-06, SR5 p. 231 and 244): any exit from VR without switching to AR first deals
+// dumpshock, link lock or not; nothing once in AR
+describe('Every ejection from VR deals one dumpshock', () => {
+  let rollTest
+  beforeEach(() => {
+    vi.spyOn(SR5_EntityHelpers, 'deleteEffectOnActor').mockResolvedValue()
+    vi.spyOn(SR5_PrepareRollTest, 'getBaseRollData').mockImplementation(() => ({
+      damage: {
+      }
+    }))
+    rollTest = hacker.rollTest = vi.fn()
+  })
+  const dumpshocks = () => rollTest.mock.calls.filter(c => c[0] === 'resistanceCard' && c[2]?.damage?.resistanceType === 'dumpshock').length
+  const rebootButton = () => {
+    const sheet = Object.create(ActorSheetSR5.prototype)
+    Object.defineProperty(sheet, 'actor', {
+      get: () => hacker
+    })
+    return sheet._onRebootDeck({
+      preventDefault(){}
+    })
+  }
+
+  it.each([['cold sim', 'coldsim', 1], ['hot sim', 'hotsim', 1], ['AR', 'ar', 0]])('the reboot button in %s (a reboot by choice, or the GM applying convergence)', async (_case, userMode, expected) => {
+    hacker.system.matrix.userMode = userMode
+    await rebootButton()
+    expect(dumpshocks()).toBe(expected)
+  })
+
+  it('a free jack out in hot sim deals exactly one dumpshock', async () => {
+    hacker.system.matrix.userMode = 'hotsim'
+    await SR5_MatrixHelpers.jackOut({
+      owner: {
+        actorId: 'hacker'
+      }, previousMessage: {
+      }
+    })
+    expect(dumpshocks()).toBe(1)
+  })
+
+  it.each(['iceScramble', 'iceFlicker'])('%s forcing the reboot in VR deals exactly one dumpshock', async typeSub => {
+    hacker.system.matrix.userMode = 'coldsim'
+    activeDeck.uuid = 'Actor.hacker.Item.deck'
+    activeDeck.system.marks = [{
+      ownerId: 'ice', value: 2
+    }]
+    globalThis.fromUuid.mockImplementation(async uuid => ({
+      [commlink.uuid]: commlink, [serverFile.uuid]: serverFile, [activeDeck.uuid]: activeDeck
+    })[uuid] ?? null)
+    vi.spyOn(SR5_MatrixHelpers, 'applylinkLockEffect').mockResolvedValue()
+    const reboot = vi.spyOn(hacker, 'rebootDeck')
+    await SR5_MatrixHelpers.applyIceEffect({
+      test: {
+        typeSub
+      }, target: {
+        itemUuid: activeDeck.uuid
+      }, damage: {
+      }
+    }, {
+      id: 'ice', name: 'CI'
+    }, hacker)
+    await reboot.mock.results[0].value
+    expect(dumpshocks()).toBe(1)
+  })
+
+  it('an AI rebooting in VR takes no dumpshock (DjamZ, 04/10)', async () => {
+    hacker.system.matrix.userMode = 'hotsim'
+    hacker.system.activeSpecialAttribute = 'depth'
+    await hacker.rebootDeck()
+    expect(dumpshocks()).toBe(0)
+  })
+})

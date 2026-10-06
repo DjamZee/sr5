@@ -1361,6 +1361,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     if (actionCost.length && this._spendingItemAction) return
     if (!SR5Combat.hasActionsLeft(actor, actionCost)) return
     if (actionCost.length) this._spendingItemAction = event
+    //The device the character is connected through, before the change: switched off in VR, it throws them out (SR5 p. 231)
+    let connectedDeviceId = itemList.find(i => i.type === "itemDevice" && i.system.isActive)?._id
     foundry.utils.setProperty(item, target, value)
 
     //Spécial, pour les decks, désactiver les autres decks lorsque l'un d'entre eux et équipé
@@ -1709,6 +1711,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       "items": itemList,
     })
     if (this.actor.isToken) this.actor.sheet.render()
+
+    //Switching off the device in use, or equipping another, leaves the Matrix: dumpshock in VR (SR5 p. 231,
+    //DjamZ's ruling, 2026-10-06). The character switches to AR first to leave it cleanly
+    if (connectedDeviceId && !itemList.find(i => i._id === connectedDeviceId)?.system.isActive) SR5_ActorHelper.dumpshockIfInVR(this.actor)
 
     //Delete effects linked to sustaining
     if ((item.type === "itemComplexForm" || item.type === "itemSpell" || item.type === "itemAdeptPower" || item.type === "itemPower") && target === "system.isActive"){

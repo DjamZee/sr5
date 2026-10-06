@@ -1042,7 +1042,9 @@ export class SR5Actor extends Actor {
 
 
   //Reboot deck = reset Overwatch score and delete any marks on or from the actor
+  //A character in VR when the device reboots takes dumpshock (SR5 p. 244), whatever made it reboot
   async rebootDeck() {
+    SR5_ActorHelper.dumpshockIfInVR(this)
     let actorId = (this.isToken ? this.token.id : this.id)
     let dataToUpdate = {
     }
