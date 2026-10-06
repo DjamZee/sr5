@@ -101,27 +101,28 @@ export class SR5_EntityHelpers {
 
     if (modifiersArray === undefined || !Array.isArray(modifiersArray)) { SR5_SystemHelpers.srLog(1, `Missing or non-array variable sent to 'updateModifier()'`); return }
     if (isNaN(modifierValue)) { SR5_SystemHelpers.srLog(1, `Modifier value '${modifierValue}' is not a number in 'updateModifier()'`); return }
-    let modified = false
-
-    modifiersArray.find((oldModifier, index) => {
-      if (!cumulative && oldModifier.type === modifierType) {
-        let newValue = 0
-        if (oldModifier.value >= 0) {
-          newValue = Math.max(oldModifier.value, modifierValue)
-        } else {
-          newValue = Math.min(oldModifier.value, modifierValue)
+    //A non-cumulative modifier competes only with the non-cumulative modifiers of the same type: the strongest one
+    //stays (the highest bonus, the deepest penalty), with its own label. Cumulative modifiers are never replaced, so
+    //the total is the same whatever order the modifiers arrive in (a long barrel's +1 Accuracy no longer vanishes
+    //when a non-cumulative sight is mounted after it)
+    if (!cumulative) {
+      const index = modifiersArray.findIndex(m => m.nonCumulative && m.type === modifierType)
+      if (index >= 0) {
+        const old = modifiersArray[index]
+        const stronger = old.value >= 0 ? modifierValue > old.value : modifierValue < old.value
+        if (stronger) modifiersArray[index] = {
+          source: modifierLabel, type: modifierType, value: modifierValue, isMultiplier: isMultiplier, nonCumulative: true, details: details
         }
-        modifiersArray[index] = {
-          source: modifierLabel, type: modifierType, value: newValue, isMultiplier: isMultiplier 
-        }
-        modified = true
+        return
       }
-    })
-    if (!modified) {
       modifiersArray.push({
-        source: modifierLabel, type: modifierType, value: modifierValue, isMultiplier: isMultiplier , details: details
+        source: modifierLabel, type: modifierType, value: modifierValue, isMultiplier: isMultiplier, nonCumulative: true, details: details
       })
+      return
     }
+    modifiersArray.push({
+      source: modifierLabel, type: modifierType, value: modifierValue, isMultiplier: isMultiplier , details: details
+    })
   }
 
   static updateValue(property, minValue, maxValue) {
