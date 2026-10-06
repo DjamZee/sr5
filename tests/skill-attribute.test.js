@@ -43,7 +43,7 @@ describe('aligned background count on the limit of magic skills', () => {
   })
 })
 
-// Grimoire des Ombres p. 30: the background count follows the attribute in use
+// Grimoire des Ombres p. 30 and p. 87 (limit of an aligned count): the background count follows the attribute in use
 describe('background count', () => {
   const penalty = {
     value: -3, modifiers: [{

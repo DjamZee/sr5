@@ -56,7 +56,7 @@ export function skillAttributeTitle(choice, localize){
   return `${choice.titleBase} + ${localize(choice.choices[choice.selected])}`
 }
 
-// Grimoire des Ombres p. 30: the background count weighs on the magic used by an Awakened, i.e. here on the tests made with Magic. It follows the
+// Grimoire des Ombres p. 30 and p. 87 (the raised limit of an aligned count): the background count weighs on the magic used by an Awakened, i.e. here on the tests made with Magic. It follows the
 // attribute in use: added when Magic is picked, removed when Magic gives way to another one.
 // Astral combat and assensing carry it whatever the attribute, as on the sheet.
 export const ALWAYS_BACKGROUND_COUNT = ["astralCombat", "assensing"]

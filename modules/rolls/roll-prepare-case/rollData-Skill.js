@@ -83,7 +83,7 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
   //Determine limit modififiers
   rollData.limit.modifiers = SR5_PrepareRollHelper.getLimitModifiers(rollData, skillLimitModifiers)
 
-  //The background count follows the attribute in use (Grimoire des Ombres p. 30)
+  //The background count follows the attribute in use (Grimoire des Ombres p. 30; its limit raise when aligned, p. 87)
   if (rollData.skillAttribute){
     rollData.skillAttribute.skillKey = rollKey
     rollData = syncBackgroundCount(rollData, actor.system.magic?.bgCount, backgroundCountApplies(rollKey, rollData.skillAttribute.selected))

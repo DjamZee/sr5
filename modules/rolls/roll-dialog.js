@@ -317,7 +317,7 @@ export default class SR5_RollDialog {
     dialogData.test.title = skillAttributeTitle(choice, k => game.i18n.localize(k))
     //The window title shows the pair in use, as the chat card will
     setDialogWindowTitle(html, dialogData.test.title)
-    //The background count follows the attribute in use (Grimoire des Ombres p. 30)
+    //The background count follows the attribute in use (Grimoire des Ombres p. 30; its limit raise when aligned, p. 87)
     if (choice.skillKey) syncBackgroundCount(dialogData, actor.system.magic?.bgCount, backgroundCountApplies(choice.skillKey, attributeKey))
     if (choice.keep) this._onKeepSkillAttribute(true, dialogData, actor)
     this._syncAttributeTests(html, dialogData)
