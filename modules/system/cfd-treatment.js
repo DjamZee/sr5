@@ -216,7 +216,8 @@ export function cfdStatus(actor){
   if (!p && naniteOf(actor) <= 0) return null
   return {
     overwriters: p?.overwriters ? {
-      rating: p.overwriters.rating, cured: !!p.overwriters.curedAt
+      rating: p.overwriters.curedAt ? overwriterDecayDue(p.overwriters, game.time.worldTime).rating : p.overwriters.rating,
+      cured: !!p.overwriters.curedAt
     } : null,
     nanoscrub: p?.nanoscrub ? {
       rating: p.nanoscrub.rating, next: fmt(p.nanoscrub.injectedAt + ((p.nanoscrub.hoursDone ?? 0) + 1) * HOUR)
@@ -383,10 +384,17 @@ async function overwriterRounds(actor, cap){
   }])
 }
 
+// A Combat Turn ends when the round moves forward from a round actually played: starting the combat (0 -> 1)
+// ends nothing, and going back a round neither
+export function endsCombatTurn(previousRound, newRound){
+  const prev = Number(previousRound) || 0
+  return prev >= 1 && Number(newRound) > prev
+}
+
 // The end of a Combat Turn: one round for every treated character fighting in it
 async function onCombatRound(combat, changed){
   if (!isActiveGM() || !("round" in changed)) return
-  if (!(changed.round > (combat.previous?.round ?? 0))) return
+  if (!endsCombatTurn(combat.previous?.round, changed.round)) return
   const patients = cfdLedger().patients ?? {
   }
   const seen = new Set()

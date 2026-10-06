@@ -3,7 +3,7 @@ import {
 } from "vitest"
 import {
   overwriterRating, overwriterPools, resolveOverwriterRound, runOverwriters, nanoscrubDue, sideEffectOf,
-  baseEssence, cyberwareAtRisk, nanowareToDecay, overwriteDeadline, overwriterDecayDue, HOUR, DAY
+  baseEssence, cyberwareAtRisk, nanowareToDecay, overwriteDeadline, overwriterDecayDue, endsCombatTurn, HOUR, DAY
 } from "../modules/system/cfd-treatment.js"
 
 describe("Overwriters (Dark Terrors p. 87)", () => {
@@ -55,6 +55,13 @@ describe("Overwriters (Dark Terrors p. 87)", () => {
     expect(rounds.at(-1)).toMatchObject({
       nanite: 0, cured: true
     })
+  })
+
+  it("only the end of a Combat Turn actually played counts: not the start of the combat, not a step back", () => {
+    expect(endsCombatTurn(0, 1)).toBe(false)
+    expect(endsCombatTurn(undefined, 1)).toBe(false)
+    expect(endsCombatTurn(1, 2)).toBe(true)
+    expect(endsCombatTurn(3, 2)).toBe(false)
   })
 
   it("never loops for ever on ties", async () => {
