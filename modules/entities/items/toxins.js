@@ -207,11 +207,13 @@ export class SR5_Toxins {
     return this.BLIGHT_BLOCKED_SKILLS.includes(rollKey) || (this.BLIGHT_ASTRAL_SKILLS.includes(rollKey) && this.blightBlocksAstral(actor))
   }
 
-  /** "Perd sa connexion à la manasphère" (decision of DjamZ after Victoire's review): no astral perception, projection,
-   *  Astral observation nor Astral combat. A dual-natured being (and a spirit) keeps its nature: the book gives it -4 dice */
+  /** "Perd sa connexion à la manasphère" (decisions of DjamZ after Victoire's reviews): no astral perception, projection,
+   *  Astral observation nor Astral combat. The book is followed: dual-natured beings are "affectées de manière
+   *  similaire", they lose the astral too, with their -4 dice. A spirit is named only for the DMSO (it loses its
+   *  Immunity to normal weapons), never as losing the manasphere: it keeps its astral */
   static BLIGHT_ASTRAL_SKILLS = ["assensing", "astralCombat"]
   static blightBlocksAstral(actor) {
-    return this.isCutFromManasphere(actor) && actor?.type !== "actorSpirit" && !this.isDualNatured(actor)
+    return this.isCutFromManasphere(actor) && actor?.type !== "actorSpirit"
   }
 
   /** A dual-natured being: one of its powers carries the dualNatured spirit power key */

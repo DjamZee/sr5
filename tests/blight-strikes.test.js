@@ -80,8 +80,9 @@ describe('Blight cuts the astral too', () => {
     expect(SR5_Toxins.blightBlocksRoll(a, 'skillDicePool', 'astralCombat')).toBe(true)
     expect(SR5_Toxins.blightBlocksRoll(a, 'weaponAstral', null)).toBe(true)
   })
-  it('leaves the astral to a dual-natured being and to a spirit, which take -4 dice instead', () => {
-    expect(SR5_Toxins.blightBlocksRoll(mage([blight, dualNature]), 'skillDicePool', 'assensing')).toBe(false)
+  // Decision of DjamZ (third round): the book is followed, dual-natured beings are "affectées de manière similaire"
+  it('cuts the astral of a dual-natured being too, and leaves it to a spirit, which the book names only for the DMSO', () => {
+    expect(SR5_Toxins.blightBlocksRoll(mage([blight, dualNature]), 'skillDicePool', 'assensing')).toBe(true)
     expect(SR5_Toxins.blightBlocksAstral(mage([blight], {
       type: 'actorSpirit'
     }))).toBe(false)
@@ -182,10 +183,11 @@ describe('when Blight strikes', () => {
     expect(a.update).not.toHaveBeenCalled()
   })
 
-  it('leaves the astral of a dual-natured being', () => {
+  it('takes a dual-natured being out of astral perception too', () => {
     expect(blightDrops(mage([blight, dualNature], {
       perceiving: true
     })).astral).toEqual({
+      'system.visions.astral.isActive': false
     })
   })
 })
