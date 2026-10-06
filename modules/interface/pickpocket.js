@@ -1,7 +1,7 @@
 import {
   pickableItems, randomPick, concealmentOf, transferEnds, pickpocketOutcome, isTransferAllowed, perceptionDialogLocks,
   PICKPOCKET_MAX_CONCEALMENT, pileSize, defaultTakeQuantity, splitPile,
-  thiefHitsCap, boundThiefHits, shownQuantity
+  thiefHitsCap, boundThiefHits, shownQuantity, trustedChoice, answeredByGM
 } from "../rolls/roll-helpers/pickpocket-rules.js"
 import {
   NOT_LOOTERS
@@ -221,7 +221,7 @@ export class SR5Pickpocket {
     const escape = foundry.utils.escapeHTML
     //Taking, the thief chooses only when the world lets him: otherwise a choice on his card is his own writing
     const thiefMayChoose = mode === "plant" || game.settings.get("sr5", "sr5PickpocketThiefChooses")
-    const chosen = thiefMayChoose ? messageData.various.pickpocketItemId : null
+    const chosen = thiefMayChoose ? trustedChoice(giver, messageData.various.pickpocketItemId) : null
     //Every object the GM can pass over to, the small ones first; one bigger than +2 is marked
     const items = pickableItems(giver, {
       allowLarge: true
@@ -298,9 +298,10 @@ export class SR5Pickpocket {
     await target.rollTest("pickpocketPerception", null, data)
   }
 
+  //The thief card's own flags first, then the GM's cards, which the player cannot wipe
   static isAnswered(thiefMessageId) {
     const various = game.messages.get(thiefMessageId)?.flags?.sr5data?.various
-    return !!(various?.pickpocketAnswerId || various?.pickpocketDone)
+    return !!(various?.pickpocketAnswerId || various?.pickpocketDone) || answeredByGM(game.messages, thiefMessageId)
   }
 
   /** The Perception card is being written: the thief card it answers is spent, its button goes
@@ -324,7 +325,7 @@ export class SR5Pickpocket {
 
   //The target learns of it: with the thief's name when caught or noticed, without when he only felt something.
   //Planting, a critical glitch drops the object at the target's feet (arbitrage de DjamZ, 2026-10-05)
-  static async alertTarget(targetId, thiefId, named, mode = "take", dropped = false) {
+  static async alertTarget(targetId, thiefId, named, mode = "take", dropped = false, answeredId = null) {
     const target = SR5_EntityHelpers.getRealActorFromID(targetId)
     const thief = SR5_EntityHelpers.getRealActorFromID(thiefId)
     const name = SR5Pickpocket.tokenOf(targetId)?.name ?? target?.name ?? ""
@@ -339,6 +340,15 @@ export class SR5Pickpocket {
     await ChatMessage.create({
       content: `<p>${foundry.utils.escapeHTML(text)}</p>`,
       whisper: SR5Pickpocket.whisperFor(target),
+      //The GM's own record that this thief card is spent (see answeredByGM)
+      ...(answeredId ? {
+        flags: {
+          sr5: {
+            pickpocketAnswered: answeredId
+          }
+        }
+      } : {
+      }),
     })
   }
 
@@ -348,7 +358,7 @@ export class SR5Pickpocket {
     const thiefId = type === "pickpocketCaught" ? messageData.owner.actorId : messageData.previousMessage.actorId
     const targetId = type === "pickpocketCaught" ? messageData.target.actorId : messageData.owner.actorId
     //The object dropped stays the thief's in the system: where it lands is the GM's call
-    await SR5Pickpocket.alertTarget(targetId, thiefId, true, messageData.various?.pickpocketMode ?? "take", type === "pickpocketCaught")
+    await SR5Pickpocket.alertTarget(targetId, thiefId, true, messageData.various?.pickpocketMode ?? "take", type === "pickpocketCaught", type === "pickpocketCaught" ? messageId : null)
     await game.messages.get(type === "pickpocketCaught" ? messageId : messageData.previousMessage.messageId)?.update({
       "flags.sr5data.various.pickpocketDone": true
     })

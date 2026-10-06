@@ -206,6 +206,34 @@ export function perceptionDialogLocks(mode, chosenItemId) {
   }
 }
 
+/**
+ * The object the thief's card names, when the GM's dialog may lock it: only one the thief could have
+ * chosen himself, a small object the giver holds (Hilde: a card retouched to name a bigger one locked
+ * the GM's list on it). Anything else is the GM's to choose.
+ */
+export function trustedChoice(giver, itemId) {
+  if (!itemId) return null
+  return pickableItems(giver).some(i => i.id === itemId) ? itemId : null
+}
+
+/**
+ * Whether a thief card was already answered, read from the GM's own cards only: a Perception card he
+ * rolled for it, or the alert he wrote when the thief was caught. The thief card is the player's own
+ * message, and she can wipe its "answered" flags to have it answered, and an object taken, twice (Hilde).
+ * @param {Iterable} messages the chat log
+ * @param {String} thiefMessageId the thief card
+ */
+export function answeredByGM(messages, thiefMessageId) {
+  if (!thiefMessageId) return false
+  for (const message of messages ?? []) {
+    if (!message?.author?.isGM) continue
+    const card = message.flags?.sr5data
+    if (card?.test?.type === "pickpocketPerception" && card.previousMessage?.messageId === thiefMessageId) return true
+    if (message.flags?.sr5?.pickpocketAnswered === thiefMessageId) return true
+  }
+  return false
+}
+
 //Who gives and who receives: the thief takes, or plants (second batch)
 export function transferEnds(mode, thief, target) {
   return mode === "plant" ? {

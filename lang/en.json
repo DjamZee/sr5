@@ -4662,6 +4662,7 @@
 	"SR5.StorageLockGlitchNote": "Glitch: the GM may take 1D6 hits away from the total (SR5 p. 50).",
 	"SR5.StorageLockStage_casingBack": "Casing put back",
 	"SR5.StorageLockNoPool": "Without the Locksmith skill, no lockpicking: it cannot be defaulted.",
+	"SR5.StorageLockOwnershipHint": "Locked storage: the rights shown are the ones you mean to give. Above Limited, they only apply once it is open; until then, everyone stays at Limited at most.",
 	"SR5.StorageLockAlarm": "Alarm: the anti-tamper system of {storage} went off while {actor} was picking it ({hits} / {threshold} hits).",
 	"SR5.StorageLockHackCard": "{actor} wants to hack the wireless maglock of {storage} (rating {rating}): Control Device, 2 marks, Electronic Warfare + Intuition [Sleaze] vs Intuition + Firewall (SR5 p. 239-240). The GM opens the lock if the action succeeds.",
 	"SR5.WARN_StorageLocked": "This container is locked.",

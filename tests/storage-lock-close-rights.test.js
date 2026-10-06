@@ -17,9 +17,10 @@ globalThis.Hooks = {
 }
 
 const {
-  SR5StorageLock
-} = await import('../modules/interface/storage-lock-actions.js')
-SR5StorageLock.registerHooks()
+  SR5StorageLockRights
+} = await import('../modules/interface/storage-lock-rights.js')
+// The rewrite runs in the actor's _preUpdate since the ownership window updates with noHook (Hilde)
+handlers.preUpdateActor = (actor, changes, options) => SR5StorageLockRights.hold(actor, changes, options)
 
 // Zélia's review of the lock: an update that shuts the storage AND changes rights skipped the
 // atomic close, so the rights it granted held until the sync came back

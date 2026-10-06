@@ -1,7 +1,10 @@
 import {
   isLocked, pickStages, pickPool, pickLimit, lockTools, extendedTest, underLimit, antiTamperOf,
-  isPickRequestAllowed, lockedOwnership, unlockedOwnership, lockedRightsChange, closingRights,
+  isPickRequestAllowed, lockedOwnership, unlockedOwnership,
 } from "./storage-lock.js"
+import {
+  SR5StorageLockRights
+} from "./storage-lock-rights.js"
 import {
   isStoredAway
 } from "./storage-rules.js"
@@ -14,9 +17,6 @@ import {
 import {
   SR5_SystemHelpers
 } from "../system/utilitySystem.js"
-import {
-  SR5_EntityHelpers
-} from "../entities/helpers.js"
 import {
   raisedThreshold
 } from "../rolls/roll-helpers/threshold.js"
@@ -52,9 +52,7 @@ export class SR5StorageLock {
 
   /** Users holding the key: the owners of the character who put it down. */
   static keyHolders(storage) {
-    const creator = SR5_EntityHelpers.getRealActorFromID(storage?.system?.creatorId)
-    if (!creator) return []
-    return game.users.filter(u => !u.isGM && creator.testUserPermission(u, "OWNER")).map(u => u.id)
+    return SR5StorageLockRights.keyHolders(storage)
   }
 
   static hasKey(storage, user = game.user) {
@@ -75,33 +73,14 @@ export class SR5StorageLock {
     const sync = (actor, changes) => {
       if (actor.type !== "actorStorage" || !game.users.activeGM?.isSelf) return
       if (changes && !foundry.utils.hasProperty(changes, "system.lock") &&
-        !("ownership" in changes)) return
+        !("ownership" in changes) && !("==ownership" in changes)) return
       SR5StorageLock.syncOwnership(actor)
     }
     // A right the GM grants while it is shut never takes effect, not even for
-    // the instant before the sync: the update is rewritten before it leaves
-    Hooks.on("preUpdateActor", (actor, changes, options) => {
-      if (actor.type !== "actorStorage" || !game.user.isGM || options?.sr5LockSync) return
-      const lockedNext = foundry.utils.getProperty(changes, "system.lock.locked")
-      if (lockedNext === false) return
-      const gms = game.users.filter(u => u.isGM).map(u => u.id)
-      const keep = [...SR5StorageLock.keyHolders(actor), ...gms]
-      // Shut by the GM: the others go down to Limited in the same update, the rights it changes too
-      const type = foundry.utils.getProperty(changes, "system.lock.type") ?? actor.system.lock?.type
-      if (lockedNext === true && !isLocked(actor) && type) {
-        const shut = closingRights(actor.ownership, changes.ownership, actor.getFlag("sr5", "lockOwnership"), keep)
-        // A key sent back to the default stays sent back: the update merges, it never drops a key
-        for (const key of Object.keys(changes.ownership ?? {
-        })) if (key.startsWith("-=")) shut.ownership[key] = null
-        changes.ownership = shut.ownership
-        foundry.utils.setProperty(changes, "flags.sr5.lockOwnership", shut.saved)
-        return
-      }
-      if (!changes.ownership || !isLocked(actor)) return
-      const result = lockedRightsChange(changes.ownership, actor.getFlag("sr5", "lockOwnership"), keep)
-      changes.ownership = result.ownership
-      foundry.utils.setProperty(changes, "flags.sr5.lockOwnership", result.saved)
-    })
+    // the instant before the sync: the update is rewritten before it leaves, in
+    // the actor's own _preUpdate (SR5StorageLockRights.hold), which Foundry's
+    // ownership window reaches too, though it updates with noHook
+    Hooks.on("renderDocumentOwnershipConfig", (app, element) => SR5StorageLockRights.showWish(app, element))
     Hooks.on("createActor", actor => sync(actor))
     Hooks.on("updateActor", (actor, changes) => sync(actor, changes))
     Hooks.once("ready", () => {

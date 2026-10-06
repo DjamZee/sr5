@@ -50,6 +50,9 @@ import {
   isStoredAway
 } from "../../interface/storage-rules.js"
 import {
+  SR5StorageLockRights
+} from "../../interface/storage-lock-rights.js"
+import {
   worsenAddiction, burnoutAttribute
 } from "../../rolls/roll-helpers/addiction.js"
 import {
@@ -265,6 +268,12 @@ export class SR5Actor extends Actor {
       default:
         super.create(data, options)
     }
+  }
+
+  async _preUpdate(changes, options, user) {
+    //A storage's rights while it is shut: rewritten here, since Foundry's ownership window updates with noHook
+    if (this.type === "actorStorage") SR5StorageLockRights.hold(this, changes, options)
+    return super._preUpdate(changes, options, user)
   }
 
   async _preCreate(data, options, user) {

@@ -243,6 +243,38 @@ export function lockedRightsChange(changed, saved, keep) {
 }
 
 /**
+ * The whole ownership the GM's ownership window sends ("==ownership") while it
+ * is shut, or as it shuts. The window shows his wish, so what it sends is his
+ * whole wish: each user it names gets at most Limited, the key holders and the
+ * GMs what was chosen. A user it leaves out goes back to the default and has
+ * no wish left.
+ *
+ * @param {object} submitted the ownership the window sends
+ * @param {string[]} keep user ids left alone: key holders and GMs
+ * @returns {{ownership: object, saved: object}}
+ */
+export function dialogRights(submitted, keep) {
+  const ownership = {
+  }
+  const wish = {
+  }
+  for (const [userId, level] of Object.entries(submitted ?? {
+  })) {
+    const wanted = Number(level)
+    if (!Number.isFinite(wanted)) continue
+    if (userId !== "default" && keep.includes(userId)) {
+      ownership[userId] = wanted
+      continue
+    }
+    wish[userId] = wanted
+    ownership[userId] = Math.min(wanted, LIMITED)
+  }
+  return {
+    ownership, saved: wish
+  }
+}
+
+/**
  * The rights a storage shut by the GM gets in the very update that shuts it,
  * when that update changes rights too (Zélia's review: such an update skipped
  * the atomic close, and the rights it granted held until the sync). The
