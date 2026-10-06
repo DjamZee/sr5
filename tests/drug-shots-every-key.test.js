@@ -101,6 +101,38 @@ describe('Soothsayer (Chrome Flesh p. 186): 8S, each further application lowers 
   })
 })
 
+// Stolen Souls p. 192 over Chrome Flesh p. 190 (arbitrage de DjamZ, H20): Laés Power 12, Leäl Power 10 and drowsiness
+// rather than unconsciousness; Leäl memory loss (120 - Body, minimum 100) minutes; duration 5 × 1D6 minutes (Chrome Flesh)
+describe('Laés and Leäl (Stolen Souls p. 192)', () => {
+  const take = (key, body = 4) => SR5_CharacterUtility.handleDrugShots(drug(key), {
+    value: key
+  }, {
+    ...actorData([]), attributes: {
+      body: {
+        augmented: {
+          value: body
+        }
+      }
+    }
+  })
+
+  it('Leäl: 10S, drowsiness, 5 × 1D6 minutes, memory lost for 116 minutes at Body 4', async () => {
+    const stat = await take('leal')
+    expect(stat.resistedStunDamage).toBe(10)
+    expect(stat.drowsy).toBe(true)
+    expect([stat.duration, stat.durationType]).toEqual([15, 'minute'])
+    expect([stat.effectDuration, stat.effectDurationType]).toEqual([116, 'SR5.Minutes'])
+  })
+  it('Leäl: never less than 100 minutes of memory', async () => {
+    expect((await take('leal', 30)).effectDuration).toBe(100)
+  })
+  it('Laés: 12S, no drowsiness', async () => {
+    const stat = await take('laes')
+    expect(stat.resistedStunDamage).toBe(12)
+    expect(stat.drowsy).toBeUndefined()
+  })
+})
+
 describe('Pixie Dust (Chrome Flesh p. 191): two separate dice', () => {
   it('duration and memory loss each rolled once', async () => {
     const stat = await SR5_CharacterUtility.handleDrugShots(drug('Poussière de fée'), {

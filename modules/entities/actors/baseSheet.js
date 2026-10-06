@@ -1611,6 +1611,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 						
             // Notify info on effect for Laes/Leal
             if (itemData.handleShot.effectDuration) await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.ErasedMemoryFor")} ${itemData.handleShot.effectDuration} ${game.i18n.localize(itemData.handleShot.effectDurationType)}`)
+            if (itemData.handleShot.drowsy) await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.localize("SR5.DrugDrowsy")}`)
 
           }
 

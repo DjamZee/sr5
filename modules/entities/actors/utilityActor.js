@@ -3849,6 +3849,9 @@ export class SR5_CharacterUtility extends Actor {
           "effectDurationType": "SR5.Hours",
         }
         break
+      //Stolen Souls p. 192 rather than Chrome Flesh p. 190 (arbitrage de DjamZ, H20): Power 10, and drowsiness
+      //rather than unconsciousness, which the book does not quantify. Stolen Souls gives no duration: 5 × 1D6
+      //minutes stays the one of Chrome Flesh p. 190
       case "leal":
         roll = new Roll(`1d6`)
         rollRoll = await roll.evaluate()
@@ -3860,7 +3863,8 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "minute",
-          "resistedStunDamage": 12,
+          "resistedStunDamage": 10,
+          "drowsy": true,
           "effectDuration": effect,
           "effectDurationType": "SR5.Minutes",
         }
