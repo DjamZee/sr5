@@ -187,6 +187,41 @@ describe('item update after a roll', () => {
     })
   })
 
+  //Flamethrower fanning (Gun H(e)aven 3 p. 3): the sweep comes from the targets of each attack. Saved on the weapon,
+  //it came back on the next shot at a single target (8dff143f, a6768a45)
+  it('never saves the sweep as the weapon\'s firing mode, but saves any other mode', async () => {
+    game.user = {
+      isGM: true
+    }
+    const swept = launcher()
+    globalThis.fromUuid = async () => swept
+    const sweep = card()
+    sweep.combat.firingMode.selected = 'FN'
+    await SR5_RollTestHelper.updateItemAfterRoll(sweep)
+    expect(swept.update).toHaveBeenCalledWith({
+      system: {
+        ammunition: {
+          value: 11
+        }
+      }
+    })
+
+    const burst = launcher()
+    globalThis.fromUuid = async () => burst
+    const other = card()
+    other.combat.firingMode.selected = 'BF'
+    await SR5_RollTestHelper.updateItemAfterRoll(other)
+    expect(burst.update).toHaveBeenCalledWith({
+      system: {
+        ammunition: {
+          value: 11
+        }, firingMode: {
+          current: 'BF'
+        }
+      }
+    })
+  })
+
   it('lets the relay ignore what a caller resent unchanged', async () => {
     const item = launcher()
     globalThis.fromUuid = async () => item
