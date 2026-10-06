@@ -113,6 +113,60 @@ describe("two GMs connected: area effects are given once", () => {
     expect(SR5_EffectArea.jamNoise(jammer, jammer.items[0])).toBe(4)
   })
 
+  //Anke's review: cover, standing up and a token's move had no red test
+  it("taking cover and standing up spend the action on the active GM only", async () => {
+    const {
+      SR5Combat
+    } = await import("../modules/system/srcombat.js")
+    const {
+      sr5HookCreateActiveEffect, sr5HookDeleteActiveEffect
+    } = await import("../modules/hooks/active-effect.js")
+    const spend = vi.spyOn(SR5Combat, "changeActionInCombat").mockResolvedValue()
+    globalThis.game.combat = {
+    }
+    const actor = {
+      id: "near", isToken: false, items: []
+    }
+    const cover = {
+      parent: actor, statuses: new Set(["cover"]), flags: {
+      }
+    }
+    const prone = {
+      parent: actor, statuses: new Set(["prone"]), flags: {
+      }
+    }
+    asGM("gm2", "gm1")
+    sr5HookCreateActiveEffect(cover)
+    await sr5HookDeleteActiveEffect(prone)
+    expect(spend).not.toHaveBeenCalled()
+    asGM("gm1", "gm1")
+    sr5HookCreateActiveEffect(cover)
+    await sr5HookDeleteActiveEffect(prone)
+    expect(spend).toHaveBeenCalledTimes(2)
+    delete globalThis.game.combat
+  })
+
+  it("a token's move checks the templates on the active GM only", async () => {
+    const {
+      sr5HookUpdateToken
+    } = await import("../modules/hooks/token.js")
+    const check = vi.spyOn(SR5_EffectArea, "checkIfTokenIsInTemplate").mockResolvedValue()
+    vi.spyOn(SR5_EffectArea, "tokenAura").mockResolvedValue()
+    const token = {
+      parent: null
+    }
+    asGM("gm2", "gm1")
+    sr5HookUpdateToken(token, {
+      x: 10
+    })
+    expect(check).not.toHaveBeenCalled()
+    asGM("gm1", "gm1")
+    sr5HookUpdateToken(token, {
+      x: 10
+    })
+    expect(check).toHaveBeenCalledTimes(1)
+  })
+
   it("a template drawn or deleted on a second GM's canvas gives and lifts nothing there", async () => {
     asGM("gm2", "gm1")
     await sr5HookDrawMeasuredTemplate({
