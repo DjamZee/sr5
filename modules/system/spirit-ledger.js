@@ -42,20 +42,42 @@ export function withCharacterField(ledger, actorId, field, value){
 }
 
 // Spirit traits the gamemaster sets (Forbidden Arcana p. 172-175), keyed like a banished spirit; and the magic pact
-// of a free spirit (Street Grimoire p. 133), the only way a spirit spends the Edge of its character (SR5 p. 58)
-export const SPIRIT_TRAITS = ["isElemental", "isWild", "hasDomain", "magicPact"]
+// of a free spirit (Street Grimoire p. 133), which lets it spend the Edge of its character; whether the spirit is free
+// (SR5 p. 306-307), and the Edge the gamemaster gave it (freeEdge, a number; null: the default of freeSpiritEdge)
+export const SPIRIT_TRAITS = ["isElemental", "isWild", "hasDomain", "magicPact", "isFree"]
+export const SPIRIT_VALUES = ["freeEdge"]
+
+// A value of the gamemaster's: a whole number from 0, or null when left empty
+function spiritValue(value){
+  if (value === null || value === undefined || value === "") return null
+  const n = Math.floor(Number(value))
+  return Number.isFinite(n) ? Math.max(0, n) : null
+}
+
 export function spiritEntry(ledger, key){
   const entry = ledger?.spirits?.[key] ?? {
   }
-  return Object.fromEntries(SPIRIT_TRAITS.map(t => [t, !!entry[t]]))
+  return {
+    ...Object.fromEntries(SPIRIT_TRAITS.map(t => [t, !!entry[t]])),
+    ...Object.fromEntries(SPIRIT_VALUES.map(v => [v, spiritValue(entry[v])])),
+  }
 }
 export function withSpiritTrait(ledger, key, trait, value){
-  if (!SPIRIT_TRAITS.includes(trait)) throw new Error(`unknown spirit trait ${trait}`)
+  if (!SPIRIT_TRAITS.includes(trait) && !SPIRIT_VALUES.includes(trait)) throw new Error(`unknown spirit trait ${trait}`)
   const next = foundryCopy(ledger)
   next.spirits[key] = {
-    ...spiritEntry(next, key), [trait]: !!value
+    ...spiritEntry(next, key), [trait]: SPIRIT_VALUES.includes(trait) ? spiritValue(value) : !!value
   }
   return next
+}
+
+// The Edge of a free spirit (SR5 p. 306-307: P / 2, only for free spirits). The tables say no rounding: the general
+// rule rounds up (SR5 p. 50). Street Grimoire p. 203 has a spirit freed start at 1 and grow in play: the gamemaster
+// sets that value (freeEdge), this default holding until he does. Default asked of DjamZ (H10), kept in one place
+export const FREE_SPIRIT_EDGE_DEFAULT = force => Math.ceil((Math.max(0, Number(force) || 0)) / 2)
+export function freeSpiritEdge(force, freeEdge){
+  const set = spiritValue(freeEdge)
+  return set === null ? FREE_SPIRIT_EDGE_DEFAULT(force) : set
 }
 
 // A banishing card counts once: its message id is kept, whatever the button state on the card says
@@ -137,7 +159,12 @@ export function banishKey(actor){
 // some there, which win
 export function spiritTraitsFor(ledger, baseId, tokenKey){
   const traits = spiritEntry(ledger, baseId)
-  if (tokenKey && ledger?.spirits?.[tokenKey]) Object.assign(traits, spiritEntry(ledger, tokenKey))
+  if (tokenKey && ledger?.spirits?.[tokenKey]) {
+    const own = spiritEntry(ledger, tokenKey)
+    //A value left empty on the token keeps the world actor's
+    for (const v of SPIRIT_VALUES) if (own[v] === null) delete own[v]
+    Object.assign(traits, own)
+  }
   return traits
 }
 

@@ -290,7 +290,10 @@
 			<div class="col-2 SR-TextCenter" 
 			  data-helpTitle="{{localize 'SR5.HELP_AttributeNat' key=(localize 'SR5.Edge')}}" 
 			  data-helpMessage="{{localize 'SR5.HELP_AttributeNatMsg'}}">
+				{{!-- A free spirit's Edge comes from its Force or the gamemaster's ledger, never from the sheet --}}
+				{{#if (eq actor.type 'actorSpirit')}}{{system.specialAttributes.edge.natural.value}}{{else}}
 				<input type="text" data-dtype="Number" class="input" name="system.specialAttributes.edge.natural.base" value="{{system.specialAttributes.edge.natural.base}}" onfocus="this.select()">
+				{{/if}}
 			</div>
 			<div class="col-2 SR-TextCenter roll-logo sr-roll" data-rolltype="attribute" data-rollkey="{{@key}}"
 			  data-helpTitle="{{localize 'SR5.HELP_AttributeAug' key=(localize 'SR5.Edge')}}"

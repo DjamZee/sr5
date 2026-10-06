@@ -107,6 +107,25 @@ export class sr5ActorSpiritDataModel extends foundry.abstract.TypeDataModel {
       ...specialPropertiesPartialModel.defineSchema(),
       ...itemsPropertiesPartialModel.defineSchema(),
       ...magicPartialModel.defineSchema(),
+      // Magic, and the Edge of a free spirit (SR5 p. 306-307): both worked out from its Force at preparation
+      specialAttributes: new fields.SchemaField({
+        magic: new fields.SchemaField({
+          natural: new fields.SchemaField({
+            ...sr5ModsPartialModel.defineSchema()
+          }),
+          augmented: new fields.SchemaField({
+            ...sr5ModsPartialModel.defineSchema()
+          }),
+        }),
+        edge: new fields.SchemaField({
+          natural: new fields.SchemaField({
+            ...sr5ModsPartialModel.defineSchema()
+          }),
+          augmented: new fields.SchemaField({
+            ...sr5ModsPartialModel.defineSchema()
+          }),
+        }),
+      }),
       skills: new fields.SchemaField({
         ...allSkillFields(),
         flight: new fields.SchemaField({
@@ -178,8 +197,24 @@ export class sr5ActorSpiritDataModel extends foundry.abstract.TypeDataModel {
           }),
           boxes: new fields.ArrayField(new fields.ObjectField()),
         }),
+        // Edge spent by a free spirit; dropped at preparation for any other spirit
+        edge: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema(),
+          actual: new fields.SchemaField({
+            ...sr5ModsPartialModel.defineSchema()
+          }),
+          boxes: new fields.ArrayField(new fields.ObjectField()),
+        }),
       }),
       statusBars: new fields.SchemaField({
+        edge: new fields.SchemaField({
+          value: new fields.NumberField({
+            initial: 0
+          }),
+          max: new fields.NumberField({
+            initial: 0
+          }),
+        }),
         condition: new fields.SchemaField({
           value: new fields.NumberField({
             initial: 0
@@ -252,6 +287,14 @@ export class sr5ActorSpiritDataModel extends foundry.abstract.TypeDataModel {
       // from the gamemaster's ledger (system/spirit-ledger.js), never read from the sheet
       magicPact: new fields.BooleanField({
         initial: false
+      }),
+      // Free spirit (SR5 p. 306-307, Street Grimoire p. 203): the only spirit with Edge of its own, and the value the
+      // gamemaster set for it (null: the default of freeSpiritEdge). Prepared from his ledger, never read from the sheet
+      isFree: new fields.BooleanField({
+        initial: false
+      }),
+      freeEdge: new fields.NumberField({
+        initial: null, nullable: true
       }),
       wildBanishTotal: new fields.NumberField({
         initial: 0

@@ -26,6 +26,8 @@ export class SR5_RollTestHelper {
   //spirit lets it spend its character's Edge too (Street Grimoire p. 133); the character is the summoner it keeps
   static edgeCharacter(actor){
     if (actor?.type !== "actorSpirit" || !actor.system?.creatorId) return null
+    //A free spirit is at no one's service: its own Edge, and its character's under a magic pact only
+    if (actor.system.isFree && !actor.system.magicPact) return null
     return SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId) ?? null
   }
 

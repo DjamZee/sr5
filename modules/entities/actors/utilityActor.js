@@ -72,7 +72,7 @@ import {
   ELEMENTAL_MENTAL_ATTRIBUTES, ELEMENTAL_SPIRIT_TYPES, elementalReduction, astralReputation, wildReputation
 } from "../items/spirit-bonds.js"
 import {
-  applyCharacterLedger, applySpiritLedger
+  applyCharacterLedger, applySpiritLedger, freeSpiritEdge
 } from "../../system/spirit-ledger.js"
 import {
   harmoniousDefensePool
@@ -1301,6 +1301,15 @@ export class SR5_CharacterUtility extends Actor {
     actorData.activeSpecialAttribute = "magic"
     specialAttributes.magic.natural.base = actorData.force.value
     SR5_EntityHelpers.updateValue(specialAttributes.magic.natural)
+    //Only a free spirit has Edge of its own (SR5 p. 306-307); a summoned or bound one has none, its summoner lends his (p. 306)
+    if (actorData.isFree && specialAttributes.edge) {
+      specialAttributes.edge.natural.base = freeSpiritEdge(actorData.force.value, actorData.freeEdge)
+      SR5_EntityHelpers.updateValue(specialAttributes.edge.natural)
+    } else {
+      delete specialAttributes.edge
+      delete actorData.conditionMonitors?.edge
+      delete actorData.statusBars?.edge
+    }
     essence.base = actorData.force.value
     SR5_EntityHelpers.updateValue(essence)
     const customType = SR5_SpiritTypes.get(actorData.type)
