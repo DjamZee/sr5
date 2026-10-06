@@ -48,6 +48,9 @@ import {
   initAIDissipation
 } from "../system/ai-dissipation.js"
 import {
+  initMonadMatrix
+} from "../system/monad-matrix.js"
+import {
   initRadiation
 } from "../system/radiation.js"
 import {
@@ -102,6 +105,8 @@ export function sr5HookReady() {
   initCfdTreatment()
   // Dissipation of an AI (Data Trails p. 161): offered to the active GM
   initAIDissipation()
+  // A Monad of the original strain whose Core or swarm fills (Dark Terrors p. 88): offered to the active GM
+  initMonadMatrix()
   // Radiation zones: resistance tests on the clock (Run & Gun p. 164-165)
   initRadiation()
   // Bullets & Bandages p. 14-16: wounds of 5+ bleed by Combat Turn, the GM adds each box

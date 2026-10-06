@@ -13,7 +13,8 @@ vi.mock("../modules/entities/helpers.js", () => ({
 
 import {
   monitorSize, corePenalty, activeHeadcase, strainOf, isOriginalStrainMonad, suggestedCoreBoxes, coreAfterDamage,
-  authorMayActFor, addMonadCoreButton
+  authorMayActFor, addMonadCoreButton, coreDissipationPool, naniteLossOnDissipation, sleepHours, mentalLoss,
+  baseAfterLoss, naniteBaseAfterLoss, surplusHint, activateMonadListeners, MENTAL_ATTRIBUTES
 } from "../modules/system/monad-matrix.js"
 import {
   SR5
@@ -208,5 +209,127 @@ describe("The GM's Core button believes nothing of the card", () => {
     const h = html()
     await addMonadCoreButton(card("p1"), h)
     expect(h.anchor.after).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe("A full Core dissipates the Monad (Dark Terrors p. 88)", () => {
+  it("resists the overflow with Willpower + Firewall + MEC (arbitrage de DjamZ, 06/10)", () => {
+    expect(coreDissipationPool({
+      willpower: 4, firewall: 6, cem: 5
+    })).toBe(15)
+    expect(coreDissipationPool({
+      willpower: 4, firewall: 6, cem: 5, extra: -20
+    })).toBe(0)
+  })
+
+  it("loses 1 Nanite Volume plus each box of overflow not resisted", () => {
+    expect(naniteLossOnDissipation(0, 0)).toBe(1)
+    expect(naniteLossOnDissipation(3, 1)).toBe(3)
+    expect(naniteLossOnDissipation(2, 5)).toBe(1)
+    expect(naniteLossOnDissipation(-4, 0)).toBe(1)
+  })
+
+  it("sleeps (10 - NV) hours, at least 1", () => {
+    expect(sleepHours(3)).toBe(7)
+    expect(sleepHours(10)).toBe(1)
+    expect(sleepHours(14)).toBe(1)
+  })
+
+  it("never brings the Nanite Volume under 0", () => {
+    expect(naniteBaseAfterLoss(6, 6, 2)).toBe(4)
+    expect(naniteBaseAfterLoss(6, 6, 9)).toBe(0)
+    //A Nanite Volume raised by an augmentation: the base loses what the value loses
+    expect(naniteBaseAfterLoss(4, 6, 6)).toBe(-2)
+  })
+
+  it("believes the overflow of a GM's own update only", () => {
+    expect(surplusHint({
+      sr5MonadCore: {
+        surplus: 3
+      }
+    }, {
+      isGM: true
+    })).toEqual({
+      surplus: 3, fromPlayer: false
+    })
+    expect(surplusHint({
+      sr5MonadCore: {
+        surplus: 3
+      }
+    }, {
+      isGM: false
+    })).toEqual({
+      surplus: 0, fromPlayer: true
+    })
+    expect(surplusHint({
+    }, {
+      isGM: true
+    })).toEqual({
+      surplus: 0, fromPlayer: false
+    })
+  })
+})
+
+describe("A bricked swarm destroys the Monad (Dark Terrors p. 88)", () => {
+  it("lowers the four mental attributes by NV / 4, rounded down, never under 1", () => {
+    expect(MENTAL_ATTRIBUTES).toEqual(["logic", "intuition", "charisma", "willpower"])
+    expect(mentalLoss(7)).toBe(1)
+    expect(mentalLoss(8)).toBe(2)
+    expect(mentalLoss(3)).toBe(0)
+    expect(baseAfterLoss(5, 5, 2)).toBe(3)
+    expect(baseAfterLoss(2, 2, 3)).toBe(1)
+    expect(baseAfterLoss(1, 1, 2)).toBe(1)
+  })
+})
+
+describe("The Monad cards answer the GM only", () => {
+  afterEach(() => {
+    delete globalThis.game
+  })
+  const buttonsOf = () => {
+    const button = {
+      remove: vi.fn(), addEventListener: vi.fn()
+    }
+    return {
+      button, html: {
+        querySelectorAll: () => [button]
+      }
+    }
+  }
+
+  it("loses its button for a player", () => {
+    globalThis.game = {
+      user: {
+        isGM: false
+      }
+    }
+    const {
+      button, html
+    } = buttonsOf()
+    activateMonadListeners(html, {
+      author: {
+        isGM: true
+      }
+    })
+    expect(button.remove).toHaveBeenCalled()
+    expect(button.addEventListener).not.toHaveBeenCalled()
+  })
+
+  it("loses its button when a player posted it, for the GM too", () => {
+    globalThis.game = {
+      user: {
+        isGM: true
+      }
+    }
+    const {
+      button, html
+    } = buttonsOf()
+    activateMonadListeners(html, {
+      author: {
+        isGM: false
+      }
+    })
+    expect(button.remove).toHaveBeenCalled()
+    expect(button.addEventListener).not.toHaveBeenCalled()
   })
 })

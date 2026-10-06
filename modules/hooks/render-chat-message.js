@@ -44,7 +44,7 @@ import {
   activateAIDissipationListeners
 } from "../system/ai-dissipation.js"
 import {
-  addMonadCoreButton
+  addMonadCoreButton, activateMonadListeners
 } from "../system/monad-matrix.js"
 import {
   activateRadiationDueListeners, activateRadiationRequestListeners, addRadiationApplyButton
@@ -112,6 +112,8 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   if (message.flags?.sr5?.aiDissipationCard) activateAIDissipationListeners(html, message)
   // Monad of the original strain (Dark Terrors p. 88): the GM puts a matrix damage on its Core
   if (message.flags?.sr5data?.chatCard?.buttons?.takeMatrixDamage) addMonadCoreButton(message, html)
+  // and resolves the card offered when its Core or its swarm fills
+  if (message.flags?.sr5?.monadMatrixCard) activateMonadListeners(html, message)
   if (message.flags?.sr5?.diseaseRequest) activateDiseaseRequestListeners(html, message)
   if (message.flags?.sr5data?.disease) addDiseaseApplyButton(message, html)
   // Radiation zones (Run & Gun p. 164-165): same three steps

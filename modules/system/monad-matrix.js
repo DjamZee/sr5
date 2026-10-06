@@ -16,6 +16,9 @@
 import {
   SR5_SystemHelpers
 } from "./utilitySystem.js"
+import {
+  markRowDoneInMessage, cardFromGM
+} from "./card-rows.js"
 
 export const STRAINS = ["lockdown", "darkTerrors"]
 
@@ -86,6 +89,45 @@ export function coreAfterDamage(current, boxes, size){
   }
 }
 
+// A full Core dissipates the Monad (Dark Terrors p. 88): its Nanite Volume drops by 1 + the overflow not resisted.
+// The overflow is resisted with Willpower + Firewall + MEC, as an AI does with its Depth (Data Trails p. 161;
+// arbitrage de DjamZ, 06/10)
+export const MENTAL_ATTRIBUTES = ["logic", "intuition", "charisma", "willpower"]
+
+export function boundCount(value, max = 50){
+  return Math.max(0, Math.min(max, Math.trunc(num(value))))
+}
+
+export function coreDissipationPool({
+  willpower, firewall, cem, extra = 0
+}){
+  return Math.max(0, num(willpower) + num(firewall) + num(cem) + Math.trunc(num(extra)))
+}
+
+export function naniteLossOnDissipation(surplus, hits){
+  return 1 + Math.max(0, boundCount(surplus) - Math.max(0, num(hits)))
+}
+
+// The personality sleeps (10 - Nanite Volume) hours, at least 1, while its source code recompiles
+export function sleepHours(nanite){
+  return Math.max(1, 10 - num(nanite))
+}
+
+// A bricked swarm destroys the Monad and lowers the host's mental attributes by NV / 4, rounded down
+export function mentalLoss(nanite){
+  return Math.floor(Math.max(0, num(nanite)) / 4)
+}
+
+// A natural base lowered by a loss, the value never under 1
+export function baseAfterLoss(base, value, loss){
+  return num(base) - Math.max(0, Math.min(num(loss), num(value) - 1))
+}
+
+// The Nanite Volume base after a loss: the value never under 0
+export function naniteBaseAfterLoss(base, value, loss){
+  return num(base) - Math.max(0, Math.min(num(loss), num(value)))
+}
+
 /* -------------------------------------------- */
 /* Foundry                                      */
 /* -------------------------------------------- */
@@ -93,6 +135,14 @@ export function coreAfterDamage(current, boxes, size){
 function isActiveGM(){
   return game.user.isGM && game.users.activeGM?.id === game.user.id
 }
+
+function escape(text){
+  return foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "")
+}
+
+const gmIds = () => ChatMessage.getWhisperRecipients("GM").map(u => u.id)
+const ownerIds = (actor) => game.users.filter(u => !u.isGM && actor.testUserPermission(u, "OWNER")).map(u => u.id)
+const isFull = (monitor) => !!monitor && num(monitor.value) > 0 && num(monitor.actual?.value) >= num(monitor.value)
 
 // A card is believed to be about an actor only when its author is a GM or owns that actor: anybody else's card is a
 // forgery, whatever actor it names
@@ -182,4 +232,183 @@ export async function applyCoreDamage(actor, boxes){
     name: actor.name, boxes: Math.max(0, Math.trunc(num(boxes)))
   }))
   return after
+}
+
+// The overflow a GM's own update carries (the Core button) is believed; any other update says it comes from a player
+export function surplusHint(options, author){
+  if (author?.isGM && options?.sr5MonadCore) return {
+    surplus: boundCount(options.sr5MonadCore.surplus), fromPlayer: false
+  }
+  return {
+    surplus: 0, fromPlayer: !author?.isGM
+  }
+}
+
+async function postCard(actor, kind, hint = {
+}){
+  const title = game.i18n.format(kind === "core" ? "SR5.MONAD_CoreFullTitle" : "SR5.MONAD_SwarmFullTitle", {
+    name: escape(actor.name)
+  })
+  const rule = game.i18n.localize(kind === "core" ? "SR5.MONAD_CoreFullRule" : "SR5.MONAD_SwarmFullRule")
+  await ChatMessage.create({
+    content: `<div class="sr5-monad-card"><h3>${title}</h3><p>${rule}</p><ul>
+      <li class="sr5-monad-row" data-actor-uuid="${escape(actor.uuid)}" data-kind="${kind}" data-surplus="${boundCount(hint.surplus)}" data-from-player="${hint.fromPlayer ? 1 : 0}">
+      <button type="button" data-sr5-monad="resolve">${game.i18n.localize("SR5.MONAD_Resolve")}</button></li></ul></div>`,
+    whisper: gmIds(),
+    flags: {
+      sr5: {
+        monadMatrixCard: true
+      }
+    },
+  })
+}
+
+function offerCore(actor, changes, options, userId){
+  if (!isActiveGM() || !isOriginalStrainMonad(actor)) return
+  if (!foundry.utils.hasProperty(changes, "system.conditionMonitors.core.actual.base")) return
+  if (!isFull(actor.system.conditionMonitors?.core)) return
+  return postCard(actor, "core", surplusHint(options, game.users.get(userId)))
+}
+
+function offerSwarm(item, changes){
+  const actor = item?.parent
+  if (!isActiveGM() || !(actor instanceof Actor) || originalStrainDevice(actor)?.id !== item.id) return
+  if (!foundry.utils.hasProperty(changes, "system.conditionMonitors.matrix.actual.base")) return
+  if (!isFull(item.system.conditionMonitors?.matrix)) return
+  return postCard(actor, "swarm")
+}
+
+async function rollPool(dicePool){
+  const {
+    SR5_RollTest
+  } = await import("../rolls/roll-test.js")
+  return SR5_RollTest.rollDice({
+    dicePool
+  })
+}
+
+async function resultCard(actor, html){
+  await ChatMessage.create({
+    content: `<div class="sr5-monad-card"><h3>${escape(actor.name)}</h3>${html}</div>`,
+    whisper: [...gmIds(), ...ownerIds(actor)],
+  })
+}
+
+function coreParts(actor){
+  return {
+    willpower: num(actor.system.attributes?.willpower?.augmented?.value),
+    firewall: num(actor.system.matrix?.attributes?.firewall?.value),
+    cem: matrixEntityConcentration(actor),
+  }
+}
+
+// The GM confirms the overflow; the pool is read from the actor, the roll is the GM's
+async function resolveCore(row, message, actor){
+  const parts = coreParts(actor)
+  const data = await foundry.applications.api.DialogV2.prompt({
+    window: {
+      title: game.i18n.format("SR5.MONAD_CoreFullTitle", {
+        name: actor.name
+      })
+    },
+    position: {
+      width: 480
+    },
+    content: `<p>${game.i18n.localize("SR5.MONAD_CoreFullRule")}</p>
+      <p>${game.i18n.format("SR5.MONAD_CorePool", parts)}</p>
+      <div class="form-group"><label>${game.i18n.localize("SR5.MONAD_Surplus")}</label><input type="number" name="surplus" min="0" value="${boundCount(row.dataset.surplus)}"></div>
+      ${row.dataset.fromPlayer === "1" ? `<p><em>${game.i18n.localize("SR5.MONAD_SurplusFromPlayer")}</em></p>` : ""}
+      <div class="form-group"><label>${game.i18n.localize("SR5.MONAD_Extra")}</label><input type="number" name="extra" value="0"></div>`,
+    ok: {
+      label: game.i18n.localize("SR5.MONAD_Roll"),
+      callback: (event, button) => ({
+        surplus: boundCount(button.form.elements.surplus.value),
+        extra: Math.trunc(num(button.form.elements.extra.value)),
+      })
+    },
+    rejectClose: false,
+  })
+  if (!data || !isActiveGM()) return false
+  if (!game.messages.get(message.id)?.content.includes("data-sr5-monad")) return false
+  const dicePool = coreDissipationPool({
+    ...coreParts(actor), extra: data.extra
+  })
+  const roll = await rollPool(dicePool)
+  const loss = naniteLossOnDissipation(data.surplus, roll.hits)
+  const nanite = actor.system.specialAttributes.nanite
+  const before = num(nanite.augmented?.value)
+  const after = Math.max(0, before - loss)
+  await actor.update({
+    "system.specialAttributes.nanite.natural.base": naniteBaseAfterLoss(nanite.natural?.base, before, loss)
+  })
+  await resultCard(actor, `<p>${game.i18n.format("SR5.MONAD_CoreResult", {
+    pool: dicePool, hits: roll.hits, surplus: data.surplus, loss, before, after
+  })}</p><p class="sr5-monad-dice">[${(roll.dices ?? []).map(d => d.result).join(" ")}]</p>
+    <p>${after > 0 ? game.i18n.format("SR5.MONAD_Sleeps", {
+    hours: sleepHours(after)
+  }) : game.i18n.localize("SR5.MONAD_Destroyed")}</p><p>${game.i18n.localize("SR5.MONAD_Ejected")}</p>`)
+  return true
+}
+
+// The GM confirms; the losses are worked out from the actor at that moment
+async function resolveSwarm(message, actor){
+  const nanite = actor.system.specialAttributes.nanite
+  const volume = num(nanite.augmented?.value)
+  const loss = mentalLoss(volume)
+  const ok = await foundry.applications.api.DialogV2.confirm({
+    window: {
+      title: game.i18n.format("SR5.MONAD_SwarmFullTitle", {
+        name: actor.name
+      })
+    },
+    content: `<p>${game.i18n.localize("SR5.MONAD_SwarmFullRule")}</p><p>${game.i18n.format("SR5.MONAD_SwarmConfirm", {
+      volume, loss
+    })}</p>`,
+    rejectClose: false,
+  })
+  if (!ok || !isActiveGM()) return false
+  if (!game.messages.get(message.id)?.content.includes("data-sr5-monad")) return false
+  const update = {
+    "system.specialAttributes.nanite.natural.base": naniteBaseAfterLoss(nanite.natural?.base, volume, volume)
+  }
+  for (const key of MENTAL_ATTRIBUTES) {
+    const attribute = actor.system.attributes[key]
+    update[`system.attributes.${key}.natural.base`] = baseAfterLoss(attribute?.natural?.base, attribute?.natural?.value, loss)
+  }
+  await actor.update(update)
+  await resultCard(actor, `<p>${game.i18n.format("SR5.MONAD_SwarmResult", {
+    volume, loss
+  })}</p><p>${game.i18n.localize("SR5.MONAD_SwarmReminders")}</p>`)
+  return true
+}
+
+const resolving = new Set()
+
+export function activateMonadListeners(html, message){
+  const buttons = html.querySelectorAll("[data-sr5-monad]")
+  if (!game.user.isGM || !cardFromGM(message)) return buttons.forEach(b => b.remove())
+  buttons.forEach(button => button.addEventListener("click", async (event) => {
+    const btn = event.currentTarget
+    const row = btn.closest(".sr5-monad-row")
+    if (!isActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.MONAD_ActiveGMOnly"))
+    if (resolving.has(message.id)) return
+    resolving.add(message.id)
+    btn.disabled = true
+    try {
+      const actor = await fromUuid(row.dataset.actorUuid)
+      if (!isOriginalStrainMonad(actor)) return ui.notifications.warn(game.i18n.localize("SR5.MONAD_Gone"))
+      const done = row.dataset.kind === "core" ? await resolveCore(row, message, actor) : await resolveSwarm(message, actor)
+      if (done) await markRowDoneInMessage(row, "[data-sr5-monad]", game.i18n.localize("SR5.CALENDAR_RowDone"))
+    } catch (e) {
+      SR5_SystemHelpers.srLog(1, `Monad card not applied: ${e}`)
+    } finally {
+      resolving.delete(message.id)
+      btn.disabled = false
+    }
+  }))
+}
+
+export function initMonadMatrix(){
+  Hooks.on("updateActor", (actor, changes, options, userId) => offerCore(actor, changes, options, userId)?.catch?.(e => SR5_SystemHelpers.srLog(1, `Monad Core card not offered: ${e}`)))
+  Hooks.on("updateItem", (item, changes) => offerSwarm(item, changes)?.catch?.(e => SR5_SystemHelpers.srLog(1, `Monad swarm card not offered: ${e}`)))
 }

@@ -13,6 +13,9 @@ import {
 import {
   SHARED_VISION_ACTOR_TYPES
 } from "../../system/shared-vision.js"
+import {
+  activeHeadcase
+} from "../../system/monad-matrix.js"
 
 export default async function matrixDefenseInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId),
@@ -111,6 +114,17 @@ export default async function matrixDefenseInfo(cardData, actorId){
           name: actor.name
         }))
         else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.DefenseFailure"))
+        break
+      //A formatted Monad repairs its boot sector with as many Complex Actions as the hacker's net hits; rebooting
+      //before that destroys it as an overflow on its Core would (Dark Terrors p. 88). Said on the card, the GM plays it
+      case "formatDevice":
+        if (activeHeadcase(actor)) {
+          cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.format("SR5.MONAD_Formatted", {
+            actions: netHits
+          }))
+          break
+        }
+        cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.DefenseFailure"))
         break
       default:
         cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.DefenseFailure"))
