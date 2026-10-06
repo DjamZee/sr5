@@ -469,6 +469,122 @@ describe('updateItem', () => {
     await ask(2)
     expect(spell.update).toHaveBeenCalledTimes(1)
   })
+
+  // Pauline's remainder d: an effect the spell holds up went down in the right direction, but by any amount
+  it("an effect the dispelled spell holds up loses no more than its entry and the GM's net hits give", async () => {
+    const victim = actor('victim', {
+    }, [])
+    const spell = item('spell', npc, 'itemSpell', {
+      hits: 8, targetOfEffect: ['Actor.victim.Item.fx'], customEffects: {
+        0: {
+          transfer: true, target: 't', category: 'c', type: 'netHits', multiplier: 1
+        }
+      }
+    })
+    const fx = item('fx', victim, 'itemEffect', {
+      value: 4, customEffects: {
+        0: {
+          target: 't', category: 'c', type: 'value', value: 4
+        }
+      }
+    })
+    fx.flags = {
+      sr5: {
+        sourceEntry: '0'
+      }
+    }
+    register(victim, spell, fx)
+    const dispel = card(users.owner, {
+      test: {
+        type: 'skillDicePool', typeSub: 'counterspelling'
+      }, owner: {
+        actorId: 'player'
+      }, target: {
+        itemUuid: spell.uuid
+      }, roll: {
+        r: dice(4)
+      }
+    })
+    const resistance = card(users.owner, {
+      test: {
+        type: 'dispellResistance'
+      }, owner: {
+        actorId: 'player'
+      }, target: {
+        itemUuid: spell.uuid
+      },
+      previousMessage: {
+        messageId: dispel
+      }, roll: {
+        netHits: 99, r: dice(1, 5)
+      }
+    })
+    const ask = value => SR5_MiscellaneousHelpers._socketUpdateItem({
+      data: {
+        item: fx.uuid, use: 'reduceEffect', messageId: resistance, info: {
+          value, customEffects: {
+            0: {
+              target: 't', category: 'c', type: 'value', value
+            }
+          }
+        }
+      }
+    }, 'owner')
+    // 4 dice counted, 1 resisted: 3 net hits, the effect from 4 down to 1, not to 0
+    await ask(0)
+    expect(fx.update).not.toHaveBeenCalled()
+    await ask(1)
+    expect(fx.update).toHaveBeenCalledTimes(1)
+  })
+
+  it('an effect of a fixed value the dispelled spell holds up keeps it', async () => {
+    const victim = actor('victim', {
+    }, [])
+    const spell = item('spell', npc, 'itemSpell', {
+      hits: 8, targetOfEffect: ['Actor.victim.Item.fx'], customEffects: {
+        0: {
+          transfer: true, target: 't', category: 'c', type: 'value', value: 2
+        }
+      }
+    })
+    const fx = item('fx', victim, 'itemEffect', {
+      value: 2
+    })
+    register(victim, spell, fx)
+    const dispel = card(users.owner, {
+      test: {
+        type: 'skillDicePool', typeSub: 'counterspelling'
+      }, owner: {
+        actorId: 'player'
+      }, target: {
+        itemUuid: spell.uuid
+      }, roll: {
+        r: dice(4)
+      }
+    })
+    const resistance = card(users.owner, {
+      test: {
+        type: 'dispellResistance'
+      }, owner: {
+        actorId: 'player'
+      }, target: {
+        itemUuid: spell.uuid
+      },
+      previousMessage: {
+        messageId: dispel
+      }, roll: {
+        r: dice(0, 5)
+      }
+    })
+    await SR5_MiscellaneousHelpers._socketUpdateItem({
+      data: {
+        item: fx.uuid, use: 'reduceEffect', messageId: resistance, info: {
+          value: 0
+        }
+      }
+    }, 'owner')
+    expect(fx.update).not.toHaveBeenCalled()
+  })
 })
 
 describe('deleteItem', () => {

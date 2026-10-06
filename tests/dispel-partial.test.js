@@ -133,6 +133,10 @@ describe('the GM guard of a player dispelling by socket', async () => {
   const {
     reduceAllowed
   } = await import('../modules/rolls/roll-helpers/socket-guard.js')
+  //Decrease Attribute: -1 per net hit (SR5 p. 290)
+  const decrease = {
+    type: 'netHits', multiplier: -1
+  }
   it('lets a malus go back up toward 0, never past it nor further down', () => {
     expect(reduceAllowed({
       value: -1, customEffects: {
@@ -146,21 +150,55 @@ describe('the GM guard of a player dispelling by socket', async () => {
           value: -3
         }
       }
-    }, 2, true)).toBe(true)
+    }, 2, true, 'hits', decrease)).toBe(true)
     expect(reduceAllowed({
       value: 1
     }, {
       value: -3
-    }, 2, true)).toBe(false)
+    }, 2, true, 'hits', decrease)).toBe(false)
     expect(reduceAllowed({
       value: -4
     }, {
       value: -3
-    }, 2, true)).toBe(false)
+    }, 2, true, 'hits', decrease)).toBe(false)
     expect(reduceAllowed({
       value: 4
     }, {
       value: 3
+    }, 2, true, 'hits', decrease)).toBe(false)
+  })
+  //Pauline's remainder d: the direction was bounded, not the amount
+  it('lets an effect go no further than its entry and the net hits give', () => {
+    const boost = {
+      type: 'netHits', multiplier: 1
+    }
+    expect(reduceAllowed({
+      value: 0
+    }, {
+      value: -3
+    }, 2, true, 'hits', decrease)).toBe(false)
+    expect(reduceAllowed({
+      value: 0
+    }, {
+      value: 4
+    }, 2, true, 'hits', boost)).toBe(false)
+    expect(reduceAllowed({
+      value: 2
+    }, {
+      value: 4
+    }, 2, true, 'hits', boost)).toBe(true)
+    //A fixed value is not dispelled, and without its entry nothing moves
+    expect(reduceAllowed({
+      value: 1
+    }, {
+      value: 2
+    }, 2, true, 'hits', {
+      type: 'value', value: 2
+    })).toBe(false)
+    expect(reduceAllowed({
+      value: 1
+    }, {
+      value: 2
     }, 2, true)).toBe(false)
   })
   it('reads a list of custom effects sent whole, the value alone may change (measured in play)', () => {
@@ -176,12 +214,12 @@ describe('the GM guard of a player dispelling by socket', async () => {
       value: 0, customEffects: [{
         ...entry, value: 0
       }]
-    }, stored, 3, true)).toBe(true)
+    }, stored, 3, true, 'hits', decrease)).toBe(true)
     expect(reduceAllowed({
       value: 0, customEffects: [{
         ...entry, target: 'system.attributes.body.augmented', value: 0
       }]
-    }, stored, 3, true)).toBe(false)
+    }, stored, 3, true, 'hits', decrease)).toBe(false)
   })
 })
 

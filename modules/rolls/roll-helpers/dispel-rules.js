@@ -18,6 +18,23 @@ export function sourceEntryOf(entries, target, category, labelOf = k => k) {
 }
 
 /**
+ * The source entry an effect held up by an item came from: the entry its flag names (applyExternalEffect), else, for
+ * an older effect, the entry of its target. Read the same way by the player who dispels and by the GM who checks
+ * @param {object} source the source item's system
+ * @param {object} effect the effect's system
+ * @param {string} [sourceKey] the effect's flags.sr5.sourceEntry
+ * @param {function} [labelOf] key -> label, for an effect on an item (itemEffects keep the label only)
+ */
+export function linkedEntryOf(source, effect, sourceKey, labelOf = k => k) {
+  const custom = Object.values(effect?.customEffects ?? {
+  })
+  const listed = source?.[custom.length ? "customEffects" : "itemEffects"]?.[sourceKey]
+  if (listed?.transfer) return listed
+  return custom.length ? sourceEntryOf(source?.customEffects, custom[0]?.target, custom[0]?.category) :
+    sourceEntryOf(source?.itemEffects, effect?.target, null, labelOf)
+}
+
+/**
  * The value an effect keeps once its spell lost `reduction` hits; null when it does not change
  * @param {object|null} entry the source entry (sourceEntryOf)
  * @param {number} value the effect's current value

@@ -11,6 +11,9 @@
  *
  * Pure rules here; the lookups are in miscellaneous.js.
  */
+import {
+  dispelledValue
+} from "./dispel-rules.js"
 
 /** Whether `user` may write on `document` (an actor, or an item through the actor holding it). */
 export function ownsTarget(user, document) {
@@ -101,10 +104,19 @@ function lowered(next, current, floor = 0) {
   return isNumber(next) && next >= floor && next <= (Number(current) || 0)
 }
 
-//An effect weakened (dispelling): a bonus goes down, a malus (Decrease Attribute) goes back up, neither past 0
-function towardZero(next, current) {
+//An effect weakened (dispelling): a bonus goes down, a malus (Decrease Attribute) goes back up, neither past `bound`
+//(0 by default)
+function towardZero(next, current, bound = 0) {
   const c = Number(current) || 0
-  return isNumber(next) && (c < 0 ? (next <= 0 && next >= c) : (next >= 0 && next <= c))
+  const b = Number(bound) || 0
+  return isNumber(next) && (c < 0 ? (next <= b && next >= c) : (next >= b && next <= c))
+}
+
+//The furthest an effect held up by a dispelled item may go: what the GM works out from its source entry and the card's
+//net hits (dispel-rules.js). Its own value when the entry did not read the hits: a fixed value is not dispelled
+function linkedBound(entry, current, netHits) {
+  const next = dispelledValue(entry, current, netHits)
+  return next === null ? (Number(current) || 0) : next
 }
 
 const off = next => next === false
@@ -151,13 +163,15 @@ export function deactivateAllowed(changes) {
  * @param {number} netHits the most the card may take away
  * @param {boolean} linked an effect the item held up, rather than the item itself
  * @param {string} key "hits", or "potency" for a preparation
+ * @param {object|null} entry for a linked effect, the transfer entry of the item it came from (linkedEntryOf): its
+ *   value goes no further than that entry and the net hits give
  */
-export function reduceAllowed(changes, stored, netHits, linked = false, key = "hits") {
+export function reduceAllowed(changes, stored, netHits, linked = false, key = "hits", entry = null) {
   for (const [field, value] of Object.entries(changes)) {
     if (!linked && field === key) {
       if (!lowered(value, stored?.[key], Math.max(0, (Number(stored?.[key]) || 0) - netHits))) return false
     } else if (linked && field === "value") {
-      if (!towardZero(value, stored?.value)) return false
+      if (!towardZero(value, stored?.value, linkedBound(entry, stored?.value, netHits))) return false
     } else if (field === "isActive") {
       if (!off(value)) return false
     } else if (!linked && field === "targetOfEffect") {
@@ -170,7 +184,7 @@ export function reduceAllowed(changes, stored, netHits, linked = false, key = "h
         const before = stored?.customEffects?.[id]
         if (!effect || !before) return false
         if (Object.keys(effect).some(k => k !== "value" && JSON.stringify(effect[k]) !== JSON.stringify(before[k]))) return false
-        if (!towardZero(effect.value, before.value)) return false
+        if (!towardZero(effect.value, before.value, linkedBound(entry, before.value, netHits))) return false
       }
     } else return false
   }

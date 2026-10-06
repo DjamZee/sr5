@@ -11,6 +11,9 @@ import {
   ownsTarget, cardTrusted, matrixDamageAllowed, deactivateAllowed, reduceAllowed, supportEffectAllowed,
   serviceSpentAllowed, maglockAllowed, testAllowed, recountHits, consumedKey, REDUCER_POOLS
 } from "./socket-guard.js"
+import {
+  linkedEntryOf
+} from "./dispel-rules.js"
 
 // The cards already spent on a use and a target (Zélia's review, B3), written by the active GM
 export const CONSUMED_CARDS = 'sr5ConsumedCards'
@@ -263,8 +266,13 @@ export class SR5_MiscellaneousHelpers {
       if (!reduced) return null
       let allowed = false
       if (reduced.item === item) allowed = reduceAllowed(changes, stored, reduced.netHits, false, reduced.key)
-      //An effect the reduced item holds up
-      else allowed = reduced.held.includes(item.uuid) && reduceAllowed(changes, stored, reduced.netHits, true)
+      //An effect the reduced item holds up: its value goes no further than its source entry and the net hits the GM
+      //worked out give (dispelledValue), never by what the player's browser computed
+      else if (reduced.held.includes(item.uuid)) {
+        const entry = linkedEntryOf(reduced.item._source?.system ?? reduced.item.system, stored, item.flags?.sr5?.sourceEntry,
+          k => SR5_EntityHelpers.getLabelByKey(k))
+        allowed = reduceAllowed(changes, stored, reduced.netHits, true, "hits", entry)
+      }
       if (!allowed) return null
       return {
         card, key: consumedKey(card.id, "reduceEffect", item.uuid), label: "reduceEffect", target: reduced.item.name, value: reduced.netHits,
