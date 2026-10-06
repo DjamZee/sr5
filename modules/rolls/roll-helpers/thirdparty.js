@@ -711,25 +711,30 @@ export class SR5_ThirdPartyHelpers {
         break
       case "createPreparation": {
         let preparation = actor.items.find(i => i.uuid === messageData.owner.itemUuid)
+        //A plain copy of the spell's data: the live model of the sheet's spell is never written, and the values of
+        //the preparation are nested in its system, where the new item reads them (a "system.potency" key set on
+        //the model landed in neither: the preparation came out with Potency 0, Octave's review of G9)
+        const spellData = preparation.toObject().system
+        const potency = messageData.previousMessage.hits - messageData.roll.hits
         buildItem = {
-          "system": preparation.system
-        }
-        buildItem = foundry.utils.mergeObject(buildItem, {
           name: `${game.i18n.localize("SR5.Preparation")}${game.i18n.localize("SR5.Colons")} ${preparation.name}`,
           type: "itemPreparation",
           img: `systems/sr5/assets/img/items/itemPreparation.svg`,
-          ["system.trigger"]: messageData.magic.preparationTrigger,
-          ["system.potency"]: messageData.previousMessage.hits - messageData.roll.hits,
-          //Its Potency is lost on the world clock from now on (SR5 p. 309, system/preparation-potency.js)
-          ["system.createdAt"]: game.time.worldTime,
-          ["system.initialPotency"]: messageData.previousMessage.hits - messageData.roll.hits,
-          ["system.fullPotencyMultiplier"]: 2,
-          ["system.decayRate"]: "hour",
-          ["system.force"]: messageData.magic.force,
-          ["system.freeSustain"]: true,
-          ["system.hits"]: 0,
-          ["system.drainValue"]:preparation.system.drainValue,
-        })
+          system: {
+            ...spellData,
+            trigger: messageData.magic.preparationTrigger,
+            potency,
+            //Its Potency is lost on the world clock from now on (SR5 p. 309, system/preparation-potency.js)
+            createdAt: game.time.worldTime,
+            initialPotency: potency,
+            fullPotencyMultiplier: 2,
+            decayRate: "hour",
+            force: messageData.magic.force,
+            freeSustain: true,
+            hits: 0,
+            drainValue: spellData.drainValue,
+          },
+        }
         ui.notifications.info(`${actor.name} ${game.i18n.localize("SR5.INFO_CreatePreparation")} ${preparation.name}`)
         break
       }
