@@ -2247,8 +2247,9 @@ export class SR5_ActorHelper {
     let isNaniteBoost = Object.values(itemData.systemEffects || {
     }).some(s => s.value === "naniteAttributeBoost")
     let naniteBoostMarked = false
-    //Damage the GM declined, or that its clicker may not write: the card keeps its button
-    let declined = false
+    //Damage the GM declined, or that its clicker may not write: the card keeps its button, unless another entry of the
+    //same card was posed (a second click would pose it twice)
+    let declined = false, posed = false
 
     for (let [entryKey, e] of Object.entries(itemData[effectType] ?? {
     })){
@@ -2278,6 +2279,7 @@ export class SR5_ActorHelper {
             SR5_EntityHelpers.updateValue(newData.conditionMonitors[key].actual, 0)
             //Only the stored fields of the monitor, as in heal(): the whole prepared copy put the computed values in the source
             await actor.update(SR5_ActorHelper.monitorSourceUpdate(key, newData.conditionMonitors[key]))
+            posed = true
             continue
           } else continue
         }
@@ -2297,6 +2299,7 @@ export class SR5_ActorHelper {
             continue
           }
           await SR5_ActorHelper.addUnresistedDamage(actorId, actor, key, value)
+          posed = true
           continue
         }
 
@@ -2358,6 +2361,7 @@ export class SR5_ActorHelper {
         //Link Effect to source owner: the effect just created, and no other (looked for by its source, every effect of
         //a spell was the same item)
         const [effect] = await actor.createEmbeddedDocuments("Item", [itemEffect]) ?? []
+        if (effect) posed = true
         if (!effect) SR5_SystemHelpers.srLog(1, `applyExternalEffect: no effect created on ${actor.name}`)
         else if (!game.user?.isGM) {
           SR5_SocketHandler.emitForGM("linkEffectToSource", {
@@ -2402,7 +2406,8 @@ export class SR5_ActorHelper {
     }
     //Whether the effect was applied: refused (a card counted again and rejected, the GM said no, damage declined), the
     //card keeps its Apply button
-    return !declined
+    //An entry declined while another was posed: the card is spent (the declined damage is lost, the GM's own choice)
+    return posed || !declined
   }
 
   //Apply specific toxin effect
