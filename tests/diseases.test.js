@@ -5,7 +5,7 @@ import {
 const {
   afterInterval, profileFromToxin, newInfection, reexpose, testPower, testModifiers, penetrationModifier, protectionOf,
   applyResult, applyRecovery, currentEffects, effectsFor, dueEntries, openInfectionOf, applyDiseaseEffects,
-  addDiseaseApplyButton, activateDiseaseRequestListeners, checkDiseases, DISEASE_UNITS, hitsAboveDice, hitsCeiling, hitsCap, finalEffectDue, reachedZero
+  addDiseaseApplyButton, activateDiseaseRequestListeners, activateDiseaseDueListeners, checkDiseases, DISEASE_UNITS, hitsAboveDice, hitsCeiling, hitsCap, finalEffectDue, reachedZero
 } = await import("../modules/system/diseases.js")
 
 const DAY = DISEASE_UNITS.day
@@ -485,6 +485,51 @@ describe("a player cannot move her disease on (the two flaws of the week)", () =
       }
     }, forged)
     expect(forged.added).toHaveLength(0)
+  })
+
+  //Inès: a second GM's "Ask for the test" posted a request whose token the ledger never kept, so the player's
+  //roll said "already applied". Only the active GM asks; another one is told so, and nothing is posted
+  it("a GM who is not the active one asks for no test", async () => {
+    game.user = {
+      id: "gm2", isGM: true
+    }
+    game.users.activeGM = {
+      id: "gm"
+    }
+    const warn = vi.fn()
+    globalThis.ui = {
+      notifications: {
+        warn
+      }
+    }
+    const create = vi.fn()
+    globalThis.ChatMessage = {
+      create, getWhisperRecipients: () => []
+    }
+    let click
+    const row = {
+      dataset: {
+        infectionId: "i1"
+      }
+    }
+    const button = {
+      dataset: {
+        sr5Disease: "request"
+      }, disabled: false, closest: () => row, addEventListener: (_e, handler) => click = handler
+    }
+    activateDiseaseDueListeners({
+      querySelectorAll: () => [button]
+    }, {
+      author: {
+        isGM: true
+      }
+    })
+    await click({
+      currentTarget: button
+    })
+    expect(warn).toHaveBeenCalledWith("SR5.DISEASE_ActiveGMOnly")
+    expect(create).not.toHaveBeenCalled()
+    expect(button.disabled).toBe(false)
   })
 
   it("no Apply button once the test was applied (no request left)", () => {

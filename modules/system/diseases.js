@@ -434,6 +434,7 @@ async function postDueCard(entries){
 // The GM asks for the test: a card to the player of the character, with the roll button. The ledger keeps a
 // token of that request; only a roll carrying it can be applied, and only once
 async function requestTest(entryId){
+  if (!isActiveGM()) return false
   const entry = diseaseLedger().infections?.[entryId]
   if (!entry || !isOpen(entry)) return true
   const actor = await fromUuid(entry.actorUuid)
@@ -503,6 +504,9 @@ export function activateDiseaseDueListeners(html, message){
   html.querySelectorAll("[data-sr5-disease]").forEach(button => button.addEventListener("click", async (event) => {
     const btn = event.currentTarget
     const row = btn.closest(".sr5-disease-row")
+    //The ledger is the active GM's: another GM's request carried a token the ledger never kept, and the player's
+    //roll was "already applied" (Inès)
+    if (!isActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.DISEASE_ActiveGMOnly"))
     btn.disabled = true
     const done = await DUE_ACTIONS[btn.dataset.sr5Disease](row.dataset.infectionId).catch(e => SR5_SystemHelpers.srLog(1, `Disease action failed: ${e}`))
     if (done && btn.dataset.sr5Disease !== "treat") await markRowDoneInMessage(row, "[data-sr5-disease=request],[data-sr5-disease=recover]", game.i18n.localize("SR5.CALENDAR_RowDone"))
