@@ -2200,7 +2200,8 @@ export class SR5_ActorHelper {
     }).some(s => s.value === "naniteAttributeBoost")
     let naniteBoostMarked = false
 
-    for (let e of Object.values(itemData[effectType])){
+    for (let [entryKey, e] of Object.entries(itemData[effectType] ?? {
+    })){
       if (e.transfer) {
         let value, key, newData
         //A "replace" type gives the target this value instead of adding it: the Limit of Animal Sense and Eyes of the Pack
@@ -2259,6 +2260,8 @@ export class SR5_ActorHelper {
           "system.ownerItem": data.owner.itemUuid,
           "system.duration": 0,
           "system.durationType": "sustained",
+          //The entry of the source item it comes from: dispelling lowers it only if that entry read the hits (dispel-rules.js)
+          "flags.sr5.sourceEntry": entryKey,
         }
 
         if (isNaniteBoost) {

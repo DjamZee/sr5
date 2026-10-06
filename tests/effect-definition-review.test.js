@@ -109,6 +109,8 @@ describe('a player sheet spell applied by the GM to an NPC', () => {
     expect(html).toContain('SR5.EffectDefinitionRefResisted')
     expect(html).toContain('SR5.EffectDefinitionChanged')
     expect(created['system.value']).toBe(4)
+    //The entry it comes from, read again when the spell is dispelled
+    expect(created['flags.sr5.sourceEntry']).toBe('0')
   })
 
   it('applies nothing when the GM declines', async () => {

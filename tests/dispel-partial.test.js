@@ -23,7 +23,7 @@ const {
   sourceEntryOf, dispelledValue
 } = await import('../modules/rolls/roll-helpers/dispel-rules.js')
 
-function effectItem(uuid, target, value, category = 'armors') {
+function effectItem(uuid, target, value, category = 'armors', sourceEntry) {
   const system = {
     value, target: 'label', customEffects: {
       0: {
@@ -32,7 +32,12 @@ function effectItem(uuid, target, value, category = 'armors') {
     }
   }
   return {
-    uuid, system, update: vi.fn(async () => {}), toObject: () => ({
+    uuid, system, flags: sourceEntry === undefined ? {
+    } : {
+      sr5: {
+        sourceEntry
+      }
+    }, update: vi.fn(async () => {}), toObject: () => ({
       system: structuredClone(system)
     })
   }
@@ -95,6 +100,32 @@ describe('dispelling part of a spell', () => {
     expect(lowered.value).toBe(3)
     expect(lowered.customEffects[0].value).toBe(3)
     expect(spell.update.mock.calls[0][0].system.hits).toBe(3)
+  })
+})
+
+describe('two entries of one spell on the same target', () => {
+  it('tells them apart by the entry the effect was made from', async () => {
+    const spell = spellWith({
+      0: {
+        transfer: true, category: 'armors', target: 'system.itemsProperties.armor', type: 'hits'
+      },
+      1: {
+        transfer: true, category: 'armors', target: 'system.itemsProperties.armor', type: 'value', value: 2
+      },
+    }, 3, ['A.hits', 'A.fixed'])
+    docs['Actor.s.Item.spell'] = spell
+    docs['A.hits'] = effectItem('A.hits', 'system.itemsProperties.armor', 3, 'armors', '0')
+    docs['A.fixed'] = effectItem('A.fixed', 'system.itemsProperties.armor', 2, 'armors', '1')
+    await SR5_ThirdPartyHelpers.reduceTransferedEffect({
+      target: {
+        itemUuid: 'Actor.s.Item.spell'
+      }, roll: {
+        netHits: 2
+      }, owner: {
+      }
+    })
+    expect(docs['A.hits'].update.mock.calls[0][0].system.value).toBe(1)
+    expect(docs['A.fixed'].update).not.toHaveBeenCalled()
   })
 })
 
