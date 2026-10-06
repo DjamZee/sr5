@@ -1659,7 +1659,7 @@ export class SR5_CharacterUtility extends Actor {
     // KEEP IN STEP with essenceAdjustment() (implant-essence.js), which mentorMagic() reads earlier
     const gift = transhumanGift(actor.items)
     if (gift?.used) SR5_EntityHelpers.updateModifier(essence, gift.name, "itemAugmentation", gift.used)
-    // Faille d'Essence (Chrome Flesh p. 74, its world setting on): what a removed implant took stays lost
+    // Faille d'Essence what a removed implant took stays lost (SR5 p. 53), filled under the Faille d'Essence (Chrome Flesh p. 74)
     essence.hole = currentEssenceHole(actor)
     if (essence.hole)SR5_EntityHelpers.updateModifier(essence, game.i18n.localize("SR5.EssenceHole"), "itemAugmentation", -essence.hole)
     SR5_EntityHelpers.updateValue(essence)

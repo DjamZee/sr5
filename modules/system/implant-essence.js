@@ -212,16 +212,19 @@ export function transhumanGift(items) {
 }
 
 /**
- * Faille d'Essence (Chrome Flesh p. 74, optional rule, world setting): "Quand un implant est retiré […] cela laisse
- * […] une « faille d'Essence » […] utilisée comme « crédit » pour tout nouvel implant". Kept on the actor by the
- * gamemaster at each removal (essence-hole.js): the hole (`holeAmount`) and what the implants took right after it
- * (`holeBase`). What is installed beyond that base fills the hole.
+ * The Essence a removed implant took: "Quand de l'Essence est perdue, elle ne revient pas" (SR5 p. 53; arbitrage de
+ * DjamZ, H22: the book, whatever the setting). Kept on the actor by the gamemaster at each removal (essence-hole.js):
+ * the hole (`holeAmount`) and what the implants took right after it (`holeBase`).
+ * Faille d'Essence (Chrome Flesh p. 74, optional rule, world setting): the hole "utilisée comme « crédit » pour tout
+ * nouvel implant": what is installed beyond the base fills it. Without the rule, nothing fills it.
  * @param {{holeAmount: number, holeBase: number}} essence the actor's
  * @param {number} implantsTotal the Essence the implants take now (implantsEssenceLost)
+ * @param {boolean} [fills] the Faille d'Essence rule is on
  */
-export function essenceHole(essence, implantsTotal) {
+export function essenceHole(essence, implantsTotal, fills = true) {
   const amount = Number(essence?.holeAmount) || 0
   if (amount <= 0) return 0
+  if (!fills) return Math.round(amount * 100) / 100
   const filled = Math.max(0, (Number(implantsTotal) || 0) - (Number(essence?.holeBase) || 0))
   return Math.max(0, Math.round((amount - filled) * 100) / 100)
 }
@@ -299,10 +302,9 @@ export function installationFlags(actor, system, {
   }
 }
 
-/** The hole of `actor` (Faille d'Essence), 0 while its world setting is off. */
+/** The Essence `actor` lost to removed implants: filled by the implants installed since under the Faille d'Essence. */
 export function currentEssenceHole(actor) {
-  if (!essenceSettingOn(ESSENCE_HOLE_SETTING)) return 0
-  return essenceHole(actor?.system?.essence, implantsEssenceLost(actor?.items))
+  return essenceHole(actor?.system?.essence, implantsEssenceLost(actor?.items), essenceSettingOn(ESSENCE_HOLE_SETTING))
 }
 
 /**

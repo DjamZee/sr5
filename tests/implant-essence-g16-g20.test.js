@@ -352,21 +352,40 @@ describe("G20 — Faille d'Essence (Chrome Flesh p. 74)", () => {
       hole: 1
     }).essence).toBe(4)
   })
-  it("is nothing while its world setting is off", () => {
+  it("without the rule, the hole stays whole: lost Essence does not come back (SR5 p. 53, H22)", () => {
+    // 1 point removed above a base of 1, then 0.5 installed
     const actor = {
-      items: [installed("cyberware", 1)], system: {
+      items: [installed("cyberware", 1.5)], system: {
         essence: {
-          holeAmount: 2, holeBase: 1
+          holeAmount: 1, holeBase: 1
+        }
+      }
+    }
+    withSettings({
+    })
+    expect(essenceAdjustment(actor)).toBe(-1)
+    withSettings({
+      sr5EssenceHole: true
+    })
+    expect(essenceAdjustment(actor)).toBe(-0.5)
+  })
+  it("without the rule, a second removal adds to the whole hole", () => {
+    expect(holeAfterRemoval({
+      holeAmount: 1, holeBase: 2
+    }, 2.4, 1.9, false)).toEqual({
+      holeAmount: 1.5, holeBase: 1.9
+    })
+  })
+  it("costs an actor saved before nothing: no hole until the next removal", () => {
+    const actor = {
+      items: [installed("cyberware", 2)], system: {
+        essence: {
         }
       }
     }
     withSettings({
     })
     expect(essenceAdjustment(actor)).toBe(0)
-    withSettings({
-      sr5EssenceHole: true
-    })
-    expect(essenceAdjustment(actor)).toBe(-2)
   })
 })
 

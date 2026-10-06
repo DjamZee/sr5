@@ -66,7 +66,7 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     actions: {
       // Faction Reputation, gamemaster's window (Cutting Aces p. 156)
       openFactions: () => SR5FactionsApp.open(),
-      // Faille d'Essence (Chrome Flesh p. 74): the gamemaster closes a hole left by mistake
+      // Essence lost to a removed implant (SR5 p. 53): the gamemaster gives it back when the removal was a mistake
       clearEssenceHole: function () {
         return clearEssenceHole(this.actor)
       },
