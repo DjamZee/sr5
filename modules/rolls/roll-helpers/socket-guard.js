@@ -164,10 +164,13 @@ export function reduceAllowed(changes, stored, netHits, linked = false, key = "h
       const kept = Array.isArray(stored?.targetOfEffect) ? stored.targetOfEffect : []
       if (!Array.isArray(value) || value.some(uuid => !kept.includes(uuid))) return false
     } else if (linked && field === "customEffects") {
+      //Stored as a list, the change of one value comes as the whole entry: everything but the value must stay as stored
       for (const [id, effect] of Object.entries(value ?? {
       })) {
-        if (!effect || Object.keys(effect).some(k => k !== "value")) return false
-        if (!towardZero(effect.value, stored?.customEffects?.[id]?.value)) return false
+        const before = stored?.customEffects?.[id]
+        if (!effect || !before) return false
+        if (Object.keys(effect).some(k => k !== "value" && JSON.stringify(effect[k]) !== JSON.stringify(before[k]))) return false
+        if (!towardZero(effect.value, before.value)) return false
       }
     } else return false
   }

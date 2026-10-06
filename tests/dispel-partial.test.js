@@ -163,6 +163,26 @@ describe('the GM guard of a player dispelling by socket', async () => {
       value: 3
     }, 2, true)).toBe(false)
   })
+  it('reads a list of custom effects sent whole, the value alone may change (measured in play)', () => {
+    const entry = {
+      category: 'characterAttributes', forceAdd: true, target: 'system.attributes.strength.augmented', type: 'value'
+    }
+    const stored = {
+      value: '-2', customEffects: [{
+        ...entry, value: -2
+      }]
+    }
+    expect(reduceAllowed({
+      value: 0, customEffects: [{
+        ...entry, value: 0
+      }]
+    }, stored, 3, true)).toBe(true)
+    expect(reduceAllowed({
+      value: 0, customEffects: [{
+        ...entry, target: 'system.attributes.body.augmented', value: 0
+      }]
+    }, stored, 3, true)).toBe(false)
+  })
 })
 
 describe('dispelledValue', () => {
