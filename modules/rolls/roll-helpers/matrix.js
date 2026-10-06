@@ -37,6 +37,9 @@ import {
 import {
   originalStrainDevice
 } from "../../system/monad-matrix.js"
+import {
+  SR5_CharacterUtility
+} from "../../entities/actors/utilityActor.js"
 
 export class SR5_MatrixHelpers {
   //Get time spent on a matrix search
@@ -407,6 +410,8 @@ export class SR5_MatrixHelpers {
 
   //create link lock effet
   static async applylinkLockEffect(attacker, target){
+    //An AI outside any device is immune to link-locking (Data Trails p. 157): the program and every IC come through here
+    if (SR5_CharacterUtility.isDevicelessAI(target)) return
     let effect = {
       type: "itemEffect",
       "system.type": "linkLock",
