@@ -5260,6 +5260,7 @@
 	"SR5.WARN_NoMedkit": "No medkit in wifi mode with remaining charge equiped.",
 	"SR5.WARN_NoMoreHitsToSpend": "No more Hits to spend.",
 	"SR5.WARN_NoReagents": "You don't have reagents left !",
+	"SR5.WARN_NeedResonance": "This action needs the Resonance attribute (SR5 p. 240).",
 	"SR5.WARN_NotASpirit": "You must select a spirit !",
 	"SR5.WARN_NotASprite": "You must select a sprite !",
 	"SR5.WARN_ActionNoInitiative": "{actor} has an Initiative score of {initiative}: only a free action is allowed in this pass (SR5 p. 162).",
