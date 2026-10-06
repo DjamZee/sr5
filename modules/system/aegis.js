@@ -1,7 +1,7 @@
 // Aegis echo (Kill Code p. 112): four extra boxes on the technomancer's matrix condition monitor, damaged
 // before the technomancer. Once damaged, the shield comes back whole twenty-four hours later, never box by box.
 // The twenty-four hours start at the FIRST damage (arbitrage de DjamZ, 2026-10-06).
-// The shield is a ledger written by the active GM only (flags.sr5.aegis): a player's client never spends it.
+// The shield is a ledger written by the active GM only (world setting aegisLedger): a player's client never spends it.
 
 export const AEGIS_BOXES = 4
 export const AEGIS_REGEN_SECONDS = 24 * 60 * 60
@@ -42,4 +42,32 @@ export function absorbWithAegis(ledger, incoming, now){
 
 export function isActiveGM(user = game.user){
   return !!user?.isGM && (game.users?.activeGM ?? null)?.id === user.id
+}
+
+// The ledger lives in a world setting, which only a GM can write: a flag on the actor would be its owner's to reset
+export const AEGIS_LEDGER = "aegisLedger"
+
+export function registerAegisLedger(){
+  game.settings.register("sr5", AEGIS_LEDGER, {
+    scope: "world", config: false, type: Object, default: {
+    },
+  })
+}
+
+export function aegisLedger(actor){
+  try {
+    return (game.settings.get("sr5", AEGIS_LEDGER) ?? {
+    })[actor.uuid] ?? null
+  } catch {
+    return null
+  }
+}
+
+export async function setAegisLedger(actor, entry){
+  if (!isActiveGM()) return
+  const ledger = foundry.utils.duplicate(game.settings.get("sr5", AEGIS_LEDGER) ?? {
+  })
+  if (entry?.damage > 0) ledger[actor.uuid] = entry
+  else delete ledger[actor.uuid]
+  await game.settings.set("sr5", AEGIS_LEDGER, ledger)
 }

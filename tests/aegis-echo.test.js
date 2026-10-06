@@ -59,5 +59,8 @@ describe("Aegis echo", () => {
     expect(helper).toMatch(/if \(isActiveGM\(\)\) \{\s*const result = absorbWithAegis/)
     const entity = readFileSync("modules/entities/actors/entityActor.js", "utf8")
     expect(entity).toMatch(/aegisToGM/)
+    // never a flag on the actor, which its owner could reset
+    expect(helper).not.toMatch(/setFlag\("sr5", "aegis"/)
+    expect(readFileSync("modules/system/aegis.js", "utf8")).toMatch(/scope: "world"/)
   })
 })
