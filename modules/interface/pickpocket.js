@@ -15,6 +15,9 @@ import {
 import {
   SR5_RollMessage
 } from "../rolls/roll-message.js"
+import {
+  screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED
+} from "../system/implant-essence.js"
 
 /**
  * Picking a pocket from the token HUD (SR5 p. 135, p. 422).
@@ -400,6 +403,17 @@ export class SR5Pickpocket {
       return ui.notifications.warn(game.i18n.localize(mode === "plant" ? "SR5.WARN_PickpocketPlantRefused" : "SR5.WARN_PickpocketRefused"))
     }
 
+    //Système sensible (SR5 p. 89): a bioware the receiver's body rejects stays where it is. Asked before anything
+    //moves: refused at the creation, it would be lost on both sides
+    const {
+      refused, confirmed: implantConfirmed
+    } = await screenRejectedImplants(receiver, [{
+      type: item.type, name: item.name, system: {
+        ...item.system, storedIn: ""
+      }
+    }])
+    if (refused.length) return
+
     //Marked first: a second click finds the card done
     await perceptionMessage.update({
       "flags.sr5data.various.pickpocketDone": true
@@ -423,7 +437,10 @@ export class SR5Pickpocket {
       if (split.mergeInto) await split.mergeInto.update({
         "system.quantity": pileSize(split.mergeInto) + split.quantity
       })
-      else await receiver.createEmbeddedDocuments("Item", [given])
+      else await receiver.createEmbeddedDocuments("Item", [given], implantConfirmed ? {
+        [IMPLANT_REJECTION_CONFIRMED]: true
+      } : {
+      })
     }
 
     await ChatMessage.create({

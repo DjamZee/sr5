@@ -173,21 +173,30 @@ describe("the till (SR5 p. 54, p. 89)", () => {
       isGM: false, warn: () => {}
     })).toBe(true)
   })
-  it("rejects bioware for a sensitive buyer, read on the buyer", () => {
+  it("drops the bioware a sensitive buyer rejects, read on the buyer, and keeps the rest", async () => {
     const warned = []
     const glande = {
-      type: "itemAugmentation", name: "Glande", system: {
-        type: "bioware"
-      }
+      source: {
+        type: "itemAugmentation", name: "Glande", system: {
+          type: "bioware"
+        }
+      }, name: "Glande"
     }
-    expect(SR5Shop.rejectedImplant(buyer(6, [sensitive]), glande, key => warned.push(key))).toBe(true)
+    const datajack = {
+      source: {
+        type: "itemAugmentation", name: "Datajack", system: {
+          type: "cyberware"
+        }
+      }, name: "Datajack"
+    }
+    const screened = await SR5Shop.screenLines(buyer(6, [sensitive]), [glande, datajack], {
+      isGM: false, warn: key => warned.push(key)
+    })
+    expect(screened.lines).toEqual([datajack])
     expect(warned).toEqual(["SR5.WARN_ImplantRejected"])
-    expect(SR5Shop.rejectedImplant(buyer(6, []), glande, () => {})).toBe(false)
-    expect(SR5Shop.rejectedImplant(buyer(6, [sensitive]), {
-      ...glande, system: {
-        type: "cyberware"
-      }
-    }, () => {})).toBe(false)
+    expect((await SR5Shop.screenLines(buyer(6, []), [glande], {
+      isGM: false, warn: () => {}
+    })).lines).toEqual([glande])
   })
 })
 
@@ -202,10 +211,10 @@ describe("Essence left after a purchase (SR5 p. 54: at 0, death)", () => {
       }, grade: "standard", quantity: 1
     }]
     expect(essenceAfterPurchase(6, items, lines)).toEqual({
-      essence: 2, rejected: []
+      essence: 2
     })
   })
-  it("names the bioware a sensitive body rejects", () => {
+  it("counts a bioware the gamemaster kept (screened before, not here)", () => {
     const lines = [{
       type: "itemAugmentation", name: "Glande", system: {
         type: "bioware", grade: "standard", essenceCost: {
@@ -213,7 +222,7 @@ describe("Essence left after a purchase (SR5 p. 54: at 0, death)", () => {
         }
       }, grade: null, quantity: 1
     }]
-    expect(essenceAfterPurchase(6, items, lines).rejected).toEqual(["Glande"])
+    expect(essenceAfterPurchase(6, items, lines).essence).toBe(5.3)
   })
   it("ignores what is not an implant, and accessories", () => {
     expect(essenceAfterPurchase(6, items, [{

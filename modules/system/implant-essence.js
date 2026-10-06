@@ -30,12 +30,21 @@ export function implantFamily(augmentationType) {
   return null
 }
 
+/** The items of an actor as a list: an embedded collection, a Map or an array. */
+function listOf(items) {
+  if (Array.isArray(items)) return items
+  if (Array.isArray(items?.contents)) return items.contents
+  return typeof items?.values === "function" ? [...items.values()] : []
+}
+
 /** The active effects of `items` that touch implants, with the name of the item carrying each. */
 function activeEffects(items) {
   const found = []
-  for (const item of items ?? []) {
-    const effects = item?.system?.systemEffects
-    if (!Array.isArray(effects) || !effects.length || !item.system.isActive) continue
+  for (const item of listOf(items)) {
+    // Raw creation data may still hold the indexed object the packs store ({"0": {...}})
+    const raw = item?.system?.systemEffects
+    const effects = Array.isArray(raw) ? raw : raw && typeof raw === "object" ? Object.values(raw) : []
+    if (!effects.length || !item.system.isActive) continue
     for (const effect of effects) {
       if (Object.values(IMPLANT_ESSENCE_EFFECTS).includes(effect?.value)) found.push({
         value: effect.value, name: item.name
@@ -92,24 +101,80 @@ export function implantEssence(gradedCost, effects) {
 }
 
 /**
- * The Essence a buyer keeps after a purchase, read on the buyer's own items, and the lines a sensitive
- * body rejects. A line: `{type, name, system, grade, quantity}` — the item as sold and the grade chosen.
- * Accessories cost no Essence, as on the sheet (entityActor.js).
+ * The Essence a buyer keeps after a purchase, read on the buyer's own items. A line: `{type, name, system,
+ * grade, quantity}` — the item as sold and the grade chosen. The lines a sensitive body rejects are screened
+ * out before (screenRejectedImplants); what is left here is installed. Accessories cost no Essence, as on the
+ * sheet (entityActor.js).
  */
 export function essenceAfterPurchase(essence, items, lines) {
   let left = Number(essence) || 0
-  const rejected = []
   for (const line of lines ?? []) {
     if (line?.type !== "itemAugmentation" || line.system?.isAccessory) continue
     const effects = implantEssenceEffects(items, line.system?.type)
-    if (effects.rejectedBy) {
-      rejected.push(line.name)
-      continue
-    }
     const graded = SR5ShopGrades.essence(line.system, line.grade ?? line.system?.grade)
     left -= implantEssence(graded, effects) * Math.max(1, Math.floor(Number(line.quantity) || 1))
   }
   return {
-    essence: Math.round(left * 100) / 100, rejected
+    essence: Math.round(left * 100) / 100
+  }
+}
+
+/**
+ * The creation option a gamemaster's confirmation travels with: the implant was screened before it moved, and
+ * the gamemaster chose to keep it. Honoured for a gamemaster only (entityItem.js _preCreateOperation).
+ */
+export const IMPLANT_REJECTION_CONFIRMED = "sr5ImplantRejectionConfirmed"
+
+/** An implant put in a storage (a stash, a vendor's counter) is carried, not installed: no body rejects it. */
+function isInstalled(data) {
+  return data?.type === "itemAugmentation" && !data.system?.storedIn
+}
+
+/**
+ * Système sensible (SR5 p. 89): the implants `actor`'s body rejects among `incoming`, looked for BEFORE anything
+ * moves — a transfer that deletes first and creates afterwards would lose them on both sides. The qualities among
+ * `incoming` count, as they arrive with the same batch. A player is told and the implants are left out; the
+ * gamemaster is asked, in his own window, and may keep them.
+ * @param {Actor} actor the receiving body, read on the client that runs the transfer
+ * @param {Array<{type: string, name: string, system: object}>} incoming
+ * @param {object} [options]
+ * @param {boolean} [options.isGM] whether the gamemaster decides
+ * @param {Function} [options.warn] how a refusal is told (key, data)
+ * @returns {Promise<{refused: object[], confirmed: boolean}>} `refused`: entries of `incoming` to leave out;
+ *   `confirmed`: the gamemaster kept rejected implants, pass IMPLANT_REJECTION_CONFIRMED with the creation
+ */
+export async function screenRejectedImplants(actor, incoming, {
+  isGM = game.user?.isGM, warn = (key, data) => ui.notifications?.warn(game.i18n.format(key, data))
+} = {
+}) {
+  const body = [...listOf(actor?.items), ...(incoming ?? [])]
+  const rejected = (incoming ?? []).map(data => ({
+    data, quality: isInstalled(data) ? implantEssenceEffects(body, data.system?.type).rejectedBy : null
+  })).filter(r => r.quality)
+  if (!rejected.length) return {
+    refused: [], confirmed: false
+  }
+  if (isGM) {
+    const kept = await foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: game.i18n.localize("SR5.ImplantRejectedConfirmTitle")
+      },
+      content: `<p>${game.i18n.format("SR5.ImplantRejectedConfirmText", {
+        actor: foundry.utils.escapeHTML?.(actor?.name ?? "") ?? actor?.name,
+        names: rejected.map(r => foundry.utils.escapeHTML?.(r.data.name ?? "") ?? r.data.name).join(", "),
+        quality: rejected[0].quality,
+      })}</p>`,
+      rejectClose: false,
+    }) === true
+    if (kept) return {
+      refused: [], confirmed: true
+    }
+  } else {
+    for (const r of rejected) warn("SR5.WARN_ImplantRejected", {
+      name: r.data.name, actor: actor?.name, quality: r.quality
+    })
+  }
+  return {
+    refused: rejected.map(r => r.data), confirmed: false
   }
 }

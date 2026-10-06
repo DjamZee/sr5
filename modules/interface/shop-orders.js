@@ -12,6 +12,9 @@
 import {
   updateLedger
 } from '../system/gm-ledger.js'
+import {
+  screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED
+} from '../system/implant-essence.js'
 
 export const ORDERS_FLAG = 'shopOrders'
 export const DELIVERY_SETTING = 'sr5ShopDelivery'
@@ -441,9 +444,26 @@ export async function deliverOrder(actor, id) {
   const {
     SR5Shop
   } = await import('./shop.js')
+  // Système sensible taken since the order (SR5 p. 89): the gamemaster decides before the order goes. Declined,
+  // the order stays on the sheet, paid: he cancels it to refund the buyer, nothing is lost without a word
+  const payload = SR5Shop._itemPayload(source, order.quantity, order.grade)
+  const {
+    refused, confirmed
+  } = await screenRejectedImplants(actor, payload.slice(0, 1), {
+    isGM: true
+  })
+  if (refused.length) {
+    ui.notifications.warn(game.i18n.format('SR5.WARN_ShopOrderRejectedKept', {
+      name: order.name, actor: actor.name
+    }))
+    return false
+  }
   await removeOrder(actor, id)
   await ledgerDrop(id)
-  await actor.createEmbeddedDocuments('Item', SR5Shop._itemPayload(source, order.quantity, order.grade))
+  await actor.createEmbeddedDocuments('Item', payload, confirmed ? {
+    [IMPLANT_REJECTION_CONFIRMED]: true
+  } : {
+  })
   await tell(actor, 'SR5.ShopOrderDelivered', order)
   return true
 }

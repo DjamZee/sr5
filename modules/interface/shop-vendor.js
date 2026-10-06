@@ -14,6 +14,9 @@ import {
   SR5Shop
 } from './shop.js'
 import {
+  IMPLANT_REJECTION_CONFIRMED
+} from '../system/implant-essence.js'
+import {
   SR5ShopStock
 } from './shop-stock.js'
 import {
@@ -741,7 +744,6 @@ export class SR5ShopVendor {
     } of ok) {
       if (!SR5ShopStock.isSellableType(item.type)) continue
       if (SR5ShopStock.isNotForSale(item) && !byGM) continue
-      if (SR5Shop.rejectedImplant(buyer, item, warnRequester)) continue
       const described = SR5ShopCatalog.describe({
         type: item.type, system: counterSystem(item), margin: shop.margin
       })
@@ -780,7 +782,6 @@ export class SR5ShopVendor {
         equip
       })
       const grade = offered.includes(line.grade) ? line.grade : null
-      if (SR5Shop.rejectedImplant(buyer, source, warnRequester)) continue
       const described = SR5ShopCatalog.describe({
         type: source.type, system: source.system, margin: shop.margin
       }, grade)
@@ -807,6 +808,12 @@ export class SR5ShopVendor {
         name: SR5Shop.gradedName(source.name, grade),
       })
     }
+    if (!resolved.length) return false
+    // Système sensible (SR5 p. 89): screened on the buyer before the counter is touched or anything paid
+    const screened = await SR5Shop.screenLines(buyer, resolved, {
+      isGM: byGM, warn: warnRequester
+    })
+    resolved.splice(0, resolved.length, ...screened.lines)
     if (!resolved.length) return false
     // SR5 p. 54: an Essence at 0 is death. A player's request is refused; the gamemaster is asked in his window
     if (!(await SR5Shop.essenceAllows(buyer, resolved.map(line => ({
@@ -934,7 +941,11 @@ export class SR5ShopVendor {
       }
     }
     if (payload.length) await buyer.createEmbeddedDocuments('Item', payload, {
-      keepId: true
+      keepId: true,
+      ...(screened.confirmed ? {
+        [IMPLANT_REJECTION_CONFIRMED]: true
+      } : {
+      }),
     })
     await addOrders(buyer, orders)
     // The GM's till writes what each order cost and who took the money: a cancellation follows this alone

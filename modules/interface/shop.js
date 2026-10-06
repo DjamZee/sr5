@@ -17,7 +17,7 @@ import {
   SR5ShopCatalog
 } from './shop-catalog.js'
 import {
-  implantEssenceEffects, essenceAfterPurchase
+  essenceAfterPurchase, screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED
 } from '../system/implant-essence.js'
 import {
   SR5ShopAvailability
@@ -288,7 +288,6 @@ export class SR5Shop {
         }))
         continue
       }
-      if (SR5Shop.rejectedImplant(actor, source)) continue
       const quantity = Math.max(1, Math.floor(Number(line.quantity) || 1))
       const base = SR5Shop.gradedPrice(source.system, grade)
       // The surcharge that bought dice on the card is paid (SR5 p. 420); the search time and the express
@@ -300,6 +299,9 @@ export class SR5Shop {
         availability: Number(described.availability) || 0,
       })
     }
+    if (!resolved.length) return false
+    const screened = await SR5Shop.screenLines(actor, resolved)
+    resolved.splice(0, resolved.length, ...screened.lines)
     if (!resolved.length) return false
     if (!(await SR5Shop.essenceAllows(actor, resolved.map(line => ({
       type: line.source.type, name: line.name, system: line.source.system, grade: line.grade, quantity: line.quantity,
@@ -386,7 +388,10 @@ export class SR5Shop {
     })
 
     SR5_SystemHelpers.srLog(3, `Shop: ${actor.name} ${equip ? 'is equipped with' : free ? 'receives' : 'buys'} ${label} (${total})`)
-    const created = payload.length ? await actor.createEmbeddedDocuments('Item', payload) : []
+    const created = payload.length ? await actor.createEmbeddedDocuments('Item', payload, screened.confirmed ? {
+      [IMPLANT_REJECTION_CONFIRMED]: true
+    } : {
+    }) : []
     await addOrders(actor, orders)
     // The active GM enters the orders in his ledger, priced by himself, within this debit
     const debit = (created ?? []).find(item => item.type === 'itemNuyen' && item.system?.type === 'loss')
@@ -456,17 +461,29 @@ export class SR5Shop {
   }
 
   /**
-   * A bioware a sensitive body rejects (SR5 p. 89), read on the buyer's own items: warned, and true.
-   * @param {Function} [warn] how the refusal is told — the vendor tells its requester
+   * The lines of a purchase whose implant the buyer's body rejects (Système sensible, SR5 p. 89), screened on
+   * the buyer's own items before anything is paid or moved: a player is told and the line is dropped; the
+   * gamemaster is asked and may keep it. A line holds its item as `source` (shelves) or `item` (counter).
+   * @returns {Promise<{lines: object[], confirmed: boolean}>} the lines kept; `confirmed` travels with the creation
    */
-  static rejectedImplant(actor, source, warn = (key, data) => ui.notifications.warn(game.i18n.format(key, data))) {
-    if (source?.type !== 'itemAugmentation') return false
-    const rejectedBy = implantEssenceEffects(actor?.items, source.system?.type).rejectedBy
-    if (!rejectedBy) return false
-    warn('SR5.WARN_ImplantRejected', {
-      name: source.name, actor: actor.name, quality: rejectedBy
+  static async screenLines(actor, lines, {
+    isGM = game.user.isGM, warn = (key, data) => ui.notifications.warn(game.i18n.format(key, data))
+  } = {
+  }) {
+    const goods = lines.map(line => {
+      const document = line.item ?? line.source
+      return {
+        type: document?.type, name: line.name ?? document?.name, system: document?.system
+      }
     })
-    return true
+    const {
+      refused, confirmed
+    } = await screenRejectedImplants(actor, goods, {
+      isGM, warn
+    })
+    return {
+      lines: lines.filter((line, i) => !refused.includes(goods[i])), confirmed
+    }
   }
 
   /**

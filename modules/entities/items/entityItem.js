@@ -8,7 +8,7 @@ import {
   SR5_UtilityItem
 } from "./utilityItem.js"
 import {
-  implantEssenceEffects
+  screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED
 } from "../../system/implant-essence.js"
 import {
   SR5_CharacterUtility 
@@ -63,18 +63,26 @@ export class SR5Item extends Item {
     return super.create(data, options)
   }
 
+  /**
+   * Système sensible: "Le bioware, quel que soit sa conception ou son type de culture, est rejeté" (SR5 p. 89).
+   * Read once per batch, so a quality created with the bioware counts. The last guard for a drop on the sheet:
+   * the transfers (shop, vendor, loot, pickpocket, delivery) screen BEFORE anything moves and come here with
+   * the gamemaster's confirmation, honoured for a gamemaster only.
+   */
+  static async _preCreateOperation(documents, operation, user) {
+    if ((await super._preCreateOperation(documents, operation, user)) === false) return false
+    const actor = operation.parent
+    if (!(actor instanceof Actor) || !documents.some(d => d.type === "itemAugmentation")) return
+    if (operation[IMPLANT_REJECTION_CONFIRMED] && game.user.isGM) return
+    const {
+      refused
+    } = await screenRejectedImplants(actor, documents)
+    for (const doc of refused) documents.splice(documents.indexOf(doc), 1)
+    if (!documents.length) return false
+  }
+
   async _preCreate(data, options, user) {
     await super._preCreate(data, options, user)
-    // Système sensible: "Le bioware, quel que soit sa conception ou son type de culture, est rejeté" (SR5 p. 89)
-    if (this.type === "itemAugmentation" && this.parent instanceof Actor) {
-      const rejectedBy = implantEssenceEffects(this.parent.items, this.system?.type).rejectedBy
-      if (rejectedBy) {
-        ui.notifications?.warn(game.i18n.format("SR5.WARN_ImplantRejected", {
-          name: this.name, actor: this.parent.name, quality: rejectedBy
-        }))
-        return false
-      }
-    }
     // An item exported prepared, or dragged from a prepared sheet, arrives without its computed modifiers
     cleanCreatedSource(this)
     const defaultImg = `systems/sr5/assets/img/items/${data.type}.svg`

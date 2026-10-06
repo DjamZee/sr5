@@ -10,6 +10,9 @@ import {
 import {
   SR5StorageLock
 } from "../../interface/storage-lock-actions.js"
+import {
+  screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED
+} from "../../system/implant-essence.js"
 
 /**
  * An Actor sheet for a storage that has been put down on the map. It shows
@@ -163,11 +166,21 @@ export class SR5StorageSheet extends ActorSheetSR5 {
     if (isLocked(SR5StorageLock.base(this.actor))) {
       return ui.notifications.warn(game.i18n.localize("SR5.WARN_StorageLocked"))
     }
-    const data = items.map(i => {
+    let data = items.map(i => {
       const object = i.toObject(false)
       if (object.system.storedIn !== undefined) object.system.storedIn = ""
       return object
     })
+    // Système sensible (SR5 p. 89): an implant the looter's body rejects stays in the storage. Asked BEFORE the
+    // deletion: refused at the creation, it would be lost on both sides
+    const {
+      refused, confirmed
+    } = await screenRejectedImplants(looter, data)
+    if (refused.length) {
+      data = data.filter(object => !refused.includes(object))
+      items = items.filter(i => data.some(object => object._id === i.id))
+      if (!items.length) return
+    }
     let taken
     try {
       taken = await this.actor.deleteEmbeddedDocuments("Item", items.map(i => i.id))
@@ -178,7 +191,10 @@ export class SR5StorageSheet extends ActorSheetSR5 {
     const takenIds = new Set((taken ?? []).map(i => i.id))
     const given = data.filter(object => takenIds.has(object._id))
     if (!given.length) return
-    await looter.createEmbeddedDocuments("Item", given)
+    await looter.createEmbeddedDocuments("Item", given, confirmed ? {
+      [IMPLANT_REJECTION_CONFIRMED]: true
+    } : {
+    })
     ui.notifications.info(game.i18n.format("SR5.StorageLooted", {
       count: given.length, actor: looter.name, storage: this.actor.name,
     }))
