@@ -613,6 +613,11 @@ export class SR5Combat extends Combat {
 
   //The ids to compare again after an update of this actor: an unlinked token's own, or every fighter of a base actor,
   //each unlinked token by its own id (its synthetic actor is prepared again from the base) and the linked ones by the actor's
+  //An actor update that can change the initiative of its fighter: the comparison with the combatant is harmless otherwise
+  static updateMovesInitiative(data){
+    return !!(data?.system?.initiatives || data?.system?.conditionMonitors || data?.system?.matrix || data?.system?.attributes)
+  }
+
   static initTargetsOfActor(document){
     if (!game.combat || !document) return []
     if (document.isToken) return document.token?.id ? [document.token.id] : []

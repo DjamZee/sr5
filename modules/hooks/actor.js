@@ -96,8 +96,9 @@ export async function sr5HookUpdateActor(document, data, _options, userId) {
   //still reads the actor as it was, so the tokens are served again from here
   if (data.items && userId === game.user?.id) await SR5_CharacterUtility.refreshVisionOfTokens(document)
 
-  //The active GM alone: with two GMs connected, each one compared and adjusted the same fighter
-  if (game.combat && game.user?.isGM && game.users?.activeGM?.id === game.user.id && (data.system?.initiatives || data.system?.conditionMonitors || data.system?.matrix)) {
+  //The active GM alone: with two GMs connected, each one compared and adjusted the same fighter.
+  //An attribute changed on the sheet moves the initiative at once, not at the next wound (Reaction + Intuition)
+  if (game.combat && game.user?.isGM && game.users?.activeGM?.id === game.user.id && SR5Combat.updateMovesInitiative(data)) {
     for (const id of SR5Combat.initTargetsOfActor(document)) await SR5Combat.changeInitInCombatHelper(id)
   }
 
