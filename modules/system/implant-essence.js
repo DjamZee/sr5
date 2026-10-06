@@ -263,7 +263,8 @@ export function implantsEssenceLost(items) {
  * a player sends.
  */
 export const GM_ONLY_FIELDS = {
-  itemAugmentation: ["underAdapsine", "augmentationBundle", "transhumanGift", "reversibleEssence", "isAccessory"],
+  itemAugmentation: ["underAdapsine", "augmentationBundle", "transhumanGift", "reversibleEssence", "isAccessory",
+    "essenceCost.base", "essenceCost.multiplier"],
   itemQuality: ["transhumanEssence"],
   actor: ["essence.holeAmount", "essence.holeBase"],
 }

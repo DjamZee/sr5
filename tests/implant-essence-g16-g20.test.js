@@ -6,7 +6,7 @@ import {
   installationFlags, GM_ONLY_FIELDS, hasAdapsine, essenceAdjustment
 } from "../modules/system/implant-essence.js"
 import {
-  holeAfterRemoval, leavesHole
+  holeAfterRemoval, leavesHole, registeredCost
 } from "../modules/system/essence-hole.js"
 import {
   reservedChangedBy, valueAfterUpdate, reservedMismatches
@@ -404,7 +404,8 @@ describe("the active gamemaster's register", () => {
     expect(await expectedAtCreation(implant({
       type: "cyberware", underAdapsine: true, augmentationBundle: true, reversibleEssence: true
     }), GM_ONLY_FIELDS.itemAugmentation)).toEqual({
-      underAdapsine: false, augmentationBundle: false, transhumanGift: false, reversibleEssence: false, isAccessory: false
+      underAdapsine: false, augmentationBundle: false, transhumanGift: false, reversibleEssence: false, isAccessory: false,
+      "essenceCost.base": 0, "essenceCost.multiplier": ""
     })
     expect((await expectedAtCreation(implant({
       type: "cyberware"
@@ -734,6 +735,70 @@ describe("Apollinaire's review: the marks of a removed implant, an accessory, an
     expect((await expectedValues(accessory, GM_ONLY_FIELDS.itemAugmentation, register, {
       resolve: noSource
     })).isAccessory).toBe(false)
+  })
+  it("keeps the base cost and its multiplier the GM's: refused to a player, its origin's for a player's implant", async () => {
+    expect(GM_ONLY_FIELDS.itemAugmentation).toEqual(expect.arrayContaining(["essenceCost.base", "essenceCost.multiplier"]))
+    expect(reservedChangedBy({
+      system: {
+        essenceCost: {
+          base: 2, multiplier: ""
+        }
+      }
+    }, {
+      "system.essenceCost.base": 0.1
+    }, GM_ONLY_FIELDS.itemAugmentation)).toEqual(["essenceCost.base"])
+    const origin = {
+      type: "itemAugmentation", system: {
+        type: "cyberware", essenceCost: {
+          base: 2, multiplier: ""
+        }
+      }
+    }
+    // A copy whose cost was lowered still finds its origin (same kind), and takes its cost back
+    const lowered = doc({
+      essenceCost: {
+        base: 0.1, multiplier: ""
+      }
+    }, {
+      _stats: {
+        compendiumSource: "Compendium.m.i.Item.r"
+      }
+    })
+    const expected = await expectedAtCreation(lowered, GM_ONLY_FIELDS.itemAugmentation, {
+      resolve: async () => origin
+    })
+    expect(expected["essenceCost.base"]).toBe(2)
+    // Without a known origin, the implant keeps its own
+    expect((await expectedAtCreation(lowered, GM_ONLY_FIELDS.itemAugmentation, {
+      resolve: noSource
+    }))["essenceCost.base"]).toBe(0.1)
+  })
+  it("prices a removed implant at the base cost the register holds, not one lowered just before", () => {
+    const item = {
+      system: {
+        essenceCost: {
+          value: 0.1, base: 0.1, multiplier: ""
+        }
+      }, _source: {
+        system: {
+          essenceCost: {
+            base: 0.1, multiplier: "", modifiers: []
+          }
+        }
+      }
+    }
+    const compute = data => {
+      data.essenceCost.value = data.essenceCost.base
+    }
+    expect(registeredCost(item, {
+      "essenceCost.base": 2, "essenceCost.multiplier": ""
+    }, null, compute)).toBe(2)
+    expect(registeredCost(item, {
+      "essenceCost.base": 0.1, "essenceCost.multiplier": ""
+    }, null, compute)).toBe(0.1)
+    expect(registeredCost(item, {
+      underAdapsine: false
+    }, null, compute)).toBe(0.1)
   })
   it("reads an unknown grade as standard, never as an implant that costs nothing", () => {
     expect(onActor(implant("cyberware", 2, "alpha"), [])).toBe(2)

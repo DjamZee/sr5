@@ -11,6 +11,8 @@ export const RESERVED_DEFAULTS = {
   transhumanGift: false,
   reversibleEssence: false,
   isAccessory: false,
+  "essenceCost.base": 0,
+  "essenceCost.multiplier": "",
   transhumanEssence: 1,
   "essence.holeAmount": 0,
   "essence.holeBase": 0,

@@ -14,6 +14,9 @@ import {
 import {
   IMPLANT_REGISTER, vouchedMarks
 } from "./implant-register.js"
+import {
+  SR5_UtilityItem
+} from "../entities/items/utilityItem.js"
 
 /**
  * The hole kept after an implant is removed.
@@ -41,6 +44,27 @@ export function leavesHole(item, marks = item?.system) {
   return item?.type === "itemAugmentation" && !marks?.isAccessory && !marks?.reversibleEssence
 }
 
+/**
+ * The Essence a removed implant took, at the base cost and multiplier the gamemaster's register holds: a player who
+ * lowered them just before the removal would leave a smaller hole. Worked out by the sheet's own function.
+ * @param {object} [entry] the implant's register entry
+ * @param {Function} [compute] how an implant's data is priced (SR5_UtilityItem._handleAugmentation)
+ */
+export function registeredCost(item, entry, actor, compute = (data, body) => SR5_UtilityItem._handleAugmentation(data, body)) {
+  const value = Number(item?.system?.essenceCost?.value) || 0
+  if (!entry || !("essenceCost.base" in entry)) return value
+  const now = item.system?.essenceCost ?? {
+  }
+  if (Number(now.base) === Number(entry["essenceCost.base"]) && (now.multiplier ?? "") === (entry["essenceCost.multiplier"] ?? "")) return value
+  const data = foundry.utils.deepClone(item._source?.system ?? item.system)
+  data.essenceCost = {
+    ...data.essenceCost, base: entry["essenceCost.base"], multiplier: entry["essenceCost.multiplier"] ?? "", modifiers: []
+  }
+  for (const key of ["price", "availability", "capacity", "capacityTaken"]) if (data[key]) data[key].modifiers = []
+  compute(data, actor)
+  return Number(data.essenceCost?.value) || 0
+}
+
 /** The deleteItem hook: an implant removed from a character. */
 async function onImplantDeleted(item) {
   if (item?.type !== "itemAugmentation" || !(item.parent instanceof Actor)) return
@@ -59,7 +83,7 @@ async function onImplantDeleted(item) {
     type: item.type, system: {
       type: item.system?.type, isAccessory: false, transhumanGift: item.system?.transhumanGift,
       essenceCost: {
-        value: item.system?.essenceCost?.value
+        value: registeredCost(item, register[item.uuid], actor)
       }
     }
   }

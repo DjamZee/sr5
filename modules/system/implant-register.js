@@ -51,7 +51,8 @@ export async function sourceReversible(doc, resolve) {
  * (shop.js, shopSource).
  */
 export async function sourceEntry(doc, resolve = uuid => fromUuid(uuid), {
-  playerOwned = source => !!game.users?.some(u => !u.isGM && source.testUserPermission?.(u, "OWNER"))
+  playerOwned = source => !!game.users?.some(u => !u.isGM && source.testUserPermission?.(u, "OWNER")),
+  matchCost = true
 } = {
 }) {
   const candidates = [doc?._stats?.compendiumSource, doc?.flags?.core?.sourceId, doc?.flags?.sr5?.shopSource, doc?._stats?.duplicateSource]
@@ -65,9 +66,9 @@ export async function sourceEntry(doc, resolve = uuid => fromUuid(uuid), {
     if (!compendium && !/^Item\.[^.]+$/.test(uuid)) continue
     const source = await resolve(uuid)
     if (!source || (!compendium && playerOwned(source))) continue
-    const same = source.type === doc.type && source.system?.type === doc.system?.type &&
+    const same = source.type === doc.type && source.system?.type === doc.system?.type && (!matchCost || (
       Number(cost(source.system).base) === Number(cost(doc.system).base) &&
-      (cost(source.system).multiplier ?? "") === (cost(doc.system).multiplier ?? "")
+      (cost(source.system).multiplier ?? "") === (cost(doc.system).multiplier ?? "")))
     if (same) return source
   }
   return null
@@ -102,6 +103,12 @@ export async function expectedAtCreation(doc, fields, {
   if (doc?.type === "itemAugmentation" && doc.parent?.items) {
     const others = doc.parent.items.filter(i => i.id !== doc.id)
     const source = await sourceEntry(doc, resolve)
+    // The Essence it costs is its origin's, whatever the copy says; an implant without a known origin keeps its own
+    const origin = source ?? await sourceEntry(doc, resolve, {
+      matchCost: false
+    })
+    const cost = (origin ?? doc).system?.essenceCost ?? {
+    }
     return {
       ...installationFlags({
         items: others
@@ -111,6 +118,8 @@ export async function expectedAtCreation(doc, fields, {
       reversibleEssence: !!source?.system?.reversibleEssence,
       // An accessory costs no Essence (entityActor.js): only a compendium entry says so for a player's implant
       isAccessory: !!source?.system?.isAccessory,
+      "essenceCost.base": Number(cost.base) || 0,
+      "essenceCost.multiplier": cost.multiplier ?? "",
     }
   }
   return Object.fromEntries(fields.map(f => [f, RESERVED_DEFAULTS[f]]))
