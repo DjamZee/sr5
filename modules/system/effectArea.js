@@ -121,7 +121,7 @@ export class SR5_EffectArea {
         }
       } else {
         if (!actorJammedEffect){
-          if (isActiveGM()) await SR5_EffectArea.createJammedEffect(passiveActor, actor, passiveJamEffect.system.value)
+          if (isActiveGM()) await SR5_EffectArea.createJammedEffect(passiveActor, actor, SR5_EffectArea.jamNoise(passiveActor, passiveJamEffect))
         }
       }
     }
@@ -130,7 +130,7 @@ export class SR5_EffectArea {
       //check distance
       if (distance <= SR5_EffectArea.JAM_SIGNALS_RADIUS_IN_METERS) {
         if (!passiveJammedEffect){
-          if (isActiveGM()) await SR5_EffectArea.createJammedEffect(actor, passiveActor, actorJamEffect.system.value)
+          if (isActiveGM()) await SR5_EffectArea.createJammedEffect(actor, passiveActor, SR5_EffectArea.jamNoise(actor, actorJamEffect))
         }
       } else {
         if (passiveJammedEffect){
@@ -166,6 +166,18 @@ export class SR5_EffectArea {
   }
 
   //Start jamming
+  //The noise a jammer puts on others, as the GM stands by it: the hits written on the jammer's own item (by its
+  //owner, from a card she may have edited) are capped at the Jam Signals pool of its sheet plus Chance. A card that
+  //claimed 99 hits gave 99 noise to every device within 100 m (security pass, Petra). An actor with no such pool
+  //(no matrix actions prepared) keeps its value
+  static jamNoise(jammer, jamItem){
+    const claimed = Math.max(0, Number(jamItem?.system?.value) || 0)
+    const pool = Number(jammer?.system?.matrix?.actions?.jamSignals?.test?.dicePool)
+    if (!Number.isFinite(pool)) return claimed
+    const edge = Number(jammer?.system?.specialAttributes?.edge?.augmented?.value) || 0
+    return Math.min(claimed, Math.max(0, pool) + edge)
+  }
+
   //The active GM alone: with two GMs connected, each laid its own signalJammed on every target (noise counted twice),
   //and the end of the jam lifted only one of them (Marta's measure)
   static async onJamCreation(actorId){
@@ -186,7 +198,7 @@ export class SR5_EffectArea {
         let distance = SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint(SR5_EffectArea.tokenPosition(activeToken), SR5_EffectArea.tokenPosition(token), scene)
         let jammedEffect = tokenActor.items.find(i => i.system.type === "signalJammed" && i.system.ownerID === activeActor.id)
         if (distance <= SR5_EffectArea.JAM_SIGNALS_RADIUS_IN_METERS && !jammedEffect){
-          await SR5_EffectArea.createJammedEffect(activeActor, tokenActor, jamEffect.system.value)
+          await SR5_EffectArea.createJammedEffect(activeActor, tokenActor, SR5_EffectArea.jamNoise(activeActor, jamEffect))
         }
       }
     }

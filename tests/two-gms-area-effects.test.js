@@ -86,6 +86,33 @@ describe("two GMs connected: area effects are given once", () => {
     expect(SR5_EffectArea.createJammedEffect).toHaveBeenCalledTimes(1)
   })
 
+  //Measured in game: a player's jam written at 99 gave 99 noise to a target she does not own
+  it("the noise given to others is capped at the jammer's Jam Signals pool plus Chance", async () => {
+    asGM("gm1", "gm1")
+    jammer.items[0].system.value = 99
+    jammer.system = {
+      matrix: {
+        actions: {
+          jamSignals: {
+            test: {
+              dicePool: 5
+            }
+          }
+        }
+      }, specialAttributes: {
+        edge: {
+          augmented: {
+            value: 2
+          }
+        }
+      }
+    }
+    await SR5_EffectArea.onJamCreation("jammer")
+    expect(SR5_EffectArea.createJammedEffect.mock.calls[0][2]).toBe(7)
+    jammer.items[0].system.value = 4
+    expect(SR5_EffectArea.jamNoise(jammer, jammer.items[0])).toBe(4)
+  })
+
   it("a template drawn or deleted on a second GM's canvas gives and lifts nothing there", async () => {
     asGM("gm2", "gm1")
     await sr5HookDrawMeasuredTemplate({
