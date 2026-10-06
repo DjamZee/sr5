@@ -94,6 +94,12 @@ export function nanoscrubDue(entry, now){
   }
 }
 
+// The world time of the NanoScrub hour that brought the Volume to 0: the hours of a check follow the ones already
+// done, so the curedHour-th of them is hour (hoursDone + curedHour) after the injection
+export function scrubCuredAt(entry, curedHour){
+  return entry.injectedAt + ((entry.hoursDone ?? 0) + curedHour) * HOUR
+}
+
 export function sideEffectOf(roll){
   if (roll?.criticalGlitchRoll) return "critical"
   if (roll?.glitchRoll) return "glitch"
@@ -146,14 +152,18 @@ export function scrubHours(state, ticks){
   }
   let overwriters = state.overwriters ?? null
   let cured = false
+  let curedHour = 0
   for (let h = 0; h < ticks; h++){
-    if (nanite > 0 && nanite - 1 === 0) cured = true
+    if (nanite > 0 && nanite - 1 === 0){
+      cured = true
+      curedHour = h + 1
+    }
     nanite = Math.max(0, nanite - 1)
     for (const id of Object.keys(nanoware)) nanoware[id] = Math.max(0, nanoware[id] - 1)
     if (overwriters !== null) overwriters = overwriters > 1 ? overwriters - 1 : null
   }
   return {
-    nanite, nanoware, overwriters, cured
+    nanite, nanoware, overwriters, cured, curedHour
   }
 }
 
@@ -241,14 +251,20 @@ export function cfdStatus(actor){
   return {
     overwriters: p?.overwriters ? {
       rating: p.overwriters.curedAt ? overwriterDecayDue(p.overwriters, game.time.worldTime).rating : p.overwriters.rating,
-      cured: !!p.overwriters.curedAt
+      cured: !!p.overwriters.curedAt || naniteOf(actor) <= 0
     } : null,
     nanoscrub: p?.nanoscrub ? {
       rating: p.nanoscrub.rating, next: fmt(p.nanoscrub.injectedAt + ((p.nanoscrub.hoursDone ?? 0) + 1) * HOUR)
     } : null,
     psychotic: p?.psychotic ? fmt(p.psychotic.deadline) : null,
     inCombat: inCombat(actor),
+    canResolve: canResolve(p?.overwriters, naniteOf(actor)) && !inCombat(actor),
   }
+}
+
+// "Resolve" is offered only when there is something to fight: Overwriters still active and a Volume above 0
+export function canResolve(overwriters, nanite){
+  return !!overwriters && !overwriters.curedAt && overwriters.rating > 0 && (Number(nanite) || 0) > 0
 }
 
 // In a started combat the Overwriters roll at the end of each Combat Turn: "Resolve" is for outside a combat
@@ -395,6 +411,18 @@ async function overwriterRounds(actor, cap, combatTurn = null){
   if (!p?.overwriters || p.overwriters.curedAt || p.overwriters.rating <= 0) return
   if (combatTurn && !turnNotPlayed(p.overwriters.turns, combatTurn)) return
   const startNanite = naniteOf(actor)
+  // Nothing left to fight: the infection is already gone, the Overwriters only lose their Rating day by day
+  if (startNanite <= 0){
+    const now = game.time.worldTime
+    await writeLedger(patients => {
+      if (patients[actor.uuid]?.overwriters) patients[actor.uuid].overwriters.curedAt = now
+    })
+    return postCard([{
+      text: game.i18n.format("SR5.CFD_Cured", {
+        actor: escape(actor.name)
+      })
+    }])
+  }
   const rounds = await runOverwriters({
     rating: p.overwriters.rating, nanite: startNanite
   }, async (pools) => ({
@@ -474,8 +502,11 @@ export async function checkCfd(){
       const due = nanoscrubDue(p.nanoscrub, now)
       if (due.ticks && actor){
         const before = naniteOf(actor)
-        // Overwriters still at work are nanoware too (DTER p. 87); leftovers after a cure follow their own daily loss
-        const ow = p.overwriters && !p.overwriters.curedAt ? p.overwriters.rating : null
+        // Overwriters in the body are nanoware too (DTER p. 87), before and after the cure: the NanoScrub hours lower
+        // their stored Rating, and the daily loss after the cure comes on top. Taken whether cured or not, so that a
+        // jump of the clock and hour-by-hour checks agree
+        const ow = p.overwriters ? p.overwriters.rating : null
+        const wasCured = !!p.overwriters?.curedAt
         const nanoware = Object.fromEntries(nanowareToDecay(actor.items, 0).map(n => [n.id, n.rating]))
         const after = scrubHours({
           nanite: before, nanoware, overwriters: ow
@@ -488,11 +519,17 @@ export async function checkCfd(){
         if (ow !== null){
           if (after.overwriters === null) p.overwriters = null
           else p.overwriters.rating = after.overwriters
+          // The infection is gone at the hour the Volume fell to 0: from then on the Overwriters left lose 1 a day
+          if (p.overwriters && !wasCured && after.curedHour) p.overwriters.curedAt = scrubCuredAt(p.nanoscrub, after.curedHour)
         }
+        // Only the nanoware that actually lost Rating is told about
+        const nanowareText = updates.length ? ` ${game.i18n.format("SR5.CFD_ScrubNanoware", {
+          count: updates.length
+        })}` : ""
         rows.push({
           text: game.i18n.format("SR5.CFD_ScrubTick", {
             actor: escape(p.actorName), n: due.ticks, lost: before - after.nanite, volume: after.nanite
-          })
+          }) + nanowareText
         })
         if (after.cured) rows.push({
           text: game.i18n.format("SR5.CFD_ScrubCured", {
@@ -513,10 +550,14 @@ export async function checkCfd(){
         })
       }
     }
+    // Overwriters still active while the Volume is already at 0 (cured by other means, or set by hand): the infection
+    // is gone, they start their daily loss now
+    if (p.overwriters && !p.overwriters.curedAt && actor && naniteOf(actor) === 0) p.overwriters.curedAt = now
     if (p.overwriters?.curedAt){
       const decay = overwriterDecayDue(p.overwriters, now)
       if (decay.rating <= 0) p.overwriters = null
-    }    if (p.psychotic && !p.psychotic.notified && p.psychotic.deadline <= now){
+    }
+    if (p.psychotic && !p.psychotic.notified && p.psychotic.deadline <= now){
       p.psychotic.notified = true
       rows.push({
         text: game.i18n.format("SR5.CFD_Overwritten", {

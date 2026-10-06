@@ -3,7 +3,7 @@ import {
 } from "vitest"
 import {
   overwriterRating, overwriterPools, resolveOverwriterRound, runOverwriters, nanoscrubDue, sideEffectOf,
-  baseEssence, cyberwareAtRisk, nanowareToDecay, overwriteDeadline, overwriterDecayDue, endsCombatTurn, scrubHours, turnNotPlayed, HOUR, DAY
+  baseEssence, cyberwareAtRisk, nanowareToDecay, overwriteDeadline, overwriterDecayDue, endsCombatTurn, scrubHours, turnNotPlayed, scrubCuredAt, canResolve, HOUR, DAY
 } from "../modules/system/cfd-treatment.js"
 
 describe("Overwriters (Dark Terrors p. 87)", () => {
@@ -269,11 +269,69 @@ describe("the NanoScrub hours, one after the other", () => {
     expect(scrubHours({
       nanite: 2, nanoware: {
       }, overwriters: null
-    }, 5).cured).toBe(true)
+    }, 5)).toMatchObject({
+      cured: true, curedHour: 2
+    })
     expect(scrubHours({
       nanite: 0, nanoware: {
       }, overwriters: null
     }, 5).cured).toBe(false)
+  })
+})
+
+describe("Overwriters still active when the NanoScrub cures (review, DTER p. 87)", () => {
+  it("they start losing 1 a day from the hour the Volume fell to 0, whatever the steps of the clock", () => {
+    // Rosalie's bench: Overwriters 10, NanoScrub 2, Volume 1. Checked in one jump of 3 hours
+    const entry = {
+      rating: 2, injectedAt: 0, hoursDone: 0
+    }
+    const due = nanoscrubDue(entry, 3 * HOUR)
+    const after = scrubHours({
+      nanite: 1, nanoware: {
+      }, overwriters: 10
+    }, due.ticks)
+    // Two NanoScrub hours: the Overwriters are nanoware too and lose 1 each hour, before and after the cure
+    expect(after).toMatchObject({
+      nanite: 0, overwriters: 8, cured: true, curedHour: 1
+    })
+    const curedAt = scrubCuredAt(entry, after.curedHour)
+    expect(curedAt).toBe(HOUR)
+    // Checked hour by hour instead: cured at the same hour, and the second hour still takes its point
+    const h1 = scrubHours({
+      nanite: 1, nanoware: {
+      }, overwriters: 10
+    }, nanoscrubDue(entry, HOUR).ticks)
+    expect(scrubCuredAt(entry, h1.curedHour)).toBe(HOUR)
+    const h2due = nanoscrubDue({
+      ...entry, hoursDone: 1
+    }, 2 * HOUR)
+    expect(scrubHours({
+      nanite: h1.nanite, nanoware: {
+      }, overwriters: h1.overwriters
+    }, h2due.ticks).overwriters).toBe(8)
+    // Five days after the cure they are down from 8 to 3, and gone after eight
+    expect(overwriterDecayDue({
+      rating: 8, curedAt
+    }, curedAt + 5 * DAY).rating).toBe(3)
+    expect(overwriterDecayDue({
+      rating: 8, curedAt
+    }, curedAt + 8 * DAY).rating).toBe(0)
+  })
+
+  it("\"Resolve\" is offered only when there is something left to fight", () => {
+    expect(canResolve({
+      rating: 8, curedAt: null
+    }, 3)).toBe(true)
+    expect(canResolve({
+      rating: 8, curedAt: null
+    }, 0)).toBe(false)
+    expect(canResolve({
+      rating: 8, curedAt: 100
+    }, 3)).toBe(false)
+    expect(canResolve({
+      rating: 0, curedAt: null
+    }, 3)).toBe(false)
+    expect(canResolve(null, 3)).toBe(false)
   })
 })
 
