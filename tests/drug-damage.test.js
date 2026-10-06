@@ -18,10 +18,7 @@ import {
   SR5_CharacterUtility
 } from '../modules/entities/actors/utilityActor.js'
 import {
-  sr5ItemDrugDataModel
-} from '../modules/datamodels/items/itemDrug.js'
-import {
-  DRUG_DAMAGE, intakeDamageOf, crashDamageOf, drugHasCrashDamage, drugResistance, drugVector, longHaulDoseKind, hasImplants
+  DRUG_DAMAGE, intakeDamageOf, crashDamageOf, drugHasCrashDamage, drugResistance, drugVector, longHaulDoseKind, hasImplants, drugTakesDoseInCrash
 } from '../modules/entities/items/drug-damage.js'
 
 beforeEach(() => {
@@ -314,8 +311,7 @@ describe('Long Haul, second dose (SR5 p. 413)', () => {
     expect(longHaulDoseKind(drugItem('longHaul'), actor([other]))).toBe('first')
   })
   it('the switch of a Long Haul in its crash takes a dose (sheet)', () => {
-    const getter = Object.getOwnPropertyDescriptor(sr5ItemDrugDataModel.prototype, 'takesDoseInCrash').get
-    const takesDoseInCrash = (key) => getter.call(drugItem(key).system)
+    const takesDoseInCrash = (key) => drugTakesDoseInCrash(drugItem(key).system)
     expect(takesDoseInCrash('longHaul')).toBe(true)
     expect(takesDoseInCrash('cram')).toBe(false)
   })

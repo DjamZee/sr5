@@ -13,11 +13,19 @@ import {
 import {
   martialArtNeedsSwitch
 } from "./system/martial-arts-technique.js"
+import {
+  drugTakesDoseInCrash
+} from "./entities/items/drug-damage.js"
 
 export const registerHandlebarsHelpers = function () {
   //Only a technique that is an action chosen for the roll keeps its switch on the sheet
   Handlebars.registerHelper('martialArtNeedsSwitch', function (system) {
     return martialArtNeedsSwitch(system)
+  })
+
+  //Long Haul (SR5 p. 413): its switch takes a further dose during the crash (entities/items/drug-damage.js)
+  Handlebars.registerHelper('drugTakesDoseInCrash', function (system) {
+    return drugTakesDoseInCrash(system)
   })
 
 

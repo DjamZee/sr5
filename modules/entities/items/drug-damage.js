@@ -185,6 +185,12 @@ export function longHaulDoseKind(item, consumer){
   return "first"
 }
 
+// Long Haul (SR5 p. 413): a dose may be taken during its crash, so the switch of the sheet takes a dose there instead of
+// ending the crash (templates/actors/_partials/right-tabs/gear/variousGear.hbs)
+export function drugTakesDoseInCrash(system){
+  return drugKeyOf(system) === "longHaul"
+}
+
 // The vector of a resisted drug: the item's own, injection first then ingestion (vectors no gear protects against,
 // SR5 p. 409-410); ingestion when the item gives none
 export function drugVector(system){

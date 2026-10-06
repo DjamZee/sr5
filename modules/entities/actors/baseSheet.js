@@ -1540,6 +1540,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
         // Check if the drug is activated
         if (item.system.isActive) {
+          //A Long Haul taken again during its crash (SR5 p. 413) starts a new dose: the mix of the former one is over
+          if (item.system.phase === "crash") itemData.interact = false
           // Check if the drug has already been taken
           if (alreadyTaken) {
             // Add one take
@@ -1575,6 +1577,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
             SR5_SystemHelpers.srLog(1, "Check drugType")
 
+            //The stat of this dose replaces the former one, but Foundry merges objects: a key of the former dose (a
+            //second dose of Long Haul, a crash made Physical by an interaction) stayed on this one. Each one is cleared
+            for (const key of Object.keys(realItem?.system?.handleShot ?? {
+            })) if (!(key in drug)) drug[key] = null
             itemData.handleShot = drug
 
             //The damage on intake (Laés, Leäl, Soothsayer, Slab), read off the drug key and the doses counted, this one
