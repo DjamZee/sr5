@@ -124,7 +124,10 @@ export class SR5_SocketHandler {
       SR5_SystemHelpers.srLog(3,'Received Shadowrun 5 system socket message.', message)
       const handlers = hooks[message.type]
       if (!handlers || handlers.length === 0) return console.warn('System socket message without handler!', message)
-      if (message.userId && game.user.id !== message.userId) return
+      //Every message of the system names the one user who handles it. One without a name, forged in a console, ran on
+      //every client: both GMs confirmed the same damage, which was applied twice (Marta's measure, security pass Petra)
+      if (!message?.userId) return SR5_SystemHelpers.srLog(1, `Socket ${message?.type} refused from ${senderId}: no recipient`)
+      if (game.user.id !== message.userId) return
       if (message.userId && game.user.id) SR5_SystemHelpers.srLog(3,'GM is handling Shadowrun 5 system socket message')
 
       for (const handler of handlers) {

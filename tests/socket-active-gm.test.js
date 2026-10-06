@@ -31,3 +31,63 @@ describe("emitForGM", () => {
     expect(emit.mock.calls[0][1].userId).toBe('gm2')
   })
 })
+
+// Marta's measure (06/10): a message without userId, forged in a player's console, ran on every client. Both GMs
+// were asked to confirm the same damage, and it was applied twice
+describe("the socket router", () => {
+  const listen = async () => {
+    const {
+      SR5_ActorHelper
+    } = await import('../modules/entities/actors/entityActor-helpers.js')
+    const takeDamage = vi.spyOn(SR5_ActorHelper, '_socketTakeDamage').mockResolvedValue()
+    takeDamage.mockClear()
+    let route
+    game.socket = {
+      on: (_name, handler) => route = handler
+    }
+    SR5_SocketHandler.registerSocketListeners()
+    return {
+      route, takeDamage
+    }
+  }
+  const forged = {
+    type: 'takeDamage', data: {
+      actorId: 'npc', options: {
+        damage: {
+          value: 3, type: 'stun'
+        }
+      }
+    }
+  }
+
+  it("runs nothing for a message that names no user", async () => {
+    game.user = {
+      id: 'gm1', isGM: true
+    }
+    const {
+      route, takeDamage
+    } = await listen()
+    await route(forged, 'player')
+    expect(takeDamage).not.toHaveBeenCalled()
+  })
+
+  it("runs a message on the user it names, and there only", async () => {
+    const {
+      route, takeDamage
+    } = await listen()
+    game.user = {
+      id: 'gm2', isGM: true
+    }
+    await route({
+      ...forged, userId: 'gm1'
+    }, 'player')
+    expect(takeDamage).not.toHaveBeenCalled()
+    game.user = {
+      id: 'gm1', isGM: true
+    }
+    await route({
+      ...forged, userId: 'gm1'
+    }, 'player')
+    expect(takeDamage).toHaveBeenCalledTimes(1)
+  })
+})
