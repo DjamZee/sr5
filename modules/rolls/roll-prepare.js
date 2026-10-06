@@ -49,6 +49,7 @@ import {
 // N91: matrix rolls aimed at a target besides matrixAction, which guards itself. Each refuses a drone
 // with its wireless off (SR5 p. 424)
 const WIRELESS_TARGETED_ROLLS = ["iceAttack", "complexForm", "resonanceAction"]
+const WIRELESS_DEFENSE_ROLLS = ["matrixDefense", "iceDefense", "complexFormDefense", "matrixResistance"]
 
 export class SR5_PrepareRollTest {
 
@@ -70,6 +71,10 @@ export class SR5_PrepareRollTest {
     //A roll relaunched from a chat card (Blue Goo's explosion) also checks the target the card knows
     if (WIRELESS_TARGETED_ROLLS.includes(rollType) && (targetsWirelessOffDrone(actor) ||
       (chatData?.target?.actorId && isWirelessOffDrone(SR5_EntityHelpers.getRealActorFromID(chatData.target.actorId, chatData.actorUuids), actor)))) {
+      return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetWirelessOff"))
+    }
+    //An attack launched with no target selected is defended from its card by the drone itself: not reached either
+    if (WIRELESS_DEFENSE_ROLLS.includes(rollType) && isWirelessOffDrone(actor, null)) {
       return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetWirelessOff"))
     }
 

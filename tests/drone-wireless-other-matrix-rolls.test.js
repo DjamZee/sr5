@@ -92,6 +92,24 @@ describe('other matrix rolls refuse a switched-off drone (N91)', () => {
     expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_TargetWirelessOff')
   })
 
+  // l. 847: an attack launched with no target selected is defended from its card by the drone itself
+  for (const rollType of ['matrixDefense', 'iceDefense', 'complexFormDefense', 'matrixResistance']) {
+    it(`refuses ${rollType} rolled by a drone with its wireless off`, async () => {
+      SR5_PrepareRollHelper.getRollingActor.mockReturnValue(drone(false))
+      await roll(rollType, [], {
+        target: {
+        }
+      })
+      expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_TargetWirelessOff')
+    })
+  }
+
+  it('lets a drone with its wireless on defend', async () => {
+    SR5_PrepareRollHelper.getRollingActor.mockReturnValue(drone(true))
+    await roll('matrixDefense', [], null).catch(() => {})
+    expect(ui.notifications.warn).not.toHaveBeenCalled()
+  })
+
   it('says in the matrix action guard that it refuses any wireless matrix action', () => {
     expect(SOURCE).toMatch(/no wireless matrix\s*\/\/action reaches it, hacking or not/)
   })
