@@ -105,6 +105,19 @@ describe("an attribute change moves the initiative at once", () => {
     expect(combatant.initiative).toBe(7)
   })
 
+  it("an item switched from the sheet (written through the actor) adjusts the fighter too", async () => {
+    // Wired reflexes (1) switched on: measured in game, the fighter stayed at 12 with 7 + 2D6 prepared
+    await sr5HookUpdateActor(actor, {
+      items: [{
+        _id: "wr", system: {
+          isActive: true
+        }
+      }]
+    }, {
+    }, "gm")
+    expect(combatant.initiative).toBe(7)
+  })
+
   it("an update that cannot change the initiative is not compared", () => {
     expect(SR5Combat.updateMovesInitiative({
       name: "x"

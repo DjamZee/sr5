@@ -611,13 +611,14 @@ export class SR5Combat extends Combat {
     return actor?.isToken ? actor.token?.id : actor?.id
   }
 
-  //The ids to compare again after an update of this actor: an unlinked token's own, or every fighter of a base actor,
-  //each unlinked token by its own id (its synthetic actor is prepared again from the base) and the linked ones by the actor's
-  //An actor update that can change the initiative of its fighter: the comparison with the combatant is harmless otherwise
+  //An actor update that can change the initiative of its fighter: the comparison with the combatant is harmless otherwise.
+  //Items written through the actor (the sheet's toggles) count: wired reflexes switched on add Reaction and a die (SR5 p. 162)
   static updateMovesInitiative(data){
-    return !!(data?.system?.initiatives || data?.system?.conditionMonitors || data?.system?.matrix || data?.system?.attributes)
+    return !!(data?.system?.initiatives || data?.system?.conditionMonitors || data?.system?.matrix || data?.system?.attributes || Array.isArray(data?.items))
   }
 
+  //The ids to compare again after an update of this actor: an unlinked token's own, or every fighter of a base actor,
+  //each unlinked token by its own id (its synthetic actor is prepared again from the base) and the linked ones by the actor's
   static initTargetsOfActor(document){
     if (!game.combat || !document) return []
     if (document.isToken) return document.token?.id ? [document.token.id] : []

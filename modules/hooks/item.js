@@ -156,8 +156,10 @@ export async function sr5HookUpdateItem(document, data, options, userId) {
     }
   }
 
-  if (document.isOwned && game.combat && game.user?.isGM) {
-    if (document.type === "itemSpell" || document.type === "itemComplexForm") SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(document.actor))
+  //Any owned item can move the initiative (a sustained spell, wired reflexes switched from the item sheet): the active GM
+  //alone compares, each fighter of the actor once
+  if (document.isOwned && game.combat && game.user?.isGM && game.users?.activeGM?.id === game.user.id) {
+    for (const id of SR5Combat.initTargetsOfActor(document.actor)) await SR5Combat.changeInitInCombatHelper(id)
   }
 
   //Keep agent condition monitor synchro with owner deck
