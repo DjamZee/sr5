@@ -101,6 +101,31 @@ export class SR5_MiscellaneousHelpers {
     return true
   }
 
+  /** At load, by the active GM: the registry had no ceiling (1.6 MB after 50 sessions of 300 cards, written whole at
+   * every card spent). A key leaves only when its card is no longer in the chat log: "messageId|use|target" when no
+   * message has that id (cardOf refuses a request without its card), "dice|…" when no card left shows those dice
+   * (heal-ledger.js); any other key is kept. In the registry's turn, so a card spent meanwhile stays. */
+  static async purgeConsumed() {
+    if (!game.user?.isGM || game.users?.activeGM?.id !== game.user.id) return false
+    const {
+      healCardDiceKey
+    } = await import("../../system/heal-ledger.js")
+    const liveDice = new Set()
+    for (const message of game.messages?.values?.() ?? []) {
+      const diceKey = message.flags?.sr5data ? healCardDiceKey(message.flags.sr5data) : null
+      if (diceKey) liveDice.add(diceKey)
+    }
+    const gone = key => {
+      if (key.startsWith("dice|")) return !liveDice.has(key.slice(0, key.lastIndexOf("|")))
+      const messageId = key.split("|")[0]
+      return /^[A-Za-z0-9]{16}$/.test(messageId) && !game.messages?.has?.(messageId)
+    }
+    return updateLedger(CONSUMED_CARDS, ledger => {
+      const kept = Object.fromEntries(Object.entries(ledger).filter(([key]) => !gone(key)))
+      return Object.keys(kept).length === Object.keys(ledger).length ? null : kept
+    })
+  }
+
   /** The card behind a request, as the chat log keeps it: null unless a GM wrote it or an owner of
    * the actor that rolled it. */
   static cardOf(messageId) {

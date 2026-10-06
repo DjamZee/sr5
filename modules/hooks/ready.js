@@ -130,4 +130,11 @@ export function sr5HookReady() {
 
   // Computed modifiers written in the source by a prepared copy: emptied once per world
   runSourceModifiersMigration().catch(err => console.error("SR5 | source modifiers migration failed", err))
+
+  // The spent cards whose card left the chat log: the registry is written whole at every card spent
+  import("../rolls/roll-helpers/miscellaneous.js")
+    .then(({
+      SR5_MiscellaneousHelpers
+    }) => SR5_MiscellaneousHelpers.purgeConsumed())
+    .catch(err => console.error("SR5 | spent cards purge failed", err))
 }
