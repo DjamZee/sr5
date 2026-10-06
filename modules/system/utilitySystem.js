@@ -19,6 +19,9 @@ import {
 import {
   registerImplantRegisterSetting
 } from "./implant-register.js"
+import {
+  registerPreparationRegisterSetting
+} from "./preparation-register.js"
 
 export class SR5_SystemHelpers {
 
@@ -661,6 +664,8 @@ export class SR5_SystemHelpers {
     })
     // The gamemaster's register of the reserved implant fields (Adapsine, lot, Prototype, Essence lost)
     registerImplantRegisterSetting()
+    // The gamemaster's register of a preparation's start and pace (SR5 p. 309)
+    registerPreparationRegisterSetting()
     game.settings.register("sr5", "sr5AugmentationBundles", {
       name: "SR5.SETTINGS_AugmentationBundles_T",
       hint: "SR5.SETTINGS_AugmentationBundles_D",

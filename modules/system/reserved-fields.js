@@ -54,7 +54,11 @@ function mergeExpanded(a, b) {
 }
 
 /** What `path` (from the document's root, "system.…") holds once `changes` are merged into `source`. */
-export function valueAfterUpdate(source, changes, path) {
+// options: the update's; with `recursive: false`, a top-level key replaces the whole object under it
+export function valueAfterUpdate(source, changes, path, {
+  recursive = true
+} = {
+}) {
   let node = expandChanges(changes)
   let src = source
   const keys = String(path).split(".")
@@ -67,7 +71,9 @@ export function valueAfterUpdate(source, changes, path) {
       const replaced = rest ? readPath(node[`==${k}`], rest) : node[`==${k}`]
       return replaced === undefined ? DELETED : replaced
     }
-    if (!Object.hasOwn(node, k)) return readPath(src, keys.slice(i).join("."))
+    // Without the recursive merge (update option recursive: false), a top-level key sent replaces the whole object
+    // under it: what it leaves out is deleted (Victoire's review)
+    if (!Object.hasOwn(node, k)) return (recursive || i === 0) ? readPath(src, keys.slice(i).join(".")) : DELETED
     if (i === keys.length - 1) return node[k]
     node = node[k]
     src = src?.[k]
@@ -85,10 +91,13 @@ function settled(value, field) {
  * @param {string[]} fields paths inside `system` ("underAdapsine", "essence.holeAmount")
  * @returns {string[]}
  */
-export function reservedChangedBy(source, changes, fields) {
+export function reservedChangedBy(source, changes, fields, options) {
   return (fields ?? []).filter(field => {
     const path = `system.${field}`
-    return settled(valueAfterUpdate(source, changes, path), field) !== settled(readPath(source, path), field)
+    const after = valueAfterUpdate(source, changes, path, {
+      recursive: options?.recursive !== false
+    })
+    return settled(after, field) !== settled(readPath(source, path), field)
   })
 }
 

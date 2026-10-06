@@ -92,12 +92,12 @@ export function sr5HookPreUpdateItem(document, data, options, userId) {
   }
   //The Elemental trait of a spirit is the gamemaster's (Forbidden Arcana p. 175): refused to a player before writing
   //Whatever its form (flat, nested, "==" replacement, "-=" deletion), such an update is refused whole
-  if (document.type === 'itemSpirit' && !game.user?.isGM && stripGMOnlyChanges(data, document, GM_ONLY_ITEM_PATHS).length) {
+  if (document.type === 'itemSpirit' && !game.user?.isGM && stripGMOnlyChanges(data, document, GM_ONLY_ITEM_PATHS, options).length) {
     ui.notifications.warn(game.i18n.localize('SR5.WARN_SpiritBondsGMOnly'))
     return false
   }
   //The start and the pace of a preparation's loss of Potency are the gamemaster's (SR5 p. 309)
-  if (document.type === 'itemPreparation' && !game.user?.isGM && stripGMOnlyChanges(data, document, GM_ONLY_PREPARATION_PATHS).length) {
+  if (document.type === 'itemPreparation' && !game.user?.isGM && stripGMOnlyChanges(data, document, GM_ONLY_PREPARATION_PATHS, options).length) {
     ui.notifications.warn(game.i18n.localize('SR5.WARN_PreparationDecayGMOnly'))
     return false
   }

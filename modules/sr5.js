@@ -116,6 +116,9 @@ import {
 import {
   registerImplantRegisterHooks
 } from './system/implant-register.js'
+import {
+  registerPreparationRegisterHooks
+} from './system/preparation-register.js'
 
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
@@ -221,6 +224,8 @@ SR5StorageLock.registerHooks()
 registerEssenceHoleHooks()
 // The reserved implant fields: the active GM puts back what a player's client let through (system/implant-register.js)
 registerImplantRegisterHooks()
+// A preparation's start and pace: the active GM puts back what a player's client let through (system/preparation-register.js)
+registerPreparationRegisterHooks()
 // Agility brought to 0: the "immobilized" status follows it (séance H, H8)
 registerAgilityZeroHooks()
 // Blight strikes: sustained spells, active foci and astral fall (Better Than Bad p. 141)

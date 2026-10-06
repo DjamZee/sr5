@@ -109,7 +109,7 @@ export class SR5Item extends Item {
     // Chrome Flesh (séance G): the Adapsine box, the lot and Prototype de transhumain's counter are the gamemaster's.
     // Read after the merge, every form of update counts; the whole update is refused. The active GM checks again
     // what gets through (implant-register.js)
-    if (!game.user.isGM && reservedChangedBy(this._source, changes, GM_ONLY_FIELDS[this.type]).length) {
+    if (!game.user.isGM && reservedChangedBy(this._source, changes, GM_ONLY_FIELDS[this.type], options).length) {
       ui.notifications?.warn(game.i18n.localize("SR5.WARN_GMOnlyField"))
       return false
     }

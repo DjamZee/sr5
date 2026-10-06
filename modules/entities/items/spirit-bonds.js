@@ -19,13 +19,19 @@ const readPath = (object, path) => path.split(".").reduce((o, key) => (o == null
 // Returns the paths refused, also those a replacement ("==system") or a deletion ("-=isWild") would change, which
 // are not stripped: the caller refuses such an update whole. The value after the update is read the way Foundry
 // merges it (reserved-fields.js, valueAfterUpdate), on the document's source when it has one.
-export function stripGMOnlyChanges(changes, current, paths){
+// `options`: the update's; with recursive: false the object sent replaces the stored one (Victoire's review).
+export function stripGMOnlyChanges(changes, current, paths, options){
   const source = current?._source ?? current
   const refused = paths.filter(path => {
-    const after = valueAfterUpdate(source, changes, path)
+    const after = valueAfterUpdate(source, changes, path, {
+      recursive: options?.recursive !== false
+    })
     const before = readPath(source, path)
     // A deletion brings back the field's default: a change whenever a value was set
-    return typeof after === "symbol" ? before !== undefined : after !== before
+    if (typeof after === "symbol") return before !== undefined
+    // A number sent as text ("2" from a form) is the number the data model will store
+    if (typeof before === "number" && typeof after === "string" && after.trim() !== "") return Number(after) !== before
+    return after !== before
   })
   for (const path of refused){
     if (path in changes){

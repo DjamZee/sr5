@@ -73,7 +73,7 @@ export function sr5HookPreUpdateActor(document, changes, options = {
   //p. 169-176): a player's update that would change them loses those paths, checked before anything is written
   if (!game.user?.isGM) {
     //Whatever its form (flat, nested, "==" replacement, "-=" deletion), such an update is refused whole
-    const refused = stripGMOnlyChanges(changes, document, GM_ONLY_ACTOR_PATHS)
+    const refused = stripGMOnlyChanges(changes, document, GM_ONLY_ACTOR_PATHS, options)
     if (refused.length) {
       ui.notifications.warn(game.i18n.localize("SR5.WARN_SpiritBondsGMOnly"))
       return false

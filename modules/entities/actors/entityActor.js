@@ -299,7 +299,7 @@ export class SR5Actor extends Actor {
     if (this.type === "actorStorage") SR5StorageLockRights.hold(this, changes, options)
     // Essence lost to removed implants (SR5 p. 53): written by the active gamemaster alone (system/essence-hole.js).
     // Read after the merge, every form of update counts; the active GM checks again (implant-register.js)
-    if (!game.user.isGM && this.system?.essence && reservedChangedBy(this._source, changes, GM_ONLY_FIELDS.actor).length) {
+    if (!game.user.isGM && this.system?.essence && reservedChangedBy(this._source, changes, GM_ONLY_FIELDS.actor, options).length) {
       ui.notifications?.warn(game.i18n.localize("SR5.WARN_GMOnlyField"))
       return false
     }

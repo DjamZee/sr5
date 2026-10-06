@@ -5378,6 +5378,7 @@
 	"SR5.WARN_BlightNoSpell": "Coupé de la manasphère par le blight : aucune magie tant que dure l'effet, ni sort, ni rituel, ni conjuration, ni contresort, ni alchimie, ni astral (perception, projection, Observation et Combat astral), ni focus, ni sort maintenu ; les pouvoirs d'adepte sont désactivés (Better Than Bad p. 141). Une préparation déjà faite se déclenche encore.",
 	"SR5.INFO_PreparationSpent": "{actor} : la préparation {item} a perdu tout son Potentiel, sa magie s'est évanouie (SR5 p. 309).",
 	"SR5.WARN_PreparationDecayGMOnly": "Le départ et le rythme de la perte de Potentiel d'une préparation sont réglés par le MJ.",
+	"SR5.WARN_PreparationRestored": "{user} a changé le départ ou le rythme d'une préparation ({name}, {actor}), réservés au MJ : la valeur du MJ est remise.",
 	"SR5.WARN_PreparationSpent": "Cette préparation n'a plus de Potentiel : sa magie s'est évanouie, le sort est perdu (SR5 p. 309).",
 	"SR5.WARN_TargetTooMany": "Vous ne devez sélectionner qu'une seule cible (token)",
 	"SR5.WARN_FanningTooMany": "Balayage au lance-flammes : trois cibles au plus.",
