@@ -19,6 +19,15 @@
         </div>
     {{/if}}
 </li>
+{{!-- The highest Essence the implant took (Chrome Flesh p. 74), and the active GM's gesture that gives back a peak
+      set by mistake (implant-register.js) --}}
+{{#if essencePeak}}
+<li class="grid">
+    <div class="col-5" data-title="{{localize 'SR5.EssencePeakHint'}}">{{localize 'SR5.EssencePeak'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-2">{{essencePeak}}</div>
+    <div class="col-5 SR-TextRight"><a data-action="resetEssencePeak"><em class="fas fa-sm fa-rotate-left"></em> {{localize 'SR5.EssencePeakReset'}}</a></div>
+</li>
+{{/if}}
 {{!-- Chrome Flesh (séance G): Adapsine (p. 165), lot d'augmentations (p. 96), Prototype de transhumain (p. 57).
       Set at the installation from the buyer's body; the gamemaster alone changes them afterwards --}}
 {{#unless system.isAccessory}}

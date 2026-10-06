@@ -206,6 +206,43 @@ function readRegister() {
   }
 }
 
+/** The register without the peak of `uuid`, or null when it holds none. */
+export function withoutPeak(register, uuid) {
+  const entry = register?.[uuid]
+  if (!entry || !(PEAK_COST in entry)) return null
+  const {
+    [PEAK_COST]: _gone, ...rest
+  } = entry
+  return {
+    ...register, [uuid]: rest
+  }
+}
+
+/**
+ * The active GM's gesture (Élise's review): a peak set by mistake (a rating clicked too high, a cost the GM entered
+ * wrong then corrected) would keep the Essence lost for ever. Confirmed, the peak is dropped: the implant takes its cost
+ * of now, which the next look of the GM notes as its new peak. Through the register, which only a gamemaster writes.
+ */
+export async function resetEssencePeak(item) {
+  if (!game.users.activeGM?.isSelf || item?.type !== "itemAugmentation" || !item.actor) return false
+  const confirmed = await foundry.applications.api.DialogV2.confirm({
+    window: {
+      title: game.i18n.localize("SR5.EssencePeakReset")
+    },
+    content: `<p>${game.i18n.format("SR5.EssencePeakResetConfirm", {
+      name: foundry.utils.escapeHTML(item.name), actor: foundry.utils.escapeHTML(item.actor.name)
+    })}</p>`,
+    rejectClose: false,
+  })
+  if (confirmed !== true) return false
+  await updateLedger(IMPLANT_REGISTER, register => withoutPeak(register, item.uuid))
+  // Every client prepares the character again; the GM's own look then notes the cost of now as the peak
+  await item.update({
+    "flags.sr5.essencePeakReset": Date.now()
+  })
+  return true
+}
+
 /** Notes the cost an implant has now, when it is the highest the active GM has seen for it. */
 function notePeak(doc) {
   if (doc?.type !== "itemAugmentation" || !(doc.parent instanceof Actor)) return

@@ -12,7 +12,7 @@ import {
   reservedChangedBy, valueAfterUpdate, reservedMismatches
 } from "../modules/system/reserved-fields.js"
 import {
-  expectedAtCreation, expectedValues, reservedFieldsOf, sourceReversible, vouchedMarks, sourceEntry, nextPeak, PEAK_COST, essenceTaken
+  expectedAtCreation, expectedValues, reservedFieldsOf, sourceReversible, vouchedMarks, sourceEntry, nextPeak, PEAK_COST, essenceTaken, withoutPeak, resetEssencePeak
 } from "../modules/system/implant-register.js"
 import {
   mentorMagic
@@ -859,6 +859,46 @@ describe("Apollinaire's review: the marks of a removed implant, an accessory, an
         reversibleEssence: true
       }
     }, 0.1, register)).toBe(0.1)
+  })
+  it("lets the active GM give back a peak set by mistake, and nobody else (Élise's review)", async () => {
+    const uuid = "Actor.a.Item.i"
+    // A rating clicked to 6 instead of 3, then lowered back: the peak holds 3.0 against a cost of 1.5
+    const register = {
+      [uuid]: {
+        underAdapsine: false, [PEAK_COST]: 3
+      }, other: {
+        [PEAK_COST]: 1
+      }
+    }
+    expect(essenceTaken({
+      uuid, system: {
+      }
+    }, 1.5, register)).toBe(3)
+    const reset = withoutPeak(register, uuid)
+    expect(reset).toEqual({
+      [uuid]: {
+        underAdapsine: false
+      }, other: {
+        [PEAK_COST]: 1
+      }
+    })
+    expect(essenceTaken({
+      uuid, system: {
+      }
+    }, 1.5, reset)).toBe(1.5)
+    expect(withoutPeak(reset, uuid)).toBe(null)
+    // Only the active GM: a player's call does nothing (no confirmation asked, nothing written)
+    const users = globalThis.game.users
+    globalThis.game.users = {
+      activeGM: {
+        isSelf: false
+      }
+    }
+    expect(await resetEssencePeak({
+      type: "itemAugmentation", actor: {
+      }
+    })).toBe(false)
+    globalThis.game.users = users
   })
   it("reads an unknown grade as standard, never as an implant that costs nothing", () => {
     expect(onActor(implant("cyberware", 2, "alpha"), [])).toBe(2)

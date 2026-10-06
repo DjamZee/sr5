@@ -11,6 +11,9 @@ import {
   transhumanGift, itemHasEffect, IMPLANT_ESSENCE_EFFECTS, AUGMENTATION_BUNDLE_SETTING
 } from "../../system/implant-essence.js"
 import {
+  IMPLANT_REGISTER, PEAK_COST, resetEssencePeak
+} from "../../system/implant-register.js"
+import {
   garageRequirement
 } from "../../interface/storage-rules.js"
 import {
@@ -91,6 +94,10 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     },
     actions: {
       toggleMode: SR5ItemSheet._onToggleMode,
+      // The active GM gives back the Essence a peak cost holds by mistake (implant-register.js)
+      resetEssencePeak: function () {
+        return resetEssencePeak(this.document)
+      },
       jammerSpareTargets: SR5ItemSheet._onJammerSpareTargets,
       jammerUnspare: SR5ItemSheet._onJammerUnspare,
       tacnetAddTargets: SR5ItemSheet._onTacnetAddTargets,
@@ -474,6 +481,10 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     context.userIsGM = game.user.isGM
     // Chrome Flesh (séance G, G19, G20): the lot box shows with its optional rule; Prototype de transhumain's counter
     if (item.type === "itemAugmentation") context.augmentationBundleRule = game.settings.get("sr5", AUGMENTATION_BUNDLE_SETTING)
+    // The highest Essence the implant took, shown to the active GM with the gesture that gives it back
+    if (item.type === "itemAugmentation" && item.actor && game.users.activeGM?.isSelf) {
+      context.essencePeak = game.settings.get("sr5", IMPLANT_REGISTER)?.[item.uuid]?.[PEAK_COST] ?? null
+    }
     if (item.type === "itemQuality" && itemHasEffect(item, IMPLANT_ESSENCE_EFFECTS.transhumanPrototype)) {
       const points = item.system.transhumanEssence
       context.transhumanGift = (item.actor && transhumanGift(item.actor.items)) || {
