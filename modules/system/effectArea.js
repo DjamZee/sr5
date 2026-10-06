@@ -359,6 +359,8 @@ export class SR5_EffectArea {
           if (messageData) {
             SR5_EffectArea.PENDING_RESISTANCES.add(pending)
             messageData.owner.messageId = message.id
+            //Its resistance card, applied later, keeps the decision taken for the template (M5 D6)
+            if (review) SR5_ActorHelper.AREA_REVIEW_KEYS.set(SR5_ActorHelper.areaReviewKey(actor, templateData.itemUuid, message.id), review.key)
             if (actor.hasPlayerOwner){
               let user = SR5_EntityHelpers.getUserOwner(actor)
               if (user.isGM) actor.rollTest("spellResistance", null, messageData)

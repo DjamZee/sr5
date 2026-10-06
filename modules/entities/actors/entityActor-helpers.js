@@ -2227,12 +2227,18 @@ export class SR5_ActorHelper {
       resisted: !!reference.system?.resisted, entries: transferEntries(reference.system?.[effectType])
     } : null
     if (!sheet.entries.length && !ref?.entries.length) return null
+    const print = definitionPrint(sheet, item.system?.itemRating)
+    //The resistance card of an actor the GM's template asked to resist (effectArea.js): the decision is the template's
+    //(M5 D6), as long as the sheet still defines the same thing. Found by the GM's own record, never by the card alone
+    const areaKey = data?.test?.type === "spellResistance" ?
+      SR5_ActorHelper.AREA_REVIEW_KEYS.get(SR5_ActorHelper.areaReviewKey(actor, item.uuid, data.previousMessage?.messageId)) : null
+    const fromArea = !!areaKey && areaKey.endsWith(`|${print}`)
     return {
       item, actor, sheet, ref, reference, diff: compareDefinitions(sheet, ref), shown: false,
       //One decision per card, or per template for an area spell (applied token by token, effectArea.js), and for the
       //definition shown: changed on the sheet afterwards (a multiplier raised), it is asked again
-      key: `${item.uuid}|${data?.owner?.messageId ?? data?.owner?.actorId}|${definitionPrint(sheet, item.system?.itemRating)}`,
-      area: !!data?.areaTemplate,
+      key: fromArea ? areaKey : `${item.uuid}|${data?.owner?.messageId ?? data?.owner?.actorId}|${print}`,
+      area: !!data?.areaTemplate || fromArea,
       //Applied once the target resisted (its resistance card): the test was not skipped
       afterResistance: /(Resistance|Defense)$/.test(data?.test?.type ?? ""),
       //Only a spell says whether it is resisted (itemSpell.resisted): a complex form, a power do not
@@ -2279,6 +2285,13 @@ export class SR5_ActorHelper {
   //tokens that come meanwhile wait for it instead of opening their own, and a refusal stands for the whole template.
   //On a card, a refusal is forgotten: the GM may click again
   static DEFINITION_DECISIONS = new Map()
+
+  //The decision key of the template that asked an actor to resist an area spell, by actor, spell and cast: written
+  //by the GM when the template asks (effectArea.js), read when he applies that actor's resistance card
+  static AREA_REVIEW_KEYS = new Map()
+  static areaReviewKey(actor, itemUuid, castMessageId){
+    return `${actor?.uuid ?? actor?.id}|${itemUuid}|${castMessageId}`
+  }
 
   static definitionDecision(review, ask){
     review.shown = true
