@@ -141,6 +141,19 @@ export class SR5_CompendiumUtility extends Actor {
     return documents
   }
 
+  // Powers that need no action to work: « toujours actifs […] listés avec une action automatique » (SR5 p. 396).
+  // The system's own "permanent" says the same (a sheet already switches it on when it is dropped).
+  static ALWAYS_ACTIVE_ACTIONS = ["automatic", "permanent"]
+
+  //The data of an item given to a new spirit, sprite or creature: a power that is always active comes switched on
+  //(arbitrage de DjamZ, H39), so that its effects (Immunity, Armor, Toughness…) count without a click
+  static givenItem(item) {
+    const data = item.toObject(false)
+    if ((data.type === "itemPower" || data.type === "itemSpritePower") &&
+      SR5_CompendiumUtility.ALWAYS_ACTIVE_ACTIONS.includes(data.system?.actionType)) data.system.isActive = true
+    return data
+  }
+
   //The "category:value" keys an item (or an index entry) carries in its systemEffects
   static itemKeys(item) {
     return Object.values(item.system?.systemEffects ?? {
@@ -211,7 +224,7 @@ export class SR5_CompendiumUtility extends Actor {
       if (systemEffects.length) {
         for (let systemEffect of Object.values(systemEffects)) {
           if ((systemEffect.category === "baseOwnItem") && (systemEffect.value === actorType)) {
-            let iObject = i.toObject(false)
+            let iObject = SR5_CompendiumUtility.givenItem(i)
             baseItems.push(iObject)
           }
         }
@@ -251,7 +264,7 @@ export class SR5_CompendiumUtility extends Actor {
         if (systemEffects.length) {
           for (let systemEffect of Object.values(systemEffects)) {
             if ((systemEffect.category === "spiritPower") && (systemEffect.value === key)) {
-              let iObject = i.toObject(false)
+              let iObject = SR5_CompendiumUtility.givenItem(i)
               baseItems.push(iObject)
             }
           }
@@ -273,7 +286,7 @@ export class SR5_CompendiumUtility extends Actor {
           if (systemEffects.length) {
             for (let systemEffect of Object.values(systemEffects)) {
               if ((systemEffect.category === "spiritPower") && (systemEffect.value === value)) {
-                let iObject = i.toObject(false)
+                let iObject = SR5_CompendiumUtility.givenItem(i)
                 baseItems.push(iObject)
               }
             }
@@ -299,7 +312,7 @@ export class SR5_CompendiumUtility extends Actor {
           if (systemEffects.length) {
             for (let systemEffect of Object.values(systemEffects)) {
               if ((systemEffect.category === "spritePower") && (systemEffect.value === value)) {
-                let iObject = i.toObject(false)
+                let iObject = SR5_CompendiumUtility.givenItem(i)
                 baseItems.push(iObject)
               }
             }
