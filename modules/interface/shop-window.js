@@ -766,6 +766,33 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     this._redrawing = true
   }
 
+  // The frame stays across renders: one listener for the whole life of the window
+  _onFirstRender(context, options) {
+    super._onFirstRender(context, options)
+    this.element.addEventListener('dragover', event => {
+      if (game.user.isGM && this._source?.vendor) event.preventDefault()
+    })
+    this.element.addEventListener('drop', event => this.#onDropContact(event))
+  }
+
+  /** A contact the gamemaster drops on a vendor's shop becomes the one who searches for it. */
+  async #onDropContact(event) {
+    if (!game.user.isGM || !this._source?.vendor) return
+    const data = foundry.applications.ux.TextEditor.implementation.getDragEventData(event)
+    if (data?.type !== 'Item' || !data.uuid) return
+    event.preventDefault()
+    const contact = await fromUuid(data.uuid)
+    if (contact?.type !== 'itemContact') return
+    const {
+      actor, storage
+    } = this._source
+    const own = await SR5ShopVendor.takeContact(actor, storage, contact)
+    if (!own) return
+    ui.notifications?.info(game.i18n.format('SR5.ShopVendorContactTaken', {
+      contact: own.name, vendor: SR5ShopVendor.labelOf(storage)
+    }))
+  }
+
   _onRender(context, options) {
     super._onRender(context, options)
     const el = this.element

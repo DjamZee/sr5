@@ -164,6 +164,8 @@ Hooks.on('renderChatMessageHTML', sr5HookRenderTablePayout)
 Hooks.on('renderSidebar', SR5ShopWindow.onRenderSidebar)
 // A sale or a restock on a vendor: its open shop window redraws
 for (const hook of ['createItem', 'updateItem', 'deleteItem', 'updateActor']) Hooks.on(hook, SR5ShopVendor.onVendorChanged)
+// A contact the gamemaster puts on a vendor searches for it
+Hooks.on('createItem', SR5ShopVendor.onContactAdded)
 Hooks.on('renderSidebar', sr5KeepSidebarSettingsLast)
 Hooks.on('getHeaderControlsDocumentSheetV2', SR5ShopStock.onHeaderControls)
 Hooks.on('drawMeasuredTemplate', sr5HookDrawMeasuredTemplate)

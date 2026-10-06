@@ -429,6 +429,46 @@ export class SR5ShopVendor {
     })
   }
 
+  /**
+   * A contact given to a vendor searches for it (gamemaster only): a contact from a pack, a
+   * sheet or the sidebar is copied onto the vendor, one it already carries is taken as it is.
+   * `replace: false` keeps a searcher already chosen. The contact's pool sets the availability
+   * test, so nothing a player creates or drops ever reaches it.
+   *
+   * @returns {Promise<Item|null>} the vendor's own contact, or null when nothing was done
+   */
+  static async takeContact(actor, storage, contact, {
+    replace = true
+  } = {
+  }) {
+    if (!game.user.isGM || !actor || !isShopStorage(storage) || storage.parent !== actor) return null
+    if (contact?.type !== 'itemContact') return null
+    let own = contact.parent === actor ? contact : null
+    if (!own) [own] = await actor.createEmbeddedDocuments('Item', [contact.toObject()], {
+      sr5ShopContact: true
+    })
+    if (!own) return null
+    const current = actor.items.get(shopSettings(storage).contactId)
+    if (!replace && current?.type === 'itemContact') return own
+    if (current?.id !== own.id) await storage.update({
+      'system.shop.contactId': own.id
+    })
+    return own
+  }
+
+  /**
+   * A contact the gamemaster puts on a vendor's sheet searches for each of its shops that has no
+   * searcher yet (a createItem hook). A creation by anyone else, or one takeContact made, is left alone.
+   */
+  static onContactAdded(item, options, userId) {
+    if (item?.type !== 'itemContact' || options?.sr5ShopContact) return
+    if (userId !== game.user.id || !game.user.isGM) return
+    const actor = item.parent
+    for (const storage of SR5ShopVendor.shopsOf(actor)) SR5ShopVendor.takeContact(actor, storage, item, {
+      replace: false
+    })
+  }
+
   /** The gamemaster's "New vendor" dialog: template, name, banner, linked or not. */
   static async newVendorDialog() {
     if (!game.user.isGM) return null
