@@ -143,6 +143,17 @@ describe('a player sheet spell applied by the GM to an NPC', () => {
     expect(confirm).toHaveBeenCalled()
   })
 
+  it('asks again on the same card when the sheet changed after the GM accepted', async () => {
+    await SR5_ActorHelper.applyExternalEffect('target', card(), 'customEffects').catch(() => {})
+    expect(confirm).toHaveBeenCalledOnce()
+    spell.system.customEffects = armor(40)
+    confirm.mockResolvedValueOnce(false)
+    created = undefined
+    await SR5_ActorHelper.applyExternalEffect('target', card(), 'customEffects')
+    expect(confirm).toHaveBeenCalledTimes(2)
+    expect(created).toBeUndefined()
+  })
+
   it('says when no reference is found', async () => {
     globalThis.game.packs = Object.assign([], {
       get: () => null

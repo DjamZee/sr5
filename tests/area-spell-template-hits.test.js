@@ -182,6 +182,25 @@ describe("SR5_EffectArea.createTemplateEffect, a spell's hits", () => {
       }
       expect(confirm).toHaveBeenCalledOnce()
     })
+    //Fritz, measured: accepted at x2, the sheet raised to x10, a token out and back in took 50 without a window
+    it("asks again when the sheet's definition changed after the answer", async () => {
+      await SR5_EffectArea.createTemplateEffect({
+        id: "a"
+      }, template)
+      expect(confirm).toHaveBeenCalledOnce()
+      const [data, , accepted] = target.applyExternalEffect.mock.calls[0]
+      expect(await SR5_ActorHelper.confirmDefinition(accepted, data)).toBe(true)
+      expect(confirm).toHaveBeenCalledOnce()
+      sourceItem.system.customEffects[0].multiplier = 10
+      await SR5_EffectArea.createTemplateEffect({
+        id: "back"
+      }, template)
+      const [data2, , forged] = target.applyExternalEffect.mock.calls[1]
+      confirm.mockResolvedValueOnce(false)
+      expect(await SR5_ActorHelper.confirmDefinition(forged, data2)).toBe(false)
+      expect(confirm).toHaveBeenCalledTimes(2)
+      expect(confirm.mock.calls[1][0].content).toContain("× 10")
+    })
     it("keeps a refusal for the whole template", async () => {
       confirm.mockResolvedValue(false)
       await Promise.all(["a", "b"].map(id => SR5_EffectArea.createTemplateEffect({

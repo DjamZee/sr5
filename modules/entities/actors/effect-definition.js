@@ -58,6 +58,17 @@ export function compareDefinitions(sheet, reference) {
   return out
 }
 
+/**
+ * What the GM was shown, as a string: each entry's target, category, type, value and multiplier, the resistance and
+ * the item rating. A GM's answer stands for this definition only
+ * @param {object} sheet {resisted, entries}
+ * @param {number} [rating]
+ */
+export function definitionPrint(sheet, rating) {
+  const entries = (sheet?.entries ?? []).map(e => [e.category, e.target, e.type, e.value, e.multiplier].join(":")).sort()
+  return JSON.stringify([!!sheet?.resisted, Number(rating) || 0, entries])
+}
+
 /** Nothing differs */
 export function definitionsMatch(diff) {
   return !diff.resistedDiffers && !diff.added.length && !diff.missing.length && !diff.changed.length

@@ -59,7 +59,7 @@ import {
   readsRoll, effectCardVerdict
 } from "../../rolls/roll-helpers/effect-card.js"
 import {
-  entryValue, transferEntries, compareDefinitions, definitionsMatch
+  entryValue, transferEntries, compareDefinitions, definitionsMatch, definitionPrint
 } from "./effect-definition.js"
 import {
   isAreaSpellTemplateGone
@@ -2119,8 +2119,10 @@ export class SR5_ActorHelper {
     if (!sheet.entries.length && !ref?.entries.length) return null
     return {
       item, actor, sheet, ref, reference, diff: compareDefinitions(sheet, ref), shown: false,
-      //One decision per card, or per template for an area spell (applied token by token, effectArea.js)
-      key: `${item.uuid}|${data?.owner?.messageId ?? data?.owner?.actorId}`, area: !!data?.areaTemplate,
+      //One decision per card, or per template for an area spell (applied token by token, effectArea.js), and for the
+      //definition shown: changed on the sheet afterwards (a multiplier raised), it is asked again
+      key: `${item.uuid}|${data?.owner?.messageId ?? data?.owner?.actorId}|${definitionPrint(sheet, item.system?.itemRating)}`,
+      area: !!data?.areaTemplate,
       //Applied once the target resisted (its resistance card): the test was not skipped
       afterResistance: /(Resistance|Defense)$/.test(data?.test?.type ?? ""),
       //Only a spell says whether it is resisted (itemSpell.resisted): a complex form, a power do not
