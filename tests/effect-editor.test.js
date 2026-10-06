@@ -379,6 +379,52 @@ describe("the active gamemaster sees every player's write of effects (Gustave's 
     expect(ui.notifications.warn).not.toHaveBeenCalled()
     expect(ui.notifications.info).not.toHaveBeenCalled()
   })
+
+  // Séance H, H3: the creation is let through, the gamemaster is warned
+  const created = (type, system) => ({
+    type, name: "Objet", isOwned: true, parent: {
+      name: "Clo"
+    }, system
+  })
+
+  it("is told when a player adds an item that carries effects", async () => {
+    gmClient()
+    const {
+      sr5HookCreateItem
+    } = await import('../modules/hooks/item.js')
+    await sr5HookCreateItem(created("itemArmor", acid.system), {
+    }, "player")
+    expect(ui.notifications.warn).toHaveBeenCalledWith("SR5.WARN_ItemEffectsAddedByPlayer", {
+      permanent: true
+    })
+  })
+
+  it("is not told of an item without effects, of the system's states, nor of its own additions", async () => {
+    gmClient()
+    const {
+      sr5HookCreateItem
+    } = await import('../modules/hooks/item.js')
+    await sr5HookCreateItem(created("itemArmor", {
+      customEffects: [], itemEffects: [], systemEffects: []
+    }), {
+    }, "player")
+    await sr5HookCreateItem(created("itemEffect", acid.system), {
+    }, "player")
+    await sr5HookCreateItem(created("itemArmor", acid.system), {
+    }, "gm")
+    expect(ui.notifications.warn).not.toHaveBeenCalled()
+  })
+
+  it("is not told when the setting is off", async () => {
+    gmClient()
+    game.settings.get = () => false
+    const {
+      sr5HookCreateItem
+    } = await import('../modules/hooks/item.js')
+    await sr5HookCreateItem(created("itemArmor", acid.system), {
+    }, "player")
+    expect(ui.notifications.warn).not.toHaveBeenCalled()
+  })
 })
 
 describe("a category changed in the sheet (Gustave's review)", () => {

@@ -5,7 +5,7 @@ import {
   GM_ONLY_ITEM_PATHS, stripGMOnlyChanges
 } from '../entities/items/spirit-bonds.js'
 import {
-  gmOnlyItemEffects, isSystemEffectWrite, stripEffectChanges, touchesItemEffects
+  carriesItemEffects, gmOnlyItemEffects, isSystemEffectWrite, stripEffectChanges, touchesItemEffects
 } from '../system/effect-editor.js'
 import {
   GM_ONLY_PREPARATION_PATHS
@@ -42,8 +42,20 @@ export async function sr5HookItemVision(item, userId) {
   await SR5_CharacterUtility.refreshVisionOfTokens(item.parent)
 }
 
-export async function sr5HookCreateItem(item, _options, userId) {
+export async function sr5HookCreateItem(item, options, userId) {
   await sr5HookItemVision(item, userId)
+  //Séance H, H3 (decision of DjamZ): a player may still add an item that carries effects to a sheet (a drop from a
+  //compendium, createEmbeddedDocuments), but the active gamemaster is told, as for a write of effects. The states the
+  //system lays itself (itemEffect: prone, fire, a spell's effect…) are left out, or every hit would warn
+  if (game.users?.activeGM?.isSelf && gmOnlyItemEffects() && item.isOwned && item.type !== "itemEffect" &&
+    !game.users.get(userId)?.isGM && carriesItemEffects(item.system)) {
+    const announced = isSystemEffectWrite(options)
+    ui.notifications.warn(game.i18n.format(announced ? 'SR5.WARN_ItemEffectsSystemCreate' : 'SR5.WARN_ItemEffectsAddedByPlayer', {
+      user: game.users.get(userId)?.name ?? userId, item: item.name, actor: item.parent?.name ?? ""
+    }), {
+      permanent: !announced
+    })
+  }
 }
 
 // Copy effect fields from an itemAmmunitionType into an effects snapshot

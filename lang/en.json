@@ -3974,6 +3974,8 @@
 	"SR5.WARN_SpiritBondsGMOnly": "Indexes, reputations and spirit traits are written by the gamemaster only.",
 	"SR5.WARN_ItemEffectsGMOnly": "In this world, the effects of an item are written by the gamemaster only: the change of the effects was not saved.",
 	"SR5.WARN_ItemEffectsChangedByPlayer": "{user} changed the effects of {item} ({actor}), although they are written by the gamemaster only in this world.",
+	"SR5.WARN_ItemEffectsAddedByPlayer": "{user} added an item with effects, {item}, to the sheet of {actor}, although effects are written by the gamemaster only in this world.",
+	"SR5.WARN_ItemEffectsSystemCreate": "System write announced: {item}, an item with effects, was added to the sheet of {actor} from the client of {user}.",
 	"SR5.EffectUnlisted": "not in the list",
 	"SR5.WARN_ItemEffectsSystemWrite": "System write announced: the effects of {item} ({actor}) changed from the client of {user} (acid, effect applied to an item…).",
 	"SR5.WARN_OverwatchGMOnly": "Only the gamemaster lowers the Overwatch Score: outside a reboot, the lowering was not written.",
