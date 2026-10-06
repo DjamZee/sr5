@@ -5288,6 +5288,7 @@
 	"SR5.WARN_AreaSpellTemplateGone": "This area spell's template was removed during the resistance: the effect is not applied.",
 	"SR5.WARN_NoTemplateForBlast": "This throw's template was removed: the distance to the blast cannot be measured. Place it again or settle the damage by hand.",
 	"SR5.WARN_NoTemplateInScene": "No template in scene !",
+	"SR5.WARN_ScatterCardTooOld": "This card predates template tracking: it cannot tell which template is its own. Roll the scatter by hand and move the template yourself.",
 	"SR5.WARN_TemplateNotYours": "This template was placed by someone else: only its author or the GM can move or remove it.",
 	"SR5.WARN_NotEnoughAction": "Not enough actions left ! You need at least {value} {action} action.",
 	"SR5.WARN_NotPossibleInCombat": "Not possible in combat.",

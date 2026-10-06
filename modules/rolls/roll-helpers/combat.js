@@ -319,6 +319,12 @@ export class SR5_CombatHelpers {
 
     let distanceMod = cardData.roll.hits
 
+    // A card from before the shot kept its template (938f2ad70) cannot tell its circle from that of a later throw of
+    // the same item (a template has no creation date): it would move the newest one, so it asks for a hand move instead
+    if (!isSpell && cardData.combat?.grenade && !("templateId" in cardData.combat.grenade)){
+      ui.notifications.warn(`${game.i18n.localize("SR5.WARN_ScatterCardTooOld")}`)
+      return false
+    }
     // The template of this shot, not the first one the item ever left on the scene; a spell's is the one its card placed
     let template = isSpell ? SR5_CombatHelpers.spellAreaTemplate(cardData) : SR5_SystemHelpers.findItemTemplate(cardData.owner.itemId, cardData.combat.grenade?.templateId)
     if (isSpell && template?.parent !== canvas.scene) template = undefined
