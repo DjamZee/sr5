@@ -1,8 +1,16 @@
 import {
   SR5_PrepareRollHelper 
 } from "../roll-prepare-helpers.js"
+import {
+  WEAPON_MATRIX_DAMAGE, hasMatrixMonitorInReach
+} from "../roll-helpers/weapon-matrix-damage.js"
 
 export default async function matrixResistance(rollData, actor, chatData){
+  //A DSP pulse reaches no matrix monitor here (Street Lethal p. 57): nothing to resist, the caller opens no dialog
+  if (chatData.damage.type === WEAPON_MATRIX_DAMAGE && !hasMatrixMonitorInReach(actor)) {
+    ui.notifications.info(game.i18n.localize("SR5.WeaponMatrixDamageNoDevice"))
+    return
+  }
   //Determine title
   rollData.test.title = `${game.i18n.localize("SR5.TakeOnDamageMatrix")} (${chatData.damage.matrix.value})`
 
