@@ -78,6 +78,34 @@ describe('the active GM records each defense card', () => {
     expect(whispers[0].content).toContain('SR5.DefenseRepeated')
   })
 
+  // Clément's review: the note named "A", the first token of the actor on the scene (owner.speakerActor)
+  it('names the actor that defended, its token when unlinked', async () => {
+    const format = vi.spyOn(game.i18n, 'format')
+    SR5_MiscellaneousHelpers.cardOf.mockImplementation(id => ({
+      id, roller: {
+        name: "Cible d'essai", isToken: false
+      }
+    }))
+    await recordDefense(defenseCard('d1', 'attack1', 'cible'))
+    await recordDefense(defenseCard('d2', 'attack1', 'cible'))
+    expect(format).toHaveBeenCalledWith('SR5.DefenseRepeated', expect.objectContaining({
+      name: "Cible d'essai"
+    }))
+
+    SR5_MiscellaneousHelpers.cardOf.mockImplementation(id => ({
+      id, roller: {
+        name: 'Ganger', isToken: true, token: {
+          name: 'Ganger 2'
+        }
+      }
+    }))
+    await recordDefense(defenseCard('d3', 'attack1', 'tok2'))
+    await recordDefense(defenseCard('d4', 'attack1', 'tok2'))
+    expect(format).toHaveBeenLastCalledWith('SR5.DefenseRepeated', expect.objectContaining({
+      name: 'Ganger 2'
+    }))
+  })
+
   it('lets another target of the same attack defend', async () => {
     await recordDefense(defenseCard('d1', 'attack1', 'diego'))
     expect(await recordDefense(defenseCard('d3', 'attack1', 'ganger'))).toBe(true)

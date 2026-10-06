@@ -105,7 +105,11 @@ export async function recordDefense(message) {
   if (!DEFENSE_TESTS.has(data?.test?.type)) return null
   const attackId = data.previousMessage?.messageId, defender = data.owner?.actorId
   if (!attackId || !defender) return null
-  if (!SR5_MiscellaneousHelpers.cardOf(message.id)) return null
+  const card = SR5_MiscellaneousHelpers.cardOf(message.id)
+  if (!card) return null
+  //The actor that defended, by its token when unlinked: owner.speakerActor is the first token of a linked actor on the
+  //scene, which named another (Clément's review)
+  const name = (card.roller?.isToken ? card.roller.token?.name : card.roller?.name) ?? message.speaker?.alias ?? ""
   const key = defenseKey(attackId, defender)
   let repeat = false
   await updateLedger(CONSUMED_CARDS, ledger => {
@@ -119,7 +123,7 @@ export async function recordDefense(message) {
   })
   if (repeat) await ChatMessage.create({
     content: `<p>${game.i18n.format("SR5.DefenseRepeated", {
-      name: data.owner.speakerActor ?? message.speaker?.alias ?? "", author: message.author?.name ?? ""
+      name, author: message.author?.name ?? ""
     })}</p>`,
     whisper: ChatMessage.getWhisperRecipients("GM").map(u => u.id),
   })
