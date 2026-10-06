@@ -5,6 +5,8 @@ import {
   updateLedger
 } from "../system/gm-ledger.js"
 
+const MEGAPACK_ID = "megapack-sr5-foundry-vtt"
+
 /**
  * The gamemaster's window that gives back the Negotiation lost before the key fix
  * (negotiation-repair-rules.js). It lists the actors and contacts of the world whose skill reads 0
@@ -71,6 +73,10 @@ export class SR5NegotiationRepair extends foundry.applications.api.HandlebarsApp
     },
   } = {
   }) {
+    // The Megapack first (arbitrage de DjamZ, séance H, H18): its contacts carry the same ids and names as
+    // those of sr5-compendiums, whose Negotiation can be lost (0) where the Megapack's is right
+    const isMegapack = pack => (pack?.metadata?.packageName ?? pack?.metadata?.package) === MEGAPACK_ID
+    itemPacks = [...itemPacks.filter(isMegapack), ...itemPacks.filter(pack => !isMegapack(pack))]
     const indexes = new Map()
     const indexOf = async pack => {
       if (!indexes.has(pack)) {
@@ -100,6 +106,9 @@ export class SR5NegotiationRepair extends foundry.applications.api.HandlebarsApp
       for (const pack of itemPacks) for (const entry of indexes.get(pack)?.values?.() ?? []) {
         if (entry?.type === doc.type && entry.name === doc.name) named.push([pack, entry._id])
       }
+      // The same contact in both modules: the Megapack's answers, when it holds a single one
+      const fromMegapack = named.filter(([pack]) => isMegapack(pack))
+      if (fromMegapack.length) named.splice(0, named.length, ...fromMegapack)
       if (named.length !== 1) return null
       try {
         return await named[0][0].getDocument(named[0][1])
