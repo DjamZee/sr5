@@ -1,6 +1,6 @@
 import {
   isLocked, pickStages, pickPool, pickLimit, lockTools, extendedTest, underLimit, antiTamperOf,
-  isPickRequestAllowed, lockedOwnership, unlockedOwnership, lockedRightsChange,
+  isPickRequestAllowed, lockedOwnership, unlockedOwnership, lockedRightsChange, closingRights,
 } from "./storage-lock.js"
 import {
   isStoredAway
@@ -86,9 +86,13 @@ export class SR5StorageLock {
       if (lockedNext === false) return
       const gms = game.users.filter(u => u.isGM).map(u => u.id)
       const keep = [...SR5StorageLock.keyHolders(actor), ...gms]
-      // Shut by the GM: the others go down to Limited in the same update
-      if (lockedNext === true && !isLocked(actor) && actor.system.lock?.type && !changes.ownership) {
-        const shut = lockedOwnership(actor.ownership, actor.getFlag("sr5", "lockOwnership"), keep)
+      // Shut by the GM: the others go down to Limited in the same update, the rights it changes too
+      const type = foundry.utils.getProperty(changes, "system.lock.type") ?? actor.system.lock?.type
+      if (lockedNext === true && !isLocked(actor) && type) {
+        const shut = closingRights(actor.ownership, changes.ownership, actor.getFlag("sr5", "lockOwnership"), keep)
+        // A key sent back to the default stays sent back: the update merges, it never drops a key
+        for (const key of Object.keys(changes.ownership ?? {
+        })) if (key.startsWith("-=")) shut.ownership[key] = null
         changes.ownership = shut.ownership
         foundry.utils.setProperty(changes, "flags.sr5.lockOwnership", shut.saved)
         return

@@ -848,6 +848,8 @@ export class SR5ShopVendor {
     await ledgerOrders(Object.fromEntries(orders.map(o => [o.id, {
       actorUuid: buyer.uuid, paid: free ? 0 : o.paid, vendorUuid: free ? null : actor.uuid, storageId: storage.id,
       vendorLabel: label,
+      // What was sold, as the till saw it: the GM is shown this, never the order the sheet carries
+      name: o.name, quantity: o.quantity, uuid: o.uuid,
     }])))
     let overflow = 0
     if (!free) {

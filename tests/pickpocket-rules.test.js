@@ -4,8 +4,24 @@ import {
 
 const {
   isPickable, pickableItems, randomPick, perceptionModifiers, pickpocketOutcome, transferEnds, isTransferAllowed, isLockedAway, splitPile, defaultTakeQuantity,
-  perceptionDialogLocks, thiefHitsCap, boundThiefHits
+  perceptionDialogLocks, thiefHitsCap, boundThiefHits, shownQuantity
 } = await import('../modules/rolls/roll-helpers/pickpocket-rules.js')
+
+describe("the quantity the GM is shown when the thief plants (Zélia's review)", () => {
+  const pile = {
+    type: 'itemGear', system: {
+      quantity: 5
+    }
+  }
+  it('a card retouched to 99 shows the 5 that will move, not 99', () => {
+    expect(shownQuantity('plant', pile, 99)).toBe(5)
+    expect(shownQuantity('plant', pile, 3)).toBe(3)
+  })
+  it('taking, the default quantity; no object, nothing', () => {
+    expect(shownQuantity('take', pile, 99)).toBe(1)
+    expect(shownQuantity('plant', null, 3)).toBe('')
+  })
+})
 
 describe("the thief card's hits, bounded by the GM (Sixtine, security lot)", () => {
   const thief = {

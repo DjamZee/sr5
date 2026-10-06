@@ -3,7 +3,7 @@ import {
 } from "vitest"
 import {
   lineWaits, expressTerms, expressCost, orderHours, dueTime, freshlyDue, cardExpressExtra,
-  bindOrderClicks, cancelPlan, testedHours, catalogueRefundCap
+  bindOrderClicks, cancelPlan, testedHours, ledgerLabel
 } from "../modules/interface/shop-orders.js"
 
 const fakeElement = () => {
@@ -54,27 +54,29 @@ describe("cancelling an order follows the GM's ledger (Quitterie's review)", () 
     }
   }
   it("a forged order missing from the ledger never touches a vendor", () => {
-    expect(cancelPlan(forged, undefined, 1000, 250)).toMatchObject({
+    expect(cancelPlan(forged, undefined, 1000)).toMatchObject({
       vendorUuid: null, fromCashbox: 0, fromAccounts: 0
     })
   })
-  // Security lot (Sixtine, Odile's finding): the flag is the player's own writing
-  it("a forged order missing from the ledger refunds the catalogue's price at most", () => {
-    expect(cancelPlan(forged, undefined, 1000, 250).refund).toBe(250)
-    expect(cancelPlan({
-      paid: 100
-    }, undefined, 0, 250).refund).toBe(100)
-  })
-  it("an order missing from the ledger whose source is gone refunds nothing", () => {
+  // Security lot (Sixtine, Odile's finding, Zélia's review): the order is the player's own writing,
+  // its quantity and source too; a forged order of 1000 pieces was refunded at the catalogue's price
+  it("a forged order missing from the ledger refunds nothing, whatever its quantity", () => {
+    const thousand = {
+      paid: 100000, quantity: 1000, uuid: "Compendium.x.Item.cheap"
+    }
+    // the 4th argument was the catalogue's cap for 1000 pieces; it no longer counts
+    expect(cancelPlan(thousand, undefined, 0, 100000).refund).toBe(0)
     expect(cancelPlan(forged, undefined).refund).toBe(0)
   })
-  it("the catalogue's cap counts the express surcharge only on an express order", () => {
-    const terms = {
-      surcharge: 25, factor: 2
-    }
-    expect(catalogueRefundCap(100, 3, false, terms)).toBe(300)
-    expect(catalogueRefundCap(100, 3, true, terms)).toBe(375)
-    expect(catalogueRefundCap(100, 3, true, null)).toBe(300)
+  it("the GM is shown the ledger's line, never the sheet's", () => {
+    expect(ledgerLabel({
+      name: "Fusil", quantity: 1000
+    }, {
+      name: "Dérivateur", quantity: 1
+    })).toBe("Dérivateur")
+    expect(ledgerLabel({
+      name: "Fusil", quantity: 2
+    }, null)).toBe("Fusil (x2)")
   })
   it("the ledger's amount wins over the flag's", () => {
     const plan = cancelPlan(forged, {

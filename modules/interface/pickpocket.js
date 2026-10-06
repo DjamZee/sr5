@@ -1,7 +1,7 @@
 import {
   pickableItems, randomPick, concealmentOf, transferEnds, pickpocketOutcome, isTransferAllowed, perceptionDialogLocks,
   PICKPOCKET_MAX_CONCEALMENT, pileSize, defaultTakeQuantity, splitPile,
-  thiefHitsCap, boundThiefHits
+  thiefHitsCap, boundThiefHits, shownQuantity
 } from "../rolls/roll-helpers/pickpocket-rules.js"
 import {
   NOT_LOOTERS
@@ -235,7 +235,7 @@ export class SR5Pickpocket {
     const locked = locks.item ? "disabled" : ""
     const chosenItem = chosen ? giver.items.get(chosen) : null
     //When he plants, the thief already said how many
-    const chosenQuantity = chosenItem ? (mode === "plant" && messageData.various.pickpocketQuantity ? messageData.various.pickpocketQuantity : defaultTakeQuantity(chosenItem)) : ""
+    const chosenQuantity = shownQuantity(mode, chosenItem, messageData.various.pickpocketQuantity)
     const titleKey = mode === "plant" ? "SR5.PickpocketPlantTitle" : "SR5.PickpocketTitle"
     const quantityKey = mode === "plant" ? "SR5.PickpocketQuantityPlanted" : "SR5.PickpocketQuantity"
     const box = key => `<div class="form-group"><label>${escape(game.i18n.localize(`SR5.Pickpocket${key.charAt(0).toUpperCase()}${key.slice(1)}`))}</label><input type="checkbox" name="${key}"/></div>`

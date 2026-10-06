@@ -188,6 +188,16 @@ export function boundThiefHits(claimed, cap) {
   return Math.min(hits, Math.max(0, Math.floor(Number(cap)) || 0))
 }
 
+/**
+ * The quantity the GM's Perception dialog shows: planting, the thief's, as it will be applied, within
+ * his pile (Zélia's review: a card retouched to 99 showed 99 for 5 moved); taking, the default.
+ */
+export function shownQuantity(mode, item, claimed) {
+  if (!item) return ""
+  if (mode === "plant" && claimed) return splitPile(item, claimed).quantity
+  return defaultTakeQuantity(item)
+}
+
 //What the GM's Perception dialog locks: the object once someone chose it, and when he plants, the quantity too,
 //since the thief said how many of his own pile he puts on the target
 export function perceptionDialogLocks(mode, chosenItemId) {

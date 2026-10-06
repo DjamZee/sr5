@@ -257,17 +257,17 @@ export function registerOrderLedger() {
 }
 
 /**
- * What a cancellation moves. The amount is the ledger's when the order is in
- * it; otherwise the flag's, which its owner writes, never above `cap`, what
- * the catalogue charges for it as the GM's browser reads it (security lot,
- * Sixtine: a forged order credited the sheet whatever it said). Only a ledger
- * entry names a vendor, and the vendor gives back from the cashbox that took
- * the money first, its accounts for the rest (what the cashbox could not hold
- * went there at the sale).
+ * What a cancellation moves: what the GM's ledger recorded at the sale, and
+ * nothing else. The order on the sheet is its owner's writing, its amount,
+ * quantity and source alike: an order missing from the ledger refunds nothing
+ * (Zélia's review: a forged order of 1000 pieces was refunded at the catalogue's
+ * price). The gamemaster refunds by hand what he wants beyond that. Only a
+ * ledger entry names a vendor, and the vendor gives back from the cashbox that
+ * took the money first, its accounts for the rest (what the cashbox could not
+ * hold went there at the sale).
  */
-export function cancelPlan(order, entry, cashboxFunds = 0, cap = 0) {
-  const claimed = Math.max(0, Number(order?.paid) || 0)
-  const refund = entry ? Math.max(0, Number(entry.paid) || 0) : Math.min(claimed, Math.max(0, Number(cap) || 0))
+export function cancelPlan(order, entry, cashboxFunds = 0) {
+  const refund = entry ? Math.max(0, Number(entry.paid) || 0) : 0
   if (!entry?.vendorUuid) return {
     refund, vendorUuid: null, fromCashbox: 0, fromAccounts: 0
   }
@@ -364,10 +364,10 @@ export async function cancelOrder(actor, id) {
   const order = await removeOrder(actor, id)
   if (!order) return false
   const name = game.i18n.format('SR5.ShopOrderRefundOf', {
-    name: lineLabel(order)
+    name: ledgerLabel(order, entry)
   })
   const vendor = await vendorOf(entry)
-  const plan = cancelPlan(order, entry, vendor?.cashbox ? creditFunds(vendor.cashbox) : 0, entry ? 0 : await refundCap(order))
+  const plan = cancelPlan(order, entry, vendor?.cashbox ? creditFunds(vendor.cashbox) : 0)
   if (plan.refund > 0) {
     await actor.createEmbeddedDocuments('Item', [transaction('gain', plan.refund, name)])
     // The vendor gives back from the cashbox that took the money, then from its accounts
@@ -383,26 +383,11 @@ export async function cancelOrder(actor, id) {
   return true
 }
 
-/** The most an order missing from the ledger may refund: its line at the catalogue's price, express included. */
-export function catalogueRefundCap(unit, quantity, express, terms) {
-  const base = Math.max(0, Number(unit) || 0) * Math.max(0, Math.floor(Number(quantity) || 0))
-  return base + (express ? expressCost(base, terms) : 0)
-}
-
-/** That cap for an order, read again from its source on the GM's browser: nothing when the source is gone. */
-async function refundCap(order) {
-  let source = null
-  try {
-    source = await fromUuid(order?.uuid ?? '')
-  } catch {
-    source = null
-  }
-  if (!source?.system) return 0
-  const {
-    SR5Shop
-  } = await import('./shop.js')
-  // Express may have been switched off since: the surcharge counted at its current share, or at none
-  return catalogueRefundCap(SR5Shop.gradedPrice(source.system, order.grade ?? null), order.quantity, order.express, currentExpress())
+/** The line the GM is shown: the ledger's name and quantity when the order is in it, never the sheet's. */
+export function ledgerLabel(order, entry) {
+  if (!entry?.name) return lineLabel(order)
+  const quantity = Math.max(1, Number(entry.quantity) || 1)
+  return quantity > 1 ? `${entry.name} (x${quantity})` : entry.name
 }
 
 function creditFunds(item) {
@@ -440,19 +425,21 @@ async function confirmCancel(actor, id, requester) {
   if (!order) return false
   const entry = orderLedger()[id]
   const own = entry?.actorUuid === actor.uuid ? entry : null
-  const plan = cancelPlan(order, own, 0, own ? 0 : await refundCap(order))
+  const plan = cancelPlan(order, own, 0)
   const vendor = plan.vendorUuid ? await vendorOf(entry) : null
   const esc = foundry.utils.escapeHTML
+  const where = !own ? game.i18n.localize('SR5.ShopOrderCancelNotInLedger') : vendor ?
+    game.i18n.format('SR5.ShopOrderCancelVendor', {
+      vendor: esc(vendor.label)
+    }) : game.i18n.localize('SR5.ShopOrderCancelNoVendor')
   const ok = await foundry.applications.api.DialogV2.confirm({
     window: {
       title: game.i18n.localize('SR5.ShopOrderCancelTitle')
     },
     content: `<p>${game.i18n.format('SR5.ShopOrderCancelText', {
       user: esc(requester?.name ?? '?'), actor: esc(actor.name),
-      name: esc(lineLabel(order)), price: plan.refund.toLocaleString(),
-    })}</p><p>${vendor ? game.i18n.format('SR5.ShopOrderCancelVendor', {
-      vendor: esc(vendor.label)
-    }) : game.i18n.localize('SR5.ShopOrderCancelNoVendor')}</p>`,
+      name: esc(ledgerLabel(order, own)), price: plan.refund.toLocaleString(),
+    })}</p><p>${where}</p>`,
     rejectClose: false,
   })
   if (!ok) {

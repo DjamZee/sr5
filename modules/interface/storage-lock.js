@@ -243,6 +243,31 @@ export function lockedRightsChange(changed, saved, keep) {
 }
 
 /**
+ * The rights a storage shut by the GM gets in the very update that shuts it,
+ * when that update changes rights too (Zélia's review: such an update skipped
+ * the atomic close, and the rights it granted held until the sync). The
+ * rights after the update, held at Limited, the GM's grants kept as his wish.
+ *
+ * @param {object} current the storage's ownership before the update
+ * @param {object} changed the ownership in the update ("-=id" sends a key back to the default)
+ * @param {object} saved the wish kept so far
+ * @param {string[]} keep user ids left alone: key holders and GMs
+ * @returns {{ownership: object, saved: object, changed: boolean}}
+ */
+export function closingRights(current, changed, saved, keep) {
+  const merged = {
+    ...(current ?? {
+    })
+  }
+  for (const [key, level] of Object.entries(changed ?? {
+  })) {
+    if (key.startsWith("-=")) delete merged[key.slice(2)]
+    else merged[key] = level
+  }
+  return lockedOwnership(merged, saved, keep)
+}
+
+/**
  * The rights once it is open: the GM's wish, for those still held at
  * Limited. A right the GM set by hand since (anything but Limited) stays.
  */
