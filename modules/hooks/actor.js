@@ -58,7 +58,7 @@ export function sr5HookPreUpdateActor(document, changes, options = {
   if (!game.user?.isGM) {
     const refused = stripGMOnlyChanges(changes, document, GM_ONLY_ACTOR_PATHS)
     if (refused.length) ui.notifications.warn(game.i18n.localize("SR5.WARN_SpiritBondsGMOnly"))
-    //The Overwatch Score only rises, until a reboot (overwatch-guard.js)
+    //The Overwatch Score only rises, but for a reboot or an Emulate swap (overwatch-guard.js)
     if (stripOverwatchDecrease(changes, document._source?.system?.matrix?.overwatchScore, options)) ui.notifications.warn(game.i18n.localize("SR5.WARN_OverwatchGMOnly"))
   }
   if (options.sr5PersonaMarks) return

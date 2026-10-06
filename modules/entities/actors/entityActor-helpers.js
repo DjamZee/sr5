@@ -716,8 +716,12 @@ export class SR5_ActorHelper {
     //A negative value can lower the score (Emulate swapped for the hits, Data Trails p. 159), never below 0, where it
     //starts and where a reboot brings it back (SR5 p. 244): the direct call and the GM side of the socket both end here
     actorData.matrix.overwatchScore = Math.max(0, (actorData.matrix.overwatchScore || 0) + defenseHits)
+    //Only the Emulate swap lowers it here: written from the AI owner's browser, it is a lowering of her own (overwatch-guard.js)
     actor.update({
       system: actorData
+    }, defenseHits < 0 ? {
+      sr5OverwatchLower: "emulate"
+    } : {
     })
     ui.notifications.info(`${actor.name}, ${game.i18n.localize("SR5.OverwatchScoreActual")} ${actorData.matrix.overwatchScore}`)
   }

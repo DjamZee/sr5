@@ -1109,9 +1109,9 @@ export class SR5Actor extends Actor {
       "system": actorData,
       "items": updatedItems,
     })
-    //The one lowering of the Overwatch Score a player writes herself (overwatch-guard.js)
+    //A lowering of the Overwatch Score a player writes herself (overwatch-guard.js)
     await this.update(dataToUpdate, {
-      sr5OverwatchReset: true
+      sr5OverwatchLower: "reboot"
     })
 
     //Delete effects from Deck

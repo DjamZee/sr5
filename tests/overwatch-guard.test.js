@@ -11,8 +11,15 @@ const {
   sr5HookPreUpdateActor
 } = await import('../modules/hooks/actor.js')
 const {
-  noteOverwatch, sr5HookOverwatchDrop
+  noteOverwatch, sr5HookOverwatchDrop, sr5HookPreUpdateTokenOverwatch, sr5HookPreUpdateActorDeltaOverwatch,
+  sr5HookUpdateTokenOverwatch
 } = await import('../modules/system/overwatch-guard.js')
+const {
+  SR5_ActorHelper
+} = await import('../modules/entities/actors/entityActor-helpers.js')
+const {
+  SR5_EntityHelpers
+} = await import('../modules/entities/helpers.js')
 
 // A player lowered her own Overwatch Score by actor.update (Jakob, 4 -> 0). Her browser now drops the lowering unless
 // a reboot asks for it; the GMs are told of every lowering a player writes.
@@ -85,7 +92,7 @@ describe('a player writing her own Overwatch Score', () => {
     for (const [score, options] of [[6, {
     }], [4, {
     }], [0, {
-      sr5OverwatchReset: true
+      sr5OverwatchLower: 'reboot'
     }]]) {
       const changes = {
         'system.matrix.overwatchScore': score
@@ -124,7 +131,7 @@ describe('the GMs told of a lowering', () => {
         }
       }
     }, {
-      sr5OverwatchReset: true
+      sr5OverwatchLower: 'reboot'
     }, 'p1')
     expect(ChatMessage.create).toHaveBeenCalledTimes(1)
     expect(ChatMessage.create.mock.calls[0][0].whisper).toEqual(['gm'])
@@ -146,5 +153,108 @@ describe('the GMs told of a lowering', () => {
     }, {
     }, 'p1')
     expect(ChatMessage.create).not.toHaveBeenCalled()
+  })
+})
+
+// Erna's review: the Emulate swap of an AI pushing her limit after the roll was dropped (Data Trails p. 159, 14 -> 11
+// stayed 14), and an unlinked token's score was lowered through the token or its delta, unseen
+describe('the lowerings Erna measured', () => {
+  beforeEach(() => {
+    game.user = player
+  })
+
+  it('the Emulate swap, written by the AI\'s owner, goes through as a lowering of her own', async () => {
+    const ai = {
+      ...deck(14), update: vi.fn(async (changes, options) => sr5HookPreUpdateActor(ai, changes, options))
+    }
+    vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockReturnValue(ai)
+    await SR5_ActorHelper.overwatchIncrease(-3, 'd')
+    const [changes, options] = ai.update.mock.calls[0]
+    expect(options).toEqual({
+      sr5OverwatchLower: 'emulate'
+    })
+    expect(changes.system.matrix.overwatchScore).toBe(11)
+    expect(ui.notifications.warn).not.toHaveBeenCalled()
+  })
+
+  it('"system.matrix": {...} is read too', () => {
+    const changes = {
+      'system.matrix': {
+        overwatchScore: 0, x: 1
+      }
+    }
+    sr5HookPreUpdateActor(deck(4), changes, {
+    })
+    expect(changes).toEqual({
+      'system.matrix': {
+        x: 1
+      }
+    })
+  })
+
+  it('an unlinked token: a lowering through the token or its delta is dropped, a rise kept', () => {
+    const token = {
+      actorLink: false, actor: deck(8)
+    }
+    for (const changes of [{
+      'delta.system.matrix.overwatchScore': 0
+    }, {
+      delta: {
+        system: {
+          matrix: {
+            overwatchScore: 0
+          }
+        }
+      }
+    }, {
+      'delta.system': {
+        'matrix.overwatchScore': 0
+      }
+    }]) {
+      sr5HookPreUpdateTokenOverwatch(token, changes, {
+      })
+      expect(JSON.stringify(changes)).not.toContain('overwatchScore')
+    }
+    const delta = {
+      'system.matrix.overwatchScore': 1
+    }
+    sr5HookPreUpdateActorDeltaOverwatch({
+      parent: token
+    }, delta, {
+    })
+    expect(delta).toEqual({
+    })
+    const rise = {
+      'delta.system.matrix.overwatchScore': 9
+    }
+    sr5HookPreUpdateTokenOverwatch(token, rise, {
+    })
+    expect(rise['delta.system.matrix.overwatchScore']).toBe(9)
+  })
+
+  it('the GMs are told of a lowering written in a token\'s delta', async () => {
+    game.user = gm
+    globalThis.ChatMessage = {
+      create: vi.fn(async () => {}), getWhisperRecipients: () => [gm]
+    }
+    const before = {
+      ...deck(8), isToken: true, token: {
+        uuid: 'Scene.s.Token.t'
+      }
+    }
+    noteOverwatch(before)
+    await sr5HookUpdateTokenOverwatch({
+      actorLink: false, actor: {
+        ...before, system: {
+          matrix: {
+            overwatchScore: 0
+          }
+        }
+      }
+    }, {
+      'delta.system.matrix.overwatchScore': 0
+    }, {
+    }, 'p1')
+    expect(ChatMessage.create).toHaveBeenCalledTimes(1)
   })
 })

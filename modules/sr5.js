@@ -92,7 +92,8 @@ import {
   SR5ShopVendor
 } from './interface/shop-vendor.js'
 import {
-  seedOverwatch, sr5HookOverwatchDrop
+  seedOverwatch, sr5HookOverwatchDrop, sr5HookPreUpdateTokenOverwatch, sr5HookPreUpdateActorDeltaOverwatch,
+  sr5HookUpdateTokenOverwatch
 } from './system/overwatch-guard.js'
 
 /* -------------------------------------------- */
@@ -105,6 +106,10 @@ Hooks.once('ready', sr5HookReady)
 // The GMs remember the Overwatch Scores, to be told of a lowering a player writes
 Hooks.once('ready', seedOverwatch)
 Hooks.on('updateActor', sr5HookOverwatchDrop)
+Hooks.on('updateToken', sr5HookUpdateTokenOverwatch)
+// A player lowers the score of an unlinked token through the token or its delta too, not only through the actor
+Hooks.on('preUpdateToken', sr5HookPreUpdateTokenOverwatch)
+Hooks.on('preUpdateActorDelta', sr5HookPreUpdateActorDeltaOverwatch)
 Hooks.once('canvasReady', sr5HookCanvasReady)
 Hooks.once('renderChatLog', sr5HookRenderChatLog)
 Hooks.on('renderChatLog', sr5PlaceChatJumpToBottom)
