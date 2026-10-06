@@ -68,7 +68,14 @@ describe("the GM's Apply button on a radiation roll", () => {
       }
     })
   })
+  // A card of the exposed character's owner (the author check of Kurt's security pass)
+  globalThis.fromUuidSync = () => ({
+    testUserPermission: (u) => u.id === "p"
+  })
   const card = (hits, pushed) => ({
+    author: {
+      id: "p", isGM: false
+    },
     flags: {
       sr5data: {
         radiation: {

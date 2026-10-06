@@ -587,6 +587,30 @@ export function addDiseaseApplyButton(message, html){
   anchor?.after?.(button)
 }
 
+// Where the GM's window on a test card starts (diseases, radiation): the alerts, and the hits in the field. Past the
+// pool, or no dice to count: the field stays empty and the GM types the hits (Inès, 05/10). Otherwise it starts from the
+// hits counted on the dice, not from those the card claims (security 06/10). The sixes of a pushed limit explode without
+// end, so dice a player writes can say anything: it never starts above the pool plus Chance the GM works out; past it
+// the field is empty and the GM types his figure (Bodo, 06/10)
+export function cardWindowStart(message, pool, cap){
+  const claimed = Math.max(0, Number(message.flags?.sr5data?.roll?.hits) || 0)
+  const counted = diseaseCardHits(message.flags?.sr5data, cardFromGM(message), pool)
+  const warn = (text) => `<p class="sr5-disease-alert" style="color: #c00; font-weight: bold;">${text}</p>`
+  const above = hitsAboveDice(claimed, pool)
+  let alert = above ? warn(game.i18n.localize("SR5.DISEASE_HitsAbovePool")) : ""
+  if (counted === null) alert += warn(game.i18n.localize("SR5.DISEASE_NoDice"))
+  else if (counted !== claimed) alert += warn(game.i18n.format("SR5.DISEASE_HitsOnDice", {
+    hits: counted
+  }))
+  const overCeiling = counted !== null && counted > pool
+  if (overCeiling) alert += warn(game.i18n.format("SR5.DISEASE_HitsAboveCeiling", {
+    hits: counted, pool
+  }))
+  return {
+    claimed, alert, prefill: above || counted === null || overCeiling ? "" : Math.min(counted, cap)
+  }
+}
+
 // The requests whose window is open in this browser: a double click opened two windows, and so did two renders of
 // one card (the chat log and a popped out card), each with its own button
 const APPLYING = new Set()
@@ -615,23 +639,9 @@ async function confirmAndApply(message, button, ref, entry){
   const base = diseasePool(actor.system, entry)
   const pool = hitsCeiling(base, actor.system, message.flags?.sr5data)
   const cap = hitsCap(base, message.flags?.sr5data)
-  const counted = diseaseCardHits(message.flags?.sr5data, cardFromGM(message), pool)
-  const warn = (text) => `<p class="sr5-disease-alert" style="color: #c00; font-weight: bold;">${text}</p>`
-  //Past the pool, or no dice to count: the field stays empty and the GM types the hits (Inès, 05/10). Otherwise it
-  //starts from the hits counted on the dice, not from those the card claims (security 06/10)
-  const above = hitsAboveDice(claimed, pool)
-  let alert = above ? warn(game.i18n.localize("SR5.DISEASE_HitsAbovePool")) : ""
-  if (counted === null) alert += warn(game.i18n.localize("SR5.DISEASE_NoDice"))
-  else if (counted !== claimed) alert += warn(game.i18n.format("SR5.DISEASE_HitsOnDice", {
-    hits: counted
-  }))
-  //The sixes of a pushed limit explode without end, so dice a player writes can say anything: the window never starts
-  //above the pool plus Chance the GM works out; past it the field is empty and the GM types his figure (Bodo, 06/10)
-  const overCeiling = counted !== null && counted > pool
-  if (overCeiling) alert += warn(game.i18n.format("SR5.DISEASE_HitsAboveCeiling", {
-    hits: counted, pool
-  }))
-  const prefill = above || counted === null || overCeiling ? "" : Math.min(counted, cap)
+  const {
+    alert, prefill
+  } = cardWindowStart(message, pool, cap)
   const hits = await foundry.applications.api.DialogV2.prompt({
     window: {
       title: "SR5.DISEASE_Apply"

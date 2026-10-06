@@ -16,7 +16,7 @@ import {
   updateLedger
 } from "./gm-ledger.js"
 import {
-  hitsAboveDice, hitsCeiling, hitsCap
+  hitsCeiling, hitsCap, diseaseCardTrusted, cardWindowStart
 } from "./diseases.js"
 
 export const RADIATION_LEDGER = "sr5RadiationLedger"
@@ -348,6 +348,8 @@ export function addRadiationApplyButton(message, html){
   const ref = message.flags?.sr5data?.radiation
   const entry = radiationLedger().exposures?.[ref?.exposureId]
   if (!entry?.request || entry.request.token !== ref.token) return
+  //The roll must be the character's: written by a GM or by an owner of the exposed actor (security 06/10, Kurt)
+  if (!diseaseCardTrusted(message.author, fromUuidSync(entry.actorUuid))) return
   const button = document.createElement("button")
   button.type = "button"
   button.classList.add("sr5-radiation-apply")
@@ -357,17 +359,21 @@ export function addRadiationApplyButton(message, html){
   anchor?.after?.(button)
 }
 
+// The requests whose window is open in this browser: a double click opened two windows (Yolande, 06/10), and so did
+// two renders of one card (the chat log and a popped out card), each with its own button
+const APPLYING = new Set()
+
 async function applyFromCard(message, button){
   const ref = message.flags?.sr5data?.radiation
   const entry = radiationLedger().exposures?.[ref?.exposureId]
   if (!entry?.request || entry.request.token !== ref.token) return button.remove()
-  //One window at a time: a double click opened two (Yolande, 06/10)
-  if (button.dataset?.pending) return
-  if (button.dataset) button.dataset.pending = "1"
+  const key = `${ref.exposureId}|${ref.token}`
+  if (APPLYING.has(key)) return
+  APPLYING.add(key)
   try {
     await confirmAndApply(message, button, ref, entry)
   } finally {
-    if (button.dataset) delete button.dataset.pending
+    APPLYING.delete(key)
   }
 }
 
@@ -379,9 +385,10 @@ async function confirmAndApply(message, button, ref, entry){
   const base = radiationPool(actor.system)
   const pool = hitsCeiling(base, actor.system, message.flags?.sr5data)
   const cap = hitsCap(base, message.flags?.sr5data)
-  const suggested = Math.max(0, Number(message.flags?.sr5data?.roll?.hits) || 0)
-  const modified = hitsAboveDice(suggested, pool)
-  const alert = modified ? `<p class="sr5-disease-alert" style="color: #c00; font-weight: bold;">${game.i18n.localize("SR5.DISEASE_HitsAbovePool")}</p>` : ""
+  //The card is the player's: its hits are counted on its dice, never above pool + Chance (cardWindowStart)
+  const {
+    claimed, alert, prefill
+  } = cardWindowStart(message, pool, cap)
   const power = entry.request.power
   const hits = await foundry.applications.api.DialogV2.prompt({
     window: {
@@ -391,9 +398,9 @@ async function confirmAndApply(message, button, ref, entry){
       actor: escape(entry.actorName), power 
     })}</p>
       <p>${game.i18n.format("SR5.DISEASE_CardPool", {
-    pool, hits: suggested 
+    pool, hits: claimed
   })}</p>${alert}
-      <div class="form-group"><label>${game.i18n.localize("SR5.DISEASE_Hits")}</label><input type="number" name="hits" value="${modified ? "" : Math.min(suggested, cap)}" min="0"${cap === Infinity ? "" : ` max="${cap}"`}></div>`,
+      <div class="form-group"><label>${game.i18n.localize("SR5.DISEASE_Hits")}</label><input type="number" name="hits" value="${prefill}" min="0"${cap === Infinity ? "" : ` max="${cap}"`}></div>`,
     ok: {
       callback: (event, b) => Number(b.form.elements.hits.value) || 0
     },
