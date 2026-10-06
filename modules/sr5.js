@@ -34,6 +34,9 @@ import {
   onMoveToken, clearRunning
 } from './system/running.js'
 import {
+  registerAgilityZeroHooks
+} from './system/agility-zero.js'
+import {
   onSprintCard
 } from './system/sprint-fatigue.js'
 import {
@@ -215,4 +218,6 @@ SR5StorageLock.registerHooks()
 registerEssenceHoleHooks()
 // The reserved implant fields: the active GM puts back what a player's client let through (system/implant-register.js)
 registerImplantRegisterHooks()
+// Agility brought to 0: the "immobilized" status follows it (séance H, H8)
+registerAgilityZeroHooks()
 for (const hook of ['createActor', 'deleteActor', 'createToken', 'deleteToken', 'canvasReady']) Hooks.on(hook, sr5HookResetJumpedInRiggers)

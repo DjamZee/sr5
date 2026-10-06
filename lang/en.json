@@ -4682,6 +4682,7 @@
 	"SR5.STATUSES_Pin_GE": "With an appropriate ranged weapon, the character can pin an opponent to the floor, the ground, or a wall. On a successful attack with the weapon, if the DV exceeds the Armor Rating of the target’s clothing (meaning augmentations like dermal plating would not be taken into account), then the flesh and clothing of the opponent are pinned to that object. Net hits determine how securely the opponent is pinned. While the opponent is pinned, he suffers a –2 penalty to all Defense Tests. To break free of a pin, the character can make a Body + Strength [Physical] Test as a Simple Action with a threshold of the net hits of the pin. The character can also rip himself free as a Free Action, but takes 1 box of unresisted physical damage for each net hit on the Pin Called Shot. Both the Simple and Free Action can be attempted in the same Action Phase. If the Simple Action fails, the difference between the hits rolled and the threshold are added to the Physical Damage the character takes when attempting to break free. Note that use of this action requires Martial Art training.",
 	"SR5.STATUSES_Prone": "Drop prone",
 	"SR5.STATUSES_Running": "Running",
+	"SR5.STATUSES_AgilityZero": "Immobilized (Agility 0)",
 	"SR5.STATUSES_Invisible": "Invisible",
 	"SR5.STATUSES_Shaked": "Shaked",
 	"SR5.STATUSES_Shaked_GE": "The target suffers -1 penalty for being shaken.",
