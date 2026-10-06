@@ -2,6 +2,9 @@ import {
   SR5 
 } from "../../config.js"
 import {
+  relayNeedsConfirmation
+} from "../../system/damage-relay.js"
+import {
   hasAegis, absorbWithAegis, isActiveGM, aegisLedger, setAegisLedger
 } from "../../system/aegis.js"
 import {
@@ -100,9 +103,17 @@ export class SR5_ActorHelper {
             if (isActiveGM()) {
               const result = absorbWithAegis(aegisLedger(realActor), damage, game.time.worldTime)
               await setAegisLedger(realActor, result.ledger)
-              if (result.absorbed > 0) ui.notifications.info(game.i18n.format("SR5.INFO_AegisAbsorbed", {
-                name: realActor.name, absorbed: result.absorbed, left: 4 - result.ledger.damage
-              }))
+              //Said to the GM and whispered to the owners, who cannot read the GM's notifications
+              if (result.absorbed > 0) {
+                const text = game.i18n.format("SR5.INFO_AegisAbsorbed", {
+                  name: realActor.name, absorbed: result.absorbed, left: 4 - result.ledger.damage
+                })
+                ui.notifications.info(text)
+                const owners = game.users.filter(u => !u.isGM && realActor.testUserPermission(u, "OWNER")).map(u => u.id)
+                if (owners.length) await ChatMessage.create({
+                  content: foundry.utils.escapeHTML(text), whisper: owners
+                })
+              }
               damage = result.through
             } else ui.notifications.warn(game.i18n.localize("SR5.WARN_AegisNeedsActiveGM"))
           }
@@ -259,8 +270,32 @@ export class SR5_ActorHelper {
     }
   }
 
-  static async _socketTakeDamage(message){
-    await SR5_ActorHelper.takeDamage(message.data.actorId, message.data.options)
+  // senderId comes from the server and cannot be forged. Damage relayed by the actor's owner (or a GM) is applied.
+  // Some legitimate relays come from someone else: the defender who sends matrix damage back to the attacker
+  // (defenderDoMatrixDamage), the healer whose critical glitch hurts the patient (SR5 p. 207). Those are never
+  // applied on the sender's word: the GM confirms them first, and a refusal is whispered to the GM
+  static async _socketTakeDamage(message, senderId){
+    const actor = SR5_EntityHelpers.getRealActorFromID(message.data?.actorId)
+    const sender = game.users.get(senderId)
+    if (!actor || !sender) return
+    if (!relayNeedsConfirmation(actor, sender)) return SR5_ActorHelper.takeDamage(message.data.actorId, message.data.options)
+    const damage = message.data.options?.damage ?? {
+    }
+    const amount = Number(damage.matrix?.value) > 0 ? `${damage.matrix.value} ${game.i18n.localize("SR5.MatrixDamage")}` : `${Number(damage.value) || 0}${game.i18n.localize(SR5.damageTypesShort[damage.type] ?? "")}`
+    const text = game.i18n.format("SR5.DamageRelayConfirm", {
+      user: sender.name, actor: actor.name, amount
+    })
+    const ok = await foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: game.i18n.localize("SR5.DamageRelayTitle")
+      }, content: `<p>${foundry.utils.escapeHTML(text)}</p>`
+    }).catch(() => false)
+    if (ok) return SR5_ActorHelper.takeDamage(message.data.actorId, message.data.options)
+    await ChatMessage.create({
+      content: foundry.utils.escapeHTML(game.i18n.format("SR5.DamageRelayRefused", {
+        user: sender.name, actor: actor.name, amount
+      })), whisper: ChatMessage.getWhisperRecipients("GM").map(u => u.id)
+    })
   }
 
   //Handle prone effect

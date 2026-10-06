@@ -81,6 +81,9 @@ import {
   reagentSystem, hasTiers
 } from "../../system/reagents.js"
 import {
+  hasAegis, aegisState, aegisLedger, AEGIS_BOXES
+} from "../../system/aegis.js"
+import {
   hungerStatus, toggleHunger, hastenHunger, canHunger
 } from "../../system/hunger.js"
 
@@ -250,6 +253,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     //Reagent stocks shown: the raw one alone in the core rules (modules/system/reagents.js)
     context.reagentSystem = reagentSystem()
     context.reagentTiers = hasTiers(context.reagentSystem)
+    //Aegis (Kill Code p. 112): the shield boxes left, read from the GM's ledger
+    if (hasAegis(this.actor)) context.aegisLeft = game.i18n.format("SR5.INFO_AegisLeft", {
+      left: AEGIS_BOXES - aegisState(aegisLedger(this.actor), game.time.worldTime).damage
+    })
     // Provide cssClass for template compatibility
     context.cssClass = this.document.isOwner ? "editable" : "locked"
 

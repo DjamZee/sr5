@@ -36,5 +36,9 @@ describe("radical reagents against object resistance", () => {
     const source = readFileSync("modules/rolls/roll-prepare-case/rollData-ObjectResistance.js", "utf8")
     expect(source).toMatch(/radicalReagent/)
     expect(source).toMatch(/testUserPermission\(author, "OWNER"\)/)
+    // the casting card is read again by its id, and must be a spell card of the same caster and spell
+    expect(source).toMatch(/game\.messages\?\.get\(chatData\?\.owner\?\.messageId\)/)
+    expect(source).toMatch(/card\.owner\?\.actorId !== chatData\.owner\?\.actorId/)
+    expect(source).toMatch(/card\.test\?\.type !== "spell"/)
   })
 })
