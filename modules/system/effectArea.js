@@ -167,15 +167,17 @@ export class SR5_EffectArea {
 
   //Start jamming
   //The noise a jammer puts on others, as the GM stands by it: the hits written on the jammer's own item (by its
-  //owner, from a card she may have edited) are capped at the Jam Signals pool of its sheet plus Chance. A card that
-  //claimed 99 hits gave 99 noise to every device within 100 m (security pass, Petra). An actor with no such pool
-  //(no matrix actions prepared) keeps its value
+  //owner, from a card she may have edited) are capped at the Jam Signals pool of its sheet and at the test's limit,
+  //its Attack (SR5 p. 239). The item keeps no trace of a pushed roll, so Edge never lifts the cap: the GM raises the
+  //noise by hand for a pushed roll that went past it (Anke's review). An actor with no such pool (no matrix actions
+  //prepared) keeps its value
   static jamNoise(jammer, jamItem){
     const claimed = Math.max(0, Number(jamItem?.system?.value) || 0)
-    const pool = Number(jammer?.system?.matrix?.actions?.jamSignals?.test?.dicePool)
+    const action = jammer?.system?.matrix?.actions?.jamSignals
+    const pool = Number(action?.test?.dicePool)
     if (!Number.isFinite(pool)) return claimed
-    const edge = Number(jammer?.system?.specialAttributes?.edge?.augmented?.value) || 0
-    return Math.min(claimed, Math.max(0, pool) + edge)
+    const limit = Number(action?.limit?.value) || 0
+    return Math.min(claimed, Math.max(0, pool), limit > 0 ? limit : Infinity)
   }
 
   //The active GM alone: with two GMs connected, each laid its own signalJammed on every target (noise counted twice),
