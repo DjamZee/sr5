@@ -5242,6 +5242,7 @@
 	"SR5.WARN_NoActiveGM": "Aucun MJ connecté : cette action doit passer par le MJ et n'a pas été appliquée.",
 	"SR5.WARN_AlreadyDefended": "{name} s'est déjà défendu contre cette attaque : une seule défense par cible. Le MJ peut la rouvrir.",
 	"SR5.DefenseReopenAsk": "{name} s'est déjà défendu contre cette attaque. Rouvrir sa défense et la relancer ?",
+	"SR5.WARN_DefenseReopenActiveGM": "{name} s'est déjà défendu contre cette attaque. Seul le MJ actif peut rouvrir une défense.",
 	"SR5.WARN_RelayLost": "Votre demande au MJ ({kind}) n'a pas abouti : {gm} s'est déconnecté avant d'y répondre. Recliquez quand un MJ est connecté.",
 	"SR5.RelayKindDamage": "dommages",
 	"SR5.RelayKindHeal": "soins",

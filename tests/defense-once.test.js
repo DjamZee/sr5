@@ -198,6 +198,24 @@ describe('the button "Se défendre"', () => {
     expect(hasDefended('attack1', 'diego')).toBe(true)
   })
 
+  // Clément's review: the registry is written by the active GM alone
+  it('leaves the reopening to the active GM', async () => {
+    game.user = {
+      id: 'gm2', isGM: true
+    }
+    store[CONSUMED_CARDS] = {
+      [defenseKey('attack1', 'diego')]: 1
+    }
+    foundry.applications.api.DialogV2 = {
+      confirm: vi.fn(async () => true)
+    }
+    expect(await mayDefend('defenseMeleeWeapon', 'attack1', {
+    }, diego)).toBe(false)
+    expect(foundry.applications.api.DialogV2.confirm).not.toHaveBeenCalled()
+    expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_DefenseReopenActiveGM')
+    expect(hasDefended('attack1', 'diego')).toBe(true)
+  })
+
   it('reads the attack carried by a shot through a barrier', async () => {
     game.user = player
     store[CONSUMED_CARDS] = {

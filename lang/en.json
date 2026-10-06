@@ -5242,6 +5242,7 @@
 	"SR5.WARN_NoActiveGM": "No GM connected: this action goes through the GM and was not applied.",
 	"SR5.WARN_AlreadyDefended": "{name} has already defended against this attack: one defense per target. The GM may reopen it.",
 	"SR5.DefenseReopenAsk": "{name} has already defended against this attack. Reopen the defense and roll it again?",
+	"SR5.WARN_DefenseReopenActiveGM": "{name} has already defended against this attack. Only the active GM may reopen a defense.",
 	"SR5.WARN_RelayLost": "Your request to the GM ({kind}) did not go through: {gm} disconnected before answering it. Click again once a GM is connected.",
 	"SR5.RelayKindDamage": "damage",
 	"SR5.RelayKindHeal": "healing",

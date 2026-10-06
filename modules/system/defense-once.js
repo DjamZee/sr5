@@ -72,6 +72,13 @@ export async function mayDefend(type, messageId, messageData, actor) {
     }))
     return false
   }
+  //The registry is written by the active GM alone; another GM cannot hand it the reopening (Clément's review)
+  if (game.users?.activeGM?.id !== game.user.id) {
+    ui.notifications.warn(game.i18n.format("SR5.WARN_DefenseReopenActiveGM", {
+      name
+    }))
+    return false
+  }
   const reopen = await foundry.applications.api.DialogV2.confirm({
     window: {
       title: game.i18n.localize("SR5.Defend")
