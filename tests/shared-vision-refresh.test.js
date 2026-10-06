@@ -47,6 +47,9 @@ describe('the gamemaster checks what a player asks (second review, Uma)', () => 
     const tokenDocument = tokenOf(actor)
     globalThis.fromUuid = async () => tokenDocument
     globalThis.game = {
+      user: {
+        id: 'gm', isGM: true
+      },
       users: {
         get: id => ({
           id

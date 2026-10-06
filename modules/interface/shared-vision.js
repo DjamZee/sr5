@@ -31,15 +31,25 @@ export class SR5SharedVision {
    */
   static async setViewer(tokenDocument, entry, remove = false) {
     if (!tokenDocument) return
-    //Read again on the gamemaster's side: two users who ask at once must not erase each other
-    if (!tokenDocument.isOwner) return SR5_SocketHandler.emitForGM("sharedVisionSetViewer", {
+    //One writer, one queue: a player asks the gamemaster, the owner too while one is connected (F4: the owner
+    //who wrote herself, while another player went through the gamemaster, stayed listed). With no gamemaster
+    //connected, the owner writes herself
+    if (!game.user.isGM && (game.users.activeGM || !tokenDocument.isOwner)) return SR5_SocketHandler.emitForGM("sharedVisionSetViewer", {
       tokenUuid: tokenDocument.uuid, entry, remove
     })
-    //A token's flags change only once the server has answered: each write waits for the previous one of that token
-    //and reads the list just before it writes (F4: two players who stopped at once, one stayed)
+    return SR5SharedVision.writeList(tokenDocument, current => remove ? withoutViewer(current, entry.userId) : withViewer(current, entry))
+  }
+
+  /** Change the list of a token in its turn. A token's flags change only once the server has answered:
+   * each write waits for the previous one of that token and reads the list just before it writes
+   * (F4: two players who stopped at once, one stayed)
+   * @param {Object} tokenDocument - the token seen through
+   * @param {Function} change - (current list) => the list to write, or null to leave it
+   */
+  static writeList(tokenDocument, change) {
     const run = async () => {
-      const current = getSharedViewers(tokenDocument)
-      await SR5SharedVision.setList(tokenDocument, remove ? withoutViewer(current, entry.userId) : withViewer(current, entry))
+      const next = change(getSharedViewers(tokenDocument))
+      if (next) await SR5SharedVision.setList(tokenDocument, next)
     }
     const job = (viewerQueues.get(tokenDocument.uuid) ?? Promise.resolve()).then(run)
     //A write that failed does not hold back the next ones
@@ -76,6 +86,8 @@ export class SR5SharedVision {
     const users = game.users.filter(u => !u.isGM)
     if (!users.length) return ui.notifications.info(game.i18n.localize("SR5.SharedVisionNoPlayer"))
     const escape = foundry.utils.escapeHTML
+    //What the boxes show: only what the owner changes in them is written, someone who left meanwhile stays out
+    const before = getSharedViewers(tokenDocument)
     const rows = users.map(u => `<label class="flexrow"><input type="checkbox" name="${u.id}" ${isSharedWith(tokenDocument, u.id) ? "checked" : ""}/> ${escape(u.name)}</label>`).join("")
     const result = await foundry.applications.api.DialogV2.wait({
       window: {
@@ -106,7 +118,6 @@ export class SR5SharedVision {
     if (result?.action !== "ok") return
 
     const chosen = users.filter(u => result.element.querySelector(`input[name="${u.id}"]`)?.checked).map(u => u.id)
-    const before = getSharedViewers(tokenDocument)
     const added = chosen.filter(id => !before.some(e => e.userId === id))
     //Inviting costs the owner a simple action (SR5 p. 241), counted in combat only (arbitrage de DjamZ, 2026-10-04)
     if (added.length && !game.user.isGM) {
@@ -118,11 +129,14 @@ export class SR5SharedVision {
       if (owner && game.combat) SR5Combat.changeActionInCombat(owner.isToken ? owner.token.id : owner.id, action)
     }
     //A viewer from a Snoop stays: his mark is not the owner's to take back here (SR5 p. 240, Erase Mark)
-    let list = before.filter(e => e.source === "snoop" || chosen.includes(e.userId))
-    for (const id of added) list = withViewer(list, {
+    const removed = before.filter(e => e.source !== "snoop" && !chosen.includes(e.userId)).map(e => e.userId)
+    //Each change goes through the same queue as the others, not over the whole list read here
+    for (const id of removed) await SR5SharedVision.setViewer(tokenDocument, {
+      userId: id
+    }, true)
+    for (const id of added) await SR5SharedVision.setViewer(tokenDocument, {
       userId: id, source: "share"
     })
-    await SR5SharedVision.setList(tokenDocument, list)
   }
 
   /** Write the whole list of a token, by its owner or the gamemaster
@@ -206,9 +220,11 @@ export class SR5SharedVision {
         if (actor && tokenDocument.actor !== actor && tokenDocument.actorId !== actor.id) continue
         const viewers = getSharedViewers(tokenDocument)
         if (!viewers.length) continue
-        const kept = viewers.filter(e => isViewerStillValid(e, tokenDocument.actor))
-        if (kept.length !== viewers.length) await tokenDocument.update({
-          [`flags.sr5.${SHARED_VISION_FLAG}`]: kept
+        if (viewers.every(e => isViewerStillValid(e, tokenDocument.actor))) continue
+        //Filtered again in its turn: a viewer added or taken out meanwhile is not undone
+        await SR5SharedVision.writeList(tokenDocument, current => {
+          const kept = current.filter(e => isViewerStillValid(e, tokenDocument.actor))
+          return kept.length !== current.length ? kept : null
         })
       }
     }
