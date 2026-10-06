@@ -283,7 +283,7 @@
 	"SR5.SETTINGS_SpiritDrainAttribute_T": "Esprits : attribut de résistance au Drain d'un sort inné",
 	"SR5.SharedVisionShare": "Partager la vision",
 	"SR5.SharedVisionShareTitle": "Partager ce que voit {name}",
-	"SR5.SharedVisionShareHint": "Chaque joueur ou joueuse coché voit sur la carte ce que voit cet appareil, en plus de ce que voient ses propres jetons. Inviter au markage est une action simple (SR5 p. 241), décomptée en combat.",
+	"SR5.SharedVisionShareHint": "Les personnes cochées voient sur la carte ce que voit cet appareil, en plus de ce que voient leurs propres jetons. Inviter au markage est une action simple (SR5 p. 241), décomptée en combat.",
 	"SR5.SharedVisionNoPlayer": "Aucun joueur ni aucune joueuse à qui partager la vision.",
 	"SR5.SharedVisionSeeingThrough": "Vous voyez par",
 	"SR5.SharedVisionStop": "Arrêter de voir par cet appareil",

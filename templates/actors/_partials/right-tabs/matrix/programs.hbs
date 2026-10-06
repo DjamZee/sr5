@@ -40,7 +40,8 @@
 					-
 				{{/if}}
 			</div>
-			<div class="col-1" data-helpTitle="{{localize 'SR5.HELP_ProgramToggle' key=name}}" data-helpMessage="{{localize 'SR5.HELP_ProgramToggleMsg'}}">
+			<!-- The help sits on each branch: on the column, the parent's mouseover would overwrite the agent's or the drone's -->
+			<div class="col-1">
 				{{#if (eq system.type 'agent')}}
 				<p class="SR-TextCenter">
 					{{#if system.isCreated}}
@@ -62,7 +63,7 @@
 					<em class="fas fa-times-circle SR-SubColor25"></em>
 				</p>
 				{{else}}
-				<p class="SR-TextCenter">
+				<p class="SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_ProgramToggle' key=name}}" data-helpMessage="{{localize 'SR5.HELP_ProgramToggleMsg'}}">
 				{{#if system.isActive}}
 					<a class="toggle-value" data-dtype="Boolean" data-item-id="{{_id}}" data-binding="system.isActive" data-title="{{localize 'SR5.StopProgram'}}"><em class="fas fa-sm fa-upload SR-SubColor"></em></a>
 				{{else}}

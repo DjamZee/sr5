@@ -81,6 +81,52 @@ describe('matrix defense of a vehicle', () => {
   })
 })
 
+// Quentin's review: a sprite's rating is its Level, in defense as in resistance
+describe('matrix defense of a sprite', () => {
+  it('names the Level', () => {
+    const actions = {
+    }
+    for (const key of [...Object.keys(SR5.matrixActions), 'checkOverwatchScore']) actions[key] = {
+      defense: {
+        base: 0, dicePool: 0, modifiers: []
+      }
+    }
+    game.settings.get = () => null
+    SR5_CharacterUtility.generateMatrixActionsDefenses({
+      type: 'actorSprite', name: 'Sprite', items: [], system: {
+        matrix: {
+          deviceRating: 4, actions, attributes: {
+            firewall: {
+              value: 5
+            }, sleaze: {
+              value: 0
+            }, dataProcessing: {
+              value: 0
+            }, attack: {
+              value: 0
+            }
+          }
+        }
+      }
+    })
+    expect(actions.hackOnTheFly.defense.modifiers.map(m => m.source)).toEqual(['SR5.Level', 'SR5.Firewall'])
+  })
+})
+
+// C6 b, Quentin's review: mouseover bubbles, so a help on the column would overwrite the agent button's own
+describe('agent row on the programs tab', async () => {
+  const {
+    readFileSync
+  } = await import('node:fs')
+  const template = readFileSync('templates/actors/_partials/right-tabs/matrix/programs.hbs', 'utf8')
+  it('puts no help on the column holding the agent button', () => {
+    const before = template.slice(0, template.indexOf("{{#if (eq system.type 'agent')}}"))
+    const column = before.slice(before.lastIndexOf('<div'))
+    expect(column).not.toContain('data-helpTitle')
+    expect(template).toContain("SR5.HELP_AgentCreate")
+  })
+})
+
 // C6 e: the overwatch button names the unlinked token the score is written to
 describe('overwatch button of an unlinked token', () => {
   it('shows the token name rather than the base actor', async () => {

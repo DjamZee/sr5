@@ -4526,7 +4526,8 @@ export class SR5_CharacterUtility extends Actor {
       intuitionValue = matrix.deviceRating
       willpowerValue = matrix.deviceRating
       logicValue = matrix.deviceRating
-      intuitionLabel = willpowerLabel = logicLabel = 'SR5.DeviceRating'
+      //A sprite's rating is its Level
+      intuitionLabel = willpowerLabel = logicLabel = actor.type === "actorSprite" ? 'SR5.Level' : 'SR5.DeviceRating'
       firewallValue = matrixAttributes.firewall.value
       sleazeValue = matrixAttributes.sleaze.value
       dataProcessingValue = matrixAttributes.dataProcessing.value
