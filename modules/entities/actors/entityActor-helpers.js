@@ -1745,9 +1745,13 @@ export class SR5_ActorHelper {
         //Handle heal effect
         if (e.target.includes("removeDamage")){
           key = e.target.replace('.removeDamage','')
-          newData = actor.system
+          //A copy, as in heal(): an update made of actor.system itself wrote nothing, and the healing was only shown
+          //until the next preparation of the actor (measured on 5a4cbf2c)
+          newData = actor.toObject(false).system
           if(newData.conditionMonitors[key]){
-            newData.conditionMonitors[key].actual.base -= value
+            //Never below 0 boxes; aggravated Physical boxes cost two hits (Howling Shadows p. 213), as in heal()
+            if (key === "physical" || key === "condition") SR5_ActorHelper.healMonitorBoxes(newData.conditionMonitors[key], value)
+            else newData.conditionMonitors[key].actual.base = Math.max(newData.conditionMonitors[key].actual.base - value, 0)
             SR5_EntityHelpers.updateValue(newData.conditionMonitors[key].actual, 0)
             await actor.update({
               "system": newData
