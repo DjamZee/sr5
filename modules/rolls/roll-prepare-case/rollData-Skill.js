@@ -121,6 +121,8 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
     //Present by default, the gamemaster can untick it in the dialog (DjamZ's ruling, 2026-10-06: "peut subir")
     if (reputation > 0 && ["summoning", "binding", "banishing"].includes(rollKey)) {
       rollData.magic.astralReputationMod = -reputation
+      //The gamemaster's to untick, not the player's
+      rollData.magic.astralReputationLocked = !game.user?.isGM
       rollData.dicePool.modifiers.push({
         type: "astralReputation",
         label: game.i18n.localize("SR5.AstralReputation"),

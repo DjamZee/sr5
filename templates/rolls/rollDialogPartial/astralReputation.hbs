@@ -1,7 +1,7 @@
 <!-- Astral Reputation (Street Grimoire p. 207): ticked by default, the gamemaster can untick it -->
 <li class="grid">
     <div class="col-10">{{localize 'SR5.AstralReputation'}}{{localize 'SR5.Colons'}}</div>
-    <div class="col-1 SR-TextRight"><input type="checkbox" class="SR-ModCheckbox" data-target="dicePoolModAstralReputation" data-modifier="astralReputation" checked></div>
+    <div class="col-1 SR-TextRight"><input type="checkbox" class="SR-ModCheckbox" data-target="dicePoolModAstralReputation" data-modifier="astralReputation" checked {{#if magic.astralReputationLocked}}disabled{{/if}}></div>
     <div class="col-1 SR-TextCenter">
         <input disabled type="number" name="dicePoolModAstralReputation" value="{{magic.astralReputationMod}}" placeholder="0" data-dtype="Number" />
     </div>

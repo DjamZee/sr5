@@ -32,9 +32,9 @@
 {{!-- Forbidden Arcana p. 172-175: Elemental, wild, Domain. The gamemaster's only --}}
 {{#if system.isGM}}
 <div class="SR-EspritType" title="{{localize 'SR5.SpiritTraits'}}">
-  <label data-tooltip="{{localize 'SR5.SpiritElemental_D'}}"><input type="checkbox" name="system.isElemental" data-dtype="Boolean" {{checked system.isElemental}}> {{localize 'SR5.SpiritElemental'}}</label>
-  <label data-tooltip="{{localize 'SR5.SpiritWild_D'}}"><input type="checkbox" name="system.isWild" data-dtype="Boolean" {{checked system.isWild}}> {{localize 'SR5.SpiritWild'}}</label>
-  <label data-tooltip="{{localize 'SR5.SpiritDomain_D'}}"><input type="checkbox" name="system.hasDomain" data-dtype="Boolean" {{checked system.hasDomain}}> {{localize 'SR5.SpiritDomain'}}</label>
+  <label data-tooltip="{{localize 'SR5.SpiritElemental_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="isElemental" {{checked system.isElemental}}> {{localize 'SR5.SpiritElemental'}}</label>
+  <label data-tooltip="{{localize 'SR5.SpiritWild_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="isWild" {{checked system.isWild}}> {{localize 'SR5.SpiritWild'}}</label>
+  <label data-tooltip="{{localize 'SR5.SpiritDomain_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="hasDomain" {{checked system.hasDomain}}> {{localize 'SR5.SpiritDomain'}}</label>
 </div>
 {{/if}}
 {{!-- Materialization switch: from the astral initiative to the physical one, and back (SR5 p. 401) --}}

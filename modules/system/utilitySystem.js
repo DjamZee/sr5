@@ -10,6 +10,9 @@ import {
 import {
   registerBBHealingSettings
 } from "./bb-healing-rules.js"
+import {
+  registerSpiritLedger
+} from "./spirit-ledger.js"
 
 export class SR5_SystemHelpers {
 
@@ -600,6 +603,9 @@ export class SR5_SystemHelpers {
       default: false,
       type: Boolean
     })
+
+    // Indexes, reputation adjustment, spirit traits and banishing totals, written by the active GM alone
+    registerSpiritLedger()
   }
 
   /* Display Shadowrun Themed Log Entries Based on Logging Level

@@ -35,6 +35,52 @@ export function stripGMOnlyChanges(changes, current, paths){
   return refused
 }
 
+// The hits of a card counted again by the gamemaster: on its first dice only, as many as the pool he works out allows
+// (plus the Chance for a Push the Limit, SR5 p. 56), the rerolls of the Rule of Six kept, within the Limit.
+// null when the card has no dice to count.
+export function recountHits(rollJSON, pool, edge = 0, limit = 0){
+  const results = rollJSON?.terms?.[0]?.results
+  if (!Array.isArray(results)) return null
+  const allowed = Math.max(0, (Number(pool) || 0) + Math.max(0, Number(edge) || 0))
+  const kept = results.filter(d => !d.ruleOfSix).slice(0, allowed).concat(results.filter(d => d.ruleOfSix))
+  const hits = kept.filter(d => d.active !== false && d.discarded !== true && Number(d.result) >= 5).length
+  return Number(limit) > 0 ? Math.min(hits, Number(limit)) : hits
+}
+
+// Banishing a wild spirit from two cards (Forbidden Arcana p. 172): the banisher's card must be written by one who
+// owns the banisher, the resistance card by the gamemaster or one who owns the spirit. Both are counted again.
+export function wildBanishVerdict({
+  banisherAuthorOwns, resistanceAuthorOwns, banisherRoll, banisherPool, banisherEdge, astralLimit, spiritRoll, force
+}){
+  if (!banisherAuthorOwns || !resistanceAuthorOwns) return {
+    ok: false, reason: "owner"
+  }
+  const banisherHits = recountHits(banisherRoll, banisherPool, banisherEdge, astralLimit)
+  const spiritHits = recountHits(spiritRoll, 2 * (Number(force) || 0), 0, 0)
+  if (banisherHits === null || spiritHits === null) return {
+    ok: false, reason: "dice"
+  }
+  return {
+    ok: true, banisherHits, spiritHits, netHits: Math.max(0, banisherHits - spiritHits)
+  }
+}
+
+// Testing the Leash from a card (Forbidden Arcana p. 176): the card's author owns the controller (or is the
+// gamemaster), and the spirit is one the controller summoned (his own spirit item). Nothing else is read on the card.
+export function leashCardVerdict({
+  authorIsGM, authorOwnsController, spiritOfController
+}){
+  if (!spiritOfController) return {
+    ok: false, reason: "spirit"
+  }
+  if (!authorIsGM && !authorOwnsController) return {
+    ok: false, reason: "owner"
+  }
+  return {
+    ok: true
+  }
+}
+
 // Astral Reputation (Street Grimoire p. 207): "commence à 0. Tous les 25 points d'Index spirituel cumulés, sa
 // réputation augmente de 1". The adjustment carries what the index does not: the hermetic elementalist's 6
 // (Forbidden Arcana p. 175), each geas (-1), atonement.
@@ -103,12 +149,6 @@ export function resolveLeash({
     }
   }
   return result
-}
-
-// Calling a wild spirit by Conjuring (Forbidden Arcana p. 170): "nombre de réussites égal à (1 + Réputation astrale
-// de l'invocateur)".
-export function wildCallThreshold(reputation){
-  return 1 + Math.max(0, Number(reputation) || 0)
 }
 
 // Banishing a wild spirit (p. 172): the banisher's net hits add up from 0; the spirit is dissipated once the total

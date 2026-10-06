@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 import {
   astralReputation, wildReputation, elementalReduction, elementalServices, leashThreshold, testsLeash, resolveLeash,
-  wildCallThreshold, wildBanishProgress, wildBanishDrain, domainMagicMultiplier, domainPowerKey,
+  wildBanishProgress, wildBanishDrain, domainMagicMultiplier, domainPowerKey,
   stripGMOnlyChanges, GM_ONLY_ACTOR_PATHS
 } from '../modules/entities/items/spirit-bonds.js'
 
@@ -133,10 +133,6 @@ describe('Testing the Leash (Forbidden Arcana p. 176)', () => {
 })
 
 describe('Wild spirits (Forbidden Arcana p. 170-172)', () => {
-  it('calling threshold is 1 + Astral Reputation', () => {
-    expect(wildCallThreshold(0)).toBe(1)
-    expect(wildCallThreshold(3)).toBe(4)
-  })
   it('banishing adds net hits until Force x 2', () => {
     expect(wildBanishProgress(0, 3, 4)).toEqual({
       total: 3, dissipated: false

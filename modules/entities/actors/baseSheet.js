@@ -11,6 +11,9 @@ import {
   startDrugCrash, resetDrugPhase
 } from "../items/drug-crash.js"
 import {
+  setCharacterField, setSpiritTrait, banishKey
+} from "../../system/spirit-ledger.js"
+import {
   SR5_Jammer
 } from "../../system/jammer.js"
 import {
@@ -436,6 +439,14 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     on(".toggle-value", "click", this._onEditItemValue.bind(this))
     on(".jammer-toggle", "click", this._onToggleJammer.bind(this))
     on(".changeValueByClick", "mousedown", this._onChangeValueByClick.bind(this))
+    //Indexes and spirit traits go to the gamemaster's ledger, never to the sheet (system/spirit-ledger.js)
+    on(".sr5-spirit-ledger", "change", ev => {
+      ev.stopPropagation()
+      const el = ev.currentTarget
+      const value = el.type === "checkbox" ? el.checked : el.value
+      if (el.dataset.field) setCharacterField(this.actor.id, el.dataset.field, value)
+      else if (el.dataset.trait) setSpiritTrait(banishKey(this.actor), el.dataset.trait, value)
+    })
     //
     on(".toggle-actorValue", "click", this._onEditActorValue.bind(this))
     //Choose controler

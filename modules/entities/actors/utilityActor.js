@@ -59,8 +59,11 @@ import {
   mentorPathFor, mentorEffectApplies, isFollowedMentor, mentorMagic, mentorPowerPoints, mentorMaskOn
 } from "../items/mentor-spirits.js"
 import {
-  ELEMENTAL_MENTAL_ATTRIBUTES, elementalReduction, astralReputation, wildReputation
+  ELEMENTAL_MENTAL_ATTRIBUTES, ELEMENTAL_SPIRIT_TYPES, elementalReduction, astralReputation, wildReputation
 } from "../items/spirit-bonds.js"
+import {
+  applyCharacterLedger, applySpiritLedger
+} from "../../system/spirit-ledger.js"
 import {
   harmoniousDefensePool
 } from "../../rolls/roll-helpers/arcana-metamagics.js"
@@ -648,7 +651,9 @@ export class SR5_CharacterUtility extends Actor {
       actorData.magic.possession = false
       actorData.magic.mentorMask = false
 
-      // Astral and Wild Reputation (Street Grimoire p. 207, Forbidden Arcana p. 170), derived from the indexes
+      // Astral and Wild Reputation (Street Grimoire p. 207, Forbidden Arcana p. 170), derived from the indexes,
+      // which the gamemaster's ledger holds and not the sheet (system/spirit-ledger.js)
+      applyCharacterLedger(actor, ELEMENTAL_SPIRIT_TYPES)
       actorData.magic.astralReputation = astralReputation(actorData.magic.spiritIndex, actorData.magic.astralReputationAdjustment)
       actorData.magic.wildReputation = wildReputation(actorData.magic.wildIndex)
 
@@ -1251,6 +1256,8 @@ export class SR5_CharacterUtility extends Actor {
 
   static updateSpiritAttributes(actor) {
     let actorData = actor.system, attributes = actorData.attributes, specialAttributes = actorData.specialAttributes, essence = actorData.essence
+    //Traits and banishing total from the gamemaster's ledger (Forbidden Arcana p. 172-175)
+    applySpiritLedger(actor, ELEMENTAL_SPIRIT_TYPES)
 
     //Valeur de base des attributs
     for (let key of Object.keys(SR5.characterAttributes)) {

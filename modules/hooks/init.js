@@ -2,6 +2,9 @@ import {
   registerSheetSizeSetting
 } from "../interface/sheet-size.js"
 import {
+  initSpiritLedger
+} from "../system/spirit-ledger.js"
+import {
   registerIndirectEffectSetting
 } from "../system/indirect-effects.js"
 import {
@@ -281,6 +284,8 @@ export async function sr5HookInit() {
   SR5_CompendiumUtility.registerSettings()
   registerSheetSizeSetting()
   registerIndirectEffectSetting()
+  //Spirit ledger: values left on the sheets by the first version are moved once the world is ready
+  initSpiritLedger()
   //Sixth World calendar and 3 s per Combat Turn (SR5 p. 51)
   registerCalendarSettings()
   registerDeadlineSettings()

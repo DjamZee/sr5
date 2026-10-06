@@ -11,8 +11,12 @@ import {
   SR5_SocketHandler
 } from "../../socket.js"
 import {
-  ELEMENTAL_SPIRIT_TYPES, elementalServices, wildBanishProgress, resolveLeash
+  ELEMENTAL_SPIRIT_TYPES, elementalServices, wildBanishProgress, resolveLeash, wildBanishVerdict, leashCardVerdict, recountHits, testsLeash,
+  leashThreshold
 } from "../../entities/items/spirit-bonds.js"
+import {
+  isActiveGM, readLedger, banishKey, banishCardSeen, setBanishTotal
+} from "../../system/spirit-ledger.js"
 import {
   SR5_ActorHelper
 } from "../../entities/actors/entityActor-helpers.js"
@@ -296,21 +300,55 @@ export class SR5_ThirdPartyHelpers {
     SR5_RollTest.renderRollCard(rollData)
   }
 
-  //Banishing a wild spirit (Forbidden Arcana p. 172): the gamemaster alone adds the banisher's net hits to the
-  //spirit's running total; neither side's hits are taken from the card beyond what the pools allow
+  //Banishing a wild spirit (Forbidden Arcana p. 172): the active gamemaster alone adds the banisher's net hits to the
+  //spirit's running total, kept in his ledger. Neither card is believed as written: who wrote each one is checked,
+  //their hits are counted again on their dice within the pools he works out, and he confirms
   static async wildBanish(cardData){
-    if (!game.user.isGM) return void ui.notifications.warn(game.i18n.localize("SR5.WildBanishGMOnly"))
+    if (!isActiveGM()) return void ui.notifications.warn(game.i18n.localize("SR5.WildBanishGMOnly"))
+    const resistanceMessage = game.messages.get(cardData.owner?.messageId)
+    const banishingMessage = game.messages.get(cardData.previousMessage?.messageId)
+    const banishingData = banishingMessage?.flags?.sr5data
     const spirit = SR5_EntityHelpers.getRealActorFromID(cardData.owner.speakerId || cardData.owner.actorId)
-    const banisher = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId)
-    if (!spirit?.system?.isWild || !banisher) return false
+    const banisher = SR5_EntityHelpers.getRealActorFromID(banishingData?.owner?.speakerId || banishingData?.owner?.actorId)
+    const reject = async (reason) => {
+      await ChatMessage.create({
+        whisper: ChatMessage.getWhisperRecipients("GM"),
+        content: `<p>${game.i18n.format("SR5.WildBanishRejected", {
+          user: resistanceMessage?.author?.name ?? "?", reason: game.i18n.localize(`SR5.SpiritCardReject_${reason}`)
+        })}</p>`,
+      })
+      return false
+    }
+    if (!spirit?.system?.isWild || !banisher || !resistanceMessage || !banishingMessage) return reject("missing")
+    const ledger = readLedger()
+    if (banishCardSeen(ledger, banishingMessage.id)) return reject("seen")
     const force = spirit.system.force.value
-    const banisherPool = (banisher.system.skills?.banishing?.test?.dicePool || 0) + (banisher.system.specialAttributes?.edge?.augmented?.value || 0)
-    const banisherHits = Math.min(Number(cardData.previousMessage.hits) || 0, banisherPool)
-    const spiritHits = Math.min(Number(cardData.roll.hits) || 0, force * 2)
-    const progress = wildBanishProgress(spirit.system.wildBanishTotal, banisherHits - spiritHits, force)
-    await spirit.update({
-      "system.wildBanishTotal": progress.dissipated ? 0 : progress.total
+    const resistanceAuthor = resistanceMessage.author
+    const verdict = wildBanishVerdict({
+      banisherAuthorOwns: !!banishingMessage.author && banisher.testUserPermission(banishingMessage.author, "OWNER"),
+      resistanceAuthorOwns: !!resistanceAuthor && (resistanceAuthor.isGM || spirit.testUserPermission(resistanceAuthor, "OWNER")),
+      banisherRoll: banishingData.roll?.r,
+      banisherPool: banisher.system.skills?.banishing?.test?.dicePool,
+      banisherEdge: banisher.system.specialAttributes?.edge?.augmented?.value,
+      astralLimit: banisher.system.limits?.astralLimit?.value,
+      spiritRoll: cardData.roll?.r,
+      force,
     })
+    if (!verdict.ok) return reject(verdict.reason)
+    const total = Number(ledger.banish?.[banishKey(spirit)]) || 0
+    const confirmed = await foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: "SR5.WildBanishAdd"
+      },
+      content: `<p>${game.i18n.format("SR5.WildBanishConfirm", {
+        banisher: banisher.name, spirit: spirit.name, banisherHits: verdict.banisherHits, spiritHits: verdict.spiritHits,
+        total, goal: force * 2, claimed: banishingData.roll?.hits ?? "?", claimedSpirit: cardData.roll?.hits ?? "?",
+      })}</p>`,
+      rejectClose: false,
+    })
+    if (!confirmed) return false
+    const progress = wildBanishProgress(total, verdict.netHits, force)
+    await setBanishTotal(banishKey(spirit), progress.dissipated ? 0 : progress.total, banishingMessage.id)
     const text = progress.dissipated ? game.i18n.format("SR5.INFO_WildSpiritDissipated", {
       name: spirit.name
     }) : game.i18n.format("SR5.INFO_WildBanishProgress", {
@@ -324,17 +362,54 @@ export class SR5_ThirdPartyHelpers {
   }
 
   //Testing the Leash (Forbidden Arcana p. 176, optional rule): the gamemaster rolls both sides himself, the spirit's
-  //Force x 2 against the controller's Drain resistance pool, read from the actors and never from the card
+  //Force x 2 against the controller's Drain resistance pool, read from the actors and never from the card.
+  //The card says which spirit and what it rolled: its author must own the controller (or be the gamemaster), the
+  //spirit must be one the controller summoned, and the hits that trigger the test are counted again on its dice,
+  //within the spirit's largest pool plus its Chance; then the gamemaster confirms
   static async leashTest(cardData){
     if (!game.user.isGM) return void ui.notifications.warn(game.i18n.localize("SR5.LeashGMOnly"))
     if (!game.settings.get("sr5", "spiritLeash")) return false
+    const message = game.messages.get(cardData.owner?.messageId)
     const spirit = SR5_EntityHelpers.getRealActorFromID(cardData.owner.speakerId || cardData.owner.actorId)
-    if (spirit?.type !== "actorSpirit") return false
+    if (spirit?.type !== "actorSpirit" || !message) return false
     const controller = SR5_EntityHelpers.getRealActorFromID(spirit.system.creatorId)
     const item = controller?.items.get(spirit.system.creatorItemId)
     if (!controller || !item) return void ui.notifications.warn(game.i18n.localize("SR5.LeashNoController"))
+    const rejectLeash = async (reason) => {
+      await ChatMessage.create({
+        whisper: ChatMessage.getWhisperRecipients("GM"),
+        content: `<p>${game.i18n.format("SR5.LeashRejected", {
+          user: message.author?.name ?? "?", reason: game.i18n.localize(`SR5.SpiritCardReject_${reason}`)
+        })}</p>`,
+      })
+      return false
+    }
+    const verdict = leashCardVerdict({
+      authorIsGM: !!message.author?.isGM,
+      authorOwnsController: !!message.author && controller.testUserPermission(message.author, "OWNER"),
+      spiritOfController: item.type === "itemSpirit",
+    })
+    if (!verdict.ok) return rejectLeash(verdict.reason)
     if (spirit.system.isElemental || item.system.isElemental) return false
     const force = spirit.system.force.value
+    //Its skills and its powers: the card does not tell which test it was, and its type is the author's to write
+    const largestPool = Math.max(0, ...Object.values(spirit.system.skills ?? {
+    }).map(s => Number(s?.test?.dicePool) || 0), ...spirit.items.map(i => Number(i.system?.test?.dicePool) || 0))
+    const hits = recountHits(cardData.roll?.r, largestPool, spirit.system.specialAttributes?.edge?.augmented?.value)
+    if (hits === null) return rejectLeash("dice")
+    if (!testsLeash({
+      hits, force, services: spirit.system.services.value
+    })) return rejectLeash("threshold")
+    const confirmed = await foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: "SR5.LeashTest"
+      },
+      content: `<p>${game.i18n.format("SR5.LeashConfirm", {
+        spirit: spirit.name, controller: controller.name, hits, claimed: cardData.roll?.hits ?? "?", threshold: leashThreshold(force)
+      })}</p>`,
+      rejectClose: false,
+    })
+    if (!confirmed) return false
     const spiritRoll = await SR5_RollTest.rollDice({
       dicePool: force * 2
     })
