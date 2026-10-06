@@ -101,10 +101,11 @@ export const DRUG_DAMAGE = {
       value: 16, resist: "toxin"
     }
   },
-  //KAMI+ (custom drug of the Megapack, Chrome Flesh p. 195-196): its block 9 at level 3 crashes for 8S, unresisted
+  //KAMI+, custom drug of the Megapack made by DjamZ (Chrome Flesh p. 194-196): base 1, block 2 level 1, block 6 level 3
+  //(2S), block 9 level 3 (8S), two Speed enhancers. The crashes of the blocks add up (Wrecker's example, p. 195): 10S
   kamiPlus: {
     crash: {
-      value: 8, resist: "none"
+      value: 10, resist: "none"
     }
   },
 }

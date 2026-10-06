@@ -123,7 +123,7 @@ describe('when the damage comes (SR5 p. 413-414, Chrome Flesh p. 185-197, Stolen
   })
   it('the unresisted crashes of the book', () => {
     const book = {
-      cram: 6, kamikaze: 6, nitro: 9, aisa: 2, betameth: 6, cereprax: 5, k10: 18, ripper: 2, overdrive: 8, shade: 10, rockLizardBlood: 2, kamiPlus: 8
+      cram: 6, kamikaze: 6, nitro: 9, aisa: 2, betameth: 6, cereprax: 5, k10: 18, ripper: 2, overdrive: 8, shade: 10, rockLizardBlood: 2, kamiPlus: 10
     }
     for (const [key, value] of Object.entries(book)) expect(crashDamageOf(key)).toMatchObject({
       value, resist: 'none'
@@ -345,5 +345,6 @@ describe('KAMI+ (custom drug of the Megapack)', () => {
       }, addictions: []
     }, actor())
     expect([stat.duration, stat.durationType]).toEqual([3, 'minute'])
+    expect([stat.speed, stat.speedType]).toEqual([1, 'SR5.CombatTurn'])
   })
 })

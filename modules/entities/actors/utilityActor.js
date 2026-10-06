@@ -3621,14 +3621,15 @@ export class SR5_CharacterUtility extends Actor {
         }
         break
       }
-      //KAMI+, custom drug of the Megapack (Chrome Flesh p. 195-196): base duration (10 × 1D6) minutes, crash 8S
-      //(drug-damage.js)
+      //KAMI+, custom drug of the Megapack (Chrome Flesh p. 194-196): base duration (10 × 1D6) minutes, base Speed of
+      //3 Combat Turns brought to 1 by its two Speed enhancers; crash 10S (drug-damage.js)
       case "kamiPlus":
         roll = new Roll(`1d6 * 10`)
         rollRoll = await roll.evaluate()
         drugStat = {
           "name": drugType.value,
-          "speed": item.system.speed,
+          "speed": 1,
+          "speedType": "SR5.CombatTurn",
           "duration": rollRoll.total,
           "durationType": "minute",
         }
