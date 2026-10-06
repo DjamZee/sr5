@@ -83,9 +83,14 @@ export function testOutcome(level, power, hits){
 
 // The test's dice, as the GM works them out: Body + Willpower, and every bonus on radiation resistance
 // that is neither the Body nor the armor (armor gives nothing against radiation unless shielded, GRI p. 105)
+//The armor rating, whatever gives it (a jacket, Dermal Plating, a troll's skin), counts for nothing against radiation;
+//only the radiation protection does (Liesel's D6: the implanted plating added its dice)
 export function radiationModifiers(actorData){
+  const key = m => `${m.source}|${m.type}|${m.value}`
+  const armor = new Set((actorData?.itemsProperties?.armor?.modifiers ?? []).map(key))
+  const shield = new Set((actorData?.itemsProperties?.armor?.specialDamage?.radiation?.modifiers ?? []).map(key))
   return (actorData?.resistances?.specialDamage?.radiation?.modifiers ?? [])
-    .filter(m => !["linkedAttribute", "armor", "armorAccessory"].includes(m.type))
+    .filter(m => !["linkedAttribute", "armor", "armorAccessory"].includes(m.type) && (shield.has(key(m)) || !armor.has(key(m))))
 }
 
 export function radiationPool(actorData){

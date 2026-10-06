@@ -85,6 +85,49 @@ describe("radiation zones (Run & Gun p. 164-165, Chrome Flesh p. 151 and 170)", 
       remaining: 0, nausea: false, stun: 0 
     })
   })
+  //Liesel's D6: the armor of an implant (Dermal Plating) counted, its modifier being an augmentation
+  it("the armor of an implant counts for nothing, the radiation protection still does", () => {
+    const plating = {
+      source: "Dermal Plating", type: "itemAugmentation", value: 2
+    }
+    const shield = {
+      source: "Combinaison", type: "itemArmor", value: 6
+    }
+    const actor = {
+      attributes: {
+        body: {
+          augmented: {
+            value: 8
+          }
+        }, willpower: {
+          augmented: {
+            value: 3
+          }
+        }
+      },
+      itemsProperties: {
+        armor: {
+          modifiers: [plating, {
+            ...shield
+          }], specialDamage: {
+            radiation: {
+              modifiers: [shield]
+            }
+          }
+        }
+      },
+      resistances: {
+        specialDamage: {
+          radiation: {
+            modifiers: [{
+              source: "Constitution", type: "linkedAttribute", value: 8
+            }, plating, shield]
+          }
+        }
+      },
+    }
+    expect(radiationPool(actor)).toBe(17)
+  })
   it("a fully shielded character gets no exposure", () => {
     expect(newExposure({
       id: "a", sceneLevel: "light", reduction: 1, now: 0 
