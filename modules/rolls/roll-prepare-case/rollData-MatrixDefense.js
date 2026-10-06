@@ -34,8 +34,9 @@ export default async function matrixDefense(rollData, rollKey, actor, chatData){
     }
     rollData.target.itemUuid = chatData.target.itemUuid
     if (targetItem.system.type !== "device"){
+      //The defending device is named, slaved to a PAN or not
+      rollData.test.title = `${targetItem.name} - ${game.i18n.localize("SR5.MatrixDefenseTest")}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize(SR5.matrixRolledActions[rollKey])} (${chatData.roll.hits})`
       if (!targetItem.system.isSlavedToPan){
-        rollData.test.title = `${targetItem.name} - ${game.i18n.localize("SR5.MatrixDefenseTest")}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize(SR5.matrixRolledActions[rollKey])} (${chatData.roll.hits})`
         rollData.dicePool.composition = ([
           {
             source: game.i18n.localize("SR5.DeviceRating"), type: "linkedAttribute", value: targetItem.system.deviceRating
