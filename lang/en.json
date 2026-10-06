@@ -3254,6 +3254,7 @@
 	"SR5.DISEASE_HitsAbovePool": "More hits than dice: the card was edited.",
 	"SR5.DISEASE_HitsOnDice": "The card's dice show {hits} hits: the card was edited.",
 	"SR5.DISEASE_NoDice": "The card does not show its dice: type the hits yourself.",
+	"SR5.DISEASE_HitsAboveCeiling": "The card's dice show {hits} hits, more than the pool and Edge ({pool}): exploding sixes can do it, but the card may have been edited. Type the hits yourself.",
 	"SR5.DISEASE_Outcome": "{actor}, {name}: Power {power}, {hits} hits, {residual} left. Tests made: {n} / {min}.",
 	"SR5.DISEASE_Cured": "The disease is beaten.",
 	"SR5.DISEASE_Recovering": "Disease beaten: {n} Essence to recover, 1 every 24 hours.",

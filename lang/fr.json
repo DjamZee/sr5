@@ -3254,6 +3254,7 @@
 	"SR5.DISEASE_HitsAbovePool": "Plus de succès que de dés : la carte a été modifiée.",
 	"SR5.DISEASE_HitsOnDice": "Les dés de la carte montrent {hits} succès : la carte a été modifiée.",
 	"SR5.DISEASE_NoDice": "La carte ne montre pas ses dés : saisissez vous-même les succès.",
+	"SR5.DISEASE_HitsAboveCeiling": "Les dés de la carte montrent {hits} succès, plus que la réserve et la Chance ({pool}) : c'est possible quand les 6 explosent, mais la carte a pu être modifiée. Saisissez vous-même les succès.",
 	"SR5.DISEASE_Outcome": "{actor}, {name} : Puissance {power}, {hits} succès, reste {residual}. Tests faits : {n} / {min}.",
 	"SR5.DISEASE_Cured": "La maladie est vaincue.",
 	"SR5.DISEASE_Recovering": "Maladie vaincue : {n} point(s) d'Essence à récupérer, 1 par 24 heures.",

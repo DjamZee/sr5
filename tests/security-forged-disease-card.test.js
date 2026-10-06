@@ -206,6 +206,35 @@ describe("the hits the GM's window starts from", () => {
   })
 })
 
+// Bodo's second round: a chain of forged sixes never ends, so no recount bounds it. The window never starts above the
+// pool plus Chance the GM works out: past it, an empty field and an alert, the GM keeps his own figure (Élise, 06/10)
+describe("a card that pushed the limit with forged sixes", () => {
+  it("leaves the field empty past the pool and Chance", async () => {
+    const contents = []
+    withPrompt(vi.fn(async (o) => {
+      contents.push(o.content)
+      return null
+    }))
+    const forged = card(owner, 12, {
+      terms: [{
+        results: [...new Array(8).fill(6).map(result => ({
+          result, active: true
+        })), ...new Array(30).fill(6).map(result => ({
+          result, active: true, ruleOfSix: true
+        }))]
+      }]
+    })
+    forged.flags.sr5data.edge = {
+      hasUsedPushTheLimit: true
+    }
+    render(forged)
+    await buttons[0].click()
+    // pool 5 + Chance 3 = 8: 38 hits on the dice do not prefill anything
+    expect(contents[0]).toContain('value=""')
+    expect(contents[0]).toContain("SR5.DISEASE_HitsAboveCeiling")
+  })
+})
+
 describe("one request, one window", () => {
   it("two renders of the same card open one window between them", async () => {
     let release

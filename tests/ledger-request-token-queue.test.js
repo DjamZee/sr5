@@ -131,6 +131,10 @@ const anchor = {
 describe("a test request applied by two cards at once", () => {
   it("radiation: one card applies it, the other finds the request gone", async () => {
     for (let i = 0; i < 2; i++) addRadiationApplyButton({
+      // A GM's card: believed as written (the author check of Kurt's security pass)
+      author: {
+        id: "gm", isGM: true
+      },
       flags: {
         sr5data: {
           radiation: {
@@ -151,6 +155,10 @@ describe("a test request applied by two cards at once", () => {
 
   it("disease: one card applies it, the other finds the request gone", async () => {
     for (let i = 0; i < 2; i++) addDiseaseApplyButton({
+      // A GM's card: believed as written (the author check of Kurt's security pass)
+      author: {
+        id: "gm", isGM: true
+      },
       flags: {
         sr5data: {
           disease: {

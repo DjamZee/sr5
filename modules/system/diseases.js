@@ -625,7 +625,13 @@ async function confirmAndApply(message, button, ref, entry){
   else if (counted !== claimed) alert += warn(game.i18n.format("SR5.DISEASE_HitsOnDice", {
     hits: counted
   }))
-  const prefill = above || counted === null ? "" : Math.min(counted, cap)
+  //The sixes of a pushed limit explode without end, so dice a player writes can say anything: the window never starts
+  //above the pool plus Chance the GM works out; past it the field is empty and the GM types his figure (Bodo, 06/10)
+  const overCeiling = counted !== null && counted > pool
+  if (overCeiling) alert += warn(game.i18n.format("SR5.DISEASE_HitsAboveCeiling", {
+    hits: counted, pool
+  }))
+  const prefill = above || counted === null || overCeiling ? "" : Math.min(counted, cap)
   const hits = await foundry.applications.api.DialogV2.prompt({
     window: {
       title: "SR5.DISEASE_Apply"
