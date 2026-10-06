@@ -30,8 +30,9 @@ export function sprintFatigueStep(previous, round, pass) {
   if (previous && previous.round === round && previous.pass === pass) return null
   const consecutive = !!previous && ((previous.round === round && pass === previous.pass + 1) ||
     (round === previous.round + 1 && pass === 1 && !previous.laterPhase))
+  //laterPhase written false, not left out: setFlag merges, the mark of the previous entry would survive
   return {
-    round, pass, streak: consecutive ? (Number(previous.streak) || 0) + 1 : 1
+    round, pass, streak: consecutive ? (Number(previous.streak) || 0) + 1 : 1, laterPhase: false
   }
 }
 

@@ -24,8 +24,15 @@ const {
 describe('the streak of a sprinter', () => {
   it('starts at 1E', () => {
     expect(sprintFatigueStep(undefined, 1, 1)).toEqual({
-      round: 1, pass: 1, streak: 1
+      round: 1, pass: 1, streak: 1, laterPhase: false
     })
+  })
+
+  //Measured in play: setFlag merges, a new entry without the key kept the mark of the previous one
+  it('writes the mark of a later phase back to false on each new sprint', () => {
+    expect(sprintFatigueStep({
+      round: 2, pass: 1, streak: 2, laterPhase: true
+    }, 2, 3).laterPhase).toBe(false)
   })
 
   it('goes up on a later phase of the same Combat Turn, and on the next Combat Turn', () => {
@@ -222,7 +229,7 @@ describe('the Sprint card read by the active GM', () => {
     await onSprintCard(card())
     expect(roll.mock.calls[1][2].damage.value).toBe(2)
     expect(combat.flags.sr5[SPRINT_FATIGUE_FLAG].k1).toEqual({
-      round: 1, pass: 2, streak: 2
+      round: 1, pass: 2, streak: 2, laterPhase: false
     })
   })
 
