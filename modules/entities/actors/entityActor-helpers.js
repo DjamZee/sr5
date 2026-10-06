@@ -1089,6 +1089,7 @@ export class SR5_ActorHelper {
         "system.conditionMonitors.matrix.actual": itemData.conditionMonitors.matrix.actual,
         "system.isSecondaryPropulsion": itemData.secondaryPropulsion.isSecondaryPropulsion,
         "system.secondaryPropulsionType": itemData.secondaryPropulsion.type,
+        "system.isSecondaryPropulsionActivate": itemData.secondaryPropulsion.isActivated === true,
         "system.pilotSkill": itemData.pilotSkill,
         "system.riggerInterface": itemData.riggerInterface,
         "system.offRoadMode": itemData.offRoadMode,
@@ -1515,6 +1516,8 @@ export class SR5_ActorHelper {
       modifiedItem.system.conditionMonitors.matrix.actual = actor.system.conditionMonitors.matrix.actual
       modifiedItem.system.secondaryPropulsion.isSecondaryPropulsion = actor.system.isSecondaryPropulsion
       modifiedItem.system.secondaryPropulsion.type = actor.system.secondaryPropulsionType
+      //The sheet's box (prepared from the source while an active secondary propulsion mod reads it, Rigger 5 p. 158)
+      modifiedItem.system.secondaryPropulsion.isActivated = actor.system.isSecondaryPropulsionActivate === true
       modifiedItem.system.isCreated = false
       modifiedItem.img = actor.img
       if (actor.img != "systems/sr5/assets/img/actors/actorDrone.svg" && modifiedItem.system.gameEffect.includes(actor.img) === false) {
