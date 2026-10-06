@@ -2215,7 +2215,10 @@ export class SR5_ActorHelper {
   //`reviewed`: a definitionReview the GM's caller already showed (its own checkEffectCard), never read from a card
   static async applyExternalEffect(actorId, data, effectType, reviewed = null){
     //An area spell whose template was deleted during the resistance: nothing would lift the effect
-    if (isAreaSpellTemplateGone(data)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_AreaSpellTemplateGone"))
+    if (isAreaSpellTemplateGone(data)) {
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_AreaSpellTemplateGone"))
+      return false
+    }
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
     let item = await fromUuid(data.owner.itemUuid)
     let itemData = item.system
@@ -2238,6 +2241,8 @@ export class SR5_ActorHelper {
     let isNaniteBoost = Object.values(itemData.systemEffects || {
     }).some(s => s.value === "naniteAttributeBoost")
     let naniteBoostMarked = false
+    //Damage the GM declined, or that its clicker may not write: the card keeps its button
+    let declined = false
 
     for (let [entryKey, e] of Object.entries(itemData[effectType] ?? {
     })){
@@ -2278,9 +2283,13 @@ export class SR5_ActorHelper {
           //A player never writes on an actor she does not own: the update would be refused half way
           if (!actor.isOwner) {
             ui.notifications.warn(game.i18n.localize("SR5.WARN_UnresistedDamageNotOwner"))
+            declined = true
             continue
           }
-          if (!(await SR5_ActorHelper.confirmUnresistedDamage(actor, item, key, value, data, effectType))) continue
+          if (!(await SR5_ActorHelper.confirmUnresistedDamage(actor, item, key, value, data, effectType))) {
+            declined = true
+            continue
+          }
           await SR5_ActorHelper.addUnresistedDamage(actorId, actor, key, value)
           continue
         }
@@ -2385,6 +2394,9 @@ export class SR5_ActorHelper {
         }
       }
     }
+    //Whether the effect was applied: refused (a card counted again and rejected, the GM said no, damage declined), the
+    //card keeps its Apply button
+    return !declined
   }
 
   //Apply specific toxin effect

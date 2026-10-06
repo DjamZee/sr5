@@ -182,6 +182,21 @@ export class SR5_RollMessage {
     }
   }
 
+  //The Apply buttons being applied: the button now stays while the GM decides, a second click must not apply it twice
+  static APPLYING = new Set()
+
+  //Applies an effect of a card once at a time; false when refused, or already being applied
+  static async applyOnce(messageId, type, apply){
+    const key = `${messageId}|${type}`
+    if (SR5_RollMessage.APPLYING.has(key)) return false
+    SR5_RollMessage.APPLYING.add(key)
+    try {
+      return await apply()
+    } finally {
+      SR5_RollMessage.APPLYING.delete(key)
+    }
+  }
+
   //Handle action related to chat buttons
   static async chatButtonAction(ev){
     ev.preventDefault()
@@ -300,16 +315,17 @@ export class SR5_RollMessage {
               messageId, targetActor: patient.isToken ? patient.token.id : patient.id
             })
           }
-          await patient.applyExternalEffect(messageData, "customEffects")
+          //Refused (the GM said no, or the card was rejected): the button stays, to apply it again
+          if (await SR5_RollMessage.applyOnce(messageId, type, () => patient.applyExternalEffect(messageData, "customEffects")) === false) break
           SR5_RollMessage.updateChatButtonHelper(messageId, type)
           break
         }
         if (!actor) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
-        actor.applyExternalEffect(messageData, "customEffects")
+        if (await SR5_RollMessage.applyOnce(messageId, type, () => actor.applyExternalEffect(messageData, "customEffects")) === false) break
         if (messageData.magic.spell.area < 1) SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "applyEffectOnItem":
-        actor.applyExternalEffect(messageData, "itemEffects")
+        if (await SR5_RollMessage.applyOnce(messageId, type, () => actor.applyExternalEffect(messageData, "itemEffects")) === false) break
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "firstAid": {

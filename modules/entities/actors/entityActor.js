@@ -1161,6 +1161,7 @@ export class SR5Actor extends Actor {
   async applyExternalEffect(data, effectType, reviewed = null){
     let actorId = (this.isToken ? this.token.id : this.id)
     //Awaited: a template's spell effect is checked again on the next move, and must find the effect created
+    //false when it was refused: the card keeps its button
     return SR5_ActorHelper.applyExternalEffect(actorId, data, effectType, reviewed)
   }
 

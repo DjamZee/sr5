@@ -115,7 +115,8 @@ describe('a player sheet spell applied by the GM to an NPC', () => {
 
   it('applies nothing when the GM declines', async () => {
     confirm.mockResolvedValueOnce(false)
-    await SR5_ActorHelper.applyExternalEffect('target', card(), 'customEffects')
+    //and says so, for the card to keep its Apply button (Pauline's remainder c)
+    expect(await SR5_ActorHelper.applyExternalEffect('target', card(), 'customEffects')).toBe(false)
     expect(created).toBeUndefined()
   })
 
