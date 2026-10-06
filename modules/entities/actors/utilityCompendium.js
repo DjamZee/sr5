@@ -19,16 +19,21 @@ export class SR5_CompendiumUtility extends Actor {
   }
 
   // Compendiums used to build actors: each one can be chosen by the GM in the system settings.
-  // "auto" uses the sr5-compendiums module packs for the world language.
-  // fallbacks: in "auto" only, packs of other modules, read when their module is active, for the items
-  // sr5-compendiums lacks (matched on their systemEffect of category fallbackEffect); sr5-compendiums comes first.
+  // "auto" reads the Megapack first (megapack-sr5-foundry-vtt, every kind of item in one pack), then the
+  // sr5-compendiums packs of the world language as a fallback (arbitrage de DjamZ, séance H, H18).
+  // Items are recognized by their systemEffects (KEY_CATEGORIES), never by their name.
+  static MEGAPACK = {
+    module: "megapack-sr5-foundry-vtt", pack: "megapack-sr5-foundry-vtt.sr5-megapack-items"
+  }
+
+  // The systemEffect categories that name what an item gives an actor. A spirit or sprite power key is
+  // given once: the first item found with it wins, so a power the Megapack holds twice is not doubled.
+  static KEY_CATEGORIES = ["baseOwnItem", "spiritPower", "spritePower"]
+  static UNIQUE_CATEGORIES = ["spiritPower", "spritePower"]
+
   static CATEGORIES = {
     creaturePowers: {
-      setting: "compendium.creaturePowers", itemType: "itemPower", defaults: ["powers-creatures"],
-      fallbacks: [{
-        module: "megapack-sr5-foundry-vtt", pack: "megapack-sr5-foundry-vtt.sr5-megapack-items"
-      }],
-      fallbackEffect: "spiritPower",
+      setting: "compendium.creaturePowers", itemType: "itemPower", defaults: ["powers-creatures"]
     },
     spritePowers: {
       setting: "compendium.spritePowers", itemType: "itemSpritePower", defaults: ["powers-sprites"]
@@ -71,86 +76,75 @@ export class SR5_CompendiumUtility extends Actor {
     }
   }
 
+  // The compendiums read for a category, in order: the first that provides a key wins
   static getCompendiumIds(categoryKey) {
     const category = SR5_CompendiumUtility.CATEGORIES[categoryKey]
     const chosen = game.settings.get("sr5", category.setting)
     if (chosen && chosen !== "auto") return [chosen]
+    const ids = []
+    const megapack = SR5_CompendiumUtility.MEGAPACK
+    if (game.modules?.get(megapack.module)?.active) ids.push(megapack.pack)
     const language = game.settings.get("core", "language")
     if (!language) SR5_SystemHelpers.srLog(0, "Could not determine core language used in getCompendiumIds()")
-    return category.defaults.map(name => `sr5-compendiums.${language}_${name}`)
+    return ids.concat(category.defaults.map(name => `sr5-compendiums.${language}_${name}`))
   }
 
   //Get the items of a category from its configured compendium(s)
   //Return an array of items
   static async getCategoryItems(categoryKey) {
+    // One actor creation asks for the same category several times: read the compendiums once
+    const cached = SR5_CompendiumUtility._compendiumCache.get(categoryKey)
+    if (cached && (Date.now() - cached.time < 10000)) return cached.documents
+
     const {
-      itemType, fallbacks, fallbackEffect
+      itemType
     } = SR5_CompendiumUtility.CATEGORIES[categoryKey]
-    const items = []
-    for (const compendiumId of SR5_CompendiumUtility.getCompendiumIds(categoryKey)) {
-      const documents = await SR5_CompendiumUtility.getCompendiumDocuments(compendiumId)
-      // A single compendium may hold every category: keep only the expected item type
-      items.push(...documents.filter(i => i.type === itemType))
+    const ids = SR5_CompendiumUtility.getCompendiumIds(categoryKey)
+    const packs = ids.map(id => game.packs.get(id)).filter(Boolean)
+    if (!packs.length) {
+      // Tell the GM once per session: without it, actors are created without their base items/powers
+      SR5_SystemHelpers.srLog(1, `No compendium among '${ids.join(", ")}' found, could not add items to actor`)
+      SR5_CompendiumUtility.warnMissingCompendium(ids[0] ?? SR5_CompendiumUtility.MEGAPACK.pack)
+      return []
     }
-    if (fallbacks?.length && game.settings.get("sr5", SR5_CompendiumUtility.CATEGORIES[categoryKey].setting) === "auto") {
-      items.push(...await SR5_CompendiumUtility.getFallbackItems(items, fallbacks, itemType, fallbackEffect))
-    }
-    return items
-  }
 
-  //The systemEffect values of category effectCategory an item carries
-  static effectKeys(item, effectCategory) {
-    return Object.values(item.system?.systemEffects ?? {
-    }).filter(e => e?.category === effectCategory && e.value).map(e => e.value)
-  }
-
-  //Items of the fallback packs (active modules only) whose effect no item already found provides
-  static async getFallbackItems(items, fallbacks, itemType, effectCategory) {
-    const provided = new Set(items.flatMap(i => SR5_CompendiumUtility.effectKeys(i, effectCategory)))
-    const added = []
-    for (const fallback of fallbacks) {
-      const pack = game.packs.get(fallback.pack)
-      if (!game.modules.get(fallback.module)?.active || !pack) continue
-      // A large pack (the Megapack holds every kind of item): read its index, load only what is missing
-      const index = await pack.getIndex({
-        fields: ["type", "system.systemEffects"]
-      })
+    const documents = []
+    const provided = new Set()
+    for (const [rank, pack] of packs.entries()) {
+      // The Megapack holds every kind of item: read the index, load only the items that give something
+      let index
+      try {
+        index = await pack.getIndex({
+          fields: ["type", "system.systemEffects"]
+        })
+      } catch (err) {
+        SR5_SystemHelpers.srLog(1, `Compendium ${pack.collection} could not be indexed: ${err.message}`)
+        continue
+      }
       for (const entry of index) {
         if (entry.type !== itemType) continue
-        const keys = SR5_CompendiumUtility.effectKeys(entry, effectCategory)
-        if (!keys.length || keys.some(k => provided.has(k))) continue
+        const keys = SR5_CompendiumUtility.itemKeys(entry)
+        if (!keys.length) continue
+        // A fallback compendium only adds what the ones before it lack
+        if (rank > 0 && keys.every(k => provided.has(k))) continue
+        // A power is given once: first found wins
+        if (keys.some(k => provided.has(k) && SR5_CompendiumUtility.UNIQUE_CATEGORIES.includes(k.split(":")[0]))) continue
         const item = await pack.getDocument(entry._id)
         if (!item) continue
         for (const k of keys) provided.add(k)
-        added.push(item)
+        documents.push(item)
       }
     }
-    return added
-  }
-
-  static async getCompendiumDocuments(compendiumId) {
-    const compendiumPack = game.packs.get(compendiumId)
-    if (!compendiumPack) {
-      SR5_SystemHelpers.srLog(1, `No compendium named '${compendiumId}' found, could not add items to actor`)
-      // Tell the GM once per session: without it, actors are created without their base items/powers
-      if (game.user.isGM && !SR5_CompendiumUtility._warnedMissingCompendiums.has(compendiumId)) {
-        SR5_CompendiumUtility._warnedMissingCompendiums.add(compendiumId)
-        ui.notifications.warn(game.i18n.format("SR5.WARN_MissingCompendium", {
-          name: compendiumId
-        }), {
-          permanent: true
-        })
-      }
-      return []
-    }
-    // The same compendium can back several categories during one actor creation: load it once
-    const cached = SR5_CompendiumUtility._compendiumCache.get(compendiumId)
-    if (cached && (Date.now() - cached.time < 10000)) return cached.documents
-    const documents = await compendiumPack.getDocuments()
-    SR5_CompendiumUtility._compendiumCache.set(compendiumId, {
+    SR5_CompendiumUtility._compendiumCache.set(categoryKey, {
       time: Date.now(), documents
     })
     return documents
+  }
+
+  //The "category:value" keys an item (or an index entry) carries in its systemEffects
+  static itemKeys(item) {
+    return Object.values(item.system?.systemEffects ?? {
+    }).filter(e => SR5_CompendiumUtility.KEY_CATEGORIES.includes(e?.category) && e.value).map(e => `${e.category}:${e.value}`)
   }
 
   //Get base items
