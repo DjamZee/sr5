@@ -152,7 +152,10 @@ describe('the markItem socket', () => {
       matrix: {
         actions: {
           hackOnTheFly: {
-            actionType: 'sleaze', test: {
+            // as the sheet stores it (measured in game): the length of the action, and its limit
+            actionType: 'complex', limit: {
+              linkedAttribute: 'sleaze'
+            }, test: {
               dicePool: 8
             }
           }

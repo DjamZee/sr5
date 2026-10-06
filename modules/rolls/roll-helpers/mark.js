@@ -216,8 +216,9 @@ export class SR5_MarkHelpers {
     const attackerHits = attack.byGM ? hitsWritten(attack) :
       recountHits(attack.data.roll?.r, SR5_MiscellaneousHelpers.poolCap(attack.roller, `matrix.actions.${typeSub}.test.dicePool`) + markPenalty(marks))
     const defenderHits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, await SR5_MarkHelpers.defenseCap(defense))
-    //Sleaze or Attack is read on the attacker's sheet, not on a card
-    const actionType = attack.roller?.system?.matrix?.actions?.[typeSub]?.actionType
+    //Sleaze or Attack is read on the attacker's sheet, not on a card: the limit of the action, as
+    //rollData-MatrixAction.js writes it (its actionType is the length of the action, "complex")
+    const actionType = attack.roller?.system?.matrix?.actions?.[typeSub]?.limit?.linkedAttribute
     const outcome = markOutcome({
       typeSub, actionType, attackerHits, defenderHits, chosen
     })
