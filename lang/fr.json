@@ -3943,6 +3943,7 @@
 	"SR5.WARN_ItemEffectsGMOnly": "Dans ce monde, les effets d'un objet ne s'écrivent que par le MJ : la modification des effets n'a pas été enregistrée.",
 	"SR5.WARN_ItemEffectsChangedByPlayer": "{user} a modifié les effets de {item} ({actor}), alors qu'ils ne s'écrivent que par le MJ dans ce monde.",
 	"SR5.EffectUnlisted": "hors liste",
+	"SR5.WARN_ItemEffectsSystemWrite": "Écriture du système annoncée : les effets de {item} ({actor}) ont changé depuis le poste de {user} (acide, effet appliqué à un objet…).",
 	"SR5.WARN_OverwatchGMOnly": "Seul le MJ baisse le Score de Surveillance : hors redémarrage, la baisse n'a pas été écrite.",
 	"SR5.WARN_OverwatchLoweredByPlayer": "{user} a ramené le Score de Surveillance de {actor} de {before} à {after} (baisse annoncée : {reason}). À toi d'arbitrer.",
 	"SR5.OverwatchLowerReboot": "redémarrage",

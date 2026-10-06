@@ -110,12 +110,15 @@ export function sr5HookPreUpdateItem(document, data, options, userId) {
 
 export async function sr5HookUpdateItem(document, data, options, userId) {
   await sr5HookItemVision(document, userId)
-  //A player's client can be made to skip the refusal above: the active gamemaster is told when effects changed anyway
-  if (game.users?.activeGM?.isSelf && !isSystemEffectWrite(options) && gmOnlyItemEffects() && !game.users.get(userId)?.isGM && touchesItemEffects(data)) {
-    ui.notifications.warn(game.i18n.format('SR5.WARN_ItemEffectsChangedByPlayer', {
+  //A player's client can be made to skip the refusal above: the active gamemaster is told of every write of effects by a
+  //player. The option of a system write (acid, Apply to item) comes from that same client and can be forged: it only
+  //turns the lasting warning into a passing line, "system write announced" (Gustave's second review)
+  if (game.users?.activeGM?.isSelf && gmOnlyItemEffects() && !game.users.get(userId)?.isGM && touchesItemEffects(data)) {
+    const announced = isSystemEffectWrite(options)
+    ui.notifications.warn(game.i18n.format(announced ? 'SR5.WARN_ItemEffectsSystemWrite' : 'SR5.WARN_ItemEffectsChangedByPlayer', {
       user: game.users.get(userId)?.name ?? userId, item: document.name, actor: document.parent?.name ?? ""
     }), {
-      permanent: true
+      permanent: !announced
     })
   }
   //A physical jammer (SR5 p. 443) turned on or off, or changed: what it does is measured again

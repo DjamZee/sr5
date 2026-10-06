@@ -3943,6 +3943,7 @@
 	"SR5.WARN_ItemEffectsGMOnly": "In this world, the effects of an item are written by the gamemaster only: the change of the effects was not saved.",
 	"SR5.WARN_ItemEffectsChangedByPlayer": "{user} changed the effects of {item} ({actor}), although they are written by the gamemaster only in this world.",
 	"SR5.EffectUnlisted": "not in the list",
+	"SR5.WARN_ItemEffectsSystemWrite": "System write announced: the effects of {item} ({actor}) changed from the client of {user} (acid, effect applied to an item…).",
 	"SR5.WARN_OverwatchGMOnly": "Only the gamemaster lowers the Overwatch Score: outside a reboot, the lowering was not written.",
 	"SR5.WARN_OverwatchLoweredByPlayer": "{user} brought the Overwatch Score of {actor} from {before} down to {after} (lowering announced: {reason}). Yours to rule on.",
 	"SR5.OverwatchLowerReboot": "reboot",

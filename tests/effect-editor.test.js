@@ -311,6 +311,76 @@ describe("the system's own writes, made on a player's client (Gustave's review)"
   })
 })
 
+describe("the active gamemaster sees every player's write of effects (Gustave's second review)", () => {
+  afterEach(() => { delete globalThis.game; delete globalThis.ui })
+  const gmClient = () => {
+    globalThis.game = {
+      user: {
+        id: "gm", isGM: true
+      }, users: {
+        activeGM: {
+          isSelf: true
+        }, get: id => ({
+          id, isGM: id === "gm", name: id === "gm" ? "MJ" : "Clo"
+        })
+      }, settings: {
+        get: () => true
+      }, i18n: {
+        localize: k => k, format: k => k
+      }
+    }
+    globalThis.ui = {
+      notifications: {
+        warn: vi.fn(), info: vi.fn()
+      }
+    }
+  }
+  const armor = {
+    type: "itemArmor", name: "Armure", parent: {
+      name: "Clo"
+    }
+  }
+  const acid = {
+    system: {
+      itemEffects: [{
+        target: "system.armorValue", value: -1
+      }]
+    }
+  }
+
+  it("is told of an announced system write too, an option the player's client can forge", async () => {
+    gmClient()
+    const {
+      sr5HookUpdateItem
+    } = await import('../modules/hooks/item.js')
+    await sr5HookUpdateItem(armor, acid, systemEffectWrite(), "player")
+    const calls = [...ui.notifications.warn.mock.calls, ...ui.notifications.info.mock.calls].map(c => c[0])
+    expect(calls).toContain("SR5.WARN_ItemEffectsSystemWrite")
+  })
+
+  it("is told of a plain write with the lasting warning", async () => {
+    gmClient()
+    const {
+      sr5HookUpdateItem
+    } = await import('../modules/hooks/item.js')
+    await sr5HookUpdateItem(armor, acid, {
+    }, "player")
+    expect(ui.notifications.warn).toHaveBeenCalledWith("SR5.WARN_ItemEffectsChangedByPlayer", {
+      permanent: true
+    })
+  })
+
+  it("is not told of the gamemaster's own writes", async () => {
+    gmClient()
+    const {
+      sr5HookUpdateItem
+    } = await import('../modules/hooks/item.js')
+    await sr5HookUpdateItem(armor, acid, systemEffectWrite(), "gm")
+    expect(ui.notifications.warn).not.toHaveBeenCalled()
+    expect(ui.notifications.info).not.toHaveBeenCalled()
+  })
+})
+
 describe("a category changed in the sheet (Gustave's review)", () => {
   const source = {
     customEffects: [{
