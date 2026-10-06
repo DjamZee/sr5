@@ -20,16 +20,42 @@ const PENDING = new Set()
 
 /**
  * The next step of a sprinter's streak.
- * Consecutive: a later pass of the same Combat Turn (a later action phase), or the next Combat Turn.
- * @param {{round: number, pass: number, streak: number}|undefined} previous The last sprint counted
+ * Consecutive, strict reading (ruling of DjamZ, 2026-10-06, G1): his very next action phase. An action phase of
+ * his own without sprint means he slowed down: back to 1E. So the next pass of the same Combat Turn, or the first
+ * pass of the next Combat Turn when he had no later phase in the previous one (laterPhase, marked by the GM).
+ * @param {{round: number, pass: number, streak: number, laterPhase?: boolean}|undefined} previous The last sprint counted
  * @returns {{round: number, pass: number, streak: number}|null} null: this phase is already counted
  */
 export function sprintFatigueStep(previous, round, pass) {
   if (previous && previous.round === round && previous.pass === pass) return null
-  const consecutive = !!previous && ((previous.round === round && pass > previous.pass) || round === previous.round + 1)
+  const consecutive = !!previous && ((previous.round === round && pass === previous.pass + 1) ||
+    (round === previous.round + 1 && pass === 1 && !previous.laterPhase))
   return {
     round, pass, streak: consecutive ? (Number(previous.streak) || 0) + 1 : 1
   }
+}
+
+/**
+ * A new initiative pass starts: the sprinters of the pass just ended who still act in this one have a later phase
+ * in the Combat Turn. If they do not sprint in it, their streak is broken, even on the next Combat Turn.
+ * @param {Object|undefined} ledger The streaks, by combatant id
+ * @param {string[]} actingIds The combatants who act in the new pass
+ * @returns {Object|null} The new ledger, null when nothing changes
+ */
+export function markSprintLaterPhases(ledger, round, pass, actingIds) {
+  let changed = false
+  const next = {
+    ...ledger
+  }
+  for (const id of actingIds) {
+    const entry = ledger?.[id]
+    if (!entry || entry.laterPhase || entry.round !== round || entry.pass !== pass - 1) continue
+    next[id] = {
+      ...entry, laterPhase: true
+    }
+    changed = true
+  }
+  return changed ? next : null
 }
 
 //The card of a Sprint test (the "run" movement test, SR5 p. 164)

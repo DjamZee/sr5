@@ -8,7 +8,7 @@ vi.mock('../modules/socket.js', () => ({
 }))
 
 const {
-  sprintFatigueStep, isSprintCard, onSprintCard, SPRINT_FATIGUE_FLAG
+  sprintFatigueStep, markSprintLaterPhases, isSprintCard, onSprintCard, SPRINT_FATIGUE_FLAG
 } = await import('../modules/system/sprint-fatigue.js')
 const {
   SR5_EntityHelpers
@@ -43,10 +43,57 @@ describe('the streak of a sprinter', () => {
     }, 3, 1).streak).toBe(1)
   })
 
+  //Strict reading of "consecutive" (ruling of DjamZ, 2026-10-06, G1): an action phase of his own without sprint
+  //means he slowed down, the streak starts again at 1E
+  it('starts again at 1E after an action phase of his own without sprint, in the same Combat Turn', () => {
+    expect(sprintFatigueStep({
+      round: 1, pass: 1, streak: 2
+    }, 1, 3).streak).toBe(1)
+  })
+
+  it('starts again at 1E on the next Combat Turn when he had a later phase without sprint', () => {
+    expect(sprintFatigueStep({
+      round: 1, pass: 1, streak: 2, laterPhase: true
+    }, 2, 1).streak).toBe(1)
+    expect(sprintFatigueStep({
+      round: 1, pass: 2, streak: 2
+    }, 2, 2).streak).toBe(1)
+  })
+
   it('counts a phase once', () => {
     expect(sprintFatigueStep({
       round: 2, pass: 1, streak: 1
     }, 2, 1)).toBeNull()
+  })
+})
+
+describe('a new initiative pass, on the GM side', () => {
+  it('marks the sprinters of the pass just ended who still act in the new one', () => {
+    const ledger = {
+      a: {
+        round: 2, pass: 1, streak: 2
+      },
+      b: {
+        round: 2, pass: 1, streak: 1
+      },
+      c: {
+        round: 1, pass: 3, streak: 3
+      },
+    }
+    expect(markSprintLaterPhases(ledger, 2, 2, ['a', 'c'])).toEqual({
+      ...ledger, a: {
+        round: 2, pass: 1, streak: 2, laterPhase: true
+      }
+    })
+  })
+
+  it('changes nothing when no sprinter of the pass just ended acts again', () => {
+    expect(markSprintLaterPhases({
+      b: {
+        round: 2, pass: 1, streak: 1
+      }
+    }, 2, 2, ['a'])).toBeNull()
+    expect(markSprintLaterPhases(undefined, 2, 2, ['a'])).toBeNull()
   })
 })
 

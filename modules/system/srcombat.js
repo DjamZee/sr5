@@ -20,6 +20,9 @@ import {
   clearRunning
 } from "./running.js"
 import {
+  markSprintLaterPhases, SPRINT_FATIGUE_FLAG
+} from "./sprint-fatigue.js"
+import {
   SR5_SystemHelpers
 } from "./utilitySystem.js"
 import {
@@ -115,6 +118,7 @@ export class SR5Combat extends Combat {
 
     const initiativePass = combat.initiativePass + 1
     const turn = 0
+    const acting = []
 
     for (const combatant of combat.combatants) {
       await SR5Combat.decreaseInitiativePassEffects(combatant)
@@ -126,10 +130,15 @@ export class SR5Combat extends Combat {
       })
       //Update actor's action if he can still play next initiative pass
       if(initiative > 0){
+        acting.push(combatant.id)
         if (!combatant.actor.isToken) await SR5Combat.resetActionInCombat(combatant.actorId, combatant)
         else await SR5Combat.resetActionInCombat(combatant.tokenId, combatant)
       }
     }
+
+    //Sprint fatigue (SR5 p. 174): a sprinter of the pass just ended who acts again has a later phase
+    const sprintLedger = markSprintLaterPhases(combat.flags?.sr5?.[SPRINT_FATIGUE_FLAG], combat.round, initiativePass, acting)
+    if (sprintLedger) await combat.setFlag("sr5", SPRINT_FATIGUE_FLAG, sprintLedger)
 
     await SR5Combat.setInitiativePass(combat, initiativePass)
     await combat.update({
