@@ -458,6 +458,7 @@
 	"SR5.SocketUseFirstAidTarget": "{name}, {boxes} box(es) healed",
 	"SR5.WARN_WoundGroupTreated": "{user} asks to heal {patient}, but this group of wounds has been treated already (first aid or the Heal spell once per group, no first aid after Heal; core rulebook p. 207-208). Nothing is applied: new damage opens a new group. If that is the case and the system did not see it, heal by hand.",
 	"SR5.SocketUse_markItem": "put marks on {target}",
+	"SR5.SocketUse_overwatch": "raise the Overwatch Score of {target}",
 	"SR5.SocketUse_eraseMark": "erase a mark from {target}",
 	"SR5.SocketUse_grappleStartHold": "hold on {target}",
 	"SR5.SocketUse_grappleSetHold": "change the hold on {target}",

@@ -230,6 +230,20 @@ export class SR5_MarkHelpers {
     }
   }
 
+  /** The Overwatch Score a defense card raises (SR5 p. 231: the defender's hits against an illegal
+   * action): the hacker the card answers, by the defense hits counted again within the defense pool,
+   * never below 0, once per card. null if refused. */
+  static async overwatchUse(messageId, actor) {
+    const defense = SR5_MiscellaneousHelpers.cardOf(messageId)
+    if (!defense || defense.data.test?.type !== "matrixDefense" || !defense.data.matrix?.overwatchScore) return null
+    if (!sameActor(actor, SR5_EntityHelpers.getRealActorFromID(defense.data.previousMessage?.actorId))) return null
+    const hits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, await SR5_MarkHelpers.defenseCap(defense))
+    if (!(hits > 0)) return null
+    return {
+      card: defense, key: consumedKey(defense.id, "overwatch", actor.uuid), label: "overwatch", target: actor.name, value: hits,
+    }
+  }
+
   /** A markItem request the cards allow: the defender's mark on the attacker who failed a Sleaze
    * action, or the attacker's marks on the master of a slaved drone it marked. null if refused. */
   static async markUse(data, target) {

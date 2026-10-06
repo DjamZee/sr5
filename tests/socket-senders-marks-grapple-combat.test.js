@@ -416,6 +416,98 @@ describe('the eraseMark socket', () => {
   })
 })
 
+describe('the overwatchIncrease socket', () => {
+  let attackId
+  beforeEach(async () => {
+    actor('hacker', {
+      matrix: {
+        overwatchScore: 3
+      }
+    }, ['owner'])
+    actor('npcDecker', {
+      matrix: {
+        overwatchScore: 3
+      }
+    })
+    actor('pc', {
+      specialAttributes: {
+        edge: {
+          augmented: {
+            value: 0
+          }
+        }
+      }, matrix: {
+        actions: {
+          dataSpike: {
+            defense: {
+              dicePool: 4
+            }
+          }
+        }
+      }
+    }, ['stranger'])
+    attackId = card(users.gm, {
+      test: {
+        type: 'matrixAction', typeSub: 'dataSpike'
+      }, owner: {
+        actorId: 'npcDecker'
+      }, roll: {
+        hits: 2
+      }
+    })
+    const {
+      SR5_ActorHelper
+    } = await import('../modules/entities/actors/entityActor-helpers.js')
+    vi.spyOn(SR5_ActorHelper, 'overwatchIncrease').mockResolvedValue()
+  })
+  const helper = async () => (await import('../modules/entities/actors/entityActor-helpers.js')).SR5_ActorHelper
+
+  it('refuses a negative relay from the owner (Quitterie: a score from 3 to 0)', async () => {
+    const SR5_ActorHelper = await helper()
+    await SR5_ActorHelper._socketOverwatchIncrease({
+      data: {
+        defenseHits: -3, actorId: 'hacker'
+      }
+    }, 'owner')
+    expect(SR5_ActorHelper.overwatchIncrease).not.toHaveBeenCalled()
+  })
+  it("raises a GM's decker by the defense card's hits counted again within the defense pool, once", async () => {
+    const SR5_ActorHelper = await helper()
+    const messageId = card(users.stranger, {
+      test: {
+        type: 'matrixDefense', typeSub: 'dataSpike'
+      }, owner: {
+        actorId: 'pc'
+      }, target: {
+      }, matrix: {
+        overwatchScore: true
+      },
+      previousMessage: {
+        actorId: 'npcDecker', messageId: attackId
+      }, roll: {
+        hits: 9, r: dice(9)
+      },
+    })
+    const request = {
+      data: {
+        defenseHits: 9, actorId: 'npcDecker', messageId
+      }
+    }
+    await SR5_ActorHelper._socketOverwatchIncrease(request, 'stranger')
+    await SR5_ActorHelper._socketOverwatchIncrease(request, 'stranger')
+    expect(SR5_ActorHelper.overwatchIncrease.mock.calls).toEqual([[4, 'npcDecker']])
+  })
+  it('refuses a stranger without a card', async () => {
+    const SR5_ActorHelper = await helper()
+    await SR5_ActorHelper._socketOverwatchIncrease({
+      data: {
+        defenseHits: 40, actorId: 'npcDecker'
+      }
+    }, 'stranger')
+    expect(SR5_ActorHelper.overwatchIncrease).not.toHaveBeenCalled()
+  })
+})
+
 /* -------------------------------------------- */
 /*  Grappling                                     */
 /* -------------------------------------------- */

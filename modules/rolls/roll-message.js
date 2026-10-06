@@ -555,6 +555,8 @@ export class SR5_RollMessage {
           SR5_SocketHandler.emitForGM("overwatchIncrease", {
             defenseHits: messageData.roll.hits,
             actorId: overwatchActorId,
+            //The GM reads the hits again on this defense card (entityActor-helpers.js)
+            messageId,
           })
         } else await SR5_ActorHelper.overwatchIncrease(messageData.roll.hits, overwatchActorId)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)

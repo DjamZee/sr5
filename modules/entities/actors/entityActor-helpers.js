@@ -701,10 +701,29 @@ export class SR5_ActorHelper {
 
   //Socket for increasing overwatch score;
   //Believed only from a player who owns the actor: anyone else could raise or lower any score from a console
+  //Its owner only raises it (a negative relay brought a score from 3 to 0, measured by Quitterie); the
+  //defender who relays the Overwatch button raises the hacker's score by the hits of her defense card,
+  //read again by the GM, once (security lot, Thomas)
   static async _socketOverwatchIncrease(message, senderId) {
-    const actor = SR5_EntityHelpers.getRealActorFromID(message.data?.actorId)
-    if (!actor?.testUserPermission?.(game.users.get(senderId), "OWNER")) return SR5_SystemHelpers.srLog(1, `overwatchIncrease refused from ${senderId}`)
-    await SR5_ActorHelper.overwatchIncrease(message.data.defenseHits, message.data.actorId)
+    const sender = game.users.get(senderId),
+      data = message?.data ?? {
+      },
+      actor = SR5_EntityHelpers.getRealActorFromID(data.actorId)
+    if (!sender || !actor) return SR5_SystemHelpers.srLog(1, `overwatchIncrease refused from ${senderId}`)
+    if (sender.isGM) return SR5_ActorHelper.overwatchIncrease(data.defenseHits, data.actorId)
+    const hits = Math.floor(Number(data.defenseHits))
+    if (actor.testUserPermission?.(sender, "OWNER") && !data.messageId) {
+      if (!(Number.isFinite(hits) && hits >= 0)) return SR5_SystemHelpers.srLog(1, `overwatchIncrease refused from ${sender.name}`, data)
+      return SR5_ActorHelper.overwatchIncrease(hits, data.actorId)
+    }
+    const [{
+      SR5_MarkHelpers
+    }, {
+      SR5_MiscellaneousHelpers
+    }] = await Promise.all([import("../../rolls/roll-helpers/mark.js"), import("../../rolls/roll-helpers/miscellaneous.js")])
+    const use = await SR5_MarkHelpers.overwatchUse(data.messageId, actor)
+    if (!use || !(await SR5_MiscellaneousHelpers.grant(use, sender))) return SR5_SystemHelpers.srLog(1, `overwatchIncrease refused from ${sender.name}`, data)
+    await SR5_ActorHelper.overwatchIncrease(use.value, data.actorId)
   }
 
   //Delete Marks on Other actors
