@@ -15,7 +15,7 @@ import {
   monitorSize, corePenalty, activeHeadcase, strainOf, isOriginalStrainMonad, suggestedCoreBoxes, coreAfterDamage,
   authorMayActFor, addMonadCoreButton, coreDissipationPool, naniteLossOnDissipation, sleepHours, mentalLoss,
   baseAfterLoss, naniteBaseAfterLoss, surplusHint, activateMonadListeners, MENTAL_ATTRIBUTES, strainChangeRefused,
-  strainBefore, isCardTarget
+  strainBefore, isCardTarget, attackBound
 } from "../modules/system/monad-matrix.js"
 
 describe("The strain is the GM's choice (relecture de Dirk)", () => {
@@ -52,6 +52,55 @@ describe("The strain is the GM's choice (relecture de Dirk)", () => {
         isActive: false
       }
     })).toBe(false)
+  })
+
+  it("bounds the Core boxes by the attacker's sheet, not by the card (relecture de Dirk)", () => {
+    const hacker = {
+      system: {
+        matrix: {
+          attributes: {
+            attack: {
+              value: 6
+            }
+          }, actions: {
+            dataSpike: {
+              test: {
+                dicePool: 11
+              }
+            }, hide: {
+              test: {
+                dicePool: 7
+              }
+            }
+          }
+        }
+      }
+    }
+    const ice = {
+      system: {
+        matrix: {
+          attributes: {
+            attack: {
+              value: 5
+            }
+          }, ice: {
+            attackDicepool: 10
+          }
+        }
+      }
+    }
+    expect(attackBound(hacker)).toBe(17)
+    expect(attackBound(ice)).toBe(15)
+    expect(attackBound(null)).toBe(0)
+    const forged = {
+      damage: {
+        matrix: {
+          value: 50, base: 50
+        }
+      }
+    }
+    expect(suggestedCoreBoxes(forged, attackBound(hacker))).toBe(17)
+    expect(suggestedCoreBoxes(forged, attackBound(null))).toBe(0)
   })
 
   it("puts back the other strain", () => {

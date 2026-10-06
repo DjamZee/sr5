@@ -3381,6 +3381,8 @@
 	"SR5.MONAD_CoreFromPlayer": "This card was written by {user}, not by a GM: the suggested number, like the attack damage it shows, can be forged. Check it against the attack itself.",
 	"SR5.MONAD_StrainGMOnly": "The CFD strain is the GM's choice (Dark Terrors p. 91): only a GM changes it.",
 	"SR5.MONAD_StrainUndone": "{user} changed the CFD strain of {name}: put back, it is the GM's choice.",
+	"SR5.MONAD_CoreBound": "At most {bound} box(es): the Attack of {name} plus its largest matrix action pool, read on its sheet (the most damage its attack can deal, Edge aside).",
+	"SR5.MONAD_CoreNoAttacker": "Attacker not found: no box can be put on the Core from this card. Change the Core monitor by hand if needed.",
 	"SR5.DEFRAG_Title": "Deactivation (Defragmentation echo, Dark Terrors p. 89-90)",
 	"SR5.DEFRAG_Cem": "Matrix Entity Concentration",
 	"SR5.DEFRAG_Link": "Deactivation (Defragmentation echo)",

@@ -3381,6 +3381,8 @@
 	"SR5.MONAD_CoreFromPlayer": "Cette carte a été écrite par {user}, pas par un MJ : le nombre proposé, comme les dommages de l'attaque qu'elle affiche, peut être forgé. Vérifiez-le avec l'attaque elle-même.",
 	"SR5.MONAD_StrainGMOnly": "La souche du SFC est le choix du MJ (Dark Terrors p. 91) : seul un MJ la change.",
 	"SR5.MONAD_StrainUndone": "{user} a changé la souche du SFC de {name} : remise en place, c'est le choix du MJ.",
+	"SR5.MONAD_CoreBound": "Au plus {bound} case(s) : l'Attaque de {name} plus sa plus grosse réserve d'action matricielle, relues sur sa fiche (le plus de dommages que son attaque puisse faire, hors Chance).",
+	"SR5.MONAD_CoreNoAttacker": "Attaquant introuvable : aucune case ne peut être mise au Cœur depuis cette carte. Modifiez le moniteur du Cœur à la main si besoin.",
 	"SR5.DEFRAG_Title": "Désactivation (écho Défragmentation, Dark Terrors p. 89-90)",
 	"SR5.DEFRAG_Cem": "Concentration d'Entité Matricielle",
 	"SR5.DEFRAG_Link": "Désactivation (écho Défragmentation)",

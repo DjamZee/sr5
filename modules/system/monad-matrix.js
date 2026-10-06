@@ -74,12 +74,25 @@ export function isOriginalStrainMonad(actor){
 }
 
 // The boxes a matrix damage card offers to put on the Core: the card is the defender's, who may be a player, so the
-// number is only a suggestion. The bound by the attack's damage is read on the same card: a forged card forges it
-// too (relecture de Dirk), so it proves nothing; the GM's confirmation is the guard, warned when a player wrote the card
-export function suggestedCoreBoxes(cardData){
+// number is only a suggestion. The attack's damage shown on the same card is forged with it (relecture de Dirk): the
+// bound that counts is attackBound, worked out by the GM from the attacker's sheet; the GM confirms within it
+export function suggestedCoreBoxes(cardData, bound = 50){
   const value = Math.trunc(num(cardData?.damage?.matrix?.value))
   const base = Math.trunc(num(cardData?.damage?.matrix?.base))
-  return Math.max(0, Math.min(value, base > 0 ? base : value, 50))
+  return Math.max(0, Math.min(value, base > 0 ? base : value, Math.max(0, Math.trunc(num(bound))), 50))
+}
+
+// The most damage the attacker could deal, worked out by the GM from the attacker's sheet: its Attack, plus the
+// largest pool of its matrix actions as the most net hits it could score (SR5 p. 228: DV = Attack + net hits). Edge
+// aside, no real attack goes beyond it; no attacker found, no box
+export function attackBound(attacker){
+  if (!attacker) return 0
+  const matrix = attacker.system?.matrix
+  const pools = Object.values(matrix?.actions ?? {
+  }).map(a => num(a?.test?.dicePool))
+  //An ICE rolls its own attack pool (rollData-IceAttack.js)
+  pools.push(num(matrix?.ice?.attackDicepool))
+  return Math.min(50, Math.max(0, num(matrix?.attributes?.attack?.value) + Math.max(0, ...pools)))
 }
 
 // The Core after some boxes: never beyond the monitor; the boxes beyond it are the overflow (Data Trails p. 161)
@@ -161,6 +174,16 @@ async function cardActor(message){
   return authorMayActFor(message?.author, actor) ? actor : null
 }
 
+// The attacker the card names, read by the GM: its sheet, not the card, bounds the damage
+async function cardAttacker(message){
+  const data = message?.flags?.sr5data
+  if (!data?.previousMessage?.actorId) return null
+  const {
+    SR5_EntityHelpers
+  } = await import("../entities/helpers.js")
+  return SR5_EntityHelpers.getRealActorFromID(data.previousMessage.actorId, data.actorUuids) ?? null
+}
+
 // The active GM puts the matrix damage of a card on the Core of a Monad of the original strain, instead of its swarm
 // (Data Trails p. 161 by analogy; arbitrage de DjamZ, 06/10). Only while the card still offers to apply the damage
 export async function addMonadCoreButton(message, html){
@@ -173,7 +196,7 @@ export async function addMonadCoreButton(message, html){
   button.type = "button"
   button.classList.add("sr5-monad-core")
   button.textContent = game.i18n.format("SR5.MONAD_CoreButton", {
-    boxes: suggestedCoreBoxes(data)
+    boxes: suggestedCoreBoxes(data, attackBound(await cardAttacker(message)))
   })
   button.addEventListener("click", () => coreFromCard(message, button).catch(e => SR5_SystemHelpers.srLog(1, `Monad Core damage not applied: ${e}`)))
   const anchor = html.querySelector("#srButtonTest") ?? html.querySelector(".message-content")
@@ -189,6 +212,8 @@ async function coreFromCard(message, button){
     if (!data?.chatCard?.buttons?.takeMatrixDamage) return button.remove()
     const actor = await cardActor(fresh)
     if (!isOriginalStrainMonad(actor)) return button.remove()
+    const attacker = await cardAttacker(fresh)
+    const bound = attackBound(attacker)
     const boxes = await foundry.applications.api.DialogV2.prompt({
       window: {
         title: game.i18n.format("SR5.MONAD_CoreTitle", {
@@ -199,10 +224,13 @@ async function coreFromCard(message, button){
         ${fresh.author?.isGM ? "" : `<p><em>${game.i18n.format("SR5.MONAD_CoreFromPlayer", {
     user: foundry.utils.escapeHTML(fresh.author?.name ?? "?")
   })}</em></p>`}
-        <div class="form-group"><label>${game.i18n.localize("SR5.MONAD_CoreBoxes")}</label><input type="number" name="boxes" min="0" value="${suggestedCoreBoxes(data)}"></div>`,
+        <p>${attacker ? game.i18n.format("SR5.MONAD_CoreBound", {
+    name: foundry.utils.escapeHTML(attacker.name ?? "?"), bound
+  }) : game.i18n.localize("SR5.MONAD_CoreNoAttacker")}</p>
+        <div class="form-group"><label>${game.i18n.localize("SR5.MONAD_CoreBoxes")}</label><input type="number" name="boxes" min="0" max="${bound}" value="${suggestedCoreBoxes(data, bound)}"></div>`,
       ok: {
         label: game.i18n.localize("SR5.MONAD_CoreApply"),
-        callback: (event, b) => Math.max(0, Math.min(50, Math.trunc(num(b.form.elements.boxes.value))))
+        callback: (event, b) => Math.max(0, Math.min(bound, Math.trunc(num(b.form.elements.boxes.value))))
       },
       rejectClose: false,
     })
