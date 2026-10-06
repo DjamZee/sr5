@@ -47,7 +47,7 @@ import {
   SR5_MatrixHelpers 
 } from "./roll-helpers/matrix.js"
 import {
-  isRolledByTarget, firstAidPatient, healPatient, healsDamage, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick, ownsCardSpeaker, defenseActorId, matrixDefenseActorId, removedButtonKeys
+  isRolledByTarget, firstAidPatient, healPatient, healsDamage, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick, ownsCardSpeaker, defenseActorId, matrixDefenseActorId, TARGET_RESISTS_CARD, removedButtonKeys
 } from "./roll-helpers/cardRoller.js"
 import {
   SR5_CombatHelpers 
@@ -349,6 +349,9 @@ export class SR5_RollMessage {
       case "matrixResistance":
       case "vehicleTest":
       case "resistanceToxin":
+        //The caster selected does not resist their own spell, complex form or power: the card's target does, as for a weapon (N93, MESURES-M7 D3).
+        //Not for an area spell: a caster caught in their own area resists it
+        if (TARGET_RESISTS_CARD.includes(type) && messageData.magic?.spell?.range !== "area") actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids) ?? actor
         //A defense among them: once per target and attack (system/defense-once.js)
         if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest(type, null, messageData)
         break
@@ -851,6 +854,9 @@ export class SR5_RollMessage {
 
     switch (buttonToUpdate) {
       case "damage":
+        //An engulf (earth, water, fire) applied at its first phase: the active GM keeps the attack card for the victim,
+        //which the following phases read (SR5 p. 399, Victoire's review)
+        if (messageData.damage?.isContinuous && messageData.test?.typeSub !== "continuousDamage") await SR5_ActorHelper.keepEngulfFirstPhase(messageData)
         if (messageData.combat.calledShot.name === "splittingDamage") {
           if (messageData.damage.splittedTwo){
             messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.damage.splittedOne}${game.i18n.localize('SR5.DamageTypeStunShort')} & ${messageData.damage.splittedTwo}${game.i18n.localize('SR5.DamageTypePhysicalShort')} ${game.i18n.localize("SR5.AppliedDamage")}`)
@@ -941,9 +947,12 @@ export class SR5_RollMessage {
         break
       case "toxinEffect":
         if (messageData.damage.toxin.type === "airEngulf"){
-          //Generate Resistance chat button
-          let label = `${game.i18n.localize("SR5.TakeOnDamageShort")} ${game.i18n.localize("SR5.DamageValueShort")}${game.i18n.localize("SR5.Colons")} ${messageData.damage.base}${game.i18n.localize(SR5.damageTypesShort[messageData.damage.type])}`
-          if (messageData.combat.armorPenetration) label += ` / ${game.i18n.localize("SR5.ArmorPenetrationShort")}${game.i18n.localize("SR5.Colons")} ${messageData.combat.armorPenetration}`
+          //Generate Resistance chat button: the damage is worked out on the engulfing spirit, never read on this card (Ivo).
+          //The first phase keeps the attack card in the active GM's ledger, for the victim (before the defense card is
+          //deleted just below); a following phase reads it there (Victoire's review)
+          const engulf = await SR5_ActorHelper.engulfDamageOf(await SR5_ActorHelper.keepEngulfFirstPhase(messageData))
+          let label = `${game.i18n.localize("SR5.TakeOnDamageShort")} ${game.i18n.localize("SR5.DamageValueShort")}${game.i18n.localize("SR5.Colons")} ${engulf ? `${engulf.value}${game.i18n.localize(SR5.damageTypesShort[engulf.type])}` : "?"}`
+          //No AP shown: armor does not protect against an air engulf, its −Magic only weighs on gas masks (SR5 p. 399, 410)
           messageData.chatCard.buttons.resistanceCard = SR5_RollMessage.generateChatButton("nonOpposedTest","resistanceCard",label)
           messageData.damage.resistanceType = "physicalDamage"
           let oldMessage = game.messages.get(messageData.previousMessage.messageId)

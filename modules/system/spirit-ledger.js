@@ -42,20 +42,42 @@ export function withCharacterField(ledger, actorId, field, value){
 }
 
 // Spirit traits the gamemaster sets (Forbidden Arcana p. 172-175), keyed like a banished spirit; and the magic pact
-// of a free spirit (Street Grimoire p. 133), the only way a spirit spends the Edge of its character (SR5 p. 58)
-export const SPIRIT_TRAITS = ["isElemental", "isWild", "hasDomain", "magicPact"]
+// of a free spirit (Street Grimoire p. 133), which lets it spend the Edge of its character; whether the spirit is free
+// (SR5 p. 306-307), and the Edge the gamemaster gave it (freeEdge, a number; null: the default of freeSpiritEdge)
+export const SPIRIT_TRAITS = ["isElemental", "isWild", "hasDomain", "magicPact", "isFree"]
+export const SPIRIT_VALUES = ["freeEdge"]
+
+// A value of the gamemaster's: a whole number from 0, or null when left empty
+function spiritValue(value){
+  if (value === null || value === undefined || value === "") return null
+  const n = Math.floor(Number(value))
+  return Number.isFinite(n) ? Math.max(0, n) : null
+}
+
 export function spiritEntry(ledger, key){
   const entry = ledger?.spirits?.[key] ?? {
   }
-  return Object.fromEntries(SPIRIT_TRAITS.map(t => [t, !!entry[t]]))
+  return {
+    ...Object.fromEntries(SPIRIT_TRAITS.map(t => [t, !!entry[t]])),
+    ...Object.fromEntries(SPIRIT_VALUES.map(v => [v, spiritValue(entry[v])])),
+  }
 }
 export function withSpiritTrait(ledger, key, trait, value){
-  if (!SPIRIT_TRAITS.includes(trait)) throw new Error(`unknown spirit trait ${trait}`)
+  if (!SPIRIT_TRAITS.includes(trait) && !SPIRIT_VALUES.includes(trait)) throw new Error(`unknown spirit trait ${trait}`)
   const next = foundryCopy(ledger)
   next.spirits[key] = {
-    ...spiritEntry(next, key), [trait]: !!value
+    ...spiritEntry(next, key), [trait]: SPIRIT_VALUES.includes(trait) ? spiritValue(value) : !!value
   }
   return next
+}
+
+// The Edge of a free spirit (SR5 p. 306-307: P / 2, only for free spirits). The tables say no rounding: the general
+// rule rounds up (SR5 p. 50). Street Grimoire p. 203 has a spirit freed start at 1 and grow in play: the gamemaster
+// sets that value (freeEdge), this default holding until he does. Default asked of DjamZ (H10), kept in one place
+export const FREE_SPIRIT_EDGE_DEFAULT = force => Math.ceil((Math.max(0, Number(force) || 0)) / 2)
+export function freeSpiritEdge(force, freeEdge){
+  const set = spiritValue(freeEdge)
+  return set === null ? FREE_SPIRIT_EDGE_DEFAULT(force) : set
 }
 
 // A banishing card counts once: its message id is kept, whatever the button state on the card says
@@ -110,7 +132,42 @@ function foundryCopy(ledger){
       ...(ledger?.banishSeen ?? {
       })
     },
+    summoners: {
+      ...(ledger?.summoners ?? {
+      })
+    },
+    summonersMigrated: !!ledger?.summonersMigrated,
+    engulfed: {
+      ...(ledger?.engulfed ?? {
+      })
+    },
   }
+}
+
+// Who summoned a spirit (SR5 p. 306: he may spend his Edge on its tests). Written by the active GM when he creates
+// the spirit from the summoner's item (createSidekick), never read from the spirit's creatorId, which its owner can
+// write (Victoire's review of H9)
+export function spiritSummoner(ledger, spiritId){
+  return ledger?.summoners?.[spiritId] ?? null
+}
+export function withSpiritSummoner(ledger, spiritId, summonerId){
+  const next = foundryCopy(ledger)
+  if (summonerId) next.summoners[spiritId] = summonerId
+  else delete next.summoners[spiritId]
+  return next
+}
+
+// The attack card of the spirit that engulfed a victim (SR5 p. 399), keyed like a banished spirit. Written by the
+// active GM when the first phase is applied through the real attack and defense, cleared when the victim breaks free;
+// the following phases read it for the actor who resists, never on a card (Victoire's review)
+export function engulfSource(ledger, victimKey){
+  return ledger?.engulfed?.[victimKey] ?? null
+}
+export function withEngulfSource(ledger, victimKey, messageId){
+  const next = foundryCopy(ledger)
+  if (messageId) next.engulfed[victimKey] = messageId
+  else delete next.engulfed[victimKey]
+  return next
 }
 
 /* -------------------------------------------- */
@@ -137,7 +194,12 @@ export function banishKey(actor){
 // some there, which win
 export function spiritTraitsFor(ledger, baseId, tokenKey){
   const traits = spiritEntry(ledger, baseId)
-  if (tokenKey && ledger?.spirits?.[tokenKey]) Object.assign(traits, spiritEntry(ledger, tokenKey))
+  if (tokenKey && ledger?.spirits?.[tokenKey]) {
+    const own = spiritEntry(ledger, tokenKey)
+    //A value left empty on the token keeps the world actor's
+    for (const v of SPIRIT_VALUES) if (own[v] === null) delete own[v]
+    Object.assign(traits, own)
+  }
   return traits
 }
 
@@ -162,6 +224,16 @@ export async function setBanishTotal(key, total, messageId){
 
 export async function setSpiritTrait(key, trait, value){
   return writeLedger(ledger => withSpiritTrait(ledger, key, trait, value))
+}
+
+//Written by the system, not by a click: only the active GM, without a warning to the others
+export async function setSpiritSummoner(spiritId, summonerId){
+  if (!isActiveGM()) return false
+  return writeLedger(ledger => withSpiritSummoner(ledger, spiritId, summonerId))
+}
+export async function setEngulfSource(victimKey, messageId){
+  if (!isActiveGM()) return false
+  return writeLedger(ledger => (engulfSource(ledger, victimKey) === (messageId || null) ? null : withEngulfSource(ledger, victimKey, messageId)))
 }
 
 // Written over the prepared data of every client, whatever the sheet holds: the ledger is the only source.
@@ -246,4 +318,25 @@ export function registerSpiritLedger(){
 
 export function initSpiritLedger(){
   Hooks.once("ready", migrateLegacy)
+  Hooks.once("ready", migrateSummoners)
+}
+
+// The spirits summoned before the summoners were kept in the ledger, once: a spirit whose creatorId names an actor
+// that does hold the spirit's item (creatorItemId), as createSidekick made it. A creatorId alone is never believed
+export function summonersFromActors(ledger, actors, resolveActor){
+  for (const actor of actors ?? []) {
+    if (actor.type !== "actorSpirit" || !actor.system?.creatorId || spiritSummoner(ledger, actor.id)) continue
+    const summoner = resolveActor(actor.system.creatorId)
+    if (summoner?.items?.get?.(actor.system.creatorItemId)?.type !== "itemSpirit") continue
+    ledger = withSpiritSummoner(ledger, actor.id, actor.system.creatorId)
+  }
+  ledger.summonersMigrated = true
+  return ledger
+}
+async function migrateSummoners(){
+  if (!isActiveGM() || readLedger().summonersMigrated) return
+  const {
+    SR5_EntityHelpers
+  } = await import("../entities/helpers.js")
+  await writeLedger(ledger => (ledger.summonersMigrated ? null : summonersFromActors(ledger, game.actors, id => SR5_EntityHelpers.getRealActorFromID(id))))
 }

@@ -194,6 +194,28 @@ export class SR5_Toxins {
     return !!actor?.items?.some(i => i.type === "itemEffect" && i.system?.type === "toxinEffectManasphereCut")
   }
 
+  /** Better Than Bad p. 141, "incapable d'utiliser la magie, sous quelque forme que ce soit" (decision H1 of DjamZ):
+   *  spells, rituals, conjuring, counterspelling, alchemy (making a preparation) and adept powers. Triggering a
+   *  preparation already made stays allowed: it runs on the item's Potency, not on its maker's Magic */
+  static BLIGHT_BLOCKED_ROLLS = ["spell", "ritual", "preparationFormula", "adeptPower"]
+  static BLIGHT_BLOCKED_SKILLS = ["spellcasting", "ritualSpellcasting", "counterspelling", "alchemy", "summoning", "binding", "banishing", "artificing", "disenchanting"]
+  static blightBlocksRoll(actor, rollType, rollKey) {
+    if (!this.isCutFromManasphere(actor)) return false
+    if (this.BLIGHT_BLOCKED_ROLLS.includes(rollType)) return true
+    if (rollType === "weaponAstral" && this.blightBlocksAstral(actor)) return true
+    if (!["skill", "skillDicePool"].includes(rollType)) return false
+    return this.BLIGHT_BLOCKED_SKILLS.includes(rollKey) || (this.BLIGHT_ASTRAL_SKILLS.includes(rollKey) && this.blightBlocksAstral(actor))
+  }
+
+  /** "Perd sa connexion à la manasphère" (decisions of DjamZ after Victoire's reviews): no astral perception, projection,
+   *  Astral observation nor Astral combat. The book is followed: dual-natured beings are "affectées de manière
+   *  similaire", they lose the astral too, with their -4 dice. A spirit is named only for the DMSO (it loses its
+   *  Immunity to normal weapons), never as losing the manasphere: it keeps its astral */
+  static BLIGHT_ASTRAL_SKILLS = ["assensing", "astralCombat"]
+  static blightBlocksAstral(actor) {
+    return this.isCutFromManasphere(actor) && actor?.type !== "actorSpirit"
+  }
+
   /** A dual-natured being: one of its powers carries the dualNatured spirit power key */
   static isDualNatured(actor) {
     return !!actor?.items?.some(i => i.type === "itemPower" &&

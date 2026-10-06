@@ -7,6 +7,9 @@ import {
 import {
   SR5_Toxins
 } from "../../entities/items/toxins.js"
+import {
+  WEAPON_MATRIX_DAMAGE
+} from "../roll-helpers/weapon-matrix-damage.js"
 
 export default async function attackInfo(cardData){
   cardData.damage.resistanceType = "physicalDamage"
@@ -29,7 +32,12 @@ export default async function attackInfo(cardData){
     let label = `${game.i18n.localize("SR5.TakeOnDamageShort")} ${game.i18n.localize("SR5.DamageValueShort")}${game.i18n.localize("SR5.Colons")} ${cardData.damage.value}${game.i18n.localize(SR5.damageTypesShort[cardData.damage.type])}`
     if (cardData.combat.armorPenetration) label += ` / ${game.i18n.localize("SR5.ArmorPenetrationShort")}${game.i18n.localize("SR5.Colons")} ${cardData.combat.armorPenetration}`
     if (cardData.damage.element === "toxin") label = `${game.i18n.localize("SR5.TakeOnDamageShort")} ${game.i18n.localize("SR5.Toxin")}${game.i18n.localize("SR5.Colons")} ${SR5_Toxins.nameOf(cardData.damage.toxin, k => game.i18n.localize(k))}`
-    if (cardData.damage.value > 0) cardData.chatCard.buttons.resistanceCard = SR5_RollMessage.generateChatButton("opposedTest","resistanceCard",label)
+    //A DSP grenade (Street Lethal p. 57): matrix damage, resisted by each device caught in the blast
+    if (cardData.damage.type === WEAPON_MATRIX_DAMAGE) {
+      cardData.damage.matrix.value = cardData.damage.value
+      cardData.damage.fromWeapon = true
+      if (cardData.damage.value > 0) cardData.chatCard.buttons.matrixResistance = SR5_RollMessage.generateChatButton("opposedTest","matrixResistance",`${game.i18n.localize("SR5.TakeOnDamageMatrix")} (${cardData.damage.value})`)
+    } else if (cardData.damage.value > 0) cardData.chatCard.buttons.resistanceCard = SR5_RollMessage.generateChatButton("opposedTest","resistanceCard",label)
   } else if (cardData.roll.hits > 0) {
     if (cardData.test.typeSub === "rangedWeapon") cardData.chatCard.buttons.defenseRangedWeapon = SR5_RollMessage.generateChatButton("opposedTest","defenseRangedWeapon",game.i18n.localize("SR5.Defend"))
     else if (cardData.test.typeSub === "meleeWeapon") cardData.chatCard.buttons.defenseMeleeWeapon = SR5_RollMessage.generateChatButton("opposedTest","defenseMeleeWeapon",game.i18n.localize("SR5.Defend"))

@@ -2,6 +2,12 @@ import {
   hasWeaponTrait
 } from '../items/weaponTraits.js'
 import {
+  SR5_Toxins
+} from '../items/toxins.js'
+import {
+  activeBoneLacing, isBoneLacing
+} from '../../system/implant-essence.js'
+import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
@@ -32,9 +38,6 @@ import {
   SR5_SocketHandler 
 } from "../../socket.js"
 import SR5_PanDialog from "../../interface/pan-dialog.js"
-import {
-  isAlwaysActive
-} from "../items/always-active.js"
 import {
   SR5Credstick 
 } from "../../interface/credstick.js"
@@ -876,19 +879,30 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
   }
 
   /**
-   * An item dropped from elsewhere. In V13, ActorSheetV2._onDropItem creates it directly: the sheets'
-   * _onDropItemCreate is never called (measured, Foundry 13.351). An always active power (SR5 p. 396) comes
-   * switched on (arbitrage de DjamZ, H39); everything else is Foundry's own drop.
+   * An item dropped on the sheet. The V13 migration lost the sheets' own rules: ActorSheetV2._onDropItem creates
+   * the item itself and never calls _onDropItemCreate (measured, Foundry 13.351). They are wired back here: the
+   * sheet's _onDropItemCreate decides (types refused, a single tradition, items switched on), and the base one
+   * below creates the item. A move within the same sheet stays Foundry's sort.
    */
   async _onDropItem(event, item) {
     if (!this.actor.isOwner) return null
     if (this.actor.uuid === item.parent?.uuid) return super._onDropItem(event, item)
-    const data = item.toObject()
-    if (!isAlwaysActive(data)) return super._onDropItem(event, item)
-    data.system.isActive = true
-    const keepId = !this.actor.items.has(item.id)
-    return (await Item.implementation.create(data, {
-      parent: this.actor, keepId
+    // The id is kept unless the actor already has an item with it (Foundry's own rule)
+    this._dropKeepId = !this.actor.items.has(item.id)
+    try {
+      return (await this._onDropItemCreate(item.toObject())) ?? null
+    } finally {
+      delete this._dropKeepId
+    }
+  }
+
+  /**
+   * Create a dropped item, once the sheet's rules have accepted it (the end of every sheet's _onDropItemCreate).
+   * @param {object} itemData  the item's data, as the sheet left it
+   */
+  async _onDropItemCreate(itemData) {
+    return (await Item.implementation.create(itemData, {
+      parent: this.actor, keepId: this._dropKeepId ?? false
     })) ?? null
   }
 
@@ -1385,6 +1399,19 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
     //Vintage (Gun H(e)aven 3 p. 3): never wireless, so no switch and no action spent
     if (target === "system.wirelessTurnedOn" && realItem?.type === "itemWeapon" && hasWeaponTrait(realItem.system, "vintage")) return ui.notifications.warn(game.i18n.localize("SR5.WARN_VintageNoWireless"))
+    //Better Than Bad p. 141: under Blight no adept power, focus nor sustained spell is switched on (decisions of DjamZ)
+    if (target === "system.isActive" && value && ["itemAdeptPower", "itemFocus", "itemSpell"].includes(realItem?.type) && SR5_Toxins.isCutFromManasphere(actor)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
+    //Ossature renforcée (SR5 p. 458): "un seul type pouvant être installé à la fois". A second one switched on is
+    //refused to a player; the gamemaster is warned and goes past it (decision H5 of DjamZ)
+    if (target === "system.isActive" && value === true && isBoneLacing(realItem)) {
+      const lacing = activeBoneLacing(actor, realItem)
+      if (lacing) {
+        ui.notifications.warn(game.i18n.format(game.user.isGM ? "SR5.WARN_BoneLacingGMPast" : "SR5.WARN_BoneLacingSecond", {
+          name: realItem.name, actor: actor.name, lacing: lacing.name
+        }))
+        if (!game.user.isGM) return
+      }
+    }
     //The guard reads the actor's counters, which change only when the server answers: a second click before
     //that would pass on the old count. Toggles that cost an action wait for the previous one to be written
     let actionCost = this._itemValueActionCost(item, target, oldValue)

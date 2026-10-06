@@ -1245,12 +1245,19 @@ SR5.ammunitionCaseType = {
 SR5.damageTypesShort = {
   stun                      : "SR5.DamageTypeStunShort",
   physical                  : "SR5.DamageTypePhysicalShort",
+  matrix                    : "SR5.DamageTypeMatrixShort",
   condition                 : "",
 }
 
 SR5.damageTypes = {
   stun                      : "SR5.DamageTypeStun",
   physical                  : "SR5.DamageTypePhysical",
+}
+
+// A weapon may also deal matrix damage: the DSP weapons (Street Lethal p. 57, roll-helpers/weapon-matrix-damage.js)
+SR5.weaponDamageTypes = {
+  ...SR5.damageTypes,
+  matrix                    : "SR5.DamageTypeMatrix",
 }
 
 // Données d'armes modifiables par un customEffect

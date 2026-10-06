@@ -25,6 +25,9 @@ import {
 import {
   subdueTakesHold, strengthenedHold, grappleHoldOf, isHeldBy, holdAfterReversal
 } from "../roll-helpers/grapple-rules.js"
+import {
+  WEAPON_MATRIX_DAMAGE, weaponMatrixResistance
+} from "../roll-helpers/weapon-matrix-damage.js"
 
 export default async function defenseInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
@@ -103,6 +106,9 @@ export default async function defenseInfo(cardData, actorId){
   if (cardData.combat.firingMode.selected === "SF") cardData.damage.value = cardData.damage.base
   else if (cardData.magic.spell.areaThreshold) cardData.damage.value = SR5_CombatHelpers.indirectAreaSpellDamage(cardData.damage.base, cardData.roll.netHits, cardData.magic.spell.areaThreshold)
   else cardData.damage.value = cardData.damage.base + cardData.roll.netHits
+
+  //A DSP weapon (Street Lethal p. 57): matrix damage, resisted with Device Rating + Firewall; no armor, no Body
+  if (cardData.damage.type === WEAPON_MATRIX_DAMAGE) return weaponMatrixResistance(cardData, actor, SR5_RollMessage.generateChatButton)
 
   //If Hardened Armor, check if damage do something: SR5 p. 397 compares the modified DV, net hits already in it
   if ((actorData.specialProperties?.hardenedArmors.normalWeapon.value > 0) && (cardData.damage.source !== "magical")) {

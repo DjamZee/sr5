@@ -5,8 +5,11 @@ import {
   canEditItemEffects, clearTargetsOnCategoryChange, keepUnlistedEffectFields, lockEffectFields
 } from "../../system/effect-editor.js"
 import {
-  SR5 
+  SR5
 } from "../../config.js"
+import {
+  transhumanGift, itemHasEffect, IMPLANT_ESSENCE_EFFECTS, AUGMENTATION_BUNDLE_SETTING
+} from "../../system/implant-essence.js"
 import {
   garageRequirement
 } from "../../interface/storage-rules.js"
@@ -469,6 +472,14 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     context.isActiveGM = game.user.isGM && game.users.activeGM?.id === game.user.id
     // The strain of a head case is the GM's choice (Dark Terrors p. 91, monad-matrix.js)
     context.userIsGM = game.user.isGM
+    // Chrome Flesh (séance G, G19, G20): the lot box shows with its optional rule; Prototype de transhumain's counter
+    if (item.type === "itemAugmentation") context.augmentationBundleRule = game.settings.get("sr5", AUGMENTATION_BUNDLE_SETTING)
+    if (item.type === "itemQuality" && itemHasEffect(item, IMPLANT_ESSENCE_EFFECTS.transhumanPrototype)) {
+      const points = item.system.transhumanEssence
+      context.transhumanGift = (item.actor && transhumanGift(item.actor.items)) || {
+        points, used: 0, remaining: points
+      }
+    }
     if (item.type === "itemWeapon") context.weaponToxinName = SR5_Toxins.nameOf(item.system.toxin, k => game.i18n.localize(k))
 
     // Mentor spirit: each effect picks its block, the Mask shows only with its optional rule

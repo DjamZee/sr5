@@ -21,6 +21,11 @@
 			{{> systems/sr5/templates/actors/_partials/footer/parts/monitor-edge.hbs }}
 		{{/if}}
 
+		{{!-- Only a free spirit has Edge of its own (SR5 p. 306-307): the monitor is dropped for any other spirit --}}
+		{{#if (eq actor.type 'actorSpirit')}}{{#if system.conditionMonitors.edge}}
+			{{> systems/sr5/templates/actors/_partials/footer/parts/monitor-edge.hbs }}
+		{{/if}}{{/if}}
+
 		{{#if (eq actor.type 'actorGrunt')}}
 			{{> systems/sr5/templates/actors/_partials/footer/parts/metatype-choice.hbs }}
 			{{> systems/sr5/templates/actors/_partials/footer/parts/monitor-edge.hbs }}

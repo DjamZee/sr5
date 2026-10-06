@@ -31,11 +31,15 @@
 </div>
 {{!-- Forbidden Arcana p. 172-175: Elemental, wild, Domain. The gamemaster's only --}}
 {{#if system.isGM}}
-<div class="SR-EspritType" title="{{localize 'SR5.SpiritTraits'}}">
+<div class="SR-EspritType SR-SpiritTraits" title="{{localize 'SR5.SpiritTraits'}}">
   <label data-tooltip="{{localize 'SR5.SpiritElemental_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="isElemental" {{checked system.isElemental}}> {{localize 'SR5.SpiritElemental'}}</label>
   <label data-tooltip="{{localize 'SR5.SpiritWild_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="isWild" {{checked system.isWild}}> {{localize 'SR5.SpiritWild'}}</label>
   <label data-tooltip="{{localize 'SR5.SpiritDomain_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="hasDomain" {{checked system.hasDomain}}> {{localize 'SR5.SpiritDomain'}}</label>
   <label data-tooltip="{{localize 'SR5.SpiritMagicPact_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="magicPact" {{checked system.magicPact}}> {{localize 'SR5.SpiritMagicPact'}}</label>
+  <label data-tooltip="{{localize 'SR5.SpiritFree_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="isFree" {{checked system.isFree}}> {{localize 'SR5.SpiritFree'}}</label>
+  {{#if system.isFree}}
+  <label data-tooltip="{{localize 'SR5.SpiritFreeEdge_D'}}">{{localize 'SR5.Edge'}} <input type="number" min="0" class="SRinputInBox sr5-spirit-ledger" data-trait="freeEdge" value="{{system.freeEdge}}" placeholder="{{system.specialAttributes.edge.natural.value}}"></label>
+  {{/if}}
 </div>
 {{/if}}
 {{!-- Materialization switch: from the astral initiative to the physical one, and back (SR5 p. 401) --}}

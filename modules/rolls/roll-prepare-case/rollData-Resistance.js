@@ -28,6 +28,44 @@ function abortWithInfo(message){
 //Add info for Resistance Roll
 export default async function resistance(rollData, rollType, actor, chatData){
   let actorData = actor.system
+  //An engulf, at the spirit's following phases (SR5 p. 399): the damage is worked out again on the spirit engulfing the
+  //actor who resists, whose attack card the active GM keeps; never read on the flags of a card (Ivo, Victoire)
+  const airPhase = rollType === "resistanceCard" && chatData.damage?.toxin?.type === "airEngulf"
+  const continuousPhase = rollType === "resistanceCard" && chatData.test?.typeSub === "continuousDamage"
+  let engulf
+  if (airPhase || continuousPhase){
+    const {
+      SR5_ActorHelper
+    } = await import("../../entities/actors/entityActor-helpers.js")
+    engulf = await SR5_ActorHelper.engulfDamageOf(await SR5_ActorHelper.engulfAttackFor(actor))
+    if (!engulf) return abortWithInfo(game.i18n.localize("SR5.INFO_EngulfSourceMissing"))
+  }
+  if (continuousPhase){
+    chatData = foundry.utils.deepClone(chatData)
+    chatData.damage.originalValue = engulf.value
+    chatData.damage.value = engulf.value
+    chatData.damage.type = engulf.type
+    chatData.damage.resistanceType = "physicalDamage"
+    chatData.damage.element = engulf.element ?? ""
+    chatData.roll.netHits = 0
+    chatData.combat.armorPenetration = engulf.armorPenetration
+  }
+  if (airPhase){
+    chatData = foundry.utils.deepClone(chatData)
+    chatData.damage.value = engulf.value
+    chatData.damage.type = engulf.type
+    chatData.damage.resistanceType = "physicalDamage"
+    chatData.damage.element = "toxin"
+    //Resisted "comme pour une attaque par une toxine dont le vecteur est l'inhalation", armor does not protect but
+    //protective gear does (p. 399, 410): the toxin path, its Power the damage, its penetration −Magic, no hits added
+    chatData.damage.toxin.power = engulf.value
+    chatData.damage.toxin.penetration = engulf.armorPenetration
+    chatData.damage.toxin.damageType = engulf.type
+    chatData.damage.isContinuous = false
+    chatData.roll.netHits = 0
+    chatData.combat.armorPenetration = 0
+    rollType = "resistanceToxin"
+  }
   //Transfert necessary info from chatCard
   rollData.damage.base = chatData.damage.value
   rollData.damage.type = chatData.damage.type

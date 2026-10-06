@@ -114,4 +114,39 @@ describe("sealing a ritual circle", () => {
     await SR5_RitualCircle.seal(circleCard)
     expect(rollTest.mock.calls[0][3].ritualCircle.bonus.dice).toBe(2)
   })
+
+  // H1 (decision of DjamZ): under Blight (Better Than Bad p. 141) no one takes part in a ritual
+  it("leaves out the assist of a participant cut from the manasphere, whatever its card says", async () => {
+    ally.items = [{
+      type: "itemEffect", system: {
+        type: "toxinEffectManasphereCut"
+      }
+    }]
+    assists = [assist('ally', 3)]
+    await SR5_RitualCircle.seal(circleCard)
+    expect(rollTest.mock.calls[0][3].ritualCircle.bonus.dice).toBe(0)
+  })
+
+  it("refuses a participant cut from the manasphere at the Join button", async () => {
+    ally.items = [{
+      type: "itemEffect", system: {
+        type: "toxinEffectManasphereCut"
+      }
+    }]
+    ally.system.specialAttributes = {
+      magic: {
+        augmented: {
+          value: 5
+        }
+      }
+    }
+    globalThis.ChatMessage = {
+      getSpeaker: () => ({
+        actor: 'ally'
+      }), create: vi.fn()
+    }
+    await SR5_RitualCircle.join(circleCard)
+    expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_BlightNoSpell')
+    expect(ChatMessage.create).not.toHaveBeenCalled()
+  })
 })

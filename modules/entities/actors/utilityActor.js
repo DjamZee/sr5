@@ -11,6 +11,9 @@ import {
   SR5ShopGrades
 } from "../../interface/shop-grades.js"
 import {
+  transhumanGift, currentEssenceHole, essenceAdjustment
+} from "../../system/implant-essence.js"
+import {
   SR5_Toxins
 } from "../items/toxins.js"
 import {
@@ -69,7 +72,7 @@ import {
   ELEMENTAL_MENTAL_ATTRIBUTES, ELEMENTAL_SPIRIT_TYPES, elementalReduction, astralReputation, wildReputation
 } from "../items/spirit-bonds.js"
 import {
-  applyCharacterLedger, applySpiritLedger
+  applyCharacterLedger, applySpiritLedger, freeSpiritEdge
 } from "../../system/spirit-ledger.js"
 import {
   harmoniousDefensePool
@@ -1078,6 +1081,8 @@ export class SR5_CharacterUtility extends Actor {
     for (let key of Object.keys(SR5.visionActive)) {
       if (actorData.visions[key].isActive) currentVision = key
     }
+    //Better Than Bad p. 141: cut from the manasphere by Blight, no astral perception (decision of DjamZ); leaving it stays free
+    if (vision === "astral" && currentVision !== "astral" && SR5_Toxins.blightBlocksAstral(actor)) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
     if ((vision === "astral" || currentVision === "astral") && !SR5Combat.hasActionsLeft(actor, [{
       type: "simple", value: 1, source: "switchPerception"
     }])) return
@@ -1296,6 +1301,15 @@ export class SR5_CharacterUtility extends Actor {
     actorData.activeSpecialAttribute = "magic"
     specialAttributes.magic.natural.base = actorData.force.value
     SR5_EntityHelpers.updateValue(specialAttributes.magic.natural)
+    //Only a free spirit has Edge of its own (SR5 p. 306-307); a summoned or bound one has none, its summoner lends his (p. 306)
+    if (actorData.isFree && specialAttributes.edge) {
+      specialAttributes.edge.natural.base = freeSpiritEdge(actorData.force.value, actorData.freeEdge)
+      SR5_EntityHelpers.updateValue(specialAttributes.edge.natural)
+    } else {
+      delete specialAttributes.edge
+      delete actorData.conditionMonitors?.edge
+      delete actorData.statusBars?.edge
+    }
     essence.base = actorData.force.value
     SR5_EntityHelpers.updateValue(essence)
     const customType = SR5_SpiritTypes.get(actorData.type)
@@ -1650,7 +1664,16 @@ export class SR5_CharacterUtility extends Actor {
 
   // Generate Essence
   static updateEssence(actor) {
-    SR5_EntityHelpers.updateValue(actor.system.essence)
+    const essence = actor.system.essence
+    // Typed as the implants are, so the Magic and Resonance lost with the Essence count them (updateSpecialAttributes)
+    // Prototype de transhumain (Chrome Flesh p. 57): its bioware costs no Essence, up to its point
+    // KEEP IN STEP with essenceAdjustment() (implant-essence.js), which mentorMagic() reads earlier
+    const gift = transhumanGift(actor.items)
+    if (gift?.used) SR5_EntityHelpers.updateModifier(essence, gift.name, "itemAugmentation", gift.used)
+    // Faille d'Essence what a removed implant took stays lost (SR5 p. 53), filled under the Faille d'Essence (Chrome Flesh p. 74)
+    essence.hole = currentEssenceHole(actor)
+    if (essence.hole)SR5_EntityHelpers.updateModifier(essence, game.i18n.localize("SR5.EssenceHole"), "itemAugmentation", -essence.hole)
+    SR5_EntityHelpers.updateValue(essence)
   }
 
   // Generate spirit values
@@ -2241,6 +2264,11 @@ export class SR5_CharacterUtility extends Actor {
   static canSwitchToInitiative(actor, initiative) {
     let currentInitiative = this.findActiveInitiative(actor.system),
       switchCost = []
+    //Better Than Bad p. 141: cut from the manasphere by Blight, no astral projection (decision of DjamZ)
+    if (initiative === "astralInit" && currentInitiative !== "astralInit" && SR5_Toxins.blightBlocksAstral(actor)) {
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
+      return false
+    }
     if (initiative === "astralInit" || (initiative === "physicalInit" && currentInitiative === "astralInit")) switchCost = [{
       type: "complex", value: 1
     }]
@@ -3380,6 +3408,12 @@ export class SR5_CharacterUtility extends Actor {
   // Counterspell pool
   static updateCounterSpellPool(actor) {
     let actorData = actor.system, magic = actorData.magic, skills = actorData.skills
+    //Better Than Bad p. 141: under Blight no counterspelling, no spell defense dice (decision H1 of DjamZ)
+    if (SR5_Toxins.isCutFromManasphere(actor)) {
+      magic.counterSpellPool.base = 0
+      magic.counterSpellPool.value = 0
+      return
+    }
     magic.counterSpellPool.base = skills.counterspelling.rating.value
     if (magic.metamagics.shielding) SR5_EntityHelpers.updateModifier(magic.counterSpellPool, `${game.i18n.localize('SR5.MetamagicShielding')}`, "metamagic", magic.initiationGrade)
     //Harmonious Defense (Forbidden Arcana p. 45): Willpower + Magic + initiate grade, used as spell defense dice.
@@ -5346,7 +5380,7 @@ export class SR5_CharacterUtility extends Actor {
       SR5_SystemHelpers.srLog(2, `Mentor spirit '${item.name}' ignored: '${actor.name}' already follows a mentor`)
       return
     }
-    const magic = mentorMagic(actor.system.specialAttributes?.magic, actor.system.essence, SR5ShopGrades.greywareMagicPenalty(actor.items))
+    const magic = mentorMagic(actor.system.specialAttributes?.magic, actor.system.essence, SR5ShopGrades.greywareMagicPenalty(actor.items), essenceAdjustment(actor))
     const path = mentorPathFor(actor.system.magic?.magicType, item.system.mysticPath)
     const maskRule = game.settings.get("sr5", "mentorMask")
     if (Object.keys(item.system.customEffects).length) SR5_CharacterUtility.applyCustomEffects(item, actor)
@@ -5359,7 +5393,7 @@ export class SR5_CharacterUtility extends Actor {
     let itemData = item.system
     // Mentor spirit: the effects of the actor's own block only, nothing with a Magic of 0 (SR5 p. 324)
     const mentorPath = item.type === "itemMentorSpirit" ? mentorPathFor(actor.system.magic?.magicType, itemData.mysticPath) : null
-    const mentorMagicValue = item.type === "itemMentorSpirit" ? mentorMagic(actor.system.specialAttributes?.magic, actor.system.essence, SR5ShopGrades.greywareMagicPenalty(actor.items)) : 0
+    const mentorMagicValue = item.type === "itemMentorSpirit" ? mentorMagic(actor.system.specialAttributes?.magic, actor.system.essence, SR5ShopGrades.greywareMagicPenalty(actor.items), essenceAdjustment(actor)) : 0
 
     for (let [effectKey, customEffect] of Object.entries(itemData.customEffects)) {
       let skipCustomEffect = false,

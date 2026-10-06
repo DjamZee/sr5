@@ -14,4 +14,11 @@ describe('Defend buttons wiring', () => {
     expect(block).toMatch(/actor = SR5_EntityHelpers\.getRealActorFromID\(defenseActorId\(/)
     expect(block.indexOf('defenseActorId')).toBeLessThan(block.indexOf('rollTest("defense"'))
   })
+
+  // MESURES-M7 D3: "Resist the spell" clicked with the caster selected went to the caster
+  it('picks the resister of a spell with defenseActorId, except for an area spell', () => {
+    const block = source.match(/case "resistanceToxin":([\s\S]*?)break/)[1]
+    expect(block).toMatch(/TARGET_RESISTS_CARD\.includes\(type\) && messageData\.magic\?\.spell\?\.range !== "area"\) actor = SR5_EntityHelpers\.getRealActorFromID\(defenseActorId\(/)
+    expect(block.indexOf('defenseActorId')).toBeLessThan(block.indexOf('mayDefend'))
+  })
 })

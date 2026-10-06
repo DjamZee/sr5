@@ -630,6 +630,35 @@ export class SR5Combat extends Combat {
     return [...ids]
   }
 
+  //The dice kept for a fighter: only this round's, and only values a d6 can give (a new round rolls the initiative again,
+  //SR5 p. 159). One pool whatever the active initiative: the magician who goes astral keeps her roll and rolls only the
+  //dice she gains (SR5 p. 162), so going back to physical gives back those same dice, never fresh ones
+  static initDiceKept(stored, round){
+    const clean = list => Array.isArray(list) ? list.filter(v => Number.isInteger(v) && v >= 1 && v <= 6).slice(0, 10) : []
+    if (!stored || stored.round !== round) return {
+      added: [], removed: []
+    }
+    return {
+      added: clean(stored.added), removed: clean(stored.removed)
+    }
+  }
+
+  //Dice gained (delta > 0) take back the dice lost this round first, dice lost take back the dice gained this round
+  //first; only what remains is rolled (fresh), as the book asks for a die never rolled
+  static async takeInitDice(kept, delta, fresh){
+    const added = [...kept.added], removed = [...kept.removed], values = []
+    const [from, to] = delta > 0 ? [removed, added] : [added, removed]
+    const count = Math.abs(delta)
+    while (values.length < count && from.length) values.push(from.pop())
+    values.push(...await fresh(count - values.length))
+    to.push(...values)
+    return {
+      values, memory: {
+        added, removed
+      }
+    }
+  }
+
   static async changeInitInCombat(documentId, initChange){
     if (!game.combat) return
     let document = SR5_EntityHelpers.getRealActorFromID(documentId)
@@ -649,10 +678,27 @@ export class SR5Combat extends Combat {
 
     if (document.system.initiatives[initKey].value !== combatant.flags.sr5.currentInitRating) initRatingChange += document.system.initiatives[initKey].value - combatant.flags.sr5.currentInitRating
     if (document.system.initiatives[initKey].dice.value !== combatant.flags.sr5.currentInitDice) {
-      sign = Math.sign(document.system.initiatives[initKey].dice.value - combatant.flags.sr5.currentInitDice)
-      diceToRoll = Math.abs(document.system.initiatives[initKey].dice.value - combatant.flags.sr5.currentInitDice)
+      const delta = document.system.initiatives[initKey].dice.value - combatant.flags.sr5.currentInitDice
+      sign = Math.sign(delta)
+      diceToRoll = Math.abs(delta)
       if (isNaN(diceToRoll)) diceToRoll = 0
-      diceResult = (await new Roll(`${diceToRoll}d6`).evaluate()).total
+      else {
+        //SR5 p. 162: dice gained or lost are rolled. A die already rolled this round is kept (ruling of DjamZ, 2026-10-06):
+        //switching wired reflexes off and on again gives back the same die, it does not roll it again. The memory lives on
+        //the combat, which the GM alone writes, never on the combatant a player owns
+        const combat = combatant.combat
+        const kept = SR5Combat.initDiceKept(combat?.flags?.sr5?.initDiceKept?.[combatant.id], combat?.round)
+        const fresh = async n => n > 0 ? (await new Roll(`${n}d6`).evaluate()).dice[0].results.map(r => r.result) : []
+        const {
+          values, memory
+        } = await SR5Combat.takeInitDice(kept, delta, fresh)
+        diceResult = values.reduce((sum, v) => sum + v, 0)
+        if (combat && game.users?.activeGM?.isSelf) await combat.update({
+          [`flags.sr5.initDiceKept.${combatant.id}`]: {
+            ...memory, round: combat.round
+          }
+        })
+      }
       if (sign > 0) initDiceChange += diceResult
       else initDiceChange -= diceResult
     }

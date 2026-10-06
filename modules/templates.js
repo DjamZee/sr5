@@ -487,6 +487,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/items/_partial/editable/quality/type-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/quality/karmaCost-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/quality/linkedMentor-edit.hbs",
+    "systems/sr5/templates/items/_partial/editable/quality/transhumanGift-edit.hbs",
 
     //Ritual
     "systems/sr5/templates/items/_partial/editable/ritual/details-edit.hbs",

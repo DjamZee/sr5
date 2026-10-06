@@ -30,6 +30,17 @@ export function toxinCardPower({
   return SR5_Toxins.effectivePower(value, antitoxin)
 }
 
+/**
+ * The damage an air engulf deals at each of the spirit's following phases (SR5 p. 399): Magic × 2 Stun, AP −Magic,
+ * without the hits of the first attack. Worked out on the engulfing spirit, never read on its victim's card (Ivo).
+ */
+export function engulfDamage(magic) {
+  const m = Math.max(0, Math.floor(Number(magic)) || 0)
+  return {
+    value: m * 2, armorPenetration: m ? -m : 0, type: "stun"
+  }
+}
+
 /** The vectors of the weapon's toxin the resister is not immune to (gas mask, chemical seal) */
 export function toxinVectors(toxin) {
   return Object.entries(toxin?.vector ?? {

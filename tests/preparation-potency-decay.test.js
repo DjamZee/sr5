@@ -82,6 +82,24 @@ describe("G9 : Potentiel d'une préparation sur l'horloge du monde (SR5 p. 309)"
       potency: 3
     })
   })
+  it("une suppression (-=) ou un remplacement (==) du départ est refusé aussi", () => {
+    const current = {
+      system: prep()
+    }
+    expect(stripGMOnlyChanges({
+      "system.-=createdAt": null
+    }, current, GM_ONLY_PREPARATION_PATHS)).toEqual(["system.createdAt"])
+    expect(stripGMOnlyChanges({
+      system: {
+        "-=decayRate": null
+      }
+    }, current, GM_ONLY_PREPARATION_PATHS)).toEqual(["system.decayRate"])
+    expect(stripGMOnlyChanges({
+      "==system": {
+        ...prep(), createdAt: 999999
+      }
+    }, current, GM_ONLY_PREPARATION_PATHS)).toEqual(["system.createdAt"])
+  })
 })
 
 describe("G9 : seul le MJ actif écrit", () => {

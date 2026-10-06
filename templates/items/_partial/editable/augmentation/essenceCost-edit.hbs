@@ -19,3 +19,25 @@
         </div>
     {{/if}}
 </li>
+{{!-- Chrome Flesh (séance G): Adapsine (p. 165), lot d'augmentations (p. 96), Prototype de transhumain (p. 57).
+      Set at the installation from the buyer's body; the gamemaster alone changes them afterwards --}}
+{{#unless system.isAccessory}}
+{{#if (or (eq system.type "cyberware") (eq system.type "nanocyber"))}}
+<li class="grid">
+    <div class="col-5" data-title="{{localize 'SR5.UnderAdapsineHint'}}">{{localize 'SR5.UnderAdapsine'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="checkbox" name="system.underAdapsine" data-dtype="Boolean" {{checked system.underAdapsine}} {{#unless userIsGM}}disabled{{/unless}} /></div>
+</li>
+{{/if}}
+{{#if (or (eq system.type "bioware") (eq system.type "culturedBioware"))}}
+<li class="grid">
+    <div class="col-5" data-title="{{localize 'SR5.TranshumanGiftHint'}}">{{localize 'SR5.TranshumanGift'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="checkbox" name="system.transhumanGift" data-dtype="Boolean" {{checked system.transhumanGift}} {{#unless userIsGM}}disabled{{/unless}} /></div>
+</li>
+{{/if}}
+{{#if augmentationBundleRule}}
+<li class="grid">
+    <div class="col-5" data-title="{{localize 'SR5.AugmentationBundleHint'}}">{{localize 'SR5.AugmentationBundle'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="checkbox" name="system.augmentationBundle" data-dtype="Boolean" {{checked system.augmentationBundle}} {{#unless userIsGM}}disabled{{/unless}} /></div>
+</li>
+{{/if}}
+{{/unless}}

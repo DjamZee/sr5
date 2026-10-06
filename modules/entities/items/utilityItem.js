@@ -8,7 +8,7 @@ import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
-  implantEssenceEffects, roundImplantEssence
+  implantEssenceEffects, roundImplantEssence, essenceSettingOn, AUGMENTATION_BUNDLE_SETTING
 } from "../../system/implant-essence.js"
 import {
   SR5_EntityHelpers 
@@ -1210,16 +1210,24 @@ export class SR5_UtilityItem extends Actor {
     SR5_EntityHelpers.updateModifier(itemData.availability, modifierSource, "augmentationGrade", availabilityModifier, false, false)
     SR5_EntityHelpers.updateModifier(itemData.price, modifierSource, "augmentationGrade", priceMultiplier, true, false)
 
-    // Système sensible, Biocompatibilité: the same function prices the implant at the shop (implant-essence.js)
-    const bodyEffects = actor ? implantEssenceEffects(actor.items, itemData.type) : null
-    for (const m of bodyEffects?.multipliers ?? []) SR5_EntityHelpers.updateModifier(itemData.essenceCost, m.name, m.type, m.value, true, false)
+    // Système sensible, Biocompatibilité, Adapsine, lot: the same function prices the implant at the shop
+    // (implant-essence.js). Adapsine lowers the grade's multiplier itself (Chrome Flesh p. 165).
+    const bodyEffects = implantEssenceEffects(actor?.items ?? [], itemData.type, {
+      underAdapsine: itemData.underAdapsine,
+      bundle: itemData.augmentationBundle && essenceSettingOn(AUGMENTATION_BUNDLE_SETTING),
+    })
+    for (const m of bodyEffects.multipliers) SR5_EntityHelpers.updateModifier(itemData.essenceCost, m.name, m.type, m.value, true, false)
+    if (bodyEffects.gradeReduction) {
+      essenceMultiplier = Math.max(0, Math.round((essenceMultiplier - bodyEffects.gradeReduction) * 100) / 100)
+      modifierSource += ` + ${game.i18n.localize("SR5.UnderAdapsine")}`
+    }
 
     SR5_EntityHelpers.updateModifier(itemData.essenceCost, modifierSource, "augmentationGrade", (itemData.isRatingBased ? essenceMultiplier * itemData.itemRating : essenceMultiplier), true, false)
     this._handleItemCapacity(itemData)
     this._handleItemPrice(itemData)
     this._handleItemAvailability(itemData)
     this._handleItemEssenceCost(itemData)
-    if (bodyEffects) itemData.essenceCost.value = roundImplantEssence(itemData.essenceCost.value, bodyEffects)
+    if (actor || bodyEffects.roundDownTenth || bodyEffects.multipliers.length) itemData.essenceCost.value = roundImplantEssence(itemData.essenceCost.value, bodyEffects)
   }
 
   ////////////////// SORTS ////////////////////

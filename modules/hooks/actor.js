@@ -72,8 +72,12 @@ export function sr5HookPreUpdateActor(document, changes, options = {
   //Indexes, reputation adjustment and spirit traits are the gamemaster's (Street Grimoire p. 207, Forbidden Arcana
   //p. 169-176): a player's update that would change them loses those paths, checked before anything is written
   if (!game.user?.isGM) {
-    const refused = stripGMOnlyChanges(changes, document, GM_ONLY_ACTOR_PATHS)
-    if (refused.length) ui.notifications.warn(game.i18n.localize("SR5.WARN_SpiritBondsGMOnly"))
+    //Whatever its form (flat, nested, "==" replacement, "-=" deletion), such an update is refused whole
+    const refused = stripGMOnlyChanges(changes, document, GM_ONLY_ACTOR_PATHS, options)
+    if (refused.length) {
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_SpiritBondsGMOnly"))
+      return false
+    }
     //The Overwatch Score only rises, but for a reboot or an Emulate swap: an update that would leave it lower, in
     //whatever form, is refused (overwatch-guard.js)
     if (!guardActorOverwatch(document, changes, options)) return false

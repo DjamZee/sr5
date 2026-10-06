@@ -83,6 +83,11 @@ export function touchesItemEffects(changes){
 const asList = value => Array.isArray(value) ? value : Object.values(value ?? {
 })
 
+// Does a new item carry effects? One of its three lists holds at least one entry (séance H, H3)
+export function carriesItemEffects(system){
+  return EFFECT_BINDINGS.some(b => asList(system?.[b]).length > 0)
+}
+
 // Sorted keys, so that two equal effects compare equal whatever the order of their fields
 function canonical(value){
   if (Array.isArray(value)) return value.map(canonical)

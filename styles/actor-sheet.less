@@ -506,6 +506,22 @@
                 .sr-dropdown-chevron {
                     color: var(--sr-text-color-light);
                 }
+
+                //The gamemaster's spirit traits: five boxes and the Edge of a free spirit, on as many lines as needed
+                &.SR-SpiritTraits {
+                    font-size  : 13px;
+                    height     : auto;
+                    min-height : 30px;
+                    display    : flex;
+                    flex-wrap  : wrap;
+                    align-items: center;
+                    gap        : 0 6px;
+
+                    input[type="number"] {
+                        width : 3em;
+                        height: 18px;
+                    }
+                }
             }
 
             .SR-AppareilType {

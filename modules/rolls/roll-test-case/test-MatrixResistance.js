@@ -10,6 +10,9 @@ import {
 import {
   SR5_CharacterUtility
 } from "../../entities/actors/utilityActor.js"
+import {
+  isWeaponPulse
+} from "../roll-helpers/weapon-matrix-damage.js"
 
 export default async function matrixResistanceInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId),
@@ -24,16 +27,19 @@ export default async function matrixResistanceInfo(cardData, actorId){
   //Determine matrix damage
   cardData.damage.matrix.value = cardData.damage.matrix.base - cardData.roll.hits
 
-  if (cardData.damage.matrix.value > 0) {       
+  //A DSP weapon's pulse (Street Lethal p. 57) is no matrix action: the shooter's programs (Biofeedback, Lockdown) play no part
+  const fromWeapon = isWeaponPulse(cardData.damage)
+
+  if (cardData.damage.matrix.value > 0) {
     cardData.chatCard.buttons.takeMatrixDamage = SR5_RollMessage.generateChatButton("nonOpposedTest", "takeMatrixDamage", `${game.i18n.localize("SR5.ApplyDamage")} (${cardData.damage.matrix.value})`)
 
     //Handle Blue Goo Ice
     if (actorData.matrix.deviceSubType === "iceBlueGoo") cardData.chatCard.buttons.blueGooExplosion = SR5_RollMessage.generateChatButton("nonOpposedTest", "blueGooExplosion", `${game.i18n.format('SR5.IceBlueGooExplosion')}`)
         
     //Handle Biofeedback
-    if ( attackerData.matrix.programs.biofeedback.isActive || attackerData.matrix.programs.blackout.isActive ||
+    if (!fromWeapon && attackerData && (attackerData.matrix.programs.biofeedback.isActive || attackerData.matrix.programs.blackout.isActive ||
           (attackerData.matrix.deviceSubType === "iceBlack") || (attackerData.matrix.deviceSubType === "iceBlaster") ||
-          (attackerData.matrix.deviceSubType === "iceSparky") ) {
+          (attackerData.matrix.deviceSubType === "iceSparky"))) {
       if (((actor.type === "actorPc" || actor.type === "actorGrunt") && (actorData.matrix.userMode !== "ar") && (targetItem?.type === "itemDevice")) ||
               (actor.type === "actorDrone" && actorData.controlMode === "rigging")) {
         cardData.damage.resistanceType = "biofeedback"
@@ -46,7 +52,7 @@ export default async function matrixResistanceInfo(cardData, actorId){
     }
         
     //If Link Lock, add button; an AI outside any device is immune to it (Data Trails p. 157)
-    if (attackerData.matrix.programs.lockdown.isActive && !SR5_CharacterUtility.isDevicelessAI(actor)) cardData.chatCard.buttons.linkLock = SR5_RollMessage.generateChatButton("nonOpposedTest", "linkLock", game.i18n.localize('SR5.MatrixLinkLock'))
+    if (!fromWeapon && attackerData?.matrix.programs.lockdown.isActive && !SR5_CharacterUtility.isDevicelessAI(actor)) cardData.chatCard.buttons.linkLock = SR5_RollMessage.generateChatButton("nonOpposedTest", "linkLock", game.i18n.localize('SR5.MatrixLinkLock'))
         
   } else {
     cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.NoDamage"))
@@ -55,7 +61,9 @@ export default async function matrixResistanceInfo(cardData, actorId){
   //Remove Resist chat button from previous chat message
   if (cardData.previousMessage.messageId){
     let originalMessage = game.messages.get(cardData.previousMessage.messageId)
-    if (originalMessage.flags?.sr5data?.chatCard.buttons?.matrixResistance) {
+    //A DSP grenade's button stays for the other devices caught in the blast
+    const previous = originalMessage?.flags?.sr5data?.chatCard.buttons?.matrixResistance
+    if (previous && previous.testType !== "opposedTest") {
       SR5_RollMessage.updateChatButtonHelper(cardData.previousMessage.messageId, "matrixResistance")
     }
   }

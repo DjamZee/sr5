@@ -508,10 +508,9 @@ export class SR5_RollTest {
       return false
     }
 
-    //A spirit spends its character's Edge under a magic pact only (Street Grimoire p. 133, SR5 p. 58)
-    const creator = SR5_RollTestHelper.pactCharacter(actor)
-    if (creator) dicePool = creator.system.specialAttributes.edge.augmented.value
-    else dicePool = actor.system.specialAttributes?.edge?.augmented?.value ?? 0
+    //A spirit with no Edge left pushes the limit with its summoner's (SR5 p. 306)
+    const edgeActor = await SR5_RollTestHelper.determineEdgeActor(actor)
+    dicePool = edgeActor.system.specialAttributes?.edge?.augmented?.value ?? 0
 
     let newRoll = await SR5_RollTest.rollDice({
       dicePool: dicePool,

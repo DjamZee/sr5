@@ -2,8 +2,17 @@ import {
   SR5
 } from "../../config.js"
 import {
+  SR5_Toxins
+} from "../items/toxins.js"
+import {
   cleanCreatedSource
 } from "../../migration-source-modifiers.js"
+import {
+  GM_ONLY_FIELDS
+} from "../../system/implant-essence.js"
+import {
+  reservedChangedBy
+} from "../../system/reserved-fields.js"
 import {
   SR5_EntityHelpers
 } from "../helpers.js"
@@ -288,6 +297,12 @@ export class SR5Actor extends Actor {
   async _preUpdate(changes, options, user) {
     //A storage's rights while it is shut: rewritten here, since Foundry's ownership window updates with noHook
     if (this.type === "actorStorage") SR5StorageLockRights.hold(this, changes, options)
+    // Essence lost to removed implants (SR5 p. 53): written by the active gamemaster alone (system/essence-hole.js).
+    // Read after the merge, every form of update counts; the active GM checks again (implant-register.js)
+    if (!game.user.isGM && this.system?.essence && reservedChangedBy(this._source, changes, GM_ONLY_FIELDS.actor, options).length) {
+      ui.notifications?.warn(game.i18n.localize("SR5.WARN_GMOnlyField"))
+      return false
+    }
     return super._preUpdate(changes, options, user)
   }
 
@@ -681,7 +696,8 @@ export class SR5Actor extends Actor {
         case "itemAdeptPower":
           i.prepareData()
           SR5_EntityHelpers.updateModifier(actor.system.magic.powerPoints, i.name, i.type, iData.powerPointsCost.value)
-          if (iData.isActive && Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
+          //Better Than Bad p. 141: under Blight the adept powers are off, their effects left out (decision H1 of DjamZ)
+          if (iData.isActive && Object.keys(iData.customEffects).length && !SR5_Toxins.isCutFromManasphere(actor)) SR5_CharacterUtility.applyCustomEffects(i, actor)
           break
 
         case "itemSpirit":
@@ -789,7 +805,8 @@ export class SR5Actor extends Actor {
           //Not prepared again here: its price and availability would add up at each preparation
           SR5_UtilityItem._resetItemModifiers(i)
           SR5_UtilityItem._handleFocus(iData)
-          if (iData.isActive) SR5_CharacterUtility.applyFocusBonus(i, actor)
+          //Better Than Bad p. 141: under Blight a focus switched on anyway (from the console) gives nothing (Victoire's review)
+          if (iData.isActive && !SR5_Toxins.isCutFromManasphere(actor)) SR5_CharacterUtility.applyFocusBonus(i, actor)
           switch (iData.type) {
             case "alchemical":
             case "banishing":

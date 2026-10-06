@@ -35,8 +35,8 @@ import {
 } from "../modules/entities/items/always-active.js"
 
 const {
-  ActorSheetSR5
-} = await import("../modules/entities/actors/baseSheet.js")
+  SR5SpiritSheet
+} = await import("../modules/entities/actors/spiritSheet.js")
 
 // Some powers « sont toujours actifs et ne nécessitent donc aucune action pour leur activation ; ils sont listés
 // avec une action « automatique » » (SR5 p. 396). Given to a new spirit, they used to arrive switched off: the
@@ -76,19 +76,18 @@ describe("a power dropped on a sheet", () => {
     })).toBe(false)
   })
 
-  // In V13, ActorSheetV2._onDropItem creates the item itself: the sheets' _onDropItemCreate is never called
-  // (measured, Wandrille then Prosper). The rule sits on the path really taken, in the base sheet
-  it("through the base sheet's _onDropItem, the path V13 really takes", async () => {
+  // The drop goes through the sheet's own rules again (fix/depot-v13): an automatic Immunity dropped on a spirit
+  // comes switched on, a complex power stays off, and a move within the same sheet is Foundry's sort
+  it("on a spirit sheet, through the sheet's own rules", async () => {
     const created = []
     globalThis.Item = {
       implementation: {
         create: vi.fn(async (data, options) => created.push([data, options]) && data)
       }
     }
-    const sheet = {
-      actor: {
-        isOwner: true, uuid: "Actor.spirit", items: new Map()
-      }
+    const sheet = Object.create(SR5SpiritSheet.prototype)
+    sheet.actor = {
+      isOwner: true, uuid: "Actor.spirit", items: new Map()
     }
     const dropped = (actionType, extra = {
     }) => ({
@@ -99,27 +98,27 @@ describe("a power dropped on a sheet", () => {
         }
       })
     })
-    await ActorSheetSR5.prototype._onDropItem.call(sheet, {
+    await sheet._onDropItem({
     }, dropped("automatic"))
     expect(created[0][0].system.isActive).toBe(true)
     expect(created[0][1]).toEqual({
       parent: sheet.actor, keepId: true
     })
-    // Anything else, and a move within the same sheet, is Foundry's own drop
-    defaultDrops.length = 0
-    await ActorSheetSR5.prototype._onDropItem.call(sheet, {
+    await sheet._onDropItem({
     }, dropped("complex"))
-    await ActorSheetSR5.prototype._onDropItem.call(sheet, {
+    expect(created[1][0].system.isActive).toBe(false)
+    defaultDrops.length = 0
+    await sheet._onDropItem({
     }, dropped("automatic", {
       parent: {
         uuid: "Actor.spirit"
       }
     }))
-    expect(defaultDrops).toHaveLength(2)
-    expect(created).toHaveLength(1)
+    expect(defaultDrops).toHaveLength(1)
+    expect(created).toHaveLength(2)
   })
 
-  it("the sheets' own handlers would say the same, were they called again", () => {
+  it("by the character, grunt and spirit sheets, through the same rule", () => {
     for (const sheet of ["characterSheet", "gruntSheet", "spiritSheet"]) {
       const source = readFileSync(new URL(`../modules/entities/actors/${sheet}.js`, import.meta.url), "utf8")
       expect(source).toContain("isAlwaysActive(")

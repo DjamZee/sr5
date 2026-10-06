@@ -81,6 +81,9 @@ export class SR5_PrepareRollTest {
       return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetWirelessOff"))
     }
 
+    //Better Than Bad p. 141: cut from the manasphere by Blight, no magic of any kind (decisions G2 and H1 of DjamZ)
+    if (SR5_Toxins.blightBlocksRoll(actor, rollType, rollKey)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
+
     //Iterate through roll type and add data to rollData;
     switch (rollType){
       case "astralTracking":
@@ -292,8 +295,6 @@ export class SR5_PrepareRollTest {
         }
         break
       case "spell":
-        // Better Than Bad p. 141: cut from the manasphere by Blight, no spell can be cast (decision G2 of DjamZ)
-        if (SR5_Toxins.isCutFromManasphere(actor)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
         if (game.user.targets.size) rollData = await SR5_PrepareRollHelper.getTargetData(rollData)
         rollData = await SR5_GetRollData.spell(rollData, actor, item)
         break
