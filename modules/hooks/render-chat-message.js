@@ -29,6 +29,9 @@ import {
   activateDiseaseDueListeners, activateDiseaseRequestListeners, addDiseaseApplyButton
 } from "../system/diseases.js"
 import {
+  activateHungerListeners
+} from "../system/hunger.js"
+import {
   activateRadiationDueListeners, activateRadiationRequestListeners, addRadiationApplyButton
 } from "../system/radiation.js"
 import {
@@ -82,6 +85,8 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   if (message.flags?.sr5data?.test?.extended?.intervalValue) addExtendedClockButton(message, html)
   // Diseases (Run Faster p. 111-112): the GM's due card, the roll asked of the player, the GM applies the roll
   if (message.flags?.sr5?.diseaseDue) activateDiseaseDueListeners(html, message)
+  // Essence Loss of the Infected (SR5 p. 403): the GM's card of losses and powers used
+  if (message.flags?.sr5?.hungerDue) activateHungerListeners(html, message)
   if (message.flags?.sr5?.diseaseRequest) activateDiseaseRequestListeners(html, message)
   if (message.flags?.sr5data?.disease) addDiseaseApplyButton(message, html)
   // Radiation zones (Run & Gun p. 164-165): same three steps

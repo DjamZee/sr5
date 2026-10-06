@@ -33,6 +33,9 @@ import {
   initDiseases
 } from "../system/diseases.js"
 import {
+  initHunger
+} from "../system/hunger.js"
+import {
   initRadiation
 } from "../system/radiation.js"
 import {
@@ -81,6 +84,7 @@ export function sr5HookReady() {
   initDrugClock()
   // Diseases: incubation and resistance tests on the clock (Run Faster p. 111-112)
   initDiseases()
+  initHunger()
   // Radiation zones: resistance tests on the clock (Run & Gun p. 164-165)
   initRadiation()
   // Bullets & Bandages p. 14-16: wounds of 5+ bleed by Combat Turn, the GM adds each box

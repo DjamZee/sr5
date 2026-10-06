@@ -23,5 +23,20 @@
 			</div>
 			{{/if}}
 		</li>
+		{{#with @root.hunger as |hunger|}}
+		<li class="grid sr5-hunger">
+			{{#if hunger.tracked}}
+			<div class="col-12">{{localize 'SR5.HUNGER_NextLoss' date=hunger.nextLoss}}</div>
+			{{#if hunger.pending}}<div class="col-12">{{localize 'SR5.HUNGER_Pending' n=hunger.pending}}</div>{{/if}}
+			{{#if hunger.deadline}}<div class="col-12">{{localize 'SR5.HUNGER_Deadline' date=hunger.deadline}}</div>{{/if}}
+			<div class="col-12 SR-TextRight">
+				<a data-sr5-hunger="hasten">{{localize 'SR5.HUNGER_Hasten'}}</a> ·
+				<a data-sr5-hunger="toggle">{{localize 'SR5.HUNGER_Untrack'}}</a>
+			</div>
+			{{else}}
+			<div class="col-12 SR-TextRight"><a data-sr5-hunger="toggle">{{localize 'SR5.HUNGER_Track'}}</a></div>
+			{{/if}}
+		</li>
+		{{/with}}
 	</ul>
 </div>

@@ -77,6 +77,9 @@ import {
 import {
   reagentSystem, hasTiers
 } from "../../system/reagents.js"
+import {
+  hungerStatus, toggleHunger, hastenHunger
+} from "../../system/hunger.js"
 
 /**
  * Extend the basic ActorSheet class to do all the SR5 things!
@@ -254,7 +257,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
     context.items.sort((a, b) => (a.sort || 0) - (b.sort || 0))
 
-    context.storageViewIsGrid = game.settings.get("sr5", "sr5StorageViewMode") !== "list"
+    //Essence Loss of the Infected (SR5 p. 403): the GM alone sees the clock of the hunger, from his ledger
+    context.hunger = game.user.isGM && this.actor.system.specialProperties?.essenceDrain ? hungerStatus(this.actor) : null
+
+    context.storageViewIsGrid =game.settings.get("sr5", "sr5StorageViewMode") !== "list"
     //The clinch button of the martial arts block (Run & Gun p. 133) exists only with the grappling rules
     context.rulesGrappling = game.settings.get("sr5", "sr5GrapplingRules")
     //The "wired by DNI" box only matters when the world asks for a DNI to switch the wireless as a free action
@@ -352,6 +358,13 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       toggleBtn.classList.toggle("fa-lock-open", this.isEditMode)
       toggleBtn.dataset.tooltip = this.isPlayMode ? "SR5.SwitchToEdit" : "SR5.SwitchToPlay"
     }
+
+    //Essence Loss (SR5 p. 403): the GM starts or stops the clock, or brings it one week closer by hand
+    element.querySelectorAll("[data-sr5-hunger]").forEach(b => b.addEventListener("click", (event) => {
+      event.preventDefault()
+      if (event.currentTarget.dataset.sr5Hunger === "hasten") hastenHunger(this.actor)
+      else toggleHunger(this.actor)
+    }))
 
     // Show/hide config button based on mode
     const configBtn = element.querySelector('[data-action="customizeDisplay"]')
