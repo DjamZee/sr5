@@ -1647,6 +1647,8 @@
 	"SR5.DrugHurlg": "Hurlg",
 	"SR5.DrugImmortalFlower": "Immortal Flower",
 	"SR5.DrugInteraction": "Drugs interaction",
+	"SR5.DrugOverdose": "Overdose:",
+	"SR5.DrugOverdoseInfo": "{actor}: overdose ({drugs}), {value}S to resist with Body + Willpower (SR5 p. 417).",
 	"SR5.DrugJazz": "Jazz",
 	"SR5.DrugK10": "K-10",
 	"SR5.DrugKamikaze": "Kamikaze",

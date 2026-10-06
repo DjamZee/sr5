@@ -17,7 +17,7 @@ import {
   startDrugCrash, resetDrugPhase, applyDrugDamage, askDrugDoses
 } from "../items/drug-crash.js"
 import {
-  DRUG_DAMAGE, DRUG_INTERACTION_DAMAGE, intakeDamageOf, dosesTaken
+  DRUG_DAMAGE, DRUG_INTERACTION_DAMAGE, intakeDamageOf, dosesTaken, overdoseOf
 } from "../items/drug-damage.js"
 import {
   setCharacterField, setSpiritTrait, banishKey
@@ -1589,6 +1589,15 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
             if (intake) drugDamages.push({
               ...intake, phase: "intake", itemId: item._id
             })
+            //SR5 p. 417: taken under its own effect, or under a drug with a common or opposed effect, an overdose,
+            //resisted with Body + Willpower (drug-damage.js)
+            const overdose = overdoseOf(item, actor)
+            if (overdose) {
+              await ui.notifications.info(game.i18n.format("SR5.DrugOverdoseInfo", {
+                actor: actor.name, drugs: overdose.drugs.join(", "), value: overdose.value
+              }))
+              drugDamages.push(overdose)
+            }
             //Chrome Flesh p. 185: Aisa, 4S more per extra dose taken at once, unresisted
             const extraDose = DRUG_DAMAGE[drugType.value]?.extraDose
             if (extraDose && itemData.quantity > 0) {

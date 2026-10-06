@@ -1,3 +1,10 @@
+import {
+  effectPhase
+} from "./drug-phase.js"
+import {
+  distinctDrugs, drugCrashIsInstant, isSameDrug
+} from "./drug-stat.js"
+
 // The damage of the drugs: when it comes (on intake or at the crash) and how it is resisted, read off the drug key of
 // the item and the addictions of the actor, never off a value written on the item or on a card.
 // resist: "none" (no test), "body" (resisted with Body only), "toxin" (toxin resistance test, Body + Willpower, SR5 p. 409:
@@ -200,6 +207,43 @@ export function drugVector(system){
   return ["injection", "ingestion", "inhalation", "contact"].find(v => vector[v] === true) ?? "ingestion"
 }
 
+// The addiction rating of a drug, the sum the overdose is made of (SR5 p. 417)
+const addictionRating = system => Math.max(Number(system?.addiction?.rating) || 0, 0)
+
+// What a drug acts on while under its effect: the targets of its effects of the rise (drug-phase.js)
+function riseTargets(system){
+  const list = Array.isArray(system?.customEffects) ? system.customEffects : Object.values(system?.customEffects ?? {
+  })
+  return new Set(list.filter(e => e?.target && effectPhase(e) === "rise").map(e => e.target))
+}
+
+// SR5 p. 417, Faire une surdose: a substance taken while still under its own effect, or under the effect of another one
+// "qui partage avec elle un effet commun ou opposé" (Cram and Novacoke both on Reaction), deals Stun damage "dont la VD
+// est égale à la somme des indices d'addiction des drogues redondantes (on double donc l'indice d'addiction d'une drogue
+// dont on répète l'utilisation)", resisted with Body + Willpower. A common or opposed effect is read as an effect of the
+// rise on the same target. `item`: the drug being taken; `consumer`: the actor, whose drugs under effect are read (the
+// one being taken left out, so that the sum reads the same at the intake and at the resistance card). Each drug is
+// counted once, however many copies of it are under effect
+export function overdoseOf(item, consumer){
+  if (!item?.system) return null
+  const id = item.id ?? item._id
+  //Under effect, as the interaction reads it (Chrome Flesh p. 196): in its rise, or in a crash that is not only damage.
+  //It also keeps the sum the same at the resistance card when an interaction 7-9 started the crashes in between
+  const underEffect = s => s?.isActive || (s?.wirelessTurnedOn && !drugCrashIsInstant(s))
+  const others = [...(consumer?.items ?? [])].filter(d => d?.type === "itemDrug" && (d.id ?? d._id) !== id && underEffect(d.system))
+  //Long Haul taken again in its crash has its own rule, the crash of a second dose (SR5 p. 413)
+  const repeated = others.some(d => isSameDrug(d, item) && !(drugKeyOf(d.system) === "longHaul" && !d.system.isActive))
+  const targets = riseTargets(item.system)
+  const sharing = distinctDrugs(others.filter(d => !isSameDrug(d, item) && [...riseTargets(d.system)].some(t => targets.has(t))))
+  if (!repeated && !sharing.length) return null
+  const value = addictionRating(item.system) * (repeated ? 2 : 1) + sharing.reduce((sum, d) => sum + addictionRating(d.system), 0)
+  if (value <= 0) return null
+  return {
+    key: drugKeyOf(item.system), value, type: "stun", resist: "bodyWill", phase: "overdose", itemId: id,
+    drugs: [item.name, ...sharing.map(d => d.name)]
+  }
+}
+
 // The resistance test of a drug damage, called by the resistance card (rolls/roll-prepare-case/rollData-Resistance.js).
 // Only for a damage the system works out itself, without a card: the value and the pool come from the drug key, the
 // item and the addictions, not from what was handed in. Returns undefined to refuse
@@ -214,16 +258,20 @@ export function drugResistance(rollData, actor, chatData){
     if (!item || item.type !== "itemDrug") return undefined
     const key = drugKeyOf(item.system)
     if (drug.phase === "intake") damage = intakeDamageOf(key, dosesTaken(actor.system.addictions, item.name))
+    //Read again off the OTHER drugs under effect, the one taken left out of the sum as at the intake. Its own phase is not
+    //read: an interaction 7-9 may have ended it in between (Cram, a crash of damage only, is over at once, measured 06/10).
+    //A card asked for nothing only hurts the resisting actor, and its DV is still the sum the drugs give
+    else if (drug.phase === "overdose") damage = overdoseOf(item, actor)
     else {
       damage = crashDamageOf(key, item.system.handleShot, actor.items)
       //The crash Physical after an interaction 11-13 can only make it worse
       if (damage && chatData.damage.type === "physical") damage.type = "physical"
     }
   }
-  if (!damage || !["body", "toxin"].includes(damage.resist)) return undefined
+  if (!damage || !["body", "toxin", "bodyWill"].includes(damage.resist)) return undefined
 
   const attributes = actor.system.attributes
-  const name = item?.name ?? game.i18n.localize("SR5.DrugInteraction")
+  const name = drug.phase === "overdose" ? `${game.i18n.localize("SR5.DrugOverdose")} ${item.name}` : (item?.name ?? game.i18n.localize("SR5.DrugInteraction"))
   rollData.damage.base = damage.value
   rollData.damage.type = damage.type ?? "stun"
   rollData.damage.isAttack = false
@@ -235,6 +283,15 @@ export function drugResistance(rollData, actor, chatData){
     if (!pool) return undefined
     rollData.dicePool.composition = pool.modifiers
     rollData.dicePool.base = pool.dicePool
+  } else if (damage.resist === "bodyWill") {
+    //SR5 p. 417: "un test de Constitution + Volonté", nothing else
+    const body = attributes.body.augmented.value, willpower = attributes.willpower.augmented.value
+    rollData.dicePool.composition = [{
+      source: game.i18n.localize("SR5.Body"), type: "linkedAttribute", value: body
+    }, {
+      source: game.i18n.localize("SR5.Willpower"), type: "linkedAttribute", value: willpower
+    }]
+    rollData.dicePool.base = body + willpower
   } else {
     rollData.dicePool.composition = [{
       source: game.i18n.localize("SR5.Body"), type: "linkedAttribute", value: attributes.body.augmented.value

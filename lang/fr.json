@@ -1647,6 +1647,8 @@
 	"SR5.DrugHurlg": "Hurlg",
 	"SR5.DrugImmortalFlower": "Fleur immortelle",
 	"SR5.DrugInteraction": "Mélange de drogues",
+	"SR5.DrugOverdose": "Surdose :",
+	"SR5.DrugOverdoseInfo": "{actor} : surdose ({drugs}), {value}E à résister par Constitution + Volonté (SR5 p. 417).",
 	"SR5.DrugJazz": "Jazz",
 	"SR5.DrugK10": "K-10",
 	"SR5.DrugKamikaze": "Kamikaze",

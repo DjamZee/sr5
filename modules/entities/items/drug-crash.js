@@ -95,7 +95,7 @@ export async function applyDrugDamage(actor, damage) {
   let damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
   damageInfo.damage.value = value
   damageInfo.damage.type = damage.type ?? "stun"
-  if (damage.resist === "body" || damage.resist === "toxin") {
+  if (["body", "toxin", "bodyWill"].includes(damage.resist)) {
     damageInfo.damage.resistanceType = "drugDamage"
     damageInfo.damage.drug = {
       itemId: damage.itemId ?? "", phase: damage.phase ?? "", interaction: !!damage.interaction
