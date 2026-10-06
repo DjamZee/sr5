@@ -1,5 +1,8 @@
 // Spirit bonds and reputations (Street Grimoire p. 207, Forbidden Arcana p. 169-176): pure helpers, no Foundry
 // dependency. The callers read the actors, these functions only do the arithmetic of the rules.
+import {
+  valueAfterUpdate
+} from "../../system/reserved-fields.js"
 
 // What only the gamemaster writes (DjamZ's ruling, 2026-10-06): the indexes, the reputation adjustment, and the
 // spirit traits that change what a spirit is or owes. Many updates send the whole system back unchanged, so a player's
@@ -13,24 +16,26 @@ export const GM_ONLY_ITEM_PATHS = ["system.isElemental"]
 const readPath = (object, path) => path.split(".").reduce((o, key) => (o == null ? undefined : o[key]), object)
 
 // Removes from `changes` (nested or dotted keys) every GM-only path whose value differs from `current`.
-// Returns the paths refused.
+// Returns the paths refused, also those a replacement ("==system") or a deletion ("-=isWild") would change, which
+// are not stripped: the caller refuses such an update whole. The value after the update is read the way Foundry
+// merges it (reserved-fields.js, valueAfterUpdate), on the document's source when it has one.
 export function stripGMOnlyChanges(changes, current, paths){
-  const refused = []
-  for (const path of paths){
+  const source = current?._source ?? current
+  const refused = paths.filter(path => {
+    const after = valueAfterUpdate(source, changes, path)
+    const before = readPath(source, path)
+    // A deletion brings back the field's default: a change whenever a value was set
+    return typeof after === "symbol" ? before !== undefined : after !== before
+  })
+  for (const path of refused){
     if (path in changes){
-      if (changes[path] !== readPath(current, path)) {
-        refused.push(path)
-        delete changes[path]
-      }
+      delete changes[path]
       continue
     }
     const keys = path.split(".")
     const last = keys.pop()
     const parent = readPath(changes, keys.join("."))
-    if (parent && typeof parent === "object" && last in parent && parent[last] !== readPath(current, path)){
-      refused.push(path)
-      delete parent[last]
-    }
+    if (parent && typeof parent === "object" && last in parent) delete parent[last]
   }
   return refused
 }

@@ -34,6 +34,59 @@ describe('GM-only paths (DjamZ ruling, 2026-10-06)', () => {
     expect(dotted).toEqual({
     })
   })
+  it('refuses the replacement and deletion forms, flat or nested', () => {
+    const forms = [
+      [{
+        "==system": {
+          magic: {
+            spiritIndex: 0
+          }
+        }
+      }, ["system.magic.spiritIndex", "system.magic.wildIndex", "system.isWild"]],
+      [{
+        system: {
+          "==magic": {
+            spiritIndex: 10, wildIndex: 3
+          }
+        }
+      }, ["system.magic.wildIndex"]],
+      [{
+        "system.magic.-=spiritIndex": null
+      }, ["system.magic.spiritIndex"]],
+      [{
+        system: {
+          magic: {
+            "-=spiritIndex": null
+          }
+        }
+      }, ["system.magic.spiritIndex"]],
+      [{
+        "system.-=magic": null
+      }, ["system.magic.spiritIndex", "system.magic.wildIndex"]],
+      [{
+        "system.magic": {
+          spiritIndex: 1
+        }
+      }, ["system.magic.spiritIndex"]],
+    ]
+    for (const [changes, refused] of forms) expect(stripGMOnlyChanges(changes, current, GM_ONLY_ACTOR_PATHS)).toEqual(refused)
+  })
+  it('reads the source of a document, not its prepared values', () => {
+    const doc = {
+      system: {
+        magic: {
+          spiritIndex: 99
+        }
+      }, _source: current
+    }
+    expect(stripGMOnlyChanges({
+      system: {
+        magic: {
+          spiritIndex: 10
+        }
+      }
+    }, doc, GM_ONLY_ACTOR_PATHS)).toEqual([])
+  })
   it('lets through a whole system written back unchanged', () => {
     const same = {
       system: {
