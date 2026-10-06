@@ -150,7 +150,8 @@ export default async function matrixAction(rollData, rollKey, actor){
   rollData.matrix.personalNoise = -actor.system.matrix.noise.value
 
   //Add special info for Data spike
-  if (rollKey === "dataSpike" || rollKey === "popupCybercombat") rollData.damage.matrix.base = actor.system.matrix.attributes.attack.value
+  //Popup has no Attack base: its damage is the hits alone (Kill Code p. 45)
+  if (rollKey === "dataSpike") rollData.damage.matrix.base = actor.system.matrix.attributes.attack.value
 
   return rollData
 }

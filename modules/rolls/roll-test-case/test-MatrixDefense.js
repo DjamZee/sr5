@@ -93,8 +93,9 @@ export default async function matrixDefenseInfo(cardData, actorId){
         cardData.chatCard.buttons.matrixResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "matrixResistance", `${game.i18n.localize('SR5.TakeOnDamageMatrix')} (${cardData.damage.matrix.value})`)
         break
       case "popupCybercombat":
+        // Kill Code p. 45: matrix damage equal to the hits, with no Attack base nor +2 per mark
         cardData.damage.matrix.base = 0
-        cardData = await SR5_MatrixHelpers.updateMatrixDamage(cardData, netHits, actor)
+        cardData = await SR5_MatrixHelpers.updateMatrixDamage(cardData, netHits, actor, false)
         cardData.chatCard.buttons.matrixResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "matrixResistance", `${game.i18n.localize('SR5.TakeOnDamageMatrix')} (${cardData.damage.matrix.value})`)
         cardData.chatCard.buttons.popup = SR5_RollMessage.generateChatButton("nonOpposedTest", "popup", game.i18n.localize("SR5.ApplyEffect"))
         break

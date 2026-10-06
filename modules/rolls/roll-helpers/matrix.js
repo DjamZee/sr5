@@ -147,16 +147,17 @@ export class SR5_MatrixHelpers {
 
 
   // Update Matrix Damage to a Deck
-  static async updateMatrixDamage(cardData, netHits, defender){
+  //withMarks false: an action whose damage the book sets without the +2 per mark (Popup, Kill Code p. 45)
+  static async updateMatrixDamage(cardData, netHits, defender, withMarks = true){
     let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId, cardData.actorUuids),
       attackerData = attacker?.system,
       damage = cardData.damage.matrix.base,
       item = cardData.target.itemUuid ? await fromUuid(cardData.target.itemUuid) : null,
       //An AI outside any device has no targeted item: the marks are read on its persona (Data Trails p. 157)
       markHolder = item?.system ?? defender.system.matrix,
-      mark = await SR5_MarkHelpers.findMarkValue(markHolder, attacker.id)
+      mark = withMarks ? await SR5_MarkHelpers.findMarkValue(markHolder, attacker.id) : 0
 
-    if (attacker.type === "actorDevice"){
+    if (withMarks && attacker.type === "actorDevice"){
       if (attacker.system.matrix.deviceType === "ice"){
         mark = await SR5_MarkHelpers.findMarkValue(markHolder, attacker.id)
       }
