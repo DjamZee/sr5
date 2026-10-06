@@ -53,6 +53,9 @@ import {
 } from "./roll-helpers/limit.js"
 
 export class SR5_RollTest {
+  //The roll window open now, if any: the next one waits for it (generateRollDialog)
+  static dialogQueue = Promise.resolve()
+
   //Prepare the roll window
   static async generateRollDialog(dialogData, edge = false) {
     let actor = SR5_EntityHelpers.getRealActorFromID(dialogData.owner.actorId),
@@ -104,7 +107,9 @@ export class SR5_RollTest {
 
     // Render template and show dialog
     const dlg = await foundry.applications.handlebars.renderTemplate(template, dialogData)
-    const result = await foundry.applications.api.DialogV2.wait({
+    //One roll window at a time (its id is fixed): a second one asked meanwhile (two actors of the same user in the
+    //area of a spell, M5 D3) opens once the first is closed, instead of being lost
+    const turn = SR5_RollTest.dialogQueue.then(() => foundry.applications.api.DialogV2.wait({
       window: {
         title: dialogData.test.title 
       },
@@ -131,7 +136,9 @@ export class SR5_RollTest {
           ev.stopImmediatePropagation()
         }))
       },
-    })
+    }))
+    SR5_RollTest.dialogQueue = turn.catch(() => null)
+    const result = await turn
 
     //If roll is cancelled (dialog dismissed without clicking a button)
     if (!result) return SR5_RollTestHelper.handleCanceledTest(actor, dialogData)
