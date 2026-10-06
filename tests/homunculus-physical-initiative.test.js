@@ -71,19 +71,28 @@ describe("M4 D2 : l'homoncule est en initiative physique (SR5 p. 301)", () => {
   })
 
   it("un esprit changé en homoncule quitte l'initiative astrale enregistrée, par le MJ qui l'a changé", async () => {
-    const sw = vi.spyOn(SR5_CharacterUtility, "switchToInitiative").mockResolvedValue(true)
-    await homunculusLeavesAstral(spirit("homunculus", true), {
+    const changed = spirit("homunculus", true)
+    changed.update = vi.fn()
+    changed.deleteEmbeddedDocuments = vi.fn()
+    changed.effects = [{
+      id: "e1", origin: "initiativeMode"
+    }]
+    await homunculusLeavesAstral(changed, {
       system: {
         type: "homunculus"
       }
     }, "gm")
-    expect(sw).toHaveBeenCalledWith(expect.anything(), "physicalInit")
-    sw.mockClear()
-    await homunculusLeavesAstral(spirit("homunculus", true), {
+    expect(changed.update).toHaveBeenCalledWith({
+      "system.initiatives.astralInit.isActive": false, "system.initiatives.physicalInit.isActive": true,
+    })
+    expect(changed.deleteEmbeddedDocuments).toHaveBeenCalledWith("ActiveEffect", ["e1"])
+    const other = spirit("homunculus", true)
+    other.update = vi.fn()
+    await homunculusLeavesAstral(other, {
       system: {
         type: "homunculus"
       }
     }, "other")
-    expect(sw).not.toHaveBeenCalled()
+    expect(other.update).not.toHaveBeenCalled()
   })
 })

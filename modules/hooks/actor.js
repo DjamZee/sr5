@@ -56,8 +56,11 @@ export async function sr5HookCreateActor(actor) {
 export async function homunculusLeavesAstral(actor, data, userId){
   if (actor.type !== "actorSpirit" || data.system?.type === undefined || userId !== game.user?.id || !game.user.isGM) return
   if (SR5_SpiritTypes.baseType(actor.system.type) !== "homunculus") return
-  if (!actor._source?.system?.initiatives?.astralInit?.isActive && !actor.effects.find(e => e.origin === "initiativeMode")) return
-  await SR5_CharacterUtility.switchToInitiative(actor, "physicalInit")
+  const initiativeEffect = actor.effects.find(e => e.origin === "initiativeMode")
+  if (actor._source?.system?.initiatives?.astralInit?.isActive) await actor.update({
+    "system.initiatives.astralInit.isActive": false, "system.initiatives.physicalInit.isActive": true,
+  })
+  if (initiativeEffect) await actor.deleteEmbeddedDocuments("ActiveEffect", [initiativeEffect.id])
 }
 
 // Data Trails p. 157-158: an AI's persona carries its own marks only while it has no device. Many updates write the
