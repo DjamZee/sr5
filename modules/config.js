@@ -896,6 +896,7 @@ SR5.actionSources = {
   ramming					  : "SR5.ActionSourceRamming",
   rebootDeck				  : "SR5.ActionSourceRebootDeck",
   replaceClip				  : "SR5.ActionSourceReplaceClip",
+  run                       : "SR5.ActionSourceRun",
   removeClip				  : "SR5.ActionSourceRemoveClip",
   standUp  				  : "SR5.ActionSourceStandUp",
   switchAttributes		  : "SR5.ActionSourceSwitchAttributes",

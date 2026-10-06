@@ -245,6 +245,7 @@
 	"SR5.ActionSourceRebootDeck": "Rebooter un appareil",
 	"SR5.ActionSourceRemoveClip": "Retirer un chargeur / bande / tambour",
 	"SR5.ActionSourceReplaceClip": "Retirer et insérer un chargeur / bande / tambour",
+	"SR5.ActionSourceRun": "Courir",
 	"SR5.ActionSourceStandUp": "Se relever",
 	"SR5.ActionSourceSwitchAttributes": "Échanger deux attributs matriciels",
 	"SR5.ActionSourceSwitchInitToAstral": "Passer en projection astrale",

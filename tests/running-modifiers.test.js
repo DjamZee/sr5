@@ -1,5 +1,5 @@
 import {
-  describe, it, expect, vi, beforeEach
+  describe, it, expect, vi, beforeEach, afterEach
 } from 'vitest'
 import {
   readFileSync
@@ -185,7 +185,11 @@ describe('the running status follows the moves and the Combat Turns', () => {
     globalThis.game.settings = {
       get: () => false
     }
+    //The free action of running (below)
+    vi.spyOn(SR5Combat, 'hasActionsLeft').mockReturnValue(true)
+    vi.spyOn(SR5Combat, 'changeActionInCombat').mockResolvedValue()
   })
+  afterEach(() => vi.restoreAllMocks())
 
   it('a move with "Course" puts the status on', async () => {
     const actor = actorWith()
@@ -334,6 +338,75 @@ describe('the running status follows the moves and the Combat Turns', () => {
     }
     await SR5Combat.handleNextRound('c1')
     expect(isRunning(runner)).toBe(false)
+  })
+
+  // SR5 p. 164: a runner uses a free action in each initiative pass in which they run
+  describe('the free action of running', () => {
+    let pass, spend, left
+    const move = (token, action, distance = 3) => onMoveToken(token, {
+      passed: {
+        distance, waypoints: [{
+          action
+        }]
+      }
+    })
+    beforeEach(() => {
+      pass = 1
+      left = true
+      globalThis.game.combat.getFlag = (scope, key) => (key === 'combatInitiativePass') ? pass : undefined
+      vi.spyOn(SR5Combat, 'hasActionsLeft').mockImplementation(() => left)
+      spend = vi.spyOn(SR5Combat, 'changeActionInCombat').mockResolvedValue()
+    })
+
+    it('is taken once per pass, at the first move made running', async () => {
+      const token = tokenWith(actorWith())
+      await move(token, 'run')
+      await move(token, 'run')
+      expect(spend).toHaveBeenCalledTimes(1)
+      expect(spend).toHaveBeenCalledWith('t1', [{
+        type: 'free', value: 1, source: 'run'
+      }])
+      pass = 2
+      await move(token, 'walk')
+      expect(spend).toHaveBeenCalledTimes(2)
+    })
+
+    it('reads the actor id of a linked token', async () => {
+      const actor = actorWith()
+      actor.id = 'a1'
+      const token = tokenWith(actor)
+      token.actorLink = true
+      await move(token, 'run')
+      expect(spend.mock.calls[0][0]).toBe('a1')
+    })
+
+    it('is not taken by a walk, nor by a move of 0 m', async () => {
+      const token = tokenWith(actorWith())
+      await move(token, 'walk')
+      expect(spend).not.toHaveBeenCalled()
+      const runner = tokenWith(actorWith([RUNNING_STATUS]))
+      await move(runner, 'walk', 0)
+      expect(spend).not.toHaveBeenCalled()
+    })
+
+    it('is taken again in a new Combat Turn', async () => {
+      const token = tokenWith(actorWith(), {
+        combatId: 'c1', round: 1, meters: 5, freePass: 1
+      })
+      globalThis.game.combat.round = 2
+      await move(token, 'run')
+      expect(spend).toHaveBeenCalledTimes(1)
+    })
+
+    it('with no free action left (world setting), spends nothing and does not ask again in that pass', async () => {
+      left = false
+      const token = tokenWith(actorWith())
+      await move(token, 'run')
+      await move(token, 'run')
+      expect(spend).not.toHaveBeenCalled()
+      expect(SR5Combat.hasActionsLeft).toHaveBeenCalledTimes(1)
+      expect(token.flags.sr5.runDistance.freePass).toBe(1)
+    })
   })
 })
 

@@ -245,6 +245,7 @@
 	"SR5.ActionSourceRebootDeck": "Reboot device",
 	"SR5.ActionSourceRemoveClip": "Remove clip / belt / drum",
 	"SR5.ActionSourceReplaceClip": "Remove and Insert clip / belt / drum",
+	"SR5.ActionSourceRun": "Running",
 	"SR5.ActionSourceStandUp": "Stand up",
 	"SR5.ActionSourceSwitchAttributes": "Switch matrix attributes",
 	"SR5.ActionSourceSwitchInitToAstral": "Astral projection",
