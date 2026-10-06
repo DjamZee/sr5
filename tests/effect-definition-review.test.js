@@ -129,6 +129,20 @@ describe('a player sheet spell applied by the GM to an NPC', () => {
     expect(created['system.value']).toBe(4)
   })
 
+  //Fritz: a complex form has no "resisted", and is defended against (complexFormDefense)
+  it('never says a complex form goes unresisted', async () => {
+    spell.type = 'itemComplexForm'
+    reference.type = 'itemComplexForm'
+    delete spell.system.resisted
+    delete reference.system.resisted
+    const data = card()
+    data.test.type = 'complexFormDefense'
+    await SR5_ActorHelper.applyExternalEffect('target', data, 'customEffects').catch(() => {})
+    await SR5_ActorHelper.applyExternalEffect('target', card(), 'customEffects').catch(() => {})
+    for (const call of confirm.mock.calls) expect(call[0].content).not.toContain('SR5.EffectDefinitionNoResistance')
+    expect(confirm).toHaveBeenCalled()
+  })
+
   it('says when no reference is found', async () => {
     globalThis.game.packs = Object.assign([], {
       get: () => null

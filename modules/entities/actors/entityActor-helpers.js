@@ -2118,7 +2118,9 @@ export class SR5_ActorHelper {
     return {
       item, actor, sheet, ref, reference, diff: compareDefinitions(sheet, ref), shown: false,
       //Applied once the target resisted (its resistance card): the test was not skipped
-      afterResistance: /Resistance$/.test(data?.test?.type ?? ""),
+      afterResistance: /(Resistance|Defense)$/.test(data?.test?.type ?? ""),
+      //Only a spell says whether it is resisted (itemSpell.resisted): a complex form, a power do not
+      resistable: item.type === "itemSpell",
     }
   }
 
@@ -2140,7 +2142,7 @@ export class SR5_ActorHelper {
     let html = `<p>${t("SR5.EffectDefinitionIntro", {
       item: review.item.name, owner: review.item.parent?.name, actor: review.actor.name
     })}</p>${list(review.sheet.entries)}`
-    if (!review.sheet.resisted && !review.afterResistance) html += `<p><strong>${t("SR5.EffectDefinitionNoResistance")}</strong></p>`
+    if (review.resistable && !review.sheet.resisted && !review.afterResistance) html += `<p><strong>${t("SR5.EffectDefinitionNoResistance")}</strong></p>`
     if (!review.reference) return html + `<p><strong>${t("SR5.EffectDefinitionNoReference")}</strong></p>`
     const source = review.reference.pack ? (game.packs?.get(review.reference.pack)?.metadata?.label ?? review.reference.pack) :
       t("SR5.EffectDefinitionWorldItem")

@@ -1157,10 +1157,11 @@ export class SR5Actor extends Actor {
   }
 
   //Apply an external effect to actor (such spell, complex form). Data is provided by chatMessage
-  async applyExternalEffect(data, effectType){
+  //`reviewed`: a definition review the GM's caller already showed (SR5_ActorHelper.applyExternalEffect)
+  async applyExternalEffect(data, effectType, reviewed = null){
     let actorId = (this.isToken ? this.token.id : this.id)
     //Awaited: a template's spell effect is checked again on the next move, and must find the effect created
-    await SR5_ActorHelper.applyExternalEffect(actorId, data, effectType)
+    return SR5_ActorHelper.applyExternalEffect(actorId, data, effectType, reviewed)
   }
 
   //Apply specific toxin effect
