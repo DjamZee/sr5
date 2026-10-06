@@ -1168,6 +1168,17 @@ export default class SR5_RollDialog {
           weapon = await fromUuid(dialogData.owner.itemUuid)
           dialogData.combat.actions = SR5_MiscellaneousHelpers.setChangeAction(dialogData.combat.actions, "changeChokeSettings",
             SR5_ConverterHelpers.chokeToCode(weapon.system.choke) !== dialogData.combat.choke.selected, SR5_RollDialog.changeIsFree(weapon, actor))
+          //A change paid as a simple action ends the progressive recoil (SR5 p. 178): the recoil shown follows, as for
+          //a change of firing mode (Rosine's review)
+          if (html.querySelector('[name="recoilBullets"]')) {
+            const recoil = this.calculRecoil(html)
+            const recoilInput = html.querySelector('[name="recoil"]')
+            if (recoilInput) recoilInput.value = recoil
+            SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "recoil")
+            dialogData.dicePool.modifiers.push({
+              type: "recoil", label: game.i18n.localize(SR5.dicePoolModTypes.recoil), value: recoil
+            })
+          }
           break
         case "firingMode":
           dialogData.combat.firingMode.selected = ev.target.value
