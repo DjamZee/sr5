@@ -44,7 +44,7 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-// C6 d: a vehicle defends with its device rating in place of the mental attributes (SR5 p. 237)
+// C6 d: a vehicle defends with its device rating in place of the mental attributes
 describe('matrix defense of a vehicle', () => {
   function vehicleDefenses(){
     const actions = {
