@@ -45,6 +45,9 @@ import {
 import {
   SR5
 } from "../config.js"
+import {
+  SR5_Toxins
+} from "../entities/items/toxins.js"
 
 // N91: matrix rolls aimed at a target besides matrixAction, which guards itself. Each refuses a drone
 // with its wireless off (SR5 p. 424)
@@ -285,6 +288,8 @@ export class SR5_PrepareRollTest {
         }
         break
       case "spell":
+        // Better Than Bad p. 141: cut from the manasphere by Blight, no spell can be cast (decision G2 of DjamZ)
+        if (SR5_Toxins.isCutFromManasphere(actor)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
         if (game.user.targets.size) rollData = await SR5_PrepareRollHelper.getTargetData(rollData)
         rollData = await SR5_GetRollData.spell(rollData, actor, item)
         break

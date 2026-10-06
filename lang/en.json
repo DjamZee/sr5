@@ -5328,6 +5328,7 @@
 	"SR5.WARN_TargetChooseOne": "You must choose a target (token)",
 	"SR5.WARN_EmulateMaxDepth": "The emulated rating cannot exceed Depth ({depth}).",
 	"SR5.WARN_TargetWirelessOff": "This drone has its wireless off: no wireless Matrix action reaches it (SR5 p. 424). Only a direct connection can (p. 234): to play one, switch its wireless on for the action.",
+	"SR5.WARN_BlightNoSpell": "Cut from the manasphere by Blight: no spell can be cast until the effect ends (Better Than Bad p. 141).",
 	"SR5.WARN_TargetTooMany": "You must choose only one target (token)",
 	"SR5.WARN_FanningTooMany": "Flamethrower fanning: three targets at most.",
 	"SR5.WARN_FanningOutOfRange": "Flamethrower fanning: every target must be within the weapon's range.",

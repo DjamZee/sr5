@@ -5328,6 +5328,7 @@
 	"SR5.WARN_TargetChooseOne": "Vous devez sélectionner une cible (token)",
 	"SR5.WARN_EmulateMaxDepth": "L'indice émulé ne peut pas dépasser la Profondeur ({depth}).",
 	"SR5.WARN_TargetWirelessOff": "Ce drone a coupé son sans-fil : aucune action matricielle sans fil ne l'atteint (SR5 p. 424). Seule une connexion directe le peut (p. 234) : pour la jouer, rallumez son sans-fil le temps de l'action.",
+	"SR5.WARN_BlightNoSpell": "Coupé de la manasphère par le blight : aucun sort ne peut être lancé tant que dure l'effet (Better Than Bad p. 141).",
 	"SR5.WARN_TargetTooMany": "Vous ne devez sélectionner qu'une seule cible (token)",
 	"SR5.WARN_FanningTooMany": "Balayage au lance-flammes : trois cibles au plus.",
 	"SR5.WARN_FanningOutOfRange": "Balayage au lance-flammes : toutes les cibles doivent être à portée de l’arme.",

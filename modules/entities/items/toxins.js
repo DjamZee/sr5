@@ -189,6 +189,11 @@ export class SR5_Toxins {
     return Math.max(1, 12 - Math.max(Number(body) || 0, Number(magic) || 0))
   }
 
+  /** Better Than Bad p. 141: under Blight "les sorts ne peuvent être lancés" (decision G2 of DjamZ) */
+  static isCutFromManasphere(actor) {
+    return !!actor?.items?.some(i => i.type === "itemEffect" && i.system?.type === "toxinEffectManasphereCut")
+  }
+
   /** A dual-natured being: one of its powers carries the dualNatured spirit power key */
   static isDualNatured(actor) {
     return !!actor?.items?.some(i => i.type === "itemPower" &&
