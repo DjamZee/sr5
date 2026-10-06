@@ -302,6 +302,22 @@ async function writeEntry(entry){
   return true
 }
 
+// Applies a test to the infection of a request only while the register still holds that request's token, read in the
+// register's turn: the entry written, or null when the request was gone
+async function writeRequested(ref, change){
+  if (!isActiveGM()) return null
+  let written = null
+  await updateLedger(DISEASE_LEDGER, ledger => {
+    const entry = ledger.infections?.[ref?.infectionId]
+    if (!entry?.request || entry.request.token !== ref.token) return null
+    written = change(entry)
+    ledger.infections[entry.id] = written
+    return ledger
+  })
+  if (written) refreshActor(written.actorUuid)
+  return written
+}
+
 // The actor reads the ledger while it prepares: drawn again once the ledger moved
 function refreshActor(uuid){
   const actor = fromUuidSync(uuid)
@@ -599,11 +615,17 @@ async function confirmAndApply(message, button, ref, entry){
   const fresh = diseaseLedger().infections?.[ref.infectionId]
   if (!fresh?.request || fresh.request.token !== ref.token || button.disabled) return button.remove()
   button.disabled = true
-  const testedPower = fresh.request.power
   const applied = Math.min(Math.max(0, hits), cap)
-  const next = applyResult(fresh, applied, testedPower, calendarStartYear())
-  await writeEntry(next)
+  const startYear = calendarStartYear()
+  //The token is read again in the register's turn, just before the write: another card of the same request,
+  //confirmed meanwhile, found it valid too outside the queue and applied the test twice (Frank's queue, Lena's lead)
+  let testedPower
+  const next = await writeRequested(ref, entry => {
+    testedPower = entry.request.power
+    return applyResult(entry, applied, testedPower, startYear)
+  })
   button.remove()
+  if (!next) return
   await postOutcome(next, applied, testedPower)
 }
 

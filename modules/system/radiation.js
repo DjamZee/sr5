@@ -142,6 +142,21 @@ async function writeEntry(entry){
   })
 }
 
+// Applies a test to the exposure of a request only while the register still holds that request's token, read in the
+// register's turn: the entry written, or null when the request was gone
+async function writeRequested(ref, change){
+  if (!isActiveGM()) return null
+  let written = null
+  await updateLedger(RADIATION_LEDGER, ledger => {
+    const entry = ledger.exposures?.[ref?.exposureId]
+    if (!entry?.request || entry.request.token !== ref.token) return null
+    written = change(entry)
+    ledger.exposures[entry.id] = written
+    return ledger
+  })
+  return written
+}
+
 function escape(text){
   return foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "")
 }
@@ -389,11 +404,14 @@ async function confirmAndApply(message, button, ref, entry){
   const fresh = radiationLedger().exposures?.[ref.exposureId]
   if (!fresh?.request || fresh.request.token !== ref.token || button.disabled) return button.remove()
   button.disabled = true
-  const outcome = testOutcome(fresh.level, fresh.request.power, Math.min(Math.max(0, hits), cap))
-  await writeEntry({
-    ...fresh, testsDone: fresh.testsDone + 1, notified: false, request: null
-  })
+  //The token is read again in the register's turn, just before the write: another card of the same request,
+  //confirmed meanwhile, found it valid too outside the queue and applied the test twice (Frank's queue, Lena's lead)
+  const written = await writeRequested(ref, entry => ({
+    ...entry, testsDone: entry.testsDone + 1, notified: false, request: null
+  }))
   button.remove()
+  if (!written) return
+  const outcome = testOutcome(fresh.level, fresh.request.power, Math.min(Math.max(0, hits), cap))
   //The Nausea of the last test gives way to this one's (Run & Gun p. 164-165: it lasts and grows while exposed)
   await removeRadiationNausea(actor)
   if (outcome.remaining > 0) await applyOutcome(actor, outcome)
