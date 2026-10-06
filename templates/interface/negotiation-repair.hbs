@@ -1,0 +1,27 @@
+<div class="sr-negotiation-repair-body">
+  <p class="hint">{{localize 'SR5.NEGO_REPAIR_Intro'}}</p>
+  {{#if done}}
+  <p><strong>{{done}}</strong></p>
+  {{else}}
+  {{#if candidates.length}}
+  <ul class="sr-negotiation-repair-list">
+    {{#each candidates}}
+    <li>
+      <label class="checkbox">
+        <input type="checkbox" name="candidate" value="{{uuid}}">
+        <strong>{{name}}</strong>{{#if owner}} <span class="hint">({{owner}})</span>{{/if}}
+        — {{localize 'SR5.NEGO_REPAIR_Value'}} 0 → {{value}}
+      </label>
+    </li>
+    {{/each}}
+  </ul>
+  {{#if isActiveGM}}
+  <button type="button" data-action="apply"><i class="fas fa-check"></i> {{localize 'SR5.NEGO_REPAIR_Apply'}}</button>
+  {{else}}
+  <p class="hint">{{localize 'SR5.NEGO_REPAIR_OnlyActiveGM'}}</p>
+  {{/if}}
+  {{else}}
+  <p>{{localize 'SR5.NEGO_REPAIR_None'}}</p>
+  {{/if}}
+  {{/if}}
+</div>

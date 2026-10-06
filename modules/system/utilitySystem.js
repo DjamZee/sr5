@@ -8,6 +8,9 @@ import {
   SR5FactionsApp
 } from "../interface/factions-app.js"
 import {
+  SR5NegotiationRepair
+} from "../interface/negotiation-repair.js"
+import {
   registerBBHealingSettings
 } from "./bb-healing-rules.js"
 import {
@@ -202,6 +205,17 @@ export class SR5_SystemHelpers {
       hint: "SR5.FACTION_MenuHint",
       icon: "fas fa-people-group",
       type: SR5FactionsApp,
+      restricted: true,
+    })
+
+    // The Negotiation lost before the key fix: the gamemaster gives it back, once (negotiation-repair.js)
+    SR5NegotiationRepair.register()
+    game.settings.registerMenu("sr5", "sr5NegotiationRepairMenu", {
+      name: "SR5.NEGO_REPAIR_Title",
+      label: "SR5.NEGO_REPAIR_Open",
+      hint: "SR5.NEGO_REPAIR_MenuHint",
+      icon: "fas fa-handshake",
+      type: SR5NegotiationRepair,
       restricted: true,
     })
 
