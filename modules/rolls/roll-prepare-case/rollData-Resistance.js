@@ -16,6 +16,12 @@ import {
 import {
   addGreyManaResistance, greyManaAppliesTo
 } from "../../system/grey-mana.js"
+import {
+  attackFamily, trustedAttackCard, trustedResistanceCard
+} from "../roll-helpers/attack-card.js"
+
+//The cards whose damage was worked out by whoever rolled them, for the actor they rolled for
+const RESISTED_CARDS = ["defense", "rammingDefense", "resistanceCard"]
 
 // Show a notification and return undefined so the caller aborts the test.
 // In Foundry V13, ui.notifications.info() returns a Notification object: returning it directly
@@ -27,6 +33,17 @@ function abortWithInfo(message){
 
 //Add info for Resistance Roll
 export default async function resistance(rollData, rollType, actor, chatData){
+  //An attack card resisted without a defense (grenade, direct spell, spell that missed its threshold) is read again
+  //as for the defense; a defense or a resistance card stands only when its author owns the actor who resists
+  //(attack-card.js). The aura is read on its owner's sheet
+  if (attackFamily(chatData)) {
+    chatData = await trustedAttackCard(chatData, actor)
+    if (!chatData) return undefined
+  } else if (RESISTED_CARDS.includes(chatData?.test?.type) && rollType !== "resistanceCardAura" && !(await trustedResistanceCard(chatData, actor))) {
+    const text = game.i18n.localize("SR5.ResistanceCardRefused")
+    ui.notifications.warn(text)
+    return undefined
+  }
   let actorData = actor.system
   //An engulf, at the spirit's following phases (SR5 p. 399): the damage is worked out again on the spirit engulfing the
   //actor who resists, whose attack card the active GM keeps; never read on the flags of a card (Ivo, Victoire)

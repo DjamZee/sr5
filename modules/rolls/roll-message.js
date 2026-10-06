@@ -299,9 +299,17 @@ export class SR5_RollMessage {
         actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids)
         if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest("defense", null, messageData)
         break
-      case "defenseThroughAndInto":
-        if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest("defense", null, messageData.originalAttackMessage)
+      case "defenseThroughAndInto": {
+        //The second target defends against the attack card itself, read again from the chat log (attack-card.js)
+        const attack = messageData.originalAttackMessage
+        if (!attack) break
+        attack.owner = {
+          ...attack.owner, messageId: messageData.previousMessage.messageId
+        }
+        attack.combat.calledShot.secondTarget = true
+        if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest("defense", null, attack)
         break
+      }
       case "matrixDefense":
         if (!await mayDefend(type, messageId, messageData, actor)) break
         if ((messageData.test.typeSub === "dataSpike" || 

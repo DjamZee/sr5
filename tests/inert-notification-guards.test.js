@@ -2,6 +2,10 @@ import {
   describe, it, expect, beforeEach, vi
 } from "vitest"
 
+//The attack card as a GM wrote it: its reading again is tested in attack-card.test.js
+vi.mock("../modules/rolls/roll-helpers/attack-card.js", () => ({
+  trustedAttackCard: async chatData => chatData,
+}))
 vi.mock("../modules/rolls/roll-prepare-helpers.js", () => ({
   SR5_PrepareRollHelper: {
     getBaseDicepool: () => 0,
