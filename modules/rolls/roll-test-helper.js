@@ -21,24 +21,22 @@ export class SR5_RollTestHelper {
   }
 
 
-  //SR5 p. 58: Edge is spent on one's own actions only, so a bound spirit never spends its summoner's (decision G7 of
-  //DjamZ). Only a free spirit's magic pact lets it spend its character's Edge (Street Grimoire p. 133); the
-  //gamemaster ticks it in the spirit ledger, the character being the summoner the spirit keeps
-  static pactCharacter(actor){
-    if (actor?.type !== "actorSpirit" || !actor.system?.magicPact || !actor.system.creatorId) return null
+  //SR5 p. 306: summoned and bound spirits have no Edge of their own, "l'invocateur peut dépenser sa propre réserve de
+  //Chance pour les tests des esprits à son service" (decision H9 of DjamZ, which reverses G7). The magic pact of a free
+  //spirit lets it spend its character's Edge too (Street Grimoire p. 133); the character is the summoner it keeps
+  static edgeCharacter(actor){
+    if (actor?.type !== "actorSpirit" || !actor.system?.creatorId) return null
     return SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId) ?? null
+  }
+
+  //True when the actor has a point of Edge left to spend
+  static hasEdgeLeft(actor){
+    return !!actor?.system?.specialAttributes?.edge && actor.system.conditionMonitors?.edge?.actual?.value < actor.system.specialAttributes.edge.augmented?.value
   }
 
   //Determine if current actor rolling test can use Edge on it
   static async canUseEdge(actor, dialogData){
-    let canUseEdge = false
-    if (actor.system.specialAttributes?.edge && (actor.system.conditionMonitors.edge?.actual.value < actor.system.specialAttributes?.edge?.augmented.value)) {
-      canUseEdge = true
-    }
-    const creator = this.pactCharacter(actor)
-    if (creator?.system.conditionMonitors.edge?.actual?.value < creator?.system.specialAttributes?.edge?.augmented?.value){
-      canUseEdge = true
-    }
+    let canUseEdge = this.hasEdgeLeft(actor) || this.hasEdgeLeft(this.edgeCharacter(actor))
     if (dialogData.test.type === "objectResistance")  canUseEdge = false
     if (dialogData.test.type === "preparation")  canUseEdge = false
     return canUseEdge
@@ -58,25 +56,22 @@ export class SR5_RollTestHelper {
     return dialogData
   }
 
-  //Determine from whom actor edge must be reduce
+  //Determine from whom actor edge must be reduce: their own first, then the summoner's for a spirit (SR5 p. 306)
   static async determineEdgeActor(actor){
-    let edgeActor = actor
-    const creator = this.pactCharacter(actor)
-    if (creator?.system.conditionMonitors.edge?.actual?.value < creator?.system.specialAttributes?.edge?.augmented?.value){
-      edgeActor = creator
-    }
-    return edgeActor
+    if (this.hasEdgeLeft(actor)) return actor
+    const creator = this.edgeCharacter(actor)
+    return this.hasEdgeLeft(creator) ? creator : actor
   }
 
   //Remove 1 edge from actor
   static async removeEdgeFromActor(messageData, actor) {
-    const creator = this.pactCharacter(actor)
-    if (creator) {
-      creator.update({
-        "system.conditionMonitors.edge.actual.base": creator.system.conditionMonitors.edge.actual.base + 1 
+    const edgeActor = await this.determineEdgeActor(actor)
+    if (edgeActor !== actor) {
+      edgeActor.update({
+        "system.conditionMonitors.edge.actual.base": edgeActor.system.conditionMonitors.edge.actual.base + 1
       })
     } else {
-      //A spirit without a magic pact has no Edge to spend (SR5 p. 58)
+      //A spirit with no Edge of its own and no summoner to lend his has none to spend
       if (!actor.system.conditionMonitors?.edge) return
       //If actor is grunt, change actor to parent
       if (actor.isToken) actor = game.actors.get(actor.id)

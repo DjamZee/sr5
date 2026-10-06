@@ -3969,7 +3969,7 @@
 	"SR5.SpiritDomain": "Domaine",
 	"SR5.SpiritDomain_D": "Trait Domaine (Arcanes Interdites p. 172) : Magie × 2 pour Accident, Garde et Recherche.",
 	"SR5.SpiritMagicPact": "Pacte de magie",
-	"SR5.SpiritMagicPact_D": "Pacte de magie d'un esprit libre (Grimoire des Ombres p. 133) : l'esprit peut dépenser la Chance du personnage qui l'a invoqué. Sans lui, un esprit ne dépense jamais la Chance de son invocateur (SR5 p. 58).",
+	"SR5.SpiritMagicPact_D": "Pacte de magie d'un esprit libre (Grimoire des Ombres p. 133) : l'esprit libre peut dépenser la Chance du personnage qui l'a invoqué. Un esprit invoqué ou lié n'en a pas besoin : son invocateur peut toujours dépenser sa Chance pour ses tests (SR5 p. 306).",
 	"SR5.AstralReputation": "Réputation astrale",
 	"SR5.AstralReputationAdjustment": "Ajustement",
 	"SR5.AstralReputationAdjustment_D": "Ajouté à la réputation tirée de l'index : +6 pour l'élémentaliste hermétique (Arcanes Interdites p. 175), −1 par geas de conjuration, l'expiation (Grimoire des Ombres p. 207).",

@@ -17,9 +17,9 @@ const {
   SPIRIT_TRAITS, withSpiritTrait, spiritEntry
 } = await import('../modules/system/spirit-ledger.js')
 
-// G7 (décision de DjamZ, 06/10) : « Un joueur ne peut dépenser des points de Chance que sur les propres actions de son
-// personnage » (SR5 p. 58) : un esprit lié ne dépense pas la Chance de son invocateur. Seul le pacte de magie d'un
-// esprit libre le permet (Grimoire des Ombres p. 133).
+// H9 (décision de DjamZ, 06/10, qui revient sur G7) : SR5 p. 306, « Esprits et Chance » : les esprits invoqués et liés
+// n'ont pas leur propre réserve de Chance, mais « l'invocateur peut dépenser sa propre réserve de Chance pour les tests
+// des esprits à son service s'il le désire ». La règle générale de la p. 58 cède devant cette exception.
 
 const summoner = {
   type: 'actorPc', update: vi.fn(), system: {
@@ -55,13 +55,24 @@ beforeEach(() => {
   vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockImplementation(id => (id === 'pc1' ? summoner : undefined))
 })
 
-describe("G7 : la Chance de l'invocateur", () => {
-  it("un esprit lié ne peut pas dépenser la Chance de son invocateur", async () => {
-    expect(await SR5_RollTestHelper.canUseEdge(spirit(false), dialog)).toBe(false)
-    expect(await SR5_RollTestHelper.determineEdgeActor(spirit(false))).not.toBe(summoner)
+describe("H9 : la Chance de l'invocateur (SR5 p. 306)", () => {
+  it("l'invocateur dépense sa Chance pour le test de son esprit, sans pacte", async () => {
+    expect(await SR5_RollTestHelper.canUseEdge(spirit(false), dialog)).toBe(true)
+    expect(await SR5_RollTestHelper.determineEdgeActor(spirit(false))).toBe(summoner)
     await SR5_RollTestHelper.removeEdgeFromActor({
     }, spirit(false))
-    expect(summoner.update).not.toHaveBeenCalled()
+    expect(summoner.update).toHaveBeenCalledWith({
+      "system.conditionMonitors.edge.actual.base": 1
+    })
+  })
+
+  it("plus de Chance chez l'invocateur : l'esprit ne peut plus en dépenser", async () => {
+    summoner.system.conditionMonitors.edge.actual.value = 3
+    try {
+      expect(await SR5_RollTestHelper.canUseEdge(spirit(false), dialog)).toBe(false)
+    } finally {
+      summoner.system.conditionMonitors.edge.actual.value = 0
+    }
   })
 
   it("sous un pacte de magie, l'esprit dépense la Chance du personnage", async () => {
