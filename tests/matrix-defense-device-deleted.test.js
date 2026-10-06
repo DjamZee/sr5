@@ -10,6 +10,7 @@ vi.mock('../modules/rolls/roll-helpers/matrix-card.js', () => ({
   cardStandsFor: async () => true,
   trustedDefenderDamage: async (id, claimed) => claimed,
   damageReachable: () => true,
+  tellMatrixCard: async () => {},
 }))
 
 // config.js writes CONFIG.statusEffects while it is being imported

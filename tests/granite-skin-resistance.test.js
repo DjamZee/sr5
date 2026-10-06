@@ -1,6 +1,12 @@
 import {
-  describe, it, expect, beforeEach
+  describe, it, expect, beforeEach, vi
 } from "vitest"
+
+//The card as a GM wrote it: its reading again is tested in attack-card.test.js and vd-carte-branchement.test.js
+vi.mock('../modules/rolls/roll-helpers/attack-card.js', async (importOriginal) => ({
+  ...(await importOriginal()),
+  trustedResistanceCard: async () => true,
+}))
 import resistance from "../modules/rolls/roll-prepare-case/rollData-Resistance.js"
 
 // Run Faster p. 80 (Peau en granit) : Armure +4 qui fonctionne comme Armure renforcée, « mais ce bonus n'est pas

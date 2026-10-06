@@ -10,6 +10,7 @@ vi.mock('../modules/rolls/roll-helpers/matrix-card.js', () => ({
   cardStandsFor: async () => true,
   trustedDefenderDamage: async (id, claimed) => claimed,
   damageReachable: () => true,
+  tellMatrixCard: async () => {},
 }))
 import fs from 'node:fs'
 

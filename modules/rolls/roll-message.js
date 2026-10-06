@@ -10,6 +10,17 @@ import {
 import {
   trustedDefenderDamage, cardStandsFor, damageReachable
 } from "./roll-helpers/matrix-card.js"
+import {
+  vouch, throughAndIntoData
+} from "./roll-helpers/attack-card.js"
+
+//The attack a second target of Through and Into defends against, from the chat log (attack-card.js), or null
+function throughAndIntoAttack(defenseMessageId, defenseData) {
+  const cardOf = id => SR5_MiscellaneousHelpers.cardOf(id)
+  return throughAndIntoData(defenseMessageId, defenseData, {
+    cardOf, messageOf: id => game.messages.get(id),
+  })
+}
 
 //The GM is told when a defender's card announced more damage than its dice give (matrix-card.js)
 async function tellDefenderDamage(claimed, value, attacker) {
@@ -315,14 +326,12 @@ export class SR5_RollMessage {
         if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest("defense", null, messageData)
         break
       case "defenseThroughAndInto": {
-        //The second target defends against the attack card itself, read again from the chat log (attack-card.js)
-        const attack = messageData.originalAttackMessage
-        if (!attack) break
-        attack.owner = {
-          ...attack.owner, messageId: messageData.previousMessage.messageId
-        }
-        attack.combat.calledShot.secondTarget = true
-        if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest("defense", null, attack)
+        //Through and Into (Run & Gun p. 131): the second target defends against the attack card itself, read again from
+        //the chat log, never against the copy a defense card carries (Apollinaire's review, D2). The defense card must
+        //stand for its first target, and the attack be one, with this called shot
+        const attackData = throughAndIntoAttack(messageId, messageData)
+        if (!attackData) return ui.notifications.warn(game.i18n.localize("SR5.ResistanceCardRefused"))
+        if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest("defense", null, attackData)
         break
       }
       case "matrixDefense":
@@ -668,7 +677,7 @@ export class SR5_RollMessage {
         const damageData = foundry.utils.deepClone(messageData)
         damageData.damage.value = value
         damageData.damage.base = value
-        originalActionActor.rollTest("resistanceCard", null, damageData)
+        originalActionActor.rollTest("resistanceCard", null, vouch(damageData))
         break
       }
       case "attackerDoBiofeedbackDamage":

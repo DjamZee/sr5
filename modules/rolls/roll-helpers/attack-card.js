@@ -19,6 +19,12 @@ import {
 import {
   SR5
 } from "../../config.js"
+import {
+  SR5_ConverterHelpers
+} from "./converter.js"
+import {
+  sameActor, diceShown
+} from "./matrix-card.js"
 
 const DAMAGE_TYPES = ["physical", "stun"]
 const ENGULF_EFFECTS = ["engulfWater", "engulfFire", "engulfAir", "engulfEarth"]
@@ -36,12 +42,9 @@ export function chokeDamageReduction(selected, range) {
   return table[selected]?.[range] ?? 0
 }
 
-/** The bullets a firing mode fires, at most 3 for the Bull's Eye (Run & Gun p. 130). */
+/** The bullets a firing mode fires (SR5 p. 179, as the roll dialog counts them), at most 3 for the Bull's Eye (Run & Gun p. 130). */
 function bullsEyeBullets(firingMode) {
-  const bullets = {
-    SS: 1, SA: 1, SB: 2, BF: 3, LB: 6, FA: 6, FAc: 10, SF: 20
-  }
-  return Math.min(bullets[firingMode] ?? 1, 3)
+  return Math.min(Number(SR5_ConverterHelpers.firingModeToBullet(firingMode)) || 1, 3)
 }
 
 /**
@@ -203,6 +206,27 @@ export function attackFamily(data) {
   return null
 }
 
+/**
+ * The attack a second target of Through and Into defends against (Run & Gun p. 131): the attack card itself, read from
+ * the chat log, never the copy a defense card carries (Apollinaire's review, D2). The defense card must stand (a GM's,
+ * or one an owner of the first target wrote) and answer an attack with this called shot. The second target takes the DV
+ * less 1 only when the first one was hit (D3): a dodged shot goes on whole. null when refused.
+ */
+export function throughAndIntoData(defenseMessageId, _defenseData, {
+  cardOf, messageOf
+}) {
+  const defense = cardOf(defenseMessageId)
+  if (!defense || defense.data.test?.type !== "defense") return null
+  const attackMessage = messageOf(defense.data.previousMessage?.messageId)
+  const attack = attackMessage?.flags?.sr5data
+  if (!attack || !attackFamily(attack) || attack.combat?.calledShot?.name !== "throughAndInto") return null
+  const data = foundry.utils.deepClone(attack)
+  data.owner.messageId = attackMessage.id
+  data.combat.calledShot.name = ""
+  data.combat.calledShot.secondTarget = (Number(defense.data.roll?.netHits) || 0) > 0
+  return data
+}
+
 /** The differences between what the card announced and what was worked out again, for the GM. */
 export function attackCardMismatches(claimed, vetted) {
   const keys = ["base", "value", "ap", "type", "element", "source", "hits", "force", "damageFallOff", "toxinPower"]
@@ -253,8 +277,17 @@ export async function vetAttackCard(chatData, {
 }) {
   const card = helpers.cardOf(messageId)
   if (!card) return null
-  if (card.byGM) return {
-    data: chatData, mismatches: [], card
+  if (card.byGM) {
+    //A GM's card stands as written; the second target of Through and Into still takes 1 less (Run & Gun p. 131)
+    if (!chatData.combat?.calledShot?.secondTarget) return {
+      data: chatData, mismatches: [], card
+    }
+    const second = foundry.utils.deepClone(chatData)
+    second.damage.base = (Number(second.damage.base) || 0) - 1
+    second.damage.value = (Number(second.damage.value) || 0) - 1
+    return {
+      data: second, mismatches: [], card
+    }
   }
   const family = attackFamily(card.data)
   if (!family) return null
@@ -267,8 +300,9 @@ export async function vetAttackCard(chatData, {
     type: chatData.damage?.type, element: chatData.damage?.element ?? "", source: chatData.damage?.source ?? "",
     hits: chatData.roll?.hits,
   }
-  let pool, drainInfo = null, vetted = {
+  let pool, drainInfo = null, overcast = null, vetted = {
   }
+  const extra = []
 
   if (family === "weapon" || (family === "astral" && item)) {
     if (!item || item.type !== "itemWeapon") return null
@@ -298,6 +332,26 @@ export async function vetAttackCard(chatData, {
       vetted.damageFallOff = damage.damageFallOff
       data.combat.grenade.damageFallOff = damage.damageFallOff
     }
+    //What a called shot does (effects, DV limit, initiative) is read on the shot chosen, as the roll dialog sets it
+    const calledShot = family === "weapon" ? chatData.combat?.calledShot?.name : ""
+    if (calledShot) {
+      const cs = helpers.calledShot ?? (await import("./calledShot.js")).SR5_CalledShotHelpers
+      const ammoType = item.system.ammunition?.type, ammoEffects = weaponAmmoEffects(roller, item.system)
+      const effects = cs.convertCalledShotToEffect(calledShot, ammoType, ammoEffects) ?? {
+      }
+      const limitDV = cs.convertCalledShotToLimitDV(calledShot, ammoType, ammoEffects) ?? 0
+      const initiative = calledShot === "shakeUp" ? cs.convertCalledShotToInitiativeMod(ammoType, ammoEffects) : null
+      const was = chatData.combat.calledShot
+      const same = JSON.stringify(Object.values(was.effects ?? {
+      })) === JSON.stringify(Object.values(effects)) && (Number(was.limitDV) || 0) === (Number(limitDV) || 0) &&
+        (calledShot !== "shakeUp" || Number(was.initiative) === Number(initiative))
+      if (!same) extra.push({
+        key: "calledShot", claimed: calledShot, value: calledShot
+      })
+      data.combat.calledShot.effects = effects
+      data.combat.calledShot.limitDV = limitDV
+      if (calledShot === "shakeUp") data.combat.calledShot.initiative = initiative
+    }
   } else if (family === "astral") {
     pool = system.skills?.astralCombat?.test?.dicePool
     vetted = {
@@ -320,6 +374,10 @@ export async function vetAttackCard(chatData, {
       force = drain.force
       drainInfo = {
         announced: chatData.magic?.force, expected: drain.expected, drainValue: chatData.magic?.drain?.value
+      }
+      //Above the Magic, the Drain turns Physical (SR5 p. 281): where a forged Force pays most, said to the GM
+      if (force > (Number(magic) || 0)) overcast = {
+        force, magic: Number(magic) || 0
       }
     }
     const masteries = system.magic?.masteries
@@ -367,9 +425,15 @@ export async function vetAttackCard(chatData, {
   if ("element" in vetted) data.damage.element = vetted.element
   if ("source" in vetted) data.damage.source = vetted.source
   data.roll.hits = vetted.hits
+  //More dice on the card than the pool worked out on the sheet allows: the ones beyond are not counted, and said
+  //(situational bonuses of the roll dialog are not on the sheet)
+  const cap = poolWithEdge(roller, pool), shown = diceShown(card.data.roll?.r)
+  const overPool = shown > cap ? {
+    dice: shown, cap
+  } : null
   return {
-    data, mismatches: attackCardMismatches(claimed, vetted), card, item,
-    direct: (family === "spell" || family === "preparation") && data.test.typeSub !== "indirect", drainInfo,
+    data, mismatches: [...attackCardMismatches(claimed, vetted), ...extra], card, item,
+    direct: (family === "spell" || family === "preparation") && data.test.typeSub !== "indirect", drainInfo, overcast, overPool,
   }
 }
 
@@ -398,7 +462,7 @@ async function rammingOf(roller, defender, cardRamming) {
 const MISMATCH_KEYS = {
   base: "SR5.AttackCardDV", value: "SR5.AttackCardDV", ap: "SR5.AttackCardAP", type: "SR5.AttackCardType",
   element: "SR5.AttackCardElement", source: "SR5.AttackCardSource", hits: "SR5.AttackCardHits", force: "SR5.AttackCardForce",
-  damageFallOff: "SR5.AttackCardFallOff", toxinPower: "SR5.AttackCardToxinPower",
+  damageFallOff: "SR5.AttackCardFallOff", toxinPower: "SR5.AttackCardToxinPower", calledShot: "SR5.AttackCardCalledShot",
 }
 
 function shown(key, value) {
@@ -406,6 +470,7 @@ function shown(key, value) {
   if (value === undefined || value === null || value === "") return "—"
   if (key === "type") return game.i18n.localize(SR5.damageTypes?.[value] ?? String(value))
   if (key === "element") return game.i18n.localize(SR5.specialDamageTypes?.[value] ?? String(value))
+  if (key === "calledShot") return game.i18n.localize(SR5.calledShots?.[value] ?? String(value))
   return String(value)
 }
 
@@ -450,13 +515,17 @@ export async function trustedAttackCard(chatData, defender, messageId = chatData
   const lines = result.mismatches.filter(m => !(m.key === "value" && result.mismatches.some(o => o.key === "base")))
   //A player's spell: the Force announced, the Drain it calls for and the Drain its caster resisted, if already rolled
   const drainLine = result.drainInfo ? spellDrainLine(result.drainInfo, messageId) : null
-  if (drainLine && !lines.length && game.user?.isGM) ui.notifications.info(drainLine)
-  if (lines.length) {
+  //Beyond Magic (Physical Drain), and dice beyond the pool worked out: always said, never cut silently
+  const overcastLine = result.overcast ? game.i18n.format("SR5.AttackCardOvercast", result.overcast) : null
+  const overPoolLine = result.overPool ? game.i18n.format("SR5.AttackCardOverPool", result.overPool) : null
+  const alert = lines.length || overcastLine || overPoolLine
+  if (drainLine && !alert && game.user?.isGM) ui.notifications.info(drainLine)
+  if (alert) {
     const text = [game.i18n.format("SR5.AttackCardReread", {
       user, actor: result.card.roller?.name ?? "?", item: result.item?.name ?? "—"
     }), ...lines.map(m => game.i18n.format(result.direct && (m.key === "base" || m.key === "value") ? "SR5.AttackCardDVDirect" : MISMATCH_KEYS[m.key], {
       value: shown(m.key, m.value), claimed: shown(m.key, m.claimed)
-    })), drainLine].filter(Boolean).join(" ")
+    })), overPoolLine, overcastLine, drainLine].filter(Boolean).join(" ")
     if (game.user?.isGM) ui.notifications.warn(text, {
       permanent: true
     })
@@ -466,15 +535,34 @@ export async function trustedAttackCard(chatData, defender, messageId = chatData
 }
 
 /**
- * Whether a resistance may stand on a card that is no attack (a defense, a ramming defense, a resistance whose
- * continuous damage goes on): written by a GM, or by an owner of the actor who rolled it, and resisted by that actor.
+ * Whether a resistance may stand on a card that is no attack, whatever its type (a list of the types allowed, never of
+ * the ones refused: Apollinaire's review, D1). A card a GM wrote stands; a player's only for the actor it was rolled for
+ * (or the rigger of that drone). An energy aura burns the attacker of the melee attack the defense card answers.
+ * Data the system builds itself has no card behind it; a cross resistance it works out (the biofeedback a defender
+ * deals back, a rigged drone's) is vouched for by the code that bounds it, never by anything a card can carry.
  */
-export async function trustedResistanceCard(chatData, actor) {
-  const {
-    SR5_MiscellaneousHelpers
-  } = await import("./miscellaneous.js")
-  const card = SR5_MiscellaneousHelpers.cardOf(chatData?.owner?.messageId)
+const VOUCHED = new WeakSet()
+
+/** Vouch for roll data the system worked out itself for another actor than the card's (see trustedResistanceCard). */
+export function vouch(data) {
+  if (data && typeof data === "object") VOUCHED.add(data)
+  return data
+}
+
+export async function trustedResistanceCard(chatData, actor, rollType = "", helpers = null) {
+  if (VOUCHED.has(chatData)) return true
+  const messageId = chatData?.owner?.messageId
+  //No card behind it: built by the system (acid, fire, a drug's crash, a sprint, a crush, dumpshock); a chat button
+  //always names its card (roll-message.js)
+  if (!messageId) return true
+  const cardOf = helpers?.cardOf ?? (await import("./miscellaneous.js")).SR5_MiscellaneousHelpers.cardOf
+  const card = cardOf(messageId)
   if (!card) return false
   if (card.byGM) return true
-  return !!card.roller && !!actor && (card.roller === actor || card.roller.uuid === actor.uuid)
+  if (rollType === "resistanceCardAura") {
+    if (card.data.test?.type !== "defense") return false
+    const attack = cardOf(card.data.previousMessage?.messageId)
+    return !!attack && sameActor(attack.roller, actor)
+  }
+  return sameActor(card.roller, actor)
 }

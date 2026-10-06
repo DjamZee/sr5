@@ -26,6 +26,23 @@ export function defenderNetHits({
   return Math.min(announced, Math.max(0, (Number(defenseHits) || 0) - (Number(attackHits) || 0)))
 }
 
+/**
+ * The dice a card shows, the rerolls of the Rule of Six left out (SR5 p. 58): what a pool rolled. 0 without dice.
+ * Compared with the pool worked out on the sheet, it tells the GM when a card rolled more than it can show for.
+ */
+export function diceShown(rollJSON) {
+  let roll = rollJSON
+  if (typeof roll === "string") {
+    try {
+      roll = JSON.parse(roll)
+    } catch {
+      return 0
+    }
+  }
+  const results = roll?.terms?.[0]?.results
+  return Array.isArray(results) ? results.filter(d => !d.ruleOfSix).length : 0
+}
+
 /** Whether `actor` is the one a card was rolled for, or the rigger of that drone (the biofeedback of a jumped-in drone). */
 export function sameActor(roller, actor) {
   if (!roller || !actor) return false
@@ -43,6 +60,7 @@ async function lookups() {
   return {
     cardOf: id => SR5_MiscellaneousHelpers.cardOf(id),
     hitsOf: (card, path) => SR5_MiscellaneousHelpers.hitsOf(card, path),
+    poolCap: (roller, path) => SR5_MiscellaneousHelpers.poolCap(roller, path),
     actorOf: (id, uuids) => SR5_EntityHelpers.getRealActorFromID(id, uuids),
   }
 }
@@ -64,6 +82,7 @@ export async function trustedMatrixAction(chatData, helpers = null) {
   return {
     card, hits: cardHits(false, chatData.roll?.hits, h.hitsOf(card, `matrix.actions.${typeSub}.test.dicePool`)),
     actionType: action.limit?.linkedAttribute ?? chatData.matrix?.actionType,
+    overPool: overPoolOf(h, card, `matrix.actions.${typeSub}.test.dicePool`),
   }
 }
 
@@ -99,7 +118,39 @@ export async function trustedComplexForm(chatData, helpers = null) {
     hits: cardHits(false, chatData.roll?.hits, h.hitsOf(card, "matrix.resonanceActions.threadComplexForm.test.dicePool")),
     typeSub: complexFormSubType(item, chatData.test?.typeSub === "resonanceSpike" || chatData.test?.typeSub === "derezz" || chatData.test?.typeSub === "redundancy" ? "" : chatData.test?.typeSub),
     defenseFirstAttribute: item.system.defenseAttribute, defenseSecondAttribute: item.system.defenseMatrixAttribute,
+    overPool: overPoolOf(h, card, "matrix.resonanceActions.threadComplexForm.test.dicePool"),
   }
+}
+
+/**
+ * Tells the GM what a player's matrix or complex form card announced beyond its dice: hits counted again, and dice
+ * beyond the pool worked out on the sheet. Nothing when the card holds.
+ */
+export async function tellMatrixCard(result, claimedHits) {
+  const claimed = Number(claimedHits) || 0
+  const lines = []
+  if (result.hits !== claimed) lines.push(game.i18n.format("SR5.MatrixCardHits", {
+    user: result.card.author?.name ?? "?", actor: result.card.roller?.name ?? "?", value: result.hits, claimed,
+  }))
+  if (result.overPool) lines.push(game.i18n.format("SR5.AttackCardOverPool", result.overPool))
+  if (!lines.length) return
+  const text = lines.join(" ")
+  const {
+    SR5_ActorHelper
+  } = await import("../../entities/actors/entityActor-helpers.js")
+  if (game.user?.isGM) ui.notifications.warn(text, {
+    permanent: true
+  })
+  await SR5_ActorHelper.whisperGM(text)
+}
+
+//More dice on a player's card than the pool worked out on the sheet allows (plus Chance): said to the GM, never cut silently
+function overPoolOf(h, card, path) {
+  if (!h.poolCap) return null
+  const cap = h.poolCap(card.roller, path), dice = diceShown(card.data.roll?.r)
+  return dice > cap ? {
+    dice, cap
+  } : null
 }
 
 /**

@@ -20,6 +20,9 @@ import {
   ownsTarget, bounded, consumedKey
 } from "../../rolls/roll-helpers/socket-guard.js"
 import {
+  vouch
+} from "../../rolls/roll-helpers/attack-card.js"
+import {
   isStorable, isStoredAway 
 } from "../../interface/storage-rules.js"
 import {
@@ -169,7 +172,8 @@ export class SR5_ActorHelper {
             chatData.damage.resistanceType = "biofeedback"
             chatData.damage.value = Math.ceil(damage/2)
             chatData.owner.messageId = options.owner.messageId
-            controler.rollTest("resistanceCard", null, chatData)
+            //Worked out here for the rigger, not the card's actor: vouched for (attack-card.js, trustedResistanceCard)
+            controler.rollTest("resistanceCard", null, vouch(chatData))
           }
         }
         // Drones short out (matrix damage); vehicles take the damage without side effect (SR5 p. 173)

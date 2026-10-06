@@ -552,3 +552,261 @@ describe('vetAttackCard', () => {
     expect(r.data.combat.armorPenetration).toBe(-10)
   })
 })
+
+// Apollinaire's review (06/10): D1 to D4 and the two warnings
+describe('review fixes', () => {
+  const {
+    throughAndIntoData, trustedResistanceCard, vouch
+  } = attackCardModule
+  const weapon = {
+    id: 'w1', name: 'Fusil', type: 'itemWeapon', system: rifle
+  }
+  const roller = actorWith([weapon])
+  const npc = {
+    id: 'npc', uuid: 'Actor.npc', type: 'actorGrunt'
+  }
+
+  it('D4: Bull\'s Eye counts 3 bullets in a semi-automatic burst (SR5 p. 179)', () => {
+    expect(weaponAttackDamage(rifle, shooter, {
+      calledShot: 'bullsEye', firingMode: 'SB'
+    }).ap).toBe(-8)
+  })
+
+  it('D1: a card of any type stands only for the actor it was rolled for', async () => {
+    const card = {
+      roller, byGM: false, data: {
+        test: {
+          type: 'falseTest'
+        }
+      }
+    }
+    const helpers = {
+      cardOf: () => card
+    }
+    const data = {
+      owner: {
+        messageId: 'm1'
+      }
+    }
+    expect(await trustedResistanceCard(data, npc, 'resistanceCard', helpers)).toBe(false)
+    expect(await trustedResistanceCard(data, roller, 'resistanceCard', helpers)).toBe(true)
+    expect(await trustedResistanceCard({
+      owner: {
+        messageId: 'x'
+      }
+    }, npc, 'resistanceCard', {
+      cardOf: () => null
+    })).toBe(false)
+  })
+  it('D1: data the system builds has no card; what it works out for another actor is vouched for', async () => {
+    expect(await trustedResistanceCard({
+      owner: {
+        messageId: null
+      }
+    }, npc, 'resistanceCard', {
+      cardOf: () => null
+    })).toBe(true)
+    const crossed = vouch({
+      owner: {
+        messageId: 'm1'
+      }
+    })
+    expect(await trustedResistanceCard(crossed, npc, 'resistanceCard', {
+      cardOf: () => null
+    })).toBe(true)
+  })
+  it('D1: an aura burns only the attacker of the attack the defense card answers', async () => {
+    const cards = {
+      d1: {
+        roller: npc, byGM: false, data: {
+          test: {
+            type: 'defense'
+          }, previousMessage: {
+            messageId: 'a1'
+          }
+        }
+      },
+      a1: {
+        roller, byGM: false, data: {
+        }
+      },
+    }
+    const helpers = {
+      cardOf: id => cards[id] ?? null
+    }
+    const data = {
+      owner: {
+        messageId: 'd1'
+      }
+    }
+    expect(await trustedResistanceCard(data, roller, 'resistanceCardAura', helpers)).toBe(true)
+    expect(await trustedResistanceCard(data, npc, 'resistanceCardAura', helpers)).toBe(false)
+  })
+
+  const throughAttack = () => attackCard({
+    combat: {
+      ...attackCard().combat, calledShot: {
+        name: 'throughAndInto'
+      }
+    }
+  })
+  const defenseOf = netHits => ({
+    byGM: false, data: {
+      test: {
+        type: 'defense'
+      }, previousMessage: {
+        messageId: 'a1'
+      }, roll: {
+        netHits
+      }
+    }
+  })
+
+  it('D2: the second target defends against the attack card itself, never the copy in the defense card', () => {
+    const messages = {
+      a1: {
+        id: 'a1', flags: {
+          sr5data: throughAttack()
+        }
+      }
+    }
+    const lookups = {
+      cardOf: id => (id === 'd1' ? defenseOf(2) : null), messageOf: id => messages[id]
+    }
+    const forgedCopy = {
+      originalAttackMessage: attackCard({
+        damage: {
+          base: 40, value: 40
+        }
+      })
+    }
+    const data = throughAndIntoData('d1', forgedCopy, lookups)
+    expect(data.damage.base).toBe(10)
+    expect(data.owner.messageId).toBe('a1')
+    expect(data.combat.calledShot.name).toBe('')
+    expect(data.combat.calledShot.secondTarget).toBe(true)
+    expect(throughAndIntoData('x', forgedCopy, lookups)).toBe(null)
+    messages.a1.flags.sr5data = attackCard()
+    expect(throughAndIntoData('d1', forgedCopy, lookups)).toBe(null)
+  })
+  it('D3: no -1 for the second target when the first one dodged (Run & Gun p. 131)', () => {
+    const lookups = {
+      cardOf: () => defenseOf(-1),
+      messageOf: () => ({
+        id: 'a1', flags: {
+          sr5data: throughAttack()
+        }
+      }),
+    }
+    expect(throughAndIntoData('d1', {
+    }, lookups).combat.calledShot.secondTarget).toBe(false)
+  })
+  it('D3: a GM attack card still takes 1 off for the second target hit through', async () => {
+    const card = attackCard({
+      combat: {
+        ...attackCard().combat, calledShot: {
+          name: '', secondTarget: true
+        }
+      }
+    })
+    const r = await vetAttackCard(card, {
+      messageId: 'm1', helpers: {
+        cardOf: cardOfFor(roller, {
+          byGM: true
+        })
+      }
+    })
+    expect(r.data.damage.base).toBe(9)
+  })
+
+  it('reads the effects of a called shot on the shot chosen, and says when the card differs', async () => {
+    const card = attackCard({
+      combat: {
+        ...attackCard().combat, calledShot: {
+          name: 'shakeUp', initiative: -50, limitDV: 0, effects: {
+          }
+        }
+      }
+    })
+    const calledShot = {
+      convertCalledShotToEffect: () => ({
+      }),
+      convertCalledShotToLimitDV: () => 0,
+      convertCalledShotToInitiativeMod: () => -5,
+    }
+    const r = await vetAttackCard(card, {
+      messageId: 'm1', helpers: {
+        calledShot, cardOf: cardOfFor(roller, {
+          data: {
+            test: {
+              type: 'attack'
+            }, owner: {
+              itemId: 'w1'
+            }
+          }
+        })
+      }
+    })
+    expect(r.data.combat.calledShot.initiative).toBe(-5)
+    expect(r.mismatches.map(m => m.key)).toContain('calledShot')
+  })
+
+  it('says when a card shows more dice than the pool worked out, and when a spell goes beyond Magic', async () => {
+    const r = await vetAttackCard(attackCard(), {
+      messageId: 'm1', helpers: {
+        cardOf: cardOfFor(roller, {
+          roll: dice(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1), data: {
+            test: {
+              type: 'attack'
+            }, owner: {
+              itemId: 'w1'
+            }
+          }
+        })
+      }
+    })
+    //pool 8 + Chance 2
+    expect(r.overPool).toEqual({
+      dice: 13, cap: 10
+    })
+    const spell = {
+      id: 's1', name: 'Boule de feu', type: 'itemSpell', system: {
+        category: 'combat', subCategory: 'indirect', damageType: 'physical', damageElement: 'fire', drain: {
+          value: -1
+        }
+      }
+    }
+    const s = await vetAttackCard(attackCard({
+      test: {
+        type: 'spell', typeSub: 'indirect'
+      }, owner: {
+        actorId: 'pc', itemId: 's1'
+      },
+      magic: {
+        force: 8, drain: {
+          value: 7, modifiers: {
+            spell: {
+              value: -1
+            }
+          }
+        }, spell: {
+        }
+      },
+    }), {
+      messageId: 'm1', helpers: {
+        cardOf: cardOfFor(actorWith([spell]), {
+          data: {
+            test: {
+              type: 'spell'
+            }, owner: {
+              itemId: 's1'
+            }
+          }
+        })
+      }
+    })
+    expect(s.overcast).toEqual({
+      force: 8, magic: 5
+    })
+  })
+})

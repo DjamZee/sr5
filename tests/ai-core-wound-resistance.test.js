@@ -10,6 +10,7 @@ vi.mock('../modules/rolls/roll-helpers/matrix-card.js', () => ({
   cardStandsFor: async () => true,
   trustedDefenderDamage: async (id, claimed) => claimed,
   damageReachable: () => true,
+  tellMatrixCard: async () => {},
 }))
 
 // The core damage of an AI gives wound modifiers "the same way as physical and stun damage"

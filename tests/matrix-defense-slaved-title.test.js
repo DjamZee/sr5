@@ -10,6 +10,7 @@ vi.mock('../modules/rolls/roll-helpers/matrix-card.js', () => ({
   cardStandsFor: async () => true,
   trustedDefenderDamage: async (id, claimed) => claimed,
   damageReachable: () => true,
+  tellMatrixCard: async () => {},
 }))
 import matrixDefense from "../modules/rolls/roll-prepare-case/rollData-MatrixDefense.js"
 import {

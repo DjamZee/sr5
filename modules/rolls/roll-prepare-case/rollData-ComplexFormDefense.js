@@ -5,7 +5,7 @@ import {
   SR5_PrepareRollHelper 
 } from "../roll-prepare-helpers.js"
 import {
-  trustedComplexForm
+  trustedComplexForm, tellMatrixCard
 } from "../roll-helpers/matrix-card.js"
 
 export default async function complexFormDefense(rollData, actor, chatData){
@@ -13,18 +13,7 @@ export default async function complexFormDefense(rollData, actor, chatData){
   //The technomancer's card read again: the form on his sheet, its hits counted on its dice within his pool (matrix-card.js)
   const form = await trustedComplexForm(chatData)
   if (!form) return void ui.notifications.warn(game.i18n.localize("SR5.MatrixCardRefused"))
-  if (form.hits !== (Number(chatData.roll?.hits) || 0)) {
-    const {
-      SR5_ActorHelper
-    } = await import("../../entities/actors/entityActor-helpers.js")
-    const text = game.i18n.format("SR5.MatrixCardHits", {
-      user: form.card.author?.name ?? "?", actor: form.card.roller?.name ?? "?", value: form.hits, claimed: chatData.roll?.hits ?? 0,
-    })
-    if (game.user?.isGM) ui.notifications.warn(text, {
-      permanent: true
-    })
-    await SR5_ActorHelper.whisperGM(text)
-  }
+  await tellMatrixCard(form, chatData.roll?.hits)
   chatData = {
     ...chatData,
     roll: {

@@ -10,6 +10,7 @@ vi.mock('../modules/rolls/roll-helpers/matrix-card.js', () => ({
   cardStandsFor: async () => true,
   trustedDefenderDamage: async (id, claimed) => claimed,
   damageReachable: () => true,
+  tellMatrixCard: async () => {},
 }))
 
 // N67: the item a card aims at may be deleted before the next button is clicked. fromUuid() then

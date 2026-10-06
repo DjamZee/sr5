@@ -20,9 +20,6 @@ import {
   attackFamily, trustedAttackCard, trustedResistanceCard
 } from "../roll-helpers/attack-card.js"
 
-//The cards whose damage was worked out by whoever rolled them, for the actor they rolled for
-const RESISTED_CARDS = ["defense", "rammingDefense", "resistanceCard"]
-
 // Show a notification and return undefined so the caller aborts the test.
 // In Foundry V13, ui.notifications.info() returns a Notification object: returning it directly
 // made the caller treat the notification as roll data and crash.
@@ -39,7 +36,7 @@ export default async function resistance(rollData, rollType, actor, chatData){
   if (attackFamily(chatData)) {
     chatData = await trustedAttackCard(chatData, actor)
     if (!chatData) return undefined
-  } else if (RESISTED_CARDS.includes(chatData?.test?.type) && rollType !== "resistanceCardAura" && !(await trustedResistanceCard(chatData, actor))) {
+  } else if (!(await trustedResistanceCard(chatData, actor, rollType))) {
     const text = game.i18n.localize("SR5.ResistanceCardRefused")
     ui.notifications.warn(text)
     return undefined
