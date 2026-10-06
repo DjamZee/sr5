@@ -11,7 +11,7 @@ vi.mock('../modules/socket.js', () => ({
 }))
 
 const {
-  blightDrops, blightStrikes
+  blightDrops, blightStrikes, sweepBlight
 } = await import('../modules/system/blight-strikes.js')
 const {
   SR5_Toxins
@@ -189,5 +189,63 @@ describe('when Blight strikes', () => {
     })).astral).toEqual({
       'system.visions.astral.isActive': false
     })
+  })
+})
+
+// Clémence's review: Blight laid while no gamemaster was connected, or in a world older than the strike
+describe('the sweep of Blight at the load', () => {
+  beforeEach(() => {
+    globalThis.game ??= {
+    }
+    game.users = {
+      activeGM: {
+        isSelf: true
+      }
+    }
+    game.i18n = {
+      localize: k => k, format: k => k
+    }
+    game.scenes = []
+    globalThis.ui = {
+      notifications: {
+        info: vi.fn(), warn: vi.fn()
+      }
+    }
+    vi.spyOn(SR5_ActorHelper, 'deleteSustainedEffect').mockResolvedValue()
+    vi.spyOn(SR5_CharacterUtility, 'handleAstralVision').mockResolvedValue()
+  })
+  afterEach(() => vi.restoreAllMocks())
+
+  it('puts in order an actor under Blight whose focus still runs, and leaves the others', async () => {
+    const struck = mage([blight, item('focus', 'itemFocus', true)])
+    const inOrder = mage([blight, item('rangé', 'itemFocus', false)])
+    const free = mage([item('focus', 'itemFocus', true)], {
+      perceiving: true
+    })
+    game.actors = [struck, inOrder, free]
+    await sweepBlight()
+    expect(struck.updateEmbeddedDocuments).toHaveBeenCalledWith('Item', [{
+      _id: 'focus', 'system.isActive': false
+    }])
+    expect(inOrder.updateEmbeddedDocuments).not.toHaveBeenCalled()
+    expect(free.updateEmbeddedDocuments).not.toHaveBeenCalled()
+    expect(free.updates).toEqual([])
+  })
+
+  it('cuts astral perception left on under Blight', async () => {
+    const a = mage([blight], {
+      perceiving: true
+    })
+    await sweepBlight([a])
+    expect(a.updates).toEqual([{
+      'system.visions.astral.isActive': false
+    }])
+  })
+
+  it('does nothing on a client that is not the active gamemaster', async () => {
+    game.users.activeGM.isSelf = false
+    const a = mage([blight, item('focus', 'itemFocus', true)])
+    await sweepBlight([a])
+    expect(a.updateEmbeddedDocuments).not.toHaveBeenCalled()
   })
 })

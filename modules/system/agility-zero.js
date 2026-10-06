@@ -4,6 +4,10 @@
 // called shot and high gravity (Run & Gun). What being immobilized allows (crawling at a quarter of the speed,
 // defending with a penalty) stays the gamemaster's call: the status only shows it.
 
+import {
+  worldActors
+} from "./world-actors.js"
+
 export const AGILITY_ZERO_STATUS = "agilityZero"
 
 export const agilityZeroStatusEffect = {
@@ -49,8 +53,17 @@ function actorOf(document) {
   return document?.parent instanceof Actor ? document.parent : null
 }
 
+// At the world's load, the active gamemaster puts every actor in order: an Agility at 0 from before the status, or
+// changed while no gamemaster was connected, carries it; a status left on an Agility that came back loses it
+// (Clémence's review). syncAgilityZero writes nothing for an actor already in order
+export async function sweepAgilityZero(actors = worldActors()) {
+  if (!game.users?.activeGM?.isSelf) return
+  for (const actor of actors) await syncAgilityZero(actor).catch(e => console.error("SR5 | agility 0 status", e))
+}
+
 // Agility moves with the actor, its items (augmentations, drugs, item effects) and its active effects
 export function registerAgilityZeroHooks() {
+  Hooks.once("ready", () => sweepAgilityZero())
   for (const hook of ["updateActor", "createItem", "updateItem", "deleteItem", "createActiveEffect", "updateActiveEffect", "deleteActiveEffect"]) {
     Hooks.on(hook, document => {
       const actor = actorOf(document)

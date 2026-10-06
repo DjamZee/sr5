@@ -37,7 +37,7 @@ import {
   registerAgilityZeroHooks
 } from './system/agility-zero.js'
 import {
-  onBlightCreated
+  onBlightCreated, sweepBlight
 } from './system/blight-strikes.js'
 import {
   onSprintCard
@@ -235,4 +235,6 @@ registerBoneAugmentationGuard()
 registerAgilityZeroHooks()
 // Blight strikes: sustained spells, active foci and astral fall (Better Than Bad p. 141)
 Hooks.on('createItem', onBlightCreated)
+// ...and an actor under Blight is put in order at the world's load, by the active GM (Clémence's review)
+Hooks.once('ready', () => sweepBlight().catch(e => console.error("SR5 | Blight", e)))
 for (const hook of ['createActor', 'deleteActor', 'createToken', 'deleteToken', 'canvasReady']) Hooks.on(hook, sr5HookResetJumpedInRiggers)

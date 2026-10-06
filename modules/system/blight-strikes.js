@@ -7,6 +7,9 @@ import {
 import {
   SR5_CharacterUtility
 } from "../entities/actors/utilityActor.js"
+import {
+  worldActors
+} from "./world-actors.js"
 
 // Better Than Bad p. 141: Blight cuts an Awakened from the manasphere, "sous quelque forme que ce soit" (decision of
 // DjamZ after Victoire's review of séance H). When it strikes, what was running falls: sustained spells, active foci,
@@ -87,6 +90,21 @@ export async function blightStrikes(actor) {
   if (names.length) ui.notifications.info(game.i18n.format("SR5.INFO_BlightDrops", {
     actor: actor.name, list: names.join(", ")
   }))
+}
+
+// At the world's load, the active gamemaster puts in order an actor under Blight whose spells, foci or astral still
+// run: Blight laid while no gamemaster was connected, or in a world older than the strike (Clémence's review). Nothing
+// is written for an actor already in order
+export async function sweepBlight(actors = worldActors()) {
+  if (!game.users?.activeGM?.isSelf) return
+  for (const actor of actors) {
+    if (!SR5_Toxins.isCutFromManasphere(actor)) continue
+    const {
+      items, sustained, astral
+    } = blightDrops(actor)
+    if (!items.length && !sustained.length && !Object.keys(astral).length) continue
+    await blightStrikes(actor).catch(e => console.error("SR5 | Blight", e))
+  }
 }
 
 // The Blight effect is laid on the actor, by whichever client: the active gamemaster switches off what was running

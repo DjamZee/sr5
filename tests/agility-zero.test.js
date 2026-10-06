@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 
 const {
-  isAgilityZero, syncAgilityZero, AGILITY_ZERO_STATUS
+  isAgilityZero, syncAgilityZero, sweepAgilityZero, AGILITY_ZERO_STATUS
 } = await import('../modules/system/agility-zero.js')
 
 // Séance H, H8 (decision of DjamZ): Agility brought to 0 lays the "immobilized" status (Street Grimoire p. 116, Mana
@@ -83,5 +83,41 @@ describe("Agility 0 and the immobilized status (H8)", () => {
     const a = actor(4, 0)
     await Promise.all([syncAgilityZero(a), syncAgilityZero(a)])
     expect(a.toggleStatusEffect).toHaveBeenCalledTimes(1)
+  })
+
+  // Clémence's review: an actor of an existing world is put in order at the load, by the active gamemaster
+  it("the sweep at the load lays and takes off the status, and writes nothing for an actor in order", async () => {
+    const down = actor(4, 0), back = actor(4, 3, [AGILITY_ZERO_STATUS]), fine = actor(4, 3)
+    await sweepAgilityZero([down, back, fine])
+    expect(down.toggleStatusEffect).toHaveBeenCalledWith(AGILITY_ZERO_STATUS, {
+      active: true
+    })
+    expect(back.toggleStatusEffect).toHaveBeenCalledWith(AGILITY_ZERO_STATUS, {
+      active: false
+    })
+    expect(fine.toggleStatusEffect).not.toHaveBeenCalled()
+  })
+
+  it("the sweep reads the world's actors and the unlinked tokens", async () => {
+    const world = actor(4, 0), unlinked = actor(5, 0), linked = actor(6, 0)
+    game.actors = [world]
+    game.scenes = [{
+      tokens: [{
+        actorLink: false, actor: unlinked
+      }, {
+        actorLink: true, actor: linked
+      }]
+    }]
+    await sweepAgilityZero()
+    expect(world.toggleStatusEffect).toHaveBeenCalled()
+    expect(unlinked.toggleStatusEffect).toHaveBeenCalled()
+    expect(linked.toggleStatusEffect).not.toHaveBeenCalled()
+  })
+
+  it("no sweep on a client that is not the active gamemaster", async () => {
+    game.users.activeGM.isSelf = false
+    const a = actor(4, 0)
+    await sweepAgilityZero([a])
+    expect(a.toggleStatusEffect).not.toHaveBeenCalled()
   })
 })
