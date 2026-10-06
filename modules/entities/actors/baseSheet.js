@@ -1630,7 +1630,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
             let interactionDrug = actor.items.filter((d) => d.type === "itemDrug" && d.id !== item._id && !isSameDrug(d, item) && (d.system.isActive || (d.system.wirelessTurnedOn && !drugCrashIsInstant(d.system))))
             if (interactionDrug.length > 0) {
               let roll, interactionDiceResult, drugs = []
-              //"1D6 pour chaque drogue en plus de la première" (Chrome Flesh p. 196): two copies of Jazz under effect are one drug
+              //"1D6 pour chaque drogue en plus de la première" (Chrome Flesh p. 197): two copies of Jazz under effect are one drug
               roll = new Roll(`${distinctDrugs(interactionDrug).length}d6`)
               interactionDiceResult = await roll.evaluate()
 
@@ -1641,7 +1641,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                 let listedDrug = itemList.find(i => i._id === d.id)
                 listedDrug.system.interact = true
                 mixedDrugs.push(listedDrug)
-                drugs.push(d.name)
+                //Two copies of Jazz are named once ("Jazz, Jazz" read as two drugs, Isaure's review)
+                if (!drugs.includes(d.name)) drugs.push(d.name)
               }
 
 

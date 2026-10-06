@@ -55,7 +55,7 @@ const take = (key, essence) => SR5_CharacterUtility.handleDrugShots({
   addictions: [],
 }, null, [])
 
-// Chrome Flesh p. 191-193, "ESS + 1D6 heures, maximum 12 heures"; SR5 p. 49, round up unless a rule says otherwise
+// Chrome Flesh p. 191-193, "ESS + 1D6 heures, maximum 12 heures"; SR5 p. 50, round up unless a rule says otherwise
 describe('ESS + 1D6 hours: whole hours, rounded up', () => {
   for (const key of ["animalTongue", "immortalFlower", "littleSmoke", "rockLizardBlood", "shade", "wuduAku", "zombieDust"]) {
     it(`${key}: Essence 5.9 (a datajack) and a 4 give 10 hours, not 9.9`, async () => {
@@ -95,7 +95,7 @@ describe('isSameDrug: two copies of a drug are not a mix', () => {
     expect(isSameDrug(drug("Jazz de Zoé", "jazz", "custom"), drug("Jazz de Max", "jazz", "custom"))).toBe(false)
     expect(isSameDrug(drug("Jazz de Zoé", "jazz", "custom"), drug("Jazz de Zoé", "jazz", "custom"))).toBe(true)
   })
-  // Chrome Flesh p. 196, "1D6 pour chaque drogue en plus de la première"
+  // Chrome Flesh p. 197, "1D6 pour chaque drogue en plus de la première"
   it('distinctDrugs counts two Jazz under effect once, a third drug apart', () => {
     const mix = [drug("Jazz", "jazz"), drug("Jazz", "jazz", "street"), drug("Langue animale", "animalTongue")]
     expect(distinctDrugs(mix).map(d => d.name)).toEqual(["Jazz", "Langue animale"])
