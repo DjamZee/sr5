@@ -65,12 +65,15 @@ export class SR5_PrepareRollHelper {
   }
 
   //Return limit modifiers object
+  //Two modifiers of the same type (two bonuses of one armor, two implants) each get their own key:
+  //getBaseLimit took both off the base, so both must come back
   static getLimitModifiers(rollData, limitModifiers){
     for (let m of limitModifiers){
-      rollData.limit.modifiers[m.type] = {
+      let key = m.type, n = 1
+      while (rollData.limit.modifiers[key] !== undefined) key = `${m.type}_${++n}`
+      rollData.limit.modifiers[key] = {
+        label: m.source, value: m.value
       }
-      rollData.limit.modifiers[m.type].label = m.source
-      rollData.limit.modifiers[m.type].value = m.value
     }
     return rollData.limit.modifiers
   }

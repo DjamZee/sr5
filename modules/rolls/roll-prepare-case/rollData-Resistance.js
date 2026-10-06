@@ -230,6 +230,14 @@ async function handleElementDamage(rollData, actorData, chatData, armor){
     //Get the base dicepool and composition
     rollData.dicePool.composition = actorData.resistances.specialDamage[element].modifiers
     rollData.dicePool.base = actorData.resistances.specialDamage[element].dicePool
+
+    //Run Faster p. 80 (Granite skin): no die against any damage, only the automatic hits, as on the physical path
+    const hardened = actorData.specialProperties?.hardenedArmors?.normalWeapon
+    if (actorData.specialProperties?.hardenedArmorHitsOnly && hardened?.value > 0 && chatData.damage.source !== "magical"){
+      rollData.dicePool.composition = rollData.dicePool.composition.filter(m => !hardened.modifiers.includes(m))
+      rollData.dicePool.base -= hardened.value
+      rollData.dicePool.modifiers.findLast(m => m.type === "armorPenetration").value = SR5_CombatHelpers.hitsOnlyArmorPenetration(armor, hardened.value, chatData.combat.armorPenetration)
+    }
   }
     
   return rollData

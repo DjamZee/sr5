@@ -79,8 +79,11 @@ export function syncBackgroundCount(rollData, bgCount, apply){
   if (!mods.length) return rollData
   let isBg = m => mods.some(b => b.type === m.type && b.source === m.label)
   rollData.dicePool.modifiers = rollData.dicePool.modifiers.filter(m => !isBg(m))
+  //getLimitModifiers keys a second modifier of the same type as "type_2", "type_3"...
   for (let b of mods){
-    if (rollData.limit.modifiers[b.type]?.label === b.source) delete rollData.limit.modifiers[b.type]
+    for (let [key, m] of Object.entries(rollData.limit.modifiers)){
+      if ((key === b.type || key.startsWith(`${b.type}_`)) && m?.label === b.source) delete rollData.limit.modifiers[key]
+    }
   }
   //The whole count added under one key by addBackgroundCountLimitModifiers goes too: it is put back below, once
   delete rollData.limit.modifiers.backgroundCount

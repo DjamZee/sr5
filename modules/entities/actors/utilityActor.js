@@ -2361,6 +2361,11 @@ export class SR5_CharacterUtility extends Actor {
   // Generate Actors Resistances
   static updateResistances(actor) {
     let actorData = actor.system, resistances = actorData.resistances, attributes = actorData.attributes
+    // The effects put their bonuses "to resist damage" on the physical damage resistance (bone density and bone lacing
+    // SR5 p. 458/462, Toughness p. 76, Bear p. 326, skeletal pneumaticity Chrome Flesh p. 167): the book makes them
+    // count against every damage but drugs, toxins and diseases, so the elemental (toxin aside) and fall resistances
+    // take them too. Read before Body and armor are added below.
+    const anyDamageModifiers = [...(resistances?.physicalDamage?.modifiers || [])]
 
     // Addiction tests (SR5 p. 415): Body + Willpower when physiological, Logic + Willpower when psychological
     if (resistances.addiction && attributes.logic && attributes.willpower) {
@@ -2399,6 +2404,7 @@ export class SR5_CharacterUtility extends Actor {
                   resistances.specialDamage[specialDamage].modifiers = resistances.specialDamage[specialDamage].modifiers.concat(actorData.itemsProperties.armor.modifiers)
                   resistances.specialDamage[specialDamage].modifiers = resistances.specialDamage[specialDamage].modifiers.concat(actorData.itemsProperties.armor.specialDamage[specialDamage].modifiers)
                 }
+                if (specialDamage !== "toxin") resistances.specialDamage[specialDamage].modifiers = resistances.specialDamage[specialDamage].modifiers.concat(anyDamageModifiers)
               }
               SR5_EntityHelpers.updateDicePool(resistances[key][specialDamage], 0)
             }
@@ -2446,6 +2452,7 @@ export class SR5_CharacterUtility extends Actor {
               SR5_EntityHelpers.updateModifier(resistances[key], game.i18n.localize('SR5.Body'), "linkedAttribute", attributes.body.augmented.value)
             }
             if (actorData.itemsProperties) resistances[key].modifiers = resistances[key].modifiers.concat(actorData.itemsProperties.armor.modifiers)
+            if (key === "fall" && actor.type != "actorDrone") resistances[key].modifiers = resistances[key].modifiers.concat(anyDamageModifiers)
             SR5_EntityHelpers.updateDicePool(resistances[key], 0)
             break
           case "crashDamage":
