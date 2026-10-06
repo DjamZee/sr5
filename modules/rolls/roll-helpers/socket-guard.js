@@ -101,6 +101,12 @@ function lowered(next, current, floor = 0) {
   return isNumber(next) && next >= floor && next <= (Number(current) || 0)
 }
 
+//An effect weakened (dispelling): a bonus goes down, a malus (Decrease Attribute) goes back up, neither past 0
+function towardZero(next, current) {
+  const c = Number(current) || 0
+  return isNumber(next) && (c < 0 ? (next <= 0 && next >= c) : (next >= 0 && next <= c))
+}
+
 const off = next => next === false
 
 /**
@@ -151,7 +157,7 @@ export function reduceAllowed(changes, stored, netHits, linked = false, key = "h
     if (!linked && field === key) {
       if (!lowered(value, stored?.[key], Math.max(0, (Number(stored?.[key]) || 0) - netHits))) return false
     } else if (linked && field === "value") {
-      if (!lowered(value, stored?.value)) return false
+      if (!towardZero(value, stored?.value)) return false
     } else if (field === "isActive") {
       if (!off(value)) return false
     } else if (!linked && field === "targetOfEffect") {
@@ -161,7 +167,7 @@ export function reduceAllowed(changes, stored, netHits, linked = false, key = "h
       for (const [id, effect] of Object.entries(value ?? {
       })) {
         if (!effect || Object.keys(effect).some(k => k !== "value")) return false
-        if (!lowered(effect.value, stored?.customEffects?.[id]?.value)) return false
+        if (!towardZero(effect.value, stored?.customEffects?.[id]?.value)) return false
       }
     } else return false
   }

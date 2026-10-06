@@ -98,6 +98,42 @@ describe('dispelling part of a spell', () => {
   })
 })
 
+describe('the GM guard of a player dispelling by socket', async () => {
+  const {
+    reduceAllowed
+  } = await import('../modules/rolls/roll-helpers/socket-guard.js')
+  it('lets a malus go back up toward 0, never past it nor further down', () => {
+    expect(reduceAllowed({
+      value: -1, customEffects: {
+        0: {
+          value: -1
+        }
+      }
+    }, {
+      value: -3, customEffects: {
+        0: {
+          value: -3
+        }
+      }
+    }, 2, true)).toBe(true)
+    expect(reduceAllowed({
+      value: 1
+    }, {
+      value: -3
+    }, 2, true)).toBe(false)
+    expect(reduceAllowed({
+      value: -4
+    }, {
+      value: -3
+    }, 2, true)).toBe(false)
+    expect(reduceAllowed({
+      value: 4
+    }, {
+      value: 3
+    }, 2, true)).toBe(false)
+  })
+})
+
 describe('dispelledValue', () => {
   it('reads the multiplier of the source entry', () => {
     expect(dispelledValue({
@@ -106,6 +142,14 @@ describe('dispelledValue', () => {
     expect(dispelledValue({
       type: 'hitsReplace'
     }, 4, 1)).toBe(3)
+  })
+  it('brings a malus back toward 0 (Decrease Strength, -1 per net hit), never past it', () => {
+    expect(dispelledValue({
+      type: 'netHits', multiplier: -1
+    }, -3, 2)).toBe(-1)
+    expect(dispelledValue({
+      type: 'netHits', multiplier: -1
+    }, -3, 5)).toBe(0)
   })
   it('never goes below 0, and leaves fixed values and ratings alone', () => {
     expect(dispelledValue({

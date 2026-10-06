@@ -27,7 +27,9 @@ export function dispelledValue(entry, value, reduction) {
   if (!entry || !(reduction > 0)) return null
   const base = String(entry.type ?? "").replace("Replace", "")
   if (!READS_HITS.includes(base)) return null
+  //A negative multiplier (Decrease Attribute, -1 per net hit) gives a malus: it goes back up toward 0, never past it
   const lost = Math.floor(reduction * (entry.multiplier || 1))
-  const next = Math.max(0, (Number(value) || 0) - lost)
-  return next === Number(value) ? null : next
+  const current = Number(value) || 0
+  const next = current < 0 ? Math.min(0, current - lost) : Math.max(0, current - lost)
+  return next === current ? null : next
 }
