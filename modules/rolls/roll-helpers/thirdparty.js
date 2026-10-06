@@ -21,8 +21,11 @@ import {
   SR5_ActorHelper
 } from "../../entities/actors/entityActor-helpers.js"
 import {
-  SR5_ConverterHelpers 
+  SR5_ConverterHelpers
 } from "./converter.js"
+import {
+  sourceEntryOf, dispelledValue
+} from "./dispel-rules.js"
 import {
   SR5_RollTest 
 } from "../roll-test.js"
@@ -581,11 +584,16 @@ export class SR5_ThirdPartyHelpers {
           if (!effect) continue
           //A copy of the stored system: the live one used to be changed in place
           let updatedEffect = effect.toObject().system
-          updatedEffect.value = newEffect.hits
-          for (let cs of Object.values(updatedEffect.customEffects ?? {
-          })){
-            cs.value = newEffect.hits
-          }
+          //SR5 p. 298: only an effect whose value came from the hits loses some; an Armor +2 stays at 2 (it used to
+          //become the hits left)
+          const custom = Object.values(updatedEffect.customEffects ?? {
+          })
+          const entry = custom.length ? sourceEntryOf(newEffect.customEffects, custom[0].target, custom[0].category) :
+            sourceEntryOf(newEffect.itemEffects, updatedEffect.target, null, k => SR5_EntityHelpers.getLabelByKey(k))
+          const value = dispelledValue(entry, updatedEffect.value, cardData.roll.netHits)
+          if (value === null) continue
+          updatedEffect.value = value
+          for (let cs of custom) cs.value = value
           if (!game.user?.isGM){
             SR5_SocketHandler.emitForGM("updateItem", {
               item: e,
