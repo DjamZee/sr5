@@ -110,10 +110,18 @@ describe('Device of an AI bricked (Data Trails p. 161)', () => {
     game.user = {
       isGM: false
     }
+    //A GM connected to relay to (with none, nothing is written: matrix-card lot)
+    const users = game.users
+    game.users = {
+      activeGM: {
+        id: 'gm', isGM: true
+      }
+    }
     const {
       actor
     } = target(true)
     await SR5_MatrixHelpers.applyDamageToDecK(actor, card(14), null, false)
+    game.users = users
     expect(SR5_ActorHelper.createDeadEffect).not.toHaveBeenCalled()
     expect(SR5_SocketHandler.emitForGM).toHaveBeenCalledWith('createDeadEffect', {
       actorId: 'a', itemUuid: 'Actor.a.Item.cl', surplus: 4,

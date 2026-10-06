@@ -8,6 +8,9 @@ import {
   mayDefend
 } from "../system/defense-once.js"
 import {
+  trustedDefenderDamage, cardStandsFor, damageReachable
+} from "./roll-helpers/matrix-card.js"
+import {
   applyStabilization, applyDiagnosis, useMedkitSupplies
 } from "../system/bb-healing.js"
 import {
@@ -613,28 +616,51 @@ export class SR5_RollMessage {
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       }
-      case "defenderDoMatrixDamage":
+      case "defenderDoMatrixDamage": {
+        //The boxes the defender's card deals back, its net hits counted again on both cards (matrix-card.js)
+        const value = await trustedDefenderDamage(messageId, messageData.damage.matrix.value)
+        if (!value) return ui.notifications.warn(game.i18n.localize(value === null ? "SR5.MatrixCardRefused" : "SR5.MatrixCardNoDamage"))
+        if (!damageReachable(originalActionActor)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActiveGM"))
+        const damageData = foundry.utils.deepClone(messageData)
+        damageData.damage.matrix.value = value
+        let done = true
         if (originalActionActor.type === "actorPc" || originalActionActor.type === "actorGrunt"){
           //A living persona or a Lockdown head case takes it as Stun there, the swarm of an original strain Monad on itself
-          await SR5_MatrixHelpers.applyDamageToDecK(originalActionActor, messageData, actor, true)
-        } else originalActionActor.takeDamage(messageData)
-        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+          done = await SR5_MatrixHelpers.applyDamageToDecK(originalActionActor, damageData, actor, true)
+        } else await originalActionActor.takeDamage(damageData)
+        if (done) SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
-      case "takeMatrixDamage":
-        if (actor.type === "actorPc" || actor.type === "actorGrunt") await SR5_MatrixHelpers.applyDamageToDecK(actor, messageData)
-        else actor.takeDamage(messageData)
+      }
+      case "takeMatrixDamage": {
+        //Only the actor the resistance was rolled for takes it, from a card a GM or one of its owners wrote (matrix-card.js)
+        if (!(await cardStandsFor(messageId, actor))) return ui.notifications.warn(game.i18n.localize("SR5.ResistanceCardRefused"))
+        if (!damageReachable(actor)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActiveGM"))
+        let done = true
+        if (actor.type === "actorPc" || actor.type === "actorGrunt") done = await SR5_MatrixHelpers.applyDamageToDecK(actor, messageData)
+        else await actor.takeDamage(messageData)
+        if (!done) break
         //Special case for Derezz Complex Form.
         if (messageData.test.typeSub === "derezz") SR5_MatrixHelpers.applyDerezzEffect(messageData, originalActionActor, actor)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
-      case "blueGooExplosion":                
+      }
+      case "blueGooExplosion":
         actor.rollTest("iceAttack", null, messageData)
         break
-      case "defenderDoBiofeedbackDamage":
-        originalActionActor.rollTest("resistanceCard", null, messageData)
+      case "defenderDoBiofeedbackDamage": {
+        //Biofeedback deals the defender's net hits (SR5 p. 238), counted again on both cards (matrix-card.js)
+        const value = await trustedDefenderDamage(messageId, messageData.damage.value)
+        if (!value) return ui.notifications.warn(game.i18n.localize(value === null ? "SR5.MatrixCardRefused" : "SR5.MatrixCardNoDamage"))
+        const damageData = foundry.utils.deepClone(messageData)
+        damageData.damage.value = value
+        damageData.damage.base = value
+        originalActionActor.rollTest("resistanceCard", null, damageData)
         break
+      }
       case "attackerDoBiofeedbackDamage":
         if (actor.type === "actorDrone") actor = SR5_EntityHelpers.getRealActorFromID(actor.system.vehicleOwner.id)
+        //Resisted by the one whose resistance card it is (or the rigger of that drone), from a card a GM or an owner wrote
+        if (actor && !(await cardStandsFor(messageId, actor))) return ui.notifications.warn(game.i18n.localize("SR5.ResistanceCardRefused"))
         if (actor) actor.rollTest("resistanceCard", null, messageData)
         break
       case "scatter":

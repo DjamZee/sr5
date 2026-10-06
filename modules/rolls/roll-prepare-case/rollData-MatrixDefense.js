@@ -7,9 +7,37 @@ import {
 import {
   SR5_EntityHelpers 
 } from "../../entities/helpers.js"
+import {
+  trustedMatrixAction
+} from "../roll-helpers/matrix-card.js"
+
+//The GM is told what a player's card announced beyond its dice
+async function whisperMismatch(attack, chatData){
+  const {
+    SR5_ActorHelper
+  } = await import("../../entities/actors/entityActor-helpers.js")
+  const text = game.i18n.format("SR5.MatrixCardHits", {
+    user: attack.card.author?.name ?? "?", actor: attack.card.roller?.name ?? "?", value: attack.hits, claimed: chatData.roll?.hits ?? 0,
+  })
+  if (game.user?.isGM) ui.notifications.warn(text, {
+    permanent: true
+  })
+  await SR5_ActorHelper.whisperGM(text)
+}
 
 export default async function matrixDefense(rollData, rollKey, actor, chatData){
   if (actor.type === "actorSpirit") return
+  //The hacker's card read again: its hits counted on its dice within his pool, its action type on his sheet (matrix-card.js)
+  const attack = await trustedMatrixAction(chatData)
+  if (!attack) return void ui.notifications.warn(game.i18n.localize("SR5.MatrixCardRefused"))
+  if (attack.hits !== (Number(chatData.roll?.hits) || 0)) await whisperMismatch(attack, chatData)
+  chatData = {
+    ...chatData, roll: {
+      ...chatData.roll, hits: attack.hits
+    }, matrix: {
+      ...chatData.matrix, actionType: attack.actionType
+    }
+  }
   let matrixAction = actor.system.matrix.actions[rollKey]
 
   //Determine title

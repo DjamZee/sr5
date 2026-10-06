@@ -1,6 +1,16 @@
 import {
   describe, it, expect, beforeAll, afterAll, vi
 } from "vitest"
+
+//The matrix card as a GM wrote it: its reading again is tested in matrix-card.test.js
+vi.mock('../modules/rolls/roll-helpers/matrix-card.js', () => ({
+  trustedMatrixAction: async chatData => ({
+    hits: chatData?.roll?.hits, actionType: chatData?.matrix?.actionType
+  }),
+  cardStandsFor: async () => true,
+  trustedDefenderDamage: async (id, claimed) => claimed,
+  damageReachable: () => true,
+}))
 import matrixDefense from "../modules/rolls/roll-prepare-case/rollData-MatrixDefense.js"
 import {
   SR5_EntityHelpers
