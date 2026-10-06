@@ -238,6 +238,25 @@ describe('spellDrainCheck (lot 3, options a + b)', () => {
       }, itemDrain: -3
     }).force).toBe(3)
   })
+  it('lowers the Drain by a reagent tier only as much as the tier gives a spell (Forbidden Arcana p. 181)', () => {
+    const forged = {
+      force: 12, drainValue: 3, modifiers: {
+        spell: {
+          value: -1
+        }, reagentTier: {
+          value: -10
+        }
+      }, itemDrain: -1, magic: 6
+    }
+    //radical: 4 at most -> Force <= 3 - (-1 - 4) = 8
+    expect(spellDrainCheck({
+      ...forged, reagentCap: 4
+    }).force).toBe(8)
+    //no reagent rules that lower the Drain: the tier counts for nothing -> Force <= 3 - (-1) = 4
+    expect(spellDrainCheck({
+      ...forged, reagentCap: 0
+    }).force).toBe(4)
+  })
   it('never calls for a Drain under its floor (SR5 p. 284)', () => {
     expect(spellDrainCheck({
       force: 1, drainValue: 2, itemDrain: -3

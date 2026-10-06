@@ -121,19 +121,23 @@ export function weaponAttackDamage(weapon, actor, choices = {
  * casting, reagents, masteries…) on the card. Not a proof, a player writes both: an edited Force left with its Drain
  * shows. Returns the Force kept (the lower of the two) and the Drain that Force calls for.
  * A modifier that lowers the Drain would let a higher Force through: only those the sheet stands for count, Structured
- * Spellcasting (-1, Forbidden Arcana p. 43) if the caster has it, and a reagent tier no lower than -`magic`
- * (Forbidden Arcana p. 181); any other lowering one counts for nothing. `floor` comes from the sheet, not the card.
+ * Spellcasting (-1, Forbidden Arcana p. 43) if the caster has it, and a reagent tier no lower than -`reagentCap`
+ * (what the world's reagent rules give that tier for a spell, Forbidden Arcana p. 181) nor than -`magic`; any other
+ * lowering one counts for nothing. `floor` comes from the sheet, not the card. The reagent stock on the sheet proves
+ * nothing here: it is spent when the spell is cast, before the GM reads the card (a known limit).
  */
 export function spellDrainCheck({
   force, drainValue, modifiers = {
-  }, itemDrain = 0, floor = 2, structured = false, magic = 0
+  }, itemDrain = 0, floor = 2, structured = false, magic = 0, reagentCap = 0
 }) {
   const others = Object.entries(modifiers ?? {
   }).filter(([key]) => key !== "spell").reduce((sum, [key, m]) => {
     const value = Number(m?.value) || 0
     if (value >= 0) return sum + value
     if (key === "structuredSpellcasting") return sum + (structured ? -1 : 0)
-    if (key === "reagentTier") return sum + Math.max(value, -Math.max(0, Number(magic) || 0))
+    //A reagent tier lowers a spell's Drain only under Forbidden Arcana, by what its tier gives (p. 181: refined 2,
+    //radical 4), never more than the Magic (Hyacinthe's limit)
+    if (key === "reagentTier") return sum + Math.max(value, -Math.min(Math.max(0, Number(reagentCap) || 0), Math.max(0, Number(magic) || 0)))
     return sum
   }, 0)
   const sum = others + (Number(itemDrain) || 0)
@@ -145,6 +149,13 @@ export function spellDrainCheck({
   return {
     force: kept, expected: Math.max(Number(floor) || 0, kept + sum)
   }
+}
+
+/** The most a reagent tier may lower a spell's Drain under the world's reagent rules: Forbidden Arcana only (p. 181). */
+async function spellReagentCap(tier, helpers = null) {
+  const reagents = helpers?.reagents ?? await import("../../system/reagents.js")
+  if (reagents.reagentSystem() !== "forbiddenArcana") return 0
+  return reagents.tierDrainReduction(reagents.normalizeTier(tier, "forbiddenArcana"), "spell")
 }
 
 /** The highest Force a spell is cast at: twice the caster's Magic (SR5 p. 281). */
@@ -391,6 +402,8 @@ export async function vetAttackCard(chatData, {
         //SR5 p. 284: never under 2; Structured Spellcasting (Forbidden Arcana p. 43): never under 1, read on the sheet
         structured: !!system.magic?.metamagics?.structuredSpellcasting,
         floor: system.magic?.metamagics?.structuredSpellcasting ? 1 : 2,
+        //What the reagent tier the card names gives a spell under the world's rules (Forbidden Arcana p. 181), 0 otherwise
+        reagentCap: await spellReagentCap(chatData.magic?.reagentTier, helpers),
       })
       force = drain.force
       drainInfo = {
