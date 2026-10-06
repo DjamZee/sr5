@@ -430,6 +430,8 @@ export class SR5ShopAvailability {
       buyerName: actor.name,
       searcherLabel: searcher.label,
       isContact: !!contact,
+      // The contact a new test after a failure asks again (shop-retry.js): the gamemaster looks it up on the buyer
+      contactId: contact?.id ?? null,
       // A hand-typed pool owes nothing to the contact's sheet, so neither the
       // derivation note nor the specialization applies to it.
       derived: override === null && !!searcher.derived,
@@ -495,6 +497,14 @@ export class SR5ShopAvailability {
       const data = message.flags?.sr5shop
       const total = html.querySelector('[data-shop-total]')
       if (data && total) total.textContent = box.checked && data.expressTotalLabel ? data.expressTotalLabel : data.totalLabel
+    }))
+    // A failed line may be tested again after twice the delay (SR5 p. 420): the gamemaster checks and rolls
+    html.querySelectorAll('[data-shop-action="retry"]').forEach(el => el.addEventListener('click', async (event) => {
+      event.preventDefault()
+      const {
+        requestRetry
+      } = await import('./shop-retry.js')
+      await requestRetry(message, el.dataset.uuid)
     }))
     html.querySelectorAll('[data-shop-action="checkout"]').forEach(el => {
       el.addEventListener('click', async (event) => {

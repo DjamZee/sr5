@@ -51,7 +51,9 @@
           <td>{{#if this.availability}}{{this.availability}}{{else}}—{{/if}}</td>
           <td>{{#if this.untested}}—{{else if this.availability}}{{this.hits}} / {{this.opposition}}{{else}}—{{/if}}</td>
           <td>{{this.outcomeLabel}}</td>
-          <td>{{this.delayLabel}}</td>
+          <td>{{this.delayLabel}}{{#if (eq this.outcome "failure")}}
+            <button type="button" class="sr-shop-retry" data-shop-action="retry" data-uuid="{{this.uuid}}" title="{{localize 'SR5.ShopRetryHint'}}"><i class="fas fa-sm fa-rotate-right"></i> {{localize 'SR5.ShopRetry'}}</button>
+          {{/if}}</td>
           <td>{{this.priceLabel}}</td>
         </tr>
         {{/each}}

@@ -17,6 +17,9 @@ import {
   registerOrderSettings, registerOrderLedger
 } from "../interface/shop-orders.js"
 import {
+  registerRetryLedger
+} from "../interface/shop-retry.js"
+import {
   registerExtendedClockSetting
 } from "../system/extended-clock.js"
 import {
@@ -294,6 +297,8 @@ export async function sr5HookInit() {
   registerDeadlineSettings()
   registerOrderSettings()
   registerOrderLedger()
+  //A new availability test after a failure (SR5 p. 420): the GM's ledger of failed cards
+  registerRetryLedger()
   registerExtendedClockSetting()
   //Diseases (Run Faster p. 111-112): the GM's ledger of infections, and what the player is shown
   registerDiseaseSettings()

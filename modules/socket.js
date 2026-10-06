@@ -51,6 +51,14 @@ const orderCancel = async (message, senderId) => {
   return socketCancel(message, senderId)
 }
 
+// A player asks for a new availability test after a failure (SR5 p. 420): the gamemaster checks and rolls
+const availabilityRetry = async (message, senderId) => {
+  const {
+    socketRetry
+  } = await import("./interface/shop-retry.js")
+  return socketRetry(message, senderId)
+}
+
 export class SR5_SocketHandler {
   static registerSocketListeners() {
     const hooks = {
@@ -97,6 +105,7 @@ export class SR5_SocketHandler {
       "shopVendorOffer": [vendor('_socketOffer')],
       "shopVendorAccept": [vendor('_socketAccept')],
       "shopVendorDecline": [vendor('_socketDecline')],
+      "shopAvailabilityRetry": [availabilityRetry],
       "shopOrderCancel": [orderCancel],
       "tacnetRoster": [async (message, senderId) => (await import("./system/tacnet.js"))._socketTacnetRoster(message, senderId)],
     }

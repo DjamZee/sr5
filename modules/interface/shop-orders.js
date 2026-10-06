@@ -287,10 +287,17 @@ export function testedHours(baseHours, result) {
   return net > 0 ? base / net : base
 }
 
-/** The test of an availability card for a line: the card must be the requester's own. */
+/**
+ * The test of an availability card for a line: the card must be the requester's own, or one the gamemaster
+ * rolled for a buyer the requester owns (a new test after a failure, shop-retry.js).
+ */
 export function cardResult(messageId, uuid, userId) {
   const message = messageId ? game.messages?.get(messageId) : null
-  if (!message || (userId && message.author?.id !== userId)) return null
+  const rolledForThem = () => {
+    const user = game.users?.get(userId)
+    return !!message.author?.isGM && !!user && !!game.actors?.get(message.flags?.sr5shop?.buyerId)?.testUserPermission?.(user, 'OWNER')
+  }
+  if (!message || (userId && message.author?.id !== userId && !rolledForThem())) return null
   return message.flags?.sr5shop?.results?.find(r => r.uuid === uuid) ?? null
 }
 
