@@ -166,11 +166,14 @@ const notices = []
 
 beforeEach(async () => {
   vi.resetModules()
-  vi.doMock('../modules/socket.js', () => ({
-    SR5_SocketHandler: {
-      emitForPlayer: async (type, data) => notices.push(data?.key), emitForGM: async () => {}
-    }
-  }))
+  // The double of modules/__mocks__/socket.js, not a factory: two imports in flight at once got the REAL
+  // module for the second one with a factory (Vitest 4.1; Tobias, 06/10)
+  vi.doMock('../modules/socket.js')
+  const {
+    SR5_SocketHandler
+  } = await import('../modules/socket.js')
+  SR5_SocketHandler.emitForPlayer = async (type, data) => notices.push(data?.key)
+  SR5_SocketHandler.emitForGM = async () => {}
   ;({
     SR5ShopVendor
   } = await import('../modules/interface/shop-vendor.js'))

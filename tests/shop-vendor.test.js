@@ -311,19 +311,21 @@ const notes = []
 // buyer without waiting (#notify is not awaited), so its import of the socket can still be running when a
 // test ends: each test waits for it (afterEach), or the last one resolved after the file was torn down, the
 // mock gone, and loaded the real system ("EnvironmentTeardownError").
-vi.mock('../modules/socket.js', () => ({
-  SR5_SocketHandler: {
-    emitForPlayer: async (type, data, userId) => sent.push({
-      type, data, userId
-    }),
-    emitForGM: async (type, data) => sent.push({
-      type, data
-    }),
-  },
-}))
+// The double is modules/__mocks__/socket.js, not a factory: with a factory, two imports in flight at once
+// got the REAL module for the second one (Vitest 4.1), 26 to 77 s that afterEach waited for (Tobias, 06/10).
+vi.mock('../modules/socket.js')
 
 beforeEach(async () => {
   vi.resetModules()
+  const {
+    SR5_SocketHandler
+  } = await import('../modules/socket.js')
+  SR5_SocketHandler.emitForPlayer = async (type, data, userId) => sent.push({
+    type, data, userId
+  })
+  SR5_SocketHandler.emitForGM = async (type, data) => sent.push({
+    type, data
+  })
   ;({
     SR5ShopVendor 
   } = await import('../modules/interface/shop-vendor.js'))
