@@ -837,6 +837,7 @@
 	"SR5.AggravatedWoundBox": "Aggravated wound: counts double for healing (right-click to remove the mark)",
 	"SR5.Anticoagulant": "Anti-coagulant",
 	"SR5.Antitoxin": "Antitoxin",
+	"SR5.WARN_ButtonClaimed": "Another owner of this character is already using this button: wait for their card (if nothing comes, try again in a minute).",
 	"SR5.WARN_CapBallRoundByRound": "Cap & Ball: in combat this weapon reloads round by round (3 Complex Actions per round).",
 	"SR5.INFO_CapBallStep": "Cap & Ball: reloading {done}/{total}. Stopping before the end means starting over.",
 	"SR5.INFO_SourceModifiersCleaned": "SR5 migration done: computed modifiers removed from the stored data (actors: {actors}, world items: {items}, unlinked tokens: {tokens}).",

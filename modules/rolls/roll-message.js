@@ -41,6 +41,9 @@ import {
   SR5_CalledShotHelpers 
 } from "./roll-helpers/calledShot.js"
 import {
+  claimChatButton
+} from "./roll-helpers/button-claim.js"
+import {
   SR5_MatrixHelpers 
 } from "./roll-helpers/matrix.js"
 import {
@@ -308,8 +311,12 @@ export class SR5_RollMessage {
           SR5_MatrixHelpers.chooseMatrixDefender(messageData, actor)
         } else actor.rollTest(type, messageData.test.typeSub, messageData)
         break
-      case "powerDefense":
       case "resistanceCard":
+        //Two owners clicking at once rolled two resistances (MESURES-F, F6): the active GM holds it for the first
+        if (!(await claimChatButton(messageId, type))) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_ButtonClaimed")}`)
+        actor.rollTest(type, null, messageData)
+        break
+      case "powerDefense":
       case "resistanceCardAura":
       case "complexFormDefense":
       case "iceAttack":

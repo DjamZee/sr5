@@ -121,6 +121,8 @@ export class SR5_SocketHandler {
       "shopAvailabilityRetry": [availabilityRetry],
       "shopOrderCancel": [orderCancel],
       "shopOrderLedger": [orderLedger],
+      "claimChatButton": [async (message, senderId) => (await import("./rolls/roll-helpers/button-claim.js")).socketClaimChatButton(message, senderId)],
+      "claimChatButtonReply": [async (message, senderId) => (await import("./rolls/roll-helpers/button-claim.js")).socketClaimChatButtonReply(message, senderId)],
       "tacnetRoster": [async (message, senderId) => (await import("./system/tacnet.js"))._socketTacnetRoster(message, senderId)],
     }
 
