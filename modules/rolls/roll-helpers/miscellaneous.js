@@ -185,7 +185,11 @@ export class SR5_MiscellaneousHelpers {
         asked = SR5_MiscellaneousHelpers.confirmUse(use, sender)
         SR5_MiscellaneousHelpers.#confirmations.set(use.card.id, asked)
       }
-      if (!(await asked)) return false
+      //A refusal is not kept: the card's button stays (Hyacinthe's D5), and its next click asks the GM again (D5b)
+      if (!(await asked)) {
+        if (SR5_MiscellaneousHelpers.#confirmations.get(use.card.id) === asked) SR5_MiscellaneousHelpers.#confirmations.delete(use.card.id)
+        return false
+      }
     }
     return SR5_MiscellaneousHelpers.consume(use.key)
   }

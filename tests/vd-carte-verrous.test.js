@@ -252,6 +252,33 @@ describe('chat buttons that write matrix damage (D4)', () => {
   })
 })
 
+describe('the GM\'s say on a relayed card (D5b)', () => {
+  it('asks him again after a refusal, and keeps a yes', async () => {
+    const {
+      SR5_MiscellaneousHelpers
+    } = await import('../modules/rolls/roll-helpers/miscellaneous.js')
+    vi.spyOn(SR5_MiscellaneousHelpers, 'consume').mockResolvedValue(true)
+    const confirm = vi.spyOn(SR5_MiscellaneousHelpers, 'confirmUse').mockResolvedValueOnce(false).mockResolvedValueOnce(true)
+    const use = {
+      card: {
+        id: 'd5b-card', byGM: false
+      }, key: 'd5b-card|matrixDamage|'
+    }
+    expect(await SR5_MiscellaneousHelpers.grant(use, {
+      name: 'Clo'
+    })).toBe(false)
+    expect(await SR5_MiscellaneousHelpers.grant(use, {
+      name: 'Clo'
+    })).toBe(true)
+    expect(confirm).toHaveBeenCalledTimes(2)
+    //A yes stays: the same card is not asked a third time
+    await SR5_MiscellaneousHelpers.grant(use, {
+      name: 'Clo'
+    })
+    expect(confirm).toHaveBeenCalledTimes(2)
+  })
+})
+
 describe('the type of the biofeedback a defender deals back (limit 3)', () => {
   const attacker = mode => ({
     type: 'actorPc', system: {
