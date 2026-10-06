@@ -1593,10 +1593,13 @@ export class SR5_ActorHelper {
     const data = message?.data ?? {
     }
     if (!isActiveGM()) return
-    const effect = typeof data.effectUuid === "string" ? await fromUuid(data.effectUuid) : null
+    //Every effect the card posed comes in one request (a spell with two effects), the card being spent once for all
+    const uuids = [...new Set(Array.isArray(data.effectUuids) ? data.effectUuids : [data.effectUuid])]
+    if (!uuids.length || uuids.length > 20 || uuids.some(u => typeof u !== "string")) return SR5_ActorHelper.refuseSocket("linkEffectToSource", senderId, data)
+    const effects = await Promise.all(uuids.map(u => fromUuid(u)))
     const source = typeof data.targetItem === "string" ? await fromUuid(data.targetItem) : null
-    const linked = effect?.type === "itemEffect" && source?.documentName === "Item" && effect.system?.ownerItem === data.targetItem
-    if (!linked || !SR5_ActorHelper.socketOwns(senderId, effect)) return SR5_ActorHelper.refuseSocket("linkEffectToSource", senderId, data)
+    const linked = effect => effect?.type === "itemEffect" && source?.documentName === "Item" && effect.system?.ownerItem === data.targetItem
+    if (effects.some(effect => !linked(effect) || !SR5_ActorHelper.socketOwns(senderId, effect))) return SR5_ActorHelper.refuseSocket("linkEffectToSource", senderId, data)
     if (!SR5_ActorHelper.socketOwns(senderId, source)) {
       const {
         SR5_MiscellaneousHelpers
@@ -1607,7 +1610,7 @@ export class SR5_ActorHelper {
       //(Harriet's second review). An area effect is linked by the GM himself (effectArea), without this socket
       if (!fromSource || !(await SR5_MiscellaneousHelpers.consume(consumedKey(card.id, "linkEffect")))) return SR5_ActorHelper.refuseSocket("linkEffectToSource", senderId, data)
     }
-    await SR5_ActorHelper.linkEffectToSource(data.actorId, data.targetItem, data.effectUuid)
+    for (const uuid of uuids) await SR5_ActorHelper.linkEffectToSource(data.actorId, data.targetItem, uuid)
   }
 
   static async deleteSustainedEffect(targetItem){
@@ -2250,6 +2253,7 @@ export class SR5_ActorHelper {
     //Damage the GM declined, or that its clicker may not write: the card keeps its button, unless another entry of the
     //same card was posed (a second click would pose it twice)
     let declined = false, posed = false
+    const toLink = []
 
     for (let [entryKey, e] of Object.entries(itemData[effectType] ?? {
     })){
@@ -2363,15 +2367,9 @@ export class SR5_ActorHelper {
         const [effect] = await actor.createEmbeddedDocuments("Item", [itemEffect]) ?? []
         if (effect) posed = true
         if (!effect) SR5_SystemHelpers.srLog(1, `applyExternalEffect: no effect created on ${actor.name}`)
-        else if (!game.user?.isGM) {
-          SR5_SocketHandler.emitForGM("linkEffectToSource", {
-            actorId: data.owner.actorId,
-            targetItem: data.owner.itemUuid,
-            effectUuid: effect.uuid,
-            //The card it was applied from: the GM reads it again (security pass, Olympe)
-            messageId: data.owner.messageId,
-          })
-        } else {
+        //Asked of the GM once for all the effects of this card, below: he spends the card once
+        else if (!game.user?.isGM) toLink.push(effect.uuid)
+        else {
           await SR5_ActorHelper.linkEffectToSource(data.owner.actorId, data.owner.itemUuid, effect.uuid)
         }
 
@@ -2404,6 +2402,16 @@ export class SR5_ActorHelper {
         }
       }
     }
+    //One request for every effect this card posed: sent one by one, the GM spent the card on the first, and refused the
+    //second link of a spell he owns that a player applied to her own actor
+    if (toLink.length) SR5_SocketHandler.emitForGM("linkEffectToSource", {
+      actorId: data.owner.actorId,
+      targetItem: data.owner.itemUuid,
+      effectUuid: toLink[0],
+      effectUuids: toLink,
+      //The card it was applied from: the GM reads it again (security pass, Olympe)
+      messageId: data.owner.messageId,
+    })
     //Whether the effect was applied: refused (a card counted again and rejected, the GM said no, damage declined), the
     //card keeps its Apply button
     //An entry declined while another was posed: the card is spent (the declined damage is lost, the GM's own choice)
