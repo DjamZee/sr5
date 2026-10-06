@@ -505,7 +505,7 @@ export class SR5_ActorHelper {
         }
       }
       ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${effect.name} ${game.i18n.localize("SR5.Applied")}.`)
-      await SR5Combat.changeInitInCombatHelper(actorId, -5)
+      await SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), -5)
       await actor.createEmbeddedDocuments("Item", [effect])
 
       let statusEffect = await _getSRStatusEffect("electricityDamage")
@@ -596,7 +596,7 @@ export class SR5_ActorHelper {
     }
 
     ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${effect.name} ${game.i18n.localize("SR5.Applied")}.`)
-    await SR5Combat.changeInitInCombatHelper(actorId, -5)
+    await SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), -5)
     await actor.createEmbeddedDocuments("Item", [effect])
 
     let statusEffect = await _getSRStatusEffect("anticoagulantDamage")
@@ -645,7 +645,7 @@ export class SR5_ActorHelper {
     }
 		
     ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${effect.name} ${game.i18n.localize("SR5.Applied")}.`)
-    await SR5Combat.changeInitInCombatHelper(actorId, -5)
+    await SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), -5)
     await actor.createEmbeddedDocuments("Item", [effect])
 
     let statusEffect = await _getSRStatusEffect("acidDamage")

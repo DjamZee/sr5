@@ -132,7 +132,7 @@ export async function sr5HookUpdateItem(document, data, _options, userId) {
   }
 
   if (document.isOwned && game.combat && game.user?.isGM) {
-    if (document.type === "itemSpell" || document.type === "itemComplexForm") SR5Combat.changeInitInCombatHelper(document.actor.id)
+    if (document.type === "itemSpell" || document.type === "itemComplexForm") SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(document.actor))
   }
 
   //Keep agent condition monitor synchro with owner deck

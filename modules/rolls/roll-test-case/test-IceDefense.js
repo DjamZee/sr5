@@ -132,7 +132,7 @@ export default async function iceDefenseInfo(cardData, actorId){
         if (existingMark >= 2) cardData.chatCard.buttons.iceEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "iceEffect", game.i18n.localize("SR5.Geolocated"))
         break
       case "iceShocker":           
-        SR5Combat.changeInitInCombatHelper(actorId, -5)
+        SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), -5)
         break               
       default:
         SR5_SystemHelpers.srLog(1, `Unknown '${cardData.test.typeSub}' type in iceDefenseInfo`)

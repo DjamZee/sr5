@@ -183,14 +183,14 @@ async function handleCalledShotResistanceInfo(cardData, actor, actorId){
       }
       break
     case "bellringer":
-      SR5Combat.changeInitInCombatHelper(actorId, -10)
+      SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), -10)
       ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_Stunned", {
         initiative: 10
       })}`)
       cardData.chatCard.buttons.bellringerEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", `${game.i18n.localize("SR5.EffectApplied")} (${game.i18n.localize("SR5.STATUSES_Stunned")})`)
       break
     case "shakeUp":
-      SR5Combat.changeInitInCombatHelper(actorId, cardData.combat.calledShot.initiative)			
+      SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), cardData.combat.calledShot.initiative)			
       ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_ShakeUp", {
         value: cardData.combat.calledShot.initiative
       })}`)

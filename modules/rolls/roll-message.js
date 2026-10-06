@@ -505,7 +505,7 @@ export class SR5_RollMessage {
         break
       case "applyFearEffect":
       case "applyStunnedEffect":
-        SR5Combat.changeInitInCombatHelper(actor.id, -messageData.combat.calledShot.initiative)
+        SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), -messageData.combat.calledShot.initiative)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "templatePlace": {

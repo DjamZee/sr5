@@ -310,7 +310,7 @@ export class SR5_RollTest {
       SR5_CombatHelpers.applyFullDefenseEffect(actor)
     }
     if (dialogData.combat.activeDefenseSelected !== "") initModifier += SR5_ConverterHelpers.activeDefenseToInitMod(dialogData.combat.activeDefenseSelected)
-    if (initModifier < 0) SR5Combat.changeInitInCombatHelper(actor.id, initModifier)
+    if (initModifier < 0) SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), initModifier)
   }
 
   /** Roll a shadowrun 5 test
