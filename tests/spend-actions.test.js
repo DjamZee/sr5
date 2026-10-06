@@ -37,6 +37,29 @@ describe('spendActions', () => {
     type: "free", value: 1, source: "turnOnWifi"
   }])).toEqual([0, 2, 1]))
   it('keeps a second complex action granted by an effect', () => expect(spend([C], left(1, 4, 2))).toEqual([1, 2, 1]))
+  //Ruling of DjamZ (2026-10-06, G12): an extra action granted by an effect is not lost with a complex action
+  it('keeps an extra simple action granted by an effect after a complex one', () => {
+    const start = left(1, 3, 1)
+    start.simple.value = 3
+    start.complex.value = 1
+    expect(spend([C], start)).toEqual([1, 1, 0])
+  })
+  it('spends the extra simple action first: one simple leaves the complex one', () => {
+    const start = left(1, 3, 1)
+    start.simple.value = 3
+    start.complex.value = 1
+    expect(spend([S], start)).toEqual([1, 2, 1])
+    const again = left(1, 3, 1)
+    again.simple.value = 3
+    again.complex.value = 1
+    expect(spend([S, S], again)).toEqual([1, 1, 0])
+  })
+  it('lets the extra simple action through after a complex one, with the blocking setting', () => {
+    const start = left(1, 3, 1)
+    start.simple.value = 3
+    start.complex.value = 1
+    expect(SR5_MiscellaneousHelpers.missingAction([C, S], start)).toBeNull()
+  })
   it('lets a manual adjustment touch only its counter', () => {
     expect(spend([{
       type: "simple", value: -1, source: "manual"

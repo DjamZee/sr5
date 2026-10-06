@@ -465,7 +465,7 @@ export class SR5_MiscellaneousHelpers {
     let left = {
     }
     for (let type of ["free", "simple", "complex"]) left[type] = {
-      current: available?.[type]?.current ?? 0
+      current: available?.[type]?.current ?? 0, value: available?.[type]?.value
     }
     let needed = {
     }
@@ -534,8 +534,12 @@ export class SR5_MiscellaneousHelpers {
         cap(complex)
         continue
       }
-      if (a.type === "simple") complex.current = Math.min(complex.current, Math.max(0, Math.floor(simple.current / 2)))
-      if (a.type === "complex") simple.current = Math.min(simple.current, Math.max(0, 2 * complex.current))
+      //Extra actions granted by an effect, beyond the two simple ≡ one complex of the pass: spent first, and
+      //never lost with the linked action (ruling of DjamZ, 2026-10-06, G12)
+      const extraSimple = Math.max(0, (Number(simple.value) || 0) - 2 * (Number(complex.value) || 0))
+      const extraComplex = Math.max(0, (Number(complex.value) || 0) - Math.floor((Number(simple.value) || 0) / 2))
+      if (a.type === "simple") complex.current = Math.min(complex.current, Math.max(0, Math.floor(simple.current / 2)) + extraComplex)
+      if (a.type === "complex") simple.current = Math.min(simple.current, Math.max(0, 2 * complex.current) + extraSimple)
     }
     return available
   }
