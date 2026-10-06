@@ -413,6 +413,9 @@ export class SR5Actor extends Actor {
         if (!Object.hasOwn(actor.system, "type")) actor.system.type = actor.flags.spiritType
         if (actor.system.force < 1) actor.system.force = parseInt(actor.flags.spiritForce)
         SR5_CharacterUtility.resetCalculatedValues(actor)
+        // A spirit is always a magical being. The V12 template.json stored magicType "spirit"; the shared
+        // magic schema of V13 starts empty, which skipped every astral value (astral damage 0, no drain resistance)
+        SR5_CharacterUtility.setSpiritMagicType(actor)
         break
       default:
         SR5_SystemHelpers.srLog(1, `Unknown '${actor.type}' actor type in prepareBaseData()`)

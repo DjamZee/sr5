@@ -1626,6 +1626,10 @@ export class SR5_CharacterUtility extends Actor {
   }
 
   // Generate spirit values
+  static setSpiritMagicType(actor) {
+    if (actor.system.magic) actor.system.magic.magicType = "spirit"
+  }
+
   static updateSpiritValues(actor) {
     SR5_EntityHelpers.updateValue(actor.system.force)
     // A homunculus is always physical, custom types based on it included
