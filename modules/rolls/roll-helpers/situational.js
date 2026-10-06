@@ -22,6 +22,8 @@ const READ_BY_ROLLS = [
   /^system\.resistances\.[^.]+(\.[^.]+)?$/,
   /^system\.derivedAttributes\.[^.]+$/,
   /^system\.movements\.[^.]+\.(test|limit)$/,
+  // The vehicle test of a drone or vehicle (M2-5): read by rollData-VehicleTest
+  /^system\.vehicleTest\.(test|limit)$/,
   /^system\.weightActions\.[^.]+\.test$/,
   /^system\.matrix\.(actions|resonanceActions)\.[^.]+\.(test|limit|defense)$/,
   /^system\.matrix\.resistances\.[^.]+$/,
