@@ -1,0 +1,28 @@
+<li class="grid">
+    <p>
+        <span class="col-auto">{{localize 'SR5.KarmaCost'}}{{localize 'SR5.Colons'}}</span>
+        <span class="col-auto SR-GreyColor">{{valueOrDash system.karmaCost}}</span>
+    </p>
+</li>
+{{#if system.mysticPath}}
+<li class="grid">
+    <p>
+        <span class="col-auto">{{localize 'SR5.MentorMysticPath'}}{{localize 'SR5.Colons'}}</span>
+        <span class="col-auto SR-GreyColor">{{#if (eq system.mysticPath 'adept')}}{{localize 'SR5.MentorPathAdept'}}{{else}}{{localize 'SR5.MentorPathMagician'}}{{/if}}</span>
+    </p>
+</li>
+{{/if}}
+<li class="grid">
+    <p>
+        <span class="col-auto">{{localize 'SR5.MentorResistThreshold'}}{{localize 'SR5.Colons'}}</span>
+        <span class="col-auto SR-GreyColor">{{valueOrDash system.resistThreshold}}</span>
+    </p>
+</li>
+{{#if system.drawback}}
+<li class="grid">
+    <p>
+        <span class="col-auto">{{localize 'SR5.MentorDrawback'}}{{localize 'SR5.Colons'}}</span>
+        <span class="col-auto SR-GreyColor">{{system.drawback}}</span>
+    </p>
+</li>
+{{/if}}

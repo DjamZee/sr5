@@ -97,6 +97,18 @@ export function isViewerStillValid(entry, actor) {
   return true
 }
 
+/** Tell whether a user sees through a token right now: listed, and his source of vision still there.
+ * The list is cleaned by the active gamemaster on his scenes only, and not at all without him: each
+ * client reads the source itself, so a Snoop whose mark was erased stops at once (security pass, Olympe)
+ * @param {Object} tokenDocument - token document
+ * @param {String} userId - the user
+ * @return {Boolean}
+ */
+export function seesThrough(tokenDocument, userId) {
+  const entry = getSharedViewers(tokenDocument).find(e => e.userId === userId)
+  return !!entry && isViewerStillValid(entry, tokenDocument.actor)
+}
+
 /** Decide whether the gamemaster grants a request a user sent by socket. The sender comes from the
  * server, not from the message: nobody can ask in another user's name.
  * @param {Object} request

@@ -18,19 +18,28 @@ export class SR5SellDialog extends foundry.applications.api.HandlebarsApplicatio
 ) {
   static _instance = null
 
-  static open(actor) {
+  /**
+   * @param {Actor} actor the seller
+   * @param {object} [options]
+   * @param {object} [options.vendor] {uuid, storageId, label}: sell to this vendor (lot C, part 2)
+   */
+  static open(actor, {
+    vendor = null
+  } = {
+  }) {
     if (!actor) {
       ui.notifications.warn(game.i18n.localize('SR5.WARN_ShopNoBuyer'))
       return null
     }
     if (SR5SellDialog._instance?.rendered) {
       SR5SellDialog._instance.actor = actor
+      SR5SellDialog._instance.vendor = vendor
       SR5SellDialog._instance.bringToFront()
       SR5SellDialog._instance.render()
       return SR5SellDialog._instance
     }
     const dialog = new SR5SellDialog({
-      actor
+      actor, vendor
     })
     SR5SellDialog._instance = dialog
     dialog.render(true).catch(err => {
@@ -54,6 +63,7 @@ export class SR5SellDialog extends foundry.applications.api.HandlebarsApplicatio
     actions: {
       sellToContact: SR5SellDialog.#onSellToContact,
       sellOnMarket: SR5SellDialog.#onSellOnMarket,
+      sellToVendor: SR5SellDialog.#onSellToVendor,
       clearSelection: SR5SellDialog.#onClearSelection,
     },
   }
@@ -68,6 +78,7 @@ export class SR5SellDialog extends foundry.applications.api.HandlebarsApplicatio
   }) {
     super(options)
     this.actor = options.actor
+    this.vendor = options.vendor ?? null
     this._selection = new Map()
     this._contactId = null
     this._overridePool = null
@@ -81,10 +92,15 @@ export class SR5SellDialog extends foundry.applications.api.HandlebarsApplicatio
     const actor = this.actor
     const contacts = SR5ShopAvailability.getContacts(actor)
     if (this._contactId && !contacts.some(c => c.id === this._contactId)) this._contactId = null
-    const contact = this._contactId ? actor.items.get(this._contactId) : null
+    // At a vendor's, the seller's own contacts do not count: the vendor's client list does
+    const contact = this._contactId && !this.vendor ? actor.items.get(this._contactId) : null
 
     const needle = this._searchText.toLowerCase()
+    // At a vendor's: only what it buys, and only a contact that stands for it gives its Loyalty
+    const SR5ShopVendor = this.vendor ? (await import('./shop-vendor.js')).SR5ShopVendor : null
+    const vendor = SR5ShopVendor?.resolve(this.vendor.uuid, this.vendor.storageId) ?? null
     const items = SR5ShopFence.sellableItems(actor)
+      .filter(item => !vendor || SR5ShopVendor.buysItem(item, vendor.storage))
       .filter(item => !needle || item.name.toLowerCase().includes(needle))
       .map(item => {
         const selected = this._selection.get(item.id)
@@ -106,6 +122,10 @@ export class SR5SellDialog extends foundry.applications.api.HandlebarsApplicatio
       })
       .sort((a, b) => a.name.localeCompare(b.name))
 
+    const loyalty = vendor ? SR5ShopVendor.clientLoyalty(vendor.storage, actor.id) : 0
+    context.vendor = vendor ? {
+      label: SR5ShopVendor.labelOf(vendor.storage), contact: loyalty > 0, loyalty,
+    } : null
     context.actorName = actor.name
     context.items = items
     context.hasSelection = this._selection.size > 0
@@ -206,6 +226,19 @@ export class SR5SellDialog extends foundry.applications.api.HandlebarsApplicatio
       useAvailability: this._useAvailability,
       overridePool: this._overridePool,
     })
+  }
+
+  /** Ask the vendor for an offer: the gamemaster rolls and posts it (SR5 p. 421). */
+  static async #onSellToVendor() {
+    const {
+      SR5ShopVendor
+    } = await import('./shop-vendor.js')
+    await SR5ShopVendor.requestOffer({
+      vendorUuid: this.vendor.uuid, storageId: this.vendor.storageId, sellerId: this.actor.id,
+      lines: this.#lines(),
+    })
+    this._selection.clear()
+    this.render()
   }
 
   static #onClearSelection() {

@@ -81,6 +81,13 @@ export function uniqueAssists(assists, leaderId) {
 
 // The chat button key of a participant's Drain, and the actor it names
 export const RITUAL_DRAIN_PREFIX = "ritualDrain_"
+// SR5 p. 299 with its errata (« attribut Magie » and not « test de Magie »): the Drain is physical when the leader's
+// hits on the sealing test (within its Limit, raised by the team) exceed the leader's Magic, read from the sheet.
+// The hits only choose the leader's own Drain type: a card that lowered them would harm no one but its author
+export function ritualDrainType(leaderHits, leaderMagic) {
+  return (Number(leaderHits) || 0) > (Number(leaderMagic) || 0) ? "physical" : "stun"
+}
+
 export function ritualDrainKey(actorId) {
   return `${RITUAL_DRAIN_PREFIX}${actorId}`
 }

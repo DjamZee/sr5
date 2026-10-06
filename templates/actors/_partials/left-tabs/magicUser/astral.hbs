@@ -26,6 +26,17 @@
 		  		{{system.magic.drainResistance.dicePool}}
 			</div>
 	  	</li>
+		<!-- Harmonious Defense (Forbidden Arcana p. 45): an adept has no Counterspelling row to show the pool on -->
+		{{#if system.magic.metamagics.harmoniousDefense}}
+		<li class="grid">
+			<div class="col-10">{{localize 'SR5.MetamagicHarmoniousDefense'}}</div>
+			<div class="col-2 SR-TextCenter changeValueByClick" data-binding="system.magic.counterSpellPool.current"
+			  data-helpTitle="{{localize 'SR5.HELP_CounterSpellPool'}}"
+			  data-helpMessage="{{localize 'SR5.HELP_CounterSpellPoolMsg'}}">
+				{{system.magic.counterSpellPool.current}} / {{system.magic.counterSpellPool.value}}
+			</div>
+		</li>
+		{{/if}}
 	  	<li class="grid">
 			<div class="col-10">{{localize 'SR5.AstralDamage'}}</div>
 			<div class="col-2 SR-TextCenter"

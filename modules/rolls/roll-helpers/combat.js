@@ -2,6 +2,9 @@ import {
   SR5 
 } from "../../config.js"
 import {
+  SR5_Toxins
+} from "../../entities/items/toxins.js"
+import {
   SR5_EntityHelpers 
 } from "../../entities/helpers.js"
 import {
@@ -139,6 +142,12 @@ export class SR5_CombatHelpers {
   // SR5 p. 397 (Hardened Armor): otherwise half the rating modified by AP, rounded up, counts as automatic hits
   static hardenedArmorAutoHits(rating, armorPenetration = 0){
     return Math.max(0, Math.ceil((rating + armorPenetration) / 2))
+  }
+
+  // Run Faster p. 80 (Granite skin): a Hardened Armor that gives only its automatic hits to the resistance test. Its
+  // rating leaves the pool, and AP bites only on the other armor in it (the hits already take AP, SR5 p. 397)
+  static hitsOnlyArmorPenetration(armor, hardenedRating, armorPenetration = 0){
+    return Math.max(armorPenetration, -Math.max(armor - hardenedRating, 0))
   }
   //Handle environmental modifiers
   //noWind: ignore the wind column (perception, melee); melee: SR5 p. 188, only the Light and Visibility columns apply
@@ -300,7 +309,7 @@ export class SR5_CombatHelpers {
   //Handle grenade scatter, and that of an indirect area spell under its threshold (SR5 p. 285: 2D6 m, as a grenade)
   //Returns the distance scattered in meters (0 when it lands on target), or false when no scatter was applied
   static async rollScatter(cardData){
-    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
     const isSpell = cardData.test?.type === "spell" || cardData.test?.type === "preparation"
 
     if (!canvas.scene){
@@ -310,6 +319,12 @@ export class SR5_CombatHelpers {
 
     let distanceMod = cardData.roll.hits
 
+    // A card from before the shot kept its template (938f2ad70) cannot tell its circle from that of a later throw of
+    // the same item (a template has no creation date): it would move the newest one, so it asks for a hand move instead
+    if (!isSpell && cardData.combat?.grenade && !("templateId" in cardData.combat.grenade)){
+      ui.notifications.warn(`${game.i18n.localize("SR5.WARN_ScatterCardTooOld")}`)
+      return false
+    }
     // The template of this shot, not the first one the item ever left on the scene; a spell's is the one its card placed
     let template = isSpell ? SR5_CombatHelpers.spellAreaTemplate(cardData) : SR5_SystemHelpers.findItemTemplate(cardData.owner.itemId, cardData.combat.grenade?.templateId)
     if (isSpell && template?.parent !== canvas.scene) template = undefined
@@ -431,12 +446,17 @@ export class SR5_CombatHelpers {
 
   static async getToxinEffect(effecType, info, actor){
     let itemEffects = []
-    let toxinType = info.damage.toxin.type
     let hasEffect
 
     let effect = {
-      name: game.i18n.localize(SR5.toxinTypes[toxinType]),
+      name: SR5_Toxins.nameOf(info.damage.toxin, k => game.i18n.localize(k)) || game.i18n.localize("SR5.Toxin"),
       type: "itemEffect",
+      //The toxin it came from: a brick of milk only soothes some of them (No Future p. 154)
+      flags: {
+        sr5: {
+          toxinType: info.damage.toxin?.type ?? ""
+        }
+      },
     }
 
     switch (effecType){
@@ -523,6 +543,44 @@ export class SR5_CombatHelpers {
           itemEffects.push(effect)
         }
         break
+      //Better Than Bad p. 141: no magic of any kind for [12 - (Body or Magic, the higher)] hours, Magic
+      //being brought to 0; a dual-natured being also takes -4 dice to every action
+      case "manasphereCut": {
+        const magic = actor.system.specialAttributes?.magic?.augmented?.value ?? 0
+        const dual = SR5_Toxins.isDualNatured(actor)
+        if (magic <= 0 && !dual) break
+        hasEffect = actor.items.find(i => i.system.type === "toxinEffectManasphereCut")
+        if (!hasEffect){
+          const customEffects = {
+            "0": {
+              "category": "characterSpecialAttributes",
+              "target": "system.specialAttributes.magic.augmented",
+              "type": "rating",
+              "multiplier": -1,
+              "forceAdd": true,
+            }
+          }
+          if (dual) customEffects["1"] = {
+            "category": "penaltyTypes",
+            "target": "system.penalties.special.actual",
+            "type": "value",
+            "value": -4,
+            "forceAdd": true,
+          }
+          effect = foundry.utils.mergeObject(effect, {
+            "system.target": game.i18n.localize("SR5.Magic"),
+            "system.type": "toxinEffectManasphereCut",
+            "system.itemRating": magic,
+            "system.value": dual ? -4 : "",
+            "system.duration": SR5_Toxins.blightHours(actor.system.attributes?.body?.augmented?.value, magic),
+            "system.durationType": "hour",
+            "system.customEffects": customEffects,
+            "system.gameEffect": game.i18n.localize("SR5.ToxinEffectManasphereCut_GE"),
+          })
+          itemEffects.push(effect)
+        }
+        break
+      }
       case "arcaneInhibitor": {
         let value = info.damage.base
         hasEffect = actor.items.find(i => i.system.type === "toxinEffectArcaneInhibitor")

@@ -127,6 +127,15 @@ export class sr5ActorGruntDataModel extends foundry.abstract.TypeDataModel {
             ...sr5ModsPartialModel.defineSchema()
           }),
         }),
+        // Matrix Entity Concentration of a Monad, set by the GM (Stolen Souls p. 199, Lockdown p. 203)
+        cem: new fields.SchemaField({
+          natural: new fields.SchemaField({
+            ...sr5ModsPartialModel.defineSchema()
+          }),
+          augmented: new fields.SchemaField({
+            ...sr5ModsPartialModel.defineSchema()
+          }),
+        }),
         depth: new fields.SchemaField({
           natural: new fields.SchemaField({
             ...sr5ModsPartialModel.defineSchema()
@@ -167,6 +176,13 @@ export class sr5ActorGruntDataModel extends foundry.abstract.TypeDataModel {
           // Aggravated wounds (Howling Shadows p. 213): number of boxes that count double for healing
           aggravated: new fields.NumberField({
             initial: 0
+          }),
+        }),
+        // Core monitor of a Monad of the original strain (Dark Terrors p. 88), removed from every other grunt
+        core: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema(),
+          actual: new fields.SchemaField({
+            ...sr5ModsPartialModel.defineSchema()
           }),
         }),
         edge: new fields.SchemaField({

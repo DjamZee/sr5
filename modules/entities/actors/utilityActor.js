@@ -1,6 +1,21 @@
 import {
-  SR5_EntityHelpers 
+  bbPenaltyReduction
+} from "../../system/bb-healing.js"
+import {
+  emptyPreparedModifiers
+} from "../../migration-source-modifiers.js"
+import {
+  SR5_EntityHelpers
 } from "../helpers.js"
+import {
+  SR5ShopGrades
+} from "../../interface/shop-grades.js"
+import {
+  SR5_Toxins
+} from "../items/toxins.js"
+import {
+  applyDrugQuality, drugAddictionThreshold, effectiveDrugQuality
+} from "../items/drug-stat.js"
 import {
   SR5_SystemHelpers 
 } from "../../system/utilitySystem.js"
@@ -8,11 +23,36 @@ import {
   SR5_SpiritTypes
 } from "../items/spirit-types.js"
 import {
+  masteryFreeSustainedSpells, illusionistLevelsByType
+} from "../items/magic-masteries.js"
+import {
   homunculusMaterialRatings
 } from "./homunculus.js"
 import {
-  SR5Combat 
+  augmentationCapExcess
+} from "./augmentationCap.js"
+import {
+  limitAttributeValue
+} from "./poolOnlyAttribute.js"
+import {
+  isOriginalStrainMonad, originalStrainDevice, activeHeadcase, naniteVolume, matrixEntityConcentration, monitorSize, corePenalty
+} from "../../system/monad-matrix.js"
+import {
+  situationalValue, isRollTestsTarget, ROLL_TESTS_PREFIX, SITUATIONAL_PREFIX, attributeRedirect, situationalReadable,
+  situationalMovement, movementEffectKey, movementEffectOn
+} from "../../rolls/roll-helpers/situational.js"
+import {
+  isIndirect, indirectEffectOf
+} from "../../rolls/roll-helpers/indirect.js"
+import {
+  SR5Combat
 } from "../../system/srcombat.js"
+import {
+  drugEffectApplies, phaseFromFlags
+} from "../items/drug-phase.js"
+import {
+  replacedValue, replaceModifierValue
+} from "./effect-replace.js"
 import {
   SR5 
 } from "../../config.js"
@@ -22,6 +62,24 @@ import {
 import {
   SR5_TOKEN_VISION_MODES, settleSensorVisions
 } from "../../system/vision.js"
+import {
+  mentorPathFor, mentorEffectApplies, isFollowedMentor, mentorMagic, mentorPowerPoints, mentorMaskOn
+} from "../items/mentor-spirits.js"
+import {
+  ELEMENTAL_MENTAL_ATTRIBUTES, ELEMENTAL_SPIRIT_TYPES, elementalReduction, astralReputation, wildReputation
+} from "../items/spirit-bonds.js"
+import {
+  applyCharacterLedger, applySpiritLedger
+} from "../../system/spirit-ledger.js"
+import {
+  harmoniousDefensePool
+} from "../../rolls/roll-helpers/arcana-metamagics.js"
+import {
+  effectiveSceneBackgroundCount, backgroundCountFor
+} from "../../system/background-count.js"
+import {
+  updateGreyMana
+} from "../../system/grey-mana.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -32,6 +90,10 @@ export class SR5_CharacterUtility extends Actor {
   // Reset Actors Properties
   static resetCalculatedValues(actor) {
     let actorData = actor.system, list
+
+    // Every modifiers array is computed: none starts from the source nor from the previous preparation,
+    // including those the resets below forget (the fatigue and fall resistances grew at each preparation)
+    emptyPreparedModifiers(actorData)
 
     // Reset Attributes
     switch (actor.type) {
@@ -79,24 +141,8 @@ export class SR5_CharacterUtility extends Actor {
       }
     }
     if (!this.findActiveInitiative(actorData)) {
-      switch (actor.type) {
-        case "actorPc":
-        case "actorGrunt":
-          actorData.initiatives.physicalInit.isActive = true
-          break
-        case "actorSpirit":
-          if (actorData.initiatives.astralInit)
-            actorData.initiatives.astralInit.isActive = true
-          else
-            actorData.initiatives.physicalInit.isActive = true
-          break
-        case "actorDevice":
-          actorData.initiatives.matrixInit.isActive = true
-          break
-        case "actorDrone":
-          actorData.initiatives.physicalInit.isActive = true
-          break
-      }
+      const initiative = this.defaultInitiative(actor)
+      if (initiative && actorData.initiatives[initiative]) actorData.initiatives[initiative].isActive = true
     }
 
     // Reset Limits
@@ -145,10 +191,18 @@ export class SR5_CharacterUtility extends Actor {
             case "directSpellMana":
             case "directSpellPhysical":
             case "crashDamage":
+            case "fatigue":
+            case "fall":
               actorData.resistances[key].dicePool = 0
               actorData.resistances[key].modifiers = []
               break
           }
+        }
+      }
+      if (actorData.resistances.addiction) {
+        for (let kind of ["physiological", "psychological"]) {
+          actorData.resistances.addiction[kind].dicePool = 0
+          actorData.resistances.addiction[kind].modifiers = []
         }
       }
     }
@@ -188,6 +242,12 @@ export class SR5_CharacterUtility extends Actor {
         if (actorData.itemsProperties.martialArts[key].modifier) {
           actorData.itemsProperties.martialArts[key].modifier.modifiers = []
         }
+      }
+    }
+
+    if (actorData.itemsProperties?.calledShots) {
+      for (let key of Object.keys(SR5.calledShotsItems)) {
+        if (actorData.itemsProperties.calledShots[key]?.modifier) actorData.itemsProperties.calledShots[key].modifier.modifiers = []
       }
     }
 
@@ -379,9 +439,12 @@ export class SR5_CharacterUtility extends Actor {
         }
       }
       actorData.specialProperties.doublePenalties = false
+      actorData.specialProperties.calledShotHalved = false
       actorData.specialProperties.energyAura = ""
       actorData.specialProperties.regeneration = ""
       actorData.specialProperties.naniteToxinResistance = false
+      actorData.specialProperties.immunodeficiency = false
+      actorData.specialProperties.hardenedArmorHitsOnly = false
       actorData.specialProperties.anticoagulant = ""
       actorData.specialProperties.aggravatedWounds = false
       actorData.specialProperties.essenceDrain = ""
@@ -590,6 +653,13 @@ export class SR5_CharacterUtility extends Actor {
 
       // Reset Possession
       actorData.magic.possession = false
+      actorData.magic.mentorMask = false
+
+      // Astral and Wild Reputation (Street Grimoire p. 207, Forbidden Arcana p. 170), derived from the indexes,
+      // which the gamemaster's ledger holds and not the sheet (system/spirit-ledger.js)
+      applyCharacterLedger(actor, ELEMENTAL_SPIRIT_TYPES)
+      actorData.magic.astralReputation = astralReputation(actorData.magic.spiritIndex, actorData.magic.astralReputationAdjustment)
+      actorData.magic.wildReputation = wildReputation(actorData.magic.wildIndex)
 
       // Reset counterspelling
       actorData.magic.counterSpellPool.value = 0
@@ -603,14 +673,30 @@ export class SR5_CharacterUtility extends Actor {
       actorData.magic.metamagics.quickening = false
       actorData.magic.metamagics.shielding = false
       actorData.magic.metamagics.spellShaping = false
+      actorData.magic.metamagics.structuredSpellcasting = false
+      actorData.magic.metamagics.harmoniousDefense = false
       actorData.magic.metamagics.centeringValue.value = 0
       actorData.magic.metamagics.centeringValue.modifiers = []
       actorData.magic.metamagics.spellShapingValue.value = 0
       actorData.magic.metamagics.spellShapingValue.modifiers = []
 
+      //Reset magical masteries (Forbidden Arcana p. 30-41)
+      for (let mastery of Object.values(actorData.magic.masteries || {
+      })) {
+        mastery.value = 0
+        mastery.modifiers = []
+      }
+
       //Reset background count
       actorData.magic.bgCount.value = 0
       actorData.magic.bgCount.modifiers = []
+
+      //Reset grey mana (Better Than Bad p. 140)
+      if (actorData.magic.greyMana) {
+        actorData.magic.greyMana.value = 0
+        actorData.magic.greyMana.modifiers = []
+        actorData.magic.greyMana.fromArmor = false
+      }
     }
 
     // Reset Monitors
@@ -671,7 +757,10 @@ export class SR5_CharacterUtility extends Actor {
   static updateKarmas(actor) {
     SR5_EntityHelpers.updateValue(actor.system.karma)
     let karmaGained = SR5_EntityHelpers.modifiersOnlyPositivesSum(actor.system.karma.modifiers)
-    if (karmaGained > 9) SR5_EntityHelpers.updateModifier(actor.system.streetCred, `${game.i18n.localize('SR5.KarmaGained')}`, "karma", Math.floor(karmaGained / 10), false, true)
+    // Karma / 10 (SR5 p. 372); a quality can raise the divisor (Assassin's Primer p. 15, Consummate Professional: / 20)
+    let divisor = 10 + SR5_EntityHelpers.modifiersSum(actor.system.specialProperties?.streetCredDivisor?.modifiers || [])
+    if (divisor < 1) divisor = 1
+    if (karmaGained >= divisor) SR5_EntityHelpers.updateModifier(actor.system.streetCred, `${game.i18n.localize('SR5.KarmaGained')}`, "karma", Math.floor(karmaGained / divisor), false, true)
   }
 
   static updateNotoriety(actor) {
@@ -716,6 +805,14 @@ export class SR5_CharacterUtility extends Actor {
         case "magic":
           actorData.penalties[key].actual.base = 0
           SR5_CharacterUtility.handleSustaining(actor, "itemSpell", key)
+          //A spirit held on a tight leash counts as a sustained spell (Forbidden Arcana p. 176, optional rule)
+          if (game.settings.get("sr5", "spiritLeash")) {
+            for (let i of actor.items) {
+              if (i.type === "itemSpirit" && i.system.leashTight && !i.system.isElemental && i.system.services?.value > 0) {
+                SR5_EntityHelpers.updateModifier(actorData.penalties[key].actual, `${game.i18n.localize('SR5.LeashTight')} (${i.name})`, "leash", -2)
+              }
+            }
+          }
           break
         case "special":
           actorData.penalties[key].actual.base = 0
@@ -731,7 +828,26 @@ export class SR5_CharacterUtility extends Actor {
 
     if ((actor.type === "actorPc" || actor.type === "actorSpirit") && actorData.conditionMonitors.physical && actorData.conditionMonitors.stun) {
       actorData.penalties.condition.actual.base = actorData.penalties.physical.actual.base + actorData.penalties.stun.actual.base
+      // Bullets & Bandages p. 15: a stabilization lowers the wound modifiers for a while, never above 0
+      const bbReduction = Math.min(bbPenaltyReduction(actor), -actorData.penalties.condition.actual.base)
+      if (bbReduction > 0) SR5_EntityHelpers.updateModifier(actorData.penalties.condition.actual, game.i18n.localize("SR5.BB_Stabilized"), "bbStabilization", bbReduction)
       SR5_EntityHelpers.updateValue(actorData.penalties.condition.actual)
+      //A wound modifier reduced by an effect (trauma damper, Chrome Flesh p. 123) never turns into a bonus
+      if (actorData.penalties.condition.actual.value > 0) actorData.penalties.condition.actual.value = 0
+    }
+
+    // Core damage of a Monad of the original strain gives wound modifiers, as for an AI (Data Trails p. 161,
+    // Dark Terrors p. 88; arbitrage de DjamZ, 06/10). Same step and box reduction as the other wounds
+    if (actorData.conditionMonitors?.core) {
+      const condition = actorData.penalties.condition
+      // A grunt's single monitor sets its step; a character's is the one of its Physical monitor
+      const scale = actorData.conditionMonitors.physical ? actorData.penalties.physical : condition
+      const coreMod = corePenalty(actorData.conditionMonitors.core.actual.value, scale.step?.value, scale.boxReduction?.value)
+      if (coreMod) {
+        SR5_EntityHelpers.updateModifier(condition.actual, game.i18n.localize("SR5.CoreMonitor"), "penaltyCore", coreMod)
+        SR5_EntityHelpers.updateValue(condition.actual)
+        if (condition.actual.value > 0) condition.actual.value = 0
+      }
     }
 
     if (actor.type === "actorDrone") {
@@ -801,8 +917,27 @@ export class SR5_CharacterUtility extends Actor {
       }
     }
 
+    //Illusionist and Master Manipulator (Forbidden Arcana p. 37, 38): one spell per level sustained without penalty, Force <= Magic.
+    //Worked out again at every preparation and never written on the item: a flag left on the item outlived a Force raised
+    //above Magic (measured in play)
+    let freedByMastery = new Set()
+    if (itemType === "itemSpell" && actor.system.magic?.masteries) {
+      const masteries = this.updateMagicMasteries(actor.system.magic)
+      if (masteries.illusionist > 0 || masteries.masterManipulator > 0) {
+        const candidates = actor.items.filter(i => i.type === "itemSpell" && i.system.isActive && !i.system.freeSustain)
+        freedByMastery = masteryFreeSustainedSpells(
+          candidates.map(i => ({
+            id: i.id, category: i.system.category, subCategory: i.system.subCategory, type: i.system.type, force: i.system.force
+          })),
+          actor.system.specialAttributes.magic.augmented.value, {
+            ...masteries, illusionistByType: illusionistLevelsByType(actor.items)
+          })
+      }
+    }
+
     //Apply sustaining malus.
     for (let i of actor.items) {
+      if (freedByMastery.has(i.id)) continue
       if (i.system.isActive && i.type === itemType && !i.system.freeSustain) SR5_EntityHelpers.updateModifier(actor.system.penalties[concentrationType].actual, `${i.name}`, i.type, -sustainedMod)
 
       //Except if concentration is active.
@@ -883,6 +1018,13 @@ export class SR5_CharacterUtility extends Actor {
         if (actorData.itemsProperties.martialArts[key].modifier) {
           SR5_EntityHelpers.updateValue(actorData.itemsProperties.martialArts[key].modifier)
         }
+      }
+    }
+
+    //called shots eased by any item
+    if (actorData.itemsProperties?.calledShots) {
+      for (let key of Object.keys(SR5.calledShotsItems)) {
+        if (actorData.itemsProperties.calledShots[key]?.modifier) SR5_EntityHelpers.updateValue(actorData.itemsProperties.calledShots[key].modifier)
       }
     }
   }
@@ -1055,6 +1197,7 @@ export class SR5_CharacterUtility extends Actor {
           SR5_EntityHelpers.updateModifier(actorData.attributes.agility.natural, label, "metatype", -1)
           SR5_EntityHelpers.updateModifier(actorData.attributes.strength.natural, label, "metatype", 4)
           SR5_EntityHelpers.updateModifier(actorData.attributes.logic.natural, label, "metatype", -1)
+          SR5_EntityHelpers.updateModifier(actorData.attributes.intuition.natural, label, "metatype", -1)
           SR5_EntityHelpers.updateModifier(actorData.attributes.charisma.natural, label, "metatype", -2)
         }
         break
@@ -1062,6 +1205,56 @@ export class SR5_CharacterUtility extends Actor {
         SR5_SystemHelpers.srLog(1, `Unknown metatype '${metatype}' in 'applyRacialModifers()'`)
         return
     }
+  }
+
+  //Cut what an attribute gains over its cap (world setting, SR5 p. 96 by default). The help of the
+  //augmented rating lists the cut with the real and the kept values. updateAttributes runs again
+  //after the armor encumbrance, so the previous cut is removed first.
+  static applyAugmentationCap(actor, key) {
+    let augmented = actor.system.attributes[key].augmented
+    augmented.modifiers = augmented.modifiers.filter(m => m.type !== "augmentationCap")
+    SR5_EntityHelpers.updateValue(augmented, 0)
+    let mode = "bonus"
+    try {
+      mode = game.settings.get("sr5", "sr5AugmentationCap")
+    } catch {
+      //setting not registered yet: the book
+    }
+    const real = augmented.value
+    const items = Array.from(actor.items ?? [])
+    const effectsOf = i => Object.values(i.system?.customEffects ?? {
+    })
+    //The Increase Attribute spell and the Attribute Boost adept power reach the attribute through an
+    //itemEffect named after them (applyExternalEffect), whose own type is the item that cast it
+    const boostNames = items.filter(i => i.type === "itemEffect" && ["itemSpell", "itemAdeptPower"].includes(i.system?.type) &&
+      effectsOf(i).some(e => e.target === `system.attributes.${key}.augmented`)).map(i => i.name)
+    //Improved Physical Attribute (SR5 p. 312) goes "up to the augmented maximum" too: an active adept power whose own
+    //custom effect raises the attribute
+    boostNames.push(...items.filter(i => i.type === "itemAdeptPower" && i.system?.isActive &&
+      effectsOf(i).some(e => e.target === `system.attributes.${key}.augmented`)).map(i => i.name))
+    //Exceptional Attribute (SR5 p. 68) raises the natural maximum by 1: the qualities of the
+    //compendiums carry it as a custom effect on system.attributes.<key>.maximum
+    const exceptional = items.filter(i => i.type === "itemQuality").flatMap(effectsOf)
+      .filter(e => e.target === `system.attributes.${key}.maximum`).reduce((sum, e) => sum + (Number(e.value) || 0), 0)
+    //Possession (choix technique d'Élise): the spirit's attributes replace the host's, it is not an
+    //augmentation in the sense of SR5 p. 96 (cyberware, bioware, magic), so it stays out of the cap
+    const gains = augmented.modifiers.filter(m => !m.isMultiplier && m.value > 0 && m.type !== "possession")
+    const gain = gains.reduce((sum, m) => sum + m.value, 0)
+    //Seen in game: the modifier carries the type of the casting item (itemSpell, itemAdeptPower), not itemEffect
+    const boostGain = gains.filter(m => ["itemEffect", "itemSpell", "itemAdeptPower"].includes(m.type) && boostNames.includes(m.source)).reduce((sum, m) => sum + m.value, 0)
+    const {
+      capExcess, boostExcess, unknownMetatype
+    } = augmentationCapExcess({
+      mode, metatype: this.getMetatype(actor), key, natural: actor.system.attributes[key].natural.value, gain, boostGain, exceptional
+    })
+    const cut = (value, reason) => SR5_EntityHelpers.updateModifier(augmented, game.i18n.format("SR5.AugmentationCapModifier", {
+      real, kept: real - capExcess - boostExcess, reason: game.i18n.localize(reason)
+    }), "augmentationCap", -value)
+    if (capExcess > 0) cut(capExcess, `SR5.AugmentationCapReason_${mode}`)
+    if (boostExcess > 0) cut(boostExcess, "SR5.AugmentationCapReason_boost")
+    //No table maximum for this metatype: nothing is cut, and the help says why
+    if (unknownMetatype && gain > 0) SR5_EntityHelpers.updateModifier(augmented, game.i18n.localize("SR5.AugmentationCapUnknownMetatype"), "augmentationCap", 0)
+    SR5_EntityHelpers.updateValue(augmented, 0)
   }
 
   // Update Attributes
@@ -1078,6 +1271,7 @@ export class SR5_CharacterUtility extends Actor {
       SR5_EntityHelpers.updateValue(actorData.attributes[key].natural, 0)
       actorData.attributes[key].augmented.base = actorData.attributes[key].natural.value
       SR5_EntityHelpers.updateValue(actorData.attributes[key].augmented, 0)
+      if (actor.type === "actorPc" || actor.type === "actorGrunt") this.applyAugmentationCap(actor, key)
     }
 
     if (actorData.initiatives.astralInit?.isActive && (actor.type == "actorPc" || actor.type == "actorGrunt")) {
@@ -1091,6 +1285,8 @@ export class SR5_CharacterUtility extends Actor {
 
   static updateSpiritAttributes(actor) {
     let actorData = actor.system, attributes = actorData.attributes, specialAttributes = actorData.specialAttributes, essence = actorData.essence
+    //Traits and banishing total from the gamemaster's ledger (Forbidden Arcana p. 172-175)
+    applySpiritLedger(actor, ELEMENTAL_SPIRIT_TYPES)
 
     //Valeur de base des attributs
     for (let key of Object.keys(SR5.characterAttributes)) {
@@ -1274,6 +1470,17 @@ export class SR5_CharacterUtility extends Actor {
     }
 
     if (customType) SR5_SpiritTypes.applyAttributes(customType, attributes, label)
+
+    // Elemental trait (Forbidden Arcana p. 175): mental attributes lowered by half the Force, to a minimum of 1
+    if (actorData.isElemental) {
+      const traitLabel = game.i18n.localize('SR5.SpiritElemental')
+      for (let key of ELEMENTAL_MENTAL_ATTRIBUTES) {
+        const natural = attributes[key].natural
+        const current = natural.base + (natural.modifiers ?? []).reduce((sum, m) => sum + (Number(m.value) || 0), 0)
+        const reduction = elementalReduction(actorData.force.value, current)
+        if (reduction) SR5_EntityHelpers.updateModifier(natural, traitLabel, 'spiritType', -reduction)
+      }
+    }
   }
 
   static updateSpriteValues(actor) {
@@ -1386,6 +1593,8 @@ export class SR5_CharacterUtility extends Actor {
         actorData.specialAttributes[key].augmented.base = actorData.specialAttributes[key].natural.value
         SR5_EntityHelpers.updateValue(actorData.specialAttributes[key].augmented, 0)
 
+        // KEEP IN STEP with mentorMagic() (modules/entities/items/mentor-spirits.js), which works out the same Magic
+        // earlier, to tell whether a mentor lies dormant: never change one of the two without the other
         if ((key == 'magic' || key == 'resonance') && actorData.essence) {
           let edgeLoss = 0
           for (let m of actorData.essence.modifiers) {
@@ -1394,6 +1603,18 @@ export class SR5_CharacterUtility extends Actor {
           if (edgeLoss < 0) {
             SR5_EntityHelpers.updateModifier(actorData.specialAttributes[key].augmented, game.i18n.localize('SR5.EssenceLoss'), "augmentations", Math.floor(edgeLoss))
             SR5_EntityHelpers.updateValue(actorData.specialAttributes[key].augmented, 0)
+          }
+        }
+
+        // BTB p. 142: "en plus de la perte de Magie due à la réduction d'Essence, les personnages Éveillés
+        // perdent un point de Magie supplémentaire […] par implant GreyWare installé". On top of the Essence
+        // loss above, which already counts the implant's Essence, so nothing is counted twice. Derived from
+        // the implants themselves: removing one gives the point back (DjamZ's ruling, 2026-10-05).
+        if (key == 'magic' && actorData.specialAttributes.magic.natural.value > 0) {
+          const penalty = SR5ShopGrades.greywareMagicPenalty(actor.items)
+          if (penalty) {
+            SR5_EntityHelpers.updateModifier(actorData.specialAttributes.magic.augmented, game.i18n.localize('SR5.GreywareMagicLoss'), "greyware", -penalty)
+            SR5_EntityHelpers.updateValue(actorData.specialAttributes.magic.augmented, 0)
           }
         }
       }
@@ -1432,10 +1653,21 @@ export class SR5_CharacterUtility extends Actor {
   }
 
   // Generate spirit values
+  static setSpiritMagicType(actor) {
+    if (actor.system.magic) actor.system.magic.magicType = "spirit"
+  }
+
   static updateSpiritValues(actor) {
     SR5_EntityHelpers.updateValue(actor.system.force)
-    if (actor.system.type == "homunculus") {
+    // A homunculus is always physical, custom types based on it included: physical initiative too, (P + 1) + 1D6
+    // (SR5 p. 301), even when it was made astral first (a spirit created as another type, then changed)
+    if (SR5_SpiritTypes.baseType(actor.system.type) === "homunculus") {
       actor.system.isMaterializing = true
+      const initiatives = actor.system.initiatives
+      if (initiatives?.astralInit?.isActive && initiatives.physicalInit) {
+        initiatives.astralInit.isActive = false
+        initiatives.physicalInit.isActive = true
+      }
     }
   }
 
@@ -1487,6 +1719,13 @@ export class SR5_CharacterUtility extends Actor {
           actorData.resistances.toxin.inhalation.modifiers = actorData.resistances.toxin.inhalation.modifiers.concat(hardenedArmors[key].modifiers)
           actorData.resistances.toxin.injection.modifiers = actorData.resistances.toxin.injection.modifiers.concat(hardenedArmors[key].modifiers)
           break
+      }
+    }
+
+    // Dice on every toxin resistance (Increased Stress, The Complete Trog p. 180), whatever the vector
+    if (actorData.resistances?.toxin && actorData.specialProperties.toxinResistance?.modifiers.length) {
+      for (let vector of Object.keys(SR5.propagationVectors)) {
+        actorData.resistances.toxin[vector].modifiers = actorData.resistances.toxin[vector].modifiers.concat(actorData.specialProperties.toxinResistance.modifiers)
       }
     }
 
@@ -1641,13 +1880,11 @@ export class SR5_CharacterUtility extends Actor {
           movements[key].movement.base = attributes.agility.augmented.value * movements[key].multiplier.value
           if (biography && (biography.metatype === "dwarf" || biography.metatype === "troll"))
             movements[key].extraMovement.base = 1
-          else {
-            if (actor.type == "actorSpirit") {
-              movements[key].extraMovement.base = 5
-            } else {
-              movements[key].extraMovement.base = 2
-            }
-          }
+          // A homunculus prints x2/x4/+1 (SR5 p. 301)
+          else if (actor.type === "actorSpirit" && SR5_SpiritTypes.baseType(actor.system.type) === "homunculus")
+            movements[key].extraMovement.base = 1
+          //Spirits sprint like everyone else: +2 m per hit (Aetherology p. 35)
+          else movements[key].extraMovement.base = 2
           break
         case "swim":
           SR5_EntityHelpers.updateModifier(movements[key].test, game.i18n.localize('SR5.Strength'), "linkedAttribute", attributes.strength.augmented.value)
@@ -1655,13 +1892,8 @@ export class SR5_CharacterUtility extends Actor {
           movements[key].movement.base = Math.ceil((attributes.strength.augmented.value + attributes.agility.augmented.value) / 2)
           if (biography && (biography.metatype === "elf" || biography.metatype === "troll"))
             movements[key].extraMovement.base = 2
-          else {
-            if (actor.type == "actorSpirit") {
-              movements[key].extraMovement.base = 5
-            } else {
-              movements[key].extraMovement.base = 1
-            }
-          }
+          //No swimming rule of their own for spirits: the general +1 m per hit
+          else movements[key].extraMovement.base = 1
           break
         case "treadWater":
           SR5_EntityHelpers.updateModifier(movements[key].test, game.i18n.localize('SR5.Strength'), "linkedAttribute", attributes.strength.augmented.value)
@@ -1722,7 +1954,7 @@ export class SR5_CharacterUtility extends Actor {
             conditionMonitors[key].base = Math.ceil((attributes.willpower.augmented.value / 2) + 8)
             break
           case "physical":
-            conditionMonitors[key].base = Math.ceil((attributes.body.augmented.value / 2) + 8)
+            conditionMonitors[key].base = Math.ceil((limitAttributeValue(attributes.body) / 2) + 8)
             break
           case "condition":
             if (actor.type == "actorDrone") {
@@ -1739,9 +1971,13 @@ export class SR5_CharacterUtility extends Actor {
             conditionMonitors[key].base = attributes.body.augmented.value
             if (conditionMonitors.physical.actual.value < conditionMonitors.physical.value) conditionMonitors[key].actual.base = 0
             break
-          case "matrix":
-            conditionMonitors[key].base = Math.ceil((actorData.matrix.deviceRating / 2) + 8)
+          case "matrix": {
+            // SR5 p. 229: 8 + half the device rating. A vehicle's rating is its Pilot, which
+            // generateVehicleMatrix copies only on the second pass over the items, after this
+            let deviceRating = actor.type === "actorDrone" ? attributes.pilot.augmented.value : actorData.matrix.deviceRating
+            conditionMonitors[key].base = Math.ceil((deviceRating / 2) + 8)
             break
+          }
           case "edge":
             conditionMonitors[key].base = specialAttributes.edge.augmented.value
             break
@@ -1759,6 +1995,19 @@ export class SR5_CharacterUtility extends Actor {
         SR5_EntityHelpers.GenerateMonitorBoxes(actorData, key)
         SR5_EntityHelpers.updateStatusBars(actor, key)
       }
+    }
+
+    // Core monitor of a Monad of the original strain (Dark Terrors p. 88): 8 + MEC / 2, beside the host's own monitors
+    if (conditionMonitors.core) {
+      if (isOriginalStrainMonad(actor)) {
+        conditionMonitors.core.base = monitorSize(matrixEntityConcentration(actor))
+        SR5_EntityHelpers.updateValue(conditionMonitors.core, 1)
+        SR5_EntityHelpers.updateValue(conditionMonitors.core.actual, 0)
+        if (conditionMonitors.core.actual.value > conditionMonitors.core.value) {
+          conditionMonitors.core.actual.base = conditionMonitors.core.value
+          SR5_EntityHelpers.updateValue(conditionMonitors.core.actual, 0)
+        }
+      } else delete conditionMonitors.core
     }
   }
 
@@ -1822,7 +2071,8 @@ export class SR5_CharacterUtility extends Actor {
       }
       default:
         SR5_EntityHelpers.updateModifier(initPhy, game.i18n.localize('SR5.Intuition'), "linkedAttribute", attributes.intuition.augmented.value)
-        SR5_EntityHelpers.updateModifier(initPhy, game.i18n.localize('SR5.Reaction'), "linkedAttribute", attributes.reaction.augmented.value)
+        //Attribute Boost (SR5 p. 312) leaves the Initiative attribute alone; the AR matrix initiative copies these modifiers
+        SR5_EntityHelpers.updateModifier(initPhy, game.i18n.localize('SR5.Reaction'), "linkedAttribute", limitAttributeValue(attributes.reaction))
         initPhy.dice.base = 1
     }
 
@@ -1903,6 +2153,13 @@ export class SR5_CharacterUtility extends Actor {
           SR5_EntityHelpers.updateModifier(initMat.dice, game.i18n.localize('SR5.Depth'), "linkedAttribute", 4)
           break
         }
+        // Monad of the original strain (Dark Terrors p. 88): Nanite Volume + Intuition + 4D6, always in hot sim
+        if (isOriginalStrainMonad(actor)) {
+          SR5_EntityHelpers.updateModifier(initMat, game.i18n.localize('SR5.Intuition'), "linkedAttribute", attributes.intuition.augmented.value)
+          SR5_EntityHelpers.updateModifier(initMat, game.i18n.localize('SR5.NaniteVolume'), "linkedAttribute", naniteVolume(actor))
+          SR5_EntityHelpers.updateModifier(initMat.dice, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 4)
+          break
+        }
         switch (actorData.matrix.userMode) {
           case "ar":
             initMat.modifiers = initiatives.physicalInit.modifiers
@@ -1926,17 +2183,17 @@ export class SR5_CharacterUtility extends Actor {
       case "actorSprite":
         SR5_EntityHelpers.updateModifier(initMat, game.i18n.localize('SR5.Level'), "linkedAttribute", actorData.level)
         SR5_EntityHelpers.updateModifier(initMat, game.i18n.localize('SR5.DataProcessing'), "linkedAttribute", matrixAttributes.dataProcessing.value)
-        SR5_EntityHelpers.updateModifier(initMat.dice, game.i18n.localize(SR5.spriteTypes[actorData.type]), `${game.i18n.localize('TYPES.Actor.actorsprite')}`, 4)
+        SR5_EntityHelpers.updateModifier(initMat.dice, game.i18n.localize(SR5.spriteTypes[actorData.type]), `${game.i18n.localize('TYPES.Actor.actorSprite')}`, 4)
         break
       case "actorAgent":
         SR5_EntityHelpers.updateModifier(initMat, `${game.i18n.localize('SR5.Rating')}`, "linkedAttribute", actorData.rating)
         SR5_EntityHelpers.updateModifier(initMat, `${game.i18n.localize('SR5.DataProcessing')}`, "linkedAttribute", matrixAttributes.dataProcessing.value)
-        SR5_EntityHelpers.updateModifier(initMat.dice, game.i18n.localize(SR5.spriteTypes[actorData.type]), `${game.i18n.localize('TYPES.Actor.actoragent')}`, 4)
+        SR5_EntityHelpers.updateModifier(initMat.dice, game.i18n.localize(SR5.spriteTypes[actorData.type]), `${game.i18n.localize('TYPES.Actor.actorAgent')}`, 4)
         break
       case "actorDevice":
         SR5_EntityHelpers.updateModifier(initMat, `${game.i18n.localize('SR5.DeviceRating')}`, "linkedAttribute", actorData.matrix.deviceRating)
         SR5_EntityHelpers.updateModifier(initMat, `${game.i18n.localize('SR5.DataProcessing')}`, "linkedAttribute", matrixAttributes.dataProcessing.value)
-        SR5_EntityHelpers.updateModifier(initMat.dice, `${game.i18n.localize(SR5.deviceTypes[actorData.matrix.deviceType])}`, `${game.i18n.localize('TYPES.Actor.actordevice')}`, 4)
+        SR5_EntityHelpers.updateModifier(initMat.dice, `${game.i18n.localize(SR5.deviceTypes[actorData.matrix.deviceType])}`, `${game.i18n.localize('TYPES.Actor.actorDevice')}`, 4)
         break
       default:
         SR5_SystemHelpers.srLog(1, `Unknown actor type '${actor.type}' in 'updateInitiativeMatrix()'`)
@@ -1951,6 +2208,26 @@ export class SR5_CharacterUtility extends Actor {
   }
 
   // Find Actor Active Initiative
+  //The initiative an actor plays when none is set yet
+  static defaultInitiative(actor) {
+    switch (actor.type) {
+      case "actorPc":
+      case "actorGrunt":
+        // An AI outside any device is a persona alone: matrix initiative (Data Trails p. 157-158, decision G11 of
+        // DjamZ); in a device or a body it starts physical like any character
+        return this.isDevicelessAI(actor) ? "matrixInit" : "physicalInit"
+      case "actorSpirit":
+        // A homunculus is always physical (SR5 p. 301)
+        if (SR5_SpiritTypes.baseType(actor.system.type) === "homunculus") return "physicalInit"
+        return actor.system.initiatives?.astralInit ? "astralInit" : "physicalInit"
+      case "actorDevice":
+        return "matrixInit"
+      case "actorDrone":
+        return "physicalInit"
+    }
+    return null
+  }
+
   static findActiveInitiative(actor) {
     for (let [key, value] of Object.entries(actor.initiatives)) {
       if (value.isActive) return key
@@ -2115,6 +2392,32 @@ export class SR5_CharacterUtility extends Actor {
   // Generate Actors Resistances
   static updateResistances(actor) {
     let actorData = actor.system, resistances = actorData.resistances, attributes = actorData.attributes
+    // The effects put their bonuses "to resist damage" on the physical damage resistance (bone density and bone lacing
+    // SR5 p. 458/462, Toughness p. 76, Bear p. 326, skeletal pneumaticity Chrome Flesh p. 167): the book makes them
+    // count against every damage, so the elemental and fall resistances take them too. Read before Body and armor
+    // are added below. Against toxins (pollution and radiation included, « traitées comme des attaques de toxine »,
+    // Street Grimoire p. 105) only bone density and bone lacing keep their exception (SR5 p. 458/462): Toughness, Bear
+    // and skeletal pneumaticity have none in the book, so they count there too (decision G3 of DjamZ). The bone
+    // implants are cyberware or bioware, the pneumaticity genetech.
+    const TOXIN_LIKE_ELEMENTS = ["toxin", "pollution", "radiation"]
+    const anyDamageModifiers = [...(resistances?.physicalDamage?.modifiers || [])]
+    const genetech = new Set((actor.items ?? []).filter(i => i.type === "itemAugmentation" && i.system?.type === "genetech").map(i => i.name))
+    const toxinDamageModifiers = anyDamageModifiers.filter(m => m.type !== "itemAugmentation" || genetech.has(m.source))
+
+    // Addiction tests (SR5 p. 415): Body + Willpower when physiological, Logic + Willpower when psychological
+    if (resistances.addiction && attributes.logic && attributes.willpower) {
+      const pools = {
+        physiological: ["body", "SR5.Body"], psychological: ["logic", "SR5.Logic"]
+      }
+      for (let [kind, [attribute, label]] of Object.entries(pools)) {
+        let pool = resistances.addiction[kind]
+        pool.base = 0
+        SR5_EntityHelpers.updateModifier(pool, game.i18n.localize(label), "linkedAttribute", attributes[attribute].augmented.value)
+        SR5_EntityHelpers.updateModifier(pool, game.i18n.localize('SR5.Willpower'), "linkedAttribute", attributes.willpower.augmented.value)
+        if (actorData.specialProperties?.addictionResistance?.modifiers.length) pool.modifiers = pool.modifiers.concat(actorData.specialProperties.addictionResistance.modifiers)
+        SR5_EntityHelpers.updateDicePool(pool, 0)
+      }
+    }
 
     for (let key of Object.keys(SR5.characterResistances)) {
       if (resistances[key]) {
@@ -2138,6 +2441,8 @@ export class SR5_CharacterUtility extends Actor {
                   resistances.specialDamage[specialDamage].modifiers = resistances.specialDamage[specialDamage].modifiers.concat(actorData.itemsProperties.armor.modifiers)
                   resistances.specialDamage[specialDamage].modifiers = resistances.specialDamage[specialDamage].modifiers.concat(actorData.itemsProperties.armor.specialDamage[specialDamage].modifiers)
                 }
+                resistances.specialDamage[specialDamage].modifiers = resistances.specialDamage[specialDamage].modifiers
+                  .concat(TOXIN_LIKE_ELEMENTS.includes(specialDamage) ? toxinDamageModifiers : anyDamageModifiers)
               }
               SR5_EntityHelpers.updateDicePool(resistances[key][specialDamage], 0)
             }
@@ -2155,6 +2460,7 @@ export class SR5_CharacterUtility extends Actor {
               if (actorData.itemsProperties && key === "toxin") {
                 resistances.toxin[vector].modifiers = resistances.toxin[vector].modifiers.concat(actorData.itemsProperties.armor.toxin[vector].modifiers)
               }
+              if (key === "toxin") resistances.toxin[vector].modifiers = resistances.toxin[vector].modifiers.concat(toxinDamageModifiers)
               SR5_EntityHelpers.updateDicePool(resistances[key][vector], 0)
             }
             break
@@ -2185,6 +2491,7 @@ export class SR5_CharacterUtility extends Actor {
               SR5_EntityHelpers.updateModifier(resistances[key], game.i18n.localize('SR5.Body'), "linkedAttribute", attributes.body.augmented.value)
             }
             if (actorData.itemsProperties) resistances[key].modifiers = resistances[key].modifiers.concat(actorData.itemsProperties.armor.modifiers)
+            if (key === "fall" && actor.type != "actorDrone") resistances[key].modifiers = resistances[key].modifiers.concat(anyDamageModifiers)
             SR5_EntityHelpers.updateDicePool(resistances[key], 0)
             break
           case "crashDamage":
@@ -2230,7 +2537,7 @@ export class SR5_CharacterUtility extends Actor {
           break
         case "physicalLimit":
           if (limits[key]) {
-            limits[key].base = Math.ceil((attributes.strength.augmented.value * 2 + attributes.body.augmented.value + attributes.reaction.augmented.value) / 3)
+            limits[key].base = Math.ceil((limitAttributeValue(attributes.strength) * 2 + limitAttributeValue(attributes.body) + limitAttributeValue(attributes.reaction)) / 3)
           }
           break
         case "socialLimit":
@@ -2829,6 +3136,7 @@ export class SR5_CharacterUtility extends Actor {
           actorData.skills[key].test.base = 0
           if (actorData.skills[key].rating.base > 0) SR5_EntityHelpers.updateModifier(actorData.skills[key].test, `${game.i18n.localize(SR5.skills[key])}`, "skillRating", actorData.skills[key].rating.base)
           actorData.skills[key].test.modifiers = actorData.skills[key].test.modifiers.concat(actorData.skills[key].rating.modifiers)
+          this.keepStrongestFocusOn(actorData.skills[key].test)
         } else {
           if (actorData.skills[key].canDefault) {
             actorData.skills[key].test.base = 0
@@ -2851,7 +3159,12 @@ export class SR5_CharacterUtility extends Actor {
 
         // limit calculation
         let linkedLimit = actorData.skills[key].limit.base
-        if (actorData.limits[linkedLimit]) {
+        //An effect may give the skill its own Limit (No Future instruments, Animal Sense): it stands in for the linked
+        //one, and the other modifiers still add to it (a Synthlink, No Future p. 152)
+        const replacedLimit = replacedValue(actorData.skills[key].limit.modifiers)
+        if (replacedLimit !== undefined) {
+          actorData.skills[key].limit.value = replacedLimit + SR5_EntityHelpers.modifiersSum(actorData.skills[key].limit.modifiers.filter(m => !m.replace))
+        } else if (actorData.limits[linkedLimit]) {
           actorData.skills[key].limit.value = actorData.limits[linkedLimit].value + SR5_EntityHelpers.modifiersSum(actorData.skills[key].limit.modifiers)
         }
       }
@@ -2863,6 +3176,8 @@ export class SR5_CharacterUtility extends Actor {
         if (actorData.skills.counterspelling.rating.value > 0) actorData.skills.counterspelling.spellCategory[key].modifiers = actorData.skills.counterspelling.spellCategory[key].modifiers.concat(actorData.skills.counterspelling.test.modifiers)
         if (actorData.skills.ritualSpellcasting.rating.value > 0) actorData.skills.ritualSpellcasting.spellCategory[key].modifiers = actorData.skills.ritualSpellcasting.spellCategory[key].modifiers.concat(actorData.skills.ritualSpellcasting.test.modifiers)
         if (actorData.skills.alchemy.rating.value > 0) actorData.skills.alchemy.spellCategory[key].modifiers = actorData.skills.alchemy.spellCategory[key].modifiers.concat(actorData.skills.alchemy.test.modifiers)
+        // SR5 p. 321: a focus on the whole skill and a focus on this category add to the same test
+        for (let skill of ["spellcasting", "counterspelling", "ritualSpellcasting", "alchemy"]) this.keepStrongestFocusOn(actorData.skills[skill].spellCategory[key])
         SR5_EntityHelpers.updateDicePool(actorData.skills.spellcasting.spellCategory[key], 0)
         SR5_EntityHelpers.updateDicePool(actorData.skills.counterspelling.spellCategory[key], 0)
         SR5_EntityHelpers.updateDicePool(actorData.skills.ritualSpellcasting.spellCategory[key], 0)
@@ -2873,6 +3188,7 @@ export class SR5_CharacterUtility extends Actor {
         actorData.skills.summoning.spiritType[key].modifiers = actorData.skills.summoning.spiritType[key].modifiers.concat(actorData.skills.summoning.test.modifiers)
         actorData.skills.binding.spiritType[key].modifiers = actorData.skills.binding.spiritType[key].modifiers.concat(actorData.skills.binding.test.modifiers)
         actorData.skills.banishing.spiritType[key].modifiers = actorData.skills.banishing.spiritType[key].modifiers.concat(actorData.skills.banishing.test.modifiers)
+        for (let skill of ["summoning", "binding", "banishing"]) this.keepStrongestFocusOn(actorData.skills[skill].spiritType[key])
         SR5_EntityHelpers.updateDicePool(actorData.skills.summoning.spiritType[key], 0)
         SR5_EntityHelpers.updateDicePool(actorData.skills.binding.spiritType[key], 0)
         SR5_EntityHelpers.updateDicePool(actorData.skills.banishing.spiritType[key], 0)
@@ -3015,15 +3331,21 @@ export class SR5_CharacterUtility extends Actor {
         SR5_EntityHelpers.updateModifier(magic.drainResistance, label, "linkedAttribute", drainAttr.augmented.value)
       }
     }
-    if (magic.magicType === "spirit") SR5_EntityHelpers.updateModifier(magic.drainResistance, `${game.i18n.localize('SR5.Charisma')}`, "linkedAttribute", attributes.charisma.augmented.value)
+    //SR5 p. 403: spirits resist the Drain of an innate spell with Intuition or Charisma, at the GM's discretion,
+    //added to Willpower as a tradition attribute is (Shadow Spells p. 19). A world setting chooses, Charisma by default
+    if (magic.magicType === "spirit") {
+      let drainKey = game.settings?.get?.("sr5", "sr5SpiritDrainAttribute") === "intuition" ? "intuition" : "charisma"
+      SR5_EntityHelpers.updateModifier(magic.drainResistance, `${game.i18n.localize(SR5.allAttributes[drainKey])}`, "linkedAttribute", attributes[drainKey].augmented.value)
+    }
     SR5_EntityHelpers.updateDicePool(magic.drainResistance, 0)
 
     //Astral damage
     magic.astralDamage.base = 0
     if ((actor.type === "actorPc") || (actor.type === "actorGrunt")) SR5_EntityHelpers.updateModifier(magic.astralDamage, `${game.i18n.localize('SR5.Charisma')}`, "linkedAttribute", attributes.charisma.augmented.value)
     if (actor.type === "actorSpirit") {
-      if ((actorData.type === "homunculus") || (actorData.type === "watcher")) {
-        SR5_EntityHelpers.updateModifier(magic.astralDamage, `${game.i18n.localize(SR5.spiritTypes[actorData.type])}`, "actorSpirit", 1)
+      // Watchers and homunculi deal 1 astral damage (SR5 p. 318), custom types based on them included
+      if (["homunculus", "watcher"].includes(SR5_SpiritTypes.baseType(actorData.type))) {
+        SR5_EntityHelpers.updateModifier(magic.astralDamage, SR5_SpiritTypes.label(actorData.type), "actorSpirit", 1)
       } else {
         SR5_EntityHelpers.updateModifier(magic.astralDamage, `${game.i18n.localize('SR5.SpiritForceShort')}`, "linkedAttribute", actorData.force.value)
       }
@@ -3057,7 +3379,35 @@ export class SR5_CharacterUtility extends Actor {
     let actorData = actor.system, magic = actorData.magic, skills = actorData.skills
     magic.counterSpellPool.base = skills.counterspelling.rating.value
     if (magic.metamagics.shielding) SR5_EntityHelpers.updateModifier(magic.counterSpellPool, `${game.i18n.localize('SR5.MetamagicShielding')}`, "metamagic", magic.initiationGrade)
+    //Harmonious Defense (Forbidden Arcana p. 45): Willpower + Magic + initiate grade, used as spell defense dice.
+    //Accepted approximation (review H2): the pool is always there, with no free action to declare it and no switch to
+    //astral perception, which the book ties to its use
+    if (magic.metamagics.harmoniousDefense) SR5_EntityHelpers.updateModifier(magic.counterSpellPool, `${game.i18n.localize('SR5.MetamagicHarmoniousDefense')}`, "metamagic",
+      harmoniousDefensePool(actorData.attributes.willpower.augmented.value, actorData.specialAttributes.magic.augmented.value, magic.initiationGrade))
     SR5_EntityHelpers.updateValue(magic.counterSpellPool)
+    //Arcane Bodyguard (Forbidden Arcana p. 36): spell defense dice doubled, applied last
+    //(never more than dice / 3 to protect himself: left to the players)
+    if (magic.masteries && this.updateMagicMasteries(magic).arcaneBodyguard > 0 && magic.counterSpellPool.value > 0) {
+      SR5_EntityHelpers.updateModifier(magic.counterSpellPool, `${game.i18n.localize('SR5.MagicMasteryArcaneBodyguard')}`, "metamagic", magic.counterSpellPool.value)
+      SR5_EntityHelpers.updateValue(magic.counterSpellPool)
+    }
+  }
+
+  //Magical masteries (Forbidden Arcana p. 30-41): computes each level from its effects, returns {key: level}
+  static updateMagicMasteries(magic) {
+    const levels = {
+    }
+    for (let [key, mastery] of Object.entries(magic?.masteries || {
+    })) {
+      SR5_EntityHelpers.updateValue(mastery, 0)
+      levels[key] = mastery.value
+    }
+    return levels
+  }
+
+  // Better Than Bad p. 140-141: the grey mana worn, and its penalty on tests using Magic
+  static updateGreyMana(actor) {
+    updateGreyMana(actor, game.i18n.localize("SR5.GreyMana"))
   }
 
   // Background count calcultations
@@ -3071,10 +3421,12 @@ export class SR5_CharacterUtility extends Actor {
         let sceneData = scene.flags.sr5
         //A scene whose background count was never set stores null, or nothing at all, and both
         //differ from 0 : read the rating as a number so they add no empty modifier to the actor
-        let backgroundCount = Number(sceneData?.backgroundCountValue) || 0
+        //Aetherologie p. 34 and Shadow Spells p. 25: the count of the scene with its running Mana Flux / Ebb,
+        //from -24 to +24, below 0 a penalty for everyone whatever the alignment
+        let backgroundCount = effectiveSceneBackgroundCount(sceneData, game.time?.worldTime ?? 0)
         if (backgroundCount !== 0) {
-          if (sceneData.backgroundCountAlignement === actorData.magic.tradition) SR5_EntityHelpers.updateModifier(actorData.magic.bgCount, game.i18n.localize("SR5.SceneBackgroundCount"), sceneData.backgroundCountAlignement, backgroundCount, false, true)
-          else SR5_EntityHelpers.updateModifier(actorData.magic.bgCount, game.i18n.localize("SR5.SceneBackgroundCount"), sceneData.backgroundCountAlignement, -backgroundCount, false, true)
+          const alignment = backgroundCount < 0 ? "" : sceneData.backgroundCountAlignement
+          SR5_EntityHelpers.updateModifier(actorData.magic.bgCount, game.i18n.localize("SR5.SceneBackgroundCount"), alignment, backgroundCountFor(backgroundCount, alignment, actorData.magic.tradition), false, true)
         }
       }
     }
@@ -3082,7 +3434,8 @@ export class SR5_CharacterUtility extends Actor {
   }
 
   // Generate Drug addiction
-  static generateDrugAddiction(item) {
+  // focusRating: for a focus, the total Force of the active foci (SR5 p. 416), its own Force by default
+  static generateDrugAddiction(item, focusRating = item.system.itemRating) {
     let addiction = [], drugTaken
 
     if (item.type === "itemDrug") {
@@ -3093,7 +3446,10 @@ export class SR5_CharacterUtility extends Actor {
           "base": 1,
           "modifiers": []
         },
-        "addiction": item.system.addiction,
+        //Pharmaceutical drugs: threshold -1 (Chrome Flesh p. 194)
+        "addiction": {
+          ...item.system.addiction, "threshold": drugAddictionThreshold(item.system)
+        },
         "weekAddiction": {
           "value": 0,
           "base": 11 - item.system.addiction.rating,
@@ -3110,11 +3466,14 @@ export class SR5_CharacterUtility extends Actor {
           "base": 1,
           "modifiers": []
         },
-        "addiction.type": "psychological",
-        "addiction.threshold": 2,
+        // Foci (SR5 p. 416): the rating is the total Force of the active foci, threshold 2. A nested
+        // object, so that the sheet and the addiction test read it (dotted keys stayed dotted in the array)
+        "addiction": {
+          "type": "psychological", "rating": focusRating, "threshold": 2
+        },
         "weekAddiction": {
           "value": 0,
-          "base": 11 - item.system.itemRating,
+          "base": Math.max(1, 11 - focusRating),
           "modifiers": []
         },
       }
@@ -3126,7 +3485,8 @@ export class SR5_CharacterUtility extends Actor {
   }
 
   // Handle drug stats
-  static async handleDrugShots(item, drugType, actorData) {
+  //`consumer`: who takes it. The sheet passes a copy of the item, without a parent (Liesel's D4)
+  static async handleDrugShots(item, drugType, actorData, consumer = item.parent) {
     let drugStat
     let roll, rollRoll, rollSpeed, rollRollSpeed, duration, effect
 
@@ -3164,7 +3524,8 @@ export class SR5_CharacterUtility extends Actor {
         }
         break
       case "jazz":
-        roll = new Roll(`10d6`)
+        //(10 × 1D6) minutes, one die times ten (SR5 p. 413-414), not the sum of ten dice
+        roll = new Roll(`1d6 * 10`)
         rollRoll = await roll.evaluate()
         drugStat = {
           "name": drugType.value,
@@ -3176,7 +3537,8 @@ export class SR5_CharacterUtility extends Actor {
         }
         break
       case "kamikaze":
-        roll = new Roll(`10d6`)
+        //(10 × 1D6) minutes, one die times ten (SR5 p. 413-414), not the sum of ten dice
+        roll = new Roll(`1d6 * 10`)
         rollRoll = await roll.evaluate()
         drugStat = {
           "name": drugType.value,
@@ -3202,7 +3564,8 @@ export class SR5_CharacterUtility extends Actor {
         }
         break
       case "nitro":
-        roll = new Roll(`10d6`)
+        //(10 × 1D6) minutes, one die times ten (SR5 p. 413), not the sum of ten dice
+        roll = new Roll(`1d6 * 10`)
         rollRoll = await roll.evaluate()
         drugStat = {
           "name": drugType.value,
@@ -3238,7 +3601,8 @@ export class SR5_CharacterUtility extends Actor {
         }
         break
       case "zen":
-        roll = new Roll(`10d6`)
+        //(10 × 1D6) minutes, one die times ten (SR5 p. 413-414), not the sum of ten dice
+        roll = new Roll(`1d6 * 10`)
         rollRoll = await roll.evaluate()
         drugStat = {
           "name": drugType.value,
@@ -3312,7 +3676,7 @@ export class SR5_CharacterUtility extends Actor {
         drugStat = {
           "name": drugType.value,
           "speed": 1,
-          "speedUnit": "SR5.Minute",
+          "speedType": "SR5.Minute",
           "duration": duration,
           "durationType": "hour",
           "unresistedStunDamage": 6,
@@ -3336,7 +3700,7 @@ export class SR5_CharacterUtility extends Actor {
         drugStat = {
           "name": drugType.value,
           "speed": 1,
-          "speedUnit": "SR5.CombatTurn",
+          "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "hour",
           "unresistedStunDamage": 6,
@@ -3362,8 +3726,10 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.Minutes",
           "duration": duration,
           "durationType": "hour",
-          "durationContrecoup": actorData.attributes.body.augmented.value,
+          //Chrome Flesh p. 186: disorientation as long as the effect, and -2 social Limit for (Body) hours
+          "durationContrecoup": duration,
           "durationContrecoupType": "hour",
+          "socialLimitContrecoup": actorData.attributes.body.augmented.value,
         }
         break
       case "forgetMeNot":
@@ -3371,7 +3737,7 @@ export class SR5_CharacterUtility extends Actor {
         drugStat = {
           "name": drugType.value,
           "speed": 1,
-          "speedUnit": "SR5.CombatTurn",
+          "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "hour",
         }
@@ -3386,8 +3752,10 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.Minutes",
           "duration": duration,
           "durationType": "hour",
+          //Chrome Flesh p. 186, as eX: disorientation as long as the effect, and -2 social Limit for (Body) hours
           "durationContrecoup": duration,
           "durationContrecoupType": "hour",
+          "socialLimitContrecoup": actorData.attributes.body.augmented.value,
         }
         break
       case "g3":
@@ -3395,7 +3763,7 @@ export class SR5_CharacterUtility extends Actor {
         drugStat = {
           "name": drugType.value,
           "speed": 1,
-          "speedUnit": "SR5.Hour",
+          "speedType": "SR5.Hour",
           "duration": duration,
           "durationType": "hour",
         }
@@ -3674,7 +4042,7 @@ export class SR5_CharacterUtility extends Actor {
         drugStat = {
           "name": drugType.value,
           "speed": 1,
-          "speedUnit": "SR5.Minute",
+          "speedType": "SR5.Minute",
           "duration": duration,
           "durationType": "minute",
           "durationContrecoup": duration * 2,
@@ -3688,7 +4056,7 @@ export class SR5_CharacterUtility extends Actor {
         drugStat = {
           "name": drugType.value,
           "speed": 1,
-          "speedUnit": "SR5.CombatTurn",
+          "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "minute",
         }
@@ -3727,7 +4095,7 @@ export class SR5_CharacterUtility extends Actor {
         drugStat = {
           "name": drugType.value,
           "speed": 1,
-          "speedUnit": "SR5.CombatTurn",
+          "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "minute",
           "durationContrecoup": 10 * duration,
@@ -3782,10 +4150,63 @@ export class SR5_CharacterUtility extends Actor {
           "durationType": "hour",
         }
         break
+      //Chrome Flesh p. 194: speed "Immédiate", 48 hours, no crash
+      case "psychochip":
+        drugStat = {
+          "name": drugType.value,
+          "speed": item.system.speed,
+          "duration": 48,
+          "durationType": "hour",
+        }
+        break
+      //Bullets & Bandages p. 19: (30 - Body) minutes, no speed given
+      case "cryo":
+        drugStat = {
+          "name": drugType.value,
+          "speed": item.system.speed,
+          "duration": Math.max(30 - actorData.attributes.body.augmented.value, 1),
+          "durationType": "minute",
+        }
+        break
+      //Bullets & Bandages p. 19: (Body) Combat Turns
+      case "hemoSynth":
+        drugStat = {
+          "name": drugType.value,
+          "speed": item.system.speed,
+          "duration": Math.max(actorData.attributes.body.augmented.value, 1),
+          "durationType": "combatTurn",
+        }
+        break
+      //Bullets & Bandages p. 19-20: 24 hours
+      case "nanoScan":
+        drugStat = {
+          "name": drugType.value,
+          "speed": item.system.speed,
+          "duration": 24,
+          "durationType": "hour",
+        }
+        break
+      //Bullets & Bandages p. 20: 1D6 × 10 minutes, one die times ten
+      case "neostigmine":
+      case "ondansetron":
+        roll = new Roll(`1d6 * 10`)
+        rollRoll = await roll.evaluate()
+        drugStat = {
+          "name": drugType.value,
+          "speed": item.system.speed,
+          "duration": rollRoll.total,
+          "durationType": "minute",
+        }
+        break
       default:
         SR5_SystemHelpers.srLog(1, `Unknown '${drugType.value}' drug type in handleDrugShots()`)
         return
     }
+    //An antitoxin divides the duration of the effect by its rating (Chrome Flesh p. 154)
+    const antitoxin = SR5_Toxins.antitoxinRating(actorData)
+    if (antitoxin > 1) drugStat.duration = SR5_Toxins.drugDuration(drugStat.duration, antitoxin)
+    //The quality of the drug changes the duration of its crash (Chrome Flesh p. 194)
+    applyDrugQuality(drugStat, effectiveDrugQuality(item.system, consumer))
     return drugStat
   }
 
@@ -3833,9 +4254,23 @@ export class SR5_CharacterUtility extends Actor {
         matrix.deviceRating = actorData.specialAttributes.resonance.augmented.value
         break
       case "headcase": {
+        let nanite = actorData.specialAttributes.nanite.augmented.value
+        if (originalStrainDevice(actor) === item) {
+          // Original strain (Dark Terrors p. 88): an AI on its nanite swarm, a device rated by the Nanite Volume, whose
+          // four attributes are each the Nanite Volume (arbitrage de DjamZ, 06/10); no program slot; always in hot sim
+          for (let key of ["attack", "sleaze", "dataProcessing", "firewall"]) matrix.attributes[key].base = nanite
+          matrix.deviceRating = nanite
+          matrix.userMode = "hotsim"
+          // The swarm's matrix monitor: 8 + NV / 2, worked out here because the device knows no Nanite Volume
+          item.system.deviceRating = nanite
+          item.system.conditionMonitors.matrix.base = monitorSize(nanite)
+          SR5_EntityHelpers.updateValue(item.system.conditionMonitors.matrix, 0)
+          SR5_EntityHelpers.updateValue(item.system.conditionMonitors.matrix.actual, 0)
+          SR5_EntityHelpers.GenerateMonitorBoxes(item.system, 'matrix')
+          break
+        }
         // Head case matrix attributes (Lockdown p. 206): same attribute layout as a
         // living persona, with the full Nanite Volume added to each one.
-        let nanite = actorData.specialAttributes.nanite.augmented.value
         matrix.attributes.attack.base = attributes.charisma.augmented.value + nanite
         matrix.attributes.sleaze.base = attributes.intuition.augmented.value + nanite
         matrix.attributes.dataProcessing.base = attributes.logic.augmented.value + nanite
@@ -4103,6 +4538,7 @@ export class SR5_CharacterUtility extends Actor {
     let modifierTypeSensor = "sensorAttribute"
     let modifierTypePilot = "pilotAttribute"
     let logicLabel = 'SR5.Logic', deviceless = false
+    let intuitionLabel = 'SR5.Intuition', willpowerLabel = 'SR5.Willpower'
 
     if (actor.type === "actorPc" || actor.type === "actorGrunt" || actor.type === "actorAgent") {
       intuitionValue = actorData.attributes.intuition.augmented.value
@@ -4123,6 +4559,8 @@ export class SR5_CharacterUtility extends Actor {
       intuitionValue = matrix.deviceRating
       willpowerValue = matrix.deviceRating
       logicValue = matrix.deviceRating
+      //A sprite's rating is its Level
+      intuitionLabel = willpowerLabel = logicLabel = actor.type === "actorSprite" ? 'SR5.Level' : 'SR5.DeviceRating'
       firewallValue = matrixAttributes.firewall.value
       sleazeValue = matrixAttributes.sleaze.value
       dataProcessingValue = matrixAttributes.dataProcessing.value
@@ -4132,17 +4570,26 @@ export class SR5_CharacterUtility extends Actor {
       if (controler.attributes.intuition.augmented.value > matrix.deviceRating) {
         intuitionValue = controler.attributes.intuition.augmented.value
         modifierTypeIntuition = "controler"
-      } else intuitionValue = matrix.deviceRating
+      } else {
+        intuitionValue = matrix.deviceRating
+        intuitionLabel = 'SR5.DeviceRating'
+      }
 
       if (controler.attributes.willpower.augmented.value > matrix.deviceRating) {
         willpowerValue = controler.attributes.willpower.augmented.value
         modifierTypeWillpower = "controler"
-      } else willpowerValue = matrix.deviceRating
+      } else {
+        willpowerValue = matrix.deviceRating
+        willpowerLabel = 'SR5.DeviceRating'
+      }
 
       if (controler.attributes.logic.augmented.value > matrix.deviceRating) {
         logicValue = controler.attributes.logic.augmented.value
         modifierTypeLogic = "controler"
-      } else logicValue = matrix.deviceRating
+      } else {
+        logicValue = matrix.deviceRating
+        logicLabel = 'SR5.DeviceRating'
+      }
 
       if (controler.matrix.attributes.firewall.value > matrix.deviceRating) {
         firewallValue = controler.matrix.attributes.firewall.value
@@ -4167,70 +4614,74 @@ export class SR5_CharacterUtility extends Actor {
       intuitionValue = matrix.deviceRating
       willpowerValue = matrix.deviceRating
       logicValue = matrix.deviceRating
+      intuitionLabel = willpowerLabel = logicLabel = 'SR5.DeviceRating'
       firewallValue = matrix.deviceRating
       sleazeValue = matrix.deviceRating
       dataProcessingValue = matrix.deviceRating
       attackValue = matrix.deviceRating
     }
 
-    SR5_EntityHelpers.updateModifier(matrixActions.editFile.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.editFile.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.editFile.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.eraseMark.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.eraseMark.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.eraseMark.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.formatDevice.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.formatDevice.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.formatDevice.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
+    // A Monad adds its Nanite Volume to resist Format Device (Dark Terrors p. 88); kept for the Lockdown strain too, as
+    // the sidebar p. 91 recommends (arbitrage de DjamZ, 06/10)
+    if (activeHeadcase(actor)) SR5_EntityHelpers.updateModifier(matrixActions.formatDevice.defense, game.i18n.localize('SR5.NaniteVolume'), "linkedAttribute", naniteVolume(actor))
     SR5_EntityHelpers.updateModifier(matrixActions.snoop.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.snoop.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.hackOnTheFly.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.hackOnTheFly.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.hackOnTheFly.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.spoofCommand.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.spoofCommand.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.garbageInGarbageOut.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.garbageInGarbageOut.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.bruteForce.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.bruteForce.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.bruteForce.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.matrixPerception.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.matrixPerception.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.dataSpike.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.dataSpike.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.dataSpike.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.crashProgram.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.crashProgram.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.crashProgram.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.jumpIntoRiggedDevice.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.jumpIntoRiggedDevice.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.jumpIntoRiggedDevice.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.rebootDevice.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.rebootDevice.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.rebootDevice.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.hide.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.hide.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.hide.defense, game.i18n.localize('SR5.DataProcessing'), modifierTypeDataProcessing, dataProcessingValue)
     SR5_EntityHelpers.updateModifier(matrixActions.jackOut.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.jackOut.defense, game.i18n.localize('SR5.MatrixAttack'), modifierTypeAttack, attackValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.traceIcon.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.traceIcon.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.traceIcon.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.controlDevice.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
+    SR5_EntityHelpers.updateModifier(matrixActions.controlDevice.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.controlDevice.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
 
     if (game.settings.get("sr5", "sr5KillCodeRules")) {
-      SR5_EntityHelpers.updateModifier(matrixActions.denialOfService.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.denialOfService.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
       SR5_EntityHelpers.updateModifier(matrixActions.denialOfService.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.haywire.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.haywire.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
       SR5_EntityHelpers.updateModifier(matrixActions.haywire.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
       SR5_EntityHelpers.updateModifier(matrixActions.masquerade.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
       SR5_EntityHelpers.updateModifier(matrixActions.masquerade.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.popupHacking.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.popupHacking.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
       SR5_EntityHelpers.updateModifier(matrixActions.popupHacking.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.popupCybercombat.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.popupCybercombat.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
       SR5_EntityHelpers.updateModifier(matrixActions.popupCybercombat.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.squelch.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.squelch.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
       SR5_EntityHelpers.updateModifier(matrixActions.squelch.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.subvertInfrastructure.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.subvertInfrastructure.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
       SR5_EntityHelpers.updateModifier(matrixActions.subvertInfrastructure.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.tag.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.tag.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
       SR5_EntityHelpers.updateModifier(matrixActions.tag.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
       SR5_EntityHelpers.updateModifier(matrixActions.watchdog.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
       SR5_EntityHelpers.updateModifier(matrixActions.watchdog.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     }
 
     if (game.settings.get("sr5", "sr5Rigger5Actions")) {
-      SR5_EntityHelpers.updateModifier(matrixActions.targetDevice.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
+      SR5_EntityHelpers.updateModifier(matrixActions.targetDevice.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
       SR5_EntityHelpers.updateModifier(matrixActions.targetDevice.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
       if (actor.type === "actorDrone") {	
         SR5_EntityHelpers.updateModifier(matrixActions.breakTargetLock.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
@@ -4274,6 +4725,12 @@ export class SR5_CharacterUtility extends Actor {
       case "commlink":
         SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, item.name, "deviceRating", item.system.deviceRating)
         SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, game.i18n.localize('SR5.Firewall'), "matrixAttribute", matrixAttributes.firewall.value)
+        //A commlink with a sim module goes into VR too: biofeedback and dumpshock are resisted with Willpower + Firewall,
+        //whatever the device (SR5 p. 229 and 231). The pool was left empty, 0 dice
+        SR5_EntityHelpers.updateModifier(matrixResistances.biofeedback, game.i18n.localize('SR5.Willpower'), "linkedAttribute", attributes.willpower.augmented.value)
+        SR5_EntityHelpers.updateModifier(matrixResistances.biofeedback, game.i18n.localize('SR5.Firewall'), "matrixAttribute", matrixAttributes.firewall.value)
+        SR5_EntityHelpers.updateModifier(matrixResistances.dumpshock, game.i18n.localize('SR5.Willpower'), "linkedAttribute", attributes.willpower.augmented.value)
+        SR5_EntityHelpers.updateModifier(matrixResistances.dumpshock, game.i18n.localize('SR5.Firewall'), "matrixAttribute", matrixAttributes.firewall.value)
         break
       case "cyberdeck":
       case "riggerCommandConsole":
@@ -4293,7 +4750,9 @@ export class SR5_CharacterUtility extends Actor {
         let personaLabel = game.i18n.localize(SR5.characterSpecialAttributes[personaKey])
         SR5_EntityHelpers.updateModifier(matrixResistances.fading, personaLabel, "linkedAttribute", specialAttributes[personaKey].augmented.value)
         SR5_EntityHelpers.updateModifier(matrixResistances.fading, game.i18n.localize('SR5.Willpower'), "linkedAttribute", attributes.willpower.augmented.value)
-        SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, personaLabel, "linkedAttribute", specialAttributes[personaKey].augmented.value)
+        // A Monad of the original strain resists with Willpower + Firewall, on both its monitors (Dark Terrors p. 88)
+        if (originalStrainDevice(actor) === item) SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, game.i18n.localize('SR5.Willpower'), "linkedAttribute", attributes.willpower.augmented.value)
+        else SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, personaLabel, "linkedAttribute", specialAttributes[personaKey].augmented.value)
         SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, game.i18n.localize('SR5.Firewall'), "matrixAttribute", matrixAttributes.firewall.value)
         SR5_EntityHelpers.updateModifier(matrixResistances.biofeedback, game.i18n.localize('SR5.Willpower'), "linkedAttribute", attributes.willpower.augmented.value)
         SR5_EntityHelpers.updateModifier(matrixResistances.biofeedback, game.i18n.localize('SR5.Firewall'), "matrixAttribute", matrixAttributes.firewall.value)
@@ -4316,9 +4775,9 @@ export class SR5_CharacterUtility extends Actor {
           SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, item.name, "deviceRating", actorData.matrix.deviceRating)
           SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, game.i18n.localize('SR5.Firewall'), "matrixAttribute", actorData.matrix.attributes.firewall.value)
         } else if (actor.type === "actorSprite") {
-          SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, game.i18n.localize('TYPES.Actor.actorsprite'), "level", matrix.deviceRating)
+          SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, game.i18n.localize('SR5.Level'), "level", matrix.deviceRating)
           SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, game.i18n.localize('SR5.Firewall'), "matrixAttribute", matrixAttributes.firewall.value)
-          SR5_EntityHelpers.updateModifier(matrixResistances.dataBomb, game.i18n.localize('TYPES.Actor.actorsprite'), "level", matrix.deviceRating)
+          SR5_EntityHelpers.updateModifier(matrixResistances.dataBomb, game.i18n.localize('SR5.Level'), "level", matrix.deviceRating)
           SR5_EntityHelpers.updateModifier(matrixResistances.dataBomb, game.i18n.localize('SR5.Firewall'), "matrixAttribute", matrixAttributes.firewall.value)
         } else if (actor.type === "actorAgent") {
           SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, `${game.i18n.localize('SR5.ProgramTypeAgent')}`, "itemRating", actorData.rating)
@@ -4506,14 +4965,15 @@ export class SR5_CharacterUtility extends Actor {
   }
 
   static generateAgentMatrix(actor, itemData) {
-    let actorData = actor.system
-    if (!actorData.creatorData?.system?.matrix) return
-    let matrixAttributes = actorData.matrix.attributes, creatorMatrix = actorData.creatorData.system.matrix
+    let actorData = actor.system,
+      matrixAttributes = actorData.matrix.attributes,
+      //An agent without a creator is loaded on no device: no matrix attributes (SR5 p. 248), its rating still counts
+      creatorMatrix = actorData.creatorData?.system?.matrix
 
     actorData.matrix.marks = itemData.marks
     actorData.matrix.markedItems = itemData.markedItems
     //Device
-    actorData.matrix.deviceRating = creatorMatrix.deviceRating
+    if (creatorMatrix) actorData.matrix.deviceRating = creatorMatrix.deviceRating
 
     //Agent attributes are equal to the rating (Kill code page 26)
     for (let key of Object.keys(SR5.characterAttributes)) {
@@ -4521,7 +4981,7 @@ export class SR5_CharacterUtility extends Actor {
     }
     //Agent matrix attributes are the same as decker attributes
     for (let key of Object.keys(SR5.deckerAttributes)) {
-      matrixAttributes[key].base = creatorMatrix.attributes[key].value
+      matrixAttributes[key].base = creatorMatrix?.attributes[key].value ?? 0
       SR5_EntityHelpers.updateValue(matrixAttributes[key], 0)
     }
     //Agent skills are equal to program rating
@@ -4534,7 +4994,7 @@ export class SR5_CharacterUtility extends Actor {
     //Noise
     SR5_EntityHelpers.updateValue(actorData.matrix.noise)
     //Grid
-    actorData.userGrid = creatorMatrix.userGrid
+    if (creatorMatrix) actorData.userGrid = creatorMatrix.userGrid
   }
 
   static applyProgramToAgent(actor) {
@@ -4732,8 +5192,9 @@ export class SR5_CharacterUtility extends Actor {
         })
         break
       case "power":
+        // Natural and augmented Magic are the same rating for a focus: a custom effect on either replaces the automatic bonus.
         if (actorData.specialAttributes?.magic) targets.push({
-          path: "system.specialAttributes.magic.augmented", property: actorData.specialAttributes.magic.augmented
+          path: "system.specialAttributes.magic.augmented", property: actorData.specialAttributes.magic.augmented, aliases: ["system.specialAttributes.magic.natural"]
         })
         break
       case "centering":
@@ -4746,6 +5207,9 @@ export class SR5_CharacterUtility extends Actor {
           path: "system.magic.metamagics.spellShapingValue", property: actorData.magic.metamagics.spellShapingValue
         })
         break
+      case "":
+        // A focus whose type was never chosen has no automatic bonus, but its custom effects are compared below
+        break
       default:
         // weapon, sustaining and qi foci have their own handling; masking and flexibleSignature have no pool in the system
         return
@@ -4753,10 +5217,46 @@ export class SR5_CharacterUtility extends Actor {
 
     let customTargets = Object.values(item.system.customEffects || {
     }).map(e => e.target)
-    for (let target of targets) {
-      if (customTargets.includes(target.path)) continue
-      SR5_EntityHelpers.updateModifier(target.property, item.name, "itemFocus", force)
+    // SR5 p. 321: only one focus adds its Force to a given test, the strongest one is kept.
+    // Two power foci fall under the same rule (DjamZ, 2026-10-02): the exception of p. 322 only lets a power focus stack with a spell focus.
+    actor._sr5FocusTargets ??= new Set()
+    // An older focus without a category carries its bonus only as a custom effect: its tests are compared too.
+    for (let path of customTargets) {
+      let property = SR5_EntityHelpers.resolveObjectPath(path, actor)
+      if (Array.isArray(property?.modifiers)) actor._sr5FocusTargets.add(property)
     }
+    for (let target of targets) {
+      actor._sr5FocusTargets.add(target.property)
+      if ([target.path, ...(target.aliases || [])].some(path => customTargets.includes(path))) continue
+      let modifiers = target.property.modifiers
+      if (!Array.isArray(modifiers)) continue
+      let index = modifiers.findIndex(m => m.type === "itemFocus" && m.value > 0 && !m.isMultiplier)
+      if (index === -1) SR5_EntityHelpers.updateModifier(target.property, item.name, "itemFocus", force)
+      else if (modifiers[index].value < force) modifiers[index] = {
+        source: item.name, type: "itemFocus", value: force, isMultiplier: false
+      }
+    }
+  }
+
+  // A focus carrying its bonus as a custom effect is read after the automatic bonus of
+  // the foci before it: once all items are read, keep only the strongest focus per test.
+  // Natural Magic feeds augmented Magic: a focus on each would both count, so they are compared together.
+  static keepStrongestFocus(actor) {
+    let targets = actor._sr5FocusTargets || new Set(), magic = actor.system.specialAttributes?.magic
+    let magicRatings = magic ? [magic.natural, magic.augmented].filter(p => Array.isArray(p?.modifiers)) : []
+    for (let property of targets) if (!magicRatings.includes(property)) this.keepStrongestFocusOn(property)
+    if (magicRatings.some(p => targets.has(p))) this.keepStrongestFocusOn(...magicRatings)
+    delete actor._sr5FocusTargets
+  }
+
+  // SR5 p. 321: among the foci adding their Force to the same test, only the strongest is kept.
+  static keepStrongestFocusOn(...properties) {
+    let foci = properties.flatMap(property => property.modifiers.filter(m => m.type === "itemFocus" && m.value > 0 && !m.isMultiplier).map(modifier => ({
+      property, modifier
+    })))
+    if (foci.length < 2) return
+    let strongest = foci.reduce((a, b) => (b.modifier.value > a.modifier.value ? b : a))
+    for (let focus of foci) if (focus !== strongest) focus.property.modifiers.splice(focus.property.modifiers.indexOf(focus.modifier), 1)
   }
 
   // SR5 p. 246-248: the rules of a program are known by its name. An active program named like one of the
@@ -4779,10 +5279,79 @@ export class SR5_CharacterUtility extends Actor {
     return typeof english === "string" ? english.trim().toLowerCase() : ""
   }
 
+  // A situational effect leaves a zero-valued marker on its target, which the roll reading that target
+  // turns into a box of the roll dialog (roll-helpers/situational.js); an effect on "tests linked to an
+  // attribute" or on "any roll" has no target on the sheet and is matched at roll time
+  static registerSituationalEffect(item, actor, customEffect) {
+    let value = situationalValue(customEffect, item.system)
+    if (value === null) return
+    if (!actor.situationalEffects) actor.situationalEffects = []
+    let effect = {
+      source: item.name, value, when: customEffect.when || "", situational: !!customEffect.situational
+    }
+    if (typeof customEffect.type === "string" && customEffect.type.endsWith("Replace")) effect.replace = true
+    //Condition on the target's metatype (The Complete Trog p. 179), read when the roll is prepared
+    if (customEffect.situational && customEffect.targetMetatype) Object.assign(effect, {
+      targetMetatype: customEffect.targetMetatype, targetMetatypeMode: customEffect.targetMetatypeMode === "isNot" ? "isNot" : "is"
+    })
+    if (isRollTestsTarget(customEffect.target)) {
+      effect.scope = customEffect.target.slice(ROLL_TESTS_PREFIX.length)
+      actor.situationalEffects.push(effect)
+      return
+    }
+    // No roll reads an attribute's modifiers: a situational effect on one goes to the tests linked to it
+    let attribute = attributeRedirect(customEffect.target)
+    if (attribute) {
+      effect.scope = attribute
+      actor.situationalEffects.push(effect)
+      return
+    }
+    // A target no roll dialog reads: the item sheet warns about it, nothing is applied
+    if (!situationalReadable(customEffect.target)) {
+      SR5_SystemHelpers.srLog(2, `Situational effect of '${item.name}' on '${customEffect.target}', which no roll reads`)
+      return
+    }
+    let targetObject = SR5_EntityHelpers.resolveObjectPath(customEffect.target, actor)
+    if (!targetObject?.modifiers) return
+    let index = actor.situationalEffects.push(effect) - 1
+    SR5_EntityHelpers.updateModifier(targetObject, item.name, `${SITUATIONAL_PREFIX}${index}`, 0)
+  }
+
+  // An effect on the rolls of whoever targets the bearer, or of whoever is within its aura: kept on the
+  // bearer, read by the other actors' rolls when they are prepared (roll-helpers/indirect.js)
+  static registerIndirectEffect(item, actor, customEffect) {
+    let value = situationalValue(customEffect, item.system)
+    if (value === null) return
+    let effect = indirectEffectOf(customEffect, item.name, value)
+    if (!effect) return
+    if (!actor.indirectEffects) actor.indirectEffects = []
+    actor.indirectEffects.push(effect)
+  }
+
+  // Mentor spirit (SR5 p. 76, 323-324): only the first one counts; its effects follow the actor's block,
+  // the Adept block gives Power Points, and the Mask (Forbidden Arcana p. 176) is an optional rule
+  static applyMentorSpirit(item, actor) {
+    if (!actor.system.magic) return
+    if (!isFollowedMentor(item, actor.items)) {
+      SR5_SystemHelpers.srLog(2, `Mentor spirit '${item.name}' ignored: '${actor.name}' already follows a mentor`)
+      return
+    }
+    const magic = mentorMagic(actor.system.specialAttributes?.magic, actor.system.essence, SR5ShopGrades.greywareMagicPenalty(actor.items))
+    const path = mentorPathFor(actor.system.magic?.magicType, item.system.mysticPath)
+    const maskRule = game.settings.get("sr5", "mentorMask")
+    if (Object.keys(item.system.customEffects).length) SR5_CharacterUtility.applyCustomEffects(item, actor)
+    if (mentorMaskOn(path, item.system, maskRule, magic, actor.system.magic?.magicType)) actor.system.magic.mentorMask = true
+    const powerPoints = mentorPowerPoints(path, item.system, maskRule, magic)
+    if (powerPoints) SR5_EntityHelpers.updateModifier(actor.system.magic.powerPoints.maximum, item.name, item.type, powerPoints)
+  }
+
   static applyCustomEffects(item, actor) {
     let itemData = item.system
+    // Mentor spirit: the effects of the actor's own block only, nothing with a Magic of 0 (SR5 p. 324)
+    const mentorPath = item.type === "itemMentorSpirit" ? mentorPathFor(actor.system.magic?.magicType, itemData.mysticPath) : null
+    const mentorMagicValue = item.type === "itemMentorSpirit" ? mentorMagic(actor.system.specialAttributes?.magic, actor.system.essence, SR5ShopGrades.greywareMagicPenalty(actor.items)) : 0
 
-    for (let customEffect of Object.values(itemData.customEffects)) {
+    for (let [effectKey, customEffect] of Object.entries(itemData.customEffects)) {
       let skipCustomEffect = false,
         cumulative = customEffect.cumulative,
         isMultiplier = false
@@ -4797,14 +5366,39 @@ export class SR5_CharacterUtility extends Actor {
       // For transferable effect
       if (customEffect.transfer) skipCustomEffect = true
       // Drugs
+      // Drugs: an effect applies in its own phase, the rise or the crash (entities/items/drug-phase.js)
       if (item.type === "itemDrug") {
-        if (!itemData.isActive && !customEffect.wifi) skipCustomEffect = true
+        skipCustomEffect = !customEffect.target || !customEffect.type || !!customEffect.transfer ||
+          !drugEffectApplies(customEffect, phaseFromFlags(itemData.isActive, itemData.wirelessTurnedOn))
       }
       // Quality : if an effect has "wifi on" check box to true, effect is always turned on, even if quality is not "equiped"
       if (item.type === "itemQuality") {
         if (itemData.isActive && customEffect.wifi) skipCustomEffect = false
         else if (!itemData.isActive && customEffect.wifi) skipCustomEffect = false
         else if (!itemData.isActive) skipCustomEffect = true
+      }
+      if (item.type === "itemMentorSpirit" && !mentorEffectApplies(customEffect.mentorPath, mentorPath, mentorMagicValue)) continue
+
+      // Effects on other actors' rolls (whoever targets me, an aura) are never applied to the bearer
+      if (isIndirect(customEffect)) {
+        if (!skipCustomEffect) SR5_CharacterUtility.registerIndirectEffect(item, actor, customEffect)
+        continue
+      }
+
+      // A situational effect on a movement rate (Dark Terrors p. 180): a box of the movement block, applied while ticked
+      if (!skipCustomEffect && customEffect.situational && situationalMovement(customEffect.target)) {
+        let key = movementEffectKey(item.id, effectKey)
+        let on = movementEffectOn(actor.system.movementSituationalOn, key)
+        if (!actor.movementSituational) actor.movementSituational = []
+        actor.movementSituational.push({
+          key, source: item.name, when: customEffect.when || "", on
+        })
+        if (!on) continue
+      }
+      // Situational effects and effects on tests linked to an attribute are offered at roll time
+      else if (!skipCustomEffect && (customEffect.situational || isRollTestsTarget(customEffect.target))) {
+        SR5_CharacterUtility.registerSituationalEffect(item, actor, customEffect)
+        continue
       }
 
       let targetObject = SR5_EntityHelpers.resolveObjectPath(customEffect.target, actor)
@@ -4822,8 +5416,20 @@ export class SR5_CharacterUtility extends Actor {
             continue
           }
           if (customEffect.target === "system.itemsProperties.weapon.damageValue") {
-            customEffect.value = (customEffect.value || 0)
-            SR5_EntityHelpers.updateModifier(targetObject, `${item.name}`, item.type, customEffect.value * customEffect.multiplier, isMultiplier, cumulative, customEffect.type)
+            //A bonus read from the item's rating with an offset: bone density adds its rating − 1 (SR5 p. 463 ; arbitrage de DjamZ : table VF)
+            //(worked out apart: the effect itself is left untouched, it is read again at each preparation)
+            const rated = typeof customEffect.ratingOffset === "number"
+            if (!rated) customEffect.value = (customEffect.value || 0)
+            const value = rated ? Math.max(0, (Number(item.system.itemRating) || 0) + customEffect.ratingOffset) : customEffect.value
+            //Damage that turns physical: (STR + n)P of the bone augmentations (SR5 p. 458 and 463). Kept apart,
+            //never merged with another item's bonus: the weapon keeps the highest of them (utilityItem.js)
+            if (customEffect.damageType === "physical") {
+              targetObject.modifiers.push({
+                source: item.name, type: item.type, value: value * customEffect.multiplier, isMultiplier, details: customEffect.type, damageType: "physical"
+              })
+              continue
+            }
+            SR5_EntityHelpers.updateModifier(targetObject, `${item.name}`, item.type, value * customEffect.multiplier, isMultiplier, cumulative, customEffect.type)
             continue
           }
         }
@@ -4866,21 +5472,30 @@ export class SR5_CharacterUtility extends Actor {
             break
           case "value":
             customEffect.value = (customEffect.value || 0)
+            //Attribute Boost (SR5 p. 312) only adds to dice pools: its modifier is marked, and limitAttributeValue() leaves it out
+            if (customEffect.poolOnly) {
+              SR5_EntityHelpers.updateModifier(targetObject, item.name, modifierType, customEffect.value * customEffect.multiplier, isMultiplier, true)
+              targetObject.modifiers[targetObject.modifiers.length - 1].poolOnly = true
+              break
+            }
             SR5_EntityHelpers.updateModifier(targetObject, item.name, modifierType, customEffect.value * customEffect.multiplier, isMultiplier, cumulative)
             break
-          case "valueReplace": {
-            targetObject.modifiers = []
-            if (targetObject.base < 1) targetObject.base = 0
-            let modValue = -targetObject.base + (customEffect.value || 0)
-            SR5_EntityHelpers.updateModifier(targetObject, item.name, modifierType, modValue * customEffect.multiplier, isMultiplier, cumulative)
-            break
-          }
-          case "ratingReplace": {
-            targetObject.modifiers = []
-            customEffect.value = (itemData.itemRating || 0)
-            if (targetObject.base < 1) targetObject.base = 0
-            let modRating = -targetObject.base + customEffect.value
-            SR5_EntityHelpers.updateModifier(targetObject, item.name, modifierType, modRating * customEffect.multiplier, isMultiplier, cumulative)
+          case "valueReplace":
+          case "ratingReplace":
+          case "hitsReplace": {
+            //The target takes this value. A skill Limit, whose base is the key of its linked Limit, reads it back through
+            //skillLimitValue(): the value stands in for the linked Limit, and the other effects on the skill Limit still
+            //add to it (No Future p. 152: an instrument gives the Limit, a Synthlink raises it)
+            if (typeof targetObject.base === "number") targetObject.modifiers = []
+            if (customEffect.type === "ratingReplace") customEffect.value = (itemData.itemRating || 0)
+            if (customEffect.type === "hitsReplace") customEffect.value = (itemData.hits || 0)
+            if (typeof targetObject.base === "number" && targetObject.base < 1) targetObject.base = 0
+            let modValue = replaceModifierValue(targetObject.base, (customEffect.value || 0)) * customEffect.multiplier
+            //Pushed as it is, marked from the start: updateModifier() may merge it into another modifier of the same
+            //type, and the last one of the list is not always the one just made
+            if (!isNaN(modValue)) targetObject.modifiers.push({
+              source: item.name, type: modifierType, value: modValue, isMultiplier, replace: true
+            })
             break
           }
           case "boolean": {

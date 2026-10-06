@@ -2,7 +2,10 @@
 <div class="SRBlockSheet">
 	<ul>
 		<li class="SR-LigneEnTete grid">
-			<div class="col-12 SR-TextUppercase">{{localize 'SR5.CharacterFinances'}}</div>
+			<div class="col-10 SR-TextUppercase">{{localize 'SR5.CharacterFinances'}}</div>
+			<div class="col-2 SR-TextRight">
+				<a class="sr5-open-shop" data-action="openShop" data-tooltip="{{localize 'SR5.ShopOpen'}}"><i class="fas fa-cart-shopping"></i> {{localize 'SR5.ShopWindow'}}</a>
+			</div>
 		</li>
 		<li class="grid">
 			<div class="col-2 SR-TextLeft {{#if (gt (lossModifiersSum system.nuyen) (gainModifiersSum system.nuyen))}}incomplete{{/if}}">{{localize 'SR5.CurrentNuyens'}}{{localize 'SR5.Colons'}}</div>
@@ -46,6 +49,31 @@
 		{{/each}}
 	</ul>
 </div>
+
+<!-- EN COMMANDE : achats payés, pas encore livrés (SR5 p. 420) -->
+{{#if actor.shopOrders.length}}
+<div class="SRBlockSheet sr-shop-orders">
+	<ul>
+		<li class="SR-LigneEnTete grid">
+			<div class="col-12 SR-TextUppercase">{{localize 'SR5.ShopOrders'}}</div>
+		</li>
+		{{#each actor.shopOrders}}
+		<li class="grid" data-order-id="{{id}}">
+			<div class="col-5">{{label}}{{#if express}} <em class="fas fa-truck-fast" data-tooltip="{{localize 'SR5.ShopOrderExpress'}}"></em>{{/if}}</div>
+			<div class="col-4 SR-TextCenter">{{#if arrived}}{{localize 'SR5.ShopOrderArrived'}}{{else}}{{dueLabel}}{{/if}}</div>
+			<div class="col-3 SR-TextRight">
+				{{#if gm}}
+				<a data-shop-order="deliver" data-tooltip="{{localize 'SR5.ShopOrderDeliverNow'}}"><em class="fas fa-box-open"></em></a>
+				{{/if}}
+				{{#if @root.owner}}
+				<a data-shop-order="cancel" data-tooltip="{{cancelLabel}}"><em class="fas fa-ban"></em></a>
+				{{/if}}
+			</div>
+		</li>
+		{{/each}}
+	</ul>
+</div>
+{{/if}}
 
 <!-- GAINS  -->
 <div class="SRBlockSheet">

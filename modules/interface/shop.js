@@ -4,6 +4,28 @@ import {
 import {
   SR5_SystemHelpers 
 } from '../system/utilitySystem.js'
+import {
+  SR5
+} from '../config.js'
+import {
+  SR5ShopStock
+} from './shop-stock.js'
+import {
+  SR5ShopGrades
+} from './shop-grades.js'
+import {
+  SR5ShopCatalog
+} from './shop-catalog.js'
+import {
+  essenceAfterPurchase, screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED
+} from '../system/implant-essence.js'
+import {
+  SR5ShopAvailability
+} from './shop-availability.js'
+import {
+  lineWaits, deliveryDelayed, currentExpress, expressCost, orderHours, newOrder, addOrders, testedHours, cardResult, cardSurcharge, surchargedUnit,
+  requestRegister
+} from './shop-orders.js'
 
 /**
  * Purchases made from the compendium browser.
@@ -19,26 +41,63 @@ export class SR5Shop {
   static STACKABLE_TYPES = ['itemAmmunition', 'itemDrug', 'itemGear', 'itemWeapon']
 
   /**
-   * The actors the current user may spend for: their own character and anything
-   * they own, the whole roster for a gamemaster.
+   * The actors the current user may spend for, by the gamemaster's buyer rule
+   * (`SR5ShopStock.isBuyer`); a player only sees those they own. In Equip mode,
+   * every actor of the world for the gamemaster.
    */
-  static getBuyers() {
-    const actors = game.actors.filter(a => a.type === 'actorPc' &&
-      (game.user.isGM || a.isOwner))
-    return actors.sort((a, b) => a.name.localeCompare(b.name))
+  static getBuyers({
+    equip = false
+  } = {
+  }) {
+    return SR5ShopStock.buyers(game.actors, game.user, {
+      equip: equip && game.user.isGM, ...SR5ShopStock.buyerRule,
+    })
   }
 
-  /** The default buyer: the user's character, else the only actor they own. */
+  /** The grades offered for an augmentation, by the shop's mode and the world options. */
+  static gradesFor(type, system, {
+    equip = false
+  } = {
+  }) {
+    if (!SR5ShopGrades.isGraded(type, system)) return []
+    return SR5ShopGrades.available({
+      augmentationType: system.type,
+      // Equip mode places every grade, the world options aside — greyware still cyberware only
+      all: equip,
+      creation: SR5Shop.creationMode,
+      gamma: game.settings.get('sr5', 'sr5ShopGradeGamma') === true,
+      greyware: game.settings.get('sr5', 'sr5ShopGradeGreyware') === true,
+    })
+  }
+
+  /** Unit price of `system`, regraded when a grade is chosen. */
+  static gradedPrice(system, grade) {
+    return grade ? SR5ShopGrades.price(system, grade) : SR5Shop.unitPrice(system)
+  }
+
+  /**
+   * The default buyer: the user's character, else the actor of the token they
+   * control (how a gamemaster points at someone), else the only actor they own.
+   */
   static defaultBuyerId(buyers) {
-    if (game.user.character && buyers.some(a => a.id === game.user.character.id)) {
-      return game.user.character.id
-    }
+    const ids = new Set(buyers.map(a => a.id))
+    if (game.user.character && ids.has(game.user.character.id)) return game.user.character.id
+    const controlled = canvas?.tokens?.controlled?.map(t => t.actor?.id).find(id => ids.has(id))
+    if (controlled) return controlled
     return buyers.length === 1 ? buyers[0].id : null
   }
 
-  /** Anything with a price can be bought; that is what `boughtOrSold` marks. */
-  static isPurchasable(entry) {
-    return entry.docName === 'Item' && entry.system?.price !== undefined
+  /**
+   * Can this entry go on the counter? A sellable type with a price, on one of
+   * the shelves, and not flagged as a prototype — Equip mode skips the last two.
+   */
+  static isPurchasable(entry, {
+    equip = false
+  } = {
+  }) {
+    return SR5ShopStock.canSell(entry, {
+      equip
+    })
   }
 
   /**
@@ -66,26 +125,67 @@ export class SR5Shop {
    *
    * A character built outside Foundry arrives with its purchases already paid
    * for on paper, and a player fixing a badly entered item would be charged a
-   * second time. The switch is remembered per user, not per world, so a
-   * gamemaster equipping a character does not change anything for the table.
+   * second time. DjamZ's ruling (2026-10-05): a world setting, in the
+   * gamemaster's hands only — per user, a player could take free alphaware.
    */
   static get creationMode() {
     return game.settings.get('sr5', 'sr5ShopCreationMode') === true
   }
 
   /**
+   * Availability and rating allowed at creation: the level the gamemaster chose in the
+   * world settings, the book's 12 and 6 by default (SR5 p. 66, p. 420; DjamZ's ruling, 2026-10-05).
+   */
+  static get creationLimits() {
+    return SR5ShopCatalog.creationLimits(game.settings.get('sr5', 'sr5ShopCreationLevel'), {
+      availability: game.settings.get('sr5', 'sr5ShopCreationMaxAvailability'),
+      rating: game.settings.get('sr5', 'sr5ShopCreationMaxRating'),
+    })
+  }
+  /**
    * The documents to create for `quantity` of `source`.
    *
    * Types that carry their own quantity become one stack; the others are
    * created as that many separate items.
    */
-  static _itemPayload(source, quantity) {
-    const itemData = source.toObject()
+  /**
+   * May the shop sell from this document? A compendium entry (the shelves), or an item on this vendor's
+   * counter; never an item an actor carries, whose copy would bring its owner's state along — a
+   * credstick its money, for one (R1, Anton: 3 500 ¥ for nothing).
+   * @param {Item} source
+   * @param {{actorUuid: string, storageId: string}|null} [counter] the vendor's counter, at a vendor's
+   */
+  static sellableSource(source, counter = null) {
+    if (!source) return false
+    if (counter?.actorUuid && source.parent?.uuid === counter.actorUuid &&
+      source.system?.storedIn === counter.storageId) return true
+    return !!source.pack && !source.isEmbedded
+  }
+
+  /**
+   * What must not travel with a copy the shop hands over: the money loaded on a credstick is bearer
+   * cash (SR5 p. 445), so a stick sold or put on a counter comes empty (R1, Anton).
+   */
+  static stripCarried(itemData) {
+    if (itemData?.system?.funds && typeof itemData.system.funds === 'object') itemData.system.funds.value = 0
+    return itemData
+  }
+
+  static _itemPayload(source, quantity, grade = null) {
+    const itemData = SR5Shop.stripCarried(source.toObject())
     delete itemData._id
+    // Where it was bought: a vendor buying it back reads its price there, not on the copy (lot C)
+    if (source.pack) foundry.utils.setProperty(itemData, 'flags.sr5.shopSource', source.uuid)
+    // The item computes Essence, price and availability from its grade itself
+    if (grade) itemData.system.grade = grade
     const stackable = SR5Shop.STACKABLE_TYPES.includes(itemData.type) &&
       itemData.system.quantity !== undefined
     if (stackable) {
-      itemData.system.quantity = quantity
+      // Ammunition is sold by its entry: the compendiums hold boxes of 10 rounds, whose computed price is the
+      // box's (utilityItem.js _handleAmmoPrice). One bought is one box, not one round for the box's price.
+      const perEntry = itemData.type === 'itemAmmunition' ?
+        Math.max(1, Math.floor(Number(source.system?.quantity) || 1)) : 1
+      itemData.system.quantity = quantity * perEntry
       return [itemData]
     }
     const payload = []
@@ -107,10 +207,16 @@ export class SR5Shop {
    * `itemNuyen` of type `loss` carrying the total.
    *
    * @param {Actor} actor
-   * @param {Array<{uuid: string, quantity: number}>} lines
+   * @param {Array<{uuid: string, quantity: number, grade?: string}>} lines
+   * @param {object} [options]
+   * @param {boolean} [options.equip] the gamemaster's Equip mode: free, no
+   *   transaction, any actor, prototypes and every grade allowed
    * @returns {Promise<boolean>} whether the gear was added
    */
-  static async checkout(actor, lines) {
+  static async checkout(actor, lines, {
+    equip = false, express = false, messageId = null, userId = game.user.id, cashToken = null
+  } = {
+  }) {
     if (!actor) {
       ui.notifications.warn(game.i18n.localize('SR5.WARN_ShopNoBuyer'))
       return false
@@ -120,29 +226,99 @@ export class SR5Shop {
       return false
     }
     if (!lines?.length) return false
+    equip = equip && game.user.isGM
+    // The card serves its own buyer, once: cashed, only the gamemaster's cashing of it still reads it (R2)
+    const card = {
+      buyerId: actor.id, cashToken
+    }
+    // The buyer list is only a display: the gamemaster's rule is checked again at the till,
+    // so a card cashed later or a call from a macro cannot spend for an actor outside it
+    // (Élise's choice, 2026-10-05). Equip mode is the gamemaster's and skips it.
+    if (!equip && !SR5ShopStock.isBuyer(actor, SR5ShopStock.buyerRule)) {
+      ui.notifications.warn(game.i18n.format('SR5.WARN_ShopNotABuyer', {
+        name: actor.name
+      }))
+      return false
+    }
 
     // A line whose source has vanished from its compendium is dropped rather
-    // than silently charged for.
+    // than silently charged for; so is one the shop does not sell.
     const resolved = []
     for (const line of lines) {
       const source = await fromUuid(line.uuid)
       if (!source) {
         ui.notifications.warn(game.i18n.format('SR5.WARN_ShopItemGone', {
-          name: line.name ?? line.uuid 
+          name: line.name ?? line.uuid
+        }))
+        continue
+      }
+      // The shelves only: an item an actor carries is not for sale here, whatever uuid a request names (R1)
+      if (!equip && !SR5Shop.sellableSource(source)) {
+        ui.notifications.warn(game.i18n.format('SR5.WARN_ShopNotForSale', {
+          name: source.name
+        }))
+        continue
+      }
+      if (!SR5ShopStock.canSell({
+        documentName: 'Item', type: source.type, system: source.system, flags: source.flags,
+        packId: source.pack
+      }, {
+        equip
+      })) {
+        ui.notifications.warn(game.i18n.format('SR5.WARN_ShopNotForSale', {
+          name: source.name
+        }))
+        continue
+      }
+      // A grade the shop does not offer here falls back to none, never to a free upgrade
+      const offered = SR5Shop.gradesFor(source.type, source.system, {
+        equip
+      })
+      const grade = offered.includes(line.grade) ? line.grade : null
+      // Creation caps availability and rating (SR5 p. 66, p. 420), at the level the gamemaster
+      // set (DjamZ's ruling, 2026-10-05); Equip mode is how the gamemaster goes past them
+      const described = SR5ShopCatalog.describe(source, grade)
+      const block = !equip && SR5Shop.creationMode ?
+        SR5ShopCatalog.creationBlock(described, SR5Shop.creationLimits) :
+        null
+      if (block) {
+        ui.notifications.warn(game.i18n.format(`SR5.WARN_ShopCreationLimit_${block}`, {
+          name: SR5Shop.gradedName(source.name, grade), ...SR5Shop.creationLimits,
+          source: game.i18n.localize(`SR5.ShopCreationSource_${SR5Shop.creationLimits.source}`),
         }))
         continue
       }
       const quantity = Math.max(1, Math.floor(Number(line.quantity) || 1))
-      const unit = SR5Shop.unitPrice(source.system)
+      const base = SR5Shop.gradedPrice(source.system, grade)
+      // The surcharge that bought dice on the card is paid (SR5 p. 420); the search time and the express
+      // surcharge stay on the base price (DjamZ's ruling, 05/10)
+      const unit = surchargedUnit(base, cardSurcharge(messageId, line.uuid, userId, card))
       resolved.push({
-        source, quantity, unit, total: unit * quantity 
+        source, quantity, unit, grade, total: unit * quantity, baseTotal: base * quantity,
+        name: SR5Shop.gradedName(source.name, grade),
+        availability: Number(described.availability) || 0,
       })
     }
     if (!resolved.length) return false
+    const screened = await SR5Shop.screenLines(actor, resolved)
+    resolved.splice(0, resolved.length, ...screened.lines)
+    if (!resolved.length) return false
+    if (!(await SR5Shop.essenceAllows(actor, resolved.map(line => ({
+      type: line.source.type, name: line.name, system: line.source.system, grade: line.grade, quantity: line.quantity,
+    }))))) return false
 
-    const total = resolved.reduce((sum, line) => sum + line.total, 0)
+    const free = equip || SR5Shop.creationMode
+    // SR5 p. 420: what has an availability is found after the search time, and waits on the buyer
+    const delayed = deliveryDelayed()
+    const terms = express ? currentExpress() : null
+    for (const line of resolved) {
+      line.waits = lineWaits({
+        delayed, availability: line.availability, free
+      })
+      line.extra = line.waits ? expressCost(line.baseTotal, terms) : 0
+    }
+    const total = resolved.reduce((sum, line) => sum + line.total + line.extra, 0)
     const balance = SR5Shop.balance(actor)
-    const free = SR5Shop.creationMode
 
     if (!free && total > balance) {
       ui.notifications.warn(game.i18n.format('SR5.WARN_ShopNotEnoughNuyen', {
@@ -153,19 +329,51 @@ export class SR5Shop {
       return false
     }
 
-    const payload = []
-    for (const line of resolved) payload.push(...SR5Shop._itemPayload(line.source, line.quantity))
+    // Greyware on an Awakened character costs Magic (BTB p. 142): the buyer, or the gamemaster in
+    // Equip mode, sees the penalty before anything is created and may cancel (DjamZ's ruling, 2026-10-05)
+    const greyware = resolved
+      .filter(line => line.grade === 'greyware')
+      .reduce((sum, line) => sum + (SR5Shop._itemPayload(line.source, line.quantity, line.grade).length), 0)
+    if (greyware && SR5ShopGrades.isAwakened(actor)) {
+      const confirmed = await foundry.applications.api.DialogV2.confirm({
+        window: {
+          title: game.i18n.localize('SR5.ShopGreywareConfirmTitle')
+        },
+        content: `<p>${game.i18n.format('SR5.WARN_ShopGreywareAwakened', {
+          name: actor.name, count: greyware
+        })}</p>`,
+        rejectClose: false,
+      })
+      if (!confirmed) return false
+    }
 
-    const labels = resolved.map(line => SR5Shop.lineLabel(line.source.name, line.quantity))
+    const payload = [], orders = []
+    const now = game.time.worldTime
+    for (const line of resolved) {
+      if (!line.waits) {
+        payload.push(...SR5Shop._itemPayload(line.source, line.quantity, line.grade))
+        continue
+      }
+      const order = newOrder(line, {
+        hours: orderHours(SR5Shop.searchHours({
+          ...line, total: line.baseTotal
+        }, messageId, userId, card), line.extra ? terms : null),
+        express: !!line.extra, extra: line.extra, now,
+      })
+      line.order = order
+      orders.push(order)
+    }
+
+    const labels = resolved.map(line => SR5Shop.lineLabel(line.name, line.quantity))
     const label = labels.length === 1 ?
       labels[0] :
       game.i18n.format('SR5.ShopPurchaseLines', {
-        count: labels.length 
+        count: labels.length
       })
 
     if (!free) payload.push({
       name: game.i18n.format('SR5.ShopPurchaseOf', {
-        name: label 
+        name: label
       }),
       type: 'itemNuyen',
       img: 'systems/sr5/assets/img/items/itemNuyen.svg',
@@ -174,22 +382,41 @@ export class SR5Shop {
         type: 'loss',
         date: new Date().toISOString().slice(0, 10),
         description: game.i18n.format('SR5.ShopPurchaseDescription', {
-          name: labels.join(', '), price: total.toLocaleString() 
+          name: labels.join(', '), price: total.toLocaleString()
         }),
       },
     })
 
-    SR5_SystemHelpers.srLog(3, `Shop: ${actor.name} ${free ? 'receives' : 'buys'} ${label} (${total})`)
-    await actor.createEmbeddedDocuments('Item', payload)
+    SR5_SystemHelpers.srLog(3, `Shop: ${actor.name} ${equip ? 'is equipped with' : free ? 'receives' : 'buys'} ${label} (${total})`)
+    const created = payload.length ? await actor.createEmbeddedDocuments('Item', payload, screened.confirmed ? {
+      [IMPLANT_REJECTION_CONFIRMED]: true
+    } : {
+    }) : []
+    await addOrders(actor, orders)
+    // The active GM enters the orders in his ledger, priced by himself, within this debit
+    const debit = (created ?? []).find(item => item.type === 'itemNuyen' && item.system?.type === 'loss')
+    if (!free && orders.length && debit) await requestRegister(actor, orders, debit.id)
 
-    // Creation mode charges nothing, so it says nothing to the table either.
-    if (!free) {
-      const rows = resolved.map(line =>
-        `<li>${SR5Shop.lineLabel(line.source.name, line.quantity)} — ${line.total.toLocaleString()}&yen;</li>`).join('')
-      const detail = resolved.length > 1 ? `<ul>${rows}</ul>` : ''
+    const rows = resolved.map(line =>
+      `<li>${SR5Shop.lineLabel(line.name, line.quantity)} — ${(line.total + line.extra).toLocaleString()}&yen;${
+        SR5Shop.orderNote(line.order)}</li>`).join('')
+    const detail = resolved.length > 1 || orders.length ? `<ul>${rows}</ul>` : ''
+    if (equip) {
+      // Equip mode leaves a trace for the gamemaster alone (DjamZ's ruling, 2026-10-05)
       await foundry.documents.ChatMessage.create({
         speaker: foundry.documents.ChatMessage.getSpeaker({
-          actor 
+          actor
+        }),
+        whisper: game.users.filter(u => u.isGM).map(u => u.id),
+        content: `<p>${game.i18n.format('SR5.ShopEquipChat', {
+          actor: actor.name, name: label,
+        })}</p>${detail}`,
+      })
+    } else if (!free) {
+      // Creation mode charges nothing, so it says nothing to the table either.
+      await foundry.documents.ChatMessage.create({
+        speaker: foundry.documents.ChatMessage.getSpeaker({
+          actor
         }),
         content: `<p>${game.i18n.format('SR5.ShopPurchaseChat', {
           actor: actor.name,
@@ -200,20 +427,119 @@ export class SR5Shop {
       })
     }
 
-    ui.notifications.info(free ?
-      game.i18n.format('SR5.ShopCreationDone', {
-        name: label 
+    ui.notifications.info(equip ?
+      game.i18n.format('SR5.ShopEquipDone', {
+        name: label, actor: actor.name
       }) :
-      game.i18n.format('SR5.ShopPurchaseDone', {
-        name: label, price: total.toLocaleString() 
-      }))
+      free ?
+        game.i18n.format('SR5.ShopCreationDone', {
+          name: label
+        }) :
+        game.i18n.format('SR5.ShopPurchaseDone', {
+          name: label, price: total.toLocaleString()
+        }))
     return true
   }
 
+  /**
+   * The search time of a line that waits, worked out here from the line's
+   * price and the test its card recorded (SR5 p. 420), never from a time the
+   * player sends. Bought without a test, the time of the table, as for one
+   * net hit (Élise's decision, 05/10).
+   */
+  static searchHours(line, messageId = null, userId = null, context = {
+  }) {
+    return testedHours(SR5ShopAvailability.delayFor(line.total), cardResult(messageId, line.source.uuid, userId, context))
+  }
+
+  /** " — on order, arrives on …" after a line that waits. */
+  static orderNote(order) {
+    if (!order) return ''
+    return ` — ${game.i18n.format(order.express ? 'SR5.ShopOrderNoteExpress' : 'SR5.ShopOrderNote', {
+      date: game.time.calendar?.format?.(order.due) ?? ''
+    })}`
+  }
+
+  /**
+   * The lines of a purchase whose implant the buyer's body rejects (Système sensible, SR5 p. 89), screened on
+   * the buyer's own items before anything is paid or moved: a player is told and the line is dropped; the
+   * gamemaster is asked and may keep it. A line holds its item as `source` (shelves) or `item` (counter).
+   * @returns {Promise<{lines: object[], confirmed: boolean}>} the lines kept; `confirmed` travels with the creation
+   */
+  static async screenLines(actor, lines, {
+    isGM = game.user.isGM, warn = (key, data) => ui.notifications.warn(game.i18n.format(key, data))
+  } = {
+  }) {
+    // Bought, an item is installed, whatever storage it sat in: a counter item is stored in the vendor's storage
+    // (storedIn = the counter), and screened as such it would go through, be paid for, and be refused at the creation
+    const goods = lines.map(line => {
+      const document = line.item ?? line.source
+      return {
+        type: document?.type, name: line.name ?? document?.name, system: {
+          ...document?.system, type: document?.system?.type, storedIn: ''
+        }
+      }
+    })
+    const {
+      refused, confirmed
+    } = await screenRejectedImplants(actor, goods, {
+      isGM, warn
+    })
+    return {
+      lines: lines.filter((line, i) => !refused.includes(goods[i])), confirmed
+    }
+  }
+
+  /**
+   * "Si jamais l'Essence du personnage atteint 0, c'est la mort" (SR5 p. 54): a purchase that would take the
+   * buyer's Essence to 0 or below is refused to a player; the gamemaster is asked, in his own window, and
+   * may go past it. The Essence and the qualities are read on the actor, on the client that runs the till.
+   * @param {Array<{type, name, system, grade, quantity}>} lines
+   * @param {object} [options]
+   * @param {boolean} [options.isGM] whether the gamemaster is the one buying
+   * @param {Function} [options.warn] how a refusal is told
+   * @returns {Promise<boolean>}
+   */
+  static async essenceAllows(actor, lines, {
+    isGM = game.user.isGM, warn = (key, data) => ui.notifications.warn(game.i18n.format(key, data))
+  } = {
+  }) {
+    const current = actor?.system?.essence?.value
+    if (typeof current !== 'number') return true
+    const {
+      essence
+    } = essenceAfterPurchase(current, actor.items, lines)
+    if (essence > 0 || essence >= current) return true
+    const data = {
+      name: actor.name, essence: essence.toLocaleString()
+    }
+    if (!isGM) {
+      warn('SR5.WARN_ShopEssenceTooLow', data)
+      return false
+    }
+    return await foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: game.i18n.localize('SR5.ShopEssenceConfirmTitle')
+      },
+      content: `<p>${game.i18n.format('SR5.ShopEssenceConfirmText', data)}</p>`,
+      rejectClose: false,
+    }) === true
+  }
+
+  /** `Nom (Alphaware)` when a grade was chosen. */
+  static gradedName(name, grade) {
+    return grade ? `${name} (${game.i18n.localize(SR5.augmentationGrades[grade])})` : name
+  }
+
   /** Buy a single line — the buy button on a result row. */
-  static async buy(actor, uuid, quantity = 1) {
+  static async buy(actor, uuid, quantity = 1, {
+    grade = null, equip = false
+  } = {
+  }) {
     return SR5Shop.checkout(actor, [{
-      uuid, quantity 
-    }])
+      uuid, quantity, grade
+    }], {
+      equip
+    })
   }
 }

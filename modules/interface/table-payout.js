@@ -232,8 +232,10 @@ export async function sr5ClaimPayout(message, kind) {
  * Pay a card's nuyen to some characters, in equal shares, and spend the row.
  * @param {ChatMessage} message
  * @param {Actor[]} actors
+ * @param {string} [shown]  what the GM was shown (payoutSnapshot): nothing goes if the card says otherwise now
  */
-export async function sr5HandOverNuyen(message, actors) {
+export async function sr5HandOverNuyen(message, actors, shown) {
+  if (changedSinceShown(message, "nuyen", shown)) return
   const amount = message.getFlag("sr5", "tableNuyen")
   if (!amount || !actors.length) return
   if (!await sr5ClaimPayout(message, "nuyen")) return
@@ -266,8 +268,10 @@ export async function sr5HandOverNuyen(message, actors) {
  * Hand a card's gear to one character and spend the row.
  * @param {ChatMessage} message
  * @param {Actor} actor
+ * @param {string} [shown]  what the GM was shown (payoutSnapshot): nothing goes if the card says otherwise now
  */
-export async function sr5HandOverLoot(message, actor) {
+export async function sr5HandOverLoot(message, actor, shown) {
+  if (changedSinceShown(message, "loot", shown)) return
   const manifest = message.getFlag("sr5", "tableLoot") ?? []
   if (!manifest.length || !actor) return
 
@@ -314,17 +318,18 @@ export async function sr5HandOverLoot(message, actor) {
  * @param {ChatMessage} message
  * @param {string} kind       "loot" or "nuyen"
  * @param {Actor[]} actors    who receives it
+ * @param {string} shown      what the clicking game master was shown
  */
-async function handOver(message, kind, actors) {
+async function handOver(message, kind, actors, shown) {
   const designated = game.users.activeGM
   if (!designated || designated.isSelf) {
-    return kind === "nuyen" ? sr5HandOverNuyen(message, actors) : sr5HandOverLoot(message, actors[0])
+    return kind === "nuyen" ? sr5HandOverNuyen(message, actors, shown) : sr5HandOverLoot(message, actors[0], shown)
   }
   await game.socket.emit("system.sr5", {
     type: "tablePayout",
     userId: designated.id,
     data: {
-      messageId: message.id, kind, actorUuids: actors.map(actor => actor.uuid)
+      messageId: message.id, kind, actorUuids: actors.map(actor => actor.uuid), shown
     }
   })
 }
@@ -336,8 +341,10 @@ async function handOver(message, kind, actors) {
  */
 export async function sr5SocketTablePayout({
   data
-}) {
-  if (!game.user.isGM) return
+}, senderId) {
+  // Only a game master may ask: a player's console could otherwise emit this
+  // message and be paid the card's nuyen and gear (security lot, Sixtine)
+  if (!game.user.isGM || !game.users.get(senderId)?.isGM) return
   const message = game.messages.get(data.messageId)
   if (!message) return
   const actors = []
@@ -345,8 +352,109 @@ export async function sr5SocketTablePayout({
     const actor = await fromUuid(uuid)
     if (actor) actors.push(actor)
   }
-  if (data.kind === "nuyen") await sr5HandOverNuyen(message, actors)
-  else if (data.kind === "loot") await sr5HandOverLoot(message, actors[0])
+  if (data.kind === "nuyen") await sr5HandOverNuyen(message, actors, data.shown)
+  else if (data.kind === "loot") await sr5HandOverLoot(message, actors[0], data.shown)
+}
+
+/**
+ * Whether the game master sees what a card hands over before it goes.
+ *
+ * The money and the gear are flags of the card, its author's to write, and
+ * the card shows only how many items were found. A card a player wrote, her
+ * own draw or one forged from her console (any item, any quantity, any sum),
+ * was handed over in one click (security pass of 06/10, Kurt). A card a game
+ * master wrote is his own draw, and goes as before.
+ *
+ * @param {ChatMessage} message
+ * @returns {boolean}
+ */
+export function sr5PayoutNeedsReview(message) {
+  return !message?.author?.isGM
+}
+
+/**
+ * What a row of a card would hand over, read from its flags, as HTML lines.
+ * @param {ChatMessage} message
+ * @param {string} kind     "loot" or "nuyen"
+ * @param {Actor[]} actors  who would receive it
+ * @returns {Promise<string[]>}
+ */
+async function payoutReviewLines(message, kind, actors) {
+  const esc = text => foundry.utils.escapeHTML(String(text ?? ""))
+  const names = esc(actors.map(actor => actor.name).join(", "))
+  if (kind === "nuyen") {
+    const amount = Number(message.getFlag("sr5", "tableNuyen")) || 0
+    return [game.i18n.format("SR5.TablePayoutReviewNuyen", {
+      amount: amount.toLocaleString(), names
+    })]
+  }
+  const lines = []
+  for (const line of message.getFlag("sr5", "tableLoot") ?? []) {
+    const item = await fromUuid(line.uuid).catch(() => null)
+    lines.push(game.i18n.format("SR5.TablePayoutReviewItem", {
+      quantity: Number(line.quantity) || 1,
+      name: esc(item?.name ?? game.i18n.localize("SR5.TablePayoutReviewMissing")),
+      uuid: esc(line.uuid)
+    }))
+  }
+  lines.push(game.i18n.format("SR5.TablePayoutReviewTo", {
+    names
+  }))
+  return lines
+}
+
+/**
+ * The game master's say on a card he did not write: what he was shown (a
+ * payoutSnapshot), or null when it may not go. A game master's own card is
+ * not shown, and goes as it reads now.
+ * @param {ChatMessage} message
+ * @param {string} kind
+ * @param {Actor[]} actors
+ * @returns {Promise<string|null>}
+ */
+async function confirmPayout(message, kind, actors) {
+  //What is shown is kept, compared again after the yes and at the hand-over (below)
+  const shown = payoutSnapshot(message, kind)
+  if (!sr5PayoutNeedsReview(message)) return shown
+  const lines = await payoutReviewLines(message, kind, actors)
+  const ok = await foundry.applications.api.DialogV2.confirm({
+    window: {
+      title: game.i18n.localize("SR5.TablePayoutReviewTitle")
+    },
+    content: `<p>${game.i18n.format("SR5.TablePayoutReview", {
+      user: foundry.utils.escapeHTML(String(message.author?.name ?? "?"))
+    })}</p><ul>${lines.map(line => `<li>${line}</li>`).join("")}</ul>`,
+    rejectClose: false,
+  })
+  if (ok !== true) return null
+  //The author may edit her card while the GM reads it (Bodo's review, 06/10: 1 000 000 ¥ shown, 5 000 000 ¥ paid):
+  //a card that changed since it was shown is not handed over, and the GM is told
+  return changedSinceShown(message, kind, shown) ? null : shown
+}
+
+/**
+ * Whether a card no longer says what the game master was shown; he is told.
+ * @param {ChatMessage} message
+ * @param {string} kind
+ * @param {string} [shown]  undefined: nothing to compare (a caller of older code)
+ * @returns {boolean}
+ */
+function changedSinceShown(message, kind, shown) {
+  if (shown === undefined || payoutSnapshot(message, kind) === shown) return false
+  ui.notifications.warn(game.i18n.localize("SR5.TablePayoutReviewChanged"))
+  return true
+}
+
+/**
+ * What a row of a card hands over, as a string to compare: its sum, or its
+ * list of gear.
+ * @param {ChatMessage} message
+ * @param {string} kind
+ * @returns {string}
+ */
+function payoutSnapshot(message, kind) {
+  return JSON.stringify(kind === "nuyen" ? message.getFlag("sr5", "tableNuyen") ?? null :
+    message.getFlag("sr5", "tableLoot") ?? [])
 }
 
 /**
@@ -377,7 +485,7 @@ function payNuyen(message, button) {
     return
   }
   button.disabled = true
-  return handOver(message, "nuyen", actors)
+  return reviewThenHandOver(message, button, "nuyen", actors)
 }
 
 /**
@@ -404,7 +512,25 @@ function giveLoot(message, button) {
     return
   }
   button.disabled = true
-  return handOver(message, "loot", actors)
+  return reviewThenHandOver(message, button, "loot", actors)
+}
+
+/**
+ * Hand a row over once the game master has seen what a card he did not
+ * write gives. The button stays disabled while he reads, so a second click
+ * opens no second window; a no gives it back.
+ * @param {ChatMessage} message
+ * @param {HTMLButtonElement} button
+ * @param {string} kind
+ * @param {Actor[]} actors
+ */
+async function reviewThenHandOver(message, button, kind, actors) {
+  const shown = await confirmPayout(message, kind, actors)
+  if (shown === null) {
+    button.disabled = false
+    return
+  }
+  return handOver(message, kind, actors, shown)
 }
 
 /**

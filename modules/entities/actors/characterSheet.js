@@ -1,6 +1,9 @@
 import {
-  ActorSheetSR5 
+  ActorSheetSR5
 } from "./baseSheet.js"
+import {
+  mentorWarningLines
+} from "../items/mentor-conversion.js"
 import {
   SR5Credstick 
 } from "../../interface/credstick.js"
@@ -8,11 +11,23 @@ import {
   isStoredAway
 } from "../../interface/storage-rules.js"
 import {
+  ordersForSheet
+} from "../../interface/shop-orders.js"
+import {
+  isLocked
+} from "../../interface/storage-lock.js"
+import {
   SR5_CharacterUtility
 } from "./utilityActor.js"
 import {
   SR5_ActorHelper
 } from "./entityActor-helpers.js"
+import {
+  SR5FactionRegistry
+} from "../../interface/faction-registry.js"
+import {
+  SR5FactionsApp
+} from "../../interface/factions-app.js"
 
 /**
  * An Actor sheet for player character type actors in the Shadowrun 5 system.
@@ -43,7 +58,11 @@ export class SR5ActorSheet extends ActorSheetSR5 {
       width: 800, height: 618 
     },
     window: {
-      resizable: false 
+      resizable: true
+    },
+    actions: {
+      // Faction Reputation, gamemaster's window (Cutting Aces p. 156)
+      openFactions: () => SR5FactionsApp.open(),
     },
   }
 
@@ -67,6 +86,11 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     context.rulesCalledShot = game.settings.get("sr5", "sr5CalledShotsRules")
     context.rulesKillCode = game.settings.get("sr5", "sr5KillCodeRules")
     context.matrixActionsRigger5 = game.settings.get("sr5", "sr5Rigger5Actions")
+    // Faction Reputation (Cutting Aces p. 157): read here, written by the gamemaster's window only
+    context.factionStanding = SR5FactionRegistry.standing(this.actor.id)
+    context.isGM = game.user.isGM
+    // Spirit Domination (Forbidden Arcana p. 176), optional rule: the leash toggle of the summoned spirits
+    context.leashRule = game.settings.get("sr5", "spiritLeash")
 
     return context
   }
@@ -149,6 +173,7 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     const ammunitions = []
     const externalEffects = []
     const traditions = []
+    const mentorSpirits = []
     const rituals = []
     const reputations = []
     const storages = []
@@ -198,8 +223,9 @@ export class SR5ActorSheet extends ActorSheetSR5 {
       else if (i.type === "itemEcho") echoes.push(i)
       else if (i.type === "itemAmmunition") ammunitions.push(i)
       else if (i.type === "itemEffect") externalEffects.push(i)
-      else if (i.type === "itemDrug") gears.push(i)
+      else if (i.type === "itemDrug" || i.type === "itemToxin") gears.push(i)
       else if (i.type === "itemTradition") traditions.push(i)
+      else if (i.type === "itemMentorSpirit") mentorSpirits.push(i)
       else if (i.type === "itemRitual") rituals.push(i)
       else if (i.type === "itemReputation") {
         if (i.system.type == "gain" && this._shownReputationGains) reputations.push(i)
@@ -228,6 +254,8 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     actor.nuyens = nuyens
     actor.credsticks = credsticks
     actor.cashOnHand = SR5Credstick.cashOnHand(this.actor)
+    // Bought, paid, not delivered yet (SR5 p. 420)
+    actor.shopOrders = ordersForSheet(this.actor)
     actor.contacts = contacts
     actor.lifestyles = lifestyles
     actor.sins = sins
@@ -243,6 +271,8 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     actor.ammunitions = ammunitions
     actor.externalEffects = externalEffects
     actor.traditions = traditions
+    actor.mentorSpirits = mentorSpirits
+    actor.mentorWarnings = mentorWarningLines(this.actor)
     actor.rituals = rituals
     actor.reputations = reputations
     actor.storages = this._prepareStorages(actor, storages)
@@ -314,6 +344,11 @@ export class SR5ActorSheet extends ActorSheetSR5 {
           icon: SR5ActorSheet.STORAGE_ICONS[storage.system.type] ?? "fa-box",
           isDeployable: storage.system.isDeployable,
           isDeployed: storage.system.isDeployed,
+          isLocked: isLocked(storage),
+          // Shut, its contents are not shown to a player who only looks at
+          // the sheet. A courtesy, not a protection: they are still in the
+          // actor's data that player's browser holds.
+          hideContents: isLocked(storage) && !this.actor.isOwner,
           contents: contents,
           used: contents.length,
           max: max,

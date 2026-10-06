@@ -45,6 +45,11 @@ export class characterResistancesPartialModel extends foundry.abstract.TypeDataM
         }),
         fatigue: resistance(),
         fall: resistance(),
+        // Addiction tests (SR5 p. 415): Body + Willpower or Logic + Willpower, by the kind of addiction
+        addiction: new fields.SchemaField({
+          physiological: resistance(),
+          psychological: resistance(),
+        }),
       }),
     }
   }

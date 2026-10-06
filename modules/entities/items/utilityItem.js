@@ -1,15 +1,27 @@
 import {
-  SR5 
+  applyVintageWireless, vintageAccessoryPrice, hasWeaponTrait, osmiumProfile
+} from './weaponTraits.js'
+import {
+  SR5, AUGMENTATION_GRADE_TABLE 
 } from "../../config.js"
 import {
-  SR5_SystemHelpers 
+  SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
+import {
+  implantEssenceEffects, roundImplantEssence
+} from "../../system/implant-essence.js"
 import {
   SR5_EntityHelpers 
 } from "../helpers.js"
 import {
   WEAPON_ACCESSORY_CATALOG 
 } from "../../data/weaponAccessoryCatalog.js"
+import {
+  SR5_Toxins
+} from "./toxins.js"
+import {
+  deathSowerAdeptDamage
+} from "./magic-masteries.js"
 
 export class SR5_UtilityItem extends Actor {
   //************************************************//
@@ -122,6 +134,9 @@ export class SR5_UtilityItem extends Actor {
       case "itemTradition":
         displayName = game.i18n.localize("SR5.TraditionNew")
         break
+      case "itemMentorSpirit":
+        displayName = game.i18n.localize("SR5.MentorSpiritNew")
+        break
       case "itemRitual":
         displayName = game.i18n.localize("SR5.RitualNew")
         break
@@ -149,6 +164,8 @@ export class SR5_UtilityItem extends Actor {
     if (itemData.price) itemData.price.modifiers = []
     if (itemData.availability) itemData.availability.modifiers = []
     if (itemData.essenceCost) itemData.essenceCost.modifiers = []
+    if (itemData.capacityTaken) itemData.capacityTaken.modifiers = []
+    if (item.type === "itemLifestyle" && itemData.point) itemData.point.modifiers = []
 
     //Rest test dicepool
     if (itemData.test){
@@ -357,8 +374,9 @@ export class SR5_UtilityItem extends Actor {
     SR5_EntityHelpers.updateValue(item.availability, 0)
   }
 
+  //No floor at 0: what hides well goes down to -6, an RFID tag (SR5 p. 422)
   static _handleItemConcealment(item) {
-    SR5_EntityHelpers.updateValue(item.concealment, 0)
+    SR5_EntityHelpers.updateValue(item.concealment)
   }
 
   static _handleArmorValue(item) {
@@ -481,12 +499,34 @@ export class SR5_UtilityItem extends Actor {
         if ((actor.system.initiatives.astralInit.isActive || itemData.isUsedAsFocus) && itemData.isLinkedToFocus) SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.Charisma'), "linkedAttribute", actor.system.attributes.charisma.augmented.value)
         else SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.Strength'), "linkedAttribute", actor.system.attributes.strength.augmented.value)
       }
+      //Death Sower, adept side (Forbidden Arcana p. 40): +1 DV with the melee skills
+      const deathSower = deathSowerAdeptDamage(actor.system.magic?.magicType, actor.system.magic?.masteries?.deathSower?.value, itemData.category)
+      if (deathSower) SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.MagicMasteryDeathSower'), "itemQuality", deathSower)
+      //Osmium mace (The Complete Trog p. 177): the listed profile only holds for Strength 5-6
+      if (hasWeaponTrait(itemData, "osmium") && actor.type !== "actorDrone") {
+        const profile = osmiumProfile(actor.system.attributes.strength.augmented.value)
+        if (profile) {
+          const label = game.i18n.localize('SR5.AccessoryOsmium')
+          SR5_EntityHelpers.updateModifier(itemData.accuracy, label, "weaponAccessory", profile.accuracy - (itemData.accuracy.base || 0), false, true)
+          SR5_EntityHelpers.updateModifier(itemData.damageValue, label, "weaponAccessory", profile.damageBonus - (itemData.damageValue.base || 0), false, true)
+        }
+      }
       if (actor.system.itemsProperties?.weapon) {
         for (let modifier of actor.system.itemsProperties.weapon.accuracy.modifiers) {
           if (modifier.details === itemData.weaponSkill.category) itemData.accuracy.modifiers = itemData.accuracy.modifiers.concat(modifier)
         }
         for (let modifier of actor.system.itemsProperties.weapon.damageValue.modifiers) {
-          if (modifier.details === itemData.weaponSkill.category) itemData.damageValue.modifiers = itemData.damageValue.modifiers.concat(modifier)
+          if (modifier.details !== itemData.weaponSkill.category) continue
+          if (!modifier.damageType) itemData.damageValue.modifiers = itemData.damageValue.modifiers.concat(modifier)
+        }
+        //The bone augmentations (SR5 p. 458 and 463) are not compatible with each other: should several be
+        //carried anyway, only the highest counts, as for any SR5 bonus. A weapon without a category takes none.
+        const bones = itemData.weaponSkill.category ? actor.system.itemsProperties.weapon.damageValue.modifiers
+          .filter(m => m.damageType && m.details === itemData.weaponSkill.category) : []
+        if (bones.length) {
+          const highest = bones.reduce((a, b) => (b.value > a.value ? b : a))
+          itemData.damageValue.modifiers = itemData.damageValue.modifiers.concat(highest)
+          itemData.damageType = highest.damageType
         }
       }
 
@@ -665,7 +705,8 @@ export class SR5_UtilityItem extends Actor {
       case "fragmentationMini":
         armorPenetration = 5
         damageValue = 18
-        damageType = "stun"
+        //18P (f) (SR5 p. 437), and the mini-grenades have the same effects as the normal grenades
+        damageType = "physical"
         blastDamageFallOff = -1
         blastRadius = 18
         break
@@ -765,216 +806,11 @@ export class SR5_UtilityItem extends Actor {
 
   // Génére les spec des toxines pour les munitions & grenades
   static _handleWeaponToxin(itemData, actor) {
-    switch (itemData.toxin.type) {
-      case "airEngulf":
-        if (!actor) return
-        itemData.toxin.vector.inhalation = true
-        itemData.toxin.speed = 0
-        itemData.toxin.power = actor.system.specialAttributes.magic.augmented.value * 2
-        itemData.toxin.penetration = -actor.system.specialAttributes.magic.augmented.value
-        itemData.toxin.damageType = "stun"
-        break
-      case "noxiousBreath":
-        if (!actor) return
-        itemData.toxin.vector.inhalation = true
-        itemData.toxin.speed = 0
-        itemData.toxin.power = actor.system.specialAttributes.magic.augmented.value
-        itemData.toxin.penetration = 0
-        itemData.toxin.effect.nausea = true
-        itemData.toxin.damageType = "stun"
-        break
-      case "gamma":
-        itemData.toxin.vector.injection = true
-        itemData.toxin.speed = 0
-        itemData.toxin.power = 12
-        itemData.toxin.penetration = 0
-        itemData.toxin.effect.paralysis = true
-        itemData.toxin.damageType = null
-        break
-      case "csTearGas":
-        itemData.toxin.vector.contact = true
-        itemData.toxin.vector.inhalation = true
-        itemData.toxin.speed = 1
-        itemData.toxin.power = 8
-        itemData.toxin.penetration = 0
-        itemData.toxin.effect.disorientation = true
-        itemData.toxin.effect.nausea = true
-        itemData.toxin.damageType = "stun"
-        break
-      case "pepperPunch":
-        itemData.toxin.vector.contact = true
-        itemData.toxin.vector.inhalation = true
-        itemData.toxin.speed = 1
-        itemData.toxin.power = 11
-        itemData.toxin.penetration = 0
-        itemData.toxin.effect.nausea = true
-        itemData.toxin.damageType = "stun"
-        break
-      case "nauseaGas":
-        itemData.toxin.vector.inhalation = true
-        itemData.toxin.speed = 3
-        itemData.toxin.power = 9
-        itemData.toxin.penetration = 0
-        itemData.toxin.effect.disorientation = true
-        itemData.toxin.effect.nausea = true
-        itemData.toxin.damageType = null
-        break
-      case "narcoject":
-        itemData.toxin.vector.injection = true
-        itemData.toxin.speed = 0
-        itemData.toxin.power = 15
-        itemData.toxin.penetration = 0
-        itemData.toxin.damageType = "stun"
-        break
-      case "neuroStunHeight":
-      case "neuroStunNine":
-        itemData.toxin.vector.contact = true
-        itemData.toxin.vector.inhalation = true
-        itemData.toxin.speed = 1
-        itemData.toxin.power = 15
-        itemData.toxin.penetration = 0
-        itemData.toxin.effect.disorientation = true
-        itemData.toxin.damageType = "stun"
-        break
-      case "neuroStunTen":
-        itemData.toxin.vector.contact = true
-        itemData.toxin.vector.inhalation = true
-        itemData.toxin.speed = 1
-        itemData.toxin.power = 15
-        itemData.toxin.penetration = -2
-        itemData.toxin.effect.disorientation = true
-        itemData.toxin.damageType = "stun"
-        break
-      case "seven":
-        itemData.toxin.vector.contact = true
-        itemData.toxin.vector.inhalation = true
-        itemData.toxin.speed = 1
-        itemData.toxin.power = 12
-        itemData.toxin.penetration = -2
-        itemData.toxin.effect.disorientation = true
-        itemData.toxin.effect.nausea = true
-        itemData.toxin.damageType = "physical"
-        break
-      case "deathrattleVenom":
-        itemData.toxin.vector.contact = true
-        itemData.toxin.vector.injection = true
-        itemData.toxin.speed = 1
-        itemData.toxin.power = 10
-        itemData.toxin.penetration = -3
-        itemData.toxin.effect.disorientation = true
-        itemData.toxin.effect.nausea = true
-        itemData.toxin.effect.agony = true
-        itemData.toxin.damageType = "physical"
-        break
-      case "nagaVenom":
-        itemData.toxin.vector.injection = true
-        itemData.toxin.speed = 0
-        itemData.toxin.power = 8
-        itemData.toxin.penetration = 0
-        itemData.toxin.damageType = "physical"
-        break
-      case "novaScorpionVenom":
-        itemData.toxin.vector.injection = true
-        itemData.toxin.speed = 1
-        itemData.toxin.power = 12
-        itemData.toxin.penetration = -2
-        itemData.toxin.effect.nausea = true
-        itemData.toxin.damageType = "physical"
-        break
-      case "martichorasVenom":
-        itemData.toxin.vector.injection = true
-        itemData.toxin.speed = 1
-        itemData.toxin.power = 9
-        itemData.toxin.penetration = -2
-        itemData.toxin.effect.disorientation = true
-        itemData.toxin.effect.nausea = true
-        itemData.toxin.damageType = "physical"
-        break
-      case "snakeVenom":
-        itemData.toxin.vector.injection = true
-        itemData.toxin.speed = 1
-        itemData.toxin.power = 8
-        itemData.toxin.penetration = 0
-        itemData.toxin.effect.nausea = true
-        itemData.toxin.damageType = "physical"
-        break
-      case "snowSnakeVenom":
-        itemData.toxin.vector.injection = true
-        itemData.toxin.speed = 1
-        itemData.toxin.power = 8
-        itemData.toxin.penetration = -1
-        itemData.toxin.effect.nausea = true
-        itemData.toxin.effect.disorientation = true
-        itemData.toxin.damageType = "physical"
-        break
-      case "spiderBeastVenom":
-        itemData.toxin.vector.injection = true
-        itemData.toxin.speed = 0
-        itemData.toxin.power = 6
-        itemData.toxin.penetration = -4
-        itemData.toxin.effect.nausea = true
-        itemData.toxin.effect.disorientation = true
-        itemData.toxin.effect.paralysis = true
-        itemData.toxin.damageType = "physical"
-        break
-      case "glowRatVenom":
-        itemData.toxin.vector.contact = true
-        itemData.toxin.speed = 0
-        itemData.toxin.power = 10
-        itemData.toxin.penetration = -6
-        itemData.toxin.effect.disorientation = true
-        itemData.toxin.effect.nausea = true
-        itemData.toxin.effect.agony = true
-        itemData.toxin.damageType = "stun"
-        break
-      case "flatwormViperVenom":
-        itemData.toxin.vector.injection = true
-        itemData.toxin.speed = 2
-        itemData.toxin.power = 12
-        itemData.toxin.penetration = 0
-        itemData.toxin.damageType = "physical"
-        break
-      case "iridescentOwlVenom":
-        itemData.toxin.vector.contact = true
-        itemData.toxin.vector.injection = true
-        itemData.toxin.speed = 0
-        itemData.toxin.power = 8
-        itemData.toxin.penetration = -6
-        itemData.toxin.effect.disorientation = true
-        itemData.toxin.effect.nausea = true
-        itemData.toxin.effect.agony = true
-        itemData.toxin.damageType = "stun"
-        break
-      case "kokoroCobraVenom":
-        itemData.toxin.vector.contact = true
-        itemData.toxin.vector.injection = true
-        itemData.toxin.speed = 0
-        itemData.toxin.power = 12
-        itemData.toxin.penetration = -6
-        itemData.toxin.effect.disorientation = true
-        itemData.toxin.effect.nausea = true
-        itemData.toxin.effect.agony = true
-        itemData.toxin.damageType = "physical"
-        break
-      case "montaukVenom":
-        itemData.toxin.vector.injection = true
-        itemData.toxin.speed = 1
-        itemData.toxin.power = 6
-        itemData.toxin.penetration = 0
-        itemData.toxin.effect.nausea = true
-        itemData.toxin.damageType = "physical"
-        break
-      case "voidWaspVenom":
-        itemData.toxin.vector.injection = true
-        itemData.toxin.speed = 3
-        itemData.toxin.power = 10
-        itemData.toxin.penetration = -4
-        itemData.toxin.effect.arcaneInhibitor = true
-        itemData.toxin.damageType = "stun"
-        break
-      default:
-        SR5_SystemHelpers.srLog(1, "_handleWeaponToxin", `Unknown toxin type: '${itemData.toxin.type}'`)
-    }
+    const profile = SR5_Toxins.profileOf(itemData.toxin)
+    if (!profile) return SR5_SystemHelpers.srLog(1, "_handleWeaponToxin", `Unknown toxin type: '${itemData.toxin.type}'`)
+    //Magic is read only for creature toxins: a drone has no special attributes
+    const needsMagic = profile.powerMagic || profile.penetrationMagic
+    SR5_Toxins.apply(itemData.toxin, profile, needsMagic ? actor?.system?.specialAttributes?.magic?.augmented?.value : undefined)
   }
 
   //Calcule la distance des armes de jet en fonction de la force
@@ -1024,10 +860,13 @@ export class SR5_UtilityItem extends Actor {
       itemData.accessory = Object.values(itemData.accessory)
     }
 
+    // Vintage (Gun H(e)aven 3 p. 3): never wireless, physical upgrades cost twice the listed amount
+    const isVintage = applyVintageWireless(itemData)
+
     for (let a of itemData.accessory) {
       // Item-based accessory (has a.system from a cloned itemGear)
       if (a.system) {
-        SR5_UtilityItem._handleItemBasedWeaponAccessory(a, itemData, actor)
+        SR5_UtilityItem._handleItemBasedWeaponAccessory(a, itemData, actor, isVintage)
         continue
       }
 
@@ -1049,6 +888,7 @@ export class SR5_UtilityItem extends Actor {
       } else {
         a.price = catalog.price || 0
       }
+      a.price = vintageAccessoryPrice(a.price, catalog.type, isVintage)
 
       // Apply standard item effects (modifiers)
       if (a.isActive && catalog.itemEffects) {
@@ -1113,6 +953,11 @@ export class SR5_UtilityItem extends Actor {
         }
         break
 
+      //Flamethrowers deal Fire damage (Gun H(e)aven 3 p. 3, SR5 p. 171)
+      case "flamethrower":
+        itemData.damageElement = "fire"
+        break
+
       case "silencerSuppressor":
         // No weapon-level effects; handled elsewhere if needed
         break
@@ -1152,7 +997,7 @@ export class SR5_UtilityItem extends Actor {
   }
 
   /** Handle an item-based weapon accessory (cloned itemWeapon with system data) */
-  static _handleItemBasedWeaponAccessory(a, itemData, actor) {
+  static _handleItemBasedWeaponAccessory(a, itemData, actor, isVintage = false) {
     const accData = a.system
     const label = a.name || 'Accessory'
 
@@ -1173,6 +1018,7 @@ export class SR5_UtilityItem extends Actor {
     } else {
       a.price = accData.price?.base || 0
     }
+    a.price = vintageAccessoryPrice(a.price, accData.weaponAccessory?.type, isVintage)
 
     // Apply itemEffects from the accessory item
     if (a.isActive && accData.itemEffects) {
@@ -1349,62 +1195,31 @@ export class SR5_UtilityItem extends Actor {
       SR5_EntityHelpers.updateModifier(itemData.price, game.i18n.localize('SR5.AugmentationCyberlimbs'), 'CustomCyberlimb', cyberlimbsPriceMod)
     }
 
-    switch (itemData.grade){
-      case "standard":
-        essenceMultiplier = 1
-        deviceRating = 2
-        availabilityModifier = 0
-        priceMultiplier = 1
-        break
-      case "alphaware":
-        essenceMultiplier = 0.8
-        deviceRating = 3
-        availabilityModifier = 2
-        priceMultiplier = 1.2
-        break
-      case "betaware":
-        essenceMultiplier = 0.7
-        deviceRating = 4
-        availabilityModifier = 4
-        priceMultiplier = 1.5
-        break
-      case "deltaware":
-        essenceMultiplier = 0.5
-        deviceRating = 5
-        availabilityModifier = 8
-        priceMultiplier = 2.5
-        break
-      case "used":
-        essenceMultiplier = 1.25
-        deviceRating = 2
-        availabilityModifier = -4
-        priceMultiplier = 0.75
-        break
-      default:
-        SR5_SystemHelpers.srLog(1, `Unknown '${itemData.grade}' grade in _handleAugmentation()`)
-        return
+    // One table for the sheet and the shop: AUGMENTATION_GRADE_TABLE (SR5 p. 454, CF p. 74, BTB p. 142)
+    const grade = AUGMENTATION_GRADE_TABLE[itemData.grade]
+    if (!grade) {
+      SR5_SystemHelpers.srLog(1, `Unknown '${itemData.grade}' grade in _handleAugmentation()`)
+      return
     }
+    essenceMultiplier = grade.essence
+    deviceRating = grade.deviceRating
+    availabilityModifier = grade.availability
+    priceMultiplier = grade.price
     itemData.deviceRating = deviceRating
     modifierSource = `${game.i18n.localize(SR5.augmentationGrades[itemData.grade])}`
     SR5_EntityHelpers.updateModifier(itemData.availability, modifierSource, "augmentationGrade", availabilityModifier, false, false)
     SR5_EntityHelpers.updateModifier(itemData.price, modifierSource, "augmentationGrade", priceMultiplier, true, false)
 
-    if (actor){
-      for (let i of actor.items){
-        if (i.system.systemEffects?.length){
-          let WeakImmuneSystem = i.system.systemEffects?.find(iEffect => iEffect.value === "doubleEssenceCost")
-          if (WeakImmuneSystem) {
-            if (i.system.isActive) SR5_EntityHelpers.updateModifier(itemData.essenceCost, i.name, i.type, 2, true, false)
-          }
-        }
-      }
-    }
+    // Système sensible, Biocompatibilité: the same function prices the implant at the shop (implant-essence.js)
+    const bodyEffects = actor ? implantEssenceEffects(actor.items, itemData.type) : null
+    for (const m of bodyEffects?.multipliers ?? []) SR5_EntityHelpers.updateModifier(itemData.essenceCost, m.name, m.type, m.value, true, false)
 
     SR5_EntityHelpers.updateModifier(itemData.essenceCost, modifierSource, "augmentationGrade", (itemData.isRatingBased ? essenceMultiplier * itemData.itemRating : essenceMultiplier), true, false)
     this._handleItemCapacity(itemData)
     this._handleItemPrice(itemData)
     this._handleItemAvailability(itemData)
     this._handleItemEssenceCost(itemData)
+    if (bodyEffects) itemData.essenceCost.value = roundImplantEssence(itemData.essenceCost.value, bodyEffects)
   }
 
   ////////////////// SORTS ////////////////////
@@ -2803,22 +2618,44 @@ export class SR5_UtilityItem extends Actor {
     SR5_EntityHelpers.updateDicePool(itemData.test)
   }
 
-  static async _checkIfAccessoryIsPlugged (item, actor){
+  //The item of the actor that carries the given accessory in its list, a weapon included
+  static accessoryHost(itemId, actor){
     for (let i of actor.items){
-      if (i.type === "itemGear" || i.type === "itemArmor" || i.type === "itemAugmentation") {
-        if (Object.keys(i.system.accessory).length){
-          if (typeof i.system.accessory === "object") i.system.accessory = Object.values(i.system.accessory)
-          let accessory = i.system.accessory.find(a => a._id === item.id)
-          if (accessory){
-            item.system.wirelessTurnedOn = i.system.wirelessTurnedOn
-            item.system.isPlugged = true
-            return
-          }      
-        } else {
-          item.system.isPlugged = false
-        }
-      }
+      if (!["itemGear", "itemArmor", "itemAugmentation", "itemWeapon"].includes(i.type) || !i.system.accessory) continue
+      if (typeof i.system.accessory === "object") i.system.accessory = Object.values(i.system.accessory)
+      if (i.system.accessory.find(a => a?._id === itemId)) return i
     }
+  }
+
+  //Read from the hosts, not from the stored flag: an accessory removed before the bin cleared the flag stayed plugged
+  //and could never be mounted again
+  static async _checkIfAccessoryIsPlugged (item, actor){
+    let host = SR5_UtilityItem.accessoryHost(item.id, actor)
+    if (host) item.system.wirelessTurnedOn = host.system.wirelessTurnedOn
+    item.system.isPlugged = !!host
+  }
+
+  //The stored accessory list with the fields a sheet's form holds (name, slot, free) written over it, by index: the
+  //form has no field for a mounted item accessory, nor for the price and effects of the others
+  static mergeAccessoryForm(stored, formAccessory){
+    let merged = foundry.utils.deepClone(stored ?? [])
+    if (!Array.isArray(merged)) merged = Object.values(merged)
+    for (const [i, entry] of Object.entries(formAccessory ?? {
+    })) {
+      if (!entry) continue
+      if (merged[i] && typeof merged[i] === "object") Object.assign(merged[i], entry)
+      else merged[i] = entry
+    }
+    return merged
+  }
+
+  //An accessory taken off its host with the bin is free again, unless another host still carries it
+  static async unplugRemovedAccessory(actor, accessoryId){
+    let item = actor?.items.get(accessoryId)
+    if (!item || SR5_UtilityItem.accessoryHost(accessoryId, actor)) return
+    await item.update({
+      "system.isPlugged": false
+    })
   }
 
   static _updatePluggedAccessory(itemData, actor){

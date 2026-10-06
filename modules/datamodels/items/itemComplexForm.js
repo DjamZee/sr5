@@ -45,7 +45,7 @@ export class sr5ItemComplexFormDataModel extends foundry.abstract.TypeDataModel 
       freeSustain: new fields.BooleanField({
         initial: false
       }),
-      targetOfEffect: new fields.ArrayField(new fields.ObjectField()),
+      targetOfEffect: new fields.ArrayField(new fields.StringField()),
     }
   }
 }

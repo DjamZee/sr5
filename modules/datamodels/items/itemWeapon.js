@@ -188,6 +188,9 @@ export class sr5ItemWeaponDataModel extends foundry.abstract.TypeDataModel {
           arcaneInhibitor: new fields.BooleanField({
             initial: false
           }),
+          manasphereCut: new fields.BooleanField({
+            initial: false
+          }),
         }),
         penetration: new fields.NumberField({
           initial: 0
@@ -195,11 +198,19 @@ export class sr5ItemWeaponDataModel extends foundry.abstract.TypeDataModel {
         damageType: new fields.StringField({
           nullable: true, initial: null
         }),
+        //Profile copied from a dropped itemToxin, read when type is "custom" (SR5_Toxins.profileFromItem)
+        custom: new fields.ObjectField({
+          nullable: true, initial: null
+        }),
       }),
       isLinkedToFocus: new fields.BooleanField({
         initial: false
       }),
       isUsedAsFocus: new fields.BooleanField({
+        initial: false
+      }),
+      // Derived from the Vintage trait (Gun H(e)aven 3 p. 3), recomputed on each preparation: the sheet greys the wireless icon
+      isVintage: new fields.BooleanField({
         initial: false
       }),
       isLinkedToMount: new fields.BooleanField({

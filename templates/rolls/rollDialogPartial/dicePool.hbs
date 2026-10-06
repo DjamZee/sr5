@@ -14,7 +14,7 @@
 
 <div id="dicePoolComposition" style="display: none;">
 	{{#each dicePool.composition}}
-	<li class="grid">
+	<li class="grid" data-type="{{type}}">
 		<div class="col-11"><span>{{source}}</span><span class="SR-LightGreyColor"> [{{findTranslation 'modifierTypes' type}}]</span>{{localize 'SR5.Colons'}}</div>
 		<div class="col-1 SR-TextCenter">{{value}}</div>
 	</li>

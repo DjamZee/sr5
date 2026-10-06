@@ -1,4 +1,16 @@
 import {
+  halveCalledShot
+} from '../entities/items/weaponTraits.js'
+import {
+  calledShotItemBonus, easeCalledShotPenalty
+} from '../system/effect-editor.js'
+import {
+  bbPatientEntry, advancedMedkitRules
+} from "../system/bb-healing.js"
+import {
+  advancedMedkitDice, bbModeDiagnosisDice, improvisedSuppliesDice
+} from "../system/bb-healing-rules.js"
+import {
   SR5 
 } from "../config.js"
 import {
@@ -29,6 +41,12 @@ import {
   SR5_SpiritTypes
 } from "../entities/items/spirit-types.js"
 import {
+  SR5_Toxins
+} from "../entities/items/toxins.js"
+import {
+  replacedValue
+} from "../entities/actors/effect-replace.js"
+import {
   SR5_SystemHelpers
 } from "../system/utilitySystem.js"
 import {
@@ -37,6 +55,15 @@ import {
 import {
   isRunning, runningModifierValue
 } from "../system/running.js"
+import {
+  attributeValue, swapLinkedAttribute, skillAttributeTitle, SKILL_ATTRIBUTE_FLAG, syncBackgroundCount, backgroundCountApplies, setDialogWindowTitle
+} from "./roll-helpers/skillAttribute.js"
+import {
+  rollAttributes, attributeTestsState, ROLL_TESTS_TYPE, situationalListShown, spiritTypeVisible, withoutSituationalMarkers
+} from "./roll-helpers/situational.js"
+import {
+  normalizeTier, tierStock
+} from "../system/reagents.js"
 
 export default class SR5_RollDialog {
 
@@ -75,6 +102,7 @@ export default class SR5_RollDialog {
         //if (key === "reagents") modifiedLimit = value;
       }
       modifiedLimit += limitModifier
+      if (this.dialogData.limit.replace !== undefined) modifiedLimit = this.dialogData.limit.replace
       if (modifiedLimit < 0) modifiedLimit = 0
       html.querySelector('[name="modifiedLimit"]').value = modifiedLimit
       this.dialogData.limit.base = parseInt(html.querySelector('[name="baseLimit"]').value)
@@ -89,7 +117,11 @@ export default class SR5_RollDialog {
         drainModifier += key.value
       }
       let drainFinalValue = parseInt(html.querySelector('[name="force"]').value) + drainModifier
-      if (drainFinalValue < 2) drainFinalValue = 2
+      //SR5 p. 284: never under 2; Structured Spellcasting (Forbidden Arcana p. 43): never under 1
+      const drainFloor = this.dialogData.magic.drainFloor ?? 2
+      if (drainFinalValue < drainFloor) drainFinalValue = drainFloor
+      //Bullets & Bandages p. 15 (VO): the Drain of Stabilize follows the patient's wounds, not the Force
+      if (Number.isFinite(this.dialogData.magic.bbStabilizeDrain)) drainFinalValue = this.dialogData.magic.bbStabilizeDrain
       html.querySelector('[name="drainValue"]').value = drainFinalValue
       this.dialogData.magic.drain.value = drainFinalValue
     }
@@ -107,6 +139,13 @@ export default class SR5_RollDialog {
       html.querySelector('[name="fadingValue"]').value = fadingFinalValue
       this.dialogData.matrix.fading.value = fadingFinalValue
     }
+  }
+
+  //SR5 p. 427, 435: a wireless smartgun with a smartlink changes the firing mode or the choke as a free action
+  static changeIsFree(weapon, actor){
+    return !!(weapon?.system?.isWireless &&
+      weapon.system.accessory?.find(a => a.name === "smartgunSystemInternal" || a.name === "smartgunSystemExternal") &&
+      actor?.system?.specialProperties?.smartlink?.value > 0)
   }
 
   // SR5 p. 170: an interruption action can only be taken if the initiative score is higher than its cost
@@ -148,8 +187,8 @@ export default class SR5_RollDialog {
       dialogData = this.dialogData
 
     // SR5 p. 180: single-shot (SS) and suppressive fire (SF) weapons neither build nor suffer progressive recoil
-    let noRecoil = dialogData.combat.firingMode.selected === "SS" || dialogData.combat.firingMode.selected === "SF"
-    let cumulativeRecoil = noRecoil ? 0 : dialogData.combat.recoil.cumulative
+    let noRecoil = dialogData.combat.firingMode.selected === "SS" || dialogData.combat.firingMode.selected === "SF" || dialogData.combat.firingMode.selected === "FN"
+    let cumulativeRecoil = noRecoil || SR5_MiscellaneousHelpers.changeEndsRecoil(dialogData.combat.actions) ? 0 : dialogData.combat.recoil.cumulative
     if (noRecoil) firingModeValue = 0
     else firingModeValue = SR5_ConverterHelpers.firingModeToBullet(dialogData.combat.firingMode.selected)
     html.querySelectorAll(".hideBulletsRecoil").forEach(el => el.style.display = noRecoil ? 'none' : '')
@@ -194,12 +233,10 @@ export default class SR5_RollDialog {
     this.updateLimitValue(element)
 
     //Show some block on initial draw
-    if (dialogData.test.type === "ritual") {
-      const useReagentsEl = element.querySelector('#useReagents')
-      if (useReagentsEl) useReagentsEl.style.display = ''
-      const reagentsModControlEl = element.querySelector('#reagentsModControl')
-      if (reagentsModControlEl) reagentsModControlEl.style.display = ''
-    }
+    if (dialogData.test.type === "ritual") this._showReagents(element, true)
+    //Binding: the (Force x 25) drachms are spent from the start (SR5 p. 304)
+    if (dialogData.magic.bindingReagents > 0 && element.querySelector('[name="reagentsSpent"]')) this._updateReagents(dialogData.magic.bindingReagents, actor, element, dialogData)
+    element.querySelectorAll('.SR-ReagentTier, .SR-ReagentForeign').forEach(el => el.addEventListener('change', () => this._onReagentOption(element, dialogData, actor)))
 
     //General commands for input
     element.querySelectorAll('.SR-ModInput').forEach(el => el.addEventListener('change', ev => this._manualInputModifier(ev, element, dialogData)))
@@ -210,10 +247,29 @@ export default class SR5_RollDialog {
     //General commands for checkbox
     const filledCheckboxes = element.querySelectorAll('.SR-ModCheckboxFilled'); if (filledCheckboxes.length) this._filledCheckBox(filledCheckboxes, element, dialogData)
     element.querySelectorAll('.SR-ModCheckbox').forEach(el => el.addEventListener('change', ev => this._checkboxModifier(ev, element, dialogData)))
+    //Situational effects, ticked by hand (roll-helpers/situational.js)
+    element.querySelectorAll('.SR-SituationalCheckbox').forEach(el => el.addEventListener('change', ev => this._situationalModifier(ev, element, dialogData)))
+    this._toggleSituationalList(element, dialogData)
+    //An invisible target already brings its blind fire box (system/illusion.js): the hand-ticked one would count -6 twice
+    this._syncBlindFire(element, dialogData)
+    element.querySelectorAll('[data-modifier="attackBlindFire"]').forEach(el => el.addEventListener('change', () => this._syncBlindFire(element, dialogData)))
+    //The attribute picked in the dialog brings its "tests linked to" effects (Pushed)
+    element.querySelectorAll('.SR-ModSelect[data-modifier="attribute"]').forEach(el => el.addEventListener('change', ev => {
+      dialogData.secondaryAttribute = ev.target.value
+      this._syncAttributeTests(element, dialogData)
+    }))
     //General commands for select
     element.querySelectorAll('.SR-ModSelect').forEach(el => el.addEventListener('change', ev => this._selectModifiers(ev, element, dialogData)))
+    //Bullets & Bandages p. 18: the improvising hits read again by the supplies select
+    element.querySelector('[name="bbImprovisedHits"]')?.addEventListener('change', () => element.querySelector('[data-modifier="healingSupplies"]')?.dispatchEvent(new Event('change')))
     //General commands for select already filled by dialogData
     const filledSelects = element.querySelectorAll('.SR-ModSelectFilled'); if (filledSelects.length) this._filledSelectModifier(filledSelects, element, dialogData)
+    //Bullets & Bandages: the care selected when the window opens counts at once (the diagnosis bonus of a treatment
+    //rolled without touching the list)
+    const bbModeSelect = element.querySelector('.SR-ModSelect[data-modifier="bbMode"]')
+    if (bbModeSelect) this._selectModifiers({
+      currentTarget: bbModeSelect, target: bbModeSelect
+    }, element, dialogData)
     //Ramming: speeds and angle of the impact
     element.querySelectorAll('.SR-RammingInput').forEach(el => el.addEventListener('change', ev => this._updateRamming(element, dialogData, ev.target.name)))
     //Manage Threshold
@@ -249,6 +305,43 @@ export default class SR5_RollDialog {
     }))
     //Toggle hidden div
     element.querySelectorAll(".SR-DialogToggle").forEach(el => el.addEventListener('click', ev => this._toggleDiv(ev, element)))
+    //Attribute paired with the skill (SR5 p. 130)
+    element.querySelectorAll(".SR-SkillAttribute").forEach(el => el.addEventListener('change', ev => this._onChangeSkillAttribute(ev.target.value, element, dialogData, actor)))
+    element.querySelectorAll(".SR-SkillAttributeKeep").forEach(el => el.addEventListener('change', ev => this._onKeepSkillAttribute(ev.target.checked, dialogData, actor)))
+  }
+
+  // SR5 p. 130: another attribute replaces the linked one in the pool and the title; the limit stays the skill's
+  _onChangeSkillAttribute(attributeKey, html, dialogData, actor){
+    let choice = dialogData.skillAttribute
+    choice.selected = attributeKey
+    let source = game.i18n.localize(choice.choices[attributeKey])
+    let value = attributeValue(actor.system, attributeKey)
+    dialogData.dicePool.composition = swapLinkedAttribute(dialogData.dicePool.composition, source, value)
+    dialogData.dicePool.base = SR5_PrepareRollHelper.getBaseDicepool(dialogData)
+    html.querySelector('[name="baseDicePool"]').value = dialogData.dicePool.base
+    let row = html.querySelector('#dicePoolComposition [data-type="linkedAttribute"]')
+    if (row){
+      row.querySelector('span').textContent = source
+      row.querySelector('.SR-TextCenter').textContent = value
+    }
+    dialogData.test.title = skillAttributeTitle(choice, k => game.i18n.localize(k))
+    //The window title shows the pair in use, as the chat card will
+    setDialogWindowTitle(html, dialogData.test.title)
+    //The background count follows the attribute in use (Grimoire des Ombres p. 30; its limit raise when aligned, p. 87)
+    if (choice.skillKey) syncBackgroundCount(dialogData, actor.system.magic?.bgCount, backgroundCountApplies(choice.skillKey, attributeKey))
+    if (choice.keep) this._onKeepSkillAttribute(true, dialogData, actor)
+    this._syncAttributeTests(html, dialogData)
+    this.updateDicePoolValue(html)
+    this.updateLimitValue(html)
+  }
+
+  // Arbitrage de DjamZ: the choice is kept in an actor flag for that skill until the box is unchecked
+  async _onKeepSkillAttribute(keep, dialogData, actor){
+    let choice = dialogData.skillAttribute
+    choice.keep = keep
+    //Keeping the linked attribute is the default: nothing to remember
+    if (keep && choice.selected !== choice.linked) await actor.setFlag("sr5", `${SKILL_ATTRIBUTE_FLAG}.${choice.flagKey}`, choice.selected)
+    else await actor.unsetFlag("sr5", `${SKILL_ATTRIBUTE_FLAG}.${choice.flagKey}`)
   }
 
   // AI Emulate (Data Trails p. 159): rating capped by Depth, -(rating / 2) dice, the limit becomes the emulated rating.
@@ -340,6 +433,102 @@ export default class SR5_RollDialog {
     html.querySelector('[name="modifiedDamage"]').value = dialogData.damage.value
   }
 
+  //Tick or untick a situational effect: on the dice pool, or on the limit
+  _situationalModifier(ev, html, dialogData){
+    let offer = dialogData.situational?.[parseInt(ev.target.dataset.index)]
+    if (!offer) return
+    //The chat card keeps the box as it was left
+    offer.checked = ev.target.checked
+    if (offer.kind === "limit" && offer.replace){
+      //A replacing box: the limit becomes its value while ticked (AutoVoice for singing, No Future p. 157)
+      if (ev.target.checked){
+        dialogData.limit.replace = offer.value
+        dialogData.limit.typeBeforeReplace ??= dialogData.limit.type
+        dialogData.limit.type = "replaced"
+      } else {
+        delete dialogData.limit.replace
+        if (dialogData.limit.typeBeforeReplace !== undefined) dialogData.limit.type = dialogData.limit.typeBeforeReplace
+      }
+      this.updateLimitValue(html)
+    } else if (offer.kind === "limit"){
+      if (ev.target.checked) dialogData.limit.modifiers[offer.key] = {
+        label: offer.label, value: offer.value
+      }
+      else delete dialogData.limit.modifiers[offer.key]
+      this.updateLimitValue(html)
+    } else {
+      SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', offer.key)
+      if (ev.target.checked) dialogData.dicePool.modifiers.push({
+        type: offer.key, label: offer.label, value: offer.value
+      })
+      this.updateDicePoolValue(html)
+    }
+    if (offer.blindFire) this._syncBlindFire(html, dialogData)
+  }
+
+  //Blind fire counts once (SR5 p. 180): the invisibility box ticked greys the hand one, and the other way round
+  _syncBlindFire(html, dialogData){
+    const index = (dialogData.situational || []).findIndex(o => o.blindFire)
+    if (index < 0) return
+    const manual = html.querySelectorAll('[data-modifier="attackBlindFire"]')
+    const manualTicked = [...manual].some(el => el.checked)
+    manual.forEach(el => {
+      el.disabled = !!dialogData.situational[index].checked
+    })
+    const box = html.querySelector(`.SR-SituationalCheckbox[data-index="${index}"]`)
+    if (box) box.disabled = manualTicked
+  }
+
+  //Effects on "tests linked to an attribute" (Pushed, Chrome Flesh p. 167) follow the attributes in use:
+  //the one paired with the skill (SR5 p. 130) and the secondary one picked in the dialog
+  _syncAttributeTests(html, dialogData){
+    if (!dialogData.situationalScoped?.length) return
+    const labels = Object.fromEntries(Object.entries(SR5.allAttributes).map(([k, v]) => [k, game.i18n.localize(v)]))
+    const attributes = rollAttributes(dialogData.dicePool.composition, labels, dialogData.secondaryAttribute)
+    const {
+      always, visible
+    } = attributeTestsState(dialogData.situationalScoped, attributes)
+    dialogData.dicePool.modifiers = dialogData.dicePool.modifiers.filter(m => !m.type?.startsWith?.(ROLL_TESTS_TYPE)).concat(always)
+    dialogData.situational.forEach((offer, i) => {
+      if (!offer.attribute) return
+      offer.hidden = !visible.includes(offer.index)
+      const box = html.querySelector(`.SR-SituationalCheckbox[data-index="${i}"]`)
+      if (!box) return
+      box.closest('li').style.display = offer.hidden ? 'none' : ''
+      if (offer.hidden && box.checked){
+        box.checked = false
+        dialogData.dicePool.modifiers = dialogData.dicePool.modifiers.filter(m => m.type !== offer.key)
+      }
+    })
+    this._toggleSituationalList(html, dialogData)
+    this.updateDicePoolValue(html)
+  }
+
+  //Forbidden Arcana p. 90-95: a spirit type picked in the dialog shows its own boxes and hides the others'.
+  //The type's modifiers are copied without their markers, which the boxes stand for; boxes ticked
+  //elsewhere in the dialog are kept
+  _syncSpiritTypeOffers(html, dialogData, spiritType, typeModifiers){
+    //The Astral Reputation penalty (Street Grimoire p. 207) is the summoner's, whatever the type: kept too
+    const kept = (dialogData.dicePool.modifiers || []).filter(m => m.type?.startsWith?.("situational_") || m.type === "astralReputation")
+    dialogData.dicePool.modifiers = withoutSituationalMarkers(typeModifiers).concat(kept)
+    const unticked = spiritTypeVisible(dialogData.situational, spiritType)
+    dialogData.dicePool.modifiers = dialogData.dicePool.modifiers.filter(m => !unticked.includes(m.type))
+    ;(dialogData.situational || []).forEach((offer, i) => {
+      if (!offer.spiritType) return
+      const box = html.querySelector(`.SR-SituationalCheckbox[data-index="${i}"]`)
+      if (!box) return
+      box.closest('li').style.display = offer.hidden ? 'none' : ''
+      if (offer.hidden) box.checked = false
+    })
+    this._toggleSituationalList(html, dialogData)
+  }
+
+  //The list of situational boxes, and its separator, only shows when one box does
+  _toggleSituationalList(html, dialogData){
+    const list = html.querySelector('.SR-SituationalList')
+    if (list) list.style.display = situationalListShown(dialogData.situational) ? '' : 'none'
+  }
+
   //Add checkbox modifiers
   _checkboxModifier(ev, html, dialogData){
     let isChecked = ev.target.checked,
@@ -370,18 +559,9 @@ export default class SR5_RollDialog {
         }
         break
       case "reagents":
-        if (isChecked) {
-          const useReagentsEl = html.querySelector('#useReagents')
-          if (useReagentsEl) useReagentsEl.style.display = ''
-          const reagentsModControlEl = html.querySelector('#reagentsModControl')
-          if (reagentsModControlEl) reagentsModControlEl.style.display = ''
-        }
-        else {
-          const useReagentsEl = html.querySelector('#useReagents')
-          if (useReagentsEl) useReagentsEl.style.display = 'none'
-          const reagentsModControlEl = html.querySelector('#reagentsModControl')
-          if (reagentsModControlEl) reagentsModControlEl.style.display = 'none'
-        }
+        this._showReagents(html, isChecked)
+        //Unticked, no reagent is spent
+        dialogData.magic.hasUsedReagents = isChecked && (parseInt(html.querySelector('[name="reagentsSpent"]')?.value) || 0) > 0
         return
       case "recklessSpellcasting":
         dialogData.combat.actions = []
@@ -403,8 +583,25 @@ export default class SR5_RollDialog {
         this.drainModifier.recklessSpellcasting = value
         this.updateDrainValue(html)
         return
+      case "mageHunter": {
+        //Mage Hunter (Forbidden Arcana p. 34): the Drain is paid only when the trade is made
+        const level = dialogData.magic.mageHunter?.level || 0
+        value = isChecked ? level : 0
+        dialogData.magic.mageHunter.used = isChecked
+        const input = html.querySelector(name)
+        if (input) input.value = value
+        if (isChecked) dialogData.magic.drain.modifiers.mageHunter = {
+          value, label: game.i18n.localize(SR5.drainModTypes.mageHunter),
+        }
+        else delete dialogData.magic.drain.modifiers.mageHunter
+        this.updateDrainValue(html)
+        return
+      }
       case "spiritAid":
         value = dialogData.magic.spiritAid.modifier
+        break
+      case "astralReputation":
+        value = dialogData.magic.astralReputationMod || 0
         break
       case "centering":
         value = actor.system.magic.metamagics.centeringValue.value
@@ -717,6 +914,17 @@ export default class SR5_RollDialog {
         }
         dialogData.magic.spell.area = -value
         break
+      case "toxinDoses": {
+        //Several doses at once: +1 Power per extra dose (SR5 p. 410)
+        let doses = Math.max(1, parseInt(html.querySelector('[name="toxinDoses"]').value) || 1)
+        html.querySelector('[name="toxinDoses"]').value = doses
+        dialogData.toxinDoses = doses
+        //The antitoxin comes off after the doses (Chrome Flesh p. 154)
+        dialogData.damage.toxin.power = SR5_Toxins.effectivePower(dialogData.damage.toxin.basePower + doses - 1, dialogData.damage.toxin.antitoxin)
+        //The title shows the Power: [10P] becomes [12P]
+        dialogData.test.title = dialogData.test.title.replace(/\[\d+/, `[${dialogData.damage.toxin.power}`)
+        return
+      }
       case "manaBarrierRating": {
         let barrierRating = parseInt((html.querySelector('[name="manaBarrierRating"]').value || 1))
         html.querySelector('[name="baseDicePool"]').value = barrierRating * 2
@@ -875,7 +1083,7 @@ export default class SR5_RollDialog {
       actor = SR5_EntityHelpers.getRealActorFromID(dialogData.owner.actorId),
       label = game.i18n.localize(SR5.dicePoolModTypes[modifierName]),
       position = this.dialog.position,
-      chokeLimitModify, chokeLimitModified, weapon, changeCost
+      chokeLimitModify, chokeLimitModified, weapon
 
     position.height = "auto"
 
@@ -959,27 +1167,21 @@ export default class SR5_RollDialog {
             dialogData.combat.choke.limit = chokeLimitModify
           }
           //actions
+          //Spent with the roll, not here (M3 D2): closing the dialog without firing costs nothing
           weapon = await fromUuid(dialogData.owner.itemUuid)
-          if (SR5_ConverterHelpers.chokeToCode(weapon.system.choke) !== dialogData.combat.choke.selected && !dialogData.combat.choke.actionSpent){
-            action = [{
-              type: "simple", value: 1, source: "changeChokeSettings"
-            }]
-            if (weapon.system.isWireless && (weapon.system.accessory.find(a => a.name === "smartgunSystemInternal" || a.name === "smartgunSystemExternal")) && (actor.system.specialProperties.smartlink.value > 0)) action = [{
-              type: "free", value: 1, source: "changeChokeSettings"
-            }]
-            SR5Combat.changeActionInCombat(dialogData.owner.actorId, action)
-            dialogData.combat.choke.actionSpent = true
-          } else if (SR5_ConverterHelpers.chokeToCode(weapon.system.choke) === dialogData.combat.choke.selected && dialogData.combat.choke.actionSpent){
-            action = [{
-              type: "simple", value: -1, source: "changeChokeSettings"
-            }]
-            if (weapon.system.isWireless && (weapon.system.accessory.find(a => a.name === "smartgunSystemInternal" || a.name === "smartgunSystemExternal")) && (actor.system.specialProperties.smartlink.value > 0)) action = [{
-              type: "free", value: -1, source: "changeChokeSettings"
-            }]
-            SR5Combat.changeActionInCombat(dialogData.owner.actorId, action)
-            dialogData.combat.choke.actionSpent = false
+          dialogData.combat.actions = SR5_MiscellaneousHelpers.setChangeAction(dialogData.combat.actions, "changeChokeSettings",
+            SR5_ConverterHelpers.chokeToCode(weapon.system.choke) !== dialogData.combat.choke.selected, SR5_RollDialog.changeIsFree(weapon, actor))
+          //A change paid as a simple action ends the progressive recoil (SR5 p. 178): the recoil shown follows, as for
+          //a change of firing mode (Rosine's review)
+          if (html.querySelector('[name="recoilBullets"]')) {
+            const recoil = this.calculRecoil(html)
+            const recoilInput = html.querySelector('[name="recoil"]')
+            if (recoilInput) recoilInput.value = recoil
+            SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "recoil")
+            dialogData.dicePool.modifiers.push({
+              type: "recoil", label: game.i18n.localize(SR5.dicePoolModTypes.recoil), value: recoil
+            })
           }
-
           break
         case "firingMode":
           dialogData.combat.firingMode.selected = ev.target.value
@@ -988,33 +1190,18 @@ export default class SR5_RollDialog {
             const bullsEyeWeapon = await fromUuid(dialogData.owner.itemUuid)
             dialogData.combat.armorPenetration = SR5_CalledShotHelpers.bullsEyeArmorPenetration(dialogData.combat.armorPenetrationBeforeCalledShot, bullsEyeWeapon?.system.armorPenetration.base ?? 0, ev.target.value)
           }
+          //Spent with the roll, not here (M2-2): closing the dialog without firing costs nothing, reopening it does
+          //not spend twice, and with no initiative left the roll warns as for any action (M2-3, SR5 p. 162 and 164).
+          //Set before the recoil: a simple action spent on the change ends the progressive recoil (SR5 p. 178)
+          weapon = await fromUuid(dialogData.owner.itemUuid)
+          dialogData.combat.actions = SR5_MiscellaneousHelpers.setChangeAction(dialogData.combat.actions, "changeFiringMode",
+            SR5_ConverterHelpers.firingModeChangeCost(weapon.system.firingMode, dialogData.combat.firingMode.selected, false) > 0,
+            SR5_RollDialog.changeIsFree(weapon, actor))
           value = this.calculRecoil(html)
           action = SR5_ConverterHelpers.firingModeToAction(ev.target.value)
           dialogData.combat.actions = SR5_MiscellaneousHelpers.addActions(dialogData.combat.actions, action)
           modifierName = "recoil"
           label = game.i18n.localize(SR5.dicePoolModTypes[modifierName])
-          //actions
-          weapon = await fromUuid(dialogData.owner.itemUuid)
-          changeCost = SR5_ConverterHelpers.firingModeChangeCost(weapon.system.firingMode, dialogData.combat.firingMode.selected, dialogData.combat.firingMode.actionSpent)
-          if (changeCost > 0){
-            action = [{
-              type: "simple", value: 1, source: "changeFiringMode"
-            }]
-            if (weapon.system.isWireless && (weapon.system.accessory.find(a => a.name === "smartgunSystemInternal" || a.name === "smartgunSystemExternal")) && (actor.system.specialProperties.smartlink.value > 0)) action = [{
-              type: "free", value: 1, source: "changeFiringMode"
-            }]
-            SR5Combat.changeActionInCombat(dialogData.owner.actorId, action)
-            dialogData.combat.firingMode.actionSpent = true
-          } else if (changeCost < 0){
-            action = [{
-              type: "simple", value: -1, source: "changeFiringMode"
-            }]
-            if (weapon.system.isWireless && (weapon.system.accessory.find(a => a.name === "smartgunSystemInternal" || a.name === "smartgunSystemExternal")) && (actor.system.specialProperties.smartlink.value > 0)) action = [{
-              type: "free", value: -1, source: "changeFiringMode"
-            }]
-            SR5Combat.changeActionInCombat(dialogData.owner.actorId, action)
-            dialogData.combat.firingMode.actionSpent = false
-          }
           break
         case "matrixActionType": {
           // Kill Code p. 43: I Am the Firewall is a Complex action or an Interruption action (-5 Initiative)
@@ -1122,7 +1309,11 @@ export default class SR5_RollDialog {
             dialogData.dicePool.base = SR5_PrepareRollHelper.getBaseDicepool(dialogData)
             //The base dice pool field feeds updateDicePoolValue back: keep it in step with the recomputed base
             html.querySelector('[name="baseDicePool"]').value = dialogData.dicePool.base
-            dialogData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(dialogData, actor.system.skills.summoning.spiritType[ev.target.value].modifiers)
+            this._syncSpiritTypeOffers(html, dialogData, ev.target.value,
+              SR5_PrepareRollHelper.getDicepoolModifiers({
+                dicePool: {
+                }
+              }, actor.system.skills.summoning.spiritType[ev.target.value].modifiers))
           }
           dialogData.magic.spiritType = ev.target.value
           this.updateDicePoolValue(html)
@@ -1141,9 +1332,19 @@ export default class SR5_RollDialog {
         case "perceptionType": {
           let limitMod = 0
           value = 0
+          delete dialogData.limit.replace
+          if (dialogData.limit.typeBeforeReplace !== undefined) dialogData.limit.type = dialogData.limit.typeBeforeReplace
           if (ev.target.value !== ""){
             value = actor.system.skills.perception.perceptionType[ev.target.value].test.value
             limitMod = actor.system.skills.perception.perceptionType[ev.target.value].limit.value
+            //Eyes of the Pack (Street Grimoire p. 106): the sense borrowed has the net hits as its Limit, in place of any other
+            const replaced = replacedValue(actor.system.skills.perception.perceptionType[ev.target.value].limit.modifiers)
+            if (replaced !== undefined) {
+              dialogData.limit.replace = replaced
+              dialogData.limit.typeBeforeReplace ??= dialogData.limit.type
+              dialogData.limit.type = "replaced"
+              limitMod = 0
+            }
           }
           if (ev.target.value === "sight") {
             const sightPerceptionEl = html.querySelector('#sightPerception')
@@ -1197,6 +1398,27 @@ export default class SR5_RollDialog {
           label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.healingConditions[ev.target.value])})`
           dialogData.healingCondition = ev.target.value
           break
+        case "bbMode": {
+          //Bullets & Bandages p. 14-16: treatment, stabilization (an extended test) or diagnosis of the targeted patient
+          dialogData.test.bbMode = ev.target.value
+          dialogData.test.bbDiagnosisPatient = null
+          value = 0
+          const patient = dialogData.target.hasTarget ? SR5_EntityHelpers.getRealActorFromID(dialogData.target.actorId) : null
+          //BB p. 15: the diagnosis bonus goes to the next stabilization or treatment of that patient
+          value = bbModeDiagnosisDice(ev.target.value, bbPatientEntry(patient).diagnosis)
+          if (value){
+            dialogData.test.bbDiagnosisPatient = patient.uuid
+          }
+          label = game.i18n.localize("SR5.BB_DiagnosisBonus")
+          const extendedToggle = html.querySelector('[name="toggleExtendedTest"]')
+          if (ev.target.value === "stabilization" && extendedToggle && !extendedToggle.checked){
+            const intervalSelect = html.querySelector('[name="extendedTime"]')
+            if (intervalSelect) intervalSelect.value = "combatTurn"
+            extendedToggle.checked = true
+            this._onToggleExtendedTest(true, dialogData, html)
+          }
+          break
+        }
         case "healingSupplies": {
           dialogData.limit.modifiers.healingSupplies = {
             value:0
@@ -1209,13 +1431,28 @@ export default class SR5_RollDialog {
               value = -3
               break
             case "improvised":
-              value = -1
+              //SR5 p. 208: -1; Bullets & Bandages p. 18 (advanced medkits): -3 less the improvising hits, capped at 3
+              value = improvisedSuppliesDice(html.querySelector('[name="bbImprovisedHits"]')?.value, !!dialogData.various?.bbImprovised)
               break
             case "medkit": {
+              //Bullets & Bandages p. 18-19: the rating is bonus dice, and a medkit without supplies still adds it, with -3
+              const advancedKit = advancedMedkitRules() ? actor.items.find(i => i.system.isMedkit) : null
+              if (advancedKit){
+                value = advancedMedkitDice(advancedKit.system.itemRating, advancedKit.system.charge)
+                dialogData.owner.itemUuid = advancedKit.uuid
+                dialogData.test.bbMedkitUuid = advancedKit.uuid
+                dialogData.test.bbMedkitRating = Number(advancedKit.system.itemRating) || 0
+                dialogData.limit.modifiers.healingSupplies.value = dialogData.test.bbMedkitRating
+                dialogData.limit.modifiers.healingSupplies.label = game.i18n.localize(SR5.dicePoolModTypes[modifierName])
+                if (suppliesLimitInput) suppliesLimitInput.value = dialogData.test.bbMedkitRating
+                if (!(Number(advancedKit.system.charge) > 0)) ui.notifications.warn(game.i18n.localize("SR5.BB_MedkitEmpty"))
+                break
+              }
               let medkit = SR5_MiscellaneousHelpers.findMedkitRating(actor)
               if (medkit){
                 value = medkit.rating
                 dialogData.owner.itemUuid = medkit.uuid
+                dialogData.test.bbMedkitRating = medkit.rating
                 dialogData.limit.modifiers.healingSupplies.value = value
                 dialogData.limit.modifiers.healingSupplies.label = game.i18n.localize(SR5.dicePoolModTypes[modifierName])
                 if (suppliesLimitInput) suppliesLimitInput.value = value
@@ -1252,10 +1489,14 @@ export default class SR5_RollDialog {
           } else {
             value = SR5_CalledShotHelpers.convertCalledShotToMod(ev.target.value, dialogData.combat.ammo.type, false, dialogData.combat.ammo.effects)
           }
+          // Aim for Perfection (Assassin's Primer p. 15): Called Shot penalties halved
+          if (SR5_EntityHelpers.getRealActorFromID(dialogData.owner.actorId)?.system.specialProperties?.calledShotHalved) value = halveCalledShot(value)
           // Apply martial arts modifier bonus if available for this called shot
           if (dialogData.combat.calledShot.martialArtsModifiers?.[ev.target.value]) {
             value += dialogData.combat.calledShot.martialArtsModifiers[ev.target.value]
           }
+          // Any item can ease the other called shots (G14), never below a penalty of 0
+          value = easeCalledShotPenalty(value, calledShotItemBonus(dialogData.combat.calledShot.itemModifiers, ev.target.value))
           if (ev.target.value === "specificTarget") {
             const calledShotEl = html.querySelector('#calledShotSpecificTarget')
             if (calledShotEl) calledShotEl.style.display = ''
@@ -1327,12 +1568,17 @@ export default class SR5_RollDialog {
             value = value - 4
             limitDV = limitDV * 2
           }
+          // Aim for Perfection (Assassin's Primer p. 15): "all Called Shots", a specific location included
+          if (SR5_EntityHelpers.getRealActorFromID(dialogData.owner.actorId)?.system.specialProperties?.calledShotHalved) value = halveCalledShot(value)
           //Run & Gun p. 148-151: the location technique (Dim Mak, Choquer, Randori) lowers the location penalty
           value += martialArtsLocationBonus(dialogData.combat.calledShot.martialArtsModifiers, html.querySelector('[data-modifier="calledShot"]').value, ev.target.value)
+          //Run & Gun p. 128-130: an item eases a vehicle location, and Doubler la mise itself (G14)
+          value = easeCalledShotPenalty(value, calledShotItemBonus(dialogData.combat.calledShot.itemModifiers, html.querySelector('[data-modifier="calledShot"]').value, ev.target.value))
           dialogData.combat.calledShot = {
             //keep the techniques read when the dialog opened, a second location pick needs them too
             martialArts: dialogData.combat.calledShot.martialArts,
             martialArtsModifiers: dialogData.combat.calledShot.martialArtsModifiers,
+            itemModifiers: dialogData.combat.calledShot.itemModifiers,
             limitDV: limitDV,
             location: ev.target.value,
             name: html.querySelector('[data-modifier="calledShot"]').value,
@@ -1368,6 +1614,8 @@ export default class SR5_RollDialog {
 
     for (let e of ev){
       modifierName = e.dataset.modifier
+      // Each modifier writes its own label: none carries over from the previous one
+      label = undefined
       targetInput = e.dataset.target
       targetInputName = `[name=${targetInput}]`
       name = `[data-modifier=${modifierName}]`
@@ -1428,7 +1676,11 @@ export default class SR5_RollDialog {
           dialogData.dicePool.base = SR5_PrepareRollHelper.getBaseDicepool(dialogData)
           //The base dice pool field feeds updateDicePoolValue back: keep it in step with the recomputed base
           html.querySelector('[name="baseDicePool"]').value = dialogData.dicePool.base
-          dialogData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(dialogData, actor.system.skills.summoning.spiritType[selectValue].modifiers)
+          this._syncSpiritTypeOffers(html, dialogData, selectValue,
+            SR5_PrepareRollHelper.getDicepoolModifiers({
+              dicePool: {
+              }
+            }, actor.system.skills.summoning.spiritType[selectValue].modifiers))
           dialogData.magic.spiritType = selectValue
           this.updateDicePoolValue(html)
           continue
@@ -1456,9 +1708,20 @@ export default class SR5_RollDialog {
         case "damageType":
           dialogData.damage.type = html.querySelector(name).value
           continue
+        // The list shown must match the 0 applied: "of no value" and "neutral" are the 0 lines of SR5 p. 142
         case "socialResult":
-        case "socialAttitude":
+          selectValue = "ofNoValue"
           inputValue = 0
+          break
+        case "socialAttitude":
+          selectValue = "neutral"
+          // Faction Reputation of the character with the target's faction (Cutting Aces p. 160)
+          if (dialogData.social?.attitude){
+            selectValue = dialogData.social.attitude
+            inputValue = SR5_ConverterHelpers.socialAttitudeToMod(selectValue)
+            // Neither the faction nor the score: the chat card is read by every player (Q9)
+            label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize("SR5.FACTION_RollLabel")})`
+          } else inputValue = 0
           break
         case "targetEffect":
           selectValue = html.querySelector(name).value
@@ -1537,9 +1800,23 @@ export default class SR5_RollDialog {
     dialogData.threshold.type = label
   }
 
+  _showReagents(html, shown){
+    const display = shown ? '' : 'none'
+    html.querySelectorAll('#useReagents, #reagentsModControl, .SR-ReagentOptions').forEach(el => el.style.display = display)
+  }
+
+  //The tier picked and its stock (modules/system/reagents.js)
+  _onReagentOption(html, dialogData, actor){
+    dialogData.magic.reagentTier = normalizeTier(html.querySelector('[name="reagentTier"]')?.value)
+    dialogData.magic.reagentForeign = !!html.querySelector('[name="reagentForeign"]')?.checked
+    const spent = parseInt(html.querySelector('[name="reagentsSpent"]')?.value) || 0
+    if (spent > 0) this._updateReagents(spent, actor, html, dialogData)
+  }
+
   _updateReagents(value, actor, html, dialogData){
-    if (value > actor.system.magic.reagents){
-      value = actor.system.magic.reagents
+    const stock = tierStock(actor.system.magic, normalizeTier(dialogData.magic.reagentTier))
+    if (value > stock){
+      value = stock
       ui.notifications.warn(game.i18n.format('SR5.WARN_MaxReagents', {
         reagents: value
       }))
@@ -1548,7 +1825,8 @@ export default class SR5_RollDialog {
     html.querySelector('[data-modifier="reagents"]').checked = true
     html.querySelector('[name="reagentsSpent"]').value = value
     dialogData.magic.hasUsedReagents = true
-    if (dialogData.test.type !== "ritual"){
+    this._showReagents(html, true)
+    if (dialogData.test.type !== "ritual" && dialogData.test.typeSub !== "binding"){
       this.limitModifier.reagents = value
       this.updateLimitValue(html)
     }

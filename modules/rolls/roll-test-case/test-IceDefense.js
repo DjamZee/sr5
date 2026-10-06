@@ -24,7 +24,7 @@ export default async function iceDefenseInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId),
     actorData = actor.system,
     netHits = cardData.previousMessage.hits - cardData.roll.hits,
-    originalActor = await SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId),
+    originalActor = await SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId, cardData.actorUuids),
     targetItem = cardData.target.itemUuid ? await fromUuid(cardData.target.itemUuid) : null,
     //An AI outside any device is marked on its persona, cannot be link-locked
     //and has no device to reboot (Data Trails p. 157)
@@ -132,7 +132,7 @@ export default async function iceDefenseInfo(cardData, actorId){
         if (existingMark >= 2) cardData.chatCard.buttons.iceEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "iceEffect", game.i18n.localize("SR5.Geolocated"))
         break
       case "iceShocker":           
-        SR5Combat.changeInitInCombatHelper(actorId, -5)
+        SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), -5)
         break               
       default:
         SR5_SystemHelpers.srLog(1, `Unknown '${cardData.test.typeSub}' type in iceDefenseInfo`)

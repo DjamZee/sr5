@@ -1,12 +1,21 @@
 import {
-  SR5 
+  SR5
 } from "../../config.js"
 import {
-  SR5_EntityHelpers 
+  cleanCreatedSource
+} from "../../migration-source-modifiers.js"
+import {
+  SR5_EntityHelpers
 } from "../helpers.js"
 import {
-  SR5_SystemHelpers 
+  hasAegis
+} from "../../system/aegis.js"
+import {
+  SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
+import {
+  applyDiseaseEffects
+} from "../../system/diseases.js"
 import {
   SR5_UtilityItem 
 } from "../items/utilityItem.js"
@@ -38,8 +47,26 @@ import {
   SR5_MarkHelpers
 } from "../../rolls/roll-helpers/mark.js"
 import {
-  isStoredAway 
+  isStoredAway
 } from "../../interface/storage-rules.js"
+import {
+  SR5StorageLockRights
+} from "../../interface/storage-lock-rights.js"
+import {
+  worsenAddiction, burnoutAttribute
+} from "../../rolls/roll-helpers/addiction.js"
+import {
+  isNecroSpirit
+} from "../../system/necro-spirits.js"
+import {
+  martialArtApplies
+} from "../../system/martial-arts-technique.js"
+import {
+  migrateNegotiationSkill
+} from "../../datamodels/common/negotiationMigration.js"
+import {
+  missingBaseDevice
+} from "./base-device.js"
 
 /**
  * Extend the base Actor class to implement additional logic specialized for Shadowrun 5.
@@ -51,6 +78,12 @@ export class SR5Actor extends Actor {
     super(...args)
     //The core fills statuses in applyActiveEffects, which this system never calls : hasStatusEffect reads them
     installLiveStatuses(this)
+  }
+
+  //The Negotiation skill under its former key, on an actor imported after the world migration (datamodels/common/negotiationMigration.js)
+  static migrateData(source) {
+    migrateNegotiationSkill(source?.system)
+    return super.migrateData(source)
   }
 
   /** Overide Actor's create Dialog to hide certain type and sort them alphabetically*/
@@ -252,8 +285,16 @@ export class SR5Actor extends Actor {
     }
   }
 
+  async _preUpdate(changes, options, user) {
+    //A storage's rights while it is shut: rewritten here, since Foundry's ownership window updates with noHook
+    if (this.type === "actorStorage") SR5StorageLockRights.hold(this, changes, options)
+    return super._preUpdate(changes, options, user)
+  }
+
   async _preCreate(data, options, user) {
     await super._preCreate(data, options, user)
+    // An actor exported prepared (the Mégapack actors) arrives without its computed modifiers
+    cleanCreatedSource(this)
     let createData = {
     }
     foundry.utils.mergeObject(createData, {
@@ -355,6 +396,19 @@ export class SR5Actor extends Actor {
 
     this.updateSource(createData)
 
+    // A device, drone or agent created by script without its base device (base-device.js)
+    const baseDevice = missingBaseDevice(this.type, this._source?.items)
+    if (baseDevice) {
+      const update = {
+        items: [...this._source.items, baseDevice]
+      }
+      if (!this._source.effects.some(e => e.statuses?.includes("matrixInit"))) {
+        const initiativeEffect = new CONFIG.ActiveEffect.documentClass(await _getSRStatusEffect("matrixInit"))
+        update.effects = [...this._source.effects, initiativeEffect.toObject()]
+      }
+      this.updateSource(update)
+    }
+
     // A storage on the map is one bag, wherever it is opened from: what is
     // taken through its token must leave the actor too, or picking it up
     // gives back what has already been taken. Set last, so that a token
@@ -364,9 +418,24 @@ export class SR5Actor extends Actor {
     })
   }
 
+  //An unlinked token inherits the effects of its world actor: switched to astral perception, that actor showed the
+  //"Astral perception" icon on every unlinked token of it, which does not have the vision (M4 D3). Shown only where
+  //the vision is on; the effect carries no modifier and nothing reads it
+  get temporaryEffects() {
+    const effects = super.temporaryEffects
+    if (!this.isToken || this.system?.visions?.astral?.isActive) return effects
+    return effects.filter(e => e.origin !== "astralVision")
+  }
+
   prepareData() {
     if (!this.img) this.img = CONST.DEFAULT_TOKEN
     if (!this.name) this.name = "[" + game.i18n.localize("SR5.New") + "]" + this.documentName
+    // Situational effects are gathered anew at each preparation (roll-helpers/situational.js)
+    this.situationalEffects = []
+    // So are the effects on other actors' rolls (roll-helpers/indirect.js)
+    this.indirectEffects = []
+    // And the movement boxes of the sheet (situationalMovement)
+    this.movementSituational = []
     this.prepareBaseData()
     this.prepareEmbeddedDocuments() // first pass on items to add bonuses from the items to the characters
     this.prepareDerivedData()
@@ -395,6 +464,9 @@ export class SR5Actor extends Actor {
         if (!Object.hasOwn(actor.system, "type")) actor.system.type = actor.flags.spiritType
         if (actor.system.force < 1) actor.system.force = parseInt(actor.flags.spiritForce)
         SR5_CharacterUtility.resetCalculatedValues(actor)
+        // A spirit is always a magical being. The V12 template.json stored magicType "spirit"; the shared
+        // magic schema of V13 starts empty, which skipped every astral value (astral damage 0, no drain resistance)
+        SR5_CharacterUtility.setSpiritMagicType(actor)
         break
       default:
         SR5_SystemHelpers.srLog(1, `Unknown '${actor.type}' actor type in prepareBaseData()`)
@@ -475,6 +547,7 @@ export class SR5Actor extends Actor {
         SR5_CharacterUtility.updateEssence(actor)
         SR5_CharacterUtility.updateSpecialAttributes(actor)
         SR5_CharacterUtility.updateBackgroundCount(actor)
+        SR5_CharacterUtility.updateGreyMana(actor)
         SR5_CharacterUtility.updateConditionMonitors(actor)
         SR5_CharacterUtility.updateSpecialProperties(actor)
         SR5_CharacterUtility.updatePenalties(actor)
@@ -513,6 +586,7 @@ export class SR5Actor extends Actor {
     const lists = SR5
 
     // Iterate through items, allocating to containers
+    const mentorSpirits = []
     for (let i of actor.items) {
       let iData = i.system
       SR5_SystemHelpers.srLog(3, `Parsing '${i.type}' item named '${i.name}'`, i)
@@ -544,8 +618,12 @@ export class SR5Actor extends Actor {
           if (iData.isActive && Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
           break
 
-        case "itemPower":
+        //A learned technique applies on its own, unless it is an action chosen for the roll (martial-arts-technique.js)
         case "itemMartialArt":
+          if (martialArtApplies(iData) && Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
+          break
+
+        case "itemPower":
         case "itemMetamagic":
         case "itemEcho":
           if (iData.isActive && Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
@@ -555,6 +633,13 @@ export class SR5Actor extends Actor {
         case "itemQuality":
           i.prepareData()
           if (Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
+          break
+
+        // SR5 p. 76, 323-324: only the first mentor counts, the sheet warns about the others
+        case "itemMentorSpirit":
+          i.prepareData()
+          // Applied once every item is parsed: the Essence lost to augmentations decides whether it lies dormant
+          mentorSpirits.push(i)
           break
 
         case "itemSpell":
@@ -575,8 +660,8 @@ export class SR5Actor extends Actor {
           if (iData.isActive) {
             if (iData.isCumulative) modifierType = "armorAccessory"
             else modifierType = "armor"
+            //The fall resistance takes the whole armor (SR5 p. 174) from itemsProperties.armor in updateResistances
             if (!iData.isAccessory) SR5_EntityHelpers.updateModifier(actor.system.itemsProperties.armor, `${i.name}`, modifierType, iData.armorValue.value)
-            if (!iData.isAccessory && actor.system.resistances.fall) SR5_EntityHelpers.updateModifier(actor.system.resistances.fall, `${i.name}`, modifierType, iData.armorValue.value)
             if (Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
           }
           if (iData.isActive && iData.wirelessTurnedOn) actor.system.matrix.connectedObject.armors[i.uuid] = i.name
@@ -603,6 +688,8 @@ export class SR5Actor extends Actor {
           //i.prepareData();
           if (iData.isBounded) actor.system.magic.boundedSpirit.current ++
           if (iData.isActive) SR5_CharacterUtility._actorModifPossession(i, actor)
+          //Forbidden Arcana p. 50: each necro spirit under control lowers the mage's Magic by 1
+          if (isNecroSpirit(iData.type) && actor.system.specialAttributes?.magic) SR5_EntityHelpers.updateModifier(actor.system.specialAttributes.magic.augmented, i.name, "itemSpirit", -1)
           break
 
         case "itemDevice":
@@ -699,6 +786,8 @@ export class SR5Actor extends Actor {
         }
 
         case "itemFocus":
+          //Not prepared again here: its price and availability would add up at each preparation
+          SR5_UtilityItem._resetItemModifiers(i)
           SR5_UtilityItem._handleFocus(iData)
           if (iData.isActive) SR5_CharacterUtility.applyFocusBonus(i, actor)
           switch (iData.type) {
@@ -817,6 +906,10 @@ export class SR5Actor extends Actor {
           SR5_SystemHelpers.srLog(1, `Unknown '${i.type}' item type in prepareEmbeddedDocuments()`)
       }
     }
+    for (const mentor of mentorSpirits) SR5_CharacterUtility.applyMentorSpirit(mentor, actor)
+    //Diseases: read from the GM's ledger, never from the actor (system/diseases.js)
+    if (actor.type === "actorPc" || actor.type === "actorGrunt") applyDiseaseEffects(actor, SR5_EntityHelpers.updateModifier.bind(SR5_EntityHelpers), game.i18n.localize("SR5.Pathogen"))
+    SR5_CharacterUtility.keepStrongestFocus(actor)
   }
 
   sortLists(data) {
@@ -929,15 +1022,33 @@ export class SR5Actor extends Actor {
     SR5_PrepareRollTest.rollTest(this, rollType, rollKey, chatData)
   }
 
-  static _socketRollTest(message){
-    let actor = SR5_EntityHelpers.getRealActorFromID(message.data.actorId)
-    SR5_PrepareRollTest.rollTest(actor, message.data.rollType, message.data.rollKey, message.data.chatData)
+  //A GM's request is rolled as sent (a resistance to an area spell). A player's carried a whole card, rolled and
+  //posted by the receiver, who then believed it as his own: only the crush of a hold is asked by a player, and its
+  //card is built again here (security pass, Olympe). Only the user it was sent to rolls, for an actor he owns
+  static async _socketRollTest(message, senderId){
+    const data = message?.data ?? {
+    }
+    const sender = game.users?.get(senderId)
+    const actor = SR5_EntityHelpers.getRealActorFromID(data.actorId)
+    if (!actor || !sender || message.userId !== game.user.id || !actor.isOwner) return
+    let chatData = data.chatData
+    //The crush of a hold travels without its card, whoever sends it: built again here, for a GM too (Harriet's review)
+    if (data.use === "grappleCrush") {
+      const {
+        SR5_GrappleHelpers
+      } = await import("../../rolls/roll-helpers/grapple.js")
+      chatData = data.rollType === "resistanceCard" ? SR5_GrappleHelpers.crushRollData(data.holderId, data.actorId, sender) : null
+    } else if (!sender.isGM) chatData = null
+    if (!chatData) return SR5_SystemHelpers.srLog(1, `actorRoll refused from ${senderId}`, data)
+    SR5_PrepareRollTest.rollTest(actor, data.rollType, data.rollKey, chatData)
   }
 
   //Apply Damage to actor
   async takeDamage(options){
     let actorId = (this.isToken ? this.token.id : this.id)
-    if (game.user.isGM || this.testUserPermission(game.user, 3)) await SR5_ActorHelper.takeDamage(actorId, options)
+    //Aegis (Kill Code p. 112): matrix damage on its owner goes to the active GM, who alone spends the shield
+    const aegisToGM = !game.user.isGM && options?.damage?.matrix?.value > 0 && hasAegis(this)
+    if (!aegisToGM && (game.user.isGM || this.testUserPermission(game.user, 3))) await SR5_ActorHelper.takeDamage(actorId, options)
     else {
       SR5_SocketHandler.emitForGM("takeDamage", {
         actorId: actorId,
@@ -966,7 +1077,9 @@ export class SR5Actor extends Actor {
 
 
   //Reboot deck = reset Overwatch score and delete any marks on or from the actor
+  //A character in VR when the device reboots takes dumpshock (SR5 p. 244), whatever made it reboot
   async rebootDeck() {
+    SR5_ActorHelper.dumpshockIfInVR(this)
     let actorId = (this.isToken ? this.token.id : this.id)
     let dataToUpdate = {
     }
@@ -1031,7 +1144,10 @@ export class SR5Actor extends Actor {
       "system": actorData,
       "items": updatedItems,
     })
-    await this.update(dataToUpdate)
+    //A lowering of the Overwatch Score a player writes herself (overwatch-guard.js)
+    await this.update(dataToUpdate, {
+      sr5OverwatchLower: "reboot"
+    })
 
     //Delete effects from Deck
     for (let i of this.items){
@@ -1068,6 +1184,38 @@ export class SR5Actor extends Actor {
     ui.notifications.info(`${this.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.AddictionsSettoNone")}.`)
   }
 
+  //A failed addiction test (SR5 p. 416): the addiction goes up one level. At burnout the lost point of Body
+  //or Willpower is told to the gamemaster, not applied
+  async worsenAddiction(messageData){
+    let index = messageData?.various?.addictionIndex
+    let addictions = foundry.utils.duplicate(this.system.addictions || [])
+    let addiction = addictions[index]
+    if (!addiction || addiction.name !== messageData.various.addictionName) return ui.notifications.warn(game.i18n.localize("SR5.WARN_AddictionNotFound"))
+    let {
+      level, attributeLoss
+    } = worsenAddiction(addiction.level)
+    let levelLabel = game.i18n.localize(SR5.addictionLevels[level])
+    if (attributeLoss) {
+      let attributes = this.system.attributes
+      let attribute = burnoutAttribute(attributes.body.augmented.value, attributes.willpower.augmented.value, addiction.addiction?.type)
+      let attributeLabel = attribute === "either" ? game.i18n.localize("SR5.AddictionBurnoutEither") : game.i18n.localize(SR5.allAttributes[attribute])
+      return ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({
+          actor: this
+        }),
+        whisper: ChatMessage.getWhisperRecipients("GM"),
+        content: game.i18n.format("SR5.AddictionBurnoutLoss", {
+          name: this.name, drug: addiction.name, attribute: attributeLabel
+        }),
+      })
+    }
+    addiction.level = level
+    await this.update({
+      "system.addictions": addictions
+    })
+    ui.notifications.info(`${this.name}${game.i18n.localize("SR5.Colons")} ${addiction.name}, ${levelLabel}`)
+  }
+
   //Reset Cumulative Defense
   resetCumulativeDefense(){
     this.setFlag("sr5", "cumulativeDefense", 0)
@@ -1075,10 +1223,12 @@ export class SR5Actor extends Actor {
   }
 
   //Apply an external effect to actor (such spell, complex form). Data is provided by chatMessage
-  async applyExternalEffect(data, effectType){
+  //`reviewed`: a definition review the GM's caller already showed (SR5_ActorHelper.applyExternalEffect)
+  async applyExternalEffect(data, effectType, reviewed = null){
     let actorId = (this.isToken ? this.token.id : this.id)
     //Awaited: a template's spell effect is checked again on the next move, and must find the effect created
-    await SR5_ActorHelper.applyExternalEffect(actorId, data, effectType)
+    //false when it was refused: the card keeps its button
+    return SR5_ActorHelper.applyExternalEffect(actorId, data, effectType, reviewed)
   }
 
   //Apply specific toxin effect

@@ -186,7 +186,7 @@ describe('acid damage drops by 1 each Combat Turn (SR5 p. 172)', () => {
       "system.value": 5
     })
     // and it eats one more point of armor
-    expect(actor.updateEmbeddedDocuments.mock.calls[0][1][0].system.itemEffects[0].value).toBe(-2)
+    expect(actor.updateEmbeddedDocuments.mock.calls[0][1][0]["system.itemEffects"][0].value).toBe(-2)
   })
 
   it('applies DV 4 on the turn after', async () => {
@@ -368,7 +368,7 @@ async function take(sheet, id){
 const written = (actor, id) => actor.update.mock.calls.at(-1)[0].items.find(i => i._id === id)
 
 describe('taking a drug rolls its random duration once (SR5 p. 411-413)', () => {
-  it('rolls 10D6 once for Jazz and stores that duration', async () => {
+  it('rolls (10 × 1D6) once for Jazz and stores that duration', async () => {
     rollTotals(30)
     const {
       actor, sheet
@@ -376,7 +376,7 @@ describe('taking a drug rolls its random duration once (SR5 p. 411-413)', () => 
 
     await take(sheet, 'jazz')
 
-    expect(rolled).toEqual(['10d6'])
+    expect(rolled).toEqual(['1d6 * 10'])
     const jazz = written(actor, 'jazz')
     expect(jazz.system.handleShot.duration).toBe(30)
     expect(jazz.system.onUse.duration).toBe('30 SR5.Minutes')
@@ -392,7 +392,7 @@ describe('drug interactions (Chrome Flesh p. 197)', () => {
 
     await take(sheet, 'jazz')
 
-    expect(rolled).toEqual(['10d6', '1d6'])
+    expect(rolled).toEqual(['1d6 * 10', '1d6'])
   })
 
   it('on 1, doubles the durations of all the drugs and writes them with the actor update', async () => {
@@ -495,9 +495,11 @@ describe('drug interactions (Chrome Flesh p. 197)', () => {
     for (const id of ['cram', 'jazz']) {
       const d = written(actor, id)
       expect(d.system.isActive).toBe(false)
-      expect(d.system.wirelessTurnedOn).toBe(true)
       expect(d.system.onUse.duration).toBe('')
     }
+    //The Jazz crash lasts; the Cram's is only its damage, over once taken (Liesel's D3)
+    expect(written(actor, 'jazz').system.wirelessTurnedOn).toBe(true)
+    expect(written(actor, 'cram').system.wirelessTurnedOn).toBe(false)
     expect(written(actor, 'jazz').system.onUse.contrecoup).toBe('30 SR5.Minutes')
     // the crash damage of Cram applies once; Bliss, already in its crash, does not start it again
     expect(actor.takeDamage).toHaveBeenCalledTimes(1)
@@ -507,6 +509,34 @@ describe('drug interactions (Chrome Flesh p. 197)', () => {
     const said = ui.notifications.info.mock.calls.map(c => c[0]).join(' | ')
     expect(said).toContain('SR5.DrugCrashImmediate')
     expect(said).not.toContain('SR5.DrugContrecoupDurationDoubled')
+  })
+
+  // Chrome Flesh p. 197 says that the crashes start, not that a drug without crash stops: it keeps its effect
+  // until its normal end (DjamZ's ruling, 06/10)
+  it.each([7, 8, 9])('on %i, leaves a drug without crash under its effect', async (total) => {
+    rollTotals(30, total)
+    const nightwatch = drugItem('nightwatch', 'Nightwatch', 'nightwatch', {
+      isActive: true,
+      handleShot: {
+        name: 'nightwatch', duration: 40, durationType: 'minute'
+      },
+      onUse: {
+        duration: '40 SR5.Minutes', contrecoup: ''
+      },
+    })
+    const {
+      actor, sheet
+    } = drugSheet([nightwatch, drugItem('jazz', 'Jazz', 'jazz')])
+    actor.takeDamage = vi.fn()
+
+    await take(sheet, 'jazz')
+
+    const night = written(actor, 'nightwatch')
+    expect(night.system.isActive).toBe(true)
+    expect(night.system.onUse.duration).toBe('40 SR5.Minutes')
+    // the drug that has a crash still goes into it
+    expect(written(actor, 'jazz').system.isActive).toBe(false)
+    expect(written(actor, 'jazz').system.onUse.contrecoup).toBe('30 SR5.Minutes')
   })
 
   // Every total of the table up to 13 has its own row: only 14+ inflicts 10P
@@ -531,6 +561,24 @@ describe('drug interactions (Chrome Flesh p. 197)', () => {
     expect(actor.rollTest).not.toHaveBeenCalled()
   })
 
+  //Liesel's D5: the crashes to come deal Physical damage, the drug being taken included
+  it.each([11, 12, 13])('on %i, marks the crashes to come as Physical', async (total) => {
+    rollTotals(30, total)
+    const cram = drugItem('cram', 'Cram', 'cram', {
+      isActive: true,
+      handleShot: {
+        name: 'cram', duration: 9, durationType: 'hour', unresistedStunDamage: 6
+      },
+    })
+    const {
+      actor, sheet
+    } = drugSheet([cram, drugItem('jazz', 'Jazz', 'jazz')])
+    await take(sheet, 'jazz')
+    expect(written(actor, 'cram').system.handleShot.crashPhysical).toBe(true)
+    expect(written(actor, 'jazz').system.handleShot.crashPhysical).toBe(true)
+    expect(ui.notifications.info.mock.calls.map(c => c[0]).join(' | ')).toContain('SR5.DrugCrashPhysical')
+  })
+
   it('on 14, inflicts 10P resisted', async () => {
     const actor = await interactionDamage(14)
     expect(actor.rollTest).toHaveBeenCalledWith('resistanceCard', null, expect.objectContaining({
@@ -544,7 +592,9 @@ describe('drug interactions (Chrome Flesh p. 197)', () => {
 describe('a bound spirit spends a service when it aids a test (SR5 p. 305-306)', () => {
   function spiritAid(modifiers, isOwner = true){
     const spiritItem = {
-      id: 's1', name: 'Esprit', system: {
+      id: 's1', name: 'Esprit', parent: {
+        id: 'a1'
+      }, system: {
         services: {
           value: 3
         }
@@ -553,13 +603,22 @@ describe('a bound spirit spends a service when it aids a test (SR5 p. 305-306)',
     const spiritActor = {
       id: 'sa1', isOwner,
       system: {
-        creatorItemId: 's1', services: {
+        creatorItemId: 's1', creatorId: 'a1', services: {
+          value: 3
+        }
+      }, update: vi.fn(async () => {}),
+    }
+    //The spirit of a duplicated summoner: same item id, another creator
+    const twinSpirit = {
+      id: 'sa2', isOwner,
+      system: {
+        creatorItemId: 's1', creatorId: 'a2', services: {
           value: 3
         }
       }, update: vi.fn(async () => {}),
     }
     globalThis.fromUuid = vi.fn(async () => spiritItem)
-    globalThis.game.actors = [spiritActor]
+    globalThis.game.actors = [twinSpirit, spiritActor]
     const dialogData = {
       dicePool: {
         modifiers
@@ -610,7 +669,7 @@ describe('a bound spirit spends a service when it aids a test (SR5 p. 305-306)',
         services: {
           value: 2
         }
-      }
+      }, use: 'spiritService'
     })
   })
 
@@ -629,6 +688,9 @@ describe('a bound spirit spends a service when it aids a test (SR5 p. 305-306)',
 
 describe('switching the wireless of a device (SR5 p. 165, 167 and 424)', () => {
   async function switchWifi(requiresDNI, hasDNI, wasOn = true){
+    //In combat: out of it nothing is spent (see "the switches of the sheet out of combat")
+    vi.spyOn(SR5Combat, 'getCombatantFromActor').mockReturnValue({
+    })
     vi.spyOn(game.settings, 'get').mockImplementation((scope, key) => (key === 'sr5WifiRequiresDNI') ? requiresDNI : null)
     const actions = {
       free: {
@@ -675,6 +737,67 @@ describe('switching the wireless of a device (SR5 p. 165, 167 and 424)', () => {
     return actor.update.mock.calls.at(-1)[0].system.specialProperties.actions
   }
 
+  // A drug has no wireless: its switch moves it into its crash, then out of it, and costs no action
+  it('spends no action on the crash switch of a drug, in or out', async () => {
+    vi.spyOn(game.settings, 'get').mockImplementation((scope, key) => (key === 'sr5WifiRequiresDNI') ? true : null)
+    for (const [phase, wasOn] of [['rise', false], ['crash', true]]) {
+      const actions = {
+        free: {
+          value: 1, current: 1
+        }, simple: {
+          value: 2, current: 2
+        }, complex: {
+          value: 1, current: 1
+        }
+      }
+      const system = {
+        hasDNI: false, specialProperties: {
+          actions
+        }, addictions: []
+      }
+      const actor = {
+        id: 'a1', name: 'Test', isToken: false, effects: [], items: [{
+          _id: 'd1', id: 'd1', name: 'Jazz', type: 'itemDrug', system: {
+            //The real Jazz gets its crash from durationContrecoup (its stat); this one is given a crash effect instead, so that it still has a crash: a drug without any is over at the end of its effect
+            phase, isActive: !wasOn, wirelessTurnedOn: wasOn, systemEffects: [], customEffects: {
+              0: {
+                phase: 'crash'
+              }
+            }, handleShot: {
+            }, onUse: {
+              duration: '', contrecoup: ''
+            }
+          }
+        }],
+        system: new FakeSystem(system, system),
+        update: vi.fn(async () => {}),
+      }
+      const sheet = Object.create(ActorSheetSR5.prototype)
+      Object.defineProperty(sheet, 'actor', {
+        value: actor
+      })
+      await sheet._onEditItemValue({
+        currentTarget: {
+          closest: () => ({
+            dataset: {
+              itemId: 'd1'
+            }
+          }),
+          dataset: {
+            binding: 'system.wirelessTurnedOn', dtype: 'Boolean'
+          },
+        },
+        target: {
+          value: ''
+        },
+      })
+      const written = actor.update.mock.calls.at(-1)[0]
+      expect(written.system.specialProperties.actions.free.current).toBe(1)
+      expect(written.system.specialProperties.actions.simple.current).toBe(2)
+      expect(written.items[0].system.phase).toBe(wasOn ? '' : 'crash')
+    }
+  })
+
   it('is a free action for everyone by default', async () => {
     const written = await switchWifi(false, false)
     expect(written.free.current).toBe(0)
@@ -701,6 +824,8 @@ describe('switching the wireless of a device (SR5 p. 165, 167 and 424)', () => {
   })
 
   it('takes the free action it announces, not a simple one', async () => {
+    vi.spyOn(SR5Combat, 'getCombatantFromActor').mockReturnValue({
+    })
     const actions = {
       free: {
         value: 1, current: 1
@@ -749,6 +874,85 @@ describe('switching the wireless of a device (SR5 p. 165, 167 and 424)', () => {
     const written = actor.update.mock.calls.at(-1)[0].system.specialProperties.actions
     expect(written.free.current).toBe(0)
     expect(written.simple.current).toBe(2)
+  })
+})
+
+// The action counters belong to the initiative passes (SR5 p. 163-165): out of combat a switch of the sheet
+// spends nothing, where the free action used to sink to -1, -2... (RESTES l. 204 and 706)
+describe('the switches of the sheet out of combat', () => {
+  async function flip(type, binding, system, combatant){
+    vi.spyOn(SR5Combat, 'getCombatantFromActor').mockReturnValue(combatant)
+    vi.spyOn(game.settings, 'get').mockReturnValue(false)
+    const actions = {
+      free: {
+        value: 1, current: 1
+      }, simple: {
+        value: 2, current: 2
+      }, complex: {
+        value: 1, current: 1
+      }
+    }
+    const data = {
+      hasDNI: false, addictions: [], specialProperties: {
+        actions
+      }
+    }
+    const actor = {
+      id: 'a1', name: 'Test', isToken: false, effects: [], items: [{
+        _id: 'i1', id: 'i1', name: 'Switch', type, system: {
+          ...system
+        }
+      }],
+      system: new FakeSystem(data, data),
+      update: vi.fn(async () => {}),
+    }
+    const sheet = Object.create(ActorSheetSR5.prototype)
+    Object.defineProperty(sheet, 'actor', {
+      value: actor
+    })
+    await sheet._onEditItemValue({
+      currentTarget: {
+        closest: () => ({
+          dataset: {
+            itemId: 'i1'
+          }
+        }),
+        dataset: {
+          binding, dtype: 'Boolean'
+        },
+      },
+      target: {
+        value: ''
+      },
+    })
+    return actor.update.mock.calls.at(-1)[0].system.specialProperties.actions
+  }
+
+  for (const [label, type, binding, system] of [
+    ['a program', 'itemProgram', 'system.isActive', {
+      isActive: true, type: 'common'
+    }],
+    ['a focus', 'itemFocus', 'system.isActive', {
+      isActive: true
+    }],
+    ['a wireless', 'itemGear', 'system.wirelessTurnedOn', {
+      wirelessTurnedOn: true, isActive: true
+    }],
+  ]) {
+    it(`${label}: nothing is spent out of combat`, async () => {
+      const written = await flip(type, binding, system, undefined)
+      expect(written.free.current).toBe(1)
+      expect(written.simple.current).toBe(2)
+      expect(written.complex.current).toBe(1)
+    })
+  }
+
+  it('a program in combat: still spent', async () => {
+    const written = await flip('itemProgram', 'system.isActive', {
+      isActive: true, type: 'common'
+    }, {
+    })
+    expect(written.free.current).toBe(0)
   })
 })
 
@@ -805,7 +1009,11 @@ describe('toggles that cost an action, clicked twice before the server answers',
   }
 
   // The guard reads the counters before the first write lands: it says yes both times
-  beforeEach(() => vi.spyOn(SR5Combat, 'hasActionsLeft').mockReturnValue(true))
+  beforeEach(() => {
+    vi.spyOn(SR5Combat, 'hasActionsLeft').mockReturnValue(true)
+    vi.spyOn(SR5Combat, 'getCombatantFromActor').mockReturnValue({
+    })
+  })
   afterEach(() => vi.restoreAllMocks())
 
   for (const [label, items, binding] of [

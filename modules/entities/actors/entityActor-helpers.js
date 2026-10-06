@@ -1,9 +1,24 @@
 import {
-  SR5 
+  SR5
 } from "../../config.js"
+import {
+  SR5_Toxins
+} from "../items/toxins.js"
+import {
+  systemEffectWrite
+} from "../../system/effect-editor.js"
+import {
+  relayNeedsConfirmation
+} from "../../system/damage-relay.js"
+import {
+  hasAegis, absorbWithAegis, isActiveGM, aegisLedger, setAegisLedger
+} from "../../system/aegis.js"
 import {
   SR5_EntityHelpers 
 } from "../helpers.js"
+import {
+  ownsTarget, bounded, consumedKey
+} from "../../rolls/roll-helpers/socket-guard.js"
 import {
   isStorable, isStoredAway 
 } from "../../interface/storage-rules.js"
@@ -11,8 +26,14 @@ import {
   SR5Combat 
 } from "../../system/srcombat.js"
 import {
-  SR5_SystemHelpers 
+  SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
+import {
+  extendTimedEffect
+} from "../../system/effect-expiry.js"
+import {
+  calendarStartYear
+} from "../../system/calendar.js"
 import {
   SR5_CompendiumUtility 
 } from "./utilityCompendium.js"
@@ -37,6 +58,15 @@ import {
 import {
   SR5_SpiritTypes
 } from "../items/spirit-types.js"
+import {
+  isReplaceEffectType
+} from "./effect-replace.js"
+import {
+  readsRoll, effectCardVerdict, cardNetHits
+} from "../../rolls/roll-helpers/effect-card.js"
+import {
+  entryValue, transferEntries, compareDefinitions, definitionsMatch, definitionPrint
+} from "./effect-definition.js"
 import {
   isAreaSpellTemplateGone
 } from "../../system/areaEffectScene.js"
@@ -73,13 +103,32 @@ export class SR5_ActorHelper {
           if (isMatrixDamage) damage = options.damage.matrix.value
           actorData.conditionMonitors.condition.actual.base += damage
           SR5_EntityHelpers.updateValue(actorData.conditionMonitors.condition.actual, 0)
-          const unit = isMatrixDamage ? "" : game.i18n.localize(SR5.damageTypesShort[damageType] ?? "")
-          ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${damage}${unit} ${game.i18n.localize("SR5.Applied")}.`)
+          const applied = isMatrixDamage ? ` ${game.i18n.localize("SR5.AppliedMatrixDamage")}` : `${game.i18n.localize(SR5.damageTypesShort[damageType] ?? "")} ${game.i18n.localize("SR5.Applied")}`
+          ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${damage}${applied}.`)
           break
         }
         if (options.damage.matrix.value > 0) {
           damage = options.damage.matrix.value
           damageType = "stun"
+          //Aegis (Kill Code p. 112): the shield takes the boxes first; its ledger is the active GM's alone
+          if (hasAegis(realActor)) {
+            if (isActiveGM()) {
+              const result = absorbWithAegis(aegisLedger(realActor), damage, game.time.worldTime)
+              await setAegisLedger(realActor, result.ledger)
+              //Said to the GM and whispered to the owners, who cannot read the GM's notifications
+              if (result.absorbed > 0) {
+                const text = game.i18n.format("SR5.INFO_AegisAbsorbed", {
+                  name: realActor.name, absorbed: result.absorbed, left: 4 - result.ledger.damage
+                })
+                ui.notifications.info(text)
+                const owners = game.users.filter(u => !u.isGM && realActor.testUserPermission(u, "OWNER")).map(u => u.id)
+                if (owners.length) await ChatMessage.create({
+                  content: foundry.utils.escapeHTML(text), whisper: owners
+                })
+              }
+              damage = result.through
+            } else ui.notifications.warn(game.i18n.localize("SR5.WARN_AegisNeedsActiveGM"))
+          }
         }
         if (damageType === "stun") {
           actorData.conditionMonitors.stun.actual.base += damage
@@ -157,7 +206,10 @@ export class SR5_ActorHelper {
       case "actorSpirit":
         if (singleMonitor) {
           // A full core monitor dissipates the AI (Data Trails p. 161)
-          if (actorData.conditionMonitors.condition.actual.value >= realActor.system.conditionMonitors.condition.value) await SR5_ActorHelper.createDeadEffect(actorId)
+          // The overflow is only a hint for the GM's dissipation card (ai-dissipation.js), who confirms it
+          if (actorData.conditionMonitors.condition.actual.value >= realActor.system.conditionMonitors.condition.value) await SR5_ActorHelper.createDeadEffect(actorId, {
+            surplus: actorData.conditionMonitors.condition.actual.value - realActor.system.conditionMonitors.condition.value
+          })
           break
         }
         if (actorData.conditionMonitors.physical.actual.value >= actorData.conditionMonitors.physical.value) {
@@ -233,8 +285,38 @@ export class SR5_ActorHelper {
     }
   }
 
-  static async _socketTakeDamage(message){
-    await SR5_ActorHelper.takeDamage(message.data.actorId, message.data.options)
+  // senderId comes from the server and cannot be forged. Damage relayed by the actor's owner (or a GM) is applied.
+  // Some legitimate relays come from someone else: the defender who sends matrix damage back to the attacker
+  // (defenderDoMatrixDamage), the healer whose critical glitch hurts the patient (SR5 p. 207). Those are never
+  // applied on the sender's word: the GM confirms them first, and a refusal is whispered to the GM
+  static async _socketTakeDamage(message, senderId){
+    const actor = SR5_EntityHelpers.getRealActorFromID(message.data?.actorId)
+    const sender = game.users.get(senderId)
+    if (!actor || !sender) return
+    if (!relayNeedsConfirmation(actor, sender)) return SR5_ActorHelper.takeDamage(message.data.actorId, message.data.options)
+    const damage = message.data.options?.damage ?? {
+    }
+    const amount = Number(damage.matrix?.value) > 0 ? `${damage.matrix.value} ${game.i18n.localize("SR5.MatrixDamage")}` : `${Number(damage.value) || 0}${game.i18n.localize(SR5.damageTypesShort[damage.type] ?? "")}`
+    const text = game.i18n.format("SR5.DamageRelayConfirm", {
+      user: sender.name, actor: actor.name, amount
+    })
+    const ok = await foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: game.i18n.localize("SR5.DamageRelayTitle")
+      }, content: `<p>${foundry.utils.escapeHTML(text)}</p>`,
+      yes: {
+        label: game.i18n.localize("SR5.Yes")
+      },
+      no: {
+        label: game.i18n.localize("SR5.No")
+      },
+    }).catch(() => false)
+    if (ok) return SR5_ActorHelper.takeDamage(message.data.actorId, message.data.options)
+    await ChatMessage.create({
+      content: foundry.utils.escapeHTML(game.i18n.format("SR5.DamageRelayRefused", {
+        user: sender.name, actor: actor.name, amount
+      })), whisper: ChatMessage.getWhisperRecipients("GM").map(u => u.id)
+    })
   }
 
   //Handle prone effect
@@ -296,16 +378,26 @@ export class SR5_ActorHelper {
     }
     for (let i = 0; i < 20 && !isFull(); i++) await new Promise(r => setTimeout(r, 100))
     if (!isFull()) return
-    await SR5_ActorHelper.createDeadEffect(message.data.actorId)
+    await SR5_ActorHelper.createDeadEffect(message.data.actorId, {
+      //The overflow was worked out by the player's client: the GM's card says so
+      surplus: message.data.surplus, itemUuid: message.data.itemUuid, fromPlayer: true
+    })
   }
 
   //Handle death effect
-  static async createDeadEffect(actorId){
+  //aiDissipation: what the GM's dissipation card of an AI starts from (Data Trails p. 161), never applied as is
+  static async createDeadEffect(actorId, aiDissipation){
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
     for (let e of actor.effects){
       if (e.statuses.has("dead")) return
     }
     let effect = await _getSRStatusEffect("dead")
+    if (aiDissipation && actor.system.activeSpecialAttribute === "depth") effect.flags.sr5 = {
+      aiDissipation: {
+        surplus: Math.max(0, Math.trunc(Number(aiDissipation.surplus) || 0)), itemUuid: aiDissipation.itemUuid ?? null,
+        fromPlayer: !game.user?.isGM || !!aiDissipation.fromPlayer
+      }
+    }
     await actor.createEmbeddedDocuments('ActiveEffect', [effect])
     ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.INFO_DamageActorDead")}`)
     await SR5_ActorHelper.dropSpoilsOnDeath(actor)
@@ -396,9 +488,10 @@ export class SR5_ActorHelper {
     let existingEffect = actor.items.find((item) => item.type === "itemEffect" && item.system.type === "electricityDamage")
 
     if (existingEffect){
-      let updatedEffect = existingEffect.toObject(false)
-      updatedEffect.system.duration += 1
-      await actor.updateEmbeddedDocuments("Item", [updatedEffect])
+      //Only the duration, read from the source: the prepared item written back would put its computed values in the source
+      await actor.updateEmbeddedDocuments("Item", [{
+        _id: existingEffect.id, "system.duration": (Number(existingEffect.toObject().system.duration) || 0) + 1
+      }])
       ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${existingEffect.name} ${game.i18n.localize("SR5.INFO_DurationExtendOneRound")}.`)
     } else {
       let effect = {
@@ -421,7 +514,7 @@ export class SR5_ActorHelper {
         }
       }
       ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${effect.name} ${game.i18n.localize("SR5.Applied")}.`)
-      await SR5Combat.changeInitInCombatHelper(actorId, -5)
+      await SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), -5)
       await actor.createEmbeddedDocuments("Item", [effect])
 
       let statusEffect = await _getSRStatusEffect("electricityDamage")
@@ -436,9 +529,8 @@ export class SR5_ActorHelper {
     let existingEffect = actor.items.find((item) => item.type === "itemEffect" && item.system.type === "dumpshock")
 
     if (existingEffect){
-      if (existingEffect.system.duration < duration) await existingEffect.update({
-        "system.duration": duration
-      })
+      //A new dumpshock restarts the count from now on the world clock, never shortening the one running
+      await existingEffect.update(extendTimedEffect(existingEffect.system, duration, game.time.worldTime, calendarStartYear()))
       return
     }
 
@@ -513,7 +605,7 @@ export class SR5_ActorHelper {
     }
 
     ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${effect.name} ${game.i18n.localize("SR5.Applied")}.`)
-    await SR5Combat.changeInitInCombatHelper(actorId, -5)
+    await SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), -5)
     await actor.createEmbeddedDocuments("Item", [effect])
 
     let statusEffect = await _getSRStatusEffect("anticoagulantDamage")
@@ -528,7 +620,9 @@ export class SR5_ActorHelper {
 
     let armor = actor.items.find((item) => item.type === "itemArmor" && item.system.isActive && !item.system.isAccessory)
     if (armor){
-      let updatedArmor = armor.toObject(false)
+      //Only the effects, copied from the source: the prepared armor written back put its computed values (price,
+      //availability, matrix monitor) in the source, with the effects other items had injected into it
+      let itemEffects = SR5_ActorHelper.sourceItemEffects(armor)
       let armorEffect = {
         "name": `${game.i18n.localize("SR5.ElementalDamage")} (${game.i18n.localize("SR5.ElementalDamageAcid")})`,
         "target": "system.armorValue",
@@ -537,8 +631,10 @@ export class SR5_ActorHelper {
         "value": -1,
         "multiplier": 1
       }
-      updatedArmor.system.itemEffects.push(armorEffect)
-      await actor.updateEmbeddedDocuments("Item", [updatedArmor])
+      itemEffects.push(armorEffect)
+      await actor.updateEmbeddedDocuments("Item", [{
+        _id: armor.id, "system.itemEffects": itemEffects
+      }], systemEffectWrite())
       ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_AcidReduceArmor", {
         armor: armor.name
       })}`)
@@ -558,7 +654,7 @@ export class SR5_ActorHelper {
     }
 		
     ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${effect.name} ${game.i18n.localize("SR5.Applied")}.`)
-    await SR5Combat.changeInitInCombatHelper(actorId, -5)
+    await SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), -5)
     await actor.createEmbeddedDocuments("Item", [effect])
 
     let statusEffect = await _getSRStatusEffect("acidDamage")
@@ -601,6 +697,26 @@ export class SR5_ActorHelper {
     actor.rollTest("resistFire", null, rollInfo)
   }
 
+  //SR5 p. 231: leaving the Matrix in VR without switching cleanly to AR first deals dumpshock (6S in cold sim,
+  //6P in hot sim), link lock or not: jack out, reboot, brick, convergence, any forced stop. Nothing once in AR.
+  //DjamZ's ruling, 2026-10-06: "ce sont les débranchements d'urgence qui provoquent le choc". An AI (Depth active,
+  //Data Trails p. 152) has no dumpshock, it is dissipated instead (decided by DjamZ, 04/10)
+  //bricked: the deck threw the character out by bricking, Willpower alone resists (SR5 p. 231)
+  static dumpshockIfInVR(actor, {
+    bricked = false
+  } = {
+  }) {
+    let userMode = actor?.system.matrix?.userMode
+    if (!userMode || userMode === "ar") return false
+    if ((actor.type === "actorPc" || actor.type === "actorGrunt") && actor.system.activeSpecialAttribute === "depth") return false
+    //The resistance card reads owner and roll from the card it follows: a bare object crashed it (SR5 p. 229)
+    let dumpshockData = SR5_PrepareRollTest.getBaseRollData(null, actor)
+    dumpshockData.damage.resistanceType = "dumpshock"
+    if (bricked) dumpshockData.damage.bricked = true
+    actor.rollTest("resistanceCard", null, dumpshockData)
+    return true
+  }
+
   //Raise owerwatch score
   static async overwatchIncrease(defenseHits, actorId) {
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
@@ -609,15 +725,41 @@ export class SR5_ActorHelper {
     //A negative value can lower the score (Emulate swapped for the hits, Data Trails p. 159), never below 0, where it
     //starts and where a reboot brings it back (SR5 p. 244): the direct call and the GM side of the socket both end here
     actorData.matrix.overwatchScore = Math.max(0, (actorData.matrix.overwatchScore || 0) + defenseHits)
+    //Only the Emulate swap lowers it here: written from the AI owner's browser, it is a lowering of her own (overwatch-guard.js)
     actor.update({
       system: actorData
+    }, defenseHits < 0 ? {
+      sr5OverwatchLower: "emulate"
+    } : {
     })
     ui.notifications.info(`${actor.name}, ${game.i18n.localize("SR5.OverwatchScoreActual")} ${actorData.matrix.overwatchScore}`)
   }
 
   //Socket for increasing overwatch score;
-  static async _socketOverwatchIncrease(message) {
-    await SR5_ActorHelper.overwatchIncrease(message.data.defenseHits, message.data.actorId)
+  //Believed only from a player who owns the actor: anyone else could raise or lower any score from a console
+  //Its owner only raises it (a negative relay brought a score from 3 to 0, measured by Quitterie); the
+  //defender who relays the Overwatch button raises the hacker's score by the hits of her defense card,
+  //read again by the GM, once (security lot, Thomas)
+  static async _socketOverwatchIncrease(message, senderId) {
+    const sender = game.users.get(senderId),
+      data = message?.data ?? {
+      },
+      actor = SR5_EntityHelpers.getRealActorFromID(data.actorId)
+    if (!sender || !actor) return SR5_SystemHelpers.srLog(1, `overwatchIncrease refused from ${senderId}`)
+    if (sender.isGM) return SR5_ActorHelper.overwatchIncrease(data.defenseHits, data.actorId)
+    const hits = Math.floor(Number(data.defenseHits))
+    if (actor.testUserPermission?.(sender, "OWNER") && !data.messageId) {
+      if (!(Number.isFinite(hits) && hits >= 0)) return SR5_SystemHelpers.srLog(1, `overwatchIncrease refused from ${sender.name}`, data)
+      return SR5_ActorHelper.overwatchIncrease(hits, data.actorId)
+    }
+    const [{
+      SR5_MarkHelpers
+    }, {
+      SR5_MiscellaneousHelpers
+    }] = await Promise.all([import("../../rolls/roll-helpers/mark.js"), import("../../rolls/roll-helpers/miscellaneous.js")])
+    const use = await SR5_MarkHelpers.overwatchUse(data.messageId, actor)
+    if (!use || !(await SR5_MiscellaneousHelpers.grant(use, sender))) return SR5_SystemHelpers.srLog(1, `overwatchIncrease refused from ${sender.name}`, data)
+    await SR5_ActorHelper.overwatchIncrease(use.value, data.actorId)
   }
 
   //Delete Marks on Other actors
@@ -651,8 +793,19 @@ export class SR5_ActorHelper {
   }
 
   //Socket for deletings marks on other actors;
-  static async _socketDeleteMarksOnActor(message) {
-    await SR5_ActorHelper.deleteMarksOnActor(message.data.actorData, message.data.actorId)
+  //Only the marker's owner forgets its own marks: the list sent only says where to look, and nothing but the
+  //marks of actorId is ever removed there (the reboot clears its sheet meanwhile, so the GM cannot read it again)
+  static async _socketDeleteMarksOnActor(message, senderId) {
+    const data = message?.data ?? {
+    }
+    if (!isActiveGM()) return
+    if (!SR5_ActorHelper.socketOwns(senderId, SR5_EntityHelpers.getRealActorFromID(data.actorId))) return SR5_ActorHelper.refuseSocket("deleteMarksOnActor", senderId, data)
+    const markedItems = (data.actorData?.matrix?.markedItems ?? []).filter(m => typeof m?.uuid === "string")
+    await SR5_ActorHelper.deleteMarksOnActor({
+      matrix: {
+        markedItems
+      }
+    }, data.actorId)
   }
 
   //Delete Mark info from deck
@@ -697,8 +850,20 @@ export class SR5_ActorHelper {
   }
 
   //Socket for deletings marks info other actors;
-  static async _socketDeleteMarkInfo(message) {
-    await SR5_ActorHelper.deleteMarkInfo(message.data.actorId, message.data.item, message.data.exact)
+  //Sent by the owner of what was marked (a reboot, SR5 p. 244), on the marker's deck: believed for the marker's
+  //owner, or for traces that all point at documents the sender owns
+  static async _socketDeleteMarkInfo(message, senderId) {
+    const data = message?.data ?? {
+    }
+    if (!isActiveGM()) return
+    const marker = SR5_EntityHelpers.getRealActorFromID(data.actorId)
+    if (!marker || typeof data.item !== "string" || !data.item) return SR5_ActorHelper.refuseSocket("deleteMarkInfo", senderId, data)
+    if (!SR5_ActorHelper.socketOwns(senderId, marker)) {
+      const deck = marker.items?.find?.(d => d.type === "itemDevice" && d.system.isActive)
+      const traces = data.exact ? [data.item] : (deck?.system?.markedItems ?? []).map(m => m.uuid).filter(uuid => uuid?.includes(data.item))
+      if (!traces.length || !traces.every(uuid => SR5_ActorHelper.socketOwns(senderId, fromUuidSync(uuid)))) return SR5_ActorHelper.refuseSocket("deleteMarkInfo", senderId, data)
+    }
+    await SR5_ActorHelper.deleteMarkInfo(data.actorId, data.item, !!data.exact)
   }
 
   //Create a Sidekick
@@ -759,6 +924,8 @@ export class SR5_ActorHelper {
         "system.type": itemData.type,
         "system.force.base": itemData.itemRating,
         "system.isBounded": itemData.isBounded,
+        "system.isElemental": itemData.isElemental,
+        "system.leashTight": itemData.leashTight,
         "system.services.value": itemData.services.value,
         "system.services.max": itemData.services.max,
         "system.summonerMagic": itemData.summonerMagic,
@@ -930,6 +1097,9 @@ export class SR5_ActorHelper {
         "system.biography.description": itemData.description,
         "system.creatorId": actorId,
         "system.creatorItemId": item._id,
+        // Its lock goes with it: a safe put down is still shut
+        "system.lock": foundry.utils.duplicate(itemData.lock ?? {
+        }),
         // A bag on the floor takes half a square, not a whole one, and it is
         // pushed about rather than walking anywhere
         "prototypeToken.width": 0.5,
@@ -981,8 +1151,29 @@ export class SR5_ActorHelper {
   }
 
   //Socket for creating sidekick;
-  static async _socketCreateSidekick(message) {
-    await SR5_ActorHelper.createSidekick(message.data.item, message.data.userId, message.data.actorId)
+  //The GM builds the actor from the item of the creator's sheet, never from the object sent, and gives it to the
+  //sender: a player's console created any actor, owned by anyone (security pass, Olympe)
+  static async _socketCreateSidekick(message, senderId) {
+    const data = message?.data ?? {
+    }
+    if (!isActiveGM()) return
+    const owner = SR5_EntityHelpers.getRealActorFromID(data.actorId)
+    const item = owner?.items?.get?.(data.item?._id)
+    if (!SR5_ActorHelper.socketOwns(senderId, owner) || !SR5_ActorHelper.SIDEKICK_ITEMS.includes(item?.type)) return SR5_ActorHelper.refuseSocket("createSidekick", senderId, data)
+    await SR5_ActorHelper.createSidekick(item.toObject(false), senderId, data.actorId)
+  }
+
+  //The items that put an actor on the map (createSidekick)
+  static SIDEKICK_ITEMS = ["itemSpirit", "itemVehicle", "itemSprite", "itemProgram", "itemContact", "itemStorage"]
+
+  //Whether the sender may write on a document: a GM, or an owner of it (of the actor holding an item)
+  static socketOwns(senderId, document){
+    return ownsTarget(game.users?.get(senderId), document)
+  }
+
+  static refuseSocket(type, senderId, data){
+    SR5_SystemHelpers.srLog(1, `${type} refused from ${senderId}`, data)
+    return false
   }
 
   //The id a sidekick keeps as system.creatorId: the token's for an unlinked actor, as _OnSidekickCreate sets it
@@ -1026,7 +1217,10 @@ export class SR5_ActorHelper {
    */
   static vehicleWirelessOn(vehicle, actors){
     if (vehicle.system?.isCreated) {
-      const drone = actors?.find(a => a.type === "actorDrone" && a.system.creatorItemId === (vehicle._id ?? vehicle.id))
+      //A duplicated character carries the same item ids: its own drone is the one its owner created
+      const creatorId = vehicle.parent ? SR5_ActorHelper.sidekickCreatorId(vehicle.parent) : undefined
+      const drone = actors?.find(a => a.type === "actorDrone" && a.system.creatorItemId === (vehicle._id ?? vehicle.id) &&
+        (creatorId === undefined || a.system.creatorId === creatorId))
       if (drone) return drone.system.wirelessTurnedOn !== false
     }
     return !!vehicle.system?.wirelessTurnedOn
@@ -1041,6 +1235,18 @@ export class SR5_ActorHelper {
    */
   static droneWirelessActionType(requiresDNI, owner, turningOn = true){
     return SR5_ActorHelper.wirelessSwitchActionType(turningOn, requiresDNI, owner?.system?.hasDNI)
+  }
+
+  /**
+   * Who may flip the wireless icon of a drone's sheet. Turning it off: anyone who holds the sheet (SR5 p. 424).
+   * Turning a switched-off drone back on is a GM shortcut (ruling of 2026-10-05): nobody can reach the drone
+   * wirelessly to ask it, so a player does not do it from her sheet (l. 845)
+   * @param {Boolean} isGM - whether the user is a GM
+   * @param {Boolean} turningOn - true when the wireless would be switched on
+   * @return {Boolean}
+   */
+  static droneWirelessToggleAllowed(isGM, turningOn){
+    return !!isGM || !turningOn
   }
 
   /**
@@ -1113,6 +1319,8 @@ export class SR5_ActorHelper {
         modifiedItem.system.conditionMonitors.stun.actual = actor.system.conditionMonitors.stun.actual
       }
       modifiedItem.system.isBounded = actor.system.isBounded
+      modifiedItem.system.isElemental = actor.system.isElemental
+      modifiedItem.system.leashTight = actor.system.leashTight
       modifiedItem.system.isCreated = false
       modifiedItem.system.powers = powers 
       if (actor.img != "systems/sr5/assets/img/actors/actorSpirit.svg" && modifiedItem.system.gameEffect.includes(actor.img) === false) {
@@ -1294,6 +1502,8 @@ export class SR5_ActorHelper {
     if (actor.type === "actorStorage"){
       modifiedItem.system.isDeployed = false
       modifiedItem.system.deployedActorId = ""
+      // Picked open or shut again on the map, it comes back as it was left
+      if (actor.system.lock) modifiedItem.system.lock = foundry.utils.duplicate(actor.system.lock)
       SR5_ActorHelper.rememberSidekickToken(modifiedItem, actor)
       // Whatever is in it comes back to the character, still stored in it
       const contents = SR5_ActorHelper.storageContentsOnMap(actor).map(i => {
@@ -1317,8 +1527,17 @@ export class SR5_ActorHelper {
   }
 
   //Socket to dismiss sidekick;
-  static async _socketDismissSidekick(message) {
-    await SR5_ActorHelper.dimissSidekick(message.data.actor)
+  //Only a sidekick of the world, dismissed by its owner or its creator's, and as the GM reads it: a player's
+  //console deleted a GM's actor by sending its _id (measured by Sixtine)
+  static async _socketDismissSidekick(message, senderId) {
+    const data = message?.data ?? {
+    }
+    if (!isActiveGM()) return
+    const actor = game.actors?.get(data.actor?._id)
+    const creator = actor?.system?.creatorId ? SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId) : null
+    const isSidekick = !!creator?.items?.get?.(actor.system.creatorItemId)
+    if (!isSidekick || !(SR5_ActorHelper.socketOwns(senderId, actor) || SR5_ActorHelper.socketOwns(senderId, creator))) return SR5_ActorHelper.refuseSocket("dismissSidekick", senderId, data)
+    await SR5_ActorHelper.dimissSidekick(actor.toObject(false))
   }
 
   //Add item to actor's PAN
@@ -1345,8 +1564,23 @@ export class SR5_ActorHelper {
     })
   }
 
-  static async _socketAddItemToPan(message){
-    await SR5_ActorHelper.addItemtoPan(message.data.targetItem, message.data.actorId)
+  //The PAN's owner slaves a device the dialog could offer her (SR5 p. 233): one of her own, or one of a
+  //player character (or linked grunt) of the table, listed among its devices, and only while the PAN has room
+  static async _socketAddItemToPan(message, senderId){
+    const data = message?.data ?? {
+    }
+    if (!isActiveGM()) return
+    const master = SR5_EntityHelpers.getRealActorFromID(data.actorId)
+    const item = typeof data.targetItem === "string" ? await fromUuid(data.targetItem) : null
+    const holder = item?.documentName === "Item" ? item.parent : null
+    const listed = Object.values(holder?.system?.matrix?.potentialPanObject ?? {
+    }).some(list => list && Object.hasOwn(list, data.targetItem))
+    const offered = SR5_ActorHelper.socketOwns(senderId, holder) ||
+      (holder?.hasPlayerOwner && (holder.type === "actorPc" || (holder.type === "actorGrunt" && holder.prototypeToken?.actorLink)))
+    const pan = master?.system?.matrix?.pan
+    const room = !pan || !(Number(pan.current) >= Number(pan.max))
+    if (!SR5_ActorHelper.socketOwns(senderId, master) || !listed || !offered || !room) return SR5_ActorHelper.refuseSocket("addItemToPan", senderId, data)
+    await SR5_ActorHelper.addItemtoPan(data.targetItem, data.actorId)
   }
 
   //Delete item from actor's PAN
@@ -1367,7 +1601,8 @@ export class SR5_ActorHelper {
     }
 
     let currentPan = foundry.utils.duplicate(deck.system.pan)
-    if (index){
+    //The socket hands a checked number over, 0 included; the sheet a string
+    if (index !== null && index !== undefined && index !== ""){
       currentPan.content.splice(index, 1)
     } else {
       index = 0
@@ -1387,25 +1622,78 @@ export class SR5_ActorHelper {
     })
   }
 
-  static async _socketDeleteItemFromPan(message){
-    await SR5_ActorHelper.deleteItemFromPan(message.data.targetItem, message.data.actorId, message.data.index)
+  //The PAN's owner takes a device out, or the device's owner takes hers back; the index is only believed when
+  //it points at the device named
+  static async _socketDeleteItemFromPan(message, senderId){
+    const data = message?.data ?? {
+    }
+    if (!isActiveGM()) return
+    const master = SR5_EntityHelpers.getRealActorFromID(data.actorId)
+    const item = typeof data.targetItem === "string" ? await fromUuid(data.targetItem) : null
+    if (!SR5_ActorHelper.socketOwns(senderId, master) && !(item && SR5_ActorHelper.socketOwns(senderId, item))) return SR5_ActorHelper.refuseSocket("deleteItemFromPan", senderId, data)
+    const deck = master?.items?.find?.(d => d.type === "itemDevice" && d.system.isActive)
+    const index = Number(data.index)
+    const pointed = Number.isInteger(index) && index >= 0 && deck?.system?.pan?.content?.[index]?.uuid === data.targetItem
+    await SR5_ActorHelper.deleteItemFromPan(data.targetItem, data.actorId, pointed ? index : null)
   }
 
-  //Update the source Item of an external Effect
-  static async linkEffectToSource(actorId, targetItem, effectUuid){
-    let item = await fromUuid(targetItem),
-      newItem = foundry.utils.duplicate(item.system)
+  //The links written on each source item, one after the other: a spell with two effects sends two requests that the
+  //socket handles at the same time, and the second, reading the item before the first was written, wrote it back
+  //without the first link
+  static LINK_QUEUE = new Map()
 
+  //Update the source Item of an external Effect
+  static linkEffectToSource(actorId, targetItem, effectUuid){
+    const previous = SR5_ActorHelper.LINK_QUEUE.get(targetItem) ?? Promise.resolve()
+    const next = previous.then(() => SR5_ActorHelper.writeEffectLink(targetItem, effectUuid))
+    const kept = next.catch(err => SR5_SystemHelpers.srLog(1, `linkEffectToSource: ${err?.message ?? err}`))
+    SR5_ActorHelper.LINK_QUEUE.set(targetItem, kept)
+    kept.then(() => {
+      if (SR5_ActorHelper.LINK_QUEUE.get(targetItem) === kept) SR5_ActorHelper.LINK_QUEUE.delete(targetItem)
+    })
+    return next
+  }
+
+  static async writeEffectLink(targetItem, effectUuid){
+    let item = await fromUuid(targetItem)
+    if (!item) return
+    let newItem = item.toObject(false).system
     if (newItem.duration === "sustained") newItem.isActive = true
     if (item.type === "itemAdeptPower" || item.type === "itemPower") newItem.isActive = true
-    newItem.targetOfEffect.push(effectUuid)
+    if (!Array.isArray(newItem.targetOfEffect)) newItem.targetOfEffect = Object.values(newItem.targetOfEffect ?? {
+    })
+    if (!newItem.targetOfEffect.includes(effectUuid)) newItem.targetOfEffect.push(effectUuid)
     await item.update({
       "system": newItem
     })
   }
 
-  static async _socketLinkEffectToSource(message){
-    await SR5_ActorHelper.linkEffectToSource(message.data.actorId, message.data.targetItem, message.data.effectUuid)
+  //Sent by whoever put the effect on its target: believed when the effect is an itemEffect of that very source,
+  //held by an actor the sender owns, and when the sender owns the source too, or the card it was applied from is
+  //the source's own (written by a GM, or by an owner of the actor that holds the source). The effect's ownerItem
+  //is the sender's to write: alone, it switched on a GM's spell (Harriet's review)
+  static async _socketLinkEffectToSource(message, senderId){
+    const data = message?.data ?? {
+    }
+    if (!isActiveGM()) return
+    //Every effect the card posed comes in one request (a spell with two effects), the card being spent once for all
+    const uuids = [...new Set(Array.isArray(data.effectUuids) ? data.effectUuids : [data.effectUuid])]
+    if (!uuids.length || uuids.length > 20 || uuids.some(u => typeof u !== "string")) return SR5_ActorHelper.refuseSocket("linkEffectToSource", senderId, data)
+    const effects = await Promise.all(uuids.map(u => fromUuid(u)))
+    const source = typeof data.targetItem === "string" ? await fromUuid(data.targetItem) : null
+    const linked = effect => effect?.type === "itemEffect" && source?.documentName === "Item" && effect.system?.ownerItem === data.targetItem
+    if (effects.some(effect => !linked(effect) || !SR5_ActorHelper.socketOwns(senderId, effect))) return SR5_ActorHelper.refuseSocket("linkEffectToSource", senderId, data)
+    if (!SR5_ActorHelper.socketOwns(senderId, source)) {
+      const {
+        SR5_MiscellaneousHelpers
+      } = await import("../../rolls/roll-helpers/miscellaneous.js")
+      const card = SR5_MiscellaneousHelpers.cardOf(data.messageId)
+      const fromSource = !!card && card.data.owner?.itemUuid === data.targetItem && !!card.roller && source.parent?.uuid === card.roller.uuid
+      //A card links its effect once: shown again, it switched back on a spell its caster no longer sustains
+      //(Harriet's second review). An area effect is linked by the GM himself (effectArea), without this socket
+      if (!fromSource || !(await SR5_MiscellaneousHelpers.consume(consumedKey(card.id, "linkEffect")))) return SR5_ActorHelper.refuseSocket("linkEffectToSource", senderId, data)
+    }
+    for (const uuid of uuids) await SR5_ActorHelper.linkEffectToSource(data.actorId, data.targetItem, uuid)
   }
 
   static async deleteSustainedEffect(targetItem){
@@ -1414,8 +1702,24 @@ export class SR5_ActorHelper {
     else SR5_SystemHelpers.srLog(2, `No item to delete in deleteSustainedEffect()`)
   }
 
-  static async _socketDeleteSustainedEffect(message){
-    await SR5_ActorHelper.deleteSustainedEffect(message.data.targetItem)
+  //The caster stopped sustaining (SR5 p. 274): believed for the effect's owner, or for an itemEffect whose source
+  //the sender owns and no longer sustains. Any other uuid deleted any item of the world (security pass, Olympe)
+  static async _socketDeleteSustainedEffect(message, senderId){
+    const data = message?.data ?? {
+    }
+    if (!isActiveGM()) return
+    const effect = typeof data.targetItem === "string" ? await fromUuid(data.targetItem) : null
+    if (!effect) return
+    if (!SR5_ActorHelper.socketOwns(senderId, effect)) {
+      //Only an effect that lasts while sustained goes with the sustaining (Harriet's review)
+      const sustained = effect.type === "itemEffect" && effect.system?.durationType === "sustained"
+      const source = sustained && typeof effect.system?.ownerItem === "string" ? await fromUuid(effect.system.ownerItem) : null
+      //Every effect a card puts is marked sustained: what is read is the source, a sustained spell or form, or a
+      //power switched off (as the sheet's switch sends it); Harriet's second review
+      const sustains = ["itemAdeptPower", "itemPower"].includes(source?.type) || source?.system?.duration === "sustained"
+      if (!source || !sustains || source.system?.isActive || !SR5_ActorHelper.socketOwns(senderId, source)) return SR5_ActorHelper.refuseSocket("deleteSustainedEffect", senderId, data)
+    }
+    await SR5_ActorHelper.deleteSustainedEffect(data.targetItem)
   }
 
   //Delete an effect on an item when parent's ItemEffect is deleted
@@ -1438,7 +1742,7 @@ export class SR5_ActorHelper {
         }
         if (needUpdate) await i.update({
           "system": dataToUpdate
-        })
+        }, systemEffectWrite())
       }
     }
   }
@@ -1505,7 +1809,8 @@ export class SR5_ActorHelper {
 
   //Manage Healing
   static async heal(targetActorID, data){
-    let damageToRemove = data.roll.netHits,
+    //A heal never deals damage: a negative count filled the monitor (Quitterie, measured from a player's console)
+    let damageToRemove = Math.max(0, Math.floor(Number(data.roll?.netHits)) || 0),
       damageType = data.test.typeSub,
       targetActor = SR5_EntityHelpers.getRealActorFromID(targetActorID),
       actorData = foundry.utils.deepClone(targetActor)
@@ -1521,9 +1826,9 @@ export class SR5_ActorHelper {
       actorData.system.conditionMonitors[damageType].actual.base -= damageToRemove
       await SR5_EntityHelpers.updateValue(actorData.system.conditionMonitors[damageType].actual, 0)
     }
-    await targetActor.update({
-      system: actorData.system
-    })
+    //Only the stored fields of the monitor: the whole prepared system written back put every computed value in the
+    //source, and the next preparation added its modifiers again (fatigue resistance 7, then 14, then 21)
+    await targetActor.update(SR5_ActorHelper.monitorSourceUpdate(damageType, actorData.system.conditionMonitors[damageType]))
     await SR5_ActorHelper.clearDamageKnockout(targetActor)
   }
 
@@ -1541,6 +1846,23 @@ export class SR5_ActorHelper {
 
   // Remove boxes from a monitor, aggravated boxes first costing two hits each (Howling Shadows p. 213):
   // the first hit turns the aggravated box into a normal one, the second removes it. Returns the unused hits.
+  //The stored fields of a condition monitor, for an update by path. A prepared copy of the system (toObject(false))
+  //must never be written back whole: its modifiers would be in the source, and the next preparation adds them again
+  static monitorSourceUpdate(key, monitor){
+    let updates = {
+      [`system.conditionMonitors.${key}.actual.base`]: monitor.actual.base
+    }
+    if (monitor.aggravated !== undefined) updates[`system.conditionMonitors.${key}.aggravated`] = monitor.aggravated
+    return updates
+  }
+
+  //The custom effects of an item as stored (an object in older data), never the prepared ones: the preparation may add
+  //effects to them (a weapon focus) that would then be written in the source
+  static sourceItemEffects(item){
+    let effects = item.toObject().system.itemEffects ?? []
+    return Array.isArray(effects) ? effects : Object.values(effects)
+  }
+
   static healMonitorBoxes(monitor, hits){
     let aggravated = Math.min(monitor.aggravated || 0, monitor.actual.value)
     let normal = Math.max(monitor.actual.value - aggravated, 0)
@@ -1561,8 +1883,149 @@ export class SR5_ActorHelper {
   }
 
   //Manage Healing by socket
-  static async _socketHeal(message){
-    await SR5_ActorHelper.heal(message.data.targetActor, message.data.healData)
+  //A player heals a patient she does not own (Heal, SR5 p. 291): the GM reads the casting card himself, from the chat
+  //log and not from the request. Only the card's author may ask, once: the button is removed, and the card is kept in
+  //a ledger the active GM alone writes (its author could put the button back in the flags). applyExternalEffect then
+  //counts its hits again and asks the GM to confirm them (checkEffectCard)
+  static async _socketApplyHealEffect(message, senderId){
+    const card = game.messages.get(message.data?.messageId)
+    if (!card || !senderId || card.author?.id !== senderId) return
+    const data = foundry.utils.deepClone(card.flags?.sr5data)
+    if (!data?.chatCard?.buttons?.applyEffect) return
+    const item = await fromUuid(data.owner?.itemUuid)
+    const {
+      healsDamage
+    } = await import("../../rolls/roll-helpers/cardRoller.js")
+    if (!healsDamage(item?.system?.customEffects)) return
+    const patient = SR5_EntityHelpers.getRealActorFromID(message.data.targetActor)
+    if (!patient) return
+    const {
+      claimHealCard, healCardClaimed, healCardDiceKey, releaseHealCard, treatmentAllowed, woundEntry, woundTotal, recordTreatment
+    } = await import("../../system/heal-ledger.js")
+    //A card is known by its id and by its dice: an exact copy of it is a new message with the same dice (Quitterie,
+    //S4). A retouched copy is stopped by the group of wounds below, read on the patient
+    const keys = [card.id, healCardDiceKey(data)]
+    if (healCardClaimed(keys)) return
+    //Heal once per group of wounds (SR5 p. 207-208; Harriet's second review)
+    if (!treatmentAllowed(woundEntry(patient.uuid), "heal", woundTotal(patient))) {
+      return SR5_ActorHelper.whisperGM(game.i18n.format("SR5.WARN_WoundGroupTreated", {
+        user: game.users.get(senderId)?.name ?? "?", patient: patient.name
+      }))
+    }
+    //The GM confirms the hits first, and the card is spent only on his yes: a no leaves it to be shown again (S5)
+    data.owner.messageId = card.id
+    //What the player's sheet defines, shown in the same window as the hits: one window (definitionReview)
+    const review = await SR5_ActorHelper.definitionReview(item, patient, "customEffects", data)
+    const roll = await SR5_ActorHelper.checkEffectCard(data, item, review)
+    if (!roll || !(await claimHealCard(keys))) return
+    //Counted and confirmed: applied without asking again (no card to read is a card already read)
+    const applied = await patient.applyExternalEffect({
+      ...data, roll: {
+        ...data.roll, ...roll
+      }, owner: {
+        ...data.owner, messageId: null
+      }
+    }, "customEffects", review)
+    //Refused inside, after the GM's yes (Sophie's false): the card is given back and keeps its button
+    if (applied === false) return releaseHealCard(keys)
+    await recordTreatment(patient.uuid, "heal", woundTotal(patient))
+    //Loaded here: roll-message imports this file
+    const {
+      SR5_RollMessage
+    } = await import("../../rolls/roll-message.js")
+    await SR5_RollMessage.updateChatButton(card.id, "applyEffect")
+  }
+
+  //A note for the GMs alone, in the chat
+  static async whisperGM(text){
+    await ChatMessage.create({
+      content: `<p>${foundry.utils.escapeHTML(text)}</p>`, whisper: game.users.filter(u => u.isGM).map(u => u.id),
+    })
+  }
+
+  //First aid on a patient the player does not own (SR5 p. 207). The healData sent healed anyone of any number of
+  //boxes, as many times as asked (Romane): the GM reads the card from the chat log, counts its hits again within
+  //the first aid pool, bounds the boxes by them, asks to confirm, and spends the card once per patient
+  static async _socketHeal(message, senderId){
+    const data = message?.data ?? {
+    }
+    if (!isActiveGM()) return
+    const sender = game.users?.get(senderId)
+    const patient = SR5_EntityHelpers.getRealActorFromID(data.targetActor)
+    if (!sender || !patient) return
+    if (SR5_ActorHelper.socketOwns(senderId, patient)) return SR5_ActorHelper.heal(data.targetActor, data.healData)
+    const healData = await SR5_ActorHelper.firstAidByCard(data, patient, sender)
+    if (!healData) return SR5_ActorHelper.refuseSocket("heal", senderId, data)
+    if (await SR5_ActorHelper.heal(data.targetActor, healData) === false) return
+    //This group of wounds has had its first aid (SR5 p. 207)
+    const {
+      recordTreatment, woundTotal
+    } = await import("../../system/heal-ledger.js")
+    await recordTreatment(patient.uuid, "firstAid", woundTotal(patient))
+  }
+
+  /**
+   * The healing a first aid card stands for, as the GM works it out again: null when the card does not back it.
+   * @param {object} data the request: messageId, healData (the monitor asked, the boxes claimed)
+   * @param {Actor} patient
+   * @param {User} sender
+   */
+  static async firstAidByCard(data, patient, sender){
+    const {
+      SR5_MiscellaneousHelpers
+    } = await import("../../rolls/roll-helpers/miscellaneous.js")
+    const {
+      patientMonitors, firstAidHealedBoxes
+    } = await import("../../rolls/roll-helpers/cardRoller.js")
+    const {
+      stabilizedTreatmentBoxes
+    } = await import("../../system/bb-healing-rules.js")
+    const card = SR5_MiscellaneousHelpers.cardOf(data.messageId)
+    if (!card || card.data.test?.typeSub !== "firstAid" || !ownsTarget(sender, card.roller)) return null
+    //Once per group of wounds, and never after a Heal spell (SR5 p. 207-208): read on the patient, not on the card,
+    //so that a retouched copy of the card treats nothing more (Harriet's second review)
+    const {
+      treatmentAllowed, woundEntry, woundTotal
+    } = await import("../../system/heal-ledger.js")
+    if (!treatmentAllowed(woundEntry(patient.uuid), "firstAid", woundTotal(patient))) {
+      await SR5_ActorHelper.whisperGM(game.i18n.format("SR5.WARN_WoundGroupTreated", {
+        user: sender.name, patient: patient.name
+      }))
+      return null
+    }
+    const type = data.healData?.test?.typeSub
+    if (!patientMonitors(patient).includes(type)) return null
+    //A card whose hits are more than its dice show was changed after the roll
+    const hits = SR5_MiscellaneousHelpers.hitsOf(card, "skills.firstAid.test.dicePool")
+    if (hits === null || (Number(card.data.roll?.hits) || 0) > hits) return null
+    const rating = Number(card.roller.system?.skills?.firstAid?.rating?.value) || 0
+    //The medkit read on the healer's sheet, never on the card (Harriet's review)
+    const medkit = Math.max(0, ...Array.from(card.roller.items ?? []).filter(i => i.system?.isMedkit).map(i => Number(i.system.itemRating) || 0))
+    const most = Math.max(firstAidHealedBoxes(hits, 2, rating, false), stabilizedTreatmentBoxes(hits, 2, rating, medkit, false))
+    const boxes = bounded(data.healData?.roll?.netHits, Math.min(most, Number(card.data.roll?.netHits) || 0))
+    if (boxes <= 0) return null
+    //An exact copy of the card is a new message with the same dice: known by its dice too (Quitterie, S4); a retouched copy is left to the GM
+    const {
+      healCardDiceKey
+    } = await import("../../system/heal-ledger.js")
+    const diceKey = healCardDiceKey(card.data)
+    if (diceKey && SR5_MiscellaneousHelpers.isConsumed(`${diceKey}|firstAid`)) return null
+    //One test treats one patient (SR5 p. 207): the card is spent on the first, whoever it is. The GM is shown the
+    //hits counted again, and the boxes asked
+    const granted = await SR5_MiscellaneousHelpers.grant({
+      card, key: consumedKey(card.id, "firstAid"), label: "firstAid", value: hits,
+      target: game.i18n.format("SR5.SocketUseFirstAidTarget", {
+        name: patient.name, boxes
+      }),
+    }, sender)
+    if (!granted || (diceKey && !(await SR5_MiscellaneousHelpers.consume(`${diceKey}|firstAid`)))) return null
+    return {
+      test: {
+        typeSub: type
+      }, roll: {
+        netHits: boxes
+      }
+    }
   }
 
   //Manage Regeneration
@@ -1572,52 +2035,335 @@ export class SR5_ActorHelper {
     let actorData = foundry.utils.deepClone(actor)
     actorData = actorData.toObject(false)
 
-    if (actorData.type === "actorGrunt"){
-      if (actorData.system.conditionMonitors.condition.actual.value > 0){
+    // A single condition monitor: grunts, and the watcher, homunculus or AI core (no Physical monitor), as in takeDamage()
+    const monitors = actorData.system.conditionMonitors
+    const singleMonitor = actorData.type === "actorGrunt" || (monitors.condition && !monitors.physical)
+    if (singleMonitor){
+      if (monitors.condition?.actual.value > 0){
         damageToRemove = SR5_ActorHelper.healMonitorBoxes(actorData.system.conditionMonitors.condition, damageToRemove)
       }
     } else {
-      if (actorData.system.conditionMonitors.overflow.actual.value > 0){
+      // A spirit has no overflow monitor (Physical and Stun only)
+      if (actorData.system.conditionMonitors.overflow?.actual.value > 0){
         actorData.system.conditionMonitors.overflow.actual.base -= damageToRemove
         damageToRemove -= actorData.system.conditionMonitors.overflow.actual.value
         await SR5_EntityHelpers.updateValue(actorData.system.conditionMonitors.overflow.actual, 0)
       }
-      if (actorData.system.conditionMonitors.physical.actual.value > 0 && damageToRemove > 0){
+      if (actorData.system.conditionMonitors.physical?.actual.value > 0 && damageToRemove > 0){
         damageToRemove = SR5_ActorHelper.healMonitorBoxes(actorData.system.conditionMonitors.physical, damageToRemove)
       }
-      if (actorData.system.conditionMonitors.stun.actual.value > 0 && damageToRemove > 0){
+      if (actorData.system.conditionMonitors.stun?.actual.value > 0 && damageToRemove > 0){
         actorData.system.conditionMonitors.stun.actual.base -= damageToRemove
         damageToRemove -= actorData.system.conditionMonitors.stun.actual.value
         await SR5_EntityHelpers.updateValue(actorData.system.conditionMonitors.stun.actual, 0)
       }
     }
 
-    await actor.update({
-      system: actorData.system
-    })
+    //Only the stored fields of the monitors, as in heal(): the whole prepared copy put the computed values in the source
+    let updates = {
+    }
+    for (let key of ["condition", "overflow", "physical", "stun"]) {
+      if (actorData.system.conditionMonitors[key]?.actual) Object.assign(updates, SR5_ActorHelper.monitorSourceUpdate(key, actorData.system.conditionMonitors[key]))
+    }
+    await actor.update(updates)
     await SR5_ActorHelper.clearDamageKnockout(actor)
   }
 
   //Apply an external effect to actor (such spell, complex form). Data is provided by chatMessage
-  static async applyExternalEffect(actorId, data, effectType){
+  //The hits and net hits of a casting card written by a player and applied by someone else (the GM, or the owner of
+  //the target), counted again (roll-helpers/effect-card.js), and confirmed when the GM applies it. The card's own
+  //figures when its author applies it himself (his own actor), or when it is the GM's. null when the card is
+  //rejected or the GM declines
+  //`review` (definitionReview): what the sheet defines, shown in the same window
+  static async checkEffectCard(data, item, review = null){
+    const claimed = {
+      hits: data.roll?.hits, netHits: data.roll?.netHits
+    }
+    const message = game.messages?.get(data.owner?.messageId)
+    const author = message?.author
+    //Never filtered on the test type the card states: a flag its author writes. A card whose dice are not the caster's
+    //(another player's resistance card) is rejected, the GM warned, and applied by hand
+    if (!author || author.isGM || author.id === game.user?.id) return claimed
+    const caster = SR5_EntityHelpers.getRealActorFromID(data.owner.actorId, data.actorUuids)
+    const isForm = item.type === "itemComplexForm"
+    const pool = isForm ? caster?.system?.matrix?.resonanceActions?.threadComplexForm?.test?.dicePool :
+      (caster?.system?.skills?.spellcasting?.spellCategory?.[item.system.category]?.dicePool ?? caster?.system?.skills?.spellcasting?.test?.dicePool)
+    const verdict = effectCardVerdict({
+      authorOwnsCaster: !!caster && caster.testUserPermission?.(author, "OWNER"),
+      itemOnCaster: !!caster && (item.parent === caster || item.parent?.id === caster.id),
+      rollJSON: data.roll?.r, pool, edge: caster?.system?.specialAttributes?.edge?.augmented?.value ?? 0,
+      force: isForm ? data.matrix?.level : data.magic?.force,
+      magic: isForm ? caster?.system?.specialAttributes?.resonance?.augmented?.value : caster?.system?.specialAttributes?.magic?.augmented?.value,
+      claimedHits: claimed.hits, claimedNetHits: claimed.netHits,
+    })
+    if (!verdict.ok) {
+      await ChatMessage.create({
+        whisper: game.users.filter(u => u.isGM).map(u => u.id),
+        content: `<p>${game.i18n.format("SR5.EffectCardRejected", {
+          user: author.name, item: item.name
+        })}</p>`,
+      })
+      return null
+    }
+    //A player applying it to his own character gets the hits counted again, without a dialog
+    if (!game.user?.isGM) return {
+      hits: verdict.hits, netHits: verdict.netHits
+    }
+    const notes = []
+    if (verdict.mismatch) notes.push(game.i18n.format("SR5.EffectCardMismatch", {
+      hits: claimed.hits ?? "?", netHits: claimed.netHits ?? "?"
+    }))
+    if (verdict.overPool) notes.push(game.i18n.format("SR5.EffectCardOverPool", {
+      allowed: verdict.allowed
+    }))
+    const asked = foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: "SR5.EffectCardConfirmTitle"
+      },
+      content: `<p>${game.i18n.format("SR5.EffectCardConfirm", {
+        user: author.name, caster: caster.name, item: item.name, hits: verdict.hits, netHits: verdict.netHits
+      })}</p>${notes.map(n => `<p><strong>${n}</strong></p>`).join("")}` +
+        (review ? SR5_ActorHelper.definitionHtml(review, {
+          hits: verdict.hits, netHits: verdict.netHits
+        }) : ""),
+      rejectClose: false,
+    })
+    //The same answer stands for the definition shown here (definitionDecision): an area spell asks once
+    if (review) SR5_ActorHelper.definitionDecision(review, () => asked)
+    const ok = await asked
+    return ok ? {
+      hits: verdict.hits, netHits: verdict.netHits
+    } : null
+  }
+
+  //The GM applies damage nobody resists on behalf of a player (her card, her area template, her item): he sees the
+  //boxes before they are written. The hits were already counted again and confirmed by checkEffectCard when the card
+  //is a player's and the effect reads the roll
+  static async confirmUnresistedDamage(actor, item, key, value, data, effectType){
+    if (!game.user?.isGM) return true
+    const author = game.messages?.get(data.owner?.messageId)?.author
+    if (author && !author.isGM && readsRoll(item.system[effectType])) return true
+    if (author?.isGM && !item.parent?.hasPlayerOwner) return true
+    return foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: "SR5.UnresistedDamageConfirmTitle"
+      },
+      content: `<p>${game.i18n.format("SR5.UnresistedDamageConfirm", {
+        item: item.name, actor: actor.name, value, monitor: game.i18n.localize(SR5.conditionMonitorTypes?.[key] ?? key)
+      })}</p>`,
+      rejectClose: false,
+    })
+  }
+
+  //Damage nobody resists (an addDamage effect): written in the source, as takeDamage does, never in the prepared data.
+  //Stun beyond its monitor goes to Physical, Physical beyond its monitor to the overflow, then death (carryMonitorOverflow)
+  static async addUnresistedDamage(actorId, actor, key, value){
+    const monitors = actor.toObject(false).system.conditionMonitors
+    monitors[key].actual.base += value
+    SR5_EntityHelpers.updateValue(monitors[key].actual, 0)
+    let isDead = false
+    if (monitors.stun?.actual && monitors.physical?.actual && (key === "stun" || key === "physical")) {
+      ({
+        isDead
+      } = SR5_ActorHelper.carryMonitorOverflow(monitors, actor.type))
+    }
+    const updates = {
+    }
+    for (let [k, monitor] of Object.entries(monitors)) {
+      if (monitor?.actual) updates[`system.conditionMonitors.${k}.actual.base`] = Math.min(monitor.actual.base, monitor.value ?? monitor.actual.base)
+    }
+    await actor.update(updates)
+
+    const full = m => m?.actual && m.actual.value >= m.value
+    if (actor.type === "actorPc" || actor.type === "actorSpirit") {
+      if (full(monitors.physical)) {
+        if (isDead || actor.type === "actorSpirit") await SR5_ActorHelper.createDeadEffect(actorId)
+        else await SR5_ActorHelper.createKoEffect(actorId)
+      } else if (full(monitors.stun)) {
+        if (actor.type === "actorSpirit") await SR5_ActorHelper.createDeadEffect(actorId)
+        else await SR5_ActorHelper.createKoEffect(actorId)
+      }
+    }
+    else if (actor.type === "actorGrunt" && full(monitors.condition)) await SR5_ActorHelper.createKoEffect(actorId)
+    else if (actor.type === "actorDrone" && full(monitors.condition)) await SR5_ActorHelper.createDeadEffect(actorId)
+    else if ((actor.type === "actorSprite" || actor.type === "actorDevice") && full(monitors.matrix)) await SR5_ActorHelper.createDeadEffect(actorId)
+  }
+
+  //The reference of an item a player's sheet carries: the compendium document it was taken from, else an item of the
+  //same type and name in the Item compendiums, then in the world. null when there is none
+  static async findReferenceItem(item){
+    const source = item._stats?.compendiumSource ?? item.flags?.core?.sourceId
+    if (typeof source === "string" && source.length) {
+      try {
+        const ref = await fromUuid(source)
+        if (ref && ref.type === item.type && ref.uuid !== item.uuid) return ref
+      } catch {
+        //A source that no longer exists: looked for by name
+      }
+    }
+    const same = d => d.type === item.type && d.name === item.name
+    for (const pack of game.packs?.filter(p => p.documentName === "Item") ?? []) {
+      const entry = (await pack.getIndex({
+        fields: ["type"]
+      })).find(same)
+      if (entry) return pack.getDocument(entry._id)
+    }
+    return game.items?.find(i => same(i) && i.uuid !== item.uuid) ?? null
+  }
+
+  //What the GM must see before an item of a player's sheet applies its effects to an actor she does not own (on the
+  //GM's side only): the sheet's definition, the reference's, and how they differ. null when nothing is to be checked
+  static async definitionReview(item, actor, effectType, data){
+    if (!game.user?.isGM || !item || !actor) return null
+    const owner = item.parent
+    if (owner?.documentName !== "Actor") return null
+    const players = game.users?.filter(u => !u.isGM && owner.testUserPermission?.(u, "OWNER")) ?? []
+    if (!players.length || players.some(u => actor.testUserPermission?.(u, "OWNER"))) return null
+    const reference = await SR5_ActorHelper.findReferenceItem(item)
+    const sheet = {
+      resisted: !!item.system.resisted, entries: transferEntries(item.system[effectType])
+    }
+    const ref = reference ? {
+      resisted: !!reference.system?.resisted, entries: transferEntries(reference.system?.[effectType])
+    } : null
+    if (!sheet.entries.length && !ref?.entries.length) return null
+    const print = definitionPrint(sheet, item.system?.itemRating)
+    //The resistance card of an actor the GM's template asked to resist (effectArea.js): the decision is the template's
+    //(M5 D6), as long as the sheet still defines the same thing. Found by the GM's own record, never by the card alone
+    const areaKey = data?.test?.type === "spellResistance" ?
+      SR5_ActorHelper.AREA_REVIEW_KEYS.get(SR5_ActorHelper.areaReviewKey(actor, item.uuid, data.previousMessage?.messageId)) : null
+    const fromArea = !!areaKey && areaKey.endsWith(`|${print}`)
+    return {
+      item, actor, sheet, ref, reference, diff: compareDefinitions(sheet, ref), shown: false,
+      //One decision per card, or per template for an area spell (applied token by token, effectArea.js), and for the
+      //definition shown: changed on the sheet afterwards (a multiplier raised), it is asked again
+      key: fromArea ? areaKey : `${item.uuid}|${data?.owner?.messageId ?? data?.owner?.actorId}|${print}`,
+      area: !!data?.areaTemplate || fromArea,
+      //Applied once the target resisted (its resistance card): the test was not skipped
+      afterResistance: /(Resistance|Defense)$/.test(data?.test?.type ?? ""),
+      //Only a spell says whether it is resisted (itemSpell.resisted): a complex form, a power do not
+      resistable: item.type === "itemSpell",
+    }
+  }
+
+  //One effect entry, as the GM reads it: its target, its kind, its value when it is known
+  static describeEntry(e, roll, rating){
+    const label = game.i18n.localize(SR5_EntityHelpers.getLabelByKey(e.target) ?? e.target)
+    const kind = game.i18n.localize(SR5.customEffectsTypes?.[e.type] ?? e.type)
+    const times = e.multiplier !== 1 ? ` × ${e.multiplier}` : ""
+    const fixed = String(e.type).startsWith("value") ? ` ${e.value}` : ""
+    const value = entryValue(e, roll, rating)
+    return `${label} : ${kind}${fixed}${times}${value === undefined ? "" : ` = ${value}`}`
+  }
+
+  static definitionHtml(review, roll){
+    const t = (k, d) => game.i18n.format(k, d ?? {
+    })
+    const rating = review.item.system?.itemRating
+    const list = entries => `<ul>${entries.map(e => `<li>${SR5_ActorHelper.describeEntry(e, roll, rating)}</li>`).join("")}</ul>`
+    let html = `<p>${t(review.area ? "SR5.EffectDefinitionIntroArea" : "SR5.EffectDefinitionIntro", {
+      item: review.item.name, owner: review.item.parent?.name, actor: review.actor.name
+    })}</p>${list(review.sheet.entries)}`
+    if (review.resistable && !review.sheet.resisted && !review.afterResistance) html += `<p><strong>${t("SR5.EffectDefinitionNoResistance")}</strong></p>`
+    if (!review.reference) return html + `<p><strong>${t("SR5.EffectDefinitionNoReference")}</strong></p>`
+    const source = review.reference.pack ? (game.packs?.get(review.reference.pack)?.metadata?.label ?? review.reference.pack) :
+      t("SR5.EffectDefinitionWorldItem")
+    html += `<p>${t("SR5.EffectDefinitionReference", {
+      name: review.reference.name, source
+    })}</p>`
+    const diff = review.diff
+    if (definitionsMatch(diff)) return html + `<p>${t("SR5.EffectDefinitionSame")}</p>`
+    if (diff.resistedDiffers) html += `<p><strong>${t(review.ref.resisted ? "SR5.EffectDefinitionRefResisted" : "SR5.EffectDefinitionRefNotResisted")}</strong></p>`
+    if (diff.changed.length) html += `<p><strong>${t("SR5.EffectDefinitionChanged")}</strong></p><ul>${diff.changed.map(([e, r]) =>
+      `<li>${SR5_ActorHelper.describeEntry(e, roll, rating)} — ${t("SR5.EffectDefinitionReferenceSays")} ${SR5_ActorHelper.describeEntry(r, roll, rating)}</li>`).join("")}</ul>`
+    if (diff.added.length) html += `<p><strong>${t("SR5.EffectDefinitionAdded")}</strong></p>${list(diff.added)}`
+    if (diff.missing.length) html += `<p><strong>${t("SR5.EffectDefinitionMissing")}</strong></p>${list(diff.missing)}`
+    return html
+  }
+
+  //The GM's answer for a card, or for every token of an area template: kept as soon as the window opens, so the
+  //tokens that come meanwhile wait for it instead of opening their own, and a refusal stands for the whole template.
+  //On a card, a refusal is forgotten: the GM may click again
+  static DEFINITION_DECISIONS = new Map()
+
+  //The decision key of the template that asked an actor to resist an area spell, by actor, spell and cast: written
+  //by the GM when the template asks (effectArea.js), read when he applies that actor's resistance card
+  static AREA_REVIEW_KEYS = new Map()
+  static areaReviewKey(actor, itemUuid, castMessageId){
+    return `${actor?.uuid ?? actor?.id}|${itemUuid}|${castMessageId}`
+  }
+
+  static definitionDecision(review, ask){
+    review.shown = true
+    const known = SR5_ActorHelper.DEFINITION_DECISIONS.get(review.key)
+    if (known) return known
+    const decided = Promise.resolve(ask()).then(ok => {
+      if (!ok && !review.area) SR5_ActorHelper.DEFINITION_DECISIONS.delete(review.key)
+      return !!ok
+    })
+    SR5_ActorHelper.DEFINITION_DECISIONS.set(review.key, decided)
+    return decided
+  }
+
+  static async confirmDefinition(review, data){
+    return SR5_ActorHelper.definitionDecision(review, () => foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: "SR5.EffectDefinitionTitle"
+      },
+      content: SR5_ActorHelper.definitionHtml(review, data.roll),
+      rejectClose: false,
+    }))
+  }
+
+  //`reviewed`: a definitionReview the GM's caller already showed (its own checkEffectCard), never read from a card
+  static async applyExternalEffect(actorId, data, effectType, reviewed = null){
     //An area spell whose template was deleted during the resistance: nothing would lift the effect
-    if (isAreaSpellTemplateGone(data)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_AreaSpellTemplateGone"))
+    if (isAreaSpellTemplateGone(data)) {
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_AreaSpellTemplateGone"))
+      return false
+    }
+    //A spell nobody resists writes no net hits on its card: they are its hits (over its threshold, if any), not "?" or 0
+    if (data.roll && cardNetHits(data.roll, data.threshold?.value) !== data.roll.netHits) data = {
+      ...data, roll: {
+        ...data.roll, netHits: cardNetHits(data.roll, data.threshold?.value)
+      }
+    }
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
     let item = await fromUuid(data.owner.itemUuid)
     let itemData = item.system
+    //A player's item applied to an actor she does not own: the GM sees what its sheet defines, against the reference
+    const review = reviewed ?? await SR5_ActorHelper.definitionReview(item, actor, effectType, data)
+    //An effect whose value reads the roll (hits, net hits): the GM does not believe a player's card as it is written
+    if (readsRoll(itemData[effectType])) {
+      const roll = await SR5_ActorHelper.checkEffectCard(data, item, review)
+      //Refused: false, so a caller that spent a card gives it back (_socketApplyHealEffect)
+      if (!roll) return false
+      data = {
+        ...data, roll: {
+          ...data.roll, ...roll
+        }
+      }
+    }
+    if (review && !review.shown && !(await SR5_ActorHelper.confirmDefinition(review, data))) return false
     // Head case Attribute Boost (Stolen Souls p. 201): lasts a number of combat turns equal to the hits,
     // then the head case takes as many boxes of Stun damage (applied when the effect expires, see SR5Combat.manageTurnEnd)
     let isNaniteBoost = Object.values(itemData.systemEffects || {
     }).some(s => s.value === "naniteAttributeBoost")
     let naniteBoostMarked = false
+    //Damage the GM declined, or that its clicker may not write: the card keeps its button, unless another entry of the
+    //same card was posed (a second click would pose it twice)
+    let declined = false, posed = false
+    const toLink = []
 
-    for (let e of Object.values(itemData[effectType])){
+    for (let [entryKey, e] of Object.entries(itemData[effectType] ?? {
+    })){
       if (e.transfer) {
         let value, key, newData
-        if (e.type === "hits") value = Math.floor(data.roll.hits * (e.multiplier || 1))
-        else if (e.type === "netHits") value = Math.floor(data.roll.netHits * (e.multiplier || 1))
-        else if (e.type === "value") value = Math.floor(e.value * (e.multiplier || 1))
-        else if (e.type === "rating") value = Math.floor(item.system.itemRating * (e.multiplier || 1))
+        //A "replace" type gives the target this value instead of adding it: the Limit of Animal Sense and Eyes of the Pack
+        //becomes the net hits (Street Grimoire p. 106)
+        const replaces = isReplaceEffectType(e.type)
+        const baseType = replaces ? e.type.replace("Replace", "") : e.type
+        if (["hits", "netHits", "value", "rating"].includes(baseType)) value = entryValue(e, data.roll, item.system.itemRating)
         //An area spell resisted totally gets its effect at 0 (test-ResistanceResult), only to mark the token as
         //having resisted inside the template: a fixed value or the resistor's hits must not apply the spell
         if (data.test?.type === "spellResistance" && data.roll.netHits <= 0) value = 0
@@ -1625,13 +2371,19 @@ export class SR5_ActorHelper {
         //Handle heal effect
         if (e.target.includes("removeDamage")){
           key = e.target.replace('.removeDamage','')
-          newData = actor.system
+          //A grunt has one condition monitor for its Physical damage (SR5 p. 381): Heal reaches it (Quitterie, S2)
+          if (key === "physical" && !actor.system.conditionMonitors?.physical && actor.system.conditionMonitors?.condition) key = "condition"
+          //A copy, as in heal(): an update made of actor.system itself wrote nothing, and the healing was only shown
+          //until the next preparation of the actor (measured on 5a4cbf2c)
+          newData = actor.toObject(false).system
           if(newData.conditionMonitors[key]){
-            newData.conditionMonitors[key].actual.base -= value
+            //Never below 0 boxes; aggravated Physical boxes cost two hits (Howling Shadows p. 213), as in heal()
+            if (key === "physical" || key === "condition") SR5_ActorHelper.healMonitorBoxes(newData.conditionMonitors[key], value)
+            else newData.conditionMonitors[key].actual.base = Math.max(newData.conditionMonitors[key].actual.base - value, 0)
             SR5_EntityHelpers.updateValue(newData.conditionMonitors[key].actual, 0)
-            await actor.update({
-              "system": newData
-            })
+            //Only the stored fields of the monitor, as in heal(): the whole prepared copy put the computed values in the source
+            await actor.update(SR5_ActorHelper.monitorSourceUpdate(key, newData.conditionMonitors[key]))
+            posed = true
             continue
           } else continue
         }
@@ -1639,15 +2391,20 @@ export class SR5_ActorHelper {
         //Handle non resisted damage
         if (e.target.includes("addDamage")){
           key = e.target.replace('.addDamage','')
-          newData = actor.system
-          if(newData.conditionMonitors[key]){
-            newData.conditionMonitors[key].actual.base += value
-            SR5_EntityHelpers.updateValue(newData.conditionMonitors[key].actual, 0)
-            await actor.update({
-              "system": newData
-            })
+          if (!actor.system.conditionMonitors?.[key] || !(value > 0)) continue
+          //A player never writes on an actor she does not own: the update would be refused half way
+          if (!actor.isOwner) {
+            ui.notifications.warn(game.i18n.localize("SR5.WARN_UnresistedDamageNotOwner"))
+            declined = true
             continue
-          } else continue
+          }
+          if (!(await SR5_ActorHelper.confirmUnresistedDamage(actor, item, key, value, data, effectType))) {
+            declined = true
+            continue
+          }
+          await SR5_ActorHelper.addUnresistedDamage(actorId, actor, key, value)
+          posed = true
+          continue
         }
 
         let targetName = SR5_EntityHelpers.getLabelByKey(e.target)
@@ -1664,6 +2421,14 @@ export class SR5_ActorHelper {
           "system.ownerItem": data.owner.itemUuid,
           "system.duration": 0,
           "system.durationType": "sustained",
+          //The entry of the source item it comes from: dispelling lowers it only if that entry read the hits (dispel-rules.js)
+          "flags.sr5.sourceEntry": entryKey,
+          //The hits its value stands on, and the spell's hits then: dispelling works the value out again from them
+          ...(["hits", "netHits"].includes(baseType) ? {
+            "flags.sr5.sourceBase": Number(baseType === "hits" ? data.roll.hits : data.roll.netHits) || 0,
+            "flags.sr5.sourceHits": Number(item.system.hits) || 0,
+          } : {
+          }),
         }
 
         if (isNaniteBoost) {
@@ -1681,9 +2446,14 @@ export class SR5_ActorHelper {
               "0": {
                 "category": e.category,
                 "target": e.target,
-                "type": "value",
+                "type": replaces ? "valueReplace" : "value",
                 "value": value,
                 "forceAdd": true,
+                //Attribute Boost (SR5 p. 312): dice pools only, see limitAttributeValue()
+                ...(e.poolOnly ? {
+                  "poolOnly": true
+                } : {
+                }),
               }
             },
           })
@@ -1692,33 +2462,14 @@ export class SR5_ActorHelper {
             "system.hasEffectOnItem": true
           })
         }
-        await actor.createEmbeddedDocuments("Item", [itemEffect])
-
-        //Link Effect to source owner
-        let effect
-        if (actor.isToken) {
-          for (let i of actor.token.actor.items){
-            if (i.system.ownerItem === data.owner.itemUuid){
-              if (!Object.keys(itemData.targetOfEffect).length) effect = i
-              else for (let e of Object.values(itemData.targetOfEffect)) if (e !== data.owner.itemUuid) effect = i
-            }
-          }
-        } else {
-          for (let i of actor.items){
-            if (i.system.ownerItem === data.owner.itemUuid){
-              if (!Object.keys(itemData.targetOfEffect).length) effect = i
-              else for (let e of Object.values(itemData.targetOfEffect)) if (e !== data.owner.itemUuid) effect = i
-            }
-          }
-        }
-
-        if (!game.user?.isGM) {
-          SR5_SocketHandler.emitForGM("linkEffectToSource", {
-            actorId: data.owner.actorId,
-            targetItem: data.owner.itemUuid,
-            effectUuid: effect.uuid,
-          })
-        } else {
+        //Link Effect to source owner: the effect just created, and no other (looked for by its source, every effect of
+        //a spell was the same item)
+        const [effect] = await actor.createEmbeddedDocuments("Item", [itemEffect]) ?? []
+        if (effect) posed = true
+        if (!effect) SR5_SystemHelpers.srLog(1, `applyExternalEffect: no effect created on ${actor.name}`)
+        //Asked of the GM once for all the effects of this card, below: he spends the card once
+        else if (!game.user?.isGM) toLink.push(effect.uuid)
+        else {
           await SR5_ActorHelper.linkEffectToSource(data.owner.actorId, data.owner.itemUuid, effect.uuid)
         }
 
@@ -1732,7 +2483,8 @@ export class SR5_ActorHelper {
           }
           //Add effect to Item
           if (itemToUpdate){
-            let newItem = itemToUpdate.toObject(false)
+            //Only the effects, copied from the source: the prepared device written back put its computed values in the source
+            let itemEffects = SR5_ActorHelper.sourceItemEffects(itemToUpdate)
             let effectItem ={
               "name": itemData.name,
               "target": e.target,
@@ -1742,12 +2494,28 @@ export class SR5_ActorHelper {
               "multiplier": 1,
               "ownerItem": data.owner.itemUuid,
             }
-            newItem.system.itemEffects.push(effectItem)
-            await actor.updateEmbeddedDocuments("Item", [newItem])
+            itemEffects.push(effectItem)
+            await actor.updateEmbeddedDocuments("Item", [{
+              _id: itemToUpdate.id, "system.itemEffects": itemEffects
+            }], systemEffectWrite())
           }
         }
       }
     }
+    //One request for every effect this card posed: sent one by one, the GM spent the card on the first, and refused the
+    //second link of a spell he owns that a player applied to her own actor
+    if (toLink.length) SR5_SocketHandler.emitForGM("linkEffectToSource", {
+      actorId: data.owner.actorId,
+      targetItem: data.owner.itemUuid,
+      effectUuid: toLink[0],
+      effectUuids: toLink,
+      //The card it was applied from: the GM reads it again (security pass, Olympe)
+      messageId: data.owner.messageId,
+    })
+    //Whether the effect was applied: refused (a card counted again and rejected, the GM said no, damage declined), the
+    //card keeps its Apply button
+    //An entry declined while another was posed: the card is spent (the declined damage is lost, the GM's own choice)
+    return posed || !declined
   }
 
   //Apply specific toxin effect
@@ -1769,7 +2537,7 @@ export class SR5_ActorHelper {
             statusEffects = statusEffects.concat(status)
           }
           if (data.damage.value > actor.system.attributes.willpower.augmented.value){
-            isStatusEffectOn = actor.effects.find(e => e.origin === "noAction")
+            isStatusEffectOn = actor.effects.find(e => e.origin === "noAction") || statusEffects.find(s => s.origin === "noAction")
             if (!isStatusEffectOn){
               status = await _getSRStatusEffect("noAction")
               statusEffects = statusEffects.concat(status)
@@ -1786,7 +2554,8 @@ export class SR5_ActorHelper {
         }
         //Paralysis Status Effect
         if (key === "paralysis" && (data.damage.value > actor.system.attributes.reaction.augmented.value)){
-          let isStatusEffectOn = actor.effects.find(e => e.origin === "noAction")
+          //Nausea may already have queued it in this same pass: one "cannot act" status, not two
+          let isStatusEffectOn = actor.effects.find(e => e.origin === "noAction") || statusEffects.find(s => s.origin === "noAction")
           if (!isStatusEffectOn){
             status = await _getSRStatusEffect("noAction")
             statusEffects = statusEffects.concat(status)
@@ -1819,6 +2588,119 @@ export class SR5_ActorHelper {
         ...data.damage, isAttack: false
       }
     })
+  }
+
+  //The weapon a toxin card answers, read on the card that rolled the attack (Liesel's D1): the card the resistance
+  //answers (the defense), then the one before it. Kept only when a GM wrote that card or an owner of its roller,
+  //and the weapon is that roller's. null otherwise
+  static toxinSourceOf(data){
+    let messageId = data?.previousMessage?.messageId
+    for (let step = 0; step < 2 && messageId; step++){
+      const message = game.messages?.get(messageId)
+      const card = message?.flags?.sr5data
+      if (!card) return null
+      const weapon = card.owner?.itemUuid ? fromUuidSync(card.owner.itemUuid) : null
+      if (weapon?.system?.damageElement === "toxin" && weapon.system.toxin) {
+        const roller = SR5_EntityHelpers.getRealActorFromID(card.owner?.actorId, card.actorUuids)
+        const author = message.author
+        if (!roller || !author || (!author.isGM && !roller.testUserPermission(author, "OWNER"))) return null
+        if (weapon.parent !== roller && weapon.parent?.uuid !== roller.uuid) return null
+        return {
+          card, weapon, answered: game.messages.get(data.previousMessage.messageId)?.flags?.sr5data
+        }
+      }
+      messageId = card.previousMessage?.messageId
+    }
+    return null
+  }
+
+  //The toxin card a player wrote, applied by the GM (SR5 p. 409-410; Liesel's D1): nothing comes from its flags. The
+  //author must own the actor it lands on; the toxin is read on the weapon, its Power worked out again, the hits counted
+  //again within the resister's pool, and the GM confirms. The card serves once, written in the active GM's registry.
+  //The card's own data when a GM wrote it, or its author applies it; null when refused
+  static async checkToxinCard(message, actor){
+    const data = message?.flags?.sr5data
+    const author = message?.author
+    if (!data || !actor) return null
+    if (!game.user?.isGM || !author || author.isGM || author.id === game.user.id) return data
+    const {
+      toxinCardPower, toxinCardVerdict, toxinVectors
+    } = await import("../../rolls/roll-helpers/toxin-card.js")
+    const {
+      SR5_MiscellaneousHelpers
+    } = await import("../../rolls/roll-helpers/miscellaneous.js")
+    const {
+      healCardDiceKey
+    } = await import("../../system/heal-ledger.js")
+    const source = SR5_ActorHelper.toxinSourceOf(data)
+    const toxin = source ? foundry.utils.deepClone(source.weapon.system.toxin) : null
+    const open = toxin ? SR5_Toxins.openVectors(actor.system, toxinVectors(toxin)) : []
+    const pool = Math.max(0, ...open.map(v => Number(actor.system.resistances?.toxin?.[v]?.dicePool) || 0))
+    const power = toxin ? toxinCardPower({
+      power: toxin.power,
+      toxinType: toxin.type,
+      calledShot: source.card.combat?.calledShot?.name,
+      engulfNetHits: bounded(source.answered?.roll?.netHits, source.card.roll?.hits),
+      doses: data.toxinDoses,
+      antitoxin: SR5_Toxins.antitoxinRating(actor.system),
+    }) : 0
+    const verdict = toxinCardVerdict({
+      authorOwnsTarget: actor.testUserPermission(author, "OWNER"),
+      sourceFound: !!toxin && open.length > 0,
+      power,
+      rollJSON: data.roll?.r,
+      pool,
+      edge: actor.system.specialAttributes?.edge?.augmented?.value,
+      claimedHits: data.roll?.hits,
+    })
+    if (!verdict.ok) {
+      await SR5_ActorHelper.whisperGM(game.i18n.format("SR5.ToxinCardRejected", {
+        user: author.name, actor: actor.name
+      }))
+      return null
+    }
+    //An exact copy of the card is a new message with the same dice: known by its dice too (heal-ledger.js)
+    const diceKey = healCardDiceKey(data)
+    const keys = [consumedKey(message.id, "toxinEffect"), diceKey ? `${diceKey}|toxinEffect` : null].filter(Boolean)
+    if (keys.some(key => SR5_MiscellaneousHelpers.isConsumed(key))) {
+      await SR5_ActorHelper.whisperGM(game.i18n.format("SR5.ToxinCardSpent", {
+        user: author.name, actor: actor.name
+      }))
+      return null
+    }
+    const damageType = toxin.damageType || ""
+    const effects = Object.entries(toxin.effect ?? {
+    }).filter(([, on]) => on).map(([key]) => game.i18n.localize(SR5.toxinEffects[key] ?? key)).join(", ")
+    const esc = foundry.utils.escapeHTML
+    const notes = verdict.mismatch ? `<p><strong>${game.i18n.format("SR5.ToxinCardMismatch", {
+      hits: esc(String(data.roll?.hits ?? "?"))
+    })}</strong></p>` : ""
+    const ok = await foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: "SR5.ToxinCardConfirmTitle"
+      },
+      content: `<p>${game.i18n.format("SR5.ToxinCardConfirm", {
+        user: esc(author.name), actor: esc(actor.name), toxin: esc(SR5_Toxins.nameOf(toxin, k => game.i18n.localize(k)) || source.weapon.name),
+        weapon: esc(source.weapon.name), power, hits: verdict.hits,
+        damage: damageType ? `${verdict.value}${game.i18n.localize(SR5.damageTypesShort[damageType])}` : "—",
+        effects: esc(effects || "—"),
+      })}</p>${notes}`,
+      rejectClose: false,
+    })
+    if (!ok) return null
+    for (const key of keys) if (!(await SR5_MiscellaneousHelpers.consume(key))) return null
+    //A fresh card: only what the GM worked out (no ammunition, no matrix damage, no target read on the player's flags)
+    const fresh = SR5_PrepareRollTest.getBaseRollData(null, actor)
+    toxin.power = power
+    fresh.damage.toxin = toxin
+    //Fully resisted: no effect either (the button only comes with a damage value, test-Resistance.js)
+    if (verdict.value <= 0) toxin.effect = {
+    }
+    fresh.damage.type = damageType
+    fresh.damage.value = verdict.value
+    //What the arcane inhibitor reads, as on the card before: the attack's damage value, read on the attack card
+    fresh.damage.base = Number(source.card.damage?.value) || 0
+    return fresh
   }
 
   static async applyCalledShotsEffect(actorId, data){

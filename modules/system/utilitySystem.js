@@ -1,3 +1,22 @@
+import {
+  SR5ShopConfig
+} from "../interface/shop-config.js"
+import {
+  SR5FactionRegistry
+} from "../interface/faction-registry.js"
+import {
+  SR5FactionsApp
+} from "../interface/factions-app.js"
+import {
+  SR5NegotiationRepair
+} from "../interface/negotiation-repair.js"
+import {
+  registerBBHealingSettings
+} from "./bb-healing-rules.js"
+import {
+  registerSpiritLedger
+} from "./spirit-ledger.js"
+
 export class SR5_SystemHelpers {
 
   // A sheet render that throws (a missing partial, for instance) would otherwise fail without a word
@@ -23,6 +42,15 @@ export class SR5_SystemHelpers {
       scope: "world",
       config: false,
       type: String,
+      default: 0
+    })
+
+    // Computed modifiers emptied in the source (migration-source-modifiers.js): the version run on this world
+    game.settings.register("sr5", "sourceModifiersMigration", {
+      name: "SR5.TEXT_TBD",
+      scope: "world",
+      config: false,
+      type: Number,
       default: 0
     })
 
@@ -68,6 +96,17 @@ export class SR5_SystemHelpers {
       requiresReload: true
     })
 
+    // SR5 p. 422 leaves the object to the GM. A table can let the thief choose it himself,
+    // a ruling of DjamZ (2026-10-05): off by default, the book's way
+    game.settings.register("sr5", "sr5PickpocketThiefChooses", {
+      name: "SR5.SETTINGS_PickpocketThiefChooses_T",
+      hint: "SR5.SETTINGS_PickpocketThiefChooses_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+    })
+
     // When someone dies, leave a bag on the body holding part of their gear.
     // No rule says so, so it stays off until a table asks for it.
     game.settings.register("sr5", "sr5StorageDropOnDeath", {
@@ -76,6 +115,16 @@ export class SR5_SystemHelpers {
       scope: "world",
       config: true,
       default: false,
+      type: Boolean,
+    })
+
+    // SR5 p. 450: picking a lock takes a lockpick kit. On by default, as the book has it
+    game.settings.register("sr5", "sr5LockpickRequiresKit", {
+      name: "SR5.SETTINGS_LockpickRequiresKit_T",
+      hint: "SR5.SETTINGS_LockpickRequiresKit_D",
+      scope: "world",
+      config: true,
+      default: true,
       type: Boolean,
     })
 
@@ -95,6 +144,17 @@ export class SR5_SystemHelpers {
     game.settings.register("sr5", "sr5BlockMissingActions", {
       name: "SR5.SETTINGS_BlockMissingActions_T",
       hint: "SR5.SETTINGS_BlockMissingActions_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+    })
+
+    // The effects of an item (tab "Modifiers") written by the gamemaster alone (DjamZ's ruling G14, 2026-10-06). Off by
+    // default: the owner of an item edits its effects, as before (system/effect-editor.js)
+    game.settings.register("sr5", "sr5GMOnlyItemEffects", {
+      name: "SR5.SETTINGS_GMOnlyItemEffects_T",
+      hint: "SR5.SETTINGS_GMOnlyItemEffects_D",
       scope: "world",
       config: true,
       default: false,
@@ -133,14 +193,104 @@ export class SR5_SystemHelpers {
     })
 
     // Compendium browser: add gear without charging it (character creation,
-    // or fixing an entry a player already paid for). Remembered per user.
+    // or fixing an entry a player already paid for).
+    // DjamZ's ruling (2026-10-05): a world setting the gamemaster alone switches. It used to be a client
+    // setting, which let a player take free gear; that old per-user value is dropped, not carried over.
     game.settings.register("sr5", "sr5ShopCreationMode", {
       name: "SR5.SETTINGS_ShopCreationMode_T",
       hint: "SR5.SETTINGS_ShopCreationMode_D",
-      scope: "client",
+      scope: "world",
       config: false,
       default: false,
       type: Boolean,
+    })
+    try {
+      localStorage.removeItem("sr5.sr5ShopCreationMode")
+    } catch (_err) { /* storage blocked: the world value applies anyway */ }
+
+    // Faction Reputation (Cutting Aces p. 156-160): the gamemaster's registry and window
+    SR5FactionRegistry.register()
+    game.settings.registerMenu("sr5", "sr5FactionsMenu", {
+      name: "SR5.FACTION_Title",
+      label: "SR5.FACTION_Open",
+      hint: "SR5.FACTION_MenuHint",
+      icon: "fas fa-people-group",
+      type: SR5FactionsApp,
+      restricted: true,
+    })
+
+    // The Negotiation lost before the key fix: the gamemaster gives it back, once (negotiation-repair.js)
+    SR5NegotiationRepair.register()
+    game.settings.registerMenu("sr5", "sr5NegotiationRepairMenu", {
+      name: "SR5.NEGO_REPAIR_Title",
+      label: "SR5.NEGO_REPAIR_Open",
+      hint: "SR5.NEGO_REPAIR_MenuHint",
+      icon: "fas fa-handshake",
+      type: SR5NegotiationRepair,
+      restricted: true,
+    })
+
+    // Shop shelves and buyers, set from one gamemaster menu (SR5ShopConfig)
+    game.settings.registerMenu("sr5", "sr5ShopConfigMenu", {
+      name: "SR5.SETTINGS_ShopConfig_T",
+      label: "SR5.SETTINGS_ShopConfig_L",
+      hint: "SR5.SETTINGS_ShopConfig_D",
+      icon: "fas fa-store",
+      type: SR5ShopConfig,
+      restricted: true,
+    })
+
+    // Compendiums left off the shelves: stored as exclusions, so a new compendium is sold by default
+    game.settings.register("sr5", "sr5ShopExcludedPacks", {
+      scope: "world", config: false, default: [], type: Array,
+    })
+
+    // Who may buy: player characters (as before), a folder, the actor's "Can shop" box, or folder or box
+    game.settings.register("sr5", "sr5ShopBuyerMode", {
+      scope: "world", config: false, default: "owned", type: String,
+    })
+
+    game.settings.register("sr5", "sr5ShopBuyerFolder", {
+      scope: "world", config: false, default: "", type: String,
+    })
+
+    // Optional implant grades, off by default: not every table owns these supplements
+    game.settings.register("sr5", "sr5ShopGradeGamma", {
+      name: "SR5.SETTINGS_ShopGradeGamma_T",
+      hint: "SR5.SETTINGS_ShopGradeGamma_D",
+      scope: "world", config: true, default: false, type: Boolean,
+    })
+
+    game.settings.register("sr5", "sr5ShopGradeGreyware", {
+      name: "SR5.SETTINGS_ShopGradeGreyware_T",
+      hint: "SR5.SETTINGS_ShopGradeGreyware_D",
+      scope: "world", config: true, default: false, type: Boolean,
+    })
+
+    // Gear limits at creation, SR5 p. 66 and p. 420: the book's level by default, the other two
+    // levels of p. 66 as presets, or the table's own figures (DjamZ's ruling, 2026-10-05)
+    game.settings.register("sr5", "sr5ShopCreationLevel", {
+      name: "SR5.SETTINGS_ShopCreationLevel_T",
+      hint: "SR5.SETTINGS_ShopCreationLevel_D",
+      scope: "world", config: true, default: "standard", type: String,
+      choices: {
+        street: "SR5.SETTINGS_ShopCreationLevel_street",
+        standard: "SR5.SETTINGS_ShopCreationLevel_standard",
+        elite: "SR5.SETTINGS_ShopCreationLevel_elite",
+        custom: "SR5.SETTINGS_ShopCreationLevel_custom",
+      },
+    })
+
+    game.settings.register("sr5", "sr5ShopCreationMaxAvailability", {
+      name: "SR5.SETTINGS_ShopCreationMaxAvailability_T",
+      hint: "SR5.SETTINGS_ShopCreationMaxAvailability_D",
+      scope: "world", config: true, default: 12, type: Number,
+    })
+
+    game.settings.register("sr5", "sr5ShopCreationMaxRating", {
+      name: "SR5.SETTINGS_ShopCreationMaxRating_T",
+      hint: "SR5.SETTINGS_ShopCreationMaxRating_D",
+      scope: "world", config: true, default: 6, type: Number,
     })
 
     // What a bonus die costs on an availability test. SR5 p. 420 sells one
@@ -196,6 +346,31 @@ export class SR5_SystemHelpers {
       name: "SR5.SETTINGS_ShopFenceBuyerPool_T",
       hint: "SR5.SETTINGS_ShopFenceBuyerPool_D",
       scope: "world", config: true, default: 6, type: Number,
+    })
+
+    // The gamemaster's vendors (shop lot C). The world's shelves stay open to the
+    // players unless the table wants every purchase to go through a vendor.
+    game.settings.register("sr5", "sr5ShopMarketOpen", {
+      name: "SR5.SETTINGS_ShopMarketOpen_T",
+      hint: "SR5.SETTINGS_ShopMarketOpen_D",
+      scope: "world", config: true, default: true, type: Boolean,
+    })
+
+    // An item on a vendor's counter has been found already: no availability test
+    // (SR5 p. 420, the test is the search). A table may want it all the same.
+    // Where the vendor banners are (lot C, part 2): never shipped with the system, the table
+    // points at its own folder. Empty, vendors have the plain sign of part 1.
+    game.settings.register("sr5", "sr5ShopBannerFolder", {
+      name: "SR5.SETTINGS_ShopBannerFolder_T",
+      hint: "SR5.SETTINGS_ShopBannerFolder_D",
+      scope: "world", config: true, default: "", type: String,
+      filePicker: "folder",
+    })
+
+    game.settings.register("sr5", "sr5ShopVendorTest", {
+      name: "SR5.SETTINGS_ShopVendorTest_T",
+      hint: "SR5.SETTINGS_ShopVendorTest_D",
+      scope: "world", config: true, default: false, type: Boolean,
     })
 
     // Which contact types deal in goods, for the Bargaining specialization
@@ -285,6 +460,23 @@ export class SR5_SystemHelpers {
       requiresReload: true
     })
 
+    // Reagents: the core rules by default, Shadow Spells or Forbidden Arcana at the GM's choice
+    // (modules/system/reagents.js). DjamZ's ruling, 2026-10-05
+    game.settings.register("sr5", "sr5ReagentSystem", {
+      name: "SR5.SETTINGS_ReagentSystem_T",
+      hint: "SR5.SETTINGS_ReagentSystem_D",
+      scope: "world",
+      config: true,
+      default: "core",
+      type: String,
+      choices: {
+        "core": "SR5.SETTINGS.ReagentSystemCore",
+        "shadowSpells": "SR5.SETTINGS.ReagentSystemShadowSpells",
+        "forbiddenArcana": "SR5.SETTINGS.ReagentSystemForbiddenArcana",
+      },
+      requiresReload: true
+    })
+
     // Grappling (SR5 p. 195-196, Run & Gun p. 126 and 133-138): token statuses, automatic thresholds and holds.
     // Off by default, and off nothing changes. It adds token statuses, hence the reload.
     game.settings.register("sr5", "sr5GrapplingRules", {
@@ -319,6 +511,9 @@ export class SR5_SystemHelpers {
       type: Boolean,
       requiresReload: true
     })
+
+    // Bullets & Bandages: healing under fire and advanced medkits (BB p. 14-19), off by default
+    registerBBHealingSettings()
 
     // Flight skill on player characters (in the Athletics skill group)
     game.settings.register("sr5", "sr5FlightSkill", {
@@ -382,6 +577,23 @@ export class SR5_SystemHelpers {
       requiresReload: true
     })
 
+    // SR5 p. 403: critters and spirits resist the Drain of an innate spell with Intuition or Charisma, at the GM's
+    // discretion; added to Willpower as a tradition attribute is (Shadow Spells p. 19), a reading: the book does not
+    // name Willpower. Spirit sheets only. Charisma by default (DjamZ's ruling, 2026-10-06). Read while the actors are prepared
+    game.settings.register("sr5", "sr5SpiritDrainAttribute", {
+      name: "SR5.SETTINGS_SpiritDrainAttribute_T",
+      hint: "SR5.SETTINGS_SpiritDrainAttribute_D",
+      scope: "world",
+      config: true,
+      default: "charisma",
+      type: String,
+      choices: {
+        "charisma": "SR5.Charisma",
+        "intuition": "SR5.Intuition",
+      },
+      requiresReload: true
+    })
+
     // SR5 p. 301 gives a homunculus the Structure of its material as Body, and no Armor: off by default.
     // On, it also gets the Armor of that material (SR5 p. 198). Read while the actors are prepared, hence the reload.
     game.settings.register("sr5", "sr5HomunculusMaterialArmor", {
@@ -393,6 +605,58 @@ export class SR5_SystemHelpers {
       type: Boolean,
       requiresReload: true
     })
+
+    // Cap of the mental and physical attributes. Book (SR5 p. 96): +4 at most from augmentations.
+    // Arbitrage de DjamZ: a table may cap only at the augmented maximum (metatype maximum + 4, SR5 p. 68,
+    // 290, 312), or not at all. Read while the actors are prepared, hence the reload.
+    game.settings.register("sr5", "sr5AugmentationCap", {
+      name: "SR5.SETTINGS_AugmentationCap_T",
+      hint: "SR5.SETTINGS_AugmentationCap_D",
+      scope: "world",
+      config: true,
+      default: "bonus",
+      type: String,
+      choices: {
+        bonus: "SR5.SETTINGS_AugmentationCap_bonus",
+        augmentedMax: "SR5.SETTINGS_AugmentationCap_augmentedMax",
+        none: "SR5.SETTINGS_AugmentationCap_none",
+      },
+      requiresReload: true
+    })
+
+    // House rule, off by default (book: SR5 p. 167 and 169): reloading spends no action
+    // when the right rounds are in the inventory. Read at the click, no reload needed.
+    game.settings.register("sr5", "sr5FreeReload", {
+      name: "SR5.SETTINGS_FreeReload_T",
+      hint: "SR5.SETTINGS_FreeReload_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean
+    })
+
+    // Optional rule (Forbidden Arcana p. 176), off as in the core book: Mask of the mentor
+    game.settings.register("sr5", "mentorMask", {
+      name: "SR5.SETTINGS_MentorMask_T",
+      hint: "SR5.SETTINGS_MentorMask_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean
+    })
+
+    // Optional rule (Forbidden Arcana p. 176), off as the book offers it: Spirit Domination, the leash
+    game.settings.register("sr5", "spiritLeash", {
+      name: "SR5.SETTINGS_SpiritLeash_T",
+      hint: "SR5.SETTINGS_SpiritLeash_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean
+    })
+
+    // Indexes, reputation adjustment, spirit traits and banishing totals, written by the active GM alone
+    registerSpiritLedger()
   }
 
   /* Display Shadowrun Themed Log Entries Based on Logging Level
@@ -572,7 +836,9 @@ export class SR5_SystemHelpers {
       (a, b) => grid.constructor.cubeDistance(grid.offsetToCube(a), grid.offsetToCube(b))
     let shortest = Infinity
     for (const a of attackerCells) for (const b of targetCells) shortest = Math.min(shortest, gap(a, b))
-    return shortest <= reach + 1
+    //SR5 p. 187: Reach lengthens the range, never shortens it. A negative Reach (Crystal Jaw, -1) only counts in the
+    //Reach comparison: the weapon still strikes the adjacent space
+    return shortest <= Math.max(Number(reach) || 0, 0) + 1
   }
 
   /**

@@ -56,13 +56,17 @@ export default async function resistanceInfo(cardData, actorId){
         })}`
       }
       if (cardData.damage.toxin.type === "airEngulf") return cardData.chatCard.buttons.toxinEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "toxinEffect",`${game.i18n.localize("SR5.ApplyDamage")} ${cardData.damage.value}${game.i18n.localize(SR5.damageTypesShort[cardData.damage.type])}`)
-      else return cardData.chatCard.buttons.toxinEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "toxinEffect",`${game.i18n.localize("SR5.ApplyToxinEffect")} ${damage}<br> ${speed}`)
+      //A toxin item's special effect is shown as is, the GM applies it
+      let special = cardData.damage.toxin.type === "custom" && cardData.damage.toxin.custom?.special ? `<br> ${Handlebars.escapeExpression(cardData.damage.toxin.custom.special)}` : ""
+      return cardData.chatCard.buttons.toxinEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "toxinEffect",`${game.i18n.localize("SR5.ApplyToxinEffect")} ${damage}<br> ${speed}${special}`)
     }
+    //Power brought below 1 by an antitoxin: every effect stops (Chrome Flesh p. 154)
+    else if (cardData.damage.toxin.antitoxin && cardData.damage.toxin.power < 1) return cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.AntitoxinNeutralized"))
     else return cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.NoDamage"))
   }
 
-  //Add automatic succes for Hardened Armor.
-  if ((actorData.specialProperties?.hardenedArmors.normalWeapon.value > 0) && (cardData.damage.source !== "magical")) {
+  //Add automatic succes for Hardened Armor. Fatigue is resisted without any armor (SR5 p. 174)
+  if ((actorData.specialProperties?.hardenedArmors.normalWeapon.value > 0) && (cardData.damage.source !== "magical") && (cardData.test.typeSub !== "fatigue")) {
     hardenedArmor = SR5_CombatHelpers.hardenedArmorAutoHits(actorData.specialProperties.hardenedArmors.normalWeapon.value, cardData.combat.armorPenetration)
     if (hardenedArmor > 0) {
       ui.notifications.info(`${game.i18n.localize("SR5.HardenedArmor")}${game.i18n.localize("SR5.Colons")} ${hardenedArmor} ${game.i18n.localize("SR5.INFO_AutomaticHits")}`)
@@ -125,10 +129,11 @@ export default async function resistanceInfo(cardData, actorId){
 function handlePreviousButtons(cardData) {
   let originalMessage, prevData
 
-  if (cardData.previousMessage.messageId) {
-    originalMessage = game.messages.get(cardData.previousMessage.messageId)
-    prevData = originalMessage.flags?.sr5data
-  }
+  //No previous card (a drug crash, for one): no button to remove, and nothing to relay to the GM
+  if (!cardData.previousMessage?.messageId) return
+
+  originalMessage = game.messages.get(cardData.previousMessage.messageId)
+  prevData = originalMessage?.flags?.sr5data
 
   if ((prevData?.test.type === "spell" || prevData?.test.type === "preparation") && prevData?.magic.spell.range === "area");
   else if (prevData?.test.typeSub === "grenade" || prevData?.combat?.grenade?.isGrenade);
@@ -178,14 +183,14 @@ async function handleCalledShotResistanceInfo(cardData, actor, actorId){
       }
       break
     case "bellringer":
-      SR5Combat.changeInitInCombatHelper(actorId, -10)
+      SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), -10)
       ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_Stunned", {
         initiative: 10
       })}`)
       cardData.chatCard.buttons.bellringerEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", `${game.i18n.localize("SR5.EffectApplied")} (${game.i18n.localize("SR5.STATUSES_Stunned")})`)
       break
     case "shakeUp":
-      SR5Combat.changeInitInCombatHelper(actorId, cardData.combat.calledShot.initiative)			
+      SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), cardData.combat.calledShot.initiative)			
       ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_ShakeUp", {
         value: cardData.combat.calledShot.initiative
       })}`)

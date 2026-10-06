@@ -1,4 +1,7 @@
 import {
+  replacedValue
+} from "../../entities/actors/effect-replace.js"
+import {
   SR5_PrepareRollHelper 
 } from "../roll-prepare-helpers.js"
 import {
@@ -10,6 +13,15 @@ import {
 import {
   SR5_MiscellaneousHelpers 
 } from "../roll-helpers/miscellaneous.js"
+import {
+  spendableStock, bindingCost
+} from "../../system/reagents.js"
+import {
+  prepareSkillAttribute, SKILL_ATTRIBUTE_FLAG, syncBackgroundCount, backgroundCountApplies, backgroundCountInModifiers
+} from "../roll-helpers/skillAttribute.js"
+import {
+  isSituationalType
+} from "../roll-helpers/situational.js"
 
 //Add info for skill dicePool roll
 export default async function skill(rollData, rollType, rollKey, actor, chatData){
@@ -22,6 +34,14 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
 
     //Determine dicepool composition
     rollData.dicePool.composition = actor.system.skills[rollKey].rating.modifiers
+
+    //The situational effects on this skill's test (SR5 p. 462) leave their marker on the test, not on the
+    //rating: carried over so that the dialog offers their boxes, as on the skill + attribute button
+    rollData.dicePool.modifiers = actor.system.skills[rollKey].test.modifiers
+      .filter(m => isSituationalType(m.type))
+      .map(m => ({
+        type: m.type, label: m.source, source: m.source, value: m.value
+      }))
 
     //Add others informations
     rollData.dialogSwitch.attribute = true
@@ -40,13 +60,34 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
         
     //Determine dicepool modififiers
     rollData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(rollData, actor.system.skills[rollKey].test.modifiers)
+
+    //SR5 p. 130: the attribute can be changed in the dialog, except on an opposed test whose pair the book sets
+    if (actor.type !== "actorDrone" && !chatData?.test?.isOpposed){
+      rollData = prepareSkillAttribute(rollData, actor.system, actor.getFlag?.("sr5", SKILL_ATTRIBUTE_FLAG)?.[rollKey], {
+        flagKey: rollKey,
+        linked: actor.system.skills[rollKey].linkedAttribute,
+        titleBase: `${game.i18n.localize("SR5.SkillTest") + game.i18n.localize("SR5.Colons") + " " + game.i18n.localize(SR5.skills[rollKey])}`,
+        alwaysInTitle: true,
+        labels: SR5.allAttributes,
+        localize: k => game.i18n.localize(k),
+      })
+    }
   }
 
   //Determine base limit
-  rollData.limit.base = SR5_PrepareRollHelper.getBaseLimit(actor.system.skills[rollKey].limit.value, actor.system.skills[rollKey].limit.modifiers)
+  //A Limit an effect replaced (No Future instruments, Animal Sense) has the replacing value as its base, and the other
+  //modifiers on top: the replacing modifier is neither taken off the base nor shown as a modifier
+  const skillLimitModifiers = actor.system.skills[rollKey].limit.modifiers.filter(m => !m.replace)
+  rollData.limit.base = SR5_PrepareRollHelper.getBaseLimit(actor.system.skills[rollKey].limit.value, skillLimitModifiers)
 
   //Determine limit modififiers
-  rollData.limit.modifiers = SR5_PrepareRollHelper.getLimitModifiers(rollData, actor.system.skills[rollKey].limit.modifiers)
+  rollData.limit.modifiers = SR5_PrepareRollHelper.getLimitModifiers(rollData, skillLimitModifiers)
+
+  //The background count follows the attribute in use (Grimoire des Ombres p. 30; its limit raise when aligned, p. 87)
+  if (rollData.skillAttribute){
+    rollData.skillAttribute.skillKey = rollKey
+    rollData = syncBackgroundCount(rollData, actor.system.magic?.bgCount, backgroundCountApplies(rollKey, rollData.skillAttribute.selected))
+  }
 
   //Handle Actions: resisting an opposed test is no action of the target's (SR5 p. 44-45), nor is a test the
   //gamemaster calls for outside the character's phase (SR5 p. 164)
@@ -58,17 +99,35 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
   rollData.test.type = "skillDicePool"
   rollData.test.typeSub = rollKey
   rollData.limit.type = actor.system.skills[rollKey].limit.base
+  //A Limit an effect replaced (No Future instruments, Animal Sense) is no longer the linked one: the card says so
+  if (replacedValue(actor.system.skills[rollKey].limit.modifiers) !== undefined) rollData.limit.type = "replaced"
   rollData.dialogSwitch.extended = true
   rollData.dialogSwitch.specialization = true
 
   //Special case for magical skills
   if(rollKey === "banishing" || rollKey === "binding" || rollKey === "counterspelling" || rollKey === "disenchanting" || rollKey === "summoning"){
     rollData.dialogSwitch.extended = false
-    if (actor.system.magic.reagents > 0 && rollKey !== "binding") rollData.dialogSwitch.reagents = true
+    //Binding spends reagents too (SR5 p. 304): (Force x 25) drachms, set once the spirit is known below
+    if (spendableStock(actor.system.magic) > 0) rollData.dialogSwitch.reagents = true
     rollData.magic.elements = actor.system.magic.elements
-    //Add background count limit modifiers if any
-    if (actor.system.magic.bgCount.value > 0){
+    //Add background count limit modifiers if any, unless the skill already carries them (Grimoire des Ombres p. 87):
+    //counted once, not twice
+    if (actor.system.magic.bgCount.value > 0 && backgroundCountApplies(rollKey, rollData.skillAttribute?.selected ?? "magic") &&
+      !backgroundCountInModifiers(actor.system.magic.bgCount, actor.system.skills[rollKey].limit.modifiers)){
       rollData = SR5_PrepareRollHelper.addBackgroundCountLimitModifiers(rollData, actor)
+    }
+    //Astral Reputation (Street Grimoire p. 207): a penalty equal to it on Summoning, Binding and Banishing tests
+    const reputation = actor.system.magic.astralReputation || 0
+    //Present by default, the gamemaster can untick it in the dialog (DjamZ's ruling, 2026-10-06: "peut subir")
+    if (reputation > 0 && ["summoning", "binding", "banishing"].includes(rollKey)) {
+      rollData.magic.astralReputationMod = -reputation
+      //The gamemaster's to untick, not the player's
+      rollData.magic.astralReputationLocked = !game.user?.isGM
+      rollData.dicePool.modifiers.push({
+        type: "astralReputation",
+        label: game.i18n.localize("SR5.AstralReputation"),
+        value: -reputation,
+      })
     }
   }
 
@@ -91,7 +150,7 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
 
   //If roll has target, add special info to roll
   if (rollData.target.hasTarget){
-    rollData = await getTargetedData(rollData, rollKey)
+    rollData = await getTargetedData(rollData, rollKey, actor)
   }
 
   //If roll is opposed, add special info to roll
@@ -120,8 +179,8 @@ function skillWithAttribute(actorData, skillKey, attributeKey, attributeLabel){
   }].concat(skillPart)
 }
 
-async function getTargetedData(rollData, rollKey){
-  let targetActor = SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId)
+async function getTargetedData(rollData, rollKey, actor){
+  let targetActor = SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId, rollData.actorUuids)
 
   switch (rollKey){
     case "banishing":
@@ -139,7 +198,14 @@ async function getTargetedData(rollData, rollKey){
         ui.notifications.warn(`${game.i18n.localize("SR5.WARN_SpiritAlreadyBounded")}`)
         return
       }
-      else rollData.limit.base = targetActor.system.force.value
+      else {
+        rollData.limit.base = targetActor.system.force.value
+        //SR5 p. 304: (Force x 25) drachms spent on the attempt. They do not change the limit
+        rollData.magic.bindingReagents = bindingCost(targetActor.system.force.value)
+        if (spendableStock(actor.system.magic) < rollData.magic.bindingReagents) ui.notifications.warn(game.i18n.format("SR5.WARN_BindingReagents", {
+          reagents: rollData.magic.bindingReagents
+        }))
+      }
       break
     case "counterspelling": {
       let spellList = targetActor.items.filter(i => i.type === "itemSpell" && i.system.isActive)

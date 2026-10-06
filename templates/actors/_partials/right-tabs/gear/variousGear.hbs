@@ -98,13 +98,19 @@
 			<div class="col-1">
 				<div class="grid">
 					{{#if (eq item.type 'itemDrug')}}
-					<div class="col-6 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_DrugToggle' key=name}}" data-helpMessage="{{localize 'SR5.HELP_DrugToggleMsg'}}">
-						{{#if system.isActive}}
-						<a class="toggle-value" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.isActive" data-title="{{localize 'SR5.Unequip'}}">
+					<!-- One switch, three positions (entities/items/drug-phase.js): not taken, rise, crash. Each click
+					     goes through the take or the crash of the drug, as the two switches did -->
+					<div class="col-6 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_DrugPhase' key=name}}" data-helpMessage="{{localize 'SR5.HELP_DrugPhaseMsg'}}">
+						{{#if (eq system.phase 'rise')}}
+						<a class="toggle-value drug-phase" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.wirelessTurnedOn" data-title="{{localize 'SR5.DrugPhaseToCrash'}}">
 							<em class="fas fa-cannabis SR-SubColor"></em>
 						</a>
+						{{else if (eq system.phase 'crash')}}
+						<a class="toggle-value drug-phase" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.wirelessTurnedOn" data-title="{{localize 'SR5.DrugPhaseToNone'}}">
+							<em class="fas fa-virus SR-SubColor"></em>
+						</a>
 						{{else}}
-						<a class="toggle-value" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.isActive" data-title="{{localize 'SR5.Equip'}}">
+						<a class="toggle-value drug-phase" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.isActive" data-title="{{localize 'SR5.DrugPhaseToRise'}}">
 							<em class="fas fa-cannabis"></em>
 						</a>
 						{{/if}}
@@ -123,17 +129,6 @@
 					</div>
 					{{/if}}
 					{{#if (eq item.type 'itemDrug')}}
-					<div class="col-6 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_DrugContrecoupToggle' key=name}}" data-helpMessage="{{localize 'SR5.HELP_DrugContrecoupToggleMsg'}}">
-						{{#if system.wirelessTurnedOn}}
-						<a class="toggle-value" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.wirelessTurnedOn" data-title="{{localize 'SR5.Unequip'}}">
-							<em class="fas fa-virus SR-SubColor"></em>
-						</a>
-						{{else}}
-						<a class="toggle-value" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.wirelessTurnedOn" data-title="{{localize 'SR5.Equip'}}">
-							<em class="fas fa-virus"></em>
-						</a>
-						{{/if}}
-					</div>
 					{{else}}
 					{{#if (gte system.conditionMonitors.matrix.actual.value system.conditionMonitors.matrix.value)}}
 					<div class="col-6 SR-TextCenter"

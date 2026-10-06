@@ -60,6 +60,10 @@ export class sr5ItemDeviceDataModel extends foundry.abstract.TypeDataModel {
       type: new fields.StringField({
         initial: ''
       }),
+      // Strain of a head case's CFD (Dark Terrors p. 91): Lockdown p. 206 or the original one, Dark Terrors p. 88
+      strain: new fields.StringField({
+        initial: 'lockdown'
+      }),
       program: new fields.SchemaField({
         value: new fields.NumberField({
           initial: 0

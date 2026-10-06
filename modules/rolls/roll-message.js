@@ -1,4 +1,19 @@
 import {
+  SR5Pickpocket
+} from "../interface/pickpocket.js"
+import {
+  reagentWorkUpdate
+} from "../system/reagents.js"
+import {
+  mayDefend
+} from "../system/defense-once.js"
+import {
+  applyStabilization, applyDiagnosis, useMedkitSupplies
+} from "../system/bb-healing.js"
+import {
+  stabilizationLabelKey
+} from "../system/bb-healing-rules.js"
+import {
   SR5 
 } from "../config.js"
 import {
@@ -26,10 +41,13 @@ import {
   SR5_CalledShotHelpers 
 } from "./roll-helpers/calledShot.js"
 import {
+  claimChatButton
+} from "./roll-helpers/button-claim.js"
+import {
   SR5_MatrixHelpers 
 } from "./roll-helpers/matrix.js"
 import {
-  isRolledByTarget, firstAidPatient, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick, ownsCardSpeaker, defenseActorId
+  isRolledByTarget, firstAidPatient, healPatient, healsDamage, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick, ownsCardSpeaker, defenseActorId, removedButtonKeys
 } from "./roll-helpers/cardRoller.js"
 import {
   SR5_CombatHelpers 
@@ -52,6 +70,43 @@ import {
 import {
   SR5SharedVision
 } from "../interface/shared-vision.js"
+import {
+  applyManaShift
+} from "../system/mana-shift.js"
+import {
+  chatButtonAllowed
+} from "./roll-helpers/socket-senders.js"
+
+// The button a card stores under this key; the template buttons are flags of their own (removeTemplate)
+export function storedButton(cardData, key) {
+  const button = cardData?.chatCard?.buttons?.[key]
+  if (button) return button
+  if ((key === "templateRemove" || key === "templatePlace") && cardData?.chatCard?.[key]) return {
+    testType: "nonOpposedTest"
+  }
+  return null
+}
+
+// The actors a card names: the one who rolled it, the one who spoke it, its target, the one it answers
+// (who resists a biofeedback the defense card returns, for one)
+function cardActors(cardData) {
+  return [cardData.owner?.actorId, cardData.owner?.speakerId, cardData.target?.actorId, cardData.previousMessage?.actorId].filter(Boolean)
+    .map(id => SR5_EntityHelpers.getRealActorFromID(id)).filter(Boolean)
+}
+
+// A toxin card the GM may apply: his own, or one whose author owns the actor it poisons, the one speaking it (Liesel's
+// D1: a player's card named the GM's actor in its flags, under her own character's name)
+export function toxinCardTrusted(message) {
+  const data = message?.flags?.sr5data
+  const author = message?.author
+  if (!data?.chatCard?.buttons?.toxinEffect) return false
+  if (author?.isGM) return true
+  const actor = SR5_EntityHelpers.getRealActorFromID(data.owner?.speakerId, data.actorUuids)
+  if (!actor || !author || !actor.testUserPermission(author, "OWNER")) return false
+  const speaking = ChatMessage.getSpeakerActor(message.speaker ?? {
+  })
+  return !!speaking && (speaking === actor || speaking.uuid === actor.uuid)
+}
 
 // True when a GM is connected to relay what a player cannot do
 export function hasActiveGM() {
@@ -78,18 +133,21 @@ export class SR5_RollMessage {
       })
     })
 
+    //A toxin card whose author does not own the actor it would poison has no button for the GM (Liesel's D1)
+    if (game.user.isGM && !toxinCardTrusted(message)) html.querySelectorAll('[data-type="toxinEffect"]').forEach(el => el.remove())
+
     if (!game.user.isGM) {
       // Hide GM stuff
       html.querySelectorAll(".chat-button-gm").forEach(el => el.remove())
 
       // SR5 p. 299: each ritual participant only sees the button of their own Drain
       html.querySelectorAll(".ritualDrain").forEach(el => {
-        if (!SR5_EntityHelpers.getRealActorFromID(ritualDrainActorId(el.dataset.type))?.isOwner) el.remove()
+        if (!SR5_EntityHelpers.getRealActorFromID(ritualDrainActorId(el.dataset.type), message.flags?.sr5data?.actorUuids)?.isOwner) el.remove()
       })
 
       // v13: use message document directly instead of data.message
       // Hide if player is not owner of the message
-      if (!ownsCardSpeaker(message.speaker, id => SR5_EntityHelpers.getRealActorFromID(id))) {
+      if (!ownsCardSpeaker(message.speaker, id => SR5_EntityHelpers.getRealActorFromID(id, message.flags?.sr5data?.actorUuids))) {
         html.querySelectorAll(".nonOpposedTest").forEach(el => el.remove())
         html.querySelectorAll(".owner").forEach(el => el.remove())
       }
@@ -132,7 +190,7 @@ export class SR5_RollMessage {
         const messageEl = target.closest(".chat-message") || target.closest(".message")
         const messageId = messageEl?.dataset.messageId
         const message = game.messages.get(messageId)
-        const actor = SR5_EntityHelpers.getRealActorFromID(message.flags.sr5data.owner.speakerId)
+        const actor = SR5_EntityHelpers.getRealActorFromID(message.flags.sr5data.owner.speakerId, message.flags.sr5data.actorUuids)
         let newMessage = foundry.utils.duplicate(message.flags.sr5data)
 
         newMessage.roll[target.dataset.editType] = parseInt(ev.target.value)
@@ -170,6 +228,21 @@ export class SR5_RollMessage {
     }
   }
 
+  //The Apply buttons being applied: the button now stays while the GM decides, a second click must not apply it twice
+  static APPLYING = new Set()
+
+  //Applies an effect of a card once at a time; false when refused, or already being applied
+  static async applyOnce(messageId, type, apply){
+    const key = `${messageId}|${type}`
+    if (SR5_RollMessage.APPLYING.has(key)) return false
+    SR5_RollMessage.APPLYING.add(key)
+    try {
+      return await apply()
+    } finally {
+      SR5_RollMessage.APPLYING.delete(key)
+    }
+  }
+
   //Handle action related to chat buttons
   static async chatButtonAction(ev){
     ev.preventDefault()
@@ -190,7 +263,7 @@ export class SR5_RollMessage {
     //SR5 p. 299: a ritual participant resists their own Drain, named on the button
     const ritualDrainId = ritualDrainActorId(type)
     if (ritualDrainId) {
-      const participant = SR5_EntityHelpers.getRealActorFromID(ritualDrainId)
+      const participant = SR5_EntityHelpers.getRealActorFromID(ritualDrainId, messageData.actorUuids)
       if (!participant?.isOwner) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
       return participant.rollTest("drain", null, messageData)
     }
@@ -200,29 +273,32 @@ export class SR5_RollMessage {
       actor = SR5_EntityHelpers.getRealActorFromID(opposedTestActorId(speaker))
       // Matrix support actions (Kill Code p. 43-44) go to the targeted tokens: no selected token needed
       let supportAction = (type === "iAmTheFirewall" || type === "intervene")
-      if (actor == null && !supportAction) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+      //A spell effect may go to a targeted token without any token selected (Heal, below)
+      let targetedEffect = (type === "applyEffect" && game.user.targets?.size > 0)
+      if (actor == null && !supportAction && !targetedEffect) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
     } else if (action === "nonOpposedTest" && messageData) {
       // The spirit or sprite handles its own buttons, but the drain and the fading are resisted by the card owner
-      if (isRolledByTarget(type, messageData.test.typeSub, messageData.target.actorId)) actor = SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId)
-      else actor = SR5_EntityHelpers.getRealActorFromID(messageData.owner.speakerId)
+      if (isRolledByTarget(type, messageData.test.typeSub, messageData.target.actorId)) actor = SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId, messageData.actorUuids)
+      else actor = SR5_EntityHelpers.getRealActorFromID(messageData.owner.speakerId, messageData.actorUuids)
     }
 
     // If there is a matrix action Author, get the Actor to do stuff with him later
     let originalActionActor, targetActor
-    if (messageData.previousMessage.actorId) originalActionActor = SR5_EntityHelpers.getRealActorFromID(messageData.previousMessage.actorId)
-    if (messageData.target.hasTarget) targetActor = SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId)
+    if (messageData.previousMessage.actorId) originalActionActor = SR5_EntityHelpers.getRealActorFromID(messageData.previousMessage.actorId, messageData.actorUuids)
+    if (messageData.target.hasTarget) targetActor = SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId, messageData.actorUuids)
 
     switch(type) {
       case "defenseMeleeWeapon":
       case "defenseRangedWeapon":
       case "defenseAstralCombat":
-        actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id)))
-        actor.rollTest("defense", null, messageData)
+        actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids)
+        if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest("defense", null, messageData)
         break
       case "defenseThroughAndInto":
-        actor.rollTest("defense", null, messageData.originalAttackMessage)
+        if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest("defense", null, messageData.originalAttackMessage)
         break
       case "matrixDefense":
+        if (!await mayDefend(type, messageId, messageData, actor)) break
         if ((messageData.test.typeSub === "dataSpike" || 
                     messageData.test.typeSub === "controlDevice" ||
                     messageData.test.typeSub === "formatDevice" ||
@@ -235,8 +311,13 @@ export class SR5_RollMessage {
           SR5_MatrixHelpers.chooseMatrixDefender(messageData, actor)
         } else actor.rollTest(type, messageData.test.typeSub, messageData)
         break
-      case "powerDefense":
       case "resistanceCard":
+        //Two owners clicking at once rolled two resistances (MESURES-F, F6): the active GM holds it for the first.
+        //A grenade's button is an opposed one, used by everyone in the blast: it is not held (Céleste's review)
+        if (action === "nonOpposedTest" && !(await claimChatButton(messageId, type))) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_ButtonClaimed")}`)
+        actor.rollTest(type, null, messageData)
+        break
+      case "powerDefense":
       case "resistanceCardAura":
       case "complexFormDefense":
       case "iceAttack":
@@ -245,7 +326,8 @@ export class SR5_RollMessage {
       case "registeringResistance":
       case "banishingResistance":
       case "iceDefense":
-      case "spellResistance":                                        
+      case "spellResistance":
+      case "illusionResistance":
       case "rammingDefense":
       case "martialArtDefense":
       case "grappleClinchDefense":
@@ -262,7 +344,8 @@ export class SR5_RollMessage {
       case "matrixResistance":
       case "vehicleTest":
       case "resistanceToxin":
-        actor.rollTest(type, null, messageData)
+        //A defense among them: once per target and attack (system/defense-once.js)
+        if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest(type, null, messageData)
         break
       case "resistanceCardContinuousDamage":
         messageData.test.typeSub = "continuousDamage"
@@ -274,11 +357,28 @@ export class SR5_RollMessage {
         break
       case "applyEffect":
       case "applyEffectAuto":
-        actor.applyExternalEffect(messageData, "customEffects")
+        //SR5 p. 291 (Heal): the targeted patient is healed, not the caster selected on the canvas
+        if (type === "applyEffect" && healsDamage((await fromUuid(messageData.owner.itemUuid))?.system?.customEffects)) {
+          const patient = healPatient(game.user.targets, actor)
+          if (!patient) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+          //A patient the player does not own is healed by the GM, who reads the card himself
+          if (!game.user.isGM && !patient.isOwner) {
+            if (!hasActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActiveGM"))
+            return SR5_SocketHandler.emitForGM("applyHealEffect", {
+              messageId, targetActor: patient.isToken ? patient.token.id : patient.id
+            })
+          }
+          //Refused (the GM said no, or the card was rejected): the button stays, to apply it again
+          if (await SR5_RollMessage.applyOnce(messageId, type, () => patient.applyExternalEffect(messageData, "customEffects")) === false) break
+          SR5_RollMessage.updateChatButtonHelper(messageId, type)
+          break
+        }
+        if (!actor) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+        if (await SR5_RollMessage.applyOnce(messageId, type, () => actor.applyExternalEffect(messageData, "customEffects")) === false) break
         if (messageData.magic.spell.area < 1) SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "applyEffectOnItem":
-        actor.applyExternalEffect(messageData, "itemEffects")
+        if (await SR5_RollMessage.applyOnce(messageId, type, () => actor.applyExternalEffect(messageData, "itemEffects")) === false) break
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "firstAid": {
@@ -311,11 +411,29 @@ export class SR5_RollMessage {
         }))
         let healedID = (patient.isToken ? patient.token.id : patient.id)
         if (healLocally) await SR5_ActorHelper.heal(healedID, healData)
+        //The card goes with it: the GM reads it again from the chat log (security pass, Olympe)
         else await SR5_SocketHandler.emitForGM("heal", {
           targetActor: healedID,
           healData: healData,
+          messageId,
         })
+        //Bullets & Bandages p. 18-19: one use of the medkit supplies per patient treated
+        await useMedkitSupplies(messageData.test.bbMedkitUuid)
         SR5_RollMessage.updateChatButtonHelper(messageId, type, healData.test.typeSub)
+        break
+      }
+      //Bullets & Bandages p. 14-15: the GM writes the stabilization and the diagnosis in his ledger
+      case "bbStabilize":
+      case "bbDiagnose": {
+        if (!targetActor) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+        const done = type === "bbStabilize" ?
+          await applyStabilization(messageData, targetActor, SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId, messageData.actorUuids)) :
+          await applyDiagnosis(messageData, targetActor)
+        //The figure applied (0 is one) comes back, false when nothing was written
+        if (done === false || done === undefined || done === null) return
+        //BB p. 18-19: one use of the supplies per patient, taken when the stabilization test is applied
+        if (type === "bbStabilize" && messageData.test.bbMode === "stabilization") await useMedkitSupplies(messageData.test.bbMedkitUuid)
+        SR5_RollMessage.updateChatButtonHelper(messageId, type, done)
         break
       }
       case "damage":
@@ -357,39 +475,50 @@ export class SR5_RollMessage {
         //SR5 p. 195: the subdued defender and its attacker enter the hold, with the net hits of the attack
         if (messageData.combat.calledShot.name === "subdue") {
           const hold = Object.values(messageData.combat.calledShot.effects).find(e => e.name === "subdue")?.value ?? 0
-          await SR5_GrappleHelpers.startHold(messageData.previousMessage.actorId, SR5_GrappleHelpers.actorIdOf(actor), hold)
+          await SR5_GrappleHelpers.startHold(messageData.previousMessage.actorId, SR5_GrappleHelpers.actorIdOf(actor), hold, "subdue", null, messageId)
         }
         //SR5 p. 196: the strengthened (or weakened) hold, written on both fighters
         else if (messageData.combat.calledShot.name === "strengthenHold") {
           const effect = Object.values(messageData.combat.calledShot.effects).find(e => e.name === "strengthenHold")
           //The hold the card was rolled against: an older card is refused once a newer hold took its place
-          await SR5_GrappleHelpers.setHold(SR5_GrappleHelpers.actorIdOf(actor), effect?.value ?? 0, effect?.holdId)
+          await SR5_GrappleHelpers.setHold(SR5_GrappleHelpers.actorIdOf(actor), effect?.value ?? 0, effect?.holdId, null, messageId)
         }
         //Run & Gun p. 126: the attacker who reversed the situation becomes the one who holds
         else if (messageData.combat.calledShot.name === "reversal" && Object.values(messageData.combat.calledShot.effects).some(e => e.name === "reversal")) {
           const effect = Object.values(messageData.combat.calledShot.effects).find(e => e.name === "reversal")
-          await SR5_GrappleHelpers.reverseHold(messageData.previousMessage.actorId, effect.value, effect.holdId)
+          await SR5_GrappleHelpers.reverseHold(messageData.previousMessage.actorId, effect.value, effect.holdId, null, messageId)
         }
         else if (messageData.combat.calledShot.name === "trickShot") await originalActionActor.applyCalledShotsEffect(messageData)
         else await actor.applyCalledShotsEffect(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      //SR5 p. 422: the GM rolls the target's Perception, moves the object, or tells the target who tried
+      case "pickpocketPerception":
+        await SR5Pickpocket.openPerception(messageData)
+        break
+      case "pickpocketCaught":
+      case "pickpocketNoticed":
+        await SR5Pickpocket.caught(messageData, messageId, type)
+        break
+      case "pickpocketTransfer":
+        await SR5Pickpocket.transfer(messageData, messageId)
+        break
       //Run & Gun p. 133: the clinched defender and the attacker enter the clinch, with the net hits of the test
       case "grappleClinchApply":
-        await SR5_GrappleHelpers.startHold(messageData.previousMessage.actorId, SR5_GrappleHelpers.actorIdOf(actor), messageData.roll.netHits, "clinch")
+        await SR5_GrappleHelpers.startHold(messageData.previousMessage.actorId, SR5_GrappleHelpers.actorIdOf(actor), messageData.roll.netHits, "clinch", null, messageId)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       //Run & Gun p. 148-149: after an escape with Contre-prise, the escaper chooses to break free or to reverse
       case "grappleEscapeFree":
       case "grappleCounterGrapple":
-        if (type === "grappleEscapeFree") await SR5_GrappleHelpers.releaseHold(SR5_GrappleHelpers.actorIdOf(actor), messageData.various.grappleHoldId)
-        else await SR5_GrappleHelpers.reverseHold(SR5_GrappleHelpers.actorIdOf(actor), messageData.various.grappleNewHold, messageData.various.grappleHoldId)
+        if (type === "grappleEscapeFree") await SR5_GrappleHelpers.releaseHold(SR5_GrappleHelpers.actorIdOf(actor), messageData.various.grappleHoldId, null, messageId)
+        else await SR5_GrappleHelpers.reverseHold(SR5_GrappleHelpers.actorIdOf(actor), messageData.various.grappleNewHold, messageData.various.grappleHoldId, null, messageId)
         await SR5_RollMessage.updateChatButtonHelper(messageId, "grappleEscapeFree")
         await SR5_RollMessage.updateChatButtonHelper(messageId, "grappleCounterGrapple")
         break
       case "applyFearEffect":
       case "applyStunnedEffect":
-        SR5Combat.changeInitInCombatHelper(actor.id, -messageData.combat.calledShot.initiative)
+        SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), -messageData.combat.calledShot.initiative)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "templatePlace": {
@@ -418,7 +547,7 @@ export class SR5_RollMessage {
       case "attackerPlaceMark": {
         // Kill Code p. 45: a mark placed by Watchdog is remembered as such, it opens the interruption actions
         let isWatchdog = messageData.test.typeSub === "watchdog"
-        await SR5_MarkHelpers.markItem(actor.id, messageData.previousMessage.actorId, messageData.matrix.mark, messageData.target.itemUuid, isWatchdog)
+        await SR5_MarkHelpers.markItem(actor.id, messageData.previousMessage.actorId, messageData.matrix.mark, messageData.target.itemUuid, isWatchdog, messageId)
         // if defender is a drone and is slaved, add mark to master
         if (actor.type === "actorDrone" && actor.system.slaved){
           if (!game.user?.isGM) {
@@ -427,6 +556,8 @@ export class SR5_RollMessage {
               attackerID: originalActionActor.id,
               mark: messageData.matrix.mark,
               isWatchdog: isWatchdog,
+              //The GM reads the marks again on this card and the attack it answers (mark.js)
+              messageId,
             })
           } else {
             await SR5_MarkHelpers.markItem(actor.system.vehicleOwner.id, messageData.previousMessage.actorId, messageData.matrix.mark, undefined, isWatchdog)
@@ -439,13 +570,16 @@ export class SR5_RollMessage {
         let attackerID
         if (actor.isToken) attackerID = actor.token.id
         else attackerID = actor.id
+        //An unlinked token has its own actor: its token id reaches it, the actor id would mark the base actor (measured)
+        let markedID = originalActionActor.isToken ? originalActionActor.token.id : originalActionActor.id
         if (!game.user?.isGM) {
           SR5_SocketHandler.emitForGM("markItem", {
-            targetActor: originalActionActor.id,
+            targetActor: markedID,
             attackerID: attackerID,
             mark: 1,
+            messageId,
           })
-        } else await SR5_MarkHelpers.markItem(originalActionActor.id, attackerID, 1)
+        } else await SR5_MarkHelpers.markItem(markedID, attackerID, 1)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       }
@@ -456,6 +590,8 @@ export class SR5_RollMessage {
           SR5_SocketHandler.emitForGM("overwatchIncrease", {
             defenseHits: messageData.roll.hits,
             actorId: overwatchActorId,
+            //The GM reads the hits again on this defense card (entityActor-helpers.js)
+            messageId,
           })
         } else await SR5_ActorHelper.overwatchIncrease(messageData.roll.hits, overwatchActorId)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
@@ -463,9 +599,8 @@ export class SR5_RollMessage {
       }
       case "defenderDoMatrixDamage":
         if (originalActionActor.type === "actorPc" || originalActionActor.type === "actorGrunt"){
-          if (originalActionActor.items.find((item) => item.type === "itemDevice" && item.system.isActive && (item.system.type === "livingPersona" || item.system.type === "headcase"))){
-            originalActionActor.takeDamage(messageData)
-          } else await SR5_MatrixHelpers.applyDamageToDecK(originalActionActor, messageData, actor, true)
+          //A living persona or a Lockdown head case takes it as Stun there, the swarm of an original strain Monad on itself
+          await SR5_MatrixHelpers.applyDamageToDecK(originalActionActor, messageData, actor, true)
         } else originalActionActor.takeDamage(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
@@ -502,6 +637,10 @@ export class SR5_RollMessage {
         SR5_MatrixHelpers.applylinkLockEffect(originalActionActor, actor)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      case "addictionWorsen":
+        await actor.worsenAddiction(messageData)
+        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
       case "catchFire":
         SR5_ActorHelper.fireDamageEffect(actor.id)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
@@ -524,7 +663,8 @@ export class SR5_RollMessage {
       case "eraseMarkSuccess":
         if (!game.user?.isGM) {
           SR5_SocketHandler.emitForGM("eraseMark", {
-            cardData: messageData
+            //The GM erases what this card says, read again from the chat log (mark.js)
+            messageId
           })
         } else SR5_MarkHelpers.eraseMark(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
@@ -546,10 +686,10 @@ export class SR5_RollMessage {
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "iAmTheFirewall":
-        SR5_MatrixHelpers.applyIAmTheFirewallEffect(messageData, speaker, SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId))
+        SR5_MatrixHelpers.applyIAmTheFirewallEffect(messageData, speaker, SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId, messageData.actorUuids))
         break
       case "intervene":
-        if (await SR5_MatrixHelpers.applyInterveneEffect(messageData, speaker, SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId))) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        if (await SR5_MatrixHelpers.applyInterveneEffect(messageData, speaker, SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId, messageData.actorUuids))) SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "popup":
         SR5_MatrixHelpers.applyPopupEffect(messageData, originalActionActor, actor)
@@ -560,6 +700,12 @@ export class SR5_RollMessage {
         SR5_ThirdPartyHelpers.reduceSideckickService(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      case "leashTest":
+        if (await SR5_ThirdPartyHelpers.leashTest(messageData)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
+      case "wildBanish":
+        if (await SR5_ThirdPartyHelpers.wildBanish(messageData)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
       case "registerSprite":
       case "bindSpirit":
         SR5_ThirdPartyHelpers.enslavedSidekick(messageData, type)
@@ -568,6 +714,15 @@ export class SR5_RollMessage {
       case "ritualSealed":
         SR5_ThirdPartyHelpers.sealRitual(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
+      case "applyReagents":
+        if (!actor?.isOwner) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+        await actor.update(reagentWorkUpdate(actor.system.magic, messageData.magic.reagentWorkChanges ?? {
+        }))
+        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
+      case "manaShift":
+        if (await applyManaShift(messageData, messageId)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "killComplexFormResistance":
       case "dispellResistance":
@@ -592,10 +747,21 @@ export class SR5_RollMessage {
         await SR5_ThirdPartyHelpers.reduceTransferedEffect(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
-      case "toxinEffect":
-        actor.applyToxinEffect(messageData)
-        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+      case "toxinEffect": {
+        //A player's card applied by the GM: read again on the weapon and confirmed, never as its flags say (Liesel's D1)
+        if (!actor) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+        if (!toxinCardTrusted(message)) return SR5_ActorHelper.whisperGM(game.i18n.format("SR5.ToxinCardRejected", {
+          user: message.author?.name ?? "?", actor: actor.name
+        }))
+        const applied = await SR5_RollMessage.applyOnce(messageId, type, async () => {
+          const toxinData = await SR5_ActorHelper.checkToxinCard(message, actor)
+          if (!toxinData) return false
+          await actor.applyToxinEffect(toxinData)
+          return true
+        })
+        if (applied) SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      }
       case "escapeEngulf":
         actor.rollTest(type, null, messageData)
         break
@@ -613,11 +779,15 @@ export class SR5_RollMessage {
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "removeCase":
-        await SR5_MiscellaneousHelpers.updateActorData(messageData.target.actorId, "maglock.caseRemoved", 0, true)
+        await SR5_MiscellaneousHelpers.updateActorData(messageData.target.actorId, "maglock.caseRemoved", 0, true, {
+          use: "maglock", messageId
+        })
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "removeAntiTamper":
-        await SR5_MiscellaneousHelpers.updateActorData(messageData.target.actorId, "maglock.hasAntiTamper", 0, true)
+        await SR5_MiscellaneousHelpers.updateActorData(messageData.target.actorId, "maglock.hasAntiTamper", 0, true, {
+          use: "maglock", messageId
+        })
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       default:
@@ -629,18 +799,18 @@ export class SR5_RollMessage {
       if (!game.user.isGM && game.user.id !== messageData.previousMessage.userId) return ui.notifications.warn(game.i18n.localize("SR5.WARN_DontHavePerm"))
       switch (type) {
         case "spendNetHits": {
-          let targetActor = SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId)
+          let targetActor = SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId, messageData.actorUuids)
           SR5_CalledShotHelpers.chooseSpendNetHits(message, targetActor)
           break
         }
         case "trickShot":
-          actor = SR5_EntityHelpers.getRealActorFromID(messageData.previousMessage.actorId)
+          actor = SR5_EntityHelpers.getRealActorFromID(messageData.previousMessage.actorId, messageData.actorUuids)
           await actor.applyCalledShotsEffect(messageData)
           break
         //SR5 p. 241: Snoop succeeded, the hacker sees what the drone or device sees while his mark lasts.
         //The card is the defender's: the hacker who rolled the Snoop clicks it, or the GM for him
         case "snoopVision": {
-          let snooped = SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId)
+          let snooped = SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId, messageData.actorUuids)
           if (await SR5SharedVision.startSnoop(snooped, messageData.previousMessage.actorId)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
           break
         }
@@ -669,7 +839,7 @@ export class SR5_RollMessage {
 
     //Get actor if any
     let actor
-    if (messageData.owner.actorId) actor = SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId)
+    if (messageData.owner.actorId) actor = SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId, messageData.actorUuids)
 
     //Special cases : add buttons or end action description
     let endLabel, hits
@@ -818,6 +988,22 @@ export class SR5_RollMessage {
       case "ritualSealed":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.RitualSealed"))
         break
+      case "applyReagents":
+        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.ReagentApplied"))
+        break
+      //Bullets & Bandages p. 15: what the GM applied, marked done
+      case "bbStabilize":
+        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.format(stabilizationLabelKey("SR5.BB_StabilizeDone", firstOption), {
+          reduction: Number(firstOption) || 0
+        }))
+        break
+      case "bbDiagnose": {
+        const bonus = Number(firstOption) || 0
+        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.format("SR5.BB_DiagnoseDone", {
+          bonus: bonus > 0 ? `+${bonus}` : `${bonus}`
+        }))
+        break
+      }
       default:
     }
 
@@ -847,8 +1033,22 @@ export class SR5_RollMessage {
     } else await SR5_RollMessage.updateChatButton(message, button, firstOption)
   }
 
-  static async _socketUpdateChatButton(message){
-    await SR5_RollMessage.updateChatButton(message.data.message, message.data.buttonToUpdate, message.data.firstOption)
+  //Believed for a button on the stored card that the sender could have clicked (security lot, Thomas):
+  //a player's console used to strip the buttons of any card, the GM's included
+  static async _socketUpdateChatButton(message, senderId){
+    const sender = game.users.get(senderId),
+      data = message?.data ?? {
+      },
+      card = game.messages.get(data.message),
+      cardData = card?.flags?.sr5data
+    if (!sender || !cardData) return SR5_SystemHelpers.srLog(1, `updateChatButton refused from ${senderId}`)
+    if (!chatButtonAllowed({
+      senderIsGM: sender.isGM,
+      button: storedButton(cardData, data.buttonToUpdate),
+      ownsCardActor: card.author?.id === sender.id || cardActors(cardData).some(a => a.testUserPermission?.(sender, "OWNER")),
+      answeredCard: [...game.messages.values()].some(m => m.author?.id === sender.id && m.flags?.sr5data?.previousMessage?.messageId === card.id),
+    })) return SR5_SystemHelpers.srLog(1, `updateChatButton refused from ${sender.name}`, data)
+    await SR5_RollMessage.updateChatButton(data.message, data.buttonToUpdate, data.firstOption)
   }
 
   //Return data for a chat button
@@ -874,17 +1074,36 @@ export class SR5_RollMessage {
       temp.innerHTML = html
       const divButtons = temp.querySelector('[id="srButtonTest"]')
       for (let button in newMessage.chatCard.buttons){
-        divButtons.insertAdjacentHTML("beforeend", `<button class="messageAction ${newMessage.chatCard.buttons[button].testType}" data-action="${newMessage.chatCard.buttons[button].testType}" data-type="${newMessage.chatCard.buttons[button].actionType}">${newMessage.chatCard.buttons[button].label}</button>`)
+        //The GM-only class too, as on the first render (roll-test.js): a refreshed card would show GM buttons to players
+        divButtons.insertAdjacentHTML("beforeend", `<button class="messageAction ${newMessage.chatCard.buttons[button].testType} ${newMessage.chatCard.buttons[button].gmAction ?? ""}" data-action="${newMessage.chatCard.buttons[button].testType}" data-type="${newMessage.chatCard.buttons[button].actionType}">${newMessage.chatCard.buttons[button].label}</button>`)
       }
       html = temp.innerHTML
-      messageToUpdate.update({
-        "flags.sr5data": newMessage,
+      //An update merges into the flags: a button the new card no longer has would stay in them and come back on the
+      //next refresh (updateChatButton). It is removed by Foundry's "-=" key
+      return messageToUpdate.update({
+        "flags.sr5data": {
+          ...newMessage,
+          chatCard: {
+            ...newMessage.chatCard,
+            buttons: {
+              ...newMessage.chatCard.buttons,
+              ...removedButtonKeys(messageToUpdate.flags.sr5data?.chatCard?.buttons, newMessage.chatCard.buttons),
+            },
+          },
+        },
         content: html,
       })
     })
   }
 
-  static async _socketUpdateRollCard(message){
+  //Believed only from a GM or from a player who owns the actor who spoke the card: the new card is the sender's own
+  //data, anyone else could rewrite the hits or the buttons of any card from a console. The speaker is read on the
+  //stored card, its token through its own scene (the GM may be looking at another one)
+  static async _socketUpdateRollCard(message, senderId){
+    const sender = game.users.get(senderId)
+    const speaker = game.messages.get(message.data?.message)?.speaker
+    const actor = (speaker?.token && game.scenes.get(speaker.scene)?.tokens.get(speaker.token)?.actor) || game.actors.get(speaker?.actor)
+    if (!sender?.isGM && !actor?.testUserPermission?.(sender, "OWNER")) return SR5_SystemHelpers.srLog(1, `updateRollCard refused from ${senderId}`)
     await SR5_RollMessage.updateRollCard(message.data.message, message.data.newMessage)
   }
 

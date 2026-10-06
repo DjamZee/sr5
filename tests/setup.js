@@ -64,6 +64,8 @@ if (!globalThis.game.i18n.localize) globalThis.game.i18n.localize = (key) => key
 if (!globalThis.game.settings) globalThis.game.settings = {
   get: () => null,
 }
+// registerSystemSettings also registers menus (the shop's, for one)
+if (!globalThis.game.settings.registerMenu) globalThis.game.settings.registerMenu = () => {}
 if (!globalThis.game.i18n.format) globalThis.game.i18n.format = (key, _data) => key
 
 // CONFIG stub: config.js assigns CONFIG.statusEffects while it is being imported, so anything that

@@ -8,4 +8,21 @@
 	{{> systems/sr5/templates/items/_partial/editable/quality/karmaCost-edit.hbs}}
 	<!-- Item Rating -->
 	{{> systems/sr5/templates/items/_partial/editable/_common/rating-edit.hbs}}
+	<!-- Illusionist (Forbidden Arcana p. 37): Physical or Mana, chosen with each level -->
+	{{#if showMasteryOption}}
+	<li class="grid">
+		<div class="col-4">{{localize 'SR5.MasteryIllusionType'}}{{localize 'SR5.Colons'}}</div>
+		<div class="col-8">
+			<select name="system.masteryOption" data-dtype="String">
+				{{#select system.masteryOption}}
+				<option value="">{{localize 'SR5.MasteryIllusionTypeAny'}}</option>
+				<option value="physical">{{localize 'SR5.SpellTypePhysical'}}</option>
+				<option value="mana">{{localize 'SR5.SpellTypeMana'}}</option>
+				{{/select}}
+			</select>
+		</div>
+	</li>
+	{{/if}}
+	<!-- Linked mentor spirit (SR5 p. 76) -->
+	{{> systems/sr5/templates/items/_partial/editable/quality/linkedMentor-edit.hbs}}
 </ul>

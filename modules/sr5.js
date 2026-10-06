@@ -34,6 +34,9 @@ import {
   onMoveToken, clearRunning
 } from './system/running.js'
 import {
+  onSprintCard
+} from './system/sprint-fatigue.js'
+import {
   sr5HookCanvasInit,
   sr5HookDeleteCombatCumulativeDefense,
   sr5HookCreateCombatant,
@@ -61,6 +64,9 @@ import {
   renderSceneIndicators, sr5HookUpdateSceneIndicators
 } from './interface/scene-indicators.js'
 import {
+  sr5HookExpireManaShifts
+} from './system/mana-shift.js'
+import {
   sr5PlaceChatJumpToBottom 
 } from './interface/chat-jump-to-bottom.js'
 import {
@@ -73,9 +79,31 @@ import {
   sr5KeepSidebarSettingsLast
 } from './interface/sidebar-tab-order.js'
 import {
+  SR5StorageLock
+} from './interface/storage-lock-actions.js'
+import {
   SR5SharedVision, sr5HookUpdateTokenSharedVision, sr5HookUpdateActorSharedVision, sr5HookUpdateItemSharedVision,
   sr5HookResetJumpedInRiggers
 } from './interface/shared-vision.js'
+import {
+  recordDefense
+} from './system/defense-once.js'
+import {
+  onUserConnected
+} from './system/relay-watch.js'
+import {
+  SR5ShopStock
+} from './interface/shop-stock.js'
+import {
+  SR5ShopWindow
+} from './interface/shop-window.js'
+import {
+  SR5ShopVendor
+} from './interface/shop-vendor.js'
+import {
+  seedOverwatch, sr5HookOverwatchDrop, sr5HookPreUpdateTokenOverwatch, sr5HookPreUpdateActorDeltaOverwatch,
+  sr5HookUpdateTokenOverwatch
+} from './system/overwatch-guard.js'
 
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
@@ -84,6 +112,13 @@ import {
 // Register all hooks
 Hooks.once('init', sr5HookInit)
 Hooks.once('ready', sr5HookReady)
+// The GMs remember the Overwatch Scores, to be told of a lowering a player writes
+Hooks.once('ready', seedOverwatch)
+Hooks.on('updateActor', sr5HookOverwatchDrop)
+Hooks.on('updateToken', sr5HookUpdateTokenOverwatch)
+// A player lowers the score of an unlinked token through the token or its delta too, not only through the actor
+Hooks.on('preUpdateToken', sr5HookPreUpdateTokenOverwatch)
+Hooks.on('preUpdateActorDelta', sr5HookPreUpdateActorDeltaOverwatch)
 Hooks.once('canvasReady', sr5HookCanvasReady)
 Hooks.once('renderChatLog', sr5HookRenderChatLog)
 Hooks.on('renderChatLog', sr5PlaceChatJumpToBottom)
@@ -115,7 +150,16 @@ Hooks.on('deleteCombat', sr5HookDeleteCombatGrapple)
 //Running (SR5 p. 163-164): put on by a move, it falls when the encounter ends
 Hooks.on('moveToken', onMoveToken)
 Hooks.on('deleteCombat', clearRunning)
+//Sprint fatigue (SR5 p. 174): counted and resisted by the active GM from the Sprint test card
+Hooks.on('createChatMessage', message => onSprintCard(message).catch(e => console.error(e)))
 Hooks.on('renderChatMessageHTML', SR5_GrappleHelpers.onRenderHoldCard)
+//An escape a player rolled frees her once the active GM has read its card again (grapple.js)
+Hooks.on('createChatMessage', message => SR5_GrappleHelpers.onEscapeCard(message))
+Hooks.on('updateChatMessage', message => SR5_GrappleHelpers.onEscapeCard(message))
+//A target defends once against one attack: the active GM records each defense card (system/defense-once.js)
+//A GM who leaves takes the requests still waiting on him: their senders are told to click again (system/relay-watch.js)
+Hooks.on('userConnected', onUserConnected)
+Hooks.on('createChatMessage', message => recordDefense(message).catch(e => console.error("SR5 | defense not recorded", e)))
 Hooks.on('closeCombatantConfig', sr5HookCloseCombatantConfig)
 Hooks.on('preUpdateItem', sr5HookPreUpdateItem)
 Hooks.on('createItem', sr5HookCreateItem)
@@ -132,13 +176,20 @@ Hooks.on('renderCompendiumDirectory', sr5HookRenderCompendiumDirectory)
 Hooks.on('renderRollTableSheet', sr5AddTableFormulaField)
 Hooks.on('renderTableResultConfig', sr5AddResultQuantityField)
 Hooks.on('renderChatMessageHTML', sr5HookRenderTablePayout)
+Hooks.on('renderSidebar', SR5ShopWindow.onRenderSidebar)
+// A sale or a restock on a vendor: its open shop window redraws
+for (const hook of ['createItem', 'updateItem', 'deleteItem', 'updateActor']) Hooks.on(hook, SR5ShopVendor.onVendorChanged)
+// A contact the gamemaster puts on a vendor searches for it
+Hooks.on('createItem', SR5ShopVendor.onContactAdded)
 Hooks.on('renderSidebar', sr5KeepSidebarSettingsLast)
+Hooks.on('getHeaderControlsDocumentSheetV2', SR5ShopStock.onHeaderControls)
 Hooks.on('drawMeasuredTemplate', sr5HookDrawMeasuredTemplate)
 Hooks.on('deleteMeasuredTemplate', sr5HookDeleteMeasuredTemplate)
 Hooks.on('createMeasuredTemplate', sr5HookCreateMeasuredTemplate)
 Hooks.on('updateMeasuredTemplate', sr5HookUpdateMeasuredTemplate)
 Hooks.on('updateScene', sr5HookUpdateScene)
 Hooks.on('updateScene', sr5HookUpdateSceneIndicators)
+Hooks.on('updateWorldTime', sr5HookExpireManaShifts)
 Hooks.on('canvasReady', renderSceneIndicators)
 Hooks.on('canvasReady', sr5HookCanvasReadyAreaEffects)
 Hooks.on('canvasReady', sr5HookCanvasReadyVisionRanges)
@@ -152,4 +203,6 @@ Hooks.on('createActiveEffect', (effect) => {
   if (effect.parent instanceof Actor) SR5SharedVision.checkViewers(effect.parent)
 })
 Hooks.on('canvasReady', () => SR5SharedVision.checkViewers())
+// Locked storages: the other players' rights follow the lock (SR5 p. 365)
+SR5StorageLock.registerHooks()
 for (const hook of ['createActor', 'deleteActor', 'createToken', 'deleteToken', 'canvasReady']) Hooks.on(hook, sr5HookResetJumpedInRiggers)

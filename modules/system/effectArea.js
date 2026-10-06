@@ -6,14 +6,31 @@ import {
   SR5_SystemHelpers 
 } from "./utilitySystem.js"
 import {
-  SR5_SocketHandler 
+  SR5_SocketHandler
 } from "../socket.js"
+import {
+  backgroundCountFor
+} from "./background-count.js"
 import {
   _getSRStatusEffect 
 } from "../system/effectsList.js"
 import {
   templateSceneId, isAreaEffectOffScene, isOrphanEnvironmentEffect
 } from "./areaEffectScene.js"
+import {
+  SR5_ActorHelper
+} from "../entities/actors/entityActor-helpers.js"
+import {
+  readsRoll
+} from "../rolls/roll-helpers/effect-card.js"
+import {
+  SR5
+} from "../config.js"
+
+//Every GM runs the templates' hooks: the one the game designates alone asks and warns
+function isActiveGM(){
+  return !!game.user?.isGM && game.users?.activeGM?.id === game.user.id
+}
 
 export class SR5_EffectArea {
 
@@ -100,11 +117,11 @@ export class SR5_EffectArea {
       //check distance
       if (distance > SR5_EffectArea.JAM_SIGNALS_RADIUS_IN_METERS) {
         if (actorJammedEffect){
-          if (game.user?.isGM) await SR5_EffectArea.removeJammedEffect(actor, actorJammedEffect)
+          if (isActiveGM()) await SR5_EffectArea.removeJammedEffect(actor, actorJammedEffect)
         }
       } else {
         if (!actorJammedEffect){
-          if (game.user?.isGM) await SR5_EffectArea.createJammedEffect(passiveActor, actor, passiveJamEffect.system.value)
+          if (isActiveGM()) await SR5_EffectArea.createJammedEffect(passiveActor, actor, SR5_EffectArea.jamNoise(passiveActor, passiveJamEffect))
         }
       }
     }
@@ -113,11 +130,11 @@ export class SR5_EffectArea {
       //check distance
       if (distance <= SR5_EffectArea.JAM_SIGNALS_RADIUS_IN_METERS) {
         if (!passiveJammedEffect){
-          if (game.user?.isGM) await SR5_EffectArea.createJammedEffect(actor, passiveActor, actorJamEffect.system.value)
+          if (isActiveGM()) await SR5_EffectArea.createJammedEffect(actor, passiveActor, SR5_EffectArea.jamNoise(actor, actorJamEffect))
         }
       } else {
         if (passiveJammedEffect){
-          if (game.user?.isGM) await SR5_EffectArea.removeJammedEffect(passiveActor, passiveJammedEffect)
+          if (isActiveGM()) await SR5_EffectArea.removeJammedEffect(passiveActor, passiveJammedEffect)
         }
       }
     }
@@ -149,8 +166,24 @@ export class SR5_EffectArea {
   }
 
   //Start jamming
+  //The noise a jammer puts on others, as the GM stands by it: the hits written on the jammer's own item (by its
+  //owner, from a card she may have edited) are capped at the Jam Signals pool of its sheet and at the test's limit,
+  //its Attack (SR5 p. 239). The item keeps no trace of a pushed roll, so Edge never lifts the cap: the GM raises the
+  //noise by hand for a pushed roll that went past it (Anke's review). An actor with no such pool (no matrix actions
+  //prepared) keeps its value
+  static jamNoise(jammer, jamItem){
+    const claimed = Math.max(0, Number(jamItem?.system?.value) || 0)
+    const action = jammer?.system?.matrix?.actions?.jamSignals
+    const pool = Number(action?.test?.dicePool)
+    if (!Number.isFinite(pool)) return claimed
+    const limit = Number(action?.limit?.value) || 0
+    return Math.min(claimed, Math.max(0, pool), limit > 0 ? limit : Infinity)
+  }
+
+  //The active GM alone: with two GMs connected, each laid its own signalJammed on every target (noise counted twice),
+  //and the end of the jam lifted only one of them (Marta's measure)
   static async onJamCreation(actorId){
-    if (!game.user?.isGM) return
+    if (!isActiveGM()) return
     let activeActor = SR5_EntityHelpers.getRealActorFromID(actorId)
     if (!activeActor) return
     let jamEffect =  activeActor.items.find(i => i.system.type === "signalJam" && i.system.ownerID === activeActor.id)
@@ -167,7 +200,7 @@ export class SR5_EffectArea {
         let distance = SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint(SR5_EffectArea.tokenPosition(activeToken), SR5_EffectArea.tokenPosition(token), scene)
         let jammedEffect = tokenActor.items.find(i => i.system.type === "signalJammed" && i.system.ownerID === activeActor.id)
         if (distance <= SR5_EffectArea.JAM_SIGNALS_RADIUS_IN_METERS && !jammedEffect){
-          await SR5_EffectArea.createJammedEffect(activeActor, tokenActor, jamEffect.system.value)
+          await SR5_EffectArea.createJammedEffect(activeActor, tokenActor, SR5_EffectArea.jamNoise(activeActor, jamEffect))
         }
       }
     }
@@ -175,7 +208,7 @@ export class SR5_EffectArea {
 
   //End jamming : lift the noise this jammer put on anyone, on every scene
   static async onJamEnd(actorId){
-    if (!game.user?.isGM) return
+    if (!isActiveGM()) return
     let cleared = new Set()
     for (let scene of game.scenes ?? []){
       for (let token of scene.tokens){
@@ -216,8 +249,25 @@ export class SR5_EffectArea {
     await jammed.createEmbeddedDocuments('ActiveEffect', [statusEffect])
   }    
 
-  //Add effect on a token moving inside a template
+  //The calls running for one token and one template, by "token.template"
+  static #templateEffectRuns = new Map()
+
+  //Add effect on a token moving inside a template. The template hook and the token hook can ask at the same moment
+  //(a template changed while a token moves): the calls for one token and one template run one after the other, so
+  //the second one finds the effect the first one created instead of creating it again (M1 D-M1-2)
   static async createTemplateEffect(token, template){
+    const key = `${token?.id}.${template?.id}`
+    const previous = SR5_EffectArea.#templateEffectRuns.get(key) ?? Promise.resolve()
+    const run = previous.catch(() => {}).then(() => SR5_EffectArea._createTemplateEffect(token, template))
+    SR5_EffectArea.#templateEffectRuns.set(key, run)
+    try {
+      return await run
+    } finally {
+      if (SR5_EffectArea.#templateEffectRuns.get(key) === run) SR5_EffectArea.#templateEffectRuns.delete(key)
+    }
+  }
+
+  static async _createTemplateEffect(token, template){
     let actor = await SR5_EntityHelpers.getRealActorFromID(token.id),
       templateData = template.flags.sr5,
       effect, customEffect, hasItem, sourceItem
@@ -226,7 +276,9 @@ export class SR5_EffectArea {
     let sourceName = game.i18n.localize("SR5.AreaEffect")
     if (templateData.itemUuid) sourceItem = await fromUuid(templateData.itemUuid)
     if (sourceItem) sourceName = sourceItem.name
-        
+    //A template a player placed: its light, noise and background count are worked out from its item, not read
+    templateData = SR5_EffectArea.trustedTemplateData(template, sourceItem)
+
     //environmental effects
     if (templateData.environmentalModifiers){
       for (let [key, value] of Object.entries(templateData.environmentalModifiers)){
@@ -257,7 +309,8 @@ export class SR5_EffectArea {
     //Background count
     if (templateData.backgroundCountValue && templateData.backgroundCountValue !== 0){
       sourceName = game.i18n.localize("SR5.SceneBackgroundCount")
-      let effectValue = actor.system.magic?.tradition === templateData.backgroundCountAlignement ? templateData.backgroundCountValue : -templateData.backgroundCountValue
+      //Aetherologie p. 34: a negative count (ebb) is a penalty for everyone, not a bonus for the non-aligned
+      let effectValue = backgroundCountFor(templateData.backgroundCountValue, templateData.backgroundCountAlignement, actor.system.magic?.tradition)
       effect = await SR5_EntityHelpers.generateItemEffect(sourceName, "areaEffect", template, `${game.i18n.localize("SR5.Magic")}`, effectValue, 0, "permanent")
       effect.system.customEffects.push(await SR5_EntityHelpers.generateCustomEffect("astralValues", "system.magic.bgCount", "value", effectValue, true))
       if (effect && effect.system.customEffects.length) {
@@ -280,9 +333,20 @@ export class SR5_EffectArea {
           roll: {
             hits: sourceItem.system.hits
           },
+          //Built here by the GM, never read from a card: one decision on the sheet's definition for the whole template
+          areaTemplate: true,
+        }
+        //A player's spell on an actor she does not own: what its sheet defines, shown in the window of the hits
+        const review = await SR5_ActorHelper.definitionReview(sourceItem, actor, "customEffects", data)
+        //An effect whose value reads the hits: the hits written on the caster's item are his owner's to change.
+        //Counted again on the cast's card, as for a card applied by hand (checkEffectCard)
+        if (readsRoll(sourceItem.system.customEffects)) {
+          const roll = await SR5_EffectArea.templateRoll(sourceItem, templateData, template, actor, review)
+          if (!roll) return
+          data.roll = roll
         }
         //If effect is not resisted, apply effect to actor
-        if (!sourceItem.system.resisted) await actor.applyExternalEffect(data, "customEffects")
+        if (!sourceItem.system.resisted) await actor.applyExternalEffect(data, "customEffects", review)
         else {
           //The cast this template comes from, when it says so; else the spell's card, as before
           let message = (templateData.messageId && game.messages.get(templateData.messageId)) ||
@@ -295,6 +359,8 @@ export class SR5_EffectArea {
           if (messageData) {
             SR5_EffectArea.PENDING_RESISTANCES.add(pending)
             messageData.owner.messageId = message.id
+            //Its resistance card, applied later, keeps the decision taken for the template (M5 D6)
+            if (review) SR5_ActorHelper.AREA_REVIEW_KEYS.set(SR5_ActorHelper.areaReviewKey(actor, templateData.itemUuid, message.id), review.key)
             if (actor.hasPlayerOwner){
               let user = SR5_EntityHelpers.getUserOwner(actor)
               if (user.isGM) actor.rollTest("spellResistance", null, messageData)
@@ -313,6 +379,103 @@ export class SR5_EffectArea {
     }
   }
 
+  //The flags of a template are its author's to write (the template's form, the console). A GM's are kept. A
+  //player's keep only the identity of their item: the environment modifiers are the ones its effects give (as
+  //AbilityTemplate.fromItem sets them), and no item gives a noise or a background count. The GM is told once
+  //per template when something written on it is left out
+  static WARNED_TEMPLATES = new Set()
+  static trustedTemplateData(template, sourceItem){
+    const flags = template.flags?.sr5 ?? {
+    }
+    const author = template.author ?? game.users?.get?.(template.user)
+    if (author?.isGM) return flags
+    let environmentalModifiers
+    //Only what fromItem sets: a grenade or a launcher. A spell's environment passes by its effect (itemHasEffect),
+    //and set here too it was applied twice, left behind by the template, and NaN for a hits effect
+    const sys = sourceItem?.system
+    const thrown = sys?.category === "grenade" || sys?.type === "grenadeLauncher" || sys?.type === "missileLauncher"
+    //Every GM viewing the scene runs this: one copy only, from the designated GM
+    for (const e of Object.values(thrown && isActiveGM() ? sys.customEffects ?? {
+    } : {
+    })){
+      if (!e?.transfer || e.category !== "environmentalModifiers") continue
+      const key = (e.target ?? "").replace("system.itemsProperties.environmentalMod.", "")
+      if (key in (SR5.environmentalModifiers ?? {
+      })) environmentalModifiers = {
+        ...environmentalModifiers, [key]: e.value
+      }
+    }
+    const trusted = {
+      ...flags, environmentalModifiers, matrixNoise: 0, backgroundCountValue: 0, backgroundCountAlignement: undefined
+    }
+    const written = Object.entries(flags.environmentalModifiers ?? {
+    }).some(([k, v]) => (parseInt(v) || 0) !== (parseInt(environmentalModifiers?.[k]) || 0)) ||
+      (parseInt(flags.matrixNoise) || 0) !== 0 || (Number(flags.backgroundCountValue) || 0) !== 0
+    if (written && !SR5_EffectArea.WARNED_TEMPLATES.has(template.id) && isActiveGM()) {
+      SR5_EffectArea.WARNED_TEMPLATES.add(template.id)
+      ChatMessage.create({
+        whisper: game.users.filter(u => u.isGM).map(u => u.id),
+        content: `<p>${game.i18n.format("SR5.TemplateFlagsIgnored", {
+          user: author?.name ?? "?", item: sourceItem?.name ?? game.i18n.localize("SR5.AreaEffect")
+        })}</p>`,
+      })
+    }
+    return trusted
+  }
+
+  //The hits of a cast, counted again once per template and cast, on the GM's client only (he alone applies the
+  //templates' effects). null when the effect must not apply (refused, declined)
+  static TEMPLATE_ROLLS = new Map()
+  //`review` (definitionReview): the sheet's definition, shown in the same window as the hits
+  static async templateRoll(sourceItem, templateData, template, actor, review = null){
+    const caster = sourceItem.actor
+    const players = game.users?.filter(u => !u.isGM && caster?.testUserPermission?.(u, "OWNER")) ?? []
+    const itemRoll = {
+      hits: sourceItem.system.hits, netHits: sourceItem.system.hits
+    }
+    //A caster no player owns: the item is the GM's. A target his player owns too: nothing she could not do herself
+    if (!players.length || players.some(u => actor.testUserPermission?.(u, "OWNER"))) return itemRoll
+    //One window, at the designated GM's: another GM leaves the effect to him
+    if (!isActiveGM()) return null
+    //The cast this template comes from: only its identity is read off the template, the dice are on the card
+    const message = (templateData.messageId && game.messages.get(templateData.messageId)) ||
+      [...(game.messages?.contents ?? [])].reverse().find(m => m.flags?.sr5data?.test?.type === "spell" && m.flags.sr5data.owner?.itemUuid === templateData.itemUuid)
+    const key = `${template.id}|${message?.id}`
+    if (SR5_EffectArea.TEMPLATE_ROLLS.has(key)) return SR5_EffectArea.TEMPLATE_ROLLS.get(key)
+    //Kept before the window opens: the tokens that come meanwhile wait for the same answer instead of asking again
+    const pending = SR5_EffectArea.#countTemplateRoll(sourceItem, templateData, players, message, review)
+    SR5_EffectArea.TEMPLATE_ROLLS.set(key, pending)
+    return pending
+  }
+
+  static async #countTemplateRoll(sourceItem, templateData, players, message, review){
+    let roll = null
+    const cast = message?.flags?.sr5data
+    //checkEffectCard believes a card the GM wrote: here the cast must be one a player rolled with this item
+    if (cast && message.author && !message.author.isGM && cast.owner?.itemUuid === templateData.itemUuid) {
+      //A cast card has no net hits of its own (nothing opposes the spell yet): they are its hits
+      roll = await SR5_ActorHelper.checkEffectCard({
+        ...cast, roll: {
+          ...cast.roll, netHits: cast.roll?.netHits ?? cast.roll?.hits
+        }, owner: {
+          ...cast.owner, messageId: message.id
+        }
+      }, sourceItem, review)
+      //The item says otherwise: the GM sees it
+      if (roll && Number(sourceItem.system.hits) !== roll.hits) ui.notifications?.warn(game.i18n.format("SR5.EffectCardItemMismatch", {
+        item: sourceItem.name, written: sourceItem.system.hits, hits: roll.hits
+      }))
+    } else {
+      await ChatMessage.create({
+        whisper: game.users.filter(u => u.isGM).map(u => u.id),
+        content: `<p>${game.i18n.format("SR5.EffectCardRejected", {
+          user: players.map(u => u.name).join(", "), item: sourceItem.name
+        })}</p>`,
+      })
+    }
+    return roll
+  }
+
   //Delete an effect applied by a template on actor
   static async deleteTemplateEffect(actor, effectID){
     for (let item of actor.items){
@@ -329,13 +492,28 @@ export class SR5_EffectArea {
   static async checkIfTemplateContainsToken(template, token){
     // Both sides are in the scene's own unit here -- a MeasuredTemplate's distance is expressed in scene
     // units, not in meters -- so this one is deliberately NOT converted.
+    // The token's destination: in the move hook, its x and y are still those of the animation (the square it leaves)
     let distance = SR5_SystemHelpers.getDistanceBetweenTwoPoint({
       x: template.x, y: template.y
-    }, {
-      x: token.x, y: token.y
-    })
+    }, SR5_EffectArea.tokenPosition(token))
     if (distance <= template.distance) return true
     else return false
+  }
+
+  //The tokens that stand for the same actor on the token's scene: all the tokens of a linked actor, whose effects
+  //are shared, or the token alone
+  static actorTokens(tokenDocument){
+    if (!tokenDocument.actorLink || !tokenDocument.actorId) return [tokenDocument]
+    let tokens = Array.from(tokenDocument.parent?.tokens ?? []).filter(t => t.actorLink && t.actorId === tokenDocument.actorId)
+    return tokens.length ? tokens : [tokenDocument]
+  }
+
+  //Is the token's actor in the template: a linked actor is while any of its tokens is
+  static async templateCoversActor(template, tokenDocument){
+    for (let t of SR5_EffectArea.actorTokens(tokenDocument)){
+      if (await this.checkIfTemplateContainsToken(template, t)) return true
+    }
+    return false
   }
 
   //Calls on one actor and one spell run one after the other: the hooks that start them are not awaited, and two
@@ -375,7 +553,7 @@ export class SR5_EffectArea {
       let covering
       for (let template of Array.from(tokenDocument.parent?.templates ?? [])){
         if (template.id === excludedTemplateId || !template.flags?.sr5?.itemHasEffect || template.flags.sr5.itemUuid !== itemUuid) continue
-        if (await this.checkIfTemplateContainsToken(template, tokenDocument)){
+        if (await this.templateCoversActor(template, tokenDocument)){
           covering = template
           break
         }
@@ -404,7 +582,8 @@ export class SR5_EffectArea {
         continue
       }
       if (templateDocument.flags.sr5?.environmentalModifiers){
-        let isInTemplate = await this.checkIfTemplateContainsToken(templateDocument, tokenDocument)
+        //A linked actor with two tokens keeps the effect while one of them is still inside
+        let isInTemplate = await this.templateCoversActor(templateDocument, tokenDocument)
         let actor = await SR5_EntityHelpers.getRealActorFromID(tokenDocument.id)
         let effectID = templateDocument.uuid
         let hasEffect = await this.checkIfHasEffect(actor, effectID)

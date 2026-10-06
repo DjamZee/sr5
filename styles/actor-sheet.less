@@ -691,6 +691,7 @@
             padding: 10px;
             display: flex;
             flex-wrap: wrap;
+            min-width: 0; // a grid item: without it, it grows with its boxes instead of shrinking them
             align-items: center;
             background-image: var(--sr-img-actor-sheet-bottom);
             background-size: auto 100%;
@@ -757,12 +758,36 @@
             flex-direction: row;
         }
 
-        .SR-MoniteurCases {
+        // A monitor (.SR-Moniteur: its label and its boxes) moves to the next line as one block,
+        // and only when even 6px boxes no longer fit. Boxes are 6px to 12px wide (10px to 16px
+        // with their margins); the template gives their count (--n, plus --o for the physical
+        // overflow). The flex basis is 0 and min-content is the label plus the smallest boxes,
+        // so that smallest size is what the footer's flex-wrap weighs; it then grows up to 12px boxes
+        .SR-Moniteur {
+            display    : flex;
+            align-items: center;
+            flex       : 1 1 0;
+            min-width  : min-content;
+            max-width  : calc(100px + (var(--n, 1) + var(--o, 0)) * 16px);
+        }
+
+        .SR-MoniteurCases, .SR-MoniteurCases.flexrow {
             padding-left  : 5px;
+            flex          : 1 1 0;
+            min-width     : calc((var(--n, 1) + var(--o, 0)) * 10px + 10px);
+            max-width     : calc((var(--n, 1) + var(--o, 0)) * 16px + 10px);
+            flex-wrap     : nowrap;
+
+            .boxes {
+                flex     : 1 1 0;
+                min-width: 10px;
+                max-width: 16px;
+            }
 
             .SR-Case {
                 height: 15px;
-                width : 10px;
+                width : auto;
+                min-width: 6px;
                 margin: 0px 2px 0px 2px;
                 //display        : flex;
                 justify-content: center;
@@ -793,14 +818,16 @@
                 }
             }
 
+        // A box beyond the monitor: hatched grey, so it no longer melts into the dark footer
         .SR-CaseNeutralDarkColor {
-            background: var(--sr-text-color-dark);
-            border: 1px solid rgba(151,183,159, 1);
+            background: repeating-linear-gradient(45deg, #555 0 2px, #2a2a2a 2px 4px);
+            border: 1px solid #777;
         }
 
+        // A wounded box: a brighter red than the theme's border red, readable on the dark footer
         .SR-CaseMainColor {
-            background: var(--sr-ui-border-color);
-            border    : 1px solid var(--sr-ui-border-color);
+            background: #c8261b;
+            border    : 1px solid #c8261b;
         }
 
         // Aggravated wound box (Howling Shadows p. 213): hatched with the pop color

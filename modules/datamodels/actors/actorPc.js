@@ -127,6 +127,15 @@ export class sr5ActorPcDataModel extends foundry.abstract.TypeDataModel {
             ...sr5ModsPartialModel.defineSchema()
           }),
         }),
+        // Matrix Entity Concentration of a Monad, set by the GM (Stolen Souls p. 199, Lockdown p. 203)
+        cem: new fields.SchemaField({
+          natural: new fields.SchemaField({
+            ...sr5ModsPartialModel.defineSchema()
+          }),
+          augmented: new fields.SchemaField({
+            ...sr5ModsPartialModel.defineSchema()
+          }),
+        }),
         depth: new fields.SchemaField({
           natural: new fields.SchemaField({
             ...sr5ModsPartialModel.defineSchema()
@@ -166,6 +175,13 @@ export class sr5ActorPcDataModel extends foundry.abstract.TypeDataModel {
             ...sr5ModsPartialModel.defineSchema()
           }),
           boxes: new fields.ArrayField(new fields.ObjectField()),
+        }),
+        // Core monitor of a Monad of the original strain (Dark Terrors p. 88), removed from every other character
+        core: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema(),
+          actual: new fields.SchemaField({
+            ...sr5ModsPartialModel.defineSchema()
+          }),
         }),
         stun: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema(),

@@ -29,6 +29,9 @@ const {
 const {
   SR5_EntityHelpers
 } = await import('../modules/entities/helpers.js')
+const {
+  SR5_MiscellaneousHelpers
+} = await import('../modules/rolls/roll-helpers/miscellaneous.js')
 
 function ai({
   device = false, marks = []
@@ -111,11 +114,40 @@ const ice = {
 }
 
 beforeEach(() => {
+  vi.restoreAllMocks()
   game.i18n.format = vi.fn(k => k)
+  // The GM's attack card, read again from the chat log (ice-attack-card.test.js); its IC names no defense
+  // attributes, so the button's are kept
+  vi.spyOn(SR5_MiscellaneousHelpers, 'cardOf').mockReturnValue({
+    id: 'attack', byGM: true, author: {
+      isGM: true
+    }, roller: {
+      system: {
+        matrix: {
+          deviceType: 'ice', ice: {
+            attackDicepool: 10
+          }, attributes: {
+            attack: {
+              value: 5
+            }
+          }
+        }
+      }
+    },
+    data: {
+      test: {
+        type: 'iceAttack'
+      }, roll: {
+        hits: 3
+      }, owner: {
+        actorId: 'ice'
+      }
+    },
+  })
 })
 
 describe('IC defense of an AI without a device (Data Trails p. 157)', () => {
-  it('prepares the defense without a device to target', () => {
+  it('prepares the defense without a device to target', async () => {
     const rollData = {
       test: {
       }, dicePool: {
@@ -138,13 +170,13 @@ describe('IC defense of an AI without a device (Data Trails p. 157)', () => {
         actorId: 'ice'
       }
     }
-    expect(() => iceDefense(rollData, ai(), chatData)).not.toThrow()
+    await expect(iceDefense(rollData, ai(), chatData)).resolves.toBeDefined()
     expect(rollData.target.itemUuid).toBeUndefined()
     expect(rollData.dicePool.base).toBe(5)
   })
 
-  it('defends against a Logic IC with the attribute the world sets, and no Firewall', () => {
-    const roll = (mode, device = false) => {
+  it('defends against a Logic IC with the attribute the world sets, and no Firewall', async () => {
+    const roll = async (mode, device = false) => {
       game.settings.get = vi.fn((_ns, key) => key === 'sr5DevicelessAILogicDefense' ? mode : null)
       const rollData = {
         test: {
@@ -160,7 +192,7 @@ describe('IC defense of an AI without a device (Data Trails p. 157)', () => {
         device
       })
       actor.system.matrix.attributes.firewall.value = 4
-      iceDefense(rollData, actor, {
+      await iceDefense(rollData, actor, {
         various: {
           defenseFirstAttribute: 'logic', defenseSecondAttribute: 'firewall'
         }, test: {
@@ -173,16 +205,16 @@ describe('IC defense of an AI without a device (Data Trails p. 157)', () => {
       })
       return rollData.dicePool
     }
-    expect(roll('highest').base).toBe(5)
-    expect(roll('highest').composition.map(m => m.source)).toEqual(['SR5.Intuition'])
-    expect(roll('willpower').base).toBe(3)
-    expect(roll('intuition').base).toBe(5)
+    expect((await roll('highest')).base).toBe(5)
+    expect((await roll('highest')).composition.map(m => m.source)).toEqual(['SR5.Intuition'])
+    expect((await roll('willpower')).base).toBe(3)
+    expect((await roll('intuition')).base).toBe(5)
     // An AI on a device keeps Logic + Firewall
-    expect(roll('highest', true).base).toBe(5)
-    expect(roll('highest', true).composition.map(m => m.type)).toEqual(['linkedAttribute', 'matrixAttribute'])
+    expect((await roll('highest', true)).base).toBe(5)
+    expect((await roll('highest', true)).composition.map(m => m.type)).toEqual(['linkedAttribute', 'matrixAttribute'])
   })
 
-  it('still targets the active device of an AI that has one', () => {
+  it('still targets the active device of an AI that has one', async () => {
     const rollData = {
       test: {
       }, dicePool: {
@@ -193,7 +225,7 @@ describe('IC defense of an AI without a device (Data Trails p. 157)', () => {
         }
       }
     }
-    iceDefense(rollData, ai({
+    await iceDefense(rollData, ai({
       device: true
     }), {
       various: {

@@ -8,11 +8,24 @@ import {
   SR5_EntityHelpers 
 } from "../../entities/helpers.js"
 import {
-  SR5_SocketHandler 
+  SR5_SocketHandler
 } from "../../socket.js"
 import {
-  SR5_ConverterHelpers 
+  ELEMENTAL_SPIRIT_TYPES, elementalServices, wildBanishProgress, resolveLeash, wildBanishVerdict, leashCardVerdict, recountHits, testsLeash,
+  leashThreshold
+} from "../../entities/items/spirit-bonds.js"
+import {
+  isActiveGM, readLedger, banishKey, banishCardSeen, setBanishTotal
+} from "../../system/spirit-ledger.js"
+import {
+  SR5_ActorHelper
+} from "../../entities/actors/entityActor-helpers.js"
+import {
+  SR5_ConverterHelpers
 } from "./converter.js"
+import {
+  linkedEntryOf, dispelledValue, effectHits
+} from "./dispel-rules.js"
 import {
   SR5_RollTest 
 } from "../roll-test.js"
@@ -36,13 +49,19 @@ export function weaponBreakChoices(actor) {
     }))
 }
 
+//Only what differs from the stored system goes to the GM: a prepared system sent whole carries
+//derived fields, which the GM's checks (socket-guard.js) refuse as changes
+function sourceChanges(item, system) {
+  return foundry.utils.diffObject(item.toObject().system, system)
+}
+
 export class SR5_ThirdPartyHelpers {
   /** Handle spirit, sprite or preparation resistance
     * @param {Object} cardData - The origin cardData
     */
   static async createItemResistance(cardData, messageId) {
     let targetItem
-    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
     // The owner may have been deleted since the card was posted: stop here, the roll data needs it
     if (!actor) {
       SR5_SystemHelpers.srLog(1, `Resistance owner not found for '${cardData.owner.actorId}': resistance not rolled`)
@@ -173,6 +192,10 @@ export class SR5_ThirdPartyHelpers {
       rollData.owner.itemUuid = cardData.owner.itemUuid
       rollData.magic.force = cardData.magic.force
       rollData.magic.reagentsSpent = cardData.magic.reagentsSpent
+      rollData.magic.reagentTier = cardData.magic.reagentTier
+      rollData.magic.reagentForeign = cardData.magic.reagentForeign
+      rollData.magic.reagentsEffective = cardData.magic.reagentsEffective
+      rollData.magic.reagentDrainReduction = cardData.magic.reagentDrainReduction
       rollData.magic.ritualParticipants = cardData.magic.ritualParticipants || []
       rollData.test.type = "ritualResistance"
       rollData.test.title = `${game.i18n.localize("SR5.RitualResistance")} (${rollData.previousMessage.hits})`
@@ -200,7 +223,7 @@ export class SR5_ThirdPartyHelpers {
 
     //Escape Engulf
     else if (cardData.test.type === "escapeEngulf"){
-      let spirit = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId)
+      let spirit = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId, cardData.actorUuids)
       rollData.dicePool.value = spirit.system.attributes.body.augmented.value + spirit.system.specialAttributes.magic.augmented.value
       rollData.dicePool.base = rollData.dicePool.value
       rollData.dicePool.composition = ([
@@ -286,8 +309,166 @@ export class SR5_ThirdPartyHelpers {
     SR5_RollTest.renderRollCard(rollData)
   }
 
+  //Banishing a wild spirit (Forbidden Arcana p. 172): the active gamemaster alone adds the banisher's net hits to the
+  //spirit's running total, kept in his ledger. Neither card is believed as written: who wrote each one is checked,
+  //their hits are counted again on their dice within the pools he works out, and he confirms
+  static async wildBanish(cardData){
+    if (!isActiveGM()) return void ui.notifications.warn(game.i18n.localize("SR5.WildBanishGMOnly"))
+    const resistanceMessage = game.messages.get(cardData.owner?.messageId)
+    const banishingMessage = game.messages.get(cardData.previousMessage?.messageId)
+    const banishingData = banishingMessage?.flags?.sr5data
+    const spirit = SR5_EntityHelpers.getRealActorFromID(cardData.owner.speakerId || cardData.owner.actorId)
+    const banisher = SR5_EntityHelpers.getRealActorFromID(banishingData?.owner?.speakerId || banishingData?.owner?.actorId)
+    const reject = async (reason) => {
+      await ChatMessage.create({
+        whisper: ChatMessage.getWhisperRecipients("GM"),
+        content: `<p>${game.i18n.format("SR5.WildBanishRejected", {
+          user: resistanceMessage?.author?.name ?? "?", reason: game.i18n.localize(`SR5.SpiritCardReject_${reason}`)
+        })}</p>`,
+      })
+      return false
+    }
+    if (!spirit?.system?.isWild || !banisher || !resistanceMessage || !banishingMessage) return reject("missing")
+    const ledger = readLedger()
+    if (banishCardSeen(ledger, banishingMessage.id)) return reject("seen")
+    const force = spirit.system.force.value
+    const resistanceAuthor = resistanceMessage.author
+    const verdict = wildBanishVerdict({
+      banisherAuthorOwns: !!banishingMessage.author && banisher.testUserPermission(banishingMessage.author, "OWNER"),
+      resistanceAuthorOwns: !!resistanceAuthor && (resistanceAuthor.isGM || spirit.testUserPermission(resistanceAuthor, "OWNER")),
+      banisherRoll: banishingData.roll?.r,
+      banisherPool: banisher.system.skills?.banishing?.test?.dicePool,
+      banisherEdge: banisher.system.specialAttributes?.edge?.augmented?.value,
+      astralLimit: banisher.system.limits?.astralLimit?.value,
+      spiritRoll: cardData.roll?.r,
+      force,
+    })
+    if (!verdict.ok) return reject(verdict.reason)
+    const total = Number(ledger.banish?.[banishKey(spirit)]) || 0
+    const confirmed = await foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: "SR5.WildBanishAdd"
+      },
+      content: `<p>${game.i18n.format("SR5.WildBanishConfirm", {
+        banisher: banisher.name, spirit: spirit.name, banisherHits: verdict.banisherHits, spiritHits: verdict.spiritHits,
+        total, goal: force * 2, claimed: banishingData.roll?.hits ?? "?", claimedSpirit: cardData.roll?.hits ?? "?",
+      })}</p>`,
+      rejectClose: false,
+    })
+    if (!confirmed) return false
+    const progress = wildBanishProgress(total, verdict.netHits, force)
+    await setBanishTotal(banishKey(spirit), progress.dissipated ? 0 : progress.total, banishingMessage.id)
+    const text = progress.dissipated ? game.i18n.format("SR5.INFO_WildSpiritDissipated", {
+      name: spirit.name
+    }) : game.i18n.format("SR5.INFO_WildBanishProgress", {
+      name: spirit.name, total: progress.total, goal: force * 2
+    })
+    ui.notifications.info(text)
+    await ChatMessage.create({
+      content: text, whisper: ChatMessage.getWhisperRecipients("GM")
+    })
+    return true
+  }
+
+  //Testing the Leash (Forbidden Arcana p. 176, optional rule): the gamemaster rolls both sides himself, the spirit's
+  //Force x 2 against the controller's Drain resistance pool, read from the actors and never from the card.
+  //The card says which spirit and what it rolled: its author must own the controller (or be the gamemaster), the
+  //spirit must be one the controller summoned, and the hits that trigger the test are counted again on its dice,
+  //within the spirit's largest pool plus its Chance; then the gamemaster confirms
+  static async leashTest(cardData){
+    if (!game.user.isGM) return void ui.notifications.warn(game.i18n.localize("SR5.LeashGMOnly"))
+    if (!game.settings.get("sr5", "spiritLeash")) return false
+    const message = game.messages.get(cardData.owner?.messageId)
+    const spirit = SR5_EntityHelpers.getRealActorFromID(cardData.owner.speakerId || cardData.owner.actorId)
+    if (spirit?.type !== "actorSpirit" || !message) return false
+    const controller = SR5_EntityHelpers.getRealActorFromID(spirit.system.creatorId)
+    const item = controller?.items.get(spirit.system.creatorItemId)
+    if (!controller || !item) return void ui.notifications.warn(game.i18n.localize("SR5.LeashNoController"))
+    const rejectLeash = async (reason) => {
+      await ChatMessage.create({
+        whisper: ChatMessage.getWhisperRecipients("GM"),
+        content: `<p>${game.i18n.format("SR5.LeashRejected", {
+          user: message.author?.name ?? "?", reason: game.i18n.localize(`SR5.SpiritCardReject_${reason}`)
+        })}</p>`,
+      })
+      return false
+    }
+    const verdict = leashCardVerdict({
+      authorIsGM: !!message.author?.isGM,
+      authorOwnsController: !!message.author && controller.testUserPermission(message.author, "OWNER"),
+      spiritOfController: item.type === "itemSpirit",
+    })
+    if (!verdict.ok) return rejectLeash(verdict.reason)
+    if (spirit.system.isElemental || item.system.isElemental) return false
+    const force = spirit.system.force.value
+    //Its skills and its powers: the card does not tell which test it was, and its type is the author's to write
+    const largestPool = Math.max(0, ...Object.values(spirit.system.skills ?? {
+    }).map(s => Number(s?.test?.dicePool) || 0), ...spirit.items.map(i => Number(i.system?.test?.dicePool) || 0))
+    const hits = recountHits(cardData.roll?.r, largestPool, spirit.system.specialAttributes?.edge?.augmented?.value)
+    if (hits === null) return rejectLeash("dice")
+    if (!testsLeash({
+      hits, force, services: spirit.system.services.value
+    })) return rejectLeash("threshold")
+    const confirmed = await foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: "SR5.LeashTest"
+      },
+      content: `<p>${game.i18n.format("SR5.LeashConfirm", {
+        spirit: spirit.name, controller: controller.name, hits, claimed: cardData.roll?.hits ?? "?", threshold: leashThreshold(force)
+      })}</p>`,
+      rejectClose: false,
+    })
+    if (!confirmed) return false
+    const spiritRoll = await SR5_RollTest.rollDice({
+      dicePool: force * 2
+    })
+    const controllerRoll = await SR5_RollTest.rollDice({
+      dicePool: controller.system.magic?.drainResistance?.dicePool || 0
+    })
+    const outcome = resolveLeash({
+      controllerHits: controllerRoll.hits,
+      spiritHits: spiritRoll.hits,
+      tight: item.system.leashTight,
+      force,
+      magic: controller.system.specialAttributes?.magic?.augmented?.value || 0,
+      services: spirit.system.services.value,
+    })
+    const damageOptions = (value, type) => ({
+      damage: {
+        value, type, matrix: {
+          value: 0
+        }
+      },
+      combat: {
+        ammo: {
+        }
+      },
+      owner: {
+      },
+    })
+    if (outcome.spiritStun) await SR5_ActorHelper.takeDamage(spirit.id, damageOptions(outcome.spiritStun, "stun"))
+    if (outcome.controllerDamage) await SR5_ActorHelper.takeDamage(controller.id, damageOptions(outcome.controllerDamage, outcome.damageType))
+    if (outcome.servicesLost) {
+      await spirit.update({
+        "system.services.value": outcome.servicesLeft
+      })
+      await item.update({
+        "system.services.value": outcome.servicesLeft
+      })
+    }
+    let content = game.i18n.format("SR5.LeashResult", {
+      spirit: spirit.name, controller: controller.name, spiritHits: spiritRoll.hits, controllerHits: controllerRoll.hits,
+      stun: outcome.spiritStun, lost: outcome.servicesLost, damage: outcome.controllerDamage,
+    })
+    if (outcome.servicesLost && outcome.servicesLeft === 0) content += `<br>${game.i18n.localize("SR5.LeashBroken")}`
+    await ChatMessage.create({
+      content, whisper: ChatMessage.getWhisperRecipients("GM")
+    })
+    return true
+  }
+
   static async reduceSideckickService(cardData){
-    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.speakerId),
+    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.speakerId, cardData.actorUuids),
       actorData = foundry.utils.duplicate(actor.system),
       key
 
@@ -310,7 +491,7 @@ export class SR5_ThirdPartyHelpers {
   }
 
   static async enslavedSidekick(cardData, type){
-    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.speakerId)
+    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.speakerId, cardData.actorUuids)
     let actorData = foundry.utils.duplicate(actor.system)
 
     if (type === "registerSprite"){
@@ -321,9 +502,11 @@ export class SR5_ThirdPartyHelpers {
         task: cardData.roll.netHits
       })}`)
     } else if (type === "bindSpirit"){
+      //Elemental trait (Forbidden Arcana p. 175): one more service when the binding gives at least one
+      const gained = elementalServices(cardData.roll.netHits, actorData.isElemental)
       actorData.isBounded = true
-      actorData.services.value += cardData.roll.netHits
-      actorData.services.max += cardData.roll.netHits
+      actorData.services.value += gained
+      actorData.services.max += gained
       ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format('SR5.INFO_SpiritBounded', {
         service: cardData.roll.netHits
       })}`)
@@ -341,9 +524,10 @@ export class SR5_ThirdPartyHelpers {
         itemData.tasks.value += cardData.roll.netHits
         itemData.tasks.max += cardData.roll.netHits
       } else if (type === "bindSpirit"){
+        const gained = elementalServices(cardData.roll.netHits, actorData.isElemental)
         itemData.isBounded = true
-        itemData.services.value += cardData.roll.netHits
-        itemData.services.max += cardData.roll.netHits
+        itemData.services.value += gained
+        itemData.services.max += gained
       }
       await itemSideKick.update({
         'system': itemData
@@ -358,9 +542,11 @@ export class SR5_ThirdPartyHelpers {
         
     itemData.isActive = false
     if (!game.user?.isGM){
+      //The GM reads the card again before switching off a focus its sender may not own (socket-guard.js)
       SR5_SocketHandler.emitForGM("updateItem", {
         item: cardData.target.itemUuid,
-        info: itemData,
+        info: sourceChanges(item, itemData),
+        use: "deactivateFocus", messageId: cardData.owner?.messageId,
       })
     } else await item.update({
       'system': itemData
@@ -384,9 +570,9 @@ export class SR5_ThirdPartyHelpers {
         for (let e of newEffect.targetOfEffect){
           let effect = await fromUuid(e)
           if (!game.user?.isGM) SR5_SocketHandler.emitForGM("deleteItem", {
-            item: e
+            item: e, use: "dispelledEffect", messageId: cardData.owner?.messageId,
           })
-          else await effect.delete()
+          else if (effect) await effect.delete()
         }
       }
       newEffect.targetOfEffect = []
@@ -396,15 +582,23 @@ export class SR5_ThirdPartyHelpers {
         for (let e of newEffect.targetOfEffect){
           let effect = await fromUuid(e)
           if (!effect) continue
-          let updatedEffect = effect.system
-          updatedEffect.value = newEffect.hits
-          for (let cs of Object.values(updatedEffect.customEffects)){
-            cs.value = newEffect.hits
-          }
+          //A copy of the stored system: the live one used to be changed in place
+          let updatedEffect = effect.toObject().system
+          //SR5 p. 298: only an effect whose value came from the hits loses some; an Armor +2 stays at 2 (it used to
+          //become the hits left)
+          const custom = Object.values(updatedEffect.customEffects ?? {
+          })
+          //The entry it was made from (applyExternalEffect); an older effect is matched by its target
+          const entry = linkedEntryOf(newEffect, updatedEffect, effect.flags?.sr5?.sourceEntry, k => SR5_EntityHelpers.getLabelByKey(k))
+          const value = dispelledValue(entry, updatedEffect.value, cardData.roll.netHits, effectHits(effect.flags?.sr5, targetedEffect.system[key]))
+          if (value === null) continue
+          updatedEffect.value = value
+          for (let cs of custom) cs.value = value
           if (!game.user?.isGM){
             SR5_SocketHandler.emitForGM("updateItem", {
               item: e,
-              info: updatedEffect,
+              info: sourceChanges(effect, updatedEffect),
+              use: "reduceEffect", messageId: cardData.owner?.messageId,
             })
           } else await effect.update({
             'system': updatedEffect
@@ -417,7 +611,8 @@ export class SR5_ThirdPartyHelpers {
     if (!game.user?.isGM){
       SR5_SocketHandler.emitForGM("updateItem", {
         item: cardData.target.itemUuid,
-        info: newEffect,
+        info: sourceChanges(targetedEffect, newEffect),
+        use: "reduceEffect", messageId: cardData.owner?.messageId,
       })
     } else await targetedEffect.update({
       'system': newEffect
@@ -478,21 +673,27 @@ export class SR5_ThirdPartyHelpers {
     let buildItem
 
     switch (itemType){
-      case"summonSpirit":
+      case"summonSpirit": {
+        //Hermetic elementalist (Forbidden Arcana p. 175): his air, earth, fire and water spirits have the Elemental
+        //trait, which adds a service when at least one is owed
+        const isElemental = !!actorData.magic?.hermeticElementalist && ELEMENTAL_SPIRIT_TYPES.includes(messageData.magic.spiritType)
+        const services = elementalServices(messageData.previousMessage.hits - messageData.roll.hits, isElemental)
         buildItem = {
           name: `${game.i18n.localize("SR5.SummonedSpirit")} (${game.i18n.localize(SR5.spiritTypes[messageData.magic.spiritType])}, ${messageData.magic.force})`,
           type: "itemSpirit",
           img: `systems/sr5/assets/img/items/itemSpirit.svg`,
           ["system.type"]: messageData.magic.spiritType,
           ["system.itemRating"]: messageData.magic.force,
-          ["system.services.max"]: messageData.previousMessage.hits - messageData.roll.hits,
-          ["system.services.value"]: messageData.previousMessage.hits - messageData.roll.hits,
+          ["system.services.max"]: services,
+          ["system.services.value"]: services,
+          ["system.isElemental"]: isElemental,
           ["system.summonerMagic"]: actorData.specialAttributes.magic.augmented.value,
           ["system.magic.tradition"]: actorData.magic.tradition,
           ["system.conjurer"]: actor.id,
         }
-        ui.notifications.info(`${actor.name} ${game.i18n.localize("SR5.INFO_SummonSpirit")} ${game.i18n.localize(SR5.spiritTypes[messageData.magic.spiritType])} (${messageData.magic.force})`) 
+        ui.notifications.info(`${actor.name} ${game.i18n.localize("SR5.INFO_SummonSpirit")} ${game.i18n.localize(SR5.spiritTypes[messageData.magic.spiritType])} (${messageData.magic.force})`)
         break
+      }
       case "compileSprite":
         buildItem = {
           name: `${game.i18n.localize("SR5.CompiledSprite")} (${game.i18n.localize(SR5.spriteTypes[messageData.matrix.spriteType])}, ${messageData.matrix.level})`,
@@ -510,20 +711,30 @@ export class SR5_ThirdPartyHelpers {
         break
       case "createPreparation": {
         let preparation = actor.items.find(i => i.uuid === messageData.owner.itemUuid)
+        //A plain copy of the spell's data: the live model of the sheet's spell is never written, and the values of
+        //the preparation are nested in its system, where the new item reads them (a "system.potency" key set on
+        //the model landed in neither: the preparation came out with Potency 0, Octave's review of G9)
+        const spellData = preparation.toObject().system
+        const potency = messageData.previousMessage.hits - messageData.roll.hits
         buildItem = {
-          "system": preparation.system
-        }
-        buildItem = foundry.utils.mergeObject(buildItem, {
           name: `${game.i18n.localize("SR5.Preparation")}${game.i18n.localize("SR5.Colons")} ${preparation.name}`,
           type: "itemPreparation",
           img: `systems/sr5/assets/img/items/itemPreparation.svg`,
-          ["system.trigger"]: messageData.magic.preparationTrigger,
-          ["system.potency"]: messageData.previousMessage.hits - messageData.roll.hits,
-          ["system.force"]: messageData.magic.force,
-          ["system.freeSustain"]: true,
-          ["system.hits"]: 0,
-          ["system.drainValue"]:preparation.system.drainValue,
-        })
+          system: {
+            ...spellData,
+            trigger: messageData.magic.preparationTrigger,
+            potency,
+            //Its Potency is lost on the world clock from now on (SR5 p. 309, system/preparation-potency.js)
+            createdAt: game.time.worldTime,
+            initialPotency: potency,
+            fullPotencyMultiplier: 2,
+            decayRate: "hour",
+            force: messageData.magic.force,
+            freeSustain: true,
+            hits: 0,
+            drainValue: spellData.drainValue,
+          },
+        }
         ui.notifications.info(`${actor.name} ${game.i18n.localize("SR5.INFO_CreatePreparation")} ${preparation.name}`)
         break
       }

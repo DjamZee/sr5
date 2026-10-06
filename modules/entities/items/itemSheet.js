@@ -1,12 +1,27 @@
 import {
+  SR5FactionRegistry
+} from "../../interface/faction-registry.js"
+import {
+  canEditItemEffects, clearTargetsOnCategoryChange, keepUnlistedEffectFields, lockEffectFields
+} from "../../system/effect-editor.js"
+import {
   SR5 
 } from "../../config.js"
 import {
-  garageRequirement 
+  garageRequirement
 } from "../../interface/storage-rules.js"
+import {
+  infectWith
+} from "../../system/diseases.js"
 import {
   SR5_SpiritTypes
 } from "./spirit-types.js"
+import {
+  isMentorQuality
+} from "./mentor-link.js"
+import {
+  SR5_Toxins
+} from "./toxins.js"
 import {
   SR5_EntityHelpers 
 } from "../helpers.js"
@@ -17,14 +32,23 @@ import {
   computeItemLayout 
 } from "../../interface/compute-item-layout.js"
 import {
-  enhanceSelects 
+  enhanceSelects
 } from "../../helpers/enhance-selects.js"
+import {
+  sheetSizeOptions, sheetSizeSetPosition
+} from "../../interface/sheet-size.js"
+import {
+  tacnetSheetContext, requestRoster, tokenActorUuid, TACNET_COMBAT_FLAG
+} from "../../system/tacnet.js"
+import {
+  TACNET_COMBAT_SKILLS
+} from "../../rolls/roll-helpers/tacnet.js"
 
 // Item types that include a footer (condition monitors, price/availability)
 const ITEM_FOOTER_TYPES = new Set([
   'SRItem-vierge', 'itemAdeptPower', 'itemAmmunition', 'itemArmor',
   'itemAugmentation', 'itemComplexForm', 'itemContact', 'itemDevice',
-  'itemDrug', 'itemFocus', 'itemGear', 'itemKarma', 'itemNuyen', 'itemReputation',
+  'itemDrug', 'itemFocus', 'itemGear', 'itemKarma', 'itemNuyen', 'itemReputation', 'itemToxin',
   'itemPreparation', 'itemProgram', 'itemQuality', 'itemSin',
   'itemSpell', 'itemSprite', 'itemVehicleMod', 'itemWeapon',
 ])
@@ -57,7 +81,7 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       width: 650, height: 445 
     },
     window: {
-      resizable: false 
+      resizable: true 
     },
     form: {
       submitOnChange: true 
@@ -66,7 +90,25 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       toggleMode: SR5ItemSheet._onToggleMode,
       jammerSpareTargets: SR5ItemSheet._onJammerSpareTargets,
       jammerUnspare: SR5ItemSheet._onJammerUnspare,
+      tacnetAddTargets: SR5ItemSheet._onTacnetAddTargets,
+      tacnetRemove: SR5ItemSheet._onTacnetRemove,
+      shopRestock: SR5ItemSheet._onShopAction,
+      shopClear: SR5ItemSheet._onShopAction,
+      shopCashbox: SR5ItemSheet._onShopAction,
+      shopOpen: SR5ItemSheet._onShopAction,
+      shopClientAdd: SR5ItemSheet._onShopAction,
+      shopClientRemove: SR5ItemSheet._onShopAction,
     },
+  }
+
+  /** @override — reopen at the size last chosen for this item type (sheet-size.js) */
+  _initializeApplicationOptions(options) {
+    return sheetSizeOptions(this.constructor, super._initializeApplicationOptions(options))
+  }
+
+  /** @override — never below the default size, and remember the size chosen */
+  setPosition(position) {
+    return sheetSizeSetPosition(this, position, p => super.setPosition(p))
   }
 
   // A jammer in wireless mode spares the actors of the targeted tokens (SR5 p. 443)
@@ -78,6 +120,43 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     await this.document.update({
       "system.jammer.spared": [...spared]
     })
+  }
+
+  // The bearer of an RP-Tac asks for the targeted tokens to join, the active GM writes the roster
+  static async _onTacnetAddTargets(event) {
+    event.preventDefault()
+    for (let token of game.user.targets) {
+      const uuid = tokenActorUuid(token)
+      if (uuid) await requestRoster(this.document, uuid, "join")
+    }
+  }
+
+  static async _onTacnetRemove(event, target) {
+    event.preventDefault()
+    await requestRoster(this.document, target.dataset.member, "leave")
+  }
+
+  // The vendor's shop (lot C): restock, empty, give a cashbox, open the window
+  static async _onShopAction(event, target) {
+    event.preventDefault()
+    const item = this.document
+    const actor = item.parent
+    if (!actor) return
+    const action = target.dataset.action
+    const {
+      SR5ShopVendor
+    } = await import("../../interface/shop-vendor.js")
+    if (action === 'shopOpen') return SR5ShopVendor.openShop(actor, item)
+    if (!game.user.isGM) return
+    if (action === 'shopRestock') await SR5ShopVendor.restock(actor, item)
+    else if (action === 'shopClear') await SR5ShopVendor.clearStock(actor, item)
+    else if (action === 'shopCashbox') await SR5ShopVendor.createCashbox(actor, item)
+    else if (action === 'shopClientAdd') {
+      const el = this.element
+      await SR5ShopVendor.setClient(item, el.querySelector('[data-shop-client-actor]')?.value,
+        el.querySelector('[data-shop-client-loyalty]')?.value)
+    } else if (action === 'shopClientRemove') await SR5ShopVendor.removeClient(item, target.dataset.actorId)
+    this.render()
   }
 
   static async _onJammerUnspare(event, target) {
@@ -261,6 +340,14 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       delete submitData['system.damageElement']
       delete submitData['system.damageElementSecond']
     }
+    //The form only holds the fields of the accessories chosen from the list (name, slot, free): it rewrote the
+    //whole list from them, dropping a mounted item accessory and the price and effects of the others
+    const formAccessory = foundry.utils.getProperty(submitData, 'system.accessory')
+    if (formAccessory && typeof formAccessory === 'object') {
+      foundry.utils.setProperty(submitData, 'system.accessory', SR5_UtilityItem.mergeAccessoryForm(this.item._source.system?.accessory, formAccessory))
+    }
+    //An effect whose category changed loses the target of the old category, even one kept as "(not in the list)"
+    clearTargetsOnCategoryChange(submitData, this.item._source.system)
     return submitData
   }
 
@@ -304,17 +391,44 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     context.owner = this.document.isOwner
     context.lists = SR5_EntityHelpers.sortTranslations(SR5)
     context.isPlay = this.isPlayMode
+    // Faction of a contact (Cutting Aces p. 157), kept in the gamemaster's registry
+    if (item.type === "itemContact") context.contactFaction = SR5FactionRegistry.factionOfContact(item.uuid)?.name ?? ""
+    // Whom a custom drug can be made for (Chrome Flesh p. 194): the actors this user sees, and the one already named
+    if (item.type === "itemDrug" && item.system.quality === "custom") {
+      const recipients = Object.fromEntries((game.actors?.contents ?? []).filter(a => ["actorPc", "actorGrunt"].includes(a.type))
+        .map(a => [a.id, a.name]))
+      const named = item.system.preparedFor
+      if (named && !recipients[named]) recipients[named] = game.actors?.get(named)?.name ?? named
+      context.drugRecipients = recipients
+    }
     // The actors a jammer in wireless mode leaves alone (SR5 p. 443), by name
     if (item.type === "itemGear" && item.system.jammer?.type) {
       context.jammerSpared = (item.system.jammer.spared ?? []).map(id => ({
         id, name: (id.includes(".") ? fromUuidSync(id)?.name : game.actors.get(id)?.name) ?? id
       }))
     }
+    // An RP-Tac unit (Run & Gun p. 118-119): its members, from the GM's ledger; each member's combat mode skill
+    if (item.type === "itemGear" && item.system.tacnetLevel) {
+      context.tacnet = tacnetSheetContext(item)
+      context.tacnetCombatSkills = Object.fromEntries(TACNET_COMBAT_SKILLS.map(k => [k, SR5.combatSkills[k]]))
+      for (const member of context.tacnet.members) {
+        const actor = fromUuidSync(member.uuid)
+        member.canPick = context.tacnet.level >= 2 && !!actor?.isOwner
+        member.combat = actor?.getFlag?.("sr5", TACNET_COMBAT_FLAG) ?? ""
+      }
+    }
     // Items that unfold into an actor wear a second picture: their token's
     context.hasTokenImage = SR5ItemSheet.SIDEKICK_TYPES.includes(item.type)
     // What the rule asks of a garage holding this kind of vehicle
     if (item.type === "itemStorage" && item.system.type === "garage") {
       context.garageRule = garageRequirement(item)
+    }
+    // A vendor's stock: its shelves, legality, cashbox
+    if (item.type === "itemStorage" && item.system.type === "shop") {
+      const {
+        SR5ShopVendor
+      } = await import("../../interface/shop-vendor.js")
+      context.shop = SR5ShopVendor.sheetContext(item)
     }
 
     // Custom ammunition type choices for weapon ammo dropdown
@@ -346,6 +460,32 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       }
     }
     context.cssClass = this.document.isOwner ? "editable" : "locked"
+
+    // Toxin: damage choices, and on a weapon the name of a dropped toxin
+    if (item.type === "itemToxin") context.toxinDamageTypes = SR5.damageTypes
+    if (item.type === "itemToxin") context.pathogenUnits = {
+      minute: "SR5.Minutes", hour: "SR5.Hours", day: "SR5.Days", week: "SR5.Weeks", month: "SR5.Months"
+    }
+    context.isActiveGM = game.user.isGM && game.users.activeGM?.id === game.user.id
+    // The strain of a head case is the GM's choice (Dark Terrors p. 91, monad-matrix.js)
+    context.userIsGM = game.user.isGM
+    if (item.type === "itemWeapon") context.weaponToxinName = SR5_Toxins.nameOf(item.system.toxin, k => game.i18n.localize(k))
+
+    // Mentor spirit: each effect picks its block, the Mask shows only with its optional rule
+    context.isMentorSpirit = item.type === "itemMentorSpirit"
+    if (context.isMentorSpirit) context.mentorMaskRule = game.settings.get("sr5", "mentorMask")
+
+    // Mentor Spirit quality (SR5 p. 76): the mentor item of the same actor that carries its bonuses
+    if (item.type === "itemQuality" && item.actor) {
+      const mentors = item.actor.items.filter(i => i.type === "itemMentorSpirit")
+      context.showLinkedMentor = mentors.length > 0 || isMentorQuality(item)
+      context.linkedMentorChoices = mentors.map(m => ({
+        value: m.id, label: m.name
+      }))
+    }
+    // Illusionist (Forbidden Arcana p. 37): the spell type chosen with each level
+    if (item.type === "itemQuality") context.showMasteryOption = (item.system.customEffects || [])
+      .some(e => e?.target === "system.magic.masteries.illusionist")
 
     // Custom spirit type: pickers, and labels for the read-only summary
     if (item.type === "itemSpiritType") {
@@ -409,6 +549,31 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
   _onRender(context, options) {
     super._onRender(context, options)
     const el = this.element
+
+    // Effects tab: a stored target missing from the lists is kept, and the effects are locked when they are the GM's (G14)
+    keepUnlistedEffectFields(el, this.document._source?.system, game.i18n.localize('SR5.EffectUnlisted'))
+    if (this.isEditable && !canEditItemEffects(game.user, this.document.isOwner)) lockEffectFields(el)
+
+    // Mentor Spirit quality: drop a mentor item of the same actor to link it
+    const mentorDrop = el.querySelector('.sr5-mentor-drop')
+    if (mentorDrop && this.isEditable) {
+      mentorDrop.addEventListener('dragover', ev => ev.preventDefault())
+      mentorDrop.addEventListener('drop', ev => this.#onDropMentor(ev))
+    }
+
+    // Pathogen: the active GM infects the tokens he selected or targeted (system/diseases.js)
+    el.querySelector('.sr5-pathogen-infect')?.addEventListener('click', () => infectWith(this.document))
+
+    // Weapon toxin: drop a toxin item, resync it, or go back to the book list
+    const toxinDrop = el.querySelector('.sr5-toxin-drop')
+    if (toxinDrop && this.isEditable) {
+      toxinDrop.addEventListener('dragover', ev => ev.preventDefault())
+      toxinDrop.addEventListener('drop', ev => this.#onDropToxin(ev))
+      el.querySelector('.sr5-toxin-resync')?.addEventListener('click', () => this.#linkToxin(this.document.system.toxin.custom?.uuid))
+      el.querySelector('.sr5-toxin-unlink')?.addEventListener('click', () => this.document.update({
+        "system.toxin.type": "", "system.toxin.custom": null
+      }))
+    }
 
     // Ammunition type select: handle "Custom" selection
     el.querySelectorAll('.sr-ammo-type-select').forEach(select => {
@@ -564,6 +729,12 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
 
     // Item-based accessory checkbox toggles (avoid form submission destroying item data)
     el.querySelectorAll(".accessory-toggle").forEach(node => node.addEventListener("change", this.#onAccessoryToggle.bind(this)))
+    //The combat mode skill of an RP-Tac member (Run & Gun p. 119): his own pick, kept on his actor
+    el.querySelectorAll("[data-tacnet-combat]").forEach(node => node.addEventListener("change", async (ev) => {
+      ev.stopPropagation()
+      const actor = await fromUuid(ev.target.dataset.tacnetCombat)
+      if (actor?.isOwner) await actor.setFlag("sr5", TACNET_COMBAT_FLAG, ev.target.value)
+    }))
 
     // Help Display (mouseover/mouseout — cannot use data-action)
     el.querySelectorAll("[data-helpTitle]").forEach(node => {
@@ -609,6 +780,37 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     }
   }
 
+  async #onDropToxin(event) {
+    event.preventDefault()
+    event.stopPropagation()
+    const data = foundry.applications.ux.TextEditor.implementation.getDragEventData(event)
+    if (data?.type !== "Item") return
+    return this.#linkToxin(data.uuid)
+  }
+
+  async #onDropMentor(event) {
+    event.preventDefault()
+    event.stopPropagation()
+    const data = foundry.applications.ux.TextEditor.implementation.getDragEventData(event)
+    if (data?.type !== "Item") return
+    const mentor = await fromUuid(data.uuid)
+    if (mentor?.type !== "itemMentorSpirit" || !this.document.actor || mentor.parent?.id !== this.document.actor.id) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NotOwnMentor"))
+    await this.document.update({
+      "system.linkedMentor": mentor.id
+    })
+  }
+
+  // Copy a toxin item onto the weapon: the roll and the chat card read the copy (SR5_Toxins.profileOf)
+  async #linkToxin(uuid) {
+    const toxin = uuid ? await fromUuid(uuid) : null
+    if (toxin?.type !== "itemToxin") return ui.notifications.warn(game.i18n.localize("SR5.WARN_NotAToxin"))
+    await this.document.update({
+      "system.damageElement": "toxin",
+      "system.toxin.type": "custom",
+      "system.toxin.custom": SR5_Toxins.profileFromItem(toxin),
+    })
+  }
+
   // Manage "Sub Item", accessory, licenses, effects...
   async #onManageSubItem(event) {
     event.preventDefault()
@@ -636,12 +838,16 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
 
     if (action === "delete") {
       const li = a.closest(".subItemManagement")
-      let removed = foundry.utils.duplicate(this.item.system[target])
+      //An accessory list is written back from its stored entries, not from the prepared copies of the mounted items
+      let removed = foundry.utils.duplicate(target === "accessory" ? this.item._source.system.accessory : this.item.system[target])
       if (typeof removed === "object") { removed = Object.values(removed) }
-      removed.splice(Number(li.dataset.key), 1)
-      return this.item.update({
-        [key]: removed 
+      let [gone] = removed.splice(Number(li.dataset.key), 1)
+      await this.item.update({
+        [key]: removed
       })
+      //The accessory taken off is free to be mounted again
+      if (target === "accessory" && gone?._id) await SR5_UtilityItem.unplugRemovedAccessory(this.item.actor, gone._id)
+      return
     }
 
     if (action === "clone") {
@@ -722,7 +928,9 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     let accessory = result.element.querySelector("[name=accessory]")?.value
     if (accessory) {
       let aItem = this.actor.items.find(i => i.id === accessory)
-      let accObj = aItem.toObject(false)
+      //Its source: the prepared copy carried the accessory's computed price, dice pools and monitors into the host's
+      //source. The host's preparation reads only stored fields of it (price.base, itemEffects, weaponAccessory)
+      let accObj = aItem.toObject()
       // Set top-level flags for template/processing compatibility
       accObj.isActive = true
       accObj.isFree = false

@@ -1,4 +1,22 @@
 import {
+  electronicAddedToVintage
+} from '../entities/items/weaponTraits.js'
+import {
+  GM_ONLY_ITEM_PATHS, stripGMOnlyChanges
+} from '../entities/items/spirit-bonds.js'
+import {
+  gmOnlyItemEffects, isSystemEffectWrite, stripEffectChanges, touchesItemEffects
+} from '../system/effect-editor.js'
+import {
+  GM_ONLY_PREPARATION_PATHS
+} from '../system/preparation-potency.js'
+import {
+  WEAPON_ACCESSORY_CATALOG
+} from '../data/weaponAccessoryCatalog.js'
+import {
+  SR5
+} from '../config.js'
+import {
   SR5Combat
 } from "../system/srcombat.js"
 import {
@@ -13,6 +31,9 @@ import {
 import {
   SR5_CharacterUtility
 } from "../entities/actors/utilityActor.js"
+import {
+  forgetKnowledgeAttribute
+} from "../rolls/roll-helpers/skillAttribute.js"
 
 // An item can take the vision in use away, or give it back (cybereyes, goggles) : the tokens of
 // its actor follow, served by the user who made the change.
@@ -52,7 +73,27 @@ function _copyAmmoTypeEffects(ammoTypeSystem) {
 }
 
 // When an itemAmmunition's ammunitionTypeUuid changes, copy effects from the referenced type
-export function sr5HookPreUpdateItem(document, data, _options, _userId) {
+export function sr5HookPreUpdateItem(document, data, options, userId) {
+  //The effects of an item are the gamemaster's when the world says so (G14): refused to a player before writing
+  if (!game.user?.isGM && userId === game.user?.id && !isSystemEffectWrite(options) && gmOnlyItemEffects() && stripEffectChanges(data, document._source?.system)) {
+    ui.notifications.warn(game.i18n.localize('SR5.WARN_ItemEffectsGMOnly'))
+  }
+  //The Elemental trait of a spirit is the gamemaster's (Forbidden Arcana p. 175): refused to a player before writing
+  if (document.type === 'itemSpirit' && !game.user?.isGM && stripGMOnlyChanges(data, document, GM_ONLY_ITEM_PATHS).length) {
+    ui.notifications.warn(game.i18n.localize('SR5.WARN_SpiritBondsGMOnly'))
+  }
+  //The start and the pace of a preparation's loss of Potency are the gamemaster's (SR5 p. 309)
+  if (document.type === 'itemPreparation' && !game.user?.isGM && stripGMOnlyChanges(data, document, GM_ONLY_PREPARATION_PATHS).length) {
+    ui.notifications.warn(game.i18n.localize('SR5.WARN_PreparationDecayGMOnly'))
+  }
+  //Vintage (Gun H(e)aven 3 p. 3): an electronic accessory is allowed but warned about, it gets no wireless
+  if (document.type === 'itemWeapon' && data.system?.accessory !== undefined && userId === game.user?.id) {
+    for (const a of electronicAddedToVintage(document.system.accessory, data.system.accessory, WEAPON_ACCESSORY_CATALOG)) {
+      ui.notifications.warn(game.i18n.format('SR5.WARN_VintageElectronic', {
+        weapon: document.name, accessory: a.system ? a.name : game.i18n.localize(SR5.weaponAccessories[a.name] ?? a.name)
+      }))
+    }
+  }
   if (document.type !== 'itemAmmunition') return
   const newUuid = data.system?.ammunitionTypeUuid
   if (newUuid === undefined) return // UUID not being changed
@@ -74,8 +115,19 @@ export function sr5HookPreUpdateItem(document, data, _options, _userId) {
   }
 }
 
-export async function sr5HookUpdateItem(document, data, _options, userId) {
+export async function sr5HookUpdateItem(document, data, options, userId) {
   await sr5HookItemVision(document, userId)
+  //A player's client can be made to skip the refusal above: the active gamemaster is told of every write of effects by a
+  //player. The option of a system write (acid, Apply to item) comes from that same client and can be forged: it only
+  //turns the lasting warning into a passing line, "system write announced" (Gustave's second review)
+  if (game.users?.activeGM?.isSelf && gmOnlyItemEffects() && !game.users.get(userId)?.isGM && touchesItemEffects(data)) {
+    const announced = isSystemEffectWrite(options)
+    ui.notifications.warn(game.i18n.format(announced ? 'SR5.WARN_ItemEffectsSystemWrite' : 'SR5.WARN_ItemEffectsChangedByPlayer', {
+      user: game.users.get(userId)?.name ?? userId, item: document.name, actor: document.parent?.name ?? ""
+    }), {
+      permanent: !announced
+    })
+  }
   //A physical jammer (SR5 p. 443) turned on or off, or changed: what it does is measured again
   if (document.type === "itemGear" && (data.system?.jammer || (SR5_Jammer.isJammer(document) &&
     ["deviceRating", "itemRating", "wirelessTurnedOn"].some(k => k in (data.system ?? {
@@ -105,11 +157,11 @@ export async function sr5HookUpdateItem(document, data, _options, userId) {
   }
 
   if (document.isOwned && game.combat && game.user?.isGM) {
-    if (document.type === "itemSpell" || document.type === "itemComplexForm") SR5Combat.changeInitInCombatHelper(document.actor.id)
+    if (document.type === "itemSpell" || document.type === "itemComplexForm") SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(document.actor))
   }
 
   //Keep agent condition monitor synchro with owner deck
-  if(document.type === "itemDevice" && data.system.conditionMonitors?.matrix && document.testUserPermission(game.user, 3) || (game.user?.isGM)){
+  if(document.type === "itemDevice" && data.system?.conditionMonitors?.matrix && (document.testUserPermission(game.user, 3) || game.user?.isGM)){
     if (document.parent?.type === "actorPc" || document.parent?.type === "actorGrunt"){
       for (let a of game.actors) {
         if(a.type === "actorAgent" && a.system.creatorId === document.parent.id) await SR5_ActorHelper.keepAgentMonitorSynchro(a)
@@ -121,6 +173,8 @@ export async function sr5HookUpdateItem(document, data, _options, userId) {
 export async function sr5HookDeleteItem(item, _options, userId) {
   await sr5HookItemVision(item, userId)
   if (SR5_Jammer.isJammer(item)) SR5_Jammer.refreshItem(item)
+  //A deleted knowledge skill takes its kept roll attribute with it, by the user who deleted it
+  if (item.type === "itemKnowledge" && userId === game.user?.id) await forgetKnowledgeAttribute(item)
   if (item.testUserPermission(game.user, 3) || (game.user?.isGM)){
     if (item.system.type === "signalJam"){
       let actorId = item.parent.id

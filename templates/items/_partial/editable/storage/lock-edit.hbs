@@ -1,0 +1,32 @@
+<!-- Its lock: SR5 p. 365-366 -->
+<li class="grid">
+    <div class="col-4">{{localize 'SR5.StorageLock'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8">
+        <select name="system.lock.type" data-dtype="String">
+            <option value="" {{#unless system.lock.type}}selected{{/unless}}>{{localize 'SR5.StorageLockNone'}}</option>
+            <option value="mechanical" {{#if (eq system.lock.type "mechanical")}}selected{{/if}}>{{localize 'SR5.StorageLockMechanical'}}</option>
+            <option value="maglock" {{#if (eq system.lock.type "maglock")}}selected{{/if}}>{{localize 'SR5.StorageLockMaglock'}}</option>
+        </select>
+    </div>
+</li>
+{{#if system.lock.type}}
+<li class="grid">
+    <div class="col-8">{{localize 'SR5.Rating'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-4"><input type="number" name="system.lock.rating" value="{{system.lock.rating}}" min="1" max="6" data-dtype="Number"/></div>
+</li>
+{{#if (eq system.lock.type "maglock")}}
+<!-- Only a maglock has an anti-tamper system (SR5 p. 365) -->
+<li class="grid">
+    <div class="col-8">{{localize 'SR5.StorageLockAntiTamper'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-4"><input type="number" name="system.lock.antiTamper" value="{{system.lock.antiTamper}}" min="0" max="4" data-dtype="Number"/></div>
+</li>
+<li class="grid">
+    <div class="col-8">{{localize 'SR5.StorageLockWireless'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-4"><input type="checkbox" data-dtype="Boolean" name="system.lock.wireless" {{checked system.lock.wireless}}/></div>
+</li>
+{{/if}}
+<li class="grid">
+    <div class="col-8">{{localize 'SR5.StorageLocked'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-4"><input type="checkbox" data-dtype="Boolean" name="system.lock.locked" {{checked system.lock.locked}}/></div>
+</li>
+{{/if}}

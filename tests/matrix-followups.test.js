@@ -134,14 +134,21 @@ describe('The Overwatch Score never goes below 0 (SR5 p. 231)', () => {
     expect(actor.system.matrix.overwatchScore).toBe(6)
   })
 
-  it('the GM side of the socket stops at 0 too', async () => {
+  it('the GM side of the socket never lowers it on a relay (Quitterie, 06/10: a score from 3 to 0)', async () => {
     actor.system.matrix.overwatchScore = 1
+    // The owner of the actor only raises it on that socket (security lot, Thomas): Emulate lowers it on her own client
+    actor.testUserPermission = (user) => user?.id === "owner"
+    game.users = {
+      get: (id) => ({
+        id
+      })
+    }
     await SR5_ActorHelper._socketOverwatchIncrease({
       data: {
         defenseHits: -3, actorId: 'a1'
       }
-    })
-    expect(actor.system.matrix.overwatchScore).toBe(0)
+    }, "owner")
+    expect(actor.system.matrix.overwatchScore).toBe(1)
   })
 })
 

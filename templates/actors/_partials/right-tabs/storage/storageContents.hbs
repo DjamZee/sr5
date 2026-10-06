@@ -1,5 +1,35 @@
 <!-- WHAT IS INSIDE A STORAGE PUT DOWN ON THE MAP -->
 <div class="SRBlockSheet sr-dropped-storage">
+	{{#if storageLock.hasLock}}
+	<!-- Its lock: SR5 p. 365-366 -->
+	<ul class="sr-storage-lock">
+		<li class="grid">
+			<div class="col-6">
+				<em class="fas fa-sm {{#if storageLock.locked}}fa-lock{{else}}fa-lock-open{{/if}}"></em>
+				{{localize storageLock.typeLabel}} {{storageLock.rating}}{{#if storageLock.wireless}} &middot; {{localize 'SR5.StorageLockWireless'}}{{/if}}{{#if storageLock.antiTamper}} &middot; {{localize 'SR5.StorageLockAntiTamper'}} {{storageLock.antiTamper}}{{/if}}
+				&mdash; <strong>{{#if storageLock.locked}}{{localize 'SR5.StorageLocked'}}{{else}}{{localize 'SR5.StorageUnlocked'}}{{/if}}</strong>
+			</div>
+			<div class="col-6 SR-TextRight">
+				{{#if storageLock.hasKey}}
+				<a class="storage-lock-toggle" data-title="{{#if storageLock.locked}}{{localize 'SR5.StorageLockOpen'}}{{else}}{{localize 'SR5.StorageLockShut'}}{{/if}}">
+					<em class="fas fa-key"></em>
+				</a>
+				{{/if}}
+				<a class="storage-lock-pick" data-title="{{#if storageLock.locked}}{{localize 'SR5.StorageLockPick'}}{{else}}{{localize 'SR5.StorageLockRelock'}}{{/if}}">
+					<em class="fas fa-screwdriver"></em>
+				</a>
+				{{#if storageLock.canHack}}
+				<a class="storage-lock-hack" data-title="{{localize 'SR5.StorageLockHack'}}">
+					<em class="fas fa-wifi"></em>
+				</a>
+				{{/if}}
+			</div>
+		</li>
+	</ul>
+	{{/if}}
+	{{#if storageLock.hideContents}}
+	<p class="sr-storage-empty SR-GreyColor">{{localize 'SR5.StorageLockedHidden'}}</p>
+	{{else}}
 	<ul>
 		<li class="SR-LigneEnTete grid">
 			<div class="col-6 SR-TextUppercase">{{localize 'SR5.StorageContents'}}</div>
@@ -37,4 +67,5 @@
 		</li>
 		{{/each}}
 	</ul>
+	{{/if}}
 </div>

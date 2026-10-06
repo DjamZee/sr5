@@ -68,6 +68,10 @@ export class sr5ItemSpellDataModel extends foundry.abstract.TypeDataModel {
       illusionSense: new fields.StringField({
         initial: ''
       }),
+      // An illusion whoever perceives the subject must resist first: Invisibility or Mask (SR5 p. 294)
+      illusionPierce: new fields.StringField({
+        initial: ''
+      }),
       detectionSense: new fields.StringField({
         initial: ''
       }),
@@ -83,7 +87,7 @@ export class sr5ItemSpellDataModel extends foundry.abstract.TypeDataModel {
       fetish: new fields.BooleanField({
         initial: false
       }),
-      targetOfEffect: new fields.ArrayField(new fields.ObjectField()),
+      targetOfEffect: new fields.ArrayField(new fields.StringField()),
       resisted: new fields.BooleanField({
         initial: false
       }),

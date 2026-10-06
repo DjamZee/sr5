@@ -1,0 +1,51 @@
+// Faction Reputation, gamemaster's window (Cutting Aces p. 156)
+.sr-factions {
+  .sr-factions-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .sr-faction {
+    border-bottom: 1px solid var(--color-border-light-2, #8884);
+    padding: 0.25rem 0;
+  }
+  .sr-faction-head {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+  }
+  .sr-faction-tools {
+    margin-left: auto;
+    display: flex;
+    gap: 0.5rem;
+  }
+  // Not the active gamemaster: read only
+  a[data-action].disabled {
+    pointer-events: none;
+    opacity: 0.4;
+  }
+  .sr-faction-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
+    margin: 0.2rem 0;
+  }
+  .sr-faction-tag {
+    border: 1px solid var(--color-border-light-2, #8884);
+    border-radius: 3px;
+    padding: 0 0.3rem;
+  }
+  .sr-faction-log {
+    list-style: none;
+    padding: 0;
+    margin: 0.25rem 0 0;
+    li {
+      display: flex;
+      gap: 0.5rem;
+      align-items: baseline;
+      a { margin-left: auto; }
+      &.pending { opacity: 0.7; }
+    }
+  }
+}

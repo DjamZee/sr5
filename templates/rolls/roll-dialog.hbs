@@ -8,6 +8,11 @@
 			{{> systems/sr5/templates/rolls/rollDialogPartial/dicePool.hbs}}
 	  	{{/if}}
 
+	  	<!-- ATTRIBUTE OF THE SKILL (SR5 p. 130) -->
+	  	{{#if skillAttribute}}
+			{{> systems/sr5/templates/rolls/rollDialogPartial/skillAttribute.hbs}}
+	  	{{/if}}
+
 	  	<!-- MODIFIERS -->
 		{{#if (ne test.type "passThroughDefense")}}
 	  		{{> systems/sr5/templates/rolls/rollDialogPartial/modifiers.hbs}}
@@ -124,9 +129,19 @@
 			{{> systems/sr5/templates/rolls/rollDialogPartial/reagents.hbs}}
   		{{/if}}
 
+		<!-- REAGENT HARVEST: THE AREA -->
+		{{#if (eq test.type "reagentHarvest")}}
+			{{> systems/sr5/templates/rolls/rollDialogPartial/reagentHarvest.hbs}}
+		{{/if}}
+
 	  	<!-- GRAPPLE ESCAPE THRESHOLD-->
 	  	{{#if (eq test.type "grappleEscape")}}
 			{{> systems/sr5/templates/rolls/rollDialogPartial/grappleEscapeThreshold.hbs}}
+	  	{{/if}}
+
+	  	<!-- TOXIN DOSES -->
+	  	{{#if (eq test.typeSub "toxinDamage")}}
+			{{> systems/sr5/templates/rolls/rollDialogPartial/toxinDoses.hbs}}
 	  	{{/if}}
 
 	  	<!-- ESCAPE ARTIST THRESHOLD-->
@@ -147,6 +162,11 @@
 	  	<!-- MATRIX SEARCH THRESHOLD-->
 	  	{{#if (eq test.typeSub "matrixSearch")}}
 			{{> systems/sr5/templates/rolls/rollDialogPartial/matrixSearchThreshold.hbs}}
+	  	{{/if}}
+
+	  	<!-- THRESHOLD MODIFIER (Bliss, Purple Orchid) -->
+	  	{{#if thresholdModifier.value}}
+			{{> systems/sr5/templates/rolls/rollDialogPartial/thresholdModifier.hbs}}
 	  	{{/if}}
 
 	  	<!-- EXTENDED TEST -->

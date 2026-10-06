@@ -23,5 +23,56 @@
 			</div>
 			{{/if}}
 		</li>
+		{{#with @root.hunger as |hunger|}}
+		<li class="grid sr5-hunger">
+			{{#if hunger.tracked}}
+			<div class="col-12">{{localize 'SR5.HUNGER_NextLoss' date=hunger.nextLoss}}</div>
+			{{#if hunger.pending}}<div class="col-12">{{localize 'SR5.HUNGER_Pending' n=hunger.pending}}</div>{{/if}}
+			{{#if hunger.deadline}}<div class="col-12">{{localize 'SR5.HUNGER_Deadline' date=hunger.deadline}}</div>{{/if}}
+			<div class="col-12 SR-TextRight">
+				<a data-sr5-hunger="hasten">{{localize 'SR5.HUNGER_Hasten'}}</a> ·
+				<a data-sr5-hunger="toggle">{{localize 'SR5.HUNGER_Untrack'}}</a>
+			</div>
+			{{else}}
+			<div class="col-12 SR-TextRight"><a data-sr5-hunger="toggle">{{localize 'SR5.HUNGER_Track'}}</a></div>
+			{{/if}}
+		</li>
+		{{/with}}
+		{{#with @root.infection as |infection|}}
+		<li class="grid sr5-infection">
+			{{#if infection.coma}}
+			<div class="col-12">{{localize 'SR5.INFECTION_Coma' date=infection.wakeAt creature=infection.creature}}</div>
+			{{else if infection.woken}}
+			<div class="col-12">{{localize 'SR5.INFECTION_Woken'}}</div>
+			{{else}}
+			<div class="col-12 SR-TextRight"><a data-sr5-infection-try>{{localize 'SR5.INFECTION_Try'}}</a></div>
+			{{/if}}
+		</li>
+		{{/with}}
+		{{#with @root.cfd as |cfd|}}
+		<li class="grid sr5-cfd">
+			<div class="col-12">{{localize 'SR5.CFD_Title'}}</div>
+			{{#if cfd.overwriters}}
+			<div class="col-12">{{#if cfd.overwriters.cured}}{{localize 'SR5.CFD_OverwritersLeft' rating=cfd.overwriters.rating}}{{else}}{{localize 'SR5.CFD_OverwritersActive' rating=cfd.overwriters.rating}}{{/if}}</div>
+			{{/if}}
+			{{#if cfd.nanoscrub}}<div class="col-12">{{localize 'SR5.CFD_ScrubActive' rating=cfd.nanoscrub.rating date=cfd.nanoscrub.next}}</div>{{/if}}
+			{{#if cfd.psychotic}}<div class="col-12">{{localize 'SR5.CFD_PsychoticUntil' date=cfd.psychotic}}</div>{{/if}}
+			<div class="col-12 SR-TextRight">
+				<a data-sr5-cfd="start">{{localize 'SR5.CFD_Give'}}</a>
+				{{#if cfd.canResolve}} · <a data-sr5-cfd="resolve">{{localize 'SR5.CFD_Resolve'}}</a>{{/if}}
+				{{#if (or cfd.overwriters cfd.nanoscrub cfd.psychotic)}} · <a data-sr5-cfd="stop">{{localize 'SR5.CFD_Stop'}}</a>{{/if}}
+			</div>
+		</li>
+		{{/with}}
+		{{#if @root.deactivation}}
+		<li class="grid sr5-defrag">
+			<div class="col-12 SR-TextRight"><a data-sr5-defrag-start>{{localize 'SR5.DEFRAG_Link'}}</a></div>
+		</li>
+		{{/if}}
+		{{#if @root.deactivationLauncher}}
+		<li class="grid sr5-defrag">
+			<div class="col-12 SR-TextRight"><a data-sr5-defrag-launch>{{localize 'SR5.DEFRAG_Launch'}}</a></div>
+		</li>
+		{{/if}}
 	</ul>
 </div>

@@ -1,6 +1,12 @@
 import {
   SR5
 } from "../config.js"
+import {
+  BACKGROUND_COUNT_PHENOMENA
+} from "./background-count-phenomena.js"
+import {
+  effectiveSceneBackgroundCount, activeManaShifts
+} from "../system/background-count.js"
 
 // Players panel layout: players list (expand button on the own player row), then scene noise / background count, then latency / FPS
 export function arrangePlayersPanel() {
@@ -32,10 +38,22 @@ export function renderSceneIndicators() {
   const flags = canvas.scene?.flags?.sr5 ?? {
   }
   const noise = Number(flags.matrixNoise) || 0
-  const backgroundCount = Number(flags.backgroundCountValue) || 0
+  //Shadow Spells p. 25: the count with its running Mana Flux / Ebb
+  const now = game.time?.worldTime ?? 0
+  const backgroundCount = effectiveSceneBackgroundCount(flags, now)
   let backgroundCountLabel = String(backgroundCount)
   const alignment = SR5.traditionTypes[flags.backgroundCountAlignement]
-  if (backgroundCount && alignment) backgroundCountLabel += ` (${game.i18n.localize(alignment)})`
+  if (backgroundCount > 0 && alignment) backgroundCountLabel += ` (${game.i18n.localize(alignment)})`
+  //Aetherologie p. 33-35: the phenomenon's name, and in the tooltip what the system leaves to the GM
+  const phenomenon = BACKGROUND_COUNT_PHENOMENA[flags.backgroundCountPhenomenon] ? flags.backgroundCountPhenomenon : ""
+  let backgroundCountTooltip = game.i18n.localize("SR5.SceneBackgroundCountRating")
+  if (phenomenon) {
+    backgroundCountLabel = `${game.i18n.localize(`SR5.BGPhenomenon_${phenomenon}`)} ${backgroundCountLabel}`
+    backgroundCountTooltip = game.i18n.localize(`SR5.BGPhenomenonHint_${phenomenon}`)
+  }
+  for (const s of activeManaShifts(flags, now)) {
+    backgroundCountTooltip += ` — ${s.name} (${Math.ceil((s.expires - now) / 3600)} h)`
+  }
 
   const escape = foundry.utils.escapeHTML
   indicators.innerHTML = `
@@ -43,7 +61,7 @@ export function renderSceneIndicators() {
       <label>${escape(game.i18n.localize("SR5.Noise"))}</label>
       <span class="value">${noise}</span>
     </div>
-    <div id="sr5-scene-background-count" class="${backgroundCount ? "active" : ""}" data-tooltip="${escape(game.i18n.localize("SR5.SceneBackgroundCountRating"))}">
+    <div id="sr5-scene-background-count" class="${backgroundCount || phenomenon ? "active" : ""}" data-tooltip="${escape(backgroundCountTooltip)}">
       <label>${escape(game.i18n.localize("SR5.SceneBackgroundCount"))}</label>
       <span class="value">${escape(backgroundCountLabel)}</span>
     </div>

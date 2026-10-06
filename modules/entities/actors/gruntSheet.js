@@ -1,6 +1,9 @@
 import {
-  ActorSheetSR5 
+  ActorSheetSR5
 } from "./baseSheet.js"
+import {
+  mentorWarningLines
+} from "../items/mentor-conversion.js"
 import {
   SR5_CharacterUtility
 } from "./utilityActor.js"
@@ -31,7 +34,7 @@ export class SR5GruntSheet extends ActorSheetSR5 {
       width: 800, height: 618 
     },
     window: {
-      resizable: false 
+      resizable: true 
     },
   }
 
@@ -130,6 +133,7 @@ export class SR5GruntSheet extends ActorSheetSR5 {
     const ammunitions = []
     const externalEffects = []
     const traditions = []
+    const mentorSpirits = []
     const rituals = []
 
     // Iterate through items, allocating to containers
@@ -161,8 +165,9 @@ export class SR5GruntSheet extends ActorSheetSR5 {
       else if (i.type === "itemEcho") echoes.push(i)
       else if (i.type === "itemAmmunition") ammunitions.push(i)
       else if (i.type === "itemEffect") externalEffects.push(i)
-      else if (i.type === "itemDrug") gears.push(i)
+      else if (i.type === "itemDrug" || i.type === "itemToxin") gears.push(i)
       else if (i.type === "itemTradition") traditions.push(i)
+      else if (i.type === "itemMentorSpirit") mentorSpirits.push(i)
       else if (i.type === "itemRitual") rituals.push(i)
     }
 
@@ -195,6 +200,8 @@ export class SR5GruntSheet extends ActorSheetSR5 {
     actor.ammunitions = ammunitions
     actor.externalEffects = externalEffects
     actor.traditions = traditions
+    actor.mentorSpirits = mentorSpirits
+    actor.mentorWarnings = mentorWarningLines(this.actor)
     actor.rituals = rituals
   }
 

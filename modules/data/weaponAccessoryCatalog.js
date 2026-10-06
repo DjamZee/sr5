@@ -178,6 +178,16 @@ export const WEAPON_ACCESSORY_CATALOG = {
   underbarrelChainsaw:      {
     price: 500, slot: "", type: "accessory" 
   },
+  // Flamethrower (Gun H(e)aven 3 p. 3): Fire damage, Suppressive Fire, fanning sweep over up to three targets
+  flamethrower:             {
+    price: 0, slot: "", type: "trait", systemEffects: [{
+      value: "flamethrower"
+    }]
+  },
+  // Osmium mace (The Complete Trog p. 177): Accuracy and DV follow the wielder's Strength
+  osmium:                   {
+    price: 0, slot: "", type: "trait" 
+  },
   underbarrelLaser:         {
     price: 22000, slot: "", type: "accessory" 
   },

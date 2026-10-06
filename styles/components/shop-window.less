@@ -1,0 +1,419 @@
+/* === Shop window (lot B) ===
+   DjamZ's choice (mock-up, revision 2, 2026-10-05): neutral greys everywhere,
+   and only the accent follows the system theme ("Style" setting): SR5 red or
+   SR6 violet, on lines, header, active shelf and buttons, never on surfaces.
+   --sr-shop-accent and --sr-shop-accent-line are set by the two themes. */
+.sr-shop-window {
+  --shop-bg: #14161b;
+  --shop-panel: #1c1f26;
+  --shop-line: #2a2e37;
+  --shop-button: #2a2e37;
+  --shop-text: #e6e6e6;
+  // #a9b0bd on #14161b: 8.6:1, readable for the small summary line (WCAG AA asks 4.5:1)
+  --shop-muted: #a9b0bd;
+  // Legality and the odds dot, the same in both themes. A prohibited item is a
+  // filled red badge, so it never reads as the red accent of the SR5 theme.
+  --shop-restricted: #e0a526;
+  --shop-prohibited: #ff5c4d;
+  --shop-good: #4cc46a;
+  --shop-even: #e0a526;
+  --shop-poor: #ff5c4d;
+
+  // The validated mock-up's type: Signika at 12 px, names at 13 px. The SR5 theme's narrow
+  // display face made the rows hard to read.
+  font-family: var(--font-body, "Signika"), sans-serif;
+  font-size: 12px;
+  // Icons keep their own face: only text elements are reset
+  .window-content :is(input, select, button, label, span, b, small, a, h4, p, li, div):not([class*="fa-"]) {
+    font-family: inherit;
+  }
+
+  .window-header {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--sr-shop-accent) 55%, transparent), #0d0e11 60%) !important;
+    border-bottom: 2px solid var(--sr-shop-accent) !important;
+  }
+
+  .window-content {
+    padding: 0 !important;
+    background: var(--shop-bg) !important;
+    color: var(--shop-text) !important;
+  }
+
+  .muted { color: var(--shop-muted) !important; }
+
+  input[type="text"], input[type="number"] {
+    background: var(--shop-bg) !important;
+    border: 1px solid var(--shop-line) !important;
+    border-radius: 2px !important;
+    color: var(--shop-text) !important;
+    height: 22px;
+    font-size: 12px;
+  }
+  input[type="number"] { width: 64px; text-align: right; }
+
+  // Scoped to the content: the window header's controls (close, menu) are buttons
+  // too, and a shop font or background there hides their Font Awesome glyph.
+  // :where() keeps the old specificity for the rules below that refine buttons.
+  :where(.window-content) button {
+    background: var(--shop-button) !important;
+    border: 1px solid #3a3f4a !important;
+    color: var(--shop-text) !important;
+    border-radius: 3px;
+    line-height: 22px;
+    font-size: 12px;
+    &:hover:not([disabled]) { border-color: var(--sr-shop-accent-line) !important; }
+    &.accent {
+      background: var(--sr-shop-accent) !important;
+      border-color: var(--sr-shop-accent) !important;
+      color: #fffffe !important;
+      font-weight: bold;
+    }
+    &.too-expensive { outline: 1px solid var(--shop-prohibited); }
+  }
+
+  h4 {
+    margin: 10px 0 4px;
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--shop-muted) !important;
+    border: none;
+  }
+
+  .sr-shop {
+    display: grid;
+    grid-template-columns: 210px minmax(0, 1fr) 300px;
+    height: 100%;
+    min-height: 0;
+  }
+
+  /* ── Shelves ─────────────────────────── */
+  .sr-shop-shelves {
+    overflow-y: auto;
+    padding: 10px;
+    background: var(--shop-panel);
+    border-right: 1px solid var(--shop-line);
+  }
+  .sr-shop-shelf {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 5px 8px;
+    border-radius: 3px;
+    color: var(--shop-text) !important;
+    .count { color: var(--shop-muted); }
+    &:hover { background: var(--shop-line); }
+    &.active {
+      background: var(--sr-shop-accent);
+      color: #fffffe !important;
+      font-weight: bold;
+      .count { color: #fffffe; }
+    }
+    &.sub { padding-left: 22px; }
+  }
+
+  /* ── Filters ─────────────────────────── */
+  .sr-shop-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+  }
+  .sr-shop-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--shop-line);
+  }
+  .sr-shop-search {
+    flex: 1 1 220px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    input {
+      flex: 1;
+      background: none !important;
+      border: none !important;
+      border-bottom: 1px solid var(--shop-muted) !important;
+    }
+  }
+  .sr-shop-max { display: flex; align-items: center; gap: 4px; white-space: nowrap; input { width: 70px; } }
+  .sr-shop-chips { display: flex; gap: 6px; }
+  .sr-shop-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid var(--shop-line) !important;
+    border-radius: 12px !important;
+    padding: 0 10px;
+    line-height: 20px !important;
+    background: none !important;
+    color: var(--shop-muted) !important;
+    cursor: pointer;
+    input { display: none; }
+    &.active {
+      border-color: var(--sr-shop-accent-line) !important;
+      color: var(--shop-text) !important;
+    }
+  }
+  .sr-shop-filter-actions { display: flex; gap: 4px; margin-left: auto; button { width: 28px; padding: 0; } }
+
+  /* ── Rows ────────────────────────────── */
+  .sr-shop-head, .sr-shop-row {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) 108px 70px 92px 84px 104px;
+    gap: 8px;
+    align-items: center;
+    padding: 0 10px;
+  }
+  .sr-shop-head {
+    padding-top: 6px;
+    padding-bottom: 6px;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--shop-muted);
+    border-bottom: 1px solid var(--shop-line);
+    .right { text-align: right; }
+  }
+  // A narrow window (under ~1 100 px) left the name column at 0 px: below 700 px of list, the name
+  // takes a line of its own over the figures, and the header row, which no longer matches, goes
+  .sr-shop-main { container-type: inline-size; }
+  @container (max-width: 700px) {
+    .sr-shop-head { display: none; }
+    .sr-shop-row {
+      grid-template-columns: 36px 84px 64px 84px minmax(60px, 1fr) 104px;
+      row-gap: 2px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      > img { grid-row: 1 / span 2; }
+      .sr-shop-name { grid-column: 2 / -1; grid-row: 1; }
+    }
+  }
+  .sr-shop-list {
+    flex: 1;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sr-shop-row {
+    min-height: 50px;
+    border-bottom: 1px solid var(--shop-line);
+    cursor: pointer;
+    &:hover { background: var(--shop-panel); }
+    &.dim { opacity: .45; }
+    img { width: 34px; height: 34px; border: none; object-fit: contain; }
+  }
+  .sr-shop-name {
+    padding: 4px 0;
+    min-width: 0;
+    b {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      font-size: 13px;
+    }
+    small { display: block; color: var(--shop-muted) !important; font-size: 11px; opacity: 1; }
+  }
+  .sr-shop-blocked { color: var(--shop-prohibited) !important; }
+  .sr-shop-tag {
+    font-size: 10px;
+    border: 1px solid var(--shop-muted);
+    border-radius: 3px;
+    padding: 0 4px;
+    color: var(--shop-muted);
+  }
+  .sr-shop-availability {
+    b { font-size: 13px; }
+    small { display: block; font-size: 11px; color: var(--shop-muted); }
+    .legality-R { color: var(--shop-restricted); }
+    .legality-F {
+      color: #fffffe;
+      background: var(--shop-prohibited);
+      border-radius: 3px;
+      padding: 0 4px;
+    }
+  }
+  .sr-shop-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+    &.odds-good { background: var(--shop-good); }
+    &.odds-even { background: var(--shop-even); }
+    &.odds-poor { background: var(--shop-poor); }
+  }
+  .sr-shop-price {
+    text-align: right;
+    font-weight: bold;
+    font-size: 13px;
+    &.too-expensive { color: var(--shop-prohibited); }
+  }
+  .sr-shop-row-buy {
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+    input[type="number"] { width: 34px; text-align: center; }
+    button { width: 28px; padding: 0; }
+  }
+  // The vendor picker ("Where to buy") is a native select too: same greys, not the global teal on red.
+  .sr-shop-grade select, select.sr-shop-source {
+    width: 100%;
+    height: 22px;
+    background: var(--shop-bg) !important;
+    color: var(--shop-text) !important;
+    border: 1px solid var(--shop-line) !important;
+    border-radius: 2px;
+    font-size: 12px;
+    option { background: var(--shop-panel); color: var(--shop-text); }
+  }
+  // The enhanced dropdowns (buyer, payment): the shared style draws a half-transparent
+  // theme-red chevron, nearly invisible on the shop's greys. Same box as the grade select.
+  .sr-dropdown .sr-dropdown-trigger {
+    height: 22px;
+    padding: 0 6px;
+    background: var(--shop-bg);
+    border: 1px solid var(--shop-line);
+    border-radius: 2px;
+    .sr-dropdown-chevron { color: var(--shop-muted); font-size: 11px; }
+    &:hover { border-color: var(--sr-shop-accent-line); .sr-dropdown-chevron { color: var(--shop-text); } }
+  }
+  .sr-dropdown.sr-dropdown-open .sr-dropdown-trigger {
+    border-color: var(--sr-shop-accent-line);
+    .sr-dropdown-chevron { color: var(--shop-text); }
+  }
+  .sr-shop-empty { padding: 20px; text-align: center; color: var(--shop-muted); }
+  .sr-shop-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 10px;
+    border-top: 1px solid var(--shop-line);
+    color: var(--shop-muted);
+    button { flex: 0 0 auto; padding: 0 10px; }
+  }
+
+  /* ── Till ────────────────────────────── */
+  .sr-shop-till {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: auto;
+    padding: 10px;
+    background: var(--shop-panel);
+    border-left: 1px solid var(--shop-line);
+    > button { width: 100%; }
+  }
+  .sr-shop-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px;
+    border: 1px solid var(--shop-line);
+    border-left: 2px solid var(--sr-shop-accent-line);
+    border-radius: 4px;
+    background: var(--shop-bg);
+    label { display: flex; align-items: center; gap: 6px; }
+  }
+  .sr-shop-balance b { font-size: 18px; }
+  .sr-shop-inline { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; input { width: 44px; } }
+  .sr-shop-cart-line {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 36px 72px 22px;
+    gap: 4px;
+    align-items: center;
+    padding: 3px 0;
+    border-bottom: 1px dashed var(--shop-line);
+    .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    &.blocked .name { color: var(--shop-prohibited); text-decoration: line-through; }
+    .price { text-align: right; }
+    input[type="number"] { width: 36px; text-align: center; }
+    button { padding: 0; }
+  }
+  .sr-shop-cart-total {
+    display: flex;
+    justify-content: space-between;
+    &.too-expensive { color: var(--shop-prohibited); }
+  }
+
+  /* -- The vendor (lot C): its sign over the list, banner 3:1 and portrait -- */
+  .sr-shop-source { width: 100%; margin-bottom: 8px; }
+  .sr-shop-vendor {
+    position: relative;
+    flex: none;
+    border-bottom: 2px solid var(--sr-shop-accent);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--sr-shop-accent) 35%, var(--shop-panel)), var(--shop-panel) 70%);
+    .sr-shop-banner {
+      display: block;
+      width: 100%;
+      aspect-ratio: 3 / 1;
+      max-height: 180px;
+      object-fit: cover;
+      border: none;
+    }
+    .sr-shop-vendor-id {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      b { font-size: 16px; }
+      small { display: block; color: var(--shop-muted) !important; }
+    }
+    &.has-banner .sr-shop-vendor-id {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      background: linear-gradient(0deg, rgba(0, 0, 0, 0.85), transparent);
+      b, small { text-shadow: 0 1px 2px #000; }
+    }
+    .sr-shop-portrait {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      border: 2px solid var(--sr-shop-accent);
+      border-radius: 4px;
+    }
+  }
+  .sr-shop-tag.stock { border-color: var(--shop-good); color: var(--shop-good); }
+  .sr-shop-tag.on-order { border-color: var(--shop-restricted); color: var(--shop-restricted); }
+}
+
+/* The vendor's block on the storage sheet (lot C): the shelves and legality boxes, readable on the light sheet */
+.sr-shop-edit {
+  .sr-shop-edit-checks {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px 8px;
+    label { display: flex; align-items: center; gap: 4px; color: var(--sr-text-color-dark, #222) !important; font-size: 12px; }
+  }
+  .sr-shop-edit-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    button { flex: 0 0 auto; width: auto; }
+  }
+  .sr-shop-blocked { color: #c0392b; }
+}
+
+/* The "New vendor" dialog (lot C, part 2): the banners of the template, as 3:1 thumbnails */
+.sr-shop-new-vendor {
+  .sr-shop-banner-choices {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .sr-shop-banner-choice {
+    position: relative;
+    cursor: pointer;
+    input { position: absolute; opacity: 0; }
+    img { display: block; width: 100%; aspect-ratio: 3 / 1; object-fit: cover; border: 3px solid transparent; border-radius: 3px; }
+    input:checked + img { border-color: var(--color-warm-2, #ff6400); }
+    input:focus-visible + img { outline: 2px solid var(--color-text-hyperlink, #ff6400); }
+  }
+}

@@ -109,6 +109,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/actors/_partials/left-tabs/magicUser/tradition.hbs",
     "systems/sr5/templates/actors/_partials/left-tabs/magicUser/astral.hbs",
     "systems/sr5/templates/actors/_partials/left-tabs/magicUser/reagents.hbs",
+    "systems/sr5/templates/actors/_partials/left-tabs/magicUser/spiritReputation.hbs",
 
     //Left Tab - Matrix user partials
     "systems/sr5/templates/actors/_partials/left-tabs/matrixUser/device.hbs",
@@ -162,6 +163,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/actors/_partials/right-tabs/storage/storageContents.hbs",
     "systems/sr5/templates/interface/storage-put-in.hbs",
     "systems/sr5/templates/interface/storage-loot-who.hbs",
+    "systems/sr5/templates/interface/storage-lock-card.hbs",
     "systems/sr5/templates/actors/_partials/right-tabs/gear/money.hbs",
 
     //Right Tab - Augmentations partials
@@ -278,6 +280,12 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/items/blocks/spirit/spirit-stat.hbs",
     "systems/sr5/templates/items/blocks/spiritType/spiritType-stat.hbs",
     "systems/sr5/templates/items/blocks/spiritType/spiritType-summary.hbs",
+    "systems/sr5/templates/items/blocks/mentorSpirit/mentorSpirit-stat.hbs",
+    "systems/sr5/templates/items/blocks/mentorSpirit/mentorSpirit-summary.hbs",
+    "systems/sr5/templates/items/blocks/toxin/toxin-stat.hbs",
+    "systems/sr5/templates/items/blocks/toxin/toxin-summary.hbs",
+    "systems/sr5/templates/items/_partial/summary/toxin-summary.hbs",
+    "systems/sr5/templates/rolls/rollDialogPartial/toxinDoses.hbs",
     "systems/sr5/templates/items/blocks/spirit/spirit-summary.hbs",
     "systems/sr5/templates/items/blocks/sprite/sprite-stat.hbs",
     "systems/sr5/templates/items/blocks/sprite/sprite-summary.hbs",
@@ -412,6 +420,7 @@ export const preloadHandlebarsTemplates = async function () {
 				
     //Device
     "systems/sr5/templates/items/_partial/editable/device/type-edit.hbs",
+    "systems/sr5/templates/items/_partial/editable/device/strain-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/device/programMax-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/device/attributesCollection-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/device/commlinkModule-edit.hbs",
@@ -477,6 +486,7 @@ export const preloadHandlebarsTemplates = async function () {
     //Quality
     "systems/sr5/templates/items/_partial/editable/quality/type-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/quality/karmaCost-edit.hbs",
+    "systems/sr5/templates/items/_partial/editable/quality/linkedMentor-edit.hbs",
 
     //Ritual
     "systems/sr5/templates/items/_partial/editable/ritual/details-edit.hbs",
@@ -488,9 +498,13 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/items/_partial/editable/sin/licenses-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/gear/intangible-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/gear/jammer-edit.hbs",
+    "systems/sr5/templates/items/_partial/editable/gear/tacnet-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/storage/type-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/storage/capacity-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/storage/deployable-edit.hbs",
+    "systems/sr5/templates/items/_partial/editable/storage/lock-edit.hbs",
+    "systems/sr5/templates/items/_partial/editable/storage/shop-edit.hbs",
+    "systems/sr5/templates/interface/shop-new-vendor.hbs",
     "systems/sr5/templates/items/_partial/editable/storage/address-edit.hbs",
 
     //Spell
@@ -529,6 +543,8 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/items/_partial/editable/spiritType/powers-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/spiritType/preview-edit.hbs",
     "systems/sr5/templates/items/_partial/summary/spiritType-summary.hbs",
+    "systems/sr5/templates/items/_partial/editable/mentorSpirit/mentorSpirit-edit.hbs",
+    "systems/sr5/templates/items/_partial/summary/mentorSpirit-summary.hbs",
 
     //Preparation
     "systems/sr5/templates/items/_partial/editable/preparation/lynchpin-edit.hbs",
@@ -584,6 +600,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/rolls/rollDialogPartial/dicePool.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/modifiers.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/customModifier.hbs",
+    "systems/sr5/templates/rolls/rollDialogPartial/situationalModifiers.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/woundModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/runningModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/specializationModifier.hbs",
@@ -592,6 +609,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/rolls/rollDialogPartial/attackRangeModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/chokeSettingsModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/attributeChoice.hbs",
+    "systems/sr5/templates/rolls/rollDialogPartial/skillAttribute.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/force.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/summoningModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/defenseRangedModifier.hbs",
@@ -620,8 +638,10 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/rolls/rollDialogPartial/matrixSearchThreshold.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/chooseTargetEffect.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/reagents.hbs",
+    "systems/sr5/templates/rolls/rollDialogPartial/reagentHarvest.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/spiritAidCommand.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/spiritAidModifier.hbs",
+    "systems/sr5/templates/rolls/rollDialogPartial/astralReputation.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/targetTypeModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/objectResistanceChoice.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/astralDamageType.hbs",
@@ -635,6 +655,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/rolls/rollDialogPartial/escapeArtistModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/escapeArtistThreshold.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/grappleEscapeThreshold.hbs",
+    "systems/sr5/templates/rolls/rollDialogPartial/thresholdModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/perceptionThreshold.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/survivalModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/survivalThreshold.hbs",

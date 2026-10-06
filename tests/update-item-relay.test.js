@@ -99,12 +99,76 @@ describe('item update after a roll', () => {
       }
     })
 
-    // the GM side of the relay
+    // the GM side of the relay: the sender owns the launcher (socket-guard.js)
+    item.testUserPermission = () => true
+    game.users = {
+      get: () => ({
+        id: 'p', isGM: false
+      })
+    }
     await SR5_MiscellaneousHelpers._socketUpdateItem({
       data: emitted[0].data
-    })
+    }, 'p')
     expect(item.source.system.type).toBe('grenadeLauncher')
     expect(item.source.system.ammunition.value).toBe(11)
+  })
+
+  //Pauline's remainder b, S15 measured by Quitterie: a player rolling for an actor she owns but that is not her assigned
+  //character (an unlinked token: its id is never the character's) relayed to the GM; without a GM the magazine did not
+  //move, and a spell kept no hits for dispelling to read
+  it("writes itself what the player owns, her assigned character or not, without a GM", async () => {
+    const item = launcher()
+    item.isOwner = true
+    globalThis.fromUuid = async () => item
+    game.user = {
+      isGM: false, character: {
+        id: 'pc'
+      }
+    }
+    await SR5_RollTestHelper.updateItemAfterRoll({
+      ...card(), owner: {
+        itemUuid: 'Actor.a.Item.lg', actorId: 'unlinkedToken'
+      }
+    })
+    expect(emitted).toHaveLength(0)
+    expect(item.update).toHaveBeenCalledWith({
+      system: {
+        ammunition: {
+          value: 11
+        }
+      }
+    })
+  })
+
+  it("writes a spell's hits for its owner, so dispelling has something to lower", async () => {
+    const source = {
+      type: 'itemSpell', system: {
+        hits: 0, force: 0
+      }
+    }
+    const spell = {
+      uuid: 'Actor.a.Item.sp', type: 'itemSpell', isOwner: true, system: structuredClone(source.system),
+      toObject: () => structuredClone(source), toJSON: () => structuredClone(source), update: vi.fn(),
+    }
+    globalThis.fromUuid = async () => spell
+    game.user = {
+      isGM: false, character: null
+    }
+    await SR5_RollTestHelper.updateItemAfterRoll({
+      ...card(), owner: {
+        itemUuid: spell.uuid, actorId: 'unlinkedToken'
+      }, roll: {
+        hits: 4
+      }, magic: {
+        force: 5
+      }
+    })
+    expect(emitted).toHaveLength(0)
+    expect(spell.update).toHaveBeenCalledWith({
+      system: {
+        hits: 4, force: 5
+      }
+    })
   })
 
   it('writes only the changed fields when the GM rolls', async () => {
@@ -123,9 +187,49 @@ describe('item update after a roll', () => {
     })
   })
 
+  //Flamethrower fanning (Gun H(e)aven 3 p. 3): the sweep comes from the targets of each attack. Saved on the weapon,
+  //it came back on the next shot at a single target (8dff143f, a6768a45)
+  it('never saves the sweep as the weapon\'s firing mode, but saves any other mode', async () => {
+    game.user = {
+      isGM: true
+    }
+    const swept = launcher()
+    globalThis.fromUuid = async () => swept
+    const sweep = card()
+    sweep.combat.firingMode.selected = 'FN'
+    await SR5_RollTestHelper.updateItemAfterRoll(sweep)
+    expect(swept.update).toHaveBeenCalledWith({
+      system: {
+        ammunition: {
+          value: 11
+        }
+      }
+    })
+
+    const burst = launcher()
+    globalThis.fromUuid = async () => burst
+    const other = card()
+    other.combat.firingMode.selected = 'BF'
+    await SR5_RollTestHelper.updateItemAfterRoll(other)
+    expect(burst.update).toHaveBeenCalledWith({
+      system: {
+        ammunition: {
+          value: 11
+        }, firingMode: {
+          current: 'BF'
+        }
+      }
+    })
+  })
+
   it('lets the relay ignore what a caller resent unchanged', async () => {
     const item = launcher()
     globalThis.fromUuid = async () => item
+    game.users = {
+      get: () => ({
+        id: 'gm', isGM: true
+      })
+    }
     await SR5_MiscellaneousHelpers._socketUpdateItem({
       data: {
         item: item.uuid, info: {
@@ -134,7 +238,7 @@ describe('item update after a roll', () => {
           }
         }
       }
-    })
+    }, 'gm')
     expect(item.update).toHaveBeenCalledWith({
       system: {
         firingMode: {

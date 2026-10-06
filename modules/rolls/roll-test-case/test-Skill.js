@@ -1,4 +1,7 @@
 import {
+  drainShown
+} from "../roll-helpers/mentorMaskDrain.js"
+import {
   SR5
 } from "../../config.js"
 import {
@@ -13,10 +16,63 @@ import {
 import {
   hasSingleMonitor, patientMonitors, wearsFullArmor, firstAidHealedBoxes
 } from "../roll-helpers/cardRoller.js"
+import {
+  underFireRules, bbPatientEntry, bbThreshold
+} from "../../system/bb-healing.js"
+import {
+  diagnosisBonus, stabilizedTreatmentBoxes, believedHits, believedStabilizationReduction, stabilizationLabelKey
+} from "../../system/bb-healing-rules.js"
+
+// Bullets & Bandages p. 14-15, world setting: the stabilization (extended) and the diagnosis of the targeted patient.
+// The GM applies the result (chat-button-gm): the ledger is his. Returns true when the card is one of those
+function bbCard(cardData, patient){
+  if (!underFireRules()) return false
+  const mode = cardData.test.bbMode
+  if (mode !== "stabilization" && mode !== "diagnosis") return false
+  const end = (key, data) => cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.format(key, data ?? {
+  }))
+  if (!patient) {
+    end("SR5.BB_NeedTarget")
+    return true
+  }
+  //The threshold is the GM's (BB p. 15): he sets it when he applies the result, the card only shows the hits
+  if (mode === "diagnosis"){
+    if (diagnosisBonus(cardData.roll, 1)) cardData.chatCard.buttons.bbDiagnose = SR5_RollMessage.generateChatButton("nonOpposedTest", "bbDiagnose", game.i18n.format("SR5.BB_DiagnoseButton", {
+      hits: cardData.roll.hits
+    }), {
+      gmAction: true
+    })
+    else end("SR5.BB_DiagnoseFailed")
+    return true
+  }
+  //A new roll of the extended test rewrites the card: the button of the previous roll goes. Taken out of the
+  //card's data here, and out of the message's flags by the "-=" keys of updateRollCard (roll-message.js)
+  delete cardData.chatCard.buttons.actionEnd
+  delete cardData.chatCard.buttons.bbStabilize
+  //SR5 p. 51: a critical glitch ends an extended test
+  if (cardData.roll.criticalGlitchRoll) {
+    end("SR5.BB_StabilizeFailed")
+    return true
+  }
+  const threshold = bbThreshold(patient)
+  const hits = believedHits(cardData.roll.hits, cardData.dicePool?.value, cardData.test?.extended?.roll)
+  if (hits >= threshold){
+    //The count the GM makes again when he applies it (bb-healing.js, stabilizationCardReduction)
+    const reduction = believedStabilizationReduction(cardData.roll, cardData.dicePool?.value, cardData.test?.extended?.roll, threshold)
+    cardData.chatCard.buttons.bbStabilize = SR5_RollMessage.generateChatButton("nonOpposedTest", "bbStabilize", game.i18n.format(stabilizationLabelKey("SR5.BB_StabilizeButton", reduction), {
+      reduction
+    }), {
+      gmAction: true
+    })
+  } else end("SR5.BB_StabilizeProgress", {
+    hits, threshold
+  })
+  return true
+}
 
 export default async function skillInfo(cardData){
   let itemTarget
-  let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+  let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
   let actorData = actor.system
 
   let testType = cardData.target.hasTarget ? "nonOpposedTest" : "opposedTest"
@@ -44,7 +100,7 @@ export default async function skillInfo(cardData){
         if (itemTarget.system.force > actorData.specialAttributes.magic.augmented.value) cardData.magic.drain.type = "physical"
         else cardData.magic.drain.type = "stun"
         //Add buttons to chat
-        cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${cardData.magic.drain.value})`)
+        cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${drainShown(cardData, cardData.owner.actorId)})`)
         if (cardData.roll.hits > 0) cardData.chatCard.buttons.dispellResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "dispellResistance", game.i18n.localize("SR5.SpellResistance"), {
           gmAction: true
         })
@@ -56,7 +112,7 @@ export default async function skillInfo(cardData){
           cardData.magic.drain.value = itemTarget.system.drainValue.value
           if (cardData.roll.hits > actorData.specialAttributes.magic.augmented.value) cardData.magic.drain.type = "physical"
           else cardData.magic.drain.type = "stun"
-          cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${cardData.magic.drain.value})`)
+          cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${drainShown(cardData, cardData.owner.actorId)})`)
         }
         if (cardData.roll.hits > 0) {
           if (itemTarget.type === "itemFocus") cardData.chatCard.buttons.enchantmentResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "enchantmentResistance", game.i18n.localize("SR5.EnchantmentResistance"), {
@@ -77,18 +133,19 @@ export default async function skillInfo(cardData){
       break
     case "firstAid": {
       //SR5 p. 150: a targeted device or drone is no patient: no 1D3 to ask a type for, no box to heal
-      let targetActor = cardData.target.hasTarget ? SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId) : null
+      let targetActor = cardData.target.hasTarget ? SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId, cardData.actorUuids) : null
       if (targetActor && !patientMonitors(targetActor).length) {
         cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.HealingFailed"))
         break
       }
+      if (bbCard(cardData, targetActor)) break
       //SR5 p. 207: a critical glitch adds 1D3 boxes, rolled once per test even if the card is refreshed (Edge)
       if (cardData.roll.criticalGlitchRoll) {
         if (!cardData.roll.criticalGlitchDamage) {
           let failedDamage = new Roll(`1d3`)
           await failedDamage.evaluate()
           //A targeted patient with a single condition monitor has no damage type to choose
-          let patient = cardData.target.hasTarget ? SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId) : null
+          let patient = cardData.target.hasTarget ? SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId, cardData.actorUuids) : null
           cardData.roll.criticalGlitchDamage = {
             value: failedDamage.total, type: hasSingleMonitor(patient) ? "condition" : await SR5_CombatHelpers.chooseDamageType()
           }
@@ -109,6 +166,16 @@ export default async function skillInfo(cardData){
         let fullArmor = wearsFullArmor(targetActor)
         cardData.roll.firstAidCap = actorData.skills.firstAid.rating.value
         cardData.roll.netHits = firstAidHealedBoxes(cardData.roll.hits, 2, actorData.skills.firstAid.rating.value, fullArmor)
+        //Bullets & Bandages p. 16: a stabilized patient heals 2 boxes per net hit; a bleeding one out of the overflow
+        //is stabilized too, which the GM applies
+        const bbEntry = underFireRules() ? bbPatientEntry(targetActor) : {
+        }
+        if (bbEntry.stabilized) cardData.roll.netHits = stabilizedTreatmentBoxes(cardData.roll.hits, 2, actorData.skills.firstAid.rating.value, cardData.test.bbMedkitRating, fullArmor)
+        if (bbEntry.bleeding && !(targetActor.system.conditionMonitors.overflow?.actual?.value > 0)) {
+          cardData.chatCard.buttons.bbStabilize = SR5_RollMessage.generateChatButton("nonOpposedTest", "bbStabilize", game.i18n.localize(stabilizationLabelKey("SR5.BB_StabilizeButton", 0)), {
+            gmAction: true
+          })
+        }
         if (cardData.target.hasTarget) cardData.chatCard.buttons.firstAid = SR5_RollMessage.generateChatButton("nonOpposedTest", "firstAid", `${game.i18n.format(fullArmor ? 'SR5.FirstAidButtonFullArmor' : 'SR5.FirstAidButton', {
           hits: cardData.roll.netHits
         })}`)
@@ -120,8 +187,12 @@ export default async function skillInfo(cardData){
       }
       break
     }
+    //Bullets & Bandages p. 15: Medicine diagnoses too
+    case "medecine":
+      bbCard(cardData, cardData.target.hasTarget ? SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId, cardData.actorUuids) : null)
+      break
     case "locksmith": {
-      let targetActor = SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId)
+      let targetActor = SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId, cardData.actorUuids)
       if (cardData.threshold.value > 0){
         if (targetActor.system.maglock.type.cardReader || targetActor.system.maglock.type.keyPads){
           if (targetActor.system.maglock.hasAntiTamper && targetActor.system.maglock.caseRemoved){

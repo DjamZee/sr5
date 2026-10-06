@@ -31,4 +31,17 @@ describe('SR5Actor.applyExternalEffect', () => {
     }, 'customEffects')
     expect(created).toBe(true)
   })
+  //Fritz: the definition review the GM's caller already showed went no further than the actor's method
+  it('passes on the review its caller already showed', async () => {
+    const spy = vi.spyOn(SR5_ActorHelper, 'applyExternalEffect').mockResolvedValue(true)
+    const review = {
+      shown: true
+    }
+    await SR5Actor.prototype.applyExternalEffect.call({
+      isToken: false, id: 'victim'
+    }, {
+    }, 'customEffects', review)
+    expect(spy).toHaveBeenCalledWith('victim', {
+    }, 'customEffects', review)
+  })
 })

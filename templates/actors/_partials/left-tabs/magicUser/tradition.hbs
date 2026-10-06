@@ -32,6 +32,40 @@
 					{{/each}}
 				{{/if}}
 				{{#ifne system.magic.magicType 'spirit'}}
+				<!-- Mentor spirits (SR5 p. 76, 323-325) -->
+				<li class="grid SR-LigneEnTete">
+					<div class="col-11"><p class="SR-TextUppercase">{{localize 'SR5.MentorSpirits'}}</p></div>
+					<div class="col-1">
+						{{#if owner}}
+						<p class="SR-TextRight add-item">
+							<a class="item-create" data-title="{{localize 'SR5.Add'}}" data-type="itemMentorSpirit"><em class="fas fa-plus"></em></a>
+						</p>
+						{{/if}}
+					</div>
+				</li>
+				{{#each actor.mentorSpirits}}
+				<li class="item grid" data-item-id="{{_id}}">
+					<div class="col-9">{{name}}{{#unless (gt ../system.specialAttributes.magic.augmented.value 0)}} <em class="SR-SubColor">({{localize 'SR5.MentorDormant'}})</em>{{/unless}}</div>
+					<div class="col-2 SR-TextCenter roll-logo sr-roll" data-rolltype="mentorDrawback" data-title="{{localize 'SR5.MentorResistDrawback'}}">
+						<em class="fas fa-dice"></em>
+					</div>
+					<div class="col-1 grid SR-TextRight">
+						{{#if ../owner}}
+						<a data-helpTitle="{{localize 'SR5.HELP_ItemManagement' key=name}}" data-helpMessage="{{localize 'SR5.HELP_ItemManagementMsg'}}">
+							<em class="fas fa-sm fa-edit item-management"></em>
+						</a>
+						{{/if}}
+					</div>
+				</li>
+				{{/each}}
+				{{#if (gt actor.mentorSpirits.length 1)}}
+				<li class="grid"><div class="col-12 SR-AlertColor">{{localize 'SR5.MentorExtraWarning'}}</div></li>
+				{{/if}}
+				{{#each actor.mentorWarnings}}
+				<li class="grid mentor-warning"><div class="col-12 SR-AlertColor">{{this}}</div></li>
+				{{/each}}
+				{{/ifne}}
+				{{#ifne system.magic.magicType 'spirit'}}
 				{{#ifne system.magic.magicType 'adept'}}
 	  			<li class="grid">
 					<div class="col-10"><p>{{localize 'SR5.TraditionCombat'}}</p></div>

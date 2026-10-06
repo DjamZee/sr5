@@ -4,7 +4,7 @@
 		  data-helpTitle="{{localize 'SR5.ConditionMonitorMatrix'}}" data-helpMessage="{{localize 'SR5.HELP_MonitorNameMsg'}}">
 			{{localize 'SR5.ConditionMonitorMatrixShort'}}
 		</div>
-		<div class="SR-MoniteurCases flexrow" data-target="system.conditionMonitors.matrix.actual.base"
+		<div class="SR-MoniteurCases flexrow" style="--n: {{system.conditionMonitors.matrix.boxes.length}}" data-target="system.conditionMonitors.matrix.actual.base"
 		  data-helpTitle="{{localize 'SR5.ConditionMonitorMatrix'}}" data-helpMessage="{{localize 'SR5.HELP_MonitorMsg'}}">
 			{{#each system.conditionMonitors.matrix.boxes as |box index|}}
 				{{#if box.locked}}

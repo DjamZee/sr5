@@ -35,7 +35,7 @@ export class SR5DroneSheet extends ActorSheetSR5 {
       width: 800, height: 618 
     },
     window: {
-      resizable: false 
+      resizable: true 
     },
   }
 
@@ -73,6 +73,7 @@ export class SR5DroneSheet extends ActorSheetSR5 {
     if (this._spendingWirelessAction) return
     const actor = this.actor
     const oldValue = actor.system.wirelessTurnedOn !== false
+    if (!SR5_ActorHelper.droneWirelessToggleAllowed(game.user?.isGM, !oldValue)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_DroneWirelessOnGMOnly"))
     const owner = SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId)
     const actions = [{
       type: SR5_ActorHelper.droneWirelessActionType(game.settings.get("sr5", "sr5WifiRequiresDNI"), owner, !oldValue),
@@ -82,11 +83,18 @@ export class SR5DroneSheet extends ActorSheetSR5 {
     if (!SR5Combat.hasActionsLeft(actor, actions)) return
     this._spendingWirelessAction = true
     try {
-      const actionsLeft = SR5_MiscellaneousHelpers.spendActions(foundry.utils.deepClone(actor.system.specialProperties.actions), actions)
-      await actor.update({
-        "system.wirelessTurnedOn": !oldValue,
-        "system.specialProperties.actions": actionsLeft,
-      })
+      const updates = {
+        "system.wirelessTurnedOn": !oldValue
+      }
+      //Out of combat nothing is spent (baseSheet _spendsActionCounters)
+      if (this._spendsActionCounters()){
+        const actionsLeft = SR5_MiscellaneousHelpers.spendActions(foundry.utils.deepClone(actor.system.specialProperties.actions), actions)
+        //The counters only: the prepared value and modifiers of the actions are not written in the source
+        updates["system.specialProperties.actions.free.current"] = actionsLeft.free.current
+        updates["system.specialProperties.actions.simple.current"] = actionsLeft.simple.current
+        updates["system.specialProperties.actions.complex.current"] = actionsLeft.complex.current
+      }
+      await actor.update(updates)
     } finally {
       this._spendingWirelessAction = false
     }

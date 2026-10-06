@@ -8,8 +8,14 @@ import {
   SR5_CombatHelpers 
 } from "../roll-helpers/combat.js"
 import {
-  SR5 
+  SR5
 } from "../../config.js"
+import {
+  SR5_Toxins
+} from "../../entities/items/toxins.js"
+import {
+  addGreyManaResistance, greyManaAppliesTo
+} from "../../system/grey-mana.js"
 
 // Show a notification and return undefined so the caller aborts the test.
 // In Foundry V13, ui.notifications.info() returns a Notification object: returning it directly
@@ -46,7 +52,7 @@ export default async function resistance(rollData, rollType, actor, chatData){
 
   //Special case for Aura
   if (rollType === "resistanceCardAura") {
-    let auraOwner = SR5_EntityHelpers.getRealActorFromID(chatData.owner.actorId)
+    let auraOwner = SR5_EntityHelpers.getRealActorFromID(chatData.owner.actorId, chatData.actorUuids)
     rollData.damage.isAttack = false
     rollData.damage.base = auraOwner.system.specialAttributes.magic.augmented.value * 2
     rollData.combat.armorPenetration = -auraOwner.system.specialAttributes.magic.augmented.value
@@ -66,7 +72,7 @@ export default async function resistance(rollData, rollType, actor, chatData){
   if (chatData.magic?.spell?.missedThreshold && chatData.magic.spell.range === "area"){
     const distance = SR5_CombatHelpers.spellAreaDistance(chatData, actor)
     if (distance === null) ui.notifications.warn(game.i18n.localize("SR5.WARN_SpellAreaNoTemplate"))
-    else if (chatData.magic.spell.area < distance) return abortWithInfo(game.i18n.localize("SR5.INFO_TargetIsTooFar"))
+    else if (chatData.magic.spell.area < distance) return abortWithInfo(game.i18n.localize("SR5.WARN_TargetIsTooFar"))
   }
 
   //Iterate throught damage type and add corresponding info
@@ -90,7 +96,7 @@ export default async function resistance(rollData, rollType, actor, chatData){
       rollData = await handleBiofeedbackDamage(rollData, actorData, chatData)
       break
     case "dumpshock":
-      rollData = await handleDumpshockDamage(rollData, actorData)
+      rollData = await handleDumpshockDamage(rollData, actorData, chatData)
       break
     case "astralDamage":
       rollData = await handleAstralDamage(rollData, actorData, chatData)
@@ -98,11 +104,17 @@ export default async function resistance(rollData, rollType, actor, chatData){
     case "fatiguedDamage":
       rollData = await handleFatiguedDamage(rollData, actorData, chatData)
       break
+    case "fatigue":
+      rollData = await handleFatigueDamage(rollData, actorData)
+      break
     default:
       SR5_SystemHelpers.srLog(1, `Unknown '${chatData.damage.resistanceType}' Damage Resistance Type in roll`)
   }
     
   if(!rollData) return
+
+  //Better Than Bad p. 140-141: grey mana adds its rating against spells and magical powers, not a weapon focus
+  if (greyManaAppliesTo(chatData.damage)) rollData = addGreyManaResistance(rollData, actor, game.i18n.localize("SR5.GreyMana"))
 
   //Add general information
   rollData.combat.armorPenetration = chatData.combat.armorPenetration
@@ -180,6 +192,15 @@ async function handleNormalPhysicalDamage(rollData, actor, chatData, armor){
   rollData.dicePool.composition = actor.system.resistances.physicalDamage.modifiers
   rollData.dicePool.base = actor.system.resistances.physicalDamage.dicePool
 
+  //Run Faster p. 80 (Granite skin): its rating gives no die, only the automatic hits (test-Resistance). Its points
+  //still count for the conversion to Stun below (SR5 p. 170): arbitrage de DjamZ, the book is silent
+  const hardened = actor.system.specialProperties?.hardenedArmors?.normalWeapon
+  if (actor.system.specialProperties?.hardenedArmorHitsOnly && hardened?.value > 0 && chatData.damage.source !== "magical"){
+    rollData.dicePool.composition = rollData.dicePool.composition.filter(m => !hardened.modifiers.includes(m))
+    rollData.dicePool.base -= hardened.value
+    rollData.dicePool.modifiers.findLast(m => m.type === "armorPenetration").value =SR5_CombatHelpers.hitsOnlyArmorPenetration(armor, hardened.value, chatData.combat.armorPenetration)
+  }
+
   //Check if damage must be converted to stun
   if (rollData.damage.base < (armor + chatData.combat.armorPenetration) && chatData.combat.calledShot.name !== "splittingDamage"){
     rollData.test.title = `${game.i18n.localize("SR5.TakeOnDamage")} ${game.i18n.localize(SR5.damageTypes[rollData.damage.type])} (${rollData.damage.base})`
@@ -212,6 +233,14 @@ async function handleElementDamage(rollData, actorData, chatData, armor){
     //Get the base dicepool and composition
     rollData.dicePool.composition = actorData.resistances.specialDamage[element].modifiers
     rollData.dicePool.base = actorData.resistances.specialDamage[element].dicePool
+
+    //Run Faster p. 80 (Granite skin): no die against any damage, only the automatic hits, as on the physical path
+    const hardened = actorData.specialProperties?.hardenedArmors?.normalWeapon
+    if (actorData.specialProperties?.hardenedArmorHitsOnly && hardened?.value > 0 && chatData.damage.source !== "magical"){
+      rollData.dicePool.composition = rollData.dicePool.composition.filter(m => !hardened.modifiers.includes(m))
+      rollData.dicePool.base -= hardened.value
+      rollData.dicePool.modifiers.findLast(m => m.type === "armorPenetration").value = SR5_CombatHelpers.hitsOnlyArmorPenetration(armor, hardened.value, chatData.combat.armorPenetration)
+    }
   }
     
   return rollData
@@ -225,21 +254,35 @@ async function handleToxinDamage(rollData, actorData, chatData){
   if (chatData.damage.toxin.type === "airEngulf") rollData.damage.toxin.power = chatData.damage.toxin.power + (chatData.roll.netHits || 0)
 
   //Determine title
-  rollData.test.title = `${game.i18n.localize("SR5.TakeOnDamageShort")} ${game.i18n.localize(SR5.toxinTypes[rollData.damage.toxin.type])}`
+  rollData.test.title = `${game.i18n.localize("SR5.TakeOnDamageShort")} ${SR5_Toxins.nameOf(rollData.damage.toxin, k => game.i18n.localize(k))}`
+  //Several doses at once: +1 Power per extra dose (SR5 p. 410), set in the dialog
+  rollData.damage.toxin.basePower = rollData.damage.toxin.power
+  rollData.toxinDoses = 1
+  //An antitoxin takes its rating off the Power before the test (Chrome Flesh p. 154)
+  rollData.damage.toxin.antitoxin = SR5_Toxins.antitoxinRating(actorData)
+  rollData.damage.toxin.power = SR5_Toxins.effectivePower(rollData.damage.toxin.basePower, rollData.damage.toxin.antitoxin)
   if (rollData.damage.toxin.damageType) rollData.test.title += ` [${rollData.damage.toxin.power}${game.i18n.localize(SR5.damageTypesShort[rollData.damage.toxin.damageType])}]`
+  if (rollData.damage.toxin.antitoxin) rollData.test.title += ` (${game.i18n.localize("SR5.Antitoxin")} −${rollData.damage.toxin.antitoxin})`
     
   //If more than one vector is present, open dialog box
   for (let [key, value] of Object.entries(rollData.damage.toxin.vector)){
-    if (value) {
-      toxinType = key
-      vectors.push(key)
-    }
+    if (value) vectors.push(key)
   }
+  //A gas mask or a chemical seal makes the vector harmless (SR5 p. 409-410): only the other vectors are left
+  const open = SR5_Toxins.openVectors(actorData, vectors)
+  if (vectors.length && !open.length) {
+    const sources = [...new Set(vectors.flatMap(v => SR5_Toxins.immunitySources(actorData, v)))].join(", ")
+    return abortWithInfo(game.i18n.format("SR5.INFO_ToxinImmune", {
+      source: sources 
+    }))
+  }
+  vectors = open
+  toxinType = vectors[vectors.length - 1]
   if (vectors.length > 1) toxinType = await SR5_CombatHelpers.chooseToxinVector(vectors)
 
-  //Check if toxin penetration is greater than armor
+  //Penetration only cancels the protection's bonus, never more (SR5 p. 410)
   let armor = actorData.itemsProperties.armor.toxin[toxinType].value
-  if (-rollData.damage.toxin.penetration > armor) rollData.damage.toxin.penetration = armor
+  if (-rollData.damage.toxin.penetration > armor) rollData.damage.toxin.penetration = -armor
 
   //Add toxin penetration modifiers to dicepool
   rollData.dicePool.modifiers.push({
@@ -330,6 +373,17 @@ async function handleDirectSpell(rollData, actorData, chatData){
   return rollData
 }
 
+//SR5 p. 174: fatigue is Stun damage resisted with Body + Willpower, armor never counts
+async function handleFatigueDamage(rollData, actorData){
+  if (!actorData.resistances?.fatigue) return
+  rollData.test.title = `${game.i18n.localize("SR5.ResistanceTest")}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize(SR5.characterResistances.fatigue)} (${rollData.damage.base})`
+  rollData.dicePool.base = actorData.resistances.fatigue.dicePool
+  rollData.dicePool.composition = actorData.resistances.fatigue.modifiers
+  rollData.damage.type = "stun"
+  rollData.test.typeSub = "fatigue"
+  return rollData
+}
+
 async function handleBiofeedbackDamage(rollData, actorData, chatData){
   // SR5 p. 231: characters in AR take no biofeedback damage
   if (actorData.matrix.userMode === "ar") {
@@ -360,13 +414,18 @@ async function handleBiofeedbackDamage(rollData, actorData, chatData){
   return rollData
 }
 
-async function handleDumpshockDamage(rollData, actorData){
+async function handleDumpshockDamage(rollData, actorData, chatData){
   //Determine title
   rollData.test.title = `${game.i18n.localize("SR5.ResistDumpshock")} (6)`
 
   //Determine base dicepool & composition
   rollData.dicePool.base = actorData.matrix.resistances.dumpshock.dicePool
   rollData.dicePool.composition = actorData.matrix.resistances.dumpshock.modifiers
+  //A bricked deck has no Firewall left: Willpower alone resists (SR5 p. 231)
+  if (chatData?.damage?.bricked){
+    rollData.dicePool.composition = rollData.dicePool.composition.filter(m => m.type !== "matrixAttribute")
+    rollData.dicePool.base = rollData.dicePool.composition.reduce((sum, m) => sum + (m.value || 0), 0)
+  }
 
   //Determine damage type & value
   if (actorData.matrix.userMode === "coldsim") rollData.damage.type = "stun"
@@ -431,7 +490,7 @@ async function handleGrenade(rollData, chatData, actor){
   let distance = Math.round(SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint(grenadePosition, defenserPosition))
   let modToDamage = distance * chatData.combat.grenade.damageFallOff
   rollData.damage.base  = chatData.damage.base + modToDamage
-  if (rollData.damage.base <= 0 && chatData.damage.element !== "toxin") return abortWithInfo(`${game.i18n.localize("SR5.INFO_TargetIsTooFar")}`)  
+  if (rollData.damage.base <= 0 && chatData.damage.element !== "toxin") return abortWithInfo(`${game.i18n.localize("SR5.WARN_TargetIsTooFar")}`)  
   if (modToDamage === 0) ui.notifications.info(`${game.i18n.format("SR5.INFO_GrenadeTargetDistance", {
     distance:distance
   })}`)

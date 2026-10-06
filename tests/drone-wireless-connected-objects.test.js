@@ -40,6 +40,30 @@ describe('deployed drone wireless in the connected objects (N91)', () => {
     expect(SR5_ActorHelper.vehicleWirelessOn(vehicle(true, false), [drone(null)])).toBe(true)
   })
 
+  it('reads its own drone, not the one of a duplicated character (same item ids)', () => {
+    const owned = {
+      ...vehicle(true, true), parent: {
+        id: 'rigger2'
+      }
+    }
+    const other = {
+      ...drone(false), system: {
+        ...drone(false).system, creatorId: 'rigger1'
+      }
+    }
+    const mine = {
+      ...drone(true), system: {
+        ...drone(true).system, creatorId: 'rigger2'
+      }
+    }
+    expect(SR5_ActorHelper.vehicleWirelessOn(owned, [other, mine])).toBe(true)
+    expect(SR5_ActorHelper.vehicleWirelessOn({
+      ...owned, system: {
+        ...owned.system, wirelessTurnedOn: false
+      }
+    }, [other])).toBe(false)
+  })
+
   it('reads the item when the vehicle is not deployed', () => {
     expect(SR5_ActorHelper.vehicleWirelessOn(vehicle(false, true), [drone(false)])).toBe(true)
     expect(SR5_ActorHelper.vehicleWirelessOn(vehicle(false, false), [])).toBe(false)

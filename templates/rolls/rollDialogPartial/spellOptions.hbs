@@ -6,7 +6,19 @@
 {{> systems/sr5/templates/rolls/rollDialogPartial/force.hbs}}
 
 <!--RECKLESS SPELLCASTING-->
+{{#unless magic.structured}}
 {{> systems/sr5/templates/rolls/rollDialogPartial/recklessSpellcasting.hbs}}
+{{/unless}}
+
+<!-- MAGE HUNTER (Forbidden Arcana p. 34): +1 Drain per level for -2 per level to the counterspelling against the spell -->
+{{#if dialogSwitch.mageHunter}}
+<li class="grid">
+    <div class="col-10">{{localize 'SR5.MagicMasteryMageHunter'}} ({{localize 'SR5.MageHunterTrade' level=magic.mageHunter.level}}){{localize 'SR5.Colons'}}</div>
+    <div class="col-1 SR-TextRight">
+        <input type="checkbox" class="SR-ModCheckbox" data-target="dicePoolModMageHunter" data-modifier="mageHunter">
+    </div>
+</li>
+{{/if}}
 
 <!-- SPIRIT AID -->
 {{#if dialogSwitch.spiritAid}}

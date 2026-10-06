@@ -1,6 +1,15 @@
 import {
-  SR5_UtilityItem 
+  hasWeaponTrait, capBallReloadStep, CAP_BALL_STEPS
+} from './weaponTraits.js'
+import {
+  cleanCreatedSource
+} from "../../migration-source-modifiers.js"
+import {
+  SR5_UtilityItem
 } from "./utilityItem.js"
+import {
+  screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED
+} from "../../system/implant-essence.js"
 import {
   SR5_CharacterUtility 
 } from "../actors/utilityActor.js"
@@ -20,18 +29,62 @@ import {
 import {
   SR5Combat 
 } from "../../system/srcombat.js"
+import {
+  reloadIsFree
+} from "../actors/augmentationCap.js"
+import {
+  migrateNegotiationTargets, migrateNegotiationSkill
+} from "../../datamodels/common/negotiationMigration.js"
+import {
+  migrateTargetOfEffect
+} from "../../datamodels/common/targetOfEffectMigration.js"
+import {
+  migrateTemplateNoise
+} from "../../datamodels/common/templateNoiseMigration.js"
 
 /**
  * Override and extend the basic :class:`Item` implementation
  */
 export class SR5Item extends Item {
+  //Effects aimed at the former key of the Negotiation skill (datamodels/common/negotiationMigration.js)
+  static migrateData(source) {
+    migrateNegotiationTargets(source?.system)
+    //The skill itself on a contact, under the former key
+    migrateNegotiationSkill(source?.system)
+    //Links to sustained effects stored as {} (datamodels/common/targetOfEffectMigration.js)
+    migrateTargetOfEffect(source?.system)
+    //A template's matrix noise stored negative before N32 (datamodels/common/templateNoiseMigration.js)
+    migrateTemplateNoise(source)
+    return super.migrateData(source)
+  }
+
   static async create(data, options) {
     if (!data.img) data.img = `systems/sr5/assets/img/items/${data.type}.svg`
     return super.create(data, options)
   }
 
+  /**
+   * Système sensible: "Le bioware, quel que soit sa conception ou son type de culture, est rejeté" (SR5 p. 89).
+   * Read once per batch, so a quality created with the bioware counts. The last guard for a drop on the sheet:
+   * the transfers (shop, vendor, loot, pickpocket, delivery) screen BEFORE anything moves and come here with
+   * the gamemaster's confirmation, honoured for a gamemaster only.
+   */
+  static async _preCreateOperation(documents, operation, user) {
+    if ((await super._preCreateOperation(documents, operation, user)) === false) return false
+    const actor = operation.parent
+    if (!(actor instanceof Actor) || !documents.some(d => d.type === "itemAugmentation")) return
+    if (operation[IMPLANT_REJECTION_CONFIRMED] && game.user.isGM) return
+    const {
+      refused
+    } = await screenRejectedImplants(actor, documents)
+    for (const doc of refused) documents.splice(documents.indexOf(doc), 1)
+    if (!documents.length) return false
+  }
+
   async _preCreate(data, options, user) {
     await super._preCreate(data, options, user)
+    // An item exported prepared, or dragged from a prepared sheet, arrives without its computed modifiers
+    cleanCreatedSource(this)
     const defaultImg = `systems/sr5/assets/img/items/${data.type}.svg`
     if (!data.img || data.img === "icons/svg/item-bag.svg") {
       this.updateSource({
@@ -60,6 +113,8 @@ export class SR5Item extends Item {
         if (typeof itemData.accessory === "object") itemData.accessory = Object.values(itemData.accessory)
         if (itemData.damageElement === "toxin") SR5_UtilityItem._handleWeaponToxin(itemData, owner)
         if (itemData.ammunition.value > itemData.ammunition.max) itemData.ammunition.value = itemData.ammunition.max
+        //A weapon accessory left marked plugged on no weapon can be mounted again
+        if (this.actor && itemData.isAccessory) itemData.isPlugged = !!SR5_UtilityItem.accessoryHost(item.id, this.actor)
         if (itemData.category === "meleeWeapon" && owner){
           SR5_UtilityItem._checkIfWeaponIsFocus(this, owner)
           if (itemData.isLinkedToFocus) SR5_UtilityItem._handleWeaponFocus(item, owner)
@@ -151,8 +206,10 @@ export class SR5Item extends Item {
         SR5_UtilityItem._handleItemPrice(itemData)
         SR5_UtilityItem._handleItemAvailability(itemData)
         if (Object.keys(itemData.itemEffects).length) SR5_UtilityItem.applyItemEffects(item)
+        SR5_UtilityItem._handleItemConcealment(itemData)
         SR5_UtilityItem._handleMatrixMonitor(item)
-        if ((itemData.conditionMonitors.matrix.actual.value >= itemData.conditionMonitors.matrix.value) && (itemData.type !== "baseDevice")) itemData.isActive = false
+        //A head case's monitor is sized by its owner's Nanite Volume, unknown here (monad-matrix.js): the actor decides
+        if ((itemData.conditionMonitors.matrix.actual.value >= itemData.conditionMonitors.matrix.value) && (itemData.type !== "baseDevice") && (itemData.type !== "headcase")) itemData.isActive = false
         SR5_EntityHelpers.GenerateMonitorBoxes(itemData, 'matrix')
         SR5_UtilityItem._handlePan(item)
         break
@@ -221,6 +278,10 @@ export class SR5Item extends Item {
         for (let key of Object.keys(SR5.propagationVectors)) {
           if (itemData.vector[key]) itemData.vector.value.push(game.i18n.localize(SR5.propagationVectors[key]))
         }
+        break
+      case "itemToxin":
+        SR5_UtilityItem._handleItemPrice(itemData)
+        SR5_UtilityItem._handleItemAvailability(itemData)
         break
       default:
     }
@@ -510,12 +571,30 @@ export class SR5Item extends Item {
       ammoSpent = weaponData.ammunition.max - weaponData.ammunition.value,
       ammoNeeded, action, stop = false, falseAmmo = false
 
-    if (ammoSpent < 1) return
-    if (weaponData.ammunition.casing === "") return ui.notifications.warn(game.i18n.localize("SR5.WARN_MissingCasing"))
+    //SR5 p. 167: a clip is removed from a ready weapon, full or not (M2-4); a full weapon takes no more rounds
+    if (ammoSpent < 1 && option !== "remove") return ui.notifications.info(game.i18n.localize("SR5.INFO_AmmoAlreadyFull"))
+    if (weaponData.ammunition.casing === "")return ui.notifications.warn(game.i18n.localize("SR5.WARN_MissingCasing"))
+
+    //House rule (world setting, off by default): with the right rounds in the inventory, reloading spends no action
+    let hasAmmo = actor.items.some((i) => i.type === "itemAmmunition" && (i.system.type === weaponData.ammunition.type) && (i.system.class === weaponData.type) && i.system.quantity > 0)
+    let freeReload = reloadIsFree({
+      houseRule: game.settings.get("sr5", "sr5FreeReload"), option, hasAmmo
+    })
 
     //Manage action in combat, eventually return if no action available
-    if (game.combat){
+    //Cap & Ball (Gun H(e)aven 3 p. 3): round by round, three Complex Actions each, one per click
+    const isCapBall = hasWeaponTrait(weaponData, "capBall") && game.combat && !freeReload
+    if (isCapBall && option !== "insertRound") return ui.notifications.warn(game.i18n.localize("SR5.WARN_CapBallRoundByRound"))
+
+    if (game.combat && !freeReload){
+      if (isCapBall) option = "capBall"
       switch (option){
+        case "capBall":
+          action = [{
+            type: "complex", value: 1, source: "insertRound"
+          }]
+          option = "insertRound"
+          break
         case "insert":
           if (weaponData.ammunition.casing === "clip") action = [{
             type: "simple", value: 1, source: "insertClip"
@@ -577,6 +656,18 @@ export class SR5Item extends Item {
       }
     }
 
+    if (isCapBall) {
+      const reload = capBallReloadStep(this.getFlag("sr5", "capBallStep"))
+      if (!reload.loaded) {
+        await this.setFlag("sr5", "capBallStep", reload.step)
+        SR5Combat.changeActionInCombat(this.actor.isToken ? this.actor.token.id : this.actor.id, action)
+        return ui.notifications.info(game.i18n.format("SR5.INFO_CapBallStep", {
+          done: reload.done, total: CAP_BALL_STEPS
+        }))
+      }
+      await this.unsetFlag("sr5", "capBallStep")
+    }
+
     //Manage removing clip/belt/drum
     if (option === "remove"){
       weaponData.ammunition.value = 0
@@ -593,8 +684,10 @@ export class SR5Item extends Item {
       return
     }
 
-    //Check if actor has good type of rounds in inventory
-    let ammo = actor.items.find((i) => i.type === "itemAmmunition" && (i.system.type === weaponData.ammunition.type) && (i.system.class === weaponData.type))
+    //Check if actor has good type of rounds in inventory: a pile that still holds rounds first,
+    //so an empty pile listed before it neither blocks the reload nor gets drawn from
+    const fits = (i) => i.type === "itemAmmunition" && (i.system.type === weaponData.ammunition.type) && (i.system.class === weaponData.type)
+    let ammo = actor.items.find((i) => fits(i) && i.system.quantity > 0) || actor.items.find(fits)
     let ammoData = ammo ? foundry.utils.duplicate(ammo.system) : {
     }
 
@@ -632,7 +725,8 @@ export class SR5Item extends Item {
         weaponData.ammunition.clipInserted = true
         break
       case "insertRound":
-        if (weaponData.ammunition.casing === "breakAction"){
+        if (isCapBall) ammoNeeded = Math.min(1, ammoData.quantity)
+        else if (weaponData.ammunition.casing === "breakAction"){
           if (ammoData.quantity < 2) ammoNeeded = ammoData.quantity
           else ammoNeeded = 2
         } else {
@@ -659,7 +753,7 @@ export class SR5Item extends Item {
     }
 
     //Update actions in combat
-    if (game.combat){
+    if (game.combat && !freeReload){
       let actorId = (this.actor.isToken ? this.actor.token.id : this.actor.id)
       SR5Combat.changeActionInCombat(actorId, action)
     }

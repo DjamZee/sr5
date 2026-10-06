@@ -1,8 +1,71 @@
 import {
-  decideVisionSource, isSharedWith, isJumpedInDrone, jumpedInRiggerIds, hidesItsOwnSight
+  decideVisionSource, seesThrough, isJumpedInDrone, jumpedInRiggerIds, hidesItsOwnSight
 } from "../system/shared-vision.js"
+import {
+  TOKEN_BAR_EMPTY, tokenBarFilledColor 
+} from "./token-bar-colors.js"
+import {
+  SR5Pickpocket
+} from "./pickpocket.js"
+import {
+  vendorShopOfToken
+} from "./shop-vendor-rules.js"
 
 export class SR5Token extends foundry.canvas.placeables.Token {
+
+  /**
+   * The core opens the HUD to the token's owners only. A thief who has his own token selected,
+   * within reach, opens it on his target too, to pick a pocket (SR5 p. 422): the HUD then keeps
+   * that single button.
+   * @override
+   */
+  _canHUD(user, event) {
+    if (super._canHUD(user, event)) return true
+    //The core's own guards, before its ownership test
+    if (this.layer._draggedToken || !this.layer.active || this.isPreview) return false
+    if (canvas.controls.ruler?.active || (CONFIG.Canvas.rulerClass.canMeasure && (event?.type === "pointerdown"))) return false
+    return SR5Pickpocket.canPickFrom(this.document)
+  }
+
+  /**
+   * The core lets a double-click through to those who may see the actor (Limited at least). A
+   * vendor whose shop is open lets anyone in: the double-click opens the shop, never the sheet.
+   * @override
+   */
+  _canView(user, event) {
+    if (super._canView(user, event)) return true
+    //The core's own guards, before its permission test
+    if (this.layer._draggedToken || !this.layer.active || this.isPreview) return false
+    if (canvas.controls.ruler?.active || (CONFIG.Canvas.rulerClass.canMeasure && (event?.type === "pointerdown"))) return false
+    return !!vendorShopOfToken(this.document)
+  }
+
+  /**
+   * A vendor's token opens its shop to whoever does not own it: the players never see the
+   * Grunt's sheet, they walk up to the counter (shop lot C).
+   * @override
+   */
+  _onClickLeft2(event) {
+    const vendor = vendorShopOfToken(this.document)
+    if (!vendor) return super._onClickLeft2(event)
+    // Loaded on demand: the shop is heavy, and a token is drawn long before anyone buys
+    import("./shop-vendor.js").then(({
+      SR5ShopVendor
+    }) => SR5ShopVendor.openShop(vendor.actor, vendor.storage))
+  }
+
+  /**
+   * The core takes control of the token right-clicked, which releases the others: on a target the
+   * thief cannot control, his own token would be released and the pocket out of reach. The HUD
+   * opens on the target and the thief stays selected.
+   * @override
+   */
+  _onClickRight(event) {
+    if (this.document.isOwner || !this.layer.hud || !SR5Pickpocket.canPickFrom(this.document)) return super._onClickRight(event)
+    if (this.hasActiveHUD) this.layer.hud.close()
+    else this.layer.hud.bind(this)
+    if (!this._propagateRightClick(event)) event.stopPropagation()
+  }
 
   /**
    * A drone or a device shares what it sees with the users in its list (SR5 p. 241: Invite Mark,
@@ -16,7 +79,7 @@ export class SR5Token extends foundry.canvas.placeables.Token {
     if (canvas.visibility.tokenVision && this.hasSight && !game.user.isGM) {
       const decision = decideVisionSource({
         isGM: false,
-        sharedWithMe: isSharedWith(this.document, game.user.id),
+        sharedWithMe: seesThrough(this.document, game.user.id),
         isMyJumpedInDrone: isJumpedInDrone(this.actor) && !!this.actor.isOwner,
         isBlindBody: this.#isJumpedInRigger(),
       })
@@ -34,7 +97,7 @@ export class SR5Token extends foundry.canvas.placeables.Token {
   get isVisible() {
     const source = this.vision
     if (!source || !hidesItsOwnSight({
-      isGM: game.user.isGM, sharedWithMe: isSharedWith(this.document, game.user.id), isOwner: !!this.actor?.isOwner
+      isGM: game.user.isGM, sharedWithMe: seesThrough(this.document, game.user.id), isOwner: !!this.actor?.isOwner
     })) return super.isVisible
     source.suppression.sr5SeenThrough = true
     try {
@@ -68,31 +131,18 @@ export class SR5Token extends foundry.canvas.placeables.Token {
 
   /** @override */
   _drawBar(number, bar, data) {
-    let mainColorElement = document.getElementById("players")
-    let mainColorRGB = window.getComputedStyle(mainColorElement, null).getPropertyValue("border-color")
-    let mainColorArray = mainColorRGB.slice(mainColorRGB.indexOf("(") + 1, mainColorRGB.indexOf(")")).split(", ")
-    let mainColor = mainColorArray.map(function convertToFloat(number) {
-      return number / 255
-    })
-    let subColorElement = document.getElementById("sidebar")
-    let subColorRGB = window.getComputedStyle(subColorElement, null).getPropertyValue("border-left-color")
-    let subColorArray = subColorRGB.slice(subColorRGB.indexOf("(") + 1, subColorRGB.indexOf(")")).split(", ")
-    let subColor = subColorArray.map(function convertToFloat(number) {
-      return number / 255
-    })
-
     bar.scale.set(0.95, 0.5)
     const val = Number(data.value)
     let h = Math.max(canvas.dimensions.size / 12, 8)
     if (this.height >= 2) h *= 1.6 // Enlarge the bar for large tokens
     // Draw the bar
-    bar.clear().beginFill(new PIXI.Color(subColor).toNumber(), 0.7).lineStyle(0.5, 0x000000, 1)
-    // each max draw a green rectangle in background
+    bar.clear().beginFill(TOKEN_BAR_EMPTY.color, TOKEN_BAR_EMPTY.alpha).lineStyle(0.5, 0x000000, 1)
+    // each max draws an empty box in background
     for (let index = 0; index < data.max; index++) {
       bar.drawRect(index * (this.w / data.max), 0, this.w / data.max, h)
     }
-    // each actual value draw a rectangle from dark green to red
-    bar.beginFill(new PIXI.Color(mainColor).toNumber(), 0.7).lineStyle(0.5, 0x000000, 1)
+    // each actual value draws a wounded box over it
+    bar.beginFill(tokenBarFilledColor(data.attribute), 1).lineStyle(0.5, 0x000000, 1)
     for (let index = 0; index < Math.clamp(val, 0, data.max); index++) {
       bar.drawRect(index * (this.w / data.max), 0, this.w / data.max, h)
     }

@@ -1,0 +1,16 @@
+<!-- SR5 p. 130: the attribute paired with the skill, chosen at roll time -->
+<li class="grid" data-helpTitle="{{localize 'SR5.SkillAttribute'}}" data-helpMessage="{{localize 'SR5.HELP_SkillAttributeMsg'}}">
+    <div class="col-5">{{localize 'SR5.SkillAttribute'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-6 SR-TextRight">
+        <select class="SR-SkillAttribute" name="skillAttribute">
+            {{selectOptions skillAttribute.choices selected=skillAttribute.selected localize=true}}
+        </select>
+    </div>
+    <div class="col-1"></div>
+</li>
+<li class="grid">
+    <div class="col-11">
+        <label><input type="checkbox" class="SR-SkillAttributeKeep" name="skillAttributeKeep" {{checked skillAttribute.keep}} /> {{localize 'SR5.SkillAttributeKeep'}}</label>
+    </div>
+    <div class="col-1"></div>
+</li>

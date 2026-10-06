@@ -4,6 +4,10 @@
 	{{> systems/sr5/templates/items/_partial/title/generalInformation.hbs}}
 	<!-- Device Type -->
 	{{> systems/sr5/templates/items/_partial/editable/device/type-edit.hbs}}
+	{{#if (eq system.type 'headcase')}}
+		<!-- Strain of the CFD (Dark Terrors p. 91) -->
+		{{> systems/sr5/templates/items/_partial/editable/device/strain-edit.hbs}}
+	{{/if}}
 	{{#if (or (eq system.type 'commlink') (eq system.type 'cyberdeck') (eq system.type 'riggerCommandConsole'))}}
 		<!-- Device Rating -->
 		{{> systems/sr5/templates/items/_partial/editable/_common/deviceRating-edit.hbs}}

@@ -5,6 +5,10 @@
 //movement action of the token HUD, or, if the world setting asks for it, when the token has gone farther than its
 //walking rate this turn. It falls at the start of the next Combat Turn and when the encounter ends.
 
+import {
+  SR5Combat
+} from "./srcombat.js"
+
 export const RUNNING_STATUS = "running"
 export const RUNNING_ACTIONS = ["run", "sprint"]
 
@@ -14,7 +18,7 @@ const DEFENSE_TESTS = ["defense", "defenseSimple", "martialArtDefense", "powerDe
 //Actions: -2 dice (SR5 p. 164). Ruling of DjamZ (2026-10-04): resistance tests (damage, drain, fading...) are not
 //actions and keep their dice
 const ACTION_TESTS = ["attack", "skill", "skillDicePool", "attributeOnly", "lift", "spell", "preparation",
-  "complexForm", "matrixAction", "resonanceAction", "grappleClinch", "grappleEscape", "escapeEngulf",
+  "complexForm", "matrixAction", "resonanceAction", "grappleClinch", "grappleEscape", "escapeEngulf", "pickpocket",
   "healing", "movement"]
 
 /**
@@ -144,10 +148,13 @@ export async function onMoveToken(tokenDocument, movement) {
   if (CONFIG.Token?.movement?.actions?.[action]?.teleport) return
   const units = tokenDocument.parent?.grid?.units ?? canvas?.scene?.grid?.units
   const moved = sceneUnitsToMeters(Number(movement?.passed?.distance) || 0, units)
-  const total = roundMeters(tokenDocument.getFlag("sr5", "runDistance"), combat.id, combat.round) + moved
-  await tokenDocument.setFlag("sr5", "runDistance", {
+  const before = tokenDocument.getFlag("sr5", "runDistance")
+  const total = roundMeters(before, combat.id, combat.round) + moved
+  const flag = {
     combatId: combat.id, round: combat.round, meters: total
-  })
+  }
+  const freePass = roundFreePass(before, combat.id, combat.round)
+  if (freePass) flag.freePass = freePass
 
   const {
     walk
@@ -158,6 +165,26 @@ export async function onMoveToken(tokenDocument, movement) {
       active: true
     })
   }
+
+  //SR5 p. 164: "Les personnages qui courent doivent utiliser une action gratuite par passe d'initiative pendant
+  //laquelle ils courent". Taken once per pass, at the first move made while running; with no free action left
+  //(world setting) the guard warns and nothing is spent, and the pass is not asked again
+  const pass = combat.getFlag?.("sr5", "combatInitiativePass") || 1
+  const runs = isRunning(actor) && moved > 0
+  if (runs && freePass !== pass) {
+    flag.freePass = pass
+    const actions = [{
+      type: "free", value: 1, source: "run"
+    }]
+    if (SR5Combat.hasActionsLeft(actor, actions)) await SR5Combat.changeActionInCombat(tokenDocument.actorLink ? actor.id : tokenDocument.id, actions)
+  }
+  await tokenDocument.setFlag("sr5", "runDistance", flag)
+}
+
+//The initiative pass whose free action the running already took, this Combat Turn (null otherwise)
+export function roundFreePass(flag, combatId, round) {
+  if (!flag || flag.combatId !== combatId || flag.round !== round) return null
+  return flag.freePass || null
 }
 
 //The running status falls at the start of a Combat Turn and when the encounter ends

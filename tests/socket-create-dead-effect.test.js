@@ -64,7 +64,9 @@ describe('createDeadEffect socket (Data Trails p. 161)', () => {
   it('lays the status on an AI whose device is full', async () => {
     setup()
     await ask()
-    expect(SR5_ActorHelper.createDeadEffect).toHaveBeenCalledWith('a')
+    expect(SR5_ActorHelper.createDeadEffect).toHaveBeenCalledWith('a', {
+      surplus: undefined, itemUuid: 'Actor.a.Item.d', fromPlayer: true
+    })
   })
 
   it('refuses an actor that is not an AI', async () => {

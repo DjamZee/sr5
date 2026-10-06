@@ -21,17 +21,23 @@ export class SR5_RollTestHelper {
   }
 
 
+  //SR5 p. 58: Edge is spent on one's own actions only, so a bound spirit never spends its summoner's (decision G7 of
+  //DjamZ). Only a free spirit's magic pact lets it spend its character's Edge (Street Grimoire p. 133); the
+  //gamemaster ticks it in the spirit ledger, the character being the summoner the spirit keeps
+  static pactCharacter(actor){
+    if (actor?.type !== "actorSpirit" || !actor.system?.magicPact || !actor.system.creatorId) return null
+    return SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId) ?? null
+  }
+
   //Determine if current actor rolling test can use Edge on it
   static async canUseEdge(actor, dialogData){
     let canUseEdge = false
     if (actor.system.specialAttributes?.edge && (actor.system.conditionMonitors.edge?.actual.value < actor.system.specialAttributes?.edge?.augmented.value)) {
       canUseEdge = true
     }
-    if (actor.type === "actorSpirit" && actor.system.creatorId){
-      let creator = SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId)
-      if (creator.system.conditionMonitors.edge?.actual?.value < creator.system.specialAttributes?.edge?.augmented?.value){
-        canUseEdge = true
-      }
+    const creator = this.pactCharacter(actor)
+    if (creator?.system.conditionMonitors.edge?.actual?.value < creator?.system.specialAttributes?.edge?.augmented?.value){
+      canUseEdge = true
     }
     if (dialogData.test.type === "objectResistance")  canUseEdge = false
     if (dialogData.test.type === "preparation")  canUseEdge = false
@@ -55,23 +61,23 @@ export class SR5_RollTestHelper {
   //Determine from whom actor edge must be reduce
   static async determineEdgeActor(actor){
     let edgeActor = actor
-    if (actor.type === "actorSpirit" && actor.system.creatorId){
-      let creator = SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId)
-      if (creator.system.conditionMonitors.edge?.actual?.value < creator.system.specialAttributes?.edge?.augmented?.value){
-        edgeActor = creator
-      }
+    const creator = this.pactCharacter(actor)
+    if (creator?.system.conditionMonitors.edge?.actual?.value < creator?.system.specialAttributes?.edge?.augmented?.value){
+      edgeActor = creator
     }
     return edgeActor
   }
 
   //Remove 1 edge from actor
   static async removeEdgeFromActor(messageData, actor) {
-    if (actor.type === "actorSpirit") {
-      let creator = SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId)
+    const creator = this.pactCharacter(actor)
+    if (creator) {
       creator.update({
         "system.conditionMonitors.edge.actual.base": creator.system.conditionMonitors.edge.actual.base + 1 
       })
     } else {
+      //A spirit without a magic pact has no Edge to spend (SR5 p. 58)
+      if (!actor.system.conditionMonitors?.edge) return
       //If actor is grunt, change actor to parent
       if (actor.isToken) actor = game.actors.get(actor.id)
       actor.update({
@@ -100,6 +106,8 @@ export class SR5_RollTestHelper {
       dialogData.limit.hasModifier = true
     }
     dialogData.limit.value = dialogData.limit.base + dialogData.limit.modifiersTotal
+    //A Limit replaced by an effect (Eyes of the Pack, Street Grimoire p. 106) takes the place of every other
+    if (dialogData.limit.replace !== undefined) dialogData.limit.value = dialogData.limit.replace
     //Debug limit can't be negative
     if (dialogData.limit.value < 0) dialogData.limit.value = 0
     return dialogData
@@ -119,7 +127,8 @@ export class SR5_RollTestHelper {
     if (newItem.type === "itemWeapon" && newItem.system.category === "rangedWeapon") {
       newItem.system.ammunition.value -= firedAmmo
       if (newItem.system.ammunition.value < 0) newItem.system.ammunition.value = 0
-      if (newItem.system.firingMode.current !== cardData.combat.firingMode.selected){
+      //The sweep (FN) is never kept: the next attack picks its mode from its own targets
+      if (cardData.combat.firingMode.selected !== "FN" && newItem.system.firingMode.current !== cardData.combat.firingMode.selected){
         newItem.system.firingMode.current = cardData.combat.firingMode.selected
       }
       if (newItem.system.choke.current !== cardData.combat.choke.selected){
@@ -154,7 +163,10 @@ export class SR5_RollTestHelper {
     // lost its scatter (3D6 fell to 1D6, and the next shot offered Defend instead of Scatter).
     const changes = foundry.utils.diffObject(item.toObject().system, newItem.system)
     if (foundry.utils.isEmpty(changes)) return
-    if (game.user?.isGM || cardData.owner.actorId == game.user?.character?.id) item.update({
+    //Whoever owns the item writes it herself: compared with her assigned character, an unlinked token (its id is never
+    //the character's) or a second actor she owns went to the GM, and without a GM the magazine did not move and the
+    //spell kept no hits (S15, measured by Quitterie). Anyone else asks the GM, whose socket checks the sender
+    if (game.user?.isGM || item.isOwner) item.update({
       system: changes
     })
     else SR5_SocketHandler.emitForGM("updateItem", {

@@ -7,11 +7,14 @@ import {
 import {
   SR5 
 } from "../../config.js"
+import {
+  SR5_CharacterUtility
+} from "../../entities/actors/utilityActor.js"
 
 export default async function matrixResistanceInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId),
     actorData = actor.system,
-    attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId),
+    attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId, cardData.actorUuids),
     attackerData = attacker?.system,
     targetItem
 
@@ -42,8 +45,8 @@ export default async function matrixResistanceInfo(cardData, actorId){
       }
     }
         
-    //If Link Lock, add button
-    if (attackerData.matrix.programs.lockdown.isActive) cardData.chatCard.buttons.linkLock = SR5_RollMessage.generateChatButton("nonOpposedTest", "linkLock", game.i18n.localize('SR5.MatrixLinkLock'))
+    //If Link Lock, add button; an AI outside any device is immune to it (Data Trails p. 157)
+    if (attackerData.matrix.programs.lockdown.isActive && !SR5_CharacterUtility.isDevicelessAI(actor)) cardData.chatCard.buttons.linkLock = SR5_RollMessage.generateChatButton("nonOpposedTest", "linkLock", game.i18n.localize('SR5.MatrixLinkLock'))
         
   } else {
     cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.NoDamage"))

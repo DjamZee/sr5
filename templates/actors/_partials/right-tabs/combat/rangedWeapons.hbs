@@ -123,7 +123,10 @@
 					  data-helpTitle="{{localize 'SR5.HELP_WifiToggle' key=name}}"
 					  data-helpMessage="{{localize 'SR5.HELP_WifiToggleMsg'}}"
 					>
-						{{#if system.wirelessTurnedOn}}
+						{{#if system.isVintage}}
+						<!-- Vintage (Gun H(e)aven 3 p. 3): never wireless, the icon is not a switch -->
+						<em class="fas fa-sm fa-wifi SR-SubColor25" data-title="{{localize 'SR5.WARN_VintageNoWireless'}}"></em>
+						{{else if system.wirelessTurnedOn}}
 						<a class="toggle-value" data-dtype="Boolean" data-item-id="{{_id}}" data-binding="system.wirelessTurnedOn" data-title="{{localize 'SR5.DisableWirelessMode'}}"><em class="fas fa-sm fa-wifi SR-SubColor"></em></a>
 						{{else}}
 						<a class="toggle-value" data-dtype="Boolean" data-item-id="{{_id}}" data-binding="system.wirelessTurnedOn" data-title="{{localize 'SR5.EnableWirelessMode'}}"><em class="fas fa-sm fa-wifi"></em></a>

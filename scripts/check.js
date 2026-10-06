@@ -24,12 +24,19 @@ function run(label, cmd) {
     execSync(cmd, {
       cwd: ROOT,
       stdio: 'pipe',
+      // The default 1 MB cut a long failing test run short (ENOBUFS)
+      maxBuffer: 64 * 1024 * 1024,
     })
     pass(label)
     return true
   } catch (err) {
-    const output = err.stdout?.toString() || err.stderr?.toString() || ''
-    if (output.trim()) console.error(output)
+    // Both streams, then why it stopped: a step killed by a signal, out of buffer or unable to start wrote
+    // nothing, and the check used to fail with no word of the cause
+    for (const stream of [err.stdout, err.stderr]) {
+      const output = stream?.toString() || ''
+      if (output.trim()) console.error(output)
+    }
+    console.error(`  (${cmd}: ${err.signal ? `signal ${err.signal}` : `exit code ${err.status ?? '?'}`}${err.code ? `, ${err.code}` : ''})`)
     fail(label)
     return false
   }

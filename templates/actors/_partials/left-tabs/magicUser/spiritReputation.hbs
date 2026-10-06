@@ -1,0 +1,31 @@
+{{#if system.isGM}}
+<!-- SPIRIT INDEX AND REPUTATIONS (Street Grimoire p. 207, Forbidden Arcana p. 169-175): the gamemaster's only -->
+<div class="SRBlockSheet">
+	<ul>
+		<li class="grid SR-LigneEnTete SR-TextUppercase">
+			<div class="col-10">{{localize 'SR5.AstralReputation'}}</div>
+			<div class="col-2 SR-TextCenter">{{system.magic.astralReputation}}</div>
+		</li>
+		<li class="grid">
+			<div class="col-9">{{localize 'SR5.SpiritIndex'}}</div>
+			<div class="col-3"><input class="SRinputInBox sr5-spirit-ledger" type="number" data-field="spiritIndex" value="{{system.magic.spiritIndex}}"></div>
+		</li>
+		<li class="grid" data-tooltip="{{localize 'SR5.AstralReputationAdjustment_D'}}">
+			<div class="col-9">{{localize 'SR5.AstralReputationAdjustment'}}</div>
+			<div class="col-3"><input class="SRinputInBox sr5-spirit-ledger" type="number" data-field="astralReputationAdjustment" value="{{system.magic.astralReputationAdjustment}}"></div>
+		</li>
+		<li class="grid SR-LigneEnTete SR-TextUppercase">
+			<div class="col-10">{{localize 'SR5.WildReputation'}}</div>
+			<div class="col-2 SR-TextCenter">{{system.magic.wildReputation}}</div>
+		</li>
+		<li class="grid">
+			<div class="col-9">{{localize 'SR5.WildIndex'}}</div>
+			<div class="col-3"><input class="SRinputInBox sr5-spirit-ledger" type="number" data-field="wildIndex" value="{{system.magic.wildIndex}}"></div>
+		</li>
+		<li class="grid" data-tooltip="{{localize 'SR5.HermeticElementalist_D'}}">
+			<div class="col-10">{{localize 'SR5.HermeticElementalist'}}</div>
+			<div class="col-2 SR-TextCenter"><input type="checkbox" class="sr5-spirit-ledger" data-field="hermeticElementalist" {{checked system.magic.hermeticElementalist}}></div>
+		</li>
+	</ul>
+</div>
+{{/if}}

@@ -1,0 +1,141 @@
+<!-- A vendor's shop (shop lot C): what it sells, at what price, where the money goes -->
+<ul class="SR-PaddingTop10 sr-shop-edit">
+    <li class="SR-EnTete"><p class="SR-TextUppercase">{{localize 'SR5.ShopVendor'}}</p></li>
+    {{#unless shop.hasActor}}
+    <li class="grid"><div class="col-12 SR-GreyColor SR-TextSmall">{{localize 'SR5.ShopVendorNoActor'}}</div></li>
+    {{/unless}}
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.ShopVendorLabel'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-8"><input type="text" name="system.shop.label" value="{{system.shop.label}}" placeholder="{{item.name}}"/></div>
+    </li>
+    <li class="grid">
+        <div class="col-8">{{localize 'SR5.ShopVendorOpen'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-4"><input type="checkbox" data-dtype="Boolean" name="system.shop.isOpen" {{checked system.shop.isOpen}}/></div>
+    </li>
+    <li class="grid" data-tooltip="{{localize 'SR5.ShopVendorMarginHint'}}">
+        <div class="col-8">{{localize 'SR5.ShopVendorMargin'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-4"><input type="number" name="system.shop.margin" value="{{system.shop.margin}}" min="-100" step="1" data-dtype="Number"/></div>
+    </li>
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.ShopVendorCashbox'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-8">
+            {{#if shop.credsticks.length}}
+            <select name="system.shop.cashboxId" data-dtype="String">
+                <option value="">{{localize 'SR5.ChooseOne'}}</option>
+                {{#each shop.credsticks}}<option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>{{this.name}}</option>{{/each}}
+            </select>
+            {{/if}}
+            {{#if shop.cashbox}}<span class="SR-GreyColor">{{shop.cashbox.funds}}&yen;</span>
+            {{else}}<span class="sr-shop-blocked">{{localize 'SR5.ShopVendorNoCashboxShort'}}</span>{{/if}}
+            {{#if (and shop.isGM shop.hasActor)}}<button type="button" data-action="shopCashbox">{{localize 'SR5.ShopVendorCreateCashbox'}}</button>{{/if}}
+        </div>
+    </li>
+    {{#if shop.templateLabel}}
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.ShopVendorTemplate'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-8 SR-GreyColor">{{shop.templateLabel}}</div>
+    </li>
+    {{/if}}
+    <li class="grid" data-tooltip="{{localize 'SR5.ShopVendorContactHint'}}">
+        <div class="col-4">{{localize 'SR5.ShopVendorContact'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-8">
+            {{#if shop.contacts.length}}
+            <select name="system.shop.contactId">
+                <option value="">{{localize 'SR5.ShopVendorContactNone'}}</option>
+                {{#each shop.contacts}}<option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>{{this.name}}</option>{{/each}}
+            </select>
+            {{else}}<span class="SR-GreyColor SR-TextSmall">{{localize 'SR5.ShopVendorContactEmpty'}}</span>{{/if}}
+        </div>
+    </li>
+    <li class="grid" data-tooltip="{{localize 'SR5.ShopVendorPoolHint'}}">
+        <div class="col-8">{{localize 'SR5.ShopVendorPool'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-4"><input type="number" name="system.shop.negotiationPool" value="{{system.shop.negotiationPool}}" min="0" data-dtype="Number"/></div>
+    </li>
+    <li class="grid" data-tooltip="{{localize 'SR5.ShopVendorClientsHint'}}">
+        <div class="col-12">{{localize 'SR5.ShopVendorClients'}}{{localize 'SR5.Colons'}}</div>
+    </li>
+    {{#each shop.clients}}
+    <li class="grid">
+        <div class="col-8">{{this.name}} — {{localize 'SR5.ContactLoyaltyShort'}} {{this.loyalty}}</div>
+        <div class="col-4">{{#if ../shop.isGM}}<button type="button" data-action="shopClientRemove" data-actor-id="{{this.actorId}}" aria-label="{{localize 'SR5.ShopVendorClientRemove'}}"><i class="fas fa-xmark"></i></button>{{/if}}</div>
+    </li>
+    {{/each}}
+    {{#if shop.isGM}}
+    <li class="grid">
+        <div class="col-6">
+            <select data-shop-client-actor aria-label="{{localize 'SR5.ShopVendorClients'}}">
+                {{#each shop.clientCandidates}}<option value="{{this.id}}">{{this.name}}</option>{{/each}}
+            </select>
+        </div>
+        <div class="col-2"><input type="number" data-shop-client-loyalty value="1" min="1" max="6" aria-label="{{localize 'SR5.ContactLoyaltyShort'}}"/></div>
+        <div class="col-4"><button type="button" data-action="shopClientAdd">{{localize 'SR5.ShopVendorClientAdd'}}</button></div>
+    </li>
+    {{/if}}
+    <li class="grid" data-tooltip="{{localize 'SR5.ShopVendorBuyAllHint'}}">
+        <div class="col-8">{{localize 'SR5.ShopVendorBuyAll'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-4"><input type="checkbox" data-dtype="Boolean" name="system.shop.buyAll" {{checked system.shop.buyAll}}/></div>
+    </li>
+    <li class="grid">
+        <div class="col-8">{{localize 'SR5.ShopVendorApprove'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-4"><input type="checkbox" data-dtype="Boolean" name="system.shop.approve" {{checked system.shop.approve}}/></div>
+    </li>
+
+    <li class="SR-EnTete"><p class="SR-TextUppercase">{{localize 'SR5.ShopVendorRestock'}}</p></li>
+    <li class="grid">
+        <div class="col-12">
+            <multi-checkbox name="system.shop.shelves" class="sr-shop-edit-checks">
+                {{#each shop.shelves}}<option value="{{this.key}}" {{#if this.checked}}selected{{/if}}>{{this.label}}</option>{{/each}}
+            </multi-checkbox>
+        </div>
+    </li>
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.ShopVendorLegality'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-8">
+            <multi-checkbox name="system.shop.legality" class="sr-shop-edit-checks">
+                {{#each shop.legality}}<option value="{{this.key}}" {{#if this.checked}}selected{{/if}}>{{this.label}}</option>{{/each}}
+            </multi-checkbox>
+        </div>
+    </li>
+    <li class="grid" data-tooltip="{{localize 'SR5.ShopVendorMaxAvailabilityHint'}}">
+        <div class="col-8">{{localize 'SR5.ShopVendorMaxAvailability'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-4"><input type="number" name="system.shop.maxAvailability" value="{{system.shop.maxAvailability}}" min="0" data-dtype="Number"/></div>
+    </li>
+    <li class="grid">
+        <div class="col-8">{{localize 'SR5.ShopVendorPerShelf'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-4"><input type="number" name="system.shop.perShelf" value="{{system.shop.perShelf}}" min="0" data-dtype="Number"/></div>
+    </li>
+    <li class="grid">
+        <div class="col-8">{{localize 'SR5.ShopVendorStackQuantity'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-4"><input type="number" name="system.shop.stackQuantity" value="{{system.shop.stackQuantity}}" min="1" data-dtype="Number"/></div>
+    </li>
+    <li class="grid" data-tooltip="{{localize 'SR5.ShopVendorOnOrderHint'}}">
+        <div class="col-8">{{localize 'SR5.ShopVendorOnOrderSetting'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-4"><input type="checkbox" data-dtype="Boolean" name="system.shop.onOrder" {{checked system.shop.onOrder}}/></div>
+    </li>
+    <li class="grid">
+        <div class="col-12 sr-shop-edit-buttons">
+            <span class="SR-GreyColor">{{localize 'SR5.ShopVendorStockCount' count=shop.stockCount}}</span>
+            {{#if shop.hasActor}}
+            <button type="button" data-action="shopOpen"><i class="fas fa-store"></i> {{localize 'SR5.ShopVendorOpenWindow'}}</button>
+            {{#if shop.isGM}}
+            <button type="button" data-action="shopRestock"><i class="fas fa-boxes-stacked"></i> {{localize 'SR5.ShopVendorRestockButton'}}</button>
+            <button type="button" data-action="shopClear"><i class="fas fa-trash"></i> {{localize 'SR5.ShopVendorClear'}}</button>
+            {{/if}}
+            {{/if}}
+        </div>
+    </li>
+
+    <li class="SR-EnTete"><p class="SR-TextUppercase">{{localize 'SR5.ShopVendorSign'}}</p></li>
+    <li class="grid" data-tooltip="{{localize 'SR5.ShopVendorBannerHint'}}">
+        <div class="col-4">{{localize 'SR5.ShopVendorBanner'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-8"><file-picker name="system.shop.banner" type="image" value="{{system.shop.banner}}"></file-picker></div>
+    </li>
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.ShopVendorPortrait'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-8"><file-picker name="system.shop.portrait" type="image" value="{{system.shop.portrait}}"></file-picker></div>
+    </li>
+    <li class="grid">
+        <div class="col-8">{{localize 'SR5.ShopVendorAccent'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-4"><color-picker name="system.shop.accent" value="{{system.shop.accent}}"></color-picker></div>
+    </li>
+</ul>

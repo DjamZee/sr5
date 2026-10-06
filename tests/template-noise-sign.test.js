@@ -23,7 +23,10 @@ describe("SR5_EffectArea.createTemplateEffect, matrix noise", () => {
     }
     vi.spyOn(SR5_EntityHelpers, "getRealActorFromID").mockReturnValue(actor)
     const template = {
-      id: "t1", uuid: "Scene.s1.MeasuredTemplate.t1", name: "Zone", flags: {
+      //A spam zone the GM placed: a player's template gives no noise
+      id: "t1", uuid: "Scene.s1.MeasuredTemplate.t1", name: "Zone", author: {
+        isGM: true
+      }, flags: {
         sr5: {
           matrixNoise: 3
         }

@@ -116,4 +116,13 @@
             </select>
         </div>
     </li>
+    <li class="grid">
+        <div class="col-5">{{localize 'SR5.IllusionPierce'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-7">
+            <select name="system.illusionPierce" data-dtype="String">
+                <option class="SR-LightGreyColor" value="">-</option>
+                {{selectOptions lists.illusionPierce selected=system.illusionPierce localize=true}}
+            </select>
+        </div>
+    </li>
 {{/ife}}

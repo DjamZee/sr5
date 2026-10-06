@@ -1,6 +1,9 @@
 import {
   describe, it, expect, vi, beforeEach
 } from 'vitest'
+import {
+  readFileSync
+} from 'node:fs'
 
 vi.mock('../modules/socket.js', () => ({
   SR5_SocketHandler: {
@@ -249,6 +252,41 @@ describe('Full defense costs 10 initiative (SR5 p. 170, 189)', () => {
         origin: 'fullDefense'
       }]
     }, true, 'parryClubs')).toBe(5)
+    delete globalThis.game.combat
+  })
+
+  // SR5 p. 170: an interruption only if the Initiative Score is higher than its cost (p. 192: Blackfeather,
+  // 11, goes into full defense and falls to 1). The bound, for every active defense paid with full defense
+  it('at the bound: full defense alone 10 refused, 11 allowed; with any active defense 15 refused, 16 allowed', async () => {
+    const {
+      default: SR5_RollDialog
+    } = await import('../modules/rolls/roll-dialog.js')
+    globalThis.ui.notifications = {
+      warn: vi.fn()
+    }
+    globalThis.game.combat = {
+    }
+    let initiative
+    vi.spyOn(SR5Combat, 'getCombatantFromActor').mockImplementation(() => ({
+      initiative
+    }))
+    const allowed = (score, cost) => {
+      initiative = score
+      return SR5_RollDialog.hasInitiativeForInterruption(target, cost)
+    }
+    const alone = SR5_RollDialog.defenseStanceCost(target, true, 'none')
+    expect([allowed(10, alone), allowed(11, alone)]).toEqual([false, true])
+    for (const mode of ['dodge', 'block', 'parryClubs', 'parryBlades']) {
+      const cost = SR5_RollDialog.defenseStanceCost(target, true, mode)
+      expect(cost).toBe(15)
+      expect([allowed(15, cost), allowed(16, cost)]).toEqual([false, true])
+    }
+    // The refusal names the score and the cost, in both languages
+    for (const lang of ['fr', 'en']) {
+      const text = JSON.parse(readFileSync(new URL(`../lang/${lang}.json`, import.meta.url), 'utf8'))['SR5.WARN_NotEnoughInitiative']
+      expect(text).toContain('{initiative}')
+      expect(text).toContain('{cost}')
+    }
     delete globalThis.game.combat
   })
 

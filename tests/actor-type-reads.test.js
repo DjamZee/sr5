@@ -132,8 +132,8 @@ describe('electricity and anticoagulant side effects read the actor type (SR5 p.
 })
 
 describe('the drone controller list offers characters and linked grunts', () => {
-  const sidebarActor = (id, type, actorLink = false, hasPlayerOwner = false) => ({
-    id, name: id, type, hasPlayerOwner,
+  const sidebarActor = (id, type, actorLink = false, hasPlayerOwner = false, isOwner = hasPlayerOwner) => ({
+    id, name: id, type, hasPlayerOwner, isOwner,
     prototypeToken: {
       actorLink
     },
@@ -150,6 +150,7 @@ describe('the drone controller list offers characters and linked grunts', () => 
     globalThis.game.actors = [
       sidebarActor('runner', 'actorPc'),
       sidebarActor('playerRunner', 'actorPc', true, true),
+      sidebarActor('otherPlayersRunner', 'actorPc', true, true, false),
       sidebarActor('linkedGrunt', 'actorGrunt', true),
       sidebarActor('mookGrunt', 'actorGrunt', false),
       sidebarActor('otherDrone', 'actorDrone'),
@@ -172,10 +173,11 @@ describe('the drone controller list offers characters and linked grunts', () => 
   }
 
   it('the GM sees every character and the grunts whose token is linked', async () => {
-    expect(await controllersOffered(true)).toEqual(['runner', 'playerRunner', 'linkedGrunt'])
+    expect(await controllersOffered(true)).toEqual(['runner', 'playerRunner', 'otherPlayersRunner', 'linkedGrunt'])
   })
 
-  it('a player only sees the ones a player owns', async () => {
+  // l. 367: another player's character is not offered to a player
+  it('a player only sees the characters they own', async () => {
     expect(await controllersOffered(false)).toEqual(['playerRunner'])
   })
 })

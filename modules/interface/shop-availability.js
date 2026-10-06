@@ -2,11 +2,23 @@ import {
   SR5Shop
 } from './shop.js'
 import {
+  SR5ShopCatalog
+} from './shop-catalog.js'
+import {
+  SR5ShopGrades
+} from './shop-grades.js'
+import {
   SR5_SystemHelpers
 } from '../system/utilitySystem.js'
 import {
   SR5_EntityHelpers
 } from '../entities/helpers.js'
+import {
+  currentExpress, deliveryDelayed, cardExpressExtra
+} from './shop-orders.js'
+import {
+  counterSystem
+} from './shop-vendor-rules.js'
 
 /**
  * The availability test of SR5 p. 420.
@@ -132,7 +144,10 @@ export class SR5ShopAvailability {
     // typed on the sheet when the derived value is not there.
     const sheetCharisma = SR5ShopAvailability.sheetValue(system.attributes?.charisma?.augmented) ||
       SR5ShopAvailability.sheetValue(system.attributes?.charisma?.natural)
-    const sheetNegotiation = SR5ShopAvailability.sheetValue(system.skills?.negotiation?.rating)
+    // A contact who has the Influence group has each of its skills at the group's rating (SR5 p. 90):
+    // Run Faster writes some contacts so, "Influence (GC) 4" (the cyber technician, p. 189)
+    const sheetNegotiation = Math.max(SR5ShopAvailability.sheetValue(system.skills?.negotiation?.rating),
+      SR5ShopAvailability.sheetValue(system.skillGroups?.influenceGroup))
 
     const cap = SR5ShopAvailability.CHARISMA_MAX[system.metatype] ??
       SR5ShopAvailability.CHARISMA_MAX.human
@@ -297,8 +312,22 @@ export class SR5ShopAvailability {
       return null
     }
     if (!lines?.length) return null
+    // A player's browser never rolls: the active gamemaster does, and freezes the outcome (shop-retry.js)
+    if (!game.user.isGM) {
+      const {
+        requestFirstTest
+      } = await import('./shop-retry.js')
+      await requestFirstTest(actor, contact, lines, surcharge, options)
+      return null
+    }
 
-    const searcher = contact ? SR5ShopAvailability.contactPool(contact) : SR5ShopAvailability.buyerPool(actor)
+    // A vendor looks for what it has not got with its own Negotiation and Charisma (SR5 p. 420)
+    // ...or through the contact the gamemaster gave the vendor (lot C, part 2), or with the pool set on its
+    // shop: options.searcherPool is SR5ShopVendor.searcherOf, the pool the window announces
+    const searcher = contact ? SR5ShopAvailability.contactPool(contact) :
+      options.searcherPool ? options.searcherPool :
+      options.searcherContact ? SR5ShopAvailability.contactPool(options.searcherContact) :
+        SR5ShopAvailability.buyerPool(options.searcher ?? actor)
 
     const bonusDice = SR5ShopAvailability.surchargeDice(surcharge)
     // null when the field was left empty; an imposed 0 stays 0 dice
@@ -316,15 +345,23 @@ export class SR5ShopAvailability {
       const source = await fromUuid(line.uuid)
       if (!source) continue
       const quantity = Math.max(1, Math.floor(Number(line.quantity) || 1))
-      const availability = SR5ShopAvailability.availabilityOf(source.system)
-      const unit = Math.round(SR5Shop.unitPrice(source.system) * (1 + Math.max(0, surcharge) / 100))
+      // An implant is looked for at the grade chosen: price and availability follow it (SR5 p. 454)
+      const grade = SR5Shop.gradesFor(source.type, source.system).includes(line.grade) ? line.grade : null
+      const name = SR5Shop.gradedName(source.name, grade)
+      // A vendor's price carries its margin, as its till charges it (lot C)
+      const listed = SR5ShopCatalog.describe({
+        // A stack on a vendor's counter is priced for one piece, as its till charges it (R5)
+        type: source.type, system: source.isEmbedded ? counterSystem(source) : source.system, margin: options.margin
+      }, grade).price
+      const availability = grade ? SR5ShopGrades.availability(source.system, grade) : SR5ShopAvailability.availabilityOf(source.system)
+      const unit = Math.round(listed * (1 + Math.max(0, surcharge) / 100))
       const price = unit * quantity
 
       // No availability rating: "Les objets sans Disponibilité peuvent être
       // achetés sans soucis" (SR5 p. 419). No test, straight to the counter.
       if (!availability) {
         results.push({
-          uuid: line.uuid, name: source.name, quantity, price, availability: 0,
+          uuid: line.uuid, grade, name, quantity, price, availability: 0,
           priceLabel: `${price.toLocaleString()}¥`,
           outcome: 'common', obtained: true, delayLabel: '—',
           outcomeLabel: game.i18n.localize('SR5.ShopOutcome_common'),
@@ -338,7 +375,7 @@ export class SR5ShopAvailability {
       // spends none, so nothing is rolled, not even the availability's dice.
       if (!pool) {
         results.push({
-          uuid: line.uuid, name: source.name, quantity, price, availability,
+          uuid: line.uuid, grade, name, quantity, price, availability,
           priceLabel: `${price.toLocaleString()}¥`,
           outcome: 'noPool', obtained: false, untested: true, delayLabel: '—',
           outcomeLabel: game.i18n.localize('SR5.ShopOutcome_noPool'),
@@ -352,7 +389,7 @@ export class SR5ShopAvailability {
       const netHits = hits - opposition.hits
       // GM ruling (05/10): the search time comes from the base price, not the one raised by the surcharge
       // SR5 p. 420 does not say which price: DjamZ filled the gap. A ruling, not a house rule, so no setting
-      const baseDelay = SR5ShopAvailability.delayFor(SR5Shop.unitPrice(source.system) * quantity)
+      const baseDelay = SR5ShopAvailability.delayFor(listed * quantity)
 
       let outcome, obtained, delay
       if (test.criticalGlitch) {
@@ -381,17 +418,24 @@ export class SR5ShopAvailability {
 
       results.push({
         uuid: line.uuid,
-        name: source.name,
+        // The base of an express surcharge: the listed price, without the surcharge dice
+        basePrice: listed * quantity,
+        grade,
+        name,
         quantity,
         price,
         priceLabel: `${price.toLocaleString()}¥`,
         availability,
         hits,
         opposition: opposition.hits,
+        // The dice themselves: the gamemaster counts the outcome on them, not on the label (shop-retry.js)
+        faces: test.faces,
+        oppositionFaces: opposition.faces,
         netHits,
         outcome,
         obtained,
         glitch: test.glitch,
+        delayHours: delay,
         delayLabel: delay === null ? '—' : SR5ShopAvailability.formatDelay(delay),
         outcomeLabel: game.i18n.localize(`SR5.ShopOutcome_${outcome}`),
       })
@@ -406,6 +450,8 @@ export class SR5ShopAvailability {
       buyerName: actor.name,
       searcherLabel: searcher.label,
       isContact: !!contact,
+      // The contact a new test after a failure asks again (shop-retry.js): the gamemaster looks it up on the buyer
+      contactId: contact?.id ?? null,
       // A hand-typed pool owes nothing to the contact's sheet, so neither the
       // derivation note nor the specialization applies to it.
       derived: override === null && !!searcher.derived,
@@ -426,6 +472,11 @@ export class SR5ShopAvailability {
       total,
       totalLabel: `${total.toLocaleString()}¥`,
       canBuy: obtained.length > 0,
+      vendor: options.vendor ?? null,
+      // Express delivery, a house rule off by default (arbitrage de DjamZ, 05/10): offered when a line waits
+      express: SR5ShopAvailability.expressOffer(obtained),
+      // The checkout button shows this total once the express box is ticked
+      expressTotalLabel: `${(total + cardExpressExtra(obtained, currentExpress())).toLocaleString()}¥`,
     }
 
     SR5_SystemHelpers.srLog(3, `Shop: availability test for ${actor.name} (pool ${pool})`, cardData)
@@ -433,7 +484,7 @@ export class SR5ShopAvailability {
     const content = await foundry.applications.handlebars.renderTemplate(
       'systems/sr5/templates/interface/shop-availability-card.hbs', cardData)
 
-    await foundry.documents.ChatMessage.create({
+    const message = await foundry.documents.ChatMessage.create({
       speaker: foundry.documents.ChatMessage.getSpeaker({
         actor
       }),
@@ -442,8 +493,22 @@ export class SR5ShopAvailability {
         sr5shop: cardData
       },
     })
+    // Frozen at once, before anyone can click: the till and a new test read this ledger, not the card
+    const {
+      recordShopCard
+    } = await import('./shop-retry.js')
+    await recordShopCard(message)
 
     return cardData
+  }
+
+  /** What the express box of the card says, or null when it has no reason to be there. */
+  static expressOffer(obtained) {
+    const terms = currentExpress()
+    if (!terms || !deliveryDelayed() || !obtained.some(r => r.availability > 0)) return null
+    return game.i18n.format('SR5.ShopExpressLabel', {
+      surcharge: terms.surcharge, factor: terms.factor
+    })
   }
 
   /* -------------------------------------------- */
@@ -452,25 +517,33 @@ export class SR5ShopAvailability {
 
   /** Wire the "cash the purchase" button of an availability card. */
   static chatListeners(html, message) {
+    // Ticking express shows the total the till will charge, surcharge included
+    html.querySelectorAll('[data-shop-express]').forEach(box => box.addEventListener('change', () => {
+      const data = message.flags?.sr5shop
+      const total = html.querySelector('[data-shop-total]')
+      if (data && total) total.textContent = box.checked && data.expressTotalLabel ? data.expressTotalLabel : data.totalLabel
+    }))
+    // A failed line may be tested again after twice the delay (SR5 p. 420): the gamemaster checks and rolls
+    html.querySelectorAll('[data-shop-action="retry"]').forEach(el => el.addEventListener('click', async (event) => {
+      event.preventDefault()
+      const {
+        requestRetry
+      } = await import('./shop-retry.js')
+      await requestRetry(message, el.dataset.uuid)
+    }))
     html.querySelectorAll('[data-shop-action="checkout"]').forEach(el => {
       el.addEventListener('click', async (event) => {
         event.preventDefault()
         const data = message.flags?.sr5shop
         if (!data) return
-        const actor = game.actors.get(data.buyerId)
-        const lines = data.results.filter(r => r.obtained).map(r => ({
-          uuid: r.uuid, quantity: r.quantity, name: r.name,
-        }))
-        const bought = await SR5Shop.checkout(actor, lines)
-        // The goods are cashed once: the button goes, the card stays.
-        if (bought) {
-          await message.update({
-            content: message.content.replace(
-              /<footer class="sr-shop-card-footer">[\s\S]*?<\/footer>/,
-              `<footer class="sr-shop-card-footer"><span class="sr-shop-cashed">${
-                game.i18n.localize('SR5.ShopAlreadyCashed')}</span></footer>`),
-          })
-        }
+        const express = !!data.express && !!html.querySelector('[data-shop-express]')?.checked
+        // Every test is the gamemaster's (shop-retry.js): a card a player's browser wrote is cashed by nobody
+        if (!message.author?.isGM) return ui.notifications.warn(game.i18n.localize('SR5.WARN_ShopCardNotByGM'))
+        // The gamemaster cashes it, once, from his ledger
+        const {
+          requestCash
+        } = await import('./shop-retry.js')
+        await requestCash(message, express)
       })
     })
   }

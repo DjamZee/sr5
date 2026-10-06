@@ -5,6 +5,17 @@ const TARGET_HANDLED_TESTS = ["banishing", "binding", "decompileSprite", "regist
 // the drain goes to the magician (SR5 p. 304), the fading to the technomancer (SR5 p. 254)
 const OWNER_RESISTANCES = ["drain", "fading"]
 
+// The Foundry "-=" keys that remove from a card's flags the buttons its refreshed version no longer has
+// (an update merges, a key left out would stay)
+export function removedButtonKeys(oldButtons, newButtons){
+  const removed = {
+  }
+  for (const key of Object.keys(oldButtons ?? {
+  })) if (!key.startsWith("-=") && !(key in (newButtons ?? {
+  }))) removed[`-=${key}`] = null
+  return removed
+}
+
 // True when a non-opposed button of the card must be rolled by the target instead of the card owner
 export function isRolledByTarget(type, typeSub, targetActorId) {
   if (!targetActorId) return false
@@ -40,6 +51,20 @@ export function ownsCardSpeaker(speaker, resolveActor) {
   const id = cardSpeakerId(speaker)
   if (!id) return true
   return resolveActor(id)?.isOwner === true
+}
+
+// True when a spell's effects remove damage from the one they are applied to (Heal, SR5 p. 291)
+export function healsDamage(customEffects) {
+  return Object.values(customEffects ?? {
+  }).some(e => e?.transfer && typeof e.target === "string" && e.target.endsWith(".removeDamage"))
+}
+
+// The patient of a healing spell (SR5 p. 291): the token the user targets, and only without a target the selected
+// token or his character. Several targets: none, the spell heals one patient
+export function healPatient(targets, selectedActor) {
+  const list = [...(targets ?? [])]
+  if (list.length === 1) return list[0].actor ?? null
+  return list.length ? null : selectedActor
 }
 
 // The first aid patient (SR5 p. 207): the targeted token when the test had a target, the selected token otherwise.

@@ -13,6 +13,9 @@ import {
 import {
   effectsPartialModel 
 } from './partial/effects.js'
+import {
+  migrateDrugSource
+} from '../../entities/items/drug-phase.js'
 
 export class sr5ItemDrugDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
@@ -47,6 +50,14 @@ export class sr5ItemDrugDataModel extends foundry.abstract.TypeDataModel {
       duration: new fields.StringField({
         initial: ''
       }),
+      //Street, standard, pharmaceutical or custom (Chrome Flesh p. 194): it changes the crash duration
+      quality: new fields.StringField({
+        initial: 'standard'
+      }),
+      //The actor a custom drug was made for (Chrome Flesh p. 194): anyone else takes it as a street drug
+      preparedFor: new fields.StringField({
+        initial: ''
+      }),
       addiction: new fields.SchemaField({
         type: new fields.StringField({
           initial: ''
@@ -74,6 +85,10 @@ export class sr5ItemDrugDataModel extends foundry.abstract.TypeDataModel {
       wirelessTurnedOn: new fields.BooleanField({
         initial: false
       }),
+      //"", "rise" or "crash" (entities/items/drug-phase.js): isActive and wirelessTurnedOn follow it
+      phase: new fields.StringField({
+        initial: ''
+      }),
     }
   }
 
@@ -81,6 +96,8 @@ export class sr5ItemDrugDataModel extends foundry.abstract.TypeDataModel {
     //Stored by the former ArrayField: always an empty list, since it dropped every key of the stat
     if (Array.isArray(source.handleShot)) source.handleShot = {
     }
+    //The crash was the "wireless" box of an effect, and the wireless switch of the drug
+    migrateDrugSource(source)
     return super.migrateData(source)
   }
 }

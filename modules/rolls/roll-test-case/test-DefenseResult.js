@@ -1,4 +1,7 @@
 import {
+  drainShown
+} from "../roll-helpers/mentorMaskDrain.js"
+import {
   SR5 
 } from "../../config.js"
 import {
@@ -11,8 +14,17 @@ import {
   SR5_EntityHelpers 
 } from "../../entities/helpers.js"
 import {
-  ritualDrainRecipients, ritualDrainKey
+  ritualDrainRecipients, ritualDrainKey, ritualDrainType
 } from "../roll-helpers/ritualTeam.js"
+import {
+  magicForDrainType
+} from "../../entities/items/magic-masteries.js"
+import {
+  manaShiftKind
+} from "../../system/background-count.js"
+import {
+  applyReagentDrainReduction
+} from "../../system/reagents.js"
 
 export default async function defenseResultInfo(cardData, type){
   let key, label, labelEnd, successTestType = "nonOpposedTest", failedTestType = "SR-CardButtonHit endTest", failedKey = ""
@@ -51,21 +63,31 @@ export default async function defenseResultInfo(cardData, type){
       labelEnd = game.i18n.localize("SR5.FailedSummon")
       key = "summonSpirit"
       cardData.magic.drain.value = cardData.roll.hits * 2
+      applyReagentDrainReduction(cardData.magic, prevData?.magic?.reagentDrainReduction, prevData?.magic?.reagentTier)
       if (cardData.magic.drain.value < 2) cardData.magic.drain.value = 2
-      cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${cardData.magic.drain.value})`)
+      cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${drainShown(cardData, cardData.owner.actorId)})`)
       break
     case "ritualResistance": {
       label = game.i18n.localize("SR5.RitualSuccess")
       labelEnd = game.i18n.localize("SR5.RitualFailed")
       cardData.magic.drain.value = cardData.roll.hits * 2
-      if (prevData.test.realHits > prevData.actorMagic) cardData.magic.drain.type = "physical"
-      else cardData.magic.drain.type = "stun"
-      if (cardData.magic.reagentsSpent > cardData.magic.force) {
+      //SR5 p. 299 (errata): the leader's hits against the leader's Magic, from the sheet. The fields read before
+      //(test.realHits, actorMagic) were written by nothing: the Drain stayed stun (M5 D2)
+      {
+        const leader = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
+        const magic = leader?.system?.specialAttributes?.magic?.augmented?.value ?? 0
+        const masteries = leader?.system?.magic?.masteries
+        cardData.magic.drain.type = ritualDrainType(prevData?.roll?.hits,
+          magicForDrainType(magic, masteries?.archivist?.value, masteries?.conjuringSpecialist?.value, false))
+      }
+      //Another tradition's reagents count for half (SR5 p. 320); cards made before keep their drachms spent
+      const reagents = cardData.magic.reagentsEffective ?? cardData.magic.reagentsSpent
+      if (reagents > cardData.magic.force) {
         cardData.magic.drain.modifiers.hits = {
           value: cardData.roll.hits * 2,
           label: game.i18n.localize(SR5.drainModTypes["hits"]),
         }
-        let reagentsMod = Math.floor(cardData.magic.reagentsSpent / cardData.magic.force) - 1
+        let reagentsMod = Math.floor(reagents / cardData.magic.force) - 1
         if (reagentsMod > 0) {
           cardData.magic.drain.value -= reagentsMod
           cardData.magic.drain.modifiers.reagents = {
@@ -74,21 +96,22 @@ export default async function defenseResultInfo(cardData, type){
           }
         }
       }
+      applyReagentDrainReduction(cardData.magic, cardData.magic.reagentDrainReduction, cardData.magic.reagentTier)
       key = "ritualSealed"
       if (cardData.magic.drain.value < 2) cardData.magic.drain.value = 2
       //SR5 p. 299: with participants, each of them takes the Drain, one button per name
       if (cardData.magic.ritualParticipants?.length) {
-        let leader = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+        let leader = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
         for (let recipient of ritualDrainRecipients({
           actorId: cardData.owner.actorId, name: leader?.name
         }, cardData.magic.ritualParticipants)) {
-          cardData.chatCard.buttons[ritualDrainKey(recipient.actorId)] = SR5_RollMessage.generateChatButton("opposedTest ritualDrain", ritualDrainKey(recipient.actorId), `${game.i18n.localize("SR5.ResistDrain")} ${recipient.name} (${cardData.magic.drain.value})`)
+          cardData.chatCard.buttons[ritualDrainKey(recipient.actorId)] = SR5_RollMessage.generateChatButton("opposedTest ritualDrain", ritualDrainKey(recipient.actorId), `${game.i18n.localize("SR5.ResistDrain")} ${recipient.name} (${drainShown(cardData, recipient.actorId)})`)
         }
-      } else cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("opposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${cardData.magic.drain.value})`)
+      } else cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("opposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${drainShown(cardData, cardData.owner.actorId)})`)
 
       let item = await fromUuid(cardData.owner.itemUuid)
       if (item.system.durationMultiplier === "netHits"){
-        let realActor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+        let realActor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
         SR5_RollTestHelper.updateItemAfterRoll(cardData, realActor)
       }
       break
@@ -165,4 +188,18 @@ export default async function defenseResultInfo(cardData, type){
 
   if (cardData.roll.hits < cardData.previousMessage.hits) cardData.chatCard.buttons[key] = SR5_RollMessage.generateChatButton(successTestType, key, label)
   else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton(failedTestType, failedKey, labelEnd)
+
+  //Shadow Spells p. 25: a sealed Mana Flux / Mana Ebb shifts the scene's background count, applied by the GM
+  if (type === "ritualResistance" && cardData.roll.hits < cardData.previousMessage.hits){
+    const ritual = await fromUuid(cardData.owner.itemUuid)
+    const kind = manaShiftKind(ritual?.name)
+    if (kind){
+      cardData.magic.manaShift = {
+        kind, force: cardData.magic.force, name: ritual.name
+      }
+      cardData.chatCard.buttons.manaShift = SR5_RollMessage.generateChatButton("nonOpposedTest", "manaShift", game.i18n.format(`SR5.ManaShiftApply_${kind}`, {
+        hours: cardData.magic.force
+      }), true)
+    }
+  }
 }

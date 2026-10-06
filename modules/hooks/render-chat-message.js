@@ -13,6 +13,45 @@ import {
 import {
   SR5_RitualCircle
 } from "../rolls/roll-helpers/ritualCircle.js"
+import {
+  activateExpiryCardListeners
+} from "../system/effect-expiry.js"
+import {
+  activateDeadlineCardListeners
+} from "../system/deadlines.js"
+import {
+  activateDrugCardListeners
+} from "../system/drug-clock.js"
+import {
+  addExtendedClockButton
+} from "../system/extended-clock.js"
+import {
+  activateDiseaseDueListeners, activateDiseaseRequestListeners, addDiseaseApplyButton
+} from "../system/diseases.js"
+import {
+  activateHungerListeners
+} from "../system/hunger.js"
+import {
+  activateInfectionListeners
+} from "../system/infection.js"
+import {
+  activateCfdListeners
+} from "../system/cfd-treatment.js"
+import {
+  activateDeactivationListeners
+} from "../system/deactivation.js"
+import {
+  activateAIDissipationListeners
+} from "../system/ai-dissipation.js"
+import {
+  addMonadCoreButton, activateMonadListeners
+} from "../system/monad-matrix.js"
+import {
+  activateRadiationDueListeners, activateRadiationRequestListeners, addRadiationApplyButton
+} from "../system/radiation.js"
+import {
+  activateBleedCardListeners
+} from "../system/bb-healing.js"
 
 export function sr5HookRenderChatMessageHTML(message, html, _data) {
   // A table draw is rendered by core and wears no SR5 header of its own
@@ -43,8 +82,44 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   // Availability cards carry their own data and their own button
   if (message.flags?.sr5shop) SR5ShopAvailability.chatListeners(html, message)
   if (message.flags?.sr5fence) SR5ShopFence.chatListeners(html, message)
+  // A vendor's buy-back offer (shop lot C, part 2): loaded on demand, the vendor brings the socket
+  if (message.flags?.sr5vendorOffer) import("../interface/shop-vendor.js").then(({
+    SR5ShopVendor
+  }) => SR5ShopVendor.chatListeners(html, message))
   // Ritual circle card: join and seal (SR5 p. 298-299)
   if (message.flags?.sr5?.ritualCircle) SR5_RitualCircle.activateListeners(html, message)
+  // Effects run out on the world clock: the GM removes them
+  if (message.flags?.sr5?.effectExpiry) activateExpiryCardListeners(html, message)
+  // Withdrawal tests and rent fall due: the GM acts
+  if (message.flags?.sr5?.deadlines) activateDeadlineCardListeners(html, message)
+  // Drugs whose effect or crash is over on the clock: the GM moves them on
+  if (message.flags?.sr5?.drugClock) activateDrugCardListeners(html, message)
+  // Wounds that bleed (Bullets & Bandages p. 14): the GM adds the box
+  if (message.flags?.sr5?.bbBleed) activateBleedCardListeners(html, message)
+  // Extended tests and healing (SR5 p. 50, 207-208): the GM moves the clock on by the time spent
+  if (message.flags?.sr5data?.test?.extended?.intervalValue) addExtendedClockButton(message, html)
+  // Diseases (Run Faster p. 111-112): the GM's due card, the roll asked of the player, the GM applies the roll
+  if (message.flags?.sr5?.diseaseDue) activateDiseaseDueListeners(html, message)
+  // Essence Loss of the Infected (SR5 p. 403): the GM's card of losses and powers used
+  if (message.flags?.sr5?.hungerDue) activateHungerListeners(html, message)
+  // Infection (SR5 p. 401): the GM's card to try it, and the end of the coma
+  if (message.flags?.sr5?.infectionCard) activateInfectionListeners(html, message)
+  // Treating CFD (Dark Terrors p. 87): the GM destroys the implants a NanoScrub glitch reached
+  if (message.flags?.sr5?.cfdTreatment) activateCfdListeners(html, message)
+  // Deactivation (Dark Terrors p. 90): the GM confirms a player's roll, then opens the technomancer's Fading test
+  if (message.flags?.sr5?.deactivation || message.flags?.sr5?.deactivationRequest) activateDeactivationListeners(html, message)
+  // Dissipation of an AI (Data Trails p. 161): the GM confirms the overflow and rolls the resistance
+  if (message.flags?.sr5?.aiDissipationCard) activateAIDissipationListeners(html, message)
+  // Monad of the original strain (Dark Terrors p. 88): the GM puts a matrix damage on its Core
+  if (message.flags?.sr5data?.chatCard?.buttons?.takeMatrixDamage) addMonadCoreButton(message, html)
+  // and resolves the card offered when its Core or its swarm fills
+  if (message.flags?.sr5?.monadMatrixCard) activateMonadListeners(html, message)
+  if (message.flags?.sr5?.diseaseRequest) activateDiseaseRequestListeners(html, message)
+  if (message.flags?.sr5data?.disease) addDiseaseApplyButton(message, html)
+  // Radiation zones (Run & Gun p. 164-165): same three steps
+  if (message.flags?.sr5?.radiationDue) activateRadiationDueListeners(html, message)
+  if (message.flags?.sr5?.radiationRequest) activateRadiationRequestListeners(html, message)
+  if (message.flags?.sr5data?.radiation) addRadiationApplyButton(message, html)
 }
 
 // v13: keep chat scrolled to bottom when SR5 roll messages change height.

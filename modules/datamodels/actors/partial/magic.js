@@ -83,6 +83,31 @@ export class magicPartialModel extends foundry.abstract.TypeDataModel {
         possession: new fields.BooleanField({
           initial: false
         }),
+        // Mask of the mentor (Forbidden Arcana p. 176): set while preparing the actor, read by the Drain roll
+        mentorMask: new fields.BooleanField({
+          initial: false
+        }),
+        // Spirit Index and Astral Reputation (Street Grimoire p. 207), Wild Index and Wild Reputation (Forbidden
+        // Arcana p. 169-170): the indexes and the adjustment are typed in by the gamemaster, the reputations derived
+        spiritIndex: new fields.NumberField({
+          initial: 0
+        }),
+        astralReputationAdjustment: new fields.NumberField({
+          initial: 0
+        }),
+        astralReputation: new fields.NumberField({
+          initial: 0
+        }),
+        wildIndex: new fields.NumberField({
+          initial: 0
+        }),
+        wildReputation: new fields.NumberField({
+          initial: 0
+        }),
+        // Hermetic elementalist (Forbidden Arcana p. 175): every spirit he summons has the Elemental trait
+        hermeticElementalist: new fields.BooleanField({
+          initial: false
+        }),
         hasAstralProjection: new fields.BooleanField({
           initial: false
         }),
@@ -93,6 +118,15 @@ export class magicPartialModel extends foundry.abstract.TypeDataModel {
           }),
         }),
         reagents: new fields.NumberField({
+          initial: 0
+        }),
+        reagentsRefined: new fields.NumberField({
+          initial: 0
+        }),
+        reagentsRadical: new fields.NumberField({
+          initial: 0
+        }),
+        orichalcum: new fields.NumberField({
           initial: 0
         }),
         boundedSpirit: new fields.SchemaField({
@@ -120,12 +154,33 @@ export class magicPartialModel extends foundry.abstract.TypeDataModel {
           spellShaping: new fields.BooleanField({
             initial: false
           }),
+          // Forbidden Arcana p. 43, 45
+          structuredSpellcasting: new fields.BooleanField({
+            initial: false
+          }),
+          harmoniousDefense: new fields.BooleanField({
+            initial: false
+          }),
           spellShapingValue: new fields.SchemaField({
             ...sr5ModsPartialModel.defineSchema()
           }),
         }),
+        // Magical masteries (Forbidden Arcana p. 30-41): level = quality rating
+        masteries: new fields.SchemaField(Object.fromEntries(
+          ["archivist", "arcaneBodyguard", "conjuringSpecialist", "deathSower", "illusionist", "mageHunter", "masterManipulator"]
+            .map(key => [key, new fields.SchemaField({
+              ...sr5ModsPartialModel.defineSchema()
+            })])
+        )),
         bgCount: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema()
+        }),
+        // Better Than Bad p. 140-141: the highest grey mana rating worn, and whether it is the armor's
+        greyMana: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema(),
+          fromArmor: new fields.BooleanField({
+            initial: false
+          }),
         }),
       }),
     }

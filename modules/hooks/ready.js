@@ -1,5 +1,11 @@
 import SR5TokenHud from "../interface/tokenHud.js"
 import {
+  runSourceModifiersMigration
+} from "../migration-source-modifiers.js"
+import {
+  initBBHealing
+} from "../system/bb-healing.js"
+import {
   SR5_CompendiumUtility
 } from "../entities/actors/utilityCompendium.js"
 import {
@@ -14,6 +20,48 @@ import {
 import {
   sr5DeepenModuleTableOfContents 
 } from "../interface/journal-heading-levels.js"
+import {
+  initCalendarClock
+} from "../interface/calendar-clock.js"
+import {
+  initEffectExpiry
+} from "../system/effect-expiry.js"
+import {
+  initDeadlines
+} from "../system/deadlines.js"
+import {
+  initDrugClock
+} from "../system/drug-clock.js"
+import {
+  initPreparationPotency
+} from "../system/preparation-potency.js"
+import {
+  initDiseases
+} from "../system/diseases.js"
+import {
+  initHunger
+} from "../system/hunger.js"
+import {
+  initInfection
+} from "../system/infection.js"
+import {
+  initCfdTreatment
+} from "../system/cfd-treatment.js"
+import {
+  initAIDissipation
+} from "../system/ai-dissipation.js"
+import {
+  initMonadMatrix
+} from "../system/monad-matrix.js"
+import {
+  initRadiation
+} from "../system/radiation.js"
+import {
+  initIllusions
+} from "../system/illusion.js"
+import {
+  initTacnet
+} from "../system/tacnet.js"
 
 export function sr5HookReady() {
   // Register the GM-authored spirit types, so that they are offered wherever
@@ -44,6 +92,35 @@ export function sr5HookReady() {
   // Translate the headers of the core "link matches" tooltip
   initLinkMatchesTooltip()
 
+  // The Sixth World clock: date and time for all, advance and "go to" for the GM
+  initCalendarClock()
+  // Effects in minutes, hours, days, weeks, months: counted on the clock, the GM removes them
+  initEffectExpiry()
+  // Dated deadlines: withdrawal tests (SR5 p. 79-80), months of rent paid (SR5 p. 377)
+  initDeadlines()
+  // Drugs: end of the effect and of the crash on the clock (SR5 p. 411-412, Chrome Flesh p. 194)
+  initDrugClock()
+  // Alchemical preparations: loss of Potency on the clock (SR5 p. 309)
+  initPreparationPotency()
+  // Diseases: incubation and resistance tests on the clock (Run Faster p. 111-112)
+  initDiseases()
+  initHunger()
+  initInfection()
+  // Treating CFD: NanoScrub hours on the clock, Overwriters at the end of each Combat Turn (Dark Terrors p. 87)
+  initCfdTreatment()
+  // Dissipation of an AI (Data Trails p. 161): offered to the active GM
+  initAIDissipation()
+  // A Monad of the original strain whose Core or swarm fills (Dark Terrors p. 88): offered to the active GM
+  initMonadMatrix()
+  // Radiation zones: resistance tests on the clock (Run & Gun p. 164-165)
+  initRadiation()
+  // Bullets & Bandages p. 14-16: wounds of 5+ bleed by Combat Turn, the GM adds each box
+  initBBHealing()
+  // Invisibility and Mask: the active GM keeps the thresholds and who has seen through (SR5 p. 294)
+  initIllusions()
+  // RP-Tac: a lowered Device Rating trims the roster (Run & Gun p. 119)
+  initTacnet()
+
   // The deeper table of contents also reaches the window of Monk's Enhanced Journal
   sr5DeepenModuleTableOfContents()
 
@@ -60,4 +137,14 @@ export function sr5HookReady() {
 
   // Perform the migration
   if (needsMigration) new game.sr5.migration().migrateWorld()
+
+  // Computed modifiers written in the source by a prepared copy: emptied once per world
+  runSourceModifiersMigration().catch(err => console.error("SR5 | source modifiers migration failed", err))
+
+  // The spent cards whose card left the chat log: the registry is written whole at every card spent
+  import("../rolls/roll-helpers/miscellaneous.js")
+    .then(({
+      SR5_MiscellaneousHelpers
+    }) => SR5_MiscellaneousHelpers.purgeConsumed())
+    .catch(err => console.error("SR5 | spent cards purge failed", err))
 }

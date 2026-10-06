@@ -47,8 +47,18 @@
 
   .sr-shop-card-footer {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
+    gap: 4px;
     padding-top: 4px;
+
+    // Express delivery, a house rule: its own line above the button
+    .sr-shop-express {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      width: 100%;
+    }
 
     button {
       width: 100%;

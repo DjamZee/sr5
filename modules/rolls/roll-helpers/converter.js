@@ -20,6 +20,9 @@ export class SR5_ConverterHelpers {
         return 10
       case "SF":
         return 20
+      //Flamethrower fanning (Gun H(e)aven 3 p. 3): two units of ammo
+      case "FN":
+        return 2
       default: return 0
     }
   }
@@ -53,7 +56,8 @@ export class SR5_ConverterHelpers {
     }
     const enabled = Object.entries(baseModes).filter(([key]) => firingMode[key]).map(([, code]) => code)
     const current = firingMode.current
-    if (current && this.firingModeToAction(current)) return current
+    //The flamethrower sweep (FN) is chosen by the targets of each attack, never carried over from the last one
+    if (current && current !== "FN" && this.firingModeToAction(current)) return current
     if (current) {
       const code = enabled.find(c => localize(`SR5.WeaponMode${c}Short`) === current)
       if (code) return code
@@ -71,6 +75,18 @@ export class SR5_ConverterHelpers {
     return 0
   }
 
+  //Suppressive fire fires 20 rounds (SR5 p. 179) and the flamethrower sweep two units (Gun H(e)aven 3 p. 3): with fewer
+  //left the attack cannot be made. Other modes keep firing what is left.
+  static missingAmmo(mode, ammoLeft){
+    if (mode !== "SF" && mode !== "FN") return false
+    return (ammoLeft ?? 0) < this.firingModeToBullet(mode)
+  }
+
+  //Several targets for a flamethrower: the sweep (Gun H(e)aven 3 p. 3), whatever mode the weapon kept
+  static initialFiringMode(firingMode, fanning){
+    return fanning ? "FN" : this.firingModeToCode(firingMode)
+  }
+
   //Conver firing mode choice to action type
   static firingModeToAction(mode){
     switch(mode){
@@ -85,6 +101,7 @@ export class SR5_ConverterHelpers {
       case "LB":
       case "FAc":
       case "SF":
+      case "FN":
         return {
           type: "complex", value: 1, source: "attack"
         }

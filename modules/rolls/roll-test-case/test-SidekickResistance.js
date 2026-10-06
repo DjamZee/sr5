@@ -4,6 +4,9 @@ import {
 import {
   SR5_EntityHelpers
 } from "../../entities/helpers.js"
+import {
+  applyReagentDrainReduction
+} from "../../system/reagents.js"
 
 export default async function sidekickResistanceInfo(cardData, type){
   let originalMessage = game.messages.get(cardData.previousMessage.messageId)
@@ -42,6 +45,15 @@ export default async function sidekickResistanceInfo(cardData, type){
       break
   }
 
+  //A wild spirit (Forbidden Arcana p. 172) owes no service: the banisher's net hits add up until Force x 2, and the
+  //Drain is the spirit's hits, minimum 2. The gamemaster's button recounts both sides before writing anything
+  const spirit = type === "banishingResistance" ? SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids) : null
+  if (spirit?.system?.isWild){
+    key = "wildBanish"
+    //No count on the button: the card's figures are not the ones the gamemaster will keep
+    label = game.i18n.localize("SR5.WildBanishAdd")
+  }
+
   if (cardData.roll.hits < cardData.previousMessage.hits) cardData.chatCard.buttons[key] = SR5_RollMessage.generateChatButton("nonOpposedTest", key, label)
   else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", labelEnd)
 
@@ -54,8 +66,9 @@ export default async function sidekickResistanceInfo(cardData, type){
     newMessage.chatCard.buttons.fadingResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "fading", `${game.i18n.localize("SR5.ResistFading")} (${newMessage.matrix.fading.value})`)
   } else if (resistType === "drain"){
     // Keep the spirit's Force on the card: it decides if the drain is physical (SR5 p. 303-304)
-    newMessage.magic.force = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)?.system.force.value
-    newMessage.magic.drain.value = cardData.roll.hits * 2
+    newMessage.magic.force = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)?.system.force.value
+    newMessage.magic.drain.value = spirit?.system?.isWild ? cardData.roll.hits : cardData.roll.hits * 2
+    applyReagentDrainReduction(newMessage.magic, newMessage.magic.reagentDrainReduction, newMessage.magic.reagentTier)
     if (newMessage.magic.drain.value < 2) newMessage.magic.drain.value = 2
     newMessage.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${newMessage.magic.drain.value})`)
   }

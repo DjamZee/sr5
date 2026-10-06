@@ -1,6 +1,9 @@
 import {
-  SR5_RollTest 
+  SR5_RollTest
 } from "./roll-test.js"
+import {
+  underFireRules, bbStabilizeDrain, advancedMedkitRules
+} from "../system/bb-healing.js"
 import {
   SR5_PrepareRollHelper 
 } from "./roll-prepare-helpers.js"
@@ -8,8 +11,14 @@ import {
   SR5_EntityHelpers 
 } from "../entities/helpers.js"
 import {
-  SR5_SystemHelpers 
+  SR5_SystemHelpers
 } from "../system/utilitySystem.js"
+import {
+  SR5FactionRegistry
+} from "../interface/faction-registry.js"
+
+// The social tests whose dialog shows the NPC attitude (rollDialogPartial/modifiers.hbs)
+const SOCIAL_FACTION_SKILLS = ["etiquette", "con", "intimidation", "leadership", "negotiation", "impersonation", "performance"]
 import {
   SR5_ActorHelper
 } from "../entities/actors/entityActor-helpers.js"
@@ -26,10 +35,24 @@ import {
 import {
   runningModifierKind
 } from "../system/running.js"
+import {
+  rollAttributes, extractSituational, tickByTargetMetatype, METATYPE_FAMILIES, SPIRIT_TYPE_SKILLS, spiritTypeOffers,
+  spiritTypeVisible
+} from "./roll-helpers/situational.js"
+import {
+  addIndirectEffects
+} from "../system/indirect-effects.js"
+import {
+  SR5
+} from "../config.js"
+import {
+  SR5_Toxins
+} from "../entities/items/toxins.js"
 
 // N91: matrix rolls aimed at a target besides matrixAction, which guards itself. Each refuses a drone
 // with its wireless off (SR5 p. 424)
 const WIRELESS_TARGETED_ROLLS = ["iceAttack", "complexForm", "resonanceAction"]
+const WIRELESS_DEFENSE_ROLLS = ["matrixDefense", "iceDefense", "complexFormDefense", "matrixResistance"]
 
 export class SR5_PrepareRollTest {
 
@@ -50,7 +73,11 @@ export class SR5_PrepareRollTest {
     //resonance action included: only a direct connection does (p. 234), played by switching it on (N91)
     //A roll relaunched from a chat card (Blue Goo's explosion) also checks the target the card knows
     if (WIRELESS_TARGETED_ROLLS.includes(rollType) && (targetsWirelessOffDrone(actor) ||
-      (chatData?.target?.actorId && isWirelessOffDrone(SR5_EntityHelpers.getRealActorFromID(chatData.target.actorId), actor)))) {
+      (chatData?.target?.actorId && isWirelessOffDrone(SR5_EntityHelpers.getRealActorFromID(chatData.target.actorId, chatData.actorUuids), actor)))) {
+      return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetWirelessOff"))
+    }
+    //An attack launched with no target selected is defended from its card by the drone itself: not reached either
+    if (WIRELESS_DEFENSE_ROLLS.includes(rollType) && isWirelessOffDrone(actor, null)) {
       return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetWirelessOff"))
     }
 
@@ -117,6 +144,12 @@ export class SR5_PrepareRollTest {
       case "grappleClinchDefense":
         rollData = await SR5_GetRollData.grappleClinchDefense(rollData, actor, chatData)
         break
+      case "pickpocket":
+        rollData = await SR5_GetRollData.pickpocket(rollData, actor, chatData)
+        break
+      case "pickpocketPerception":
+        rollData = await SR5_GetRollData.pickpocketPerception(rollData, actor, chatData)
+        break
       case "fading":
         rollData = await SR5_GetRollData.fading(rollData, actor, chatData)
         break
@@ -140,6 +173,10 @@ export class SR5_PrepareRollTest {
         break
       case "lift":
         rollData = await SR5_GetRollData.lift(rollData, rollKey, actor)
+        break
+      case "reagentHarvest":
+      case "reagentRefine":
+        rollData = await SR5_GetRollData.reagentWork(rollData, rollType, rollKey, actor)
         break
       case "martialArtDefense":
         rollData = await SR5_GetRollData.martialArtsDefense(rollData, actor, chatData)
@@ -179,6 +216,8 @@ export class SR5_PrepareRollTest {
         rollData = await SR5_GetRollData.powerDefense(rollData, actor, chatData)
         break
       case "preparation":
+        // SR5 p. 309: at 0 Potency the preparation is no longer magical, its spell is lost
+        if (!(Number(item.system?.potency) > 0)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_PreparationSpent"))
         rollData = await SR5_GetRollData.preparation(rollData, actor, item)
         break
       case "preparationFormula":
@@ -210,8 +249,20 @@ export class SR5_PrepareRollTest {
       case "resistanceSimple":
         rollData = await SR5_GetRollData.resistanceSimple(rollData, rollKey, actor)
         break
+      case "resistanceDisease":
+        rollData = await SR5_GetRollData.resistanceDisease(rollData, rollKey, actor, chatData)
+        break
+      case "resistanceRadiation":
+        rollData = await SR5_GetRollData.resistanceRadiation(rollData, actor, chatData)
+        break
       case "resistFire":
         rollData = await SR5_GetRollData.resistFire(rollData, actor, chatData)
+        break
+      case "addictionTest":
+        rollData = await SR5_GetRollData.addictionTest(rollData, rollKey, actor)
+        break
+      case "mentorDrawback":
+        rollData = await SR5_GetRollData.mentorDrawback(rollData, actor, item)
         break
       case "ritual":
         // SR5 p. 298: a ritual open to a group starts with the circle card, the roll comes when the leader seals it
@@ -229,13 +280,28 @@ export class SR5_PrepareRollTest {
       case "skillDicePool":
         if (game.user.targets.size) rollData = await SR5_PrepareRollHelper.getTargetData(rollData)
         rollData = await SR5_GetRollData.skill(rollData, rollType, rollKey, actor, chatData)
+        // A refused roll (astral combat out of astral perception) has already said why (M5 M1)
+        if (!rollData) return
+        // Faction Reputation moves the default NPC attitude (Cutting Aces p. 160); the list stays free
+        if (rollData.target?.actorId && SOCIAL_FACTION_SKILLS.includes(rollData.test?.typeSub)){
+          const faction = SR5FactionRegistry.attitudeFor(actor.id, SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId, rollData.actorUuids))
+          // Only the attitude travels with the roll: the faction and the score stay the gamemaster's
+          if (faction) rollData.social = {
+            attitude: faction.attitude
+          }
+        }
         break
       case "spell":
+        // Better Than Bad p. 141: cut from the manasphere by Blight, no spell can be cast (decision G2 of DjamZ)
+        if (SR5_Toxins.isCutFromManasphere(actor)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
         if (game.user.targets.size) rollData = await SR5_PrepareRollHelper.getTargetData(rollData)
         rollData = await SR5_GetRollData.spell(rollData, actor, item)
         break
       case "spellResistance":
         rollData = await SR5_GetRollData.spellResistance(rollData, actor, chatData)
+        break
+      case "illusionResistance":
+        rollData = await SR5_GetRollData.illusionResistance(rollData, actor, chatData)
         break
       case "spritePower":
         if (game.user.targets.size) rollData = await SR5_PrepareRollHelper.getTargetData(rollData)
@@ -260,6 +326,40 @@ export class SR5_PrepareRollTest {
       //Running (SR5 p. 164): the running box of the modifiers list, for the tests that have no box of their own
       const runningKind = runningModifierKind(rollData.test)
       rollData.dialogSwitch.running = (runningKind === "general" || runningKind === "defense") ? runningKind : false
+      //Situational effects (SR5 p. 462, Chrome Flesh p. 160-172): offered as boxes, unticked
+      const attributeLabels = Object.fromEntries(Object.entries(SR5.allAttributes).map(([k, v]) => [k, game.i18n.localize(v)]))
+      const {
+        offers, always, scoped
+      } = extractSituational(rollData, actor?.situationalEffects || [], rollAttributes(rollData.dicePool.composition, attributeLabels),
+        actor?.system?.limits?.[rollData.limit?.type]?.modifiers)
+      rollData.situational = offers
+      //Forbidden Arcana p. 90-95: the boxes of a spirit type, shown once the type is known (dialog, or the targeted spirit)
+      if (rollData.test.type === "skillDicePool" && SPIRIT_TYPE_SKILLS.includes(rollData.test.typeSub)){
+        rollData.situational = offers.concat(spiritTypeOffers(actor.system.skills[rollData.test.typeSub]?.spiritType, actor.situationalEffects || []))
+        const targetType = rollData.target?.actorId ? SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId, rollData.actorUuids)?.system?.type : null
+        spiritTypeVisible(rollData.situational, targetType || rollData.magic?.spiritType)
+      }
+      //A condition on the target's metatype (The Complete Trog p. 179) ticks its box when it is met
+      if (offers.some(o => o.targetMetatype) && game.user.targets.size){
+        const target = await SR5_PrepareRollHelper.getTargetedActor()
+        const biography = target?.system?.biography
+        tickByTargetMetatype(rollData, biography?.metatype || biography?.characterMetatype || "", METATYPE_FAMILIES)
+      }
+      //Kept for the dialog, which matches them again when the attribute is changed there
+      rollData.situationalScoped = scoped
+      if (always.length) rollData.dicePool.modifiers = (rollData.dicePool.modifiers || []).concat(always)
+      //Effects other actors carry on this roll: its target's, the auras around the roller (roll-helpers/indirect.js)
+      addIndirectEffects(rollData, actor)
+      //Bullets & Bandages p. 14-16: the dialog of First Aid and Medicine asks what the test is for
+      if (underFireRules() && (rollData.test.typeSub === "firstAid" || rollData.test.typeSub === "medecine")) rollData.various.bbUnderFire = true
+      //Bullets & Bandages p. 18: improvised supplies take the hits of an improvising roll off the -3
+      if (advancedMedkitRules()) rollData.various.bbImprovised = true
+      if (rollData.test.type === "spell" && rollData.target?.hasTarget){
+        const drain = bbStabilizeDrain(rollData.owner?.itemUuid ? fromUuidSync(rollData.owner.itemUuid)?.name : null, SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId, rollData.actorUuids), rollData.magic.drainFloor ?? 2)
+        if (drain !== null) rollData.magic.bbStabilizeDrain = drain
+      }
+      //Whoever reads the card later (a GM on another scene) finds the same tokens as the roller (helpers.js)
+      rollData.actorUuids = SR5_EntityHelpers.cardActorUuids(rollData, actor, chatData)
       SR5_RollTest.generateRollDialog(rollData)
     }
   }
@@ -332,6 +432,8 @@ export class SR5_PrepareRollTest {
             feint: false,
           },
           martialArtsModifiers: {
+          },
+          itemModifiers: {
           },
         },
         firingMode: {
@@ -484,6 +586,9 @@ export class SR5_PrepareRollTest {
         },
         force: null,
         hasUsedReagents: false,
+        //Reagent tier spent and reagents of another tradition (modules/system/reagents.js)
+        reagentTier: "raw",
+        reagentForeign: false,
         spell: {
           category: "",
           isResisted: false,
@@ -491,6 +596,8 @@ export class SR5_PrepareRollTest {
           range: 0,
           area: 0,
           type: "",
+          // Death Sower (Forbidden Arcana p. 40): DV bonus of a combat spell
+          damageBonus: 0,
         },
         spiritAid: {
           id: "",
@@ -565,6 +672,9 @@ export class SR5_PrepareRollTest {
           interval: "",
           intervalValue: 0,
           multiplier: 1,
+          //Intervals already put on the world clock (system/extended-clock.js): a card rolled before the calendar
+          //has no such field and offers no clock button
+          clockAdvanced: 0,
         },
         title: "",
         type: "",

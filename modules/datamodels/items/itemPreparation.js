@@ -76,6 +76,21 @@ export class sr5ItemPreparationDataModel extends foundry.abstract.TypeDataModel 
       potency: new fields.NumberField({
         initial: 0
       }),
+      // Loss of Potency on the world clock (SR5 p. 309, system/preparation-potency.js): the world time it was made at
+      // and its starting Potency, both written at its making; the full time multiplier (Potency × 2, 3 or 4 hours)
+      // and the pace of the loss (an hour, or a day with Fixation, SR5 p. 329), the gamemaster's
+      createdAt: new fields.NumberField({
+        initial: null, nullable: true
+      }),
+      initialPotency: new fields.NumberField({
+        initial: 0
+      }),
+      fullPotencyMultiplier: new fields.NumberField({
+        initial: 2
+      }),
+      decayRate: new fields.StringField({
+        initial: 'hour'
+      }),
       test: new fields.SchemaField({
         dicePool: new fields.NumberField({
           initial: 0

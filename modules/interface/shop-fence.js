@@ -7,6 +7,9 @@ import {
 import {
   SR5_SystemHelpers
 } from '../system/utilitySystem.js'
+import {
+  raisedThreshold
+} from '../rolls/roll-helpers/threshold.js'
 
 /**
  * Fencing gear, SR5 p. 421 (Fourguer du matériel).
@@ -152,6 +155,8 @@ export class SR5ShopFence {
     const etiquette = override ?? SR5ShopFence.#skillPool(actor, 'etiquette')
     const negotiation = override ?? SR5ShopFence.#skillPool(actor, 'negotiation')
     const limit = Number(actor.system.limits?.socialLimit?.value ?? 0)
+    //Bliss, Purple Orchid: +1 to all thresholds (SR5 p. 412), the search for a buyer included
+    const searchThreshold = raisedThreshold(rules.searchThreshold, actor.system)
 
     // Finding a buyer is easier for rare goods: the availability rating helps
     // as a teamwork test, its hits joining the searcher's pool (SR5 p. 421).
@@ -163,7 +168,7 @@ export class SR5ShopFence {
     }
 
     const interval = SR5ShopAvailability.delayFor(priced.reduce((sum, l) => sum + l.listed * l.quantity, 0))
-    const search = await SR5ShopFence.#extendedTest(etiquette + teamwork, rules.searchThreshold, limit)
+    const search = await SR5ShopFence.#extendedTest(etiquette + teamwork, searchThreshold, limit)
 
     if (!search.reached) {
       // Not a single die to search with: no test was made (SR5 p. 58)
@@ -176,7 +181,7 @@ export class SR5ShopFence {
         searchImpossible,
         searchPool: etiquette + teamwork,
         teamwork,
-        threshold: rules.searchThreshold,
+        threshold: searchThreshold,
         searchHits: search.hits,
         searchRolls: search.rolls,
         delayLabel: searchImpossible ? '—' :
@@ -206,7 +211,7 @@ export class SR5ShopFence {
         haggleImpossible: true,
         searchPool: etiquette + teamwork,
         teamwork,
-        threshold: rules.searchThreshold,
+        threshold: searchThreshold,
         searchHits: search.hits,
         searchRolls: search.rolls,
         delayLabel: SR5ShopAvailability.formatDelay(interval * search.rolls),
@@ -244,7 +249,7 @@ export class SR5ShopFence {
       searchFailed: false,
       searchPool: etiquette + teamwork,
       teamwork,
-      threshold: rules.searchThreshold,
+      threshold: searchThreshold,
       searchHits: search.hits,
       searchRolls: search.rolls,
       delayLabel: SR5ShopAvailability.formatDelay(interval * search.rolls),
@@ -432,7 +437,7 @@ export class SR5ShopFence {
       type: 'shopFenceCash',
       userId: designated.id,
       data: {
-        messageId: message.id, actorId: actor.id, requesterId: game.user.id
+        messageId: message.id, actorId: actor.id
       }
     })
     return true
@@ -441,16 +446,21 @@ export class SR5ShopFence {
   /**
    * Cash a sale card a player asked for, on the designated game master.
    * Only for the seller's own card, and only if the player owns the seller.
+   *
+   * The requester is the sender the server stamps on the message, never an id
+   * the client wrote in it: a player cannot cash in someone else's name (the
+   * same rule as the shared vision and lock-picking requests).
    * @param {object} socketMessage
    * @param {object} socketMessage.data
+   * @param {string} senderId added by the server to every custom socket message
    */
   static async socketCash({
     data
-  }) {
+  }, senderId) {
     if (!game.user.isGM) return
-    const message = game.messages.get(data.messageId)
-    const actor = game.actors.get(data.actorId)
-    const requester = game.users.get(data.requesterId)
+    const message = game.messages.get(data?.messageId)
+    const actor = game.actors.get(data?.actorId)
+    const requester = game.users.get(senderId)
     if (!message || !actor || !requester) return
     if (message.flags?.sr5fence?.buyerId !== actor.id) return
     if (!actor.testUserPermission(requester, 'OWNER')) return

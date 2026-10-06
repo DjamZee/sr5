@@ -1,4 +1,7 @@
 import {
+  drainShown
+} from "../roll-helpers/mentorMaskDrain.js"
+import {
   SR5_RollMessage 
 } from "../roll-message.js"
 
@@ -23,7 +26,7 @@ export default async function actionHitInfo(cardData, type){
       labelEnd = game.i18n.localize("SR5.PreparationCreateFailed")
       key = "preparationResist"
       testType = "nonOpposedTest"
-      cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${cardData.magic.drain.value})`)
+      cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${drainShown(cardData, cardData.owner.actorId)})`)
       break
     case "iceAttack":
       label = game.i18n.localize("SR5.Defend")

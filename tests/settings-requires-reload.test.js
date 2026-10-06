@@ -42,6 +42,8 @@ describe('registerSystemSettings', () => {
       'sr5.sr5MatrixGridRules',
       'sr5.sr5CalledShotsRules',
       'sr5.sr5KillCodeRules',
+      'sr5.sr5BBUnderFireRules',
+      'sr5.sr5BBAdvancedMedkits',
       'sr5.sr5Rigger5Actions',
       'sr5.sr5CyberEyesReplaceNaturalVision',
       'sr5.sr5LowLightGreenTint',

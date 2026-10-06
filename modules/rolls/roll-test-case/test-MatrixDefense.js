@@ -13,11 +13,14 @@ import {
 import {
   SHARED_VISION_ACTOR_TYPES
 } from "../../system/shared-vision.js"
+import {
+  activeHeadcase
+} from "../../system/monad-matrix.js"
 
 export default async function matrixDefenseInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId),
     actorData = actor.system,
-    attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId),
+    attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId, cardData.actorUuids),
     attackerData = attacker?.system,
     netHits = cardData.previousMessage.hits - cardData.roll.hits,
     targetItem = cardData.target.itemUuid ? await fromUuid(cardData.target.itemUuid) : null,
@@ -26,7 +29,8 @@ export default async function matrixDefenseInfo(cardData, actorId){
 
   //Overwatch button if illegal action
   if (cardData.matrix.overwatchScore && cardData.roll.hits > 0) cardData.chatCard.buttons.overwatch = await SR5_RollMessage.generateChatButton("nonOpposedTest", "overwatch", `${game.i18n.format('SR5.IncreaseOverwatch', {
-    name: attacker.name, score: cardData.roll.hits
+    //An unlinked token carries its own name, and the score is written to it
+    name: attacker.token?.name || attacker.name, score: cardData.roll.hits
   })}`)
 
   //if defender wins
@@ -90,8 +94,9 @@ export default async function matrixDefenseInfo(cardData, actorId){
         cardData.chatCard.buttons.matrixResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "matrixResistance", `${game.i18n.localize('SR5.TakeOnDamageMatrix')} (${cardData.damage.matrix.value})`)
         break
       case "popupCybercombat":
+        // Kill Code p. 45: matrix damage equal to the hits, with no Attack base nor +2 per mark
         cardData.damage.matrix.base = 0
-        cardData = await SR5_MatrixHelpers.updateMatrixDamage(cardData, netHits, actor)
+        cardData = await SR5_MatrixHelpers.updateMatrixDamage(cardData, netHits, actor, false)
         cardData.chatCard.buttons.matrixResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "matrixResistance", `${game.i18n.localize('SR5.TakeOnDamageMatrix')} (${cardData.damage.matrix.value})`)
         cardData.chatCard.buttons.popup = SR5_RollMessage.generateChatButton("nonOpposedTest", "popup", game.i18n.localize("SR5.ApplyEffect"))
         break
@@ -111,6 +116,17 @@ export default async function matrixDefenseInfo(cardData, actorId){
           name: actor.name
         }))
         else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.DefenseFailure"))
+        break
+      //A formatted Monad repairs its boot sector with as many Complex Actions as the hacker's net hits; rebooting
+      //before that destroys it as an overflow on its Core would (Dark Terrors p. 88). Said on the card, the GM plays it
+      case "formatDevice":
+        if (activeHeadcase(actor)) {
+          cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.format("SR5.MONAD_Formatted", {
+            actions: netHits
+          }))
+          break
+        }
+        cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.DefenseFailure"))
         break
       default:
         cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.DefenseFailure"))

@@ -1,4 +1,7 @@
 export {
+  default as addictionTest
+} from "./rollData-Addiction.js"
+export {
   default as astralTracking
 } from "./rollData-AstralTracking.js"
 export {
@@ -50,6 +53,9 @@ export {
   default as drainSimple
 } from "./rollData-DrainSimple.js"
 export {
+  default as mentorDrawback
+} from "./rollData-MentorDrawback.js"
+export {
   default as escapeEngulf
 } from "./rollData-EscapeEngulf.js"
 export {
@@ -61,6 +67,12 @@ export {
 export {
   default as grappleClinchDefense
 } from "./rollData-GrappleClinchDefense.js"
+export {
+  default as pickpocket
+} from "./rollData-Pickpocket.js"
+export {
+  default as pickpocketPerception
+} from "./rollData-PickpocketPerception.js"
 export {
   default as fading
 } from "./rollData-Fading.js"
@@ -82,6 +94,9 @@ export {
 export {
   default as lift
 } from "./rollData-Lift.js"
+export {
+  default as reagentWork
+} from "./rollData-Reagent.js"
 export {
   default as martialArtsDefense
 } from "./rollData-MartialArtsDefense.js"
@@ -137,7 +152,7 @@ export {
   default as resistance
 } from "./rollData-Resistance.js"
 export {
-  default as resistanceSimple
+  default as resistanceSimple, resistanceDisease, resistanceRadiation
 } from "./rollData-ResistanceSimple.js"
 export {
   default as resistFire
@@ -163,6 +178,9 @@ export {
 export {
   default as spellResistance
 } from "./rollData-SpellResistance.js"
+export {
+  default as illusionResistance
+} from "./rollData-IllusionResistance.js"
 export {
   default as spritePower
 } from "./rollData-SpritePower.js"

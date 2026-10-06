@@ -1,9 +1,24 @@
 import {
-  SR5_SystemHelpers 
+  hasWeaponTrait
+} from '../items/weaponTraits.js'
+import {
+  SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
+import {
+  phaseFromFlags, unitKey
+} from "../items/drug-phase.js"
+import {
+  startDrugCrash, resetDrugPhase
+} from "../items/drug-crash.js"
+import {
+  setCharacterField, setSpiritTrait, banishKey
+} from "../../system/spirit-ledger.js"
 import {
   SR5_Jammer
 } from "../../system/jammer.js"
+import {
+  sheetSizeOptions, sheetSizeSetPosition
+} from "../../interface/sheet-size.js"
 import {
   SR5_EntityHelpers 
 } from "../helpers.js"
@@ -27,6 +42,9 @@ import {
   STORABLE_TYPES, isStorable, isStoredAway, garageRequirement, meetsGarageLifestyle 
 } from "../../interface/storage-rules.js"
 import {
+  bindOrderClicks
+} from "../../interface/shop-orders.js"
+import {
   SR5_ActorHelper 
 } from "./entityActor-helpers.js"
 import {
@@ -48,8 +66,38 @@ import {
   SR5SheetConfigDialog 
 } from "../../interface/sheet-config-dialog.js"
 import {
-  enhanceSelects 
+  enhanceSelects
 } from "../../helpers/enhance-selects.js"
+import {
+  isMilkBrick, soothe
+} from "../items/milkBrick.js"
+import {
+  addictionWeeks, focusAddictionRating
+} from "../../rolls/roll-helpers/addiction.js"
+import {
+  warnDrugWithoutStat, drugAddictionThreshold, drugInteractionModifier, effectiveDrugQuality, drugCrashIsInstant, drugHasCrash
+} from "../items/drug-stat.js"
+import {
+  reagentSystem, hasTiers
+} from "../../system/reagents.js"
+import {
+  hasAegis, aegisState, aegisLedger, AEGIS_BOXES
+} from "../../system/aegis.js"
+import {
+  hungerStatus, toggleHunger, hastenHunger, canHunger
+} from "../../system/hunger.js"
+import {
+  infectionStatus, tryInfection
+} from "../../system/infection.js"
+import {
+  movementBoxes, toggleMovementBox
+} from "../../rolls/roll-helpers/situational.js"
+import {
+  cfdStatus, startTreatmentDialog, resolveOverwritersNow, stopTreatment
+} from "../../system/cfd-treatment.js"
+import {
+  deactivationStatus, deactivationDialog, deactivationLauncher, launchDeactivation
+} from "../../system/deactivation.js"
 
 /**
  * Extend the basic ActorSheet class to do all the SR5 things!
@@ -84,11 +132,27 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     actions: {
       toggleMode: ActorSheetSR5._onToggleMode,
       customizeDisplay: ActorSheetSR5._onCustomizeDisplay,
+      // The shop window, this actor already chosen as the buyer (lot B)
+      openShop: function () {
+        game.sr5.shop.open({
+          actor: this.actor
+        })
+      },
     },
   }
 
   get title() {
     return this.document.name
+  }
+
+  /** @override — reopen at the size last chosen for this sheet type (sheet-size.js) */
+  _initializeApplicationOptions(options) {
+    return sheetSizeOptions(this.constructor, super._initializeApplicationOptions(options))
+  }
+
+  /** @override — never below the default size, and remember the size chosen */
+  setPosition(position) {
+    return sheetSizeSetPosition(this, position, p => super.setPosition(p))
   }
 
   /** @override — Foundry's _onClickTab uses event.target which misses when clicking SVG icons inside <a> */
@@ -198,6 +262,13 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
     context.lists = this.actor.system.lists
     context.isPlay = this.isPlayMode
+    //Reagent stocks shown: the raw one alone in the core rules (modules/system/reagents.js)
+    context.reagentSystem = reagentSystem()
+    context.reagentTiers = hasTiers(context.reagentSystem)
+    //Aegis (Kill Code p. 112): the shield boxes left, read from the GM's ledger
+    if (hasAegis(this.actor)) context.aegisLeft = game.i18n.format("SR5.INFO_AegisLeft", {
+      left: AEGIS_BOXES - aegisState(aegisLedger(this.actor), game.time.worldTime).damage
+    })
     // Provide cssClass for template compatibility
     context.cssClass = this.document.isOwner ? "editable" : "locked"
 
@@ -207,6 +278,21 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       if (item) i.labels = item.labels
     }
     context.items.sort((a, b) => (a.sort || 0) - (b.sort || 0))
+
+    //Essence Loss of the Infected (SR5 p. 403): the GM alone sees the clock of the hunger, from his ledger
+    context.hunger = game.user.isGM && canHunger(this.actor) ? hungerStatus(this.actor) : null
+    //Infection (SR5 p. 401): the GM tries it on a victim drained to 0, or sees when the coma ends
+    context.infection = infectionStatus(this.actor)
+    //Situational effects on a movement rate (Dark Terrors p. 180): a box per item and situation, ticked by the owner
+    context.movementBoxes = movementBoxes(this.actor.movementSituational).map(b => ({
+      ...b, keysAttr: b.keys.join(" ")
+    }))
+    //Treating CFD (Dark Terrors p. 87): the GM alone gives a treatment and sees where it stands, from his ledger
+    context.cfd = cfdStatus(this.actor)
+    //Deactivation (Dark Terrors p. 89-90): the owner of a technomancer with the echo rolls it from its sheet, the GM
+    //confirms; the GM can also run it from the target's sheet for a GM's technomancer
+    context.deactivation = deactivationStatus(this.actor)
+    context.deactivationLauncher = deactivationLauncher(this.actor)
 
     context.storageViewIsGrid = game.settings.get("sr5", "sr5StorageViewMode") !== "list"
     //The clinch button of the martial arts block (Run & Gun p. 133) exists only with the grappling rules
@@ -307,6 +393,40 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       toggleBtn.dataset.tooltip = this.isPlayMode ? "SR5.SwitchToEdit" : "SR5.SwitchToPlay"
     }
 
+    //Essence Loss (SR5 p. 403): the GM starts or stops the clock, or brings it one week closer by hand
+    element.querySelectorAll("[data-sr5-movement-box]").forEach(b => b.addEventListener("change", (event) => {
+      const keys = event.currentTarget.dataset.sr5MovementBox.split(" ")
+      this.actor.update({
+        "system.movementSituationalOn": toggleMovementBox(this.actor.system.movementSituationalOn, keys, event.currentTarget.checked)
+      })
+    }))
+    element.querySelectorAll("[data-sr5-infection-try]").forEach(b => b.addEventListener("click", (event) => {
+      event.preventDefault()
+      tryInfection(this.actor)
+    }))
+    element.querySelectorAll("[data-sr5-hunger]").forEach(b => b.addEventListener("click", (event) => {
+      event.preventDefault()
+      if (event.currentTarget.dataset.sr5Hunger === "hasten") hastenHunger(this.actor)
+      else toggleHunger(this.actor)
+    }))
+
+    //Treating CFD (Dark Terrors p. 87): give a treatment, run the Overwriters out of combat, or stop following
+    element.querySelectorAll("[data-sr5-cfd]").forEach(b => b.addEventListener("click", (event) => {
+      event.preventDefault()
+      const action = event.currentTarget.dataset.sr5Cfd
+      if (action === "resolve") resolveOverwritersNow(this.actor)
+      else if (action === "stop") stopTreatment(this.actor)
+      else startTreatmentDialog(this.actor)
+    }))
+    element.querySelectorAll("[data-sr5-defrag-start]").forEach(b => b.addEventListener("click", (event) => {
+      event.preventDefault()
+      deactivationDialog(this.actor)
+    }))
+    element.querySelectorAll("[data-sr5-defrag-launch]").forEach(b => b.addEventListener("click", (event) => {
+      event.preventDefault()
+      launchDeactivation(this.actor)
+    }))
+
     // Show/hide config button based on mode
     const configBtn = element.querySelector('[data-action="customizeDisplay"]')
     if (configBtn) configBtn.style.display = this.isPlayMode ? "none" : ""
@@ -366,12 +486,25 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     on(".item-delete", "click", this._onItemDelete.bind(this))
     on(".item-management", "mousedown", this._onItemManagement.bind(this))
     on(".subItem", "click", this._onManageSubItem.bind(this))
+    //The gamemaster puts a drug back to "not taken" by a right click on its switch (entities/items/drug-crash.js)
+    on(".drug-phase", "contextmenu", ev => {
+      ev.preventDefault()
+      resetDrugPhase(this.actor.items.get(ev.currentTarget.closest(".item")?.dataset.itemId))
+    })
     //Edit item value from actor sheet
     on(".edit-value", "change", this._onEditItemValue.bind(this))
     on(".select-value", "change", this._onEditItemValue.bind(this))
     on(".toggle-value", "click", this._onEditItemValue.bind(this))
     on(".jammer-toggle", "click", this._onToggleJammer.bind(this))
     on(".changeValueByClick", "mousedown", this._onChangeValueByClick.bind(this))
+    //Indexes and spirit traits go to the gamemaster's ledger, never to the sheet (system/spirit-ledger.js)
+    on(".sr5-spirit-ledger", "change", ev => {
+      ev.stopPropagation()
+      const el = ev.currentTarget
+      const value = el.type === "checkbox" ? el.checked : el.value
+      if (el.dataset.field) setCharacterField(this.actor.id, el.dataset.field, value)
+      else if (el.dataset.trait) setSpiritTrait(banishKey(this.actor), el.dataset.trait, value)
+    })
     //
     on(".toggle-actorValue", "click", this._onEditActorValue.bind(this))
     //Choose controler
@@ -385,6 +518,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     //Move money between the ledger and a credstick
     on(".credstick-withdraw", "click", this._onCredstickMove.bind(this, "withdraw"))
     on(".credstick-deposit", "click", this._onCredstickMove.bind(this, "deposit"))
+    //Shop orders: delivery and cancellation for the GM, a cancellation request for a player.
+    //Delegated on the window element, once per element: the block may be drawn after these listeners
+    //(lazy tabs), and a sheet closed then opened again gets a new element
+    bindOrderClicks(element, (event, target) => this._onShopOrder(event, target))
     //Reboot le deck
     on(".reset-deck", "click", this._onRebootDeck.bind(this))
     // Déplie les infos
@@ -722,8 +859,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       const updates = {
         [dropZone.dataset.dropmatrixattribute]: draggedValue,
         [dropData.valueFromAttribute]: existingValue,
-        'system.specialProperties.actions.free.current': this.actor.system.specialProperties.actions.free.current - 1,
       }
+      if (this._spendsActionCounters()) updates['system.specialProperties.actions.free.current'] = this.actor.system.specialProperties.actions.free.current - 1
       await this.actor.update(updates)
       const actorId = this.actor.isToken ? this.actor.token.id : this.actor.id
       SR5Combat.changeActionInCombat(actorId, [{
@@ -745,19 +882,23 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       event.stopPropagation()
       return
     }
-    if (await SR5_CharacterUtility.switchToInitiative(this.actor, wantedInitiative) === false) return
-    //special case for materialization button on spirit sheet
+    //Materialization button on a spirit sheet: the Materialization power follows the initiative, physical when
+    //materialized. Written and awaited BEFORE the switch: the actions the switch spends write the token again with
+    //its item list, which undid a power toggled afterwards on an unlinked token in combat (M4 D1)
+    let power, wasActive
     if (isMaterializing){
-      let item
-      for (let i of this.actor.items){
-        if (i.system.systemEffects.find(e => e.value === "materialization")) item = i
-      }
-      if (item){
-        let value = foundry.utils.getProperty(item, "system.isActive")
-        item.update({
-          "system.isActive": !value
-        })
-      }
+      power = this.actor.items.find(i => Object.values(i.system.systemEffects ?? {
+      }).find(e => e?.value === "materialization"))
+      wasActive = !!power?.system.isActive
+      const active = wantedInitiative === "physicalInit"
+      if (power && wasActive !== active) await power.update({
+        "system.isActive": active
+      })
+    }
+    if (await SR5_CharacterUtility.switchToInitiative(this.actor, wantedInitiative) === false) {
+      if (power && !!power.system.isActive !== wasActive) await power.update({
+        "system.isActive": wasActive
+      })
     }
   }
 
@@ -829,6 +970,16 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
    * @param {Event} event
    * @private
    */
+  async _onShopOrder(event, target) {
+    event.preventDefault()
+    const id = target.closest("[data-order-id]")?.dataset.orderId
+    if (!id) return
+    const orders = await import("../../interface/shop-orders.js")
+    const action = target.dataset.shopOrder
+    if (action === "deliver") return orders.deliverOrder(this.actor, id)
+    if (action === "cancel") return orders.cancelFromSheet(this.actor, id)
+  }
+
   async _onCredstickMove(way, event) {
     event.preventDefault()
     // Read the dataset before the first await: currentTarget is null afterwards
@@ -987,7 +1138,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     // Don't expand/collapse when clicking interactive elements inside .deplie
     if (event.target.closest(".toggle-value, .edit-value, .select-value, .changeValueByClick, .reload-ammo, .accessory-activate, .item-summary, .jammer-toggle")) return
     event.preventDefault()
-    let li = event.currentTarget.closest(".item")
+    // The browser clears currentTarget once the handler yields: keep the clicked element before any await
+    const clicked = event.currentTarget
+    let li = clicked.closest(".item")
     if (!li) return
     let item = this.actor.items.get(li.dataset.itemId)
     if (!item) return
@@ -1001,7 +1154,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       let summary = li.querySelector(":scope > .item-summary")
       if (summary) summary.remove()
     } else {
-      let accessoryClass = (event.currentTarget.classList.contains("SR-MarginLeft10") ? "SR-MarginLeft10" : "")
+      let accessoryClass = (clicked.classList.contains("SR-MarginLeft10") ? "SR-MarginLeft10" : "")
       let div = document.createElement("div")
       div.className = `col-x item-summary ${accessoryClass}`
       div.innerHTML = expandData.gameEffect
@@ -1162,6 +1315,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
   // Edit Item value from Actor Sheet
   //Actions spent by _onEditItemValue: activating a focus, (un)loading a program, switching a device's wireless
   _itemValueActionCost(item, target, oldValue){
+    //A drug has no wireless: its switch moves its phase (entities/items/drug-phase.js) and costs no action
+    if (item.type === "itemDrug") return []
     if (item.type === "itemFocus" && target === "system.isActive") return [{
       type: (oldValue === false) ? "simple" : "free", value: 1
     }]
@@ -1172,6 +1327,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       type: SR5_ActorHelper.wirelessSwitchActionType(!oldValue, game.settings.get("sr5", "sr5WifiRequiresDNI"), this.actor.system.hasDNI), value: 1
     }]
     return []
+  }
+
+  //The action counters belong to the initiative passes (SR5 p. 163-165): out of combat a switch spends nothing,
+  //and the counters no longer sink to -1, -2... before the fight
+  _spendsActionCounters(){
+    return !!SR5Combat.getCombatantFromActor(this.actor)
   }
 
   //The lock taken by a toggle that costs an action is given back however its handling ends, error included
@@ -1202,17 +1363,24 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       oldValue = foundry.utils.getProperty(item, target)
       value = !oldValue
     }
+    //Vintage (Gun H(e)aven 3 p. 3): never wireless, so no switch and no action spent
+    if (target === "system.wirelessTurnedOn" && realItem?.type === "itemWeapon" && hasWeaponTrait(realItem.system, "vintage")) return ui.notifications.warn(game.i18n.localize("SR5.WARN_VintageNoWireless"))
     //The guard reads the actor's counters, which change only when the server answers: a second click before
     //that would pass on the old count. Toggles that cost an action wait for the previous one to be written
     let actionCost = this._itemValueActionCost(item, target, oldValue)
     if (actionCost.length && this._spendingItemAction) return
     if (!SR5Combat.hasActionsLeft(actor, actionCost)) return
     if (actionCost.length) this._spendingItemAction = event
+    //The device the character is connected through, before the change: switched off in VR, it throws them out (SR5 p. 231)
+    let connectedDeviceId = itemList.find(i => i.type === "itemDevice" && i.system.isActive)?._id
     foundry.utils.setProperty(item, target, value)
 
     //Spécial, pour les decks, désactiver les autres decks lorsque l'un d'entre eux et équipé
-    if (item.type === "itemDevice" && target !== "system.conditionMonitors.matrix.actual.base") {
-      for (let otherItem of itemList) {
+    //Only equipping or unequipping a device does this: the wireless of a spare device leaves the active one alone, or
+    //a character in VR would take dumpshock for it (SR5 p. 231), and keeps its configuration (SR5 p. 229, DjamZ's ruling of 03/10)
+    if (item.type === "itemDevice" && target === "system.isActive") {
+      //Equipping a device switches the others off
+      if (value) for (let otherItem of itemList) {
         if (otherItem.type === "itemDevice" && (otherItem._id !== id)) otherItem.system.isActive = false
       }
 
@@ -1251,6 +1419,21 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       }
     }
 
+    //Brick of milk (No Future p. 154): used up when switched on, on the targeted character or on its owner
+    if (target === "system.isActive" && item.system.isActive && isMilkBrick(item)) {
+      item.system.isActive = false
+      if (item.system.quantity > 0) {
+        let soothed = game.user.targets.first()?.actor ?? actor
+        let {
+          used, itemIds
+        } = await soothe(soothed)
+        //Not spent on a character the user does not own: the gamemaster does it
+        if (used) item.system.quantity -= 1
+        //The item list is written back below: the removed effects must leave it, or they come back
+        if (soothed === actor) itemList = itemList.filter(i => !itemIds.includes(i._id))
+      } else ui.notifications.warn(game.i18n.localize("SR5.WARN_MilkBrickNone"))
+    }
+
     if (item.type === "itemDrug") {
       let drugType = "", drug = [], itemData = item.system
       if (Object.keys(itemData.systemEffects).length) {
@@ -1277,27 +1460,36 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
             // Add one take
             alreadyTaken.shot.value += 1
             // Reset the threshold
-            alreadyTaken.addiction.threshold = item.system.addiction.threshold
+            alreadyTaken.addiction.threshold = drugAddictionThreshold(item.system)
           }
           else {
             // Generate and populate the drug addiction
             addiction = SR5_CharacterUtility.generateDrugAddiction(item)
             actorData.addictions = actorData.addictions.concat(addiction)
             actorData.addictions = Object.values(actorData.addictions)
-          }		
-          
+          }
+          //Reminder of the addiction test (SR5 p. 415): rolled from the Addictions list, never on its own
+          if (item.system.addiction?.type && item.system.addiction?.rating > 0) ui.notifications.info(game.i18n.format("SR5.AddictionTestReminder", {
+            drug: item.name, threshold: drugAddictionThreshold(item.system), rating: item.system.addiction.rating,
+            weeks: addictionWeeks(item.system.addiction.rating)
+          }))
+
           SR5_SystemHelpers.srLog(1, "actorData.addictions : " + JSON.stringify(actorData.addictions))
           if (actorData.addictions.shot) SR5_EntityHelpers.updateValue(actorData.addictions.shot)
           if (actorData.addictions.weekAddiction) SR5_EntityHelpers.updateValue(actorData.addictions.weekAddiction)		
 					
-          // Check if the drug is set on systemEffect					
-          if (drugType) {
-						
+          // Generate the drug stat from the drug systemEffect: durations read the augmented Body and the
+          // Essence, prepared values that the copy of system (its source) does not hold
+          drug = drugType ? await SR5_CharacterUtility.handleDrugShots(item, drugType, actor.system, actor) : null
+
+          // Without a stat (no drug systemEffect, or a key the system does not know), nothing is counted: the GM
+          // is told, instead of a drug that silently never ends
+          if (!drug) await warnDrugWithoutStat(actor, item)
+
+          if (drug) {
+
             SR5_SystemHelpers.srLog(1, "Check drugType")
 
-            // Generate the drug stat: durations read the augmented Body and the Essence, prepared values that
-            // the copy of system (its source) does not hold
-            drug = await SR5_CharacterUtility.handleDrugShots(item, drugType, actor.system)
             itemData.handleShot = drug
 
             let speedType = ""
@@ -1305,17 +1497,18 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
             //The stat above is the only one rolled: a second call rolled the random durations again
             if (!itemData.interact) {
               console.log("drug : " + item.name)
-              itemData.onUse.duration = `${itemData.handleShot.duration} ${game.i18n.localize(SR5.extendedIntervals[itemData.handleShot.durationType])}`
+              itemData.onUse.duration = `${itemData.handleShot.duration} ${game.i18n.localize(unitKey(SR5.extendedIntervals[itemData.handleShot.durationType], itemData.handleShot.duration))}`
               itemData.onUse.contrecoup = ""
-							
+
               // Generate the speed type if not pure text
-              if (itemData.handleShot.speedType) speedType = game.i18n.localize(itemData.handleShot.speedType)
+              if (itemData.handleShot.speedType) speedType = game.i18n.localize(unitKey(itemData.handleShot.speedType, itemData.handleShot.speed))
             }
 
             //Chrome Flesh p. 196: an interaction comes from taking a drug while under the effect (or the crash) of
             //ANOTHER one. The drug being taken is left out: retaken during its own crash, it is not another drug,
             //and it would otherwise be counted twice in the mix, doubled twice and rolled one die too many
-            let interactionDrug = actor.items.filter((d) => d.type === "itemDrug" && d.id !== item._id && (d.system.isActive || d.system.wirelessTurnedOn))
+            //A crash that is only damage is over (drug-stat.js): one left in it before is not in the mix (Liesel's D3)
+            let interactionDrug = actor.items.filter((d) => d.type === "itemDrug" && d.id !== item._id && (d.system.isActive || (d.system.wirelessTurnedOn && !drugCrashIsInstant(d.system))))
             if (interactionDrug.length > 0) {
               let roll, interactionDiceResult, drugs = []
               roll = new Roll(`${interactionDrug.length}d6`)
@@ -1333,10 +1526,15 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
               let damageInfo
 
-              switch(interactionDiceResult.total){
+              //Chrome Flesh p. 194: +1 for each street drug of the mix, -1 when all of them are custom.
+              //The table (Chrome Flesh p. 197) has no row below 1: a lower total reads row 1, not the default one (14+, 10P). This floor
+              //is a reading by Élise, the coordinator, not a text of the book
+              const interactionTotal = Math.max(1, interactionDiceResult.total + drugInteractionModifier(mixedDrugs.map(d => effectiveDrugQuality(d.system, actor))))
+
+              switch(interactionTotal){
                 case 1:
                   //Chrome Flesh p. 197: the durations of all the drugs are doubled
-                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.toString().replace(",", ", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugDurationDoubled")}`)
+                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.join(", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugDurationDoubled")}`)
 
                   for (let d of mixedDrugs){
                     let shot = d.system.handleShot
@@ -1350,12 +1548,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                 case 2:
                 case 3:
                 case 4:
-                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.toString().replace(",", ", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugNoInteractEffect")}`)
+                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.join(", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugNoInteractEffect")}`)
                   break
                 case 5:
                 case 6:
                   //Chrome Flesh p. 197: the durations of all the crashes are doubled
-                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.toString().replace(",", ", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugContrecoupDurationDoubled")}`)
+                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.join(", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugContrecoupDurationDoubled")}`)
 
                   for (let d of mixedDrugs){
                     let shot = d.system.handleShot
@@ -1369,14 +1567,16 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                 case 9: {
                   //Chrome Flesh p. 197: the crashes start immediately, for every drug of the mix still under
                   //effect, the one being taken included. A drug already in its crash does not start it again
-                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.toString().replace(",", ", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugCrashImmediate")}`)
+                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.join(", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugCrashImmediate")}`)
+                  //A drug without crash keeps its effect until its normal end: the book starts the crashes, it does
+                  //not stop a drug that has none (DjamZ's ruling, 06/10)
                   for (let d of mixedDrugs){
-                    if (d.system.isActive) await this._startDrugCrash(d, actor)
+                    if (d.system.isActive && drugHasCrash(d.system)) await this._startDrugCrash(d, actor)
                   }
                   break
                 }
                 case 10:
-                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")}${game.i18n.format("SR5.Colons")} ${drugs.toString().replace(",", ", ")}`)
+                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")}${game.i18n.format("SR5.Colons")} ${drugs.join(", ")}`)
                   damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
                   damageInfo.damage.value = 10
                   damageInfo.damage.type = "stun"
@@ -1385,11 +1585,17 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                 case 11:
                 case 12:
                 case 13:
-                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")}${game.i18n.format("SR5.Colons")} ${drugs.toString().replace(",", ", ")} ${interactionDiceResult.total}`)
+                  //Chrome Flesh p. 197: the crashes deal Physical damage rather than Stun, noted on each drug of the
+                  //mix whose crash is still to come, the one being taken included (drug-crash.js)
+                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.join(", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugCrashPhysical")}`)
+                  itemData.handleShot.crashPhysical = true
+                  for (let d of mixedDrugs.slice(1)){
+                    if (d.system.isActive && d.system.handleShot) d.system.handleShot.crashPhysical = true
+                  }
                   break
                 default:
-                  console.log(interactionDiceResult.total)
-                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")}${game.i18n.format("SR5.Colons")} ${drugs.toString().replace(",", ", ")}`)
+                  console.log(interactionTotal)
+                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")}${game.i18n.format("SR5.Colons")} ${drugs.join(", ")}`)
                   damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
                   damageInfo.damage.value = 10
                   damageInfo.damage.type = "physical"
@@ -1401,7 +1607,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
             }
 						
             // Notify info drug taken
-            await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.localize(SR5.drugs[itemData.handleShot.name])}${game.i18n.format("SR5.Colons")}<ul><li>${game.i18n.format("SR5.ToxinSpeed")}${game.i18n.format("SR5.Colons")} ${itemData.handleShot.speed} ${speedType}</li><li>${game.i18n.format("SR5.Duration")}${game.i18n.format("SR5.Colons")} ${itemData.handleShot.duration} ${game.i18n.localize(SR5.extendedIntervals[itemData.handleShot.durationType])}</li></ul>`)
+            await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.localize(SR5.drugs[itemData.handleShot.name])}${game.i18n.format("SR5.Colons")}<ul><li>${game.i18n.format("SR5.ToxinSpeed")}${game.i18n.format("SR5.Colons")} ${itemData.handleShot.speed} ${speedType}</li><li>${game.i18n.format("SR5.Duration")}${game.i18n.format("SR5.Colons")} ${itemData.handleShot.duration} ${game.i18n.localize(unitKey(SR5.extendedIntervals[itemData.handleShot.durationType], itemData.handleShot.duration))}</li></ul>`)
 						
             // Notify info on effect for Laes/Leal
             if (itemData.handleShot.effectDuration) await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.ErasedMemoryFor")} ${itemData.handleShot.effectDuration} ${game.i18n.localize(itemData.handleShot.effectDurationType)}`)
@@ -1416,40 +1622,17 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         }
 
       } else if (target === "system.wirelessTurnedOn"){
-        foundry.utils.setProperty(item, "system.isActive", false)
-
-								
-        itemData.onUse.duration = ""
-        if (itemData.handleShot.durationContrecoup) itemData.onUse.contrecoup = `${itemData.handleShot.durationContrecoup} ${game.i18n.localize(SR5.extendedIntervals[itemData.handleShot.durationContrecoupType])}`
-				
-        // Check if the item is a drug set on systemEffect and has contrecoup duration
-        if (item.system.wirelessTurnedOn && drugType && itemData.handleShot.durationContrecoup) {
-          // Notify info on contrecoup				
-          await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugContrecoup")} (${game.i18n.localize(SR5.drugs[itemData.handleShot.name])})${game.i18n.format("SR5.Colons")} ${itemData.handleShot.durationContrecoup} ${game.i18n.localize(SR5.extendedIntervals[itemData.handleShot.durationContrecoupType])}`)
-        }
-				
-        // Handle if the item is a drug set on systemEffect and has untresisted stun contrecoup
-        if (item.system.wirelessTurnedOn && drugType && itemData.handleShot.unresistedStunDamage) {
-          let damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
-          damageInfo.damage.value = itemData.handleShot.unresistedStunDamage
-          damageInfo.damage.type = "stun"
-          this.actor.takeDamage(damageInfo)
-        }
-				
-        // Handle if the item is a drug set on systemEffect and has resisted stun contrecoup
-        if (item.system.wirelessTurnedOn && drugType && itemData.handleShot.resistedStunDamage) {
-          let damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
-          damageInfo.damage.value = itemData.handleShot.resistedStunDamage
-          damageInfo.damage.type = "stun"
-          damageInfo.damage.resistanceType = "physicalDamage"
-          this.actor.rollTest("resistanceCard", null, damageInfo)
-        }
-
-        if (!item.system.wirelessTurnedOn) {
+        //The crash takes the same path as the calendar (entities/items/drug-crash.js)
+        if (itemData.wirelessTurnedOn) await startDrugCrash(itemData, actor)
+        else {
+          itemData.isActive = false
+          itemData.onUse.duration = ""
           itemData.interact = false
           itemData.onUse.contrecoup = ""
         }
       }
+      //The phase is what is kept: the two switches only lead to it (entities/items/drug-phase.js)
+      itemData.phase = phaseFromFlags(itemData.isActive, itemData.wirelessTurnedOn)
     }
 
     if (item.type === "itemProgram" && target === "system.isCreated"){
@@ -1480,19 +1663,25 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         actions = [{
           type: "simple", value: 1, source: "activateFocus"
         }]
-        SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
+        if (this._spendsActionCounters()) SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
 
         // Handle focus addicition
         let alreadyTaken = actorData.addictions.find((d) => item.name === d.name)
         let addiction = []
         if (item.system.isActive){
+          //SR5 p. 416: the rating is the total Force of the active foci, this one included
+          let rating = focusAddictionRating(itemList)
           if (alreadyTaken) {
             alreadyTaken.shot.value += 1
-            alreadyTaken.weekAddiction.value = 11 - item.system.itemRating
-            alreadyTaken.addiction.threshold = 2
+            alreadyTaken.weekAddiction.value = addictionWeeks(rating)
+            //An entry written before with dotted keys has no addiction object: it gets one
+            alreadyTaken.addiction = {
+              ...(alreadyTaken.addiction ?? {
+              }), type: "psychological", rating, threshold: 2
+            }
           }
           else {
-            addiction = SR5_CharacterUtility.generateDrugAddiction(item)
+            addiction = SR5_CharacterUtility.generateDrugAddiction(item, rating)
             actorData.addictions = actorData.addictions.concat(addiction)
           }		
           if (actorData.addictions.shot) SR5_EntityHelpers.updateValue(actorData.addictions.shot)
@@ -1503,7 +1692,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         actions = [{
           type: "free", value: 1, source: "desactivateFocus"
         }]
-        SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
+        if (this._spendsActionCounters()) SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
 
       }
     }
@@ -1518,16 +1707,17 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       else actions = [{
         type: "free", value: 1, source: "unloadProgram"
       }]
-      SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
+      if (this._spendsActionCounters()) SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
     }
-    if (target === "system.wirelessTurnedOn"){
+    //A drug has no wireless: its switch moves its phase, as in _itemValueActionCost
+    if (target === "system.wirelessTurnedOn" && item.type !== "itemDrug"){
       //Turning a device's wireless off is always a free action (SR5 p. 424). Turning it on is free through a
       //DNI (p. 165), simple otherwise (p. 167), when the world setting asks for it; the actor's "wired by DNI" box decides
       let actionType = SR5_ActorHelper.wirelessSwitchActionType(!oldValue, game.settings.get("sr5", "sr5WifiRequiresDNI"), actor.system.hasDNI)
       actions = [{
         type: actionType, value: 1, source: (oldValue === false) ? "turnOnWifi" : "turnOffWifi"
       }]
-      SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
+      if (this._spendsActionCounters()) SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
     }
 
     //Special case for materialization
@@ -1543,6 +1733,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       "items": itemList,
     })
     if (this.actor.isToken) this.actor.sheet.render()
+
+    //Switching off the device in use, or equipping another, leaves the Matrix: dumpshock in VR (SR5 p. 231,
+    //DjamZ's ruling, 2026-10-06). The character switches to AR first to leave it cleanly
+    if (connectedDeviceId && !itemList.find(i => i._id === connectedDeviceId)?.system.isActive) SR5_ActorHelper.dumpshockIfInVR(this.actor)
 
     //Delete effects linked to sustaining
     if ((item.type === "itemComplexForm" || item.type === "itemSpell" || item.type === "itemAdeptPower" || item.type === "itemPower") && target === "system.isActive"){
@@ -1586,32 +1780,13 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
   //Start the crash of a drug in the item list: as when its crash switch is turned on from the sheet, the effect
   //ends, the crash duration is shown and its Stun damage applies
   async _startDrugCrash(drug, actor) {
-    let data = drug.system, shot = data.handleShot ?? {
-    }
-    data.isActive = false
-    data.wirelessTurnedOn = true
-    data.onUse.duration = ""
-    if (shot.durationContrecoup) {
-      data.onUse.contrecoup = `${shot.durationContrecoup} ${game.i18n.localize(SR5.extendedIntervals[shot.durationContrecoupType])}`
-      await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugContrecoup")} (${game.i18n.localize(SR5.drugs[shot.name])})${game.i18n.format("SR5.Colons")} ${data.onUse.contrecoup}`)
-    }
-    if (shot.unresistedStunDamage) {
-      let damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
-      damageInfo.damage.value = shot.unresistedStunDamage
-      damageInfo.damage.type = "stun"
-      actor.takeDamage(damageInfo)
-    }
-    if (shot.resistedStunDamage) {
-      let damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
-      damageInfo.damage.value = shot.resistedStunDamage
-      damageInfo.damage.type = "stun"
-      damageInfo.damage.resistanceType = "physicalDamage"
-      actor.rollTest("resistanceCard", null, damageInfo)
-    }
+    await startDrugCrash(drug.system, actor)
   }
 
   /* -------------------------------------------- */
-  //Change value of an item from actor sheet by clicking with mouse
+  //Change value of an item from actor sheet by clicking with mouse. The value is read as the sheet shows it, but only
+  //the clicked path is written (and the other matrix attribute when it moves too): the prepared copy written back
+  //whole put every computed value in the source, and the next preparation added its modifiers again
   _onChangeValueByClick(event) {
     let id = event.currentTarget.closest(".item")?.dataset.itemId,
       target = event.currentTarget.dataset.binding,
@@ -1623,8 +1798,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     entity = original.toObject(false)
     let value = foundry.utils.getProperty(entity, target)
     let step = 1
-    if (event.shiftKey && target === "system.magic.reagents") step = 10
+    if (event.shiftKey && ["system.magic.reagents", "system.magic.reagentsRefined", "system.magic.reagentsRadical"].includes(target)) step = 10
     else if (event.ctrlKey && target === "system.quantity") step = 10
+    let updates = {
+    }
 
     switch (event.button) {
       case 0:
@@ -1641,7 +1818,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
               value++
             } else {
               if (noiseReduction > 0) {
-                foundry.utils.setProperty(entity, "system.matrix.attributes.noiseReduction.base", (noiseReduction - 1))
+                updates["system.matrix.attributes.noiseReduction.base"] = noiseReduction - 1
                 value++
               } else {
                 SR5_SystemHelpers.srLog(3, "Reached maximum value")
@@ -1653,7 +1830,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
               value++
             } else {
               if (sharing > 0) {
-                foundry.utils.setProperty(entity, "system.matrix.attributes.sharing.base", (sharing - 1))
+                updates["system.matrix.attributes.sharing.base"] = sharing - 1
                 value++
               } else {
                 SR5_SystemHelpers.srLog(3, "Reached maximum value")
@@ -1666,30 +1843,25 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         break
     }
 
-    if (id){
-      foundry.utils.setProperty(entity, target, value)
-      this.actor.updateEmbeddedDocuments("Item", [entity])
-    } else {
-      foundry.utils.setProperty(entity, target, value)
-      this.actor.update(entity)
-    }
+    updates[target] = value
+    if (id) this.actor.updateEmbeddedDocuments("Item", [{
+      _id: id, ...updates
+    }])
+    else this.actor.update(updates)
   }
 
   /* -------------------------------------------- */
   //Change value of an actor by click
   _onEditActorValue(event){
     let target = event.currentTarget.dataset.binding
-    let actor = this.actor.toObject(false)
-
     let value = event.target.value
     if (event.currentTarget.dataset.dtype === "Boolean") {
-      let oldValue = foundry.utils.getProperty(actor, target)
+      let oldValue = foundry.utils.getProperty(this.actor, target)
       value = !oldValue
     }
-    foundry.utils.setProperty(actor, target, value)
-    let actorData = actor.system
+    //Only the toggled path: the whole prepared system written back put its computed values in the source
     this.actor.update({
-      'system': actorData
+      [target]: value
     })
   }
 
@@ -1769,7 +1941,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }])) return false
     await this.actor.rebootDeck()
 
-    //Rebooting by choice is a complex action (SR5 p. 231); a reboot forced by an IC spends none
+    //Rebooting by choice is a complex action (SR5 p. 231); a reboot forced by an IC spends none, nor one out of combat
+    if (!this._spendsActionCounters()) return
     let actionsLeft = SR5_MiscellaneousHelpers.spendActions(foundry.utils.deepClone(this.actor.system.specialProperties.actions), [{
       type: "complex", value: 1, source: "rebootDeck"
     }])
@@ -1883,7 +2056,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         if (game.user.isGM) {
           controlerList[a.id] = a.name
         } else {
-          if (a.hasPlayerOwner) controlerList[a.id] = a.name
+          //A player hands the drone to their own character, not to another player's
+          if (a.isOwner) controlerList[a.id] = a.name
         }
       }
     }
@@ -2238,6 +2412,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
   async _onDeleteItemFromPan(event){
     event.preventDefault()
+    // The browser clears currentTarget once the handler yields: read the button before any await
+    let index = event.currentTarget.dataset.index
+    let itemId = event.currentTarget.dataset.key
     // Submit any unsaved changes
     if (this.isEditable) {
       const formData = new foundry.applications.ux.FormDataExtended(this.element)
@@ -2246,8 +2423,6 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         await this.document.update(submitData)
       }
     }
-    let index = event.currentTarget.dataset.index
-    let itemId = event.currentTarget.dataset.key
     let actor = this.actor.id
     if (this.actor.isToken) actor = this.actor.token.id
 

@@ -37,19 +37,21 @@ export async function sr5HookCanvasReadyVisionRanges(canvasData) {
   if (updates.length) await scene.updateEmbeddedDocuments("Token", updates)
 }
 
+//The template hooks run on every GM: the active one alone gives and lifts their effects, or two GMs connected gave each
+//token two copies, its noise counted twice (Marta's measure)
 export async function sr5HookDrawMeasuredTemplate(template) {
-  if ( !game.user.isGM ) return
+  if (!game.users?.activeGM?.isSelf) return
   await SR5_EffectArea.initiateTemplateEffect(template)
 }
 
 export async function sr5HookDeleteMeasuredTemplate(templateDocument) {
-  if ( !game.user.isGM ) return
+  if (!game.users?.activeGM?.isSelf) return
   if (templateDocument.flags?.sr5?.jammerUuid) return SR5_Jammer.refreshScene(templateDocument.parent)
   await SR5_EffectArea.removeTemplateEffect(templateDocument)
 }
 
 export async function sr5HookUpdateMeasuredTemplate(templateDocument) {
-  if ( !game.user.isGM ) return
+  if (!game.users?.activeGM?.isSelf) return
   if (templateDocument.flags?.sr5?.jammerUuid) return SR5_Jammer.refreshScene(templateDocument.parent)
   await SR5_EffectArea.checkUpdatedTemplateEffect(templateDocument)
 }

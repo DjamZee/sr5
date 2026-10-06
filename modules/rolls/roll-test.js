@@ -11,10 +11,21 @@ import {
   SR5_RollTestHelper 
 } from "./roll-test-helper.js"
 import * as SR5_AddRollInfo from "./roll-test-case/index.js"
+
+const PICKPOCKET_TESTS = ["pickpocket", "pickpocketPerception"]
 import {
   SR5Combat 
 } from "../system/srcombat.js"
 import SR5_RollDialog from "./roll-dialog.js"
+import {
+  testsLeash
+} from "../entities/items/spirit-bonds.js"
+import {
+  thresholdModifierOf, applyThresholdModifier, hasOwnThreshold
+} from "./roll-helpers/threshold.js"
+import {
+  isStructuredSpell, pushedHits
+} from "./roll-helpers/arcana-metamagics.js"
 import {
   isRecoilCarriedOver, buildsProgressiveRecoil
 } from "./roll-helpers/recoil.js"
@@ -25,13 +36,26 @@ import {
   SR5_CombatHelpers
 } from "./roll-helpers/combat.js"
 import {
+  SR5_MiscellaneousHelpers
+} from "./roll-helpers/miscellaneous.js"
+import {
   SR5_SocketHandler
 } from "../socket.js"
 import {
   SR5_ActorHelper
 } from "../entities/actors/entityActor-helpers.js"
+import {
+  reagentSystem, reagentChoices, reagentLimit, reagentTestKind, drainReduction, normalizeTier, tierStock, tierPath,
+  effectiveDrachms, stockAfterSpending, TIER_LABELS
+} from "../system/reagents.js"
+import {
+  rollLimitValue, secondChanceLimit
+} from "./roll-helpers/limit.js"
 
 export class SR5_RollTest {
+  //The roll window open now, if any: the next one waits for it (generateRollDialog)
+  static dialogQueue = Promise.resolve()
+
   //Prepare the roll window
   static async generateRollDialog(dialogData, edge = false) {
     let actor = SR5_EntityHelpers.getRealActorFromID(dialogData.owner.actorId),
@@ -46,7 +70,16 @@ export class SR5_RollTest {
     const captureResult = (action, dialog) => ({
       action,
       reagentsSpent: parseInt(dialog.element.querySelector('[name="reagentsSpent"]')?.value || 0),
+      reagentTier: dialog.element.querySelector('[name="reagentTier"]')?.value || "raw",
+      reagentForeign: !!dialog.element.querySelector('[name="reagentForeign"]')?.checked,
+      harvestZone: dialog.element.querySelector('[name="harvestZone"]')?.value,
     })
+
+    //Reagent tiers offered in the dialog (Shadow Spells, Forbidden Arcana)
+    dialogData.magic.reagentChoices = reagentChoices(actorData.magic)
+    if (dialogData.magic.reagentChoices.hasTiers && !(tierStock(actorData.magic, dialogData.magic.reagentTier) > 0)) {
+      dialogData.magic.reagentTier = dialogData.magic.reagentChoices.tiers.find(t => t.stock > 0)?.key ?? "raw"
+    }
 
     // Build DialogV2 buttons
     let buttons = [
@@ -67,9 +100,16 @@ export class SR5_RollTest {
       })
     }
 
+    //Threshold modifier of the character (Bliss, Purple Orchid), shown in the dialog and added once it closes
+    dialogData.thresholdModifier = hasOwnThreshold(dialogData.test) ? thresholdModifierOf(actorData) : {
+      value: 0, sources: []
+    }
+
     // Render template and show dialog
     const dlg = await foundry.applications.handlebars.renderTemplate(template, dialogData)
-    const result = await foundry.applications.api.DialogV2.wait({
+    //One roll window at a time (its id is fixed): a second one asked meanwhile (two actors of the same user in the
+    //area of a spell, M5 D3) opens once the first is closed, instead of being lost
+    const turn = SR5_RollTest.dialogQueue.then(() => foundry.applications.api.DialogV2.wait({
       window: {
         title: dialogData.test.title 
       },
@@ -86,12 +126,19 @@ export class SR5_RollTest {
         rollDialog.activateListeners(element)
         //An action the character no longer has keeps the dialog open, when the world setting asks for it
         element.querySelectorAll('button[data-action="roll"], button[data-action="edge"]').forEach(b => b.addEventListener("click", ev => {
-          if (SR5Combat.hasActionsLeft(actor, dialogData.combat.actions)) return
+          //Suppressive fire and the flamethrower sweep need all their rounds (SR5 p. 179, Gun H(e)aven 3 p. 3)
+          const missingAmmo = dialogData.test.typeSub === "rangedWeapon" && SR5_ConverterHelpers.missingAmmo(dialogData.combat.firingMode.selected, dialogData.combat.ammo.value)
+          if (missingAmmo) ui.notifications.warn(game.i18n.format("SR5.WARN_FiringModeAmmo", {
+            needed: SR5_ConverterHelpers.firingModeToBullet(dialogData.combat.firingMode.selected), left: dialogData.combat.ammo.value ?? 0
+          }))
+          else if (SR5Combat.hasActionsLeft(actor, dialogData.combat.actions)) return
           ev.preventDefault()
           ev.stopImmediatePropagation()
         }))
       },
-    })
+    }))
+    SR5_RollTest.dialogQueue = turn.catch(() => null)
+    const result = await turn
 
     //If roll is cancelled (dialog dismissed without clicking a button)
     if (!result) return SR5_RollTestHelper.handleCanceledTest(actor, dialogData)
@@ -103,12 +150,19 @@ export class SR5_RollTest {
     }
 
     //Verify if reagents are used, if so, remove from actor
-    if (dialogData.magic.hasUsedReagents) {
-      dialogData.magic.reagentsSpent = result.reagentsSpent
-      actor.update({
-        "system.magic.reagents": actorData.magic.reagents - dialogData.magic.reagentsSpent
+    if (dialogData.magic.hasUsedReagents && result.reagentsSpent > 0) {
+      const tier = normalizeTier(result.reagentTier)
+      const spent = Math.min(result.reagentsSpent, tierStock(actorData.magic, tier))
+      dialogData.magic.reagentsSpent = spent
+      dialogData.magic.reagentTier = tier
+      dialogData.magic.reagentForeign = result.reagentForeign
+      //Another tradition's reagents work at half their Power (SR5 p. 320)
+      dialogData.magic.reagentsEffective = effectiveDrachms(spent, result.reagentForeign)
+      await actor.update({
+        [tierPath(tier)]: stockAfterSpending(tierStock(actorData.magic, tier), spent)
       })
-    }
+    } else dialogData.magic.hasUsedReagents = false
+    if (result.harvestZone) dialogData.magic.reagentHarvestZone = result.harvestZone
 
     //Rename chatCard title for extended test
     if (dialogData.test.isExtended) dialogData.test.title = dialogData.test.title.replace("Test", game.i18n.localize("SR5.ExtendedTest"))
@@ -129,15 +183,41 @@ export class SR5_RollTest {
         dialogData.limit.base = dialogData.magic.force
         dialogData.limit.type = "force"
       }
-      if (dialogData.magic.hasUsedReagents && dialogData.test.type !== "ritual") {
-        dialogData.limit.base = dialogData.magic.reagentsSpent
-        dialogData.limit.type = "reagents"
+      if (dialogData.magic.hasUsedReagents) {
+        const magic = actorData.specialAttributes?.magic?.augmented?.value ?? 0
+        const system = reagentSystem()
+        const reagents = reagentLimit({
+          system, test: dialogData.test, tier: dialogData.magic.reagentTier, effective: dialogData.magic.reagentsEffective,
+          spent: dialogData.magic.reagentsSpent, baseLimit: dialogData.limit.base, magic
+        })
+        if (reagents.base !== dialogData.limit.base) {
+          dialogData.limit.base = reagents.base
+          dialogData.limit.type = "reagents"
+        }
+        if (reagents.bonus) dialogData.limit.modifiers.reagentTier = {
+          value: reagents.bonus, label: game.i18n.localize(TIER_LABELS[dialogData.magic.reagentTier]),
+        }
+        dialogData.limit.unlimited = reagents.unlimited
+        //Forbidden Arcana p. 181: the Drain the tier takes off, within what the limit bonus left of the Magic
+        dialogData.magic.reagentDrainReduction = drainReduction({
+          system, tier: dialogData.magic.reagentTier, testKind: reagentTestKind(dialogData.test),
+          spent: dialogData.magic.reagentsSpent, magic, limitBonusUsed: reagents.bonus
+        })
+        if (dialogData.magic.reagentDrainReduction && dialogData.test.type === "spell") {
+          dialogData.magic.drain.modifiers.reagentTier = {
+            value: -dialogData.magic.reagentDrainReduction, label: game.i18n.localize(TIER_LABELS[dialogData.magic.reagentTier]),
+          }
+          dialogData.magic.drain.value = Math.max(dialogData.magic.drainFloor ?? 2, dialogData.magic.drain.value - dialogData.magic.reagentDrainReduction)
+        }
       }
     }
     if (dialogData.matrix.level) {
       dialogData.limit.base = dialogData.matrix.level
       dialogData.limit.type = "level"
     }
+
+    //Raise the threshold of the test, if it has one (Bliss SR5 p. 412, Purple Orchid Chrome Flesh p. 190)
+    if (hasOwnThreshold(dialogData.test)) dialogData.threshold = applyThresholdModifier(dialogData.threshold, dialogData.thresholdModifier)
 
     //Add limit modifiers
     dialogData = await SR5_RollTestHelper.handleLimitModifiers(dialogData)
@@ -151,7 +231,8 @@ export class SR5_RollTest {
     // Outside combat there are no action phases to carry recoil over: each shot stands alone
     if (dialogData.combat.ammo.fired > 0){
       if (buildsProgressiveRecoil(dialogData.combat.firingMode.selected) && isRecoilCarriedOver(actor)){
-        let actualRecoil = actor.getFlag("sr5", "cumulativeRecoil") || 0
+        //A change of firing mode or choke spent with this roll ended the earlier recoil (SR5 p. 178)
+        let actualRecoil = SR5_MiscellaneousHelpers.changeEndsRecoil(dialogData.combat.actions) ? 0 : (actor.getFlag("sr5", "cumulativeRecoil") || 0)
         actualRecoil += dialogData.combat.ammo.fired
         await actor.setFlag("sr5", "cumulativeRecoil", actualRecoil)
       }
@@ -160,12 +241,16 @@ export class SR5_RollTest {
     // Roll dices
     if (edge) {
       // push the limits
+      //Structured Spellcasting (Forbidden Arcana p. 43): Edge no longer lifts the limit of the spell
       dialogData.roll = await SR5_RollTest.rollDice({
         dicePool: dialogData.dicePool.value,
         explose: edge,
+        limit: isStructuredSpell(dialogData) ? dialogData.limit.value : undefined,
       })
       dialogData.edge.hasUsedPushTheLimit = true
     } else {
+      //Radical reagents lift the limit (Forbidden Arcana p. 181): the card shows none either
+      if (dialogData.limit.unlimited) dialogData.limit.value = rollLimitValue(dialogData.limit)
       dialogData.roll = await SR5_RollTest.rollDice({
         dicePool: dialogData.dicePool.value,
         limit: dialogData.limit.value,
@@ -204,7 +289,8 @@ export class SR5_RollTest {
     ui.notifications.info(`${spiritItem.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format('SR5.INFO_ServicesReduced', {
       service: 1
     })}`)
-    let spiritActor = game.actors.find(a => a.system.creatorItemId === spiritItem.id)
+    //A duplicated summoner carries the same item ids: the spirit is the one this summoner called
+    let spiritActor = spiritItem.parent ? SR5_ActorHelper.findSidekick(game.actors, SR5_ActorHelper.sidekickCreatorId(spiritItem.parent), spiritItem.id) : null
     if (spiritActor){
       let services = spiritActor.system.services.value - 1
       //A summoned spirit is often the GM's: a player who does not own it hands the update to the GM
@@ -218,6 +304,8 @@ export class SR5_RollTest {
             value: services
           }
         },
+        //The GM lets one service go, for the owner of the summoner (socket-guard.js)
+        use: "spiritService",
       })
     }
   }
@@ -233,7 +321,7 @@ export class SR5_RollTest {
       SR5_CombatHelpers.applyFullDefenseEffect(actor)
     }
     if (dialogData.combat.activeDefenseSelected !== "") initModifier += SR5_ConverterHelpers.activeDefenseToInitMod(dialogData.combat.activeDefenseSelected)
-    if (initModifier < 0) SR5Combat.changeInitInCombatHelper(actor.id, initModifier)
+    if (initModifier < 0) SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), initModifier)
   }
 
   /** Roll a shadowrun 5 test
@@ -376,15 +464,14 @@ export class SR5_RollTest {
     let rollHits = messageData.roll.rollHits ?? messageData.roll.hits
     let dicePool = rollDices ? rollDices.filter(d => d.result < 5).length : messageData.dicePool.value - messageData.roll.hits
     if (dicePool < 0) dicePool = 0
-    let limit = messageData.limit.value - rollHits
-    if (limit < 0) limit = 0
-    let chance = await SR5_RollTest.rollDice({
-      dicePool: dicePool, limit: limit, edgeRoll: true
-    })
     //SR5 p. 58: Second Chance has no effect on limits. A test whose hits already reached its limit gains nothing,
-    //only a test without limit (value 0) keeps every new hit
+    //only a test without limit (value 0, or lifted by radical reagents) keeps every new hit
+    let limit = secondChanceLimit(messageData.limit, rollHits)
+    let chance = await SR5_RollTest.rollDice({
+      dicePool: dicePool, limit: limit ?? 0, edgeRoll: true
+    })
     let chanceHit = chance.hits
-    if (messageData.limit.value > 0) chanceHit = Math.min(chance.hits, limit)
+    if (limit !== null) chanceHit = Math.min(chance.hits, limit)
     let dicesKeeped = messageData.roll.dices.filter(function (d) {
       return d.result > 4
     })
@@ -394,6 +481,8 @@ export class SR5_RollTest {
     newMessage.roll.hits = messageData.roll.hits + chanceHit
     newMessage.roll.dices = dicesKeeped.concat(chance.dices)
     if (rollDices) newMessage.roll.rollDices = rollDices.filter(d => d.result > 4).concat(chance.dices)
+    //Glitch status not read again: it stays the one of the initial roll. Second Chance cannot erase a glitch
+    //(SR5 p. 58), and rerolled dice full of 1 do not create one (ruling of DjamZ, 2026-10-06, G5)
     newMessage.edge.hasUsedSecondChance = true
     newMessage.edge.canUseEdge = false
     await SR5_RollTest.addInfoToCard(newMessage, actor.id)
@@ -412,18 +501,17 @@ export class SR5_RollTest {
   //Handle Push the Limit test
   static async pushTheLimit(message, actor, fromCard = false) {
     let messageData = message.flags.sr5data
-    let dicePool, creator
+    let dicePool
     //GM ruling (05/10): Edge joins the starting pool of an extended test, once: not on a later roll
     if (SR5_RollTest.isExtendedTest(messageData) && (messageData.test.extended?.roll > 1 || messageData.edge.hasUsedPushTheLimit)) {
       ui.notifications.warn(game.i18n.localize("SR5.WARN_EdgeExtendedTestStartOnly"))
       return false
     }
 
-    //If roller is a bounder spirit, use actor Edge instead
-    if (actor.type === "actorSpirit"){
-      creator = SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId)
-      dicePool = creator.system.specialAttributes.edge.augmented.value
-    } else dicePool = actor.system.specialAttributes.edge.augmented.value
+    //A spirit spends its character's Edge under a magic pact only (Street Grimoire p. 133, SR5 p. 58)
+    const creator = SR5_RollTestHelper.pactCharacter(actor)
+    if (creator) dicePool = creator.system.specialAttributes.edge.augmented.value
+    else dicePool = actor.system.specialAttributes?.edge?.augmented?.value ?? 0
 
     let newRoll = await SR5_RollTest.rollDice({
       dicePool: dicePool,
@@ -434,7 +522,9 @@ export class SR5_RollTest {
     // SR5 p. 58: pushing the limit ignores the test limit, so start from the unlimited hits of the original roll
     let originalHits = messageData.roll.realHits ?? messageData.roll.hits
     let newMessage = foundry.utils.duplicate(messageData)
-    newMessage.roll.hits = originalHits + newRoll.hits
+    //Structured Spellcasting (Forbidden Arcana p. 43): the limit of the spell still holds
+    newMessage.roll.hits = pushedHits(isStructuredSpell(messageData) ? messageData.roll.hits : originalHits, newRoll.hits,
+      messageData.limit.value, isStructuredSpell(messageData))
     newMessage.roll.realHits = originalHits + newRoll.realHits
     newMessage.roll.dices = messageData.roll.dices.concat(newRoll.dices)
     //The Edge dice join the pool: glitch is read again on every die rolled for this roll (SR5 p. 47, 58),
@@ -465,8 +555,8 @@ export class SR5_RollTest {
 
   //Render the chat message
   // The full speaker of a card: scene, token and world actor, so that Foundry finds an unlinked token's actor (N95)
-  static cardSpeaker(owner) {
-    const actor = SR5_EntityHelpers.getRealActorFromID(owner.speakerId)
+  static cardSpeaker(owner, uuids) {
+    const actor = SR5_EntityHelpers.getRealActorFromID(owner.speakerId, uuids)
     if (!actor) return {
       actor: owner.speakerId, token: owner.speakerId, alias: owner.speakerActor
     }
@@ -495,12 +585,15 @@ export class SR5_RollTest {
     }
     html = temp.innerHTML
 
+    //A pocket is picked in secret: the target hears of it only if he notices, so both cards go to the GM
+    if (PICKPOCKET_TESTS.includes(cardData.test.type) && !["gmroll", "blindroll"].includes(cardData.roll.rollMode)) cardData.roll.rollMode = "gmroll"
+
     let chatData = {
       roll: cardData.roll.r,
       rollMode: cardData.roll.rollMode,
       user: game.user.id,
       content: html,
-      speaker: SR5_RollTest.cardSpeaker(cardData.owner),
+      speaker: SR5_RollTest.cardSpeaker(cardData.owner, cardData.actorUuids),
     }
 
     if (["gmroll", "blindroll"].includes(cardData.roll.rollMode)) chatData["whisper"] = ChatMessage.getWhisperRecipients("GM").map((u) => u.id)
@@ -558,6 +651,17 @@ export class SR5_RollTest {
   static async addInfoToCard(cardData, actorId) {
     //Reset button
     cardData.chatCard.buttons = {
+    }
+
+    //Testing the Leash (Forbidden Arcana p. 176, optional rule): a spirit that scores 6 - (Force / 2) hits or more
+    //tests it. The card only offers the gamemaster's button; the test itself reads nothing from the card
+    if (game.settings.get("sr5", "spiritLeash") === true && actorId) {
+      const spirit = SR5_EntityHelpers.getRealActorFromID(actorId)
+      if (spirit?.type === "actorSpirit" && testsLeash({
+        hits: cardData.roll?.hits, force: spirit.system.force.value, isElemental: spirit.system.isElemental, services: spirit.system.services.value
+      }) && spirit.system.creatorId) {
+        cardData.chatCard.buttons.leashTest = SR5_RollMessage.generateChatButton("nonOpposedTest", "leashTest", game.i18n.localize("SR5.LeashTest"))
+      }
     }
 
     //Handle Extended Test
@@ -635,11 +739,21 @@ export class SR5_RollTest {
       case "grappleClinchDefense":
         await SR5_AddRollInfo.grappleClinchDefenseInfo(cardData)
         break
+      case "pickpocket":
+        await SR5_AddRollInfo.pickpocketInfo(cardData)
+        break
+      case "pickpocketPerception":
+        await SR5_AddRollInfo.pickpocketPerceptionInfo(cardData)
+        break
       case "lift":
         await SR5_AddRollInfo.liftInfo(cardData, actorId)
         break
       case "movement":
         await SR5_AddRollInfo.movementInfo(cardData, actorId)
+        break
+      case "reagentHarvest":
+      case "reagentRefine":
+        await SR5_AddRollInfo.reagentWorkInfo(cardData)
         break
       case "skill":
       case "skillDicePool":
@@ -650,6 +764,9 @@ export class SR5_RollTest {
         break
       case "resistFire":
         await SR5_AddRollInfo.fireResistanceInfo(cardData)
+        break
+      case "addictionTest":
+        await SR5_AddRollInfo.addictionInfo(cardData)
         break
       case "preparationResistance":
       case "ritualResistance":
@@ -701,6 +818,9 @@ export class SR5_RollTest {
       case "vehicleTest":
         await SR5_AddRollInfo.vehicleTestInfo(cardData, actorId)
         break
+      case "mentorDrawback":
+        await SR5_AddRollInfo.mentorDrawbackInfo(cardData)
+        break
       case "attributeOnly":
       case "languageSkill":
       case "knowledgeSkill":
@@ -709,6 +829,7 @@ export class SR5_RollTest {
       case "matrixDefenseSimple":
       case "astralTracking":
       case "derivedAttribute":
+      case "illusionResistance": //The active GM compares it with the threshold in his ledger (system/illusion.js)
       case "itemRoll":
         break
       default:

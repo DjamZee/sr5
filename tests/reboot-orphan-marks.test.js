@@ -174,13 +174,23 @@ describe('Rebooting the hacker deck wipes the marks it had placed (SR5 p. 244)',
     const call = SR5_SocketHandler.emitForGM.mock.calls.find(c => c[0] === 'deleteMarksOnActor')
     expect(call[1].actorId).toBe('hacker')
     expect(call[1].actorData.matrix.markedItems.map(m => m.uuid)).toEqual(['Actor.pc.Item.c', 'Actor.ai'])
-    // The GM's client runs what the socket carries
+    // The active GM's client runs what the socket carries, for the player who owns the hacker (security pass, Olympe)
     game.user = {
       isGM: true, id: 'gm'
     }
+    game.users = {
+      activeGM: game.user, get: id => ({
+        id, isGM: id === 'gm'
+      })
+    }
+    hacker.testUserPermission = user => user?.id === 'player'
     await SR5_ActorHelper._socketDeleteMarksOnActor({
       data: call[1]
-    })
+    }, 'stranger')
+    expect(commlink.system.marks).not.toEqual([])
+    await SR5_ActorHelper._socketDeleteMarksOnActor({
+      data: call[1]
+    }, 'player')
     expect(commlink.system.marks).toEqual([])
     expect(ai.system.matrix.marks).toEqual([{
       ownerId: 'other', value: 1

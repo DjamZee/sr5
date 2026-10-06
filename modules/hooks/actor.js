@@ -2,6 +2,12 @@ import {
   SR5_CharacterUtility
 } from "../entities/actors/utilityActor.js"
 import {
+  GM_ONLY_ACTOR_PATHS, stripGMOnlyChanges
+} from "../entities/items/spirit-bonds.js"
+import {
+  guardActorOverwatch
+} from "../system/overwatch-guard.js"
+import {
   SR5_ActorHelper
 } from "../entities/actors/entityActor-helpers.js"
 import {
@@ -13,6 +19,9 @@ import {
 import {
   SR5_EntityHelpers
 } from "../entities/helpers.js"
+import {
+  SR5_SpiritTypes
+} from "../entities/items/spirit-types.js"
 
 export async function sr5HookCreateActor(actor) {
   SR5_ActorHelper.redrawCreatorSheet(actor)
@@ -36,9 +45,22 @@ export async function sr5HookCreateActor(actor) {
     }
   }
 
-  if (actor.type ==="actorSpirit") {
+  //A homunculus is always physical (SR5 p. 301): it starts in physical initiative, the others astral
+  if (actor.type ==="actorSpirit" && SR5_SpiritTypes.baseType(actor.system.type) !== "homunculus") {
     SR5_CharacterUtility.switchToInitiative(actor, "astralInit")
   }
+}
+
+//A spirit changed into a homunculus (or a type based on it) drops the astral initiative it was made with: written once
+//by the gamemaster who changed it, the preparation already playing it physical (updateSpiritValues)
+export async function homunculusLeavesAstral(actor, data, userId){
+  if (actor.type !== "actorSpirit" || data.system?.type === undefined || userId !== game.user?.id || !game.user.isGM) return
+  if (SR5_SpiritTypes.baseType(actor.system.type) !== "homunculus") return
+  const initiativeEffect = actor.effects.find(e => e.origin === "initiativeMode")
+  if (actor._source?.system?.initiatives?.astralInit?.isActive) await actor.update({
+    "system.initiatives.astralInit.isActive": false, "system.initiatives.physicalInit.isActive": true,
+  })
+  if (initiativeEffect) await actor.deleteEmbeddedDocuments("ActiveEffect", [initiativeEffect.id])
 }
 
 // Data Trails p. 157-158: an AI's persona carries its own marks only while it has no device. Many updates write the
@@ -47,6 +69,15 @@ export async function sr5HookCreateActor(actor) {
 // leaves them alone; only an update that means to change them (a hacker who reboots, the AI that reboots) goes through.
 export function sr5HookPreUpdateActor(document, changes, options = {
 }) {
+  //Indexes, reputation adjustment and spirit traits are the gamemaster's (Street Grimoire p. 207, Forbidden Arcana
+  //p. 169-176): a player's update that would change them loses those paths, checked before anything is written
+  if (!game.user?.isGM) {
+    const refused = stripGMOnlyChanges(changes, document, GM_ONLY_ACTOR_PATHS)
+    if (refused.length) ui.notifications.warn(game.i18n.localize("SR5.WARN_SpiritBondsGMOnly"))
+    //The Overwatch Score only rises, but for a reboot or an Emulate swap: an update that would leave it lower, in
+    //whatever form, is refused (overwatch-guard.js)
+    if (!guardActorOverwatch(document, changes, options)) return false
+  }
   if (options.sr5PersonaMarks) return
   if (!SR5_CharacterUtility.isDepthActive(document) || SR5_CharacterUtility.isDevicelessAI(document)) return
   delete changes["system.matrix.marks"]
@@ -54,6 +85,7 @@ export function sr5HookPreUpdateActor(document, changes, options = {
 }
 
 export async function sr5HookUpdateActor(document, data, _options, userId) {
+  await homunculusLeavesAstral(document, data, userId)
   //The sheet's wireless and equip toggles write the items through the actor, so no updateItem is sent: a
   //physical jammer changed that way is measured again from here (SR5 p. 443)
   for (let change of Array.isArray(data.items) ? data.items : []){
@@ -64,15 +96,13 @@ export async function sr5HookUpdateActor(document, data, _options, userId) {
   //still reads the actor as it was, so the tokens are served again from here
   if (data.items && userId === game.user?.id) await SR5_CharacterUtility.refreshVisionOfTokens(document)
 
-  if (game.combat && game.user?.isGM && (data.system?.initiatives || data.system?.conditionMonitors || data.system?.matrix)) {
-    let actorId = document.id
-    if (document.isToken) actorId = document.token.id
-
-    if (actorId) await SR5Combat.changeInitInCombatHelper(actorId)
+  //The active GM alone: with two GMs connected, each one compared and adjusted the same fighter
+  if (game.combat && game.user?.isGM && game.users?.activeGM?.id === game.user.id && (data.system?.initiatives || data.system?.conditionMonitors || data.system?.matrix)) {
+    for (const id of SR5Combat.initTargetsOfActor(document)) await SR5Combat.changeInitInCombatHelper(id)
   }
 
   //Keep deck condition monitor synchro with agent condition monitor
-  if (document.type === "actorAgent" && data.system.conditionMonitors?.matrix && (document.testUserPermission(game.user, 3) || (game.user?.isGM))){
+  if (document.type === "actorAgent" && data.system?.conditionMonitors?.matrix && (document.testUserPermission(game.user, 3) || (game.user?.isGM))){
     await SR5_ActorHelper.keepDeckSynchroWithAgent(document)
   }
 

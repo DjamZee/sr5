@@ -10,6 +10,9 @@ import {
 import {
   ritualTraditionPenalty, ritualAssistPool, readAssistDice, teamworkBonus, contractualLacksParticipant, uniqueAssists
 } from "./ritualTeam.js"
+import {
+  spendableStock
+} from "../../system/reagents.js"
 
 // The id the roll cards give an actor (roll-prepare.js getBaseRollData): its token for an unlinked token, itself otherwise
 export function rollCardActorId(actor) {
@@ -22,7 +25,7 @@ export class SR5_RitualCircle {
 
   // Step 3: the Force is chosen before anyone rolls, the participants roll against it
   static async open(actor, item) {
-    if (!(actor.system.magic.reagents > 0)) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_NoReagents"))
+    if (!(spendableStock(actor.system.magic) > 0)) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_NoReagents"))
     const force = await foundry.applications.api.DialogV2.prompt({
       window: {
         title: `${game.i18n.localize("SR5.PerformRitual")} ${item.name}`
@@ -74,13 +77,35 @@ export class SR5_RitualCircle {
   static activateListeners(html, message) {
     const circle = message.flags?.sr5?.ritualCircle
     if (!circle) return
-    // Only the leader (author of the card) or the GM seals
-    if (!message.isOwner) html.querySelectorAll(".ritual-leader").forEach(el => el.remove())
+    // Only the leader seals (SR5 p. 299): whoever owns the ritual's caster, a GM included, never the mere author of the card
+    if (!this.canSeal(globalThis.fromUuidSync?.(circle.itemUuid)?.actor, circle)) html.querySelectorAll(".ritual-leader").forEach(el => el.remove())
     html.querySelectorAll(".sr5-ritual-action").forEach(el => el.addEventListener("click", ev => {
       ev.preventDefault()
       if (ev.currentTarget.dataset.ritualAction === "join") this.join(message)
       else this.seal(message)
     }))
+  }
+
+  // The leader is the caster of the ritual item, and the card must name him: a card pointing at another caster's ritual
+  // seals nothing
+  static canSeal(leader, circle) {
+    return !!leader?.isOwner && rollCardActorId(leader) === circle.leaderId
+  }
+
+  // The assists the teamwork bonus believes: a card posted by the owner of its participant (or a GM), its hits capped
+  // by the pool the participant's sheet gives and by the Force (security, 06/10: the card's hits were the poster's)
+  static believedAssists(message, circle) {
+    return game.messages.contents.map(m => {
+      const a = m.flags?.sr5?.ritualAssist
+      if (a?.circleId !== message.id) return null
+      const actor = SR5_EntityHelpers.getRealActorFromID(a.actorId)
+      if (!actor || !(m.author?.isGM || actor.testUserPermission?.(m.author, "OWNER"))) return null
+      const skill = actor.system.skills?.ritualSpellcasting
+      const pool = ritualAssistPool(skill?.rating?.value, skill?.test?.dicePool, ritualTraditionPenalty(circle.tradition, actor.system.magic?.tradition))
+      return {
+        ...a, pool, hits: Math.min(Math.max(0, Number(a.hits) || 0), pool, Math.max(0, Number(circle.force) || 0))
+      }
+    }).filter(Boolean)
   }
 
   // The assist cards already posted for this circle
@@ -148,10 +173,11 @@ export class SR5_RitualCircle {
     const circle = message.flags.sr5.ritualCircle
     const item = await fromUuid(circle.itemUuid)
     if (!item) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_RitualItemMissing"))
-    const assists = uniqueAssists(this.assistsOf(message), circle.leaderId)
+    const leader = item.actor
+    if (!this.canSeal(leader, circle)) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_RitualNotLeader"))
+    const assists = uniqueAssists(this.believedAssists(message, circle), circle.leaderId)
     if (contractualLacksParticipant(circle, assists.length)) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_RitualContractual"))
 
-    const leader = item.actor
     const bonus = teamworkBonus(leader.system.skills.ritualSpellcasting.rating.value, assists)
     if (!circle.sealed) {
       // No one joins once the leader seals; the leader can still seal again if the roll dialog was closed

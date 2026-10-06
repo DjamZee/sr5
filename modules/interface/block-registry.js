@@ -104,7 +104,10 @@ export const BLOCK_REGISTRY = {
     partial: `${PARTIAL_ROOT}/left-tabs/magicUser/astral.hbs`,              label: 'SR5.SheetConfig.Block.Astral',           size: BLOCK_SIZE.SINGLE 
   },
   reagents:            {
-    partial: `${PARTIAL_ROOT}/left-tabs/magicUser/reagents.hbs`,            label: 'SR5.SheetConfig.Block.Reagents',         size: BLOCK_SIZE.SINGLE 
+    partial: `${PARTIAL_ROOT}/left-tabs/magicUser/reagents.hbs`,            label: 'SR5.SheetConfig.Block.Reagents',         size: BLOCK_SIZE.SINGLE
+  },
+  spiritReputation:    {
+    partial: `${PARTIAL_ROOT}/left-tabs/magicUser/spiritReputation.hbs`,    label: 'SR5.SheetConfig.Block.SpiritReputation', size: BLOCK_SIZE.SINGLE
   },
 
   // ---- Matrix User sidebar (single) ----

@@ -177,7 +177,7 @@ export default async function defenseInfo(cardData, actorId){
 
 async function handleCalledShotDefenseInfo(cardData, actorData){
   cardData.chatCard.calledShotButton = true
-  let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId)
+  let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId, cardData.actorUuids)
   if (typeof cardData.combat.calledShot.effects === "object") cardData.combat.calledShot.effects = Object.values(cardData.combat.calledShot.effects)
 
   switch (cardData.combat.calledShot.name){
@@ -303,7 +303,7 @@ async function handleCalledShotDefenseInfo(cardData, actorData){
 
 async function handleRamming(cardData, initiatorDamage, defenderIsVehicle) {
   //Get the attacker actor
-  let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId)
+  let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId, cardData.actorUuids)
 
   //build roll data
   let rollData = SR5_PrepareRollTest.getBaseRollData(null, attacker)
@@ -331,7 +331,7 @@ async function handleRamming(cardData, initiatorDamage, defenderIsVehicle) {
 
 async function handleEnergeticAura(cardData, actorData){
   //Get the attacker actor
-  let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId)
+  let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId, cardData.actorUuids)
     
   //build roll data
   let rollData = SR5_PrepareRollTest.getBaseRollData(null, attacker)

@@ -28,6 +28,18 @@ import {
 import {
   SR5_ActorHelper
 } from "../../entities/actors/entityActor-helpers.js"
+import {
+  SR5_MiscellaneousHelpers
+} from "./miscellaneous.js"
+import {
+  recountHits, consumedKey
+} from "./socket-guard.js"
+import {
+  originalStrainDevice
+} from "../../system/monad-matrix.js"
+import {
+  SR5_CharacterUtility
+} from "../../entities/actors/utilityActor.js"
 
 export class SR5_MatrixHelpers {
   //Get time spent on a matrix search
@@ -74,7 +86,9 @@ export class SR5_MatrixHelpers {
     let newItem = foundry.utils.duplicate(targetItem)
 
     //targetActor.takeDamage(cardData);
-    if (targetItem.system.type === "livingPersona" || targetItem.system.type === "headcase" ){
+    //A Monad of the original strain takes matrix damage on its nanite swarm, as an AI on its device (Dark Terrors p. 88)
+    let swarm = !!targetItem.id && originalStrainDevice(targetActor)?.id === targetItem.id
+    if (!swarm && (targetItem.system.type === "livingPersona" || targetItem.system.type === "headcase")){
       return targetActor.takeDamage(cardData)
     }
         
@@ -83,18 +97,20 @@ export class SR5_MatrixHelpers {
     //The size of the monitor is prepared (SR5 p. 228): the copy above holds the source, where it is 0,
     //and every first box used to brick the device. No box is kept beyond the monitor
     let monitorSize = targetItem.system.conditionMonitors.matrix.value
+    //Boxes beyond the monitor: the overflow an AI on this device resists when dissipated (Data Trails p. 161)
+    let surplus = Math.max(0, newItem.system.conditionMonitors.matrix.actual.base + damageValue - monitorSize)
     newItem.system.conditionMonitors.matrix.actual.base = Math.min(newItem.system.conditionMonitors.matrix.actual.base + damageValue, monitorSize)
     SR5_EntityHelpers.updateValue(newItem.system.conditionMonitors.matrix.actual, 0, monitorSize)
     //An AI shares the matrix monitor of the device it is loaded on, and is dissipated when it fills (Data Trails p. 161)
     let aiDissipated = false
-    if (newItem.system.conditionMonitors.matrix.actual.value >= monitorSize){
+    //A full swarm is no bricked deck: the Monad is not disconnected, the device stays as it is (Dark Terrors p. 88)
+    if (!swarm && newItem.system.conditionMonitors.matrix.actual.value >= monitorSize){
       //No dumpshock for an AI: it is dissipated instead (decided by DjamZ, 04/10)
       if (targetActor.system.activeSpecialAttribute === "depth") aiDissipated = true
-      else if (targetItem.type === "itemDevice" && targetActor.system.matrix.userMode !== "ar"){
-        //The resistance card reads owner and roll from the card it follows: a bare object crashed it (SR5 p. 229)
-        let dumpshockData = SR5_PrepareRollTest.getBaseRollData(null, targetActor)
-        dumpshockData.damage.resistanceType = "dumpshock"
-        targetActor.rollTest("resistanceCard", null, dumpshockData)
+      //A bricked device throws a character in VR out of the Matrix, with dumpshock resisted by Willpower alone (SR5 p. 229, 231)
+      else if (targetItem.type === "itemDevice" && SR5_ActorHelper.dumpshockIfInVR(targetActor, {
+        bricked: true
+      })){
         ui.notifications.info(`${targetActor.name} ${game.i18n.localize("SR5.INFO_IsDisconnected")}.`)
       }
       newItem.system.isActive = false
@@ -106,14 +122,19 @@ export class SR5_MatrixHelpers {
     else SR5_SocketHandler.emitForGM("updateItem", {
       item: targetItem.uuid,
       info: newItem.system,
+      //The GM reads this card again and bounds the boxes by it (socket-guard.js)
+      use: "matrixDamage", messageId: cardData.owner?.messageId,
     })
     if (aiDissipated) {
       //A player who deals the damage cannot write on the AI: the GM lays the status, as for the device above
       let actorId = targetActor.isToken ? targetActor.token.id : targetActor.id
-      if (game.user?.isGM) await SR5_ActorHelper.createDeadEffect(actorId)
+      if (game.user?.isGM) await SR5_ActorHelper.createDeadEffect(actorId, {
+        surplus, itemUuid: targetItem.uuid
+      })
       else SR5_SocketHandler.emitForGM("createDeadEffect", {
         actorId: actorId,
         itemUuid: targetItem.uuid,
+        surplus,
       })
     }
 
@@ -126,16 +147,17 @@ export class SR5_MatrixHelpers {
 
 
   // Update Matrix Damage to a Deck
-  static async updateMatrixDamage(cardData, netHits, defender){
-    let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId),
+  //withMarks false: an action whose damage the book sets without the +2 per mark (Popup, Kill Code p. 45)
+  static async updateMatrixDamage(cardData, netHits, defender, withMarks = true){
+    let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId, cardData.actorUuids),
       attackerData = attacker?.system,
       damage = cardData.damage.matrix.base,
       item = cardData.target.itemUuid ? await fromUuid(cardData.target.itemUuid) : null,
       //An AI outside any device has no targeted item: the marks are read on its persona (Data Trails p. 157)
       markHolder = item?.system ?? defender.system.matrix,
-      mark = await SR5_MarkHelpers.findMarkValue(markHolder, attacker.id)
+      mark = withMarks ? await SR5_MarkHelpers.findMarkValue(markHolder, attacker.id) : 0
 
-    if (attacker.type === "actorDevice"){
+    if (withMarks && attacker.type === "actorDevice"){
       if (attacker.system.matrix.deviceType === "ice"){
         mark = await SR5_MarkHelpers.findMarkValue(markHolder, attacker.id)
       }
@@ -216,7 +238,7 @@ export class SR5_MatrixHelpers {
   }
 
   static async rollOverwatchDefense(cardData){
-    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
     let rollData = SR5_PrepareRollTest.getBaseRollData(null, actor)
 
     rollData.test.type = "overwatchResistance"
@@ -234,24 +256,79 @@ export class SR5_MatrixHelpers {
     SR5_RollTest.renderRollCard(rollData)
   }
 
+  //The hits of a Jack Out card the GM stands by: a GM's as written; a player's counted again on its dice. `capped`: within
+  //the Jack Out pool of the sheet and its Firewall limit; `pushed`: within the pool plus the Edge rating, no limit (SR5
+  //p. 56), only if the GM grants the push (rollJackOut). null when the card cannot be believed
+  static jackOutHits(cardData){
+    const card = SR5_MiscellaneousHelpers.cardOf(cardData.owner?.messageId)
+    if (!card || card.data.test?.typeSub !== "jackOut") return null
+    if (card.byGM) {
+      const hits = Math.max(0, Number(card.data.roll?.hits) || 0)
+      return {
+        card, capped: hits, pushed: hits, claimsPush: false
+      }
+    }
+    const action = card.roller?.system?.matrix?.actions?.jackOut
+    const pool = Math.max(0, Number(action?.test?.dicePool) || 0)
+    const withEdge = SR5_MiscellaneousHelpers.poolCap(card.roller, "matrix.actions.jackOut.test.dicePool")
+    const counted = recountHits(card.data.roll?.r, pool), countedWithEdge = recountHits(card.data.roll?.r, withEdge)
+    if (counted === null || countedWithEdge === null) return null
+    const limit = Number(action?.limit?.value) || 0
+    return {
+      card, capped: limit > 0 ? Math.min(counted, limit) : counted, pushed: countedWithEdge,
+      claimsPush: !!card.data.edge?.hasUsedPushTheLimit,
+    }
+  }
+
+  //A player's card that says it pushed the limit: the roll spent the Edge on the player's own sheet, which she can write
+  //back. The push counts only if the sheet shows some Edge spent, and if the GM grants it (Anke's review)
+  static async grantJackOutPush(jackOut){
+    const actor = jackOut.card.roller
+    const spent = Number(actor?.system?.conditionMonitors?.edge?.actual?.value) || 0
+    const rating = Number(actor?.system?.specialAttributes?.edge?.augmented?.value) || 0
+    if (spent <= 0) {
+      ui.notifications.warn(game.i18n.format("SR5.WARN_JackOutPushNoEdge", {
+        hits: jackOut.capped
+      }))
+      return false
+    }
+    return foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: game.i18n.localize("SR5.JackOutPushTitle")
+      },
+      content: `<p>${game.i18n.format("SR5.JackOutPushConfirm", {
+        actor: foundry.utils.escapeHTML?.(actor.name) ?? actor.name, pushed: jackOut.pushed, capped: jackOut.capped, spent, rating
+      })}</p>`,
+      rejectClose: false,
+    }).catch(() => false)
+  }
+
   static async rollJackOut(cardData){
-    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+    //The GM rolls the locks against the card read again from the chat log, never against the hits it claims
+    const jackOut = SR5_MatrixHelpers.jackOutHits(cardData)
+    if (!jackOut) return ui.notifications.warn(game.i18n.localize("SR5.WARN_JackOutCardRefused"))
+    //A card serves once: its button, written back in its content, rolled the locks again at every click (Anke's
+    //review). The spent cards are the active GM's ledger
+    if (!game.users?.activeGM?.isSelf) return ui.notifications.warn(game.i18n.localize("SR5.WARN_JackOutActiveGMOnly"))
+    if (!(await SR5_MiscellaneousHelpers.consume(consumedKey(jackOut.card.id, "jackOut")))) return ui.notifications.warn(game.i18n.localize("SR5.WARN_JackOutCardSpent"))
+    let actor = jackOut.card.roller, hits = jackOut.capped
+    if (jackOut.claimsPush && await SR5_MatrixHelpers.grantJackOutPush(jackOut)) hits = jackOut.pushed
 
     //One jack out roll, whose hits are compared to each link lock in turn (SR5 p. 246): one resistance card per lock
     for (let lock of SR5_MatrixHelpers.getLinkLocks(actor)){
       let dicePool = lock.system.value
       let rollData = SR5_PrepareRollTest.getBaseRollData(null, actor)
       rollData.test.type = "jackOutDefense"
-      rollData.test.title = `${game.i18n.localize("SR5.MatrixActionJackOutResistance")} (${cardData.roll.hits})`
+      rollData.test.title = `${game.i18n.localize("SR5.MatrixActionJackOutResistance")} (${hits})`
       rollData.dicePool.base = dicePool
       rollData.dicePool.value = dicePool
-      rollData.previousMessage.hits = cardData.roll.hits
+      rollData.previousMessage.hits = hits
       rollData.previousMessage.itemUuid = lock.id
       rollData.roll = await SR5_RollTest.rollDice({
         dicePool: dicePool
       })
 
-      await SR5_RollTest.addInfoToCard(rollData, cardData.previousMessage.actorId)
+      await SR5_RollTest.addInfoToCard(rollData, actor.isToken ? actor.token.id : actor.id)
       await SR5_RollTest.renderRollCard(rollData)
     }
   }
@@ -264,7 +341,7 @@ export class SR5_MatrixHelpers {
 
   //Jack out (SR5 p. 244): free of the link lock, the character reboots the device used
   static async jackOut(cardData){
-    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
     //Only the lock this card beat goes: each lock is beaten on its own (SR5 p. 246)
     let beaten = cardData.previousMessage.itemUuid
     if (beaten && actor.items.find(i => i.id === beaten)) await actor.deleteEmbeddedDocuments("Item", [beaten])
@@ -272,14 +349,8 @@ export class SR5_MatrixHelpers {
     if (SR5_MatrixHelpers.getLinkLocks(actor).length) return
     await SR5_EntityHelpers.deleteEffectOnActor(actor, "linkLock")
 
-    //Dumpshock in VR, cold or hot sim (SR5 p. 231 and 244), as the IC reboots of this file
-    let userMode = actor.system.matrix.userMode
-    if (userMode && userMode !== "ar"){
-      let dumpshockData = SR5_PrepareRollTest.getBaseRollData(null, actor)
-      dumpshockData.damage.resistanceType = "dumpshock"
-      actor.rollTest("resistanceCard", null, dumpshockData)
-    }
-    //rebootDeck spends no action: the jack out has already paid for its own
+    //rebootDeck spends no action: the jack out has already paid for its own. It deals the dumpshock
+    //in VR, cold or hot sim, link lock or not (SR5 p. 231 and 244)
     await actor.rebootDeck()
   }
 
@@ -287,7 +358,7 @@ export class SR5_MatrixHelpers {
   //positive number, turned into a dice pool malus when a matrix test reads it (rollData-MatrixAction.js),
   //like the scene's own noise : a negative value here gave the jammer, and every jammed device, bonus dice.
   static async jamSignals(cardData){
-    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
     let noise = cardData.roll.hits
     let effect = {
       name: game.i18n.localize("SR5.EffectSignalJam"),
@@ -340,6 +411,8 @@ export class SR5_MatrixHelpers {
 
   //create link lock effet
   static async applylinkLockEffect(attacker, target){
+    //An AI outside any device is immune to link-locking (Data Trails p. 157): the program and every IC come through here
+    if (SR5_CharacterUtility.isDevicelessAI(target)) return
     let effect = {
       type: "itemEffect",
       "system.type": "linkLock",
@@ -434,13 +507,13 @@ export class SR5_MatrixHelpers {
 
   //Create an effect on an ally, through the GM when the user does not own the ally.
   //A previous effect of the same kind from the same hacker is replaced, not stacked.
-  static async _createEffectOnAlly(ally, effect){
+  static async _createEffectOnAlly(ally, effect, messageId){
     let previous = ally.items.filter(i => i.type === "itemEffect" && i.system.type === effect["system.type"] && i.system.ownerID === effect["system.ownerID"]).map(i => i.id)
     if (ally.isOwner) {
       if (previous.length) await ally.deleteEmbeddedDocuments("Item", previous)
       await ally.createEmbeddedDocuments("Item", [effect])
     } else await SR5_SocketHandler.emitForGM("createItemEffect", {
-      actorId: ally.uuid, effect: effect, replace: previous,
+      actorId: ally.uuid, effect: effect, replace: previous, messageId,
     })
   }
 
@@ -482,7 +555,7 @@ export class SR5_MatrixHelpers {
 
     let effect = SR5_MatrixHelpers._defenseBonusEffect("SR5.MatrixActionIAmTheFirewall", "iAmTheFirewall", sourceActor, hits, 1, "initiativePass", "SR5.MatrixActionIAmTheFirewall_GE")
     for (let ally of allies){
-      await SR5_MatrixHelpers._createEffectOnAlly(ally, effect)
+      await SR5_MatrixHelpers._createEffectOnAlly(ally, effect, cardData.owner?.messageId)
       ui.notifications.info(`${ally.name}${game.i18n.format('SR5.Colons')} ${game.i18n.format('SR5.MatrixActionIAmTheFirewall')} (+${hits})`)
     }
   }
@@ -498,7 +571,7 @@ export class SR5_MatrixHelpers {
     }
 
     let effect = SR5_MatrixHelpers._defenseBonusEffect("SR5.MatrixActionIntervene", "intervene", sourceActor, hits, 1, "action", "SR5.MatrixActionIntervene_GE")
-    await SR5_MatrixHelpers._createEffectOnAlly(allies[0], effect)
+    await SR5_MatrixHelpers._createEffectOnAlly(allies[0], effect, cardData.owner?.messageId)
     ui.notifications.info(`${allies[0].name}${game.i18n.format('SR5.Colons')} ${game.i18n.format('SR5.MatrixActionInterveneEffectNotification', {
       hits: hits
     })}`)
@@ -650,11 +723,8 @@ export class SR5_MatrixHelpers {
         })
         target.createEmbeddedDocuments("Item", [effect])
         break
+      //The forced reboot deals the dumpshock in VR (rebootDeck, SR5 p. 244)
       case "iceScramble": {
-        if (target.system.matrix.userMode !== "ar"){
-          cardData.damage.resistanceType = "dumpshock"
-          target.rollTest("resistanceCard", null, cardData)
-        }
         let deck = target.items.find((item) => item.type === "itemDevice" && item.system.isActive)
         target.rebootDeck(deck)
         break
@@ -681,11 +751,8 @@ export class SR5_MatrixHelpers {
         let existingMark = await SR5_MarkHelpers.findMarkValue(item.system, ice.id)
         if (!target.system.matrix.isLinkLocked) 
           await SR5_MatrixHelpers.applylinkLockEffect(ice, target)
-        if (existingMark >= 2) {                    
-          if (target.system.matrix.userMode !== "ar"){
-            cardData.damage.resistanceType = "dumpshock"
-            target.rollTest("resistanceCard", null, cardData)
-          }
+        //The forced reboot deals the dumpshock in VR (rebootDeck, SR5 p. 244)
+        if (existingMark >= 2) {
           let deck_iceFlicker = target.items.find((item) => item.type === "itemDevice" && item.system.isActive)
           target.rebootDeck(deck_iceFlicker)
         }

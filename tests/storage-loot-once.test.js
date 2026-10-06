@@ -1,5 +1,5 @@
 import {
-  describe, it, expect, afterEach
+  describe, it, expect, afterEach, beforeAll
 } from 'vitest'
 
 // Foundry's actor sheet, which the storage sheet builds on
@@ -52,6 +52,15 @@ const runner = () => {
   return actor
 }
 
+// The storage sheet pulls in most of the system: loaded once, outside the test's own time limit,
+// since under the full parallel suite this first import alone can pass the 5 s a test is given.
+let SR5StorageSheet
+beforeAll(async () => {
+  ({
+    SR5StorageSheet
+  } = await import('../modules/entities/actors/storageSheet.js'))
+})
+
 const click = itemId => ({
   preventDefault: () => {}, currentTarget: {
     dataset: {
@@ -73,9 +82,6 @@ describe('taking from a storage put down (SR5 p. 445: whoever holds a certified 
         actor: taker
       }], placeables: []
     }
-    const {
-      SR5StorageSheet
-    } = await import('../modules/entities/actors/storageSheet.js')
     const sheet = Object.create(SR5StorageSheet.prototype)
     Object.defineProperty(sheet, 'actor', {
       value: bag

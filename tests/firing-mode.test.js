@@ -81,6 +81,39 @@ describe('firingModeChangeCost', () => {
   })
 })
 
+//M2-2, M2-3, M3 D2: changing the firing mode or the choke in the dialog joins the actions of the roll, spent
+//when firing only (SR5 p. 166 and 182), and checked like them (no initiative left: warning)
+describe('setChangeAction', () => {
+  it('adds the change once, replaced on each new choice, and removes it when back to the saved setting', () => {
+    let actions = SR5_MiscellaneousHelpers.addActions([], SR5_ConverterHelpers.rangedAttackAction("SA"))
+    actions = SR5_MiscellaneousHelpers.setChangeAction(actions, "changeFiringMode", true, false)
+    actions = SR5_MiscellaneousHelpers.setChangeAction(actions, "changeFiringMode", true, false)
+    expect(actions).toEqual([{
+      type: "simple", value: 1, source: "attack"
+    }, {
+      type: "simple", value: 1, source: "changeFiringMode"
+    }])
+    actions = SR5_MiscellaneousHelpers.setChangeAction(actions, "changeFiringMode", false, false)
+    expect(actions).toEqual([{
+      type: "simple", value: 1, source: "attack"
+    }])
+  })
+
+  it('costs a free action with a wireless smartgun (SR5 p. 427, 435)', () => {
+    expect(SR5_MiscellaneousHelpers.setChangeAction([], "changeChokeSettings", true, true)).toEqual([{
+      type: "free", value: 1, source: "changeChokeSettings"
+    }])
+  })
+})
+
+describe('changeEndsRecoil (SR5 p. 178)', () => {
+  it('a change spent as a simple action ends the recoil, not a free one, nor the shot alone', () => {
+    expect(SR5_MiscellaneousHelpers.changeEndsRecoil(SR5_MiscellaneousHelpers.setChangeAction([], "changeFiringMode", true, false))).toBe(true)
+    expect(SR5_MiscellaneousHelpers.changeEndsRecoil(SR5_MiscellaneousHelpers.setChangeAction([], "changeChokeSettings", true, true))).toBe(false)
+    expect(SR5_MiscellaneousHelpers.changeEndsRecoil([SR5_ConverterHelpers.rangedAttackAction("SA")])).toBe(false)
+  })
+})
+
 describe('addActions', () => {
   it('ignores an undefined action, so readers never meet action.type on undefined', () => {
     const actions = SR5_MiscellaneousHelpers.addActions([], SR5_ConverterHelpers.firingModeToAction("CC"))

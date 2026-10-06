@@ -1,20 +1,48 @@
 import {
+  drainShown
+} from "../roll-helpers/mentorMaskDrain.js"
+import {
   SR5_EntityHelpers 
 } from "../../entities/helpers.js"
 import {
   SR5_RollMessage
 } from "../roll-message.js"
+import {
+  greyManaSustainedPenalty
+} from "../../system/grey-mana.js"
+import {
+  underFireRules, bbPatientEntry
+} from "../../system/bb-healing.js"
+import {
+  spellStabilizes, stabilizationLabelKey
+} from "../../system/bb-healing-rules.js"
 
 export default async function spellInfo(cardData){
   let actionType, label, item
-  let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+  let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
   let actorData = actor.system
   if (cardData.owner.itemUuid) item = await fromUuid(cardData.owner.itemUuid)
 
+  //Better Than Bad p. 140-141: a sustained spell cast while wearing grey mana loses 1 Force and 1 hit (GM ruling of 05/10)
+  if (cardData.test.type === "spell" && !cardData.magic.greyManaPenalty && greyManaSustainedPenalty(actorData, item?.system?.duration)) {
+    cardData.magic.force = Math.max(1, (cardData.magic.force || 0) - 1)
+    cardData.roll.hits = Math.max(0, (cardData.roll.hits || 0) - 1)
+    cardData.magic.greyManaPenalty = true
+    ui.notifications.info(game.i18n.format("SR5.GreyManaSustainedSpell", {
+      spell: item.name
+    }))
+  }
+
   //Add Resist Drain chat button
   if (cardData.test.type === "spell" || (cardData.test.type === "adeptPower" && cardData.magic.drain > 0)) {
-    cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${cardData.magic.drain.value})`)
+    cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${drainShown(cardData, cardData.owner.actorId)})`)
   }
+
+  //Mage Hunter (Forbidden Arcana p. 34): the counterspelling against this spell loses 2 dice per level, for the GM
+  if (cardData.magic.mageHunter?.used) cardData.chatCard.buttons.mageHunter = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "",
+    game.i18n.format("SR5.MageHunterCounterspell", {
+      value: 2 * (cardData.magic.mageHunter.level || 0)
+    }))
 
   //Roll Succeed
   if (cardData.roll.hits > 0) {
@@ -24,8 +52,9 @@ export default async function spellInfo(cardData){
         actionType = "defenseRangedWeapon"
         label = game.i18n.localize("SR5.Defend")
         // Defense computes DV from damage.base + net hits (like ranged weapons): DV = Force + net hits, AP = -Force
-        cardData.damage.base = cardData.magic.force
-        cardData.damage.value = cardData.magic.force
+        // Death Sower (Forbidden Arcana p. 40): DV +1 per level
+        cardData.damage.base = cardData.magic.force + (cardData.magic.spell.damageBonus || 0)
+        cardData.damage.value = cardData.damage.base
         cardData.combat.armorPenetration = -cardData.magic.force
         cardData.damage.resistanceType = "physicalDamage"
         // SR5 p. 285: an area is cast with a threshold of 3, like a grenade (p. 182)
@@ -42,7 +71,8 @@ export default async function spellInfo(cardData){
       } else if (cardData.test.typeSub === "direct") {
         actionType = "resistanceCard"
         label = game.i18n.localize("SR5.ResistDirectSpell")
-        cardData.damage.value = cardData.roll.hits
+        // Death Sower (Forbidden Arcana p. 40): DV +1 per level
+        cardData.damage.value = cardData.roll.hits + (cardData.magic.spell.damageBonus || 0)
         if (cardData.magic.spell.type === "mana") cardData.damage.resistanceType = "directSpellMana"
         else cardData.damage.resistanceType = "directSpellPhysical"
         cardData.damage.isAttack = true
@@ -74,6 +104,18 @@ export default async function spellInfo(cardData){
         else cardData.magic.spell.area = cardData.magic.spell.area * actorData.specialAttributes.magic.augmented.value
       }
     }
+
+    //Bullets & Bandages p. 15-16: Stabilize (Force at least the boxes of bleeding and overflow) and Heal (out of the
+    //overflow) stabilize the targeted patient; the GM applies it and checks it again (bb-healing.js)
+    if (underFireRules() && cardData.test.type === "spell" && cardData.target.hasTarget){
+      const patient = SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId, cardData.actorUuids)
+      const force = Math.min(Number(cardData.magic.force) || 0, 2 * (Number(actorData.specialAttributes?.magic?.augmented?.value) || 0))
+      if (patient && spellStabilizes(item?.name, force, bbPatientEntry(patient), patient.system?.conditionMonitors?.overflow?.actual?.value)) cardData.chatCard.buttons.bbStabilize = SR5_RollMessage.generateChatButton("nonOpposedTest", "bbStabilize", game.i18n.localize(stabilizationLabelKey("SR5.BB_StabilizeButton", 0)), {
+        gmAction: true
+      })
+    }
+    //Invisibility, Mask (SR5 p. 294): whoever perceives the subject resists first, the hits are his threshold
+    if (cardData.test.type === "spell" && item?.system?.illusionPierce) cardData.chatCard.buttons.illusionResistance = SR5_RollMessage.generateChatButton("opposedTest", "illusionResistance", game.i18n.localize("SR5.IllusionResist"))
 
     //Generate apply effect on Actor chat button
     if (cardData.effects.canApplyEffect) cardData.chatCard.buttons.applyEffect = SR5_RollMessage.generateChatButton("opposedTest", "applyEffect", game.i18n.localize("SR5.ApplyEffect"))

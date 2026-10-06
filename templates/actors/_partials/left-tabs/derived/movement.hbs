@@ -95,5 +95,11 @@
 		{{/if}}
 	  	{{/each}}
 		{{/if}}
+		{{#each @root.movementBoxes as |box|}}
+		<!-- Dark Terrors p. 180: a situational effect on a movement rate counts while its box is ticked -->
+		<li class="grid">
+			<div class="col-12"><label><input type="checkbox" data-sr5-movement-box="{{box.keysAttr}}" {{checked box.on}}> {{#if box.when}}{{box.when}} ({{box.source}}){{else}}{{box.source}}{{/if}}</label></div>
+		</li>
+		{{/each}}
 	</ul>
 </div>

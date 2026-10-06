@@ -25,7 +25,15 @@ function checksTargetMarks(rollKey){
   return !NO_TARGET_MARK_CHECK.includes(rollKey)
 }
 
+// SR5 p. 240: Erase Matrix Signature is Computer + Resonance; without Resonance nobody can try it,
+// not even an AI emulating it (DjamZ's ruling T8, 2026-10-06)
+export function canTryMatrixAction(rollKey, actor){
+  if (rollKey !== "eraseMatrixSignature") return true
+  return (actor?.system?.specialAttributes?.resonance?.augmented?.value || 0) > 0
+}
+
 export default async function matrixAction(rollData, rollKey, actor){
+  if (!canTryMatrixAction(rollKey, actor)) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_NeedResonance"))
   let matrixAction = actor.system.matrix.actions[rollKey]
 
   //Determine title
@@ -142,7 +150,8 @@ export default async function matrixAction(rollData, rollKey, actor){
   rollData.matrix.personalNoise = -actor.system.matrix.noise.value
 
   //Add special info for Data spike
-  if (rollKey === "dataSpike" || rollKey === "popupCybercombat") rollData.damage.matrix.base = actor.system.matrix.attributes.attack.value
+  //Popup has no Attack base: its damage is the hits alone (Kill Code p. 45)
+  if (rollKey === "dataSpike") rollData.damage.matrix.base = actor.system.matrix.attributes.attack.value
 
   return rollData
 }

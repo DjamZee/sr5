@@ -43,6 +43,11 @@
 					{{system.matrix.submersionGrade}}
 				</div>
 			</li>
+			{{#if aegisLeft}}
+			<li class="grid">
+				<div class="col-12">{{aegisLeft}}</div>
+			</li>
+			{{/if}}
 		{{/if_g}}
 
 		{{#if (or (eq system.matrix.deviceType "slavedDevice") (eq system.matrix.deviceType "maglock"))}}

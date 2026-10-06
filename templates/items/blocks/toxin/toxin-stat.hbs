@@ -1,0 +1,107 @@
+<!-- Toxin profile (SR5 p. 409-412) -->
+<ul>
+    <li class="SR-TextUppercase SR-EnTete">{{localize 'SR5.ToxinVector'}}</li>
+    <li class="grid">
+        {{#each system.vector}}
+            <div class="col-4">{{findTranslation "propagationVectors" @key}}{{localize 'SR5.Colons'}}</div>
+            <div class="col-1 SR-TextCenter"><input type="checkbox" name="system.vector.{{@key}}" data-dtype="Boolean" {{checked this}} /></div>
+            <div class="col-1"></div>
+        {{/each}}
+    </li>
+
+    <li class="SR-TextUppercase SR-EnTete">{{localize 'SR5.Toxin'}}</li>
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.ToxinSpeed'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-2"><input type="number" data-dtype="Number" name="system.speed" value="{{system.speed}}" min="0" /></div>
+        <div class="col-6 SR-GreyColor">{{localize 'SR5.ToxinSpeedHint'}}</div>
+    </li>
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.ToxinPower'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-2"><input type="number" data-dtype="Number" name="system.power" value="{{system.power}}" min="0" {{#if system.powerFromMagic}}disabled{{/if}} /></div>
+        <div class="col-5">{{localize 'SR5.ToxinPowerFromMagic'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-1 SR-TextCenter"><input type="checkbox" name="system.powerFromMagic" data-dtype="Boolean" {{checked system.powerFromMagic}} /></div>
+    </li>
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.ToxinPenetration'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-2"><input type="number" data-dtype="Number" name="system.penetration" value="{{system.penetration}}" max="0" /></div>
+    </li>
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.Damage'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-8">
+            <select name="system.damageType">
+                <option value="">{{localize 'SR5.None'}}</option>
+                {{selectOptions toxinDamageTypes selected=system.damageType localize=true}}
+            </select>
+        </div>
+    </li>
+
+    <li class="SR-TextUppercase SR-EnTete">{{localize 'SR5.ToxinEffect'}}</li>
+    <li class="grid">
+        {{#each system.effect}}
+            <div class="col-4">{{findTranslation "toxinEffects" @key}}{{localize 'SR5.Colons'}}</div>
+            <div class="col-1 SR-TextCenter"><input type="checkbox" name="system.effect.{{@key}}" data-dtype="Boolean" {{checked this}} /></div>
+            <div class="col-1"></div>
+        {{/each}}
+    </li>
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.ToxinSpecial'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-8"><input type="text" name="system.special" value="{{system.special}}" placeholder="{{localize 'SR5.ToxinSpecialHint'}}" /></div>
+    </li>
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.ToxinInertia'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-8"><input type="text" name="system.inertia" value="{{system.inertia}}" /></div>
+    </li>
+
+    <!-- Pathogen: a toxin that comes back (Run Faster p. 111-112) -->
+    <li class="SR-TextUppercase SR-EnTete">{{localize 'SR5.Pathogen'}}</li>
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.DISEASE_IsPathogen'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-1 SR-TextCenter"><input type="checkbox" name="system.pathogen.isPathogen" data-dtype="Boolean" {{checked system.pathogen.isPathogen}} /></div>
+        <div class="col-7 SR-GreyColor">{{localize 'SR5.DISEASE_IsPathogenHint'}}</div>
+    </li>
+    {{#if system.pathogen.isPathogen}}
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.DISEASE_Interval'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-2"><input type="number" data-dtype="Number" name="system.pathogen.interval.value" value="{{system.pathogen.interval.value}}" min="1" /></div>
+        <div class="col-3">
+            <select name="system.pathogen.interval.unit">{{selectOptions pathogenUnits selected=system.pathogen.interval.unit localize=true}}</select>
+        </div>
+    </li>
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.DISEASE_MinTests'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-2"><input type="number" data-dtype="Number" name="system.pathogen.minTests" value="{{system.pathogen.minTests}}" min="1" /></div>
+        <div class="col-4">{{localize 'SR5.DISEASE_VolunteerPenalty'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-2"><input type="number" data-dtype="Number" name="system.pathogen.volunteerPenalty" value="{{system.pathogen.volunteerPenalty}}" min="0" /></div>
+    </li>
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.DISEASE_Nature'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-8"><input type="text" name="system.pathogen.nature" value="{{system.pathogen.nature}}" /></div>
+    </li>
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.DISEASE_EffectAttributes'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-1 SR-TextCenter"><input type="checkbox" name="system.pathogen.effect.reducedAttributes" data-dtype="Boolean" {{checked system.pathogen.effect.reducedAttributes}} /></div>
+        <div class="col-1"></div>
+        <div class="col-4">{{localize 'SR5.DISEASE_EffectEssence'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-1 SR-TextCenter"><input type="checkbox" name="system.pathogen.effect.essenceLoss" data-dtype="Boolean" {{checked system.pathogen.effect.essenceLoss}} /></div>
+        <div class="col-1"></div>
+    </li>
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.DISEASE_EffectMemory'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-1 SR-TextCenter"><input type="checkbox" name="system.pathogen.effect.memoryLoss" data-dtype="Boolean" {{checked system.pathogen.effect.memoryLoss}} /></div>
+    </li>
+    <li class="grid">
+        <div class="col-4">{{localize 'SR5.DISEASE_FinalEffect'}}</div>
+        <div class="col-8"><input type="text" name="system.pathogen.finalEffect" value="{{system.pathogen.finalEffect}}" /></div>
+    </li>
+    {{#if isActiveGM}}
+    <li class="grid">
+        <div class="col-12"><button type="button" class="sr5-pathogen-infect"><i class="fa-solid fa-virus"></i> {{localize 'SR5.DISEASE_InfectButton'}}</button></div>
+    </li>
+    {{/if}}
+    {{/if}}
+</ul>
+
+<!-- Price & Availability (per dose) -->
+<ul class="SR-PaddingTop10">
+	{{> systems/sr5/templates/items/_partial/editable/_common/price-edit.hbs}}
+</ul>

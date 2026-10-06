@@ -113,3 +113,26 @@ describe('Second Chance and limits (SR5 p. 58)', () => {
     expect(updatedCard.roll.hits).toBe(6)
   })
 })
+
+//Ruling of DjamZ (2026-10-06, G5): the glitch is read on the initial roll only. Second Chance cannot erase one
+//(SR5 p. 58), and a reroll full of 1 does not create one
+describe('Second Chance and glitches', () => {
+  it('creates no glitch from rerolled dice that all show 1', async () => {
+    faces = [1, 1]
+    await SR5_RollTest.secondeChance(card(4, 0), {
+      id: 'a1'
+    })
+    expect(updatedCard.roll.glitchRoll).toBeFalsy()
+    expect(updatedCard.roll.criticalGlitchRoll).toBeFalsy()
+  })
+
+  it('keeps the glitch of the initial roll', async () => {
+    faces = [6, 6, 6, 6, 6]
+    const glitched = card(1, 0)
+    glitched.flags.sr5data.roll.glitchRoll = true
+    await SR5_RollTest.secondeChance(glitched, {
+      id: 'a1'
+    })
+    expect(updatedCard.roll.glitchRoll).toBe(true)
+  })
+})

@@ -1,0 +1,54 @@
+<!-- Mentor spirit (SR5 p. 76, 323-325; Forbidden Arcana p. 176) -->
+<li class="grid">
+    <div class="col-4">{{localize 'SR5.KarmaCost'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8"><input type="number" data-dtype="Number" name="system.karmaCost" value="{{system.karmaCost}}" placeholder="5" onfocus="this.select()"/></div>
+</li>
+<li class="grid" data-title="{{localize 'SR5.MentorMysticPathHint'}}">
+    <div class="col-4">{{localize 'SR5.MentorMysticPath'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8">
+        <select name="system.mysticPath" data-dtype="String">
+            {{#select system.mysticPath}}
+            <option value="">-</option>
+            <option value="magician">{{localize 'SR5.MentorPathMagician'}}</option>
+            <option value="adept">{{localize 'SR5.MentorPathAdept'}}</option>
+            {{/select}}
+        </select>
+    </div>
+    <div class="col-12 SR-SubColor"><em>{{localize 'SR5.MentorMysticPathHint'}}</em></div>
+</li>
+<li class="grid">
+    <div class="col-4">{{localize 'SR5.MentorResistThreshold'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8"><input type="number" data-dtype="Number" name="system.resistThreshold" value="{{system.resistThreshold}}" placeholder="3" onfocus="this.select()"/></div>
+</li>
+<!-- Charisma + Willpower (SR5 p. 325) unless the book says otherwise (Street Grimoire p. 200-201) -->
+<li class="grid">
+    <div class="col-4">{{localize 'SR5.MentorResistAttributes'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-4">
+        <select name="system.resistAttributes.first" data-dtype="String">
+            {{#select system.resistAttributes.first}}
+            {{#each @root.lists.characterAttributes}}<option value="{{@key}}">{{localize this}}</option>{{/each}}
+            {{/select}}
+        </select>
+    </div>
+    <div class="col-4">
+        <select name="system.resistAttributes.second" data-dtype="String">
+            {{#select system.resistAttributes.second}}
+            {{#each @root.lists.characterAttributes}}<option value="{{@key}}">{{localize this}}</option>{{/each}}
+            {{/select}}
+        </select>
+    </div>
+</li>
+<li class="grid">
+    <div class="col-4">{{localize 'SR5.MentorFreePowerPoints'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8"><input type="number" data-dtype="Number" step="0.25" name="system.freePowerPoints" value="{{system.freePowerPoints}}" placeholder="0" onfocus="this.select()"/></div>
+</li>
+{{#if mentorMaskRule}}
+<li class="grid">
+    <div class="col-4">{{localize 'SR5.MentorMask'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8"><input type="checkbox" name="system.mask" data-dtype="Boolean" {{checked system.mask}} /></div>
+</li>
+{{/if}}
+<li class="grid">
+    <div class="col-12">{{localize 'SR5.MentorDrawback'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-12"><textarea name="system.drawback" rows="4">{{system.drawback}}</textarea></div>
+</li>

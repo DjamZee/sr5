@@ -77,6 +77,13 @@ export default async function matrixActionInfo(cardData, actorId){
     return
   }
 
+  //Rigger 5 p. 34: Detect Target Lock is a simple test (2), nobody defends against it
+  if (cardData.test.typeSub === "detectTargetLock") {
+    let success = cardData.roll.hits >= (Number(cardData.threshold.value) || 0)
+    cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize(success ? "SR5.SuccessfulTest" : "SR5.ActionFailure"))
+    return
+  }
+
   if (cardData.roll.hits > 0) {
     if (cardData.test.typeSub === "jackOut" && actorData.matrix.isLinkLocked) cardData.chatCard.buttons.jackOut = SR5_RollMessage.generateChatButton("nonOpposedTest", "jackOut", game.i18n.localize("SR5.MatrixActionJackOutResistance"), true)
     else if (cardData.test.typeSub === "eraseMark") cardData.chatCard.buttons.eraseMark = SR5_RollMessage.generateChatButton("opposedTest", "eraseMark", game.i18n.localize("SR5.ChooseMarkToErase"))

@@ -136,12 +136,17 @@ describe('SR5Token gives the vision of a hidden camera to the player it is share
       }
     }
     SR5Token = (await import('../modules/interface/token.js')).SR5Token
-  })
+    // The token pulls in most of the system: under the full parallel suite, more than the 5 s a hook is given
+  }, 60000)
 
   const make = (flags) => {
     const t = new SR5Token()
+    //A working camera: the vision is only given while its source is there (security pass, Olympe)
     t.document = {
-      hidden: true, ...flags
+      hidden: true, actor: {
+        type: 'actorDevice', system: {
+        }, items: []
+      }, ...flags
     }
     t.hasSight = true
     return t
@@ -371,9 +376,14 @@ describe('the camera itself stays out of sight (second review, Uma)', () => {
     } = await import('../modules/interface/token.js')
     const make = isOwner => {
       const t = new SR5Token()
-      t.document = token([{
-        userId: 'u1'
-      }])
+      t.document = {
+        ...token([{
+          userId: 'u1'
+        }]), actor: {
+          type: 'actorDevice', system: {
+          }, items: []
+        }
+      }
       t.vision = {
         suppression: {
         }

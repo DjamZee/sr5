@@ -11,3 +11,10 @@
         {{threshold.value}}
     </div>
 </li>
+{{#if threshold.modifier}}
+<li class="grid">
+    <div class="col-12">
+        ({{threshold.base}} {{#if (gt threshold.modifier 0)}}+{{/if}}{{threshold.modifier}}{{localize 'SR5.Colons'}} {{#each threshold.modifierSources}}{{this.source}}{{#unless @last}}, {{/unless}}{{/each}})
+    </div>
+</li>
+{{/if}}

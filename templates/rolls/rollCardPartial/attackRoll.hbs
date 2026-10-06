@@ -14,7 +14,7 @@
 {{#if (or (eq damage.element "toxin") (eq damage.elementSecond "toxin"))}}
 <li class="grid">
     <div class="col-8">{{localize 'SR5.Type'}}{{localize 'SR5.Colons'}} </div>
-    <div class="col-4 SR-TextRight">{{findTranslation 'toxinTypes' damage.toxin.type}}</div>
+    <div class="col-4 SR-TextRight">{{#ife damage.toxin.type "custom"}}{{damage.toxin.custom.name}}{{else}}{{findTranslation 'toxinTypes' damage.toxin.type}}{{/ife}}</div>
 </li>
 <li class="grid">
     <div class="col-8">{{localize 'SR5.ToxinPenetration'}}{{localize 'SR5.Colons'}} </div>
@@ -63,9 +63,9 @@
     </div>
 </li>
 {{/if}}
-{{#if (eq test.typeSub 'grenade')}}
+{{#if (or (eq test.typeSub 'grenade') combat.grenade.isGrenade)}}
 <li class="grid">
     <div class="col-10">{{localize 'SR5.Blast'}}{{localize 'SR5.Colons'}}</div>
-    <div class="col-2 SR-TextRight">{{grenade.blastRadius}}m {{#if_l grenade.damageFallOff 0}} ({{grenade.damageFallOff}}) {{/if_l}}</div>
+    <div class="col-2 SR-TextRight">{{combat.grenade.blastRadius}}m {{#if_l combat.grenade.damageFallOff 0}} ({{combat.grenade.damageFallOff}}) {{/if_l}}</div>
 </li>
 {{/if}}

@@ -4,6 +4,15 @@ import {
 import {
   SR5_MiscellaneousHelpers 
 } from "../roll-helpers/miscellaneous.js"
+import {
+  STRUCTURED_DRAIN_FLOOR
+} from "../roll-helpers/arcana-metamagics.js"
+import {
+  SR5
+} from "../../config.js"
+import {
+  combatSpellMasteryBonus
+} from "../../entities/items/magic-masteries.js"
 
 //Add info for skill dicePool roll
 export default async function spell(rollData, actor, item){
@@ -50,6 +59,32 @@ export default async function spell(rollData, actor, item){
   rollData.magic.spell.range = itemData.range
   rollData.magic.force = actorData.specialAttributes.magic.augmented.value
   rollData.dialogSwitch.reagents = true
+  //Structured Spellcasting (Forbidden Arcana p. 43): Drain -1 (minimum 1), no reckless casting, and reagents
+  //cannot stand in for the limit
+  if (actorData.magic.metamagics?.structuredSpellcasting){
+    rollData.magic.structured = true
+    rollData.magic.drainFloor = STRUCTURED_DRAIN_FLOOR
+    rollData.magic.drain.modifiers.structuredSpellcasting = {
+      value: -1,
+      label: game.i18n.localize(SR5.drainModTypes.structuredSpellcasting),
+    }
+    rollData.dialogSwitch.reagents = false
+  }
+  //Mage Hunter (Forbidden Arcana p. 34): Drain +1 per level ; Death Sower (p. 40): DV and Drain +1 per level, combat spells only
+  const masteries = actorData.magic.masteries
+  const masteryBonus = combatSpellMasteryBonus(spellCategory, masteries?.mageHunter?.value, masteries?.deathSower?.value)
+  //Mage Hunter is a trade the player chooses at each casting (review M1): a box in the dialog, unticked
+  if (masteryBonus.drainMageHunter){
+    rollData.magic.mageHunter = {
+      level: masteryBonus.drainMageHunter, used: false
+    }
+    rollData.dialogSwitch.mageHunter = true
+  }
+  if (masteryBonus.drainDeathSower) rollData.magic.drain.modifiers.deathSower = {
+    value: masteryBonus.drainDeathSower,
+    label: game.i18n.localize(SR5.drainModTypes.deathSower),
+  }
+  rollData.magic.spell.damageBonus = masteryBonus.damage
   rollData.dialogSwitch.specialization = true
   rollData.owner.itemUuid = item.uuid
 

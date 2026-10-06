@@ -2,6 +2,9 @@ export {
   default as actionHitInfo
 } from "./test-ActionHit.js"
 export {
+  default as addictionInfo
+} from "./test-Addiction.js"
+export {
   default as attackInfo
 } from "./test-Attack.js"
 export {
@@ -23,6 +26,9 @@ export {
   default as fadingInfo
 } from "./test-Fading.js"
 export {
+  default as mentorDrawbackInfo
+} from "./test-MentorDrawback.js"
+export {
   default as fireResistanceInfo
 } from "./test-FireResistance.js"
 export {
@@ -38,8 +44,14 @@ export {
   default as grappleClinchDefenseInfo
 } from "./test-GrappleClinchDefense.js"
 export {
+  default as pickpocketInfo, pickpocketPerceptionInfo
+} from "./test-Pickpocket.js"
+export {
   default as liftInfo
 } from "./test-Lift.js"
+export {
+  default as reagentWorkInfo
+} from "./test-Reagent.js"
 export {
   default as matrixActionInfo
 } from "./test-MatrixAction.js"

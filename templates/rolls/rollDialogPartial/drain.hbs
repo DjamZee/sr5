@@ -19,12 +19,32 @@
 
     {{> systems/sr5/templates/rolls/rollDialogPartial/drainBase.hbs}}
     
-    {{#if (eq test.type "spell")}}
-    <!--RECKLESS SPELLCASTING-->
+    {{#if (and (eq test.type "spell") (not magic.structured))}}
+    <!--RECKLESS SPELLCASTING: none for Structured Spellcasting (Forbidden Arcana p. 43)-->
     <li class="grid">
         <div class="col-11">{{localize 'SR5.RecklessSpellcasting'}}{{localize 'SR5.Colons'}}</div>
         <div class="col-1 SR-TextCenter">
             <input disabled type="number" name="dicePoolModRecklessSpellcasting" value="" placeholder="0" data-dtype="Number" />
+        </div>
+    </li>
+    {{/if}}
+
+    {{#if magic.drain.modifiers.deathSower}}
+    <!-- DEATH SOWER (Forbidden Arcana p. 40) -->
+    <li class="grid">
+        <div class="col-11">{{localize 'SR5.MagicMasteryDeathSower'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-1 SR-TextCenter">
+            <input disabled type="number" value="{{magic.drain.modifiers.deathSower.value}}" data-dtype="Number" placeholder="0" />
+        </div>
+    </li>
+    {{/if}}
+
+    {{#if dialogSwitch.mageHunter}}
+    <!-- MAGE HUNTER (Forbidden Arcana p. 34): filled when its box is ticked -->
+    <li class="grid">
+        <div class="col-11">{{localize 'SR5.MagicMasteryMageHunter'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-1 SR-TextCenter">
+            <input disabled type="number" name="dicePoolModMageHunter" value="" placeholder="0" data-dtype="Number" />
         </div>
     </li>
     {{/if}}

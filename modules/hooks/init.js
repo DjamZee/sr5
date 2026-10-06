@@ -1,4 +1,58 @@
 import {
+  registerSheetSizeSetting
+} from "../interface/sheet-size.js"
+import {
+  initSpiritLedger
+} from "../system/spirit-ledger.js"
+import {
+  registerIndirectEffectSetting
+} from "../system/indirect-effects.js"
+import {
+  registerCalendarSettings
+} from "../system/calendar.js"
+import {
+  registerDeadlineSettings
+} from "../system/deadlines.js"
+import {
+  registerOrderSettings, registerOrderLedger
+} from "../interface/shop-orders.js"
+import {
+  registerRetryLedger
+} from "../interface/shop-retry.js"
+import {
+  registerAegisLedger
+} from "../system/aegis.js"
+import {
+  SR5_MiscellaneousHelpers
+} from "../rolls/roll-helpers/miscellaneous.js"
+import {
+  registerExtendedClockSetting
+} from "../system/extended-clock.js"
+import {
+  registerDiseaseSettings
+} from "../system/diseases.js"
+import {
+  registerHungerSettings
+} from "../system/hunger.js"
+import {
+  registerInfectionSettings
+} from "../system/infection.js"
+import {
+  registerCfdSettings
+} from "../system/cfd-treatment.js"
+import {
+  registerRadiationSettings
+} from "../system/radiation.js"
+import {
+  registerIllusionSetting
+} from "../system/illusion.js"
+import {
+  registerHealLedger
+} from "../system/heal-ledger.js"
+import {
+  registerTacnetSetting
+} from "../system/tacnet.js"
+import {
   SR5
 } from "../config.js"
 import {
@@ -75,6 +129,9 @@ import Migration from "../migration.js"
 import {
   SR5CompendiumBrowser
 } from "../interface/compendium-browser.js"
+import {
+  SR5ShopWindow, SR5ShopWorldSource
+} from "../interface/shop-window.js"
 
 // Item DataModels
 import {
@@ -135,6 +192,9 @@ import {
   sr5ItemMartialArtDataModel
 } from "../datamodels/items/itemMartialArt.js"
 import {
+  sr5ItemMentorSpiritDataModel
+} from "../datamodels/items/itemMentorSpirit.js"
+import {
   sr5ItemMetamagicDataModel
 } from "../datamodels/items/itemMetamagic.js"
 import {
@@ -170,6 +230,12 @@ import {
 import {
   sr5ItemSpiritTypeDataModel
 } from "../datamodels/items/itemSpiritType.js"
+import {
+  sr5ItemToxinDataModel
+} from "../datamodels/items/itemToxin.js"
+import {
+  SR5_Toxins
+} from "../entities/items/toxins.js"
 import {
   sr5ItemSpriteDataModel
 } from "../datamodels/items/itemSprite.js"
@@ -227,10 +293,43 @@ import {
 import {
   registerRunningMovementActions, createRunningTokenRuler, runningStatusEffect
 } from "../system/running.js"
+import {
+  convertMentorQualities, revertMentorConversion
+} from "../entities/items/mentor-conversion.js"
 
 export async function sr5HookInit() {
   SR5_SystemHelpers.registerSystemSettings()
   SR5_CompendiumUtility.registerSettings()
+  registerSheetSizeSetting()
+  registerIndirectEffectSetting()
+  //Spirit ledger: values left on the sheets by the first version are moved once the world is ready
+  initSpiritLedger()
+  //Sixth World calendar and 3 s per Combat Turn (SR5 p. 51)
+  registerCalendarSettings()
+  registerDeadlineSettings()
+  registerOrderSettings()
+  registerOrderLedger()
+  //A new availability test after a failure (SR5 p. 420): the GM's ledger of failed cards
+  registerRetryLedger()
+  //Aegis (Kill Code p. 112): the shield boxes, kept by the active GM
+  registerAegisLedger()
+  //The cards spent through the generic sockets, once per use and target (security lot)
+  SR5_MiscellaneousHelpers.registerSettings()
+  registerExtendedClockSetting()
+  //Diseases (Run Faster p. 111-112): the GM's ledger of infections, and what the player is shown
+  registerDiseaseSettings()
+  //Essence Loss of the Infected (SR5 p. 403): the GM's ledger of their hunger, and the length of a lunar month
+  registerHungerSettings()
+  //Infection (SR5 p. 401): the GM's ledger of the comas
+  registerInfectionSettings()
+  //Treating CFD (Dark Terrors p. 86-87): the GM's ledger of the NanoScrub and Overwriters at work
+  registerCfdSettings()
+  //Radiation zones (Run & Gun p. 164-165): the GM's ledger of exposures
+  registerRadiationSettings()
+  //The GM's ledgers of the illusions seen through (SR5 p. 294) and of the RP-Tac rosters (Run & Gun p. 119)
+  registerIllusionSetting()
+  registerHealLedger()
+  registerTacnetSetting()
   //The grappling statuses exist only in a world that uses the grappling rules
   if (SR5_GrappleHelpers.isActive()) CONFIG.statusEffects.push(...SR5_GrappleHelpers.statusEffects())
   //Running (SR5 p. 163-164): the "running" status, "Course" and "Sprint" in the movement selector, a ruler colored by gait
@@ -255,6 +354,12 @@ export async function sr5HookInit() {
     rollItemMacro: macros.rollItemMacro,
     rollMacro: macros.rollMacro,
     compendiumBrowser: SR5CompendiumBrowser,
+    shop: SR5ShopWindow,
+    // The shop against the till, item by item: should answer no difference
+    shopAudit: () => SR5ShopWorldSource.audit(),
+    // GM macro: old-style Mentor Spirit qualities -> quality linked to a mentor item (SR5 p. 76), and back
+    convertMentorQualities,
+    revertMentorConversion,
   }
 
   // Register DataModels
@@ -288,6 +393,7 @@ export async function sr5HookInit() {
     itemLifestyle: sr5ItemLifestyleDataModel,
     itemMark: sr5ItemMarkDataModel,
     itemMartialArt: sr5ItemMartialArtDataModel,
+    itemMentorSpirit: sr5ItemMentorSpiritDataModel,
     itemMetamagic: sr5ItemMetamagicDataModel,
     itemNuyen: sr5ItemNuyenDataModel,
     itemPower: sr5ItemPowerDataModel,
@@ -300,6 +406,7 @@ export async function sr5HookInit() {
     itemSpell: sr5ItemSpellDataModel,
     itemSpirit: sr5ItemSpiritDataModel,
     itemSpiritType: sr5ItemSpiritTypeDataModel,
+    itemToxin: sr5ItemToxinDataModel,
     itemSprite: sr5ItemSpriteDataModel,
     itemSpritePower: sr5ItemSpritePowerDataModel,
     itemStorage: sr5ItemStorageDataModel,
@@ -385,6 +492,9 @@ export async function sr5HookInit() {
 
   //Socket
   SR5_SocketHandler.registerSocketListeners()
+
+  //Book toxins button in the Items tab
+  SR5_Toxins.registerHooks()
 
   // Patch creation dialog buttons with document-type icons
   const docTypes = ["Actor", "Item", "Scene", "JournalEntry", "RollTable", "Cards", "Playlist", "Macro"]

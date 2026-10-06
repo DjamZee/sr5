@@ -4,6 +4,9 @@ import {
 import {
   MARTIAL_ARTS_LOCATIONS, martialArtsLocationKey
 } from '../../../rolls/roll-helpers/martialArtsLocation.js'
+import {
+  CALLED_SHOT_ITEM_KEYS
+} from '../../../system/effect-editor.js'
 
 export class itemsPropertiesPartialModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
@@ -191,6 +194,12 @@ export class itemsPropertiesPartialModel extends foundry.abstract.TypeDataModel 
             }),
           })])),
         }),
+        //Called shots any item can ease (system/effect-editor.js): how much their penalty is lowered
+        calledShots: new fields.SchemaField(Object.fromEntries(CALLED_SHOT_ITEM_KEYS.map(key => [key, new fields.SchemaField({
+          modifier: new fields.SchemaField({
+            ...sr5ModsPartialModel.defineSchema()
+          }),
+        })]))),
       }),
     }
   }

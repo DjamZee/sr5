@@ -4,6 +4,14 @@ import {
 import {
   SR5_PrepareRollHelper 
 } from "../roll-prepare-helpers.js"
+import {
+  addGreyManaResistance
+} from "../../system/grey-mana.js"
+
+//The attributes a spell is resisted with: one or two, a blank one is skipped
+export function spellResistanceAttributes(spellData) {
+  return [spellData.defenseFirstAttribute, spellData.defenseSecondAttribute].filter(Boolean)
+}
 
 export default async function spellResistance(rollData, actor, chatData){
   if (actor.type === "actorAgent" || actor.type === "actorSprite" || actor.type === "actorDevice") return
@@ -20,17 +28,11 @@ export default async function spellResistance(rollData, actor, chatData){
       source: game.i18n.localize("SR5.ObjectHighlyProcessed"), type: "linkedAttribute", value: 15
     }])
   } else {
-    let firstAttribute = actor.system.attributes[spellData.defenseFirstAttribute].augmented.value
-    let secondAttribute = actor.system.attributes[spellData.defenseSecondAttribute].augmented.value
-    rollData.dicePool.composition = ([
-      {
-        source: game.i18n.localize(SR5.allAttributes[spellData.defenseFirstAttribute]), type: "linkedAttribute", value: firstAttribute
-      },
-      {
-        source: game.i18n.localize(SR5.allAttributes[spellData.defenseSecondAttribute]), type: "linkedAttribute", value: secondAttribute
-      },
-    ])
-    rollData.dicePool.base = firstAttribute + secondAttribute
+    //A spell resisted by a single attribute leaves the second one blank (Decrease Reflexes: Reaction, GRI p. 109)
+    rollData.dicePool.composition = spellResistanceAttributes(spellData).map(key => ({
+      source: game.i18n.localize(SR5.allAttributes[key]), type: "linkedAttribute", value: actor.system.attributes[key]?.augmented.value ?? 0
+    }))
+    rollData.dicePool.base = rollData.dicePool.composition.reduce((sum, c) => sum + c.value, 0)
   }
 
   //Add others informations
@@ -39,6 +41,9 @@ export default async function spellResistance(rollData, actor, chatData){
   rollData.previousMessage.hits = chatData.roll.hits
   rollData.previousMessage.itemUuid = chatData.owner.itemUuid
   rollData.previousMessage.messageId = chatData.owner.messageId
+
+  //Better Than Bad p. 140-141: grey mana adds its rating against any targeted magic
+  rollData = addGreyManaResistance(rollData, actor, game.i18n.localize("SR5.GreyMana"))
 
   //Add transferable effects
   rollData = SR5_PrepareRollHelper.addTransferableEffect(rollData, spellItem)

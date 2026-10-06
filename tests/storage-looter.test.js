@@ -1,5 +1,5 @@
 import {
-  describe, it, expect, afterEach
+  describe, it, expect, afterEach, beforeAll
 } from 'vitest'
 import {
   canLoot
@@ -21,6 +21,15 @@ globalThis.foundry.applications.sheets ??= {
   ActorSheetV2: class {}
 }
 
+// The storage sheet pulls in most of the system: loaded once, outside any test's own time limit,
+// since under the full parallel suite this first import alone can pass the 5 s a test is given.
+let SR5StorageSheet
+beforeAll(async () => {
+  ({
+    SR5StorageSheet
+  } = await import('../modules/entities/actors/storageSheet.js'))
+})
+
 async function looterOf(controlled, placeables) {
   const shown = {
   }
@@ -38,9 +47,6 @@ async function looterOf(controlled, placeables) {
       action: 'cancel'
     })
   }
-  const {
-    SR5StorageSheet
-  } = await import('../modules/entities/actors/storageSheet.js')
   const sheet = Object.create(SR5StorageSheet.prototype)
   Object.defineProperty(sheet, 'actor', {
     value: bag

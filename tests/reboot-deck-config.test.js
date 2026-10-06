@@ -35,11 +35,17 @@ const {
   SR5_MatrixHelpers
 } = await import('../modules/rolls/roll-helpers/matrix.js')
 const {
+  SR5Combat
+} = await import('../modules/system/srcombat.js')
+const {
   SR5_PrepareRollTest
 } = await import('../modules/rolls/roll-prepare.js')
 const {
   SR5_RollTest
 } = await import('../modules/rolls/roll-test.js')
+const {
+  SR5_MiscellaneousHelpers
+} = await import('../modules/rolls/roll-helpers/miscellaneous.js')
 
 /** A document whose update merges the flattened changes the way Foundry does */
 function documentWith(data) {
@@ -240,7 +246,22 @@ describe('Rebooting a deck (SR5 p. 244)', () => {
     expect(spareDeck.system.markedItems).toHaveLength(1)
   })
 
+  // The action counters belong to the initiative passes (SR5 p. 163-165): out of combat nothing is spent
+  it('reboots out of combat without spending an action', async () => {
+    vi.spyOn(SR5Combat, 'getCombatantFromActor').mockReturnValue(undefined)
+    const sheet = Object.create(ActorSheetSR5.prototype)
+    Object.defineProperty(sheet, 'actor', {
+      get: () => hacker
+    })
+    await sheet._onRebootDeck({
+      preventDefault(){}
+    })
+    expect(hacker.update).toHaveBeenCalledTimes(1)
+  })
+
   it('lets the reboot button through once the connection is free', async () => {
+    vi.spyOn(SR5Combat, 'getCombatantFromActor').mockReturnValue({
+    })
     const sheet = Object.create(ActorSheetSR5.prototype)
     Object.defineProperty(sheet, 'actor', {
       get: () => hacker
@@ -350,6 +371,14 @@ describe('Jacking out reboots the device used (SR5 p. 244)', () => {
       hacker.deleteEmbeddedDocuments = vi.fn(async (_type, ids) => {
         hacker.items = hacker.items.filter(i => !ids.includes(i.id))
       })
+      // The active GM rolls the locks, once per card (Anke's review)
+      game.users = {
+        activeGM: {
+          isSelf: true
+        }
+      }
+      const spent = new Set()
+      vi.spyOn(SR5_MiscellaneousHelpers, 'consume').mockImplementation(async key => !spent.has(key) && !!spent.add(key))
     })
 
     /** The success button of the resistance card rolled against one lock */
@@ -392,9 +421,19 @@ describe('Jacking out reboots the device used (SR5 p. 244)', () => {
       })
       vi.spyOn(SR5_RollTest, 'addInfoToCard').mockResolvedValue()
       const render = vi.spyOn(SR5_RollTest, 'renderRollCard').mockResolvedValue()
+      // A GM's card: its hits are believed as written
+      vi.spyOn(SR5_MiscellaneousHelpers, 'cardOf').mockReturnValue({
+        byGM: true, roller: hacker, data: {
+          test: {
+            typeSub: 'jackOut'
+          }, roll: {
+            hits: 3
+          }
+        }
+      })
       await SR5_MatrixHelpers.rollJackOut({
         owner: {
-          actorId: 'hacker'
+          actorId: 'hacker', messageId: 'card'
         }, roll: {
           hits: 3
         }, previousMessage: {
@@ -403,5 +442,238 @@ describe('Jacking out reboots the device used (SR5 p. 244)', () => {
       expect(rollDice.mock.calls.map(c => c[0].dicePool)).toEqual([4, 6])
       expect(render.mock.calls.map(c => [c[0].previousMessage.itemUuid, c[0].previousMessage.hits])).toEqual([['lock1', 3], ['lock2', 3]])
     })
+
+    // Security pass (Petra): the GM never believes the hits a player's Jack Out card claims
+    describe("a player's card", () => {
+      let render
+      /** Dice as Foundry stores them on a card: the hits are the 5 and 6 */
+      const diceRoll = results => JSON.stringify({
+        terms: [{
+          results: results.map(result => ({
+            result, active: true
+          }))
+        }]
+      })
+      const playerCard = (claimed, dice, extra = {
+      }) => vi.spyOn(SR5_MiscellaneousHelpers, 'cardOf').mockReturnValue({
+        byGM: false, roller: hacker, data: {
+          test: {
+            typeSub: 'jackOut'
+          }, roll: {
+            hits: claimed, r: diceRoll(dice)
+          }, edge: {
+          }, ...extra
+        }
+      })
+      const jackOutWith = claimed => SR5_MatrixHelpers.rollJackOut({
+        owner: {
+          actorId: 'hacker', messageId: 'card'
+        }, roll: {
+          hits: claimed
+        }, previousMessage: {
+        }
+      })
+
+      beforeEach(() => {
+        hacker.system.matrix.actions = {
+          jackOut: {
+            test: {
+              dicePool: 4
+            }, limit: {
+              value: 0
+            }
+          }
+        }
+        hacker.system.specialAttributes = {
+          edge: {
+            augmented: {
+              value: 0
+            }
+          }
+        }
+        vi.spyOn(SR5_PrepareRollTest, 'getBaseRollData').mockImplementation(() => ({
+          test: {
+          }, dicePool: {
+          }, previousMessage: {
+          }
+        }))
+        vi.spyOn(SR5_RollTest, 'rollDice').mockResolvedValue({
+        })
+        vi.spyOn(SR5_RollTest, 'addInfoToCard').mockResolvedValue()
+        render = vi.spyOn(SR5_RollTest, 'renderRollCard').mockResolvedValue()
+        vi.spyOn(ui.notifications, 'warn').mockImplementation(() => {})
+      })
+
+      it('counts its hits again on its dice, within the sheet pool: 99 claimed, 2 rolled', async () => {
+        playerCard(99, [6, 5, 1, 2, 6, 6, 6])
+        await jackOutWith(99)
+        // The pool is 4: only the first four dice count, two of them hits
+        expect(render.mock.calls.map(c => c[0].previousMessage.hits)).toEqual([2, 2])
+      })
+
+      it('caps its hits at the Firewall limit of the sheet', async () => {
+        hacker.system.matrix.actions.jackOut.limit.value = 1
+        playerCard(3, [6, 5, 6, 1])
+        await jackOutWith(3)
+        expect(render.mock.calls.map(c => c[0].previousMessage.hits)).toEqual([1, 1])
+      })
+
+      // Anke's review: the button written back in the card's content rolled the locks at every click
+      it('rolls the locks once per card, never on a second click', async () => {
+        playerCard(3, [6, 5, 6, 1])
+        await jackOutWith(3)
+        await jackOutWith(3)
+        expect(render).toHaveBeenCalledTimes(2)
+        expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_JackOutCardSpent')
+      })
+
+      it('rolls nothing on a GM who is not the active one', async () => {
+        game.users.activeGM.isSelf = false
+        playerCard(3, [6, 5, 6, 1])
+        await jackOutWith(3)
+        expect(render).not.toHaveBeenCalled()
+        expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_JackOutActiveGMOnly')
+      })
+
+      // Anke's review: the push flag of the card was believed, 10 hits kept with no Edge spent
+      describe('that says it pushed the limit', () => {
+        const pushedCard = () => playerCard(99, [6, 6, 6, 6, 6, 6], {
+          edge: {
+            hasUsedPushTheLimit: true
+          }
+        })
+        beforeEach(() => {
+          // Pool 4, Edge 2, Firewall 3: capped, 3 hits; pushed, the six dice count
+          hacker.system.matrix.actions.jackOut.limit.value = 3
+          hacker.system.specialAttributes.edge.augmented.value = 2
+          hacker.system.conditionMonitors = {
+            edge: {
+              actual: {
+                value: 0
+              }
+            }
+          }
+          globalThis.foundry.applications.api ??= {
+          }
+          globalThis.foundry.applications.api.DialogV2 ??= {
+            confirm: async () => false
+          }
+        })
+
+        it('keeps the Firewall cap when the sheet spent no Edge, without asking the GM', async () => {
+          const grant = vi.spyOn(foundry.applications.api.DialogV2, 'confirm')
+          pushedCard()
+          await jackOutWith(99)
+          expect(grant).not.toHaveBeenCalled()
+          expect(render.mock.calls.map(c => c[0].previousMessage.hits)).toEqual([3, 3])
+        })
+
+        it('lifts the cap only when the GM grants the push', async () => {
+          hacker.system.conditionMonitors.edge.actual.value = 1
+          vi.spyOn(foundry.applications.api.DialogV2, 'confirm').mockResolvedValue(true)
+          pushedCard()
+          await jackOutWith(99)
+          expect(render.mock.calls.map(c => c[0].previousMessage.hits)).toEqual([6, 6])
+        })
+
+        it('keeps the cap when the GM refuses the push', async () => {
+          hacker.system.conditionMonitors.edge.actual.value = 1
+          vi.spyOn(foundry.applications.api.DialogV2, 'confirm').mockResolvedValue(false)
+          pushedCard()
+          await jackOutWith(99)
+          expect(render.mock.calls.map(c => c[0].previousMessage.hits)).toEqual([3, 3])
+        })
+      })
+
+      it('rolls nothing for a card nobody can stand by', async () => {
+        vi.spyOn(SR5_MiscellaneousHelpers, 'cardOf').mockReturnValue(null)
+        await jackOutWith(99)
+        expect(render).not.toHaveBeenCalled()
+        expect(ui.notifications.warn).toHaveBeenCalled()
+      })
+
+      it('rolls nothing for a card of another action', async () => {
+        playerCard(5, [6, 6, 6, 6], {
+          test: {
+            typeSub: 'hackOnTheFly'
+          }
+        })
+        await jackOutWith(5)
+        expect(render).not.toHaveBeenCalled()
+      })
+    })
+  })
+})
+
+// E4 (DjamZ's ruling, 2026-10-06, SR5 p. 231 and 244): any exit from VR without switching to AR first deals
+// dumpshock, link lock or not; nothing once in AR
+describe('Every ejection from VR deals one dumpshock', () => {
+  let rollTest
+  beforeEach(() => {
+    vi.spyOn(SR5_EntityHelpers, 'deleteEffectOnActor').mockResolvedValue()
+    vi.spyOn(SR5_PrepareRollTest, 'getBaseRollData').mockImplementation(() => ({
+      damage: {
+      }
+    }))
+    rollTest = hacker.rollTest = vi.fn()
+  })
+  const dumpshocks = () => rollTest.mock.calls.filter(c => c[0] === 'resistanceCard' && c[2]?.damage?.resistanceType === 'dumpshock').length
+  const rebootButton = () => {
+    const sheet = Object.create(ActorSheetSR5.prototype)
+    Object.defineProperty(sheet, 'actor', {
+      get: () => hacker
+    })
+    return sheet._onRebootDeck({
+      preventDefault(){}
+    })
+  }
+
+  it.each([['cold sim', 'coldsim', 1], ['hot sim', 'hotsim', 1], ['AR', 'ar', 0]])('the reboot button in %s (a reboot by choice, or the GM applying convergence)', async (_case, userMode, expected) => {
+    hacker.system.matrix.userMode = userMode
+    await rebootButton()
+    expect(dumpshocks()).toBe(expected)
+  })
+
+  it('a free jack out in hot sim deals exactly one dumpshock', async () => {
+    hacker.system.matrix.userMode = 'hotsim'
+    await SR5_MatrixHelpers.jackOut({
+      owner: {
+        actorId: 'hacker'
+      }, previousMessage: {
+      }
+    })
+    expect(dumpshocks()).toBe(1)
+  })
+
+  it.each(['iceScramble', 'iceFlicker'])('%s forcing the reboot in VR deals exactly one dumpshock', async typeSub => {
+    hacker.system.matrix.userMode = 'coldsim'
+    activeDeck.uuid = 'Actor.hacker.Item.deck'
+    activeDeck.system.marks = [{
+      ownerId: 'ice', value: 2
+    }]
+    globalThis.fromUuid.mockImplementation(async uuid => ({
+      [commlink.uuid]: commlink, [serverFile.uuid]: serverFile, [activeDeck.uuid]: activeDeck
+    })[uuid] ?? null)
+    vi.spyOn(SR5_MatrixHelpers, 'applylinkLockEffect').mockResolvedValue()
+    const reboot = vi.spyOn(hacker, 'rebootDeck')
+    await SR5_MatrixHelpers.applyIceEffect({
+      test: {
+        typeSub
+      }, target: {
+        itemUuid: activeDeck.uuid
+      }, damage: {
+      }
+    }, {
+      id: 'ice', name: 'CI'
+    }, hacker)
+    await reboot.mock.results[0].value
+    expect(dumpshocks()).toBe(1)
+  })
+
+  it('an AI rebooting in VR takes no dumpshock (DjamZ, 04/10)', async () => {
+    hacker.system.matrix.userMode = 'hotsim'
+    hacker.system.activeSpecialAttribute = 'depth'
+    await hacker.rebootDeck()
+    expect(dumpshocks()).toBe(0)
   })
 })

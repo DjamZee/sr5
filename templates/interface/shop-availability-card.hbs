@@ -51,7 +51,9 @@
           <td>{{#if this.availability}}{{this.availability}}{{else}}—{{/if}}</td>
           <td>{{#if this.untested}}—{{else if this.availability}}{{this.hits}} / {{this.opposition}}{{else}}—{{/if}}</td>
           <td>{{this.outcomeLabel}}</td>
-          <td>{{this.delayLabel}}</td>
+          <td>{{this.delayLabel}}{{#if (eq this.outcome "failure")}}
+            <button type="button" class="sr-shop-retry" data-shop-action="retry" data-uuid="{{this.uuid}}" title="{{localize 'SR5.ShopRetryHint'}}"><i class="fas fa-sm fa-rotate-right"></i> {{localize 'SR5.ShopRetry'}}</button>
+          {{/if}}</td>
           <td>{{this.priceLabel}}</td>
         </tr>
         {{/each}}
@@ -61,9 +63,12 @@
 
   <footer class="sr-shop-card-footer">
     {{#if canBuy}}
+    {{#if express}}
+    <label class="sr-shop-express"><input type="checkbox" data-shop-express> {{express}}</label>
+    {{/if}}
     <button type="button" data-shop-action="checkout">
       <i class="fas fa-sm fa-receipt"></i>
-      {{localize 'SR5.ShopCashPurchase'}} ({{totalLabel}})
+      {{localize 'SR5.ShopCashPurchase'}} (<span data-shop-total>{{totalLabel}}</span>)
     </button>
     {{else}}
     <span class="sr-shop-cashed">{{localize 'SR5.ShopNothingFound'}}</span>

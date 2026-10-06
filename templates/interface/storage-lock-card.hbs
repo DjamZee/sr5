@@ -1,0 +1,25 @@
+<div class="sr5 chat-card sr-storage-lock-card">
+	<header class="card-header">
+		<h3>{{#if relock}}{{localize 'SR5.StorageLockRelock'}}{{else}}{{localize 'SR5.StorageLockPick'}}{{/if}} &mdash; {{storageName}}</h3>
+	</header>
+	{{#if noKit}}
+	<p>{{localize 'SR5.StorageLockNoKit'}}</p>
+	{{else if noPool}}
+	<p>{{localize 'SR5.StorageLockNoPool'}}</p>
+	{{else}}
+	<p class="SR-GreyColor SR-TextSmall">{{localize 'SR5.StorageLockTest'}} &middot; {{localize 'SR5.DicePool'}} {{pool}} {{#if limit}}&middot; {{localize 'SR5.Limit'}} {{limit}}{{/if}}{{#if autopicker}} ({{localize 'SR5.StorageLockAutopicker'}} +{{autopicker}}){{/if}}</p>
+	<ul>
+		{{#each stages as |stage|}}
+		<li>
+			<strong>{{stage.label}}</strong> &mdash; {{stage.hits}} / {{stage.threshold}} {{localize 'SR5.StorageLockHits'}}, {{stage.rolls}} {{localize 'SR5.StorageLockTurns'}}
+			{{#if stage.criticalGlitch}}<span class="SR-Red"> &middot; {{localize 'SR5.StorageLockCriticalGlitch'}}</span>{{else}}{{#if stage.glitch}}<span class="SR-Red"> &middot; {{localize 'SR5.Glitch'}}</span>{{/if}}{{/if}}
+		</li>
+		{{/each}}
+	</ul>
+	{{#if glitched}}
+	<p class="SR-TextSmall">{{localize 'SR5.StorageLockGlitchNote'}}</p>
+	{{/if}}
+	<p><strong>{{#if reached}}{{#if relock}}{{localize 'SR5.StorageLockRelocked'}}{{else}}{{localize 'SR5.StorageLockOpened'}}{{/if}}{{else}}{{localize 'SR5.StorageLockFailed'}}{{/if}}</strong>
+	&middot; {{turns}} {{localize 'SR5.StorageLockTurns'}}</p>
+	{{/if}}
+</div>

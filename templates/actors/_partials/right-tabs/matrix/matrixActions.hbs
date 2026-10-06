@@ -33,6 +33,8 @@
 				</li>
 				{{/if}}
 			{{else}}
+			<!-- SR5 p. 240: Erase Matrix Signature needs Resonance (DjamZ's ruling T8) -->
+			{{#unless (and (eq @key 'eraseMatrixSignature') (not (gt ../system.specialAttributes.resonance.augmented.value 0)))}}
 			<li class="item grid" data-matrix="{{@key}}" data-item-id="{{@key}}" data="{{@key}}">
 				<div class="col-5 deplieMatrix">
 					<!--Specialization Icon-->
@@ -85,6 +87,7 @@
 				{{/if_ge}}
 				<div class="col-1 SR-TextCenter">{{#if increaseOverwatchScore}}<em class="fas fa-sm fa-exclamation-triangle SR-popColor"></em>{{/if}}</div>
 			</li>
+			{{/unless}}
 			{{/if}}
 		{{/each}}
 	</ul>

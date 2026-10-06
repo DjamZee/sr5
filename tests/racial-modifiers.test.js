@@ -43,7 +43,7 @@ function makeActor(metatype, type = 'actorPc') {
         toxin: resistanceByVector(),
       },
       attributes: Object.fromEntries(
-        ['body', 'agility', 'reaction', 'strength', 'willpower', 'logic', 'charisma']
+        ['body', 'agility', 'reaction', 'strength', 'willpower', 'logic', 'intuition', 'charisma']
           .map((key) => [key, {
             natural: mod() 
           }])
@@ -118,6 +118,8 @@ describe('applyRacialModifers - other racial traits', () => {
     expect(valueOf(grunt.system.attributes.body.natural)).toBe(4)
     expect(valueOf(grunt.system.attributes.strength.natural)).toBe(4)
     expect(valueOf(grunt.system.attributes.charisma.natural)).toBe(-2)
+    //SR5 p. 68: Intuition 1/5 for a troll
+    expect(valueOf(grunt.system.attributes.intuition.natural)).toBe(-1)
   })
 
   it('does nothing when no metatype is set', () => {

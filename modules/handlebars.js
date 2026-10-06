@@ -7,8 +7,29 @@ import {
 import {
   SR5_EntityHelpers 
 } from "./entities/helpers.js"
+import {
+  situationalReadable, situationalMovement
+} from "./rolls/roll-helpers/situational.js"
+import {
+  martialArtNeedsSwitch
+} from "./system/martial-arts-technique.js"
 
 export const registerHandlebarsHelpers = function () {
+  //Only a technique that is an action chosen for the roll keeps its switch on the sheet
+  Handlebars.registerHelper('martialArtNeedsSwitch', function (system) {
+    return martialArtNeedsSwitch(system)
+  })
+
+
+  // Whether a roll dialog reads this effect target, so that a situational effect on it is offered
+  Handlebars.registerHelper("situationalReadable", function (target) {
+    return situationalReadable(target)
+  })
+
+  // Whether a situational effect on this target is a box of the movement block of the sheet (Dark Terrors p. 180)
+  Handlebars.registerHelper("situationalMovement", function (target) {
+    return situationalMovement(target)
+  })
 
   // if equal
   Handlebars.registerHelper("ife", function (v1, v2, options) {
@@ -233,6 +254,13 @@ export const registerHandlebarsHelpers = function () {
     }
     if (string.includes(subString)) return true
     return false
+  })
+
+  //Short name of an attribute (FOR, INT...), or its full name when it has none
+  Handlebars.registerHelper('attributeShort', function (key) {
+    let label = SR5.allAttributes[key]
+    if (!label) return ""
+    return game.i18n.has(`${label}Short`) ? game.i18n.localize(`${label}Short`) : game.i18n.localize(label)
   })
 
   //Concat multiple strings or data to one string

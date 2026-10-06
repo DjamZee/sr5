@@ -202,6 +202,8 @@ describe('First aid "Heal" button', () => {
           netHits: 2
         }
       },
+      // The GM reads the card again from the chat log (security pass, Olympe)
+      messageId: 'm1',
     })
   })
 

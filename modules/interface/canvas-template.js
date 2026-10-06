@@ -113,7 +113,13 @@ export default class SR5Template extends foundry.canvas.placeables.MeasuredTempl
     //
     // Drawing one costs nothing either, measured in a real browser window on a 142.8 m map: 60 fps with no
     // template, and 60 fps again with a circle of radius 286, 5 000 or 50 000 -- up to 350 times the map.
-    // Worst frame 17 ms in all three, one frame at 60 Hz, so no hitch. Hit-testing was not measured.
+    // Worst frame 17 ms in all three, one frame at 60 Hz, so no hitch.
+    //
+    // Telling who stands inside costs nothing either, whatever the radius: checkIfTemplateContainsToken
+    // (effectArea.js) never walks the polygon, it compares one grid.measurePath between the template's centre
+    // and the token with the template's distance. Timed on 2026-10-06 with Foundry 13.351's own grid code
+    // (common/grid, run under Node, 100 000 calls each): 0.3 to 1.4 microseconds per token on a square grid
+    // under all seven diagonal rules and on a hex grid, the same at a radius of 10, 286, 5 000 or 50 000.
 
     // Prepare template data
     const templateData = {

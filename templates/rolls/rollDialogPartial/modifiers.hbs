@@ -11,6 +11,8 @@
 </li>
 <!-- CUSTOM MODIFIER-->
 {{> systems/sr5/templates/rolls/rollDialogPartial/customModifier.hbs}}
+<!-- SITUATIONAL EFFECTS: outside the folded list, so that they are seen -->
+{{> systems/sr5/templates/rolls/rollDialogPartial/situationalModifiers.hbs}}
 
 <div id="dicePoolModifier" style="display: none;">
     <!-- ALREADY APPLIED MODIFIERS-->
@@ -99,6 +101,11 @@
         <div class="col-1 SR-TextCenter">
             <input disabled type="number" name="dicePoolModSpiritType" value="" placeholder="0" data-dtype="Number" />
         </div>
+    {{/if}}
+
+    <!-- ASTRAL REPUTATION -->
+    {{#if magic.astralReputationMod}}
+        {{> systems/sr5/templates/rolls/rollDialogPartial/astralReputation.hbs}}
     {{/if}}
 
     <!-- SPIRIT AID -->

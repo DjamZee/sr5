@@ -64,6 +64,33 @@ describe("changeActionInCombat and interruptions", () => {
     expect(SR5Combat.changeInitInCombatHelper).toHaveBeenCalledWith("pc", -15)
   })
 
+  //Ruling of DjamZ (2026-10-06, G13): a player does not raise the actions of her character herself
+  it("refuses a manual raise of actions from a player, lets a manual cut through", async () => {
+    globalThis.game.user = {
+      isGM: false
+    }
+    await SR5Combat.changeActionInCombat("pc", [{
+      type: "simple", value: -1, source: "manual"
+    }])
+    expect(actor.update).not.toHaveBeenCalled()
+    expect(combatant.update).not.toHaveBeenCalled()
+    expect(ui.notifications.warn).toHaveBeenCalledWith("SR5.WARN_RaiseActionsGMOnly")
+    await SR5Combat.changeActionInCombat("pc", [{
+      type: "simple", value: 1, source: "manual"
+    }])
+    expect(combatant.update).toHaveBeenCalledTimes(1)
+  })
+
+  it("lets the GM raise actions by hand", async () => {
+    globalThis.game.user = {
+      isGM: true
+    }
+    await SR5Combat.changeActionInCombat("pc", [{
+      type: "simple", value: -1, source: "manual"
+    }])
+    expect(combatant.update).toHaveBeenCalledTimes(1)
+  })
+
   it("leaves the Initiative alone without an interruption", async () => {
     await SR5Combat.changeActionInCombat("pc", [{
       type: "simple", value: 1, source: "attack"
