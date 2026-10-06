@@ -57,7 +57,7 @@ const item = (type, actionType, key, name = key) => ({
 
 describe("a power dropped on a sheet", () => {
   it("is switched on when its action is automatic or permanent, for powers, adept powers and techniques", () => {
-    for (const type of ["itemPower", "itemSpritePower", "itemAdeptPower", "itemMartialArt"]) {
+    for (const type of ["itemPower", "itemAdeptPower", "itemMartialArt"]) {
       expect(isAlwaysActive({
         type, system: {
           actionType: "automatic"

@@ -162,7 +162,7 @@ export class SR5_CompendiumUtility extends Actor {
     return documents
   }
 
-  //The data of an item given to a new spirit, sprite or creature: a power that is always active (always-active.js)
+  //The data of an item given to a new spirit or creature: a power that is always active (always-active.js)
   //comes switched on (arbitrage de DjamZ, H39), so that its effects (Immunity, Armor, Toughness…) count without a click
   static givenItem(item) {
     const data = item.toObject(false)

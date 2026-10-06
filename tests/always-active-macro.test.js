@@ -54,7 +54,7 @@ beforeEach(() => {
 })
 
 describe("the plan of the GM macro", () => {
-  it("takes the creature and sprite powers that are always active and off", () => {
+  it("takes the creature powers that are always active and off, never a sprite power (SR5 p. 259)", () => {
     const plan = planActivation([
       power("Immunité", "itemPower", "automatic"),
       power("Armure", "itemPower", "permanent"),
@@ -64,7 +64,7 @@ describe("the plan of the GM macro", () => {
       power("Réflexes améliorés", "itemAdeptPower", "permanent"),
       power("Arme", "itemWeapon", "automatic"),
     ])
-    expect(plan.map(p => p.id)).toEqual(["Immunité", "Armure", "Gremlins"])
+    expect(plan.map(p => p.id)).toEqual(["Immunité", "Armure"])
   })
 })
 
