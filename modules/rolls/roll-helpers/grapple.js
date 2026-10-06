@@ -220,6 +220,9 @@ export class SR5_GrappleHelpers {
     if (!card || card.data.test?.type !== "grappleEscape") return null
     const held = card.roller, hold = SR5_GrappleHelpers.holdBetween(held, SR5_GrappleHelpers.partnerOf(held))
     if (!hold || !sameFighter(hold.held, held)) return null
+    //A card rolled before this hold began frees nobody from it: the server dates both
+    const begun = hold.holder.effects?.find(e => e.flags?.sr5?.grapple?.holdId === hold.data.holdId)?._stats?.createdTime ?? 0
+    if (!((game.messages.get(messageId)?.timestamp ?? 0) >= begun)) return null
     const attributes = held.system?.attributes ?? {
     }
     const cap = SR5_MiscellaneousHelpers.poolCap(held, "skills.unarmedCombat.test.dicePool") +
@@ -283,7 +286,7 @@ export class SR5_GrappleHelpers {
     const escape = SR5_GrappleHelpers.escapeOf(d.messageId)
     if (!escape || !sameFighter(escape.hold.held, reverser) || !reverser.system?.itemsProperties?.martialArts?.counterGrapple?.isActive) return null
     return {
-      card: escape.card, key: consumedKey(escape.card.id, "grappleReverseHold", escape.hold.data.holdId), label: "grappleReverseHold",
+      card: escape.card, key: consumedKey(escape.card.id, "grappleEscape"), label: "grappleReverseHold",
       target: escape.hold.holder.name, value: counterGrappleHold(escape.hits, escape.stored), holdId: escape.hold.data.holdId,
     }
   }
@@ -485,7 +488,7 @@ export class SR5_GrappleHelpers {
       if (!allowed && hold && ownsTarget(sender, hold.held)) {
         const escape = SR5_GrappleHelpers.escapeOf(d.messageId)
         allowed = !!escape && sameFighter(escape.hold.held, hold.held) && await SR5_MiscellaneousHelpers.grant({
-          card: escape.card, key: consumedKey(escape.card.id, "grappleEscape", escape.hold.data.holdId), label: "grappleEscape",
+          card: escape.card, key: consumedKey(escape.card.id, "grappleEscape"), label: "grappleEscape",
           target: hold.holder.name, value: escape.hits,
         }, sender)
       }
@@ -501,7 +504,7 @@ export class SR5_GrappleHelpers {
     //A card that frees nobody (hold already over, hits short of it) frees nobody, without a word: the card says so
     const escape = SR5_GrappleHelpers.escapeOf(message.id)
     if (!escape) return
-    const key = consumedKey(escape.card.id, "grappleEscape", escape.hold.data.holdId)
+    const key = consumedKey(escape.card.id, "grappleEscape")
     if (SR5_MiscellaneousHelpers.isConsumed(key)) return
     const granted = await SR5_MiscellaneousHelpers.grant({
       card: escape.card, key, label: "grappleEscape", target: escape.hold.holder.name, value: escape.hits,

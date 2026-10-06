@@ -557,6 +557,31 @@ describe('the grappling sockets', () => {
     expect(SR5_GrappleHelpers.releaseHold).not.toHaveBeenCalled()
   })
 
+  it('releaseHold: an escape card rolled before the hold began is not served again on it', async () => {
+    thug.effects = [{
+      ...grapple('holder', 'pc', 1, 'h2'), _stats: {
+        createdTime: 2000
+      }
+    }]
+    pc.effects = [grapple('held', 'thug', 1, 'h2')]
+    const messageId = card(users.owner, {
+      test: {
+        type: 'grappleEscape'
+      }, owner: {
+        actorId: 'pc'
+      }, roll: {
+        hits: 3, r: dice(3, 3)
+      }
+    })
+    messages.get(messageId).timestamp = 1000
+    await SR5_GrappleHelpers._socketReleaseHold({
+      data: {
+        actorId: 'pc', messageId
+      }
+    }, 'owner')
+    expect(SR5_GrappleHelpers.releaseHold).not.toHaveBeenCalled()
+  })
+
   it('reverseHold: refuses a reversal without a card', async () => {
     thug.effects = [grapple('holder', 'pc')]
     pc.effects = [grapple('held', 'thug')]
