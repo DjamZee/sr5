@@ -113,6 +113,64 @@ describe('item update after a roll', () => {
     expect(item.source.system.ammunition.value).toBe(11)
   })
 
+  //Pauline's remainder b, S15 measured by Quitterie: a player rolling for an actor she owns but that is not her assigned
+  //character (an unlinked token: its id is never the character's) relayed to the GM; without a GM the magazine did not
+  //move, and a spell kept no hits for dispelling to read
+  it("writes itself what the player owns, her assigned character or not, without a GM", async () => {
+    const item = launcher()
+    item.isOwner = true
+    globalThis.fromUuid = async () => item
+    game.user = {
+      isGM: false, character: {
+        id: 'pc'
+      }
+    }
+    await SR5_RollTestHelper.updateItemAfterRoll({
+      ...card(), owner: {
+        itemUuid: 'Actor.a.Item.lg', actorId: 'unlinkedToken'
+      }
+    })
+    expect(emitted).toHaveLength(0)
+    expect(item.update).toHaveBeenCalledWith({
+      system: {
+        ammunition: {
+          value: 11
+        }
+      }
+    })
+  })
+
+  it("writes a spell's hits for its owner, so dispelling has something to lower", async () => {
+    const source = {
+      type: 'itemSpell', system: {
+        hits: 0, force: 0
+      }
+    }
+    const spell = {
+      uuid: 'Actor.a.Item.sp', type: 'itemSpell', isOwner: true, system: structuredClone(source.system),
+      toObject: () => structuredClone(source), toJSON: () => structuredClone(source), update: vi.fn(),
+    }
+    globalThis.fromUuid = async () => spell
+    game.user = {
+      isGM: false, character: null
+    }
+    await SR5_RollTestHelper.updateItemAfterRoll({
+      ...card(), owner: {
+        itemUuid: spell.uuid, actorId: 'unlinkedToken'
+      }, roll: {
+        hits: 4
+      }, magic: {
+        force: 5
+      }
+    })
+    expect(emitted).toHaveLength(0)
+    expect(spell.update).toHaveBeenCalledWith({
+      system: {
+        hits: 4, force: 5
+      }
+    })
+  })
+
   it('writes only the changed fields when the GM rolls', async () => {
     const item = launcher()
     globalThis.fromUuid = async () => item

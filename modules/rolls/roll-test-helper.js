@@ -157,7 +157,10 @@ export class SR5_RollTestHelper {
     // lost its scatter (3D6 fell to 1D6, and the next shot offered Defend instead of Scatter).
     const changes = foundry.utils.diffObject(item.toObject().system, newItem.system)
     if (foundry.utils.isEmpty(changes)) return
-    if (game.user?.isGM || cardData.owner.actorId == game.user?.character?.id) item.update({
+    //Whoever owns the item writes it herself: compared with her assigned character, an unlinked token (its id is never
+    //the character's) or a second actor she owns went to the GM, and without a GM the magazine did not move and the
+    //spell kept no hits (S15, measured by Quitterie). Anyone else asks the GM, whose socket checks the sender
+    if (game.user?.isGM || item.isOwner) item.update({
       system: changes
     })
     else SR5_SocketHandler.emitForGM("updateItem", {
