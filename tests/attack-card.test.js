@@ -161,8 +161,18 @@ describe('weaponAttackDamage', () => {
       choke: 'medium', range: 'short', secondTarget: true
     }).base).toBe(8)
   })
-  it('adds Magic and the element of an energy aura (SR5 p. 397)', () => {
-    const d = weaponAttackDamage(rifle, {
+  it('adds Magic and the element of an energy aura to a melee attack only (SR5 p. 397)', () => {
+    expect(weaponAttackDamage(rifle, {
+      ...shooter, specialProperties: {
+        energyAura: 'fire'
+      }
+    }, {
+    })).toMatchObject({
+      base: 10, ap: -2, element: ''
+    })
+    const d = weaponAttackDamage({
+      ...rifle, category: 'meleeWeapon'
+    }, {
       ...shooter, specialProperties: {
         energyAura: 'fire'
       }

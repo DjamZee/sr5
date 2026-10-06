@@ -25,6 +25,12 @@ import {
 import {
   sameActor, standsFor, diceShown, trustedHits, sheetValue
 } from "./matrix-card.js"
+import {
+  energyAuraApplies, jugularToxin, laserDamageReduction, LASER_TRAIT
+} from "./weapon-attack-rules.js"
+import {
+  hasWeaponTrait
+} from "../../entities/items/weaponTraits.js"
 
 const DAMAGE_TYPES = ["physical", "stun"]
 const ENGULF_EFFECTS = ["engulfWater", "engulfFire", "engulfAir", "engulfEarth"]
@@ -84,8 +90,8 @@ export function weaponAttackDamage(weapon, actor, choices = {
     result.isContinuous = true
     result.originalValue = result.base
   }
-  //Energy aura (SR5 p. 397): Magic added to the DV, AP -Magic, the aura's element
-  if (a.specialProperties?.energyAura) {
+  //Energy aura (SR5 p. 397): Magic added to the DV of a melee attack, AP -Magic, the aura's element
+  if (a.specialProperties?.energyAura && energyAuraApplies(w.category)) {
     result.base += magic
     result.ap = -magic
     result.element = a.specialProperties.energyAura
@@ -95,12 +101,9 @@ export function weaponAttackDamage(weapon, actor, choices = {
     case "bullsEye":
       result.ap += (Number(w.armorPenetration?.base) || 0) * bullsEyeBullets(choices.firingMode)
       break
+    //Run & Gun p. 131: the toxin's Power +2 and speed -1, the DV does not change
     case "hitEmWhereItCounts":
-      if (result.toxin && Number(result.toxin.power) > 0) {
-        result.toxin.power = Number(result.toxin.power) + 2
-        if (result.base > 0) result.base += 2
-      }
-      if (result.toxin && Number(result.toxin.speed) > 0) result.toxin.speed = Number(result.toxin.speed) - 1
+      if (result.toxin) result.toxin = jugularToxin(result.toxin)
       break
     case "harderKnock":
       result.type = "physical"
@@ -110,6 +113,9 @@ export function weaponAttackDamage(weapon, actor, choices = {
       break
   }
   result.base -= chokeDamageReduction(choices.choke, choices.range)
+  //A laser loses DV with range and visibility (Run & Gun p. 64), as test-Attack.js takes it off
+  const laser = hasWeaponTrait(w, LASER_TRAIT) ? laserDamageReduction(choices.range, choices.visibility) : 0
+  if (laser) result.base = Math.max(0, result.base - laser)
   //Through and Into: the second target takes the DV less 1 (test-Defense.js)
   if (choices.secondTarget) result.base -= 1
   return result
@@ -279,6 +285,18 @@ function poolWithEdge(roller, pool) {
   return (Number(pool) || 0) + (Number(roller?.system?.specialAttributes?.edge?.augmented?.value) || 0)
 }
 
+/**
+ * The Visibility row a laser's DV loses to (Run & Gun p. 64): the card's, never clearer than the scene the attack was
+ * rolled on. A lower row raises the DV, so the card may claim a thicker air than the scene's, not a clearer one; a
+ * smoke template is read on the card only.
+ */
+export function laserVisibility(chatData, scenes = globalThis.game?.scenes) {
+  const claimed = Number(chatData.combat?.environmentalColumns?.[0]) || 0
+  const scene = chatData.target?.sceneId ? scenes?.get?.(chatData.target.sceneId) : null
+  const sceneRow = Number(scene?.getFlag?.("sr5", "environModVisibility")) || 0
+  return Math.max(claimed, sceneRow)
+}
+
 function itemOn(roller, data) {
   const id = data?.owner?.itemId ?? String(data?.owner?.itemUuid ?? "").split(".").pop()
   return id ? roller?.items?.get?.(id) ?? null : null
@@ -339,6 +357,7 @@ export async function vetAttackCard(chatData, {
     } : weaponAttackDamage(item.system, system, {
       calledShot: chatData.combat?.calledShot?.name, chosenType: chatData.damage?.type,
       choke: chatData.combat?.choke?.selected, range: chatData.target?.range, firingMode: chatData.combat?.firingMode?.selected,
+      visibility: laserVisibility(chatData),
       targetIsDrone: defender?.type === "actorDrone", ammoEffects: weaponAmmoEffects(roller, item.system),
       secondTarget: !!chatData.combat?.calledShot?.secondTarget,
     })
