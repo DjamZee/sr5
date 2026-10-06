@@ -45,6 +45,32 @@ const deck = (score) => ({
     }
   },
 })
+// An unlinked token whose delta holds its score, over a base actor holding another
+const BASE = 'base'
+const unlinked = (deltaScore, baseScore = 2) => {
+  game.actors = {
+    get: id => (id === BASE ? deck(baseScore) : undefined)
+  }
+  const _source = {
+    actorLink: false, actorId: BASE, delta: {
+      system: {
+        matrix: {
+          overwatchScore: deltaScore
+        }
+      }
+    }
+  }
+  return {
+    uuid: 'Scene.s.Token.t', actorLink: false, actorId: BASE, _source, delta: {
+      _source: _source.delta
+    },
+    actor: {
+      ...deck(deltaScore), isToken: true, token: {
+        uuid: 'Scene.s.Token.t'
+      }
+    },
+  }
+}
 
 beforeEach(() => {
   globalThis.ui = {
@@ -193,9 +219,7 @@ describe('the lowerings Erna measured', () => {
   })
 
   it('an unlinked token: a lowering through the token or its delta is dropped, a rise kept', () => {
-    const token = {
-      actorLink: false, actor: deck(8)
-    }
+    const token = unlinked(8)
     for (const changes of [{
       'delta.system.matrix.overwatchScore': 0
     }, {
@@ -219,7 +243,7 @@ describe('the lowerings Erna measured', () => {
       'system.matrix.overwatchScore': 1
     }
     sr5HookPreUpdateActorDeltaOverwatch({
-      parent: token
+      parent: token, _source: token._source.delta
     }, delta, {
     })
     expect(delta).toEqual({
@@ -237,24 +261,123 @@ describe('the lowerings Erna measured', () => {
     globalThis.ChatMessage = {
       create: vi.fn(async () => {}), getWhisperRecipients: () => [gm]
     }
-    const before = {
-      ...deck(8), isToken: true, token: {
-        uuid: 'Scene.s.Token.t'
-      }
-    }
-    noteOverwatch(before)
-    await sr5HookUpdateTokenOverwatch({
-      actorLink: false, actor: {
-        ...before, system: {
-          matrix: {
-            overwatchScore: 0
-          }
-        }
-      }
-    }, {
+    noteOverwatch(unlinked(8).actor)
+    await sr5HookUpdateTokenOverwatch(unlinked(0), {
       'delta.system.matrix.overwatchScore': 0
     }, {
     }, 'p1')
     expect(ChatMessage.create).toHaveBeenCalledTimes(1)
+  })
+})
+
+// Erna's second round: a lowering written by deleting the key, by replacing matrix or system whole, or by linking the
+// token to a base actor with a lower score went through, most of them unseen. The guard now reads the score the
+// update would leave, whatever its form, and refuses the whole update when it is lower.
+describe('the score the update would leave', () => {
+  beforeEach(() => {
+    game.user = player
+  })
+
+  it('actor: deleting the key, or replacing matrix or system whole, is refused', () => {
+    for (const [changes, options] of [
+      [{
+        'system.matrix.-=overwatchScore': null
+      }, {
+      }],
+      [{
+        system: {
+          matrix: {
+            '-=overwatchScore': null
+          }
+        }
+      }, {
+      }],
+      [{
+        'system.matrix': {
+          x: 1
+        }
+      }, {
+        recursive: false
+      }],
+      [{
+        system: {
+          attributes: {
+          }
+        }
+      }, {
+        recursive: false
+      }],
+      [{
+        'system.==matrix': {
+          x: 1
+        }
+      }, {
+      }],
+    ]) expect(sr5HookPreUpdateActor(deck(6), changes, options)).toBe(false)
+    expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_OverwatchGMOnly')
+  })
+
+  it('actor: a reboot may delete it, and an update leaving it alone goes through', () => {
+    expect(sr5HookPreUpdateActor(deck(6), {
+      'system.matrix.-=overwatchScore': null
+    }, {
+      sr5OverwatchLower: 'reboot'
+    })).not.toBe(false)
+    expect(sr5HookPreUpdateActor(deck(6), {
+      'system.matrix': {
+        x: 1
+      }
+    }, {
+    })).not.toBe(false)
+    expect(sr5HookPreUpdateActor(deck(6), {
+      system: {
+        matrix: {
+          overwatchScore: 6, x: 1
+        }
+      }
+    }, {
+      recursive: false
+    })).not.toBe(false)
+  })
+
+  it('unlinked token: deleting the delta\'s key, or linking it to a lower base actor, is refused', () => {
+    expect(sr5HookPreUpdateTokenOverwatch(unlinked(8), {
+      'delta.system.matrix.-=overwatchScore': null
+    }, {
+    })).toBe(false)
+    expect(sr5HookPreUpdateTokenOverwatch(unlinked(8), {
+      actorLink: true
+    }, {
+    })).toBe(false)
+    const token = unlinked(8)
+    expect(sr5HookPreUpdateActorDeltaOverwatch({
+      parent: token, _source: token._source.delta
+    }, {
+      'system.matrix.-=overwatchScore': null
+    }, {
+    })).toBe(false)
+    //Linking to a base actor whose score is not lower changes nothing to it
+    expect(sr5HookPreUpdateTokenOverwatch(unlinked(2, 5), {
+      actorLink: true
+    }, {
+    })).not.toBe(false)
+  })
+
+  it('the GMs are told of a lowering whatever its form: the score is read, not the key', async () => {
+    game.user = gm
+    globalThis.ChatMessage = {
+      create: vi.fn(async () => {}), getWhisperRecipients: () => [gm]
+    }
+    noteOverwatch(deck(6))
+    await sr5HookOverwatchDrop(deck(0), {
+      'system.matrix.-=overwatchScore': null
+    }, {
+    }, 'p1')
+    noteOverwatch(unlinked(8).actor)
+    await sr5HookUpdateTokenOverwatch(unlinked(0), {
+      'delta.system.matrix.-=overwatchScore': null
+    }, {
+    }, 'p1')
+    expect(ChatMessage.create).toHaveBeenCalledTimes(2)
   })
 })
