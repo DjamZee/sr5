@@ -18,7 +18,10 @@ import {
   SR5_CharacterUtility
 } from '../modules/entities/actors/utilityActor.js'
 import {
-  DRUG_DAMAGE, intakeDamageOf, crashDamageOf, drugHasCrashDamage, drugResistance, drugVector, longHaulInCrash, hasImplants
+  sr5ItemDrugDataModel
+} from '../modules/datamodels/items/itemDrug.js'
+import {
+  DRUG_DAMAGE, intakeDamageOf, crashDamageOf, drugHasCrashDamage, drugResistance, drugVector, longHaulDoseKind, hasImplants
 } from '../modules/entities/items/drug-damage.js'
 
 beforeEach(() => {
@@ -282,7 +285,39 @@ describe('Long Haul, second dose (SR5 p. 413)', () => {
     })
     other.id = other._id = 'other'
     const item = drugItem('longHaul')
-    expect(longHaulInCrash(item, actor([other, item]))).toBe(other.system)
+    expect(longHaulDoseKind(item, actor([other, item]))).toBe('second')
+  })
+  // Eudoxie's review, D1: counted for the actor, not for one item
+  it('two items in turn: a dose during the rise or the crash of a second dose keeps no one awake', async () => {
+    const second = drugItem('longHaul', {
+      phase: 'rise', handleShot: {
+        longHaulSecondDose: true
+      }
+    })
+    second.id = second._id = 'second'
+    const first = drugItem('longHaul', {
+      phase: 'crash'
+    })
+    expect(longHaulDoseKind(first, actor([first, second]))).toBe('noMore')
+    second.system.phase = 'crash'
+    expect(longHaulDoseKind(first, actor([first, second]))).toBe('noMore')
+    //Once that chain is over, a dose is a first one again
+    second.system.phase = ''
+    first.system.phase = ''
+    expect(longHaulDoseKind(first, actor([first, second]))).toBe('first')
+  })
+  it('a dose during the rise of a first dose is a first dose (the book only speaks of the crash)', () => {
+    const other = drugItem('longHaul', {
+      phase: 'rise'
+    })
+    other.id = other._id = 'other'
+    expect(longHaulDoseKind(drugItem('longHaul'), actor([other]))).toBe('first')
+  })
+  it('the switch of a Long Haul in its crash takes a dose (sheet)', () => {
+    const getter = Object.getOwnPropertyDescriptor(sr5ItemDrugDataModel.prototype, 'takesDoseInCrash').get
+    const takesDoseInCrash = (key) => getter.call(drugItem(key).system)
+    expect(takesDoseInCrash('longHaul')).toBe(true)
+    expect(takesDoseInCrash('cram')).toBe(false)
   })
   it('a third dose keeps no one awake: straight back to sleep, no damage', async () => {
     const item = drugItem('longHaul', {

@@ -20,7 +20,7 @@ import {
   applyDrugQuality, drugAddictionThreshold, effectiveDrugQuality
 } from "../items/drug-stat.js"
 import {
-  longHaulInCrash
+  longHaulDoseKind
 } from "../items/drug-damage.js"
 import {
   SR5_SystemHelpers 
@@ -3602,15 +3602,16 @@ export class SR5_CharacterUtility extends Actor {
           "durationContrecoupType": "hour",
         }
         //SR5 p. 413: a second dose taken after the first one wore off (in its crash) keeps awake (1D6/2) days more,
-        //(12 × 1D6) hours, then 10S unresisted and the same crash (drug-damage.js). No further dose keeps awake
-        const crashing = longHaulInCrash(item, consumer)
-        if (crashing?.handleShot?.longHaulSecondDose || crashing?.handleShot?.longHaulNoMore) {
+        //(12 × 1D6) hours, then 10S unresisted and the same crash (drug-damage.js). No further dose keeps awake. Counted
+        //for the actor, the same pile taken during its own crash or another Long Haul item (Eudoxie's review, D1)
+        const kind = longHaulDoseKind(item, consumer)
+        if (kind === "noMore") {
           ui.notifications.warn(game.i18n.localize("SR5.DrugLongHaulNoMore"))
           //One Combat Turn, the shortest the drug clock counts (0 is never counted): back to its crash at once
           drugStat.duration = 1
           drugStat.durationType = "combatTurn"
           drugStat.longHaulNoMore = true
-        } else if (crashing) {
+        } else if (kind === "second") {
           rollSpeed = new Roll(`1d6 * 12`)
           rollRollSpeed = await rollSpeed.evaluate()
           drugStat.duration = rollRollSpeed.total

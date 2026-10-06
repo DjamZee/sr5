@@ -105,6 +105,11 @@
 						<a class="toggle-value drug-phase" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.wirelessTurnedOn" data-title="{{localize 'SR5.DrugPhaseToCrash'}}">
 							<em class="fas fa-cannabis SR-SubColor"></em>
 						</a>
+						{{else if (and (eq system.phase 'crash') system.takesDoseInCrash)}}
+						<!-- Long Haul (SR5 p. 413): a click during the crash takes a further dose -->
+						<a class="toggle-value drug-phase" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.isActive" data-title="{{localize 'SR5.DrugLongHaulTakeInCrash'}}">
+							<em class="fas fa-virus SR-SubColor"></em>
+						</a>
 						{{else if (eq system.phase 'crash')}}
 						<a class="toggle-value drug-phase" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.wirelessTurnedOn" data-title="{{localize 'SR5.DrugPhaseToNone'}}">
 							<em class="fas fa-virus SR-SubColor"></em>

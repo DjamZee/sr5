@@ -1783,6 +1783,7 @@
 	"SR5.DrugExtraDosesTitle": "Doses prises d'un coup",
 	"SR5.DrugExtraDoses": "{drug} : combien de doses supplémentaires sont prises d'un coup, en plus de celle-ci ? Chacune inflige 4E non résistés (Chrome Flesh p. 185).",
 	"SR5.DrugLongHaulSecondDose": "seconde dose après la fin de la première : éveillé (12 × 1D6) heures de plus, puis 10E non résistés et la même descente (SR5 p. 413)",
+	"SR5.DrugLongHaulTakeInCrash": "Descente du long cours : prendre une nouvelle dose (SR5 p. 413)",
 	"SR5.DrugLongHaulNoMore": "Le long cours ne peut plus maintenir le personnage éveillé, quel que soit le nombre de doses (SR5 p. 413) : il se rendort",
 	"SR5.DrugDrowsy": "somnolence plutôt qu'inconscience (Âmes Volées p. 192) ; le livre ne la chiffre pas, le MJ en décide",
 	"SR5.EscapeArtistFailed": "Echec de l'évasion",

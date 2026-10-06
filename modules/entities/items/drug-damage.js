@@ -173,13 +173,16 @@ export function drugHasCrashDamage(key, shot = {
   return !!(DRUG_DAMAGE[key]?.crash || (key === "longHaul" && shot?.longHaulSecondDose))
 }
 
-// The Long Haul in its crash when a dose is taken (SR5 p. 413): the item itself, its phase not written yet by the sheet,
-// or another Long Haul of the actor. Its system, or null
-export function longHaulInCrash(item, consumer){
-  if (item?.system?.phase === "crash") return item.system
-  const other = [...(consumer?.items ?? [])].find(i => i?.type === "itemDrug" && (i.id ?? i._id) !== item?._id &&
-    i.system?.phase === "crash" && drugKeyOf(i.system) === "longHaul")
-  return other?.system ?? null
+// What a dose of Long Haul is, counted for the actor and not for one item (SR5 p. 413): "second" when any Long Haul of
+// the actor is in its crash (the item itself included, its phase not written yet by the sheet), "noMore" while a second
+// dose (or a dose that kept no one awake) is still in its rise or its crash, whatever the item, "first" otherwise
+export function longHaulDoseKind(item, consumer){
+  const doses = [item?.system, ...[...(consumer?.items ?? [])]
+    .filter(i => i?.type === "itemDrug" && (i.id ?? i._id) !== item?._id && drugKeyOf(i.system) === "longHaul")
+    .map(i => i.system)].filter(s => s && ["rise", "crash"].includes(s.phase))
+  if (doses.some(s => s.handleShot?.longHaulSecondDose || s.handleShot?.longHaulNoMore)) return "noMore"
+  if (doses.some(s => s.phase === "crash")) return "second"
+  return "first"
 }
 
 // The vector of a resisted drug: the item's own, injection first then ingestion (vectors no gear protects against,

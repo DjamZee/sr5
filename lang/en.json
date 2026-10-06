@@ -1783,6 +1783,7 @@
 	"SR5.DrugExtraDosesTitle": "Doses taken at once",
 	"SR5.DrugExtraDoses": "{drug}: how many extra doses are taken at once, on top of this one? Each deals 4S, unresisted (Chrome Flesh p. 185).",
 	"SR5.DrugLongHaulSecondDose": "second dose after the first one wore off: awake (12 × 1D6) hours more, then 10S unresisted and the same crash (SR5 p. 413)",
+	"SR5.DrugLongHaulTakeInCrash": "Long Haul crash: take a further dose (SR5 p. 413)",
 	"SR5.DrugLongHaulNoMore": "Long Haul cannot keep the character awake any longer, whatever the doses (SR5 p. 413): back to sleep",
 	"SR5.DrugDrowsy": "drowsiness rather than unconsciousness (Stolen Souls); the book gives no figures, the GM decides",
 	"SR5.EscapeArtistFailed": "Escape failed",

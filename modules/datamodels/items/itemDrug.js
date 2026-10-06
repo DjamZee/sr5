@@ -16,6 +16,9 @@ import {
 import {
   migrateDrugSource
 } from '../../entities/items/drug-phase.js'
+import {
+  drugKeyOf
+} from '../../entities/items/drug-damage.js'
 
 export class sr5ItemDrugDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
@@ -90,6 +93,12 @@ export class sr5ItemDrugDataModel extends foundry.abstract.TypeDataModel {
         initial: ''
       }),
     }
+  }
+
+  //Long Haul (SR5 p. 413): a dose may be taken during the crash, so its switch takes a dose there instead of ending the
+  //crash (entities/items/drug-damage.js, longHaulDoseKind)
+  get takesDoseInCrash() {
+    return drugKeyOf(this) === "longHaul"
   }
 
   static migrateData(source) {
