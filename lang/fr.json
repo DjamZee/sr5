@@ -455,6 +455,7 @@
 	"SR5.SocketUse_maglock": "ouvrir le maglock {target}",
 	"SR5.SocketUse_support": "effet de soutien sur {target}",
 	"SR5.SocketUse_firstAid": "premiers soins sur {target}",
+	"SR5.SocketUseFirstAidTarget": "{name}, {boxes} case(s) soignée(s)",
 	"SR5.ShopCashPurchase": "Encaisser l'achat",
 	"SR5.ShopCashSale": "Encaisser la vente",
 	"SR5.ShopCheckout": "Acheter le panier",

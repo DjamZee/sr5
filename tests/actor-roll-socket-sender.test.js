@@ -116,6 +116,14 @@ describe('the actorRoll socket', () => {
     expect(chatData?.damage.type).toBe('stun')
   })
 
+  it('builds the crush of a GM\'s fighter again for the player who is held (Harriet\'s review, R1)', async () => {
+    game.user = users.owner
+    await send({
+      actorId: 'held', rollType: 'resistanceCard', rollKey: null, use: 'grappleCrush', holderId: 'holder'
+    }, 'gm', 'owner')
+    expect(SR5_PrepareRollTest.rollTest.mock.calls[0]?.[3]?.damage.value).toBe(4)
+  })
+
   it('refuses a crush from a player who holds nobody, or not that fighter', async () => {
     await send({
       actorId: 'held', rollType: 'resistanceCard', use: 'grappleCrush', holderId: 'holder'

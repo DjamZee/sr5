@@ -971,13 +971,14 @@ export class SR5Actor extends Actor {
     const actor = SR5_EntityHelpers.getRealActorFromID(data.actorId)
     if (!actor || !sender || message.userId !== game.user.id || !actor.isOwner) return
     let chatData = data.chatData
-    if (!sender.isGM) {
+    //The crush of a hold travels without its card, whoever sends it: built again here, for a GM too (Harriet's review)
+    if (data.use === "grappleCrush") {
       const {
         SR5_GrappleHelpers
       } = await import("../../rolls/roll-helpers/grapple.js")
-      chatData = data.use === "grappleCrush" && data.rollType === "resistanceCard" ? SR5_GrappleHelpers.crushRollData(data.holderId, data.actorId, sender) : null
-      if (!chatData) return SR5_SystemHelpers.srLog(1, `actorRoll refused from ${senderId}`, data)
-    }
+      chatData = data.rollType === "resistanceCard" ? SR5_GrappleHelpers.crushRollData(data.holderId, data.actorId, sender) : null
+    } else if (!sender.isGM) chatData = null
+    if (!chatData) return SR5_SystemHelpers.srLog(1, `actorRoll refused from ${senderId}`, data)
     SR5_PrepareRollTest.rollTest(actor, data.rollType, data.rollKey, chatData)
   }
 

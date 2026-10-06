@@ -13,6 +13,9 @@ const {
 const {
   SR5_ActorHelper
 } = await import('../modules/entities/actors/entityActor-helpers.js')
+const {
+  SR5_MiscellaneousHelpers
+} = await import('../modules/rolls/roll-helpers/miscellaneous.js')
 
 // Last security pass before the djamz.11 (Olympe): the eight sockets of entityActor-helpers.js believed
 // any sender. From a player's console, dismissSidekick with a chosen _id deleted a GM's actor (measured
@@ -305,7 +308,7 @@ describe("the sustained effect sockets", () => {
     }
     effect = {
       uuid: 'Actor.t.Item.eff', type: 'itemEffect', documentName: 'Item', parent: target, system: {
-        ownerItem: 'Actor.pc.Item.spell'
+        ownerItem: 'Actor.pc.Item.spell', durationType: 'sustained'
       }
     }
     gmItem = {
@@ -350,7 +353,51 @@ describe("the sustained effect sockets", () => {
     expect(SR5_ActorHelper.deleteSustainedEffect).toHaveBeenCalledWith(effect.uuid)
   })
 
+  it("deleteSustainedEffect never lifts an effect that does not last while sustained (Harriet's review)", async () => {
+    effect.system.durationType = 'round'
+    await SR5_ActorHelper._socketDeleteSustainedEffect({
+      data: {
+        targetItem: effect.uuid
+      }
+    }, 'owner')
+    expect(SR5_ActorHelper.deleteSustainedEffect).not.toHaveBeenCalled()
+  })
+
+  it("linkEffectToSource never switches on a source on the word of the effect's ownerItem (Harriet's review)", async () => {
+    // The player writes ownerItem on an effect of her own actor, pointing at a GM's spell: no card of that spell
+    vi.spyOn(SR5_MiscellaneousHelpers, 'cardOf').mockReturnValue(null)
+    await SR5_ActorHelper._socketLinkEffectToSource({
+      data: {
+        actorId: 'pc', targetItem: spell.uuid, effectUuid: effect.uuid, messageId: 'forged'
+      }
+    }, 'target')
+    // A card of her own that names the GM's spell does not stand for it
+    SR5_MiscellaneousHelpers.cardOf.mockReturnValue({
+      data: {
+        owner: {
+          itemUuid: spell.uuid
+        }
+      }, roller: {
+        uuid: 'Actor.herPc'
+      }
+    })
+    await SR5_ActorHelper._socketLinkEffectToSource({
+      data: {
+        actorId: 'pc', targetItem: spell.uuid, effectUuid: effect.uuid, messageId: 'hers'
+      }
+    }, 'target')
+    expect(SR5_ActorHelper.linkEffectToSource).not.toHaveBeenCalled()
+  })
+
   it("linkEffectToSource only links an effect of that source, on an actor the sender owns", async () => {
+    spell.parent.uuid = 'Actor.pc'
+    vi.spyOn(SR5_MiscellaneousHelpers, 'cardOf').mockImplementation(id => (id === 'm1' ? {
+      data: {
+        owner: {
+          itemUuid: spell.uuid
+        }
+      }, roller: spell.parent
+    } : null))
     await SR5_ActorHelper._socketLinkEffectToSource({
       data: {
         targetItem: spell.uuid, effectUuid: gmItem.uuid
@@ -364,7 +411,7 @@ describe("the sustained effect sockets", () => {
     expect(SR5_ActorHelper.linkEffectToSource).not.toHaveBeenCalled()
     await SR5_ActorHelper._socketLinkEffectToSource({
       data: {
-        actorId: 'pc', targetItem: spell.uuid, effectUuid: effect.uuid
+        actorId: 'pc', targetItem: spell.uuid, effectUuid: effect.uuid, messageId: 'm1'
       }
     }, 'target')
     expect(SR5_ActorHelper.linkEffectToSource).toHaveBeenCalledWith('pc', spell.uuid, effect.uuid)

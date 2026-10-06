@@ -112,7 +112,26 @@ describe('the heal socket', () => {
     SR5_MiscellaneousHelpers.grant.mockResolvedValue(false)
     await heal(asked(3), 'medic')
     expect(SR5_ActorHelper.heal).not.toHaveBeenCalled()
-    expect(SR5_MiscellaneousHelpers.grant.mock.calls[0][0].key).toBe('m1|firstAid|Actor.patient')
+    // One test treats one patient (SR5 p. 207): the card is spent whoever the patient is (Harriet's review)
+    expect(SR5_MiscellaneousHelpers.grant.mock.calls[0][0].key).toBe('m1|firstAid|')
+  })
+
+  it('shows the GM the hits counted again, and the boxes asked apart (Harriet\'s review)', async () => {
+    game.i18n.format = (key, data) => `${key}:${JSON.stringify(data)}`
+    await heal(asked(3), 'medic')
+    const use = SR5_MiscellaneousHelpers.grant.mock.calls[0][0]
+    expect(use.value).toBe(5)
+    expect(use.target).toContain('"boxes":3')
+  })
+
+  it('reads the medkit on the healer\'s sheet, never on the card (Harriet\'s review)', async () => {
+    // No first aid rating and no medkit on the sheet: a medkit of 6 written on the card heals nothing
+    actors.medicPc.system.skills.firstAid.rating.value = 0
+    actors.medicPc.items = []
+    card.data.test.bbMedkitRating = 6
+    card.data.roll.netHits = 6
+    await heal(asked(6), 'medic')
+    expect(SR5_ActorHelper.heal).not.toHaveBeenCalled()
   })
 
   it('a negative count heals nobody and hurts nobody (Quitterie, S1)', async () => {

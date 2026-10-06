@@ -1560,7 +1560,9 @@ export class SR5_ActorHelper {
   }
 
   //Sent by whoever put the effect on its target: believed when the effect is an itemEffect of that very source,
-  //held by an actor the sender owns
+  //held by an actor the sender owns, and when the sender owns the source too, or the card it was applied from is
+  //the source's own (written by a GM, or by an owner of the actor that holds the source). The effect's ownerItem
+  //is the sender's to write: alone, it switched on a GM's spell (Harriet's review)
   static async _socketLinkEffectToSource(message, senderId){
     const data = message?.data ?? {
     }
@@ -1569,6 +1571,14 @@ export class SR5_ActorHelper {
     const source = typeof data.targetItem === "string" ? await fromUuid(data.targetItem) : null
     const linked = effect?.type === "itemEffect" && source?.documentName === "Item" && effect.system?.ownerItem === data.targetItem
     if (!linked || !SR5_ActorHelper.socketOwns(senderId, effect)) return SR5_ActorHelper.refuseSocket("linkEffectToSource", senderId, data)
+    if (!SR5_ActorHelper.socketOwns(senderId, source)) {
+      const {
+        SR5_MiscellaneousHelpers
+      } = await import("../../rolls/roll-helpers/miscellaneous.js")
+      const card = SR5_MiscellaneousHelpers.cardOf(data.messageId)
+      const fromSource = !!card && card.data.owner?.itemUuid === data.targetItem && !!card.roller && source.parent?.uuid === card.roller.uuid
+      if (!fromSource) return SR5_ActorHelper.refuseSocket("linkEffectToSource", senderId, data)
+    }
     await SR5_ActorHelper.linkEffectToSource(data.actorId, data.targetItem, data.effectUuid)
   }
 
@@ -1587,7 +1597,9 @@ export class SR5_ActorHelper {
     const effect = typeof data.targetItem === "string" ? await fromUuid(data.targetItem) : null
     if (!effect) return
     if (!SR5_ActorHelper.socketOwns(senderId, effect)) {
-      const source = effect.type === "itemEffect" && typeof effect.system?.ownerItem === "string" ? await fromUuid(effect.system.ownerItem) : null
+      //Only an effect that lasts while sustained goes with the sustaining (Harriet's review)
+      const sustained = effect.type === "itemEffect" && effect.system?.durationType === "sustained"
+      const source = sustained && typeof effect.system?.ownerItem === "string" ? await fromUuid(effect.system.ownerItem) : null
       if (!source || source.system?.isActive || !SR5_ActorHelper.socketOwns(senderId, source)) return SR5_ActorHelper.refuseSocket("deleteSustainedEffect", senderId, data)
     }
     await SR5_ActorHelper.deleteSustainedEffect(data.targetItem)
@@ -1806,13 +1818,18 @@ export class SR5_ActorHelper {
     const hits = SR5_MiscellaneousHelpers.hitsOf(card, "skills.firstAid.test.dicePool")
     if (hits === null || (Number(card.data.roll?.hits) || 0) > hits) return null
     const rating = Number(card.roller.system?.skills?.firstAid?.rating?.value) || 0
-    //A medkit has a rating of 6 at most (SR5 p. 450)
-    const medkit = Math.min(Number(card.data.test?.bbMedkitRating) || 0, 6)
+    //The medkit read on the healer's sheet, never on the card (Harriet's review)
+    const medkit = Math.max(0, ...Array.from(card.roller.items ?? []).filter(i => i.system?.isMedkit).map(i => Number(i.system.itemRating) || 0))
     const most = Math.max(firstAidHealedBoxes(hits, 2, rating, false), stabilizedTreatmentBoxes(hits, 2, rating, medkit, false))
     const boxes = bounded(data.healData?.roll?.netHits, Math.min(most, Number(card.data.roll?.netHits) || 0))
     if (boxes <= 0) return null
+    //One test treats one patient (SR5 p. 207): the card is spent on the first, whoever it is. The GM is shown the
+    //hits counted again, and the boxes asked
     const granted = await SR5_MiscellaneousHelpers.grant({
-      card, key: consumedKey(card.id, "firstAid", patient.uuid), label: "firstAid", target: patient.name, value: boxes,
+      card, key: consumedKey(card.id, "firstAid"), label: "firstAid", value: hits,
+      target: game.i18n.format("SR5.SocketUseFirstAidTarget", {
+        name: patient.name, boxes
+      }),
     }, sender)
     if (!granted) return null
     return {
@@ -2111,6 +2128,8 @@ export class SR5_ActorHelper {
             actorId: data.owner.actorId,
             targetItem: data.owner.itemUuid,
             effectUuid: effect.uuid,
+            //The card it was applied from: the GM reads it again (security pass, Olympe)
+            messageId: data.owner.messageId,
           })
         } else {
           await SR5_ActorHelper.linkEffectToSource(data.owner.actorId, data.owner.itemUuid, effect.uuid)
