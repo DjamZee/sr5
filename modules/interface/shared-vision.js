@@ -95,7 +95,7 @@ export class SR5SharedVision {
         },
         {
           action: "cancel",
-          label: game.i18n.localize("Cancel"),
+          label: game.i18n.localize("SR5.Cancel"),
           callback: () => ({
             action: "cancel"
           }),

@@ -84,5 +84,7 @@ describe('matrix damage on an AI core', () => {
     expect(infos.length).toBeGreaterThan(0)
     expect(infos.join(' ')).not.toContain('undefined')
     expect(infos[0]).toContain(' 10 ')
+    // C6 c: the core names the damage as a device does ("10 Dommages matriciels appliqués")
+    expect(infos[0]).toContain('SR5.AppliedMatrixDamage')
   })
 })

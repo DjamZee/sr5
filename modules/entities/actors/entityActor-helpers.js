@@ -100,8 +100,8 @@ export class SR5_ActorHelper {
           if (isMatrixDamage) damage = options.damage.matrix.value
           actorData.conditionMonitors.condition.actual.base += damage
           SR5_EntityHelpers.updateValue(actorData.conditionMonitors.condition.actual, 0)
-          const unit = isMatrixDamage ? "" : game.i18n.localize(SR5.damageTypesShort[damageType] ?? "")
-          ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${damage}${unit} ${game.i18n.localize("SR5.Applied")}.`)
+          const applied = isMatrixDamage ? ` ${game.i18n.localize("SR5.AppliedMatrixDamage")}` : `${game.i18n.localize(SR5.damageTypesShort[damageType] ?? "")} ${game.i18n.localize("SR5.Applied")}`
+          ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${damage}${applied}.`)
           break
         }
         if (options.damage.matrix.value > 0) {
@@ -300,7 +300,13 @@ export class SR5_ActorHelper {
     const ok = await foundry.applications.api.DialogV2.confirm({
       window: {
         title: game.i18n.localize("SR5.DamageRelayTitle")
-      }, content: `<p>${foundry.utils.escapeHTML(text)}</p>`
+      }, content: `<p>${foundry.utils.escapeHTML(text)}</p>`,
+      yes: {
+        label: game.i18n.localize("SR5.Yes")
+      },
+      no: {
+        label: game.i18n.localize("SR5.No")
+      },
     }).catch(() => false)
     if (ok) return SR5_ActorHelper.takeDamage(message.data.actorId, message.data.options)
     await ChatMessage.create({

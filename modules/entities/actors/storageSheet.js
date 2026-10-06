@@ -137,7 +137,7 @@ export class SR5StorageSheet extends ActorSheetSR5 {
         },
         {
           action: "cancel",
-          label: game.i18n.localize("Cancel"),
+          label: game.i18n.localize("SR5.Cancel"),
           callback: () => ({
             action: "cancel" 
           }),
