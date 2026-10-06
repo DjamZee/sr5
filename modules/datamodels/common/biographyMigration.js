@@ -14,6 +14,22 @@
 export const LEGACY_BIOGRAPHY_KEYS = {
   characterMetatype: 'metatype',
   characterMetatypeVariant: 'metatypeVariant',
+  // The v12 PC sheet wrote the whole biography under these names (archetypes of the Megapack still carry them):
+  // the gender of an imported archetype stayed empty (Albertine)
+  characterName: 'name',
+  characterAlias: 'alias',
+  characterEthnicalGroup: 'ethnicalGroup',
+  characterGender: 'gender',
+  characterNationality: 'nationality',
+  characterBirthPlace: 'birthPlace',
+  characterAge: 'age',
+  characterFamilySituation: 'familySituation',
+  characterDependants: 'dependants',
+  characterHeight: 'height',
+  characterWeight: 'weight',
+  characterEyes: 'eyes',
+  characterHair: 'hair',
+  characterSkin: 'skin',
 }
 
 /**
