@@ -300,16 +300,20 @@ export class SR5_EffectArea {
           roll: {
             hits: sourceItem.system.hits
           },
+          //Built here by the GM, never read from a card: one decision on the sheet's definition for the whole template
+          areaTemplate: true,
         }
+        //A player's spell on an actor she does not own: what its sheet defines, shown in the window of the hits
+        const review = await SR5_ActorHelper.definitionReview(sourceItem, actor, "customEffects", data)
         //An effect whose value reads the hits: the hits written on the caster's item are his owner's to change.
         //Counted again on the cast's card, as for a card applied by hand (checkEffectCard)
         if (readsRoll(sourceItem.system.customEffects)) {
-          const roll = await SR5_EffectArea.templateRoll(sourceItem, templateData, template, actor)
+          const roll = await SR5_EffectArea.templateRoll(sourceItem, templateData, template, actor, review)
           if (!roll) return
           data.roll = roll
         }
         //If effect is not resisted, apply effect to actor
-        if (!sourceItem.system.resisted) await actor.applyExternalEffect(data, "customEffects")
+        if (!sourceItem.system.resisted) await actor.applyExternalEffect(data, "customEffects", review)
         else {
           //The cast this template comes from, when it says so; else the spell's card, as before
           let message = (templateData.messageId && game.messages.get(templateData.messageId)) ||
@@ -387,7 +391,8 @@ export class SR5_EffectArea {
   //The hits of a cast, counted again once per template and cast, on the GM's client only (he alone applies the
   //templates' effects). null when the effect must not apply (refused, declined)
   static TEMPLATE_ROLLS = new Map()
-  static async templateRoll(sourceItem, templateData, template, actor){
+  //`review` (definitionReview): the sheet's definition, shown in the same window as the hits
+  static async templateRoll(sourceItem, templateData, template, actor, review = null){
     const caster = sourceItem.actor
     const players = game.users?.filter(u => !u.isGM && caster?.testUserPermission?.(u, "OWNER")) ?? []
     const itemRoll = {
@@ -402,6 +407,13 @@ export class SR5_EffectArea {
       [...(game.messages?.contents ?? [])].reverse().find(m => m.flags?.sr5data?.test?.type === "spell" && m.flags.sr5data.owner?.itemUuid === templateData.itemUuid)
     const key = `${template.id}|${message?.id}`
     if (SR5_EffectArea.TEMPLATE_ROLLS.has(key)) return SR5_EffectArea.TEMPLATE_ROLLS.get(key)
+    //Kept before the window opens: the tokens that come meanwhile wait for the same answer instead of asking again
+    const pending = SR5_EffectArea.#countTemplateRoll(sourceItem, templateData, players, message, review)
+    SR5_EffectArea.TEMPLATE_ROLLS.set(key, pending)
+    return pending
+  }
+
+  static async #countTemplateRoll(sourceItem, templateData, players, message, review){
     let roll = null
     const cast = message?.flags?.sr5data
     //checkEffectCard believes a card the GM wrote: here the cast must be one a player rolled with this item
@@ -413,7 +425,7 @@ export class SR5_EffectArea {
         }, owner: {
           ...cast.owner, messageId: message.id
         }
-      }, sourceItem)
+      }, sourceItem, review)
       //The item says otherwise: the GM sees it
       if (roll && Number(sourceItem.system.hits) !== roll.hits) ui.notifications?.warn(game.i18n.format("SR5.EffectCardItemMismatch", {
         item: sourceItem.name, written: sourceItem.system.hits, hits: roll.hits
@@ -426,7 +438,6 @@ export class SR5_EffectArea {
         })}</p>`,
       })
     }
-    SR5_EffectArea.TEMPLATE_ROLLS.set(key, roll)
     return roll
   }
 

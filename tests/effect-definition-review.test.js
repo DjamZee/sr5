@@ -50,7 +50,7 @@ describe('a player sheet spell applied by the GM to an NPC', () => {
         resisted: true, customEffects: armor(2)
       }
     }
-    SR5_ActorHelper.DEFINITION_OK.clear()
+    SR5_ActorHelper.DEFINITION_DECISIONS.clear()
     vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockImplementation(id => id === 'caster' ? caster : target)
     vi.spyOn(SR5_EntityHelpers, 'getLabelByKey').mockReturnValue('Armure')
     globalThis.fromUuid = async uuid => uuid === reference.uuid ? reference : spell

@@ -7,6 +7,9 @@ import {
 import {
   SR5_EntityHelpers
 } from "../modules/entities/helpers.js"
+import {
+  SR5_ActorHelper
+} from "../modules/entities/actors/entityActor-helpers.js"
 
 // A spell of area whose effect reads the hits, applied by its template: the GM read the hits written on the caster's
 // item, which its player owns and can raise in the console. They are counted again on the cast's card, within the
@@ -154,6 +157,42 @@ describe("SR5_EffectArea.createTemplateEffect, a spell's hits", () => {
     }, template)
     expect(confirm).toHaveBeenCalledOnce()
     expect(target.applyExternalEffect).toHaveBeenCalledTimes(2)
+  })
+
+  //Fritz: two windows for each token (the hits, then the sheet's definition), three definition windows open at once for
+  //three tokens, back after 30 s, and a refusal forgotten
+  describe("a player's spell whose sheet the GM reviews", () => {
+    beforeEach(() => {
+      caster.documentName = "Actor"
+      game.packs = []
+      game.items = []
+      vi.spyOn(SR5_EntityHelpers, "getLabelByKey").mockReturnValue("label")
+      SR5_ActorHelper.DEFINITION_DECISIONS.clear()
+    })
+    it("opens one window for three tokens coming at once, the definition inside the hits'", async () => {
+      await Promise.all(["a", "b", "c"].map(id => SR5_EffectArea.createTemplateEffect({
+        id
+      }, template)))
+      expect(confirm).toHaveBeenCalledOnce()
+      expect(confirm.mock.calls[0][0].content).toContain("SR5.EffectDefinitionIntroArea")
+      expect(target.applyExternalEffect).toHaveBeenCalledTimes(3)
+      //What applyExternalEffect then asks for each token: the answer already given
+      for (const [data, , review] of target.applyExternalEffect.mock.calls) {
+        expect(await SR5_ActorHelper.confirmDefinition(review, data)).toBe(true)
+      }
+      expect(confirm).toHaveBeenCalledOnce()
+    })
+    it("keeps a refusal for the whole template", async () => {
+      confirm.mockResolvedValue(false)
+      await Promise.all(["a", "b"].map(id => SR5_EffectArea.createTemplateEffect({
+        id
+      }, template)))
+      await SR5_EffectArea.createTemplateEffect({
+        id: "late"
+      }, template)
+      expect(confirm).toHaveBeenCalledOnce()
+      expect(target.applyExternalEffect).not.toHaveBeenCalled()
+    })
   })
 
   it("applies nothing when the GM declines", async () => {

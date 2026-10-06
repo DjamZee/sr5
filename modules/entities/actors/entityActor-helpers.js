@@ -2006,8 +2006,7 @@ export class SR5_ActorHelper {
     if (verdict.overPool) notes.push(game.i18n.format("SR5.EffectCardOverPool", {
       allowed: verdict.allowed
     }))
-    if (review) review.shown = true
-    const ok = await foundry.applications.api.DialogV2.confirm({
+    const asked = foundry.applications.api.DialogV2.confirm({
       window: {
         title: "SR5.EffectCardConfirmTitle"
       },
@@ -2019,6 +2018,9 @@ export class SR5_ActorHelper {
         }) : ""),
       rejectClose: false,
     })
+    //The same answer stands for the definition shown here (definitionDecision): an area spell asks once
+    if (review) SR5_ActorHelper.definitionDecision(review, () => asked)
+    const ok = await asked
     return ok ? {
       hits: verdict.hits, netHits: verdict.netHits
     } : null
@@ -2117,6 +2119,8 @@ export class SR5_ActorHelper {
     if (!sheet.entries.length && !ref?.entries.length) return null
     return {
       item, actor, sheet, ref, reference, diff: compareDefinitions(sheet, ref), shown: false,
+      //One decision per card, or per template for an area spell (applied token by token, effectArea.js)
+      key: `${item.uuid}|${data?.owner?.messageId ?? data?.owner?.actorId}`, area: !!data?.areaTemplate,
       //Applied once the target resisted (its resistance card): the test was not skipped
       afterResistance: /(Resistance|Defense)$/.test(data?.test?.type ?? ""),
       //Only a spell says whether it is resisted (itemSpell.resisted): a complex form, a power do not
@@ -2139,7 +2143,7 @@ export class SR5_ActorHelper {
     })
     const rating = review.item.system?.itemRating
     const list = entries => `<ul>${entries.map(e => `<li>${SR5_ActorHelper.describeEntry(e, roll, rating)}</li>`).join("")}</ul>`
-    let html = `<p>${t("SR5.EffectDefinitionIntro", {
+    let html = `<p>${t(review.area ? "SR5.EffectDefinitionIntroArea" : "SR5.EffectDefinitionIntro", {
       item: review.item.name, owner: review.item.parent?.name, actor: review.actor.name
     })}</p>${list(review.sheet.entries)}`
     if (review.resistable && !review.sheet.resisted && !review.afterResistance) html += `<p><strong>${t("SR5.EffectDefinitionNoResistance")}</strong></p>`
@@ -2159,22 +2163,31 @@ export class SR5_ActorHelper {
     return html
   }
 
-  //Approved once for a card (or an area template) for a short while: an area spell asks for each token it covers
-  static DEFINITION_OK = new Map()
+  //The GM's answer for a card, or for every token of an area template: kept as soon as the window opens, so the
+  //tokens that come meanwhile wait for it instead of opening their own, and a refusal stands for the whole template.
+  //On a card, a refusal is forgotten: the GM may click again
+  static DEFINITION_DECISIONS = new Map()
+
+  static definitionDecision(review, ask){
+    review.shown = true
+    const known = SR5_ActorHelper.DEFINITION_DECISIONS.get(review.key)
+    if (known) return known
+    const decided = Promise.resolve(ask()).then(ok => {
+      if (!ok && !review.area) SR5_ActorHelper.DEFINITION_DECISIONS.delete(review.key)
+      return !!ok
+    })
+    SR5_ActorHelper.DEFINITION_DECISIONS.set(review.key, decided)
+    return decided
+  }
 
   static async confirmDefinition(review, data){
-    const key = `${review.item.uuid}|${data.owner?.messageId ?? data.owner?.actorId}`
-    if ((SR5_ActorHelper.DEFINITION_OK.get(key) ?? 0) > Date.now()) return true
-    review.shown = true
-    const ok = await foundry.applications.api.DialogV2.confirm({
+    return SR5_ActorHelper.definitionDecision(review, () => foundry.applications.api.DialogV2.confirm({
       window: {
         title: "SR5.EffectDefinitionTitle"
       },
       content: SR5_ActorHelper.definitionHtml(review, data.roll),
       rejectClose: false,
-    })
-    if (ok) SR5_ActorHelper.DEFINITION_OK.set(key, Date.now() + 30000)
-    return !!ok
+    }))
   }
 
   //`reviewed`: a definitionReview the GM's caller already showed (its own checkEffectCard), never read from a card

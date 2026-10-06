@@ -835,6 +835,7 @@
 	"SR5.EffectCardConfirm":"{user} : {caster}, {item}. Succès recomptés sur les dés : {hits}, succès excédentaires : {netHits}. Appliquer l'effet avec ces valeurs ?",
 	"SR5.EffectDefinitionTitle": "Effet défini par la fiche d’une joueuse",
 	"SR5.EffectDefinitionIntro": "{item}, sur la fiche de {owner}, va s’appliquer à {actor} :",
+	"SR5.EffectDefinitionIntroArea": "{item}, sur la fiche de {owner}, va s’appliquer aux jetons de son gabarit (le premier : {actor}). Votre réponse vaut pour tout le gabarit :",
 	"SR5.EffectDefinitionNoResistance": "Sans test de résistance : la fiche dit que ce sort n’est pas résisté.",
 	"SR5.EffectDefinitionNoReference": "Aucune référence trouvée (compendium ou objet du monde) : vérifiez la fiche avant d’appliquer.",
 	"SR5.EffectDefinitionWorldItem": "objet du monde",

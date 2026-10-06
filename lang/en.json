@@ -835,6 +835,7 @@
 	"SR5.EffectCardConfirm":"{user}: {caster}, {item}. Hits counted again on the dice: {hits}, net hits: {netHits}. Apply the effect with these values?",
 	"SR5.EffectDefinitionTitle": "Effect defined on a player’s sheet",
 	"SR5.EffectDefinitionIntro": "{item}, on {owner}’s sheet, is about to apply to {actor}:",
+	"SR5.EffectDefinitionIntroArea": "{item}, on {owner}’s sheet, is about to apply to the tokens of its template (the first: {actor}). Your answer stands for the whole template:",
 	"SR5.EffectDefinitionNoResistance": "No resistance test: the sheet says this spell is not resisted.",
 	"SR5.EffectDefinitionNoReference": "No reference found (compendium or world item): check the sheet before applying.",
 	"SR5.EffectDefinitionWorldItem": "world item",
