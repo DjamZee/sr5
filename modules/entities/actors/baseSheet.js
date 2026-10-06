@@ -92,6 +92,9 @@ import {
 import {
   movementBoxes, toggleMovementBox
 } from "../../rolls/roll-helpers/situational.js"
+import {
+  cfdStatus, startTreatmentDialog, resolveOverwritersNow, stopTreatment
+} from "../../system/cfd-treatment.js"
 
 /**
  * Extend the basic ActorSheet class to do all the SR5 things!
@@ -281,6 +284,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     context.movementBoxes = movementBoxes(this.actor.movementSituational).map(b => ({
       ...b, keysAttr: b.keys.join(" ")
     }))
+    //Treating CFD (Dark Terrors p. 87): the GM alone gives a treatment and sees where it stands, from his ledger
+    context.cfd = cfdStatus(this.actor)
 
     context.storageViewIsGrid = game.settings.get("sr5", "sr5StorageViewMode") !== "list"
     //The clinch button of the martial arts block (Run & Gun p. 133) exists only with the grappling rules
@@ -396,6 +401,15 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       event.preventDefault()
       if (event.currentTarget.dataset.sr5Hunger === "hasten") hastenHunger(this.actor)
       else toggleHunger(this.actor)
+    }))
+
+    //Treating CFD (Dark Terrors p. 87): give a treatment, run the Overwriters out of combat, or stop following
+    element.querySelectorAll("[data-sr5-cfd]").forEach(b => b.addEventListener("click", (event) => {
+      event.preventDefault()
+      const action = event.currentTarget.dataset.sr5Cfd
+      if (action === "resolve") resolveOverwritersNow(this.actor)
+      else if (action === "stop") stopTreatment(this.actor)
+      else startTreatmentDialog(this.actor)
     }))
 
     // Show/hide config button based on mode

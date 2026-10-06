@@ -39,6 +39,9 @@ import {
   initInfection
 } from "../system/infection.js"
 import {
+  initCfdTreatment
+} from "../system/cfd-treatment.js"
+import {
   initRadiation
 } from "../system/radiation.js"
 import {
@@ -89,6 +92,8 @@ export function sr5HookReady() {
   initDiseases()
   initHunger()
   initInfection()
+  // Treating CFD: NanoScrub hours on the clock, Overwriters at the end of each Combat Turn (Dark Terrors p. 87)
+  initCfdTreatment()
   // Radiation zones: resistance tests on the clock (Run & Gun p. 164-165)
   initRadiation()
   // Bullets & Bandages p. 14-16: wounds of 5+ bleed by Combat Turn, the GM adds each box

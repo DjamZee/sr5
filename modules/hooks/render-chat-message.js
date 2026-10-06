@@ -35,6 +35,9 @@ import {
   activateInfectionListeners
 } from "../system/infection.js"
 import {
+  activateCfdListeners
+} from "../system/cfd-treatment.js"
+import {
   activateRadiationDueListeners, activateRadiationRequestListeners, addRadiationApplyButton
 } from "../system/radiation.js"
 import {
@@ -92,6 +95,8 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   if (message.flags?.sr5?.hungerDue) activateHungerListeners(html, message)
   // Infection (SR5 p. 401): the GM's card to try it, and the end of the coma
   if (message.flags?.sr5?.infectionCard) activateInfectionListeners(html, message)
+  // Treating CFD (Dark Terrors p. 87): the GM destroys the implants a NanoScrub glitch reached
+  if (message.flags?.sr5?.cfdTreatment) activateCfdListeners(html, message)
   if (message.flags?.sr5?.diseaseRequest) activateDiseaseRequestListeners(html, message)
   if (message.flags?.sr5data?.disease) addDiseaseApplyButton(message, html)
   // Radiation zones (Run & Gun p. 164-165): same three steps
