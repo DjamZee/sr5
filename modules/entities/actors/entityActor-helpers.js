@@ -2646,7 +2646,7 @@ export class SR5_ActorHelper {
   //the resistance card of the others): it answers a defense card, which answers the engulf attack, and the defense was
   //written by a GM or an owner of the defender, who is the actor resisting. null otherwise: nothing to keep
   static engulfFirstPhase(card){
-    const defenseMessage = game.messages?.get(card?.previousMessage?.messageId)
+    const defenseMessage = card?.previousMessage?.messageId ? game.messages?.get(card.previousMessage.messageId) : null
     const defense = defenseMessage?.flags?.sr5data
     if (defense?.test?.type !== "defense") return null
     const source = SR5_ActorHelper.engulfSourceOf(defense.previousMessage?.messageId)
@@ -2672,7 +2672,8 @@ export class SR5_ActorHelper {
       await setEngulfSource(banishKey(first.victim), first.attackId)
       return first.attackId
     }
-    return SR5_ActorHelper.engulfAttackFor(SR5_EntityHelpers.getRealActorFromID(card?.owner?.speakerId ?? card?.owner?.actorId, card?.actorUuids))
+    const victimId = card?.owner?.speakerId ?? card?.owner?.actorId
+    return victimId ? SR5_ActorHelper.engulfAttackFor(SR5_EntityHelpers.getRealActorFromID(victimId, card.actorUuids)) : null
   }
 
   //The engulf ends for the victim who broke free (SR5 p. 399): the active GM forgets the attack card
