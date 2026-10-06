@@ -316,8 +316,10 @@ export class SR5ShopAvailability {
     }
 
     // A vendor looks for what it has not got with its own Negotiation and Charisma (SR5 p. 420)
-    // ...or through the contact the gamemaster gave the vendor (lot C, part 2)
+    // ...or through the contact the gamemaster gave the vendor (lot C, part 2), or with the pool set on its
+    // shop: options.searcherPool is SR5ShopVendor.searcherOf, the pool the window announces
     const searcher = contact ? SR5ShopAvailability.contactPool(contact) :
+      options.searcherPool ? options.searcherPool :
       options.searcherContact ? SR5ShopAvailability.contactPool(options.searcherContact) :
         SR5ShopAvailability.buyerPool(options.searcher ?? actor)
 

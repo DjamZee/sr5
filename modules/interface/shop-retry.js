@@ -305,11 +305,13 @@ async function vendorOf(vendor) {
     shopSettings
   } = await import('./shop-vendor-rules.js')
   const shop = shopSettings(resolved.storage)
+  const searcher = SR5ShopVendor.searcherOf(resolved.actor, resolved.storage)
   return {
     shop,
     options: {
       searcher: resolved.actor, margin: shop.margin,
-      searcherContact: SR5ShopVendor.searcherOf(resolved.actor, resolved.storage).contact,
+      // The pool the window announces: the shop's contact, the pool its template set, else the sheet
+      searcherContact: searcher.contact, searcherPool: searcher.pool,
       vendor: {
         uuid: vendor.uuid, storageId: vendor.storageId
       },

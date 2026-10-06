@@ -1004,7 +1004,9 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       // At a vendor's, the vendor searches and its margin is on the price (lot C)
       ...(source ? {
         searcher: source.actor, margin: source.shop.margin,
+        // The pool #searchPool announces is the one rolled (searcherOf: contact, the shop's pool, else the sheet)
         searcherContact: SR5ShopVendor.searcherOf(source.actor, source.storage).contact,
+        searcherPool: SR5ShopVendor.searcherOf(source.actor, source.storage).pool,
         vendor: {
           uuid: source.actorUuid, storageId: source.storageId
         },
