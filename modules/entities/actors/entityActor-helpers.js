@@ -1554,14 +1554,32 @@ export class SR5_ActorHelper {
     await SR5_ActorHelper.deleteItemFromPan(data.targetItem, data.actorId, pointed ? index : null)
   }
 
-  //Update the source Item of an external Effect
-  static async linkEffectToSource(actorId, targetItem, effectUuid){
-    let item = await fromUuid(targetItem),
-      newItem = foundry.utils.duplicate(item.system)
+  //The links written on each source item, one after the other: a spell with two effects sends two requests that the
+  //socket handles at the same time, and the second, reading the item before the first was written, wrote it back
+  //without the first link
+  static LINK_QUEUE = new Map()
 
+  //Update the source Item of an external Effect
+  static linkEffectToSource(actorId, targetItem, effectUuid){
+    const previous = SR5_ActorHelper.LINK_QUEUE.get(targetItem) ?? Promise.resolve()
+    const next = previous.then(() => SR5_ActorHelper.writeEffectLink(targetItem, effectUuid))
+    const kept = next.catch(err => SR5_SystemHelpers.srLog(1, `linkEffectToSource: ${err?.message ?? err}`))
+    SR5_ActorHelper.LINK_QUEUE.set(targetItem, kept)
+    kept.then(() => {
+      if (SR5_ActorHelper.LINK_QUEUE.get(targetItem) === kept) SR5_ActorHelper.LINK_QUEUE.delete(targetItem)
+    })
+    return next
+  }
+
+  static async writeEffectLink(targetItem, effectUuid){
+    let item = await fromUuid(targetItem)
+    if (!item) return
+    let newItem = item.toObject(false).system
     if (newItem.duration === "sustained") newItem.isActive = true
     if (item.type === "itemAdeptPower" || item.type === "itemPower") newItem.isActive = true
-    newItem.targetOfEffect.push(effectUuid)
+    if (!Array.isArray(newItem.targetOfEffect)) newItem.targetOfEffect = Object.values(newItem.targetOfEffect ?? {
+    })
+    if (!newItem.targetOfEffect.includes(effectUuid)) newItem.targetOfEffect.push(effectUuid)
     await item.update({
       "system": newItem
     })
@@ -2322,27 +2340,11 @@ export class SR5_ActorHelper {
             "system.hasEffectOnItem": true
           })
         }
-        await actor.createEmbeddedDocuments("Item", [itemEffect])
-
-        //Link Effect to source owner
-        let effect
-        if (actor.isToken) {
-          for (let i of actor.token.actor.items){
-            if (i.system.ownerItem === data.owner.itemUuid){
-              if (!Object.keys(itemData.targetOfEffect).length) effect = i
-              else for (let e of Object.values(itemData.targetOfEffect)) if (e !== data.owner.itemUuid) effect = i
-            }
-          }
-        } else {
-          for (let i of actor.items){
-            if (i.system.ownerItem === data.owner.itemUuid){
-              if (!Object.keys(itemData.targetOfEffect).length) effect = i
-              else for (let e of Object.values(itemData.targetOfEffect)) if (e !== data.owner.itemUuid) effect = i
-            }
-          }
-        }
-
-        if (!game.user?.isGM) {
+        //Link Effect to source owner: the effect just created, and no other (looked for by its source, every effect of
+        //a spell was the same item)
+        const [effect] = await actor.createEmbeddedDocuments("Item", [itemEffect]) ?? []
+        if (!effect) SR5_SystemHelpers.srLog(1, `applyExternalEffect: no effect created on ${actor.name}`)
+        else if (!game.user?.isGM) {
           SR5_SocketHandler.emitForGM("linkEffectToSource", {
             actorId: data.owner.actorId,
             targetItem: data.owner.itemUuid,
