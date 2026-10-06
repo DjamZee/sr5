@@ -649,6 +649,9 @@ describe('a bound spirit spends a service when it aids a test (SR5 p. 305-306)',
 
 describe('switching the wireless of a device (SR5 p. 165, 167 and 424)', () => {
   async function switchWifi(requiresDNI, hasDNI, wasOn = true){
+    //In combat: out of it nothing is spent (see "the switches of the sheet out of combat")
+    vi.spyOn(SR5Combat, 'getCombatantFromActor').mockReturnValue({
+    })
     vi.spyOn(game.settings, 'get').mockImplementation((scope, key) => (key === 'sr5WifiRequiresDNI') ? requiresDNI : null)
     const actions = {
       free: {
@@ -782,6 +785,8 @@ describe('switching the wireless of a device (SR5 p. 165, 167 and 424)', () => {
   })
 
   it('takes the free action it announces, not a simple one', async () => {
+    vi.spyOn(SR5Combat, 'getCombatantFromActor').mockReturnValue({
+    })
     const actions = {
       free: {
         value: 1, current: 1
@@ -830,6 +835,85 @@ describe('switching the wireless of a device (SR5 p. 165, 167 and 424)', () => {
     const written = actor.update.mock.calls.at(-1)[0].system.specialProperties.actions
     expect(written.free.current).toBe(0)
     expect(written.simple.current).toBe(2)
+  })
+})
+
+// The action counters belong to the initiative passes (SR5 p. 163-165): out of combat a switch of the sheet
+// spends nothing, where the free action used to sink to -1, -2... (RESTES l. 204 and 706)
+describe('the switches of the sheet out of combat', () => {
+  async function flip(type, binding, system, combatant){
+    vi.spyOn(SR5Combat, 'getCombatantFromActor').mockReturnValue(combatant)
+    vi.spyOn(game.settings, 'get').mockReturnValue(false)
+    const actions = {
+      free: {
+        value: 1, current: 1
+      }, simple: {
+        value: 2, current: 2
+      }, complex: {
+        value: 1, current: 1
+      }
+    }
+    const data = {
+      hasDNI: false, addictions: [], specialProperties: {
+        actions
+      }
+    }
+    const actor = {
+      id: 'a1', name: 'Test', isToken: false, effects: [], items: [{
+        _id: 'i1', id: 'i1', name: 'Switch', type, system: {
+          ...system
+        }
+      }],
+      system: new FakeSystem(data, data),
+      update: vi.fn(async () => {}),
+    }
+    const sheet = Object.create(ActorSheetSR5.prototype)
+    Object.defineProperty(sheet, 'actor', {
+      value: actor
+    })
+    await sheet._onEditItemValue({
+      currentTarget: {
+        closest: () => ({
+          dataset: {
+            itemId: 'i1'
+          }
+        }),
+        dataset: {
+          binding, dtype: 'Boolean'
+        },
+      },
+      target: {
+        value: ''
+      },
+    })
+    return actor.update.mock.calls.at(-1)[0].system.specialProperties.actions
+  }
+
+  for (const [label, type, binding, system] of [
+    ['a program', 'itemProgram', 'system.isActive', {
+      isActive: true, type: 'common'
+    }],
+    ['a focus', 'itemFocus', 'system.isActive', {
+      isActive: true
+    }],
+    ['a wireless', 'itemGear', 'system.wirelessTurnedOn', {
+      wirelessTurnedOn: true, isActive: true
+    }],
+  ]) {
+    it(`${label}: nothing is spent out of combat`, async () => {
+      const written = await flip(type, binding, system, undefined)
+      expect(written.free.current).toBe(1)
+      expect(written.simple.current).toBe(2)
+      expect(written.complex.current).toBe(1)
+    })
+  }
+
+  it('a program in combat: still spent', async () => {
+    const written = await flip('itemProgram', 'system.isActive', {
+      isActive: true, type: 'common'
+    }, {
+    })
+    expect(written.free.current).toBe(0)
   })
 })
 
@@ -886,7 +970,11 @@ describe('toggles that cost an action, clicked twice before the server answers',
   }
 
   // The guard reads the counters before the first write lands: it says yes both times
-  beforeEach(() => vi.spyOn(SR5Combat, 'hasActionsLeft').mockReturnValue(true))
+  beforeEach(() => {
+    vi.spyOn(SR5Combat, 'hasActionsLeft').mockReturnValue(true)
+    vi.spyOn(SR5Combat, 'getCombatantFromActor').mockReturnValue({
+    })
+  })
   afterEach(() => vi.restoreAllMocks())
 
   for (const [label, items, binding] of [

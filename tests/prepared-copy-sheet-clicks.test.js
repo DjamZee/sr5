@@ -208,7 +208,7 @@ describe('an accessory attached from the item sheet', () => {
   it('the drone wireless switch writes its action counters only', () => {
     const DRONE_SHEET = fs.readFileSync('modules/entities/actors/droneSheet.js', 'utf8')
     expect(DRONE_SHEET).not.toMatch(/"system\.specialProperties\.actions":/)
-    expect(DRONE_SHEET).toContain('"system.specialProperties.actions.simple.current": actionsLeft.simple.current')
+    expect(DRONE_SHEET).toContain('updates["system.specialProperties.actions.simple.current"] = actionsLeft.simple.current')
   })
 })
 

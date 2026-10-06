@@ -35,6 +35,9 @@ const {
   SR5_MatrixHelpers
 } = await import('../modules/rolls/roll-helpers/matrix.js')
 const {
+  SR5Combat
+} = await import('../modules/system/srcombat.js')
+const {
   SR5_PrepareRollTest
 } = await import('../modules/rolls/roll-prepare.js')
 const {
@@ -243,7 +246,22 @@ describe('Rebooting a deck (SR5 p. 244)', () => {
     expect(spareDeck.system.markedItems).toHaveLength(1)
   })
 
+  // The action counters belong to the initiative passes (SR5 p. 163-165): out of combat nothing is spent
+  it('reboots out of combat without spending an action', async () => {
+    vi.spyOn(SR5Combat, 'getCombatantFromActor').mockReturnValue(undefined)
+    const sheet = Object.create(ActorSheetSR5.prototype)
+    Object.defineProperty(sheet, 'actor', {
+      get: () => hacker
+    })
+    await sheet._onRebootDeck({
+      preventDefault(){}
+    })
+    expect(hacker.update).toHaveBeenCalledTimes(1)
+  })
+
   it('lets the reboot button through once the connection is free', async () => {
+    vi.spyOn(SR5Combat, 'getCombatantFromActor').mockReturnValue({
+    })
     const sheet = Object.create(ActorSheetSR5.prototype)
     Object.defineProperty(sheet, 'actor', {
       get: () => hacker

@@ -859,8 +859,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       const updates = {
         [dropZone.dataset.dropmatrixattribute]: draggedValue,
         [dropData.valueFromAttribute]: existingValue,
-        'system.specialProperties.actions.free.current': this.actor.system.specialProperties.actions.free.current - 1,
       }
+      if (this._spendsActionCounters()) updates['system.specialProperties.actions.free.current'] = this.actor.system.specialProperties.actions.free.current - 1
       await this.actor.update(updates)
       const actorId = this.actor.isToken ? this.actor.token.id : this.actor.id
       SR5Combat.changeActionInCombat(actorId, [{
@@ -1325,6 +1325,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     return []
   }
 
+  //The action counters belong to the initiative passes (SR5 p. 163-165): out of combat a switch spends nothing,
+  //and the counters no longer sink to -1, -2... before the fight
+  _spendsActionCounters(){
+    return !!SR5Combat.getCombatantFromActor(this.actor)
+  }
+
   //The lock taken by a toggle that costs an action is given back however its handling ends, error included
   async _onEditItemValue(event) {
     try {
@@ -1651,7 +1657,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         actions = [{
           type: "simple", value: 1, source: "activateFocus"
         }]
-        SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
+        if (this._spendsActionCounters()) SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
 
         // Handle focus addicition
         let alreadyTaken = actorData.addictions.find((d) => item.name === d.name)
@@ -1680,7 +1686,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         actions = [{
           type: "free", value: 1, source: "desactivateFocus"
         }]
-        SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
+        if (this._spendsActionCounters()) SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
 
       }
     }
@@ -1695,7 +1701,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       else actions = [{
         type: "free", value: 1, source: "unloadProgram"
       }]
-      SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
+      if (this._spendsActionCounters()) SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
     }
     //A drug has no wireless: its switch moves its phase, as in _itemValueActionCost
     if (target === "system.wirelessTurnedOn" && item.type !== "itemDrug"){
@@ -1705,7 +1711,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       actions = [{
         type: actionType, value: 1, source: (oldValue === false) ? "turnOnWifi" : "turnOffWifi"
       }]
-      SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
+      if (this._spendsActionCounters()) SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
     }
 
     //Special case for materialization
@@ -1929,7 +1935,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }])) return false
     await this.actor.rebootDeck()
 
-    //Rebooting by choice is a complex action (SR5 p. 231); a reboot forced by an IC spends none
+    //Rebooting by choice is a complex action (SR5 p. 231); a reboot forced by an IC spends none, nor one out of combat
+    if (!this._spendsActionCounters()) return
     let actionsLeft = SR5_MiscellaneousHelpers.spendActions(foundry.utils.deepClone(this.actor.system.specialProperties.actions), [{
       type: "complex", value: 1, source: "rebootDeck"
     }])

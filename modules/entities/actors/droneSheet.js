@@ -82,14 +82,18 @@ export class SR5DroneSheet extends ActorSheetSR5 {
     if (!SR5Combat.hasActionsLeft(actor, actions)) return
     this._spendingWirelessAction = true
     try {
-      const actionsLeft = SR5_MiscellaneousHelpers.spendActions(foundry.utils.deepClone(actor.system.specialProperties.actions), actions)
-      await actor.update({
-        "system.wirelessTurnedOn": !oldValue,
+      const updates = {
+        "system.wirelessTurnedOn": !oldValue
+      }
+      //Out of combat nothing is spent (baseSheet _spendsActionCounters)
+      if (this._spendsActionCounters()){
+        const actionsLeft = SR5_MiscellaneousHelpers.spendActions(foundry.utils.deepClone(actor.system.specialProperties.actions), actions)
         //The counters only: the prepared value and modifiers of the actions are not written in the source
-        "system.specialProperties.actions.free.current": actionsLeft.free.current,
-        "system.specialProperties.actions.simple.current": actionsLeft.simple.current,
-        "system.specialProperties.actions.complex.current": actionsLeft.complex.current,
-      })
+        updates["system.specialProperties.actions.free.current"] = actionsLeft.free.current
+        updates["system.specialProperties.actions.simple.current"] = actionsLeft.simple.current
+        updates["system.specialProperties.actions.complex.current"] = actionsLeft.complex.current
+      }
+      await actor.update(updates)
     } finally {
       this._spendingWirelessAction = false
     }
