@@ -4927,6 +4927,7 @@
 	"SR5.WARN_RitualNotAwakened": "{name} has no Magic attribute: cannot join a ritual.",
 	"SR5.WARN_RitualAlreadyJoined": "{name} already joins this ritual.",
 	"SR5.WARN_RitualContractual": "Contractual ritual: it needs at least one participant besides the leader (Street Grimoire p. 122).",
+	"SR5.WARN_RitualNotLeader": "Only the ritual leader (who owns its caster) or the GM can seal it (SR5 p. 299).",
 	"SR5.WARN_ResistanceOwnerMissing": "Test author not found (deleted character): the resistance cannot be rolled.",
 	"SR5.WARN_NoEquippedWeapon": "No weapon equipped !",
 	"SR5.WARN_NoForce": "You don't have declared Force. Magic is applied by default.",

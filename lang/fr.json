@@ -4927,6 +4927,7 @@
 	"SR5.WARN_RitualNotAwakened": "{name} n'a pas d'attribut Magie : impossible de participer à un rituel.",
 	"SR5.WARN_RitualAlreadyJoined": "{name} participe déjà à ce rituel.",
 	"SR5.WARN_RitualContractual": "Rituel contractuel : il faut au moins un participant en plus du leader (Grimoire des Ombres p. 122).",
+	"SR5.WARN_RitualNotLeader": "Seul le leader du rituel (qui possède son lanceur) ou le MJ peut le sceller (SR5 p. 299).",
 	"SR5.WARN_ResistanceOwnerMissing": "Auteur du test introuvable (personnage supprimé) : la résistance ne peut pas être lancée.",
 	"SR5.WARN_NoEquippedWeapon": "Aucune arme équipée !",
 	"SR5.WARN_NoForce": "Vous n'avez pas défini de Puissance ! Par défaut Magie est appliquée.",
