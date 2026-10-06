@@ -75,7 +75,7 @@ import {
   addictionWeeks, focusAddictionRating
 } from "../../rolls/roll-helpers/addiction.js"
 import {
-  warnDrugWithoutStat, drugAddictionThreshold, drugInteractionModifier, effectiveDrugQuality, drugCrashIsInstant
+  warnDrugWithoutStat, drugAddictionThreshold, drugInteractionModifier, effectiveDrugQuality, drugCrashIsInstant, drugHasCrash
 } from "../items/drug-stat.js"
 import {
   reagentSystem, hasTiers
@@ -1564,8 +1564,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                   //Chrome Flesh p. 197: the crashes start immediately, for every drug of the mix still under
                   //effect, the one being taken included. A drug already in its crash does not start it again
                   await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.join(", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugCrashImmediate")}`)
+                  //A drug without crash keeps its effect until its normal end: the book starts the crashes, it does
+                  //not stop a drug that has none (DjamZ's ruling, 06/10)
                   for (let d of mixedDrugs){
-                    if (d.system.isActive) await this._startDrugCrash(d, actor)
+                    if (d.system.isActive && drugHasCrash(d.system)) await this._startDrugCrash(d, actor)
                   }
                   break
                 }

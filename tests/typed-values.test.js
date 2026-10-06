@@ -511,6 +511,34 @@ describe('drug interactions (Chrome Flesh p. 197)', () => {
     expect(said).not.toContain('SR5.DrugContrecoupDurationDoubled')
   })
 
+  // Chrome Flesh p. 197 says that the crashes start, not that a drug without crash stops: it keeps its effect
+  // until its normal end (DjamZ's ruling, 06/10)
+  it.each([7, 8, 9])('on %i, leaves a drug without crash under its effect', async (total) => {
+    rollTotals(30, total)
+    const nightwatch = drugItem('nightwatch', 'Nightwatch', 'nightwatch', {
+      isActive: true,
+      handleShot: {
+        name: 'nightwatch', duration: 40, durationType: 'minute'
+      },
+      onUse: {
+        duration: '40 SR5.Minutes', contrecoup: ''
+      },
+    })
+    const {
+      actor, sheet
+    } = drugSheet([nightwatch, drugItem('jazz', 'Jazz', 'jazz')])
+    actor.takeDamage = vi.fn()
+
+    await take(sheet, 'jazz')
+
+    const night = written(actor, 'nightwatch')
+    expect(night.system.isActive).toBe(true)
+    expect(night.system.onUse.duration).toBe('40 SR5.Minutes')
+    // the drug that has a crash still goes into it
+    expect(written(actor, 'jazz').system.isActive).toBe(false)
+    expect(written(actor, 'jazz').system.onUse.contrecoup).toBe('30 SR5.Minutes')
+  })
+
   // Every total of the table up to 13 has its own row: only 14+ inflicts 10P
   async function interactionDamage(total){
     rollTotals(30, total)
