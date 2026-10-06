@@ -5379,6 +5379,7 @@
 	"SR5.INFO_PreparationSpent": "{actor}: the preparation {item} has lost all its Potency, its magic is gone (SR5 p. 309).",
 	"SR5.WARN_PreparationDecayGMOnly": "The start and the pace of a preparation's loss of Potency are set by the gamemaster.",
 	"SR5.WARN_PreparationRestored": "{user} changed the start or pace of a preparation ({name}, {actor}), reserved to the GM: the GM's value is put back.",
+	"SR5.SomePlayer": "a player",
 	"SR5.WARN_PreparationSpent": "This preparation has no Potency left: its magic is gone, the spell is lost (SR5 p. 309).",
 	"SR5.WARN_TargetTooMany": "You must choose only one target (token)",
 	"SR5.WARN_FanningTooMany": "Flamethrower fanning: three targets at most.",

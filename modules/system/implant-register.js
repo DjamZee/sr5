@@ -90,7 +90,7 @@ function record(doc, values) {
 async function restore(doc, mismatches, userId) {
   const update = Object.fromEntries(Object.entries(mismatches).map(([f, v]) => [`system.${f}`, v]))
   await doc.update(update)
-  const user = game.users.get(userId)?.name ?? userId ?? "?"
+  const user = game.users.get(userId)?.name ?? game.i18n.localize("SR5.SomePlayer")
   ui.notifications.warn(game.i18n.format("SR5.WARN_GMOnlyFieldRestored", {
     user, name: doc.name, actor: doc.parent?.name ?? doc.name
   }), {

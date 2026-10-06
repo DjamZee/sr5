@@ -14,7 +14,7 @@ import {
   GM_ONLY_FIELDS
 } from "../modules/system/implant-essence.js"
 import {
-  expectedAtMaking, preparationMismatches, preparationValues
+  expectedAtMaking, preparationMismatches, preparationValues, boundedUnknown
 } from "../modules/system/preparation-register.js"
 
 // Victoire's review: an update sent with recursive: false replaces the object under a top-level key, so what it
@@ -114,6 +114,25 @@ describe("the active GM's register of preparations", () => {
       potency: 5, fullPotencyMultiplier: 4, decayRate: "day", createdAt: 9e9
     }, 1000)).toEqual({
       createdAt: 1000, initialPotency: 5, fullPotencyMultiplier: 2, decayRate: "hour"
+    })
+  })
+  it("brings an unknown preparation back to the book's reading, once the first round is done", () => {
+    // Made while no gamemaster was connected: a start in the future, × 4, a day a point, Potency 6
+    expect(boundedUnknown({
+      potency: 6, initialPotency: 6, createdAt: 999999, fullPotencyMultiplier: 4, decayRate: "day"
+    }, 1000)).toEqual({
+      createdAt: 1000, initialPotency: 6, fullPotencyMultiplier: 2, decayRate: "hour"
+    })
+    // A start in the past is kept; a starting Potency above the Potency is brought down to it
+    expect(boundedUnknown({
+      potency: 3, initialPotency: 9, createdAt: 200, fullPotencyMultiplier: 2, decayRate: "hour"
+    }, 1000)).toEqual({
+      createdAt: 200, initialPotency: 3, fullPotencyMultiplier: 2, decayRate: "hour"
+    })
+    expect(boundedUnknown({
+      potency: 4, initialPotency: null, createdAt: null
+    }, 1000)).toEqual({
+      createdAt: 1000, initialPotency: 4, fullPotencyMultiplier: 2, decayRate: "hour"
     })
   })
   it("puts back what differs from the register", () => {

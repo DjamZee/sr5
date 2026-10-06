@@ -6,8 +6,9 @@
 // skip its own checks. So the active GM, who sees every write through the hooks, checks again: a value a player
 // changed is put back from the register, and he is told (Victoire's review). A preparation a player makes is read
 // against the GM's clock and the book's defaults. Nothing is checked while no gamemaster is connected; at the next
-// GM's arrival, what does not match the register is put back. A preparation the register does not know yet (made
-// before it, or while no gamemaster was connected) is taken as it stands.
+// GM's arrival, what does not match the register is put back. At its first round the register takes the
+// preparations made before it as they stand; after that, an unknown one (made while no gamemaster was connected) is
+// brought back to the book's reading, and the gamemaster is told (boundedUnknown).
 import {
   updateLedger
 } from "./gm-ledger.js"
@@ -44,6 +45,27 @@ export function expectedAtMaking(system, now) {
   }
 }
 
+/**
+ * A preparation the register does not know, once its first round is done: it can only come from a write the
+ * gamemaster did not see (made while none was connected). Brought back to the book's reading (Victoire's review):
+ * made no later than now, at no more than its Potency, × 2, losing a point an hour. The gamemaster slows it afterwards
+ * if he wants to.
+ */
+export function boundedUnknown(system, now) {
+  const potency = Number(system?.potency) || 0
+  const start = typeof system?.createdAt === "number" ? Math.min(system.createdAt, now) : now
+  const initial = Number(system?.initialPotency)
+  return {
+    createdAt: start,
+    initialPotency: Number.isFinite(initial) && system?.initialPotency !== null ? Math.min(initial, potency) : potency,
+    fullPotencyMultiplier: 2,
+    decayRate: "hour",
+  }
+}
+
+/** The key that tells the register's first round is done: from then on, an unknown preparation is not believed. */
+export const REGISTER_STARTED = "__started"
+
 /** The fields whose value differs from the one expected. */
 export function preparationMismatches(current, expected) {
   const out = {
@@ -69,7 +91,7 @@ function record(uuid, values) {
 /** Puts back on `doc` the values a player changed, and tells the gamemaster. */
 async function restore(doc, mismatches, userId) {
   await doc.update(Object.fromEntries(Object.entries(mismatches).map(([f, v]) => [`system.${f}`, v])))
-  const user = game.users.get(userId)?.name ?? userId ?? "?"
+  const user = game.users.get(userId)?.name ?? game.i18n.localize("SR5.SomePlayer")
   ui.notifications.warn(game.i18n.format("SR5.WARN_PreparationRestored", {
     user, name: doc.name, actor: doc.parent?.name ?? ""
   }), {
@@ -91,10 +113,15 @@ async function onCreate(doc, _options, userId) {
 async function onUpdate(doc, _changes, _options, userId) {
   if (!isPreparation(doc) || !isActiveGM()) return
   const current = preparationValues(doc.system)
-  const known = registerNow()[doc.uuid]
-  if (game.users.get(userId)?.isGM || !known) {
+  const register = registerNow()
+  let known = register[doc.uuid]
+  if (game.users.get(userId)?.isGM || (!known && !register[REGISTER_STARTED])) {
     if (JSON.stringify(known) !== JSON.stringify(current)) await record(doc.uuid, current)
     return
+  }
+  if (!known) {
+    known = boundedUnknown(doc.system, game.time.worldTime)
+    await record(doc.uuid, known)
   }
   const mismatches = preparationMismatches(current, known)
   if (Object.keys(mismatches).length) await restore(doc, mismatches, userId)
@@ -116,22 +143,24 @@ function onDelete(doc) {
 export async function reconcilePreparationRegister() {
   if (!isActiveGM()) return
   const register = registerNow()
+  // The first round takes the preparations made before the register as they stand; after it, an unknown one is
+  // brought back to the book's reading
+  const started = !!register[REGISTER_STARTED]
+  const now = game.time.worldTime
   const unknown = {
   }
   for (const actor of game.actors) {
     for (const doc of actor.items) {
       if (doc.type !== "itemPreparation") continue
       const current = preparationValues(doc.system)
-      if (!register[doc.uuid]) {
-        unknown[doc.uuid] = current
-        continue
-      }
-      const mismatches = preparationMismatches(current, register[doc.uuid])
+      const expected = register[doc.uuid] ?? (started ? boundedUnknown(doc.system, now) : current)
+      if (!register[doc.uuid]) unknown[doc.uuid] = expected
+      const mismatches = preparationMismatches(current, expected)
       if (Object.keys(mismatches).length) await restore(doc, mismatches, null)
     }
   }
-  if (Object.keys(unknown).length) await updateLedger(PREPARATION_REGISTER, latest => ({
-    ...unknown, ...latest
+  if (Object.keys(unknown).length || !started) await updateLedger(PREPARATION_REGISTER, latest => ({
+    ...unknown, ...latest, [REGISTER_STARTED]: true
   }))
 }
 
