@@ -37,7 +37,11 @@ export default async function resonanceAction(rollData, rollKey, actor){
   rollData.test.typeSub = rollKey
   rollData.matrix.actionType = resonanceAction.actionType
   rollData.matrix.overwatchScore = resonanceAction.increaseOverwatchScore
-  rollData.matrix.level = actor.system.specialAttributes.resonance.augmented.value
+  //SR5 p. 252: only compiling asks the sprite level (Resonance by default); the level becomes the limit,
+  //so the other actions keep their own (Decompile [Social], Kill Complex Form [Mental])
+  if (rollKey === "compileSprite") rollData.matrix.level = actor.system.specialAttributes.resonance.augmented.value
+  //Without a targeted sprite, its level is unknown: the Resonance stays the limit, as before
+  if (rollKey === "registerSprite") rollData.matrix.level = actor.system.specialAttributes.resonance.augmented.value
   rollData.dialogSwitch.specialization = true
 
   //Manage actions
@@ -68,6 +72,8 @@ export default async function resonanceAction(rollData, rollKey, actor){
     //Decompiling / Register
     if (rollKey === "decompileSprite" || rollKey === "registerSprite"){
       if (targetActor.type !== "actorSprite") return void ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NotASprite")}`)
+      //SR5 p. 252: Register [Sprite level]
+      if (rollKey === "registerSprite") rollData.matrix.level = targetActor.system.level
     }
   }
 
