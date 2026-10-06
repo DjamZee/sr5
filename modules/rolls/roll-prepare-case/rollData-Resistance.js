@@ -17,7 +17,7 @@ import {
   addGreyManaResistance, greyManaAppliesTo
 } from "../../system/grey-mana.js"
 import {
-  attackFamily, trustedAttackCard, trustedResistanceCard
+  attackFamily, trustedAttackCard, trustedResistanceCard, rebuildCrossCard, CROSS_CARDS
 } from "../roll-helpers/attack-card.js"
 
 // Show a notification and return undefined so the caller aborts the test.
@@ -25,6 +25,11 @@ import {
 // made the caller treat the notification as roll data and crash.
 function abortWithInfo(message){
   ui.notifications.info(message)
+  return undefined
+}
+
+function abortWithWarn(message){
+  ui.notifications.warn(message)
   return undefined
 }
 
@@ -36,6 +41,10 @@ export default async function resistance(rollData, rollType, actor, chatData){
   if (attackFamily(chatData)) {
     chatData = await trustedAttackCard(chatData, actor)
     if (!chatData) return undefined
+  } else if (chatData?.test?.type === "falseTest" && CROSS_CARDS.includes(chatData.test.typeSub)) {
+    //A card a defense wrote in the attacker's name (aura, ramming crash): rebuilt from the attack and the defense
+    chatData = await rebuildCrossCard(chatData, actor)
+    if (!chatData) return abortWithWarn(game.i18n.localize("SR5.ResistanceCardRefused"))
   } else if (!(await trustedResistanceCard(chatData, actor, rollType))) {
     const text = game.i18n.localize("SR5.ResistanceCardRefused")
     ui.notifications.warn(text)

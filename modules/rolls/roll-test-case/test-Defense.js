@@ -52,7 +52,7 @@ export default async function defenseInfo(cardData, actorId){
   }
 
   //Handle Energetic Aura: only a successful attack burns the attacker (SR5 p. 397)
-  if (actorData.specialProperties?.energyAura && cardData.test.typeSub === "meleeWeapon" && cardData.roll.netHits > 0) await handleEnergeticAura(cardData, actorData)
+  if (actorData.specialProperties?.energyAura && cardData.test.typeSub === "meleeWeapon" && cardData.roll.netHits > 0) await handleEnergeticAura(cardData, actorData, actorId)
 
   //SR5 p. 196 (renforcer sa prise): no damage, the hold moves by the net hits, either way
   if (cardData.combat.calledShot.name === "strengthenHold") {
@@ -94,7 +94,7 @@ export default async function defenseInfo(cardData, actorId){
     })
     //No relative speed, no damage (a few scratches at most)
     if (damages.target <= 0) return cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.RammingNoImpact"))
-    await handleRamming(cardData, damages.initiator, actor.type === "actorDrone")
+    await handleRamming(cardData, damages.initiator, actor.type === "actorDrone", actorId)
   }
 
   //Handle astral combat damage
@@ -307,7 +307,7 @@ async function handleCalledShotDefenseInfo(cardData, actorData){
   return cardData
 }
 
-async function handleRamming(cardData, initiatorDamage, defenderIsVehicle) {
+async function handleRamming(cardData, initiatorDamage, defenderIsVehicle, defenderId) {
   //Get the attacker actor
   let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId, cardData.actorUuids)
 
@@ -316,6 +316,10 @@ async function handleRamming(cardData, initiatorDamage, defenderIsVehicle) {
   rollData.test.type = "falseTest"
   rollData.test.typeSub = "accident"
   rollData.test.title = game.i18n.localize("SR5.CrashDamageResistance")
+  //The attack and the defender this card stems from: the GM rebuilds it from them (attack-card.js, rebuildCrossCard)
+  rollData.previousMessage = {
+    ...rollData.previousMessage, messageId: cardData.previousMessage?.messageId, actorId: defenderId
+  }
   //Rigger 5 p. 179 between two vehicles; SR5 p. 204 when the target is not a vehicle (its Body instead of the initiator's Structure)
   rollData.damage.base = initiatorDamage
   rollData.damage.value = rollData.damage.base
@@ -335,7 +339,7 @@ async function handleRamming(cardData, initiatorDamage, defenderIsVehicle) {
   if (defenderIsVehicle) cardData.chatCard.buttons.vehicleTest = SR5_RollMessage.generateChatButton("nonOpposedTest", "vehicleTest", `${game.i18n.localize("SR5.VehicleTest")} (3)`)
 }
 
-async function handleEnergeticAura(cardData, actorData){
+async function handleEnergeticAura(cardData, actorData, defenderId){
   //Get the attacker actor
   let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId, cardData.actorUuids)
     
@@ -344,6 +348,10 @@ async function handleEnergeticAura(cardData, actorData){
   rollData.test.type = "falseTest"
   rollData.test.typeSub = "energeticAura"
   rollData.test.title = game.i18n.localize("SR5.SpiritPowerEnergyAura")
+  //The attack and the defender this card stems from: the GM rebuilds it from them (attack-card.js, rebuildCrossCard)
+  rollData.previousMessage = {
+    ...rollData.previousMessage, messageId: cardData.previousMessage?.messageId, actorId: defenderId
+  }
   rollData.damage.base = actorData.specialAttributes.magic.augmented.value * 2
   rollData.damage.value = rollData.damage.base
   rollData.damage.type = "physical"

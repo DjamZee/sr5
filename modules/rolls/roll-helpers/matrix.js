@@ -74,10 +74,12 @@ export class SR5_MatrixHelpers {
     * @param {Object} targetActor - The Target Actor who owns the deck/item
     * @param {Object} cardData - Message data
     * @param {Object} attacker - Actor who do the damage
-    * @returns {Promise<boolean>} true once the damage is written, relayed to the active GM, or told to him to write by hand;
-    *   false when nothing could be done, so that the card's button stays (Joachim's finding: no GM connected)
+    * @param {string} button - The card's button that asked for it: relayed, the GM spends it once he writes the damage
+    * @returns {Promise<boolean|string>} true once the damage is written or told to the GM to write by hand; "relayed" when
+    *   asked of the active GM, who may refuse it, the button left for him to spend (Hyacinthe's review, D5); false when
+    *   nothing could be done, so that the card's button stays (Joachim's finding: no GM connected)
     */
-  static async applyDamageToDecK(targetActor, cardData, defender, defenderWin) {
+  static async applyDamageToDecK(targetActor, cardData, defender, defenderWin, button = "") {
     let damageValue = cardData.damage.matrix.value
     let targetItem
     if (cardData.target.itemUuid && !defenderWin) {
@@ -148,7 +150,7 @@ export class SR5_MatrixHelpers {
       item: targetItem.uuid,
       info: newItem.system,
       //The GM reads this card again and bounds the boxes by it (socket-guard.js)
-      use: "matrixDamage", messageId: cardData.owner?.messageId,
+      use: "matrixDamage", messageId: cardData.owner?.messageId, button,
     })
     if (aiDissipated) {
       //A player who deals the damage cannot write on the AI: the GM lays the status, as for the device above
@@ -171,7 +173,7 @@ export class SR5_MatrixHelpers {
       damageValue: damageValue
     })} ${targetActor.name}.`)
     else ui.notifications.info(`${targetActor.name} (${targetItem.name})${game.i18n.localize("SR5.Colons")} ${damageValue} ${game.i18n.localize("SR5.AppliedMatrixDamage")}.`)
-    return true
+    return relayed ? "relayed" : true
   }
 
 

@@ -76,7 +76,9 @@ function actorWith(items, system = shooter, type = 'actorPc') {
   return {
     id: 'pc', uuid: 'Actor.pc', name: 'Clo', type, system, items: {
       get: id => map.get(id), find: fn => items.find(fn)
-    }
+    },
+    //Clo owns her actor (standsFor: the author of a card must own the actor hurt)
+    testUserPermission: () => true,
   }
 }
 
@@ -420,8 +422,8 @@ describe('vetAttackCard', () => {
     })
     expect(r.data.combat.armorPenetration).toBe(-2)
     expect(r.data.combat.grenade.damageFallOff).toBe(-2)
-    //pool 6 + Chance 2
-    expect(r.data.roll.hits).toBe(8)
+    //pool 6, no push of the limit: no Chance, no Rule of Six (SR5 p. 58)
+    expect(r.data.roll.hits).toBe(6)
     expect(r.mismatches.map(m => m.key)).toEqual(expect.arrayContaining(['base', 'ap', 'element', 'source', 'hits', 'damageFallOff']))
   })
 
@@ -443,7 +445,9 @@ describe('vetAttackCard', () => {
         base: 0, value: 40, type: 'physical'
       },
       magic: {
-        force: 30, spell: {
+        force: 30, drain: {
+          value: 30
+        }, spell: {
           damageBonus: 0
         }
       },
@@ -461,9 +465,9 @@ describe('vetAttackCard', () => {
         })
       }
     })
-    //pool 10 + Chance 2
-    expect(r.data.roll.hits).toBe(12)
-    expect(r.data.damage.value).toBe(12)
+    //pool 10, no push: no Chance; within the Force (10, Magic x 2)
+    expect(r.data.roll.hits).toBe(10)
+    expect(r.data.damage.value).toBe(10)
     expect(r.data.magic.force).toBe(10)
     expect(r.direct).toBe(true)
   })
@@ -530,7 +534,9 @@ describe('vetAttackCard', () => {
         base: 25, value: 25, type: 'physical', element: 'fire', source: 'magical'
       },
       magic: {
-        force: 25, spell: {
+        force: 25, drain: {
+          value: 25
+        }, spell: {
         }
       },
     })
@@ -574,7 +580,9 @@ describe('review fixes', () => {
 
   it('D1: a card of any type stands only for the actor it was rolled for', async () => {
     const card = {
-      roller, byGM: false, data: {
+      roller, byGM: false, author: {
+        name: "Clo" 
+      }, data: {
         test: {
           type: 'falseTest'
         }
@@ -627,7 +635,9 @@ describe('review fixes', () => {
         }
       },
       a1: {
-        roller, byGM: false, data: {
+        roller, byGM: false, author: {
+          name: "Clo" 
+        }, data: {
         }
       },
     }
@@ -832,5 +842,143 @@ describe('review fixes', () => {
     expect(s.overcast).toEqual({
       force: 8, magic: 5
     })
+  })
+})
+
+// Apollinaire's second review (06/10): the cards a defense writes in the attacker's name, rebuilt by the GM
+describe('rebuildCrossCard: energy aura and ramming crash', () => {
+  const {
+    rebuildCrossCard
+  } = attackCardModule
+  const gmNpc = {
+    id: 'npc', uuid: 'Actor.npc', type: 'actorGrunt', testUserPermission: () => false
+  }
+  const auraPc = {
+    id: 'pc', uuid: 'Actor.pc', type: 'actorPc', system: {
+      specialProperties: {
+        energyAura: 'fire'
+      }, specialAttributes: {
+        magic: {
+          augmented: {
+            value: 4
+          }
+        }
+      }, attributes: {
+        body: {
+          augmented: {
+            value: 8
+          }
+        }
+      }
+    }
+  }
+  const attack = (over = {
+  }) => ({
+    id: 'a1', roller: gmNpc, byGM: true, author: {
+      name: 'MJ', isGM: true
+    }, data: {
+      test: {
+        type: 'attack', typeSub: 'meleeWeapon'
+      }, roll: {
+        hits: 4
+      }, ...over
+    }
+  })
+  const defenseMessage = netHits => ({
+    id: 'd1', flags: {
+      sr5data: {
+        test: {
+          type: 'defense'
+        }, previousMessage: {
+          messageId: 'a1'
+        }, owner: {
+          actorId: 'pc'
+        }, roll: {
+          netHits
+        }
+      }
+    }
+  })
+  const lookups = (netHits, attackCard = attack()) => {
+    const defense = defenseMessage(netHits)
+    return {
+      cardOf: id => ({
+        a1: attackCard, d1: {
+          id: 'd1', roller: auraPc, byGM: false, author: {
+            name: 'Clo'
+          }, data: defense.flags.sr5data
+        }
+      })[id] ?? null,
+      messages: [defense],
+    }
+  }
+  //The aura card, as the player's defense writes it in the NPC's name: its values are those of a forger
+  const auraCard = () => ({
+    test: {
+      type: 'falseTest', typeSub: 'energeticAura'
+    }, owner: {
+      messageId: 'f1', actorId: 'npc'
+    }, previousMessage: {
+      messageId: 'a1', actorId: 'pc'
+    },
+    damage: {
+      base: 40, value: 40, type: 'stun', source: ''
+    }, combat: {
+      armorPenetration: -30
+    },
+  })
+
+  it('an honest aura chain: the GM resists for his NPC, from the defender\'s sheet', async () => {
+    const data = await rebuildCrossCard(auraCard(), gmNpc, lookups(2))
+    expect(data.damage).toMatchObject({
+      base: 8, value: 8, type: 'physical', source: 'magical'
+    })
+    expect(data.combat.armorPenetration).toBe(-4)
+  })
+  it('no aura without a defense that hit through, nor a melee attack', async () => {
+    expect(await rebuildCrossCard(auraCard(), gmNpc, lookups(0))).toBe(null)
+    expect(await rebuildCrossCard(auraCard(), gmNpc, {
+      ...lookups(2), messages: []
+    })).toBe(null)
+    expect(await rebuildCrossCard(auraCard(), gmNpc, lookups(2, attack({
+      test: {
+        type: 'attack', typeSub: 'rangedWeapon'
+      }, roll: {
+        hits: 4
+      }
+    })))).toBe(null)
+  })
+  it('an honest ramming crash chain: the initiator\'s damage worked out on both vehicles', async () => {
+    const drone = {
+      ...gmNpc, type: 'actorDrone'
+    }
+    const ramming = attack({
+      test: {
+        type: 'ramming'
+      }, roll: {
+        hits: 3
+      }, combat: {
+        ramming: {
+        }
+      }
+    })
+    ramming.roller = drone
+    const crash = {
+      ...auraCard(), test: {
+        type: 'falseTest', typeSub: 'accident'
+      }
+    }
+    const helpers = {
+      ...lookups(2, ramming), ramming: async () => ({
+        ramming: {
+          angle: 'side', attackerSpeed: 3, relativeSpeed: 20, targetIsVehicle: false
+        }, base: 6
+      })
+    }
+    helpers.messages[0].flags.sr5data.test.type = 'rammingDefense'
+    const data = await rebuildCrossCard(crash, drone, helpers)
+    expect(data.damage.value).toBeGreaterThan(0)
+    expect(data.damage.value).not.toBe(40)
+    expect(data.combat.armorPenetration).toBe(0)
   })
 })

@@ -22,6 +22,24 @@ function throughAndIntoAttack(defenseMessageId, defenseData) {
   })
 }
 
+//The type of the biofeedback a winning defender deals back (as test-MatrixDefense.js works it out), read
+//on the attacker's sheet (his user mode) and the defender's (her programs); null when no biofeedback is dealt
+export function biofeedbackType(attacker, defender) {
+  const mode = attacker?.system?.matrix?.userMode
+  if (!mode || mode === "ar" || (attacker.type !== "actorPc" && attacker.type !== "actorGrunt")) return null
+  const programs = defender?.system?.matrix?.programs ?? {
+  }
+  if (!programs.biofeedback?.isActive && !programs.blackout?.isActive) return null
+  return programs.biofeedback?.isActive && mode === "hotsim" ? "physical" : "stun"
+}
+
+//Damage written here, or asked of the active GM ("relayed": he spends the button once he writes it, Hyacinthe's D5)
+async function takeDamageOrRelay(actor, damageData) {
+  const relayed = !game.user?.isGM && !actor.testUserPermission?.(game.user, 3)
+  await actor.takeDamage(damageData)
+  return relayed ? "relayed" : true
+}
+
 //The GM is told when a defender's card announced more damage than its dice give (matrix-card.js)
 async function tellDefenderDamage(claimed, value, attacker) {
   if ((Number(claimed) || 0) === value) return
@@ -645,12 +663,14 @@ export class SR5_RollMessage {
         await tellDefenderDamage(messageData.damage.matrix.value, value, originalActionActor)
         const damageData = foundry.utils.deepClone(messageData)
         damageData.damage.matrix.value = value
+        //Relayed to the GM, the button is his to spend once he writes the damage: a refusal leaves it (Hyacinthe's D5)
+        damageData.relayButton = type
         let done = true
         if (originalActionActor.type === "actorPc" || originalActionActor.type === "actorGrunt"){
           //A living persona or a Lockdown head case takes it as Stun there, the swarm of an original strain Monad on itself
-          done = await SR5_MatrixHelpers.applyDamageToDecK(originalActionActor, damageData, actor, true)
-        } else await originalActionActor.takeDamage(damageData)
-        if (done) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+          done = await SR5_MatrixHelpers.applyDamageToDecK(originalActionActor, damageData, actor, true, type)
+        } else done = await takeDamageOrRelay(originalActionActor, damageData)
+        if (done === true) SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       }
       case "takeMatrixDamage": {
@@ -658,9 +678,11 @@ export class SR5_RollMessage {
         if (!(await cardStandsFor(messageId, actor))) return ui.notifications.warn(game.i18n.localize("SR5.ResistanceCardRefused"))
         if (!damageReachable(actor)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActiveGM"))
         let done = true
-        if (actor.type === "actorPc" || actor.type === "actorGrunt") done = await SR5_MatrixHelpers.applyDamageToDecK(actor, messageData)
-        else await actor.takeDamage(messageData)
-        if (!done) break
+        const damageData = foundry.utils.deepClone(messageData)
+        damageData.relayButton = type
+        if (actor.type === "actorPc" || actor.type === "actorGrunt") done = await SR5_MatrixHelpers.applyDamageToDecK(actor, damageData, null, false, type)
+        else done = await takeDamageOrRelay(actor, damageData)
+        if (done !== true) break
         //Special case for Derezz Complex Form.
         if (messageData.test.typeSub === "derezz") SR5_MatrixHelpers.applyDerezzEffect(messageData, originalActionActor, actor)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
@@ -673,10 +695,15 @@ export class SR5_RollMessage {
         //Biofeedback deals the defender's net hits (SR5 p. 232), counted again on both cards (matrix-card.js)
         const value = await trustedDefenderDamage(messageId, messageData.damage.value)
         if (!value) return ui.notifications.warn(game.i18n.localize(value === null ? "SR5.MatrixCardRefused" : "SR5.MatrixCardNoDamage"))
+        //Its type read on the sheets, never on the card (Hyacinthe's limit 3, test-MatrixDefense.js): only against an
+        //attacker in VR, with the defender's Biofeedback or Blackout running; Physical for Biofeedback against hot sim
+        const type = biofeedbackType(originalActionActor, actor)
+        if (!type) return ui.notifications.warn(game.i18n.localize("SR5.MatrixCardRefused"))
         await tellDefenderDamage(messageData.damage.value, value, originalActionActor)
         const damageData = foundry.utils.deepClone(messageData)
         damageData.damage.value = value
         damageData.damage.base = value
+        damageData.damage.type = type
         originalActionActor.rollTest("resistanceCard", null, vouch(damageData))
         break
       }

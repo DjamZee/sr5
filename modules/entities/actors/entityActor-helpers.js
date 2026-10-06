@@ -297,7 +297,20 @@ export class SR5_ActorHelper {
     const actor = SR5_EntityHelpers.getRealActorFromID(message.data?.actorId)
     const sender = game.users.get(senderId)
     if (!actor || !sender) return
-    if (!relayNeedsConfirmation(actor, sender)) return SR5_ActorHelper.takeDamage(message.data.actorId, message.data.options)
+    //The button a player's browser left for the GM is spent once he writes the damage, never on a refusal (D5)
+    const spend = async () => {
+      const options = message.data.options ?? {
+      }
+      if (!options.relayButton) return
+      const {
+        spendRelayedButton
+      } = await import("../../rolls/roll-helpers/matrix-card.js")
+      await spendRelayedButton(options.owner?.messageId, options.relayButton)
+    }
+    if (!relayNeedsConfirmation(actor, sender)) {
+      await SR5_ActorHelper.takeDamage(message.data.actorId, message.data.options)
+      return spend()
+    }
     const damage = message.data.options?.damage ?? {
     }
     const amount = Number(damage.matrix?.value) > 0 ? `${damage.matrix.value} ${game.i18n.localize("SR5.MatrixDamage")}` : `${Number(damage.value) || 0}${game.i18n.localize(SR5.damageTypesShort[damage.type] ?? "")}`
@@ -315,7 +328,10 @@ export class SR5_ActorHelper {
         label: game.i18n.localize("SR5.No")
       },
     }).catch(() => false)
-    if (ok) return SR5_ActorHelper.takeDamage(message.data.actorId, message.data.options)
+    if (ok) {
+      await SR5_ActorHelper.takeDamage(message.data.actorId, message.data.options)
+      return spend()
+    }
     await ChatMessage.create({
       content: foundry.utils.escapeHTML(game.i18n.format("SR5.DamageRelayRefused", {
         user: sender.name, actor: actor.name, amount

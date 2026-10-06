@@ -23,7 +23,7 @@ import {
   SR5_ConverterHelpers
 } from "./converter.js"
 import {
-  sameActor, diceShown
+  sameActor, standsFor, diceShown, trustedHits, sheetValue
 } from "./matrix-card.js"
 
 const DAMAGE_TYPES = ["physical", "stun"]
@@ -120,17 +120,28 @@ export function weaponAttackDamage(weapon, actor, choices = {
  * Force can be no more than Drain − modifiers. The spell's own modifier is read on the item, the others (reckless
  * casting, reagents, masteries…) on the card. Not a proof, a player writes both: an edited Force left with its Drain
  * shows. Returns the Force kept (the lower of the two) and the Drain that Force calls for.
+ * A modifier that lowers the Drain would let a higher Force through: only those the sheet stands for count, Structured
+ * Spellcasting (-1, Forbidden Arcana p. 43) if the caster has it, and a reagent tier no lower than -`magic`
+ * (Forbidden Arcana p. 181); any other lowering one counts for nothing. `floor` comes from the sheet, not the card.
  */
 export function spellDrainCheck({
   force, drainValue, modifiers = {
-  }, itemDrain = 0, floor = 2
+  }, itemDrain = 0, floor = 2, structured = false, magic = 0
 }) {
   const others = Object.entries(modifiers ?? {
-  }).filter(([key]) => key !== "spell").reduce((sum, [, m]) => sum + (Number(m?.value) || 0), 0)
+  }).filter(([key]) => key !== "spell").reduce((sum, [key, m]) => {
+    const value = Number(m?.value) || 0
+    if (value >= 0) return sum + value
+    if (key === "structuredSpellcasting") return sum + (structured ? -1 : 0)
+    if (key === "reagentTier") return sum + Math.max(value, -Math.max(0, Number(magic) || 0))
+    return sum
+  }, 0)
   const sum = others + (Number(itemDrain) || 0)
   let kept = Math.max(0, Math.floor(Number(force)) || 0)
-  const drain = Number(drainValue)
-  if (Number.isFinite(drain)) kept = Math.max(0, Math.min(kept, drain - sum))
+  //A card without a Drain proves nothing: read as the least Drain a spell can call for (Hyacinthe's review, L3-1)
+  const read = drainValue === null || drainValue === undefined || drainValue === "" ? NaN : Number(drainValue)
+  const drain = Number.isFinite(read) ? read : Math.max(0, Number(floor) || 0)
+  kept = Math.max(0, Math.min(kept, drain - sum))
   return {
     force: kept, expected: Math.max(Number(floor) || 0, kept + sum)
   }
@@ -305,7 +316,7 @@ export async function vetAttackCard(chatData, {
     claimed.base = (Number(claimed.base) || 0) - 1
     claimed.value = (Number(claimed.value) || 0) - 1
   }
-  let pool, drainInfo = null, overcast = null, vetted = {
+  let pool, limit = 0, drainInfo = null, overcast = null, vetted = {
   }
   const extra = []
 
@@ -321,6 +332,8 @@ export async function vetAttackCard(chatData, {
       secondTarget: !!chatData.combat?.calledShot?.secondTarget,
     })
     pool = item.system.weaponSkill?.dicePool
+    //The limit of a weapon is its Accuracy, a grenade's the thrower's Physical limit (SR5 p. 182, rollData-Weapon.js)
+    limit = item.system.category === "grenade" ? sheetValue(roller, "limits.physicalLimit.value") : Number(item.system.accuracy?.value) || 0
     vetted = {
       base: damage.base, value: damage.base, ap: damage.ap, type: damage.type, element: damage.element ?? "", source: damage.source,
     }
@@ -374,7 +387,10 @@ export async function vetAttackCard(chatData, {
     if (family === "spell") {
       const drain = spellDrainCheck({
         force, drainValue: chatData.magic?.drain?.value, modifiers: chatData.magic?.drain?.modifiers,
-        itemDrain: item.system.drain?.value, floor: chatData.magic?.drainFloor ?? 2,
+        itemDrain: item.system.drain?.value, magic,
+        //SR5 p. 284: never under 2; Structured Spellcasting (Forbidden Arcana p. 43): never under 1, read on the sheet
+        structured: !!system.magic?.metamagics?.structuredSpellcasting,
+        floor: system.magic?.metamagics?.structuredSpellcasting ? 1 : 2,
       })
       force = drain.force
       drainInfo = {
@@ -388,6 +404,8 @@ export async function vetAttackCard(chatData, {
     const masteries = system.magic?.masteries
     const bonus = family === "spell" ? combatSpellMasteryBonus(item.system.category, masteries?.mageHunter?.value, masteries?.deathSower?.value).damage : 0
     pool = family === "preparation" ? item.system.test?.dicePool : system.skills?.spellcasting?.spellCategory?.[item.system.category]?.dicePool
+    //The limit of a spell or a preparation is its Force (SR5 p. 281)
+    limit = force
     const indirect = item.system.subCategory === "indirect"
     const damage = spellAttackDamage({
       indirect, force, hits: 0, bonus
@@ -408,15 +426,18 @@ export async function vetAttackCard(chatData, {
     if (roller.type !== "actorDrone") return null
     const ramming = await helpers.ramming(roller, defender, chatData.combat?.ramming)
     pool = system.rammingTest?.test?.dicePool
+    limit = sheetValue(roller, "rammingTest.limit.value")
     vetted = {
       base: ramming.base, value: ramming.base, ap: -6, type: "physical",
     }
     data.combat.ramming = ramming.ramming
   }
 
-  vetted.hits = vettedHits({
-    byGM: false, claimed: chatData.roll?.hits, rollJSON: card.data.roll?.r, pool: poolWithEdge(roller, pool),
+  //Without a granted push of the limit, no Rule of Six and the test's limit (Hyacinthe's review, D1; SR5 p. 58)
+  const counted = await trustedHits({
+    card, claimed: chatData.roll?.hits, pool, limit, label: item?.name ?? "", helpers,
   })
+  vetted.hits = counted?.hits ?? 0
   //A direct spell's DV is its hits (SR5 p. 283): worked out with the hits counted again
   if ((family === "spell" || family === "preparation") && data.test.typeSub !== "indirect") {
     vetted.base = vetted.value = spellAttackDamage({
@@ -548,6 +569,62 @@ export async function trustedAttackCard(chatData, defender, messageId = chatData
  */
 const VOUCHED = new WeakSet()
 
+/** The cards a defense writes in the attacker's name: an energy aura that burns him, the crash of his ramming. */
+export const CROSS_CARDS = ["energeticAura", "accident"]
+
+/**
+ * The card a defense wrote in the attacker's name (test-Defense.js: energy aura, SR5 p. 397; ramming crash, Rigger 5
+ * p. 179, SR5 p. 204), rebuilt by the GM from what justifies it, never read on it (Apollinaire's second review): the
+ * attack card itself, the attacker's and his to resist; the defense card that answered it, written by a GM or an owner
+ * of the defender, with net hits; the aura read on the defender's sheet, the crash worked out again on both vehicles.
+ * The rebuilt data, vouched for; null when nothing stands behind the card.
+ */
+export async function rebuildCrossCard(chatData, actor, helpers = null) {
+  const kind = chatData?.test?.typeSub
+  if (chatData?.test?.type !== "falseTest" || !CROSS_CARDS.includes(kind)) return null
+  const cardOf = helpers?.cardOf ?? (await import("./miscellaneous.js")).SR5_MiscellaneousHelpers.cardOf
+  const messages = helpers?.messages ?? globalThis.game?.messages?.contents ?? []
+  const attackId = chatData.previousMessage?.messageId, defenderId = chatData.previousMessage?.actorId
+  const attack = cardOf(attackId)
+  if (!attack || !standsFor(attack, actor) || !sameActor(attack.roller, actor)) return null
+  const defenseMessage = messages.find(m => {
+    const d = m.flags?.sr5data
+    return ["defense", "rammingDefense"].includes(d?.test?.type) && d.previousMessage?.messageId === attackId && d.owner?.actorId === defenderId
+  })
+  const defense = defenseMessage ? cardOf(defenseMessage.id) : null
+  if (!defense) return null
+  //Net hits the defense cannot have more of than the attack had hits
+  const netHits = Math.min(Number(defense.data.roll?.netHits) || 0, Math.max(0, Number(attack.data.roll?.hits) || 0))
+  if (netHits <= 0) return null
+  const defender = defense.roller
+  const data = foundry.utils.deepClone(chatData)
+  if (kind === "energeticAura") {
+    const aura = defender?.system?.specialProperties?.energyAura
+    if (!aura || attack.data.test?.typeSub !== "meleeWeapon") return null
+    const magic = Number(defender.system.specialAttributes?.magic?.augmented?.value) || 0
+    data.damage.base = data.damage.value = magic * 2
+    data.combat.armorPenetration = -magic
+    data.damage.type = "physical"
+    data.damage.source = "magical"
+  } else {
+    if (attack.data.test?.type !== "ramming" || attack.roller?.type !== "actorDrone") return null
+    const ramming = await (helpers?.ramming ?? rammingOf)(attack.roller, defender, attack.data.combat?.ramming)
+    const {
+      SR5_ConverterHelpers: converter
+    } = await import("./converter.js")
+    const damages = converter.rammingDefenseDamages(ramming.ramming, {
+      defenderIsVehicle: defender?.type === "actorDrone", defenderBody: Number(defender?.system?.attributes?.body?.augmented?.value) || 0,
+      damageBase: ramming.base, netHits,
+    })
+    if (!(damages.initiator > 0)) return null
+    data.damage.base = data.damage.value = damages.initiator
+    data.combat.armorPenetration = 0
+    data.damage.type = "physical"
+  }
+  data.damage.resistanceType = "physicalDamage"
+  return vouch(data)
+}
+
 /** Vouch for roll data the system worked out itself for another actor than the card's (see trustedResistanceCard). */
 export function vouch(data) {
   if (data && typeof data === "object") VOUCHED.add(data)
@@ -567,7 +644,8 @@ export async function trustedResistanceCard(chatData, actor, rollType = "", help
   if (rollType === "resistanceCardAura") {
     if (card.data.test?.type !== "defense") return false
     const attack = cardOf(card.data.previousMessage?.messageId)
-    return !!attack && sameActor(attack.roller, actor)
+    return !!attack && standsFor(attack, actor) && sameActor(attack.roller, actor)
   }
-  return sameActor(card.roller, actor)
+  //Also its author must own the actor hurt: a drone's owner on its sheet is no proof (Hyacinthe's review, D2)
+  return standsFor(card, actor)
 }
