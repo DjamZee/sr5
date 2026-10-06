@@ -424,6 +424,8 @@ export class SR5_PrepareRollTest {
           },
           martialArtsModifiers: {
           },
+          itemModifiers: {
+          },
         },
         firingMode: {
           singleShot: false,

@@ -462,6 +462,13 @@ export async function handleMartialArtsCalledShot(rollData, actor){
     // A technique lowers the penalty on its own (Run & Gun p. 125): no unlocking flag needed
     if (value.modifier?.value) rollData.combat.calledShot.martialArtsModifiers[key] = value.modifier.value
   }
+  // Any item can ease the other called shots (effect category "calledShots", G14)
+  rollData.combat.calledShot.itemModifiers ??= {
+  }
+  for (let [key, value] of Object.entries(actor.system.itemsProperties.calledShots ?? {
+  })){
+    if (value?.modifier?.value) rollData.combat.calledShot.itemModifiers[key] = value.modifier.value
+  }
   return rollData
 }
 

@@ -261,6 +261,12 @@ export class SR5_CharacterUtility extends Actor {
       }
     }
 
+    if (actorData.itemsProperties?.calledShots) {
+      for (let key of Object.keys(SR5.calledShotsItems)) {
+        if (actorData.itemsProperties.calledShots[key]?.modifier) actorData.itemsProperties.calledShots[key].modifier.modifiers = []
+      }
+    }
+
     // Reset Essence
     if (actorData.essence) {
       actorData.essence.value = 0
@@ -1028,6 +1034,13 @@ export class SR5_CharacterUtility extends Actor {
         if (actorData.itemsProperties.martialArts[key].modifier) {
           SR5_EntityHelpers.updateValue(actorData.itemsProperties.martialArts[key].modifier)
         }
+      }
+    }
+
+    //called shots eased by any item
+    if (actorData.itemsProperties?.calledShots) {
+      for (let key of Object.keys(SR5.calledShotsItems)) {
+        if (actorData.itemsProperties.calledShots[key]?.modifier) SR5_EntityHelpers.updateValue(actorData.itemsProperties.calledShots[key].modifier)
       }
     }
   }

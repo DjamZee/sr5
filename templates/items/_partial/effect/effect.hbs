@@ -90,6 +90,7 @@
 					<optgroup label="{{localize 'SR5.OtherCategories'}}">
 						<option value="reputationTypes">{{localize 'SR5.CharacterReputation'}}</option>
 						<option value="martialArts">{{localize 'SR5.MartialArts'}}</option>
+						<option value="calledShots">{{localize 'SR5.CS_CalledShots'}}</option>
 						<option value="actions">{{localize 'SR5.Actions'}}</option>
 					</optgroup>
 					<optgroup label="{{localize 'SR5.Special'}}">
@@ -328,6 +329,8 @@
 						<option value="system.magic.drainResistance">{{localize 'SR5.DrainResistance'}}</option>
 						<option value="system.magic.powerPoints.maximum">{{localize 'SR5.PowerPoints'}} [{{localize 'SR5.GENERAL_Maximum_F'}}]</option>
 						<option value="system.magic.bgCount">{{localize 'SR5.SceneBackgroundCount'}}</option>
+						<!-- Better Than Bad p. 140-141 (system/grey-mana.js) -->
+						<option value="system.magic.greyMana">{{localize 'SR5.GreyMana'}}</option>
 
 					{{else ife category 'metamagics'}}
 						{{#each (lookup ../lists category)}}
@@ -413,6 +416,12 @@
 						{{#each ../lists.calledShotsMartialArts}}
 							<option value="system.itemsProperties.martialArts.{{@key}}.isActive">{{localize this}}</option>
 							<option value="system.itemsProperties.martialArts.{{@key}}.modifier">{{localize this}} [{{localize 'SR5.Modifier'}}]</option>
+						{{/each}}
+
+					{{else ife category 'calledShots'}}
+						<!-- SR5 p. 196-197, Run & Gun p. 126 and 128-132: the value lowers the penalty of the called shot, never below 0 -->
+						{{#each ../lists.calledShotsItems}}
+							<option value="system.itemsProperties.calledShots.{{@key}}.modifier">{{localize this}} [{{localize 'SR5.Modifier'}}]</option>
 						{{/each}}
 
 					{{else ife category 'actions'}}

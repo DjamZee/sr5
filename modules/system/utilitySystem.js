@@ -150,6 +150,17 @@ export class SR5_SystemHelpers {
       type: Boolean,
     })
 
+    // The effects of an item (tab "Modifiers") written by the gamemaster alone (DjamZ's ruling G14, 2026-10-06). Off by
+    // default: the owner of an item edits its effects, as before (system/effect-editor.js)
+    game.settings.register("sr5", "sr5GMOnlyItemEffects", {
+      name: "SR5.SETTINGS_GMOnlyItemEffects_T",
+      hint: "SR5.SETTINGS_GMOnlyItemEffects_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+    })
+
     game.settings.register("sr5", "sr5StorageDropOnDeathShare", {
       name: "SR5.SETTINGS_StorageDropOnDeathShare_T",
       hint: "SR5.SETTINGS_StorageDropOnDeathShare_D",

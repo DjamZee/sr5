@@ -2199,6 +2199,33 @@ SR5.calledShotsMartialArts = {
   locationThigh         : "SR5.CS_MA_LocationThigh",
 }
 
+// Called shots any item can ease, outside the martial arts techniques (effect category "calledShots", system/effect-editor.js):
+// SR5 p. 196-197, Run & Gun p. 126 and p. 128-132
+SR5.calledShotsItems = {
+  harderKnock           : "SR5.CS_HarderKnock",
+  trickShot             : "SR5.CS_TrickShot",
+  splittingDamage       : "SR5.CS_SplittingDamage",
+  bellringer            : "SR5.CS_AS_Bellringer",
+  bullsEye              : "SR5.CS_AS_BullsEye",
+  downTheGullet         : "SR5.CS_AS_DownTheGullet",
+  extremeIntimidation   : "SR5.CS_AS_ExtremeIntimidation",
+  flameOn               : "SR5.CS_AS_FlameOn",
+  flashBlind            : "SR5.CS_AS_FlashBlind",
+  hitEmWhereItCounts    : "SR5.CS_AS_HitEmWhereItCounts",
+  onPinsAndNeedles      : "SR5.CS_AS_OnPinsAndNeedles",
+  ricochetShot          : "SR5.CS_AS_RicochetShot",
+  shreddedFlesh         : "SR5.CS_AS_ShreddedFlesh",
+  tag                   : "SR5.CS_AS_Tag",
+  upTheAnte             : "SR5.CS_AS_UpTheAnte",
+  warningShot           : "SR5.CS_AS_WarningShot",
+  antenna               : "SR5.CS_ST_Antenna",
+  axle                  : "SR5.CS_ST_Axle",
+  doorLock              : "SR5.CS_ST_DoorLock",
+  engineBlock           : "SR5.CS_ST_EngineBlock",
+  fuelTankBattery       : "SR5.CS_ST_FuelTankBattery",
+  windowMotor           : "SR5.CS_ST_WindowMotor",
+}
+
 //-----------------------------------//
 //             MATRIX                //
 //-----------------------------------//

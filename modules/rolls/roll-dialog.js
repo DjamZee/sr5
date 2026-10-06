@@ -2,6 +2,9 @@ import {
   halveCalledShot
 } from '../entities/items/weaponTraits.js'
 import {
+  calledShotItemBonus, easeCalledShotPenalty
+} from '../system/effect-editor.js'
+import {
   bbPatientEntry, advancedMedkitRules
 } from "../system/bb-healing.js"
 import {
@@ -1492,6 +1495,8 @@ export default class SR5_RollDialog {
           if (dialogData.combat.calledShot.martialArtsModifiers?.[ev.target.value]) {
             value += dialogData.combat.calledShot.martialArtsModifiers[ev.target.value]
           }
+          // Any item can ease the other called shots (G14), never below a penalty of 0
+          value = easeCalledShotPenalty(value, calledShotItemBonus(dialogData.combat.calledShot.itemModifiers, ev.target.value))
           if (ev.target.value === "specificTarget") {
             const calledShotEl = html.querySelector('#calledShotSpecificTarget')
             if (calledShotEl) calledShotEl.style.display = ''
@@ -1567,10 +1572,13 @@ export default class SR5_RollDialog {
           if (SR5_EntityHelpers.getRealActorFromID(dialogData.owner.actorId)?.system.specialProperties?.calledShotHalved) value = halveCalledShot(value)
           //Run & Gun p. 148-151: the location technique (Dim Mak, Choquer, Randori) lowers the location penalty
           value += martialArtsLocationBonus(dialogData.combat.calledShot.martialArtsModifiers, html.querySelector('[data-modifier="calledShot"]').value, ev.target.value)
+          //Run & Gun p. 128-130: an item eases a vehicle location, and Doubler la mise itself (G14)
+          value = easeCalledShotPenalty(value, calledShotItemBonus(dialogData.combat.calledShot.itemModifiers, html.querySelector('[data-modifier="calledShot"]').value, ev.target.value))
           dialogData.combat.calledShot = {
             //keep the techniques read when the dialog opened, a second location pick needs them too
             martialArts: dialogData.combat.calledShot.martialArts,
             martialArtsModifiers: dialogData.combat.calledShot.martialArtsModifiers,
+            itemModifiers: dialogData.combat.calledShot.itemModifiers,
             limitDV: limitDV,
             location: ev.target.value,
             name: html.querySelector('[data-modifier="calledShot"]').value,

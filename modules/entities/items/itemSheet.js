@@ -2,6 +2,9 @@ import {
   SR5FactionRegistry
 } from "../../interface/faction-registry.js"
 import {
+  canEditItemEffects, keepUnlistedEffectFields, lockEffectFields
+} from "../../system/effect-editor.js"
+import {
   SR5 
 } from "../../config.js"
 import {
@@ -544,6 +547,10 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
   _onRender(context, options) {
     super._onRender(context, options)
     const el = this.element
+
+    // Effects tab: a stored target missing from the lists is kept, and the effects are locked when they are the GM's (G14)
+    keepUnlistedEffectFields(el, this.document._source?.system, game.i18n.localize('SR5.EffectUnlisted'))
+    if (this.isEditable && !canEditItemEffects(game.user, this.document.isOwner)) lockEffectFields(el)
 
     // Mentor Spirit quality: drop a mentor item of the same actor to link it
     const mentorDrop = el.querySelector('.sr5-mentor-drop')
