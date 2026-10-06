@@ -23,6 +23,9 @@ import {
   registerAegisLedger
 } from "../system/aegis.js"
 import {
+  SR5_MiscellaneousHelpers
+} from "../rolls/roll-helpers/miscellaneous.js"
+import {
   registerExtendedClockSetting
 } from "../system/extended-clock.js"
 import {
@@ -304,6 +307,8 @@ export async function sr5HookInit() {
   registerRetryLedger()
   //Aegis (Kill Code p. 112): the shield boxes, kept by the active GM
   registerAegisLedger()
+  //The cards spent through the generic sockets, once per use and target (security lot)
+  SR5_MiscellaneousHelpers.registerSettings()
   registerExtendedClockSetting()
   //Diseases (Run Faster p. 111-112): the GM's ledger of infections, and what the player is shown
   registerDiseaseSettings()

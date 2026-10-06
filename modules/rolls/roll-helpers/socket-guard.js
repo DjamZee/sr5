@@ -31,6 +31,63 @@ export function cardTrusted(author, rollerOwned) {
 
 const isNumber = value => typeof value === "number" && Number.isFinite(value)
 
+/**
+ * The test types each use accepts (Zélia's review, B2: a Perception card opened a maglock). The card
+ * must be the test the rule names, rolled by the actor the rule names.
+ */
+export const USE_TESTS = {
+  // Matrix damage: the defender who wins hurts the attacker; the loser of a resistance takes it
+  matrixDamage: ["matrixDefense", "matrixResistance", "iceDefense", "complexFormDefense"],
+  deactivateFocus: ["enchantmentResistance"],
+  reduceEffect: ["dispellResistance", "disjointingResistance", "complexFormResistance"],
+  dispelledEffect: ["dispellResistance", "disjointingResistance", "complexFormResistance"],
+  maglock: ["skill"],
+  support: ["matrixAction"],
+}
+
+/** Whether a card of this test type (and sub-type) may stand behind this use. */
+export function testAllowed(use, test) {
+  if (!(USE_TESTS[use] ?? []).includes(test?.type)) return false
+  if (use === "maglock") return test.typeSub === "locksmith"
+  if (use === "support") return ["iAmTheFirewall", "intervene"].includes(test.typeSub)
+  return true
+}
+
+/**
+ * The test a reducing card answers (dispelling, disenchanting, Kill Complex Form), and where the GM
+ * reads its pool on the sheet of the actor who rolled it.
+ */
+export const REDUCER_POOLS = {
+  counterspelling: "skills.counterspelling.test.dicePool",
+  disenchanting: "skills.disenchanting.test.dicePool",
+  killComplexForm: "matrix.resonanceActions.killComplexForm.test.dicePool",
+}
+
+/**
+ * The hits of a card counted again on its dice (SR5 p. 44): only the first `allowed` dice of the pool
+ * count, the rerolls of the Rule of Six after them (p. 58). null when the card shows no dice.
+ */
+export function recountHits(rollJSON, allowed) {
+  let roll = rollJSON
+  if (typeof roll === "string") {
+    try {
+      roll = JSON.parse(roll)
+    } catch {
+      return null
+    }
+  }
+  const results = roll?.terms?.[0]?.results
+  if (!Array.isArray(results)) return null
+  const kept = results.filter(d => !d.ruleOfSix).slice(0, Math.max(0, Math.floor(Number(allowed)) || 0))
+  const rerolls = results.filter(d => d.ruleOfSix)
+  return [...kept, ...rerolls].filter(d => d.active !== false && d.discarded !== true && Number(d.result) >= 5).length
+}
+
+/** The key of a card spent on a use and a target: a card serves once per use (Zélia's review, B3). */
+export function consumedKey(messageId, use, targetUuid = "") {
+  return `${messageId}|${use}|${targetUuid}`
+}
+
 /** A whole number from 0 to `cap`: what a card's claimed hits count at most. */
 export function bounded(claimed, cap) {
   const value = Math.floor(Number(claimed))

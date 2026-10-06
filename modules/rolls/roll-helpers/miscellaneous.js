@@ -8,9 +8,12 @@ import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
-  ownsTarget, cardTrusted, bounded, matrixDamageAllowed, deactivateAllowed, reduceAllowed, supportEffectAllowed,
-  serviceSpentAllowed, maglockAllowed
+  ownsTarget, cardTrusted, matrixDamageAllowed, deactivateAllowed, reduceAllowed, supportEffectAllowed,
+  serviceSpentAllowed, maglockAllowed, testAllowed, recountHits, consumedKey, REDUCER_POOLS
 } from "./socket-guard.js"
+
+// The cards already spent on a use and a target (Zélia's review, B3), written by the active GM
+export const CONSUMED_CARDS = 'sr5ConsumedCards'
 
 export class SR5_MiscellaneousHelpers {
   /** Update an actor with given data
@@ -44,9 +47,52 @@ export class SR5_MiscellaneousHelpers {
   /* -------------------------------------------- */
   /*  The generic sockets, on the GM's browser     */
   /* -------------------------------------------- */
-  // Security lot (Sixtine, ruled by DjamZ before the djamz.11): a GM or an owner of the target writes
-  // as before; anyone else only one of the uses of socket-guard.js, the effect of a card the GM reads
-  // again from the chat log, bounded by the sheet. Refused requests are logged, never applied.
+  // Security lot (Sixtine, ruled by DjamZ before the djamz.11; second round after Zélia's review): a GM
+  // or an owner of the target writes as before; anyone else only one of the uses of socket-guard.js.
+  // The use rests on the card the GM reads again from the chat log: the test the rule names, rolled by
+  // the actor the rule names, its hits counted again on its dice within the pool the GM works out; a
+  // card serves once per use and target; a card a player wrote is confirmed by the GM. Refused requests
+  // are logged, never applied.
+
+  static #pending = new Set()
+  static #confirmations = new Map()
+
+  /** The registry of spent cards, written by the active GM alone (Zélia's review, B3). */
+  static registerSettings() {
+    game.settings.register('sr5', CONSUMED_CARDS, {
+      scope: 'world',
+      config: false,
+      type: Object,
+      default: {
+      },
+    })
+  }
+
+  static #consumed() {
+    try {
+      return game.settings.get('sr5', CONSUMED_CARDS) ?? {
+      }
+    } catch {
+      return {
+      }
+    }
+  }
+
+  /** Whether a card was spent on this use and target already, or is being spent. */
+  static isConsumed(key) {
+    return !!SR5_MiscellaneousHelpers.#consumed()[key] || SR5_MiscellaneousHelpers.#pending.has(key)
+  }
+
+  /** Spend a card on a use and a target: false when it was spent already. Nothing is awaited between
+   * the test and the mark, so two requests arriving together cannot both pass. */
+  static async consume(key) {
+    if (SR5_MiscellaneousHelpers.isConsumed(key)) return false
+    SR5_MiscellaneousHelpers.#pending.add(key)
+    await game.settings.set('sr5', CONSUMED_CARDS, {
+      ...SR5_MiscellaneousHelpers.#consumed(), [key]: Date.now()
+    })
+    return true
+  }
 
   /** The card behind a request, as the chat log keeps it: null unless a GM wrote it or an owner of
    * the actor that rolled it. */
@@ -58,20 +104,61 @@ export class SR5_MiscellaneousHelpers {
     const author = message.author
     if (!cardTrusted(author, !!roller && !!author && roller.testUserPermission(author, "OWNER"))) return null
     return {
-      data, roller
+      id: message.id, data, roller, author, byGM: !!author?.isGM
     }
   }
 
-  /** The most hits a card may count, from the roller's sheet: the pool of that test, plus Chance. */
+  /** The most dice a test may roll, from the roller's sheet: the pool of that test, plus Chance. */
   static poolCap(roller, path) {
     const pool = Number(foundry.utils.getProperty(roller?.system ?? {
     }, path)) || 0
     return pool + (Number(roller?.system?.specialAttributes?.edge?.augmented?.value) || 0)
   }
 
+  /** The hits of a card the GM stands by: a GM's card as written, a player's counted again on its dice
+   * within the pool at `path` (null when it shows no dice). */
+  static hitsOf(card, path) {
+    if (card.byGM) return Math.max(0, Number(card.data.roll?.hits) || 0)
+    return recountHits(card.data.roll?.r, path === null ? Infinity : SR5_MiscellaneousHelpers.poolCap(card.roller, path))
+  }
+
   static #refuse(kind, senderId, data) {
     SR5_SystemHelpers.srLog(1, `Socket ${kind} refused from ${game.users.get(senderId)?.name ?? senderId}`, data)
     return false
+  }
+
+  /**
+   * A use the checks let through: the GM confirms a card a player wrote (once per card), then the card
+   * is spent on it. Replaced in the tests.
+   * @param {object} use {card, key, label, target, value}
+   * @param {User} sender who asks
+   */
+  static async grant(use, sender) {
+    if (!use.card.byGM) {
+      let asked = SR5_MiscellaneousHelpers.#confirmations.get(use.card.id)
+      if (!asked) {
+        asked = SR5_MiscellaneousHelpers.confirmUse(use, sender)
+        SR5_MiscellaneousHelpers.#confirmations.set(use.card.id, asked)
+      }
+      if (!(await asked)) return false
+    }
+    return SR5_MiscellaneousHelpers.consume(use.key)
+  }
+
+  /** The GM's say on a card a player wrote. */
+  static async confirmUse(use, sender) {
+    const esc = foundry.utils.escapeHTML
+    return foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: game.i18n.localize('SR5.SocketUseConfirmTitle')
+      },
+      content: `<p>${game.i18n.format('SR5.SocketUseConfirm', {
+        user: esc(sender?.name ?? '?'), what: esc(game.i18n.format(`SR5.SocketUse_${use.label}`, {
+          target: use.target ?? ''
+        })), value: use.value ?? '',
+      })}</p>`,
+      rejectClose: false,
+    })
   }
 
   //Socket for updating an actor
@@ -99,15 +186,28 @@ export class SR5_MiscellaneousHelpers {
       allowed = !!summoner?.testUserPermission(sender, "OWNER") &&
         serviceSpentAllowed(changes, actor._source?.system?.services?.value)
     } else if (data.use === "maglock") {
-      const card = SR5_MiscellaneousHelpers.cardOf(data.messageId)
-      allowed = !!card && SR5_EntityHelpers.getRealActorFromID(card.data.target?.actorId) === actor &&
-        maglockAllowed(changes, actor._source?.system?.maglock)
+      const use = SR5_MiscellaneousHelpers.maglockUse(data, actor, changes)
+      allowed = !!use && await SR5_MiscellaneousHelpers.grant(use, sender)
     }
     if (!allowed) return SR5_MiscellaneousHelpers.#refuse("updateActorData", senderId, data)
     await actor.update({
       'system': changes
     })
     return true
+  }
+
+  /** A maglock opened by a Locksmith test (SR5 p. 365) of the card's picker, aimed at this lock. */
+  static maglockUse(data, actor, changes) {
+    const card = SR5_MiscellaneousHelpers.cardOf(data.messageId)
+    if (!card || !testAllowed("maglock", card.data.test)) return null
+    if (SR5_EntityHelpers.getRealActorFromID(card.data.target?.actorId) !== actor) return null
+    const hits = SR5_MiscellaneousHelpers.hitsOf(card, "skills.locksmith.test.dicePool")
+    if (hits === null || hits < Math.max(1, Number(card.data.threshold?.value) || 1)) return null
+    if (!maglockAllowed(changes, actor._source?.system?.maglock)) return null
+    return {
+      card, key: consumedKey(card.id, "maglock", `${actor.uuid}.${Object.keys(changes.maglock).sort().join(",")}`),
+      label: "maglock", target: actor.name, value: hits,
+    }
   }
 
   //Socket for updating an item
@@ -122,8 +222,11 @@ export class SR5_MiscellaneousHelpers {
     const changes = foundry.utils.diffObject(target.toObject().system, data.info ?? {
     })
     if (foundry.utils.isEmpty(changes)) return false
-    if (!ownsTarget(sender, target) && !(await SR5_MiscellaneousHelpers.itemUseAllowed(data, target, changes))) {
-      return SR5_MiscellaneousHelpers.#refuse("updateItem", senderId, data)
+    if (!ownsTarget(sender, target)) {
+      const use = await SR5_MiscellaneousHelpers.itemUse(data, target, changes)
+      if (!use || !(await SR5_MiscellaneousHelpers.grant(use, sender))) {
+        return SR5_MiscellaneousHelpers.#refuse("updateItem", senderId, data)
+      }
     }
     await target.update({
       'system': changes
@@ -131,58 +234,103 @@ export class SR5_MiscellaneousHelpers {
     return true
   }
 
-  /** A use of updateItem on an item the sender does not own, checked against its card. */
-  static async itemUseAllowed(data, item, changes) {
+  /** A use of updateItem on an item the sender does not own, checked against its card: null if refused. */
+  static async itemUse(data, item, changes) {
     const card = SR5_MiscellaneousHelpers.cardOf(data.messageId)
-    if (!card) return false
+    if (!card || !testAllowed(data.use, card.data.test)) return null
     const stored = item._source?.system ?? {
     }
-    const cardData = card.data
     if (data.use === "matrixDamage") {
-      //The device belongs to an actor of the card: who rolled it, whom it answers, or whom it aims at
-      const holder = item.parent
-      const actors = [cardData.owner?.actorId, cardData.previousMessage?.actorId, cardData.target?.actorId]
-        .map(id => id ? SR5_EntityHelpers.getRealActorFromID(id) : null)
-      if (!holder || !actors.includes(holder)) return false
-      if (cardData.target?.itemUuid && cardData.target.itemUuid !== item.uuid) return false
-      const damage = Math.max(0, Number(cardData.damage?.matrix?.value) || 0) + 1
-      return matrixDamageAllowed(changes, stored, Number(item.system?.conditionMonitors?.matrix?.value) || 0, damage)
+      const damage = SR5_MiscellaneousHelpers.matrixDamageOf(card, item)
+      if (!(damage > 0)) return null
+      const size = Number(item.system?.conditionMonitors?.matrix?.value) || 0
+      // One more for a virtual machine on the device (SR5 p. 247)
+      if (!matrixDamageAllowed(changes, stored, size, damage + 1)) return null
+      return {
+        card, key: consumedKey(card.id, "matrixDamage"), label: "matrixDamage", target: item.name, value: damage,
+      }
     }
     if (data.use === "deactivateFocus") {
-      return cardData.test?.type === "enchantmentResistance" && cardData.target?.itemUuid === item.uuid && deactivateAllowed(changes)
+      if (card.data.target?.itemUuid !== item.uuid || !deactivateAllowed(changes)) return null
+      const net = SR5_MiscellaneousHelpers.reducerNetHits(card)
+      if (!(net > 0)) return null
+      return {
+        card, key: consumedKey(card.id, "deactivateFocus", item.uuid), label: "deactivateFocus", target: item.name, value: net,
+      }
     }
     if (data.use === "reduceEffect") {
-      const reduced = await SR5_MiscellaneousHelpers.#reducedBy(cardData, card.roller)
-      if (!reduced) return false
-      if (reduced.item === item) return reduceAllowed(changes, stored, reduced.netHits, false, reduced.key)
+      const reduced = await SR5_MiscellaneousHelpers.#reducedBy(card)
+      if (!reduced) return null
+      let allowed = false
+      if (reduced.item === item) allowed = reduceAllowed(changes, stored, reduced.netHits, false, reduced.key)
       //An effect the reduced item holds up
-      const held = Array.isArray(reduced.item._source?.system?.targetOfEffect) ? reduced.item._source.system.targetOfEffect : []
-      return held.includes(item.uuid) && reduceAllowed(changes, stored, reduced.netHits, true)
+      else allowed = reduced.held.includes(item.uuid) && reduceAllowed(changes, stored, reduced.netHits, true)
+      if (!allowed) return null
+      return {
+        card, key: consumedKey(card.id, "reduceEffect", item.uuid), label: "reduceEffect", target: reduced.item.name, value: reduced.netHits,
+      }
     }
-    return false
+    return null
   }
 
-  /** The item a reducing card aims at, and the net hits it may take away, bounded by the roller's pool. */
-  static async #reducedBy(cardData, roller) {
-    const pools = {
-      dispellResistance: "skills.counterspelling.test.dicePool",
-      enchantmentResistance: "skills.disenchanting.test.dicePool",
-      disjointingResistance: "skills.disenchanting.test.dicePool",
-      complexFormResistance: "matrix.resonanceActions.killComplexForm.test.dicePool",
+  /**
+   * The boxes a matrix card may fill on this device, or 0. A defender who wins (matrixDefense) hurts
+   * the ATTACKER of the card it answers (Zélia's review, B1): his net hits, counted again on his dice
+   * within his defense pool, over the attacker's hits. A resistance (or a defense against ICE or a
+   * complex form) hurts the actor who rolled it, on the device the card names.
+   */
+  static matrixDamageOf(card, item) {
+    const holder = item.parent
+    const claimed = Math.max(0, Number(card.data.damage?.matrix?.value) || 0)
+    if (card.data.test?.type === "matrixDefense") {
+      const attacker = SR5_EntityHelpers.getRealActorFromID(card.data.previousMessage?.actorId)
+      if (!holder || holder !== attacker) return 0
+      if (card.byGM) return claimed
+      const attack = SR5_MiscellaneousHelpers.cardOf(card.data.previousMessage?.messageId)
+      if (!attack || attack.roller !== attacker) return 0
+      const attackHits = SR5_MiscellaneousHelpers.hitsOf(attack, `matrix.actions.${attack.data.test?.typeSub}.test.dicePool`)
+      const defenseHits = SR5_MiscellaneousHelpers.hitsOf(card, `matrix.actions.${card.data.test?.typeSub}.defense.dicePool`)
+      if (attackHits === null || defenseHits === null) return 0
+      return Math.min(claimed, Math.max(0, defenseHits - attackHits))
     }
-    const path = pools[cardData.test?.type]
-    if (!path || !cardData.target?.itemUuid) return null
+    if (!holder || holder !== card.roller) return 0
+    if (card.data.target?.itemUuid && card.data.target.itemUuid !== item.uuid) return 0
+    return claimed
+  }
+
+  /**
+   * The net hits of a reducing card (the resistance of a spell, focus, preparation or complex form): the
+   * hits of the test it answers, by the same actor and on the same item, counted again within his pool,
+   * over the hits of the resistance. null when the cards do not hold together.
+   */
+  static reducerNetHits(card) {
+    const reducer = SR5_MiscellaneousHelpers.cardOf(card.data.previousMessage?.messageId)
+    if (!reducer || reducer.roller !== card.roller) return null
+    if (reducer.data.target?.itemUuid !== card.data.target?.itemUuid) return null
+    const path = REDUCER_POOLS[reducer.data.test?.typeSub]
+    if (!path) return null
+    const reducerHits = SR5_MiscellaneousHelpers.hitsOf(reducer, path)
+    const resisted = SR5_MiscellaneousHelpers.hitsOf(card, null)
+    if (reducerHits === null || resisted === null) return null
+    return Math.max(0, reducerHits - resisted)
+  }
+
+  /** The item a reducing card aims at, what it holds up, and the net hits the card may take away. */
+  static async #reducedBy(card) {
+    if (!card.data.target?.itemUuid) return null
+    const netHits = SR5_MiscellaneousHelpers.reducerNetHits(card)
+    if (!(netHits > 0)) return null
     let item = null
     try {
-      item = await fromUuid(cardData.target.itemUuid)
+      item = await fromUuid(card.data.target.itemUuid)
     } catch {
       item = null
     }
     if (!item) return null
     return {
-      item,
+      item, netHits,
       key: item.type === "itemPreparation" ? "potency" : "hits",
-      netHits: bounded(cardData.roll?.netHits, SR5_MiscellaneousHelpers.poolCap(roller, path)),
+      held: Array.isArray(item._source?.system?.targetOfEffect) ? item._source.system.targetOfEffect : [],
     }
   }
 
@@ -195,20 +343,28 @@ export class SR5_MiscellaneousHelpers {
     if (!actor || !sender) return false
     const replace = Array.isArray(data.replace) ? data.replace : []
     if (!ownsTarget(sender, actor)) {
-      const card = SR5_MiscellaneousHelpers.cardOf(data.messageId)
-      const type = foundry.utils.getProperty(foundry.utils.expandObject(data.effect ?? {
-      }), "system.type")
-      const hits = card ? bounded(card.data.roll?.hits,
-        SR5_MiscellaneousHelpers.poolCap(card.roller, `matrix.actions.${type}.test.dicePool`)) : 0
-      const hackerId = card?.roller?.id
-      if (!card || card.data.test?.typeSub !== type ||
-        !supportEffectAllowed(data.effect, hackerId, hits, replace.map(id => actor.items.get(id)))) {
+      const use = SR5_MiscellaneousHelpers.supportUse(data, actor, replace)
+      if (!use || !(await SR5_MiscellaneousHelpers.grant(use, sender))) {
         return SR5_MiscellaneousHelpers.#refuse("createItemEffect", senderId, data)
       }
     }
     if (replace.length) await actor.deleteEmbeddedDocuments("Item", replace)
     await actor.createEmbeddedDocuments("Item", [data.effect])
     return true
+  }
+
+  /** A Kill Code support effect (I Am the Firewall, Intervene) of the hacker who rolled the card. */
+  static supportUse(data, actor, replace) {
+    const card = SR5_MiscellaneousHelpers.cardOf(data.messageId)
+    if (!card || !testAllowed("support", card.data.test)) return null
+    const type = foundry.utils.getProperty(foundry.utils.expandObject(data.effect ?? {
+    }), "system.type")
+    if (card.data.test.typeSub !== type) return null
+    const hits = SR5_MiscellaneousHelpers.hitsOf(card, `matrix.actions.${type}.test.dicePool`)
+    if (hits === null || !supportEffectAllowed(data.effect, card.roller?.id, hits, replace.map(id => actor.items.get(id)))) return null
+    return {
+      card, key: consumedKey(card.id, "support", actor.uuid), label: "support", target: actor.name, value: hits,
+    }
   }
 
   //Socket for deleting an item
@@ -221,12 +377,13 @@ export class SR5_MiscellaneousHelpers {
     if (!ownsTarget(sender, item)) {
       //An effect held up by a spell the card brings to nothing (SR5 p. 299)
       const card = data.use === "dispelledEffect" ? SR5_MiscellaneousHelpers.cardOf(data.messageId) : null
-      const reduced = card ? await SR5_MiscellaneousHelpers.#reducedBy(card.data, card.roller) : null
-      const held = reduced?.item?._source?.system?.targetOfEffect ?? []
+      const reduced = card && testAllowed("dispelledEffect", card.data.test) ? await SR5_MiscellaneousHelpers.#reducedBy(card) : null
       const left = (Number(reduced?.item?._source?.system?.[reduced?.key]) || 0) - (reduced?.netHits ?? 0)
-      if (!reduced || item.type !== "itemEffect" || !held.includes(item.uuid) || left > 0) {
-        return SR5_MiscellaneousHelpers.#refuse("deleteItem", senderId, data)
-      }
+      const allowed = !!reduced && item.type === "itemEffect" && reduced.held.includes(item.uuid) && left <= 0 &&
+        await SR5_MiscellaneousHelpers.grant({
+          card, key: consumedKey(card.id, "dispelledEffect", item.uuid), label: "dispelledEffect", target: item.name, value: reduced.netHits,
+        }, sender)
+      if (!allowed) return SR5_MiscellaneousHelpers.#refuse("deleteItem", senderId, data)
     }
     await item.delete()
     return true
