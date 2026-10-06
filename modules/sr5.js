@@ -34,6 +34,9 @@ import {
   onMoveToken, clearRunning
 } from './system/running.js'
 import {
+  onSprintCard
+} from './system/sprint-fatigue.js'
+import {
   sr5HookCanvasInit,
   sr5HookDeleteCombatCumulativeDefense,
   sr5HookCreateCombatant,
@@ -141,6 +144,8 @@ Hooks.on('deleteCombat', sr5HookDeleteCombatGrapple)
 //Running (SR5 p. 163-164): put on by a move, it falls when the encounter ends
 Hooks.on('moveToken', onMoveToken)
 Hooks.on('deleteCombat', clearRunning)
+//Sprint fatigue (SR5 p. 174): counted and resisted by the active GM from the Sprint test card
+Hooks.on('createChatMessage', message => onSprintCard(message).catch(e => console.error(e)))
 Hooks.on('renderChatMessageHTML', SR5_GrappleHelpers.onRenderHoldCard)
 //An escape a player rolled frees her once the active GM has read its card again (grapple.js)
 Hooks.on('createChatMessage', message => SR5_GrappleHelpers.onEscapeCard(message))

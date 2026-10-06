@@ -65,8 +65,8 @@ export default async function resistanceInfo(cardData, actorId){
     else return cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.NoDamage"))
   }
 
-  //Add automatic succes for Hardened Armor.
-  if ((actorData.specialProperties?.hardenedArmors.normalWeapon.value > 0) && (cardData.damage.source !== "magical")) {
+  //Add automatic succes for Hardened Armor. Fatigue is resisted without any armor (SR5 p. 174)
+  if ((actorData.specialProperties?.hardenedArmors.normalWeapon.value > 0) && (cardData.damage.source !== "magical") && (cardData.test.typeSub !== "fatigue")) {
     hardenedArmor = SR5_CombatHelpers.hardenedArmorAutoHits(actorData.specialProperties.hardenedArmors.normalWeapon.value, cardData.combat.armorPenetration)
     if (hardenedArmor > 0) {
       ui.notifications.info(`${game.i18n.localize("SR5.HardenedArmor")}${game.i18n.localize("SR5.Colons")} ${hardenedArmor} ${game.i18n.localize("SR5.INFO_AutomaticHits")}`)

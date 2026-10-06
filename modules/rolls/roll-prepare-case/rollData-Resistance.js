@@ -104,6 +104,9 @@ export default async function resistance(rollData, rollType, actor, chatData){
     case "fatiguedDamage":
       rollData = await handleFatiguedDamage(rollData, actorData, chatData)
       break
+    case "fatigue":
+      rollData = await handleFatigueDamage(rollData, actorData)
+      break
     default:
       SR5_SystemHelpers.srLog(1, `Unknown '${chatData.damage.resistanceType}' Damage Resistance Type in roll`)
   }
@@ -367,6 +370,17 @@ async function handleDirectSpell(rollData, actorData, chatData){
   //Add others informations
   rollData.test.typeSub = "spellDamage"
     
+  return rollData
+}
+
+//SR5 p. 174: fatigue is Stun damage resisted with Body + Willpower, armor never counts
+async function handleFatigueDamage(rollData, actorData){
+  if (!actorData.resistances?.fatigue) return
+  rollData.test.title = `${game.i18n.localize("SR5.ResistanceTest")}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize(SR5.characterResistances.fatigue)} (${rollData.damage.base})`
+  rollData.dicePool.base = actorData.resistances.fatigue.dicePool
+  rollData.dicePool.composition = actorData.resistances.fatigue.modifiers
+  rollData.damage.type = "stun"
+  rollData.test.typeSub = "fatigue"
   return rollData
 }
 
