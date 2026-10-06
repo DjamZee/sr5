@@ -8,7 +8,7 @@ import {
   SR5
 } from "../../config.js"
 import {
-  penetrationModifier, protectionOf
+  penetrationModifier, protectionOf, REVEAL_DISEASES_SETTING
 } from "../../system/diseases.js"
 import {
   radiationModifiers
@@ -71,7 +71,9 @@ export async function resistanceDisease(rollData, vector, actor, chatData){
   const disease = chatData?.disease
   if (!disease) return
   rollData = await resistanceSimple(rollData, `disease_${vector}`, actor)
-  rollData.test.title = `${game.i18n.localize(SR5.characterResistances.disease)} : ${disease.name} (${disease.power})`
+  //The card is seen by the player: the Power only shows when the world reveals diseases
+  const reveal = game.settings.get("sr5", REVEAL_DISEASES_SETTING)
+  rollData.test.title = `${game.i18n.localize(SR5.characterResistances.disease)} : ${disease.name}${reveal ? ` (${disease.power})` : ""}`
   const labels = {
     diseaseTreatment: "SR5.DISEASE_TreatmentModifier", diseaseVolunteer: "SR5.DISEASE_VolunteerModifier"
   }

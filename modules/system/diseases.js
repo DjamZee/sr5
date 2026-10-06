@@ -360,11 +360,12 @@ function isImmunodeficient(actor){
 
 /* Infecting ---------------------------------- */
 
-// The GM infects the tokens he selected or targeted with a pathogen item; with none, he ticks characters in a list
-// (a character off the scene can fall ill too)
+// The GM infects the tokens he selected with a pathogen item, or else those he targeted (never both: a token left
+// targeted would fall ill with the selected one); with none, he ticks characters in a list (off the scene too)
 export async function infectWith(item){
   if (!isActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.DISEASE_ActiveGMOnly"))
-  const picked = [...new Set([...game.user.targets, ...(canvas?.tokens?.controlled ?? [])].map(t => t.actor).filter(Boolean))]
+  const controlled = canvas?.tokens?.controlled ?? []
+  const picked = [...new Set([...(controlled.length ? controlled : game.user.targets)].map(t => t.actor).filter(Boolean))]
   const candidates = picked.length ? picked : game.actors.filter(a => a.type === "actorPc" || a.type === "actorGrunt")
   if (!candidates.length) return ui.notifications.warn(game.i18n.localize("SR5.DISEASE_NoTarget"))
   const profile = profileFromToxin(item)
