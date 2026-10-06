@@ -2606,7 +2606,7 @@ export class SR5_ActorHelper {
         if (!roller || !author || (!author.isGM && !roller.testUserPermission(author, "OWNER"))) return null
         if (weapon.parent !== roller && weapon.parent?.uuid !== roller.uuid) return null
         return {
-          card, weapon, answered: game.messages.get(data.previousMessage.messageId)?.flags?.sr5data
+          card, weapon, answered: game.messages.get(data.previousMessage.messageId)?.flags?.sr5data, messageId
         }
       }
       messageId = card.previousMessage?.messageId
@@ -2614,8 +2614,9 @@ export class SR5_ActorHelper {
     return null
   }
 
-  //The damage of an air engulf at the spirit's following phases (SR5 p. 399), from the attack card the toxin card
-  //answered (kept as damage.engulfSourceId): read on the engulfing spirit, as toxinSourceOf checks it. null when lost
+  //The damage of an air engulf at the spirit's following phases (SR5 p. 399), from the spirit's attack card (kept as
+  //damage.engulfSourceId; the defense card in between is deleted once the toxin applied): read on the engulfing spirit,
+  //as toxinSourceOf checks it. null when lost
   static async engulfDamageOf(sourceMessageId){
     const source = SR5_ActorHelper.toxinSourceOf({
       previousMessage: {

@@ -945,7 +945,8 @@ export class SR5_RollMessage {
       case "toxinEffect":
         if (messageData.damage.toxin.type === "airEngulf"){
           //Generate Resistance chat button: the damage is worked out on the engulfing spirit, never read on this card (Ivo)
-          messageData.damage.engulfSourceId = messageData.previousMessage.messageId
+          //The spirit's attack card: the defense card before this one is deleted just below
+          messageData.damage.engulfSourceId = SR5_ActorHelper.toxinSourceOf(messageData)?.messageId ?? null
           const engulf = await SR5_ActorHelper.engulfDamageOf(messageData.damage.engulfSourceId)
           let label = `${game.i18n.localize("SR5.TakeOnDamageShort")} ${game.i18n.localize("SR5.DamageValueShort")}${game.i18n.localize("SR5.Colons")} ${engulf ? `${engulf.value}${game.i18n.localize(SR5.damageTypesShort[engulf.type])}` : "?"}`
           if (engulf?.armorPenetration) label += ` / ${game.i18n.localize("SR5.ArmorPenetrationShort")}${game.i18n.localize("SR5.Colons")} ${engulf.armorPenetration}`
