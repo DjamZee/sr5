@@ -158,7 +158,7 @@ async function cleanActor(actor, source) {
  */
 export async function migrateSourceModifiers() {
   const done = {
-    actors: 0, items: 0, tokens: 0, arrays: 0
+    actors: 0, items: 0, tokens: 0, arrays: 0, failed: 0
   }
 
   for (const actor of game.actors) {
@@ -168,17 +168,24 @@ export async function migrateSourceModifiers() {
         done.actors++; done.arrays += n
       }
     } catch (err) {
+      done.failed++
       console.error(`SR5 | modifiers not cleaned for actor ${actor.name}`, err)
     }
   }
 
   const worldItems = itemUpdates(game.items.contents.map(i => i._source))
   if (worldItems.length) {
-    for (const update of worldItems) done.arrays += computedModifierPaths(game.items.get(update._id)._source.system).length
-    await Item.implementation.updateDocuments(worldItems, {
-      render: false
-    })
-    done.items = worldItems.length
+    try {
+      const arrays = worldItems.reduce((n, update) => n + computedModifierPaths(game.items.get(update._id)._source.system).length, 0)
+      await Item.implementation.updateDocuments(worldItems, {
+        render: false
+      })
+      done.items = worldItems.length
+      done.arrays += arrays
+    } catch (err) {
+      done.failed++
+      console.error("SR5 | modifiers not cleaned for the world items", err)
+    }
   }
 
   // An unlinked token keeps in its delta only what differs from its actor: cleaned when it holds such arrays
@@ -191,6 +198,7 @@ export async function migrateSourceModifiers() {
           done.tokens++; done.arrays += n
         }
       } catch (err) {
+        done.failed++
         console.error(`SR5 | modifiers not cleaned for token ${token.name} (${scene.name})`, err)
       }
     }
@@ -198,12 +206,27 @@ export async function migrateSourceModifiers() {
   return done
 }
 
-// Ready hook: the active GM runs it once per world
+// Ready hook: the active GM runs it once per world. Put off while a combat is under way: every actor
+// written moves through the combat hooks. Marked done only when nothing failed, so a failure is taken
+// up again at the next load (the cleaning is idempotent).
 export async function runSourceModifiersMigration() {
   if (!game.user.isGM || game.users.activeGM?.id !== game.user.id) return
   if ((Number(game.settings.get("sr5", "sourceModifiersMigration")) || 0) >= SOURCE_MODIFIERS_MIGRATION) return
+  if (game.combats?.some(combat => combat.started)) {
+    ui.notifications.warn(game.i18n.localize("SR5.WARN_SourceModifiersDeferred"), {
+      permanent: true
+    })
+    return
+  }
+  ui.notifications.info(game.i18n.localize("SR5.INFO_SourceModifiersRunning"))
   const done = await migrateSourceModifiers()
+  SR5_SystemHelpers.srLog(1, `Computed modifiers emptied in the source: ${done.arrays} arrays (${done.actors} actors, ${done.items} items, ${done.tokens} tokens, ${done.failed} failed)`)
+  if (done.failed) {
+    ui.notifications.warn(game.i18n.format("SR5.WARN_SourceModifiersFailed", done), {
+      permanent: true
+    })
+    return
+  }
   await game.settings.set("sr5", "sourceModifiersMigration", SOURCE_MODIFIERS_MIGRATION)
-  SR5_SystemHelpers.srLog(1, `Computed modifiers emptied in the source: ${done.arrays} arrays (${done.actors} actors, ${done.items} items, ${done.tokens} tokens)`)
   if (done.arrays) ui.notifications.info(game.i18n.format("SR5.INFO_SourceModifiersCleaned", done))
 }

@@ -237,9 +237,11 @@ describe("the world migration", () => {
     globalThis.game.i18n ??= {
     }
     globalThis.game.i18n.format = key => key
+    globalThis.game.combats = []
+    globalThis.game.i18n.localize = key => key
     globalThis.ui = {
       notifications: {
-        info: vi.fn()
+        info: vi.fn(), warn: vi.fn()
       }
     }
     globalThis.Item = {
@@ -269,7 +271,7 @@ describe("the world migration", () => {
     // The linked token is its actor: not written a second time
     expect(pc.update).toHaveBeenCalledTimes(1)
     expect(done).toEqual({
-      actors: 1, items: 1, tokens: 1, arrays: 4 + 1 + 1 + 1
+      actors: 1, items: 1, tokens: 1, arrays: 4 + 1 + 1 + 1, failed: 0
     })
   })
 
@@ -289,5 +291,34 @@ describe("the world migration", () => {
 
     await runSourceModifiersMigration()
     expect(actors[0].update).toHaveBeenCalledTimes(1)
+  })
+
+  it("is put off while a combat is under way, and runs once it is over", async () => {
+    globalThis.game.combats = [{
+      started: true
+    }]
+    await runSourceModifiersMigration()
+    expect(actors[0].update).not.toHaveBeenCalled()
+    expect(settings["sr5.sourceModifiersMigration"]).toBe(0)
+    expect(globalThis.ui.notifications.warn).toHaveBeenCalledWith("SR5.WARN_SourceModifiersDeferred", expect.anything())
+
+    globalThis.game.combats = [{
+      started: false
+    }]
+    await runSourceModifiersMigration()
+    expect(actors[0].update).toHaveBeenCalledTimes(1)
+    expect(settings["sr5.sourceModifiersMigration"]).toBe(SOURCE_MODIFIERS_MIGRATION)
+  })
+
+  it("is not marked done when an actor failed: the next load takes it up again", async () => {
+    actors[0].update.mockRejectedValueOnce(new Error("refused"))
+    vi.spyOn(console, "error").mockImplementation(() => {})
+    await runSourceModifiersMigration()
+    expect(settings["sr5.sourceModifiersMigration"]).toBe(0)
+    expect(globalThis.ui.notifications.warn).toHaveBeenCalled()
+
+    await runSourceModifiersMigration()
+    expect(actors[0].update).toHaveBeenCalledTimes(2)
+    expect(settings["sr5.sourceModifiersMigration"]).toBe(SOURCE_MODIFIERS_MIGRATION)
   })
 })
