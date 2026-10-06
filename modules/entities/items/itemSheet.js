@@ -337,6 +337,12 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       delete submitData['system.damageElement']
       delete submitData['system.damageElementSecond']
     }
+    //The form only holds the fields of the accessories chosen from the list (name, slot, free): it rewrote the
+    //whole list from them, dropping a mounted item accessory and the price and effects of the others
+    const formAccessory = foundry.utils.getProperty(submitData, 'system.accessory')
+    if (formAccessory && typeof formAccessory === 'object') {
+      foundry.utils.setProperty(submitData, 'system.accessory', SR5_UtilityItem.mergeAccessoryForm(this.item._source.system?.accessory, formAccessory))
+    }
     return submitData
   }
 
@@ -821,7 +827,8 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
 
     if (action === "delete") {
       const li = a.closest(".subItemManagement")
-      let removed = foundry.utils.duplicate(this.item.system[target])
+      //An accessory list is written back from its stored entries, not from the prepared copies of the mounted items
+      let removed = foundry.utils.duplicate(target === "accessory" ? this.item._source.system.accessory : this.item.system[target])
       if (typeof removed === "object") { removed = Object.values(removed) }
       let [gone] = removed.splice(Number(li.dataset.key), 1)
       await this.item.update({

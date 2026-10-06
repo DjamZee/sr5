@@ -2632,6 +2632,20 @@ export class SR5_UtilityItem extends Actor {
     item.system.isPlugged = !!host
   }
 
+  //The stored accessory list with the fields a sheet's form holds (name, slot, free) written over it, by index: the
+  //form has no field for a mounted item accessory, nor for the price and effects of the others
+  static mergeAccessoryForm(stored, formAccessory){
+    let merged = foundry.utils.deepClone(stored ?? [])
+    if (!Array.isArray(merged)) merged = Object.values(merged)
+    for (const [i, entry] of Object.entries(formAccessory ?? {
+    })) {
+      if (!entry) continue
+      if (merged[i] && typeof merged[i] === "object") Object.assign(merged[i], entry)
+      else merged[i] = entry
+    }
+    return merged
+  }
+
   //An accessory taken off its host with the bin is free again, unless another host still carries it
   static async unplugRemovedAccessory(actor, accessoryId){
     let item = actor?.items.get(accessoryId)
