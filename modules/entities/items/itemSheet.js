@@ -2,7 +2,7 @@ import {
   SR5FactionRegistry
 } from "../../interface/faction-registry.js"
 import {
-  canEditItemEffects, keepUnlistedEffectFields, lockEffectFields
+  canEditItemEffects, clearTargetsOnCategoryChange, keepUnlistedEffectFields, lockEffectFields
 } from "../../system/effect-editor.js"
 import {
   SR5 
@@ -346,6 +346,8 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     if (formAccessory && typeof formAccessory === 'object') {
       foundry.utils.setProperty(submitData, 'system.accessory', SR5_UtilityItem.mergeAccessoryForm(this.item._source.system?.accessory, formAccessory))
     }
+    //An effect whose category changed loses the target of the old category, even one kept as "(not in the list)"
+    clearTargetsOnCategoryChange(submitData, this.item._source.system)
     return submitData
   }
 

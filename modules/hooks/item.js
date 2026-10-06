@@ -5,7 +5,7 @@ import {
   GM_ONLY_ITEM_PATHS, stripGMOnlyChanges
 } from '../entities/items/spirit-bonds.js'
 import {
-  gmOnlyItemEffects, stripEffectChanges, touchesItemEffects
+  gmOnlyItemEffects, isSystemEffectWrite, stripEffectChanges, touchesItemEffects
 } from '../system/effect-editor.js'
 import {
   WEAPON_ACCESSORY_CATALOG
@@ -70,9 +70,9 @@ function _copyAmmoTypeEffects(ammoTypeSystem) {
 }
 
 // When an itemAmmunition's ammunitionTypeUuid changes, copy effects from the referenced type
-export function sr5HookPreUpdateItem(document, data, _options, userId) {
+export function sr5HookPreUpdateItem(document, data, options, userId) {
   //The effects of an item are the gamemaster's when the world says so (G14): refused to a player before writing
-  if (!game.user?.isGM && userId === game.user?.id && gmOnlyItemEffects() && stripEffectChanges(data, document._source?.system)) {
+  if (!game.user?.isGM && userId === game.user?.id && !isSystemEffectWrite(options) && gmOnlyItemEffects() && stripEffectChanges(data, document._source?.system)) {
     ui.notifications.warn(game.i18n.localize('SR5.WARN_ItemEffectsGMOnly'))
   }
   //The Elemental trait of a spirit is the gamemaster's (Forbidden Arcana p. 175): refused to a player before writing
@@ -108,10 +108,10 @@ export function sr5HookPreUpdateItem(document, data, _options, userId) {
   }
 }
 
-export async function sr5HookUpdateItem(document, data, _options, userId) {
+export async function sr5HookUpdateItem(document, data, options, userId) {
   await sr5HookItemVision(document, userId)
   //A player's client can be made to skip the refusal above: the active gamemaster is told when effects changed anyway
-  if (game.users?.activeGM?.isSelf && gmOnlyItemEffects() && !game.users.get(userId)?.isGM && touchesItemEffects(data)) {
+  if (game.users?.activeGM?.isSelf && !isSystemEffectWrite(options) && gmOnlyItemEffects() && !game.users.get(userId)?.isGM && touchesItemEffects(data)) {
     ui.notifications.warn(game.i18n.format('SR5.WARN_ItemEffectsChangedByPlayer', {
       user: game.users.get(userId)?.name ?? userId, item: document.name, actor: document.parent?.name ?? ""
     }), {

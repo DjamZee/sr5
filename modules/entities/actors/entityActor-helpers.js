@@ -5,6 +5,9 @@ import {
   SR5_Toxins
 } from "../items/toxins.js"
 import {
+  systemEffectWrite
+} from "../../system/effect-editor.js"
+import {
   relayNeedsConfirmation
 } from "../../system/damage-relay.js"
 import {
@@ -631,7 +634,7 @@ export class SR5_ActorHelper {
       itemEffects.push(armorEffect)
       await actor.updateEmbeddedDocuments("Item", [{
         _id: armor.id, "system.itemEffects": itemEffects
-      }])
+      }], systemEffectWrite())
       ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_AcidReduceArmor", {
         armor: armor.name
       })}`)
@@ -1739,7 +1742,7 @@ export class SR5_ActorHelper {
         }
         if (needUpdate) await i.update({
           "system": dataToUpdate
-        })
+        }, systemEffectWrite())
       }
     }
   }
@@ -2481,7 +2484,7 @@ export class SR5_ActorHelper {
             itemEffects.push(effectItem)
             await actor.updateEmbeddedDocuments("Item", [{
               _id: itemToUpdate.id, "system.itemEffects": itemEffects
-            }])
+            }], systemEffectWrite())
           }
         }
       }

@@ -10,7 +10,7 @@ vi.hoisted(() => {
 
 import {
   calledShotItemBonus, easeCalledShotPenalty, effectsChangedBy, stripEffectChanges, canEditItemEffects,
-  keepUnlistedEffectFields, lockEffectFields, CALLED_SHOT_ITEM_KEYS
+  keepUnlistedEffectFields, lockEffectFields, CALLED_SHOT_ITEM_KEYS, systemEffectWrite, clearTargetsOnCategoryChange
 } from '../modules/system/effect-editor.js'
 import {
   handleMartialArtsCalledShot
@@ -244,6 +244,108 @@ describe("an effect target missing from the lists (greyMana, 06/10)", () => {
   })
 })
 
+describe("the system's own writes, made on a player's client (Gustave's review)", () => {
+  afterEach(() => { delete globalThis.game; delete globalThis.ui })
+  const setup = () => {
+    globalThis.game = {
+      user: {
+        id: "player", isGM: false
+      }, settings: {
+        get: () => true
+      }, i18n: {
+        localize: k => k
+      }
+    }
+    globalThis.ui = {
+      notifications: {
+        warn: vi.fn()
+      }
+    }
+  }
+  const armor = {
+    type: "itemArmor", _source: {
+      system: {
+        customEffects: [], itemEffects: [], systemEffects: []
+      }
+    }
+  }
+  const acid = () => ({
+    "system.itemEffects": [{
+      target: "system.armorValue", type: "value", value: -1
+    }]
+  })
+
+  it("lets an effect written by the system through (acid on the armor, Apply to item)", async () => {
+    setup()
+    const {
+      sr5HookPreUpdateItem
+    } = await import('../modules/hooks/item.js')
+    const changes = acid()
+    sr5HookPreUpdateItem(armor, changes, systemEffectWrite(), "player")
+    expect(changes["system.itemEffects"]).toHaveLength(1)
+    expect(ui.notifications.warn).not.toHaveBeenCalled()
+  })
+
+  it("still refuses the player's own write", async () => {
+    setup()
+    const {
+      sr5HookPreUpdateItem
+    } = await import('../modules/hooks/item.js')
+    const changes = acid()
+    sr5HookPreUpdateItem(armor, changes, {
+    }, "player")
+    expect(changes["system.itemEffects"]).toBeUndefined()
+    expect(ui.notifications.warn).toHaveBeenCalled()
+  })
+
+  it("is marked at every place where the system writes the effects of an existing item", async () => {
+    const fs = await import('node:fs')
+    const marked = {
+      'modules/entities/actors/entityActor-helpers.js': 3,
+      'modules/system/srcombat.js': 1,
+      'modules/entities/items/mentor-conversion.js': 2,
+    }
+    for (const [file, count] of Object.entries(marked)) {
+      expect(fs.readFileSync(file, 'utf8').split('systemEffectWrite()').length - 1, file).toBe(count)
+    }
+  })
+})
+
+describe("a category changed in the sheet (Gustave's review)", () => {
+  const source = {
+    customEffects: [{
+      category: "astralValues", target: "system.magic.cibleInconnue", type: "value", value: 1
+    }]
+  }
+  it("drops the old target, which belongs to the old category", () => {
+    const submit = {
+      system: {
+        customEffects: {
+          0: {
+            category: "skills", target: "system.magic.cibleInconnue", value: 1
+          }
+        }
+      }
+    }
+    clearTargetsOnCategoryChange(submit, source)
+    expect(submit.system.customEffects[0].target).toBe("")
+  })
+  it("keeps a target unknown in its own, unchanged category", () => {
+    const submit = {
+      "system.customEffects.0.category": "astralValues", "system.customEffects.0.target": "system.magic.cibleInconnue"
+    }
+    clearTargetsOnCategoryChange(submit, source)
+    expect(submit["system.customEffects.0.target"]).toBe("system.magic.cibleInconnue")
+  })
+  it("drops it in the dotted form too", () => {
+    const submit = {
+      "system.customEffects.0.category": "skills", "system.customEffects.0.target": "system.magic.cibleInconnue"
+    }
+    clearTargetsOnCategoryChange(submit, source)
+    expect(submit["system.customEffects.0.target"]).toBe("")
+  })
+})
+
 describe("locked fields", () => {
   it("are disabled, and the add, delete and copy controls removed", () => {
     const field = {
@@ -258,5 +360,17 @@ describe("locked fields", () => {
     lockEffectFields(root)
     expect(field.disabled).toBe(true)
     expect(control.remove).toHaveBeenCalled()
+  })
+})
+
+describe("the options of a system write", () => {
+  it("are a new object each time, which Foundry may write into", () => {
+    const a = systemEffectWrite()
+    a.parent = {
+    }
+    expect(systemEffectWrite()).toEqual({
+      sr5SystemEffect: true
+    })
+    expect(Object.isExtensible(systemEffectWrite())).toBe(true)
   })
 })

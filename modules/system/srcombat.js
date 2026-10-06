@@ -8,8 +8,11 @@ import {
   SR5_EntityHelpers 
 } from "../entities/helpers.js"
 import {
-  SR5_SocketHandler 
+  SR5_SocketHandler
 } from "../socket.js"
+import {
+  systemEffectWrite
+} from "./effect-editor.js"
 import {
   SR5_PrepareRollTest 
 } from "../rolls/roll-prepare.js"
@@ -961,7 +964,7 @@ export class SR5Combat extends Combat {
             }
             await actor.updateEmbeddedDocuments("Item", [{
               _id: armor.id, "system.itemEffects": itemEffects
-            }])
+            }], systemEffectWrite())
             ui.notifications.info(`${combatant.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_AcidReduceArmor", {
               armor: armor.name
             })}`)

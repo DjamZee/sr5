@@ -5,7 +5,7 @@
 export const EFFECT_BINDINGS = ["customEffects", "itemEffects", "systemEffects"]
 
 // Called shots an item can ease, outside the martial arts techniques (category "martialArts" keeps those):
-// Attaque violente (SR5 p. 196), Prouesse (SR5 p. 197), Partager les dommages (Run & Gun p. 126), the ammo called shots
+// Attaque violente (SR5 p. 196), Prouesse (SR5 p. 197), Partager les dommages (SR5 p. 196), the ammo called shots
 // (Run & Gun p. 129-132) and the vehicle locations (Run & Gun p. 128-129). Tir transperçant is left out: its penalty
 // is the target's armor, not a book penalty.
 export const CALLED_SHOT_ITEM_KEYS = [
@@ -28,6 +28,39 @@ export function calledShotItemBonus(itemModifiers, calledShot, location){
 export function easeCalledShotPenalty(penalty, bonus){
   if (!(bonus > 0) || !(penalty < 0)) return penalty
   return Math.min(0, penalty + bonus)
+}
+
+// The update option the system puts on its own writes of an item's effects (acid eating an armor, Apply to item, a
+// linked effect removed, the mentor conversion): made on a player's client, they are not the player's edits. An option
+// can be forged from the console like any write: the setting is a comfort, the gamemaster is warned of what gets through
+// A new object at each call: Foundry writes into the options it is given (operation.parent), a shared or frozen one
+// broke the update (measured 06/10: "Cannot add property parent, object is not extensible")
+export const systemEffectWrite = () => ({
+  sr5SystemEffect: true
+})
+export const isSystemEffectWrite = options => !!options?.sr5SystemEffect
+
+// A category changed in the sheet: the target chosen in the old category means nothing in the new one, and is dropped
+// (it used to be by accident, the old target being missing from the new list). Without this, a target missing from
+// the lists would be kept as "(not in the list)" across the change.
+export function clearTargetsOnCategoryChange(submit, sourceSystem){
+  for (const binding of EFFECT_BINDINGS){
+    const stored = asList(sourceSystem?.[binding])
+    const nested = submit?.system?.[binding]
+    if (nested && typeof nested === "object") {
+      for (const [i, entry] of Object.entries(nested)){
+        if (entry && "category" in entry && entry.category !== stored[i]?.category && "target" in entry) entry.target = ""
+      }
+    }
+    for (const key of Object.keys(submit ?? {
+    })){
+      const match = key.match(new RegExp(`^system\\.${binding}\\.(\\d+)\\.category$`))
+      if (!match) continue
+      const targetKey = `system.${binding}.${match[1]}.target`
+      if (submit[key] !== stored[match[1]]?.category && targetKey in submit) submit[targetKey] = ""
+    }
+  }
+  return submit
 }
 
 // Does an update write one of the effect lists? Nested ({system: {customEffects}}) or dotted ("system.customEffects.0.value")

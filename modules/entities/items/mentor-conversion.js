@@ -4,6 +4,9 @@
 import {
   mentorLinkWarnings, planMentorConversion, planMentorRevert, CONVERSION_FLAG
 } from "./mentor-link.js"
+import {
+  systemEffectWrite
+} from "../../system/effect-editor.js"
 
 const plainItems = actor => actor.items.map(i => ({
   id: i.id, type: i.type, name: i.name, system: i.system, flags: i.flags
@@ -95,7 +98,7 @@ export async function convertMentorQualities(options = {
       [`flags.sr5.${CONVERSION_FLAG}`]: {
         ...l.original, createdMentor: !!l.mentorKey
       },
-    })))
+    })), systemEffectWrite())
     const reused = [...new Set(plan.link.filter(l => l.mentorId).map(l => actor.items.get(l.mentorId)?.name).filter(Boolean))]
     lines.push(game.i18n.format("SR5.MentorConversionLine", {
       actor: actor.name,
@@ -122,7 +125,7 @@ export async function revertMentorConversion(options = {
       "system.customEffects": r.customEffects,
       "system.linkedMentor": "",
       [`flags.sr5.-=${CONVERSION_FLAG}`]: null,
-    })))
+    })), systemEffectWrite())
     const removed = plan.remove.map(id => actor.items.get(id)?.name).filter(Boolean)
     const ids = plan.remove.filter(id => actor.items.has(id))
     if (ids.length) await actor.deleteEmbeddedDocuments("Item", ids)

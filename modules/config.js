@@ -2200,7 +2200,7 @@ SR5.calledShotsMartialArts = {
 }
 
 // Called shots any item can ease, outside the martial arts techniques (effect category "calledShots", system/effect-editor.js):
-// SR5 p. 196-197, Run & Gun p. 126 and p. 128-132
+// SR5 p. 196-197, Run & Gun p. 128-132
 SR5.calledShotsItems = {
   harderKnock           : "SR5.CS_HarderKnock",
   trickShot             : "SR5.CS_TrickShot",
