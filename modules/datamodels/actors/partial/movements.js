@@ -84,6 +84,8 @@ export class characterMovementsPartialModel extends foundry.abstract.TypeDataMod
           ...movementSchema("physicalLimit") 
         }),
       }),
+      // The movement boxes ticked on the sheet (roll-helpers/situational.js, situationalMovement): item id and effect key
+      movementSituationalOn: new fields.ArrayField(new fields.StringField()),
     }
   }
 }

@@ -598,7 +598,7 @@
 					</div>
 				</div>
 
-				{{#if (and (or (eq type 'value') (eq type 'rating') (eq type 'hits')) (or situational (situationalReadable target)))}}
+				{{#if (and (or (eq type 'value') (eq type 'rating') (eq type 'hits')) (or situational (situationalReadable target) (situationalMovement target)))}}
 				<!-- SITUATIONAL (SR5 p. 462, Chrome Flesh p. 160-172): offered in the roll dialog instead of applied,
 				     only for the targets a roll dialog reads -->
 				<div class="col-3 SR-PaddingRight5" data-title="{{localize 'SR5.SituationalEffectHint'}}">
@@ -606,7 +606,11 @@
 				</div>
 				<div class="col-9">
 					{{#if situational}}
-						{{#if (situationalReadable target)}}
+						{{#if (situationalMovement target)}}
+						<!-- Dark Terrors p. 180: a box of the movement block of the sheet, labelled by the item and this text -->
+						<input type="text" data-dtype="String" name="system.customEffects.{{@key}}.when" value="{{when}}" placeholder="{{localize 'SR5.SituationalMovementWhen'}}">
+						<div class="SR-SubColor"><em>{{localize 'SR5.SituationalMovementHint'}}</em></div>
+						{{else if (situationalReadable target)}}
 						<input type="text" data-dtype="String" name="system.customEffects.{{@key}}.when" value="{{when}}" placeholder="{{localize 'SR5.SituationalWhen'}}">
 						<!-- The Complete Trog p. 179: the box ticks itself when the target's metatype matches -->
 						<div class="flexrow" data-title="{{localize 'SR5.SituationalTargetMetatypeHint'}}">

@@ -32,7 +32,8 @@ import {
   limitAttributeValue
 } from "./poolOnlyAttribute.js"
 import {
-  situationalValue, isRollTestsTarget, ROLL_TESTS_PREFIX, SITUATIONAL_PREFIX, attributeRedirect, situationalReadable
+  situationalValue, isRollTestsTarget, ROLL_TESTS_PREFIX, SITUATIONAL_PREFIX, attributeRedirect, situationalReadable,
+  situationalMovement, movementEffectKey, movementEffectOn
 } from "../../rolls/roll-helpers/situational.js"
 import {
   isIndirect, indirectEffectOf
@@ -5160,7 +5161,7 @@ export class SR5_CharacterUtility extends Actor {
     const mentorPath = item.type === "itemMentorSpirit" ? mentorPathFor(actor.system.magic?.magicType, itemData.mysticPath) : null
     const mentorMagicValue = item.type === "itemMentorSpirit" ? mentorMagic(actor.system.specialAttributes?.magic, actor.system.essence, SR5ShopGrades.greywareMagicPenalty(actor.items)) : 0
 
-    for (let customEffect of Object.values(itemData.customEffects)) {
+    for (let [effectKey, customEffect] of Object.entries(itemData.customEffects)) {
       let skipCustomEffect = false,
         cumulative = customEffect.cumulative,
         isMultiplier = false
@@ -5194,8 +5195,18 @@ export class SR5_CharacterUtility extends Actor {
         continue
       }
 
+      // A situational effect on a movement rate (Dark Terrors p. 180): a box of the movement block, applied while ticked
+      if (!skipCustomEffect && customEffect.situational && situationalMovement(customEffect.target)) {
+        let key = movementEffectKey(item.id, effectKey)
+        let on = movementEffectOn(actor.system.movementSituationalOn, key)
+        if (!actor.movementSituational) actor.movementSituational = []
+        actor.movementSituational.push({
+          key, source: item.name, when: customEffect.when || "", on
+        })
+        if (!on) continue
+      }
       // Situational effects and effects on tests linked to an attribute are offered at roll time
-      if (!skipCustomEffect && (customEffect.situational || isRollTestsTarget(customEffect.target))) {
+      else if (!skipCustomEffect && (customEffect.situational || isRollTestsTarget(customEffect.target))) {
         SR5_CharacterUtility.registerSituationalEffect(item, actor, customEffect)
         continue
       }

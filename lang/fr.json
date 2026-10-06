@@ -2694,6 +2694,8 @@
 	"SR5.SituationalEffectHint": "Effet qui ne vaut que dans une situation : il n'est pas appliqué sur la fiche, il est proposé comme une case à cocher dans la fenêtre de jet.",
 	"SR5.SituationalWhen": "Quand ? (ex. contre les toxines inhalées, de nuit)",
 	"SR5.SituationalUnread": "Aucune fenêtre de jet ne lit cette cible : l'effet circonstanciel ne sera jamais proposé. Choisissez une compétence, une Limite, une défense, une résistance, ou « Jets ».",
+	"SR5.SituationalMovementWhen": "Quand ? (ex. course à quatre pattes, mains libres)",
+	"SR5.SituationalMovementHint": "Effet de déplacement : il devient une case du bloc Déplacement de la fiche, et ne compte que lorsqu'elle est cochée.",
 	"SR5.SituationalHint":"Effet circonstanciel : à cocher seulement si la situation s'applique.",
 	"SR5.LimitBase": "Limite de base",
 	"SR5.LimitModifiers": "Modificateurs de limite",

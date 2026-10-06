@@ -89,6 +89,9 @@ import {
 import {
   infectionStatus, tryInfection
 } from "../../system/infection.js"
+import {
+  movementBoxes, toggleMovementBox
+} from "../../rolls/roll-helpers/situational.js"
 
 /**
  * Extend the basic ActorSheet class to do all the SR5 things!
@@ -274,6 +277,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     context.hunger = game.user.isGM && canHunger(this.actor) ? hungerStatus(this.actor) : null
     //Infection (SR5 p. 401): the GM tries it on a victim drained to 0, or sees when the coma ends
     context.infection = infectionStatus(this.actor)
+    //Situational effects on a movement rate (Dark Terrors p. 180): a box per item and situation, ticked by the owner
+    context.movementBoxes = movementBoxes(this.actor.movementSituational).map(b => ({
+      ...b, keysAttr: b.keys.join(" ")
+    }))
 
     context.storageViewIsGrid = game.settings.get("sr5", "sr5StorageViewMode") !== "list"
     //The clinch button of the martial arts block (Run & Gun p. 133) exists only with the grappling rules
@@ -375,6 +382,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
 
     //Essence Loss (SR5 p. 403): the GM starts or stops the clock, or brings it one week closer by hand
+    element.querySelectorAll("[data-sr5-movement-box]").forEach(b => b.addEventListener("change", (event) => {
+      const keys = event.currentTarget.dataset.sr5MovementBox.split(" ")
+      this.actor.update({
+        "system.movementSituationalOn": toggleMovementBox(this.actor.system.movementSituationalOn, keys, event.currentTarget.checked)
+      })
+    }))
     element.querySelectorAll("[data-sr5-infection-try]").forEach(b => b.addEventListener("click", (event) => {
       event.preventDefault()
       tryInfection(this.actor)

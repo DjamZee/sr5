@@ -383,6 +383,8 @@ export class SR5Actor extends Actor {
     this.situationalEffects = []
     // So are the effects on other actors' rolls (roll-helpers/indirect.js)
     this.indirectEffects = []
+    // And the movement boxes of the sheet (situationalMovement)
+    this.movementSituational = []
     this.prepareBaseData()
     this.prepareEmbeddedDocuments() // first pass on items to add bonuses from the items to the characters
     this.prepareDerivedData()

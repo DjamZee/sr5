@@ -8,7 +8,7 @@ import {
   SR5_EntityHelpers 
 } from "./entities/helpers.js"
 import {
-  situationalReadable
+  situationalReadable, situationalMovement
 } from "./rolls/roll-helpers/situational.js"
 
 export const registerHandlebarsHelpers = function () {
@@ -16,6 +16,11 @@ export const registerHandlebarsHelpers = function () {
   // Whether a roll dialog reads this effect target, so that a situational effect on it is offered
   Handlebars.registerHelper("situationalReadable", function (target) {
     return situationalReadable(target)
+  })
+
+  // Whether a situational effect on this target is a box of the movement block of the sheet (Dark Terrors p. 180)
+  Handlebars.registerHelper("situationalMovement", function (target) {
+    return situationalMovement(target)
   })
 
   // if equal

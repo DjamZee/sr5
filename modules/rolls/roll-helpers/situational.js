@@ -63,6 +63,45 @@ export function situationalValue(customEffect, itemData){
   return base * multiplier
 }
 
+// A situational effect on a movement rate (Dark Terrors p. 180, Feral Run: "when it moves this way"): no roll reads it.
+// It is shown as a box in the movement block of the sheet, and counts in the movement while its box is ticked
+const MOVEMENT_TARGET = /^system\.movements\.[^.]+\.(movement|extraMovement|maximum|multiplier)$/
+
+export function situationalMovement(target){
+  return typeof target === "string" && MOVEMENT_TARGET.test(target)
+}
+
+// The key of the box of one effect of one item, as kept in the actor's list of ticked boxes
+export function movementEffectKey(itemId, effectKey){
+  return `${itemId}.${effectKey}`
+}
+
+// Whether the box of that effect is ticked
+export function movementEffectOn(ticked, key){
+  return Array.isArray(ticked) && ticked.includes(key)
+}
+
+// The boxes of the movement block: one per item and situation, so that Feral Run, which raises both walking and running,
+// shows one box. A box is ticked when all its effects are
+export function movementBoxes(effects){
+  const boxes = []
+  for (const e of effects || []){
+    let box = boxes.find(b => b.source === e.source && b.when === e.when)
+    if (!box) boxes.push(box = {
+      source: e.source, when: e.when, keys: [], on: true
+    })
+    box.keys.push(e.key)
+    box.on = box.on && !!e.on
+  }
+  return boxes
+}
+
+// The list of ticked boxes once a box is ticked (all its keys) or unticked (none of them)
+export function toggleMovementBox(ticked, keys, on){
+  const list = (Array.isArray(ticked) ? ticked : []).filter(k => !keys.includes(k))
+  return on ? list.concat(keys) : list
+}
+
 export function isRollTestsTarget(target){
   return typeof target === "string" && target.startsWith(ROLL_TESTS_PREFIX)
 }
