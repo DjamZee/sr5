@@ -2050,7 +2050,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         if (game.user.isGM) {
           controlerList[a.id] = a.name
         } else {
-          if (a.hasPlayerOwner) controlerList[a.id] = a.name
+          //A player hands the drone to their own character, not to another player's
+          if (a.isOwner) controlerList[a.id] = a.name
         }
       }
     }
