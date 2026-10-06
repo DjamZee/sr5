@@ -104,6 +104,9 @@ import {
   seedOverwatch, sr5HookOverwatchDrop, sr5HookPreUpdateTokenOverwatch, sr5HookPreUpdateActorDeltaOverwatch,
   sr5HookUpdateTokenOverwatch
 } from './system/overwatch-guard.js'
+import {
+  registerEssenceHoleHooks
+} from './system/essence-hole.js'
 
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
@@ -205,4 +208,6 @@ Hooks.on('createActiveEffect', (effect) => {
 Hooks.on('canvasReady', () => SR5SharedVision.checkViewers())
 // Locked storages: the other players' rights follow the lock (SR5 p. 365)
 SR5StorageLock.registerHooks()
+// Faille d'Essence (Chrome Flesh p. 74): the active GM keeps the hole a removed implant leaves
+registerEssenceHoleHooks()
 for (const hook of ['createActor', 'deleteActor', 'createToken', 'deleteToken', 'canvasReady']) Hooks.on(hook, sr5HookResetJumpedInRiggers)

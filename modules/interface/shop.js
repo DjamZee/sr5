@@ -508,7 +508,9 @@ export class SR5Shop {
     if (typeof current !== 'number') return true
     const {
       essence
-    } = essenceAfterPurchase(current, actor.items, lines)
+    } = essenceAfterPurchase(current, actor.items, lines, {
+      creation: SR5Shop.creationMode, hole: actor.system.essence.hole
+    })
     if (essence > 0 || essence >= current) return true
     const data = {
       name: actor.name, essence: essence.toLocaleString()

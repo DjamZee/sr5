@@ -33,6 +33,10 @@ export class sr5ItemQualityDataModel extends foundry.abstract.TypeDataModel {
       masteryOption: new fields.StringField({
         initial: "", blank: true
       }),
+      // Prototype de transhumain (Chrome Flesh p. 57): the Essence of bioware it gives, the gamemaster's alone
+      transhumanEssence: new fields.NumberField({
+        initial: 1, min: 0
+      }),
     }
   }
 }

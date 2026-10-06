@@ -8,7 +8,7 @@ import {
   SR5_UtilityItem
 } from "./utilityItem.js"
 import {
-  screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED
+  screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED, installationFlags, stripSystemFields, GM_ONLY_FIELDS
 } from "../../system/implant-essence.js"
 import {
   SR5_CharacterUtility 
@@ -85,12 +85,29 @@ export class SR5Item extends Item {
     await super._preCreate(data, options, user)
     // An item exported prepared, or dragged from a prepared sheet, arrives without its computed modifiers
     cleanCreatedSource(this)
+    // Chrome Flesh (séance G, G16, G19): Adapsine and Prototype de transhumain read on the body at the installation
+    if (this.type === "itemAugmentation" && this.parent instanceof Actor) {
+      const flags = installationFlags(this.parent, this.system, {
+        isGM: game.user.isGM, creation: game.settings.get("sr5", "sr5ShopCreationMode") === true
+      })
+      this.updateSource(Object.fromEntries(Object.entries(flags).map(([key, value]) => [`system.${key}`, value])))
+    } else if (!game.user.isGM && this.type === "itemQuality") this.updateSource({
+      "system.transhumanEssence": 1
+    })
     const defaultImg = `systems/sr5/assets/img/items/${data.type}.svg`
     if (!data.img || data.img === "icons/svg/item-bag.svg") {
       this.updateSource({
         img: defaultImg 
       })
     }
+  }
+
+  async _preUpdate(changes, options, user) {
+    // Chrome Flesh (séance G): the Adapsine box, the lot and Prototype de transhumain's counter are the gamemaster's
+    if (!game.user.isGM && stripSystemFields(changes, GM_ONLY_FIELDS[this.type], this._source.system).length) {
+      ui.notifications?.warn(game.i18n.localize("SR5.WARN_GMOnlyField"))
+    }
+    return super._preUpdate(changes, options, user)
   }
 
   prepareData() {

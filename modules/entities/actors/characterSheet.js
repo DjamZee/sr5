@@ -28,6 +28,9 @@ import {
 import {
   SR5FactionsApp
 } from "../../interface/factions-app.js"
+import {
+  clearEssenceHole
+} from "../../system/essence-hole.js"
 
 /**
  * An Actor sheet for player character type actors in the Shadowrun 5 system.
@@ -63,6 +66,10 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     actions: {
       // Faction Reputation, gamemaster's window (Cutting Aces p. 156)
       openFactions: () => SR5FactionsApp.open(),
+      // Faille d'Essence (Chrome Flesh p. 74): the gamemaster closes a hole left by mistake
+      clearEssenceHole: function () {
+        return clearEssenceHole(this.actor)
+      },
     },
   }
 
@@ -89,6 +96,8 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     // Faction Reputation (Cutting Aces p. 157): read here, written by the gamemaster's window only
     context.factionStanding = SR5FactionRegistry.standing(this.actor.id)
     context.isGM = game.user.isGM
+    // Faille d'Essence (Chrome Flesh p. 74): derived, so not in the plain copy of the actor
+    context.essenceHole = this.actor.system.essence?.hole ?? 0
     // Spirit Domination (Forbidden Arcana p. 176), optional rule: the leash toggle of the summoned spirits
     context.leashRule = game.settings.get("sr5", "spiritLeash")
 

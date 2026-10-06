@@ -6,8 +6,12 @@
 //   quel que soit sa conception ou son type de culture, est rejeté par le corps du personnage."
 // - Biocompatibilité (Chrome Flesh p. 56): "le coût en Essence des implants du type choisi est réduit de 10 %,
 //   arrondi au dixième inférieur", on top of the grade ("un alphaware de 0,8 […] 0,72, arrondi à 0,7").
-//
-// Adapsine (Chrome Flesh p. 165) and Prototype de transhumain (p. 57) wait for the gamemaster's ruling.
+// - Adapsine (Chrome Flesh p. 165): "réduit le coût en Essence du cyberware implanté (mais pas du bioware) de 10 %
+//   […] seulement dans le cas où vous avez déjà commencé le traitement", the percentages added to the grade's
+//   (alphaware + Adapsine = -30 %). Only the implants marked "posé sous Adapsine" (underAdapsine) get it.
+// - Lots d'augmentations (Chrome Flesh p. 96, optional rule, world setting): Essence × 0.9.
+// Arbitrage de DjamZ (séance G, G17): (grade − 10 % Adapsine) × 0.9 Biocompatibilité, ONE rounding down to the
+// tenth at the end; two decimals when neither Adapsine nor Biocompatibilité applies.
 import {
   SR5ShopGrades
 } from "../interface/shop-grades.js"
@@ -17,6 +21,21 @@ export const IMPLANT_ESSENCE_EFFECTS = {
   sensitiveSystem: "doubleEssenceCost",
   biocompatibilityCyberware: "biocompatibilityCyberware",
   biocompatibilityBioware: "biocompatibilityBioware",
+  adapsine: "adapsine",
+  transhumanPrototype: "transhumanPrototype",
+}
+
+/** The world settings of the optional rules of Chrome Flesh (séance G, G20): off by default. */
+export const ESSENCE_HOLE_SETTING = "sr5EssenceHole"
+export const AUGMENTATION_BUNDLE_SETTING = "sr5AugmentationBundles"
+
+/** Whether a world setting is on; false while the settings are not ready (tests, early preparation). */
+export function essenceSettingOn(key) {
+  try {
+    return globalThis.game?.settings?.get("sr5", key) === true
+  } catch (_err) {
+    return false
+  }
 }
 
 /**
@@ -37,13 +56,22 @@ function listOf(items) {
   return typeof items?.values === "function" ? [...items.values()] : []
 }
 
+/** The `systemEffects` of an item as a list. Raw creation data may still hold the indexed object the packs store. */
+function effectsOf(item) {
+  const raw = item?.system?.systemEffects
+  return Array.isArray(raw) ? raw : raw && typeof raw === "object" ? Object.values(raw) : []
+}
+
+/** Whether `item` carries the `systemEffects` value `value`, active or not. */
+export function itemHasEffect(item, value) {
+  return effectsOf(item).some(e => e?.value === value)
+}
+
 /** The active effects of `items` that touch implants, with the name of the item carrying each. */
 function activeEffects(items) {
   const found = []
   for (const item of listOf(items)) {
-    // Raw creation data may still hold the indexed object the packs store ({"0": {...}})
-    const raw = item?.system?.systemEffects
-    const effects = Array.isArray(raw) ? raw : raw && typeof raw === "object" ? Object.values(raw) : []
+    const effects = effectsOf(item)
     if (!effects.length || !item.system.isActive) continue
     for (const effect of effects) {
       if (Object.values(IMPLANT_ESSENCE_EFFECTS).includes(effect?.value)) found.push({
@@ -54,17 +82,37 @@ function activeEffects(items) {
   return found
 }
 
+/** Whether the body carrying `items` is under Adapsine (Chrome Flesh p. 165): an active item with the effect. */
+export function hasAdapsine(items) {
+  return activeEffects(items).some(e => e.value === IMPLANT_ESSENCE_EFFECTS.adapsine)
+}
+
 /**
  * What the body carrying `items` does to an implant of `augmentationType`.
- * @returns {{multipliers: Array<{name: string, type: string, value: number}>, roundDownTenth: boolean,
- *   rejectedBy: string|null}}
+ * @param {object} [implant] the implant itself
+ * @param {boolean} [implant.underAdapsine] posé sous Adapsine (Chrome Flesh p. 165)
+ * @param {boolean} [implant.bundle] part of a lot d'augmentations (Chrome Flesh p. 96), its world setting on
+ * @returns {{multipliers: Array<{name: string, type: string, value: number}>, gradeReduction: number,
+ *   roundDownTenth: boolean, rejectedBy: string|null}} `gradeReduction`: taken off the grade's multiplier
  */
-export function implantEssenceEffects(items, augmentationType) {
+export function implantEssenceEffects(items, augmentationType, {
+  underAdapsine = false, bundle = false
+} = {
+}) {
   const family = implantFamily(augmentationType)
   const result = {
-    multipliers: [], roundDownTenth: false, rejectedBy: null
+    multipliers: [], gradeReduction: 0, roundDownTenth: false, rejectedBy: null
   }
   if (!family) return result
+  // Added to the grade's percentage: alphaware 0.8 becomes 0.7 (Chrome Flesh p. 165)
+  if (underAdapsine && family === "cyberware") {
+    result.gradeReduction = 0.1
+    result.roundDownTenth = true
+  }
+  if (bundle) result.multipliers.push({
+    name: globalThis.game?.i18n?.localize("SR5.AugmentationBundle") ?? "augmentationBundle", type: "augmentationBundle",
+    value: 0.9
+  })
   for (const {
     value, name
   } of activeEffects(items)) {
@@ -93,9 +141,14 @@ export function roundImplantEssence(value, effects) {
   return Math.floor(hundredths / 10) / 10
 }
 
-/** The cost of an implant once graded (`gradedCost`), for the body whose `effects` these are. */
-export function implantEssence(gradedCost, effects) {
+/**
+ * The cost of an implant once graded (`gradedCost`), for the body whose `effects` these are.
+ * @param {number} [gradeMultiplier] the grade's Essence multiplier, which Adapsine lowers
+ */
+export function implantEssence(gradedCost, effects, gradeMultiplier = 1) {
   let value = Number(gradedCost) || 0
+  const reduction = effects?.gradeReduction ?? 0
+  if (reduction && gradeMultiplier > 0) value = value * Math.max(0, gradeMultiplier - reduction) / gradeMultiplier
   for (const m of effects?.multipliers ?? []) value *= m.value
   return roundImplantEssence(value, effects)
 }
@@ -106,17 +159,158 @@ export function implantEssence(gradedCost, effects) {
  * out before (screenRejectedImplants); what is left here is installed. Accessories cost no Essence, as on the
  * sheet (entityActor.js).
  */
-export function essenceAfterPurchase(essence, items, lines) {
-  let left = Number(essence) || 0
+export function essenceAfterPurchase(essence, items, lines, {
+  creation = false, hole = 0
+} = {
+}) {
+  let left = Number(essence) || 0, bioware = 0, total = 0
+  // A cyberware bought now is installed under the Adapsine the buyer already takes (Chrome Flesh p. 165)
+  const underAdapsine = hasAdapsine(items)
   for (const line of lines ?? []) {
     if (line?.type !== "itemAugmentation" || line.system?.isAccessory) continue
-    const effects = implantEssenceEffects(items, line.system?.type)
-    const graded = SR5ShopGrades.essence(line.system, line.grade ?? line.system?.grade)
-    left -= implantEssence(graded, effects) * Math.max(1, Math.floor(Number(line.quantity) || 1))
+    const grade = line.grade ?? line.system?.grade
+    const effects = implantEssenceEffects(items, line.system?.type, {
+      underAdapsine
+    })
+    const graded = SR5ShopGrades.essence(line.system, grade)
+    const cost = implantEssence(graded, effects, SR5ShopGrades.row(grade).essence) * Math.max(1, Math.floor(Number(line.quantity) || 1))
+    total += cost
+    if (implantFamily(line.system?.type) === "bioware") bioware += cost
   }
+  // Prototype de transhumain: at creation, the bioware is free up to what is left of the point
+  const gift = creation ? Math.min(bioware, transhumanGift(items)?.remaining ?? 0) : 0
+  // Faille d'Essence (its world setting on): the new implants fill the hole first (Chrome Flesh p. 74)
+  left -= Math.max(0, total - gift - Math.max(0, Number(hole) || 0))
   return {
     essence: Math.round(left * 100) / 100
   }
+}
+
+/**
+ * Prototype de transhumain (Chrome Flesh p. 57): "vous pouvez choisir jusqu'à 1 point d'Essence de bioware […] ce
+ * bioware ne vous coûte pas d'Essence", at character creation. Arbitrage de DjamZ (séance G, G19): a counter on the
+ * quality (`transhumanEssence`, 1 by default, the gamemaster's), spent by the bioware installed while the shop's
+ * creation mode is on (marked `transhumanGift` at the installation, entityItem.js), frozen once creation is over;
+ * what is left then is lost. Derived from the implants: removing a gifted bioware gives its share back.
+ * @returns {{name: string, points: number, used: number, remaining: number}|null} null without the quality
+ */
+export function transhumanGift(items) {
+  const list = listOf(items)
+  const quality = list.find(i => i?.system?.isActive &&
+    effectsOf(i).some(e => e?.value === IMPLANT_ESSENCE_EFFECTS.transhumanPrototype))
+  if (!quality) return null
+  const points = Math.max(0, Number(quality.system.transhumanEssence ?? 1) || 0)
+  let spent = 0
+  for (const item of list) {
+    if (item?.type !== "itemAugmentation" || !item.system?.transhumanGift || item.system.isAccessory) continue
+    if (implantFamily(item.system.type) === "bioware") spent += Number(item.system.essenceCost?.value) || 0
+  }
+  const used = Math.round(Math.min(spent, points) * 100) / 100
+  return {
+    name: quality.name, points, used, remaining: Math.round((points - used) * 100) / 100
+  }
+}
+
+/**
+ * Faille d'Essence (Chrome Flesh p. 74, optional rule, world setting): "Quand un implant est retiré […] cela laisse
+ * […] une « faille d'Essence » […] utilisée comme « crédit » pour tout nouvel implant". Kept on the actor by the
+ * gamemaster at each removal (essence-hole.js): the hole (`holeAmount`) and what the implants took right after it
+ * (`holeBase`). What is installed beyond that base fills the hole.
+ * @param {{holeAmount: number, holeBase: number}} essence the actor's
+ * @param {number} implantsTotal the Essence the implants take now (implantsEssenceLost)
+ */
+export function essenceHole(essence, implantsTotal) {
+  const amount = Number(essence?.holeAmount) || 0
+  if (amount <= 0) return 0
+  const filled = Math.max(0, (Number(implantsTotal) || 0) - (Number(essence?.holeBase) || 0))
+  return Math.max(0, Math.round((amount - filled) * 100) / 100)
+}
+
+/**
+ * The Essence the implants among `items` take, as the sheet counts it (entityActor.js: every implant but the
+ * accessories), less what Prototype de transhumain gives. Read on prepared items.
+ */
+export function implantsEssenceLost(items) {
+  const list = listOf(items)
+  let total = 0
+  for (const item of list) {
+    if (item?.type === "itemAugmentation" && !item.system?.isAccessory) total += Number(item.system?.essenceCost?.value) || 0
+  }
+  return Math.round((total - (transhumanGift(list)?.used ?? 0)) * 100) / 100
+}
+
+/**
+ * The fields the gamemaster alone changes once an item is installed (séance G, G16 and G19): a player's update loses
+ * them (entityItem.js, entityActor.js). Set at the installation from what the body has then, never from the data a
+ * player sends.
+ */
+export const GM_ONLY_FIELDS = {
+  itemAugmentation: ["underAdapsine", "augmentationBundle", "transhumanGift"],
+  itemQuality: ["transhumanEssence"],
+  actor: ["essence.holeAmount", "essence.holeBase"],
+}
+
+/**
+ * Removes from `changes` (an update, flat or nested) the `system` fields among `paths`.
+ * @param {object} [current] the document's system source: a field sent unchanged is removed without being counted
+ * @returns {string[]} the paths that would have changed
+ */
+export function stripSystemFields(changes, paths, current) {
+  const changed = new Set()
+  for (const path of paths ?? []) {
+    const keys = path.split(".")
+    const now = keys.reduce((obj, key) => obj?.[key], current)
+    const drop = (holder, key) => {
+      if (holder && typeof holder === "object" && Object.hasOwn(holder, key)) {
+        if (holder[key] !== now) changed.add(path)
+        delete holder[key]
+      }
+    }
+    drop(changes, `system.${path}`)
+    // A flat key under a nested system ({system: {"essence.holeAmount": 1}})
+    drop(changes?.system, path)
+    let parent = changes?.system
+    for (const key of keys.slice(0, -1)) parent = parent && typeof parent === "object" ? parent[key] : undefined
+    drop(parent, keys.at(-1))
+  }
+  return [...changed]
+}
+
+/**
+ * What an implant installed on `actor` carries from the body (séance G): posé sous Adapsine when the body already
+ * takes it (G16, cyberware only), a bioware given by Prototype de transhumain while the shop's creation mode is on
+ * and the point is not spent (G19). A player's data is never believed: the flags are worked out here. The
+ * gamemaster's own flags are kept (an implant moved from another sheet), and he may change them afterwards.
+ * @param {object} system the implant's system data
+ * @returns {{underAdapsine: boolean, augmentationBundle: boolean, transhumanGift: boolean}}
+ */
+export function installationFlags(actor, system, {
+  isGM = false, creation = false
+} = {
+}) {
+  const family = implantFamily(system?.type)
+  const installed = !system?.storedIn && !system?.isAccessory
+  const adapsine = family === "cyberware" && installed && hasAdapsine(actor?.items)
+  const gift = family === "bioware" && installed && creation && (transhumanGift(actor?.items)?.remaining ?? 0) > 0
+  return {
+    underAdapsine: (isGM && system?.underAdapsine === true) || adapsine,
+    augmentationBundle: isGM && system?.augmentationBundle === true,
+    transhumanGift: (isGM && system?.transhumanGift === true) || gift,
+  }
+}
+
+/** The hole of `actor` (Faille d'Essence), 0 while its world setting is off. */
+export function currentEssenceHole(actor) {
+  if (!essenceSettingOn(ESSENCE_HOLE_SETTING)) return 0
+  return essenceHole(actor?.system?.essence, implantsEssenceLost(actor?.items))
+}
+
+/**
+ * What the body adds to the Essence its implants take: Prototype de transhumain's gift, less the hole. For
+ * mentorMagic(), which works out the Magic before the actor's Essence is (updateEssence: KEEP IN STEP).
+ */
+export function essenceAdjustment(actor) {
+  return (transhumanGift(actor?.items)?.used ?? 0) - currentEssenceHole(actor)
 }
 
 /**

@@ -11,6 +11,9 @@ import {
   SR5ShopGrades
 } from "../../interface/shop-grades.js"
 import {
+  transhumanGift, currentEssenceHole, essenceAdjustment
+} from "../../system/implant-essence.js"
+import {
   SR5_Toxins
 } from "../items/toxins.js"
 import {
@@ -1650,7 +1653,16 @@ export class SR5_CharacterUtility extends Actor {
 
   // Generate Essence
   static updateEssence(actor) {
-    SR5_EntityHelpers.updateValue(actor.system.essence)
+    const essence = actor.system.essence
+    // Typed as the implants are, so the Magic and Resonance lost with the Essence count them (updateSpecialAttributes)
+    // Prototype de transhumain (Chrome Flesh p. 57): its bioware costs no Essence, up to its point
+    // KEEP IN STEP with essenceAdjustment() (implant-essence.js), which mentorMagic() reads earlier
+    const gift = transhumanGift(actor.items)
+    if (gift?.used) SR5_EntityHelpers.updateModifier(essence, gift.name, "itemAugmentation", gift.used)
+    // Faille d'Essence (Chrome Flesh p. 74, its world setting on): what a removed implant took stays lost
+    essence.hole = currentEssenceHole(actor)
+    if (essence.hole)SR5_EntityHelpers.updateModifier(essence, game.i18n.localize("SR5.EssenceHole"), "itemAugmentation", -essence.hole)
+    SR5_EntityHelpers.updateValue(essence)
   }
 
   // Generate spirit values
@@ -5346,7 +5358,7 @@ export class SR5_CharacterUtility extends Actor {
       SR5_SystemHelpers.srLog(2, `Mentor spirit '${item.name}' ignored: '${actor.name}' already follows a mentor`)
       return
     }
-    const magic = mentorMagic(actor.system.specialAttributes?.magic, actor.system.essence, SR5ShopGrades.greywareMagicPenalty(actor.items))
+    const magic = mentorMagic(actor.system.specialAttributes?.magic, actor.system.essence, SR5ShopGrades.greywareMagicPenalty(actor.items), essenceAdjustment(actor))
     const path = mentorPathFor(actor.system.magic?.magicType, item.system.mysticPath)
     const maskRule = game.settings.get("sr5", "mentorMask")
     if (Object.keys(item.system.customEffects).length) SR5_CharacterUtility.applyCustomEffects(item, actor)
@@ -5359,7 +5371,7 @@ export class SR5_CharacterUtility extends Actor {
     let itemData = item.system
     // Mentor spirit: the effects of the actor's own block only, nothing with a Magic of 0 (SR5 p. 324)
     const mentorPath = item.type === "itemMentorSpirit" ? mentorPathFor(actor.system.magic?.magicType, itemData.mysticPath) : null
-    const mentorMagicValue = item.type === "itemMentorSpirit" ? mentorMagic(actor.system.specialAttributes?.magic, actor.system.essence, SR5ShopGrades.greywareMagicPenalty(actor.items)) : 0
+    const mentorMagicValue = item.type === "itemMentorSpirit" ? mentorMagic(actor.system.specialAttributes?.magic, actor.system.essence, SR5ShopGrades.greywareMagicPenalty(actor.items), essenceAdjustment(actor)) : 0
 
     for (let [effectKey, customEffect] of Object.entries(itemData.customEffects)) {
       let skipCustomEffect = false,

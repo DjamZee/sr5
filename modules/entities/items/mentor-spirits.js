@@ -69,13 +69,14 @@ export function isFollowedMentor(item, items){
 // before the augmented Magic is computed, so it is worked out here from the same pieces (review R1).
 // KEEP IN STEP with SR5_CharacterUtility.updateSpecialAttributes (utilityActor.js): same calculation, made here
 // before it runs. Never change one of the two without the other.
-export function mentorMagic(specialMagic, essence, greywarePenalty = 0){
+export function mentorMagic(specialMagic, essence, greywarePenalty = 0, essenceAdjust = 0){
   const sum = list => (list || []).reduce((total, m) => total + (Number(m?.value) || 0), 0)
   // Same steps as updateSpecialAttributes, which runs after the items: natural, augmented, then the Magic
   // lost with the Essence of augmentations (rounded down) and the GreyWare point per implant (BTB p. 142)
   const natural = (Number(specialMagic?.natural?.base) || 0) + sum(specialMagic?.natural?.modifiers)
   let magic = natural + sum(specialMagic?.augmented?.modifiers)
-  const essenceLoss = sum((essence?.modifiers || []).filter(m => m?.type === "itemAugmentation"))
+  // essenceAdjust: Prototype de transhumain and the Faille d'Essence, added later by updateEssence (essenceAdjustment)
+  const essenceLoss = sum((essence?.modifiers || []).filter(m => m?.type === "itemAugmentation")) + (Number(essenceAdjust) || 0)
   if (essenceLoss < 0) magic += Math.floor(essenceLoss)
   if (natural > 0) magic -= greywarePenalty || 0
   return magic

@@ -5,6 +5,9 @@ import {
   cleanCreatedSource
 } from "../../migration-source-modifiers.js"
 import {
+  stripSystemFields, GM_ONLY_FIELDS
+} from "../../system/implant-essence.js"
+import {
   SR5_EntityHelpers
 } from "../helpers.js"
 import {
@@ -288,6 +291,10 @@ export class SR5Actor extends Actor {
   async _preUpdate(changes, options, user) {
     //A storage's rights while it is shut: rewritten here, since Foundry's ownership window updates with noHook
     if (this.type === "actorStorage") SR5StorageLockRights.hold(this, changes, options)
+    // Faille d'Essence (Chrome Flesh p. 74): written by the active gamemaster alone (system/essence-hole.js)
+    if (!game.user.isGM && stripSystemFields(changes, GM_ONLY_FIELDS.actor, this._source.system).length) {
+      ui.notifications?.warn(game.i18n.localize("SR5.WARN_GMOnlyField"))
+    }
     return super._preUpdate(changes, options, user)
   }
 

@@ -645,6 +645,27 @@ export class SR5_SystemHelpers {
       type: Boolean
     })
 
+    // Optional rules of Chrome Flesh, off by default (arbitrage de DjamZ, séance G, G20): Faille d'Essence (p. 74) and
+    // lots d'augmentations (p. 96). Read while the actors are prepared, hence the reload.
+    game.settings.register("sr5", "sr5EssenceHole", {
+      name: "SR5.SETTINGS_EssenceHole_T",
+      hint: "SR5.SETTINGS_EssenceHole_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+      requiresReload: true
+    })
+    game.settings.register("sr5", "sr5AugmentationBundles", {
+      name: "SR5.SETTINGS_AugmentationBundles_T",
+      hint: "SR5.SETTINGS_AugmentationBundles_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+      requiresReload: true
+    })
+
     // Optional rule (Forbidden Arcana p. 176), off as the book offers it: Spirit Domination, the leash
     game.settings.register("sr5", "spiritLeash", {
       name: "SR5.SETTINGS_SpiritLeash_T",

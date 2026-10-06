@@ -1,0 +1,9 @@
+{{!-- Prototype de transhumain (Chrome Flesh p. 57, séance G, G19): the bioware Essence it gives, spent by the shop
+      in creation mode, frozen afterwards. The points are the gamemaster's alone --}}
+{{#if transhumanGift}}
+<li class="grid">
+    <div class="col-4" data-title="{{localize 'SR5.TranshumanEssenceHint'}}">{{localize 'SR5.TranshumanEssence'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-2"><input type="number" data-dtype="Number" step="0.01" min="0" name="system.transhumanEssence" value="{{system.transhumanEssence}}" {{#unless userIsGM}}disabled{{/unless}} onfocus="this.select()"/></div>
+    <div class="col-6">&nbsp;{{localize 'SR5.TranshumanEssenceLeft' used=transhumanGift.used remaining=transhumanGift.remaining}}</div>
+</li>
+{{/if}}

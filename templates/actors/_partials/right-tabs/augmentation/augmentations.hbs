@@ -156,5 +156,19 @@
 		{{/each}}
 		{{/if}}
 	  	{{/each}}
+		{{!-- Faille d'Essence (Chrome Flesh p. 74), its world setting on: what a removed implant left --}}
+		{{#if @root.essenceHole}}
+		<li class="grid" data-title="{{localize 'SR5.EssenceHoleHint'}}">
+			<div class="col-4">{{localize 'SR5.EssenceHole'}}</div>
+			<div class="col-2"></div>
+			<div class="col-2 SR-TextCenter">{{@root.essenceHole}}</div>
+			<div class="col-3"></div>
+			<div class="col-1">
+				{{#if @root.isGM}}
+				<p class="SR-TextRight"><a data-action="clearEssenceHole" data-title="{{localize 'SR5.EssenceHoleClear'}}"><em class="fas fa-sm fa-eraser"></em></a></p>
+				{{/if}}
+			</div>
+		</li>
+		{{/if}}
 	</ul>
 </div>
