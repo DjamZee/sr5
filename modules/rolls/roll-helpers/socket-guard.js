@@ -41,7 +41,8 @@ export const USE_TESTS = {
   deactivateFocus: ["enchantmentResistance"],
   reduceEffect: ["dispellResistance", "disjointingResistance", "complexFormResistance"],
   dispelledEffect: ["dispellResistance", "disjointingResistance", "complexFormResistance"],
-  maglock: ["skill"],
+  // A skill test is written "skillDicePool" on its card (rollData-Skill.js), measured in game
+  maglock: ["skillDicePool"],
   support: ["matrixAction"],
 }
 

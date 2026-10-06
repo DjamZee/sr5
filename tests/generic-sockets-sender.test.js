@@ -351,7 +351,7 @@ describe('updateItem', () => {
   it('a card of another test (a Perception) stands behind no matrix damage', async () => {
     const perception = card(users.owner, {
       test: {
-        type: 'skill', typeSub: 'perception'
+        type: 'skillDicePool', typeSub: 'perception'
       }, owner: {
         actorId: 'player'
       }, previousMessage: {
@@ -395,7 +395,7 @@ describe('updateItem', () => {
     expect(focus.update).not.toHaveBeenCalled()
     const disenchant = card(users.owner, {
       test: {
-        type: 'skill', typeSub: 'disenchanting'
+        type: 'skillDicePool', typeSub: 'disenchanting'
       }, owner: {
         actorId: 'player'
       }, target: {
@@ -429,7 +429,7 @@ describe('updateItem', () => {
     register(spell)
     const dispel = card(users.owner, {
       test: {
-        type: 'skill', typeSub: 'counterspelling'
+        type: 'skillDicePool', typeSub: 'counterspelling'
       }, owner: {
         actorId: 'player'
       }, target: {
@@ -502,7 +502,7 @@ describe('deleteItem', () => {
     expect(effect.delete).not.toHaveBeenCalled()
     const dispel = card(users.owner, {
       test: {
-        type: 'skill', typeSub: 'counterspelling'
+        type: 'skillDicePool', typeSub: 'counterspelling'
       }, owner: {
         actorId: 'dispeller'
       }, target: {
@@ -650,7 +650,7 @@ describe('updateActorData', () => {
     }, 'owner')
     await ask(card(users.owner, {
       test: {
-        type: 'skill', typeSub: 'perception'
+        type: 'skillDicePool', typeSub: 'perception'
       }, owner: {
         actorId: 'picker'
       }, target: {
@@ -661,7 +661,7 @@ describe('updateActorData', () => {
     }))
     await ask(card(users.owner, {
       test: {
-        type: 'skill', typeSub: 'locksmith'
+        type: 'skillDicePool', typeSub: 'locksmith'
       }, owner: {
         actorId: 'picker'
       }, target: {
@@ -675,7 +675,7 @@ describe('updateActorData', () => {
     expect(lock.update).not.toHaveBeenCalled()
     const pick = card(users.owner, {
       test: {
-        type: 'skill', typeSub: 'locksmith'
+        type: 'skillDicePool', typeSub: 'locksmith'
       }, owner: {
         actorId: 'picker'
       }, target: {
