@@ -67,7 +67,7 @@ async function recordCast(message, data){
   const kind = item?.system?.illusionPierce
   if (!kind) return
   const author = message.author
-  const caster = SR5_EntityHelpers.getRealActorFromID(data.owner.actorId)
+  const caster = SR5_EntityHelpers.getRealActorFromID(data.owner.actorId, data.actorUuids)
   const verdict = castVerdict({
     authorOwnsCaster: owns(author, caster),
     spellOnCaster: !!caster && (item.parent === caster || item.parent?.id === caster.id),
@@ -82,7 +82,7 @@ async function recordCast(message, data){
     return
   }
   //The subject: the targeted token, or the caster himself when he targeted nobody
-  const subject = (data.target?.hasTarget && SR5_EntityHelpers.getRealActorFromID(data.target.actorId)) || caster
+  const subject = (data.target?.hasTarget && SR5_EntityHelpers.getRealActorFromID(data.target.actorId, data.actorUuids)) || caster
   if (!subject) return
   //Option A of 06/10: every casting of an Invisibility or a Mask is confirmed by the GM, its threshold shown
   const notes = []
@@ -114,7 +114,7 @@ function resistancePool(observer, spellType){
 }
 
 async function recordResistance(message, data){
-  const observer = SR5_EntityHelpers.getRealActorFromID(data.owner.actorId)
+  const observer = SR5_EntityHelpers.getRealActorFromID(data.owner.actorId, data.actorUuids)
   const spellUuid = data.previousMessage?.itemUuid
   const entry = ledger()[spellUuid]
   if (!observer || !entry) return

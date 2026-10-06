@@ -52,7 +52,7 @@ export default async function resistance(rollData, rollType, actor, chatData){
 
   //Special case for Aura
   if (rollType === "resistanceCardAura") {
-    let auraOwner = SR5_EntityHelpers.getRealActorFromID(chatData.owner.actorId)
+    let auraOwner = SR5_EntityHelpers.getRealActorFromID(chatData.owner.actorId, chatData.actorUuids)
     rollData.damage.isAttack = false
     rollData.damage.base = auraOwner.system.specialAttributes.magic.augmented.value * 2
     rollData.combat.armorPenetration = -auraOwner.system.specialAttributes.magic.augmented.value

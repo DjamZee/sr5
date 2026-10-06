@@ -166,7 +166,7 @@ export class SR5_MiscellaneousHelpers {
     const sender = game.users.get(senderId)
     const data = message?.data ?? {
     }
-    let actor = SR5_EntityHelpers.getRealActorFromID(data.actorId)
+    let actor = SR5_EntityHelpers.getRealActorFromID(data.actorId, data.actorUuids)
     if (!actor || !sender) return false
     if (ownsTarget(sender, actor)) {
       await actor.update({

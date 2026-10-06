@@ -7,7 +7,7 @@ import {
 
 export default async function overwatchResistanceInfo(cardData){
   let label
-  let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId)
+  let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId, cardData.actorUuids)
   let currentOS = attacker.system.matrix.overwatchScore
   cardData.attackerName = attacker.name
     

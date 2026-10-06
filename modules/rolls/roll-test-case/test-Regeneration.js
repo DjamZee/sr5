@@ -6,7 +6,7 @@ import {
 } from "../../entities/helpers.js"
 
 export default async function regenerationInfo(cardData){
-  let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+  let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
 
   cardData.roll.netHits = cardData.roll.hits + actor.system.attributes.body.augmented.value
   cardData.chatCard.buttons.regeneration = SR5_RollMessage.generateChatButton("nonOpposedTest", "regeneration", `${game.i18n.format('SR5.Regenerate', {

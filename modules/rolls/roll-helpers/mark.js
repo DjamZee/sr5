@@ -274,8 +274,8 @@ export class SR5_MarkHelpers {
     let actor, newData = cardData
 
     //Determine actor who is marked
-    if (cardData.target.actorId) actor = SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId)
-    else actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+    if (cardData.target.actorId) actor = SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId, cardData.actorUuids)
+    else actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
 
     //Build marked items list
     let markedItems = actor.items.filter(i => i.system.marks?.length > 0)

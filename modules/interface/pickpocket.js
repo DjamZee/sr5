@@ -203,8 +203,8 @@ export class SR5Pickpocket {
   //The GM's side, from the thief card: the object and the situation, then the target's Perception
   static async openPerception(messageData) {
     if (!game.user.isGM) return
-    const target = SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId)
-    const thief = SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId)
+    const target = SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId, messageData.actorUuids)
+    const thief = SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId, messageData.actorUuids)
     if (!target || !thief) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActor"))
     //One Perception per thief card: a second click would give a second roll, and a second object
     if (SR5Pickpocket.isAnswered(messageData.owner.messageId)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_PickpocketAnswered"))

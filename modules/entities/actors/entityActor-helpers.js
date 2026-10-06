@@ -1970,7 +1970,7 @@ export class SR5_ActorHelper {
     //Never filtered on the test type the card states: a flag its author writes. A card whose dice are not the caster's
     //(another player's resistance card) is rejected, the GM warned, and applied by hand
     if (!author || author.isGM || author.id === game.user?.id) return claimed
-    const caster = SR5_EntityHelpers.getRealActorFromID(data.owner.actorId)
+    const caster = SR5_EntityHelpers.getRealActorFromID(data.owner.actorId, data.actorUuids)
     const isForm = item.type === "itemComplexForm"
     const pool = isForm ? caster?.system?.matrix?.resonanceActions?.threadComplexForm?.test?.dicePool :
       (caster?.system?.skills?.spellcasting?.spellCategory?.[item.system.category]?.dicePool ?? caster?.system?.skills?.spellcasting?.test?.dicePool)

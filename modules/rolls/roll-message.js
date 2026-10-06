@@ -96,12 +96,12 @@ export class SR5_RollMessage {
 
       // SR5 p. 299: each ritual participant only sees the button of their own Drain
       html.querySelectorAll(".ritualDrain").forEach(el => {
-        if (!SR5_EntityHelpers.getRealActorFromID(ritualDrainActorId(el.dataset.type))?.isOwner) el.remove()
+        if (!SR5_EntityHelpers.getRealActorFromID(ritualDrainActorId(el.dataset.type), message.flags?.sr5data?.actorUuids)?.isOwner) el.remove()
       })
 
       // v13: use message document directly instead of data.message
       // Hide if player is not owner of the message
-      if (!ownsCardSpeaker(message.speaker, id => SR5_EntityHelpers.getRealActorFromID(id))) {
+      if (!ownsCardSpeaker(message.speaker, id => SR5_EntityHelpers.getRealActorFromID(id, message.flags?.sr5data?.actorUuids))) {
         html.querySelectorAll(".nonOpposedTest").forEach(el => el.remove())
         html.querySelectorAll(".owner").forEach(el => el.remove())
       }
@@ -144,7 +144,7 @@ export class SR5_RollMessage {
         const messageEl = target.closest(".chat-message") || target.closest(".message")
         const messageId = messageEl?.dataset.messageId
         const message = game.messages.get(messageId)
-        const actor = SR5_EntityHelpers.getRealActorFromID(message.flags.sr5data.owner.speakerId)
+        const actor = SR5_EntityHelpers.getRealActorFromID(message.flags.sr5data.owner.speakerId, message.flags.sr5data.actorUuids)
         let newMessage = foundry.utils.duplicate(message.flags.sr5data)
 
         newMessage.roll[target.dataset.editType] = parseInt(ev.target.value)
@@ -202,7 +202,7 @@ export class SR5_RollMessage {
     //SR5 p. 299: a ritual participant resists their own Drain, named on the button
     const ritualDrainId = ritualDrainActorId(type)
     if (ritualDrainId) {
-      const participant = SR5_EntityHelpers.getRealActorFromID(ritualDrainId)
+      const participant = SR5_EntityHelpers.getRealActorFromID(ritualDrainId, messageData.actorUuids)
       if (!participant?.isOwner) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
       return participant.rollTest("drain", null, messageData)
     }
@@ -217,20 +217,20 @@ export class SR5_RollMessage {
       if (actor == null && !supportAction && !targetedEffect) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
     } else if (action === "nonOpposedTest" && messageData) {
       // The spirit or sprite handles its own buttons, but the drain and the fading are resisted by the card owner
-      if (isRolledByTarget(type, messageData.test.typeSub, messageData.target.actorId)) actor = SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId)
-      else actor = SR5_EntityHelpers.getRealActorFromID(messageData.owner.speakerId)
+      if (isRolledByTarget(type, messageData.test.typeSub, messageData.target.actorId)) actor = SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId, messageData.actorUuids)
+      else actor = SR5_EntityHelpers.getRealActorFromID(messageData.owner.speakerId, messageData.actorUuids)
     }
 
     // If there is a matrix action Author, get the Actor to do stuff with him later
     let originalActionActor, targetActor
-    if (messageData.previousMessage.actorId) originalActionActor = SR5_EntityHelpers.getRealActorFromID(messageData.previousMessage.actorId)
-    if (messageData.target.hasTarget) targetActor = SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId)
+    if (messageData.previousMessage.actorId) originalActionActor = SR5_EntityHelpers.getRealActorFromID(messageData.previousMessage.actorId, messageData.actorUuids)
+    if (messageData.target.hasTarget) targetActor = SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId, messageData.actorUuids)
 
     switch(type) {
       case "defenseMeleeWeapon":
       case "defenseRangedWeapon":
       case "defenseAstralCombat":
-        actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id)))
+        actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids)
         actor.rollTest("defense", null, messageData)
         break
       case "defenseThroughAndInto":
@@ -358,7 +358,7 @@ export class SR5_RollMessage {
       case "bbDiagnose": {
         if (!targetActor) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
         const done = type === "bbStabilize" ?
-          await applyStabilization(messageData, targetActor, SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId)) :
+          await applyStabilization(messageData, targetActor, SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId, messageData.actorUuids)) :
           await applyDiagnosis(messageData, targetActor)
         //The figure applied (0 is one) comes back, false when nothing was written
         if (done === false || done === undefined || done === null) return
@@ -610,10 +610,10 @@ export class SR5_RollMessage {
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "iAmTheFirewall":
-        SR5_MatrixHelpers.applyIAmTheFirewallEffect(messageData, speaker, SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId))
+        SR5_MatrixHelpers.applyIAmTheFirewallEffect(messageData, speaker, SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId, messageData.actorUuids))
         break
       case "intervene":
-        if (await SR5_MatrixHelpers.applyInterveneEffect(messageData, speaker, SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId))) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        if (await SR5_MatrixHelpers.applyInterveneEffect(messageData, speaker, SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId, messageData.actorUuids))) SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "popup":
         SR5_MatrixHelpers.applyPopupEffect(messageData, originalActionActor, actor)
@@ -712,18 +712,18 @@ export class SR5_RollMessage {
       if (!game.user.isGM && game.user.id !== messageData.previousMessage.userId) return ui.notifications.warn(game.i18n.localize("SR5.WARN_DontHavePerm"))
       switch (type) {
         case "spendNetHits": {
-          let targetActor = SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId)
+          let targetActor = SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId, messageData.actorUuids)
           SR5_CalledShotHelpers.chooseSpendNetHits(message, targetActor)
           break
         }
         case "trickShot":
-          actor = SR5_EntityHelpers.getRealActorFromID(messageData.previousMessage.actorId)
+          actor = SR5_EntityHelpers.getRealActorFromID(messageData.previousMessage.actorId, messageData.actorUuids)
           await actor.applyCalledShotsEffect(messageData)
           break
         //SR5 p. 241: Snoop succeeded, the hacker sees what the drone or device sees while his mark lasts.
         //The card is the defender's: the hacker who rolled the Snoop clicks it, or the GM for him
         case "snoopVision": {
-          let snooped = SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId)
+          let snooped = SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId, messageData.actorUuids)
           if (await SR5SharedVision.startSnoop(snooped, messageData.previousMessage.actorId)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
           break
         }
@@ -752,7 +752,7 @@ export class SR5_RollMessage {
 
     //Get actor if any
     let actor
-    if (messageData.owner.actorId) actor = SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId)
+    if (messageData.owner.actorId) actor = SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId, messageData.actorUuids)
 
     //Special cases : add buttons or end action description
     let endLabel, hits

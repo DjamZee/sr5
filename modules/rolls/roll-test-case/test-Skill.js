@@ -72,7 +72,7 @@ function bbCard(cardData, patient){
 
 export default async function skillInfo(cardData){
   let itemTarget
-  let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+  let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
   let actorData = actor.system
 
   let testType = cardData.target.hasTarget ? "nonOpposedTest" : "opposedTest"
@@ -133,7 +133,7 @@ export default async function skillInfo(cardData){
       break
     case "firstAid": {
       //SR5 p. 150: a targeted device or drone is no patient: no 1D3 to ask a type for, no box to heal
-      let targetActor = cardData.target.hasTarget ? SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId) : null
+      let targetActor = cardData.target.hasTarget ? SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId, cardData.actorUuids) : null
       if (targetActor && !patientMonitors(targetActor).length) {
         cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.HealingFailed"))
         break
@@ -145,7 +145,7 @@ export default async function skillInfo(cardData){
           let failedDamage = new Roll(`1d3`)
           await failedDamage.evaluate()
           //A targeted patient with a single condition monitor has no damage type to choose
-          let patient = cardData.target.hasTarget ? SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId) : null
+          let patient = cardData.target.hasTarget ? SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId, cardData.actorUuids) : null
           cardData.roll.criticalGlitchDamage = {
             value: failedDamage.total, type: hasSingleMonitor(patient) ? "condition" : await SR5_CombatHelpers.chooseDamageType()
           }
@@ -191,10 +191,10 @@ export default async function skillInfo(cardData){
     }
     //Bullets & Bandages p. 15: Medicine diagnoses too
     case "medecine":
-      bbCard(cardData, cardData.target.hasTarget ? SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId) : null)
+      bbCard(cardData, cardData.target.hasTarget ? SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId, cardData.actorUuids) : null)
       break
     case "locksmith": {
-      let targetActor = SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId)
+      let targetActor = SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId, cardData.actorUuids)
       if (cardData.threshold.value > 0){
         if (targetActor.system.maglock.type.cardReader || targetActor.system.maglock.type.keyPads){
           if (targetActor.system.maglock.hasAntiTamper && targetActor.system.maglock.caseRemoved){

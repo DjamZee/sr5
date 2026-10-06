@@ -11,7 +11,7 @@ import {
 export default async function matrixResistanceInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId),
     actorData = actor.system,
-    attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId),
+    attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId, cardData.actorUuids),
     attackerData = attacker?.system,
     targetItem
 

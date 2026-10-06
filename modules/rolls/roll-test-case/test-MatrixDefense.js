@@ -17,7 +17,7 @@ import {
 export default async function matrixDefenseInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId),
     actorData = actor.system,
-    attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId),
+    attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId, cardData.actorUuids),
     attackerData = attacker?.system,
     netHits = cardData.previousMessage.hits - cardData.roll.hits,
     targetItem = cardData.target.itemUuid ? await fromUuid(cardData.target.itemUuid) : null,

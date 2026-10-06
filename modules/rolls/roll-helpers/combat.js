@@ -309,7 +309,7 @@ export class SR5_CombatHelpers {
   //Handle grenade scatter, and that of an indirect area spell under its threshold (SR5 p. 285: 2D6 m, as a grenade)
   //Returns the distance scattered in meters (0 when it lands on target), or false when no scatter was applied
   static async rollScatter(cardData){
-    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
     const isSpell = cardData.test?.type === "spell" || cardData.test?.type === "preparation"
 
     if (!canvas.scene){

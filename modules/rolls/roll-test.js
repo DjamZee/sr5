@@ -542,8 +542,8 @@ export class SR5_RollTest {
 
   //Render the chat message
   // The full speaker of a card: scene, token and world actor, so that Foundry finds an unlinked token's actor (N95)
-  static cardSpeaker(owner) {
-    const actor = SR5_EntityHelpers.getRealActorFromID(owner.speakerId)
+  static cardSpeaker(owner, uuids) {
+    const actor = SR5_EntityHelpers.getRealActorFromID(owner.speakerId, uuids)
     if (!actor) return {
       actor: owner.speakerId, token: owner.speakerId, alias: owner.speakerActor
     }
@@ -580,7 +580,7 @@ export class SR5_RollTest {
       rollMode: cardData.roll.rollMode,
       user: game.user.id,
       content: html,
-      speaker: SR5_RollTest.cardSpeaker(cardData.owner),
+      speaker: SR5_RollTest.cardSpeaker(cardData.owner, cardData.actorUuids),
     }
 
     if (["gmroll", "blindroll"].includes(cardData.roll.rollMode)) chatData["whisper"] = ChatMessage.getWhisperRecipients("GM").map((u) => u.id)

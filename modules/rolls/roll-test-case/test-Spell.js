@@ -19,7 +19,7 @@ import {
 
 export default async function spellInfo(cardData){
   let actionType, label, item
-  let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+  let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
   let actorData = actor.system
   if (cardData.owner.itemUuid) item = await fromUuid(cardData.owner.itemUuid)
 
@@ -108,7 +108,7 @@ export default async function spellInfo(cardData){
     //Bullets & Bandages p. 15-16: Stabilize (Force at least the boxes of bleeding and overflow) and Heal (out of the
     //overflow) stabilize the targeted patient; the GM applies it and checks it again (bb-healing.js)
     if (underFireRules() && cardData.test.type === "spell" && cardData.target.hasTarget){
-      const patient = SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId)
+      const patient = SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId, cardData.actorUuids)
       const force = Math.min(Number(cardData.magic.force) || 0, 2 * (Number(actorData.specialAttributes?.magic?.augmented?.value) || 0))
       if (patient && spellStabilizes(item?.name, force, bbPatientEntry(patient), patient.system?.conditionMonitors?.overflow?.actual?.value)) cardData.chatCard.buttons.bbStabilize = SR5_RollMessage.generateChatButton("nonOpposedTest", "bbStabilize", game.i18n.format("SR5.BB_StabilizeButton", {
         reduction: 0

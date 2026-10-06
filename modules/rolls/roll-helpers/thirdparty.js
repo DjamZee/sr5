@@ -61,7 +61,7 @@ export class SR5_ThirdPartyHelpers {
     */
   static async createItemResistance(cardData, messageId) {
     let targetItem
-    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
     // The owner may have been deleted since the card was posted: stop here, the roll data needs it
     if (!actor) {
       SR5_SystemHelpers.srLog(1, `Resistance owner not found for '${cardData.owner.actorId}': resistance not rolled`)
@@ -223,7 +223,7 @@ export class SR5_ThirdPartyHelpers {
 
     //Escape Engulf
     else if (cardData.test.type === "escapeEngulf"){
-      let spirit = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId)
+      let spirit = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId, cardData.actorUuids)
       rollData.dicePool.value = spirit.system.attributes.body.augmented.value + spirit.system.specialAttributes.magic.augmented.value
       rollData.dicePool.base = rollData.dicePool.value
       rollData.dicePool.composition = ([
@@ -468,7 +468,7 @@ export class SR5_ThirdPartyHelpers {
   }
 
   static async reduceSideckickService(cardData){
-    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.speakerId),
+    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.speakerId, cardData.actorUuids),
       actorData = foundry.utils.duplicate(actor.system),
       key
 
@@ -491,7 +491,7 @@ export class SR5_ThirdPartyHelpers {
   }
 
   static async enslavedSidekick(cardData, type){
-    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.speakerId)
+    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.speakerId, cardData.actorUuids)
     let actorData = foundry.utils.duplicate(actor.system)
 
     if (type === "registerSprite"){

@@ -180,7 +180,7 @@ function skillWithAttribute(actorData, skillKey, attributeKey, attributeLabel){
 }
 
 async function getTargetedData(rollData, rollKey, actor){
-  let targetActor = SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId)
+  let targetActor = SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId, rollData.actorUuids)
 
   switch (rollKey){
     case "banishing":

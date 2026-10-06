@@ -196,8 +196,15 @@ export class SR5_EntityHelpers {
     }, 0)
   }
 
-  //Get the real actor Document based on ID
-  static getRealActorFromID(actorId){
+  //Get the real actor Document based on ID. `uuids` (a card's actorUuids, cardActorUuids) gives the token or actor
+  //the roller meant by that id: an unlinked token is found on its own scene, whatever scene the reader looks at,
+  //and a token copied with its scene (same id on two scenes) is not mistaken for the other one
+  static getRealActorFromID(actorId, uuids){
+    const known = actorId && uuids?.[actorId]
+    if (typeof known === "string") {
+      const found = SR5_EntityHelpers.actorFromUuid(known, actorId)
+      if (found) return found
+    }
     let actor, token, tokenDocument
     actor = game.actors.get(actorId)
     if (actor) return actor
@@ -212,6 +219,42 @@ export class SR5_EntityHelpers {
     //An unlinked token outside the viewed canvas (another scene, or no canvas at all): look for it in the scenes
     if (!actor) actor = game.scenes?.find(s => s.tokens.has(actorId))?.tokens.get(actorId)?.actor
     return actor
+  }
+
+  //The uuid that names an actor on a card: its token's for an unlinked token (its id is the token's), else its own
+  static actorRefUuid(actor){
+    return actor?.isToken ? actor.token?.uuid : actor?.uuid
+  }
+
+  //The actor behind a uuid of a card, only when the document it names carries that id: a uuid written on a card
+  //never swaps the id for another actor
+  static actorFromUuid(uuid, actorId){
+    let doc
+    try {
+      doc = fromUuidSync(uuid)
+    } catch {
+      return null
+    }
+    if (!doc || doc.id !== actorId) return null
+    if (doc.documentName === "Token") return doc.actor ?? null
+    return doc.documentName === "Actor" ? doc : null
+  }
+
+  //The ids a card names (its roller, its target, the card it answers), each with the uuid this client finds for it.
+  //Written by the client that rolls, which sees the scene where it happens; kept from the card it answers
+  static cardActorUuids(rollData, actor, chatData){
+    const uuids = {
+    }
+    for (const [id, uuid] of Object.entries(chatData?.actorUuids ?? {
+    })) if (typeof uuid === "string") uuids[id] = uuid
+    const rollerId = rollData?.owner?.actorId
+    if (rollerId && actor) uuids[rollerId] = SR5_EntityHelpers.actorRefUuid(actor)
+    for (const id of [rollData?.owner?.speakerId, rollData?.target?.actorId, rollData?.previousMessage?.actorId]) {
+      if (!id || uuids[id]) continue
+      const found = SR5_EntityHelpers.getRealActorFromID(id)
+      if (found) uuids[id] = SR5_EntityHelpers.actorRefUuid(found)
+    }
+    return uuids
   }
 
   /**

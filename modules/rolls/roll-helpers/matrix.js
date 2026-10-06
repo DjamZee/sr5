@@ -129,7 +129,7 @@ export class SR5_MatrixHelpers {
 
   // Update Matrix Damage to a Deck
   static async updateMatrixDamage(cardData, netHits, defender){
-    let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId),
+    let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId, cardData.actorUuids),
       attackerData = attacker?.system,
       damage = cardData.damage.matrix.base,
       item = cardData.target.itemUuid ? await fromUuid(cardData.target.itemUuid) : null,
@@ -218,7 +218,7 @@ export class SR5_MatrixHelpers {
   }
 
   static async rollOverwatchDefense(cardData){
-    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
     let rollData = SR5_PrepareRollTest.getBaseRollData(null, actor)
 
     rollData.test.type = "overwatchResistance"
@@ -237,7 +237,7 @@ export class SR5_MatrixHelpers {
   }
 
   static async rollJackOut(cardData){
-    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
 
     //One jack out roll, whose hits are compared to each link lock in turn (SR5 p. 246): one resistance card per lock
     for (let lock of SR5_MatrixHelpers.getLinkLocks(actor)){
@@ -266,7 +266,7 @@ export class SR5_MatrixHelpers {
 
   //Jack out (SR5 p. 244): free of the link lock, the character reboots the device used
   static async jackOut(cardData){
-    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
     //Only the lock this card beat goes: each lock is beaten on its own (SR5 p. 246)
     let beaten = cardData.previousMessage.itemUuid
     if (beaten && actor.items.find(i => i.id === beaten)) await actor.deleteEmbeddedDocuments("Item", [beaten])
@@ -289,7 +289,7 @@ export class SR5_MatrixHelpers {
   //positive number, turned into a dice pool malus when a matrix test reads it (rollData-MatrixAction.js),
   //like the scene's own noise : a negative value here gave the jammer, and every jammed device, bonus dice.
   static async jamSignals(cardData){
-    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
     let noise = cardData.roll.hits
     let effect = {
       name: game.i18n.localize("SR5.EffectSignalJam"),

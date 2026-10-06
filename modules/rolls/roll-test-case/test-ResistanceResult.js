@@ -97,7 +97,7 @@ export default async function resistanceResultInfo(cardData, type){
     if (type === "spellResistance" && prevData?.magic.spell.area > 0){
       //add effect "applyEffectAuto"
       if (cardData.roll.netHits < 0) cardData.roll.netHits = 0
-      actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+      actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
       actor.applyExternalEffect(cardData, "customEffects")
     }
   } else {

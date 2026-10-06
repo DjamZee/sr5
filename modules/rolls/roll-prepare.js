@@ -69,7 +69,7 @@ export class SR5_PrepareRollTest {
     //resonance action included: only a direct connection does (p. 234), played by switching it on (N91)
     //A roll relaunched from a chat card (Blue Goo's explosion) also checks the target the card knows
     if (WIRELESS_TARGETED_ROLLS.includes(rollType) && (targetsWirelessOffDrone(actor) ||
-      (chatData?.target?.actorId && isWirelessOffDrone(SR5_EntityHelpers.getRealActorFromID(chatData.target.actorId), actor)))) {
+      (chatData?.target?.actorId && isWirelessOffDrone(SR5_EntityHelpers.getRealActorFromID(chatData.target.actorId, chatData.actorUuids), actor)))) {
       return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetWirelessOff"))
     }
 
@@ -272,7 +272,7 @@ export class SR5_PrepareRollTest {
         rollData = await SR5_GetRollData.skill(rollData, rollType, rollKey, actor, chatData)
         // Faction Reputation moves the default NPC attitude (Cutting Aces p. 160); the list stays free
         if (rollData.target?.actorId && SOCIAL_FACTION_SKILLS.includes(rollData.test?.typeSub)){
-          const faction = SR5FactionRegistry.attitudeFor(actor.id, SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId))
+          const faction = SR5FactionRegistry.attitudeFor(actor.id, SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId, rollData.actorUuids))
           // Only the attitude travels with the roll: the faction and the score stay the gamemaster's
           if (faction) rollData.social = {
             attitude: faction.attitude
@@ -322,7 +322,7 @@ export class SR5_PrepareRollTest {
       //Forbidden Arcana p. 90-95: the boxes of a spirit type, shown once the type is known (dialog, or the targeted spirit)
       if (rollData.test.type === "skillDicePool" && SPIRIT_TYPE_SKILLS.includes(rollData.test.typeSub)){
         rollData.situational = offers.concat(spiritTypeOffers(actor.system.skills[rollData.test.typeSub]?.spiritType, actor.situationalEffects || []))
-        const targetType = rollData.target?.actorId ? SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId)?.system?.type : null
+        const targetType = rollData.target?.actorId ? SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId, rollData.actorUuids)?.system?.type : null
         spiritTypeVisible(rollData.situational, targetType || rollData.magic?.spiritType)
       }
       //A condition on the target's metatype (The Complete Trog p. 179) ticks its box when it is met
@@ -341,9 +341,11 @@ export class SR5_PrepareRollTest {
       //Bullets & Bandages p. 18: improvised supplies take the hits of an improvising roll off the -3
       if (advancedMedkitRules()) rollData.various.bbImprovised = true
       if (rollData.test.type === "spell" && rollData.target?.hasTarget){
-        const drain = bbStabilizeDrain(rollData.owner?.itemUuid ? fromUuidSync(rollData.owner.itemUuid)?.name : null, SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId), rollData.magic.drainFloor ?? 2)
+        const drain = bbStabilizeDrain(rollData.owner?.itemUuid ? fromUuidSync(rollData.owner.itemUuid)?.name : null, SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId, rollData.actorUuids), rollData.magic.drainFloor ?? 2)
         if (drain !== null) rollData.magic.bbStabilizeDrain = drain
       }
+      //Whoever reads the card later (a GM on another scene) finds the same tokens as the roller (helpers.js)
+      rollData.actorUuids = SR5_EntityHelpers.cardActorUuids(rollData, actor, chatData)
       SR5_RollTest.generateRollDialog(rollData)
     }
   }

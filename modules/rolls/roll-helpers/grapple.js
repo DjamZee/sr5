@@ -142,7 +142,7 @@ export class SR5_GrappleHelpers {
     const data = grappleHoldOf(actor?.effects)
     const stale = staleHoldWarning(data, holdId)
     if (stale) return SR5_GrappleHelpers.warn(stale, fromUserId)
-    const partner = SR5_EntityHelpers.getRealActorFromID(data.partner)
+    const partner = SR5_EntityHelpers.getRealActorFromID(data.partner, data.actorUuids)
     //A changed hold is a new state of the hold: the cards rolled against the former one no longer apply
     const newHoldId = foundry.utils.randomID()
     for (const a of [actor, partner]){
@@ -301,7 +301,7 @@ export class SR5_GrappleHelpers {
     if (!SR5_GrappleHelpers.isKeeper()) return
     const data = effect.flags?.sr5?.grapple
     if (!data) return
-    await deleteGrappleEffectOnce(SR5_EntityHelpers.getRealActorFromID(data.partner), PENDING_DELETIONS, data.holdId)
+    await deleteGrappleEffectOnce(SR5_EntityHelpers.getRealActorFromID(data.partner, data.actorUuids), PENDING_DELETIONS, data.holdId)
   }
 
   //Active GM side : a fighter knocked out or killed leaves the hold
@@ -329,6 +329,6 @@ export class SR5_GrappleHelpers {
     if (!tokenRemovalEndsHold(tokenDocument.actorLink, remaining)) return
     //An unlinked token's effects went with it: only the partner's half is left. A linked actor keeps its half,
     //whose deletion takes the partner's along (onDeleteEffect).
-    await SR5_GrappleHelpers.releaseActors([tokenDocument.actorLink ? actor : SR5_EntityHelpers.getRealActorFromID(data.partner)])
+    await SR5_GrappleHelpers.releaseActors([tokenDocument.actorLink ? actor : SR5_EntityHelpers.getRealActorFromID(data.partner, data.actorUuids)])
   }
 }

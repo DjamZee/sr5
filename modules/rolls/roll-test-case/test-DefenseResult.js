@@ -91,7 +91,7 @@ export default async function defenseResultInfo(cardData, type){
       if (cardData.magic.drain.value < 2) cardData.magic.drain.value = 2
       //SR5 p. 299: with participants, each of them takes the Drain, one button per name
       if (cardData.magic.ritualParticipants?.length) {
-        let leader = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+        let leader = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
         for (let recipient of ritualDrainRecipients({
           actorId: cardData.owner.actorId, name: leader?.name
         }, cardData.magic.ritualParticipants)) {
@@ -101,7 +101,7 @@ export default async function defenseResultInfo(cardData, type){
 
       let item = await fromUuid(cardData.owner.itemUuid)
       if (item.system.durationMultiplier === "netHits"){
-        let realActor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)
+        let realActor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
         SR5_RollTestHelper.updateItemAfterRoll(cardData, realActor)
       }
       break
