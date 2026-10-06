@@ -200,7 +200,10 @@ export class SR5_ActorHelper {
       case "actorSpirit":
         if (singleMonitor) {
           // A full core monitor dissipates the AI (Data Trails p. 161)
-          if (actorData.conditionMonitors.condition.actual.value >= realActor.system.conditionMonitors.condition.value) await SR5_ActorHelper.createDeadEffect(actorId)
+          // The overflow is only a hint for the GM's dissipation card (ai-dissipation.js), who confirms it
+          if (actorData.conditionMonitors.condition.actual.value >= realActor.system.conditionMonitors.condition.value) await SR5_ActorHelper.createDeadEffect(actorId, {
+            surplus: actorData.conditionMonitors.condition.actual.value - realActor.system.conditionMonitors.condition.value
+          })
           break
         }
         if (actorData.conditionMonitors.physical.actual.value >= actorData.conditionMonitors.physical.value) {
@@ -363,16 +366,24 @@ export class SR5_ActorHelper {
     }
     for (let i = 0; i < 20 && !isFull(); i++) await new Promise(r => setTimeout(r, 100))
     if (!isFull()) return
-    await SR5_ActorHelper.createDeadEffect(message.data.actorId)
+    await SR5_ActorHelper.createDeadEffect(message.data.actorId, {
+      surplus: message.data.surplus, itemUuid: message.data.itemUuid
+    })
   }
 
   //Handle death effect
-  static async createDeadEffect(actorId){
+  //aiDissipation: what the GM's dissipation card of an AI starts from (Data Trails p. 161), never applied as is
+  static async createDeadEffect(actorId, aiDissipation){
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
     for (let e of actor.effects){
       if (e.statuses.has("dead")) return
     }
     let effect = await _getSRStatusEffect("dead")
+    if (aiDissipation && actor.system.activeSpecialAttribute === "depth") effect.flags.sr5 = {
+      aiDissipation: {
+        surplus: Math.max(0, Math.trunc(Number(aiDissipation.surplus) || 0)), itemUuid: aiDissipation.itemUuid ?? null
+      }
+    }
     await actor.createEmbeddedDocuments('ActiveEffect', [effect])
     ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.INFO_DamageActorDead")}`)
     await SR5_ActorHelper.dropSpoilsOnDeath(actor)

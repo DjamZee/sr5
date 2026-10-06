@@ -83,6 +83,8 @@ export class SR5_MatrixHelpers {
     //The size of the monitor is prepared (SR5 p. 228): the copy above holds the source, where it is 0,
     //and every first box used to brick the device. No box is kept beyond the monitor
     let monitorSize = targetItem.system.conditionMonitors.matrix.value
+    //Boxes beyond the monitor: the overflow an AI on this device resists when dissipated (Data Trails p. 161)
+    let surplus = Math.max(0, newItem.system.conditionMonitors.matrix.actual.base + damageValue - monitorSize)
     newItem.system.conditionMonitors.matrix.actual.base = Math.min(newItem.system.conditionMonitors.matrix.actual.base + damageValue, monitorSize)
     SR5_EntityHelpers.updateValue(newItem.system.conditionMonitors.matrix.actual, 0, monitorSize)
     //An AI shares the matrix monitor of the device it is loaded on, and is dissipated when it fills (Data Trails p. 161)
@@ -112,10 +114,13 @@ export class SR5_MatrixHelpers {
     if (aiDissipated) {
       //A player who deals the damage cannot write on the AI: the GM lays the status, as for the device above
       let actorId = targetActor.isToken ? targetActor.token.id : targetActor.id
-      if (game.user?.isGM) await SR5_ActorHelper.createDeadEffect(actorId)
+      if (game.user?.isGM) await SR5_ActorHelper.createDeadEffect(actorId, {
+        surplus, itemUuid: targetItem.uuid
+      })
       else SR5_SocketHandler.emitForGM("createDeadEffect", {
         actorId: actorId,
         itemUuid: targetItem.uuid,
+        surplus,
       })
     }
 

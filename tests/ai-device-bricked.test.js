@@ -95,7 +95,10 @@ describe('Device of an AI bricked (Data Trails p. 161)', () => {
     const written = device.update.mock.calls[0][0].system
     expect(written.conditionMonitors.matrix.actual.base).toBe(10)
     expect(written.isActive).toBe(false)
-    expect(SR5_ActorHelper.createDeadEffect).toHaveBeenCalledWith('a')
+    //14 boxes on a monitor of 10: 4 of overflow, the hint of the GM's dissipation card
+    expect(SR5_ActorHelper.createDeadEffect).toHaveBeenCalledWith('a', {
+      surplus: 4, itemUuid: 'Actor.a.Item.cl'
+    })
     expect(actor.rollTest).not.toHaveBeenCalled()
   })
 
@@ -113,7 +116,7 @@ describe('Device of an AI bricked (Data Trails p. 161)', () => {
     await SR5_MatrixHelpers.applyDamageToDecK(actor, card(14), null, false)
     expect(SR5_ActorHelper.createDeadEffect).not.toHaveBeenCalled()
     expect(SR5_SocketHandler.emitForGM).toHaveBeenCalledWith('createDeadEffect', {
-      actorId: 'a', itemUuid: 'Actor.a.Item.cl',
+      actorId: 'a', itemUuid: 'Actor.a.Item.cl', surplus: 4,
     })
   })
 

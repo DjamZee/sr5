@@ -42,6 +42,9 @@ import {
   initCfdTreatment
 } from "../system/cfd-treatment.js"
 import {
+  initAIDissipation
+} from "../system/ai-dissipation.js"
+import {
   initRadiation
 } from "../system/radiation.js"
 import {
@@ -94,6 +97,8 @@ export function sr5HookReady() {
   initInfection()
   // Treating CFD: NanoScrub hours on the clock, Overwriters at the end of each Combat Turn (Dark Terrors p. 87)
   initCfdTreatment()
+  // Dissipation of an AI (Data Trails p. 161): offered to the active GM
+  initAIDissipation()
   // Radiation zones: resistance tests on the clock (Run & Gun p. 164-165)
   initRadiation()
   // Bullets & Bandages p. 14-16: wounds of 5+ bleed by Combat Turn, the GM adds each box
