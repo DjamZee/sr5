@@ -537,14 +537,16 @@ export class SR5_RollMessage {
         let attackerID
         if (actor.isToken) attackerID = actor.token.id
         else attackerID = actor.id
+        //An unlinked token has its own actor: its token id reaches it, the actor id would mark the base actor (measured)
+        let markedID = originalActionActor.isToken ? originalActionActor.token.id : originalActionActor.id
         if (!game.user?.isGM) {
           SR5_SocketHandler.emitForGM("markItem", {
-            targetActor: originalActionActor.id,
+            targetActor: markedID,
             attackerID: attackerID,
             mark: 1,
             messageId,
           })
-        } else await SR5_MarkHelpers.markItem(originalActionActor.id, attackerID, 1)
+        } else await SR5_MarkHelpers.markItem(markedID, attackerID, 1)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       }
