@@ -67,14 +67,27 @@ export function itemHasEffect(item, value) {
   return effectsOf(item).some(e => e?.value === value)
 }
 
-/** The active effects of `items` that touch implants, with the name of the item carrying each. */
+/**
+ * What is part of the body once taken, with nothing to switch on: Adapsine is a transgenic treatment already begun
+ * (Chrome Flesh p. 165), Prototype de transhumain a quality the character was born with (p. 57). Their item counts
+ * while it is on the sheet, active or not, unless it is carried in a storage.
+ */
+const ALWAYS_ON_EFFECTS = [IMPLANT_ESSENCE_EFFECTS.adapsine, IMPLANT_ESSENCE_EFFECTS.transhumanPrototype]
+
+/** Whether the item carrying `value` acts on the body. */
+function effectOn(item, value) {
+  if (ALWAYS_ON_EFFECTS.includes(value)) return !item.system?.storedIn
+  return !!item.system?.isActive
+}
+
+/** The effects of `items` that act on implants, with the name of the item carrying each. */
 function activeEffects(items) {
   const found = []
   for (const item of listOf(items)) {
     const effects = effectsOf(item)
-    if (!effects.length || !item.system.isActive) continue
+    if (!effects.length) continue
     for (const effect of effects) {
-      if (Object.values(IMPLANT_ESSENCE_EFFECTS).includes(effect?.value)) found.push({
+      if (Object.values(IMPLANT_ESSENCE_EFFECTS).includes(effect?.value) && effectOn(item, effect.value)) found.push({
         value: effect.value, name: item.name
       })
     }
@@ -196,7 +209,7 @@ export function essenceAfterPurchase(essence, items, lines, {
  */
 export function transhumanGift(items) {
   const list = listOf(items)
-  const quality = list.find(i => i?.system?.isActive &&
+  const quality = list.find(i => effectOn(i, IMPLANT_ESSENCE_EFFECTS.transhumanPrototype) &&
     effectsOf(i).some(e => e?.value === IMPLANT_ESSENCE_EFFECTS.transhumanPrototype))
   if (!quality) return null
   const points = Math.max(0, Number(quality.system.transhumanEssence ?? 1) || 0)

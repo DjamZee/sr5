@@ -96,10 +96,18 @@ describe("G16 — Adapsine, on the implants installed under it", () => {
       underAdapsine: true
     }), [adapsine])).toBe(0.7)
   })
-  it("reads the body: an active item with the effect", () => {
+  it("reads the body: the item with the effect, active or not, unless it is in a storage", () => {
     expect(hasAdapsine([adapsine])).toBe(true)
-    expect(hasAdapsine([withEffect("Adapsine", "adapsine", false)])).toBe(false)
+    expect(hasAdapsine([withEffect("Adapsine", "adapsine", false)])).toBe(true)
+    expect(hasAdapsine([withEffect("Adapsine", "adapsine", true, {
+      storedIn: "coffre"
+    })])).toBe(false)
     expect(hasAdapsine([])).toBe(false)
+  })
+  it("counts Prototype de transhumain without its box ticked", () => {
+    expect(transhumanGift([withEffect("Prototype de transhumain", "transhumanPrototype", false, {
+      transhumanEssence: 1
+    })])?.points).toBe(1)
   })
   it("shows at the shop what the sheet will take", () => {
     const system = {
