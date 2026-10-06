@@ -45,15 +45,15 @@ export async function sr5HookItemVision(item, userId) {
 export async function sr5HookCreateItem(item, options, userId) {
   await sr5HookItemVision(item, userId)
   //Séance H, H3 (decision of DjamZ): a player may still add an item that carries effects to a sheet (a drop from a
-  //compendium, createEmbeddedDocuments), but the active gamemaster is told, as for a write of effects. The states the
-  //system lays itself (itemEffect: prone, fire, a spell's effect…) are left out, or every hit would warn
-  if (game.users?.activeGM?.isSelf && gmOnlyItemEffects() && item.isOwned && item.type !== "itemEffect" &&
+  //compendium, createEmbeddedDocuments), but the active gamemaster is told with the lasting warning, an itemEffect
+  //included (Victoire's review: a state forged in the console added +4 Reaction unseen). Nothing the player's client
+  //sends (the option of a system write) makes it quieter
+  if (game.users?.activeGM?.isSelf && gmOnlyItemEffects() && item.isOwned &&
     !game.users.get(userId)?.isGM && carriesItemEffects(item.system)) {
-    const announced = isSystemEffectWrite(options)
-    ui.notifications.warn(game.i18n.format(announced ? 'SR5.WARN_ItemEffectsSystemCreate' : 'SR5.WARN_ItemEffectsAddedByPlayer', {
+    ui.notifications.warn(game.i18n.format('SR5.WARN_ItemEffectsAddedByPlayer', {
       user: game.users.get(userId)?.name ?? userId, item: item.name, actor: item.parent?.name ?? ""
     }), {
-      permanent: !announced
+      permanent: true
     })
   }
 }
@@ -130,14 +130,13 @@ export function sr5HookPreUpdateItem(document, data, options, userId) {
 export async function sr5HookUpdateItem(document, data, options, userId) {
   await sr5HookItemVision(document, userId)
   //A player's client can be made to skip the refusal above: the active gamemaster is told of every write of effects by a
-  //player. The option of a system write (acid, Apply to item) comes from that same client and can be forged: it only
-  //turns the lasting warning into a passing line, "system write announced" (Gustave's second review)
+  //player. The option of a system write (acid, Apply to item) comes from that same client and can be forged: it no
+  //longer changes the warning, always the lasting one (Victoire's review of séance H; Gustave's second review before)
   if (game.users?.activeGM?.isSelf && gmOnlyItemEffects() && !game.users.get(userId)?.isGM && touchesItemEffects(data)) {
-    const announced = isSystemEffectWrite(options)
-    ui.notifications.warn(game.i18n.format(announced ? 'SR5.WARN_ItemEffectsSystemWrite' : 'SR5.WARN_ItemEffectsChangedByPlayer', {
+    ui.notifications.warn(game.i18n.format('SR5.WARN_ItemEffectsChangedByPlayer', {
       user: game.users.get(userId)?.name ?? userId, item: document.name, actor: document.parent?.name ?? ""
     }), {
-      permanent: !announced
+      permanent: true
     })
   }
   //A physical jammer (SR5 p. 443) turned on or off, or changed: what it does is measured again

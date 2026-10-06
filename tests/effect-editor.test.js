@@ -348,14 +348,15 @@ describe("the active gamemaster sees every player's write of effects (Gustave's 
     }
   }
 
-  it("is told of an announced system write too, an option the player's client can forge", async () => {
+  it("is told of an announced system write with the lasting warning too, an option the player's client can forge", async () => {
     gmClient()
     const {
       sr5HookUpdateItem
     } = await import('../modules/hooks/item.js')
     await sr5HookUpdateItem(armor, acid, systemEffectWrite(), "player")
-    const calls = [...ui.notifications.warn.mock.calls, ...ui.notifications.info.mock.calls].map(c => c[0])
-    expect(calls).toContain("SR5.WARN_ItemEffectsSystemWrite")
+    expect(ui.notifications.warn).toHaveBeenCalledWith("SR5.WARN_ItemEffectsChangedByPlayer", {
+      permanent: true
+    })
   })
 
   it("is told of a plain write with the lasting warning", async () => {
@@ -399,7 +400,22 @@ describe("the active gamemaster sees every player's write of effects (Gustave's 
     })
   })
 
-  it("is not told of an item without effects, of the system's states, nor of its own additions", async () => {
+  // Victoire's review: an itemEffect forged in the console, and the option of a system write, warn the same way
+  it("is told with the lasting warning of a state the player adds, and of an addition announced as a system write", async () => {
+    gmClient()
+    const {
+      sr5HookCreateItem
+    } = await import('../modules/hooks/item.js')
+    await sr5HookCreateItem(created("itemEffect", acid.system), {
+    }, "player")
+    await sr5HookCreateItem(created("itemArmor", acid.system), systemEffectWrite(), "player")
+    expect(ui.notifications.warn).toHaveBeenCalledTimes(2)
+    for (const call of ui.notifications.warn.mock.calls) expect(call).toEqual(["SR5.WARN_ItemEffectsAddedByPlayer", {
+      permanent: true
+    }])
+  })
+
+  it("is not told of an item without effects, nor of its own additions", async () => {
     gmClient()
     const {
       sr5HookCreateItem
@@ -407,8 +423,6 @@ describe("the active gamemaster sees every player's write of effects (Gustave's 
     await sr5HookCreateItem(created("itemArmor", {
       customEffects: [], itemEffects: [], systemEffects: []
     }), {
-    }, "player")
-    await sr5HookCreateItem(created("itemEffect", acid.system), {
     }, "player")
     await sr5HookCreateItem(created("itemArmor", acid.system), {
     }, "gm")
