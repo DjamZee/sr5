@@ -20,7 +20,7 @@ const {
   SR5_ThirdPartyHelpers
 } = await import('../modules/rolls/roll-helpers/thirdparty.js')
 const {
-  sourceEntryOf, dispelledValue
+  sourceEntryOf, dispelledValue, effectHits
 } = await import('../modules/rolls/roll-helpers/dispel-rules.js')
 
 function effectItem(uuid, target, value, category = 'armors', sourceEntry) {
@@ -201,6 +201,29 @@ describe('the GM guard of a player dispelling by socket', async () => {
       value: 2
     }, 2, true)).toBe(false)
   })
+  //Fritz's forged requests, typed in a player's console
+  it('refuses 1 net hit taking an Armor from the hits from 4 to 0, and 2 taking a fixed +2 to 0', () => {
+    const armorHits = {
+      type: 'hits', multiplier: 1
+    }
+    expect(reduceAllowed({
+      value: 0
+    }, {
+      value: 4
+    }, 1, true, 'hits', armorHits)).toBe(false)
+    expect(reduceAllowed({
+      value: 3
+    }, {
+      value: 4
+    }, 1, true, 'hits', armorHits)).toBe(true)
+    expect(reduceAllowed({
+      value: 0
+    }, {
+      value: 2
+    }, 2, true, 'hits', {
+      type: 'value', value: 2, multiplier: 1
+    })).toBe(false)
+  })
   it('reads a list of custom effects sent whole, the value alone may change (measured in play)', () => {
     const entry = {
       category: 'characterAttributes', forceAdd: true, target: 'system.attributes.strength.augmented', type: 'value'
@@ -239,6 +262,28 @@ describe('dispelledValue', () => {
     expect(dispelledValue({
       type: 'netHits', multiplier: -1
     }, -3, 5)).toBe(0)
+  })
+  //Fritz: 4 hits x 0.5 give 2; 1 net hit of dispelling leaves 3 hits, so 1 (it used to stay at 2)
+  it('works a fractional multiplier out again from the hits left', () => {
+    const half = {
+      type: 'hits', multiplier: 0.5
+    }
+    expect(dispelledValue(half, 2, 1, effectHits({
+      sourceBase: 4, sourceHits: 4
+    }, 4))).toBe(1)
+    //Without the hits written on the effect: the fewest that give 2, here 4
+    expect(dispelledValue(half, 2, 1)).toBe(1)
+    //5 hits give 2 as well; 1 net hit leaves 4, still 2
+    expect(dispelledValue(half, 2, 1, effectHits({
+      sourceBase: 5, sourceHits: 5
+    }, 5))).toBeNull()
+    //A second dispelling counts what the spell lost before: 5 hits, 2 already lost (value 1), 1 more -> 2 hits -> still 1
+    expect(dispelledValue(half, 1, 1, effectHits({
+      sourceBase: 5, sourceHits: 5
+    }, 3))).toBeNull()
+    expect(dispelledValue(half, 1, 2, effectHits({
+      sourceBase: 5, sourceHits: 5
+    }, 3))).toBe(0)
   })
   it('never goes below 0, and leaves fixed values and ratings alone', () => {
     expect(dispelledValue({

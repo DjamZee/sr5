@@ -39,14 +39,37 @@ export function linkedEntryOf(source, effect, sourceKey, labelOf = k => k) {
  * @param {object|null} entry the source entry (sourceEntryOf)
  * @param {number} value the effect's current value
  * @param {number} reduction the dispelling net hits
+ * @param {number|null} [hits] the hits the effect stands on now (effectHits); unknown, the fewest that give its value:
+ *   never more than the true ones, so the GM's bound never lets an effect go further than the card allows
  */
-export function dispelledValue(entry, value, reduction) {
+export function dispelledValue(entry, value, reduction, hits = null) {
   if (!entry || !(reduction > 0)) return null
-  const base = String(entry.type ?? "").replace("Replace", "")
-  if (!READS_HITS.includes(base)) return null
-  //A negative multiplier (Decrease Attribute, -1 per net hit) gives a malus: it goes back up toward 0, never past it
-  const lost = Math.floor(reduction * (entry.multiplier || 1))
+  const kind = String(entry.type ?? "").replace("Replace", "")
+  if (!READS_HITS.includes(kind)) return null
+  const m = Number(entry.multiplier) || 1
   const current = Number(value) || 0
-  const next = current < 0 ? Math.min(0, current - lost) : Math.max(0, current - lost)
+  //The value is worked out again from the hits left, as applyExternalEffect did: a multiplier of 0.5 rounds the same
+  //way (4 hits give 2, 3 hits give 1). A negative multiplier (Decrease Attribute) goes back up toward 0
+  const from = Number.isFinite(hits) ? hits : fewestHits(current, m)
+  if (from === null) return null
+  const next = Math.floor(Math.max(0, from - reduction) * m) + 0
   return next === current ? null : next
+}
+
+//The fewest hits that give this value through the multiplier (applyExternalEffect rounds down); null when none does
+function fewestHits(value, m) {
+  for (let h = 0; h <= 200; h++) if (Math.floor(h * m) === value) return h
+  return null
+}
+
+/**
+ * The hits an effect stands on now: those it was made from (flags.sr5.sourceBase, applyExternalEffect), less what its
+ * spell lost since (flags.sr5.sourceHits against the spell's hits before this card). null for an older effect
+ * @param {object} flags the effect's flags.sr5
+ * @param {number} spellHits the spell's hits before this dispelling
+ */
+export function effectHits(flags, spellHits) {
+  const base = Number(flags?.sourceBase), atCast = Number(flags?.sourceHits)
+  if (!Number.isFinite(base) || !Number.isFinite(atCast)) return null
+  return Math.max(0, base - Math.max(0, atCast - (Number(spellHits) || 0)))
 }

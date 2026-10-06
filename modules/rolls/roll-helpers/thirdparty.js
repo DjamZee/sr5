@@ -24,7 +24,7 @@ import {
   SR5_ConverterHelpers
 } from "./converter.js"
 import {
-  linkedEntryOf, dispelledValue
+  linkedEntryOf, dispelledValue, effectHits
 } from "./dispel-rules.js"
 import {
   SR5_RollTest 
@@ -590,7 +590,7 @@ export class SR5_ThirdPartyHelpers {
           })
           //The entry it was made from (applyExternalEffect); an older effect is matched by its target
           const entry = linkedEntryOf(newEffect, updatedEffect, effect.flags?.sr5?.sourceEntry, k => SR5_EntityHelpers.getLabelByKey(k))
-          const value = dispelledValue(entry, updatedEffect.value, cardData.roll.netHits)
+          const value = dispelledValue(entry, updatedEffect.value, cardData.roll.netHits, effectHits(effect.flags?.sr5, targetedEffect.system[key]))
           if (value === null) continue
           updatedEffect.value = value
           for (let cs of custom) cs.value = value

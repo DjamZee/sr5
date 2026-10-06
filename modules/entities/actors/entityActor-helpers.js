@@ -2263,6 +2263,12 @@ export class SR5_ActorHelper {
           "system.durationType": "sustained",
           //The entry of the source item it comes from: dispelling lowers it only if that entry read the hits (dispel-rules.js)
           "flags.sr5.sourceEntry": entryKey,
+          //The hits its value stands on, and the spell's hits then: dispelling works the value out again from them
+          ...(["hits", "netHits"].includes(baseType) ? {
+            "flags.sr5.sourceBase": Number(baseType === "hits" ? data.roll.hits : data.roll.netHits) || 0,
+            "flags.sr5.sourceHits": Number(item.system.hits) || 0,
+          } : {
+          }),
         }
 
         if (isNaniteBoost) {
