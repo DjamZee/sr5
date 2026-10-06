@@ -5288,7 +5288,7 @@
 	"SR5.WARN_TargetItemMissing": "Objet visé introuvable (supprimé depuis le test) : l'action ne peut pas être appliquée.",
 	"SR5.WARN_MatrixResistanceDeviceMissing": "Appareil visé introuvable (supprimé depuis l'attaque) : la résistance aux dommages matriciels ne peut pas être lancée.",
 	"SR5.WARN_MatrixDamageDeviceMissing": "Appareil visé introuvable (supprimé depuis l'attaque) : les dommages matriciels ne sont appliqués à aucun appareil.",
-	"SR5.WARN_NoMatrixDefender": "Aucun défenseur pour cette attaque matricielle : ciblez le défenseur (ou sélectionnez son jeton) ; l'attaquant ne peut pas se défendre de sa propre attaque.",
+	"SR5.WARN_NoMatrixDefender": "Aucun défenseur pour cette attaque matricielle : la carte n'a pas de cible à vous ; sélectionnez le jeton du défenseur. L'attaquant ne peut pas se défendre de sa propre attaque.",
 	"SR5.WARN_MatrixDamageNowhere": "{name} n'a ni appareil actif ni persona incarné : les {value} cases de dommages matriciels ne sont écrites nulle part. Un technomancien ou une technomancienne les subit en étourdissants (SR5 p. 230) : à reporter à la main.",
 	"SR5.WARN_JackOutCardRefused": "Carte de débranchement refusée : elle n'a pas été lancée par le propriétaire du personnage, ou ses dés ne sont pas lisibles.",
 	"SR5.WARN_JackOutActiveGMOnly": "Seul le MJ actif lance la résistance à la déconnexion : c'est son navigateur qui tient le registre des cartes utilisées.",
