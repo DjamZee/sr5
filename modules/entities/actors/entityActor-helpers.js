@@ -11,6 +11,9 @@ import {
   SR5_EntityHelpers 
 } from "../helpers.js"
 import {
+  ownsTarget
+} from "../../rolls/roll-helpers/socket-guard.js"
+import {
   isStorable, isStoredAway 
 } from "../../interface/storage-rules.js"
 import {
@@ -714,8 +717,19 @@ export class SR5_ActorHelper {
   }
 
   //Socket for deletings marks on other actors;
-  static async _socketDeleteMarksOnActor(message) {
-    await SR5_ActorHelper.deleteMarksOnActor(message.data.actorData, message.data.actorId)
+  //Only the marker's owner forgets its own marks: the list sent only says where to look, and nothing but the
+  //marks of actorId is ever removed there (the reboot clears its sheet meanwhile, so the GM cannot read it again)
+  static async _socketDeleteMarksOnActor(message, senderId) {
+    const data = message?.data ?? {
+    }
+    if (!isActiveGM()) return
+    if (!SR5_ActorHelper.socketOwns(senderId, SR5_EntityHelpers.getRealActorFromID(data.actorId))) return SR5_ActorHelper.refuseSocket("deleteMarksOnActor", senderId, data)
+    const markedItems = (data.actorData?.matrix?.markedItems ?? []).filter(m => typeof m?.uuid === "string")
+    await SR5_ActorHelper.deleteMarksOnActor({
+      matrix: {
+        markedItems
+      }
+    }, data.actorId)
   }
 
   //Delete Mark info from deck
@@ -760,8 +774,20 @@ export class SR5_ActorHelper {
   }
 
   //Socket for deletings marks info other actors;
-  static async _socketDeleteMarkInfo(message) {
-    await SR5_ActorHelper.deleteMarkInfo(message.data.actorId, message.data.item, message.data.exact)
+  //Sent by the owner of what was marked (a reboot, SR5 p. 244), on the marker's deck: believed for the marker's
+  //owner, or for traces that all point at documents the sender owns
+  static async _socketDeleteMarkInfo(message, senderId) {
+    const data = message?.data ?? {
+    }
+    if (!isActiveGM()) return
+    const marker = SR5_EntityHelpers.getRealActorFromID(data.actorId)
+    if (!marker || typeof data.item !== "string" || !data.item) return SR5_ActorHelper.refuseSocket("deleteMarkInfo", senderId, data)
+    if (!SR5_ActorHelper.socketOwns(senderId, marker)) {
+      const deck = marker.items?.find?.(d => d.type === "itemDevice" && d.system.isActive)
+      const traces = data.exact ? [data.item] : (deck?.system?.markedItems ?? []).map(m => m.uuid).filter(uuid => uuid?.includes(data.item))
+      if (!traces.length || !traces.every(uuid => SR5_ActorHelper.socketOwns(senderId, fromUuidSync(uuid)))) return SR5_ActorHelper.refuseSocket("deleteMarkInfo", senderId, data)
+    }
+    await SR5_ActorHelper.deleteMarkInfo(data.actorId, data.item, !!data.exact)
   }
 
   //Create a Sidekick
@@ -1049,8 +1075,29 @@ export class SR5_ActorHelper {
   }
 
   //Socket for creating sidekick;
-  static async _socketCreateSidekick(message) {
-    await SR5_ActorHelper.createSidekick(message.data.item, message.data.userId, message.data.actorId)
+  //The GM builds the actor from the item of the creator's sheet, never from the object sent, and gives it to the
+  //sender: a player's console created any actor, owned by anyone (security pass, Olympe)
+  static async _socketCreateSidekick(message, senderId) {
+    const data = message?.data ?? {
+    }
+    if (!isActiveGM()) return
+    const owner = SR5_EntityHelpers.getRealActorFromID(data.actorId)
+    const item = owner?.items?.get?.(data.item?._id)
+    if (!SR5_ActorHelper.socketOwns(senderId, owner) || !SR5_ActorHelper.SIDEKICK_ITEMS.includes(item?.type)) return SR5_ActorHelper.refuseSocket("createSidekick", senderId, data)
+    await SR5_ActorHelper.createSidekick(item.toObject(false), senderId, data.actorId)
+  }
+
+  //The items that put an actor on the map (createSidekick)
+  static SIDEKICK_ITEMS = ["itemSpirit", "itemVehicle", "itemSprite", "itemProgram", "itemContact", "itemStorage"]
+
+  //Whether the sender may write on a document: a GM, or an owner of it (of the actor holding an item)
+  static socketOwns(senderId, document){
+    return ownsTarget(game.users?.get(senderId), document)
+  }
+
+  static refuseSocket(type, senderId, data){
+    SR5_SystemHelpers.srLog(1, `${type} refused from ${senderId}`, data)
+    return false
   }
 
   //The id a sidekick keeps as system.creatorId: the token's for an unlinked actor, as _OnSidekickCreate sets it
@@ -1389,8 +1436,17 @@ export class SR5_ActorHelper {
   }
 
   //Socket to dismiss sidekick;
-  static async _socketDismissSidekick(message) {
-    await SR5_ActorHelper.dimissSidekick(message.data.actor)
+  //Only a sidekick of the world, dismissed by its owner or its creator's, and as the GM reads it: a player's
+  //console deleted a GM's actor by sending its _id (measured by Sixtine)
+  static async _socketDismissSidekick(message, senderId) {
+    const data = message?.data ?? {
+    }
+    if (!isActiveGM()) return
+    const actor = game.actors?.get(data.actor?._id)
+    const creator = actor?.system?.creatorId ? SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId) : null
+    const isSidekick = !!creator?.items?.get?.(actor.system.creatorItemId)
+    if (!isSidekick || !(SR5_ActorHelper.socketOwns(senderId, actor) || SR5_ActorHelper.socketOwns(senderId, creator))) return SR5_ActorHelper.refuseSocket("dismissSidekick", senderId, data)
+    await SR5_ActorHelper.dimissSidekick(actor.toObject(false))
   }
 
   //Add item to actor's PAN
@@ -1417,8 +1473,23 @@ export class SR5_ActorHelper {
     })
   }
 
-  static async _socketAddItemToPan(message){
-    await SR5_ActorHelper.addItemtoPan(message.data.targetItem, message.data.actorId)
+  //The PAN's owner slaves a device the dialog could offer her (SR5 p. 233): one of her own, or one of a
+  //player character (or linked grunt) of the table, listed among its devices, and only while the PAN has room
+  static async _socketAddItemToPan(message, senderId){
+    const data = message?.data ?? {
+    }
+    if (!isActiveGM()) return
+    const master = SR5_EntityHelpers.getRealActorFromID(data.actorId)
+    const item = typeof data.targetItem === "string" ? await fromUuid(data.targetItem) : null
+    const holder = item?.documentName === "Item" ? item.parent : null
+    const listed = Object.values(holder?.system?.matrix?.potentialPanObject ?? {
+    }).some(list => list && Object.hasOwn(list, data.targetItem))
+    const offered = SR5_ActorHelper.socketOwns(senderId, holder) ||
+      (holder?.hasPlayerOwner && (holder.type === "actorPc" || (holder.type === "actorGrunt" && holder.prototypeToken?.actorLink)))
+    const pan = master?.system?.matrix?.pan
+    const room = !pan || !(Number(pan.current) >= Number(pan.max))
+    if (!SR5_ActorHelper.socketOwns(senderId, master) || !listed || !offered || !room) return SR5_ActorHelper.refuseSocket("addItemToPan", senderId, data)
+    await SR5_ActorHelper.addItemtoPan(data.targetItem, data.actorId)
   }
 
   //Delete item from actor's PAN
@@ -1439,7 +1510,8 @@ export class SR5_ActorHelper {
     }
 
     let currentPan = foundry.utils.duplicate(deck.system.pan)
-    if (index){
+    //The socket hands a checked number over, 0 included; the sheet a string
+    if (index !== null && index !== undefined && index !== ""){
       currentPan.content.splice(index, 1)
     } else {
       index = 0
@@ -1459,8 +1531,19 @@ export class SR5_ActorHelper {
     })
   }
 
-  static async _socketDeleteItemFromPan(message){
-    await SR5_ActorHelper.deleteItemFromPan(message.data.targetItem, message.data.actorId, message.data.index)
+  //The PAN's owner takes a device out, or the device's owner takes hers back; the index is only believed when
+  //it points at the device named
+  static async _socketDeleteItemFromPan(message, senderId){
+    const data = message?.data ?? {
+    }
+    if (!isActiveGM()) return
+    const master = SR5_EntityHelpers.getRealActorFromID(data.actorId)
+    const item = typeof data.targetItem === "string" ? await fromUuid(data.targetItem) : null
+    if (!SR5_ActorHelper.socketOwns(senderId, master) && !(item && SR5_ActorHelper.socketOwns(senderId, item))) return SR5_ActorHelper.refuseSocket("deleteItemFromPan", senderId, data)
+    const deck = master?.items?.find?.(d => d.type === "itemDevice" && d.system.isActive)
+    const index = Number(data.index)
+    const pointed = Number.isInteger(index) && index >= 0 && deck?.system?.pan?.content?.[index]?.uuid === data.targetItem
+    await SR5_ActorHelper.deleteItemFromPan(data.targetItem, data.actorId, pointed ? index : null)
   }
 
   //Update the source Item of an external Effect
@@ -1476,8 +1559,17 @@ export class SR5_ActorHelper {
     })
   }
 
-  static async _socketLinkEffectToSource(message){
-    await SR5_ActorHelper.linkEffectToSource(message.data.actorId, message.data.targetItem, message.data.effectUuid)
+  //Sent by whoever put the effect on its target: believed when the effect is an itemEffect of that very source,
+  //held by an actor the sender owns
+  static async _socketLinkEffectToSource(message, senderId){
+    const data = message?.data ?? {
+    }
+    if (!isActiveGM()) return
+    const effect = typeof data.effectUuid === "string" ? await fromUuid(data.effectUuid) : null
+    const source = typeof data.targetItem === "string" ? await fromUuid(data.targetItem) : null
+    const linked = effect?.type === "itemEffect" && source?.documentName === "Item" && effect.system?.ownerItem === data.targetItem
+    if (!linked || !SR5_ActorHelper.socketOwns(senderId, effect)) return SR5_ActorHelper.refuseSocket("linkEffectToSource", senderId, data)
+    await SR5_ActorHelper.linkEffectToSource(data.actorId, data.targetItem, data.effectUuid)
   }
 
   static async deleteSustainedEffect(targetItem){
@@ -1486,8 +1578,19 @@ export class SR5_ActorHelper {
     else SR5_SystemHelpers.srLog(2, `No item to delete in deleteSustainedEffect()`)
   }
 
-  static async _socketDeleteSustainedEffect(message){
-    await SR5_ActorHelper.deleteSustainedEffect(message.data.targetItem)
+  //The caster stopped sustaining (SR5 p. 274): believed for the effect's owner, or for an itemEffect whose source
+  //the sender owns and no longer sustains. Any other uuid deleted any item of the world (security pass, Olympe)
+  static async _socketDeleteSustainedEffect(message, senderId){
+    const data = message?.data ?? {
+    }
+    if (!isActiveGM()) return
+    const effect = typeof data.targetItem === "string" ? await fromUuid(data.targetItem) : null
+    if (!effect) return
+    if (!SR5_ActorHelper.socketOwns(senderId, effect)) {
+      const source = effect.type === "itemEffect" && typeof effect.system?.ownerItem === "string" ? await fromUuid(effect.system.ownerItem) : null
+      if (!source || source.system?.isActive || !SR5_ActorHelper.socketOwns(senderId, source)) return SR5_ActorHelper.refuseSocket("deleteSustainedEffect", senderId, data)
+    }
+    await SR5_ActorHelper.deleteSustainedEffect(data.targetItem)
   }
 
   //Delete an effect on an item when parent's ItemEffect is deleted
