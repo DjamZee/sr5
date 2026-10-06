@@ -398,7 +398,7 @@ export async function infectWith(item){
   const startYear = calendarStartYear()
   const actors = candidates.filter(a => data.actors.includes(a.uuid))
   if (!actors.length) return ui.notifications.warn(game.i18n.localize("SR5.DISEASE_NoTarget"))
-  const immune = []
+  const immune = [], recovering = []
   for (const actor of actors){
     //A gas mask or a chemical seal also keeps a pathogen out by its vector (SR5 p. 410)
     const sources = SR5_Toxins.immunitySources(actor.system, data.vector)
@@ -407,6 +407,13 @@ export async function infectWith(item){
       continue
     }
     const open = openInfectionOf(diseaseLedger(), actor.uuid, profile.name)
+    //Beaten, and getting its Essence back: the book says nothing of a new exposure then (Bullets & Bandages p. 21).
+    //Neither a dose added to an infection that no longer tests, nor a second one: the GM is told and decides
+    //(Liesel's D7, the exposure was lost without a word)
+    if (open?.state === "recovering") {
+      recovering.push(actor.name)
+      continue
+    }
     if (open) await writeEntry(reexpose(open, data.doses))
     else await writeEntry(newInfection(profile, {
       id: foundry.utils.randomID(), actorUuid: actor.uuid, actorName: actor.name, now, startYear,
@@ -416,8 +423,13 @@ export async function infectWith(item){
   if (immune.length) ui.notifications.info(game.i18n.format("SR5.DISEASE_Immune", {
     names: immune.join(" ; ")
   }))
+  if (recovering.length) ui.notifications.warn(game.i18n.format("SR5.DISEASE_ReexposedRecovering", {
+    names: recovering.join(", "), name: item.name
+  }), {
+    permanent: true
+  })
   ui.notifications.info(game.i18n.format("SR5.DISEASE_Infected", {
-    name: item.name, count: actors.length - immune.length
+    name: item.name, count: actors.length - immune.length - recovering.length
   }))
 }
 
