@@ -14,7 +14,7 @@ import {
   underFireRules, bbPatientEntry
 } from "../../system/bb-healing.js"
 import {
-  spellStabilizes
+  spellStabilizes, stabilizationLabelKey
 } from "../../system/bb-healing-rules.js"
 
 export default async function spellInfo(cardData){
@@ -110,9 +110,7 @@ export default async function spellInfo(cardData){
     if (underFireRules() && cardData.test.type === "spell" && cardData.target.hasTarget){
       const patient = SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId, cardData.actorUuids)
       const force = Math.min(Number(cardData.magic.force) || 0, 2 * (Number(actorData.specialAttributes?.magic?.augmented?.value) || 0))
-      if (patient && spellStabilizes(item?.name, force, bbPatientEntry(patient), patient.system?.conditionMonitors?.overflow?.actual?.value)) cardData.chatCard.buttons.bbStabilize = SR5_RollMessage.generateChatButton("nonOpposedTest", "bbStabilize", game.i18n.format("SR5.BB_StabilizeButton", {
-        reduction: 0
-      }), {
+      if (patient && spellStabilizes(item?.name, force, bbPatientEntry(patient), patient.system?.conditionMonitors?.overflow?.actual?.value)) cardData.chatCard.buttons.bbStabilize = SR5_RollMessage.generateChatButton("nonOpposedTest", "bbStabilize", game.i18n.localize(stabilizationLabelKey("SR5.BB_StabilizeButton", 0)), {
         gmAction: true
       })
     }

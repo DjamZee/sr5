@@ -93,6 +93,12 @@ export function stabilizationReduction(hits, threshold){
   return Math.max(0, (Number(hits) || 0) - (Number(threshold) || 0))
 }
 
+// A Stabilize or Heal spell and a first aid on a bleeding patient (BB p. 15-16) stabilize without lowering the
+// wound modifiers: their labels then leave the "-0" out
+export function stabilizationLabelKey(key, reduction){
+  return (Number(reduction) || 0) > 0 ? key : `${key}NoReduction`
+}
+
 // BB p. 16: on a stabilized patient each net hit heals 2 boxes, the hits counted capped by the higher of First Aid
 // and the medkit rating. The rest of the core rule stays (arbitrage de DjamZ, 2026-10-05): a full armor halves the
 // hits first (SR5 p. 207)

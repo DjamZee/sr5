@@ -8,6 +8,9 @@ import {
   applyStabilization, applyDiagnosis, useMedkitSupplies
 } from "../system/bb-healing.js"
 import {
+  stabilizationLabelKey
+} from "../system/bb-healing-rules.js"
+import {
   SR5 
 } from "../config.js"
 import {
@@ -977,7 +980,7 @@ export class SR5_RollMessage {
         break
       //Bullets & Bandages p. 15: what the GM applied, marked done
       case "bbStabilize":
-        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.format("SR5.BB_StabilizeDone", {
+        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.format(stabilizationLabelKey("SR5.BB_StabilizeDone", firstOption), {
           reduction: Number(firstOption) || 0
         }))
         break

@@ -20,7 +20,7 @@ import {
   underFireRules, bbPatientEntry, bbThreshold
 } from "../../system/bb-healing.js"
 import {
-  diagnosisBonus, stabilizedTreatmentBoxes, believedHits, believedStabilizationReduction
+  diagnosisBonus, stabilizedTreatmentBoxes, believedHits, believedStabilizationReduction, stabilizationLabelKey
 } from "../../system/bb-healing-rules.js"
 
 // Bullets & Bandages p. 14-15, world setting: the stabilization (extended) and the diagnosis of the targeted patient.
@@ -59,7 +59,7 @@ function bbCard(cardData, patient){
   if (hits >= threshold){
     //The count the GM makes again when he applies it (bb-healing.js, stabilizationCardReduction)
     const reduction = believedStabilizationReduction(cardData.roll, cardData.dicePool?.value, cardData.test?.extended?.roll, threshold)
-    cardData.chatCard.buttons.bbStabilize = SR5_RollMessage.generateChatButton("nonOpposedTest", "bbStabilize", game.i18n.format("SR5.BB_StabilizeButton", {
+    cardData.chatCard.buttons.bbStabilize = SR5_RollMessage.generateChatButton("nonOpposedTest", "bbStabilize", game.i18n.format(stabilizationLabelKey("SR5.BB_StabilizeButton", reduction), {
       reduction
     }), {
       gmAction: true
@@ -172,9 +172,7 @@ export default async function skillInfo(cardData){
         }
         if (bbEntry.stabilized) cardData.roll.netHits = stabilizedTreatmentBoxes(cardData.roll.hits, 2, actorData.skills.firstAid.rating.value, cardData.test.bbMedkitRating, fullArmor)
         if (bbEntry.bleeding && !(targetActor.system.conditionMonitors.overflow?.actual?.value > 0)) {
-          cardData.chatCard.buttons.bbStabilize = SR5_RollMessage.generateChatButton("nonOpposedTest", "bbStabilize", game.i18n.format("SR5.BB_StabilizeButton", {
-            reduction: 0
-          }), {
+          cardData.chatCard.buttons.bbStabilize = SR5_RollMessage.generateChatButton("nonOpposedTest", "bbStabilize", game.i18n.localize(stabilizationLabelKey("SR5.BB_StabilizeButton", 0)), {
             gmAction: true
           })
         }

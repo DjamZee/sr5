@@ -5,7 +5,7 @@
 import {
   BB_UNDER_FIRE, BB_ADVANCED_MEDKITS, BB_LEDGER, BB_WOUND_THRESHOLD, refreshPatients,
   physicalTotal, canBleed, ledgerAfterWound, ledgerAfterBleedBox, isStabilizeSpell, stabilizeSpellDrain, ledgerAfterRound, ledgerAfterStabilization,
-  spellStabilizes, believedStabilizationReduction,
+  spellStabilizes, believedStabilizationReduction, stabilizationLabelKey,
   ledgerWithDiagnosis, ledgerWithoutDiagnosis, diagnosisBonus, woundDiagnosisThreshold, DIAGNOSIS_THRESHOLDS, ledgerCleaned, penaltyReduction, stabilizationThreshold,
 } from "./bb-healing-rules.js"
 import {
@@ -233,7 +233,7 @@ export async function applyStabilization(messageData, patient, medic){
   }
   const reduction = stabilizationCardReduction(messageData, patient)
   const hours = Number(medic?.system?.skills?.firstAid?.rating?.value) || 0
-  const ok = await confirm(game.i18n.format("SR5.BB_StabilizeConfirm", {
+  const ok = await confirm(game.i18n.format(stabilizationLabelKey("SR5.BB_StabilizeConfirm", reduction), {
     name: escape(patient.name), reduction, hours
   }))
   if (!ok) return false

@@ -7,7 +7,7 @@ import {
   stabilizationReduction, stabilizedTreatmentBoxes, penaltyReduction, ledgerAfterStabilization,
   ledgerWithDiagnosis, ledgerWithoutDiagnosis, ledgerCleaned, advancedMedkitDice, ledgerAfterBleedBox,
   isStabilizeSpell, stabilizeSpellDrain, woundDiagnosisThreshold,
-  bbModeDiagnosisDice, spellStabilizes, believedHits, believedStabilizationReduction,
+  bbModeDiagnosisDice, spellStabilizes, believedHits, believedStabilizationReduction, stabilizationLabelKey,
 } from '../modules/system/bb-healing-rules.js'
 import {
   removedButtonKeys
@@ -270,5 +270,16 @@ describe('Balles et Pansements : ce que le MJ croit d\'une carte', () => {
     expect(removedButtonKeys(undefined, {
     })).toEqual({
     })
+  })
+})
+
+// A spell or a first aid on a bleeding patient stabilizes without lowering the wound modifiers: the button, the
+// confirmation and the done mark then say "Stabilize", not "wound modifiers -0"
+describe('stabilizationLabelKey', () => {
+  it('names the reduction only when there is one', () => {
+    expect(stabilizationLabelKey("SR5.BB_StabilizeButton", 2)).toBe("SR5.BB_StabilizeButton")
+    expect(stabilizationLabelKey("SR5.BB_StabilizeButton", 0)).toBe("SR5.BB_StabilizeButtonNoReduction")
+    expect(stabilizationLabelKey("SR5.BB_StabilizeDone", "0")).toBe("SR5.BB_StabilizeDoneNoReduction")
+    expect(stabilizationLabelKey("SR5.BB_StabilizeConfirm", undefined)).toBe("SR5.BB_StabilizeConfirmNoReduction")
   })
 })
