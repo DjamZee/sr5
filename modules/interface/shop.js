@@ -470,10 +470,14 @@ export class SR5Shop {
     isGM = game.user.isGM, warn = (key, data) => ui.notifications.warn(game.i18n.format(key, data))
   } = {
   }) {
+    // Bought, an item is installed, whatever storage it sat in: a counter item is stored in the vendor's storage
+    // (storedIn = the counter), and screened as such it would go through, be paid for, and be refused at the creation
     const goods = lines.map(line => {
       const document = line.item ?? line.source
       return {
-        type: document?.type, name: line.name ?? document?.name, system: document?.system
+        type: document?.type, name: line.name ?? document?.name, system: {
+          ...document?.system, type: document?.system?.type, storedIn: ''
+        }
       }
     })
     const {

@@ -198,6 +198,23 @@ describe("the till (SR5 p. 54, p. 89)", () => {
       isGM: false, warn: () => {}
     })).lines).toEqual([glande])
   })
+  // Apolline, second round: a counter item is stored in the vendor's storage (storedIn = the counter's id); bought,
+  // it is installed. Screened as it was, it went through, was paid for, and was refused at the creation
+  it("screens a vendor's counter item as installed, whatever storage it sits in", async () => {
+    const warned = []
+    const counter = {
+      item: {
+        type: "itemAugmentation", name: "Glande", system: {
+          type: "bioware", storedIn: "counterStorageId"
+        }
+      }, name: "Glande"
+    }
+    const screened = await SR5Shop.screenLines(buyer(6, [sensitive]), [counter], {
+      isGM: false, warn: key => warned.push(key)
+    })
+    expect(screened.lines).toEqual([])
+    expect(warned).toEqual(["SR5.WARN_ImplantRejected"])
+  })
 })
 
 describe("Essence left after a purchase (SR5 p. 54: at 0, death)", () => {
