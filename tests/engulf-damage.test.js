@@ -62,6 +62,13 @@ describe('engulf resistance wiring', () => {
     expect(resistanceCase).toMatch(/typeSub === "toxinDamage" && prevData\?\.damage\?\.toxin\?\.type === "airEngulf" && prevData\?\.chatCard\?\.buttons\?\.resistanceCard\) SR5_RollMessage\.updateChatButtonHelper\(cardData\.previousMessage\.messageId, "resistanceCard"\)/)
   })
 
+  // Victoire's review, remark 3: the release card had a button stored under the key "undefined"
+  it('gives the release card an end label under a real key', () => {
+    const defenseResult = readFileSync(new URL('../modules/rolls/roll-test-case/test-DefenseResult.js', import.meta.url), 'utf8')
+    const block = defenseResult.slice(defenseResult.indexOf('case "engulfResistance":'))
+    expect(block.slice(0, block.indexOf('break'))).toMatch(/key = "actionEnd"/)
+  })
+
   it('keeps the first phase of an earth, water or fire engulf when its damage is applied', () => {
     const block = message.slice(message.indexOf('switch (buttonToUpdate) {'))
     expect(block.slice(0, 600)).toMatch(/isContinuous && messageData\.test\?\.typeSub !== "continuousDamage"\) await SR5_ActorHelper\.keepEngulfFirstPhase\(messageData\)/)
