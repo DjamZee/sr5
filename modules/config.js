@@ -3538,6 +3538,9 @@ SR5.AllSpiritPowers = {
   hemoragy                   : "SR5.SpiritPowerHemoragy",
   hiveMind                   : "SR5.SpiritPowerHiveMind",
   immunity                   : "SR5.SpiritPowerImmunity",
+  // The necro spirits' own Immunity (Arcanes Interdites p. 50: normal weapons, pathogens, toxins), apart from
+  // the shedims' (Grimoire des Ombres p. 93: age, pathogens, toxins) that "immunity" gives
+  immunityNecro              : "SR5.SpiritPowerImmunityNecro",
   influence                  : "SR5.SpiritPowerInfluence",
   inhabitation               : "SR5.SpiritPowerInhabitation",
   innateSpell                : "SR5.SpiritPowerInnateSpell",
