@@ -2,6 +2,9 @@ import {
   SR5 
 } from "../../config.js"
 import {
+  hasAegis, absorbWithAegis, isActiveGM
+} from "../../system/aegis.js"
+import {
   SR5_EntityHelpers 
 } from "../helpers.js"
 import {
@@ -92,6 +95,17 @@ export class SR5_ActorHelper {
         if (options.damage.matrix.value > 0) {
           damage = options.damage.matrix.value
           damageType = "stun"
+          //Aegis (Kill Code p. 112): the shield takes the boxes first; its ledger is the active GM's alone
+          if (hasAegis(realActor)) {
+            if (isActiveGM()) {
+              const result = absorbWithAegis(realActor.getFlag("sr5", "aegis"), damage, game.time.worldTime)
+              await realActor.setFlag("sr5", "aegis", result.ledger)
+              if (result.absorbed > 0) ui.notifications.info(game.i18n.format("SR5.INFO_AegisAbsorbed", {
+                name: realActor.name, absorbed: result.absorbed, left: 4 - result.ledger.damage
+              }))
+              damage = result.through
+            } else ui.notifications.warn(game.i18n.localize("SR5.WARN_AegisNeedsActiveGM"))
+          }
         }
         if (damageType === "stun") {
           actorData.conditionMonitors.stun.actual.base += damage

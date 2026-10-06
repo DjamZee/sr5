@@ -2,8 +2,11 @@ import {
   SR5 
 } from "../../config.js"
 import {
-  SR5_EntityHelpers 
+  SR5_EntityHelpers
 } from "../helpers.js"
+import {
+  hasAegis
+} from "../../system/aegis.js"
 import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
@@ -964,7 +967,9 @@ export class SR5Actor extends Actor {
   //Apply Damage to actor
   async takeDamage(options){
     let actorId = (this.isToken ? this.token.id : this.id)
-    if (game.user.isGM || this.testUserPermission(game.user, 3)) await SR5_ActorHelper.takeDamage(actorId, options)
+    //Aegis (Kill Code p. 112): matrix damage on its owner goes to the active GM, who alone spends the shield
+    const aegisToGM = !game.user.isGM && options?.damage?.matrix?.value > 0 && hasAegis(this)
+    if (!aegisToGM && (game.user.isGM || this.testUserPermission(game.user, 3))) await SR5_ActorHelper.takeDamage(actorId, options)
     else {
       SR5_SocketHandler.emitForGM("takeDamage", {
         actorId: actorId,
