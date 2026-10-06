@@ -116,7 +116,9 @@ export function baseEssence(system){
 }
 
 const CRANIAL = ["headware", "eyeware", "earware"]
-const NANOWARE = ["nanocyber", "hardNanoware", "softNanoware"]
+// Nanoware is the hard and soft nanites; nanocybernetic implants are cyberware, each built around its own nanohive
+// (Chrome Flesh p. 150, 155), and a nanohive is out of the reach of these treatments (DTER p. 87)
+const NANOWARE = ["hardNanoware", "softNanoware"]
 
 // A glitch destroys every cranial, eye or ear cyberware whose base Essence is below Rating / 10
 export function cyberwareAtRisk(items, rating){
@@ -131,6 +133,28 @@ export function nanowareToDecay(items, ticks){
     .map(i => ({
       id: i.id, rating: Math.max(0, i.system.itemRating - ticks)
     }))
+}
+
+// The hours of NanoScrub played one after the other: each lowers the Volume, every other nanoware and the
+// Overwriters still at work by 1, never below 0. The book does not stop the NanoScrub at Volume 0, so the hours
+// go on: a jump of the clock and the same time hour by hour give the same result.
+// state: { nanite, nanoware: { id: rating }, overwriters: rating or null }
+export function scrubHours(state, ticks){
+  let nanite = Number(state.nanite) || 0
+  const nanoware = {
+    ...state.nanoware
+  }
+  let overwriters = state.overwriters ?? null
+  let cured = false
+  for (let h = 0; h < ticks; h++){
+    if (nanite > 0 && nanite - 1 === 0) cured = true
+    nanite = Math.max(0, nanite - 1)
+    for (const id of Object.keys(nanoware)) nanoware[id] = Math.max(0, nanoware[id] - 1)
+    if (overwriters !== null) overwriters = overwriters > 1 ? overwriters - 1 : null
+  }
+  return {
+    nanite, nanoware, overwriters, cured
+  }
 }
 
 /* -------------------------------------------- */
@@ -223,7 +247,13 @@ export function cfdStatus(actor){
       rating: p.nanoscrub.rating, next: fmt(p.nanoscrub.injectedAt + ((p.nanoscrub.hoursDone ?? 0) + 1) * HOUR)
     } : null,
     psychotic: p?.psychotic ? fmt(p.psychotic.deadline) : null,
+    inCombat: inCombat(actor),
   }
+}
+
+// In a started combat the Overwriters roll at the end of each Combat Turn: "Resolve" is for outside a combat
+function inCombat(actor){
+  return !!game.combats?.some(c => c.started && c.combatants.some(cb => cb.actor?.uuid === actor.uuid))
 }
 
 export async function startTreatmentDialog(actor){
@@ -274,7 +304,15 @@ export async function startTreatment(actor, {
     if (rating <= 0) return
     const roll = await rollPool(rating)
     const effect = sideEffectOf(roll)
-    const rows = []
+    // The roll of the side effects shows on the card, so that the GM can check it
+    const rows = [{
+      text: game.i18n.format("SR5.CFD_SideEffectRoll", {
+        n: rating,
+        dice: (roll.dices ?? []).map(d => d.result).join(", "),
+        hits: roll.hits ?? 0,
+        result: game.i18n.localize(`SR5.CFD_SideEffect_${effect}`)
+      })
+    }]
     let atRisk = []
     if (effect === "critical"){
       rows.push({
@@ -294,7 +332,7 @@ export async function startTreatment(actor, {
           text: escape(item.name), itemId: item.id, uuid: actor.uuid, button: "destroy"
         })
       }
-      rows.unshift({
+      rows.splice(1, 0, {
         text: game.i18n.format("SR5.CFD_ScrubStarted", {
           actor: escape(actor.name), rating, date: fmt(now + HOUR)
         })
@@ -338,6 +376,7 @@ export async function startTreatment(actor, {
 // Outside a combat the GM lets the Overwriters run to the end at once
 export async function resolveOverwritersNow(actor){
   if (!isActiveGM()) return warnNotActiveGM()
+  if (inCombat(actor)) return ui.notifications.warn(game.i18n.localize("SR5.CFD_ResolveInCombat"))
   return overwriterRounds(actor, MAX_ROUNDS)
 }
 
@@ -350,9 +389,11 @@ export async function stopTreatment(actor){
 
 /* The Overwriters ----------------------------- */
 
-async function overwriterRounds(actor, cap){
+// combatTurn: { combatId, round } of the Combat Turn that ended, kept so that the same turn never plays twice
+async function overwriterRounds(actor, cap, combatTurn = null){
   const p = patientOf(actor.uuid)
   if (!p?.overwriters || p.overwriters.curedAt || p.overwriters.rating <= 0) return
+  if (combatTurn && !turnNotPlayed(p.overwriters.turns, combatTurn)) return
   const startNanite = naniteOf(actor)
   const rounds = await runOverwriters({
     rating: p.overwriters.rating, nanite: startNanite
@@ -368,11 +409,14 @@ async function overwriterRounds(actor, cap){
     const e = patients[actor.uuid]
     if (!e?.overwriters) return
     e.overwriters.rating = last.rating
+    if (combatTurn) e.overwriters.turns = {
+      ...e.overwriters.turns, [combatTurn.combatId]: combatTurn.round
+    }
     if (last.cured) e.overwriters.curedAt = now
     if (last.spent || (last.cured && last.rating <= 0)) e.overwriters = null
   })
   const lines = rounds.map((r, i) => game.i18n.format("SR5.CFD_Round", {
-    n: i + 1, own: r.ownHits, nanite: r.naniteHits, rating: r.rating, volume: r.nanite
+    n: combatTurn ? combatTurn.round : i + 1, own: r.ownHits, nanite: r.naniteHits, rating: r.rating, volume: r.nanite
   }))
   const end = last.cured ? "SR5.CFD_Cured" : (last.spent ? "SR5.CFD_OverwritersSpent" : null)
   await postCard([{
@@ -391,6 +435,13 @@ export function endsCombatTurn(previousRound, newRound){
   return prev >= 1 && Number(newRound) > prev
 }
 
+// A turn of a combat is played once: going back a round and forward again does not replay it
+export function turnNotPlayed(turns, {
+  combatId, round
+}){
+  return round > (Number(turns?.[combatId]) || 0)
+}
+
 // The end of a Combat Turn: one round for every treated character fighting in it
 async function onCombatRound(combat, changed){
   if (!isActiveGM() || !("round" in changed)) return
@@ -403,7 +454,9 @@ async function onCombatRound(combat, changed){
     if (!actor || seen.has(actor.uuid)) continue
     seen.add(actor.uuid)
     const p = patients[actor.uuid]
-    if (p?.overwriters && !p.overwriters.curedAt) await overwriterRounds(actor, 1)
+    if (p?.overwriters && !p.overwriters.curedAt) await overwriterRounds(actor, 1, {
+      combatId: combat.id, round: Number(combat.previous.round)
+    })
   }
 }
 
@@ -421,30 +474,49 @@ export async function checkCfd(){
       const due = nanoscrubDue(p.nanoscrub, now)
       if (due.ticks && actor){
         const before = naniteOf(actor)
-        await lowerNanite(actor, due.ticks)
-        const updates = nanowareToDecay(actor.items, due.ticks).map(n => ({
-          _id: n.id, "system.itemRating": n.rating
+        // Overwriters still at work are nanoware too (DTER p. 87); leftovers after a cure follow their own daily loss
+        const ow = p.overwriters && !p.overwriters.curedAt ? p.overwriters.rating : null
+        const nanoware = Object.fromEntries(nanowareToDecay(actor.items, 0).map(n => [n.id, n.rating]))
+        const after = scrubHours({
+          nanite: before, nanoware, overwriters: ow
+        }, due.ticks)
+        await lowerNanite(actor, before - after.nanite)
+        const updates = Object.entries(after.nanoware).filter(([id, r]) => r !== nanoware[id]).map(([id, r]) => ({
+          _id: id, "system.itemRating": r
         }))
         if (updates.length) await actor.updateEmbeddedDocuments("Item", updates)
-        // Overwriters still at work are nanoware too
-        if (p.overwriters) p.overwriters.rating = Math.max(0, p.overwriters.rating - due.ticks)
-        if (p.overwriters?.rating === 0) p.overwriters = null
-        const after = Math.max(0, before - due.ticks)
+        if (ow !== null){
+          if (after.overwriters === null) p.overwriters = null
+          else p.overwriters.rating = after.overwriters
+        }
         rows.push({
-          text: game.i18n.format(after === 0 ? "SR5.CFD_ScrubCured" : "SR5.CFD_ScrubTick", {
-            actor: escape(p.actorName), n: due.ticks, volume: after
+          text: game.i18n.format("SR5.CFD_ScrubTick", {
+            actor: escape(p.actorName), n: due.ticks, volume: after.nanite
+          })
+        })
+        if (after.cured) rows.push({
+          text: game.i18n.format("SR5.CFD_ScrubCured", {
+            actor: escape(p.actorName)
           })
         })
       }
       p.nanoscrub.hoursDone = due.hoursDone
       p.nanoscrub.rating = due.rating
-      if (due.finished || (actor && naniteOf(actor) === 0)) p.nanoscrub = null
+      if (due.finished){
+        p.nanoscrub = null
+        // Spent without curing: the GM is told that the infection remains
+        const left = actor ? naniteOf(actor) : 0
+        if (left > 0) rows.push({
+          text: game.i18n.format("SR5.CFD_ScrubSpent", {
+            actor: escape(p.actorName), volume: left
+          })
+        })
+      }
     }
     if (p.overwriters?.curedAt){
       const decay = overwriterDecayDue(p.overwriters, now)
       if (decay.rating <= 0) p.overwriters = null
-    }
-    if (p.psychotic && !p.psychotic.notified && p.psychotic.deadline <= now){
+    }    if (p.psychotic && !p.psychotic.notified && p.psychotic.deadline <= now){
       p.psychotic.notified = true
       rows.push({
         text: game.i18n.format("SR5.CFD_Overwritten", {
@@ -526,7 +598,17 @@ function queueCheck(){
 }
 
 export function initCfdTreatment(){
-  Hooks.on("updateWorldTime", () => queueCheck())
+  Hooks.on("updateWorldTime", () => {
+    queueCheck()
+    //The daily loss of leftover Overwriters and the next NanoScrub hour are read from the clock: an open sheet of
+    //a treated character is drawn again, the ledger itself may not have changed
+    if (!game.user.isGM) return
+    const patients = cfdLedger().patients ?? {
+    }
+    for (const app of foundry.applications.instances.values()){
+      if (app.actor && patients[app.actor.uuid] && app.rendered) app.render(false)
+    }
+  })
   Hooks.on("updateCombat", (combat, changed) => onCombatRound(combat, changed).catch(e => SR5_SystemHelpers.srLog(1, `CFD round failed: ${e}`)))
   //The sheets of the treated characters show where the treatment stands
   const redraw = (setting) => {

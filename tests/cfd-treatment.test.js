@@ -3,7 +3,7 @@ import {
 } from "vitest"
 import {
   overwriterRating, overwriterPools, resolveOverwriterRound, runOverwriters, nanoscrubDue, sideEffectOf,
-  baseEssence, cyberwareAtRisk, nanowareToDecay, overwriteDeadline, overwriterDecayDue, endsCombatTurn, HOUR, DAY
+  baseEssence, cyberwareAtRisk, nanowareToDecay, overwriteDeadline, overwriterDecayDue, endsCombatTurn, scrubHours, turnNotPlayed, HOUR, DAY
 } from "../modules/system/cfd-treatment.js"
 
 describe("Overwriters (Dark Terrors p. 87)", () => {
@@ -205,14 +205,97 @@ describe("what the NanoScrub reaches", () => {
       }),
     ]
     expect(nanowareToDecay(items, 1)).toEqual([{
-      id: "n1", rating: 1
-    }, {
       id: "n2", rating: 0
     }])
-    expect(nanowareToDecay(items, 2)).toEqual([{
-      id: "n1", rating: 0
+  })
+
+  it("never reaches a nanohive, nor any nanocybernetic implant (DTER p. 87 ; Chrome Flesh p. 150, 155)", () => {
+    const items = [
+      aug("hive", "nanocyber", "bodyware", 0.2, {
+        rating: 3
+      }),
+      aug("soft", "softNanoware", "", 0, {
+        rating: 3
+      }),
+    ]
+    expect(nanowareToDecay(items, 3).map(n => n.id)).toEqual(["soft"])
+  })
+})
+
+describe("the NanoScrub hours, one after the other", () => {
+  const start = 0
+  // The bench of the review: Volume 3, NanoScrub Rating 6, two nanoware at 10, eight hours
+  const bench = {
+    nanite: 3, nanoware: {
+      a: 10, b: 10
+    }, overwriters: 4
+  }
+
+  function play(steps){
+    let entry = {
+      rating: 6, injectedAt: start, hoursDone: 0
+    }
+    let state = bench
+    let cured = false
+    for (const t of steps){
+      const due = nanoscrubDue(entry, t)
+      const r = scrubHours(state, due.ticks)
+      cured = cured || r.cured
+      state = {
+        nanite: r.nanite, nanoware: r.nanoware, overwriters: r.overwriters
+      }
+      entry = {
+        ...entry, hoursDone: due.hoursDone, rating: due.rating
+      }
+    }
+    return {
+      ...state, cured
+    }
+  }
+
+  it("a jump of 8 hours and 8 steps of 1 hour give the same result", () => {
+    const jump = play([8 * HOUR])
+    const steps = play([1, 2, 3, 4, 5, 6, 7, 8].map(h => h * HOUR))
+    expect(steps).toEqual(jump)
+    // Rating 6 works 6 hours: the nanoware loses 6, the Volume stops at 0, the Overwriters are gone
+    expect(jump).toEqual({
+      nanite: 0, nanoware: {
+        a: 4, b: 4
+      }, overwriters: null, cured: true
+    })
+  })
+
+  it("tells once that the Volume reached 0, and not when it was already 0", () => {
+    expect(scrubHours({
+      nanite: 2, nanoware: {
+      }, overwriters: null
+    }, 5).cured).toBe(true)
+    expect(scrubHours({
+      nanite: 0, nanoware: {
+      }, overwriters: null
+    }, 5).cured).toBe(false)
+  })
+})
+
+describe("a Combat Turn of Overwriters is played once", () => {
+  it("going back a round and forward again does not replay it", () => {
+    expect(turnNotPlayed(undefined, {
+      combatId: "c", round: 1
+    })).toBe(true)
+    expect(turnNotPlayed({
+      c: 1
     }, {
-      id: "n2", rating: 0
-    }])
+      combatId: "c", round: 1
+    })).toBe(false)
+    expect(turnNotPlayed({
+      c: 1
+    }, {
+      combatId: "c", round: 2
+    })).toBe(true)
+    expect(turnNotPlayed({
+      c: 3
+    }, {
+      combatId: "other", round: 1
+    })).toBe(true)
   })
 })

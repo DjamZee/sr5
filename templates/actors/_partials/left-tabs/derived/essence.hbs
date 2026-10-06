@@ -59,7 +59,7 @@
 			{{#if cfd.psychotic}}<div class="col-12">{{localize 'SR5.CFD_PsychoticUntil' date=cfd.psychotic}}</div>{{/if}}
 			<div class="col-12 SR-TextRight">
 				<a data-sr5-cfd="start">{{localize 'SR5.CFD_Give'}}</a>
-				{{#if cfd.overwriters}}{{#unless cfd.overwriters.cured}} · <a data-sr5-cfd="resolve">{{localize 'SR5.CFD_Resolve'}}</a>{{/unless}}{{/if}}
+				{{#if cfd.overwriters}}{{#unless (or cfd.overwriters.cured cfd.inCombat)}} · <a data-sr5-cfd="resolve">{{localize 'SR5.CFD_Resolve'}}</a>{{/unless}}{{/if}}
 				{{#if (or cfd.overwriters cfd.nanoscrub cfd.psychotic)}} · <a data-sr5-cfd="stop">{{localize 'SR5.CFD_Stop'}}</a>{{/if}}
 			</div>
 		</li>
