@@ -312,8 +312,9 @@ export class SR5_RollMessage {
         } else actor.rollTest(type, messageData.test.typeSub, messageData)
         break
       case "resistanceCard":
-        //Two owners clicking at once rolled two resistances (MESURES-F, F6): the active GM holds it for the first
-        if (!(await claimChatButton(messageId, type))) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_ButtonClaimed")}`)
+        //Two owners clicking at once rolled two resistances (MESURES-F, F6): the active GM holds it for the first.
+        //A grenade's button is an opposed one, used by everyone in the blast: it is not held (Céleste's review)
+        if (action === "nonOpposedTest" && !(await claimChatButton(messageId, type))) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_ButtonClaimed")}`)
         actor.rollTest(type, null, messageData)
         break
       case "powerDefense":

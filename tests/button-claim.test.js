@@ -49,6 +49,7 @@ beforeEach(() => {
         chatCard: {
           buttons: {
             resistanceCard: {
+              testType: "nonOpposedTest", actionType: "resistanceCard"
             }
           }
         },
@@ -78,7 +79,27 @@ describe("holding a chat button", () => {
     expect(holdButton("a|resistanceCard", "j1", 0)).toBe(true)
     expect(holdButton("a|resistanceCard", "j2", 1)).toBe(false)
     expect(holdButton("a|resistanceCard", "j1", 2)).toBe(true)
-    expect(holdButton("a|resistanceCard", "j2", 2 + HOLD_MS + 1)).toBe(true)
+    expect(holdButton("a|resistanceCard", "j2", HOLD_MS + 1)).toBe(true)
+  })
+
+  // Céleste's review: a co-owner asking again every 59 s from the console kept the button from everyone
+  it("asking again never extends one's own hold", () => {
+    expect(holdButton("b|resistanceCard", "j1", 0)).toBe(true)
+    expect(holdButton("b|resistanceCard", "j1", HOLD_MS - 1000)).toBe(true)
+    expect(holdButton("b|resistanceCard", "j2", HOLD_MS + 1)).toBe(true)
+    expect(holdButton("b|resistanceCard", "j1", HOLD_MS + 2)).toBe(false)
+  })
+
+  it("never refuses a GM, whose click takes the hold", () => {
+    expect(grantButton("m8", "resistanceCard", j1)).toBe(true)
+    expect(grantButton("m8", "resistanceCard", gm)).toBe(true)
+    expect(grantButton("m8", "resistanceCard", j1)).toBe(false)
+  })
+
+  // A grenade's "Encaisser" is an opposed button, used by everyone in the blast for their own character
+  it("holds no opposed button", () => {
+    card.flags.sr5data.chatCard.buttons.resistanceCard.testType = "opposedTest"
+    expect(grantButton("m9", "resistanceCard", j1)).toBe(false)
   })
 
   it("two co-owners asking together: one card only", () => {
@@ -114,6 +135,8 @@ describe("the Encaisser button", () => {
     const branch = source.slice(source.indexOf('case "resistanceCard":'))
     expect(branch.indexOf("claimChatButton(messageId, type)")).toBeGreaterThan(0)
     expect(branch.indexOf("claimChatButton(messageId, type)")).toBeLessThan(branch.indexOf("actor.rollTest(type, null, messageData)"))
+    // The grenade's opposed button goes straight to the clicker's character, without asking
+    expect(branch).toContain('if (action === "nonOpposedTest" && !(await claimChatButton(messageId, type)))')
   })
 })
 

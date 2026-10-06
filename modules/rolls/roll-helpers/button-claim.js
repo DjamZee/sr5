@@ -14,8 +14,11 @@ import {
 // Two owners of one actor clicking "Encaisser" at the same moment each rolled a resistance, and each card then offered
 // to apply the damage (MESURES-F, F6): the button is only removed once a resistance is rolled. The active GM, alone,
 // now holds the button for the first owner who asks, reading the card from his own chat log. A hold lapses after
-// HOLD_MS, so an owner who closes the dialog without rolling does not lock the others out; the same user may always
-// ask again. Without an active GM, or without his answer, the button works as before rather than block the resistance.
+// HOLD_MS, so an owner who closes the dialog without rolling does not lock the others out; the same user may ask again
+// while it runs, but asking again never extends it, so no owner can keep the button from the others by asking every
+// minute. A GM is never refused, and his click takes the hold. Only the card owner's own button is held: a grenade's
+// "Encaisser" is an opposed button that everyone in the blast uses for their own character (Céleste's review).
+// Without an active GM, or without his answer, the button works as before rather than block the resistance.
 export const HOLD_MS = 60000
 const REPLY_MS = 5000
 
@@ -26,9 +29,12 @@ const waiting = new Map()
 
 /** On the GM's browser: whether `userId` may use the button now, holding it for him if so. Nothing is awaited
  * between the test and the hold, so two requests arriving together cannot both pass. */
-export function holdButton(key, userId, now = Date.now()){
+export function holdButton(key, userId, now = Date.now(), isGM = false){
   const current = held.get(key)
-  if (current && current.userId !== userId && current.until > now) return false
+  if (current && current.until > now){
+    if (current.userId === userId) return true
+    if (!isGM) return false
+  }
   held.set(key, {
     userId, until: now + HOLD_MS
   })
@@ -39,13 +45,14 @@ export function holdButton(key, userId, now = Date.now()){
  * that rolls it (the speaker of the card, or its spirit or sprite target, as chatButtonAction picks it). */
 export function grantButton(messageId, type, user){
   const data = game.messages?.get(messageId)?.flags?.sr5data
-  if (!data?.chatCard?.buttons?.[type] || !user) return false
+  const button = data?.chatCard?.buttons?.[type]
+  if (!button || !user || button.testType !== "nonOpposedTest") return false
   if (!user.isGM){
     const actorId = isRolledByTarget(type, data.test?.typeSub, data.target?.actorId) ? data.target.actorId : data.owner?.speakerId
     const actor = SR5_EntityHelpers.getRealActorFromID(actorId, data.actorUuids)
     if (!actor?.testUserPermission(user, "OWNER")) return false
   }
-  return holdButton(`${messageId}|${type}`, user.id)
+  return holdButton(`${messageId}|${type}`, user.id, Date.now(), user.isGM)
 }
 
 /** On the clicking browser: true when this user may roll the button now. */
