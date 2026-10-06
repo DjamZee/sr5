@@ -1366,10 +1366,11 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     foundry.utils.setProperty(item, target, value)
 
     //Spécial, pour les decks, désactiver les autres decks lorsque l'un d'entre eux et équipé
-    if (item.type === "itemDevice" && target !== "system.conditionMonitors.matrix.actual.base") {
-      //Only equipping a device switches the others off: the wireless of a spare device leaves the active one alone,
-      //or a character in VR would take dumpshock for it (SR5 p. 231)
-      if (target === "system.isActive" && value) for (let otherItem of itemList) {
+    //Only equipping or unequipping a device does this: the wireless of a spare device leaves the active one alone, or
+    //a character in VR would take dumpshock for it (SR5 p. 231), and keeps its configuration (SR5 p. 229, DjamZ's ruling of 03/10)
+    if (item.type === "itemDevice" && target === "system.isActive") {
+      //Equipping a device switches the others off
+      if (value) for (let otherItem of itemList) {
         if (otherItem.type === "itemDevice" && (otherItem._id !== id)) otherItem.system.isActive = false
       }
 

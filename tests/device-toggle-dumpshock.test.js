@@ -118,6 +118,28 @@ describe('device switches on the sheet and dumpshock (SR5 p. 231)', () => {
     })
   })
 
+  // SR5 p. 229, DjamZ's ruling of 03/10: the deck keeps its configuration (Lars's measure: Firewall 3 -> 0)
+  it('the wireless of a spare device keeps the configuration of the active deck', async () => {
+    const actor = actorIn('ar')
+    actor.system.matrix.attributes.firewall.base = 3
+    actor.system.matrix.attributesCollection = {
+      value4: 3, value4isSet: true
+    }
+    await click(actor, 'spare', 'system.wirelessTurnedOn')
+    const matrix = actor.update.mock.calls.at(-1)[0].system.matrix
+    expect(matrix.attributes.firewall.base).toBe(3)
+    expect(matrix.attributesCollection).toEqual({
+      value4: 3, value4isSet: true
+    })
+  })
+
+  it('equipping another device still clears the configuration for it', async () => {
+    const actor = actorIn('ar')
+    actor.system.matrix.attributes.firewall.base = 3
+    await click(actor, 'spare', 'system.isActive')
+    expect(actor.update.mock.calls.at(-1)[0].system.matrix.attributes.firewall.base).toBe(0)
+  })
+
   it('the wireless of the active deck deals no dumpshock either (a deck may be wired)', async () => {
     expect((await click(actorIn('hotsim'), 'deck', 'system.wirelessTurnedOn')).dumpshocks).toBe(0)
   })
