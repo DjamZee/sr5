@@ -95,6 +95,9 @@ import {
 import {
   cfdStatus, startTreatmentDialog, resolveOverwritersNow, stopTreatment
 } from "../../system/cfd-treatment.js"
+import {
+  deactivationStatus, deactivationDialog
+} from "../../system/deactivation.js"
 
 /**
  * Extend the basic ActorSheet class to do all the SR5 things!
@@ -286,6 +289,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }))
     //Treating CFD (Dark Terrors p. 87): the GM alone gives a treatment and sees where it stands, from his ledger
     context.cfd = cfdStatus(this.actor)
+    //Deactivation (Dark Terrors p. 89-90): the GM alone expels an AI or a Monad, rolled on his client
+    context.deactivation = deactivationStatus(this.actor)
 
     context.storageViewIsGrid = game.settings.get("sr5", "sr5StorageViewMode") !== "list"
     //The clinch button of the martial arts block (Run & Gun p. 133) exists only with the grappling rules
@@ -410,6 +415,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       if (action === "resolve") resolveOverwritersNow(this.actor)
       else if (action === "stop") stopTreatment(this.actor)
       else startTreatmentDialog(this.actor)
+    }))
+    element.querySelectorAll("[data-sr5-defrag-start]").forEach(b => b.addEventListener("click", (event) => {
+      event.preventDefault()
+      deactivationDialog(this.actor)
     }))
 
     // Show/hide config button based on mode

@@ -127,6 +127,15 @@ export class sr5ActorGruntDataModel extends foundry.abstract.TypeDataModel {
             ...sr5ModsPartialModel.defineSchema()
           }),
         }),
+        // Matrix Entity Concentration of a Monad, set by the GM (Stolen Souls p. 199, Lockdown p. 203)
+        cem: new fields.SchemaField({
+          natural: new fields.SchemaField({
+            ...sr5ModsPartialModel.defineSchema()
+          }),
+          augmented: new fields.SchemaField({
+            ...sr5ModsPartialModel.defineSchema()
+          }),
+        }),
         depth: new fields.SchemaField({
           natural: new fields.SchemaField({
             ...sr5ModsPartialModel.defineSchema()

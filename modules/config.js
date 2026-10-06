@@ -37,6 +37,7 @@ SR5.characterSpecialAttributes = {
   magic                     : "SR5.Magic",
   resonance                 : "SR5.Resonance",
   nanite                    : "SR5.NaniteVolume",
+  cem                       : "SR5.DEFRAG_Cem",
   depth                     : "SR5.Depth",
 }
 

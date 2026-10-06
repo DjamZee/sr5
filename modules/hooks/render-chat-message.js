@@ -38,6 +38,9 @@ import {
   activateCfdListeners
 } from "../system/cfd-treatment.js"
 import {
+  activateDeactivationListeners
+} from "../system/deactivation.js"
+import {
   activateRadiationDueListeners, activateRadiationRequestListeners, addRadiationApplyButton
 } from "../system/radiation.js"
 import {
@@ -97,6 +100,8 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   if (message.flags?.sr5?.infectionCard) activateInfectionListeners(html, message)
   // Treating CFD (Dark Terrors p. 87): the GM destroys the implants a NanoScrub glitch reached
   if (message.flags?.sr5?.cfdTreatment) activateCfdListeners(html, message)
+  // Deactivation (Dark Terrors p. 90): the GM opens the technomancer's Fading test
+  if (message.flags?.sr5?.deactivation) activateDeactivationListeners(html, message)
   if (message.flags?.sr5?.diseaseRequest) activateDiseaseRequestListeners(html, message)
   if (message.flags?.sr5data?.disease) addDiseaseApplyButton(message, html)
   // Radiation zones (Run & Gun p. 164-165): same three steps
