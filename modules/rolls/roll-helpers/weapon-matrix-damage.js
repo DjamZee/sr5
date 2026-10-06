@@ -12,6 +12,11 @@
 /** The weapon damage type the DSP weapons carry, besides "physical" and "stun". */
 export const WEAPON_MATRIX_DAMAGE = "matrix"
 
+/** Carried by the resistance cards of a DSP hit (damage.fromWeapon): a matrix attack never sets it. */
+export function isWeaponPulse(damage) {
+  return !!damage?.fromWeapon
+}
+
 /** Whether `actor` has a matrix monitor a DSP pulse reaches (see above). */
 export function hasMatrixMonitorInReach(actor) {
   if (!actor) return false
@@ -33,6 +38,7 @@ export function weaponMatrixResistance(cardData, actor, button) {
     return
   }
   cardData.damage.matrix.value = cardData.damage.value
+  cardData.damage.fromWeapon = true
   if (cardData.damage.value > 0) cardData.chatCard.buttons.matrixResistance = button("nonOpposedTest", "matrixResistance",
     `${game.i18n.localize("SR5.TakeOnDamageMatrix")} (${cardData.damage.value})`)
 }

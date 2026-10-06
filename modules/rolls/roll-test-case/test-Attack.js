@@ -35,6 +35,7 @@ export default async function attackInfo(cardData){
     //A DSP grenade (Street Lethal p. 57): matrix damage, resisted by each device caught in the blast
     if (cardData.damage.type === WEAPON_MATRIX_DAMAGE) {
       cardData.damage.matrix.value = cardData.damage.value
+      cardData.damage.fromWeapon = true
       if (cardData.damage.value > 0) cardData.chatCard.buttons.matrixResistance = SR5_RollMessage.generateChatButton("opposedTest","matrixResistance",`${game.i18n.localize("SR5.TakeOnDamageMatrix")} (${cardData.damage.value})`)
     } else if (cardData.damage.value > 0) cardData.chatCard.buttons.resistanceCard = SR5_RollMessage.generateChatButton("opposedTest","resistanceCard",label)
   } else if (cardData.roll.hits > 0) {

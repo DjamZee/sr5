@@ -76,7 +76,7 @@ const card = (extra = {
     actorId: 'shooter', messageId: 'attack'
   }, target: {
   }, damage: {
-    type: WEAPON_MATRIX_DAMAGE, value: 17, matrix: {
+    type: WEAPON_MATRIX_DAMAGE, fromWeapon: true, value: 17, matrix: {
       base: 17, value: 0
     }
   }, roll: {
@@ -125,6 +125,7 @@ describe('after the defense', () => {
     const cardData = card()
     weaponMatrixResistance(cardData, character([device()]), button)
     expect(cardData.damage.matrix.value).toBe(17)
+    expect(cardData.damage.fromWeapon).toBe(true)
     expect(cardData.chatCard.buttons.matrixResistance.actionType).toBe('matrixResistance')
     expect(cardData.chatCard.buttons.resistanceCard).toBeUndefined()
   })
@@ -153,7 +154,8 @@ describe('the resistance card', () => {
     const target = character([device()])
     vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockImplementation(id => id === 'shooter' ? shooter : target)
     const cardData = card()
-    cardData.damage.type = ''
+    // A matrix attack: no fromWeapon, whatever its damage type (test fixtures elsewhere write 'matrix')
+    delete cardData.damage.fromWeapon
     cardData.target.itemUuid = 'deck'
     globalThis.fromUuid = vi.fn(async () => ({
       type: 'itemDevice'
@@ -210,6 +212,7 @@ describe('a DSP grenade', () => {
     }
     await attackInfo(cardData)
     expect(cardData.damage.matrix.value).toBe(10)
+    expect(cardData.damage.fromWeapon).toBe(true)
     expect(cardData.chatCard.buttons.matrixResistance.testType).toBe('opposedTest')
     expect(cardData.chatCard.buttons.resistanceCard).toBeUndefined()
   })

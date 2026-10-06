@@ -11,7 +11,7 @@ import {
   SR5_CharacterUtility
 } from "../../entities/actors/utilityActor.js"
 import {
-  WEAPON_MATRIX_DAMAGE
+  isWeaponPulse
 } from "../roll-helpers/weapon-matrix-damage.js"
 
 export default async function matrixResistanceInfo(cardData, actorId){
@@ -28,7 +28,7 @@ export default async function matrixResistanceInfo(cardData, actorId){
   cardData.damage.matrix.value = cardData.damage.matrix.base - cardData.roll.hits
 
   //A DSP weapon's pulse (Street Lethal p. 57) is no matrix action: the shooter's programs (Biofeedback, Lockdown) play no part
-  const fromWeapon = cardData.damage.type === WEAPON_MATRIX_DAMAGE
+  const fromWeapon = isWeaponPulse(cardData.damage)
 
   if (cardData.damage.matrix.value > 0) {
     cardData.chatCard.buttons.takeMatrixDamage = SR5_RollMessage.generateChatButton("nonOpposedTest", "takeMatrixDamage", `${game.i18n.localize("SR5.ApplyDamage")} (${cardData.damage.matrix.value})`)
