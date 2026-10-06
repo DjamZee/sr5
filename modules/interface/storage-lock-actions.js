@@ -1,6 +1,6 @@
 import {
   isLocked, pickStages, pickPool, pickLimit, lockTools, extendedTest, underLimit, antiTamperOf,
-  isPickRequestAllowed, lockedOwnership, unlockedOwnership,
+  isPickRequestAllowed, lockedOwnership, unlockedOwnership, lockedRightsChange,
 } from "./storage-lock.js"
 import {
   isStoredAway
@@ -78,6 +78,26 @@ export class SR5StorageLock {
         !("ownership" in changes)) return
       SR5StorageLock.syncOwnership(actor)
     }
+    // A right the GM grants while it is shut never takes effect, not even for
+    // the instant before the sync: the update is rewritten before it leaves
+    Hooks.on("preUpdateActor", (actor, changes, options) => {
+      if (actor.type !== "actorStorage" || !game.user.isGM || options?.sr5LockSync) return
+      const lockedNext = foundry.utils.getProperty(changes, "system.lock.locked")
+      if (lockedNext === false) return
+      const gms = game.users.filter(u => u.isGM).map(u => u.id)
+      const keep = [...SR5StorageLock.keyHolders(actor), ...gms]
+      // Shut by the GM: the others go down to Limited in the same update
+      if (lockedNext === true && !isLocked(actor) && actor.system.lock?.type && !changes.ownership) {
+        const shut = lockedOwnership(actor.ownership, actor.getFlag("sr5", "lockOwnership"), keep)
+        changes.ownership = shut.ownership
+        foundry.utils.setProperty(changes, "flags.sr5.lockOwnership", shut.saved)
+        return
+      }
+      if (!changes.ownership || !isLocked(actor)) return
+      const result = lockedRightsChange(changes.ownership, actor.getFlag("sr5", "lockOwnership"), keep)
+      changes.ownership = result.ownership
+      foundry.utils.setProperty(changes, "flags.sr5.lockOwnership", result.saved)
+    })
     Hooks.on("createActor", actor => sync(actor))
     Hooks.on("updateActor", (actor, changes) => sync(actor, changes))
     Hooks.once("ready", () => {
@@ -97,6 +117,8 @@ export class SR5StorageLock {
       await actor.update({
         ownership: result.ownership,
         "flags.sr5.-=lockOwnership": null,
+      }, {
+        sr5LockSync: true
       })
       await actor.setFlag("sr5", "lockOwnership", result.saved)
     }
@@ -104,6 +126,8 @@ export class SR5StorageLock {
       await actor.update({
         ownership: unlockedOwnership(actor.ownership, saved),
         "flags.sr5.-=lockOwnership": null,
+      }, {
+        sr5LockSync: true
       })
     }
   }

@@ -205,6 +205,44 @@ export function lockedOwnership(ownership, saved, keep) {
 }
 
 /**
+ * A change of rights the GM makes while it is shut, rewritten before it is
+ * sent (security lot, Sixtine, after Odile): granted above Limited, a right
+ * took effect for a few milliseconds before the sync held it back. Each user
+ * the change names gets at most Limited, and what the GM chose becomes the
+ * wish applied once it is open.
+ *
+ * @param {object} changed the ownership in the update
+ * @param {object} saved the wish kept so far
+ * @param {string[]} keep user ids left alone: key holders and GMs
+ * @returns {{ownership: object, saved: object}}
+ */
+export function lockedRightsChange(changed, saved, keep) {
+  const ownership = {
+  }
+  const wish = {
+    ...(saved ?? {
+    })
+  }
+  for (const [userId, level] of Object.entries(changed ?? {
+  })) {
+    // A key going back to the default ("-=id") is left to the sync that follows
+    if (userId.startsWith("-=") || keep.includes(userId)) {
+      ownership[userId] = level
+      continue
+    }
+    const wanted = Number(level)
+    if (!Number.isFinite(wanted)) continue
+    // Whatever the GM sets now is his wish, Limited and None included: set by
+    // hand, a Limited is no longer told apart from the lock's own (Odile)
+    wish[userId] = wanted
+    ownership[userId] = Math.min(wanted, LIMITED)
+  }
+  return {
+    ownership, saved: wish
+  }
+}
+
+/**
  * The rights once it is open: the GM's wish, for those still held at
  * Limited. A right the GM set by hand since (anything but Limited) stays.
  */

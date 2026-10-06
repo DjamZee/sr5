@@ -3,8 +3,65 @@ import {
 } from 'vitest'
 import {
   defaultLockFor, isLocked, pickStages, pickPool, pickLimit, lockTools, underLimit, antiTamperOf,
-  extendedTest, isPickRequestAllowed, lockedOwnership, unlockedOwnership,
+  extendedTest, isPickRequestAllowed, lockedOwnership, unlockedOwnership, lockedRightsChange,
 } from '../modules/interface/storage-lock.js'
+
+// Security lot (Sixtine, after Odile): the GM's change of rights while it is shut
+describe('a right granted while it is shut', () => {
+  it('never reaches the server above Limited: it becomes the wish', () => {
+    const result = lockedRightsChange({
+      p1: 3
+    }, {
+    }, ['gm'])
+    expect(result.ownership).toEqual({
+      p1: 1
+    })
+    expect(result.saved).toEqual({
+      p1: 3
+    })
+  })
+  it('a Limited set by hand is the GM\'s wish, kept once it is open', () => {
+    const result = lockedRightsChange({
+      p1: 1
+    }, {
+      p1: 3
+    }, ['gm'])
+    expect(result.saved).toEqual({
+      p1: 1
+    })
+    // The sync that follows keeps it, and opening applies it
+    const after = lockedOwnership({
+      p1: 1
+    }, result.saved, ['gm'])
+    expect(after.saved).toEqual({
+      p1: 1
+    })
+    expect(unlockedOwnership({
+      p1: 1
+    }, after.saved)).toEqual({
+      p1: 1
+    })
+  })
+  it('key holders, GMs and keys sent back to the default are left alone', () => {
+    const result = lockedRightsChange({
+      gm: 3, key: 3, '-=p2': null
+    }, {
+    }, ['gm', 'key'])
+    expect(result.ownership).toEqual({
+      gm: 3, key: 3, '-=p2': null
+    })
+    expect(result.saved).toEqual({
+    })
+  })
+  it('the default level is held back like a user', () => {
+    expect(lockedRightsChange({
+      default: 3
+    }, {
+    }, []).ownership).toEqual({
+      default: 1
+    })
+  })
+})
 
 const lock = (over = {
 }) => ({
