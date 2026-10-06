@@ -4258,6 +4258,9 @@ export class SR5_CharacterUtility extends Actor {
         SR5_SystemHelpers.srLog(1, `Unknown '${drugType.value}' drug type in handleDrugShots()`)
         return
     }
+    //"ESS + 1D6 heures" (Chrome Flesh p. 191-193) gives 9.9 hours with a datajack: the book rounds up when it does not
+    //say otherwise (SR5 p. 49). Rounded to the hundredth first, or an Essence of 5 stored as 5.0000001 would give one hour more
+    if (typeof drugStat.duration === "number") drugStat.duration = Math.ceil(Math.round(drugStat.duration * 100) / 100)
     //An antitoxin divides the duration of the effect by its rating (Chrome Flesh p. 154)
     const antitoxin = SR5_Toxins.antitoxinRating(actorData)
     if (antitoxin > 1) drugStat.duration = SR5_Toxins.drugDuration(drugStat.duration, antitoxin)

@@ -84,7 +84,7 @@ import {
   addictionWeeks, focusAddictionRating
 } from "../../rolls/roll-helpers/addiction.js"
 import {
-  warnDrugWithoutStat, drugAddictionThreshold, drugInteractionModifier, effectiveDrugQuality, drugCrashIsInstant, drugHasCrash
+  warnDrugWithoutStat, drugAddictionThreshold, drugInteractionModifier, effectiveDrugQuality, drugCrashIsInstant, drugHasCrash, isSameDrug
 } from "../items/drug-stat.js"
 import {
   reagentSystem, hasTiers
@@ -1617,7 +1617,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
             //ANOTHER one. The drug being taken is left out: retaken during its own crash, it is not another drug,
             //and it would otherwise be counted twice in the mix, doubled twice and rolled one die too many
             //A crash that is only damage is over (drug-stat.js): one left in it before is not in the mix (Liesel's D3)
-            let interactionDrug = actor.items.filter((d) => d.type === "itemDrug" && d.id !== item._id && (d.system.isActive || (d.system.wirelessTurnedOn && !drugCrashIsInstant(d.system))))
+            //Another copy of the same drug is not another drug either (Chrome Flesh p. 183, isSameDrug)
+            let interactionDrug = actor.items.filter((d) => d.type === "itemDrug" && d.id !== item._id && !isSameDrug(d, item) && (d.system.isActive || (d.system.wirelessTurnedOn && !drugCrashIsInstant(d.system))))
             if (interactionDrug.length > 0) {
               let roll, interactionDiceResult, drugs = []
               roll = new Roll(`${interactionDrug.length}d6`)
