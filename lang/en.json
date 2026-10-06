@@ -881,7 +881,7 @@
 	"SR5.AttackCardMagical": "magical",
 	"SR5.AttackCardMundane": "mundane",
 	"SR5.AttackCardHits": "Hits counted again on the dice: {value}, the card claimed {claimed} (pool worked out on the sheet, Edge included).",
-	"SR5.AttackCardForce": "Force read again: {value}, the card claimed {claimed} (at most Magic × 2, SR5 p. 281).",
+	"SR5.AttackCardForce": "Force read again: {value}, the card claimed {claimed} (at most Magic × 2 and what the card's Drain allows, SR5 p. 281-284).",
 	"SR5.AttackCardFallOff": "Blast read again: {value} per meter, the card claimed {claimed} (SR5 p. 184).",
 	"SR5.AttackCardToxinPower": "Toxin Power read again: {value}, the card claimed {claimed}.",
 	"SR5.ToxinCardRejected": "Toxin effect ignored ({user}'s card, on {actor}): the card does not come from the actor's owner, the weapon that carried the toxin cannot be found, or its dice cannot be read. Apply it by hand if needed.",

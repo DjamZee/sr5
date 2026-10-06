@@ -881,7 +881,7 @@
 	"SR5.AttackCardMagical": "magique",
 	"SR5.AttackCardMundane": "ordinaire",
 	"SR5.AttackCardHits": "Succès recomptés sur les dés : {value}, la carte annonçait {claimed} (réserve recalculée sur la fiche, Chance comprise).",
-	"SR5.AttackCardForce": "Puissance relue : {value}, la carte annonçait {claimed} (au plus Magie × 2, SR5 p. 281).",
+	"SR5.AttackCardForce": "Puissance relue : {value}, la carte annonçait {claimed} (au plus Magie × 2 et ce que permet le Drain de la carte, SR5 p. 281-284).",
 	"SR5.AttackCardFallOff": "Souffle relu : {value} par mètre, la carte annonçait {claimed} (SR5 p. 184).",
 	"SR5.AttackCardToxinPower": "Puissance de la toxine relue : {value}, la carte annonçait {claimed}.",
 	"SR5.ToxinCardRejected": "Effet de toxine ignoré (carte de {user}, sur {actor}) : la carte ne vient pas du propriétaire de l’acteur, l’arme qui portait la toxine est introuvable, ou ses dés sont illisibles. Appliquez-le à la main si besoin.",
