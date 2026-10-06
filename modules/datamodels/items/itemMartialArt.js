@@ -45,7 +45,7 @@ export class sr5ItemMartialArtDataModel extends foundry.abstract.TypeDataModel {
         }),
         modifiers: new fields.ArrayField(new fields.ObjectField()),
       }),
-      targetOfEffect: new fields.ArrayField(new fields.ObjectField()),
+      targetOfEffect: new fields.ArrayField(new fields.StringField()),
     }
   }
 }

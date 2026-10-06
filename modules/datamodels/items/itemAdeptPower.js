@@ -52,7 +52,7 @@ export class sr5ItemAdeptPowerDataModel extends foundry.abstract.TypeDataModel {
         }),
         modifiers: new fields.ArrayField(new fields.ObjectField()),
       }),
-      targetOfEffect: new fields.ArrayField(new fields.ObjectField()),
+      targetOfEffect: new fields.ArrayField(new fields.StringField()),
       hasDrain: new fields.BooleanField({
         initial: false
       }),

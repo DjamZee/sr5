@@ -29,6 +29,9 @@ import {
 import {
   migrateNegotiationTargets
 } from "../../datamodels/common/negotiationMigration.js"
+import {
+  migrateTargetOfEffect
+} from "../../datamodels/common/targetOfEffectMigration.js"
 
 /**
  * Override and extend the basic :class:`Item` implementation
@@ -37,6 +40,8 @@ export class SR5Item extends Item {
   //Effects aimed at the former key of the Negotiation skill (datamodels/common/negotiationMigration.js)
   static migrateData(source) {
     migrateNegotiationTargets(source?.system)
+    //Links to sustained effects stored as {} (datamodels/common/targetOfEffectMigration.js)
+    migrateTargetOfEffect(source?.system)
     return super.migrateData(source)
   }
 

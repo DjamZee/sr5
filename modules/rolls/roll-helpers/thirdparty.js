@@ -390,7 +390,7 @@ export class SR5_ThirdPartyHelpers {
           if (!game.user?.isGM) SR5_SocketHandler.emitForGM("deleteItem", {
             item: e
           })
-          else await effect.delete()
+          else if (effect) await effect.delete()
         }
       }
       newEffect.targetOfEffect = []
