@@ -7,7 +7,8 @@ export default function itemRoll(rollData, item){
   rollData.test.title = `${game.i18n.localize("SR5.Use")} ${item.name}`
 
   //Determine dicepool composition
-  rollData.dicePool.composition = item.system.test.modifiers
+  //The other modifiers are listed below: in the base too, they would count twice
+  rollData.dicePool.composition = SR5_PrepareRollHelper.getDicepoolComposition(item.system.test.modifiers)
 
   //Determine base dicepool
   rollData.dicePool.base = SR5_PrepareRollHelper.getBaseDicepool(rollData)
