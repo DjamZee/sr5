@@ -240,3 +240,63 @@ describe("SR5_CombatHelpers.scatterOffset — the old 1d8 compass", () => {
     }
   })
 })
+
+// The fake above is checked against itself: it both translates and measures, so a wrong formula in it would
+// pass every test above. These points were produced by Foundry's own SquareGrid (common/grid/square.mjs of
+// Foundry 13.351, run under Node with common/primitives loaded; size 100, distance 1.5, 6 m translation),
+// and the real measurePath read each one back as 6 m. They are the oracle the fake must match.
+describe("FakeSquareGrid against Foundry 13.351's own SquareGrid", () => {
+  const FOUNDRY_POINTS = {
+    [DIAGONALS.EQUIDISTANT]: {
+      0: [400, 0], 30: [400, 230.940108], 45: [400, 400], 60: [230.940108, 400],
+      135: [-400, 400], 210: [-400, -230.940108], 300: [230.940108, -400],
+    },
+    [DIAGONALS.EXACT]: {
+      0: [400, 0], 30: [322.802881, 186.370331], 45: [282.842712, 282.842712], 60: [186.370331, 322.802881],
+      135: [-282.842712, 282.842712], 210: [-322.802881, -186.370331], 300: [186.370331, -322.802881],
+    },
+    [DIAGONALS.RECTILINEAR]: {
+      0: [400, 0], 30: [253.589838, 146.410162], 45: [200, 200], 60: [146.410162, 253.589838],
+      135: [-200, 200], 210: [-253.589838, -146.410162], 300: [146.410162, -253.589838],
+    },
+  }
+  // Each screen angle above reached through a 2D6 result and a line of fire.
+  const SHOTS = [
+    {
+      fire: 0, roll: 7, angle: 0
+    },
+    {
+      fire: 0, roll: 8, angle: 30
+    },
+    {
+      fire: 45, roll: 7, angle: 45
+    },
+    {
+      fire: 0, roll: 9, angle: 60
+    },
+    {
+      fire: 0, roll: 11, angle: 135
+    },
+    {
+      fire: 180, roll: 8, angle: 210
+    },
+    {
+      fire: 0, roll: 5, angle: 300
+    },
+  ]
+
+  for (const rule of RULES){
+    it(`lands where Foundry lands (${rule.label})`, () => {
+      const grid = new FakeSquareGrid({
+        size: 100, distance: 1.5, diagonals: rule.diagonals
+      })
+      for (const shot of SHOTS){
+        const [x, y] = FOUNDRY_POINTS[rule.diagonals][shot.angle]
+        const o = SR5_CombatHelpers.scatterOffset(grid, shot.roll, 6, shot.fire)
+        expect(o.x, `2D6 = ${shot.roll}, fire ${shot.fire} deg`).toBeCloseTo(x, 5)
+        expect(o.y, `2D6 = ${shot.roll}, fire ${shot.fire} deg`).toBeCloseTo(y, 5)
+        expect(grid.measurePath([ORIGIN, o]).distance).toBeCloseTo(6, 6)
+      }
+    })
+  }
+})
