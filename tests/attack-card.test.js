@@ -586,6 +586,70 @@ describe('vetAttackCard', () => {
     expect(r.data.damage.base).toBe(10)
     expect(r.data.combat.armorPenetration).toBe(-10)
   })
+
+  it('does not accuse a caster wounded by her Drain after an honest roll (Élise, from Lucrèce\'s review)', async () => {
+    const spell = {
+      id: 's1', name: 'Boule de feu', type: 'itemSpell', system: {
+        category: 'combat', subCategory: 'indirect', damageType: 'physical', damageElement: 'fire'
+      }
+    }
+    //Rolled with 10 dice (pool 10, no wound), 4 hits among the last ones; then 6 boxes of Drain: -2, the sheet shows 8
+    const hurt = actorWith([spell], {
+      ...shooter, penalties: {
+        condition: {
+          actual: {
+            value: -2
+          }
+        }
+      }, skills: {
+        spellcasting: {
+          spellCategory: {
+            combat: {
+              dicePool: 8
+            }
+          }
+        }
+      }
+    })
+    const card = attackCard({
+      test: {
+        type: 'spell', typeSub: 'indirect'
+      }, owner: {
+        actorId: 'pc', itemId: 's1'
+      },
+      roll: {
+        hits: 4
+      }, damage: {
+        base: 6, value: 6, type: 'physical', element: 'fire', source: 'magical'
+      },
+      magic: {
+        force: 6, drain: {
+          value: 6
+        }, spell: {
+        }
+      },
+    })
+    card.combat.armorPenetration = -6
+    const r = await vetAttackCard(card, {
+      messageId: 'm1', helpers: {
+        cardOf: cardOfFor(hurt, {
+          roll: dice(1, 2, 3, 1, 2, 3, 5, 5, 6, 5), data: {
+            test: {
+              type: 'spell'
+            }, owner: {
+              itemId: 's1'
+            }
+          }
+        })
+      }
+    })
+    expect(r.data.roll.hits).toBe(4)
+    expect(r.mismatches).toEqual([])
+    expect(r.overPool).toBeNull()
+    //Never more than the wound: a card beyond what the unwounded pool rolls is still bounded
+    expect(attackCardModule.woundAllowance(hurt)).toBe(2)
+    expect(attackCardModule.woundAllowance(actorWith([spell]))).toBe(0)
+  })
 })
 
 // Apollinaire's review (06/10): D1 to D4 and the two warnings

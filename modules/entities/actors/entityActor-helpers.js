@@ -2117,8 +2117,10 @@ export class SR5_ActorHelper {
     if (!author || author.isGM || author.id === game.user?.id) return claimed
     const caster = SR5_EntityHelpers.getRealActorFromID(data.owner.actorId, data.actorUuids)
     const isForm = item.type === "itemComplexForm"
-    const pool = isForm ? caster?.system?.matrix?.resonanceActions?.threadComplexForm?.test?.dicePool :
-      (caster?.system?.skills?.spellcasting?.spellCategory?.[item.system.category]?.dicePool ?? caster?.system?.skills?.spellcasting?.test?.dicePool)
+    //The wounds taken since the roll (its Drain, typically) are given back to the pool (attack-card.js, woundAllowance)
+    const pool = (Number(isForm ? caster?.system?.matrix?.resonanceActions?.threadComplexForm?.test?.dicePool :
+      (caster?.system?.skills?.spellcasting?.spellCategory?.[item.system.category]?.dicePool ?? caster?.system?.skills?.spellcasting?.test?.dicePool)) || 0) +
+      Math.max(0, -(Number(caster?.system?.penalties?.condition?.actual?.value) || 0))
     const verdict = effectCardVerdict({
       authorOwnsCaster: !!caster && caster.testUserPermission?.(author, "OWNER"),
       itemOnCaster: !!caster && (item.parent === caster || item.parent?.id === caster.id),

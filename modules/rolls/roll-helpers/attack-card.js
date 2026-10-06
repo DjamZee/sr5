@@ -284,6 +284,16 @@ export function weaponAmmoEffects(actor, itemData) {
   return null
 }
 
+/**
+ * The dice the sheet's pool may have lost to wounds since the roll (SR5 p. 171): the wound modifier, read now on the
+ * roller, when the card is read again. Drain taken after a spell, a wound between the attack and the defense lower the
+ * pool the sheet shows now, not the one rolled, and the honest hits were counted lower and the player accused (Élise,
+ * from Lucrèce's review): given back to the ceiling, never more.
+ */
+export function woundAllowance(roller) {
+  return Math.max(0, -(Number(roller?.system?.penalties?.condition?.actual?.value) || 0))
+}
+
 function poolWithEdge(roller, pool) {
   return (Number(pool) || 0) + (Number(roller?.system?.specialAttributes?.edge?.augmented?.value) || 0)
 }
@@ -475,6 +485,8 @@ export async function vetAttackCard(chatData, {
     data.combat.ramming = ramming.ramming
   }
 
+  //The pool as rolled: what wounds took since is given back (woundAllowance)
+  pool = (Number(pool) || 0) + woundAllowance(roller)
   //Without a granted push of the limit, no Rule of Six and the test's limit (Hyacinthe's review, D1; SR5 p. 58)
   const counted = await trustedHits({
     card, claimed: chatData.roll?.hits, pool, limit, label: item?.name ?? "", helpers,
