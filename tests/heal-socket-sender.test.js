@@ -140,6 +140,39 @@ describe('the heal socket', () => {
     expect(SR5_ActorHelper.heal).not.toHaveBeenCalled()
   })
 
+  it('a copy of the card (new id, same dice) does not heal again (Quitterie, S4)', async () => {
+    const spent = new Set()
+    vi.spyOn(SR5_MiscellaneousHelpers, 'isConsumed').mockImplementation(key => spent.has(key))
+    vi.spyOn(SR5_MiscellaneousHelpers, 'consume').mockImplementation(async key => !spent.has(key) && !!spent.add(key))
+    card.data.roll.r = JSON.stringify({
+      terms: [{
+        results: [{
+          result: 5
+        }, {
+          result: 6
+        }, {
+          result: 5
+        }, {
+          result: 5
+        }, {
+          result: 6
+        }]
+      }]
+    })
+    card.data.owner = {
+      actorId: 'medicPc', itemUuid: ''
+    }
+    const copy = {
+      ...card, id: 'm2'
+    }
+    SR5_MiscellaneousHelpers.cardOf.mockImplementation(id => ({
+      m1: card, m2: copy
+    })[id] ?? null)
+    await heal(asked(3), 'medic')
+    await heal(asked(3), 'medic', 'm2')
+    expect(SR5_ActorHelper.heal).toHaveBeenCalledTimes(1)
+  })
+
   it('refuses a monitor the patient does not have', async () => {
     await heal(asked(3, 'matrix'), 'medic')
     expect(SR5_ActorHelper.heal).not.toHaveBeenCalled()

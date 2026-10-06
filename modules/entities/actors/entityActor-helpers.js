@@ -1835,6 +1835,12 @@ export class SR5_ActorHelper {
     const most = Math.max(firstAidHealedBoxes(hits, 2, rating, false), stabilizedTreatmentBoxes(hits, 2, rating, medkit, false))
     const boxes = bounded(data.healData?.roll?.netHits, Math.min(most, Number(card.data.roll?.netHits) || 0))
     if (boxes <= 0) return null
+    //A copy of the card is a new message with the same dice: known by its dice too (Quitterie, S4)
+    const {
+      healCardDiceKey
+    } = await import("../../system/heal-ledger.js")
+    const diceKey = healCardDiceKey(card.data)
+    if (diceKey && SR5_MiscellaneousHelpers.isConsumed(`${diceKey}|firstAid`)) return null
     //One test treats one patient (SR5 p. 207): the card is spent on the first, whoever it is. The GM is shown the
     //hits counted again, and the boxes asked
     const granted = await SR5_MiscellaneousHelpers.grant({
@@ -1843,7 +1849,7 @@ export class SR5_ActorHelper {
         name: patient.name, boxes
       }),
     }, sender)
-    if (!granted) return null
+    if (!granted || (diceKey && !(await SR5_MiscellaneousHelpers.consume(`${diceKey}|firstAid`)))) return null
     return {
       test: {
         typeSub: type
