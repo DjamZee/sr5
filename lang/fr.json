@@ -5173,6 +5173,7 @@
 	"SR5.WARN_TargetItemMissing": "Objet visé introuvable (supprimé depuis le test) : l'action ne peut pas être appliquée.",
 	"SR5.WARN_MatrixResistanceDeviceMissing": "Appareil visé introuvable (supprimé depuis l'attaque) : la résistance aux dommages matriciels ne peut pas être lancée.",
 	"SR5.WARN_MatrixDamageDeviceMissing": "Appareil visé introuvable (supprimé depuis l'attaque) : les dommages matriciels ne sont appliqués à aucun appareil.",
+	"SR5.WARN_JackOutCardRefused": "Carte de débranchement refusée : elle n'a pas été lancée par le propriétaire du personnage, ou ses dés ne sont pas lisibles.",
 	"SR5.WARN_MatrixTargetDeviceMissing": "Appareil visé introuvable (supprimé depuis l'attaque) : la défense matricielle ne peut pas être lancée.",
 	"SR5.WARN_RitualLeaderMissing": "Leader du rituel introuvable : la résistance du rituel ne peut pas être lancée.",
 	"SR5.WARN_RitualForceChanged": "Les jets d'aide des participants ont été faits à Puissance {force} : ils ne sont pas relancés.",

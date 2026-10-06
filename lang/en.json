@@ -5173,6 +5173,7 @@
 	"SR5.WARN_TargetItemMissing": "Targeted item not found (deleted since the test): the action cannot be applied.",
 	"SR5.WARN_MatrixResistanceDeviceMissing": "Targeted device not found (deleted since the attack): the matrix damage resistance cannot be rolled.",
 	"SR5.WARN_MatrixDamageDeviceMissing": "Targeted device not found (deleted since the attack): the matrix damage is applied to no device.",
+	"SR5.WARN_JackOutCardRefused": "Jack Out card refused: it was not rolled by an owner of the character, or its dice cannot be read.",
 	"SR5.WARN_MatrixTargetDeviceMissing": "Targeted device not found (deleted since the attack): the matrix defense cannot be rolled.",
 	"SR5.WARN_RitualLeaderMissing": "Ritual leader not found: the ritual resistance cannot be rolled.",
 	"SR5.WARN_RitualForceChanged": "The participants' assist rolls were made at Force {force}: they are not rolled again.",

@@ -28,6 +28,12 @@ import {
 import {
   SR5_ActorHelper
 } from "../../entities/actors/entityActor-helpers.js"
+import {
+  SR5_MiscellaneousHelpers
+} from "./miscellaneous.js"
+import {
+  recountHits
+} from "./socket-guard.js"
 
 export class SR5_MatrixHelpers {
   //Get time spent on a matrix search
@@ -241,24 +247,43 @@ export class SR5_MatrixHelpers {
     SR5_RollTest.renderRollCard(rollData)
   }
 
+  //The hits of a Jack Out card the GM stands by: a GM's as written; a player's counted again on its dice, within the
+  //Jack Out pool of the sheet (plus Chance) and its Firewall limit. null when the card cannot be believed
+  static jackOutHits(cardData){
+    const card = SR5_MiscellaneousHelpers.cardOf(cardData.owner?.messageId)
+    if (!card || card.data.test?.typeSub !== "jackOut") return null
+    if (card.byGM) return {
+      card, hits: Math.max(0, Number(card.data.roll?.hits) || 0)
+    }
+    const counted = recountHits(card.data.roll?.r, SR5_MiscellaneousHelpers.poolCap(card.roller, "matrix.actions.jackOut.test.dicePool"))
+    if (counted === null) return null
+    const limit = Number(card.roller?.system?.matrix?.actions?.jackOut?.limit?.value) || 0
+    return {
+      card, hits: (limit > 0 && !card.data.edge?.hasUsedPushTheLimit) ? Math.min(counted, limit) : counted
+    }
+  }
+
   static async rollJackOut(cardData){
-    let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
+    //The GM rolls the locks against the card read again from the chat log, never against the hits it claims
+    const jackOut = SR5_MatrixHelpers.jackOutHits(cardData)
+    if (!jackOut) return ui.notifications.warn(game.i18n.localize("SR5.WARN_JackOutCardRefused"))
+    let actor = jackOut.card.roller, hits = jackOut.hits
 
     //One jack out roll, whose hits are compared to each link lock in turn (SR5 p. 246): one resistance card per lock
     for (let lock of SR5_MatrixHelpers.getLinkLocks(actor)){
       let dicePool = lock.system.value
       let rollData = SR5_PrepareRollTest.getBaseRollData(null, actor)
       rollData.test.type = "jackOutDefense"
-      rollData.test.title = `${game.i18n.localize("SR5.MatrixActionJackOutResistance")} (${cardData.roll.hits})`
+      rollData.test.title = `${game.i18n.localize("SR5.MatrixActionJackOutResistance")} (${hits})`
       rollData.dicePool.base = dicePool
       rollData.dicePool.value = dicePool
-      rollData.previousMessage.hits = cardData.roll.hits
+      rollData.previousMessage.hits = hits
       rollData.previousMessage.itemUuid = lock.id
       rollData.roll = await SR5_RollTest.rollDice({
         dicePool: dicePool
       })
 
-      await SR5_RollTest.addInfoToCard(rollData, cardData.previousMessage.actorId)
+      await SR5_RollTest.addInfoToCard(rollData, actor.isToken ? actor.token.id : actor.id)
       await SR5_RollTest.renderRollCard(rollData)
     }
   }

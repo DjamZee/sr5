@@ -40,6 +40,9 @@ const {
 const {
   SR5_RollTest
 } = await import('../modules/rolls/roll-test.js')
+const {
+  SR5_MiscellaneousHelpers
+} = await import('../modules/rolls/roll-helpers/miscellaneous.js')
 
 /** A document whose update merges the flattened changes the way Foundry does */
 function documentWith(data) {
@@ -392,9 +395,19 @@ describe('Jacking out reboots the device used (SR5 p. 244)', () => {
       })
       vi.spyOn(SR5_RollTest, 'addInfoToCard').mockResolvedValue()
       const render = vi.spyOn(SR5_RollTest, 'renderRollCard').mockResolvedValue()
+      // A GM's card: its hits are believed as written
+      vi.spyOn(SR5_MiscellaneousHelpers, 'cardOf').mockReturnValue({
+        byGM: true, roller: hacker, data: {
+          test: {
+            typeSub: 'jackOut'
+          }, roll: {
+            hits: 3
+          }
+        }
+      })
       await SR5_MatrixHelpers.rollJackOut({
         owner: {
-          actorId: 'hacker'
+          actorId: 'hacker', messageId: 'card'
         }, roll: {
           hits: 3
         }, previousMessage: {
@@ -402,6 +415,99 @@ describe('Jacking out reboots the device used (SR5 p. 244)', () => {
       })
       expect(rollDice.mock.calls.map(c => c[0].dicePool)).toEqual([4, 6])
       expect(render.mock.calls.map(c => [c[0].previousMessage.itemUuid, c[0].previousMessage.hits])).toEqual([['lock1', 3], ['lock2', 3]])
+    })
+
+    // Security pass (Petra): the GM never believes the hits a player's Jack Out card claims
+    describe("a player's card", () => {
+      let render
+      /** Dice as Foundry stores them on a card: the hits are the 5 and 6 */
+      const diceRoll = results => JSON.stringify({
+        terms: [{
+          results: results.map(result => ({
+            result, active: true
+          }))
+        }]
+      })
+      const playerCard = (claimed, dice, extra = {
+      }) => vi.spyOn(SR5_MiscellaneousHelpers, 'cardOf').mockReturnValue({
+        byGM: false, roller: hacker, data: {
+          test: {
+            typeSub: 'jackOut'
+          }, roll: {
+            hits: claimed, r: diceRoll(dice)
+          }, edge: {
+          }, ...extra
+        }
+      })
+      const jackOutWith = claimed => SR5_MatrixHelpers.rollJackOut({
+        owner: {
+          actorId: 'hacker', messageId: 'card'
+        }, roll: {
+          hits: claimed
+        }, previousMessage: {
+        }
+      })
+
+      beforeEach(() => {
+        hacker.system.matrix.actions = {
+          jackOut: {
+            test: {
+              dicePool: 4
+            }, limit: {
+              value: 0
+            }
+          }
+        }
+        hacker.system.specialAttributes = {
+          edge: {
+            augmented: {
+              value: 0
+            }
+          }
+        }
+        vi.spyOn(SR5_PrepareRollTest, 'getBaseRollData').mockImplementation(() => ({
+          test: {
+          }, dicePool: {
+          }, previousMessage: {
+          }
+        }))
+        vi.spyOn(SR5_RollTest, 'rollDice').mockResolvedValue({
+        })
+        vi.spyOn(SR5_RollTest, 'addInfoToCard').mockResolvedValue()
+        render = vi.spyOn(SR5_RollTest, 'renderRollCard').mockResolvedValue()
+        vi.spyOn(ui.notifications, 'warn').mockImplementation(() => {})
+      })
+
+      it('counts its hits again on its dice, within the sheet pool: 99 claimed, 2 rolled', async () => {
+        playerCard(99, [6, 5, 1, 2, 6, 6, 6])
+        await jackOutWith(99)
+        // The pool is 4: only the first four dice count, two of them hits
+        expect(render.mock.calls.map(c => c[0].previousMessage.hits)).toEqual([2, 2])
+      })
+
+      it('caps its hits at the Firewall limit of the sheet', async () => {
+        hacker.system.matrix.actions.jackOut.limit.value = 1
+        playerCard(3, [6, 5, 6, 1])
+        await jackOutWith(3)
+        expect(render.mock.calls.map(c => c[0].previousMessage.hits)).toEqual([1, 1])
+      })
+
+      it('rolls nothing for a card nobody can stand by', async () => {
+        vi.spyOn(SR5_MiscellaneousHelpers, 'cardOf').mockReturnValue(null)
+        await jackOutWith(99)
+        expect(render).not.toHaveBeenCalled()
+        expect(ui.notifications.warn).toHaveBeenCalled()
+      })
+
+      it('rolls nothing for a card of another action', async () => {
+        playerCard(5, [6, 6, 6, 6], {
+          test: {
+            typeSub: 'hackOnTheFly'
+          }
+        })
+        await jackOutWith(5)
+        expect(render).not.toHaveBeenCalled()
+      })
     })
   })
 })
