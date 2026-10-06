@@ -26,6 +26,11 @@ const serpent = technique("simple", [effect("system.itemsProperties.martialArts.
 const souplesse = technique("permanent", [effect("system.defenses.dodge")])
 const outrance = technique("complex", [effect("system.skills.unarmedCombat.test", "value", 2)])
 const balestra = technique("complex", [effect("system.defenses.defend", "value", -1)])
+// As the Mégapack gives them: situational, a box of the roll dialog
+const situational = e => ({
+  ...e, situational: true, when: "en exécutant une attaque à outrance"
+})
+const outranceMegapack = technique("complex", [situational(effect("system.skills.unarmedCombat.test", "value", 2))])
 
 describe("a learned martial arts technique applies on its own", () => {
   it("applies Choquer's modifier without being pinned (Run & Gun p. 148-151)", () => {
@@ -42,7 +47,12 @@ describe("a learned martial arts technique applies on its own", () => {
     expect(martialArtApplies(souplesse)).toBe(true)
   })
 
-  it("keeps the switch of an action chosen for the roll (All-Out Attack, Balestra, Run & Gun p. 134)", () => {
+  it("applies an action whose effects are situational: the roll dialog offers them (Run & Gun p. 134)", () => {
+    expect(martialArtNeedsSwitch(outranceMegapack)).toBe(false)
+    expect(martialArtApplies(outranceMegapack)).toBe(true)
+  })
+
+  it("keeps the switch of an action whose effect is not situational (an item made by hand)", () => {
     expect(martialArtNeedsSwitch(outrance)).toBe(true)
     expect(martialArtNeedsSwitch(balestra)).toBe(true)
     expect(martialArtApplies(outrance)).toBe(false)
