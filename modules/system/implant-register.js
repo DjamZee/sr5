@@ -13,6 +13,9 @@ import {
 import {
   RESERVED_DEFAULTS, reservedValues, reservedMismatches
 } from "./reserved-fields.js"
+import {
+  updateLedger
+} from "./gm-ledger.js"
 
 export const IMPLANT_REGISTER = "sr5ImplantRegister"
 
@@ -69,34 +72,18 @@ export function expectedValues(doc, fields, register, options) {
 const isActiveGM = () => !!game.users?.activeGM?.isSelf
 const creationMode = () => game.settings.get("sr5", "sr5ShopCreationMode") === true
 
-// The register is written by one client, the active GM; the writes of a batch are gathered
-let pending = {
-}
-let flushing = null
+// The register is written by one client, the active GM, in its turn on its latest state (gm-ledger.js)
 function record(doc, values) {
   // An implant is always kept: absent, a box a player forged would be worked out again from the body. A quality or a
   // character at its defaults needs no entry
   const atDefaults = values && Object.entries(values).every(([f, v]) => v === RESERVED_DEFAULTS[f])
-  pending[doc.uuid] = doc.type !== "itemAugmentation" && atDefaults ? null : values
-  flushing ??= Promise.resolve().then(async () => {
-    const patch = pending
-    pending = {
-    }
-    flushing = null
-    const register = foundry.utils.deepClone(game.settings.get("sr5", IMPLANT_REGISTER) ?? {
-    })
-    let changed = false
-    for (const [key, value] of Object.entries(patch)) {
-      if (value === null) {
-        if (key in register) changed = delete register[key]
-      } else if (JSON.stringify(register[key]) !== JSON.stringify(value)) {
-        register[key] = value
-        changed = true
-      }
-    }
-    if (changed) await game.settings.set("sr5", IMPLANT_REGISTER, register)
+  const value = doc.type !== "itemAugmentation" && atDefaults ? null : values
+  return updateLedger(IMPLANT_REGISTER, register => {
+    if (value === null) return doc.uuid in register ? (delete register[doc.uuid], register) : null
+    if (JSON.stringify(register[doc.uuid]) === JSON.stringify(value)) return null
+    register[doc.uuid] = value
+    return register
   }).catch(e => console.error("SR5 | implant register", e))
-  return flushing
 }
 
 /** Puts back on `doc` the reserved values a player changed, and tells the gamemaster. */
@@ -147,10 +134,19 @@ async function onUpdate(doc, _changes, _options, userId) {
   if (Object.keys(mismatches).length) await restore(doc, mismatches, userId)
 }
 
-/** deleteItem / deleteActor: the entry goes with the document. */
+/** deleteItem / deleteActor: the entry goes with the document, and a character's with those of its items. */
 function onDelete(doc) {
-  if (!reservedFieldsOf(doc).length || !isActiveGM()) return
-  if (game.settings.get("sr5", IMPLANT_REGISTER)?.[doc.uuid]) record(doc, null)
+  if (!isActiveGM()) return
+  const register = game.settings.get("sr5", IMPLANT_REGISTER) ?? {
+  }
+  const prefix = doc.documentName === "Actor" ? `${doc.uuid}.` : null
+  for (const uuid of Object.keys(register)) {
+    if (uuid === doc.uuid || (prefix && uuid.startsWith(prefix))) {
+      record({
+        uuid, type: "itemAugmentation"
+      }, null)
+    }
+  }
 }
 
 /** At a gamemaster's arrival: every world character and its items checked against the register. */
@@ -161,17 +157,22 @@ export async function reconcileImplantRegister() {
   const options = {
     creation: creationMode()
   }
+  // The implants the register does not know yet are entered in one write
+  const unknown = {
+  }
   for (const actor of game.actors) {
     for (const doc of [actor, ...actor.items]) {
       const fields = reservedFieldsOf(doc)
       if (!fields.length) continue
       const expected = expectedValues(doc, fields, register, options)
-      if (!register[doc.uuid]) record(doc, expected)
+      if (!register[doc.uuid] && doc.type === "itemAugmentation") unknown[doc.uuid] = expected
       const mismatches = reservedMismatches(reservedValues(doc.system, fields), expected)
       if (Object.keys(mismatches).length) await restore(doc, mismatches, null)
     }
   }
-  await flushing
+  if (Object.keys(unknown).length) await updateLedger(IMPLANT_REGISTER, latest => ({
+    ...unknown, ...latest
+  }))
 }
 
 export function registerImplantRegisterHooks() {
