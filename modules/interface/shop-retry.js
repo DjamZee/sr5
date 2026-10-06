@@ -180,11 +180,26 @@ export async function requestRetry(message, uuid) {
   const payload = {
     messageId: message.id, uuid, surcharge
   }
-  if (game.user.isGM) return rollRetry(payload, game.user.id)
+  if (isWriter()) return rollRetry(payload, game.user.id)
+  await toActiveGM(payload)
+}
+
+/**
+ * Send a request to the active gamemaster, the only one who writes the ledger. A player goes through
+ * emitForGM; another gamemaster, whom emitForGM turns away, is addressed to him directly, and is told when
+ * there is nobody to answer — clicking "Pay" did nothing before (R4, Anton).
+ */
+export async function toActiveGM(payload) {
   const {
     SR5_SocketHandler
   } = await import('../socket.js')
-  await SR5_SocketHandler.emitForGM('shopAvailabilityRetry', payload)
+  if (!game.user.isGM) return SR5_SocketHandler.emitForGM('shopAvailabilityRetry', payload)
+  const active = game.users.activeGM
+  if (!active) return ui.notifications.warn(game.i18n.localize('SR5.WARN_NoActiveGM'))
+  await SR5_SocketHandler.emitForPlayer('shopAvailabilityRetry', payload, active.id)
+  ui.notifications.info(game.i18n.format('SR5.ShopSentToActiveGM', {
+    name: active.name
+  }))
 }
 
 /** The server stamps `senderId`; only the active gamemaster rolls or cashes. */
@@ -396,11 +411,8 @@ export async function requestCash(message, express) {
   const payload = {
     cash: true, messageId: message.id, express: !!express
   }
-  if (game.user.isGM) return cashCard(payload, game.user.id)
-  const {
-    SR5_SocketHandler
-  } = await import('../socket.js')
-  await SR5_SocketHandler.emitForGM('shopAvailabilityRetry', payload)
+  if (isWriter()) return cashCard(payload, game.user.id)
+  await toActiveGM(payload)
   return false
 }
 

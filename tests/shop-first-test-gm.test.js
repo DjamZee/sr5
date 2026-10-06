@@ -6,9 +6,10 @@ import {
 // new test after a failure: a player's browser only sends the request, so a card with made-up dice is never
 // the one the till or the ledger reads.
 const emitForGM = vi.fn(async () => {})
+const emitForPlayer = vi.fn(async () => {})
 vi.mock("../modules/socket.js", () => ({
   SR5_SocketHandler: {
-    emitForGM: (...args) => emitForGM(...args)
+    emitForGM: (...args) => emitForGM(...args), emitForPlayer: (...args) => emitForPlayer(...args)
   }
 }))
 
@@ -259,5 +260,29 @@ describe("the first availability test is rolled by the active GM (SR5 p. 420)", 
     expect(cardResult("msg1", "Item.gun", "pl", {
       buyerId: "buyer"
     })).toBe(null)
+  })
+
+  it("R4: a GM who is not the active one passes Pay to the active GM, and says so", async () => {
+    const assistant = {
+      id: "gm2", isGM: true, name: "MJ assistant"
+    }
+    game.user = assistant
+    const {
+      requestCash
+    } = await retry()
+    game._card = card([{
+      uuid: "Item.gun", obtained: true
+    }], gm)
+    await requestCash(game._card, false)
+    expect(emitForPlayer).toHaveBeenCalledWith("shopAvailabilityRetry", {
+      cash: true, messageId: "msg1", express: false
+    }, "gm")
+    expect(ui.notifications.info).toHaveBeenCalledWith("SR5.ShopSentToActiveGM")
+    // Nobody active: a message, not silence
+    emitForPlayer.mockClear()
+    game.users.activeGM = null
+    await requestCash(game._card, false)
+    expect(emitForPlayer).not.toHaveBeenCalled()
+    expect(ui.notifications.warn).toHaveBeenCalledWith("SR5.WARN_NoActiveGM")
   })
 })
