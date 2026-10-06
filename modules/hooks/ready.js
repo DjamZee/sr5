@@ -1,5 +1,8 @@
 import SR5TokenHud from "../interface/tokenHud.js"
 import {
+  runSourceModifiersMigration
+} from "../migration-source-modifiers.js"
+import {
   initBBHealing
 } from "../system/bb-healing.js"
 import {
@@ -124,4 +127,7 @@ export function sr5HookReady() {
 
   // Perform the migration
   if (needsMigration) new game.sr5.migration().migrateWorld()
+
+  // Computed modifiers written in the source by a prepared copy: emptied once per world
+  runSourceModifiersMigration().catch(err => console.error("SR5 | source modifiers migration failed", err))
 }

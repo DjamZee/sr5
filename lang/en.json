@@ -825,6 +825,7 @@
 	"SR5.Antitoxin": "Antitoxin",
 	"SR5.WARN_CapBallRoundByRound": "Cap & Ball: in combat this weapon reloads round by round (3 Complex Actions per round).",
 	"SR5.INFO_CapBallStep": "Cap & Ball: reloading {done}/{total}. Stopping before the end means starting over.",
+	"SR5.INFO_SourceModifiersCleaned": "SR5 migration: computed modifiers removed from the stored data ({actors} actors, {items} items, {tokens} tokens).",
 	"SR5.StreetCredDivisor": "Street Cred: Karma divisor (+)",
 	"SR5.LimitReplaced": "replaced",
 	"SR5.EffectCardRejected": "Effect ignored ({item}, card from {user}): it does not come from the caster's owner, or its dice cannot be read. Apply it by hand if needed.",

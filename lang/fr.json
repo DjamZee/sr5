@@ -825,6 +825,7 @@
 	"SR5.Antitoxin": "Antitoxine",
 	"SR5.WARN_CapBallRoundByRound": "Percussion à poudre noire : en combat, cette arme se recharge balle par balle (3 actions complexes par balle).",
 	"SR5.INFO_CapBallStep": "Percussion à poudre noire : rechargement {done}/{total}. Si vous vous interrompez, il faut recommencer.",
+	"SR5.INFO_SourceModifiersCleaned": "Migration SR5 : modificateurs calculés retirés des données enregistrées ({actors} acteurs, {items} objets, {tokens} jetons).",
 	"SR5.StreetCredDivisor": "Crédibilité : diviseur du Karma (+)",
 	"SR5.LimitReplaced": "remplacée",
 	"SR5.EffectCardRejected": "Effet ignoré ({item}, carte de {user}) : elle ne vient pas du propriétaire du lanceur, ou ses dés sont illisibles. Appliquez-le à la main si besoin.",
