@@ -823,10 +823,13 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       const li = a.closest(".subItemManagement")
       let removed = foundry.utils.duplicate(this.item.system[target])
       if (typeof removed === "object") { removed = Object.values(removed) }
-      removed.splice(Number(li.dataset.key), 1)
-      return this.item.update({
-        [key]: removed 
+      let [gone] = removed.splice(Number(li.dataset.key), 1)
+      await this.item.update({
+        [key]: removed
       })
+      //The accessory taken off is free to be mounted again
+      if (target === "accessory" && gone?._id) await SR5_UtilityItem.unplugRemovedAccessory(this.item.actor, gone._id)
+      return
     }
 
     if (action === "clone") {

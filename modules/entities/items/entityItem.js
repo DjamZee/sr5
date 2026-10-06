@@ -85,6 +85,8 @@ export class SR5Item extends Item {
         if (typeof itemData.accessory === "object") itemData.accessory = Object.values(itemData.accessory)
         if (itemData.damageElement === "toxin") SR5_UtilityItem._handleWeaponToxin(itemData, owner)
         if (itemData.ammunition.value > itemData.ammunition.max) itemData.ammunition.value = itemData.ammunition.max
+        //A weapon accessory left marked plugged on no weapon can be mounted again
+        if (this.actor && itemData.isAccessory) itemData.isPlugged = !!SR5_UtilityItem.accessoryHost(item.id, this.actor)
         if (itemData.category === "meleeWeapon" && owner){
           SR5_UtilityItem._checkIfWeaponIsFocus(this, owner)
           if (itemData.isLinkedToFocus) SR5_UtilityItem._handleWeaponFocus(item, owner)

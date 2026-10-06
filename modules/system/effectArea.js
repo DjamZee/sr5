@@ -457,13 +457,28 @@ export class SR5_EffectArea {
   static async checkIfTemplateContainsToken(template, token){
     // Both sides are in the scene's own unit here -- a MeasuredTemplate's distance is expressed in scene
     // units, not in meters -- so this one is deliberately NOT converted.
+    // The token's destination: in the move hook, its x and y are still those of the animation (the square it leaves)
     let distance = SR5_SystemHelpers.getDistanceBetweenTwoPoint({
       x: template.x, y: template.y
-    }, {
-      x: token.x, y: token.y
-    })
+    }, SR5_EffectArea.tokenPosition(token))
     if (distance <= template.distance) return true
     else return false
+  }
+
+  //The tokens that stand for the same actor on the token's scene: all the tokens of a linked actor, whose effects
+  //are shared, or the token alone
+  static actorTokens(tokenDocument){
+    if (!tokenDocument.actorLink || !tokenDocument.actorId) return [tokenDocument]
+    let tokens = Array.from(tokenDocument.parent?.tokens ?? []).filter(t => t.actorLink && t.actorId === tokenDocument.actorId)
+    return tokens.length ? tokens : [tokenDocument]
+  }
+
+  //Is the token's actor in the template: a linked actor is while any of its tokens is
+  static async templateCoversActor(template, tokenDocument){
+    for (let t of SR5_EffectArea.actorTokens(tokenDocument)){
+      if (await this.checkIfTemplateContainsToken(template, t)) return true
+    }
+    return false
   }
 
   //Calls on one actor and one spell run one after the other: the hooks that start them are not awaited, and two
@@ -503,7 +518,7 @@ export class SR5_EffectArea {
       let covering
       for (let template of Array.from(tokenDocument.parent?.templates ?? [])){
         if (template.id === excludedTemplateId || !template.flags?.sr5?.itemHasEffect || template.flags.sr5.itemUuid !== itemUuid) continue
-        if (await this.checkIfTemplateContainsToken(template, tokenDocument)){
+        if (await this.templateCoversActor(template, tokenDocument)){
           covering = template
           break
         }
@@ -532,7 +547,8 @@ export class SR5_EffectArea {
         continue
       }
       if (templateDocument.flags.sr5?.environmentalModifiers){
-        let isInTemplate = await this.checkIfTemplateContainsToken(templateDocument, tokenDocument)
+        //A linked actor with two tokens keeps the effect while one of them is still inside
+        let isInTemplate = await this.templateCoversActor(templateDocument, tokenDocument)
         let actor = await SR5_EntityHelpers.getRealActorFromID(tokenDocument.id)
         let effectID = templateDocument.uuid
         let hasEffect = await this.checkIfHasEffect(actor, effectID)

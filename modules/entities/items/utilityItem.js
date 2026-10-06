@@ -696,7 +696,8 @@ export class SR5_UtilityItem extends Actor {
       case "fragmentationMini":
         armorPenetration = 5
         damageValue = 18
-        damageType = "stun"
+        //18P (f) (SR5 p. 437), and the mini-grenades have the same effects as the normal grenades
+        damageType = "physical"
         blastDamageFallOff = -1
         blastRadius = 18
         break
@@ -2614,22 +2615,30 @@ export class SR5_UtilityItem extends Actor {
     SR5_EntityHelpers.updateDicePool(itemData.test)
   }
 
-  static async _checkIfAccessoryIsPlugged (item, actor){
+  //The item of the actor that carries the given accessory in its list, a weapon included
+  static accessoryHost(itemId, actor){
     for (let i of actor.items){
-      if (i.type === "itemGear" || i.type === "itemArmor" || i.type === "itemAugmentation") {
-        if (Object.keys(i.system.accessory).length){
-          if (typeof i.system.accessory === "object") i.system.accessory = Object.values(i.system.accessory)
-          let accessory = i.system.accessory.find(a => a._id === item.id)
-          if (accessory){
-            item.system.wirelessTurnedOn = i.system.wirelessTurnedOn
-            item.system.isPlugged = true
-            return
-          }      
-        } else {
-          item.system.isPlugged = false
-        }
-      }
+      if (!["itemGear", "itemArmor", "itemAugmentation", "itemWeapon"].includes(i.type) || !i.system.accessory) continue
+      if (typeof i.system.accessory === "object") i.system.accessory = Object.values(i.system.accessory)
+      if (i.system.accessory.find(a => a?._id === itemId)) return i
     }
+  }
+
+  //Read from the hosts, not from the stored flag: an accessory removed before the bin cleared the flag stayed plugged
+  //and could never be mounted again
+  static async _checkIfAccessoryIsPlugged (item, actor){
+    let host = SR5_UtilityItem.accessoryHost(item.id, actor)
+    if (host) item.system.wirelessTurnedOn = host.system.wirelessTurnedOn
+    item.system.isPlugged = !!host
+  }
+
+  //An accessory taken off its host with the bin is free again, unless another host still carries it
+  static async unplugRemovedAccessory(actor, accessoryId){
+    let item = actor?.items.get(accessoryId)
+    if (!item || SR5_UtilityItem.accessoryHost(accessoryId, actor)) return
+    await item.update({
+      "system.isPlugged": false
+    })
   }
 
   static _updatePluggedAccessory(itemData, actor){
