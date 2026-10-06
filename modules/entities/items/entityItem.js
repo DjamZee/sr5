@@ -35,6 +35,9 @@ import {
 import {
   migrateTargetOfEffect
 } from "../../datamodels/common/targetOfEffectMigration.js"
+import {
+  migrateTemplateNoise
+} from "../../datamodels/common/templateNoiseMigration.js"
 
 /**
  * Override and extend the basic :class:`Item` implementation
@@ -47,6 +50,8 @@ export class SR5Item extends Item {
     migrateNegotiationSkill(source?.system)
     //Links to sustained effects stored as {} (datamodels/common/targetOfEffectMigration.js)
     migrateTargetOfEffect(source?.system)
+    //A template's matrix noise stored negative before N32 (datamodels/common/templateNoiseMigration.js)
+    migrateTemplateNoise(source)
     return super.migrateData(source)
   }
 
