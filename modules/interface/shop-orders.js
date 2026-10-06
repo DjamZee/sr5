@@ -383,6 +383,99 @@ export async function cancelOrder(actor, id) {
   return true
 }
 
+/* -------------------------------------------- */
+/*  Orders of the shop without vendor            */
+/* -------------------------------------------- */
+// The shop without vendor runs on the buyer's browser: it debits her and writes her orders. The
+// active GM enters them in the ledger at once (Élise's ruling after Zélia's review), from what he
+// works out himself: the price of the catalogue's item, never one read on the request, and never
+// more than the purchase she was debited, a loss transaction on her sheet used once.
+
+/**
+ * The ledger entries for a purchase, or null when it cannot be entered.
+ * @param {object[]} priced [{order, paid}], `paid` worked out by the GM from the catalogue
+ * @param {number} debited the amount of the purchase's loss transaction
+ * @param {string} actorUuid the buyer
+ * @param {string} transactionId that transaction, entered once
+ */
+export function registrationPlan(priced, debited, actorUuid, transactionId) {
+  if (!priced.length || priced.some(line => !(line.paid >= 0))) return null
+  const total = priced.reduce((sum, line) => sum + line.paid, 0)
+  if (total > Math.max(0, Number(debited) || 0)) return null
+  return Object.fromEntries(priced.map(({
+    order, paid
+  }) => [order.id, {
+    actorUuid, paid, vendorUuid: null, name: order.name, quantity: order.quantity, uuid: order.uuid, transactionId,
+  }]))
+}
+
+/** What an order costs at the catalogue, read on the GM's browser: null when its item is gone. */
+async function catalogueCost(order) {
+  let source = null
+  try {
+    source = await fromUuid(order?.uuid ?? '')
+  } catch {
+    source = null
+  }
+  if (!source?.system) return null
+  const {
+    SR5Shop
+  } = await import('./shop.js')
+  const base = SR5Shop.gradedPrice(source.system, order.grade ?? null) * Math.max(1, Math.floor(Number(order.quantity) || 1))
+  return base + (order.express ? expressCost(base, currentExpress()) : 0)
+}
+
+/**
+ * Enter the orders of a purchase in the ledger, on the active GM's browser.
+ * @param {Actor} actor the buyer
+ * @param {string[]} ids the orders the purchase placed
+ * @param {string} transactionId the loss transaction of the purchase
+ * @param {User} requester who asks: an owner of the buyer
+ */
+export async function registerOrders(actor, ids, transactionId, requester) {
+  if (!isWriter() || !actor || !requester) return false
+  if (!requester.isGM && !actor.testUserPermission?.(requester, 'OWNER')) return false
+  const ledger = orderLedger()
+  const debit = actor.items?.get(transactionId)
+  if (!debit || debit.type !== 'itemNuyen' || debit.system?.type !== 'loss') return false
+  // One purchase, one entry: a transaction already used stands behind nothing more
+  if (Object.values(ledger).some(entry => entry?.transactionId === transactionId)) return false
+  const orders = ordersOf(actor).filter(o => (ids ?? []).includes(o.id) && !(o.id in ledger))
+  if (!orders.length) return false
+  const priced = []
+  for (const order of orders) {
+    const paid = await catalogueCost(order)
+    if (paid === null) return false
+    priced.push({
+      order, paid
+    })
+  }
+  const entries = registrationPlan(priced, debit.system.amount, actor.uuid, transactionId)
+  if (!entries) return false
+  await ledgerOrders(entries)
+  return true
+}
+
+/** The buyer's browser asks the active GM to enter its orders. */
+export async function requestRegister(actor, orders, transactionId) {
+  if (!orders.length || !transactionId) return
+  const ids = orders.map(o => o.id)
+  if (game.user.isGM) return registerOrders(actor, ids, transactionId, game.user)
+  const {
+    SR5_SocketHandler
+  } = await import('../socket.js')
+  await SR5_SocketHandler.emitForGM('shopOrderLedger', {
+    actorUuid: actor.uuid, ids, transactionId
+  })
+}
+
+/** The server stamps `senderId`: the GM checks who asks, and works the prices out himself. */
+export async function socketRegister(message, senderId) {
+  if (!isWriter()) return
+  const actor = await fromUuid(message?.data?.actorUuid ?? '')
+  await registerOrders(actor, message?.data?.ids, message?.data?.transactionId, game.users.get(senderId))
+}
+
 /** The line the GM is shown: the ledger's name and quantity when the order is in it, never the sheet's. */
 export function ledgerLabel(order, entry) {
   if (!entry?.name) return lineLabel(order)

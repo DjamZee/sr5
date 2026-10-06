@@ -20,7 +20,8 @@ import {
   SR5ShopAvailability
 } from './shop-availability.js'
 import {
-  lineWaits, deliveryDelayed, currentExpress, expressCost, orderHours, newOrder, addOrders, testedHours, cardResult, cardSurcharge, surchargedUnit
+  lineWaits, deliveryDelayed, currentExpress, expressCost, orderHours, newOrder, addOrders, testedHours, cardResult, cardSurcharge, surchargedUnit,
+  requestRegister
 } from './shop-orders.js'
 
 /**
@@ -340,8 +341,11 @@ export class SR5Shop {
     })
 
     SR5_SystemHelpers.srLog(3, `Shop: ${actor.name} ${equip ? 'is equipped with' : free ? 'receives' : 'buys'} ${label} (${total})`)
-    if (payload.length) await actor.createEmbeddedDocuments('Item', payload)
+    const created = payload.length ? await actor.createEmbeddedDocuments('Item', payload) : []
     await addOrders(actor, orders)
+    // The active GM enters the orders in his ledger, priced by himself, within this debit
+    const debit = (created ?? []).find(item => item.type === 'itemNuyen' && item.system?.type === 'loss')
+    if (!free && orders.length && debit) await requestRegister(actor, orders, debit.id)
 
     const rows = resolved.map(line =>
       `<li>${SR5Shop.lineLabel(line.name, line.quantity)} — ${(line.total + line.extra).toLocaleString()}&yen;${

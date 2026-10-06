@@ -59,6 +59,14 @@ const availabilityRetry = async (message, senderId) => {
   return socketRetry(message, senderId)
 }
 
+// A buyer's browser asks the active GM to enter its orders in his ledger (security lot, Sixtine)
+const orderLedger = async (message, senderId) => {
+  const {
+    socketRegister
+  } = await import("./interface/shop-orders.js")
+  return socketRegister(message, senderId)
+}
+
 export class SR5_SocketHandler {
   static registerSocketListeners() {
     const hooks = {
@@ -107,6 +115,7 @@ export class SR5_SocketHandler {
       "shopVendorDecline": [vendor('_socketDecline')],
       "shopAvailabilityRetry": [availabilityRetry],
       "shopOrderCancel": [orderCancel],
+      "shopOrderLedger": [orderLedger],
       "tacnetRoster": [async (message, senderId) => (await import("./system/tacnet.js"))._socketTacnetRoster(message, senderId)],
     }
 
