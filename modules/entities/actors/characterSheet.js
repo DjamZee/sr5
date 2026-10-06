@@ -382,28 +382,13 @@ export class SR5ActorSheet extends ActorSheetSR5 {
         }
         return super._onDropItemCreate(itemData)
       case "itemDevice":
-        for (let i of this.actor.items){
-          if (i.type === "itemDevice" && i.system.isActive) {
-            return super._onDropItemCreate(itemData)
-          }
-        }
-        itemData.system.isActive = true
+        this._activeUnlessOneIs(itemData, i => i.type === "itemDevice")
         return super._onDropItemCreate(itemData)
       case "itemArmor":
-        for (let i of this.actor.items){
-          if (i.type === "itemArmor" && i.system.isActive) {
-            return super._onDropItemCreate(itemData)
-          }
-        }
-        itemData.system.isActive = true
+        this._activeUnlessOneIs(itemData, i => i.type === "itemArmor")
         return super._onDropItemCreate(itemData)
       case "itemWeapon":
-        for (let i of this.actor.items){
-          if (i.type === "itemWeapon" && i.system.isActive && (i.system.category === itemData.system.category)) {
-            return super._onDropItemCreate(itemData)
-          }
-        }
-        itemData.system.isActive = true
+        this._activeUnlessOneIs(itemData, i => i.type === "itemWeapon" && i.system.category === itemData.system.category)
         return super._onDropItemCreate(itemData)
       case "itemFocus":
       case "itemAugmentation":

@@ -249,3 +249,101 @@ describe('device and agent sheets', () => {
     })
   }
 })
+
+// Élise's ruling (djamz.12): an item copied from another sheet follows the sheet's rule, like a new drop
+describe('an item switched on where it came from', () => {
+  it('arrives switched off when the actor already has one of its kind switched on', async () => {
+    for (const SheetClass of [SR5ActorSheet, SR5GruntSheet]) {
+      await drop(sheetOf(SheetClass, [owned('itemArmor', {
+        isActive: true
+      })]), dropped('itemArmor', {
+        isActive: true
+      }))
+      expect(last().data.system.isActive).toBe(false)
+      await drop(sheetOf(SheetClass, [owned('itemDevice', {
+        isActive: true
+      })]), dropped('itemDevice', {
+        isActive: true
+      }))
+      expect(last().data.system.isActive).toBe(false)
+    }
+    for (const SheetClass of [SR5SpiritSheet, SR5DroneSheet]) {
+      await drop(sheetOf(SheetClass, [owned('itemWeapon', {
+        isActive: true, category: 'rangedWeapon'
+      })]), dropped('itemWeapon', {
+        isActive: true, category: 'rangedWeapon'
+      }))
+      expect(last().data.system.isActive).toBe(false)
+    }
+  })
+
+  it('stays switched on when the actor has none of its kind switched on', async () => {
+    await drop(sheetOf(SR5ActorSheet, [owned('itemArmor', {
+      isActive: false
+    })]), dropped('itemArmor', {
+      isActive: true
+    }))
+    expect(last().data.system.isActive).toBe(true)
+  })
+})
+
+// V13's ActorSheetV2._onDropFolder does nothing: a folder dropped on a sheet created no item
+describe('a folder of items dropped on a sheet', () => {
+  /** An actor whose created items join its item list, as Foundry's do */
+  const liveSheet = SheetClass => {
+    const sheet = sheetOf(SheetClass)
+    Item.implementation.create = vi.fn(async (data, options) => {
+      created.push({
+        data, options
+      })
+      sheet.actor.items.set(data._id, {
+        id: data._id, type: data.type, system: data.system
+      })
+      return {
+        ...data, documentName: 'Item'
+      }
+    })
+    return sheet
+  }
+  const folderOf = (...items) => ({
+    type: 'Item', contents: items.map(i => ({
+      ...i, documentName: 'Item'
+    }))
+  })
+
+  it('sends each item through the sheet rules, each seeing the ones created before it', async () => {
+    const sheet = liveSheet(SR5ActorSheet)
+    const folder = folderOf(dropped('itemArmor', {
+    }, 'a1'), dropped('itemArmor', {
+    }, 'a2'), dropped('itemVehicleMod'))
+    expect(await sheet._onDropFolder({
+    }, folder)).toBe(folder)
+    expect(created.map(c => [c.data._id, c.data.system.isActive])).toEqual([['a1', true], ['a2', false]])
+    expect(info).toHaveBeenCalledWith('SR5.INFO_ForbiddenItemType')
+  })
+
+  it('reads a compendium folder through the uuids of its index', async () => {
+    const sheet = liveSheet(SR5ActorSheet)
+    globalThis.fromUuid = vi.fn(async uuid => dropped('itemSpell', {
+    }, uuid))
+    await sheet._onDropFolder({
+    }, {
+      type: 'Item', contents: [{
+        uuid: 'Compendium.x.Item.s1'
+      }]
+    })
+    expect(created.map(c => c.data.type)).toEqual(['itemSpell'])
+  })
+
+  it('creates nothing from a folder of actors, or on a sheet the user does not own', async () => {
+    const sheet = liveSheet(SR5ActorSheet)
+    expect(await sheet._onDropFolder({
+    }, {
+      type: 'Actor', contents: [dropped('itemSpell')]
+    })).toBeNull()
+    sheet.actor.isOwner = false
+    expect(await sheet._onDropFolder({
+    }, folderOf(dropped('itemSpell')))).toBeNull()
+    expect(created).toEqual([])
+  })
+})

@@ -899,6 +899,35 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
   }
 
   /**
+   * A folder of items dropped on the sheet: V13's ActorSheetV2._onDropFolder does nothing, where V12 created its items.
+   * Each item of the folder (its own, not its subfolders', as in V12) goes through _onDropItem in turn, so the sheet's
+   * rules apply to it and see the items created before it (a second armor of the folder arrives switched off).
+   */
+  async _onDropFolder(event, folder) {
+    if (!this.actor.isOwner || folder?.type !== "Item") return null
+    let createdAny = false
+    for (let entry of folder.contents) {
+      // A compendium folder lists index entries, not documents
+      const item = entry.documentName === "Item" ? entry : await fromUuid(entry.uuid)
+      if (item && await this._onDropItem(event, item)) createdAny = true
+    }
+    return createdAny ? folder : null
+  }
+
+  /**
+   * Switch a dropped item on unless the actor already has one of its kind switched on; then it arrives switched off,
+   * even when it was on where it came from (copied from another sheet): one rule for a new drop and a copy (ruling of
+   * Élise, coordinator)
+   * @param {object} itemData     the dropped item's data
+   * @param {Function} sameKind   whether an owned item is of the same kind
+   */
+  _activeUnlessOneIs(itemData, sameKind) {
+    let oneIsActive = false
+    for (let i of this.actor.items) if (i.system.isActive && sameKind(i)) oneIsActive = true
+    itemData.system.isActive = !oneIsActive
+  }
+
+  /**
    * Create a dropped item, once the sheet's rules have accepted it (the end of every sheet's _onDropItemCreate).
    * @param {object} itemData  the item's data, as the sheet left it
    */

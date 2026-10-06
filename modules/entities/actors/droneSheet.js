@@ -139,12 +139,7 @@ export class SR5DroneSheet extends ActorSheetSR5 {
           ui.notifications.info(game.i18n.localize('SR5.INFO_ForbiddenItemType'))
           return
         }
-        for (let i of this.actor.items){
-          if (i.type === "itemWeapon" && i.system.isActive && (i.system.category === item.system.category)) {
-            return super._onDropItemCreate(item)
-          }
-        }
-        item.system.isActive = true
+        this._activeUnlessOneIs(item, i => i.type === "itemWeapon" && i.system.category === item.system.category)
         return super._onDropItemCreate(item)
       case "itemArmor":
       case "itemProgram":
