@@ -3,7 +3,7 @@ import {
 } from "vitest"
 import {
   lineWaits, expressTerms, expressCost, orderHours, dueTime, freshlyDue, cardExpressExtra,
-  bindOrderClicks, cancelPlan, testedHours
+  bindOrderClicks, cancelPlan, testedHours, catalogueRefundCap
 } from "../modules/interface/shop-orders.js"
 
 const fakeElement = () => {
@@ -54,9 +54,27 @@ describe("cancelling an order follows the GM's ledger (Quitterie's review)", () 
     }
   }
   it("a forged order missing from the ledger never touches a vendor", () => {
-    expect(cancelPlan(forged, undefined, 1000)).toEqual({
-      refund: 5000000, vendorUuid: null, fromCashbox: 0, fromAccounts: 0
+    expect(cancelPlan(forged, undefined, 1000, 250)).toMatchObject({
+      vendorUuid: null, fromCashbox: 0, fromAccounts: 0
     })
+  })
+  // Security lot (Sixtine, Odile's finding): the flag is the player's own writing
+  it("a forged order missing from the ledger refunds the catalogue's price at most", () => {
+    expect(cancelPlan(forged, undefined, 1000, 250).refund).toBe(250)
+    expect(cancelPlan({
+      paid: 100
+    }, undefined, 0, 250).refund).toBe(100)
+  })
+  it("an order missing from the ledger whose source is gone refunds nothing", () => {
+    expect(cancelPlan(forged, undefined).refund).toBe(0)
+  })
+  it("the catalogue's cap counts the express surcharge only on an express order", () => {
+    const terms = {
+      surcharge: 25, factor: 2
+    }
+    expect(catalogueRefundCap(100, 3, false, terms)).toBe(300)
+    expect(catalogueRefundCap(100, 3, true, terms)).toBe(375)
+    expect(catalogueRefundCap(100, 3, true, null)).toBe(300)
   })
   it("the ledger's amount wins over the flag's", () => {
     const plan = cancelPlan(forged, {

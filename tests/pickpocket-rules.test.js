@@ -4,8 +4,42 @@ import {
 
 const {
   isPickable, pickableItems, randomPick, perceptionModifiers, pickpocketOutcome, transferEnds, isTransferAllowed, isLockedAway, splitPile, defaultTakeQuantity,
-  perceptionDialogLocks
+  perceptionDialogLocks, thiefHitsCap, boundThiefHits
 } = await import('../modules/rolls/roll-helpers/pickpocket-rules.js')
+
+describe("the thief card's hits, bounded by the GM (Sixtine, security lot)", () => {
+  const thief = {
+    system: {
+      skills: {
+        palming: {
+          test: {
+            dicePool: 7
+          }
+        }
+      },
+      specialAttributes: {
+        edge: {
+          augmented: {
+            value: 3
+          }
+        }
+      }
+    }
+  }
+  it('the cap is the Palming pool the GM prepares, plus Chance', () => {
+    expect(thiefHitsCap(thief)).toBe(10)
+    expect(thiefHitsCap(null)).toBe(0)
+  })
+  it('a card forged to 99 hits counts the cap, never more', () => {
+    expect(boundThiefHits(99, 10)).toBe(10)
+    expect(boundThiefHits(4, 10)).toBe(4)
+  })
+  it('nonsense claims count nothing', () => {
+    expect(boundThiefHits(-5, 10)).toBe(0)
+    expect(boundThiefHits("abc", 10)).toBe(0)
+    expect(boundThiefHits(Infinity, 10)).toBe(0)
+  })
+})
 
 describe("the GM's Perception dialog (review of Xara)", () => {
   it('planting, the thief chose the object and the quantity: both are locked', () => {

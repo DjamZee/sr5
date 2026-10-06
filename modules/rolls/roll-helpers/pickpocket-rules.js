@@ -169,6 +169,25 @@ export function pickpocketOutcome({
   return glitch ? "felt" : "taken"
 }
 
+/**
+ * The most hits a thief card may claim, from the thief's sheet as the GM's browser prepares it: the
+ * Palming pool, plus Chance in case it was spent (it adds dice and breaks the limit, SR5 p. 56). The
+ * card is the player's own message, written before the GM's first click: what it says is only a
+ * claim, bounded here and confirmed by the GM in his Perception dialog.
+ */
+export function thiefHitsCap(thief) {
+  const pool = Number(thief?.system?.skills?.palming?.test?.dicePool) || 0
+  const edge = Number(thief?.system?.specialAttributes?.edge?.augmented?.value) || 0
+  return Math.max(0, pool + edge)
+}
+
+/** The thief's claimed hits brought within the cap: a whole number from 0 to the cap. */
+export function boundThiefHits(claimed, cap) {
+  const hits = Math.floor(Number(claimed))
+  if (!Number.isFinite(hits) || hits < 0) return 0
+  return Math.min(hits, Math.max(0, Math.floor(Number(cap)) || 0))
+}
+
 //What the GM's Perception dialog locks: the object once someone chose it, and when he plants, the quantity too,
 //since the thief said how many of his own pile he puts on the target
 export function perceptionDialogLocks(mode, chosenItemId) {

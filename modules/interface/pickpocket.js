@@ -1,6 +1,7 @@
 import {
   pickableItems, randomPick, concealmentOf, transferEnds, pickpocketOutcome, isTransferAllowed, perceptionDialogLocks,
-  PICKPOCKET_MAX_CONCEALMENT, pileSize, defaultTakeQuantity, splitPile
+  PICKPOCKET_MAX_CONCEALMENT, pileSize, defaultTakeQuantity, splitPile,
+  thiefHitsCap, boundThiefHits
 } from "../rolls/roll-helpers/pickpocket-rules.js"
 import {
   NOT_LOOTERS
@@ -207,11 +208,20 @@ export class SR5Pickpocket {
     if (!target || !thief) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActor"))
     //One Perception per thief card: a second click would give a second roll, and a second object
     if (SR5Pickpocket.isAnswered(messageData.owner.messageId)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_PickpocketAnswered"))
+    //The thief card must be written by someone who plays the thief: nobody rolls in another's name
+    const thiefMessage = game.messages.get(messageData.owner.messageId)
+    if (!thiefMessage?.author || !thief.testUserPermission(thiefMessage.author, "OWNER")) return ui.notifications.warn(game.i18n.localize("SR5.WARN_PickpocketRefused"))
+    //The card is the player's own message, retouchable until the GM's first click: its hits are a claim,
+    //bounded by the pool the GM's browser prepares and confirmed by the GM below (security lot, Sixtine)
+    const hitsCap = thiefHitsCap(thief)
+    const claimedHits = Number(thiefMessage.flags?.sr5data?.roll?.hits) || 0
     const mode = messageData.various.pickpocketMode ?? "take"
     const giver = mode === "plant" ? thief : target
 
     const escape = foundry.utils.escapeHTML
-    const chosen = messageData.various.pickpocketItemId
+    //Taking, the thief chooses only when the world lets him: otherwise a choice on his card is his own writing
+    const thiefMayChoose = mode === "plant" || game.settings.get("sr5", "sr5PickpocketThiefChooses")
+    const chosen = thiefMayChoose ? messageData.various.pickpocketItemId : null
     //Every object the GM can pass over to, the small ones first; one bigger than +2 is marked
     const items = pickableItems(giver, {
       allowLarge: true
@@ -235,7 +245,9 @@ export class SR5Pickpocket {
           name: SR5Pickpocket.tokenOf(messageData.target.actorId)?.name ?? target.name
         })
       },
-      content: `<div class="form-group"><label>${escape(game.i18n.localize("SR5.PickpocketItem"))}</label><select name="itemId" ${locked}><option value="">${escape(game.i18n.localize("SR5.PickpocketRandom"))}</option>${options}</select></div><div class="form-group"><label>${escape(game.i18n.localize(quantityKey))}</label><input type="number" name="quantity" min="1" step="1" value="${chosenQuantity}" ${locks.quantity ? "disabled" : ""} placeholder="${escape(game.i18n.localize("SR5.PickpocketQuantityDefault"))}"/></div>${box("distracted")}${box("attentive")}${box("diversion")}`,
+      content: `<div class="form-group"><label>${escape(game.i18n.localize("SR5.PickpocketItem"))}</label><select name="itemId" ${locked}><option value="">${escape(game.i18n.localize("SR5.PickpocketRandom"))}</option>${options}</select></div><div class="form-group"><label>${escape(game.i18n.localize(quantityKey))}</label><input type="number" name="quantity" min="1" step="1" value="${chosenQuantity}" ${locks.quantity ? "disabled" : ""} placeholder="${escape(game.i18n.localize("SR5.PickpocketQuantityDefault"))}"/></div><div class="form-group"><label>${escape(game.i18n.format("SR5.PickpocketThiefHits", {
+        claimed: claimedHits, cap: hitsCap
+      }))}</label><input type="number" name="thiefHits" min="0" max="${hitsCap}" step="1" value="${boundThiefHits(claimedHits, hitsCap)}"/></div>${box("distracted")}${box("attentive")}${box("diversion")}`,
       buttons: [{
         action: "ok",
         label: game.i18n.localize("SR5.SkillPerception"),
@@ -245,6 +257,7 @@ export class SR5Pickpocket {
           return {
             itemId: chosen || f.itemId.value || null,
             situations: ["distracted", "attentive", "diversion"].filter(k => f[k].checked),
+            thiefHits: boundThiefHits(f.thiefHits.value, hitsCap),
             //Planting, the thief's quantity stands, whatever the field says
             quantity: locks.quantity ? (messageData.various.pickpocketQuantity ?? null) : (f.quantity.value === "" ? null : Number(f.quantity.value)),
           }
@@ -275,6 +288,8 @@ export class SR5Pickpocket {
     data.various.pickpocketConcealment = concealmentOf(item)
     data.various.pickpocketSituations = result.situations
     data.various.pickpocketAnswerId = foundry.utils.randomID()
+    //The hits the GM confirmed: the Perception card freezes them, the thief card is never read again
+    data.roll.hits = result.thiefHits
     //The thief's roll as it is now, kept on the GM's card: the hits go through previousMessage.hits
     data.various.pickpocketThiefGlitch = !!messageData.roll.glitchRoll
     data.various.pickpocketThiefCriticalGlitch = !!messageData.roll.criticalGlitchRoll

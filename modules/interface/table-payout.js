@@ -336,8 +336,10 @@ async function handOver(message, kind, actors) {
  */
 export async function sr5SocketTablePayout({
   data
-}) {
-  if (!game.user.isGM) return
+}, senderId) {
+  // Only a game master may ask: a player's console could otherwise emit this
+  // message and be paid the card's nuyen and gear (security lot, Sixtine)
+  if (!game.user.isGM || !game.users.get(senderId)?.isGM) return
   const message = game.messages.get(data.messageId)
   if (!message) return
   const actors = []

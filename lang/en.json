@@ -4515,6 +4515,7 @@
 	"SR5.PickpocketLarge": "too big, GM's call",
 	"SR5.PickpocketQuantity": "Quantity taken",
 	"SR5.PickpocketQuantityDefault": "1 from a pile, else the whole object",
+	"SR5.PickpocketThiefHits": "Thief's hits (claimed: {claimed}, at most {cap})",
 	"SR5.PickpocketConcealment": "Object concealability",
 	"SR5.PickpocketDistracted": "Target distracted",
 	"SR5.PickpocketAttentive": "Target watching their belongings",

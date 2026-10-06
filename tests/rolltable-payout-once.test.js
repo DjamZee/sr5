@@ -165,11 +165,43 @@ describe("a table card is handed over once", () => {
       }
     }
 
+    game.users = new Map([["gm1", {
+      isGM: true
+    }], ["gm2", {
+      isGM: true
+    }]])
     await Promise.all([
-      sr5SocketTablePayout(request), sr5SocketTablePayout(request),
+      sr5SocketTablePayout(request, "gm2"), sr5SocketTablePayout(request, "gm2"),
       sr5HandOverNuyen(message, [a])
     ])
+    delete game.users
 
     expect(a.received.map(item => item.system.amount)).toEqual([300])
+  })
+
+  // Security lot (Sixtine): the message is emitted from a player's console,
+  // naming her own character; the server stamps her id as the sender.
+  it("pays nothing when a player forges the request", async () => {
+    const message = card("m6", {
+      tableNuyen: 5000, tableName: "Butin"
+    })
+    const a = pc("Ana")
+    game.messages = new Map([["m6", message]])
+    game.users = new Map([["gm1", {
+      isGM: true
+    }], ["p1", {
+      isGM: false
+    }]])
+    globalThis.fromUuid = async uuid => (uuid === "Actor.Ana" ? a : null)
+
+    await sr5SocketTablePayout({
+      data: {
+        messageId: "m6", kind: "nuyen", actorUuids: ["Actor.Ana"]
+      }
+    }, "p1")
+    delete game.users
+
+    expect(a.received).toEqual([])
+    expect(sr5PayoutSpent(message, "nuyen")).toBe(false)
   })
 })

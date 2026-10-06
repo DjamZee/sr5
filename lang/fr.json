@@ -4515,6 +4515,7 @@
 	"SR5.PickpocketLarge": "trop gros, le MJ passe outre",
 	"SR5.PickpocketQuantity": "Quantité volée",
 	"SR5.PickpocketQuantityDefault": "1 d'une pile, sinon l'objet entier",
+	"SR5.PickpocketThiefHits": "Succès du voleur (annoncés : {claimed}, au plus {cap})",
 	"SR5.PickpocketConcealment": "Dissimulation de l'objet",
 	"SR5.PickpocketDistracted": "Cible distraite",
 	"SR5.PickpocketAttentive": "Cible attentive à ses affaires",

@@ -258,12 +258,16 @@ export function registerOrderLedger() {
 
 /**
  * What a cancellation moves. The amount is the ledger's when the order is in
- * it, the flag's otherwise; only a ledger entry names a vendor, and the vendor
- * gives back from the cashbox that took the money first, its accounts for
- * the rest (what the cashbox could not hold went there at the sale).
+ * it; otherwise the flag's, which its owner writes, never above `cap`, what
+ * the catalogue charges for it as the GM's browser reads it (security lot,
+ * Sixtine: a forged order credited the sheet whatever it said). Only a ledger
+ * entry names a vendor, and the vendor gives back from the cashbox that took
+ * the money first, its accounts for the rest (what the cashbox could not hold
+ * went there at the sale).
  */
-export function cancelPlan(order, entry, cashboxFunds = 0) {
-  const refund = Math.max(0, Number(entry ? entry.paid : order?.paid) || 0)
+export function cancelPlan(order, entry, cashboxFunds = 0, cap = 0) {
+  const claimed = Math.max(0, Number(order?.paid) || 0)
+  const refund = entry ? Math.max(0, Number(entry.paid) || 0) : Math.min(claimed, Math.max(0, Number(cap) || 0))
   if (!entry?.vendorUuid) return {
     refund, vendorUuid: null, fromCashbox: 0, fromAccounts: 0
   }
@@ -363,7 +367,7 @@ export async function cancelOrder(actor, id) {
     name: lineLabel(order)
   })
   const vendor = await vendorOf(entry)
-  const plan = cancelPlan(order, entry, vendor?.cashbox ? creditFunds(vendor.cashbox) : 0)
+  const plan = cancelPlan(order, entry, vendor?.cashbox ? creditFunds(vendor.cashbox) : 0, entry ? 0 : await refundCap(order))
   if (plan.refund > 0) {
     await actor.createEmbeddedDocuments('Item', [transaction('gain', plan.refund, name)])
     // The vendor gives back from the cashbox that took the money, then from its accounts
@@ -377,6 +381,28 @@ export async function cancelOrder(actor, id) {
     ...order, paid: plan.refund
   })
   return true
+}
+
+/** The most an order missing from the ledger may refund: its line at the catalogue's price, express included. */
+export function catalogueRefundCap(unit, quantity, express, terms) {
+  const base = Math.max(0, Number(unit) || 0) * Math.max(0, Math.floor(Number(quantity) || 0))
+  return base + (express ? expressCost(base, terms) : 0)
+}
+
+/** That cap for an order, read again from its source on the GM's browser: nothing when the source is gone. */
+async function refundCap(order) {
+  let source = null
+  try {
+    source = await fromUuid(order?.uuid ?? '')
+  } catch {
+    source = null
+  }
+  if (!source?.system) return 0
+  const {
+    SR5Shop
+  } = await import('./shop.js')
+  // Express may have been switched off since: the surcharge counted at its current share, or at none
+  return catalogueRefundCap(SR5Shop.gradedPrice(source.system, order.grade ?? null), order.quantity, order.express, currentExpress())
 }
 
 function creditFunds(item) {
@@ -413,7 +439,8 @@ async function confirmCancel(actor, id, requester) {
   const order = ordersOf(actor).find(o => o.id === id)
   if (!order) return false
   const entry = orderLedger()[id]
-  const plan = cancelPlan(order, entry?.actorUuid === actor.uuid ? entry : null)
+  const own = entry?.actorUuid === actor.uuid ? entry : null
+  const plan = cancelPlan(order, own, 0, own ? 0 : await refundCap(order))
   const vendor = plan.vendorUuid ? await vendorOf(entry) : null
   const esc = foundry.utils.escapeHTML
   const ok = await foundry.applications.api.DialogV2.confirm({
