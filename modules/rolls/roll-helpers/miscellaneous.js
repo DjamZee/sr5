@@ -2,8 +2,15 @@ import {
   SR5_EntityHelpers 
 } from "../../entities/helpers.js"
 import {
-  SR5_SocketHandler 
+  SR5_SocketHandler
 } from "../../socket.js"
+import {
+  SR5_SystemHelpers
+} from "../../system/utilitySystem.js"
+import {
+  ownsTarget, cardTrusted, bounded, matrixDamageAllowed, deactivateAllowed, reduceAllowed, supportEffectAllowed,
+  serviceSpentAllowed, maglockAllowed
+} from "./socket-guard.js"
 
 export class SR5_MiscellaneousHelpers {
   /** Update an actor with given data
@@ -12,66 +19,217 @@ export class SR5_MiscellaneousHelpers {
      * @param {number} value - The new value
      * @param {boolean} boolean - If the value to change is a boolean, default = false
      */
-  static async updateActorData(actorId, path, value, boolean = false){
+  static async updateActorData(actorId, path, value, boolean = false, card = {
+  }){
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
     if (!actor) return
-    let actorData = foundry.utils.duplicate(actor.system)
-
-    //change value
-    if (boolean) {
-      let oldvalue = path.split('.').reduce((previous, current) => previous[current], actorData)
-      foundry.utils.mergeObject(actorData, {
-        [path]: !oldvalue
-      })
-    } else foundry.utils.mergeObject(actorData, {
-      [path]: value
+    //Only the field changed is sent: the whole prepared system used to be written back
+    const next = boolean ? !foundry.utils.getProperty(actor.system, path) : value
+    const dataToUpdate = foundry.utils.expandObject({
+      [path]: next
     })
 
     //update actor
     if (!game.user?.isGM) {
       await SR5_SocketHandler.emitForGM("updateActorData", {
         actorId: actorId,
-        dataToUpdate: actorData,
+        dataToUpdate,
+        use: card.use, messageId: card.messageId,
       })
     } else await actor.update({
-      "system": actorData
+      "system": dataToUpdate
     })
+  }
+
+  /* -------------------------------------------- */
+  /*  The generic sockets, on the GM's browser     */
+  /* -------------------------------------------- */
+  // Security lot (Sixtine, ruled by DjamZ before the djamz.11): a GM or an owner of the target writes
+  // as before; anyone else only one of the uses of socket-guard.js, the effect of a card the GM reads
+  // again from the chat log, bounded by the sheet. Refused requests are logged, never applied.
+
+  /** The card behind a request, as the chat log keeps it: null unless a GM wrote it or an owner of
+   * the actor that rolled it. */
+  static cardOf(messageId) {
+    const message = messageId ? game.messages?.get(messageId) : null
+    const data = message?.flags?.sr5data
+    if (!data) return null
+    const roller = SR5_EntityHelpers.getRealActorFromID(data.owner?.actorId)
+    const author = message.author
+    if (!cardTrusted(author, !!roller && !!author && roller.testUserPermission(author, "OWNER"))) return null
+    return {
+      data, roller
+    }
+  }
+
+  /** The most hits a card may count, from the roller's sheet: the pool of that test, plus Chance. */
+  static poolCap(roller, path) {
+    const pool = Number(foundry.utils.getProperty(roller?.system ?? {
+    }, path)) || 0
+    return pool + (Number(roller?.system?.specialAttributes?.edge?.augmented?.value) || 0)
+  }
+
+  static #refuse(kind, senderId, data) {
+    SR5_SystemHelpers.srLog(1, `Socket ${kind} refused from ${game.users.get(senderId)?.name ?? senderId}`, data)
+    return false
   }
 
   //Socket for updating an actor
-  static async _socketUpdateActorData(message) {
-    let actor = SR5_EntityHelpers.getRealActorFromID(message.data.actorId)
-    await actor.update({
-      'system': message.data.dataToUpdate
+  static async _socketUpdateActorData(message, senderId) {
+    const sender = game.users.get(senderId)
+    const data = message?.data ?? {
+    }
+    let actor = SR5_EntityHelpers.getRealActorFromID(data.actorId)
+    if (!actor || !sender) return false
+    if (ownsTarget(sender, actor)) {
+      await actor.update({
+        'system': data.dataToUpdate
+      })
+      return true
+    }
+    const changes = foundry.utils.diffObject(actor.toObject().system, data.dataToUpdate ?? {
     })
+    if (foundry.utils.isEmpty(changes)) return false
+    let allowed = false
+    if (data.use === "spiritService") {
+      //No card: the service is spent as the summoner's test is rolled. The sender must own the
+      //summoner, the actor holding the item this spirit was called from
+      const creatorId = actor.system?.creatorItemId
+      const summoner = creatorId ? game.actors.find(a => a.items.get(creatorId)) : null
+      allowed = !!summoner?.testUserPermission(sender, "OWNER") &&
+        serviceSpentAllowed(changes, actor._source?.system?.services?.value)
+    } else if (data.use === "maglock") {
+      const card = SR5_MiscellaneousHelpers.cardOf(data.messageId)
+      allowed = !!card && SR5_EntityHelpers.getRealActorFromID(card.data.target?.actorId) === actor &&
+        maglockAllowed(changes, actor._source?.system?.maglock)
+    }
+    if (!allowed) return SR5_MiscellaneousHelpers.#refuse("updateActorData", senderId, data)
+    await actor.update({
+      'system': changes
+    })
+    return true
   }
 
   //Socket for updating an item
-  static async _socketUpdateItem(message) {
-    let target = await fromUuid(message.data.item)
-    if (!target) return
+  static async _socketUpdateItem(message, senderId) {
+    const sender = game.users.get(senderId)
+    const data = message?.data ?? {
+    }
+    let target = await fromUuid(data.item ?? "")
+    if (!target || !sender) return false
     // info is a system object: only the fields that differ from the stored ones are written, so a
     // caller sending its whole (prepared) system cannot overwrite what it did not change
-    const changes = foundry.utils.diffObject(target.toObject().system, message.data.info ?? {
+    const changes = foundry.utils.diffObject(target.toObject().system, data.info ?? {
     })
-    if (foundry.utils.isEmpty(changes)) return
+    if (foundry.utils.isEmpty(changes)) return false
+    if (!ownsTarget(sender, target) && !(await SR5_MiscellaneousHelpers.itemUseAllowed(data, target, changes))) {
+      return SR5_MiscellaneousHelpers.#refuse("updateItem", senderId, data)
+    }
     await target.update({
       'system': changes
     })
+    return true
+  }
+
+  /** A use of updateItem on an item the sender does not own, checked against its card. */
+  static async itemUseAllowed(data, item, changes) {
+    const card = SR5_MiscellaneousHelpers.cardOf(data.messageId)
+    if (!card) return false
+    const stored = item._source?.system ?? {
+    }
+    const cardData = card.data
+    if (data.use === "matrixDamage") {
+      //The device belongs to an actor of the card: who rolled it, whom it answers, or whom it aims at
+      const holder = item.parent
+      const actors = [cardData.owner?.actorId, cardData.previousMessage?.actorId, cardData.target?.actorId]
+        .map(id => id ? SR5_EntityHelpers.getRealActorFromID(id) : null)
+      if (!holder || !actors.includes(holder)) return false
+      if (cardData.target?.itemUuid && cardData.target.itemUuid !== item.uuid) return false
+      const damage = Math.max(0, Number(cardData.damage?.matrix?.value) || 0) + 1
+      return matrixDamageAllowed(changes, stored, Number(item.system?.conditionMonitors?.matrix?.value) || 0, damage)
+    }
+    if (data.use === "deactivateFocus") {
+      return cardData.test?.type === "enchantmentResistance" && cardData.target?.itemUuid === item.uuid && deactivateAllowed(changes)
+    }
+    if (data.use === "reduceEffect") {
+      const reduced = await SR5_MiscellaneousHelpers.#reducedBy(cardData, card.roller)
+      if (!reduced) return false
+      if (reduced.item === item) return reduceAllowed(changes, stored, reduced.netHits, false, reduced.key)
+      //An effect the reduced item holds up
+      const held = Array.isArray(reduced.item._source?.system?.targetOfEffect) ? reduced.item._source.system.targetOfEffect : []
+      return held.includes(item.uuid) && reduceAllowed(changes, stored, reduced.netHits, true)
+    }
+    return false
+  }
+
+  /** The item a reducing card aims at, and the net hits it may take away, bounded by the roller's pool. */
+  static async #reducedBy(cardData, roller) {
+    const pools = {
+      dispellResistance: "skills.counterspelling.test.dicePool",
+      enchantmentResistance: "skills.disenchanting.test.dicePool",
+      disjointingResistance: "skills.disenchanting.test.dicePool",
+      complexFormResistance: "matrix.resonanceActions.killComplexForm.test.dicePool",
+    }
+    const path = pools[cardData.test?.type]
+    if (!path || !cardData.target?.itemUuid) return null
+    let item = null
+    try {
+      item = await fromUuid(cardData.target.itemUuid)
+    } catch {
+      item = null
+    }
+    if (!item) return null
+    return {
+      item,
+      key: item.type === "itemPreparation" ? "potency" : "hits",
+      netHits: bounded(cardData.roll?.netHits, SR5_MiscellaneousHelpers.poolCap(roller, path)),
+    }
   }
 
   //Socket for creating an effect on an actor the player does not own (matrix support actions)
-  static async _socketCreateItemEffect(message){
-    let actor = await fromUuid(message.data.actorId)
-    if (!actor) return
-    if (message.data.replace?.length) await actor.deleteEmbeddedDocuments("Item", message.data.replace)
-    await actor.createEmbeddedDocuments("Item", [message.data.effect])
+  static async _socketCreateItemEffect(message, senderId){
+    const sender = game.users.get(senderId)
+    const data = message?.data ?? {
+    }
+    let actor = await fromUuid(data.actorId ?? "")
+    if (!actor || !sender) return false
+    const replace = Array.isArray(data.replace) ? data.replace : []
+    if (!ownsTarget(sender, actor)) {
+      const card = SR5_MiscellaneousHelpers.cardOf(data.messageId)
+      const type = foundry.utils.getProperty(foundry.utils.expandObject(data.effect ?? {
+      }), "system.type")
+      const hits = card ? bounded(card.data.roll?.hits,
+        SR5_MiscellaneousHelpers.poolCap(card.roller, `matrix.actions.${type}.test.dicePool`)) : 0
+      const hackerId = card?.roller?.id
+      if (!card || card.data.test?.typeSub !== type ||
+        !supportEffectAllowed(data.effect, hackerId, hits, replace.map(id => actor.items.get(id)))) {
+        return SR5_MiscellaneousHelpers.#refuse("createItemEffect", senderId, data)
+      }
+    }
+    if (replace.length) await actor.deleteEmbeddedDocuments("Item", replace)
+    await actor.createEmbeddedDocuments("Item", [data.effect])
+    return true
   }
 
   //Socket for deleting an item
-  static async _socketDeleteItem(message){
-    let item = await fromUuid(message.data.item)
+  static async _socketDeleteItem(message, senderId){
+    const sender = game.users.get(senderId)
+    const data = message?.data ?? {
+    }
+    let item = await fromUuid(data.item ?? "")
+    if (!item || !sender) return false
+    if (!ownsTarget(sender, item)) {
+      //An effect held up by a spell the card brings to nothing (SR5 p. 299)
+      const card = data.use === "dispelledEffect" ? SR5_MiscellaneousHelpers.cardOf(data.messageId) : null
+      const reduced = card ? await SR5_MiscellaneousHelpers.#reducedBy(card.data, card.roller) : null
+      const held = reduced?.item?._source?.system?.targetOfEffect ?? []
+      const left = (Number(reduced?.item?._source?.system?.[reduced?.key]) || 0) - (reduced?.netHits ?? 0)
+      if (!reduced || item.type !== "itemEffect" || !held.includes(item.uuid) || left > 0) {
+        return SR5_MiscellaneousHelpers.#refuse("deleteItem", senderId, data)
+      }
+    }
     await item.delete()
+    return true
   }
 
   static findMedkitRating(actor){

@@ -690,11 +690,15 @@ export class SR5_RollMessage {
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "removeCase":
-        await SR5_MiscellaneousHelpers.updateActorData(messageData.target.actorId, "maglock.caseRemoved", 0, true)
+        await SR5_MiscellaneousHelpers.updateActorData(messageData.target.actorId, "maglock.caseRemoved", 0, true, {
+          use: "maglock", messageId
+        })
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "removeAntiTamper":
-        await SR5_MiscellaneousHelpers.updateActorData(messageData.target.actorId, "maglock.hasAntiTamper", 0, true)
+        await SR5_MiscellaneousHelpers.updateActorData(messageData.target.actorId, "maglock.hasAntiTamper", 0, true, {
+          use: "maglock", messageId
+        })
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       default:

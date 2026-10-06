@@ -99,10 +99,16 @@ describe('item update after a roll', () => {
       }
     })
 
-    // the GM side of the relay
+    // the GM side of the relay: the sender owns the launcher (socket-guard.js)
+    item.testUserPermission = () => true
+    game.users = {
+      get: () => ({
+        id: 'p', isGM: false
+      })
+    }
     await SR5_MiscellaneousHelpers._socketUpdateItem({
       data: emitted[0].data
-    })
+    }, 'p')
     expect(item.source.system.type).toBe('grenadeLauncher')
     expect(item.source.system.ammunition.value).toBe(11)
   })
@@ -126,6 +132,11 @@ describe('item update after a roll', () => {
   it('lets the relay ignore what a caller resent unchanged', async () => {
     const item = launcher()
     globalThis.fromUuid = async () => item
+    game.users = {
+      get: () => ({
+        id: 'gm', isGM: true
+      })
+    }
     await SR5_MiscellaneousHelpers._socketUpdateItem({
       data: {
         item: item.uuid, info: {
@@ -134,7 +145,7 @@ describe('item update after a roll', () => {
           }
         }
       }
-    })
+    }, 'gm')
     expect(item.update).toHaveBeenCalledWith({
       system: {
         firingMode: {

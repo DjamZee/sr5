@@ -46,6 +46,12 @@ export function weaponBreakChoices(actor) {
     }))
 }
 
+//Only what differs from the stored system goes to the GM: a prepared system sent whole carries
+//derived fields, which the GM's checks (socket-guard.js) refuse as changes
+function sourceChanges(item, system) {
+  return foundry.utils.diffObject(item.toObject().system, system)
+}
+
 export class SR5_ThirdPartyHelpers {
   /** Handle spirit, sprite or preparation resistance
     * @param {Object} cardData - The origin cardData
@@ -533,9 +539,11 @@ export class SR5_ThirdPartyHelpers {
         
     itemData.isActive = false
     if (!game.user?.isGM){
+      //The GM reads the card again before switching off a focus its sender may not own (socket-guard.js)
       SR5_SocketHandler.emitForGM("updateItem", {
         item: cardData.target.itemUuid,
-        info: itemData,
+        info: sourceChanges(item, itemData),
+        use: "deactivateFocus", messageId: cardData.owner?.messageId,
       })
     } else await item.update({
       'system': itemData
@@ -559,7 +567,7 @@ export class SR5_ThirdPartyHelpers {
         for (let e of newEffect.targetOfEffect){
           let effect = await fromUuid(e)
           if (!game.user?.isGM) SR5_SocketHandler.emitForGM("deleteItem", {
-            item: e
+            item: e, use: "dispelledEffect", messageId: cardData.owner?.messageId,
           })
           else if (effect) await effect.delete()
         }
@@ -571,15 +579,18 @@ export class SR5_ThirdPartyHelpers {
         for (let e of newEffect.targetOfEffect){
           let effect = await fromUuid(e)
           if (!effect) continue
-          let updatedEffect = effect.system
+          //A copy of the stored system: the live one used to be changed in place
+          let updatedEffect = effect.toObject().system
           updatedEffect.value = newEffect.hits
-          for (let cs of Object.values(updatedEffect.customEffects)){
+          for (let cs of Object.values(updatedEffect.customEffects ?? {
+          })){
             cs.value = newEffect.hits
           }
           if (!game.user?.isGM){
             SR5_SocketHandler.emitForGM("updateItem", {
               item: e,
-              info: updatedEffect,
+              info: sourceChanges(effect, updatedEffect),
+              use: "reduceEffect", messageId: cardData.owner?.messageId,
             })
           } else await effect.update({
             'system': updatedEffect
@@ -592,7 +603,8 @@ export class SR5_ThirdPartyHelpers {
     if (!game.user?.isGM){
       SR5_SocketHandler.emitForGM("updateItem", {
         item: cardData.target.itemUuid,
-        info: newEffect,
+        info: sourceChanges(targetedEffect, newEffect),
+        use: "reduceEffect", messageId: cardData.owner?.messageId,
       })
     } else await targetedEffect.update({
       'system': newEffect

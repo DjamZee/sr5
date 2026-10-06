@@ -292,6 +292,8 @@ export class SR5_RollTest {
             value: services
           }
         },
+        //The GM lets one service go, for the owner of the summoner (socket-guard.js)
+        use: "spiritService",
       })
     }
   }

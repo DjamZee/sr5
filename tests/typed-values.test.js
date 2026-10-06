@@ -610,7 +610,7 @@ describe('a bound spirit spends a service when it aids a test (SR5 p. 305-306)',
         services: {
           value: 2
         }
-      }
+      }, use: 'spiritService'
     })
   })
 
