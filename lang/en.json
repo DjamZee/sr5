@@ -3837,6 +3837,8 @@
 	"SR5.ManaShiftFails_ebb": "Mana Ebb fails: it only succeeds on a positive background count (here {count}). The Drain is still resisted (Shadow Spells p. 25).",
 	"SR5.ManaShiftGMOnly": "Only the GM applies a ritual to the scene's background count.",
 	"SR5.ManaShiftNoScene": "No scene to apply the ritual to.",
+	"SR5.ManaShiftCardRefused": "Ritual card refused: it was not rolled by a GM or an owner of the character who rolled it, or it is not the resistance of a Mana Flux / Mana Ebb.",
+	"SR5.ManaShiftConfirm": "Apply {name} (Force {force}) to the scene {scene}: background count shifted by 1 for {hours} hours?",
 	"SR5.ManaShiftRunning": "Running rituals (Mana Flux / Ebb)",
 	"SR5.ManaShiftRemove": "Remove this ritual",
 	"SR5.ManaShiftHint": "Shadow Spells p. 25: each one moves the count by 1 toward 0 for [Force] hours of game time, never past 0. A ritual that has run out goes away when game time passes.",
