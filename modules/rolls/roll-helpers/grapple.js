@@ -205,9 +205,33 @@ export class SR5_GrappleHelpers {
 
   //SR5 p. 196 : damage the held fighter, Strength as Stun Damage Value, no test, resisted normally with armor
   static async crush(holderId, heldId){
+    const held = SR5_EntityHelpers.getRealActorFromID(heldId)
+    const chatData = SR5_GrappleHelpers.crushRollData(holderId, heldId)
+    if (!held || !chatData) return
+    //Only who crushes whom travels: whoever rolls the resistance builds the card again (security pass, Olympe)
+    const request = {
+      actorId: heldId, rollType: "resistanceCard", rollKey: null, use: "grappleCrush", holderId
+    }
+    const user = SR5_EntityHelpers.getUserOwner(held)
+    if (user && user.id !== game.user.id && !user.isGM) return SR5_SocketHandler.emitForPlayer("actorRoll", request, user.id)
+    if (held.isOwner) return held.rollTest("resistanceCard", null, chatData)
+    return SR5_SocketHandler.emitForGM("actorRoll", request)
+  }
+
+  /**
+   * The resistance card of a crush (SR5 p. 196). Asked by a player (`sender`), only for a holder she owns, and
+   * while the held fighter's own effect, written by the GM, names that holder.
+   * @return {Object|null} the card's data, null when the crush is not hers to ask
+   */
+  static crushRollData(holderId, heldId, sender = null){
     const holder = SR5_EntityHelpers.getRealActorFromID(holderId),
       held = SR5_EntityHelpers.getRealActorFromID(heldId)
-    if (!holder || !held) return
+    if (!holder || !held) return null
+    if (sender && !sender.isGM) {
+      if (!holder.testUserPermission?.(sender, "OWNER")) return null
+      const hold = grappleHoldOf(held.effects)
+      if (hold?.role !== "held" || hold.partner !== holderId) return null
+    }
     const damage = crushDamage(holder.system.attributes.strength.augmented.value)
     const chatData = SR5_PrepareRollTest.getBaseRollData(null, holder)
     chatData.damage.value = damage.value
@@ -217,15 +241,7 @@ export class SR5_GrappleHelpers {
     chatData.test.typeSub = "meleeWeapon"
     chatData.owner.actorId = holderId
     chatData.previousMessage.actorId = holderId
-
-    const user = SR5_EntityHelpers.getUserOwner(held)
-    if (user && user.id !== game.user.id && !user.isGM) return SR5_SocketHandler.emitForPlayer("actorRoll", {
-      actorId: heldId, rollType: "resistanceCard", rollKey: null, chatData
-    }, user.id)
-    if (held.isOwner) return held.rollTest("resistanceCard", null, chatData)
-    return SR5_SocketHandler.emitForGM("actorRoll", {
-      actorId: heldId, rollType: "resistanceCard", rollKey: null, chatData
-    })
+    return chatData
   }
 
   //holdId names the hold both halves belong to, so that deleting one half never takes a newer hold away

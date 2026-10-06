@@ -961,9 +961,24 @@ export class SR5Actor extends Actor {
     SR5_PrepareRollTest.rollTest(this, rollType, rollKey, chatData)
   }
 
-  static _socketRollTest(message){
-    let actor = SR5_EntityHelpers.getRealActorFromID(message.data.actorId)
-    SR5_PrepareRollTest.rollTest(actor, message.data.rollType, message.data.rollKey, message.data.chatData)
+  //A GM's request is rolled as sent (a resistance to an area spell). A player's carried a whole card, rolled and
+  //posted by the receiver, who then believed it as his own: only the crush of a hold is asked by a player, and its
+  //card is built again here (security pass, Olympe). Only the user it was sent to rolls, for an actor he owns
+  static async _socketRollTest(message, senderId){
+    const data = message?.data ?? {
+    }
+    const sender = game.users?.get(senderId)
+    const actor = SR5_EntityHelpers.getRealActorFromID(data.actorId)
+    if (!actor || !sender || message.userId !== game.user.id || !actor.isOwner) return
+    let chatData = data.chatData
+    if (!sender.isGM) {
+      const {
+        SR5_GrappleHelpers
+      } = await import("../../rolls/roll-helpers/grapple.js")
+      chatData = data.use === "grappleCrush" && data.rollType === "resistanceCard" ? SR5_GrappleHelpers.crushRollData(data.holderId, data.actorId, sender) : null
+      if (!chatData) return SR5_SystemHelpers.srLog(1, `actorRoll refused from ${senderId}`, data)
+    }
+    SR5_PrepareRollTest.rollTest(actor, data.rollType, data.rollKey, chatData)
   }
 
   //Apply Damage to actor
