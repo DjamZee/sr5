@@ -137,16 +137,13 @@ async function onUpdate(doc, _changes, _options, userId) {
 /** deleteItem / deleteActor: the entry goes with the document, and a character's with those of its items. */
 function onDelete(doc) {
   if (!isActiveGM()) return
-  const register = game.settings.get("sr5", IMPLANT_REGISTER) ?? {
-  }
   const prefix = doc.documentName === "Actor" ? `${doc.uuid}.` : null
-  for (const uuid of Object.keys(register)) {
-    if (uuid === doc.uuid || (prefix && uuid.startsWith(prefix))) {
-      record({
-        uuid, type: "itemAugmentation"
-      }, null)
-    }
-  }
+  // In the register's turn, after the entry of a document created just before (gm-ledger.js)
+  return updateLedger(IMPLANT_REGISTER, register => {
+    const gone = Object.keys(register).filter(uuid => uuid === doc.uuid || (prefix && uuid.startsWith(prefix)))
+    for (const uuid of gone) delete register[uuid]
+    return gone.length ? register : null
+  }).catch(e => console.error("SR5 | implant register", e))
 }
 
 /** At a gamemaster's arrival: every world character and its items checked against the register. */
