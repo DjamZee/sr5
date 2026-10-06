@@ -15,7 +15,7 @@ import {
 
 // What Blight switches off on the actor: the item updates, the sustained effects to delete, the astral update
 export function blightDrops(actor) {
-  const items = [], sustained = [], names = []
+  const items = [], sustained = [], spells = [], names = []
   for (const i of actor?.items ?? []) {
     if (!i.system?.isActive) continue
     if (i.type === "itemFocus") items.push({
@@ -23,6 +23,7 @@ export function blightDrops(actor) {
     })
     else if (i.type === "itemSpell") {
       sustained.push(...(i.system.targetOfEffect ?? []))
+      spells.push(i.uuid)
       items.push({
         _id: i.id, "system.isActive": false, "system.targetOfEffect": []
       })
@@ -40,19 +41,36 @@ export function blightDrops(actor) {
     }
   }
   return {
-    items, sustained, astral, names
+    items, sustained, spells, astral, names
   }
+}
+
+// The templates a sustained area spell left on the scenes: they carry the spell's uuid (flags.sr5.itemUuid), as the
+// sheet finds them when the spell is switched off there (Victoire's review)
+export function spellTemplates(spellUuids, scenes = game.scenes) {
+  const found = []
+  for (const scene of scenes ?? []) {
+    for (const t of scene.templates ?? []) if (spellUuids.includes(t.flags?.sr5?.itemUuid)) found.push(t)
+  }
+  return found
 }
 
 export async function blightStrikes(actor) {
   if (!game.users?.activeGM?.isSelf || !actor) return
   const {
-    items, sustained, astral, names
+    items, sustained, spells, astral, names
   } = blightDrops(actor)
   for (const uuid of sustained) await SR5_ActorHelper.deleteSustainedEffect(uuid)
+  for (const t of spellTemplates(spells)) await t.delete()
   if (items.length) await actor.updateEmbeddedDocuments("Item", items)
   if (Object.keys(astral).length) {
     await actor.update(astral)
+    //Out of astral projection: the status of the astral initiative goes too, as switchToInitiative does it for the
+    //physical initiative (no action spent), or the body stays hidden to ordinary sight (Victoire's review)
+    if (astral["system.initiatives.astralInit.isActive"] === false) {
+      const status = actor.effects?.filter(e => e.origin === "initiativeMode").map(e => e.id) ?? []
+      if (status.length) await actor.deleteEmbeddedDocuments("ActiveEffect", status)
+    }
     names.push(game.i18n.localize("SR5.AstralPerception"))
     await SR5_CharacterUtility.handleAstralVision(actor)
   }

@@ -805,7 +805,8 @@ export class SR5Actor extends Actor {
           //Not prepared again here: its price and availability would add up at each preparation
           SR5_UtilityItem._resetItemModifiers(i)
           SR5_UtilityItem._handleFocus(iData)
-          if (iData.isActive) SR5_CharacterUtility.applyFocusBonus(i, actor)
+          //Better Than Bad p. 141: under Blight a focus switched on anyway (from the console) gives nothing (Victoire's review)
+          if (iData.isActive && !SR5_Toxins.isCutFromManasphere(actor)) SR5_CharacterUtility.applyFocusBonus(i, actor)
           switch (iData.type) {
             case "alchemical":
             case "banishing":

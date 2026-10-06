@@ -127,6 +127,44 @@ describe('when Blight strikes', () => {
     expect(ui.notifications.info).toHaveBeenCalledWith('SR5.INFO_BlightDrops')
   })
 
+  // Victoire's second review: the astral initiative's status and the sustained spell's template went on
+  it("takes off the astral initiative's status and the templates of the sustained spells", async () => {
+    const template = {
+      flags: {
+        sr5: {
+          itemUuid: 'Actor.m.Item.lumiere'
+        }
+      }, delete: vi.fn(async () => {})
+    }
+    const other = {
+      flags: {
+        sr5: {
+          itemUuid: 'Actor.m.Item.autre'
+        }
+      }, delete: vi.fn(async () => {})
+    }
+    game.scenes = [{
+      templates: [template, other]
+    }]
+    const spell = {
+      ...item('lumiere', 'itemSpell', true), uuid: 'Actor.m.Item.lumiere'
+    }
+    const a = mage([blight, spell], {
+      projecting: true
+    })
+    a.effects = [{
+      id: 'st', origin: 'initiativeMode'
+    }, {
+      id: 'autre', origin: 'prone'
+    }]
+    a.deleteEmbeddedDocuments = vi.fn(async () => {})
+    await blightStrikes(a)
+    expect(template.delete).toHaveBeenCalled()
+    expect(other.delete).not.toHaveBeenCalled()
+    expect(a.deleteEmbeddedDocuments).toHaveBeenCalledWith('ActiveEffect', ['st'])
+    delete game.scenes
+  })
+
   it('is written by the active gamemaster alone', async () => {
     game.users.activeGM.isSelf = false
     const a = mage([blight, item('focus', 'itemFocus', true)], {
