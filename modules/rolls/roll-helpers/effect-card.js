@@ -14,6 +14,13 @@ export function readsRoll(effects){
   }).some(e => e?.transfer && /^(hits|netHits)(Replace)?$/.test(e.type ?? ""))
 }
 
+// The net hits of a card: a spell nobody resists has none written, its net hits are its hits over the threshold its
+// description gives, if any (SR5 p. 284, step 4; p. 47, excess hits). The card used to show "?" and give 0
+export function cardNetHits(roll, threshold){
+  if (roll?.netHits !== undefined && roll?.netHits !== null && roll?.netHits !== "" && Number.isFinite(Number(roll.netHits))) return Number(roll.netHits)
+  return Math.max(0, (Number(roll?.hits) || 0) - (Number(threshold) || 0))
+}
+
 // The hits counted on the first dice of the card only, as many as the pool allows
 function hitsWithinPool(rollJSON, allowed, limit){
   const results = rollJSON?.terms?.[0]?.results

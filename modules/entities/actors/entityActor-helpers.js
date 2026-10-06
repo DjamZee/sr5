@@ -56,7 +56,7 @@ import {
   isReplaceEffectType
 } from "./effect-replace.js"
 import {
-  readsRoll, effectCardVerdict
+  readsRoll, effectCardVerdict, cardNetHits
 } from "../../rolls/roll-helpers/effect-card.js"
 import {
   entryValue, transferEntries, compareDefinitions, definitionsMatch, definitionPrint
@@ -2218,6 +2218,12 @@ export class SR5_ActorHelper {
     if (isAreaSpellTemplateGone(data)) {
       ui.notifications.warn(game.i18n.localize("SR5.WARN_AreaSpellTemplateGone"))
       return false
+    }
+    //A spell nobody resists writes no net hits on its card: they are its hits (over its threshold, if any), not "?" or 0
+    if (data.roll && cardNetHits(data.roll, data.threshold?.value) !== data.roll.netHits) data = {
+      ...data, roll: {
+        ...data.roll, netHits: cardNetHits(data.roll, data.threshold?.value)
+      }
     }
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
     let item = await fromUuid(data.owner.itemUuid)
