@@ -151,6 +151,34 @@ describe('augmentation cap (SR5 p. 96 by default, arbitrage de DjamZ for the oth
     }))).toBe(10)
   })
 
+  //Improved Physical Attribute (SR5 p. 312): "jusqu'à son maximum augmenté (maximum naturel + 4)", whatever the choice.
+  //An active adept power whose own custom effect raises the attribute, as in the compendium
+  const improvedPhysical = (name, isActive = true) => ({
+    type: 'itemAdeptPower', name, system: {
+      isActive, customEffects: {
+        0: {
+          target: 'system.attributes.strength.augmented', type: 'rating'
+        }
+      }
+    }
+  })
+
+  it('bounds Improved Physical Attribute at the augmented maximum even without a cap (SR5 p. 312)', () => {
+    settings.sr5AugmentationCap = 'none'
+    expect(strengthOf(actor({
+      metatype: 'human', natural: 6, items: [improvedPhysical('Attribut physique amélioré (Force)')],
+      strength: [mod(2), fromEffect('Attribut physique amélioré (Force)', 4, 'itemAdeptPower')]
+    }))).toBe(10)
+  })
+
+  it('leaves an inactive Improved Physical Attribute out of the bound', () => {
+    settings.sr5AugmentationCap = 'none'
+    expect(strengthOf(actor({
+      metatype: 'human', natural: 6, items: [improvedPhysical('Attribut physique amélioré (Force)', false)],
+      strength: [mod(6)]
+    }))).toBe(12)
+  })
+
   it('never cuts more than the spell brought', () => {
     settings.sr5AugmentationCap = 'none'
     expect(strengthOf(actor({

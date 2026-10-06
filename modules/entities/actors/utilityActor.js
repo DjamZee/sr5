@@ -1231,6 +1231,10 @@ export class SR5_CharacterUtility extends Actor {
     //itemEffect named after them (applyExternalEffect), whose own type is the item that cast it
     const boostNames = items.filter(i => i.type === "itemEffect" && ["itemSpell", "itemAdeptPower"].includes(i.system?.type) &&
       effectsOf(i).some(e => e.target === `system.attributes.${key}.augmented`)).map(i => i.name)
+    //Improved Physical Attribute (SR5 p. 312) goes "up to the augmented maximum" too: an active adept power whose own
+    //custom effect raises the attribute
+    boostNames.push(...items.filter(i => i.type === "itemAdeptPower" && i.system?.isActive &&
+      effectsOf(i).some(e => e.target === `system.attributes.${key}.augmented`)).map(i => i.name))
     //Exceptional Attribute (SR5 p. 68) raises the natural maximum by 1: the qualities of the
     //compendiums carry it as a custom effect on system.attributes.<key>.maximum
     const exceptional = items.filter(i => i.type === "itemQuality").flatMap(effectsOf)
