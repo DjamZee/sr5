@@ -1964,9 +1964,13 @@ export class SR5_CharacterUtility extends Actor {
             conditionMonitors[key].base = attributes.body.augmented.value
             if (conditionMonitors.physical.actual.value < conditionMonitors.physical.value) conditionMonitors[key].actual.base = 0
             break
-          case "matrix":
-            conditionMonitors[key].base = Math.ceil((actorData.matrix.deviceRating / 2) + 8)
+          case "matrix": {
+            // SR5 p. 229: 8 + half the device rating. A vehicle's rating is its Pilot, which
+            // generateVehicleMatrix copies only on the second pass over the items, after this
+            let deviceRating = actor.type === "actorDrone" ? attributes.pilot.augmented.value : actorData.matrix.deviceRating
+            conditionMonitors[key].base = Math.ceil((deviceRating / 2) + 8)
             break
+          }
           case "edge":
             conditionMonitors[key].base = specialAttributes.edge.augmented.value
             break
