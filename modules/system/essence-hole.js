@@ -28,9 +28,18 @@ export function holeAfterRemoval(essence, lostBefore, lostAfter, fills = true) {
   }
 }
 
+/**
+ * Whether removing `item` leaves Essence lost: an implant, not an accessory, and not one whose loss "est réversible dès
+ * que le tatouage est retiré" (Better Than Bad p. 141; the mark is the gamemaster's, checked against the compendium,
+ * implant-register.js).
+ */
+export function leavesHole(item) {
+  return item?.type === "itemAugmentation" && !item.system?.isAccessory && !item.system?.reversibleEssence
+}
+
 /** The deleteItem hook: an implant removed from a character. */
 async function onImplantDeleted(item) {
-  if (item?.type !== "itemAugmentation" || item.system?.isAccessory || !(item.parent instanceof Actor)) return
+  if (!leavesHole(item) || !(item.parent instanceof Actor)) return
   if (!game.users.activeGM?.isSelf) return
   if (game.settings.get("sr5", "sr5ShopCreationMode") === true) return
   const actor = item.parent

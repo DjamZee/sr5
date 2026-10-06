@@ -40,4 +40,9 @@
     <div class="col-1"><input type="checkbox" name="system.augmentationBundle" data-dtype="Boolean" {{checked system.augmentationBundle}} {{#unless userIsGM}}disabled{{/unless}} /></div>
 </li>
 {{/if}}
+{{!-- Better Than Bad p. 141: an Essence given back when the implant is removed (Tatouage de mana gris) --}}
+<li class="grid">
+    <div class="col-5" data-title="{{localize 'SR5.ReversibleEssenceHint'}}">{{localize 'SR5.ReversibleEssence'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="checkbox" name="system.reversibleEssence" data-dtype="Boolean" {{checked system.reversibleEssence}} {{#unless userIsGM}}disabled{{/unless}} /></div>
+</li>
 {{/unless}}

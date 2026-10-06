@@ -6,13 +6,13 @@ import {
   installationFlags, GM_ONLY_FIELDS, hasAdapsine, essenceAdjustment
 } from "../modules/system/implant-essence.js"
 import {
-  holeAfterRemoval
+  holeAfterRemoval, leavesHole
 } from "../modules/system/essence-hole.js"
 import {
   reservedChangedBy, valueAfterUpdate, reservedMismatches
 } from "../modules/system/reserved-fields.js"
 import {
-  expectedAtCreation, expectedValues, reservedFieldsOf
+  expectedAtCreation, expectedValues, reservedFieldsOf, sourceReversible
 } from "../modules/system/implant-register.js"
 import {
   mentorMagic
@@ -400,32 +400,87 @@ describe("the active gamemaster's register", () => {
       "essence.holeAmount": 1.8, "essence.holeBase": 0.2
     })
   })
-  it("works out a player's implant again from the body, without the implant itself", () => {
-    expect(expectedAtCreation(implant({
-      type: "cyberware", underAdapsine: true, augmentationBundle: true
+  it("works out a player's implant again from the body, without the implant itself", async () => {
+    expect(await expectedAtCreation(implant({
+      type: "cyberware", underAdapsine: true, augmentationBundle: true, reversibleEssence: true
     }), GM_ONLY_FIELDS.itemAugmentation)).toEqual({
-      underAdapsine: false, augmentationBundle: false, transhumanGift: false
+      underAdapsine: false, augmentationBundle: false, transhumanGift: false, reversibleEssence: false
     })
-    expect(expectedAtCreation(implant({
+    expect((await expectedAtCreation(implant({
       type: "cyberware"
-    }, [adapsine]), GM_ONLY_FIELDS.itemAugmentation).underAdapsine).toBe(true)
+    }, [adapsine]), GM_ONLY_FIELDS.itemAugmentation)).underAdapsine).toBe(true)
   })
-  it("expects the register's values, else what a document holds at its defaults", () => {
+  it("gives back the Essence of an implant taken from a compendium entry that says so (Better Than Bad p. 141)", async () => {
+    const tattoo = {
+      type: "itemAugmentation", system: {
+        type: "cyberware", reversibleEssence: true, essenceCost: {
+          base: 0.1, multiplier: "rating"
+        }
+      }
+    }
+    const resolve = async uuid => (uuid === "Compendium.megapack.items.Item.tattoo" ? tattoo : null)
+    const copy = (extra = {
+    }, system = {
+    }) => ({
+      ...implant({
+        type: "cyberware", reversibleEssence: true, essenceCost: {
+          base: 0.1, multiplier: "rating"
+        }, ...system
+      }), ...extra
+    })
+    // Dragged from the compendium, or bought at the shop
+    expect(await sourceReversible(copy({
+      _stats: {
+        compendiumSource: "Compendium.megapack.items.Item.tattoo"
+      }
+    }), resolve)).toBe(true)
+    expect(await sourceReversible(copy({
+      flags: {
+        sr5: {
+          shopSource: "Compendium.megapack.items.Item.tattoo"
+        }
+      }
+    }), resolve)).toBe(true)
+    // No source, an entry without the mark, or an implant that is no longer the tattoo
+    expect(await sourceReversible(copy(), resolve)).toBe(false)
+    expect(await sourceReversible(copy({
+      _stats: {
+        compendiumSource: "Compendium.megapack.items.Item.other"
+      }
+    }), resolve)).toBe(false)
+    expect(await sourceReversible(copy({
+      _stats: {
+        compendiumSource: "Compendium.megapack.items.Item.tattoo"
+      }
+    }, {
+      essenceCost: {
+        base: 2, multiplier: ""
+      }
+    }), resolve)).toBe(false)
+    expect((await expectedAtCreation(copy({
+      _stats: {
+        compendiumSource: "Compendium.megapack.items.Item.tattoo"
+      }
+    }), GM_ONLY_FIELDS.itemAugmentation, {
+      resolve
+    })).reversibleEssence).toBe(true)
+  })
+  it("expects the register's values, else what a document holds at its defaults", async () => {
     const doc = implant({
       type: "cyberware", underAdapsine: true
     }, [adapsine])
-    expect(expectedValues(doc, GM_ONLY_FIELDS.itemAugmentation, {
+    expect((await expectedValues(doc, GM_ONLY_FIELDS.itemAugmentation, {
       "Actor.a.Item.i": {
         underAdapsine: false, augmentationBundle: false, transhumanGift: false
       }
-    }).underAdapsine).toBe(false)
+    })).underAdapsine).toBe(false)
     // Unknown to the register: a box at its default is kept, a box set is worked out again from the body
-    expect(expectedValues(implant({
+    expect((await expectedValues(implant({
       type: "cyberware", augmentationBundle: true
     }), GM_ONLY_FIELDS.itemAugmentation, {
-    }).augmentationBundle).toBe(false)
-    expect(expectedValues(doc, GM_ONLY_FIELDS.itemAugmentation, {
-    }).underAdapsine).toBe(true)
+    })).augmentationBundle).toBe(false)
+    expect((await expectedValues(doc, GM_ONLY_FIELDS.itemAugmentation, {
+    })).underAdapsine).toBe(true)
     expect(reservedFieldsOf({
       documentName: "Actor", system: {
         essence: {
@@ -451,6 +506,19 @@ describe("G20 — Faille d'Essence (Chrome Flesh p. 74)", () => {
     expect(essenceHole(essence, 2)).toBe(1)
     expect(essenceHole(essence, 2.4)).toBe(0.6)
     expect(essenceHole(essence, 3.5)).toBe(0)
+  })
+  it("leaves no Essence lost for a Tatouage de mana gris removed (Better Than Bad p. 141)", () => {
+    expect(leavesHole(installed("cyberware", 0.1))).toBe(true)
+    expect(leavesHole(installed("cyberware", 0.1, {
+      reversibleEssence: true
+    }))).toBe(false)
+    expect(leavesHole(installed("cyberware", 0.1, {
+      isAccessory: true
+    }))).toBe(false)
+    expect(leavesHole({
+      type: "itemGear", system: {
+      }
+    })).toBe(false)
   })
   it("opens no hole when an implant is made cheaper in place", () => {
     expect(essenceHole({

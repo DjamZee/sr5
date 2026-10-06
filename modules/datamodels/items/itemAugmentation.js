@@ -61,6 +61,11 @@ export class sr5ItemAugmentationDataModel extends foundry.abstract.TypeDataModel
       transhumanGift: new fields.BooleanField({
         initial: false
       }),
+      // Essence lost while it is worn and given back when it is removed: the Tatouage de mana gris (Better Than Bad
+      // p. 141), no hole left (essence-hole.js). The gamemaster's, or the compendium's (implant-register.js)
+      reversibleEssence: new fields.BooleanField({
+        initial: false
+      }),
       essenceCost: new fields.SchemaField({
         ...sr5ModsPartialModel.defineSchema(),
         multiplier: new fields.StringField({

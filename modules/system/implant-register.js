@@ -37,20 +37,42 @@ export function reservedFieldsOf(doc) {
 }
 
 /**
- * What a document a player created should carry, worked out by the gamemaster: an implant from the body it is
- * installed on, without itself (Chrome Flesh p. 57, 165); anything else, the defaults.
+ * Whether the compendium entry `doc` was taken from gives its Essence back on removal (Better Than Bad p. 141), and
+ * `doc` is still that implant (same kind, same Essence): a compendium is the gamemaster's, a player cannot write it.
+ * @param {Function} [resolve] how a uuid is read (fromUuid)
  */
-export function expectedAtCreation(doc, fields, {
-  creation = false
+export async function sourceReversible(doc, resolve = uuid => fromUuid(uuid)) {
+  // A drag from a compendium notes compendiumSource; the shop notes where it sold from (shop.js, shopSource)
+  const uuid = [doc?._stats?.compendiumSource, doc?.flags?.core?.sourceId, doc?.flags?.sr5?.shopSource]
+    .find(u => typeof u === "string" && u.startsWith("Compendium."))
+  if (!uuid) return false
+  const source = await resolve(uuid)
+  const cost = system => system?.essenceCost ?? {
+  }
+  return !!source?.system?.reversibleEssence && source.type === doc.type && source.system?.type === doc.system?.type &&
+    Number(cost(source.system).base) === Number(cost(doc.system).base) &&
+    (cost(source.system).multiplier ?? "") === (cost(doc.system).multiplier ?? "")
+}
+
+/**
+ * What a document a player created should carry, worked out by the gamemaster: an implant from the body it is
+ * installed on, without itself (Chrome Flesh p. 57, 165), and from its compendium entry for the Essence given back
+ * (Better Than Bad p. 141); anything else, the defaults.
+ */
+export async function expectedAtCreation(doc, fields, {
+  creation = false, resolve
 } = {
 }) {
   if (doc?.type === "itemAugmentation" && doc.parent?.items) {
     const others = doc.parent.items.filter(i => i.id !== doc.id)
-    return installationFlags({
-      items: others
-    }, doc.system, {
-      creation
-    })
+    return {
+      ...installationFlags({
+        items: others
+      }, doc.system, {
+        creation
+      }),
+      reversibleEssence: await sourceReversible(doc, resolve),
+    }
   }
   return Object.fromEntries(fields.map(f => [f, RESERVED_DEFAULTS[f]]))
 }
@@ -60,12 +82,12 @@ export function expectedAtCreation(doc, fields, {
  * existed, created while no gamemaster was connected), what it holds when that is the default, else what the body
  * gives now.
  */
-export function expectedValues(doc, fields, register, options) {
+export async function expectedValues(doc, fields, register, options) {
   if (register?.[doc.uuid]) return {
     ...Object.fromEntries(fields.map(f => [f, RESERVED_DEFAULTS[f]])), ...register[doc.uuid]
   }
   const current = reservedValues(doc.system, fields)
-  const worked = expectedAtCreation(doc, fields, options)
+  const worked = await expectedAtCreation(doc, fields, options)
   return Object.fromEntries(fields.map(f => [f, current[f] === RESERVED_DEFAULTS[f] ? current[f] : (worked[f] ?? RESERVED_DEFAULTS[f])]))
 }
 
@@ -105,7 +127,7 @@ async function onCreate(doc, _options, userId) {
   if (!fields.length || !isActiveGM()) return
   const current = reservedValues(doc.system, fields)
   if (game.users.get(userId)?.isGM) return record(doc, current)
-  const expected = expectedAtCreation(doc, fields, {
+  const expected = await expectedAtCreation(doc, fields, {
     creation: creationMode()
   })
   const mismatches = reservedMismatches(current, expected)
@@ -126,7 +148,7 @@ async function onUpdate(doc, _changes, _options, userId) {
     if (JSON.stringify(known) !== JSON.stringify(current)) await record(doc, current)
     return
   }
-  const expected = expectedValues(doc, fields, register, {
+  const expected = await expectedValues(doc, fields, register, {
     creation: creationMode()
   })
   if (!register[doc.uuid]) await record(doc, expected)
@@ -161,7 +183,7 @@ export async function reconcileImplantRegister() {
     for (const doc of [actor, ...actor.items]) {
       const fields = reservedFieldsOf(doc)
       if (!fields.length) continue
-      const expected = expectedValues(doc, fields, register, options)
+      const expected = await expectedValues(doc, fields, register, options)
       if (!register[doc.uuid] && doc.type === "itemAugmentation") unknown[doc.uuid] = expected
       const mismatches = reservedMismatches(reservedValues(doc.system, fields), expected)
       if (Object.keys(mismatches).length) await restore(doc, mismatches, null)
