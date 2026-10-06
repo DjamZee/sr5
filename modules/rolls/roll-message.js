@@ -85,6 +85,20 @@ function cardActors(cardData) {
     .map(id => SR5_EntityHelpers.getRealActorFromID(id)).filter(Boolean)
 }
 
+// A toxin card the GM may apply: his own, or one whose author owns the actor it poisons, the one speaking it (Liesel's
+// D1: a player's card named the GM's actor in its flags, under her own character's name)
+export function toxinCardTrusted(message) {
+  const data = message?.flags?.sr5data
+  const author = message?.author
+  if (!data?.chatCard?.buttons?.toxinEffect) return false
+  if (author?.isGM) return true
+  const actor = SR5_EntityHelpers.getRealActorFromID(data.owner?.speakerId, data.actorUuids)
+  if (!actor || !author || !actor.testUserPermission(author, "OWNER")) return false
+  const speaking = ChatMessage.getSpeakerActor(message.speaker ?? {
+  })
+  return !!speaking && (speaking === actor || speaking.uuid === actor.uuid)
+}
+
 // True when a GM is connected to relay what a player cannot do
 export function hasActiveGM() {
   return !!game.users?.find(user => user.isGM && user.active)
@@ -109,6 +123,9 @@ export class SR5_RollMessage {
         if (content) content.style.display = content.style.display === "none" ? "" : "none"
       })
     })
+
+    //A toxin card whose author does not own the actor it would poison has no button for the GM (Liesel's D1)
+    if (game.user.isGM && !toxinCardTrusted(message)) html.querySelectorAll('[data-type="toxinEffect"]').forEach(el => el.remove())
 
     if (!game.user.isGM) {
       // Hide GM stuff
@@ -715,10 +732,21 @@ export class SR5_RollMessage {
         await SR5_ThirdPartyHelpers.reduceTransferedEffect(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
-      case "toxinEffect":
-        actor.applyToxinEffect(messageData)
-        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+      case "toxinEffect": {
+        //A player's card applied by the GM: read again on the weapon and confirmed, never as its flags say (Liesel's D1)
+        if (!actor) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+        if (!toxinCardTrusted(message)) return SR5_ActorHelper.whisperGM(game.i18n.format("SR5.ToxinCardRejected", {
+          user: message.author?.name ?? "?", actor: actor.name
+        }))
+        const applied = await SR5_RollMessage.applyOnce(messageId, type, async () => {
+          const toxinData = await SR5_ActorHelper.checkToxinCard(message, actor)
+          if (!toxinData) return false
+          await actor.applyToxinEffect(toxinData)
+          return true
+        })
+        if (applied) SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      }
       case "escapeEngulf":
         actor.rollTest(type, null, messageData)
         break

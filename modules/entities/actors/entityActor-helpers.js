@@ -1,6 +1,9 @@
 import {
-  SR5 
+  SR5
 } from "../../config.js"
+import {
+  SR5_Toxins
+} from "../items/toxins.js"
 import {
   relayNeedsConfirmation
 } from "../../system/damage-relay.js"
@@ -2544,6 +2547,119 @@ export class SR5_ActorHelper {
         ...data.damage, isAttack: false
       }
     })
+  }
+
+  //The weapon a toxin card answers, read on the card that rolled the attack (Liesel's D1): the card the resistance
+  //answers (the defense), then the one before it. Kept only when a GM wrote that card or an owner of its roller,
+  //and the weapon is that roller's. null otherwise
+  static toxinSourceOf(data){
+    let messageId = data?.previousMessage?.messageId
+    for (let step = 0; step < 2 && messageId; step++){
+      const message = game.messages?.get(messageId)
+      const card = message?.flags?.sr5data
+      if (!card) return null
+      const weapon = card.owner?.itemUuid ? fromUuidSync(card.owner.itemUuid) : null
+      if (weapon?.system?.damageElement === "toxin" && weapon.system.toxin) {
+        const roller = SR5_EntityHelpers.getRealActorFromID(card.owner?.actorId, card.actorUuids)
+        const author = message.author
+        if (!roller || !author || (!author.isGM && !roller.testUserPermission(author, "OWNER"))) return null
+        if (weapon.parent !== roller && weapon.parent?.uuid !== roller.uuid) return null
+        return {
+          card, weapon, answered: game.messages.get(data.previousMessage.messageId)?.flags?.sr5data
+        }
+      }
+      messageId = card.previousMessage?.messageId
+    }
+    return null
+  }
+
+  //The toxin card a player wrote, applied by the GM (SR5 p. 409-410; Liesel's D1): nothing comes from its flags. The
+  //author must own the actor it lands on; the toxin is read on the weapon, its Power worked out again, the hits counted
+  //again within the resister's pool, and the GM confirms. The card serves once, written in the active GM's registry.
+  //The card's own data when a GM wrote it, or its author applies it; null when refused
+  static async checkToxinCard(message, actor){
+    const data = message?.flags?.sr5data
+    const author = message?.author
+    if (!data || !actor) return null
+    if (!game.user?.isGM || !author || author.isGM || author.id === game.user.id) return data
+    const {
+      toxinCardPower, toxinCardVerdict, toxinVectors
+    } = await import("../../rolls/roll-helpers/toxin-card.js")
+    const {
+      SR5_MiscellaneousHelpers
+    } = await import("../../rolls/roll-helpers/miscellaneous.js")
+    const {
+      healCardDiceKey
+    } = await import("../../system/heal-ledger.js")
+    const source = SR5_ActorHelper.toxinSourceOf(data)
+    const toxin = source ? foundry.utils.deepClone(source.weapon.system.toxin) : null
+    const open = toxin ? SR5_Toxins.openVectors(actor.system, toxinVectors(toxin)) : []
+    const pool = Math.max(0, ...open.map(v => Number(actor.system.resistances?.toxin?.[v]?.dicePool) || 0))
+    const power = toxin ? toxinCardPower({
+      power: toxin.power,
+      toxinType: toxin.type,
+      calledShot: source.card.combat?.calledShot?.name,
+      engulfNetHits: bounded(source.answered?.roll?.netHits, source.card.roll?.hits),
+      doses: data.toxinDoses,
+      antitoxin: SR5_Toxins.antitoxinRating(actor.system),
+    }) : 0
+    const verdict = toxinCardVerdict({
+      authorOwnsTarget: actor.testUserPermission(author, "OWNER"),
+      sourceFound: !!toxin && open.length > 0,
+      power,
+      rollJSON: data.roll?.r,
+      pool,
+      edge: actor.system.specialAttributes?.edge?.augmented?.value,
+      claimedHits: data.roll?.hits,
+    })
+    if (!verdict.ok) {
+      await SR5_ActorHelper.whisperGM(game.i18n.format("SR5.ToxinCardRejected", {
+        user: author.name, actor: actor.name
+      }))
+      return null
+    }
+    //An exact copy of the card is a new message with the same dice: known by its dice too (heal-ledger.js)
+    const diceKey = healCardDiceKey(data)
+    const keys = [consumedKey(message.id, "toxinEffect"), diceKey ? `${diceKey}|toxinEffect` : null].filter(Boolean)
+    if (keys.some(key => SR5_MiscellaneousHelpers.isConsumed(key))) {
+      await SR5_ActorHelper.whisperGM(game.i18n.format("SR5.ToxinCardSpent", {
+        user: author.name, actor: actor.name
+      }))
+      return null
+    }
+    const damageType = toxin.damageType || ""
+    const effects = Object.entries(toxin.effect ?? {
+    }).filter(([, on]) => on).map(([key]) => game.i18n.localize(SR5.toxinEffects[key] ?? key)).join(", ")
+    const esc = foundry.utils.escapeHTML
+    const notes = verdict.mismatch ? `<p><strong>${game.i18n.format("SR5.ToxinCardMismatch", {
+      hits: esc(String(data.roll?.hits ?? "?"))
+    })}</strong></p>` : ""
+    const ok = await foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: "SR5.ToxinCardConfirmTitle"
+      },
+      content: `<p>${game.i18n.format("SR5.ToxinCardConfirm", {
+        user: esc(author.name), actor: esc(actor.name), toxin: esc(SR5_Toxins.nameOf(toxin, k => game.i18n.localize(k)) || source.weapon.name),
+        weapon: esc(source.weapon.name), power, hits: verdict.hits,
+        damage: damageType ? `${verdict.value}${game.i18n.localize(SR5.damageTypesShort[damageType])}` : "—",
+        effects: esc(effects || "—"),
+      })}</p>${notes}`,
+      rejectClose: false,
+    })
+    if (!ok) return null
+    for (const key of keys) if (!(await SR5_MiscellaneousHelpers.consume(key))) return null
+    //A fresh card: only what the GM worked out (no ammunition, no matrix damage, no target read on the player's flags)
+    const fresh = SR5_PrepareRollTest.getBaseRollData(null, actor)
+    toxin.power = power
+    fresh.damage.toxin = toxin
+    //Fully resisted: no effect either (the button only comes with a damage value, test-Resistance.js)
+    if (verdict.value <= 0) toxin.effect = {
+    }
+    fresh.damage.type = damageType
+    fresh.damage.value = verdict.value
+    //What the arcane inhibitor reads, as on the card before: the attack's damage value, read on the attack card
+    fresh.damage.base = Number(source.card.damage?.value) || 0
+    return fresh
   }
 
   static async applyCalledShotsEffect(actorId, data){
