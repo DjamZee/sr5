@@ -2,7 +2,7 @@
 // that converts the old-style qualities (effects carried by the quality) to the new form, or goes back.
 // Rules live in mentor-link.js; this file only reads and writes Foundry documents.
 import {
-  mentorLinkWarnings, planMentorConversion, planMentorRevert, CONVERSION_FLAG
+  mentorLinkWarnings, planMentorConversion, planMentorRevert, CONVERSION_FLAG, mentorResistAttributes
 } from "./mentor-link.js"
 import {
   systemEffectWrite
@@ -79,7 +79,12 @@ export async function convertMentorQualities(options = {
     const created = plan.create.length ? await actor.createEmbeddedDocuments("Item", plan.create.map(c => ({
       name: c.name, type: "itemMentorSpirit",
       system: {
-        description: c.description, gameEffect: c.gameEffect, customEffects: c.customEffects, mysticPath: c.mysticPath ?? ""
+        description: c.description, gameEffect: c.gameEffect, customEffects: c.customEffects, mysticPath: c.mysticPath ?? "",
+        //Chaos, Oracle, Peacemaker resist their drawback with other attributes (Street Grimoire p. 200-201)
+        ...(mentorResistAttributes(c.name) ? {
+          resistAttributes: mentorResistAttributes(c.name)
+        } : {
+        })
       },
       flags: {
         sr5: {

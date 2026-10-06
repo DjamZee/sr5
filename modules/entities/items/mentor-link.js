@@ -10,6 +10,26 @@ const MENTOR_NAME = /\(([^)]+)\)/
 
 export const CONVERSION_FLAG = "mentorConversion"
 
+// The few mentors whose drawback is not resisted with Charisma + Willpower (SR5 p. 325), by their name in either
+// language: Chaos and Oracle Willpower + Intuition, Peacemaker Charisma + Intuition (Street Grimoire p. 200-201)
+const MENTOR_RESIST_ATTRIBUTES = {
+  chaos: {
+    first: "willpower", second: "intuition"
+  },
+  oracle: {
+    first: "willpower", second: "intuition"
+  },
+  conciliateur: {
+    first: "charisma", second: "intuition"
+  },
+  peacemaker: {
+    first: "charisma", second: "intuition"
+  },
+}
+export function mentorResistAttributes(name){
+  return MENTOR_RESIST_ATTRIBUTES[String(name ?? "").trim().toLowerCase()] ?? null
+}
+
 export function isMentorQuality(item){
   return item?.type === "itemQuality" && (MENTOR_QUALITY_NAME.test(item.name || "") || !!item.system?.linkedMentor)
 }
