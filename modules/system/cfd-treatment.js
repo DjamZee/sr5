@@ -491,7 +491,7 @@ export async function checkCfd(){
         }
         rows.push({
           text: game.i18n.format("SR5.CFD_ScrubTick", {
-            actor: escape(p.actorName), n: due.ticks, volume: after.nanite
+            actor: escape(p.actorName), n: due.ticks, lost: before - after.nanite, volume: after.nanite
           })
         })
         if (after.cured) rows.push({

@@ -3259,7 +3259,7 @@
 	"SR5.CFD_ScrubGlitch": "Complication : le NanoScrub détruit les implants crâniens, oculaires ou auriculaires de {actor} dont le coût de base en Essence est inférieur à {n}. À détruire :",
 	"SR5.CFD_ScrubGlitchNothing": "Complication : le NanoScrub s'en prend aux implants de {actor} d'Essence de base inférieure à {n}, mais aucun n'est concerné.",
 	"SR5.CFD_ScrubCritical": "Échec critique : le traitement de {actor} échoue et la Monade devient psychotique. Sauf si c'est déjà fait, la personnalité du SFC écrase l'hôte le {date}.",
-	"SR5.CFD_ScrubTick": "NanoScrub : {actor} perd {n} point(s) de Volume de nanites (reste {volume}) ; ses autres nanowares perdent autant d'Indice.",
+	"SR5.CFD_ScrubTick": "NanoScrub, {n} heure(s) : {actor} perd {lost} point(s) de Volume de nanites (reste {volume}) ; ses nanowares perdent {n} point(s) d’Indice.",
 	"SR5.CFD_ScrubCured": "NanoScrub : le Volume de nanites de {actor} tombe à 0, l'infection au SFC est supprimée.",
 	"SR5.CFD_ScrubActive": "NanoScrub actif, Indice {rating} ; prochain effet le {date}",
 	"SR5.CFD_PsychoticUntil": "Monade psychotique : hôte écrasé le {date}",
