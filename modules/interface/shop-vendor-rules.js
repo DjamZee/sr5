@@ -66,6 +66,23 @@ export function piecesOf(item) {
 }
 
 /**
+ * A counter item's figures for one piece. Ammunition carries the whole stack in its computed price (the
+ * item multiplies it by its quantity, utilityItem.js _handleAmmoPrice), so a stack of 5 was charged five
+ * times for each round sold (R5, Anton). Every other item's price is already that of one piece.
+ */
+export function counterSystem(item) {
+  const system = item?.system
+  if (item?.type !== 'itemAmmunition' || !system?.price) return system
+  const pieces = piecesOf(item)
+  const value = Number(system.price.value ?? 0) || 0
+  return {
+    ...system, price: {
+      ...system.price, value: value / pieces
+    }
+  }
+}
+
+/**
  * Does an entry pass the shop's restock filters? Its shelf ticked, its
  * legality allowed ('legal', 'R', 'F'), its availability under the ceiling. A shop with
  * no shelf ticked restocks nothing: the gamemaster says what it sells.

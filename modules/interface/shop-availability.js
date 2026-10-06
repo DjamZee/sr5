@@ -16,6 +16,9 @@ import {
 import {
   currentExpress, deliveryDelayed, cardExpressExtra
 } from './shop-orders.js'
+import {
+  counterSystem
+} from './shop-vendor-rules.js'
 
 /**
  * The availability test of SR5 p. 420.
@@ -344,7 +347,8 @@ export class SR5ShopAvailability {
       const name = SR5Shop.gradedName(source.name, grade)
       // A vendor's price carries its margin, as its till charges it (lot C)
       const listed = SR5ShopCatalog.describe({
-        type: source.type, system: source.system, margin: options.margin
+        // A stack on a vendor's counter is priced for one piece, as its till charges it (R5)
+        type: source.type, system: source.isEmbedded ? counterSystem(source) : source.system, margin: options.margin
       }, grade).price
       const availability = grade ? SR5ShopGrades.availability(source.system, grade) : SR5ShopAvailability.availabilityOf(source.system)
       const unit = Math.round(listed * (1 + Math.max(0, surcharge) / 100))

@@ -281,7 +281,7 @@ function makeVendor({
     },
   })
   return {
-    vendor, storage, till 
+    vendor, storage, till, add: item
   }
 }
 
@@ -380,6 +380,37 @@ const request = (lines, extra = {
 })
 
 describe('the vendor till (socket, validated by the gamemaster)', () => {
+  it('R5: one round from a stack of ammunition costs one round, not the stack', async () => {
+    const {
+      vendor, till, add
+    } = makeVendor({
+      margin: 20
+    })
+    // As the system prepares it: the computed price of ammunition is the stack's (15 ¥ x 5)
+    add('tracer', {
+      name: 'Balles traceuses', type: 'itemAmmunition',
+      system: {
+        storedIn: 'shop', quantity: 5, price: {
+          base: 15, value: 75, modifiers: [{
+            source: 'Quantité', type: 'Multiplicateur', isMultiplier: true, value: 5
+          }]
+        }, availability: {
+          value: 0
+        }
+      },
+    })
+    const buyer = makeBuyer()
+    vi.spyOn(SR5Shop, 'balance').mockReturnValue(10000)
+    world(vendor, buyer)
+    expect(await SR5ShopVendor.sell(request([{
+      uuid: 'Actor.vendor.Item.tracer', quantity: 1, name: 'Balles traceuses'
+    }]), player.id)).toBe(true)
+    // 15 ¥ and its 20 % margin: 18 ¥, where 90 ¥ was charged
+    expect(till.system.funds.value).toBe(18)
+    expect(buyer.created.find(d => d.type === 'itemNuyen').system.amount).toBe(18)
+    expect(buyer.created.find(d => d.type === 'itemAmmunition').system.quantity).toBe(1)
+  })
+
   it('sells from the counter: the stock drops, the money goes into the cashbox', async () => {
     const {
       vendor, till 

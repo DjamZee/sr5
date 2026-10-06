@@ -35,7 +35,7 @@ import {
   isStoredAway
 } from './storage-rules.js'
 import {
-  isShopStorage, shopSettings, stockOf, itemFigures, figureMismatches, piecesOf, fitsRestock, restockPicks, splitTakings,
+  isShopStorage, shopSettings, stockOf, itemFigures, figureMismatches, piecesOf, counterSystem, fitsRestock, restockPicks, splitTakings,
   checkStockLines
 } from './shop-vendor-rules.js'
 import {
@@ -700,7 +700,7 @@ export class SR5ShopVendor {
       if (!SR5ShopStock.isSellableType(item.type)) continue
       if (SR5ShopStock.isNotForSale(item) && !byGM) continue
       const described = SR5ShopCatalog.describe({
-        type: item.type, system: item.system, margin: shop.margin
+        type: item.type, system: counterSystem(item), margin: shop.margin
       })
       const block = limits ? SR5ShopCatalog.creationBlock(described, limits) : null
       if (block) {
@@ -956,7 +956,7 @@ export class SR5ShopVendor {
       const item = actor.items.get(entry.itemId)
       const shown = SR5ShopCatalog.describe(entry)
       const charged = SR5ShopCatalog.describe({
-        type: item.type, system: item.system, margin
+        type: item.type, system: counterSystem(item), margin
       })
       for (const key of ['price', 'availability', 'legality', 'essence', 'rating']) {
         if (shown[key] !== charged[key]) differences.push({
@@ -1633,7 +1633,7 @@ export class SR5ShopVendorSource {
             notForSale: item.flags?.sr5?.notForSale === true
           }
         },
-        system: SR5ShopCatalog.essentials(item.system),
+        system: SR5ShopCatalog.essentials(counterSystem(item)),
         info: getEntryInfo({
           type: item.type, system: {
             ...item.system, price: undefined, grade: undefined
