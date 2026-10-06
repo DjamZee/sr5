@@ -18,6 +18,9 @@ import {
   SR5_EntityHelpers
 } from "../entities/helpers.js"
 
+//The pending writes of the shared vision list, by token uuid
+const viewerQueues = new Map()
+
 export class SR5SharedVision {
 
   /** Put a user in the shared vision of a token, or take him out
@@ -32,8 +35,20 @@ export class SR5SharedVision {
     if (!tokenDocument.isOwner) return SR5_SocketHandler.emitForGM("sharedVisionSetViewer", {
       tokenUuid: tokenDocument.uuid, entry, remove
     })
-    const current = getSharedViewers(tokenDocument)
-    await SR5SharedVision.setList(tokenDocument, remove ? withoutViewer(current, entry.userId) : withViewer(current, entry))
+    //A token's flags change only once the server has answered: each write waits for the previous one of that token
+    //and reads the list just before it writes (F4: two players who stopped at once, one stayed)
+    const run = async () => {
+      const current = getSharedViewers(tokenDocument)
+      await SR5SharedVision.setList(tokenDocument, remove ? withoutViewer(current, entry.userId) : withViewer(current, entry))
+    }
+    const job = (viewerQueues.get(tokenDocument.uuid) ?? Promise.resolve()).then(run)
+    //A write that failed does not hold back the next ones
+    const tail = job.catch(() => {})
+    viewerQueues.set(tokenDocument.uuid, tail)
+    tail.then(() => {
+      if (viewerQueues.get(tokenDocument.uuid) === tail) viewerQueues.delete(tokenDocument.uuid)
+    })
+    return job
   }
 
   //The gamemaster writes only what the sender is allowed to ask: the server tells who sent it
