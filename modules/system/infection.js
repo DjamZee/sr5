@@ -136,14 +136,24 @@ export function infectionStatus(actor){
   } : null
 }
 
+// The actors of the tokens of the scene the GM looks at, read from the scene and not from the canvas, which a GM may
+// have turned off
+function sceneActors(){
+  const scene = game.scenes?.viewed ?? game.scenes?.active
+  return (scene?.tokens?.contents ?? []).map(t => t.actor).filter(Boolean)
+}
+
 // The creatures offered in the dialog: those of the scene first (the controlled one ticked), then the world's
 function infectors(victim){
-  const scene = (canvas?.tokens?.placeables ?? []).map(t => t.actor).filter(a => a && canInfect(a) && a.uuid !== victim.uuid)
+  const scene = sceneActors().filter(a => canInfect(a) && a.uuid !== victim.uuid)
   const world = game.actors.filter(a => canInfect(a) && a.uuid !== victim.uuid)
   const list = []
   for (const a of [...scene, ...world]) if (!list.some(b => b.uuid === a.uuid)) list.push(a)
   return list
 }
+
+// The dice of a roll, for the GM to read on the card
+const diceOf = (roll) => `[${(roll?.dices ?? []).map(d => d.result).join(" ")}]`
 
 // The GM's button: pick the creature, read both pools, confirm, roll
 export async function tryInfection(victim){
@@ -209,7 +219,7 @@ export async function tryInfection(victim){
     content: `<div class="sr5-infection-card"><h3>${game.i18n.localize("SR5.INFECTION_CardTitle")}</h3>
       <p>${game.i18n.format("SR5.INFECTION_Dice", {
     creature: escape(creature.name), a: attack, ah: a.hits, victim: escape(victim.name), d: defense, dh: d.hits
-  })}</p><p>${result}</p></div>`,
+  })}</p><p class="sr5-infection-dice">${diceOf(a)} / ${diceOf(d)}</p><p>${result}</p></div>`,
     whisper: gmIds(),
   })
 }
@@ -244,7 +254,7 @@ async function offerOnZero(actor, changes){
     return
   }
   if (entry) return
-  const scene = (canvas?.tokens?.placeables ?? []).some(t => t.actor && t.actor.uuid !== actor.uuid && canInfect(t.actor))
+  const scene = sceneActors().some(a => a.uuid !== actor.uuid && canInfect(a))
   if (!scene) return
   await writeLedger(v => {
     v[actor.uuid] = {
