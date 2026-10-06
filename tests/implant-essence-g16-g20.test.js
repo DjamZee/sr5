@@ -12,7 +12,7 @@ import {
   reservedChangedBy, valueAfterUpdate, reservedMismatches
 } from "../modules/system/reserved-fields.js"
 import {
-  expectedAtCreation, expectedValues, reservedFieldsOf, sourceReversible, vouchedMarks
+  expectedAtCreation, expectedValues, reservedFieldsOf, sourceReversible, vouchedMarks, sourceEntry
 } from "../modules/system/implant-register.js"
 import {
   mentorMagic
@@ -653,6 +653,38 @@ describe("Apollinaire's review: the marks of a removed implant, an accessory, an
     })
     expect(leavesHole(forged, marks)).toBe(true)
     expect(leavesHole(forged)).toBe(false)
+  })
+  it("takes for origin an item of the world no player owns, not one a player owns (Apollinaire's second review)", async () => {
+    const worldAccessory = {
+      type: "itemAugmentation", system: {
+        type: "cyberware", isAccessory: true, essenceCost: {
+          base: 1, multiplier: ""
+        }
+      }
+    }
+    const copied = doc({
+      isAccessory: true
+    }, {
+      _stats: {
+        duplicateSource: "Item.vision"
+      }
+    })
+    const resolve = async uuid => (uuid === "Item.vision" ? worldAccessory : null)
+    expect(await sourceEntry(copied, resolve, {
+      playerOwned: () => false
+    })).toBe(worldAccessory)
+    expect(await sourceEntry(copied, resolve, {
+      playerOwned: () => true
+    })).toBe(null)
+    // An item on another sheet is no origin
+    expect(await sourceEntry(doc({
+    }, {
+      _stats: {
+        duplicateSource: "Actor.x.Item.vision"
+      }
+    }), async () => worldAccessory, {
+      playerOwned: () => false
+    })).toBe(null)
   })
   it("reads an implant the register does not know on its compendium entry, else as leaving a hole", async () => {
     const tattoo = {

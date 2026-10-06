@@ -1801,6 +1801,7 @@
 	"SR5.EssenceHoleClear": "Rendre cette Essence (MJ)",
 	"SR5.WARN_GMOnlyField": "Seul le MJ peut changer ce réglage d'implant (Adapsine, lot, Prototype de transhumain, faille d'Essence).",
 	"SR5.WARN_GMOnlyFieldRestored": "{user} a changé un réglage d'implant réservé au MJ ({name}, {actor}) : la valeur du MJ est remise.",
+	"SR5.WARN_GMOnlyFieldSetAtInstall": "{name}, posé sur {actor} par {user} : ses réglages d'implant réservés au MJ ont été fixés d'après le corps et l'objet d'origine (un objet sans origine reconnue n'est pas un accessoire).",
 	"SR5.SETTINGS_EssenceHole_T": "Failles d'Essence (Chrome Flesh p. 74)",
 	"SR5.SETTINGS_EssenceHole_D": "Par défaut, l'Essence d'un implant retiré reste perdue (SR5 p. 53). Règle optionnelle : ce trou sert de crédit aux implants posés ensuite, qui le comblent avant de coûter de l'Essence.",
 	"SR5.SETTINGS_AugmentationBundles_T": "Lots d'augmentations (Chrome Flesh p. 96)",

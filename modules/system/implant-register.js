@@ -50,17 +50,27 @@ export async function sourceReversible(doc, resolve) {
  * multiplier); null otherwise. A drag from a compendium notes compendiumSource; the shop notes where it sold from
  * (shop.js, shopSource).
  */
-export async function sourceEntry(doc, resolve = uuid => fromUuid(uuid)) {
-  const uuid = [doc?._stats?.compendiumSource, doc?.flags?.core?.sourceId, doc?.flags?.sr5?.shopSource]
-    .find(u => typeof u === "string" && u.startsWith("Compendium."))
-  if (!uuid) return null
-  const source = await resolve(uuid)
+export async function sourceEntry(doc, resolve = uuid => fromUuid(uuid), {
+  playerOwned = source => !!game.users?.some(u => !u.isGM && source.testUserPermission?.(u, "OWNER"))
+} = {
+}) {
+  const candidates = [doc?._stats?.compendiumSource, doc?.flags?.core?.sourceId, doc?.flags?.sr5?.shopSource, doc?._stats?.duplicateSource]
+    .filter(u => typeof u === "string")
   const cost = system => system?.essenceCost ?? {
   }
-  const same = source && source.type === doc.type && source.system?.type === doc.system?.type &&
-    Number(cost(source.system).base) === Number(cost(doc.system).base) &&
-    (cost(source.system).multiplier ?? "") === (cost(doc.system).multiplier ?? "")
-  return same ? source : null
+  for (const uuid of candidates) {
+    // A compendium is the gamemaster's; so is an item of the world's directory no player owns (Apollinaire's second
+    // review: an accessory the gamemaster made in the world). An item on a sheet, or one a player owns, is not
+    const compendium = uuid.startsWith("Compendium.")
+    if (!compendium && !/^Item\.[^.]+$/.test(uuid)) continue
+    const source = await resolve(uuid)
+    if (!source || (!compendium && playerOwned(source))) continue
+    const same = source.type === doc.type && source.system?.type === doc.system?.type &&
+      Number(cost(source.system).base) === Number(cost(doc.system).base) &&
+      (cost(source.system).multiplier ?? "") === (cost(doc.system).multiplier ?? "")
+    if (same) return source
+  }
+  return null
 }
 
 /**
@@ -145,11 +155,15 @@ function record(doc, values) {
 }
 
 /** Puts back on `doc` the reserved values a player changed, and tells the gamemaster. */
-async function restore(doc, mismatches, userId) {
+async function restore(doc, mismatches, userId, {
+  created = false
+} = {
+}) {
   const update = Object.fromEntries(Object.entries(mismatches).map(([f, v]) => [`system.${f}`, v]))
   await doc.update(update)
   const user = game.users.get(userId)?.name ?? game.i18n.localize("SR5.SomePlayer")
-  ui.notifications.warn(game.i18n.format("SR5.WARN_GMOnlyFieldRestored", {
+  // At the installation nothing was "changed": the GM set what the body and the item's origin give
+  ui.notifications.warn(game.i18n.format(created ? "SR5.WARN_GMOnlyFieldSetAtInstall" : "SR5.WARN_GMOnlyFieldRestored", {
     user, name: doc.name, actor: doc.parent?.name ?? doc.name
   }), {
     permanent: true
@@ -168,7 +182,9 @@ async function onCreate(doc, _options, userId) {
   })
   const mismatches = reservedMismatches(current, expected)
   await record(doc, expected)
-  if (Object.keys(mismatches).length) await restore(doc, mismatches, userId)
+  if (Object.keys(mismatches).length) await restore(doc, mismatches, userId, {
+    created: true
+  })
 }
 
 /** updateItem / updateActor: a gamemaster's write is recorded; a player's change is put back. */
@@ -223,7 +239,10 @@ export async function reconcileImplantRegister() {
       const entry = register[doc.uuid]
       if ((!entry && doc.type === "itemAugmentation") || (entry && !fields.every(f => f in entry))) unknown[doc.uuid] = expected
       const mismatches = reservedMismatches(reservedValues(doc.system, fields), expected)
-      if (Object.keys(mismatches).length) await restore(doc, mismatches, null)
+      // An implant unknown to the register was installed while no GM was there: nothing was "changed"
+      if (Object.keys(mismatches).length) await restore(doc, mismatches, null, {
+        created: !entry
+      })
     }
   }
   if (Object.keys(unknown).length) await updateLedger(IMPLANT_REGISTER, latest => {
