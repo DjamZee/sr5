@@ -1,8 +1,6 @@
 <div class="sr-negotiation-repair-body">
   <p class="hint">{{localize 'SR5.NEGO_REPAIR_Intro'}}</p>
-  {{#if done}}
-  <p><strong>{{done}}</strong></p>
-  {{else}}
+  {{#if last}}<p class="hint">{{last}}</p>{{/if}}
   {{#if candidates.length}}
   <ul class="sr-negotiation-repair-list">
     {{#each candidates}}
@@ -22,6 +20,5 @@
   {{/if}}
   {{else}}
   <p>{{localize 'SR5.NEGO_REPAIR_None'}}</p>
-  {{/if}}
   {{/if}}
 </div>

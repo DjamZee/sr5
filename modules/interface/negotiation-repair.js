@@ -8,7 +8,8 @@ import {
 /**
  * The gamemaster's window that gives back the Negotiation lost before the key fix
  * (negotiation-repair-rules.js). It lists the actors and contacts of the world whose skill reads 0
- * while their compendium source gives more; the gamemaster ticks what applies, once. Nothing is
+ * while their compendium source gives more; the gamemaster ticks what applies, and each correction
+ * is applied once to each sheet (the register keeps them), however often the window is run. Nothing is
  * read off a player's sheet or a chat card: the list is recomputed from the documents and the
  * compendiums when the gamemaster applies it, and only the active gamemaster writes.
  */
@@ -36,7 +37,7 @@ export class SR5NegotiationRepair extends foundry.applications.api.HandlebarsApp
     }
   }
 
-  /** The world setting that records the repair once it is done. */
+  /** The world setting that records the corrections applied, by document uuid, and the last run. */
   static register() {
     game.settings.register("sr5", "sr5NegotiationRepair", {
       scope: "world", config: false, type: Object, default: {
@@ -50,17 +51,43 @@ export class SR5NegotiationRepair extends foundry.applications.api.HandlebarsApp
 
   /**
    * The candidates: an actor or a contact whose Negotiation looks lost, and whose compendium source
-   * gives one above 0. A contact carried by an actor whose own source is stale (a copy made inside a
-   * pack keeps the uuid of where it came from) is matched in the source of its actor: the embedded
-   * ids are kept on import.
+   * gives one above 0, and that this repair has not corrected already. A contact's own source is often
+   * stale: every contact of fr_contacts carries the uuid of the actor it was copied from inside the
+   * pack, and a contact dropped from a pack onto a sheet keeps it (Hugo, measured). Its twin is then
+   * looked for by id: the drop keeps the id it has in its pack, and an import keeps the embedded ids,
+   * so the same id, type and name in a compendium of items, else in the source of the actor that
+   * carries it, is the original.
    *
-   * @param {object} [from]  what to look through, and how to resolve a uuid (for the tests)
+   * @param {object} [from]  what to look through, how to resolve a uuid, the item compendiums and the
+   *                         corrections already applied (for the tests)
    * @returns {Promise<{uuid, name, owner, value, source}[]>}
    */
   static async findCandidates({
-    actors = game.actors, items = game.items, resolve = uuid => fromUuid(uuid)
+    actors = game.actors, items = game.items, resolve = uuid => fromUuid(uuid),
+    itemPacks = game.packs?.filter(pack => pack.documentName === "Item") ?? [],
+    applied = (game.settings.get("sr5", "sr5NegotiationRepair") ?? {
+    }).applied ?? {
+    },
   } = {
   }) {
+    const indexes = new Map()
+    const packTwin = async doc => {
+      for (const pack of itemPacks) {
+        if (!indexes.has(pack)) {
+          let index = null
+          try {
+            index = await pack.getIndex()
+          } catch (_err) { /* an unreadable pack: skipped */ }
+          indexes.set(pack, index)
+        }
+        const entry = indexes.get(pack)?.get?.(doc.id)
+        if (entry?.type !== doc.type || entry.name !== doc.name) continue
+        try {
+          return await pack.getDocument(doc.id)
+        } catch (_err) { /* gone since the index: next pack */ }
+      }
+      return null
+    }
     const cache = new Map()
     const load = async uuid => {
       if (!uuid) return null
@@ -75,8 +102,9 @@ export class SR5NegotiationRepair extends foundry.applications.api.HandlebarsApp
     }
     const found = []
     const consider = async (doc, owner) => {
-      if (!negotiationLooksLost(doc?.system)) return
+      if (!negotiationLooksLost(doc?.system) || applied[doc.uuid]) return
       let source = await load(compendiumSourceOf(doc))
+      if (source?.type !== doc.type && doc.type === "itemContact") source = await packTwin(doc)
       if (source?.type !== doc.type && owner) {
         const twin = (await load(compendiumSourceOf(owner)))?.items?.get?.(doc.id)
         source = twin?.type === doc.type && twin.name === doc.name ? twin : null
@@ -107,26 +135,44 @@ export class SR5NegotiationRepair extends foundry.applications.api.HandlebarsApp
     const context = await super._prepareContext(options)
     const record = game.settings.get("sr5", "sr5NegotiationRepair") ?? {
     }
-    context.done = record.date ? game.i18n.format("SR5.NEGO_REPAIR_AlreadyDone", {
-      date: new Date(record.date).toLocaleString(), count: record.count ?? 0, user: record.user ?? ""
+    const last = record.last
+    context.last = last?.date ? game.i18n.format("SR5.NEGO_REPAIR_LastRun", {
+      date: new Date(last.date).toLocaleString(), count: last.count ?? 0, user: last.user ?? ""
     }) : ""
     context.isActiveGM = SR5NegotiationRepair.isActiveGM
-    context.candidates = context.done || !game.user.isGM ? [] : await SR5NegotiationRepair.findCandidates()
+    context.candidates = game.user.isGM ? await SR5NegotiationRepair.findCandidates() : []
     return context
   }
 
-  /** Apply what the gamemaster ticked: the list is recomputed first, the one on screen proves nothing. */
+  /**
+   * Apply what the gamemaster ticked. The list is recomputed first, the one on screen proves nothing;
+   * the corrections are claimed in the register before any write, one per document: a second click, a
+   * second window or a later run never applies the same correction to the same sheet twice. What was
+   * not ticked stays a candidate for a later run.
+   */
   static async #apply() {
     if (!SR5NegotiationRepair.isActiveGM) return ui.notifications.warn(game.i18n.localize("SR5.NEGO_REPAIR_OnlyGM"))
     const ticked = [...this.element.querySelectorAll("input[name=candidate]:checked")].map(input => input.value)
     if (!ticked.length) return ui.notifications.warn(game.i18n.localize("SR5.NEGO_REPAIR_NoneTicked"))
-    // Claimed in the register first: a second click, or a second window, finds it taken and does nothing
+    const fresh = (await SR5NegotiationRepair.findCandidates()).filter(c => ticked.includes(c.uuid))
     const date = new Date().toISOString()
-    const claimed = await updateLedger("sr5NegotiationRepair", ledger => ledger.date ? null : {
-      date, count: 0, user: game.user.name
+    let chosen = []
+    await updateLedger("sr5NegotiationRepair", ledger => {
+      const applied = {
+        ...(ledger.applied ?? {
+        })
+      }
+      chosen = fresh.filter(c => !applied[c.uuid])
+      if (!chosen.length) return null
+      for (const c of chosen) applied[c.uuid] = {
+        value: c.value, date
+      }
+      return {
+        ...ledger, applied, last: {
+          date, count: chosen.length, user: game.user.name
+        }
+      }
     })
-    if (!claimed) return this.render()
-    const chosen = (await SR5NegotiationRepair.findCandidates()).filter(c => ticked.includes(c.uuid))
     let count = 0
     for (const candidate of chosen) {
       const doc = await fromUuid(candidate.uuid)
@@ -136,9 +182,6 @@ export class SR5NegotiationRepair extends foundry.applications.api.HandlebarsApp
       })
       count++
     }
-    await updateLedger("sr5NegotiationRepair", ledger => ({
-      ...ledger, count
-    }))
     ui.notifications.info(game.i18n.format("SR5.NEGO_REPAIR_Applied", {
       count
     }))

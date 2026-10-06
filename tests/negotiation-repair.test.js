@@ -81,6 +81,45 @@ describe("The candidates of the repair window", () => {
       compendiumSource: uuid
     }
   })
+  // fr_contacts: every contact carries the stale source of the actor it was copied from in the pack
+  const STALE = "Actor.DkPBhBFEParSeXws.Item.KCrnQvp5qdi6jcfg"
+  const packPawn = doc("Compendium.sr5-compendiums.fr_contacts.Item.DYArczOGDGKuiDZw", "itemContact", "Prêteuse sur gages", negotiation(5))
+  const frContacts = {
+    documentName: "Item",
+    getIndex: async () => new Map([[packPawn.id, {
+      _id: packPawn.id, type: "itemContact", name: packPawn.name
+    }]]),
+    getDocument: async id => (id === packPawn.id ? packPawn : null),
+  }
+
+  // Hugo's second review, measured: a contact dropped from fr_contacts on a sheet keeps its pack id
+  // and the stale source; it was never offered
+  it("finds a contact dropped from a pack on a sheet by its pack id", async () => {
+    const dropped = doc(`Actor.pc.Item.${packPawn.id}`, "itemContact", "Prêteuse sur gages", negotiation(0), from(STALE))
+    const pc = doc("Actor.pc", "actorPc", "Runner", negotiation(3), {
+      items: [dropped]
+    })
+    const found = await SR5NegotiationRepair.findCandidates({
+      actors: [pc], items: [], resolve, itemPacks: [frContacts], applied: {
+      }
+    })
+    expect(found.map(c => [c.uuid, c.value, c.owner, c.source])).toEqual([
+      [`Actor.pc.Item.${packPawn.id}`, 5, "Runner", packPawn.uuid]
+    ])
+  })
+
+  it("does not offer again a sheet already corrected, and keeps offering the others", async () => {
+    const face = doc("Actor.face", "actorPc", "Face", negotiation(0), from("Compendium.mp.actors.Actor.face"))
+    const dealer = doc("Item.dealer", "itemContact", "Vendeur d'armes", negotiation(0), from("Compendium.sr5.fr_contacts.Item.dealer"))
+    const found = await SR5NegotiationRepair.findCandidates({
+      actors: [face], items: [dealer], resolve, itemPacks: [], applied: {
+        "Actor.face": {
+          value: 5, date: "2026-10-06"
+        }
+      }
+    })
+    expect(found.map(c => c.uuid)).toEqual(["Item.dealer"])
+  })
 
   it("lists a lost actor, its contact through the actor's source, and a world contact", async () => {
     // The embedded contact carries a stale source, copied inside the pack (Hugo, measured)
@@ -90,7 +129,8 @@ describe("The candidates of the repair window", () => {
     })
     const dealer = doc("Item.dealer", "itemContact", "Vendeur d'armes", negotiation(0), from("Compendium.sr5.fr_contacts.Item.dealer"))
     const found = await SR5NegotiationRepair.findCandidates({
-      actors: [face], items: [dealer], resolve
+      actors: [face], items: [dealer], resolve, itemPacks: [], applied: {
+      }
     })
     expect(found.map(c => [c.uuid, c.value, c.owner])).toEqual([
       ["Actor.face", 5, ""],
@@ -106,7 +146,8 @@ describe("The candidates of the repair window", () => {
     const gone = doc("Item.gone", "itemContact", "Ancien", negotiation(0), from("Compendium.gone.Item.x"))
     const wrongType = doc("Actor.grunt", "actorGrunt", "Face", negotiation(0), from("Compendium.mp.actors.Actor.face"))
     const found = await SR5NegotiationRepair.findCandidates({
-      actors: [malley, typed, copy, wrongType], items: [gone], resolve
+      actors: [malley, typed, copy, wrongType], items: [gone], resolve, itemPacks: [frContacts], applied: {
+      }
     })
     expect(found).toEqual([])
   })
@@ -117,7 +158,8 @@ describe("The candidates of the repair window", () => {
       ...from("Compendium.mp.actors.Actor.face"), items: [renamed]
     })
     expect(await SR5NegotiationRepair.findCandidates({
-      actors: [face], items: [], resolve
+      actors: [face], items: [], resolve, itemPacks: [frContacts], applied: {
+      }
     })).toEqual([])
   })
 })
