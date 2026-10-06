@@ -47,31 +47,20 @@
     border-radius: 2px !important;
     color: var(--shop-text) !important;
     height: 22px;
-    // The validated mock-up's type: Signika at 12 px, names at 13 px. The SR5 theme's narrow
-  // display face made the rows hard to read.
-  font-family: var(--font-body, "Signika"), sans-serif;
-  font-size: 12px;
-  // Icons keep their own face: only text elements are reset
-  .window-content :is(input, select, button, label, span, b, small, a, h4, p, li, div):not([class*="fa-"]) {
-    font-family: inherit;
-  }
+    font-size: 12px;
   }
   input[type="number"] { width: 64px; text-align: right; }
 
-  button {
+  // Scoped to the content: the window header's controls (close, menu) are buttons
+  // too, and a shop font or background there hides their Font Awesome glyph.
+  // :where() keeps the old specificity for the rules below that refine buttons.
+  :where(.window-content) button {
     background: var(--shop-button) !important;
     border: 1px solid #3a3f4a !important;
     color: var(--shop-text) !important;
     border-radius: 3px;
     line-height: 22px;
-    // The validated mock-up's type: Signika at 12 px, names at 13 px. The SR5 theme's narrow
-  // display face made the rows hard to read.
-  font-family: var(--font-body, "Signika"), sans-serif;
-  font-size: 12px;
-  // Icons keep their own face: only text elements are reset
-  .window-content :is(input, select, button, label, span, b, small, a, h4, p, li, div):not([class*="fa-"]) {
-    font-family: inherit;
-  }
+    font-size: 12px;
     &:hover:not([disabled]) { border-color: var(--sr-shop-accent-line) !important; }
     &.accent {
       background: var(--sr-shop-accent) !important;
@@ -271,7 +260,8 @@
     input[type="number"] { width: 34px; text-align: center; }
     button { width: 28px; padding: 0; }
   }
-  .sr-shop-grade select {
+  // The vendor picker ("Where to buy") is a native select too: same greys, not the global teal on red.
+  .sr-shop-grade select, select.sr-shop-source {
     width: 100%;
     height: 22px;
     background: var(--shop-bg) !important;
@@ -280,6 +270,21 @@
     border-radius: 2px;
     font-size: 12px;
     option { background: var(--shop-panel); color: var(--shop-text); }
+  }
+  // The enhanced dropdowns (buyer, payment): the shared style draws a half-transparent
+  // theme-red chevron, nearly invisible on the shop's greys. Same box as the grade select.
+  .sr-dropdown .sr-dropdown-trigger {
+    height: 22px;
+    padding: 0 6px;
+    background: var(--shop-bg);
+    border: 1px solid var(--shop-line);
+    border-radius: 2px;
+    .sr-dropdown-chevron { color: var(--shop-muted); font-size: 11px; }
+    &:hover { border-color: var(--sr-shop-accent-line); .sr-dropdown-chevron { color: var(--shop-text); } }
+  }
+  .sr-dropdown.sr-dropdown-open .sr-dropdown-trigger {
+    border-color: var(--sr-shop-accent-line);
+    .sr-dropdown-chevron { color: var(--shop-text); }
   }
   .sr-shop-empty { padding: 20px; text-align: center; color: var(--shop-muted); }
   .sr-shop-footer {
