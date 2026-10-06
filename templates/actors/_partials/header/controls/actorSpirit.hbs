@@ -31,7 +31,7 @@
 </div>
 {{!-- Forbidden Arcana p. 172-175: Elemental, wild, Domain. The gamemaster's only --}}
 {{#if system.isGM}}
-<div class="SR-EspritType" title="{{localize 'SR5.SpiritTraits'}}">
+<div class="SR-EspritType SR-SpiritTraits" title="{{localize 'SR5.SpiritTraits'}}">
   <label data-tooltip="{{localize 'SR5.SpiritElemental_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="isElemental" {{checked system.isElemental}}> {{localize 'SR5.SpiritElemental'}}</label>
   <label data-tooltip="{{localize 'SR5.SpiritWild_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="isWild" {{checked system.isWild}}> {{localize 'SR5.SpiritWild'}}</label>
   <label data-tooltip="{{localize 'SR5.SpiritDomain_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="hasDomain" {{checked system.hasDomain}}> {{localize 'SR5.SpiritDomain'}}</label>
