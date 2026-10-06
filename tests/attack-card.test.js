@@ -718,6 +718,30 @@ describe('review fixes', () => {
     })
     expect(r.data.damage.base).toBe(9)
   })
+  it('D3: the -1 of a second target hit through is no gap to tell the GM (measured in game)', async () => {
+    const card = attackCard({
+      combat: {
+        ...attackCard().combat, calledShot: {
+          name: '', secondTarget: true
+        }
+      }
+    })
+    const r = await vetAttackCard(card, {
+      messageId: 'm1', helpers: {
+        cardOf: cardOfFor(roller, {
+          data: {
+            test: {
+              type: 'attack'
+            }, owner: {
+              itemId: 'w1'
+            }
+          }
+        })
+      }
+    })
+    expect(r.data.damage.base).toBe(9)
+    expect(r.mismatches.map(m => m.key)).not.toContain('base')
+  })
 
   it('reads the effects of a called shot on the shot chosen, and says when the card differs', async () => {
     const card = attackCard({

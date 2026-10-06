@@ -300,6 +300,11 @@ export async function vetAttackCard(chatData, {
     type: chatData.damage?.type, element: chatData.damage?.element ?? "", source: chatData.damage?.source ?? "",
     hits: chatData.roll?.hits,
   }
+  //The second target of Through and Into reads the attack card itself: its DV less 1 is the expected one, no gap
+  if (chatData.combat?.calledShot?.secondTarget) {
+    claimed.base = (Number(claimed.base) || 0) - 1
+    claimed.value = (Number(claimed.value) || 0) - 1
+  }
   let pool, drainInfo = null, overcast = null, vetted = {
   }
   const extra = []
