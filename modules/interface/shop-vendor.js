@@ -184,6 +184,29 @@ export class SR5ShopVendor {
       ui.notifications.warn(game.i18n.localize('SR5.WARN_ShopVendorNoShelf'))
       return 0
     }
+    // Reading the shelves can take a minute after a reload: a second click while it runs would fill the
+    // counter twice, with doubles (S7, Quitterie). One restock per shop at a time, and it says it is reading.
+    const key = `${actor.uuid}.${storage.id}`
+    if (SR5ShopVendor.#restocking.has(key)) {
+      ui.notifications.info(game.i18n.format('SR5.ShopVendorRestockBusy', {
+        name: SR5ShopVendor.labelOf(storage)
+      }))
+      return 0
+    }
+    SR5ShopVendor.#restocking.add(key)
+    try {
+      return await SR5ShopVendor.#restock(actor, storage, shop)
+    } finally {
+      SR5ShopVendor.#restocking.delete(key)
+    }
+  }
+
+  static #restocking = new Set()
+
+  static async #restock(actor, storage, shop) {
+    ui.notifications.info(game.i18n.format('SR5.ShopVendorRestockReading', {
+      name: SR5ShopVendor.labelOf(storage)
+    }))
     const {
       SR5ShopWorldSource
     } = await import('./shop-window.js')
@@ -511,6 +534,11 @@ export class SR5ShopVendor {
    */
   static async purchase(request) {
     if (game.user.isGM) return SR5ShopVendor.sell(request, game.user.id)
+    // Nobody to run the till: nothing is bought, so the cart stays full (S8, Quitterie)
+    if (!(game.users.activeGM ?? game.users.find(user => user.isGM && user.active))) {
+      ui.notifications.warn(game.i18n.localize('SR5.WARN_NoActiveGM'))
+      return false
+    }
     const {
       SR5_SocketHandler
     } = await import('../socket.js')

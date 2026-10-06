@@ -753,6 +753,8 @@
 	"SR5.ShopVendorRestock": "Restock",
 	"SR5.ShopVendorRestockButton": "Restock",
 	"SR5.ShopVendorRestocked": "{name}: {count} item(s) added, {stacks} stack(s) topped up.",
+	"SR5.ShopVendorRestockReading": "{name}: reading the shelves for the restock… (up to a minute after a reload)",
+	"SR5.ShopVendorRestockBusy": "{name}: a restock is already running, wait for it to finish.",
 	"SR5.ShopVendorReviewAccept": "Accept the sale",
 	"SR5.ShopVendorReviewRefuse": "Refuse",
 	"SR5.ShopVendorReviewText": "{seller} sells for {price}¥. Check each item against its source, then accept, refuse or correct the price.",

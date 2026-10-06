@@ -667,3 +667,60 @@ describe('the vendor till (socket, validated by the gamemaster)', () => {
     }]), player.id)).resolves.toBe(false)
   })
 })
+
+describe('the counter, without a gamemaster and while restocking (Quitterie, S7 and S8)', () => {
+  it('S8: no gamemaster connected, the purchase says so and the cart is kept', async () => {
+    globalThis.game.user = player
+    globalThis.game.users = Object.assign([gm, player], {
+      get: id => [gm, player].find(u => u.id === id), activeGM: null,
+    })
+    expect(await SR5ShopVendor.purchase(request([{
+      uuid: 'Actor.vendor.Item.medkit', quantity: 1
+    }]))).toBe(false)
+    expect(notes).toContainEqual(['warn', 'SR5.WARN_NoActiveGM'])
+    expect(sent).toHaveLength(0)
+  })
+
+  it('S7: a second restock while the shelves are read adds nothing', async () => {
+    const {
+      vendor, storage
+    } = makeVendor()
+    storage.system.shop.shelves = ['armor']
+    storage.system.shop.perShelf = 2
+    storage.system.shop.legality = ['legal']
+    let release
+    const reading = new Promise(resolve => {
+      release = resolve
+    })
+    const entries = ['a', 'b', 'c', 'd'].map(id => ({
+      uuid: `Compendium.x.y.Item.${id}`, docName: 'Item', type: 'itemArmor', shelf: 'armor', name: id,
+      system: {
+        price: {
+          value: 100, base: 100
+        }, availability: {
+          value: 2
+        }
+      },
+    }))
+    vi.doMock('../modules/interface/shop-window.js', () => ({
+      SR5ShopWorldSource: {
+        index: () => reading
+      }
+    }))
+    globalThis.fromUuid = async uuid => ({
+      toObject: () => ({
+        name: uuid, type: 'itemArmor', system: {
+        }
+      })
+    })
+    const first = SR5ShopVendor.restock(vendor, storage)
+    const second = SR5ShopVendor.restock(vendor, storage)
+    release(entries)
+    expect(await second).toBe(0)
+    expect(await first).toBe(2)
+    expect(vendor.created).toHaveLength(2)
+    // Once done, the shop can be restocked again
+    expect(await SR5ShopVendor.restock(vendor, storage)).toBe(2)
+    vi.doUnmock('../modules/interface/shop-window.js')
+  })
+})

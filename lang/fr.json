@@ -753,6 +753,8 @@
 	"SR5.ShopVendorRestock": "Réassort",
 	"SR5.ShopVendorRestockButton": "Réassortir",
 	"SR5.ShopVendorRestocked": "{name} : {count} article(s) ajouté(s), {stacks} pile(s) complétée(s).",
+	"SR5.ShopVendorRestockReading": "{name} : lecture des rayons pour le réassort… (jusqu'à une minute après un rechargement)",
+	"SR5.ShopVendorRestockBusy": "{name} : un réassort est déjà en cours, attendez qu'il se termine.",
 	"SR5.ShopVendorReviewAccept": "Accepter la vente",
 	"SR5.ShopVendorReviewRefuse": "Refuser",
 	"SR5.ShopVendorReviewText": "{seller} vend pour {price}¥. Vérifiez chaque objet contre sa source, puis acceptez, refusez ou corrigez le prix.",
