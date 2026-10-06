@@ -544,6 +544,23 @@ export class SR5_MiscellaneousHelpers {
     return available
   }
 
+  //A change of setting made in the roll dialog (firing mode, choke): one simple action, free with a wireless smartgun
+  //(SR5 p. 166, 182, 427, 435). It joins the actions of the roll, spent when the roll is made, and leaves the list
+  //when the setting goes back to the saved one: closing the dialog without rolling spends nothing
+  static setChangeAction(actions, source, changed, free){
+    actions = SR5_MiscellaneousHelpers.removeActions(actions ?? [], source)
+    if (!changed) return actions
+    return SR5_MiscellaneousHelpers.addActions(actions, {
+      type: free ? "free" : "simple", value: 1, source
+    })
+  }
+
+  //A change of setting spent as a simple action is a simple action that does not fire: it ends the progressive
+  //recoil before the shot of the same roll (SR5 p. 178). Free with a smartgun, it does not
+  static changeEndsRecoil(actions){
+    return !!actions?.some(a => (a.source === "changeFiringMode" || a.source === "changeChokeSettings") && a.type !== "free")
+  }
+
   //Remove an action from array
   static removeActions(actions, actionToRemove){
     if (!actions.length) return actions

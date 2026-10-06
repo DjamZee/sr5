@@ -138,6 +138,13 @@ export default class SR5_RollDialog {
     }
   }
 
+  //SR5 p. 427, 435: a wireless smartgun with a smartlink changes the firing mode or the choke as a free action
+  static changeIsFree(weapon, actor){
+    return !!(weapon?.system?.isWireless &&
+      weapon.system.accessory?.find(a => a.name === "smartgunSystemInternal" || a.name === "smartgunSystemExternal") &&
+      actor?.system?.specialProperties?.smartlink?.value > 0)
+  }
+
   // SR5 p. 170: an interruption action can only be taken if the initiative score is higher than its cost
   static hasInitiativeForInterruption(actor, cost){
     if (!game.combat || !(cost > 0)) return true
@@ -178,7 +185,7 @@ export default class SR5_RollDialog {
 
     // SR5 p. 180: single-shot (SS) and suppressive fire (SF) weapons neither build nor suffer progressive recoil
     let noRecoil = dialogData.combat.firingMode.selected === "SS" || dialogData.combat.firingMode.selected === "SF" || dialogData.combat.firingMode.selected === "FN"
-    let cumulativeRecoil = noRecoil ? 0 : dialogData.combat.recoil.cumulative
+    let cumulativeRecoil = noRecoil || SR5_MiscellaneousHelpers.changeEndsRecoil(dialogData.combat.actions) ? 0 : dialogData.combat.recoil.cumulative
     if (noRecoil) firingModeValue = 0
     else firingModeValue = SR5_ConverterHelpers.firingModeToBullet(dialogData.combat.firingMode.selected)
     html.querySelectorAll(".hideBulletsRecoil").forEach(el => el.style.display = noRecoil ? 'none' : '')
@@ -1073,7 +1080,7 @@ export default class SR5_RollDialog {
       actor = SR5_EntityHelpers.getRealActorFromID(dialogData.owner.actorId),
       label = game.i18n.localize(SR5.dicePoolModTypes[modifierName]),
       position = this.dialog.position,
-      chokeLimitModify, chokeLimitModified, weapon, changeCost
+      chokeLimitModify, chokeLimitModified, weapon
 
     position.height = "auto"
 
@@ -1157,27 +1164,10 @@ export default class SR5_RollDialog {
             dialogData.combat.choke.limit = chokeLimitModify
           }
           //actions
+          //Spent with the roll, not here (M3 D2): closing the dialog without firing costs nothing
           weapon = await fromUuid(dialogData.owner.itemUuid)
-          if (SR5_ConverterHelpers.chokeToCode(weapon.system.choke) !== dialogData.combat.choke.selected && !dialogData.combat.choke.actionSpent){
-            action = [{
-              type: "simple", value: 1, source: "changeChokeSettings"
-            }]
-            if (weapon.system.isWireless && (weapon.system.accessory.find(a => a.name === "smartgunSystemInternal" || a.name === "smartgunSystemExternal")) && (actor.system.specialProperties.smartlink.value > 0)) action = [{
-              type: "free", value: 1, source: "changeChokeSettings"
-            }]
-            SR5Combat.changeActionInCombat(dialogData.owner.actorId, action)
-            dialogData.combat.choke.actionSpent = true
-          } else if (SR5_ConverterHelpers.chokeToCode(weapon.system.choke) === dialogData.combat.choke.selected && dialogData.combat.choke.actionSpent){
-            action = [{
-              type: "simple", value: -1, source: "changeChokeSettings"
-            }]
-            if (weapon.system.isWireless && (weapon.system.accessory.find(a => a.name === "smartgunSystemInternal" || a.name === "smartgunSystemExternal")) && (actor.system.specialProperties.smartlink.value > 0)) action = [{
-              type: "free", value: -1, source: "changeChokeSettings"
-            }]
-            SR5Combat.changeActionInCombat(dialogData.owner.actorId, action)
-            dialogData.combat.choke.actionSpent = false
-          }
-
+          dialogData.combat.actions = SR5_MiscellaneousHelpers.setChangeAction(dialogData.combat.actions, "changeChokeSettings",
+            SR5_ConverterHelpers.chokeToCode(weapon.system.choke) !== dialogData.combat.choke.selected, SR5_RollDialog.changeIsFree(weapon, actor))
           break
         case "firingMode":
           dialogData.combat.firingMode.selected = ev.target.value
@@ -1186,33 +1176,18 @@ export default class SR5_RollDialog {
             const bullsEyeWeapon = await fromUuid(dialogData.owner.itemUuid)
             dialogData.combat.armorPenetration = SR5_CalledShotHelpers.bullsEyeArmorPenetration(dialogData.combat.armorPenetrationBeforeCalledShot, bullsEyeWeapon?.system.armorPenetration.base ?? 0, ev.target.value)
           }
+          //Spent with the roll, not here (M2-2): closing the dialog without firing costs nothing, reopening it does
+          //not spend twice, and with no initiative left the roll warns as for any action (M2-3, SR5 p. 162 and 164).
+          //Set before the recoil: a simple action spent on the change ends the progressive recoil (SR5 p. 178)
+          weapon = await fromUuid(dialogData.owner.itemUuid)
+          dialogData.combat.actions = SR5_MiscellaneousHelpers.setChangeAction(dialogData.combat.actions, "changeFiringMode",
+            SR5_ConverterHelpers.firingModeChangeCost(weapon.system.firingMode, dialogData.combat.firingMode.selected, false) > 0,
+            SR5_RollDialog.changeIsFree(weapon, actor))
           value = this.calculRecoil(html)
           action = SR5_ConverterHelpers.firingModeToAction(ev.target.value)
           dialogData.combat.actions = SR5_MiscellaneousHelpers.addActions(dialogData.combat.actions, action)
           modifierName = "recoil"
           label = game.i18n.localize(SR5.dicePoolModTypes[modifierName])
-          //actions
-          weapon = await fromUuid(dialogData.owner.itemUuid)
-          changeCost = SR5_ConverterHelpers.firingModeChangeCost(weapon.system.firingMode, dialogData.combat.firingMode.selected, dialogData.combat.firingMode.actionSpent)
-          if (changeCost > 0){
-            action = [{
-              type: "simple", value: 1, source: "changeFiringMode"
-            }]
-            if (weapon.system.isWireless && (weapon.system.accessory.find(a => a.name === "smartgunSystemInternal" || a.name === "smartgunSystemExternal")) && (actor.system.specialProperties.smartlink.value > 0)) action = [{
-              type: "free", value: 1, source: "changeFiringMode"
-            }]
-            SR5Combat.changeActionInCombat(dialogData.owner.actorId, action)
-            dialogData.combat.firingMode.actionSpent = true
-          } else if (changeCost < 0){
-            action = [{
-              type: "simple", value: -1, source: "changeFiringMode"
-            }]
-            if (weapon.system.isWireless && (weapon.system.accessory.find(a => a.name === "smartgunSystemInternal" || a.name === "smartgunSystemExternal")) && (actor.system.specialProperties.smartlink.value > 0)) action = [{
-              type: "free", value: -1, source: "changeFiringMode"
-            }]
-            SR5Combat.changeActionInCombat(dialogData.owner.actorId, action)
-            dialogData.combat.firingMode.actionSpent = false
-          }
           break
         case "matrixActionType": {
           // Kill Code p. 43: I Am the Firewall is a Complex action or an Interruption action (-5 Initiative)

@@ -36,6 +36,9 @@ import {
   SR5_CombatHelpers
 } from "./roll-helpers/combat.js"
 import {
+  SR5_MiscellaneousHelpers
+} from "./roll-helpers/miscellaneous.js"
+import {
   SR5_SocketHandler
 } from "../socket.js"
 import {
@@ -221,7 +224,8 @@ export class SR5_RollTest {
     // Outside combat there are no action phases to carry recoil over: each shot stands alone
     if (dialogData.combat.ammo.fired > 0){
       if (buildsProgressiveRecoil(dialogData.combat.firingMode.selected) && isRecoilCarriedOver(actor)){
-        let actualRecoil = actor.getFlag("sr5", "cumulativeRecoil") || 0
+        //A change of firing mode or choke spent with this roll ended the earlier recoil (SR5 p. 178)
+        let actualRecoil = SR5_MiscellaneousHelpers.changeEndsRecoil(dialogData.combat.actions) ? 0 : (actor.getFlag("sr5", "cumulativeRecoil") || 0)
         actualRecoil += dialogData.combat.ammo.fired
         await actor.setFlag("sr5", "cumulativeRecoil", actualRecoil)
       }
