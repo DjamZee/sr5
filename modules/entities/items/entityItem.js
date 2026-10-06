@@ -180,7 +180,8 @@ export class SR5Item extends Item {
         if (Object.keys(itemData.itemEffects).length) SR5_UtilityItem.applyItemEffects(item)
         SR5_UtilityItem._handleItemConcealment(itemData)
         SR5_UtilityItem._handleMatrixMonitor(item)
-        if ((itemData.conditionMonitors.matrix.actual.value >= itemData.conditionMonitors.matrix.value) && (itemData.type !== "baseDevice")) itemData.isActive = false
+        //A head case's monitor is sized by its owner's Nanite Volume, unknown here (monad-matrix.js): the actor decides
+        if ((itemData.conditionMonitors.matrix.actual.value >= itemData.conditionMonitors.matrix.value) && (itemData.type !== "baseDevice") && (itemData.type !== "headcase")) itemData.isActive = false
         SR5_EntityHelpers.GenerateMonitorBoxes(itemData, 'matrix')
         SR5_UtilityItem._handlePan(item)
         break

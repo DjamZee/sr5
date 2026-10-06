@@ -178,6 +178,13 @@ export class sr5ActorGruntDataModel extends foundry.abstract.TypeDataModel {
             initial: 0
           }),
         }),
+        // Core monitor of a Monad of the original strain (Dark Terrors p. 88), removed from every other grunt
+        core: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema(),
+          actual: new fields.SchemaField({
+            ...sr5ModsPartialModel.defineSchema()
+          }),
+        }),
         edge: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema(),
           actual: new fields.SchemaField({

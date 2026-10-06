@@ -420,6 +420,7 @@ export const preloadHandlebarsTemplates = async function () {
 				
     //Device
     "systems/sr5/templates/items/_partial/editable/device/type-edit.hbs",
+    "systems/sr5/templates/items/_partial/editable/device/strain-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/device/programMax-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/device/attributesCollection-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/device/commlinkModule-edit.hbs",

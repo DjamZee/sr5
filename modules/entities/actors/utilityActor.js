@@ -35,6 +35,9 @@ import {
   limitAttributeValue
 } from "./poolOnlyAttribute.js"
 import {
+  isOriginalStrainMonad, originalStrainDevice, activeHeadcase, naniteVolume, matrixEntityConcentration, monitorSize, corePenalty
+} from "../../system/monad-matrix.js"
+import {
   situationalValue, isRollTestsTarget, ROLL_TESTS_PREFIX, SITUATIONAL_PREFIX, attributeRedirect, situationalReadable,
   situationalMovement, movementEffectKey, movementEffectOn
 } from "../../rolls/roll-helpers/situational.js"
@@ -841,6 +844,20 @@ export class SR5_CharacterUtility extends Actor {
       SR5_EntityHelpers.updateValue(actorData.penalties.condition.actual)
       //A wound modifier reduced by an effect (trauma damper, Chrome Flesh p. 123) never turns into a bonus
       if (actorData.penalties.condition.actual.value > 0) actorData.penalties.condition.actual.value = 0
+    }
+
+    // Core damage of a Monad of the original strain gives wound modifiers, as for an AI (Data Trails p. 161,
+    // Dark Terrors p. 88; arbitrage de DjamZ, 06/10). Same step and box reduction as the other wounds
+    if (actorData.conditionMonitors?.core) {
+      const condition = actorData.penalties.condition
+      // A grunt's single monitor sets its step; a character's is the one of its Physical monitor
+      const scale = actorData.conditionMonitors.physical ? actorData.penalties.physical : condition
+      const coreMod = corePenalty(actorData.conditionMonitors.core.actual.value, scale.step?.value, scale.boxReduction?.value)
+      if (coreMod) {
+        SR5_EntityHelpers.updateModifier(condition.actual, game.i18n.localize("SR5.CoreMonitor"), "penaltyCore", coreMod)
+        SR5_EntityHelpers.updateValue(condition.actual)
+        if (condition.actual.value > 0) condition.actual.value = 0
+      }
     }
 
     if (actor.type === "actorDrone") {
@@ -1968,6 +1985,19 @@ export class SR5_CharacterUtility extends Actor {
         SR5_EntityHelpers.updateStatusBars(actor, key)
       }
     }
+
+    // Core monitor of a Monad of the original strain (Dark Terrors p. 88): 8 + MEC / 2, beside the host's own monitors
+    if (conditionMonitors.core) {
+      if (isOriginalStrainMonad(actor)) {
+        conditionMonitors.core.base = monitorSize(matrixEntityConcentration(actor))
+        SR5_EntityHelpers.updateValue(conditionMonitors.core, 1)
+        SR5_EntityHelpers.updateValue(conditionMonitors.core.actual, 0)
+        if (conditionMonitors.core.actual.value > conditionMonitors.core.value) {
+          conditionMonitors.core.actual.base = conditionMonitors.core.value
+          SR5_EntityHelpers.updateValue(conditionMonitors.core.actual, 0)
+        }
+      } else delete conditionMonitors.core
+    }
   }
 
   // Generate physical initiative
@@ -2110,6 +2140,13 @@ export class SR5_CharacterUtility extends Actor {
           if (actorData.matrix.deviceType) SR5_EntityHelpers.updateModifier(initMat, actorData.matrix.deviceName, "device", matrixAttributes.dataProcessing.value)
           else SR5_EntityHelpers.updateModifier(initMat, game.i18n.localize('SR5.Intuition'), "linkedAttribute", attributes.intuition.augmented.value)
           SR5_EntityHelpers.updateModifier(initMat.dice, game.i18n.localize('SR5.Depth'), "linkedAttribute", 4)
+          break
+        }
+        // Monad of the original strain (Dark Terrors p. 88): Nanite Volume + Intuition + 4D6, always in hot sim
+        if (isOriginalStrainMonad(actor)) {
+          SR5_EntityHelpers.updateModifier(initMat, game.i18n.localize('SR5.Intuition'), "linkedAttribute", attributes.intuition.augmented.value)
+          SR5_EntityHelpers.updateModifier(initMat, game.i18n.localize('SR5.NaniteVolume'), "linkedAttribute", naniteVolume(actor))
+          SR5_EntityHelpers.updateModifier(initMat.dice, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 4)
           break
         }
         switch (actorData.matrix.userMode) {
@@ -4167,9 +4204,23 @@ export class SR5_CharacterUtility extends Actor {
         matrix.deviceRating = actorData.specialAttributes.resonance.augmented.value
         break
       case "headcase": {
+        let nanite = actorData.specialAttributes.nanite.augmented.value
+        if (originalStrainDevice(actor) === item) {
+          // Original strain (Dark Terrors p. 88): an AI on its nanite swarm, a device rated by the Nanite Volume, whose
+          // four attributes are each the Nanite Volume (arbitrage de DjamZ, 06/10); no program slot; always in hot sim
+          for (let key of ["attack", "sleaze", "dataProcessing", "firewall"]) matrix.attributes[key].base = nanite
+          matrix.deviceRating = nanite
+          matrix.userMode = "hotsim"
+          // The swarm's matrix monitor: 8 + NV / 2, worked out here because the device knows no Nanite Volume
+          item.system.deviceRating = nanite
+          item.system.conditionMonitors.matrix.base = monitorSize(nanite)
+          SR5_EntityHelpers.updateValue(item.system.conditionMonitors.matrix, 0)
+          SR5_EntityHelpers.updateValue(item.system.conditionMonitors.matrix.actual, 0)
+          SR5_EntityHelpers.GenerateMonitorBoxes(item.system, 'matrix')
+          break
+        }
         // Head case matrix attributes (Lockdown p. 206): same attribute layout as a
         // living persona, with the full Nanite Volume added to each one.
-        let nanite = actorData.specialAttributes.nanite.augmented.value
         matrix.attributes.attack.base = attributes.charisma.augmented.value + nanite
         matrix.attributes.sleaze.base = attributes.intuition.augmented.value + nanite
         matrix.attributes.dataProcessing.base = attributes.logic.augmented.value + nanite
@@ -4513,6 +4564,9 @@ export class SR5_CharacterUtility extends Actor {
     SR5_EntityHelpers.updateModifier(matrixActions.eraseMark.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.formatDevice.defense, game.i18n.localize('SR5.Willpower'), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.formatDevice.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
+    // A Monad adds its Nanite Volume to resist Format Device (Dark Terrors p. 88); kept for the Lockdown strain too, as
+    // the sidebar p. 91 recommends (arbitrage de DjamZ, 06/10)
+    if (activeHeadcase(actor)) SR5_EntityHelpers.updateModifier(matrixActions.formatDevice.defense, game.i18n.localize('SR5.NaniteVolume'), "linkedAttribute", naniteVolume(actor))
     SR5_EntityHelpers.updateModifier(matrixActions.snoop.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
     SR5_EntityHelpers.updateModifier(matrixActions.snoop.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.hackOnTheFly.defense, game.i18n.localize('SR5.Intuition'), modifierTypeIntuition, intuitionValue)
@@ -4627,7 +4681,9 @@ export class SR5_CharacterUtility extends Actor {
         let personaLabel = game.i18n.localize(SR5.characterSpecialAttributes[personaKey])
         SR5_EntityHelpers.updateModifier(matrixResistances.fading, personaLabel, "linkedAttribute", specialAttributes[personaKey].augmented.value)
         SR5_EntityHelpers.updateModifier(matrixResistances.fading, game.i18n.localize('SR5.Willpower'), "linkedAttribute", attributes.willpower.augmented.value)
-        SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, personaLabel, "linkedAttribute", specialAttributes[personaKey].augmented.value)
+        // A Monad of the original strain resists with Willpower + Firewall, on both its monitors (Dark Terrors p. 88)
+        if (originalStrainDevice(actor) === item) SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, game.i18n.localize('SR5.Willpower'), "linkedAttribute", attributes.willpower.augmented.value)
+        else SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, personaLabel, "linkedAttribute", specialAttributes[personaKey].augmented.value)
         SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, game.i18n.localize('SR5.Firewall'), "matrixAttribute", matrixAttributes.firewall.value)
         SR5_EntityHelpers.updateModifier(matrixResistances.biofeedback, game.i18n.localize('SR5.Willpower'), "linkedAttribute", attributes.willpower.augmented.value)
         SR5_EntityHelpers.updateModifier(matrixResistances.biofeedback, game.i18n.localize('SR5.Firewall'), "matrixAttribute", matrixAttributes.firewall.value)

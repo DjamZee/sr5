@@ -583,9 +583,8 @@ export class SR5_RollMessage {
       }
       case "defenderDoMatrixDamage":
         if (originalActionActor.type === "actorPc" || originalActionActor.type === "actorGrunt"){
-          if (originalActionActor.items.find((item) => item.type === "itemDevice" && item.system.isActive && (item.system.type === "livingPersona" || item.system.type === "headcase"))){
-            originalActionActor.takeDamage(messageData)
-          } else await SR5_MatrixHelpers.applyDamageToDecK(originalActionActor, messageData, actor, true)
+          //A living persona or a Lockdown head case takes it as Stun there, the swarm of an original strain Monad on itself
+          await SR5_MatrixHelpers.applyDamageToDecK(originalActionActor, messageData, actor, true)
         } else originalActionActor.takeDamage(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break

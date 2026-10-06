@@ -1,0 +1,9 @@
+<li class="grid">
+    <div class="col-4">{{localize 'SR5.MonadStrain'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8">
+        <select name="system.strain" data-dtype="String"
+          data-helpTitle="{{localize 'SR5.MonadStrain'}}" data-helpMessage="{{localize 'SR5.HELP_MonadStrain'}}">
+            {{selectOptions lists.monadStrains selected=system.strain localize=true}}
+        </select>
+    </div>
+</li>

@@ -34,6 +34,9 @@ import {
 import {
   recountHits, consumedKey
 } from "./socket-guard.js"
+import {
+  originalStrainDevice
+} from "../../system/monad-matrix.js"
 
 export class SR5_MatrixHelpers {
   //Get time spent on a matrix search
@@ -80,7 +83,9 @@ export class SR5_MatrixHelpers {
     let newItem = foundry.utils.duplicate(targetItem)
 
     //targetActor.takeDamage(cardData);
-    if (targetItem.system.type === "livingPersona" || targetItem.system.type === "headcase" ){
+    //A Monad of the original strain takes matrix damage on its nanite swarm, as an AI on its device (Dark Terrors p. 88)
+    let swarm = !!targetItem.id && originalStrainDevice(targetActor)?.id === targetItem.id
+    if (!swarm && (targetItem.system.type === "livingPersona" || targetItem.system.type === "headcase")){
       return targetActor.takeDamage(cardData)
     }
         
@@ -95,7 +100,8 @@ export class SR5_MatrixHelpers {
     SR5_EntityHelpers.updateValue(newItem.system.conditionMonitors.matrix.actual, 0, monitorSize)
     //An AI shares the matrix monitor of the device it is loaded on, and is dissipated when it fills (Data Trails p. 161)
     let aiDissipated = false
-    if (newItem.system.conditionMonitors.matrix.actual.value >= monitorSize){
+    //A full swarm is no bricked deck: the Monad is not disconnected, the device stays as it is (Dark Terrors p. 88)
+    if (!swarm && newItem.system.conditionMonitors.matrix.actual.value >= monitorSize){
       //No dumpshock for an AI: it is dissipated instead (decided by DjamZ, 04/10)
       if (targetActor.system.activeSpecialAttribute === "depth") aiDissipated = true
       //A bricked device throws a character in VR out of the Matrix, with dumpshock resisted by Willpower alone (SR5 p. 229, 231)

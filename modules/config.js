@@ -2525,6 +2525,12 @@ SR5.deckTypes = {
   headcase                  : "SR5.DeckTypeHeadcase",
 }
 
+// Strain of a head case's CFD (Dark Terrors p. 91)
+SR5.monadStrains = {
+  lockdown                  : "SR5.MonadStrainLockdown",
+  darkTerrors               : "SR5.MonadStrainDarkTerrors",
+}
+
 // Type de modules
 SR5.deckModules = {
   standard                  : "SR5.ModuleStandardSim",

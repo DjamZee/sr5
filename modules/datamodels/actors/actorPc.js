@@ -176,6 +176,13 @@ export class sr5ActorPcDataModel extends foundry.abstract.TypeDataModel {
           }),
           boxes: new fields.ArrayField(new fields.ObjectField()),
         }),
+        // Core monitor of a Monad of the original strain (Dark Terrors p. 88), removed from every other character
+        core: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema(),
+          actual: new fields.SchemaField({
+            ...sr5ModsPartialModel.defineSchema()
+          }),
+        }),
         stun: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema(),
           actual: new fields.SchemaField({
