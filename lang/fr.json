@@ -844,6 +844,7 @@
 	"SR5.WARN_ButtonClaimed": "Un autre propriétaire de ce personnage utilise déjà ce bouton : attendez sa carte (si rien ne vient, réessayez dans une minute).",
 	"SR5.WARN_CapBallRoundByRound": "Percussion à poudre noire : en combat, cette arme se recharge balle par balle (3 actions complexes par balle).",
 	"SR5.INFO_CapBallStep": "Percussion à poudre noire : rechargement {done}/{total}. Si vous vous interrompez, il faut recommencer.",
+	"SR5.WARN_DroneWirelessOnGMOnly": "Seul le meneur de jeu rallume le sans-fil d'un drone coupé : personne ne peut le joindre sans fil pour le lui demander.",
 	"SR5.INFO_AmmoAlreadyFull": "L'arme est déjà pleine : rien à recharger.",
 	"SR5.INFO_SourceModifiersCleaned": "Migration SR5 terminée : modificateurs calculés retirés des données enregistrées (acteurs : {actors}, objets du monde : {items}, jetons non liés : {tokens}).",
 	"SR5.INFO_SourceModifiersRunning": "Migration SR5 en cours : nettoyage des modificateurs calculés enregistrés dans les acteurs. Cela peut prendre une minute ; ne fermez pas le monde.",

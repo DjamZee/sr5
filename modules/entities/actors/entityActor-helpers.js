@@ -1235,6 +1235,18 @@ export class SR5_ActorHelper {
   }
 
   /**
+   * Who may flip the wireless icon of a drone's sheet. Turning it off: anyone who holds the sheet (SR5 p. 424).
+   * Turning a switched-off drone back on is a GM shortcut (ruling of 2026-10-05): nobody can reach the drone
+   * wirelessly to ask it, so a player does not do it from her sheet (l. 845)
+   * @param {Boolean} isGM - whether the user is a GM
+   * @param {Boolean} turningOn - true when the wireless would be switched on
+   * @return {Boolean}
+   */
+  static droneWirelessToggleAllowed(isGM, turningOn){
+    return !!isGM || !turningOn
+  }
+
+  /**
    * The action a device's wireless switch costs. Turning it off is always a free action (SR5 p. 424).
    * Turning it on is free through a DNI (p. 165), simple otherwise (p. 167), when the world setting asks for it
    * @param {Boolean} turningOn - true when the wireless is switched on

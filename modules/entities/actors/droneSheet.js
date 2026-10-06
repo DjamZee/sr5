@@ -73,6 +73,7 @@ export class SR5DroneSheet extends ActorSheetSR5 {
     if (this._spendingWirelessAction) return
     const actor = this.actor
     const oldValue = actor.system.wirelessTurnedOn !== false
+    if (!SR5_ActorHelper.droneWirelessToggleAllowed(game.user?.isGM, !oldValue)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_DroneWirelessOnGMOnly"))
     const owner = SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId)
     const actions = [{
       type: SR5_ActorHelper.droneWirelessActionType(game.settings.get("sr5", "sr5WifiRequiresDNI"), owner, !oldValue),
