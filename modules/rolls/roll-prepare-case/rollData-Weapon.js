@@ -41,7 +41,7 @@ import {
   energyAuraApplies, LASER_TRAIT
 } from "../roll-helpers/weapon-attack-rules.js"
 import {
-  redDotSightWorks, scopeVision
+  redDotSightWorks, scopeVision, nonCumulativeAccessoryAccuracy
 } from "../../entities/items/weapon-accessory-rules.js"
 
 //Add info for weapon Roll
@@ -227,12 +227,11 @@ export default async function weapon(rollData, actor, item){
   if (itemData.category === "rangedWeapon") {
     const smartlink = actor.type !== "actorDrone" && !!actorData.specialProperties?.smartlink?.value
     //The sight's +1 Accuracy still competes with the other non-cumulative accessory bonuses (helpers.js updateModifier)
-    const accuracyAlready = Math.max(0, ...itemData.accuracy.modifiers.filter(m => m.nonCumulative && m.type === "weaponAccessory").map(m => m.value))
     rollData.combat.redDotSight = {
-      works: redDotSightWorks(itemData, smartlink), accuracyAlready
+      works: redDotSightWorks(itemData, smartlink), accuracyAlready: nonCumulativeAccessoryAccuracy(itemData)
     }
     rollData.combat.laser = {
-      isLaser: hasWeaponTrait(itemData, LASER_TRAIT), damageModify: 0
+      isLaser: hasWeaponTrait(itemData, LASER_TRAIT), damageModify: 0, visibility: rollData.combat.airVisibility ?? 0
     }
   }
 
@@ -432,6 +431,8 @@ async function handleTargetInfo(rollData, actor, item){
       return false
     }
     const environmentalColumns = SR5_CombatHelpers.environmentalColumns(SR5_CombatHelpers.environmentScene(), actor.system, false, areaEffect, false, weaponLight, weaponLightCap, weaponVision)
+    //A laser loses DV to the particles in the air, whatever the shooter sees through (Run & Gun p. 64)
+    rollData.combat.airVisibility = SR5_CombatHelpers.airVisibilityRow(SR5_CombatHelpers.environmentScene(), actor, areaEffect)
     if (environmentalColumns) {
       // Range is an environmental modifier (SR5 p. 176): the roll dialog weighs the range line against these
       rollData.combat.environmentalColumns = environmentalColumns

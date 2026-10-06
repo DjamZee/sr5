@@ -135,7 +135,7 @@ export default class SR5_RollDialog {
       this.updateLimitValue(html)
     }
     if (dialogData.combat.laser?.isLaser) {
-      dialogData.combat.laser.damageModify = laserDamageReduction(dialogData.target.range, dialogData.combat.environmentalColumns?.[0])
+      dialogData.combat.laser.damageModify = laserDamageReduction(dialogData.target.range, dialogData.combat.laser.visibility)
     }
   }
 

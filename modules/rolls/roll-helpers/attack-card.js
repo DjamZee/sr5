@@ -31,6 +31,9 @@ import {
 import {
   hasWeaponTrait
 } from "../../entities/items/weaponTraits.js"
+import {
+  redDotAttackBonus
+} from "../../entities/items/weapon-accessory-rules.js"
 
 const DAMAGE_TYPES = ["physical", "stun"]
 const ENGULF_EFFECTS = ["engulfWater", "engulfFire", "engulfAir", "engulfEarth"]
@@ -286,12 +289,12 @@ function poolWithEdge(roller, pool) {
 }
 
 /**
- * The Visibility row a laser's DV loses to (Run & Gun p. 64): the card's, never clearer than the scene the attack was
- * rolled on. A lower row raises the DV, so the card may claim a thicker air than the scene's, not a clearer one; a
- * smoke template is read on the card only.
+ * The Visibility row a laser's DV loses to (Run & Gun p. 64): the air's on the card (scene and smoke, before any vision,
+ * rollData-Weapon.js airVisibility), never clearer than the scene the attack was rolled on. A lower row raises the DV,
+ * so the card may claim a thicker air than the scene's, not a clearer one; a smoke template is read on the card only.
  */
 export function laserVisibility(chatData, scenes = globalThis.game?.scenes) {
-  const claimed = Number(chatData.combat?.environmentalColumns?.[0]) || 0
+  const claimed = Number(chatData.combat?.laser?.visibility) || 0
   const scene = chatData.target?.sceneId ? scenes?.get?.(chatData.target.sceneId) : null
   const sceneRow = Number(scene?.getFlag?.("sr5", "environModVisibility")) || 0
   return Math.max(claimed, sceneRow)
@@ -364,6 +367,13 @@ export async function vetAttackCard(chatData, {
     pool = item.system.weaponSkill?.dicePool
     //The limit of a weapon is its Accuracy, a grenade's the thrower's Physical limit (SR5 p. 182, rollData-Weapon.js)
     limit = item.system.category === "grenade" ? sheetValue(roller, "limits.physicalLimit.value") : Number(item.system.accuracy?.value) || 0
+    //Red dot sight (Street Lethal p. 49): its die and Accuracy follow the range, as the roll dialog adds them
+    if (family === "weapon" && item.system.category === "rangedWeapon") {
+      const hasSmartlink = roller.type !== "actorDrone" && !!system.specialProperties?.smartlink?.value
+      const sight = redDotAttackBonus(item.system, hasSmartlink, chatData.target?.range)
+      pool = (Number(pool) || 0) + sight.dice
+      limit += sight.accuracy
+    }
     vetted = {
       base: damage.base, value: damage.base, ap: damage.ap, type: damage.type, element: damage.element ?? "", source: damage.source,
     }

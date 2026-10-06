@@ -62,6 +62,22 @@ export class SR5_CombatHelpers {
   // Environmental rows an actor carries from templates standing on another scene than `sceneId`, by column.
   // The same rule as the prepared data (areaEffectScene.js): an effect with no template scene counts nowhere,
   // and is already left out of the prepared rows, so it is not subtracted here a second time.
+  //The Visibility row of the air between the shooter and the target, before any vision compensates it: the scene's,
+  //plus the smoke and fog of the templates the target and the shooter stand in. A laser's DV reads this one (Run &
+  //Gun p. 64: "les particules dans l'air"), not what the shooter sees through thermographic, ultrasound or astral sight.
+  static airVisibilityRow(scene, actor, areaEffect = null){
+    if (!scene) return 0
+    let row = (parseInt(scene.getFlag("sr5", "environModVisibility")) || 0) + (parseInt(areaEffect?.visibility) || 0)
+    for (const item of actor?.items ?? []){
+      if (item.type !== "itemEffect" || item.system?.type !== "areaEffect" || isAreaEffectOffScene(item, scene.id)) continue
+      for (const effect of Object.values(item.system.customEffects ?? {
+      })){
+        if (effect?.target === "system.itemsProperties.environmentalMod.visibility") row += parseInt(effect.value) || 0
+      }
+    }
+    return Math.min(Math.max(row, 0), 4)
+  }
+
   static areaEffectsOffScene(actor, sceneId){
     const offScene = {
     }

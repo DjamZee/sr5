@@ -134,6 +134,25 @@ export function redDotSightBonus(range, works = true) {
   }
 }
 
+/** The non-cumulative Accuracy bonus the weapon's other accessories already give: the red dot's competes with it */
+export function nonCumulativeAccessoryAccuracy(weaponData) {
+  return Math.max(0, ...(weaponData?.accuracy?.modifiers ?? []).filter(m => m.nonCumulative && m.type === "weaponAccessory").map(m => Number(m.value) || 0))
+}
+
+/**
+ * What a red dot sight adds to a ranged attack at this range: the die, and the Accuracy beyond the other
+ * non-cumulative bonuses. The roll dialog and the GM's check of the card (attack-card.js) both use it.
+ */
+export function redDotAttackBonus(weaponData, hasSmartlink, range) {
+  if (!redDotSightWorks(weaponData, hasSmartlink)) return {
+    accuracy: 0, dice: 0
+  }
+  const bonus = redDotSightBonus(range)
+  return {
+    dice: bonus.dice, accuracy: Math.max(0, bonus.accuracy - nonCumulativeAccessoryAccuracy(weaponData))
+  }
+}
+
 /**
  * Recoil compensation that does not stack (Run & Gun p. 71): within each group, only one accessory compensates; the same
  * system mounted twice does not double either. Bipod, foregrip, gyro mount, tripod and barrel weight are all mutually
