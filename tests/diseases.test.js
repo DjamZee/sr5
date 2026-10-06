@@ -5,7 +5,7 @@ import {
 const {
   afterInterval, profileFromToxin, newInfection, reexpose, testPower, testModifiers, penetrationModifier, protectionOf,
   applyResult, applyRecovery, currentEffects, effectsFor, dueEntries, openInfectionOf, applyDiseaseEffects,
-  addDiseaseApplyButton, activateDiseaseRequestListeners, checkDiseases, DISEASE_UNITS, hitsAboveDice, hitsCeiling, finalEffectDue, reachedZero
+  addDiseaseApplyButton, activateDiseaseRequestListeners, checkDiseases, DISEASE_UNITS, hitsAboveDice, hitsCeiling, hitsCap, finalEffectDue, reachedZero
 } = await import("../modules/system/diseases.js")
 
 const DAY = DISEASE_UNITS.day
@@ -242,9 +242,59 @@ describe("applying a test (Run Faster p. 111-112)", () => {
         }
       }
     })
-    expect(reachedZero(actor(0, 6))).toBe(true)
-    expect(reachedZero(actor(2, 0))).toBe(true)
-    expect(reachedZero(actor(2, 6))).toBe(false)
+    const mask = {
+      ...infect(redMask()), state: "active", residual: 2
+    }
+    const crypt = {
+      ...infect(crypto()), state: "active", residual: 2
+    }
+    expect(reachedZero(actor(0, 6), mask)).toBe(true)
+    expect(reachedZero(actor(2, 0), crypt)).toBe(true)
+    expect(reachedZero(actor(2, 6), mask)).toBe(false)
+  })
+
+  // Only what the disease lowers counts, and only while it lowers it (Red Mask, Bullets & Bandages p. 21: "if one of
+  // these attributes is reduced to zero"): Yolande, 06/10, saw the alert on a patient the disease did not touch there
+  it("an attribute or the Essence the disease does not lower is not its zero", () => {
+    const actor = (str, ess, magic) => ({
+      system: {
+        attributes: {
+          strength: {
+            augmented: {
+              value: str
+            }
+          }, logic: {
+            augmented: {
+              value: 3
+            }
+          }, willpower: {
+            augmented: {
+              value: 3
+            }
+          }
+        }, essence: {
+          value: ess
+        }, specialAttributes: {
+          magic: {
+            augmented: {
+              value: magic
+            }
+          }
+        }
+      }
+    })
+    const mask = {
+      ...infect(redMask()), state: "active", residual: 2
+    }
+    const crypt = {
+      ...infect(crypto()), state: "active", residual: 2
+    }
+    expect(reachedZero(actor(0, 6, 0), crypt)).toBe(false)
+    expect(reachedZero(actor(3, 0, 0), mask)).toBe(false)
+    expect(reachedZero(actor(3, 6, 0), crypt)).toBe(false)
+    expect(reachedZero(actor(0, 6, 0), {
+      ...mask, residual: 0
+    })).toBe(false)
   })
 
   it("goes on past the least number while some Power is left", () => {
@@ -568,6 +618,20 @@ describe("a player cannot move her disease on (the two flaws of the week)", () =
       }
     })).toBe(8)
     expect(hitsCeiling(5, actorData, {
+      edge: {
+      }
+    })).toBe(5)
+  })
+
+  // Push the limit explodes the sixes (VF p. 58), so a true roll may pass pool + Edge: past it the GM is warned, and
+  // he rules, nothing caps his figure (Élise, 06/10, after Yolande's R1). Without Edge the pool still caps it
+  it("caps the hits by the pool, but not once the roll pushed the limit", () => {
+    expect(hitsCap(5, {
+      edge: {
+        hasUsedPushTheLimit: true
+      }
+    })).toBe(Infinity)
+    expect(hitsCap(5, {
       edge: {
       }
     })).toBe(5)

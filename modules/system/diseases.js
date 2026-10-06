@@ -165,12 +165,15 @@ export function finalEffectDue(entry){
   return entry?.state === "active" && entry.testsDone >= entry.profile.minTests && entry.residual > 0
 }
 
-// Strength, Logic, Willpower or Essence down to 0 on the prepared actor
-export function reachedZero(actor){
+// What this disease lowers, down to 0 on the prepared actor: Strength, Logic and Willpower for a disease that reduces
+// them, the Essence for one that takes it, and only while it does (Red Mask, Bullets & Bandages p. 21: "if one of
+// these attributes is reduced to zero"). An attribute the disease leaves alone is not its zero (Yolande, 06/10)
+export function reachedZero(actor, entry){
   const s = actor?.system
   if (!s) return false
-  const values = ["strength", "logic", "willpower"].map(k => s.attributes?.[k]?.augmented?.value)
-  if (s.essence) values.push(s.essence.value)
+  const effects = currentEffects(entry)
+  const values = effects.attributes ? ["strength", "logic", "willpower"].map(k => s.attributes?.[k]?.augmented?.value) : []
+  if (effects.essence && s.essence) values.push(s.essence.value)
   return values.some(v => typeof v === "number" && v <= 0)
 }
 
@@ -183,10 +186,17 @@ export function diseasePool(actorData, entry){
 }
 
 // The most hits the GM believes: the pool he worked out, plus the Edge of the sheet when the roll pushed the limit
-// (SR5 p. 56). Only whether it pushed is read on the card, and claiming it never gives more than the sheet's Edge
+// (SR5 p. 56 VO, p. 58 VF « Repousser les limites »). Only whether it pushed is read on the card, and claiming it never
+// gives more than the sheet's Edge. Past this figure the GM is warned
 export function hitsCeiling(pool, actorData, card){
   const edge = card?.edge?.hasUsedPushTheLimit ? Math.max(0, Number(actorData?.specialAttributes?.edge?.augmented?.value) || 0) : 0
   return Math.max(0, Number(pool) || 0) + edge
+}
+
+// The most hits the GM may keep: the pool, unless the roll pushed the limit, whose sixes explode (SR5 p. 56 VO, p. 58
+// VF), so a true roll can pass pool + Edge: the GM is warned, and his figure is kept (Élise, 06/10)
+export function hitsCap(pool, card){
+  return card?.edge?.hasUsedPushTheLimit ? Infinity : Math.max(0, Number(pool) || 0)
 }
 
 // A card claiming more hits than it rolled dice was written by hand
@@ -552,8 +562,10 @@ async function confirmAndApply(message, button, ref, entry){
   //The card is the player's: the pool beside the hits is the one the GM works out from the character
   const actor = await fromUuid(entry.actorUuid)
   if (!actor) return
-  //Pushing the limit rolled the Edge of the sheet besides the pool (SR5 p. 56)
-  const pool = hitsCeiling(diseasePool(actor.system, entry), actor.system, message.flags?.sr5data)
+  //Pushing the limit rolled the Edge of the sheet besides the pool (SR5 p. 56 VO, p. 58 VF)
+  const base = diseasePool(actor.system, entry)
+  const pool = hitsCeiling(base, actor.system, message.flags?.sr5data)
+  const cap = hitsCap(base, message.flags?.sr5data)
   const alert = hitsAboveDice(suggested, pool) ? `<p class="sr5-disease-alert" style="color: #c00; font-weight: bold;">${game.i18n.localize("SR5.DISEASE_HitsAbovePool")}</p>` : ""
   const hits = await foundry.applications.api.DialogV2.prompt({
     window: {
@@ -565,7 +577,7 @@ async function confirmAndApply(message, button, ref, entry){
       <p>${game.i18n.format("SR5.DISEASE_CardPool", {
     pool, hits: suggested
   })}</p>${alert}
-      <div class="form-group"><label>${game.i18n.localize("SR5.DISEASE_Hits")}</label><input type="number" name="hits" value="${alert ? "" : Math.min(suggested, pool)}" min="0" max="${pool}"></div>`,
+      <div class="form-group"><label>${game.i18n.localize("SR5.DISEASE_Hits")}</label><input type="number" name="hits" value="${alert ? "" : Math.min(suggested, cap)}" min="0"${cap === Infinity ? "" : ` max="${cap}"`}></div>`,
     ok: {
       callback: (event, b) => Number(b.form.elements.hits.value) || 0
     },
@@ -577,7 +589,7 @@ async function confirmAndApply(message, button, ref, entry){
   if (!fresh?.request || fresh.request.token !== ref.token || button.disabled) return button.remove()
   button.disabled = true
   const testedPower = fresh.request.power
-  const applied = Math.min(Math.max(0, hits), pool)
+  const applied = Math.min(Math.max(0, hits), cap)
   const next = applyResult(fresh, applied, testedPower, calendarStartYear())
   await writeEntry(next)
   button.remove()
@@ -603,7 +615,7 @@ async function postOutcome(entry, hits, power){
   }))
   if (finalEffectDue(entry) && p.finalEffect) lines.push(`${game.i18n.localize("SR5.DISEASE_FinalEffect")} ${escape(p.finalEffect)}`)
   //An attribute or the Essence down to 0, at any test: death or incapacity (B&P p. 21), for the GM to rule
-  if (entry.state === "active" && reachedZero(actor)) lines.push(`<strong>${game.i18n.localize("SR5.DISEASE_ZeroReached")}</strong>${p.finalEffect && !finalEffectDue(entry) ? ` ${escape(p.finalEffect)}` : ""}`)
+  if (entry.state === "active" && reachedZero(actor, entry)) lines.push(`<strong>${game.i18n.localize("SR5.DISEASE_ZeroReached")}</strong>${p.finalEffect && !finalEffectDue(entry) ? ` ${escape(p.finalEffect)}` : ""}`)
   if (p.special) lines.push(escape(p.special))
   await ChatMessage.create({
     content: `<div class="sr5-disease-card"><h3>${game.i18n.localize("SR5.DISEASE_Title")}</h3>${lines.map(l => `<p>${l}</p>`).join("")}</div>`,

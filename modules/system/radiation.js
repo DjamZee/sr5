@@ -13,7 +13,7 @@ import {
   cardFromGM
 } from "./card-rows.js"
 import {
-  hitsAboveDice, hitsCeiling
+  hitsAboveDice, hitsCeiling, hitsCap
 } from "./diseases.js"
 
 export const RADIATION_LEDGER = "sr5RadiationLedger"
@@ -340,10 +340,24 @@ async function applyFromCard(message, button){
   const ref = message.flags?.sr5data?.radiation
   const entry = radiationLedger().exposures?.[ref?.exposureId]
   if (!entry?.request || entry.request.token !== ref.token) return button.remove()
+  //One window at a time: a double click opened two (Yolande, 06/10)
+  if (button.dataset?.pending) return
+  if (button.dataset) button.dataset.pending = "1"
+  try {
+    await confirmAndApply(message, button, ref, entry)
+  } finally {
+    if (button.dataset) delete button.dataset.pending
+  }
+}
+
+async function confirmAndApply(message, button, ref, entry){
   const actor = await fromUuid(entry.actorUuid)
   if (!actor) return
-  //Pushing the limit rolled the Edge of the sheet besides the pool (SR5 p. 56)
-  const pool = hitsCeiling(radiationPool(actor.system), actor.system, message.flags?.sr5data)
+  //Pushing the limit rolled the Edge of the sheet besides the pool (SR5 p. 56 VO, p. 58 VF); its sixes explode, so
+  //past pool + Edge the GM is warned and his figure is kept
+  const base = radiationPool(actor.system)
+  const pool = hitsCeiling(base, actor.system, message.flags?.sr5data)
+  const cap = hitsCap(base, message.flags?.sr5data)
   const suggested = Math.max(0, Number(message.flags?.sr5data?.roll?.hits) || 0)
   const modified = hitsAboveDice(suggested, pool)
   const alert = modified ? `<p class="sr5-disease-alert" style="color: #c00; font-weight: bold;">${game.i18n.localize("SR5.DISEASE_HitsAbovePool")}</p>` : ""
@@ -358,7 +372,7 @@ async function applyFromCard(message, button){
       <p>${game.i18n.format("SR5.DISEASE_CardPool", {
     pool, hits: suggested 
   })}</p>${alert}
-      <div class="form-group"><label>${game.i18n.localize("SR5.DISEASE_Hits")}</label><input type="number" name="hits" value="${modified ? "" : Math.min(suggested, pool)}" min="0" max="${pool}"></div>`,
+      <div class="form-group"><label>${game.i18n.localize("SR5.DISEASE_Hits")}</label><input type="number" name="hits" value="${modified ? "" : Math.min(suggested, cap)}" min="0"${cap === Infinity ? "" : ` max="${cap}"`}></div>`,
     ok: {
       callback: (event, b) => Number(b.form.elements.hits.value) || 0
     },
@@ -369,7 +383,7 @@ async function applyFromCard(message, button){
   const fresh = radiationLedger().exposures?.[ref.exposureId]
   if (!fresh?.request || fresh.request.token !== ref.token || button.disabled) return button.remove()
   button.disabled = true
-  const outcome = testOutcome(fresh.level, fresh.request.power, Math.min(Math.max(0, hits), pool))
+  const outcome = testOutcome(fresh.level, fresh.request.power, Math.min(Math.max(0, hits), cap))
   await writeEntry({
     ...fresh, testsDone: fresh.testsDone + 1, notified: false, request: null
   })
@@ -379,7 +393,7 @@ async function applyFromCard(message, button){
   if (outcome.remaining > 0) await applyOutcome(actor, outcome)
   await ChatMessage.create({
     content: `<div class="sr5-radiation-card"><h3>${game.i18n.localize("SR5.RADIATION_Title")}</h3><p>${game.i18n.format(outcome.remaining > 0 ? (outcome.stun ? (outcome.stun === 1 ? "SR5.RADIATION_OutcomeStunOne" : "SR5.RADIATION_OutcomeStun") : "SR5.RADIATION_OutcomeNausea") : "SR5.RADIATION_OutcomeNone", {
-      actor: escape(fresh.actorName), power: fresh.request.power, hits: Math.min(Math.max(0, hits), pool), remaining: outcome.remaining
+      actor: escape(fresh.actorName), power: fresh.request.power, hits: Math.min(Math.max(0, hits), cap), remaining: outcome.remaining
     })}</p></div>`,
     whisper: [...playerOwners(actor), ...gmIds()],
   })
