@@ -11,7 +11,7 @@ import {
   SR5_EntityHelpers 
 } from "../helpers.js"
 import {
-  ownsTarget
+  ownsTarget, bounded, consumedKey
 } from "../../rolls/roll-helpers/socket-guard.js"
 import {
   isStorable, isStoredAway 
@@ -1680,7 +1680,8 @@ export class SR5_ActorHelper {
 
   //Manage Healing
   static async heal(targetActorID, data){
-    let damageToRemove = data.roll.netHits,
+    //A heal never deals damage: a negative count filled the monitor (Quitterie, measured from a player's console)
+    let damageToRemove = Math.max(0, Math.floor(Number(data.roll?.netHits)) || 0),
       damageType = data.test.typeSub,
       targetActor = SR5_EntityHelpers.getRealActorFromID(targetActorID),
       actorData = foundry.utils.deepClone(targetActor)
@@ -1765,8 +1766,62 @@ export class SR5_ActorHelper {
     await patient.applyExternalEffect(data, "customEffects")
   }
 
-  static async _socketHeal(message){
-    await SR5_ActorHelper.heal(message.data.targetActor, message.data.healData)
+  //First aid on a patient the player does not own (SR5 p. 207). The healData sent healed anyone of any number of
+  //boxes, as many times as asked (Romane): the GM reads the card from the chat log, counts its hits again within
+  //the first aid pool, bounds the boxes by them, asks to confirm, and spends the card once per patient
+  static async _socketHeal(message, senderId){
+    const data = message?.data ?? {
+    }
+    if (!isActiveGM()) return
+    const sender = game.users?.get(senderId)
+    const patient = SR5_EntityHelpers.getRealActorFromID(data.targetActor)
+    if (!sender || !patient) return
+    if (SR5_ActorHelper.socketOwns(senderId, patient)) return SR5_ActorHelper.heal(data.targetActor, data.healData)
+    const healData = await SR5_ActorHelper.firstAidByCard(data, patient, sender)
+    if (!healData) return SR5_ActorHelper.refuseSocket("heal", senderId, data)
+    await SR5_ActorHelper.heal(data.targetActor, healData)
+  }
+
+  /**
+   * The healing a first aid card stands for, as the GM works it out again: null when the card does not back it.
+   * @param {object} data the request: messageId, healData (the monitor asked, the boxes claimed)
+   * @param {Actor} patient
+   * @param {User} sender
+   */
+  static async firstAidByCard(data, patient, sender){
+    const {
+      SR5_MiscellaneousHelpers
+    } = await import("../../rolls/roll-helpers/miscellaneous.js")
+    const {
+      patientMonitors, firstAidHealedBoxes
+    } = await import("../../rolls/roll-helpers/cardRoller.js")
+    const {
+      stabilizedTreatmentBoxes
+    } = await import("../../system/bb-healing-rules.js")
+    const card = SR5_MiscellaneousHelpers.cardOf(data.messageId)
+    if (!card || card.data.test?.typeSub !== "firstAid" || !ownsTarget(sender, card.roller)) return null
+    const type = data.healData?.test?.typeSub
+    if (!patientMonitors(patient).includes(type)) return null
+    //A card whose hits are more than its dice show was changed after the roll
+    const hits = SR5_MiscellaneousHelpers.hitsOf(card, "skills.firstAid.test.dicePool")
+    if (hits === null || (Number(card.data.roll?.hits) || 0) > hits) return null
+    const rating = Number(card.roller.system?.skills?.firstAid?.rating?.value) || 0
+    //A medkit has a rating of 6 at most (SR5 p. 450)
+    const medkit = Math.min(Number(card.data.test?.bbMedkitRating) || 0, 6)
+    const most = Math.max(firstAidHealedBoxes(hits, 2, rating, false), stabilizedTreatmentBoxes(hits, 2, rating, medkit, false))
+    const boxes = bounded(data.healData?.roll?.netHits, Math.min(most, Number(card.data.roll?.netHits) || 0))
+    if (boxes <= 0) return null
+    const granted = await SR5_MiscellaneousHelpers.grant({
+      card, key: consumedKey(card.id, "firstAid", patient.uuid), label: "firstAid", target: patient.name, value: boxes,
+    }, sender)
+    if (!granted) return null
+    return {
+      test: {
+        typeSub: type
+      }, roll: {
+        netHits: boxes
+      }
+    }
   }
 
   //Manage Regeneration

@@ -342,9 +342,11 @@ export class SR5_RollMessage {
         }))
         let healedID = (patient.isToken ? patient.token.id : patient.id)
         if (healLocally) await SR5_ActorHelper.heal(healedID, healData)
+        //The card goes with it: the GM reads it again from the chat log (security pass, Olympe)
         else await SR5_SocketHandler.emitForGM("heal", {
           targetActor: healedID,
           healData: healData,
+          messageId,
         })
         //Bullets & Bandages p. 18-19: one use of the medkit supplies per patient treated
         await useMedkitSupplies(messageData.test.bbMedkitUuid)
