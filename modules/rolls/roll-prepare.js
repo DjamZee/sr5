@@ -280,6 +280,8 @@ export class SR5_PrepareRollTest {
       case "skillDicePool":
         if (game.user.targets.size) rollData = await SR5_PrepareRollHelper.getTargetData(rollData)
         rollData = await SR5_GetRollData.skill(rollData, rollType, rollKey, actor, chatData)
+        // A refused roll (astral combat out of astral perception) has already said why (M5 M1)
+        if (!rollData) return
         // Faction Reputation moves the default NPC attitude (Cutting Aces p. 160); the list stays free
         if (rollData.target?.actorId && SOCIAL_FACTION_SKILLS.includes(rollData.test?.typeSub)){
           const faction = SR5FactionRegistry.attitudeFor(actor.id, SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId, rollData.actorUuids))
