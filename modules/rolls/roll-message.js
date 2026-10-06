@@ -952,7 +952,7 @@ export class SR5_RollMessage {
           //deleted just below); a following phase reads it there (Victoire's review)
           const engulf = await SR5_ActorHelper.engulfDamageOf(await SR5_ActorHelper.keepEngulfFirstPhase(messageData))
           let label = `${game.i18n.localize("SR5.TakeOnDamageShort")} ${game.i18n.localize("SR5.DamageValueShort")}${game.i18n.localize("SR5.Colons")} ${engulf ? `${engulf.value}${game.i18n.localize(SR5.damageTypesShort[engulf.type])}` : "?"}`
-          if (engulf?.armorPenetration) label += ` / ${game.i18n.localize("SR5.ArmorPenetrationShort")}${game.i18n.localize("SR5.Colons")} ${engulf.armorPenetration}`
+          //No AP shown: armor does not protect against an air engulf, its −Magic only weighs on gas masks (SR5 p. 399, 410)
           messageData.chatCard.buttons.resistanceCard = SR5_RollMessage.generateChatButton("nonOpposedTest","resistanceCard",label)
           messageData.damage.resistanceType = "physicalDamage"
           let oldMessage = game.messages.get(messageData.previousMessage.messageId)

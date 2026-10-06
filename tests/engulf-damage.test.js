@@ -52,6 +52,8 @@ describe('engulf resistance wiring', () => {
     const block = message.slice(message.indexOf('if (messageData.damage.toxin.type === "airEngulf"){'))
     expect(block.slice(0, 900)).toMatch(/engulfDamageOf\(await SR5_ActorHelper\.keepEngulfFirstPhase\(messageData\)\)/)
     expect(block.slice(0, 900)).not.toMatch(/messageData\.damage\.base/)
+    //Remark 2 of Victoire: no AP on the button, armor does not count
+    expect(block.slice(0, block.indexOf('generateChatButton("nonOpposedTest","resistanceCard"'))).not.toMatch(/ArmorPenetrationShort/)
   })
 
   // Victoire's review, remark 1: the previous phase's "Take on" button goes when the next phase is rolled
