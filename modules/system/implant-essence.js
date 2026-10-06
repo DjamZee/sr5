@@ -312,10 +312,32 @@ function isInstalled(data) {
 }
 
 /**
+ * Ossature renforcée (SR5 p. 458): "un seul type pouvant être installé à la fois". Told by what it does, in every
+ * language and in both compendiums (the system's and the Megapack's, variants (NE) included): the only cyberware
+ * that gives Armor and changes the unarmed damage. Bone density, which also changes it, is bioware.
+ */
+export function isBoneLacing(data) {
+  if (data?.type !== "itemAugmentation" || data.system?.isAccessory || implantFamily(data.system?.type) !== "cyberware") return false
+  const raw = data.system?.customEffects
+  const effects = Array.isArray(raw) ? raw : raw && typeof raw === "object" ? Object.values(raw) : []
+  return effects.some(e => e?.category === "itemArmor") &&
+    effects.some(e => e?.category === "weaponEffectTargets" && e.damageType)
+}
+
+/**
+ * The bone lacing `actor` already has switched on, other than `item`: the one a second must not join (SR5 p. 458).
+ * Switching one on is where two lacings installed before the screening, or kept by the gamemaster, would add up.
+ */
+export function activeBoneLacing(actor, item) {
+  return listOf(actor?.items).find(i => i !== item && !(i.id && i.id === item?.id) && isInstalled(i) && i.system?.isActive && isBoneLacing(i)) ?? null
+}
+
+/**
  * Système sensible (SR5 p. 89): the implants `actor`'s body rejects among `incoming`, looked for BEFORE anything
  * moves — a transfer that deletes first and creates afterwards would lose them on both sides. The qualities among
- * `incoming` count, as they arrive with the same batch. A player is told and the implants are left out; the
- * gamemaster is asked, in his own window, and may keep them.
+ * `incoming` count, as they arrive with the same batch. A second Ossature renforcée is refused the same way
+ * (SR5 p. 458, decision H5 of DjamZ). A player is told and the implants are left out; the gamemaster is asked, in
+ * his own window, and may keep them.
  * @param {Actor} actor the receiving body, read on the client that runs the transfer
  * @param {Array<{type: string, name: string, system: object}>} incoming
  * @param {object} [options]
@@ -329,31 +351,54 @@ export async function screenRejectedImplants(actor, incoming, {
 } = {
 }) {
   const body = [...listOf(actor?.items), ...(incoming ?? [])]
-  const rejected = (incoming ?? []).map(data => ({
-    data, quality: isInstalled(data) ? implantEssenceEffects(body, data.system?.type).rejectedBy : null
-  })).filter(r => r.quality)
+  // Ossature renforcée (SR5 p. 458): one installed already, or earlier in the same batch, and a second is refused
+  const lacings = listOf(actor?.items).filter(i => isInstalled(i) && isBoneLacing(i)).map(i => i.name)
+  const rejected = []
+  for (const data of incoming ?? []) {
+    if (!isInstalled(data)) continue
+    const quality = implantEssenceEffects(body, data.system?.type).rejectedBy
+    if (quality) rejected.push({
+      data, quality
+    })
+    else if (isBoneLacing(data)) {
+      if (lacings.length) rejected.push({
+        data, lacing: lacings[0]
+      })
+      else lacings.push(data.name)
+    }
+  }
   if (!rejected.length) return {
     refused: [], confirmed: false
   }
   if (isGM) {
+    const escape = text => foundry.utils.escapeHTML?.(text ?? "") ?? text
+    const paragraph = (key, list, data) => list.length ? `<p>${game.i18n.format(key, {
+      actor: escape(actor?.name), names: list.map(r => escape(r.data.name)).join(", "), ...data
+    })}</p>` : ""
+    const bioware = rejected.filter(r => r.quality), bones = rejected.filter(r => r.lacing)
     const kept = await foundry.applications.api.DialogV2.confirm({
       window: {
-        title: game.i18n.localize("SR5.ImplantRejectedConfirmTitle")
+        title: game.i18n.localize(bioware.length ? "SR5.ImplantRejectedConfirmTitle" : "SR5.BoneLacingConfirmTitle")
       },
-      content: `<p>${game.i18n.format("SR5.ImplantRejectedConfirmText", {
-        actor: foundry.utils.escapeHTML?.(actor?.name ?? "") ?? actor?.name,
-        names: rejected.map(r => foundry.utils.escapeHTML?.(r.data.name ?? "") ?? r.data.name).join(", "),
-        quality: rejected[0].quality,
-      })}</p>`,
+      content: paragraph("SR5.ImplantRejectedConfirmText", bioware, {
+        quality: bioware[0]?.quality
+      }) + paragraph("SR5.BoneLacingConfirmText", bones, {
+        lacing: escape(bones[0]?.lacing)
+      }),
       rejectClose: false,
     }) === true
     if (kept) return {
       refused: [], confirmed: true
     }
   } else {
-    for (const r of rejected) warn("SR5.WARN_ImplantRejected", {
-      name: r.data.name, actor: actor?.name, quality: r.quality
-    })
+    for (const r of rejected) {
+      if (r.quality) warn("SR5.WARN_ImplantRejected", {
+        name: r.data.name, actor: actor?.name, quality: r.quality
+      })
+      else warn("SR5.WARN_BoneLacingSecond", {
+        name: r.data.name, actor: actor?.name, lacing: r.lacing
+      })
+    }
   }
   return {
     refused: rejected.map(r => r.data), confirmed: false

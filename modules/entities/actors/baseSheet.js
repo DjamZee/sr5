@@ -5,6 +5,9 @@ import {
   SR5_Toxins
 } from '../items/toxins.js'
 import {
+  activeBoneLacing, isBoneLacing
+} from '../../system/implant-essence.js'
+import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
@@ -1370,6 +1373,17 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     if (target === "system.wirelessTurnedOn" && realItem?.type === "itemWeapon" && hasWeaponTrait(realItem.system, "vintage")) return ui.notifications.warn(game.i18n.localize("SR5.WARN_VintageNoWireless"))
     //Better Than Bad p. 141: under Blight no adept power, focus nor sustained spell is switched on (decisions of DjamZ)
     if (target === "system.isActive" && value && ["itemAdeptPower", "itemFocus", "itemSpell"].includes(realItem?.type) && SR5_Toxins.isCutFromManasphere(actor)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
+    //Ossature renforcée (SR5 p. 458): "un seul type pouvant être installé à la fois". A second one switched on is
+    //refused to a player; the gamemaster is warned and goes past it (decision H5 of DjamZ)
+    if (target === "system.isActive" && value === true && isBoneLacing(realItem)) {
+      const lacing = activeBoneLacing(actor, realItem)
+      if (lacing) {
+        ui.notifications.warn(game.i18n.format(game.user.isGM ? "SR5.WARN_BoneLacingGMPast" : "SR5.WARN_BoneLacingSecond", {
+          name: realItem.name, actor: actor.name, lacing: lacing.name
+        }))
+        if (!game.user.isGM) return
+      }
+    }
     //The guard reads the actor's counters, which change only when the server answers: a second click before
     //that would pass on the old count. Toggles that cost an action wait for the previous one to be written
     let actionCost = this._itemValueActionCost(item, target, oldValue)
