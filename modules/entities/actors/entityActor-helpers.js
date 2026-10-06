@@ -1577,7 +1577,9 @@ export class SR5_ActorHelper {
       } = await import("../../rolls/roll-helpers/miscellaneous.js")
       const card = SR5_MiscellaneousHelpers.cardOf(data.messageId)
       const fromSource = !!card && card.data.owner?.itemUuid === data.targetItem && !!card.roller && source.parent?.uuid === card.roller.uuid
-      if (!fromSource) return SR5_ActorHelper.refuseSocket("linkEffectToSource", senderId, data)
+      //A card links its effect once: shown again, it switched back on a spell its caster no longer sustains
+      //(Harriet's second review). An area effect is linked by the GM himself (effectArea), without this socket
+      if (!fromSource || !(await SR5_MiscellaneousHelpers.consume(consumedKey(card.id, "linkEffect")))) return SR5_ActorHelper.refuseSocket("linkEffectToSource", senderId, data)
     }
     await SR5_ActorHelper.linkEffectToSource(data.actorId, data.targetItem, data.effectUuid)
   }
@@ -1600,7 +1602,10 @@ export class SR5_ActorHelper {
       //Only an effect that lasts while sustained goes with the sustaining (Harriet's review)
       const sustained = effect.type === "itemEffect" && effect.system?.durationType === "sustained"
       const source = sustained && typeof effect.system?.ownerItem === "string" ? await fromUuid(effect.system.ownerItem) : null
-      if (!source || source.system?.isActive || !SR5_ActorHelper.socketOwns(senderId, source)) return SR5_ActorHelper.refuseSocket("deleteSustainedEffect", senderId, data)
+      //Every effect a card puts is marked sustained: what is read is the source, a sustained spell or form, or a
+      //power switched off (as the sheet's switch sends it); Harriet's second review
+      const sustains = ["itemAdeptPower", "itemPower"].includes(source?.type) || source?.system?.duration === "sustained"
+      if (!source || !sustains || source.system?.isActive || !SR5_ActorHelper.socketOwns(senderId, source)) return SR5_ActorHelper.refuseSocket("deleteSustainedEffect", senderId, data)
     }
     await SR5_ActorHelper.deleteSustainedEffect(data.targetItem)
   }
@@ -1766,28 +1771,45 @@ export class SR5_ActorHelper {
     const patient = SR5_EntityHelpers.getRealActorFromID(message.data.targetActor)
     if (!patient) return
     const {
-      claimHealCard, healCardClaimed, healCardDiceKey
+      claimHealCard, healCardClaimed, healCardDiceKey, releaseHealCard, treatmentAllowed, woundEntry, woundTotal, recordTreatment
     } = await import("../../system/heal-ledger.js")
-    //A card is known by its id and by its dice: a copy of it is a new message with the same dice (Quitterie, S4)
+    //A card is known by its id and by its dice: an exact copy of it is a new message with the same dice (Quitterie,
+    //S4). A retouched copy is stopped by the group of wounds below, read on the patient
     const keys = [card.id, healCardDiceKey(data)]
     if (healCardClaimed(keys)) return
+    //Heal once per group of wounds (SR5 p. 207-208; Harriet's second review)
+    if (!treatmentAllowed(woundEntry(patient.uuid), "heal", woundTotal(patient))) {
+      return SR5_ActorHelper.whisperGM(game.i18n.format("SR5.WARN_WoundGroupTreated", {
+        user: game.users.get(senderId)?.name ?? "?", patient: patient.name
+      }))
+    }
     //The GM confirms the hits first, and the card is spent only on his yes: a no leaves it to be shown again (S5)
     data.owner.messageId = card.id
     const roll = await SR5_ActorHelper.checkEffectCard(data, item)
     if (!roll || !(await claimHealCard(keys))) return
-    //Loaded here: roll-message imports this file
-    const {
-      SR5_RollMessage
-    } = await import("../../rolls/roll-message.js")
-    await SR5_RollMessage.updateChatButton(card.id, "applyEffect")
     //Counted and confirmed: applied without asking again (no card to read is a card already read)
-    await patient.applyExternalEffect({
+    const applied = await patient.applyExternalEffect({
       ...data, roll: {
         ...data.roll, ...roll
       }, owner: {
         ...data.owner, messageId: null
       }
     }, "customEffects")
+    //Refused inside, after the GM's yes (Sophie's false): the card is given back and keeps its button
+    if (applied === false) return releaseHealCard(keys)
+    await recordTreatment(patient.uuid, "heal", woundTotal(patient))
+    //Loaded here: roll-message imports this file
+    const {
+      SR5_RollMessage
+    } = await import("../../rolls/roll-message.js")
+    await SR5_RollMessage.updateChatButton(card.id, "applyEffect")
+  }
+
+  //A note for the GMs alone, in the chat
+  static async whisperGM(text){
+    await ChatMessage.create({
+      content: `<p>${foundry.utils.escapeHTML(text)}</p>`, whisper: game.users.filter(u => u.isGM).map(u => u.id),
+    })
   }
 
   //First aid on a patient the player does not own (SR5 p. 207). The healData sent healed anyone of any number of
@@ -1803,7 +1825,12 @@ export class SR5_ActorHelper {
     if (SR5_ActorHelper.socketOwns(senderId, patient)) return SR5_ActorHelper.heal(data.targetActor, data.healData)
     const healData = await SR5_ActorHelper.firstAidByCard(data, patient, sender)
     if (!healData) return SR5_ActorHelper.refuseSocket("heal", senderId, data)
-    await SR5_ActorHelper.heal(data.targetActor, healData)
+    if (await SR5_ActorHelper.heal(data.targetActor, healData) === false) return
+    //This group of wounds has had its first aid (SR5 p. 207)
+    const {
+      recordTreatment, woundTotal
+    } = await import("../../system/heal-ledger.js")
+    await recordTreatment(patient.uuid, "firstAid", woundTotal(patient))
   }
 
   /**
@@ -1824,6 +1851,17 @@ export class SR5_ActorHelper {
     } = await import("../../system/bb-healing-rules.js")
     const card = SR5_MiscellaneousHelpers.cardOf(data.messageId)
     if (!card || card.data.test?.typeSub !== "firstAid" || !ownsTarget(sender, card.roller)) return null
+    //Once per group of wounds, and never after a Heal spell (SR5 p. 207-208): read on the patient, not on the card,
+    //so that a retouched copy of the card treats nothing more (Harriet's second review)
+    const {
+      treatmentAllowed, woundEntry, woundTotal
+    } = await import("../../system/heal-ledger.js")
+    if (!treatmentAllowed(woundEntry(patient.uuid), "firstAid", woundTotal(patient))) {
+      await SR5_ActorHelper.whisperGM(game.i18n.format("SR5.WARN_WoundGroupTreated", {
+        user: sender.name, patient: patient.name
+      }))
+      return null
+    }
     const type = data.healData?.test?.typeSub
     if (!patientMonitors(patient).includes(type)) return null
     //A card whose hits are more than its dice show was changed after the roll
@@ -1835,7 +1873,7 @@ export class SR5_ActorHelper {
     const most = Math.max(firstAidHealedBoxes(hits, 2, rating, false), stabilizedTreatmentBoxes(hits, 2, rating, medkit, false))
     const boxes = bounded(data.healData?.roll?.netHits, Math.min(most, Number(card.data.roll?.netHits) || 0))
     if (boxes <= 0) return null
-    //A copy of the card is a new message with the same dice: known by its dice too (Quitterie, S4)
+    //An exact copy of the card is a new message with the same dice: known by its dice too (Quitterie, S4); a retouched copy is left to the GM
     const {
       healCardDiceKey
     } = await import("../../system/heal-ledger.js")

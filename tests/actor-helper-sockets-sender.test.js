@@ -303,7 +303,7 @@ describe("the sustained effect sockets", () => {
     }
     spell = {
       uuid: 'Actor.pc.Item.spell', type: 'itemSpell', documentName: 'Item', parent: pc, system: {
-        isActive: false, targetOfEffect: []
+        isActive: false, targetOfEffect: [], duration: 'sustained'
       }
     }
     effect = {
@@ -325,6 +325,18 @@ describe("the sustained effect sockets", () => {
     }
     vi.spyOn(SR5_ActorHelper, 'deleteSustainedEffect').mockResolvedValue()
     vi.spyOn(SR5_ActorHelper, 'linkEffectToSource').mockResolvedValue()
+    const spent = new Set()
+    vi.spyOn(SR5_MiscellaneousHelpers, 'consume').mockImplementation(async key => !spent.has(key) && !!spent.add(key))
+  })
+
+  it("deleteSustainedEffect never lifts the effect of a spell that is not sustained (Harriet's second review)", async () => {
+    spell.system.duration = 'instant'
+    await SR5_ActorHelper._socketDeleteSustainedEffect({
+      data: {
+        targetItem: effect.uuid
+      }
+    }, 'owner')
+    expect(SR5_ActorHelper.deleteSustainedEffect).not.toHaveBeenCalled()
   })
 
   it("deleteSustainedEffect never deletes an item that is no effect of the sender's spell", async () => {
@@ -415,6 +427,13 @@ describe("the sustained effect sockets", () => {
       }
     }, 'target')
     expect(SR5_ActorHelper.linkEffectToSource).toHaveBeenCalledWith('pc', spell.uuid, effect.uuid)
+    // The same card shown again switches nothing back on (Harriet's second review)
+    await SR5_ActorHelper._socketLinkEffectToSource({
+      data: {
+        actorId: 'pc', targetItem: spell.uuid, effectUuid: effect.uuid, messageId: 'm1'
+      }
+    }, 'target')
+    expect(SR5_ActorHelper.linkEffectToSource).toHaveBeenCalledTimes(1)
   })
 })
 

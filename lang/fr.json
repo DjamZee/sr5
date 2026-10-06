@@ -456,6 +456,7 @@
 	"SR5.SocketUse_support": "effet de soutien sur {target}",
 	"SR5.SocketUse_firstAid": "premiers soins sur {target}",
 	"SR5.SocketUseFirstAidTarget": "{name}, {boxes} case(s) soignée(s)",
+	"SR5.WARN_WoundGroupTreated": "{user} demande de soigner {patient}, mais ce groupe de blessures a déjà été soigné (premiers soins ou sort Soins une fois par groupe, pas de premiers soins après Soins ; livre de base p. 207-208). Rien n'est appliqué : de nouveaux dommages ouvrent un nouveau groupe. Si c'est le cas sans que le système le voie, soignez à la main.",
 	"SR5.ShopCashPurchase": "Encaisser l'achat",
 	"SR5.ShopCashSale": "Encaisser la vente",
 	"SR5.ShopCheckout": "Acheter le panier",

@@ -60,7 +60,7 @@ describe("le MJ applique Soins pour une joueuse", () => {
   let patient, card, updateButton
   beforeEach(() => {
     patient = {
-      applyExternalEffect: vi.fn()
+      uuid: "Scene.s.Token.pnj.Actor.a", applyExternalEffect: vi.fn()
     }
     card = {
       id: "m1", author: {
@@ -87,7 +87,9 @@ describe("le MJ applique Soins pour une joueuse", () => {
       ...globalThis.game, messages: {
         get: id => (id === "m1" ? card : undefined)
       }, user: gm, users: {
-        activeGM: gm
+        activeGM: gm, get: id => ({
+          id, name: id
+        }), filter: fn => [gm].filter(fn)
       }, settings: {
         get: (s, k) => store[k], set: async (s, k, v) => {
           store[k] = v
@@ -121,6 +123,55 @@ describe("le MJ applique Soins pour une joueuse", () => {
     expect(patient.applyExternalEffect.mock.calls[0][0].roll.hits).toBe(3)
     expect(patient.applyExternalEffect.mock.calls[0][0].owner.messageId).toBe(null)
   })
+  it("une copie retouchée (un dé de plus) ne soigne pas : une fois par groupe de blessures (p. 207-208, Harriet)", async () => {
+    globalThis.ChatMessage = {
+      create: vi.fn()
+    }
+    foundry.utils.escapeHTML ??= text => text
+    patient.system = {
+      conditionMonitors: {
+        condition: {
+          actual: {
+            value: 6
+          }
+        }
+      }
+    }
+    // The heal brings the patient from 6 boxes down to 1, as the real one would
+    patient.applyExternalEffect.mockImplementationOnce(async () => {
+      patient.system.conditionMonitors.condition.actual.value = 1
+    })
+    await ask("joueuse")
+    const retouched = {
+      ...card, id: "m3", flags: foundry.utils.deepClone(card.flags)
+    }
+    retouched.flags.sr5data.roll = {
+      r: "{\"terms\":[{\"results\":[{\"result\":5},{\"result\":1}]}]}"
+    }
+    game.messages.get = id => ({
+      m1: card, m3: retouched
+    })[id]
+    await ask("joueuse", {
+      messageId: "m3", targetActor: "pnj"
+    })
+    expect(patient.applyExternalEffect).toHaveBeenCalledTimes(1)
+    expect(ChatMessage.create).toHaveBeenCalled()
+    // De nouveaux dommages : un nouveau groupe (p. 208)
+    patient.system.conditionMonitors.condition.actual.value = 4
+    await ask("joueuse", {
+      messageId: "m3", targetActor: "pnj"
+    })
+    expect(patient.applyExternalEffect).toHaveBeenCalledTimes(2)
+  })
+  it("l'effet refusé après le oui du MJ (false de Sophie) : la carte est rendue et garde son bouton", async () => {
+    patient.applyExternalEffect.mockResolvedValueOnce(false)
+    updateButton.mockClear()
+    await ask("joueuse")
+    expect(updateButton).not.toHaveBeenCalled()
+    await ask("joueuse")
+    expect(patient.applyExternalEffect).toHaveBeenCalledTimes(2)
+    expect(updateButton).toHaveBeenCalledTimes(1)
+  })
   it("le MJ répond non : la carte n'est pas consommée et peut être redemandée (Quitterie, S5)", async () => {
     SR5_ActorHelper.checkEffectCard.mockResolvedValueOnce(null)
     await ask("joueuse")
@@ -128,7 +179,7 @@ describe("le MJ applique Soins pour une joueuse", () => {
     await ask("joueuse")
     expect(patient.applyExternalEffect).toHaveBeenCalledTimes(1)
   })
-  it("une copie de la carte (nouvel id, mêmes dés) ne soigne pas une seconde fois (Quitterie, S4)", async () => {
+  it("une copie EXACTE de la carte (nouvel id, mêmes dés) ne soigne pas une seconde fois (Quitterie, S4)", async () => {
     card.flags.sr5data.roll = {
       r: JSON.stringify({
         terms: [{

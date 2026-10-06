@@ -37,8 +37,20 @@ beforeEach(() => {
   vi.restoreAllMocks()
   game.user = users.gm
   game.users = {
-    get: id => users[id], activeGM: users.gm
+    get: id => users[id], activeGM: users.gm, filter: fn => Object.values(users).filter(fn)
   }
+  // The registers the active GM writes (the groups of wounds treated)
+  const store = {
+  }
+  game.settings = {
+    get: (s, k) => store[k], set: async (s, k, v) => {
+      store[k] = v
+    }
+  }
+  globalThis.ChatMessage = {
+    create: vi.fn()
+  }
+  foundry.utils.escapeHTML ??= text => text
   actors = {
     patient: {
       uuid: 'Actor.patient', name: 'Patient', type: 'actorPc', testUserPermission: () => false, system: {
@@ -140,7 +152,7 @@ describe('the heal socket', () => {
     expect(SR5_ActorHelper.heal).not.toHaveBeenCalled()
   })
 
-  it('a copy of the card (new id, same dice) does not heal again (Quitterie, S4)', async () => {
+  it('an exact copy of the card (new id, same dice) does not heal again (Quitterie, S4)', async () => {
     const spent = new Set()
     vi.spyOn(SR5_MiscellaneousHelpers, 'isConsumed').mockImplementation(key => spent.has(key))
     vi.spyOn(SR5_MiscellaneousHelpers, 'consume').mockImplementation(async key => !spent.has(key) && !!spent.add(key))
@@ -171,6 +183,34 @@ describe('the heal socket', () => {
     await heal(asked(3), 'medic')
     await heal(asked(3), 'medic', 'm2')
     expect(SR5_ActorHelper.heal).toHaveBeenCalledTimes(1)
+  })
+
+  it('a retouched copy (one die more) treats nothing more: once per group of wounds (SR5 p. 207; Harriet)', async () => {
+    const patient = actors.patient
+    patient.system.conditionMonitors.physical.actual = {
+      value: 4
+    }
+    await heal(asked(3), 'medic')
+    expect(SR5_ActorHelper.heal).toHaveBeenCalledTimes(1)
+    // heal() is replaced here: the patient's boxes go down by hand, as the GM's update would
+    patient.system.conditionMonitors.physical.actual.value = 1
+    const retouched = {
+      ...card, id: 'm3', data: {
+        ...card.data, roll: {
+          ...card.data.roll, r: '{"terms":[{"results":[{"result":5},{"result":5},{"result":5},{"result":6},{"result":6},{"result":2}]}]}'
+        }
+      }
+    }
+    SR5_MiscellaneousHelpers.cardOf.mockImplementation(id => ({
+      m1: card, m3: retouched
+    })[id] ?? null)
+    await heal(asked(3), 'medic', 'm3')
+    expect(SR5_ActorHelper.heal).toHaveBeenCalledTimes(1)
+    expect(ChatMessage.create).toHaveBeenCalled()
+    // New damage is a new group of wounds (SR5 p. 208): the next card is believed again
+    patient.system.conditionMonitors.physical.actual.value = 5
+    await heal(asked(3), 'medic', 'm3')
+    expect(SR5_ActorHelper.heal).toHaveBeenCalledTimes(2)
   })
 
   it('refuses a monitor the patient does not have', async () => {
