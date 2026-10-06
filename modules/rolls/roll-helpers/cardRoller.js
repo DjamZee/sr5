@@ -39,6 +39,20 @@ export function defenseActorId(selectedId, card, resolveActor) {
   return selectedId
 }
 
+// The actor defending against a matrix attack card: its target first, then the selected one; never
+// its author, still selected after the attack, whose deck the choice offered (Anatole's matrix trial).
+// Null when nobody may defend: the button refuses
+export function matrixDefenseActorId(selectedId, card, resolveActor) {
+  const attacker = card?.owner?.speakerId ? resolveActor(card.owner.speakerId) : null
+  const isAttacker = actor => !!attacker && actor?.uuid === attacker.uuid
+  const targetId = card?.target?.actorId
+  const target = targetId ? resolveActor(targetId) : null
+  if (target?.isOwner && !isAttacker(target)) return targetId
+  const selected = selectedId ? resolveActor(selectedId) : null
+  if (selected && !isAttacker(selected)) return selectedId
+  return null
+}
+
 // The id that finds the actor who spoke a card: its token first, since an unlinked token's actor
 // only exists through its token and is unknown to game.actors (N95)
 export function cardSpeakerId(speaker) {

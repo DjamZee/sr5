@@ -5288,6 +5288,8 @@
 	"SR5.WARN_TargetItemMissing": "Targeted item not found (deleted since the test): the action cannot be applied.",
 	"SR5.WARN_MatrixResistanceDeviceMissing": "Targeted device not found (deleted since the attack): the matrix damage resistance cannot be rolled.",
 	"SR5.WARN_MatrixDamageDeviceMissing": "Targeted device not found (deleted since the attack): the matrix damage is applied to no device.",
+	"SR5.WARN_NoMatrixDefender": "No defender for this matrix attack: target the defender (or select their token); the attacker cannot defend against their own attack.",
+	"SR5.WARN_MatrixDamageNowhere": "{name} has no active device nor living persona: the {value} matrix damage boxes are written nowhere. A technomancer takes them as Stun (SR5 p. 230): write them by hand.",
 	"SR5.WARN_JackOutCardRefused": "Jack Out card refused: it was not rolled by an owner of the character, or its dice cannot be read.",
 	"SR5.WARN_JackOutActiveGMOnly": "Only the active GM rolls the jack out resistance: their browser keeps the ledger of spent cards.",
 	"SR5.WARN_IceAttackCardRefused": "IC attack card refused: it was not rolled by a GM or an owner of the IC, or its dice cannot be read.",

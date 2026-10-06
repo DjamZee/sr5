@@ -81,6 +81,15 @@ export class SR5_MatrixHelpers {
     //An AI outside any device only has its core condition monitor, which takes all its damage (Data Trails p. 161)
     if (!targetItem) {
       if (targetActor.system.activeSpecialAttribute === "depth") return targetActor.takeDamage(cardData)
+      //No active device nor living persona item: the damage is written nowhere, the GM is told so (Anatole's matrix trial).
+      //A technomancer takes it as Stun (SR5 p. 230), to be written by hand
+      const content = game.i18n.format("SR5.WARN_MatrixDamageNowhere", {
+        name: targetActor.name, value: damageValue,
+      })
+      ui.notifications.warn(content)
+      await ChatMessage.create({
+        content: `<p>${foundry.utils.escapeHTML(content)}</p>`, whisper: ChatMessage.getWhisperRecipients("GM").map(u => u.id),
+      })
       return
     }
     let newItem = foundry.utils.duplicate(targetItem)
