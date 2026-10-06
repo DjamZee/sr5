@@ -26,8 +26,16 @@ export function migrateNegotiationTargets(source) {
   return source
 }
 
-/** Whether a skill of a source carries anything typed on the sheet. */
-const typedSkill = skill => !!(Number(skill?.rating?.base) || Number(skill?.rating?.value) || skill?.specializations?.length)
+const isObject = value => value !== null && typeof value === "object" && !Array.isArray(value)
+
+/** The former key under the current one: every field written under the current key wins. */
+function underCurrent(legacy, current) {
+  const merged = {
+    ...legacy
+  }
+  for (const [key, value] of Object.entries(current)) merged[key] = isObject(value) && isObject(legacy[key]) ? underCurrent(legacy[key], value) : value
+  return merged
+}
 
 /**
  * The Negotiation skill itself, under the former key.
@@ -40,8 +48,11 @@ const typedSkill = skill => !!(Number(skill?.rating?.base) || Number(skill?.rati
  * for a vendor fell back to Charisma - 1 (shop-availability.js).
  *
  * Called from `Item.migrateData` and `Actor.migrateData`, on every load: the
- * world, compendium entries, a creation from a pack. What was typed under the
- * current key wins over the former one.
+ * world, compendium entries, a creation from a pack. This runs on the raw
+ * source, before the schema fills its defaults: a field under the current key
+ * was written by someone (a Negotiation brought back to 0 in a pack still
+ * under the former key) and wins over the former one, which only fills what
+ * the current key lacks.
  * @param {object} system  The raw system data of an actor or an item.
  * @return {object}        The same object.
  */
@@ -49,8 +60,7 @@ export function migrateNegotiationSkill(system) {
   const skills = system?.skills
   if (!skills || typeof skills !== "object" || !("negociation" in skills)) return system
   const legacy = skills.negociation
-  if (legacy && typeof legacy === "object" && (!skills.negotiation || (!typedSkill(skills.negotiation) && typedSkill(legacy))))
-    skills.negotiation = legacy
+  if (isObject(legacy)) skills.negotiation = isObject(skills.negotiation) ? underCurrent(legacy, skills.negotiation) : legacy
   delete skills.negociation
   return system
 }

@@ -144,7 +144,10 @@ export class SR5ShopAvailability {
     // typed on the sheet when the derived value is not there.
     const sheetCharisma = SR5ShopAvailability.sheetValue(system.attributes?.charisma?.augmented) ||
       SR5ShopAvailability.sheetValue(system.attributes?.charisma?.natural)
-    const sheetNegotiation = SR5ShopAvailability.sheetValue(system.skills?.negotiation?.rating)
+    // A contact who has the Influence group has each of its skills at the group's rating (SR5 p. 90):
+    // Run Faster writes some contacts so, "Influence (GC) 4" (the cyber technician, p. 189)
+    const sheetNegotiation = Math.max(SR5ShopAvailability.sheetValue(system.skills?.negotiation?.rating),
+      SR5ShopAvailability.sheetValue(system.skillGroups?.influenceGroup))
 
     const cap = SR5ShopAvailability.CHARISMA_MAX[system.metatype] ??
       SR5ShopAvailability.CHARISMA_MAX.human

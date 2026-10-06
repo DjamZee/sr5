@@ -58,17 +58,39 @@ describe("The Negotiation skill under its former key negociation", () => {
     expect("negociation" in system.skills).toBe(false)
   })
 
-  it("replaces an empty current key, the schema default, by the typed former one", () => {
+  // Hugo's review, measured: in a pack still under the former key, Negotiation brought back to 0 is
+  // written as a diff, {negotiation: {rating: {base: 0}}}, next to the former key. It must stay 0.
+  it("keeps a 0 written under the current key next to the former one, which only fills the rest", () => {
     const system = {
       skills: {
-        negotiation: skill(0), negociation: skill(5, {
-          specializations: ["Armes"]
-        })
+        negotiation: {
+          rating: {
+            base: 0
+          }
+        },
+        negociation: skill(5, {
+          specializations: "Armes"
+        }),
+      }
+    }
+    migrateNegotiationSkill(system)
+    expect(system.skills.negotiation.rating.base).toBe(0)
+    expect(system.skills.negotiation.rating.modifiers).toEqual([])
+    expect(system.skills.negotiation.specializations).toBe("Armes")
+    expect("negociation" in system.skills).toBe(false)
+  })
+
+  it("keeps the former rating when the current key holds something else only", () => {
+    const system = {
+      skills: {
+        negotiation: {
+          specializations: "Marchandage"
+        }, negociation: skill(5)
       }
     }
     migrateNegotiationSkill(system)
     expect(system.skills.negotiation.rating.base).toBe(5)
-    expect(system.skills.negotiation.specializations).toEqual(["Armes"])
+    expect(system.skills.negotiation.specializations).toBe("Marchandage")
   })
 
   it("leaves a source without the former key, or without skills, as it is", () => {
@@ -99,5 +121,33 @@ describe("The Negotiation skill under its former key negociation", () => {
     // "Vendeur d'armes" is not among the dealer keywords of the setting: no specialization, 9 dice
     expect(searcher.specialized).toBe(false)
     expect(searcher.pool).toBe(9)
+  })
+
+  it("counts the Influence group of a contact as its Negotiation (SR5 p. 90): the cyber technician of Run Faster p. 189", () => {
+    const technician = {
+      name: "Technicienne cybernétique",
+      system: {
+        connection: 4, type: "Technicienne cybernétique", metatype: "troll",
+        attributes: {
+          charisma: {
+            natural: {
+              value: 0, base: 4, modifiers: []
+            }
+          }
+        },
+        skillGroups: {
+          influenceGroup: {
+            value: 0, base: 4, modifiers: []
+          }
+        },
+        skills: {
+          negotiation: skill(0)
+        },
+      },
+    }
+    const searcher = SR5ShopAvailability.contactPool(technician)
+    expect(searcher.defaulting).toBe(false)
+    expect(searcher.negotiation).toBe(4)
+    expect(searcher.pool).toBe(8)
   })
 })
