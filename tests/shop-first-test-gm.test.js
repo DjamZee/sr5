@@ -94,7 +94,8 @@ beforeEach(() => {
   }
   globalThis.foundry.utils.escapeHTML ??= s => s
   globalThis.fromUuid = vi.fn(async () => ({
-    name: "Gun", type: "itemWeapon", system: {
+    // An entry of the shelves (a compendium): the only thing the shop sells (R1)
+    name: "Gun", type: "itemWeapon", pack: "sr5.gear", system: {
       price: {
         value: 500
       }, availability: {

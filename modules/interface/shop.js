@@ -145,8 +145,31 @@ export class SR5Shop {
    * Types that carry their own quantity become one stack; the others are
    * created as that many separate items.
    */
+  /**
+   * May the shop sell from this document? A compendium entry (the shelves), or an item on this vendor's
+   * counter; never an item an actor carries, whose copy would bring its owner's state along — a
+   * credstick its money, for one (R1, Anton: 3 500 ¥ for nothing).
+   * @param {Item} source
+   * @param {{actorUuid: string, storageId: string}|null} [counter] the vendor's counter, at a vendor's
+   */
+  static sellableSource(source, counter = null) {
+    if (!source) return false
+    if (counter?.actorUuid && source.parent?.uuid === counter.actorUuid &&
+      source.system?.storedIn === counter.storageId) return true
+    return !!source.pack && !source.isEmbedded
+  }
+
+  /**
+   * What must not travel with a copy the shop hands over: the money loaded on a credstick is bearer
+   * cash (SR5 p. 445), so a stick sold or put on a counter comes empty (R1, Anton).
+   */
+  static stripCarried(itemData) {
+    if (itemData?.system?.funds && typeof itemData.system.funds === 'object') itemData.system.funds.value = 0
+    return itemData
+  }
+
   static _itemPayload(source, quantity, grade = null) {
-    const itemData = source.toObject()
+    const itemData = SR5Shop.stripCarried(source.toObject())
     delete itemData._id
     // Where it was bought: a vendor buying it back reads its price there, not on the copy (lot C)
     if (source.pack) foundry.utils.setProperty(itemData, 'flags.sr5.shopSource', source.uuid)
@@ -215,6 +238,13 @@ export class SR5Shop {
       if (!source) {
         ui.notifications.warn(game.i18n.format('SR5.WARN_ShopItemGone', {
           name: line.name ?? line.uuid
+        }))
+        continue
+      }
+      // The shelves only: an item an actor carries is not for sale here, whatever uuid a request names (R1)
+      if (!equip && !SR5Shop.sellableSource(source)) {
+        ui.notifications.warn(game.i18n.format('SR5.WARN_ShopNotForSale', {
+          name: source.name
         }))
         continue
       }

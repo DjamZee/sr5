@@ -549,6 +549,30 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
     }]), player.id)).toBe(false)
   })
 
+  it('does not buy back a credstick that still holds nuyen: emptied first (R1, Anton)', async () => {
+    world({
+      shop: {
+        buyAll: true
+      },
+      sellerItems: [gun(350, {
+        system: {
+          storedIn: '', isCredstick: true, funds: {
+            value: 3500, max: 0
+          }, price: {
+            value: 350, base: 350
+          }, availability: {
+            value: 0
+          }
+        }
+      })]
+    })
+    expect(await SR5ShopVendor.offer(offerFor([{
+      itemId: 'gun', quantity: 1
+    }]), player.id)).toBe(false)
+    await vi.dynamicImportSettled()
+    expect(notices.at(-1)).toBe('SR5.WARN_ShopVendorLoadedStick')
+  })
+
   it('refuses an offer card a player wrote: only the gamemaster\'s card is paid', async () => {
     const {
       vendor, seller

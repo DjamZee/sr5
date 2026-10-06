@@ -250,7 +250,7 @@ export class SR5ShopVendor {
 
   /** An item made ready for the counter: stored in the shop, not worn, in a stack of the size set. */
   static stockPayload(source, storageId, stackQuantity, sourceUuid) {
-    const data = source.toObject()
+    const data = SR5Shop.stripCarried(source.toObject())
     delete data._id
     data.system.storedIn = storageId
     if (data.system.isActive !== undefined) data.system.isActive = false
@@ -915,7 +915,7 @@ export class SR5ShopVendor {
 
   /** The vendor's own item, as it reaches the buyer: out of the shop, the quantity bought. */
   static #handedOver(item, quantity) {
-    const data = item.toObject()
+    const data = SR5Shop.stripCarried(item.toObject())
     delete data._id
     data.system.storedIn = ''
     if (data.system.quantity !== undefined) {
@@ -1133,6 +1133,13 @@ export class SR5ShopVendor {
       const item = seller.items.get(line?.itemId)
       const quantity = Number(line?.quantity)
       if (!item || isStoredAway(item, seller) || !Number.isInteger(quantity) || quantity < 1) continue
+      // A loaded credstick is money, not goods: emptied first, or its nuyens would vanish on the counter (R1)
+      if (item.system?.isCredstick && SR5Credstick.funds(item) > 0) {
+        SR5ShopVendor.#notify(requester, 'warn', 'SR5.WARN_ShopVendorLoadedStick', {
+          name: item.name
+        })
+        continue
+      }
       if (!SR5ShopVendor.buysItem(item, storage)) {
         SR5ShopVendor.#notify(requester, 'warn', 'SR5.WARN_ShopVendorDoesNotBuy', {
           name: item.name, shop: label
@@ -1352,7 +1359,8 @@ export class SR5ShopVendor {
         _id: item.id, 'system.quantity': left
       })
       else toDelete.push(item.id)
-      const stocked = item.toObject()
+      // A credstick bought back comes onto the counter empty: its money stays a sale, not stock (R1)
+      const stocked = SR5Shop.stripCarried(item.toObject())
       delete stocked._id
       stocked.system.storedIn = storage.id
       if (stocked.system.isActive !== undefined) stocked.system.isActive = false

@@ -74,7 +74,7 @@ beforeEach(() => {
   rolls = []
   vi.restoreAllMocks()
   globalThis.fromUuid = async () => ({
-    name: 'SBd-44', type: 'itemWeapon', system: {
+    name: 'SBd-44', type: 'itemWeapon', pack: 'sr5.gear', system: {
       availability: {
         value: 4
       }, price: {

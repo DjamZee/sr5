@@ -245,24 +245,38 @@ export async function rollFirstTest(data, senderId) {
 
   let options = {
   }
+  let vendor = null
   if (data.vendor?.uuid) {
     // At a vendor's, the vendor searches: its shop, read again, must be open and carry the item (lot C)
-    const vendor = await vendorOf(data.vendor)
+    vendor = await vendorOf(data.vendor)
     const reason = vendorRefusal(vendor?.shop, 0, requester.isGM)
     if (reason) {
       await refuse(requester.id, `SR5.ShopTestRefused_${reason}`)
       return false
     }
-    const {
-      SR5ShopCatalog
-    } = await import('./shop-catalog.js')
-    const {
-      SR5Shop
-    } = await import('./shop.js')
-    const kept = []
-    for (const line of lines) {
-      const source = await fromUuid(line.uuid)
-      if (!source) continue
+    options = vendor.options
+  }
+  const {
+    SR5ShopCatalog
+  } = await import('./shop-catalog.js')
+  const {
+    SR5Shop
+  } = await import('./shop.js')
+  // A shelf of the shop, or this vendor's counter: never an item an actor carries (R1, Anton)
+  const counter = vendor ? {
+    actorUuid: options.searcher?.uuid, storageId: data.vendor.storageId
+  } : null
+  const kept = []
+  for (const line of lines) {
+    const source = await fromUuid(line.uuid)
+    if (!source) continue
+    if (!SR5Shop.sellableSource(source, counter)) {
+      await refuse(requester.id, 'SR5.WARN_ShopNotForSale', {
+        name: source.name
+      })
+      continue
+    }
+    if (vendor) {
       const grade = SR5Shop.gradesFor(source.type, source.system).includes(line.grade) ? line.grade : null
       const described = SR5ShopCatalog.describe({
         type: source.type, system: source.system, margin: vendor.shop.margin
@@ -273,12 +287,11 @@ export async function rollFirstTest(data, senderId) {
         })
         continue
       }
-      kept.push(line)
     }
-    lines = kept
-    if (!lines.length) return false
-    options = vendor.options
+    kept.push(line)
   }
+  lines = kept
+  if (!lines.length) return false
   const contact = data.vendor ? null : buyer.items.get(String(data.contactId ?? ''))
   await SR5ShopAvailability.testLines(buyer, contact?.type === 'itemContact' ? contact : null, lines,
     Math.max(0, Number(data.surcharge) || 0), options)
