@@ -88,6 +88,8 @@ export function sr5HookReady() {
 
   // Compendium choices for the base items settings
   SR5_CompendiumUtility.refreshCompendiumChoices()
+  // The active GM reads the reference compendiums' index in the background (not awaited)
+  SR5_CompendiumUtility.preloadIndexes()
 
   // Translate the headers of the core "link matches" tooltip
   initLinkMatchesTooltip()

@@ -7,6 +7,9 @@ import {
 import {
   SR5_SpiritTypes
 } from "../items/spirit-types.js"
+import {
+  isAlwaysActive
+} from "../items/always-active.js"
 
 export class SR5_CompendiumUtility extends Actor {
 
@@ -30,6 +33,18 @@ export class SR5_CompendiumUtility extends Actor {
   // given once: the first item found with it wins, so a power the Megapack holds twice is not doubled.
   static KEY_CATEGORIES = ["baseOwnItem", "spiritPower", "spritePower"]
   static UNIQUE_CATEGORIES = ["spiritPower", "spritePower"]
+
+  // What the index must carry to choose the items without loading them
+  static INDEX_FIELDS = ["type", "system.systemEffects", "system.source"]
+
+  // The order in which a compendium's items are read, so that "first found" is never left to the order of the
+  // ids: the core rulebook first (a supplement's namesake gives way to it: Arme naturelle, SR5 p. 396, before
+  // Dard caudal, Howling Shadows p. 188), then by name, then by id
+  static inKeyOrder(index) {
+    const core = entry => (entry.system?.source === "core" ? 0 : 1)
+    return [...index].sort((a, b) => core(a) - core(b) ||
+      String(a.name ?? "").localeCompare(String(b.name ?? ""), "fr") || String(a._id).localeCompare(String(b._id)))
+  }
 
   static CATEGORIES = {
     creaturePowers: {
@@ -115,13 +130,13 @@ export class SR5_CompendiumUtility extends Actor {
       let index
       try {
         index = await pack.getIndex({
-          fields: ["type", "system.systemEffects"]
+          fields: SR5_CompendiumUtility.INDEX_FIELDS
         })
       } catch (err) {
         SR5_SystemHelpers.srLog(1, `Compendium ${pack.collection} could not be indexed: ${err.message}`)
         continue
       }
-      for (const entry of index) {
+      for (const entry of SR5_CompendiumUtility.inKeyOrder(index)) {
         if (entry.type !== itemType) continue
         const keys = SR5_CompendiumUtility.itemKeys(entry)
         if (!keys.length) continue
@@ -141,17 +156,23 @@ export class SR5_CompendiumUtility extends Actor {
     return documents
   }
 
-  // Powers that need no action to work: « toujours actifs […] listés avec une action automatique » (SR5 p. 396).
-  // The system's own "permanent" says the same (a sheet already switches it on when it is dropped).
-  static ALWAYS_ACTIVE_ACTIONS = ["automatic", "permanent"]
-
-  //The data of an item given to a new spirit, sprite or creature: a power that is always active comes switched on
-  //(arbitrage de DjamZ, H39), so that its effects (Immunity, Armor, Toughness…) count without a click
+  //The data of an item given to a new spirit, sprite or creature: a power that is always active (always-active.js)
+  //comes switched on (arbitrage de DjamZ, H39), so that its effects (Immunity, Armor, Toughness…) count without a click
   static givenItem(item) {
     const data = item.toObject(false)
-    if ((data.type === "itemPower" || data.type === "itemSpritePower") &&
-      SR5_CompendiumUtility.ALWAYS_ACTIVE_ACTIONS.includes(data.system?.actionType)) data.system.isActive = true
+    if (isAlwaysActive(data)) data.system.isActive = true
     return data
+  }
+
+  // The first spirit created after the world loads waited for the Megapack's index (more than 15 s, 4 900 items).
+  // The active GM reads it once on ready, in the background: nothing waits for it
+  static preloadIndexes() {
+    if (!game.user?.isGM || game.users?.activeGM?.id !== game.user.id) return null
+    const ids = new Set(Object.keys(SR5_CompendiumUtility.CATEGORIES).flatMap(k => SR5_CompendiumUtility.getCompendiumIds(k)))
+    const started = Date.now()
+    return Promise.all([...ids].map(id => game.packs.get(id)?.getIndex({
+      fields: SR5_CompendiumUtility.INDEX_FIELDS
+    }).catch(() => null))).then(() => SR5_SystemHelpers.srLog(3, `Reference compendiums indexed in ${Date.now() - started} ms`))
   }
 
   //The "category:value" keys an item (or an index entry) carries in its systemEffects

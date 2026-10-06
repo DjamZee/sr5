@@ -16,8 +16,9 @@ import {
 // the index, and a power key is given once: a power the Megapack holds twice is not doubled.
 // History, N78: sr5-compendiums alone had no Manifestation (SR5 p. 317), so a watcher came without it.
 
-const item = (type, effects, id, name = id) => ({
+const item = (type, effects, id, name = id, source = "") => ({
   _id: id, name, type, system: {
+    source,
     systemEffects: effects.map(([category, value]) => ({
       category, value
     }))
@@ -25,7 +26,7 @@ const item = (type, effects, id, name = id) => ({
     name
   })
 })
-const power = (key, id = key, name = key) => item("itemPower", [["spiritPower", key]], id, name)
+const power = (key, id = key, name = key, source = "") => item("itemPower", [["spiritPower", key]], id, name, source)
 
 const pack = (collection, documents) => ({
   collection,
@@ -95,7 +96,7 @@ describe("base items on auto: the Megapack first, sr5-compendiums as a fallback"
   it("items are read through the index, and an item without a key is not loaded", async () => {
     await watcherPowers()
     expect(megapack.getIndex).toHaveBeenCalledWith({
-      fields: ["type", "system.systemEffects"]
+      fields: ["type", "system.systemEffects", "system.source"]
     })
     expect(megapack.getDocument.mock.calls.map(([id]) => id)).not.toContain("mp5")
   })
@@ -129,6 +130,58 @@ describe("base items on auto: the Megapack first, sr5-compendiums as a fallback"
   it("a compendium chosen by the GM is the only one read", async () => {
     setting = "sr5-compendiums.fr_powers-creatures"
     expect(await watcherPowers()).toEqual(["c-astralForm", "c-sapience", "c-search"])
+    expect(megapack.getIndex).not.toHaveBeenCalled()
+  })
+
+  // Cyprien, measured: two items with the same key, the first found by id won. An abomination and an insect
+  // soldier got Dard caudal (Howling Shadows p. 188) instead of Arme naturelle (SR5 p. 396)
+  it("between two items with the same key, the core rulebook's wins, whatever their ids", async () => {
+    megapack = pack("megapack-sr5-foundry-vtt.sr5-megapack-items", [
+      power("naturalWeapon", "7iCEmlgKlvcXGeSq", "Dard caudal", "howlingShadows"),
+      power("naturalWeapon", "RRPCyfetRGKNUa7Q", "Arme naturelle", "core"),
+      power("naturalWeapon", "0aaaaaaaaaaaaaaa", "Aiguillon", "streetGrimoire"),
+    ])
+    game.packs.set(megapack.collection, megapack)
+    const powers = await SR5_CompendiumUtility.getCategoryItems("creaturePowers")
+    expect(powers.filter(i => i.system.systemEffects[0]?.value === "naturalWeapon").map(i => i.name)).toEqual(["Arme naturelle"])
+  })
+
+  it("without the core rulebook's, the order is by name, then by id: never the order of the index", () => {
+    const order = SR5_CompendiumUtility.inKeyOrder([
+      power("x", "b2", "Zèbre"), power("x", "a1", "Âne"), power("x", "a0", "Âne"), power("x", "c3", "Base", "core"),
+    ]).map(e => e._id)
+    expect(order).toEqual(["c3", "a0", "a1", "b2"])
+  })
+})
+
+describe("the reference compendiums are indexed on ready", () => {
+  const gm = active => {
+    game.user = {
+      id: "gm", isGM: true
+    }
+    game.users = {
+      activeGM: {
+        id: active ? "gm" : "other"
+      }
+    }
+  }
+
+  it("by the active GM, with the fields the creation reads", async () => {
+    gm(true)
+    await SR5_CompendiumUtility.preloadIndexes()
+    expect(megapack.getIndex).toHaveBeenCalledWith({
+      fields: SR5_CompendiumUtility.INDEX_FIELDS
+    })
+    expect(compendiums.getIndex).toHaveBeenCalled()
+  })
+
+  it("not by another GM, nor by a player", () => {
+    gm(false)
+    expect(SR5_CompendiumUtility.preloadIndexes()).toBeNull()
+    game.user = {
+      id: "p", isGM: false
+    }
+    expect(SR5_CompendiumUtility.preloadIndexes()).toBeNull()
     expect(megapack.getIndex).not.toHaveBeenCalled()
   })
 })
