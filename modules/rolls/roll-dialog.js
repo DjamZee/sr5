@@ -141,7 +141,8 @@ export default class SR5_RollDialog {
     }
   }
 
-  //SR5 p. 427 and 435: a wireless firearm and a DNI change the firing mode or the choke as a free action (decision H21)
+  //SR5 p. 427 and 435: a wireless firearm and a DNI change the firing mode as a free action; the choke by ruling of
+  //DjamZ (decision H21, by analogy with p. 165)
   static changeIsFree(weapon, actor){
     return firearmCommandIsFree(weapon?.system, actor, game.settings.get("sr5", "sr5WifiRequiresDNI"))
   }

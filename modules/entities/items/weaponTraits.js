@@ -131,8 +131,9 @@ export function electronicAddedToVintage(before, after, catalog = {
 }
 
 /**
- * Ejecting a clip, changing the firing mode or the choke as a free action: a wireless firearm with its wireless on, and a
- * DNI (SR5 p. 427, every firearm, smartgun or not; p. 435 for the smartgun). Wired, the smartgun only gives its Accuracy.
+ * Ejecting a clip or changing the firing mode as a free action: a wireless firearm with its wireless on, and a DNI
+ * (SR5 p. 427, every firearm, smartgun or not; p. 435 for the smartgun). Wired, the smartgun only gives its Accuracy.
+ * The choke follows the same rule by ruling of DjamZ (decision H21, by analogy with p. 165), not by these pages.
  * The DNI follows the wireless ruling of 2026-10-03 (decision H21): assumed unless the world setting asks for the
  * character's "linked by DNI" box.
  * @param {Object} weaponData - the weapon's system
