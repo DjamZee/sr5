@@ -31,7 +31,7 @@ const withInit = (value, dice = 1) => ({
   }
 })
 
-let base, synth1, synth2, linked, c1, c2, c3, actors, savedUser, savedCombat
+let base, synth1, synth2, linked, c1, c2, c3, actors, savedUser, savedUsers, savedCombat
 const fighter = (id, tokenId, actorId, actor, actorLink, initiative, rating) => ({
   id, tokenId, actorId, actor, initiative, name: id,
   token: {
@@ -66,8 +66,12 @@ beforeEach(() => {
   globalThis.game.i18n.format = (k) => k
   savedUser = game.user
   savedCombat = game.combat
+  savedUsers = game.users
   game.user = {
     id: "gm", isGM: true
+  }
+  game.users = {
+    activeGM: game.user
   }
   const common = {
     type: "actorPc", items: [], testUserPermission: () => false
@@ -103,6 +107,7 @@ beforeEach(() => {
 
 afterEach(() => {
   game.user = savedUser
+  game.users = savedUsers
   game.combat = savedCombat
   vi.restoreAllMocks()
 })
@@ -149,6 +154,20 @@ describe("wound modifier on the initiative of unlinked tokens", () => {
     await update(synth2)
     expect(c2.initiative).toBe(29)
     expect(c1.initiative).toBe(41)
+  })
+
+  it("with two GMs connected, the wound is taken off once, by the active GM alone", async () => {
+    linked.system = withInit(9)
+    // The other GM's client sees the same update: it leaves the initiative to the active GM
+    game.user = {
+      id: "gm2", isGM: true
+    }
+    await update(linked)
+    expect(c3.initiative).toBe(20)
+    // The active GM's client takes the wound off
+    game.user = game.users.activeGM
+    await update(linked)
+    expect(c3.initiative).toBe(19)
   })
 
   it("a linked actor's wound moves its own combatant", async () => {
