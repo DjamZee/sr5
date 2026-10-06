@@ -1952,20 +1952,24 @@ export class SR5_ActorHelper {
     let actorData = foundry.utils.deepClone(actor)
     actorData = actorData.toObject(false)
 
-    if (actorData.type === "actorGrunt"){
-      if (actorData.system.conditionMonitors.condition.actual.value > 0){
+    // A single condition monitor: grunts, and the watcher, homunculus or AI core (no Physical monitor), as in takeDamage()
+    const monitors = actorData.system.conditionMonitors
+    const singleMonitor = actorData.type === "actorGrunt" || (monitors.condition && !monitors.physical)
+    if (singleMonitor){
+      if (monitors.condition?.actual.value > 0){
         damageToRemove = SR5_ActorHelper.healMonitorBoxes(actorData.system.conditionMonitors.condition, damageToRemove)
       }
     } else {
-      if (actorData.system.conditionMonitors.overflow.actual.value > 0){
+      // A spirit has no overflow monitor (Physical and Stun only)
+      if (actorData.system.conditionMonitors.overflow?.actual.value > 0){
         actorData.system.conditionMonitors.overflow.actual.base -= damageToRemove
         damageToRemove -= actorData.system.conditionMonitors.overflow.actual.value
         await SR5_EntityHelpers.updateValue(actorData.system.conditionMonitors.overflow.actual, 0)
       }
-      if (actorData.system.conditionMonitors.physical.actual.value > 0 && damageToRemove > 0){
+      if (actorData.system.conditionMonitors.physical?.actual.value > 0 && damageToRemove > 0){
         damageToRemove = SR5_ActorHelper.healMonitorBoxes(actorData.system.conditionMonitors.physical, damageToRemove)
       }
-      if (actorData.system.conditionMonitors.stun.actual.value > 0 && damageToRemove > 0){
+      if (actorData.system.conditionMonitors.stun?.actual.value > 0 && damageToRemove > 0){
         actorData.system.conditionMonitors.stun.actual.base -= damageToRemove
         damageToRemove -= actorData.system.conditionMonitors.stun.actual.value
         await SR5_EntityHelpers.updateValue(actorData.system.conditionMonitors.stun.actual, 0)

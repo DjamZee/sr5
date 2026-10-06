@@ -343,6 +343,40 @@ describe("regeneration writes the monitors only", () => {
       "system.conditionMonitors.condition.actual.base": 3, "system.conditionMonitors.condition.aggravated": 0
     })
   })
+
+  it("a spirit has no overflow monitor: 3 net hits on 2 Physical and 4 Stun give 0 and 3", async () => {
+    const r = regenerating("actorSpirit", {
+      physical: monitor(2, {
+        aggravated: 0
+      }), stun: monitor(4)
+    })
+    vi.spyOn(SR5_EntityHelpers, "getRealActorFromID").mockReturnValue(r)
+    await SR5_ActorHelper.regenerate("r", {
+      roll: {
+        netHits: 3
+      }
+    })
+    const update = r.update.mock.calls[0][0]
+    expect(update["system.conditionMonitors.physical.actual.base"]).toBe(0)
+    expect(update["system.conditionMonitors.stun.actual.base"]).toBe(3)
+  })
+
+  it("a homunculus or a watcher heals its single condition monitor (SR5 p. 301)", async () => {
+    const r = regenerating("actorSpirit", {
+      condition: monitor(5, {
+        aggravated: 0
+      })
+    })
+    vi.spyOn(SR5_EntityHelpers, "getRealActorFromID").mockReturnValue(r)
+    await SR5_ActorHelper.regenerate("r", {
+      roll: {
+        netHits: 2
+      }
+    })
+    expect(r.update.mock.calls[0][0]).toEqual({
+      "system.conditionMonitors.condition.actual.base": 3, "system.conditionMonitors.condition.aggravated": 0
+    })
+  })
 })
 
 describe("an effect put on a device (Redundancy) writes the device effects only", () => {
