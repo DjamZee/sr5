@@ -1710,6 +1710,59 @@ export class SR5_ActorHelper {
     } : null
   }
 
+  //The GM applies damage nobody resists on behalf of a player (her card, her area template, her item): he sees the
+  //boxes before they are written. The hits were already counted again and confirmed by checkEffectCard when the card
+  //is a player's and the effect reads the roll
+  static async confirmUnresistedDamage(actor, item, key, value, data, effectType){
+    if (!game.user?.isGM) return true
+    const author = game.messages?.get(data.owner?.messageId)?.author
+    if (author && !author.isGM && readsRoll(item.system[effectType])) return true
+    if (author?.isGM && !item.parent?.hasPlayerOwner) return true
+    return foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: "SR5.UnresistedDamageConfirmTitle"
+      },
+      content: `<p>${game.i18n.format("SR5.UnresistedDamageConfirm", {
+        item: item.name, actor: actor.name, value, monitor: game.i18n.localize(SR5.conditionMonitorTypes?.[key] ?? key)
+      })}</p>`,
+      rejectClose: false,
+    })
+  }
+
+  //Damage nobody resists (an addDamage effect): written in the source, as takeDamage does, never in the prepared data.
+  //Stun beyond its monitor goes to Physical, Physical beyond its monitor to the overflow, then death (carryMonitorOverflow)
+  static async addUnresistedDamage(actorId, actor, key, value){
+    const monitors = actor.toObject(false).system.conditionMonitors
+    monitors[key].actual.base += value
+    SR5_EntityHelpers.updateValue(monitors[key].actual, 0)
+    let isDead = false
+    if (monitors.stun?.actual && monitors.physical?.actual && (key === "stun" || key === "physical")) {
+      ({
+        isDead
+      } = SR5_ActorHelper.carryMonitorOverflow(monitors, actor.type))
+    }
+    const updates = {
+    }
+    for (let [k, monitor] of Object.entries(monitors)) {
+      if (monitor?.actual) updates[`system.conditionMonitors.${k}.actual.base`] = Math.min(monitor.actual.base, monitor.value ?? monitor.actual.base)
+    }
+    await actor.update(updates)
+
+    const full = m => m?.actual && m.actual.value >= m.value
+    if (actor.type === "actorPc" || actor.type === "actorSpirit") {
+      if (full(monitors.physical)) {
+        if (isDead || actor.type === "actorSpirit") await SR5_ActorHelper.createDeadEffect(actorId)
+        else await SR5_ActorHelper.createKoEffect(actorId)
+      } else if (full(monitors.stun)) {
+        if (actor.type === "actorSpirit") await SR5_ActorHelper.createDeadEffect(actorId)
+        else await SR5_ActorHelper.createKoEffect(actorId)
+      }
+    }
+    else if (actor.type === "actorGrunt" && full(monitors.condition)) await SR5_ActorHelper.createKoEffect(actorId)
+    else if (actor.type === "actorDrone" && full(monitors.condition)) await SR5_ActorHelper.createDeadEffect(actorId)
+    else if ((actor.type === "actorSprite" || actor.type === "actorDevice") && full(monitors.matrix)) await SR5_ActorHelper.createDeadEffect(actorId)
+  }
+
   static async applyExternalEffect(actorId, data, effectType){
     //An area spell whose template was deleted during the resistance: nothing would lift the effect
     if (isAreaSpellTemplateGone(data)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_AreaSpellTemplateGone"))
@@ -1768,15 +1821,15 @@ export class SR5_ActorHelper {
         //Handle non resisted damage
         if (e.target.includes("addDamage")){
           key = e.target.replace('.addDamage','')
-          newData = actor.system
-          if(newData.conditionMonitors[key]){
-            newData.conditionMonitors[key].actual.base += value
-            SR5_EntityHelpers.updateValue(newData.conditionMonitors[key].actual, 0)
-            await actor.update({
-              "system": newData
-            })
+          if (!actor.system.conditionMonitors?.[key] || !(value > 0)) continue
+          //A player never writes on an actor she does not own: the update would be refused half way
+          if (!actor.isOwner) {
+            ui.notifications.warn(game.i18n.localize("SR5.WARN_UnresistedDamageNotOwner"))
             continue
-          } else continue
+          }
+          if (!(await SR5_ActorHelper.confirmUnresistedDamage(actor, item, key, value, data, effectType))) continue
+          await SR5_ActorHelper.addUnresistedDamage(actorId, actor, key, value)
+          continue
         }
 
         let targetName = SR5_EntityHelpers.getLabelByKey(e.target)
