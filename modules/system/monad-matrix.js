@@ -206,6 +206,10 @@ async function coreFromCard(message, button){
     //Applied once: a card whose damage was applied meanwhile, on the swarm or here, no longer offers it
     if (!game.messages.get(message.id)?.flags?.sr5data?.chatCard?.buttons?.takeMatrixDamage) return button.remove()
     await applyCoreDamage(actor, boxes)
+    //The end of the card says the boxes the GM put on the Core, not the suggestion
+    await game.messages.get(message.id)?.update({
+      "flags.sr5data.damage.matrix.value": boxes
+    })
     const {
       SR5_RollMessage
     } = await import("../rolls/roll-message.js")
