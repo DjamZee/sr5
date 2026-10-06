@@ -157,10 +157,50 @@ function record(doc, values) {
   const value = doc.type !== "itemAugmentation" && atDefaults ? null : values
   return updateLedger(IMPLANT_REGISTER, register => {
     if (value === null) return doc.uuid in register ? (delete register[doc.uuid], register) : null
-    if (JSON.stringify(register[doc.uuid]) === JSON.stringify(value)) return null
-    register[doc.uuid] = value
+    // The highest cost seen (PEAK_COST) is not a field of the implant: it stays across the writes of its fields
+    const peak = register[doc.uuid]?.[PEAK_COST]
+    const next = peak === undefined ? value : {
+      ...value, [PEAK_COST]: peak
+    }
+    if (JSON.stringify(register[doc.uuid]) === JSON.stringify(next)) return null
+    register[doc.uuid] = next
     return register
   }).catch(e => console.error("SR5 | implant register", e))
+}
+
+/**
+ * The register's key for the highest Essence an implant ever cost while the active GM watched. Lost Essence does not
+ * come back (SR5 p. 53, arbitrage de DjamZ): lowering an implant's rating or grade just before removing it does not
+ * shrink the hole, which is that peak (essence-hole.js). An honest rise (a higher rating bought) raises it.
+ */
+export const PEAK_COST = "peakCost"
+
+/** The new peak for an implant whose cost is now `cost`, or null when the register already holds as much. */
+export function nextPeak(entry, cost) {
+  const now = Number(cost) || 0
+  const peak = Number(entry?.[PEAK_COST]) || 0
+  return now > peak ? Math.round(now * 100) / 100 : null
+}
+
+/** Notes the cost an implant has now, when it is the highest the active GM has seen for it. */
+function notePeak(doc) {
+  if (doc?.type !== "itemAugmentation" || !(doc.parent instanceof Actor)) return
+  const cost = doc.system?.essenceCost?.value
+  if (nextPeak(game.settings.get("sr5", IMPLANT_REGISTER)?.[doc.uuid], cost) === null) return
+  return updateLedger(IMPLANT_REGISTER, register => {
+    const peak = nextPeak(register[doc.uuid], cost)
+    if (peak === null) return null
+    register[doc.uuid] = {
+      ...(register[doc.uuid] ?? {
+      }), [PEAK_COST]: peak
+    }
+    return register
+  }).catch(e => console.error("SR5 | implant register", e))
+}
+
+/** A register entry's reserved fields only, without the peak. */
+function fieldsOfEntry(entry, fields) {
+  return entry ? Object.fromEntries(fields.filter(f => f in entry).map(f => [f, entry[f]])) : entry
 }
 
 /** Puts back on `doc` the reserved values a player changed, and tells the gamemaster. */
@@ -185,7 +225,10 @@ async function onCreate(doc, _options, userId) {
   const fields = reservedFieldsOf(doc)
   if (!fields.length || !isActiveGM()) return
   const current = reservedValues(doc.system, fields)
-  if (game.users.get(userId)?.isGM) return record(doc, current)
+  if (game.users.get(userId)?.isGM) {
+    await record(doc, current)
+    return notePeak(doc)
+  }
   const expected = await expectedAtCreation(doc, fields, {
     creation: creationMode()
   })
@@ -194,6 +237,7 @@ async function onCreate(doc, _options, userId) {
   if (Object.keys(mismatches).length) await restore(doc, mismatches, userId, {
     created: true
   })
+  return notePeak(doc)
 }
 
 /** updateItem / updateActor: a gamemaster's write is recorded; a player's change is put back. */
@@ -205,9 +249,9 @@ async function onUpdate(doc, _changes, _options, userId) {
   }
   if (game.users.get(userId)?.isGM) {
     const atDefaults = Object.entries(current).every(([f, v]) => v === RESERVED_DEFAULTS[f])
-    const known = register[doc.uuid] ?? (doc.type !== "itemAugmentation" && atDefaults ? current : null)
+    const known = fieldsOfEntry(register[doc.uuid], fields) ?? (doc.type !== "itemAugmentation" && atDefaults ? current : null)
     if (JSON.stringify(known) !== JSON.stringify(current)) await record(doc, current)
-    return
+    return notePeak(doc)
   }
   const expected = await expectedValues(doc, fields, register, {
     creation: creationMode()
@@ -215,6 +259,8 @@ async function onUpdate(doc, _changes, _options, userId) {
   if (!register[doc.uuid] || !fields.every(f => f in register[doc.uuid])) await record(doc, expected)
   const mismatches = reservedMismatches(current, expected)
   if (Object.keys(mismatches).length) await restore(doc, mismatches, userId)
+  // A rating or a grade lowered does not lower the peak; a higher rating bought raises it
+  return notePeak(doc)
 }
 
 /** deleteItem / deleteActor: the entry goes with the document, and a character's with those of its items. */
@@ -240,6 +286,8 @@ export async function reconcileImplantRegister() {
   // The implants the register does not know yet, and the entries missing a field added since, are written in one go
   const unknown = {
   }
+  const peaks = {
+  }
   for (const actor of game.actors) {
     for (const doc of [actor, ...actor.items]) {
       const fields = reservedFieldsOf(doc)
@@ -252,13 +300,22 @@ export async function reconcileImplantRegister() {
       if (Object.keys(mismatches).length) await restore(doc, mismatches, null, {
         created: !entry
       })
+      // The cost an implant has at the GM's arrival is the first one he sees (PEAK_COST)
+      if (doc.type === "itemAugmentation" && nextPeak(entry, doc.system?.essenceCost?.value) !== null) peaks[doc.uuid] = doc.system.essenceCost.value
     }
   }
-  if (Object.keys(unknown).length) await updateLedger(IMPLANT_REGISTER, latest => {
+  if (Object.keys(unknown).length || Object.keys(peaks).length) await updateLedger(IMPLANT_REGISTER, latest => {
     // What the register holds wins; the fields it lacks are added
     for (const [uuid, values] of Object.entries(unknown)) latest[uuid] = {
       ...values, ...(latest[uuid] ?? {
       })
+    }
+    for (const [uuid, cost] of Object.entries(peaks)) {
+      const peak = nextPeak(latest[uuid], cost)
+      if (peak !== null) latest[uuid] = {
+        ...(latest[uuid] ?? {
+        }), [PEAK_COST]: peak
+      }
     }
     return latest
   })

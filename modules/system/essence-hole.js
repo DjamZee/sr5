@@ -12,7 +12,7 @@ import {
   implantsEssenceLost, essenceHole, essenceSettingOn, ESSENCE_HOLE_SETTING
 } from "./implant-essence.js"
 import {
-  IMPLANT_REGISTER, vouchedMarks
+  IMPLANT_REGISTER, PEAK_COST, vouchedMarks
 } from "./implant-register.js"
 import {
   SR5_UtilityItem
@@ -65,6 +65,15 @@ export function registeredCost(item, entry, actor, compute = (data, body) => SR5
   return Number(data.essenceCost?.value) || 0
 }
 
+/**
+ * The Essence a removed implant leaves lost: the highest cost the active GM ever saw it take (PEAK_COST: a rating or a
+ * grade lowered just before the removal gives nothing back, SR5 p. 53; an implant replaced or improved leaves its
+ * hole, Chrome Flesh p. 74), and never less than its cost at the registered base.
+ */
+export function removedCost(item, entry, actor, compute) {
+  return Math.max(Number(entry?.[PEAK_COST]) || 0, registeredCost(item, entry, actor, compute))
+}
+
 /** The deleteItem hook: an implant removed from a character. */
 async function onImplantDeleted(item) {
   if (item?.type !== "itemAugmentation" || !(item.parent instanceof Actor)) return
@@ -83,7 +92,7 @@ async function onImplantDeleted(item) {
     type: item.type, system: {
       type: item.system?.type, isAccessory: false, transhumanGift: item.system?.transhumanGift,
       essenceCost: {
-        value: registeredCost(item, register[item.uuid], actor)
+        value: removedCost(item, register[item.uuid], actor)
       }
     }
   }

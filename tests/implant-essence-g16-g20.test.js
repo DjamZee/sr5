@@ -6,13 +6,13 @@ import {
   installationFlags, GM_ONLY_FIELDS, hasAdapsine, essenceAdjustment
 } from "../modules/system/implant-essence.js"
 import {
-  holeAfterRemoval, leavesHole, registeredCost
+  holeAfterRemoval, leavesHole, registeredCost, removedCost
 } from "../modules/system/essence-hole.js"
 import {
   reservedChangedBy, valueAfterUpdate, reservedMismatches
 } from "../modules/system/reserved-fields.js"
 import {
-  expectedAtCreation, expectedValues, reservedFieldsOf, sourceReversible, vouchedMarks, sourceEntry
+  expectedAtCreation, expectedValues, reservedFieldsOf, sourceReversible, vouchedMarks, sourceEntry, nextPeak, PEAK_COST
 } from "../modules/system/implant-register.js"
 import {
   mentorMagic
@@ -799,6 +799,41 @@ describe("Apollinaire's review: the marks of a removed implant, an accessory, an
     expect(registeredCost(item, {
       underAdapsine: false
     }, null, compute)).toBe(0.1)
+  })
+  it("keeps the highest cost seen, and leaves it as the hole whatever rating or grade the implant has at its removal", () => {
+    // Bought at rating 2 (1.0), raised honestly to rating 3 (1.5), lowered to rating 1 (0.5) just before the removal
+    let entry = {
+      underAdapsine: false
+    }
+    expect(nextPeak(entry, 1)).toBe(1)
+    entry = {
+      ...entry, [PEAK_COST]: 1
+    }
+    expect(nextPeak(entry, 1.5)).toBe(1.5)
+    entry = {
+      ...entry, [PEAK_COST]: 1.5
+    }
+    expect(nextPeak(entry, 0.5)).toBe(null)
+    const item = {
+      system: {
+        essenceCost: {
+          value: 0.5, base: 0.5, multiplier: ""
+        }
+      }
+    }
+    expect(removedCost(item, entry, null)).toBe(1.5)
+    // A grade raised in surgery (standard 1.0 → alphaware 0.8): the improved implant leaves its hole (Chrome Flesh p. 74)
+    expect(removedCost({
+      system: {
+        essenceCost: {
+          value: 0.8, base: 1, multiplier: ""
+        }
+      }
+    }, {
+      [PEAK_COST]: 1
+    }, null)).toBe(1)
+    // Unknown to the register: its own cost
+    expect(removedCost(item, undefined, null)).toBe(0.5)
   })
   it("reads an unknown grade as standard, never as an implant that costs nothing", () => {
     expect(onActor(implant("cyberware", 2, "alpha"), [])).toBe(2)
