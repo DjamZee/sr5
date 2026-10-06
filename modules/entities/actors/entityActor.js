@@ -1,6 +1,9 @@
 import {
-  SR5 
+  SR5
 } from "../../config.js"
+import {
+  cleanCreatedSource
+} from "../../migration-source-modifiers.js"
 import {
   SR5_EntityHelpers
 } from "../helpers.js"
@@ -266,6 +269,8 @@ export class SR5Actor extends Actor {
 
   async _preCreate(data, options, user) {
     await super._preCreate(data, options, user)
+    // An actor exported prepared (the Mégapack actors) arrives without its computed modifiers
+    cleanCreatedSource(this)
     let createData = {
     }
     foundry.utils.mergeObject(createData, {
@@ -605,8 +610,8 @@ export class SR5Actor extends Actor {
           if (iData.isActive) {
             if (iData.isCumulative) modifierType = "armorAccessory"
             else modifierType = "armor"
+            //The fall resistance takes the whole armor (SR5 p. 174) from itemsProperties.armor in updateResistances
             if (!iData.isAccessory) SR5_EntityHelpers.updateModifier(actor.system.itemsProperties.armor, `${i.name}`, modifierType, iData.armorValue.value)
-            if (!iData.isAccessory && actor.system.resistances.fall) SR5_EntityHelpers.updateModifier(actor.system.resistances.fall, `${i.name}`, modifierType, iData.armorValue.value)
             if (Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
           }
           if (iData.isActive && iData.wirelessTurnedOn) actor.system.matrix.connectedObject.armors[i.uuid] = i.name
@@ -731,6 +736,8 @@ export class SR5Actor extends Actor {
         }
 
         case "itemFocus":
+          //Not prepared again here: its price and availability would add up at each preparation
+          SR5_UtilityItem._resetItemModifiers(i)
           SR5_UtilityItem._handleFocus(iData)
           if (iData.isActive) SR5_CharacterUtility.applyFocusBonus(i, actor)
           switch (iData.type) {

@@ -2,6 +2,9 @@ import {
   hasWeaponTrait, capBallReloadStep, CAP_BALL_STEPS
 } from './weaponTraits.js'
 import {
+  cleanCreatedSource
+} from "../../migration-source-modifiers.js"
+import {
   SR5_UtilityItem 
 } from "./utilityItem.js"
 import {
@@ -52,6 +55,8 @@ export class SR5Item extends Item {
 
   async _preCreate(data, options, user) {
     await super._preCreate(data, options, user)
+    // An item exported prepared, or dragged from a prepared sheet, arrives without its computed modifiers
+    cleanCreatedSource(this)
     const defaultImg = `systems/sr5/assets/img/items/${data.type}.svg`
     if (!data.img || data.img === "icons/svg/item-bag.svg") {
       this.updateSource({

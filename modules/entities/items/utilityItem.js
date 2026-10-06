@@ -158,6 +158,8 @@ export class SR5_UtilityItem extends Actor {
     if (itemData.price) itemData.price.modifiers = []
     if (itemData.availability) itemData.availability.modifiers = []
     if (itemData.essenceCost) itemData.essenceCost.modifiers = []
+    if (itemData.capacityTaken) itemData.capacityTaken.modifiers = []
+    if (item.type === "itemLifestyle" && itemData.point) itemData.point.modifiers = []
 
     //Rest test dicepool
     if (itemData.test){

@@ -2,6 +2,9 @@ import {
   bbPenaltyReduction
 } from "../../system/bb-healing.js"
 import {
+  emptyPreparedModifiers
+} from "../../migration-source-modifiers.js"
+import {
   SR5_EntityHelpers
 } from "../helpers.js"
 import {
@@ -84,6 +87,10 @@ export class SR5_CharacterUtility extends Actor {
   // Reset Actors Properties
   static resetCalculatedValues(actor) {
     let actorData = actor.system, list
+
+    // Every modifiers array is computed: none starts from the source nor from the previous preparation,
+    // including those the resets below forget (the fatigue and fall resistances grew at each preparation)
+    emptyPreparedModifiers(actorData)
 
     // Reset Attributes
     switch (actor.type) {
@@ -197,6 +204,8 @@ export class SR5_CharacterUtility extends Actor {
             case "directSpellMana":
             case "directSpellPhysical":
             case "crashDamage":
+            case "fatigue":
+            case "fall":
               actorData.resistances[key].dicePool = 0
               actorData.resistances[key].modifiers = []
               break

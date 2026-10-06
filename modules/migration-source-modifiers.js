@@ -69,6 +69,23 @@ export function sourceModifiersUpdate(system) {
   return update
 }
 
+/**
+ * At the start of a preparation: empties in place every "modifiers" array of a prepared system, so that
+ * none of them starts from what the source holds nor from the previous preparation. Arrays are not
+ * entered (stored item copies keep theirs), nor the prepared actor copies and the translation lists.
+ * @param {object} system  The prepared system
+ */
+export function emptyPreparedModifiers(system) {
+  const walk = (node, top) => {
+    for (const [key, value] of Object.entries(node)) {
+      if (!value || typeof value !== "object") continue
+      if (key === "modifiers" && Array.isArray(value)) node[key] = []
+      else if (!Array.isArray(value) && !(top && (SNAPSHOTS.has(key) || key === "lists"))) walk(value, false)
+    }
+  }
+  if (system && typeof system === "object") walk(system, true)
+}
+
 // Empties every "modifiers" array of a plain copy, in place
 function emptyModifiers(node) {
   if (!node || typeof node !== "object") return
@@ -76,6 +93,27 @@ function emptyModifiers(node) {
     if (key === "modifiers" && Array.isArray(value)) node[key] = []
     else if (value && typeof value === "object") emptyModifiers(value)
   }
+}
+
+/**
+ * Before a creation (_preCreate): an actor or an item imported from a pack exported prepared arrives clean,
+ * its embedded items too.
+ * @param {Document} document  The actor or item about to be created
+ */
+export function cleanCreatedSource(document) {
+  const update = sourceModifiersUpdate(document._source?.system)
+  if (update) document.updateSource(update)
+  const items = document._source?.items
+  if (!Array.isArray(items) || !items.some(i => computedModifierPaths(i.system).length)) return
+  document.updateSource({
+    items: items.map(item => {
+      const itemUpdate = sourceModifiersUpdate(item.system)
+      if (!itemUpdate) return item
+      const copy = foundry.utils.deepClone(item)
+      for (const [path, value] of Object.entries(itemUpdate)) foundry.utils.setProperty(copy, path, value)
+      return copy
+    })
+  })
 }
 
 // The item updates of a list of item sources ({_id, system})
