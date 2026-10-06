@@ -123,6 +123,21 @@ describe("le MJ applique Soins pour une joueuse", () => {
     expect(patient.applyExternalEffect.mock.calls[0][0].roll.hits).toBe(3)
     expect(patient.applyExternalEffect.mock.calls[0][0].owner.messageId).toBe(null)
   })
+  //Pauline : la définition de la fiche se montre dans la fenêtre des succès, et l'application ne la redemande pas
+  it("une seule fenêtre : la revue de la fiche passe au recomptage, puis à l'application", async () => {
+    const review = {
+      shown: false
+    }
+    const reviewSpy = vi.spyOn(SR5_ActorHelper, "definitionReview").mockResolvedValue(review)
+    try {
+      await ask("joueuse")
+      expect(reviewSpy.mock.calls.at(-1)[1]).toBe(patient)
+      expect(SR5_ActorHelper.checkEffectCard.mock.calls.at(-1)[2]).toBe(review)
+      expect(patient.applyExternalEffect.mock.calls.at(-1)[2]).toBe(review)
+    } finally {
+      reviewSpy.mockRestore()
+    }
+  })
   it("une copie retouchée (un dé de plus) ne soigne pas : une fois par groupe de blessures (p. 207-208, Harriet)", async () => {
     globalThis.ChatMessage = {
       create: vi.fn()

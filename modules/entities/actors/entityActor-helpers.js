@@ -1810,7 +1810,9 @@ export class SR5_ActorHelper {
     }
     //The GM confirms the hits first, and the card is spent only on his yes: a no leaves it to be shown again (S5)
     data.owner.messageId = card.id
-    const roll = await SR5_ActorHelper.checkEffectCard(data, item)
+    //What the player's sheet defines, shown in the same window as the hits: one window (definitionReview)
+    const review = await SR5_ActorHelper.definitionReview(item, patient, "customEffects", data)
+    const roll = await SR5_ActorHelper.checkEffectCard(data, item, review)
     if (!roll || !(await claimHealCard(keys))) return
     //Counted and confirmed: applied without asking again (no card to read is a card already read)
     const applied = await patient.applyExternalEffect({
@@ -1819,7 +1821,7 @@ export class SR5_ActorHelper {
       }, owner: {
         ...data.owner, messageId: null
       }
-    }, "customEffects")
+    }, "customEffects", review)
     //Refused inside, after the GM's yes (Sophie's false): the card is given back and keeps its button
     if (applied === false) return releaseHealCard(keys)
     await recordTreatment(patient.uuid, "heal", woundTotal(patient))
@@ -2204,14 +2206,15 @@ export class SR5_ActorHelper {
     //An effect whose value reads the roll (hits, net hits): the GM does not believe a player's card as it is written
     if (readsRoll(itemData[effectType])) {
       const roll = await SR5_ActorHelper.checkEffectCard(data, item, review)
-      if (!roll) return
+      //Refused: false, so a caller that spent a card gives it back (_socketApplyHealEffect)
+      if (!roll) return false
       data = {
         ...data, roll: {
           ...data.roll, ...roll
         }
       }
     }
-    if (review && !review.shown && !(await SR5_ActorHelper.confirmDefinition(review, data))) return
+    if (review && !review.shown && !(await SR5_ActorHelper.confirmDefinition(review, data))) return false
     // Head case Attribute Boost (Stolen Souls p. 201): lasts a number of combat turns equal to the hits,
     // then the head case takes as many boxes of Stun damage (applied when the effect expires, see SR5Combat.manageTurnEnd)
     let isNaniteBoost = Object.values(itemData.systemEffects || {
