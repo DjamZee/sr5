@@ -5,8 +5,11 @@ import {
   cleanCreatedSource
 } from "../../migration-source-modifiers.js"
 import {
-  SR5_UtilityItem 
+  SR5_UtilityItem
 } from "./utilityItem.js"
+import {
+  implantEssenceEffects
+} from "../../system/implant-essence.js"
 import {
   SR5_CharacterUtility 
 } from "../actors/utilityActor.js"
@@ -62,6 +65,16 @@ export class SR5Item extends Item {
 
   async _preCreate(data, options, user) {
     await super._preCreate(data, options, user)
+    // Système sensible: "Le bioware, quel que soit sa conception ou son type de culture, est rejeté" (SR5 p. 89)
+    if (this.type === "itemAugmentation" && this.parent instanceof Actor) {
+      const rejectedBy = implantEssenceEffects(this.parent.items, this.system?.type).rejectedBy
+      if (rejectedBy) {
+        ui.notifications?.warn(game.i18n.format("SR5.WARN_ImplantRejected", {
+          name: this.name, actor: this.parent.name, quality: rejectedBy
+        }))
+        return false
+      }
+    }
     // An item exported prepared, or dragged from a prepared sheet, arrives without its computed modifiers
     cleanCreatedSource(this)
     const defaultImg = `systems/sr5/assets/img/items/${data.type}.svg`

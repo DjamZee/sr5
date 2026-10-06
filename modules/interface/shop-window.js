@@ -34,6 +34,9 @@ import {
 import {
   shopSettings
 } from './shop-vendor-rules.js'
+import {
+  implantEssenceEffects, implantEssence
+} from '../system/implant-essence.js'
 
 /**
  * Where the shop's goods come from: the world's shelves, the compendiums the
@@ -468,6 +471,15 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       id: s.id, label: `${s.name} (${SR5Credstick.funds(s).toLocaleString()}¥)`, selected: s.id === this._payWith,
     }))] : null
     const offeredByKind = new Map()
+    // An implant's Essence as the buyer's body will take it (Système sensible, Biocompatibilité): the sheet's own
+    // function, once per kind of implant
+    const bodyEffects = new Map()
+    const essenceFor = (entry, essence) => {
+      if (!buyer || entry.type !== 'itemAugmentation' || typeof essence !== 'number') return essence
+      const kind = entry.system?.type
+      if (!bodyEffects.has(kind)) bodyEffects.set(kind, implantEssenceEffects(buyer.items, kind))
+      return implantEssence(essence, bodyEffects.get(kind))
+    }
     const rows = entries.map(entry => {
       const kind = `${entry.type}|${entry.system?.type ?? ''}`
       if (!offeredByKind.has(kind)) offeredByKind.set(kind, SR5Shop.gradesFor(entry.type, entry.system, {
@@ -476,13 +488,15 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       // An implant on a vendor's counter is of the grade it is: the vendor has what it has
       const offered = entry.vendor && !entry.onOrder ? [] : offeredByKind.get(kind)
       const grade = this.#gradeOf(entry, offered)
+      const described = SR5ShopWindow.#described(entry, grade)
       return {
         entry, offered, grade,
         name: entry.name,
         shelf: entry.shelf ?? SR5ShopCatalog.shelfOf(entry),
         sub: entry.sub ?? SR5ShopCatalog.subOf(entry),
         notForSale: SR5ShopStock.isNotForSale(entry),
-        ...SR5ShopWindow.#described(entry, grade),
+        ...described,
+        essence: essenceFor(entry, described.essence),
       }
     })
 
@@ -501,7 +515,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       line.unit = unit
       const total = unit * line.quantity
       cartTotal += total
-      if (described?.essence) cartEssence += described.essence * line.quantity
+      if (described?.essence) cartEssence += essenceFor(row.entry, described.essence) * line.quantity
       // An item on a vendor's counter is there: it adds no search time (SR5 p. 420)
       const onCounter = row?.entry.vendor && !row.entry.onOrder && !SR5ShopVendor.testInStock
       if (described?.availability && !onCounter) cartDelay = Math.max(cartDelay, SR5ShopAvailability.delayFor(total))

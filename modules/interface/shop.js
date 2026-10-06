@@ -17,6 +17,9 @@ import {
   SR5ShopCatalog
 } from './shop-catalog.js'
 import {
+  implantEssenceEffects, essenceAfterPurchase
+} from '../system/implant-essence.js'
+import {
   SR5ShopAvailability
 } from './shop-availability.js'
 import {
@@ -285,6 +288,7 @@ export class SR5Shop {
         }))
         continue
       }
+      if (SR5Shop.rejectedImplant(actor, source)) continue
       const quantity = Math.max(1, Math.floor(Number(line.quantity) || 1))
       const base = SR5Shop.gradedPrice(source.system, grade)
       // The surcharge that bought dice on the card is paid (SR5 p. 420); the search time and the express
@@ -297,6 +301,9 @@ export class SR5Shop {
       })
     }
     if (!resolved.length) return false
+    if (!(await SR5Shop.essenceAllows(actor, resolved.map(line => ({
+      type: line.source.type, name: line.name, system: line.source.system, grade: line.grade, quantity: line.quantity,
+    }))))) return false
 
     const free = equip || SR5Shop.creationMode
     // SR5 p. 420: what has an availability is found after the search time, and waits on the buyer
@@ -446,6 +453,56 @@ export class SR5Shop {
     return ` — ${game.i18n.format(order.express ? 'SR5.ShopOrderNoteExpress' : 'SR5.ShopOrderNote', {
       date: game.time.calendar?.format?.(order.due) ?? ''
     })}`
+  }
+
+  /**
+   * A bioware a sensitive body rejects (SR5 p. 89), read on the buyer's own items: warned, and true.
+   * @param {Function} [warn] how the refusal is told — the vendor tells its requester
+   */
+  static rejectedImplant(actor, source, warn = (key, data) => ui.notifications.warn(game.i18n.format(key, data))) {
+    if (source?.type !== 'itemAugmentation') return false
+    const rejectedBy = implantEssenceEffects(actor?.items, source.system?.type).rejectedBy
+    if (!rejectedBy) return false
+    warn('SR5.WARN_ImplantRejected', {
+      name: source.name, actor: actor.name, quality: rejectedBy
+    })
+    return true
+  }
+
+  /**
+   * "Si jamais l'Essence du personnage atteint 0, c'est la mort" (SR5 p. 54): a purchase that would take the
+   * buyer's Essence to 0 or below is refused to a player; the gamemaster is asked, in his own window, and
+   * may go past it. The Essence and the qualities are read on the actor, on the client that runs the till.
+   * @param {Array<{type, name, system, grade, quantity}>} lines
+   * @param {object} [options]
+   * @param {boolean} [options.isGM] whether the gamemaster is the one buying
+   * @param {Function} [options.warn] how a refusal is told
+   * @returns {Promise<boolean>}
+   */
+  static async essenceAllows(actor, lines, {
+    isGM = game.user.isGM, warn = (key, data) => ui.notifications.warn(game.i18n.format(key, data))
+  } = {
+  }) {
+    const current = actor?.system?.essence?.value
+    if (typeof current !== 'number') return true
+    const {
+      essence
+    } = essenceAfterPurchase(current, actor.items, lines)
+    if (essence > 0 || essence >= current) return true
+    const data = {
+      name: actor.name, essence: essence.toLocaleString()
+    }
+    if (!isGM) {
+      warn('SR5.WARN_ShopEssenceTooLow', data)
+      return false
+    }
+    return await foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: game.i18n.localize('SR5.ShopEssenceConfirmTitle')
+      },
+      content: `<p>${game.i18n.format('SR5.ShopEssenceConfirmText', data)}</p>`,
+      rejectClose: false,
+    }) === true
   }
 
   /** `Nom (Alphaware)` when a grade was chosen. */

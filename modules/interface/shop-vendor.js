@@ -733,12 +733,15 @@ export class SR5ShopVendor {
     const free = equip || SR5Shop.creationMode
     const terms = request.express === true ? currentExpress() : null
     const limits = !equip && SR5Shop.creationMode ? SR5Shop.creationLimits : null
+    // Told to the requester; read on the buyer here, on the gamemaster's client, never from the request
+    const warnRequester = (key, data) => SR5ShopVendor.#notify(requester, 'warn', key, data)
     const resolved = []
     for (const {
       item, quantity
     } of ok) {
       if (!SR5ShopStock.isSellableType(item.type)) continue
       if (SR5ShopStock.isNotForSale(item) && !byGM) continue
+      if (SR5Shop.rejectedImplant(buyer, item, warnRequester)) continue
       const described = SR5ShopCatalog.describe({
         type: item.type, system: counterSystem(item), margin: shop.margin
       })
@@ -777,6 +780,7 @@ export class SR5ShopVendor {
         equip
       })
       const grade = offered.includes(line.grade) ? line.grade : null
+      if (SR5Shop.rejectedImplant(buyer, source, warnRequester)) continue
       const described = SR5ShopCatalog.describe({
         type: source.type, system: source.system, margin: shop.margin
       }, grade)
@@ -804,6 +808,13 @@ export class SR5ShopVendor {
       })
     }
     if (!resolved.length) return false
+    // SR5 p. 54: an Essence at 0 is death. A player's request is refused; the gamemaster is asked in his window
+    if (!(await SR5Shop.essenceAllows(buyer, resolved.map(line => ({
+      type: (line.item ?? line.source).type, name: line.name, system: (line.item ?? line.source).system,
+      grade: line.grade ?? null, quantity: line.quantity,
+    })), {
+      isGM: byGM, warn: warnRequester
+    }))) return false
     const total = resolved.reduce((sum, line) => sum + line.total + (line.extra ?? 0), 0)
 
     // How the buyer pays: the accounts, or a credstick carried on them (SR5 p. 445)
