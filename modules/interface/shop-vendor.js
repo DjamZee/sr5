@@ -1121,7 +1121,9 @@ export class SR5ShopVendor {
     if (!lines.length) return false
     const open = SR5ShopVendor.openOfferOn(actor.uuid, seller.id, lines.map(line => line.item.id))
     if (open) {
-      SR5ShopVendor.#notify(requester, 'warn', 'SR5.WARN_ShopVendorOfferOpen', {
+      // Still open: answer it; declined: locked until the gamemaster lifts it (S9, Quitterie)
+      const key = SR5ShopVendor.isOfferOpen(open) ? 'SR5.WARN_ShopVendorOfferOpen' : 'SR5.WARN_ShopVendorOfferLocked'
+      SR5ShopVendor.#notify(requester, 'warn', key, {
         shop: label
       })
       return false

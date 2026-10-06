@@ -160,12 +160,14 @@ let confirmAnswer = {
 }
 let confirmations = 0
 let reviews = []
+// The keys of the messages the gamemaster sends a player (#notify)
+const notices = []
 
 beforeEach(async () => {
   vi.resetModules()
   vi.doMock('../modules/socket.js', () => ({
     SR5_SocketHandler: {
-      emitForPlayer: async () => {}, emitForGM: async () => {}
+      emitForPlayer: async (type, data) => notices.push(data?.key), emitForGM: async () => {}
     }
   }))
   ;({
@@ -510,6 +512,8 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
       itemId: 'gun', quantity: 1
     }]), player.id)).toBe(false)
     expect(messages.size).toBe(1)
+    await vi.dynamicImportSettled()
+    expect(notices.at(-1)).toBe('SR5.WARN_ShopVendorOfferOpen')
     // The seller declines: the item stays locked at this vendor
     expect(await SR5ShopVendor.decline({
       messageId: 'm0'
@@ -519,6 +523,9 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
       itemId: 'gun', quantity: 1
     }]), player.id)).toBe(false)
     expect(roll.mock.calls.length).toBe(rolls)
+    // Not "accept or decline it first": it is declined, and only the gamemaster lifts the lock (S9, Quitterie)
+    await vi.dynamicImportSettled()
+    expect(notices.at(-1)).toBe('SR5.WARN_ShopVendorOfferLocked')
     // A player cannot lift the lock; the gamemaster can
     expect(await SR5ShopVendor.unlock({
       messageId: 'm0'

@@ -1408,6 +1408,7 @@
 	"SR5.WARN_ShopVendorNoStick": "This credstick is not on the buyer.",
 	"SR5.WARN_ShopVendorOfferGone": "{name} is no longer there, or not in that quantity: nothing is sold.",
 	"SR5.WARN_ShopVendorOfferOpen": "{shop} already made an offer on this item: accept or decline it first.",
+	"SR5.WARN_ShopVendorOfferLocked": "You declined {shop}'s offer on this item: only the GM can unlock it (“Unlock (GM)” on the offer card) before a new request.",
 	"SR5.WARN_ShopVendorRefused": "{name} refuses the sale.",
 	"SR5.description": "An advanced game system for running games of Shadowrun 5 within the virtual tabletop FoundryVTT environment.",
 	"SR5.Description": "Description",
