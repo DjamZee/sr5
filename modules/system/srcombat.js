@@ -587,7 +587,9 @@ export class SR5Combat extends Combat {
     if (!game.combat) return
     let combatant
     if (document.isToken) combatant = game.combat.combatants.find(c => c.tokenId === document.token.id)
-    else combatant = game.combat.combatants.find(c => c.actorId === document.id)
+    //The base actor of unlinked tokens is none of them: its sheet, opened from the actors list, spent the actions
+    //of the first token of the combat (Blandine)
+    else combatant = game.combat.combatants.find(c => c.actorId === document.id && c.token?.actorLink !== false)
     return combatant
   }
 
