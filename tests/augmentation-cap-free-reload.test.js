@@ -332,6 +332,26 @@ describe('reload without spending an action (house rule, off by default)', () =>
     expect(item.update).not.toHaveBeenCalled()
   })
 
+  //M2-4, SR5 p. 167: a clip is removed from a ready weapon in a simple action, full or not
+  it('ejects a full clip', async () => {
+    const item = weapon(30)
+    item.actor.system.specialProperties.actions.simple.current = 2
+    item.system.ammunition.value = 15
+    item.system.ammunition.clipInserted = true
+    await item.reloadAmmo('remove')
+    expect(item.update.mock.calls[0][0].system.ammunition.value).toBe(0)
+    expect(SR5Combat.changeActionInCombat).toHaveBeenCalled()
+  })
+
+  it('says why a full weapon is not reloaded', async () => {
+    globalThis.ui.notifications.info = vi.fn()
+    const item = weapon(30)
+    item.system.ammunition.value = 15
+    await item.reloadAmmo('insert')
+    expect(ui.notifications.info).toHaveBeenCalledWith('SR5.INFO_AmmoAlreadyFull')
+    expect(item.update).not.toHaveBeenCalled()
+  })
+
   it('keeps the cost of ejecting a clip alone', async () => {
     settings.sr5FreeReload = true
     const item = weapon(30)

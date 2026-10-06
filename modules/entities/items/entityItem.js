@@ -571,8 +571,9 @@ export class SR5Item extends Item {
       ammoSpent = weaponData.ammunition.max - weaponData.ammunition.value,
       ammoNeeded, action, stop = false, falseAmmo = false
 
-    if (ammoSpent < 1) return
-    if (weaponData.ammunition.casing === "") return ui.notifications.warn(game.i18n.localize("SR5.WARN_MissingCasing"))
+    //SR5 p. 167: a clip is removed from a ready weapon, full or not (M2-4); a full weapon takes no more rounds
+    if (ammoSpent < 1 && option !== "remove") return ui.notifications.info(game.i18n.localize("SR5.INFO_AmmoAlreadyFull"))
+    if (weaponData.ammunition.casing === "")return ui.notifications.warn(game.i18n.localize("SR5.WARN_MissingCasing"))
 
     //House rule (world setting, off by default): with the right rounds in the inventory, reloading spends no action
     let hasAmmo = actor.items.some((i) => i.type === "itemAmmunition" && (i.system.type === weaponData.ammunition.type) && (i.system.class === weaponData.type) && i.system.quantity > 0)
