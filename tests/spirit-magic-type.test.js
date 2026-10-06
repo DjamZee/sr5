@@ -7,7 +7,7 @@ import {
 
 // A spirit is a magical being: its astral values (astral damage, astral defense, drain resistance) are
 // computed for magicType "spirit". V12's template.json stored it; the V13 shared magic schema starts
-// empty and nothing filled it, so every spirit created since dealt 0 astral damage (SR5 p. 315).
+// empty and nothing filled it, so every spirit created since dealt 0 astral damage (SR5 p. 318).
 
 import {
   SR5_CharacterUtility
@@ -78,7 +78,7 @@ describe("spirits are magical beings", () => {
     expect(prepared(spirit("air", 4)).magicType).toBe("spirit")
   })
 
-  it("deal their Force in astral damage, 1 for a homunculus (SR5 p. 315)", () => {
+  it("deal their Force in astral damage, 1 for a homunculus (SR5 p. 318)", () => {
     expect(prepared(spirit("air", 4)).astralDamage.value).toBe(4)
     expect(prepared(spirit("homunculus", 4)).astralDamage.value).toBe(1)
   })

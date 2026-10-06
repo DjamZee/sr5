@@ -3242,7 +3242,7 @@ export class SR5_CharacterUtility extends Actor {
     magic.astralDamage.base = 0
     if ((actor.type === "actorPc") || (actor.type === "actorGrunt")) SR5_EntityHelpers.updateModifier(magic.astralDamage, `${game.i18n.localize('SR5.Charisma')}`, "linkedAttribute", attributes.charisma.augmented.value)
     if (actor.type === "actorSpirit") {
-      // Watchers and homunculi deal 1 astral damage (SR5 p. 315), custom types based on them included
+      // Watchers and homunculi deal 1 astral damage (SR5 p. 318), custom types based on them included
       if (["homunculus", "watcher"].includes(SR5_SpiritTypes.baseType(actorData.type))) {
         SR5_EntityHelpers.updateModifier(magic.astralDamage, SR5_SpiritTypes.label(actorData.type), "actorSpirit", 1)
       } else {

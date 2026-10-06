@@ -3,7 +3,7 @@ import {
 } from "vitest"
 
 // SR5 p. 301: a homunculus sprints x2/x4/+1 and is always physical; watchers and homunculi deal
-// 1 astral damage (SR5 p. 315). Custom spirit types based on them follow the same rules.
+// 1 astral damage (SR5 p. 318). Custom spirit types based on them follow the same rules.
 
 import {
   SR5
@@ -123,7 +123,7 @@ describe("custom types based on a homunculus or a watcher", () => {
     expect(actor.system.isMaterializing).toBe(false)
   })
 
-  it("watchers and homunculi deal 1 astral damage, custom ones included (SR5 p. 315)", () => {
+  it("watchers and homunculi deal 1 astral damage, custom ones included (SR5 p. 318)", () => {
     custom("clayServant", "homunculus")
     custom("sentry", "watcher")
     expect(astralDamage(spirit("homunculus"))).toBe(1)
