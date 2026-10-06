@@ -10,3 +10,16 @@ export const ACTION_DRIVEN_TYPES = ["itemPower", "itemSpritePower", "itemAdeptPo
 export function isAlwaysActive(item) {
   return ACTION_DRIVEN_TYPES.includes(item?.type) && ALWAYS_ACTIVE_ACTIONS.includes(item?.system?.actionType)
 }
+
+// The powers types the GM macro switches on, on sheets made before: creature and sprite powers (H39). Adept
+// powers and techniques were already switched on when dropped, being "permanent"
+export const MACRO_TYPES = ["itemPower", "itemSpritePower"]
+
+// The items of a sheet the GM macro switches on: always active, of a macro type, and off. Running it again finds
+// nothing more to do
+export function planActivation(items) {
+  return [...(items ?? [])].filter(i => MACRO_TYPES.includes(i?.type) && isAlwaysActive(i) && !i.system?.isActive)
+    .map(i => ({
+      id: i.id ?? i._id, name: i.name
+    }))
+}

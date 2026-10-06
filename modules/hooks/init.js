@@ -296,6 +296,9 @@ import {
 import {
   convertMentorQualities, revertMentorConversion
 } from "../entities/items/mentor-conversion.js"
+import {
+  activateAutomaticPowers
+} from "../entities/items/always-active-macro.js"
 
 export async function sr5HookInit() {
   SR5_SystemHelpers.registerSystemSettings()
@@ -360,6 +363,8 @@ export async function sr5HookInit() {
     // GM macro: old-style Mentor Spirit qualities -> quality linked to a mentor item (SR5 p. 76), and back
     convertMentorQualities,
     revertMentorConversion,
+    // GM macro: switch on the always active powers of the sheets made before (SR5 p. 396, H39)
+    activateAutomaticPowers,
   }
 
   // Register DataModels
