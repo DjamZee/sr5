@@ -873,6 +873,7 @@
 	"SR5.RADIATION_SceneHint": "Rigueur des radiations de la scène (Run & Gun p. 164-165). Rien ne se passe sans le bouton : il ouvre la liste des personnages exposés.",
 	"SR5.RADIATION_Expose": "Exposer aux radiations",
 	"SR5.RADIATION_Exposed": "{actor} : exposé, ressent une rigueur {level} ; premier test le {time}.",
+	"SR5.RADIATION_ActiveGMOnly": "Seul le MJ actif tient le registre des radiations.",
 	"SR5.RADIATION_Shielded": "{actor} : Antirad / Tolérance, aucun effet.",
 	"SR5.RADIATION_Due": "{actor} ({level}) : test de résistance, Puissance {power}.",
 	"SR5.RADIATION_End": "Fin d'exposition",

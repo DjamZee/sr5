@@ -129,10 +129,11 @@ export default async function resistanceInfo(cardData, actorId){
 function handlePreviousButtons(cardData) {
   let originalMessage, prevData
 
-  if (cardData.previousMessage.messageId) {
-    originalMessage = game.messages.get(cardData.previousMessage.messageId)
-    prevData = originalMessage.flags?.sr5data
-  }
+  //No previous card (a drug crash, for one): no button to remove, and nothing to relay to the GM
+  if (!cardData.previousMessage?.messageId) return
+
+  originalMessage = game.messages.get(cardData.previousMessage.messageId)
+  prevData = originalMessage?.flags?.sr5data
 
   if ((prevData?.test.type === "spell" || prevData?.test.type === "preparation") && prevData?.magic.spell.range === "area");
   else if (prevData?.test.typeSub === "grenade" || prevData?.combat?.grenade?.isGrenade);

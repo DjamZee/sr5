@@ -165,7 +165,7 @@ const endButton = () => `<button type="button" data-sr5-radiation="end">${game.i
 
 // The GM exposes characters of a scene; the level comes from the scene, he can change it in the window
 export async function exposeToRadiation(scene){
-  if (!isActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.DISEASE_ActiveGMOnly"))
+  if (!isActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.RADIATION_ActiveGMOnly"))
   const sceneActors = (scene?.tokens ?? []).map(t => t.actor).filter(a => a && (a.type === "actorPc" || a.type === "actorGrunt"))
   const candidates = [...new Map(sceneActors.map(a => [a.uuid, a])).values()]
   if (!candidates.length) return ui.notifications.warn(game.i18n.localize("SR5.DISEASE_NoTarget"))
@@ -244,7 +244,7 @@ export async function checkRadiation(){
 // only a roll carrying it can be applied, and only once
 async function requestTest(entryId){
   //The ledger is the active GM's: another GM's request would carry no token
-  if (!isActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.DISEASE_ActiveGMOnly"))
+  if (!isActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.RADIATION_ActiveGMOnly"))
   const entry = radiationLedger().exposures?.[entryId]
   if (!entry || entry.state !== "open") return
   const actor = await fromUuid(entry.actorUuid)
@@ -274,7 +274,7 @@ async function requestTest(entryId){
 }
 
 async function endExposure(entryId){
-  if (!isActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.DISEASE_ActiveGMOnly"))
+  if (!isActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.RADIATION_ActiveGMOnly"))
   const entry = radiationLedger().exposures?.[entryId]
   if (!entry || entry.state !== "open") return
   await writeEntry({
@@ -294,7 +294,7 @@ export function activateRadiationDueListeners(html, message){
     const btn = event.currentTarget
     const id = btn.closest(".sr5-radiation-row")?.dataset.exposureId
     if (!id) return
-    if (!isActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.DISEASE_ActiveGMOnly"))
+    if (!isActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.RADIATION_ActiveGMOnly"))
     btn.disabled = true
     if (btn.dataset.sr5Radiation === "end") await endExposure(id)
     else await requestTest(id)

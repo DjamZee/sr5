@@ -873,6 +873,7 @@
 	"SR5.RADIATION_SceneHint": "Radiation severity of the scene (Run & Gun p. 164-165). Nothing happens without the button: it opens the list of exposed characters.",
 	"SR5.RADIATION_Expose": "Expose to radiation",
 	"SR5.RADIATION_Exposed": "{actor}: exposed, feels a {level} severity; first test on {time}.",
+	"SR5.RADIATION_ActiveGMOnly": "Only the active GM keeps the radiation ledger.",
 	"SR5.RADIATION_Shielded": "{actor}: Antirad / tolerance, no effect.",
 	"SR5.RADIATION_Due": "{actor} ({level}): resistance test, Power {power}.",
 	"SR5.RADIATION_End": "End exposure",
