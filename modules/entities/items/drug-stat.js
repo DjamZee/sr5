@@ -129,3 +129,9 @@ export function isSameDrug(a, b){
   const custom = a.system?.quality === "custom" || b.system?.quality === "custom"
   return !custom || a.name === b.name
 }
+
+// The drugs of a mix, each counted once: the roll has one die per drug and the street modifier +1 per drug
+// (Chrome Flesh p. 196), however many copies of it are under effect. Every copy still undergoes the result
+export function distinctDrugs(drugs){
+  return drugs.filter((d, i) => !drugs.slice(0, i).some(o => isSameDrug(o, d)))
+}

@@ -18,7 +18,7 @@ import {
   SR5_CharacterUtility
 } from '../modules/entities/actors/utilityActor.js'
 import {
-  isSameDrug
+  distinctDrugs, isSameDrug
 } from '../modules/entities/items/drug-stat.js'
 
 let die = 4
@@ -94,6 +94,11 @@ describe('isSameDrug: two copies of a drug are not a mix', () => {
   it('two custom drugs on the same base but named apart are two drugs (Chrome Flesh p. 194)', () => {
     expect(isSameDrug(drug("Jazz de Zoé", "jazz", "custom"), drug("Jazz de Max", "jazz", "custom"))).toBe(false)
     expect(isSameDrug(drug("Jazz de Zoé", "jazz", "custom"), drug("Jazz de Zoé", "jazz", "custom"))).toBe(true)
+  })
+  // Chrome Flesh p. 196, "1D6 pour chaque drogue en plus de la première"
+  it('distinctDrugs counts two Jazz under effect once, a third drug apart', () => {
+    const mix = [drug("Jazz", "jazz"), drug("Jazz", "jazz", "street"), drug("Langue animale", "animalTongue")]
+    expect(distinctDrugs(mix).map(d => d.name)).toEqual(["Jazz", "Langue animale"])
   })
   it('a drug without key is never the same as another', () => {
     expect(isSameDrug({

@@ -84,7 +84,7 @@ import {
   addictionWeeks, focusAddictionRating
 } from "../../rolls/roll-helpers/addiction.js"
 import {
-  warnDrugWithoutStat, drugAddictionThreshold, drugInteractionModifier, effectiveDrugQuality, drugCrashIsInstant, drugHasCrash, isSameDrug
+  warnDrugWithoutStat, drugAddictionThreshold, drugInteractionModifier, effectiveDrugQuality, drugCrashIsInstant, drugHasCrash, isSameDrug, distinctDrugs
 } from "../items/drug-stat.js"
 import {
   reagentSystem, hasTiers
@@ -1621,7 +1621,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
             let interactionDrug = actor.items.filter((d) => d.type === "itemDrug" && d.id !== item._id && !isSameDrug(d, item) && (d.system.isActive || (d.system.wirelessTurnedOn && !drugCrashIsInstant(d.system))))
             if (interactionDrug.length > 0) {
               let roll, interactionDiceResult, drugs = []
-              roll = new Roll(`${interactionDrug.length}d6`)
+              //"1D6 pour chaque drogue en plus de la première" (Chrome Flesh p. 196): two copies of Jazz under effect are one drug
+              roll = new Roll(`${distinctDrugs(interactionDrug).length}d6`)
               interactionDiceResult = await roll.evaluate()
 
               //The drugs are changed in the item list, which the actor update below writes back: a separate
@@ -1638,7 +1639,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
               //Chrome Flesh p. 194: +1 for each street drug of the mix, -1 when all of them are custom.
               //The table (Chrome Flesh p. 197) has no row below 1: a lower total reads row 1, not the default one (14+, 10P). This floor
               //is a reading by Élise, the coordinator, not a text of the book
-              const interactionTotal = Math.max(1, interactionDiceResult.total + drugInteractionModifier(mixedDrugs.map(d => effectiveDrugQuality(d.system, actor))))
+              const interactionTotal = Math.max(1, interactionDiceResult.total + drugInteractionModifier(distinctDrugs(mixedDrugs).map(d => effectiveDrugQuality(d.system, actor))))
 
               switch(interactionTotal){
                 case 1:
