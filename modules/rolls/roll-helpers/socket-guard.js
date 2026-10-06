@@ -187,9 +187,17 @@ export function matrixDamageAllowed(changes, stored, size, damage) {
   if (!monitor.matrix || Object.keys(monitor.matrix).some(key => key !== "actual")) return false
   const before = stored?.conditionMonitors?.matrix?.actual ?? {
   }
-  for (const [key, value] of Object.entries(monitor.matrix.actual ?? {
-  })) {
+  const actual = monitor.matrix.actual ?? {
+  }
+  for (const [key, value] of Object.entries(actual)) {
     if (!["base", "value"].includes(key)) return false
+    //The value is worked out from the base when the item is prepared, and stored as 0: a player's browser sends the
+    //prepared one (Hortense, measured: every relay was refused). It stands only as the new base, within the monitor
+    if (key === "value") {
+      const base = "base" in actual ? actual.base : before.base
+      if (!isNumber(value) || value !== Number(base) || value > size) return false
+      continue
+    }
     const was = Number(before[key]) || 0
     if (!isNumber(value) || value < was || value > size || value - was > damage) return false
   }
