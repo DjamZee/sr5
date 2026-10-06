@@ -66,6 +66,10 @@ describe('drug durations rolled as the book says', () => {
       const stat = await shots(key)
       expect(formulas).toContain('1d6 * 10')
       expect(formulas).not.toContain('10d6')
+      // The bounds of what was rolled, read off the formula with every die at 1, then at 6: 10 to 60 minutes
+      const formula = formulas.find(f => /d6/.test(f))
+      const at = face => Function(`return ${formula.replace(/(\d+)d6/g, (m, n) => `(${n} * ${face})`)}`)()
+      expect([at(1), at(6)]).toEqual([10, 60])
       expect(stat.duration).toBe(30)
       expect(stat.durationType).toBe('minute')
     })
