@@ -2,10 +2,27 @@ import {
   describe, it, expect, vi
 } from "vitest"
 
-vi.hoisted(() => {
+const defaultDrops = vi.hoisted(() => {
   globalThis.CONFIG ??= {
   }
+  const drops = []
+  // Foundry's ActorSheetV2: its own drop is only recorded
+  globalThis.foundry.applications.sheets ??= {
+  }
+  globalThis.foundry.applications.sheets.ActorSheetV2 = class {
+    _onRender(){}
+    async _onDropItem(event, item){
+      drops.push(item)
+      return item
+    }
+  }
+  return drops
 })
+vi.mock("../modules/socket.js", () => ({
+  SR5_SocketHandler: {
+    emitForGM: vi.fn(),
+  },
+}))
 
 import {
   readFileSync
@@ -16,6 +33,10 @@ import {
 import {
   isAlwaysActive
 } from "../modules/entities/items/always-active.js"
+
+const {
+  ActorSheetSR5
+} = await import("../modules/entities/actors/baseSheet.js")
 
 // Some powers « sont toujours actifs et ne nécessitent donc aucune action pour leur activation ; ils sont listés
 // avec une action « automatique » » (SR5 p. 396). Given to a new spirit, they used to arrive switched off: the
@@ -55,12 +76,53 @@ describe("a power dropped on a sheet", () => {
     })).toBe(false)
   })
 
-  // Before H39, the three sheets switched on "permanent" only: an automatic Immunity dropped by hand stayed off
-  it("by the character, grunt and spirit sheets, through the same rule", () => {
+  // In V13, ActorSheetV2._onDropItem creates the item itself: the sheets' _onDropItemCreate is never called
+  // (measured, Wandrille then Prosper). The rule sits on the path really taken, in the base sheet
+  it("through the base sheet's _onDropItem, the path V13 really takes", async () => {
+    const created = []
+    globalThis.Item = {
+      implementation: {
+        create: vi.fn(async (data, options) => created.push([data, options]) && data)
+      }
+    }
+    const sheet = {
+      actor: {
+        isOwner: true, uuid: "Actor.spirit", items: new Map()
+      }
+    }
+    const dropped = (actionType, extra = {
+    }) => ({
+      id: "pow", parent: null, ...extra,
+      toObject: () => ({
+        type: "itemPower", name: "Immunité", system: {
+          actionType, isActive: false
+        }
+      })
+    })
+    await ActorSheetSR5.prototype._onDropItem.call(sheet, {
+    }, dropped("automatic"))
+    expect(created[0][0].system.isActive).toBe(true)
+    expect(created[0][1]).toEqual({
+      parent: sheet.actor, keepId: true
+    })
+    // Anything else, and a move within the same sheet, is Foundry's own drop
+    defaultDrops.length = 0
+    await ActorSheetSR5.prototype._onDropItem.call(sheet, {
+    }, dropped("complex"))
+    await ActorSheetSR5.prototype._onDropItem.call(sheet, {
+    }, dropped("automatic", {
+      parent: {
+        uuid: "Actor.spirit"
+      }
+    }))
+    expect(defaultDrops).toHaveLength(2)
+    expect(created).toHaveLength(1)
+  })
+
+  it("the sheets' own handlers would say the same, were they called again", () => {
     for (const sheet of ["characterSheet", "gruntSheet", "spiritSheet"]) {
       const source = readFileSync(new URL(`../modules/entities/actors/${sheet}.js`, import.meta.url), "utf8")
       expect(source).toContain("isAlwaysActive(")
-      expect(source).not.toContain('actionType === "permanent") ')
     }
   })
 })

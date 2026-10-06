@@ -33,6 +33,9 @@ import {
 } from "../../socket.js"
 import SR5_PanDialog from "../../interface/pan-dialog.js"
 import {
+  isAlwaysActive
+} from "../items/always-active.js"
+import {
   SR5Credstick 
 } from "../../interface/credstick.js"
 import {
@@ -870,6 +873,23 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
 
     await super._onDrop(event)
+  }
+
+  /**
+   * An item dropped from elsewhere. In V13, ActorSheetV2._onDropItem creates it directly: the sheets'
+   * _onDropItemCreate is never called (measured, Foundry 13.351). An always active power (SR5 p. 396) comes
+   * switched on (arbitrage de DjamZ, H39); everything else is Foundry's own drop.
+   */
+  async _onDropItem(event, item) {
+    if (!this.actor.isOwner) return null
+    if (this.actor.uuid === item.parent?.uuid) return super._onDropItem(event, item)
+    const data = item.toObject()
+    if (!isAlwaysActive(data)) return super._onDropItem(event, item)
+    data.system.isActive = true
+    const keepId = !this.actor.items.has(item.id)
+    return (await Item.implementation.create(data, {
+      parent: this.actor, keepId
+    })) ?? null
   }
 
   // Handles initiative switching from the derived attributes tab
