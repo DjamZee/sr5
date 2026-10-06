@@ -2024,6 +2024,18 @@ SR5.preparationTriggerTypes = {
   time                      : "SR5.PreparationTriggerTime",
 }
 
+// Loss of Potency (SR5 p. 309): hours at full Potency (Potency × 2, 3 or 4) and pace of the loss (Fixation, p. 329)
+SR5.preparationFullPotency = {
+  2                         : "SR5.PreparationFullPotency2",
+  3                         : "SR5.PreparationFullPotency3",
+  4                         : "SR5.PreparationFullPotency4",
+}
+
+SR5.preparationDecayRates = {
+  hour                      : "SR5.PreparationDecayHour",
+  day                       : "SR5.PreparationDecayDay",
+}
+
 // Type d'action des pouvoirs d'adepte
 SR5.powerActionTypes = {
   free                      : "SR5.ActionTypeFree",

@@ -2,3 +2,20 @@
     <div class="col-4">{{localize 'SR5.PreparationPotency'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-8"><input type="number" data-dtype="Number" name="system.potency" value="{{system.potency}}" placeholder="1" onfocus="this.select()"/></div>
 </li>
+{{!-- Loss of Potency on the world clock (SR5 p. 309): the gamemaster's (system/preparation-potency.js) --}}
+<li class="grid" data-tooltip="{{localize 'SR5.PreparationFullPotency_D'}}">
+    <div class="col-4">{{localize 'SR5.PreparationFullPotency'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8">
+        <select name="system.fullPotencyMultiplier" data-dtype="Number" {{#unless userIsGM}}disabled{{/unless}}>
+            {{selectOptions lists.preparationFullPotency selected=system.fullPotencyMultiplier localize=true}}
+        </select>
+    </div>
+</li>
+<li class="grid" data-tooltip="{{localize 'SR5.PreparationDecayRate_D'}}">
+    <div class="col-4">{{localize 'SR5.PreparationDecayRate'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8">
+        <select name="system.decayRate" data-dtype="String" {{#unless userIsGM}}disabled{{/unless}}>
+            {{selectOptions lists.preparationDecayRates selected=system.decayRate localize=true}}
+        </select>
+    </div>
+</li>

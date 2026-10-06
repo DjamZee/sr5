@@ -33,6 +33,9 @@ import {
   initDrugClock
 } from "../system/drug-clock.js"
 import {
+  initPreparationPotency
+} from "../system/preparation-potency.js"
+import {
   initDiseases
 } from "../system/diseases.js"
 import {
@@ -97,6 +100,8 @@ export function sr5HookReady() {
   initDeadlines()
   // Drugs: end of the effect and of the crash on the clock (SR5 p. 411-412, Chrome Flesh p. 194)
   initDrugClock()
+  // Alchemical preparations: loss of Potency on the clock (SR5 p. 309)
+  initPreparationPotency()
   // Diseases: incubation and resistance tests on the clock (Run Faster p. 111-112)
   initDiseases()
   initHunger()

@@ -720,6 +720,11 @@ export class SR5_ThirdPartyHelpers {
           img: `systems/sr5/assets/img/items/itemPreparation.svg`,
           ["system.trigger"]: messageData.magic.preparationTrigger,
           ["system.potency"]: messageData.previousMessage.hits - messageData.roll.hits,
+          //Its Potency is lost on the world clock from now on (SR5 p. 309, system/preparation-potency.js)
+          ["system.createdAt"]: game.time.worldTime,
+          ["system.initialPotency"]: messageData.previousMessage.hits - messageData.roll.hits,
+          ["system.fullPotencyMultiplier"]: 2,
+          ["system.decayRate"]: "hour",
           ["system.force"]: messageData.magic.force,
           ["system.freeSustain"]: true,
           ["system.hits"]: 0,

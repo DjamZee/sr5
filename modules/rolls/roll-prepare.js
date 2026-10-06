@@ -216,6 +216,8 @@ export class SR5_PrepareRollTest {
         rollData = await SR5_GetRollData.powerDefense(rollData, actor, chatData)
         break
       case "preparation":
+        // SR5 p. 309: at 0 Potency the preparation is no longer magical, its spell is lost
+        if (!(Number(item.system?.potency) > 0)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_PreparationSpent"))
         rollData = await SR5_GetRollData.preparation(rollData, actor, item)
         break
       case "preparationFormula":
