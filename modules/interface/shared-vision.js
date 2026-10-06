@@ -203,7 +203,8 @@ export class SR5SharedVision {
   static refreshIfListed(actor) {
     if (game.user.isGM) return
     const listed = Array.from(canvas?.scene?.tokens ?? []).some(t => (t.actor === actor || t.actorId === actor?.id) && isSharedWith(t, game.user.id))
-    if (listed) SR5SharedVision.refresh()
+    //Drawn on the next turn: an unlinked token's actor takes the change of its base actor after this hook (measured)
+    if (listed) setTimeout(() => SR5SharedVision.refresh(), 0)
   }
 
   //Draw again what the user sees, and the list of what he sees through
