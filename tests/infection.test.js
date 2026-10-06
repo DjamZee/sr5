@@ -2,7 +2,7 @@ import {
   describe, it, expect
 } from "vitest"
 import {
-  infectorPool, victimPool, infectionWins, canBeInfected, canInfect, newComa, comasDue, essenceBaseForOne, COMA,
+  infectorPool, victimPool, infectionWins, canBeInfected, canInfect, isInfectionPower, victimLabel, newComa, comasDue, essenceBaseForOne, COMA,
   IN_COMA, RESISTED, WOKEN
 } from "../modules/system/infection.js"
 
@@ -55,20 +55,41 @@ describe("Infection (SR5 p. 401)", () => {
     expect(canBeInfected(at("actorSpirit", 0))).toBe(false)
   })
 
-  it("is carried by a creature that drains Essence", () => {
-    expect(canInfect({
+  it("is carried by a creature with the Infection power and Essence Drain, not by a mere drainer", () => {
+    const creature = (drain, names) => ({
       system: {
         specialProperties: {
-          essenceDrain: true
+          essenceDrain: drain
         }
-      }
-    })).toBe(true)
-    expect(canInfect({
-      system: {
-        specialProperties: {
-        }
-      }
+      },
+      items: names.map(name => ({
+        type: "itemPower", name
+      }))
+    })
+    expect(canInfect(creature(true, ["Drain d'Essence", "Infection"]))).toBe(true)
+    expect(canInfect(creature(true, ["Infection (VVHMH)"]))).toBe(true)
+    // A chupacabra drains Essence but has no Infection power (SR5 p. 401: "a creature with this power")
+    expect(canInfect(creature(true, ["Drain d'Essence", "Arme naturelle"]))).toBe(false)
+    expect(canInfect(creature(false, ["Infection"]))).toBe(false)
+    expect(isInfectionPower({
+      type: "itemQuality", name: "Infection"
     })).toBe(false)
+    expect(isInfectionPower({
+      type: "itemPower", name: "Infectieux"
+    })).toBe(false)
+  })
+
+  it("names an unlinked token with its scene, apart from its character", () => {
+    expect(victimLabel({
+      name: "Rita", isToken: false
+    })).toBe("Rita")
+    expect(victimLabel({
+      name: "Rita", isToken: true, token: {
+        parent: {
+          name: "Docks"
+        }
+      }
+    })).toBe("Rita [Docks]")
   })
 
   it("wakes the victim 24 hours later", () => {

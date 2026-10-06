@@ -46,9 +46,25 @@ export function canBeInfected(actor){
   return num(actor.system?.essence?.value) <= 0
 }
 
-// A creature that can infect: it drains Essence (the Infection power works through Essence Drain, SR5 p. 401)
+// The Infection power, known by its name ("Infection", "Infection (VVHMH)"): no system effect marks it
+export function isInfectionPower(item){
+  return item?.type === "itemPower" && /^infection\b/i.test((item.name ?? "").trim())
+}
+
+// A creature that can infect: it has the Infection power (SR5 p. 401, "a creature with this power"), and the Essence
+// Drain through which the power works. A creature that only drains Essence (a chupacabra) does not infect
 export function canInfect(actor){
-  return !!actor?.system?.specialProperties?.essenceDrain
+  if (!actor?.system?.specialProperties?.essenceDrain) return false
+  const items = actor.items?.contents ?? actor.items ?? []
+  return [...items].some(isInfectionPower)
+}
+
+// The name of a victim on the cards and in the ledger: an unlinked token says so, with its scene, so that it is not
+// taken for the character it was made from
+export function victimLabel(actor){
+  if (!actor?.isToken) return actor?.name ?? ""
+  const scene = actor.token?.parent?.name
+  return scene ? `${actor.name} [${scene}]` : `${actor.name} [token]`
 }
 
 export function newComa({
@@ -207,18 +223,18 @@ export async function tryInfection(victim){
   const now = game.time.worldTime
   await writeLedger(v => {
     v[victim.uuid] = wins ? newComa({
-      victimName: victim.name, creatureName: creature.name, now
+      victimName: victimLabel(victim), creatureName: creature.name, now
     }) : {
-      state: RESISTED, victimName: victim.name, creatureName: creature.name
+      state: RESISTED, victimName: victimLabel(victim), creatureName: creature.name
     }
   })
   const result = game.i18n.format(wins ? "SR5.INFECTION_Infected" : "SR5.INFECTION_Resisted", {
-    victim: escape(victim.name), creature: escape(creature.name), date: fmt(now + COMA)
+    victim: escape(victimLabel(victim)), creature: escape(creature.name), date: fmt(now + COMA)
   })
   await ChatMessage.create({
     content: `<div class="sr5-infection-card"><h3>${game.i18n.localize("SR5.INFECTION_CardTitle")}</h3>
       <p>${game.i18n.format("SR5.INFECTION_Dice", {
-    creature: escape(creature.name), a: attack, ah: a.hits, victim: escape(victim.name), d: defense, dh: d.hits
+    creature: escape(creature.name), a: attack, ah: a.hits, victim: escape(victimLabel(victim)), d: defense, dh: d.hits
   })}</p><p class="sr5-infection-dice">${diceOf(a)} / ${diceOf(d)}</p><p>${result}</p></div>`,
     whisper: gmIds(),
   })
@@ -242,7 +258,8 @@ async function postCard(uuid, text, action){
   })
 }
 
-// The Essence of a character falls to 0 while a creature that drains Essence is in the scene: the GM is asked once
+// The Essence of a character falls to 0 while a creature with the Infection power is in the scene: the GM is asked once,
+// and confirms that its Essence Drain is what emptied the victim, which the system cannot know
 async function offerOnZero(actor, changes){
   if (!isActiveGM() || !foundry.utils.hasProperty(changes, "system.essence")) return
   const entry = infectionOf(actor.uuid)
@@ -258,11 +275,11 @@ async function offerOnZero(actor, changes){
   if (!scene) return
   await writeLedger(v => {
     v[actor.uuid] = {
-      state: OFFERED, victimName: actor.name
+      state: OFFERED, victimName: victimLabel(actor)
     }
   })
   await postCard(actor.uuid, game.i18n.format("SR5.INFECTION_Offer", {
-    victim: escape(actor.name)
+    victim: escape(victimLabel(actor))
   }), "try")
 }
 
@@ -271,10 +288,14 @@ export async function checkInfection(){
   const due = comasDue(infectionLedger().victims, game.time.worldTime)
   if (!due.length) return
   const ledger = infectionLedger()
+  // A victim whose token or actor was deleted during the coma leaves the ledger, without a card
+  const gone = due.filter(uuid => !fromUuidSync(uuid))
+  const woken = due.filter(uuid => !gone.includes(uuid))
   await writeLedger(v => {
-    for (const uuid of due) if (v[uuid]) v[uuid].state = WOKEN
+    for (const uuid of gone) delete v[uuid]
+    for (const uuid of woken) if (v[uuid]) v[uuid].state = WOKEN
   })
-  for (const uuid of due) await postCard(uuid, game.i18n.format("SR5.INFECTION_Wake", {
+  for (const uuid of woken) await postCard(uuid, game.i18n.format("SR5.INFECTION_Wake", {
     victim: escape(ledger.victims[uuid].victimName), creature: escape(ledger.victims[uuid].creatureName)
   }), "wake")
 }
@@ -284,7 +305,14 @@ async function wake(uuid){
   if (!isActiveGM()) return false
   if (infectionOf(uuid)?.state !== WOKEN) return true
   const actor = await fromUuid(uuid)
-  if (!actor) return false
+  // Deleted since the card was posted: the entry goes, and the button with it
+  if (!actor){
+    await writeLedger(v => {
+      delete v[uuid]
+    })
+    ui.notifications.warn(game.i18n.localize("SR5.INFECTION_VictimGone"))
+    return true
+  }
   await actor.update({
     "system.essence.base": essenceBaseForOne(actor.system.essence)
   })
