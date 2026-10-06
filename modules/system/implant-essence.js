@@ -314,14 +314,16 @@ function isInstalled(data) {
 /**
  * Ossature renforcée (SR5 p. 458): "un seul type pouvant être installé à la fois". Told by what it does, in every
  * language and in both compendiums (the system's and the Megapack's, variants (NE) included): the only cyberware
- * that gives Armor and changes the unarmed damage. Bone density, which also changes it, is bioware.
+ * that gives Armor and changes the unarmed damage (the laser pointers touch the unarmed attacks, but give no
+ * Armor). Bone density, which also changes the damage, is bioware.
  */
 export function isBoneLacing(data) {
   if (data?.type !== "itemAugmentation" || data.system?.isAccessory || implantFamily(data.system?.type) !== "cyberware") return false
   const raw = data.system?.customEffects
   const effects = Array.isArray(raw) ? raw : raw && typeof raw === "object" ? Object.values(raw) : []
-  return effects.some(e => e?.category === "itemArmor") &&
-    effects.some(e => e?.category === "weaponEffectTargets" && e.damageType)
+  // The unarmed damage effect: a lacing taken from a Megapack before 2.0.16 has it without its damageType
+  return effects.some(e => e?.category === "itemArmor") && effects.some(e => e?.category === "weaponEffectTargets" &&
+    e.target === "system.itemsProperties.weapon.damageValue" && (e.damageType || e.type === "unarmedCombat"))
 }
 
 /**

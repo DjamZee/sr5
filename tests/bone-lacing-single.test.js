@@ -81,6 +81,20 @@ describe("what an Ossature renforcée is", () => {
     expect(isBoneLacing(lacing("Ossature renforcée (Plastique) (NE)", 1))).toBe(true)
     expect(isBoneLacing(lacing("Bone Lacing (Aluminum)", 2))).toBe(true)
   })
+  it("one taken from a Megapack before 2.0.16, its unarmed effect without damageType (measured on 2.0.10)", () => {
+    const old = lacing("Ossature renforcée (Aluminium)", 2)
+    delete old.system.customEffects[2].damageType
+    expect(isBoneLacing(old)).toBe(true)
+  })
+  it("not a laser pointer: it touches the unarmed attacks, but its accuracy, and gives no Armor", () => {
+    expect(isBoneLacing({
+      type: "itemAugmentation", name: "Pointeur laser", system: {
+        type: "cyberware", customEffects: [{
+          category: "weaponEffectTargets", target: "system.itemsProperties.weapon.accuracy", type: "unarmedCombat", value: 1
+        }]
+      }
+    })).toBe(false)
+  })
   it("not bone density (bioware), dermal armor, an accessory, or another type", () => {
     expect(isBoneLacing(boneDensity())).toBe(false)
     expect(isBoneLacing(dermal())).toBe(false)
