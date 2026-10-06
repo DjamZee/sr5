@@ -206,13 +206,33 @@ export async function migrateSourceModifiers() {
   return done
 }
 
+/**
+ * Whether the world holds anything to clean, read without writing: actors and their items, world items, the deltas
+ * of unlinked tokens.
+ * @return {boolean}
+ */
+export function sourceModifiersPending() {
+  const dirty = source => !!source && (computedModifierPaths(source.system).length > 0 ||
+    (source.items ?? []).some(item => computedModifierPaths(item.system).length > 0))
+  if (Array.from(game.actors ?? []).some(actor => dirty(actor._source))) return true
+  if ((game.items?.contents ?? []).some(item => dirty(item._source))) return true
+  return Array.from(game.scenes ?? []).some(scene => Array.from(scene.tokens ?? [])
+    .some(token => !token.actorLink && token.actor && dirty(token.delta?._source)))
+}
+
 // Ready hook: the active GM runs it once per world. Put off while a combat is under way: every actor
 // written moves through the combat hooks. Marked done only when nothing failed, so a failure is taken
 // up again at the next load (the cleaning is idempotent).
 export async function runSourceModifiersMigration() {
   if (!game.user.isGM || game.users.activeGM?.id !== game.user.id) return
   if ((Number(game.settings.get("sr5", "sourceModifiersMigration")) || 0) >= SOURCE_MODIFIERS_MIGRATION) return
-  if (game.combats?.some(combat => combat.started)) {
+  //A world already clean is marked done without a word: it said "running" and then nothing (Ruth's review)
+  if (!sourceModifiersPending()) {
+    await game.settings.set("sr5", "sourceModifiersMigration", SOURCE_MODIFIERS_MIGRATION)
+    return
+  }
+  //Rolled initiatives already make a combat under way, begun or not (Ruth's review)
+  if (game.combats?.some(combat => combat.started || combat.combatants?.some?.(c => Number.isFinite(c.initiative)))) {
     ui.notifications.warn(game.i18n.localize("SR5.WARN_SourceModifiersDeferred"), {
       permanent: true
     })

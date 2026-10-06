@@ -310,6 +310,30 @@ describe("the world migration", () => {
     expect(settings["sr5.sourceModifiersMigration"]).toBe(SOURCE_MODIFIERS_MIGRATION)
   })
 
+  // Ruth's review: a combat whose initiatives are rolled but not begun is under way too
+  it("is put off while a combat has its initiatives rolled, even before it begins", async () => {
+    globalThis.game.combats = [{
+      started: false, combatants: [{
+        initiative: null
+      }, {
+        initiative: 12
+      }]
+    }]
+    await runSourceModifiersMigration()
+    expect(actors[0].update).not.toHaveBeenCalled()
+    expect(settings["sr5.sourceModifiersMigration"]).toBe(0)
+  })
+
+  // Ruth's review: a world already clean showed "Migration en cours" and no count after it
+  it("says nothing on a world already clean, and marks it done", async () => {
+    actors.splice(0, 1)
+    worldItems.splice(0, 1)
+    scenes.splice(0, 1)
+    await runSourceModifiersMigration()
+    expect(globalThis.ui.notifications.info).not.toHaveBeenCalled()
+    expect(settings["sr5.sourceModifiersMigration"]).toBe(SOURCE_MODIFIERS_MIGRATION)
+  })
+
   it("is not marked done when an actor failed: the next load takes it up again", async () => {
     actors[0].update.mockRejectedValueOnce(new Error("refused"))
     vi.spyOn(console, "error").mockImplementation(() => {})
