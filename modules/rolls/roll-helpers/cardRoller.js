@@ -53,6 +53,20 @@ export function ownsCardSpeaker(speaker, resolveActor) {
   return resolveActor(id)?.isOwner === true
 }
 
+// True when a spell's effects remove damage from the one they are applied to (Heal, SR5 p. 291)
+export function healsDamage(customEffects) {
+  return Object.values(customEffects ?? {
+  }).some(e => e?.transfer && typeof e.target === "string" && e.target.endsWith(".removeDamage"))
+}
+
+// The patient of a healing spell (SR5 p. 291): the token the user targets, and only without a target the selected
+// token or his character. Several targets: none, the spell heals one patient
+export function healPatient(targets, selectedActor) {
+  const list = [...(targets ?? [])]
+  if (list.length === 1) return list[0].actor ?? null
+  return list.length ? null : selectedActor
+}
+
 // The first aid patient (SR5 p. 207): the targeted token when the test had a target, the selected token otherwise.
 // Never the card owner: with a target, a missing patient stays missing instead of falling back to the healer.
 export function firstAidPatient(hasTarget, targetActor, selectedActor) {

@@ -143,6 +143,12 @@ export class SR5_CombatHelpers {
   static hardenedArmorAutoHits(rating, armorPenetration = 0){
     return Math.max(0, Math.ceil((rating + armorPenetration) / 2))
   }
+
+  // Run Faster p. 80 (Granite skin): a Hardened Armor that gives only its automatic hits to the resistance test. Its
+  // rating leaves the pool, and AP bites only on the other armor in it (the hits already take AP, SR5 p. 397)
+  static hitsOnlyArmorPenetration(armor, hardenedRating, armorPenetration = 0){
+    return Math.max(armorPenetration, -Math.max(armor - hardenedRating, 0))
+  }
   //Handle environmental modifiers
   //noWind: ignore the wind column (perception, melee); melee: SR5 p. 188, only the Light and Visibility columns apply
   //weaponLight: light rows taken off by a flashlight on the weapon being used (SR5_UtilityItem.getWeaponLightCompensation)

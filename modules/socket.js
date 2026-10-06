@@ -79,6 +79,7 @@ export class SR5_SocketHandler {
       "updateChatButton": [SR5_RollMessage._socketUpdateChatButton],
       "updateRollCard": [SR5_RollMessage._socketUpdateRollCard],
       "heal": [SR5_ActorHelper._socketHeal],
+      "applyHealEffect": [SR5_ActorHelper._socketApplyHealEffect],
       "updateActorData": [SR5_MiscellaneousHelpers._socketUpdateActorData],
       "takeDamage":[SR5_ActorHelper._socketTakeDamage],
       "actorRoll": [SR5Actor._socketRollTest],

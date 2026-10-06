@@ -3169,6 +3169,7 @@
 	"SR5.DISEASE_PlayerCured": "Vous êtes guéri(e) : {name}.",
 	"SR5.DISEASE_NothingFelt": "rien pour l'instant",
 	"SR5.Immunodeficiency": "Immunodéficience : Puissance des maladies +2",
+	"SR5.HardenedArmorHitsOnly": "Armure renforcée : seulement ses succès automatiques à la résistance (Peau en granit)",
 	"SR5.HUNGER_ActiveGMOnly": "Seul le MJ actif tient le registre de la faim.",
 	"SR5.HUNGER_Title": "Perte d'Essence (SR5 p. 403)",
 	"SR5.HUNGER_Loss": "{actor} perd {n} point(s) d'Essence volée.",

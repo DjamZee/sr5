@@ -3169,6 +3169,7 @@
 	"SR5.DISEASE_PlayerCured": "You are cured: {name}.",
 	"SR5.DISEASE_NothingFelt": "nothing for now",
 	"SR5.Immunodeficiency": "Immunodeficiency: disease Power +2",
+	"SR5.HardenedArmorHitsOnly": "Hardened Armor: only its automatic hits on resistance (Granite skin)",
 	"SR5.HUNGER_ActiveGMOnly": "Only the active GM keeps the hunger ledger.",
 	"SR5.HUNGER_Title": "Essence Loss (SR5 p. 403)",
 	"SR5.HUNGER_Loss": "{actor} loses {n} point(s) of stolen Essence.",

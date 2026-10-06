@@ -189,6 +189,15 @@ async function handleNormalPhysicalDamage(rollData, actor, chatData, armor){
   rollData.dicePool.composition = actor.system.resistances.physicalDamage.modifiers
   rollData.dicePool.base = actor.system.resistances.physicalDamage.dicePool
 
+  //Run Faster p. 80 (Granite skin): its rating gives no die, only the automatic hits (test-Resistance). Its points
+  //still count for the conversion to Stun below (SR5 p. 170): arbitrage de DjamZ, the book is silent
+  const hardened = actor.system.specialProperties?.hardenedArmors?.normalWeapon
+  if (actor.system.specialProperties?.hardenedArmorHitsOnly && hardened?.value > 0 && chatData.damage.source !== "magical"){
+    rollData.dicePool.composition = rollData.dicePool.composition.filter(m => !hardened.modifiers.includes(m))
+    rollData.dicePool.base -= hardened.value
+    rollData.dicePool.modifiers.findLast(m => m.type === "armorPenetration").value =SR5_CombatHelpers.hitsOnlyArmorPenetration(armor, hardened.value, chatData.combat.armorPenetration)
+  }
+
   //Check if damage must be converted to stun
   if (rollData.damage.base < (armor + chatData.combat.armorPenetration) && chatData.combat.calledShot.name !== "splittingDamage"){
     rollData.test.title = `${game.i18n.localize("SR5.TakeOnDamage")} ${game.i18n.localize(SR5.damageTypes[rollData.damage.type])} (${rollData.damage.base})`

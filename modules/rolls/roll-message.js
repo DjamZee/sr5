@@ -38,7 +38,7 @@ import {
   SR5_MatrixHelpers 
 } from "./roll-helpers/matrix.js"
 import {
-  isRolledByTarget, firstAidPatient, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick, ownsCardSpeaker, defenseActorId, removedButtonKeys
+  isRolledByTarget, firstAidPatient, healPatient, healsDamage, patientMonitors, hasSingleMonitor, opposedTestActorId, firstAidBoxesOnClick, ownsCardSpeaker, defenseActorId, removedButtonKeys
 } from "./roll-helpers/cardRoller.js"
 import {
   SR5_CombatHelpers 
@@ -212,7 +212,9 @@ export class SR5_RollMessage {
       actor = SR5_EntityHelpers.getRealActorFromID(opposedTestActorId(speaker))
       // Matrix support actions (Kill Code p. 43-44) go to the targeted tokens: no selected token needed
       let supportAction = (type === "iAmTheFirewall" || type === "intervene")
-      if (actor == null && !supportAction) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+      //A spell effect may go to a targeted token without any token selected (Heal, below)
+      let targetedEffect = (type === "applyEffect" && game.user.targets?.size > 0)
+      if (actor == null && !supportAction && !targetedEffect) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
     } else if (action === "nonOpposedTest" && messageData) {
       // The spirit or sprite handles its own buttons, but the drain and the fading are resisted by the card owner
       if (isRolledByTarget(type, messageData.test.typeSub, messageData.target.actorId)) actor = SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId)
@@ -287,6 +289,22 @@ export class SR5_RollMessage {
         break
       case "applyEffect":
       case "applyEffectAuto":
+        //SR5 p. 291 (Heal): the targeted patient is healed, not the caster selected on the canvas
+        if (type === "applyEffect" && healsDamage((await fromUuid(messageData.owner.itemUuid))?.system?.customEffects)) {
+          const patient = healPatient(game.user.targets, actor)
+          if (!patient) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+          //A patient the player does not own is healed by the GM, who reads the card himself
+          if (!game.user.isGM && !patient.isOwner) {
+            if (!hasActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActiveGM"))
+            return SR5_SocketHandler.emitForGM("applyHealEffect", {
+              messageId, targetActor: patient.isToken ? patient.token.id : patient.id
+            })
+          }
+          await patient.applyExternalEffect(messageData, "customEffects")
+          SR5_RollMessage.updateChatButtonHelper(messageId, type)
+          break
+        }
+        if (!actor) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
         actor.applyExternalEffect(messageData, "customEffects")
         if (messageData.magic.spell.area < 1) SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break

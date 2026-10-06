@@ -109,6 +109,10 @@ export class specialPropertiesPartialModel extends foundry.abstract.TypeDataMode
         immunodeficiency: new fields.BooleanField({
           initial: false
         }),
+        // Granite skin (Run Faster p. 80): the Hardened Armor gives only its automatic hits to damage resistance
+        hardenedArmorHitsOnly: new fields.BooleanField({
+          initial: false
+        }),
         essenceDrain: new fields.BooleanField({
           initial: false
         }),

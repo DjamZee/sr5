@@ -1584,6 +1584,30 @@ export class SR5_ActorHelper {
   }
 
   //Manage Healing by socket
+  //A player heals a patient she does not own (Heal, SR5 p. 291): the GM reads the casting card himself, from the chat
+  //log and not from the request. Only the card's author may ask, once (its button is removed before the effect), and
+  //applyExternalEffect counts its hits again and asks the GM to confirm them (checkEffectCard)
+  static async _socketApplyHealEffect(message, senderId){
+    const card = game.messages.get(message.data?.messageId)
+    if (!card || !senderId || card.author?.id !== senderId) return
+    const data = foundry.utils.deepClone(card.flags?.sr5data)
+    if (!data?.chatCard?.buttons?.applyEffect) return
+    const item = await fromUuid(data.owner?.itemUuid)
+    const {
+      healsDamage
+    } = await import("../../rolls/roll-helpers/cardRoller.js")
+    if (!healsDamage(item?.system?.customEffects)) return
+    const patient = SR5_EntityHelpers.getRealActorFromID(message.data.targetActor)
+    if (!patient) return
+    data.owner.messageId = card.id
+    //Loaded here: roll-message imports this file
+    const {
+      SR5_RollMessage
+    } = await import("../../rolls/roll-message.js")
+    await SR5_RollMessage.updateChatButton(card.id, "applyEffect")
+    await patient.applyExternalEffect(data, "customEffects")
+  }
+
   static async _socketHeal(message){
     await SR5_ActorHelper.heal(message.data.targetActor, message.data.healData)
   }
