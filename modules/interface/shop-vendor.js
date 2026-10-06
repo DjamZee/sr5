@@ -663,6 +663,10 @@ export class SR5ShopVendor {
     const lines = Array.isArray(request.lines) ? request.lines.slice(0, 100) : []
     if (!lines.length) return false
     const messageId = typeof request.messageId === 'string' ? request.messageId : null
+    // The card serves its own buyer, once; a cashToken only comes from the gamemaster's cashCard, never a socket (R2)
+    const card = {
+      buyerId: buyer.id, cashToken: typeof request.cashToken === 'symbol' ? request.cashToken : null
+    }
 
     // The lines: an item of the counter by its uuid, or, for a shop taking orders, a compendium item
     const stockPrefix = `${actor.uuid}.Item.`
@@ -706,7 +710,7 @@ export class SR5ShopVendor {
         continue
       }
       // The surcharge that bought dice on the card is paid (SR5 p. 420)
-      const unit = surchargedUnit(described.price, cardSurcharge(messageId, item.uuid, senderId))
+      const unit = surchargedUnit(described.price, cardSurcharge(messageId, item.uuid, senderId, card))
       resolved.push({
         item, quantity, unit, total: unit * quantity, name: item.name,
       })
@@ -749,7 +753,7 @@ export class SR5ShopVendor {
       const waits = lineWaits({
         delayed: deliveryDelayed(), availability: described.availability, free
       })
-      const unit = surchargedUnit(described.price, cardSurcharge(messageId, line.uuid, senderId))
+      const unit = surchargedUnit(described.price, cardSurcharge(messageId, line.uuid, senderId, card))
       const total = unit * quantity
       // The express surcharge and the search time stay on the price before the surcharge (DjamZ's ruling, 05/10)
       const baseTotal = described.price * quantity
@@ -836,7 +840,7 @@ export class SR5ShopVendor {
           // The time from the requester's own card, worked out here on the GM's browser
           hours: orderHours(SR5Shop.searchHours({
             ...line, total: line.baseTotal ?? line.total
-          }, messageId, senderId),
+          }, messageId, senderId, card),
             line.extra ? terms : null),
           express: !!line.extra, extra: line.extra, now: game.time.worldTime,
           // Shown on the sheet only: the money follows the GM's ledger, not this

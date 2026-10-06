@@ -224,4 +224,40 @@ describe("the first availability test is rolled by the active GM (SR5 p. 420)", 
     })], expect.anything())
     expect(checkout.mock.calls[0][1]).toHaveLength(1)
   })
+
+  it("R2: a card serves its own buyer, once; only the GM's cashing of it still reads it", async () => {
+    game.user = gm
+    const {
+      recordShopCard, cashCard
+    } = await retry()
+    const {
+      SR5Shop
+    } = await import("../modules/interface/shop.js")
+    game._card = card([{
+      uuid: "Item.gun", outcome: "success", obtained: true, quantity: 1, netHits: 2, faces: [5, 6, 2], oppositionFaces: [1]
+    }], gm)
+    await recordShopCard(game._card)
+    // Another buyer than the card's: nothing
+    expect(cardResult("msg1", "Item.gun", "pl", {
+      buyerId: "someone-else"
+    })).toBe(null)
+    // Inside its own cashing, the till reads the card; the token is the one the GM's cashing hands over
+    const seen = []
+    vi.spyOn(SR5Shop, "checkout").mockImplementation(async (actor, lines, options) => {
+      seen.push(cardResult("msg1", "Item.gun", "pl", {
+        buyerId: actor.id, cashToken: options.cashToken
+      })?.netHits, cardResult("msg1", "Item.gun", "pl", {
+        buyerId: actor.id
+      }))
+      return true
+    })
+    expect(await cashCard({
+      messageId: "msg1"
+    }, "pl")).toBe(true)
+    expect(seen).toEqual([2, null])
+    // Cashed: a direct checkout naming the card again gets the time of the table, not 2 net hits
+    expect(cardResult("msg1", "Item.gun", "pl", {
+      buyerId: "buyer"
+    })).toBe(null)
+  })
 })

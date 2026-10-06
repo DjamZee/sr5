@@ -207,7 +207,7 @@ export class SR5Shop {
    * @returns {Promise<boolean>} whether the gear was added
    */
   static async checkout(actor, lines, {
-    equip = false, express = false, messageId = null, userId = game.user.id
+    equip = false, express = false, messageId = null, userId = game.user.id, cashToken = null
   } = {
   }) {
     if (!actor) {
@@ -220,6 +220,10 @@ export class SR5Shop {
     }
     if (!lines?.length) return false
     equip = equip && game.user.isGM
+    // The card serves its own buyer, once: cashed, only the gamemaster's cashing of it still reads it (R2)
+    const card = {
+      buyerId: actor.id, cashToken
+    }
     // The buyer list is only a display: the gamemaster's rule is checked again at the till,
     // so a card cashed later or a call from a macro cannot spend for an actor outside it
     // (Élise's choice, 2026-10-05). Equip mode is the gamemaster's and skips it.
@@ -281,7 +285,7 @@ export class SR5Shop {
       const base = SR5Shop.gradedPrice(source.system, grade)
       // The surcharge that bought dice on the card is paid (SR5 p. 420); the search time and the express
       // surcharge stay on the base price (DjamZ's ruling, 05/10)
-      const unit = surchargedUnit(base, cardSurcharge(messageId, line.uuid, userId))
+      const unit = surchargedUnit(base, cardSurcharge(messageId, line.uuid, userId, card))
       resolved.push({
         source, quantity, unit, grade, total: unit * quantity, baseTotal: base * quantity,
         name: SR5Shop.gradedName(source.name, grade),
@@ -340,7 +344,7 @@ export class SR5Shop {
       const order = newOrder(line, {
         hours: orderHours(SR5Shop.searchHours({
           ...line, total: line.baseTotal
-        }, messageId, userId), line.extra ? terms : null),
+        }, messageId, userId, card), line.extra ? terms : null),
         express: !!line.extra, extra: line.extra, now,
       })
       line.order = order
@@ -427,8 +431,9 @@ export class SR5Shop {
    * player sends. Bought without a test, the time of the table, as for one
    * net hit (Élise's decision, 05/10).
    */
-  static searchHours(line, messageId = null, userId = null) {
-    return testedHours(SR5ShopAvailability.delayFor(line.total), cardResult(messageId, line.source.uuid, userId))
+  static searchHours(line, messageId = null, userId = null, context = {
+  }) {
+    return testedHours(SR5ShopAvailability.delayFor(line.total), cardResult(messageId, line.source.uuid, userId, context))
   }
 
   /** " — on order, arrives on …" after a line that waits. */

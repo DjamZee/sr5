@@ -25,6 +25,9 @@
 import {
   SR5ShopAvailability
 } from './shop-availability.js'
+import {
+  openCashing, closeCashing
+} from './shop-orders.js'
 
 export const RETRY_LEDGER = 'sr5ShopRetryLedger'
 const HOUR = 3600
@@ -424,6 +427,8 @@ export async function cashCard({
     await writeLedger(messageId, {
       ...entry, cashed: true
     })
+    // Its own checkout still reads the card it just marked cashed; any other request no longer does (R2)
+    const cashToken = openCashing(messageId)
     // What was obtained is the ledger's, frozen when the card appeared; the card only lends its names
     const names = new Map(data.results.map(r => [r.uuid, r.name]))
     const lines = (entry.lines ?? cardEntry(data, 0).lines).filter(l => l.obtained).map(l => ({
@@ -435,14 +440,14 @@ export async function cashCard({
         SR5ShopVendor
       } = await import('./shop-vendor.js')
       bought = await SR5ShopVendor.sell({
-        vendorUuid: data.vendor.uuid, storageId: data.vendor.storageId, buyerId: buyer.id, lines, express: !!express, messageId,
+        vendorUuid: data.vendor.uuid, storageId: data.vendor.storageId, buyerId: buyer.id, lines, express: !!express, messageId, cashToken,
       }, senderId)
     } else {
       const {
         SR5Shop
       } = await import('./shop.js')
       bought = await SR5Shop.checkout(buyer, lines, {
-        express: !!express, messageId, userId: senderId
+        express: !!express, messageId, userId: senderId, cashToken
       })
     }
     if (!bought) {
@@ -461,5 +466,6 @@ export async function cashCard({
     return true
   } finally {
     cashing.delete(messageId)
+    closeCashing(messageId)
   }
 }

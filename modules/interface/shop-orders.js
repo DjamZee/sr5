@@ -318,22 +318,47 @@ export function testedHours(baseHours, result) {
  * The test of an availability card for a line: only a card the gamemaster rolled (every test is his,
  * shop-retry.js), for a buyer the requester owns. The outcome is the one his ledger froze when the card
  * appeared; the card itself only for a card the ledger missed.
+ *
+ * A card serves one purchase, for its own buyer (R2, Anton): once the ledger has it cashed, it shortens
+ * no other delay, except inside the gamemaster's own cashing of it, which holds a token no request carries.
+ * @param {object} [context]
+ * @param {string} [context.buyerId] the actor being sold to: the card must have been rolled for it
+ * @param {symbol} [context.cashToken] the token of the gamemaster's cashing of this card (openCashing)
  */
-export function cardResult(messageId, uuid, userId) {
+export function cardResult(messageId, uuid, userId, {
+  buyerId = null, cashToken = null
+} = {
+}) {
   const message = messageId ? game.messages?.get(messageId) : null
   if (!message?.author?.isGM) return null
+  if (buyerId && message.flags?.sr5shop?.buyerId !== buyerId) return null
   if (userId) {
     const user = game.users?.get(userId)
     if (!user || !(user.isGM || game.actors?.get(message.flags?.sr5shop?.buyerId)?.testUserPermission?.(user, 'OWNER'))) return null
   }
-  let frozen
+  let entry
   try {
-    frozen = game.settings.get('sr5', 'sr5ShopRetryLedger')?.[messageId]?.lines
+    entry = game.settings.get('sr5', 'sr5ShopRetryLedger')?.[messageId]
   } catch {
-    frozen = undefined
+    entry = undefined
   }
-  if (Array.isArray(frozen)) return frozen.find(l => l.uuid === uuid) ?? null
+  if (entry?.cashed && !(cashToken && cashTokens.get(messageId) === cashToken)) return null
+  if (Array.isArray(entry?.lines)) return entry.lines.find(l => l.uuid === uuid) ?? null
   return message.flags?.sr5shop?.results?.find(r => r.uuid === uuid) ?? null
+}
+
+// The cashings under way on the gamemaster's browser: a symbol cannot travel through a socket
+const cashTokens = new Map()
+
+/** The gamemaster starts cashing a card: the token lets its own checkout read the card it has marked cashed. */
+export function openCashing(messageId) {
+  const token = Symbol(messageId)
+  cashTokens.set(messageId, token)
+  return token
+}
+
+export function closeCashing(messageId) {
+  cashTokens.delete(messageId)
 }
 
 /**
@@ -342,8 +367,9 @@ export function cardResult(messageId, uuid, userId) {
  * The gamemaster's ledger froze it when the card appeared (shop-retry.js), so a card edited afterwards does
  * not lower it; a card the ledger missed gives its own figure. No card for the line: none.
  */
-export function cardSurcharge(messageId, uuid, userId) {
-  if (!cardResult(messageId, uuid, userId)) return 0
+export function cardSurcharge(messageId, uuid, userId, context = {
+}) {
+  if (!cardResult(messageId, uuid, userId, context)) return 0
   let frozen
   try {
     frozen = game.settings.get('sr5', 'sr5ShopRetryLedger')?.[messageId]?.surcharge
