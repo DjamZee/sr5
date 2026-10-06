@@ -1208,7 +1208,10 @@ export class SR5_ActorHelper {
    */
   static vehicleWirelessOn(vehicle, actors){
     if (vehicle.system?.isCreated) {
-      const drone = actors?.find(a => a.type === "actorDrone" && a.system.creatorItemId === (vehicle._id ?? vehicle.id))
+      //A duplicated character carries the same item ids: its own drone is the one its owner created
+      const creatorId = vehicle.parent ? SR5_ActorHelper.sidekickCreatorId(vehicle.parent) : undefined
+      const drone = actors?.find(a => a.type === "actorDrone" && a.system.creatorItemId === (vehicle._id ?? vehicle.id) &&
+        (creatorId === undefined || a.system.creatorId === creatorId))
       if (drone) return drone.system.wirelessTurnedOn !== false
     }
     return !!vehicle.system?.wirelessTurnedOn

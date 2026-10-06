@@ -564,7 +564,9 @@ describe('drug interactions (Chrome Flesh p. 197)', () => {
 describe('a bound spirit spends a service when it aids a test (SR5 p. 305-306)', () => {
   function spiritAid(modifiers, isOwner = true){
     const spiritItem = {
-      id: 's1', name: 'Esprit', system: {
+      id: 's1', name: 'Esprit', parent: {
+        id: 'a1'
+      }, system: {
         services: {
           value: 3
         }
@@ -573,13 +575,22 @@ describe('a bound spirit spends a service when it aids a test (SR5 p. 305-306)',
     const spiritActor = {
       id: 'sa1', isOwner,
       system: {
-        creatorItemId: 's1', services: {
+        creatorItemId: 's1', creatorId: 'a1', services: {
+          value: 3
+        }
+      }, update: vi.fn(async () => {}),
+    }
+    //The spirit of a duplicated summoner: same item id, another creator
+    const twinSpirit = {
+      id: 'sa2', isOwner,
+      system: {
+        creatorItemId: 's1', creatorId: 'a2', services: {
           value: 3
         }
       }, update: vi.fn(async () => {}),
     }
     globalThis.fromUuid = vi.fn(async () => spiritItem)
-    globalThis.game.actors = [spiritActor]
+    globalThis.game.actors = [twinSpirit, spiritActor]
     const dialogData = {
       dicePool: {
         modifiers

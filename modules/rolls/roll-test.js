@@ -278,7 +278,8 @@ export class SR5_RollTest {
     ui.notifications.info(`${spiritItem.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format('SR5.INFO_ServicesReduced', {
       service: 1
     })}`)
-    let spiritActor = game.actors.find(a => a.system.creatorItemId === spiritItem.id)
+    //A duplicated summoner carries the same item ids: the spirit is the one this summoner called
+    let spiritActor = spiritItem.parent ? SR5_ActorHelper.findSidekick(game.actors, SR5_ActorHelper.sidekickCreatorId(spiritItem.parent), spiritItem.id) : null
     if (spiritActor){
       let services = spiritActor.system.services.value - 1
       //A summoned spirit is often the GM's: a player who does not own it hands the update to the GM
