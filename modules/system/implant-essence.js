@@ -314,16 +314,19 @@ function isInstalled(data) {
 /**
  * Ossature renforcée (SR5 p. 458): "un seul type pouvant être installé à la fois". Told by what it does, in every
  * language and in both compendiums (the system's and the Megapack's, variants (NE) included): the only cyberware
- * that gives Armor and changes the unarmed damage (the laser pointers touch the unarmed attacks, but give no
- * Armor). Bone density, which also changes the damage, is bioware.
+ * that gives Armor and either changes the unarmed damage or adds to the damage resistance. Either one, as the copies
+ * already on sheets come in several shapes: sr5-compendiums up to 13.0.0-alpha.6 gives Armor and resistance only,
+ * the Megapack before 2.0.16 its unarmed effect without damageType (Honoré's review). Dermal armor gives Armor
+ * alone, the laser pointers touch the unarmed attacks without Armor, bone density is bioware.
  */
 export function isBoneLacing(data) {
   if (data?.type !== "itemAugmentation" || data.system?.isAccessory || implantFamily(data.system?.type) !== "cyberware") return false
   const raw = data.system?.customEffects
   const effects = Array.isArray(raw) ? raw : raw && typeof raw === "object" ? Object.values(raw) : []
-  // The unarmed damage effect: a lacing taken from a Megapack before 2.0.16 has it without its damageType
-  return effects.some(e => e?.category === "itemArmor") && effects.some(e => e?.category === "weaponEffectTargets" &&
-    e.target === "system.itemsProperties.weapon.damageValue" && (e.damageType || e.type === "unarmedCombat"))
+  const unarmed = e => e?.category === "weaponEffectTargets" && e.target === "system.itemsProperties.weapon.damageValue" &&
+    (e.damageType || e.type === "unarmedCombat")
+  const resistance = e => e?.category === "characterResistances" && e.target === "system.resistances.physicalDamage"
+  return effects.some(e => e?.category === "itemArmor") && effects.some(e => unarmed(e) || resistance(e))
 }
 
 /**

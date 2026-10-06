@@ -86,6 +86,11 @@ describe("what an Ossature renforcée is", () => {
     delete old.system.customEffects[2].damageType
     expect(isBoneLacing(old)).toBe(true)
   })
+  it("one from sr5-compendiums 13.0.0-alpha.6: Armor and resistance, no unarmed effect (Honoré's review)", () => {
+    const old = lacing("Ossature renforcée (Titane)")
+    delete old.system.customEffects[2]
+    expect(isBoneLacing(old)).toBe(true)
+  })
   it("not a laser pointer: it touches the unarmed attacks, but its accuracy, and gives no Armor", () => {
     expect(isBoneLacing({
       type: "itemAugmentation", name: "Pointeur laser", system: {

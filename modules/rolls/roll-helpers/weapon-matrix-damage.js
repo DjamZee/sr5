@@ -2,7 +2,8 @@
 // sur le moniteur de condition correspondant. Ils sont résistés avec Indice d'Appareil + Firewall" (decision H6 of
 // DjamZ). The pulse "cible spécifiquement un dispositif ou un système par le biais de sa connexion sans fil" (p. 56):
 // - a character is hit through the device running its persona (the active device, as for any matrix damage,
-//   SR5 p. 229); a technomancer takes it as Stun, resisted with Resonance + Firewall (SR5 p. 230);
+//   SR5 p. 229); a technomancer takes it as Stun, resisted with "Indice d'appareil + Firewall de leur persona
+//   incarné" (SR5 p. 230: the living persona's Device Rating is the Resonance);
 // - a drone, a vehicle or a device actor takes it on its own matrix monitor;
 // - anything else (no active device, a spirit, a sprite, an agent, an AI outside any device) has no matrix
 //   monitor in reach: no effect. The book does not say it: the gamemaster's ruling, as written in the wiki.
