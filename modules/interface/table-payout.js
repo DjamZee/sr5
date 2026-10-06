@@ -352,6 +352,75 @@ export async function sr5SocketTablePayout({
 }
 
 /**
+ * Whether the game master sees what a card hands over before it goes.
+ *
+ * The money and the gear are flags of the card, its author's to write, and
+ * the card shows only how many items were found. A card a player wrote, her
+ * own draw or one forged from her console (any item, any quantity, any sum),
+ * was handed over in one click (security pass of 06/10, Kurt). A card a game
+ * master wrote is his own draw, and goes as before.
+ *
+ * @param {ChatMessage} message
+ * @returns {boolean}
+ */
+export function sr5PayoutNeedsReview(message) {
+  return !message?.author?.isGM
+}
+
+/**
+ * What a row of a card would hand over, read from its flags, as HTML lines.
+ * @param {ChatMessage} message
+ * @param {string} kind     "loot" or "nuyen"
+ * @param {Actor[]} actors  who would receive it
+ * @returns {Promise<string[]>}
+ */
+async function payoutReviewLines(message, kind, actors) {
+  const esc = text => foundry.utils.escapeHTML(String(text ?? ""))
+  const names = esc(actors.map(actor => actor.name).join(", "))
+  if (kind === "nuyen") {
+    const amount = Number(message.getFlag("sr5", "tableNuyen")) || 0
+    return [game.i18n.format("SR5.TablePayoutReviewNuyen", {
+      amount: amount.toLocaleString(), names
+    })]
+  }
+  const lines = []
+  for (const line of message.getFlag("sr5", "tableLoot") ?? []) {
+    const item = await fromUuid(line.uuid).catch(() => null)
+    lines.push(game.i18n.format("SR5.TablePayoutReviewItem", {
+      quantity: Number(line.quantity) || 1,
+      name: esc(item?.name ?? game.i18n.localize("SR5.TablePayoutReviewMissing")),
+      uuid: esc(line.uuid)
+    }))
+  }
+  lines.push(game.i18n.format("SR5.TablePayoutReviewTo", {
+    names
+  }))
+  return lines
+}
+
+/**
+ * The game master's say on a card he did not write: true when it may go.
+ * @param {ChatMessage} message
+ * @param {string} kind
+ * @param {Actor[]} actors
+ * @returns {Promise<boolean>}
+ */
+async function confirmPayout(message, kind, actors) {
+  if (!sr5PayoutNeedsReview(message)) return true
+  const lines = await payoutReviewLines(message, kind, actors)
+  const ok = await foundry.applications.api.DialogV2.confirm({
+    window: {
+      title: game.i18n.localize("SR5.TablePayoutReviewTitle")
+    },
+    content: `<p>${game.i18n.format("SR5.TablePayoutReview", {
+      user: foundry.utils.escapeHTML(String(message.author?.name ?? "?"))
+    })}</p><ul>${lines.map(line => `<li>${line}</li>`).join("")}</ul>`,
+    rejectClose: false,
+  })
+  return ok === true
+}
+
+/**
  * The characters a money payment can go to: the selected tokens that hold a
  * purse and that the clicker may write on.
  *
@@ -379,7 +448,7 @@ function payNuyen(message, button) {
     return
   }
   button.disabled = true
-  return handOver(message, "nuyen", actors)
+  return reviewThenHandOver(message, button, "nuyen", actors)
 }
 
 /**
@@ -406,7 +475,24 @@ function giveLoot(message, button) {
     return
   }
   button.disabled = true
-  return handOver(message, "loot", actors)
+  return reviewThenHandOver(message, button, "loot", actors)
+}
+
+/**
+ * Hand a row over once the game master has seen what a card he did not
+ * write gives. The button stays disabled while he reads, so a second click
+ * opens no second window; a no gives it back.
+ * @param {ChatMessage} message
+ * @param {HTMLButtonElement} button
+ * @param {string} kind
+ * @param {Actor[]} actors
+ */
+async function reviewThenHandOver(message, button, kind, actors) {
+  if (!await confirmPayout(message, kind, actors)) {
+    button.disabled = false
+    return
+  }
+  return handOver(message, kind, actors)
 }
 
 /**
