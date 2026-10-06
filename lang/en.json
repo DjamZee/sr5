@@ -278,6 +278,8 @@
 	"SR5.SETTINGS_ShopMarketOpen_T": "Shop: the market is open to players",
 	"SR5.SETTINGS_ShopVendorTest_D": "By default an item on the shelf has already been found and is bought without a test (SR5 p. 420: the test is the search). Ticked, the test and the dot come back on the stock.",
 	"SR5.SETTINGS_ShopVendorTest_T": "Shop: availability test at a vendor's too",
+	"SR5.SETTINGS_SpiritDrainAttribute_D": "Critters and spirits resist the Drain of an innate spell with Intuition or Charisma, at the gamemaster's discretion (SR5 p. 403). The chosen attribute is added to Willpower. Charisma by default.",
+	"SR5.SETTINGS_SpiritDrainAttribute_T": "Spirits: attribute resisting the Drain of an innate spell",
 	"SR5.SharedVisionShare": "Share vision",
 	"SR5.SharedVisionShareTitle": "Share what {name} sees",
 	"SR5.SharedVisionShareHint": "The checked players see on the map what this device sees, on top of what their own tokens see. Invite Mark is a simple action (SR5 p. 241), counted in combat.",

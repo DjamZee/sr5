@@ -278,6 +278,8 @@
 	"SR5.SETTINGS_ShopMarketOpen_T": "Boutique : le marché est ouvert aux joueurs",
 	"SR5.SETTINGS_ShopVendorTest_D": "Par défaut, un objet en rayon est déjà trouvé et s'achète sans test (SR5 p. 420 : le test sert à trouver). Coché, le test et la pastille reviennent sur le stock.",
 	"SR5.SETTINGS_ShopVendorTest_T": "Boutique : test de Disponibilité aussi chez un vendeur",
+	"SR5.SETTINGS_SpiritDrainAttribute_D": "Les créatures et les esprits résistent au Drain d'un sort inné avec l'Intuition ou le Charisme, à la discrétion du meneur de jeu (SR5 p. 403). L'attribut choisi s'ajoute à la Volonté. Charisme par défaut.",
+	"SR5.SETTINGS_SpiritDrainAttribute_T": "Esprits : attribut de résistance au Drain d'un sort inné",
 	"SR5.SharedVisionShare": "Partager la vision",
 	"SR5.SharedVisionShareTitle": "Partager ce que voit {name}",
 	"SR5.SharedVisionShareHint": "Les joueurs cochés voient sur la carte ce que voit cet appareil, en plus de ce que voient leurs propres jetons. Inviter au markage est une action simple (SR5 p. 241), décomptée en combat.",

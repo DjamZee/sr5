@@ -3244,7 +3244,12 @@ export class SR5_CharacterUtility extends Actor {
         SR5_EntityHelpers.updateModifier(magic.drainResistance, label, "linkedAttribute", drainAttr.augmented.value)
       }
     }
-    if (magic.magicType === "spirit") SR5_EntityHelpers.updateModifier(magic.drainResistance, `${game.i18n.localize('SR5.Charisma')}`, "linkedAttribute", attributes.charisma.augmented.value)
+    //SR5 p. 403: spirits resist the Drain of an innate spell with Intuition or Charisma, at the GM's discretion,
+    //added to Willpower as a tradition attribute is (Shadow Spells p. 19). A world setting chooses, Charisma by default
+    if (magic.magicType === "spirit") {
+      let drainKey = game.settings?.get?.("sr5", "sr5SpiritDrainAttribute") === "intuition" ? "intuition" : "charisma"
+      SR5_EntityHelpers.updateModifier(magic.drainResistance, `${game.i18n.localize(SR5.allAttributes[drainKey])}`, "linkedAttribute", attributes[drainKey].augmented.value)
+    }
     SR5_EntityHelpers.updateDicePool(magic.drainResistance, 0)
 
     //Astral damage
