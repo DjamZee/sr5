@@ -136,7 +136,7 @@ export async function sr5HookUpdateItem(document, data, _options, userId) {
   }
 
   //Keep agent condition monitor synchro with owner deck
-  if(document.type === "itemDevice" && data.system.conditionMonitors?.matrix && document.testUserPermission(game.user, 3) || (game.user?.isGM)){
+  if(document.type === "itemDevice" && data.system?.conditionMonitors?.matrix && (document.testUserPermission(game.user, 3) || game.user?.isGM)){
     if (document.parent?.type === "actorPc" || document.parent?.type === "actorGrunt"){
       for (let a of game.actors) {
         if(a.type === "actorAgent" && a.system.creatorId === document.parent.id) await SR5_ActorHelper.keepAgentMonitorSynchro(a)

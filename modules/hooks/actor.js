@@ -87,7 +87,7 @@ export async function sr5HookUpdateActor(document, data, _options, userId) {
   }
 
   //Keep deck condition monitor synchro with agent condition monitor
-  if (document.type === "actorAgent" && data.system.conditionMonitors?.matrix && (document.testUserPermission(game.user, 3) || (game.user?.isGM))){
+  if (document.type === "actorAgent" && data.system?.conditionMonitors?.matrix && (document.testUserPermission(game.user, 3) || (game.user?.isGM))){
     await SR5_ActorHelper.keepDeckSynchroWithAgent(document)
   }
 
