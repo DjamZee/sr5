@@ -2384,11 +2384,15 @@ export class SR5_CharacterUtility extends Actor {
     let actorData = actor.system, resistances = actorData.resistances, attributes = actorData.attributes
     // The effects put their bonuses "to resist damage" on the physical damage resistance (bone density and bone lacing
     // SR5 p. 458/462, Toughness p. 76, Bear p. 326, skeletal pneumaticity Chrome Flesh p. 167): the book makes them
-    // count against every damage but drugs, toxins and diseases, so the elemental and fall resistances take them too.
-    // Not toxin, nor pollution and radiation: « traitées comme des attaques de toxine » (Street Grimoire p. 105).
-    // Read before Body and armor are added below.
+    // count against every damage, so the elemental and fall resistances take them too. Read before Body and armor
+    // are added below. Against toxins (pollution and radiation included, « traitées comme des attaques de toxine »,
+    // Street Grimoire p. 105) only bone density and bone lacing keep their exception (SR5 p. 458/462): Toughness, Bear
+    // and skeletal pneumaticity have none in the book, so they count there too (decision G3 of DjamZ). The bone
+    // implants are cyberware or bioware, the pneumaticity genetech.
     const TOXIN_LIKE_ELEMENTS = ["toxin", "pollution", "radiation"]
     const anyDamageModifiers = [...(resistances?.physicalDamage?.modifiers || [])]
+    const genetech = new Set((actor.items ?? []).filter(i => i.type === "itemAugmentation" && i.system?.type === "genetech").map(i => i.name))
+    const toxinDamageModifiers = anyDamageModifiers.filter(m => m.type !== "itemAugmentation" || genetech.has(m.source))
 
     // Addiction tests (SR5 p. 415): Body + Willpower when physiological, Logic + Willpower when psychological
     if (resistances.addiction && attributes.logic && attributes.willpower) {
@@ -2427,7 +2431,8 @@ export class SR5_CharacterUtility extends Actor {
                   resistances.specialDamage[specialDamage].modifiers = resistances.specialDamage[specialDamage].modifiers.concat(actorData.itemsProperties.armor.modifiers)
                   resistances.specialDamage[specialDamage].modifiers = resistances.specialDamage[specialDamage].modifiers.concat(actorData.itemsProperties.armor.specialDamage[specialDamage].modifiers)
                 }
-                if (!TOXIN_LIKE_ELEMENTS.includes(specialDamage)) resistances.specialDamage[specialDamage].modifiers = resistances.specialDamage[specialDamage].modifiers.concat(anyDamageModifiers)
+                resistances.specialDamage[specialDamage].modifiers = resistances.specialDamage[specialDamage].modifiers
+                  .concat(TOXIN_LIKE_ELEMENTS.includes(specialDamage) ? toxinDamageModifiers : anyDamageModifiers)
               }
               SR5_EntityHelpers.updateDicePool(resistances[key][specialDamage], 0)
             }
@@ -2445,6 +2450,7 @@ export class SR5_CharacterUtility extends Actor {
               if (actorData.itemsProperties && key === "toxin") {
                 resistances.toxin[vector].modifiers = resistances.toxin[vector].modifiers.concat(actorData.itemsProperties.armor.toxin[vector].modifiers)
               }
+              if (key === "toxin") resistances.toxin[vector].modifiers = resistances.toxin[vector].modifiers.concat(toxinDamageModifiers)
               SR5_EntityHelpers.updateDicePool(resistances[key][vector], 0)
             }
             break

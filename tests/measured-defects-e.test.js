@@ -201,7 +201,7 @@ function boneDensityActor(){
       },
       // As the item effect leaves it: bone density 2 on the physical damage resistance
       resistances: {
-        physicalDamage: pool([mod("Augmentation de densité osseuse", 2, "itemBioware")]), fall: pool(), specialDamage,
+        physicalDamage: pool([mod("Augmentation de densité osseuse", 2, "itemAugmentation")]), fall: pool(), specialDamage,
       },
     }
   }
