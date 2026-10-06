@@ -5,7 +5,7 @@ import {
 const {
   afterInterval, profileFromToxin, newInfection, reexpose, testPower, testModifiers, penetrationModifier, protectionOf,
   applyResult, applyRecovery, currentEffects, effectsFor, dueEntries, openInfectionOf, applyDiseaseEffects,
-  addDiseaseApplyButton, activateDiseaseRequestListeners, checkDiseases, DISEASE_UNITS, hitsAboveDice, finalEffectDue, reachedZero
+  addDiseaseApplyButton, activateDiseaseRequestListeners, checkDiseases, DISEASE_UNITS, hitsAboveDice, hitsCeiling, finalEffectDue, reachedZero
 } = await import("../modules/system/diseases.js")
 
 const DAY = DISEASE_UNITS.day
@@ -474,7 +474,7 @@ describe("a player cannot move her disease on (the two flaws of the week)", () =
   })
 
   // Security 06/10: the card's pool is the player's, so a card raising hits AND pool together slipped past the alert
-  const clickApply = (cardPool, cardHits, prompt) => {
+  const clickApply = (cardPool, cardHits, prompt, pushed = false) => {
     game.i18n.format = (k) => k
     let listener
     const el = {
@@ -503,6 +503,13 @@ describe("a player cannot move her disease on (the two flaws of the week)", () =
     }
     globalThis.fromUuid = async () => ({
       system: {
+        specialAttributes: {
+          edge: {
+            augmented: {
+              value: 3
+            }
+          }
+        },
         resistances: {
           disease: {
             inhalation: {
@@ -523,6 +530,8 @@ describe("a player cannot move her disease on (the two flaws of the week)", () =
             infectionId: "i1", token: "t1"
           }, roll: {
             hits: cardHits
+          }, edge: {
+            hasUsedPushTheLimit: pushed
           }, dicePool: {
             value: cardPool
           }
@@ -540,6 +549,39 @@ describe("a player cannot move her disease on (the two flaws of the week)", () =
     })
     await clickApply(20, 12, prompt)()
     expect(contents[0]).toContain("SR5.DISEASE_HitsAbovePool")
+  })
+
+  // Push the limit adds Edge to the pool (SR5 p. 56): the GM reads Edge on the sheet, never on the card (Élise, 06/10)
+  it("the ceiling is the pool, plus the Edge of the sheet when the roll pushed the limit", () => {
+    const actorData = {
+      specialAttributes: {
+        edge: {
+          augmented: {
+            value: 3
+          }
+        }
+      }
+    }
+    expect(hitsCeiling(5, actorData, {
+      edge: {
+        hasUsedPushTheLimit: true
+      }
+    })).toBe(8)
+    expect(hitsCeiling(5, actorData, {
+      edge: {
+      }
+    })).toBe(5)
+  })
+
+  it("a roll that pushed the limit is not flagged for hits up to pool + Edge", async () => {
+    const contents = []
+    const prompt = vi.fn(async (o) => {
+      contents.push(o.content)
+      return null
+    })
+    await clickApply(99, 7, prompt, true)()
+    expect(contents[0]).not.toContain("SR5.DISEASE_HitsAbovePool")
+    expect(contents[0]).toContain('value="7"')
   })
 
   it("a double click on Apply opens one window only", async () => {

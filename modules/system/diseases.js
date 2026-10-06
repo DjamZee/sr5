@@ -182,6 +182,13 @@ export function diseasePool(actorData, entry){
   return Math.max(0, sum(own) + sum(testModifiers(entry)) + penetrationModifier(entry.profile?.penetration, protectionOf(own)))
 }
 
+// The most hits the GM believes: the pool he worked out, plus the Edge of the sheet when the roll pushed the limit
+// (SR5 p. 56). Only whether it pushed is read on the card, and claiming it never gives more than the sheet's Edge
+export function hitsCeiling(pool, actorData, card){
+  const edge = card?.edge?.hasUsedPushTheLimit ? Math.max(0, Number(actorData?.specialAttributes?.edge?.augmented?.value) || 0) : 0
+  return Math.max(0, Number(pool) || 0) + edge
+}
+
 // A card claiming more hits than it rolled dice was written by hand
 export function hitsAboveDice(hits, pool){
   return (Number(hits) || 0) > Math.max(0, Number(pool) || 0)
@@ -545,7 +552,8 @@ async function confirmAndApply(message, button, ref, entry){
   //The card is the player's: the pool beside the hits is the one the GM works out from the character
   const actor = await fromUuid(entry.actorUuid)
   if (!actor) return
-  const pool = diseasePool(actor.system, entry)
+  //Pushing the limit rolled the Edge of the sheet besides the pool (SR5 p. 56)
+  const pool = hitsCeiling(diseasePool(actor.system, entry), actor.system, message.flags?.sr5data)
   const alert = hitsAboveDice(suggested, pool) ? `<p class="sr5-disease-alert" style="color: #c00; font-weight: bold;">${game.i18n.localize("SR5.DISEASE_HitsAbovePool")}</p>` : ""
   const hits = await foundry.applications.api.DialogV2.prompt({
     window: {

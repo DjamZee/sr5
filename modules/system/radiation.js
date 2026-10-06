@@ -13,7 +13,7 @@ import {
   cardFromGM
 } from "./card-rows.js"
 import {
-  hitsAboveDice
+  hitsAboveDice, hitsCeiling
 } from "./diseases.js"
 
 export const RADIATION_LEDGER = "sr5RadiationLedger"
@@ -342,7 +342,8 @@ async function applyFromCard(message, button){
   if (!entry?.request || entry.request.token !== ref.token) return button.remove()
   const actor = await fromUuid(entry.actorUuid)
   if (!actor) return
-  const pool = radiationPool(actor.system)
+  //Pushing the limit rolled the Edge of the sheet besides the pool (SR5 p. 56)
+  const pool = hitsCeiling(radiationPool(actor.system), actor.system, message.flags?.sr5data)
   const suggested = Math.max(0, Number(message.flags?.sr5data?.roll?.hits) || 0)
   const modified = hitsAboveDice(suggested, pool)
   const alert = modified ? `<p class="sr5-disease-alert" style="color: #c00; font-weight: bold;">${game.i18n.localize("SR5.DISEASE_HitsAbovePool")}</p>` : ""

@@ -965,7 +965,14 @@ export class SR5_RollMessage {
     })
   }
 
-  static async _socketUpdateRollCard(message){
+  //Believed only from a GM or from a player who owns the actor who spoke the card: the new card is the sender's own
+  //data, anyone else could rewrite the hits or the buttons of any card from a console. The speaker is read on the
+  //stored card, its token through its own scene (the GM may be looking at another one)
+  static async _socketUpdateRollCard(message, senderId){
+    const sender = game.users.get(senderId)
+    const speaker = game.messages.get(message.data?.message)?.speaker
+    const actor = (speaker?.token && game.scenes.get(speaker.scene)?.tokens.get(speaker.token)?.actor) || game.actors.get(speaker?.actor)
+    if (!sender?.isGM && !actor?.testUserPermission?.(sender, "OWNER")) return SR5_SystemHelpers.srLog(1, `updateRollCard refused from ${senderId}`)
     await SR5_RollMessage.updateRollCard(message.data.message, message.data.newMessage)
   }
 
