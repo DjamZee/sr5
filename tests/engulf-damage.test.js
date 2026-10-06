@@ -54,6 +54,12 @@ describe('engulf resistance wiring', () => {
     expect(block.slice(0, 900)).not.toMatch(/messageData\.damage\.base/)
   })
 
+  // Victoire's review, remark 1: the previous phase's "Take on" button goes when the next phase is rolled
+  it('removes the previous phase button of an air engulf when the next one is rolled', () => {
+    const resistanceCase = readFileSync(new URL('../modules/rolls/roll-test-case/test-Resistance.js', import.meta.url), 'utf8')
+    expect(resistanceCase).toMatch(/typeSub === "toxinDamage" && prevData\?\.damage\?\.toxin\?\.type === "airEngulf" && prevData\?\.chatCard\?\.buttons\?\.resistanceCard\) SR5_RollMessage\.updateChatButtonHelper\(cardData\.previousMessage\.messageId, "resistanceCard"\)/)
+  })
+
   it('keeps the first phase of an earth, water or fire engulf when its damage is applied', () => {
     const block = message.slice(message.indexOf('switch (buttonToUpdate) {'))
     expect(block.slice(0, 600)).toMatch(/isContinuous && messageData\.test\?\.typeSub !== "continuousDamage"\) await SR5_ActorHelper\.keepEngulfFirstPhase\(messageData\)/)
