@@ -71,8 +71,8 @@ describe("SR5_EffectArea.createTemplateEffect, a template a player wrote", () =>
 
   it("takes the environment modifier from the template's item, not from its flags", async () => {
     globalThis.fromUuid = vi.fn().mockResolvedValue({
-      name: "Flash-pak", system: {
-        customEffects: {
+      name: "Fumigène", system: {
+        category: "grenade", customEffects: {
           0: {
             transfer: true, category: "environmentalModifiers", target: "system.itemsProperties.environmentalMod.glare", value: 2
           }
@@ -87,6 +87,54 @@ describe("SR5_EffectArea.createTemplateEffect, a template a player wrote", () =>
       }
     }))
     expect(valueOf("system.itemsProperties.environmentalMod.glare")).toBe(2)
+  })
+
+  it("gives a spell's environment by its effect only, not a second time as the template's", async () => {
+    //Poltergeist: visibility 1, a value effect, applied by itemHasEffect
+    globalThis.fromUuid = vi.fn().mockResolvedValue({
+      name: "Poltergeist", type: "itemSpell", system: {
+        category: "manipulation", customEffects: {
+          0: {
+            transfer: true, category: "environmentalModifiers", type: "value", target: "system.itemsProperties.environmentalMod.visibility", value: 1
+          }
+        }
+      }
+    })
+    await SR5_EffectArea.createTemplateEffect({
+      id: "tok1"
+    }, forged(player, {
+      itemUuid: "Actor.a.Item.p"
+    }))
+    expect(created).toEqual([])
+  })
+
+  it("a grenade's environment is set by the designated GM only", async () => {
+    globalThis.fromUuid = vi.fn().mockResolvedValue({
+      name: "Fumigène", system: {
+        category: "grenade", customEffects: {
+          0: {
+            transfer: true, category: "environmentalModifiers", target: "system.itemsProperties.environmentalMod.visibility", value: 3
+          }
+        }
+      }
+    })
+    game.users.activeGM = {
+      id: "gm2", isGM: true
+    }
+    const template = forged(player, {
+      itemUuid: "Actor.a.Item.g", environmentalModifiers: {
+        visibility: 3
+      }
+    })
+    await SR5_EffectArea.createTemplateEffect({
+      id: "tok1"
+    }, template)
+    expect(created).toEqual([])
+    game.users.activeGM = gm
+    await SR5_EffectArea.createTemplateEffect({
+      id: "tok1"
+    }, template)
+    expect(valueOf("system.itemsProperties.environmentalMod.visibility")).toBe(3)
   })
 
   it("treats a template with no known author as a player's", async () => {

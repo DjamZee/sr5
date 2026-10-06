@@ -196,6 +196,31 @@ describe("SR5_EffectArea.createTemplateEffect, a spell's hits", () => {
     expect(target.applyExternalEffect).not.toHaveBeenCalled()
   })
 
+  it("a spell of light gives its effect once, by its hits, and nothing when the GM declines", async () => {
+    //Light (SG): an environment effect of type hits, no value
+    sourceItem.system.customEffects[0] = {
+      transfer: true, type: "hits", category: "environmentalModifiers", target: "system.itemsProperties.environmentalMod.light", multiplier: 1
+    }
+    target.createEmbeddedDocuments = vi.fn()
+    confirm.mockResolvedValue(false)
+    await SR5_EffectArea.createTemplateEffect({
+      id: "tok"
+    }, {
+      ...template, author: player
+    })
+    expect(target.createEmbeddedDocuments).not.toHaveBeenCalled()
+    expect(target.applyExternalEffect).not.toHaveBeenCalled()
+    confirm.mockResolvedValue(true)
+    SR5_EffectArea.TEMPLATE_ROLLS.clear()
+    await SR5_EffectArea.createTemplateEffect({
+      id: "tok"
+    }, {
+      ...template, author: player
+    })
+    expect(target.createEmbeddedDocuments).not.toHaveBeenCalled()
+    expect(target.applyExternalEffect).toHaveBeenCalledOnce()
+  })
+
   it("keeps the item's hits for a caster no player owns", async () => {
     caster.testUserPermission = () => false
     await SR5_EffectArea.createTemplateEffect({

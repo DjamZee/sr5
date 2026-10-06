@@ -351,7 +351,13 @@ export class SR5_EffectArea {
     const author = template.author ?? game.users?.get?.(template.user)
     if (author?.isGM) return flags
     let environmentalModifiers
-    for (const e of Object.values(sourceItem?.system?.customEffects ?? {
+    //Only what fromItem sets: a grenade or a launcher. A spell's environment passes by its effect (itemHasEffect),
+    //and set here too it was applied twice, left behind by the template, and NaN for a hits effect
+    const sys = sourceItem?.system
+    const thrown = sys?.category === "grenade" || sys?.type === "grenadeLauncher" || sys?.type === "missileLauncher"
+    //Every GM viewing the scene runs this: one copy only, from the designated GM
+    for (const e of Object.values(thrown && isActiveGM() ? sys.customEffects ?? {
+    } : {
     })){
       if (!e?.transfer || e.category !== "environmentalModifiers") continue
       const key = (e.target ?? "").replace("system.itemsProperties.environmentalMod.", "")
