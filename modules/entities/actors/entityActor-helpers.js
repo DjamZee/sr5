@@ -59,6 +59,9 @@ import {
   readsRoll, effectCardVerdict
 } from "../../rolls/roll-helpers/effect-card.js"
 import {
+  entryValue, transferEntries, compareDefinitions, definitionsMatch
+} from "./effect-definition.js"
+import {
   isAreaSpellTemplateGone
 } from "../../system/areaEffectScene.js"
 
@@ -1961,7 +1964,8 @@ export class SR5_ActorHelper {
   //the target), counted again (roll-helpers/effect-card.js), and confirmed when the GM applies it. The card's own
   //figures when its author applies it himself (his own actor), or when it is the GM's. null when the card is
   //rejected or the GM declines
-  static async checkEffectCard(data, item){
+  //`review` (definitionReview): what the sheet defines, shown in the same window
+  static async checkEffectCard(data, item, review = null){
     const claimed = {
       hits: data.roll?.hits, netHits: data.roll?.netHits
     }
@@ -2002,13 +2006,17 @@ export class SR5_ActorHelper {
     if (verdict.overPool) notes.push(game.i18n.format("SR5.EffectCardOverPool", {
       allowed: verdict.allowed
     }))
+    if (review) review.shown = true
     const ok = await foundry.applications.api.DialogV2.confirm({
       window: {
         title: "SR5.EffectCardConfirmTitle"
       },
       content: `<p>${game.i18n.format("SR5.EffectCardConfirm", {
         user: author.name, caster: caster.name, item: item.name, hits: verdict.hits, netHits: verdict.netHits
-      })}</p>${notes.map(n => `<p><strong>${n}</strong></p>`).join("")}`,
+      })}</p>${notes.map(n => `<p><strong>${n}</strong></p>`).join("")}` +
+        (review ? SR5_ActorHelper.definitionHtml(review, {
+          hits: verdict.hits, netHits: verdict.netHits
+        }) : ""),
       rejectClose: false,
     })
     return ok ? {
@@ -2069,15 +2077,115 @@ export class SR5_ActorHelper {
     else if ((actor.type === "actorSprite" || actor.type === "actorDevice") && full(monitors.matrix)) await SR5_ActorHelper.createDeadEffect(actorId)
   }
 
+  //The reference of an item a player's sheet carries: the compendium document it was taken from, else an item of the
+  //same type and name in the Item compendiums, then in the world. null when there is none
+  static async findReferenceItem(item){
+    const source = item._stats?.compendiumSource ?? item.flags?.core?.sourceId
+    if (typeof source === "string" && source.length) {
+      try {
+        const ref = await fromUuid(source)
+        if (ref && ref.type === item.type && ref.uuid !== item.uuid) return ref
+      } catch {
+        //A source that no longer exists: looked for by name
+      }
+    }
+    const same = d => d.type === item.type && d.name === item.name
+    for (const pack of game.packs?.filter(p => p.documentName === "Item") ?? []) {
+      const entry = (await pack.getIndex({
+        fields: ["type"]
+      })).find(same)
+      if (entry) return pack.getDocument(entry._id)
+    }
+    return game.items?.find(i => same(i) && i.uuid !== item.uuid) ?? null
+  }
+
+  //What the GM must see before an item of a player's sheet applies its effects to an actor she does not own (on the
+  //GM's side only): the sheet's definition, the reference's, and how they differ. null when nothing is to be checked
+  static async definitionReview(item, actor, effectType, data){
+    if (!game.user?.isGM || !item || !actor) return null
+    const owner = item.parent
+    if (owner?.documentName !== "Actor") return null
+    const players = game.users?.filter(u => !u.isGM && owner.testUserPermission?.(u, "OWNER")) ?? []
+    if (!players.length || players.some(u => actor.testUserPermission?.(u, "OWNER"))) return null
+    const reference = await SR5_ActorHelper.findReferenceItem(item)
+    const sheet = {
+      resisted: !!item.system.resisted, entries: transferEntries(item.system[effectType])
+    }
+    const ref = reference ? {
+      resisted: !!reference.system?.resisted, entries: transferEntries(reference.system?.[effectType])
+    } : null
+    if (!sheet.entries.length && !ref?.entries.length) return null
+    return {
+      item, actor, sheet, ref, reference, diff: compareDefinitions(sheet, ref), shown: false,
+      //Applied once the target resisted (its resistance card): the test was not skipped
+      afterResistance: /Resistance$/.test(data?.test?.type ?? ""),
+    }
+  }
+
+  //One effect entry, as the GM reads it: its target, its kind, its value when it is known
+  static describeEntry(e, roll, rating){
+    const label = game.i18n.localize(SR5_EntityHelpers.getLabelByKey(e.target) ?? e.target)
+    const kind = game.i18n.localize(SR5.customEffectsTypes?.[e.type] ?? e.type)
+    const times = e.multiplier !== 1 ? ` × ${e.multiplier}` : ""
+    const fixed = String(e.type).startsWith("value") ? ` ${e.value}` : ""
+    const value = entryValue(e, roll, rating)
+    return `${label} : ${kind}${fixed}${times}${value === undefined ? "" : ` = ${value}`}`
+  }
+
+  static definitionHtml(review, roll){
+    const t = (k, d) => game.i18n.format(k, d ?? {
+    })
+    const rating = review.item.system?.itemRating
+    const list = entries => `<ul>${entries.map(e => `<li>${SR5_ActorHelper.describeEntry(e, roll, rating)}</li>`).join("")}</ul>`
+    let html = `<p>${t("SR5.EffectDefinitionIntro", {
+      item: review.item.name, owner: review.item.parent?.name, actor: review.actor.name
+    })}</p>${list(review.sheet.entries)}`
+    if (!review.sheet.resisted && !review.afterResistance) html += `<p><strong>${t("SR5.EffectDefinitionNoResistance")}</strong></p>`
+    if (!review.reference) return html + `<p><strong>${t("SR5.EffectDefinitionNoReference")}</strong></p>`
+    const source = review.reference.pack ? (game.packs?.get(review.reference.pack)?.metadata?.label ?? review.reference.pack) :
+      t("SR5.EffectDefinitionWorldItem")
+    html += `<p>${t("SR5.EffectDefinitionReference", {
+      name: review.reference.name, source
+    })}</p>`
+    const diff = review.diff
+    if (definitionsMatch(diff)) return html + `<p>${t("SR5.EffectDefinitionSame")}</p>`
+    if (diff.resistedDiffers) html += `<p><strong>${t(review.ref.resisted ? "SR5.EffectDefinitionRefResisted" : "SR5.EffectDefinitionRefNotResisted")}</strong></p>`
+    if (diff.changed.length) html += `<p><strong>${t("SR5.EffectDefinitionChanged")}</strong></p><ul>${diff.changed.map(([e, r]) =>
+      `<li>${SR5_ActorHelper.describeEntry(e, roll, rating)} — ${t("SR5.EffectDefinitionReferenceSays")} ${SR5_ActorHelper.describeEntry(r, roll, rating)}</li>`).join("")}</ul>`
+    if (diff.added.length) html += `<p><strong>${t("SR5.EffectDefinitionAdded")}</strong></p>${list(diff.added)}`
+    if (diff.missing.length) html += `<p><strong>${t("SR5.EffectDefinitionMissing")}</strong></p>${list(diff.missing)}`
+    return html
+  }
+
+  //Approved once for a card (or an area template) for a short while: an area spell asks for each token it covers
+  static DEFINITION_OK = new Map()
+
+  static async confirmDefinition(review, data){
+    const key = `${review.item.uuid}|${data.owner?.messageId ?? data.owner?.actorId}`
+    if ((SR5_ActorHelper.DEFINITION_OK.get(key) ?? 0) > Date.now()) return true
+    review.shown = true
+    const ok = await foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: "SR5.EffectDefinitionTitle"
+      },
+      content: SR5_ActorHelper.definitionHtml(review, data.roll),
+      rejectClose: false,
+    })
+    if (ok) SR5_ActorHelper.DEFINITION_OK.set(key, Date.now() + 30000)
+    return !!ok
+  }
+
   static async applyExternalEffect(actorId, data, effectType){
     //An area spell whose template was deleted during the resistance: nothing would lift the effect
     if (isAreaSpellTemplateGone(data)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_AreaSpellTemplateGone"))
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
     let item = await fromUuid(data.owner.itemUuid)
     let itemData = item.system
+    //A player's item applied to an actor she does not own: the GM sees what its sheet defines, against the reference
+    const review = await SR5_ActorHelper.definitionReview(item, actor, effectType, data)
     //An effect whose value reads the roll (hits, net hits): the GM does not believe a player's card as it is written
     if (readsRoll(itemData[effectType])) {
-      const roll = await SR5_ActorHelper.checkEffectCard(data, item)
+      const roll = await SR5_ActorHelper.checkEffectCard(data, item, review)
       if (!roll) return
       data = {
         ...data, roll: {
@@ -2085,6 +2193,7 @@ export class SR5_ActorHelper {
         }
       }
     }
+    if (review && !review.shown && !(await SR5_ActorHelper.confirmDefinition(review, data))) return
     // Head case Attribute Boost (Stolen Souls p. 201): lasts a number of combat turns equal to the hits,
     // then the head case takes as many boxes of Stun damage (applied when the effect expires, see SR5Combat.manageTurnEnd)
     let isNaniteBoost = Object.values(itemData.systemEffects || {
@@ -2098,10 +2207,7 @@ export class SR5_ActorHelper {
         //becomes the net hits (Street Grimoire p. 106)
         const replaces = isReplaceEffectType(e.type)
         const baseType = replaces ? e.type.replace("Replace", "") : e.type
-        if (baseType === "hits") value = Math.floor(data.roll.hits * (e.multiplier || 1))
-        else if (baseType === "netHits") value = Math.floor(data.roll.netHits * (e.multiplier || 1))
-        else if (baseType === "value") value = Math.floor(e.value * (e.multiplier || 1))
-        else if (baseType === "rating") value = Math.floor(item.system.itemRating * (e.multiplier || 1))
+        if (["hits", "netHits", "value", "rating"].includes(baseType)) value = entryValue(e, data.roll, item.system.itemRating)
         //An area spell resisted totally gets its effect at 0 (test-ResistanceResult), only to mark the token as
         //having resisted inside the template: a fixed value or the resistor's hits must not apply the spell
         if (data.test?.type === "spellResistance" && data.roll.netHits <= 0) value = 0
