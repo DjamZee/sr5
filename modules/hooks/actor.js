@@ -19,6 +19,9 @@ import {
 import {
   SR5_EntityHelpers
 } from "../entities/helpers.js"
+import {
+  SR5_SpiritTypes
+} from "../entities/items/spirit-types.js"
 
 export async function sr5HookCreateActor(actor) {
   SR5_ActorHelper.redrawCreatorSheet(actor)
@@ -42,9 +45,19 @@ export async function sr5HookCreateActor(actor) {
     }
   }
 
-  if (actor.type ==="actorSpirit") {
+  //A homunculus is always physical (SR5 p. 301): it starts in physical initiative, the others astral
+  if (actor.type ==="actorSpirit" && SR5_SpiritTypes.baseType(actor.system.type) !== "homunculus") {
     SR5_CharacterUtility.switchToInitiative(actor, "astralInit")
   }
+}
+
+//A spirit changed into a homunculus (or a type based on it) drops the astral initiative it was made with: written once
+//by the gamemaster who changed it, the preparation already playing it physical (updateSpiritValues)
+export async function homunculusLeavesAstral(actor, data, userId){
+  if (actor.type !== "actorSpirit" || data.system?.type === undefined || userId !== game.user?.id || !game.user.isGM) return
+  if (SR5_SpiritTypes.baseType(actor.system.type) !== "homunculus") return
+  if (!actor._source?.system?.initiatives?.astralInit?.isActive && !actor.effects.find(e => e.origin === "initiativeMode")) return
+  await SR5_CharacterUtility.switchToInitiative(actor, "physicalInit")
 }
 
 // Data Trails p. 157-158: an AI's persona carries its own marks only while it has no device. Many updates write the
@@ -69,6 +82,7 @@ export function sr5HookPreUpdateActor(document, changes, options = {
 }
 
 export async function sr5HookUpdateActor(document, data, _options, userId) {
+  await homunculusLeavesAstral(document, data, userId)
   //The sheet's wireless and equip toggles write the items through the actor, so no updateItem is sent: a
   //physical jammer changed that way is measured again from here (SR5 p. 443)
   for (let change of Array.isArray(data.items) ? data.items : []){

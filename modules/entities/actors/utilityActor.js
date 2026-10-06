@@ -1659,9 +1659,15 @@ export class SR5_CharacterUtility extends Actor {
 
   static updateSpiritValues(actor) {
     SR5_EntityHelpers.updateValue(actor.system.force)
-    // A homunculus is always physical, custom types based on it included
+    // A homunculus is always physical, custom types based on it included: physical initiative too, (P + 1) + 1D6
+    // (SR5 p. 301), even when it was made astral first (a spirit created as another type, then changed)
     if (SR5_SpiritTypes.baseType(actor.system.type) === "homunculus") {
       actor.system.isMaterializing = true
+      const initiatives = actor.system.initiatives
+      if (initiatives?.astralInit?.isActive && initiatives.physicalInit) {
+        initiatives.astralInit.isActive = false
+        initiatives.physicalInit.isActive = true
+      }
     }
   }
 
@@ -2211,6 +2217,8 @@ export class SR5_CharacterUtility extends Actor {
         // DjamZ); in a device or a body it starts physical like any character
         return this.isDevicelessAI(actor) ? "matrixInit" : "physicalInit"
       case "actorSpirit":
+        // A homunculus is always physical (SR5 p. 301)
+        if (SR5_SpiritTypes.baseType(actor.system.type) === "homunculus") return "physicalInit"
         return actor.system.initiatives?.astralInit ? "astralInit" : "physicalInit"
       case "actorDevice":
         return "matrixInit"
