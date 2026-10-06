@@ -14,8 +14,11 @@ import {
   SR5_EntityHelpers 
 } from "../../entities/helpers.js"
 import {
-  ritualDrainRecipients, ritualDrainKey
+  ritualDrainRecipients, ritualDrainKey, ritualDrainType
 } from "../roll-helpers/ritualTeam.js"
+import {
+  magicForDrainType
+} from "../../entities/items/magic-masteries.js"
 import {
   manaShiftKind
 } from "../../system/background-count.js"
@@ -68,8 +71,15 @@ export default async function defenseResultInfo(cardData, type){
       label = game.i18n.localize("SR5.RitualSuccess")
       labelEnd = game.i18n.localize("SR5.RitualFailed")
       cardData.magic.drain.value = cardData.roll.hits * 2
-      if (prevData.test.realHits > prevData.actorMagic) cardData.magic.drain.type = "physical"
-      else cardData.magic.drain.type = "stun"
+      //SR5 p. 299 (errata): the leader's hits against the leader's Magic, from the sheet. The fields read before
+      //(test.realHits, actorMagic) were written by nothing: the Drain stayed stun (M5 D2)
+      {
+        const leader = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)
+        const magic = leader?.system?.specialAttributes?.magic?.augmented?.value ?? 0
+        const masteries = leader?.system?.magic?.masteries
+        cardData.magic.drain.type = ritualDrainType(prevData?.roll?.hits,
+          magicForDrainType(magic, masteries?.archivist?.value, masteries?.conjuringSpecialist?.value, false))
+      }
       //Another tradition's reagents count for half (SR5 p. 320); cards made before keep their drachms spent
       const reagents = cardData.magic.reagentsEffective ?? cardData.magic.reagentsSpent
       if (reagents > cardData.magic.force) {
