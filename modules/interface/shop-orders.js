@@ -315,16 +315,24 @@ export function testedHours(baseHours, result) {
 }
 
 /**
- * The test of an availability card for a line: the card must be the requester's own, or one the gamemaster
- * rolled for a buyer the requester owns (a new test after a failure, shop-retry.js).
+ * The test of an availability card for a line: only a card the gamemaster rolled (every test is his,
+ * shop-retry.js), for a buyer the requester owns. The outcome is the one his ledger froze when the card
+ * appeared; the card itself only for a card the ledger missed.
  */
 export function cardResult(messageId, uuid, userId) {
   const message = messageId ? game.messages?.get(messageId) : null
-  const rolledForThem = () => {
+  if (!message?.author?.isGM) return null
+  if (userId) {
     const user = game.users?.get(userId)
-    return !!message.author?.isGM && !!user && !!game.actors?.get(message.flags?.sr5shop?.buyerId)?.testUserPermission?.(user, 'OWNER')
+    if (!user || !(user.isGM || game.actors?.get(message.flags?.sr5shop?.buyerId)?.testUserPermission?.(user, 'OWNER'))) return null
   }
-  if (!message || (userId && message.author?.id !== userId && !rolledForThem())) return null
+  let frozen
+  try {
+    frozen = game.settings.get('sr5', 'sr5ShopRetryLedger')?.[messageId]?.lines
+  } catch {
+    frozen = undefined
+  }
+  if (Array.isArray(frozen)) return frozen.find(l => l.uuid === uuid) ?? null
   return message.flags?.sr5shop?.results?.find(r => r.uuid === uuid) ?? null
 }
 

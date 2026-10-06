@@ -42,6 +42,10 @@ globalThis.foundry.documents.ChatMessage = {
   }),
 }
 globalThis.game.settings.get = () => 25
+// The gamemaster rolls every availability test (shop-retry.js): these run on his browser
+globalThis.game.user = {
+  isGM: true
+}
 
 const {
   SR5ShopAvailability

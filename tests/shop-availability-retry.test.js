@@ -37,8 +37,8 @@ const FAIL = {
 const CRIT = {
   faces: [1, 1, 1, 1, 2, 3], oppositionFaces: [5]
 }
-// A card of the player's, for a 500 ¥ item (table: 1 day, so 2 days to wait)
-const card = (results, author = player, extra = {
+// A card the GM rolled for the player (every test is his), for a 500 ¥ item (table: 1 day, so 2 days to wait)
+const card = (results, author = gm, extra = {
 }) => ({
   id: "msg1", author, content: '<footer class="sr-shop-card-footer">x</footer>', update: vi.fn(async () => {}),
   flags: {
@@ -155,7 +155,7 @@ describe("a new availability test after a failure (SR5 p. 420)", () => {
       recordShopCard, RETRY_LEDGER
     } = await retry()
     game.time.worldTime = 500
-    await recordShopCard(card(failed, player, {
+    await recordShopCard(card(failed, gm, {
       surcharge: 50
     }))
     expect(settings[RETRY_LEDGER].msg1).toMatchObject({
@@ -344,7 +344,7 @@ describe("the till charges the surcharge that bought the dice (SR5 p. 420)", () 
     } = await import("../modules/interface/shop-orders.js")
     game._card = card([{
       uuid: "Item.gun", obtained: true
-    }], player, {
+    }], gm, {
       surcharge: 0
     })
     settings.sr5ShopRetryLedger = {

@@ -16,6 +16,11 @@
  *
  * A card the gamemaster rolled cannot be edited by the player, so it is cashed
  * by the gamemaster: marked cashed in the ledger before any money moves, once.
+ *
+ * The first test is his too: a player's browser sends the buyer, the contact,
+ * the lines and the surcharge, and the active gamemaster recomputes the rest,
+ * rolls and posts the card, frozen in the ledger as it appears. A card a
+ * player's browser wrote is neither recorded nor cashed.
  */
 import {
   SR5ShopAvailability
@@ -50,14 +55,23 @@ export function outcomeFromDice(line, limit = 0) {
   return net > 0 ? 'success' : net === 0 ? 'tie' : 'failure'
 }
 
-/** What the ledger keeps of a card when it appears. */
+/**
+ * What the ledger keeps of a card when it appears: its lines and their outcome, which the till reads
+ * (shop-orders.js cardResult, cashCard), and the failures a new test may follow.
+ */
 export function cardEntry(data, time) {
-  const failed = (data?.results ?? []).filter(r => r && outcomeFromDice(r, data.limit) === 'failure')
+  const results = (data?.results ?? []).filter(r => r)
+  const quantityOf = r => Math.max(1, Math.floor(Number(r.quantity) || 1))
+  const failed = results.filter(r => outcomeFromDice(r, data.limit) === 'failure')
     .map(r => ({
-      uuid: String(r.uuid), quantity: Math.max(1, Math.floor(Number(r.quantity) || 1)), grade: r.grade ?? null
+      uuid: String(r.uuid), quantity: quantityOf(r), grade: r.grade ?? null
     }))
+  const lines = results.map(r => ({
+    uuid: String(r.uuid), quantity: quantityOf(r), grade: r.grade ?? null,
+    outcome: r.outcome ?? null, netHits: Number.isFinite(Number(r.netHits)) ? Number(r.netHits) : null, obtained: !!r.obtained,
+  }))
   return {
-    time, surcharge: Math.max(0, Number(data?.surcharge) || 0), failed, used: [], cashed: false
+    time, surcharge: Math.max(0, Number(data?.surcharge) || 0), failed, lines, used: [], cashed: false
   }
 }
 
@@ -117,9 +131,12 @@ async function writeLedger(id, entry) {
   })
 }
 
-/** An availability card appears: the active gamemaster writes what it is worth, once. */
+/**
+ * An availability card appears: the active gamemaster writes what it is worth, once. Only a card a
+ * gamemaster rolled: one a player's browser wrote carries dice nobody saw rolled.
+ */
 export async function recordShopCard(message) {
-  if (!isWriter()) return
+  if (!message?.author?.isGM || !isWriter()) return
   const data = message?.flags?.sr5shop
   if (!data || !Array.isArray(data.results) || retryLedger()[message.id]) return
   await writeLedger(message.id, cardEntry(data, game.time.worldTime))
@@ -173,7 +190,99 @@ export async function socketRetry(message, senderId) {
   const data = message?.data ?? {
   }
   if (data.cash) return cashCard(data, senderId)
+  if (data.first) return rollFirstTest(data, senderId)
   await rollRetry(data, senderId)
+}
+
+/* -------------------------------------------- */
+/*  The first test                              */
+/* -------------------------------------------- */
+
+/**
+ * A player tests the cart: the request goes to the active gamemaster, with the buyer, the contact, the lines
+ * and the surcharge. Nothing else: the pool, the limit, the availability and the price are recomputed there,
+ * and a pool typed in the window is the gamemaster's tool only. No gamemaster connected: no test.
+ */
+export async function requestFirstTest(actor, contact, lines, surcharge = 0, options = {
+}) {
+  if (!game.users.activeGM) {
+    ui.notifications.warn(game.i18n.localize('SR5.WARN_ShopTestNoGM'))
+    return false
+  }
+  const vendor = options.vendor?.uuid ? {
+    uuid: options.vendor.uuid, storageId: options.vendor.storageId
+  } : null
+  const payload = {
+    first: true, buyerId: actor.id, contactId: contact?.id ?? null, vendor,
+    surcharge: Math.max(0, Number(surcharge) || 0),
+    lines: lines.map(line => ({
+      uuid: line.uuid, quantity: Math.max(1, Math.floor(Number(line.quantity) || 1)), grade: line.grade ?? null
+    })),
+  }
+  const {
+    SR5_SocketHandler
+  } = await import('../socket.js')
+  await SR5_SocketHandler.emitForGM('shopAvailabilityRetry', payload)
+  ui.notifications.info(game.i18n.localize('SR5.ShopTestSent'))
+  return true
+}
+
+/**
+ * The active gamemaster rolls a player's first test: the requester must own the buyer, the contact is the
+ * buyer's own, a vendor is read again from its sheet. testLines then posts the card and freezes it.
+ */
+export async function rollFirstTest(data, senderId) {
+  const requester = game.users.get(senderId)
+  const buyer = game.actors.get(String(data?.buyerId ?? ''))
+  if (!requester || !buyer || !(requester.isGM || buyer.testUserPermission(requester, 'OWNER'))) return false
+  let lines = (Array.isArray(data.lines) ? data.lines : []).slice(0, 100)
+    .filter(line => typeof line?.uuid === 'string' && line.uuid)
+    .map(line => ({
+      uuid: line.uuid, quantity: Math.max(1, Math.floor(Number(line.quantity) || 1)),
+      grade: typeof line.grade === 'string' ? line.grade : null,
+    }))
+  if (!lines.length) return false
+
+  let options = {
+  }
+  if (data.vendor?.uuid) {
+    // At a vendor's, the vendor searches: its shop, read again, must be open and carry the item (lot C)
+    const vendor = await vendorOf(data.vendor)
+    const reason = vendorRefusal(vendor?.shop, 0, requester.isGM)
+    if (reason) {
+      await refuse(requester.id, `SR5.ShopTestRefused_${reason}`)
+      return false
+    }
+    const {
+      SR5ShopCatalog
+    } = await import('./shop-catalog.js')
+    const {
+      SR5Shop
+    } = await import('./shop.js')
+    const kept = []
+    for (const line of lines) {
+      const source = await fromUuid(line.uuid)
+      if (!source) continue
+      const grade = SR5Shop.gradesFor(source.type, source.system).includes(line.grade) ? line.grade : null
+      const described = SR5ShopCatalog.describe({
+        type: source.type, system: source.system, margin: vendor.shop.margin
+      }, grade)
+      if (vendorRefusal(vendor.shop, described.availability, requester.isGM)) {
+        await refuse(requester.id, 'SR5.ShopTestRefused_vendorCeiling', {
+          name: source.name
+        })
+        continue
+      }
+      kept.push(line)
+    }
+    lines = kept
+    if (!lines.length) return false
+    options = vendor.options
+  }
+  const contact = data.vendor ? null : buyer.items.get(String(data.contactId ?? ''))
+  await SR5ShopAvailability.testLines(buyer, contact?.type === 'itemContact' ? contact : null, lines,
+    Math.max(0, Number(data.surcharge) || 0), options)
+  return true
 }
 
 async function refuse(userId, key, data = {
@@ -300,8 +409,10 @@ export async function cashCard({
     await writeLedger(messageId, {
       ...entry, cashed: true
     })
-    const lines = data.results.filter(r => r.obtained).map(r => ({
-      uuid: r.uuid, quantity: r.quantity, name: r.name, grade: r.grade,
+    // What was obtained is the ledger's, frozen when the card appeared; the card only lends its names
+    const names = new Map(data.results.map(r => [r.uuid, r.name]))
+    const lines = (entry.lines ?? cardEntry(data, 0).lines).filter(l => l.obtained).map(l => ({
+      uuid: l.uuid, quantity: l.quantity, name: names.get(l.uuid), grade: l.grade,
     }))
     let bought
     if (data.vendor) {

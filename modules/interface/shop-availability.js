@@ -306,6 +306,14 @@ export class SR5ShopAvailability {
       return null
     }
     if (!lines?.length) return null
+    // A player's browser never rolls: the active gamemaster does, and freezes the outcome (shop-retry.js)
+    if (!game.user.isGM) {
+      const {
+        requestFirstTest
+      } = await import('./shop-retry.js')
+      await requestFirstTest(actor, contact, lines, surcharge, options)
+      return null
+    }
 
     // A vendor looks for what it has not got with its own Negotiation and Charisma (SR5 p. 420)
     // ...or through the contact the gamemaster gave the vendor (lot C, part 2)
@@ -467,7 +475,7 @@ export class SR5ShopAvailability {
     const content = await foundry.applications.handlebars.renderTemplate(
       'systems/sr5/templates/interface/shop-availability-card.hbs', cardData)
 
-    await foundry.documents.ChatMessage.create({
+    const message = await foundry.documents.ChatMessage.create({
       speaker: foundry.documents.ChatMessage.getSpeaker({
         actor
       }),
@@ -476,6 +484,11 @@ export class SR5ShopAvailability {
         sr5shop: cardData
       },
     })
+    // Frozen at once, before anyone can click: the till and a new test read this ledger, not the card
+    const {
+      recordShopCard
+    } = await import('./shop-retry.js')
+    await recordShopCard(message)
 
     return cardData
   }
@@ -514,38 +527,14 @@ export class SR5ShopAvailability {
         event.preventDefault()
         const data = message.flags?.sr5shop
         if (!data) return
-        const actor = game.actors.get(data.buyerId)
-        const lines = data.results.filter(r => r.obtained).map(r => ({
-          uuid: r.uuid, quantity: r.quantity, name: r.name, grade: r.grade,
-        }))
-        // The till reads the test from this card itself, never a time sent along with the lines
-        const messageId = message.id
         const express = !!data.express && !!html.querySelector('[data-shop-express]')?.checked
-        // A card the gamemaster rolled (a new test) is not the player's to edit: the gamemaster cashes it, once
-        if (message.author?.isGM) {
-          const {
-            requestCash
-          } = await import('./shop-retry.js')
-          await requestCash(message, express)
-          return
-        }
-        // Bought at a vendor's: its till, on the gamemaster's browser
-        // Loaded on demand: the vendor's till brings the socket, which the tests do without
-        const SR5ShopVendor = data.vendor ? (await import('./shop-vendor.js')).SR5ShopVendor : null
-        const bought = data.vendor ? await SR5ShopVendor.purchase({
-          vendorUuid: data.vendor.uuid, storageId: data.vendor.storageId, buyerId: actor?.id, lines, express, messageId,
-        }) : await SR5Shop.checkout(actor, lines, {
-          express, messageId
-        })
-        // The goods are cashed once: the button goes, the card stays.
-        if (bought) {
-          await message.update({
-            content: message.content.replace(
-              /<footer class="sr-shop-card-footer">[\s\S]*?<\/footer>/,
-              `<footer class="sr-shop-card-footer"><span class="sr-shop-cashed">${
-                game.i18n.localize('SR5.ShopAlreadyCashed')}</span></footer>`),
-          })
-        }
+        // Every test is the gamemaster's (shop-retry.js): a card a player's browser wrote is cashed by nobody
+        if (!message.author?.isGM) return ui.notifications.warn(game.i18n.localize('SR5.WARN_ShopCardNotByGM'))
+        // The gamemaster cashes it, once, from his ledger
+        const {
+          requestCash
+        } = await import('./shop-retry.js')
+        await requestCash(message, express)
       })
     })
   }

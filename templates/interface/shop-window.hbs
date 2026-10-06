@@ -173,8 +173,11 @@
         </select>
       </div>
       <div class="sr-shop-inline">
+        {{!-- The gamemaster rolls every test: a pool typed by a player would never reach the dice --}}
+        {{#if isGM}}
         <input type="number" min="0" data-shop-override="pool" value="{{overridePool}}" placeholder="{{localize 'SR5.ShopPoolShort'}}" data-tooltip="{{localize 'SR5.ShopOverridePoolHint'}}">
         <input type="number" min="0" data-shop-override="limit" value="{{overrideLimit}}" placeholder="{{localize 'SR5.ShopLimitShort'}}" data-tooltip="{{localize 'SR5.ShopOverrideLimitHint'}}">
+        {{/if}}
         <span class="muted">{{localize 'SR5.ShopPoolNow' pool=pool}}</span>
       </div>
     </div>

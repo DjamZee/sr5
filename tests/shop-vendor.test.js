@@ -411,9 +411,12 @@ describe('the vendor till (socket, validated by the gamemaster)', () => {
     const buyer = makeBuyer()
     vi.spyOn(SR5Shop, 'balance').mockReturnValue(10000)
     world(vendor, buyer)
+    // Every availability card is the gamemaster's (shop-retry.js)
     globalThis.game.messages = {
       get: id => id === 'card' ? {
-        id, author: player, flags: {
+        id, author: {
+          id: 'gm', isGM: true 
+        }, flags: {
           sr5shop: {
             buyerId: 'buyer', surcharge: 100, results: [{
               uuid: 'Actor.vendor.Item.medkit', obtained: true
