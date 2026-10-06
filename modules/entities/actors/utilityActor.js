@@ -20,6 +20,9 @@ import {
   applyDrugQuality, drugAddictionThreshold, effectiveDrugQuality
 } from "../items/drug-stat.js"
 import {
+  longHaulInCrash
+} from "../items/drug-damage.js"
+import {
   SR5_SystemHelpers 
 } from "../../system/utilitySystem.js"
 import {
@@ -3523,9 +3526,8 @@ export class SR5_CharacterUtility extends Actor {
 
   // Handle drug stats
   //`consumer`: who takes it. The sheet passes a copy of the item, without a parent (Liesel's D4)
-  //`addictions`: the doses counted so far, this one included. The sheet passes its working list: the prepared
-  //system does not hold the dose being taken yet (M7 D1)
-  static async handleDrugShots(item, drugType, actorData, consumer = item.parent, addictions = actorData.addictions) {
+  //The doses counted (Soothsayer) are read by the sheet on its working list (entities/items/drug-damage.js, M7 D1)
+  static async handleDrugShots(item, drugType, actorData, consumer = item.parent) {
     let drugStat
     let roll, rollRoll, rollSpeed, rollRollSpeed, duration, effect
 
@@ -3548,7 +3550,6 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.Minutes",
           "duration": duration,
           "durationType": "hour",
-          "unresistedStunDamage": 6,
         }
         break
       case "deepweed":
@@ -3586,10 +3587,9 @@ export class SR5_CharacterUtility extends Actor {
           "durationType": "minute",
           "durationContrecoup": rollRoll.total,
           "durationContrecoupType": "minute",
-          "unresistedStunDamage": 6,
         }
         break
-      case "longHaul":
+      case "longHaul": {
         roll = new Roll(`8d6`)
         rollRoll = await roll.evaluate()
         drugStat = {
@@ -3600,6 +3600,36 @@ export class SR5_CharacterUtility extends Actor {
           "durationType": "day",
           "durationContrecoup": rollRoll.total,
           "durationContrecoupType": "hour",
+        }
+        //SR5 p. 413: a second dose taken after the first one wore off (in its crash) keeps awake (1D6/2) days more,
+        //(12 × 1D6) hours, then 10S unresisted and the same crash (drug-damage.js). No further dose keeps awake
+        const crashing = longHaulInCrash(item, consumer)
+        if (crashing?.handleShot?.longHaulSecondDose || crashing?.handleShot?.longHaulNoMore) {
+          ui.notifications.warn(game.i18n.localize("SR5.DrugLongHaulNoMore"))
+          //One Combat Turn, the shortest the drug clock counts (0 is never counted): back to its crash at once
+          drugStat.duration = 1
+          drugStat.durationType = "combatTurn"
+          drugStat.longHaulNoMore = true
+        } else if (crashing) {
+          rollSpeed = new Roll(`1d6 * 12`)
+          rollRollSpeed = await rollSpeed.evaluate()
+          drugStat.duration = rollRollSpeed.total
+          drugStat.durationType = "hour"
+          drugStat.longHaulSecondDose = true
+          ui.notifications.info(`${item.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.DrugLongHaulSecondDose")}`)
+        }
+        break
+      }
+      //KAMI+, custom drug of the Megapack (Chrome Flesh p. 195-196): base duration (10 × 1D6) minutes, crash 8S
+      //(drug-damage.js)
+      case "kamiPlus":
+        roll = new Roll(`1d6 * 10`)
+        rollRoll = await roll.evaluate()
+        drugStat = {
+          "name": drugType.value,
+          "speed": item.system.speed,
+          "duration": rollRoll.total,
+          "durationType": "minute",
         }
         break
       case "nitro":
@@ -3614,7 +3644,6 @@ export class SR5_CharacterUtility extends Actor {
           "durationType": "minute",
           "durationContrecoup": rollRoll.total,
           "durationContrecoupType": "minute",
-          "unresistedStunDamage": 9,
         }
         break
       case "novacoke":
@@ -3669,7 +3698,6 @@ export class SR5_CharacterUtility extends Actor {
           "speed": item.system.speed,
           "duration": 20 * rollRoll.total,
           "durationType": "minute",
-          "unresistedStunDamage": 2,
         }
         break
       case "animalTongue":
@@ -3718,7 +3746,6 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.Minute",
           "duration": duration,
           "durationType": "hour",
-          "unresistedStunDamage": 6,
         }
         break
       case "cereprax":
@@ -3731,7 +3758,6 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.Minutes",
           "duration": duration,
           "durationType": "hour",
-          "unresistedStunDamage": 5,
         }
         break
       case "crimsonOrchid":
@@ -3742,7 +3768,6 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "hour",
-          "unresistedStunDamage": 6,
         }
         break
       case "dopadrine":
@@ -3839,23 +3864,19 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.Minutes",
           "duration": duration,
           "durationType": "hour",
-          "resistedStunDamage": 9,
         }
         break
       case "immortalFlower":
         roll = new Roll(`1d6`)
         rollRoll = await roll.evaluate()
         duration = Math.min(rollRoll.total + actorData.essence.value, 12)
-        rollSpeed = new Roll(`2d6`)
-        rollRollSpeed = await rollSpeed.evaluate()
-        duration = Math.min(rollRoll.total + actorData.essence.value, 12)
+        //Its 2D6 Physical at the crash, for the characters with implants, are in entities/items/drug-damage.js
         drugStat = {
           "name": drugType.value,
           "speed": 16,
           "speedType": "SR5.CombatTurns",
           "duration": duration,
           "durationType": "hour",
-          "unresistedStunDamage": rollRollSpeed.total,
         }
         break
       case "k10":
@@ -3867,7 +3888,6 @@ export class SR5_CharacterUtility extends Actor {
           "speed": item.system.speed,
           "duration": duration,
           "durationType": "minute",
-          "unresistedStunDamage": 18,
         }
         break
       case "laes":
@@ -3881,7 +3901,6 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "minute",
-          "resistedStunDamage": 12,
           "effectDuration": effect,
           "effectDurationType": "SR5.Hours",
         }
@@ -3900,7 +3919,6 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "minute",
-          "resistedStunDamage": 10,
           "drowsy": true,
           "effectDuration": effect,
           "effectDurationType": "SR5.Minutes",
@@ -3987,7 +4005,6 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "hour",
-          "unresistedStunDamage": 8,
         }
         break
       //Chrome Flesh p. 191: +1 Charisma and Perception, Pain Tolerance 1, memory loss; no damage, on taking or after
@@ -4036,7 +4053,6 @@ export class SR5_CharacterUtility extends Actor {
           "speed": item.system.speed,
           "duration": duration,
           "durationType": "minute",
-          "unresistedStunDamage": 2,
         }
         break
       case "rockLizardBlood":
@@ -4051,7 +4067,6 @@ export class SR5_CharacterUtility extends Actor {
           "durationType": "hour",
           "durationContrecoup": duration,
           "durationContrecoupType": "hour",
-          "unresistedStunDamage": 2,
         }
         break
       case "shade":
@@ -4063,7 +4078,6 @@ export class SR5_CharacterUtility extends Actor {
           "speed": item.system.speed,
           "duration": duration,
           "durationType": "hour",
-          "unresistedStunDamage": 10,
         }
         break
       case "slab":
@@ -4106,17 +4120,13 @@ export class SR5_CharacterUtility extends Actor {
         break
       case "soothsayer": {
         duration = Math.max(12 - actorData.attributes.body.augmented.value, 1)
-        //Each further application lowers the DV by 1 (Chrome Flesh p. 186)
-        let alreadyTaken = (addictions ?? []).find((d) => item.name === d.name)
-        let malus = 0
-        if (alreadyTaken?.shot?.value) malus = alreadyTaken.shot.value - 1
+        //Its 8S on intake, 1 less per application already made, are in entities/items/drug-damage.js
         drugStat = {
           "name": drugType.value,
           "speed": 1,
           "speedType": "SR5.Minute",
           "duration": duration,
           "durationType": "hour",
-          "resistedStunDamage": Math.max(8 - malus, 0),
         }
         break
       }

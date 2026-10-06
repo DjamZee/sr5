@@ -1,6 +1,9 @@
 import {
   effectPhase
 } from "./drug-phase.js"
+import {
+  drugHasCrashDamage, drugKeyOf
+} from "./drug-damage.js"
 
 // The quality of a drug changes the duration of its crash (Chrome Flesh p. 194): street drugs double it,
 // pharmaceutical ones halve it, custom ones divide it by four. Standard is the default
@@ -107,7 +110,7 @@ export function drugCrashIsInstant(data){
 export function drugHasCrash(data){
   const shot = data.handleShot ?? {
   }
-  if (Number(shot.durationContrecoup) > 0 || shot.unresistedStunDamage || shot.resistedStunDamage) return true
+  if (Number(shot.durationContrecoup) > 0 || drugHasCrashDamage(drugKeyOf(data), shot)) return true
   return Object.values(data.customEffects ?? {
   }).some(e => e && typeof e === "object" && effectPhase(e) === "crash")
 }

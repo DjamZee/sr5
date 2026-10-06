@@ -20,6 +20,9 @@ vi.hoisted(() => {
 import {
   SR5_CharacterUtility
 } from '../modules/entities/actors/utilityActor.js'
+import {
+  intakeDamageOf, dosesTaken
+} from '../modules/entities/items/drug-damage.js'
 
 // A Roll that behaves like Foundry's: a second evaluate() throws (Pixie Dust rolled the same die twice, M7 D2)
 beforeEach(() => {
@@ -84,20 +87,26 @@ describe('every drug the system knows can be taken', () => {
   }
 })
 
-describe('Soothsayer (Chrome Flesh p. 186): 8S, each further application lowers the DV by 1', () => {
-  const take = (prepared, working) => SR5_CharacterUtility.handleDrugShots(drug('Devineresse'), {
-    value: 'soothsayer'
-  }, actorData(prepared), null, working)
+// Its damage comes on intake, from the drug key and the doses counted (drug-damage.js), no longer from the stat
+describe('Soothsayer (Chrome Flesh p. 186): 8S on intake, each further application lowers the DV by 1', () => {
+  const dv = (list) => intakeDamageOf('soothsayer', dosesTaken(list, 'Devineresse'))?.value ?? 0
 
-  // M7 D1: the prepared system does not hold the first dose yet, the sheet's list does
-  it('first dose: the prepared list is empty, DV 8', async () => {
-    expect((await take([], [dose('Devineresse', 1)])).resistedStunDamage).toBe(8)
+  // M7 D1: the sheet's working list holds the dose being taken
+  it('first dose: DV 8, resisted with Body only', () => {
+    expect(dv([dose('Devineresse', 1)])).toBe(8)
+    expect(intakeDamageOf('soothsayer', 1).resist).toBe('body')
   })
-  it('third dose: DV 6, from the working list and not the stale prepared one', async () => {
-    expect((await take([dose('Devineresse', 2)], [dose('Devineresse', 3)])).resistedStunDamage).toBe(6)
+  it('third dose: DV 6', () => {
+    expect(dv([dose('Devineresse', 3)])).toBe(6)
   })
-  it('never below 0', async () => {
-    expect((await take([], [dose('Devineresse', 12)])).resistedStunDamage).toBe(0)
+  it('never below 0: no damage at all', () => {
+    expect(dv([dose('Devineresse', 12)])).toBe(0)
+  })
+  it('the stat carries no damage any more', async () => {
+    const stat = await SR5_CharacterUtility.handleDrugShots(drug('Devineresse'), {
+      value: 'soothsayer'
+    }, actorData([]), null, [dose('Devineresse', 1)])
+    expect(stat.resistedStunDamage).toBeUndefined()
   })
 })
 
@@ -118,7 +127,10 @@ describe('Laés and Leäl (Stolen Souls p. 192)', () => {
 
   it('Leäl: 10S, drowsiness, 5 × 1D6 minutes, memory lost for 116 minutes at Body 4', async () => {
     const stat = await take('leal')
-    expect(stat.resistedStunDamage).toBe(10)
+    expect(intakeDamageOf('leal')).toMatchObject({
+      value: 10, type: 'stun', resist: 'toxin'
+    })
+    expect(stat.resistedStunDamage).toBeUndefined()
     expect(stat.drowsy).toBe(true)
     expect([stat.duration, stat.durationType]).toEqual([15, 'minute'])
     expect([stat.effectDuration, stat.effectDurationType]).toEqual([116, 'SR5.Minutes'])
@@ -128,7 +140,10 @@ describe('Laés and Leäl (Stolen Souls p. 192)', () => {
   })
   it('Laés: 12S, no drowsiness', async () => {
     const stat = await take('laes')
-    expect(stat.resistedStunDamage).toBe(12)
+    expect(intakeDamageOf('laes')).toMatchObject({
+      value: 12, type: 'stun', resist: 'toxin'
+    })
+    expect(stat.resistedStunDamage).toBeUndefined()
     expect(stat.drowsy).toBeUndefined()
   })
 })

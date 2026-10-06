@@ -192,6 +192,7 @@ SR5.drugs = {
   nanoScan                  : "SR5.DrugNanoScan",
   neostigmine               : "SR5.DrugNeostigmine",
   ondansetron               : "SR5.DrugOndansetron",
+  kamiPlus                  : "SR5.DrugKamiPlus",
 }
 
 // Drug qualities (Chrome Flesh p. 194)

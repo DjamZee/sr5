@@ -14,8 +14,11 @@ import {
   phaseFromFlags, unitKey
 } from "../items/drug-phase.js"
 import {
-  startDrugCrash, resetDrugPhase
+  startDrugCrash, resetDrugPhase, applyDrugDamage, askDrugDoses
 } from "../items/drug-crash.js"
+import {
+  DRUG_DAMAGE, DRUG_INTERACTION_DAMAGE, intakeDamageOf, dosesTaken
+} from "../items/drug-damage.js"
 import {
   setCharacterField, setSpiritTrait, banishKey
 } from "../../system/spirit-ledger.js"
@@ -1418,6 +1421,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     let item = itemList.find((i) => i._id === id)
     let realItem = this.actor.items.find(i => i.id === id)
     let oldValue, actions
+    //Drug damage, applied once the actor is written below: applied before, the update wrote the condition monitor back
+    let drugDamages = []
     let actorId = actor.id
     if (actor.isToken) actorId = actor.token.id
 		
@@ -1560,7 +1565,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 					
           // Generate the drug stat from the drug systemEffect: durations read the augmented Body and the
           // Essence, prepared values that the copy of system (its source) does not hold
-          drug = drugType ? await SR5_CharacterUtility.handleDrugShots(item, drugType, actor.system, actor, actorData.addictions) : null
+          drug = drugType ? await SR5_CharacterUtility.handleDrugShots(item, drugType, actor.system, actor) : null
 
           // Without a stat (no drug systemEffect, or a key the system does not know), nothing is counted: the GM
           // is told, instead of a drug that silently never ends
@@ -1571,6 +1576,24 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
             SR5_SystemHelpers.srLog(1, "Check drugType")
 
             itemData.handleShot = drug
+
+            //The damage on intake (Laés, Leäl, Soothsayer, Slab), read off the drug key and the doses counted, this one
+            //included (drug-damage.js)
+            const intake = intakeDamageOf(drugType.value, dosesTaken(actorData.addictions, item.name))
+            if (intake) drugDamages.push({
+              ...intake, phase: "intake", itemId: item._id
+            })
+            //Chrome Flesh p. 185: Aisa, 4S more per extra dose taken at once, unresisted
+            const extraDose = DRUG_DAMAGE[drugType.value]?.extraDose
+            if (extraDose && itemData.quantity > 0) {
+              const extra = await askDrugDoses(item.name, itemData.quantity)
+              if (extra > 0) {
+                itemData.quantity -= extra
+                drugDamages.push({
+                  value: extra * extraDose, type: "stun", resist: "none"
+                })
+              }
+            }
 
             let speedType = ""
 
@@ -1604,7 +1627,6 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                 drugs.push(d.name)
               }
 
-              let damageInfo
 
               //Chrome Flesh p. 194: +1 for each street drug of the mix, -1 when all of them are custom.
               //The table (Chrome Flesh p. 197) has no row below 1: a lower total reads row 1, not the default one (14+, 10P). This floor
@@ -1651,16 +1673,16 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                   //A drug without crash keeps its effect until its normal end: the book starts the crashes, it does
                   //not stop a drug that has none (DjamZ's ruling, 06/10)
                   for (let d of mixedDrugs){
-                    if (d.system.isActive && drugHasCrash(d.system)) await this._startDrugCrash(d, actor)
+                    if (d.system.isActive && drugHasCrash(d.system)) await this._startDrugCrash(d, actor, drugDamages)
                   }
                   break
                 }
                 case 10:
+                  //Chrome Flesh p. 197: 10S at once, unresisted
                   await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")}${game.i18n.format("SR5.Colons")} ${drugs.join(", ")}`)
-                  damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
-                  damageInfo.damage.value = 10
-                  damageInfo.damage.type = "stun"
-                  this.actor.takeDamage(damageInfo)
+                  drugDamages.push({
+                    value: 10, type: "stun", resist: "none"
+                  })
                   break
                 case 11:
                 case 12:
@@ -1675,13 +1697,11 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                   break
                 default:
                   console.log(interactionTotal)
+                  //Chrome Flesh p. 197, 14+: 10P at once, "résistés uniquement avec la Constitution" (drug-damage.js)
                   await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")}${game.i18n.format("SR5.Colons")} ${drugs.join(", ")}`)
-                  damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
-                  damageInfo.damage.value = 10
-                  damageInfo.damage.type = "physical"
-                  damageInfo.damage.resistanceType = "physicalDamage"
-                  damageInfo.combat.armorPenetration = -20
-                  this.actor.rollTest("resistanceCard", null, damageInfo)
+                  drugDamages.push({
+                    ...DRUG_INTERACTION_DAMAGE, interaction: true
+                  })
                   break
               }
             }
@@ -1690,7 +1710,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
             await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.localize(SR5.drugs[itemData.handleShot.name])}${game.i18n.format("SR5.Colons")}<ul><li>${game.i18n.format("SR5.ToxinSpeed")}${game.i18n.format("SR5.Colons")} ${itemData.handleShot.speed} ${speedType}</li><li>${game.i18n.format("SR5.Duration")}${game.i18n.format("SR5.Colons")} ${itemData.handleShot.duration} ${game.i18n.localize(unitKey(SR5.extendedIntervals[itemData.handleShot.durationType], itemData.handleShot.duration))}</li></ul>`)
 						
             // Notify info on effect for Laes/Leal
-            if (itemData.handleShot.effectDuration) await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.ErasedMemoryFor")} ${itemData.handleShot.effectDuration} ${game.i18n.localize(itemData.handleShot.effectDurationType)}`)
+            //Stolen Souls p. 192: the Leäl erases the memory only if at least one box is taken
+            if (itemData.handleShot.effectDuration) await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.format(drugType.value === "leal" ? "SR5.ErasedMemoryForIfDamaged" : "SR5.ErasedMemoryFor")} ${itemData.handleShot.effectDuration} ${game.i18n.localize(itemData.handleShot.effectDurationType)}`)
             if (itemData.handleShot.drowsy) await ui.notifications.info(`${actor.name}${game.i18n.format("SR5.Colons")} ${game.i18n.localize("SR5.DrugDrowsy")}`)
 
           }
@@ -1704,7 +1725,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
       } else if (target === "system.wirelessTurnedOn"){
         //The crash takes the same path as the calendar (entities/items/drug-crash.js)
-        if (itemData.wirelessTurnedOn) await startDrugCrash(itemData, actor)
+        if (itemData.wirelessTurnedOn) await startDrugCrash(itemData, actor, item._id, {
+          deferDamage: drugDamages
+        })
         else {
           itemData.isActive = false
           itemData.onUse.duration = ""
@@ -1814,6 +1837,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       "items": itemList,
     })
     if (this.actor.isToken) this.actor.sheet.render()
+    for (const damage of drugDamages) await applyDrugDamage(this.actor, damage)
 
     //Switching off the device in use, or equipping another, leaves the Matrix: dumpshock in VR (SR5 p. 231,
     //DjamZ's ruling, 2026-10-06). The character switches to AR first to leave it cleanly
@@ -1860,8 +1884,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
   /* -------------------------------------------- */
   //Start the crash of a drug in the item list: as when its crash switch is turned on from the sheet, the effect
   //ends, the crash duration is shown and its Stun damage applies
-  async _startDrugCrash(drug, actor) {
-    await startDrugCrash(drug.system, actor)
+  async _startDrugCrash(drug, actor, deferDamage) {
+    await startDrugCrash(drug.system, actor, drug._id, {
+      deferDamage
+    })
   }
 
   /* -------------------------------------------- */

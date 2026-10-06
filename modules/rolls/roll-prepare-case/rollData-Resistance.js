@@ -19,6 +19,9 @@ import {
 import {
   attackFamily, trustedAttackCard, trustedResistanceCard, rebuildCrossCard, CROSS_CARDS
 } from "../roll-helpers/attack-card.js"
+import {
+  drugResistance
+} from "../../entities/items/drug-damage.js"
 
 // Show a notification and return undefined so the caller aborts the test.
 // In Foundry V13, ui.notifications.info() returns a Notification object: returning it directly
@@ -167,6 +170,10 @@ export default async function resistance(rollData, rollType, actor, chatData){
       break
     case "fatigue":
       rollData = await handleFatigueDamage(rollData, actorData)
+      break
+    //A drug's damage, worked out again from the drug of the sheet, never from a card (entities/items/drug-damage.js)
+    case "drugDamage":
+      rollData = drugResistance(rollData, actor, chatData)
       break
     default:
       SR5_SystemHelpers.srLog(1, `Unknown '${chatData.damage.resistanceType}' Damage Resistance Type in roll`)

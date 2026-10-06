@@ -132,7 +132,7 @@ describe('the keys read in the book', () => {
     for (const key of ['psychochip', 'cryo', 'hemoSynth', 'nanoScan', 'neostigmine', 'ondansetron']) expect(SR5.drugs[key]).toBeTruthy()
   })
   it('an unknown key gives no stat', async () => {
-    expect(await shots('kamiPlus')).toBeUndefined()
+    expect(await shots('notADrug')).toBeUndefined()
   })
 })
 

@@ -7,7 +7,7 @@ vi.mock("../modules/config.js", () => ({
     extendedIntervals: {
       hour: "SR5.Hours"
     }, drugs: {
-      redMescaline: "SR5.RedMescaline"
+      nitro: "SR5.Nitro", hurlg: "SR5.Hurlg"
     }
   }
 }))
@@ -77,19 +77,25 @@ function actor() {
   }
 }
 
-function drug(phase, owner = actor()) {
+//The damage comes from the drug key (drug-damage.js): Nitro, 9S unresisted at the crash (SR5 p. 414). The crash duration
+//is set here to see both
+function drug(phase, owner = actor(), key = "nitro") {
   const system = {
     phase, isActive: phase === "rise", wirelessTurnedOn: phase === "crash",
+    systemEffects: {
+      0: {
+        category: "drug", value: key
+      }
+    },
     onUse: {
       duration: "3 SR5.Hours", contrecoup: ""
     },
     handleShot: {
-      name: "redMescaline", durationContrecoup: 4, durationContrecoupType: "hour",
-      unresistedStunDamage: 2, resistedStunDamage: 3
+      name: key, durationContrecoup: 4, durationContrecoupType: "hour",
     }
   }
   return {
-    type: "itemDrug", system, parent: owner,
+    id: "drug1", type: "itemDrug", system, parent: owner,
     toObject: () => ({
       system: structuredClone(system)
     }),
@@ -110,11 +116,39 @@ describe("Fin de la montée d'une drogue, sans fiche ouverte (CF p. 194)", () =>
     })
     expect(ui.notifications.info).toHaveBeenCalledOnce()
     expect(owner.takeDamage.mock.calls[0][0].damage).toEqual({
-      value: 2, type: "stun"
+      value: 9, type: "stun"
     })
+    expect(owner.rollTest).not.toHaveBeenCalled()
+  })
+
+  it("le hurlg (CF p. 187) : un jet de Constitution seule, refait depuis la drogue de la fiche", async () => {
+    const owner = actor(), item = drug("rise", owner, "hurlg")
+    expect(await endDrugRise(item)).toBe(true)
+    expect(owner.takeDamage).not.toHaveBeenCalled()
+    expect(owner.rollTest.mock.calls[0][0]).toBe("resistanceCard")
     expect(owner.rollTest.mock.calls[0][2].damage).toEqual({
-      value: 3, type: "stun", resistanceType: "physicalDamage"
+      value: 9, type: "stun", resistanceType: "drugDamage", drug: {
+        itemId: "drug1", phase: "crash", interaction: false
+      }
     })
+  })
+
+  it("le laés, la Devineresse et le slab n'ont plus de dommages au contrecoup (ils arrivent à la prise)", async () => {
+    for (const key of ["laes", "leal", "soothsayer", "slab"]) {
+      const owner = actor()
+      await endDrugRise(drug("rise", owner, key))
+      expect(owner.takeDamage).not.toHaveBeenCalled()
+      expect(owner.rollTest).not.toHaveBeenCalled()
+    }
+  })
+
+  it("une valeur forgée dans la dose ne change rien : seule la clé compte", async () => {
+    const owner = actor(), item = drug("rise", owner)
+    item.system.handleShot.unresistedStunDamage = 1
+    item.system.handleShot.resistedStunDamage = 1
+    await endDrugRise(item)
+    expect(owner.takeDamage.mock.calls[0][0].damage.value).toBe(9)
+    expect(owner.rollTest).not.toHaveBeenCalled()
   })
 
   it("ne fait rien pour une drogue déjà en descente, pas prise, ou sans porteur", async () => {
