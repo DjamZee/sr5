@@ -289,12 +289,10 @@ export class SR5_RollMessage {
       case "defenseRangedWeapon":
       case "defenseAstralCombat":
         actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids)
-        if (!await mayDefend(type, messageId, messageData, actor)) break
-        actor.rollTest("defense", null, messageData)
+        if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest("defense", null, messageData)
         break
       case "defenseThroughAndInto":
-        if (!await mayDefend(type, messageId, messageData, actor)) break
-        actor.rollTest("defense", null, messageData.originalAttackMessage)
+        if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest("defense", null, messageData.originalAttackMessage)
         break
       case "matrixDefense":
         if (!await mayDefend(type, messageId, messageData, actor)) break
@@ -339,8 +337,7 @@ export class SR5_RollMessage {
       case "vehicleTest":
       case "resistanceToxin":
         //A defense among them: once per target and attack (system/defense-once.js)
-        if (!await mayDefend(type, messageId, messageData, actor)) break
-        actor.rollTest(type, null, messageData)
+        if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest(type, null, messageData)
         break
       case "resistanceCardContinuousDamage":
         messageData.test.typeSub = "continuousDamage"
