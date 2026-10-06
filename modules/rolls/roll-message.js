@@ -5,6 +5,9 @@ import {
   reagentWorkUpdate
 } from "../system/reagents.js"
 import {
+  mayDefend
+} from "../system/defense-once.js"
+import {
   applyStabilization, applyDiagnosis, useMedkitSupplies
 } from "../system/bb-healing.js"
 import {
@@ -286,12 +289,15 @@ export class SR5_RollMessage {
       case "defenseRangedWeapon":
       case "defenseAstralCombat":
         actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids)
+        if (!await mayDefend(type, messageId, messageData, actor)) break
         actor.rollTest("defense", null, messageData)
         break
       case "defenseThroughAndInto":
+        if (!await mayDefend(type, messageId, messageData, actor)) break
         actor.rollTest("defense", null, messageData.originalAttackMessage)
         break
       case "matrixDefense":
+        if (!await mayDefend(type, messageId, messageData, actor)) break
         if ((messageData.test.typeSub === "dataSpike" || 
                     messageData.test.typeSub === "controlDevice" ||
                     messageData.test.typeSub === "formatDevice" ||
@@ -332,6 +338,8 @@ export class SR5_RollMessage {
       case "matrixResistance":
       case "vehicleTest":
       case "resistanceToxin":
+        //A defense among them: once per target and attack (system/defense-once.js)
+        if (!await mayDefend(type, messageId, messageData, actor)) break
         actor.rollTest(type, null, messageData)
         break
       case "resistanceCardContinuousDamage":

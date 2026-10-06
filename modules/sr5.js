@@ -86,6 +86,9 @@ import {
   sr5HookResetJumpedInRiggers
 } from './interface/shared-vision.js'
 import {
+  recordDefense
+} from './system/defense-once.js'
+import {
   SR5ShopStock
 } from './interface/shop-stock.js'
 import {
@@ -150,6 +153,8 @@ Hooks.on('renderChatMessageHTML', SR5_GrappleHelpers.onRenderHoldCard)
 //An escape a player rolled frees her once the active GM has read its card again (grapple.js)
 Hooks.on('createChatMessage', message => SR5_GrappleHelpers.onEscapeCard(message))
 Hooks.on('updateChatMessage', message => SR5_GrappleHelpers.onEscapeCard(message))
+//A target defends once against one attack: the active GM records each defense card (system/defense-once.js)
+Hooks.on('createChatMessage', message => recordDefense(message).catch(e => console.error("SR5 | defense not recorded", e)))
 Hooks.on('closeCombatantConfig', sr5HookCloseCombatantConfig)
 Hooks.on('preUpdateItem', sr5HookPreUpdateItem)
 Hooks.on('createItem', sr5HookCreateItem)
