@@ -444,6 +444,12 @@ export async function deliverOrder(actor, id) {
 /** The gamemaster cancels an order: everything paid comes back, express included. */
 export async function cancelOrder(actor, id) {
   if (!game.user.isGM || !actor) return false
+  // Only the active GM drops the ledger entry: refunded elsewhere, it stayed, and the order id written
+  // again on the sheet was refunded a second time (Petra)
+  if (!isWriter()) {
+    ui.notifications.warn(game.i18n.localize('SR5.ShopOrderCancelActiveGMOnly'))
+    return false
+  }
   const entry = orderLedger()[id]
   // A ledger entry belongs to one buyer: an order id copied onto another sheet refunds nothing of it
   if (entry && entry.actorUuid !== actor.uuid) return false
@@ -619,6 +625,10 @@ export async function requestCancel(actor, id) {
 }
 
 async function confirmCancel(actor, id, requester) {
+  if (!isWriter()) {
+    ui.notifications.warn(game.i18n.localize('SR5.ShopOrderCancelActiveGMOnly'))
+    return false
+  }
   const order = ordersOf(actor).find(o => o.id === id)
   if (!order) return false
   const entry = orderLedger()[id]

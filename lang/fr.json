@@ -450,6 +450,7 @@
 	"SR5.ShopOrderCancelNoVendor": "Aucun vendeur au registre du MJ : seule la fiche est remboursée.",
 	"SR5.ShopOrderCancelNotInLedger": "Absente du registre du MJ : aucun remboursement automatique. Remboursez à la main si la commande est réelle.",
 	"SR5.ShopOrderCancelDebitGone": "La dépense de cet achat ({paid} ¥) a été supprimée ou baissée sur la fiche : il en reste {left} ¥, et le remboursement s'y limite.",
+	"SR5.ShopOrderCancelActiveGMOnly": "Seul le MJ actif annule une commande : c'est lui qui tient le registre des commandes.",
 	"SR5.SocketUseConfirmTitle": "Demande d'une joueuse au MJ",
 	"SR5.SocketUseConfirm": "{user} demande : {what}. La carte vient de sa joueuse : le système a recompté {value} sur ses dés, dans la réserve de la fiche, mais ne peut pas vérifier les dés eux-mêmes. Appliquer ?",
 	"SR5.SocketUse_matrixDamage": "dommages matriciels sur {target}",

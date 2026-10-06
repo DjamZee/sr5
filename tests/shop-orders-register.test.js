@@ -13,7 +13,7 @@ vi.mock('../modules/interface/shop.js', () => ({
 }))
 
 const {
-  registerOrders, registrationPlan, cancelPlan, orderLedger, deliverOrder, debitLeft
+  registerOrders, registrationPlan, cancelPlan, orderLedger, deliverOrder, debitLeft, cancelOrder
 } = await import('../modules/interface/shop-orders.js')
 
 // Élise's ruling after Zélia's review: an order of the shop without vendor enters the GM's ledger at
@@ -149,6 +149,30 @@ describe('an order of the shop without vendor', () => {
     expect(debitLeft(buyer, {
       ...entry, transactionId: undefined
     })).toBe(null)
+  })
+
+  // Petra: a GM who is not the active one refunded from the ledger, but could not drop the entry; the
+  // order id written again on the sheet was then refunded a second time by the active GM
+  it('is cancelled by the active GM only, who alone drops the ledger entry', async () => {
+    buyer = makeBuyer([order()], 300)
+    expect(await registerOrders(buyer, ['o1'], 'debit', owner)).toBe(true)
+    const otherGM = {
+      id: 'gm2', isGM: true
+    }
+    game.user = otherGM
+    const warn = vi.fn()
+    globalThis.ui = {
+      notifications: {
+        warn, info: () => {}
+      }
+    }
+    buyer.setFlag = vi.fn()
+    buyer.createEmbeddedDocuments = vi.fn()
+    expect(await cancelOrder(buyer, 'o1')).toBe(false)
+    expect(buyer.createEmbeddedDocuments).not.toHaveBeenCalled()
+    expect(buyer.setFlag).not.toHaveBeenCalled()
+    expect(warn).toHaveBeenCalledWith('SR5.ShopOrderCancelActiveGMOnly')
+    expect(orderLedger().o1).toBeDefined()
   })
 
   it('the plan refuses a purchase dearer than its debit', () => {
