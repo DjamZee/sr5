@@ -148,7 +148,7 @@ describe("the request and its answer", () => {
     expect(emitted[0]).toEqual({
       type: "claimChatButton", data: {
         messageId: "m4", type: "resistanceCard", requestId: "req"
-      }
+      }, userId: "gm"
     })
     game.user = gm
     await socketClaimChatButton({

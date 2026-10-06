@@ -58,7 +58,8 @@ export function grantButton(messageId, type, user){
 /** On the clicking browser: true when this user may roll the button now. */
 export async function claimChatButton(messageId, type){
   if (game.user.isGM) return grantButton(messageId, type, game.user)
-  if (!game.users.activeGM) return true
+  const gm = game.users.activeGM
+  if (!gm) return true
   const requestId = foundry.utils.randomID()
   const answer = new Promise(resolve => {
     waiting.set(requestId, resolve)
@@ -66,9 +67,11 @@ export async function claimChatButton(messageId, type){
       if (waiting.delete(requestId)) resolve(true)
     }, REPLY_MS)
   })
-  await SR5_SocketHandler.emitForGM("claimChatButton", {
+  // Addressed to the active GM by hand rather than by emitForGM: a lost hold only means the button works as before
+  // after REPLY_MS, so it stays out of the relays a GM leaving must report (Élise, relay-watch of Yann's lot)
+  await SR5_SocketHandler.emitForPlayer("claimChatButton", {
     messageId, type, requestId
-  })
+  }, gm.id)
   return answer
 }
 
