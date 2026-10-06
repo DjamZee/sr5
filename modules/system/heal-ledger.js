@@ -27,18 +27,48 @@ export function ledgerAfterHeal(ledger, messageId, now){
   return Object.fromEntries(entries.slice(-KEEP))
 }
 
-// Records the card, for the active GM only. False when it was already applied, or when this user cannot write it
-export async function claimHealCard(messageId){
-  if (!game.user.isGM || game.users.activeGM?.id !== game.user.id) return false
-  let ledger
-  try {
-    ledger = game.settings.get("sr5", HEAL_LEDGER) ?? {
-    }
-  } catch {
-    ledger = {
+// The dice of a card, as the key of its cast: a copy of the card is a new message with the same dice, and must not
+// heal again (Quitterie, S4). Two casts of the same spell by the same caster with the very same dice would share it:
+// the GM then applies the second by hand. null when the card shows no dice
+export function healCardDiceKey(data){
+  let roll = data?.roll?.r
+  if (typeof roll === "string") {
+    try {
+      roll = JSON.parse(roll)
+    } catch {
+      return null
     }
   }
-  if (healCardUsed(ledger, messageId)) return false
-  await game.settings.set("sr5", HEAL_LEDGER, ledgerAfterHeal(ledger, messageId, Date.now()))
+  const results = roll?.terms?.[0]?.results
+  if (!Array.isArray(results) || !results.length) return null
+  return `dice|${data.owner?.actorId ?? ""}|${data.owner?.itemUuid ?? ""}|${results.map(d => `${d.result}${d.ruleOfSix ? "!" : ""}`).join(",")}`
+}
+
+function readLedger(){
+  try {
+    return game.settings.get("sr5", HEAL_LEDGER) ?? {
+    }
+  } catch {
+    return {
+    }
+  }
+}
+
+// Whether one of these keys (the card, its dice) was applied already
+export function healCardClaimed(keys){
+  const ledger = readLedger()
+  return [keys].flat().filter(Boolean).some(key => healCardUsed(ledger, key))
+}
+
+// Records the card under each of its keys, for the active GM only. False when one was already applied, or when this
+// user cannot write it. Nothing is awaited between the test and the write
+export async function claimHealCard(keys){
+  if (!game.user.isGM || game.users.activeGM?.id !== game.user.id) return false
+  keys = [keys].flat().filter(Boolean)
+  let ledger = readLedger()
+  if (!keys.length || keys.some(key => healCardUsed(ledger, key))) return false
+  const now = Date.now()
+  for (const key of keys) ledger = ledgerAfterHeal(ledger, key, now)
+  await game.settings.set("sr5", HEAL_LEDGER, ledger)
   return true
 }

@@ -101,6 +101,10 @@ describe("le MJ applique Soins pour une joueuse", () => {
     })
     vi.spyOn(SR5_EntityHelpers, "getRealActorFromID").mockReturnValue(patient)
     updateButton = vi.spyOn(SR5_RollMessage, "updateChatButton").mockResolvedValue()
+    // The GM's yes on the hits counted again (checkEffectCard), measured elsewhere
+    vi.spyOn(SR5_ActorHelper, "checkEffectCard").mockResolvedValue({
+      hits: 3, netHits: 2
+    })
   })
   const ask = (senderId, data = {
     messageId: "m1", targetActor: "pnj"
@@ -112,7 +116,43 @@ describe("le MJ applique Soins pour une joueuse", () => {
     await ask("joueuse")
     expect(updateButton).toHaveBeenCalledWith("m1", "applyEffect")
     expect(patient.applyExternalEffect).toHaveBeenCalledTimes(1)
-    expect(patient.applyExternalEffect.mock.calls[0][0].owner.messageId).toBe("m1")
+    // Counted and confirmed before: applied with the GM's figures, without a card to read again
+    expect(SR5_ActorHelper.checkEffectCard.mock.calls[0][0].owner.messageId).toBe("m1")
+    expect(patient.applyExternalEffect.mock.calls[0][0].roll.hits).toBe(3)
+    expect(patient.applyExternalEffect.mock.calls[0][0].owner.messageId).toBe(null)
+  })
+  it("le MJ répond non : la carte n'est pas consommée et peut être redemandée (Quitterie, S5)", async () => {
+    SR5_ActorHelper.checkEffectCard.mockResolvedValueOnce(null)
+    await ask("joueuse")
+    expect(patient.applyExternalEffect).not.toHaveBeenCalled()
+    await ask("joueuse")
+    expect(patient.applyExternalEffect).toHaveBeenCalledTimes(1)
+  })
+  it("une copie de la carte (nouvel id, mêmes dés) ne soigne pas une seconde fois (Quitterie, S4)", async () => {
+    card.flags.sr5data.roll = {
+      r: JSON.stringify({
+        terms: [{
+          results: [{
+            result: 5
+          }, {
+            result: 6
+          }, {
+            result: 2
+          }]
+        }]
+      })
+    }
+    const copy = {
+      ...card, id: "m2", flags: foundry.utils.deepClone(card.flags)
+    }
+    game.messages.get = id => ({
+      m1: card, m2: copy
+    })[id]
+    await ask("joueuse")
+    await ask("joueuse", {
+      messageId: "m2", targetActor: "pnj"
+    })
+    expect(patient.applyExternalEffect).toHaveBeenCalledTimes(1)
   })
   it("une autre joueuse : rien", async () => {
     await ask("autre")
@@ -136,6 +176,40 @@ describe("le MJ applique Soins pour une joueuse", () => {
     }
     await ask("joueuse")
     expect(patient.applyExternalEffect).not.toHaveBeenCalled()
+  })
+  it("Soins sur un grunt soigne son moniteur unique, au lieu de ne rien faire (Quitterie, S2)", async () => {
+    const monitors = {
+      condition: {
+        value: 10, actual: {
+          base: 4, value: 4
+        }
+      }
+    }
+    const grunt = {
+      type: "actorGrunt", system: {
+        conditionMonitors: monitors
+      }, toObject: () => ({
+        system: {
+          conditionMonitors: foundry.utils.deepClone(monitors)
+        }
+      }), update: vi.fn(), items: []
+    }
+    SR5_EntityHelpers.getRealActorFromID.mockReturnValue(grunt)
+    globalThis.fromUuid = async () => ({
+      name: "Soins", type: "itemSpell", system: {
+        customEffects: HEAL, targetOfEffect: []
+      }
+    })
+    await SR5_ActorHelper.applyExternalEffect("pnj", {
+      owner: {
+        itemUuid: "Item.soins"
+      }, roll: {
+        hits: 3, netHits: 3
+      }, test: {
+      }
+    }, "customEffects")
+    expect(grunt.update).toHaveBeenCalled()
+    expect(grunt.update.mock.calls[0][0].system.conditionMonitors.condition.actual.base).toBe(1)
   })
   it("carte d'un sort qui ne soigne pas : rien", async () => {
     globalThis.fromUuid = async () => ({

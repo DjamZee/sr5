@@ -1766,16 +1766,28 @@ export class SR5_ActorHelper {
     const patient = SR5_EntityHelpers.getRealActorFromID(message.data.targetActor)
     if (!patient) return
     const {
-      claimHealCard
+      claimHealCard, healCardClaimed, healCardDiceKey
     } = await import("../../system/heal-ledger.js")
-    if (!(await claimHealCard(card.id))) return
+    //A card is known by its id and by its dice: a copy of it is a new message with the same dice (Quitterie, S4)
+    const keys = [card.id, healCardDiceKey(data)]
+    if (healCardClaimed(keys)) return
+    //The GM confirms the hits first, and the card is spent only on his yes: a no leaves it to be shown again (S5)
     data.owner.messageId = card.id
+    const roll = await SR5_ActorHelper.checkEffectCard(data, item)
+    if (!roll || !(await claimHealCard(keys))) return
     //Loaded here: roll-message imports this file
     const {
       SR5_RollMessage
     } = await import("../../rolls/roll-message.js")
     await SR5_RollMessage.updateChatButton(card.id, "applyEffect")
-    await patient.applyExternalEffect(data, "customEffects")
+    //Counted and confirmed: applied without asking again (no card to read is a card already read)
+    await patient.applyExternalEffect({
+      ...data, roll: {
+        ...data.roll, ...roll
+      }, owner: {
+        ...data.owner, messageId: null
+      }
+    }, "customEffects")
   }
 
   //First aid on a patient the player does not own (SR5 p. 207). The healData sent healed anyone of any number of
@@ -2027,6 +2039,8 @@ export class SR5_ActorHelper {
         //Handle heal effect
         if (e.target.includes("removeDamage")){
           key = e.target.replace('.removeDamage','')
+          //A grunt has one condition monitor for its Physical damage (SR5 p. 381): Heal reaches it (Quitterie, S2)
+          if (key === "physical" && !actor.system.conditionMonitors?.physical && actor.system.conditionMonitors?.condition) key = "condition"
           //A copy, as in heal(): an update made of actor.system itself wrote nothing, and the healing was only shown
           //until the next preparation of the actor (measured on 5a4cbf2c)
           newData = actor.toObject(false).system
