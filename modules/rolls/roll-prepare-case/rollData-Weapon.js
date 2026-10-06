@@ -109,6 +109,9 @@ export default async function weapon(rollData, actor, item){
   rollData.damage.base = itemData.damageValue.value
   rollData.damage.value = itemData.damageValue.value
   rollData.damage.type = itemData.damageType
+  //Every weapon deals Physical or Stun damage (SR5 p. 171): one entered without a type lets the attacker pick it
+  //in the roll dialog, rather than a "4undefined" damage that no condition monitor takes
+  if (!rollData.damage.type) rollData.dialogSwitch.chooseDamageType = true
   rollData.damage.element = itemData.damageElement
   if (itemData.isMagical) rollData.damage.source = "magical"
   //A weapon focus stays a physical attack: grey mana does not resist it (Better Than Bad p. 140)
