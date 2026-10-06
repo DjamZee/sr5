@@ -91,8 +91,15 @@ export default async function resistanceInfo(cardData, actorId){
   //Handle continous damage
   if (cardData.damage.isContinuous && cardData.test.typeSub !== "continuousDamage") {
     cardData.chatCard.buttons.damage = SR5_RollMessage.generateChatButton("nonOpposedTest", "damage",`${game.i18n.localize("SR5.ApplyDamage")} ${cardData.damage.value}${game.i18n.localize(SR5.damageTypesShort[cardData.damage.type])}`)
-    let label = `${game.i18n.localize("SR5.TakeOnDamageContinuous")} ${game.i18n.localize("SR5.DamageValueShort")}${game.i18n.localize("SR5.Colons")} ${cardData.damage.originalValue}${game.i18n.localize(SR5.damageTypesShort[cardData.damage.type])}`
-    if (cardData.combat.armorPenetration) label += ` / ${game.i18n.localize("SR5.ArmorPenetrationShort")}${game.i18n.localize("SR5.Colons")} ${cardData.combat.armorPenetration}`
+    //The DV of the following phases is worked out again on the engulfing spirit when they are resisted
+    //(rollData-Resistance.js): the button shows that one, never the card's originalValue, or none when it is not found
+    const attackId = SR5_ActorHelper.engulfFirstPhase(cardData)?.attackId ?? await SR5_ActorHelper.engulfAttackFor(actor)
+    const engulf = attackId ? await SR5_ActorHelper.engulfDamageOf(attackId) : null
+    let label = game.i18n.localize("SR5.TakeOnDamageContinuous")
+    if (engulf) {
+      label += ` ${game.i18n.localize("SR5.DamageValueShort")}${game.i18n.localize("SR5.Colons")} ${engulf.value}${game.i18n.localize(SR5.damageTypesShort[engulf.type])}`
+      if (engulf.armorPenetration) label += ` / ${game.i18n.localize("SR5.ArmorPenetrationShort")}${game.i18n.localize("SR5.Colons")} ${engulf.armorPenetration}`
+    }
     cardData.chatCard.buttons.resistanceCard = SR5_RollMessage.generateChatButton("nonOpposedTest","resistanceCardContinuousDamage",label)
     cardData.damage.resistanceType = "physicalDamage"
     //Escape engulf
