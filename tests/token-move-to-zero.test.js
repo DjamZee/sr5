@@ -26,6 +26,12 @@ describe("sr5HookUpdateToken", () => {
     globalThis.game = {
       user: {
         isGM: true
+      },
+      //The active GM checks the templates (two GMs gave each token two copies, Marta's measure)
+      users: {
+        activeGM: {
+          isSelf: true
+        }
       }
     }
   })
