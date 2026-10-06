@@ -1,3 +1,7 @@
+import {
+  updateLedger
+} from "./gm-ledger.js"
+
 // Heal spell cards applied by the GM for a player (SR5 p. 291). The button lives in the card's flags, which its author
 // can write again: the cards already applied are kept here, written by the active GM only, so a card heals once
 export const HEAL_LEDGER = "sr5HealSpellLedger"
@@ -64,27 +68,30 @@ export function woundEntry(uuid){
 // A treatment done: the boxes the patient carries afterwards. The active GM only; a new group overwrites the old one
 export async function recordTreatment(uuid, kind, total){
   if (!uuid || !game.user.isGM || game.users.activeGM?.id !== game.user.id) return
-  const ledger = readWoundLedger()
+  await updateLedger(WOUND_GROUP_LEDGER, ledger => woundLedgerAfter(ledger, uuid, kind, total))
+}
+
+// The ledger once a patient is treated: the patient goes last, and the oldest beyond KEEP patients leave it
+export function woundLedgerAfter(ledger, uuid, kind, total){
   const entry = {
-    ...(ledger[uuid] ?? {
+    ...(ledger?.[uuid] ?? {
     })
   }
   //First aid is only allowed on a new group: the Heal of the old group no longer counts
   if (kind === "firstAid") delete entry.heal
   entry[kind] = total
-  await game.settings.set("sr5", WOUND_GROUP_LEDGER, {
-    ...ledger, [uuid]: entry
-  })
+  const others = Object.entries(ledger ?? {
+  }).filter(([key]) => key !== uuid)
+  return Object.fromEntries([...others, [uuid, entry]].slice(-KEEP))
 }
 
 // Undo a claim (the effect was refused after the GM's yes): the card may be shown again
 export async function releaseHealCard(keys){
   if (!game.user.isGM || game.users.activeGM?.id !== game.user.id) return
-  const ledger = {
-    ...readLedger()
-  }
-  for (const key of [keys].flat().filter(Boolean)) delete ledger[key]
-  await game.settings.set("sr5", HEAL_LEDGER, ledger)
+  await updateLedger(HEAL_LEDGER, ledger => {
+    for (const key of [keys].flat().filter(Boolean)) delete ledger[key]
+    return ledger
+  })
 }
 
 export function healCardUsed(ledger, messageId){
@@ -137,14 +144,16 @@ export function healCardClaimed(keys){
 }
 
 // Records the card under each of its keys, for the active GM only. False when one was already applied, or when this
-// user cannot write it. Nothing is awaited between the test and the write
+// user cannot write it. The test is made in the ledger's turn, on its latest state: two claims begun together do not
+// both pass, and neither erases the other (gm-ledger.js)
 export async function claimHealCard(keys){
   if (!game.user.isGM || game.users.activeGM?.id !== game.user.id) return false
   keys = [keys].flat().filter(Boolean)
-  let ledger = readLedger()
-  if (!keys.length || keys.some(key => healCardUsed(ledger, key))) return false
-  const now = Date.now()
-  for (const key of keys) ledger = ledgerAfterHeal(ledger, key, now)
-  await game.settings.set("sr5", HEAL_LEDGER, ledger)
-  return true
+  if (!keys.length) return false
+  return updateLedger(HEAL_LEDGER, ledger => {
+    if (keys.some(key => healCardUsed(ledger, key))) return null
+    const now = Date.now()
+    for (const key of keys) ledger = ledgerAfterHeal(ledger, key, now)
+    return ledger
+  })
 }

@@ -13,6 +13,9 @@ import {
   cardFromGM
 } from "./card-rows.js"
 import {
+  updateLedger
+} from "./gm-ledger.js"
+import {
   hitsAboveDice, hitsCeiling, hitsCap
 } from "./diseases.js"
 
@@ -131,12 +134,12 @@ export function radiationLedger(){
 
 async function writeEntry(entry){
   if (!isActiveGM()) return false
-  const ledger = foundry.utils.duplicate(radiationLedger())
-  ledger.exposures ??= {
-  }
-  ledger.exposures[entry.id] = entry
-  await game.settings.set("sr5", RADIATION_LEDGER, ledger)
-  return true
+  return updateLedger(RADIATION_LEDGER, ledger => {
+    ledger.exposures ??= {
+    }
+    ledger.exposures[entry.id] = entry
+    return ledger
+  })
 }
 
 function escape(text){
@@ -220,12 +223,15 @@ export async function exposeToRadiation(scene){
 
 export async function checkRadiation(){
   if (!isActiveGM()) return
-  const ledger = radiationLedger()
-  const due = dueExposures(ledger, game.time.worldTime)
+  let due = []
+  // In the ledger's turn: an exposure entered meanwhile is not erased by the clock (gm-ledger.js)
+  await updateLedger(RADIATION_LEDGER, next => {
+    due = dueExposures(next, game.time.worldTime)
+    if (!due.length) return null
+    for (const e of due) next.exposures[e.id].notified = true
+    return next
+  })
   if (!due.length) return
-  const next = foundry.utils.duplicate(ledger)
-  for (const e of due) next.exposures[e.id].notified = true
-  await game.settings.set("sr5", RADIATION_LEDGER, next)
   const rows = due.map(e => row(e, game.i18n.format("SR5.RADIATION_Due", {
     actor: escape(e.actorName), level: escape(levelName(e.level)), power: testPower(e)
   }), `<button type="button" data-sr5-radiation="request">${game.i18n.localize("SR5.DISEASE_Request")}</button>${endButton()}`))

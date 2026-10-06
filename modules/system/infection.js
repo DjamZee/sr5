@@ -11,6 +11,9 @@ import {
 import {
   markRowDoneInMessage, cardFromGM
 } from "./card-rows.js"
+import {
+  updateLedger
+} from "./gm-ledger.js"
 
 export const INFECTION_LEDGER = "sr5InfectionLedger"
 export const COMA = 86400
@@ -120,12 +123,12 @@ export function infectionOf(uuid){
 
 async function writeLedger(mutate){
   if (!isActiveGM()) return false
-  const ledger = foundry.utils.duplicate(infectionLedger())
-  ledger.victims ??= {
-  }
-  mutate(ledger.victims)
-  await game.settings.set("sr5", INFECTION_LEDGER, ledger)
-  return true
+  return updateLedger(INFECTION_LEDGER, ledger => {
+    ledger.victims ??= {
+    }
+    mutate(ledger.victims)
+    return ledger
+  })
 }
 
 const fmt = (t) => game.time.calendar.format(t)

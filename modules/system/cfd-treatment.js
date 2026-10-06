@@ -12,6 +12,9 @@ import {
 import {
   markRowDoneInMessage, cardFromGM
 } from "./card-rows.js"
+import {
+  updateLedger
+} from "./gm-ledger.js"
 
 export const CFD_LEDGER = "sr5CfdLedger"
 
@@ -199,16 +202,16 @@ export function patientOf(actorUuid){
 
 async function writeLedger(mutate){
   if (!isActiveGM()) return false
-  const ledger = foundry.utils.duplicate(cfdLedger())
-  ledger.patients ??= {
-  }
-  mutate(ledger.patients)
-  // A patient with nothing left to follow leaves the ledger
-  for (const [uuid, p] of Object.entries(ledger.patients)){
-    if (!p.overwriters && !p.nanoscrub && !p.psychotic && !p.atRisk?.length) delete ledger.patients[uuid]
-  }
-  await game.settings.set("sr5", CFD_LEDGER, ledger)
-  return true
+  return updateLedger(CFD_LEDGER, ledger => {
+    ledger.patients ??= {
+    }
+    mutate(ledger.patients)
+    // A patient with nothing left to follow leaves the ledger
+    for (const [uuid, p] of Object.entries(ledger.patients)){
+      if (!p.overwriters && !p.nanoscrub && !p.psychotic && !p.atRisk?.length) delete ledger.patients[uuid]
+    }
+    return ledger
+  })
 }
 
 const fmt = (t) => game.time.calendar.format(t)
@@ -492,9 +495,15 @@ async function onCombatRound(combat, changed){
 
 export async function checkCfd(){
   if (!isActiveGM()) return
-  const now = game.time.worldTime
-  const next = foundry.utils.duplicate(cfdLedger())
   const rows = []
+  // In the ledger's turn: a treatment started meanwhile is not erased by the clock (gm-ledger.js)
+  await updateLedger(CFD_LEDGER, next => checkedLedger(next, rows))
+  if (rows.length) await postCard(rows)
+}
+
+async function checkedLedger(next, rows){
+  const now = game.time.worldTime
+  const before = JSON.stringify(next)
   for (const [uuid, p] of Object.entries(next.patients ?? {
   })){
     const actor = await fromUuid(uuid)
@@ -567,9 +576,8 @@ export async function checkCfd(){
     }
     if (!p.overwriters && !p.nanoscrub && !p.psychotic && !p.atRisk?.length) delete next.patients[uuid]
   }
-  if (!rows.length && JSON.stringify(next) === JSON.stringify(cfdLedger())) return
-  await game.settings.set("sr5", CFD_LEDGER, next)
-  if (rows.length) await postCard(rows)
+  if (!rows.length && JSON.stringify(next) === before) return null
+  return next
 }
 
 /* The card ------------------------------------ */

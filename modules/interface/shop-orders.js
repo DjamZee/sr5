@@ -9,6 +9,9 @@
  * (full refund); a player may only ask for a cancellation, which the
  * gamemaster confirms, as with a buy-back.
  */
+import {
+  updateLedger
+} from '../system/gm-ledger.js'
 
 export const ORDERS_FLAG = 'shopOrders'
 export const DELIVERY_SETTING = 'sr5ShopDelivery'
@@ -234,16 +237,18 @@ export function orderLedger() {
 
 export async function ledgerOrders(entries) {
   if (!isWriter() || !Object.keys(entries).length) return
-  await game.settings.set('sr5', ORDER_LEDGER, {
-    ...orderLedger(), ...entries
-  })
+  await updateLedger(ORDER_LEDGER, ledger => ({
+    ...ledger, ...entries
+  }))
 }
 
 async function ledgerDrop(id) {
-  const ledger = orderLedger()
-  if (!isWriter() || !(id in ledger)) return
-  delete ledger[id]
-  await game.settings.set('sr5', ORDER_LEDGER, ledger)
+  if (!isWriter() || !(id in orderLedger())) return
+  await updateLedger(ORDER_LEDGER, ledger => {
+    if (!(id in ledger)) return null
+    delete ledger[id]
+    return ledger
+  })
 }
 
 export function registerOrderLedger() {
@@ -528,9 +533,9 @@ export async function registerOrders(actor, ids, transactionId, requester) {
   // Marked used first, with nothing awaited since the test: a second request arriving meanwhile finds it spent
   if (usedDebits()[debitKey] || PENDING_DEBITS.has(debitKey)) return false
   PENDING_DEBITS.add(debitKey)
-  await game.settings.set('sr5', USED_DEBITS, {
-    ...usedDebits(), [debitKey]: true
-  })
+  await updateLedger(USED_DEBITS, debits => ({
+    ...debits, [debitKey]: true
+  }))
   await ledgerOrders(entries)
   return true
 }

@@ -10,6 +10,9 @@ import {
 import {
   SR5_SystemHelpers
 } from "./utilitySystem.js"
+import {
+  updateLedger
+} from "./gm-ledger.js"
 
 export const EXTENDED_CLOCK_LEDGER = "sr5ExtendedClockLedger"
 
@@ -85,7 +88,7 @@ async function advance(message, button){
   if (!ok) return
   button.disabled = true
   await game.time.set(timeAfter(game.time.worldTime, n, extended.interval, calendarStartYear()))
-  await game.settings.set("sr5", EXTENDED_CLOCK_LEDGER, ledgerAfter(ledger(), message.id, n, new Set(game.messages.keys())))
+  await updateLedger(EXTENDED_CLOCK_LEDGER, current => ledgerAfter(current, message.id, n, new Set(game.messages.keys())))
   button.remove()
 }
 

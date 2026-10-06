@@ -2,6 +2,9 @@
 // before the technomancer. Once damaged, the shield comes back whole twenty-four hours later, never box by box.
 // The twenty-four hours start at the FIRST damage (arbitrage de DjamZ, 2026-10-06).
 // The shield is a ledger written by the active GM only (world setting aegisLedger): a player's client never spends it.
+import {
+  updateLedger
+} from "./gm-ledger.js"
 
 export const AEGIS_BOXES = 4
 export const AEGIS_REGEN_SECONDS = 24 * 60 * 60
@@ -65,9 +68,9 @@ export function aegisLedger(actor){
 
 export async function setAegisLedger(actor, entry){
   if (!isActiveGM()) return
-  const ledger = foundry.utils.duplicate(game.settings.get("sr5", AEGIS_LEDGER) ?? {
+  await updateLedger(AEGIS_LEDGER, ledger => {
+    if (entry?.damage > 0) ledger[actor.uuid] = entry
+    else delete ledger[actor.uuid]
+    return ledger
   })
-  if (entry?.damage > 0) ledger[actor.uuid] = entry
-  else delete ledger[actor.uuid]
-  await game.settings.set("sr5", AEGIS_LEDGER, ledger)
 }

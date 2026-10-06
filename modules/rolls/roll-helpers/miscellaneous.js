@@ -8,6 +8,9 @@ import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
+  updateLedger
+} from "../../system/gm-ledger.js"
+import {
   ownsTarget, cardTrusted, matrixDamageAllowed, deactivateAllowed, reduceAllowed, supportEffectAllowed,
   serviceSpentAllowed, maglockAllowed, testAllowed, recountHits, consumedKey, REDUCER_POOLS
 } from "./socket-guard.js"
@@ -87,13 +90,14 @@ export class SR5_MiscellaneousHelpers {
   }
 
   /** Spend a card on a use and a target: false when it was spent already. Nothing is awaited between
-   * the test and the mark, so two requests arriving together cannot both pass. */
+   * the test and the mark, so two requests arriving together cannot both pass; the write waits for the
+   * others of the registry, so two uses of one card both stay written (gm-ledger.js). */
   static async consume(key) {
     if (SR5_MiscellaneousHelpers.isConsumed(key)) return false
     SR5_MiscellaneousHelpers.#pending.add(key)
-    await game.settings.set('sr5', CONSUMED_CARDS, {
-      ...SR5_MiscellaneousHelpers.#consumed(), [key]: Date.now()
-    })
+    await updateLedger(CONSUMED_CARDS, ledger => ({
+      ...ledger, [key]: Date.now()
+    }))
     return true
   }
 

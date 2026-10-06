@@ -8,6 +8,9 @@ import {
   SR5_SocketHandler
 } from "../socket.js"
 import {
+  updateLedger
+} from "./gm-ledger.js"
+import {
   tacnetLevel, tacnetMembers, tacnetCapacity, ledgerAfterJoin, ledgerAfterLeave, ledgerTrimmed, tacnetBonus, tacnetOffer
 } from "../rolls/roll-helpers/tacnet.js"
 
@@ -106,13 +109,16 @@ async function applyRoster({
   const item = await fromUuid(deviceUuid)
   if (!item || !tacnetLevel(item.system.tacnetLevel)) return
   const member = await fromUuid(memberUuid)
-  let next, error = null
-  if (action === "leave") next = ledgerAfterLeave(ledger(), deviceUuid, memberUuid)
-  else ({
-    ledger: next, error
-  } = ledgerAfterJoin(ledger(), deviceUuid, memberUuid, {
-    deviceRating: item.system.deviceRating, bearerUuid: item.parent?.uuid
-  }))
+  let error = null
+  // The roster is worked out in the ledger's turn, on its latest state (gm-ledger.js)
+  await updateLedger(TACNET_LEDGER, current => {
+    if (action === "leave") return ledgerAfterLeave(current, deviceUuid, memberUuid)
+    const after = ledgerAfterJoin(current, deviceUuid, memberUuid, {
+      deviceRating: item.system.deviceRating, bearerUuid: item.parent?.uuid
+    })
+    error = after.error
+    return error ? null : after.ledger
+  })
   const say = (key) => {
     const text = game.i18n.format(key, {
       member: member?.name ?? memberUuid, network: item.name, max: tacnetCapacity(item.system.deviceRating)
@@ -123,7 +129,6 @@ async function applyRoster({
     })
   }
   if (error) return say(error === "full" ? "SR5.TacnetFull" : "SR5.TacnetAlready")
-  await game.settings.set("sr5", TACNET_LEDGER, next)
   say(action === "leave" ? "SR5.TacnetLeft" : "SR5.TacnetJoined")
 }
 
@@ -166,13 +171,17 @@ export function initTacnet(){
   Hooks.on("updateItem", (item, changes) => {
     if (!isActiveGM() || item.type !== "itemGear" || changes?.system?.deviceRating === undefined) return
     if (!tacnetLevel(item.system.tacnetLevel)) return
-    const {
-      ledger: next, removed
-    } = ledgerTrimmed(ledger(), item.uuid, {
+    if (!ledgerTrimmed(ledger(), item.uuid, {
       deviceRating: item.system.deviceRating, bearerUuid: item.parent?.uuid
-    })
-    if (!removed.length) return
-    game.settings.set("sr5", TACNET_LEDGER, next).then(() => ChatMessage.create({
+    }).removed.length) return
+    let removed = []
+    updateLedger(TACNET_LEDGER, current => {
+      const after = ledgerTrimmed(current, item.uuid, {
+        deviceRating: item.system.deviceRating, bearerUuid: item.parent?.uuid
+      })
+      removed = after.removed
+      return removed.length ? after.ledger : null
+    }).then(written => written && ChatMessage.create({
       whisper: game.users.filter(u => u.isGM).map(u => u.id),
       content: `<p>${game.i18n.format("SR5.TacnetTrimmed", {
         network: item.name, max: tacnetCapacity(item.system.deviceRating),

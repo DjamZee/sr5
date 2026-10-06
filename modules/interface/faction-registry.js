@@ -1,6 +1,9 @@
 import {
   attitudeShift, shiftAttitude, scoreOf
 } from "./faction-rules.js"
+import {
+  updateLedger
+} from "../system/gm-ledger.js"
 
 // Faction Reputation (Cutting Aces p. 156-160): one hidden world setting, written by the active
 // gamemaster only. A player's client reads it (attitude of a social test, her own scores) but never
@@ -55,10 +58,15 @@ export class SR5FactionRegistry {
 
   static async update(mutate){
     if (this.refuse()) return false
-    const data = foundry.utils.deepClone(this.data)
-    mutate(data)
-    await game.settings.set("sr5", FACTIONS_SETTING, data)
-    return true
+    // In the registry's turn, on its latest state (gm-ledger.js)
+    return updateLedger(FACTIONS_SETTING, raw => {
+      const data = {
+        factions: raw.factions ?? [], log: raw.log ?? [], raises: raw.raises ?? {
+        }
+      }
+      mutate(data)
+      return data
+    })
   }
 
   static faction(id){

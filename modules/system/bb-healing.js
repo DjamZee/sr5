@@ -12,6 +12,9 @@ import {
   SR5_SystemHelpers
 } from "./utilitySystem.js"
 import {
+  updateLedger
+} from "./gm-ledger.js"
+import {
   markRowDoneInMessage, cardFromGM
 } from "./card-rows.js"
 
@@ -45,10 +48,13 @@ export function bbLedger(){
   }
 }
 
-async function writeLedger(next){
+// `change` makes the next ledger from its latest state, in its turn (gm-ledger.js); null leaves it as it is
+async function writeLedger(change){
   if (!isWriter()) return false
-  await game.settings.set("sr5", BB_LEDGER, ledgerCleaned(next, game.time.worldTime))
-  return true
+  return updateLedger(BB_LEDGER, ledger => {
+    const next = change(ledger)
+    return next ? ledgerCleaned(next, game.time.worldTime) : null
+  })
 }
 
 // Read by the actor preparation (utilityActor.updatePenalties): the wound modifiers lowered by a stabilization
@@ -91,10 +97,9 @@ async function onUpdateActor(actor){
   const now = physicalTotal(actor.system)
   seen.set(actor.uuid, now)
   if (before === undefined || now - before < BB_WOUND_THRESHOLD) return
-  const ledger = bbLedger()
-  if (ledger[actor.uuid]?.bleeding) return
-  await writeLedger(ledgerAfterWound(ledger, actor.uuid, actor.system.attributes?.body?.augmented?.value))
-  ui.notifications.info(game.i18n.format("SR5.BB_BleedingStarts", {
+  if (bbLedger()[actor.uuid]?.bleeding) return
+  const written = await writeLedger(ledger => (ledger[actor.uuid]?.bleeding ? null : ledgerAfterWound(ledger, actor.uuid, actor.system.attributes?.body?.augmented?.value)))
+  if (written) ui.notifications.info(game.i18n.format("SR5.BB_BleedingStarts", {
     name: actor.name
   }))
 }
@@ -106,10 +111,12 @@ async function onUpdateCombat(combat, changes, options){
   if ((options?.direction ?? 1) < 0) return
   const actors = new Map()
   for (const c of combat.combatants) if (c.actor?.uuid) actors.set(c.actor.uuid, c.actor)
-  const {
-    ledger, due
-  } = ledgerAfterRound(bbLedger(), [...actors.keys()])
-  await writeLedger(ledger)
+  let due = []
+  await writeLedger(current => {
+    const after = ledgerAfterRound(current, [...actors.keys()])
+    due = after.due
+    return after.ledger
+  })
   if (due.length) await postBleedCard(due.map(uuid => actors.get(uuid)))
 }
 
@@ -154,7 +161,7 @@ async function applyBleedBox(actor){
     "system.conditionMonitors.physical.actual.base": Math.min(monitors.physical.actual.base, monitors.physical.value),
     "system.conditionMonitors.overflow.actual.base": Math.min(monitors.overflow.actual.base, monitors.overflow.value),
   })
-  await writeLedger(ledgerAfterBleedBox(bbLedger(), actor.uuid))
+  await writeLedger(ledger => ledgerAfterBleedBox(ledger, actor.uuid))
   const id = actor.isToken ? actor.token.id : actor.id
   if (isDead) await SR5_ActorHelper.createDeadEffect(id)
   else if (monitors.physical.actual.value >= monitors.physical.value) await SR5_ActorHelper.createKoEffect(id)
@@ -230,7 +237,7 @@ export async function applyStabilization(messageData, patient, medic){
     name: escape(patient.name), reduction, hours
   }))
   if (!ok) return false
-  await writeLedger(ledgerAfterStabilization(bbLedger(), patient.uuid, reduction, game.time.worldTime + hours * 3600))
+  await writeLedger(ledger => ledgerAfterStabilization(ledger, patient.uuid, reduction, game.time.worldTime + hours * 3600))
   return reduction
 }
 
@@ -256,7 +263,7 @@ export async function applyDiagnosis(messageData, patient){
     name: patient.name, bonus: bonus > 0 ? `+${bonus}` : `${bonus}`
   }))
   //A diagnosis without result leaves no bonus: nothing to write
-  if (bonus) await writeLedger(ledgerWithDiagnosis(bbLedger(), patient.uuid, bonus))
+  if (bonus) await writeLedger(ledger => ledgerWithDiagnosis(ledger, patient.uuid, bonus))
   return bonus
 }
 
@@ -265,7 +272,7 @@ async function onCreateChatMessage(message){
   if (!isWriter()) return
   const uuid = message.flags?.sr5data?.test?.bbDiagnosisPatient
   if (!uuid || bbLedger()[uuid]?.diagnosis === undefined) return
-  await writeLedger(ledgerWithoutDiagnosis(bbLedger(), uuid))
+  await writeLedger(ledger => ledgerWithoutDiagnosis(ledger, uuid))
 }
 
 // BB p. 18-19: one use of the medkit supplies per patient stabilized or treated (arbitrage de DjamZ, 2026-10-05).

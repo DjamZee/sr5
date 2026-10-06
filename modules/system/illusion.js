@@ -12,6 +12,9 @@ import {
   ledgerAfterCast, ledgerAfterResistance, unpiercedIllusions, blindFireOffer,
   illusionResistanceAttributes, resistanceVerdict, castVerdict, messageUsed, ledgerAfterSustain
 } from "../rolls/roll-helpers/illusion.js"
+import {
+  updateLedger
+} from "./gm-ledger.js"
 
 export const ILLUSION_LEDGER = "sr5IllusionLedger"
 
@@ -100,11 +103,10 @@ async function recordCast(message, data){
     rejectClose: false,
   })
   if (!ok) return
-  const next = ledgerAfterCast(ledger(), {
+  await updateLedger(ILLUSION_LEDGER, current => ledgerAfterCast(current, {
     spellUuid: item.uuid, kind, spellType: item.system.type, threshold: verdict.hits,
     subjectUuid: subject.uuid, subjectName: subject.name, messageId: message.id,
-  })
-  await game.settings.set("sr5", ILLUSION_LEDGER, next)
+  }))
 }
 
 // The resistance pool as the GM works it out from the observer himself (rollData-IllusionResistance.js)
@@ -126,8 +128,11 @@ async function recordResistance(message, data){
   if (!verdict.ok) return warnGM("SR5.IllusionCardRejected", {
     user: message.author?.name ?? "?", spell: spell?.name ?? ""
   })
-  const result = ledgerAfterResistance(ledger(), spellUuid, observer.uuid, verdict.hits)
-  await game.settings.set("sr5", ILLUSION_LEDGER, result.ledger)
+  let result = null
+  await updateLedger(ILLUSION_LEDGER, current => {
+    result = ledgerAfterResistance(current, spellUuid, observer.uuid, verdict.hits)
+    return result.ledger
+  })
   //Only the outcome, to the observer's owners and the GM: the threshold stays with the GM (Q4 of 06/10)
   const whisper = game.users.filter(u => u.isGM || observer.testUserPermission?.(u, "OWNER")).map(u => u.id)
   await ChatMessage.create({
@@ -155,19 +160,17 @@ export function initIllusions(){
   //through the actor (baseSheet _onEditItemValue updates its item list), so the actor's update is watched, and a
   //spell cast but not yet sustained is kept until it has been sustained once
   const watch = () => {
-    if (!isActiveGM()) return
-    const next = ledgerAfterSustain(ledger(), isSustained)
-    if (next) game.settings.set("sr5", ILLUSION_LEDGER, next).catch(e => SR5_SystemHelpers.srLog(1, `Illusion not forgotten: ${e}`))
+    if (!isActiveGM() || !ledgerAfterSustain(ledger(), isSustained)) return
+    updateLedger(ILLUSION_LEDGER, current => ledgerAfterSustain(current, isSustained)).catch(e => SR5_SystemHelpers.srLog(1, `Illusion not forgotten: ${e}`))
   }
   Hooks.on("updateActor", watch)
   Hooks.on("updateItem", watch)
   Hooks.on("deleteItem", (item) => {
     if (item.type === "itemSpell" && isActiveGM() && ledger()[item.uuid]) {
-      const next = {
-        ...ledger()
-      }
-      delete next[item.uuid]
-      game.settings.set("sr5", ILLUSION_LEDGER, next).catch(e => SR5_SystemHelpers.srLog(1, `Illusion not forgotten: ${e}`))
+      updateLedger(ILLUSION_LEDGER, current => {
+        delete current[item.uuid]
+        return current
+      }).catch(e => SR5_SystemHelpers.srLog(1, `Illusion not forgotten: ${e}`))
     }
   })
 }

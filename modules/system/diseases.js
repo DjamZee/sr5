@@ -14,6 +14,9 @@ import {
   markRowDoneInMessage, cardFromGM
 } from "./card-rows.js"
 import {
+  updateLedger
+} from "./gm-ledger.js"
+import {
   SR5_Toxins
 } from "../entities/items/toxins.js"
 
@@ -289,11 +292,12 @@ export function diseaseLedger(){
 
 async function writeEntry(entry){
   if (!isActiveGM()) return false
-  const ledger = foundry.utils.duplicate(diseaseLedger())
-  ledger.infections ??= {
-  }
-  ledger.infections[entry.id] = entry
-  await game.settings.set("sr5", DISEASE_LEDGER, ledger)
+  await updateLedger(DISEASE_LEDGER, ledger => {
+    ledger.infections ??= {
+    }
+    ledger.infections[entry.id] = entry
+    return ledger
+  })
   refreshActor(entry.actorUuid)
   return true
 }
@@ -388,12 +392,15 @@ export async function infectWith(item){
 
 export async function checkDiseases(){
   if (!isActiveGM()) return
-  const ledger = diseaseLedger()
-  const due = dueEntries(ledger, game.time.worldTime)
+  let due = []
+  // In the ledger's turn: an infection entered meanwhile is not erased by the clock (gm-ledger.js)
+  await updateLedger(DISEASE_LEDGER, next => {
+    due = dueEntries(next, game.time.worldTime)
+    if (!due.length) return null
+    for (const e of due) next.infections[e.id].notified = true
+    return next
+  })
   if (!due.length) return
-  const next = foundry.utils.duplicate(ledger)
-  for (const e of due) next.infections[e.id].notified = true
-  await game.settings.set("sr5", DISEASE_LEDGER, next)
   await postDueCard(due)
 }
 

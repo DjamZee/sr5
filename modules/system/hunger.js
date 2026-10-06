@@ -9,6 +9,9 @@ import {
 import {
   markRowDoneInMessage, cardFromGM
 } from "./card-rows.js"
+import {
+  updateLedger
+} from "./gm-ledger.js"
 
 export const HUNGER_LEDGER = "sr5HungerLedger"
 export const HUNGER_MONTH_SETTING = "sr5HungerMonthDays"
@@ -104,12 +107,12 @@ export function hungerOf(actorUuid){
 
 async function writeLedger(mutate){
   if (!isActiveGM()) return false
-  const ledger = foundry.utils.duplicate(hungerLedger())
-  ledger.creatures ??= {
-  }
-  mutate(ledger.creatures)
-  await game.settings.set("sr5", HUNGER_LEDGER, ledger)
-  return true
+  return updateLedger(HUNGER_LEDGER, ledger => {
+    ledger.creatures ??= {
+    }
+    mutate(ledger.creatures)
+    return ledger
+  })
 }
 
 const month = () => monthSeconds(game.settings.get("sr5", HUNGER_MONTH_SETTING))
@@ -197,7 +200,13 @@ export async function checkHunger(){
   const now = game.time.worldTime
   const m = month()
   const rows = []
-  const next = foundry.utils.duplicate(hungerLedger())
+  // In the ledger's turn: a creature entered meanwhile is not erased by the clock (gm-ledger.js)
+  await updateLedger(HUNGER_LEDGER, next => checkedLedger(next, rows, now, m))
+  if (rows.length) await postCard(rows)
+}
+
+function checkedLedger(next, rows, now, m){
+  const before = JSON.stringify(next)
   for (const [uuid, entry] of Object.entries(next.creatures ?? {
   })){
     const due = lossesDue(entry, now, m)
@@ -226,9 +235,8 @@ export async function checkHunger(){
       }
     }
   }
-  if (!rows.length && JSON.stringify(next) === JSON.stringify(hungerLedger())) return
-  await game.settings.set("sr5", HUNGER_LEDGER, next)
-  if (rows.length) await postCard(rows)
+  if (!rows.length && JSON.stringify(next) === before) return null
+  return next
 }
 
 async function postCard(rows){

@@ -3,6 +3,9 @@
 // A player owns her character sheet and the server accepts her writes to it, whatever the client says: these values
 // live in a hidden world setting that the active gamemaster alone writes (same method as the hunger ledger).
 // Characters are keyed by actor id, a banished spirit by its token's uuid when it is not linked, its actor id otherwise.
+import {
+  updateLedger
+} from "./gm-ledger.js"
 
 export const SPIRIT_LEDGER = "sr5SpiritLedger"
 export const CHARACTER_FIELDS = ["spiritIndex", "astralReputationAdjustment", "wildIndex", "hermeticElementalist"]
@@ -137,25 +140,27 @@ export function spiritTraitsFor(ledger, baseId, tokenKey){
   return traits
 }
 
-async function writeLedger(next){
+// `change` makes the next ledger from its latest state, in its turn (gm-ledger.js)
+async function writeLedger(change){
   if (!isActiveGM()) {
     ui.notifications.warn(game.i18n.localize("SR5.SpiritLedgerActiveGMOnly"))
     return false
   }
-  await game.settings.set("sr5", SPIRIT_LEDGER, next)
-  return true
+  return updateLedger(SPIRIT_LEDGER, ledger => change({
+    ...emptyLedger(), ...ledger
+  }))
 }
 
 export async function setCharacterField(actorId, field, value){
-  return writeLedger(withCharacterField(readLedger(), actorId, field, value))
+  return writeLedger(ledger => withCharacterField(ledger, actorId, field, value))
 }
 
 export async function setBanishTotal(key, total, messageId){
-  return writeLedger(withBanishTotal(readLedger(), key, total, messageId))
+  return writeLedger(ledger => withBanishTotal(ledger, key, total, messageId))
 }
 
 export async function setSpiritTrait(key, trait, value){
-  return writeLedger(withSpiritTrait(readLedger(), key, trait, value))
+  return writeLedger(ledger => withSpiritTrait(ledger, key, trait, value))
 }
 
 // Written over the prepared data of every client, whatever the sheet holds: the ledger is the only source.
@@ -187,11 +192,21 @@ export function applySpiritLedger(actor, elementalTypes){
 // The active GM moves the legacy values off the sheets into the ledger, then clears them
 async function migrateLegacy(){
   if (!isActiveGM()) return
-  let ledger = readLedger()
-  //Once only: afterwards the sheets may hold the prepared values written back by an update, never read again
-  if (ledger.migrated) return
   const cleared = []
   const spirits = []
+  //Once only: afterwards the sheets may hold the prepared values written back by an update, never read again
+  if (readLedger().migrated) return
+  const written = await writeLedger(ledger => (ledger.migrated ? null : migratedLedger(ledger, spirits, cleared)))
+  if (!written) return
+  for (const actor of spirits) await actor.update({
+    "system.isElemental": false, "system.isWild": false, "system.hasDomain": false, "system.wildBanishTotal": 0,
+  })
+  for (const actor of cleared) await actor.update({
+    "system.magic.spiritIndex": 0, "system.magic.astralReputationAdjustment": 0, "system.magic.wildIndex": 0, "system.magic.hermeticElementalist": false,
+  })
+}
+
+function migratedLedger(ledger, spirits, cleared){
   for (const actor of game.actors ?? []) {
     if (actor.type !== "actorSpirit") continue
     const source = actor._source?.system ?? {
@@ -209,13 +224,7 @@ async function migrateLegacy(){
     cleared.push(actor)
   }
   ledger.migrated = true
-  await game.settings.set("sr5", SPIRIT_LEDGER, ledger)
-  for (const actor of spirits) await actor.update({
-    "system.isElemental": false, "system.isWild": false, "system.hasDomain": false, "system.wildBanishTotal": 0,
-  })
-  for (const actor of cleared) await actor.update({
-    "system.magic.spiritIndex": 0, "system.magic.astralReputationAdjustment": 0, "system.magic.wildIndex": 0, "system.magic.hermeticElementalist": false,
-  })
+  return ledger
 }
 
 export function registerSpiritLedger(){

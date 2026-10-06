@@ -28,6 +28,9 @@ import {
 import {
   openCashing, closeCashing
 } from './shop-orders.js'
+import {
+  updateLedger
+} from '../system/gm-ledger.js'
 
 export const RETRY_LEDGER = 'sr5ShopRetryLedger'
 const HOUR = 3600
@@ -129,9 +132,9 @@ export function retryLedger() {
 
 async function writeLedger(id, entry) {
   if (!isWriter()) return
-  await game.settings.set('sr5', RETRY_LEDGER, {
-    ...retryLedger(), [id]: entry
-  })
+  await updateLedger(RETRY_LEDGER, ledger => ({
+    ...ledger, [id]: entry
+  }))
 }
 
 /**
