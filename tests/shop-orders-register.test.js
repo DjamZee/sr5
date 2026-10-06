@@ -13,7 +13,7 @@ vi.mock('../modules/interface/shop.js', () => ({
 }))
 
 const {
-  registerOrders, registrationPlan, cancelPlan, orderLedger
+  registerOrders, registrationPlan, cancelPlan, orderLedger, deliverOrder
 } = await import('../modules/interface/shop-orders.js')
 
 // Élise's ruling after Zélia's review: an order of the shop without vendor enters the GM's ledger at
@@ -132,5 +132,25 @@ describe('an order of the shop without vendor', () => {
     expect(registrationPlan([{
       order: order(), paid: 400
     }], 300, 'Actor.buyer', 'debit')).toBe(null)
+  })
+})
+
+// A second GM delivered an order: the order left the sheet, its ledger entry stayed behind (security pass, Petra)
+describe('an order delivered by a GM who is not the active one', () => {
+  it('is not delivered: the order stays on the sheet and in the ledger', async () => {
+    const second = {
+      id: 'gm2', isGM: true
+    }
+    game.user = second
+    const warn = vi.spyOn(ui.notifications, 'warn').mockImplementation(() => {})
+    const setFlag = vi.fn()
+    const createEmbeddedDocuments = vi.fn()
+    buyer = {
+      ...makeBuyer([order()], 300), setFlag, createEmbeddedDocuments
+    }
+    expect(await deliverOrder(buyer, 'o1')).toBe(false)
+    expect(warn).toHaveBeenCalledWith('SR5.ShopOrderActiveGMOnly')
+    expect(setFlag).not.toHaveBeenCalled()
+    expect(createEmbeddedDocuments).not.toHaveBeenCalled()
   })
 })

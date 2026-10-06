@@ -398,6 +398,12 @@ export function surchargedUnit(unit, percent) {
 /** The gamemaster hands an order over: the goods reach the sheet, the order goes. */
 export async function deliverOrder(actor, id) {
   if (!game.user.isGM || !actor) return false
+  //The ledger is the active GM's: another GM took the order off the sheet and left its entry behind, which a
+  //player could bring back by writing the order again on her sheet (security pass, Petra)
+  if (!isWriter()) {
+    ui.notifications.warn(game.i18n.localize('SR5.ShopOrderActiveGMOnly'))
+    return false
+  }
   const order = ordersOf(actor).find(o => o.id === id)
   if (!order) {
     ui.notifications.warn(game.i18n.localize('SR5.WARN_ShopOrderGone'))
