@@ -349,13 +349,21 @@ export function isBoneLacing(data) {
 /** The Augmentations de densité osseuse of the compendiums: sr5-compendiums fr_bioware, then the Megapack (and (NE)). */
 const BONE_DENSITY_SOURCES = ["J3aTcMzhQgzjhL5T", "vRsjmjPwxyoQszgl", "H6bRPeyZzxEFIC7S"]
 
-/** Augmentation de densité osseuse (SR5 p. 462), told by the compendium it was taken from, then by its name. */
+/**
+ * Augmentation de densité osseuse (SR5 p. 462), told by the compendium it was taken from, by its name, then by what it
+ * does, for a copy renamed or made by hand: the only bioware that adds both to the damage resistance and to the unarmed
+ * damage (a renamed copy forged in a player's console went past the guard otherwise).
+ */
 export function isBoneDensity(data) {
   if (data?.type !== "itemAugmentation" || data.system?.isAccessory || implantFamily(data.system?.type) !== "bioware") return false
   const source = data._stats?.compendiumSource ?? data.flags?.core?.sourceId ?? ""
   if (BONE_DENSITY_SOURCES.some(id => source.endsWith(`.${id}`))) return true
   const name = (data.name ?? "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim()
-  return /^(augmentation de densite osseuse|bone density augmentation)\b/.test(name)
+  if (/^(augmentation de densite osseuse|bone density augmentation)\b/.test(name)) return true
+  const raw = data.system?.customEffects
+  const effects = Array.isArray(raw) ? raw : raw && typeof raw === "object" ? Object.values(raw) : []
+  return effects.some(e => e?.category === "characterResistances" && e.target === "system.resistances.physicalDamage") &&
+    effects.some(e => e?.category === "weaponEffectTargets" && e.target === "system.itemsProperties.weapon.damageValue" && e.type === "unarmedCombat")
 }
 
 /**

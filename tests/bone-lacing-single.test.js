@@ -260,6 +260,33 @@ describe("what an Augmentation de densité osseuse is", () => {
       }
     })).toBe(true)
     expect(isBoneDensity(lacing("Ossature renforcée (Titane)"))).toBe(false)
+    // Renamed, from no compendium (forged in a player's console): by what it does, as in both compendiums
+    const effects = {
+      0: {
+        category: "characterResistances", target: "system.resistances.physicalDamage", type: "rating"
+      },
+      1: {
+        category: "weaponEffectTargets", target: "system.itemsProperties.weapon.damageValue", type: "unarmedCombat",
+        damageType: "physical"
+      }
+    }
+    expect(isBoneDensity({
+      ...boneDensity(), name: "Renamed", system: {
+        type: "bioware", customEffects: effects
+      }
+    })).toBe(true)
+    expect(isBoneDensity({
+      ...boneDensity(), name: "Renamed", system: {
+        type: "bioware", customEffects: {
+          0: effects[0]
+        }
+      }
+    })).toBe(false)
+    expect(isBoneDensity({
+      ...boneDensity(), name: "Pneumaticité squelettique", system: {
+        type: "genetech", customEffects: effects
+      }
+    })).toBe(false)
     expect(isBoneDensity({
       ...boneDensity(), name: "Augmentation musculaire"
     })).toBe(false)

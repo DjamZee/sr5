@@ -1499,6 +1499,7 @@
 	"SR5.BoneLacingConfirmText": "{actor} already has {lacing}; only one type can be installed at a time (SR5 p. 458): {names}. Install anyway?",
 	"SR5.WARN_BoneDensityClash": "{name}: Remove {lacing}. Bone lacing and bone density augmentation are incompatible (SR5 p. 458 and 462).",
 	"SR5.WARN_BoneDensityClashGMPast": "{name}: {actor} already has {lacing} active; bone lacing and bone density augmentation are incompatible (SR5 p. 458 and 462). Gamemaster override: the bonuses add up.",
+	"SR5.WARN_BoneClashSwitchedOff": "{user} switched {name} on in {actor}'s sheet, beside {lacing}: one type of bone lacing only, and never with bone density augmentation (SR5 p. 458 and 462). Switched off again.",
 	"SR5.BoneDensityClashConfirmTitle": "Bone lacing and bone density",
 	"SR5.BoneDensityClashConfirmText": "{actor} already has {lacing}; bone lacing and bone density augmentation are incompatible (SR5 p. 458 and 462): {names}. Install anyway?",
 	"SR5.WARN_ShopNotForSale": "{name} is not for sale.",

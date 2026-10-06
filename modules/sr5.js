@@ -119,6 +119,9 @@ import {
 import {
   registerPreparationRegisterHooks
 } from './system/preparation-register.js'
+import {
+  registerBoneAugmentationGuard
+} from './system/bone-augmentation-guard.js'
 
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
@@ -226,6 +229,8 @@ registerEssenceHoleHooks()
 registerImplantRegisterHooks()
 // A preparation's start and pace: the active GM puts back what a player's client let through (system/preparation-register.js)
 registerPreparationRegisterHooks()
+// Two bone lacings, or a lacing and bone density, switched on by a player: the active GM switches it off (SR5 p. 458, 462)
+registerBoneAugmentationGuard()
 // Agility brought to 0: the "immobilized" status follows it (séance H, H8)
 registerAgilityZeroHooks()
 // Blight strikes: sustained spells, active foci and astral fall (Better Than Bad p. 141)
