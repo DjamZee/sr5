@@ -225,6 +225,16 @@ export function advancedMedkitDice(rating, charge){
   return (Number(rating) || 0) + ((Number(charge) || 0) > 0 ? 0 : -3)
 }
 
+// Improvised supplies. Core rules: -1 (SR5 p. 208). Bullets & Bandages p. 18 (optional rule, with the advanced
+// medkits): a Complex Action of First Aid + Intuition, each hit taking 1 off the -3 of "no supplies", down to 0.
+// The hits come from the player's own improvising roll, capped at 3
+export const IMPROVISED_BASE = -3
+export function improvisedSuppliesDice(hits, advanced){
+  if (!advanced) return -1
+  const kept = Math.min(-IMPROVISED_BASE, Math.max(0, Math.floor(Number(hits) || 0)))
+  return IMPROVISED_BASE + kept
+}
+
 /* -------------------------------------------- */
 // Registered with the other settings (utilitySystem.js): nothing imported here, so no cycle with the runtime
 

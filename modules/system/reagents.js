@@ -252,6 +252,19 @@ export function applyReagentDrainReduction(magic, reduction, tier){
   }
 }
 
+// Forbidden Arcana p. 181: a radical reagent lowers the object resistance by 1 per drachm (per drachm as
+// printed, unlike the limit bonus). The bonuses together never exceed the caster's Magic: the object
+// resistance gets what the Drain reduction left. The GM computes it again from the caster's Magic:
+// a card's drachms are never taken at their word beyond that cap
+export function radicalObjectReduction({
+  system = reagentSystem(), tier, effective, magic, drainReductionUsed = 0
+}){
+  if (system !== "forbiddenArcana" || tier !== "radical") return 0
+  const drachms = Math.max(0, Math.floor(Number(effective) || 0))
+  const cap = Math.max(0, (Number(magic) || 0) - Math.max(0, Number(drainReductionUsed) || 0))
+  return Math.min(drachms, cap)
+}
+
 // Spirit binding costs (Force x 25) drachms (SR5 p. 304)
 export function bindingCost(force){
   return Math.max(0, Number(force) || 0) * 25

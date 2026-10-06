@@ -3767,6 +3767,8 @@
 	"SR5.BB_ModeDiagnosis": "Diagnosis",
 	"SR5.BB_DiagnosisBonus": "Diagnosis",
 	"SR5.BB_MedkitEmpty": "The medkit has no supplies left: -3 penalty (Bullets & Bandages p. 18).",
+	"SR5.BB_ImprovisedHits": "Improvising hits (improvised supplies)",
+	"SR5.BB_ImprovisedHits_D": "Bullets & Bandages p. 18: a Complex Action of First Aid + Intuition; each hit takes 1 off the -3 penalty (3 at most). First aid then takes one and a half times as long.",
 	"SR5.BB_NeedTarget": "Target the patient",
 	"SR5.BB_DiagnoseButton": "Diagnosis: {hits} hits (threshold set by the GM)",
 	"SR5.BB_DiagnoseFailed": "Diagnosis without result",

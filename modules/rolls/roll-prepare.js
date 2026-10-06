@@ -2,7 +2,7 @@ import {
   SR5_RollTest
 } from "./roll-test.js"
 import {
-  underFireRules, bbStabilizeDrain
+  underFireRules, bbStabilizeDrain, advancedMedkitRules
 } from "../system/bb-healing.js"
 import {
   SR5_PrepareRollHelper 
@@ -338,6 +338,8 @@ export class SR5_PrepareRollTest {
       addIndirectEffects(rollData, actor)
       //Bullets & Bandages p. 14-16: the dialog of First Aid and Medicine asks what the test is for
       if (underFireRules() && (rollData.test.typeSub === "firstAid" || rollData.test.typeSub === "medecine")) rollData.various.bbUnderFire = true
+      //Bullets & Bandages p. 18: improvised supplies take the hits of an improvising roll off the -3
+      if (advancedMedkitRules()) rollData.various.bbImprovised = true
       if (rollData.test.type === "spell" && rollData.target?.hasTarget){
         const drain = bbStabilizeDrain(rollData.owner?.itemUuid ? fromUuidSync(rollData.owner.itemUuid)?.name : null, SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId), rollData.magic.drainFloor ?? 2)
         if (drain !== null) rollData.magic.bbStabilizeDrain = drain

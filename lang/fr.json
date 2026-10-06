@@ -3767,6 +3767,8 @@
 	"SR5.BB_ModeDiagnosis": "Diagnostic",
 	"SR5.BB_DiagnosisBonus": "Diagnostic",
 	"SR5.BB_MedkitEmpty": "Le médikit n'a plus de fournitures : malus de -3 (Balles et Pansements p. 18).",
+	"SR5.BB_ImprovisedHits": "Succès d'improvisation (fournitures improvisées)",
+	"SR5.BB_ImprovisedHits_D": "Balles et Pansements p. 18 : une action complexe de Premiers soins + Intuition ; chaque succès réduit de 1 le malus de -3 (3 au plus). Les premiers soins prennent alors une fois et demie plus de temps.",
 	"SR5.BB_NeedTarget": "Ciblez le patient",
 	"SR5.BB_DiagnoseButton": "Diagnostic : {hits} succès (seuil au MJ)",
 	"SR5.BB_DiagnoseFailed": "Diagnostic sans résultat",

@@ -38,6 +38,14 @@
         <input disabled type="number" name="dicePoolModHealingSupplies" value="" placeholder="0" data-dtype="Number" />
     </div>
 </li>
+{{#if various.bbImprovised}}
+<li class="grid">
+    <div class="col-10">{{localize 'SR5.BB_ImprovisedHits'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-2 SR-TextCenter">
+        <input type="number" name="bbImprovisedHits" value="0" min="0" max="3" data-dtype="Number" data-tooltip="{{localize 'SR5.BB_ImprovisedHits_D'}}" />
+    </div>
+</li>
+{{/if}}
 <li class="grid">
     <div class="col-10">{{localize 'SR5.PatientAwakenedOrEmerged'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-1 SR-TextRight"><input type="checkbox" class="SR-ModCheckbox SR-ModCheckboxFilled" data-target="dicePoolModPatientAwakenedOrEmerged" data-modifier="patientAwakenedOrEmerged"></div>

@@ -5,7 +5,7 @@ import {
   bbPatientEntry, advancedMedkitRules
 } from "../system/bb-healing.js"
 import {
-  advancedMedkitDice, bbModeDiagnosisDice
+  advancedMedkitDice, bbModeDiagnosisDice, improvisedSuppliesDice
 } from "../system/bb-healing-rules.js"
 import {
   SR5 
@@ -250,6 +250,8 @@ export default class SR5_RollDialog {
     }))
     //General commands for select
     element.querySelectorAll('.SR-ModSelect').forEach(el => el.addEventListener('change', ev => this._selectModifiers(ev, element, dialogData)))
+    //Bullets & Bandages p. 18: the improvising hits read again by the supplies select
+    element.querySelector('[name="bbImprovisedHits"]')?.addEventListener('change', () => element.querySelector('[data-modifier="healingSupplies"]')?.dispatchEvent(new Event('change')))
     //General commands for select already filled by dialogData
     const filledSelects = element.querySelectorAll('.SR-ModSelectFilled'); if (filledSelects.length) this._filledSelectModifier(filledSelects, element, dialogData)
     //Bullets & Bandages: the care selected when the window opens counts at once (the diagnosis bonus of a treatment
@@ -1440,7 +1442,8 @@ export default class SR5_RollDialog {
               value = -3
               break
             case "improvised":
-              value = -1
+              //SR5 p. 208: -1; Bullets & Bandages p. 18 (advanced medkits): -3 less the improvising hits, capped at 3
+              value = improvisedSuppliesDice(html.querySelector('[name="bbImprovisedHits"]')?.value, !!dialogData.various?.bbImprovised)
               break
             case "medkit": {
               //Bullets & Bandages p. 18-19: the rating is bonus dice, and a medkit without supplies still adds it, with -3
