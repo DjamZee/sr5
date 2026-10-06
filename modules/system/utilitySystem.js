@@ -16,6 +16,9 @@ import {
 import {
   registerSpiritLedger
 } from "./spirit-ledger.js"
+import {
+  registerImplantRegisterSetting
+} from "./implant-register.js"
 
 export class SR5_SystemHelpers {
 
@@ -656,6 +659,8 @@ export class SR5_SystemHelpers {
       type: Boolean,
       requiresReload: true
     })
+    // The gamemaster's register of the reserved implant fields (Adapsine, lot, Prototype, Essence lost)
+    registerImplantRegisterSetting()
     game.settings.register("sr5", "sr5AugmentationBundles", {
       name: "SR5.SETTINGS_AugmentationBundles_T",
       hint: "SR5.SETTINGS_AugmentationBundles_D",

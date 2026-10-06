@@ -253,40 +253,15 @@ export function implantsEssenceLost(items) {
 }
 
 /**
- * The fields the gamemaster alone changes once an item is installed (séance G, G16 and G19): a player's update loses
- * them (entityItem.js, entityActor.js). Set at the installation from what the body has then, never from the data a
- * player sends.
+ * The fields the gamemaster alone changes once an item is installed (séance G, G16 and G19, H22): a player's update
+ * that would change them is refused (entityItem.js, entityActor.js, reserved-fields.js) and the active GM puts back
+ * what gets through (implant-register.js). Set at the installation from what the body has then, never from the data
+ * a player sends.
  */
 export const GM_ONLY_FIELDS = {
   itemAugmentation: ["underAdapsine", "augmentationBundle", "transhumanGift"],
   itemQuality: ["transhumanEssence"],
   actor: ["essence.holeAmount", "essence.holeBase"],
-}
-
-/**
- * Removes from `changes` (an update, flat or nested) the `system` fields among `paths`.
- * @param {object} [current] the document's system source: a field sent unchanged is removed without being counted
- * @returns {string[]} the paths that would have changed
- */
-export function stripSystemFields(changes, paths, current) {
-  const changed = new Set()
-  for (const path of paths ?? []) {
-    const keys = path.split(".")
-    const now = keys.reduce((obj, key) => obj?.[key], current)
-    const drop = (holder, key) => {
-      if (holder && typeof holder === "object" && Object.hasOwn(holder, key)) {
-        if (holder[key] !== now) changed.add(path)
-        delete holder[key]
-      }
-    }
-    drop(changes, `system.${path}`)
-    // A flat key under a nested system ({system: {"essence.holeAmount": 1}})
-    drop(changes?.system, path)
-    let parent = changes?.system
-    for (const key of keys.slice(0, -1)) parent = parent && typeof parent === "object" ? parent[key] : undefined
-    drop(parent, keys.at(-1))
-  }
-  return [...changed]
 }
 
 /**

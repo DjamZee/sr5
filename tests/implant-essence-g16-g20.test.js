@@ -3,11 +3,17 @@ import {
 } from "vitest"
 import {
   implantEssenceEffects, implantEssence, essenceAfterPurchase, transhumanGift, essenceHole, implantsEssenceLost,
-  installationFlags, stripSystemFields, GM_ONLY_FIELDS, hasAdapsine, essenceAdjustment
+  installationFlags, GM_ONLY_FIELDS, hasAdapsine, essenceAdjustment
 } from "../modules/system/implant-essence.js"
 import {
   holeAfterRemoval
 } from "../modules/system/essence-hole.js"
+import {
+  reservedChangedBy, valueAfterUpdate, reservedMismatches
+} from "../modules/system/reserved-fields.js"
+import {
+  expectedAtCreation, expectedValues, reservedFieldsOf
+} from "../modules/system/implant-register.js"
 import {
   mentorMagic
 } from "../modules/entities/items/mentor-spirits.js"
@@ -270,51 +276,166 @@ describe("installation: the body decides, never the data a player sends", () => 
   })
 })
 
-describe("the gamemaster's fields, out of a player's update", () => {
-  it("strips them flat or nested, and tells what would have changed", () => {
-    const flat = {
-      "system.underAdapsine": true, "system.itemRating": 2
+describe("the gamemaster's fields: a player's update read after the merge", () => {
+  const implantSource = {
+    system: {
+      underAdapsine: false, augmentationBundle: false, transhumanGift: false, itemRating: 1
     }
-    expect(stripSystemFields(flat, GM_ONLY_FIELDS.itemAugmentation, {
-      underAdapsine: false
-    })).toEqual(["underAdapsine"])
-    expect(flat).toEqual({
-      "system.itemRating": 2
-    })
-    const nested = {
-      system: {
-        essence: {
-          holeAmount: 3, base: 6
-        }, "essence.holeBase": 1
-      }
-    }
-    expect(stripSystemFields(nested, GM_ONLY_FIELDS.actor, {
+  }
+  const actorSource = {
+    system: {
       essence: {
-        holeAmount: 0, holeBase: 0
+        base: 6, holeAmount: 1.8, holeBase: 0.2
       }
-    })).toEqual(["essence.holeAmount", "essence.holeBase"])
-    expect(nested).toEqual({
+    }
+  }
+  it("sees every form: flat, half-flat, nested", () => {
+    for (const changes of [{
+      "system.underAdapsine": true
+    }, {
       system: {
-        essence: {
-          base: 6
+        underAdapsine: true
+      }
+    }, {
+      system: {
+        "underAdapsine": true, itemRating: 2
+      }
+    }]) expect(reservedChangedBy(implantSource, changes, GM_ONLY_FIELDS.itemAugmentation)).toEqual(["underAdapsine"])
+    expect(reservedChangedBy(actorSource, {
+      "system.essence": {
+        holeAmount: 0
+      }
+    }, GM_ONLY_FIELDS.actor)).toEqual(["essence.holeAmount"])
+    expect(reservedChangedBy(actorSource, {
+      system: {
+        "essence.holeBase": 5
+      }
+    }, GM_ONLY_FIELDS.actor)).toEqual(["essence.holeBase"])
+  })
+  it("sees a replacement (==) and a deletion (-=), flat or nested", () => {
+    expect(reservedChangedBy(implantSource, {
+      "==system": {
+        underAdapsine: true
+      }
+    }, GM_ONLY_FIELDS.itemAugmentation)).toEqual(["underAdapsine"])
+    expect(reservedChangedBy(actorSource, {
+      system: {
+        "==essence": {
+          holeAmount: 0, holeBase: 0, base: 6
         }
       }
-    })
+    }, GM_ONLY_FIELDS.actor)).toEqual(["essence.holeAmount", "essence.holeBase"])
+    expect(reservedChangedBy(actorSource, {
+      "system.essence.-=holeAmount": null
+    }, GM_ONLY_FIELDS.actor)).toEqual(["essence.holeAmount"])
+    expect(reservedChangedBy(actorSource, {
+      system: {
+        essence: {
+          "-=holeAmount": null
+        }
+      }
+    }, GM_ONLY_FIELDS.actor)).toEqual(["essence.holeAmount"])
+    expect(reservedChangedBy(actorSource, {
+      "system.-=essence": null
+    }, GM_ONLY_FIELDS.actor)).toEqual(["essence.holeAmount", "essence.holeBase"])
   })
-  it("drops a field sent unchanged without counting it", () => {
-    const changes = {
+  it("lets through what changes nothing reserved", () => {
+    expect(reservedChangedBy(implantSource, {
+      system: {
+        itemRating: 3
+      }
+    }, GM_ONLY_FIELDS.itemAugmentation)).toEqual([])
+    expect(reservedChangedBy(actorSource, {
+      "==system": {
+        essence: {
+          base: 6, holeAmount: 1.8, holeBase: 0.2
+        }
+      }
+    }, GM_ONLY_FIELDS.actor)).toEqual([])
+    // A deletion of a field already at its default changes nothing
+    expect(reservedChangedBy(implantSource, {
+      "system.-=underAdapsine": null
+    }, GM_ONLY_FIELDS.itemAugmentation)).toEqual([])
+    expect(reservedChangedBy({
+      system: {
+        transhumanEssence: 1
+      }
+    }, {
       system: {
         transhumanEssence: 1, karmaCost: 10
       }
-    }
-    expect(stripSystemFields(changes, GM_ONLY_FIELDS.itemQuality, {
-      transhumanEssence: 1
-    })).toEqual([])
-    expect(changes).toEqual({
+    }, GM_ONLY_FIELDS.itemQuality)).toEqual([])
+  })
+  it("reads a merged value the way Foundry merges", () => {
+    expect(valueAfterUpdate(actorSource, {
       system: {
-        karmaCost: 10
+        essence: {
+          base: 5
+        }
       }
+    }, "system.essence.holeAmount")).toBe(1.8)
+  })
+})
+
+describe("the active gamemaster's register", () => {
+  const implant = (system, items = []) => ({
+    documentName: "Item", type: "itemAugmentation", uuid: "Actor.a.Item.i", id: "i", system,
+    parent: {
+      items
+    }
+  })
+  it("puts back what differs from the register", () => {
+    expect(reservedMismatches({
+      underAdapsine: true, augmentationBundle: false
+    }, {
+      underAdapsine: false, augmentationBundle: false
+    })).toEqual({
+      underAdapsine: false
     })
+    expect(reservedMismatches({
+      "essence.holeAmount": 0, "essence.holeBase": 0
+    }, {
+      "essence.holeAmount": 1.8, "essence.holeBase": 0.2
+    })).toEqual({
+      "essence.holeAmount": 1.8, "essence.holeBase": 0.2
+    })
+  })
+  it("works out a player's implant again from the body, without the implant itself", () => {
+    expect(expectedAtCreation(implant({
+      type: "cyberware", underAdapsine: true, augmentationBundle: true
+    }), GM_ONLY_FIELDS.itemAugmentation)).toEqual({
+      underAdapsine: false, augmentationBundle: false, transhumanGift: false
+    })
+    expect(expectedAtCreation(implant({
+      type: "cyberware"
+    }, [adapsine]), GM_ONLY_FIELDS.itemAugmentation).underAdapsine).toBe(true)
+  })
+  it("expects the register's values, else what a document holds at its defaults", () => {
+    const doc = implant({
+      type: "cyberware", underAdapsine: true
+    }, [adapsine])
+    expect(expectedValues(doc, GM_ONLY_FIELDS.itemAugmentation, {
+      "Actor.a.Item.i": {
+        underAdapsine: false, augmentationBundle: false, transhumanGift: false
+      }
+    }).underAdapsine).toBe(false)
+    // Unknown to the register: a box at its default is kept, a box set is worked out again from the body
+    expect(expectedValues(implant({
+      type: "cyberware", augmentationBundle: true
+    }), GM_ONLY_FIELDS.itemAugmentation, {
+    }).augmentationBundle).toBe(false)
+    expect(expectedValues(doc, GM_ONLY_FIELDS.itemAugmentation, {
+    }).underAdapsine).toBe(true)
+    expect(reservedFieldsOf({
+      documentName: "Actor", system: {
+        essence: {
+        }
+      }
+    })).toEqual(GM_ONLY_FIELDS.actor)
+    expect(reservedFieldsOf({
+      documentName: "Actor", system: {
+      }
+    })).toEqual([])
   })
 })
 

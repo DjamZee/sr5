@@ -1759,6 +1759,7 @@
 	"SR5.EssenceHoleHint": "SR5 p. 53: lost Essence does not come back, even when the implant is removed (outside creation mode). With the optional Essence hole rule (Chrome Flesh p. 74), implants installed afterwards fill this hole before costing Essence.",
 	"SR5.EssenceHoleClear": "Give this Essence back (GM)",
 	"SR5.WARN_GMOnlyField": "Only the GM can change this implant setting (Adapsin, bundle, Prototype Transhuman, Essence hole).",
+	"SR5.WARN_GMOnlyFieldRestored": "{user} changed an implant setting reserved to the GM ({name}, {actor}): the GM's value is put back.",
 	"SR5.SETTINGS_EssenceHole_T": "Essence holes (Chrome Flesh p. 74)",
 	"SR5.SETTINGS_EssenceHole_D": "By default, the Essence of a removed implant stays lost (SR5 p. 53). Optional rule: this hole is credited to the implants installed afterwards, which fill it before costing Essence.",
 	"SR5.SETTINGS_AugmentationBundles_T": "Augmentation bundles (Chrome Flesh p. 96)",

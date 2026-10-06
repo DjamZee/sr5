@@ -8,8 +8,11 @@ import {
   SR5_UtilityItem
 } from "./utilityItem.js"
 import {
-  screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED, installationFlags, stripSystemFields, GM_ONLY_FIELDS
+  screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED, installationFlags, GM_ONLY_FIELDS
 } from "../../system/implant-essence.js"
+import {
+  reservedChangedBy
+} from "../../system/reserved-fields.js"
 import {
   SR5_CharacterUtility 
 } from "../actors/utilityActor.js"
@@ -103,9 +106,12 @@ export class SR5Item extends Item {
   }
 
   async _preUpdate(changes, options, user) {
-    // Chrome Flesh (séance G): the Adapsine box, the lot and Prototype de transhumain's counter are the gamemaster's
-    if (!game.user.isGM && stripSystemFields(changes, GM_ONLY_FIELDS[this.type], this._source.system).length) {
+    // Chrome Flesh (séance G): the Adapsine box, the lot and Prototype de transhumain's counter are the gamemaster's.
+    // Read after the merge, every form of update counts; the whole update is refused. The active GM checks again
+    // what gets through (implant-register.js)
+    if (!game.user.isGM && reservedChangedBy(this._source, changes, GM_ONLY_FIELDS[this.type]).length) {
       ui.notifications?.warn(game.i18n.localize("SR5.WARN_GMOnlyField"))
+      return false
     }
     return super._preUpdate(changes, options, user)
   }

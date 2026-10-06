@@ -107,6 +107,9 @@ import {
 import {
   registerEssenceHoleHooks
 } from './system/essence-hole.js'
+import {
+  registerImplantRegisterHooks
+} from './system/implant-register.js'
 
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
@@ -210,4 +213,6 @@ Hooks.on('canvasReady', () => SR5SharedVision.checkViewers())
 SR5StorageLock.registerHooks()
 // Essence lost to a removed implant (SR5 p. 53, Faille d'Essence CF p. 74): the active GM keeps the hole
 registerEssenceHoleHooks()
+// The reserved implant fields: the active GM puts back what a player's client let through (system/implant-register.js)
+registerImplantRegisterHooks()
 for (const hook of ['createActor', 'deleteActor', 'createToken', 'deleteToken', 'canvasReady']) Hooks.on(hook, sr5HookResetJumpedInRiggers)
