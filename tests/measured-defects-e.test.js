@@ -229,4 +229,11 @@ describe("D3 : Augmentation de densité osseuse contre tous les dommages (SR5 p.
     SR5_CharacterUtility.updateResistances(actor)
     expect(actor.system.resistances.specialDamage.toxin.dicePool).toBe(4)
   })
+  // Grimoire des Ombres p. 105 : « Les attaques de pollution sont traitées comme des attaques de toxine », la radiation aussi
+  it("pollution et radiation : rien, ce sont des attaques de toxine (Grimoire des Ombres p. 105)", () => {
+    const actor = boneDensityActor()
+    SR5_CharacterUtility.updateResistances(actor)
+    expect(actor.system.resistances.specialDamage.pollution.dicePool).toBe(4)
+    expect(actor.system.resistances.specialDamage.radiation.dicePool).toBe(4)
+  })
 })

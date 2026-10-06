@@ -2363,8 +2363,10 @@ export class SR5_CharacterUtility extends Actor {
     let actorData = actor.system, resistances = actorData.resistances, attributes = actorData.attributes
     // The effects put their bonuses "to resist damage" on the physical damage resistance (bone density and bone lacing
     // SR5 p. 458/462, Toughness p. 76, Bear p. 326, skeletal pneumaticity Chrome Flesh p. 167): the book makes them
-    // count against every damage but drugs, toxins and diseases, so the elemental (toxin aside) and fall resistances
-    // take them too. Read before Body and armor are added below.
+    // count against every damage but drugs, toxins and diseases, so the elemental and fall resistances take them too.
+    // Not toxin, nor pollution and radiation: « traitées comme des attaques de toxine » (Street Grimoire p. 105).
+    // Read before Body and armor are added below.
+    const TOXIN_LIKE_ELEMENTS = ["toxin", "pollution", "radiation"]
     const anyDamageModifiers = [...(resistances?.physicalDamage?.modifiers || [])]
 
     // Addiction tests (SR5 p. 415): Body + Willpower when physiological, Logic + Willpower when psychological
@@ -2404,7 +2406,7 @@ export class SR5_CharacterUtility extends Actor {
                   resistances.specialDamage[specialDamage].modifiers = resistances.specialDamage[specialDamage].modifiers.concat(actorData.itemsProperties.armor.modifiers)
                   resistances.specialDamage[specialDamage].modifiers = resistances.specialDamage[specialDamage].modifiers.concat(actorData.itemsProperties.armor.specialDamage[specialDamage].modifiers)
                 }
-                if (specialDamage !== "toxin") resistances.specialDamage[specialDamage].modifiers = resistances.specialDamage[specialDamage].modifiers.concat(anyDamageModifiers)
+                if (!TOXIN_LIKE_ELEMENTS.includes(specialDamage)) resistances.specialDamage[specialDamage].modifiers = resistances.specialDamage[specialDamage].modifiers.concat(anyDamageModifiers)
               }
               SR5_EntityHelpers.updateDicePool(resistances[key][specialDamage], 0)
             }
