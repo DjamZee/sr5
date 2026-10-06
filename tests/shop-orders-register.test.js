@@ -29,15 +29,17 @@ const stranger = {
   id: 'stranger', isGM: false
 }
 
-let settings, buyer
-function makeBuyer(orders, debitAmount) {
+let settings, buyer, serial = 0
+function makeBuyer(orders, debitAmount, createdTime = Date.now()) {
   const items = new Map([['debit', {
-    id: 'debit', type: 'itemNuyen', system: {
+    id: 'debit', type: 'itemNuyen', _stats: {
+      createdTime
+    }, system: {
       type: 'loss', amount: debitAmount
     }
   }]])
   return {
-    uuid: 'Actor.buyer', items, getFlag: () => orders,
+    uuid: `Actor.buyer${++serial}`, items, getFlag: () => orders,
     testUserPermission: user => user.isGM || user.id === 'owner',
   }
 }
@@ -80,7 +82,7 @@ describe('an order of the shop without vendor', () => {
     expect(await registerOrders(buyer, ['o1'], 'debit', owner)).toBe(true)
     const entry = orderLedger().o1
     expect(entry).toMatchObject({
-      paid: 300, quantity: 3, actorUuid: 'Actor.buyer', vendorUuid: null
+      paid: 300, quantity: 3, actorUuid: buyer.uuid, vendorUuid: null
     })
     expect(cancelPlan(order(), entry).refund).toBe(300)
   })
@@ -99,6 +101,25 @@ describe('an order of the shop without vendor', () => {
     })], 1000)
     expect(await registerOrders(buyer, ['o1'], 'debit', owner)).toBe(true)
     expect(await registerOrders(buyer, ['o2'], 'debit', owner)).toBe(false)
+  })
+
+  // Measured in game: once the order was cancelled, its entry left the ledger, and the same debit
+  // entered a forged order again, refunded a second time
+  it('a debit used once stays used after the order is cancelled', async () => {
+    buyer = makeBuyer([order(), order({
+      id: 'o2'
+    })], 300)
+    expect(await registerOrders(buyer, ['o1'], 'debit', owner)).toBe(true)
+    // the cancellation drops the entry
+    settings.sr5ShopOrderLedger = {
+    }
+    expect(await registerOrders(buyer, ['o2'], 'debit', owner)).toBe(false)
+    expect(orderLedger().o2).toBeUndefined()
+  })
+
+  it('an old debit, from an earlier purchase, stands behind nothing', async () => {
+    buyer = makeBuyer([order()], 300, Date.now() - 24 * 3600 * 1000)
+    expect(await registerOrders(buyer, ['o1'], 'debit', owner)).toBe(false)
   })
 
   it('is refused for someone who does not own the buyer, or without a debit', async () => {

@@ -254,6 +254,29 @@ export function registerOrderLedger() {
     default: {
     },
   })
+  game.settings.register('sr5', USED_DEBITS, {
+    scope: 'world',
+    config: false,
+    type: Object,
+    default: {
+    },
+  })
+}
+
+// The debits that already stood behind ledger entries, kept after the entries go (a cancelled order
+// leaves the ledger): a debit used once never stands behind a second purchase
+export const USED_DEBITS = 'sr5ShopOrderDebits'
+
+const PENDING_DEBITS = new Set()
+
+function usedDebits() {
+  try {
+    return game.settings.get('sr5', USED_DEBITS) ?? {
+    }
+  } catch {
+    return {
+    }
+  }
 }
 
 /**
@@ -409,6 +432,15 @@ export function registrationPlan(priced, debited, actorUuid, transactionId) {
   }]))
 }
 
+/** How long after its purchase a debit may stand behind its orders: the request follows it at once. */
+export const DEBIT_FRESHNESS = 2 * 60 * 1000
+
+/** Whether a debit created at `createdTime` (ms, set by the server) is the purchase being entered. */
+export function debitIsFresh(createdTime, now) {
+  const created = Number(createdTime)
+  return Number.isFinite(created) && created > 0 && now - created >= -5000 && now - created <= DEBIT_FRESHNESS
+}
+
 /** What an order costs at the catalogue, read on the GM's browser: null when its item is gone. */
 async function catalogueCost(order) {
   let source = null
@@ -438,8 +470,12 @@ export async function registerOrders(actor, ids, transactionId, requester) {
   const ledger = orderLedger()
   const debit = actor.items?.get(transactionId)
   if (!debit || debit.type !== 'itemNuyen' || debit.system?.type !== 'loss') return false
+  // The debit of this very purchase: created just now, by the server's clock (an older one, from
+  // before the ledger kept the used debits, would stand behind a forged order)
+  if (!debitIsFresh(debit._stats?.createdTime, Date.now())) return false
   // One purchase, one entry: a transaction already used stands behind nothing more
-  if (Object.values(ledger).some(entry => entry?.transactionId === transactionId)) return false
+  const debitKey = `${actor.uuid}.${transactionId}`
+  if (usedDebits()[debitKey] || Object.values(ledger).some(entry => entry?.transactionId === transactionId)) return false
   const orders = ordersOf(actor).filter(o => (ids ?? []).includes(o.id) && !(o.id in ledger))
   if (!orders.length) return false
   const priced = []
@@ -452,6 +488,12 @@ export async function registerOrders(actor, ids, transactionId, requester) {
   }
   const entries = registrationPlan(priced, debit.system.amount, actor.uuid, transactionId)
   if (!entries) return false
+  // Marked used first, with nothing awaited since the test: a second request arriving meanwhile finds it spent
+  if (usedDebits()[debitKey] || PENDING_DEBITS.has(debitKey)) return false
+  PENDING_DEBITS.add(debitKey)
+  await game.settings.set('sr5', USED_DEBITS, {
+    ...usedDebits(), [debitKey]: true
+  })
   await ledgerOrders(entries)
   return true
 }
