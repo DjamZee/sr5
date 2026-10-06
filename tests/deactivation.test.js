@@ -250,16 +250,14 @@ describe("The player rolls, the GM counts again (arbitrage de DjamZ, 2026-10-06)
     })
   })
 
-  it("believes at most the limit, or twice the pool when the 6s explode", () => {
+  it("believes at most the limit, or the pool plus the Edge rating when the 6s explode", () => {
     expect(hitsCap({
       dicePool: 9, limit: 6
     })).toBe(6)
     expect(hitsCap({
       dicePool: 4, limit: 6
     })).toBe(4)
-    expect(hitsCap({
-      dicePool: 12, limit: null
-    })).toBe(24)
+    expect(hitsCap(gmPool(tm(), "charisma", 0, true))).toBe(15)
   })
 
   it("never keeps more hits than the pool the GM works out, whatever the card says", () => {

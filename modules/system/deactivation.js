@@ -115,11 +115,12 @@ export function gmPool(actor, method, modifier, pushed){
   }
 }
 
-// The most hits the GM can believe: the limit without Edge; with Edge the 6s explode, and the hits are bounded at
-// twice the pool (beyond, the odds are nil). The GM can always count fewer
+// The most hits the GM can believe: the limit without Edge. With Edge the 6s explode: the pool plus the Edge rating
+// again leaves room for the rerolls of a small pool, and a forged card no room to speak of (more hits than dice from
+// exploding 6s is all but impossible past a few dice). The GM can always count fewer
 export function hitsCap(pool){
   const dice = Math.max(0, num(pool?.dicePool))
-  return pool?.limit ? Math.min(dice, num(pool.limit)) : dice * 2
+  return pool?.limit ? Math.min(dice, num(pool.limit)) : dice + Math.max(0, num(pool?.edge))
 }
 
 export function boundHits(announced, pool){
