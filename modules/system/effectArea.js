@@ -350,8 +350,11 @@ export class SR5_EffectArea {
     const cast = message?.flags?.sr5data
     //checkEffectCard believes a card the GM wrote: here the cast must be one a player rolled with this item
     if (cast && message.author && !message.author.isGM && cast.owner?.itemUuid === templateData.itemUuid) {
+      //A cast card has no net hits of its own (nothing opposes the spell yet): they are its hits
       roll = await SR5_ActorHelper.checkEffectCard({
-        ...cast, owner: {
+        ...cast, roll: {
+          ...cast.roll, netHits: cast.roll?.netHits ?? cast.roll?.hits
+        }, owner: {
           ...cast.owner, messageId: message.id
         }
       }, sourceItem)

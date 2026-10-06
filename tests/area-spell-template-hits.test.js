@@ -133,12 +133,15 @@ describe("SR5_EffectArea.createTemplateEffect, a spell's hits", () => {
   }
 
   it("applies the hits counted on the card's dice, not the ones raised on the item", async () => {
+    //A cast card has no net hits
+    delete message.flags.sr5data.roll.netHits
     await SR5_EffectArea.createTemplateEffect({
       id: "tok"
     }, template)
     expect(confirm).toHaveBeenCalledOnce()
     expect(target.applyExternalEffect).toHaveBeenCalledOnce()
     expect(target.applyExternalEffect.mock.calls[0][0].roll.hits).toBe(2)
+    expect(target.applyExternalEffect.mock.calls[0][0].roll.netHits).toBe(2)
     expect(ui.notifications.warn).toHaveBeenCalled()
   })
 
