@@ -260,7 +260,7 @@ describe("le MJ applique Soins pour une joueuse", () => {
       }
     }, "customEffects")
     expect(grunt.update).toHaveBeenCalled()
-    expect(grunt.update.mock.calls[0][0].system.conditionMonitors.condition.actual.base).toBe(1)
+    expect(grunt.update.mock.calls[0][0]["system.conditionMonitors.condition.actual.base"]).toBe(1)
   })
   it("carte d'un sort qui ne soigne pas : rien", async () => {
     globalThis.fromUuid = async () => ({
