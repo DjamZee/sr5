@@ -8,7 +8,7 @@ import {
   unitKey
 } from "./drug-phase.js"
 import {
-  drugHasCrash
+  drugHasCrash, drugCrashIsInstant
 } from "./drug-stat.js"
 
 // The crash of a drug, "the negative effects that follow the effect of the drug" (Chrome Flesh p. 194).
@@ -44,16 +44,29 @@ export async function startDrugCrash(data, actor) {
   if (shot.unresistedStunDamage) {
     let damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
     damageInfo.damage.value = shot.unresistedStunDamage
-    damageInfo.damage.type = "stun"
+    damageInfo.damage.type = crashDamageType(shot)
     actor.takeDamage(damageInfo)
   }
   if (shot.resistedStunDamage) {
     let damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
     damageInfo.damage.value = shot.resistedStunDamage
-    damageInfo.damage.type = "stun"
+    damageInfo.damage.type = crashDamageType(shot)
     damageInfo.damage.resistanceType = "physicalDamage"
     actor.rollTest("resistanceCard", null, damageInfo)
   }
+  //A crash that is only damage is over once it is taken (drug-stat.js)
+  if (drugCrashIsInstant(data)) {
+    data.wirelessTurnedOn = false
+    data.phase = ""
+    data.interact = false
+    data.onUse.contrecoup = ""
+  }
+}
+
+//Chrome Flesh p. 197, interaction 11 to 13: "the crashes deal Physical damage rather than Stun", noted on the drug
+//(handleShot.crashPhysical) until its crash
+export function crashDamageType(shot) {
+  return shot?.crashPhysical ? "physical" : "stun"
 }
 
 // The gamemaster puts a drug back to "not taken", without crash, damage nor effect: it corrects a mistake

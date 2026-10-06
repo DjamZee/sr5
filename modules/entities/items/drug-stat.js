@@ -92,6 +92,17 @@ export function drugInteractionModifier(qualities){
   return street - (allCustom ? 1 : 0)
 }
 
+// A crash that is only damage (Cram, "Crash: 6S", SR5 p. 412; Hurlg, Chrome Flesh p. 187): no duration, no effect
+// of the crash. The book gives it no length: it is over once its damage is taken (Liesel's D3, such a drug stayed
+// in its crash for ever and was rolled in every interaction after it, Chrome Flesh p. 196)
+export function drugCrashIsInstant(data){
+  const shot = data?.handleShot ?? {
+  }
+  if (Number(shot.durationContrecoup) > 0) return false
+  return !Object.values(data?.customEffects ?? {
+  }).some(e => e && typeof e === "object" && effectPhase(e) === "crash")
+}
+
 // A drug has a crash when its stat gives it a duration or damage, or when one of its effects applies then
 export function drugHasCrash(data){
   const shot = data.handleShot ?? {

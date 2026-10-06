@@ -495,9 +495,11 @@ describe('drug interactions (Chrome Flesh p. 197)', () => {
     for (const id of ['cram', 'jazz']) {
       const d = written(actor, id)
       expect(d.system.isActive).toBe(false)
-      expect(d.system.wirelessTurnedOn).toBe(true)
       expect(d.system.onUse.duration).toBe('')
     }
+    //The Jazz crash lasts; the Cram's is only its damage, over once taken (Liesel's D3)
+    expect(written(actor, 'jazz').system.wirelessTurnedOn).toBe(true)
+    expect(written(actor, 'cram').system.wirelessTurnedOn).toBe(false)
     expect(written(actor, 'jazz').system.onUse.contrecoup).toBe('30 SR5.Minutes')
     // the crash damage of Cram applies once; Bliss, already in its crash, does not start it again
     expect(actor.takeDamage).toHaveBeenCalledTimes(1)
@@ -529,6 +531,24 @@ describe('drug interactions (Chrome Flesh p. 197)', () => {
   it.each([2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13])('on %i, inflicts no 10P', async (total) => {
     const actor = await interactionDamage(total)
     expect(actor.rollTest).not.toHaveBeenCalled()
+  })
+
+  //Liesel's D5: the crashes to come deal Physical damage, the drug being taken included
+  it.each([11, 12, 13])('on %i, marks the crashes to come as Physical', async (total) => {
+    rollTotals(30, total)
+    const cram = drugItem('cram', 'Cram', 'cram', {
+      isActive: true,
+      handleShot: {
+        name: 'cram', duration: 9, durationType: 'hour', unresistedStunDamage: 6
+      },
+    })
+    const {
+      actor, sheet
+    } = drugSheet([cram, drugItem('jazz', 'Jazz', 'jazz')])
+    await take(sheet, 'jazz')
+    expect(written(actor, 'cram').system.handleShot.crashPhysical).toBe(true)
+    expect(written(actor, 'jazz').system.handleShot.crashPhysical).toBe(true)
+    expect(ui.notifications.info.mock.calls.map(c => c[0]).join(' | ')).toContain('SR5.DrugCrashPhysical')
   })
 
   it('on 14, inflicts 10P resisted', async () => {

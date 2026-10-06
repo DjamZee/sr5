@@ -75,7 +75,7 @@ import {
   addictionWeeks, focusAddictionRating
 } from "../../rolls/roll-helpers/addiction.js"
 import {
-  warnDrugWithoutStat, drugAddictionThreshold, drugInteractionModifier, effectiveDrugQuality
+  warnDrugWithoutStat, drugAddictionThreshold, drugInteractionModifier, effectiveDrugQuality, drugCrashIsInstant
 } from "../items/drug-stat.js"
 import {
   reagentSystem, hasTiers
@@ -1469,7 +1469,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 					
           // Generate the drug stat from the drug systemEffect: durations read the augmented Body and the
           // Essence, prepared values that the copy of system (its source) does not hold
-          drug = drugType ? await SR5_CharacterUtility.handleDrugShots(item, drugType, actor.system) : null
+          drug = drugType ? await SR5_CharacterUtility.handleDrugShots(item, drugType, actor.system, actor) : null
 
           // Without a stat (no drug systemEffect, or a key the system does not know), nothing is counted: the GM
           // is told, instead of a drug that silently never ends
@@ -1496,7 +1496,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
             //Chrome Flesh p. 196: an interaction comes from taking a drug while under the effect (or the crash) of
             //ANOTHER one. The drug being taken is left out: retaken during its own crash, it is not another drug,
             //and it would otherwise be counted twice in the mix, doubled twice and rolled one die too many
-            let interactionDrug = actor.items.filter((d) => d.type === "itemDrug" && d.id !== item._id && (d.system.isActive || d.system.wirelessTurnedOn))
+            //A crash that is only damage is over (drug-stat.js): one left in it before is not in the mix (Liesel's D3)
+            let interactionDrug = actor.items.filter((d) => d.type === "itemDrug" && d.id !== item._id && (d.system.isActive || (d.system.wirelessTurnedOn && !drugCrashIsInstant(d.system))))
             if (interactionDrug.length > 0) {
               let roll, interactionDiceResult, drugs = []
               roll = new Roll(`${interactionDrug.length}d6`)
@@ -1522,7 +1523,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
               switch(interactionTotal){
                 case 1:
                   //Chrome Flesh p. 197: the durations of all the drugs are doubled
-                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.toString().replace(",", ", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugDurationDoubled")}`)
+                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.join(", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugDurationDoubled")}`)
 
                   for (let d of mixedDrugs){
                     let shot = d.system.handleShot
@@ -1536,12 +1537,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                 case 2:
                 case 3:
                 case 4:
-                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.toString().replace(",", ", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugNoInteractEffect")}`)
+                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.join(", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugNoInteractEffect")}`)
                   break
                 case 5:
                 case 6:
                   //Chrome Flesh p. 197: the durations of all the crashes are doubled
-                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.toString().replace(",", ", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugContrecoupDurationDoubled")}`)
+                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.join(", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugContrecoupDurationDoubled")}`)
 
                   for (let d of mixedDrugs){
                     let shot = d.system.handleShot
@@ -1555,14 +1556,14 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                 case 9: {
                   //Chrome Flesh p. 197: the crashes start immediately, for every drug of the mix still under
                   //effect, the one being taken included. A drug already in its crash does not start it again
-                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.toString().replace(",", ", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugCrashImmediate")}`)
+                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.join(", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugCrashImmediate")}`)
                   for (let d of mixedDrugs){
                     if (d.system.isActive) await this._startDrugCrash(d, actor)
                   }
                   break
                 }
                 case 10:
-                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")}${game.i18n.format("SR5.Colons")} ${drugs.toString().replace(",", ", ")}`)
+                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")}${game.i18n.format("SR5.Colons")} ${drugs.join(", ")}`)
                   damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
                   damageInfo.damage.value = 10
                   damageInfo.damage.type = "stun"
@@ -1571,11 +1572,17 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                 case 11:
                 case 12:
                 case 13:
-                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")}${game.i18n.format("SR5.Colons")} ${drugs.toString().replace(",", ", ")} ${interactionTotal}`)
+                  //Chrome Flesh p. 197: the crashes deal Physical damage rather than Stun, noted on each drug of the
+                  //mix whose crash is still to come, the one being taken included (drug-crash.js)
+                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")} ${drugs.join(", ")}${game.i18n.format("SR5.Colons")} ${game.i18n.format("SR5.DrugCrashPhysical")}`)
+                  itemData.handleShot.crashPhysical = true
+                  for (let d of mixedDrugs.slice(1)){
+                    if (d.system.isActive && d.system.handleShot) d.system.handleShot.crashPhysical = true
+                  }
                   break
                 default:
                   console.log(interactionTotal)
-                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")}${game.i18n.format("SR5.Colons")} ${drugs.toString().replace(",", ", ")}`)
+                  await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")}${game.i18n.format("SR5.Colons")} ${drugs.join(", ")}`)
                   damageInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
                   damageInfo.damage.value = 10
                   damageInfo.damage.type = "physical"

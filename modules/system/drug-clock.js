@@ -6,6 +6,9 @@ import {
   endDrugRise, resetDrugPhase
 } from "../entities/items/drug-crash.js"
 import {
+  drugCrashIsInstant
+} from "../entities/items/drug-stat.js"
+import {
   SR5_SystemHelpers
 } from "./utilitySystem.js"
 import {
@@ -51,7 +54,8 @@ export function phaseEnd(system, flags){
   }
   if (system?.phase === "crash"){
     const start = flags?.crashStart
-    const d = durationSeconds(shot.durationContrecoup, shot.durationContrecoupType)
+    //A crash that is only damage ends as it starts: a drug left in it before (Liesel's D3) gets its card at once
+    const d = drugCrashIsInstant(system) ? 0 : durationSeconds(shot.durationContrecoup, shot.durationContrecoupType)
     if (!Number.isFinite(start) || d === null) return null
     return start + d
   }
