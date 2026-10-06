@@ -83,8 +83,10 @@ export function suggestedCoreBoxes(cardData, bound = 50){
 }
 
 // The most damage the attacker could deal, worked out by the GM from the attacker's sheet: its Attack, plus the
-// largest pool of its matrix actions as the most net hits it could score (SR5 p. 228: DV = Attack + net hits). Edge
-// aside, no real attack goes beyond it; no attacker found, no box
+// largest pool of its matrix actions as the most net hits it could score, plus 2 per mark, three marks at most
+// (SR5 p. 242, Data Spike; relecture de Dirk). Edge aside, no real attack goes beyond it; no attacker found, no box
+export const MARK_BONUS_MAX = 6
+
 export function attackBound(attacker){
   if (!attacker) return 0
   const matrix = attacker.system?.matrix
@@ -92,7 +94,7 @@ export function attackBound(attacker){
   }).map(a => num(a?.test?.dicePool))
   //An ICE rolls its own attack pool (rollData-IceAttack.js)
   pools.push(num(matrix?.ice?.attackDicepool))
-  return Math.min(50, Math.max(0, num(matrix?.attributes?.attack?.value) + Math.max(0, ...pools)))
+  return Math.min(50, Math.max(0, num(matrix?.attributes?.attack?.value) + Math.max(0, ...pools) + MARK_BONUS_MAX))
 }
 
 // The Core after some boxes: never beyond the monitor; the boxes beyond it are the overflow (Data Trails p. 161)
@@ -455,9 +457,28 @@ export function isCardTarget(actor){
 // The strain is the GM's choice (Dark Terrors p. 91): the owner of a Monad, its enemy's host, must not switch it to
 // escape a dissipation or the loss of its Core (relecture de Dirk). Refused on the player's client, and undone by the
 // active GM if an update gets through anyway (a console can bypass a client hook)
-export function strainChangeRefused(user, changes){
-  return !user?.isGM && foundry.utils.hasProperty(changes ?? {
+// A change, not the mere presence of the key: an update sending the whole device (a monitor box clicked on the item
+// sheet, a mark deleted) carries the strain unchanged, and must pass (relecture de Dirk, second tour)
+export function strainChangeRefused(user, changes, current){
+  if (user?.isGM) return false
+  const sent = foundry.utils.getProperty(changes ?? {
   }, "system.strain")
+  if (sent === undefined) return false
+  return strainOf({
+    system: {
+      strain: sent
+    }
+  }) !== strainOf({
+    system: {
+      strain: current
+    }
+  })
+}
+
+// What the active GM sees after an update: the server's difference, where the strain shows only when it changed
+export function strainChangedByPlayer(user, changes){
+  return !user?.isGM && foundry.utils.getProperty(changes ?? {
+  }, "system.strain") !== undefined
 }
 
 // Only two strains: the one before a refused change is the other one
@@ -470,13 +491,13 @@ export function strainBefore(changed){
 }
 
 function refuseStrain(item, changes){
-  if (item?.type !== "itemDevice" || !strainChangeRefused(game.user, changes)) return
+  if (item?.type !== "itemDevice" || !strainChangeRefused(game.user, changes, item._source?.system?.strain)) return
   ui.notifications.warn(game.i18n.localize("SR5.MONAD_StrainGMOnly"))
   return false
 }
 
 async function undoStrain(item, changes, userId){
-  if (!isActiveGM() || item?.type !== "itemDevice" || !strainChangeRefused(game.users.get(userId), changes)) return
+  if (!isActiveGM() || item?.type !== "itemDevice" || !strainChangedByPlayer(game.users.get(userId), changes)) return
   await item.update({
     "system.strain": strainBefore(foundry.utils.getProperty(changes, "system.strain"))
   })

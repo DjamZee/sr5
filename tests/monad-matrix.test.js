@@ -1,5 +1,5 @@
 import {
-  describe, it, expect, vi, afterEach
+  describe, it, expect, vi, afterEach, beforeEach
 } from "vitest"
 
 const lookup = vi.hoisted(() => ({
@@ -15,41 +15,90 @@ import {
   monitorSize, corePenalty, activeHeadcase, strainOf, isOriginalStrainMonad, suggestedCoreBoxes, coreAfterDamage,
   authorMayActFor, addMonadCoreButton, coreDissipationPool, naniteLossOnDissipation, sleepHours, mentalLoss,
   baseAfterLoss, naniteBaseAfterLoss, surplusHint, activateMonadListeners, MENTAL_ATTRIBUTES, strainChangeRefused,
-  strainBefore, isCardTarget, attackBound
+  strainBefore, isCardTarget, attackBound, strainChangedByPlayer
 } from "../modules/system/monad-matrix.js"
 
 describe("The strain is the GM's choice (relecture de Dirk)", () => {
   const hasProperty = foundry.utils.hasProperty
+  beforeEach(() => {
+    foundry.utils.hasProperty = (o, k) => foundry.utils.getProperty(o, k) !== undefined
+  })
   afterEach(() => {
     foundry.utils.hasProperty = hasProperty
   })
 
   it("refuses a strain change from anybody but a GM, and nothing else", () => {
-    foundry.utils.hasProperty = (o, k) => foundry.utils.getProperty(o, k) !== undefined
+    const sent = (strain) => ({
+      system: {
+        strain
+      }
+    })
     expect(strainChangeRefused({
       isGM: false
-    }, {
-      system: {
-        strain: "lockdown"
-      }
-    })).toBe(true)
-    expect(strainChangeRefused(null, {
-      system: {
-        strain: "lockdown"
-      }
-    })).toBe(true)
+    }, sent("lockdown"), "darkTerrors")).toBe(true)
+    expect(strainChangeRefused(null, sent("lockdown"), "darkTerrors")).toBe(true)
     expect(strainChangeRefused({
       isGM: true
-    }, {
-      system: {
-        strain: "lockdown"
-      }
-    })).toBe(false)
+    }, sent("lockdown"), "darkTerrors")).toBe(false)
     expect(strainChangeRefused({
       isGM: false
     }, {
       system: {
         isActive: false
+      }
+    }, "darkTerrors")).toBe(false)
+  })
+
+  it("lets a player click a monitor box on the item sheet, which sends the whole device (relecture de Dirk, 2e tour)", () => {
+    //itemSheet.js sends foundry.utils.duplicate(this.item): the strain travels with the box, unchanged
+    const box = (strain) => ({
+      system: {
+        type: "cyberdeck", strain, conditionMonitors: {
+          matrix: {
+            actual: {
+              base: 3
+            }
+          }
+        }
+      }
+    })
+    expect(strainChangeRefused({
+      isGM: false
+    }, box("lockdown"), "lockdown")).toBe(false)
+    expect(strainChangeRefused({
+      isGM: false
+    }, box("darkTerrors"), "darkTerrors")).toBe(false)
+    //A device made before the field existed reads as Lockdown
+    expect(strainChangeRefused({
+      isGM: false
+    }, box("lockdown"), undefined)).toBe(false)
+    //The same whole device with the strain switched is refused
+    expect(strainChangeRefused({
+      isGM: false
+    }, box("lockdown"), "darkTerrors")).toBe(true)
+  })
+
+  it("has the GM put back a strain only when the server says it changed", () => {
+    expect(strainChangedByPlayer({
+      isGM: false
+    }, {
+      system: {
+        strain: "lockdown"
+      }
+    })).toBe(true)
+    expect(strainChangedByPlayer({
+      isGM: false
+    }, {
+      system: {
+        conditionMonitors: {
+        }
+      }
+    })).toBe(false)
+    expect(strainChangedByPlayer({
+      isGM: true
+    }, {
+      system: {
+        strain: "lockdown"
       }
     })).toBe(false)
   })
@@ -89,8 +138,8 @@ describe("The strain is the GM's choice (relecture de Dirk)", () => {
         }
       }
     }
-    expect(attackBound(hacker)).toBe(17)
-    expect(attackBound(ice)).toBe(15)
+    expect(attackBound(hacker)).toBe(23)
+    expect(attackBound(ice)).toBe(21)
     expect(attackBound(null)).toBe(0)
     const forged = {
       damage: {
@@ -99,7 +148,7 @@ describe("The strain is the GM's choice (relecture de Dirk)", () => {
         }
       }
     }
-    expect(suggestedCoreBoxes(forged, attackBound(hacker))).toBe(17)
+    expect(suggestedCoreBoxes(forged, attackBound(hacker))).toBe(23)
     expect(suggestedCoreBoxes(forged, attackBound(null))).toBe(0)
   })
 
