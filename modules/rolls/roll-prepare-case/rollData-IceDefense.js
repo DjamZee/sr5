@@ -25,7 +25,7 @@ export function iceAttackHits({
 
 // The IC attack card behind the defense, read again from the chat log, never from the button's data: a card a GM wrote,
 // or an owner of the IC, of an IC attack. A card written by anyone else (a player's copy of the GM's card, its hits
-// changed) is refused. The GM confirms the hits of a player's card. null when refused or declined
+// changed) is refused. The GM confirms the hits of a player's card. null when refused, false when the GM declines
 export async function trustedIceAttack(chatData){
   const card = SR5_MiscellaneousHelpers.cardOf(chatData?.owner?.messageId)
   const ice = card?.roller
@@ -45,7 +45,7 @@ export async function trustedIceAttack(chatData){
       })}</p>`,
       rejectClose: false,
     }).catch(() => false)
-    if (!confirmed) return null
+    if (!confirmed) return false
   }
   return {
     card, ice, hits
@@ -57,6 +57,7 @@ export default async function iceDefense(rollData, actor, chatData){
       actor.type !== "actorAgent" && actor.type !== "actorSprite") return void ui.notifications.warn(game.i18n.localize('SR5.WARN_InvalidActorType'))
 
   const attack = await trustedIceAttack(chatData)
+  if (attack === false) return void ui.notifications.warn(game.i18n.localize("SR5.IceAttackDeclined"))
   if (!attack) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_IceAttackCardRefused"))
   //What the defense reads on the IC comes from its sheet, not from the card
   const iceMatrix = attack.ice.system.matrix

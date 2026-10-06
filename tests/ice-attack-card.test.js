@@ -187,6 +187,8 @@ describe('defense against an IC attack card', () => {
     expect(data.previousMessage.hits).toBe(6)
     confirm.mockResolvedValue(false)
     expect(await iceDefense(rollData(), defender, clicked)).toBeUndefined()
+    // Declined by the GM, not refused for its author (Gaston)
+    expect(ui.notifications.warn).toHaveBeenLastCalledWith('SR5.IceAttackDeclined')
   })
 
   it('starts the DV at the IC\'s Attack, read on its sheet (M2-1, SR5 p. 250)', async () => {

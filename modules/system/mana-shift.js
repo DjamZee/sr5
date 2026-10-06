@@ -4,19 +4,22 @@ import {
 import {
   SR5_MiscellaneousHelpers
 } from "../rolls/roll-helpers/miscellaneous.js"
+import {
+  consumedKey
+} from "../rolls/roll-helpers/socket-guard.js"
 
 // The ritual a resistance card stands for, read again from the chat log, never from the button's data: a ritual
-// resistance card a GM wrote or an owner of the actor that rolled it, of a Mana Flux / Mana Ebb named by the ritual item
-// itself, and a whole Force above 0. null when refused
+// resistance card a GM wrote (its button is a GM's action: a real one is always the GM's; Gaston's review), of a Mana
+// Flux / Mana Ebb named by the ritual item itself, and a whole Force above 0. null when refused
 export async function manaShiftOf(messageId){
   const card = SR5_MiscellaneousHelpers.cardOf(messageId)
-  if (!card || card.data.test?.type !== "ritualResistance") return null
+  if (!card?.byGM || card.data.test?.type !== "ritualResistance") return null
   const ritual = card.data.owner?.itemUuid ? await fromUuid(card.data.owner.itemUuid) : null
   const kind = manaShiftKind(ritual?.name)
   const force = Number(card.data.magic?.force)
   if (!kind || !Number.isInteger(force) || force < 1) return null
   return {
-    kind, force, name: ritual.name, sceneId: game.messages.get(card.id)?.speaker?.scene
+    kind, force, name: ritual.name, sceneId: game.messages.get(card.id)?.speaker?.scene, key: consumedKey(card.id, "manaShift")
   }
 }
 
@@ -32,6 +35,15 @@ export async function applyManaShift(cardData, messageId){
   const shift = await manaShiftOf(messageId)
   if (!shift) {
     ui.notifications.warn(game.i18n.localize("SR5.ManaShiftCardRefused"))
+    return false
+  }
+  //A card applies once: the active GM's ledger of spent cards keeps it (a second click, a copy of the button)
+  if (!game.users?.activeGM?.isSelf) {
+    ui.notifications.warn(game.i18n.localize("SR5.ManaShiftActiveGMOnly"))
+    return false
+  }
+  if (SR5_MiscellaneousHelpers.isConsumed(shift.key)) {
+    ui.notifications.warn(game.i18n.localize("SR5.ManaShiftAlreadyApplied"))
     return false
   }
   const scene = game.scenes.get(shift.sceneId) ?? canvas.scene
@@ -50,6 +62,10 @@ export async function applyManaShift(cardData, messageId){
     rejectClose: false,
   }).catch(() => false)
   if (!confirmed) return false
+  if (!(await SR5_MiscellaneousHelpers.consume(shift.key))) {
+    ui.notifications.warn(game.i18n.localize("SR5.ManaShiftAlreadyApplied"))
+    return false
+  }
   const base = clampBackgroundCount(scene.flags.sr5?.backgroundCountValue)
   if (!manaShiftPossible(shift.kind, base)) {
     //The ritual fails: the participants still resist the Drain, as on the card

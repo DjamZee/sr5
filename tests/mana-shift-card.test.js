@@ -24,12 +24,14 @@ const ritual = {
   name: 'Flux mana'
 }
 
+// Each card its own id: the ledger of spent cards outlives a test
+let cards = 0
 function card({
-  type = 'ritualResistance', force = 4
+  type = 'ritualResistance', force = 4, byGM = true
 } = {
 }) {
   return {
-    id: 'res', byGM: true, data: {
+    id: `res${++cards}`, byGM, data: {
       test: {
         type
       }, magic: {
@@ -52,8 +54,21 @@ const forged = {
 
 beforeEach(() => {
   vi.restoreAllMocks()
-  game.user = {
-    id: 'gm', isGM: true
+  const gm = {
+    id: 'gm', isGM: true, isSelf: true
+  }
+  game.user = gm
+  game.users = {
+    activeGM: gm
+  }
+  const store = {
+  }
+  game.settings = {
+    get: (s, k) => store[k],
+    set: async (s, k, v) => {
+      store[k] = JSON.parse(JSON.stringify(v))
+      return v
+    },
   }
   game.time = {
     worldTime: 1000
@@ -70,7 +85,7 @@ beforeEach(() => {
     get: id => (id === 'scene1' ? scene : undefined)
   }
   game.messages = {
-    get: id => (id === 'res' ? {
+    get: id => (String(id).startsWith('res') ? {
       speaker: {
         scene: 'scene1'
       }
@@ -123,6 +138,43 @@ describe('Mana Flux / Mana Ebb applied by the GM (M5 D1)', () => {
     expect(sources).toEqual([{
       id: 'id1', kind: 'flux', name: 'Flux mana', force: 4, expires: 1000 + 4 * 3600
     }])
+  })
+
+  it('refuses the card of an owner of the leader: a real ritual resistance card is always the GM\'s (Gaston)', async () => {
+    vi.spyOn(SR5_MiscellaneousHelpers, 'cardOf').mockReturnValue(card({
+      byGM: false
+    }))
+    expect(await applyManaShift(forged, 'res')).toBe(false)
+    expect(confirm).not.toHaveBeenCalled()
+    expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.ManaShiftCardRefused')
+  })
+
+  it('applies a card once: a second click is refused without asking', async () => {
+    vi.spyOn(SR5_MiscellaneousHelpers, 'cardOf').mockReturnValue(card())
+    expect(await applyManaShift(forged, 'res')).toBe(true)
+    expect(await applyManaShift(forged, 'res')).toBe(false)
+    expect(confirm).toHaveBeenCalledTimes(1)
+    expect(scene.update).toHaveBeenCalledTimes(1)
+    expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.ManaShiftAlreadyApplied')
+  })
+
+  it('leaves the card to the active GM', async () => {
+    vi.spyOn(SR5_MiscellaneousHelpers, 'cardOf').mockReturnValue(card())
+    game.users.activeGM = {
+      id: 'gm2', isSelf: false
+    }
+    expect(await applyManaShift(forged, 'res')).toBe(false)
+    expect(confirm).not.toHaveBeenCalled()
+  })
+
+  it('writes nothing when the GM declines, and the card stays usable', async () => {
+    const declined = card()
+    vi.spyOn(SR5_MiscellaneousHelpers, 'cardOf').mockReturnValue(declined)
+    confirm.mockResolvedValue(false)
+    expect(await applyManaShift(forged, 'res')).toBe(false)
+    expect(scene.update).not.toHaveBeenCalled()
+    confirm.mockResolvedValue(true)
+    expect(await applyManaShift(forged, 'res')).toBe(true)
   })
 
   it('writes nothing when the GM declines', async () => {
