@@ -53,7 +53,7 @@ function _characterDefaultLayout() {
         ]),
         _tab('Magic', 'magic', [
           _block('magicUserType'), _block('adeptPowerPoint'),
-          _block('tradition'), _block('astral'), _block('reagents'),
+          _block('tradition'), _block('astral'), _block('reagents'), _block('spiritReputation'),
         ]),
         _tab('Matrix', 'matrix', [
           _block('matrixDevice'), _block('matrixSilentMode'),

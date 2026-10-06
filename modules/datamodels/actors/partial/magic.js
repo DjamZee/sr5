@@ -87,6 +87,27 @@ export class magicPartialModel extends foundry.abstract.TypeDataModel {
         mentorMask: new fields.BooleanField({
           initial: false
         }),
+        // Spirit Index and Astral Reputation (Street Grimoire p. 207), Wild Index and Wild Reputation (Forbidden
+        // Arcana p. 169-170): the indexes and the adjustment are typed in by the gamemaster, the reputations derived
+        spiritIndex: new fields.NumberField({
+          initial: 0
+        }),
+        astralReputationAdjustment: new fields.NumberField({
+          initial: 0
+        }),
+        astralReputation: new fields.NumberField({
+          initial: 0
+        }),
+        wildIndex: new fields.NumberField({
+          initial: 0
+        }),
+        wildReputation: new fields.NumberField({
+          initial: 0
+        }),
+        // Hermetic elementalist (Forbidden Arcana p. 175): every spirit he summons has the Elemental trait
+        hermeticElementalist: new fields.BooleanField({
+          initial: false
+        }),
         hasAstralProjection: new fields.BooleanField({
           initial: false
         }),

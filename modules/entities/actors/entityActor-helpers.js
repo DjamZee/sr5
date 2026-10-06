@@ -773,6 +773,8 @@ export class SR5_ActorHelper {
         "system.type": itemData.type,
         "system.force.base": itemData.itemRating,
         "system.isBounded": itemData.isBounded,
+        "system.isElemental": itemData.isElemental,
+        "system.leashTight": itemData.leashTight,
         "system.services.value": itemData.services.value,
         "system.services.max": itemData.services.max,
         "system.summonerMagic": itemData.summonerMagic,
@@ -1130,6 +1132,8 @@ export class SR5_ActorHelper {
         modifiedItem.system.conditionMonitors.stun.actual = actor.system.conditionMonitors.stun.actual
       }
       modifiedItem.system.isBounded = actor.system.isBounded
+      modifiedItem.system.isElemental = actor.system.isElemental
+      modifiedItem.system.leashTight = actor.system.leashTight
       modifiedItem.system.isCreated = false
       modifiedItem.system.powers = powers 
       if (actor.img != "systems/sr5/assets/img/actors/actorSpirit.svg" && modifiedItem.system.gameEffect.includes(actor.img) === false) {

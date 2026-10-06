@@ -89,6 +89,8 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     // Faction Reputation (Cutting Aces p. 157): read here, written by the gamemaster's window only
     context.factionStanding = SR5FactionRegistry.standing(this.actor.id)
     context.isGM = game.user.isGM
+    // Spirit Domination (Forbidden Arcana p. 176), optional rule: the leash toggle of the summoned spirits
+    context.leashRule = game.settings.get("sr5", "spiritLeash")
 
     return context
   }

@@ -103,6 +103,11 @@
         </div>
     {{/if}}
 
+    <!-- ASTRAL REPUTATION -->
+    {{#if magic.astralReputationMod}}
+        {{> systems/sr5/templates/rolls/rollDialogPartial/astralReputation.hbs}}
+    {{/if}}
+
     <!-- SPIRIT AID -->
     {{#if dialogSwitch.spiritAid}}
         {{> systems/sr5/templates/rolls/rollDialogPartial/spiritAidModifier.hbs}}

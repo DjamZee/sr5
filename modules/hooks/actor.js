@@ -2,6 +2,9 @@ import {
   SR5_CharacterUtility
 } from "../entities/actors/utilityActor.js"
 import {
+  GM_ONLY_ACTOR_PATHS, stripGMOnlyChanges
+} from "../entities/items/spirit-bonds.js"
+import {
   SR5_ActorHelper
 } from "../entities/actors/entityActor-helpers.js"
 import {
@@ -47,6 +50,12 @@ export async function sr5HookCreateActor(actor) {
 // leaves them alone; only an update that means to change them (a hacker who reboots, the AI that reboots) goes through.
 export function sr5HookPreUpdateActor(document, changes, options = {
 }) {
+  //Indexes, reputation adjustment and spirit traits are the gamemaster's (Street Grimoire p. 207, Forbidden Arcana
+  //p. 169-176): a player's update that would change them loses those paths, checked before anything is written
+  if (!game.user?.isGM) {
+    const refused = stripGMOnlyChanges(changes, document, GM_ONLY_ACTOR_PATHS)
+    if (refused.length) ui.notifications.warn(game.i18n.localize("SR5.WARN_SpiritBondsGMOnly"))
+  }
   if (options.sr5PersonaMarks) return
   if (!SR5_CharacterUtility.isDepthActive(document) || SR5_CharacterUtility.isDevicelessAI(document)) return
   delete changes["system.matrix.marks"]

@@ -47,6 +47,13 @@
 				{{#if system.sustainedSpell}}
 				<em class="fas fa-sm fa-praying-hands SR-SubColor"></em>
 				{{/if}}
+				{{!-- Leash, slack or tight (Forbidden Arcana p. 176, optional rule); an elemental never strains it --}}
+				{{#if @root.leashRule}}{{#unless system.isElemental}}
+				<a class="toggle-value" data-dtype="Boolean" data-item-id="{{_id}}" data-binding="system.leashTight"
+				  data-tooltip="{{#if system.leashTight}}{{localize 'SR5.LeashTight'}}{{else}}{{localize 'SR5.LeashSlack'}}{{/if}}">
+					<em class="fas fa-sm fa-link {{#if system.leashTight}}SR-SubColor{{else}}SR-LightGreyColor{{/if}}"></em>
+				</a>
+				{{/unless}}{{/if}}
 			</div>
 			<div class="col-1 SR-TextCenter">
 				{{#if ../system.magic.possession}}

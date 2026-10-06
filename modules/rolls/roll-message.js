@@ -604,6 +604,12 @@ export class SR5_RollMessage {
         SR5_ThirdPartyHelpers.reduceSideckickService(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      case "leashTest":
+        if (await SR5_ThirdPartyHelpers.leashTest(messageData)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
+      case "wildBanish":
+        if (await SR5_ThirdPartyHelpers.wildBanish(messageData)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
       case "registerSprite":
       case "bindSpirit":
         SR5_ThirdPartyHelpers.enslavedSidekick(messageData, type)

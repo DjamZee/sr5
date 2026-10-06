@@ -590,6 +590,16 @@ export class SR5_SystemHelpers {
       default: false,
       type: Boolean
     })
+
+    // Optional rule (Forbidden Arcana p. 176), off as the book offers it: Spirit Domination, the leash
+    game.settings.register("sr5", "spiritLeash", {
+      name: "SR5.SETTINGS_SpiritLeash_T",
+      hint: "SR5.SETTINGS_SpiritLeash_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean
+    })
   }
 
   /* Display Shadowrun Themed Log Entries Based on Logging Level

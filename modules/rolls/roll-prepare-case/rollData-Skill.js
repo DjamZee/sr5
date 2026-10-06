@@ -116,6 +116,17 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
       !backgroundCountInModifiers(actor.system.magic.bgCount, actor.system.skills[rollKey].limit.modifiers)){
       rollData = SR5_PrepareRollHelper.addBackgroundCountLimitModifiers(rollData, actor)
     }
+    //Astral Reputation (Street Grimoire p. 207): a penalty equal to it on Summoning, Binding and Banishing tests
+    const reputation = actor.system.magic.astralReputation || 0
+    //Present by default, the gamemaster can untick it in the dialog (DjamZ's ruling, 2026-10-06: "peut subir")
+    if (reputation > 0 && ["summoning", "binding", "banishing"].includes(rollKey)) {
+      rollData.magic.astralReputationMod = -reputation
+      rollData.dicePool.modifiers.push({
+        type: "astralReputation",
+        label: game.i18n.localize("SR5.AstralReputation"),
+        value: -reputation,
+      })
+    }
   }
 
   //Add force default

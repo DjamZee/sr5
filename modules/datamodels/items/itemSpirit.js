@@ -36,6 +36,13 @@ export class sr5ItemSpiritDataModel extends foundry.abstract.TypeDataModel {
       isBounded: new fields.BooleanField({
         initial: false
       }),
+      // Elemental trait and leash state (Forbidden Arcana p. 175-176), carried to the spirit actor and back
+      isElemental: new fields.BooleanField({
+        initial: false
+      }),
+      leashTight: new fields.BooleanField({
+        initial: false
+      }),
       magic: new fields.SchemaField({
         tradition: new fields.StringField({
           initial: ''

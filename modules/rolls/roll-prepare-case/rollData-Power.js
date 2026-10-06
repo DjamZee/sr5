@@ -4,6 +4,9 @@ import {
 import {
   SR5_MiscellaneousHelpers 
 } from "../roll-helpers/miscellaneous.js"
+import {
+  domainPowerKey, domainMagicMultiplier
+} from "../../entities/items/spirit-bonds.js"
 
 export default function power(rollData, rollType, item){
   //Determine title
@@ -22,6 +25,17 @@ export default function power(rollData, rollType, item){
   if (item.system.actionType && item.system.actionType !== "permanent" && item.system.actionType !== "automatic") {
     rollData.combat.actions = SR5_MiscellaneousHelpers.addActions(rollData.combat.actions, {
       type: item.system.actionType, value: 1, source: "usePower"
+    })
+  }
+
+  //Domain trait (Forbidden Arcana p. 172): Accident, Guard and Search use the spirit's Magic x 2
+  const owner = item.actor
+  if (owner?.type === "actorSpirit" && domainMagicMultiplier(domainPowerKey(item.name), owner.system.hasDomain) === 2){
+    rollData.dicePool.modifiers.push({
+      type: "domainTrait",
+      label: game.i18n.localize("SR5.SpiritDomain"),
+      source: game.i18n.localize("SR5.SpiritDomain"),
+      value: owner.system.specialAttributes.magic.augmented.value,
     })
   }
 

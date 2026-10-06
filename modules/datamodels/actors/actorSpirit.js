@@ -234,6 +234,23 @@ export class sr5ActorSpiritDataModel extends foundry.abstract.TypeDataModel {
       isBounded: new fields.BooleanField({
         initial: false
       }),
+      // Forbidden Arcana p. 172-176: Elemental trait, wild spirit, Domain trait, tight leash, and the net hits a
+      // banisher has piled up against a wild spirit
+      isElemental: new fields.BooleanField({
+        initial: false
+      }),
+      isWild: new fields.BooleanField({
+        initial: false
+      }),
+      hasDomain: new fields.BooleanField({
+        initial: false
+      }),
+      leashTight: new fields.BooleanField({
+        initial: false
+      }),
+      wildBanishTotal: new fields.NumberField({
+        initial: 0
+      }),
       // Material of a homunculus (SR5 p. 301): a key of SR5.barrierTypes, or "other" with its values typed in
       homunculusMaterial: new fields.SchemaField({
         type: new fields.StringField({

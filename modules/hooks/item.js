@@ -2,6 +2,9 @@ import {
   electronicAddedToVintage
 } from '../entities/items/weaponTraits.js'
 import {
+  GM_ONLY_ITEM_PATHS, stripGMOnlyChanges
+} from '../entities/items/spirit-bonds.js'
+import {
   WEAPON_ACCESSORY_CATALOG
 } from '../data/weaponAccessoryCatalog.js'
 import {
@@ -65,6 +68,10 @@ function _copyAmmoTypeEffects(ammoTypeSystem) {
 
 // When an itemAmmunition's ammunitionTypeUuid changes, copy effects from the referenced type
 export function sr5HookPreUpdateItem(document, data, _options, userId) {
+  //The Elemental trait of a spirit is the gamemaster's (Forbidden Arcana p. 175): refused to a player before writing
+  if (document.type === 'itemSpirit' && !game.user?.isGM && stripGMOnlyChanges(data, document, GM_ONLY_ITEM_PATHS).length) {
+    ui.notifications.warn(game.i18n.localize('SR5.WARN_SpiritBondsGMOnly'))
+  }
   //Vintage (Gun H(e)aven 3 p. 3): an electronic accessory is allowed but warned about, it gets no wireless
   if (document.type === 'itemWeapon' && data.system?.accessory !== undefined && userId === game.user?.id) {
     for (const a of electronicAddedToVintage(document.system.accessory, data.system.accessory, WEAPON_ACCESSORY_CATALOG)) {

@@ -109,6 +109,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/actors/_partials/left-tabs/magicUser/tradition.hbs",
     "systems/sr5/templates/actors/_partials/left-tabs/magicUser/astral.hbs",
     "systems/sr5/templates/actors/_partials/left-tabs/magicUser/reagents.hbs",
+    "systems/sr5/templates/actors/_partials/left-tabs/magicUser/spiritReputation.hbs",
 
     //Left Tab - Matrix user partials
     "systems/sr5/templates/actors/_partials/left-tabs/matrixUser/device.hbs",
@@ -639,6 +640,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/rolls/rollDialogPartial/reagentHarvest.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/spiritAidCommand.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/spiritAidModifier.hbs",
+    "systems/sr5/templates/rolls/rollDialogPartial/astralReputation.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/targetTypeModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/objectResistanceChoice.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/astralDamageType.hbs",

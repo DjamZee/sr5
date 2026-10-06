@@ -59,6 +59,9 @@ import {
   mentorPathFor, mentorEffectApplies, isFollowedMentor, mentorMagic, mentorPowerPoints, mentorMaskOn
 } from "../items/mentor-spirits.js"
 import {
+  ELEMENTAL_MENTAL_ATTRIBUTES, elementalReduction, astralReputation, wildReputation
+} from "../items/spirit-bonds.js"
+import {
   harmoniousDefensePool
 } from "../../rolls/roll-helpers/arcana-metamagics.js"
 import {
@@ -645,6 +648,10 @@ export class SR5_CharacterUtility extends Actor {
       actorData.magic.possession = false
       actorData.magic.mentorMask = false
 
+      // Astral and Wild Reputation (Street Grimoire p. 207, Forbidden Arcana p. 170), derived from the indexes
+      actorData.magic.astralReputation = astralReputation(actorData.magic.spiritIndex, actorData.magic.astralReputationAdjustment)
+      actorData.magic.wildReputation = wildReputation(actorData.magic.wildIndex)
+
       // Reset counterspelling
       actorData.magic.counterSpellPool.value = 0
       actorData.magic.counterSpellPool.modifiers = []
@@ -789,6 +796,14 @@ export class SR5_CharacterUtility extends Actor {
         case "magic":
           actorData.penalties[key].actual.base = 0
           SR5_CharacterUtility.handleSustaining(actor, "itemSpell", key)
+          //A spirit held on a tight leash counts as a sustained spell (Forbidden Arcana p. 176, optional rule)
+          if (game.settings.get("sr5", "spiritLeash")) {
+            for (let i of actor.items) {
+              if (i.type === "itemSpirit" && i.system.leashTight && !i.system.isElemental && i.system.services?.value > 0) {
+                SR5_EntityHelpers.updateModifier(actorData.penalties[key].actual, `${game.i18n.localize('SR5.LeashTight')} (${i.name})`, "leash", -2)
+              }
+            }
+          }
           break
         case "special":
           actorData.penalties[key].actual.base = 0
@@ -1419,6 +1434,17 @@ export class SR5_CharacterUtility extends Actor {
     }
 
     if (customType) SR5_SpiritTypes.applyAttributes(customType, attributes, label)
+
+    // Elemental trait (Forbidden Arcana p. 175): mental attributes lowered by half the Force, to a minimum of 1
+    if (actorData.isElemental) {
+      const traitLabel = game.i18n.localize('SR5.SpiritElemental')
+      for (let key of ELEMENTAL_MENTAL_ATTRIBUTES) {
+        const natural = attributes[key].natural
+        const current = natural.base + (natural.modifiers ?? []).reduce((sum, m) => sum + (Number(m.value) || 0), 0)
+        const reduction = elementalReduction(actorData.force.value, current)
+        if (reduction) SR5_EntityHelpers.updateModifier(natural, traitLabel, 'spiritType', -reduction)
+      }
+    }
   }
 
   static updateSpriteValues(actor) {

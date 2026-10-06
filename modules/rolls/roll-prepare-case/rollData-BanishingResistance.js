@@ -12,6 +12,12 @@ export default function banishingResistance(rollData, actor, chatData){
   //Determine base dicepool
   rollData.dicePool.base = actor.system.force.value
 
+  //A wild spirit resists with Force x 2 (Forbidden Arcana p. 172)
+  if (actor.system.isWild) rollData.dicePool.composition.push({
+    source: game.i18n.localize("SR5.SpiritWild"), type: "wildSpirit", value: actor.system.force.value
+  })
+  if (actor.system.isWild) rollData.dicePool.base = actor.system.force.value * 2
+
   //Determine dicepool modififiers
   if (actor.system.isBounded) {
     rollData.dicePool.modifiers.push({

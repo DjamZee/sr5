@@ -3778,6 +3778,8 @@ SR5.dicePoolModTypes = {
   publicGrid                : "SR5.GridPublicOn",
   targetGrid                : "SR5.GridTargetDifferent",
   spiritAid                 : "SR5.SpiritAid",
+  astralReputation          : "SR5.AstralReputation",
+  domainTrait               : "SR5.SpiritDomain",
   spiritType                : "SR5.SpiritTypeBonus",
   spellCategory             : "SR5.SpellCategoryBonus",
   sensorLockMod             : "SR5.SensorLockedTarget",

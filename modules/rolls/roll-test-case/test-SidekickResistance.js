@@ -45,6 +45,14 @@ export default async function sidekickResistanceInfo(cardData, type){
       break
   }
 
+  //A wild spirit (Forbidden Arcana p. 172) owes no service: the banisher's net hits add up until Force x 2, and the
+  //Drain is the spirit's hits, minimum 2. The gamemaster's button recounts both sides before writing anything
+  const spirit = type === "banishingResistance" ? SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId) : null
+  if (spirit?.system?.isWild){
+    key = "wildBanish"
+    label = `${game.i18n.localize("SR5.WildBanishAdd")} (${cardData.roll.netHits})`
+  }
+
   if (cardData.roll.hits < cardData.previousMessage.hits) cardData.chatCard.buttons[key] = SR5_RollMessage.generateChatButton("nonOpposedTest", key, label)
   else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", labelEnd)
 
@@ -58,7 +66,7 @@ export default async function sidekickResistanceInfo(cardData, type){
   } else if (resistType === "drain"){
     // Keep the spirit's Force on the card: it decides if the drain is physical (SR5 p. 303-304)
     newMessage.magic.force = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId)?.system.force.value
-    newMessage.magic.drain.value = cardData.roll.hits * 2
+    newMessage.magic.drain.value = spirit?.system?.isWild ? cardData.roll.hits : cardData.roll.hits * 2
     applyReagentDrainReduction(newMessage.magic, newMessage.magic.reagentDrainReduction, newMessage.magic.reagentTier)
     if (newMessage.magic.drain.value < 2) newMessage.magic.drain.value = 2
     newMessage.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${newMessage.magic.drain.value})`)

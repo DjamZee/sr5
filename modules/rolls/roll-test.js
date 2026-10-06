@@ -18,6 +18,9 @@ import {
 } from "../system/srcombat.js"
 import SR5_RollDialog from "./roll-dialog.js"
 import {
+  testsLeash
+} from "../entities/items/spirit-bonds.js"
+import {
   thresholdModifierOf, applyThresholdModifier, hasOwnThreshold
 } from "./roll-helpers/threshold.js"
 import {
@@ -633,6 +636,17 @@ export class SR5_RollTest {
   static async addInfoToCard(cardData, actorId) {
     //Reset button
     cardData.chatCard.buttons = {
+    }
+
+    //Testing the Leash (Forbidden Arcana p. 176, optional rule): a spirit that scores 6 - (Force / 2) hits or more
+    //tests it. The card only offers the gamemaster's button; the test itself reads nothing from the card
+    if (game.settings.get("sr5", "spiritLeash") === true && actorId) {
+      const spirit = SR5_EntityHelpers.getRealActorFromID(actorId)
+      if (spirit?.type === "actorSpirit" && testsLeash({
+        hits: cardData.roll?.hits, force: spirit.system.force.value, isElemental: spirit.system.isElemental, services: spirit.system.services.value
+      }) && spirit.system.creatorId) {
+        cardData.chatCard.buttons.leashTest = SR5_RollMessage.generateChatButton("nonOpposedTest", "leashTest", game.i18n.localize("SR5.LeashTest"))
+      }
     }
 
     //Handle Extended Test

@@ -8,8 +8,14 @@ import {
   SR5_EntityHelpers 
 } from "../../entities/helpers.js"
 import {
-  SR5_SocketHandler 
+  SR5_SocketHandler
 } from "../../socket.js"
+import {
+  ELEMENTAL_SPIRIT_TYPES, elementalServices, wildBanishProgress, resolveLeash
+} from "../../entities/items/spirit-bonds.js"
+import {
+  SR5_ActorHelper
+} from "../../entities/actors/entityActor-helpers.js"
 import {
   SR5_ConverterHelpers 
 } from "./converter.js"
@@ -290,6 +296,93 @@ export class SR5_ThirdPartyHelpers {
     SR5_RollTest.renderRollCard(rollData)
   }
 
+  //Banishing a wild spirit (Forbidden Arcana p. 172): the gamemaster alone adds the banisher's net hits to the
+  //spirit's running total; neither side's hits are taken from the card beyond what the pools allow
+  static async wildBanish(cardData){
+    if (!game.user.isGM) return void ui.notifications.warn(game.i18n.localize("SR5.WildBanishGMOnly"))
+    const spirit = SR5_EntityHelpers.getRealActorFromID(cardData.owner.speakerId || cardData.owner.actorId)
+    const banisher = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId)
+    if (!spirit?.system?.isWild || !banisher) return false
+    const force = spirit.system.force.value
+    const banisherPool = (banisher.system.skills?.banishing?.test?.dicePool || 0) + (banisher.system.specialAttributes?.edge?.augmented?.value || 0)
+    const banisherHits = Math.min(Number(cardData.previousMessage.hits) || 0, banisherPool)
+    const spiritHits = Math.min(Number(cardData.roll.hits) || 0, force * 2)
+    const progress = wildBanishProgress(spirit.system.wildBanishTotal, banisherHits - spiritHits, force)
+    await spirit.update({
+      "system.wildBanishTotal": progress.dissipated ? 0 : progress.total
+    })
+    const text = progress.dissipated ? game.i18n.format("SR5.INFO_WildSpiritDissipated", {
+      name: spirit.name
+    }) : game.i18n.format("SR5.INFO_WildBanishProgress", {
+      name: spirit.name, total: progress.total, goal: force * 2
+    })
+    ui.notifications.info(text)
+    await ChatMessage.create({
+      content: text, whisper: ChatMessage.getWhisperRecipients("GM")
+    })
+    return true
+  }
+
+  //Testing the Leash (Forbidden Arcana p. 176, optional rule): the gamemaster rolls both sides himself, the spirit's
+  //Force x 2 against the controller's Drain resistance pool, read from the actors and never from the card
+  static async leashTest(cardData){
+    if (!game.user.isGM) return void ui.notifications.warn(game.i18n.localize("SR5.LeashGMOnly"))
+    if (!game.settings.get("sr5", "spiritLeash")) return false
+    const spirit = SR5_EntityHelpers.getRealActorFromID(cardData.owner.speakerId || cardData.owner.actorId)
+    if (spirit?.type !== "actorSpirit") return false
+    const controller = SR5_EntityHelpers.getRealActorFromID(spirit.system.creatorId)
+    const item = controller?.items.get(spirit.system.creatorItemId)
+    if (!controller || !item) return void ui.notifications.warn(game.i18n.localize("SR5.LeashNoController"))
+    if (spirit.system.isElemental || item.system.isElemental) return false
+    const force = spirit.system.force.value
+    const spiritRoll = await SR5_RollTest.rollDice({
+      dicePool: force * 2
+    })
+    const controllerRoll = await SR5_RollTest.rollDice({
+      dicePool: controller.system.magic?.drainResistance?.dicePool || 0
+    })
+    const outcome = resolveLeash({
+      controllerHits: controllerRoll.hits,
+      spiritHits: spiritRoll.hits,
+      tight: item.system.leashTight,
+      force,
+      magic: controller.system.specialAttributes?.magic?.augmented?.value || 0,
+      services: spirit.system.services.value,
+    })
+    const damageOptions = (value, type) => ({
+      damage: {
+        value, type, matrix: {
+          value: 0
+        }
+      },
+      combat: {
+        ammo: {
+        }
+      },
+      owner: {
+      },
+    })
+    if (outcome.spiritStun) await SR5_ActorHelper.takeDamage(spirit.id, damageOptions(outcome.spiritStun, "stun"))
+    if (outcome.controllerDamage) await SR5_ActorHelper.takeDamage(controller.id, damageOptions(outcome.controllerDamage, outcome.damageType))
+    if (outcome.servicesLost) {
+      await spirit.update({
+        "system.services.value": outcome.servicesLeft
+      })
+      await item.update({
+        "system.services.value": outcome.servicesLeft
+      })
+    }
+    let content = game.i18n.format("SR5.LeashResult", {
+      spirit: spirit.name, controller: controller.name, spiritHits: spiritRoll.hits, controllerHits: controllerRoll.hits,
+      stun: outcome.spiritStun, lost: outcome.servicesLost, damage: outcome.controllerDamage,
+    })
+    if (outcome.servicesLost && outcome.servicesLeft === 0) content += `<br>${game.i18n.localize("SR5.LeashBroken")}`
+    await ChatMessage.create({
+      content, whisper: ChatMessage.getWhisperRecipients("GM")
+    })
+    return true
+  }
+
   static async reduceSideckickService(cardData){
     let actor = SR5_EntityHelpers.getRealActorFromID(cardData.owner.speakerId),
       actorData = foundry.utils.duplicate(actor.system),
@@ -325,9 +418,11 @@ export class SR5_ThirdPartyHelpers {
         task: cardData.roll.netHits
       })}`)
     } else if (type === "bindSpirit"){
+      //Elemental trait (Forbidden Arcana p. 175): one more service when the binding gives at least one
+      const gained = elementalServices(cardData.roll.netHits, actorData.isElemental)
       actorData.isBounded = true
-      actorData.services.value += cardData.roll.netHits
-      actorData.services.max += cardData.roll.netHits
+      actorData.services.value += gained
+      actorData.services.max += gained
       ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format('SR5.INFO_SpiritBounded', {
         service: cardData.roll.netHits
       })}`)
@@ -345,9 +440,10 @@ export class SR5_ThirdPartyHelpers {
         itemData.tasks.value += cardData.roll.netHits
         itemData.tasks.max += cardData.roll.netHits
       } else if (type === "bindSpirit"){
+        const gained = elementalServices(cardData.roll.netHits, actorData.isElemental)
         itemData.isBounded = true
-        itemData.services.value += cardData.roll.netHits
-        itemData.services.max += cardData.roll.netHits
+        itemData.services.value += gained
+        itemData.services.max += gained
       }
       await itemSideKick.update({
         'system': itemData
@@ -482,21 +578,27 @@ export class SR5_ThirdPartyHelpers {
     let buildItem
 
     switch (itemType){
-      case"summonSpirit":
+      case"summonSpirit": {
+        //Hermetic elementalist (Forbidden Arcana p. 175): his air, earth, fire and water spirits have the Elemental
+        //trait, which adds a service when at least one is owed
+        const isElemental = !!actorData.magic?.hermeticElementalist && ELEMENTAL_SPIRIT_TYPES.includes(messageData.magic.spiritType)
+        const services = elementalServices(messageData.previousMessage.hits - messageData.roll.hits, isElemental)
         buildItem = {
           name: `${game.i18n.localize("SR5.SummonedSpirit")} (${game.i18n.localize(SR5.spiritTypes[messageData.magic.spiritType])}, ${messageData.magic.force})`,
           type: "itemSpirit",
           img: `systems/sr5/assets/img/items/itemSpirit.svg`,
           ["system.type"]: messageData.magic.spiritType,
           ["system.itemRating"]: messageData.magic.force,
-          ["system.services.max"]: messageData.previousMessage.hits - messageData.roll.hits,
-          ["system.services.value"]: messageData.previousMessage.hits - messageData.roll.hits,
+          ["system.services.max"]: services,
+          ["system.services.value"]: services,
+          ["system.isElemental"]: isElemental,
           ["system.summonerMagic"]: actorData.specialAttributes.magic.augmented.value,
           ["system.magic.tradition"]: actorData.magic.tradition,
           ["system.conjurer"]: actor.id,
         }
-        ui.notifications.info(`${actor.name} ${game.i18n.localize("SR5.INFO_SummonSpirit")} ${game.i18n.localize(SR5.spiritTypes[messageData.magic.spiritType])} (${messageData.magic.force})`) 
+        ui.notifications.info(`${actor.name} ${game.i18n.localize("SR5.INFO_SummonSpirit")} ${game.i18n.localize(SR5.spiritTypes[messageData.magic.spiritType])} (${messageData.magic.force})`)
         break
+      }
       case "compileSprite":
         buildItem = {
           name: `${game.i18n.localize("SR5.CompiledSprite")} (${game.i18n.localize(SR5.spriteTypes[messageData.matrix.spriteType])}, ${messageData.matrix.level})`,
