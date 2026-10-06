@@ -1094,15 +1094,22 @@ export class SR5ShopVendor {
     return !!message?.flags?.sr5vendorOffer && !message.flags?.sr5?.vendorOfferTaken && !message.flags?.sr5?.vendorOfferClosed
   }
 
-  /** The open offer of this vendor on one of these items of this seller, if any. */
-  static openOfferOn(vendorUuid, sellerId, itemIds) {
+  /**
+   * The open offer of this vendor on one of these items of this seller, if any. An item is known by its
+   * id, and by its kind and name too: a copy the seller makes on her sheet gets a new id, and would
+   * otherwise roll the declined offer again (Georg).
+   * @param {Item[]} items the seller's items
+   */
+  static openOfferOn(vendorUuid, sellerId, items) {
+    const same = (line, item) => line.itemId === item.id ||
+      (line.name === item.name && (!line.type || line.type === item.type))
     return game.messages?.find?.(message => {
       // Open, or declined by the seller and not unlocked by the gamemaster
       const blocking = SR5ShopVendor.isOfferOpen(message) || message.flags?.sr5?.vendorOfferLocked === true
       if (!message.author?.isGM || !blocking) return false
       const data = message.flags.sr5vendorOffer
       return data.vendorUuid === vendorUuid && data.sellerId === sellerId &&
-        (data.results ?? []).some(line => itemIds.includes(line.itemId))
+        (data.results ?? []).some(line => items.some(item => same(line, item)))
     }) ?? null
   }
 
@@ -1202,7 +1209,7 @@ export class SR5ShopVendor {
       })
     }
     if (!lines.length) return false
-    const open = SR5ShopVendor.openOfferOn(actor.uuid, seller.id, lines.map(line => line.item.id))
+    const open = SR5ShopVendor.openOfferOn(actor.uuid, seller.id, lines.map(line => line.item))
     if (open) {
       // Still open: answer it; declined: locked until the gamemaster lifts it (S9, Quitterie)
       const key = SR5ShopVendor.isOfferOpen(open) ? 'SR5.WARN_ShopVendorOfferOpen' : 'SR5.WARN_ShopVendorOfferLocked'
@@ -1235,7 +1242,7 @@ export class SR5ShopVendor {
     }) => {
       const unit = Math.round(listed * percent / 100)
       return {
-        itemId: item.id, name: item.name, quantity, listed, unit, total: unit * quantity, origin, sourceUuid,
+        itemId: item.id, name: item.name, type: item.type, quantity, listed, unit, total: unit * quantity, origin, sourceUuid,
       }
     })
     const total = results.reduce((sum, line) => sum + line.total, 0)
@@ -1313,7 +1320,11 @@ export class SR5ShopVendor {
       })
       return false
     }
-    return SR5ShopVendor.#serial(() => SR5ShopVendor.#finishAccept(request, senderId, answer))
+    // The source each item keeps on the counter: the one the gamemaster saw match it, or none (Georg)
+    const sources = review.lines.map(line => line.sourceFigures && !line.mismatches?.length ? line.sourceUuid : null)
+    return SR5ShopVendor.#serial(() => SR5ShopVendor.#finishAccept(request, senderId, {
+      ...answer, sources
+    }))
   }
 
   static decline(request, senderId) {
@@ -1410,6 +1421,13 @@ export class SR5ShopVendor {
       // A credstick bought back comes onto the counter empty: its money stays a sale, not stock (R1)
       const stocked = SR5Shop.stripCarried(item.toObject())
       delete stocked._id
+      // The sources the seller's copy declares are hers to write: the restock and the "on order" list
+      // trust a counter item's source, so it keeps only the one the gamemaster saw match (Georg)
+      if (stocked._stats) delete stocked._stats.compendiumSource
+      if (stocked.flags?.core) delete stocked.flags.core.sourceId
+      if (stocked.flags?.sr5) delete stocked.flags.sr5.shopSource
+      const verified = answer.sources?.[lines.indexOf(line)]
+      if (verified) foundry.utils.setProperty(stocked, 'flags.sr5.shopSource', verified)
       stocked.system.storedIn = storage.id
       if (stocked.system.isActive !== undefined) stocked.system.isActive = false
       if (stocked.system.quantity !== undefined) stocked.system.quantity = line.quantity

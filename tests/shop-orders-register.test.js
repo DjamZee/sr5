@@ -13,7 +13,7 @@ vi.mock('../modules/interface/shop.js', () => ({
 }))
 
 const {
-  registerOrders, registrationPlan, cancelPlan, orderLedger, deliverOrder
+  registerOrders, registrationPlan, cancelPlan, orderLedger, deliverOrder, debitLeft
 } = await import('../modules/interface/shop-orders.js')
 
 // Élise's ruling after Zélia's review: an order of the shop without vendor enters the GM's ledger at
@@ -126,6 +126,29 @@ describe('an order of the shop without vendor', () => {
     buyer = makeBuyer([order()], 300)
     expect(await registerOrders(buyer, ['o1'], 'debit', stranger)).toBe(false)
     expect(await registerOrders(buyer, ['o1'], 'nothing', owner)).toBe(false)
+  })
+
+  // Georg: the debit is the buyer's own item; deleted after the entry, the cancellation would hand
+  // her back money she no longer paid
+  it('refunds nothing once the buyer has deleted the debit behind the entry', async () => {
+    buyer = makeBuyer([order()], 300)
+    expect(await registerOrders(buyer, ['o1'], 'debit', owner)).toBe(true)
+    const entry = orderLedger().o1
+    expect(cancelPlan(order(), entry, 0, debitLeft(buyer, entry)).refund).toBe(300)
+    buyer.items.delete('debit')
+    expect(debitLeft(buyer, entry)).toBe(0)
+    expect(cancelPlan(order(), entry, 0, debitLeft(buyer, entry)).refund).toBe(0)
+    // A debit lowered on the sheet refunds no more than what is left of it
+    buyer.items.set('debit', {
+      id: 'debit', type: 'itemNuyen', system: {
+        type: 'loss', amount: 50
+      }
+    })
+    expect(cancelPlan(order(), entry, 0, debitLeft(buyer, entry)).refund).toBe(50)
+    // An entry without a debit of its own (the vendor's till) is not checked this way
+    expect(debitLeft(buyer, {
+      ...entry, transactionId: undefined
+    })).toBe(null)
   })
 
   it('the plan refuses a purchase dearer than its debit', () => {

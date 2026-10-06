@@ -95,6 +95,7 @@ function makeActor(id, items, owner = null) {
     item.parent = actor
     item.toObject = () => JSON.parse(JSON.stringify({
       _id: item.id, name: item.name, type: item.type, system: item.system, flags: item.flags ?? {
+      }, _stats: item._stats ?? {
       }
     }))
     item.update = async changes => {
@@ -574,6 +575,79 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
     expect(await SR5ShopVendor.offer(offerFor([{
       itemId: 'gun', quantity: 1
     }]), player.id)).toBe(true)
+  })
+
+  it('keeps the lock on a copy of the declined item: a new id rolls nothing (Georg)', async () => {
+    const {
+      seller
+    } = world({
+      sellerItems: [gun(), gun(350, {
+        id: 'copy'
+      })]
+    })
+    const roll = noHits()
+    // The first offer is on 'gun' alone; the seller declines it
+    await SR5ShopVendor.offer(offerFor([{
+      itemId: 'gun', quantity: 1
+    }]), player.id)
+    await SR5ShopVendor.decline({
+      messageId: 'm0'
+    }, player.id)
+    const rolls = roll.mock.calls.length
+    // Her duplicate of the same item, under a new id, is locked too
+    expect(seller.items.get('copy')).toBeDefined()
+    expect(await SR5ShopVendor.offer(offerFor([{
+      itemId: 'copy', quantity: 1
+    }]), player.id)).toBe(false)
+    expect(roll.mock.calls.length).toBe(rolls)
+    expect(messages.size).toBe(1)
+  })
+
+  it('stocks a bought-back item with the source the gamemaster saw match, never a forged one (Georg)', async () => {
+    const panther = {
+      uuid: PANTHER, name: 'Panther XXL', type: 'itemWeapon', system: {
+        price: {
+          value: 43000, base: 43000
+        }, category: 'heavyWeapon'
+      },
+    }
+    globalThis.fromUuid = async uuid => (uuid === PANTHER ? panther : uuid === SOURCE ? compendiumFichetti : null)
+    const {
+      vendor
+    } = world({
+      sellerItems: [gun(350, {
+        flags: {
+          sr5: {
+            shopSource: PANTHER
+          }, core: {
+            sourceId: PANTHER
+          }
+        },
+        _stats: {
+          compendiumSource: PANTHER
+        },
+      }), gun(350, {
+        id: 'honest'
+      })]
+    })
+    noHits()
+    await SR5ShopVendor.offer(offerFor([{
+      itemId: 'gun', quantity: 1
+    }, {
+      itemId: 'honest', quantity: 1
+    }]), player.id)
+    // The gamemaster, warned, takes both anyway at a price he sets
+    confirmAnswer = {
+      accepted: true, units: [10, 88]
+    }
+    expect(await SR5ShopVendor.accept({
+      messageId: 'm0'
+    }, player.id)).toBe(true)
+    const [forged, honest] = vendor.created
+    expect(forged.flags?.sr5?.shopSource).toBeUndefined()
+    expect(forged.flags?.core?.sourceId).toBeUndefined()
+    expect(forged._stats?.compendiumSource ?? null).toBeNull()
+    expect(honest.flags.sr5.shopSource).toBe(SOURCE)
   })
 
   it('refuses what is not on its shelves, unless it buys everything', async () => {

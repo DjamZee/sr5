@@ -449,6 +449,7 @@
 	"SR5.ShopOrderCancelVendor": "The vendor <strong>{vendor}</strong> pays it back: its cashbox first, its accounts for the rest.",
 	"SR5.ShopOrderCancelNoVendor": "No vendor in the GM's ledger: only the sheet is refunded.",
 	"SR5.ShopOrderCancelNotInLedger": "Not in the GM's ledger: no automatic refund. Refund by hand if the order is real.",
+	"SR5.ShopOrderCancelDebitGone": "The debit of this purchase ({paid} ¥) was deleted or lowered on the sheet: {left} ¥ is left, and the refund stops there.",
 	"SR5.SocketUseConfirmTitle": "A player asks the GM",
 	"SR5.SocketUseConfirm": "{user} asks: {what}. The card comes from their player: the system counted {value} again on its dice, within the sheet's pool, but cannot check the dice themselves. Apply?",
 	"SR5.SocketUse_matrixDamage": "matrix damage on {target}",

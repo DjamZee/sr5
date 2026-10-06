@@ -294,8 +294,10 @@ function usedDebits() {
  * took the money first, its accounts for the rest (what the cashbox could not
  * hold went there at the sale).
  */
-export function cancelPlan(order, entry, cashboxFunds = 0) {
-  const refund = entry ? Math.max(0, Number(entry.paid) || 0) : 0
+export function cancelPlan(order, entry, cashboxFunds = 0, debit = null) {
+  const paid = entry ? Math.max(0, Number(entry.paid) || 0) : 0
+  // Never more than what is left of the debit that stood behind the entry (Georg)
+  const refund = debit === null ? paid : Math.min(paid, Math.max(0, Number(debit) || 0))
   if (!entry?.vendorUuid) return {
     refund, vendorUuid: null, fromCashbox: 0, fromAccounts: 0
   }
@@ -303,6 +305,19 @@ export function cancelPlan(order, entry, cashboxFunds = 0) {
   return {
     refund, vendorUuid: entry.vendorUuid, fromCashbox, fromAccounts: refund - fromCashbox
   }
+}
+
+/**
+ * What is left on the buyer's sheet of the debit an entry was entered against (shop without vendor):
+ * that loss transaction is her own item, and deleted or lowered after the entry, a cancellation
+ * would hand back money she no longer paid (Georg). null: an entry with no debit of its own (the
+ * vendor's till), not checked this way.
+ */
+export function debitLeft(actor, entry) {
+  if (!entry?.transactionId) return null
+  const debit = actor?.items?.get?.(entry.transactionId)
+  if (!debit || debit.type !== 'itemNuyen' || debit.system?.type !== 'loss') return 0
+  return Math.max(0, Number(debit.system.amount) || 0)
 }
 
 /**
@@ -438,7 +453,7 @@ export async function cancelOrder(actor, id) {
     name: ledgerLabel(order, entry)
   })
   const vendor = await vendorOf(entry)
-  const plan = cancelPlan(order, entry, vendor?.cashbox ? creditFunds(vendor.cashbox) : 0)
+  const plan = cancelPlan(order, entry, vendor?.cashbox ? creditFunds(vendor.cashbox) : 0, debitLeft(actor, entry))
   if (plan.refund > 0) {
     await actor.createEmbeddedDocuments('Item', [transaction('gain', plan.refund, name)])
     // The vendor gives back from the cashbox that took the money, then from its accounts
@@ -608,10 +623,15 @@ async function confirmCancel(actor, id, requester) {
   if (!order) return false
   const entry = orderLedger()[id]
   const own = entry?.actorUuid === actor.uuid ? entry : null
-  const plan = cancelPlan(order, own, 0)
+  const left = debitLeft(actor, own)
+  const plan = cancelPlan(order, own, 0, left)
   const vendor = plan.vendorUuid ? await vendorOf(entry) : null
   const esc = foundry.utils.escapeHTML
-  const where = !own ? game.i18n.localize('SR5.ShopOrderCancelNotInLedger') : vendor ?
+  const shortDebit = own && left !== null && left < (Number(own.paid) || 0)
+  const where = !own ? game.i18n.localize('SR5.ShopOrderCancelNotInLedger') :
+    shortDebit ? game.i18n.format('SR5.ShopOrderCancelDebitGone', {
+      paid: (Number(own.paid) || 0).toLocaleString(), left: left.toLocaleString()
+    }) : vendor ?
     game.i18n.format('SR5.ShopOrderCancelVendor', {
       vendor: esc(vendor.label)
     }) : game.i18n.localize('SR5.ShopOrderCancelNoVendor')
