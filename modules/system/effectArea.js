@@ -117,11 +117,11 @@ export class SR5_EffectArea {
       //check distance
       if (distance > SR5_EffectArea.JAM_SIGNALS_RADIUS_IN_METERS) {
         if (actorJammedEffect){
-          if (game.user?.isGM) await SR5_EffectArea.removeJammedEffect(actor, actorJammedEffect)
+          if (isActiveGM()) await SR5_EffectArea.removeJammedEffect(actor, actorJammedEffect)
         }
       } else {
         if (!actorJammedEffect){
-          if (game.user?.isGM) await SR5_EffectArea.createJammedEffect(passiveActor, actor, passiveJamEffect.system.value)
+          if (isActiveGM()) await SR5_EffectArea.createJammedEffect(passiveActor, actor, passiveJamEffect.system.value)
         }
       }
     }
@@ -130,11 +130,11 @@ export class SR5_EffectArea {
       //check distance
       if (distance <= SR5_EffectArea.JAM_SIGNALS_RADIUS_IN_METERS) {
         if (!passiveJammedEffect){
-          if (game.user?.isGM) await SR5_EffectArea.createJammedEffect(actor, passiveActor, actorJamEffect.system.value)
+          if (isActiveGM()) await SR5_EffectArea.createJammedEffect(actor, passiveActor, actorJamEffect.system.value)
         }
       } else {
         if (passiveJammedEffect){
-          if (game.user?.isGM) await SR5_EffectArea.removeJammedEffect(passiveActor, passiveJammedEffect)
+          if (isActiveGM()) await SR5_EffectArea.removeJammedEffect(passiveActor, passiveJammedEffect)
         }
       }
     }
@@ -166,8 +166,10 @@ export class SR5_EffectArea {
   }
 
   //Start jamming
+  //The active GM alone: with two GMs connected, each laid its own signalJammed on every target (noise counted twice),
+  //and the end of the jam lifted only one of them (Marta's measure)
   static async onJamCreation(actorId){
-    if (!game.user?.isGM) return
+    if (!isActiveGM()) return
     let activeActor = SR5_EntityHelpers.getRealActorFromID(actorId)
     if (!activeActor) return
     let jamEffect =  activeActor.items.find(i => i.system.type === "signalJam" && i.system.ownerID === activeActor.id)
@@ -192,7 +194,7 @@ export class SR5_EffectArea {
 
   //End jamming : lift the noise this jammer put on anyone, on every scene
   static async onJamEnd(actorId){
-    if (!game.user?.isGM) return
+    if (!isActiveGM()) return
     let cleared = new Set()
     for (let scene of game.scenes ?? []){
       for (let token of scene.tokens){
