@@ -63,7 +63,7 @@
     </div>
 </li>
 {{/if}}
-{{#if (eq test.typeSub 'grenade')}}
+{{#if (or (eq test.typeSub 'grenade') combat.grenade.isGrenade)}}
 <li class="grid">
     <div class="col-10">{{localize 'SR5.Blast'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-2 SR-TextRight">{{combat.grenade.blastRadius}}m {{#if_l combat.grenade.damageFallOff 0}} ({{combat.grenade.damageFallOff}}) {{/if_l}}</div>

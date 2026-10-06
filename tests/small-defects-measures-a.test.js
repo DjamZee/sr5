@@ -111,4 +111,9 @@ describe('Attack card: grenade blast line', () => {
     expect(template).toMatch(/combat\.grenade\.damageFallOff/)
     expect(template).not.toMatch(/[^.]grenade\.blastRadius/)
   })
+
+  it('also shows it for a grenade or missile launcher (combat.grenade.isGrenade)', () => {
+    const template = read('../templates/rolls/rollCardPartial/attackRoll.hbs')
+    expect(template).toMatch(/{{#if \(or \(eq test\.typeSub 'grenade'\) combat\.grenade\.isGrenade\)}}/)
+  })
 })
