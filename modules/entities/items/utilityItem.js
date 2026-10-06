@@ -17,6 +17,9 @@ import {
   WEAPON_ACCESSORY_CATALOG 
 } from "../../data/weaponAccessoryCatalog.js"
 import {
+  isAccessoryKind, ignoredRecoilAccessories
+} from "./weapon-accessory-rules.js"
+import {
   SR5_Toxins
 } from "./toxins.js"
 import {
@@ -876,10 +879,14 @@ export class SR5_UtilityItem extends Actor {
     // Vintage (Gun H(e)aven 3 p. 3): never wireless, physical upgrades cost twice the listed amount
     const isVintage = applyVintageWireless(itemData)
 
+    for (let a of itemData.accessory) if (a.system) SR5_UtilityItem._syncAccessoryActive(a, actor)
+    // Run & Gun p. 71: within a group of recoil systems, only the one that compensates the most counts
+    const ignoredRecoil = ignoredRecoilAccessories(itemData, SR5_UtilityItem._accessoryRecoil)
+
     for (let a of itemData.accessory) {
       // Item-based accessory (has a.system from a cloned itemGear)
       if (a.system) {
-        SR5_UtilityItem._handleItemBasedWeaponAccessory(a, itemData, actor, isVintage)
+        SR5_UtilityItem._handleItemBasedWeaponAccessory(a, itemData, actor, isVintage, ignoredRecoil.has(a))
         continue
       }
 
@@ -908,6 +915,7 @@ export class SR5_UtilityItem extends Actor {
         for (const effect of catalog.itemEffects) {
           // Skip wifi-only effects if wireless is off
           if (effect.wifi && !itemData.wirelessTurnedOn) continue
+          if (SR5_UtilityItem._skipAccessoryEffect(a, effect, ignoredRecoil.has(a))) continue
 
           const targetObject = SR5_EntityHelpers.resolveObjectPath(effect.target.replace(/^system\./, ''), itemData)
           if (targetObject) {
@@ -1010,17 +1018,11 @@ export class SR5_UtilityItem extends Actor {
   }
 
   /** Handle an item-based weapon accessory (cloned itemWeapon with system data) */
-  static _handleItemBasedWeaponAccessory(a, itemData, actor, isVintage = false) {
+  static _handleItemBasedWeaponAccessory(a, itemData, actor, isVintage = false, recoilIgnored = false) {
     const accData = a.system
     const label = a.name || 'Accessory'
 
-    // Sync isActive from the actor's live item (the actor sheet toggles the item, not the clone)
-    if (actor && a._id) {
-      const liveItem = actor.items.get(a._id)
-      if (liveItem) {
-        a.isActive = liveItem.system.isActive
-      }
-    }
+    SR5_UtilityItem._syncAccessoryActive(a, actor)
 
     // Slot from item data
     if (!a.slot && accData.weaponAccessory?.slot) a.slot = accData.weaponAccessory.slot
@@ -1039,6 +1041,7 @@ export class SR5_UtilityItem extends Actor {
       for (const effect of effects) {
         if (!effect.target || !effect.type) continue
         if (effect.wifi && !itemData.wirelessTurnedOn) continue
+        if (SR5_UtilityItem._skipAccessoryEffect(a, effect, recoilIgnored)) continue
 
         const targetObject = SR5_EntityHelpers.resolveObjectPath(effect.target.replace(/^system\./, ''), itemData)
         if (targetObject) {
@@ -1061,6 +1064,29 @@ export class SR5_UtilityItem extends Actor {
     if (!a.isFree) {
       SR5_EntityHelpers.updateModifier(itemData.price, label, "weaponAccessory", a.price)
     }
+  }
+
+  //Sync isActive of an item-based accessory from the actor's live item (the actor sheet toggles the item, not the clone)
+  static _syncAccessoryActive(a, actor) {
+    if (!actor || !a._id) return
+    const liveItem = actor.items?.get(a._id)
+    if (liveItem) a.isActive = liveItem.system.isActive
+  }
+
+  //The recoil compensation an accessory brings (catalog entry or item), for Run & Gun p. 71
+  static _accessoryRecoil(a) {
+    let effects = a.system ? a.system.itemEffects : WEAPON_ACCESSORY_CATALOG[a.name]?.itemEffects
+    if (effects && !Array.isArray(effects)) effects = Object.values(effects)
+    return (effects ?? []).filter(e => e?.target === "system.recoilCompensation").reduce((sum, e) => sum + (Number(e.value) || 0), 0)
+  }
+
+  //An accessory effect left to the roll or cancelled by another accessory:
+  //- the red dot sight's Accuracy depends on the range (Street Lethal p. 49): the attack adds it (rollData-Weapon.js)
+  //- a recoil system that does not stack with a better one on the weapon (Run & Gun p. 71)
+  static _skipAccessoryEffect(a, effect, recoilIgnored) {
+    if (effect.target === "system.accuracy" && isAccessoryKind(a, "redDotSight")) return true
+    if (recoilIgnored && effect.target === "system.recoilCompensation") return true
+    return false
   }
 
   //Light rows taken off by a flashlight mounted on the weapon being used (0 or -1).

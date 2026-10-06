@@ -17,7 +17,12 @@ export default async function attackInfo(cardData){
   // handle choke settings
   if (cardData.combat.choke.damageModify) {
     cardData.damage.base -= cardData.combat.choke.damageModify 
-    cardData.damage.value -= cardData.combat.choke.damageModify 
+    cardData.damage.value -= cardData.combat.choke.damageModify
+  }
+  // Laser weapons lose DV with range and visibility (Run & Gun p. 64), worked out by the roll dialog
+  if (cardData.combat.laser?.damageModify) {
+    cardData.damage.base = Math.max(0, cardData.damage.base - cardData.combat.laser.damageModify)
+    cardData.damage.value = Math.max(0, cardData.damage.value - cardData.combat.laser.damageModify)
   }
   // A launcher keeps typeSub "rangedWeapon" for its dialog (range and every usual modifier apply, SR5 p. 182),
   // so a hand grenade, a grenade launcher and a missile launcher are all told apart by combat.grenade.isGrenade:

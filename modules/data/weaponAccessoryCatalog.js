@@ -143,7 +143,8 @@ export const WEAPON_ACCESSORY_CATALOG = {
     price: 0, slot: "", type: "modification" 
   },
   // Red dot sight (Street Lethal p. 49): 750 nuyen, +1 Accuracy, not compatible with a smartlink, a laser sight, a
-  // holographic sight or any zoom. Its +1 die at short range is not modelled: an accessory effect has no range condition
+  // holographic sight or any zoom. Its +1 Accuracy only counts at short and medium range, with +1 die at short range:
+  // the item preparation skips it and the attack adds it for the range chosen (weapon-accessory-rules.js)
   redDotSight:              {
     price: 750, slot: "top", type: "accessory",
     itemEffects: [
@@ -217,7 +218,11 @@ export const WEAPON_ACCESSORY_CATALOG = {
     price: 600, slot: "underneath", type: "accessory" 
   },
   vintage:                  {
-    price: 0, slot: "", type: "trait" 
+    price: 0, slot: "", type: "trait"
+  },
+  // Laser weapon (Run & Gun p. 64): its DV falls with range and visibility (weapon-attack-rules.js)
+  laserWeapon:              {
+    price: 0, slot: "", type: "trait"
   },
   weaponCommlink:           {
     price: 200, slot: "", type: "accessory" 

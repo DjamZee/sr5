@@ -37,6 +37,12 @@ import {
 import {
   grapplingCalledShots, holdKindOn, clinchAttackPenalty, clinchCancelsReach, isHeldBy, isClinchFirearm
 } from "../roll-helpers/grapple-rules.js"
+import {
+  energyAuraApplies, LASER_TRAIT
+} from "../roll-helpers/weapon-attack-rules.js"
+import {
+  redDotSightWorks
+} from "../../entities/items/weapon-accessory-rules.js"
 
 //Add info for weapon Roll
 export default async function weapon(rollData, actor, item){
@@ -208,13 +214,26 @@ export default async function weapon(rollData, actor, item){
     }
   }
 
-  //Special case for Energy aura and melee weapon
-  if (actorData.specialProperties.energyAura){
+  //Energy aura (SR5 p. 397): only for a melee attack
+  if (actorData.specialProperties.energyAura && energyAuraApplies(itemData.category)){
     rollData.damage.base = itemData.damageValue.value + actorData.specialAttributes.magic.augmented.value
     rollData.damage.value = itemData.damageValue.value + actorData.specialAttributes.magic.augmented.value
     rollData.combat.armorPenetration = -actorData.specialAttributes.magic.augmented.value
     rollData.damage.element = actorData.specialProperties.energyAura
     if (actorData.specialProperties.energyAura !== "electricity") rollData.damage.type = "physical"
+  }
+
+  //What depends on the range the dialog picks: red dot sight (Street Lethal p. 49), laser weapon (Run & Gun p. 64)
+  if (itemData.category === "rangedWeapon") {
+    const smartlink = actor.type !== "actorDrone" && !!actorData.specialProperties?.smartlink?.value
+    //The sight's +1 Accuracy still competes with the other non-cumulative accessory bonuses (helpers.js updateModifier)
+    const accuracyAlready = Math.max(0, ...itemData.accuracy.modifiers.filter(m => m.nonCumulative && m.type === "weaponAccessory").map(m => m.value))
+    rollData.combat.redDotSight = {
+      works: redDotSightWorks(itemData, smartlink), accuracyAlready
+    }
+    rollData.combat.laser = {
+      isLaser: hasWeaponTrait(itemData, LASER_TRAIT), damageModify: 0
+    }
   }
 
   // Aggravated Wounds (Howling Shadows p. 213): the critter's attacks leave boxes that count double for healing

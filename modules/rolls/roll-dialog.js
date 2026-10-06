@@ -64,6 +64,12 @@ import {
 import {
   normalizeTier, tierStock
 } from "../system/reagents.js"
+import {
+  laserDamageReduction, jugularToxin
+} from "./roll-helpers/weapon-attack-rules.js"
+import {
+  redDotSightBonus
+} from "../entities/items/weapon-accessory-rules.js"
 
 export default class SR5_RollDialog {
 
@@ -106,6 +112,30 @@ export default class SR5_RollDialog {
       if (modifiedLimit < 0) modifiedLimit = 0
       html.querySelector('[name="modifiedLimit"]').value = modifiedLimit
       this.dialogData.limit.base = parseInt(html.querySelector('[name="baseLimit"]').value)
+    }
+  }
+
+  //What depends on the range picked: the red dot sight's Accuracy and die (Street Lethal p. 49), the DV a laser loses
+  //(Run & Gun p. 64), worked out again at each change of range
+  _syncRangeEffects(html, dialogData){
+    const redDot = dialogData.combat.redDotSight
+    if (redDot?.works) {
+      const bonus = redDotSightBonus(dialogData.target.range)
+      const label = game.i18n.localize("SR5.AccessoryRedDotSight")
+      const accuracy = Math.max(0, bonus.accuracy - (redDot.accuracyAlready || 0))
+      SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', 'redDotSight')
+      if (bonus.dice) dialogData.dicePool.modifiers.push({
+        type: 'redDotSight', label, value: bonus.dice
+      })
+      delete dialogData.limit.modifiers.redDotSight
+      if (accuracy) dialogData.limit.modifiers.redDotSight = {
+        label, value: accuracy
+      }
+      this.updateDicePoolValue(html)
+      this.updateLimitValue(html)
+    }
+    if (dialogData.combat.laser?.isLaser) {
+      dialogData.combat.laser.damageModify = laserDamageReduction(dialogData.target.range, dialogData.combat.environmentalColumns?.[0])
     }
   }
 
@@ -1128,6 +1158,7 @@ export default class SR5_RollDialog {
           value = SR5_CombatHelpers.rangeModifierWithEnvironment(baseRange, dialogData.combat.environmentalColumns)
           label = game.i18n.localize(dialogData.combat.environmentalColumns ? "SR5.RangeWithEnvironment" : SR5.dicePoolModTypes[modifierName])
           dialogData.target.range = ev.target.value
+          this._syncRangeEffects(html, dialogData)
           // Handle choke
           if (dialogData.combat.weaponType === "shotgun") {
             dialogData.combat.choke.damageModify = SR5_PrepareRollHelper.chokeSettingsOnDamage(dialogData.combat.choke.selected, dialogData.target.range)
@@ -1506,6 +1537,13 @@ export default class SR5_RollDialog {
           }
           if (dialogData.combat.armorPenetrationBeforeCalledShot === undefined) dialogData.combat.armorPenetrationBeforeCalledShot = dialogData.combat.armorPenetration
           dialogData.combat.armorPenetration = dialogData.combat.armorPenetrationBeforeCalledShot
+          //The toxin as the weapon carries it: picking the shot again does not add its +2 twice
+          if (dialogData.damage.toxin && dialogData.damage.toxinBeforeCalledShot === undefined) dialogData.damage.toxinBeforeCalledShot = {
+            ...dialogData.damage.toxin
+          }
+          if (dialogData.damage.toxinBeforeCalledShot) dialogData.damage.toxin = {
+            ...dialogData.damage.toxinBeforeCalledShot
+          }
           dialogData.combat.calledShot.name = ev.target.value
           dialogData.combat.calledShot.effects = SR5_CalledShotHelpers.convertCalledShotToEffect(ev.target.value, dialogData.combat.ammo.type, dialogData.combat.ammo.effects)
           dialogData.combat.calledShot.limitDV = SR5_CalledShotHelpers.convertCalledShotToLimitDV(ev.target.value, dialogData.combat.ammo.type, dialogData.combat.ammo.effects)
@@ -1520,15 +1558,9 @@ export default class SR5_RollDialog {
               dialogData.combat.armorPenetration = SR5_CalledShotHelpers.bullsEyeArmorPenetration(dialogData.combat.armorPenetrationBeforeCalledShot, bullsEyeWeapon?.system.armorPenetration.base ?? 0, dialogData.combat.firingMode.selected)
               break
             }
+            //Run & Gun p. 131: the toxin's Power +2 and speed -1, the DV does not change
             case "hitEmWhereItCounts":
-              if (dialogData.damage.toxin.power > 0) {
-                dialogData.damage.toxin.power += 2
-                if (dialogData.damage.value > 0) {
-                  dialogData.damage.value += 2
-                  dialogData.damage.base += 2
-                }
-              }
-              if (dialogData.damage.toxin.speed > 0) dialogData.damage.toxin.speed -= 1
+              if (dialogData.damage.toxin) dialogData.damage.toxin = jugularToxin(dialogData.damage.toxin)
               break
             case "throughAndInto":
               if (!dialogData.target.actorId) {
@@ -1636,6 +1668,7 @@ export default class SR5_RollDialog {
           baseRange += actor.system.itemsProperties.environmentalMod.range.value
           inputValue = SR5_CombatHelpers.rangeModifierWithEnvironment(baseRange, dialogData.combat.environmentalColumns)
           label = game.i18n.localize(dialogData.combat.environmentalColumns ? "SR5.RangeWithEnvironment" : SR5.dicePoolModTypes[modifierName])
+          this._syncRangeEffects(html, dialogData)
           break
         }
         case "chokeSettings": {
