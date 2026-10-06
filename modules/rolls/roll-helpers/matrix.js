@@ -247,20 +247,51 @@ export class SR5_MatrixHelpers {
     SR5_RollTest.renderRollCard(rollData)
   }
 
-  //The hits of a Jack Out card the GM stands by: a GM's as written; a player's counted again on its dice, within the
-  //Jack Out pool of the sheet (plus Chance) and its Firewall limit. null when the card cannot be believed
+  //The hits of a Jack Out card the GM stands by: a GM's as written; a player's counted again on its dice. `capped`: within
+  //the Jack Out pool of the sheet and its Firewall limit; `pushed`: within the pool plus the Edge rating, no limit (SR5
+  //p. 56), only if the GM grants the push (rollJackOut). null when the card cannot be believed
   static jackOutHits(cardData){
     const card = SR5_MiscellaneousHelpers.cardOf(cardData.owner?.messageId)
     if (!card || card.data.test?.typeSub !== "jackOut") return null
-    if (card.byGM) return {
-      card, hits: Math.max(0, Number(card.data.roll?.hits) || 0)
+    if (card.byGM) {
+      const hits = Math.max(0, Number(card.data.roll?.hits) || 0)
+      return {
+        card, capped: hits, pushed: hits, claimsPush: false
+      }
     }
-    const counted = recountHits(card.data.roll?.r, SR5_MiscellaneousHelpers.poolCap(card.roller, "matrix.actions.jackOut.test.dicePool"))
-    if (counted === null) return null
-    const limit = Number(card.roller?.system?.matrix?.actions?.jackOut?.limit?.value) || 0
+    const action = card.roller?.system?.matrix?.actions?.jackOut
+    const pool = Math.max(0, Number(action?.test?.dicePool) || 0)
+    const withEdge = SR5_MiscellaneousHelpers.poolCap(card.roller, "matrix.actions.jackOut.test.dicePool")
+    const counted = recountHits(card.data.roll?.r, pool), countedWithEdge = recountHits(card.data.roll?.r, withEdge)
+    if (counted === null || countedWithEdge === null) return null
+    const limit = Number(action?.limit?.value) || 0
     return {
-      card, hits: (limit > 0 && !card.data.edge?.hasUsedPushTheLimit) ? Math.min(counted, limit) : counted
+      card, capped: limit > 0 ? Math.min(counted, limit) : counted, pushed: countedWithEdge,
+      claimsPush: !!card.data.edge?.hasUsedPushTheLimit,
     }
+  }
+
+  //A player's card that says it pushed the limit: the roll spent the Edge on the player's own sheet, which she can write
+  //back. The push counts only if the sheet shows some Edge spent, and if the GM grants it (Anke's review)
+  static async grantJackOutPush(jackOut){
+    const actor = jackOut.card.roller
+    const spent = Number(actor?.system?.conditionMonitors?.edge?.actual?.value) || 0
+    const rating = Number(actor?.system?.specialAttributes?.edge?.augmented?.value) || 0
+    if (spent <= 0) {
+      ui.notifications.warn(game.i18n.format("SR5.WARN_JackOutPushNoEdge", {
+        hits: jackOut.capped
+      }))
+      return false
+    }
+    return foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: game.i18n.localize("SR5.JackOutPushTitle")
+      },
+      content: `<p>${game.i18n.format("SR5.JackOutPushConfirm", {
+        actor: foundry.utils.escapeHTML?.(actor.name) ?? actor.name, pushed: jackOut.pushed, capped: jackOut.capped, spent, rating
+      })}</p>`,
+      rejectClose: false,
+    }).catch(() => false)
   }
 
   static async rollJackOut(cardData){
@@ -271,11 +302,8 @@ export class SR5_MatrixHelpers {
     //review). The spent cards are the active GM's ledger
     if (!game.users?.activeGM?.isSelf) return ui.notifications.warn(game.i18n.localize("SR5.WARN_JackOutActiveGMOnly"))
     if (!(await SR5_MiscellaneousHelpers.consume(consumedKey(jackOut.card.id, "jackOut")))) return ui.notifications.warn(game.i18n.localize("SR5.WARN_JackOutCardSpent"))
-    //Pushing the limit lifts the Firewall cap, and the card says so itself: the GM checks the Chance was spent
-    if (!jackOut.card.byGM && jackOut.card.data.edge?.hasUsedPushTheLimit) ui.notifications.info(game.i18n.format("SR5.INFO_JackOutPushed", {
-      hits: jackOut.hits
-    }))
-    let actor = jackOut.card.roller, hits = jackOut.hits
+    let actor = jackOut.card.roller, hits = jackOut.capped
+    if (jackOut.claimsPush && await SR5_MatrixHelpers.grantJackOutPush(jackOut)) hits = jackOut.pushed
 
     //One jack out roll, whose hits are compared to each link lock in turn (SR5 p. 246): one resistance card per lock
     for (let lock of SR5_MatrixHelpers.getLinkLocks(actor)){

@@ -517,15 +517,54 @@ describe('Jacking out reboots the device used (SR5 p. 244)', () => {
         expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_JackOutActiveGMOnly')
       })
 
-      it('tells the GM when the card says it pushed the limit', async () => {
-        const info = vi.spyOn(ui.notifications, 'info').mockImplementation(() => {})
-        playerCard(3, [6, 5, 6, 1], {
+      // Anke's review: the push flag of the card was believed, 10 hits kept with no Edge spent
+      describe('that says it pushed the limit', () => {
+        const pushedCard = () => playerCard(99, [6, 6, 6, 6, 6, 6], {
           edge: {
             hasUsedPushTheLimit: true
           }
         })
-        await jackOutWith(3)
-        expect(info).toHaveBeenCalled()
+        beforeEach(() => {
+          // Pool 4, Edge 2, Firewall 3: capped, 3 hits; pushed, the six dice count
+          hacker.system.matrix.actions.jackOut.limit.value = 3
+          hacker.system.specialAttributes.edge.augmented.value = 2
+          hacker.system.conditionMonitors = {
+            edge: {
+              actual: {
+                value: 0
+              }
+            }
+          }
+          globalThis.foundry.applications.api ??= {
+          }
+          globalThis.foundry.applications.api.DialogV2 ??= {
+            confirm: async () => false
+          }
+        })
+
+        it('keeps the Firewall cap when the sheet spent no Edge, without asking the GM', async () => {
+          const grant = vi.spyOn(foundry.applications.api.DialogV2, 'confirm')
+          pushedCard()
+          await jackOutWith(99)
+          expect(grant).not.toHaveBeenCalled()
+          expect(render.mock.calls.map(c => c[0].previousMessage.hits)).toEqual([3, 3])
+        })
+
+        it('lifts the cap only when the GM grants the push', async () => {
+          hacker.system.conditionMonitors.edge.actual.value = 1
+          vi.spyOn(foundry.applications.api.DialogV2, 'confirm').mockResolvedValue(true)
+          pushedCard()
+          await jackOutWith(99)
+          expect(render.mock.calls.map(c => c[0].previousMessage.hits)).toEqual([6, 6])
+        })
+
+        it('keeps the cap when the GM refuses the push', async () => {
+          hacker.system.conditionMonitors.edge.actual.value = 1
+          vi.spyOn(foundry.applications.api.DialogV2, 'confirm').mockResolvedValue(false)
+          pushedCard()
+          await jackOutWith(99)
+          expect(render.mock.calls.map(c => c[0].previousMessage.hits)).toEqual([3, 3])
+        })
       })
 
       it('rolls nothing for a card nobody can stand by', async () => {
