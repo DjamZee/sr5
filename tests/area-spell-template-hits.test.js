@@ -92,7 +92,7 @@ describe("SR5_EffectArea.createTemplateEffect, a spell's hits", () => {
     globalThis.game = {
       user: gm,
       users: Object.assign([gm, player], {
-        filter: Array.prototype.filter
+        filter: Array.prototype.filter, activeGM: gm, get: id => [gm, player].find(u => u.id === id)
       }),
       messages: {
         get: id => (id === "m1" ? message : undefined), contents: [message]
@@ -182,6 +182,17 @@ describe("SR5_EffectArea.createTemplateEffect, a spell's hits", () => {
     await SR5_EffectArea.createTemplateEffect({
       id: "tok"
     }, template)
+    expect(target.applyExternalEffect).not.toHaveBeenCalled()
+  })
+
+  it("asks only at the designated GM's: another GM opens no window and applies nothing", async () => {
+    game.users.activeGM = {
+      id: "gm2", isGM: true
+    }
+    await SR5_EffectArea.createTemplateEffect({
+      id: "tok"
+    }, template)
+    expect(confirm).not.toHaveBeenCalled()
     expect(target.applyExternalEffect).not.toHaveBeenCalled()
   })
 

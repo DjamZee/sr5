@@ -801,6 +801,7 @@
 	"SR5.EffectCardMismatch": "The card stated {hits} hits and {netHits} net hits.",
 	"SR5.EffectCardOverPool": "The card shows more dice than the pool worked out again ({allowed}, Edge included): only the first ones count.",
 	"SR5.EffectCardItemMismatch": "{item}: the caster's sheet holds {written} hits, the dice of his card give {hits}. The template applies {hits}.",
+	"SR5.TemplateFlagsIgnored": "Template from {user} ({item}): the light, visibility, noise or background count written on it are ignored. Only the ones its item gives count. Place a template yourself if the scene calls for it.",
 	"SR5.ThresholdModifier": "Threshold of all tests (+)",
 	"SR5.ThresholdModifierHint": "added to the threshold of the test if it has one, no effect on a test without threshold.",
 	"SR5.DiceHitsReplace": "Hits (replace)",

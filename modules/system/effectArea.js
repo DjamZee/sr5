@@ -23,6 +23,14 @@ import {
 import {
   readsRoll
 } from "../rolls/roll-helpers/effect-card.js"
+import {
+  SR5
+} from "../config.js"
+
+//Every GM runs the templates' hooks: the one the game designates alone asks and warns
+function isActiveGM(){
+  return !!game.user?.isGM && game.users?.activeGM?.id === game.user.id
+}
 
 export class SR5_EffectArea {
 
@@ -235,7 +243,9 @@ export class SR5_EffectArea {
     let sourceName = game.i18n.localize("SR5.AreaEffect")
     if (templateData.itemUuid) sourceItem = await fromUuid(templateData.itemUuid)
     if (sourceItem) sourceName = sourceItem.name
-        
+    //A template a player placed: its light, noise and background count are worked out from its item, not read
+    templateData = SR5_EffectArea.trustedTemplateData(template, sourceItem)
+
     //environmental effects
     if (templateData.environmentalModifiers){
       for (let [key, value] of Object.entries(templateData.environmentalModifiers)){
@@ -330,6 +340,44 @@ export class SR5_EffectArea {
     }
   }
 
+  //The flags of a template are its author's to write (the template's form, the console). A GM's are kept. A
+  //player's keep only the identity of their item: the environment modifiers are the ones its effects give (as
+  //AbilityTemplate.fromItem sets them), and no item gives a noise or a background count. The GM is told once
+  //per template when something written on it is left out
+  static WARNED_TEMPLATES = new Set()
+  static trustedTemplateData(template, sourceItem){
+    const flags = template.flags?.sr5 ?? {
+    }
+    const author = template.author ?? game.users?.get?.(template.user)
+    if (author?.isGM) return flags
+    let environmentalModifiers
+    for (const e of Object.values(sourceItem?.system?.customEffects ?? {
+    })){
+      if (!e?.transfer || e.category !== "environmentalModifiers") continue
+      const key = (e.target ?? "").replace("system.itemsProperties.environmentalMod.", "")
+      if (key in (SR5.environmentalModifiers ?? {
+      })) environmentalModifiers = {
+        ...environmentalModifiers, [key]: e.value
+      }
+    }
+    const trusted = {
+      ...flags, environmentalModifiers, matrixNoise: 0, backgroundCountValue: 0, backgroundCountAlignement: undefined
+    }
+    const written = Object.entries(flags.environmentalModifiers ?? {
+    }).some(([k, v]) => (parseInt(v) || 0) !== (parseInt(environmentalModifiers?.[k]) || 0)) ||
+      (parseInt(flags.matrixNoise) || 0) !== 0 || (Number(flags.backgroundCountValue) || 0) !== 0
+    if (written && !SR5_EffectArea.WARNED_TEMPLATES.has(template.id) && isActiveGM()) {
+      SR5_EffectArea.WARNED_TEMPLATES.add(template.id)
+      ChatMessage.create({
+        whisper: game.users.filter(u => u.isGM).map(u => u.id),
+        content: `<p>${game.i18n.format("SR5.TemplateFlagsIgnored", {
+          user: author?.name ?? "?", item: sourceItem?.name ?? game.i18n.localize("SR5.AreaEffect")
+        })}</p>`,
+      })
+    }
+    return trusted
+  }
+
   //The hits of a cast, counted again once per template and cast, on the GM's client only (he alone applies the
   //templates' effects). null when the effect must not apply (refused, declined)
   static TEMPLATE_ROLLS = new Map()
@@ -341,6 +389,8 @@ export class SR5_EffectArea {
     }
     //A caster no player owns: the item is the GM's. A target his player owns too: nothing she could not do herself
     if (!players.length || players.some(u => actor.testUserPermission?.(u, "OWNER"))) return itemRoll
+    //One window, at the designated GM's: another GM leaves the effect to him
+    if (!isActiveGM()) return null
     //The cast this template comes from: only its identity is read off the template, the dice are on the card
     const message = (templateData.messageId && game.messages.get(templateData.messageId)) ||
       [...(game.messages?.contents ?? [])].reverse().find(m => m.flags?.sr5data?.test?.type === "spell" && m.flags.sr5data.owner?.itemUuid === templateData.itemUuid)
