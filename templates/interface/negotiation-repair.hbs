@@ -8,7 +8,7 @@
       <label class="checkbox">
         <input type="checkbox" name="candidate" value="{{uuid}}">
         <strong>{{name}}</strong>{{#if owner}} <span class="hint">({{owner}})</span>{{/if}}
-        — {{localize 'SR5.NEGO_REPAIR_Value'}} 0 → {{value}}
+        — {{localize 'SR5.NEGO_REPAIR_Value'}} 0 → {{value}}{{#if from}} <span class="hint">({{from}})</span>{{/if}}
       </label>
     </li>
     {{/each}}

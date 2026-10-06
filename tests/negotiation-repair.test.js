@@ -108,6 +108,32 @@ describe("The candidates of the repair window", () => {
     ])
   })
 
+  // Measured: a second copy of the same contact on a sheet gets a new id
+  it("falls back on a name a single compendium entry carries, never on an ambiguous one", async () => {
+    const second = doc("Actor.pc.Item.newId", "itemContact", "Prêteuse sur gages", negotiation(0), from(STALE))
+    const pc = doc("Actor.pc", "actorPc", "Runner", negotiation(3), {
+      items: [second]
+    })
+    const found = await SR5NegotiationRepair.findCandidates({
+      actors: [pc], items: [], resolve, itemPacks: [frContacts], applied: {
+      }
+    })
+    expect(found.map(c => [c.uuid, c.value, c.source])).toEqual([["Actor.pc.Item.newId", 5, packPawn.uuid]])
+
+    // The same name in another compendium: two entries, nothing offered
+    const other = {
+      documentName: "Item",
+      getIndex: async () => new Map([["other", {
+        _id: "other", type: "itemContact", name: "Prêteuse sur gages"
+      }]]),
+      getDocument: async () => doc("Compendium.x.y.Item.other", "itemContact", "Prêteuse sur gages", negotiation(3)),
+    }
+    expect(await SR5NegotiationRepair.findCandidates({
+      actors: [pc], items: [], resolve, itemPacks: [frContacts, other], applied: {
+      }
+    })).toEqual([])
+  })
+
   it("does not offer again a sheet already corrected, and keeps offering the others", async () => {
     const face = doc("Actor.face", "actorPc", "Face", negotiation(0), from("Compendium.mp.actors.Actor.face"))
     const dealer = doc("Item.dealer", "itemContact", "Vendeur d'armes", negotiation(0), from("Compendium.sr5.fr_contacts.Item.dealer"))

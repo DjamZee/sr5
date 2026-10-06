@@ -56,7 +56,8 @@ export class SR5NegotiationRepair extends foundry.applications.api.HandlebarsApp
    * pack, and a contact dropped from a pack onto a sheet keeps it (Hugo, measured). Its twin is then
    * looked for by id: the drop keeps the id it has in its pack, and an import keeps the embedded ids,
    * so the same id, type and name in a compendium of items, else in the source of the actor that
-   * carries it, is the original.
+   * carries it, is the original. Last, a name and a type that a single entry of the item compendiums
+   * carries. The window shows the source: the gamemaster judges.
    *
    * @param {object} [from]  what to look through, how to resolve a uuid, the item compendiums and the
    *                         corrections already applied (for the tests)
@@ -71,22 +72,40 @@ export class SR5NegotiationRepair extends foundry.applications.api.HandlebarsApp
   } = {
   }) {
     const indexes = new Map()
+    const indexOf = async pack => {
+      if (!indexes.has(pack)) {
+        let index = null
+        try {
+          index = await pack.getIndex()
+        } catch (_err) { /* an unreadable pack: skipped */ }
+        indexes.set(pack, index)
+      }
+      return indexes.get(pack)
+    }
     const packTwin = async doc => {
       for (const pack of itemPacks) {
-        if (!indexes.has(pack)) {
-          let index = null
-          try {
-            index = await pack.getIndex()
-          } catch (_err) { /* an unreadable pack: skipped */ }
-          indexes.set(pack, index)
-        }
-        const entry = indexes.get(pack)?.get?.(doc.id)
+        const entry = (await indexOf(pack))?.get?.(doc.id)
         if (entry?.type !== doc.type || entry.name !== doc.name) continue
         try {
           return await pack.getDocument(doc.id)
         } catch (_err) { /* gone since the index: next pack */ }
       }
       return null
+    }
+    // A second copy of the same contact on a sheet gets a new id (measured): the name and type then,
+    // only when a single entry of the item compendiums carries them
+    const namedTwin = async doc => {
+      const named = []
+      for (const pack of itemPacks) await indexOf(pack)
+      for (const pack of itemPacks) for (const entry of indexes.get(pack)?.values?.() ?? []) {
+        if (entry?.type === doc.type && entry.name === doc.name) named.push([pack, entry._id])
+      }
+      if (named.length !== 1) return null
+      try {
+        return await named[0][0].getDocument(named[0][1])
+      } catch (_err) {
+        return null
+      }
     }
     const cache = new Map()
     const load = async uuid => {
@@ -109,10 +128,13 @@ export class SR5NegotiationRepair extends foundry.applications.api.HandlebarsApp
         const twin = (await load(compendiumSourceOf(owner)))?.items?.get?.(doc.id)
         source = twin?.type === doc.type && twin.name === doc.name ? twin : null
       }
+      if (source?.type !== doc.type && doc.type === "itemContact") source = await namedTwin(doc)
       if (source?.type !== doc.type) return
       const value = sourceNegotiation(source.system)
       if (value > 0) found.push({
-        uuid: doc.uuid, name: doc.name, owner: owner?.name ?? "", value, source: source.uuid ?? ""
+        uuid: doc.uuid, name: doc.name, owner: owner?.name ?? "", value, source: source.uuid ?? "",
+        // Where the value comes from, shown to the gamemaster: the compendium, and the actor inside it
+        from: [source.compendium?.title ?? source.pack ?? "", source.parent?.name ?? ""].filter(Boolean).join(" › "),
       })
     }
     for (const actor of actors ?? []) {
@@ -182,7 +204,8 @@ export class SR5NegotiationRepair extends foundry.applications.api.HandlebarsApp
       })
       count++
     }
-    ui.notifications.info(game.i18n.format("SR5.NEGO_REPAIR_Applied", {
+    // A second click finds everything claimed: nothing to say
+    if (count) ui.notifications.info(game.i18n.format("SR5.NEGO_REPAIR_Applied", {
       count
     }))
     this.render()
