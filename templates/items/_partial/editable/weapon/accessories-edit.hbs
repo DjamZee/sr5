@@ -25,7 +25,8 @@
         <li class="subItemManagement grid" data-key="{{@key}}">
             <div class="col-5">
                 {{#if a.system}}
-                    {{a.name}}
+                    {{a.name}}{{#if a.capacityTotal}} [{{a.capacityUsed}}/{{a.capacityTotal}}]{{/if}}
+                    {{#if a.visionEnhancementNames}}<br><span class="SR-MarginLeft10">{{a.visionEnhancementNames}}</span>{{/if}}
                 {{else}}
                 <select name="system.accessory.{{i}}.name">
                 {{#select name}}

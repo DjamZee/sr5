@@ -633,7 +633,9 @@ export class SR5Actor extends Actor {
           i.prepareData()
           if (!iData.isSlavedToPan) actor.system.matrix.potentialPanObject.gears[i.uuid] = i.name
           if (iData.isActive && iData.wirelessTurnedOn) actor.system.matrix.connectedObject.gears[i.uuid] = i.name
-          if (iData.isActive && Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
+          //A vision enhancement mounted in a weapon accessory only counts for the shots of that weapon (arbitrage de
+          //DjamZ, 06/10, as the weapon flashlight): never on the character (SR5_UtilityItem.getWeaponVisionEnhancements)
+          if (iData.isActive && Object.keys(iData.customEffects).length && !SR5_UtilityItem.weaponAccessoryHost(i.id, actor)) SR5_CharacterUtility.applyCustomEffects(i, actor)
           break
 
         //A learned technique applies on its own, unless it is an action chosen for the roll (martial-arts-technique.js)

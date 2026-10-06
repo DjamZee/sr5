@@ -2,6 +2,9 @@ import {
   hasWeaponTrait, capBallReloadStep, CAP_BALL_STEPS, firearmCommandIsFree
 } from './weaponTraits.js'
 import {
+  accessoryCapacity, capacityTaken
+} from './weapon-accessory-rules.js'
+import {
   cleanCreatedSource
 } from "../../migration-source-modifiers.js"
 import {
@@ -138,6 +141,11 @@ export class SR5Item extends Item {
         if (itemData.ammunition.value > itemData.ammunition.max) itemData.ammunition.value = itemData.ammunition.max
         //A weapon accessory left marked plugged on no weapon can be mounted again
         if (this.actor && itemData.isAccessory) itemData.isPlugged = !!SR5_UtilityItem.accessoryHost(item.id, this.actor)
+        //Capacity for vision enhancements and what the mounted ones take (SR5 p. 434-435, 447), for the sheets
+        if (itemData.category === "weaponAccessory") {
+          itemData.weaponAccessory.capacityTotal = accessoryCapacity(item)
+          itemData.weaponAccessory.capacityUsed = capacityTaken(itemData.weaponAccessory.visionEnhancements)
+        }
         if (itemData.category === "meleeWeapon" && owner){
           SR5_UtilityItem._checkIfWeaponIsFocus(this, owner)
           if (itemData.isLinkedToFocus) SR5_UtilityItem._handleWeaponFocus(item, owner)

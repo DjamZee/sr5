@@ -11,6 +11,7 @@ const NAME_PATTERNS = {
   laserSight       : /visee laser|laser sight/,
   holographicSight : /holograph/,
   imagingScope     : /lunette de visee|imaging scope/,
+  periscope        : /periscope/,
   bipod            : /bipied|bipod/,
   foregrip         : /poignee avant|foregrip/,
   gyroMount        : /gyrostab|gyro mount/,
@@ -43,6 +44,63 @@ export function isAccessoryKind(a, key) {
 
 function isSmartgun(a) {
   return SMARTGUN_KEYS.some(key => a?.name === key || a?.system?.weaponAccessory?.specialEffect === key)
+}
+
+/**
+ * The Capacity an accessory offers vision enhancements: the one written on it, else the book's for an accessory it
+ * names, imaging scope and periscope "une Capacité de 3", a smartgun's camera "une Capacité de 1" (SR5 p. 434-435).
+ */
+export function accessoryCapacity(a) {
+  const written = Math.max(0, Math.floor(Number(a?.system?.weaponAccessory?.capacity)) || 0)
+  if (written) return written
+  if (isAccessoryKind(a, "imagingScope") || isAccessoryKind(a, "periscope")) return 3
+  if (isSmartgun(a)) return 1
+  return 0
+}
+
+/** The Capacity the mounted enhancements take (each enhancement's [Capacity], SR5 p. 447) */
+export function capacityTaken(enhancements) {
+  let list = enhancements ?? []
+  if (!Array.isArray(list)) list = Object.values(list)
+  return list.reduce((sum, e) => sum + Math.max(0, Number(e?.system?.capacityTaken?.value ?? e?.system?.capacityTaken?.base) || 0), 0)
+}
+
+/** Whether an enhancement fits in what is left of the accessory's Capacity */
+export function enhancementFits(a, enhancement) {
+  return capacityTaken(a?.system?.weaponAccessory?.visionEnhancements) + capacityTaken([enhancement]) <= accessoryCapacity(a)
+}
+
+/**
+ * What the vision enhancements mounted in the weapon's accessories give its shots (SR5 p. 434, 447). Arbitrage de
+ * DjamZ (06/10), as for the weapon flashlight: they only count for a shot with that weapon, when the weapon, the
+ * accessory and the enhancement are active. Read on the actor's own items (`getItem(id)`), not on the copies.
+ * @returns {{lowLight: boolean, thermographic: boolean, glare: number, zoom: boolean}}
+ */
+export function scopeVision(weaponData, getItem) {
+  const result = {
+    lowLight: false, thermographic: false, glare: 0, zoom: false
+  }
+  if (!weaponData?.isActive) return result
+  for (const a of accessoryList(weaponData)) {
+    if (!a.isActive) continue
+    const live = a._id ? getItem(a._id) : null
+    const accessory = live ?? a
+    //The imaging scope's zoom takes a row off range for this weapon only (SR5 p. 434: "inclut une micro-caméra et un zoom")
+    if (accessory.system?.weaponAccessory?.specialEffect === "imagingScope" || isAccessoryKind(accessory, "imagingScope")) result.zoom = true
+    let mounted = accessory.system?.weaponAccessory?.visionEnhancements ?? []
+    if (!Array.isArray(mounted)) mounted = Object.values(mounted)
+    for (const copy of mounted) {
+      const gear = copy?._id ? getItem(copy._id) : null
+      if (!gear?.system?.isActive) continue
+      for (const effect of Object.values(gear.system.customEffects ?? {
+      })) {
+        if (effect?.target === "system.visions.lowLight.augmented" && String(effect.value) === "true") result.lowLight = true
+        if (effect?.target === "system.visions.thermographic.augmented" && String(effect.value) === "true") result.thermographic = true
+        if (effect?.target === "system.itemsProperties.environmentalMod.glare") result.glare = Math.min(result.glare, Number(effect.value) || 0)
+      }
+    }
+  }
+  return result
 }
 
 /**

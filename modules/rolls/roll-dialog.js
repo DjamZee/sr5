@@ -1154,7 +1154,8 @@ export default class SR5_RollDialog {
           break
         case "targetRange": {
           let baseRange = SR5_ConverterHelpers.rangeToEnvironmentalLine(ev.target.value)
-          baseRange += actor.system.itemsProperties.environmentalMod.range.value
+          //The zoom of this weapon's scope, not of the character's other weapons (SR5 p. 434)
+          baseRange += actor.system.itemsProperties.environmentalMod.range.value + (dialogData.combat.scopeRangeMod || 0)
           value = SR5_CombatHelpers.rangeModifierWithEnvironment(baseRange, dialogData.combat.environmentalColumns)
           label = game.i18n.localize(dialogData.combat.environmentalColumns ? "SR5.RangeWithEnvironment" : SR5.dicePoolModTypes[modifierName])
           dialogData.target.range = ev.target.value
@@ -1671,7 +1672,8 @@ export default class SR5_RollDialog {
         case "targetRange": {
           selectValue = dialogData.target.range
           let baseRange = SR5_ConverterHelpers.rangeToEnvironmentalLine(dialogData.target.range)
-          baseRange += actor.system.itemsProperties.environmentalMod.range.value
+          //The zoom of this weapon's scope, not of the character's other weapons (SR5 p. 434)
+          baseRange += actor.system.itemsProperties.environmentalMod.range.value + (dialogData.combat.scopeRangeMod || 0)
           inputValue = SR5_CombatHelpers.rangeModifierWithEnvironment(baseRange, dialogData.combat.environmentalColumns)
           label = game.i18n.localize(dialogData.combat.environmentalColumns ? "SR5.RangeWithEnvironment" : SR5.dicePoolModTypes[modifierName])
           this._syncRangeEffects(html, dialogData)

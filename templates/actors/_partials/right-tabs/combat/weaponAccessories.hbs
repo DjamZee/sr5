@@ -29,7 +29,7 @@
 		{{#each actor.weaponAccessories}}
 		{{#if system.isPlugged}}
 		<li class="item grid" data-item-id="{{_id}}" draggable="true">
-			<div class="col-6">{{name}}</div>
+			<div class="col-6">{{name}}{{#if system.weaponAccessory.capacityTotal}} [{{system.weaponAccessory.capacityUsed}}/{{system.weaponAccessory.capacityTotal}}]{{/if}}{{#each system.weaponAccessory.visionEnhancements}}<br><span class="SR-MarginLeft10">{{name}}</span>{{/each}}</div>
 			<div class="col-4 SR-TextCenter">
 				{{#if system.weaponAccessory.slot}}
 					{{findTranslation "weaponAccessorySlots" system.weaponAccessory.slot}}
@@ -65,7 +65,7 @@
 		</li>
 		{{else}}
 		<li class="item grid SR-LightGreyColor" data-item-id="{{_id}}" draggable="true">
-			<div class="col-6">{{name}}</div>
+			<div class="col-6">{{name}}{{#if system.weaponAccessory.capacityTotal}} [{{system.weaponAccessory.capacityUsed}}/{{system.weaponAccessory.capacityTotal}}]{{/if}}{{#each system.weaponAccessory.visionEnhancements}}<br><span class="SR-MarginLeft10">{{name}}</span>{{/each}}</div>
 			<div class="col-4 SR-TextCenter">
 				{{#if system.weaponAccessory.slot}}
 					{{findTranslation "weaponAccessorySlots" system.weaponAccessory.slot}}

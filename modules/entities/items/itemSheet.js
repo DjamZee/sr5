@@ -49,6 +49,9 @@ import {
 import {
   TACNET_COMBAT_SKILLS
 } from "../../rolls/roll-helpers/tacnet.js"
+import {
+  enhancementFits
+} from "./weapon-accessory-rules.js"
 
 // Item types that include a footer (condition monitors, price/availability)
 const ITEM_FOOTER_TYPES = new Set([
@@ -748,6 +751,9 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
 
     // Accessory choice
     el.querySelectorAll(".accessoryChoice").forEach(node => node.addEventListener("click", this.#onAccessoryChoice.bind(this)))
+    // Vision enhancements mounted in a weapon accessory (SR5 p. 434)
+    el.querySelectorAll(".visionEnhancementChoice").forEach(node => node.addEventListener("click", this.#onVisionEnhancementChoice.bind(this)))
+    el.querySelectorAll(".visionEnhancementRemove").forEach(node => node.addEventListener("click", this.#onVisionEnhancementRemove.bind(this)))
 
     // Item-based accessory checkbox toggles (avoid form submission destroying item data)
     el.querySelectorAll(".accessory-toggle").forEach(node => node.addEventListener("change", this.#onAccessoryToggle.bind(this)))
@@ -971,6 +977,70 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
   }
 
   // Toggle isFree/isActive on item-based accessories without form submission
+  // Mount one of the actor's vision enhancements (itemGear accessory) in this weapon accessory, within its Capacity
+  async #onVisionEnhancementChoice(event) {
+    event.preventDefault()
+    const actor = this.item.actor
+    if (!actor) return
+    const choices = {
+    }
+    for (let i of actor.items) {
+      if (i.type === "itemGear" && i.system.isAccessory && !i.system.isPlugged) choices[i.id] = i.name
+    }
+    const dlg = await foundry.applications.handlebars.renderTemplate("systems/sr5/templates/interface/chooseAccessory.hbs", {
+      accessoriesList: SR5_EntityHelpers.sortObjectValue(choices)
+    })
+    const result = await foundry.applications.api.DialogV2.wait({
+      window: {
+        title: game.i18n.localize('SR5.ChooseVisionEnhancement')
+      },
+      content: dlg,
+      buttons: [
+        {
+          action: "ok", label: "Ok", default: true,
+          callback: (event, button, dialog) => ({
+            action: "ok", element: dialog.element
+          }),
+        },
+        {
+          action: "cancel", label: "Cancel",
+          callback: () => ({
+            action: "cancel"
+          }),
+        },
+      ],
+      rejectClose: false,
+    })
+    if (!result || result.action !== "ok") return
+    const gear = actor.items.get(result.element.querySelector("[name=accessory]")?.value)
+    if (!gear) return
+    //The prepared copy carries the Capacity the enhancement takes (a rated one: rating × its Capacity)
+    const copy = gear.toObject(false)
+    if (!enhancementFits(this.item, copy)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_AccessoryCapacityFull"))
+    let mounted = foundry.utils.deepClone(this.item._source.system.weaponAccessory?.visionEnhancements ?? [])
+    if (!Array.isArray(mounted)) mounted = Object.values(mounted)
+    mounted.push(copy)
+    await this.item.update({
+      "system.weaponAccessory.visionEnhancements": mounted
+    })
+    await gear.update({
+      "system.isPlugged": true
+    })
+  }
+
+  // Take a vision enhancement out of this weapon accessory: it is free to be mounted again
+  async #onVisionEnhancementRemove(event) {
+    event.preventDefault()
+    const index = Number(event.currentTarget.dataset.index)
+    let mounted = foundry.utils.deepClone(this.item._source.system.weaponAccessory?.visionEnhancements ?? [])
+    if (!Array.isArray(mounted)) mounted = Object.values(mounted)
+    const [gone] = mounted.splice(index, 1)
+    await this.item.update({
+      "system.weaponAccessory.visionEnhancements": mounted
+    })
+    if (gone?._id) await SR5_UtilityItem.unplugRemovedAccessory(this.item.actor, gone._id)
+  }
+
   async #onAccessoryToggle(event) {
     event.preventDefault()
     event.stopPropagation()

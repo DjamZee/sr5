@@ -41,7 +41,7 @@ import {
   energyAuraApplies, LASER_TRAIT
 } from "../roll-helpers/weapon-attack-rules.js"
 import {
-  redDotSightWorks
+  redDotSightWorks, scopeVision
 } from "../../entities/items/weapon-accessory-rules.js"
 
 //Add info for weapon Roll
@@ -383,6 +383,9 @@ async function handleTargetInfo(rollData, actor, item){
   //A flashlight lights where its own weapon points (Run & Gun p. 69): only this weapon's counts
   const weaponLight = SR5_UtilityItem.getWeaponLightCompensation(itemData, actor)
   const weaponLightCap = SR5_UtilityItem.getWeaponLightCap(itemData)
+  //So do the vision enhancements and the zoom of its scope (SR5 p. 434; arbitrage de DjamZ, 06/10)
+  const weaponVision = scopeVision(itemData, id => actor.items.get(id))
+  rollData.combat.scopeRangeMod = weaponVision.zoom ? -1 : 0
 
   //Handle Melee specifics
   if (itemData.category === "meleeWeapon") {
@@ -400,7 +403,7 @@ async function handleTargetInfo(rollData, actor, item){
       ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetIsTooFar"))
       return false
     }
-    sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, true, areaEffect, true, weaponLight, weaponLightCap)
+    sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, true, areaEffect, true, weaponLight, weaponLightCap, weaponVision)
     // Kept on the card for the defense to compare with (SR5 p. 188 option), before the option clears it here
     rollData.combat.environmentalMod = sceneEnvironmentalMod
     const targetMod = SR5_CombatHelpers.meleeEnvironmentalMod(SR5_CombatHelpers.environmentScene(), targetActor)
@@ -428,7 +431,7 @@ async function handleTargetInfo(rollData, actor, item){
       ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetIsTooFar"))
       return false
     }
-    const environmentalColumns = SR5_CombatHelpers.environmentalColumns(SR5_CombatHelpers.environmentScene(), actor.system, false, areaEffect, false, weaponLight, weaponLightCap)
+    const environmentalColumns = SR5_CombatHelpers.environmentalColumns(SR5_CombatHelpers.environmentScene(), actor.system, false, areaEffect, false, weaponLight, weaponLightCap, weaponVision)
     if (environmentalColumns) {
       // Range is an environmental modifier (SR5 p. 176): the roll dialog weighs the range line against these
       rollData.combat.environmentalColumns = environmentalColumns

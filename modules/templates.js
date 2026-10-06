@@ -575,6 +575,7 @@ export const preloadHandlebarsTemplates = async function () {
 				
     //Weapon
     "systems/sr5/templates/items/_partial/editable/weapon/accessories-edit.hbs",
+    "systems/sr5/templates/items/_partial/editable/weapon/visionEnhancements-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/weapon/accuracy-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/weapon/aerodynamic-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/weapon/ammunitionMax-edit.hbs",

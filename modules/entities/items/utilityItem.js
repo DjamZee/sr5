@@ -17,7 +17,7 @@ import {
   WEAPON_ACCESSORY_CATALOG 
 } from "../../data/weaponAccessoryCatalog.js"
 import {
-  isAccessoryKind, ignoredRecoilAccessories
+  isAccessoryKind, ignoredRecoilAccessories, accessoryCapacity, capacityTaken
 } from "./weapon-accessory-rules.js"
 import {
   SR5_Toxins
@@ -1070,7 +1070,14 @@ export class SR5_UtilityItem extends Actor {
   static _syncAccessoryActive(a, actor) {
     if (!actor || !a._id) return
     const liveItem = actor.items?.get(a._id)
-    if (liveItem) a.isActive = liveItem.system.isActive
+    if (!liveItem) return
+    a.isActive = liveItem.system.isActive
+    //Its Capacity and the vision enhancements mounted in it since it was put on the weapon (SR5 p. 434), for the sheets
+    let mounted = liveItem.system.weaponAccessory?.visionEnhancements ?? []
+    if (!Array.isArray(mounted)) mounted = Object.values(mounted)
+    a.capacityTotal = accessoryCapacity(liveItem)
+    a.capacityUsed = capacityTaken(mounted)
+    a.visionEnhancementNames = mounted.map(e => e?.name).filter(Boolean).join(", ")
   }
 
   //The recoil compensation an accessory brings (catalog entry or item), for Run & Gun p. 71
@@ -1179,26 +1186,20 @@ export class SR5_UtilityItem extends Actor {
     for (let a of itemData.accessory) {
       // Determine special effect: from item data or from catalog
       let effectType = null
-      let label = a.name || 'Accessory'
       if (a.system) {
         effectType = a.system.weaponAccessory?.specialEffect
-        label = a.name
       } else {
         const catalog = WEAPON_ACCESSORY_CATALOG[a.name]
         if (!catalog?.systemEffects) continue
         effectType = catalog.systemEffects[0]?.value
-        label = game.i18n.localize(SR5.weaponAccessories[a.name]) || a.name
       }
       if (!effectType) continue
 
       switch (effectType) {
         // flashLightInfrared and flashLightLowLight light where the weapon points (Run & Gun p. 69): they are
         // not written on the actor, see getWeaponLightCompensation
-        case "imagingScope":
-          if (a.isActive && itemData.isActive) {
-            SR5_EntityHelpers.updateModifier(actor.system.itemsProperties.environmentalMod.range, label, "weaponAccessory", -1, false, false)
-          }
-          break
+        // imagingScope: its zoom takes a row off range for the shots of its own weapon only, not for the actor's
+        // other weapons (scopeVision, rollData-Weapon.js)
         case "smartgunInternal":
         case "smartgunExternal": {
           let hasSmartlink = false
@@ -2675,8 +2676,21 @@ export class SR5_UtilityItem extends Actor {
   }
 
   //The item of the actor that carries the given accessory in its list, a weapon included
+  //The weapon accessory a vision enhancement is mounted in (SR5 p. 434), or undefined
+  static weaponAccessoryHost(itemId, actor){
+    for (let i of actor?.items ?? []){
+      if (i.type !== "itemWeapon") continue
+      let enhancements = i.system.weaponAccessory?.visionEnhancements
+      if (enhancements && !Array.isArray(enhancements)) enhancements = Object.values(enhancements)
+      if (enhancements?.some(e => e?._id === itemId)) return i
+    }
+  }
+
   static accessoryHost(itemId, actor){
     for (let i of actor.items){
+      if (i.type === "itemWeapon" && SR5_UtilityItem.weaponAccessoryHost(itemId, {
+        items: [i]
+      })) return i
       if (!["itemGear", "itemArmor", "itemAugmentation", "itemWeapon"].includes(i.type) || !i.system.accessory) continue
       if (typeof i.system.accessory === "object") i.system.accessory = Object.values(i.system.accessory)
       if (i.system.accessory.find(a => a?._id === itemId)) return i
