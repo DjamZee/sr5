@@ -1,17 +1,19 @@
 // Defragmentation echo and the Deactivation resonance action (Dark Terrors p. 89-90): a technomancer with the echo
 // forces an AI or a Monad out of its biological host or of its home device.
 // - Test: Charisma + Willpower, or, with the Decompiling skill, Decompiling + Resonance + Willpower. The book gives
-//   no limit: the Decompiling test is "the usual one", Decompile Sprite is [Social] (SR5 p. 252), so both are [Social].
+//   no limit: the Decompiling test is "the usual one", Decompile Sprite is [Social] (SR5 p. 252), hence [Social]; the
+//   same limit for Charisma + Willpower is our reading. Both to be confirmed by DjamZ.
 // - The AI resists with Depth x 2, the Monad with Matrix Entity Concentration (MEC) x 2.
 // - Net hits equal to the Depth or the MEC: the digital intelligence is expelled and flees into the Matrix.
 // - Fading: 2 per hit of the target (not only the net ones), at least 2.
 // Everything is rolled by the active GM's client, on pools it works out itself from the sheets: nothing a player
-// writes on a card or a flag counts. The expulsion itself is left to the GM: the card says it, the sheet is untouched.
+// writes on a card or a flag counts. So the player cannot spend Edge on the test: a choice made for safety, to be
+// confirmed by DjamZ. The expulsion itself is left to the GM: the card says it, the sheet is untouched.
 import {
   SR5_SystemHelpers
 } from "./utilitySystem.js"
 import {
-  markRowDoneInMessage, cardFromGM
+  contentWithRowDone, cardFromGM
 } from "./card-rows.js"
 
 export const DEFRAG_ECHO = /d[ée]frag/i
@@ -130,6 +132,18 @@ async function rollPool(dicePool, limit){
 
 const diceText = (roll) => (roll.dices ?? []).map(d => d.result).join(", ")
 
+// A glitch or a critical glitch on a roll of the card, as the system's dice tell it
+export function glitchKey(roll){
+  if (roll?.criticalGlitchRoll) return "SR5.DEFRAG_CriticalGlitch"
+  if (roll?.glitchRoll) return "SR5.DEFRAG_Glitch"
+  return null
+}
+
+function glitchText(roll){
+  const key = glitchKey(roll)
+  return key ? ` <strong>${game.i18n.localize(key)}</strong>` : ""
+}
+
 // The GM sees the link on the sheet of an AI or a Monad
 export function deactivationStatus(actor){
   if (!game.user.isGM) return null
@@ -209,15 +223,16 @@ export async function runDeactivation(target, {
   const physical = fadingIsPhysical(strength, resonance)
   const strengthLabel = game.i18n.localize(kind === "monad" ? "SR5.DEFRAG_Cem" : "SR5.Depth")
   const testLabel = game.i18n.localize(m === "decompiling" ? "SR5.DEFRAG_TestDecompiling" : "SR5.DEFRAG_TestCharisma")
+  const net = Math.max(0, out.net)
   const rows = [
     game.i18n.format("SR5.DEFRAG_OwnRoll", {
       tm: escape(tm.name), test: testLabel, pool: pool.dicePool, limit: pool.limit, dice: diceText(own), hits: own.hits ?? 0
-    }),
+    }) + glitchText(own),
     game.i18n.format("SR5.DEFRAG_TargetRoll", {
       target: escape(target.name), label: strengthLabel, strength, pool: strength * 2, dice: diceText(res), hits: res.hits ?? 0
-    }),
+    }) + glitchText(res),
     `<strong>${game.i18n.format(out.expelled ? "SR5.DEFRAG_Expelled" : "SR5.DEFRAG_Failed", {
-      target: escape(target.name), net: Math.max(0, out.net), needed: strength
+      target: escape(target.name), net, needed: strength, s: net > 1 ? "s" : ""
     })}</strong>`,
   ]
   if (out.expelled && kind === "ai") rows.push(game.i18n.localize("SR5.DEFRAG_ExpelledAI"))
@@ -256,8 +271,36 @@ async function resistFading(message){
   // Compared with the Resonance by the Fading test, as the Level of a decompiled sprite is
   chatData.matrix.fadingLevel = num(data.strength)
   chatData.roll.hits = 0
+  // The Fading card keeps the id of this one: the row is marked done only once the test is rolled
+  chatData.owner.messageId = message.id
+  watchFadingCards()
   tm.rollTest("fading", null, chatData)
   return true
+}
+
+// A Fading card rolled from a Deactivation card: the system's Fading test keeps the id of the card it comes from
+export function isFadingCardOf(sr5data, cardId){
+  return sr5data?.test?.type === "fading" && !!cardId && sr5data?.previousMessage?.messageId === cardId
+}
+
+// Once the Fading test is rolled, its Deactivation card loses its button. Closing the dialog without rolling keeps it
+let watching = false
+function watchFadingCards(){
+  if (watching) return
+  watching = true
+  Hooks.on("createChatMessage", async (created) => {
+    const cardId = created.flags?.sr5data?.previousMessage?.messageId
+    //A player's card naming the GM's card would take its button away: only a Fading card rolled by a GM counts
+    if (!isActiveGM() || !cardFromGM(created) || !isFadingCardOf(created.flags?.sr5data, cardId)) return
+    const card = game.messages.get(cardId)
+    if (!card?.flags?.sr5?.deactivation || !cardFromGM(card)) return
+    const content = contentWithRowDone(card.content, {
+      "defrag-fading": "1"
+    }, "[data-sr5-defrag]", game.i18n.localize("SR5.CALENDAR_RowDone"))
+    if (content) await card.update({
+      content
+    }).catch(e => SR5_SystemHelpers.srLog(1, `Deactivation card not marked: ${e}`))
+  })
 }
 
 export function activateDeactivationListeners(html, message){
@@ -267,8 +310,7 @@ export function activateDeactivationListeners(html, message){
     const btn = event.currentTarget
     if (!isActiveGM()) return ui.notifications.warn(game.i18n.localize("SR5.DEFRAG_ActiveGMOnly"))
     btn.disabled = true
-    const done = await resistFading(message).catch(e => SR5_SystemHelpers.srLog(1, `Deactivation fading not opened: ${e}`))
-    if (done) await markRowDoneInMessage(btn.closest(".sr5-defrag-row"), "[data-sr5-defrag]", game.i18n.localize("SR5.CALENDAR_RowDone"))
-    else btn.disabled = false
+    await resistFading(message).catch(e => SR5_SystemHelpers.srLog(1, `Deactivation fading not opened: ${e}`))
+    btn.disabled = false
   }))
 }

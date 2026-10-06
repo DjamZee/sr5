@@ -50,9 +50,10 @@ SR5.magicOrResonance = {
 }
 
 //
+//The MEC of a Monad is no attribute a power, a complex form or a tradition rolls: kept out of their menus
 SR5.allAttributes = {
   ...SR5.characterAttributes,
-  ...SR5.characterSpecialAttributes
+  ...Object.fromEntries(Object.entries(SR5.characterSpecialAttributes).filter(([key]) => key !== "cem"))
 }
 
 SR5.allAttributesWithoutEdge = {

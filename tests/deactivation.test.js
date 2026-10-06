@@ -3,8 +3,64 @@ import {
 } from "vitest"
 import {
   hasDefragmentation, targetKind, targetStrength, deactivationPool, bestMethod, resolveDeactivation,
-  deactivationFading, fadingIsPhysical, activateDeactivationListeners
+  deactivationFading, fadingIsPhysical, activateDeactivationListeners, glitchKey, isFadingCardOf
 } from "../modules/system/deactivation.js"
+import {
+  SR5
+} from "../modules/config.js"
+
+describe("Matrix Entity Concentration", () => {
+  it("is a special attribute of the sheet, but no attribute a power, a complex form or a tradition rolls", () => {
+    expect(SR5.characterSpecialAttributes.cem).toBe("SR5.DEFRAG_Cem")
+    expect(SR5.allAttributes.cem).toBeUndefined()
+    expect(SR5.allAttributes.nanite).toBe("SR5.NaniteVolume")
+  })
+})
+
+describe("Deactivation card, second round", () => {
+  it("tells a glitch and a critical glitch", () => {
+    expect(glitchKey({
+      glitchRoll: true
+    })).toBe("SR5.DEFRAG_Glitch")
+    expect(glitchKey({
+      glitchRoll: false, criticalGlitchRoll: true
+    })).toBe("SR5.DEFRAG_CriticalGlitch")
+    expect(glitchKey({
+      hits: 3
+    })).toBe(null)
+  })
+
+  it("knows the Fading card rolled from it, and no other", () => {
+    expect(isFadingCardOf({
+      test: {
+        type: "fading"
+      }, previousMessage: {
+        messageId: "abc"
+      }
+    }, "abc")).toBe(true)
+    expect(isFadingCardOf({
+      test: {
+        type: "drain"
+      }, previousMessage: {
+        messageId: "abc"
+      }
+    }, "abc")).toBe(false)
+    expect(isFadingCardOf({
+      test: {
+        type: "fading"
+      }, previousMessage: {
+        messageId: "xyz"
+      }
+    }, "abc")).toBe(false)
+    expect(isFadingCardOf({
+      test: {
+        type: "fading"
+      }, previousMessage: {
+        messageId: null
+      }
+    }, null)).toBe(false)
+  })
+})
 
 const val = (v) => ({
   augmented: {
