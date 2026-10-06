@@ -460,11 +460,20 @@ describe("a player cannot move her disease on (the two flaws of the week)", () =
         }
       })
     }
+    // The infected character is the player's: her rolls may carry an Apply button (security 06/10, Kurt)
+    globalThis.fromUuidSync = () => ({
+      testUserPermission: (u) => u.id === "p"
+    })
   })
+
+  const player = {
+    id: "p", isGM: false
+  }
 
   it("the GM's Apply button shows only on a roll carrying the request token of the ledger", () => {
     const ok = html()
     addDiseaseApplyButton({
+      author: player,
       flags: {
         sr5data: {
           disease: {
@@ -618,13 +627,24 @@ describe("a player cannot move her disease on (the two flaws of the week)", () =
         }
       }
     })
+    // The dice the card shows: its hits first, then misses up to its pool
+    const r = {
+      terms: [{
+        results: Array.from({
+          length: Math.max(cardPool, cardHits)
+        }, (_d, i) => ({
+          result: i < cardHits ? 5 : 1, active: true
+        }))
+      }]
+    }
     addDiseaseApplyButton({
+      author: player,
       flags: {
         sr5data: {
           disease: {
             infectionId: "i1", token: "t1"
           }, roll: {
-            hits: cardHits
+            hits: cardHits, r
           }, edge: {
             hasUsedPushTheLimit: pushed
           }, dicePool: {

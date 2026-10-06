@@ -3252,6 +3252,8 @@
 	"SR5.DISEASE_ZeroReached": "Un attribut ou l'Essence est tombé à 0 : mort ou incapacité selon la maladie, à trancher par le MJ.",
 	"SR5.DISEASE_CardPool": "La carte dit : {hits} succès sur {pool} dés.",
 	"SR5.DISEASE_HitsAbovePool": "Plus de succès que de dés : la carte a été modifiée.",
+	"SR5.DISEASE_HitsOnDice": "Les dés de la carte montrent {hits} succès : la carte a été modifiée.",
+	"SR5.DISEASE_NoDice": "La carte ne montre pas ses dés : saisissez vous-même les succès.",
 	"SR5.DISEASE_Outcome": "{actor}, {name} : Puissance {power}, {hits} succès, reste {residual}. Tests faits : {n} / {min}.",
 	"SR5.DISEASE_Cured": "La maladie est vaincue.",
 	"SR5.DISEASE_Recovering": "Maladie vaincue : {n} point(s) d'Essence à récupérer, 1 par 24 heures.",

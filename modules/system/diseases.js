@@ -19,6 +19,9 @@ import {
 import {
   SR5_Toxins
 } from "../entities/items/toxins.js"
+import {
+  recountHits
+} from "../rolls/roll-helpers/socket-guard.js"
 
 export const DISEASE_LEDGER = "sr5DiseaseLedger"
 export const REVEAL_DISEASES_SETTING = "sr5RevealDiseases"
@@ -205,6 +208,20 @@ export function hitsCap(pool, card){
 // A card claiming more hits than it rolled dice was written by hand
 export function hitsAboveDice(hits, pool){
   return (Number(hits) || 0) > Math.max(0, Number(pool) || 0)
+}
+
+// A disease roll the GM may apply: written by a GM, or by an owner of the infected character. A chat card is its
+// author's to write, flags included: anyone else names the infection only by forging a card (security 06/10)
+export function diseaseCardTrusted(author, actor){
+  if (!author) return false
+  return !!author.isGM || !!actor?.testUserPermission?.(author, "OWNER")
+}
+
+// The hits the GM's window starts from: a GM's card as written; a player's counted again on its dice, the first `pool`
+// of them and the rerolls of the Rule of Six after (SR5 p. 44, 58), never what the card says. null: no dice shown
+export function diseaseCardHits(card, fromGM, pool){
+  if (fromGM) return Math.max(0, Number(card?.roll?.hits) || 0)
+  return recountHits(card?.roll?.r, pool)
 }
 
 // One day of recovery more (Bullets & Bandages p. 21)
@@ -560,6 +577,7 @@ export function addDiseaseApplyButton(message, html){
   const ref = data?.disease
   const entry = diseaseLedger().infections?.[ref?.infectionId]
   if (!entry?.request || entry.request.token !== ref.token) return
+  if (!diseaseCardTrusted(message.author, fromUuidSync(entry.actorUuid))) return
   const button = document.createElement("button")
   button.type = "button"
   button.classList.add("sr5-disease-apply")
@@ -569,22 +587,26 @@ export function addDiseaseApplyButton(message, html){
   anchor?.after?.(button)
 }
 
+// The requests whose window is open in this browser: a double click opened two windows, and so did two renders of
+// one card (the chat log and a popped out card), each with its own button
+const APPLYING = new Set()
+
 async function applyFromCard(message, button){
   const ref = message.flags?.sr5data?.disease
   const entry = diseaseLedger().infections?.[ref?.infectionId]
   if (!entry?.request || entry.request.token !== ref.token) return button.remove()
-  //One window at a time: a double click opened two
-  if (button.dataset?.pending) return
-  if (button.dataset) button.dataset.pending = "1"
+  const key = `${ref.infectionId}|${ref.token}`
+  if (APPLYING.has(key)) return
+  APPLYING.add(key)
   try {
     await confirmAndApply(message, button, ref, entry)
   } finally {
-    if (button.dataset) delete button.dataset.pending
+    APPLYING.delete(key)
   }
 }
 
 async function confirmAndApply(message, button, ref, entry){
-  const suggested = Math.max(0, Number(message.flags?.sr5data?.roll?.hits) || 0)
+  const claimed = Math.max(0, Number(message.flags?.sr5data?.roll?.hits) || 0)
   const power = entry.request.power
   //The card is the player's: the pool beside the hits is the one the GM works out from the character
   const actor = await fromUuid(entry.actorUuid)
@@ -593,7 +615,17 @@ async function confirmAndApply(message, button, ref, entry){
   const base = diseasePool(actor.system, entry)
   const pool = hitsCeiling(base, actor.system, message.flags?.sr5data)
   const cap = hitsCap(base, message.flags?.sr5data)
-  const alert = hitsAboveDice(suggested, pool) ? `<p class="sr5-disease-alert" style="color: #c00; font-weight: bold;">${game.i18n.localize("SR5.DISEASE_HitsAbovePool")}</p>` : ""
+  const counted = diseaseCardHits(message.flags?.sr5data, cardFromGM(message), pool)
+  const warn = (text) => `<p class="sr5-disease-alert" style="color: #c00; font-weight: bold;">${text}</p>`
+  //Past the pool, or no dice to count: the field stays empty and the GM types the hits (Inès, 05/10). Otherwise it
+  //starts from the hits counted on the dice, not from those the card claims (security 06/10)
+  const above = hitsAboveDice(claimed, pool)
+  let alert = above ? warn(game.i18n.localize("SR5.DISEASE_HitsAbovePool")) : ""
+  if (counted === null) alert += warn(game.i18n.localize("SR5.DISEASE_NoDice"))
+  else if (counted !== claimed) alert += warn(game.i18n.format("SR5.DISEASE_HitsOnDice", {
+    hits: counted
+  }))
+  const prefill = above || counted === null ? "" : Math.min(counted, cap)
   const hits = await foundry.applications.api.DialogV2.prompt({
     window: {
       title: "SR5.DISEASE_Apply"
@@ -602,9 +634,9 @@ async function confirmAndApply(message, button, ref, entry){
       actor: escape(entry.actorName), name: escape(entry.profile.name), power
     })}</p>
       <p>${game.i18n.format("SR5.DISEASE_CardPool", {
-    pool, hits: suggested
+    pool, hits: claimed
   })}</p>${alert}
-      <div class="form-group"><label>${game.i18n.localize("SR5.DISEASE_Hits")}</label><input type="number" name="hits" value="${alert ? "" : Math.min(suggested, cap)}" min="0"${cap === Infinity ? "" : ` max="${cap}"`}></div>`,
+      <div class="form-group"><label>${game.i18n.localize("SR5.DISEASE_Hits")}</label><input type="number" name="hits" value="${prefill}" min="0"${cap === Infinity ? "" : ` max="${cap}"`}></div>`,
     ok: {
       callback: (event, b) => Number(b.form.elements.hits.value) || 0
     },
