@@ -22,7 +22,7 @@ const {
 // des esprits à son service s'il le désire ». La règle générale de la p. 58 cède devant cette exception.
 
 const summoner = {
-  type: 'actorPc', update: vi.fn(), system: {
+  type: 'actorPc', isOwner: true, update: vi.fn(), system: {
     specialAttributes: {
       edge: {
         augmented: {
@@ -40,7 +40,7 @@ const summoner = {
   }
 }
 const spirit = magicPact => ({
-  type: 'actorSpirit', update: vi.fn(), system: {
+  type: 'actorSpirit', id: 'sp1', update: vi.fn(), system: {
     creatorId: 'pc1', magicPact
   }
 })
@@ -53,6 +53,16 @@ const dialog = {
 beforeEach(() => {
   summoner.update.mockClear()
   vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockImplementation(id => (id === 'pc1' ? summoner : undefined))
+  //The summoner the active GM wrote in the spirit ledger when he created the spirit
+  globalThis.game = {
+    settings: {
+      get: () => ({
+        summoners: {
+          sp1: 'pc1'
+        }
+      })
+    }
+  }
 })
 
 describe("H9 : la Chance de l'invocateur (SR5 p. 306)", () => {
@@ -64,6 +74,26 @@ describe("H9 : la Chance de l'invocateur (SR5 p. 306)", () => {
     expect(summoner.update).toHaveBeenCalledWith({
       "system.conditionMonitors.edge.actual.base": 1
     })
+  })
+
+  // Victoire's review: the creatorId is written by the spirit's owner, it is never believed
+  it("un creatorId réécrit par la propriétaire ne donne aucune Chance : seul le registre du MJ nomme l'invocateur", async () => {
+    const forged = {
+      type: 'actorSpirit', id: 'sp2', update: vi.fn(), system: {
+        creatorId: 'pc1'
+      }
+    }
+    expect(await SR5_RollTestHelper.canUseEdge(forged, dialog)).toBe(false)
+    expect(await SR5_RollTestHelper.determineEdgeActor(forged)).toBe(forged)
+  })
+
+  it("un invocateur que l'utilisateur ne peut pas écrire ne prête pas sa Chance", async () => {
+    summoner.isOwner = false
+    try {
+      expect(await SR5_RollTestHelper.canUseEdge(spirit(false), dialog)).toBe(false)
+    } finally {
+      summoner.isOwner = true
+    }
   })
 
   it("plus de Chance chez l'invocateur : l'esprit ne peut plus en dépenser", async () => {

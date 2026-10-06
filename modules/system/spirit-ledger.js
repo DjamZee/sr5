@@ -132,7 +132,42 @@ function foundryCopy(ledger){
       ...(ledger?.banishSeen ?? {
       })
     },
+    summoners: {
+      ...(ledger?.summoners ?? {
+      })
+    },
+    summonersMigrated: !!ledger?.summonersMigrated,
+    engulfed: {
+      ...(ledger?.engulfed ?? {
+      })
+    },
   }
+}
+
+// Who summoned a spirit (SR5 p. 306: he may spend his Edge on its tests). Written by the active GM when he creates
+// the spirit from the summoner's item (createSidekick), never read from the spirit's creatorId, which its owner can
+// write (Victoire's review of H9)
+export function spiritSummoner(ledger, spiritId){
+  return ledger?.summoners?.[spiritId] ?? null
+}
+export function withSpiritSummoner(ledger, spiritId, summonerId){
+  const next = foundryCopy(ledger)
+  if (summonerId) next.summoners[spiritId] = summonerId
+  else delete next.summoners[spiritId]
+  return next
+}
+
+// The attack card of the spirit that engulfed a victim (SR5 p. 399), keyed like a banished spirit. Written by the
+// active GM when the first phase is applied through the real attack and defense, cleared when the victim breaks free;
+// the following phases read it for the actor who resists, never on a card (Victoire's review)
+export function engulfSource(ledger, victimKey){
+  return ledger?.engulfed?.[victimKey] ?? null
+}
+export function withEngulfSource(ledger, victimKey, messageId){
+  const next = foundryCopy(ledger)
+  if (messageId) next.engulfed[victimKey] = messageId
+  else delete next.engulfed[victimKey]
+  return next
 }
 
 /* -------------------------------------------- */
@@ -189,6 +224,16 @@ export async function setBanishTotal(key, total, messageId){
 
 export async function setSpiritTrait(key, trait, value){
   return writeLedger(ledger => withSpiritTrait(ledger, key, trait, value))
+}
+
+//Written by the system, not by a click: only the active GM, without a warning to the others
+export async function setSpiritSummoner(spiritId, summonerId){
+  if (!isActiveGM()) return false
+  return writeLedger(ledger => withSpiritSummoner(ledger, spiritId, summonerId))
+}
+export async function setEngulfSource(victimKey, messageId){
+  if (!isActiveGM()) return false
+  return writeLedger(ledger => (engulfSource(ledger, victimKey) === (messageId || null) ? null : withEngulfSource(ledger, victimKey, messageId)))
 }
 
 // Written over the prepared data of every client, whatever the sheet holds: the ledger is the only source.
@@ -273,4 +318,25 @@ export function registerSpiritLedger(){
 
 export function initSpiritLedger(){
   Hooks.once("ready", migrateLegacy)
+  Hooks.once("ready", migrateSummoners)
+}
+
+// The spirits summoned before the summoners were kept in the ledger, once: a spirit whose creatorId names an actor
+// that does hold the spirit's item (creatorItemId), as createSidekick made it. A creatorId alone is never believed
+export function summonersFromActors(ledger, actors, resolveActor){
+  for (const actor of actors ?? []) {
+    if (actor.type !== "actorSpirit" || !actor.system?.creatorId || spiritSummoner(ledger, actor.id)) continue
+    const summoner = resolveActor(actor.system.creatorId)
+    if (summoner?.items?.get?.(actor.system.creatorItemId)?.type !== "itemSpirit") continue
+    ledger = withSpiritSummoner(ledger, actor.id, actor.system.creatorId)
+  }
+  ledger.summonersMigrated = true
+  return ledger
+}
+async function migrateSummoners(){
+  if (!isActiveGM() || readLedger().summonersMigrated) return
+  const {
+    SR5_EntityHelpers
+  } = await import("../entities/helpers.js")
+  await writeLedger(ledger => (ledger.summonersMigrated ? null : summonersFromActors(ledger, game.actors, id => SR5_EntityHelpers.getRealActorFromID(id))))
 }

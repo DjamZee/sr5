@@ -176,12 +176,18 @@ export default async function defenseResultInfo(cardData, type){
       labelEnd = game.i18n.localize("SR5.EscapeEngulfFailed")
       successTestType = "SR-CardButtonHit endTest"
       if (cardData.roll.hits < cardData.previousMessage.hits) {
-        let parentMessage = game.messages.find(m => m.flags.sr5data.chatCard.buttons.escapeEngulf && m.flags.sr5data.owner.actorId === cardData.owner.actorId)
+        //A plain chat message has no sr5data: it is skipped, it stopped the search (and the escape) before
+        let parentMessage = game.messages.find(m => m.flags?.sr5data?.chatCard?.buttons?.escapeEngulf && m.flags.sr5data.owner?.actorId === cardData.owner.actorId)
         if (parentMessage) prevData = parentMessage.flags?.sr5data
-        if (prevData.chatCard.buttons?.escapeEngulf) {
+        if (parentMessage && prevData?.chatCard?.buttons?.escapeEngulf) {
           SR5_RollMessage.updateChatButtonHelper(parentMessage.id, "escapeEngulf")
           SR5_RollMessage.updateChatButtonHelper(parentMessage.id, "resistanceCard")
         }
+        //Broken free (SR5 p. 399): the active GM forgets the attack card kept for the victim
+        const {
+          SR5_ActorHelper
+        } = await import("../../entities/actors/entityActor-helpers.js")
+        await SR5_ActorHelper.forgetEngulf(SR5_EntityHelpers.getRealActorFromID(cardData.owner.speakerId ?? cardData.owner.actorId, cardData.actorUuids))
       }
       break
   }

@@ -854,6 +854,9 @@ export class SR5_RollMessage {
 
     switch (buttonToUpdate) {
       case "damage":
+        //An engulf (earth, water, fire) applied at its first phase: the active GM keeps the attack card for the victim,
+        //which the following phases read (SR5 p. 399, Victoire's review)
+        if (messageData.damage?.isContinuous && messageData.test?.typeSub !== "continuousDamage") await SR5_ActorHelper.keepEngulfFirstPhase(messageData)
         if (messageData.combat.calledShot.name === "splittingDamage") {
           if (messageData.damage.splittedTwo){
             messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.damage.splittedOne}${game.i18n.localize('SR5.DamageTypeStunShort')} & ${messageData.damage.splittedTwo}${game.i18n.localize('SR5.DamageTypePhysicalShort')} ${game.i18n.localize("SR5.AppliedDamage")}`)
@@ -944,11 +947,10 @@ export class SR5_RollMessage {
         break
       case "toxinEffect":
         if (messageData.damage.toxin.type === "airEngulf"){
-          //Generate Resistance chat button: the damage is worked out on the engulfing spirit, never read on this card (Ivo)
-          //The spirit's attack card: the defense card before this one is deleted just below. At a following phase,
-          //the card answers the previous phase's: the attack card it carries (checked again by engulfDamageOf)
-          messageData.damage.engulfSourceId = SR5_ActorHelper.toxinSourceOf(messageData)?.messageId ?? messageData.damage.engulfSourceId ?? null
-          const engulf = await SR5_ActorHelper.engulfDamageOf(messageData.damage.engulfSourceId)
+          //Generate Resistance chat button: the damage is worked out on the engulfing spirit, never read on this card (Ivo).
+          //The first phase keeps the attack card in the active GM's ledger, for the victim (before the defense card is
+          //deleted just below); a following phase reads it there (Victoire's review)
+          const engulf = await SR5_ActorHelper.engulfDamageOf(await SR5_ActorHelper.keepEngulfFirstPhase(messageData))
           let label = `${game.i18n.localize("SR5.TakeOnDamageShort")} ${game.i18n.localize("SR5.DamageValueShort")}${game.i18n.localize("SR5.Colons")} ${engulf ? `${engulf.value}${game.i18n.localize(SR5.damageTypesShort[engulf.type])}` : "?"}`
           if (engulf?.armorPenetration) label += ` / ${game.i18n.localize("SR5.ArmorPenetrationShort")}${game.i18n.localize("SR5.Colons")} ${engulf.armorPenetration}`
           messageData.chatCard.buttons.resistanceCard = SR5_RollMessage.generateChatButton("nonOpposedTest","resistanceCard",label)

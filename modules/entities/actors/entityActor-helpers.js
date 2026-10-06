@@ -1122,6 +1122,14 @@ export class SR5_ActorHelper {
     //Create actor
     const created = await Actor.createDocuments([sideKickData])
 
+    //The summoner who may lend his Edge to the spirit (SR5 p. 306), kept by the active GM, who creates it from the item
+    if (item.type === "itemSpirit" && created[0]) {
+      const {
+        setSpiritSummoner
+      } = await import("../../system/spirit-ledger.js")
+      await setSpiritSummoner(created[0].id, actorId)
+    }
+
     if (item.type === "itemStorage") {
       const dropped = created[0]
       await originalItem.update({
@@ -2614,22 +2622,91 @@ export class SR5_ActorHelper {
     return null
   }
 
-  //The damage of an air engulf at the spirit's following phases (SR5 p. 399), from the spirit's attack card (kept as
-  //damage.engulfSourceId; the defense card in between is deleted once the toxin applied): read on the engulfing spirit,
-  //as toxinSourceOf checks it. null when lost
-  static async engulfDamageOf(sourceMessageId){
-    const source = SR5_ActorHelper.toxinSourceOf({
-      previousMessage: {
-        messageId: sourceMessageId
-      }
-    })
-    if (source?.weapon?.system?.toxin?.type !== "airEngulf") return null
-    const spirit = SR5_EntityHelpers.getRealActorFromID(source.card.owner?.actorId, source.card.actorUuids)
-    if (!spirit) return null
+  static ENGULF_EFFECTS = ["engulfAir", "engulfWater", "engulfFire", "engulfEarth"]
+
+  //An engulf attack card (SR5 p. 399): written by a GM or an owner of its roller, with an engulf weapon of that roller.
+  //{card, weapon, roller, messageId}, or null
+  static engulfSourceOf(messageId){
+    const message = messageId ? game.messages?.get(messageId) : null
+    const card = message?.flags?.sr5data
+    if (!card?.owner?.itemUuid) return null
+    const weapon = fromUuidSync(card.owner.itemUuid)
+    if (!Object.values(weapon?.system?.systemEffects ?? {
+    }).some(e => SR5_ActorHelper.ENGULF_EFFECTS.includes(e?.value))) return null
+    const roller = SR5_EntityHelpers.getRealActorFromID(card.owner?.actorId, card.actorUuids)
+    const author = message.author
+    if (!roller || !author || (!author.isGM && !roller.testUserPermission(author, "OWNER"))) return null
+    if (weapon.parent !== roller && weapon.parent?.uuid !== roller.uuid) return null
+    return {
+      card, weapon, roller, messageId
+    }
+  }
+
+  //The victim of a first engulf phase and the attack card, from the card that resists it (an air engulf's toxin card,
+  //the resistance card of the others): it answers a defense card, which answers the engulf attack, and the defense was
+  //written by a GM or an owner of the defender, who is the actor resisting. null otherwise: nothing to keep
+  static engulfFirstPhase(card){
+    const defenseMessage = game.messages?.get(card?.previousMessage?.messageId)
+    const defense = defenseMessage?.flags?.sr5data
+    if (defense?.test?.type !== "defense") return null
+    const source = SR5_ActorHelper.engulfSourceOf(defense.previousMessage?.messageId)
+    if (!source) return null
+    const defender = SR5_EntityHelpers.getRealActorFromID(defense.owner?.speakerId ?? defense.owner?.actorId, defense.actorUuids)
+    const victim = SR5_EntityHelpers.getRealActorFromID(card.owner?.speakerId ?? card.owner?.actorId, card.actorUuids)
+    const author = defenseMessage.author
+    if (!defender || !victim || defender.uuid !== victim.uuid) return null
+    if (!author || (!author.isGM && !defender.testUserPermission(author, "OWNER"))) return null
+    return {
+      victim, attackId: source.messageId
+    }
+  }
+
+  //At a first engulf phase, the active GM keeps the attack card for the victim; at a following one, nothing changes.
+  //The attack card of the spirit engulfing the actor of this card, or null
+  static async keepEngulfFirstPhase(card){
+    const first = SR5_ActorHelper.engulfFirstPhase(card)
+    if (first) {
+      const {
+        setEngulfSource, banishKey
+      } = await import("../../system/spirit-ledger.js")
+      await setEngulfSource(banishKey(first.victim), first.attackId)
+      return first.attackId
+    }
+    return SR5_ActorHelper.engulfAttackFor(SR5_EntityHelpers.getRealActorFromID(card?.owner?.speakerId ?? card?.owner?.actorId, card?.actorUuids))
+  }
+
+  //The engulf ends for the victim who broke free (SR5 p. 399): the active GM forgets the attack card
+  static async forgetEngulf(victim){
+    if (!victim) return
+    const {
+      setEngulfSource, banishKey
+    } = await import("../../system/spirit-ledger.js")
+    await setEngulfSource(banishKey(victim), null)
+  }
+
+  //The attack card of the spirit engulfing this actor, in the active GM's ledger (spirit-ledger.js); null if none
+  static async engulfAttackFor(actor){
+    const {
+      readLedger, engulfSource, banishKey
+    } = await import("../../system/spirit-ledger.js")
+    return actor ? engulfSource(readLedger(), banishKey(actor)) : null
+  }
+
+  //The damage of an engulf at the spirit's following phases, without the hits of the first attack, read on the
+  //engulfing spirit, never on the weapon's data: Magic × 2, AP −Magic (SR5 p. 399); Stun for air and water,
+  //Physical for earth and fire (p. 399-400), fire keeping its element. null when lost
+  static async engulfDamageOf(attackId){
+    const source = SR5_ActorHelper.engulfSourceOf(attackId)
+    if (!source) return null
     const {
       engulfDamage
     } = await import("../../rolls/roll-helpers/toxin-card.js")
-    return engulfDamage(spirit.system.specialAttributes?.magic?.augmented?.value)
+    const damage = engulfDamage(source.roller.system.specialAttributes?.magic?.augmented?.value)
+    const effect = Object.values(source.weapon.system.systemEffects ?? {
+    }).map(e => e?.value).find(v => SR5_ActorHelper.ENGULF_EFFECTS.includes(v))
+    if (effect === "engulfEarth" || effect === "engulfFire") damage.type = "physical"
+    if (effect === "engulfFire") damage.element = "fire"
+    return damage
   }
 
   //The toxin card a player wrote, applied by the GM (SR5 p. 409-410; Liesel's D1): nothing comes from its flags. The
@@ -2650,13 +2727,14 @@ export class SR5_ActorHelper {
     const {
       healCardDiceKey
     } = await import("../../system/heal-ledger.js")
-    //An air engulf's following phase answers the previous phase's card: its source is the spirit's attack card it
-    //carries, and the hits of the first attack no longer count (SR5 p. 399)
+    //An air engulf's following phase answers the previous phase's card: its source is the attack card of the spirit
+    //engulfing this actor, in the active GM's ledger, and the hits of the first attack no longer count (SR5 p. 399)
     let source = SR5_ActorHelper.toxinSourceOf(data)
-    const engulfPhase = !source && !!data.damage?.engulfSourceId
+    const engulfAttack = source ? null : await SR5_ActorHelper.engulfAttackFor(actor)
+    const engulfPhase = !!engulfAttack
     if (engulfPhase) source = SR5_ActorHelper.toxinSourceOf({
       previousMessage: {
-        messageId: data.damage.engulfSourceId
+        messageId: engulfAttack
       }
     })
     if (engulfPhase && source?.weapon?.system?.toxin?.type !== "airEngulf") source = null

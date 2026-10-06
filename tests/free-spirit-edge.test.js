@@ -64,7 +64,7 @@ describe("H10 : la Chance d'un esprit libre", () => {
 
 describe("H10 : qui paie la Chance d'un esprit libre", () => {
   const summoner = {
-    type: 'actorPc', update: vi.fn(), system: {
+    type: 'actorPc', isOwner: true, update: vi.fn(), system: {
       specialAttributes: {
         edge: {
           augmented: {
@@ -82,7 +82,7 @@ describe("H10 : qui paie la Chance d'un esprit libre", () => {
     }
   }
   const freeSpirit = (spent, magicPact = false) => ({
-    type: 'actorSpirit', update: vi.fn(), system: {
+    type: 'actorSpirit', id: 'sp1', update: vi.fn(), system: {
       creatorId: 'pc1', isFree: true, magicPact,
       specialAttributes: {
         edge: {
@@ -109,6 +109,15 @@ describe("H10 : qui paie la Chance d'un esprit libre", () => {
   beforeEach(() => {
     summoner.update.mockClear()
     vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockImplementation(id => (id === 'pc1' ? summoner : undefined))
+    globalThis.game = {
+      settings: {
+        get: () => ({
+          summoners: {
+            sp1: 'pc1'
+          }
+        })
+      }
+    }
   })
 
   it("dépense sa propre Chance", async () => {

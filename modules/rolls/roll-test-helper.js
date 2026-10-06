@@ -5,8 +5,11 @@ import {
   SR5_EntityHelpers 
 } from "../entities/helpers.js"
 import {
-  SR5_SocketHandler 
+  SR5_SocketHandler
 } from "../socket.js"
+import {
+  readLedger, spiritSummoner
+} from "../system/spirit-ledger.js"
 
 export class SR5_RollTestHelper {
 
@@ -23,12 +26,16 @@ export class SR5_RollTestHelper {
 
   //SR5 p. 306: summoned and bound spirits have no Edge of their own, "l'invocateur peut dépenser sa propre réserve de
   //Chance pour les tests des esprits à son service" (decision H9 of DjamZ, which reverses G7). The magic pact of a free
-  //spirit lets it spend its character's Edge too (Street Grimoire p. 133); the character is the summoner it keeps
-  static edgeCharacter(actor){
-    if (actor?.type !== "actorSpirit" || !actor.system?.creatorId) return null
+  //spirit lets it spend its character's Edge too (Street Grimoire p. 133); the character is the summoner it keeps.
+  //The summoner is the one the active GM wrote in the spirit ledger when he created the spirit, never the creatorId its
+  //owner can rewrite; and only one the user rolling may write to, or the point spent would not be taken (Victoire)
+  static edgeCharacter(actor, ledger = readLedger()){
+    if (actor?.type !== "actorSpirit") return null
     //A free spirit is at no one's service: its own Edge, and its character's under a magic pact only
-    if (actor.system.isFree && !actor.system.magicPact) return null
-    return SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId) ?? null
+    if (actor.system?.isFree && !actor.system.magicPact) return null
+    const summonerId = spiritSummoner(ledger, actor.id)
+    const summoner = summonerId ? SR5_EntityHelpers.getRealActorFromID(summonerId) : null
+    return summoner?.isOwner ? summoner : null
   }
 
   //True when the actor has a point of Edge left to spend
