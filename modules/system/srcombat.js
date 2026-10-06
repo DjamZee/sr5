@@ -314,19 +314,20 @@ export class SR5Combat extends Combat {
   /** Step from the current combatant to the one at nextTurn: the current one has played, a delayed
    * action is spent. On the GM's browser. */
   async stepTurn(nextTurn){
-    let updatedCombatants = this.combatants.toObject(false)
-    for (let combatant of updatedCombatants){
-      if (combatant.flags.sr5.delayedAction){
-        combatant.flags.sr5.delayedAction = false
-        continue
-      }
-      if (combatant.id === this.current.combatantId) {
-        combatant.flags.sr5.hasPlayed = true
-      }
+    //Written on the combatants themselves: the combat's own update does not write its embedded combatants, and
+    //hasPlayed stayed false (Jakob, Thomas pointe 3)
+    const updates = []
+    for (let combatant of this.combatants){
+      if (combatant.flags.sr5?.delayedAction) updates.push({
+        _id: combatant.id, "flags.sr5.delayedAction": false
+      })
+      else if (combatant.id === this.current.combatantId) updates.push({
+        _id: combatant.id, "flags.sr5.hasPlayed": true
+      })
     }
+    if (updates.length) await this.updateEmbeddedDocuments("Combatant", updates)
     await this.update({
-      turn: nextTurn,
-      combatants: updatedCombatants,
+      turn: nextTurn
     })
     await SR5Combat.endOwnerPassEffects(this, this.combatant)
   }
