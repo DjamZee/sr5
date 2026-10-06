@@ -141,10 +141,10 @@ export default class SR5_RollDialog {
     }
   }
 
-  //SR5 p. 427, 435: a wireless smartgun with a smartlink changes the firing mode or the choke as a free action
+  //SR5 p. 165: a smartgun linked by DNI (the smartlink), wired or wireless, changes the firing mode or the choke
+  //as a free action
   static changeIsFree(weapon, actor){
-    return !!(weapon?.system?.isWireless &&
-      weapon.system.accessory?.find(a => a.name === "smartgunSystemInternal" || a.name === "smartgunSystemExternal") &&
+    return !!(weapon?.system?.accessory?.find(a => a.name === "smartgunSystemInternal" || a.name === "smartgunSystemExternal") &&
       actor?.system?.specialProperties?.smartlink?.value > 0)
   }
 
