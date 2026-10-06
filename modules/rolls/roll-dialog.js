@@ -1537,7 +1537,13 @@ export default class SR5_RollDialog {
           }
           if (dialogData.combat.armorPenetrationBeforeCalledShot === undefined) dialogData.combat.armorPenetrationBeforeCalledShot = dialogData.combat.armorPenetration
           dialogData.combat.armorPenetration = dialogData.combat.armorPenetrationBeforeCalledShot
-          //The toxin as the weapon carries it: picking the shot again does not add its +2 twice
+          //The DV and the toxin as the weapon carries them: picking a shot again, or another one, does not keep the
+          //+2 of the previous one (Vitals, Hit 'em Where It Counts)
+          if (dialogData.damage.beforeCalledShot === undefined) dialogData.damage.beforeCalledShot = {
+            base: dialogData.damage.base, value: dialogData.damage.value
+          }
+          dialogData.damage.base = dialogData.damage.beforeCalledShot.base
+          dialogData.damage.value = dialogData.damage.beforeCalledShot.value
           if (dialogData.damage.toxin && dialogData.damage.toxinBeforeCalledShot === undefined) dialogData.damage.toxinBeforeCalledShot = {
             ...dialogData.damage.toxin
           }
