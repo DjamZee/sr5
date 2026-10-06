@@ -91,6 +91,18 @@ describe("holding a chat button", () => {
     delete card.flags.sr5data.chatCard.buttons.resistanceCard
     expect(grantButton("m3", "resistanceCard", j1)).toBe(false)
   })
+
+  it("on a banishing card, asks about the spirit that resists, not the magician", () => {
+    card.flags.sr5data.test = {
+      typeSub: "banishing"
+    }
+    card.flags.sr5data.target = {
+      actorId: "diego"
+    }
+    card.flags.sr5data.owner.speakerId = "magician"
+    expect(grantButton("m6", "resistanceCard", j1)).toBe(true)
+    expect(grantButton("m7", "resistanceCard", stranger)).toBe(false)
+  })
 })
 
 describe("the Encaisser button", () => {

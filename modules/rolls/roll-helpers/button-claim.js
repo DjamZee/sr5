@@ -7,6 +7,9 @@ import {
 import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
+import {
+  isRolledByTarget
+} from "./cardRoller.js"
 
 // Two owners of one actor clicking "Encaisser" at the same moment each rolled a resistance, and each card then offered
 // to apply the damage (MESURES-F, F6): the button is only removed once a resistance is rolled. The active GM, alone,
@@ -33,12 +36,13 @@ export function holdButton(key, userId, now = Date.now()){
 }
 
 /** On the GM's browser: the card as his chat log keeps it still shows the button, and the user owns the actor
- * that rolls it (the speaker of the card, as chatButtonAction picks it). */
+ * that rolls it (the speaker of the card, or its spirit or sprite target, as chatButtonAction picks it). */
 export function grantButton(messageId, type, user){
   const data = game.messages?.get(messageId)?.flags?.sr5data
   if (!data?.chatCard?.buttons?.[type] || !user) return false
   if (!user.isGM){
-    const actor = SR5_EntityHelpers.getRealActorFromID(data.owner?.speakerId, data.actorUuids)
+    const actorId = isRolledByTarget(type, data.test?.typeSub, data.target?.actorId) ? data.target.actorId : data.owner?.speakerId
+    const actor = SR5_EntityHelpers.getRealActorFromID(actorId, data.actorUuids)
     if (!actor?.testUserPermission(user, "OWNER")) return false
   }
   return holdButton(`${messageId}|${type}`, user.id)
