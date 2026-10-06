@@ -38,5 +38,16 @@
 			{{/if}}
 		</li>
 		{{/with}}
+		{{#with @root.infection as |infection|}}
+		<li class="grid sr5-infection">
+			{{#if infection.coma}}
+			<div class="col-12">{{localize 'SR5.INFECTION_Coma' date=infection.wakeAt creature=infection.creature}}</div>
+			{{else if infection.woken}}
+			<div class="col-12">{{localize 'SR5.INFECTION_Woken'}}</div>
+			{{else}}
+			<div class="col-12 SR-TextRight"><a data-sr5-infection-try>{{localize 'SR5.INFECTION_Try'}}</a></div>
+			{{/if}}
+		</li>
+		{{/with}}
 	</ul>
 </div>

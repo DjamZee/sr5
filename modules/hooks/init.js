@@ -35,6 +35,9 @@ import {
   registerHungerSettings
 } from "../system/hunger.js"
 import {
+  registerInfectionSettings
+} from "../system/infection.js"
+import {
   registerRadiationSettings
 } from "../system/radiation.js"
 import {
@@ -314,6 +317,8 @@ export async function sr5HookInit() {
   registerDiseaseSettings()
   //Essence Loss of the Infected (SR5 p. 403): the GM's ledger of their hunger, and the length of a lunar month
   registerHungerSettings()
+  //Infection (SR5 p. 401): the GM's ledger of the comas
+  registerInfectionSettings()
   //Radiation zones (Run & Gun p. 164-165): the GM's ledger of exposures
   registerRadiationSettings()
   //The GM's ledgers of the illusions seen through (SR5 p. 294) and of the RP-Tac rosters (Run & Gun p. 119)

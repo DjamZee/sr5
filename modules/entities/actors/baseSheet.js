@@ -86,6 +86,9 @@ import {
 import {
   hungerStatus, toggleHunger, hastenHunger, canHunger
 } from "../../system/hunger.js"
+import {
+  infectionStatus, tryInfection
+} from "../../system/infection.js"
 
 /**
  * Extend the basic ActorSheet class to do all the SR5 things!
@@ -269,6 +272,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
     //Essence Loss of the Infected (SR5 p. 403): the GM alone sees the clock of the hunger, from his ledger
     context.hunger = game.user.isGM && canHunger(this.actor) ? hungerStatus(this.actor) : null
+    //Infection (SR5 p. 401): the GM tries it on a victim drained to 0, or sees when the coma ends
+    context.infection = infectionStatus(this.actor)
 
     context.storageViewIsGrid = game.settings.get("sr5", "sr5StorageViewMode") !== "list"
     //The clinch button of the martial arts block (Run & Gun p. 133) exists only with the grappling rules
@@ -370,6 +375,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
 
     //Essence Loss (SR5 p. 403): the GM starts or stops the clock, or brings it one week closer by hand
+    element.querySelectorAll("[data-sr5-infection-try]").forEach(b => b.addEventListener("click", (event) => {
+      event.preventDefault()
+      tryInfection(this.actor)
+    }))
     element.querySelectorAll("[data-sr5-hunger]").forEach(b => b.addEventListener("click", (event) => {
       event.preventDefault()
       if (event.currentTarget.dataset.sr5Hunger === "hasten") hastenHunger(this.actor)
