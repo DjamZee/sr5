@@ -136,6 +136,9 @@ export class SR5_CompendiumUtility extends Actor {
         SR5_SystemHelpers.srLog(1, `Compendium ${pack.collection} could not be indexed: ${err.message}`)
         continue
       }
+      // Chosen on the index, then loaded in one request: one request per item took 26 s for the 85 creature powers
+      // of a cold Megapack (measured), against half a second for the whole lot
+      const chosen = []
       for (const entry of SR5_CompendiumUtility.inKeyOrder(index)) {
         if (entry.type !== itemType) continue
         const keys = SR5_CompendiumUtility.itemKeys(entry)
@@ -144,11 +147,14 @@ export class SR5_CompendiumUtility extends Actor {
         if (rank > 0 && keys.every(k => provided.has(k))) continue
         // A power is given once: first found wins
         if (keys.some(k => provided.has(k) && SR5_CompendiumUtility.UNIQUE_CATEGORIES.includes(k.split(":")[0]))) continue
-        const item = await pack.getDocument(entry._id)
-        if (!item) continue
         for (const k of keys) provided.add(k)
-        documents.push(item)
+        chosen.push(entry._id)
       }
+      if (!chosen.length) continue
+      const loaded = new Map((await pack.getDocuments({
+        _id__in: chosen
+      })).map(d => [d.id ?? d._id, d]))
+      for (const id of chosen) if (loaded.has(id)) documents.push(loaded.get(id))
     }
     SR5_CompendiumUtility._compendiumCache.set(categoryKey, {
       time: Date.now(), documents

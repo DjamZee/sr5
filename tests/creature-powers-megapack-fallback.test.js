@@ -31,8 +31,12 @@ const power = (key, id = key, name = key, source = "") => item("itemPower", [["s
 const pack = (collection, documents) => ({
   collection,
   getIndex: vi.fn(async () => documents),
-  getDocument: vi.fn(async id => documents.find(d => d._id === id)),
+  getDocuments: vi.fn(async ({
+    _id__in
+  }) => documents.filter(d => _id__in.includes(d._id))),
 })
+// The ids a pack was asked to load
+const loadedIds = p => p.getDocuments.mock.calls.flatMap(([query]) => query._id__in)
 
 let setting, megapackActive, megapack, compendiums, sprites, warn
 beforeEach(() => {
@@ -88,9 +92,9 @@ describe("base items on auto: the Megapack first, sr5-compendiums as a fallback"
 
   it("a power the Megapack holds twice is given once, and nothing is loaded twice", async () => {
     await watcherPowers()
-    const loaded = megapack.getDocument.mock.calls.map(([id]) => id)
+    const loaded = loadedIds(megapack)
     expect(loaded).not.toContain("mp4")
-    expect(compendiums.getDocument.mock.calls.map(([id]) => id)).toEqual(["c-astralForm"])
+    expect(loadedIds(compendiums)).toEqual(["c-astralForm"])
   })
 
   it("items are read through the index, and an item without a key is not loaded", async () => {
@@ -98,7 +102,14 @@ describe("base items on auto: the Megapack first, sr5-compendiums as a fallback"
     expect(megapack.getIndex).toHaveBeenCalledWith({
       fields: ["type", "system.systemEffects", "system.source"]
     })
-    expect(megapack.getDocument.mock.calls.map(([id]) => id)).not.toContain("mp5")
+    expect(loadedIds(megapack)).not.toContain("mp5")
+  })
+
+  // Measured: one request per item took 26 s for the 85 creature powers of a cold Megapack
+  it("the chosen items of a compendium are loaded in one request", async () => {
+    await watcherPowers()
+    expect(megapack.getDocuments).toHaveBeenCalledTimes(1)
+    expect(loadedIds(megapack)).toEqual(["mp1", "mp3", "mp2"])
   })
 
   it("several items given to the same sub type are all kept (sprite powers)", async () => {
