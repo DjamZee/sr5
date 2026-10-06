@@ -54,6 +54,29 @@ describe('spendActions', () => {
     again.complex.value = 1
     expect(spend([S, S], again)).toEqual([1, 1, 0])
   })
+  //Rosine's review: simple, complex, then simple spent 4 simple-equivalents out of 3 without any missing action
+  it('spends the extra simple action once: simple, complex, then nothing left', () => {
+    const start = left(1, 3, 1)
+    start.simple.value = 3
+    start.complex.value = 1
+    expect(spend([S, C], start)).toEqual([1, 0, 0])
+    const again = left(1, 3, 1)
+    again.simple.value = 3
+    again.complex.value = 1
+    expect(SR5_MiscellaneousHelpers.missingAction([S, C, S], again)).toEqual({
+      type: "simple", value: 2, current: 3
+    })
+  })
+  it('keeps an extra complex action granted by an effect after a simple one, and the simple left after it', () => {
+    const start = left(1, 2, 2)
+    start.simple.value = 2
+    start.complex.value = 2
+    expect(spend([S], start)).toEqual([1, 1, 1])
+    const again = left(1, 2, 2)
+    again.simple.value = 2
+    again.complex.value = 2
+    expect(spend([S, C], again)).toEqual([1, 1, 0])
+  })
   it('lets the extra simple action through after a complex one, with the blocking setting', () => {
     const start = left(1, 3, 1)
     start.simple.value = 3

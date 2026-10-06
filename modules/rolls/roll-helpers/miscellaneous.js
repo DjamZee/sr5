@@ -518,6 +518,8 @@ export class SR5_MiscellaneousHelpers {
     for (let a of actions ?? []){
       if (!a || !available?.[a.type] || typeof a.value !== "number") continue
       let simple = available.simple, complex = available.complex
+      //The counters before this action: what is left of the extra actions is read on them, not on the pass
+      const simpleBefore = Number(simple?.current) || 0, complexBefore = Number(complex?.current) || 0
       available[a.type].current -= a.value
       //A refund never gives more than the pass grants (p. 164): the setting may have been changed in an
       //earlier pass, with the dialog left open, so the action refunded was never spent in this one
@@ -535,9 +537,17 @@ export class SR5_MiscellaneousHelpers {
         continue
       }
       //Extra actions granted by an effect, beyond the two simple ≡ one complex of the pass: spent first, and
-      //never lost with the linked action (ruling of DjamZ, 2026-10-06, G12)
-      const extraSimple = Math.max(0, (Number(simple.value) || 0) - 2 * (Number(complex.value) || 0))
-      const extraComplex = Math.max(0, (Number(complex.value) || 0) - Math.floor((Number(simple.value) || 0) / 2))
+      //never lost with the linked action (ruling of DjamZ, 2026-10-06, G12). What is left of them is read on the
+      //counters before this action (simple actions the complex ones left cannot pair with), capped by what the
+      //effect grants: an extra action already spent is not given again (Rosine's review)
+      //Granted: beyond the two simple or one complex of an ordinary phase (SR5 p. 164)
+      const grantedSimple = Math.max(0, (Number(simple.value) || 0) - 2)
+      const grantedComplex = Math.max(0, (Number(complex.value) || 0) - 1)
+      const extraSimple = Math.min(grantedSimple, Math.max(0, simpleBefore - 2 * complexBefore))
+      const extraComplex = Math.min(grantedComplex, Math.max(0, complexBefore - Math.floor(simpleBefore / 2)))
+      //An extra action pays for itself: the linked counter is left alone
+      if (a.type === "simple" && extraSimple > 0) continue
+      if (a.type === "complex" && extraComplex > 0) continue
       if (a.type === "simple") complex.current = Math.min(complex.current, Math.max(0, Math.floor(simple.current / 2)) + extraComplex)
       if (a.type === "complex") simple.current = Math.min(simple.current, Math.max(0, 2 * complex.current) + extraSimple)
     }
