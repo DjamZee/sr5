@@ -182,6 +182,30 @@ export function nextPeak(entry, cost) {
   return now > peak ? Math.round(now * 100) / 100 : null
 }
 
+/**
+ * The Essence an installed implant takes from its body: the highest cost the active GM saw it take, never less than its
+ * cost now. "Quand un implant est retiré […] pour être remplacé ou amélioré, cela laisse […] une faille" (Chrome Flesh
+ * p. 74): an implant improved in surgery (standard 1.0 → alphaware 0.8) still takes 1.0, at once; a rating lowered gives
+ * nothing back (SR5 p. 53). A Tatouage de mana gris gives its Essence back (Better Than Bad p. 141): its cost now.
+ * An implant seen for the first time takes its cost now: the sheets already made do not move.
+ * @param {object} [register] the register (read from the world setting by default)
+ */
+export function essenceTaken(item, cost, register = readRegister()) {
+  const now = Number(cost) || 0
+  if (item?.system?.reversibleEssence) return now
+  return Math.max(now, Number(register?.[item?.uuid]?.[PEAK_COST]) || 0)
+}
+
+function readRegister() {
+  try {
+    return globalThis.game?.settings?.get("sr5", IMPLANT_REGISTER) ?? {
+    }
+  } catch (_err) {
+    return {
+    }
+  }
+}
+
 /** Notes the cost an implant has now, when it is the highest the active GM has seen for it. */
 function notePeak(doc) {
   if (doc?.type !== "itemAugmentation" || !(doc.parent instanceof Actor)) return

@@ -11,6 +11,9 @@ import {
   GM_ONLY_FIELDS
 } from "../../system/implant-essence.js"
 import {
+  essenceTaken
+} from "../../system/implant-register.js"
+import {
   reservedChangedBy
 } from "../../system/reserved-fields.js"
 import {
@@ -687,6 +690,8 @@ export class SR5Actor extends Actor {
         case "itemAugmentation":
           i.prepareData()
           SR5_UtilityItem._handleAugmentation(iData, actor)
+          // An implant improved or lowered in place keeps the highest Essence it took (Chrome Flesh p. 74, SR5 p. 53)
+          iData.essenceCost.value = essenceTaken(i, iData.essenceCost.value)
           if (!iData.isAccessory) SR5_EntityHelpers.updateModifier(actor.system.essence, `${i.name}`, `itemAugmentation`, -iData.essenceCost.value)
           if (iData.isActive && Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
           if (iData.isActive && iData.wirelessTurnedOn) actor.system.matrix.connectedObject.augmentations[i.uuid] = i.name

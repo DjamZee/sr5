@@ -12,7 +12,7 @@ import {
   reservedChangedBy, valueAfterUpdate, reservedMismatches
 } from "../modules/system/reserved-fields.js"
 import {
-  expectedAtCreation, expectedValues, reservedFieldsOf, sourceReversible, vouchedMarks, sourceEntry, nextPeak, PEAK_COST
+  expectedAtCreation, expectedValues, reservedFieldsOf, sourceReversible, vouchedMarks, sourceEntry, nextPeak, PEAK_COST, essenceTaken
 } from "../modules/system/implant-register.js"
 import {
   mentorMagic
@@ -834,6 +834,31 @@ describe("Apollinaire's review: the marks of a removed implant, an accessory, an
     }, null)).toBe(1)
     // Unknown to the register: its own cost
     expect(removedCost(item, undefined, null)).toBe(0.5)
+  })
+  it("takes at once the highest Essence an implant took: standard 1.0 improved to alphaware still takes 1.0 (Chrome Flesh p. 74)", () => {
+    const uuid = "Actor.a.Item.i"
+    const register = {
+      [uuid]: {
+        [PEAK_COST]: 1
+      }
+    }
+    const improved = {
+      uuid, system: {
+        grade: "alphaware"
+      }
+    }
+    expect(essenceTaken(improved, 0.8, register)).toBe(1)
+    // A higher rating bought takes its new cost
+    expect(essenceTaken(improved, 1.5, register)).toBe(1.5)
+    // First sight, or a sheet made before: its cost now
+    expect(essenceTaken(improved, 0.8, {
+    })).toBe(0.8)
+    // A Tatouage de mana gris gives back what its rating no longer takes (Better Than Bad p. 141)
+    expect(essenceTaken({
+      uuid, system: {
+        reversibleEssence: true
+      }
+    }, 0.1, register)).toBe(0.1)
   })
   it("reads an unknown grade as standard, never as an implant that costs nothing", () => {
     expect(onActor(implant("cyberware", 2, "alpha"), [])).toBe(2)
