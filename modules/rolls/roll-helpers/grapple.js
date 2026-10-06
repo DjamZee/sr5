@@ -561,15 +561,38 @@ export class SR5_GrappleHelpers {
     if (!SR5_GrappleHelpers.isKeeper()) return
     const data = effect.flags?.sr5?.grapple
     if (!data) return
-    const user = userId ? game.users.get(userId) : null,
-      partner = SR5_EntityHelpers.getRealActorFromID(data.partner)
-    if (data.role === "held" && user && !user.isGM && partner && !ownsTarget(user, partner) &&
-      grappleHoldOf(partner.effects)?.holdId === data.holdId) {
-      const kept = grappleHoldOf(partner.effects)
-      await effect.parent?.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(kept.kind, "held", data.partner, kept.hold, kept.holdId)])
+    const user = userId ? game.users.get(userId) : null
+    //A GM, or a player who owns the partner the half names, ends the hold as before
+    const named = SR5_EntityHelpers.getRealActorFromID(data.partner)
+    if (!user || user.isGM || (named && ownsTarget(user, named))) {
+      return deleteGrappleEffectOnce(named, PENDING_DELETIONS, data.holdId)
+    }
+    //Anyone else wrote the flags of the half she deleted (Jakob's review: a role turned to "holder", an
+    //empty holdId): nothing is read on them. The hold is the one the other half names, written by the GM
+    const counterpart = SR5_GrappleHelpers.counterpartOf(effect.parent)
+    if (!counterpart) return
+    const kept = grappleHoldOf(counterpart.effects)
+    if (kept.role === "holder") {
+      //The held fighter has not escaped: her half comes back, the holder's stays
+      const keptId = counterpart.isToken ? counterpart.token.id : counterpart.id
+      await effect.parent?.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(kept.kind, "held", keptId, kept.hold, kept.holdId)])
       return refuse("grappleDeleteHeld", userId, data)
     }
-    await deleteGrappleEffectOnce(SR5_EntityHelpers.getRealActorFromID(data.partner), PENDING_DELETIONS, data.holdId)
+    //The holder lets go when she likes (SR5 p. 196): the held half goes too
+    await deleteGrappleEffectOnce(counterpart, PENDING_DELETIONS, kept.holdId)
+  }
+
+  /** The fighter whose grappling half, written by the GM, names this actor as its partner. */
+  static counterpartOf(actor){
+    if (!actor) return null
+    const unlinked = game.scenes?.contents?.flatMap(s => s.tokens.contents.filter(t => !t.actorLink).map(t => t.actor)) ?? []
+    for (const other of [...(game.actors?.contents ?? []), ...unlinked]){
+      if (!other || other === actor) continue
+      const data = grappleHoldOf(other.effects)
+      //By uuid: two unlinked tokens of one actor share its id
+      if (data && SR5_EntityHelpers.getRealActorFromID(data.partner)?.uuid === actor.uuid) return other
+    }
+    return null
   }
 
   //Active GM side : a fighter knocked out or killed leaves the hold

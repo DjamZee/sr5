@@ -228,6 +228,10 @@ describe('the markItem socket', () => {
     await SR5_MarkHelpers._socketMarkItem(request, 'owner')
     expect(SR5_MarkHelpers.markItem).toHaveBeenCalledTimes(1)
     expect(SR5_MarkHelpers.markItem.mock.calls[0][2]).toBe(1)
+    // the GM is shown the defense hits counted again, not the number of marks (Jakob's review)
+    expect(SR5_MiscellaneousHelpers.confirmUse.mock.calls[0][0]).toMatchObject({
+      value: 3, marks: 1
+    })
   })
   it("serves a card once, even on the unlinked token's actor after its base actor (measured in game)", async () => {
     const messageId = defenseCard(3)
@@ -708,6 +712,48 @@ describe('the grappling sockets', () => {
       }
     }, 'owner')
     expect(SR5_GrappleHelpers.reverseHold).not.toHaveBeenCalled()
+  })
+
+  describe("deleting one's own grappling half (Jakob's review)", () => {
+    const half = (role, partner, parent, extra = {
+    }) => ({
+      ...grapple(role, partner), parent, delete: vi.fn(), ...extra
+    })
+    beforeEach(() => {
+      vi.spyOn(SR5_GrappleHelpers, 'isKeeper').mockReturnValue(true)
+      game.actors = {
+        contents: [thug, pc]
+      }
+      game.scenes = {
+        contents: []
+      }
+      pc.createEmbeddedDocuments = vi.fn()
+    })
+    for (const forged of [{
+      role: 'holder'
+    }, {
+      holdId: ''
+    }]) {
+      it(`a held player who forged ${JSON.stringify(forged)} on her half before deleting it frees nobody`, async () => {
+        thug.effects = [half('holder', 'pc', thug)]
+        const deleted = half('held', 'thug', pc)
+        Object.assign(deleted.flags.sr5.grapple, forged)
+        pc.effects = []
+        await SR5_GrappleHelpers.onDeleteEffect(deleted, 'owner')
+        expect(thug.effects[0].delete).not.toHaveBeenCalled()
+        expect(pc.createEmbeddedDocuments).toHaveBeenCalledTimes(1)
+        expect(pc.createEmbeddedDocuments.mock.calls[0][1][0].flags.sr5.grapple).toMatchObject({
+          role: 'held', partner: 'thug', hold: 2, holdId: 'h1'
+        })
+      })
+    }
+    it('the holder who lets go by deleting her half frees the held one', async () => {
+      // the holder is the player's, the held one the GM's
+      const thugHeld = half('held', 'pc', thug)
+      thug.effects = [thugHeld]
+      await SR5_GrappleHelpers.onDeleteEffect(half('holder', 'thug', pc), 'owner')
+      expect(thugHeld.delete).toHaveBeenCalledTimes(1)
+    })
   })
 
   it('grappleWarn: shows only a GM\'s grappling warning', () => {

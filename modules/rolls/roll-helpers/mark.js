@@ -225,10 +225,19 @@ export class SR5_MarkHelpers {
     if (!outcome) return null
     return {
       defense, attack, outcome, attacker: attack.roller, defender: defense.roller,
+      //The hits counted again that decided it, shown to the GM (not the number of marks: Jakob's review)
+      hits: outcome.winner === "defender" ? defenderHits : attackerHits,
       card: {
         id: defense.id, byGM: defense.byGM && attack.byGM
       },
     }
+  }
+
+  /** What the GM's window names: the icon, and how many marks the card puts on it. */
+  static marksLabel(name, marks) {
+    return game.i18n.format("SR5.SocketUseMarks", {
+      name, marks
+    })
   }
 
   /** The Overwatch Score a defense card raises (SR5 p. 231: the defender's hits against an illegal
@@ -261,7 +270,7 @@ export class SR5_MarkHelpers {
     if (!allowed) return null
     return {
       card: pair.card, key: consumedKey(pair.card.id, "markItem"),
-      label: "markItem", target: target.name, value: outcome.marks, watchdog: outcome.watchdog,
+      label: "markItem", target: SR5_MarkHelpers.marksLabel(target.name, outcome.marks), value: pair.hits, marks: outcome.marks, watchdog: outcome.watchdog,
     }
   }
 
@@ -275,7 +284,7 @@ export class SR5_MarkHelpers {
     if (ownsTarget(sender, target)) return SR5_MarkHelpers.markItem(data.targetActor, data.attackerID, data.mark, undefined, data.isWatchdog)
     const use = await SR5_MarkHelpers.markUse(data, target)
     if (!use || !(await SR5_MiscellaneousHelpers.grant(use, sender))) return refuse("markItem", senderId, data)
-    await SR5_MarkHelpers.markItem(data.targetActor, data.attackerID, use.value, undefined, use.watchdog)
+    await SR5_MarkHelpers.markItem(data.targetActor, data.attackerID, use.marks, undefined, use.watchdog)
     return true
   }
 
@@ -304,10 +313,10 @@ export class SR5_MarkHelpers {
       !sameActor(SR5_EntityHelpers.getRealActorFromID(data.attackerID), pair.attacker)) return refuse("markPanMaster", senderId, data)
     const use = {
       card: pair.card, key: consumedKey(pair.card.id, "markPanMaster"),
-      label: "markItem", target: master.name, value: pair.outcome.marks,
+      label: "markItem", target: SR5_MarkHelpers.marksLabel(master.name, pair.outcome.marks), value: pair.hits, marks: pair.outcome.marks,
     }
     if (!(await SR5_MiscellaneousHelpers.grant(use, sender))) return refuse("markPanMaster", senderId, data)
-    await SR5_MarkHelpers.markPanMaster(item.system, data.attackerID, use.value)
+    await SR5_MarkHelpers.markPanMaster(item.system, data.attackerID, use.marks)
     return true
   }
 
