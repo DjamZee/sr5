@@ -20,7 +20,7 @@ import {
   SR5ShopAvailability
 } from './shop-availability.js'
 import {
-  lineWaits, deliveryDelayed, currentExpress, expressCost, orderHours, newOrder, addOrders, testedHours, cardResult
+  lineWaits, deliveryDelayed, currentExpress, expressCost, orderHours, newOrder, addOrders, testedHours, cardResult, cardSurcharge, surchargedUnit
 } from './shop-orders.js'
 
 /**
@@ -183,7 +183,7 @@ export class SR5Shop {
    * @returns {Promise<boolean>} whether the gear was added
    */
   static async checkout(actor, lines, {
-    equip = false, express = false, messageId = null
+    equip = false, express = false, messageId = null, userId = game.user.id
   } = {
   }) {
     if (!actor) {
@@ -247,9 +247,12 @@ export class SR5Shop {
         continue
       }
       const quantity = Math.max(1, Math.floor(Number(line.quantity) || 1))
-      const unit = SR5Shop.gradedPrice(source.system, grade)
+      const base = SR5Shop.gradedPrice(source.system, grade)
+      // The surcharge that bought dice on the card is paid (SR5 p. 420); the search time and the express
+      // surcharge stay on the base price (DjamZ's ruling, 05/10)
+      const unit = surchargedUnit(base, cardSurcharge(messageId, line.uuid, userId))
       resolved.push({
-        source, quantity, unit, grade, total: unit * quantity,
+        source, quantity, unit, grade, total: unit * quantity, baseTotal: base * quantity,
         name: SR5Shop.gradedName(source.name, grade),
         availability: Number(described.availability) || 0,
       })
@@ -264,7 +267,7 @@ export class SR5Shop {
       line.waits = lineWaits({
         delayed, availability: line.availability, free
       })
-      line.extra = line.waits ? expressCost(line.total, terms) : 0
+      line.extra = line.waits ? expressCost(line.baseTotal, terms) : 0
     }
     const total = resolved.reduce((sum, line) => sum + line.total + line.extra, 0)
     const balance = SR5Shop.balance(actor)
@@ -304,7 +307,9 @@ export class SR5Shop {
         continue
       }
       const order = newOrder(line, {
-        hours: orderHours(SR5Shop.searchHours(line, messageId, game.user.id), line.extra ? terms : null),
+        hours: orderHours(SR5Shop.searchHours({
+          ...line, total: line.baseTotal
+        }, messageId, userId), line.extra ? terms : null),
         express: !!line.extra, extra: line.extra, now,
       })
       line.order = order

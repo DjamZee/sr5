@@ -39,7 +39,7 @@ import {
   checkStockLines
 } from './shop-vendor-rules.js'
 import {
-  lineWaits, deliveryDelayed, currentExpress, expressCost, orderHours, newOrder, addOrders, ledgerOrders
+  lineWaits, deliveryDelayed, currentExpress, expressCost, orderHours, newOrder, addOrders, ledgerOrders, cardSurcharge, surchargedUnit
 } from './shop-orders.js'
 
 /**
@@ -634,6 +634,7 @@ export class SR5ShopVendor {
     }
     const lines = Array.isArray(request.lines) ? request.lines.slice(0, 100) : []
     if (!lines.length) return false
+    const messageId = typeof request.messageId === 'string' ? request.messageId : null
 
     // The lines: an item of the counter by its uuid, or, for a shop taking orders, a compendium item
     const stockPrefix = `${actor.uuid}.Item.`
@@ -676,8 +677,10 @@ export class SR5ShopVendor {
         })
         continue
       }
+      // The surcharge that bought dice on the card is paid (SR5 p. 420)
+      const unit = surchargedUnit(described.price, cardSurcharge(messageId, item.uuid, senderId))
       resolved.push({
-        item, quantity, unit: described.price, total: described.price * quantity, name: item.name,
+        item, quantity, unit, total: unit * quantity, name: item.name,
       })
     }
     for (const line of orderLines) {
@@ -718,10 +721,13 @@ export class SR5ShopVendor {
       const waits = lineWaits({
         delayed: deliveryDelayed(), availability: described.availability, free
       })
-      const total = described.price * quantity
-      const extra = waits ? expressCost(total, terms) : 0
+      const unit = surchargedUnit(described.price, cardSurcharge(messageId, line.uuid, senderId))
+      const total = unit * quantity
+      // The express surcharge and the search time stay on the price before the surcharge (DjamZ's ruling, 05/10)
+      const baseTotal = described.price * quantity
+      const extra = waits ? expressCost(baseTotal, terms) : 0
       resolved.push({
-        source, grade, quantity, unit: described.price, total, extra, waits,
+        source, grade, quantity, unit, total, baseTotal, extra, waits,
         name: SR5Shop.gradedName(source.name, grade),
       })
     }
@@ -800,7 +806,9 @@ export class SR5ShopVendor {
       if (line.waits) {
         line.order = newOrder(line, {
           // The time from the requester's own card, worked out here on the GM's browser
-          hours: orderHours(SR5Shop.searchHours(line, typeof request.messageId === 'string' ? request.messageId : null, senderId),
+          hours: orderHours(SR5Shop.searchHours({
+            ...line, total: line.baseTotal ?? line.total
+          }, messageId, senderId),
             line.extra ? terms : null),
           express: !!line.extra, extra: line.extra, now: game.time.worldTime,
           // Shown on the sheet only: the money follows the GM's ledger, not this

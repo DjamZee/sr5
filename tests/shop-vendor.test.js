@@ -404,6 +404,35 @@ describe('the vendor till (socket, validated by the gamemaster)', () => {
     expect(expense.system.type).toBe('loss')
   })
 
+  it('charges the surcharge of the availability card that bought the dice (SR5 p. 420)', async () => {
+    const {
+      vendor, till
+    } = makeVendor()
+    const buyer = makeBuyer()
+    vi.spyOn(SR5Shop, 'balance').mockReturnValue(10000)
+    world(vendor, buyer)
+    globalThis.game.messages = {
+      get: id => id === 'card' ? {
+        id, author: player, flags: {
+          sr5shop: {
+            buyerId: 'buyer', surcharge: 100, results: [{
+              uuid: 'Actor.vendor.Item.medkit', obtained: true
+            }]
+          }
+        }
+      } : null
+    }
+    const done = await SR5ShopVendor.sell(request([{
+      uuid: 'Actor.vendor.Item.medkit', quantity: 2, name: 'Medkit'
+    }], {
+      messageId: 'card'
+    }), player.id)
+    delete globalThis.game.messages
+    expect(done).toBe(true)
+    expect(till.system.funds.value).toBe(4000)
+    expect(buyer.created.find(d => d.type === 'itemNuyen').system.amount).toBe(4000)
+  })
+
   it('ignores the price a client sends: the till works it out again', async () => {
     const {
       vendor, till 

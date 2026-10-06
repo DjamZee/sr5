@@ -301,6 +301,29 @@ export function cardResult(messageId, uuid, userId) {
   return message.flags?.sr5shop?.results?.find(r => r.uuid === uuid) ?? null
 }
 
+/**
+ * The surcharge a line was tested with (SR5 p. 420: "pour chaque tranche de 25 % du prix de l'objet que
+ * l'acheteur est prêt à payer en plus"), in percent: the dice were bought with it, so the till charges it.
+ * The gamemaster's ledger froze it when the card appeared (shop-retry.js), so a card edited afterwards does
+ * not lower it; a card the ledger missed gives its own figure. No card for the line: none.
+ */
+export function cardSurcharge(messageId, uuid, userId) {
+  if (!cardResult(messageId, uuid, userId)) return 0
+  let frozen
+  try {
+    frozen = game.settings.get('sr5', 'sr5ShopRetryLedger')?.[messageId]?.surcharge
+  } catch {
+    frozen = undefined
+  }
+  const percent = Number(frozen ?? game.messages.get(messageId)?.flags?.sr5shop?.surcharge)
+  return Number.isFinite(percent) && percent > 0 ? percent : 0
+}
+
+/** A unit price with its surcharge, rounded as the availability card rounds it. */
+export function surchargedUnit(unit, percent) {
+  return Math.round(Math.max(0, Number(unit) || 0) * (1 + Math.max(0, Number(percent) || 0) / 100))
+}
+
 /* -------------------------------------------- */
 
 /** The gamemaster hands an order over: the goods reach the sheet, the order goes. */

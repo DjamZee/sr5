@@ -411,6 +411,9 @@ export class SR5ShopAvailability {
         availability,
         hits,
         opposition: opposition.hits,
+        // The dice themselves: the gamemaster counts the outcome on them, not on the label (shop-retry.js)
+        faces: test.faces,
+        oppositionFaces: opposition.faces,
         netHits,
         outcome,
         obtained,
@@ -518,6 +521,14 @@ export class SR5ShopAvailability {
         // The till reads the test from this card itself, never a time sent along with the lines
         const messageId = message.id
         const express = !!data.express && !!html.querySelector('[data-shop-express]')?.checked
+        // A card the gamemaster rolled (a new test) is not the player's to edit: the gamemaster cashes it, once
+        if (message.author?.isGM) {
+          const {
+            requestCash
+          } = await import('./shop-retry.js')
+          await requestCash(message, express)
+          return
+        }
         // Bought at a vendor's: its till, on the gamemaster's browser
         // Loaded on demand: the vendor's till brings the socket, which the tests do without
         const SR5ShopVendor = data.vendor ? (await import('./shop-vendor.js')).SR5ShopVendor : null
