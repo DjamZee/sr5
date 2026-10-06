@@ -61,18 +61,28 @@ export async function blightStrikes(actor) {
     items, sustained, spells, astral, names
   } = blightDrops(actor)
   for (const uuid of sustained) await SR5_ActorHelper.deleteSustainedEffect(uuid)
-  for (const t of spellTemplates(spells)) await t.delete()
   if (items.length) await actor.updateEmbeddedDocuments("Item", items)
   if (Object.keys(astral).length) {
+    //Read before the update: Foundry rewrites the object it is given (measured 06/10, the key was gone afterwards)
+    const leavesProjection = astral["system.initiatives.astralInit.isActive"] === false
     await actor.update(astral)
     //Out of astral projection: the status of the astral initiative goes too, as switchToInitiative does it for the
     //physical initiative (no action spent), or the body stays hidden to ordinary sight (Victoire's review)
-    if (astral["system.initiatives.astralInit.isActive"] === false) {
+    if (leavesProjection) {
       const status = actor.effects?.filter(e => e.origin === "initiativeMode").map(e => e.id) ?? []
       if (status.length) await actor.deleteEmbeddedDocuments("ActiveEffect", status)
     }
     names.push(game.i18n.localize("SR5.AstralPerception"))
     await SR5_CharacterUtility.handleAstralVision(actor)
+  }
+  //Last, and alone: a template deleted with no canvas drawn throws in the core after the deletion (measured 06/10)
+  for (const t of spellTemplates(spells)) {
+    try {
+      await t.delete()
+    }
+    catch (e) {
+      console.warn("SR5 | Blight: template", e)
+    }
   }
   if (names.length) ui.notifications.info(game.i18n.format("SR5.INFO_BlightDrops", {
     actor: actor.name, list: names.join(", ")

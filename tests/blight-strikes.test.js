@@ -56,7 +56,14 @@ const mage = (items, {
       }
     }
   },
-  update: vi.fn(async () => {}),
+  updates: [],
+  // As Foundry does, the update rewrites the object it is given: what it was is kept in `updates`
+  update: vi.fn(async function (data) {
+    this.updates.push({
+      ...data
+    })
+    for (const k of Object.keys(data)) delete data[k]
+  }),
   updateEmbeddedDocuments: vi.fn(async () => {}),
 })
 const item = (id, type, isActive, extra = {
@@ -119,11 +126,11 @@ describe('when Blight strikes', () => {
     }, {
       _id: 'sort', 'system.isActive': false, 'system.targetOfEffect': []
     }])
-    expect(a.update).toHaveBeenCalledWith({
+    expect(a.updates).toEqual([{
       'system.visions.astral.isActive': false,
       'system.initiatives.astralInit.isActive': false,
       'system.initiatives.physicalInit.isActive': true,
-    })
+    }])
     expect(ui.notifications.info).toHaveBeenCalledWith('SR5.INFO_BlightDrops')
   })
 
