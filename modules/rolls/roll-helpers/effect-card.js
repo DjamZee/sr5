@@ -7,6 +7,9 @@
 import {
   countHits, poolDice
 } from "./illusion.js"
+import {
+  earnedRerolls
+} from "./socket-guard.js"
 
 // Whether one of the effects passed on reads the roll
 export function readsRoll(effects){
@@ -26,7 +29,7 @@ function hitsWithinPool(rollJSON, allowed, limit){
   const results = rollJSON?.terms?.[0]?.results
   if (!Array.isArray(results)) return null
   const kept = results.filter(d => !d.ruleOfSix).slice(0, Math.max(0, allowed))
-  const rerolls = results.filter(d => d.ruleOfSix)
+  const rerolls = earnedRerolls(kept, results.filter(d => d.ruleOfSix))
   return countHits({
     terms: [{
       results: [...kept, ...rerolls]

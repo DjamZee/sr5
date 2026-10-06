@@ -83,8 +83,25 @@ export function recountHits(rollJSON, allowed) {
   const results = roll?.terms?.[0]?.results
   if (!Array.isArray(results)) return null
   const kept = results.filter(d => !d.ruleOfSix).slice(0, Math.max(0, Math.floor(Number(allowed)) || 0))
-  const rerolls = results.filter(d => d.ruleOfSix)
-  return [...kept, ...rerolls].filter(d => d.active !== false && d.discarded !== true && Number(d.result) >= 5).length
+  return [...kept, ...earnedRerolls(kept, results.filter(d => d.ruleOfSix))]
+    .filter(d => d.active !== false && d.discarded !== true && Number(d.result) >= 5).length
+}
+
+/**
+ * The rerolls of the Rule of Six a card really earned (SR5 p. 56 VO, p. 58 VF): one per six, the sixes of the
+ * rerolls included, as Foundry's explosion rolls them; the dice a card writes past them count for nothing (Bodo's
+ * review, 06/10: thirty forged rerolls prefilled 42 hits).
+ */
+export function earnedRerolls(kept, rerolls) {
+  let owed = kept.filter(d => Number(d.result) === 6).length
+  const earned = []
+  for (const die of rerolls) {
+    if (owed <= 0) break
+    owed--
+    earned.push(die)
+    if (Number(die.result) === 6) owed++
+  }
+  return earned
 }
 
 /** The key of a card spent on a use and a target: a card serves once per use (Zélia's review, B3). */
