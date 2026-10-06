@@ -1368,8 +1368,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
     //Vintage (Gun H(e)aven 3 p. 3): never wireless, so no switch and no action spent
     if (target === "system.wirelessTurnedOn" && realItem?.type === "itemWeapon" && hasWeaponTrait(realItem.system, "vintage")) return ui.notifications.warn(game.i18n.localize("SR5.WARN_VintageNoWireless"))
-    //Better Than Bad p. 141: under Blight no adept power is switched on (decision H1 of DjamZ)
-    if (target === "system.isActive" && value && realItem?.type === "itemAdeptPower" && SR5_Toxins.isCutFromManasphere(actor)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
+    //Better Than Bad p. 141: under Blight no adept power, focus nor sustained spell is switched on (decisions of DjamZ)
+    if (target === "system.isActive" && value && ["itemAdeptPower", "itemFocus", "itemSpell"].includes(realItem?.type) && SR5_Toxins.isCutFromManasphere(actor)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
     //The guard reads the actor's counters, which change only when the server answers: a second click before
     //that would pass on the old count. Toggles that cost an action wait for the previous one to be written
     let actionCost = this._itemValueActionCost(item, target, oldValue)

@@ -37,6 +37,9 @@ import {
   registerAgilityZeroHooks
 } from './system/agility-zero.js'
 import {
+  onBlightCreated
+} from './system/blight-strikes.js'
+import {
   onSprintCard
 } from './system/sprint-fatigue.js'
 import {
@@ -220,4 +223,6 @@ registerEssenceHoleHooks()
 registerImplantRegisterHooks()
 // Agility brought to 0: the "immobilized" status follows it (séance H, H8)
 registerAgilityZeroHooks()
+// Blight strikes: sustained spells, active foci and astral fall (Better Than Bad p. 141)
+Hooks.on('createItem', onBlightCreated)
 for (const hook of ['createActor', 'deleteActor', 'createToken', 'deleteToken', 'canvasReady']) Hooks.on(hook, sr5HookResetJumpedInRiggers)

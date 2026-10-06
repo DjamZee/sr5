@@ -1081,6 +1081,8 @@ export class SR5_CharacterUtility extends Actor {
     for (let key of Object.keys(SR5.visionActive)) {
       if (actorData.visions[key].isActive) currentVision = key
     }
+    //Better Than Bad p. 141: cut from the manasphere by Blight, no astral perception (decision of DjamZ); leaving it stays free
+    if (vision === "astral" && currentVision !== "astral" && SR5_Toxins.blightBlocksAstral(actor)) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
     if ((vision === "astral" || currentVision === "astral") && !SR5Combat.hasActionsLeft(actor, [{
       type: "simple", value: 1, source: "switchPerception"
     }])) return
@@ -2253,6 +2255,11 @@ export class SR5_CharacterUtility extends Actor {
   static canSwitchToInitiative(actor, initiative) {
     let currentInitiative = this.findActiveInitiative(actor.system),
       switchCost = []
+    //Better Than Bad p. 141: cut from the manasphere by Blight, no astral projection (decision of DjamZ)
+    if (initiative === "astralInit" && currentInitiative !== "astralInit" && SR5_Toxins.blightBlocksAstral(actor)) {
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
+      return false
+    }
     if (initiative === "astralInit" || (initiative === "physicalInit" && currentInitiative === "astralInit")) switchCost = [{
       type: "complex", value: 1
     }]
