@@ -483,11 +483,12 @@ export class SR5_CharacterUtility extends Actor {
       actorData.modificationSlots.cosmetic.modifiers = []
     }
 
-    // Reset Vehicule Secondary Propulsion
+    // Reset Vehicule Secondary Propulsion: the activation stays off unless an active secondary propulsion
+    // mod reads it again from the source (handleSecondaryAttributes)
+    if (actor.type === "actorDrone") actorData.isSecondaryPropulsionActivate = false
     if (actorData.isSecondaryPropulsion) {
       actorData.isSecondaryPropulsion = false
       actorData.secondaryPropulsionType = ""
-      actorData.isSecondaryPropulsionActivate = false
     }
 
     if (actorData.matrix) {
@@ -2799,6 +2800,8 @@ export class SR5_CharacterUtility extends Actor {
 
     actorData.isSecondaryPropulsion = itemData.secondaryPropulsion.isSecondaryPropulsion
     actorData.secondaryPropulsionType = itemData.secondaryPropulsion.type
+    // The sheet checkbox writes the source; the reset turned the prepared value off (Rigger 5 p. 158)
+    actorData.isSecondaryPropulsionActivate = actor._source?.system?.isSecondaryPropulsionActivate === true
 
     switch (actorData.secondaryPropulsionType) {
       case "amphibiousSurface":
