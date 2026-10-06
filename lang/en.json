@@ -5266,6 +5266,8 @@
 	"SR5.WARN_MatrixDamageDeviceMissing": "Targeted device not found (deleted since the attack): the matrix damage is applied to no device.",
 	"SR5.WARN_JackOutCardRefused": "Jack Out card refused: it was not rolled by an owner of the character, or its dice cannot be read.",
 	"SR5.WARN_JackOutActiveGMOnly": "Only the active GM rolls the jack out resistance: their browser keeps the ledger of spent cards.",
+	"SR5.WARN_IceAttackCardRefused": "IC attack card refused: it was not rolled by a GM or an owner of the IC, or its dice cannot be read.",
+	"SR5.IceAttackConfirm": "{user} rolled this attack of {ice}. Hits counted again on its dice, within the IC's pool and Attack: {hits}. Defend against these hits?",
 	"SR5.WARN_JackOutCardSpent": "This Jack Out card was already used: the link locks are not rolled again.",
 	"SR5.WARN_JackOutPushNoEdge": "The card says Push the Limit, but the sheet spent no Edge: {hits} hits kept, capped by the Firewall.",
 	"SR5.JackOutPushTitle": "Jack Out: Push the Limit",

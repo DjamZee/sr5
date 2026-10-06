@@ -5266,6 +5266,8 @@
 	"SR5.WARN_MatrixDamageDeviceMissing": "Appareil visé introuvable (supprimé depuis l'attaque) : les dommages matriciels ne sont appliqués à aucun appareil.",
 	"SR5.WARN_JackOutCardRefused": "Carte de débranchement refusée : elle n'a pas été lancée par le propriétaire du personnage, ou ses dés ne sont pas lisibles.",
 	"SR5.WARN_JackOutActiveGMOnly": "Seul le MJ actif lance la résistance à la déconnexion : c'est son navigateur qui tient le registre des cartes utilisées.",
+	"SR5.WARN_IceAttackCardRefused": "Carte d'attaque de CI refusée : elle n'a été lancée ni par un MJ ni par un propriétaire de la CI, ou ses dés ne sont pas lisibles.",
+	"SR5.IceAttackConfirm": "{user} a lancé cette attaque de {ice}. Succès recomptés sur ses dés, dans la réserve et l'Attaque de la CI : {hits}. Se défendre contre ces succès ?",
 	"SR5.WARN_JackOutCardSpent": "Cette carte de débranchement a déjà servi : les verrous ne sont pas relancés.",
 	"SR5.WARN_JackOutPushNoEdge": "La carte indique « Repousser les limites », mais la fiche n'a dépensé aucune Chance : {hits} succès retenus, avec le plafond du Firewall.",
 	"SR5.JackOutPushTitle": "Débranchement : « Repousser les limites »",
