@@ -68,16 +68,13 @@ export function itemHasEffect(item, value) {
 }
 
 /**
- * What is part of the body once taken, with nothing to switch on: Adapsine is a transgenic treatment already begun
- * (Chrome Flesh p. 165), Prototype de transhumain a quality the character was born with (p. 57). Their item counts
- * while it is on the sheet, active or not, unless it is carried in a storage.
+ * Whether the item carrying an implant effect acts on the body. Each is part of the body once taken, with nothing to
+ * switch on: Système sensible (SR5 p. 89), Biocompatibilité (Chrome Flesh p. 56) and Prototype de transhumain (p. 57)
+ * are qualities, Adapsine a transgenic treatment already begun (p. 165). The item counts while it is on the sheet,
+ * active or not, unless it is carried in a storage (décision d'Élise, 06/10).
  */
-const ALWAYS_ON_EFFECTS = [IMPLANT_ESSENCE_EFFECTS.adapsine, IMPLANT_ESSENCE_EFFECTS.transhumanPrototype]
-
-/** Whether the item carrying `value` acts on the body. */
-function effectOn(item, value) {
-  if (ALWAYS_ON_EFFECTS.includes(value)) return !item.system?.storedIn
-  return !!item.system?.isActive
+function effectOn(item) {
+  return !item?.system?.storedIn
 }
 
 /** The effects of `items` that act on implants, with the name of the item carrying each. */
@@ -87,7 +84,7 @@ function activeEffects(items) {
     const effects = effectsOf(item)
     if (!effects.length) continue
     for (const effect of effects) {
-      if (Object.values(IMPLANT_ESSENCE_EFFECTS).includes(effect?.value) && effectOn(item, effect.value)) found.push({
+      if (Object.values(IMPLANT_ESSENCE_EFFECTS).includes(effect?.value) && effectOn(item)) found.push({
         value: effect.value, name: item.name
       })
     }
@@ -209,7 +206,7 @@ export function essenceAfterPurchase(essence, items, lines, {
  */
 export function transhumanGift(items) {
   const list = listOf(items)
-  const quality = list.find(i => effectOn(i, IMPLANT_ESSENCE_EFFECTS.transhumanPrototype) &&
+  const quality = list.find(i => effectOn(i) &&
     effectsOf(i).some(e => e?.value === IMPLANT_ESSENCE_EFFECTS.transhumanPrototype))
   if (!quality) return null
   const points = Math.max(0, Number(quality.system.transhumanEssence ?? 1) || 0)
