@@ -5,7 +5,7 @@ import {
   SR5ShopAvailability
 } from "../modules/interface/shop-availability.js"
 import {
-  cardResult
+  cardResult, openCashing, closeCashing
 } from "../modules/interface/shop-orders.js"
 
 // SR5 p. 420: "En cas d'échec, il est possible de réessayer après avoir attendu le double du délai de
@@ -253,12 +253,18 @@ describe("a new availability test after a failure (SR5 p. 420)", () => {
     expect(vendorRefusal(null, 4)).toBe("vendorGone")
   })
 
-  it("the card the GM rolled for the player's buyer is read by the till", () => {
+  it("the card the GM rolled for the player's buyer is read by the till, while he cashes it", () => {
     game._card = card([{
       uuid: "Item.gun", outcome: "success", obtained: true, netHits: 2
     }], gm)
-    expect(cardResult("msg1", "Item.gun", "pl")?.netHits).toBe(2)
-    expect(cardResult("msg1", "Item.gun", "st")).toBe(null)
+    const cashToken = openCashing("msg1")
+    expect(cardResult("msg1", "Item.gun", "pl", {
+      cashToken
+    })?.netHits).toBe(2)
+    expect(cardResult("msg1", "Item.gun", "st", {
+      cashToken
+    })).toBe(null)
+    closeCashing("msg1")
   })
 })
 
@@ -352,10 +358,15 @@ describe("the till charges the surcharge that bought the dice (SR5 p. 420)", () 
         surcharge: 300
       }
     }
-    expect(cardSurcharge("msg1", "Item.gun", "pl")).toBe(300)
+    // Read while the GM cashes the card (R2): the token his cashCard holds
+    const context = {
+      cashToken: openCashing("msg1")
+    }
+    expect(cardSurcharge("msg1", "Item.gun", "pl", context)).toBe(300)
     expect(surchargedUnit(2700, 300)).toBe(10800)
     // no card for the line, or someone else's card: no surcharge
-    expect(cardSurcharge("msg1", "Item.other", "pl")).toBe(0)
-    expect(cardSurcharge("msg1", "Item.gun", "st")).toBe(0)
+    expect(cardSurcharge("msg1", "Item.other", "pl", context)).toBe(0)
+    expect(cardSurcharge("msg1", "Item.gun", "st", context)).toBe(0)
+    closeCashing("msg1")
   })
 })

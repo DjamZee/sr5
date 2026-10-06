@@ -319,8 +319,9 @@ export function testedHours(baseHours, result) {
  * shop-retry.js), for a buyer the requester owns. The outcome is the one his ledger froze when the card
  * appeared; the card itself only for a card the ledger missed.
  *
- * A card serves one purchase, for its own buyer (R2, Anton): once the ledger has it cashed, it shortens
- * no other delay, except inside the gamemaster's own cashing of it, which holds a token no request carries.
+ * A card serves one purchase, for its own buyer (R2, Anton): it is read only inside the gamemaster's own
+ * cashing of it, which holds a token no request carries. Cashed or not, a direct purchase naming it gets
+ * the time of the table and no surcharge.
  * @param {object} [context]
  * @param {string} [context.buyerId] the actor being sold to: the card must have been rolled for it
  * @param {symbol} [context.cashToken] the token of the gamemaster's cashing of this card (openCashing)
@@ -342,7 +343,9 @@ export function cardResult(messageId, uuid, userId, {
   } catch {
     entry = undefined
   }
-  if (entry?.cashed && !(cashToken && cashTokens.get(messageId) === cashToken)) return null
+  // Every card is cashed by the gamemaster's cashCard, which holds the token: a messageId alone, cashed or
+  // not, reads nothing, or one successful card would shorten any number of direct purchases (R2, Anton)
+  if (!(cashToken && cashTokens.get(messageId) === cashToken)) return null
   if (Array.isArray(entry?.lines)) return entry.lines.find(l => l.uuid === uuid) ?? null
   return message.flags?.sr5shop?.results?.find(r => r.uuid === uuid) ?? null
 }

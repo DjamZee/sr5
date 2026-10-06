@@ -456,11 +456,16 @@ describe('the vendor till (socket, validated by the gamemaster)', () => {
         }
       } : null
     }
+    // The card is read inside the gamemaster's cashing of it (cashCard hands its token over, R2)
+    const {
+      openCashing, closeCashing
+    } = await import('../modules/interface/shop-orders.js')
     const done = await SR5ShopVendor.sell(request([{
       uuid: 'Actor.vendor.Item.medkit', quantity: 2, name: 'Medkit'
     }], {
-      messageId: 'card'
+      messageId: 'card', cashToken: openCashing('card')
     }), player.id)
+    closeCashing('card')
     delete globalThis.game.messages
     expect(done).toBe(true)
     expect(till.system.funds.value).toBe(4000)

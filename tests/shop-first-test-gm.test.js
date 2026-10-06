@@ -17,7 +17,7 @@ import {
   SR5ShopAvailability
 } from "../modules/interface/shop-availability.js"
 import {
-  cardResult
+  cardResult, openCashing, closeCashing
 } from "../modules/interface/shop-orders.js"
 
 const retry = () => import("../modules/interface/shop-retry.js")
@@ -216,7 +216,11 @@ describe("the first availability test is rolled by the active GM (SR5 p. 420)", 
     // Whatever the card says afterwards, the till reads the ledger
     game._card.flags.sr5shop.results[1].obtained = true
     game._card.flags.sr5shop.results[0].netHits = 9
-    expect(cardResult("msg1", "Item.gun", "pl")?.netHits).toBe(2)
+    const token = openCashing("msg1")
+    expect(cardResult("msg1", "Item.gun", "pl", {
+      cashToken: token
+    })?.netHits).toBe(2)
+    closeCashing("msg1")
     expect(await cashCard({
       messageId: "msg1"
     }, "pl")).toBe(true)
@@ -238,6 +242,10 @@ describe("the first availability test is rolled by the active GM (SR5 p. 420)", 
       uuid: "Item.gun", outcome: "success", obtained: true, quantity: 1, netHits: 2, faces: [5, 6, 2], oppositionFaces: [1]
     }], gm)
     await recordShopCard(game._card)
+    // Not cashed yet, but outside the GM's cashing: a direct purchase naming it reads nothing (R2, the rest)
+    expect(cardResult("msg1", "Item.gun", "pl", {
+      buyerId: "buyer"
+    })).toBe(null)
     // Another buyer than the card's: nothing
     expect(cardResult("msg1", "Item.gun", "pl", {
       buyerId: "someone-else"
