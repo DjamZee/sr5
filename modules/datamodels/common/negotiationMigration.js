@@ -25,3 +25,32 @@ export function migrateNegotiationTargets(source) {
   }
   return source
 }
+
+/** Whether a skill of a source carries anything typed on the sheet. */
+const typedSkill = skill => !!(Number(skill?.rating?.base) || Number(skill?.rating?.value) || skill?.specializations?.length)
+
+/**
+ * The Negotiation skill itself, under the former key.
+ *
+ * The world migration renames it on the actors present when it runs, never
+ * again: an actor imported from a pack afterwards, and every contact (an
+ * itemContact carries skills too), kept `system.skills.negociation`. The data
+ * model does not know that key and drops it, so the skill read 0: the 104
+ * contacts of the compendiums and the Megapack lost it, and a contact searching
+ * for a vendor fell back to Charisma - 1 (shop-availability.js).
+ *
+ * Called from `Item.migrateData` and `Actor.migrateData`, on every load: the
+ * world, compendium entries, a creation from a pack. What was typed under the
+ * current key wins over the former one.
+ * @param {object} system  The raw system data of an actor or an item.
+ * @return {object}        The same object.
+ */
+export function migrateNegotiationSkill(system) {
+  const skills = system?.skills
+  if (!skills || typeof skills !== "object" || !("negociation" in skills)) return system
+  const legacy = skills.negociation
+  if (legacy && typeof legacy === "object" && (!skills.negotiation || (!typedSkill(skills.negotiation) && typedSkill(legacy))))
+    skills.negotiation = legacy
+  delete skills.negociation
+  return system
+}

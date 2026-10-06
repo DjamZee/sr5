@@ -30,7 +30,7 @@ import {
   reloadIsFree
 } from "../actors/augmentationCap.js"
 import {
-  migrateNegotiationTargets
+  migrateNegotiationTargets, migrateNegotiationSkill
 } from "../../datamodels/common/negotiationMigration.js"
 import {
   migrateTargetOfEffect
@@ -43,6 +43,8 @@ export class SR5Item extends Item {
   //Effects aimed at the former key of the Negotiation skill (datamodels/common/negotiationMigration.js)
   static migrateData(source) {
     migrateNegotiationTargets(source?.system)
+    //The skill itself on a contact, under the former key
+    migrateNegotiationSkill(source?.system)
     //Links to sustained effects stored as {} (datamodels/common/targetOfEffectMigration.js)
     migrateTargetOfEffect(source?.system)
     return super.migrateData(source)

@@ -61,6 +61,9 @@ import {
 import {
   martialArtApplies
 } from "../../system/martial-arts-technique.js"
+import {
+  migrateNegotiationSkill
+} from "../../datamodels/common/negotiationMigration.js"
 
 /**
  * Extend the base Actor class to implement additional logic specialized for Shadowrun 5.
@@ -72,6 +75,12 @@ export class SR5Actor extends Actor {
     super(...args)
     //The core fills statuses in applyActiveEffects, which this system never calls : hasStatusEffect reads them
     installLiveStatuses(this)
+  }
+
+  //The Negotiation skill under its former key, on an actor imported after the world migration (datamodels/common/negotiationMigration.js)
+  static migrateData(source) {
+    migrateNegotiationSkill(source?.system)
+    return super.migrateData(source)
   }
 
   /** Overide Actor's create Dialog to hide certain type and sort them alphabetically*/
