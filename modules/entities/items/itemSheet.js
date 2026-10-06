@@ -907,7 +907,9 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     let accessory = result.element.querySelector("[name=accessory]")?.value
     if (accessory) {
       let aItem = this.actor.items.find(i => i.id === accessory)
-      let accObj = aItem.toObject(false)
+      //Its source: the prepared copy carried the accessory's computed price, dice pools and monitors into the host's
+      //source. The host's preparation reads only stored fields of it (price.base, itemEffects, weaponAccessory)
+      let accObj = aItem.toObject()
       // Set top-level flags for template/processing compatibility
       accObj.isActive = true
       accObj.isFree = false

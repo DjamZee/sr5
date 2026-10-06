@@ -609,25 +609,29 @@ export class SR5Combat extends Combat {
   static async changeActionInCombat(documentId, actions, updateActor = true){
     let actor = await SR5_EntityHelpers.getRealActorFromID(documentId)
     if (!actor) return
-    let actorData = foundry.utils.duplicate(actor.system)
+    //The prepared counters: a refund is capped at what the pass grants, the prepared value (base and the item effects
+    //that add actions). The source copy only carries the stored default, and capped a refund below it
+    let counters = foundry.utils.deepClone(actor.system.specialProperties.actions)
     let combatant = await SR5Combat.getCombatantFromActor(actor)
     let initModifier
     if (!combatant) return
-		
-    //Update actor actions
+
+    //Update actor actions: the counters only, never the prepared values written in the source
     if (updateActor){
       //SR5 p. 164: a simple action spent leaves no complex one, and the reverse
-      SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions.filter(a => a.type !== "special"))
+      SR5_MiscellaneousHelpers.spendActions(counters, actions.filter(a => a.type !== "special"))
       await actor.update({
-        system: actorData
+        "system.specialProperties.actions.free.current": counters.free.current,
+        "system.specialProperties.actions.simple.current": counters.simple.current,
+        "system.specialProperties.actions.complex.current": counters.complex.current,
       })
     }
 
     //... and combatant actions
     await combatant.update({
-      "flags.sr5.actions.free": actorData.specialProperties.actions.free.current,
-      "flags.sr5.actions.simple": actorData.specialProperties.actions.simple.current,
-      "flags.sr5.actions.complex": actorData.specialProperties.actions.complex.current,
+      "flags.sr5.actions.free": counters.free.current,
+      "flags.sr5.actions.simple": counters.simple.current,
+      "flags.sr5.actions.complex": counters.complex.current,
     })
 		
     for (let action of actions){

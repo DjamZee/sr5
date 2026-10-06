@@ -1741,7 +1741,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
   }
 
   /* -------------------------------------------- */
-  //Change value of an item from actor sheet by clicking with mouse
+  //Change value of an item from actor sheet by clicking with mouse. The value is read as the sheet shows it, but only
+  //the clicked path is written (and the other matrix attribute when it moves too): the prepared copy written back
+  //whole put every computed value in the source, and the next preparation added its modifiers again
   _onChangeValueByClick(event) {
     let id = event.currentTarget.closest(".item")?.dataset.itemId,
       target = event.currentTarget.dataset.binding,
@@ -1755,6 +1757,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     let step = 1
     if (event.shiftKey && ["system.magic.reagents", "system.magic.reagentsRefined", "system.magic.reagentsRadical"].includes(target)) step = 10
     else if (event.ctrlKey && target === "system.quantity") step = 10
+    let updates = {
+    }
 
     switch (event.button) {
       case 0:
@@ -1771,7 +1775,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
               value++
             } else {
               if (noiseReduction > 0) {
-                foundry.utils.setProperty(entity, "system.matrix.attributes.noiseReduction.base", (noiseReduction - 1))
+                updates["system.matrix.attributes.noiseReduction.base"] = noiseReduction - 1
                 value++
               } else {
                 SR5_SystemHelpers.srLog(3, "Reached maximum value")
@@ -1783,7 +1787,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
               value++
             } else {
               if (sharing > 0) {
-                foundry.utils.setProperty(entity, "system.matrix.attributes.sharing.base", (sharing - 1))
+                updates["system.matrix.attributes.sharing.base"] = sharing - 1
                 value++
               } else {
                 SR5_SystemHelpers.srLog(3, "Reached maximum value")
@@ -1796,30 +1800,25 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         break
     }
 
-    if (id){
-      foundry.utils.setProperty(entity, target, value)
-      this.actor.updateEmbeddedDocuments("Item", [entity])
-    } else {
-      foundry.utils.setProperty(entity, target, value)
-      this.actor.update(entity)
-    }
+    updates[target] = value
+    if (id) this.actor.updateEmbeddedDocuments("Item", [{
+      _id: id, ...updates
+    }])
+    else this.actor.update(updates)
   }
 
   /* -------------------------------------------- */
   //Change value of an actor by click
   _onEditActorValue(event){
     let target = event.currentTarget.dataset.binding
-    let actor = this.actor.toObject(false)
-
     let value = event.target.value
     if (event.currentTarget.dataset.dtype === "Boolean") {
-      let oldValue = foundry.utils.getProperty(actor, target)
+      let oldValue = foundry.utils.getProperty(this.actor, target)
       value = !oldValue
     }
-    foundry.utils.setProperty(actor, target, value)
-    let actorData = actor.system
+    //Only the toggled path: the whole prepared system written back put its computed values in the source
     this.actor.update({
-      'system': actorData
+      [target]: value
     })
   }
 
