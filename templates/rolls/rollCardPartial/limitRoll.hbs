@@ -9,7 +9,10 @@
         {{/if}}
     </div>
     <div class="col-2 SR-TextRight">
-        {{#if edge.hasUsedPushTheLimit}}
+        {{!-- Structured Spellcasting (Forbidden Arcana p. 43): the limit holds even after pushing the limit (M5 M2) --}}
+        {{#if (and edge.hasUsedPushTheLimit magic.structured)}}
+            {{limit.value}}
+        {{else if edge.hasUsedPushTheLimit}}
             {{localize 'SR5.PushTheLimit'}}
         {{else if (gt limit.value 0)}}
             {{limit.value}}
