@@ -40,8 +40,19 @@ export default async function resistance(rollData, rollType, actor, chatData){
     chatData.damage.value = engulf.value
     chatData.damage.type = engulf.type
     chatData.damage.resistanceType = "physicalDamage"
-    chatData.combat.armorPenetration = engulf.armorPenetration
+    chatData.damage.element = "toxin"
+    //Resisted "comme pour une attaque par une toxine dont le vecteur est l'inhalation", armor does not protect but
+    //protective gear does (p. 399, 410): the toxin path, its Power the damage, its penetration −Magic, no hits added
+    chatData.damage.toxin.power = engulf.value
+    chatData.damage.toxin.penetration = engulf.armorPenetration
+    chatData.damage.toxin.damageType = engulf.type
+    chatData.damage.isContinuous = false
+    chatData.roll.netHits = 0
+    chatData.combat.armorPenetration = 0
+    rollType = "resistanceToxin"
   }
+  //The spirit's attack card, carried from phase to phase
+  rollData.damage.engulfSourceId = chatData.damage.engulfSourceId
   //Transfert necessary info from chatCard
   rollData.damage.base = chatData.damage.value
   rollData.damage.type = chatData.damage.type

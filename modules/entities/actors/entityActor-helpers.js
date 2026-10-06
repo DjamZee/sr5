@@ -2650,7 +2650,16 @@ export class SR5_ActorHelper {
     const {
       healCardDiceKey
     } = await import("../../system/heal-ledger.js")
-    const source = SR5_ActorHelper.toxinSourceOf(data)
+    //An air engulf's following phase answers the previous phase's card: its source is the spirit's attack card it
+    //carries, and the hits of the first attack no longer count (SR5 p. 399)
+    let source = SR5_ActorHelper.toxinSourceOf(data)
+    const engulfPhase = !source && !!data.damage?.engulfSourceId
+    if (engulfPhase) source = SR5_ActorHelper.toxinSourceOf({
+      previousMessage: {
+        messageId: data.damage.engulfSourceId
+      }
+    })
+    if (engulfPhase && source?.weapon?.system?.toxin?.type !== "airEngulf") source = null
     const toxin = source ? foundry.utils.deepClone(source.weapon.system.toxin) : null
     const open = toxin ? SR5_Toxins.openVectors(actor.system, toxinVectors(toxin)) : []
     const pool = Math.max(0, ...open.map(v => Number(actor.system.resistances?.toxin?.[v]?.dicePool) || 0))
@@ -2658,7 +2667,7 @@ export class SR5_ActorHelper {
       power: toxin.power,
       toxinType: toxin.type,
       calledShot: source.card.combat?.calledShot?.name,
-      engulfNetHits: bounded(source.answered?.roll?.netHits, source.card.roll?.hits),
+      engulfNetHits: engulfPhase ? 0 : bounded(source.answered?.roll?.netHits, source.card.roll?.hits),
       doses: data.toxinDoses,
       antitoxin: SR5_Toxins.antitoxinRating(actor.system),
     }) : 0
