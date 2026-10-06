@@ -114,8 +114,9 @@ function towardZero(next, current, bound = 0) {
 
 //The furthest an effect held up by a dispelled item may go: what the GM works out from its source entry and the card's
 //net hits (dispel-rules.js). Its own value when the entry did not read the hits: a fixed value is not dispelled
-function linkedBound(entry, current, netHits) {
-  const next = dispelledValue(entry, current, netHits)
+//`hits`: the fewest hits the effect may still stand on, from the flags its applier wrote (effectHits)
+function linkedBound(entry, current, netHits, hits = null) {
+  const next = dispelledValue(entry, current, netHits, hits)
   return next === null ? (Number(current) || 0) : next
 }
 
@@ -166,12 +167,12 @@ export function deactivateAllowed(changes) {
  * @param {object|null} entry for a linked effect, the transfer entry of the item it came from (linkedEntryOf): its
  *   value goes no further than that entry and the net hits give
  */
-export function reduceAllowed(changes, stored, netHits, linked = false, key = "hits", entry = null) {
+export function reduceAllowed(changes, stored, netHits, linked = false, key = "hits", entry = null, hits = null) {
   for (const [field, value] of Object.entries(changes)) {
     if (!linked && field === key) {
       if (!lowered(value, stored?.[key], Math.max(0, (Number(stored?.[key]) || 0) - netHits))) return false
     } else if (linked && field === "value") {
-      if (!towardZero(value, stored?.value, linkedBound(entry, stored?.value, netHits))) return false
+      if (!towardZero(value, stored?.value, linkedBound(entry, stored?.value, netHits, hits))) return false
     } else if (field === "isActive") {
       if (!off(value)) return false
     } else if (!linked && field === "targetOfEffect") {
@@ -184,7 +185,7 @@ export function reduceAllowed(changes, stored, netHits, linked = false, key = "h
         const before = stored?.customEffects?.[id]
         if (!effect || !before) return false
         if (Object.keys(effect).some(k => k !== "value" && JSON.stringify(effect[k]) !== JSON.stringify(before[k]))) return false
-        if (!towardZero(effect.value, before.value, linkedBound(entry, before.value, netHits))) return false
+        if (!towardZero(effect.value, before.value, linkedBound(entry, before.value, netHits, hits))) return false
       }
     } else return false
   }

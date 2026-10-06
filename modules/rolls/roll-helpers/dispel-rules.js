@@ -39,8 +39,9 @@ export function linkedEntryOf(source, effect, sourceKey, labelOf = k => k) {
  * @param {object|null} entry the source entry (sourceEntryOf)
  * @param {number} value the effect's current value
  * @param {number} reduction the dispelling net hits
- * @param {number|null} [hits] the hits the effect stands on now (effectHits); unknown, the fewest that give its value:
- *   never more than the true ones, so the GM's bound never lets an effect go further than the card allows
+ * @param {number|null} [hits] the hits the effect stands on now (effectHits), or at least (the GM's guard). The fewest
+ *   hits that give its value are a floor too: the higher of the two is taken, never more than the true hits, so the
+ *   GM's bound is exact when his own flags tell, and never lets an effect go further than the card allows
  */
 export function dispelledValue(entry, value, reduction, hits = null) {
   if (!entry || !(reduction > 0)) return null
@@ -50,8 +51,10 @@ export function dispelledValue(entry, value, reduction, hits = null) {
   const current = Number(value) || 0
   //The value is worked out again from the hits left, as applyExternalEffect did: a multiplier of 0.5 rounds the same
   //way (4 hits give 2, 3 hits give 1). A negative multiplier (Decrease Attribute) goes back up toward 0
-  const from = Number.isFinite(hits) ? hits : fewestHits(current, m)
-  if (from === null) return null
+  const fewest = fewestHits(current, m)
+  const known = Number.isFinite(hits) ? hits : null
+  if (fewest === null && known === null) return null
+  const from = Math.max(fewest ?? 0, known ?? 0)
   const next = Math.floor(Math.max(0, from - reduction) * m) + 0
   return next === current ? null : next
 }

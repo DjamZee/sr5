@@ -224,6 +224,29 @@ describe('the GM guard of a player dispelling by socket', async () => {
       type: 'value', value: 2, multiplier: 1
     })).toBe(false)
   })
+  //Fritz, measured on the pile: x0.5 and an odd number of hits let one more step through (3 -> 1 accepted 0)
+  it('reads the hits its own flags tell, so x0.5 with odd hits lets no step more through', () => {
+    const half = {
+      type: 'hits', multiplier: 0.5
+    }
+    for (const [h, v] of [[3, 1], [5, 2], [7, 3]]) {
+      const hits = effectHits({
+        sourceBase: h, sourceHits: h
+      }, h)
+      //1 net hit leaves h - 1 hits, which still give v
+      expect(reduceAllowed({
+        value: v - 1
+      }, {
+        value: v
+      }, 1, true, 'hits', half, hits)).toBe(false)
+      //2 net hits: one step, and no more
+      expect(reduceAllowed({
+        value: v - 1
+      }, {
+        value: v
+      }, 2, true, 'hits', half, hits)).toBe(true)
+    }
+  })
   it('reads a list of custom effects sent whole, the value alone may change (measured in play)', () => {
     const entry = {
       category: 'characterAttributes', forceAdd: true, target: 'system.attributes.strength.augmented', type: 'value'

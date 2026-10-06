@@ -12,7 +12,7 @@ import {
   serviceSpentAllowed, maglockAllowed, testAllowed, recountHits, consumedKey, REDUCER_POOLS
 } from "./socket-guard.js"
 import {
-  linkedEntryOf
+  linkedEntryOf, effectHits
 } from "./dispel-rules.js"
 
 // The cards already spent on a use and a target (Zélia's review, B3), written by the active GM
@@ -271,7 +271,10 @@ export class SR5_MiscellaneousHelpers {
       else if (reduced.held.includes(item.uuid)) {
         const entry = linkedEntryOf(reduced.item._source?.system ?? reduced.item.system, stored, item.flags?.sr5?.sourceEntry,
           k => SR5_EntityHelpers.getLabelByKey(k))
-        allowed = reduceAllowed(changes, stored, reduced.netHits, true, "hits", entry)
+        //The hits it stands on, from the flags written when it was applied (the GM, the target not being the sender's)
+        //and the spell's stored hits: never above the true ones, even if the spell was lowered first
+        const hits = effectHits(item.flags?.sr5, (reduced.item._source?.system ?? reduced.item.system)?.hits)
+        allowed = reduceAllowed(changes, stored, reduced.netHits, true, "hits", entry, hits)
       }
       if (!allowed) return null
       return {
