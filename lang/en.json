@@ -3915,6 +3915,8 @@
 	"SR5.HermeticElementalist_D": "Forbidden Arcana p. 175: his air, earth, fire and water spirits get the Elemental trait. Remember the +6 adjustment.",
 	"SR5.SheetConfig.Block.SpiritReputation": "Spirit reputation",
 	"SR5.WARN_SpiritBondsGMOnly": "Indexes, reputations and spirit traits are written by the gamemaster only.",
+	"SR5.WARN_OverwatchGMOnly": "Only the gamemaster lowers the Overwatch Score: outside a reboot, the lowering was not written.",
+	"SR5.WARN_OverwatchLoweredByPlayer": "{user} brought the Overwatch Score of {actor} from {before} down to {after} (reboot announced: {reboot}). Yours to rule on.",
 	"SR5.WildBanishAdd": "Add to banishing",
 	"SR5.WildBanishGMOnly": "Only the active gamemaster adds up the banishing of a wild spirit.",
 	"SR5.INFO_WildBanishProgress": "{name}: banishing {total} / {goal}.",

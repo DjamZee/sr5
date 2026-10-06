@@ -5,6 +5,9 @@ import {
   GM_ONLY_ACTOR_PATHS, stripGMOnlyChanges
 } from "../entities/items/spirit-bonds.js"
 import {
+  stripOverwatchDecrease
+} from "../system/overwatch-guard.js"
+import {
   SR5_ActorHelper
 } from "../entities/actors/entityActor-helpers.js"
 import {
@@ -55,6 +58,8 @@ export function sr5HookPreUpdateActor(document, changes, options = {
   if (!game.user?.isGM) {
     const refused = stripGMOnlyChanges(changes, document, GM_ONLY_ACTOR_PATHS)
     if (refused.length) ui.notifications.warn(game.i18n.localize("SR5.WARN_SpiritBondsGMOnly"))
+    //The Overwatch Score only rises, until a reboot (overwatch-guard.js)
+    if (stripOverwatchDecrease(changes, document._source?.system?.matrix?.overwatchScore, options)) ui.notifications.warn(game.i18n.localize("SR5.WARN_OverwatchGMOnly"))
   }
   if (options.sr5PersonaMarks) return
   if (!SR5_CharacterUtility.isDepthActive(document) || SR5_CharacterUtility.isDevicelessAI(document)) return

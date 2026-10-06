@@ -91,6 +91,9 @@ import {
 import {
   SR5ShopVendor
 } from './interface/shop-vendor.js'
+import {
+  seedOverwatch, sr5HookOverwatchDrop
+} from './system/overwatch-guard.js'
 
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
@@ -99,6 +102,9 @@ import {
 // Register all hooks
 Hooks.once('init', sr5HookInit)
 Hooks.once('ready', sr5HookReady)
+// The GMs remember the Overwatch Scores, to be told of a lowering a player writes
+Hooks.once('ready', seedOverwatch)
+Hooks.on('updateActor', sr5HookOverwatchDrop)
 Hooks.once('canvasReady', sr5HookCanvasReady)
 Hooks.once('renderChatLog', sr5HookRenderChatLog)
 Hooks.on('renderChatLog', sr5PlaceChatJumpToBottom)

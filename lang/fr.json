@@ -3915,6 +3915,8 @@
 	"SR5.HermeticElementalist_D": "Arcanes Interdites p. 175 : ses esprits de l'air, de la terre, du feu et de l'eau reçoivent le trait Élémentaire. Pensez à l'ajustement de +6.",
 	"SR5.SheetConfig.Block.SpiritReputation": "Réputation auprès des esprits",
 	"SR5.WARN_SpiritBondsGMOnly": "Les index, les réputations et les traits d'esprit ne s'écrivent que par le MJ.",
+	"SR5.WARN_OverwatchGMOnly": "Seul le MJ baisse le Score de Surveillance : hors redémarrage, la baisse n'a pas été écrite.",
+	"SR5.WARN_OverwatchLoweredByPlayer": "{user} a ramené le Score de Surveillance de {actor} de {before} à {after} (redémarrage annoncé : {reboot}). À toi d'arbitrer.",
 	"SR5.WildBanishAdd": "Bannissement cumulé",
 	"SR5.WildBanishGMOnly": "Seul le MJ actif cumule le bannissement d'un esprit sauvage.",
 	"SR5.INFO_WildBanishProgress": "{name} : bannissement {total} / {goal}.",
