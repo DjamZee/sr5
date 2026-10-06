@@ -310,7 +310,7 @@ export async function vetAttackCard(chatData, {
     data.damage.elementSecond = item.system.damageElementSecond
   } else if (family === "ramming") {
     if (roller.type !== "actorDrone") return null
-    const ramming = helpers.ramming(roller, defender, chatData.combat?.ramming)
+    const ramming = await helpers.ramming(roller, defender, chatData.combat?.ramming)
     pool = system.rammingTest?.test?.dicePool
     vetted = {
       base: ramming.base, value: ramming.base, ap: -6, type: "physical",
@@ -369,10 +369,10 @@ const MISMATCH_KEYS = {
 }
 
 function shown(key, value) {
+  if (key === "source") return game.i18n.localize(value === "magical" ? "SR5.AttackCardMagical" : "SR5.AttackCardMundane")
   if (value === undefined || value === null || value === "") return "—"
   if (key === "type") return game.i18n.localize(SR5.damageTypes?.[value] ?? String(value))
   if (key === "element") return game.i18n.localize(SR5.specialDamageTypes?.[value] ?? String(value))
-  if (key === "source") return value === "magical" ? game.i18n.localize("SR5.AttackCardMagical") : game.i18n.localize("SR5.AttackCardMundane")
   return String(value)
 }
 

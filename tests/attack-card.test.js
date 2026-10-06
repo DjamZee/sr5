@@ -423,6 +423,52 @@ describe('vetAttackCard', () => {
     expect(r.direct).toBe(true)
   })
 
+  it('works a ramming out again with the speeds of the sheets (await of the lookup, measured in game)', async () => {
+    const drone = {
+      ...actorWith([], {
+        ...shooter, rammingTest: {
+          test: {
+            dicePool: 4
+          }
+        }
+      }, 'actorDrone')
+    }
+    const card = attackCard({
+      test: {
+        type: 'ramming', typeSub: ''
+      }, damage: {
+        base: 60, value: 60, type: 'physical'
+      }, roll: {
+        hits: 25
+      },
+    })
+    card.combat.armorPenetration = -30
+    card.combat.ramming = {
+      attackerSpeed: 12, relativeSpeed: 99999
+    }
+    const r = await vetAttackCard(card, {
+      messageId: 'm1', helpers: {
+        cardOf: cardOfFor(drone, {
+          data: {
+            test: {
+              type: 'ramming'
+            }
+          }
+        }),
+        ramming: async (roller, defender, ramming) => ({
+          ramming: {
+            ...ramming, attackerSpeed: 3, relativeSpeed: 20
+          }, base: 6
+        }),
+      }
+    })
+    expect(r.data.damage.base).toBe(6)
+    expect(r.data.combat.armorPenetration).toBe(-6)
+    expect(r.data.combat.ramming.relativeSpeed).toBe(20)
+    //the three hits its dice show
+    expect(r.data.roll.hits).toBe(3)
+  })
+
   it('caps the Force of an indirect spell at Magic x 2 (SR5 p. 281)', async () => {
     const spell = {
       id: 's1', name: 'Boule de feu', type: 'itemSpell', system: {
