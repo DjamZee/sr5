@@ -3112,8 +3112,9 @@ SR5.spiritBasePowersinsectQueen = {
   sapience                   : "SR5.SpiritPowerSapience",
   search                     : "SR5.SpiritPowerSearch",
   wealth                     : "SR5.SpiritPowerWealth",
+  // Her only weakness: Allergy (Insecticides, Severe); no Evanescence, every Queen/Mother is a free spirit
+  // (Grimoire des Ombres p. 100)
   allergyInsecticides        : "SR5.SpiritPowerAllergyInsecticides",
-  evanescence                : "SR5.SpiritPowerEvanescence",
 }
 
 SR5.spiritOptionalPowersinsectQueen = {
