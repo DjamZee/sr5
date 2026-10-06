@@ -1585,8 +1585,9 @@ export class SR5_ActorHelper {
 
   //Manage Healing by socket
   //A player heals a patient she does not own (Heal, SR5 p. 291): the GM reads the casting card himself, from the chat
-  //log and not from the request. Only the card's author may ask, once (its button is removed before the effect), and
-  //applyExternalEffect counts its hits again and asks the GM to confirm them (checkEffectCard)
+  //log and not from the request. Only the card's author may ask, once: the button is removed, and the card is kept in
+  //a ledger the active GM alone writes (its author could put the button back in the flags). applyExternalEffect then
+  //counts its hits again and asks the GM to confirm them (checkEffectCard)
   static async _socketApplyHealEffect(message, senderId){
     const card = game.messages.get(message.data?.messageId)
     if (!card || !senderId || card.author?.id !== senderId) return
@@ -1599,6 +1600,10 @@ export class SR5_ActorHelper {
     if (!healsDamage(item?.system?.customEffects)) return
     const patient = SR5_EntityHelpers.getRealActorFromID(message.data.targetActor)
     if (!patient) return
+    const {
+      claimHealCard
+    } = await import("../../system/heal-ledger.js")
+    if (!(await claimHealCard(card.id))) return
     data.owner.messageId = card.id
     //Loaded here: roll-message imports this file
     const {

@@ -78,9 +78,20 @@ describe("le MJ applique Soins pour une joueuse", () => {
         }
       }
     }
+    const store = {
+    }
+    const gm = {
+      id: "mj", isGM: true
+    }
     globalThis.game = {
       ...globalThis.game, messages: {
         get: id => (id === "m1" ? card : undefined)
+      }, user: gm, users: {
+        activeGM: gm
+      }, settings: {
+        get: (s, k) => store[k], set: async (s, k, v) => {
+          store[k] = v
+        }
       }
     }
     globalThis.fromUuid = async () => ({
@@ -109,6 +120,20 @@ describe("le MJ applique Soins pour une joueuse", () => {
   })
   it("bouton déjà utilisé : rien", async () => {
     delete card.flags.sr5data.chatCard.buttons.applyEffect
+    await ask("joueuse")
+    expect(patient.applyExternalEffect).not.toHaveBeenCalled()
+  })
+  it("l'autrice remet le bouton dans sa carte et redemande : rien, le registre du MJ la connaît", async () => {
+    await ask("joueuse")
+    card.flags.sr5data.chatCard.buttons.applyEffect = {
+    }
+    await ask("joueuse")
+    expect(patient.applyExternalEffect).toHaveBeenCalledTimes(1)
+  })
+  it("un MJ qui n'est pas le MJ actif n'écrit pas le registre et n'applique rien", async () => {
+    game.users.activeGM = {
+      id: "autre-mj"
+    }
     await ask("joueuse")
     expect(patient.applyExternalEffect).not.toHaveBeenCalled()
   })

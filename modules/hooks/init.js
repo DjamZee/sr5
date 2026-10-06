@@ -32,6 +32,9 @@ import {
   registerIllusionSetting
 } from "../system/illusion.js"
 import {
+  registerHealLedger
+} from "../system/heal-ledger.js"
+import {
   registerTacnetSetting
 } from "../system/tacnet.js"
 import {
@@ -300,6 +303,7 @@ export async function sr5HookInit() {
   registerRadiationSettings()
   //The GM's ledgers of the illusions seen through (SR5 p. 294) and of the RP-Tac rosters (Run & Gun p. 119)
   registerIllusionSetting()
+  registerHealLedger()
   registerTacnetSetting()
   //The grappling statuses exist only in a world that uses the grappling rules
   if (SR5_GrappleHelpers.isActive()) CONFIG.statusEffects.push(...SR5_GrappleHelpers.statusEffects())
