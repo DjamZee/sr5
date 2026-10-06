@@ -4919,14 +4919,15 @@ export class SR5_CharacterUtility extends Actor {
   }
 
   static generateAgentMatrix(actor, itemData) {
-    let actorData = actor.system
-    if (!actorData.creatorData?.system?.matrix) return
-    let matrixAttributes = actorData.matrix.attributes, creatorMatrix = actorData.creatorData.system.matrix
+    let actorData = actor.system,
+      matrixAttributes = actorData.matrix.attributes,
+      //An agent without a creator is loaded on no device: no matrix attributes (SR5 p. 248), its rating still counts
+      creatorMatrix = actorData.creatorData?.system?.matrix
 
     actorData.matrix.marks = itemData.marks
     actorData.matrix.markedItems = itemData.markedItems
     //Device
-    actorData.matrix.deviceRating = creatorMatrix.deviceRating
+    if (creatorMatrix) actorData.matrix.deviceRating = creatorMatrix.deviceRating
 
     //Agent attributes are equal to the rating (Kill code page 26)
     for (let key of Object.keys(SR5.characterAttributes)) {
@@ -4934,7 +4935,7 @@ export class SR5_CharacterUtility extends Actor {
     }
     //Agent matrix attributes are the same as decker attributes
     for (let key of Object.keys(SR5.deckerAttributes)) {
-      matrixAttributes[key].base = creatorMatrix.attributes[key].value
+      matrixAttributes[key].base = creatorMatrix?.attributes[key].value ?? 0
       SR5_EntityHelpers.updateValue(matrixAttributes[key], 0)
     }
     //Agent skills are equal to program rating
@@ -4947,7 +4948,7 @@ export class SR5_CharacterUtility extends Actor {
     //Noise
     SR5_EntityHelpers.updateValue(actorData.matrix.noise)
     //Grid
-    actorData.userGrid = creatorMatrix.userGrid
+    if (creatorMatrix) actorData.userGrid = creatorMatrix.userGrid
   }
 
   static applyProgramToAgent(actor) {
