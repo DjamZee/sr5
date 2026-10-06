@@ -733,6 +733,9 @@ describe('the grappling sockets', () => {
       role: 'holder'
     }, {
       holdId: ''
+    }, {
+      // Jakob's second round: a partner she owns, herself or another of her actors
+      partner: 'pc'
     }]) {
       it(`a held player who forged ${JSON.stringify(forged)} on her half before deleting it frees nobody`, async () => {
         thug.effects = [half('holder', 'pc', thug)]
@@ -747,6 +750,31 @@ describe('the grappling sockets', () => {
         })
       })
     }
+    it('a held player whose half names another actor of hers, given a forged half too, frees nobody', async () => {
+      const alt = actor('alt', {
+      }, ['owner'])
+      // forged on her other actor: a half that says she holds it, or is held by it
+      alt.effects = [half('held', 'pc', alt, {
+        flags: {
+          sr5: {
+            grapple: {
+              role: 'held', partner: 'pc', hold: 0, holdId: 'x', kind: 'subdue'
+            }
+          }
+        }
+      })]
+      game.actors = {
+        contents: [alt, thug, pc]
+      }
+      thug.effects = [half('holder', 'pc', thug)]
+      const deleted = half('held', 'alt', pc)
+      await SR5_GrappleHelpers.onDeleteEffect(deleted, 'owner')
+      expect(thug.effects[0].delete).not.toHaveBeenCalled()
+      expect(pc.createEmbeddedDocuments).toHaveBeenCalledTimes(1)
+      expect(pc.createEmbeddedDocuments.mock.calls[0][1][0].flags.sr5.grapple).toMatchObject({
+        role: 'held', partner: 'thug', hold: 2, holdId: 'h1'
+      })
+    })
     it('the holder who lets go by deleting her half frees the held one', async () => {
       // the holder is the player's, the held one the GM's
       const thugHeld = half('held', 'pc', thug)

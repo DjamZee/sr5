@@ -562,37 +562,39 @@ export class SR5_GrappleHelpers {
     const data = effect.flags?.sr5?.grapple
     if (!data) return
     const user = userId ? game.users.get(userId) : null
-    //A GM, or a player who owns the partner the half names, ends the hold as before
-    const named = SR5_EntityHelpers.getRealActorFromID(data.partner)
-    if (!user || user.isGM || (named && ownsTarget(user, named))) {
-      return deleteGrappleEffectOnce(named, PENDING_DELETIONS, data.holdId)
+    //A GM ends the hold as before
+    if (!user || user.isGM) return deleteGrappleEffectOnce(SR5_EntityHelpers.getRealActorFromID(data.partner), PENDING_DELETIONS, data.holdId)
+    //A player wrote every flag of the half she deleted (Jakob's review, two rounds: a role turned to
+    //"holder", an empty holdId, a partner of her own): none is read. The source is the other half, and
+    //first a half she does not own, which only the GM writes: a half she forged on another actor of hers
+    //decides nothing over it
+    const counterparts = SR5_GrappleHelpers.counterpartsOf(effect.parent)
+    const foreign = counterparts.find(c => !ownsTarget(user, c))
+    if (foreign) {
+      const kept = grappleHoldOf(foreign.effects)
+      if (kept.role === "holder") {
+        //The held fighter has not escaped: her half comes back, read on the holder's; the holder's stays
+        const keptId = foreign.isToken ? foreign.token.id : foreign.id
+        await effect.parent?.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(kept.kind, "held", keptId, kept.hold, kept.holdId)])
+        return refuse("grappleDeleteHeld", userId, data)
+      }
+      //The holder lets go when she likes (SR5 p. 196): the held half goes too, by its own holdId
+      return deleteGrappleEffectOnce(foreign, PENDING_DELETIONS, kept.holdId)
     }
-    //Anyone else wrote the flags of the half she deleted (Jakob's review: a role turned to "holder", an
-    //empty holdId): nothing is read on them. The hold is the one the other half names, written by the GM
-    const counterpart = SR5_GrappleHelpers.counterpartOf(effect.parent)
-    if (!counterpart) return
-    const kept = grappleHoldOf(counterpart.effects)
-    if (kept.role === "holder") {
-      //The held fighter has not escaped: her half comes back, the holder's stays
-      const keptId = counterpart.isToken ? counterpart.token.id : counterpart.id
-      await effect.parent?.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(kept.kind, "held", keptId, kept.hold, kept.holdId)])
-      return refuse("grappleDeleteHeld", userId, data)
-    }
-    //The holder lets go when she likes (SR5 p. 196): the held half goes too
-    await deleteGrappleEffectOnce(counterpart, PENDING_DELETIONS, kept.holdId)
+    //Only halves of her own: she could delete them herself
+    for (const own of counterparts) await deleteGrappleEffectOnce(own, PENDING_DELETIONS, grappleHoldOf(own.effects).holdId)
   }
 
-  /** The fighter whose grappling half, written by the GM, names this actor as its partner. */
-  static counterpartOf(actor){
-    if (!actor) return null
+  /** The fighters whose grappling half names this actor as its partner (by uuid: two unlinked tokens of
+   * one actor share its id). */
+  static counterpartsOf(actor){
+    if (!actor) return []
     const unlinked = game.scenes?.contents?.flatMap(s => s.tokens.contents.filter(t => !t.actorLink).map(t => t.actor)) ?? []
-    for (const other of [...(game.actors?.contents ?? []), ...unlinked]){
-      if (!other || other === actor) continue
+    return [...(game.actors?.contents ?? []), ...unlinked].filter(other => {
+      if (!other || other === actor) return false
       const data = grappleHoldOf(other.effects)
-      //By uuid: two unlinked tokens of one actor share its id
-      if (data && SR5_EntityHelpers.getRealActorFromID(data.partner)?.uuid === actor.uuid) return other
-    }
-    return null
+      return !!data && SR5_EntityHelpers.getRealActorFromID(data.partner)?.uuid === actor.uuid
+    })
   }
 
   //Active GM side : a fighter knocked out or killed leaves the hold
