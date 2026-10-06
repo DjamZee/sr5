@@ -1218,7 +1218,7 @@ export class SR5_UtilityItem extends Actor {
     })
     for (const m of bodyEffects.multipliers) SR5_EntityHelpers.updateModifier(itemData.essenceCost, m.name, m.type, m.value, true, false)
     if (bodyEffects.gradeReduction) {
-      essenceMultiplier = Math.max(0, essenceMultiplier - bodyEffects.gradeReduction)
+      essenceMultiplier = Math.max(0, Math.round((essenceMultiplier - bodyEffects.gradeReduction) * 100) / 100)
       modifierSource += ` + ${game.i18n.localize("SR5.UnderAdapsine")}`
     }
 
