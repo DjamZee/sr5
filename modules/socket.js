@@ -128,7 +128,8 @@ export class SR5_SocketHandler {
   static async emitForGM(type, data) {
     if (game.user.isGM) return SR5_SystemHelpers.srLog(1, 'Active user is GM, abort')
 
-    const gmUser = game.users.find(user => user.isGM && user.active)
+    //The active GM: the handlers that write a ledger only for him dropped a request sent to another GM
+    const gmUser = game.users.activeGM ?? game.users.find(user => user.isGM && user.active)
     //Nobody can relay the action: say so instead of dropping it silently
     if (!gmUser) {
       ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActiveGM"))

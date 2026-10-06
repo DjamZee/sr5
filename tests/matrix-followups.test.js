@@ -136,11 +136,18 @@ describe('The Overwatch Score never goes below 0 (SR5 p. 231)', () => {
 
   it('the GM side of the socket stops at 0 too', async () => {
     actor.system.matrix.overwatchScore = 1
+    // Only the owner of the actor is believed on that socket (security 06/10)
+    actor.testUserPermission = (user) => user?.id === "owner"
+    game.users = {
+      get: (id) => ({
+        id
+      })
+    }
     await SR5_ActorHelper._socketOverwatchIncrease({
       data: {
         defenseHits: -3, actorId: 'a1'
       }
-    })
+    }, "owner")
     expect(actor.system.matrix.overwatchScore).toBe(0)
   })
 })

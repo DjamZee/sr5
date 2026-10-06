@@ -473,6 +473,89 @@ describe("a player cannot move her disease on (the two flaws of the week)", () =
     }
   })
 
+  // Security 06/10: the card's pool is the player's, so a card raising hits AND pool together slipped past the alert
+  const clickApply = (cardPool, cardHits, prompt) => {
+    game.i18n.format = (k) => k
+    let listener
+    const el = {
+      classList: {
+        add(){
+        }
+      }, dataset: {
+      }, addEventListener: (_e, fn) => {
+        listener = fn
+      }, remove: vi.fn()
+    }
+    globalThis.document = {
+      createElement: () => el
+    }
+    globalThis.foundry = {
+      applications: {
+        api: {
+          DialogV2: {
+            prompt
+          }
+        }
+      },
+      utils: {
+        randomID: () => "r"
+      }
+    }
+    globalThis.fromUuid = async () => ({
+      system: {
+        resistances: {
+          disease: {
+            inhalation: {
+              modifiers: [{
+                type: "linkedAttribute", value: 3
+              }, {
+                type: "linkedAttribute", value: 2
+              }]
+            }
+          }
+        }
+      }
+    })
+    addDiseaseApplyButton({
+      flags: {
+        sr5data: {
+          disease: {
+            infectionId: "i1", token: "t1"
+          }, roll: {
+            hits: cardHits
+          }, dicePool: {
+            value: cardPool
+          }
+        }
+      }
+    }, html())
+    return listener
+  }
+
+  it("the alert compares the hits to the pool the GM works out, not to the card's pool", async () => {
+    const contents = []
+    const prompt = vi.fn(async (o) => {
+      contents.push(o.content)
+      return null
+    })
+    await clickApply(20, 12, prompt)()
+    expect(contents[0]).toContain("SR5.DISEASE_HitsAbovePool")
+  })
+
+  it("a double click on Apply opens one window only", async () => {
+    let release
+    const prompt = vi.fn(() => new Promise(r => {
+      release = r
+    }))
+    const click = clickApply(5, 2, prompt)
+    const first = click()
+    await click()
+    await new Promise(r => setTimeout(r, 0))
+    expect(prompt).toHaveBeenCalledTimes(1)
+    release(null)
+    await first
+  })
+
   it("the roll button of a request card posted by a player is taken off", () => {
     const button = {
       removed: false, remove(){

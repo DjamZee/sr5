@@ -174,6 +174,14 @@ export function reachedZero(actor){
   return values.some(v => typeof v === "number" && v <= 0)
 }
 
+// The pool of the test, worked out again by the GM from the character and the ledger: the card's own pool is the
+// player's, and a card raising hits and pool together kept the alert silent (security, 06/10)
+export function diseasePool(actorData, entry){
+  const own = actorData?.resistances?.disease?.[entry.vector]?.modifiers ?? []
+  const sum = (mods) => mods.reduce((total, m) => total + (Number(m.value) || 0), 0)
+  return Math.max(0, sum(own) + sum(testModifiers(entry)) + penetrationModifier(entry.profile?.penetration, protectionOf(own)))
+}
+
 // A card claiming more hits than it rolled dice was written by hand
 export function hitsAboveDice(hits, pool){
   return (Number(hits) || 0) > Math.max(0, Number(pool) || 0)
@@ -521,10 +529,23 @@ async function applyFromCard(message, button){
   const ref = message.flags?.sr5data?.disease
   const entry = diseaseLedger().infections?.[ref?.infectionId]
   if (!entry?.request || entry.request.token !== ref.token) return button.remove()
+  //One window at a time: a double click opened two
+  if (button.dataset?.pending) return
+  if (button.dataset) button.dataset.pending = "1"
+  try {
+    await confirmAndApply(message, button, ref, entry)
+  } finally {
+    if (button.dataset) delete button.dataset.pending
+  }
+}
+
+async function confirmAndApply(message, button, ref, entry){
   const suggested = Math.max(0, Number(message.flags?.sr5data?.roll?.hits) || 0)
   const power = entry.request.power
-  //The card is the player's: its pool is shown beside the hits, and more hits than dice is flagged
-  const pool = Math.max(0, Number(message.flags?.sr5data?.dicePool?.value) || 0)
+  //The card is the player's: the pool beside the hits is the one the GM works out from the character
+  const actor = await fromUuid(entry.actorUuid)
+  if (!actor) return
+  const pool = diseasePool(actor.system, entry)
   const alert = hitsAboveDice(suggested, pool) ? `<p class="sr5-disease-alert" style="color: #c00; font-weight: bold;">${game.i18n.localize("SR5.DISEASE_HitsAbovePool")}</p>` : ""
   const hits = await foundry.applications.api.DialogV2.prompt({
     window: {
@@ -536,7 +557,7 @@ async function applyFromCard(message, button){
       <p>${game.i18n.format("SR5.DISEASE_CardPool", {
     pool, hits: suggested
   })}</p>${alert}
-      <div class="form-group"><label>${game.i18n.localize("SR5.DISEASE_Hits")}</label><input type="number" name="hits" value="${suggested}" min="0"></div>`,
+      <div class="form-group"><label>${game.i18n.localize("SR5.DISEASE_Hits")}</label><input type="number" name="hits" value="${alert ? "" : Math.min(suggested, pool)}" min="0" max="${pool}"></div>`,
     ok: {
       callback: (event, b) => Number(b.form.elements.hits.value) || 0
     },
@@ -548,10 +569,11 @@ async function applyFromCard(message, button){
   if (!fresh?.request || fresh.request.token !== ref.token || button.disabled) return button.remove()
   button.disabled = true
   const testedPower = fresh.request.power
-  const next = applyResult(fresh, hits, testedPower, calendarStartYear())
+  const applied = Math.min(Math.max(0, hits), pool)
+  const next = applyResult(fresh, applied, testedPower, calendarStartYear())
   await writeEntry(next)
   button.remove()
-  await postOutcome(next, hits, testedPower)
+  await postOutcome(next, applied, testedPower)
 }
 
 // The GM reads the outcome; the player of the character reads what he feels, the numbers only if revealed

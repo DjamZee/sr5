@@ -627,7 +627,10 @@ export class SR5_ActorHelper {
   }
 
   //Socket for increasing overwatch score;
-  static async _socketOverwatchIncrease(message) {
+  //Believed only from a player who owns the actor: anyone else could raise or lower any score from a console
+  static async _socketOverwatchIncrease(message, senderId) {
+    const actor = SR5_EntityHelpers.getRealActorFromID(message.data?.actorId)
+    if (!actor?.testUserPermission?.(game.users.get(senderId), "OWNER")) return SR5_SystemHelpers.srLog(1, `overwatchIncrease refused from ${senderId}`)
     await SR5_ActorHelper.overwatchIncrease(message.data.defenseHits, message.data.actorId)
   }
 
