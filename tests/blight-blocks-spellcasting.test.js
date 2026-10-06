@@ -89,3 +89,48 @@ describe('Blight blocks spellcasting (G2, BTB p. 141)', () => {
     expect(ui.notifications.warn).not.toHaveBeenCalled()
   })
 })
+
+// H1 (decision of DjamZ, 06/10 evening): "incapable d'utiliser la magie, sous quelque forme que ce soit" blocks
+// everything, with the same message; a preparation already made still triggers
+describe('Blight blocks every form of magic (H1, BTB p. 141)', () => {
+  const blocked = (rollType, rollKey) => SR5_Toxins.blightBlocksRoll(mage([blight]), rollType, rollKey)
+
+  it('refuses to open a ritual', async () => {
+    const actor = mage([blight])
+    vi.spyOn(SR5_PrepareRollHelper, 'getRollingActor').mockReturnValue(actor)
+    await SR5_PrepareRollTest.rollTest(actor, 'ritual', null)
+    expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_BlightNoSpell')
+  })
+  it('refuses to seal a ritual (the sealed roll goes through the same ritual roll)', () => {
+    expect(blocked('ritual', null)).toBe(true)
+  })
+  it('refuses to summon', () => {
+    expect(blocked('skillDicePool', 'summoning')).toBe(true)
+    expect(blocked('skill', 'summoning')).toBe(true)
+  })
+  it('refuses to bind', () => {
+    expect(blocked('skillDicePool', 'binding')).toBe(true)
+  })
+  it('refuses to banish', () => {
+    expect(blocked('skillDicePool', 'banishing')).toBe(true)
+  })
+  it('refuses to counterspell', () => {
+    expect(blocked('skillDicePool', 'counterspelling')).toBe(true)
+  })
+  it('refuses to make a preparation, by the formula or by the Alchemy skill', () => {
+    expect(blocked('preparationFormula', null)).toBe(true)
+    expect(blocked('skillDicePool', 'alchemy')).toBe(true)
+  })
+  it('refuses an adept power roll', () => {
+    expect(blocked('adeptPower', null)).toBe(true)
+  })
+  it('still triggers a preparation already made, and lets the mundane skills through', () => {
+    expect(blocked('preparation', null)).toBe(false)
+    expect(blocked('skillDicePool', 'perception')).toBe(false)
+    expect(blocked('attribute', 'body')).toBe(false)
+  })
+  it('blocks nothing without Blight', () => {
+    expect(SR5_Toxins.blightBlocksRoll(mage([other]), 'ritual', null)).toBe(false)
+    expect(SR5_Toxins.blightBlocksRoll(mage([other]), 'skillDicePool', 'summoning')).toBe(false)
+  })
+})

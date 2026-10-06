@@ -194,6 +194,17 @@ export class SR5_Toxins {
     return !!actor?.items?.some(i => i.type === "itemEffect" && i.system?.type === "toxinEffectManasphereCut")
   }
 
+  /** Better Than Bad p. 141, "incapable d'utiliser la magie, sous quelque forme que ce soit" (decision H1 of DjamZ):
+   *  spells, rituals, conjuring, counterspelling, alchemy (making a preparation) and adept powers. Triggering a
+   *  preparation already made stays allowed: it runs on the item's Potency, not on its maker's Magic */
+  static BLIGHT_BLOCKED_ROLLS = ["spell", "ritual", "preparationFormula", "adeptPower"]
+  static BLIGHT_BLOCKED_SKILLS = ["spellcasting", "ritualSpellcasting", "counterspelling", "alchemy", "summoning", "binding", "banishing", "artificing", "disenchanting"]
+  static blightBlocksRoll(actor, rollType, rollKey) {
+    if (!this.isCutFromManasphere(actor)) return false
+    if (this.BLIGHT_BLOCKED_ROLLS.includes(rollType)) return true
+    return ["skill", "skillDicePool"].includes(rollType) && this.BLIGHT_BLOCKED_SKILLS.includes(rollKey)
+  }
+
   /** A dual-natured being: one of its powers carries the dualNatured spirit power key */
   static isDualNatured(actor) {
     return !!actor?.items?.some(i => i.type === "itemPower" &&

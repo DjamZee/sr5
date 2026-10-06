@@ -3392,6 +3392,12 @@ export class SR5_CharacterUtility extends Actor {
   // Counterspell pool
   static updateCounterSpellPool(actor) {
     let actorData = actor.system, magic = actorData.magic, skills = actorData.skills
+    //Better Than Bad p. 141: under Blight no counterspelling, no spell defense dice (decision H1 of DjamZ)
+    if (SR5_Toxins.isCutFromManasphere(actor)) {
+      magic.counterSpellPool.base = 0
+      magic.counterSpellPool.value = 0
+      return
+    }
     magic.counterSpellPool.base = skills.counterspelling.rating.value
     if (magic.metamagics.shielding) SR5_EntityHelpers.updateModifier(magic.counterSpellPool, `${game.i18n.localize('SR5.MetamagicShielding')}`, "metamagic", magic.initiationGrade)
     //Harmonious Defense (Forbidden Arcana p. 45): Willpower + Magic + initiate grade, used as spell defense dice.

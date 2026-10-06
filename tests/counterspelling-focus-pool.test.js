@@ -70,4 +70,17 @@ describe("counterspelling focus and the spell defense pool", () => {
     SR5_CharacterUtility.updateCounterSpellPool(actor)
     expect(actor.system.magic.counterSpellPool.value).toBe(4)
   })
+
+  // H1 (decision of DjamZ): under Blight (Better Than Bad p. 141) no counterspelling, so no spell defense dice
+  it("is empty under Blight, focus or not", () => {
+    const actor = magician(4)
+    actor.items = [{
+      type: "itemEffect", system: {
+        type: "toxinEffectManasphereCut"
+      }
+    }]
+    SR5_CharacterUtility.applyFocusBonus(focus("counterspelling", 3), actor)
+    SR5_CharacterUtility.updateCounterSpellPool(actor)
+    expect(actor.system.magic.counterSpellPool.value).toBe(0)
+  })
 })

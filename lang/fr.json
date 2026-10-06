@@ -5364,7 +5364,7 @@
 	"SR5.WARN_TargetChooseOne": "Vous devez sélectionner une cible (token)",
 	"SR5.WARN_EmulateMaxDepth": "L'indice émulé ne peut pas dépasser la Profondeur ({depth}).",
 	"SR5.WARN_TargetWirelessOff": "Ce drone a coupé son sans-fil : aucune action matricielle sans fil ne l'atteint (SR5 p. 424). Seule une connexion directe le peut (p. 234) : pour la jouer, rallumez son sans-fil le temps de l'action.",
-	"SR5.WARN_BlightNoSpell": "Coupé de la manasphère par le blight : aucun sort ne peut être lancé tant que dure l'effet (Better Than Bad p. 141).",
+	"SR5.WARN_BlightNoSpell": "Coupé de la manasphère par le blight : aucune magie tant que dure l'effet, ni sort, ni rituel, ni conjuration, ni contresort, ni alchimie ; les pouvoirs d'adepte sont désactivés (Better Than Bad p. 141). Une préparation déjà faite se déclenche encore.",
 	"SR5.INFO_PreparationSpent": "{actor} : la préparation {item} a perdu tout son Potentiel, sa magie s'est évanouie (SR5 p. 309).",
 	"SR5.WARN_PreparationDecayGMOnly": "Le départ et le rythme de la perte de Potentiel d'une préparation sont réglés par le MJ.",
 	"SR5.WARN_PreparationSpent": "Cette préparation n'a plus de Potentiel : sa magie s'est évanouie, le sort est perdu (SR5 p. 309).",

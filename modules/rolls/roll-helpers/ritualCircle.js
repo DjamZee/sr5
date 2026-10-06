@@ -13,6 +13,9 @@ import {
 import {
   spendableStock
 } from "../../system/reagents.js"
+import {
+  SR5_Toxins
+} from "../../entities/items/toxins.js"
 
 // The id the roll cards give an actor (roll-prepare.js getBaseRollData): its token for an unlinked token, itself otherwise
 export function rollCardActorId(actor) {
@@ -100,6 +103,8 @@ export class SR5_RitualCircle {
       if (a?.circleId !== message.id) return null
       const actor = SR5_EntityHelpers.getRealActorFromID(a.actorId)
       if (!actor || !(m.author?.isGM || actor.testUserPermission?.(m.author, "OWNER"))) return null
+      //A participant cut from the manasphere by Blight brings nothing, whatever its card says (decision H1 of DjamZ)
+      if (SR5_Toxins.isCutFromManasphere(actor)) return null
       const skill = actor.system.skills?.ritualSpellcasting
       const pool = ritualAssistPool(skill?.rating?.value, skill?.test?.dicePool, ritualTraditionPenalty(circle.tradition, actor.system.magic?.tradition))
       return {
@@ -122,6 +127,8 @@ export class SR5_RitualCircle {
     if (!actor) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActor"))
     const actorId = rollCardActorId(actor)
     if (actorId === circle.leaderId) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_RitualLeaderJoins"))
+    //Better Than Bad p. 141: under Blight no one takes part in a ritual (decision H1 of DjamZ)
+    if (SR5_Toxins.isCutFromManasphere(actor)) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
     if (!(actor.system.specialAttributes?.magic?.augmented?.value > 0)) return void ui.notifications.warn(game.i18n.format("SR5.WARN_RitualNotAwakened", {
       name: actor.name
     }))

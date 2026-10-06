@@ -2,6 +2,9 @@ import {
   SR5
 } from "../../config.js"
 import {
+  SR5_Toxins
+} from "../items/toxins.js"
+import {
   cleanCreatedSource
 } from "../../migration-source-modifiers.js"
 import {
@@ -693,7 +696,8 @@ export class SR5Actor extends Actor {
         case "itemAdeptPower":
           i.prepareData()
           SR5_EntityHelpers.updateModifier(actor.system.magic.powerPoints, i.name, i.type, iData.powerPointsCost.value)
-          if (iData.isActive && Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
+          //Better Than Bad p. 141: under Blight the adept powers are off, their effects left out (decision H1 of DjamZ)
+          if (iData.isActive && Object.keys(iData.customEffects).length && !SR5_Toxins.isCutFromManasphere(actor)) SR5_CharacterUtility.applyCustomEffects(i, actor)
           break
 
         case "itemSpirit":

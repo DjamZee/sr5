@@ -5364,7 +5364,7 @@
 	"SR5.WARN_TargetChooseOne": "You must choose a target (token)",
 	"SR5.WARN_EmulateMaxDepth": "The emulated rating cannot exceed Depth ({depth}).",
 	"SR5.WARN_TargetWirelessOff": "This drone has its wireless off: no wireless Matrix action reaches it (SR5 p. 424). Only a direct connection can (p. 234): to play one, switch its wireless on for the action.",
-	"SR5.WARN_BlightNoSpell": "Cut from the manasphere by Blight: no spell can be cast until the effect ends (Better Than Bad p. 141).",
+	"SR5.WARN_BlightNoSpell": "Cut from the manasphere by Blight: no magic until the effect ends, no spell, ritual, conjuring, counterspelling or alchemy; adept powers are off (Better Than Bad p. 141). A preparation already made can still be triggered.",
 	"SR5.INFO_PreparationSpent": "{actor}: the preparation {item} has lost all its Potency, its magic is gone (SR5 p. 309).",
 	"SR5.WARN_PreparationDecayGMOnly": "The start and the pace of a preparation's loss of Potency are set by the gamemaster.",
 	"SR5.WARN_PreparationSpent": "This preparation has no Potency left: its magic is gone, the spell is lost (SR5 p. 309).",
