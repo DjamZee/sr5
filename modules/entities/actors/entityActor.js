@@ -58,6 +58,9 @@ import {
 import {
   isNecroSpirit
 } from "../../system/necro-spirits.js"
+import {
+  martialArtApplies
+} from "../../system/martial-arts-technique.js"
 
 /**
  * Extend the base Actor class to implement additional logic specialized for Shadowrun 5.
@@ -581,8 +584,12 @@ export class SR5Actor extends Actor {
           if (iData.isActive && Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
           break
 
-        case "itemPower":
+        //A learned technique applies on its own, unless it is an action chosen for the roll (martial-arts-technique.js)
         case "itemMartialArt":
+          if (martialArtApplies(iData) && Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
+          break
+
+        case "itemPower":
         case "itemMetamagic":
         case "itemEcho":
           if (iData.isActive && Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)

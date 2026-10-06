@@ -57,11 +57,13 @@
 			<div class="col-1">
 				<div class="grid">
 					<div class="col-6 SR-TextCenter"></div>
+					{{#if (martialArtNeedsSwitch system)}}
 					<div class="col-6 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_MartialArtsActivateToggle' key=name}}"
 			data-helpMessage="{{localize 'SR5.HELP_MartialArtsActivateToggleMsg'}}">
 				<a class="toggle-value" data-dtype="Boolean" data-item-id="{{_id}}" data-binding="system.isActive" data-title="{{#if system.isActive}}{{localize 'SR5.Unequip'}}{{else}}{{localize 'SR5.Equip'}}{{/if}}">
 					<em class="fas fa-sm fa-thumbtack {{#if system.isActive}}SR-SubColor{{/if}}"></em></a>
-			</div>					
+			</div>
+					{{/if}}
 				</div>
 			</div>
 			<div class="col-1 grid SR-TextRight">

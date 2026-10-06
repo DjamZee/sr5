@@ -10,8 +10,16 @@ import {
 import {
   situationalReadable, situationalMovement
 } from "./rolls/roll-helpers/situational.js"
+import {
+  martialArtNeedsSwitch
+} from "./system/martial-arts-technique.js"
 
 export const registerHandlebarsHelpers = function () {
+  //Only a technique that is an action chosen for the roll keeps its switch on the sheet
+  Handlebars.registerHelper('martialArtNeedsSwitch', function (system) {
+    return martialArtNeedsSwitch(system)
+  })
+
 
   // Whether a roll dialog reads this effect target, so that a situational effect on it is offered
   Handlebars.registerHelper("situationalReadable", function (target) {
