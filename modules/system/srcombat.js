@@ -677,6 +677,8 @@ export class SR5Combat extends Combat {
       },
       document = SR5_EntityHelpers.getRealActorFromID(data.documentId)
     if (!sender || !document) return SR5Combat.#refuse("changeInitInCombat", senderId, data)
+    //The guard is the active GM's: a request sent to another GM is not run behind his back
+    if (game.users.activeGM && game.users.activeGM.id !== game.user?.id) return SR5Combat.#refuse("changeInitInCombat", senderId, data)
     if (!initChangeAllowed({
       senderIsGM: sender.isGM, ownsActor: !!document.testUserPermission?.(sender, "OWNER"), initChange: data.initChange
     })) return SR5Combat.#refuse("changeInitInCombat", senderId, data)
@@ -694,6 +696,11 @@ export class SR5Combat extends Combat {
   }
 
   static async changeActionInCombat(documentId, actions, updateActor = true){
+    //A manual adjustment that gives actions back (negative value) is the GM's: a player does not raise the actions
+    //of her character herself (ruling of DjamZ, 2026-10-06, G13). Refunds of the system stay capped by spendActions
+    if (!game.user?.isGM && actions?.some(a => a?.source === "manual" && Number(a.value) < 0)) {
+      return ui.notifications.warn(game.i18n.localize("SR5.WARN_RaiseActionsGMOnly"))
+    }
     let actor = await SR5_EntityHelpers.getRealActorFromID(documentId)
     if (!actor) return
     //The prepared counters: a refund is capped at what the pass grants, the prepared value (base and the item effects

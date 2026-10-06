@@ -106,8 +106,11 @@ export function passAllowed({
 export function initChangeAllowed({
   senderIsGM, ownsActor, initChange
 }) {
-  if (senderIsGM || ownsActor) return true
-  return initChange === undefined || initChange === null
+  if (senderIsGM) return true
+  if (initChange === undefined || initChange === null) return true
+  //Every change a player's client sends is a cut (fear, stun, full defense, interruption): no legitimate path
+  //raises the initiative through this socket, a raise is refused even from the owner (ruling of DjamZ, 2026-10-06, G13)
+  return ownsActor && Number(initChange) <= 0
 }
 
 /**

@@ -5302,6 +5302,7 @@
 	"SR5.WARN_ActionOutOfPhase": "This is not {actor}'s action phase: a simple or complex action is taken in the character's own phase (SR5 p. 164).",
 	"SR5.WARN_NoActionLeft": "{actor} has no {action} action left in this pass ({current} left, {value} needed): nothing is spent.",
 	"SR5.WARN_ResetActionsGMOnly": "Only the gamemaster can give actions back.",
+	"SR5.WARN_RaiseActionsGMOnly": "Only the gamemaster can raise the actions of a character by hand.",
 	"SR5.WARN_ActiveDefenseNoSkill": "{actor} lacks the {skill} skill: this active defense is not available.",
 	"SR5.WARN_NotEnoughInitiative": "{actor} does not have enough initiative ({initiative}) for an interruption action costing {cost}.",
 	"SR5.WARN_AreaSpellTemplateGone": "This area spell's template was removed during the resistance: the effect is not applied.",

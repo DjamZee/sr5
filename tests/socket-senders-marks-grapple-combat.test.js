@@ -908,6 +908,34 @@ describe('the combat sockets', () => {
     }, 'owner')
     expect(spy.mock.calls).toEqual([['pc', undefined], ['pc', -10]])
   })
+
+  //Ruling of DjamZ (2026-10-06, G13): no legitimate path raises the initiative through this socket
+  it('changeInitInCombat: refuses a raise, even from the owner', async () => {
+    actor('pc', {
+    }, ['owner'])
+    const spy = vi.spyOn(SR5Combat, 'changeInitInCombat').mockResolvedValue()
+    await SR5Combat._socketChangeInitInCombat({
+      data: {
+        documentId: 'pc', initChange: 40
+      }
+    }, 'owner')
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  it('changeInitInCombat: run by the active GM only', async () => {
+    actor('pc', {
+    }, ['owner'])
+    const spy = vi.spyOn(SR5Combat, 'changeInitInCombat').mockResolvedValue()
+    game.users.activeGM = {
+      id: 'otherGM'
+    }
+    await SR5Combat._socketChangeInitInCombat({
+      data: {
+        documentId: 'pc', initChange: -10
+      }
+    }, 'owner')
+    expect(spy).not.toHaveBeenCalled()
+  })
 })
 
 /* -------------------------------------------- */
