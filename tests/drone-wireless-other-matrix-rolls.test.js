@@ -1,6 +1,16 @@
 import {
   describe, it, expect, vi, beforeEach
 } from 'vitest'
+
+//The matrix card as a GM wrote it: its reading again is tested in matrix-card.test.js
+vi.mock('../modules/rolls/roll-helpers/matrix-card.js', () => ({
+  trustedMatrixAction: async chatData => ({
+    hits: chatData?.roll?.hits, actionType: chatData?.matrix?.actionType
+  }),
+  cardStandsFor: async () => true,
+  trustedDefenderDamage: async (id, claimed) => claimed,
+  damageReachable: () => true,
+}))
 import fs from 'node:fs'
 
 // config.js writes CONFIG.statusEffects while it is being imported
