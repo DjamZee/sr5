@@ -1,6 +1,6 @@
 import {
   SHARED_VISION_FLAG, SHARED_VISION_ACTOR_TYPES, getSharedViewers, isSharedWith, withViewer, withoutViewer, isViewerStillValid,
-  isViewerRequestAllowed, hasMarkFrom
+  isViewerRequestAllowed, hasMarkFrom, seesThrough
 } from "../system/shared-vision.js"
 import {
   SR5_SystemHelpers
@@ -175,7 +175,7 @@ export class SR5SharedVision {
 
   //The tokens of the viewed scene the user sees through
   static tokensSeenBy(userId, scene = canvas?.scene) {
-    return Array.from(scene?.tokens ?? []).filter(t => isSharedWith(t, userId))
+    return Array.from(scene?.tokens ?? []).filter(t => seesThrough(t, userId))
   }
 
   /** The gamemaster takes out every viewer whose source of vision is gone: the mark of a Snoop erased,
@@ -197,6 +197,13 @@ export class SR5SharedVision {
         })
       }
     }
+  }
+
+  //A player listed on a token of this actor draws his vision again: its source may just have gone (a mark erased)
+  static refreshIfListed(actor) {
+    if (game.user.isGM) return
+    const listed = Array.from(canvas?.scene?.tokens ?? []).some(t => (t.actor === actor || t.actorId === actor?.id) && isSharedWith(t, game.user.id))
+    if (listed) SR5SharedVision.refresh()
   }
 
   //Draw again what the user sees, and the list of what he sees through
@@ -273,12 +280,18 @@ export function sr5HookUpdateActorSharedVision(actor, change) {
     SR5Token.clearJumpedInRiggers()
     SR5SharedVision.refresh()
   }
-  if (SHARED_VISION_ACTOR_TYPES.includes(actor?.type)) SR5SharedVision.checkViewers(actor)
+  if (SHARED_VISION_ACTOR_TYPES.includes(actor?.type)) {
+    SR5SharedVision.checkViewers(actor)
+    SR5SharedVision.refreshIfListed(actor)
+  }
 }
 
 //An item of a drone or device changed (its marks, its wireless): check who sees through it
 export function sr5HookUpdateItemSharedVision(item) {
-  if (SHARED_VISION_ACTOR_TYPES.includes(item?.parent?.type)) SR5SharedVision.checkViewers(item.parent)
+  if (SHARED_VISION_ACTOR_TYPES.includes(item?.parent?.type)) {
+    SR5SharedVision.checkViewers(item.parent)
+    SR5SharedVision.refreshIfListed(item.parent)
+  }
 }
 
 //An actor or a token appeared or went, a scene was drawn: who is jumped in is to be read again

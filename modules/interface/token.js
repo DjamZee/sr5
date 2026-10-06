@@ -1,5 +1,5 @@
 import {
-  decideVisionSource, isSharedWith, isJumpedInDrone, jumpedInRiggerIds, hidesItsOwnSight
+  decideVisionSource, seesThrough, isJumpedInDrone, jumpedInRiggerIds, hidesItsOwnSight
 } from "../system/shared-vision.js"
 import {
   TOKEN_BAR_EMPTY, tokenBarFilledColor 
@@ -79,7 +79,7 @@ export class SR5Token extends foundry.canvas.placeables.Token {
     if (canvas.visibility.tokenVision && this.hasSight && !game.user.isGM) {
       const decision = decideVisionSource({
         isGM: false,
-        sharedWithMe: isSharedWith(this.document, game.user.id),
+        sharedWithMe: seesThrough(this.document, game.user.id),
         isMyJumpedInDrone: isJumpedInDrone(this.actor) && !!this.actor.isOwner,
         isBlindBody: this.#isJumpedInRigger(),
       })
@@ -97,7 +97,7 @@ export class SR5Token extends foundry.canvas.placeables.Token {
   get isVisible() {
     const source = this.vision
     if (!source || !hidesItsOwnSight({
-      isGM: game.user.isGM, sharedWithMe: isSharedWith(this.document, game.user.id), isOwner: !!this.actor?.isOwner
+      isGM: game.user.isGM, sharedWithMe: seesThrough(this.document, game.user.id), isOwner: !!this.actor?.isOwner
     })) return super.isVisible
     source.suppression.sr5SeenThrough = true
     try {
