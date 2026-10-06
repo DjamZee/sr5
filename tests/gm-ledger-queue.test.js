@@ -214,6 +214,59 @@ describe('every register keeps two writes begun together', () => {
   })
 })
 
+describe('the registers of the clocks and of the table', () => {
+  it('sr5HungerLedger: two creatures entered at once', async () => {
+    game.time = {
+      worldTime: 0, calendar: {
+        format: t => String(t)
+      }
+    }
+    globalThis.ChatMessage = {
+      create: vi.fn(), getWhisperRecipients: () => [gm]
+    }
+    const {
+      toggleHunger
+    } = await import('../modules/system/hunger.js')
+    await Promise.all([toggleHunger({
+      uuid: 'Actor.h1', name: 'H1'
+    }), toggleHunger({
+      uuid: 'Actor.h2', name: 'H2'
+    })])
+    expect(Object.keys(store.sr5HungerLedger.creatures).sort()).toEqual(['Actor.h1', 'Actor.h2'])
+  })
+
+  it('sr5TacnetLedger: two members joining one unit at once both stay on its roster', async () => {
+    globalThis.ChatMessage = {
+      create: vi.fn()
+    }
+    globalThis.ui = {
+      notifications: {
+        info: vi.fn(), warn: vi.fn()
+      }
+    }
+    const item = {
+      uuid: 'Item.unit', name: 'Unit', system: {
+        tacnetLevel: 3, deviceRating: 6
+      }, parent: {
+        uuid: 'Actor.bearer'
+      }
+    }
+    const docs = {
+      'Item.unit': item, 'Actor.m1': {
+        name: 'M1'
+      }, 'Actor.m2': {
+        name: 'M2'
+      }
+    }
+    globalThis.fromUuid = async uuid => docs[uuid]
+    const {
+      requestRoster, TACNET_LEDGER
+    } = await import('../modules/system/tacnet.js')
+    await Promise.all([requestRoster(item, 'Actor.m1', 'join'), requestRoster(item, 'Actor.m2', 'join')])
+    expect([...store[TACNET_LEDGER]['Item.unit']].sort()).toEqual(['Actor.m1', 'Actor.m2'])
+  })
+})
+
 describe('no register is written outside the queue', () => {
   it('finds game.settings.set on a register nowhere but in gm-ledger.js', async () => {
     const fs = await import('node:fs')
