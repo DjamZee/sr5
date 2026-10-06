@@ -81,6 +81,48 @@ describe("AI dissipation, what the GM can trust (Paul's review)", () => {
     })).toBe(true)
   })
 
+  it("the listener strips the buttons of a card a player wrote, even for the GM", async () => {
+    const {
+      activateAIDissipationListeners
+    } = await import("../modules/system/ai-dissipation.js")
+    globalThis.game = {
+      ...globalThis.game, user: {
+        isGM: true
+      }
+    }
+    const button = () => {
+      const b = {
+        removed: false, listened: false
+      }
+      b.remove = () => {
+        b.removed = true
+      }
+      b.addEventListener = () => {
+        b.listened = true
+      }
+      return b
+    }
+    const forged = button(), genuine = button()
+    activateAIDissipationListeners({
+      querySelectorAll: () => [forged]
+    }, {
+      author: {
+        isGM: false
+      }
+    })
+    activateAIDissipationListeners({
+      querySelectorAll: () => [genuine]
+    }, {
+      author: {
+        isGM: true
+      }
+    })
+    expect(forged.removed).toBe(true)
+    expect(forged.listened).toBe(false)
+    expect(genuine.removed).toBe(false)
+    expect(genuine.listened).toBe(true)
+  })
+
   it("a natural Depth of 1 raised by a bonus does not fall to 0", () => {
     expect(depthBaseAfterLoss({
       natural: {
