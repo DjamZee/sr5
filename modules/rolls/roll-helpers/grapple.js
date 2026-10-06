@@ -38,6 +38,9 @@ const calledShotEffect = (data, name) => Object.values(data?.combat?.calledShot?
 //The grappling effects being deleted on this client: each is deleted once (see deleteGrappleEffectOnce)
 const PENDING_DELETIONS = new Set()
 
+//The GM's answer on a player's card whose hold is read, not counted again: asked once per card
+const READ_CONFIRMATIONS = new Map()
+
 //The chat message that announces a new hold, by kind
 const HOLD_TAKEN_MESSAGES = {
   subdue: "SR5.GrappleHoldTaken",
@@ -146,7 +149,7 @@ export class SR5_GrappleHelpers {
     let hold = d.hold, holdId = d.holdId
     if (grappleNeedsCard(SR5_GrappleHelpers.ownsHold(sender, reverser))) {
       const use = SR5_GrappleHelpers.reverseUse(d, reverser)
-      if (!use || !(await SR5_MiscellaneousHelpers.grant(use, sender))) return refuse("grappleReverseHold", senderId, d)
+      if (!use || !(await SR5_GrappleHelpers.grantUse(use, sender))) return refuse("grappleReverseHold", senderId, d)
       hold = use.value
       holdId = use.holdId
     }
@@ -177,6 +180,44 @@ export class SR5_GrappleHelpers {
   // progress; the hold comes from the card, never from the request; a card serves once; a player's
   // card is confirmed by the GM. A hold is read on the effect of the fighter the sender does NOT own:
   // a player writes the flags of her own actor's effects (Olympe's remark).
+
+  /**
+   * Grant a use read on a card. The hold of a subdue, a strengthened hold or a reversal is read on the
+   * card, not counted again on its dice (it comes from two cards and the defense pool): the GM is told
+   * so in his own words, then the card is spent. Escape cards are counted again: the common window.
+   */
+  static async grantUse(use, sender){
+    if (!use.readOnly || use.card.byGM) return SR5_MiscellaneousHelpers.grant(use, sender)
+    //A spent card asks nothing, and the GM is asked once per card, as in the common window
+    if (SR5_MiscellaneousHelpers.isConsumed(use.key)) return false
+    let asked = READ_CONFIRMATIONS.get(use.card.id)
+    if (!asked) {
+      asked = SR5_GrappleHelpers.confirmRead(use, sender)
+      READ_CONFIRMATIONS.set(use.card.id, asked)
+    }
+    if (!(await asked)) return false
+    return SR5_MiscellaneousHelpers.grant({
+      ...use, card: {
+        id: use.card.id, byGM: true
+      }
+    }, sender)
+  }
+
+  /** The GM's say on a hold read on a player's card, without the word "counted". Replaced in the tests. */
+  static async confirmRead(use, sender){
+    const esc = foundry.utils.escapeHTML
+    return foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: game.i18n.localize("SR5.SocketUseConfirmTitle")
+      },
+      content: `<p>${game.i18n.format("SR5.SocketUseConfirmRead", {
+        user: esc(sender?.name ?? "?"), what: esc(game.i18n.format(`SR5.SocketUse_${use.label}`, {
+          target: use.target ?? ""
+        })), value: use.value ?? "",
+      })}</p>`,
+      rejectClose: false,
+    })
+  }
 
   /** Whether the sender is a GM or owns all these fighters. */
   static ownsFighters(sender, ...fighters){
@@ -249,7 +290,7 @@ export class SR5_GrappleHelpers {
     }
     if (!kind || !(value > 0)) return null
     return {
-      card, key: consumedKey(card.id, "grappleStartHold"), label: "grappleStartHold", target: held.name, value, kind,
+      card, key: consumedKey(card.id, "grappleStartHold"), label: "grappleStartHold", target: held.name, value, kind, readOnly: true,
     }
   }
 
@@ -264,7 +305,7 @@ export class SR5_GrappleHelpers {
     const value = Number(effect.value)
     if (!Number.isFinite(value) || value < 0) return null
     return {
-      card, key: consumedKey(card.id, "grappleSetHold"), label: "grappleSetHold", target: actor.name, value, holdId: effect.holdId,
+      card, key: consumedKey(card.id, "grappleSetHold"), label: "grappleSetHold", target: actor.name, value, holdId: effect.holdId, readOnly: true,
     }
   }
 
@@ -279,7 +320,7 @@ export class SR5_GrappleHelpers {
       if (!effect || !hold || !sameFighter(hold.held, reverser) || !sameFighter(SR5_EntityHelpers.getRealActorFromID(card.data.previousMessage?.actorId), reverser) ||
         hold.data.holdId !== effect.holdId || !(Number(effect.value) > 0)) return null
       return {
-        card, key: consumedKey(card.id, "grappleReverseHold"), label: "grappleReverseHold", target: hold.holder.name,
+        card, key: consumedKey(card.id, "grappleReverseHold"), label: "grappleReverseHold", target: hold.holder.name, readOnly: true,
         value: Number(effect.value), holdId: hold.data.holdId,
       }
     }
@@ -451,7 +492,7 @@ export class SR5_GrappleHelpers {
     let hold = d.hold, kind = d.kind ?? "subdue"
     if (grappleNeedsCard(SR5_GrappleHelpers.ownsFighters(sender, holder, held))) {
       const use = SR5_GrappleHelpers.startUse(d, holder, held)
-      if (!use || !(await SR5_MiscellaneousHelpers.grant(use, sender))) return refuse("grappleStartHold", senderId, d)
+      if (!use || !(await SR5_GrappleHelpers.grantUse(use, sender))) return refuse("grappleStartHold", senderId, d)
       hold = use.value
       kind = use.kind
     }
@@ -467,7 +508,7 @@ export class SR5_GrappleHelpers {
     let hold = d.hold, holdId = d.holdId
     if (grappleNeedsCard(SR5_GrappleHelpers.ownsHold(sender, actor))) {
       const use = SR5_GrappleHelpers.setUse(d, actor)
-      if (!use || !(await SR5_MiscellaneousHelpers.grant(use, sender))) return refuse("grappleSetHold", senderId, d)
+      if (!use || !(await SR5_GrappleHelpers.grantUse(use, sender))) return refuse("grappleSetHold", senderId, d)
       hold = use.value
       holdId = use.holdId
     }

@@ -564,6 +564,7 @@ describe('the grappling sockets', () => {
       },
     }, ['owner'])
     for (const name of ['startHold', 'setHold', 'releaseHold', 'reverseHold']) vi.spyOn(SR5_GrappleHelpers, name).mockResolvedValue()
+    vi.spyOn(SR5_GrappleHelpers, 'confirmRead').mockResolvedValue(true)
   })
 
   it('startHold: refuses a hold a console asks for without a card', async () => {
@@ -600,6 +601,9 @@ describe('the grappling sockets', () => {
     await SR5_GrappleHelpers._socketStartHold(request, 'owner')
     expect(SR5_GrappleHelpers.startHold).toHaveBeenCalledTimes(1)
     expect(SR5_GrappleHelpers.startHold.mock.calls[0].slice(0, 5)).toEqual(['thug', 'pc', 2, 'subdue', 'owner'])
+    // the hold is read on the card, not counted again: the GM is not told "counted again"
+    expect(SR5_GrappleHelpers.confirmRead).toHaveBeenCalledTimes(1)
+    expect(SR5_MiscellaneousHelpers.confirmUse).not.toHaveBeenCalled()
   })
 
   it('setHold: refuses the held fighter lowering her hold without a card', async () => {

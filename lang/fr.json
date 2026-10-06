@@ -457,6 +457,7 @@
 	"SR5.SocketUse_firstAid": "premiers soins sur {target}",
 	"SR5.SocketUseFirstAidTarget": "{name}, {boxes} case(s) soignée(s)",
 	"SR5.WARN_WoundGroupTreated": "{user} demande de soigner {patient}, mais ce groupe de blessures a déjà été soigné (premiers soins ou sort Soins une fois par groupe, pas de premiers soins après Soins ; livre de base p. 207-208). Rien n'est appliqué : de nouveaux dommages ouvrent un nouveau groupe. Si c'est le cas sans que le système le voie, soignez à la main.",
+	"SR5.SocketUseConfirmRead": "{user} demande : {what}. La prise ({value}) est lue sur la carte de sa joueuse : le système ne la recompte pas sur les dés et ne peut pas la vérifier. Appliquer ?",
 	"SR5.SocketUse_markItem": "poser des marks sur {target}",
 	"SR5.SocketUse_overwatch": "augmenter le Score de Surveillance de {target}",
 	"SR5.SocketUse_eraseMark": "effacer une mark de {target}",
