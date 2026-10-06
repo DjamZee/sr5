@@ -831,6 +831,9 @@ export class SR5_RollMessage {
         break
       case "decreaseReach":
       case "decreaseAccuracy":
+        //Only on the weapon of the actor the resistance was rolled for, from a card a GM or an owner wrote (matrix-card.js)
+        if (!(await cardStandsFor(messageId, SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId, messageData.actorUuids)))) return ui.notifications.warn(game.i18n.localize("SR5.ResistanceCardRefused"))
+        if (messageData.target.itemUuid && fromUuidSync(messageData.target.itemUuid)?.parent?.id !== SR5_EntityHelpers.getRealActorFromID(messageData.target.actorId, messageData.actorUuids)?.id) return ui.notifications.warn(game.i18n.localize("SR5.ResistanceCardRefused"))
         await SR5_ThirdPartyHelpers.applyEffectToItem(messageData, type)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break

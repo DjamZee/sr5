@@ -5,7 +5,7 @@ import {
 // Security lot "VD des cartes", part 2 (matrix): the GM reads again the matrix cards a player wrote
 
 const {
-  cardHits, defenderNetHits, sameActor, trustedMatrixAction, trustedDefenderDamage, cardStandsFor,
+  cardHits, defenderNetHits, sameActor, trustedMatrixAction, trustedDefenderDamage, cardStandsFor, trustedComplexForm, complexFormSubType,
 } = await import('../modules/rolls/roll-helpers/matrix-card.js')
 
 const hacker = {
@@ -171,6 +171,74 @@ describe('trustedDefenderDamage', () => {
         ...defense, byGM: true
       }
     }))).toBe(7)
+  })
+})
+
+describe('trustedComplexForm (lot 3)', () => {
+  const spike = {
+    id: 'cf', type: 'itemComplexForm', uuid: 'Actor.h.Item.cf', system: {
+      systemEffects: [], defenseAttribute: 'willpower', defenseMatrixAttribute: 'firewall'
+    }
+  }
+  const techno = {
+    ...hacker, items: {
+      get: id => (id === 'cf' ? spike : null)
+    }
+  }
+  const card = {
+    id: 'c', roller: techno, byGM: false, author: {
+      name: 'Clo'
+    }, data: {
+      test: {
+        type: 'complexForm'
+      }, owner: {
+        itemId: 'cf'
+      }
+    }
+  }
+  it('counts the hits again and reads the sub type and defense on the form', async () => {
+    const r = await trustedComplexForm({
+      owner: {
+        messageId: 'c'
+      }, roll: {
+        hits: 40
+      }, test: {
+        typeSub: 'resonanceSpike'
+      }, various: {
+        defenseFirstAttribute: 'body'
+      }
+    }, helpers({
+      c: card
+    }, {
+      'c|matrix.resonanceActions.threadComplexForm.test.dicePool': 4
+    }))
+    expect(r.hits).toBe(4)
+    expect(r.typeSub).toBe('')
+    expect(r.defenseFirstAttribute).toBe('willpower')
+  })
+  it('keeps the sub type the form really has', () => {
+    expect(complexFormSubType({
+      system: {
+        systemEffects: [{
+          value: 'sre_Derezz'
+        }]
+      }
+    })).toBe('derezz')
+  })
+  it('refuses a form that is not on its technomancer', async () => {
+    expect(await trustedComplexForm({
+      owner: {
+        messageId: 'c'
+      }
+    }, helpers({
+      c: {
+        ...card, data: {
+          ...card.data, owner: {
+            itemId: 'other'
+          }
+        }
+      }
+    }))).toBe(null)
   })
 })
 

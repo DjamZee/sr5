@@ -5,9 +5,10 @@ import {
 // Security lot "VD des cartes d'attaque" (Honoré's finding, 06/10): the defense and the resistance read the attack card
 // again, its damage worked out on the attacker's item, its hits counted again on the dice within the sheet's pool
 
+const attackCardModule = await import('../modules/rolls/roll-helpers/attack-card.js')
 const {
   weaponAttackDamage, spellAttackDamage, spellForceCap, vettedHits, vettedRamming, vetAttackCard, attackFamily, chokeDamageReduction,
-} = await import('../modules/rolls/roll-helpers/attack-card.js')
+} = attackCardModule
 
 const dice = (...results) => JSON.stringify({
   terms: [{
@@ -195,6 +196,50 @@ describe('weaponAttackDamage', () => {
     }, shooter, {
       chosenType: 'nuclear'
     }).type).toBe('physical')
+  })
+})
+
+describe('spellDrainCheck (lot 3, options a + b)', () => {
+  const {
+    spellDrainCheck 
+  } = attackCardModule
+  it('keeps an honest Force: its Drain stands for it', () => {
+    expect(spellDrainCheck({
+      force: 6, drainValue: 3, modifiers: {
+        spell: {
+          value: -3
+        }
+      }, itemDrain: -3
+    })).toEqual({
+      force: 6, expected: 3
+    })
+  })
+  it('lowers a Force edited on the card to what its Drain stands for', () => {
+    expect(spellDrainCheck({
+      force: 12, drainValue: 3, modifiers: {
+        spell: {
+          value: -3
+        }
+      }, itemDrain: -3
+    })).toEqual({
+      force: 6, expected: 3
+    })
+  })
+  it('reads the spell modifier on the item, the others on the card', () => {
+    expect(spellDrainCheck({
+      force: 6, drainValue: 3, modifiers: {
+        spell: {
+          value: -9
+        }, recklessSpellcasting: {
+          value: 3
+        }
+      }, itemDrain: -3
+    }).force).toBe(3)
+  })
+  it('never calls for a Drain under its floor (SR5 p. 284)', () => {
+    expect(spellDrainCheck({
+      force: 1, drainValue: 2, itemDrain: -3
+    }).expected).toBe(2)
   })
 })
 

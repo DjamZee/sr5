@@ -4,9 +4,42 @@ import {
 import {
   SR5_PrepareRollHelper 
 } from "../roll-prepare-helpers.js"
+import {
+  trustedComplexForm
+} from "../roll-helpers/matrix-card.js"
 
 export default async function complexFormDefense(rollData, actor, chatData){
   if (actor.type === "actorSpirit") return
+  //The technomancer's card read again: the form on his sheet, its hits counted on its dice within his pool (matrix-card.js)
+  const form = await trustedComplexForm(chatData)
+  if (!form) return void ui.notifications.warn(game.i18n.localize("SR5.MatrixCardRefused"))
+  if (form.hits !== (Number(chatData.roll?.hits) || 0)) {
+    const {
+      SR5_ActorHelper
+    } = await import("../../entities/actors/entityActor-helpers.js")
+    const text = game.i18n.format("SR5.MatrixCardHits", {
+      user: form.card.author?.name ?? "?", actor: form.card.roller?.name ?? "?", value: form.hits, claimed: chatData.roll?.hits ?? 0,
+    })
+    if (game.user?.isGM) ui.notifications.warn(text, {
+      permanent: true
+    })
+    await SR5_ActorHelper.whisperGM(text)
+  }
+  chatData = {
+    ...chatData,
+    roll: {
+      ...chatData.roll, hits: form.hits
+    },
+    test: {
+      ...chatData.test, typeSub: form.typeSub
+    },
+    various: {
+      ...chatData.various, defenseFirstAttribute: form.defenseFirstAttribute, defenseSecondAttribute: form.defenseSecondAttribute
+    },
+    owner: {
+      ...chatData.owner, itemUuid: form.item?.uuid ?? chatData.owner.itemUuid
+    },
+  }
   let actorData = actor.system,
     defenseAttribute, defenseMatrixAttribute, 
     firstLabel = game.i18n.localize("SR5.DeviceRating"),

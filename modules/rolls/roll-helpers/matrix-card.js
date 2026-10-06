@@ -67,6 +67,41 @@ export async function trustedMatrixAction(chatData, helpers = null) {
   }
 }
 
+/** The sub type a complex form's card carries, read on the item's own system effects (rollData-ComplexForm.js). */
+export function complexFormSubType(item, fallback = "") {
+  let typeSub = fallback
+  for (const e of item?.system?.systemEffects ?? []) {
+    if (e.value === "sre_ResonanceSpike") typeSub = "resonanceSpike"
+    if (e.value === "sre_Derezz") typeSub = "derezz"
+    if (e.value === "sre_Redundancy") typeSub = "redundancy"
+  }
+  return typeSub
+}
+
+/**
+ * The complex form a defense answers: the form must be on the technomancer who threaded it, its hits counted again
+ * within his Thread a Complex Form pool plus Chance, its sub type and defense attributes read on the item. null when
+ * the card is refused.
+ */
+export async function trustedComplexForm(chatData, helpers = null) {
+  const h = helpers ?? await lookups()
+  const card = h.cardOf(chatData?.owner?.messageId)
+  if (!card) return null
+  const itemId = card.data.owner?.itemId ?? String(card.data.owner?.itemUuid ?? "").split(".").pop()
+  const item = itemId ? card.roller?.items?.get?.(itemId) : null
+  if (card.byGM) return {
+    card, item, hits: cardHits(true, chatData.roll?.hits), typeSub: chatData.test?.typeSub,
+    defenseFirstAttribute: chatData.various?.defenseFirstAttribute, defenseSecondAttribute: chatData.various?.defenseSecondAttribute,
+  }
+  if (card.data.test?.type !== "complexForm" || !item || item.type !== "itemComplexForm") return null
+  return {
+    card, item,
+    hits: cardHits(false, chatData.roll?.hits, h.hitsOf(card, "matrix.resonanceActions.threadComplexForm.test.dicePool")),
+    typeSub: complexFormSubType(item, chatData.test?.typeSub === "resonanceSpike" || chatData.test?.typeSub === "derezz" || chatData.test?.typeSub === "redundancy" ? "" : chatData.test?.typeSub),
+    defenseFirstAttribute: item.system.defenseAttribute, defenseSecondAttribute: item.system.defenseMatrixAttribute,
+  }
+}
+
 /**
  * The damage a winning defender's card deals back to the attacker (matrix boxes or biofeedback), as the GM may stand
  * by it: the card's own when a GM wrote it; otherwise the net hits counted again on both cards (the attack, read

@@ -27,6 +27,9 @@ import {
   linkedEntryOf, dispelledValue, effectHits
 } from "./dispel-rules.js"
 import {
+  cardStandsFor
+} from "./matrix-card.js"
+import {
   SR5_RollTest 
 } from "../roll-test.js"
 import {
@@ -240,6 +243,9 @@ export class SR5_ThirdPartyHelpers {
 
     //Weapon break Resistance
     else if (cardData.test.type === "defense"){
+      //The defense card read again: written by a GM or an owner of the defender whose weapon is aimed at, never a copy
+      //naming someone else's (matrix-card.js); its DV is the one the defense worked out (attack-card.js)
+      if (!(await cardStandsFor(messageId, actor))) return void ui.notifications.warn(game.i18n.localize("SR5.ResistanceCardRefused"))
       let activeWeapons = weaponBreakChoices(actor)
       if (activeWeapons.length === 0) return ui.notifications.warn(game.i18n.localize('SR5.WARN_NoEquippedWeapon'))
 

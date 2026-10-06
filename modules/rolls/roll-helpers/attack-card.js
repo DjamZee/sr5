@@ -112,6 +112,27 @@ export function weaponAttackDamage(weapon, actor, choices = {
   return result
 }
 
+/**
+ * The Force a spell card's Drain stands for (SR5 p. 281-284): Drain = Force + modifiers, never under its floor, so
+ * Force can be no more than Drain − modifiers. The spell's own modifier is read on the item, the others (reckless
+ * casting, reagents, masteries…) on the card. Not a proof, a player writes both: an edited Force left with its Drain
+ * shows. Returns the Force kept (the lower of the two) and the Drain that Force calls for.
+ */
+export function spellDrainCheck({
+  force, drainValue, modifiers = {
+  }, itemDrain = 0, floor = 2
+}) {
+  const others = Object.entries(modifiers ?? {
+  }).filter(([key]) => key !== "spell").reduce((sum, [, m]) => sum + (Number(m?.value) || 0), 0)
+  const sum = others + (Number(itemDrain) || 0)
+  let kept = Math.max(0, Math.floor(Number(force)) || 0)
+  const drain = Number(drainValue)
+  if (Number.isFinite(drain)) kept = Math.max(0, Math.min(kept, drain - sum))
+  return {
+    force: kept, expected: Math.max(Number(floor) || 0, kept + sum)
+  }
+}
+
 /** The highest Force a spell is cast at: twice the caster's Magic (SR5 p. 281). */
 export function spellForceCap(magic) {
   return Math.max(0, 2 * (Number(magic) || 0))
@@ -246,7 +267,7 @@ export async function vetAttackCard(chatData, {
     type: chatData.damage?.type, element: chatData.damage?.element ?? "", source: chatData.damage?.source ?? "",
     hits: chatData.roll?.hits,
   }
-  let pool, vetted = {
+  let pool, drainInfo = null, vetted = {
   }
 
   if (family === "weapon" || (family === "astral" && item)) {
@@ -287,8 +308,20 @@ export async function vetAttackCard(chatData, {
   } else if (family === "spell" || family === "preparation") {
     if (!item || item.type !== (family === "spell" ? "itemSpell" : "itemPreparation")) return null
     const magic = system.specialAttributes?.magic?.augmented?.value
-    const force = family === "preparation" ? Number(item.system.force) || 0 :
+    let force = family === "preparation" ? Number(item.system.force) || 0 :
       Math.min(Math.max(0, Math.floor(Number(chatData.magic?.force)) || 0), spellForceCap(magic))
+    //The Drain the caster resists follows the Force (SR5 p. 281-284): a Force the card's Drain cannot stand for is
+    //lowered to what it can (decided by DjamZ through Élise, 06/10), and the GM is shown both
+    if (family === "spell") {
+      const drain = spellDrainCheck({
+        force, drainValue: chatData.magic?.drain?.value, modifiers: chatData.magic?.drain?.modifiers,
+        itemDrain: item.system.drain?.value, floor: chatData.magic?.drainFloor ?? 2,
+      })
+      force = drain.force
+      drainInfo = {
+        announced: chatData.magic?.force, expected: drain.expected, drainValue: chatData.magic?.drain?.value
+      }
+    }
     const masteries = system.magic?.masteries
     const bonus = family === "spell" ? combatSpellMasteryBonus(item.system.category, masteries?.mageHunter?.value, masteries?.deathSower?.value).damage : 0
     pool = family === "preparation" ? item.system.test?.dicePool : system.skills?.spellcasting?.spellCategory?.[item.system.category]?.dicePool
@@ -336,7 +369,7 @@ export async function vetAttackCard(chatData, {
   data.roll.hits = vetted.hits
   return {
     data, mismatches: attackCardMismatches(claimed, vetted), card, item,
-    direct: (family === "spell" || family === "preparation") && data.test.typeSub !== "indirect",
+    direct: (family === "spell" || family === "preparation") && data.test.typeSub !== "indirect", drainInfo,
   }
 }
 
@@ -376,6 +409,17 @@ function shown(key, value) {
   return String(value)
 }
 
+//« Puissance annoncée / Drain attendu / Drain résisté », the Drain read on the caster's resistance card to this spell
+function spellDrainLine(info, messageId) {
+  const drainCard = game.messages?.find?.(m => m.flags?.sr5data?.test?.type === "drain" && m.flags.sr5data.previousMessage?.messageId === messageId)
+  const resisted = drainCard ? game.i18n.format("SR5.AttackCardDrainResisted", {
+    value: drainCard.flags.sr5data.magic?.drain?.value ?? "?", hits: drainCard.flags.sr5data.roll?.hits ?? 0
+  }) : game.i18n.localize("SR5.AttackCardDrainNotYet")
+  return game.i18n.format("SR5.AttackCardDrainInfo", {
+    force: info.announced ?? "?", expected: info.expected, drain: info.drainValue ?? "?", resisted
+  })
+}
+
 /**
  * The attack card behind a defense or a resistance, read again (vetAttackCard): its data as the roll may use it, or
  * null when it is refused. What it announced beyond what the attacker's sheet allows is told to the GM.
@@ -404,12 +448,15 @@ export async function trustedAttackCard(chatData, defender, messageId = chatData
   }
   //The DV is said once: the value follows the base on a weapon
   const lines = result.mismatches.filter(m => !(m.key === "value" && result.mismatches.some(o => o.key === "base")))
+  //A player's spell: the Force announced, the Drain it calls for and the Drain its caster resisted, if already rolled
+  const drainLine = result.drainInfo ? spellDrainLine(result.drainInfo, messageId) : null
+  if (drainLine && !lines.length && game.user?.isGM) ui.notifications.info(drainLine)
   if (lines.length) {
     const text = [game.i18n.format("SR5.AttackCardReread", {
       user, actor: result.card.roller?.name ?? "?", item: result.item?.name ?? "—"
     }), ...lines.map(m => game.i18n.format(result.direct && (m.key === "base" || m.key === "value") ? "SR5.AttackCardDVDirect" : MISMATCH_KEYS[m.key], {
       value: shown(m.key, m.value), claimed: shown(m.key, m.claimed)
-    }))].join(" ")
+    })), drainLine].filter(Boolean).join(" ")
     if (game.user?.isGM) ui.notifications.warn(text, {
       permanent: true
     })
