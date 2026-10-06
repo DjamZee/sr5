@@ -878,6 +878,34 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     await super._onDrop(event)
   }
 
+  /**
+   * An item dropped on the sheet. The V13 migration lost the sheets' own rules: ActorSheetV2._onDropItem creates
+   * the item itself and never calls _onDropItemCreate (measured, Foundry 13.351). They are wired back here: the
+   * sheet's _onDropItemCreate decides (types refused, a single tradition, items switched on), and the base one
+   * below creates the item. A move within the same sheet stays Foundry's sort.
+   */
+  async _onDropItem(event, item) {
+    if (!this.actor.isOwner) return null
+    if (this.actor.uuid === item.parent?.uuid) return super._onDropItem(event, item)
+    // The id is kept unless the actor already has an item with it (Foundry's own rule)
+    this._dropKeepId = !this.actor.items.has(item.id)
+    try {
+      return (await this._onDropItemCreate(item.toObject())) ?? null
+    } finally {
+      delete this._dropKeepId
+    }
+  }
+
+  /**
+   * Create a dropped item, once the sheet's rules have accepted it (the end of every sheet's _onDropItemCreate).
+   * @param {object} itemData  the item's data, as the sheet left it
+   */
+  async _onDropItemCreate(itemData) {
+    return (await Item.implementation.create(itemData, {
+      parent: this.actor, keepId: this._dropKeepId ?? false
+    })) ?? null
+  }
+
   // Handles initiative switching from the derived attributes tab
   async _onInitiativeSwitch(event) {
     let wantedInitiative = event.currentTarget.dataset.binding

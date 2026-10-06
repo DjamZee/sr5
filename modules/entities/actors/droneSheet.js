@@ -140,7 +140,7 @@ export class SR5DroneSheet extends ActorSheetSR5 {
           return
         }
         for (let i of this.actor.items){
-          if (i.system.type === "itemWeapon" && i.system.isActive && (i.system.category === item.system.category)) {
+          if (i.type === "itemWeapon" && i.system.isActive && (i.system.category === item.system.category)) {
             return super._onDropItemCreate(item)
           }
         }
