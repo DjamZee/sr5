@@ -21,17 +21,23 @@ export class SR5_RollTestHelper {
   }
 
 
+  //SR5 p. 58: Edge is spent on one's own actions only, so a bound spirit never spends its summoner's (decision G7 of
+  //DjamZ). Only a free spirit's magic pact lets it spend its character's Edge (Street Grimoire p. 133); the
+  //gamemaster ticks it in the spirit ledger, the character being the summoner the spirit keeps
+  static pactCharacter(actor){
+    if (actor?.type !== "actorSpirit" || !actor.system?.magicPact || !actor.system.creatorId) return null
+    return SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId) ?? null
+  }
+
   //Determine if current actor rolling test can use Edge on it
   static async canUseEdge(actor, dialogData){
     let canUseEdge = false
     if (actor.system.specialAttributes?.edge && (actor.system.conditionMonitors.edge?.actual.value < actor.system.specialAttributes?.edge?.augmented.value)) {
       canUseEdge = true
     }
-    if (actor.type === "actorSpirit" && actor.system.creatorId){
-      let creator = SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId)
-      if (creator.system.conditionMonitors.edge?.actual?.value < creator.system.specialAttributes?.edge?.augmented?.value){
-        canUseEdge = true
-      }
+    const creator = this.pactCharacter(actor)
+    if (creator?.system.conditionMonitors.edge?.actual?.value < creator?.system.specialAttributes?.edge?.augmented?.value){
+      canUseEdge = true
     }
     if (dialogData.test.type === "objectResistance")  canUseEdge = false
     if (dialogData.test.type === "preparation")  canUseEdge = false
@@ -55,23 +61,23 @@ export class SR5_RollTestHelper {
   //Determine from whom actor edge must be reduce
   static async determineEdgeActor(actor){
     let edgeActor = actor
-    if (actor.type === "actorSpirit" && actor.system.creatorId){
-      let creator = SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId)
-      if (creator.system.conditionMonitors.edge?.actual?.value < creator.system.specialAttributes?.edge?.augmented?.value){
-        edgeActor = creator
-      }
+    const creator = this.pactCharacter(actor)
+    if (creator?.system.conditionMonitors.edge?.actual?.value < creator?.system.specialAttributes?.edge?.augmented?.value){
+      edgeActor = creator
     }
     return edgeActor
   }
 
   //Remove 1 edge from actor
   static async removeEdgeFromActor(messageData, actor) {
-    if (actor.type === "actorSpirit") {
-      let creator = SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId)
+    const creator = this.pactCharacter(actor)
+    if (creator) {
       creator.update({
         "system.conditionMonitors.edge.actual.base": creator.system.conditionMonitors.edge.actual.base + 1 
       })
     } else {
+      //A spirit without a magic pact has no Edge to spend (SR5 p. 58)
+      if (!actor.system.conditionMonitors?.edge) return
       //If actor is grunt, change actor to parent
       if (actor.isToken) actor = game.actors.get(actor.id)
       actor.update({

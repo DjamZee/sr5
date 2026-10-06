@@ -41,8 +41,9 @@ export function withCharacterField(ledger, actorId, field, value){
   return next
 }
 
-// Spirit traits the gamemaster sets (Forbidden Arcana p. 172-175), keyed like a banished spirit
-export const SPIRIT_TRAITS = ["isElemental", "isWild", "hasDomain"]
+// Spirit traits the gamemaster sets (Forbidden Arcana p. 172-175), keyed like a banished spirit; and the magic pact
+// of a free spirit (Street Grimoire p. 133), the only way a spirit spends the Edge of its character (SR5 p. 58)
+export const SPIRIT_TRAITS = ["isElemental", "isWild", "hasDomain", "magicPact"]
 export function spiritEntry(ledger, key){
   const entry = ledger?.spirits?.[key] ?? {
   }

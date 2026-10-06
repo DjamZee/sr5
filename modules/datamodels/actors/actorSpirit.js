@@ -248,6 +248,11 @@ export class sr5ActorSpiritDataModel extends foundry.abstract.TypeDataModel {
       leashTight: new fields.BooleanField({
         initial: false
       }),
+      // Street Grimoire p. 133: magic pact of a free spirit, which lets it spend the Edge of its character. Prepared
+      // from the gamemaster's ledger (system/spirit-ledger.js), never read from the sheet
+      magicPact: new fields.BooleanField({
+        initial: false
+      }),
       wildBanishTotal: new fields.NumberField({
         initial: 0
       }),

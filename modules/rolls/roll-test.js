@@ -494,18 +494,17 @@ export class SR5_RollTest {
   //Handle Push the Limit test
   static async pushTheLimit(message, actor, fromCard = false) {
     let messageData = message.flags.sr5data
-    let dicePool, creator
+    let dicePool
     //GM ruling (05/10): Edge joins the starting pool of an extended test, once: not on a later roll
     if (SR5_RollTest.isExtendedTest(messageData) && (messageData.test.extended?.roll > 1 || messageData.edge.hasUsedPushTheLimit)) {
       ui.notifications.warn(game.i18n.localize("SR5.WARN_EdgeExtendedTestStartOnly"))
       return false
     }
 
-    //If roller is a bounder spirit, use actor Edge instead
-    if (actor.type === "actorSpirit"){
-      creator = SR5_EntityHelpers.getRealActorFromID(actor.system.creatorId)
-      dicePool = creator.system.specialAttributes.edge.augmented.value
-    } else dicePool = actor.system.specialAttributes.edge.augmented.value
+    //A spirit spends its character's Edge under a magic pact only (Street Grimoire p. 133, SR5 p. 58)
+    const creator = SR5_RollTestHelper.pactCharacter(actor)
+    if (creator) dicePool = creator.system.specialAttributes.edge.augmented.value
+    else dicePool = actor.system.specialAttributes?.edge?.augmented?.value ?? 0
 
     let newRoll = await SR5_RollTest.rollDice({
       dicePool: dicePool,

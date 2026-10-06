@@ -3930,6 +3930,8 @@
 	"SR5.SpiritWild_D": "Wild spirit (Forbidden Arcana p. 170-172): cannot be summoned; banished against Force × 2, net hits adding up to Force × 2.",
 	"SR5.SpiritDomain": "Domain",
 	"SR5.SpiritDomain_D": "Domain trait (Forbidden Arcana p. 172): Magic × 2 for Accident, Guard and Search.",
+	"SR5.SpiritMagicPact": "Magic pact",
+	"SR5.SpiritMagicPact_D": "Magic pact of a free spirit (Street Grimoire p. 133): the spirit may spend the Edge of the character who summoned it. Without it, a spirit never spends its summoner's Edge (SR5 p. 58).",
 	"SR5.AstralReputation": "Astral Reputation",
 	"SR5.AstralReputationAdjustment": "Adjustment",
 	"SR5.AstralReputationAdjustment_D": "Added to the reputation from the index: +6 for the hermetic elementalist (Forbidden Arcana p. 175), −1 per conjuring geas, atonement (Street Grimoire p. 207).",

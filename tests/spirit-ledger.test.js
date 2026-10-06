@@ -30,7 +30,7 @@ describe('Spirit ledger, written by the active GM only (Street Grimoire p. 207, 
   it('keeps spirit traits and banishing totals apart, and remembers a counted card', () => {
     let ledger = withSpiritTrait(emptyLedger(), "s1", "isWild", true)
     expect(spiritEntry(ledger, "s1")).toEqual({
-      isElemental: false, isWild: true, hasDomain: false
+      isElemental: false, isWild: true, hasDomain: false, magicPact: false
     })
     ledger = withBanishTotal(ledger, "s1", 5, "m1")
     expect(ledger.banish.s1).toBe(5)
