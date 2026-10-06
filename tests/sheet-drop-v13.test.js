@@ -250,7 +250,7 @@ describe('device and agent sheets', () => {
   }
 })
 
-// Élise's ruling (djamz.12): an item copied from another sheet follows the sheet's rule, like a new drop
+// Decision of DjamZ (djamz.12): an item copied from another sheet follows the sheet's rule, like a new drop
 describe('an item switched on where it came from', () => {
   it('arrives switched off when the actor already has one of its kind switched on', async () => {
     for (const SheetClass of [SR5ActorSheet, SR5GruntSheet]) {

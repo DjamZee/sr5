@@ -916,8 +916,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
   /**
    * Switch a dropped item on unless the actor already has one of its kind switched on; then it arrives switched off,
-   * even when it was on where it came from (copied from another sheet): one rule for a new drop and a copy (ruling of
-   * Élise, coordinator)
+   * even when it was on where it came from (copied from another sheet): one rule for a new drop and a copy (decision of
+   * DjamZ, djamz.12)
    * @param {object} itemData     the dropped item's data
    * @param {Function} sameKind   whether an owned item is of the same kind
    */
