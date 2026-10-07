@@ -7,12 +7,18 @@
 // into Rigged Device aims at a vehicle or a drone. The master device stands for the persona (SR5 p. 236): Trace Icon,
 // Crash Program and Haywire ("la cible doit être un persona", KC p. 43) are offered on it alone.
 
+import {
+  FILE_NODE_ACTIONS
+} from "../../system/matrix-files.js"
+
 export const PAN_DEVICE_ACTIONS = [
   "matrixPerception", "hackOnTheFly", "bruteForce", "dataSpike", "snoop", "spoofCommand", "controlDevice",
   "formatDevice", "rebootDevice", "garbageInGarbageOut", "eraseMark", "denialOfService",
 ]
 export const PAN_RIGGED_ACTIONS = ["jumpIntoRiggedDevice"]
 export const PAN_PERSONA_ACTIONS = ["traceIcon", "crashProgram", "haywire"]
+// The owner of a file edits or protects it (SR5 p. 240), and sets a bomb on it, with no mark to win
+export const FILE_OWNER_ACTIONS = ["editFile", "setDataBomb"]
 
 // SR5 p. 238: the owner counts as four marks, more than anyone else can place
 export const OWNER_MARKS = 4
@@ -26,6 +32,8 @@ export const OWNER_MARKS = 4
 export function actionsForNode(node, graph = {
 }){
   if (!node) return []
+  // A file (objet Fichier): the actions on files, and those any icon takes (SR5 p. 237, 245)
+  if (node.kind === "file") return [...FILE_NODE_ACTIONS]
   const keys = [...PAN_DEVICE_ACTIONS]
   if (node.kind === "drone" || node.itemType === "itemVehicle") keys.push(...PAN_RIGGED_ACTIONS)
   // A sprite is a persona of its own (SR5 p. 236)
@@ -187,6 +195,19 @@ export function menuEntries(node, graph, viewer, {
   const owner = (node.ownerIds ?? []).some(id => ids.includes(id))
   const entries = {
     owner, actions: [], modes: [], slave: null
+  }
+  // A file has no mode nor PAN of its own: its owner works on it as the owner of an icon, four marks (SR5 p. 238)
+  if (owner && node.kind === "file") {
+    const actions = viewer?.actor?.system?.matrix?.actions ?? {
+    }
+    entries.actions = FILE_OWNER_ACTIONS.map(key => ({
+      key,
+      ...actionState({
+        neededMarks: actions[key]?.neededMarks, marks: OWNER_MARKS, known: !!actions[key],
+        hasAntenna: !!graph.viewer?.hasAntenna, canTry: canTry(key, viewer?.actor),
+      }),
+    }))
+    return entries
   }
   if (owner) {
     // A deployed drone holds its own switches, on its sheet; the master's wireless goes through the sheet too, which

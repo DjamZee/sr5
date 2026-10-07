@@ -123,6 +123,8 @@ export function iconCategoryOf(item, holder = item?.parent){
       return isReflexImplant(item) ? "implant-reflex" : "implant-other"
     case "itemVehicle":
       return item.system?.type === "vehicle" ? "vehicle" : "drone"
+    case "itemFile":
+      return "file"
     default:
       return "device"
   }

@@ -23,7 +23,8 @@ import {
 // rigger: the master of the rigger, in a drone's crown; wan: the master of a device of the scenery (a host, or the
 // master item of a PAN); decor: a device of the scenery slaved to the crown's master (lot 7); persona: a
 // technomancer's living persona while she does not use it; sprite: a sprite she compiled (lot Technomanciens)
-export const PAN_NODE_KINDS = ["master", "slave", "drone", "device", "rigger", "wan", "decor", "persona", "sprite"]
+// file: a file the actor carries (objet Fichier)
+export const PAN_NODE_KINDS = ["master", "slave", "drone", "device", "rigger", "wan", "decor", "persona", "sprite", "file"]
 // The nodes drawn as a line to their own token, when it is on the scene, rather than as an icon (lot 7)
 export const PAN_TOKEN_KINDS = ["drone", "rigger", "wan", "decor"]
 export const PAN_MODES = ["active", "silent", "offline"]
@@ -252,7 +253,30 @@ export function buildPanGraph(actor, {
   if (isTechnomancer(actor)) addResonanceNodes(actor, device, {
     add, seen, actors
   })
+  addFileNodes(actor, device, graph, {
+    add, seen, masterState
+  })
   return graph
+}
+
+/**
+ * The files an actor carries (objet Fichier): a host's files, what a persona or a device stores (SR5 p. 228). A file
+ * is an icon (SR5 p. 237) in the Matrix while what stores it is: it hangs from the master device, or from the actor's
+ * own device, and takes its mode. Without a device in the Matrix, it is out of it. It is seen as any other icon
+ * (pan-visibility.js); its data bomb never shows (it is found by Matrix Perception, SR5 p. 243).
+ */
+function addFileNodes(actor, device, graph, {
+  add, seen, masterState
+}){
+  const mode = !device ? "offline" : graph.master ? masterState : masterMode(device, actor)
+  const from = graph.master ?? "owner"
+  for (const item of itemsOf(actor)){
+    if (item.type !== "itemFile" || seen.has(item.uuid)) continue
+    const node = nodeOf(item, "file", actor, mode, mode === "silent" ? (graph.master ? "master" : "self") : null)
+    // A file has no Device Rating (SR5 p. 228)
+    node.rating = 0
+    add(node, from, "file")
+  }
 }
 
 /**
