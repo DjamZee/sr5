@@ -17,6 +17,9 @@ import {
   SR5NegotiationRepair
 } from "../interface/negotiation-repair.js"
 import {
+  SR5Chase, ADVANCED_DRIVING_SETTING
+} from "./chase.js"
+import {
   registerBBHealingSettings
 } from "./bb-healing-rules.js"
 import {
@@ -610,6 +613,20 @@ export class SR5_SystemHelpers {
       type: Boolean,
       requiresReload: true
     })
+
+    // Vehicle chases (R12): the core book's chase by default (SR5 p. 204-205), Rigger 5.0's advanced driving rules
+    // (p. 175-185) when checked. Arbitrage de DjamZ (07/10) : la poursuite est automatisée, le défaut reste le livre.
+    game.settings.register("sr5", ADVANCED_DRIVING_SETTING, {
+      name: "SR5.SETTINGS_Rigger5AdvancedDriving_T",
+      hint: "SR5.SETTINGS_Rigger5AdvancedDriving_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+      onChange: () => foundry.applications.instances.get("sr5-chase")?.render(),
+    })
+    // The chase itself: the gamemaster's register (chase.js); its window opens from the token controls
+    SR5Chase.register()
 
     // Hide the die and its face on a random table's chat card
     game.settings.register("sr5", "sr5HideTableRoll", {
