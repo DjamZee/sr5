@@ -15,6 +15,9 @@ import {
 import {
   screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED
 } from '../system/implant-essence.js'
+import {
+  dealerPrice
+} from '../system/rigger-qualities.js'
 
 export const ORDERS_FLAG = 'shopOrders'
 export const DELIVERY_SETTING = 'sr5ShopDelivery'
@@ -537,8 +540,10 @@ export function debitIsFresh(createdTime, now) {
   return Number.isFinite(created) && created > 0 && now - created >= -5000 && now - created <= DEBIT_FRESHNESS
 }
 
-/** What an order costs at the catalogue, read on the GM's browser: null when its item is gone. */
-async function catalogueCost(order) {
+/** What an order costs at the catalogue, read on the GM's browser: null when its item is gone. The buyer's Relation
+ *  avec un concessionnaire takes its 10 % off a vehicle, as at the till (Rigger 5.0 p. 37): without it an honest
+ *  purchase stayed out of the ledger */
+async function catalogueCost(order, buyer = null) {
   let source = null
   try {
     source = await fromUuid(order?.uuid ?? '')
@@ -549,8 +554,11 @@ async function catalogueCost(order) {
   const {
     SR5Shop
   } = await import('./shop.js')
-  const base = SR5Shop.gradedPrice(source.system, order.grade ?? null) * Math.max(1, Math.floor(Number(order.quantity) || 1))
-  return base + (order.express ? expressCost(base, currentExpress()) : 0)
+  const quantity = Math.max(1, Math.floor(Number(order.quantity) || 1))
+  const unit = SR5Shop.gradedPrice(source.system, order.grade ?? null)
+  const base = unit * quantity
+  const paid = dealerPrice(unit, source, buyer?.items ?? []) * quantity
+  return paid + (order.express ? expressCost(base, currentExpress()) : 0)
 }
 
 /**
@@ -576,7 +584,7 @@ export async function registerOrders(actor, ids, transactionId, requester) {
   if (!orders.length) return false
   const priced = []
   for (const order of orders) {
-    const paid = await catalogueCost(order)
+    const paid = await catalogueCost(order, actor)
     if (paid === null) return false
     priced.push({
       order, paid
