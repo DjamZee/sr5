@@ -5676,6 +5676,7 @@
 	"SR5.VehicleModEffectKind_tactileSensors": "Tactile sensors",
 	"SR5.VehicleModEffectKind_signatureMasking": "Signature masking",
 	"SR5.VehicleModEffectKind_metahumanAdaptation": "Metahuman adjustment",
+	"SR5.VehicleArmorCap": "Added armor cap (Body, Rigger 5.0 p. 161)",
 	"SR5.VehicleModSkill": "Skill required",
 	"SR5.VehicleModSlots": "Modification Slots",
 	"SR5.VehicleModSlotsFull": "Modifications Slots",

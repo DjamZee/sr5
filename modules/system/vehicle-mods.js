@@ -84,3 +84,20 @@ export function replacedVehicleAttribute(items, attribute) {
   }
   return replaced
 }
+
+// R5 p. 161: "Un véhicule ne peut ajouter au maximum qu'un nombre de points de blindage égal à sa Structure (ce qui
+// donne un Blindage maximal = Structure + Blindage d'origine)", whatever slots are left. Factory armor is the printed
+// Armor (R5 p. 156): only the armor added afterwards counts
+
+/** How much of the armor added by the Armor mods goes beyond the vehicle's Body, to take off; 0 within the cap */
+export function armorCapReduction(addedArmor, body) {
+  return Math.max(0, (Number(addedArmor) || 0) - Math.max(0, Number(body) || 0))
+}
+
+/** The armor the fitted Armor mods (factory left out) add, read from the modifiers they left on the Armor */
+export function addedArmor(items, armorModifiers) {
+  const sources = new Set(fittedMods(items, "armor", {
+    factory: false
+  }).map(i => i.name))
+  return (armorModifiers ?? []).filter(m => sources.has(m.source) && !m.isMultiplier).reduce((sum, m) => sum + (Number(m.value) || 0), 0)
+}

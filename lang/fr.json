@@ -5676,6 +5676,7 @@
 	"SR5.VehicleModEffectKind_tactileSensors": "Senseurs tactiles",
 	"SR5.VehicleModEffectKind_signatureMasking": "Camouflage de la signature",
 	"SR5.VehicleModEffectKind_metahumanAdaptation": "Adaptation métahumaine",
+	"SR5.VehicleArmorCap": "Plafond du blindage ajouté (Structure, Rigger 5.0 p. 161)",
 	"SR5.VehicleModSkill": "Compétence",
 	"SR5.VehicleModSlots": "Emplacement",
 	"SR5.VehicleModSlotsFull": "Emplacements",

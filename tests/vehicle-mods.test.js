@@ -2,7 +2,7 @@ import {
   describe, it, expect
 } from 'vitest'
 import {
-  vehicleModKind, fittedMods, fittedRating, replacedVehicleAttribute, replacedVehicleAttributeOf
+  vehicleModKind, fittedMods, fittedRating, replacedVehicleAttribute, replacedVehicleAttributeOf, armorCapReduction, addedArmor
 } from '../modules/system/vehicle-mods.js'
 import {
   droneAutopilot
@@ -120,5 +120,28 @@ describe('Autopilot and Sensor replacement (Rigger 5.0 p. 170)', () => {
         }
       }
     }, items)).toBe(6)
+  })
+})
+
+describe('Armor added to a vehicle: at most its Body (Rigger 5.0 p. 161)', () => {
+  it('takes off what goes beyond the Body', () => {
+    expect(armorCapReduction(6, 4)).toBe(2)
+    expect(armorCapReduction(4, 4)).toBe(0)
+    expect(armorCapReduction(2, 4)).toBe(0)
+  })
+  it('counts the armor of the fitted Armor mods only, factory left out', () => {
+    const items = [mod("Blindage (standard)", {
+      itemRating: 5
+    }), mod("Blindage (dissimulé)", {
+      itemRating: 2, isFactory: true
+    }), mod("Monture d'arme manuelle protégée")]
+    const modifiers = [{
+      source: "Blindage (standard)", value: 5
+    }, {
+      source: "Monture d'arme manuelle protégée", value: 6
+    }, {
+      source: "Blindage (dissimulé)", value: 2
+    }]
+    expect(addedArmor(items, modifiers)).toBe(5)
   })
 })

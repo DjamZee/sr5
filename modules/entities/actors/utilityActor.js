@@ -108,7 +108,7 @@ import {
   modTakesSlots, factorySkipsEffect
 } from "../../system/vehicle-factory.js"
 import {
-  replacedVehicleAttribute, replacedVehicleAttributeOf
+  replacedVehicleAttribute, replacedVehicleAttributeOf, armorCapReduction, addedArmor
 } from "../../system/vehicle-mods.js"
 
 
@@ -2964,6 +2964,15 @@ export class SR5_CharacterUtility extends Actor {
       if (replaced === null || !attributes[key]) continue
       SR5_EntityHelpers.updateModifier(attributes[key].natural, game.i18n.localize(label), "itemVehicleMod", replaced - (Number(attributes[key].natural.base) || 0))
     }
+  }
+
+  // Armor added by mods: at most the vehicle's Body (Rigger 5.0 p. 161), the excess taken off as a visible modifier
+  static capVehicleArmor(actor) {
+    const attributes = actor.system.attributes, armor = attributes.armor.augmented
+    const cut = armorCapReduction(addedArmor(actor.items, armor.modifiers), attributes.body.augmented.value)
+    if (!cut) return
+    SR5_EntityHelpers.updateModifier(armor, game.i18n.localize("SR5.VehicleArmorCap"), "itemVehicleMod", -cut)
+    SR5_EntityHelpers.updateValue(armor, 0)
   }
 
   // Vehicle slots Update
