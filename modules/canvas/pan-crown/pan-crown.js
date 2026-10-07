@@ -185,9 +185,10 @@ export function getGraph(subject, options = {
     actors: sceneActors(),
   })
   // Lot 11: the nodes and lines of the modules (sr5.panCrownGraph), added to what the system builds
-  contributeToGraph(graph, {
-    token: crown.token, actor: crown.actor
-  })
+  const crownContext = {
+    token: crown.token ?? null, actor: crown.actor
+  }
+  contributeToGraph(graph, crownContext)
   const viewer = viewerFrom(options)
   const looker = lookerOf(viewer?.actor, !!viewer?.isGM)
   graph.viewer = {
@@ -212,7 +213,7 @@ export function getGraph(subject, options = {
       actor: viewer?.actor ?? null, token: viewer?.token ?? null, isGM: looker.isGM, ids: looker.ids
     }, nodeVisibility(node, looker, {
       distance: node.distance, isHost, tokenHidden
-    }))
+    }), crownContext)
     // The observer's own marks on it, which she alone sees (SR5 p. 238)
     node.viewerMarks = viewerMarksOn(node, looker.ids)
     // What her Matrix Perceptions brought back that the crown draws: the monitor, the number of marks (lot 5)
@@ -221,7 +222,7 @@ export function getGraph(subject, options = {
       actor: p.actor, token: p.token ?? null, isGM: false, ids: p.looker.ids
     }, nodeVisibility(node, p.looker, {
       distance: distanceInMeters(p.token, nodeToken), isHost, tokenHidden
-    }))))
+    }), crownContext)))
   }
   return graph
 }
