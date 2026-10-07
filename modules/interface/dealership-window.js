@@ -231,7 +231,7 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
     }]
     const points = this.#points()
     // The free +1 is once per drone: one line of the build takes it, not each upgrade (review 40)
-    const pointLines = points ? modPointsLines(this.#buildMods(), m => !m.pending) : []
+    const pointLines = points ? modPointsLines(this.#buildMods(), m => !m.pending, vehicleStats(vehicle.system)) : []
     const ownCount = (vehicle.system.vehiclesMod ?? []).length
     const own = (vehicle.system.vehiclesMod ?? []).map((m, i) => ({
       name: m.name, factory: isFactoryMod(m), price: yen(modCost(m)), fitted: isFactoryMod(m) || m.system?.isActive === true,

@@ -5,7 +5,7 @@ import fs from 'node:fs'
 
 import {
   MAX_MARKS, markCount, markTarget, markable, actorRef, placeMarks, _socketPlaceMarks, SR5MatrixApi,
-  CONVERGENCE_DAMAGE, HOST_CONVERGENCE_MARKS, convergencePlan, converge,
+  CONVERGENCE_DAMAGE, HOST_CONVERGENCE_MARKS, convergencePlan, converge, convergenceLines,
   MATRIX_ACTION_RESOLVED_HOOK, matrixActionPayload, announceMatrixAction
 } from '../modules/system/matrix-api.js'
 
@@ -241,6 +241,35 @@ describe('A12: the convergence (game.sr5.matrix.converge)', () => {
     })).toEqual({
       damage: 0, reboot: false, marks: 3, located: false
     })
+  })
+
+  it('in a host, whispers the marks put only when they were (review 43: a sprite, a persona offline carry none)', () => {
+    const plan = convergencePlan({
+      inHost: true
+    })
+    expect(convergenceLines({
+      name: 'Dek', host: 'Ares', plan, placed: true
+    })).toEqual([['SR5.MatrixConvergenceHost', {
+      name: 'Dek', host: 'Ares', marks: 3
+    }]])
+    expect(convergenceLines({
+      name: 'Spr', host: 'Ares', plan, placed: false, sprite: true
+    })).toEqual([['SR5.MatrixConvergenceHostNoMark', {
+      name: 'Spr', host: 'Ares', marks: 3
+    }], ['SR5.MatrixConvergenceSprite']])
+    const source = read('../modules/system/matrix-api.js')
+    expect(source).toMatch(/const placed = plan\.marks \? await placeMarks\([^)]*\{\s*source: "convergence"\s*\}\) === true : false/)
+    expect(source).toMatch(/whisperConvergence\(actor, hostActor, plan, placed\)/)
+  })
+
+  it('on the grid, whispers the damage and the location as before', () => {
+    expect(convergenceLines({
+      name: 'Dek', plan: convergencePlan({
+        stealth: true
+      })
+    })).toEqual([['SR5.MatrixConvergenceGrid', {
+      name: 'Dek', damage: 12
+    }], ['SR5.MatrixConvergenceStealth']])
   })
 
   it('on the GM\'s browser, converges on the persona, in its host when one is named', async () => {

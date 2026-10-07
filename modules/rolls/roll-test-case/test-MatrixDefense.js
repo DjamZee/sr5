@@ -74,8 +74,9 @@ export default async function matrixDefenseInfo(cardData, actorId){
         })}`)
       }
     } else if (cardData.matrix.actionType === "sleaze") {
+      //SR5 p. 232: a failed Sleaze action gives the defender one mark, whatever the attacker chose (roll-message.js)
       cardData.chatCard.buttons.defenderPlaceMark = SR5_RollMessage.generateChatButton("nonOpposedTest", "defenderPlaceMark", `${game.i18n.format('SR5.DefenderPlaceMarkTo', {
-        key: cardData.matrix.mark, item: targetName, name: attacker.name
+        key: 1, item: targetName, name: attacker.name
       })}`)
     }
   }

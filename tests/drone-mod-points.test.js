@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 import {
   usesModPoints, attributeChange, modPointsDemand, modPointsOf, modPointsUsage, modPointsRefusal, modPointsPrice,
-  armorOverload, attributeCap, modPointsLines
+  armorOverload, attributeCap, modPointsLines, weaponMountPoints
 } from '../modules/system/drone-mod-points.js'
 import {
   dealerPointsGauge, buildPointsRefusal
@@ -206,6 +206,100 @@ describe('Dealership under the points (R5 p. 126-128)', () => {
   it('refuses the gamemaster\'s fitting beyond the points', () => {
     expect(buildPointsRefusal(drone, [pointsMod(3)], upgrade('speed', 2))).toEqual({
       needed: 1, free: 0
+    })
+  })
+})
+
+// A weapon mount as utilityItem._handleWeaponMounted leaves it on a vehicle: its slots set by the vehicle size
+const mount = (size, visibility = 'external', slots = 4) => ({
+  system: {
+    isActive: true, isWeaponMounted: true, weaponMount: {
+      size, visibility, flexibility: 'turret', control: 'remote'
+    }, slots: {
+      value: slots
+    }
+  }
+})
+
+describe('Weapon mounts under the Modification Points (R5 p. 128)', () => {
+  it('cost the drone table, not the vehicle slots', () => {
+    expect(['micro', 'mini', 'small', 'standard', 'large', 'huge', 'heavy'].map(size => modPointsOf(mount(size))))
+      .toEqual([0, 1, 2, 3, 4, 5, 6])
+    expect(modPointsOf(mount('heavy', 'external', 4))).toBe(6)
+  })
+  it('add 1 for a pop-up mount (internal or concealed), nothing for the flexibility or the control', () => {
+    expect(modPointsOf(mount('standard', 'internal', 8))).toBe(4)
+    expect(modPointsOf(mount('heavy', 'concealed', 12))).toBe(7)
+  })
+  it('read the vehicle light mount by the weapons it carries, as the Standard (arbitrage de DjamZ, 08/10)', () => {
+    expect(weaponMountPoints(mount('light').system)).toBe(3)
+  })
+  it('leave a mount without a size, and any other mod, to its own slots', () => {
+    expect(modPointsOf(mount('', 'external', 1))).toBe(1)
+    expect(weaponMountPoints(pointsMod(2))).toBeNull()
+    expect(modPointsUsage(drone, [mount('heavy'), pointsMod(1)]).used).toBe(7)
+  })
+})
+
+// The Sensor replacement of the Mégapack (R5 p. 171): its slots are its rating, its effect a ratingReplace
+const sensorReplacement = (rating, extra = {
+}) => ({
+  name: 'Remplacement des Senseurs', type: 'itemVehicleMod', system: {
+    itemRating: rating, isActive: true, slots: {
+      value: rating
+    }, customEffects: {
+      0: {
+        target: 'system.attributes.sensor.augmented', type: 'ratingReplace', value: 0
+      }
+    }, ...extra
+  }
+})
+
+describe('Sensor replacement under the Modification Points (R5 p. 128)', () => {
+  it('is a raise of the Sensor to its rating, not its slots', () => {
+    // Sensor 3 to 6: +3, 2 points on its own line, priced as the new Sensor × 1,000 ¥
+    expect(modPointsDemand(sensorReplacement(6), drone)).toEqual({
+      kind: 'upgrade', key: 'sensor', steps: 3
+    })
+    expect(modPointsOf(sensorReplacement(6), drone)).toBe(2)
+    expect(modPointsPrice(sensorReplacement(6), drone)).toBe(6000)
+  })
+  it('takes the free +1 once per drone with the other upgrades', () => {
+    expect(modPointsUsage(drone, [sensorReplacement(5), upgrade('speed', 1)]).used).toBe(2)
+    expect(modPointsLines([sensorReplacement(5), upgrade('speed', 1)], () => true, drone)).toEqual([1, 1])
+  })
+  it('costs nothing when no higher than the drone Sensor', () => {
+    expect(modPointsOf(sensorReplacement(3), drone)).toBe(0)
+    expect(modPointsPrice(sensorReplacement(3), drone)).toBeNull()
+  })
+  it('is known by its name when it carries no effect', () => {
+    expect(modPointsOf({
+      ...sensorReplacement(5), system: {
+        itemRating: 5, isActive: true, slots: {
+          value: 5
+        }
+      }
+    }, drone)).toBe(1)
+  })
+  it('leaves the Autopilot replacement free (arbitrage de DjamZ, 08/10), by its effect or its name', () => {
+    const autopilot = sensorReplacement(5)
+    autopilot.system.customEffects[0].target = 'system.attributes.pilot.augmented'
+    expect(modPointsOf(autopilot, drone)).toBe(0)
+    expect(modPointsOf({
+      name: "Remplacement de l'Autopilote", system: {
+        itemRating: 5, isActive: true, slots: {
+          value: 5
+        }
+      }
+    }, drone)).toBe(0)
+    expect(modPointsUsage(drone, [autopilot]).used).toBe(0)
+    expect(modPointsPrice(autopilot, drone)).toBeNull()
+  })
+  it('keeps the double cap of the Sensor (R5 p. 127)', () => {
+    expect(modPointsRefusal({
+      ...drone, body: 12
+    }, [], null, sensorReplacement(7))).toEqual({
+      attribute: 'sensor', cap: 6
     })
   })
 })
