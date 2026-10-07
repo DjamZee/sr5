@@ -204,6 +204,18 @@ export class SR5_RollMessage {
         if (!SR5_EntityHelpers.getRealActorFromID(ritualDrainActorId(el.dataset.type), message.flags?.sr5data?.actorUuids)?.isOwner) el.remove()
       })
 
+      // R12: a chase test is the button of its vehicle's owners only (system/chase-roll.js)
+      const chaseButtons = html.querySelectorAll(".chaseRoll")
+      if (chaseButtons.length) {
+        chaseButtons.forEach(el => el.style.display = "none")
+        import("../system/chase-roll.js").then(({
+          mayUseChaseButton
+        }) => chaseButtons.forEach(el => {
+          if (mayUseChaseButton(el.dataset.type)) el.style.display = ""
+          else el.remove()
+        }))
+      }
+
       // v13: use message document directly instead of data.message
       // Hide if player is not owner of the message
       if (!ownsCardSpeaker(message.speaker, id => SR5_EntityHelpers.getRealActorFromID(id, message.flags?.sr5data?.actorUuids))) {
@@ -325,6 +337,14 @@ export class SR5_RollMessage {
       const participant = SR5_EntityHelpers.getRealActorFromID(ritualDrainId, messageData.actorUuids)
       if (!participant?.isOwner) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
       return participant.rollTest("drain", null, messageData)
+    }
+
+    //R12: the buttons of a chase action, opposed, followed up or applied (system/chase-roll.js)
+    if (type === "chaseApply" || type?.startsWith?.("chaseRoll_")) {
+      const {
+        chaseButton
+      } = await import("../system/chase-roll.js")
+      return chaseButton(type, messageData, messageId)
     }
 
     //Define actor for Opposed test or Non opposed tests
