@@ -831,8 +831,12 @@ export class SR5_RollTest {
       case "mentorDrawback":
         await SR5_AddRollInfo.mentorDrawbackInfo(cardData)
         break
+      case "autopilotUnforeseen":
+        //Confused by a hacker, the threshold is known (Rigger 5.0 p. 34); otherwise the gamemaster compares the hits with
+        //the threshold of the situation (SR5 p. 271)
+        if (cardData.threshold.value > 0) cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize(cardData.roll.hits >= cardData.threshold.value ? "SR5.AutopilotKeepsControl" : "SR5.AutopilotConfused"))
+        break
       case "attributeOnly":
-      case "autopilotUnforeseen": //The gamemaster compares the hits with the threshold of the situation (SR5 p. 271)
       case "languageSkill":
       case "knowledgeSkill":
       case "defenseSimple":
