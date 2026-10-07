@@ -411,7 +411,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       configBtn.type = "button"
       configBtn.classList.add("header-control", "icon", "fa-solid", "fa-tools")
       configBtn.dataset.action = "customizeDisplay"
-      configBtn.dataset.tooltip = "SR5.CustomizeSheetDisplay"
+      configBtn.dataset.tooltip = game.i18n.localize("SR5.CustomizeSheetDisplay")
       if (closeButton) closeButton.before(configBtn)
       else header?.appendChild(configBtn)
     }
@@ -445,7 +445,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     if (toggleBtn) {
       toggleBtn.classList.toggle("fa-lock", this.isPlayMode)
       toggleBtn.classList.toggle("fa-lock-open", this.isEditMode)
-      toggleBtn.dataset.tooltip = this.isPlayMode ? "SR5.SwitchToEdit" : "SR5.SwitchToPlay"
+      toggleBtn.dataset.tooltip = game.i18n.localize(this.isPlayMode ? "SR5.SwitchToEdit" : "SR5.SwitchToPlay")
     }
 
     //Essence Loss (SR5 p. 403): the GM starts or stops the clock, or brings it one week closer by hand
