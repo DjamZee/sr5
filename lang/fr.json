@@ -5968,6 +5968,8 @@
 	"SR5.WeaponAccessorySlotInternal": "À l'intérieur de l'arme",
 	"SR5.WeaponAccessorySlotSide": "De chaque côté de l'arme",
 	"SR5.WeaponAccessorySlotStock": "Remplacement ou ajout à la crosse",
+	"SR5.WeaponAccessorySpecialEffect": "Effet spécial",
+	"SR5.WeaponAccessorySpecialEffect_D": "La règle que le système applique pour cet accessoire : une lampe torche faite main éclaire comme une lampe torche, un système smartgun donne ses dés, etc.",
 	"SR5.WeaponAccessorySlotTop": "Au-dessus de l'arme",
 	"SR5.WeaponAccessorySlotUnderneath": "Sous le canon",
 	"SR5.WeaponAccessoryTypeAccessory": "Accessoire",

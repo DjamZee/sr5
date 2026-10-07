@@ -5968,6 +5968,8 @@
 	"SR5.WeaponAccessorySlotInternal": "Internal to the weapon",
 	"SR5.WeaponAccessorySlotSide": "On the side of the weapon",
 	"SR5.WeaponAccessorySlotStock": "Replacing or adding to the stock",
+	"SR5.WeaponAccessorySpecialEffect": "Special effect",
+	"SR5.WeaponAccessorySpecialEffect_D": "The rule the system applies for this accessory: a homemade flashlight lights like a flashlight, a smartgun system gives its dice, etc.",
 	"SR5.WeaponAccessorySlotTop": "On top of the weapon",
 	"SR5.WeaponAccessorySlotUnderneath": "Underneath th barrel",
 	"SR5.WeaponAccessoryTypeAccessory": "Accessory",

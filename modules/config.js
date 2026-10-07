@@ -1411,6 +1411,21 @@ SR5.weaponAccessorySlots = {
   stock                     : "SR5.WeaponAccessorySlotStock",
 }
 
+//The special effects the system reads on a weapon accessory (weaponAccessory.specialEffect), chosen on its sheet
+SR5.weaponAccessorySpecialEffects = {
+  chameleonCoating          : "SR5.AccessoryChameleonCoating",
+  concealableHolster        : "SR5.AccessoryConcealableHolster",
+  flamethrower              : "SR5.AccessoryFlamethrower",
+  flashLight                : "SR5.AccessoryFlashLight",
+  flashLightInfrared        : "SR5.AccessoryFlashLightInfrared",
+  flashLightLowLight        : "SR5.AccessoryFlashLightLowLight",
+  imagingScope              : "SR5.AccessoryImagingScope",
+  overclocked               : "SR5.AccessoryOverclocked",
+  silencerSuppressor        : "SR5.AccessorySilencerSuppressor",
+  smartgunExternal          : "SR5.AccessorySmartgunSystemExternal",
+  smartgunInternal          : "SR5.AccessorySmartgunSystemInternal",
+}
+
 // Toxins
 SR5.toxinTypes = {
   airEngulf                 : "SR5.SpiritPowerEngulfAir",
