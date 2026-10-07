@@ -49,7 +49,9 @@ describe('no wireless matrix action on a switched-off drone (N91)', () => {
   it('refuses the roll before checking marks, with the rule in the message', () => {
     const refusal = SOURCE.indexOf('checksTargetMarks(rollKey) && targetsWirelessOffDrone(actor, rollData)')
     expect(refusal).toBeGreaterThan(-1)
-    expect(SOURCE.slice(refusal, refusal + 200)).toMatch(/WARN_TargetWirelessOff"\)\)\s*return\b/)
+    // The refusal returns, whatever the arguments that name the actor in the gamemaster's whisper (review 39)
+    expect(SOURCE.slice(refusal, refusal + 250)).toMatch(/WARN_TargetWirelessOff"(?:,[^)]*\{\s*actor\s*\})?\)\)\s*return\b/)
+    expect(SOURCE.slice(refusal, refusal + 250)).toMatch(/WARN_TargetWirelessOff",\s*null,\s*\{\s*actor\s*\}\)/)
     expect(refusal).toBeLessThan(SOURCE.indexOf('await checkTargetMarks('))
     expect(FR['SR5.WARN_TargetWirelessOff']).toMatch(/p\. 424[\s\S]*p\. 234/)
     expect(EN['SR5.WARN_TargetWirelessOff']).toMatch(/p\. 424[\s\S]*p\. 234/)
