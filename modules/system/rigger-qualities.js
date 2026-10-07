@@ -4,10 +4,14 @@
 /** The `systemEffects` values the qualities carry. */
 export const RIGGER_QUALITY_EFFECTS = {
   speedDemon: "riggerSpeedDemon",
+  informationOverload: "riggerInformationOverload",
 }
 
 /** Démon de la vitesse (p. 37): +1 to the piloting tests of a vehicle moving at Speed 3 or more, 4 for aircraft. */
 export const SPEED_DEMON_BONUS = 1
+/** Surcharge d'informations (p. 38): −2 dice once four vehicles or drones he directs are moving. */
+export const INFORMATION_OVERLOAD_PENALTY = -2
+export const INFORMATION_OVERLOAD_COUNT = 4
 
 /** The `systemEffects` of an item as a list. Raw creation data and the packs may still hold an indexed object. */
 function effectsOf(item) {
@@ -47,5 +51,26 @@ export function speedDemonBonus(vehicleSystem, ownerItems) {
   if (!hasRiggerQuality(ownerItems, RIGGER_QUALITY_EFFECTS.speedDemon)) return 0
   const needed = AIRCRAFT_SKILLS.has(vehicleSystem?.pilotSkill) ? 4 : 3
   return (Number(vehicleSystem?.currentSpeed) || 0) >= needed ? SPEED_DEMON_BONUS : 0
+}
+
+/**
+ * Surcharge d'informations: the penalty of a piloting test of the vehicle `vehicleSystem`, when `movingCount` vehicles
+ * and drones its controller directs are moving, the tested one among them. The autopilot's own test uses its Pilot,
+ * not the rigger: it is not one of "ses" tests. The drones on autopilot still count ("cela s'applique même si
+ * certains […] sont en pilote automatique").
+ */
+export function informationOverloadPenalty(vehicleSystem, ownerItems, movingCount) {
+  if (!vehicleSystem?.vehicleOwner?.id || vehicleSystem.controlMode === "autopilot") return 0
+  if (!isMoving(vehicleSystem)) return 0
+  if (!hasRiggerQuality(ownerItems, RIGGER_QUALITY_EFFECTS.informationOverload)) return 0
+  return (Number(movingCount) || 0) >= INFORMATION_OVERLOAD_COUNT ? INFORMATION_OVERLOAD_PENALTY : 0
+}
+
+/**
+ * How many vehicles and drones directed by `ownerId` are moving, among `vehicles` (the systems of the drone actors).
+ */
+export function movingVehiclesOf(ownerId, vehicles) {
+  if (!ownerId) return 0
+  return listOf(vehicles).filter(system => system?.vehicleOwner?.id === ownerId && isMoving(system)).length
 }
 

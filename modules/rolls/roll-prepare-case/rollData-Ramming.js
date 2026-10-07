@@ -10,6 +10,9 @@ import {
 import {
   SR5
 } from "../../config.js"
+import {
+  applyInformationOverload
+} from "../roll-helpers/rigger-overload.js"
 
 export default function ramming(rollData, actor){
   //Determine title
@@ -23,6 +26,7 @@ export default function ramming(rollData, actor){
 
   //Determine dicepool modififiers
   rollData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(rollData, actor.system.rammingTest.test.modifiers.filter(mod => (mod.type !== "manual")))
+  applyInformationOverload(rollData, actor)
 
   //Determine base limit
   rollData.limit.base = SR5_PrepareRollHelper.getBaseLimit(actor.system.rammingTest.limit.value, actor.system.rammingTest.limit.modifiers)

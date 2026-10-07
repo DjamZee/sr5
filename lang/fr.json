@@ -1506,6 +1506,7 @@
 	"SR5.EchoMachineMind": "Écho : Possession de la machine (SR5 p. 261)",
 	"SR5.EchoHumanMachineInterface": "Écho : IRHM (DT p. 63)",
 	"SR5.RiggerSpeedDemon": "Démon de la vitesse (R5 p. 37)",
+	"SR5.RiggerInformationOverload": "Surcharge d'informations (R5 p. 38)",
 	"SR5.VehicleCurrentSpeed": "Vitesse actuelle",
 	"SR5.HELP_VehicleCurrentSpeedMsg": "La Vitesse à laquelle le véhicule se déplace en ce moment, 0 à l'arrêt. Lue par Démon de la vitesse (Vitesse 3 ou plus, 4 en avion) et Surcharge d'informations (quatre véhicules en mouvement).",
 	"SR5.HELP_MachinistSharing": "<p>Machiniste (Kill Code p. 101) : le persona incarné sert de console de rigger, son Partage est égal au Charisme.</p>",
