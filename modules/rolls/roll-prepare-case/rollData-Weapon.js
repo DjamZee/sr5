@@ -43,6 +43,9 @@ import {
 import {
   redDotSightWorks, scopeVision, nonCumulativeAccessoryAccuracy
 } from "../../entities/items/weapon-accessory-rules.js"
+import {
+  weaponLimb, limbEnhancementNames
+} from "../../system/cyberlimb.js"
 
 //Add info for weapon Roll
 export default async function weapon(rollData, actor, item){
@@ -60,6 +63,9 @@ export default async function weapon(rollData, actor, item){
 
   //Determine dicepool modififiers
   rollData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(rollData, itemData.weaponSkill.modifiers)
+
+  //Held by a cyberlimb (SR5 p. 459): its Agility already counts its enhancement, whose box is not offered again
+  if (weaponLimb(itemData, actor.items)) rollData.various.limbEnhancements = [...limbEnhancementNames(actor.items)]
 
   //Determine limit
   if (itemData.category === "grenade") {

@@ -98,6 +98,9 @@ import {
 import {
   VR_PILOTING_LIMIT_BONUS, controlRigThresholdModifier, dataProcessingCapModifier
 } from "../../system/rigging-rules.js"
+import {
+  isLimbAttributeTarget, hostLimb
+} from "../../system/cyberlimb.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -5499,6 +5502,9 @@ export class SR5_CharacterUtility extends Actor {
         skipCustomEffect = true
       }
 
+      // A Strength or Agility enhancement plugged into a cyberlimb raises that limb only (SR5 p. 460, cyberlimb.js);
+      // a situational one stays a box, for the tests made with that limb that no weapon carries
+      if (item.type === "itemAugmentation" && !customEffect.situational && isLimbAttributeTarget(customEffect.target) && hostLimb(item.id, actor.items)) skipCustomEffect = true
       // For effect depending on wifi
       if (customEffect.wifi && !itemData.wirelessTurnedOn) skipCustomEffect = true
       // For transferable effect

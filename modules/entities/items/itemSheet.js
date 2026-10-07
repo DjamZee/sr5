@@ -8,6 +8,9 @@ import {
   SR5
 } from "../../config.js"
 import {
+  limbChoices, limbAttributes
+} from "../../system/cyberlimb.js"
+import {
   transhumanGift, itemHasEffect, IMPLANT_ESSENCE_EFFECTS, AUGMENTATION_BUNDLE_SETTING
 } from "../../system/implant-essence.js"
 import {
@@ -452,6 +455,15 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
         SR5ShopVendor
       } = await import("../../interface/shop-vendor.js")
       context.shop = SR5ShopVendor.sheetContext(item)
+    }
+
+    // Cyberlimbs (SR5 p. 459): the limb a weapon is held by, and a limb's Strength and Agility with its enhancements
+    if (item.type === 'itemWeapon' && item.actor) {
+      const choices = limbChoices(item.actor.items)
+      if (Object.keys(choices).length) context.weaponLimbChoices = choices
+    }
+    if (item.type === 'itemAugmentation' && item.system.category === "cyberlimbs") {
+      context.limbAttributes = limbAttributes(item, item.actor?.items)
     }
 
     // Custom ammunition type choices for weapon ammo dropdown

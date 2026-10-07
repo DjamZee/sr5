@@ -347,6 +347,8 @@ export class SR5_PrepareRollTest {
       } = extractSituational(rollData, actor?.situationalEffects || [], rollAttributes(rollData.dicePool.composition, attributeLabels),
         actor?.system?.limits?.[rollData.limit?.type]?.modifiers)
       rollData.situational = offers
+      //A weapon held by a cyberlimb: the limb's enhancements are in its Agility already (cyberlimb.js)
+      if (rollData.various?.limbEnhancements?.length) rollData.situational = offers.filter(o => !(o.attribute && rollData.various.limbEnhancements.includes(o.label)))
       //Forbidden Arcana p. 90-95: the boxes of a spirit type, shown once the type is known (dialog, or the targeted spirit)
       if (rollData.test.type === "skillDicePool" && SPIRIT_TYPE_SKILLS.includes(rollData.test.typeSub)){
         rollData.situational = offers.concat(spiritTypeOffers(actor.system.skills[rollData.test.typeSub]?.spiritType, actor.situationalEffects || []))

@@ -34,6 +34,9 @@ import {
 import {
   dataProcessingCapModifier
 } from "../../system/rigging-rules.js"
+import {
+  weaponLimb, limbAttributes, weaponAttribute, withLimbAgility
+} from "../../system/cyberlimb.js"
 
 // The implants whose unknown grade the gamemaster was told of, once each per session
 const unknownGradesTold = new Set()
@@ -497,9 +500,13 @@ export class SR5_UtilityItem extends Actor {
           itemData.weaponSkill.base = 0
           if ((actor.system.initiatives.astralInit.isActive || itemData.isUsedAsFocus) && itemData.isLinkedToFocus) itemData.weaponSkill.modifiers = itemData.weaponSkill.modifiers.concat(actor.system.skills.astralCombat.test.modifiers)
           else itemData.weaponSkill.modifiers = itemData.weaponSkill.modifiers.concat(actor.system.skills[actorSkill].test.modifiers)
+          //A weapon held by a cyberlimb attacks with the limb's Agility (SR5 p. 459)
+          const limb = weaponLimb(itemData, actor.items)
+          if (limb) itemData.weaponSkill.modifiers = withLimbAgility(itemData.weaponSkill.modifiers, game.i18n.localize('SR5.Agility'), limbAttributes(limb, actor.items).agility.value)
           //Special case : bow
-          if (itemData.type === "bow" && (actor.system.attributes.strength.augmented.value < itemData.itemRating)){
-            let malus = (actor.system.attributes.strength.augmented.value - itemData.itemRating) * 3
+          const strength = weaponAttribute("strength", itemData, actor)
+          if (itemData.type === "bow" && (strength < itemData.itemRating)){
+            let malus = (strength - itemData.itemRating) * 3
             SR5_EntityHelpers.updateModifier(itemData.weaponSkill, `${game.i18n.localize('SR5.WeaponTypeBow')}`, "itemRating", malus, false, true)
           }
         }
@@ -513,7 +520,7 @@ export class SR5_UtilityItem extends Actor {
       if (itemData.accuracy.isPhysicalLimitBased) itemData.accuracy.base = actor.system.limits.physicalLimit.value
       if (itemData.damageValue.isStrengthBased && actor.type !=="actorDrone") {
         if ((actor.system.initiatives.astralInit.isActive || itemData.isUsedAsFocus) && itemData.isLinkedToFocus) SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.Charisma'), "linkedAttribute", actor.system.attributes.charisma.augmented.value)
-        else SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.Strength'), "linkedAttribute", actor.system.attributes.strength.augmented.value)
+        else SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.Strength'), "linkedAttribute", weaponAttribute("strength", itemData, actor))
       }
       //A natural weapon or an engulf that follows the creature's ratings (SR5 p. 399, Howling Shadows p. 138)
       const astral = (actor.system.initiatives?.astralInit?.isActive || itemData.isUsedAsFocus) && itemData.isLinkedToFocus
@@ -525,7 +532,7 @@ export class SR5_UtilityItem extends Actor {
       if (deathSower) SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.MagicMasteryDeathSower'), "itemQuality", deathSower)
       //Osmium mace (The Complete Trog p. 177): the listed profile only holds for Strength 5-6
       if (hasWeaponTrait(itemData, "osmium") && actor.type !== "actorDrone") {
-        const profile = osmiumProfile(actor.system.attributes.strength.augmented.value)
+        const profile = osmiumProfile(weaponAttribute("strength", itemData, actor))
         if (profile) {
           const label = game.i18n.localize('SR5.AccessoryOsmium')
           SR5_EntityHelpers.updateModifier(itemData.accuracy, label, "weaponAccessory", profile.accuracy - (itemData.accuracy.base || 0), false, true)
@@ -846,7 +853,8 @@ export class SR5_UtilityItem extends Actor {
   static _generateWeaponRange(itemData, actor) {
     if (itemData.range.isStrengthBased) {
       if (actor !== undefined) {
-        let actorStrength = actor.system.attributes.strength.augmented.value
+        //Thrown by a cyberlimb: the limb's Strength (SR5 p. 459)
+        let actorStrength = weaponAttribute("strength", itemData, actor)
 
         SR5_EntityHelpers.updateModifier(itemData.range.short, game.i18n.localize('SR5.Strength'), "linkedAttribute", (actorStrength * itemData.range.short.base) - itemData.range.short.base)
         SR5_EntityHelpers.updateModifier(itemData.range.medium, game.i18n.localize('SR5.Strength'), "linkedAttribute", (actorStrength * itemData.range.medium.base) - itemData.range.medium.base)

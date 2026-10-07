@@ -148,6 +148,10 @@ export class sr5ItemWeaponDataModel extends foundry.abstract.TypeDataModel {
           initial: ''
         }),
       }),
+      // The id of the actor's cyberlimb holding the weapon, whose Strength and Agility it uses (SR5 p. 459); '' = the body
+      heldByLimb: new fields.StringField({
+        initial: ''
+      }),
       toxin: new fields.SchemaField({
         type: new fields.StringField({
           initial: ''

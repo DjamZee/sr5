@@ -26,6 +26,17 @@
             <div class="col-1 SR-TextCenter"><input type="number" data-dtype="Number" name="system.cyberlimbs.agility.customization" value="{{system.cyberlimbs.agility.customization}}" onfocus="this.select()"/></div>
             {{/if}}
         </li>
+        {{#if (or limbAttributes.strength.enhancement limbAttributes.agility.enhancement)}}
+        {{#each limbAttributes as |attribute key|}}
+        {{#if attribute.enhancement}}
+        <li class="grid" title="{{attribute.enhancement.name}}">
+            <div class="col-5">{{localize (concat 'SR5.CyberlimbWith' key)}}{{localize 'SR5.Colons'}}</div>
+            <div class="col-1">{{attribute.value}}</div>
+            <div class="col-6 SR-TextRight">+{{attribute.enhancement.value}} ({{attribute.enhancement.name}})</div>
+        </li>
+        {{/if}}
+        {{/each}}
+        {{/if}}
     </ul>
 </div>
 {{/if}}
