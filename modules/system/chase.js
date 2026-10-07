@@ -42,6 +42,9 @@ const EMPTY = () => ({
   }, glove: {
   }, handlingLoss: {
   },
+  // Part 3: the Handling a stunt gave or took for the turn (R5 p. 182)
+  turnHandling: {
+  },
 })
 
 const isActiveGM = () => !!game.user?.isActiveGM
@@ -482,6 +485,18 @@ export class SR5Chase {
     })
   }
 
+  /** The Handling a stunt gives (or takes from another vehicle) until the end of the Combat Turn (R5 p. 182) */
+  static addTurnHandling(id, delta) {
+    return this.update(state => {
+      if (!state.vehicles.some(v => v.id === id) || !delta) return false
+      state.turnHandling = {
+        ...(state.turnHandling ?? {
+        })
+      }
+      state.turnHandling[id] = (Number(state.turnHandling[id]) || 0) + delta
+    })
+  }
+
   /** Handling lost to a PIT (R5 p. 179), an effect on the vehicle while the chase lasts */
   static addHandlingLoss(id, value) {
     return this.update(state => {
@@ -518,7 +533,8 @@ export class SR5Chase {
           name: vehicle.name
         }))
         const reason = chaseEndReason({
-          monitorFull: monitorFull(actor?.system?.conditionMonitors?.condition),
+          // Hang On Baby: a point of Edge keeps it going this turn (R5 p. 178)
+          monitorFull: monitorFull(actor?.system?.conditionMonitors?.condition) && !state.turnFlags?.[vehicle.id]?.holdOn,
           handling: actor ? attribute(actor, "handling") : undefined,
           speed: next.speed, acceleration: actor ? attribute(actor, "acceleration") : 1,
         }, advanced)
@@ -537,6 +553,8 @@ export class SR5Chase {
       state.turnTerrain = {
       }
       state.turnFlags = {
+      }
+      state.turnHandling = {
       }
     }).then(async written => {
       if (written && events.length) await ChatMessage.create({
@@ -739,11 +757,13 @@ export class SR5ChaseApp extends foundry.applications.api.HandlebarsApplicationM
     const row = target.closest(".sr-chase-act")
     const key = row?.querySelector("[name=chaseAction]")?.value
     const targetId = row?.querySelector("[name=chaseTarget]")?.value ?? ""
+    // Part 3: the level of a stunt within the action (R5 p. 183), 0 for none
+    const stunt = Number(row?.querySelector("[name=chaseStunt]")?.value) || 0
     if (!key) return
     const {
       launchChaseAction
     } = await import("./chase-roll.js")
-    return launchChaseAction(target.dataset.vehicle, key, targetId)
+    return launchChaseAction(target.dataset.vehicle, key, targetId, stunt)
   }
 
   async _prepareContext(options) {

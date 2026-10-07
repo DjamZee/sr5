@@ -9,6 +9,8 @@ export const RIGGER_QUALITY_EFFECTS = {
   dealerWatercraft: "riggerDealerWatercraft",
   dealerAircraft: "riggerDealerAircraft",
   dealerDrone: "riggerDealerDrone",
+  stuntman: "riggerStuntman",
+  tirelessPursuer: "riggerTirelessPursuer",
 }
 
 /** Démon de la vitesse (p. 37): +1 to the piloting tests of a vehicle moving at Speed 3 or more, 4 for aircraft. */
@@ -16,6 +18,10 @@ export const SPEED_DEMON_BONUS = 1
 /** Surcharge d'informations (p. 38): −2 dice once four vehicles or drones he directs are moving. */
 export const INFORMATION_OVERLOAD_PENALTY = -2
 export const INFORMATION_OVERLOAD_COUNT = 4
+/** Cascadeur (p. 37): +2 to a Stunt test (SR5 p. 204-205). */
+export const STUNTMAN_BONUS = 2
+/** Poursuivant infatigable (p. 37): +2 dice to a chase action (SR5 p. 204). */
+export const TIRELESS_PURSUER_BONUS = 2
 /** Relation avec un concessionnaire (p. 37): 10 % off a vehicle of the chosen category. */
 export const DEALER_DISCOUNT = 0.1
 
@@ -105,4 +111,27 @@ export function dealerPrice(unit, item, buyerItems) {
   const effect = dealerEffectFor(item)
   if (!effect || !hasRiggerQuality(buyerItems, effect)) return price
   return Math.round(price * (1 - DEALER_DISCOUNT))
+}
+
+/**
+ * Cascadeur and Poursuivant infatigable (R12): the dice they add to a chase test of the vehicle `vehicleSystem`, whose
+ * controller has `ownerItems`. The character tests by hand, remotely or jumped in; never the autopilot, which rolls
+ * without him (and "les programmes autopilote" never stunt, R5 p. 183).
+ * @param {{action: boolean, stunt: boolean}} p action: the character takes a chase action (not an opposition nor a
+ *   follow-up test); stunt: the test is a Stunt test
+ * @returns {Array<{key: string, value: number}>}
+ */
+export function chaseQualityDice(vehicleSystem, ownerItems, {
+  action = false, stunt = false
+} = {
+}) {
+  if (!vehicleSystem?.vehicleOwner?.id || vehicleSystem.controlMode === "autopilot") return []
+  const dice = []
+  if (action && hasRiggerQuality(ownerItems, RIGGER_QUALITY_EFFECTS.tirelessPursuer)) dice.push({
+    key: "SR5.RiggerTirelessPursuer", value: TIRELESS_PURSUER_BONUS
+  })
+  if (stunt && hasRiggerQuality(ownerItems, RIGGER_QUALITY_EFFECTS.stuntman)) dice.push({
+    key: "SR5.RiggerStuntman", value: STUNTMAN_BONUS
+  })
+  return dice
 }

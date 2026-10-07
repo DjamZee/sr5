@@ -77,6 +77,11 @@
             {{#each targets}}<option value="{{id}}">{{name}} ({{range}})</option>{{/each}}
           </select>
         </label>
+        {{#if ../advanced}}
+        <label data-tooltip="{{localize 'SR5.CHASE_StuntWithinHint'}}">{{localize 'SR5.CHASE_StuntWithin'}}
+          <input type="number" name="chaseStunt" value="0" min="0" step="1" data-chase-act>
+        </label>
+        {{/if}}
         <button type="button" data-action="chaseAct" data-vehicle="{{id}}" data-chase-act><i class="fas fa-dice"></i> {{localize 'SR5.CHASE_ActionRoll'}}</button>
       </div>
       {{/if}}
