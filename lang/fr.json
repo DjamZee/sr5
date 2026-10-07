@@ -1450,7 +1450,7 @@
 	"SR5.WeaponHeldByLimb": "Tenue par",
 	"SR5.CyberlimbNoticeIntro": "Cybermembres (SR5 p. 459-460) : une amélioration de Force ou d'Agilité branchée dans un cybermembre n'augmente plus que ce membre, plus le corps entier. Ces personnages en portent une :",
 	"SR5.CyberlimbNoticeWeapons": "armes tenues par le corps : {weapons}",
-	"SR5.CyberlimbNoticeHowTo": "Pour qu'une arme profite du membre, ouvrez sa fiche et choisissez le membre dans « Tenue par » (onglet de la compétence). Ce message ne s'affiche qu'une fois dans ce monde.",
+	"SR5.CyberlimbNoticeHowTo": "Pour qu'une arme profite du membre, ouvrez sa fiche et choisissez le membre dans « Tenue par » (onglet de configuration). Ce message ne s'affiche qu'une fois dans ce monde.",
 	"SR5.WeaponHeldByBody": "Le corps (attributs du personnage)",
 	"SR5.Damage": "Dommages",
 	"SR5.DamageDropOff": "Réduction de dommages (m)",
