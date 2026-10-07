@@ -25,6 +25,14 @@
     </p>
 </li>
 
+<li class="grid">
+    <p>
+        <span class="col-auto">{{localize 'SR5.RentCost'}}{{localize 'SR5.Colons'}}</span>
+        <span class="col-auto SR-GreyColor" data-helpTitle="{{localize 'SR5.RentCost'}}"
+            data-helpDetails="system.price">{{valueOrDash (nuyen system.price.value)}}</span>
+    </p>
+</li>
+
 <li class="SR-PaddingTop10 grid SR-LigneEnTete">
     <div class="col-12 SR-TextUppercase">{{localize 'SR5.LifeStyleOptions'}}</div>
 </li>
