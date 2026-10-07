@@ -51,8 +51,11 @@ import {
   SR5Credstick 
 } from "../../interface/credstick.js"
 import {
-  SR5 
+  SR5
 } from "../../config.js"
+import {
+  refuseByRule
+} from "../../system/rule-locks.js"
 import {
   STORABLE_TYPES, isStorable, isStoredAway, garageRequirement, meetsGarageLifestyle 
 } from "../../interface/storage-rules.js"
@@ -2344,8 +2347,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
    * What this garage asks for that the character has not got, or null when it
    * will take the vehicle (Run Faster p. 216).
    */
+  // Whether it refuses is the "garage" box of the "objects" rule lock (formerly sr5StorageCheckGarageLifestyle), at _onStoragePutIn
   static garageShortfall(actor, storage) {
-    if (!game.settings.get("sr5", "sr5StorageCheckGarageLifestyle")) return null
     const requirement = garageRequirement(storage)
     if (!requirement) return null
 
@@ -2382,22 +2385,24 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
 
     const shortfall = ActorSheetSR5.garageShortfall(this.actor, storage)
-    if (shortfall) {
-      return ui.notifications.warn(game.i18n.format("SR5.WARN_StorageGarageLifestyle", {
-        storage: storage.name,
-        lifestyle: game.i18n.localize(SR5.lifestyleTypes[shortfall.lifestyle]),
-        cost: shortfall.cost,
-      }))
-    }
+    if (shortfall && refuseByRule("objects", "SR5.WARN_StorageGarageLifestyle", {
+      storage: storage.name,
+      lifestyle: game.i18n.localize(SR5.lifestyleTypes[shortfall.lifestyle]),
+      cost: shortfall.cost,
+    }, {
+      actor: this.actor, lockCase: "garage"
+    })) return
 
     const max = storage.system.capacity.value
     const used = this.actor.items.filter(i => i.system?.storedIn === storageId).length
     const room = max > 0 ? max - used : Infinity
-    if (room <= 0) {
-      return ui.notifications.warn(game.i18n.format("SR5.WARN_StorageFull", {
-        storage: storage.name 
-      }))
-    }
+    // The "objects" rule lock lifted, a full storage takes more, and the GM is told once (not again for the overflow)
+    const full = room <= 0
+    if (full && refuseByRule("objects", "SR5.WARN_StorageFull", {
+      storage: storage.name
+    }, {
+      actor: this.actor
+    })) return
 
     const content = await foundry.applications.handlebars.renderTemplate(
       "systems/sr5/templates/interface/storage-put-in.hbs", {
@@ -2434,11 +2439,11 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
     const chosen = [...result.element.querySelectorAll("[name=storedItem]:checked")].map(i => i.value)
     if (!chosen.length) return
-    if (chosen.length > room) {
-      return ui.notifications.warn(game.i18n.format("SR5.WARN_StorageNotEnoughRoom", {
-        storage: storage.name, room: room 
-      }))
-    }
+    if (!full && chosen.length > room && refuseByRule("objects", "SR5.WARN_StorageNotEnoughRoom", {
+      storage: storage.name, room: room
+    }, {
+      actor: this.actor
+    })) return
 
     await this.actor.updateEmbeddedDocuments("Item", chosen.map(id => ({
       _id: id, "system.storedIn": storageId 

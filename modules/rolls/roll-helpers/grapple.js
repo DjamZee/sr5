@@ -19,6 +19,9 @@ import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
+  refuseByRule, ruleLockActive
+} from "../../system/rule-locks.js"
+import {
   ownsTarget, recountHits, consumedKey
 } from "./socket-guard.js"
 import {
@@ -98,7 +101,13 @@ export class SR5_GrappleHelpers {
       const holdId = grappleHoldOf(holder.effects).holdId
       await Promise.all([holder, held].map(a => deleteGrappleEffectOnce(a, PENDING_DELETIONS, holdId)))
     }
-    else if (!canStartHold(holder.effects, held.effects)) return SR5_GrappleHelpers.warn("SR5.WARN_GrappleAlreadyHeld", fromUserId)
+    else if (!canStartHold(holder.effects, held.effects)) {
+      //The "objects" rule lock (B13): on, the refusal goes back to the one who asked; lifted, the hold is taken and the GM, whose browser this is, is told
+      if (ruleLockActive("objects")) return SR5_GrappleHelpers.warn("SR5.WARN_GrappleAlreadyHeld", fromUserId)
+      refuseByRule("objects", "SR5.WARN_GrappleAlreadyHeld", null, {
+        actor: holder
+      })
+    }
 
     const holdId = foundry.utils.randomID()
     await holder.createEmbeddedDocuments("ActiveEffect", [SR5_GrappleHelpers._effect(kind, "holder", heldId, hold, holdId)])
