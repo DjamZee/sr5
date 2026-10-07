@@ -62,6 +62,13 @@ describe('What a mod asks (R5 p. 127)', () => {
       key: 'speed', amount: 2
     })
   })
+  it('a "rating" effect is worth the rating once prepared (its value then holds the rating, not a factor)', () => {
+    const prepared = upgrade('speed', 2)
+    prepared.system.customEffects[0].value = 2
+    expect(attributeChange(prepared)).toEqual({
+      key: 'speed', amount: 2
+    })
+  })
   it('+2 Speed costs 1 point, +4 costs 3', () => {
     expect(modPointsOf(upgrade('speed', 2))).toBe(1)
     expect(modPointsOf(upgrade('speed', 4))).toBe(3)

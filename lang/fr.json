@@ -6101,6 +6101,7 @@
 	"SR5.DealerBuy": "Acheter pour {price}",
 	"SR5.DealerClear": "Retirer les modifications",
 	"SR5.DealerOverSlots": "La configuration dépasse les emplacements d'une catégorie : la pose de trop sera refusée (Rigger 5.0 p. 154).",
+	"SR5.DealerOverModPoints": "La configuration dépasse les Points de Modification du drone : la pose de trop sera refusée (Rigger 5.0 p. 126-127).",
 	"SR5.DealerWaits": "Le lot a une disponibilité : il part en commande d'un seul tenant et arrive monté au bout du délai de recherche (SR5 p. 420).",
 	"SR5.DealerInstallHint": "Les modifications arrivent à bord, à installer selon le livre depuis l'Atelier du véhicule déployé (test étendu, Rigger 5.0 p. 153), sauf celles que le MJ a posées.",
 	"SR5.DealerOrderName": "{name} + {count} modification(s)",

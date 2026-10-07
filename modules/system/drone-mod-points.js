@@ -73,7 +73,8 @@ export function attributeChange(system) {
   })) {
     const key = TARGET.exec(effect?.target ?? "")?.[1]
     if (!key || effect.transfer) continue
-    const value = effect.type === "rating" ? num(s.itemRating) * num(effect.value) : effect.type === "value" ? num(effect.value) : 0
+    //A "rating" effect is worth the item's rating, whatever its value (utilityActor.js, customEffect.value = itemRating)
+    const value = effect.type === "rating" ? num(s.itemRating) : effect.type === "value" ? num(effect.value) : 0
     const multiplier = Number(effect.multiplier)
     changes[key] = (changes[key] ?? 0) + value * (Number.isFinite(multiplier) && multiplier ? multiplier : 1)
   }

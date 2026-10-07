@@ -6101,6 +6101,7 @@
 	"SR5.DealerBuy": "Buy for {price}",
 	"SR5.DealerClear": "Take the modifications off",
 	"SR5.DealerOverSlots": "The build goes beyond the slots of a category: the extra installation will be refused (Rigger 5.0 p. 154).",
+	"SR5.DealerOverModPoints": "The build goes beyond the drone's Modification Points: the mod too many will be refused (Rigger 5.0 p. 126-127).",
 	"SR5.DealerWaits": "The lot has an availability: it is ordered as one and arrives assembled after the search time (SR5 p. 420).",
 	"SR5.DealerInstallHint": "The modifications arrive aboard, to be installed by the book from the deployed vehicle's Workshop (extended test, Rigger 5.0 p. 153), except those the GM fitted.",
 	"SR5.DealerOrderName": "{name} + {count} modification(s)",
