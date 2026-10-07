@@ -19,7 +19,7 @@ import {
   SR5Chase, advancedDriving, chaseVehicleActor, chaseAttribute, chaseSpeedOf
 } from "./chase.js"
 import {
-  monitorFull
+  monitorFull, vehiclePilotId
 } from "./rigging-rules.js"
 
 export const CHASE_ROLL_PREFIX = "chaseRoll_"
@@ -221,15 +221,15 @@ function turnHandlingMods(state, vehicleId) {
  * @returns {Promise<null|{actor: object, edgeLeft: boolean}>}
  */
 async function edgePilot(vehicleActor) {
-  const system = vehicleActor?.system
-  if (!system?.vehicleOwner?.id || system.controlMode === "autopilot") return null
+  const pilotId = vehiclePilotId(vehicleActor?.system)
+  if (!pilotId) return null
   const {
     SR5_EntityHelpers
   } = await import("../entities/helpers.js")
   const {
     SR5_RollTestHelper
   } = await import("../rolls/roll-test-helper.js")
-  const actor = SR5_EntityHelpers.getRealActorFromID(system.vehicleOwner.id)
+  const actor = SR5_EntityHelpers.getRealActorFromID(pilotId)
   return actor ? {
     actor, edgeLeft: SR5_RollTestHelper.hasEdgeLeft(actor)
   } : null

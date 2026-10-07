@@ -10,6 +10,9 @@ import {
 import {
   readLedger, spiritSummoner
 } from "../system/spirit-ledger.js"
+import {
+  vehiclePilotId
+} from "../system/rigging-rules.js"
 
 export class SR5_RollTestHelper {
 
@@ -29,7 +32,14 @@ export class SR5_RollTestHelper {
   //spirit lets it spend its character's Edge too (Street Grimoire p. 133); the character is the summoner it keeps.
   //The summoner is the one the active GM wrote in the spirit ledger when he created the spirit, never the creatorId its
   //owner can rewrite; and only one the user rolling may write to, or the point spent would not be taken (Victoire)
+  //A vehicle has no Edge either: its pilot's is spent on its tests, by hand, remotely or jumped in, never on autopilot
+  //(arbitrage de DjamZ, 08/10); only a pilot the user rolling may write to, as for the summoner
   static edgeCharacter(actor, ledger = readLedger()){
+    if (actor?.type === "actorDrone") {
+      const pilotId = vehiclePilotId(actor.system)
+      const pilot = pilotId ? SR5_EntityHelpers.getRealActorFromID(pilotId) : null
+      return pilot?.isOwner ? pilot : null
+    }
     if (actor?.type !== "actorSpirit") return null
     //A free spirit is at no one's service: its own Edge, and its character's under a magic pact only
     if (actor.system?.isFree && !actor.system.magicPact) return null
