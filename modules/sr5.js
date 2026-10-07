@@ -122,6 +122,9 @@ import {
 import {
   registerBoneAugmentationGuard
 } from './system/bone-augmentation-guard.js'
+import {
+  registerPanCrownHooks
+} from './canvas/pan-crown/pan-crown-layer.js'
 
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
@@ -233,6 +236,8 @@ registerPreparationRegisterHooks()
 registerBoneAugmentationGuard()
 // Agility brought to 0: the "immobilized" status follows it (séance H, H8)
 registerAgilityZeroHooks()
+// The crown of a PAN follows its token and its devices (couronne du PAN, lot 2)
+registerPanCrownHooks()
 // Blight strikes: sustained spells, active foci and astral fall (Better Than Bad p. 141)
 Hooks.on('createItem', onBlightCreated)
 // ...and an actor under Blight is put in order at the world's load, by the active GM (Clémence's review)

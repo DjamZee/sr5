@@ -13,6 +13,10 @@
 // - silent running is stored per actor (system.matrix.runningSilent); per device (system.isSilent) comes with lot 6,
 //   and is read here already so that lot 6 only adds the field.
 
+import {
+  iconCategoryOf
+} from "./pan-icons.js"
+
 export const PAN_NODE_KINDS = ["master", "slave", "drone", "device"]
 export const PAN_MODES = ["active", "silent", "offline"]
 
@@ -109,7 +113,7 @@ export function droneOf(vehicle, owner, actors){
  * @return {Object} {owner, master, nodes, links, missing}
  *   owner:   {id, actorId, name, type}
  *   master:  the uuid of the master node, or null
- *   nodes:   [{uuid, kind, name, itemType, subType, holderIds, mode, silentFrom, rating, marks, droneId, revealed}]
+ *   nodes:   [{uuid, kind, name, itemType, subType, icon, holderIds, mode, silentFrom, rating, marks, droneId, revealed}]
  *   links:   [{from, to, kind}]; "owner" is the id of the crown's center, the token
  *   missing: the PAN entries whose item could not be found
  */
@@ -191,6 +195,8 @@ function nodeOf(item, kind, holder, mode, silentFrom, drone = null, panOwner = n
     name: item.name ?? "",
     itemType: item.type,
     subType: item.system?.type ?? "",
+    // The generic icon of its category (lot 2)
+    icon: iconCategoryOf(item),
     holderIds: idsOf(holder),
     // The user of the PAN owns its slaves for the Matrix, even a device carried by another character
     ownerIds: [...new Set([...idsOf(holder), ...idsOf(panOwner)])],

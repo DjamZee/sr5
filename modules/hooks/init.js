@@ -135,6 +135,9 @@ import {
 import {
   SR5PanCrown
 } from "../canvas/pan-crown/pan-crown.js"
+import {
+  SR5PanCrownLayer
+} from "../canvas/pan-crown/pan-crown-layer.js"
 
 // Item DataModels
 import {
@@ -373,7 +376,7 @@ export async function sr5HookInit() {
     revertMentorConversion,
     // GM macro: switch on the always active powers of the sheets made before (SR5 p. 396, H39)
     activateAutomaticPowers,
-    // The crown of a PAN (lot 1: the graph and what the observer sees of it, nothing drawn yet)
+    // The crown of a PAN (lot 1: the graph and what the observer sees of it; lot 2: open and close it)
     panCrown: SR5PanCrown,
   }
 
@@ -441,6 +444,10 @@ export async function sr5HookInit() {
   CONFIG.ui.combat = SR5CombatTracker
   CONFIG.ui.items = SR5ItemDirectory
   CONFIG.Token.objectClass = SR5Token
+  // The crowns of PANs: a layer of their own, above the tokens and under the HTML HUD (couronne du PAN, lot 2)
+  CONFIG.Canvas.layers.sr5PanCrown = {
+    layerClass: SR5PanCrownLayer, group: "interface"
+  }
   SRVision.registerVisionModes()
 
   // ACTIVATE HOOKS DEBUG

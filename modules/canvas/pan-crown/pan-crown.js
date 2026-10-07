@@ -1,6 +1,6 @@
-// The crown of a PAN in Foundry (couronne du PAN). Lot 1: the public API only, game.sr5.panCrown.getGraph(), which
-// reads the graph (pan-graph.js) and what the observer sees of it (pan-visibility.js). Nothing is drawn yet, and
-// nothing is written.
+// The crown of a PAN in Foundry (couronne du PAN). Lot 1: the public API, game.sr5.panCrown.getGraph(), which
+// reads the graph (pan-graph.js) and what the observer sees of it (pan-visibility.js). Lot 2: open and close a
+// crown, drawn by the layer of pan-crown-layer.js. Nothing is written.
 
 import {
   buildPanGraph, hasAntenna, idsOf
@@ -47,7 +47,7 @@ function tokenOfActor(actor){
 
 // The token that carries a node: the drone's own token, the crown's token for its own devices, the token of the
 // character who carries a slave lent to the PAN
-function tokenOfNode(node, crown){
+export function tokenOfNode(node, crown){
   const ids = node.droneId ? [node.droneId] : node.holderIds
   if (crown.token && idsOf(crown.actor).some(id => ids.includes(id))) return crown.token
   return canvas?.tokens?.placeables?.find(t => t.actor && idsOf(t.actor).some(id => ids.includes(id))) ?? null
@@ -138,6 +138,16 @@ export function getGraph(subject, options = {
   return graph
 }
 
+// The token placeable of a subject, for the layer (lot 2)
+function tokenOf(subject){
+  return resolveSubject(subject).token
+}
+
 export const SR5PanCrown = {
   getGraph,
+  // Lot 2: open and close the crown of a token on the canvas (layer pan-crown-layer.js)
+  toggle: subject => canvas?.sr5PanCrown?.toggle(tokenOf(subject)),
+  open: subject => canvas?.sr5PanCrown?.open(tokenOf(subject)),
+  close: subject => canvas?.sr5PanCrown?.close(tokenOf(subject)),
+  isOpen: subject => !!canvas?.sr5PanCrown?.isOpen(tokenOf(subject)),
 }

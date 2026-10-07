@@ -36,6 +36,7 @@ export default class SR5TokenHud extends foundry.applications.hud.TokenHUD {
     super._onRender(context, options)
     this.#dressControlIcons()
     this.#addStorageButton()
+    this.#addPanCrownButton()
     SR5SharedVision.addHudButton(this)
     SR5Pickpocket.addHudButton(this)
     //Opened on someone else's token to pick his pocket: nothing else of his is the user's to touch
@@ -87,5 +88,32 @@ export default class SR5TokenHud extends foundry.applications.hud.TokenHUD {
       this.document?.actor?.sheet?.render(true)
     })
     middle.appendChild(button)
+  }
+
+  /**
+   * Open and close the crown of the token's PAN (couronne du PAN, lot 2).
+   * A storage on the ground has no PAN.
+   */
+  #addPanCrownButton() {
+    const token = this.object
+    const layer = canvas?.sr5PanCrown
+    if (!token?.actor || !layer || token.actor.type === "actorStorage") return
+
+    const column = this.element?.querySelector(".col.right")
+    if (!column || column.querySelector(".sr-hud-pan")) return
+
+    const button = document.createElement("button")
+    button.type = "button"
+    button.className = "control-icon sr-hud-pan"
+    button.classList.toggle("active", layer.isOpen(token))
+    button.dataset.tooltip = game.i18n.localize("SR5.HUD.PanCrown")
+    button.setAttribute("aria-label", button.dataset.tooltip)
+    button.textContent = "PAN"
+    button.addEventListener("click", async event => {
+      event.preventDefault()
+      event.stopPropagation()
+      button.classList.toggle("active", await layer.toggle(token))
+    })
+    column.appendChild(button)
   }
 }
