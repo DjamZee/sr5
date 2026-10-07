@@ -2781,6 +2781,12 @@ SR5.WeaponMountSize = {
   light                   : "SR5.VEHICLE_WeaponMountSize_L",
   standard                : "SR5.VEHICLE_WeaponMountSize_S",
   heavy                   : "SR5.VEHICLE_WeaponMountSize_H",
+  //The drone mounts (R5 p. 128), counted under the Modification Points only (drone-mod-points.js)
+  micro                   : "SR5.VEHICLE_WeaponMountSize_Micro",
+  mini                    : "SR5.VEHICLE_WeaponMountSize_Mini",
+  small                   : "SR5.VEHICLE_WeaponMountSize_Small",
+  large                   : "SR5.VEHICLE_WeaponMountSize_Large",
+  huge                    : "SR5.VEHICLE_WeaponMountSize_Huge",
 }
 
 // Weapon Mount : Visibility

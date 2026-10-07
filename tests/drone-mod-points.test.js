@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 import {
   usesModPoints, attributeChange, modPointsDemand, modPointsOf, modPointsUsage, modPointsRefusal, modPointsPrice,
-  armorOverload, attributeCap, modPointsLines
+  armorOverload, attributeCap, modPointsLines, weaponMountPoints
 } from '../modules/system/drone-mod-points.js'
 import {
   dealerPointsGauge, buildPointsRefusal
@@ -207,5 +207,36 @@ describe('Dealership under the points (R5 p. 126-128)', () => {
     expect(buildPointsRefusal(drone, [pointsMod(3)], upgrade('speed', 2))).toEqual({
       needed: 1, free: 0
     })
+  })
+})
+
+// A weapon mount as utilityItem._handleWeaponMounted leaves it on a vehicle: its slots set by the vehicle size
+const mount = (size, visibility = 'external', slots = 4) => ({
+  system: {
+    isActive: true, isWeaponMounted: true, weaponMount: {
+      size, visibility, flexibility: 'turret', control: 'remote'
+    }, slots: {
+      value: slots
+    }
+  }
+})
+
+describe('Weapon mounts under the Modification Points (R5 p. 128)', () => {
+  it('cost the drone table, not the vehicle slots', () => {
+    expect(['micro', 'mini', 'small', 'standard', 'large', 'huge', 'heavy'].map(size => modPointsOf(mount(size))))
+      .toEqual([0, 1, 2, 3, 4, 5, 6])
+    expect(modPointsOf(mount('heavy', 'external', 4))).toBe(6)
+  })
+  it('add 1 for a pop-up mount (internal or concealed), nothing for the flexibility or the control', () => {
+    expect(modPointsOf(mount('standard', 'internal', 8))).toBe(4)
+    expect(modPointsOf(mount('heavy', 'concealed', 12))).toBe(7)
+  })
+  it('read the vehicle light mount as the Petite', () => {
+    expect(weaponMountPoints(mount('light').system)).toBe(2)
+  })
+  it('leave a mount without a size, and any other mod, to its own slots', () => {
+    expect(modPointsOf(mount('', 'external', 1))).toBe(1)
+    expect(weaponMountPoints(pointsMod(2))).toBeNull()
+    expect(modPointsUsage(drone, [mount('heavy'), pointsMod(1)]).used).toBe(7)
   })
 })

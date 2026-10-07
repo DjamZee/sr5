@@ -84,7 +84,24 @@ export function attributeChange(system) {
   } : null
 }
 
-/** What one mod asks of the drone: an attribute raised (in steps, Armor by 3), an attribute lowered, or points */
+/** The points of a weapon mount on a drone, table "Monture d'armes" (R5 p. 128): Micro 0, Mini 1, Petite 2, Standard 3,
+ *  Grande 4, Énorme 5, Lourde 6. "Une monture standard escamotable coûtera 4 PM au lieu de 3": a hidden mount (internal
+ *  or concealed) is the pop-up one, +1; the ejectable panels cost no point, and the book gives none to the flexibility or
+ *  the control. The vehicle "light" mount is not in the drone table: read as the Petite (2). The slots of the vehicles
+ *  (utilityItem._handleWeaponMounted) are not touched; null when the size is unknown, the mod's own slots then stand */
+export const WEAPON_MOUNT_POINTS = {
+  micro: 0, mini: 1, small: 2, light: 2, standard: 3, large: 4, huge: 5, heavy: 6
+}
+export function weaponMountPoints(system) {
+  const s = sys(system)
+  if (!s.isWeaponMounted) return null
+  const points = WEAPON_MOUNT_POINTS[s.weaponMount?.size]
+  if (points === undefined) return null
+  return points + (["internal", "concealed"].includes(s.weaponMount?.visibility) ? 1 : 0)
+}
+
+/** What one mod asks of the drone: an attribute raised (in steps, Armor by 3), an attribute lowered, or points (a weapon
+ *  mount by the drone table, any other mod its slots) */
 export function modPointsDemand(system) {
   const change = attributeChange(system)
   if (change && change.amount > 0 && change.key !== "body") return {
@@ -94,7 +111,7 @@ export function modPointsDemand(system) {
     kind: "downgrade", key: change.key, amount: -change.amount
   }
   return {
-    kind: "points", points: whole(sys(system).slots?.value)
+    kind: "points", points: weaponMountPoints(system) ?? whole(sys(system).slots?.value)
   }
 }
 
