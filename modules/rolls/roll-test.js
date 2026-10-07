@@ -1,4 +1,7 @@
 import {
+  refuseByRule
+} from "../system/rule-locks.js"
+import {
   SR5_SystemHelpers 
 } from "../system/utilitySystem.js"
 import {
@@ -455,10 +458,10 @@ export class SR5_RollTest {
   static async secondeChance(message, actor) {
     let messageData = message.flags.sr5data
     //GM ruling (05/10): during an extended test, Push the limit is the only use of Edge
-    if (SR5_RollTest.isExtendedTest(messageData)) {
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_EdgeExtendedTestPushOnly"))
-      return false
-    }
+    //B13: refused by the "actions" rule lock family; lifted, Second Chance goes and the gamemaster is whispered
+    if (SR5_RollTest.isExtendedTest(messageData) && refuseByRule("actions", "SR5.WARN_EdgeExtendedTestPushOnly", null, {
+      actor
+    })) return false
 
     //Re roll failed dices
     let rollDices = messageData.roll.rollDices
@@ -504,10 +507,11 @@ export class SR5_RollTest {
     let messageData = message.flags.sr5data
     let dicePool
     //GM ruling (05/10): Edge joins the starting pool of an extended test, once: not on a later roll
-    if (SR5_RollTest.isExtendedTest(messageData) && (messageData.test.extended?.roll > 1 || messageData.edge.hasUsedPushTheLimit)) {
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_EdgeExtendedTestStartOnly"))
-      return false
-    }
+    //B13: refused by the "actions" rule lock family; lifted, the push goes and the gamemaster is whispered
+    if (SR5_RollTest.isExtendedTest(messageData) && (messageData.test.extended?.roll > 1 || messageData.edge.hasUsedPushTheLimit) &&
+      refuseByRule("actions", "SR5.WARN_EdgeExtendedTestStartOnly", null, {
+        actor
+      })) return false
 
     //A spirit with no Edge left pushes the limit with its summoner's (SR5 p. 306)
     const edgeActor = await SR5_RollTestHelper.determineEdgeActor(actor)

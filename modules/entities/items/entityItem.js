@@ -1,4 +1,7 @@
 import {
+  refuseByRule
+} from "../../system/rule-locks.js"
+import {
   hasWeaponTrait, capBallReloadStep, CAP_BALL_STEPS, firearmCommandIsFree
 } from './weaponTraits.js'
 import {
@@ -701,12 +704,14 @@ export class SR5Item extends Item {
           break
       }
 
-      //chek if actor has enought action left
-      for (let a of action){
-        if (a.value > actor.system.specialProperties.actions[a.type].current) return ui.notifications.warn(game.i18n.format('SR5.WARN_NotEnoughAction', {
-          value: a.value, action: game.i18n.localize(SR5.actionTypes[a.type])
-        }))
-      }
+      //chek if actor has enought action left. B13: it refused in every world, whatever sr5BlockMissingActions said,
+      //so it follows the "actions" rule lock family, checked in every world, and not its "missing actions" box
+      let short = action.find(a => a.value > actor.system.specialProperties.actions[a.type].current)
+      if (short && refuseByRule("actions", 'SR5.WARN_NotEnoughAction', {
+        value: short.value, action: game.i18n.localize(SR5.actionTypes[short.type])
+      }, {
+        actor
+      })) return
     }
 
     if (isCapBall) {

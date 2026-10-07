@@ -1,4 +1,7 @@
 import {
+  refuseByRule
+} from "../system/rule-locks.js"
+import {
   halveCalledShot, firearmCommandIsFree
 } from '../entities/items/weaponTraits.js'
 import {
@@ -189,20 +192,24 @@ export default class SR5_RollDialog {
     let combatant = SR5Combat.getCombatantFromActor(actor)
     if (!combatant || combatant.initiative === null || combatant.initiative === undefined) return true
     if (combatant.initiative > cost) return true
-    ui.notifications.warn(game.i18n.format("SR5.WARN_NotEnoughInitiative", {
+    // B13: the "actions" rule lock family lifted, the interruption goes and the gamemaster is whispered
+    return !refuseByRule("actions", "SR5.WARN_NotEnoughInitiative", {
       actor: actor.name, initiative: combatant.initiative, cost: cost
-    }))
-    return false
+    }, {
+      actor
+    })
   }
 
   // SR5 p. 191-192: block needs Unarmed Combat and parry the weapon's skill; dodge is open to anyone
   static hasActiveDefenseSkill(actor, defenseMode){
     let skillKey = SR5_RollDialog.activeDefenseSkills[defenseMode]
     if (!skillKey || !actor || (actor.system?.skills?.[skillKey]?.rating.value || 0) > 0) return true
-    ui.notifications.warn(game.i18n.format("SR5.WARN_ActiveDefenseNoSkill", {
+    // B13: the "actions" rule lock family lifted, the parry or block goes and the gamemaster is whispered
+    return !refuseByRule("actions", "SR5.WARN_ActiveDefenseNoSkill", {
       actor: actor.name, skill: game.i18n.localize(SR5.skills[skillKey])
-    }))
-    return false
+    }, {
+      actor
+    })
   }
 
   static activeDefenseSkills = {
