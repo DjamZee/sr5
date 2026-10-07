@@ -15,6 +15,9 @@ import {
 import {
   tacnetOfferFor
 } from "./tacnet.js"
+import {
+  targetDeviceBonus, targetDeviceOffer
+} from "../rolls/roll-helpers/electronic-warfare.js"
 
 export const INDIRECT_DISPLAY_SETTING = "sr5IndirectEffectDisplay"
 
@@ -33,6 +36,23 @@ export function registerIndirectEffectSetting() {
       hidden: "SR5.SETTINGS_IndirectDisplayHidden",
     },
   })
+}
+
+// The slaves of a rigger's PAN: the uuids its active master devices hold (pan-graph.js)
+function masterContentOf(riggerId){
+  const rigger = game.actors?.get(riggerId) ?? game.scenes?.viewed?.tokens?.get(riggerId)?.actor
+  if (!rigger) return []
+  return rigger.items.filter(i => i.type === "itemDevice" && i.system.isActive).flatMap(i => (Array.isArray(i.system.pan?.content) ? i.system.pan.content : []).map(e => e?.uuid))
+}
+
+function targetDeviceOfferFor(rollData, actor, targetActor){
+  if (!actor || !targetActor || targetActor === actor) return null
+  const bonus = targetDeviceBonus(targetActor.items, actor, {
+    weaponUuid: rollData.owner?.itemUuid, masterContentOf
+  })
+  return targetDeviceOffer(bonus, game.i18n.format("SR5.TargetDeviceBonus", {
+    name: bonus?.ownerName ?? ""
+  }))
 }
 
 function rollerToken(actor){
@@ -80,6 +100,9 @@ export function addIndirectEffects(rollData, actor){
   if (blindFire) offers.push(blindFire)
   const tacnet = tacnetOfferFor(rollData, actor)
   if (tacnet) offers.push(tacnet)
+  //A device a rigger tracks for his slaved attackers (Rigger 5.0 p. 34)
+  const tracked = kinds.has("attack") ? targetDeviceOfferFor(rollData, actor, targetToken?.actor) : null
+  if (tracked) offers.push(tracked)
   for (let offer of offers) applyOffer(rollData, offer)
   rollData.situational = (rollData.situational || []).concat(offers)
 }
