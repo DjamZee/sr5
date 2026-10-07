@@ -215,13 +215,21 @@ describe('sprite sheet', () => {
 })
 
 describe('drone sheet', () => {
-  it('refuses a melee weapon and what a drone cannot carry', async () => {
+  it('refuses what a drone cannot carry', async () => {
+    await drop(sheetOf(SR5DroneSheet), dropped('itemQuality'))
+    await drop(sheetOf(SR5DroneSheet), dropped('itemSpell'))
+    expect(info).toHaveBeenCalledTimes(2)
+    expect(created).toEqual([])
+  })
+
+  // Rigger 5.0 p. 129, 182: a melee weapon mounted or in a drone arm; p. 154-156: vehicle equipment
+  it('takes a melee weapon and gear', async () => {
     await drop(sheetOf(SR5DroneSheet), dropped('itemWeapon', {
       category: 'meleeWeapon'
     }))
-    await drop(sheetOf(SR5DroneSheet), dropped('itemQuality'))
-    expect(info).toHaveBeenCalledTimes(2)
-    expect(created).toEqual([])
+    await drop(sheetOf(SR5DroneSheet), dropped('itemGear'))
+    expect(info).not.toHaveBeenCalled()
+    expect(created.length).toBe(2)
   })
 
   // droneSheet.js read i.system.type instead of i.type: every ranged weapon dropped came switched on
