@@ -2,7 +2,8 @@
 // reads the graph (pan-graph.js) and what the observer sees of it (pan-visibility.js). Lot 2: open and close a
 // crown, drawn by the layer of pan-crown-layer.js. Lot 3: the world setting "the gamemaster decides", the
 // gamemaster's reveal device by device (flags.sr5.panReveal, written by the gamemaster alone, for the whole table:
-// Q4), the observer's own marks, and what the players do not see, for the gamemaster.
+// Q4), the observer's own marks, and what the players do not see, for the gamemaster. Lot 4: the radial menu of an
+// icon (pan-radial-menu.js), which also holds the gamemaster's reveal.
 
 import {
   buildPanGraph, hasAntenna, idsOf
@@ -13,6 +14,9 @@ import {
 import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
+import {
+  rollMatrixActionOn
+} from "./pan-radial-menu.js"
 
 // A token placeable, a TokenDocument, an Actor, or the id of a token of the canvas or of a world actor
 function resolveSubject(subject){
@@ -78,6 +82,12 @@ function spottedBy(actor){
   const intel = actor?.flags?.sr5?.matrixIntel ?? {
   }
   return new Set(Object.keys(intel).filter(uuid => intel[uuid]?.spotted))
+}
+
+/** The user who looks at the crowns (Q3: her controlled token, else her assigned character), for the radial menu */
+export function currentViewer(){
+  return viewerFrom({
+  })
 }
 
 function viewerFrom(options){
@@ -208,67 +218,6 @@ export async function setPanReveal(node, revealed){
   }
 }
 
-let gmMenu = null
-
-function closeGmMenu(){
-  gmMenu?.remove()
-  gmMenu = null
-  document.removeEventListener("pointerdown", onPointerOutside, true)
-  document.removeEventListener("keydown", onEscape, true)
-}
-
-function onPointerOutside(event){
-  if (gmMenu && !gmMenu.contains(event.target)) closeGmMenu()
-}
-
-function onEscape(event){
-  if (event.key !== "Escape" || !gmMenu) return
-  // Escape closes this menu only, not Foundry's main menu as well
-  event.stopPropagation()
-  event.preventDefault()
-  closeGmMenu()
-}
-
-/**
- * The gamemaster's small menu on an icon of a crown (lot 3, provisional: the radial menu of lot 4 takes it over):
- * reveal the device to the whole table, or hide it again.
- * @param {Object} data   the payload of the hook sr5.panCrownClickIcon: {token, node, point: {x, y} on the screen}
- */
-export function openGmMenu({
-  node, point
-} = {
-}){
-  closeGmMenu()
-  if (!game.user?.isGM || !node) return
-  const menu = document.createElement("nav")
-  menu.className = "sr5-pan-gm-menu"
-  menu.style.cssText = `position: fixed; left: ${Math.round(point?.x ?? 0) + 8}px; top: ${Math.round(point?.y ?? 0) + 8}px;` +
-    "z-index: 1000; display: flex; flex-direction: column; gap: 2px; padding: 4px; min-width: 12rem;" +
-    "background: rgba(4, 19, 17, 0.95); border: 1px solid #39f3b1; border-radius: 4px; color: #bfffee;"
-  const title = document.createElement("strong")
-  title.textContent = node.name
-  title.style.cssText = "padding: 2px 4px; border-bottom: 1px solid #39f3b1;"
-  menu.appendChild(title)
-  if (node.hiddenFromPlayers !== undefined) {
-    const state = document.createElement("span")
-    state.textContent = game.i18n.localize(node.hiddenFromPlayers ? "SR5.PanCrownHiddenFromPlayers" : "SR5.PanCrownSeenByPlayers")
-    state.style.cssText = "padding: 2px 4px; font-size: 0.85em; opacity: 0.8;"
-    menu.appendChild(state)
-  }
-  const button = document.createElement("button")
-  button.type = "button"
-  button.textContent = game.i18n.localize(node.revealed ? "SR5.PanCrownHide" : "SR5.PanCrownReveal")
-  button.addEventListener("click", async () => {
-    closeGmMenu()
-    await setPanReveal(node, !node.revealed)
-  })
-  menu.appendChild(button)
-  document.body.appendChild(menu)
-  gmMenu = menu
-  document.addEventListener("pointerdown", onPointerOutside, true)
-  document.addEventListener("keydown", onEscape, true)
-}
-
 // The token placeable of a subject, for the layer (lot 2)
 function tokenOf(subject){
   return resolveSubject(subject).token
@@ -283,4 +232,6 @@ export const SR5PanCrown = {
   isOpen: subject => !!canvas?.sr5PanCrown?.isOpen(tokenOf(subject)),
   // Lot 3: the gamemaster reveals a node of getGraph to the whole table, or hides it again
   setReveal: setPanReveal,
+  // Lot 4: launch a Matrix action of the system against a device chosen on a crown, {targetTokenId, targetUuid}
+  rollMatrixActionOn,
 }

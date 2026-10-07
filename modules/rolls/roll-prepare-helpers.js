@@ -104,6 +104,22 @@ export class SR5_PrepareRollHelper {
     return rollData
   }
 
+  /**
+   * The target chosen on the crown of a PAN (lot 4, Q6): its token, and the device aimed at when it is not the
+   * persona's own (the defender then has nothing to choose: chooseMatrixDefender is skipped)
+   * @param {Object} rollData
+   * @param {Object} panTarget  {tokenId, itemUuid}
+   */
+  static getPanTargetData(rollData, panTarget){
+    const token = canvas?.tokens?.get(panTarget?.tokenId)
+    if (!token?.actor) return rollData
+    rollData.target.hasTarget = true
+    rollData.target.actorId = token.actor.isToken ? token.actor.token.id : token.actor.id
+    rollData.target.itemUuid = panTarget.itemUuid ?? null
+    rollData.target.panPicked = true
+    return rollData
+  }
+
   //Add dicepool modifier
   static addDicepoolModifier(rollData, modifier, modifierValue, modifierLabel){
     rollData.dicePool.modifiers.push({

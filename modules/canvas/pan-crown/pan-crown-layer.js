@@ -9,8 +9,11 @@
 // animation of a move: the crown follows the token.
 
 import {
-  getGraph, openGmMenu, tokenOfNode
+  getGraph, tokenOfNode
 } from "./pan-crown.js"
+import {
+  openRadialMenu
+} from "./pan-radial-menu.js"
 import {
   crownAngle, dashesOf, layoutCrown
 } from "./pan-layout.js"
@@ -360,8 +363,7 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     return marks
   }
 
-  // Lot 2 proves that the click reaches the right icon; lot 3 opens the gamemaster's reveal menu from the hook;
-  // lot 4 opens the radial menu from here
+  // Lot 2 proves that the click reaches the right icon; the hook opens the radial menu of lot 4
   #onClickIcon(crown, node, event){
     this.lastClick = {
       tokenId: crown.token.id, uuid: node.uuid, name: node.name, time: Date.now()
@@ -400,8 +402,6 @@ export function registerPanCrownHooks(){
   for (const hook of ["updateItem", "createItem", "deleteItem", "updateActor", "controlToken", "updateUser", "createToken"]){
     Hooks.on(hook, () => layer()?.refresh())
   }
-  // Lot 3: the gamemaster's click on an icon opens the reveal menu
-  Hooks.on("sr5.panCrownClickIcon", data => {
-    if (game.user?.isGM) openGmMenu(data)
-  })
+  // Lot 4: a click on an icon opens its radial menu, for everyone (the gamemaster's reveal is in it)
+  Hooks.on("sr5.panCrownClickIcon", data => openRadialMenu(data))
 }

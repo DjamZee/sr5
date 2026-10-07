@@ -1,0 +1,243 @@
+// The radial menu of a crown (couronne du PAN, lot 4, decision 5 of DjamZ): a click on an icon lays the Matrix actions
+// possible on that device around it, greyed out with their reason when marks are missing; a click on one launches the
+// system's own Matrix action test, the target and the device already chosen by the attacker (Q6). The owner switches
+// the device's mode (SR5 p. 236, Q7) and slaves it or frees it; the gamemaster keeps "Reveal / Hide" (lot 3).
+
+import {
+  SR5
+} from "../../config.js"
+import {
+  aimedItemUuid, menuEntries, modeSwitchCost, modeUpdate, ownModeOf
+} from "./pan-actions.js"
+import {
+  currentViewer, getGraph, setPanReveal, tokenOfNode
+} from "./pan-crown.js"
+import {
+  canTryMatrixAction
+} from "../../rolls/roll-prepare-case/rollData-MatrixAction.js"
+import {
+  SR5_ActorHelper
+} from "../../entities/actors/entityActor-helpers.js"
+import {
+  SR5Combat
+} from "../../system/srcombat.js"
+import {
+  SR5_SocketHandler
+} from "../../socket.js"
+
+const MODE_LABELS = {
+  active: "SR5.PanMenuModeActive", silent: "SR5.PanMenuModeSilent", offline: "SR5.PanMenuModeOffline"
+}
+const REASON_LABELS = {
+  marks: "SR5.PanMenuReasonMarks",
+  owner: "SR5.PanMenuReasonOwner",
+  noAntenna: "SR5.PanMenuReasonNoAntenna",
+  unknown: "SR5.PanMenuReasonUnknown",
+  cannotTry: "SR5.PanMenuReasonCannotTry",
+  varies: "SR5.PanMenuReasonVaries",
+}
+
+/**
+ * Launch a Matrix action of the system against a device chosen on a crown (lot 4, Q6). The token is targeted for
+ * the user, as a click on it would, so that every check of the existing test reads it; the device goes in the card's
+ * target.itemUuid and the defender is not asked to choose it again.
+ * @param {Object} actor           the attacker
+ * @param {String} actionKey       a key of matrix.actions
+ * @param {Object} target
+ * @param {String} target.targetTokenId  the token that carries the device
+ * @param {String} [target.targetUuid]   the device aimed at; none for the persona
+ */
+export async function rollMatrixActionOn(actor, actionKey, {
+  targetTokenId, targetUuid = null
+} = {
+}){
+  const token = canvas?.tokens?.get(targetTokenId)
+  if (!actor || !token) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_PanTargetMissing"))
+  token.setTarget(true, {
+    releaseOthers: true, groupSelection: false
+  })
+  return actor.rollTest("matrixAction", actionKey, {
+    panTarget: {
+      tokenId: token.id, itemUuid: targetUuid
+    }
+  })
+}
+
+let openMenu = null
+
+function closeMenu(){
+  openMenu?.remove()
+  openMenu = null
+  document.removeEventListener("pointerdown", onPointerOutside, true)
+  document.removeEventListener("keydown", onEscape, true)
+}
+
+function onPointerOutside(event){
+  if (openMenu && !openMenu.contains(event.target)) closeMenu()
+}
+
+function onEscape(event){
+  if (event.key !== "Escape" || !openMenu) return
+  // Escape closes this menu only, not Foundry's main menu as well
+  event.stopPropagation()
+  event.preventDefault()
+  closeMenu()
+}
+
+function reasonOf(entry){
+  if (!entry.reason) return ""
+  const key = entry.key === "spoofCommand" && entry.reason === "marks" ? "SR5.PanMenuReasonSpoof" : REASON_LABELS[entry.reason]
+  return game.i18n.format(key, {
+    needed: entry.needed, marks: entry.marks
+  })
+}
+
+function button(label, {
+  tooltip = "", disabled = false, current = false, onClick
+} = {
+}){
+  const element = document.createElement("button")
+  element.type = "button"
+  element.className = "sr5-pan-radial-entry"
+  if (current) element.classList.add("current")
+  element.textContent = label
+  if (tooltip) element.dataset.tooltip = tooltip
+  // Greyed out, but its reason still shows on hover
+  if (disabled) element.setAttribute("aria-disabled", "true")
+  else element.addEventListener("click", async event => {
+    event.preventDefault()
+    closeMenu()
+    await onClick?.()
+  })
+  return element
+}
+
+// The entries laid on a ring around the icon, the first one on top
+function layOut(menu, entries){
+  const count = entries.length
+  const radius = Math.max(80, count * 13)
+  entries.forEach((entry, i) => {
+    const angle = -Math.PI / 2 + i * 2 * Math.PI / count
+    entry.style.left = `${Math.round(Math.cos(angle) * radius)}px`
+    entry.style.top = `${Math.round(Math.sin(angle) * radius)}px`
+    menu.appendChild(entry)
+  })
+}
+
+/**
+ * Open the radial menu of an icon.
+ * @param {Object} data   the payload of the hook sr5.panCrownClickIcon: {token, node, point: {x, y} on the screen}
+ */
+export function openRadialMenu({
+  token, node: clicked, point
+} = {
+}){
+  closeMenu()
+  if (!token || !clicked) return
+  const viewer = currentViewer()
+  const graph = getGraph(token)
+  const node = graph?.nodes.find(n => n.uuid === clicked.uuid)
+  if (!node || (!node.visibility?.visible && !game.user?.isGM)) return
+  const entries = menuEntries(node, graph, viewer, {
+    canTry: canTryMatrixAction
+  })
+
+  const buttons = []
+  for (const action of entries.actions){
+    buttons.push(button(game.i18n.localize(SR5.matrixRolledActions[action.key] ?? action.key), {
+      tooltip: reasonOf(action),
+      disabled: !action.enabled,
+      onClick: () => rollMatrixActionOn(viewer.actor, action.key, {
+        targetTokenId: tokenOfNode(node, {
+          actor: token.actor, token
+        })?.id,
+        targetUuid: aimedItemUuid(node, graph),
+      }),
+    }))
+  }
+  for (const mode of entries.modes){
+    buttons.push(button(game.i18n.localize(MODE_LABELS[mode.mode]), {
+      current: mode.current, disabled: mode.current, onClick: () => switchMode(node, mode.mode, graph)
+    }))
+  }
+  if (entries.slave) buttons.push(button(entries.slave.action === "free" ?
+    game.i18n.localize("SR5.PanMenuUnslave") :
+    game.i18n.format("SR5.PanMenuSlave", {
+      master: graph.nodes.find(n => n.uuid === graph.master)?.name ?? ""
+    }), {
+    onClick: () => entries.slave.action === "free" ? freeFromPan(node, graph) : slaveToPan(node, graph)
+  }))
+  // The gamemaster's reveal (lot 3), for the whole table
+  if (game.user?.isGM) buttons.push(button(game.i18n.localize(node.revealed ? "SR5.PanCrownHide" : "SR5.PanCrownReveal"), {
+    tooltip: node.hiddenFromPlayers === undefined ? "" : game.i18n.localize(node.hiddenFromPlayers ? "SR5.PanCrownHiddenFromPlayers" : "SR5.PanCrownSeenByPlayers"),
+    onClick: () => setPanReveal(node, !node.revealed),
+  }))
+
+  const menu = document.createElement("nav")
+  menu.className = "sr5-pan-radial"
+  menu.style.left = `${Math.round(point?.x ?? 0)}px`
+  menu.style.top = `${Math.round(point?.y ?? 0)}px`
+  const center = document.createElement("strong")
+  center.className = "sr5-pan-radial-center"
+  center.textContent = node.name
+  menu.appendChild(center)
+  if (!buttons.length) {
+    const empty = document.createElement("span")
+    empty.className = "sr5-pan-radial-empty"
+    empty.textContent = game.i18n.localize("SR5.PanMenuNoViewer")
+    buttons.push(empty)
+  }
+  layOut(menu, buttons)
+  document.body.appendChild(menu)
+  openMenu = menu
+  document.addEventListener("pointerdown", onPointerOutside, true)
+  document.addEventListener("keydown", onEscape, true)
+}
+
+/**
+ * The owner switches a device's mode (SR5 p. 236: silent is a simple action, Q7; the wireless switch costs what it
+ * costs on the sheet). The master's silent mode is its user's, the box of the sheet (system.matrix.runningSilent).
+ */
+export async function switchMode(node, mode, graph){
+  const item = globalThis.fromUuidSync?.(node.uuid) ?? null
+  const holder = item?.parent ?? null
+  if (!item || !holder?.isOwner) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_PanNotOwner"))
+  const from = ownModeOf(node)
+  const actions = modeSwitchCost(from, mode, turningOn => SR5_ActorHelper.wirelessSwitchActionType(turningOn,
+    game.settings.get("sr5", "sr5WifiRequiresDNI"), holder.system?.hasDNI))
+  if (!SR5Combat.hasActionsLeft(holder, actions)) return
+  if (node.kind === "master" || node.uuid === graph?.master) {
+    await holder.update({
+      "system.matrix.runningSilent": mode === "silent"
+    })
+  } else await item.update(modeUpdate(mode))
+  if (actions.length) await SR5Combat.changeActionInCombat(holder.isToken ? holder.token.id : holder.id, actions)
+}
+
+// The PAN's owner takes a slave out, or its holder takes it back: the sheet's own path (entityActor-helpers.js)
+async function freeFromPan(node, graph){
+  const index = masterItemOf(graph)?.system?.pan?.content?.findIndex(p => p.uuid === node.uuid)
+  const data = {
+    targetItem: node.uuid, actorId: graph.owner.id, index: index >= 0 ? index : null
+  }
+  if (game.user?.isGM) return SR5_ActorHelper.deleteItemFromPan(data.targetItem, data.actorId, data.index)
+  return SR5_SocketHandler.emitForGM("deleteItemFromPan", data)
+}
+
+// The owner slaves one of her devices to her PAN, within its Device Rating x 3 (SR5 p. 233), the sheet's own path
+async function slaveToPan(node, graph){
+  const pan = masterItemOf(graph)?.system?.pan
+  if (pan && Number(pan.current) >= Number(pan.max)) return void ui.notifications.info(`${graph.owner.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.INFO_PanIsFull")}`)
+  if (game.user?.isGM) return SR5_ActorHelper.addItemtoPan(node.uuid, graph.owner.id)
+  return SR5_SocketHandler.emitForGM("addItemToPan", {
+    targetItem: node.uuid, actorId: graph.owner.id
+  })
+}
+
+function masterItemOf(graph){
+  return graph?.master ? (globalThis.fromUuidSync?.(graph.master) ?? null) : null
+}
+
+export {
+  closeMenu as closeRadialMenu
+}

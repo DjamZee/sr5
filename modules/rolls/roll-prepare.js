@@ -188,7 +188,10 @@ export class SR5_PrepareRollTest {
         rollData = await SR5_GetRollData.martialArtsDefense(rollData, actor, chatData)
         break
       case "matrixAction":
-        if (game.user.targets.size) rollData = await SR5_PrepareRollHelper.getTargetData(rollData)
+        //Launched from the crown of a PAN (lot 4, Q6): the attacker already chose the token (targeted by
+        //rollMatrixActionOn, so that the checks on game.user.targets read it) and the device
+        if (chatData?.panTarget) rollData = SR5_PrepareRollHelper.getPanTargetData(rollData, chatData.panTarget)
+        else if (game.user.targets.size) rollData = await SR5_PrepareRollHelper.getTargetData(rollData)
         rollData = await SR5_GetRollData.matrixAction(rollData, rollKey, actor)
         break
       case "matrixDefense":

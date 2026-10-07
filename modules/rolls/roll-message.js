@@ -357,7 +357,8 @@ export class SR5_RollMessage {
       }
       case "matrixDefense":
         if (!await mayDefend(type, messageId, messageData, actor)) break
-        if ((messageData.test.typeSub === "dataSpike" || 
+        //The attacker chose the device on the crown of the PAN (lot 4, Q6): the defender has nothing left to choose
+        if (!messageData.target?.panPicked && (messageData.test.typeSub === "dataSpike" ||
                     messageData.test.typeSub === "controlDevice" ||
                     messageData.test.typeSub === "formatDevice" ||
                     messageData.test.typeSub === "hackOnTheFly" ||

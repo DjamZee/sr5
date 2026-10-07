@@ -1,0 +1,56 @@
+// Radial menu of a crown of the PAN (couronne du PAN, lot 4): the actions laid on a ring around the clicked icon
+.sr5-pan-radial {
+  position: fixed;
+  z-index: 1000;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  font-size: 0.85rem;
+
+  .sr5-pan-radial-center,
+  .sr5-pan-radial-entry,
+  .sr5-pan-radial-empty {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+    white-space: nowrap;
+    color: #bfffee;
+    background: rgba(4, 19, 17, 0.95);
+    border: 1px solid #39f3b1;
+    border-radius: 1rem;
+    padding: 0.15rem 0.6rem;
+    box-shadow: 0 0 6px rgba(57, 243, 177, 0.45);
+  }
+
+  .sr5-pan-radial-center {
+    left: 0;
+    top: 0;
+    border-radius: 4px;
+    font-weight: bold;
+  }
+
+  .sr5-pan-radial-entry {
+    width: auto;
+    min-height: 1.6rem;
+    line-height: 1.2;
+    cursor: pointer;
+
+    &:hover:not([aria-disabled="true"]),
+    &:focus-visible {
+      background: #0c3b31;
+      color: #ffffff;
+    }
+
+    &.current {
+      border-style: dashed;
+    }
+
+    // Greyed out: the reason shows on hover
+    &[aria-disabled="true"] {
+      cursor: help;
+      color: #7a8f8a;
+      border-color: #4b5b57;
+      box-shadow: none;
+    }
+  }
+}
