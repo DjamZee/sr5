@@ -128,6 +128,14 @@ describe("the end of creation on a prepared character", () => {
     }, {
     }, "gm")
     expect(store[IMPLANT_REGISTER]["Actor.pc.Item.eyes"][PEAK_COST]).toBe(0.5)
+    // The peaks arrived: the character is prepared again with them, and takes 0.5, not the old 1.0
+    Object.defineProperty(actor, "reset", {
+      value: prepare, configurable: true
+    })
+    await hooks.updateSetting({
+      key: `sr5.${IMPLANT_REGISTER}`
+    })
+    expect(eyes.system.essenceCost.value).toBe(0.5)
   })
 
   it("keeps the peak at its creation cost when nothing older is left", async () => {
