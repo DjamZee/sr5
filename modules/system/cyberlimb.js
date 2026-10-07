@@ -112,6 +112,19 @@ export function weaponAttribute(attribute, weaponSystem, actor){
   return actor?.system?.attributes?.[attribute]?.augmented?.value ?? 0
 }
 
+// SR5 p. 178: one free point, plus Strength / 3 rounded up
+export const strengthRecoil = strength => 1 + Math.ceil((Number(strength) || 0) / 3)
+
+// The recoil compensation the shooter brings to a weapon: a weapon held by a cyberlimb fires with that limb's Strength
+// (SR5 p. 459), the other sources of the actor's compensation (an effect, a power) kept as they are
+export function weaponRecoilCompensation(weaponSystem, actor){
+  const recoil = actor?.system?.recoilCompensation
+  const value = Number(recoil?.value) || 0
+  const limb = weaponLimb(weaponSystem, actor?.items)
+  if (!limb) return value
+  return value - (Number(recoil?.base) || 0) + strengthRecoil(limbAttributes(limb, actor.items).strength.value)
+}
+
 // A weapon's dice pool modifiers with the actor's Agility swapped for its limb's. New objects: the list shares the
 // actor's skill modifiers. The label stays the attribute's, which the roll dialog matches its boxes against
 export function withLimbAgility(modifiers, agilityLabel, value){

@@ -44,7 +44,7 @@ import {
   redDotSightWorks, scopeVision, nonCumulativeAccessoryAccuracy
 } from "../../entities/items/weapon-accessory-rules.js"
 import {
-  weaponLimb, limbEnhancementNames
+  weaponLimb, limbEnhancementNames, weaponRecoilCompensation
 } from "../../system/cyberlimb.js"
 
 //Add info for weapon Roll
@@ -79,7 +79,8 @@ export default async function weapon(rollData, actor, item){
   }
 
   //Recoil Compensation calculation
-  rollData.combat.recoil.compensationActor = actorData.recoilCompensation.value
+  //Held by a cyberlimb, the weapon fires with the limb's Strength (SR5 p. 178, 459)
+  rollData.combat.recoil.compensationActor = weaponRecoilCompensation(itemData, actor)
   rollData.combat.recoil.compensationWeapon = itemData.recoilCompensation.value
   rollData.combat.recoil.cumulative = actor.getFlag("sr5", "cumulativeRecoil") || 0
   // SR5 p. 179: a mounted weapon gets the vehicle's Body as compensation on top of the weapon's own (updateRecoil sets

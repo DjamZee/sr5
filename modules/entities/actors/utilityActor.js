@@ -102,7 +102,7 @@ import {
   VR_PILOTING_LIMIT_BONUS, controlRigThresholdModifier, dataProcessingCapModifier
 } from "../../system/rigging-rules.js"
 import {
-  isLimbAttributeTarget, hostLimb
+  isLimbAttributeTarget, hostLimb, strengthRecoil
 } from "../../system/cyberlimb.js"
 import {
   modTakesSlots, factorySkipsEffect
@@ -1867,7 +1867,7 @@ export class SR5_CharacterUtility extends Actor {
   // Generate Actors Recoil Compensation
   static updateRecoil(actor) {
     if (actor.type === "actorDrone") actor.system.recoilCompensation.base = actor.system.attributes.body.augmented.value
-    else actor.system.recoilCompensation.base = parseInt(1 + Math.ceil(actor.system.attributes.strength.augmented.value / 3))
+    else actor.system.recoilCompensation.base = strengthRecoil(actor.system.attributes.strength.augmented.value)
 
     SR5_EntityHelpers.updateValue(actor.system.recoilCompensation)
   }

@@ -3,7 +3,7 @@ import {
 } from "vitest"
 import {
   limbAttributes, weaponLimb, weaponAttribute, withLimbAgility, hostLimb, limbEnhancementNames, limbChoices,
-  isLimbAttributeTarget
+  isLimbAttributeTarget, strengthRecoil, weaponRecoilCompensation
 } from "../modules/system/cyberlimb.js"
 import {
   SR5_UtilityItem
@@ -181,6 +181,24 @@ describe("the limb a weapon is held by", () => {
     expect(limbChoices([limb, off, enhancement("e1", "x", "strength", 1)])).toEqual({
       a1: "Bras a1"
     })
+  })
+
+  it("recoil compensation: the limb's Strength for a weapon it holds, the other sources kept (SR5 p. 178, 459)", () => {
+    const str = enhancement("e1", "FOR 3", "strength", 3)
+    const limb = arm("a1", 6, 6, [str])
+    const a = actor([limb, str], 2)
+    // Body Strength 2: 1 + 1, plus an effect worth 1
+    a.system.recoilCompensation = {
+      base: strengthRecoil(2), value: strengthRecoil(2) + 1
+    }
+    expect(weaponRecoilCompensation({
+      heldByLimb: ""
+    }, a)).toBe(3)
+    // Arm Strength 9: 1 + 3, plus the same effect
+    expect(weaponRecoilCompensation({
+      heldByLimb: "a1"
+    }, a)).toBe(5)
+    expect([strengthRecoil(3), strengthRecoil(4), strengthRecoil(0)]).toEqual([2, 3, 1])
   })
 
   it("Strength and Agility: the limb's, or the actor's when held by the body", () => {
