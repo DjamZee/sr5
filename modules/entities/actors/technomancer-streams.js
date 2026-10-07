@@ -111,6 +111,11 @@ export function firewallBonusOfStream(stream, grade){
   return stream === "erisian" ? Math.ceil(Math.max(0, Number(grade) || 0) / 2) : 0
 }
 
+// Apophenian daemon: half the submersion grade, rounded up, added to Sleaze (Kill Code p. 146)
+export function sleazeBonusOfStream(stream, grade){
+  return stream === "apophenian" ? Math.ceil(Math.max(0, Number(grade) || 0) / 2) : 0
+}
+
 /**
  * Cyberadept daemon (Kill Code p. 100): the Resonance lost to cyberware, and to cyberware alone, comes back up to half
  * the submersion grade, rounded up. The Resonance lost is the Essence lost rounded up, as updateSpecialAttributes counts it; the share of the

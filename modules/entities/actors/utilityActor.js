@@ -96,7 +96,7 @@ import {
   actsAsRcc, fixedRccRatings, rccRatings, hasLocalAutosoftRunning, rccAutosoftsForDrone, autosoftFitsDrone, droneAutopilot, localAutosoftRating
 } from "./rcc.js"
 import {
-  streamOf, firewallBonusOfStream, sourcererFreeSustain, resonanceRestoredByStream, machineMindRating
+  streamOf, firewallBonusOfStream, sleazeBonusOfStream, sourcererFreeSustain, resonanceRestoredByStream, machineMindRating
 } from "./technomancer-streams.js"
 import {
   VR_PILOTING_LIMIT_BONUS, controlRigThresholdModifier, dataProcessingCapModifier
@@ -4446,6 +4446,9 @@ export class SR5_CharacterUtility extends Actor {
     if (item.system.type === "livingPersona") {
       const firewallBonus = firewallBonusOfStream(streamOf(actor), matrix.submersionGrade)
       if (firewallBonus) SR5_EntityHelpers.updateModifier(matrixAttributes.firewall, game.i18n.localize('SR5.StreamErisian'), "technomancerStream", firewallBonus, false, false)
+      //Apophenian daemon: the same on Sleaze (Kill Code p. 146)
+      const sleazeBonus = sleazeBonusOfStream(streamOf(actor), matrix.submersionGrade)
+      if (sleazeBonus) SR5_EntityHelpers.updateModifier(matrixAttributes.sleaze, game.i18n.localize('SR5.StreamApophenian'), "technomancerStream", sleazeBonus, false, false)
     }
     SR5_EntityHelpers.updateValue(matrix.noise)
     SR5_EntityHelpers.updateValue(matrix.programsMaximumActive, 0)

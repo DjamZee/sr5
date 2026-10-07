@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 import {
   streamOf, streamFadingReduction, streamSpriteDice, streamSpriteFadingReduction, reducedFading, sourcererFreeSustain,
-  noiseIgnoredByStream, firewallBonusOfStream, resonanceRestoredByStream, personaActsAsRcc, machinistRccRatings,
+  noiseIgnoredByStream, firewallBonusOfStream, sleazeBonusOfStream, resonanceRestoredByStream, personaActsAsRcc, machinistRccRatings,
   machineMindRating, hasHumanMachineInterface, mayJumpIn
 } from '../modules/entities/actors/technomancer-streams.js'
 import {
@@ -142,6 +142,11 @@ describe('the daemons', () => {
     expect(firewallBonusOfStream('erisian', 3)).toBe(2)
     expect(firewallBonusOfStream('erisian', 0)).toBe(0)
     expect(firewallBonusOfStream('morphinae', 3)).toBe(0)
+  })
+  it('Apophenian: half the grade on Sleaze, rounded up (KC p. 146)', () => {
+    expect(sleazeBonusOfStream('apophenian', 3)).toBe(2)
+    expect(sleazeBonusOfStream('apophenian', 0)).toBe(0)
+    expect(sleazeBonusOfStream('erisian', 3)).toBe(0)
   })
   it('Cyberadept: the Resonance lost to cyberware comes back, up to half the grade rounded up (KC p. 100)', () => {
     // 2.5 Essence lost, 2 of them to cyberware: 3 points of Resonance lost, 2 because of the cyberware
