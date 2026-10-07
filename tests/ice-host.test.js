@@ -2,7 +2,7 @@ import {
   describe, it, expect, afterEach, vi
 } from 'vitest'
 import {
-  ICE_HOST_ATTRIBUTES, iceHostAttributes, iceHostOf, icesOfHost
+  ICE_HOST_ATTRIBUTES, iceHostAttributes, iceHostOf, icesOfHost, matrixActorsOf
 } from '../modules/system/ice-host.js'
 
 const host = (uuid, values, deviceType = "host") => ({
@@ -76,5 +76,32 @@ describe('An IC uses the matrix attributes of its host (SR5 p. 249)', () => {
     }), a = ice("Actor.h7"), b = ice("Actor.h3"), c = ice("Actor.h7", "device")
     expect(icesOfHost(h7, [a, b, c, null])).toEqual([a])
     expect(icesOfHost(null, [a])).toEqual([])
+  })
+
+  it('finds the copies of an IC on the unlinked tokens of the scenes too (review 36)', () => {
+    const h7 = host("Actor.h7", {
+    }), base = ice("Actor.h7"), copy = ice("Actor.h7"), linked = ice("Actor.h7")
+    const actors = Object.assign([base], {
+      get: id => id === "base" ? base : id === "pc" ? {
+        type: "actorPc", system: {
+        }
+      } : null
+    })
+    const pcToken = {
+      actorLink: false, actorId: "pc", get actor() {
+        throw new Error("a token that is no IC is not built")
+      }
+    }
+    const scenes = [{
+      tokens: [{
+        actorLink: false, actorId: "base", actor: copy
+      }, {
+        actorLink: true, actorId: "base", actor: linked
+      }, pcToken]
+    }, {
+      tokens: []
+    }]
+    expect(icesOfHost(h7, matrixActorsOf(actors, scenes))).toEqual([base, copy])
+    expect(matrixActorsOf(null, null)).toEqual([])
   })
 })

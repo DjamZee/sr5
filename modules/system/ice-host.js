@@ -30,11 +30,24 @@ export function iceHostOf(ice) {
   return isHost(host) ? host : null
 }
 
-/** The ICs of the world that run in `host` */
+/** The ICs among `actors` that run in `host` */
 export function icesOfHost(host, actors) {
   if (!host?.uuid) return []
   return [...(actors ?? [])].filter(actor => actor?.type === "actorDevice" && actor.system?.matrix?.deviceType === "ice" &&
     actor.system.matrix.hostUuid === host.uuid)
+}
+
+/** The actors of the world, then those of the unlinked IC tokens of every scene: the copies of an IC that Matrice
+ *  launches are unlinked tokens, and kept the host's attributes read at their creation (review 36). Only the tokens
+ *  of an IC are read, so as not to build every synthetic actor of the world */
+export function matrixActorsOf(actors, scenes) {
+  const isIceBase = token => {
+    const base = actors?.get?.(token.actorId)
+    return base?.type === "actorDevice" && base.system?.matrix?.deviceType === "ice"
+  }
+  const unlinked = [...(scenes ?? [])].flatMap(scene => [...(scene?.tokens ?? [])]
+    .filter(token => !token.actorLink && isIceBase(token)).map(token => token.actor).filter(Boolean))
+  return [...(actors ?? []), ...unlinked]
 }
 
 function prepareAgain(ices) {
@@ -47,9 +60,9 @@ function prepareAgain(ices) {
 /** Each client prepares its own documents: an IC prepared before its host (world load order) or a host changed later
  *  would leave the IC with stale attributes */
 export function registerIceHostHooks() {
-  Hooks.once("ready", () => prepareAgain([...(game.actors ?? [])].filter(actor => actor.type === "actorDevice" &&
+  Hooks.once("ready", () => prepareAgain(matrixActorsOf(game.actors, game.scenes).filter(actor => actor.type === "actorDevice" &&
     actor.system?.matrix?.deviceType === "ice" && actor.system.matrix.hostUuid)))
   Hooks.on("updateActor", actor => {
-    if (isHost(actor)) prepareAgain(icesOfHost(actor, game.actors))
+    if (isHost(actor)) prepareAgain(icesOfHost(actor, matrixActorsOf(game.actors, game.scenes)))
   })
 }
