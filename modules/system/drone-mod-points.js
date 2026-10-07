@@ -9,7 +9,7 @@
 // point at most; lowering the Structure by 1 gives 2 points, a net gain of 1. "Un attribut de drone ne peut jamais
 // dépasser le double de sa valeur initiale" (0 counts as 0.5). Armor goes up to 3 × Structure without penalty (p. 127-128).
 //
-// Readings the book leaves open (lot R13, to be confirmed by DjamZ):
+// Readings the book leaves open, arbitrage de DjamZ (08/10):
 // - the free +1 is one per drone ("un de ses attributs"), not one per attribute;
 // - Armor counts by steps of 3 points (its free step is 3): +6 Armor costs 1 point, as +2 in another attribute;
 // - the double cap is not applied to Armor, whose own cap is the penalty beyond 3 × Structure (example p. 128:
