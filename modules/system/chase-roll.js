@@ -649,8 +649,8 @@ async function setCrashDamage(type, messageId) {
 
 /**
  * Resist a damage of a card the gamemaster posted, by the system's path (rollData-Resistance.js): a vehicle with
- * Structure + Armor (SR5 p. 205), a character aboard a crashing vehicle with Body + Armor (SR5 p. 202), AP −6. Each
- * button once: held for its first owner, then taken off once the resistance is rolled.
+ * Structure + Armor (SR5 p. 205), a character aboard a crashing vehicle with Body + Armor (SR5 p. 202), AP −6. The
+ * button goes once the resistance is rolled (the hold of button-claim.js is for the card speaker's own buttons only).
  */
 async function resistChaseDamage(type, messageId) {
   const {
@@ -661,10 +661,6 @@ async function resistChaseDamage(type, messageId) {
   const actor = damage ? damageActor(card.data.chase, type) : null
   if (!damage || !actor) return ui.notifications?.warn(game.i18n.localize("SR5.CHASE_Stale"))
   if (!actor.isOwner) return ui.notifications?.warn(game.i18n.localize("SR5.CHASE_NotYourVehicle"))
-  const {
-    claimChatButton
-  } = await import("../rolls/roll-helpers/button-claim.js")
-  if (!(await claimChatButton(messageId, type))) return ui.notifications?.warn(game.i18n.localize("SR5.WARN_ButtonClaimed"))
   const {
     SR5_PrepareRollTest
   } = await import("../rolls/roll-prepare.js")
@@ -679,16 +675,20 @@ async function resistChaseDamage(type, messageId) {
   data.damage.resistanceType = "physicalDamage"
   data.combat.armorPenetration = COLLISION_AP
   data.target.actorId = null
-  await actor.rollTest("resistanceCard", null, data)
-  // Rolled (its card answers this one): the button goes
-  const rolled = game.messages.contents.some(m => m.author?.id === game.user.id && m.flags?.sr5data?.previousMessage?.messageId === messageId &&
-    m.flags.sr5data.owner?.actorId === actor.id)
-  if (rolled) {
+  // Rolled (its card answers this one, for this actor): the button goes. The roll window closes after rollTest returns
+  const actorId = data.owner.actorId
+  const hook = Hooks.on("createChatMessage", async message => {
+    const answer = message.flags?.sr5data
+    if (message.author?.id !== game.user.id || answer?.previousMessage?.messageId !== messageId || answer.owner?.actorId !== actorId) return
+    Hooks.off("createChatMessage", hook)
     const {
       SR5_RollMessage
     } = await import("../rolls/roll-message.js")
     await SR5_RollMessage.updateChatButtonHelper(messageId, type)
-  }
+  })
+  // A window left closed without a roll: the button stays, and the hook goes after a while
+  setTimeout(() => Hooks.off("createChatMessage", hook), 10 * 60 * 1000)
+  await actor.rollTest("resistanceCard", null, data)
   return true
 }
 
