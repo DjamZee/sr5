@@ -22,11 +22,23 @@ import {
 import {
   fileActionButtons
 } from "../roll-helpers/file-actions.js"
+import {
+  announceMatrixAction
+} from "../../system/matrix-api.js"
+
+//The actions this card resolves itself once it has hits: the others go on to a defense, or to a test of their own
+const RESOLVED_ON_HITS = ["jamSignals", "iAmTheFirewall", "intervene"]
 
 export default async function matrixActionInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
   let actorData = actor.system
   cardData.previousMessage.actorId = cardData.speakerId
+  //A5: the modules hear of an action no defense opposes once this card resolves it (matrix-api.js)
+  const resolved = netHits => announceMatrixAction({
+    actor, card: cardData, successes: cardData.roll.hits, netHits,
+    target: cardData.target?.actorId ? SR5_EntityHelpers.getRealActorFromID(cardData.target.actorId, cardData.actorUuids) ?? null : null,
+  })
+  const overThreshold = () => cardData.roll.hits - (Number(cardData.threshold.value) || 0)
 
   //SR5 p. 237: the last Matrix action of an icon can be perceived. Written once per roll (a refresh of the card is
   //the same action)
@@ -64,7 +76,7 @@ export default async function matrixActionInfo(cardData, actorId){
       if (cost !== (raised || 0)) await raiseOverwatchScore(cost - (raised || 0), actor)
     }
   }
-  if (cardData.test.typeSub === "matrixSearch") return
+  if (cardData.test.typeSub === "matrixSearch") return void resolved(overThreshold())
   if (cardData.test.typeSub === "redefineOwnership") {
     let depth = cardData.matrix.depth || 0, threshold = Number(cardData.threshold.value) || 0
     cardData.test.title = `${game.i18n.localize("SR5.MatrixActionTest")}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize(SR5.matrixRolledActions.redefineOwnership)} (${threshold})`
@@ -80,21 +92,21 @@ export default async function matrixActionInfo(cardData, actorId){
         depth: depth
       }))
     }
-    return
+    return void resolved(overThreshold())
   }
 
   //The defense only applies under a link lock (SR5 p. 244): free, nothing opposes the jack out and it succeeds,
   //whatever the hits (DjamZ's ruling of 2026-10-03)
   if (cardData.test.typeSub === "jackOut" && !actorData.matrix.isLinkLocked) {
     cardData.chatCard.buttons.jackOutSuccess = SR5_RollMessage.generateChatButton("nonOpposedTest", "jackOutSuccess", game.i18n.localize("SR5.MatrixActionJackOutSuccess"))
-    return
+    return void resolved(cardData.roll.hits)
   }
 
   //Rigger 5 p. 34: Detect Target Lock is a simple test (2), nobody defends against it
   if (cardData.test.typeSub === "detectTargetLock") {
     let success = cardData.roll.hits >= (Number(cardData.threshold.value) || 0)
     cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize(success ? "SR5.SuccessfulTest" : "SR5.ActionFailure"))
-    return
+    return void resolved(overThreshold())
   }
 
   //Rigger 5.0 p. 35: Suppress Noise is a simple test, nobody defends against it; its hits reduce the noise
@@ -103,13 +115,13 @@ export default async function matrixActionInfo(cardData, actorId){
       hits: cardData.roll.hits
     }))
     else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.ActionFailure"))
-    return
+    return void resolved(cardData.roll.hits)
   }
 
   //SR5 p. 242: a simple test, one piece of information per hit; only a silent icon defends (couronne du PAN, lot 5)
   if (cardData.test.typeSub === "matrixPerception" && cardData.roll.hits > 0 && !perceptionNeedsDefense(cardData)) {
     cardData.chatCard.buttons[PERCEPTION_BUTTON] = SR5_RollMessage.generateChatButton("nonOpposedTest", PERCEPTION_BUTTON, `${game.i18n.localize("SR5.MatrixPerceptionInfoButton")} (${cardData.roll.hits})`)
-    return
+    return void resolved(cardData.roll.hits)
   }
 
   //A file aimed at (objet Fichier): its own dice oppose Crack File and the data bombs, its owner edits it undefended
@@ -126,8 +138,11 @@ export default async function matrixActionInfo(cardData, actorId){
       hits: cardData.roll.hits
     })}`)
     else cardData.chatCard.buttons.matrixAction = SR5_RollMessage.generateChatButton("opposedTest", "matrixDefense", game.i18n.localize("SR5.Defend"))
+    if (RESOLVED_ON_HITS.includes(cardData.test.typeSub)) resolved(cardData.roll.hits)
   } else {
     cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.ActionFailure"))
+    //No hit: the action failed, no defense is rolled
+    resolved(0)
   }
 }
 

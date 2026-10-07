@@ -10,6 +10,8 @@ export const MAX_MARKS = 3
 export const CONVERGENCE_DAMAGE = 12
 // SR5 p. 249: in a host, the host puts three marks on the persona instead
 export const HOST_CONVERGENCE_MARKS = 3
+// A5, read only: told on the browser that resolves the action
+export const MATRIX_ACTION_RESOLVED_HOOK = "sr5.matrixActionResolved"
 
 /**
  * The number of marks a request puts, or null when it is not one the API takes.
@@ -281,6 +283,51 @@ export async function _socketConverge(message, senderId){
   return converge(actor, {
     host: hostActor
   })
+}
+
+/* -------------------------------------------- */
+/*  A5: a matrix action resolved                 */
+/* -------------------------------------------- */
+
+/**
+ * The payload of sr5.matrixActionResolved: a copy, so that a subscriber changes nothing of the card.
+ * @param {Object} entry
+ * @param {Object} entry.actor        the actor who acted
+ * @param {Object} entry.card         the data of the card that resolves it (the defense card, or the action card)
+ * @param {Object} [entry.target]     the actor who defended, or null
+ * @param {Number} entry.successes    the hits of the actor who acted
+ * @param {Number} entry.netHits      its net hits (over the defense, or over the threshold); 0 or less: failed
+ * @param {Number} [entry.marksPlaced] the marks the actor wins on the target (the card's button puts them)
+ * @param {Number} [entry.defenderMarks] the marks the defender wins on the actor (a failed Sleaze action, SR5 p. 232)
+ */
+export function matrixActionPayload({
+  actor, card, target = null, successes, netHits, marksPlaced = 0, defenderMarks = 0
+}){
+  const copy = (globalThis.foundry?.utils?.deepClone ?? structuredClone)(card ?? {
+  })
+  return {
+    actor, key: copy.test?.typeSub ?? null, target, successes: Number(successes) || 0, netHits: Number(netHits) || 0,
+    marksPlaced: Number(marksPlaced) || 0, defenderMarks: Number(defenderMarks) || 0, itemUuid: copy.target?.itemUuid ?? null,
+    refreshed: !!card?.matrix?.resolvedAnnounced, card: copy,
+  }
+}
+
+/**
+ * Tell the modules a matrix action is resolved, on this browser. Called again when the card is rolled again (Second
+ * Chance, Push the Limit): `refreshed` is then true. A subscriber that fails is logged and the others go on.
+ */
+export function announceMatrixAction(entry, call = (...args) => globalThis.Hooks?.callAll(...args)){
+  //Told, never in the way: whatever fails here, the card of the roll is posted as the system builds it
+  try {
+    const payload = matrixActionPayload(entry)
+    if (entry.card?.matrix) entry.card.matrix.resolvedAnnounced = true
+    //Hooks.callAll logs a subscriber that fails, and calls the next
+    call(MATRIX_ACTION_RESOLVED_HOOK, payload)
+    return payload
+  } catch (error) {
+    console.error(`SR5 | ${MATRIX_ACTION_RESOLVED_HOOK}`, error)
+    return null
+  }
 }
 
 export const SR5MatrixApi = {

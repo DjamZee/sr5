@@ -5,7 +5,8 @@ import fs from 'node:fs'
 
 import {
   MAX_MARKS, markCount, markTarget, markable, actorRef, placeMarks, _socketPlaceMarks, SR5MatrixApi,
-  CONVERGENCE_DAMAGE, HOST_CONVERGENCE_MARKS, convergencePlan, converge
+  CONVERGENCE_DAMAGE, HOST_CONVERGENCE_MARKS, convergencePlan, converge,
+  MATRIX_ACTION_RESOLVED_HOOK, matrixActionPayload, announceMatrixAction
 } from '../modules/system/matrix-api.js'
 
 // API pour Matrice v1, second round: what the module Matrice v1 still needs of the system (A11 marks put by a module,
@@ -290,5 +291,78 @@ describe('A12: the convergence (game.sr5.matrix.converge)', () => {
     expect(source).toMatch(/programs\?\.sneak\?\.isActive/)
     expect(typeof SR5MatrixApi.converge).toBe('function')
     expect(read('../modules/socket.js')).toMatch(/"apiConverge": \[async \(message, senderId\) => \(await import\("\.\/system\/matrix-api\.js"\)\)\._socketConverge/)
+  })
+})
+
+describe('A5: the hook after a matrix action resolved (sr5.matrixActionResolved)', () => {
+  beforeEach(() => {
+    globalThis.foundry = {
+      utils: {
+        deepClone: value => structuredClone(value)
+      }
+    }
+  })
+  const card = () => ({
+    test: {
+      typeSub: 'hackOnTheFly'
+    }, target: {
+      itemUuid: 'Actor.cam.Item.dev'
+    }, matrix: {
+      mark: 2
+    }
+  })
+
+  it('carries the actor, the action, the target, the hits, the net hits and the marks', () => {
+    const actor = {
+      name: 'Decker'
+    }, target = {
+      name: 'Caméra'
+    }
+    expect(matrixActionPayload({
+      actor, card: card(), target, successes: 5, netHits: 2, marksPlaced: 2
+    })).toMatchObject({
+      actor, key: 'hackOnTheFly', target, successes: 5, netHits: 2, marksPlaced: 2, defenderMarks: 0,
+      itemUuid: 'Actor.cam.Item.dev', refreshed: false,
+    })
+  })
+
+  it('gives the subscriber a copy: what it changes stays out of the card', () => {
+    const data = card()
+    const seen = []
+    announceMatrixAction({
+      actor: {
+      }, card: data, successes: 3, netHits: 1
+    }, (hook, payload) => {
+      seen.push(hook)
+      payload.card.matrix.mark = 3
+      payload.card.test.typeSub = 'bruteForce'
+    })
+    expect(seen).toEqual([MATRIX_ACTION_RESOLVED_HOOK])
+    expect(MATRIX_ACTION_RESOLVED_HOOK).toBe('sr5.matrixActionResolved')
+    expect(data.matrix.mark).toBe(2)
+    expect(data.test.typeSub).toBe('hackOnTheFly')
+  })
+
+  it('says refreshed when the same card is resolved again (Second Chance, Push the Limit)', () => {
+    const data = card(), payloads = []
+    const call = (hook, payload) => payloads.push(payload)
+    announceMatrixAction({
+      actor: {
+      }, card: data, successes: 3, netHits: 1
+    }, call)
+    announceMatrixAction({
+      actor: {
+      }, card: structuredClone(data), successes: 4, netHits: 2
+    }, call)
+    expect(payloads.map(p => p.refreshed)).toEqual([false, true])
+  })
+
+  it('is called where the system resolves a matrix action: the defense card, or the action card no defense opposes', () => {
+    const defense = read('../modules/rolls/roll-test-case/test-MatrixDefense.js')
+    expect(defense).toMatch(/announceMatrixAction\(\{\s*actor: attacker, card: cardData, target: actor, successes: cardData\.previousMessage\.hits, netHits,/)
+    expect(defense).toMatch(/MARKING_ACTIONS = \["hackOnTheFly", "bruteForce", "watchdog"\]/)
+    const action = read('../modules/rolls/roll-test-case/test-MatrixAction.js')
+    expect(action.match(/resolved\(/g).length).toBeGreaterThanOrEqual(8)
+    expect(action).toMatch(/RESOLVED_ON_HITS = \["jamSignals", "iAmTheFirewall", "intervene"\]/)
   })
 })
