@@ -388,7 +388,8 @@ function nodeOf(item, kind, holder, mode, silentFrom, drone = null, panOwner = n
   return {
     uuid: item.uuid,
     kind,
-    name: item.name ?? "",
+    // A base device is named "Appareil" in every actor: the name on hover is the actor's, the camera or the host
+    name: (item.system?.type === "baseDevice" ? holder?.name : null) ?? item.name ?? "",
     itemType: item.type,
     subType: item.system?.type ?? "",
     // The generic icon of its category (lot 2)

@@ -140,17 +140,54 @@ export function fan(nodes, direction, radius, origin, place, {
     rest = rest.slice(capacity)
     const n = arc.length
     // As before for a few icons (0.62 rad apiece), wider when they need it, never wider than the arc may open
-    const spread = n === 1 ? 0 : Math.min(maxSpread, Math.max(step * (n - 1), 0.62 * n))
-    arc.forEach((node, i) => {
-      const a = direction + (n === 1 ? 0 : -spread / 2 + spread * i / (n - 1))
-      place(node, origin.x + Math.cos(a) * r, origin.y + Math.sin(a) * r)
+    let spread = n === 1 ? 0 : Math.min(maxSpread, Math.max(step * (n - 1), 0.62 * n))
+    // An outer arc opens and turns a little, so that its lines run between the icons of the inner arcs, not through
+    // them (the master's lines are straight)
+    const evenly = s => Array.from({
+      length: n
+    }, (_, i) => n === 1 ? 0 : -s / 2 + s * i / (n - 1))
+    let angles = evenly(spread)
+    if (arcs.length) ({
+      spread, angles
+    } = staggerOf(n, spread, maxSpread, arcs.flatMap(a => a.angles), evenly))
+    angles.forEach((angle, i) => {
+      const a = direction + angle
+      place(arc[i], origin.x + Math.cos(a) * r, origin.y + Math.sin(a) * r)
     })
     arcs.push({
-      radius: r, count: n, spread
+      radius: r, count: n, spread, angles
     })
     r += gap
   }
   return arcs
+}
+
+// The opening and the turn of an arc, never wider than it may open, that keep its angles furthest from the angles of
+// the inner arcs (the least change when several are as good). Neighbours only move apart: the gap still holds.
+function staggerOf(n, spread, maxSpread, inner, evenly){
+  const clearance = angles => Math.min(...angles.flatMap(a => inner.map(b => Math.abs(a - b))))
+  let best = {
+    spread, angles: evenly(spread)
+  }
+  let bestClearance = clearance(best.angles)
+  const openings = n === 1 ? [0] : Array.from({
+    length: 9
+  }, (_, k) => spread + (maxSpread - spread) * k / 8)
+  for (const s of openings){
+    const limit = Math.min((maxSpread - s) / 2, 0.5)
+    const base = evenly(s)
+    for (let k = -20; k <= 20; k++){
+      const angles = base.map(a => a + limit * k / 20)
+      const c = clearance(angles)
+      if (c > bestClearance + 1e-9) {
+        best = {
+          spread: s, angles
+        }
+        bestClearance = c
+      }
+    }
+  }
+  return best
 }
 
 /**
@@ -193,7 +230,7 @@ export function dashesOf(from, to, dash = 5, gap = 5){
  * @param {Number} [sizes.step]        the height of a row (an entry and the space under it), in pixels
  * @param {Number} [sizes.familyGap]   the extra space between two families
  * @param {Number} [sizes.minRadius]   the least distance from the icon to the inner edge of an entry
- * @return {{radius: Number, right: Array<{x, y}>, left: Array<{x, y}>}}
+ * @return {{radius: {right: Number, left: Number}, right: Array<{x, y}>, left: Array<{x, y}>}}
  *   x: the distance from the icon to the inner edge of the entry (to be negated on the left), y: its middle
  */
 export function radialColumns({
@@ -216,12 +253,18 @@ export function radialColumns({
   const columns = {
     right: rowsOf(right), left: rowsOf(left)
   }
-  const reach = Math.max(0, ...columns.right.map(Math.abs), ...columns.left.map(Math.abs))
-  const radius = Math.max(minRadius, reach + step)
-  const place = y => ({
-    x: Math.sqrt(radius * radius - y * y), y
-  })
+  // Each column its own arc: a short one stays close to the icon
+  const radiusOf = rows => Math.max(minRadius, Math.max(0, ...rows.map(Math.abs)) + step)
+  const place = rows => {
+    const radius = radiusOf(rows)
+    return rows.map(y => ({
+      x: Math.sqrt(radius * radius - y * y), y
+    }))
+  }
   return {
-    radius, right: columns.right.map(place), left: columns.left.map(place)
+    radius: {
+      right: radiusOf(columns.right), left: radiusOf(columns.left)
+    },
+    right: place(columns.right), left: place(columns.left)
   }
 }

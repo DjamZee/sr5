@@ -95,6 +95,28 @@ describe('pan layout: never crowded', () => {
     expect(rings).toEqual(new Set([PAN_LAYOUT.slaveRing, PAN_LAYOUT.slaveRing + PAN_LAYOUT.minSpacing]))
   })
 
+  it('turns the outer ring so that its lines run between the icons of the inner one', () => {
+    // An icon on the inner ring hides the line of an outer one when their directions from the master are closer
+    // than its own width seen from the master. Up to 6 slaves the lines run clear; at 8, four outer icons cannot all
+    // find a gap between four inner ones within the fan: their lines cross the rim of a disc, beside its picture (0.8 radius).
+    const clear = Math.asin(1.32 * PAN_LAYOUT.iconRadius / PAN_LAYOUT.slaveRing)
+    const grazing = Math.asin(0.8 * PAN_LAYOUT.iconRadius / PAN_LAYOUT.slaveRing)
+    for (const [slaves, hidden] of [[5, clear], [6, clear], [8, grazing]]){
+      const {
+        icons
+      } = layoutCrown(graphOf(slaves), {
+        tokenRadius: 50, angle: 0
+      })
+      const master = icons.find(i => i.node.uuid === 'm')
+      const polar = icons.filter(i => i.node.kind === 'slave').map(s => ({
+        r: Math.round(Math.hypot(s.x - master.x, s.y - master.y)), a: Math.atan2(s.y - master.y, s.x - master.x)
+      }))
+      const inner = polar.filter(p => p.r === PAN_LAYOUT.slaveRing)
+      const outer = polar.filter(p => p.r === PAN_LAYOUT.slaveRing + PAN_LAYOUT.minSpacing)
+      for (const o of outer) for (const i of inner) expect(Math.abs(o.a - i.a)).toBeGreaterThan(hidden)
+    }
+  })
+
   it('gives no place in a ring to a drone on its own token', () => {
     const {
       icons
@@ -242,7 +264,10 @@ describe('pan icons: the picture of what it is', () => {
           type: 'baseDevice', isActive: true, isWireless: true, wirelessTurnedOn: true, marks: []
         }
       })
-      return buildPanGraph(a).nodes[0]?.icon
+      const node = buildPanGraph(a).nodes[0]
+      // Named on hover after the actor, not "Appareil" as every base device is
+      expect(node.name).toBe(name)
+      return node.icon
     }
     expect(own('actorDrone', {
       type: 'drone'
@@ -282,7 +307,9 @@ describe('pan radial menu: never overlapping', () => {
     expect(left[4].y - left[3].y).toBe(step + 10)
     // An arc: the middle rows further out than the end ones, all on one circle
     expect(right[8].x).toBeGreaterThan(right[0].x)
-    for (const at of right) expect(Math.hypot(at.x, at.y)).toBeCloseTo(radius)
+    for (const at of right) expect(Math.hypot(at.x, at.y)).toBeCloseTo(radius.right)
+    // The short column on its own, closer arc
+    expect(radius.left).toBeLessThan(radius.right)
   })
 
   it('keeps a small menu close to the icon', () => {
@@ -293,7 +320,7 @@ describe('pan radial menu: never overlapping', () => {
     }, {
       step: 27, minRadius: 90
     })
-    expect(radius).toBe(90)
+    expect(radius.right).toBe(90)
     expect(right.map(r => r.y)).toEqual([-13.5, 13.5])
   })
 })
