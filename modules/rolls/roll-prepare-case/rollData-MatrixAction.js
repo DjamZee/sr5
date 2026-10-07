@@ -19,8 +19,9 @@ import {
 } from "../roll-helpers/mark.js"
 
 // Actions whose marks are not checked on the target: the support actions target allies, not Matrix icons,
-// and Jack Out and Jam Signals ask for ownership of the hacker's own device (SR5 p. 239 and 244)
-const NO_TARGET_MARK_CHECK = ["iAmTheFirewall", "intervene", "jackOut", "jamSignals"]
+// and Jack Out and Jam Signals ask for ownership of the hacker's own device (SR5 p. 239 and 244), as Suppress Noise
+// and Detect Target Lock do with the rigger's console (Rigger 5.0 p. 34-35)
+const NO_TARGET_MARK_CHECK = ["iAmTheFirewall", "intervene", "jackOut", "jamSignals", "suppressNoise", "detectTargetLock"]
 function checksTargetMarks(rollKey){
   return !NO_TARGET_MARK_CHECK.includes(rollKey)
 }
