@@ -144,21 +144,28 @@ export function contributeToGraph(graph, {
 
 /**
  * Let the subscribers of sr5.panCrownVisibility hide a node: they get a copy of the node and of the verdict, and may
- * set verdict.visible to false (with a reason of their own). What the system hides stays hidden.
+ * set verdict.visible to false (with a reason of their own). What the system hides stays hidden. A fourth argument,
+ * {token, actor}, is the crown's token (null without one) and actor, as sr5.panCrownGraph gets them.
  * @param {Object} node      a node of the graph
  * @param {Object} viewer    {actor, token, isGM, ids}
  * @param {Object} verdict   {visible, reason} of the system (pan-visibility.js)
+ * @param {Object} [crown]   {token, actor} of the crown
  * @param {Function} [call]
  * @return {{visible: Boolean, reason: String}}
  */
-export function applyVisibilityHooks(node, viewer, verdict, call = defaultCall){
+export function applyVisibilityHooks(node, viewer, verdict, {
+  token = null, actor = null
+} = {
+}, call = defaultCall){
   // The gamemaster sees everything: what a module hides from the players shows in her yellow ring
   if (!verdict?.visible || viewer?.isGM) return verdict
   const proposed = {
     visible: true, reason: verdict.reason
   }
   safeCall(PAN_CROWN_HOOKS.visibility, [plainCopy(node) ?? {
-  }, viewer, proposed], call)
+  }, viewer, proposed, {
+    token, actor
+  }], call)
   if (proposed.visible !== false) return verdict
   return {
     visible: false, reason: typeof proposed.reason === "string" && proposed.reason !== verdict.reason ? proposed.reason : "module"

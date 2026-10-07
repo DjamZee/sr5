@@ -176,6 +176,7 @@ describe('pan hooks: the visibility', () => {
   it('lets a subscriber hide what the system shows', () => {
     const verdict = applyVisibilityHooks(node, viewer, {
       visible: true, reason: 'inRange'
+    }, {
     }, dispatcher({
       [PAN_CROWN_HOOKS.visibility]: [(n, v, verdict) => {
         verdict.visible = false
@@ -191,7 +192,8 @@ describe('pan hooks: the visibility', () => {
     const hidden = {
       visible: false, reason: 'silent'
     }
-    const verdict = applyVisibilityHooks(node, viewer, hidden, dispatcher({
+    const verdict = applyVisibilityHooks(node, viewer, hidden, {
+    }, dispatcher({
       [PAN_CROWN_HOOKS.visibility]: [(n, v, verdict) => {
         verdict.visible = true
         verdict.reason = 'revealed'
@@ -210,7 +212,8 @@ describe('pan hooks: the visibility', () => {
     }
     expect(applyVisibilityHooks(node, {
       isGM: true, ids: []
-    }, verdict, dispatcher({
+    }, verdict, {
+    }, dispatcher({
       [PAN_CROWN_HOOKS.visibility]: [(n, v, verdict) => {
         verdict.visible = false
       }]
@@ -220,6 +223,7 @@ describe('pan hooks: the visibility', () => {
   it('gives a reason of its own to a hidden node without one', () => {
     expect(applyVisibilityHooks(node, viewer, {
       visible: true, reason: 'inRange'
+    }, {
     }, dispatcher({
       [PAN_CROWN_HOOKS.visibility]: [(n, v, verdict) => {
         verdict.visible = false
@@ -234,10 +238,40 @@ describe('pan hooks: the visibility', () => {
     const verdict = {
       visible: true, reason: 'inRange'
     }
-    expect(applyVisibilityHooks(node, viewer, verdict, () => {
+    expect(applyVisibilityHooks(node, viewer, verdict, {
+    }, () => {
       throw new Error('module en panne')
     })).toBe(verdict)
     error.mockRestore()
+  })
+
+  // Fabien (Matrice MF): the crown's token in the hook, as sr5.panCrownGraph gets it; a subscriber of three
+  // arguments reads what it read before
+  it('gives the subscriber the crown\'s token and actor, null without them', () => {
+    const token = {
+        id: 'tok'
+      }, actor = {
+        id: 'act'
+      }
+    let seen = null
+    const call = dispatcher({
+      [PAN_CROWN_HOOKS.visibility]: [(n, v, verdict, crown) => {
+        seen = crown
+      }]
+    })
+    applyVisibilityHooks(node, viewer, {
+      visible: true, reason: 'inRange'
+    }, {
+      token, actor
+    }, call)
+    expect(seen.token).toBe(token)
+    expect(seen.actor).toBe(actor)
+    applyVisibilityHooks(node, viewer, {
+      visible: true, reason: 'inRange'
+    }, undefined, call)
+    expect(seen).toEqual({
+      token: null, actor: null
+    })
   })
 })
 
