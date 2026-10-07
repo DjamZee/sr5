@@ -17,7 +17,7 @@ import {
   updateLedger
 } from "./gm-ledger.js"
 import {
-  CREATION_FLAG, creationModeFor
+  CREATION_FLAG, creationModeFor, actorInCreation, worldCreationMode
 } from "./creation-actor.js"
 
 export const IMPLANT_REGISTER = "sr5ImplantRegister"
@@ -437,8 +437,76 @@ export async function reconcileImplantRegister() {
   })
 }
 
+/**
+ * The costs the implants of the world's characters take now, read while the world's creation mode is still in their
+ * prepared data (no peak then, inCreation): the peaks they start from when the gamemaster switches that mode off. A
+ * character the gamemaster flagged "in creation" stays so: its flag is not touched, its implants keep no peak.
+ */
+export function costsAtWorldCreationEnd(actors) {
+  const costs = {
+  }
+  for (const actor of actors ?? []) {
+    if (actorInCreation(actor)) continue
+    for (const item of actor?.items ?? []) {
+      if (item?.type !== "itemAugmentation" || item.system?.reversibleEssence) continue
+      costs[item.uuid] = Math.round((Number(item.system?.essenceCost?.value) || 0) * 100) / 100
+    }
+  }
+  return costs
+}
+
+/** The register with each implant's peak set to `costs`; null when nothing changes. */
+export function peaksFromCosts(register, costs) {
+  let changed = false
+  for (const [uuid, peak] of Object.entries(costs)) {
+    if (register[uuid]?.[PEAK_COST] === peak) continue
+    register[uuid] = {
+      ...(register[uuid] ?? {
+      }), [PEAK_COST]: peak
+    }
+    changed = true
+  }
+  return changed ? register : null
+}
+
+const withImplants = () => [...(game.actors ?? [])].filter(a => a.items?.some?.(i => i.type === "itemAugmentation"))
+// Every client prepares its characters again once the peaks the active GM writes at the end of the world's creation
+// mode have arrived (the register changed after the mode did)
+let peaksPending = false
+
+function prepareAgain() {
+  for (const actor of withImplants()) {
+    actor.reset()
+    if (actor.sheet?.rendered) actor.sheet.render()
+  }
+}
+
+/**
+ * updateSetting, on every client: the gamemaster switched the world's creation mode. Off, the peaks start from the
+ * costs of now at once (Clovis, réserve de la relecture 61), not at the next arrival of a GM: the active GM writes them,
+ * every client prepares its characters again. On, the characters are prepared again without their peaks.
+ */
+export async function onWorldCreationModeChange(setting) {
+  if (setting?.key === `sr5.${IMPLANT_REGISTER}`) {
+    if (peaksPending) {
+      peaksPending = false
+      prepareAgain()
+    }
+    return
+  }
+  if (setting?.key !== "sr5.sr5ShopCreationMode") return
+  if (worldCreationMode()) return prepareAgain()
+  // Read before anything is prepared again: the prepared costs are still those of the creation mode
+  const costs = isActiveGM() ? costsAtWorldCreationEnd(game.actors) : null
+  peaksPending = true
+  prepareAgain()
+  if (costs) await updateLedger(IMPLANT_REGISTER, register => peaksFromCosts(register, costs))
+}
+
 export function registerImplantRegisterHooks() {
   const guard = fn => (...args) => Promise.resolve(fn(...args)).catch(e => console.error("SR5 | implant register", e))
+  Hooks.on("updateSetting", guard(onWorldCreationModeChange))
+  Hooks.on("createSetting", guard(onWorldCreationModeChange))
   Hooks.on("createItem", guard(onCreate))
   Hooks.on("updateItem", guard(onUpdate))
   Hooks.on("updateActor", guard(onUpdate))
