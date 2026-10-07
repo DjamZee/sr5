@@ -231,8 +231,8 @@ describe('Weapon mounts under the Modification Points (R5 p. 128)', () => {
     expect(modPointsOf(mount('standard', 'internal', 8))).toBe(4)
     expect(modPointsOf(mount('heavy', 'concealed', 12))).toBe(7)
   })
-  it('read the vehicle light mount as the Petite', () => {
-    expect(weaponMountPoints(mount('light').system)).toBe(2)
+  it('read the vehicle light mount by the weapons it carries, as the Standard (arbitrage de DjamZ, 08/10)', () => {
+    expect(weaponMountPoints(mount('light').system)).toBe(3)
   })
   it('leave a mount without a size, and any other mod, to its own slots', () => {
     expect(modPointsOf(mount('', 'external', 1))).toBe(1)

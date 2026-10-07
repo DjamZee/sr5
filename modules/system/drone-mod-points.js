@@ -119,10 +119,11 @@ export function attributeChange(system, vehicle) {
 /** The points of a weapon mount on a drone, table "Monture d'armes" (R5 p. 128): Micro 0, Mini 1, Petite 2, Standard 3,
  *  Grande 4, Énorme 5, Lourde 6. "Une monture standard escamotable coûtera 4 PM au lieu de 3": a hidden mount (internal
  *  or concealed) is the pop-up one, +1; the ejectable panels cost no point, and the book gives none to the flexibility or
- *  the control. The vehicle "light" mount is not in the drone table: read as the Petite (2). The slots of the vehicles
+ *  the control. The vehicle "light" mount is not in the drone table: 3 points, by the weapons it carries (up to the
+ *  submachine guns, R5 p. 162, as the drone Standard), arbitrage de DjamZ (08/10). The slots of the vehicles
  *  (utilityItem._handleWeaponMounted) are not touched; null when the size is unknown, the mod's own slots then stand */
 export const WEAPON_MOUNT_POINTS = {
-  micro: 0, mini: 1, small: 2, light: 2, standard: 3, large: 4, huge: 5, heavy: 6
+  micro: 0, mini: 1, small: 2, light: 3, standard: 3, large: 4, huge: 5, heavy: 6
 }
 export function weaponMountPoints(system) {
   const s = sys(system)
