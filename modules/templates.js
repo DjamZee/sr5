@@ -427,6 +427,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/items/_partial/editable/device/attributesCollection-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/device/commlinkModule-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/device/commlinkDongle-edit.hbs",
+    "systems/sr5/templates/items/_partial/editable/device/commcode-edit.hbs",
 
     //Drugs
     "systems/sr5/templates/items/_partial/editable/drug/attributes-edit.hbs",

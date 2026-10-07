@@ -16,11 +16,21 @@ import {
 import {
   SR5_SocketHandler
 } from "../../socket.js"
+import {
+  PERCEPTION_BUTTON, perceptionNeedsDefense, recordLastMatrixAction
+} from "../../canvas/pan-crown/pan-perception-card.js"
 
 export default async function matrixActionInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
   let actorData = actor.system
   cardData.previousMessage.actorId = cardData.speakerId
+
+  //SR5 p. 237: the last Matrix action of an icon can be perceived. Written once per roll (a refresh of the card is
+  //the same action)
+  if (!cardData.matrix.lastActionWritten) {
+    cardData.matrix.lastActionWritten = true
+    await recordLastMatrixAction(actor, cardData.test.typeSub)
+  }
 
   //Matrix search special case
   if (cardData.test.typeSub === "matrixSearch"){
@@ -81,6 +91,12 @@ export default async function matrixActionInfo(cardData, actorId){
   if (cardData.test.typeSub === "detectTargetLock") {
     let success = cardData.roll.hits >= (Number(cardData.threshold.value) || 0)
     cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize(success ? "SR5.SuccessfulTest" : "SR5.ActionFailure"))
+    return
+  }
+
+  //SR5 p. 242: a simple test, one piece of information per hit; only a silent icon defends (couronne du PAN, lot 5)
+  if (cardData.test.typeSub === "matrixPerception" && cardData.roll.hits > 0 && !perceptionNeedsDefense(cardData)) {
+    cardData.chatCard.buttons[PERCEPTION_BUTTON] = SR5_RollMessage.generateChatButton("nonOpposedTest", PERCEPTION_BUTTON, `${game.i18n.localize("SR5.MatrixPerceptionInfoButton")} (${cardData.roll.hits})`)
     return
   }
 

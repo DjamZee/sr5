@@ -78,6 +78,10 @@ export class sr5ItemDeviceDataModel extends foundry.abstract.TypeDataModel {
       dongle: new fields.StringField({
         initial: ''
       }),
+      // The commcode of the device (SR5 p. 237: a Matrix Perception can read it); empty, it answers "not written"
+      commcode: new fields.StringField({
+        initial: ''
+      }),
       modifiers: new fields.ArrayField(new fields.ObjectField()),
       pan: new fields.SchemaField({
         max: new fields.NumberField({

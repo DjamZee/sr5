@@ -82,6 +82,9 @@ import {
 import {
   SR5_SpiritTypes
 } from "../items/spirit-types.js"
+import {
+  requestForgetIntel
+} from "../../canvas/pan-crown/pan-perception-card.js"
 
 /**
  * Extend the base Actor class to implement additional logic specialized for Shadowrun 5.
@@ -1110,6 +1113,11 @@ export class SR5Actor extends Actor {
   //A character in VR when the device reboots takes dumpshock (SR5 p. 244), whatever made it reboot
   async rebootDeck() {
     SR5_ActorHelper.dumpshockIfInVR(this)
+    //SR5 p. 236: whoever had spotted its icons loses sight of them, and it starts again without what it had spotted
+    //(couronne du PAN, lot 5)
+    await requestForgetIntel({
+      holder: this.uuid, clearOwn: true
+    })
     let actorId = (this.isToken ? this.token.id : this.id)
     let dataToUpdate = {
     }

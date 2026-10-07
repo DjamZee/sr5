@@ -283,6 +283,10 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
 
     // The observer's own marks (SR5 p. 238): one diamond per mark, over the icon, on her screen alone
     if (node.viewerMarks > 0) icon.addChild(this.#marksOf(Math.min(node.viewerMarks, 4), radius, markTexture))
+    // What her Matrix Perception brought back (lot 5, SR5 p. 237): the monitor under the icon, the number of marks of
+    // anyone, without their owners, at its side. Never drawn without a perception (decision 6 of DjamZ)
+    if (node.intel?.monitor?.boxes > 0) icon.addChild(monitorOf(node.intel.monitor, radius))
+    if (typeof node.intel?.marks === "number") icon.addChild(marksCountOf(node.intel.marks, radius))
 
     icon.on("pointerover", () => {
       label.visible = true
@@ -380,6 +384,39 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
       }
     })
   }
+}
+
+// The Matrix condition monitor a perception read: a bar under the icon, the boxes of damage filled
+function monitorOf({
+  damage = 0, boxes = 0
+}, radius){
+  const bar = new PIXI.Graphics()
+  const width = radius * 2, height = Math.max(radius / 5, 2), y = radius * 1.12
+  const filled = Math.min(1, Math.max(0, damage / boxes))
+  bar.beginFill(COLORS.disc, 0.92)
+  bar.drawRect(-width / 2, y, width, height)
+  bar.endFill()
+  if (filled > 0) {
+    bar.beginFill(COLORS.mark, 1)
+    bar.drawRect(-width / 2, y, width * filled, height)
+    bar.endFill()
+  }
+  bar.lineStyle({
+    width: Math.max(radius / 20, 1), color: COLORS.line, alpha: 0.9
+  })
+  bar.drawRect(-width / 2, y, width, height)
+  return bar
+}
+
+// The number of marks a perception counted: a neutral figure on the upper right of the icon
+function marksCountOf(count, radius){
+  const style = foundry.canvas.containers.PreciseText.getTextStyle({
+    fontSize: Math.round(radius * 0.7), fill: COLORS.picture
+  })
+  const text = new foundry.canvas.containers.PreciseText(`◇${count}`, style)
+  text.anchor.set(0, 0.5)
+  text.position.set(radius * 0.8, -radius * 0.8)
+  return text
 }
 
 function labelOf(node, graph){

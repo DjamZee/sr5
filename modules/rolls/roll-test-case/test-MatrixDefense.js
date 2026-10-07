@@ -16,6 +16,9 @@ import {
 import {
   activeHeadcase
 } from "../../system/monad-matrix.js"
+import {
+  PERCEPTION_BUTTON, requestForgetIntel
+} from "../../canvas/pan-crown/pan-perception-card.js"
 
 export default async function matrixDefenseInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId),
@@ -116,6 +119,19 @@ export default async function matrixDefenseInfo(cardData, actorId){
           name: actor.name
         }))
         else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.DefenseFailure"))
+        break
+      //SR5 p. 242: a silent icon found, the net hits go to information, the first one spotting it (couronne du PAN,
+      //lot 5). The button is the observer's, as Snoop's
+      case "matrixPerception":
+        cardData.chatCard.buttons[PERCEPTION_BUTTON] = SR5_RollMessage.generateChatButton("attackerTest", PERCEPTION_BUTTON, `${game.i18n.localize("SR5.MatrixPerceptionInfoButton")} (${netHits})`)
+        break
+      //SR5 p. 236: Hide beat the defender, who loses sight of the hider's icons. The defender rolled this card, on
+      //her own client
+      case "hide":
+        await requestForgetIntel({
+          holder: attacker?.uuid, observer: actor.uuid
+        })
+        cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.MatrixPerceptionLostSight"))
         break
       //A formatted Monad repairs its boot sector with as many Complex Actions as the hacker's net hits; rebooting
       //before that destroys it as an overflow on its Core would (Dark Terrors p. 88). Said on the card, the GM plays it

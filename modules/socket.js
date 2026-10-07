@@ -123,6 +123,9 @@ export class SR5_SocketHandler {
       "shopOrderLedger": [orderLedger],
       "claimChatButton": [async (message, senderId) => (await import("./rolls/roll-helpers/button-claim.js")).socketClaimChatButton(message, senderId)],
       "claimChatButtonReply": [async (message, senderId) => (await import("./rolls/roll-helpers/button-claim.js")).socketClaimChatButtonReply(message, senderId)],
+      //Couronne du PAN, lot 5: the observer asks for her Matrix Perception, an owner makes the table lose sight
+      "matrixPerceptionInfo": [async (message, senderId) => (await import("./canvas/pan-crown/pan-perception-card.js"))._socketPerceptionInfo(message, senderId)],
+      "matrixIntelForget": [async (message, senderId) => (await import("./canvas/pan-crown/pan-perception-card.js"))._socketForgetIntel(message, senderId)],
       "tacnetRoster": [async (message, senderId) => (await import("./system/tacnet.js"))._socketTacnetRoster(message, senderId)],
     }
 

@@ -17,6 +17,9 @@ import {
 import {
   rollMatrixActionOn
 } from "./pan-radial-menu.js"
+import {
+  intelFor, spottedUuids
+} from "./pan-perception.js"
 
 // A token placeable, a TokenDocument, an Actor, or the id of a token of the canvas or of a world actor
 function resolveSubject(subject){
@@ -77,11 +80,15 @@ function holderActorOf(node, crown){
   return game.actors?.find(a => ids.includes(a.id)) ?? null
 }
 
-// What the observer knows from her Matrix Perceptions (lot 5 writes it): flags.sr5.matrixIntel[uuid].spotted
-function spottedBy(actor){
-  const intel = actor?.flags?.sr5?.matrixIntel ?? {
+// What the observer knows from her Matrix Perceptions (lot 5 writes it, pan-perception-card.js): the register
+// flags.sr5.matrixIntel, one entry per icon {uuid, spotted, monitor, marks}
+function intelOf(actor){
+  return actor?.flags?.sr5?.matrixIntel ?? {
   }
-  return new Set(Object.keys(intel).filter(uuid => intel[uuid]?.spotted))
+}
+
+function spottedBy(actor){
+  return new Set(spottedUuids(intelOf(actor)))
 }
 
 /** The user who looks at the crowns (Q3: her controlled token, else her assigned character), for the radial menu */
@@ -188,6 +195,8 @@ export function getGraph(subject, options = {
     })
     // The observer's own marks on it, which she alone sees (SR5 p. 238)
     node.viewerMarks = viewerMarksOn(node, looker.ids)
+    // What her Matrix Perceptions brought back that the crown draws: the monitor, the number of marks (lot 5)
+    node.intel = intelFor(intelOf(viewer?.actor), node.uuid)
     if (players) node.hiddenFromPlayers = hiddenFromPlayers(players.map(p => nodeVisibility(node, p.looker, {
       distance: distanceInMeters(p.token, nodeToken), isHost
     })))

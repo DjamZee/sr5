@@ -118,6 +118,9 @@ import {
   SR5SharedVision
 } from "../interface/shared-vision.js"
 import {
+  choosePerceptionInfo
+} from "../canvas/pan-crown/pan-perception-card.js"
+import {
   applyManaShift
 } from "../system/mana-shift.js"
 import {
@@ -774,6 +777,11 @@ export class SR5_RollMessage {
         SR5_MatrixHelpers.rollOverwatchDefense(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      //Couronne du PAN, lot 5: the button stays until the gamemaster has answered
+      case "matrixPerceptionInfo":
+        //On a defense card it is the observer's button, taken below (attackerTest)
+        if (action === "nonOpposedTest") await choosePerceptionInfo(messageData, messageId)
+        break
       case "matrixJamSignals":
         SR5_MatrixHelpers.jamSignals(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
@@ -918,6 +926,10 @@ export class SR5_RollMessage {
           if (await SR5SharedVision.startSnoop(snooped, messageData.previousMessage.actorId)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
           break
         }
+        //SR5 p. 242: the silent icon was found, the observer chooses what she learns (couronne du PAN, lot 5)
+        case "matrixPerceptionInfo":
+          await choosePerceptionInfo(messageData, messageId)
+          break
         default:
           SR5_SystemHelpers.srLog(1, `Unknown '${type}' type in chatButtonAction (attacker Test)`)
       }
@@ -1088,6 +1100,9 @@ export class SR5_RollMessage {
         break
       case "createPreparation":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.PreparationCreateSuccessful"))
+        break
+      case "matrixPerceptionInfo":
+        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.MatrixPerceptionInfoDone"))
         break
       case "jackOutSuccess":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.MatrixActionJackOutSuccessFul"))
