@@ -355,6 +355,10 @@ export default class SR5_RollDialog {
     element.querySelectorAll('[name="emulateLegal"]').forEach(el => el.addEventListener('change', ev => {
       dialogData.matrix.emulateLegal = ev.target.checked
     }))
+    //Kill Code p. 102: a sprite of major form, compiled by a Technoshaman
+    element.querySelectorAll('[name="majorForm"]').forEach(el => el.addEventListener('change', ev => {
+      dialogData.matrix.majorForm = ev.target.checked
+    }))
     //Toggle hidden div
     element.querySelectorAll(".SR-DialogToggle").forEach(el => el.addEventListener('click', ev => this._toggleDiv(ev, element)))
     //Attribute paired with the skill (SR5 p. 130)

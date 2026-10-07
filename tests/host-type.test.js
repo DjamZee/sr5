@@ -2,7 +2,7 @@ import {
   describe, it, expect, vi, beforeEach
 } from 'vitest'
 import {
-  resolveHostAttributes, hostTypeLayout, hostTypeOffsetLabel
+  resolveHostAttributes, hostTypeLayout, hostTypeOffsetLabel, untypedHostDefaults
 } from '../modules/entities/actors/host-type.js'
 
 vi.mock('../modules/socket.js', () => ({
@@ -208,6 +208,36 @@ describe("applyHostType: the host's preparation", () => {
     expect(line.value).toBe(0)
     expect(line.source).toBe("SR5.HostTypeFixed|SR5.HostTypeDestination (KC p. 50)|+3")
     expect(matrix.attributes.sleaze.modifiers[0].source).toBe("SR5.HostTypeDealt|SR5.HostTypeDestination (KC p. 50)|-3")
+  })
+
+  it("no type, never arranged: the default order of SR5 p. 248, not four attributes at 0 (Valentine, 07/10)", () => {
+    const matrix = hostMatrix("", 5, [0, 0, 0, 0])
+    SR5_CharacterUtility.applyHostType(matrix)
+    expect(HOST(matrix)).toEqual([5, 6, 7, 8])
+    expect([1, 2, 3, 4].every(i => matrix.attributesCollection[`value${i}isSet`])).toBe(true)
+    expect(matrix.attributes.firewall.modifiers[0].type).toBe("hostType")
+    expect(matrix.attributes.firewall.modifiers[0].value).toBe(0)
+  })
+
+  it("no type, partly arranged by the gamemaster: left as entered", () => {
+    const placed = hostMatrix("", 5, [7, 0, 0, 0])
+    SR5_CharacterUtility.applyHostType(placed)
+    expect(HOST(placed)).toEqual([7, 0, 0, 0])
+    const flagged = hostMatrix("", 5, [0, 0, 0, 0])
+    flagged.attributesCollection.value2isSet = true
+    SR5_CharacterUtility.applyHostType(flagged)
+    expect(HOST(flagged)).toEqual([0, 0, 0, 0])
+  })
+
+  it("untypedHostDefaults", () => {
+    expect(untypedHostDefaults(4)).toEqual({
+      attack: 4, sleaze: 5, dataProcessing: 6, firewall: 7
+    })
+    expect(untypedHostDefaults(4, {
+      firewall: 6
+    })).toBeNull()
+    expect(untypedHostDefaults(4, {
+    }, true)).toBeNull()
   })
 
   it("changing the type changes the attributes", () => {

@@ -6,3 +6,12 @@
         </select>
     </div>
 </li>
+{{#if matrix.canMajorForm}}
+<!-- Kill Code p. 102: Technoshaman, sprite of major form (fading doubled) -->
+<li class="grid">
+    <div class="col-11" data-tooltip="{{localize 'SR5.SpriteMajorForm_D'}}">{{localize 'SR5.SpriteMajorForm'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1 SR-TextCenter">
+        <input type="checkbox" name="majorForm" {{#if matrix.majorForm}}checked{{/if}} />
+    </div>
+</li>
+{{/if}}

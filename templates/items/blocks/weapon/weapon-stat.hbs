@@ -18,6 +18,10 @@
 	{{> systems/sr5/templates/items/_partial/editable/_common/concealabilityModifier-edit.hbs}}
 	<!-- Required hands -->
 	{{> systems/sr5/templates/items/_partial/editable/weapon/requiredHands-edit.hbs}}
+	{{#ife system.category "weaponAccessory"}}
+	<!-- Special effect the system reads (a homemade flashlight, a smartgun system...) -->
+	{{> systems/sr5/templates/items/_partial/editable/weapon/specialEffect-edit.hbs}}
+	{{/ife}}
 </ul>
 
 <!-- Vision enhancements of a weapon accessory (SR5 p. 434) -->

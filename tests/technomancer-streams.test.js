@@ -2,9 +2,12 @@ import {
   describe, it, expect
 } from 'vitest'
 import {
+  readFileSync
+} from 'fs'
+import {
   streamOf, streamFadingReduction, streamSpriteDice, streamSpriteFadingReduction, reducedFading, sourcererFreeSustain,
   noiseIgnoredByStream, firewallBonusOfStream, sleazeBonusOfStream, resonanceRestoredByStream, personaActsAsRcc, machinistRccRatings,
-  machineMindRating, hasHumanMachineInterface, mayJumpIn
+  machineMindRating, hasHumanMachineInterface, mayJumpIn, MAJOR_FORM_POWERS, mayCompileMajorForm, compilingFading
 } from '../modules/entities/actors/technomancer-streams.js'
 import {
   actsAsRcc, fixedRccRatings, rccAutosoftsForDrone, rccAutosoftRows
@@ -264,5 +267,37 @@ describe('jumping in: a control rig, or the echo that stands for one (Q14)', () 
     expect(mayJumpIn({
       vehicleOwner: owner([echo('Possession de la machine'), echo('Interface de résonance homme-machine (IRHM)')])
     }, false)).toBe(true)
+  })
+})
+
+// Technoshaman daemon (Kill Code p. 102): sprites of major form
+describe("the Technoshaman's sprites of major form", () => {
+  it("only a Technoshaman compiles them", () => {
+    expect(mayCompileMajorForm("technoshaman")).toBe(true)
+    for (const other of ["machinist", "sourcerer", "cyberadept", "morphinae", "apophenian", "erisian", null]) expect(mayCompileMajorForm(other)).toBe(false)
+  })
+
+  it("each sprite type has its power, with its labels", () => {
+    const text = readFileSync('lang/fr.json', 'utf8')
+    const fr = JSON.parse(text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text)
+    for (const type of ["courier", "crack", "data", "fault", "machine", "companion", "generalist"]) {
+      const power = MAJOR_FORM_POWERS[type]
+      expect(power).toBeTruthy()
+      expect(fr[`SR5.SpriteMajorPower_${power}`]).toBeTruthy()
+      expect(fr[`SR5.SpriteMajorPower_${power}_D`]).toBeTruthy()
+    }
+    expect(MAJOR_FORM_POWERS.fault).toBe("annihilation")
+    expect(MAJOR_FORM_POWERS.crack).toBe("gatekeeper")
+  })
+
+  it("the fading of the compiling: lowered by the stream, then doubled for a major form", () => {
+    // 3 hits: 6, lowered to 4 by the Technoshaman, doubled to 8
+    expect(compilingFading(3, "technoshaman", false)).toBe(4)
+    expect(compilingFading(3, "technoshaman", true)).toBe(8)
+    // 1 hit: 2, lowered to 1 (floor of a lowered fading), doubled to 2
+    expect(compilingFading(1, "technoshaman", true)).toBe(2)
+    // no stream, or another one: no major form, the usual floor of 2
+    expect(compilingFading(3, null, true)).toBe(6)
+    expect(compilingFading(0, "machinist", true)).toBe(2)
   })
 })

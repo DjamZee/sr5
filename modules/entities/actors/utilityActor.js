@@ -38,7 +38,7 @@ import {
   homunculusMaterialRatings
 } from "./homunculus.js"
 import {
-  HOST_ATTRIBUTES, HOST_TYPE_PAGES, resolveHostAttributes, hostTypeOffsetLabel
+  HOST_ATTRIBUTES, HOST_TYPE_PAGES, resolveHostAttributes, hostTypeOffsetLabel, untypedHostDefaults
 } from "./host-type.js"
 import {
   augmentationCapExcess, uncappedRating, limitBase, limitCapNote, CAP_NOTE_LIMITS
@@ -5035,12 +5035,24 @@ export class SR5_CharacterUtility extends Actor {
   }
 
   // Host types (Kill Code p. 48-52): a typed host takes its attributes from its rating and its type, the free ones
-  // keeping the gamemaster's arrangement while it fits; with no type the attributes stay as entered
+  // keeping the gamemaster's arrangement while it fits; with no type the attributes stay as entered, save for a host
+  // never arranged, which gets the default order of SR5 p. 248 instead of four attributes at 0
   static applyHostType(matrix) {
-    const resolved = resolveHostAttributes(matrix.hostType, matrix.deviceRating, Object.fromEntries(
-      HOST_ATTRIBUTES.map(key => [key, matrix.attributes[key].base])
-    ))
-    if (!resolved) return
+    const stored = Object.fromEntries(HOST_ATTRIBUTES.map(key => [key, matrix.attributes[key].base]))
+    const resolved = resolveHostAttributes(matrix.hostType, matrix.deviceRating, stored)
+    if (!resolved) {
+      const collection = matrix.attributesCollection
+      const defaults = untypedHostDefaults(matrix.deviceRating, stored, [1, 2, 3, 4].some(i => collection[`value${i}isSet`]))
+      if (!defaults) return
+      for (let i = 1; i <= 4; i++) collection[`value${i}isSet`] = true
+      for (const key of HOST_ATTRIBUTES) {
+        matrix.attributes[key].base = defaults[key]
+        SR5_EntityHelpers.updateModifier(matrix.attributes[key], game.i18n.format('SR5.HostUntypedDealt', {
+          offset: hostTypeOffsetLabel(defaults[key], matrix.deviceRating)
+        }), "hostType", 0)
+      }
+      return
+    }
     // The collection only offers the free values, all of them already dealt
     for (let i = 1; i <= 4; i++) {
       matrix.attributesCollection[`value${i}`] = resolved.collection[i - 1] ?? 0
@@ -5257,7 +5269,7 @@ export class SR5_CharacterUtility extends Actor {
     let actorObject = actor.toObject(false)
     if (game.actors) {
       for (let a of game.actors) {
-        if (a.type === "actorAgent" && a.system.creatorId === actor.id) {
+        if (a.type === "actorAgent" && a.system.creatorId === actor.id && a.isOwner) {
           await a.update({
             "system.creatorData.items": actorObject.items
           })
@@ -5267,7 +5279,8 @@ export class SR5_CharacterUtility extends Actor {
 
     if (canvas.scene) {
       for (let t of canvas.tokens.placeables) {
-        if (t.actor.type === "actorAgent" && t.actor.system.creatorId === actor.id) {
+        //A linked token is the world actor, copied just above
+        if (t.actor?.type === "actorAgent" && !t.document.actorLink && t.actor.system.creatorId === actor.id && t.actor.isOwner) {
           await t.actor.update({
             "system.creatorData.items": actorObject.items
           })
