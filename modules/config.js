@@ -3922,6 +3922,7 @@ SR5.dicePoolModTypes = {
   spiritType                : "SR5.SpiritTypeBonus",
   spellCategory             : "SR5.SpellCategoryBonus",
   sensorLockMod             : "SR5.SensorLockedTarget",
+  rccNoiseReduction         : "SR5.NoiseReduction",
   signatureSize             : "SR5.TargetSize",
   mark                      : "SR5.NumberOfWantedMarks",
   emulate                   : "SR5.MatrixActionEmulate",
