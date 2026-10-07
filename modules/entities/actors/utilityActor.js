@@ -92,6 +92,9 @@ import {
 import {
   updateGreyMana
 } from "../../system/grey-mana.js"
+import {
+  actsAsRcc, rccRatings, hasLocalAutosoftRunning, rccAutosoftsForDrone, autosoftFitsDrone, droneAutopilot, localAutosoftRating
+} from "./rcc.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -4383,6 +4386,11 @@ export class SR5_CharacterUtility extends Actor {
     matrix.pan = item.system.pan
     matrix.marks = item.system.marks
     matrix.markedItems = item.system.markedItems
+    //Noise Reduction and Sharing belong to a console, their total within its Device Rating (SR5 p. 269): a deck or a
+    //commlink equipped instead no longer reduces the noise with the console's setting
+    const rcc = rccRatings(matrixAttributes.noiseReduction.base, matrixAttributes.sharing.base, matrix.deviceRating, actsAsRcc(actor))
+    matrixAttributes.noiseReduction.base = rcc.noiseReduction
+    matrixAttributes.sharing.base = rcc.sharing
     SR5_EntityHelpers.updateValue(matrix.noise)
     SR5_EntityHelpers.updateValue(matrix.programsMaximumActive, 0)
     SR5_EntityHelpers.updateValue(matrix.programsCurrentActive, 0)
@@ -5177,26 +5185,17 @@ export class SR5_CharacterUtility extends Actor {
     }
   }
 
+  //An autosoft the drone carries itself, not one of the console's copied items (those have no parent)
+  static isLocalDroneAutosoft(item, actor) {
+    return actor?.type === "actorDrone" && item?.type === "itemProgram" && item.system?.type === "autosoft" && !!item.parent && item.parent.id === actor.id
+  }
+
+  //The console's autosofts a slaved drone on autopilot runs (SR5 p. 269, 272): those the rigger shares, up to the
+  //console's Sharing, and none if the drone runs one of its own (rcc.js)
   static applyAutosoftEffect(actor) {
-    let controlerItems = actor.system.vehicleOwner.items
-    let hasLocalAutosoftRunning = actor.items.find(a => a.system.type === "autosoft" && a.system.isActive)
-    if (hasLocalAutosoftRunning) actor.system.matrix.hasLocalAutosoftRunning = true
-    else actor.system.matrix.hasLocalAutosoftRunning = false
-
-    if (actor.system.controlMode !== "autopilot") actor.system.matrix.hasLocalAutosoftRunning = false
-
-    if (actor.system.controlMode === "autopilot") {
-      for (let i of controlerItems) {
-        if (i.type === "itemProgram" && i.system.type === "autosoft" && i.system.isActive && !hasLocalAutosoftRunning) {
-          if (i.system.isModelBased) {
-            if (i.system.model === actor.system.model) {
-              if (Object.keys(i.system.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
-            }
-          } else {
-            if (Object.keys(i.system.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
-          }
-        }
-      }
+    actor.system.matrix.hasLocalAutosoftRunning = actor.system.controlMode === "autopilot" && hasLocalAutosoftRunning(actor.items)
+    for (let i of rccAutosoftsForDrone(actor.system, actor.items)) {
+      if (autosoftFitsDrone(i.system, actor.system.model) && Object.keys(i.system.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
     }
   }
 
@@ -5585,6 +5584,8 @@ export class SR5_CharacterUtility extends Actor {
         switch (customEffect.type) {
           case "rating":
             customEffect.value = (itemData.itemRating || 0)
+            //A drone's own autosoft runs at most at its autopilot's rating; the console's keeps its own (Rigger 5.0 p. 131)
+            if (SR5_CharacterUtility.isLocalDroneAutosoft(item, actor)) customEffect.value = localAutosoftRating(customEffect.value, droneAutopilot(actor.system))
             SR5_EntityHelpers.updateModifier(targetObject, item.name, modifierType, customEffect.value * customEffect.multiplier, isMultiplier, cumulative)
             break
           case "hits":

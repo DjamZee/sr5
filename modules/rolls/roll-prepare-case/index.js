@@ -8,6 +8,9 @@ export {
   default as attributeOnly
 } from "./rollData-AttributeOnly.js"
 export {
+  default as autopilotUnforeseen
+} from "./rollData-AutopilotUnforeseen.js"
+export {
   default as banishingResistance
 } from "./rollData-BanishingResistance.js"
 export {

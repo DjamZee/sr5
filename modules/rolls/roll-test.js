@@ -828,6 +828,7 @@ export class SR5_RollTest {
         await SR5_AddRollInfo.mentorDrawbackInfo(cardData)
         break
       case "attributeOnly":
+      case "autopilotUnforeseen": //The gamemaster compares the hits with the threshold of the situation (SR5 p. 271)
       case "languageSkill":
       case "knowledgeSkill":
       case "defenseSimple":

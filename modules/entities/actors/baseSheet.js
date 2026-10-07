@@ -122,6 +122,9 @@ import {
 import {
   deviceModeSheetContext, switchDeviceMode
 } from "../../canvas/pan-crown/pan-device-switch.js"
+import {
+  actsAsRcc, programSwitchActionType, sharingSlotsLeft
+} from "./rcc.js"
 
 /**
  * Extend the basic ActorSheet class to do all the SR5 things!
@@ -340,6 +343,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       const mode = deviceModeSheetContext(item)
       if (mode) context.deviceModes[item.id] = mode
     }
+    //A rigger command console: Noise Reduction, Sharing and the shared autosofts (SR5 p. 269)
+    context.actsAsRcc = actsAsRcc(this.actor)
 
     // Compute dynamic layout (SR6-style panel/tab/block system)
     context.layout = this._computeSheetLayout(this.actor)
@@ -1462,7 +1467,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       type: (oldValue === false) ? "simple" : "free", value: 1
     }]
     if (item.type === "itemProgram" && target === "system.isActive") return [{
-      type: "free", value: 1
+      type: programSwitchActionType(item, this.actor.type, oldValue === false), value: 1
     }]
     if (target === "system.wirelessTurnedOn") return [{
       type: SR5_ActorHelper.wirelessSwitchActionType(!oldValue, game.settings.get("sr5", "sr5WifiRequiresDNI"), this.actor.system.hasDNI), value: 1
@@ -1527,6 +1532,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         if (!game.user.isGM) return
       }
     }
+    //A console shares as many autosofts as its Sharing rating (SR5 p. 269)
+    if (target === "system.isShared" && value === true && sharingSlotsLeft(itemList, actor.system.matrix.attributes.sharing.value) < 1) return ui.notifications.warn(game.i18n.format("SR5.WARN_RccSharingFull", {
+      sharing: actor.system.matrix.attributes.sharing.value
+    }))
     //The guard reads the actor's counters, which change only when the server answers: a second click before
     //that would pass on the old count. Toggles that cost an action wait for the previous one to be written
     let actionCost = this._itemValueActionCost(item, target, oldValue)
@@ -1901,7 +1910,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         if (warning) ui.notifications.warn(warning)
       }
       if(oldValue === false) actions = [{
-        type: "free", value: 1, source: "loadProgram"
+        type: programSwitchActionType(item, actor.type, true), value: 1, source: "loadProgram"
       }]
       else actions = [{
         type: "free", value: 1, source: "unloadProgram"

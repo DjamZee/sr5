@@ -23,7 +23,15 @@
 		{{#each actor.programs}}
 		<li class="item grid" data-item-id="{{_id}}" draggable="true">
 			<div class="col-6 deplie" data-helpTitle="{{localize 'SR5.HELP_MoreInfos'}}" data-helpMessage="{{localize 'SR5.HELP_MoreInfosMsg'}}">
-				<p>{{name}}</p>
+				<p>{{name}}
+				{{#if (and @root.actsAsRcc (eq system.type "autosoft"))}}
+					<!-- Shared with the slaved drones, as many as the console's Sharing (SR5 p. 269) -->
+					<a class="toggle-value" data-dtype="Boolean" data-binding="system.isShared"
+					data-helpTitle="{{localize 'SR5.RccShareAutosoft' key=name}}" data-helpMessage="{{localize 'SR5.HELP_RccShareAutosoftMsg'}}">
+						<em class="fas fa-sm fa-share-alt {{#unless system.isShared}}SR-SubColor25{{/unless}}"></em>
+					</a>
+				{{/if}}
+				</p>
 			</div>
 			<div class="col-2"><p class="SR-TextCenter">{{findTranslation 'programTypes' system.type}}</p></div>
 			<div class="col-2 SR-TextCenter">
@@ -31,6 +39,11 @@
 					<p class="changeValueByClick" data-binding="system.itemRating"
 					data-helpTitle="{{localize 'SR5.HELP_Rating' key=name}}"
 					data-helpMessage="{{localize 'SR5.HELP_RatingMsg'}}">{{valueOrDash system.itemRating}}</p>
+					{{#if (and (eq @root.actor.type 'actorDrone') (gt system.itemRating @root.actor.autopilotCap))}}
+					<!-- An autopilot runs an autosoft at most at its own rating (Rigger 5.0 p. 131) -->
+					<p class="SR-SubColor" data-helpTitle="{{localize 'SR5.AutosoftCapped'}}"
+					data-helpMessage="{{localize 'SR5.HELP_AutosoftCappedMsg' cap=@root.actor.autopilotCap}}"><em class="fas fa-sm fa-compress-alt"></em> {{@root.actor.autopilotCap}}</p>
+					{{/if}}
 				{{else if (eq system.type "agent")}}
 					<p class="changeValueByClick" data-binding="system.itemRating"
 					  data-helpTitle="{{localize 'SR5.HELP_Rating' key=name}}"
@@ -87,28 +100,27 @@
 		{{/each}}
 
 		<!-- Controler's programs -->
-		{{#each system.vehicleOwner.items}}
-		{{#if (and (eq type "itemProgram") (eq system.type "autosoft"))}}
+		<!-- The console's autosofts: used when shared and the drone runs none of its own (SR5 p. 269) -->
+		{{#each actor.rccAutosofts}}
 		<li class="grid">
 			<div class="col-6">{{name}}</div>
-			<div class="col-2 SR-TextCenter">{{findTranslation 'programTypes' system.type}}</div>
-			<div class="col-2 SR-TextCenter">{{valueOrDash system.itemRating}}</div>
-			{{#if ../system.matrix.hasLocalAutosoftRunning}}
-			<div class="col-1 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_ProgramsControler' key=name}}" data-helpMessage="{{localize 'SR5.HELP_ProgramsControlerDisabledMsg'}}">
+			<div class="col-2 SR-TextCenter">{{findTranslation 'programTypes' 'autosoft'}}</div>
+			<div class="col-2 SR-TextCenter">{{valueOrDash rating}}</div>
+			{{#if (eq state "used")}}
+			<div class="col-1 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_ProgramsControler' key=name}}" data-helpMessage="{{localize 'SR5.HELP_ProgramsControlerMsg'}}">
+				<em class="fas fa-sm fa-upload SR-SubColor"></em>
+			</div>
+			{{else if (eq state "idle")}}
+			<div class="col-1 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_ProgramsControler' key=name}}" data-helpMessage="{{localize 'SR5.HELP_RccSharedIdleMsg'}}">
 				<em class="fas fa-times-circle SR-SubColor25"></em>
 			</div>
 			{{else}}
-			<div class="col-1 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_ProgramsControler' key=name}}" data-helpMessage="{{localize 'SR5.HELP_ProgramsControlerMsg'}}">
-				{{#if system.isActive}}
-					<em class="fas fa-sm fa-upload SR-SubColor"></em>
-				{{else}}
-					<em class="fas fa-sm fa-upload SR-SubColor25"></em>
-				{{/if}}
+			<div class="col-1 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_ProgramsControler' key=name}}" data-helpMessage="{{localize 'SR5.HELP_RccNotSharedMsg'}}">
+				<em class="fas fa-sm fa-upload SR-SubColor25"></em>
 			</div>
 			{{/if}}
 			<div class="col-1 SR-TextRight"><em class="fas fa-user-cog SR-SubColor25"></em></div>
 		</li>
-		{{/if}}
 		{{/each}}
 
 		<!-- Owner Agent's programs -->

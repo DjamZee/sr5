@@ -16,6 +16,9 @@ import {
 import {
   openVehicleRepair
 } from "../../system/vehicle-repair-apply.js"
+import {
+  rccAutosoftRows, droneAutopilot
+} from "./rcc.js"
 
 /**
  * An Actor sheet for drone type actors in the Shadowrun 5 system.
@@ -133,6 +136,11 @@ export class SR5DroneSheet extends ActorSheetSR5 {
     actor.weapons = weapons
     actor.armors = armors
     actor.programs = programs
+    //The console's autosofts, and whether this drone uses them (SR5 p. 269)
+    actor.rccAutosofts = rccAutosoftRows(actor.system, actor.items)
+    actor.autopilotCap = droneAutopilot(actor.system)
+    //Autopilot faced with the unexpected: Device Rating x 2 (SR5 p. 271)
+    actor.autopilotUnforeseenPool = (actor.system.attributes.pilot.augmented.value || 0) * 2
     actor.marks = marks
     actor.ammunitions = ammunitions
     actor.vehiclesMod = vehiclesMod

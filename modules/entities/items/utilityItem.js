@@ -28,6 +28,9 @@ import {
 import {
   weaponRatingModifiers
 } from "./weapon-ratings.js"
+import {
+  rccAutosoftsForDrone, droneAutopilot, localAutosoftRating
+} from "../actors/rcc.js"
 
 // The implants whose unknown grade the gamemaster was told of, once each per session
 const unknownGradesTold = new Set()
@@ -440,25 +443,18 @@ export class SR5_UtilityItem extends Actor {
         itemData.weaponSkill.base = 0
 
         switch (actor.system.controlMode){
-          case "autopilot":
-            for (let i of actor.items) {
-              let iData = i.system
-              if (iData.model === item.name && i.type === "itemProgram" && iData.isActive) {
-                SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.VehicleStat_PilotShort'), "linkedAttribute", actor.system.attributes.pilot.augmented.value)
-                SR5_EntityHelpers.updateModifier(itemData.weaponSkill, i.name, "program", iData.itemRating)
-              }
-            }
-            if (controlerData){
-              for (let i of actor.system.vehicleOwner.items) {
-                if (i.system.model === item.name && i.type === "itemProgram" && i.system.isActive) {
-                  SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.VehicleStat_PilotShort'), "linkedAttribute", actor.system.attributes.pilot.augmented.value)
-                  SR5_EntityHelpers.updateModifier(itemData.weaponSkill, i.name, "controlerProgram", i.system.itemRating)
-                }
-              }
-            }
+          case "autopilot": {
+            //Autopilot + Targeting [Weapon] (SR5 p. 272): the drone's own autosoft, capped by its autopilot (Rigger 5.0
+            //p. 131), or, when it runs none, the one its console shares; never both (SR5 p. 269)
+            const local = actor.items.find(i => i.type === "itemProgram" && i.system.isActive && i.system.model === item.name)
+            const shared = local ? null : rccAutosoftsForDrone(actor.system, actor.items).find(i => i.system.model === item.name)
+            if (local || shared) SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.VehicleStat_PilotShort'), "linkedAttribute", actor.system.attributes.pilot.augmented.value)
+            if (local) SR5_EntityHelpers.updateModifier(itemData.weaponSkill, local.name, "program", localAutosoftRating(local.system.itemRating, droneAutopilot(actor.system)))
+            if (shared) SR5_EntityHelpers.updateModifier(itemData.weaponSkill, shared.name, "controlerProgram", shared.system.itemRating)
             itemData.weaponSkill.modifiers = itemData.weaponSkill.modifiers.concat(actor.system.penalties.special.actual.modifiers)
             if (actor.system.passiveTargeting) itemData.accuracy.base = actor.system.attributes.sensor.augmented.value
             break
+          }
           case "manual":
             SR5_EntityHelpers.updateModifier(itemData.weaponSkill, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.SkillGunnery')})`, "controleMode", controlerData.skills.gunnery.test.dicePool)
             if (actor.system.passiveTargeting) itemData.accuracy.base = actor.system.attributes.sensor.augmented.value

@@ -329,6 +329,9 @@ export class SR5_PrepareRollTest {
       case "vehicleRepair":
         rollData = await SR5_GetRollData.vehicleRepair(rollData, actor, rollKey)
         break
+      case "autopilotUnforeseen":
+        rollData = SR5_GetRollData.autopilotUnforeseen(rollData, actor)
+        break
       default:
         SR5_SystemHelpers.srLog(1, `Unknown ${rollType} roll type in 'actorRoll()'`)
     }
