@@ -11,6 +11,9 @@ import {
   registerCalendarSettings
 } from "../system/calendar.js"
 import {
+  registerCalendarClockSettings
+} from "../interface/calendar-clock.js"
+import {
   registerDeadlineSettings
 } from "../system/deadlines.js"
 import {
@@ -318,6 +321,8 @@ export async function sr5HookInit() {
   initSpiritLedger()
   //Sixth World calendar and 3 s per Combat Turn (SR5 p. 51)
   registerCalendarSettings()
+  //How each user shows the clock, and the GM's dated events
+  registerCalendarClockSettings()
   registerDeadlineSettings()
   registerOrderSettings()
   registerOrderLedger()
