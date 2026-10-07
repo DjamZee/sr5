@@ -62,6 +62,8 @@ export class SR5DroneSheet extends ActorSheetSR5 {
     context.system.hasRiggerInterface = this.actor.system.hasRiggerInterface
     //Same for the right to jump in, which asks the controller's control rig (SR5 p. 243, 267)
     context.system.canJumpIn = this.actor.system.canJumpIn
+    //And the swarm the drone is a body of (Rigger 5.0 p. 35, system/swarm.js)
+    context.system.swarmState = this.actor.system.swarmState
 
     this._prepareItems(context.actor)
 

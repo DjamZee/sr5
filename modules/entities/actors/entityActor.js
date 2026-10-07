@@ -100,6 +100,9 @@ import {
 import {
   mayJumpIn
 } from "./technomancer-streams.js"
+import {
+  applySwarm
+} from "../../system/swarm.js"
 
 /**
  * Extend the base Actor class to implement additional logic specialized for Shadowrun 5.
@@ -535,8 +538,10 @@ export class SR5Actor extends Actor {
         SR5_CharacterUtility.updateAttributes(actor)
         SR5_CharacterUtility.capVehicleArmor(actor)
         SR5_CharacterUtility.updateResistances(actor)
-        SR5_CharacterUtility.updateConditionMonitors(actor)        
-        SR5_CharacterUtility.updatePenalties(actor)  
+        SR5_CharacterUtility.updateConditionMonitors(actor)
+        //A swarm's ratings, once the monitors tell a wrecked drone, before the tests (Rigger 5.0 p. 35)
+        applySwarm(actor, (item, target) => SR5_CharacterUtility.applyCustomEffects(item, target))
+        SR5_CharacterUtility.updatePenalties(actor)
         SR5_CharacterUtility.updateDefenses(actor)
         SR5_CharacterUtility.updateRecoil(actor)      
         SR5_CharacterUtility.updateInitiativePhysical(actor)

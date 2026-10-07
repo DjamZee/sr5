@@ -452,6 +452,11 @@ function nodeOf(item, kind, holder, mode, silentFrom, drone = null, panOwner = n
         ownerId: m.ownerId, value: Number(m.value) || 0
       })),
     droneId: drone ? realIdOf(drone) : null,
+    // The swarm a deployed drone is a body of (Rigger 5.0 p. 35): each body stays an icon of its own, since each
+    // one is targeted on its own, in the Matrix as well
+    swarm: drone?.system?.swarmState?.active ? {
+      number: drone.system.swarmState.number, count: drone.system.swarmState.count
+    } : null,
     // The gamemaster's reveal (lot 3), for the whole table (decision of DjamZ, Q4)
     revealed: source.flags?.sr5?.panReveal === true || item.flags?.sr5?.panReveal === true,
   }

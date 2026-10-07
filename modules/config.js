@@ -2648,6 +2648,7 @@ SR5.programTypes = {
   common                    : "SR5.ProgramTypeCommon",
   hacking                   : "SR5.ProgramTypeHacking",
   autosoft                  : "SR5.ProgramTypeAutosoft",
+  swarm                     : "SR5.ProgramTypeSwarm",
   agent                     : "SR5.ProgramTypeAgent",
   activesoft                : "SR5.ProgramTypeActivesoft",
   datasoft                  : "SR5.ProgramTypeDatasoft",

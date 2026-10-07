@@ -52,6 +52,9 @@ import {
   registerChaseHooks
 } from './system/chase.js'
 import {
+  registerSwarmHooks
+} from './system/swarm.js'
+import {
   onBlightCreated, sweepBlight
 } from './system/blight-strikes.js'
 import {
@@ -283,6 +286,8 @@ registerCyberlimbNotice()
 registerRiggerEjectionHooks()
 // Vehicle chases: the window in the token controls, and the turn that follows the encounter (R12)
 registerChaseHooks()
+// Drone swarms: a member that changes, enters or leaves the scene prepares its swarm again (Rigger 5.0 p. 35)
+registerSwarmHooks()
 // The crown of a PAN follows its token and its devices (couronne du PAN, lot 2)
 registerPanCrownHooks()
 // Blight strikes: sustained spells, active foci and astral fall (Better Than Bad p. 141)

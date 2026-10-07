@@ -61,6 +61,18 @@
                 <input type="checkbox" name="system.riggerCabled" data-dtype="Boolean" {{checked system.riggerCabled}}>
             </div>
         </li>
+        {{!-- The swarm of the rigger the drone belongs to (Rigger 5.0 p. 35, system/swarm.js) --}}
+        <li class="grid">
+            <div class="col-10">{{localize 'SR5.SwarmNumber'}}</div>
+            <div class="col-2 SR-TextCenter" data-helpTitle="{{localize 'SR5.SwarmNumber'}}" data-helpMessage="{{localize 'SR5.HELP_SwarmNumber'}}">
+                <input type="number" name="system.swarm" value="{{system.swarm}}" min="0" step="1" data-dtype="Number">
+            </div>
+        </li>
+        {{#if system.swarmState.label}}
+        <li class="grid">
+            <div class="col-12 SR-GreyColor">{{system.swarmState.label}}</div>
+        </li>
+        {{/if}}
         {{/ifne}}
         <li class="grid">
             <div class="col-10">{{localize 'SR5.VehicleCurrentSpeed'}}</div>

@@ -916,7 +916,8 @@ function marksCountOf(count, radius){
 function labelOf(node, graph){
   const mode = game.i18n.localize(MODE_LABELS[node.mode] ?? MODE_LABELS.active)
   const master = node.uuid === graph.master ? ` · ${game.i18n.localize("SR5.PanCrownMaster")}` : ""
-  return `${node.name} — ${mode}${master}`
+  const swarm = node.swarm ? ` · ${game.i18n.format("SR5.PanCrownSwarm", node.swarm)}` : ""
+  return `${node.name} — ${mode}${master}${swarm}`
 }
 
 function dashedCircle(graphics, radius, count){

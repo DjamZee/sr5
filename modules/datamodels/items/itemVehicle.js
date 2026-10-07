@@ -150,6 +150,10 @@ export class sr5ItemVehicleDataModel extends foundry.abstract.TypeDataModel {
       slaved: new fields.BooleanField({
         initial: false
       }),
+      //The swarm number the drone keeps between two deployments (Rigger 5.0 p. 35)
+      swarm: new fields.NumberField({
+        initial: 0, min: 0, integer: true
+      }),
       conditionMonitors: new fields.SchemaField({
         condition: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema(),
