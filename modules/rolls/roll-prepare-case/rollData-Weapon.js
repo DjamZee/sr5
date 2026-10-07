@@ -46,6 +46,9 @@ import {
 import {
   weaponLimb, limbEnhancementNames, weaponRecoilCompensation
 } from "../../system/cyberlimb.js"
+import {
+  refuseByRule
+} from "../../system/rule-locks.js"
 
 //Add info for weapon Roll
 export default async function weapon(rollData, actor, item){
@@ -304,7 +307,7 @@ const GRAPPLING_CALLED_SHOT_LABELS = {
 //               Helpers             //
 //-----------------------------------//
 
-async function handleTargetInfo(rollData, actor, item){
+export async function handleTargetInfo(rollData, actor, item){
   let itemData = item.system
   //Unmeasured, the range is short (+0, SR5 p. 186) and a shotgun keeps its own spread: the dialog shows both
   rollData.target.range = "short"
@@ -333,18 +336,17 @@ async function handleTargetInfo(rollData, actor, item){
     //Flamethrower fanning (Gun H(e)aven 3 p. 3): up to three targets, linked within 4 m, all in range
     const isFanning = game.user.targets.size > 1 && hasWeaponTrait(itemData, "flamethrower")
     if (isFanning) {
-      const fanning = await checkFanningTargets(Array.from(game.user.targets), attacker, itemData.range.extreme.value)
+      const fanning = await checkFanningTargets(Array.from(game.user.targets), attacker, itemData.range.extreme.value, actor)
       if (!fanning) return false
       rollData.target.fanning = fanning.actorIds
       rollData.target.fanningFarthest = fanning.farthest
       rollData.combat.firingMode.selected = "FN"
       rollData.combat.ammo.fired = FANNING_AMMO
     }
-    //Otherwise, only allow one target for attack;
-    else if (game.user.targets.size > 1) {
-      ui.notifications.warn(`${game.i18n.localize("SR5.WARN_TargetTooMany")}`)
-      return false
-    }
+    //Otherwise, only allow one target for attack; the "ranges" lock lifted, the last one targeted is attacked
+    else if (game.user.targets.size > 1 && refuseByRule("ranges", "SR5.WARN_TargetTooMany", null, {
+      actor
+    })) return false
 
     //Get target actor
     targetActor = await SR5_PrepareRollHelper.getTargetedActor()
@@ -407,10 +409,9 @@ async function handleTargetInfo(rollData, actor, item){
     const targetDocument = Array.from(game.user.targets).at(-1)?.document
     let inReach = SR5_SystemHelpers.isInMeleeRange(canvas.grid, attackerDocument?.getOccupiedGridSpaceOffsets(), targetDocument?.getOccupiedGridSpaceOffsets(), itemData.reach.value)
     if (inReach === null) inReach = rollData.target.rangeInMeters <= (Math.max(itemData.reach.value, 0) + 1) * SR5_SystemHelpers.convertSceneUnitsToMeters(canvas.scene.grid.distance)
-    if (Number.isFinite(rollData.target.rangeInMeters) && !inReach) {
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetIsTooFar"))
-      return false
-    }
+    if (Number.isFinite(rollData.target.rangeInMeters) && !inReach && refuseByRule("ranges", "SR5.WARN_TargetIsTooFar", null, {
+      actor
+    })) return false
     sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, true, areaEffect, true, weaponLight, weaponLightCap, weaponVision)
     // Kept on the card for the defense to compare with (SR5 p. 188 option), before the option clears it here
     rollData.combat.environmentalMod = sceneEnvironmentalMod
@@ -433,11 +434,16 @@ async function handleTargetInfo(rollData, actor, item){
     // unmeasurable distance carries no range modifier, which is short range (+0, SR5 p. 186); the GM
     // applies a band by hand if the fiction calls for one.
     else if (Number.isFinite(rollData.target.rangeInMeters)) {
-      // removeTemplate matches on flags.sr5.itemUuid, which AbilityTemplate.fromItem fills from
-      // item.uuid; flags.sr5.item holds the id and is what getTemplateItemPosition looks up.
-      if (itemData.category === "grenade"|| itemData.type === "grenadeLauncher" || itemData.type === "missileLauncher") SR5_RollMessage.removeTemplate(null, item.uuid)
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetIsTooFar"))
-      return false
+      if (refuseByRule("ranges", "SR5.WARN_TargetIsTooFar", null, {
+        actor
+      })) {
+        // removeTemplate matches on flags.sr5.itemUuid, which AbilityTemplate.fromItem fills from
+        // item.uuid; flags.sr5.item holds the id and is what getTemplateItemPosition looks up.
+        if (itemData.category === "grenade"|| itemData.type === "grenadeLauncher" || itemData.type === "missileLauncher") SR5_RollMessage.removeTemplate(null, item.uuid)
+        return false
+      }
+      // The "ranges" lock lifted: the shot goes with the extreme range modifier, the farthest band of the table
+      rollData.target.range = "extreme"
     }
     const environmentalColumns = SR5_CombatHelpers.environmentalColumns(SR5_CombatHelpers.environmentScene(), actor.system, false, areaEffect, false, weaponLight, weaponLightCap, weaponVision)
     //A laser loses DV to the particles in the air, whatever the shooter sees through (Run & Gun p. 64)
@@ -663,30 +669,28 @@ export function _buildCalledShotList(rollData){
 }
 //Flamethrower fanning (Gun H(e)aven 3 p. 3): at most three targets, all in range, linked within 4 m of one another.
 //Distances are measured on the scene in meters, a grid space being 1.5 m.
-async function checkFanningTargets(tokens, attacker, maxRange){
-  if (tokens.length > FANNING_MAX_TARGETS) {
-    ui.notifications.warn(game.i18n.localize("SR5.WARN_FanningTooMany"))
-    return false
-  }
+//Each refusal goes through the "ranges" rule lock: lifted, the sweep strikes every target as aimed.
+export async function checkFanningTargets(tokens, attacker, maxRange, actor = null){
+  if (tokens.length > FANNING_MAX_TARGETS && refuseByRule("ranges", "SR5.WARN_FanningTooMany", null, {
+    actor
+  })) return false
   const points = tokens.map(t => ({
     x: t.document.x, y: t.document.y
   }))
   const fromAttacker = []
   for (const point of points) fromAttacker.push(await SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint(attacker, point))
-  if (fromAttacker.some(d => d > maxRange)) {
-    ui.notifications.warn(game.i18n.localize("SR5.WARN_FanningOutOfRange"))
-    return false
-  }
+  if (fromAttacker.some(d => d > maxRange) && refuseByRule("ranges", "SR5.WARN_FanningOutOfRange", null, {
+    actor
+  })) return false
   const distances = []
   for (const a of points) {
     const row = []
     for (const b of points) row.push(a === b ? 0 : await SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint(a, b))
     distances.push(row)
   }
-  if (!fanningTargetsLinked(distances)) {
-    ui.notifications.warn(game.i18n.localize("SR5.WARN_FanningTooFar"))
-    return false
-  }
+  if (!fanningTargetsLinked(distances) && refuseByRule("ranges", "SR5.WARN_FanningTooFar", null, {
+    actor
+  })) return false
   const farthest = fromAttacker.indexOf(Math.max(...fromAttacker))
   return {
     actorIds: tokens.map(t => t.actor.isToken ? t.actor.token.id : t.actor.id),
