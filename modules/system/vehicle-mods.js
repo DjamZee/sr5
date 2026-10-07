@@ -176,3 +176,13 @@ export const TACTILE_BIOFEEDBACK_DICE = -2
 export function tactileSensorsOn(items, controlMode) {
   return controlMode === "rigging" && fittedMods(items, "tactileSensors").length > 0
 }
+
+// R5 p. 169 (Camouflage de la signature): "À chaque fois qu'un attaquant tente de repérer le véhicule via un test de
+// Senseurs, ou de le cibler à l'aide d'un verrouillage actif ou passif, l'Indice de masquage est appliqué comme malus au
+// test de dés de l'attaquant, en plus des autres modificateurs de Signature"
+
+/** The dice the signature masking of a vehicle takes off whoever locks on it: minus its rating, 0 for anyone else */
+export function signatureMaskingPenalty(target) {
+  if (target?.type !== "actorDrone") return 0
+  return -fittedRating(target.items, "signatureMasking") || 0
+}

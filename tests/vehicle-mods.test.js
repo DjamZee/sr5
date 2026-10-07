@@ -4,7 +4,7 @@ import {
 import {
   vehicleModKind, fittedMods, fittedRating, replacedVehicleAttribute, replacedVehicleAttributeOf, armorCapReduction, addedArmor,
   hasBullBar, modSlotUse, slotsRefusal, crashArmorPenetration, occupantCrashBonus,
-  tactileSensorsOn, TACTILE_PERCEPTION_DICE, TACTILE_HANDLING, TACTILE_BIOFEEDBACK_DICE
+  tactileSensorsOn, TACTILE_PERCEPTION_DICE, TACTILE_HANDLING, TACTILE_BIOFEEDBACK_DICE, signatureMaskingPenalty
 } from '../modules/system/vehicle-mods.js'
 import {
   droneAutopilot
@@ -311,5 +311,26 @@ describe('Tactile sensors (Rigger 5.0 p. 170)', () => {
     expect(TACTILE_PERCEPTION_DICE).toBe(2)
     expect(TACTILE_HANDLING).toBe(1)
     expect(TACTILE_BIOFEEDBACK_DICE).toBe(-2)
+  })
+})
+
+describe('Signature masking against a lock (Rigger 5.0 p. 169)', () => {
+  it('takes its rating off whoever locks on the vehicle', () => {
+    expect(signatureMaskingPenalty({
+      type: "actorDrone", items: [mod("Camouflage de la signature", {
+        itemRating: 4
+      })]
+    })).toBe(-4)
+  })
+  it('nothing without it, nor against a character', () => {
+    expect(signatureMaskingPenalty({
+      type: "actorDrone", items: []
+    })).toBe(0)
+    expect(signatureMaskingPenalty({
+      type: "actorPc", items: [mod("Camouflage de la signature", {
+        itemRating: 4
+      })]
+    })).toBe(0)
+    expect(signatureMaskingPenalty(undefined)).toBe(0)
   })
 })
