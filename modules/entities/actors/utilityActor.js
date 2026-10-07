@@ -117,6 +117,9 @@ import {
 import {
   speedDemonBonus
 } from "../../system/rigger-qualities.js"
+import {
+  refuseByRule
+} from "../../system/rule-locks.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -1123,7 +1126,10 @@ export class SR5_CharacterUtility extends Actor {
       if (actorData.visions[key].isActive) currentVision = key
     }
     //Better Than Bad p. 141: cut from the manasphere by Blight, no astral perception (decision of DjamZ); leaving it stays free
-    if (vision === "astral" && currentVision !== "astral" && SR5_Toxins.blightBlocksAstral(actor)) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
+    //The "magic" rule lock lifted (B13), the switch goes and the gamemaster hears of it
+    if (vision === "astral" && currentVision !== "astral" && SR5_Toxins.blightBlocksAstral(actor) && refuseByRule("magic", "SR5.WARN_BlightNoSpell", null, {
+      actor
+    })) return
     if ((vision === "astral" || currentVision === "astral") && !SR5Combat.hasActionsLeft(actor, [{
       type: "simple", value: 1, source: "switchPerception"
     }])) return
@@ -2340,10 +2346,10 @@ export class SR5_CharacterUtility extends Actor {
     let currentInitiative = this.findActiveInitiative(actor.system),
       switchCost = []
     //Better Than Bad p. 141: cut from the manasphere by Blight, no astral projection (decision of DjamZ)
-    if (initiative === "astralInit" && currentInitiative !== "astralInit" && SR5_Toxins.blightBlocksAstral(actor)) {
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
-      return false
-    }
+    //The "magic" rule lock lifted (B13), the switch goes and the gamemaster hears of it
+    if (initiative === "astralInit" && currentInitiative !== "astralInit" && SR5_Toxins.blightBlocksAstral(actor) && refuseByRule("magic", "SR5.WARN_BlightNoSpell", null, {
+      actor
+    })) return false
     if (initiative === "astralInit" || (initiative === "physicalInit" && currentInitiative === "astralInit")) switchCost = [{
       type: "complex", value: 1
     }]
