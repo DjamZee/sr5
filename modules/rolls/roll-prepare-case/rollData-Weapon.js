@@ -299,6 +299,9 @@ const GRAPPLING_CALLED_SHOT_LABELS = {
 
 async function handleTargetInfo(rollData, actor, item){
   let itemData = item.system
+  //Unmeasured, the range is short (+0, SR5 p. 186) and a shotgun keeps its own spread: the dialog shows both
+  rollData.target.range = "short"
+  if (itemData.type === "shotgun") rollData.combat.choke.selected = SR5_ConverterHelpers.chokeToCode(itemData.choke)
   // No scene on the canvas: no distance and no environment to read. Say so rather than roll as if all were normal.
   if (!SR5_CombatHelpers.environmentScene()) {
     ui.notifications.warn(game.i18n.localize("SR5.WARN_NoSceneForEnvironment"))
@@ -309,8 +312,7 @@ async function handleTargetInfo(rollData, actor, item){
   let target = 0,
     sceneEnvironmentalMod,
     targetActor
-  rollData.target.range = "short"
-    
+
   //Initialize area environmental modifiers
   let areaEffect = {
     visibility:0, light:0, glare:0, wind:0
@@ -443,11 +445,6 @@ async function handleTargetInfo(rollData, actor, item){
   //Handle ranged weapon current firing mode (several targets for a flamethrower: the sweep, set above)
   if (itemData.category === "rangedWeapon") {
     rollData.combat.firingMode.selected = SR5_ConverterHelpers.initialFiringMode(itemData.firingMode, rollData.target.fanning)
-  }
-    
-  //Handle shotgun current choke settings
-  if (itemData.type === "shotgun") {
-    rollData.combat.choke.selected = SR5_ConverterHelpers.chokeToCode(itemData.choke)
   }
 
   //Add environmental modifiers
