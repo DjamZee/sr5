@@ -6,8 +6,16 @@
 export const PAN_LAYOUT = {
   iconRadius: 15,
   masterGap: 46,
-  slaveRing: 50,
+  slaveRing: 56,
   deviceGap: 40,
+  // The least distance between the centers of two icons (retours de DjamZ, 07/10): an icon with all it can wear, four
+  // marks over it (1.7 radius high, 1.5 wide), the monitor under it (1.3), the count of marks at its side (2), fits
+  // in 3.6 radii; a crowded ring grows, then a second ring opens one spacing further out
+  minSpacing: 54,
+  // How wide a ring opens: the slaves around the master, away from the token; the loose devices around the token,
+  // on the side opposite the master, never beyond its sides (so they never meet the slaves)
+  slaveSpread: Math.PI * 1.1,
+  deviceSpread: Math.PI,
 }
 
 /**
@@ -41,8 +49,11 @@ export function layoutCrown(graph, {
   const shown = graph.nodes.filter(n => seen(n) && (!n.via || graph.nodes.some(o => o.uuid === n.via && seen(o))))
   const at = {
   }
+  // A node on its own token takes no place in a ring: only a line goes to it
+  const offsets = new Map(shown.map(n => [n.uuid, tokenOffset(n)]))
+  const onRing = n => !offsets.get(n.uuid)
   const place = (node, x, y) => {
-    const offset = tokenOffset(node)
+    const offset = offsets.get(node.uuid)
     if (offset) {
       at[node.uuid] = {
         x: offset.x, y: offset.y
@@ -66,12 +77,18 @@ export function layoutCrown(graph, {
 
   // The slaves fan out around the master, away from the token
   const slaves = shown.filter(n => graph.links.some(l => l.to === n.uuid && l.from === graph.master))
-  const ring = PAN_LAYOUT.slaveRing * scale
-  fan(slaves, angle, ring, masterAt, place)
+  const gap = PAN_LAYOUT.minSpacing * scale
+  for (const node of slaves.filter(n => !onRing(n))) place(node, 0, 0)
+  fan(slaves.filter(onRing), angle, PAN_LAYOUT.slaveRing * scale, masterAt, place, {
+    maxSpread: PAN_LAYOUT.slaveSpread, gap
+  })
 
   // The devices slaved to nothing ring the token, on the side opposite the master
   const loose = shown.filter(n => graph.links.some(l => l.to === n.uuid && l.from === "owner") && n.uuid !== graph.master)
-  fan(loose, angle + Math.PI, tokenRadius + PAN_LAYOUT.deviceGap * scale, center, place)
+  for (const node of loose.filter(n => !onRing(n))) place(node, 0, 0)
+  fan(loose.filter(onRing), angle + Math.PI, tokenRadius + PAN_LAYOUT.deviceGap * scale, center, place, {
+    maxSpread: PAN_LAYOUT.deviceSpread, gap
+  })
 
   for (const link of graph.links){
     const to = at[link.to]
@@ -102,15 +119,38 @@ function edgeToward(point, radius){
   }
 }
 
-// Spread n nodes on an arc around a point, centered on a direction
-function fan(nodes, direction, radius, origin, place){
-  const n = nodes.length
-  if (!n) return
-  const spread = Math.min(Math.PI * 1.1, 0.62 * n)
-  nodes.forEach((node, i) => {
-    const a = direction + (n === 1 ? 0 : -spread / 2 + spread * i / (n - 1))
-    place(node, origin.x + Math.cos(a) * radius, origin.y + Math.sin(a) * radius)
-  })
+/**
+ * Spread nodes on arcs around a point, centered on a direction: two neighbours on an arc are never closer than the
+ * gap (a chord, not an arc length); what an arc cannot hold goes on the next one, a gap further out, so that two
+ * icons of two arcs are never closer than the gap either.
+ * @return {Array<{radius: Number, count: Number, spread: Number}>}  the arcs used, for the tests
+ */
+export function fan(nodes, direction, radius, origin, place, {
+  maxSpread = PAN_LAYOUT.slaveSpread, gap = PAN_LAYOUT.minSpacing
+} = {
+}){
+  const arcs = []
+  let rest = [...nodes]
+  let r = radius
+  while (rest.length){
+    // The least angle between two neighbours on this arc
+    const step = 2 * Math.asin(Math.min(1, gap / (2 * r)))
+    const capacity = Math.max(1, Math.floor(maxSpread / step + 1e-9) + 1)
+    const arc = rest.slice(0, capacity)
+    rest = rest.slice(capacity)
+    const n = arc.length
+    // As before for a few icons (0.62 rad apiece), wider when they need it, never wider than the arc may open
+    const spread = n === 1 ? 0 : Math.min(maxSpread, Math.max(step * (n - 1), 0.62 * n))
+    arc.forEach((node, i) => {
+      const a = direction + (n === 1 ? 0 : -spread / 2 + spread * i / (n - 1))
+      place(node, origin.x + Math.cos(a) * r, origin.y + Math.sin(a) * r)
+    })
+    arcs.push({
+      radius: r, count: n, spread
+    })
+    r += gap
+  }
+  return arcs
 }
 
 /**
@@ -139,4 +179,49 @@ export function dashesOf(from, to, dash = 5, gap = 5){
     dashes.push([from.x + ux * d, from.y + uy * d, from.x + ux * e, from.y + uy * e])
   }
   return dashes
+}
+
+/**
+ * Where the entries of the menu go (retours de DjamZ, 07/10: on a ring, the wide entries of a full menu overlapped).
+ * Two columns bent into an arc around the icon: the Matrix actions on its right, the owner's and the gamemaster's
+ * on its left, each family a little apart from the next. One row per entry, so that no two ever meet, whatever
+ * their number; the arc widens with the tallest column.
+ * @param {Object} families
+ * @param {Array<Number>} families.right   the number of entries of each family of the right column
+ * @param {Array<Number>} families.left    the same for the left column
+ * @param {Object} [sizes]
+ * @param {Number} [sizes.step]        the height of a row (an entry and the space under it), in pixels
+ * @param {Number} [sizes.familyGap]   the extra space between two families
+ * @param {Number} [sizes.minRadius]   the least distance from the icon to the inner edge of an entry
+ * @return {{radius: Number, right: Array<{x, y}>, left: Array<{x, y}>}}
+ *   x: the distance from the icon to the inner edge of the entry (to be negated on the left), y: its middle
+ */
+export function radialColumns({
+  right = [], left = []
+} = {
+}, {
+  step = 28, familyGap = 10, minRadius = 90
+} = {
+}){
+  const rowsOf = families => {
+    const rows = []
+    let y = 0
+    families.filter(count => count > 0).forEach((count, f) => {
+      if (f) y += familyGap
+      for (let i = 0; i < count; i++, y += step) rows.push(y)
+    })
+    const height = rows.length ? rows[rows.length - 1] : 0
+    return rows.map(r => r - height / 2)
+  }
+  const columns = {
+    right: rowsOf(right), left: rowsOf(left)
+  }
+  const reach = Math.max(0, ...columns.right.map(Math.abs), ...columns.left.map(Math.abs))
+  const radius = Math.max(minRadius, reach + step)
+  const place = y => ({
+    x: Math.sqrt(radius * radius - y * y), y
+  })
+  return {
+    radius, right: columns.right.map(place), left: columns.left.map(place)
+  }
 }

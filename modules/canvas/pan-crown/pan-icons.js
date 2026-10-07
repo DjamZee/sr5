@@ -30,6 +30,65 @@ const DECK_CATEGORIES = {
 const AUGMENTATION_CATEGORIES = {
   eyeware: "implant-eye",
   earware: "implant-ear",
+  // An implanted weapon is a weapon first (retours de DjamZ, 07/10)
+  cyberweapon: "weapon",
+}
+
+// A device of the scenery (actorDevice) knows only device, slavedDevice, host, ice or maglock: what it is (a camera,
+// a door...) is read in its name, or its device's, in French and in English. The first that matches wins: a turret
+// camera is a turret, a maglock on a door is a maglock. A gamemaster who wants another picture gives it its own.
+const SCENERY_NAMES = [
+  ["turret", /tourelle|turret/i],
+  ["maglock", /maglock|serrure|lock\b/i],
+  ["camera", /cam[ée]ra|camera/i],
+  ["elevator", /ascenseur|elevator|\blift\b/i],
+  ["door", /\bportes?\b|portail|\bsas\b|\bdoors?\b|\bgates?\b/i],
+  ["sensor", /capteur|senseur|sensor|d[ée]tecteur|detector|scanner/i],
+  ["light", /[ée]clairage|lampe|lumi[èe]re|projecteur|\blights?\b|lighting|lamp\b/i],
+  ["terminal", /terminal|ordinateur|computer|poste de travail|workstation/i],
+]
+
+// A piece of gear has no category at all: it takes a picture of the scenery only when its name says it is a camera,
+// a sensor or a maglock (not a lockpick kit, not a maglock passkey, not sensor tags)
+const GEAR_NAMES = [
+  ["camera", /cam[ée]ra|camera/i],
+  ["sensor", /^(senseur|capteur|batterie de senseurs|sensor)/i],
+  ["maglock", /^maglock/i],
+]
+
+function sceneryOf(...names){
+  for (const name of names){
+    const found = SCENERY_NAMES.find(([, pattern]) => pattern.test(name ?? ""))
+    if (found) return found[0]
+  }
+  return null
+}
+
+/**
+ * The generic icon category of an actor of the Matrix, for its own device (the base device of a drone, a host, an IC,
+ * an agent, a sprite, a device of the scenery).
+ * @param {Object} actor
+ * @param {Object} [device]   its device, whose name may tell what a device of the scenery is
+ * @return {String|null}      a key of PAN_ICON_CATEGORIES; null for a character, who has no base device
+ */
+export function actorIconCategoryOf(actor, device = null){
+  switch (actor?.type){
+    case "actorDrone":
+      return actor.system?.type === "vehicle" ? "vehicle" : "drone"
+    case "actorSprite":
+      return "sprite"
+    case "actorAgent":
+      return "agent"
+    case "actorDevice": {
+      const type = actor.system?.matrix?.deviceType
+      if (type === "host") return "host"
+      if (type === "ice") return "ice"
+      if (type === "maglock") return "maglock"
+      return sceneryOf(actor.name, device?.name) ?? "device"
+    }
+    default:
+      return null
+  }
 }
 
 // An implant that speeds the reflexes (wired reflexes, reaction enhancers, synaptic booster...): the system knows
@@ -44,13 +103,17 @@ function isReflexImplant(item){
 
 /**
  * The generic icon category of an item of the Matrix.
- * @param {Object} item   the item (an itemDevice, itemWeapon, itemAugmentation, itemVehicle...)
- * @return {String}       a key of PAN_ICON_CATEGORIES; "device" when nothing more precise is known
+ * @param {Object} item       the item (an itemDevice, itemWeapon, itemAugmentation, itemVehicle...)
+ * @param {Object} [holder]   the actor that carries it (its parent by default): the base device of a drone, a host,
+ *                            an IC, an agent or a sprite takes the picture of what it is
+ * @return {String}           a key of PAN_ICON_CATEGORIES; "device" when nothing more precise is known
  */
-export function iconCategoryOf(item){
+export function iconCategoryOf(item, holder = item?.parent){
   switch (item?.type){
     case "itemDevice":
-      return DECK_CATEGORIES[item.system?.type] ?? "device"
+      return DECK_CATEGORIES[item.system?.type] ?? actorIconCategoryOf(holder, item) ?? "device"
+    case "itemGear":
+      return GEAR_NAMES.find(([, pattern]) => pattern.test(item.name ?? ""))?.[0] ?? "device"
     case "itemWeapon":
       return "weapon"
     case "itemArmor":

@@ -29,9 +29,14 @@ export const PAN_TOKEN_KINDS = ["drone", "rigger", "wan", "decor"]
 export const PAN_MODES = ["active", "silent", "offline"]
 
 // Items that can be an icon of the Matrix: those that carry the wireless switch. A drug has one too, for its own
-// phases, and is no device.
+// phases, and is no device. Nor is a living augmentation: "il va de soi que le bioware ne dispose pas de fonctions sans
+// fil" (SR5 p. 462), and the same goes for genetech and symbionts, though their data carry the switch (retours de
+// DjamZ, 07/10: a bioware drawn as an implant).
+const LIVING_AUGMENTATIONS = ["bioware", "culturedBioware", "genetech", "symbionts"]
+
 export function isMatrixItem(item){
-  return !!item && item.type !== "itemDrug" && item.system?.isWireless !== undefined
+  if (!item || item.type === "itemDrug" || item.system?.isWireless === undefined) return false
+  return !(item.type === "itemAugmentation" && LIVING_AUGMENTATIONS.includes(item.system?.type))
 }
 
 // The device through which the actor reaches the Matrix: its active commlink, deck, rigger console or living persona
@@ -221,8 +226,7 @@ export function buildPanGraph(actor, {
       const node = nodeOf(decorDevice, "decor", decor, mode, silentFrom, null, actor)
       // Its own token: the token's id for an unlinked token, so that two doors of one actor stay two
       node.holderIds = [realIdOf(decor)]
-      node.icon = decorIconOf(decor)
-      // The gamemaster's own icon for a device of the scenery is on its actor (lot 10)
+      // Its generic icon is what it is, a camera, a door... (pan-icons.js, actorIconCategoryOf); the gamemaster's own icon for a device of the scenery is on its actor (lot 10)
       node.customIcon ??= customIconOf(decor)
       add(node, device.uuid, "decor")
       decorCount++
@@ -332,11 +336,6 @@ export function decorSlavesOf(actor, device, actors){
     keys.includes(a.system?.matrix?.panMaster) && (a.isToken || !tokenIds.has(a.id)))
 }
 
-// The generic icon of a device of the scenery: a maglock, otherwise the device (lot 10 may refine it)
-function decorIconOf(actor){
-  return actor?.system?.matrix?.deviceType === "maglock" ? "maglock" : "device"
-}
-
 // The master a drone (its rigger's) or a device of the scenery (panMaster) goes up to, as a node of the crown
 function upwardMasterOf(actor, graph, {
   resolve, actors
@@ -393,7 +392,8 @@ function nodeOf(item, kind, holder, mode, silentFrom, drone = null, panOwner = n
     itemType: item.type,
     subType: item.system?.type ?? "",
     // The generic icon of its category (lot 2)
-    icon: iconCategoryOf(item),
+    // (the base device of a drone, a host, an IC or a device of the scenery: the picture of what it is)
+    icon: iconCategoryOf(item, holder),
     // Its own picture, if the item (or the deployed drone) has one: it takes the place of the generic one (lot 10)
     customIcon: customIconOf(item) ?? customIconOf(drone),
     holderIds: idsOf(holder),

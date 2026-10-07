@@ -29,6 +29,15 @@
     font-weight: bold;
   }
 
+  // Two columns bent into an arc (pan-radial-menu.js, radialColumns): each entry hangs by its edge nearest the icon
+  .right {
+    transform: translate(0, -50%);
+  }
+
+  .left {
+    transform: translate(-100%, -50%);
+  }
+
   .sr5-pan-radial-entry {
     width: auto;
     min-height: 1.6rem;
@@ -43,6 +52,12 @@
 
     &.current {
       border-style: dashed;
+    }
+
+    // The gamemaster's own entry, in the purple of what no player sees
+    &.gm {
+      border-color: #b04dff;
+      box-shadow: 0 0 6px rgba(176, 77, 255, 0.45);
     }
 
     // Greyed out: the reason shows on hover

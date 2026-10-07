@@ -13,6 +13,9 @@ import {
   currentViewer, getGraph, setPanReveal, tokenOfNode
 } from "./pan-crown.js"
 import {
+  radialColumns
+} from "./pan-layout.js"
+import {
   canTryMatrixAction
 } from "../../rolls/roll-prepare-case/rollData-MatrixAction.js"
 import {
@@ -112,16 +115,45 @@ function button(label, {
   return element
 }
 
-// The entries laid on a ring around the icon, the first one on top
-function layOut(menu, entries){
-  const count = entries.length
-  const radius = Math.max(80, count * 13)
-  entries.forEach((entry, i) => {
-    const angle = -Math.PI / 2 + i * 2 * Math.PI / count
-    entry.style.left = `${Math.round(Math.cos(angle) * radius)}px`
-    entry.style.top = `${Math.round(Math.sin(angle) * radius)}px`
-    menu.appendChild(entry)
+// The entries laid out in their two columns; the whole menu kept on the screen
+function layOut(menu, {
+  right, left
+}){
+  const all = [...right.flat(), ...left.flat()]
+  for (const entry of all) menu.appendChild(entry)
+  const center = menu.querySelector(".sr5-pan-radial-center")
+  const step = Math.max(...all.map(e => e.offsetHeight || 0), 22) + 5
+  const {
+    right: rightAt, left: leftAt
+  } = radialColumns({
+    right: right.map(f => f.length), left: left.map(f => f.length)
+  }, {
+    step, minRadius: Math.max(70, (center?.offsetWidth ?? 0) / 2 + 14)
   })
+  const set = (entry, {
+    x, y
+  }, side) => {
+    entry.classList.add(side)
+    entry.style.left = `${Math.round(side === "left" ? -x : x)}px`
+    entry.style.top = `${Math.round(y)}px`
+  }
+  right.flat().forEach((entry, i) => set(entry, rightAt[i], "right"))
+  left.flat().forEach((entry, i) => set(entry, leftAt[i], "left"))
+
+  // Near an edge of the screen, the menu moves in rather than spill over it
+  const margin = 8
+  const boxes = [center, ...all].filter(Boolean).map(e => e.getBoundingClientRect())
+  const box = {
+    left: Math.min(...boxes.map(b => b.left)), right: Math.max(...boxes.map(b => b.right)),
+    top: Math.min(...boxes.map(b => b.top)), bottom: Math.max(...boxes.map(b => b.bottom)),
+  }
+  const shift = (low, high, size) => low < margin ? margin - low : high > size - margin ? Math.max(margin - low, size - margin - high) : 0
+  const dx = shift(box.left, box.right, window.innerWidth)
+  const dy = shift(box.top, box.bottom, window.innerHeight)
+  if (dx || dy) {
+    menu.style.left = `${parseFloat(menu.style.left) + dx}px`
+    menu.style.top = `${parseFloat(menu.style.top) + dy}px`
+  }
 }
 
 /**
@@ -142,7 +174,10 @@ export function openRadialMenu({
     canTry: canTryMatrixAction
   })
 
+  // Three families: the Matrix actions on the right; the owner's (mode, PAN) and the gamemaster's on the left
   const buttons = []
+  const owners = []
+  const gm = []
   for (const action of entries.actions){
     buttons.push(button(game.i18n.localize(SR5.matrixRolledActions[action.key] ?? action.key), {
       tooltip: reasonOf(action),
@@ -156,11 +191,11 @@ export function openRadialMenu({
     }))
   }
   for (const mode of entries.modes){
-    buttons.push(button(game.i18n.localize(MODE_LABELS[mode.mode]), {
+    owners.push(button(game.i18n.localize(MODE_LABELS[mode.mode]), {
       current: mode.current, disabled: mode.current, onClick: () => switchMode(node, mode.mode, graph)
     }))
   }
-  if (entries.slave) buttons.push(button(entries.slave.action === "free" ?
+  if (entries.slave) owners.push(button(entries.slave.action === "free" ?
     game.i18n.localize("SR5.PanMenuUnslave") :
     game.i18n.format("SR5.PanMenuSlave", {
       master: graph.nodes.find(n => n.uuid === graph.master)?.name ?? ""
@@ -168,7 +203,7 @@ export function openRadialMenu({
     onClick: () => entries.slave.action === "free" ? freeFromPan(node, graph) : slaveToPan(node, graph)
   }))
   // The gamemaster's reveal (lot 3), for the whole table
-  if (game.user?.isGM) buttons.push(button(game.i18n.localize(node.revealed ? "SR5.PanCrownHide" : "SR5.PanCrownReveal"), {
+  if (game.user?.isGM) gm.push(button(game.i18n.localize(node.revealed ? "SR5.PanCrownHide" : "SR5.PanCrownReveal"), {
     tooltip: node.hiddenFromPlayers === undefined ? "" : game.i18n.localize(node.hiddenFromPlayers ? "SR5.PanCrownHiddenFromPlayers" : "SR5.PanCrownSeenByPlayers"),
     onClick: () => setPanReveal(node, !node.revealed),
   }))
@@ -181,14 +216,18 @@ export function openRadialMenu({
   center.className = "sr5-pan-radial-center"
   center.textContent = node.name
   menu.appendChild(center)
-  if (!buttons.length) {
+  if (!buttons.length && !owners.length && !gm.length) {
     const empty = document.createElement("span")
     empty.className = "sr5-pan-radial-empty"
     empty.textContent = game.i18n.localize("SR5.PanMenuNoViewer")
     buttons.push(empty)
   }
-  layOut(menu, buttons)
+  for (const entry of gm) entry.classList.add("gm")
+  // In the page first: the layout measures the entries
   document.body.appendChild(menu)
+  layOut(menu, {
+    right: [buttons], left: [owners, gm]
+  })
   openMenu = menu
   document.addEventListener("pointerdown", onPointerOutside, true)
   document.addEventListener("keydown", onEscape, true)
