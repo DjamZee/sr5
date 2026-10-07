@@ -148,11 +148,18 @@ export class SR5_MiscellaneousHelpers {
   }
 
   /** The hits of a card the GM stands by, the push of the limit counted only when the roller's sheet shows Edge spent
-   * (hitsUnderPush, SR5 p. 58): a GM's card as written. null when a player's card shows no dice. */
-  static pushAwareHits(card, path, limit = 0) {
+   * (hitsUnderPush, SR5 p. 58): a GM's card as written. null when a player's card shows no dice.
+   * `rolled`: the pool the card was rolled with (its dicePool.value) counts when larger than the sheet's: the dice the
+   * roll dialog added (miscellaneous, situational, often granted by the GM) are not on the sheet, and an honest card
+   * counted on the sheet alone lost its hits (Matrix Perception, Anselmine 07/10). */
+  static pushAwareHits(card, path, limit = 0, {
+    rolled = false
+  } = {
+  }) {
     if (card.byGM) return Math.max(0, Number(card.data.roll?.hits) || 0)
-    const pool = Number(foundry.utils.getProperty(card.roller?.system ?? {
+    const sheet = Number(foundry.utils.getProperty(card.roller?.system ?? {
     }, path)) || 0
+    const pool = rolled ? Math.max(sheet, Number(card.data.dicePool?.value) || 0) : sheet
     const pushed = !!card.data.edge?.hasUsedPushTheLimit && edgeSpentOn(card.roller)
     const counted = hitsUnderPush({
       rollJSON: card.data.roll?.r, pool, edge: Number(card.roller?.system?.specialAttributes?.edge?.augmented?.value) || 0, limit, pushed,

@@ -39,6 +39,13 @@ import {
 
 export const PERCEPTION_BUTTON = "matrixPerceptionInfo"
 const POOL = "matrix.actions.matrixPerception.test.dicePool"
+// The observer's dice are counted within the pool she rolled: the dice added in the roll dialog are not on the sheet
+// (Anselmine 07/10: +3 miscellaneous dice, the gamemaster refused an honest card)
+const ROLLED = {
+  rolled: true
+}
+// The reasons the observer is told of, when the gamemaster refuses her request
+export const PERCEPTION_REFUSALS = ["card", "owner", "empty", "tooMany", "unknown", "noTarget", "twice", "spent", "target", "gm"]
 
 /* -------------------------------------------- */
 /*  What the card aims at                        */
@@ -327,7 +334,7 @@ async function perceptionCard(messageId){
   const data = card?.data
   if (data?.test?.typeSub !== "matrixPerception") return null
   if (data.test.type === "matrixAction") {
-    const hits = SR5_MiscellaneousHelpers.pushAwareHits(card, POOL, Number(data.limit?.value) || 0)
+    const hits = SR5_MiscellaneousHelpers.pushAwareHits(card, POOL, Number(data.limit?.value) || 0, ROLLED)
     if (hits === null) return null
     return {
       card, observer: card.roller, budget: perceptionBudget({
@@ -340,7 +347,7 @@ async function perceptionCard(messageId){
   const attack = SR5_MiscellaneousHelpers.cardOf(data.previousMessage?.messageId)
   const observer = actorOf(data.previousMessage?.actorId, data)
   if (!attack || !observer || attack.roller?.uuid !== observer.uuid) return null
-  const hits = SR5_MiscellaneousHelpers.pushAwareHits(attack, POOL, Number(attack.data.limit?.value) || 0)
+  const hits = SR5_MiscellaneousHelpers.pushAwareHits(attack, POOL, Number(attack.data.limit?.value) || 0, ROLLED)
   const {
     SR5_MarkHelpers
   } = await import("../../rolls/roll-helpers/mark.js")
@@ -409,8 +416,10 @@ export function needsGMWindow(choices, typed = {
  * @param {User} sender
  */
 export async function answerPerception(request, sender){
-  const refuse = reason => {
+  // Never a silent refusal: the observer's player is told why, in a few words
+  const refuse = (reason, budget = null) => {
     SR5_SystemHelpers.srLog(1, `Matrix Perception refused from ${sender?.name}: ${reason}`, request)
+    tellRefusal(sender, reason, budget)
     return false
   }
   const found = await perceptionCard(request?.messageId)
@@ -422,7 +431,7 @@ export async function answerPerception(request, sender){
   const checked = checkChoices(request.choices, budget, {
     hasTarget
   })
-  if (!checked.ok) return refuse(checked.reason)
+  if (!checked.ok) return refuse(checked.reason, budget)
   const key = consumedKey(card.id, PERCEPTION_BUTTON)
   if (SR5_MiscellaneousHelpers.isConsumed(key)) return refuse("spent")
 
@@ -581,6 +590,35 @@ export async function _socketPerceptionInfo(message, senderId){
   if (!activeGM()) return false
   return answerPerception(message?.data ?? {
   }, game.users.get(senderId))
+}
+
+/** The words of a refusal: the reason, and the hits the gamemaster counted when they were too few */
+export function refusalText(reason, budget = null){
+  const why = game.i18n.localize(`SR5.MatrixPerceptionRefused_${reason}`)
+  const counted = reason === "tooMany" && Number.isFinite(budget) ? ` ${game.i18n.format("SR5.MatrixPerceptionRefusedCounted", {
+    budget
+  })}` : ""
+  return game.i18n.format("SR5.MatrixPerceptionRefusedByGM", {
+    reason: why
+  }) + counted
+}
+
+/** Tell the player who asked why the gamemaster refused: on her own screen, or here when she is the gamemaster */
+export function tellRefusal(sender, reason, budget = null){
+  if (!sender) return
+  if (sender.id === game.user?.id) return void ui.notifications.warn(refusalText(reason, budget))
+  return SR5_SocketHandler.emitForPlayer("matrixPerceptionRefused", {
+    reason, budget
+  }, sender.id)
+}
+
+// Only a gamemaster sends it, and only a reason of the list: no other text reaches a player's screen
+export function _socketPerceptionRefused(message, senderId){
+  const data = message?.data ?? {
+  }
+  if (!game.users.get(senderId)?.isGM || !PERCEPTION_REFUSALS.includes(data.reason)) return SR5_SystemHelpers.srLog(1, `matrixPerceptionRefused refused from ${senderId}`, data)
+  const budget = Number.isFinite(data.budget) ? Math.max(0, Math.floor(data.budget)) : null
+  ui.notifications.warn(refusalText(data.reason, budget))
 }
 
 export async function _socketForgetIntel(message, senderId){

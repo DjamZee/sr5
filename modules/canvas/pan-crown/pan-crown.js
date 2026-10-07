@@ -137,7 +137,7 @@ function lookerOf(actor, isGM){
 
 // Who may look at a crown for the players, as the gamemaster's client can tell (Q3 lets a player look through any
 // token she controls): every non-gamemaster user's assigned character, and the actors she owns that have a token on
-// the scene. The gamemaster's purple ring is therefore "no player can see it from any of her characters".
+// the scene. The gamemaster's yellow ring (purple before lot 8) is therefore "no player can see it from any of her characters".
 function playerViewers(){
   const viewers = new Map()
   const add = (actor, token) => {
@@ -182,7 +182,7 @@ export function getGraph(subject, options = {
     name: viewer?.actor?.name ?? null, ids: looker.ids, hasAntenna: looker.hasAntenna, isGM: looker.isGM,
     gmDecides: looker.gmDecides
   }
-  // The gamemaster's purple ring (lot 3): what no player sees
+  // The gamemaster's yellow ring (lot 3, yellow since lot 8): what no player sees
   const players = looker.isGM ? playerViewers().map(p => ({
     token: p.token, looker: lookerOf(p.actor, false)
   })) : null
