@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 import {
   vehicleModKind, fittedMods, fittedRating, replacedVehicleAttribute, replacedVehicleAttributeOf, armorCapReduction, addedArmor,
-  hasBullBar
+  hasBullBar, modSlotUse, slotsRefusal
 } from '../modules/system/vehicle-mods.js'
 import {
   droneAutopilot
@@ -185,5 +185,74 @@ describe('Ram plate (Rigger 5.0 p. 164)', () => {
     }
     expect(SR5_ConverterHelpers.rammingAttackDamage(ramming, 10)).toBe(10)
     expect(ramming.bullBarBonus).toBe(0)
+  })
+})
+
+describe('Slots cannot be gone beyond (Rigger 5.0 p. 153-154)', () => {
+  const use = (type, slots, extra = {
+  }) => ({
+    type, isActive: true, slots: {
+      value: slots
+    }, ...extra
+  })
+  const free = {
+    weapons: {
+      value: 1
+    }, protection: {
+      value: 0
+    }
+  }
+  it('reads the slots a fitted mod takes, factory ones even switched off', () => {
+    expect(modSlotUse(use("weapons", 2))).toEqual({
+      category: "weapons", slots: 2
+    })
+    expect(modSlotUse(use("weapons", 2, {
+      isActive: false
+    }))).toBe(null)
+    expect(modSlotUse(use("weapons", 2, {
+      isActive: false, isFactory: true
+    }))).toEqual({
+      category: "weapons", slots: 2
+    })
+    expect(modSlotUse(use("equipment", 2))).toBe(null)
+  })
+  it('refuses a mod fitted beyond the slots left', () => {
+    expect(slotsRefusal(free, null, {
+      category: "weapons", slots: 2
+    })).toEqual({
+      category: "weapons", needed: 2, free: 1
+    })
+    expect(slotsRefusal(free, null, {
+      category: "weapons", slots: 1
+    })).toBe(null)
+  })
+  it('a mod that grows counts what it already held', () => {
+    expect(slotsRefusal(free, {
+      category: "weapons", slots: 2
+    }, {
+      category: "weapons", slots: 3
+    })).toBe(null)
+    expect(slotsRefusal(free, {
+      category: "weapons", slots: 2
+    }, {
+      category: "weapons", slots: 4
+    })).toEqual({
+      category: "weapons", needed: 4, free: 3
+    })
+  })
+  it('never refuses a change that takes no more, even on a vehicle already over its slots', () => {
+    const over = {
+      protection: {
+        value: -2
+      }
+    }
+    expect(slotsRefusal(over, {
+      category: "protection", slots: 3
+    }, {
+      category: "protection", slots: 3
+    })).toBe(null)
+    expect(slotsRefusal(over, {
+      category: "protection", slots: 3
+    }, null)).toBe(null)
   })
 })

@@ -56,6 +56,30 @@ import {
 import {
   isFactoryMod
 } from "../../system/vehicle-factory.js"
+import {
+  modSlotUse, slotsRefusal
+} from "../../system/vehicle-mods.js"
+
+/** Rigger 5.0 p. 153-154: a mod fitted on a drone beyond the slots of its category is refused (rule lock "objects").
+ *  `after` is the mod as it would be, prepared; factory equipment fits by definition */
+function vehicleModSlotsRefused(drone, before, after) {
+  if (drone?.type !== "actorDrone" || isFactoryMod(after)) return false
+  const refusal = slotsRefusal(drone.system?.modificationSlots, before ? modSlotUse(before.system) : null, modSlotUse(after.system))
+  if (!refusal) return false
+  return refuseByRule("objects", "SR5.WARN_VehicleModSlotsFull", {
+    name: after.name, needed: refusal.needed, free: refusal.free, category: game.i18n.localize(SR5.vehicleModType[refusal.category])
+  }, {
+    actor: drone
+  })
+}
+
+/** The mod as an update or a creation would leave it, prepared, without touching the document */
+function preparedCopy(item, changes = {
+}) {
+  const copy = item.clone(changes)
+  copy.prepareData()
+  return copy
+}
 
 /**
  * Override and extend the basic :class:`Item` implementation
@@ -117,6 +141,10 @@ export class SR5Item extends Item {
     if (this.type === "itemVehicleMod" && data.flags?.sr5?.isFactory === true) this.updateSource({
       "system.isFactory": true, "flags.sr5.-=isFactory": null
     })
+    //Rigger 5.0 p. 153: no slot beyond the vehicle's. Only on a drone already in the world: a drone being deployed
+    //brings its mods along with it
+    if (this.type === "itemVehicleMod" && this.parent?.type === "actorDrone" && this.parent.collection?.has?.(this.parent.id) &&
+      vehicleModSlotsRefused(this.parent, null, preparedCopy(this))) return false
     const defaultImg = `systems/sr5/assets/img/items/${data.type}.svg`
     if (!data.img || data.img === "icons/svg/item-bag.svg") {
       this.updateSource({
@@ -137,6 +165,9 @@ export class SR5Item extends Item {
     if (updateTakesOut(this, changes)) foundry.utils.setProperty(changes, `flags.sr5.-=${CONCEALED_FLAG}`, null)
     //The factory box unticked: the Mégapack's flag goes with it, or it would tick it again (Rigger 5.0 p. 156)
     if (foundry.utils.getProperty(changes, "system.isFactory") === false && this.flags?.sr5?.isFactory) foundry.utils.setProperty(changes, "flags.sr5.-=isFactory", null)
+    //Rigger 5.0 p. 153: fitting it, or making it bigger, beyond the slots left is refused
+    if (this.type === "itemVehicleMod" && this.parent?.type === "actorDrone" && changes.system &&
+      vehicleModSlotsRefused(this.parent, this, preparedCopy(this, changes))) return false
     return super._preUpdate(changes, options, user)
   }
 

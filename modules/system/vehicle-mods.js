@@ -2,7 +2,7 @@
 // Pure rules, read by the actor preparation, the rolls and the item guards. The other mods are data (effects).
 
 import {
-  isFactoryMod
+  isFactoryMod, modTakesSlots
 } from "./vehicle-factory.js"
 
 // What a mod does, chosen on its sheet. "" = nothing the system works out by code
@@ -108,4 +108,30 @@ export function addedArmor(items, armorModifiers) {
     factory: false
   }).map(i => i.name))
   return (armorModifiers ?? []).filter(m => sources.has(m.source) && !m.isMultiplier).reduce((sum, m) => sum + (Number(m.value) || 0), 0)
+}
+
+// R5 p. 153-154: a vehicle has as many slots as its Body in each of six categories, and a mod cannot go beyond them.
+// Factory equipment fits by definition (R5 p. 156): it is never refused
+const SLOT_CATEGORIES = ["powerTrain", "protection", "weapons", "body", "electromagnetic", "cosmetic"]
+
+/** The slots a mod takes and their category, or null when it takes none (switched off, equipment, no slots) */
+export function modSlotUse(system) {
+  if (!system || !SLOT_CATEGORIES.includes(system.type) || !modTakesSlots(system, system.isFactory)) return null
+  const slots = Number(system.slots?.value) || 0
+  return slots > 0 ? {
+    category: system.type, slots
+  } : null
+}
+
+/** Whether fitting a mod as `after` (it was `before`) goes beyond the free slots of its category, and by how much:
+ *  {category, needed, free} or null. `free` holds the vehicle's slots left, `before` already counted in them.
+ *  A change that takes no more slots is never refused, even on a vehicle already over its slots */
+export function slotsRefusal(free, before, after) {
+  if (!after) return null
+  const held = before?.category === after.category ? before.slots : 0
+  if (after.slots <= held) return null
+  const left = (Number(free?.[after.category]?.value) || 0) + held
+  return after.slots > left ? {
+    category: after.category, needed: after.slots, free: Math.max(0, left)
+  } : null
 }
