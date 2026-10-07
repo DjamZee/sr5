@@ -37,7 +37,9 @@ export class SR5Conceal {
   //The sheet's button: Palming cannot be used untrained (SR5 p. 135)
   static async startHide(actor, item) {
     if (!actor?.isOwner || !canBeConcealed(item)) return
-    if (!(actor.system.skills?.palming?.rating?.value > 0)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_PickpocketNeedsPalming"))
+    if (!(actor.system.skills?.palming?.rating?.value > 0) && refuseByRule("objects", "SR5.WARN_PickpocketNeedsPalming", null, {
+      actor
+    })) return
     return actor.rollTest("concealItem", null, {
       itemId: item.id
     })
