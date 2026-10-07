@@ -3,6 +3,9 @@
 import {
   personaActsAsRcc, machinistRccRatings
 } from "./technomancer-streams.js"
+import {
+  replacedVehicleAttribute
+} from "../../system/vehicle-mods.js"
 
 // Whether an actor, or the controller's copy a drone carries ({system, items}), acts as a rigger command console.
 // The single test of the system: the living persona of a Machinist answers it too (Kill Code p. 100-101)
@@ -86,8 +89,9 @@ function consoleSharing(console){
 // autopilot (the vehicle mod « Remplacement de l'Autopilote », Rigger 5.0 p. 131) is read from its mod, fitted and
 // not from the factory, whose effect the printed profile already counts
 export function droneAutopilot(droneSystem, droneItems){
-  let pilot = Number(droneSystem?.attributes?.pilot?.natural?.base) || 0
-  let replaced = null, added = 0
+  const replaced = replacedVehicleAttribute(droneItems, "pilot")
+  let pilot = replaced ?? (Number(droneSystem?.attributes?.pilot?.natural?.base) || 0)
+  let added = 0
   for (const item of droneItems ?? []){
     const system = item?.system
     if (item?.type !== "itemVehicleMod" || !system?.isActive || system.isFactory === true) continue
@@ -95,14 +99,10 @@ export function droneAutopilot(droneSystem, droneItems){
     })){
       if (effect?.target !== "system.attributes.pilot.augmented" || effect.transfer || (effect.wifi && !system.wirelessTurnedOn)) continue
       const multiplier = Number(effect.multiplier ?? 1) || 1
-      if (effect.type === "ratingReplace" || effect.type === "valueReplace") {
-        const value = effect.type === "ratingReplace" ? Number(system.itemRating) || 0 : Number(effect.value) || 0
-        replaced = Math.max(replaced ?? 0, value * multiplier)
-      } else if (effect.type === "rating") added += (Number(system.itemRating) || 0) * multiplier
+      if (effect.type === "rating") added += (Number(system.itemRating) || 0) * multiplier
       else if (effect.type === "value") added += (Number(effect.value) || 0) * multiplier
     }
   }
-  if (replaced !== null) pilot = replaced
   return pilot + added
 }
 

@@ -107,6 +107,9 @@ import {
 import {
   modTakesSlots, factorySkipsEffect
 } from "../../system/vehicle-factory.js"
+import {
+  replacedVehicleAttribute, replacedVehicleAttributeOf
+} from "../../system/vehicle-mods.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -2952,6 +2955,17 @@ export class SR5_CharacterUtility extends Actor {
 
   }
 
+  // Autopilot and Sensor replacements (Rigger 5.0 p. 170): the printed value gives way to the mod's rating, read in the
+  // base of the attribute so that the other mods still add to it. A modifier on natural, never the base the sheet edits
+  static applyVehicleReplacements(actor) {
+    const attributes = actor.system.attributes
+    for (const [key, label] of [["pilot", "SR5.VehicleModEffectKind_autopilotReplacement"], ["sensor", "SR5.VehicleModEffectKind_sensorReplacement"]]) {
+      const replaced = replacedVehicleAttribute(actor.items, key)
+      if (replaced === null || !attributes[key]) continue
+      SR5_EntityHelpers.updateModifier(attributes[key].natural, game.i18n.localize(label), "itemVehicleMod", replaced - (Number(attributes[key].natural.base) || 0))
+    }
+  }
+
   // Vehicle slots Update
   static updateVehicleSlots(actor) {
     let actorData = actor.system, slots = actorData.attributes.body.augmented.value
@@ -5549,6 +5563,8 @@ export class SR5_CharacterUtility extends Actor {
       if (customEffect.transfer) skipCustomEffect = true
       // A factory mod: its effect on the printed profile is already there (Rigger 5.0 p. 156)
       if (item.type === "itemVehicleMod" && factorySkipsEffect(itemData.isFactory, customEffect)) skipCustomEffect = true
+      // An Autopilot or Sensor replacement is in the base of the attribute already (applyVehicleReplacements)
+      if (item.type === "itemVehicleMod" && actor.type === "actorDrone" && replacedVehicleAttributeOf(customEffect)) skipCustomEffect = true
       // Drugs
       // Drugs: an effect applies in its own phase, the rise or the crash (entities/items/drug-phase.js)
       if (item.type === "itemDrug") {

@@ -499,6 +499,9 @@ export class SR5Actor extends Actor {
         SR5_CharacterUtility.applyRacialModifers(actor)
         break
       case "actorDrone":
+        SR5_CharacterUtility.resetCalculatedValues(actor)
+        SR5_CharacterUtility.applyVehicleReplacements(actor)
+        break
       case "actorDevice":
       case "actorSprite":
       case "actorAgent":

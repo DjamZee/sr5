@@ -2,8 +2,11 @@ import {
   describe, it, expect
 } from 'vitest'
 import {
-  vehicleModKind, fittedMods, fittedRating
+  vehicleModKind, fittedMods, fittedRating, replacedVehicleAttribute, replacedVehicleAttributeOf
 } from '../modules/system/vehicle-mods.js'
+import {
+  droneAutopilot
+} from '../modules/entities/actors/rcc.js'
 
 const mod = (name, system = {
 }) => ({
@@ -59,5 +62,63 @@ describe('The kind of a vehicle mod (Rigger 5.0 p. 153-173)', () => {
       factory: false
     })).toBe(2)
     expect(fittedRating(items, "riggerCocoon")).toBe(0)
+  })
+})
+
+describe('Autopilot and Sensor replacement (Rigger 5.0 p. 170)', () => {
+  const replacement = (name, rating, extra = {
+  }) => mod(name, {
+    itemRating: rating, customEffects: {
+      0: {
+        target: name.includes("Senseurs") ? "system.attributes.sensor.augmented" : "system.attributes.pilot.augmented", type: "ratingReplace", multiplier: 1
+      }
+    }, ...extra
+  })
+  it('the replacement gives the value, it does not add to it', () => {
+    expect(replacedVehicleAttribute([replacement("Remplacement de l'Autopilote (indice 4-7)", 5)], "pilot")).toBe(5)
+    expect(replacedVehicleAttribute([replacement("Remplacement des Senseurs (indice 1-3)", 3)], "sensor")).toBe(3)
+    expect(replacedVehicleAttribute([replacement("Remplacement des Senseurs (indice 1-3)", 3)], "pilot")).toBe(null)
+  })
+  it('a mod known by its kind alone replaces too, the highest wins', () => {
+    expect(replacedVehicleAttribute([mod("Autopilote maison", {
+      effectKind: "autopilotReplacement", itemRating: 4
+    }), replacement("Remplacement de l'Autopilote (indice 1-3)", 2)], "pilot")).toBe(4)
+  })
+  it('a factory or a switched off replacement changes nothing', () => {
+    expect(replacedVehicleAttribute([replacement("Remplacement de l'Autopilote", 6, {
+      isFactory: true
+    })], "pilot")).toBe(null)
+    expect(replacedVehicleAttribute([replacement("Remplacement de l'Autopilote", 6, {
+      isActive: false
+    })], "pilot")).toBe(null)
+  })
+  it('tells the effects it reads in the base', () => {
+    expect(replacedVehicleAttributeOf({
+      target: "system.attributes.pilot.augmented", type: "ratingReplace"
+    })).toBe("pilot")
+    expect(replacedVehicleAttributeOf({
+      target: "system.attributes.pilot.augmented", type: "rating"
+    })).toBe(null)
+    expect(replacedVehicleAttributeOf({
+      target: "system.attributes.handling.augmented", type: "valueReplace"
+    })).toBe(null)
+  })
+  it('the drone autopilot that caps its autosofts reads the replacement, then the bonuses', () => {
+    const items = [replacement("Remplacement de l'Autopilote", 5), mod("Bonus", {
+      itemRating: 1, customEffects: {
+        0: {
+          target: "system.attributes.pilot.augmented", type: "rating", multiplier: 1
+        }
+      }
+    })]
+    expect(droneAutopilot({
+      attributes: {
+        pilot: {
+          natural: {
+            base: 2
+          }
+        }
+      }
+    }, items)).toBe(6)
   })
 })
