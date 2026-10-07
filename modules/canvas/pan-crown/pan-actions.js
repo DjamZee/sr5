@@ -17,6 +17,11 @@ export const PAN_DEVICE_ACTIONS = [
 ]
 export const PAN_RIGGED_ACTIONS = ["jumpIntoRiggedDevice"]
 export const PAN_PERSONA_ACTIONS = ["traceIcon", "crashProgram", "haywire"]
+// The electronic warfare of Rigger 5.0 (p. 34-35), offered when the world plays its actions (lot R7 of the rigging
+// plan): Target Device aims at "un appareil fonctionnant en sans-fil"; Confuse Pilot at a device with an autopilot,
+// and Break Target Lock at the enemy that locked on: a drone, which defends with its own Pilot and Sensors
+export const PAN_TARGET_DEVICE_ACTIONS = ["targetDevice"]
+export const PAN_RIGGER5_DRONE_ACTIONS = ["confusePilot", "breakTargetLock"]
 // The owner of a file edits or protects it (SR5 p. 240), and sets a bomb on it, with no mark to win
 export const FILE_OWNER_ACTIONS = ["editFile", "setDataBomb"]
 
@@ -27,15 +32,23 @@ export const OWNER_MARKS = 4
  * The actions offered on a node of the crown.
  * @param {Object} node    a node of getGraph
  * @param {Object} graph   its graph (graph.master is the uuid of the master node)
+ * @param {Object} [options]
+ * @param {Boolean} [options.rigger5]  the world plays the actions of Rigger 5.0 (setting sr5Rigger5Actions)
  * @return {Array<String>} the keys of matrix.actions
  */
 export function actionsForNode(node, graph = {
+}, {
+  rigger5 = false
+} = {
 }){
   if (!node) return []
   // A file (objet Fichier): the actions on files, and those any icon takes (SR5 p. 237, 245)
   if (node.kind === "file") return [...FILE_NODE_ACTIONS]
   const keys = [...PAN_DEVICE_ACTIONS]
+  // A sprite is no device (SR5 p. 236)
+  if (rigger5 && node.kind !== "sprite") keys.push(...PAN_TARGET_DEVICE_ACTIONS)
   if (node.kind === "drone" || node.itemType === "itemVehicle") keys.push(...PAN_RIGGED_ACTIONS)
+  if (rigger5 && node.kind === "drone") keys.push(...PAN_RIGGER5_DRONE_ACTIONS)
   // A sprite is a persona of its own (SR5 p. 236)
   if ((node.uuid && node.uuid === graph.master) || node.kind === "sprite") keys.push(...PAN_PERSONA_ACTIONS)
   return keys
@@ -185,10 +198,11 @@ export function radialTargetOf(node, graph, {
  * @param {Object} viewer   {actor} who looks (pan-crown.js, currentViewer)
  * @param {Object} [options]
  * @param {Function} [options.canTry]  (key, actor) -> false when the actor lacks what the action asks (Resonance)
+ * @param {Boolean} [options.rigger5]   the world plays the actions of Rigger 5.0 (actionsForNode)
  * @return {{owner: Boolean, actions: Array, modes: Array, slave: Object|null}}
  */
 export function menuEntries(node, graph, viewer, {
-  canTry = () => true
+  canTry = () => true, rigger5 = false
 } = {
 }){
   const ids = graph?.viewer?.ids ?? []
@@ -233,7 +247,9 @@ export function menuEntries(node, graph, viewer, {
   if (!actor) return entries
   const actions = actor.system?.matrix?.actions ?? {
   }
-  entries.actions = actionsForNode(node, graph).map(key => ({
+  entries.actions = actionsForNode(node, graph, {
+    rigger5
+  }).map(key => ({
     key,
     ...actionState({
       neededMarks: actions[key]?.neededMarks,
