@@ -293,6 +293,9 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
    */
   static async entriesFor(state) {
     const browser = new SR5CompendiumBrowser()
+    // Indexing every compendium with its fields makes the server read each document: the open
+    // browser's index is reused when there is one
+    browser._indexCache = SR5CompendiumBrowser._instance?._indexCache ?? null
     browser._selectedTypes = new Set(state?.types ?? [])
     browser._searchText = String(state?.search ?? '')
     browser._activeFilters = {
@@ -553,8 +556,9 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
   /** "Tirer au hasard": among everything the filters let through, every page included */
   static async #onDrawAtRandom() {
     const entries = await this._applyFilters(await this._visibleEntries())
+    const label = game.i18n.localize('SR5.CompendiumBrowser')
     return sr5PromptDraw({
-      name: game.i18n.localize('SR5.CompendiumBrowser'),
+      name: this._searchText ? `${label} — ${this._searchText}` : label,
       entries,
       source: {
         kind: 'browser', state: this.filterState
