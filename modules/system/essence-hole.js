@@ -17,6 +17,9 @@ import {
 import {
   SR5_UtilityItem
 } from "../entities/items/utilityItem.js"
+import {
+  creationModeFor
+} from "./creation-actor.js"
 
 /**
  * The hole kept after an implant is removed.
@@ -81,8 +84,9 @@ async function onImplantDeleted(item) {
   // Read before anything waits: the register still holds the entry the deletion is about to remove
   const register = game.settings.get("sr5", IMPLANT_REGISTER) ?? {
   }
-  if (game.settings.get("sr5", "sr5ShopCreationMode") === true) return
   const actor = item.parent
+  // At creation, the world's or the character's own (lot C0), an implant taken off leaves no hole
+  if (creationModeFor(actor)) return
   if (!actor.system?.essence) return
   // Never the deleted document's marks: a player's write the GM has not put back yet would open no hole
   // (Apollinaire's review)
