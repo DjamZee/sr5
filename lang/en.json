@@ -4004,7 +4004,7 @@
 	"SR5.SETTINGS_HomunculusMaterialArmor_T": "Homunculus: material Armor as Armor",
 	"SR5.SETTINGS_HomunculusMaterialArmor_D": "The book (SR5 p. 301) gives a homunculus the Structure of its material as Body, and no Armor. Checked, it also gets the Armor of that material (Barrier Ratings table, SR5 p. 198).",
 	"SR5.SETTINGS_AugmentationCap_T": "Augmentation cap",
-	"SR5.SETTINGS_AugmentationCap_D": "What bounds an augmented physical or mental attribute (cyberware, bioware, magic). The book: +4 at most over the natural rating (SR5 p. 96). The excess is removed, and the attribute's tooltip shows the real and the kept values. Magic, Resonance and Edge are not concerned.",
+	"SR5.SETTINGS_AugmentationCap_D": "What bounds an augmented physical or mental attribute (cyberware, bioware, magic). The book: +4 at most over the natural rating (SR5 p. 96). The excess is removed, and the attribute's tooltip shows the real and the kept values. Magic, Resonance and Edge are not concerned. \"No cap\" lifts this cap but keeps the bound of the spells and adept powers that raise an attribute: the metatype augmented maximum (SR5 p. 290 and 312).",
 	"SR5.SETTINGS_AugmentationCap_bonus": "+4 at most over the natural rating (book, SR5 p. 96)",
 	"SR5.SETTINGS_AugmentationCap_augmentedMax": "Augmented maximum only: metatype maximum + 4 (SR5 p. 68, 290, 312)",
 	"SR5.SETTINGS_AugmentationCap_none": "No cap",

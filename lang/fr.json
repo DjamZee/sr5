@@ -4004,7 +4004,7 @@
 	"SR5.SETTINGS_HomunculusMaterialArmor_T": "Homoncule : Blindage du matériau en Armure",
 	"SR5.SETTINGS_HomunculusMaterialArmor_D": "Le livre (SR5 p. 301) donne à l'homoncule la Structure de son matériau comme Constitution, et aucune Armure. Coché, il reçoit aussi en Armure le Blindage de ce matériau (table des barrières, SR5 p. 198).",
 	"SR5.SETTINGS_AugmentationCap_T": "Plafond des augmentations",
-	"SR5.SETTINGS_AugmentationCap_D": "Ce qui borne un attribut physique ou mental augmenté (cyberware, bioware, magie). Le livre : +4 au plus sur l'attribut naturel (SR5 p. 96). Le surplus est retiré, et la bulle de l'attribut montre la valeur réelle et la valeur retenue. Magie, Résonance et Chance ne sont pas concernées.",
+	"SR5.SETTINGS_AugmentationCap_D": "Ce qui borne un attribut physique ou mental augmenté (cyberware, bioware, magie). Le livre : +4 au plus sur l'attribut naturel (SR5 p. 96). Le surplus est retiré, et la bulle de l'attribut montre la valeur réelle et la valeur retenue. Magie, Résonance et Chance ne sont pas concernées. « Aucun plafond » retire ce plafond, mais garde la borne des sorts et des pouvoirs d'adepte qui augmentent un attribut : le maximum augmenté du métatype (SR5 p. 290 et 312).",
 	"SR5.SETTINGS_AugmentationCap_bonus": "+4 au plus sur l'attribut naturel (livre, SR5 p. 96)",
 	"SR5.SETTINGS_AugmentationCap_augmentedMax": "Maximum augmenté seulement : maximum du métatype + 4 (SR5 p. 68, 290, 312)",
 	"SR5.SETTINGS_AugmentationCap_none": "Aucun plafond",
