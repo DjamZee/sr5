@@ -289,6 +289,16 @@ export class SR5_MiscellaneousHelpers {
     await target.update({
       'system': changes
     })
+    //A brick a player dealt: the dumpshock of a character in VR goes to the target's player, not the attacker's (SR5 p. 231)
+    //(An AI has none, dumpshockIfInVR knows it)
+    if (data.use === "matrixDamage" && changes.isActive === false && target.type === "itemDevice" && target.actor) {
+      const {
+        SR5_ActorHelper
+      } = await import("../../entities/actors/entityActor-helpers.js")
+      if (SR5_ActorHelper.dumpshockIfInVR(target.actor, {
+        bricked: true
+      })) ui.notifications.info(`${target.actor.name} ${game.i18n.localize("SR5.INFO_IsDisconnected")}.`)
+    }
     //The button the player's browser left for the GM is spent once the damage is written (Hyacinthe's review, D5)
     if (data.use === "matrixDamage" && data.button) {
       const {

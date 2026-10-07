@@ -218,6 +218,33 @@ describe('a drone destroyed under its jumped in rigger (SR5 p. 268, 271)', () =>
     expect(dumpshockCards(r)).toHaveLength(0)
   })
 
+  it('the biofeedback of a drone hit under its rigger is rolled by the rigger\'s player (SR5 p. 268)', async () => {
+    const r = rigger(), d = drone()
+    r.hasPlayerOwner = true
+    actors = {
+      r1: r, d1: d
+    }
+    vi.spyOn(SR5_EntityHelpers, 'getUserOwner').mockReturnValue({
+      id: 'p1', isGM: false
+    })
+    SR5_SocketHandler.emitForPlayer.mockClear()
+    await SR5_ActorHelper.takeDamage('d1', hit(4))
+    const sent = SR5_SocketHandler.emitForPlayer.mock.calls.find(([type, data]) => type === 'actorRoll' && data.chatData.damage.resistanceType === 'biofeedback')
+    expect(sent?.[1].actorId).toBe('r1')
+    expect(sent?.[1].chatData.damage.value).toBe(2)
+    expect(sent?.[2]).toBe('p1')
+    expect(r.rollTest).not.toHaveBeenCalled()
+  })
+
+  it('a rigger played by the GM resists the biofeedback on the GM\'s screen', async () => {
+    const r = rigger(), d = drone()
+    actors = {
+      r1: r, d1: d
+    }
+    await SR5_ActorHelper.takeDamage('d1', hit(4))
+    expect(r.rollTest.mock.calls.filter(([type, , data]) => type === 'resistanceCard' && data.damage.resistanceType === 'biofeedback')).toHaveLength(1)
+  })
+
   it('a drone damaged but not destroyed keeps its rigger', async () => {
     const r = rigger(), d = drone()
     actors = {

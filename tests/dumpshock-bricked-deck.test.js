@@ -94,6 +94,37 @@ describe('Dumpshock when a deck is bricked in VR (SR5 p. 229)', () => {
     expect(chatData.damage.bricked).toBe(true)
   })
 
+  it('bricked by a player, the dumpshock is left to the GM\'s browser, never opened on the attacker\'s screen', async () => {
+    game.user = {
+      isGM: false, id: 'p'
+    }
+    game.users = {
+      activeGM: {
+        id: 'gm', isGM: true
+      }
+    }
+    const {
+      SR5_SocketHandler
+    } = await import('../modules/socket.js')
+    SR5_SocketHandler.emitForGM.mockClear()
+    const actor = hacker()
+    await SR5_MatrixHelpers.applyDamageToDecK(actor, {
+      damage: {
+        matrix: {
+          value: 12
+        }
+      }, target: {
+      }, owner: {
+        messageId: 'm1'
+      }
+    }, null, false)
+    expect(actor.rollTest).not.toHaveBeenCalled()
+    const [type, data] = SR5_SocketHandler.emitForGM.mock.calls.at(-1)
+    expect(type).toBe('updateItem')
+    expect(data.use).toBe('matrixDamage')
+    expect(data.info.isActive).toBe(false)
+  })
+
   it('resists a bricked deck dumpshock with Willpower alone, the other dumpshocks with Willpower + Firewall', async () => {
     const {
       resistance

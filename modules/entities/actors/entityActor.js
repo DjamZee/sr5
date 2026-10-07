@@ -62,6 +62,9 @@ import {
   SR5_MarkHelpers
 } from "../../rolls/roll-helpers/mark.js"
 import {
+  vouch
+} from "../../rolls/roll-helpers/attack-card.js"
+import {
   isStoredAway
 } from "../../interface/storage-rules.js"
 import {
@@ -1087,6 +1090,9 @@ export class SR5Actor extends Actor {
       } = await import("../../rolls/roll-helpers/grapple.js")
       chatData = data.rollType === "resistanceCard" ? SR5_GrappleHelpers.crushRollData(data.holderId, data.actorId, sender) : null
     } else if (!sender.isGM) chatData = null
+    //What the GM worked out for this player (a drone's biofeedback, dumpshock): vouched for as on his own browser,
+    //where the card behind it may be the drone's, which the rigger does not stand for (attack-card.js)
+    else vouch(chatData)
     if (!chatData) return SR5_SystemHelpers.srLog(1, `actorRoll refused from ${senderId}`, data)
     SR5_PrepareRollTest.rollTest(actor, data.rollType, data.rollKey, chatData)
   }

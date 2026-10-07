@@ -181,8 +181,9 @@ export class SR5_ActorHelper {
             chatData.damage.resistanceType = "biofeedback"
             chatData.damage.value = Math.ceil(damage/2)
             chatData.owner.messageId = options.owner.messageId
-            //Worked out here for the rigger, not the card's actor: vouched for (attack-card.js, trustedResistanceCard)
-            controler.rollTest("resistanceCard", null, vouch(chatData))
+            //Worked out here for the rigger, not the card's actor: vouched for (attack-card.js, trustedResistanceCard);
+            //by the GM, sent to the rigger's player, whose browser trusts what the GM sends (_socketRollTest)
+            SR5_ActorHelper.rollForOwner(controler, "resistanceCard", vouch(chatData))
           }
         }
         // Drones short out (matrix damage); vehicles take the damage without side effect (SR5 p. 173)
@@ -752,14 +753,18 @@ export class SR5_ActorHelper {
     let dumpshockData = SR5_PrepareRollTest.getBaseRollData(null, actor)
     dumpshockData.damage.resistanceType = "dumpshock"
     if (bricked) dumpshockData.damage.bricked = true
-    //Worked out by the GM (a destroyed drone, a brick he wrote): the resistance is rolled by the player of the
-    //character when one is connected, as for an area spell (effectArea.js)
-    const user = game.user?.isGM && actor.hasPlayerOwner ? SR5_EntityHelpers.getUserOwner(actor) : null
-    if (user && !user.isGM && user.id !== game.user.id) SR5_SocketHandler.emitForPlayer("actorRoll", {
-      actorId: actor.isToken ? actor.token.id : actor.id, rollType: "resistanceCard", rollKey: null, chatData: dumpshockData,
-    }, user.id)
-    else actor.rollTest("resistanceCard", null, dumpshockData)
+    SR5_ActorHelper.rollForOwner(actor, "resistanceCard", dumpshockData)
     return true
+  }
+
+  //Worked out by the GM (a destroyed drone, a brick he wrote, a drone hit under its rigger): the resistance is rolled
+  //by the player of the character when one is connected, as for an area spell (effectArea.js); here otherwise
+  static rollForOwner(actor, rollType, chatData) {
+    const user = game.user?.isGM && actor.hasPlayerOwner ? SR5_EntityHelpers.getUserOwner(actor) : null
+    if (user && !user.isGM && user.id !== game.user.id) return SR5_SocketHandler.emitForPlayer("actorRoll", {
+      actorId: actor.isToken ? actor.token.id : actor.id, rollType, rollKey: null, chatData,
+    }, user.id)
+    return actor.rollTest(rollType, null, chatData)
   }
 
   //Raise owerwatch score
