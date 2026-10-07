@@ -2726,6 +2726,7 @@
 	"SR5.INFO_NoScattering": "Pas de déviation.",
 	"SR5.INFO_NoSpendHitsLeft": "Vous ne pouvez pas dépenser plus de succès excédentaires en effets.",
 	"SR5.INFO_PanIsFull": "le nombre maximum d'appareils asservis est atteint.",
+	"SR5.INFO_PanFullOf": "{actor} : le nombre maximum d'appareils asservis (Indice × 3) est atteint.",
 	"SR5.INFO_ScatterDistance": "Déviation : {distance}m.",
 	"SR5.INFO_ServicesReduced": "services réduits de {service}",
 	"SR5.INFO_ShakeUp": "est ébranlé ! Initiative réduite de {value}.",

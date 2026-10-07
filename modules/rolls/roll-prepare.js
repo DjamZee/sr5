@@ -79,13 +79,15 @@ export class SR5_PrepareRollTest {
     //resonance action included: only a direct connection does (p. 234), played by switching it on (N91)
     //A roll relaunched from a chat card (Blue Goo's explosion) also checks the target the card knows
     if (WIRELESS_TARGETED_ROLLS.includes(rollType) && (targetsWirelessOffDrone(actor) ||
-      (chatData?.target?.actorId && isWirelessOffDrone(SR5_EntityHelpers.getRealActorFromID(chatData.target.actorId, chatData.actorUuids), actor)))) {
-      return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetWirelessOff"))
-    }
+      (chatData?.target?.actorId && isWirelessOffDrone(SR5_EntityHelpers.getRealActorFromID(chatData.target.actorId, chatData.actorUuids), actor))) &&
+      refuseByRule("matrix", "SR5.WARN_TargetWirelessOff", null, {
+        actor
+      })) return
     //An attack launched with no target selected is defended from its card by the drone itself: not reached either
-    if (WIRELESS_DEFENSE_ROLLS.includes(rollType) && isWirelessOffDrone(actor, null)) {
-      return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetWirelessOff"))
-    }
+    //The "matrix" rule lock lifted (B13), the attack reached the drone, so the drone defends and resists it
+    if (WIRELESS_DEFENSE_ROLLS.includes(rollType) && isWirelessOffDrone(actor, null) && refuseByRule("matrix", "SR5.WARN_TargetWirelessOff", null, {
+      actor
+    })) return
 
     //Better Than Bad p. 141: cut from the manasphere by Blight, no magic of any kind (decisions G2 and H1 of DjamZ)
     //The "magic" rule lock lifted (B13), the roll goes, on the values Blight leaves (Magic at 0), and the gamemaster hears of it

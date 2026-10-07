@@ -20,6 +20,9 @@ import {
 import {
   isFile
 } from "../../system/matrix-files.js"
+import {
+  refuseByRule
+} from "../../system/rule-locks.js"
 
 // Actions whose marks are not checked on the target: the support actions target allies, not Matrix icons,
 // and Jack Out and Jam Signals ask for ownership of the hacker's own device (SR5 p. 239 and 244), as Suppress Noise
@@ -52,7 +55,10 @@ function matrixTargets(rollData){
 }
 
 export default async function matrixAction(rollData, rollKey, actor){
-  if (!canTryMatrixAction(rollKey, actor)) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_NeedResonance"))
+  //The "matrix" rule lock lifted (B13), the action goes without Resonance (rolled at 0), and the gamemaster hears of it
+  if (!canTryMatrixAction(rollKey, actor) && refuseByRule("matrix", "SR5.WARN_NeedResonance", null, {
+    actor
+  })) return
   let matrixAction = actor.system.matrix.actions[rollKey]
 
   //Determine title
@@ -152,10 +158,8 @@ export default async function matrixAction(rollData, rollKey, actor){
   //A drone with its wireless off can no longer be hacked wirelessly (SR5 p. 424): no wireless matrix
   //action reaches it, hacking or not. Only a direct connection does (p. 234), which the GM plays by
   //switching its wireless on for the action (N91). IC, complex forms and resonance actions: roll-prepare.js
-  if (checksTargetMarks(rollKey) && targetsWirelessOffDrone(actor, rollData)) {
-    ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetWirelessOff"))
-    return
-  }
+  //The "matrix" rule lock lifted (B13), the action reaches it, and the gamemaster hears of it (named after the user)
+  if (checksTargetMarks(rollKey) && targetsWirelessOffDrone(actor, rollData) && refuseByRule("matrix", "SR5.WARN_TargetWirelessOff")) return
 
   //Check target's Marks before rolling if a target is selected
   if (matrixTargets(rollData).length && checksTargetMarks(rollKey)) {
@@ -224,6 +228,13 @@ function fileAimedAt(rollData){
   return isFile(item) ? item : null
 }
 
+//Too few marks (SR5 p. 238). The "matrix" rule lock lifted (B13), the action goes, and the gamemaster hears of it
+function refuseMarks(actor){
+  return refuseByRule("matrix", "SR5.NotEnoughMarksOnTarget", null, {
+    actor, level: "info"
+  })
+}
+
 async function checkTargetMarks(rollData, matrixAction, actor){
   const cibles = matrixTargets(rollData)
   if (cibles.length > 1) {
@@ -251,11 +262,7 @@ async function checkTargetMarks(rollData, matrixAction, actor){
       const file = fileAimedAt(rollData)
       if (file) {
         const fileMark = (file.system.marks ?? []).find(m => m.ownerId === rollData.owner.speakerId)
-        if ((Number(fileMark?.value) || 0) < neededMarks) {
-          ui.notifications.info(game.i18n.localize("SR5.NotEnoughMarksOnTarget"))
-          return false
-        }
-        return true
+        return !((Number(fileMark?.value) || 0) < neededMarks && refuseMarks(actor))
       }
       for (let item of t.actor.items){
         const mark = item.system.marks?.find(m => m.ownerId === rollData.owner.speakerId)
@@ -264,11 +271,7 @@ async function checkTargetMarks(rollData, matrixAction, actor){
       //An AI outside any device carries the marks on its persona (Data Trails p. 157)
       const personaMark = t.actor.system.matrix?.marks?.find(m => m.ownerId === rollData.owner.speakerId)
       if (personaMark?.value > marks) marks = personaMark.value
-      if (marks < neededMarks) {
-        ui.notifications.info(game.i18n.localize("SR5.NotEnoughMarksOnTarget"))
-        return false
-      }
-      return true
+      return !(marks < neededMarks && refuseMarks(actor))
     } else return true
   }
 }

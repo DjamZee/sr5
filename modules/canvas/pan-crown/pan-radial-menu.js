@@ -36,6 +36,9 @@ import {
 import {
   SR5_SocketHandler
 } from "../../socket.js"
+import {
+  refuseByRule, ruleLockActive
+} from "../../system/rule-locks.js"
 
 const MODE_LABELS = {
   active: "SR5.PanMenuModeActive", silent: "SR5.PanMenuModeSilent", offline: "SR5.PanMenuModeOffline"
@@ -202,7 +205,9 @@ export function openRadialMenu({
   const entries = node.contributed && node.systemActions !== true ? {
     actions: [], modes: [], slave: null
   } : menuEntries(node, graph, viewer, {
-    canTry: canTryMatrixAction, rigger5: !!game.settings?.get("sr5", "sr5Rigger5Actions")
+    canTry: canTryMatrixAction, rigger5: !!game.settings?.get("sr5", "sr5Rigger5Actions"),
+    // The "matrix" rule lock lifted (B13): the entries the marks grey out are enabled, the roll tells the gamemaster
+    ruleLocked: ruleLockActive("matrix"),
   })
 
   // Three families: the Matrix actions on the right; the owner's (mode, PAN) and the gamemaster's on the left
@@ -337,7 +342,12 @@ async function freeFromPan(node, graph){
 // The owner slaves one of her devices to her PAN, within its Device Rating x 3 (SR5 p. 233), the sheet's own path
 async function slaveToPan(node, graph){
   const pan = masterItemOf(graph)?.system?.pan
-  if (pan && Number(pan.current) >= Number(pan.max)) return void ui.notifications.info(`${graph.owner.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.INFO_PanIsFull")}`)
+  // The "matrix" rule lock lifted (B13), the PAN grows past it, and the gamemaster hears of it
+  if (pan && Number(pan.current) >= Number(pan.max) && refuseByRule("matrix", "SR5.INFO_PanFullOf", {
+    actor: graph.owner.name
+  }, {
+    actor: graph.owner, level: "info"
+  })) return
   if (game.user?.isGM) return SR5_ActorHelper.addItemtoPan(node.uuid, graph.owner.id)
   return SR5_SocketHandler.emitForGM("addItemToPan", {
     targetItem: node.uuid, actorId: graph.owner.id

@@ -43,6 +43,9 @@ import {
 import {
   TARGET_DEVICE_EFFECT, NOISE_SUPPRESSION_EFFECT, SENSOR_LOCK_EFFECT, netHitsOf, brokenLockValue, turnEffect, noiseSuppressionCustomEffects
 } from "./electronic-warfare.js"
+import {
+  refuseByRule
+} from "../../system/rule-locks.js"
 
 //A warning, and false: nothing was written, the card's button stays
 function warned(key) {
@@ -660,9 +663,12 @@ export class SR5_MatrixHelpers {
     let allies = SR5_MatrixHelpers._getSupportedAllies(speaker)
     if (!allies.length) return
     let maxUsers = sourceActor.system.matrix?.attributes?.dataProcessing?.value || 0
-    if (allies.length > maxUsers) return ui.notifications.warn(game.i18n.format("SR5.WARN_IAmTheFirewallTooManyTargets", {
+    //The "matrix" rule lock lifted (B13), every ally gets the dice, and the gamemaster hears of it
+    if (allies.length > maxUsers && refuseByRule("matrix", "SR5.WARN_IAmTheFirewallTooManyTargets", {
       actor: sourceActor.name, max: maxUsers, count: allies.length,
-    }))
+    }, {
+      actor: sourceActor
+    })) return
 
     let effect = SR5_MatrixHelpers._defenseBonusEffect("SR5.MatrixActionIAmTheFirewall", "iAmTheFirewall", sourceActor, hits, 1, "initiativePass", "SR5.MatrixActionIAmTheFirewall_GE")
     for (let ally of allies){
@@ -676,16 +682,18 @@ export class SR5_MatrixHelpers {
     let hits = cardData.roll.hits
     let allies = SR5_MatrixHelpers._getSupportedAllies(speaker)
     if (!allies.length) return false
-    if (allies.length > 1) {
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_InterveneSingleTarget"))
-      return false
-    }
+    //The "matrix" rule lock lifted (B13), every ally gets the dice, and the gamemaster hears of it
+    if (allies.length > 1 && refuseByRule("matrix", "SR5.WARN_InterveneSingleTarget", null, {
+      actor: sourceActor
+    })) return false
 
     let effect = SR5_MatrixHelpers._defenseBonusEffect("SR5.MatrixActionIntervene", "intervene", sourceActor, hits, 1, "action", "SR5.MatrixActionIntervene_GE")
-    await SR5_MatrixHelpers._createEffectOnAlly(allies[0], effect, cardData.owner?.messageId)
-    ui.notifications.info(`${allies[0].name}${game.i18n.format('SR5.Colons')} ${game.i18n.format('SR5.MatrixActionInterveneEffectNotification', {
-      hits: hits
-    })}`)
+    for (let ally of allies){
+      await SR5_MatrixHelpers._createEffectOnAlly(ally, effect, cardData.owner?.messageId)
+      ui.notifications.info(`${ally.name}${game.i18n.format('SR5.Colons')} ${game.i18n.format('SR5.MatrixActionInterveneEffectNotification', {
+        hits: hits
+      })}`)
+    }
     return true
   }
   //create popup Effect
