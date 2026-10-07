@@ -398,7 +398,8 @@ export class SR5_EntityHelpers {
         case "rammingAngles":
         case "rammingGaits":
         case "drugQualities":
-          //Book order for the last three: Rigger 5 p. 179, SR5 p. 203, Chrome Flesh p. 194
+        case "matrixNoiseDistance":
+          //Book order for the last four: Rigger 5 p. 179, SR5 p. 203, Chrome Flesh p. 194, SR5 p. 232 (nearest first)
           break
         default:
           object[key] = this.sortByTranslatedTerm(object[key], key)

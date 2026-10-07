@@ -23,6 +23,9 @@ import {
   SR5_ConverterHelpers 
 } from "./roll-helpers/converter.js"
 import {
+  matrixTargetBand
+} from "./roll-helpers/matrix-distance.js"
+import {
   SR5_CombatHelpers 
 } from "./roll-helpers/combat.js"
 import {
@@ -299,6 +302,16 @@ export default class SR5_RollDialog {
     if (bbModeSelect) this._selectModifiers({
       currentTarget: bbModeSelect, target: bbModeSelect
     }, element, dialogData)
+    //Matrix noise: the band of the distance to the targeted icon counts at once (SR5 p. 232); unmeasured, the list
+    //keeps its default and the user picks the band
+    const matrixRangeSelect = element.querySelector('.SR-ModSelect[data-modifier="matrixRange"]')
+    const matrixBand = matrixRangeSelect ? matrixTargetBand(actor) : null
+    if (matrixBand) {
+      matrixRangeSelect.value = matrixBand
+      this._selectModifiers({
+        currentTarget: matrixRangeSelect, target: matrixRangeSelect
+      }, element, dialogData)
+    }
     //Ramming: speeds and angle of the impact
     element.querySelectorAll('.SR-RammingInput').forEach(el => el.addEventListener('change', ev => this._updateRamming(element, dialogData, ev.target.name)))
     //Manage Threshold
@@ -1296,7 +1309,8 @@ export default class SR5_RollDialog {
             if (matrixNoiseReductionEl) matrixNoiseReductionEl.style.display = ''
             const matrixTargetGridEl = html.querySelector('#matrixTargetGrid')
             if (matrixTargetGridEl) matrixTargetGridEl.style.display = ''
-            if (dialogData.target.grid !== actor.system.matrix.userGrid) {
+            //A complex form's dialog has no grid line: its noise is the distance alone
+            if (matrixTargetGridEl && dialogData.target.grid !== actor.system.matrix.userGrid) {
               html.querySelector('[name="dicePoolModTargetGrid"]').value = -2
               SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "targetGrid")
               dialogData.dicePool.modifiers.push({
@@ -1319,7 +1333,8 @@ export default class SR5_RollDialog {
             if (matrixTargetGridEl) matrixTargetGridEl.style.display = 'none'
             const matrixNoiseActorEl = html.querySelector('#matrixNoiseActor')
             if (matrixNoiseActorEl) matrixNoiseActorEl.style.display = 'none'
-            html.querySelector('[name="dicePoolModTargetGrid"]').value = 0
+            const targetGridInput = html.querySelector('[name="dicePoolModTargetGrid"]')
+            if (targetGridInput) targetGridInput.value = 0
           }
           dialogData.matrix.noiseRangeValue = value
           dialogData.matrix.noiseRange = ev.target.value

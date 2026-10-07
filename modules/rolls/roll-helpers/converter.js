@@ -185,6 +185,17 @@ export class SR5_ConverterHelpers {
     }
   }
 
+  //Noise band of a distance in meters (SR5 p. 232 table: up to 100 m, 101 m to 1 km, 1 001 m to 10 km, 10 001 m
+  //to 100 km, beyond): each band holds its upper bound. Null when nothing was measured (no target, another scene)
+  static matrixDistanceToBand(meters){
+    if (typeof meters !== "number" || !Number.isFinite(meters) || meters < 0) return null
+    if (meters <= 100) return "upTo100m"
+    if (meters <= 1000) return "upTo1km"
+    if (meters <= 10000) return "upTo10km"
+    if (meters <= 100000) return "upTo100km"
+    return "farAway"
+  }
+
   //convert matrix search info to interval multiplier for an extended test
   static matrixSearchTypeToTime(type){
     switch (type){
