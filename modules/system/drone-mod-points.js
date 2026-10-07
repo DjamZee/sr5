@@ -143,8 +143,10 @@ export function modPointsDemand(system, vehicle) {
   if (change && change.amount < 0) return {
     kind: "downgrade", key: change.key, amount: -change.amount
   }
-  //A Sensor replacement no higher than the drone's own Sensor raises nothing: no point
-  if (replacementOf(system)?.key === "sensor") return {
+  //A Sensor replacement no higher than the drone's own Sensor raises nothing: no point. The Autopilot replacement costs
+  //no point either: the book sends it to "Solutions logicielles" (R5 p. 128, 130-131), which gives no Modification
+  //Points; arbitrage de DjamZ (08/10), "Gratuit (0 point)"
+  if (replacementOf(system)) return {
     kind: "points", points: 0
   }
   return {

@@ -281,6 +281,20 @@ describe('Sensor replacement under the Modification Points (R5 p. 128)', () => {
       }
     }, drone)).toBe(1)
   })
+  it('leaves the Autopilot replacement free (arbitrage de DjamZ, 08/10), by its effect or its name', () => {
+    const autopilot = sensorReplacement(5)
+    autopilot.system.customEffects[0].target = 'system.attributes.pilot.augmented'
+    expect(modPointsOf(autopilot, drone)).toBe(0)
+    expect(modPointsOf({
+      name: "Remplacement de l'Autopilote", system: {
+        itemRating: 5, isActive: true, slots: {
+          value: 5
+        }
+      }
+    }, drone)).toBe(0)
+    expect(modPointsUsage(drone, [autopilot]).used).toBe(0)
+    expect(modPointsPrice(autopilot, drone)).toBeNull()
+  })
   it('keeps the double cap of the Sensor (R5 p. 127)', () => {
     expect(modPointsRefusal({
       ...drone, body: 12
