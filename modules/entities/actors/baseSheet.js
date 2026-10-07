@@ -1532,8 +1532,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }))
     //Vintage (Gun H(e)aven 3 p. 3): never wireless, so no switch and no action spent (the "ammo" rule lock family, B13 lot 2)
     if (target === "system.wirelessTurnedOn" && vintageWirelessRefused(realItem, actor)) return
-    //Better Than Bad p. 141: under Blight no adept power, focus nor sustained spell is switched on (decisions of DjamZ)
-    if (target === "system.isActive" && value && ["itemAdeptPower", "itemFocus", "itemSpell"].includes(realItem?.type) && SR5_Toxins.isCutFromManasphere(actor)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
+    //Better Than Bad p. 141: under Blight no adept power, focus nor sustained spell is switched on (decisions of DjamZ;
+    //the "magic" rule lock family, B13 lot 6)
+    if (target === "system.isActive" && value && SR5_Toxins.blightSwitchRefused(actor, realItem)) return
     //Ossature renforcée (SR5 p. 458): "un seul type pouvant être installé à la fois", and never beside an Augmentation
     //de densité osseuse (p. 458, 462). One switched on beside another is refused to a player; the gamemaster is warned
     //and goes past it (decision H5 of DjamZ); the "body" rule lock family lifted, so does a player (B13, lot 4)

@@ -1,5 +1,5 @@
 import {
-  refuseByRule
+  refuseByRule, capByRule
 } from "../system/rule-locks.js"
 import {
   halveCalledShot, firearmCommandIsFree
@@ -972,11 +972,15 @@ export default class SR5_RollDialog {
         if (value > 0) {
           ui.notifications.warn(game.i18n.format('SR5.WARN_SpellShapingMin'))
           value = 0
-        } else if (-value > actor.system.magic.metamagics.spellShapingValue.value){
-          value = -actor.system.magic.metamagics.spellShapingValue.value
-          ui.notifications.warn(game.i18n.format('SR5.WARN_SpellShapingMaxMagic', {
-            magic: value
-          }))
+        } else {
+          //SR5 p. 329: no more than the Magic. The "magic" rule lock lifted (B13), the value entered is kept, the dice
+          //pool and the area follow it, and the gamemaster hears of it. A positive value stays refused: it is no shaping
+          const cap = actor.system.magic.metamagics.spellShapingValue.value
+          value = -capByRule("magic", -value, cap, 'SR5.WARN_SpellShapingMaxMagic', {
+            magic: -cap
+          }, {
+            actor
+          })
         }
         dialogData.magic.spell.area = -value
         break

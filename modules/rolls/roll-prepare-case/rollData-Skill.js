@@ -25,6 +25,9 @@ import {
 import {
   SR5_SpiritTypes
 } from "../../entities/items/spirit-types.js"
+import {
+  refuseByRule
+} from "../../system/rule-locks.js"
 
 //Add info for skill dicePool roll
 export default async function skill(rollData, rollType, rollKey, actor, chatData){
@@ -189,7 +192,8 @@ function skillWithAttribute(actorData, skillKey, attributeKey, attributeLabel){
   }].concat(skillPart)
 }
 
-async function getTargetedData(rollData, rollKey, actor){
+//Exported for its tests (rule-locks-magic.test.js)
+export async function getTargetedData(rollData, rollKey, actor){
   let targetActor = SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId, rollData.actorUuids)
 
   switch (rollKey){
@@ -204,10 +208,10 @@ async function getTargetedData(rollData, rollKey, actor){
         ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NotASpirit")}`)
         return
       }
-      else if (targetActor.system.isBounded) {
-        ui.notifications.warn(`${game.i18n.localize("SR5.WARN_SpiritAlreadyBounded")}`)
-        return
-      }
+      //The "magic" rule lock lifted (B13), the binding goes on and the gamemaster hears of it
+      else if (targetActor.system.isBounded && refuseByRule("magic", "SR5.WARN_SpiritAlreadyBounded", null, {
+        actor
+      })) return
       else {
         rollData.limit.base = targetActor.system.force.value
         //SR5 p. 304: (Force x 25) drachms spent on the attempt. They do not change the limit

@@ -1,6 +1,9 @@
 import {
   SR5
 } from "../../config.js"
+import {
+  refuseByRule
+} from "../../system/rule-locks.js"
 
 /**
  * Toxins as data (SR5 p. 409-412).
@@ -205,6 +208,17 @@ export class SR5_Toxins {
     if (rollType === "weaponAstral" && this.blightBlocksAstral(actor)) return true
     if (!["skill", "skillDicePool"].includes(rollType)) return false
     return this.BLIGHT_BLOCKED_SKILLS.includes(rollKey) || (this.BLIGHT_ASTRAL_SKILLS.includes(rollKey) && this.blightBlocksAstral(actor))
+  }
+
+  /** Better Than Bad p. 141: under Blight no adept power, focus nor sustained spell is switched on (decisions of DjamZ).
+   *  True if the switch must stop. The "magic" rule lock lifted (B13), it goes and the gamemaster hears of it; what the
+   *  item gives stays Blight's (entityActor.js: no focus bonus, no adept power effect) */
+  static BLIGHT_SWITCHED_TYPES = ["itemAdeptPower", "itemFocus", "itemSpell"]
+  static blightSwitchRefused(actor, item) {
+    if (!this.BLIGHT_SWITCHED_TYPES.includes(item?.type) || !this.isCutFromManasphere(actor)) return false
+    return refuseByRule("magic", "SR5.WARN_BlightNoSpell", null, {
+      actor
+    })
   }
 
   /** "Perd sa connexion à la manasphère" (decisions of DjamZ after Victoire's reviews): no astral perception, projection,

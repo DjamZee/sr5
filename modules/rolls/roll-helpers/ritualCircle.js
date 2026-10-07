@@ -16,6 +16,9 @@ import {
 import {
   SR5_Toxins
 } from "../../entities/items/toxins.js"
+import {
+  refuseByRule
+} from "../../system/rule-locks.js"
 
 // The id the roll cards give an actor (roll-prepare.js getBaseRollData): its token for an unlinked token, itself otherwise
 export function rollCardActorId(actor) {
@@ -127,18 +130,24 @@ export class SR5_RitualCircle {
     if (!actor) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActor"))
     const actorId = rollCardActorId(actor)
     if (actorId === circle.leaderId) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_RitualLeaderJoins"))
-    //Better Than Bad p. 141: under Blight no one takes part in a ritual (decision H1 of DjamZ)
-    if (SR5_Toxins.isCutFromManasphere(actor)) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
-    if (!(actor.system.specialAttributes?.magic?.augmented?.value > 0)) return void ui.notifications.warn(game.i18n.format("SR5.WARN_RitualNotAwakened", {
+    //Better Than Bad p. 141: under Blight no one takes part in a ritual (decision H1 of DjamZ). The "magic" rule lock
+    //lifted (B13), the participant joins and the gamemaster hears of it; its card still brings nothing (believedAssists)
+    if (SR5_Toxins.isCutFromManasphere(actor) && refuseByRule("magic", "SR5.WARN_BlightNoSpell", null, {
+      actor
+    })) return
+    if (!(actor.system.specialAttributes?.magic?.augmented?.value > 0) && refuseByRule("magic", "SR5.WARN_RitualNotAwakened", {
       name: actor.name
-    }))
+    }, {
+      actor
+    })) return
     if (this.assistsOf(message).some(a => a.actorId === actorId)) return void ui.notifications.warn(game.i18n.format("SR5.WARN_RitualAlreadyJoined", {
       name: actor.name
     }))
 
-    const skill = actor.system.skills.ritualSpellcasting
-    const penalty = ritualTraditionPenalty(circle.tradition, actor.system.magic.tradition)
-    const pool = ritualAssistPool(skill.rating.value, skill.test.dicePool, penalty)
+    //Read with care: the lock lifted, a mundane actor (a drone, a vehicle) may join, with no magic nor skill
+    const skill = actor.system.skills?.ritualSpellcasting
+    const penalty = ritualTraditionPenalty(circle.tradition, actor.system.magic?.tradition)
+    const pool = ritualAssistPool(skill?.rating?.value, skill?.test?.dicePool, penalty)
     let assist = {
       hits: 0, glitch: false, criticalGlitch: false
     }
@@ -152,7 +161,7 @@ export class SR5_RitualCircle {
     let lines = [game.i18n.format("SR5.RitualAssistJoined", {
       name: actor.name, ritual: circle.ritualName, leader: circle.leaderName
     })]
-    if (!(skill.rating.value > 0)) lines.push(game.i18n.localize("SR5.RitualAssistNoSkill"))
+    if (!(skill?.rating?.value > 0)) lines.push(game.i18n.localize("SR5.RitualAssistNoSkill"))
     else lines.push(game.i18n.format("SR5.RitualAssistRoll", {
       pool, force: circle.force, hits: assist.hits
     }))
@@ -183,7 +192,9 @@ export class SR5_RitualCircle {
     const leader = item.actor
     if (!this.canSeal(leader, circle)) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_RitualNotLeader"))
     const assists = uniqueAssists(this.believedAssists(message, circle), circle.leaderId)
-    if (contractualLacksParticipant(circle, assists.length)) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_RitualContractual"))
+    if (contractualLacksParticipant(circle, assists.length) && refuseByRule("magic", "SR5.WARN_RitualContractual", null, {
+      actor: leader
+    })) return
 
     const bonus = teamworkBonus(leader.system.skills.ritualSpellcasting.rating.value, assists)
     if (!circle.sealed) {
