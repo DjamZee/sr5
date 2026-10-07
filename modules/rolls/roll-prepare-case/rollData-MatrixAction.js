@@ -158,8 +158,10 @@ export default async function matrixAction(rollData, rollKey, actor){
   //A drone with its wireless off can no longer be hacked wirelessly (SR5 p. 424): no wireless matrix
   //action reaches it, hacking or not. Only a direct connection does (p. 234), which the GM plays by
   //switching its wireless on for the action (N91). IC, complex forms and resonance actions: roll-prepare.js
-  //The "matrix" rule lock lifted (B13), the action reaches it, and the gamemaster hears of it (named after the user)
-  if (checksTargetMarks(rollKey) && targetsWirelessOffDrone(actor, rollData) && refuseByRule("matrix", "SR5.WARN_TargetWirelessOff")) return
+  //The "matrix" rule lock lifted (B13), the action reaches it, and the gamemaster hears of it (named after the actor)
+  if (checksTargetMarks(rollKey) && targetsWirelessOffDrone(actor, rollData) && refuseByRule("matrix", "SR5.WARN_TargetWirelessOff", null, {
+    actor
+  })) return
 
   //Check target's Marks before rolling if a target is selected
   if (matrixTargets(rollData).length && checksTargetMarks(rollKey)) {
