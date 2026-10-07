@@ -29,6 +29,9 @@ import {
   weaponRatingModifiers
 } from "./weapon-ratings.js"
 import {
+  streamOf, streamFadingReduction, reducedFading
+} from "../actors/technomancer-streams.js"
+import {
   rccAutosoftsForDrone, droneAutopilot, localAutosoftRating
 } from "../actors/rcc.js"
 import {
@@ -1615,8 +1618,8 @@ export class SR5_UtilityItem extends Actor {
   //Handle complex form
   static _handleComplexForm(item, actor) {
     // Fading calculation
-    item.system.fadingValue = item.system.fadingModifier + (item.system.level || 0)
-    if (item.system.fadingValue < 2) item.system.fadingValue = 2
+    //Lowered by the technomancer's stream when the form aims at what it knows best (Kill Code p. 100-101, 145-146)
+    item.system.fadingValue = reducedFading(item.system.fadingModifier + (item.system.level || 0), streamFadingReduction(streamOf(actor), item.system.target))
 
     //Check if complex form is sustained by a sprite
     for (let i of actor.items){

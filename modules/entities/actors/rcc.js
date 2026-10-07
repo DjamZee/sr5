@@ -1,11 +1,21 @@
 // Rigger command console (SR5 p. 269-272, Rigger 5.0 p. 131): who acts as one, what it shares with its drones,
 // and what a drone runs on its own. Pure functions, read by utilityActor.js, utilityItem.js and the sheets.
+import {
+  personaActsAsRcc, machinistRccRatings
+} from "./technomancer-streams.js"
 
-// Whether an actor, or its system data (the controller's copy a drone carries), acts as a rigger command console.
-// The single test of the system: the Machinist of Kill Code (p. 100-101) will make a living persona answer it too
+// Whether an actor, or the controller's copy a drone carries ({system, items}), acts as a rigger command console.
+// The single test of the system: the living persona of a Machinist answers it too (Kill Code p. 100-101)
 export function actsAsRcc(actorOrSystem){
   const system = actorOrSystem?.system ?? actorOrSystem
-  return system?.matrix?.deviceType === "riggerCommandConsole"
+  return system?.matrix?.deviceType === "riggerCommandConsole" || personaActsAsRcc(actorOrSystem)
+}
+
+// The Noise Reduction and Sharing of a Machinist's persona: Willpower and Charisma, fixed, never split within a rating
+// (Kill Code p. 101). Null for a real console, whose two ratings the rigger configures
+export function fixedRccRatings(actorOrOwner){
+  if (!personaActsAsRcc(actorOrOwner)) return null
+  return machinistRccRatings(actorOrOwner?.system?.attributes)
 }
 
 // Noise Reduction and Sharing are configured on the console, their total never above its Device Rating (SR5 p. 269).
@@ -45,7 +55,7 @@ export function hasLocalAutosoftRunning(droneItems){
 export function droneUsesRccAutosofts(droneSystem, droneItems){
   if (droneSystem?.controlMode !== "autopilot") return false
   if (!droneSystem.vehicleOwner?.id || !droneSystem.slaved) return false
-  if (!actsAsRcc(droneSystem.vehicleOwner.system)) return false
+  if (!actsAsRcc(droneSystem.vehicleOwner)) return false
   return !hasLocalAutosoftRunning(droneItems)
 }
 
@@ -58,13 +68,17 @@ export function autosoftFitsDrone(autosoftSystem, droneModel){
 export function rccAutosoftsForDrone(droneSystem, droneItems){
   if (!droneUsesRccAutosofts(droneSystem, droneItems)) return []
   const console = droneSystem.vehicleOwner
-  return sharedAutosofts(console.items, consoleSharing(console.system))
+  return sharedAutosofts(console.items, consoleSharing(console))
 }
 
-// The Sharing of the console a drone carries a copy of, read from its source values and kept within its rating
-function consoleSharing(consoleSystem){
+// The Sharing of the console a drone carries a copy of ({system, items}), read from its source values and kept within
+// its rating; a Machinist's persona shares its Charisma
+function consoleSharing(console){
+  const fixed = fixedRccRatings(console)
+  if (fixed) return fixed.sharing
+  const consoleSystem = console?.system
   const attributes = consoleSystem?.matrix?.attributes
-  return rccRatings(attributes?.noiseReduction?.base, attributes?.sharing?.base, consoleSystem?.matrix?.deviceRating, actsAsRcc(consoleSystem)).sharing
+  return rccRatings(attributes?.noiseReduction?.base, attributes?.sharing?.base, consoleSystem?.matrix?.deviceRating, actsAsRcc(console)).sharing
 }
 
 // The drone's autopilot: its Device Rating (SR5 p. 271). Read from the source, since the item effects are applied
@@ -90,9 +104,9 @@ export function programSwitchActionType(program, actorType, loading){
 // the drone runs its own
 export function rccAutosoftRows(droneSystem, droneItems){
   const console = droneSystem?.vehicleOwner
-  if (!console?.id || !actsAsRcc(console.system)) return []
+  if (!console?.id || !actsAsRcc(console)) return []
   const used = new Set(rccAutosoftsForDrone(droneSystem, droneItems).map(i => i._id))
-  const shared = new Set(sharedAutosofts(console.items, consoleSharing(console.system)).map(i => i._id))
+  const shared = new Set(sharedAutosofts(console.items, consoleSharing(console)).map(i => i._id))
   return (console.items || []).filter(isAutosoft).map(i => ({
     _id: i._id, name: i.name, rating: i.system.itemRating,
     state: used.has(i._id) ? "used" : (shared.has(i._id) ? "idle" : "notShared")

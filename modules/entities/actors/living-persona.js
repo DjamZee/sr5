@@ -15,6 +15,10 @@
 //   she is (SR5 p. 253, Data Trails p. 63) keeps that choice, and the persona is created switched off beside it.
 // The rules below have no Foundry in them, so that tests can read them.
 
+import {
+  streamOf
+} from "./technomancer-streams.js"
+
 // The special cases a quality "Fusion avec la matrice" carries (the 10 Karma level carries both)
 export const FUSION_EFFECTS = {
   slave: "matrixFusionSlave",
@@ -118,10 +122,10 @@ export function matrixFusionOf(actor){
 
 /**
  * How many slaves the living persona takes: none by the book (SR5 p. 253), Resonance x 3 with the quality "Fusion avec
- * la matrice" at 8 or 10 Karma (Kill Code p. 107).
+ * la matrice" at 8 or 10 Karma (Kill Code p. 107), or for a Machinist, whose persona acts as a console (Kill Code p. 100).
  */
 export function personaPanMax(actor, resonance){
-  return matrixFusionOf(actor).master ? (Number(resonance) || 0) * 3 : 0
+  return (matrixFusionOf(actor).master || streamOf(actor) === "machinist") ? (Number(resonance) || 0) * 3 : 0
 }
 
 /**

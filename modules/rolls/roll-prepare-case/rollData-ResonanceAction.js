@@ -7,6 +7,9 @@ import {
 import {
   SR5_MiscellaneousHelpers 
 } from "../roll-helpers/miscellaneous.js"
+import {
+  streamOf, streamSpriteDice
+} from "../../entities/actors/technomancer-streams.js"
 
 export default async function resonanceAction(rollData, rollKey, actor){
   let resonanceAction = actor.system.matrix?.resonanceActions[rollKey]
@@ -74,6 +77,11 @@ export default async function resonanceAction(rollData, rollKey, actor){
       if (targetActor.type !== "actorSprite") return void ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NotASprite")}`)
       //SR5 p. 252: Register [Sprite level]
       if (rollKey === "registerSprite") rollData.matrix.level = targetActor.system.level
+      //The stream's +2 dice to decompile two kinds of sprites (Kill Code p. 100-101, 145-146)
+      const streamDice = rollKey === "decompileSprite" ? streamSpriteDice(streamOf(actor), targetActor.system.type) : 0
+      if (streamDice) rollData.dicePool.modifiers.push({
+        type: "technomancerStream", label: game.i18n.localize(SR5.dicePoolModTypes.technomancerStream), value: streamDice
+      })
     }
   }
 

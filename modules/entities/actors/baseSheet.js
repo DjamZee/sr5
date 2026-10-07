@@ -123,7 +123,7 @@ import {
   deviceModeSheetContext, switchDeviceMode
 } from "../../canvas/pan-crown/pan-device-switch.js"
 import {
-  actsAsRcc, programSwitchActionType, sharingSlotsLeft
+  actsAsRcc, fixedRccRatings, programSwitchActionType, sharingSlotsLeft
 } from "./rcc.js"
 
 /**
@@ -345,6 +345,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
     //A rigger command console: Noise Reduction, Sharing and the shared autosofts (SR5 p. 269)
     context.actsAsRcc = actsAsRcc(this.actor)
+    //A Machinist's persona: Willpower and Charisma, not set by hand (Kill Code p. 101)
+    context.rccFixed = !!fixedRccRatings(this.actor)
 
     // Compute dynamic layout (SR6-style panel/tab/block system)
     context.layout = this._computeSheetLayout(this.actor)

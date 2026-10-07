@@ -2525,6 +2525,7 @@ SR5.matrixGameEffects = {
 
 // Complex Form Targets
 SR5.complexFormTargets = {
+  cyberware                 : "SR5.ComplexFormTargetCyberware",
   device                    : "SR5.ComplexFormTargetDevice",
   file                      : "SR5.ComplexFormTargetFile",
   host                      : "SR5.ComplexFormTargetHost",
@@ -3910,7 +3911,8 @@ SR5.dicePoolModTypes = {
   matrixRange               : "SR5.MatrixNoise",
   matrixSceneNoise          : "SR5.SceneNoiseRating",
   matrixNoiseReduction      : "SR5.NoiseReduction",
-  matrixActorNoise 		  : "SR5.PersonalMatrixNoise",
+  technomancerStream        : "SR5.TechnomancerStream",
+  matrixActorNoise		  : "SR5.PersonalMatrixNoise",
   publicGrid                : "SR5.GridPublicOn",
   targetGrid                : "SR5.GridTargetDifferent",
   spiritAid                 : "SR5.SpiritAid",

@@ -91,6 +91,9 @@ import {
 import {
   hasRiggerInterface
 } from "../../system/rigging-rules.js"
+import {
+  mayJumpIn
+} from "./technomancer-streams.js"
 
 /**
  * Extend the base Actor class to implement additional logic specialized for Shadowrun 5.
@@ -515,6 +518,8 @@ export class SR5Actor extends Actor {
     switch (actor.type) {
       case "actorDrone":
         actor.system.hasRiggerInterface = hasRiggerInterface(actor.system)
+        //Jumping in takes a control rig, or the echo that stands for one (SR5 p. 243, 261, 267; Data Trails p. 63)
+        actor.system.canJumpIn = mayJumpIn(actor.system, actor.system.hasRiggerInterface)
         if (actor.system.vehicleOwner.items.length) SR5_CharacterUtility.applyAutosoftEffect(actor)
         SR5_CharacterUtility.updateAttributes(actor)
         SR5_CharacterUtility.updateResistances(actor)

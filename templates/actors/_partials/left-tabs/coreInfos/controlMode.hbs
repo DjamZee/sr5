@@ -19,7 +19,8 @@
                     {{selectOptions lists.vehicleControlModesAutopilot selected=system.controlMode localize=true}}
                     {{#ifne system.vehicleOwner.id ""}}
                         {{selectOptions lists.vehicleControlModesSimple selected=system.controlMode localize=true}}
-                        {{#if system.hasRiggerInterface}}
+                        {{!-- Jumping in asks a control rig or the echo Possession de la machine (SR5 p. 243, 261); a vehicle already jumped into keeps its mode --}}
+                        {{#if (or system.canJumpIn (eq system.controlMode "rigging"))}}
                             {{selectOptions lists.vehicleControlModesRigging selected=system.controlMode localize=true}}
                         {{/if}}
                     {{/ifne}}

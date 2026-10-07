@@ -93,8 +93,11 @@ import {
   updateGreyMana
 } from "../../system/grey-mana.js"
 import {
-  actsAsRcc, rccRatings, hasLocalAutosoftRunning, rccAutosoftsForDrone, autosoftFitsDrone, droneAutopilot, localAutosoftRating
+  actsAsRcc, fixedRccRatings, rccRatings, hasLocalAutosoftRunning, rccAutosoftsForDrone, autosoftFitsDrone, droneAutopilot, localAutosoftRating
 } from "./rcc.js"
+import {
+  streamOf, firewallBonusOfStream, sourcererFreeSustain, resonanceRestoredByStream, machineMindRating
+} from "./technomancer-streams.js"
 import {
   VR_PILOTING_LIMIT_BONUS, controlRigThresholdModifier, dataProcessingCapModifier
 } from "../../system/rigging-rules.js"
@@ -957,6 +960,13 @@ export class SR5_CharacterUtility extends Actor {
       }
     }
 
+    //Sourcerer daemon (Kill Code p. 101): half the submersion grade, rounded down, of complex forms sustained without
+    //penalty; worked out at every preparation, like the masteries above
+    if (itemType === "itemComplexForm") {
+      const free = sourcererFreeSustain(streamOf(actor), actor.system.matrix?.submersionGrade)
+      actor.items.filter(i => i.type === "itemComplexForm" && i.system.isActive && !i.system.freeSustain).slice(0, free).forEach(i => freedByMastery.add(i.id))
+    }
+
     //Apply sustaining malus.
     for (let i of actor.items) {
       if (freedByMastery.has(i.id)) continue
@@ -1642,6 +1652,14 @@ export class SR5_CharacterUtility extends Actor {
           }
           if (edgeLoss < 0) {
             SR5_EntityHelpers.updateModifier(actorData.specialAttributes[key].augmented, game.i18n.localize('SR5.EssenceLoss'), "augmentations", Math.floor(edgeLoss))
+            //Cyberadept daemon (Kill Code p. 100): the Resonance lost to cyberware alone comes back, up to half the
+            //submersion grade rounded up
+            if (key == 'resonance') {
+              const cyberwareLost = actor.items.filter(i => i.type === "itemAugmentation" && i.system.type === "cyberware" && !i.system.isAccessory)
+                .reduce((sum, i) => sum + (Number(i.system.essenceCost?.value) || 0), 0)
+              const restored = resonanceRestoredByStream(streamOf(actor), actorData.matrix?.submersionGrade, -edgeLoss, cyberwareLost)
+              if (restored) SR5_EntityHelpers.updateModifier(actorData.specialAttributes[key].augmented, game.i18n.localize('SR5.StreamCyberadept'), "technomancerStream", restored)
+            }
             SR5_EntityHelpers.updateValue(actorData.specialAttributes[key].augmented, 0)
           }
         }
@@ -1790,6 +1808,15 @@ export class SR5_CharacterUtility extends Actor {
       if (actorData.specialProperties.fullDefenseAttribute === "perception" || actorData.specialProperties.fullDefenseAttribute === "gymnastics") {
         actorData.specialProperties.fullDefenseValue = actorData.skills[actorData.specialProperties.fullDefenseAttribute].rating.value
       } else actorData.specialProperties.fullDefenseValue = actorData.attributes[actorData.specialProperties.fullDefenseAttribute].augmented.value
+    }
+
+    //Echo Possession de la machine (SR5 p. 261): the benefit of a control rig of rating 1 to 3, the higher of the two
+    //when the technomancer also has one
+    const machineMind = machineMindRating(actor)
+    const controlRig = actorData.specialProperties.controlRig
+    if (machineMind && controlRig) {
+      const implanted = controlRig.modifiers.reduce((sum, m) => sum + (Number(m.value) || 0), 0)
+      if (machineMind > implanted) SR5_EntityHelpers.updateModifier(controlRig, game.i18n.localize('SR5.EchoMachineMind'), "echo", machineMind - implanted)
     }
 
     for (let key of Object.keys(SR5.specialProperties)) {
@@ -4406,9 +4433,16 @@ export class SR5_CharacterUtility extends Actor {
     matrix.markedItems = item.system.markedItems
     //Noise Reduction and Sharing belong to a console, their total within its Device Rating (SR5 p. 269): a deck or a
     //commlink equipped instead no longer reduces the noise with the console's setting
-    const rcc = rccRatings(matrixAttributes.noiseReduction.base, matrixAttributes.sharing.base, matrix.deviceRating, actsAsRcc(actor))
+    //A Machinist's persona takes Willpower and Charisma instead (Kill Code p. 101)
+    const rcc = fixedRccRatings(actor) ?? rccRatings(matrixAttributes.noiseReduction.base, matrixAttributes.sharing.base, matrix.deviceRating, actsAsRcc(actor))
     matrixAttributes.noiseReduction.base = rcc.noiseReduction
     matrixAttributes.sharing.base = rcc.sharing
+    //Erisian daemon: half the submersion grade, rounded up, on the persona's Firewall (Kill Code p. 146). Non-cumulative,
+    //since this function runs twice in a preparation
+    if (item.system.type === "livingPersona") {
+      const firewallBonus = firewallBonusOfStream(streamOf(actor), matrix.submersionGrade)
+      if (firewallBonus) SR5_EntityHelpers.updateModifier(matrixAttributes.firewall, game.i18n.localize('SR5.StreamErisian'), "technomancerStream", firewallBonus, false, false)
+    }
     SR5_EntityHelpers.updateValue(matrix.noise)
     SR5_EntityHelpers.updateValue(matrix.programsMaximumActive, 0)
     SR5_EntityHelpers.updateValue(matrix.programsCurrentActive, 0)

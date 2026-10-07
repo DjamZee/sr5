@@ -7,6 +7,9 @@ import {
 import {
   applyReagentDrainReduction
 } from "../../system/reagents.js"
+import {
+  streamOf, streamSpriteFadingReduction, reducedFading
+} from "../../entities/actors/technomancer-streams.js"
 
 export default async function sidekickResistanceInfo(cardData, type){
   let originalMessage = game.messages.get(cardData.previousMessage.messageId)
@@ -61,8 +64,9 @@ export default async function sidekickResistanceInfo(cardData, type){
   if (resistType === "fading"){
     // SR5 p. 254: the fading is physical when the sprite Level exceeds the technomancer's Resonance
     newMessage.matrix.fadingLevel = cardData.matrix.spriteLevel
-    newMessage.matrix.fading.value = cardData.roll.hits * 2
-    if (newMessage.matrix.fading.value < 2) newMessage.matrix.fading.value = 2
+    //Technoshaman: decompiling costs 2 less fading, never under 2 (Kill Code p. 102, SR5 p. 254); registering does not
+    const technomancer = (type === "decompilingResistance" && newMessage.owner?.actorId) ? SR5_EntityHelpers.getRealActorFromID(newMessage.owner.actorId, newMessage.actorUuids) : null
+    newMessage.matrix.fading.value = reducedFading(cardData.roll.hits * 2, streamSpriteFadingReduction(streamOf(technomancer)))
     newMessage.chatCard.buttons.fadingResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "fading", `${game.i18n.localize("SR5.ResistFading")} (${newMessage.matrix.fading.value})`)
   } else if (resistType === "drain"){
     // Keep the spirit's Force on the card: it decides if the drain is physical (SR5 p. 303-304)

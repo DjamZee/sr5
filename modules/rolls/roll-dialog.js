@@ -73,6 +73,9 @@ import {
 import {
   redDotSightBonus
 } from "../entities/items/weapon-accessory-rules.js"
+import {
+  streamOf, streamSpriteDice, noiseIgnoredByStream
+} from "../entities/actors/technomancer-streams.js"
 
 export default class SR5_RollDialog {
 
@@ -752,6 +755,16 @@ export default class SR5_RollDialog {
     }
   }
 
+  //The stream's +2 dice to compile two kinds of sprites (Kill Code p. 100-101, 145-146), following the type chosen
+  _syncStreamSpriteDice(html, dialogData, actor){
+    SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "technomancerStream")
+    const dice = streamSpriteDice(streamOf(actor), dialogData.matrix.spriteType)
+    if (dice) dialogData.dicePool.modifiers.push({
+      type: "technomancerStream", label: game.i18n.localize(SR5.dicePoolModTypes.technomancerStream), value: dice
+    })
+    this.updateDicePoolValue(html)
+  }
+
   //Uncheck a checkbox modifier and take its value off the dice pool
   _uncheckModifier(html, dialogData, modifierName){
     const checkbox = html.querySelector(`[data-modifier=${modifierName}]`)
@@ -1030,7 +1043,8 @@ export default class SR5_RollDialog {
             let rangeMod = dialogData.matrix.noiseRangeValue || 0,
               sceneNoise = dialogData.matrix.noiseScene || 0,
               actorNoise = dialogData.matrix.personalNoise || 0
-            value = actor.system.matrix.attributes.noiseReduction.value
+            //Morphinae daemon: one point of noise ignored per submersion grade (Kill Code p. 145)
+            value = actor.system.matrix.attributes.noiseReduction.value + noiseIgnoredByStream(streamOf(actor), actor.system.matrix.submersionGrade)
             if (-value < rangeMod + sceneNoise + actorNoise) value = -(rangeMod + sceneNoise + actorNoise)
             if (rangeMod + sceneNoise + actorNoise === 0) value = 0
           }
@@ -1347,6 +1361,7 @@ export default class SR5_RollDialog {
           break
         case "spriteType":
           dialogData.matrix.spriteType = ev.target.value
+          this._syncStreamSpriteDice(html, dialogData, actor)
           return
         case "spiritType":
           if (ev.target.value !== ""){
@@ -1741,6 +1756,7 @@ export default class SR5_RollDialog {
           continue
         case "spriteType":
           dialogData.matrix.spriteType = html.querySelector(name).value
+          this._syncStreamSpriteDice(html, dialogData, actor)
           continue
         case "preparationTrigger":
           inputValue = SR5_ConverterHelpers.triggerToMod(html.querySelector('[data-modifier="preparationTrigger"]').value)
