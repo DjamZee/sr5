@@ -17,7 +17,7 @@ import {
   updateLedger
 } from "./gm-ledger.js"
 import {
-  creationModeFor
+  CREATION_FLAG, creationModeFor
 } from "./creation-actor.js"
 
 export const IMPLANT_REGISTER = "sr5ImplantRegister"
@@ -198,8 +198,49 @@ export function nextPeak(entry, cost) {
  */
 export function essenceTaken(item, cost, register = readRegister()) {
   const now = Number(cost) || 0
-  if (item?.system?.reversibleEssence) return now
+  if (item?.system?.reversibleEssence || inCreation(item?.parent)) return now
   return Math.max(now, Number(register?.[item?.uuid]?.[PEAK_COST]) || 0)
+}
+
+/**
+ * A character in creation (lot C0) takes no peak: buying an implant at creation is no surgery, the cyber-surgery and
+ * its toll come "après sa création" (SR5 p. 454), and the Essence that "ne revient pas" (SR5 p. 53) is lost in play.
+ * At creation an implant takes its cost of now, whatever a module or the GM sets it to; the peak starts from that cost
+ * when the gamemaster ends the creation (creationEnded). A rule of the book, not a house rule.
+ */
+function inCreation(actor) {
+  try {
+    return !!actor && creationModeFor(actor)
+  } catch (_err) {
+    return false
+  }
+}
+
+/** updateActor: did this change take the actor out of creation (the flag unset, or no longer active)? */
+export function creationEnded(changes) {
+  const sr5 = changes?.flags?.sr5
+  if (!sr5) return false
+  if (`-=${CREATION_FLAG}` in sr5) return true
+  return CREATION_FLAG in sr5 && sr5[CREATION_FLAG]?.active !== true
+}
+
+/**
+ * The register once `actor` leaves creation: each implant's peak is its cost of now, whatever peak an earlier stay in
+ * play left; null when nothing changes.
+ */
+export function peaksAtCreationEnd(register, actor) {
+  let changed = false
+  for (const item of actor?.items ?? []) {
+    if (item?.type !== "itemAugmentation" || item.system?.reversibleEssence) continue
+    const peak = Math.round((Number(item.system?.essenceCost?.value) || 0) * 100) / 100
+    if (register[item.uuid]?.[PEAK_COST] === peak) continue
+    register[item.uuid] = {
+      ...(register[item.uuid] ?? {
+      }), [PEAK_COST]: peak
+    }
+    changed = true
+  }
+  return changed ? register : null
 }
 
 function readRegister() {
@@ -252,6 +293,8 @@ export async function resetEssencePeak(item) {
 /** Notes the cost an implant has now, when it is the highest the active GM has seen for it. */
 function notePeak(doc) {
   if (doc?.type !== "itemAugmentation" || !(doc.parent instanceof Actor)) return
+  // At creation, no peak (inCreation)
+  if (creationMode(doc)) return
   const cost = doc.system?.essenceCost?.value
   if (nextPeak(game.settings.get("sr5", IMPLANT_REGISTER)?.[doc.uuid], cost) === null) return
   return updateLedger(IMPLANT_REGISTER, register => {
@@ -308,7 +351,11 @@ async function onCreate(doc, _options, userId) {
 }
 
 /** updateItem / updateActor: a gamemaster's write is recorded; a player's change is put back. */
-async function onUpdate(doc, _changes, _options, userId) {
+async function onUpdate(doc, changes, _options, userId) {
+  // The gamemaster ends the creation: the peaks start from the costs of now (inCreation)
+  if (doc.documentName === "Actor" && isActiveGM() && creationEnded(changes) && !creationMode(doc)) {
+    await updateLedger(IMPLANT_REGISTER, register => peaksAtCreationEnd(register, doc))
+  }
   const fields = reservedFieldsOf(doc)
   if (!fields.length || !isActiveGM()) return
   const current = reservedValues(doc.system, fields)
@@ -369,7 +416,8 @@ export async function reconcileImplantRegister() {
       const mismatches = reservedMismatches(reservedValues(doc.system, fields), expected)
       if (Object.keys(mismatches).length) await restore(doc, mismatches, null)
       // The cost an implant has at the GM's arrival is the first one he sees (PEAK_COST)
-      if (doc.type === "itemAugmentation" && nextPeak(entry, doc.system?.essenceCost?.value) !== null) peaks[doc.uuid] = doc.system.essenceCost.value
+      // At creation, none (inCreation)
+      if (doc.type === "itemAugmentation" && !options.creation && nextPeak(entry, doc.system?.essenceCost?.value) !== null) peaks[doc.uuid] = doc.system.essenceCost.value
     }
   }
   if (Object.keys(unknown).length || Object.keys(peaks).length) await updateLedger(IMPLANT_REGISTER, latest => {
