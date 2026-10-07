@@ -84,7 +84,8 @@ export function layoutCrown(graph, {
   })
 
   // The devices slaved to nothing ring the token, on the side opposite the master
-  const loose = shown.filter(n => graph.links.some(l => l.to === n.uuid && l.from === "owner") && n.uuid !== graph.master)
+  // (a node a module links to both the token and the master is placed once, as a slave: lot 11)
+  const loose = shown.filter(n => graph.links.some(l => l.to === n.uuid && l.from === "owner") && n.uuid !== graph.master && !at[n.uuid])
   for (const node of loose.filter(n => !onRing(n))) place(node, 0, 0)
   fan(loose.filter(onRing), angle + Math.PI, tokenRadius + PAN_LAYOUT.deviceGap * scale, center, place, {
     maxSpread: PAN_LAYOUT.deviceSpread, gap

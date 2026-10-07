@@ -7,6 +7,9 @@ import {
 import {
   registerPanIcon, iconPathOf, nodeIconPathOf
 } from '../modules/canvas/pan-crown/pan-icons.js'
+import {
+  layoutCrown
+} from '../modules/canvas/pan-crown/pan-layout.js'
 
 // The hooks of the crown of a PAN for the modules (couronne du PAN, lot 11): a subscriber adds nodes and lines, can
 // only hide, greys out or adds entries of the menu; an error of a subscriber is ignored.
@@ -121,6 +124,30 @@ describe('pan hooks: the graph', () => {
     error.mockRestore()
   })
 
+  it('draws once a node a subscriber links to the token and to the master', () => {
+    const graph = contributeToGraph(graphOf(), {
+    }, dispatcher({
+      [PAN_CROWN_HOOKS.graph]: [g => {
+        g.nodes.push({
+          uuid: 'zone', name: 'Hall'
+        })
+        g.links.push({
+          from: 'owner', to: 'zone'
+        }, {
+          from: 'Item.M', to: 'zone'
+        })
+      }]
+    }))
+    for (const node of graph.nodes) node.visibility = {
+      visible: true
+    }
+    const {
+      icons, lines
+    } = layoutCrown(graph)
+    expect(icons.filter(i => i.node.uuid === 'zone')).toHaveLength(1)
+    expect(lines.filter(l => l.uuid === 'zone')).toHaveLength(2)
+  })
+
   it('without a subscriber, changes nothing', () => {
     expect(contributeToGraph(graphOf(), {
     }, dispatcher({
@@ -175,6 +202,19 @@ describe('pan hooks: the visibility', () => {
       visible: false, reason: 'silent'
     })
     expect(node.revealed).toBe(false)
+  })
+
+  it('never hides anything from the gamemaster', () => {
+    const verdict = {
+      visible: true, reason: 'gm'
+    }
+    expect(applyVisibilityHooks(node, {
+      isGM: true, ids: []
+    }, verdict, dispatcher({
+      [PAN_CROWN_HOOKS.visibility]: [(n, v, verdict) => {
+        verdict.visible = false
+      }]
+    }))).toBe(verdict)
   })
 
   it('gives a reason of its own to a hidden node without one', () => {

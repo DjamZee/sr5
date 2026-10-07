@@ -5,7 +5,8 @@
 //
 // The rules of safety:
 // - a subscriber works on a copy: it can ADD nodes and lines, never remove or change those of the system;
-// - it can only HIDE: the system's visibility (SR5 p. 236-238, the rulings of DjamZ) stays a ceiling;
+// - it can only HIDE, and only from the players: the system's visibility (SR5 p. 236-238, the rulings of DjamZ)
+//   stays a ceiling, and the gamemaster sees everything;
 // - it can grey out an entry of the menu, never enable one the system greys out;
 // - an error of a subscriber is ignored: the crown is drawn as the system builds it.
 // Without a module, no hook has a subscriber and the crown follows the book.
@@ -125,7 +126,8 @@ export function contributeToGraph(graph, {
  * @return {{visible: Boolean, reason: String}}
  */
 export function applyVisibilityHooks(node, viewer, verdict, call = defaultCall){
-  if (!verdict?.visible) return verdict
+  // The gamemaster sees everything: what a module hides from the players shows in her yellow ring
+  if (!verdict?.visible || viewer?.isGM) return verdict
   const proposed = {
     visible: true, reason: verdict.reason
   }
