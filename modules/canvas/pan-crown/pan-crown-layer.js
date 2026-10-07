@@ -235,6 +235,21 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     this.#hide(token)
   }
 
+  /**
+   * A token was deleted: its crown goes, and nothing is kept of how it was opened. Not close(): a token brought back
+   * by Ctrl+Z keeps its id, and would stay "closed by hand" (relecture).
+   */
+  forget(tokenId){
+    if (!tokenId) return
+    this.manual.delete(tokenId)
+    this.dismissed.delete(tokenId)
+    this._centers.delete(tokenId)
+    if (this.hovered === tokenId) this.hovered = null
+    this.#hide({
+      id: tokenId
+    })
+  }
+
   /** The tokens of the scene that may carry a crown (a storage on the ground has no PAN) */
   #crownTokens(){
     return (canvas?.tokens?.placeables ?? []).filter(t => t.actor && t.actor.type !== "actorStorage" && !t.destroyed)
@@ -329,7 +344,8 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
       children: true
     })
     this.#updateTicker()
-    safeCall(PAN_CROWN_HOOKS.closed, [token])
+    // The token the crown was drawn on, a Token placeable even when only its id is known
+    safeCall(PAN_CROWN_HOOKS.closed, [crown.token])
   }
 
   /**
@@ -911,9 +927,7 @@ export function registerPanCrownHooks(){
   Hooks.on("deleteActor", () => closeRadialMenu())
   Hooks.on("deleteToken", document => {
     closeRadialMenuOf(document.id)
-    layer()?.close(document.object ?? {
-      id: document.id
-    })
+    layer()?.forget(document.id)
     // The lines that led to it (a drone, a rigger, a device of the scenery: lot 7)
     layer()?.refresh()
   })

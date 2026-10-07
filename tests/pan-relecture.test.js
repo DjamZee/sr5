@@ -214,6 +214,15 @@ describe('M1: a move lays the crowns out again, it does not build them again', (
     expect(layer).toMatch(/Hooks\.on\("deleteToken", document => \{\s*closeRadialMenuOf\(document\.id\)/)
   })
 
+  it('forgets a deleted token, which Ctrl+Z may bring back with its id, and gives the hook a Token', () => {
+    const layer = read(LAYER)
+    expect(layer).toMatch(/closeRadialMenuOf\(document\.id\)\r?\n {4}layer\(\)\?\.forget\(document\.id\)/)
+    const forget = layer.slice(layer.indexOf('  forget(tokenId){'), layer.indexOf('  /** The tokens of the scene'))
+    expect(forget).toMatch(/this\.dismissed\.delete\(tokenId\)/)
+    expect(forget).not.toMatch(/this\.dismissed\.add/)
+    expect(layer).toMatch(/safeCall\(PAN_CROWN_HOOKS\.closed, \[crown\.token\]\)/)
+  })
+
   it('makes the name of an icon the first time it is read, not at each build', () => {
     const source = read(LAYER)
     expect(source).toMatch(/let label = null/)
