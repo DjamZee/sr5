@@ -289,9 +289,7 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     // Lot 9: the halos under the lines, the pulses on them, both out of the pointer's way
     const halos = container.addChild(inert(new PIXI.Container()))
     const lines = container.addChild(new PIXI.Graphics())
-    const pulses = container.addChild(inert(new PIXI.ParticleContainer(1000, {
-      position: true
-    })))
+    const pulses = container.addChild(inert(new PIXI.Container()))
     const icons = container.addChild(new PIXI.Container())
     icons.eventMode = "passive"
     const sceneCenter = canvas.dimensions.sceneRect.center
