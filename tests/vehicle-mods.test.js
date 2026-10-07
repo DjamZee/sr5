@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 import {
   vehicleModKind, fittedMods, fittedRating, replacedVehicleAttribute, replacedVehicleAttributeOf, armorCapReduction, addedArmor,
-  hasBullBar, modSlotUse, slotsRefusal
+  hasBullBar, modSlotUse, slotsRefusal, crashArmorPenetration, occupantCrashBonus
 } from '../modules/system/vehicle-mods.js'
 import {
   droneAutopilot
@@ -254,5 +254,44 @@ describe('Slots cannot be gone beyond (Rigger 5.0 p. 153-154)', () => {
     expect(slotsRefusal(over, {
       category: "protection", slots: 3
     }, null)).toBe(null)
+  })
+})
+
+describe('A passenger in a crash: SPP and rigger cocoon (SR5 p. 202, Rigger 5.0 p. 157, 162)', () => {
+  it('the crash takes 6 points of armor, never more than there is', () => {
+    expect(crashArmorPenetration(12)).toBe(-6)
+    expect(crashArmorPenetration(4)).toBe(-4)
+    expect(crashArmorPenetration(0) === 0).toBe(true)
+  })
+  it('the highest SPP of the vehicles driven or jumped into', () => {
+    expect(occupantCrashBonus([{
+      controlMode: "manual", items: [mod("Système de protection des passagers (SPP)", {
+        itemRating: 3
+      })]
+    }, {
+      controlMode: "rigging", items: [mod("Système de protection des passagers (SPP)", {
+        itemRating: 4
+      })]
+    }])).toEqual({
+      protection: 4, cocoon: 0
+    })
+  })
+  it('the cocoon holds the rigger who jumps in, +6 dice', () => {
+    const items = [mod("Cocon de rigger")]
+    expect(occupantCrashBonus([{
+      controlMode: "rigging", items
+    }]).cocoon).toBe(6)
+    expect(occupantCrashBonus([{
+      controlMode: "manual", items
+    }]).cocoon).toBe(0)
+  })
+  it('a vehicle on autopilot or remote control carries nobody', () => {
+    expect(occupantCrashBonus([{
+      controlMode: "remote", items: [mod("Système de protection des passagers (SPP)", {
+        itemRating: 3
+      }), mod("Cocon de rigger")]
+    }])).toEqual({
+      protection: 0, cocoon: 0
+    })
   })
 })

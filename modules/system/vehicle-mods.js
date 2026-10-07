@@ -135,3 +135,31 @@ export function slotsRefusal(free, before, after) {
     category: after.category, needed: after.slots, free: Math.max(0, left)
   } : null
 }
+
+// SR5 p. 202: in a crash, "les personnages [résistent] avec Constitution + Armure - PA 6". R5 p. 162 (SPP): its rating
+// is added "à tout test de Résistance aux dégâts effectué par les passagers, dans le cas de dégâts dus à une collision
+// ou à une action de conduite violente [...] à l'exception des attaques d'armes". R5 p. 157 (Cocon de rigger): "Son
+// occupant bénéficie de +6 dés pour résister aux dégâts causés par les accidents ou les manœuvres violentes".
+// The system knows no seat: a character is aboard the vehicles they drive themselves or jump into (arbitrage d'Hélène,
+// 07/10, lot R8); the cocoon holds the rigger who jumps in. The gamemaster takes a modifier off in the dialog otherwise
+export const CRASH_ARMOR_PENETRATION = -6
+export const COCOON_CRASH_DICE = 6
+
+/** What the crash's AP takes off a passenger's armor: -6, never more than the armor itself */
+export function crashArmorPenetration(armor) {
+  return -Math.min(-CRASH_ARMOR_PENETRATION, Math.max(0, Number(armor) || 0))
+}
+
+/** The dice a passenger adds to resist a crash, from the vehicles they are aboard ({items, controlMode}): the highest SPP,
+ *  and the cocoon of a vehicle they jump into */
+export function occupantCrashBonus(vehicles) {
+  let protection = 0, cocoon = 0
+  for (const vehicle of vehicles ?? []) {
+    if (vehicle?.controlMode !== "manual" && vehicle?.controlMode !== "rigging") continue
+    protection = Math.max(protection, fittedRating(vehicle.items, "passengerProtection"))
+    if (vehicle.controlMode === "rigging" && fittedMods(vehicle.items, "riggerCocoon").length) cocoon = COCOON_CRASH_DICE
+  }
+  return {
+    protection, cocoon
+  }
+}

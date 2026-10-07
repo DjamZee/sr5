@@ -108,7 +108,7 @@ import {
   modTakesSlots, factorySkipsEffect
 } from "../../system/vehicle-factory.js"
 import {
-  replacedVehicleAttribute, replacedVehicleAttributeOf, armorCapReduction, addedArmor
+  replacedVehicleAttribute, replacedVehicleAttributeOf, armorCapReduction, addedArmor, crashArmorPenetration
 } from "../../system/vehicle-mods.js"
 
 
@@ -2602,6 +2602,15 @@ export class SR5_CharacterUtility extends Actor {
               resistances[key].base = 0
               SR5_EntityHelpers.updateModifier(resistances[key], game.i18n.localize('SR5.Body'), "linkedAttribute", attributes.body.augmented.value)
               SR5_EntityHelpers.updateModifier(resistances[key], game.i18n.localize('SR5.VehicleStat_ArmorShort'), "linkedAttribute", attributes.armor.augmented.value)
+              SR5_EntityHelpers.updateDicePool(resistances[key], 0)
+            } else {
+              //A passenger in a crash: Body + Armor, AP -6 (SR5 p. 202). The vehicle's SPP and cocoon join at the roll
+              resistances[key].base = 0
+              SR5_EntityHelpers.updateModifier(resistances[key], game.i18n.localize('SR5.Body'), "linkedAttribute", attributes.body.augmented.value)
+              const armor = actorData.itemsProperties?.armor?.modifiers ?? []
+              resistances[key].modifiers = resistances[key].modifiers.concat(armor, anyDamageModifiers)
+              const penetration = crashArmorPenetration(SR5_EntityHelpers.modifiersSum(armor))
+              if (penetration) SR5_EntityHelpers.updateModifier(resistances[key], game.i18n.localize('SR5.ArmorPenetrationShort'), "armorPenetration", penetration)
               SR5_EntityHelpers.updateDicePool(resistances[key], 0)
             }
             break
