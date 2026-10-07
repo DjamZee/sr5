@@ -394,6 +394,25 @@ describe('the other actions', () => {
     }])
   })
 
+  it('Falling Leaf: each net hit puts the aircraft a range farther from each of its pursuers (R5 p. 181)', () => {
+    const out = resolveAction('fallingLeaf', {
+      ...ids, hits: 4, threshold: 2, pursuers: ['B', 'C']
+    })
+    expect(out.effects).toEqual([{
+      type: 'speed', id: 'A', value: 0
+    }, {
+      type: 'shift', a: 'A', b: 'B', steps: 2
+    }, {
+      type: 'shift', a: 'A', b: 'C', steps: 2
+    }, {
+      type: 'leave', id: 'A', reason: 'fallingLeaf'
+    }])
+    // Made with no hit to spare: it drops out where it is
+    expect(resolveAction('fallingLeaf', {
+      ...ids, hits: 2, threshold: 2, pursuers: ['B']
+    }).effects.map(e => e.type)).toEqual(['speed', 'leave'])
+  })
+
   it('Control a Vehicle rolls nothing and gives the control back (SR5 p. 203)', () => {
     expect(CHASE_ACTIONS.control.roll).toBe(false)
     expect(resolveAction('control', ids).effects).toEqual([{

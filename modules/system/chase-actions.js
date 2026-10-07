@@ -550,9 +550,13 @@ const fallingLeaf = registerChaseAction("fallingLeaf", {
   rules: "r5", page: "R5 p. 181", optimal: 2, kinds: ["rotor", "jet"],
   resolve: r => {
     const effects = []
+    const net = excessHits(r.hits, r.threshold)
+    // Each net hit puts it a range farther from each of its pursuers as it drops, before it leaves the chase
     if (r.hits >= r.threshold) effects.push({
       type: "speed", id: r.initiatorId, value: 0
-    }, {
+    }, ...(net ? (r.pursuers ?? []).map(id => ({
+      type: "shift", a: r.initiatorId, b: id, steps: net
+    })) : []), {
       type: "leave", id: r.initiatorId, reason: "fallingLeaf"
     })
     if (r.glitch) effects.push({
