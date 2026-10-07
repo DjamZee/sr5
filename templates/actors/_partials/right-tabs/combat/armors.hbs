@@ -127,6 +127,7 @@
 						{{else}}
 						<a class="toggle-value" data-dtype="Boolean" data-item-id="{{_id}}" data-binding="system.wirelessTurnedOn" data-title="{{localize 'SR5.EnableWirelessMode'}}"><em class="fas fa-sm fa-wifi"></em></a>
 						{{/if}}
+						{{~> systems/sr5/templates/actors/_partials/right-tabs/_common/device-silent.hbs deviceMode=(lookup @root.deviceModes _id) itemId=_id}}
 					</div>
 					{{/if}}
 					<div class="col-6 SR-TextRight">

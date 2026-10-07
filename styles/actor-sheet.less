@@ -899,3 +899,14 @@
     color: var(--sr-text-color-alert);
     font-weight: bold;
 }
+
+// The silent switch of a device, beside its wireless one in the lists (couronne du PAN, lot 6): both on one line
+.app.window-app.actor :has(> .device-silent-toggle) {
+    display        : flex;
+    justify-content: center;
+    align-items    : center;
+    gap            : 1px;
+    white-space    : nowrap;
+
+    > .device-silent-toggle em { font-size: 0.75em; }
+}

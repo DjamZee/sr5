@@ -52,6 +52,9 @@ import {
 import {
   enhancementFits
 } from "./weapon-accessory-rules.js"
+import {
+  deviceModeSheetContext, switchDeviceMode
+} from "../../canvas/pan-crown/pan-device-switch.js"
 
 // Item types that include a footer (condition monitors, price/availability)
 const ITEM_FOOTER_TYPES = new Set([
@@ -111,6 +114,11 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       shopOpen: SR5ItemSheet._onShopAction,
       shopClientAdd: SR5ItemSheet._onShopAction,
       shopClientRemove: SR5ItemSheet._onShopAction,
+      // The owner switches the device's mode (pan-device-switch.js)
+      switchDeviceMode: function (event, target) {
+        event.preventDefault()
+        return switchDeviceMode(this.document, target.dataset.mode)
+      },
     },
   }
 
@@ -430,6 +438,8 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
         member.combat = actor?.getFlag?.("sr5", TACNET_COMBAT_FLAG) ?? ""
       }
     }
+    // The device's mode, switched by its owner (couronne du PAN, lot 6)
+    context.deviceMode = deviceModeSheetContext(item)
     // Items that unfold into an actor wear a second picture: their token's
     context.hasTokenImage = SR5ItemSheet.SIDEKICK_TYPES.includes(item.type)
     // What the rule asks of a garage holding this kind of vehicle

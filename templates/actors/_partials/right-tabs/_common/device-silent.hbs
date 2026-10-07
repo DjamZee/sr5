@@ -1,0 +1,12 @@
+{{!-- The silent switch of a device, beside its wireless one (couronne du PAN, lot 6, SR5 p. 236). Takes deviceMode
+(the item's entry of deviceModes) and itemId. Nothing while the device is out of the Matrix, nor for a deployed drone,
+which holds its own switches on its sheet. --}}
+{{#if deviceMode}}{{#unless (or (eq deviceMode.mode "offline") deviceMode.locked)}}
+{{#if (eq deviceMode.silentFrom "self")}}
+<a class="device-silent-toggle" data-item-id="{{itemId}}" data-mode="active" data-title="{{localize 'SR5.DeviceModeLeaveSilent'}}"><em class="fas fa-sm fa-user-secret SR-SubColor"></em></a>
+{{else if (eq deviceMode.silentFrom "master")}}
+<a class="device-silent-toggle" data-item-id="{{itemId}}" data-mode="silent" data-title="{{localize 'SR5.DeviceModeSilentFromMaster'}}"><em class="fas fa-sm fa-user-secret SR-LightGreyColor"></em></a>
+{{else}}
+<a class="device-silent-toggle" data-item-id="{{itemId}}" data-mode="silent" data-title="{{localize 'SR5.PanMenuModeSilent'}}"><em class="fas fa-sm fa-user-secret"></em></a>
+{{/if}}
+{{/unless}}{{/if}}

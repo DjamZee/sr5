@@ -119,6 +119,9 @@ import {
 import {
   canBeConcealed, concealedState, concealedItems
 } from "../../rolls/roll-helpers/conceal-rules.js"
+import {
+  deviceModeSheetContext, switchDeviceMode
+} from "../../canvas/pan-crown/pan-device-switch.js"
 
 /**
  * Extend the basic ActorSheet class to do all the SR5 things!
@@ -330,6 +333,13 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     context.emulateOnlyDepth = context.canReboot ? null : (this.actor.system.specialAttributes?.depth?.augmented?.value || 0)
     //An active cyberdeck whose attribute array is not assigned rolls with matrix limits at 0 (SR5 p. 229)
     context.deckUnconfigured = SR5_CharacterUtility.isDeckUnconfigured(this.actor.system)
+    //The mode of each device of the lists, its silent switch beside its wireless one (couronne du PAN, lot 6)
+    context.deviceModes = {
+    }
+    for (const item of this.actor.items) {
+      const mode = deviceModeSheetContext(item)
+      if (mode) context.deviceModes[item.id] = mode
+    }
 
     // Compute dynamic layout (SR6-style panel/tab/block system)
     context.layout = this._computeSheetLayout(this.actor)
@@ -584,6 +594,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     on(".changeMatrixMode", "change", this._onChangeMatrixMode.bind(this))
     // Change matrix silent mode
     on(".changeSilentMode", "click", this._onChangeSilentMode.bind(this))
+    // A device of the lists runs silent or leaves it (pan-device-switch.js)
+    on(".device-silent-toggle", "click", event => {
+      event.preventDefault()
+      const item = this.actor.items.get(event.currentTarget.dataset.itemId)
+      if (item) switchDeviceMode(item, event.currentTarget.dataset.mode)
+    })
     // Custom drag start — AppV2 does not wire DragDrop.dragSelector, so we bind manually
     on(".draggableAttribute, [data-skill], [data-matrix], [data-resonance]", "dragstart", this._onDragStart.bind(this))
     // Owned item dragging (to the sidebar, chat or another sheet) — core ActorSheetV2 only binds `.draggable`

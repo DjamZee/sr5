@@ -182,6 +182,7 @@ export const preloadHandlebarsTemplates = async function () {
 		
     //Right Tab - Matrix partials
     "systems/sr5/templates/actors/_partials/right-tabs/matrix/devices.hbs",
+    "systems/sr5/templates/actors/_partials/right-tabs/_common/device-silent.hbs",
     "systems/sr5/templates/actors/_partials/right-tabs/matrix/iceAttack.hbs",
     "systems/sr5/templates/actors/_partials/right-tabs/matrix/programs.hbs",
     "systems/sr5/templates/actors/_partials/right-tabs/matrix/matrixActions.hbs",
@@ -225,6 +226,7 @@ export const preloadHandlebarsTemplates = async function () {
 
     // Item sheet — dynamic layout
     "systems/sr5/templates/items/_partials/item-header.hbs",
+    "systems/sr5/templates/items/_partial/header/device-mode.hbs",
 
     // Item block templates (summary + stat blocks)
     "systems/sr5/templates/items/blocks/adeptPower/adeptPower-stat.hbs",
