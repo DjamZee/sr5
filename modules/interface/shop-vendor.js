@@ -44,6 +44,9 @@ import {
 import {
   lineWaits, deliveryDelayed, currentExpress, expressCost, orderHours, newOrder, addOrders, ledgerOrders, cardSurcharge, surchargedUnit
 } from './shop-orders.js'
+import {
+  dealerPrice
+} from '../system/rigger-qualities.js'
 
 /**
  * The gamemaster's vendor (shop lot C, part 1).
@@ -754,8 +757,10 @@ export class SR5ShopVendor {
         })
         continue
       }
-      // The surcharge that bought dice on the card is paid (SR5 p. 420)
-      const unit = surchargedUnit(described.price, cardSurcharge(messageId, item.uuid, senderId, card))
+      // The surcharge that bought dice on the card is paid (SR5 p. 420); a dealer takes 10 % off after it (Rigger 5.0 p. 37)
+      const unit = dealerPrice(surchargedUnit(described.price, cardSurcharge(messageId, item.uuid, senderId, card)), {
+        type: item.type, system: counterSystem(item)
+      }, buyer.items)
       resolved.push({
         item, quantity, unit, total: unit * quantity, name: item.name,
       })
@@ -798,7 +803,7 @@ export class SR5ShopVendor {
       const waits = lineWaits({
         delayed: deliveryDelayed(), availability: described.availability, free
       })
-      const unit = surchargedUnit(described.price, cardSurcharge(messageId, line.uuid, senderId, card))
+      const unit = dealerPrice(surchargedUnit(described.price, cardSurcharge(messageId, line.uuid, senderId, card)), source, buyer.items)
       const total = unit * quantity
       // The express surcharge and the search time stay on the price before the surcharge (DjamZ's ruling, 05/10)
       const baseTotal = described.price * quantity

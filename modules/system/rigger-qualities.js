@@ -5,6 +5,10 @@
 export const RIGGER_QUALITY_EFFECTS = {
   speedDemon: "riggerSpeedDemon",
   informationOverload: "riggerInformationOverload",
+  dealerGround: "riggerDealerGround",
+  dealerWatercraft: "riggerDealerWatercraft",
+  dealerAircraft: "riggerDealerAircraft",
+  dealerDrone: "riggerDealerDrone",
 }
 
 /** Démon de la vitesse (p. 37): +1 to the piloting tests of a vehicle moving at Speed 3 or more, 4 for aircraft. */
@@ -12,6 +16,8 @@ export const SPEED_DEMON_BONUS = 1
 /** Surcharge d'informations (p. 38): −2 dice once four vehicles or drones he directs are moving. */
 export const INFORMATION_OVERLOAD_PENALTY = -2
 export const INFORMATION_OVERLOAD_COUNT = 4
+/** Relation avec un concessionnaire (p. 37): 10 % off a vehicle of the chosen category. */
+export const DEALER_DISCOUNT = 0.1
 
 /** The `systemEffects` of an item as a list. Raw creation data and the packs may still hold an indexed object. */
 function effectsOf(item) {
@@ -74,3 +80,29 @@ export function movingVehiclesOf(ownerId, vehicles) {
   return listOf(vehicles).filter(system => system?.vehicleOwner?.id === ownerId && isMoving(system)).length
 }
 
+/** The four categories of the quality (p. 37: "véhicules terrestres, bateaux, avions ou drones"), by vehicle category. */
+const DEALER_BY_CATEGORY = {
+  car: "dealerGround", bike: "dealerGround", truck: "dealerGround",
+  boat: "dealerWatercraft", submarine: "dealerWatercraft",
+  fixedWingAircraft: "dealerAircraft", rotorCraft: "dealerAircraft", vectorThrustCraft: "dealerAircraft", lta: "dealerAircraft",
+}
+
+/** The `systemEffects` value of the dealer that sells `item` (an itemVehicle), or null. A drone is a drone first. */
+export function dealerEffectFor(item) {
+  if (item?.type !== "itemVehicle") return null
+  if (item.system?.type === "drone") return RIGGER_QUALITY_EFFECTS.dealerDrone
+  const key = DEALER_BY_CATEGORY[item.system?.category]
+  return key ? RIGGER_QUALITY_EFFECTS[key] : null
+}
+
+/**
+ * Relation avec un concessionnaire: the unit price of `item` for a buyer with `buyerItems`. The discount comes "après
+ * que le maître de jeu ait ajusté le prix en fonction de la disponibilité": on the price the surcharge already raised.
+ * Rounded to the nearest nuyen. Bought once per category, it never stacks.
+ */
+export function dealerPrice(unit, item, buyerItems) {
+  const price = Number(unit) || 0
+  const effect = dealerEffectFor(item)
+  if (!effect || !hasRiggerQuality(buyerItems, effect)) return price
+  return Math.round(price * (1 - DEALER_DISCOUNT))
+}

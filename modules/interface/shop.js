@@ -30,6 +30,9 @@ import {
   requestRegister
 } from './shop-orders.js'
 import {
+  dealerPrice
+} from '../system/rigger-qualities.js'
+import {
   STACKABLE_TYPES, sr5StackPayload, sr5LineLabel
 } from './item-payload.js'
 
@@ -290,7 +293,8 @@ export class SR5Shop {
       const base = SR5Shop.gradedPrice(source.system, grade)
       // The surcharge that bought dice on the card is paid (SR5 p. 420); the search time and the express
       // surcharge stay on the base price (DjamZ's ruling, 05/10)
-      const unit = surchargedUnit(base, cardSurcharge(messageId, line.uuid, userId, card))
+      // Relation avec un concessionnaire (Rigger 5.0 p. 37): 10 % off, after the surcharge
+      const unit = dealerPrice(surchargedUnit(base, cardSurcharge(messageId, line.uuid, userId, card)), source, actor.items)
       resolved.push({
         source, quantity, unit, grade, total: unit * quantity, baseTotal: base * quantity,
         name: SR5Shop.gradedName(source.name, grade),

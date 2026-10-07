@@ -40,6 +40,9 @@ import {
 import {
   implantEssenceEffects, implantEssence, hasAdapsine
 } from '../system/implant-essence.js'
+import {
+  dealerPrice
+} from '../system/rigger-qualities.js'
 
 /**
  * Where the shop's goods come from: the world's shelves, the compendiums the
@@ -522,7 +525,8 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       // No more than the counter holds
       if (row?.entry.stock && line.quantity > row.entry.stock) line.quantity = row.entry.stock
       const described = row ? SR5ShopWindow.#described(row.entry, line.grade) : null
-      const unit = described?.price ?? line.unit ?? 0
+      // Relation avec un concessionnaire (Rigger 5.0 p. 37): the cart shows what the till will take
+      const unit = described && buyer ? dealerPrice(described.price, row.entry, buyer.items) : described?.price ?? line.unit ?? 0
       line.unit = unit
       const total = unit * line.quantity
       cartTotal += total

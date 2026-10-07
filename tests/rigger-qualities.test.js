@@ -2,7 +2,7 @@ import {
   describe, it, expect
 } from "vitest"
 import {
-  RIGGER_QUALITY_EFFECTS, speedDemonBonus, informationOverloadPenalty, movingVehiclesOf,
+  RIGGER_QUALITY_EFFECTS, speedDemonBonus, informationOverloadPenalty, movingVehiclesOf, dealerEffectFor, dealerPrice,
   hasRiggerQuality
 } from "../modules/system/rigger-qualities.js"
 
@@ -104,5 +104,45 @@ describe("Surcharge d'informations at the roll: the world's drones, the tested o
       }
     }, tested).dicePool.modifiers).toEqual([])
     delete globalThis.game
+  })
+})
+
+describe("Relation avec un concessionnaire (R5 p. 37): 10 % off the chosen category, after the surcharge", () => {
+  const car = {
+    type: "itemVehicle", system: {
+      type: "vehicle", category: "car"
+    }
+  }
+  const flyingDrone = {
+    type: "itemVehicle", system: {
+      type: "drone", category: "rotorCraft"
+    }
+  }
+  it("reads the four categories of the book", () => {
+    expect(dealerEffectFor(car)).toBe(RIGGER_QUALITY_EFFECTS.dealerGround)
+    expect(dealerEffectFor({
+      type: "itemVehicle", system: {
+        type: "vehicle", category: "submarine"
+      }
+    })).toBe(RIGGER_QUALITY_EFFECTS.dealerWatercraft)
+    expect(dealerEffectFor({
+      type: "itemVehicle", system: {
+        type: "vehicle", category: "lta"
+      }
+    })).toBe(RIGGER_QUALITY_EFFECTS.dealerAircraft)
+    expect(dealerEffectFor(flyingDrone)).toBe(RIGGER_QUALITY_EFFECTS.dealerDrone)
+    expect(dealerEffectFor({
+      type: "itemWeapon", system: {
+      }
+    })).toBe(null)
+  })
+  it("takes 10 % off a vehicle of its category only", () => {
+    const buyer = [quality(RIGGER_QUALITY_EFFECTS.dealerGround)]
+    expect(dealerPrice(15000, car, buyer)).toBe(13500)
+    expect(dealerPrice(15000, flyingDrone, buyer)).toBe(15000)
+    expect(dealerPrice(15000, car, [])).toBe(15000)
+  })
+  it("rounds to the nearest nuyen", () => {
+    expect(dealerPrice(1995, car, [quality(RIGGER_QUALITY_EFFECTS.dealerGround)])).toBe(1796)
   })
 })
