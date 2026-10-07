@@ -59,7 +59,9 @@ export default async function matrixDefense(rollData, rollKey, actor, chatData){
       return
     }
     rollData.target.itemUuid = chatData.target.itemUuid
-    if (targetItem.system.type !== "device"){
+    //The base device of a drone, a device of the scenery or a host is the actor itself: it defends with the actor's
+    //own pool, whose rating is the actor's (the item's stays 0); a device of the scenery may then take its master's below
+    if (targetItem.system.type !== "device" && targetItem.system.type !== "baseDevice"){
       //The defending device is named, slaved to a PAN or not
       rollData.test.title = `${targetItem.name} - ${game.i18n.localize("SR5.MatrixDefenseTest")}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize(SR5.matrixRolledActions[rollKey])} (${chatData.roll.hits})`
       if (!targetItem.system.isSlavedToPan){

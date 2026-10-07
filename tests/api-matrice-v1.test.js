@@ -333,6 +333,8 @@ describe('A3: the direct connection, attacker by attacker (SR5 p. 234)', () => {
     expect(source).toMatch(/directConnectionVerdict\(attacker\(\), targetItem, false\)/)
     expect(source).toMatch(/directConnectionVerdict\(attacker\(\), device, actor\.system\.isDirectlyConnected === true\)/)
     expect(source).toMatch(/if \(direct \|\| targetItem\.system\.deviceRating \* 2 >/)
+    // The base device of an actor defends with the actor's pool, not with the item's rating, which stays 0
+    expect(source).toMatch(/targetItem\.system\.type !== "device" && targetItem\.system\.type !== "baseDevice"/)
   })
 })
 
