@@ -20,6 +20,9 @@ import {
   registerPanOpeningSettings
 } from "../canvas/pan-crown/pan-openings.js"
 import {
+  registerPanAmbienceSettings
+} from "../canvas/pan-crown/pan-ambience.js"
+import {
   registerImplantRegisterSetting
 } from "./implant-register.js"
 import {
@@ -719,6 +722,10 @@ export class SR5_SystemHelpers {
 
     // How each user opens the PAN crowns (couronne du PAN, lot 8; Q8 of DjamZ, 07/10); its key is in init.js
     registerPanOpeningSettings()
+
+    // The ambiences of the PAN crowns (couronne du PAN, lot 9; decision 7 of DjamZ, 07/10): each user's level, under
+    // the gamemaster's ceiling
+    registerPanAmbienceSettings()
   }
 
   /* Display Shadowrun Themed Log Entries Based on Logging Level

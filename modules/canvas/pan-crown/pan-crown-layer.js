@@ -3,7 +3,9 @@
 // hover. A crown shows what getGraph() makes visible to the current user. Lot 3: the observer's own marks as small
 // diamonds over an icon, a yellow ring for the gamemaster on what no player sees, and the gamemaster's menu to reveal
 // a device (pan-crown.js); the radial menu comes with lot 4. Which crowns are open is the client's own state: lot 8
-// opens them by the HUD button, on hover, always, or with the key of the AR view (pan-openings.js).
+// opens them by the HUD button, on hover, always, or with the key of the AR view (pan-openings.js). Lot 9: the
+// ambiences Sober (unfolding, pulses) and Spectacular (halo, flicker, rain of code), under the gamemaster's ceiling
+// (pan-ambience.js).
 //
 // A layer of its own in the interface group, above the tokens and under the HTML HUD (PLAN-COURONNE-PAN-MATRICE § 3).
 // Each crown is a container placed on its token's center by the refreshToken hook, which also fires during the
@@ -33,6 +35,14 @@ import {
 import {
   PAN_CROWN_HOOKS, safeCall
 } from "./pan-hooks.js"
+import {
+  PAN_DEPLOY_MS, PAN_RAIN_MAX, ambienceRank, currentAmbience, deployScale, pulsePhase, pulsePoint, rainCrownIds
+} from "./pan-ambience.js"
+
+// The glyphs of the rain of code (lot 9), drawn once in a single texture: a ParticleContainer draws all its sprites
+// from the base texture of the first one
+const RAIN_GLYPHS = "アイウエオカキクケコサシスセソタチツテト01ABCDEF"
+const RAIN_CELL = 28
 
 // The colors of the mock-up
 const COLORS = {
@@ -44,6 +54,14 @@ const COLORS = {
   // The gamemaster's ring on what no player sees (lot 3): yellow since lot 8, the Mark picture of DjamZ being purple
   hidden: 0xffd23f,
   mark: 0xff4d6d,
+  pulse: 0xd6fff3,
+}
+
+// A container of the ambience (lot 9) that the pointer goes through
+function inert(container){
+  container.eventMode = "none"
+  container.interactiveChildren = false
+  return container
 }
 
 const MODE_LABELS = {
@@ -72,6 +90,69 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     this.arView = false
     this._hoverTimer = null
     this._syncing = Promise.resolve()
+    // Lot 9: the ambience drawn, and its clock, on the canvas ticker only while a crown is open above Static
+    this.ambience = "static"
+    this._ticking = false
+    this._onTick = () => this.#tick()
+    this._dots = new Map()
+    this._haloTexture = null
+    this._glyphs = null
+    this._rain = null
+    this._drops = []
+    this._flicker = null
+  }
+
+  /** Read again the level of ambience (settings, reduced motion, performance mode) and apply it to the open crowns */
+  applyAmbience(){
+    const level = currentAmbience()
+    const changed = level !== this.ambience
+    this.ambience = level
+    const rank = ambienceRank(level)
+    if (rank < 2) {
+      this.#clearRain()
+      this.#endFlicker()
+    }
+    if (!rank) for (const crown of this.crowns.values()){
+      crown.deployStart = null
+      crown.container.scale.set(1)
+    }
+    if (changed) this.refresh()
+    this.#updateTicker()
+  }
+
+  #updateTicker(){
+    const needed = this.crowns.size > 0 && ambienceRank(this.ambience) > 0
+    const ticker = canvas?.app?.ticker
+    if (!ticker || needed === this._ticking) return
+    this._ticking = needed
+    if (needed) ticker.add(this._onTick)
+    else {
+      ticker.remove(this._onTick)
+      this.#clearRain()
+      this.#endFlicker()
+    }
+  }
+
+  // One function per frame for every crown: the unfolding, the pulses, and at the Spectacular level the rain and the
+  // flicker
+  #tick(){
+    const now = performance.now()
+    const dt = Math.min(canvas.app.ticker.deltaMS, 100)
+    for (const crown of this.crowns.values()){
+      if (crown.deployStart !== null && crown.deployStart !== undefined) {
+        const elapsed = now - crown.deployStart
+        crown.container.scale.set(deployScale(elapsed))
+        if (elapsed >= PAN_DEPLOY_MS) crown.deployStart = null
+      }
+      if (!crown.container.visible) continue
+      for (const pulse of crown.pulseData ?? []){
+        const point = pulsePoint(pulse.from, pulse.to, now, pulse.phase)
+        pulse.sprite.position.set(point.x, point.y)
+      }
+    }
+    if (ambienceRank(this.ambience) < 2) return
+    this.#rainStep(dt)
+    this.#flickerStep(now, dt)
   }
 
   static get layerOptions(){
@@ -82,10 +163,24 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
 
   /** @override */
   async _draw(){
+    // The performance mode is read again at each drawing of the canvas (lot 9)
+    this.applyAmbience()
   }
 
   /** @override */
   async _tearDown(){
+    canvas.app?.ticker?.remove(this._onTick)
+    this._ticking = false
+    this.#clearRain()
+    this._flicker = null
+    this._rain?.destroy()
+    this._rain = null
+    this._glyphs?.[0]?.baseTexture.destroy()
+    this._glyphs = null
+    this._haloTexture?.destroy(true)
+    this._haloTexture = null
+    for (const texture of this._dots.values()) texture.destroy(true)
+    this._dots.clear()
     for (const crown of this.crowns.values()) crown.container.destroy({
       children: true
     })
@@ -191,27 +286,40 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     container.eventMode = "passive"
     // Lot 11: the free drawing of the modules (sr5.panCrownRendered), under the lines, emptied at each drawing
     const decor = container.addChild(new PIXI.Container())
+    // Lot 9: the halos under the lines, the pulses on them, both out of the pointer's way
+    const halos = container.addChild(inert(new PIXI.Container()))
     const lines = container.addChild(new PIXI.Graphics())
+    const pulses = container.addChild(inert(new PIXI.ParticleContainer(1000, {
+      position: true
+    })))
     const icons = container.addChild(new PIXI.Container())
     icons.eventMode = "passive"
     const sceneCenter = canvas.dimensions.sceneRect.center
     const crown = {
-      token, container, decor, lines, icons, droneTokenIds: new Set(), version: 0,
+      token, container, decor, lines, icons, halos, pulses, pulseData: [], droneTokenIds: new Set(), version: 0,
       // Fixed once open, so that the crown does not swing round while its token moves
       angle: crownAngle(token.center, sceneCenter),
+      deployStart: null,
     }
     this.crowns.set(token.id, crown)
     this.#place(crown)
+    // Sober and above: the crown unfolds from its token once its pictures are loaded
+    const unfolds = ambienceRank(this.ambience) > 0
+    if (unfolds) container.scale.set(0)
+    this.#updateTicker()
     await this.#build(crown)
+    if (unfolds && this.crowns.get(token.id) === crown) crown.deployStart = performance.now()
   }
 
   #hide(token){
     const crown = this.crowns.get(token?.id)
     if (!crown) return
     this.crowns.delete(token.id)
+    if (this._flicker?.crown === crown) this._flicker = null
     crown.container.destroy({
       children: true
     })
+    this.#updateTicker()
     safeCall(PAN_CROWN_HOOKS.closed, [token])
   }
 
@@ -310,11 +418,167 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
         texture: textures.get(path), tinted: isTintedIcon(path), markTexture
       }, graph, crown))
     }
+    this.#drawAmbience(crown, layout, scale)
     for (const child of crown.decor.removeChildren()) child.destroy({
       children: true
     })
     safeCall(PAN_CROWN_HOOKS.rendered, [token, crown.decor, graph])
     this.#place(crown)
+  }
+
+  // Lot 9: a pulse on each line that is not offline (Sober), a halo under each icon that is not (Spectacular)
+  #drawAmbience(crown, layout, scale){
+    for (const child of crown.pulses.removeChildren()) child.destroy()
+    for (const child of crown.halos.removeChildren()) child.destroy()
+    crown.pulseData = []
+    const rank = ambienceRank(this.ambience)
+    if (!rank) return
+    const dot = this.#dotTexture(scale)
+    const now = performance.now()
+    layout.lines.forEach((line, index) => {
+      if (line.mode === "offline") return
+      const sprite = crown.pulses.addChild(new PIXI.Sprite(dot))
+      sprite.anchor.set(0.5)
+      const pulse = {
+        sprite, from: line.from, to: line.to, phase: pulsePhase(index)
+      }
+      const point = pulsePoint(pulse.from, pulse.to, now, pulse.phase)
+      sprite.position.set(point.x, point.y)
+      crown.pulseData.push(pulse)
+    })
+    if (rank < 2) return
+    const halo = this.#haloTexture()
+    for (const icon of layout.icons){
+      if (icon.node.mode === "offline") continue
+      const sprite = crown.halos.addChild(new PIXI.Sprite(halo))
+      sprite.anchor.set(0.5)
+      sprite.position.set(icon.x, icon.y)
+      sprite.width = sprite.height = icon.radius * 4
+      sprite.blendMode = PIXI.BLEND_MODES.ADD
+    }
+  }
+
+  // The dot of a pulse, drawn once per size
+  #dotTexture(scale){
+    const radius = Math.round(2.4 * scale * 10) / 10
+    let texture = this._dots.get(radius)
+    if (texture) return texture
+    const dot = new PIXI.Graphics()
+    dot.beginFill(COLORS.pulse, 1)
+    dot.drawCircle(0, 0, radius)
+    dot.endFill()
+    texture = canvas.app.renderer.generateTexture(dot, {
+      resolution: 3
+    })
+    dot.destroy()
+    this._dots.set(radius, texture)
+    return texture
+  }
+
+  // A blurred disc drawn once: the halo costs a sprite, never a PIXI filter (the bench: a blur filter triples the cost)
+  #haloTexture(){
+    if (this._haloTexture) return this._haloTexture
+    const size = 96
+    const picture = document.createElement("canvas")
+    picture.width = picture.height = size
+    const context = picture.getContext("2d")
+    const gradient = context.createRadialGradient(size / 2, size / 2, size / 16, size / 2, size / 2, size / 2)
+    gradient.addColorStop(0, "rgba(57, 243, 177, 0.55)")
+    gradient.addColorStop(1, "rgba(57, 243, 177, 0)")
+    context.fillStyle = gradient
+    context.fillRect(0, 0, size, size)
+    this._haloTexture = PIXI.Texture.from(picture)
+    return this._haloTexture
+  }
+
+  // The glyphs of the rain, one texture each, all cut from a single picture
+  #glyphTextures(){
+    if (this._glyphs) return this._glyphs
+    const picture = document.createElement("canvas")
+    picture.width = RAIN_CELL * RAIN_GLYPHS.length
+    picture.height = RAIN_CELL
+    const context = picture.getContext("2d")
+    context.font = `${Math.round(RAIN_CELL * 0.8)}px monospace`
+    context.textAlign = "center"
+    context.textBaseline = "middle"
+    context.fillStyle = "#39f3b1"
+    ;[...RAIN_GLYPHS].forEach((glyph, i) => context.fillText(glyph, (i + 0.5) * RAIN_CELL, RAIN_CELL / 2))
+    const base = PIXI.BaseTexture.from(picture)
+    this._glyphs = [...RAIN_GLYPHS].map((glyph, i) => new PIXI.Texture(base, new PIXI.Rectangle(i * RAIN_CELL, 0, RAIN_CELL, RAIN_CELL)))
+    return this._glyphs
+  }
+
+  // The rain of code, on the crowns opened one by one (Q10 of DjamZ), never more than PAN_RAIN_MAX glyphs on the canvas
+  #rainStep(dt){
+    const shown = new Set([...this.crowns.values()].filter(c => c.container.visible).map(c => c.token.id))
+    const falling = rainCrownIds({
+      shown, manual: this.manual, hovered: this.hovered
+    })
+    if (!falling.size && !this._drops.length) return
+    if (!this._rain) {
+      this._rain = this.addChildAt(inert(new PIXI.ParticleContainer(PAN_RAIN_MAX, {
+        vertices: true, position: true, uvs: true, alpha: true
+      })), 0)
+    }
+    const glyphs = this.#glyphTextures()
+    const scale = Math.max(canvas.dimensions.size / 100, 0.5)
+    const frames = dt / (1000 / 60)
+    for (const id of falling){
+      if (this._drops.length >= PAN_RAIN_MAX) break
+      if (Math.random() > 0.6 * frames) continue
+      const center = this.crowns.get(id).token.center
+      const sprite = this._rain.addChild(new PIXI.Sprite(glyphs[Math.floor(Math.random() * glyphs.length)]))
+      sprite.anchor.set(0.5)
+      sprite.scale.set(scale * 13 / RAIN_CELL)
+      const y0 = center.y - 110 * scale
+      sprite.position.set(center.x + (Math.random() - 0.5) * 190 * scale, y0)
+      this._drops.push({
+        sprite, y0, tokenId: id, speed: (0.6 + Math.random() * 1.2) * 2.2 * scale
+      })
+    }
+    const fall = 220 * scale
+    this._drops = this._drops.filter(drop => {
+      const {
+        sprite
+      } = drop
+      sprite.y += drop.speed * frames
+      const life = 1 - (sprite.y - drop.y0) / fall
+      if (life <= 0 || !falling.has(drop.tokenId)) {
+        sprite.destroy()
+        return false
+      }
+      sprite.alpha = life * 0.55
+      if (Math.random() < 0.04) sprite.texture = glyphs[Math.floor(Math.random() * glyphs.length)]
+      return true
+    })
+  }
+
+  #clearRain(){
+    for (const drop of this._drops) drop.sprite.destroy()
+    this._drops = []
+  }
+
+  // Now and then an icon dims for a blink
+  #flickerStep(now, dt){
+    if (this._flicker) {
+      if (now < this._flicker.until) return
+      this.#endFlicker()
+    }
+    if (Math.random() > 0.08 * dt / (1000 / 60)) return
+    const crowns = [...this.crowns.values()].filter(c => c.container.visible && c.icons.children.length)
+    if (!crowns.length) return
+    const crown = crowns[Math.floor(Math.random() * crowns.length)]
+    const icon = crown.icons.children[Math.floor(Math.random() * crown.icons.children.length)]
+    icon.alpha = 0.55
+    this._flicker = {
+      crown, icon, until: now + 70
+    }
+  }
+
+  #endFlicker(){
+    const icon = this._flicker?.icon
+    if (icon && !icon.destroyed) icon.alpha = 1
+    this._flicker = null
   }
 
   #drawLines(graphics, lines, scale){
