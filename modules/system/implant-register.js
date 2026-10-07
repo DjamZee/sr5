@@ -226,13 +226,16 @@ export function creationEnded(changes) {
 
 /**
  * The register once `actor` leaves creation: each implant's peak is its cost of now, whatever peak an earlier stay in
- * play left; null when nothing changes.
+ * play left; null when nothing changes. The hook runs once the character is prepared again without its flag, its cost
+ * already raised to that old peak (essenceTaken): the cost before the peak is read (relecture 70).
  */
 export function peaksAtCreationEnd(register, actor) {
   let changed = false
   for (const item of actor?.items ?? []) {
     if (item?.type !== "itemAugmentation" || item.system?.reversibleEssence) continue
-    const peak = Math.round((Number(item.system?.essenceCost?.value) || 0) * 100) / 100
+    const cost = item.system?.essenceCost ?? {
+    }
+    const peak = Math.round((Number(cost.withoutPeak ?? cost.value) || 0) * 100) / 100
     if (register[item.uuid]?.[PEAK_COST] === peak) continue
     register[item.uuid] = {
       ...(register[item.uuid] ?? {
@@ -352,9 +355,11 @@ async function onCreate(doc, _options, userId) {
 
 /** updateItem / updateActor: a gamemaster's write is recorded; a player's change is put back. */
 async function onUpdate(doc, changes, _options, userId) {
-  // The gamemaster ends the creation: the peaks start from the costs of now (inCreation)
-  if (doc.documentName === "Actor" && isActiveGM() && creationEnded(changes) && !creationMode(doc)) {
-    await updateLedger(IMPLANT_REGISTER, register => peaksAtCreationEnd(register, doc))
+  // The gamemaster ends the creation: the peaks start from the costs of now (inCreation). Every client prepares the
+  // character again once they have arrived (onWorldCreationModeChange), or it shows an old peak until then
+  if (doc.documentName === "Actor" && creationEnded(changes) && !creationMode(doc)) {
+    endedPending.add(doc)
+    if (isActiveGM()) await updateLedger(IMPLANT_REGISTER, register => peaksAtCreationEnd(register, doc))
   }
   const fields = reservedFieldsOf(doc)
   if (!fields.length || !isActiveGM()) return
@@ -473,6 +478,8 @@ const withImplants = () => [...(game.actors ?? [])].filter(a => a.items?.some?.(
 // Every client prepares its characters again once the peaks the active GM writes at the end of the world's creation
 // mode have arrived (the register changed after the mode did)
 let peaksPending = false
+// The same, for the characters whose own creation flag the gamemaster just took off
+const endedPending = new Set()
 
 function prepareAgain() {
   for (const actor of withImplants()) {
@@ -492,6 +499,11 @@ export async function onWorldCreationModeChange(setting) {
       peaksPending = false
       prepareAgain()
     }
+    for (const actor of endedPending) {
+      actor.reset()
+      if (actor.sheet?.rendered) actor.sheet.render()
+    }
+    endedPending.clear()
     return
   }
   if (setting?.key !== "sr5.sr5ShopCreationMode") return
