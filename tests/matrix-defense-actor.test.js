@@ -82,6 +82,13 @@ describe('Matrix damage written nowhere', () => {
     expect(block).toMatch(/getWhisperRecipients\("GM"\)/)
     expect(block).toMatch(/escapeHTML/)
   })
+  it('writes a technomancer\'s matrix damage as Stun, living persona item or not (SR5 p. 229-230)', () => {
+    const block = source.match(/if \(!targetItem\) \{([\s\S]*?)\n {4}\}/)[1]
+    const tm = block.indexOf('activeSpecialAttribute === "resonance"')
+    expect(tm).toBeGreaterThan(-1)
+    expect(tm).toBeLessThan(block.indexOf('SR5.WARN_MatrixDamageNowhere'))
+    expect(block.slice(tm, tm + 120)).toMatch(/takeDamage\(cardData\)/)
+  })
   it('has the message in both languages', () => {
     for (const lang of ["en", "fr"]) {
       const json = JSON.parse(readFileSync(new URL(`../lang/${lang}.json`, import.meta.url), 'utf8'))

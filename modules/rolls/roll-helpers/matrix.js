@@ -94,8 +94,12 @@ export class SR5_MatrixHelpers {
         await targetActor.takeDamage(cardData)
         return true
       }
-      //No active device nor living persona item: the damage is written nowhere, the GM is told so (Anatole's matrix trial).
-      //A technomancer takes it as Stun (SR5 p. 230), to be written by hand
+      //A technomancer takes matrix damage as Stun, living persona item or not (SR5 p. 229-230): takeDamage converts it
+      if (targetActor.type === "actorPc" && targetActor.system.activeSpecialAttribute === "resonance") {
+        await targetActor.takeDamage(cardData)
+        return true
+      }
+      //No active device nor living persona item: the damage is written nowhere, the GM is told so (Anatole's matrix trial)
       const content = game.i18n.format("SR5.WARN_MatrixDamageNowhere", {
         name: targetActor.name, value: damageValue,
       })
