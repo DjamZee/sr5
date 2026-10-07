@@ -1,9 +1,18 @@
 <li class="grid">
     <div class="col-4">{{localize 'SR5.Type'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-8">
+        {{#if system.managed}}
+        <span>{{localize 'SR5.DeckTypeLivingPersona'}}</span>
+        {{else}}
         <select name="system.type" data-dtype="String" required>
             <option class="SR-LightGreyColor" value="">{{localize 'SR5.ChooseOne'}}</option>
             {{selectOptions lists.deckTypes selected=system.type localize=true}}
         </select>
+        {{/if}}
     </div>
 </li>
+{{#if system.managed}}
+<li class="grid">
+    <div class="col-12 SR-GreyColor">{{localize 'SR5.LivingPersonaManaged'}}</div>
+</li>
+{{/if}}

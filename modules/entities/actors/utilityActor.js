@@ -4344,6 +4344,8 @@ export class SR5_CharacterUtility extends Actor {
         matrix.attributes.dataProcessing.base = attributes.logic.augmented.value
         matrix.attributes.firewall.base = attributes.willpower.augmented.value
         matrix.deviceRating = actorData.specialAttributes.resonance.augmented.value
+        //Worked out, never typed: the persona's Device Rating is the Resonance (SR5 p. 253), shown on its own sheet too
+        item.system.deviceRating = matrix.deviceRating
         break
       case "headcase": {
         let nanite = actorData.specialAttributes.nanite.augmented.value

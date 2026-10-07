@@ -65,6 +65,9 @@ import {
 import {
   initTacnet
 } from "../system/tacnet.js"
+import {
+  initLivingPersona
+} from "../entities/actors/living-persona-hooks.js"
 
 export function sr5HookReady() {
   // Register the GM-authored spirit types, so that they are offered wherever
@@ -125,6 +128,8 @@ export function sr5HookReady() {
   initIllusions()
   // RP-Tac: a lowered Device Rating trims the roster (Run & Gun p. 119)
   initTacnet()
+  // Every technomancer has her living persona, kept by the system (SR5 p. 236, 253): the active GM gives it
+  initLivingPersona()
 
   // The deeper table of contents also reaches the window of Monk's Enhanced Journal
   sr5DeepenModuleTableOfContents()

@@ -60,6 +60,10 @@ export class sr5ItemDeviceDataModel extends foundry.abstract.TypeDataModel {
       type: new fields.StringField({
         initial: ''
       }),
+      // A technomancer's living persona kept by the system: created when missing, never deleted (living-persona.js)
+      managed: new fields.BooleanField({
+        initial: false
+      }),
       // Strain of a head case's CFD (Dark Terrors p. 91): Lockdown p. 206 or the original one, Dark Terrors p. 88
       strain: new fields.StringField({
         initial: 'lockdown'

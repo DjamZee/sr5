@@ -32,8 +32,11 @@ import {
   SR5_UtilityItem 
 } from "../items/utilityItem.js"
 import {
-  SR5_CharacterUtility 
+  SR5_CharacterUtility
 } from "./utilityActor.js"
+import {
+  personaPanMax
+} from "./living-persona.js"
 import {
   SR5_CompendiumUtility 
 } from "./utilityCompendium.js"
@@ -969,7 +972,8 @@ export class SR5Actor extends Actor {
               SR5_CharacterUtility.updateInitiativeMatrix(actor)
               // Drone data propagation is now handled by the updateActor hook
               if (iData.type === "livingPersona" || iData.type === "headcase") SR5_CharacterUtility.generateResonanceMatrix(actor)
-              iData.pan.max = actorData.matrix.deviceRating * 3
+              //A living persona is no device and takes no slave (SR5 p. 253), save with Fusion avec la matrice (KC p. 107)
+              iData.pan.max = iData.type === "livingPersona" ? personaPanMax(actor, actorData.matrix.deviceRating) : actorData.matrix.deviceRating * 3
             }
           } else if (actor.type === "actorDrone"){
             SR5_CharacterUtility.generateVehicleMatrix(actor, iData)
