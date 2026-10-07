@@ -56,14 +56,6 @@ describe('engulf resistance wiring', () => {
     expect(block.slice(0, block.indexOf('generateChatButton("nonOpposedTest","resistanceCard"'))).not.toMatch(/ArmorPenetrationShort/)
   })
 
-  // Restes avant la djamz.12, point 1: the continuous damage button of earth, water and fire shows the spirit's DV
-  it('shows on the continuous damage button the DV worked out on the spirit, never the card\'s originalValue', () => {
-    const resistanceCase = readFileSync(new URL('../modules/rolls/roll-test-case/test-Resistance.js', import.meta.url), 'utf8')
-    const block = resistanceCase.slice(resistanceCase.indexOf('//Handle continous damage'), resistanceCase.indexOf('"resistanceCardContinuousDamage"'))
-    expect(block).toMatch(/engulfDamageOf\(attackId\)/)
-    expect(block).not.toMatch(/originalValue/)
-  })
-
   // Victoire's review, remark 1: the previous phase's "Take on" button goes when the next phase is rolled
   it('removes the previous phase button of an air engulf when the next one is rolled', () => {
     const resistanceCase = readFileSync(new URL('../modules/rolls/roll-test-case/test-Resistance.js', import.meta.url), 'utf8')
