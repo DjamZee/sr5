@@ -145,6 +145,9 @@ import {
   SR5CombatApi
 } from "../system/combat-api.js"
 import {
+  SR5MatrixApi
+} from "../system/matrix-api.js"
+import {
   SR5PanCrownLayer
 } from "../canvas/pan-crown/pan-crown-layer.js"
 
@@ -409,6 +412,8 @@ export async function sr5HookInit() {
     panCrown: SR5PanCrown,
     // The combat for the modules: count an action (API pour Matrice v1, A4)
     combat: SR5CombatApi,
+    // The Matrix for the modules: put marks, converge (API pour Matrice v1, A11, A12)
+    matrix: SR5MatrixApi,
   }
 
   // Register DataModels

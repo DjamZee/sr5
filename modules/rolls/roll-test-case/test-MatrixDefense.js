@@ -28,6 +28,12 @@ import {
 import {
   isFile
 } from "../../system/matrix-files.js"
+import {
+  announceMatrixAction
+} from "../../system/matrix-api.js"
+
+//The actions whose success gives the attacker its marks (SR5 p. 240, 242; Kill Code p. 45)
+const MARKING_ACTIONS = ["hackOnTheFly", "bruteForce", "watchdog"]
 
 export default async function matrixDefenseInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId),
@@ -179,6 +185,14 @@ export default async function matrixDefenseInfo(cardData, actorId){
 
   //Edit File on a file (SR5 p. 240): whatever the hits, the attacker applies it, as a bomb goes off at the try
   await fileDefenseButton(cardData)
+
+  //A5: the modules hear of the action this defense resolves (matrix-api.js). The marks are those the card's button puts
+  const marks = Number(cardData.matrix.mark) || 0
+  announceMatrixAction({
+    actor: attacker, card: cardData, target: actor, successes: cardData.previousMessage.hits, netHits,
+    marksPlaced: netHits > 0 && MARKING_ACTIONS.includes(cardData.test.typeSub) ? marks : 0,
+    defenderMarks: netHits <= 0 && cardData.matrix.actionType === "sleaze" ? marks : 0,
+  })
 
   //Remove chat button from previous chat message
   if (cardData.previousMessage.messageId){
