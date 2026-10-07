@@ -136,6 +136,14 @@ export function slotsRefusal(free, before, after) {
   } : null
 }
 
+/** Whether the drone already stands in the world, as opposed to one being created with its mods. The synthetic actor of
+ *  an unlinked token is in no actor collection: its token, on its scene, says it */
+export function droneInWorld(drone) {
+  if (!drone) return false
+  if (drone.isToken) return !!drone.token?.collection?.has?.(drone.token.id)
+  return !!drone.collection?.has?.(drone.id)
+}
+
 // SR5 p. 202: in a crash, "les personnages [résistent] avec Constitution + Armure - PA 6". R5 p. 162 (SPP): its rating
 // is added "à tout test de Résistance aux dégâts effectué par les passagers, dans le cas de dégâts dus à une collision
 // ou à une action de conduite violente [...] à l'exception des attaques d'armes". R5 p. 157 (Cocon de rigger): "Son

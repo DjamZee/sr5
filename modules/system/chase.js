@@ -26,6 +26,7 @@ import {
 export const CHASE_LEDGER = "sr5Chase"
 export const ADVANCED_DRIVING_SETTING = "sr5Rigger5AdvancedDriving"
 export const CHASE_EFFECT = "chaseOutOfControl"
+export const CHASE_HANDLING_EFFECT = "chaseHandling"
 const APP_ID = "sr5-chase"
 const LOG_SIZE = 30
 
@@ -34,6 +35,13 @@ const EMPTY = () => ({
   vehicles: [], ranges: {
   }, lost: {
   }, log: [],
+  // Part 2, the chase actions: the Terrain of the turn by vehicle (Sow Chaos, Clear the Path), what a vehicle did this
+  // turn (Drift, Strafe, Sow Chaos), who failed a Like a Glove (its Terrain), the Handling a PIT took
+  turnTerrain: {
+  }, turnFlags: {
+  }, glove: {
+  }, handlingLoss: {
+  },
 })
 
 const isActiveGM = () => !!game.user?.isActiveGM
@@ -291,6 +299,9 @@ export class SR5Chase {
   static setTerrain(terrain) {
     return this.update(state => {
       state.terrain = normalizeTerrain(terrain, advancedDriving())
+      // Like a Glove's −2 dice last as long as its Terrain (R5 p. 178)
+      for (const [id, key] of Object.entries(state.glove ?? {
+      })) if (key !== state.terrain) delete state.glove[id]
     })
   }
 
@@ -345,6 +356,144 @@ export class SR5Chase {
     })
   }
 
+  /** The Terrain modifier a vehicle's action reads this turn: the chase's, changed by Sow Chaos or Clear the Path */
+  static terrainFor(id, state = readState()) {
+    return Math.max(0, terrainValue(state.terrain, advancedDriving()) + (Number(state.turnTerrain?.[id]) || 0))
+  }
+
+  // ---- Part 2: what the chase actions change (chase-roll.js) ----
+
+  /** A failed test put the vehicle out of control (SR5 p. 203-205): −2 dice aboard until a control action */
+  static markOutOfControl(id) {
+    return this.update(state => {
+      const vehicle = state.vehicles.find(v => v.id === id)
+      if (!vehicle || vehicle.ended) return false
+      Object.assign(vehicle, {
+        controlled: false, outOfControl: true, autopilot: false,
+        uncontrolledTurns: Math.max(1, Number(vehicle.uncontrolledTurns) || 0),
+      })
+      logLine(state, game.i18n.format("SR5.CHASE_LogLostControl", {
+        name: vehicle.name
+      }))
+    })
+  }
+
+  /** A Speed an action imposes (PIT, Falling Leaf): from 0 to the Speed attribute, past the bounds of the turn */
+  static async forceSpeed(id, value) {
+    const vehicle = readState().vehicles.find(v => v.id === id)
+    if (!vehicle) return false
+    const actor = vehicleActor(vehicle)
+    const speed = clampSpeed(value, {
+      min: 0, max: attribute(actor, "speed")
+    })
+    const written = await this.update(state => {
+      const v = state.vehicles.find(x => x.id === id)
+      if (!v) return false
+      v.speed = speed
+    })
+    if (written && hasSpeedField(actor) && actor.system.currentSpeed !== speed) await actor.update({
+      "system.currentSpeed": speed
+    })
+    return written
+  }
+
+  /** The initiator gets behind the target (Quick Turn, Six Pack): it pursues, the target is pursued */
+  static setRoles(pursuerId, pursuedId) {
+    return this.update(state => {
+      const pursuer = state.vehicles.find(v => v.id === pursuerId)
+      const pursued = state.vehicles.find(v => v.id === pursuedId)
+      if (!pursuer || !pursued) return false
+      pursuer.role = "pursuer"
+      pursued.role = "pursued"
+    })
+  }
+
+  /** The pursued got away from the other vehicle (SR5 p. 205, R5 p. 177-178): the pair is marked lost */
+  static escapePair(a, b) {
+    return this.update(state => {
+      const pair = [state.vehicles.find(v => v.id === a), state.vehicles.find(v => v.id === b)]
+      if (pair.some(v => !v)) return false
+      const key = pairKey(a, b)
+      if (state.lost[key]) return false
+      state.lost[key] = true
+      const pursued = pair.find(v => v.role === "pursued") ?? pair[0]
+      const pursuer = pair.find(v => v !== pursued)
+      logLine(state, game.i18n.format("SR5.CHASE_LogEscaped", {
+        pursued: pursued.name, pursuer: pursuer.name,
+        range: game.i18n.localize(`SR5.CHASE_Range_${normalizeRange(state.ranges[key], advancedDriving(),
+          pair.some(v => isAircraft(v.kind)))}`)
+      }))
+    })
+  }
+
+  /** A vehicle drops out of the chase (Falling Leaf, R5 p. 181) */
+  static leaveChase(id, reason) {
+    return this.update(state => {
+      const vehicle = state.vehicles.find(v => v.id === id)
+      if (!vehicle || vehicle.ended) return false
+      vehicle.ended = reason
+      vehicle.outOfControl = false
+      logLine(state, game.i18n.format("SR5.CHASE_LogEnded", {
+        name: vehicle.name, reason: game.i18n.localize(`SR5.CHASE_Ended_${reason}`)
+      }))
+    })
+  }
+
+  /** The Terrain of the turn for some vehicles (Sow Chaos +1, Clear the Path −net hits) */
+  static addTurnTerrain(ids, delta) {
+    return this.update(state => {
+      if (!ids?.length || !delta) return false
+      state.turnTerrain = {
+        ...(state.turnTerrain ?? {
+        })
+      }
+      for (const id of ids) state.turnTerrain[id] = (Number(state.turnTerrain[id]) || 0) + delta
+    })
+  }
+
+  /** What a vehicle did this turn (drift, noCatchUp, <action>Used) */
+  static setTurnFlag(id, flag) {
+    return this.update(state => {
+      state.turnFlags = {
+        ...(state.turnFlags ?? {
+        })
+      }
+      state.turnFlags[id] = {
+        ...(state.turnFlags[id] ?? {
+        }), [flag]: true
+      }
+    })
+  }
+
+  /** Failed a Like a Glove: −2 dice to Catch-Up while this Terrain lasts (R5 p. 178) */
+  static setGlove(id, terrain) {
+    return this.update(state => {
+      state.glove = {
+        ...(state.glove ?? {
+        }), [id]: terrain
+      }
+    })
+  }
+
+  /** A line in the chase's log */
+  static log(text) {
+    return this.update(state => {
+      logLine(state, text)
+    })
+  }
+
+  /** Handling lost to a PIT (R5 p. 179), an effect on the vehicle while the chase lasts */
+  static addHandlingLoss(id, value) {
+    return this.update(state => {
+      if (!state.vehicles.some(v => v.id === id) || !(value > 0)) return false
+      state.handlingLoss = {
+        ...(state.handlingLoss ?? {
+        })
+      }
+      state.handlingLoss[id] = (Number(state.handlingLoss[id]) || 0) + value
+    })
+  }
+
   /**
    * End of a Combat Turn (SR5 p. 203, R5 p. 176): each vehicle not controlled goes out of control, then to its
    * autopilot; a vehicle destroyed, pinned or immobilized leaves the chase (R5 p. 175). The Speed of the turn becomes
@@ -384,6 +533,11 @@ export class SR5Chase {
       }
       for (const text of events) logLine(state, text)
       state.turn += 1
+      // What lasted until the end of the turn (Sow Chaos, Clear the Path, Drift, Strafe)
+      state.turnTerrain = {
+      }
+      state.turnFlags = {
+      }
     }).then(async written => {
       if (written && events.length) await ChatMessage.create({
         content: `<h3>${game.i18n.format("SR5.CHASE_ChatTitle", {
@@ -398,7 +552,13 @@ export class SR5Chase {
   // player whose vehicle just entered a new chase sees it open
   static #changed() {
     const state = readState()
-    if (isActiveGM()) syncOutOfControlEffects(state).catch(e => console.error("SR5 | chase effects", e))
+    // One sync at a time, each on the register as it is when its turn comes: an action writes the register several
+    // times in a row, and two syncs running together each created the same effect
+    if (isActiveGM()) SR5Chase.#syncing = SR5Chase.#syncing.then(async () => {
+      const latest = readState()
+      await syncOutOfControlEffects(latest)
+      await syncHandlingEffects(latest)
+    }).catch(e => console.error("SR5 | chase effects", e))
     const app = foundry.applications.instances.get(APP_ID)
     if (app?.rendered) app.render()
     else if (!game.user.isGM && state.active && state.id !== SR5Chase.#seen && involves(state)) {
@@ -409,6 +569,7 @@ export class SR5Chase {
   }
 
   static #seen = ""
+  static #syncing = Promise.resolve()
 }
 
 /**
@@ -465,6 +626,57 @@ async function syncOutOfControlEffects(state) {
 }
 
 /**
+ * The Handling a PIT took (R5 p. 179) is an effect on the vehicle, kept in step with the register like the −2 dice: its
+ * value follows, and it goes with the chase.
+ */
+async function syncHandlingEffects(state) {
+  const wanted = new Map()
+  if (state.active) for (const vehicle of state.vehicles) {
+    const loss = Number(state.handlingLoss?.[vehicle.id]) || 0
+    const actor = loss > 0 ? vehicleActor(vehicle) : null
+    if (actor) wanted.set(actor.uuid, {
+      actor, vehicle, loss
+    })
+  }
+  const actors = new Map()
+  for (const actor of game.actors ?? []) if (actor.type === "actorDrone") actors.set(actor.uuid, actor)
+  for (const scene of game.scenes ?? []) for (const token of scene.tokens ?? []) {
+    if (!token.actorLink && token.actor?.type === "actorDrone") actors.set(token.actor.uuid, token.actor)
+  }
+  for (const {
+    actor
+  } of wanted.values()) actors.set(actor.uuid, actor)
+
+  for (const actor of actors.values()) {
+    const effects = actor.items?.filter(i => i.type === "itemEffect" && i.system?.type === CHASE_HANDLING_EFFECT) ?? []
+    const want = wanted.get(actor.uuid)
+    const keep = want ? effects.find(e => e.system?.value === -want.loss) : null
+    const stale = effects.filter(e => e !== keep)
+    if (stale.length) await actor.deleteEmbeddedDocuments("Item", stale.map(e => e.id))
+    if (want && !keep) await actor.createEmbeddedDocuments("Item", [{
+      name: `${game.i18n.localize("SR5.CHASE_HandlingEffectName")} (−${want.loss})`,
+      type: "itemEffect",
+      "system.type": CHASE_HANDLING_EFFECT,
+      "system.target": game.i18n.localize("SR5.VehicleStat_HandlingShort"),
+      "system.value": -want.loss,
+      "system.durationType": "permanent",
+      "system.duration": "",
+      "system.gameEffect": game.i18n.localize("SR5.CHASE_HandlingEffectGE"),
+      "system.customEffects": {
+        "0": {
+          category: "vehicleAttributes", target: "system.attributes.handling.augmented", type: "value",
+          value: -want.loss, forceAdd: true,
+        },
+        "1": {
+          category: "vehicleAttributes", target: "system.attributes.handlingOffRoad.augmented", type: "value",
+          value: -want.loss, forceAdd: true,
+        },
+      },
+    }])
+  }
+}
+
+/**
  * The chase window. The active gamemaster leads it; a player whose vehicle (or who herself) is in the chase reads it.
  */
 export class SR5ChaseApp extends foundry.applications.api.HandlebarsApplicationMixin(
@@ -491,6 +703,8 @@ export class SR5ChaseApp extends foundry.applications.api.HandlebarsApplicationM
       closer: (event, target) => SR5Chase.shiftPair(target.dataset.a, target.dataset.b, -1),
       farther: (event, target) => SR5Chase.shiftPair(target.dataset.a, target.dataset.b, 1),
       resetPair: (event, target) => SR5Chase.setRange(target.dataset.a, target.dataset.b, target.dataset.range),
+      // Part 2: the chase actions, rolled by the vehicle's owners (chase-roll.js)
+      chaseAct: SR5ChaseApp.#act,
     },
   }
 
@@ -520,6 +734,18 @@ export class SR5ChaseApp extends foundry.applications.api.HandlebarsApplicationM
     if (confirmed) await SR5Chase.end()
   }
 
+  static async #act(event, target) {
+    // The row of the action, not the button: it carries data-vehicle too
+    const row = target.closest(".sr-chase-act")
+    const key = row?.querySelector("[name=chaseAction]")?.value
+    const targetId = row?.querySelector("[name=chaseTarget]")?.value ?? ""
+    if (!key) return
+    const {
+      launchChaseAction
+    } = await import("./chase-roll.js")
+    return launchChaseAction(target.dataset.vehicle, key, targetId)
+  }
+
   async _prepareContext(options) {
     const context = await super._prepareContext(options)
     const state = readState()
@@ -540,6 +766,9 @@ export class SR5ChaseApp extends foundry.applications.api.HandlebarsApplicationM
       key: t.key, label: game.i18n.localize(`${prefix}${t.key}`), value: t.value, selected: t.key === terrain
     }))
     context.kinds = Object.keys(VEHICLE_KINDS)
+    const {
+      windowActions
+    } = await import("./chase-roll.js")
 
     context.vehicles = state.vehicles.map(v => {
       const actor = vehicleActor(v)
@@ -577,6 +806,9 @@ export class SR5ChaseApp extends foundry.applications.api.HandlebarsApplicationM
         passengerList: (v.passengers ?? []).map(uuid => ({
           uuid, name: fromUuidSync(uuid)?.name ?? "?"
         })),
+        // The chase actions: for whoever owns the vehicle, the gamemaster included
+        canAct: !v.ended && !!actor?.isOwner,
+        ...windowActions(state, v),
       }
     })
 
@@ -602,7 +834,8 @@ export class SR5ChaseApp extends foundry.applications.api.HandlebarsApplicationM
   _onRender(context, options) {
     super._onRender?.(context, options)
     if (!SR5Chase.canWrite) {
-      for (const el of this.element.querySelectorAll("button, input, select")) el.disabled = true
+      // A player still takes the chase actions of her own vehicle (part 2)
+      for (const el of this.element.querySelectorAll("button, input, select")) el.disabled = !el.hasAttribute("data-chase-act")
       for (const el of this.element.querySelectorAll("a[data-action]")) el.classList.add("disabled")
       return
     }
@@ -657,6 +890,11 @@ export function registerChaseHooks() {
   })
 }
 
+// What the chase actions read of a vehicle (chase-roll.js)
+export {
+  vehicleActor as chaseVehicleActor, attribute as chaseAttribute, speedOf as chaseSpeedOf
+}
+
 export const _test = {
-  aboard, involves, attribute, syncOutOfControlEffects, onCombatRound, readState
+  aboard, involves, attribute, syncOutOfControlEffects, syncHandlingEffects, onCombatRound, readState
 }

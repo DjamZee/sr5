@@ -40,6 +40,9 @@ import {
   registerAgilityZeroHooks
 } from './system/agility-zero.js'
 import {
+  registerIceHostHooks
+} from './system/ice-host.js'
+import {
   registerCyberlimbNotice
 } from './system/cyberlimb-notice.js'
 import {
@@ -121,6 +124,9 @@ import {
 import {
   SR5ShopWindow
 } from './interface/shop-window.js'
+import {
+  SR5DealershipWindow
+} from './interface/dealership-window.js'
 import {
   SR5ShopVendor
 } from './interface/shop-vendor.js'
@@ -223,6 +229,7 @@ Hooks.on('getCompendiumContextOptions', sr5HookCompendiumDrawContext)
 Hooks.on('getHeaderControlsCompendium', sr5HookCompendiumDrawHeader)
 Hooks.on('getFolderContextOptions', sr5HookCompendiumDrawFolder)
 Hooks.on('renderSidebar', SR5ShopWindow.onRenderSidebar)
+Hooks.on('renderSidebar', SR5DealershipWindow.onRenderSidebar)
 // A sale or a restock on a vendor: its open shop window redraws
 for (const hook of ['createItem', 'updateItem', 'deleteItem', 'updateActor']) Hooks.on(hook, SR5ShopVendor.onVendorChanged)
 // A contact the gamemaster puts on a vendor searches for it
@@ -261,6 +268,8 @@ registerPreparationRegisterHooks()
 registerBoneAugmentationGuard()
 // Agility brought to 0: the "immobilized" status follows it (séance H, H8)
 registerAgilityZeroHooks()
+// An IC uses its host's matrix attributes (SR5 p. 249): prepared again once the host is, or when it changes
+registerIceHostHooks()
 // The cyberlimb enhancements raise the limb only: the active GM is told once which characters to check (SR5 p. 459)
 registerCyberlimbNotice()
 // A rigger ejected from his vehicle: it is out of control until the next Combat Turn, then on autopilot (SR5 p. 271)

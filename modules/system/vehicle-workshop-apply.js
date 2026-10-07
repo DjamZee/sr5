@@ -22,6 +22,9 @@ import {
 import {
   TOOL_LEVELS, slotGauges, modsByCategory, modCost, workshopCost, workshopImage
 } from "./vehicle-workshop.js"
+import {
+  assembledVehicleData
+} from "./vehicle-dealership.js"
 
 // The Foundry side of the workshop (Chop Shop, B12; Rigger 5.0 p. 153-156): the "Workshop" tab of the drone sheet and
 // of the vehicle item, the drop of a mod, its purchase through the shop, the direct fitting by the gamemaster and the
@@ -64,7 +67,9 @@ export function pricedModData(source, vehicle){
   const temp = new CONFIG.Item.documentClass(data)
   SR5_UtilityItem._handleItemPrice(temp.system)
   return {
-    data, price: Number(temp.system.price.value) || 0
+    data, price: Number(temp.system.price.value) || 0,
+    // The slots once prepared (a count multiplied by the rating): the stored data holds 0 (lot R9, the dealership)
+    slots: Number(temp.system.slots?.value) || 0,
   }
 }
 
@@ -128,7 +133,7 @@ export async function dropModOnWorkshop(vehicle, dropData){
   }))
   const isItem = vehicle.documentName === "Item"
   const {
-    data, price
+    data, price, slots
   } = pricedModData(source, vehicle)
   const owned = source.parent?.documentName === "Actor"
   const buyer = workshopBuyer(vehicle)
@@ -185,16 +190,18 @@ export async function dropModOnWorkshop(vehicle, dropData){
   }
   //The gamemaster's direct fitting: no test, no payment (Q7 of DjamZ)
   data.system.isActive = true
+  //On the vehicle item the mod stays raw data: it carries its prepared slots, or the workshop's gauge reads 0 (lot R9)
   if (isItem){
-    const fitted = new CONFIG.Item.documentClass(data)
+    data.img = new CONFIG.Item.documentClass(data).img
+    const built = assembledVehicleData({
+      system: {
+        vehiclesMod: vehicle.system.vehiclesMod ?? []
+      }
+    }, [{
+      data, price, slots, fitted: true
+    }], foundry.utils.randomID)
     return vehicle.update({
-      "system.vehiclesMod": [...(vehicle.system.vehiclesMod ?? []), {
-        ...data, _id: foundry.utils.randomID(), system: {
-          ...data.system, price: {
-            ...data.system.price, value: price
-          }
-        }, img: fitted.img
-      }]
+      "system.vehiclesMod": built.system.vehiclesMod
     })
   }
   const created = await vehicle.createEmbeddedDocuments("Item", [data])
