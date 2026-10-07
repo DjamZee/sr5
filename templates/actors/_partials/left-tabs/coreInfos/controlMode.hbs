@@ -63,6 +63,12 @@
         </li>
         {{/ifne}}
         <li class="grid">
+            <div class="col-10">{{localize 'SR5.VehicleCurrentSpeed'}}</div>
+            <div class="col-2 SR-TextCenter" data-helpTitle="{{localize 'SR5.VehicleCurrentSpeed'}}" data-helpMessage="{{localize 'SR5.HELP_VehicleCurrentSpeedMsg'}}">
+                <input type="number" name="system.currentSpeed" value="{{system.currentSpeed}}" min="0" step="1" data-dtype="Number">
+            </div>
+        </li>
+        <li class="grid">
             <div class="col-10">{{localize 'SR5.OffRoadMode'}}</div>
             <div class="col-2 SR-TextCenter" data-helpTitle="{{localize 'SR5.OffRoadMode'}}" data-helpMessage="{{localize 'SR5.HELP_OffRoadModeMsg'}}">
                 <input type="checkbox" name="system.offRoadMode" data-dtype="Boolean" {{checked system.offRoadMode}}>

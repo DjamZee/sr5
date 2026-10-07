@@ -110,6 +110,9 @@ import {
 import {
   consoleNoiseReductionDice
 } from "../../rolls/roll-helpers/electronic-warfare.js"
+import {
+  speedDemonBonus
+} from "../../system/rigger-qualities.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -2794,11 +2797,19 @@ export class SR5_CharacterUtility extends Actor {
       default:
         SR5_SystemHelpers.srLog(1, `Unknown controle mode '${actorData.controlMode}' in 'generateVehicleTest()'`)
     }
+    SR5_CharacterUtility.applySpeedDemon(actor, vehicleTest.test)
 
     //update vehicle Actions Value
     SR5_EntityHelpers.updateDicePool(vehicleTest.test, 0)
     SR5_EntityHelpers.updateValue(vehicleTest.limit, 0)
     SR5_CharacterUtility.capRemoteLimit(actor, vehicleTest.limit)
+  }
+
+  //Démon de la vitesse (Rigger 5.0 p. 37): +1 to the piloting test of a vehicle moving fast, its rigger aboard or jumped in
+  static applySpeedDemon(actor, test) {
+    let actorData = actor.system
+    let bonus = speedDemonBonus(actorData, actorData.vehicleOwner?.items)
+    if (bonus) SR5_EntityHelpers.updateModifier(test, game.i18n.localize('SR5.RiggerSpeedDemon'), "itemQuality", bonus)
   }
 
   //Remote control: the limit is the lower of the normal limit and the controller's Data Processing (SR5 p. 239-240)
@@ -2856,6 +2867,7 @@ export class SR5_CharacterUtility extends Actor {
       default:
         SR5_SystemHelpers.srLog(1, `Unknown controle mode '${actorData.controlMode}' in 'generateRammingTest()'`)
     }
+    SR5_CharacterUtility.applySpeedDemon(actor, rammingTest.test)
 
     //update vehicle Actions Value
     SR5_EntityHelpers.updateDicePool(rammingTest.test, 0)
