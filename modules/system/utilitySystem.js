@@ -697,6 +697,22 @@ export class SR5_SystemHelpers {
 
     // Indexes, reputation adjustment, spirit traits and banishing totals, written by the active GM alone
     registerSpiritLedger()
+
+    // What the players see of the PAN crowns (couronne du PAN, lot 3; decision of DjamZ, 07/10): the book's rules by
+    // default (SR5 p. 236-238), or the gamemaster decides, device by device. Read at each drawing of a crown.
+    game.settings.register("sr5", "panCrownVisibility", {
+      name: "SR5.SETTINGS_PanCrownVisibility_T",
+      hint: "SR5.SETTINGS_PanCrownVisibility_D",
+      scope: "world",
+      config: true,
+      default: "book",
+      type: String,
+      choices: {
+        book: "SR5.SETTINGS_PanCrownVisibility_book",
+        gm: "SR5.SETTINGS_PanCrownVisibility_gm",
+      },
+      onChange: () => canvas?.sr5PanCrown?.refresh()
+    })
   }
 
   /* Display Shadowrun Themed Log Entries Based on Logging Level

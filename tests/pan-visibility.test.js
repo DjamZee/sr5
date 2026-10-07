@@ -2,7 +2,7 @@ import {
   describe, it, expect
 } from 'vitest'
 import {
-  nodeVisibility, pickViewer, PAN_SPOT_RANGE_METERS
+  hiddenFromPlayers, nodeVisibility, pickViewer, PAN_SPOT_RANGE_METERS, viewerMarksOn
 } from '../modules/canvas/pan-crown/pan-visibility.js'
 
 // What an observer sees of a crown (couronne du PAN, lot 1): SR5 p. 236-238, and the rulings of DjamZ Q2-Q4 (07/10)
@@ -164,5 +164,118 @@ describe('who looks (Q3)', () => {
     })
     expect(pickViewer({
     })).toBeNull()
+  })
+})
+
+// Lot 3: the world setting "the gamemaster decides", the reveal, the observer's own marks, the gamemaster's ring
+describe('the gamemaster decides (lot 3)', () => {
+  const gm = extra => viewer({
+    gmDecides: true, ...extra
+  })
+  const near = {
+    distance: 5
+  }
+
+  it('hides an active device within 100 m from a player', () => {
+    expect(sees(node(), gm(), near)).toEqual({
+      visible: false, reason: 'gmDecides'
+    })
+  })
+
+  it('hides a device the player marked or spotted', () => {
+    expect(sees(node({
+      marks: [{
+        ownerId: 'decker', value: 2
+      }]
+    }), gm(), near).visible).toBe(false)
+    expect(sees(node(), gm({
+      spotted: new Set(['gun'])
+    }), near).visible).toBe(false)
+  })
+
+  it('still shows the player her own crown', () => {
+    expect(sees(node({
+      mode: 'offline'
+    }), gm({
+      ids: ['guard'], hasAntenna: false
+    })).reason).toBe('owner')
+  })
+
+  it('shows what the gamemaster revealed, to the whole table', () => {
+    expect(sees(node({
+      revealed: true
+    }), gm({
+      hasAntenna: false
+    }))).toEqual({
+      visible: true, reason: 'revealed'
+    })
+  })
+
+  it('leaves the gamemaster seeing everything', () => {
+    expect(sees(node(), gm({
+      isGM: true
+    })).reason).toBe('gm')
+  })
+
+  it('applies the book again once the setting is back to the book', () => {
+    expect(sees(node(), viewer({
+      gmDecides: false
+    }), near).reason).toBe('inRange')
+  })
+})
+
+describe('reveal under the book rules (lot 3)', () => {
+  it('shows a revealed device even offline, far, silent or without antenna', () => {
+    for (const mode of ['offline', 'silent']){
+      expect(sees(node({
+        mode, revealed: true
+      }), viewer({
+        hasAntenna: false
+      }), {
+        distance: 500
+      }).reason).toBe('revealed')
+    }
+  })
+})
+
+describe('marks of the observer (SR5 p. 238)', () => {
+  it('counts only the marks the observer put', () => {
+    const n = node({
+      marks: [{
+        ownerId: 'decker', value: 2
+      }, {
+        ownerId: 'other', value: 3
+      }]
+    })
+    expect(viewerMarksOn(n, ['decker'])).toBe(2)
+    expect(viewerMarksOn(n, ['other'])).toBe(3)
+    expect(viewerMarksOn(n, ['nobody'])).toBe(0)
+  })
+
+  it('reads the token id of an unlinked observer as well', () => {
+    expect(viewerMarksOn(node({
+      marks: [{
+        ownerId: 'tokenId', value: 1
+      }]
+    }), ['actorId', 'tokenId'])).toBe(1)
+  })
+})
+
+describe('what no player sees, for the gamemaster (lot 3)', () => {
+  it('is hidden when no player sees it, or when there is no player', () => {
+    expect(hiddenFromPlayers([{
+      visible: false
+    }, {
+      visible: false
+    }])).toBe(true)
+    expect(hiddenFromPlayers([])).toBe(true)
+  })
+
+  it('is not hidden when one player sees it', () => {
+    expect(hiddenFromPlayers([{
+      visible: false
+    }, {
+      visible: true
+    }])).toBe(false)
   })
 })

@@ -1,14 +1,15 @@
 // The canvas layer that draws the crowns of PANs (couronne du PAN, lot 2): the constellation B at the Static level,
 // with its full (wireless on), dashed (silent) and grey (offline) lines, a generic icon per category and the name on
-// hover. A crown shows what getGraph() makes visible to the current user; the gamemaster's setting and reveal come
-// with lot 3, the radial menu with lot 4. Which crowns are open is the client's own state: nothing is stored.
+// hover. A crown shows what getGraph() makes visible to the current user. Lot 3: the observer's own marks as small
+// diamonds over an icon, a purple ring for the gamemaster on what no player sees, and the gamemaster's menu to reveal
+// a device (pan-crown.js); the radial menu comes with lot 4. Which crowns are open is the client's own state.
 //
 // A layer of its own in the interface group, above the tokens and under the HTML HUD (PLAN-COURONNE-PAN-MATRICE § 3).
 // Each crown is a container placed on its token's center by the refreshToken hook, which also fires during the
 // animation of a move: the crown follows the token.
 
 import {
-  getGraph, tokenOfNode
+  getGraph, openGmMenu, tokenOfNode
 } from "./pan-crown.js"
 import {
   crownAngle, dashesOf, layoutCrown
@@ -27,6 +28,9 @@ const COLORS = {
   disc: 0x041311,
   picture: 0xbfffee,
   pictureOffline: 0x7d8a88,
+  // The gamemaster's ring on what no player sees (lot 3)
+  hidden: 0xb04dff,
+  mark: 0xff4d6d,
 }
 
 const MODE_LABELS = {
@@ -139,6 +143,8 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     const linked = [...this.crowns.values()].filter(c => c.droneTokenIds.has(token.id)).map(c => c.token.id)
     // The viewer moved: what she sees within 100 m may change. A crown with lines to other tokens is laid out again.
     if (token.controlled) return this.refresh()
+    // For the gamemaster, a player's token that moves changes what the players see (the purple ring)
+    if (game.user?.isGM && token.actor?.hasPlayerOwner) return this.refresh()
     if (crown?.droneTokenIds.size) linked.push(token.id)
     if (linked.length) this.refresh(linked)
   }
@@ -231,7 +237,8 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
 
     // One texture per kind of disc, shared by every crown: sprites are drawn in one batch, a Graphics each is not
     // (20 crowns: 2.6 ms per render with a Graphics per icon)
-    const disc = icon.addChild(new PIXI.Sprite(this.#discTexture(node.mode, node.uuid === graph.master, radius)))
+    const hidden = !!graph.viewer?.isGM && node.hiddenFromPlayers === true
+    const disc = icon.addChild(new PIXI.Sprite(this.#discTexture(node.mode, node.uuid === graph.master, radius, hidden)))
     disc.anchor.set(0.5)
 
     if (texture) {
@@ -249,6 +256,9 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     label.position.set(0, radius + 4)
     label.visible = false
 
+    // The observer's own marks (SR5 p. 238): one diamond per mark, over the icon, on her screen alone
+    if (node.viewerMarks > 0) icon.addChild(this.#marksOf(Math.min(node.viewerMarks, 4), radius))
+
     icon.on("pointerover", () => {
       label.visible = true
       // Over its neighbours while it is read
@@ -258,15 +268,15 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     // The token stays selected, and the canvas does not start a selection box under the icon
     icon.on("pointerdown", event => {
       event.stopPropagation()
-      if (event.button === 0) this.#onClickIcon(crown, node)
+      if (event.button === 0) this.#onClickIcon(crown, node, event)
     })
     icon.on("pointerup", event => event.stopPropagation())
     return icon
   }
 
   // The disc of an icon: its mode (full, dashed, grey) and the second ring of the master, drawn once per size
-  #discTexture(mode, isMaster, radius){
-    const key = `${mode}|${isMaster}|${radius}`
+  #discTexture(mode, isMaster, radius, hidden = false){
+    const key = `${mode}|${isMaster}|${radius}|${hidden}`
     let texture = this._discs.get(key)
     if (texture) return texture
     const color = mode === "offline" ? COLORS.offline : COLORS.line
@@ -286,6 +296,13 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
       })
       disc.drawCircle(0, 0, radius * 1.17)
     }
+    // What no player sees, for the gamemaster: a purple ring outside the others
+    if (hidden) {
+      disc.lineStyle({
+        width: radius / 7, color: COLORS.hidden, alpha: 0.95
+      })
+      disc.drawCircle(0, 0, radius * 1.32)
+    }
     // Sharp up to the deepest zoom of the canvas
     texture = canvas.app.renderer.generateTexture(disc, {
       resolution: 3
@@ -295,14 +312,35 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     return texture
   }
 
-  // Lot 2 only proves that the click reaches the right icon; lot 4 opens the radial menu from here
-  #onClickIcon(crown, node){
+  // The marks of the observer: small diamonds in a row over the icon
+  #marksOf(count, radius){
+    const marks = new PIXI.Graphics()
+    const size = radius * 0.28
+    const step = size * 2.4
+    const y = -radius * 1.25
+    marks.lineStyle({
+      width: Math.max(radius / 15, 1), color: COLORS.disc, alpha: 0.9
+    })
+    for (let i = 0; i < count; i++){
+      const x = (i - (count - 1) / 2) * step
+      marks.beginFill(COLORS.mark, 1)
+      marks.drawPolygon([x, y - size, x + size, y, x, y + size, x - size, y])
+      marks.endFill()
+    }
+    return marks
+  }
+
+  // Lot 2 proves that the click reaches the right icon; lot 3 opens the gamemaster's reveal menu from the hook;
+  // lot 4 opens the radial menu from here
+  #onClickIcon(crown, node, event){
     this.lastClick = {
       tokenId: crown.token.id, uuid: node.uuid, name: node.name, time: Date.now()
     }
     SR5_SystemHelpers.srLog(3, `PAN crown: click on ${node.name} (${node.uuid}) of ${crown.token.name}`)
     Hooks.callAll("sr5.panCrownClickIcon", {
-      token: crown.token, node
+      token: crown.token, node, point: {
+        x: event?.clientX ?? 0, y: event?.clientY ?? 0
+      }
     })
   }
 }
@@ -332,4 +370,8 @@ export function registerPanCrownHooks(){
   for (const hook of ["updateItem", "createItem", "deleteItem", "updateActor", "controlToken", "updateUser", "createToken"]){
     Hooks.on(hook, () => layer()?.refresh())
   }
+  // Lot 3: the gamemaster's click on an icon opens the reveal menu
+  Hooks.on("sr5.panCrownClickIcon", data => {
+    if (game.user?.isGM) openGmMenu(data)
+  })
 }
