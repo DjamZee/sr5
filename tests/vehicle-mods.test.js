@@ -3,7 +3,8 @@ import {
 } from 'vitest'
 import {
   vehicleModKind, fittedMods, fittedRating, replacedVehicleAttribute, replacedVehicleAttributeOf, armorCapReduction, addedArmor,
-  hasBullBar, modSlotUse, slotsRefusal, crashArmorPenetration, occupantCrashBonus
+  hasBullBar, modSlotUse, slotsRefusal, crashArmorPenetration, occupantCrashBonus,
+  tactileSensorsOn, TACTILE_PERCEPTION_DICE, TACTILE_HANDLING, TACTILE_BIOFEEDBACK_DICE
 } from '../modules/system/vehicle-mods.js'
 import {
   droneAutopilot
@@ -293,5 +294,22 @@ describe('A passenger in a crash: SPP and rigger cocoon (SR5 p. 202, Rigger 5.0 
     }])).toEqual({
       protection: 0, cocoon: 0
     })
+  })
+})
+
+describe('Tactile sensors (Rigger 5.0 p. 170)', () => {
+  const items = [mod("Senseurs tactiles")]
+  it('work for a jumped-in rigger only', () => {
+    expect(tactileSensorsOn(items, "rigging")).toBe(true)
+    expect(tactileSensorsOn(items, "remote")).toBe(false)
+    expect(tactileSensorsOn(items, "manual")).toBe(false)
+    expect(tactileSensorsOn([mod("Senseurs tactiles", {
+      isActive: false
+    })], "rigging")).toBe(false)
+  })
+  it('+2 dice to Perception, +1 Handling, -2 against biofeedback', () => {
+    expect(TACTILE_PERCEPTION_DICE).toBe(2)
+    expect(TACTILE_HANDLING).toBe(1)
+    expect(TACTILE_BIOFEEDBACK_DICE).toBe(-2)
   })
 })

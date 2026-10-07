@@ -163,3 +163,16 @@ export function occupantCrashBonus(vehicles) {
     protection, cocoon
   }
 }
+
+// R5 p. 170 (Senseurs tactiles): "un rigger immergé dans un véhicule équipé de capteurs tactiles bénéficie d'un bonus de +2
+// dés à tous les tests de Perception ou de Senseurs, et la Maniabilité du véhicule est augmentée de +1. Cependant [...]
+// chaque fois que le véhicule subit des dégâts, le rigger subit un malus de –2 à ses tests de Résistance aux Dommages de
+// biofeedback". Only while a rigger is jumped in
+export const TACTILE_PERCEPTION_DICE = 2
+export const TACTILE_HANDLING = 1
+export const TACTILE_BIOFEEDBACK_DICE = -2
+
+/** Whether a jumped-in rigger feels the vehicle through its tactile sensors */
+export function tactileSensorsOn(items, controlMode) {
+  return controlMode === "rigging" && fittedMods(items, "tactileSensors").length > 0
+}

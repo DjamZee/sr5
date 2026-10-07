@@ -108,7 +108,8 @@ import {
   modTakesSlots, factorySkipsEffect
 } from "../../system/vehicle-factory.js"
 import {
-  replacedVehicleAttribute, replacedVehicleAttributeOf, armorCapReduction, addedArmor, crashArmorPenetration
+  replacedVehicleAttribute, replacedVehicleAttributeOf, armorCapReduction, addedArmor, crashArmorPenetration,
+  tactileSensorsOn, TACTILE_PERCEPTION_DICE, TACTILE_HANDLING
 } from "../../system/vehicle-mods.js"
 
 
@@ -2731,6 +2732,8 @@ export class SR5_CharacterUtility extends Actor {
           SR5_EntityHelpers.updateModifier(skills.perception.test, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 1)
           SR5_EntityHelpers.updateModifier(skills.sneaking.test, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 1)
         }
+        //Tactile sensors: +2 dice to Perception and Sensor tests (Rigger 5.0 p. 170)
+        if (tactileSensorsOn(actor.items, actorData.controlMode)) SR5_EntityHelpers.updateModifier(skills.perception.test, game.i18n.localize('SR5.VehicleModEffectKind_tactileSensors'), "itemVehicleMod", TACTILE_PERCEPTION_DICE)
         break
       default:
         SR5_SystemHelpers.srLog(1, `Unknown controle mode '${actorData.controlMode}' in 'generateVehicleSkills()'`)
@@ -2965,13 +2968,20 @@ export class SR5_CharacterUtility extends Actor {
   }
 
   // Autopilot and Sensor replacements (Rigger 5.0 p. 170): the printed value gives way to the mod's rating, read in the
-  // base of the attribute so that the other mods still add to it. A modifier on natural, never the base the sheet edits
+  // base of the attribute so that the other mods still add to it. A modifier on natural, never the base the sheet edits.
+  // Read in prepareBaseData, before the item effects
   static applyVehicleReplacements(actor) {
     const attributes = actor.system.attributes
     for (const [key, label] of [["pilot", "SR5.VehicleModEffectKind_autopilotReplacement"], ["sensor", "SR5.VehicleModEffectKind_sensorReplacement"]]) {
       const replaced = replacedVehicleAttribute(actor.items, key)
       if (replaced === null || !attributes[key]) continue
       SR5_EntityHelpers.updateModifier(attributes[key].natural, game.i18n.localize(label), "itemVehicleMod", replaced - (Number(attributes[key].natural.base) || 0))
+    }
+    //Tactile sensors: +1 Handling while a rigger is jumped in (Rigger 5.0 p. 170)
+    if (tactileSensorsOn(actor.items, actor.system.controlMode)) {
+      for (const key of ["handling", "handlingOffRoad", "secondaryPropulsionHandling", "secondaryPropulsionHandlingOffRoad"]) {
+        if (attributes[key]) SR5_EntityHelpers.updateModifier(attributes[key].augmented, game.i18n.localize("SR5.VehicleModEffectKind_tactileSensors"), "itemVehicleMod", TACTILE_HANDLING)
+      }
     }
   }
 
