@@ -374,8 +374,16 @@ describe('Applying matrix damage without a device (Data Trails p. 161)', () => {
     expect(actor.takeDamage).toHaveBeenCalledTimes(1)
   })
 
-  it('writes nothing on a character who is not an AI, and tells the GM so', async () => {
+  it('writes a technomancer\'s damage as Stun through takeDamage (SR5 p. 229-230)', async () => {
+    actor.type = 'actorPc'
     actor.system.activeSpecialAttribute = 'resonance'
+    actor.takeDamage = vi.fn(async () => {})
+    await SR5_MatrixHelpers.applyDamageToDecK(actor, card())
+    expect(actor.takeDamage).toHaveBeenCalledTimes(1)
+  })
+
+  it('writes nothing on a character who is neither an AI nor a technomancer, and tells the GM so', async () => {
+    actor.system.activeSpecialAttribute = 'magic'
     actor.takeDamage = vi.fn(async () => {})
     const create = vi.fn(async () => {})
     globalThis.ChatMessage = {
