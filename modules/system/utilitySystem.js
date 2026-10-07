@@ -2,6 +2,12 @@ import {
   SR5ShopConfig
 } from "../interface/shop-config.js"
 import {
+  SR5RuleLocksConfig
+} from "../interface/rule-locks-config.js"
+import {
+  RULE_LOCK_PRESETS, presetLocks
+} from "./rule-locks.js"
+import {
   SR5FactionRegistry
 } from "../interface/faction-registry.js"
 import {
@@ -139,12 +145,13 @@ export class SR5_SystemHelpers {
       type: Boolean,
     })
 
-    // SR5 p. 450: picking a lock takes a lockpick kit. On by default, as the book has it
+    // SR5 p. 450: picking a lock takes a lockpick kit. On by default, as the book has it. Edited from the
+    // rule locks menu since B13 (box "lockpick" of the "objects" family), which keeps it in step
     game.settings.register("sr5", "sr5LockpickRequiresKit", {
       name: "SR5.SETTINGS_LockpickRequiresKit_T",
       hint: "SR5.SETTINGS_LockpickRequiresKit_D",
       scope: "world",
-      config: true,
+      config: false,
       default: true,
       type: Boolean,
     })
@@ -161,12 +168,13 @@ export class SR5_SystemHelpers {
     })
 
     // SR5 p. 164-165: one free action, and two simple or one complex, per initiative pass. Off by default: an action
-    // the character no longer has still goes through, as before
+    // the character no longer has still goes through, as before. Edited from the rule locks menu since B13
+    // (family "actions"), which keeps it in step
     game.settings.register("sr5", "sr5BlockMissingActions", {
       name: "SR5.SETTINGS_BlockMissingActions_T",
       hint: "SR5.SETTINGS_BlockMissingActions_D",
       scope: "world",
-      config: true,
+      config: false,
       default: false,
       type: Boolean,
     })
@@ -192,12 +200,13 @@ export class SR5_SystemHelpers {
     })
 
     // A garage is a lifestyle Asset with a minimum lifestyle (Run Faster
-    // p. 216). Tables that do not track lifestyles can switch the check off.
+    // p. 216). Tables that do not track lifestyles can switch the check off, from the rule locks menu since
+    // B13 (box "garage" of the "objects" family), which keeps it in step.
     game.settings.register("sr5", "sr5StorageCheckGarageLifestyle", {
       name: "SR5.SETTINGS_StorageCheckGarageLifestyle_T",
       hint: "SR5.SETTINGS_StorageCheckGarageLifestyle_D",
       scope: "world",
-      config: true,
+      config: false,
       default: true,
       type: Boolean,
     })
@@ -248,6 +257,28 @@ export class SR5_SystemHelpers {
       hint: "SR5.NEGO_REPAIR_MenuHint",
       icon: "fas fa-handshake",
       type: SR5NegotiationRepair,
+      restricted: true,
+    })
+
+    // Rule locks (B13, system/rule-locks.js): one box per family of rules, the book's by default. The three
+    // settings that were rule locks (actions, garage, lockpick) are edited from its menu now, and kept in step
+    game.settings.register("sr5", "sr5RuleLocks", {
+      scope: "world", config: false, default: presetLocks("book"), type: Object,
+    })
+    game.settings.register("sr5", "sr5RuleLocksPreset", {
+      scope: "world", config: false, default: "book", type: String,
+      choices: Object.fromEntries(RULE_LOCK_PRESETS.map(key => [key, `SR5.RULELOCKS_Preset_${key}`])),
+    })
+    // 0 until the three former settings are copied into the boxes, once per world (runRuleLocksMigration)
+    game.settings.register("sr5", "sr5RuleLocksMigration", {
+      scope: "world", config: false, default: 0, type: Number,
+    })
+    game.settings.registerMenu("sr5", "sr5RuleLocksMenu", {
+      name: "SR5.RULELOCKS_Menu_T",
+      label: "SR5.RULELOCKS_Menu_L",
+      hint: "SR5.RULELOCKS_Menu_D",
+      icon: "fas fa-lock",
+      type: SR5RuleLocksConfig,
       restricted: true,
     })
 

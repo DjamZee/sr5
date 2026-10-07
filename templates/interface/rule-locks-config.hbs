@@ -1,0 +1,33 @@
+<div class="sr-rule-locks-config-body">
+  <p class="hint">{{localize 'SR5.RULELOCKS_Intro'}}</p>
+  <div class="form-group">
+    <label>{{localize 'SR5.RULELOCKS_Preset'}}</label>
+    <select name="preset">
+      {{#each presets}}
+      <option value="{{key}}" {{#if selected}}selected{{/if}}>{{localize label}}</option>
+      {{/each}}
+    </select>
+  </div>
+
+  <fieldset>
+    <legend>{{localize 'SR5.RULELOCKS_Families'}}</legend>
+    {{#each families}}
+    <div class="form-group">
+      <label>{{localize label}}</label>
+      <input type="checkbox" name="lock.{{key}}" data-lock="{{key}}" {{#if checked}}checked{{/if}}>
+      <p class="hint">{{localize hint}}</p>
+    </div>
+    {{#each cases}}
+    <div class="form-group" style="margin-left: 1.5em;">
+      <label>{{localize label}}</label>
+      <input type="checkbox" name="lock.{{key}}" data-lock="{{key}}" {{#if checked}}checked{{/if}}>
+    </div>
+    {{/each}}
+    {{/each}}
+  </fieldset>
+  <p class="hint">{{localize 'SR5.RULELOCKS_ShopHint'}}</p>
+
+  <footer class="form-footer">
+    <button type="submit"><i class="fas fa-save"></i> {{localize 'SR5.RULELOCKS_Save'}}</button>
+  </footer>
+</div>

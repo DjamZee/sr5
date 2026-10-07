@@ -15,6 +15,9 @@ export const SETTINGS_WINDOW_MENU = "sr5SettingsWindow"
 // The tabs, in the order the window shows them. A tab with nothing the user may see is left out.
 export const SETTINGS_TABS = [
   {
+    id: "ruleLocks", label: "SR5.SETTINGS_Tab_RuleLocks", icon: "fas fa-lock"
+  },
+  {
     id: "combat", label: "SR5.SETTINGS_Tab_Combat", icon: "fas fa-crosshairs"
   },
   {
@@ -64,8 +67,7 @@ export const SETTINGS_TAGS = {
 // Key (without the "sr5." namespace) → [tab, tag]. The tag is left out when the setting only tells
 // the system how far to automate the book's rule, or how to show it.
 export const SETTINGS_CATALOG = {
-  // Combat
-  sr5BlockMissingActions: ["combat"],
+  // Combat (sr5BlockMissingActions, a rule lock, is edited from the rule locks menu since B13)
   sr5FreeReload: ["combat", "house"],
   sr5CalledShotsRules: ["combat", "book"],
   sr5GrapplingRules: ["combat", "book"],
@@ -108,12 +110,11 @@ export const SETTINGS_CATALOG = {
   sr5RevealDiseases: ["body"],
   sr5WithdrawalModifier: ["body"],
   sr5HungerMonthDays: ["body"],
-  // Gear and storage
-  sr5LockpickRequiresKit: ["gear"],
+  // Gear and storage (sr5LockpickRequiresKit and sr5StorageCheckGarageLifestyle, rule locks, are edited from the
+  // rule locks menu since B13)
   sr5PickpocketThiefChooses: ["gear", "house"],
   sr5StorageDropOnDeath: ["gear", "house"],
   sr5StorageDropOnDeathShare: ["gear", "house"],
-  sr5StorageCheckGarageLifestyle: ["gear"],
   // Shop
   sr5ShopMarketOpen: ["shop"],
   sr5ShopCreationLevel: ["shop"],
@@ -155,6 +156,7 @@ export const SETTINGS_CATALOG = {
 
 // Submenus (registerMenu key, without the namespace) → tab. They head their tab.
 export const MENU_CATALOG = {
+  sr5RuleLocksMenu: "ruleLocks",
   sr5ShopConfigMenu: "shop",
   sr5FactionsMenu: "gm",
   sr5NegotiationRepairMenu: "gm",
