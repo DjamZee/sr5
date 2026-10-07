@@ -916,6 +916,11 @@ export function registerPanCrownHooks(){
   for (const hook of ["updateItem", "createItem", "deleteItem", "updateActor", "controlToken", "updateUser", "createToken"]){
     Hooks.on(hook, () => layer()?.refresh())
   }
+  // The gamemaster hides a token, or shows it again: the lines that lead to it come and go for the players
+  Hooks.on("updateToken", (document, changes) => {
+    if ("hidden" in (changes ?? {
+    })) layer()?.refresh()
+  })
   // Lot 4: a click on an icon opens its radial menu, for everyone (the gamemaster's reveal is in it)
   Hooks.on("sr5.panCrownClickIcon", data => openRadialMenu(data))
   // Lot 8: the openings on hover, always, and in the AR view follow the scene and its tokens

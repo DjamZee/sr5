@@ -54,9 +54,10 @@ export function pickViewer({
  * @param {Object} viewer   {isGM, ids, hasAntenna, spotted: Set|Array of uuids, gmDecides: the world setting is
  *                          "the gamemaster decides"}
  * @param {Object} where    {distance: meters from the viewer's antenna to the device, or null when not measurable
- *                          (another scene, no token); isHost: a host has no physical distance}
+ *                          (another scene, no token); isHost: a host has no physical distance; tokenHidden: the
+ *                          node is a line to a token the gamemaster hid}
  * @return {{visible: Boolean, reason: String}}
- *   reason: gm, owner, revealed, ownerOnly, gmDecides, offline, noAntenna, marked, spotted, silent, host, inRange, outOfRange
+ *   reason: gm, hiddenToken, owner, revealed, ownerOnly, gmDecides, offline, noAntenna, marked, spotted, silent, host, inRange, outOfRange
  */
 export function nodeVisibility(node, viewer, where = {
 }){
@@ -65,6 +66,8 @@ export function nodeVisibility(node, viewer, where = {
   })
   const ids = viewer?.ids ?? []
   if (viewer?.isGM) return verdict(true, "gm")
+  // A node drawn as a line to a token the gamemaster hid: no line betrays that token (relecture)
+  if (where.tokenHidden) return verdict(false, "hiddenToken")
   if ((node.ownerIds ?? []).some(id => ids.includes(id))) return verdict(true, "owner")
   if (node.revealed) return verdict(true, "revealed")
   // A technomancer's persona out of the Matrix, her sprites while she hides (pan-graph.js, addResonanceNodes)

@@ -9,6 +9,9 @@ import {
 import {
   radialTargetOf
 } from '../modules/canvas/pan-crown/pan-actions.js'
+import {
+  nodeVisibility
+} from '../modules/canvas/pan-crown/pan-visibility.js'
 
 // The defects of the crown found by the grouped review of Fleur (alpha 32df8eae6), one block per defect
 
@@ -170,6 +173,35 @@ describe('M1: a move lays the crowns out again, it does not build them again', (
     }, graph)).toEqual({
       targetTokenId: undefined, targetUuid: null
     })
+  })
+
+  it('draws no line to a token the gamemaster hid, for a player; the gamemaster sees it', () => {
+    const node = {
+      kind: 'drone', mode: 'active', ownerIds: ['rigger'], marks: [], revealed: true
+    }
+    // even the owner, or a revealed device: Foundry hides the token from every player
+    expect(nodeVisibility(node, {
+      ids: ['rigger'], hasAntenna: true
+    }, {
+      distance: 5, tokenHidden: true
+    })).toEqual({
+      visible: false, reason: 'hiddenToken'
+    })
+    expect(nodeVisibility(node, {
+      isGM: true
+    }, {
+      tokenHidden: true
+    })).toEqual({
+      visible: true, reason: 'gm'
+    })
+    expect(nodeVisibility(node, {
+      ids: ['rigger'], hasAntenna: true
+    }, {
+      distance: 5
+    }).visible).toBe(true)
+    const crown = read('../modules/canvas/pan-crown/pan-crown.js')
+    expect(crown).toMatch(/PAN_TOKEN_KINDS\.includes\(node\.kind\) && nodeToken !== crown\.token && nodeToken\?\.document\?\.hidden === true/)
+    expect(read(LAYER)).toMatch(/if \("hidden" in \(changes \?\? \{\s*\}\)\) layer\(\)\?\.refresh\(\)/)
   })
 
   it('makes the name of an icon the first time it is read, not at each build', () => {

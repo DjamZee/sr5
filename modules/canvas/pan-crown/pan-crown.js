@@ -7,7 +7,7 @@
 // (pan-hooks.js), registerIcon and refresh.
 
 import {
-  buildPanGraph, hasAntenna, idsOf
+  PAN_TOKEN_KINDS, buildPanGraph, hasAntenna, idsOf
 } from "./pan-graph.js"
 import {
   hiddenFromPlayers, isMatrixScene, nodeVisibility, pickViewer, viewerMarksOn
@@ -204,12 +204,14 @@ export function getGraph(subject, options = {
       holderIds: node.anchorIds
     } : node, crown)
     const isHost = isHostActor(holderActorOf(node, crown))
+    // A drone, a rigger, a master or a device of the scenery is a line to its token (lot 7): none to a hidden token
+    const tokenHidden = PAN_TOKEN_KINDS.includes(node.kind) && nodeToken !== crown.token && nodeToken?.document?.hidden === true
     node.distance = distanceInMeters(viewer?.token, nodeToken)
     // Lot 11: a module may hide it (sr5.panCrownVisibility), never show what the system hides
     node.visibility = applyVisibilityHooks(node, {
       actor: viewer?.actor ?? null, token: viewer?.token ?? null, isGM: looker.isGM, ids: looker.ids
     }, nodeVisibility(node, looker, {
-      distance: node.distance, isHost
+      distance: node.distance, isHost, tokenHidden
     }))
     // The observer's own marks on it, which she alone sees (SR5 p. 238)
     node.viewerMarks = viewerMarksOn(node, looker.ids)
@@ -218,7 +220,7 @@ export function getGraph(subject, options = {
     if (players) node.hiddenFromPlayers = hiddenFromPlayers(players.map(p => applyVisibilityHooks(node, {
       actor: p.actor, token: p.token ?? null, isGM: false, ids: p.looker.ids
     }, nodeVisibility(node, p.looker, {
-      distance: distanceInMeters(p.token, nodeToken), isHost
+      distance: distanceInMeters(p.token, nodeToken), isHost, tokenHidden
     }))))
   }
   return graph
