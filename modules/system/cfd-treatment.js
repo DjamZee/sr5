@@ -15,6 +15,9 @@ import {
 import {
   updateLedger
 } from "./gm-ledger.js"
+import {
+  refuseByRule
+} from "./rule-locks.js"
 
 export const CFD_LEDGER = "sr5CfdLedger"
 
@@ -318,7 +321,10 @@ export async function startTreatment(actor, {
   if (!isActiveGM()) return warnNotActiveGM()
   const now = game.time.worldTime
   if (product === "nanoscrub"){
-    if (vector === "aerosol") return ui.notifications.warn(game.i18n.localize("SR5.CFD_NanoScrubIVOnly"))
+    // The "body" rule lock family lifted (B13, lot 4): the aerosol goes in as an injection would
+    if (vector === "aerosol" && refuseByRule("body", "SR5.CFD_NanoScrubIVOnly", null, {
+      actor
+    })) return
     const rating = overwriterRating(doses, "injection")
     if (rating <= 0) return
     const roll = await rollPool(rating)
@@ -395,7 +401,10 @@ export async function startTreatment(actor, {
 // Outside a combat the GM lets the Overwriters run to the end at once
 export async function resolveOverwritersNow(actor){
   if (!isActiveGM()) return warnNotActiveGM()
-  if (inCombat(actor)) return ui.notifications.warn(game.i18n.localize("SR5.CFD_ResolveInCombat"))
+  // The "body" rule lock family lifted (B13, lot 4): the GM lets them run to the end in a combat too
+  if (inCombat(actor) && refuseByRule("body", "SR5.CFD_ResolveInCombat", null, {
+    actor
+  })) return
   return overwriterRounds(actor, MAX_ROUNDS)
 }
 
