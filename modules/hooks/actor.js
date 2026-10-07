@@ -129,8 +129,9 @@ export async function sr5HookUpdateActor(document, data, _options, userId) {
 
   //The drones' copy of their controller, by one client only (vehicle-owner-sync.js)
   if (controllerOf(document) && syncsHere(game.users, game.user, userId)) scheduleVehicleOwnerSync(document, a => SR5_CharacterUtility.updateControledVehicle(a))
-  //Propagate owner data changes to linked agents
-  if ((document.type === "actorPc" || document.type === "actorGrunt") && (document.testUserPermission(game.user, 3))) {
+  //Propagate owner data changes to linked agents, by one client only, as for the drones (vehicle-owner-sync.js): every
+  //owner of the character used to write, a player without rights on the agent with an error
+  if (controllerOf(document) && syncsHere(game.users, game.user, userId)) {
     if (document.items.find(item => item.system.type === "agent")) await SR5_CharacterUtility.updateProgramAgent(document)
   }
 

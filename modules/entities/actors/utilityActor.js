@@ -5217,7 +5217,7 @@ export class SR5_CharacterUtility extends Actor {
     let actorObject = actor.toObject(false)
     if (game.actors) {
       for (let a of game.actors) {
-        if (a.type === "actorAgent" && a.system.creatorId === actor.id) {
+        if (a.type === "actorAgent" && a.system.creatorId === actor.id && a.isOwner) {
           await a.update({
             "system.creatorData.items": actorObject.items
           })
@@ -5227,7 +5227,8 @@ export class SR5_CharacterUtility extends Actor {
 
     if (canvas.scene) {
       for (let t of canvas.tokens.placeables) {
-        if (t.actor.type === "actorAgent" && t.actor.system.creatorId === actor.id) {
+        //A linked token is the world actor, copied just above
+        if (t.actor?.type === "actorAgent" && !t.document.actorLink && t.actor.system.creatorId === actor.id && t.actor.isOwner) {
           await t.actor.update({
             "system.creatorData.items": actorObject.items
           })
