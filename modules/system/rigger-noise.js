@@ -110,7 +110,9 @@ export function tokenOfActor(actor, scene, placeables){
   const onScene = placeables.filter(t => t.document?.parent === scene)
   if (actor.isToken) return onScene.find(t => t.actor === actor || t.document === actor.token) ?? null
   const own = onScene.filter(t => t.actor === actor || (t.document?.actorLink && t.document?.actorId === actor.id))
-  return own.find(t => t.controlled) ?? own[0] ?? null
+  // An unlinked token of this actor counts only when one controls it: among several of a model, it is the one picked
+  const picked = onScene.find(t => t.controlled && t.document?.actorId === actor.id)
+  return own.find(t => t.controlled) ?? own[0] ?? picked ?? null
 }
 
 /**

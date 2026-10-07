@@ -296,4 +296,14 @@ describe('on the canvas', () => {
     expect(tokenOfActor(synthetic, scene, [sibling, own])).toBe(own)
     expect(riggerLinkNoise(synthetic, rigger, canvasWith([token(0, rigger), sibling, own]))).toBe(1)
   })
+
+  it('the world actor of an unlinked drone takes the token one controls, and none otherwise', () => {
+    const world = droneActor("model")
+    const loose = token(150, {
+      ...droneActor("model"), isToken: true
+    }, scene, false)
+    expect(tokenOfActor(world, scene, [loose])).toBe(null)
+    loose.controlled = true
+    expect(tokenOfActor(world, scene, [loose])).toBe(loose)
+  })
 })
