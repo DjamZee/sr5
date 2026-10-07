@@ -70,6 +70,8 @@ export default async function matrixResistance(rollData, actor, chatData){
   rollData.damage.type = chatData.damage.type
   rollData.damage.fromWeapon = isWeaponPulse(chatData.damage)
   rollData.damage.isAttack = !!chatData.damage.isAttack
+  //The damage of a convergence, whose reboot already dealt the dumpshock a brick would deal (matrix-api.js)
+  if (chatData.damage.convergence) rollData.damage.convergence = true
 
   return rollData
 }

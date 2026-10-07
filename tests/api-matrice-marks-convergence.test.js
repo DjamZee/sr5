@@ -215,6 +215,8 @@ describe('A11: marks put by a module (game.sr5.matrix.placeMarks)', () => {
   it('is game.sr5.matrix.placeMarks, its request handled by the active GM', () => {
     expect(typeof SR5MatrixApi.placeMarks).toBe('function')
     expect(read('../modules/hooks/init.js')).toMatch(/matrix: SR5MatrixApi/)
+    //A host marks with no scene viewed (measured on 30003): its tokens are looked for on the canvas only when there is one
+    expect(read('../modules/rolls/roll-helpers/mark.js')).not.toMatch(/canvas\.tokens\.placeables/)
     expect(read('../modules/socket.js')).toMatch(/"apiPlaceMarks": \[async \(message, senderId\) => \(await import\("\.\/system\/matrix-api\.js"\)\)\._socketPlaceMarks/)
   })
 })
@@ -289,6 +291,11 @@ describe('A12: the convergence (game.sr5.matrix.converge)', () => {
     expect(source).toMatch(/generateChatButton\("nonOpposedTest", "matrixResistance"/)
     expect(source).toMatch(/placeMarks\(hostActor, actor, plan\.marks/)
     expect(source).toMatch(/programs\?\.sneak\?\.isActive/)
+    //One dumpshock: the reboot's; a deck its damage bricks deals none again
+    expect(source).toMatch(/rollData\.damage\.convergence = true/)
+    expect(read('../modules/rolls/roll-prepare-case/rollData-MatrixResistance.js')).toMatch(/if \(chatData\.damage\.convergence\) rollData\.damage\.convergence = true/)
+    expect(read('../modules/rolls/roll-helpers/matrix.js')).toMatch(/!relayed && !cardData\.damage\?\.convergence && targetItem\.type === "itemDevice"/)
+    expect(read('../modules/rolls/roll-helpers/miscellaneous.js')).toMatch(/!SR5_MiscellaneousHelpers\.cardOf\(data\.messageId\)\?\.data\?\.damage\?\.convergence/)
     expect(typeof SR5MatrixApi.converge).toBe('function')
     expect(read('../modules/socket.js')).toMatch(/"apiConverge": \[async \(message, senderId\) => \(await import\("\.\/system\/matrix-api\.js"\)\)\._socketConverge/)
   })

@@ -205,6 +205,8 @@ async function postConvergenceCard(actor, damage){
   if (device) rollData.target.itemUuid = device.uuid
   rollData.damage.matrix.value = damage
   rollData.damage.matrix.base = damage
+  //Its reboot throws the character out with dumpshock: a deck it bricks deals none again (matrix.js, miscellaneous.js)
+  rollData.damage.convergence = true
   rollData.chatCard.buttons.matrixResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "matrixResistance", `${game.i18n.localize("SR5.TakeOnDamageMatrix")} (${damage})`)
   return SR5_RollTest.renderRollCard(rollData)
 }
