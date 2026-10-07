@@ -2957,6 +2957,12 @@ SR5.spiritTypeSkillRatios = {
   half                      : "SR5.SpiritTypeRatioHalf",
 }
 
+SR5.spiritTypeBaseSkills = {
+  astralCombat              : "SR5.SkillAstralCombat",
+  assensing                 : "SR5.SkillAssensing",
+  perception                : "SR5.SkillPerception",
+}
+
 SR5.spiritBasePowersabomination = {
   animalControl              : "SR5.SpiritPowerAnimalControl",
   astralForm                 : "SR5.SpiritPowerAstralForm",

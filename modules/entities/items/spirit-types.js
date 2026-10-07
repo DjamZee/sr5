@@ -329,6 +329,11 @@ export class SR5_SpiritTypes {
     return custom.system.baseSkillsRatio || ""
   }
 
+  /** Astral Combat, Assensing or Perception keys the type does not have at all ("aucune"). */
+  static noBaseSkills(custom) {
+    return (custom.system.noBaseSkills ?? []).filter(key => key in SR5.spiritTypeBaseSkills)
+  }
+
   /** Physical initiative dice bonus, or null to keep the base type's. */
   static physicalDice(custom) {
     return custom.system.initiative?.physicalDice ?? null

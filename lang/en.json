@@ -4777,6 +4777,7 @@
 	"SR5.SpiritTypeAttributeModifier": "Modifier",
 	"SR5.SpiritTypeAttributeOverride": "Fixed Value",
 	"SR5.SpiritTypeBaseSkillsRatio": "Astral Combat, Assensing and Perception",
+	"SR5.SpiritTypeNoBaseSkills": "None (the type lacks it)",
 	"SR5.SpiritTypeBasedOn": "Based On",
 	"SR5.SpiritTypeBasedOnNone": "None (generic spirit)",
 	"SR5.SpiritTypeConditionMonitor": "Condition Monitors",

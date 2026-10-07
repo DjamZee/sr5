@@ -4777,6 +4777,7 @@
 	"SR5.SpiritTypeAttributeModifier": "Modificateur",
 	"SR5.SpiritTypeAttributeOverride": "Valeur imposée",
 	"SR5.SpiritTypeBaseSkillsRatio": "Combat astral, Observation astrale et Perception",
+	"SR5.SpiritTypeNoBaseSkills": "Aucune (le type ne l'a pas)",
 	"SR5.SpiritTypeBasedOn": "Basé sur",
 	"SR5.SpiritTypeBasedOnNone": "Aucun (esprit générique)",
 	"SR5.SpiritTypeConditionMonitor": "Moniteurs de condition",

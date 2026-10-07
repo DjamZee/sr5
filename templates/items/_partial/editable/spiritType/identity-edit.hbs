@@ -39,6 +39,14 @@
     </div>
 </li>
 <li class="grid">
+    <div class="col-4">{{localize 'SR5.SpiritTypeNoBaseSkills'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8">
+        <multi-select name="system.noBaseSkills">
+            {{selectOptions lists.spiritTypeBaseSkills selected=system.noBaseSkills localize=true}}
+        </multi-select>
+    </div>
+</li>
+<li class="grid">
     <div class="col-8">{{localize 'SR5.SpiritTypeInitiativeDice'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-1"><input type="number" data-dtype="Number" name="system.initiative.physicalDice" value="{{system.initiative.physicalDice}}" placeholder="—" onfocus="this.select()"/></div>
 </li>

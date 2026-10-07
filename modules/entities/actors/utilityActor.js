@@ -3084,6 +3084,7 @@ export class SR5_CharacterUtility extends Actor {
         skills.assensing.rating.base = rating
         skills.perception.rating.base = rating
       }
+      for (const key of SR5_SpiritTypes.noBaseSkills(customType)) skills[key].rating.base = 0
       SR5_SpiritTypes.applySkills(customType, skills, actorData.force.value)
     }
 

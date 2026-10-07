@@ -47,6 +47,8 @@ export class sr5ItemSpiritTypeDataModel extends foundry.abstract.TypeDataModel {
       baseSkillsRatio: new fields.StringField({
         initial: '', blank: true
       }),
+      // Those of the three the type does not have at all (Howling Shadows p. 130-155: the Chindi have no Assensing).
+      noBaseSkills: new fields.ArrayField(new fields.StringField()),
       // Skills the type grants, at Force and at half Force.
       skills: new fields.ArrayField(new fields.StringField()),
       halfSkills: new fields.ArrayField(new fields.StringField()),
