@@ -42,6 +42,8 @@ describe('the core book\'s Stunt (SR5 p. 205)', () => {
     expect(out.success).toBe(false)
     expect(out.effects).toEqual([{
       type: 'outOfControl', id: 'A'
+    }, {
+      type: 'crash', id: 'A'
     }])
     expect(out.notes[0].key).toBe('SR5.CHASE_NoteStuntBookFailed')
   })
@@ -114,6 +116,8 @@ describe('Rigger 5.0\'s stunts (R5 p. 182-183)', () => {
       hits: 1, threshold: 2
     }).effects).toEqual([{
       type: 'outOfControl', id: 'A'
+    }, {
+      type: 'crash', id: 'A'
     }])
   })
 

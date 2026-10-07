@@ -165,6 +165,18 @@ function noEffect(success, net = 0, notes = []) {
   }
 }
 
+/**
+ * The damage of a collision, for the card's « Apply the damage » buttons: each vehicle resists its own DV with
+ * Structure + Armor, AP −6 (SR5 p. 204-205, chase-roll.js)
+ */
+function collisionEffects(r, target, initiator) {
+  return [{
+    type: "damage", id: r.targetId, dv: target
+  }, {
+    type: "damage", id: r.initiatorId, dv: initiator
+  }].filter(d => d.id && d.dv > 0)
+}
+
 export const CHASE_ACTIONS = {
 }
 
@@ -238,10 +250,11 @@ registerChaseAction("rammingBook", {
   resolve: r => {
     if (!winsOpposed(r)) return noEffect(false)
     const net = r.hits - r.opposingHits
+    const target = (Number(r.body) || 0) + net, initiator = Math.ceil((Number(r.body) || 0) / 2)
     return {
-      success: true, net, effects: [], notes: [{
+      success: true, net, effects: collisionEffects(r, target, initiator), notes: [{
         key: "SR5.CHASE_NoteRamming", data: {
-          target: (Number(r.body) || 0) + net, initiator: Math.ceil((Number(r.body) || 0) / 2)
+          target, initiator
         }
       }]
     }
@@ -362,11 +375,18 @@ registerChaseAction("likeAGlove", {
   rules: "r5", page: "R5 p. 178",
   threshold: ctx => (Number(ctx.newTerrainValue) || 0) + (ctx.endRun && ctx.endRunHarder ? 2 : 0),
   resolve: r => {
-    if (r.hits < r.threshold) return noEffect(false, 0, [{
-      key: "SR5.CHASE_NoteLikeAGloveFailed", data: {
-        dv: (Number(r.speed) || 0) + (Number(r.newTerrainValue) || 0)
+    if (r.hits < r.threshold) {
+      const dv = (Number(r.speed) || 0) + (Number(r.newTerrainValue) || 0)
+      return {
+        ...noEffect(false, 0, [{
+          key: "SR5.CHASE_NoteLikeAGloveFailed", data: {
+            dv
+          }
+        }]), effects: dv > 0 ? [{
+          type: "damage", id: r.initiatorId, dv
+        }] : []
       }
-    }])
+    }
     const opponents = r.opponents ?? []
     if (r.endRun) return {
       success: true, net: excessHits(r.hits, r.threshold), notes: [], effects: opponents.map(id => ({
@@ -425,11 +445,13 @@ registerChaseAction("collision", {
     const damage = collisionDamage({
       angle: r.angle, speed: r.speed, targetSpeed: r.targetSpeed, body: r.body, net, aircraft: r.aircraft
     })
-    return noEffect(true, net, [{
-      key: "SR5.CHASE_NoteCollision", data: {
-        target: damage.target, initiator: damage.initiator
-      }
-    }])
+    return {
+      ...noEffect(true, net, [{
+        key: "SR5.CHASE_NoteCollision", data: {
+          target: damage.target, initiator: damage.initiator
+        }
+      }]), effects: collisionEffects(r, damage.target, damage.initiator)
+    }
   },
 })
 
@@ -594,8 +616,11 @@ registerChaseAction("stuntBook", {
   threshold: ctx => (ctx.maneuver ?? 2) + ctx.terrain,
   resolve: r => {
     if (r.hits < r.threshold) return {
+      // The gamemaster may make it a crash (SR5 p. 202): the card's button, his to use or not
       success: false, net: 0, effects: [{
         type: "outOfControl", id: r.initiatorId
+      }, {
+        type: "crash", id: r.initiatorId
       }], notes: [{
         key: "SR5.CHASE_NoteStuntBookFailed", data: {
         }
@@ -897,6 +922,8 @@ export function resolveFollowUp(pending, {
           }
         }], effects: [{
           type: "outOfControl", id: pending.vehicle
+        }, {
+          type: "crash", id: pending.vehicle
         }]
       }
       // Like a Glove: missed, two ranges back and −2 dice to Catch-Up while the Terrain lasts (R5 p. 178)
@@ -931,6 +958,8 @@ export function resolveFollowUp(pending, {
           }
         }], effects: [{
           type: "outOfControl", id: pending.vehicle
+        }, {
+          type: "crash", id: pending.vehicle
         }]
       }
     default:

@@ -944,7 +944,7 @@ export function registerChaseHooks() {
 
 // What the chase actions read of a vehicle (chase-roll.js)
 export {
-  vehicleActor as chaseVehicleActor, attribute as chaseAttribute, speedOf as chaseSpeedOf
+  vehicleActor as chaseVehicleActor, attribute as chaseAttribute, speedOf as chaseSpeedOf, aboard as chaseAboard
 }
 
 export const _test = {

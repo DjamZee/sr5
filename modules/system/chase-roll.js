@@ -9,14 +9,14 @@
 
 import {
   CHASE_ACTIONS, NEAR_RANGES, actionRefusal, actionThreshold, actionDice, resolveAction, resolveFollowUp,
-  stuntAdvantagesFor, cardActions, crazyStuntEdge
+  stuntAdvantagesFor, cardActions, crazyStuntEdge, collisionDamage
 } from "./chase-actions.js"
 import {
   chaseRanges, normalizeRange, terrainList, normalizeTerrain, terrainValue, effectiveSpeed, isFastest, isAircraft,
   pairKey
 } from "./chase-rules.js"
 import {
-  SR5Chase, advancedDriving, chaseVehicleActor, chaseAttribute, chaseSpeedOf
+  SR5Chase, advancedDriving, chaseVehicleActor, chaseAttribute, chaseSpeedOf, chaseAboard
 } from "./chase.js"
 import {
   monitorFull, vehiclePilotId
@@ -35,8 +35,20 @@ export function chaseRollVehicleId(type) {
   return typeof type === "string" && type.startsWith(CHASE_ROLL_PREFIX) ? type.slice(CHASE_ROLL_PREFIX.length) : null
 }
 
+// The damage a card gives, each actor resisting its own (SR5 p. 202, 204-205); a crash, whose DV the gamemaster sets
+export const CHASE_DAMAGE_PREFIX = "chaseDamage_"
+export const CHASE_CRASH_PREFIX = "chaseCrash_"
+// Collision damage and crashes have AP −6 (SR5 p. 202, 204)
+const COLLISION_AP = -6
+// The resistance of such a damage (rollData-Resistance.js): a collision, not an attack
+export const CHASE_DAMAGE_TEST = "chaseDamage"
+
 export function isChaseButton(type) {
-  return type === CHASE_APPLY || !!chaseRollVehicleId(type)
+  return type === CHASE_APPLY || !!chaseRollVehicleId(type) || isChaseDamageButton(type)
+}
+
+export function isChaseDamageButton(type) {
+  return typeof type === "string" && (type.startsWith(CHASE_DAMAGE_PREFIX) || type.startsWith(CHASE_CRASH_PREFIX))
 }
 
 function actionLabel(key) {
@@ -301,8 +313,11 @@ export async function chaseCardButtons(cardData) {
 }
 
 /** Whether the current user may see a chase button of a card: its vehicle's owners, and the gamemaster */
-export function mayUseChaseButton(type) {
+export function mayUseChaseButton(type, data = null) {
   if (game.user?.isGM) return true
+  // A damage: the owners of the actor who resists it; a crash's DV: the gamemaster's
+  if (typeof type === "string" && type.startsWith(CHASE_CRASH_PREFIX)) return false
+  if (typeof type === "string" && type.startsWith(CHASE_DAMAGE_PREFIX)) return !!damageActor(data?.chase, type)?.isOwner
   const id = chaseRollVehicleId(type)
   if (!id) return false
   const vehicle = SR5Chase.state.vehicles.find(v => v.id === id)
@@ -315,6 +330,8 @@ export function mayUseChaseButton(type) {
 
 /** A click on a chase button of a card */
 export async function chaseButton(type, messageData, messageId) {
+  if (type.startsWith(CHASE_CRASH_PREFIX)) return setCrashDamage(type, messageId)
+  if (type.startsWith(CHASE_DAMAGE_PREFIX)) return resistChaseDamage(type, messageId)
   if (type === CHASE_APPLY) {
     if (!SR5Chase.canWrite) return ui.notifications?.warn(game.i18n.localize("SR5.CHASE_OnlyGM"))
     const {
@@ -506,7 +523,8 @@ async function postOutcome(source, chase, outcome, followUps) {
     name: subject, net: outcome.net
   }))
   for (const e of outcome.effects ?? []) {
-    if (e.type === "followUp") continue
+    // A damage or a crash is a button of the card, its line one of the outcome's notes
+    if (e.type === "followUp" || e.type === "damage" || e.type === "crash") continue
     const prefix = advancedDriving() ? "SR5.CHASE_TerrainR5_" : "SR5.CHASE_TerrainBook_"
     const key = e.type === "flag" ? `flag_${e.flag}` : e.type === "shift" ? (e.steps > 0 ? "shiftFarther" : "shiftCloser") : e.type
     lines.push(game.i18n.format(`SR5.CHASE_Effect_${key}`, {
@@ -527,21 +545,156 @@ async function postOutcome(source, chase, outcome, followUps) {
   }
   for (const text of lines) await SR5Chase.log(text)
   const actor = initiator ? chaseVehicleActor(initiator) : null
+  const damages = vehicleDamages(state, outcome.effects)
+  const crashes = (outcome.effects ?? []).filter(e => e.type === "crash" && state.vehicles.some(v => v.id === e.id)).map(e => e.id)
   return postChaseCard(actor, {
     mode: followUps.length ? "pending" : "done", key: source.key, chaseId: state.id, initiatorId: source.initiatorId,
-    pending,
+    pending, damages, crashes,
   }, {
     title: actionLabel(source.key), lines, followUps: followUps.map(f => ({
       id: f.vehicle, label: game.i18n.format("SR5.CHASE_FollowUpButton", {
         name: name(f.vehicle), test: game.i18n.localize(`SR5.CHASE_FollowUp_${f.test}`), threshold: f.threshold
       })
-    }))
+    })), extra: [...damageButtons(damages), ...crashes.map(id => ({
+      type: `${CHASE_CRASH_PREFIX}${id}`, gm: true, label: game.i18n.format("SR5.CHASE_CrashButton", {
+        name: name(id)
+      })
+    }))]
   })
+}
+
+/* -------------------------------------------- */
+/*  The damage of the cards                      */
+/* -------------------------------------------- */
+
+// The damage of an outcome, by the actor of each vehicle hit: its uuid, so that it stays resistible once the chase is over
+function vehicleDamages(state, effects) {
+  const damages = []
+  for (const e of effects ?? []) {
+    if (e.type !== "damage" || !(e.dv > 0)) continue
+    const vehicle = state.vehicles.find(v => v.id === e.id)
+    const actor = vehicle ? chaseVehicleActor(vehicle) : null
+    if (actor) damages.push({
+      uuid: actor.uuid, name: vehicle.name, dv: e.dv
+    })
+  }
+  return damages
+}
+
+function damageButtons(damages, crash = false) {
+  return damages.map((d, i) => ({
+    type: `${CHASE_DAMAGE_PREFIX}${i}`, label: game.i18n.format(crash ? "SR5.CHASE_ResistCrashButton" : "SR5.CHASE_DamageButton", {
+      name: d.name, dv: d.dv
+    })
+  }))
+}
+
+// The actor a damage button of a card is for, or null
+function damageActor(chase, type) {
+  const d = chase?.damages?.[Number(type.slice(CHASE_DAMAGE_PREFIX.length))]
+  return d?.uuid ? fromUuidSync(d.uuid) : null
+}
+
+/**
+ * A crash (SR5 p. 202): the gamemaster sets its DV — the vehicle's Speed and the Structure of what it hit, read on the
+ * collision table, which the system cannot know — then posts the card where the vehicle and everyone aboard resist it.
+ * The DV offered is a collision with an obstacle as solid as the vehicle, side on (R5 p. 179).
+ */
+async function setCrashDamage(type, messageId) {
+  if (!game.user?.isGM) return ui.notifications?.warn(game.i18n.localize("SR5.CHASE_OnlyGM"))
+  const {
+    SR5_MiscellaneousHelpers
+  } = await import("../rolls/roll-helpers/miscellaneous.js")
+  const card = SR5_MiscellaneousHelpers.cardOf(messageId)
+  const vehicleId = type.slice(CHASE_CRASH_PREFIX.length)
+  const vehicle = SR5Chase.state.vehicles.find(v => v.id === vehicleId)
+  if (!card?.byGM || !card.data.chase?.crashes?.includes(vehicleId) || !vehicle) return ui.notifications?.warn(game.i18n.localize("SR5.CHASE_Stale"))
+  const actor = chaseVehicleActor(vehicle)
+  if (!actor) return ui.notifications?.warn(game.i18n.localize("SR5.CHASE_Stale"))
+  const suggested = collisionDamage({
+    angle: "side", speed: chaseSpeedOf(vehicle), body: chaseAttribute(actor, "body"), aircraft: isAircraft(vehicle.kind)
+  }).target
+  const dv = await foundry.applications.api.DialogV2.prompt({
+    window: {
+      title: game.i18n.format("SR5.CHASE_CrashButton", {
+        name: vehicle.name
+      })
+    },
+    content: `<p>${esc(game.i18n.localize("SR5.CHASE_CrashHint"))}</p><label>${esc(game.i18n.localize("SR5.DamageValueShort"))} <input type="number" name="dv" min="1" value="${Math.max(1, suggested)}"></label>`,
+    ok: {
+      label: game.i18n.localize("SR5.CHASE_DamageSet"),
+      callback: (event, button) => Math.max(0, Math.floor(Number(button.form.elements.dv.value) || 0)),
+    },
+    rejectClose: false,
+  })
+  if (!(dv > 0)) return false
+  const {
+    SR5_RollMessage
+  } = await import("../rolls/roll-message.js")
+  await SR5_RollMessage.updateChatButton(messageId, type)
+  // The vehicle, its driver by hand and the passengers the gamemaster put aboard (chase.js)
+  const damages = chaseAboard(vehicle, actor).map(a => ({
+    uuid: a.uuid, name: a.name, dv, crash: true
+  }))
+  return postChaseCard(actor, {
+    mode: "damage", key: card.data.chase.key, chaseId: card.data.chase.chaseId, damages,
+  }, {
+    title: game.i18n.format("SR5.CHASE_CrashTitle", {
+      name: vehicle.name
+    }), lines: [game.i18n.format("SR5.CHASE_CrashLine", {
+      dv
+    })], extra: damageButtons(damages, true)
+  })
+}
+
+/**
+ * Resist a damage of a card the gamemaster posted, by the system's path (rollData-Resistance.js): a vehicle with
+ * Structure + Armor (SR5 p. 205), a character aboard a crashing vehicle with Body + Armor (SR5 p. 202), AP −6. Each
+ * button once: held for its first owner, then taken off once the resistance is rolled.
+ */
+async function resistChaseDamage(type, messageId) {
+  const {
+    SR5_MiscellaneousHelpers
+  } = await import("../rolls/roll-helpers/miscellaneous.js")
+  const card = SR5_MiscellaneousHelpers.cardOf(messageId)
+  const damage = card?.byGM ? card.data.chase?.damages?.[Number(type.slice(CHASE_DAMAGE_PREFIX.length))] : null
+  const actor = damage ? damageActor(card.data.chase, type) : null
+  if (!damage || !actor) return ui.notifications?.warn(game.i18n.localize("SR5.CHASE_Stale"))
+  if (!actor.isOwner) return ui.notifications?.warn(game.i18n.localize("SR5.CHASE_NotYourVehicle"))
+  const {
+    claimChatButton
+  } = await import("../rolls/roll-helpers/button-claim.js")
+  if (!(await claimChatButton(messageId, type))) return ui.notifications?.warn(game.i18n.localize("SR5.WARN_ButtonClaimed"))
+  const {
+    SR5_PrepareRollTest
+  } = await import("../rolls/roll-prepare.js")
+  const data = SR5_PrepareRollTest.getBaseRollData(null, actor)
+  data.test.type = "falseTest"
+  data.test.typeSub = CHASE_DAMAGE_TEST
+  data.test.title = game.i18n.localize(damage.crash ? "SR5.CrashDamageResistance" : "SR5.CHASE_DamageResistance")
+  // The gamemaster's card stands for the damage (attack-card.js, trustedResistanceCard)
+  data.owner.messageId = messageId
+  data.damage.base = data.damage.value = Number(damage.dv) || 0
+  data.damage.type = "physical"
+  data.damage.resistanceType = "physicalDamage"
+  data.combat.armorPenetration = COLLISION_AP
+  data.target.actorId = null
+  await actor.rollTest("resistanceCard", null, data)
+  // Rolled (its card answers this one): the button goes
+  const rolled = game.messages.contents.some(m => m.author?.id === game.user.id && m.flags?.sr5data?.previousMessage?.messageId === messageId &&
+    m.flags.sr5data.owner?.actorId === actor.id)
+  if (rolled) {
+    const {
+      SR5_RollMessage
+    } = await import("../rolls/roll-message.js")
+    await SR5_RollMessage.updateChatButtonHelper(messageId, type)
+  }
+  return true
 }
 
 /** A card without dice: the result of an action, or the Control a Vehicle action that rolls nothing */
 async function postChaseCard(actor, chase, {
-  title, lines = [], followUps = [], apply = false, actions = []
+  title, lines = [], followUps = [], apply = false, actions = [], extra = []
 }) {
   if (!actor) return false
   // The combat actions it spends, checked and counted as a roll does (roll-test.js)
@@ -572,6 +725,7 @@ async function postChaseCard(actor, chase, {
   })
   for (const f of followUps) rollData.chatCard.buttons[`${CHASE_ROLL_PREFIX}${f.id}`] = SR5_RollMessage.generateChatButton("chaseRoll",
     `${CHASE_ROLL_PREFIX}${f.id}`, esc(f.label))
+  for (const b of extra) rollData.chatCard.buttons[b.type] = SR5_RollMessage.generateChatButton("chaseRoll", b.type, esc(b.label), !!b.gm)
   if (apply) rollData.chatCard.buttons[CHASE_APPLY] = SR5_RollMessage.generateChatButton("nonOpposedTest", CHASE_APPLY,
     game.i18n.localize("SR5.CHASE_ApplyButton"), true)
   rollData.combat.actions = actions
