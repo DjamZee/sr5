@@ -14,6 +14,9 @@ import {
 import {
   SR5_RollTest
 } from "../rolls/roll-test.js"
+import {
+  refuseByRule, ruleLockActive
+} from "../system/rule-locks.js"
 
 //SR5 p. 139: a search is made looking attentively (+3), ticked by default; the GM unticks it, or ticks distracted (-2)
 const SITUATIONS = ["attentive", "distracted"]
@@ -81,8 +84,10 @@ export class SR5Conceal {
     const observerId = SR5Conceal.actorIdOf(observer)
     if (!target?.actor || SR5Pickpocket.actorIdOf(target) === observerId) return ui.notifications.warn(game.i18n.localize("SR5.WARN_ConcealSearchTarget"))
     const targetId = SR5Pickpocket.actorIdOf(target)
-    //SR5 p. 422: a pat-down is made by hand
-    if (mode === "patDown" && !SR5Pickpocket.actorsInReach(observerId, targetId)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_ConcealSearchReach"))
+    //SR5 p. 422: a pat-down is made by hand (the "ranges" rule lock)
+    if (mode === "patDown" && !SR5Pickpocket.actorsInReach(observerId, targetId) && refuseByRule("ranges", "SR5.WARN_ConcealSearchReach", null, {
+      actor: observer
+    })) return
 
     const choice = await SR5Conceal.askSearch(observer, mode, target.name)
     if (!choice) return
@@ -170,11 +175,12 @@ export class SR5Conceal {
     const observer = SR5_EntityHelpers.getRealActorFromID(request.observerId)
     const target = SR5_EntityHelpers.getRealActorFromID(request.targetId)
     if (!observer || !target) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoActor"))
-    //The request is written by someone who plays the searcher; a pat-down is still made by hand
+    //The request is written by someone who plays the searcher; a pat-down is still made by hand, unless the
+    //"ranges" rule lock is lifted (the searcher's browser has already whispered it)
     const refused = (message && !(message.author && observer.testUserPermission(message.author, "OWNER"))) ||
       !["spot", "patDown"].includes(request.mode) || !["perception", "palming"].includes(request.skill) ||
       !(request.attribute in SEARCH_ATTRIBUTES) || (request.mode !== "patDown" && request.attribute !== "intuition") ||
-      (request.mode === "patDown" && !SR5Pickpocket.actorsInReach(request.observerId, request.targetId))
+      (request.mode === "patDown" && ruleLockActive("ranges") && !SR5Pickpocket.actorsInReach(request.observerId, request.targetId))
     if (refused) {
       SR5_SystemHelpers.srLog(1, "Concealed search refused", request)
       return ui.notifications.warn(game.i18n.localize("SR5.WARN_ConcealSearchRefused"))
