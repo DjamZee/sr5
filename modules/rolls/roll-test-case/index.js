@@ -100,3 +100,6 @@ export {
 export {
   default as vehicleTestInfo
 } from "./test-VehicleTest.js"
+export {
+  default as vehicleRepairInfo
+} from "./test-VehicleRepair.js"

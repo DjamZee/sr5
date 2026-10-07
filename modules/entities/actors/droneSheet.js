@@ -13,6 +13,9 @@ import {
 import {
   SR5Combat
 } from "../../system/srcombat.js"
+import {
+  openVehicleRepair
+} from "../../system/vehicle-repair-apply.js"
 
 /**
  * An Actor sheet for drone type actors in the Shadowrun 5 system.
@@ -63,6 +66,11 @@ export class SR5DroneSheet extends ActorSheetSR5 {
   _onRender(context, options) {
     super._onRender(context, options)
     this.element.querySelectorAll(".drone-wireless-toggle").forEach(el => el.addEventListener("click", this._onToggleDroneWireless.bind(this)))
+    //Rigger 5.0 p. 33-34: repairing the vehicle (system/vehicle-repair-apply.js)
+    this.element.querySelectorAll(".drone-repair").forEach(el => el.addEventListener("click", ev => {
+      ev.preventDefault()
+      openVehicleRepair(this.actor)
+    }))
   }
 
   //The deployed drone holds its vehicle's wireless switch (N83): switching it costs the drone an action (N91).

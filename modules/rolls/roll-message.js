@@ -61,6 +61,9 @@ import {
   stabilizationLabelKey
 } from "../system/bb-healing-rules.js"
 import {
+  applyVehicleRepair
+} from "../system/vehicle-repair-apply.js"
+import {
   SR5 
 } from "../config.js"
 import {
@@ -882,6 +885,11 @@ export class SR5_RollMessage {
         if (await SR5_ActorHelper.heal(messageData.owner.actorId, messageData) === false) return
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      //Rigger 5.0 p. 34: the repaired boxes leave the vehicle's monitor
+      case "repairVehicle":
+        if (await applyVehicleRepair(messageData.various?.vehicleRepair) === false) return
+        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
       case "decreaseReach":
       case "decreaseAccuracy":
         //Only on the weapon of the actor the resistance was rolled for, from a card a GM or an owner wrote (matrix-card.js)
@@ -1078,6 +1086,11 @@ export class SR5_RollMessage {
       case "heal":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.roll.netHits}${game.i18n.localize(SR5.damageTypesShort[messageData.test.typeSub])} ${game.i18n.localize("SR5.Healed")}`)
         messageData.extendedTest = false
+        break
+      case "repairVehicle":
+        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.format("SR5.VehicleRepairDone", {
+          boxes: messageData.various?.vehicleRepair?.repaired ?? 0
+        }))
         break
       case "firstAid":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.roll.netHits}${game.i18n.localize(SR5.damageTypesShort[firstOption])} ${game.i18n.localize("SR5.Healed")}`)

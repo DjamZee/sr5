@@ -3966,6 +3966,8 @@ SR5.dicePoolModTypes = {
   workingCondition          : "SR5.WorkingCondition",
   toolsAndParts             : "SR5.ToolsAndParts",
   plansMaterial             : "SR5.PlansMaterial",
+  missingParts              : "SR5.VehicleRepairMissingPartsShort",
+  nanomaintenance           : "SR5.Nanomaintenance",
   workingFromMemory         : "SR5.WorkingFromMemory",
   calledShot                : "SR5.CS_CalledShot",
   defenseInMelee 			  : "SR5.DefenseModInMeleeTargetedByRange",

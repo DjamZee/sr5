@@ -821,6 +821,9 @@ export class SR5_RollTest {
       case "vehicleTest":
         await SR5_AddRollInfo.vehicleTestInfo(cardData, actorId)
         break
+      case "vehicleRepair":
+        await SR5_AddRollInfo.vehicleRepairInfo(cardData)
+        break
       case "mentorDrawback":
         await SR5_AddRollInfo.mentorDrawbackInfo(cardData)
         break

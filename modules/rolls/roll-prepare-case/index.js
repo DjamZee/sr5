@@ -191,6 +191,9 @@ export {
   default as vehicleTest
 } from "./rollData-VehicleTest.js"
 export {
+  default as vehicleRepair
+} from "./rollData-VehicleRepair.js"
+export {
   default as weapon
 } from "./rollData-Weapon.js"
 export {

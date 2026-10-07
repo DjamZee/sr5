@@ -325,6 +325,10 @@ export class SR5_PrepareRollTest {
       case "vehicleTest":
         rollData = await SR5_GetRollData.vehicleTest(rollData, actor, chatData)
         break
+      //Rigger 5.0 p. 33-34: the options come from the repair window of the drone sheet, in place of a roll key
+      case "vehicleRepair":
+        rollData = await SR5_GetRollData.vehicleRepair(rollData, actor, rollKey)
+        break
       default:
         SR5_SystemHelpers.srLog(1, `Unknown ${rollType} roll type in 'actorRoll()'`)
     }
@@ -574,7 +578,7 @@ export class SR5_PrepareRollTest {
         characterSpecialDefensesDodge: actor.system.lists.characterSpecialDefensesDodge,
         characterSpecialDefenses: actor.system.lists.characterSpecialDefenses,
         chokeSettings: actor.system.lists.chokeSettings,
-        workingCondition: actor.system.lists.chokeSettings,
+        workingCondition: actor.system.lists.workingCondition,
         toolsAndParts: actor.system.lists.toolsAndParts,
         plansMaterial: actor.system.lists.plansMaterial,
         weaponRanges: actor.system.lists.weaponRanges,
