@@ -9,7 +9,7 @@
 
 import {
   CHASE_ACTIONS, NEAR_RANGES, actionRefusal, actionThreshold, actionDice, resolveAction, resolveFollowUp,
-  stuntAdvantagesFor
+  stuntAdvantagesFor, cardActions
 } from "./chase-actions.js"
 import {
   chaseRanges, normalizeRange, terrainList, normalizeTerrain, terrainValue, effectiveSpeed, isFastest, isAircraft,
@@ -200,7 +200,7 @@ export async function launchChaseAction(vehicleId, key, targetId = "", stunt = 0
     },
   }
   if (action.roll === false) return postChaseCard(actor, chase, {
-    title: actionLabel(key), apply: true, lines: action.edge ? [edgeLine(pilot)] : []
+    title: actionLabel(key), apply: true, lines: action.edge ? [edgeLine(pilot)] : [], actions: cardActions(key)
   })
   return actor.rollTest("vehicleTest", null, {
     chaseRoll: chase
@@ -531,9 +531,15 @@ async function postOutcome(source, chase, outcome, followUps) {
 
 /** A card without dice: the result of an action, or the Control a Vehicle action that rolls nothing */
 async function postChaseCard(actor, chase, {
-  title, lines = [], followUps = [], apply = false
+  title, lines = [], followUps = [], apply = false, actions = []
 }) {
   if (!actor) return false
+  // The combat actions it spends, checked and counted as a roll does (roll-test.js)
+  const {
+    SR5Combat
+  } = actions.length ? await import("./srcombat.js") : {
+  }
+  if (actions.length && !SR5Combat.hasActionsLeft(actor, actions)) return false
   const {
     SR5_PrepareRollTest
   } = await import("../rolls/roll-prepare.js")
@@ -558,7 +564,10 @@ async function postChaseCard(actor, chase, {
     `${CHASE_ROLL_PREFIX}${f.id}`, esc(f.label))
   if (apply) rollData.chatCard.buttons[CHASE_APPLY] = SR5_RollMessage.generateChatButton("nonOpposedTest", CHASE_APPLY,
     game.i18n.localize("SR5.CHASE_ApplyButton"), true)
-  return SR5_RollTest.renderRollCard(rollData)
+  rollData.combat.actions = actions
+  const card = await SR5_RollTest.renderRollCard(rollData)
+  if (game.combat && actions.length) await SR5Combat.changeActionInCombat(rollData.owner.actorId, actions)
+  return card
 }
 
 /* -------------------------------------------- */

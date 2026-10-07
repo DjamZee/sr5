@@ -179,7 +179,7 @@ export function registerChaseAction(key, action) {
 
 // Control a Vehicle (SR5 p. 203, R5 p. 176-177): a Complex Action, no test
 registerChaseAction("control", {
-  rules: "both", page: "SR5 p. 203", roll: false, threshold: () => 0,
+  rules: "both", page: "SR5 p. 203", roll: false, complexAction: true, threshold: () => 0,
   resolve: r => ({
     success: true, net: 0, effects: [{
       type: "control", id: r.initiatorId
@@ -755,6 +755,17 @@ registerChaseAction("leafInWind", {
     }])
   },
 })
+
+/**
+ * The combat actions an action that rolls nothing spends, as the vehicle test counts its own (rollData-VehicleTest.js):
+ * Control a Vehicle is a Complex Action (SR5 p. 203); Zen Driving takes its place without one (R5 p. 176), and Hang On
+ * Baby is no action at all (R5 p. 178). An action that rolls spends its actions through its roll.
+ */
+export function cardActions(key) {
+  return CHASE_ACTIONS[key]?.complexAction ? [{
+    type: "complex", value: 1, source: "vehicleTest"
+  }] : []
+}
 
 /** The actions of a rule set, in the order of the book */
 export function actionsFor(advanced) {

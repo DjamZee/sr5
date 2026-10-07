@@ -3,7 +3,8 @@ import {
 } from 'vitest'
 import {
   CHASE_ACTIONS, actionsFor, actionRefusal, actionThreshold, actionDice, resolveAction, resolveFollowUp, opposedNet,
-  optimalSpeedModifier, catchUpSteps, behindRange, sixPackBonus, collisionMultiplier, collisionDamage, winsOpposed
+  optimalSpeedModifier, catchUpSteps, behindRange, sixPackBonus, collisionMultiplier, collisionDamage, winsOpposed,
+  cardActions
 } from '../modules/system/chase-actions.js'
 
 // Vehicle chases (R12, part 2): the chase actions of the core book (SR5 p. 204-205) and of Rigger 5.0 (p. 176-181)
@@ -374,5 +375,21 @@ describe('the other actions', () => {
     expect(resolveAction('control', ids).effects).toEqual([{
       type: 'control', id: 'A'
     }])
+  })
+})
+
+// Solène's review 33: Control a Vehicle from the window posted its card without counting its Complex Action, which the
+// vehicle test of every other action counts (rollData-VehicleTest.js)
+describe('the combat actions of an action that rolls nothing', () => {
+  it('Control a Vehicle spends a Complex Action, as the vehicle test does (SR5 p. 203)', () => {
+    expect(cardActions('control')).toEqual([{
+      type: 'complex', value: 1, source: 'vehicleTest'
+    }])
+  })
+
+  it('Zen Driving takes its place without one (R5 p. 176), Hang On Baby is none', () => {
+    expect(cardActions('zenDriving')).toEqual([])
+    expect(cardActions('holdOn')).toEqual([])
+    expect(cardActions('nothing')).toEqual([])
   })
 })
