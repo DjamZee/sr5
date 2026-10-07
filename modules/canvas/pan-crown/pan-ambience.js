@@ -138,7 +138,7 @@ export function registerPanAmbienceSettings(){
     // An old browser: read again at each drawing
   }
   // In the settings, the levels above the gamemaster's ceiling are greyed out (the chosen one stays readable)
-  Hooks.on("renderSettingsConfig", (app, html) => greyAboveCap(html instanceof HTMLElement ? html : html?.[0]))
+  globalThis.Hooks?.on("renderSettingsConfig", (app, html) => greyAboveCap(html instanceof HTMLElement ? html : html?.[0]))
 }
 
 function greyAboveCap(root){
