@@ -26,7 +26,7 @@
 	  	{{#each actor.vehiclesMod}}
 		<li class="item grid" data-item-id="{{_id}}" draggable="true">
 			<div class="col-6 deplie" data-helpTitle="{{localize 'SR5.HELP_MoreInfos'}}" data-helpMessage="{{localize 'SR5.HELP_MoreInfosMsg'}}">
-				{{name}}{{#if system.isWeaponMounted}}{{system.surname}}{{/if}}
+				{{name}}{{#if system.isWeaponMounted}}{{system.surname}}{{/if}}{{#if system.isFactory}} <span class="SR-LightGreyColor">({{localize 'SR5.VehicleModFactory'}})</span>{{/if}}
 			</div>
 			<div class="col-1 SR-TextCenter changeValueByClick" data-binding="system.itemRating"
 			data-helpTitle="{{localize 'SR5.HELP_Rating' key=name}}"

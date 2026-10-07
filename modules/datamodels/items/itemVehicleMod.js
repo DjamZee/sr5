@@ -54,6 +54,10 @@ export class sr5ItemVehicleModDataModel extends foundry.abstract.TypeDataModel {
       surname: new fields.StringField({
         initial: ''
       }),
+      //Fitted at the factory: takes up its slots, its effect already in the profile, no price (Rigger 5.0 p. 156)
+      isFactory: new fields.BooleanField({
+        initial: false
+      }),
       isWeaponMounted: new fields.BooleanField({
         initial: false
       }),

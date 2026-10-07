@@ -348,6 +348,9 @@ export class SR5_UtilityItem extends Actor {
       default:
     }
     if (item.price.multiplier) SR5_EntityHelpers.updateModifier(item.price, game.i18n.localize(SR5.valueMultipliersAll[item.price.multiplier]), "multiplier", multiplier, true, false)
+    //A factory mod is paid with the vehicle (Rigger 5.0 p. 156)
+    //(a product of 0 is read as 1, hence the sum brought back to 0)
+    if (item.isFactory === true) SR5_EntityHelpers.updateModifier(item.price, game.i18n.localize("SR5.VehicleModFactory"), "factory", -((item.price.base || 0) + SR5_EntityHelpers.modifiersSum(item.price.modifiers)), false, false)
     SR5_EntityHelpers.updateValue(item.price, 0)
   }
 

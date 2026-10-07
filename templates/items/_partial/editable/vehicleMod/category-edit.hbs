@@ -7,6 +7,10 @@
         </select>
     </div>
 </li>
+<li class="grid" data-helpTitle="{{localize 'SR5.VehicleModFactory'}}" data-helpMessage="{{localize 'SR5.HELP_VehicleModFactoryMsg'}}">
+    <div class="col-4">{{localize 'SR5.VehicleModFactory'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="checkbox" name="system.isFactory" data-dtype="Boolean" {{checked system.isFactory}} /></div>
+</li>
 {{#if (eq system.type "weapons")}}
 <li class="grid">
     <div class="col-4">{{localize 'SR5.VEHICLE_WeaponMount_F'}}{{localize 'SR5.Colons'}}</div>

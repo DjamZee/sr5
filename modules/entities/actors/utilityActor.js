@@ -104,6 +104,9 @@ import {
 import {
   isLimbAttributeTarget, hostLimb
 } from "../../system/cyberlimb.js"
+import {
+  modTakesSlots
+} from "../../system/vehicle-factory.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -2861,7 +2864,8 @@ export class SR5_CharacterUtility extends Actor {
   static updateModificationsSlots(actor, itemData) {
     let actorData = actor.system
 
-    if (itemData.isActive) {
+    //A factory mod takes up its slots even when its effect is off (Rigger 5.0 p. 154, 156)
+    if (modTakesSlots(itemData, itemData.isFactory)) {
       switch (itemData.type) {
         case "powerTrain":
           SR5_EntityHelpers.updateModifier(actorData.modificationSlots.powerTrain, itemData.name, itemData.type, -itemData.slots.value)

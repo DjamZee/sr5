@@ -50,6 +50,9 @@ import {
 import {
   migrateTemplateNoise
 } from "../../datamodels/common/templateNoiseMigration.js"
+import {
+  isFactoryMod
+} from "../../system/vehicle-factory.js"
 
 /**
  * Override and extend the basic :class:`Item` implementation
@@ -107,10 +110,14 @@ export class SR5Item extends Item {
     if (data.flags?.sr5?.[CONCEALED_FLAG] !== undefined) this.updateSource({
       [`flags.sr5.-=${CONCEALED_FLAG}`]: null
     })
+    //Rigger 5.0 p. 156: the Mégapack's factory flag becomes the box of the sheet, which the player can untick
+    if (this.type === "itemVehicleMod" && data.flags?.sr5?.isFactory === true) this.updateSource({
+      "system.isFactory": true, "flags.sr5.-=isFactory": null
+    })
     const defaultImg = `systems/sr5/assets/img/items/${data.type}.svg`
     if (!data.img || data.img === "icons/svg/item-bag.svg") {
       this.updateSource({
-        img: defaultImg 
+        img: defaultImg
       })
     }
   }
@@ -125,6 +132,8 @@ export class SR5Item extends Item {
     }
     //SR5 p. 422: a hidden weapon made ready is taken out, its hidden state goes (arbitrage de DjamZ, 2026-10-07)
     if (updateTakesOut(this, changes)) foundry.utils.setProperty(changes, `flags.sr5.-=${CONCEALED_FLAG}`, null)
+    //The factory box unticked: the Mégapack's flag goes with it, or it would tick it again (Rigger 5.0 p. 156)
+    if (foundry.utils.getProperty(changes, "system.isFactory") === false && this.flags?.sr5?.isFactory) foundry.utils.setProperty(changes, "flags.sr5.-=isFactory", null)
     return super._preUpdate(changes, options, user)
   }
 
@@ -211,6 +220,8 @@ export class SR5Item extends Item {
         }
         break
       case "itemVehicleMod":
+        //The Mégapack marks its factory copies by a flag: the box of the sheet reads it too (Rigger 5.0 p. 156)
+        if (isFactoryMod(item)) itemData.isFactory = true
         if (Object.keys(itemData.itemEffects).length) SR5_UtilityItem.applyItemEffects(item)
         if (itemData.isWeaponMounted) SR5_UtilityItem._handleWeaponMounted(item)
         SR5_UtilityItem._handleSlotsMultiplier(itemData)
