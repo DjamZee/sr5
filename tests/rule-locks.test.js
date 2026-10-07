@@ -54,9 +54,9 @@ beforeEach(() => {
 })
 
 describe('presets and families', () => {
-  it('has the seven families of the survey, and the two boxes of "objects"', () => {
+  it('has the seven families of the survey, the box of "actions" and the two boxes of "objects"', () => {
     expect(RULE_LOCK_FAMILIES).toEqual(['actions', 'ranges', 'ammo', 'magic', 'matrix', 'body', 'objects'])
-    expect(RULE_LOCK_KEYS).toEqual([...RULE_LOCK_FAMILIES, 'garage', 'lockpick'])
+    expect(RULE_LOCK_KEYS).toEqual([...RULE_LOCK_FAMILIES, 'missingActions', 'garage', 'lockpick'])
   })
 
   it('"book" checks every box, "light" unchecks every box, anything else is "custom"', () => {
@@ -104,19 +104,19 @@ describe('presets and families', () => {
 })
 
 describe('migration of the three former settings', () => {
-  it('copies them as they stand: a default world keeps its actions unlocked, hence "custom"', async () => {
+  it('copies them as they stand: a default world keeps its missing actions unlocked, hence "custom"', async () => {
     await runRuleLocksMigration()
     expect(store.sr5RuleLocks).toEqual({
-      ...presetLocks('book'), actions: false
+      ...presetLocks('book'), missingActions: false
     })
     expect(store.sr5RuleLocksPreset).toBe('custom')
-    expect(store.sr5RuleLocksMigration).toBe(1)
+    expect(store.sr5RuleLocksMigration).toBe(2)
   })
 
-  it('a world that had sr5BlockMissingActions checked finds the "actions" family checked', async () => {
+  it('a world that had sr5BlockMissingActions checked finds the "missing actions" box checked', async () => {
     store.sr5BlockMissingActions = true
     await runRuleLocksMigration()
-    expect(store.sr5RuleLocks.actions).toBe(true)
+    expect(store.sr5RuleLocks.missingActions).toBe(true)
     expect(store.sr5RuleLocksPreset).toBe('book')
   })
 
@@ -139,9 +139,9 @@ describe('migration of the three former settings', () => {
 
   it('before the migration has run, the former settings still speak', () => {
     store.sr5BlockMissingActions = false
-    expect(ruleLockActive('actions')).toBe(false)
+    expect(ruleLockActive('actions', 'missingActions')).toBe(false)
     store.sr5BlockMissingActions = true
-    expect(ruleLockActive('actions')).toBe(true)
+    expect(ruleLockActive('actions', 'missingActions')).toBe(true)
     store.sr5LockpickRequiresKit = false
     expect(ruleLockActive('objects', 'lockpick')).toBe(false)
   })
@@ -154,7 +154,7 @@ describe('migration of the three former settings', () => {
     expect(store.sr5BlockMissingActions).toBe(true)
     expect(store.sr5StorageCheckGarageLifestyle).toBe(false)
     expect(store.sr5LockpickRequiresKit).toBe(false)
-    expect(store.sr5RuleLocksMigration).toBe(1)
+    expect(store.sr5RuleLocksMigration).toBe(2)
     await setRuleLocks(presetLocks('light'))
     expect(store.sr5RuleLocksPreset).toBe('light')
     expect(legacyFromLocks(presetLocks('light'))).toEqual({
@@ -162,9 +162,55 @@ describe('migration of the three former settings', () => {
     })
   })
 
+  it('a default world keeps the "actions" family checked: the interruption, the active defense and the Edge still refuse', async () => {
+    expect(ruleLockActive('actions')).toBe(true)
+    await runRuleLocksMigration()
+    expect(store.sr5RuleLocks.actions).toBe(true)
+    expect(ruleLockActive('actions')).toBe(true)
+    expect(ruleLockActive('actions', 'missingActions')).toBe(false)
+  })
+
+  it('a new world starts with the book, every box checked, the former setting written in step', async () => {
+    await runRuleLocksMigration({
+      newWorld: true
+    })
+    expect(store.sr5RuleLocks).toEqual(presetLocks('book'))
+    expect(store.sr5RuleLocksPreset).toBe('book')
+    expect(store.sr5BlockMissingActions).toBe(true)
+    expect(store.sr5RuleLocksMigration).toBe(2)
+  })
+
+  it('migration 2 moves the "actions" box of a world migrated once to "missing actions", and checks the family', async () => {
+    store.sr5RuleLocksMigration = 1
+    const {
+      missingActions: _, ...v1
+    } = {
+      ...presetLocks('book'), actions: false, magic: false
+    }
+    store.sr5RuleLocks = v1
+    expect(ruleLockActive('actions')).toBe(true)
+    expect(ruleLockActive('actions', 'missingActions')).toBe(false)
+    await runRuleLocksMigration()
+    expect(store.sr5RuleLocks).toEqual({
+      ...presetLocks('book'), missingActions: false, magic: false
+    })
+    expect(store.sr5RuleLocksMigration).toBe(2)
+  })
+
+  it('migration 2 leaves a world chosen "light" light', async () => {
+    store.sr5RuleLocksMigration = 1
+    const {
+      missingActions: _, ...v1
+    } = presetLocks('light')
+    store.sr5RuleLocks = v1
+    await runRuleLocksMigration()
+    expect(store.sr5RuleLocks).toEqual(presetLocks('light'))
+    expect(store.sr5RuleLocksPreset).toBe('light')
+  })
+
   it('locksFromLegacy reads only booleans set to true as checked', () => {
     expect(locksFromLegacy(() => undefined)).toEqual({
-      ...presetLocks('book'), actions: false, garage: false, lockpick: false
+      ...presetLocks('book'), missingActions: false, garage: false, lockpick: false
     })
   })
 })

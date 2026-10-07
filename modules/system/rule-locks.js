@@ -10,7 +10,7 @@
  * Settings (world, hidden, edited from the "Rule locks" tab of the settings window):
  * - sr5RuleLocks: one box per family, and the two boxes of the "objects" family that were settings of their own;
  * - sr5RuleLocksPreset: "book", "light" or "custom", what the boxes amount to;
- * - sr5RuleLocksMigration: 1 once the three former settings were copied in (runRuleLocksMigration).
+ * - sr5RuleLocksMigration: 1 once the three former settings were copied in, 2 once sr5BlockMissingActions moved to its box (runRuleLocksMigration).
  * The default is the book: every box checked.
  */
 
@@ -18,8 +18,10 @@
 export const RULE_LOCK_FAMILIES = ["actions", "ranges", "ammo", "magic", "matrix", "body", "objects"]
 
 // Boxes inside a family → their family. Each was a world setting of its own before B13
+// "missingActions" holds sr5BlockMissingActions (unchecked by default before B13), so that its family stays the
+// book's: the interruption, the active defense and the Edge of an extended test refused in every world (lot 1)
 export const RULE_LOCK_CASES = {
-  garage: "objects", lockpick: "objects"
+  missingActions: "actions", garage: "objects", lockpick: "objects"
 }
 
 // Every box of sr5RuleLocks, in the order the menu shows them
@@ -29,12 +31,13 @@ export const RULE_LOCK_PRESETS = ["book", "light", "custom"]
 
 // The former world settings, by the box that now holds their value
 export const LEGACY_RULE_LOCKS = {
-  actions: "sr5BlockMissingActions",
+  missingActions: "sr5BlockMissingActions",
   garage: "sr5StorageCheckGarageLifestyle",
   lockpick: "sr5LockpickRequiresKit",
 }
 
-export const RULE_LOCKS_MIGRATION_VERSION = 1
+// 1: the three former settings copied in; 2: sr5BlockMissingActions moved from the "actions" family to its box
+export const RULE_LOCKS_MIGRATION_VERSION = 2
 
 // Every box checked (the book) or none (light)
 export function presetLocks(preset) {
@@ -87,8 +90,25 @@ function readSetting(key) {
  */
 export function currentRuleLocks() {
   if (!globalThis.game?.settings) return presetLocks("book")
-  if ((readSetting("sr5RuleLocksMigration") ?? 0) < RULE_LOCKS_MIGRATION_VERSION) return locksFromLegacy(readSetting)
+  const done = readSetting("sr5RuleLocksMigration") ?? 0
+  if (done < 1) return locksFromLegacy(readSetting)
+  if (done < 2) return locksFromV1(readSetting("sr5RuleLocks"))
   return normalizeLocks(readSetting("sr5RuleLocks"))
+}
+
+/**
+ * The boxes saved by migration 1, where the "actions" family held sr5BlockMissingActions: that value goes to its
+ * box, and the family is checked again (the interruption, the active defense and the Edge refused in every world),
+ * unless the gamemaster had chosen "light", which lifted everything.
+ */
+export function locksFromV1(raw) {
+  const locks = {
+    ...normalizeLocks(raw), missingActions: raw?.actions !== false
+  }
+  if (presetOf(locks) === "light") return locks
+  return {
+    ...locks, actions: true
+  }
 }
 
 /**
@@ -201,12 +221,18 @@ export async function setRuleLocks(raw) {
 
 /**
  * Once per world, by the gamemaster at ready: the three former settings copied into the boxes, as they stand.
- * A world that had sr5BlockMissingActions unchecked (its default) finds the "actions" family unchecked, hence
- * the "custom" preset: nothing changes in its games.
+ * A world that had sr5BlockMissingActions unchecked (its default) finds the "missing actions" box unchecked, hence
+ * the "custom" preset: nothing changes in its games. A world migrated once gets its boxes moved (locksFromV1).
+ * A new world (newWorld: no system migration had ever run in it) starts with the book, every box checked.
  */
-export async function runRuleLocksMigration() {
-  if (game.settings.get("sr5", "sr5RuleLocksMigration") >= RULE_LOCKS_MIGRATION_VERSION) return
-  const locks = locksFromLegacy(key => game.settings.get("sr5", key))
+export async function runRuleLocksMigration({
+  newWorld = false
+} = {
+}) {
+  const done = game.settings.get("sr5", "sr5RuleLocksMigration") ?? 0
+  if (done >= RULE_LOCKS_MIGRATION_VERSION) return
+  if (newWorld && done < 1) return setRuleLocks(presetLocks("book"))
+  const locks = done < 1 ? locksFromLegacy(key => game.settings.get("sr5", key)) : locksFromV1(game.settings.get("sr5", "sr5RuleLocks"))
   await game.settings.set("sr5", "sr5RuleLocks", locks)
   await game.settings.set("sr5", "sr5RuleLocksPreset", presetOf(locks))
   await game.settings.set("sr5", "sr5RuleLocksMigration", RULE_LOCKS_MIGRATION_VERSION)

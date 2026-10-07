@@ -157,8 +157,11 @@ export function sr5HookReady() {
   // The v12 biography keys the database still holds: unset once per world
   runLegacyBiographyMigration().catch(err => console.error("SR5 | legacy biography migration failed", err))
 
-  // The three settings that were rule locks, copied into the boxes of the rule locks menu once per world (B13)
-  runRuleLocksMigration().catch(err => console.error("SR5 | rule locks migration failed", err))
+  // The three settings that were rule locks, copied into the boxes of the rule locks menu once per world (B13);
+  // a world no migration ever ran in is new, and starts with the book
+  runRuleLocksMigration({
+    newWorld: !currentVersion
+  }).catch(err => console.error("SR5 | rule locks migration failed", err))
 
   // The spent cards whose card left the chat log: the registry is written whole at every card spent
   import("../rolls/roll-helpers/miscellaneous.js")
