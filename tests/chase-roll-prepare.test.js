@@ -2,7 +2,7 @@ import {
   describe, it, expect, beforeAll
 } from 'vitest'
 import {
-  prepareChaseRoll, vehicleTestCostsAction
+  prepareChaseRoll, vehicleTestCostsAction, collisionControlThreshold
 } from '../modules/system/chase-roll-prepare.js'
 
 // Vehicle chases (R12, part 2): the vehicle test of a chase action takes the threshold, the limit and the dice the
@@ -114,7 +114,7 @@ describe('vehicleTestCostsAction', () => {
     expect(vehicleTestCostsAction(undefined)).toBe(true)
     expect(vehicleTestCostsAction({
       test: {
-        type: 'ramming'
+        type: 'attack'
       }
     })).toBe(true)
     expect(vehicleTestCostsAction({
@@ -140,5 +140,44 @@ describe('vehicleTestCostsAction', () => {
     ]) expect(vehicleTestCostsAction({
       chaseRoll
     })).toBe(false)
+  })
+})
+
+// SR5 p. 204: once the collision happens, each pilot tests to keep control, 2 for the one who forced it, 3 for the one
+// who suffered it. Free outside a chase too (arbitrage de DjamZ, 08/10: a test another's action imposes, or one that
+// follows an action already paid)
+describe('the control test after a collision outside a chase', () => {
+  const rammed = {
+    test: {
+      type: 'rammingDefense'
+    }
+  }
+  const rammer = {
+    test: {
+      type: 'falseTest', typeSub: 'accident'
+    }
+  }
+  it('takes threshold 3 for the vehicle hit, 2 for the one that rammed', () => {
+    expect(collisionControlThreshold(rammed)).toBe(3)
+    expect(collisionControlThreshold(rammer)).toBe(2)
+    expect(collisionControlThreshold({
+      test: {
+        type: 'ramming'
+      }
+    })).toBe(2)
+  })
+  it('costs no action, for either pilot', () => {
+    expect(vehicleTestCostsAction(rammed)).toBe(false)
+    expect(vehicleTestCostsAction(rammer)).toBe(false)
+  })
+  it('leaves any other card alone', () => {
+    const chaseDamage = {
+      test: {
+        type: 'falseTest', typeSub: 'chaseDamage'
+      }
+    }
+    expect(collisionControlThreshold(undefined)).toBe(null)
+    expect(collisionControlThreshold(chaseDamage)).toBe(null)
+    expect(vehicleTestCostsAction(chaseDamage)).toBe(true)
   })
 })

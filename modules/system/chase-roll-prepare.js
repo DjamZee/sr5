@@ -44,7 +44,21 @@ export function chaseTestKind(chase) {
  */
 export function vehicleTestCostsAction(chatData) {
   const mode = chatData?.chaseRoll?.mode
-  return mode !== "oppose" && mode !== "followUp"
+  if (mode === "oppose" || mode === "followUp") return false
+  return collisionControlThreshold(chatData) === null
+}
+
+/**
+ * The threshold of the test to keep control once a collision happens outside a chase (SR5 p. 204): 2 for the pilot
+ * who forced it (button of the crash card, falseTest "accident"), 3 for the one who suffered it (ramming defense card).
+ * Such a test is free: it follows the action of another, or the ramming already paid (arbitrage de DjamZ, 08/10).
+ * @return {Number|null} null when the vehicle test does not follow a collision
+ */
+export function collisionControlThreshold(chatData) {
+  const test = chatData?.test
+  if (test?.type === "rammingDefense") return 3
+  if (test?.type === "ramming" || (test?.type === "falseTest" && test.typeSub === "accident")) return 2
+  return null
 }
 
 /**

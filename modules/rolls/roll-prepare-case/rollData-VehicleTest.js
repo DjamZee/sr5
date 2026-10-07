@@ -11,7 +11,7 @@ import {
   applyInformationOverload
 } from "../roll-helpers/rigger-overload.js"
 import {
-  prepareChaseRoll, vehicleTestCostsAction
+  prepareChaseRoll, vehicleTestCostsAction, collisionControlThreshold
 } from "../../system/chase-roll-prepare.js"
 
 export default function vehicleTest(rollData, actor, chatData){
@@ -39,7 +39,7 @@ export default function vehicleTest(rollData, actor, chatData){
   if (chatData?.owner) rollData.previousMessage.messageId = chatData.owner.messageId
   rollData.test.type = "vehicleTest"
 
-  //Handle Actions: a chase test the action of another imposes is free, as a defense (chase-roll-prepare.js)
+  //Handle Actions: a chase or collision test the action of another imposes is free, as a defense (chase-roll-prepare.js)
   if (vehicleTestCostsAction(chatData)) rollData.combat.actions = SR5_MiscellaneousHelpers.addActions(rollData.combat.actions, {
     type: "complex", value: 1, source: "vehicleTest"
   })
@@ -49,8 +49,8 @@ export default function vehicleTest(rollData, actor, chatData){
 
   //Special, for ramming test
   if (chatData){
-    if (chatData.test.type === "rammingDefense") {rollData.threshold.value = 3}
-    if (chatData.test.type === "ramming") rollData.threshold.value = 2
+    const collision = collisionControlThreshold(chatData)
+    if (collision !== null) rollData.threshold.value = collision
     rollData.test.typeSub = chatData.test.type
     //The title shows the threshold once lowered by a jumped in rigger's control rig (SR5 p. 268), as the card does
     const shown = applyThresholdModifier(rollData.threshold, thresholdModifierOf(actor.system, rollData.test)).value
