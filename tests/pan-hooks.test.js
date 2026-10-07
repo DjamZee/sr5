@@ -316,6 +316,39 @@ describe('pan hooks: the radial menu', () => {
     expect(added).toEqual([])
   })
 
+  // Fabien (Matrice MF): an entry the system greys out keeps its reason, the module's comes after it
+  it('shows the extraReason of a subscriber after the reason of a greyed entry', () => {
+    const {
+      greyed
+    } = contributeActions(node, {
+    }, entries, dispatcher({
+      [PAN_CROWN_HOOKS.actions]: [(n, v, list) => {
+        const bruteForce = list.find(e => e.key === 'bruteForce')
+        bruteForce.extraReason = ' Pas depuis cette zone '
+        bruteForce.tooltip = 'effacée ?'
+        const hack = list.find(e => e.key === 'hackOnTheFly')
+        hack.enabled = false
+        hack.tooltip = 'Hors de la zone'
+        hack.extraReason = 'Fichier au Coffre'
+      }]
+    }))
+    expect(greyed.get('bruteForce')).toBe('Il manque 1 mark — Pas depuis cette zone')
+    expect(greyed.get('hackOnTheFly')).toBe('Hors de la zone — Fichier au Coffre')
+  })
+
+  it('ignores an extraReason on an entry left enabled, or one that is not text', () => {
+    const {
+      greyed
+    } = contributeActions(node, {
+    }, entries, dispatcher({
+      [PAN_CROWN_HOOKS.actions]: [(n, v, list) => {
+        list.find(e => e.key === 'hackOnTheFly').extraReason = 'rien'
+        list.find(e => e.key === 'bruteForce').extraReason = 3
+      }]
+    }))
+    expect(greyed.size).toBe(0)
+  })
+
   it('ignores an entry without label or without onClick, and a subscriber that throws', () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => {})
     const {
