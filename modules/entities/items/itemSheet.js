@@ -779,7 +779,7 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     if (toggleBtn) {
       toggleBtn.classList.toggle("fa-lock", this.isPlayMode)
       toggleBtn.classList.toggle("fa-lock-open", this.isEditMode)
-      toggleBtn.dataset.tooltip = this.isPlayMode ? "SR5.SwitchToEdit" : "SR5.SwitchToPlay"
+      toggleBtn.dataset.tooltip = game.i18n.localize(this.isPlayMode ? "SR5.SwitchToEdit" : "SR5.SwitchToPlay")
     }
 
     // Disable form inputs in duplicate block instances to prevent FormDataExtended conflicts

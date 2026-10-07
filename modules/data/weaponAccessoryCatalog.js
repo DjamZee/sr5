@@ -220,6 +220,10 @@ export const WEAPON_ACCESSORY_CATALOG = {
   vintage:                  {
     price: 0, slot: "", type: "trait"
   },
+  // Kick (Run Faster p. 83): an unarmed attack made with the legs; Jambes de satyre adds +2 DV to it alone
+  kick:                     {
+    price: 0, slot: "", type: "trait"
+  },
   // Laser weapon (Run & Gun p. 64): its DV falls with range and visibility (weapon-attack-rules.js)
   laserWeapon:              {
     price: 0, slot: "", type: "trait"

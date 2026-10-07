@@ -3,7 +3,7 @@ import {
 } from "vitest"
 import {
   registerImplantRegisterHooks, reconcileImplantRegister, essenceTaken, creationEnded, peaksAtCreationEnd,
-  IMPLANT_REGISTER, PEAK_COST
+  IMPLANT_REGISTER, PEAK_COST, costsAtWorldCreationEnd
 } from "../modules/system/implant-register.js"
 
 // Lot C0-bis of the character creator: buying an implant at creation is no surgery (SR5 p. 454, "après sa création"),
@@ -211,6 +211,64 @@ describe("creationEnded / peaksAtCreationEnd", () => {
       "Actor.pc.Item.eyes": {
         [PEAK_COST]: 0.2
       }
+    })
+  })
+})
+
+// Réserve de la relecture 61: the world's creation mode switched off gives the peaks back at once, not at the next
+// arrival of a GM; a character flagged "in creation" keeps its flag and takes none
+describe("the world's creation mode switched off", () => {
+  const off = () => hooks.updateSetting({
+    key: "sr5.sr5ShopCreationMode"
+  })
+  it("starts every peak from the cost of now and prepares the characters again", async () => {
+    const actor = character(false)
+    let resets = 0
+    actor.reset = () => resets++
+    const eyes = implant(actor, 0.25)
+    store[IMPLANT_REGISTER][eyes.uuid] = {
+      [PEAK_COST]: 0.5
+    }
+    implant(actor, 0.1, "ears")
+    globalThis.game.actors = [actor]
+    await off()
+    expect(peakOf("eyes")).toBe(0.25)
+    expect(peakOf("ears")).toBe(0.1)
+    expect(resets).toBe(1)
+    // The peaks arrived: the characters are prepared again with them
+    await hooks.updateSetting({
+      key: `sr5.${IMPLANT_REGISTER}`
+    })
+    expect(resets).toBe(2)
+    expect(actor.flags.sr5).toEqual({
+    })
+  })
+  it("leaves alone a character the gamemaster flagged in creation, and does nothing while the mode is on", async () => {
+    const actor = character(true)
+    actor.reset = () => {
+    }
+    implant(actor, 0.5)
+    globalThis.game.actors = [actor]
+    await off()
+    expect(peakOf("eyes")).toBeUndefined()
+    expect(actor.flags.sr5.creation.active).toBe(true)
+    actor.flags.sr5 = {
+    }
+    store.sr5ShopCreationMode = true
+    await off()
+    expect(peakOf("eyes")).toBeUndefined()
+  })
+  it("is written by the active GM alone", async () => {
+    const actor = character(false)
+    actor.reset = () => {
+    }
+    implant(actor, 0.5)
+    globalThis.game.users.activeGM.isSelf = false
+    globalThis.game.actors = [actor]
+    await off()
+    expect(peakOf("eyes")).toBeUndefined()
+    expect(costsAtWorldCreationEnd([actor])).toEqual({
+      "Actor.pc.Item.eyes": 0.5
     })
   })
 })
