@@ -2,6 +2,9 @@ import {
   overwatchScoreShownTo
 } from "../../rolls/roll-helpers/overwatch-notice.js"
 import {
+  tactileSensorsOn
+} from "../../system/vehicle-mods.js"
+import {
   SR5
 } from "../../config.js"
 import {
@@ -183,6 +186,8 @@ export class SR5_ActorHelper {
             let chatData = SR5_PrepareRollTest.getBaseRollData(null, controler)
             chatData.damage.resistanceType = "biofeedback"
             chatData.damage.value = Math.ceil(damage/2)
+            //Its tactile sensors make the rigger feel the hit: -2 to resist (Rigger 5.0 p. 170)
+            chatData.tactileSensors = tactileSensorsOn(actor.items, actorData.controlMode)
             chatData.owner.messageId = options.owner.messageId
             //Worked out here for the rigger, not the card's actor: vouched for (attack-card.js, trustedResistanceCard);
             //by the GM, sent to the rigger's player, whose browser trusts what the GM sends (_socketRollTest)

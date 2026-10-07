@@ -116,6 +116,15 @@ function _descStatLayout(summaryBlock, statBlock) {
   }
 }
 
+// The vehicle: Description + Configuration + its workshop (Chop Shop, Rigger 5.0 p. 153-156)
+function _vehicleLayout() {
+  const layout = _descStatLayout('vehicleSummary', 'vehicleStat')
+  layout.panels[1].tabs.push(_tab('Workshop', 'workshop', [
+    _block('vehicleWorkshop'),
+  ]))
+  return layout
+}
+
 // ---------------------------------------------------------------------------
 //  1-tab items: Description only (no stat, no effects)
 //  (4 types: Karma, Knowledge, Language, Nuyen)
@@ -178,7 +187,7 @@ const ITEM_LAYOUTS = {
   itemEcho:         () => _descEffectsLayout('echoSummary'),
 
   // 2-tab: Description + Configuration (no effects)
-  itemVehicle:      () => _descStatLayout('vehicleSummary', 'vehicleStat'),
+  itemVehicle:      () => _vehicleLayout(),
   itemSin:          () => _descStatLayout('sinSummary', 'sinStat'),
   itemFile:         () => _descStatLayout('fileSummary', 'fileStat'),
   itemStorage:      () => _descStatLayout('storageSummary', 'storageStat'),

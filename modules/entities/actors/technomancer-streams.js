@@ -89,6 +89,31 @@ export function streamSpriteFadingReduction(stream){
   return STREAMS[stream]?.spriteFadingReduction ?? 0
 }
 
+// Technoshaman daemon (Kill Code p. 102): a sprite compiled in its major form, which only a Technoshaman may do, has
+// the power of its type (table "Pouvoirs des sprites de forme majeure"; the table calls the crack sprite's power
+// Sentinelle, the text Gardien des portes). Using the power takes all its remaining tasks and decompiles it
+export const MAJOR_FORM_POWERS = {
+  courier: "freenet",
+  crack: "gatekeeper",
+  data: "supercomputer",
+  fault: "annihilation",
+  machine: "overdrive",
+  companion: "sacrifice",
+  generalist: "coRoutine",
+}
+
+export function mayCompileMajorForm(stream){
+  return stream === "technoshaman"
+}
+
+// Compiling a major form doubles the fading the Technoshaman resists: the fading of the compiling, already lowered by
+// the stream, is doubled (arbitrage: the text doubles "la valeur de technodrain à laquelle le technochaman doit
+// résister", the value after the stream's reduction)
+export function compilingFading(hits, stream, majorForm){
+  const fading = reducedFading((Number(hits) || 0) * 2, streamSpriteFadingReduction(stream))
+  return majorForm && mayCompileMajorForm(stream) ? fading * 2 : fading
+}
+
 // Every fading has a floor of 2 (SR5 p. 254); a fading a stream lowers goes down to 1, as in the example of LOTO,
 // a fading of 3 resisted at 1 by a Machinist (arbitrage de DjamZ (07/10), d'après l'exemple de KC p. 101)
 export function reducedFading(value, reduction){

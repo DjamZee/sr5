@@ -48,6 +48,7 @@ export const TAB_ICONS = {
   device:        `${ICON_ROOT}/nav-information.svg`,
   drone:         `${ICON_ROOT}/nav-gear.svg`,
   storage:       `${ICON_ROOT}/nav-storage.svg`,
+  workshop:      `${ICON_ROOT}/nav-configuration.svg`,
 }
 
 // ---------------------------------------------------------------------------
@@ -334,6 +335,9 @@ export const BLOCK_REGISTRY = {
     partial: `${PARTIAL_ROOT}/right-tabs/droneStuff/droneRoll.hbs`,         label: 'SR5.SheetConfig.Block.DroneRoll',        size: BLOCK_SIZE.DOUBLE 
   },
   modifications:       {
-    partial: `${PARTIAL_ROOT}/right-tabs/droneStuff/modifications.hbs`,     label: 'SR5.SheetConfig.Block.Modifications',    size: BLOCK_SIZE.DOUBLE 
+    partial: `${PARTIAL_ROOT}/right-tabs/droneStuff/modifications.hbs`,     label: 'SR5.SheetConfig.Block.Modifications',    size: BLOCK_SIZE.DOUBLE
+  },
+  workshop:            {
+    partial: `${PARTIAL_ROOT}/right-tabs/droneStuff/atelier.hbs`,           label: 'SR5.VehicleModWorkshop',                 size: BLOCK_SIZE.DOUBLE
   },
 }

@@ -4,6 +4,9 @@ import {
 import {
   SR5_MiscellaneousHelpers 
 } from "../roll-helpers/miscellaneous.js"
+import {
+  signatureMaskingPenalty
+} from "../../system/vehicle-mods.js"
 
 export default function sensorTarget(rollData, actor){
   //Determine title
@@ -23,6 +26,12 @@ export default function sensorTarget(rollData, actor){
 
   //Determine limit modififiers
   rollData.limit.modifiers = SR5_PrepareRollHelper.getLimitModifiers(rollData, actor.system.skills.perception.limit.modifiers)
+
+  //A vehicle's signature masking: its rating against whoever locks on it (Rigger 5.0 p. 169)
+  const masking = signatureMaskingPenalty(game.user.targets?.first()?.actor)
+  if (masking) rollData.dicePool.modifiers.push({
+    type: "signatureMasking", label: game.i18n.localize("SR5.VehicleModEffectKind_signatureMasking"), value: masking
+  })
 
   //Add others informations
   rollData.test.type = "sensorTarget"

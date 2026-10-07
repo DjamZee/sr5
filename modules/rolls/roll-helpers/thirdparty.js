@@ -35,6 +35,9 @@ import {
 import {
   SR5_PrepareRollTest 
 } from "../roll-prepare.js"
+import {
+  MAJOR_FORM_POWERS
+} from "../../entities/actors/technomancer-streams.js"
 
 // The warning shown when the owner of a resistance card was deleted: the ritual names its leader,
 // every other resistance (summoning, compiling...) its author
@@ -94,6 +97,7 @@ export class SR5_ThirdPartyHelpers {
     //add roll info for Sprite resistance
     else if (cardData.test.typeSub === "compileSprite"){
       rollData.matrix.spriteType = cardData.matrix.spriteType
+      rollData.matrix.majorForm = !!cardData.matrix.majorForm
       rollData.matrix.level = cardData.matrix.level
       rollData.test.type = "compilingResistance"
       rollData.test.title = `${game.i18n.localize("SR5.CompilingResistance")} (${rollData.previousMessage.hits})`
@@ -700,9 +704,13 @@ export class SR5_ThirdPartyHelpers {
         ui.notifications.info(`${actor.name} ${game.i18n.localize("SR5.INFO_SummonSpirit")} ${game.i18n.localize(SR5.spiritTypes[messageData.magic.spiritType])} (${messageData.magic.force})`)
         break
       }
-      case "compileSprite":
+      case "compileSprite": {
+        //Kill Code p. 102: a sprite of major form carries the power of its type, written in its name and description
+        const majorPower = messageData.matrix.majorForm ? MAJOR_FORM_POWERS[messageData.matrix.spriteType] : null
+        const majorName = majorPower ? `, ${game.i18n.localize("SR5.SpriteMajorForm")}` : ""
+        const majorText = majorPower ? `<h3>${game.i18n.localize("SR5.SpriteMajorForm")} : ${game.i18n.localize(`SR5.SpriteMajorPower_${majorPower}`)}</h3>${game.i18n.localize(`SR5.SpriteMajorPower_${majorPower}_D`)}<p>${game.i18n.localize("SR5.SpriteMajorFormUse")}</p>` : ""
         buildItem = {
-          name: `${game.i18n.localize("SR5.CompiledSprite")} (${game.i18n.localize(SR5.spriteTypes[messageData.matrix.spriteType])}, ${messageData.matrix.level})`,
+          name: `${game.i18n.localize("SR5.CompiledSprite")} (${game.i18n.localize(SR5.spriteTypes[messageData.matrix.spriteType])}, ${messageData.matrix.level}${majorName})`,
           type: "itemSprite",
           img: `systems/sr5/assets/img/items/itemSprite.svg`,
           ["system.type"]: messageData.matrix.spriteType,
@@ -710,11 +718,12 @@ export class SR5_ThirdPartyHelpers {
           ["system.tasks.max"]: messageData.previousMessage.hits - messageData.roll.hits,
           ["system.tasks.value"]: messageData.previousMessage.hits - messageData.roll.hits,
           ["system.compilerResonance"]: actorData.specialAttributes.resonance.augmented.value,
-          ["system.description"]: `${game.i18n.localize(SR5.spriteTypesDescription[messageData.matrix.spriteType])}`,
+          ["system.description"]: `${game.i18n.localize(SR5.spriteTypesDescription[messageData.matrix.spriteType])}${majorText}`,
           ["system.compiler"]: actor.id,
         }
         ui.notifications.info(`${actor.name} ${game.i18n.localize("SR5.INFO_CompileSprite")} ${game.i18n.localize(SR5.spriteTypes[messageData.matrix.spriteType])} (${messageData.matrix.level})`)
         break
+      }
       case "createPreparation": {
         let preparation = actor.items.find(i => i.uuid === messageData.owner.itemUuid)
         //A plain copy of the spell's data: the live model of the sheet's spell is never written, and the values of

@@ -45,6 +45,8 @@ export class characterResistancesPartialModel extends foundry.abstract.TypeDataM
         }),
         fatigue: resistance(),
         fall: resistance(),
+        // A passenger in a vehicle's crash (SR5 p. 202), with its SPP and cocoon (Rigger 5.0 p. 157, 162)
+        crashDamage: resistance(),
         // Addiction tests (SR5 p. 415): Body + Willpower or Logic + Willpower, by the kind of addiction
         addiction: new fields.SchemaField({
           physiological: resistance(),

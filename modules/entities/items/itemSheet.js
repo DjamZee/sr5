@@ -2,6 +2,9 @@ import {
   SR5FactionRegistry
 } from "../../interface/faction-registry.js"
 import {
+  workshopContext, dropModOnWorkshop, removeModFromVehicleItem
+} from "../../system/vehicle-workshop-apply.js"
+import {
   fileLastEditText
 } from "../../rolls/roll-helpers/file-actions.js"
 import {
@@ -606,6 +609,9 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       context.ammoBuiltinType = item.system.ammunitionTypeUuid ? '' : item.system.type
     }
 
+    // The vehicle's workshop (Chop Shop, Rigger 5.0 p. 153-156)
+    if (item.type === 'itemVehicle') context.workshop = workshopContext(item)
+
     // Dynamic layout
     context.layout = this._computeSheetLayout()
     context.hasFooter = ITEM_FOOTER_TYPES.has(item.type)
@@ -626,6 +632,21 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     if (mentorDrop && this.isEditable) {
       mentorDrop.addEventListener('dragover', ev => ev.preventDefault())
       mentorDrop.addEventListener('drop', ev => this.#onDropMentor(ev))
+    }
+
+    // Vehicle workshop: the gamemaster fits a mod by dropping it, or takes one off (Q7 of DjamZ)
+    if (this.document.type === 'itemVehicle' && this.isEditable) {
+      for (const zone of el.querySelectorAll('.sr5-workshop-drop')) {
+        zone.addEventListener('dragover', ev => ev.preventDefault())
+        zone.addEventListener('drop', ev => {
+          ev.preventDefault()
+          ev.stopPropagation()
+          dropModOnWorkshop(this.document, foundry.applications.ux.TextEditor.implementation.getDragEventData(ev))
+        })
+      }
+      for (const remove of el.querySelectorAll('.workshop-item-remove')) {
+        remove.addEventListener('click', ev => removeModFromVehicleItem(this.document, Number(ev.currentTarget.closest('[data-index]').dataset.index)))
+      }
     }
 
     // Spirit type: drop an item to give it to every spirit of the type, or take one back

@@ -95,6 +95,17 @@ export function resolveHostAttributes(type, rating, stored = {
   }
 }
 
+/**
+ * A host with no type that the gamemaster never arranged (the four attributes at 0, no value of the collection placed)
+ * gets the array of SR5 p. 248 in the default order: rating, +1, +2, +3 for Attack, Sleaze, Data Processing, Firewall.
+ * Otherwise null: what the gamemaster placed stays as entered.
+ */
+export function untypedHostDefaults(rating, stored = {
+}, anyPlaced = false) {
+  if (anyPlaced || HOST_ATTRIBUTES.some(key => Number(stored[key]) > 0)) return null
+  return Object.fromEntries(HOST_ATTRIBUTES.map((key, i) => [key, atLeastOne((Number(rating) || 0) + i)]))
+}
+
 // The offset from the rating, as the bubble shows it ("rating + 3", "rating - 2")
 export function hostTypeOffsetLabel(value, rating) {
   const offset = value - rating

@@ -19,6 +19,9 @@ import {
 import {
   rccAutosoftRows, droneAutopilot
 } from "./rcc.js"
+import {
+  workshopContext, dropModOnWorkshop, openModInstall, fitModDirectly
+} from "../../system/vehicle-workshop-apply.js"
 
 /**
  * An Actor sheet for drone type actors in the Shadowrun 5 system.
@@ -66,6 +69,8 @@ export class SR5DroneSheet extends ActorSheetSR5 {
     context.rulesCalledShot = game.settings.get("sr5", "sr5CalledShotsRules")
     context.rulesKillCode = game.settings.get("sr5", "sr5KillCodeRules")
     context.matrixActionsRigger5 = game.settings.get("sr5", "sr5Rigger5Actions")
+    //The Chop Shop (Rigger 5.0 p. 153-156)
+    context.workshop = workshopContext(this.actor)
 
     return context
   }
@@ -78,6 +83,28 @@ export class SR5DroneSheet extends ActorSheetSR5 {
       ev.preventDefault()
       openVehicleRepair(this.actor)
     }))
+    //Rigger 5.0 p. 153-154: the workshop's mods, installed or removed by the book, or by the gamemaster directly (Q7)
+    const workshopMod = ev => this.actor.items.get(ev.currentTarget.closest("[data-item-id]")?.dataset.itemId)
+    const on = (selector, handler) => this.element.querySelectorAll(selector).forEach(el => el.addEventListener("click", ev => {
+      ev.preventDefault()
+      const mod = workshopMod(ev)
+      if (mod) handler(mod)
+    }))
+    on(".workshop-install", mod => openModInstall(this.actor, mod))
+    on(".workshop-remove", mod => openModInstall(this.actor, mod, {
+      removal: true
+    }))
+    on(".workshop-fit", mod => fitModDirectly(mod, true))
+    on(".workshop-unfit", mod => fitModDirectly(mod, false))
+  }
+
+  //A mod dropped on the workshop is bought, moved aboard or fitted there (vehicle-workshop-apply.js); any other drop
+  //stays the sheet's
+  async _onDrop(event) {
+    if (!event.target?.closest?.(".sr5-workshop-drop")) return super._onDrop(event)
+    event.preventDefault()
+    event.stopPropagation()
+    return dropModOnWorkshop(this.actor, foundry.applications.ux.TextEditor.implementation.getDragEventData(event))
   }
 
   //The deployed drone holds its vehicle's wireless switch (N83): switching it costs the drone an action (N91).

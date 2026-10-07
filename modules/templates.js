@@ -219,6 +219,8 @@ export const preloadHandlebarsTemplates = async function () {
     //Right Tab - Drone
     "systems/sr5/templates/actors/_partials/right-tabs/droneStuff/droneRoll.hbs",
     "systems/sr5/templates/actors/_partials/right-tabs/droneStuff/modifications.hbs",
+    "systems/sr5/templates/actors/_partials/right-tabs/droneStuff/atelier.hbs",
+    "systems/sr5/templates/actors/_partials/right-tabs/droneStuff/atelier-gauge.hbs",
 		
 
     /************************************************************************************* */
@@ -601,6 +603,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/items/_partial/editable/weapon/recoilCompensation-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/weapon/reloadingMethod-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/weapon/requiredHands-edit.hbs",
+    "systems/sr5/templates/items/_partial/editable/weapon/specialEffect-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/weapon/skill-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/weapon/toxin-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/weapon/type-edit.hbs",

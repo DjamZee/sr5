@@ -1,0 +1,9 @@
+<li class="grid">
+    <div class="col-5" data-tooltip="{{localize 'SR5.WeaponAccessorySpecialEffect_D'}}">{{localize 'SR5.WeaponAccessorySpecialEffect'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-7">
+        <select name="system.weaponAccessory.specialEffect" {{#unless owner}}disabled{{/unless}}>
+            <option value="">{{localize 'SR5.None'}}</option>
+            {{selectOptions lists.weaponAccessorySpecialEffects selected=system.weaponAccessory.specialEffect localize=true}}
+        </select>
+    </div>
+</li>

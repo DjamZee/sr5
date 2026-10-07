@@ -1411,6 +1411,21 @@ SR5.weaponAccessorySlots = {
   stock                     : "SR5.WeaponAccessorySlotStock",
 }
 
+//The special effects the system reads on a weapon accessory (weaponAccessory.specialEffect), chosen on its sheet
+SR5.weaponAccessorySpecialEffects = {
+  chameleonCoating          : "SR5.AccessoryChameleonCoating",
+  concealableHolster        : "SR5.AccessoryConcealableHolster",
+  flamethrower              : "SR5.AccessoryFlamethrower",
+  flashLight                : "SR5.AccessoryFlashLight",
+  flashLightInfrared        : "SR5.AccessoryFlashLightInfrared",
+  flashLightLowLight        : "SR5.AccessoryFlashLightLowLight",
+  imagingScope              : "SR5.AccessoryImagingScope",
+  overclocked               : "SR5.AccessoryOverclocked",
+  silencerSuppressor        : "SR5.AccessorySilencerSuppressor",
+  smartgunExternal          : "SR5.AccessorySmartgunSystemExternal",
+  smartgunInternal          : "SR5.AccessorySmartgunSystemInternal",
+}
+
 // Toxins
 SR5.toxinTypes = {
   airEngulf                 : "SR5.SpiritPowerEngulfAir",
@@ -2848,6 +2863,19 @@ SR5.vehicleModType = {
   cosmetic                  : "SR5.VehicleModTypeCosmetic",
 }
 
+// What the system works out by code for a vehicle mod (system/vehicle-mods.js, Rigger 5.0 p. 153-173)
+SR5.vehicleModEffectKinds = {
+  autopilotReplacement      : "SR5.VehicleModEffectKind_autopilotReplacement",
+  sensorReplacement         : "SR5.VehicleModEffectKind_sensorReplacement",
+  armor                     : "SR5.VehicleModEffectKind_armor",
+  bullBar                   : "SR5.VehicleModEffectKind_bullBar",
+  passengerProtection       : "SR5.VehicleModEffectKind_passengerProtection",
+  riggerCocoon              : "SR5.VehicleModEffectKind_riggerCocoon",
+  tactileSensors            : "SR5.VehicleModEffectKind_tactileSensors",
+  signatureMasking          : "SR5.VehicleModEffectKind_signatureMasking",
+  metahumanAdaptation       : "SR5.VehicleModEffectKind_metahumanAdaptation",
+}
+
 // Type d'installation nécessaires
 SR5.vehicleModTools = {
   kit                       : "SR5.VehicleModToolsKit",
@@ -3738,6 +3766,7 @@ SR5.effectTypes = {
   fireDamage                : "SR5.ElementalDamage",
   dumpshock                 : "SR5.Dumpshock",
   suppressiveFire           : "SR5.WeaponModeSF",
+  chaseOutOfControl         : "SR5.CHASE_EffectName",
   sensorLock                : "SR5.SensorTargetingActive",
   signalJam                 : "SR5.EffectSignalJam",
   signalJammed              : "SR5.EffectSignalJammed",

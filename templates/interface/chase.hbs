@@ -1,0 +1,118 @@
+<div class="sr-chase-body">
+  <p class="hint">{{localize rules}}</p>
+
+  {{#if active}}
+  <fieldset>
+    <legend>{{localize 'SR5.CHASE_Turn'}} {{turn}}</legend>
+    <div class="sr-chase-row">
+      {{#unless advanced}}
+      <label>{{localize 'SR5.CHASE_Environment'}}
+        <select name="environment">
+          {{#each environments}}<option value="{{key}}" {{#if selected}}selected{{/if}}>{{localize label}}</option>{{/each}}
+        </select>
+      </label>
+      {{/unless}}
+      <label>{{localize 'SR5.CHASE_Terrain'}}
+        <select name="terrain">
+          {{#each terrains}}<option value="{{key}}" {{#if selected}}selected{{/if}}>{{label}} (+{{value}})</option>{{/each}}
+        </select>
+      </label>
+      <span class="sr-chase-tools">
+        {{#if linkedCombat}}
+        <span class="hint">{{localize 'SR5.CHASE_LinkedCombat'}}</span>
+        {{else}}
+        <button type="button" data-action="nextTurn"><i class="fas fa-forward-step"></i> {{localize 'SR5.CHASE_NextTurn'}}</button>
+        {{/if}}
+        <button type="button" data-action="end"><i class="fas fa-flag-checkered"></i> {{localize 'SR5.CHASE_End'}}</button>
+      </span>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>{{localize 'SR5.CHASE_Vehicles'}}</legend>
+    {{#each vehicles}}
+    <section class="sr-chase-vehicle{{#if warning}} warning{{/if}}" data-vehicle="{{id}}">
+      <header class="sr-chase-row">
+        <img src="{{img}}" alt="" width="36" height="36">
+        <strong>{{name}}</strong>
+        {{#if driver}}<span class="hint">({{localize 'SR5.CHASE_Pilot'}} : {{driver}})</span>{{/if}}
+        {{#if status}}<span class="sr-chase-status">{{localize status}}</span>{{/if}}
+        <span class="sr-chase-tools">
+          <a data-action="removeVehicle" data-vehicle="{{id}}" data-tooltip="{{localize 'SR5.CHASE_Remove'}}"><i class="fas fa-trash"></i></a>
+        </span>
+      </header>
+      <div class="sr-chase-row">
+        <label>{{localize 'SR5.CHASE_Role'}}
+          <select data-field="role">
+            <option value="pursued" {{#if isPursued}}selected{{/if}}>{{localize 'SR5.CHASE_Role_pursued'}}</option>
+            <option value="pursuer" {{#unless isPursued}}selected{{/unless}}>{{localize 'SR5.CHASE_Role_pursuer'}}</option>
+          </select>
+        </label>
+        {{#if ../advanced}}
+        <label>{{localize 'SR5.CHASE_Kind'}}
+          <select data-field="kind">
+            {{#each kinds}}<option value="{{key}}" {{#if selected}}selected{{/if}}>{{localize label}}</option>{{/each}}
+          </select>
+        </label>
+        {{/if}}
+        <label data-tooltip="{{speedHint}}">{{localize 'SR5.CHASE_Speed'}}
+          <input type="number" data-field="speed" value="{{speed}}" min="{{bounds.min}}" max="{{bounds.max}}" step="1">
+        </label>
+        <span class="hint">{{localize 'SR5.CHASE_Acceleration'}} {{acceleration}} · {{localize 'SR5.CHASE_Handling'}} {{handling}} · {{localize 'SR5.CHASE_MaxSpeed'}} {{maxSpeed}}</span>
+        <label data-tooltip="{{localize 'SR5.CHASE_ControlledHint'}}">
+          <input type="checkbox" data-field="controlled" {{#if controlled}}checked{{/if}} {{#if ended}}disabled{{/if}}>
+          {{localize 'SR5.CHASE_Controlled'}}
+        </label>
+      </div>
+      <div class="sr-chase-row">
+        <span>{{localize 'SR5.CHASE_Aboard'}} :</span>
+        {{#each passengerList}}<span class="sr-chase-tag">{{name}} <a data-action="removePassenger" data-vehicle="{{../id}}" data-uuid="{{uuid}}"><i class="fas fa-xmark"></i></a></span>{{/each}}
+        <button type="button" data-action="addPassengers" data-vehicle="{{id}}"><i class="fas fa-user-plus"></i> {{localize 'SR5.CHASE_AddPassengers'}}</button>
+      </div>
+    </section>
+    {{else}}
+    <p class="hint">{{localize 'SR5.CHASE_NoVehicle'}}</p>
+    {{/each}}
+    <div class="sr-chase-row">
+      <button type="button" data-action="addTokens"><i class="fas fa-car"></i> {{localize 'SR5.CHASE_AddTokens'}}</button>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>{{localize 'SR5.CHASE_Ranges'}}</legend>
+    {{#each pairs}}
+    <div class="sr-chase-row sr-chase-pair">
+      <span class="sr-chase-names">{{nameA}} ↔ {{nameB}}</span>
+      {{#if lost}}
+      <span class="sr-chase-status">{{localize 'SR5.CHASE_Lost'}}</span>
+      <button type="button" data-action="resetPair" data-a="{{a}}" data-b="{{b}}" data-range="{{range}}"><i class="fas fa-rotate-left"></i> {{localize 'SR5.CHASE_ResetPair'}}</button>
+      {{else}}
+      <a data-action="closer" data-a="{{a}}" data-b="{{b}}" data-tooltip="{{localize 'SR5.CHASE_Closer'}}"><i class="fas fa-minus"></i></a>
+      <select data-pair-range data-a="{{a}}" data-b="{{b}}">
+        {{#each options}}<option value="{{key}}" {{#if selected}}selected{{/if}}>{{localize label}}</option>{{/each}}
+      </select>
+      <a data-action="farther" data-a="{{a}}" data-b="{{b}}" data-tooltip="{{localize 'SR5.CHASE_Farther'}}"><i class="fas fa-plus"></i></a>
+      {{#if distance}}<span class="hint">{{distance}}</span>{{/if}}
+      {{/if}}
+    </div>
+    {{else}}
+    <p class="hint">{{localize 'SR5.CHASE_NeedTwo'}}</p>
+    {{/each}}
+  </fieldset>
+
+  {{#if log.length}}
+  <fieldset>
+    <legend>{{localize 'SR5.CHASE_Log'}}</legend>
+    <ul class="sr-chase-log">
+      {{#each log}}<li><span class="hint">{{localize 'SR5.CHASE_Turn'}} {{turn}}</span> {{text}}</li>{{/each}}
+    </ul>
+  </fieldset>
+  {{/if}}
+
+  {{else}}
+  <p class="hint">{{localize 'SR5.CHASE_None'}}</p>
+  {{#if canWrite}}
+  <button type="button" data-action="start"><i class="fas fa-car-side"></i> {{localize 'SR5.CHASE_Start'}}</button>
+  {{/if}}
+  {{/if}}
+</div>

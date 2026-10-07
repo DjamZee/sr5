@@ -283,6 +283,11 @@ export class sr5ActorDroneDataModel extends foundry.abstract.TypeDataModel {
       controlMode: new fields.StringField({
         initial: 'autopilot'
       }),
+      // The Speed the vehicle moves at now, 0 when it stands still (Rigger 5.0 p. 37-38: Démon de la vitesse,
+      // Surcharge d'informations); set by the gamemaster or the pilot
+      currentSpeed: new fields.NumberField({
+        initial: 0, min: 0, integer: true
+      }),
       vehicleOwner: new fields.SchemaField({
         id: new fields.StringField({
           initial: ''

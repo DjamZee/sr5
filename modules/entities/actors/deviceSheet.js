@@ -50,7 +50,9 @@ export class SR5AppareilSheet extends ActorSheetSR5 {
   // values the type dealt are saved, so that the swap is made on what the sheet shows and not on older saved values
   async _onDrop(event) {
     const matrix = this.actor.system.matrix
-    if (this.actor.type === "actorDevice" && matrix.deviceType === "host" && hostTypeLayout(matrix.hostType)) {
+    // A host with no type, never arranged, shows the default order of SR5 p. 248 without having saved it
+    const untypedDealt = !hostTypeLayout(matrix.hostType) && matrix.attributes?.firewall?.modifiers?.some(m => m.type === "hostType")
+    if (this.actor.type === "actorDevice" && matrix.deviceType === "host" && (hostTypeLayout(matrix.hostType) || untypedDealt)) {
       let dropData = null
       try {
         dropData = JSON.parse(event.dataTransfer.getData('text/plain'))
@@ -59,7 +61,8 @@ export class SR5AppareilSheet extends ActorSheetSR5 {
       }
       const dropZone = event.target.closest('[data-dropmatrixattribute]')
       if (dropData?.valueFromAttribute && dropZone) {
-        const fixed = Object.keys(hostTypeLayout(matrix.hostType).fixed).map(key => `system.matrix.attributes.${key}.base`)
+        const fixed = Object.keys(hostTypeLayout(matrix.hostType)?.fixed ?? {
+        }).map(key => `system.matrix.attributes.${key}.base`)
         if (fixed.includes(dropData.valueFromAttribute) || fixed.includes(dropZone.dataset.dropmatrixattribute)) {
           event.preventDefault()
           event.stopPropagation()
@@ -72,6 +75,8 @@ export class SR5AppareilSheet extends ActorSheetSR5 {
           const shown = matrix.attributes[key].base
           if (this.actor._source.system.matrix.attributes[key].base !== shown) updates[`system.matrix.attributes.${key}.base`] = shown
         }
+        // Saved, the default order is the gamemaster's own: its four values are no longer offered in the collection
+        if (untypedDealt) for (let i = 1; i <= 4; i++) updates[`system.matrix.attributesCollection.value${i}isSet`] = true
         if (Object.keys(updates).length) await this.actor.update(updates)
       }
     }
