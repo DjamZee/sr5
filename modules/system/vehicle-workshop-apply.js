@@ -26,7 +26,7 @@ import {
   assembledVehicleData
 } from "./vehicle-dealership.js"
 import {
-  usesModPoints, droneModRule, vehicleStats, modPointsCost, modPointsOf, modPointsGauge, modsTakingPoints, modPointsPrice
+  usesModPoints, droneModRule, vehicleStats, modPointsCost, modPointsOf, modPointsLines, modPointsGauge, modsTakingPoints, modPointsPrice
 } from "./drone-mod-points.js"
 
 // The Foundry side of the workshop (Chop Shop, B12; Rigger 5.0 p. 153-156): the "Workshop" tab of the drone sheet and
@@ -92,6 +92,8 @@ export function workshopContext(vehicle){
   const points = usesModPoints(droneModRule(), s.type)
   const stats = vehicleStats(s)
   const priceOf = points ? m => modPointsCost(m, stats) : modCost
+  //The free +1 is once per drone: one line takes it, not each upgrade (review 40)
+  const pointLines = points ? modPointsLines(mods) : []
   const row = (m, index) => {
     const ms = m.system ?? {
     }
@@ -100,7 +102,7 @@ export function workshopContext(vehicle){
     return {
       id: m._id ?? m.id, index, name: `${m.name}${ms.isWeaponMounted && ms.surname ? ms.surname : ""}`, img: m.img,
       rating: ms.itemRating && !m.name.includes(`(${ms.itemRating})`) ? ms.itemRating : 0,
-      slots: points ? modPointsOf(ms) : Number(ms.slots?.value) || 0, threshold: Number(ms.threshold?.value) || 0,
+      slots: points ? pointLines[index] : Number(ms.slots?.value) || 0, threshold: Number(ms.threshold?.value) || 0,
       tools: ms.tools ? L(SR5.vehicleModTools[ms.tools] ?? ms.tools) : "", price: priceOf(m).toLocaleString(),
       factory, fitted, pending: !fitted,
     }

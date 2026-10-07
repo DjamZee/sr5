@@ -291,7 +291,9 @@ export class SR5_MiscellaneousHelpers {
     })
     //A brick a player dealt: the dumpshock of a character in VR goes to the target's player, not the attacker's (SR5 p. 231)
     //(An AI has none, dumpshockIfInVR knows it)
-    if (data.use === "matrixDamage" && changes.isActive === false && target.type === "itemDevice" && target.actor) {
+    //Not after a convergence, whose reboot already threw the character out with dumpshock (SR5 p. 233)
+    if (data.use === "matrixDamage" && changes.isActive === false && target.type === "itemDevice" && target.actor &&
+      !SR5_MiscellaneousHelpers.cardOf(data.messageId)?.data?.damage?.convergence) {
       const {
         SR5_ActorHelper
       } = await import("../../entities/actors/entityActor-helpers.js")

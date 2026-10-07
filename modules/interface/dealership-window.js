@@ -35,7 +35,7 @@ import {
   dealerCapacity, dealerGauges, buildSlotsRefusal, dealerTotals, dealerPointsGauge, buildPointsRefusal
 } from '../system/vehicle-dealership.js'
 import {
-  usesModPoints, droneModRule, vehicleStats, modPointsOf
+  usesModPoints, droneModRule, vehicleStats, modPointsLines
 } from '../system/drone-mod-points.js'
 
 const L = k => game.i18n.localize(k)
@@ -230,11 +230,14 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
       price: vehicleUnit, availability: vehicleDescribed.availability, legality: vehicleDescribed.legality,
     }]
     const points = this.#points()
-    const own = (vehicle.system.vehiclesMod ?? []).map(m => ({
+    // The free +1 is once per drone: one line of the build takes it, not each upgrade (review 40)
+    const pointLines = points ? modPointsLines(this.#buildMods(), m => !m.pending) : []
+    const ownCount = (vehicle.system.vehiclesMod ?? []).length
+    const own = (vehicle.system.vehiclesMod ?? []).map((m, i) => ({
       name: m.name, factory: isFactoryMod(m), price: yen(modCost(m)), fitted: isFactoryMod(m) || m.system?.isActive === true,
-      slots: points ? modPointsOf(m.system) : Number(m.system?.slots?.value) || 0, category: L(SR5.vehicleModType[m.system?.type] ?? 'SR5.VehicleModWorkshopOther'),
+      slots: points ? pointLines[i] : Number(m.system?.slots?.value) || 0, category: L(SR5.vehicleModType[m.system?.type] ?? 'SR5.VehicleModWorkshopOther'),
     }))
-    const added = this._mods.map(m => {
+    const added = this._mods.map((m, i) => {
       const {
         price, slots
       } = pricedModData(m.source, vehicle)
@@ -245,11 +248,7 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
       const s = m.source.system
       return {
         key: m.key, uuid: m.uuid, name: m.source.name, img: m.source.img, fitted: m.fitted, price: yen(price),
-        slots: points ? modPointsOf({
-          ...s, slots: {
-            value: slots
-          }
-        }) : slots,
+        slots: points ? pointLines[ownCount + i] : slots,
         threshold: Number(s.threshold?.value) || 0,
         tools: s.tools ? L(SR5.vehicleModTools[s.tools] ?? s.tools) : '—',
         category: L(SR5.vehicleModType[s.type] ?? 'SR5.VehicleModWorkshopOther'),

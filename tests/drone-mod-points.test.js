@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 import {
   usesModPoints, attributeChange, modPointsDemand, modPointsOf, modPointsUsage, modPointsRefusal, modPointsPrice,
-  armorOverload, attributeCap
+  armorOverload, attributeCap, modPointsLines
 } from '../modules/system/drone-mod-points.js'
 import {
   dealerPointsGauge, buildPointsRefusal
@@ -99,9 +99,35 @@ describe('The drone\'s points (R5 p. 126-127)', () => {
   it('the downgrades give back one point at most', () => {
     expect(modPointsUsage(drone, [lowered('sensor', 1), lowered('handling', 1)]).total).toBe(4)
   })
-  it('lowering the Structure by 1 is a net gain of 1, never below half of it', () => {
+  it('lowering the Structure by 1 is a net gain of 1, never below half of it rounded up', () => {
     expect(modPointsUsage(drone, [lowered('body', 1)]).total).toBe(4)
-    expect(modPointsUsage(drone, [lowered('body', 3)]).total).toBe(5)
+    // Structure 3: down to 2, "pas à 1 (car 1 < 1,5)" (R5 p. 127): 1 point at most
+    expect(modPointsUsage(drone, [lowered('body', 2)]).total).toBe(4)
+    expect(modPointsUsage(drone, [lowered('body', 3)]).total).toBe(4)
+    // An even Structure goes down to its half: 4 to 2
+    expect(modPointsUsage({
+      ...drone, body: 4
+    }, [lowered('body', 3)]).total).toBe(6)
+  })
+})
+
+describe('The points on each line (review 40)', () => {
+  it('the free +1 is taken once per drone: two +2 show 1 and 2, as the gauge counts 3', () => {
+    const mods = [upgrade('speed', 2), upgrade('handling', 2), pointsMod(2), lowered('sensor', 1)]
+    expect(modPointsLines(mods)).toEqual([1, 2, 2, 0])
+    expect(modPointsUsage(drone, mods.slice(0, 2)).used).toBe(3)
+  })
+  it('the free +1 goes to an upgrade that takes its points, the one waiting to be installed shows its full steps', () => {
+    const waiting = upgrade('speed', 2, {
+      isActive: false
+    })
+    const fitted = upgrade('handling', 2)
+    expect(modPointsLines([waiting, fitted], m => m.system.isActive)).toEqual([2, 1])
+    // None fitted yet: the first upgrade of the list shows it
+    expect(modPointsLines([waiting, upgrade('sensor', 2, {
+      isActive: false
+    })], m => m.system.isActive)).toEqual([1, 2])
+    expect(modPointsLines(null)).toEqual([])
   })
 })
 
