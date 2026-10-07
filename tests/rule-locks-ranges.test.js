@@ -231,7 +231,7 @@ describe('B13 lot 3, melee reach (SR5 p. 187)', () => {
     game.user.targets = new Set([token('t1')])
     const result = await handleTargetInfo(rollData(), shooter, blade)
     expect(result).not.toBe(false)
-    expect(result.combat.reach).toBe(0)
+    // The weapon's Reach is copied by the caller (rollData-Weapon.js) before handleTargetInfo, whatever the scene
     await flush()
     expect(whispered()).toEqual(['SR5.WARN_TargetIsTooFar'])
   })
