@@ -474,7 +474,7 @@ export class SR5ShopAvailability {
       canBuy: obtained.length > 0,
       vendor: options.vendor ?? null,
       // Express delivery, a house rule off by default (arbitrage de DjamZ, 05/10): offered when a line waits
-      express: SR5ShopAvailability.expressOffer(obtained),
+      express: SR5ShopAvailability.expressOffer(obtained, actor),
       // The checkout button shows this total once the express box is ticked
       expressTotalLabel: `${(total + cardExpressExtra(obtained, currentExpress())).toLocaleString()}¥`,
     }
@@ -503,9 +503,9 @@ export class SR5ShopAvailability {
   }
 
   /** What the express box of the card says, or null when it has no reason to be there. */
-  static expressOffer(obtained) {
+  static expressOffer(obtained, buyer = null) {
     const terms = currentExpress()
-    if (!terms || !deliveryDelayed() || !obtained.some(r => r.availability > 0)) return null
+    if (!terms || !deliveryDelayed(buyer) || !obtained.some(r => r.availability > 0)) return null
     return game.i18n.format('SR5.ShopExpressLabel', {
       surcharge: terms.surcharge, factor: terms.factor
     })

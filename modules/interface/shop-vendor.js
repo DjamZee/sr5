@@ -801,7 +801,7 @@ export class SR5ShopVendor {
       if (block) continue
       // An order is searched for (SR5 p. 420): it waits on the buyer; the counter's stock does not
       const waits = lineWaits({
-        delayed: deliveryDelayed(), availability: described.availability, free
+        delayed: deliveryDelayed(buyer), availability: described.availability, free
       })
       const unit = dealerPrice(surchargedUnit(described.price, cardSurcharge(messageId, line.uuid, senderId, card)), source, buyer.items)
       const total = unit * quantity
