@@ -37,6 +37,11 @@ export class SR5SharedVision {
     if (!game.user.isGM && (game.users.activeGM || !tokenDocument.isOwner)) return SR5_SocketHandler.emitForGM("sharedVisionSetViewer", {
       tokenUuid: tokenDocument.uuid, entry, remove
     })
+    //A second gamemaster asks the active one too: his own queue is not the one the others wait on (Oskar, after F4)
+    const activeGM = game.users.activeGM
+    if (game.user.isGM && activeGM && activeGM.id !== game.user.id) return SR5_SocketHandler.emitForPlayer("sharedVisionSetViewer", {
+      tokenUuid: tokenDocument.uuid, entry, remove
+    }, activeGM.id)
     return SR5SharedVision.writeList(tokenDocument, current => remove ? withoutViewer(current, entry.userId) : withViewer(current, entry))
   }
 
@@ -65,7 +70,8 @@ export class SR5SharedVision {
   static async _socketSetViewer(message, senderId) {
     const tokenDocument = await fromUuid(message.data.tokenUuid)
     const sender = game.users.get(senderId)
-    const allowed = isViewerRequestAllowed({
+    //A gamemaster may write any list himself: his request is relayed only to keep a single queue
+    const allowed = !!sender?.isGM || isViewerRequestAllowed({
       actor: tokenDocument?.actor,
       entry: message.data.entry,
       remove: !!message.data.remove,
