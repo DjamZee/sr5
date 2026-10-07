@@ -163,7 +163,7 @@ export class SR5_PrepareRollTest {
         rollData = await SR5_GetRollData.fading(rollData, actor, chatData)
         break
       case "healing":
-        if (SR5_ActorHelper.stunBlocksNaturalHealing(actor.system, "healing", rollKey)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_StunHealsFirst"))
+        if (SR5_ActorHelper.stunHealsFirstRefused(actor, "healing", rollKey)) return
         rollData = await SR5_GetRollData.healing(rollData, rollKey, actor)
         break
       case "iceAttack":
