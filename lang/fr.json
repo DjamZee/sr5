@@ -2647,6 +2647,7 @@
 	"SR5.HostTypeObsolete": "Obsolète",
 	"SR5.HostTypeOffline": "Hors ligne",
 	"SR5.HostTypeRogue": "Renégat",
+	"SR5.IceHostAttribute": "Attribut du serveur {host} (SR5 p. 249)",
 	"SR5.HostTypeFixed": "{type}, fixé par le type : indice {offset}",
 	"SR5.HostTypeDealt": "{type}, réparti par le type : indice {offset}",
 	"SR5.HostUntypedDealt": "Sans type, ordre par défaut (SR5 p. 248) : indice {offset} ; échangez deux attributs pour choisir le vôtre",

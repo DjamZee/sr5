@@ -2647,6 +2647,7 @@
 	"SR5.HostTypeObsolete": "Obsolete",
 	"SR5.HostTypeOffline": "Offline",
 	"SR5.HostTypeRogue": "Rogue",
+	"SR5.IceHostAttribute": "Attribute of the host {host} (SR5 p. 249)",
 	"SR5.HostTypeFixed": "{type}, set by the type: rating {offset}",
 	"SR5.HostTypeDealt": "{type}, dealt by the type: rating {offset}",
 	"SR5.HostUntypedDealt": "No type, default order (SR5 p. 248): rating {offset}; swap two attributes to choose your own",
