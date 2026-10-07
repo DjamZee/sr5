@@ -491,7 +491,8 @@ export class SR5_UtilityItem extends Actor {
             SR5_EntityHelpers.updateModifier(itemData.weaponSkill, skillLabel, "controleMode", controlerSkill.test.dicePool)
             //Jumped in, the control rig rating adds to piloting skill tests, Gunnery among them (SR5 p. 149, 268, 455), and to the Accuracy of a mounted weapon (SR5 p. 268)
             if (controlerData.specialProperties.controlRig.value) {
-              SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)
+              //A melee weapon in a drone arm uses the controller's melee skill, not a piloting skill: no dice
+              if (skillKey === "gunnery") SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)
               SR5_EntityHelpers.updateModifier(itemData.accuracy, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)
             }
             if (controlerData.matrix.userMode === "hotsim") SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 1)
