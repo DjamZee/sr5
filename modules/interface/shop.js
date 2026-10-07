@@ -35,6 +35,9 @@ import {
 import {
   STACKABLE_TYPES, sr5StackPayload, sr5LineLabel
 } from './item-payload.js'
+import {
+  creationModeFor
+} from '../system/creation-actor.js'
 
 /**
  * Purchases made from the compendium browser.
@@ -65,7 +68,7 @@ export class SR5Shop {
 
   /** The grades offered for an augmentation, by the shop's mode and the world options. */
   static gradesFor(type, system, {
-    equip = false
+    equip = false, actor = null
   } = {
   }) {
     if (!SR5ShopGrades.isGraded(type, system)) return []
@@ -73,7 +76,7 @@ export class SR5Shop {
       augmentationType: system.type,
       // Equip mode places every grade, the world options aside — greyware still cyberware only
       all: equip,
-      creation: SR5Shop.creationMode,
+      creation: SR5Shop.creationModeFor(actor),
       gamma: game.settings.get('sr5', 'sr5ShopGradeGamma') === true,
       greyware: game.settings.get('sr5', 'sr5ShopGradeGreyware') === true,
     })
@@ -139,6 +142,15 @@ export class SR5Shop {
    */
   static get creationMode() {
     return game.settings.get('sr5', 'sr5ShopCreationMode') === true
+  }
+
+  /**
+   * The creation rules for this buyer: the world's mode, or the gamemaster's flag on the actor (créateur de
+   * personnage, lot C0). The flag caps availability, rating and grades, but the purchase is charged: whether it is
+   * free stays `creationMode`, the world's (DjamZ's ruling Q2, 2026-10-08).
+   */
+  static creationModeFor(actor) {
+    return creationModeFor(actor)
   }
 
   /**
@@ -282,13 +294,13 @@ export class SR5Shop {
       }
       // A grade the shop does not offer here falls back to none, never to a free upgrade
       const offered = SR5Shop.gradesFor(source.type, source.system, {
-        equip
+        equip, actor
       })
       const grade = offered.includes(line.grade) ? line.grade : null
       // Creation caps availability and rating (SR5 p. 66, p. 420), at the level the gamemaster
       // set (DjamZ's ruling, 2026-10-05); Equip mode is how the gamemaster goes past them
       const described = SR5ShopCatalog.describe(source, grade)
-      const block = !equip && SR5Shop.creationMode ?
+      const block = !equip && SR5Shop.creationModeFor(actor) ?
         SR5ShopCatalog.creationBlock(described, SR5Shop.creationLimits) :
         null
       if (block) {
@@ -576,7 +588,7 @@ export class SR5Shop {
       essence
     } = essenceAfterPurchase(current, actor.items, lines, {
       // The hole is credited to the new implants under the Faille d'Essence only (Chrome Flesh p. 74)
-      creation: SR5Shop.creationMode, hole: essenceSettingOn(ESSENCE_HOLE_SETTING) ? actor.system.essence.hole : 0
+      creation: SR5Shop.creationModeFor(actor), hole: essenceSettingOn(ESSENCE_HOLE_SETTING) ? actor.system.essence.hole : 0
     })
     if (essence > 0 || essence >= current) return true
     const data = {

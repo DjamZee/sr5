@@ -16,6 +16,9 @@ import {
 import {
   updateLedger
 } from "./gm-ledger.js"
+import {
+  creationModeFor
+} from "./creation-actor.js"
 
 export const IMPLANT_REGISTER = "sr5ImplantRegister"
 
@@ -149,7 +152,8 @@ export async function expectedValues(doc, fields, register, options = {
 }
 
 const isActiveGM = () => !!game.users?.activeGM?.isSelf
-const creationMode = () => game.settings.get("sr5", "sr5ShopCreationMode") === true
+// The world's creation mode, or the gamemaster's flag on the character the document is (or is on): lot C0
+const creationMode = doc => creationModeFor(doc?.documentName === "Actor" ? doc : doc?.parent)
 
 // The register is written by one client, the active GM, in its turn on its latest state (gm-ledger.js)
 function record(doc, values) {
@@ -293,7 +297,7 @@ async function onCreate(doc, _options, userId) {
     return notePeak(doc)
   }
   const expected = await expectedAtCreation(doc, fields, {
-    creation: creationMode()
+    creation: creationMode(doc)
   })
   const mismatches = reservedMismatches(current, expected)
   await record(doc, expected)
@@ -317,7 +321,7 @@ async function onUpdate(doc, _changes, _options, userId) {
     return notePeak(doc)
   }
   const expected = await expectedValues(doc, fields, register, {
-    creation: creationMode()
+    creation: creationMode(doc)
   })
   if (!register[doc.uuid] || !fields.every(f => f in register[doc.uuid])) await record(doc, expected)
   const mismatches = reservedMismatches(current, expected)
@@ -343,15 +347,15 @@ export async function reconcileImplantRegister() {
   if (!isActiveGM()) return
   const register = game.settings.get("sr5", IMPLANT_REGISTER) ?? {
   }
-  const options = {
-    creation: creationMode(), firstSight: true
-  }
   // The implants the register does not know yet, and the entries missing a field added since, are written in one go
   const unknown = {
   }
   const peaks = {
   }
   for (const actor of game.actors) {
+    const options = {
+      creation: creationMode(actor), firstSight: true
+    }
     for (const doc of [actor, ...actor.items]) {
       const fields = reservedFieldsOf(doc)
       if (!fields.length) continue
