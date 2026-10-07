@@ -147,7 +147,8 @@ export class SR5_MatrixHelpers {
       //A bricked device throws a character in VR out of the Matrix, with dumpshock resisted by Willpower alone (SR5 p. 229, 231).
       //Relayed, the GM's browser writes the brick and sends the dumpshock to the target's player (_socketUpdateItem):
       //rolled here, its window opened on the attacker's screen
-      else if (!relayed && targetItem.type === "itemDevice" && SR5_ActorHelper.dumpshockIfInVR(targetActor, {
+      //A convergence already threw the character out by its reboot, with dumpshock (SR5 p. 233): not twice
+      else if (!relayed && !cardData.damage?.convergence && targetItem.type === "itemDevice" && SR5_ActorHelper.dumpshockIfInVR(targetActor, {
         bricked: true
       })){
         ui.notifications.info(`${targetActor.name} ${game.i18n.localize("SR5.INFO_IsDisconnected")}.`)
