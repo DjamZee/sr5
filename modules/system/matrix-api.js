@@ -175,14 +175,33 @@ async function gmConverge(actor, hostActor){
   const plan = convergencePlan({
     inHost: !!hostActor, stealth: !!actor.system?.matrix?.programs?.sneak?.isActive
   })
-  if (plan.marks) await placeMarks(hostActor, actor, plan.marks, {
+  //A persona with no active device (a sprite, a persona offline) carries no mark: placeMarks then puts none
+  const placed = plan.marks ? await placeMarks(hostActor, actor, plan.marks, {
     source: "convergence"
-  })
+  }) === true : false
   if (plan.damage) await postConvergenceCard(actor, plan.damage)
   //The reboot erases the marks, brings the score back to 0 and deals dumpshock in VR (entityActor.js)
   if (plan.reboot && typeof actor.rebootDeck === "function") await actor.rebootDeck()
-  await whisperConvergence(actor, hostActor, plan)
+  await whisperConvergence(actor, hostActor, plan, placed)
   return true
+}
+
+/** The lines the GM is whispered after a convergence, [key, data] each: in a host, whether its marks were put or not */
+export function convergenceLines({
+  name, host = null, plan, placed = false, sprite = false
+}){
+  const lines = []
+  if (host) lines.push([placed ? "SR5.MatrixConvergenceHost" : "SR5.MatrixConvergenceHostNoMark", {
+    name, host, marks: plan.marks
+  }])
+  else {
+    lines.push(["SR5.MatrixConvergenceGrid", {
+      name, damage: plan.damage
+    }])
+    lines.push([plan.located ? "SR5.MatrixConvergenceLocated" : "SR5.MatrixConvergenceStealth"])
+  }
+  if (sprite) lines.push(["SR5.MatrixConvergenceSprite"])
+  return lines
 }
 
 /** The card of the demigods: the matrix damage to resist, as a data bomb's (file-actions.js), the GM's card */
@@ -212,19 +231,11 @@ async function postConvergenceCard(actor, damage){
 }
 
 /** What the GM must play himself: the location told, the IC launched, a sprite that vanishes (SR5 p. 233, 249, 256) */
-async function whisperConvergence(actor, hostActor, plan){
+async function whisperConvergence(actor, hostActor, plan, placed){
   const esc = s => foundry.utils.escapeHTML(String(s ?? ""))
-  const lines = []
-  if (hostActor) lines.push(game.i18n.format("SR5.MatrixConvergenceHost", {
-    name: esc(actor.name), host: esc(hostActor.name), marks: plan.marks
-  }))
-  else {
-    lines.push(game.i18n.format("SR5.MatrixConvergenceGrid", {
-      name: esc(actor.name), damage: plan.damage
-    }))
-    lines.push(game.i18n.localize(plan.located ? "SR5.MatrixConvergenceLocated" : "SR5.MatrixConvergenceStealth"))
-  }
-  if (actor.type === "actorSprite") lines.push(game.i18n.localize("SR5.MatrixConvergenceSprite"))
+  const lines = convergenceLines({
+    name: esc(actor.name), host: hostActor ? esc(hostActor.name) : null, plan, placed, sprite: actor.type === "actorSprite"
+  }).map(([key, data]) => data ? game.i18n.format(key, data) : game.i18n.localize(key))
   await ChatMessage.create({
     content: lines.map(l => `<p>${l}</p>`).join(""),
     whisper: ChatMessage.getWhisperRecipients("GM").map(u => u.id),
