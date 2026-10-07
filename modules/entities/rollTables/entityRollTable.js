@@ -295,7 +295,26 @@ export class SR5RollTable extends foundry.documents.RollTable {
   async toMessage(results, options = {
   }) {
     const grouped = sr5GroupResults(results)
-    const message = await super.toMessage(grouped, options)
+    // What the card's "Relancer" button needs to draw again (table-actions.js):
+    // the table, or for a compendium drawn as a table, where its lines came from
+    const source = this.sr5DrawSource ? {
+      tableDrawSource: this.sr5DrawSource
+    } : {
+      tableUuid: this.uuid
+    }
+    const messageData = foundry.utils.mergeObject(options.messageData ?? {
+    }, {
+      flags: {
+        sr5: {
+          tableName: this.name, ...source
+        }
+      }
+    }, {
+      inplace: false
+    })
+    const message = await super.toMessage(grouped, {
+      ...options, messageData
+    })
     if (message) await this.#addPayout(message, grouped)
     return message
   }

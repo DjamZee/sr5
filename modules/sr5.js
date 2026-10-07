@@ -82,6 +82,9 @@ import {
   sr5HookRenderTablePayout
 } from './interface/table-payout.js'
 import {
+  sr5HookRenderTableActions
+} from './interface/table-actions.js'
+import {
   sr5KeepSidebarSettingsLast
 } from './interface/sidebar-tab-order.js'
 import {
@@ -197,6 +200,7 @@ Hooks.on('renderCompendiumDirectory', sr5HookRenderCompendiumDirectory)
 Hooks.on('renderRollTableSheet', sr5AddTableFormulaField)
 Hooks.on('renderTableResultConfig', sr5AddResultQuantityField)
 Hooks.on('renderChatMessageHTML', sr5HookRenderTablePayout)
+Hooks.on('renderChatMessageHTML', sr5HookRenderTableActions)
 Hooks.on('renderSidebar', SR5ShopWindow.onRenderSidebar)
 // A sale or a restock on a vendor: its open shop window redraws
 for (const hook of ['createItem', 'updateItem', 'deleteItem', 'updateActor']) Hooks.on(hook, SR5ShopVendor.onVendorChanged)
