@@ -90,6 +90,9 @@ export default async function weapon(rollData, actor, item){
   // the drone's compensation to its Body); the dialog (calculRecoil) already adds both, keep the stored value consistent
   rollData.combat.recoil.value = rollData.combat.recoil.compensationActor + rollData.combat.recoil.compensationWeapon - rollData.combat.recoil.cumulative
     
+  //The weapon's Reach goes on the card whatever the scene: handleTargetInfo stops early when none is viewed
+  if (itemData.category === "meleeWeapon") rollData.combat.reach = itemData.reach.value
+
   //Handle Targets & range
   rollData = await handleTargetInfo(rollData, actor, item)
   if(!rollData) return
@@ -399,7 +402,6 @@ export async function handleTargetInfo(rollData, actor, item){
 
   //Handle Melee specifics
   if (itemData.category === "meleeWeapon") {
-    rollData.combat.reach = itemData.reach.value
     // Melee range is a number of grid spaces: the adjacent one, diagonal included, plus one per point of
     // Reach (SR5 p. 187). It is counted between the spaces both tokens cover rather than compared to a
     // distance, which would depend on the scene's scale, its diagonal rule and the tokens' sizes. Only a
