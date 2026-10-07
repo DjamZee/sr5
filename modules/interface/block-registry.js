@@ -279,6 +279,9 @@ export const BLOCK_REGISTRY = {
   matrixProgramsList:  {
     partial: `${PARTIAL_ROOT}/right-tabs/matrix/programs.hbs`,              label: 'SR5.SheetConfig.Block.MatrixProgramsList', size: BLOCK_SIZE.DOUBLE 
   },
+  matrixFilesList:     {
+    partial: `${PARTIAL_ROOT}/right-tabs/matrix/files.hbs`,                 label: 'SR5.SheetConfig.Block.MatrixFiles',      size: BLOCK_SIZE.DOUBLE
+  },
   matrixActionsList:   {
     partial: `${PARTIAL_ROOT}/right-tabs/matrix/matrixActions.hbs`,         label: 'SR5.SheetConfig.Block.MatrixActions',    size: BLOCK_SIZE.DOUBLE 
   },

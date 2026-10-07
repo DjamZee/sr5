@@ -142,6 +142,8 @@ export class SR5DroneSheet extends ActorSheetSR5 {
     actor.weapons = weapons
     actor.armors = armors
     actor.programs = programs
+    // The files it stores (SR5 p. 228)
+    actor.files = Array.from(actor.items).filter(i => i.type === "itemFile")
     //The console's autosofts, and whether this drone uses them (SR5 p. 269)
     actor.rccAutosofts = rccAutosoftRows(actor.system, actor.items)
     actor.autopilotCap = droneAutopilot(actor.system, actor.items)
@@ -169,6 +171,7 @@ export class SR5DroneSheet extends ActorSheetSR5 {
       case "itemArmor":
       case "itemProgram":
       case "itemMark":
+      case "itemFile":
       case "itemAmmunition":
       case "itemVehicleMod":
       case "itemGear":

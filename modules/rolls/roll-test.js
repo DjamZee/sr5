@@ -1,5 +1,5 @@
 import {
-  refuseByRule
+  refuseByRule, ruleLockActive
 } from "../system/rule-locks.js"
 import {
   SR5_SystemHelpers 
@@ -130,12 +130,7 @@ export class SR5_RollTest {
         rollDialog.activateListeners(element)
         //An action the character no longer has keeps the dialog open, when the world setting asks for it
         element.querySelectorAll('button[data-action="roll"], button[data-action="edge"]').forEach(b => b.addEventListener("click", ev => {
-          //Suppressive fire and the flamethrower sweep need all their rounds (SR5 p. 179, Gun H(e)aven 3 p. 3)
-          const missingAmmo = dialogData.test.typeSub === "rangedWeapon" && SR5_ConverterHelpers.missingAmmo(dialogData.combat.firingMode.selected, dialogData.combat.ammo.value)
-          if (missingAmmo) ui.notifications.warn(game.i18n.format("SR5.WARN_FiringModeAmmo", {
-            needed: SR5_ConverterHelpers.firingModeToBullet(dialogData.combat.firingMode.selected), left: dialogData.combat.ammo.value ?? 0
-          }))
-          else if (SR5Combat.hasActionsLeft(actor, dialogData.combat.actions)) return
+          if (!SR5_RollTest.rollClickRefused(actor, dialogData)) return
           ev.preventDefault()
           ev.stopImmediatePropagation()
         }))
@@ -284,6 +279,26 @@ export class SR5_RollTest {
 
   //SR5 p. 305-306: aiding a test is a service of a bound spirit. The dice pool modifiers are a list, and an
   //update keyed 'data' (Foundry V9) is ignored: the service is written by its path
+  /**
+   * Must a click on "roll" keep the dialog open? Suppressive fire and the flamethrower sweep need all their rounds
+   * (SR5 p. 179, Gun H(e)aven 3 p. 3): refused by the "ammo" rule lock family. Lifted, the roll goes with the rounds
+   * left and the clip stops at 0 (roll-test-helper); the gamemaster hears of it only once the roll really goes,
+   * after the actions check (B13, lot 2)
+   */
+  static rollClickRefused(actor, dialogData) {
+    const mode = dialogData.combat.firingMode.selected, left = dialogData.combat.ammo.value ?? 0
+    const missingAmmo = dialogData.test.typeSub === "rangedWeapon" && SR5_ConverterHelpers.missingAmmo(mode, left)
+    const refuse = () => refuseByRule("ammo", "SR5.WARN_FiringModeAmmo", {
+      needed: SR5_ConverterHelpers.firingModeToBullet(mode), left
+    }, {
+      actor
+    })
+    if (missingAmmo && ruleLockActive("ammo")) return refuse()
+    if (!SR5Combat.hasActionsLeft(actor, dialogData.combat.actions)) return true
+    if (missingAmmo) refuse()
+    return false
+  }
+
   static async spendSpiritAidService(dialogData) {
     if (!(dialogData.dicePool.modifiers.find(m => m.type === "spiritAid")?.value > 0)) return
     let spiritItem = await fromUuid(dialogData.magic.spiritAid.id)
@@ -391,10 +406,7 @@ export class SR5_RollTest {
   static async extendedRoll(message, actor){
     let messageData = message.flags.sr5data
     //SR5 p. 207: the next roll of a natural Physical recovery waits for the Stun damage to be healed, as the first one
-    if (SR5_ActorHelper.stunBlocksNaturalHealing(actor?.system, messageData.test.type, messageData.test.typeSub)) {
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_StunHealsFirst"))
-      return false
-    }
+    if (SR5_ActorHelper.stunHealsFirstRefused(actor, messageData.test.type, messageData.test.typeSub)) return false
 
     //Prepare new chat card: the base pool and its modifiers, minus one die per earlier roll (SR5 p. 50).
     //GM ruling (05/10): Push the limit joins the starting pool of an extended test, every roll keeps its Edge dice
@@ -831,8 +843,12 @@ export class SR5_RollTest {
       case "mentorDrawback":
         await SR5_AddRollInfo.mentorDrawbackInfo(cardData)
         break
+      case "autopilotUnforeseen":
+        //Confused by a hacker, the threshold is known (Rigger 5.0 p. 34); otherwise the gamemaster compares the hits with
+        //the threshold of the situation (SR5 p. 271)
+        if (cardData.threshold.value > 0) cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize(cardData.roll.hits >= cardData.threshold.value ? "SR5.AutopilotKeepsControl" : "SR5.AutopilotConfused"))
+        break
       case "attributeOnly":
-      case "autopilotUnforeseen": //The gamemaster compares the hits with the threshold of the situation (SR5 p. 271)
       case "languageSkill":
       case "knowledgeSkill":
       case "defenseSimple":

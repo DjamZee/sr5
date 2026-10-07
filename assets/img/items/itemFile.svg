@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A file of the Matrix: a sheet with a folded corner and lines of data, white like the other item icons -->
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 113.4 113.4" width="512" height="512" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#FFFFFF;}
+</style>
+<g>
+	<path class="st0" d="M24.5,6.5h44.2l22.2,22.2v74.2c0,2.2-1.8,4-4,4H24.5c-2.2,0-4-1.8-4-4V10.5C20.5,8.3,22.3,6.5,24.5,6.5z
+		 M28.5,14.5v84.4h54.4V33.2H64.2V14.5H28.5z M72.2,18.9v6.3h6.3L72.2,18.9z"/>
+	<rect class="st0" x="36.5" y="42.5" width="38.4" height="6"/>
+	<rect class="st0" x="36.5" y="56.5" width="38.4" height="6"/>
+	<rect class="st0" x="36.5" y="70.5" width="38.4" height="6"/>
+	<rect class="st0" x="36.5" y="84.5" width="24" height="6"/>
+</g>
+</svg>

@@ -1,11 +1,11 @@
 import {
-  hasWeaponTrait
+  vintageWirelessRefused
 } from '../items/weaponTraits.js'
 import {
   SR5_Toxins
 } from '../items/toxins.js'
 import {
-  activeBoneClash, boneClashKey, isBoneLacing
+  boneSwitchRefused
 } from '../../system/implant-essence.js'
 import {
   SR5_SystemHelpers
@@ -1527,23 +1527,14 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     if (target === "system.isActive" && value && realItem?.type === "itemDrug" && !drugDesignApproved(realItem.system)) return ui.notifications.warn(game.i18n.format(realItem.system.designer.status === "refused" ? "SR5.WARN_DrugDesignRefused" : "SR5.WARN_DrugDesignNotApproved", {
       drug: realItem.name
     }))
-    //Vintage (Gun H(e)aven 3 p. 3): never wireless, so no switch and no action spent
-    if (target === "system.wirelessTurnedOn" && realItem?.type === "itemWeapon" && hasWeaponTrait(realItem.system, "vintage")) return ui.notifications.warn(game.i18n.localize("SR5.WARN_VintageNoWireless"))
+    //Vintage (Gun H(e)aven 3 p. 3): never wireless, so no switch and no action spent (the "ammo" rule lock family, B13 lot 2)
+    if (target === "system.wirelessTurnedOn" && vintageWirelessRefused(realItem, actor)) return
     //Better Than Bad p. 141: under Blight no adept power, focus nor sustained spell is switched on (decisions of DjamZ)
     if (target === "system.isActive" && value && ["itemAdeptPower", "itemFocus", "itemSpell"].includes(realItem?.type) && SR5_Toxins.isCutFromManasphere(actor)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
     //Ossature renforcée (SR5 p. 458): "un seul type pouvant être installé à la fois", and never beside an Augmentation
     //de densité osseuse (p. 458, 462). One switched on beside another is refused to a player; the gamemaster is warned
-    //and goes past it (decision H5 of DjamZ)
-    if (target === "system.isActive" && value === true) {
-      const lacing = activeBoneClash(actor, realItem)
-      if (lacing) {
-        const key = boneClashKey(isBoneLacing(realItem) && isBoneLacing(lacing), game.user.isGM ? "gm" : "player")
-        ui.notifications.warn(game.i18n.format(key, {
-          name: realItem.name, actor: actor.name, lacing: lacing.name
-        }))
-        if (!game.user.isGM) return
-      }
-    }
+    //and goes past it (decision H5 of DjamZ); the "body" rule lock family lifted, so does a player (B13, lot 4)
+    if (target === "system.isActive" && value === true && boneSwitchRefused(actor, realItem)) return
     //A console shares as many autosofts as its Sharing rating (SR5 p. 269)
     if (target === "system.isShared" && value === true && sharingSlotsLeft(itemList, actor.system.matrix.attributes.sharing.value) < 1) return ui.notifications.warn(game.i18n.format("SR5.WARN_RccSharingFull", {
       sharing: actor.system.matrix.attributes.sharing.value

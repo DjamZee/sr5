@@ -3800,6 +3800,8 @@ SR5.effectTypes = {
   backgroundCount			  : "SR5.SceneBackgroundCount",
   anticoagulantDamage       : "SR5.Anticoagulant",
   matrixAction              : "SR5.MatrixAction",
+  targetDevice              : "SR5.MatrixActionTargetDevice",
+  noiseSuppression          : "SR5.MatrixActionSuppressNoise",
 }
 
 SR5.effectDuration = {
@@ -3935,6 +3937,7 @@ SR5.dicePoolModTypes = {
   spiritType                : "SR5.SpiritTypeBonus",
   spellCategory             : "SR5.SpellCategoryBonus",
   sensorLockMod             : "SR5.SensorLockedTarget",
+  rccNoiseReduction         : "SR5.NoiseReduction",
   signatureSize             : "SR5.TargetSize",
   mark                      : "SR5.NumberOfWantedMarks",
   emulate                   : "SR5.MatrixActionEmulate",
@@ -4115,6 +4118,7 @@ SR5.itemTypes = {
   itemDrug                  : "TYPES.Item.itemDrug",
   itemEcho                  : "TYPES.Item.itemEcho",
   itemEffect                : "TYPES.Item.itemEffect",
+  itemFile                  : "TYPES.Item.itemFile",
   itemFocus                 : "TYPES.Item.itemFocus",
   itemGear                  : "TYPES.Item.itemGear",
   itemKarma                 : "TYPES.Item.itemKarma",

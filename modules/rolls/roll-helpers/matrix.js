@@ -40,6 +40,9 @@ import {
 import {
   SR5_CharacterUtility
 } from "../../entities/actors/utilityActor.js"
+import {
+  TARGET_DEVICE_EFFECT, NOISE_SUPPRESSION_EFFECT, SENSOR_LOCK_EFFECT, netHitsOf, brokenLockValue, turnEffect, noiseSuppressionCustomEffects
+} from "./electronic-warfare.js"
 
 //A warning, and false: nothing was written, the card's button stays
 function warned(key) {
@@ -542,6 +545,76 @@ export class SR5_MatrixHelpers {
     ui.notifications.info(`${target.name}${game.i18n.format('SR5.Colons')} ${game.i18n.localize('SR5.MatrixActionHaywire')} (${hackerHits})`)
   }
 
+
+  //An effect of the same kind and the same author on this actor is replaced, not stacked
+  static async _replaceTurnEffect(actor, effect){
+    let previous = actor.items.filter(i => i.type === "itemEffect" && i.system.type === effect["system.type"] && i.system.ownerID === effect["system.ownerID"]).map(i => i.id)
+    if (previous.length) await actor.deleteEmbeddedDocuments("Item", previous)
+    await actor.createEmbeddedDocuments("Item", [effect])
+  }
+
+  // Rigger 5.0 p. 34: Target Device. Until the end of the combat turn, the attackers slaved to the rigger add his net
+  // hits to their pool against this target (the box of the attack dialog, indirect-effects.js). Clicked on the
+  // defender's card, by whoever owns the target
+  static async applyTargetDeviceEffect(cardData, sourceActor, target){
+    if (!sourceActor || !target) return warned("SR5.WARN_NoActor")
+    let netHits = netHitsOf(cardData.previousMessage.hits, cardData.roll.hits)
+    let deviceName = await SR5_MatrixHelpers.targetDeviceName(cardData, target)
+    await SR5_MatrixHelpers._replaceTurnEffect(target, turnEffect({
+      name: `${game.i18n.localize("SR5.MatrixActionTargetDevice")} (${sourceActor.name})`,
+      type: TARGET_DEVICE_EFFECT, owner: sourceActor, value: netHits, target: deviceName,
+      gameEffect: game.i18n.localize("SR5.MatrixActionTargetDevice_GE"),
+    }))
+    ui.notifications.info(`${target.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.TargetDeviceApplied", {
+      name: sourceActor.name, hits: netHits
+    })}`)
+    return true
+  }
+
+  // Rigger 5.0 p. 35: Suppress Noise. The hits raise the noise reduction of the rigger until the end of the combat
+  // turn, with any other reduction. Clicked on his own card
+  static async applyNoiseSuppressionEffect(cardData, actor){
+    if (!actor) return warned("SR5.WARN_NoActor")
+    let hits = Math.max(0, Number(cardData.roll.hits) || 0)
+    await SR5_MatrixHelpers._replaceTurnEffect(actor, turnEffect({
+      name: game.i18n.localize("SR5.MatrixActionSuppressNoise"),
+      type: NOISE_SUPPRESSION_EFFECT, owner: actor, value: hits, target: game.i18n.localize("SR5.NoiseReduction"),
+      gameEffect: game.i18n.localize("SR5.MatrixActionSuppressNoise_GE"), customEffects: noiseSuppressionCustomEffects(hits),
+    }))
+    ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.NoiseSuppressionApplied", {
+      hits
+    })}`)
+    return true
+  }
+
+  // Rigger 5.0 p. 35: Break Target Lock. Each net hit lowers by one the lock the defender holds on the hacker
+  // (SR5 p. 186). Clicked by the hacker, who owns the lock written on him
+  static async breakTargetLock(cardData, hacker, locker){
+    if (!hacker || !locker) return warned("SR5.WARN_NoActor")
+    let lock = hacker.items.find(i => i.type === "itemEffect" && i.system.type === SENSOR_LOCK_EFFECT && i.system.ownerID === locker.id)
+    if (!lock) {
+      ui.notifications.warn(game.i18n.format("SR5.WARN_NoTargetLock", {
+        name: locker.name, target: hacker.name
+      }))
+      return false
+    }
+    let left = brokenLockValue(lock.system.value, netHitsOf(cardData.previousMessage.hits, cardData.roll.hits))
+    if (left === null) {
+      await hacker.deleteEmbeddedDocuments("Item", [lock.id])
+      if (!hacker.items.some(i => i.type === "itemEffect" && i.system.type === SENSOR_LOCK_EFFECT)) await SR5_EntityHelpers.deleteEffectOnActor(hacker, SENSOR_LOCK_EFFECT)
+      ui.notifications.info(`${hacker.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_TargetLockBroken", {
+        name: locker.name
+      })}`)
+    } else {
+      await lock.update({
+        "system.value": left
+      })
+      ui.notifications.info(`${hacker.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_TargetLockReduced", {
+        name: locker.name, value: -left
+      })}`)
+    }
+    return true
+  }
 
   //Create an effect on an ally, through the GM when the user does not own the ally.
   //A previous effect of the same kind from the same hacker is replaced, not stacked.

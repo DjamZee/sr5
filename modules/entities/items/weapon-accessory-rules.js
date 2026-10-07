@@ -6,6 +6,10 @@
 // the tripod or the gyro mount), so they are recognised by their specialEffect when it is set, else by their name, in
 // French or in English.
 
+import {
+  refuseByRule
+} from "../../system/rule-locks.js"
+
 const NAME_PATTERNS = {
   redDotSight      : /point rouge|red ?dot/,
   laserSight       : /visee laser|laser sight/,
@@ -68,6 +72,18 @@ export function capacityTaken(enhancements) {
 /** Whether an enhancement fits in what is left of the accessory's Capacity */
 export function enhancementFits(a, enhancement) {
   return capacityTaken(a?.system?.weaponAccessory?.visionEnhancements) + capacityTaken([enhancement]) <= accessoryCapacity(a)
+}
+
+/**
+ * Mounting an enhancement the accessory has no Capacity left for is refused (SR5 p. 447). The "ammo" rule lock family
+ * lifted (B13, lot 2), it is mounted beyond the Capacity and the gamemaster hears of it.
+ * @returns {boolean} true if the mounting must stop
+ */
+export function enhancementRefused(a, enhancement, actor) {
+  if (enhancementFits(a, enhancement)) return false
+  return refuseByRule("ammo", "SR5.WARN_AccessoryCapacityFull", null, {
+    actor
+  })
 }
 
 /**

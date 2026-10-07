@@ -44,14 +44,15 @@ export const PERCEPTION_ENTRIES = [
   {
     key: "marks", kind: "target", source: "system", drawn: true
   },
+  // fileFact: the system answers when the target is a file (objet Fichier); the gamemaster types it otherwise
   {
-    key: "fileEdited", kind: "target", source: "gm"
+    key: "fileEdited", kind: "target", source: "gm", fileFact: true
   },
   {
-    key: "fileBomb", kind: "target", source: "gm"
+    key: "fileBomb", kind: "target", source: "gm", fileFact: true
   },
   {
-    key: "fileProtection", kind: "target", source: "gm"
+    key: "fileProtection", kind: "target", source: "gm", fileFact: true
   },
   {
     key: "silentNearby", kind: "around", source: "system"
@@ -65,6 +66,18 @@ export const PERCEPTION_KEYS = PERCEPTION_ENTRIES.map(e => e.key)
 
 export function entryOf(key){
   return PERCEPTION_ENTRIES.find(e => e.key === key) ?? null
+}
+
+/**
+ * Who answers an entry: the system, or the gamemaster (or a provider). The three entries on files are the system's
+ * when the target is a file (objet Fichier), the gamemaster's otherwise (a target that is no file has no such answer).
+ * @param {Object} entry          an entry of PERCEPTION_ENTRIES
+ * @param {Boolean} targetIsFile  the card aims at a file
+ * @return {String}  "system" or "gm"
+ */
+export function sourceOf(entry, targetIsFile = false){
+  if (entry?.fileFact && targetIsFile) return "system"
+  return entry?.source ?? "gm"
 }
 
 /**
@@ -132,6 +145,7 @@ export function checkChoices(choices = [], budget = 0, {
  * @param {Object} facts.lastAction   {key, worldTime, round} or null
  * @param {Array} facts.marks         [{ownerId, value}]
  * @param {Number|null} facts.silentNearby  silent icons within 100 m of the observer
+ * @param {Object|null} facts.file    the target is a file: {protection, bomb, lastEdit} (matrix-files.js, fileFacts)
  * @param {Object} [typed]            the gamemaster's or a provider's answers, by key
  * @return {{key: String, param?: String, value: *, missing: Boolean}}
  *   missing: the system has nothing to say (no commcode written, no action known, no answer typed)
@@ -180,12 +194,28 @@ export function answerOf(choice, facts = {
       return answer(marksCount(facts.marks))
     case "silentNearby":
       return typeof facts.silentNearby === "number" ? answer(facts.silentNearby) : answer(null, true)
-    default: {
-    // The gamemaster's entries: what she typed, or what a provider answered (sr5.matrixPerceptionInfo)
-      const text = String(typed?.[key] ?? "").trim()
-      return text ? answer(text) : answer(null, true)
-    }
+    // A file (objet Fichier, SR5 p. 237): its last edit ({worldTime, byName}, or null when nobody edited it in play),
+    // whether a bomb is on it (not its rating), its protection (0: none)
+    case "fileEdited":
+    case "fileBomb":
+    case "fileProtection":
+      if (facts.file) {
+        if (key === "fileEdited") return answer(facts.file.lastEdit ? {
+          ...facts.file.lastEdit
+        } : null)
+        if (key === "fileBomb") return answer(!!facts.file.bomb)
+        return answer(Number(facts.file.protection) || 0)
+      }
+      return typedAnswer(key, typed, answer)
+    default:
+      return typedAnswer(key, typed, answer)
   }
+}
+
+// The gamemaster's entries: what she typed, or what a provider answered (sr5.matrixPerceptionInfo)
+function typedAnswer(key, typed, answer){
+  const text = String(typed?.[key] ?? "").trim()
+  return text ? answer(text) : answer(null, true)
 }
 
 /** The number of marks on an icon, whoever placed them (SR5 p. 237: "but not their owners") */

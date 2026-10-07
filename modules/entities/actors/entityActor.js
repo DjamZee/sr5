@@ -955,6 +955,7 @@ export class SR5Actor extends Actor {
         case "itemLanguage":
         case "itemKnowledge":
         case "itemMark":
+        case "itemFile":
         case "itemContact":
         case "itemSpritePower":
           break

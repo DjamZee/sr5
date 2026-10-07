@@ -243,6 +243,9 @@ import {
   sr5ItemSpiritTypeDataModel
 } from "../datamodels/items/itemSpiritType.js"
 import {
+  sr5ItemFileDataModel
+} from "../datamodels/items/itemFile.js"
+import {
   sr5ItemToxinDataModel
 } from "../datamodels/items/itemToxin.js"
 import {
@@ -426,6 +429,7 @@ export async function sr5HookInit() {
     itemDrug: sr5ItemDrugDataModel,
     itemEcho: sr5ItemEchoDataModel,
     itemEffect: sr5ItemEffectDataModel,
+    itemFile: sr5ItemFileDataModel,
     itemFocus: sr5ItemFocusDataModel,
     itemGear: sr5ItemGearDataModel,
     itemKarma: sr5ItemKarmaDataModel,

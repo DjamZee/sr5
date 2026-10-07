@@ -2,6 +2,9 @@ import {
   SR5FactionRegistry
 } from "../../interface/faction-registry.js"
 import {
+  fileLastEditText
+} from "../../rolls/roll-helpers/file-actions.js"
+import {
   canEditItemEffects, clearTargetsOnCategoryChange, keepUnlistedEffectFields, lockEffectFields
 } from "../../system/effect-editor.js"
 import {
@@ -53,7 +56,7 @@ import {
   TACNET_COMBAT_SKILLS
 } from "../../rolls/roll-helpers/tacnet.js"
 import {
-  enhancementFits
+  enhancementRefused
 } from "./weapon-accessory-rules.js"
 import {
   deviceModeSheetContext, switchDeviceMode
@@ -540,6 +543,12 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     // Illusionist (Forbidden Arcana p. 37): the spell type chosen with each level
     if (item.type === "itemQuality") context.showMasteryOption = (item.system.customEffects || [])
       .some(e => e?.target === "system.magic.masteries.illusionist")
+
+    // A file of the Matrix: its content, the gamemaster's, and its last edit in words (SR5 p. 237, 240)
+    if (item.type === "itemFile") {
+      context.enrichedFileContent = await enrich(item.system.content)
+      context.fileLastEdit = fileLastEditText(item.system.lastEdit)
+    }
 
     // Custom spirit type: pickers, and labels for the read-only summary
     if (item.type === "itemSpiritType") {
@@ -1083,7 +1092,7 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     if (!gear) return
     //The prepared copy carries the Capacity the enhancement takes (a rated one: rating × its Capacity)
     const copy = gear.toObject(false)
-    if (!enhancementFits(this.item, copy)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_AccessoryCapacityFull"))
+    if (enhancementRefused(this.item, copy, actor)) return
     let mounted = foundry.utils.deepClone(this.item._source.system.weaponAccessory?.visionEnhancements ?? [])
     if (!Array.isArray(mounted)) mounted = Object.values(mounted)
     mounted.push(copy)

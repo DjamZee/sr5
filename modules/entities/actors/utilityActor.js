@@ -111,6 +111,9 @@ import {
   replacedVehicleAttribute, replacedVehicleAttributeOf, armorCapReduction, addedArmor, crashArmorPenetration,
   tactileSensorsOn, TACTILE_PERCEPTION_DICE, TACTILE_HANDLING, metahumanAdaptationPenalty
 } from "../../system/vehicle-mods.js"
+import {
+  consoleNoiseReductionDice
+} from "../../rolls/roll-helpers/electronic-warfare.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -4660,21 +4663,23 @@ export class SR5_CharacterUtility extends Actor {
       SR5_EntityHelpers.updateModifier(matrixActions.watchdog.test, game.i18n.localize('SR5.Logic'), "linkedAttribute", attributes.logic.augmented.value)
     }		
     if (game.settings.get("sr5", "sr5Rigger5Actions")) {
+      //The console's own noise reduction, without the Suppress Noise of the turn (Rigger 5.0 p. 34-35)
+      const consoleNoise = consoleNoiseReductionDice(matrixAttributes.noiseReduction)
       SR5_EntityHelpers.updateModifier(matrixActions.breakTargetLock.test, game.i18n.localize('SR5.SkillElectronicWarfare'), "skillRating", skills.electronicWarfare.rating.value)
       SR5_EntityHelpers.updateModifier(matrixActions.breakTargetLock.test, game.i18n.localize('SR5.Intuition'), "linkedAttribute", attributes.intuition.augmented.value)
-      SR5_EntityHelpers.updateModifier(matrixActions.breakTargetLock.test, game.i18n.localize('SR5.NoiseReduction'), "matrixAttribute", matrixAttributes.noiseReduction.value)
+      SR5_EntityHelpers.updateModifier(matrixActions.breakTargetLock.test, game.i18n.localize('SR5.NoiseReduction'), "rccNoiseReduction", consoleNoise)
       SR5_EntityHelpers.updateModifier(matrixActions.confusePilot.test, game.i18n.localize('SR5.SkillElectronicWarfare'), "skillRating", skills.electronicWarfare.rating.value)
       SR5_EntityHelpers.updateModifier(matrixActions.confusePilot.test, game.i18n.localize('SR5.Logic'), "linkedAttribute", attributes.logic.augmented.value)
-      SR5_EntityHelpers.updateModifier(matrixActions.confusePilot.test, game.i18n.localize('SR5.NoiseReduction'), "matrixAttribute", matrixAttributes.noiseReduction.value)
+      SR5_EntityHelpers.updateModifier(matrixActions.confusePilot.test, game.i18n.localize('SR5.NoiseReduction'), "rccNoiseReduction", consoleNoise)
       SR5_EntityHelpers.updateModifier(matrixActions.detectTargetLock.test, game.i18n.localize('SR5.SkillComputer'), "skillRating", skills.computer.rating.value)
       SR5_EntityHelpers.updateModifier(matrixActions.detectTargetLock.test, game.i18n.localize('SR5.Logic'), "linkedAttribute", attributes.logic.augmented.value)
-      SR5_EntityHelpers.updateModifier(matrixActions.detectTargetLock.test, game.i18n.localize('SR5.NoiseReduction'), "matrixAttribute", matrixAttributes.noiseReduction.value)
+      SR5_EntityHelpers.updateModifier(matrixActions.detectTargetLock.test, game.i18n.localize('SR5.NoiseReduction'), "rccNoiseReduction", consoleNoise)
       SR5_EntityHelpers.updateModifier(matrixActions.suppressNoise.test, game.i18n.localize('SR5.SkillElectronicWarfare'), "skillRating", skills.electronicWarfare.rating.value)
       SR5_EntityHelpers.updateModifier(matrixActions.suppressNoise.test, game.i18n.localize('SR5.Logic'), "linkedAttribute", attributes.logic.augmented.value)
-      SR5_EntityHelpers.updateModifier(matrixActions.suppressNoise.test, game.i18n.localize('SR5.NoiseReduction'), "matrixAttribute", matrixAttributes.noiseReduction.value)
+      SR5_EntityHelpers.updateModifier(matrixActions.suppressNoise.test, game.i18n.localize('SR5.NoiseReduction'), "rccNoiseReduction", consoleNoise)
       SR5_EntityHelpers.updateModifier(matrixActions.targetDevice.test, game.i18n.localize('SR5.SkillElectronicWarfare'), "skillRating", skills.electronicWarfare.rating.value)
       SR5_EntityHelpers.updateModifier(matrixActions.targetDevice.test, game.i18n.localize('SR5.Logic'), "linkedAttribute", attributes.logic.augmented.value)
-      SR5_EntityHelpers.updateModifier(matrixActions.targetDevice.test, game.i18n.localize('SR5.NoiseReduction'), "matrixAttribute", matrixAttributes.noiseReduction.value)
+      SR5_EntityHelpers.updateModifier(matrixActions.targetDevice.test, game.i18n.localize('SR5.NoiseReduction'), "rccNoiseReduction", consoleNoise)
     }
 
     // AI Depth action (Data Trails p. 160): Redefine Ownership, Logic + Computer [Depth]
@@ -5275,7 +5280,7 @@ export class SR5_CharacterUtility extends Actor {
     let actorObject = actor.toObject(false)
     if (game.actors) {
       for (let a of game.actors) {
-        if (a.type === "actorDrone" && a.system.vehicleOwner.id === actor.id) {
+        if (a.type === "actorDrone" && a.system.vehicleOwner.id === actor.id && a.isOwner) {
           await a.update({
             "system.vehicleOwner.system": actorObject.system,
             "system.vehicleOwner.items": actorObject.items,
@@ -5286,7 +5291,8 @@ export class SR5_CharacterUtility extends Actor {
 
     if (canvas.scene) {
       for (let t of canvas.tokens.placeables) {
-        if (t.actor.type === "actorDrone" && t.actor.system.vehicleOwner.id === actor.id) {
+        //A linked token is the world actor, copied just above
+        if (t.actor?.type === "actorDrone" && !t.document.actorLink && t.actor.system.vehicleOwner.id === actor.id && t.actor.isOwner) {
           await t.actor.update({
             "system.vehicleOwner.system": actorObject.system,
             "system.vehicleOwner.items": actorObject.items,

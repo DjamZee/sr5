@@ -126,19 +126,24 @@ export class SR5AppareilSheet extends ActorSheetSR5 {
 
   _prepareItems(actor) {
     const externalEffects = []
+    const files = []
 
     // Iterate through items, allocating to containers
     for (let i of actor.items) {
       if (i.type === "itemEffect") externalEffects.push(i)
+      else if (i.type === "itemFile") files.push(i)
     }
 
     actor.externalEffects = externalEffects
+    actor.files = files
   }
 
   /** @override */
   async _onDropItemCreate(itemData) {
+    // A host's files, a device's (SR5 p. 228)
     switch(itemData.type){
       case "itemEffect":
+      case "itemFile":
         return super._onDropItemCreate(itemData)
       default:
         ui.notifications.info(game.i18n.localize('SR5.INFO_ForbiddenItemType'))

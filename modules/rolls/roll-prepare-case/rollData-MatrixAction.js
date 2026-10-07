@@ -17,10 +17,14 @@ import {
 import {
   SR5_MarkHelpers, WATCHDOG_INTERRUPTION_COST
 } from "../roll-helpers/mark.js"
+import {
+  isFile
+} from "../../system/matrix-files.js"
 
 // Actions whose marks are not checked on the target: the support actions target allies, not Matrix icons,
-// and Jack Out and Jam Signals ask for ownership of the hacker's own device (SR5 p. 239 and 244)
-const NO_TARGET_MARK_CHECK = ["iAmTheFirewall", "intervene", "jackOut", "jamSignals"]
+// and Jack Out and Jam Signals ask for ownership of the hacker's own device (SR5 p. 239 and 244), as Suppress Noise
+// and Detect Target Lock do with the rigger's console (Rigger 5.0 p. 34-35)
+const NO_TARGET_MARK_CHECK = ["iAmTheFirewall", "intervene", "jackOut", "jamSignals", "suppressNoise", "detectTargetLock"]
 function checksTargetMarks(rollKey){
   return !NO_TARGET_MARK_CHECK.includes(rollKey)
 }
@@ -213,6 +217,13 @@ function isCreator(creatorId, actor, speakerId){
   return !!creator && creator.id === actor.id && !actor.isToken
 }
 
+// The file the card aims at (the crown, or rollMatrixActionOn with its uuid), or null
+function fileAimedAt(rollData){
+  const uuid = rollData?.target?.itemUuid
+  const item = uuid ? globalThis.fromUuidSync?.(uuid) ?? null : null
+  return isFile(item) ? item : null
+}
+
 async function checkTargetMarks(rollData, matrixAction, actor){
   const cibles = matrixTargets(rollData)
   if (cibles.length > 1) {
@@ -236,6 +247,16 @@ async function checkTargetMarks(rollData, matrixAction, actor){
         neededMarks = 1
       }
       let marks = 0
+      //A file aimed at counts its own marks, as any icon (SR5 p. 233: the mark is placed on the file itself)
+      const file = fileAimedAt(rollData)
+      if (file) {
+        const fileMark = (file.system.marks ?? []).find(m => m.ownerId === rollData.owner.speakerId)
+        if ((Number(fileMark?.value) || 0) < neededMarks) {
+          ui.notifications.info(game.i18n.localize("SR5.NotEnoughMarksOnTarget"))
+          return false
+        }
+        return true
+      }
       for (let item of t.actor.items){
         const mark = item.system.marks?.find(m => m.ownerId === rollData.owner.speakerId)
         if (mark?.value > marks) marks = mark.value

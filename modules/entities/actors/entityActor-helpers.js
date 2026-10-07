@@ -32,6 +32,9 @@ import {
   isStorable, isStoredAway 
 } from "../../interface/storage-rules.js"
 import {
+  refuseByRule, ruleLockActive
+} from "../../system/rule-locks.js"
+import {
   SR5Combat 
 } from "../../system/srcombat.js"
 import {
@@ -216,6 +219,8 @@ export class SR5_ActorHelper {
     for (let [key, monitor] of Object.entries(actorData.conditionMonitors)) {
       // Boxes beyond the monitor are not kept: they would eat the next healing (SR5 p. 171, 381)
       if (monitor?.actual) monitorUpdates[`system.conditionMonitors.${key}.actual.base`] = Math.min(monitor.actual.base, monitor.value ?? monitor.actual.base)
+      // The aggravated boxes are damage taken too (Howling Shadows p. 213): written with the boxes they mark
+      if (monitor && "aggravated" in monitor) monitorUpdates[`system.conditionMonitors.${key}.aggravated`] = monitor.aggravated
     }
     await realActor.update(monitorUpdates)
 
@@ -1882,6 +1887,17 @@ export class SR5_ActorHelper {
     return testType === "healing" && damageType === "physical" && (system?.conditionMonitors?.stun?.actual?.value || 0) > 0
   }
 
+  // The order above, at each place it refuses: true if the healing must stop. The "body" rule lock family lifted
+  // (B13, lot 4), the Physical damage heals and the gamemaster hears of it
+  static stunHealsFirstRefused(actor, testType, damageType){
+    if (!SR5_ActorHelper.stunBlocksNaturalHealing(actor?.system, testType, damageType)) return false
+    if (!ruleLockActive("body")) return refuseByRule("body", "SR5.WARN_StunHealsFirst", null, {
+      actor
+    })
+    ui.notifications.warn(game.i18n.localize("SR5.WARN_StunHealsFirst"))
+    return true
+  }
+
   //Manage Healing
   static async heal(targetActorID, data){
     //A heal never deals damage: a negative count filled the monitor (Quitterie, measured from a player's console)
@@ -1890,10 +1906,7 @@ export class SR5_ActorHelper {
       targetActor = SR5_EntityHelpers.getRealActorFromID(targetActorID),
       actorData = foundry.utils.deepClone(targetActor)
     //The card may have been rolled before new Stun damage was taken
-    if (SR5_ActorHelper.stunBlocksNaturalHealing(targetActor.system, data.test.type, damageType)) {
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_StunHealsFirst"))
-      return false
-    }
+    if (SR5_ActorHelper.stunHealsFirstRefused(targetActor, data.test.type, damageType)) return false
 				
     actorData = actorData.toObject(false)
     if (damageType === "physical" || damageType === "condition") SR5_ActorHelper.healMonitorBoxes(actorData.system.conditionMonitors[damageType], damageToRemove)

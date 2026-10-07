@@ -262,6 +262,8 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     actor.gears = gears
     actor.cyberdecks = cyberdecks
     actor.programs = programs
+    // The files it stores (SR5 p. 228)
+    actor.files = Array.from(actor.items).filter(i => i.type === "itemFile")
     actor.karmas = karmas
     actor.nuyens = nuyens
     actor.credsticks = credsticks

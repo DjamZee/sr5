@@ -27,6 +27,21 @@
 </li>
 {{/if}}
 
+{{#if (eq system.type "body")}}
+<li class="grid" data-helpTitle="{{localize 'SR5.VehicleModDroneArm'}}" data-helpMessage="{{localize 'SR5.HELP_VehicleModDroneArmMsg'}}">
+    <div class="col-4">{{localize 'SR5.VehicleModDroneArm'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="checkbox" name="system.droneArm.isDroneArm" data-dtype="Boolean" {{checked system.droneArm.isDroneArm}} /></div>
+</li>
+{{/if}}
+{{#if system.droneArm.isDroneArm}}
+<li class="grid" data-helpTitle="{{localize 'SR5.VehicleModDroneArm'}}" data-helpMessage="{{localize 'SR5.HELP_VehicleModDroneArmMsg'}}">
+    <div class="col-4">{{localize 'SR5.Strength'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="number" data-dtype="Number" name="system.droneArm.strength" value="{{system.droneArm.strength}}" placeholder="0" min="0" onfocus="this.select()"/></div>
+    <div class="col-4">{{localize 'SR5.Agility'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="number" data-dtype="Number" name="system.droneArm.agility" value="{{system.droneArm.agility}}" placeholder="0" min="0" onfocus="this.select()"/></div>
+</li>
+{{/if}}
+
 {{#if (eq system.type "powerTrain")}}
 <li class="grid">
     <div class="col-4">{{localize 'SR5.VEHICLE_SecondaryPropulsion'}}{{localize 'SR5.Colons'}}</div>

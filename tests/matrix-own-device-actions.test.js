@@ -17,6 +17,11 @@ describe('Matrix actions on the hacker\'s own device (SR5 p. 239 and 244)', () =
     expect(checksTargetMarks('jamSignals')).toBe(false)
   })
 
+  it('checks no mark on the target for Suppress Noise and Detect Target Lock (Rigger 5.0 p. 34-35)', () => {
+    expect(checksTargetMarks('suppressNoise')).toBe(false)
+    expect(checksTargetMarks('detectTargetLock')).toBe(false)
+  })
+
   it('still checks the target for an action on a foreign icon', () => {
     expect(checksTargetMarks('formatDevice')).toBe(true)
     expect(checksTargetMarks('dataSpike')).toBe(true)

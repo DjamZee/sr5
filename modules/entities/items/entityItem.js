@@ -1,5 +1,5 @@
 import {
-  refuseByRule
+  refuseByRule, ruleLockActive
 } from "../../system/rule-locks.js"
 import {
   hasWeaponTrait, capBallReloadStep, CAP_BALL_STEPS, firearmCommandIsFree
@@ -669,8 +669,21 @@ export class SR5Item extends Item {
 
     //Manage action in combat, eventually return if no action available
     //Cap & Ball (Gun H(e)aven 3 p. 3): round by round, three Complex Actions each, one per click
-    const isCapBall = hasWeaponTrait(weaponData, "capBall") && game.combat && !freeReload
-    if (isCapBall && option !== "insertRound") return ui.notifications.warn(game.i18n.localize("SR5.WARN_CapBallRoundByRound"))
+    //B13, lot 2: the "ammo" rule lock family refuses; lifted, the gamemaster hears of it once the reload really goes
+    const liftedAmmo = []
+    const ammoRefused = key => {
+      if (ruleLockActive("ammo")) return refuseByRule("ammo", key, null, {
+        actor
+      })
+      liftedAmmo.push(key)
+      return false
+    }
+    //Lifted, it reloads like any other weapon of its casing
+    let isCapBall = hasWeaponTrait(weaponData, "capBall") && game.combat && !freeReload
+    if (isCapBall && option !== "insertRound") {
+      if (ammoRefused("SR5.WARN_CapBallRoundByRound")) return
+      isCapBall = false
+    }
 
     if (game.combat && !freeReload){
       if (isCapBall) option = "capBall"
@@ -715,10 +728,11 @@ export class SR5Item extends Item {
           }]
           break
         case "insertRoundFull":
-          if (weaponData.ammunition.casing === "cylinder") action = [{
+          //B13, lot 2: the "ammo" rule lock family lifted, any casing fills round by round as a cylinder does
+          if (weaponData.ammunition.casing !== "cylinder" && ammoRefused("SR5.WARN_NotPossibleInCombat")) return
+          action = [{
             type: "complex", value: 1, source: "insertRound"
           }]
-          else return ui.notifications.warn(game.i18n.format('SR5.WARN_NotPossibleInCombat'))
           break
         case "remove":
           if (weaponData.ammunition.casing === "clip") {
@@ -802,12 +816,17 @@ export class SR5Item extends Item {
       }
     }
     if (stop) return
-	
+    for (const key of liftedAmmo) refuseByRule("ammo", key, null, {
+      actor
+    })
+
     switch (option){
       case "insert":
       case "replace":
       case "insertRoundFull":
-        if (option === "insert" && weaponData.ammunition.clipInserted && game.combat) return ui.notifications.warn(game.i18n.localize("SR5.WARN_RemoveClipFirst"))
+        if (option === "insert" && weaponData.ammunition.clipInserted && game.combat && refuseByRule("ammo", "SR5.WARN_RemoveClipFirst", null, {
+          actor
+        })) return
         if (ammoSpent > ammoData.quantity) ammoNeeded = ammoData.quantity
         else ammoNeeded = ammoSpent
         weaponData.ammunition.value += ammoNeeded

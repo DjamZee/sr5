@@ -291,6 +291,10 @@ export class SR5_SystemHelpers {
     game.settings.register("sr5", "sr5RuleLocksMigration", {
       scope: "world", config: false, default: 0, type: Number,
     })
+    // "pending" in a new world until its gamemaster chose a preset (askNewWorldPreset), then "done"
+    game.settings.register("sr5", "sr5RuleLocksAsk", {
+      scope: "world", config: false, default: "", type: String,
+    })
     game.settings.registerMenu("sr5", "sr5RuleLocksMenu", {
       name: "SR5.RULELOCKS_Menu_T",
       label: "SR5.RULELOCKS_Menu_L",

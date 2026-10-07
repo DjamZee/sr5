@@ -1,0 +1,53 @@
+<!-- File of the Matrix (SR5 p. 228, 237, 240, 243) -->
+<ul>
+	{{> systems/sr5/templates/items/_partial/title/generalInformation.hbs}}
+	<!-- Protection: 0 = none (Edit File, SR5 p. 240) -->
+	<li class="grid">
+		<div class="col-8">{{localize 'SR5.FileProtection'}}{{localize 'SR5.Colons'}}</div>
+		<div class="col-4">
+			<input type="number" data-dtype="Number" name="system.protection" value="{{system.protection}}" min="0" placeholder="0" onfocus="this.select()"/>
+		</div>
+	</li>
+	<li class="grid">
+		<div class="col-12 SR-GreyColor SR-TextSmall">{{localize 'SR5.FileProtectionHint'}}</div>
+	</li>
+	<!-- Data bomb: the gamemaster's (Set Data Bomb, SR5 p. 243) -->
+	{{#if userIsGM}}
+	<li class="grid">
+		<div class="col-8">{{localize 'SR5.FileDataBombRating'}}{{localize 'SR5.Colons'}}</div>
+		<div class="col-4">
+			<input type="number" data-dtype="Number" name="system.dataBomb.rating" value="{{system.dataBomb.rating}}" min="0" placeholder="0" onfocus="this.select()"/>
+		</div>
+	</li>
+	<li class="grid">
+		<div class="col-8">{{localize 'SR5.FileDataBombDestroys'}}{{localize 'SR5.Colons'}}</div>
+		<div class="col-4">
+			<input type="checkbox" data-dtype="Boolean" name="system.dataBomb.destroysFile" {{checked system.dataBomb.destroysFile}}/>
+		</div>
+	</li>
+	<li class="grid">
+		<div class="col-8">{{localize 'SR5.FileDataBombSetBy'}}{{localize 'SR5.Colons'}}</div>
+		<div class="col-4">
+			<input type="text" name="system.dataBomb.setByName" value="{{system.dataBomb.setByName}}"/>
+		</div>
+	</li>
+	<li class="grid">
+		<div class="col-12 SR-GreyColor SR-TextSmall">{{localize 'SR5.FileDataBombHint'}}</div>
+	</li>
+	{{/if}}
+	<!-- Last edit (Matrix Perception, SR5 p. 237) -->
+	<li class="grid">
+		<p>
+			<span class="col-auto">{{localize 'SR5.FileLastEdit'}}{{localize 'SR5.Colons'}}</span>
+			<span class="col-auto SR-GreyColor">{{fileLastEdit}}</span>
+		</p>
+	</li>
+</ul>
+
+<!-- What the file holds, written by the gamemaster -->
+{{#if userIsGM}}
+<ul class="SR-PaddingTop10">
+	<li class="SR-LigneEnTete grid"><div class="col-12"><p class="SR-TextUppercase">{{localize 'SR5.FileContent'}}</p></div></li>
+	<li><prose-mirror name="system.content" value="{{system.content}}" toggled>{{{enrichedFileContent}}}</prose-mirror></li>
+</ul>
+{{/if}}

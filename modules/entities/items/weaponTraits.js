@@ -1,6 +1,22 @@
 // Weapon traits from Gun H(e)aven 3 p. 3 and The Complete Trog p. 177.
 // Pure helpers, kept apart from the item preparation so the tests can reach them.
 
+import {
+  refuseByRule
+} from "../../system/rule-locks.js"
+
+/**
+ * Vintage (Gun H(e)aven 3 p. 3): never wireless, so the switch is refused and no action spent. The "ammo" rule lock
+ * family lifted (B13, lot 2), the switch goes and the gamemaster hears of it.
+ * @returns {boolean} true if the switch must stop
+ */
+export function vintageWirelessRefused(item, actor) {
+  if (item?.type !== "itemWeapon" || !hasWeaponTrait(item.system, "vintage")) return false
+  return refuseByRule("ammo", "SR5.WARN_VintageNoWireless", null, {
+    actor
+  })
+}
+
 /** Does the weapon carry this catalog accessory or trait? */
 export function hasWeaponTrait(weaponData, key) {
   let accessories = weaponData?.accessory

@@ -129,6 +129,9 @@ export class SR5_SocketHandler {
       "matrixIntelForget": [async (message, senderId) => (await import("./canvas/pan-crown/pan-perception-card.js"))._socketForgetIntel(message, senderId)],
       //B13: a lock lifted by the world, told to the gamemaster by his own browser, so the player does not read it
       "ruleLockWhisper": [async (message, senderId) => (await import("./system/rule-locks.js")).socketRuleLockWhisper(message, senderId)],
+      //Objet Fichier: the attacker asks for an action on a file (SR5 p. 240-243), the active GM resolves it
+      "matrixFileAction": [async (message, senderId) => (await import("./rolls/roll-helpers/file-actions.js"))._socketFileAction(message, senderId)],
+      "matrixFileRefused": [async (message, senderId) => (await import("./rolls/roll-helpers/file-actions.js"))._socketFileRefused(message, senderId)],
       "tacnetRoster": [async (message, senderId) => (await import("./system/tacnet.js"))._socketTacnetRoster(message, senderId)],
     }
 

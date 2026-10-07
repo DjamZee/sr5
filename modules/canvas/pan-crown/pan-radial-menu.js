@@ -202,7 +202,7 @@ export function openRadialMenu({
   const entries = node.contributed && node.systemActions !== true ? {
     actions: [], modes: [], slave: null
   } : menuEntries(node, graph, viewer, {
-    canTry: canTryMatrixAction
+    canTry: canTryMatrixAction, rigger5: !!game.settings?.get("sr5", "sr5Rigger5Actions")
   })
 
   // Three families: the Matrix actions on the right; the owner's (mode, PAN) and the gamemaster's on the left
