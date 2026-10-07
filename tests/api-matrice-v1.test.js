@@ -35,7 +35,7 @@ import {
 } from '../modules/rolls/roll-helpers/overwatch-notice.js'
 
 const {
-  actionRequest, SPENDABLE_ACTION_TYPES
+  actionRequest, SPENDABLE_ACTION_TYPES, switchInitiative, SR5CombatApi
 } = await import('../modules/system/combat-api.js')
 const {
   SR5_PrepareRollHelper
@@ -380,6 +380,55 @@ describe('A4: an action counted by a module', () => {
     const source = read('../modules/system/combat-api.js')
     expect(source).toMatch(/SR5Combat\.hasActionsLeft\(actor, \[action\]\)/)
     expect(source).toMatch(/SR5Combat\.changeActionInCombat\(actor\.isToken \? actor\.token\.id : actor\.id, \[action\]\)/)
+  })
+})
+
+describe('A4: an initiative switched by a module (game.sr5.combat.switchInitiative)', () => {
+  const actor = {
+    system: {
+      initiatives: {
+        physicalInit: {
+        }, astralInit: {
+        }, matrixInit: {
+        }
+      }
+    }
+  }
+  const utility = (can = true) => ({
+    canSwitchToInitiative: vi.fn(() => can), switchToInitiative: vi.fn(async () => undefined)
+  })
+
+  it('switches through the system\'s own function when canSwitchToInitiative agrees', async () => {
+    const u = utility()
+    expect(await switchInitiative(actor, 'matrixInit', u)).toBe(true)
+    expect(u.canSwitchToInitiative).toHaveBeenCalledWith(actor, 'matrixInit')
+    expect(u.switchToInitiative).toHaveBeenCalledWith(actor, 'matrixInit')
+  })
+
+  it('returns false, switching nothing, when canSwitchToInitiative refuses', async () => {
+    const u = utility(false)
+    expect(await switchInitiative(actor, 'astralInit', u)).toBe(false)
+    expect(u.switchToInitiative).not.toHaveBeenCalled()
+  })
+
+  it('returns false on an unknown initiative, an actor without it, or no actor', async () => {
+    const u = utility()
+    expect(await switchInitiative(actor, 'rapide', u)).toBe(false)
+    expect(await switchInitiative({
+      system: {
+        initiatives: {
+          physicalInit: {
+          }
+        }
+      }
+    }, 'astralInit', u)).toBe(false)
+    expect(await switchInitiative(null, 'physicalInit', u)).toBe(false)
+    expect(u.canSwitchToInitiative).not.toHaveBeenCalled()
+  })
+
+  it('is exposed on game.sr5.combat beside spendAction', () => {
+    expect(SR5CombatApi.switchInitiative).toBe(switchInitiative)
+    expect(SR5CombatApi.spendAction).toBeTypeOf('function')
   })
 })
 
