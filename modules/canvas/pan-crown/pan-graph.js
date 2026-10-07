@@ -168,7 +168,9 @@ export function buildPanGraph(actor, {
       } = up.slaved ? slaveMode(own, up.mode) : {
         mode: own, silentFrom: own === "silent" ? "self" : null
       }
-      add(nodeOf(device, "device", actor, mode, silentFrom), "owner", "device")
+      const ownNode = nodeOf(device, "device", actor, mode, silentFrom)
+      ownNode.customIcon ??= customIconOf(actor)
+      add(ownNode, "owner", "device")
     }
     add(up.node, "owner", up.node.kind)
   }
@@ -181,7 +183,8 @@ export function buildPanGraph(actor, {
 
     for (const entry of arrayOf(device.system?.pan?.content)){
       if (!entry?.uuid || seen.has(entry.uuid)) continue
-      const item = resolve(entry.uuid)
+      const item = ownCopyOf(resolve(entry.uuid), actor)
+      if (item && seen.has(item.uuid)) continue
       if (!item) {
         graph.missing.push({
           uuid: entry.uuid, name: entry.name ?? ""
@@ -208,6 +211,8 @@ export function buildPanGraph(actor, {
       // Its own token: the token's id for an unlinked token, so that two doors of one actor stay two
       node.holderIds = [realIdOf(decor)]
       node.icon = decorIconOf(decor)
+      // The gamemaster's own icon for a device of the scenery is on its actor (lot 10)
+      node.customIcon ??= customIconOf(decor)
       add(node, device.uuid, "decor")
       decorCount++
     }
@@ -230,6 +235,15 @@ export function buildPanGraph(actor, {
     add(nodeOf(item, drone ? "drone" : "device", actor, own, own === "silent" ? "self" : null, drone), "owner", drone ? "drone" : "device")
   }
   return graph
+}
+
+// The PAN of an unlinked token lists the uuids of its world actor's items (Actor.x.Item.y), while the token carries
+// its own copies (Scene.s.Token.t.Actor.x.Item.y): the slave is the token's copy, or it is drawn twice, once as a
+// slave and once as a loose device
+function ownCopyOf(item, actor){
+  if (!item || !actor?.isToken || item.parent?.id !== actor.id || item.parent === actor) return item
+  const id = item.id ?? item._id
+  return itemsOf(actor).find(i => (i.id ?? i._id) === id) ?? item
 }
 
 export function isHostActor(actor){
@@ -274,7 +288,10 @@ function upwardMasterOf(actor, graph, {
     const mode = masterMode(device, rigger)
     // The drone is slaved when its vehicle item is in the PAN of the rigger's master
     const vehicle = itemsOf(rigger).find(i => (i.id ?? i._id) === graph.rigger.itemId)
-    const slaved = !!vehicle && arrayOf(device.system?.pan?.content).some(e => e?.uuid === vehicle.uuid)
+    // (by the item's id: an unlinked rigger's PAN lists the uuids of its world actor's items)
+    const vehicleId = vehicle ? (vehicle.id ?? vehicle._id) : null
+    const slaved = !!vehicle && arrayOf(device.system?.pan?.content).some(e => e?.uuid === vehicle.uuid ||
+      String(e?.uuid ?? "").endsWith(`.Item.${vehicleId}`))
     const node = nodeOf(device, "rigger", rigger, mode, mode === "silent" ? "self" : null, null, actor)
     node.holderIds = [realIdOf(rigger)]
     return {
@@ -298,6 +315,7 @@ function upwardMasterOf(actor, graph, {
   const node = nodeOf(device, "wan", holder, mode, mode === "silent" ? "self" : null, null, actor)
   node.holderIds = [realIdOf(holder)]
   if (isHostActor(holder)) node.icon = "host"
+  node.customIcon ??= customIconOf(holder)
   graph.wan = {
     uuid: key, actorId: realIdOf(holder), isHost: isHostActor(holder)
   }

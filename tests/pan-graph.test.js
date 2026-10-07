@@ -295,6 +295,43 @@ describe('pan graph: drones (creatorItemId)', () => {
   })
 })
 
+describe('pan graph: an unlinked token (synthetic uuids)', () => {
+  it('draws each slave once: the PAN lists the world actor\'s uuids, the token carries its own copies', () => {
+    const worldGun = item('itemWeapon', {
+      isSlavedToPan: true
+    }, {
+      id: 'gun', uuid: 'Actor.guard.Item.gun'
+    })
+    const world = actor([worldGun], {
+    }, {
+      id: 'guard', type: 'actorGrunt'
+    })
+    const gun = item('itemWeapon', {
+      // the copy may lose the flag (utilityItem: an empty panMaster resets it)
+      isSlavedToPan: false
+    }, {
+      id: 'gun', uuid: 'Scene.s.Token.t.Actor.guard.Item.gun'
+    })
+    const deck = deckWith([worldGun])
+    const token = actor([deck, gun], {
+    }, {
+      id: 'guard', type: 'actorGrunt'
+    })
+    token.isToken = true
+    token.token = {
+      id: 't'
+    }
+    const g = buildPanGraph(token, {
+      resolve: uuid => (uuid === worldGun.uuid ? worldGun : null)
+    })
+    expect(world.items[0].parent).toBe(world)
+    expect(g.nodes.map(n => n.uuid)).toEqual([deck.uuid, gun.uuid])
+    expect(g.nodes[1]).toMatchObject({
+      kind: 'slave', holderIds: ['guard', 't']
+    })
+  })
+})
+
 describe('pan graph: devices of the scenery (lot 7, SR5 p. 234)', () => {
   function host(id = 'host1'){
     return actor([item('itemDevice', {
