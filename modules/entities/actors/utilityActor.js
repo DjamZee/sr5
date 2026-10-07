@@ -1308,8 +1308,14 @@ export class SR5_CharacterUtility extends Actor {
     specialAttributes.magic.natural.base = actorData.force.value
     SR5_EntityHelpers.updateValue(specialAttributes.magic.natural)
     //Only a free spirit has Edge of its own (SR5 p. 306-307); a summoned or bound one has none, its summoner lends his (p. 306)
+    //An extraplanar entity prints its own, CHC P/2 or P (Howling Shadows p. 128 and following)
+    const customType = SR5_SpiritTypes.get(actorData.type)
+    const typeEdge = SR5_SpiritTypes.edgeRating(customType, actorData.force.value)
     if (actorData.isFree && specialAttributes.edge) {
       specialAttributes.edge.natural.base = freeSpiritEdge(actorData.force.value, actorData.freeEdge)
+      SR5_EntityHelpers.updateValue(specialAttributes.edge.natural)
+    } else if (typeEdge !== null && specialAttributes.edge) {
+      specialAttributes.edge.natural.base = typeEdge
       SR5_EntityHelpers.updateValue(specialAttributes.edge.natural)
     } else {
       delete specialAttributes.edge
@@ -1317,9 +1323,10 @@ export class SR5_CharacterUtility extends Actor {
       delete actorData.statusBars?.edge
     }
     essence.base = actorData.force.value
-    SR5_EntityHelpers.updateValue(essence)
-    const customType = SR5_SpiritTypes.get(actorData.type)
     let label = `${game.i18n.localize('SR5.SpiritType')} (${SR5_SpiritTypes.label(actorData.type)})`
+    const essenceModifier = SR5_SpiritTypes.essenceModifier(customType)
+    if (essenceModifier) SR5_EntityHelpers.updateModifier(essence, label, "spiritType", essenceModifier)
+    SR5_EntityHelpers.updateValue(essence)
 
     switch (SR5_SpiritTypes.baseType(actorData.type)) {
       case "watcher":
@@ -1689,6 +1696,14 @@ export class SR5_CharacterUtility extends Actor {
 
   static updateSpiritValues(actor) {
     SR5_EntityHelpers.updateValue(actor.system.force)
+    //Hardened armor of a spirit type, "12R", "(P x 2) mystique (renforcée)" (Howling Shadows p. 128 and following):
+    //a mystic one protects in the astral, the other against ordinary weapons; read by updateSpecialProperties
+    const typeArmor = SR5_SpiritTypes.armor(SR5_SpiritTypes.get(actor.system.type), actor.system.force.value)
+    const hardenedArmors = actor.system.specialProperties?.hardenedArmors
+    if (typeArmor?.kind && hardenedArmors) {
+      const key = typeArmor.kind === "mystic" ? "astral" : "normalWeapon"
+      SR5_EntityHelpers.updateModifier(hardenedArmors[key], SR5_SpiritTypes.label(actor.system.type), "spiritType", typeArmor.value)
+    }
     // A homunculus is always physical, custom types based on it included: physical initiative too, (P + 1) + 1D6
     // (SR5 p. 301), even when it was made astral first (a spirit created as another type, then changed)
     if (SR5_SpiritTypes.baseType(actor.system.type) === "homunculus") {
@@ -2097,6 +2112,8 @@ export class SR5_CharacterUtility extends Actor {
           customDice :
           (SR5_SpiritTypes.baseType(actorData.type) === "homunculus" ? 0 : 1)
         if (spiritDice) SR5_EntityHelpers.updateModifier(initPhy.dice, SR5_SpiritTypes.label(actorData.type), "spiritType", spiritDice)
+        const spiritBonus = customType ? SR5_SpiritTypes.physicalBonus(customType) : 0
+        if (spiritBonus) SR5_EntityHelpers.updateModifier(initPhy, SR5_SpiritTypes.label(actorData.type), "spiritType", spiritBonus)
         break
       }
       default:
@@ -2415,6 +2432,12 @@ export class SR5_CharacterUtility extends Actor {
       const armor = homunculusMaterialRatings(actor.system.homunculusMaterial).armor
       if (armor) SR5_EntityHelpers.updateModifier(actor.system.itemsProperties.armor, game.i18n.localize("SR5.HomunculusMaterial"), "actorSpirit", armor)
     }
+    //Ordinary armor of a spirit type, "Armure (P x 2)" (Howling Shadows p. 128 and following); the hardened one is
+    //given in updateSpiritValues, as hardened armor
+    if (actor.type === "actorSpirit") {
+      const typeArmor = SR5_SpiritTypes.armor(SR5_SpiritTypes.get(actor.system.type), actor.system.force?.value)
+      if (typeArmor && !typeArmor.kind) SR5_EntityHelpers.updateModifier(actor.system.itemsProperties.armor, SR5_SpiritTypes.label(actor.system.type), "spiritType", typeArmor.value)
+    }
     SR5_EntityHelpers.updateValue(actor.system.itemsProperties.armor, 0)
     for (let key of Object.keys(SR5.specialDamageTypes)) {
       SR5_EntityHelpers.updateValue(actor.system.itemsProperties.armor.specialDamage[key], 0)
@@ -2553,6 +2576,7 @@ export class SR5_CharacterUtility extends Actor {
     let actorData = actor.system, limits = actorData.limits, attributes = actorData.attributes
     // AI on a device (Data Trails p. 160): Data Processing can replace the Mental limit and joins the Social limit
     let aiDataProcessing = (this.isDepthActive(actor) && actorData.matrix?.deviceType) ? actorData.matrix.attributes.dataProcessing.value : null
+    const forceLimit = actor.type === "actorSpirit" ? SR5_SpiritTypes.forceLimit(SR5_SpiritTypes.get(actorData.type), actorData.force?.value) : null
 
     const context = {
       attributes, essence: actorData.essence?.value, aiDataProcessing
@@ -2569,11 +2593,13 @@ export class SR5_CharacterUtility extends Actor {
       if (base === undefined) SR5_SystemHelpers.srLog(1, `Unknown limit '${key}' in 'updateLimits()'`)
       if (!limits[key]) continue
       if (base !== undefined) limits[key].base = base
+      //The extraplanar entities print (P x 4) / 3 for every limit (Howling Shadows p. 130 and following)
+      if (forceLimit !== null) limits[key].base = forceLimit
       limits[key].modifiers = (limits[key].modifiers ?? []).filter(m => m.type !== "augmentationCap")
       SR5_EntityHelpers.updateValue(limits[key], 0)
       //Augmentation cap (SR5 p. 96): the limit reads the kept ratings; when the cap did cut something, the help
       //also gives the limit the real ratings would reach (arbitrage de DjamZ). The line counts for 0.
-      if (base === undefined || !CAP_NOTE_LIMITS.includes(key)) continue
+      if (base === undefined || forceLimit !== null || !CAP_NOTE_LIMITS.includes(key)) continue
       const note = limitCapNote(limits[key].value, base, limitBase(key, uncapped))
       if (note) SR5_EntityHelpers.updateModifier(limits[key], game.i18n.format("SR5.AugmentationCapLimitModifier", note), "augmentationCap", 0)
     }

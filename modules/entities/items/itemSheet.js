@@ -537,6 +537,10 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       // Counted on the preview, so that inherited skills are included.
       context.spiritTypeSkillsCount = game.i18n.format("SR5.SpiritTypeSkillsCount",
         SR5_SpiritTypes.skillCounts(context.spiritTypePreview))
+      // Items given to every spirit of the type when it is created
+      context.spiritTypeItems = (item.system.items ?? []).map((given, index) => ({
+        index, name: given.name, img: given.img, typeLabel: `TYPES.Item.${given.type}`
+      }))
     }
 
     // Weapon focus: populate weapon choices from parent actor
@@ -584,6 +588,22 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     if (mentorDrop && this.isEditable) {
       mentorDrop.addEventListener('dragover', ev => ev.preventDefault())
       mentorDrop.addEventListener('drop', ev => this.#onDropMentor(ev))
+    }
+
+    // Spirit type: drop an item to give it to every spirit of the type, or take one back
+    const spiritTypeDrop = el.querySelector('.sr5-spirit-type-drop')
+    if (spiritTypeDrop && this.isEditable) {
+      spiritTypeDrop.addEventListener('dragover', ev => ev.preventDefault())
+      spiritTypeDrop.addEventListener('drop', ev => this.#onDropSpiritTypeItem(ev))
+      for (const remove of el.querySelectorAll('.sr5-spirit-type-item-remove')) {
+        remove.addEventListener('click', () => {
+          const items = [...(this.document.system.items ?? [])]
+          items.splice(Number(remove.dataset.index), 1)
+          this.document.update({
+            "system.items": items
+          })
+        })
+      }
     }
 
     // Pathogen: the active GM infects the tokens he selected or targeted (system/diseases.js)
@@ -806,6 +826,24 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       })
       this._savedScrollPositions = null
     }
+  }
+
+  // A copy of the dropped item, kept on the spirit type: a spirit or a type cannot carry itself
+  async #onDropSpiritTypeItem(event) {
+    event.preventDefault()
+    event.stopPropagation()
+    const data = foundry.applications.ux.TextEditor.implementation.getDragEventData(event)
+    if (data?.type !== "Item") return
+    const dropped = await fromUuid(data.uuid)
+    if (!dropped || SR5_SpiritTypes.NOT_GIVEN.includes(dropped.type)) return
+    const copy = dropped.toObject()
+    delete copy._id
+    delete copy.folder
+    delete copy.sort
+    delete copy.ownership
+    return this.document.update({
+      "system.items": [...(this.document.system.items ?? []), copy]
+    })
   }
 
   async #onDropToxin(event) {

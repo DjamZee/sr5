@@ -25,6 +25,9 @@ import {
 import {
   deathSowerAdeptDamage
 } from "./magic-masteries.js"
+import {
+  weaponRatingModifiers
+} from "./weapon-ratings.js"
 
 // The implants whose unknown grade the gamemaster was told of, once each per session
 const unknownGradesTold = new Set()
@@ -514,6 +517,11 @@ export class SR5_UtilityItem extends Actor {
       if (itemData.damageValue.isStrengthBased && actor.type !=="actorDrone") {
         if ((actor.system.initiatives.astralInit.isActive || itemData.isUsedAsFocus) && itemData.isLinkedToFocus) SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.Charisma'), "linkedAttribute", actor.system.attributes.charisma.augmented.value)
         else SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.Strength'), "linkedAttribute", actor.system.attributes.strength.augmented.value)
+      }
+      //A natural weapon or an engulf that follows the creature's ratings (SR5 p. 399, Howling Shadows p. 138)
+      const astral = (actor.system.initiatives?.astralInit?.isActive || itemData.isUsedAsFocus) && itemData.isLinkedToFocus
+      for (const modifier of weaponRatingModifiers(itemData, actor.system, astral)) {
+        SR5_EntityHelpers.updateModifier(itemData[modifier.target], game.i18n.localize(modifier.label), "linkedAttribute", modifier.value)
       }
       //Death Sower, adept side (Forbidden Arcana p. 40): +1 DV with the melee skills
       const deathSower = deathSowerAdeptDamage(actor.system.magic?.magicType, actor.system.magic?.masteries?.deathSower?.value, itemData.category)

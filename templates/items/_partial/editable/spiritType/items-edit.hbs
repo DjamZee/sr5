@@ -1,0 +1,15 @@
+<li class="SR-EnTete">
+    <p class="SR-TextUppercase">{{localize 'SR5.SpiritTypeItems'}}</p>
+</li>
+{{#each spiritTypeItems as |given|}}
+<li class="grid">
+    <div class="col-1"><img src="{{given.img}}" alt="" width="20" height="20"/></div>
+    <div class="col-7">{{given.name}}</div>
+    <div class="col-3 SR-GreyColor">{{localize given.typeLabel}}</div>
+    <div class="col-1 SR-TextRight"><a class="sr5-spirit-type-item-remove" data-index="{{given.index}}" data-tooltip="{{localize 'SR5.Delete'}}"><em class="fas fa-trash"></em></a></div>
+</li>
+{{/each}}
+<!-- Dropping an item here gives a copy of it to every spirit of this type, when it is created -->
+<li class="grid sr5-spirit-type-drop SR-LightGreyColor">
+    <div class="col-12"><em class="fas fa-hand-holding"></em> {{localize 'SR5.SpiritTypeItemsDropHint'}}</div>
+</li>

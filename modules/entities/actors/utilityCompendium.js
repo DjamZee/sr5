@@ -204,6 +204,9 @@ export class SR5_CompendiumUtility extends Actor {
       baseItems = await SR5_CompendiumUtility.findBaseItemInCompendium(baseItems, weapons, weaponType)
       baseItems = await SR5_CompendiumUtility.findBaseSpiritPowersInCompendium(baseItems, powers, actorSubType)
       baseItems = await SR5_CompendiumUtility.modifyBaseSpiritWeapon(baseItems, actorLevel)
+      // The type's own items, after the Force was written into the inherited weapons: theirs follow the Force by
+      // themselves (weapon-ratings.js) and keep what the type says
+      baseItems = baseItems.concat(SR5_SpiritTypes.givenItems(actorSubType))
     }
 
     if (actorType === "actorSprite") {

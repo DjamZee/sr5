@@ -43,10 +43,53 @@
     <div class="col-1"><input type="number" data-dtype="Number" name="system.initiative.physicalDice" value="{{system.initiative.physicalDice}}" placeholder="—" onfocus="this.select()"/></div>
 </li>
 <li class="grid">
+    <div class="col-8">{{localize 'SR5.SpiritTypeInitiativeBonus'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="number" data-dtype="Number" name="system.initiative.physicalBonus" value="{{system.initiative.physicalBonus}}" placeholder="0" onfocus="this.select()"/></div>
+</li>
+<li class="grid">
     <div class="col-8">{{localize 'SR5.SpiritTypeAstralInitiativeDice'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-1"><input type="number" data-dtype="Number" name="system.initiative.astralDice" value="{{system.initiative.astralDice}}" placeholder="—" onfocus="this.select()"/></div>
 </li>
 <li class="grid">
     <div class="col-8">{{localize 'SR5.SpiritTypeAstralInitiativeBonus'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-1"><input type="number" data-dtype="Number" name="system.initiative.astralBonus" value="{{system.initiative.astralBonus}}" placeholder="0" onfocus="this.select()"/></div>
+</li>
+<li class="grid">
+    <div class="col-4">{{localize 'SR5.SpiritTypeEdge'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8">
+        <select name="system.edge" data-dtype="String">
+            {{selectOptions lists.spiritTypeEdges selected=system.edge localize=true}}
+        </select>
+    </div>
+</li>
+<li class="grid">
+    <div class="col-8">{{localize 'SR5.SpiritTypeEssenceModifier'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="number" data-dtype="Number" name="system.essenceModifier" value="{{system.essenceModifier}}" placeholder="0" onfocus="this.select()"/></div>
+</li>
+<li class="grid">
+    <div class="col-4">{{localize 'SR5.SpiritTypeLimits'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8">
+        <select name="system.limits" data-dtype="String">
+            {{selectOptions lists.spiritTypeLimits selected=system.limits localize=true}}
+        </select>
+    </div>
+</li>
+<li class="grid">
+    <div class="col-4">{{localize 'SR5.Armor'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1 SR-TextRight">P ×</div>
+    <div class="col-1"><input type="number" data-dtype="Number" name="system.armor.forceMultiplier" value="{{system.armor.forceMultiplier}}" placeholder="0" min="0" onfocus="this.select()"/></div>
+    <div class="col-1 SR-TextRight">+</div>
+    <div class="col-1"><input type="number" data-dtype="Number" name="system.armor.bonus" value="{{system.armor.bonus}}" placeholder="0" onfocus="this.select()"/></div>
+    <div class="col-4">
+        <select name="system.armor.kind" data-dtype="String">
+            {{selectOptions lists.spiritTypeArmorKinds selected=system.armor.kind localize=true}}
+        </select>
+    </div>
+</li>
+<li class="grid">
+    <div class="col-11">{{localize 'SR5.SpiritTypeSummonable'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1 SR-TextRight SR-PaddingRight3"><input type="checkbox" name="system.summonable" data-dtype="Boolean" {{checked system.summonable}} {{#unless userIsGM}}disabled{{/unless}}/></div>
+</li>
+<li class="grid">
+    <div class="col-12 SR-GreyColor">{{localize 'SR5.SpiritTypeSummonableHint'}}</div>
 </li>

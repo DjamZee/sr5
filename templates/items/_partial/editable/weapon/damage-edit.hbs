@@ -8,6 +8,10 @@
     <div class="col-1 SR-TextRight SR-PaddingRight3"><input type="checkbox" name="system.damageValue.isStrengthBased" data-dtype="Boolean" {{checked system.damageValue.isStrengthBased}} /></div>
     {{/if}}
 </li>
+<li class="grid">
+    <div class="col-5">{{localize 'SR5.WeaponMagicMultiplier'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="number" data-dtype="Number" name="system.damageValue.magicMultiplier" value="{{system.damageValue.magicMultiplier}}" placeholder="0" min="0" onfocus="this.select()"/></div>
+</li>
 
 <li class="grid">
     <div class="col-5">{{localize 'SR5.DamageType'}}{{localize 'SR5.Colons'}}</div>

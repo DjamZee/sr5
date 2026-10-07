@@ -22,6 +22,9 @@ import {
 import {
   isSituationalType
 } from "../roll-helpers/situational.js"
+import {
+  SR5_SpiritTypes
+} from "../../entities/items/spirit-types.js"
 
 //Add info for skill dicePool roll
 export default async function skill(rollData, rollType, rollKey, actor, chatData){
@@ -132,7 +135,14 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
   }
 
   //Add force default
-  if (rollKey === "summoning") rollData.magic.force = 1
+  if (rollKey === "summoning") {
+    rollData.magic.force = 1
+    //A type the Summoning skill cannot call is not offered: the extraplanar entities, unless the gamemaster
+    //ticked the box (DjamZ's ruling, 2026-10-07)
+    rollData.lists.spiritTypes = SR5_SpiritTypes.summonableOnly(rollData.lists.spiritTypes)
+    if (rollData.magic.elements) rollData.magic.elements = Object.fromEntries(Object.entries(rollData.magic.elements)
+      .filter(([, type]) => SR5_SpiritTypes.isSummonable(type)))
+  }
 
   //Special case for Astral combat
   if (rollKey === "astralCombat"){

@@ -2925,6 +2925,32 @@ SR5.spiritTypeMonitors = {
 }
 
 // How a custom spirit type rates the skills every spirit gets
+// Own Edge of a spirit type that is not summoned (Howling Shadows p. 128 and following: CHC P/2 or P)
+SR5.spiritTypeEdges = {
+  ""                        : "SR5.SpiritTypeEdgeNone",
+  half                      : "SR5.SpiritTypeEdgeHalf",
+  full                      : "SR5.SpiritTypeEdgeFull",
+}
+
+// Limits of a spirit type: from its attributes, or (P x 4) / 3 as the entities print them (Howling Shadows p. 130)
+SR5.spiritTypeLimits = {
+  ""                        : "SR5.SpiritTypeLimitsAttributes",
+  force                     : "SR5.SpiritTypeLimitsForce",
+}
+
+// Armor of a spirit type: ordinary, hardened, or mystic and hardened (Howling Shadows p. 128 and following)
+SR5.spiritTypeArmorKinds = {
+  ""                        : "SR5.SpiritTypeArmorOrdinary",
+  hardened                  : "SR5.SpiritTypeArmorHardened",
+  mystic                    : "SR5.SpiritTypeArmorMystic",
+}
+
+// Rating that lowers a weapon's AP: "PA -FOR", "PA -Magie" (SR5 p. 399, Howling Shadows p. 138)
+SR5.weaponAPLinkedAttributes = {
+  strength                  : "SR5.Strength",
+  magic                     : "SR5.Magic",
+}
+
 SR5.spiritTypeSkillRatios = {
   ""                        : "SR5.SpiritTypeInherit",
   full                      : "SR5.SpiritTypeRatioFull",
