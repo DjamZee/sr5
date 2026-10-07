@@ -93,10 +93,16 @@ describe('fading lowered by 2 for the forms the stream knows best', () => {
     expect(streamFadingReduction('technoshaman', 'device')).toBe(0)
     expect(streamFadingReduction(null, 'device')).toBe(0)
   })
-  it('the floor of 2 stays (SR5 p. 254): Grandeur resists 5 instead of 7, Voxel 2 and not 1', () => {
+  // Arbitrage de DjamZ (07/10), d'après l'exemple de KC p. 101: a stream lowers the floor to 1, none keeps it at 2
+  it('Grandeur resists 5 instead of 7, Voxel the Machinist 1 instead of 3 (KC p. 101)', () => {
     expect(reducedFading(7, 2)).toBe(5)
-    expect(reducedFading(3, 2)).toBe(2)
+    expect(reducedFading(3, 2)).toBe(1)
+    expect(reducedFading(2, 2)).toBe(1)
+  })
+  it('without a stream, the floor of 2 stays (SR5 p. 254)', () => {
     expect(reducedFading(3, 0)).toBe(3)
+    expect(reducedFading(1, 0)).toBe(2)
+    expect(reducedFading(0)).toBe(2)
   })
 })
 
@@ -112,11 +118,13 @@ describe('sprites: +2 dice to compile and decompile, or less fading for the Tech
     expect(streamSpriteDice('erisian', 'crack')).toBe(2)
     expect(streamSpriteDice('sourcerer', 'machine')).toBe(0)
   })
-  it('the Technoshaman compiles with 2 less fading, never under 2 (KC p. 102)', () => {
+  it('the Technoshaman compiles with 2 less fading, never under 1 (KC p. 102; floor: arbitrage de DjamZ, 07/10)', () => {
     expect(streamSpriteFadingReduction('technoshaman')).toBe(2)
     expect(streamSpriteFadingReduction('machinist')).toBe(0)
     expect(reducedFading(3 * 2, streamSpriteFadingReduction('technoshaman'))).toBe(4)
-    expect(reducedFading(1 * 2, streamSpriteFadingReduction('technoshaman'))).toBe(2)
+    expect(reducedFading(1 * 2, streamSpriteFadingReduction('technoshaman'))).toBe(1)
+    // Another stream compiles with the floor of 2 (SR5 p. 254)
+    expect(reducedFading(1 * 2, streamSpriteFadingReduction('machinist'))).toBe(2)
   })
 })
 

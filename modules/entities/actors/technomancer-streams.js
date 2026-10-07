@@ -89,10 +89,11 @@ export function streamSpriteFadingReduction(stream){
   return STREAMS[stream]?.spriteFadingReduction ?? 0
 }
 
-// A fading lowered by a stream keeps the floor of 2 of every fading (SR5 p. 254). Kill Code p. 101 shows a fading of 1
-// in its example of LOTO: the floor of the core book is kept until a gamemaster rules otherwise
+// Every fading has a floor of 2 (SR5 p. 254); a fading a stream lowers goes down to 1, as in the example of LOTO,
+// a fading of 3 resisted at 1 by a Machinist (arbitrage de DjamZ (07/10), d'après l'exemple de KC p. 101)
 export function reducedFading(value, reduction){
-  return Math.max(2, (Number(value) || 0) - (Number(reduction) || 0))
+  const lowered = (Number(reduction) || 0) > 0
+  return Math.max(lowered ? 1 : 2, (Number(value) || 0) - (Number(reduction) || 0))
 }
 
 // Sourcerer daemon: half the submersion grade, rounded down, of complex forms sustained without penalty (KC p. 101)
