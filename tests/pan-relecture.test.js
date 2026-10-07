@@ -100,6 +100,18 @@ describe('M1: a move lays the crowns out again, it does not build them again', (
     expect(body).toMatch(/\r?\n {4}this\.#settleLater\(\)\r?\n {2}\}/)
   })
 
+  it('M6: the radial menu switches a device the sheets\' way, which clears a master left silent on its item', () => {
+    const radial = read('../modules/canvas/pan-crown/pan-radial-menu.js')
+    const fn = radial.slice(radial.indexOf('export async function switchMode'))
+    expect(fn).toMatch(/if \(item\.isEmbedded && hasDeviceMode\(item\)\) return switchDeviceMode\(item, mode\)/)
+    // and its own path, for what the sheets do not switch, clears the box too
+    expect(fn).toMatch(/if \(item\.system\?\.isSilent\) await item\.update\(\{\s*"system\.isSilent": false/)
+    const sheet = read('../modules/canvas/pan-crown/pan-device-switch.js')
+    // the sheets' way: the lock against a double click, and the master's box cleared
+    expect(sheet).toMatch(/if \(switching\.has\(item\.uuid\)\) return/)
+    expect(sheet).toMatch(/if \(item\.system\.isSilent\) await item\.update\(\{\s*"system\.isSilent": false/)
+  })
+
   it('makes the name of an icon the first time it is read, not at each build', () => {
     const source = read(LAYER)
     expect(source).toMatch(/let label = null/)

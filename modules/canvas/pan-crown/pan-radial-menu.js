@@ -19,6 +19,12 @@ import {
   contributeActions
 } from "./pan-hooks.js"
 import {
+  switchDeviceMode
+} from "./pan-device-switch.js"
+import {
+  hasDeviceMode
+} from "./pan-device-mode.js"
+import {
   canTryMatrixAction
 } from "../../rolls/roll-prepare-case/rollData-MatrixAction.js"
 import {
@@ -289,11 +295,14 @@ export function openRadialMenu({
 /**
  * The owner switches a device's mode (SR5 p. 236: silent is a simple action, Q7; the wireless switch costs what it
  * costs on the sheet). The master's silent mode is its user's, the box of the sheet (system.matrix.runningSilent).
+ * A device the sheets switch goes their way (pan-device-switch.js): a master left silent on its own item is cleared
+ * too, and a second click while the first is written is ignored (relecture, M6).
  */
 export async function switchMode(node, mode, graph){
   const item = globalThis.fromUuidSync?.(node.uuid) ?? null
   const holder = item?.parent ?? null
   if (!item || !holder?.isOwner) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_PanNotOwner"))
+  if (item.isEmbedded && hasDeviceMode(item)) return switchDeviceMode(item, mode)
   const from = ownModeOf(node)
   const actions = modeSwitchCost(from, mode, turningOn => SR5_ActorHelper.wirelessSwitchActionType(turningOn,
     game.settings.get("sr5", "sr5WifiRequiresDNI"), holder.system?.hasDNI))
@@ -301,6 +310,10 @@ export async function switchMode(node, mode, graph){
   if (node.kind === "master" || node.uuid === graph?.master) {
     await holder.update({
       "system.matrix.runningSilent": mode === "silent"
+    })
+    // masterMode reads the item's own box too: left checked, the master would stay silent
+    if (item.system?.isSilent) await item.update({
+      "system.isSilent": false
     })
   } else await item.update(modeUpdate(mode))
   if (actions.length) await SR5Combat.changeActionInCombat(holder.isToken ? holder.token.id : holder.id, actions)
