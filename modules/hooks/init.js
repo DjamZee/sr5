@@ -317,6 +317,9 @@ import {
 import {
   registerPanArKey
 } from "../canvas/pan-crown/pan-openings.js"
+import {
+  registerSettingsWindow
+} from "../interface/settings-window.js"
 
 export async function sr5HookInit() {
   SR5_SystemHelpers.registerSystemSettings()
@@ -355,6 +358,8 @@ export async function sr5HookInit() {
   registerIllusionSetting()
   registerHealLedger()
   registerTacnetSetting()
+  //Every visible system setting moves into the settings window, by tab (B10): keep this after the last registration
+  registerSettingsWindow()
   //The grappling statuses exist only in a world that uses the grappling rules
   if (SR5_GrappleHelpers.isActive()) CONFIG.statusEffects.push(...SR5_GrappleHelpers.statusEffects())
   //Running (SR5 p. 163-164): the "running" status, "Course" and "Sprint" in the movement selector, a ruler colored by gait

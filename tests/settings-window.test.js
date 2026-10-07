@@ -68,7 +68,12 @@ import {
   registerTacnetSetting
 } from '../modules/system/tacnet.js'
 
-const SNAPSHOT = new URL('./fixtures/settings-before-b10.json', import.meta.url)
+import {
+  SETTINGS_TABS, SETTINGS_TAGS, SETTINGS_CATALOG, MENU_CATALOG, SETTINGS_WINDOW_MENU,
+  captureSystemSettings, capturedSettingIds, capturedMenus, catalogEntry
+} from '../modules/system/settings-catalog.js'
+
+const SNAPSHOT =new URL('./fixtures/settings-before-b10.json', import.meta.url)
 
 // Every registration the init hook makes (modules/hooks/init.js, sr5HookInit), against a recording game.settings
 function registerAll() {
@@ -183,5 +188,94 @@ describe('settings registered by the system', () => {
       expect(kept, id).toEqual(wasKept)
     }
     for (const id of before.menus) expect(registered.menus.has(id), id).toBe(true)
+  })
+
+  it('gives every visible setting and every submenu its tab (none left in "other")', () => {
+    const tabs = new Set(SETTINGS_TABS.map(t => t.id))
+    for (const data of registered.settings.values()) {
+      if (!data.config) continue
+      const {
+        tab, tag
+      } = catalogEntry(data.key)
+      expect(tab, `${data.id}: add it to SETTINGS_CATALOG (modules/system/settings-catalog.js)`).not.toBe('other')
+      expect(tabs.has(tab), data.id).toBe(true)
+      if (tag) expect(Object.keys(SETTINGS_TAGS), data.id).toContain(tag)
+    }
+    for (const id of registered.menus.keys()) {
+      expect(catalogEntry(id.slice('sr5.'.length)).tab, `${id}: add it to MENU_CATALOG`).not.toBe('other')
+    }
+  })
+
+  it('lists in the catalog only settings that are registered and visible', () => {
+    for (const key of Object.keys(SETTINGS_CATALOG)) {
+      expect(registered.settings.get(`sr5.${key}`)?.config, key).toBe(true)
+    }
+    for (const key of Object.keys(MENU_CATALOG)) expect(registered.menus.has(`sr5.${key}`), key).toBe(true)
+  })
+
+  it('takes the visible settings and the submenus out of the general list, values untouched', () => {
+    const fresh = registerAll()
+    fresh.menus.set(`sr5.${SETTINGS_WINDOW_MENU}`, {
+      key: `sr5.${SETTINGS_WINDOW_MENU}`, namespace: 'sr5'
+    })
+    fresh.settings.set('other.visible', {
+      id: 'other.visible', key: 'visible', namespace: 'other', config: true
+    })
+    const visible = [...fresh.settings.values()].filter(s => s.namespace === 'sr5' && s.config).map(s => s.id)
+    const before = new Map([...fresh.settings].map(([id, s]) => [id, describeSetting(s)]))
+
+    captureSystemSettings(fresh)
+
+    expect(capturedSettingIds()).toEqual(expect.arrayContaining(visible))
+    for (const [id, data] of fresh.settings) {
+      const {
+        config, ...kept
+      } = describeSetting(data)
+      const {
+        config: wasConfig, ...wasKept
+      } = before.get(id)
+      expect(kept, id).toEqual(wasKept)
+      // Only the system's visible settings leave the list; another package's stay where they are
+      expect(config, id).toBe(data.namespace === 'sr5' ? false : wasConfig)
+    }
+    // Foundry's list keeps the window's button alone
+    expect([...fresh.menus.keys()]).toEqual([`sr5.${SETTINGS_WINDOW_MENU}`])
+    expect([...capturedMenus().keys()].sort()).toEqual(['sr5.sr5FactionsMenu', 'sr5.sr5NegotiationRepairMenu', 'sr5.sr5ShopConfigMenu'])
+  })
+})
+
+describe('settings window: the default it recalls', () => {
+  let defaultLabel
+
+  beforeAll(async () => {
+    globalThis.foundry.applications.settings ??= {
+      SettingsConfig: class {}
+    }
+    defaultLabel = (await import('../modules/interface/settings-window.js')).SR5SettingsConfig.defaultLabel
+  })
+
+  it('says checked or unchecked, the label of a choice, the value, or empty', () => {
+    expect(defaultLabel({
+      default: true
+    })).toBe('SR5.SETTINGS_Default_On')
+    expect(defaultLabel({
+      default: false
+    })).toBe('SR5.SETTINGS_Default_Off')
+    expect(defaultLabel({
+      default: 'SR5', choices: {
+        SR5: 'SR5.SETTINGS.Sr5Style'
+      }
+    })).toBe('SR5.SETTINGS.Sr5Style')
+    expect(defaultLabel({
+      default: 30
+    })).toBe('30')
+    expect(defaultLabel({
+      default: ''
+    })).toBe('SR5.SETTINGS_Default_Empty')
+    expect(defaultLabel({
+      default: {
+        a: 1
+      }
+    })).toBeNull()
   })
 })

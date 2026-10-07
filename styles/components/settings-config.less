@@ -65,7 +65,8 @@
    checkbox each give a different gap. Two columns instead: the title and its hint
    stacked on the left, the control beside them on the right. The distance between
    a title and its hint is then a row gap, the same for every kind of setting. */
-#settings-config .main .form-group:not(.stacked) {
+#settings-config .main .form-group:not(.stacked),
+#sr5-settings-config .main .form-group:not(.stacked) {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas:
@@ -111,7 +112,8 @@
 }
 
 /* === Settings config window === */
-#settings-config {
+#settings-config,
+#sr5-settings-config {
   nav {
     button {
       padding: 0px 5px;
@@ -144,5 +146,42 @@
         color: var(--sr-text-color-flash);
       }
     }
+  }
+}
+
+/* === Shadowrun settings window (B10) ===
+   Core sizes the fields of its own window by id (#settings-config): the same here.
+   Each setting may carry a label ("option du livre", "règle maison") and recalls its default. */
+#sr5-settings-config {
+  .main .form-fields {
+    flex: 1;
+  }
+
+  .main .form-fields > button {
+    flex-basis: 100%;
+  }
+
+  .sr5-settings-tag {
+    display: inline-block;
+    margin-left: 0.25rem;
+    padding: 0 0.35rem;
+    border: 1px solid var(--sr-ui-border-color-active);
+    border-radius: 3px;
+    font-size: 0.75em;
+    font-weight: normal;
+    line-height: 1.4;
+    text-transform: lowercase;
+    vertical-align: middle;
+    color: var(--sr-ui-border-color-active);
+
+    &.house {
+      border-color: var(--sr-text-color-flash);
+      color: var(--sr-text-color-flash);
+    }
+  }
+
+  .sr5-settings-default {
+    font-style: italic;
+    opacity: 0.85;
   }
 }
