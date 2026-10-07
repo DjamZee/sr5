@@ -393,6 +393,80 @@ describe('refuseByRule and capByRule', () => {
   })
 })
 
+describe('the preset asked in a new world (wish of DjamZ, 07/10)', () => {
+  let wait
+  beforeEach(() => {
+    store.sr5RuleLocksAsk = ''
+    game.users.activeGM = {
+      id: 'p1', isSelf: true
+    }
+    wait = vi.fn(async () => 'bookFreeActions')
+    globalThis.foundry.applications = {
+      api: {
+        DialogV2: {
+          wait
+        }
+      }
+    }
+  })
+
+  it('a new world: the active gamemaster is asked once, "book, free actions" lets the missing actions through', async () => {
+    await runRuleLocksMigration({
+      newWorld: true
+    })
+    expect(wait).toHaveBeenCalledTimes(1)
+    expect(store.sr5RuleLocks).toEqual({
+      ...presetLocks('book'), missingActions: false
+    })
+    expect(store.sr5RuleLocksPreset).toBe('custom')
+    expect(store.sr5BlockMissingActions).toBe(false)
+    expect(store.sr5RuleLocksAsk).toBe('done')
+    // The page reloaded: no window any more
+    await runRuleLocksMigration()
+    expect(wait).toHaveBeenCalledTimes(1)
+  })
+
+  it('the window closed without a choice: the book', async () => {
+    wait.mockResolvedValue(null)
+    await runRuleLocksMigration({
+      newWorld: true
+    })
+    expect(store.sr5RuleLocks).toEqual(presetLocks('book'))
+    expect(store.sr5RuleLocksAsk).toBe('done')
+  })
+
+  it('"light" lifts everything', async () => {
+    wait.mockResolvedValue('light')
+    await runRuleLocksMigration({
+      newWorld: true
+    })
+    expect(store.sr5RuleLocks).toEqual(presetLocks('light'))
+    expect(store.sr5RuleLocksPreset).toBe('light')
+  })
+
+  it('an existing world, migrated now or long ago: no window, nothing changes', async () => {
+    await runRuleLocksMigration()
+    store.sr5RuleLocksMigration = 2
+    await runRuleLocksMigration()
+    expect(wait).not.toHaveBeenCalled()
+    expect(store.sr5RuleLocksAsk).toBe('')
+  })
+
+  it('a gamemaster who is not the active one is not asked; the active one will be', async () => {
+    game.users.activeGM = {
+      id: 'gm', isSelf: false
+    }
+    await runRuleLocksMigration({
+      newWorld: true
+    })
+    expect(wait).not.toHaveBeenCalled()
+    expect(store.sr5RuleLocksAsk).toBe('pending')
+    game.users.activeGM.isSelf = true
+    await runRuleLocksMigration()
+    expect(wait).toHaveBeenCalledTimes(1)
+  })
+})
+
 describe('the text of the whisper (B13, lot 2)', () => {
   // The site's message says what the refusal did ("nothing is spent"): the whisper says the action went, and gives
   // that message as the reason of the refusal lifted only

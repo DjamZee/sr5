@@ -11,8 +11,12 @@
  * - sr5RuleLocks: one box per family, and the two boxes of the "objects" family that were settings of their own;
  * - sr5RuleLocksPreset: "book", "light" or "custom", what the boxes amount to;
  * - sr5RuleLocksMigration: 1 once the three former settings were copied in, 2 once sr5BlockMissingActions moved to its box (runRuleLocksMigration).
+ * - sr5RuleLocksAsk: "pending" in a new world until its gamemaster chose a preset, then "done"; "" in any other world.
  * The default is the book: every box checked.
  */
+import {
+  updateLedger
+} from "./gm-ledger.js"
 
 // The seven families of the survey (PLAN-AUTOMATISATION-LEGERE.md, § 1)
 export const RULE_LOCK_FAMILIES = ["actions", "ranges", "ammo", "magic", "matrix", "body", "objects"]
@@ -269,10 +273,51 @@ export async function runRuleLocksMigration({
 } = {
 }) {
   const done = game.settings.get("sr5", "sr5RuleLocksMigration") ?? 0
-  if (done >= RULE_LOCKS_MIGRATION_VERSION) return
-  if (newWorld && done < 1) return setRuleLocks(presetLocks("book"))
+  if (done >= RULE_LOCKS_MIGRATION_VERSION) return askNewWorldPreset()
+  if (newWorld && done < 1) {
+    await setRuleLocks(presetLocks("book"))
+    await updateLedger("sr5RuleLocksAsk", () => "pending")
+    return askNewWorldPreset()
+  }
   const locks = done < 1 ? locksFromLegacy(key => game.settings.get("sr5", key)) : locksFromV1(game.settings.get("sr5", "sr5RuleLocks"))
   await game.settings.set("sr5", "sr5RuleLocks", locks)
   await game.settings.set("sr5", "sr5RuleLocksPreset", presetOf(locks))
   await game.settings.set("sr5", "sr5RuleLocksMigration", RULE_LOCKS_MIGRATION_VERSION)
+}
+
+// The presets offered in a new world (askNewWorldPreset): the book, the book with the missing actions let through, light
+export const NEW_WORLD_PRESETS = ["book", "bookFreeActions", "light"]
+
+// The boxes of a preset chosen in a new world; anything else (the window closed) is the book
+export function newWorldPresetLocks(choice) {
+  if (choice === "light") return presetLocks("light")
+  if (choice === "bookFreeActions") return {
+    ...presetLocks("book"), missingActions: false
+  }
+  return presetLocks("book")
+}
+
+/**
+ * Once per new world, the active gamemaster chooses its preset (wish of DjamZ, 07/10). sr5RuleLocksAsk is "pending"
+ * only in a world the migration found new; an existing world never had it, and is never asked. The window closed
+ * without a choice is the book, already set. Asked once: the flag goes to "done" in its turn (gm-ledger.js)
+ */
+export async function askNewWorldPreset() {
+  if (game.settings.get("sr5", "sr5RuleLocksAsk") !== "pending") return
+  if (!game.users?.activeGM?.isSelf) return
+  const option = (key, checked) => `<p><label><input type="radio" name="preset" value="${key}"${checked ? " checked" : ""}> <strong>${game.i18n.localize(`SR5.RULELOCKS_Ask_${key}`)}</strong> — ${game.i18n.localize(`SR5.RULELOCKS_Ask_${key}_D`)}</label></p>`
+  const content = `<p>${game.i18n.localize("SR5.RULELOCKS_Ask_Intro")}</p>${NEW_WORLD_PRESETS.map((key, i) => option(key, i === 0)).join("")}<p><em>${game.i18n.localize("SR5.RULELOCKS_Ask_Later")}</em></p>`
+  const choice = await foundry.applications.api.DialogV2.wait({
+    window: {
+      title: "SR5.RULELOCKS_Ask_T"
+    },
+    content,
+    buttons: [{
+      action: "ok", label: "SR5.RULELOCKS_Save", default: true,
+      callback: (_event, button) => button.form.elements.preset.value
+    }],
+    rejectClose: false,
+  })
+  await updateLedger("sr5RuleLocksAsk", () => "done")
+  if (choice && choice !== "book") await setRuleLocks(newWorldPresetLocks(choice))
 }
