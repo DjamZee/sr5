@@ -204,6 +204,16 @@ describe('M1: a move lays the crowns out again, it does not build them again', (
     expect(read(LAYER)).toMatch(/if \("hidden" in \(changes \?\? \{\s*\}\)\) layer\(\)\?\.refresh\(\)/)
   })
 
+  it('closes the radial menu with the scene shown, its token or an actor deleted', () => {
+    const radial = read('../modules/canvas/pan-crown/pan-radial-menu.js')
+    expect(radial).toMatch(/openMenuTokenId = token\.id \?\? null/)
+    expect(radial).toMatch(/if \(openMenu && openMenuTokenId === tokenId\) closeMenu\(\)/)
+    const layer = read(LAYER)
+    expect(layer).toMatch(/Hooks\.on\("canvasTearDown", \(\) => closeRadialMenu\(\)\)/)
+    expect(layer).toMatch(/Hooks\.on\("deleteActor", \(\) => closeRadialMenu\(\)\)/)
+    expect(layer).toMatch(/Hooks\.on\("deleteToken", document => \{\s*closeRadialMenuOf\(document\.id\)/)
+  })
+
   it('makes the name of an icon the first time it is read, not at each build', () => {
     const source = read(LAYER)
     expect(source).toMatch(/let label = null/)

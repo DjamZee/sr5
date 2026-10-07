@@ -90,10 +90,13 @@ export async function rollMatrixActionOn(actor, actionKey, {
 }
 
 let openMenu = null
+// The token whose crown the open menu belongs to: the menu goes with it (deleted, or another scene shown)
+let openMenuTokenId = null
 
 function closeMenu(){
   openMenu?.remove()
   openMenu = null
+  openMenuTokenId = null
   document.removeEventListener("pointerdown", onPointerOutside, true)
   document.removeEventListener("keydown", onEscape, true)
 }
@@ -289,6 +292,7 @@ export function openRadialMenu({
     right: [buttons, modules], left: [owners, gm]
   })
   openMenu = menu
+  openMenuTokenId = token.id ?? null
   document.addEventListener("pointerdown", onPointerOutside, true)
   document.addEventListener("keydown", onEscape, true)
 }
@@ -342,6 +346,11 @@ async function slaveToPan(node, graph){
 
 function masterItemOf(graph){
   return graph?.master ? (globalThis.fromUuidSync?.(graph.master) ?? null) : null
+}
+
+/** Close the radial menu if it belongs to this token's crown (the token was deleted) */
+export function closeRadialMenuOf(tokenId){
+  if (openMenu && openMenuTokenId === tokenId) closeMenu()
 }
 
 export {

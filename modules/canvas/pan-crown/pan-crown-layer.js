@@ -15,7 +15,7 @@ import {
   getGraph, tokenOfNode
 } from "./pan-crown.js"
 import {
-  openRadialMenu
+  closeRadialMenu, closeRadialMenuOf, openRadialMenu
 } from "./pan-radial-menu.js"
 import {
   crownAngle, dashesOf, layoutCrown, signatureOf
@@ -906,7 +906,11 @@ function dashedCircle(graphics, radius, count){
 export function registerPanCrownHooks(){
   const layer = () => canvas?.sr5PanCrown
   Hooks.on("refreshToken", token => layer()?.onRefreshToken(token))
+  // The radial menu goes with the scene shown, the token, the actor it was opened on
+  Hooks.on("canvasTearDown", () => closeRadialMenu())
+  Hooks.on("deleteActor", () => closeRadialMenu())
   Hooks.on("deleteToken", document => {
+    closeRadialMenuOf(document.id)
     layer()?.close(document.object ?? {
       id: document.id
     })
