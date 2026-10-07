@@ -19,7 +19,7 @@ const DEFENSE_TESTS = ["defense", "defenseSimple", "martialArtDefense", "powerDe
 //actions and keep their dice
 const ACTION_TESTS = ["attack", "skill", "skillDicePool", "attributeOnly", "lift", "spell", "preparation",
   "complexForm", "matrixAction", "resonanceAction", "grappleClinch", "grappleEscape", "escapeEngulf", "pickpocket",
-  "healing", "movement"]
+  "concealItem", "healing", "movement"]
 
 /**
  * Which running modifier a test takes.

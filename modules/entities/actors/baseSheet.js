@@ -113,6 +113,12 @@ import {
 import {
   deactivationStatus, deactivationDialog, deactivationLauncher, launchDeactivation
 } from "../../system/deactivation.js"
+import {
+  SR5Conceal
+} from "../../interface/conceal.js"
+import {
+  canBeConcealed, concealedState, concealedItems
+} from "../../rolls/roll-helpers/conceal-rules.js"
 
 /**
  * Extend the basic ActorSheet class to do all the SR5 things!
@@ -152,6 +158,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         game.sr5.shop.open({
           actor: this.actor
         })
+      },
+      //SR5 p. 422: look for an object hidden on the targeted token, or pat it down
+      concealSearch: function (event, target) {
+        SR5Conceal.startSearch(this.actor, target.dataset.mode === "patDown" ? "patDown" : "spot")
       },
     },
   }
@@ -487,6 +497,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
     // Scroll indicators — toggle .can-scroll-up / .can-scroll-down on panels
     this._updateScrollFades(element)
+
+    //SR5 p. 422: an object hidden on oneself is marked for whoever plays the actor (and the GM)
+    if (this.actor.isOwner) this._markConcealedItems(element)
 
     // Everything below here is only needed if the sheet is editable
     if (!this.isEditable) return
@@ -1211,6 +1224,39 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
   /* -------------------------------------------- */
 
+  //An eye crossed out after the name of each hidden object, the hits of the one who hid it in its tooltip
+  _markConcealedItems(root) {
+    for (const item of concealedItems(this.actor)) {
+      const name = root.querySelector(`.item[data-item-id="${item.id}"] .deplie`)
+      if (!name || name.querySelector(".sr5-concealed-mark")) continue
+      name.insertAdjacentHTML("beforeend", ` <i class="fas fa-eye-slash sr5-concealed-mark" data-tooltip="${foundry.utils.escapeHTML(game.i18n.format("SR5.ConcealHidden", {
+        hits: concealedState(item).hits
+      }))}"></i>`)
+    }
+  }
+
+  //SR5 p. 422: hide the object on oneself, or take it out, from its details
+  _appendConcealToggle(div, item) {
+    if (!this.actor.isOwner || !canBeConcealed(item) || !this.actor.system.skills?.palming) return
+    const state = concealedState(item)
+    const label = state ? game.i18n.format("SR5.ConcealTakeOut", {
+      item: item.name
+    }) : game.i18n.localize("SR5.ConcealItem")
+    const tooltip = state ? game.i18n.format("SR5.ConcealHidden", {
+      hits: state.hits
+    }) : game.i18n.localize("SR5.ConcealItemTooltip")
+    const box = document.createElement("div")
+    box.className = "item-properties"
+    box.innerHTML = `<span class="tag sr5-conceal-toggle" style="cursor:pointer;" data-tooltip="${foundry.utils.escapeHTML(tooltip)}"><i class="fas ${state ? "fa-eye" : "fa-eye-slash"}"></i> ${foundry.utils.escapeHTML(label)}</span>`
+    box.querySelector(".sr5-conceal-toggle").addEventListener("click", event => {
+      event.stopPropagation()
+      event.preventDefault()
+      if (state) SR5Conceal.takeOut(item)
+      else SR5Conceal.startHide(this.actor, item)
+    })
+    div.appendChild(box)
+  }
+
   async _onItemSummary(event) {
     // Don't expand/collapse when clicking interactive elements inside .deplie
     if (event.target.closest(".toggle-value, .edit-value, .select-value, .changeValueByClick, .reload-ammo, .accessory-activate, .item-summary, .jammer-toggle")) return
@@ -1261,6 +1307,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         }
         div.appendChild(accDiv)
       }
+
+      this._appendConcealToggle(div, item)
 
       li.appendChild(div)
 

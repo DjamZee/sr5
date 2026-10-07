@@ -74,6 +74,9 @@ export {
   default as pickpocketPerception
 } from "./rollData-PickpocketPerception.js"
 export {
+  default as concealItem
+} from "./rollData-ConcealItem.js"
+export {
   default as fading
 } from "./rollData-Fading.js"
 export {

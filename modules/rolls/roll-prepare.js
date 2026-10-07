@@ -153,6 +153,9 @@ export class SR5_PrepareRollTest {
       case "pickpocketPerception":
         rollData = await SR5_GetRollData.pickpocketPerception(rollData, actor, chatData)
         break
+      case "concealItem":
+        rollData = await SR5_GetRollData.concealItem(rollData, actor, chatData)
+        break
       case "fading":
         rollData = await SR5_GetRollData.fading(rollData, actor, chatData)
         break

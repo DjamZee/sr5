@@ -3,6 +3,9 @@ import {
   SR5_GrappleHelpers
 } from './rolls/roll-helpers/grapple.js'
 import {
+  SR5Conceal
+} from './interface/conceal.js'
+import {
   sr5HookInit 
 } from './hooks/init.js'
 import {
@@ -180,6 +183,8 @@ Hooks.on('deleteCombat', clearRunning)
 //Sprint fatigue (SR5 p. 174): counted and resisted by the active GM from the Sprint test card
 Hooks.on('createChatMessage', message => onSprintCard(message).catch(e => console.error(e)))
 Hooks.on('renderChatMessageHTML', SR5_GrappleHelpers.onRenderHoldCard)
+//SR5 p. 422: the request of a search for hidden objects, resolved by the GM (conceal.js)
+Hooks.on('renderChatMessageHTML', SR5Conceal.onRenderSearchCard)
 //An escape a player rolled frees her once the active GM has read its card again (grapple.js)
 Hooks.on('createChatMessage', message => SR5_GrappleHelpers.onEscapeCard(message))
 Hooks.on('updateChatMessage', message => SR5_GrappleHelpers.onEscapeCard(message))

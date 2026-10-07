@@ -47,6 +47,9 @@ export {
   default as pickpocketInfo, pickpocketPerceptionInfo
 } from "./test-Pickpocket.js"
 export {
+  default as concealItemInfo
+} from "./test-ConcealItem.js"
+export {
   default as liftInfo
 } from "./test-Lift.js"
 export {

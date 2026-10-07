@@ -2,6 +2,9 @@ import {
   hasWeaponTrait, capBallReloadStep, CAP_BALL_STEPS, firearmCommandIsFree
 } from './weaponTraits.js'
 import {
+  CONCEALED_FLAG, updateTakesOut
+} from "../../rolls/roll-helpers/conceal-rules.js"
+import {
   accessoryCapacity, capacityTaken
 } from './weapon-accessory-rules.js'
 import {
@@ -100,6 +103,10 @@ export class SR5Item extends Item {
     } else if (!game.user.isGM && this.type === "itemQuality") this.updateSource({
       "system.transhumanEssence": 1
     })
+    //SR5 p. 422: hidden on someone's body, not on whoever gets a copy of it (pickpocket, loot, gift, duplicate)
+    if (data.flags?.sr5?.[CONCEALED_FLAG] !== undefined) this.updateSource({
+      [`flags.sr5.-=${CONCEALED_FLAG}`]: null
+    })
     const defaultImg = `systems/sr5/assets/img/items/${data.type}.svg`
     if (!data.img || data.img === "icons/svg/item-bag.svg") {
       this.updateSource({
@@ -116,6 +123,8 @@ export class SR5Item extends Item {
       ui.notifications?.warn(game.i18n.localize("SR5.WARN_GMOnlyField"))
       return false
     }
+    //SR5 p. 422: a hidden weapon made ready is taken out, its hidden state goes (arbitrage de DjamZ, 2026-10-07)
+    if (updateTakesOut(this, changes)) foundry.utils.setProperty(changes, `flags.sr5.-=${CONCEALED_FLAG}`, null)
     return super._preUpdate(changes, options, user)
   }
 

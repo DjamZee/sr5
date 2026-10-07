@@ -2,6 +2,9 @@ import {
   SR5Pickpocket
 } from "../interface/pickpocket.js"
 import {
+  SR5Conceal
+} from "../interface/conceal.js"
+import {
   reagentWorkUpdate
 } from "../system/reagents.js"
 import {
@@ -560,6 +563,11 @@ export class SR5_RollMessage {
         break
       case "pickpocketTransfer":
         await SR5Pickpocket.transfer(messageData, messageId)
+        break
+      //SR5 p. 422: the object hidden is taken out, its hidden state goes
+      case "concealTakeOut":
+        await SR5Conceal.takeOut(actor?.items.get(messageData.various.concealItemId))
+        SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       //Run & Gun p. 133: the clinched defender and the attacker enter the clinch, with the net hits of the test
       case "grappleClinchApply":

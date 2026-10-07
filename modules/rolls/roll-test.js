@@ -12,7 +12,8 @@ import {
 } from "./roll-test-helper.js"
 import * as SR5_AddRollInfo from "./roll-test-case/index.js"
 
-const PICKPOCKET_TESTS = ["pickpocket", "pickpocketPerception"]
+//An object hidden on oneself is the GM's to know too, not the table's (SR5 p. 422)
+const PICKPOCKET_TESTS = ["pickpocket", "pickpocketPerception", "concealItem"]
 import {
   SR5Combat 
 } from "../system/srcombat.js"
@@ -743,6 +744,9 @@ export class SR5_RollTest {
         break
       case "pickpocketPerception":
         await SR5_AddRollInfo.pickpocketPerceptionInfo(cardData)
+        break
+      case "concealItem":
+        await SR5_AddRollInfo.concealItemInfo(cardData)
         break
       case "lift":
         await SR5_AddRollInfo.liftInfo(cardData, actorId)
