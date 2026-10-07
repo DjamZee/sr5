@@ -415,6 +415,13 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     context.owner = this.document.isOwner
     context.lists = SR5_EntityHelpers.sortTranslations(SR5)
     context.isPlay = this.isPlayMode
+    // Read on the sheet, the description and the game effect show their links (@UUID to a journal, the Library)
+    // enriched, as on the chat card; the editor keeps the raw text
+    const enrich = text => foundry.applications.ux.TextEditor.implementation.enrichHTML(typeof text === "string" ? text : "", {
+      secrets: this.document.isOwner, relativeTo: item
+    })
+    context.enrichedDescription = await enrich(item.system.description)
+    context.enrichedGameEffect = await enrich(item.system.gameEffect)
     // Faction of a contact (Cutting Aces p. 157), kept in the gamemaster's registry
     if (item.type === "itemContact") context.contactFaction = SR5FactionRegistry.factionOfContact(item.uuid)?.name ?? ""
     // Whom a custom drug can be made for (Chrome Flesh p. 194): the actors this user sees, and the one already named

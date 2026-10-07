@@ -293,6 +293,16 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
     context.lists = this.actor.system.lists
     context.isPlay = this.isPlayMode
+    // Read on the sheet, descriptions show their links (@UUID to a journal, the Library) enriched; the editor keeps
+    // the raw text
+    const enrich = text => foundry.applications.ux.TextEditor.implementation.enrichHTML(typeof text === "string" ? text : "", {
+      secrets: this.actor.isOwner, relativeTo: this.actor
+    })
+    const biography = this.actor.system.biography
+    context.enrichedBiography = {
+      description: await enrich(biography?.description), background: await enrich(biography?.background),
+    }
+    context.enrichedDescription = await enrich(this.actor.system.description)
     //Reagent stocks shown: the raw one alone in the core rules (modules/system/reagents.js)
     context.reagentSystem = reagentSystem()
     context.reagentTiers = hasTiers(context.reagentSystem)
