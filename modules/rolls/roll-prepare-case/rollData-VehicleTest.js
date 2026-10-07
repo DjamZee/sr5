@@ -7,6 +7,9 @@ import {
 import {
   thresholdModifierOf, applyThresholdModifier
 } from "../roll-helpers/threshold.js"
+import {
+  applyInformationOverload
+} from "../roll-helpers/rigger-overload.js"
 
 export default function vehicleTest(rollData, actor, chatData){
   //Determine title
@@ -20,6 +23,7 @@ export default function vehicleTest(rollData, actor, chatData){
 
   //Determine dicepool modififiers
   rollData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(rollData, actor.system.vehicleTest.test.modifiers.filter(mod => (mod.type !== "manual")))
+  applyInformationOverload(rollData, actor)
 
   //Determine base limit
   rollData.limit.base = SR5_PrepareRollHelper.getBaseLimit(actor.system.vehicleTest.limit.value, actor.system.vehicleTest.limit.modifiers)
