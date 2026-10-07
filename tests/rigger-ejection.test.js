@@ -13,8 +13,12 @@ vi.hoisted(() => {
 vi.mock('../modules/socket.js', () => ({
   SR5_SocketHandler: {
     emitForGM: vi.fn(),
+    emitForPlayer: vi.fn(),
   },
 }))
+const {
+  SR5_SocketHandler
+} = await import('../modules/socket.js')
 
 const {
   SR5_ActorHelper
@@ -192,6 +196,26 @@ describe('a drone destroyed under its jumped in rigger (SR5 p. 268, 271)', () =>
     }
     await SR5_ActorHelper.takeDamage('d1', hit(2))
     expect(dumpshockCards(r)).toHaveLength(1)
+  })
+
+  it('the dumpshock is rolled by the player of the rigger, not on the GM\'s screen', async () => {
+    const r = rigger(), d = drone({
+      damage: 7
+    })
+    r.hasPlayerOwner = true
+    actors = {
+      r1: r, d1: d
+    }
+    const player = {
+      id: 'p1', isGM: false
+    }
+    vi.spyOn(SR5_EntityHelpers, 'getUserOwner').mockReturnValue(player)
+    SR5_SocketHandler.emitForPlayer.mockClear()
+    await SR5_ActorHelper.takeDamage('d1', hit(4))
+    const sent = SR5_SocketHandler.emitForPlayer.mock.calls.find(([type, data]) => type === 'actorRoll' && data.chatData.damage.resistanceType === 'dumpshock')
+    expect(sent?.[1].actorId).toBe('r1')
+    expect(sent?.[2]).toBe('p1')
+    expect(dumpshockCards(r)).toHaveLength(0)
   })
 
   it('a drone damaged but not destroyed keeps its rigger', async () => {

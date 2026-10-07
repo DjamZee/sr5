@@ -746,7 +746,13 @@ export class SR5_ActorHelper {
     let dumpshockData = SR5_PrepareRollTest.getBaseRollData(null, actor)
     dumpshockData.damage.resistanceType = "dumpshock"
     if (bricked) dumpshockData.damage.bricked = true
-    actor.rollTest("resistanceCard", null, dumpshockData)
+    //Worked out by the GM (a destroyed drone, a brick he wrote): the resistance is rolled by the player of the
+    //character when one is connected, as for an area spell (effectArea.js)
+    const user = game.user?.isGM && actor.hasPlayerOwner ? SR5_EntityHelpers.getUserOwner(actor) : null
+    if (user && !user.isGM && user.id !== game.user.id) SR5_SocketHandler.emitForPlayer("actorRoll", {
+      actorId: actor.isToken ? actor.token.id : actor.id, rollType: "resistanceCard", rollKey: null, chatData: dumpshockData,
+    }, user.id)
+    else actor.rollTest("resistanceCard", null, dumpshockData)
     return true
   }
 
