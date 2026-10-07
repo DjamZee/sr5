@@ -11,7 +11,7 @@ import {
   applyInformationOverload
 } from "../roll-helpers/rigger-overload.js"
 import {
-  prepareChaseRoll
+  prepareChaseRoll, vehicleTestCostsAction
 } from "../../system/chase-roll-prepare.js"
 
 export default function vehicleTest(rollData, actor, chatData){
@@ -39,8 +39,8 @@ export default function vehicleTest(rollData, actor, chatData){
   if (chatData?.owner) rollData.previousMessage.messageId = chatData.owner.messageId
   rollData.test.type = "vehicleTest"
 
-  //Handle Actions
-  rollData.combat.actions = SR5_MiscellaneousHelpers.addActions(rollData.combat.actions, {
+  //Handle Actions: a chase test the action of another imposes is free, as a defense (chase-roll-prepare.js)
+  if (vehicleTestCostsAction(chatData)) rollData.combat.actions = SR5_MiscellaneousHelpers.addActions(rollData.combat.actions, {
     type: "complex", value: 1, source: "vehicleTest"
   })
 

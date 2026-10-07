@@ -37,6 +37,17 @@ export function chaseTestKind(chase) {
 }
 
 /**
+ * Whether a vehicle test costs its complex action. A test the action of another imposes (opposing it, following a
+ * stunt, avoiding the crash after Cut Off, the final test beyond Extreme) is free, as a defense is, and so is a test
+ * that only follows up an action already paid: neither action nor initiative (SR5 p. 205, arbitrage de DjamZ, 08/10).
+ * Control a Vehicle, a chase action and a stunt the character takes stay actions.
+ */
+export function vehicleTestCostsAction(chatData) {
+  const mode = chatData?.chaseRoll?.mode
+  return mode !== "oppose" && mode !== "followUp"
+}
+
+/**
  * The vehicle test of a chase action: its title, threshold, limit and dice. chatData.chaseRoll comes from the chase
  * window (launchChaseAction) or from a chase card (chaseButton).
  * @return {Boolean} true when the roll is a chase action's

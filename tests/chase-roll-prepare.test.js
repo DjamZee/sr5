@@ -2,7 +2,7 @@ import {
   describe, it, expect, beforeAll
 } from 'vitest'
 import {
-  prepareChaseRoll
+  prepareChaseRoll, vehicleTestCostsAction
 } from '../modules/system/chase-roll-prepare.js'
 
 // Vehicle chases (R12, part 2): the vehicle test of a chase action takes the threshold, the limit and the dice the
@@ -105,5 +105,40 @@ describe('a chase action\'s vehicle test', () => {
     expect(data.previousMessage.messageId).toBe('abc')
     expect(data.test.title).toContain('SR5.CHASE_Opposing')
     expect(data.test.title).not.toContain('(0)')
+  })
+})
+
+// Arbitrage de DjamZ (08/10, SR5 p. 205): a test another's action imposes is free, as a defense
+describe('vehicleTestCostsAction', () => {
+  it('a chase action the character takes, or a plain vehicle test, costs its complex action', () => {
+    expect(vehicleTestCostsAction(undefined)).toBe(true)
+    expect(vehicleTestCostsAction({
+      test: {
+        type: 'ramming'
+      }
+    })).toBe(true)
+    expect(vehicleTestCostsAction({
+      chaseRoll: {
+        mode: 'initiate', key: 'stunt'
+      }
+    })).toBe(true)
+  })
+  it('opposing an action, following a stunt or avoiding the crash costs nothing', () => {
+    for (const chaseRoll of [
+      {
+        mode: 'oppose', key: 'cutOff'
+      },
+      {
+        mode: 'followUp', key: 'stunt', test: 'stuntFollow'
+      },
+      {
+        mode: 'followUp', key: 'cutOff', test: 'avoidCrash'
+      },
+      {
+        mode: 'followUp', key: 'catchUpR5', test: 'escapeR5'
+      },
+    ]) expect(vehicleTestCostsAction({
+      chaseRoll
+    })).toBe(false)
   })
 })
