@@ -339,6 +339,56 @@ describe('SR5Shop.checkout, assemble (the dealership)', () => {
     })])
   })
 
+  it('the express of a lot is entered as the till charged it, rounded line by line (review 32)', async () => {
+    delivery = 'delayed'
+    const ledger = {
+    }
+    game.settings.get = (_s, key) => ({
+      sr5ShopBuyerMode: 'owned', sr5ShopBuyerFolder: '', sr5ShopCreationMode: false, sr5ShopExcludedPacks: [],
+      sr5ShopDelivery: delivery, sr5ShopExpress: true, sr5ShopExpressSurcharge: 25, sr5ShopExpressFactor: 2,
+    })[key] ?? ledger[key] ?? {
+    }
+    game.settings.set = async (_s, key, value) => {
+      ledger[key] = value
+    }
+    // 5 001 ¥ and a mod at 1 501 ¥ on the vehicle: 1 250 + 375 = 1 625 at the till, 1 626 rounded on the sum
+    for (const d of [shelf('scout', 'itemVehicle', 5001, 4, {
+      type: 'drone', category: 'mediumDrone', vehiclesMod: []
+    }), shelf('sensor', 'itemVehicleMod', 750.5, 0, {
+      type: 'electromagnetic'
+    })]) docs[d.uuid] = d
+    const items = new Map()
+    const rigger = {
+      ...buyer, uuid: 'Actor.rigger-express', items,
+      createEmbeddedDocuments: async (_t, data) => {
+        created.push(...data)
+        return data.map(d => {
+          const doc = {
+            ...d, id: 'debit', _stats: {
+              createdTime: Date.now()
+            }
+          }
+          items.set(doc.id, doc)
+          return doc
+        })
+      },
+    }
+    expect(await SR5Shop.checkout(rigger, [{
+      uuid: 'Compendium.sr5.vehicles.Item.scout', quantity: 1
+    }, {
+      uuid: 'Compendium.sr5.vehicles.Item.sensor', quantity: 1
+    }], {
+      assemble: true, express: true
+    })).toBe(true)
+    expect(created.find(d => d.type === 'itemNuyen').system.amount).toBe(5001 + 1501 + 1625)
+    const {
+      orderLedger
+    } = await import('../modules/interface/shop-orders.js')
+    expect(Object.values(orderLedger())).toEqual([expect.objectContaining({
+      paid: 5001 + 1501 + 1625, uuid: 'Compendium.sr5.vehicles.Item.scout'
+    })])
+  })
+
   it('the order delivered, the vehicle arrives with its mods aboard', async () => {
     delivery = 'delayed'
     await SR5Shop.checkout(buyer, lines(), {

@@ -596,16 +596,16 @@ async function catalogueCost(order, buyer = null) {
   } = await import('./shop.js')
   const quantity = Math.max(1, Math.floor(Number(order.quantity) || 1))
   const unit = SR5Shop.gradedPrice(source.system, order.grade ?? null)
-  let base = unit * quantity
-  let paid = dealerPrice(unit, source, buyer?.items ?? []) * quantity
+  const terms = order.express ? currentExpress() : null
+  let paid = dealerPrice(unit, source, buyer?.items ?? []) * quantity + expressCost(unit * quantity, terms)
   if (order.mods?.length) {
     const mods = await orderMods(source, order)
     if (!mods) return null
-    const modsTotal = mods.reduce((sum, mod) => sum + mod.price, 0)
-    base += modsTotal
-    paid += modsTotal
+    // The express of a lot is rounded line by line, as the till charges it: rounded on the sum, it came 1 ¥ above
+    // the debit and the honest purchase stayed out of the ledger (review 32)
+    paid += mods.reduce((sum, mod) => sum + mod.price + expressCost(mod.price, terms), 0)
   }
-  return paid + (order.express ? expressCost(base, currentExpress()) : 0)
+  return paid
 }
 
 /**
