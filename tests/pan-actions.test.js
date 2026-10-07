@@ -52,6 +52,26 @@ describe('R7: electronic warfare in the radial menu (Rigger 5.0 p. 34-35)', () =
     expect(keys.slice(jump - 1, jump + 3)).toEqual(['targetDevice', 'jumpIntoRiggedDevice', 'confusePilot', 'breakTargetLock'])
   })
 
+  it('offers them too in the drone\'s own crown, on the device that stands for the drone', () => {
+    const own = {
+      uuid: 'Actor.drone1.Item.dd', kind: 'device', itemType: 'itemDevice', holderIds: ['drone1'], ownerIds: ['drone1', 'rigger']
+    }
+    const droneCrown = graph({
+      master: null, owner: {
+        id: 'drone1', type: 'actorDrone'
+      }
+    })
+    expect(actionsForNode(own, droneCrown, {
+      rigger5: true
+    })).toEqual(expect.arrayContaining(['jumpIntoRiggedDevice', 'confusePilot', 'breakTargetLock']))
+    // The rigger's console, drawn in the same crown, is no drone
+    expect(actionsForNode({
+      ...own, uuid: 'Actor.rigger.Item.rcc', kind: 'rigger', holderIds: ['rigger']
+    }, droneCrown, {
+      rigger5: true
+    })).not.toContain('confusePilot')
+  })
+
   it('offers Target Device on any wireless device, but the autopilot and the lock only on a drone', () => {
     const keys = actionsForNode(gun, graph(), {
       rigger5: true

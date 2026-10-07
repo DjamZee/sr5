@@ -28,6 +28,13 @@ export const FILE_OWNER_ACTIONS = ["editFile", "setDataBomb"]
 // SR5 p. 238: the owner counts as four marks, more than anyone else can place
 export const OWNER_MARKS = 4
 
+// In a drone's own crown, the drone is the device it carries (pan-graph.js): the node stands for the drone itself
+export function isOwnDroneDevice(node, graph = {
+}){
+  return node?.kind === "device" && graph?.owner?.type === "actorDrone" && !!graph.owner.id &&
+    (node.holderIds ?? []).includes(graph.owner.id)
+}
+
 /**
  * The actions offered on a node of the crown.
  * @param {Object} node    a node of getGraph
@@ -47,8 +54,9 @@ export function actionsForNode(node, graph = {
   const keys = [...PAN_DEVICE_ACTIONS]
   // A sprite is no device (SR5 p. 236)
   if (rigger5 && node.kind !== "sprite") keys.push(...PAN_TARGET_DEVICE_ACTIONS)
-  if (node.kind === "drone" || node.itemType === "itemVehicle") keys.push(...PAN_RIGGED_ACTIONS)
-  if (rigger5 && node.kind === "drone") keys.push(...PAN_RIGGER5_DRONE_ACTIONS)
+  const drone = node.kind === "drone" || isOwnDroneDevice(node, graph)
+  if (drone || node.itemType === "itemVehicle") keys.push(...PAN_RIGGED_ACTIONS)
+  if (rigger5 && drone) keys.push(...PAN_RIGGER5_DRONE_ACTIONS)
   // A sprite is a persona of its own (SR5 p. 236)
   if ((node.uuid && node.uuid === graph.master) || node.kind === "sprite") keys.push(...PAN_PERSONA_ACTIONS)
   return keys
