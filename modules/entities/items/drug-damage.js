@@ -4,6 +4,9 @@ import {
 import {
   distinctDrugs, drugCrashIsInstant, isSameDrug
 } from "./drug-stat.js"
+import {
+  CUSTOM_DRUG_KEY
+} from "./drug-designer.js"
 
 // The damage of the drugs: when it comes (on intake or at the crash) and how it is resisted, read off the drug key of
 // the item and the addictions of the actor, never off a value written on the item or on a card.
@@ -167,6 +170,11 @@ export function crashDamageOf(key, shot = {
   if (key === "longHaul" && shot?.longHaulSecondDose) crash = {
     value: LONG_HAUL_SECOND_DOSE_DAMAGE, resist: "none"
   }
+  //A drug made with the designer: the blocks' crashes, "non-résistés" (Chrome Flesh p. 196), worked out from its recipe
+  //when the dose was taken (utilityActor.handleDrugShots)
+  if (key === CUSTOM_DRUG_KEY && Number(shot?.customCrash) > 0) crash = {
+    value: Number(shot.customCrash), resist: "none"
+  }
   if (!crash) return null
   if (crash.implantsOnly && !hasImplants(items)) return null
   return {
@@ -178,7 +186,8 @@ export function crashDamageOf(key, shot = {
 // Does the drug deal damage at its crash, whoever takes it (used to know whether it has a crash at all)
 export function drugHasCrashDamage(key, shot = {
 }){
-  return !!(DRUG_DAMAGE[key]?.crash || (key === "longHaul" && shot?.longHaulSecondDose))
+  return !!(DRUG_DAMAGE[key]?.crash || (key === "longHaul" && shot?.longHaulSecondDose) ||
+    (key === CUSTOM_DRUG_KEY && Number(shot?.customCrash) > 0))
 }
 
 // What a dose of Long Haul is, counted for the actor and not for one item (SR5 p. 413): "second" when any Long Haul of

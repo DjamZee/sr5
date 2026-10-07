@@ -23,6 +23,9 @@ import {
   longHaulDoseKind
 } from "../items/drug-damage.js"
 import {
+  computeCustomDrug, customDrugShot
+} from "../items/drug-designer.js"
+import {
   SR5_SystemHelpers 
 } from "../../system/utilitySystem.js"
 import {
@@ -3625,6 +3628,15 @@ export class SR5_CharacterUtility extends Actor {
           "durationType": "minute",
         }
         break
+      //A drug made with the designer (Chrome Flesh p. 194-196): Speed, (10 × ND6) minutes and crash worked out from its
+      //recipe (drug-designer.js), the crash damage carried by the stat (drug-damage.js)
+      case "customDrug": {
+        const recipe = item.system?.designer?.recipe
+        roll = new Roll(`${computeCustomDrug(recipe).durationDice}d6 * 10`)
+        rollRoll = await roll.evaluate()
+        drugStat = customDrugShot(recipe, rollRoll.total)
+        break
+      }
       case "nitro":
         //(10 × 1D6) minutes, one die times ten (SR5 p. 413), not the sum of ten dice
         roll = new Roll(`1d6 * 10`)

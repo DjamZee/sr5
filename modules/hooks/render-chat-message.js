@@ -23,6 +23,9 @@ import {
   activateDrugCardListeners
 } from "../system/drug-clock.js"
 import {
+  SR5DrugDesigner
+} from "../interface/drug-designer.js"
+import {
   addExtendedClockButton
 } from "../system/extended-clock.js"
 import {
@@ -92,6 +95,8 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   if (message.flags?.sr5?.effectExpiry) activateExpiryCardListeners(html, message)
   // Withdrawal tests and rent fall due: the GM acts
   if (message.flags?.sr5?.deadlines) activateDeadlineCardListeners(html, message)
+  // A drug a player designed: the GM reviews it (Chrome Flesh p. 194-196)
+  if (message.flags?.sr5?.drugDesign) SR5DrugDesigner.activateCardListeners(html, message)
   // Drugs whose effect or crash is over on the clock: the GM moves them on
   if (message.flags?.sr5?.drugClock) activateDrugCardListeners(html, message)
   // Wounds that bleed (Bullets & Bandages p. 14): the GM adds the box

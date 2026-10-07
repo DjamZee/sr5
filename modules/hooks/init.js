@@ -246,6 +246,9 @@ import {
   SR5_Toxins
 } from "../entities/items/toxins.js"
 import {
+  SR5DrugDesigner
+} from "../interface/drug-designer.js"
+import {
   sr5ItemSpriteDataModel
 } from "../datamodels/items/itemSprite.js"
 import {
@@ -522,6 +525,8 @@ export async function sr5HookInit() {
 
   //Book toxins button in the Items tab
   SR5_Toxins.registerHooks()
+  //Drug designer button in the Items tab (Chrome Flesh p. 194-196)
+  SR5DrugDesigner.registerHooks()
 
   // Patch creation dialog buttons with document-type icons
   const docTypes = ["Actor", "Item", "Scene", "JournalEntry", "RollTable", "Cards", "Playlist", "Macro"]

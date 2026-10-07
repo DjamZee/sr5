@@ -1,0 +1,70 @@
+// Drug designer (Chrome Flesh p. 194-196)
+.sr-drug-designer {
+  .sr-drug-designer-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    h3 {
+      margin: 0.4rem 0 0;
+      border-bottom: 1px solid var(--color-border-light-2, #8884);
+    }
+  }
+  .sr-drug-designer-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    input[type="text"] {
+      flex: 1;
+    }
+  }
+  .sr-drug-designer-blocks {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    li {
+      display: grid;
+      grid-template-columns: 12rem 4rem 1fr;
+      gap: 0.5rem;
+      align-items: center;
+      padding: 0.1rem 0;
+      &.chosen .sr-drug-designer-block-name {
+        font-weight: bold;
+      }
+    }
+  }
+  .hint {
+    opacity: 0.8;
+    font-size: 0.9em;
+  }
+  .sr-drug-designer-errors {
+    list-style: none;
+    margin: 0;
+    padding: 0.3rem;
+    border: 1px solid #c33;
+    border-radius: 3px;
+    color: #c33;
+  }
+  .sr-drug-designer-pending {
+    font-weight: bold;
+  }
+  .sr-drug-designer-result {
+    display: grid;
+    grid-template-columns: 12rem 1fr;
+    gap: 0.15rem 0.5rem;
+    margin: 0;
+    dt {
+      font-weight: bold;
+    }
+    dd {
+      margin: 0;
+    }
+  }
+  .sr-drug-designer-buttons {
+    display: flex;
+    gap: 0.5rem;
+    button {
+      flex: 1;
+    }
+  }
+}

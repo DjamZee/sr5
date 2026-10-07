@@ -20,6 +20,12 @@ import {
   DRUG_DAMAGE, DRUG_INTERACTION_DAMAGE, intakeDamageOf, dosesTaken, overdoseOf
 } from "../items/drug-damage.js"
 import {
+  drugDesignApproved
+} from "../items/drug-designer.js"
+import {
+  SR5DrugDesigner
+} from "../../interface/drug-designer.js"
+import {
   setCharacterField, setSpiritTrait, banishKey
 } from "../../system/spirit-ledger.js"
 import {
@@ -490,6 +496,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
     // Owned Item management
     on(".item-create", "click", this._onItemCreate.bind(this))
+    on(".drug-designer-open", "click", () => new SR5DrugDesigner({
+      actor: this.actor
+    }).render(true))
     on(".item-clone", "click", this._onItemClone.bind(this))
     on(".item-edit", "click", this._onItemEdit.bind(this))
     on(".item-delete", "click", this._onItemDelete.bind(this))
@@ -1433,6 +1442,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       oldValue = foundry.utils.getProperty(item, target)
       value = !oldValue
     }
+    //A drug a player made with the designer is taken once the gamemaster approved it (decision of DjamZ, 07/10)
+    if (target === "system.isActive" && value && realItem?.type === "itemDrug" && !drugDesignApproved(realItem.system)) return ui.notifications.warn(game.i18n.format("SR5.WARN_DrugDesignNotApproved", {
+      drug: realItem.name
+    }))
     //Vintage (Gun H(e)aven 3 p. 3): never wireless, so no switch and no action spent
     if (target === "system.wirelessTurnedOn" && realItem?.type === "itemWeapon" && hasWeaponTrait(realItem.system, "vintage")) return ui.notifications.warn(game.i18n.localize("SR5.WARN_VintageNoWireless"))
     //Better Than Bad p. 141: under Blight no adept power, focus nor sustained spell is switched on (decisions of DjamZ)

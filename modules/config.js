@@ -193,6 +193,38 @@ SR5.drugs = {
   neostigmine               : "SR5.DrugNeostigmine",
   ondansetron               : "SR5.DrugOndansetron",
   kamiPlus                  : "SR5.DrugKamiPlus",
+  customDrug                : "SR5.DrugCustomDesigned",
+}
+
+// Drug designer (Chrome Flesh p. 194-196): bases, blocks and the qualities a block of level 3 gives
+SR5.drugDesignerBases = {
+  tank                      : "SR5.DrugBaseTank",
+  defender                  : "SR5.DrugBaseDefender",
+  genius                    : "SR5.DrugBaseGenius",
+  charmer                   : "SR5.DrugBaseCharmer",
+  warrior                   : "SR5.DrugBaseWarrior",
+}
+
+SR5.drugDesignerBlocks = {
+  brute                     : "SR5.DrugBlockBrute",
+  enduring                  : "SR5.DrugBlockEnduring",
+  strike                    : "SR5.DrugBlockStrike",
+  flash                     : "SR5.DrugBlockFlash",
+  einstein                  : "SR5.DrugBlockEinstein",
+  momentOfTruth             : "SR5.DrugBlockMomentOfTruth",
+  stoneWall                 : "SR5.DrugBlockStoneWall",
+  silverTongue              : "SR5.DrugBlockSilverTongue",
+  shockAndAwe               : "SR5.DrugBlockShockAndAwe",
+  sharpMind                 : "SR5.DrugBlockSharpMind",
+  general                   : "SR5.DrugBlockGeneral",
+  resistance                : "SR5.DrugBlockResistance",
+  speedDemon                : "SR5.DrugBlockSpeedDemon",
+}
+
+SR5.drugDesignerQualities = {
+  painSensitivity           : "SR5.DrugTraitPainSensitivity",
+  shakyHands                : "SR5.DrugTraitShakyHands",
+  uncouth                   : "SR5.DrugTraitUncouth",
 }
 
 // Drug qualities (Chrome Flesh p. 194)

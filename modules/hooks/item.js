@@ -11,6 +11,9 @@ import {
   GM_ONLY_PREPARATION_PATHS
 } from '../system/preparation-potency.js'
 import {
+  GM_ONLY_DRUG_PATHS
+} from '../entities/items/drug-designer.js'
+import {
   WEAPON_ACCESSORY_CATALOG
 } from '../data/weaponAccessoryCatalog.js'
 import {
@@ -108,6 +111,11 @@ export function sr5HookPreUpdateItem(document, data, options, userId) {
   //The start and the pace of a preparation's loss of Potency are the gamemaster's (SR5 p. 309)
   if (document.type === 'itemPreparation' && !game.user?.isGM && stripGMOnlyChanges(data, document, GM_ONLY_PREPARATION_PATHS, options).length) {
     ui.notifications.warn(game.i18n.localize('SR5.WARN_PreparationDecayGMOnly'))
+    return false
+  }
+  //The approval of a drug a player made with the designer is the gamemaster's (decision of DjamZ, 07/10)
+  if (document.type === 'itemDrug' && !game.user?.isGM && stripGMOnlyChanges(data, document, GM_ONLY_DRUG_PATHS, options).length) {
+    ui.notifications.warn(game.i18n.localize('SR5.WARN_DrugDesignGMOnly'))
     return false
   }
   //Vintage (Gun H(e)aven 3 p. 3): an electronic accessory is allowed but warned about, it gets no wireless

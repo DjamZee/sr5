@@ -126,7 +126,8 @@ const drugKey = system => Object.values(system?.systemEffects ?? {
 export function isSameDrug(a, b){
   const key = drugKey(a?.system)
   if (!key || key !== drugKey(b?.system)) return false
-  const custom = a.system?.quality === "custom" || b.system?.quality === "custom"
+  //Two drugs made with the designer share their key whatever their recipe: told apart by their name too
+  const custom = a.system?.quality === "custom" || b.system?.quality === "custom" || key === "customDrug"
   return !custom || a.name === b.name
 }
 
