@@ -406,10 +406,7 @@ export class SR5_RollTest {
   static async extendedRoll(message, actor){
     let messageData = message.flags.sr5data
     //SR5 p. 207: the next roll of a natural Physical recovery waits for the Stun damage to be healed, as the first one
-    if (SR5_ActorHelper.stunBlocksNaturalHealing(actor?.system, messageData.test.type, messageData.test.typeSub)) {
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_StunHealsFirst"))
-      return false
-    }
+    if (SR5_ActorHelper.stunHealsFirstRefused(actor, messageData.test.type, messageData.test.typeSub)) return false
 
     //Prepare new chat card: the base pool and its modifiers, minus one die per earlier roll (SR5 p. 50).
     //GM ruling (05/10): Push the limit joins the starting pool of an extended test, every roll keeps its Edge dice

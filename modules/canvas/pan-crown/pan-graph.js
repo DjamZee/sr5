@@ -19,6 +19,9 @@ import {
 import {
   isAwake, isLivingPersona, isTechnomancer, personaOf
 } from "../../entities/actors/living-persona.js"
+import {
+  actsAsRcc
+} from "../../entities/actors/rcc.js"
 
 // rigger: the master of the rigger, in a drone's crown; wan: the master of a device of the scenery (a host, or the
 // master item of a PAN); decor: a device of the scenery slaved to the crown's master (lot 7); persona: a
@@ -216,6 +219,21 @@ export function buildPanGraph(actor, {
       add(nodeOf(item, drone ? "drone" : "slave", holder, mode, silentFrom, drone, actor), device.uuid, drone ? "drone" : "slave")
     }
 
+    // A rigger command console is the master of the drones slaved to it (SR5 p. 269, lot R7 of the rigging plan):
+    // the box "Asservi" of the vehicle is enough, with no line in the console's PAN list
+    let consoleCount = 0
+    if (isConsole(actor, device)) for (const item of itemsOf(actor)){
+      if (seen.has(item.uuid) || item.type !== "itemVehicle" || item.system?.isSlavedToPan) continue
+      const drone = droneOf(item, actor, actors)
+      if (!(drone?.system?.slaved ?? item.system?.slaved)) continue
+      if (!drone && !item.system?.isActive) continue
+      const {
+        mode, silentFrom
+      } = slaveMode(ownMode(item, drone), masterState)
+      add(nodeOf(item, drone ? "drone" : "slave", actor, mode, silentFrom, drone, actor), device.uuid, drone ? "drone" : "slave")
+      consoleCount++
+    }
+
     // The devices of the scenery slaved to this master (actorDevice.system.matrix.panMaster, lot 7)
     let decorCount = 0
     for (const decor of decorSlavesOf(actor, device, actors)){
@@ -234,7 +252,7 @@ export function buildPanGraph(actor, {
     }
     if (!isHostActor(actor)) graph.capacity = {
       max: Number(device.system?.pan?.max) || (Number(device.system?.deviceRating) || 0) * 3,
-      used: arrayOf(device.system?.pan?.content).length + decorCount,
+      used: arrayOf(device.system?.pan?.content).length + decorCount + consoleCount,
     }
   }
 
@@ -334,6 +352,11 @@ function ownCopyOf(item, actor){
   return itemsOf(actor).find(i => (i.id ?? i._id) === id) ?? item
 }
 
+// Does the actor reach the Matrix through a rigger command console (or a Machinist's persona, rcc.js)?
+export function isConsole(actor, device){
+  return device?.system?.type === "riggerCommandConsole" || actsAsRcc(actor)
+}
+
 export function isHostActor(actor){
   return actor?.type === "actorDevice" && actor.system?.matrix?.deviceType === "host"
 }
@@ -373,8 +396,9 @@ function upwardMasterOf(actor, graph, {
     const vehicle = itemsOf(rigger).find(i => (i.id ?? i._id) === graph.rigger.itemId)
     // (by the item's id: an unlinked rigger's PAN lists the uuids of its world actor's items)
     const vehicleId = vehicle ? (vehicle.id ?? vehicle._id) : null
-    const slaved = !!vehicle && arrayOf(device.system?.pan?.content).some(e => e?.uuid === vehicle.uuid ||
-      String(e?.uuid ?? "").endsWith(`.Item.${vehicleId}`))
+    // or when it is slaved to the rigger's console (lot R7)
+    const slaved = !!vehicle && (arrayOf(device.system?.pan?.content).some(e => e?.uuid === vehicle.uuid ||
+      String(e?.uuid ?? "").endsWith(`.Item.${vehicleId}`)) || (isConsole(rigger, device) && !!actor.system?.slaved))
     const node = nodeOf(device, "rigger", rigger, mode, mode === "silent" ? "self" : null, null, actor)
     node.holderIds = [realIdOf(rigger)]
     return {

@@ -20,6 +20,9 @@ import {
   essenceAfterPurchase, screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED, essenceSettingOn, ESSENCE_HOLE_SETTING
 } from '../system/implant-essence.js'
 import {
+  refuseByRule, ruleLockActive
+} from '../system/rule-locks.js'
+import {
   SR5ShopAvailability
 } from './shop-availability.js'
 import {
@@ -488,7 +491,7 @@ export class SR5Shop {
   /**
    * "Si jamais l'Essence du personnage atteint 0, c'est la mort" (SR5 p. 54): a purchase that would take the
    * buyer's Essence to 0 or below is refused to a player; the gamemaster is asked, in his own window, and
-   * may go past it. The Essence and the qualities are read on the actor, on the client that runs the till.
+   * may go past it; so does a player when the "body" rule lock family is lifted. The Essence and the qualities are read on the actor, on the client that runs the till.
    * @param {Array<{type, name, system, grade, quantity}>} lines
    * @param {object} [options]
    * @param {boolean} [options.isGM] whether the gamemaster is the one buying
@@ -512,6 +515,10 @@ export class SR5Shop {
       name: actor.name, essence: essence.toLocaleString()
     }
     if (!isGM) {
+      // The "body" rule lock family lifted (B13, lot 4): the purchase goes, the gamemaster hears of it
+      if (!ruleLockActive("body")) return !refuseByRule("body", 'SR5.WARN_ShopEssenceTooLow', data, {
+        actor
+      })
       warn('SR5.WARN_ShopEssenceTooLow', data)
       return false
     }
