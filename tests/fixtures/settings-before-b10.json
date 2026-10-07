@@ -1,0 +1,663 @@
+{
+  "settings": {
+    "sr5.aegisLedger": {
+      "scope": "world",
+      "type": "Object",
+      "default": {},
+      "config": false
+    },
+    "sr5.compendium.baseWeapons": {
+      "scope": "world",
+      "type": "String",
+      "default": "auto",
+      "config": true
+    },
+    "sr5.compendium.creaturePowers": {
+      "scope": "world",
+      "type": "String",
+      "default": "auto",
+      "config": true
+    },
+    "sr5.compendium.spritePowers": {
+      "scope": "world",
+      "type": "String",
+      "default": "auto",
+      "config": true
+    },
+    "sr5.legacyBiographyMigration": {
+      "scope": "world",
+      "type": "Number",
+      "default": 0,
+      "config": false
+    },
+    "sr5.mentorMask": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.panCrownAmbience": {
+      "scope": "client",
+      "type": "String",
+      "default": "sober",
+      "config": true
+    },
+    "sr5.panCrownAmbienceCap": {
+      "scope": "world",
+      "type": "String",
+      "default": "spectacular",
+      "config": true
+    },
+    "sr5.panCrownArKey": {
+      "scope": "client",
+      "type": "String",
+      "default": "toggle",
+      "config": true
+    },
+    "sr5.panCrownOpening": {
+      "scope": "client",
+      "type": "String",
+      "default": "hud",
+      "config": true
+    },
+    "sr5.panCrownVisibility": {
+      "scope": "world",
+      "type": "String",
+      "default": "book",
+      "config": true
+    },
+    "sr5.sheetSizes": {
+      "scope": "client",
+      "type": "Object",
+      "default": {},
+      "config": false
+    },
+    "sr5.sourceModifiersMigration": {
+      "scope": "world",
+      "type": "Number",
+      "default": 0,
+      "config": false
+    },
+    "sr5.spiritLeash": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5AugmentationBundles": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5AugmentationCap": {
+      "scope": "world",
+      "type": "String",
+      "default": "bonus",
+      "config": true
+    },
+    "sr5.sr5BBAdvancedMedkits": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5BBHealingLedger": {
+      "scope": "world",
+      "type": "Object",
+      "default": {},
+      "config": false
+    },
+    "sr5.sr5BBUnderFireRules": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5BlockMissingActions": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5CalendarClockView": {
+      "scope": "client",
+      "type": "String",
+      "default": "compact",
+      "config": false
+    },
+    "sr5.sr5CalendarCombatTime": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": true,
+      "config": true
+    },
+    "sr5.sr5CalendarEvents": {
+      "scope": "world",
+      "type": "Array",
+      "default": [],
+      "config": false
+    },
+    "sr5.sr5CalendarRevealDeadlines": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5CalendarStartYear": {
+      "scope": "world",
+      "type": "Number",
+      "default": 2070,
+      "config": true
+    },
+    "sr5.sr5CalledShotsRules": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": true,
+      "config": true
+    },
+    "sr5.sr5CfdLedger": {
+      "scope": "world",
+      "type": "Object",
+      "default": {
+        "patients": {}
+      },
+      "config": false
+    },
+    "sr5.sr5ChooseStyle": {
+      "scope": "client",
+      "type": "String",
+      "default": "SR5",
+      "config": true
+    },
+    "sr5.sr5ConsumedCards": {
+      "scope": "world",
+      "type": "Object",
+      "default": {},
+      "config": false
+    },
+    "sr5.sr5CyberEyesReplaceNaturalVision": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": true,
+      "config": true
+    },
+    "sr5.sr5DevicelessAILogicDefense": {
+      "scope": "world",
+      "type": "String",
+      "default": "highest",
+      "config": true
+    },
+    "sr5.sr5DiseaseLedger": {
+      "scope": "world",
+      "type": "Object",
+      "default": {
+        "infections": {}
+      },
+      "config": false
+    },
+    "sr5.sr5EssenceHole": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5ExtendedClockLedger": {
+      "scope": "world",
+      "type": "Object",
+      "default": {},
+      "config": false
+    },
+    "sr5.sr5Factions": {
+      "scope": "world",
+      "type": "Object",
+      "default": {
+        "factions": [],
+        "log": [],
+        "raises": {}
+      },
+      "config": false
+    },
+    "sr5.sr5FlightSkill": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5FreeReload": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5GMOnlyItemEffects": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5GrapplingRules": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5HealSpellLedger": {
+      "scope": "world",
+      "type": "Object",
+      "default": {},
+      "config": false
+    },
+    "sr5.sr5Help.active": {
+      "scope": "client",
+      "type": "Boolean",
+      "default": true,
+      "config": true
+    },
+    "sr5.sr5HideTableRoll": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5HomunculusMaterialArmor": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5HungerLedger": {
+      "scope": "world",
+      "type": "Object",
+      "default": {
+        "creatures": {}
+      },
+      "config": false
+    },
+    "sr5.sr5HungerMonthDays": {
+      "scope": "world",
+      "type": "Number",
+      "default": 29.5,
+      "config": true
+    },
+    "sr5.sr5IllusionLedger": {
+      "scope": "world",
+      "type": "Object",
+      "default": {},
+      "config": false
+    },
+    "sr5.sr5ImplantRegister": {
+      "scope": "world",
+      "type": "Object",
+      "default": {},
+      "config": false
+    },
+    "sr5.sr5IndirectEffectDisplay": {
+      "scope": "world",
+      "type": "String",
+      "default": "name",
+      "config": true
+    },
+    "sr5.sr5InfectionLedger": {
+      "scope": "world",
+      "type": "Object",
+      "default": {
+        "victims": {}
+      },
+      "config": false
+    },
+    "sr5.sr5KillCodeRules": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5LockpickRequiresKit": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": true,
+      "config": true
+    },
+    "sr5.sr5Log.active": {
+      "scope": "client",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5Log.level": {
+      "scope": "client",
+      "type": "Number",
+      "default": 0,
+      "config": true
+    },
+    "sr5.sr5LowLightGreenTint": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5MatrixGridRules": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": true,
+      "config": true
+    },
+    "sr5.sr5MeleeEnvironmentBalanced": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5NegotiationRepair": {
+      "scope": "world",
+      "type": "Object",
+      "default": {},
+      "config": false
+    },
+    "sr5.sr5PickpocketThiefChooses": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5PreparationRegister": {
+      "scope": "world",
+      "type": "Object",
+      "default": {},
+      "config": false
+    },
+    "sr5.sr5RadiationLedger": {
+      "scope": "world",
+      "type": "Object",
+      "default": {
+        "exposures": {}
+      },
+      "config": false
+    },
+    "sr5.sr5ReagentSystem": {
+      "scope": "world",
+      "type": "String",
+      "default": "core",
+      "config": true
+    },
+    "sr5.sr5RevealDiseases": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5Rigger5Actions": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5RunningFromDistance": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5ShopBannerFolder": {
+      "scope": "world",
+      "type": "String",
+      "default": "",
+      "config": true
+    },
+    "sr5.sr5ShopBuyerFolder": {
+      "scope": "world",
+      "type": "String",
+      "default": "",
+      "config": false
+    },
+    "sr5.sr5ShopBuyerMode": {
+      "scope": "world",
+      "type": "String",
+      "default": "owned",
+      "config": false
+    },
+    "sr5.sr5ShopContactFencePercent": {
+      "scope": "world",
+      "type": "Number",
+      "default": 5,
+      "config": true
+    },
+    "sr5.sr5ShopCreationLevel": {
+      "scope": "world",
+      "type": "String",
+      "default": "standard",
+      "config": true
+    },
+    "sr5.sr5ShopCreationMaxAvailability": {
+      "scope": "world",
+      "type": "Number",
+      "default": 12,
+      "config": true
+    },
+    "sr5.sr5ShopCreationMaxRating": {
+      "scope": "world",
+      "type": "Number",
+      "default": 6,
+      "config": true
+    },
+    "sr5.sr5ShopCreationMode": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": false
+    },
+    "sr5.sr5ShopDealerKeywords": {
+      "scope": "world",
+      "type": "String",
+      "default": "fixer, intermediaire, intermédiaire, receleur, recéleur, fourgue, marchand, armurier, talismonger, talismancien, dealer, trafiquant, contrebandier, smuggler, arms dealer",
+      "config": true
+    },
+    "sr5.sr5ShopDelivery": {
+      "scope": "world",
+      "type": "String",
+      "default": "delayed",
+      "config": true
+    },
+    "sr5.sr5ShopExcludedPacks": {
+      "scope": "world",
+      "type": "Array",
+      "default": [],
+      "config": false
+    },
+    "sr5.sr5ShopExpress": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5ShopExpressFactor": {
+      "scope": "world",
+      "type": "Number",
+      "default": 2,
+      "config": true
+    },
+    "sr5.sr5ShopExpressSurcharge": {
+      "scope": "world",
+      "type": "Number",
+      "default": 25,
+      "config": true
+    },
+    "sr5.sr5ShopFenceBasePercent": {
+      "scope": "world",
+      "type": "Number",
+      "default": 25,
+      "config": true
+    },
+    "sr5.sr5ShopFenceBuyerPool": {
+      "scope": "world",
+      "type": "Number",
+      "default": 6,
+      "config": true
+    },
+    "sr5.sr5ShopFenceStepPercent": {
+      "scope": "world",
+      "type": "Number",
+      "default": 5,
+      "config": true
+    },
+    "sr5.sr5ShopFenceThreshold": {
+      "scope": "world",
+      "type": "Number",
+      "default": 10,
+      "config": true
+    },
+    "sr5.sr5ShopGradeGamma": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5ShopGradeGreyware": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5ShopMarketOpen": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": true,
+      "config": true
+    },
+    "sr5.sr5ShopMaxSurchargeDice": {
+      "scope": "world",
+      "type": "Number",
+      "default": 12,
+      "config": true
+    },
+    "sr5.sr5ShopOrderDebits": {
+      "scope": "world",
+      "type": "Object",
+      "default": {},
+      "config": false
+    },
+    "sr5.sr5ShopOrderLedger": {
+      "scope": "world",
+      "type": "Object",
+      "default": {},
+      "config": false
+    },
+    "sr5.sr5ShopRetryLedger": {
+      "scope": "world",
+      "type": "Object",
+      "default": {},
+      "config": false
+    },
+    "sr5.sr5ShopSurchargePerDie": {
+      "scope": "world",
+      "type": "Number",
+      "default": 25,
+      "config": true
+    },
+    "sr5.sr5ShopVendorTest": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5SpiritDrainAttribute": {
+      "scope": "world",
+      "type": "String",
+      "default": "charisma",
+      "config": true
+    },
+    "sr5.sr5SpiritLedger": {
+      "scope": "world",
+      "type": "Object",
+      "default": {
+        "characters": {},
+        "banish": {},
+        "spirits": {}
+      },
+      "config": false
+    },
+    "sr5.sr5StorageCheckGarageLifestyle": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": true,
+      "config": true
+    },
+    "sr5.sr5StorageDropOnDeath": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5StorageDropOnDeathShare": {
+      "scope": "world",
+      "type": "Number",
+      "default": 50,
+      "config": true
+    },
+    "sr5.sr5StorageViewMode": {
+      "scope": "client",
+      "type": "String",
+      "default": "grid",
+      "config": false
+    },
+    "sr5.sr5TacnetLedger": {
+      "scope": "world",
+      "type": "Object",
+      "default": {},
+      "config": false
+    },
+    "sr5.sr5VisionRangeAstral": {
+      "scope": "world",
+      "type": "Number",
+      "default": 300,
+      "config": true
+    },
+    "sr5.sr5VisionRangeLowLight": {
+      "scope": "world",
+      "type": "Number",
+      "default": 0,
+      "config": true
+    },
+    "sr5.sr5VisionRangeThermographic": {
+      "scope": "world",
+      "type": "Number",
+      "default": 30,
+      "config": true
+    },
+    "sr5.sr5VisionRangeUltrasound": {
+      "scope": "world",
+      "type": "Number",
+      "default": 50,
+      "config": true
+    },
+    "sr5.sr5WifiRequiresDNI": {
+      "scope": "world",
+      "type": "Boolean",
+      "default": false,
+      "config": true
+    },
+    "sr5.sr5WithdrawalModifier": {
+      "scope": "world",
+      "type": "String",
+      "default": "none",
+      "config": true
+    },
+    "sr5.sr5WoundGroupLedger": {
+      "scope": "world",
+      "type": "Object",
+      "default": {},
+      "config": false
+    },
+    "sr5.systemMigrationVersion": {
+      "scope": "world",
+      "type": "String",
+      "default": 0,
+      "config": false
+    }
+  },
+  "menus": [
+    "sr5.sr5FactionsMenu",
+    "sr5.sr5NegotiationRepairMenu",
+    "sr5.sr5ShopConfigMenu"
+  ]
+}
