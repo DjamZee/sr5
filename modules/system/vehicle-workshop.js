@@ -50,10 +50,11 @@ export function modCost(mod) {
   return isFactoryMod(mod) || mod?.flags?.sr5?.wasFactory === true ? 0 : num(sys(mod).price?.value)
 }
 
-/** The bare vehicle, its mods (fitted or waiting to be), and the sum (Q8 of the rigging plan) */
-export function workshopCost(vehiclePrice, mods) {
+/** The bare vehicle, its mods (fitted or waiting to be), and the sum (Q8 of the rigging plan). `priceOf` prices a mod
+ *  otherwise (the Modification Points of a drone, R5 p. 127) */
+export function workshopCost(vehiclePrice, mods, priceOf = modCost) {
   const vehicle = num(vehiclePrice)
-  const modsTotal = Array.from(mods ?? []).reduce((sum, m) => sum + modCost(m), 0)
+  const modsTotal = Array.from(mods ?? []).reduce((sum, m) => sum + priceOf(m), 0)
   return {
     vehicle, mods: modsTotal, total: vehicle + modsTotal
   }

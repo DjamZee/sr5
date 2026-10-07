@@ -2,6 +2,9 @@ import {
   bbPenaltyReduction
 } from "../../system/bb-healing.js"
 import {
+  usesModPoints, droneModRule, armorOverload
+} from "../../system/drone-mod-points.js"
+import {
   emptyPreparedModifiers
 } from "../../migration-source-modifiers.js"
 import {
@@ -3022,6 +3025,19 @@ export class SR5_CharacterUtility extends Actor {
   // Armor added by mods: at most the vehicle's Body (Rigger 5.0 p. 161), the excess taken off as a visible modifier
   static capVehicleArmor(actor) {
     const attributes = actor.system.attributes, armor = attributes.armor.augmented
+    //Under the optional Modification Points a drone carries up to 3 × its Structure of Armor, then slows down
+    //(Rigger 5.0 p. 127-128) instead of the cap of vehicles
+    if (usesModPoints(droneModRule(), actor.system.type)) {
+      const overload = armorOverload(armor.value, attributes.body.augmented.value)
+      const label = game.i18n.localize("SR5.DroneArmorOverload")
+      for (const [key, penalty] of [["handling", overload.handling], ["handlingOffRoad", overload.handling], ["speed", overload.speed],
+        ["speedOffRoad", overload.speed], ["acceleration", overload.acceleration], ["accelerationOffRoad", overload.acceleration]]) {
+        if (!penalty || !attributes[key]) continue
+        SR5_EntityHelpers.updateModifier(attributes[key].augmented, label, "itemVehicleMod", penalty)
+        SR5_EntityHelpers.updateValue(attributes[key].augmented, 0)
+      }
+      return
+    }
     const cut = armorCapReduction(addedArmor(actor.items, armor.modifiers), attributes.body.augmented.value)
     if (!cut) return
     SR5_EntityHelpers.updateModifier(armor, game.i18n.localize("SR5.VehicleArmorCap"), "itemVehicleMod", -cut)
