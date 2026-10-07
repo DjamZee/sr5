@@ -4,7 +4,8 @@ import {
 import fs from 'node:fs'
 
 import {
-  MAX_MARKS, markCount, markTarget, markable, actorRef, placeMarks, _socketPlaceMarks, SR5MatrixApi
+  MAX_MARKS, markCount, markTarget, markable, actorRef, placeMarks, _socketPlaceMarks, SR5MatrixApi,
+  CONVERGENCE_DAMAGE, HOST_CONVERGENCE_MARKS, convergencePlan, converge
 } from '../modules/system/matrix-api.js'
 
 // API pour Matrice v1, second round: what the module Matrice v1 still needs of the system (A11 marks put by a module,
@@ -214,5 +215,80 @@ describe('A11: marks put by a module (game.sr5.matrix.placeMarks)', () => {
     expect(typeof SR5MatrixApi.placeMarks).toBe('function')
     expect(read('../modules/hooks/init.js')).toMatch(/matrix: SR5MatrixApi/)
     expect(read('../modules/socket.js')).toMatch(/"apiPlaceMarks": \[async \(message, senderId\) => \(await import\("\.\/system\/matrix-api\.js"\)\)\._socketPlaceMarks/)
+  })
+})
+
+describe('A12: the convergence (game.sr5.matrix.converge)', () => {
+  it('on the grid: DV 12 resisted, a forced reboot, the location told unless Sneak runs (SR5 p. 233, 247)', () => {
+    expect(CONVERGENCE_DAMAGE).toBe(12)
+    expect(convergencePlan()).toEqual({
+      damage: 12, reboot: true, marks: 0, located: true
+    })
+    expect(convergencePlan({
+      stealth: true
+    })).toEqual({
+      damage: 12, reboot: true, marks: 0, located: false
+    })
+  })
+
+  it('in a host: neither damage nor reboot, the host puts three marks (SR5 p. 249)', () => {
+    expect(HOST_CONVERGENCE_MARKS).toBe(3)
+    expect(convergencePlan({
+      inHost: true
+    })).toEqual({
+      damage: 0, reboot: false, marks: 3, located: false
+    })
+  })
+
+  it('on the GM\'s browser, converges on the persona, in its host when one is named', async () => {
+    const {
+      decker, host
+    } = world()
+    const h = helpers()
+    expect(await converge(decker, {
+    }, h)).toBe(true)
+    expect(h.converge).toHaveBeenLastCalledWith(decker, null)
+    expect(await converge('Actor.dek', {
+      host: 'Actor.hst'
+    }, h)).toBe(true)
+    expect(h.converge).toHaveBeenLastCalledWith(decker, host)
+  })
+
+  it('does nothing without a persona, or with a host it cannot find', async () => {
+    const {
+      decker
+    } = world()
+    const h = helpers()
+    expect(await converge(null, {
+    }, h)).toBe(false)
+    expect(await converge(decker, {
+      host: 'Actor.none'
+    }, h)).toBe(false)
+    expect(h.converge).not.toHaveBeenCalled()
+  })
+
+  it('on a player\'s browser, asks the active GM', async () => {
+    const {
+      decker
+    } = world()
+    game.user.isGM = false
+    const h = helpers()
+    expect(await converge(decker, {
+      host: 'Actor.hst'
+    }, h)).toBe('relayed')
+    expect(h.converge).not.toHaveBeenCalled()
+    expect(h.emitForGM).toHaveBeenCalledWith('apiConverge', {
+      personaUuid: 'Actor.dek', hostUuid: 'Actor.hst'
+    })
+  })
+
+  it('reuses the system\'s reboot, matrix resistance card and marks, and is game.sr5.matrix.converge', () => {
+    const source = read('../modules/system/matrix-api.js')
+    expect(source).toMatch(/actor\.rebootDeck\(\)/)
+    expect(source).toMatch(/generateChatButton\("nonOpposedTest", "matrixResistance"/)
+    expect(source).toMatch(/placeMarks\(hostActor, actor, plan\.marks/)
+    expect(source).toMatch(/programs\?\.sneak\?\.isActive/)
+    expect(typeof SR5MatrixApi.converge).toBe('function')
+    expect(read('../modules/socket.js')).toMatch(/"apiConverge": \[async \(message, senderId\) => \(await import\("\.\/system\/matrix-api\.js"\)\)\._socketConverge/)
   })
 })

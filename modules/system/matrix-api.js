@@ -6,6 +6,10 @@
 
 // SR5 p. 237: three marks at most on an icon, from one owner
 export const MAX_MARKS = 3
+// SR5 p. 233: the demigods deal matrix damage of DV 12, resisted normally
+export const CONVERGENCE_DAMAGE = 12
+// SR5 p. 249: in a host, the host puts three marks on the persona instead
+export const HOST_CONVERGENCE_MARKS = 3
 
 /**
  * The number of marks a request puts, or null when it is not one the API takes.
@@ -62,6 +66,24 @@ export function markable(on){
   return on.actor.system?.activeSpecialAttribute === "depth"
 }
 
+/**
+ * What a convergence does (SR5 p. 233, 249). On the grid: matrix damage DV 12 resisted normally, a forced reboot that
+ * erases the marks and brings the Overwatch Score back to 0, dumpshock in VR, the physical location told to the owner
+ * of the grid (unless Sneak, VF « Discrétion », runs: SR5 p. 247). In a host: nothing of that, the host puts three marks on the persona and
+ * launches IC; the score keeps rising, and the demigods converge the moment the persona leaves the host.
+ */
+export function convergencePlan({
+  inHost = false, stealth = false
+} = {
+}){
+  if (inHost) return {
+    damage: 0, reboot: false, marks: HOST_CONVERGENCE_MARKS, located: false
+  }
+  return {
+    damage: CONVERGENCE_DAMAGE, reboot: true, marks: 0, located: !stealth
+  }
+}
+
 // The system's helpers, loaded when called: the tests give their own
 async function systemHelpers(){
   const [{
@@ -72,6 +94,7 @@ async function systemHelpers(){
   return {
     markItem: (...args) => SR5_MarkHelpers.markItem(...args),
     emitForGM: (type, data) => SR5_SocketHandler.emitForGM(type, data),
+    converge: gmConverge,
   }
 }
 
@@ -113,6 +136,95 @@ export async function placeMarks(attacker, target, count, options = {
     attacker: by.name, target: on.actor.name, marks, source: sourceLabel(options.source)
   }))
   return true
+}
+
+/**
+ * The grid converges on a persona (SR5 p. 233), or the host it is in does (SR5 p. 249): see convergencePlan.
+ * @param {Object|String} persona     the actor (or token, or uuid) the demigods converge on
+ * @param {Object} [options]
+ * @param {Object|String} [options.host]  the host the persona is in, when it is in one
+ * @return {Promise<Boolean|String>}  false when nothing is done (no persona, no GM to ask); true once done; "relayed" on
+ *                                    a player's browser, the request sent to the active GM
+ */
+export async function converge(persona, {
+  host = null
+} = {
+}, helpers = null){
+  const actor = await actorOf(persona)
+  if (!actor) return false
+  const hostActor = host ? await actorOf(host) : null
+  if (host && !hostActor) return false
+  const h = helpers ?? await systemHelpers()
+  if (!isGM()) {
+    if (!activeGM()) {
+      ui.notifications?.warn(game.i18n.localize("SR5.WARN_NoActiveGM"))
+      return false
+    }
+    await h.emitForGM("apiConverge", {
+      personaUuid: actor.uuid, hostUuid: hostActor?.uuid ?? null
+    })
+    return "relayed"
+  }
+  return h.converge(actor, hostActor)
+}
+
+// On the GM's browser: the convergence itself
+async function gmConverge(actor, hostActor){
+  const plan = convergencePlan({
+    inHost: !!hostActor, stealth: !!actor.system?.matrix?.programs?.sneak?.isActive
+  })
+  if (plan.marks) await placeMarks(hostActor, actor, plan.marks, {
+    source: "convergence"
+  })
+  if (plan.damage) await postConvergenceCard(actor, plan.damage)
+  //The reboot erases the marks, brings the score back to 0 and deals dumpshock in VR (entityActor.js)
+  if (plan.reboot && typeof actor.rebootDeck === "function") await actor.rebootDeck()
+  await whisperConvergence(actor, hostActor, plan)
+  return true
+}
+
+/** The card of the demigods: the matrix damage to resist, as a data bomb's (file-actions.js), the GM's card */
+async function postConvergenceCard(actor, damage){
+  const [{
+    SR5_PrepareRollTest
+  }, {
+    SR5_RollTest
+  }, {
+    SR5_RollMessage
+  }] = await Promise.all([import("../rolls/roll-prepare.js"), import("../rolls/roll-test.js"), import("../rolls/roll-message.js")])
+  const rollData = SR5_PrepareRollTest.getBaseRollData(null, actor)
+  rollData.test.type = "falseTest"
+  rollData.test.title = game.i18n.localize("SR5.MatrixConvergence")
+  rollData.edge.canUseEdge = false
+  rollData.roll = {
+    rollMode: game.settings.get("core", "rollMode")
+  }
+  const device = actor.items?.find(i => i.type === "itemDevice" && i.system.isActive)
+  if (device) rollData.target.itemUuid = device.uuid
+  rollData.damage.matrix.value = damage
+  rollData.damage.matrix.base = damage
+  rollData.chatCard.buttons.matrixResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "matrixResistance", `${game.i18n.localize("SR5.TakeOnDamageMatrix")} (${damage})`)
+  return SR5_RollTest.renderRollCard(rollData)
+}
+
+/** What the GM must play himself: the location told, the IC launched, a sprite that vanishes (SR5 p. 233, 249, 256) */
+async function whisperConvergence(actor, hostActor, plan){
+  const esc = s => foundry.utils.escapeHTML(String(s ?? ""))
+  const lines = []
+  if (hostActor) lines.push(game.i18n.format("SR5.MatrixConvergenceHost", {
+    name: esc(actor.name), host: esc(hostActor.name), marks: plan.marks
+  }))
+  else {
+    lines.push(game.i18n.format("SR5.MatrixConvergenceGrid", {
+      name: esc(actor.name), damage: plan.damage
+    }))
+    lines.push(game.i18n.localize(plan.located ? "SR5.MatrixConvergenceLocated" : "SR5.MatrixConvergenceStealth"))
+  }
+  if (actor.type === "actorSprite") lines.push(game.i18n.localize("SR5.MatrixConvergenceSprite"))
+  await ChatMessage.create({
+    content: lines.map(l => `<p>${l}</p>`).join(""),
+    whisper: ChatMessage.getWhisperRecipients("GM").map(u => u.id),
+  })
 }
 
 function sourceLabel(source){
@@ -157,6 +269,21 @@ export async function _socketPlaceMarks(message, senderId){
   })
 }
 
+export async function _socketConverge(message, senderId){
+  const sender = game.users.get(senderId), data = message?.data ?? {
+  }
+  const actor = await actorOf(data.personaUuid), hostActor = data.hostUuid ? await actorOf(data.hostUuid) : null
+  if (!sender || !actor || (data.hostUuid && !hostActor)) return false
+  const what = game.i18n.format("SR5.MatrixApiConfirmConverge", {
+    name: foundry.utils.escapeHTML(actor.name)
+  })
+  if (!(await agreed(sender, [actor], what))) return false
+  return converge(actor, {
+    host: hostActor
+  })
+}
+
 export const SR5MatrixApi = {
   placeMarks: (attacker, target, count, options) => placeMarks(attacker, target, count, options),
+  converge: (persona, options) => converge(persona, options),
 }

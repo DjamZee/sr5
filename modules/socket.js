@@ -133,8 +133,9 @@ export class SR5_SocketHandler {
       "matrixFileAction": [async (message, senderId) => (await import("./rolls/roll-helpers/file-actions.js"))._socketFileAction(message, senderId)],
       "matrixFileRefused": [async (message, senderId) => (await import("./rolls/roll-helpers/file-actions.js"))._socketFileRefused(message, senderId)],
       "tacnetRoster": [async (message, senderId) => (await import("./system/tacnet.js"))._socketTacnetRoster(message, senderId)],
-      //API pour Matrice v1 (A11, A12): a module on a player's browser asks the active GM to put marks
+      //API pour Matrice v1 (A11, A12): a module on a player's browser asks the active GM to put marks, or to converge
       "apiPlaceMarks": [async (message, senderId) => (await import("./system/matrix-api.js"))._socketPlaceMarks(message, senderId)],
+      "apiConverge": [async (message, senderId) => (await import("./system/matrix-api.js"))._socketConverge(message, senderId)],
     }
 
     //senderId is added by the server to every custom socket message: a client cannot forge it
