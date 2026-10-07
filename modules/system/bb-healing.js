@@ -15,6 +15,9 @@ import {
   updateLedger
 } from "./gm-ledger.js"
 import {
+  refuseByRule
+} from "./rule-locks.js"
+import {
   markRowDoneInMessage, cardFromGM
 } from "./card-rows.js"
 
@@ -225,12 +228,12 @@ export async function spellCardStabilizes(messageData, patient, caster){
 // Returns the reduction applied (0 or more), false when nothing was written
 export async function applyStabilization(messageData, patient, medic){
   if (!writerOrWarn()) return false
-  if (messageData?.test?.type === "spell" && !(await spellCardStabilizes(messageData, patient, medic))) {
-    ui.notifications.warn(game.i18n.format("SR5.BB_SpellDoesNotStabilize", {
-      name: patient.name
-    }))
-    return false
-  }
+  // The "body" rule lock family lifted (B13, lot 4): the spell stabilizes all the same, without reduction as any spell
+  if (messageData?.test?.type === "spell" && !(await spellCardStabilizes(messageData, patient, medic)) && refuseByRule("body", "SR5.BB_SpellDoesNotStabilize", {
+    name: patient.name
+  }, {
+    actor: medic
+  })) return false
   const reduction = stabilizationCardReduction(messageData, patient)
   const hours = Number(medic?.system?.skills?.firstAid?.rating?.value) || 0
   const ok = await confirm(game.i18n.format(stabilizationLabelKey("SR5.BB_StabilizeConfirm", reduction), {
