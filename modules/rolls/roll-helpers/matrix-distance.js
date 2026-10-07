@@ -23,9 +23,13 @@ function isHost(actor){
  * @return {Object|null} a Token placeable
  */
 function actorToken(actor, scene, placeables){
-  // An unlinked token's actor is its own synthetic actor: its base actor is found by id
-  const own = placeables.filter(t => t.document?.parent === scene && (t.actor === actor || (actor.id && t.document?.actorId === actor.id)))
-  return own.find(t => t.controlled) ?? own[0] ?? null
+  const onScene = placeables.filter(t => t.document?.parent === scene)
+  // An unlinked token's actor is its own synthetic actor: its own token, never another one made from the same base
+  // actor, a guard of the same model across the room (relecture)
+  if (actor.isToken) return onScene.find(t => t.actor === actor || (actor.token && t.document === actor.token)) ?? null
+  // A world actor: its linked tokens; an unlinked one of it only when it is the one the user controls
+  const own = onScene.filter(t => t.actor === actor || (actor.id && t.document?.actorId === actor.id))
+  return own.find(t => t.controlled) ?? own.find(t => t.actor === actor || t.document?.actorLink) ?? null
 }
 
 /**

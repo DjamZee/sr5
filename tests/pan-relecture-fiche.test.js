@@ -2,7 +2,8 @@ import {
   describe, it, expect, vi, afterEach
 } from 'vitest'
 
-// The sheets' switch reads the drones once per sheet drawn, not game.actors once per item (relecture de Fleur)
+// The sheets' switch reads the drones once per sheet drawn, not game.actors once per item; the noise of a Matrix
+// action is measured from the acting token itself (relecture de Fleur)
 
 vi.mock('../modules/entities/actors/entityActor-helpers.js', () => ({
   SR5_ActorHelper: {
@@ -20,6 +21,81 @@ vi.mock('../modules/system/srcombat.js', () => ({
 const {
   knownActors
 } = await import('../modules/canvas/pan-crown/pan-device-switch.js')
+
+const {
+  matrixTargetDistance
+} = await import('../modules/rolls/roll-helpers/matrix-distance.js')
+
+describe('matrixTargetDistance: the noise is measured from the acting token itself', () => {
+  const scene = {
+    grid: {
+      units: 'm'
+    }
+  }
+  const grid = {
+    measurePath: ([a, b]) => ({
+      distance: Math.abs(b.x - a.x) / 100
+    })
+  }
+  const token = (x, actor, document = {
+  }, controlled = false) => ({
+    center: {
+      x, y: 0
+    }, actor, controlled, document: {
+      parent: scene, actorId: actor.baseId ?? actor.id, ...document
+    }
+  })
+  const canvasWith = placeables => ({
+    scene, grid, tokens: {
+      placeables
+    }
+  })
+
+  it('never measures from another unlinked token of the same model', () => {
+    const guardA = {
+      id: 'guard', baseId: 'guard', isToken: true
+    }
+    const guardB = {
+      id: 'guard', baseId: 'guard', isToken: true
+    }
+    const target = token(5000, {
+      id: 'target'
+    })
+    const farGuard = token(0, guardB, {
+      actorLink: false
+    })
+    const nearGuard = token(4900, guardA, {
+      actorLink: false
+    })
+    guardA.token = nearGuard.document
+    // B stands first on the scene: the alpha measured from it, 50 m off
+    expect(matrixTargetDistance(guardA, canvasWith([farGuard, nearGuard, target]), new Set([target]))).toBeCloseTo(1)
+  })
+
+  it('measures a world actor from its linked token, or the unlinked one the user controls', () => {
+    const decker = {
+      id: 'decker'
+    }
+    const target = token(1000, {
+      id: 'target'
+    })
+    const synthetic = {
+      id: 'decker', isToken: true
+    }
+    expect(matrixTargetDistance(decker, canvasWith([token(0, synthetic, {
+      actorLink: false
+    }), token(800, decker, {
+      actorLink: true
+    }), target]), new Set([target]))).toBeCloseTo(2)
+    expect(matrixTargetDistance(decker, canvasWith([token(0, synthetic, {
+      actorLink: false
+    }, true), target]), new Set([target]))).toBeCloseTo(10)
+    // an unlinked token of it nobody controls: no distance, the dialog keeps its default band
+    expect(matrixTargetDistance(decker, canvasWith([token(0, synthetic, {
+      actorLink: false
+    }), target]), new Set([target]))).toBeNull()
+  })
+})
 
 afterEach(() => {
   delete globalThis.game
