@@ -211,6 +211,8 @@ export class SR5_ActorHelper {
     for (let [key, monitor] of Object.entries(actorData.conditionMonitors)) {
       // Boxes beyond the monitor are not kept: they would eat the next healing (SR5 p. 171, 381)
       if (monitor?.actual) monitorUpdates[`system.conditionMonitors.${key}.actual.base`] = Math.min(monitor.actual.base, monitor.value ?? monitor.actual.base)
+      // The aggravated boxes are damage taken too (Howling Shadows p. 213): written with the boxes they mark
+      if (monitor && "aggravated" in monitor) monitorUpdates[`system.conditionMonitors.${key}.aggravated`] = monitor.aggravated
     }
     await realActor.update(monitorUpdates)
 
