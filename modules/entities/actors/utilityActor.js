@@ -5646,7 +5646,7 @@ export class SR5_CharacterUtility extends Actor {
           case "rating":
             customEffect.value = (itemData.itemRating || 0)
             //A drone's own autosoft runs at most at its autopilot's rating; the console's keeps its own (Rigger 5.0 p. 131)
-            if (SR5_CharacterUtility.isLocalDroneAutosoft(item, actor)) customEffect.value = localAutosoftRating(customEffect.value, droneAutopilot(actor.system))
+            if (SR5_CharacterUtility.isLocalDroneAutosoft(item, actor)) customEffect.value = localAutosoftRating(customEffect.value, droneAutopilot(actor.system, actor.items))
             SR5_EntityHelpers.updateModifier(targetObject, item.name, modifierType, customEffect.value * customEffect.multiplier, isMultiplier, cumulative)
             break
           case "hits":

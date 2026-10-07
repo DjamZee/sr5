@@ -175,6 +175,29 @@ describe('cap: an autopilot runs no autosoft above its rating (Rigger 5.0 p. 131
     expect(droneAutopilot({
     })).toBe(0)
   })
+  it('a replaced autopilot caps at its new rating, fitted and not from the factory', () => {
+    const replacement = (rating, extra = {
+    }) => ({
+      type: 'itemVehicleMod', system: {
+        isActive: true, itemRating: rating, customEffects: {
+          0: {
+            target: 'system.attributes.pilot.augmented', type: 'ratingReplace', value: 1, multiplier: null
+          }
+        }, ...extra
+      }
+    })
+    const system = drone([], {
+      pilot: 2
+    })
+    expect(droneAutopilot(system, [replacement(5)])).toBe(5)
+    expect(droneAutopilot(system, [replacement(5, {
+      isActive: false
+    })])).toBe(2)
+    expect(droneAutopilot(system, [replacement(5, {
+      isFactory: true
+    })])).toBe(2)
+    expect(localAutosoftRating(6, droneAutopilot(system, [replacement(4)]))).toBe(4)
+  })
   it('the console shares at its full rating', () => {
     expect(rccAutosoftsForDrone(drone([autosoft('acuity', {
       rating: 6

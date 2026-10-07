@@ -81,10 +81,29 @@ function consoleSharing(console){
   return rccRatings(attributes?.noiseReduction?.base, attributes?.sharing?.base, consoleSystem?.matrix?.deviceRating, actsAsRcc(console)).sharing
 }
 
-// The drone's autopilot: its Device Rating (SR5 p. 271). Read from the source, since the item effects are applied
-// before the attributes are worked out
-export function droneAutopilot(droneSystem){
-  return Number(droneSystem?.attributes?.pilot?.natural?.base) || 0
+// The drone's autopilot: its Device Rating (SR5 p. 271), the one that caps its own autosofts (Rigger 5.0 p. 131).
+// Read from the source, since the item effects are applied before the attributes are worked out; a replaced
+// autopilot (the vehicle mod « Remplacement de l'Autopilote », Rigger 5.0 p. 131) is read from its mod, fitted and
+// not from the factory, whose effect the printed profile already counts
+export function droneAutopilot(droneSystem, droneItems){
+  let pilot = Number(droneSystem?.attributes?.pilot?.natural?.base) || 0
+  let replaced = null, added = 0
+  for (const item of droneItems ?? []){
+    const system = item?.system
+    if (item?.type !== "itemVehicleMod" || !system?.isActive || system.isFactory === true) continue
+    for (const effect of Object.values(system.customEffects ?? {
+    })){
+      if (effect?.target !== "system.attributes.pilot.augmented" || effect.transfer || (effect.wifi && !system.wirelessTurnedOn)) continue
+      const multiplier = Number(effect.multiplier ?? 1) || 1
+      if (effect.type === "ratingReplace" || effect.type === "valueReplace") {
+        const value = effect.type === "ratingReplace" ? Number(system.itemRating) || 0 : Number(effect.value) || 0
+        replaced = Math.max(replaced ?? 0, value * multiplier)
+      } else if (effect.type === "rating") added += (Number(system.itemRating) || 0) * multiplier
+      else if (effect.type === "value") added += (Number(effect.value) || 0) * multiplier
+    }
+  }
+  if (replaced !== null) pilot = replaced
+  return pilot + added
 }
 
 // An autopilot cannot run an autosoft rated above itself; the console can, and shares it at its full rating

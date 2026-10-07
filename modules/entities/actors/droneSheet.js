@@ -144,7 +144,7 @@ export class SR5DroneSheet extends ActorSheetSR5 {
     actor.programs = programs
     //The console's autosofts, and whether this drone uses them (SR5 p. 269)
     actor.rccAutosofts = rccAutosoftRows(actor.system, actor.items)
-    actor.autopilotCap = droneAutopilot(actor.system)
+    actor.autopilotCap = droneAutopilot(actor.system, actor.items)
     //Autopilot faced with the unexpected: Device Rating x 2 (SR5 p. 271)
     actor.autopilotUnforeseenPool = (actor.system.attributes.pilot.augmented.value || 0) * 2
     actor.marks = marks

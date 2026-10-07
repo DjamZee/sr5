@@ -471,7 +471,7 @@ export class SR5_UtilityItem extends Actor {
             const local = actor.items.find(i => i.type === "itemProgram" && i.system.isActive && i.system.model === item.name)
             const shared = local ? null : rccAutosoftsForDrone(actor.system, actor.items).find(i => i.system.model === item.name)
             if (local || shared) SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.VehicleStat_PilotShort'), "linkedAttribute", actor.system.attributes.pilot.augmented.value)
-            if (local) SR5_EntityHelpers.updateModifier(itemData.weaponSkill, local.name, "program", localAutosoftRating(local.system.itemRating, droneAutopilot(actor.system)))
+            if (local) SR5_EntityHelpers.updateModifier(itemData.weaponSkill, local.name, "program", localAutosoftRating(local.system.itemRating, droneAutopilot(actor.system, actor.items)))
             if (shared) SR5_EntityHelpers.updateModifier(itemData.weaponSkill, shared.name, "controlerProgram", shared.system.itemRating)
             itemData.weaponSkill.modifiers = itemData.weaponSkill.modifiers.concat(actor.system.penalties.special.actual.modifiers)
             if (actor.system.passiveTargeting) itemData.accuracy.base = actor.system.attributes.sensor.augmented.value
