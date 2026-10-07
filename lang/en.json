@@ -4763,6 +4763,7 @@
 	"SR5.SpiritTypeLimits": "Limits",
 	"SR5.SpiritTypeLimitsAttributes": "From the attributes",
 	"SR5.SpiritTypeLimitsForce": "(F × 4) / 3",
+	"SR5.SpiritTypePhysicalLimitBonus": "Physical Limit Bonus",
 	"SR5.SpiritTypeArmorOrdinary": "Ordinary",
 	"SR5.SpiritTypeArmorHardened": "Hardened",
 	"SR5.SpiritTypeArmorMystic": "Mystic (hardened)",

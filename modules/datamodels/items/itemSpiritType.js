@@ -82,6 +82,10 @@ export class sr5ItemSpiritTypeDataModel extends foundry.abstract.TypeDataModel {
       limits: new fields.StringField({
         initial: '', blank: true
       }),
+      // Added to the Physical one of those: "Physique (P x 4)/3 + 1" (Dark Terrors p. 52)
+      physicalLimitBonus: new fields.NumberField({
+        initial: 0, integer: true
+      }),
       // (P x forceMultiplier) + bonus; kind "" ordinary, "hardened", "mystic" (mystic and hardened)
       armor: new fields.SchemaField({
         forceMultiplier: new fields.NumberField({

@@ -384,10 +384,15 @@ export class SR5_SpiritTypes {
     return custom?.system.essenceModifier ?? 0
   }
 
-  /** (P x 4) / 3 rounded up when the type prints its limits so, null when they come from the attributes. */
-  static forceLimit(custom, force) {
+  /**
+	 * (P x 4) / 3 rounded up when the type prints its limits so, null when they come from the attributes. The
+	 * shedim add to the Physical one: "Physique (P x 4)/3 + 1" (Dark Terrors p. 52).
+	 * @param {string} limit "physicalLimit", "mentalLimit", "socialLimit" or "astralLimit"
+	 */
+  static forceLimit(custom, force, limit = "") {
     if (custom?.system.limits !== "force") return null
-    return Math.ceil((Number(force) || 0) * 4 / 3)
+    const bonus = limit === "physicalLimit" ? (custom.system.physicalLimitBonus || 0) : 0
+    return Math.ceil((Number(force) || 0) * 4 / 3) + bonus
   }
 
   /** The type's armor at this Force: {value, kind}, or null when it has none. */

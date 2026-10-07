@@ -112,6 +112,12 @@ describe('extraplanar entities as spirit types', () => {
     expect(SR5_SpiritTypes.forceLimit(entity({
       limits: ''
     }), 8)).toBeNull()
+    // Shedim: "Physique (P x 4)/3 + 1" (Dark Terrors p. 52), the others unchanged
+    const shedim = entity({
+      physicalLimitBonus: 1
+    })
+    expect(SR5_SpiritTypes.forceLimit(shedim, 5, 'physicalLimit')).toBe(8)
+    expect(SR5_SpiritTypes.forceLimit(shedim, 5, 'mentalLimit')).toBe(7)
   })
 
   it('works out its armor at the Force it is given', () => {

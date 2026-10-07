@@ -2576,7 +2576,7 @@ export class SR5_CharacterUtility extends Actor {
     let actorData = actor.system, limits = actorData.limits, attributes = actorData.attributes
     // AI on a device (Data Trails p. 160): Data Processing can replace the Mental limit and joins the Social limit
     let aiDataProcessing = (this.isDepthActive(actor) && actorData.matrix?.deviceType) ? actorData.matrix.attributes.dataProcessing.value : null
-    const forceLimit = actor.type === "actorSpirit" ? SR5_SpiritTypes.forceLimit(SR5_SpiritTypes.get(actorData.type), actorData.force?.value) : null
+    const spiritType = actor.type === "actorSpirit" ? SR5_SpiritTypes.get(actorData.type) : null
 
     const context = {
       attributes, essence: actorData.essence?.value, aiDataProcessing
@@ -2594,6 +2594,7 @@ export class SR5_CharacterUtility extends Actor {
       if (!limits[key]) continue
       if (base !== undefined) limits[key].base = base
       //The extraplanar entities print (P x 4) / 3 for every limit (Howling Shadows p. 130 and following)
+      const forceLimit = spiritType ? SR5_SpiritTypes.forceLimit(spiritType, actorData.force?.value, key) : null
       if (forceLimit !== null) limits[key].base = forceLimit
       limits[key].modifiers = (limits[key].modifiers ?? []).filter(m => m.type !== "augmentationCap")
       SR5_EntityHelpers.updateValue(limits[key], 0)

@@ -79,6 +79,9 @@ import {
 import {
   missingBaseDevice
 } from "./base-device.js"
+import {
+  SR5_SpiritTypes
+} from "../items/spirit-types.js"
 
 /**
  * Extend the base Actor class to implement additional logic specialized for Shadowrun 5.
@@ -211,6 +214,9 @@ export class SR5Actor extends Actor {
         const spiritType = spiritResult.element.querySelector("[name=spiritType]").value
         const spiritForce = spiritResult.element.querySelector("[name=spiritForce]").value
         baseItems = await SR5_CompendiumUtility.getBaseItems(data.type, spiritType, spiritForce)
+        // A custom type with a picture of its own lends it to the portrait and the token, an entity's above all
+        const typeImg = SR5_SpiritTypes.get(spiritType)?.img
+        if (typeImg && data.img === "systems/sr5/assets/img/actors/actorSpirit.svg" && !typeImg.endsWith("/itemSpiritType.svg") && !typeImg.endsWith("/itemSpirit.svg")) data.img = typeImg
         for (let baseItem of baseItems) {
           data.items.push(baseItem)
         }

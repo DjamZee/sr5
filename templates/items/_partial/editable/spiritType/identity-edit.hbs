@@ -74,6 +74,12 @@
         </select>
     </div>
 </li>
+{{#ife system.limits "force"}}
+<li class="grid">
+    <div class="col-8">{{localize 'SR5.SpiritTypePhysicalLimitBonus'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="number" data-dtype="Number" name="system.physicalLimitBonus" value="{{system.physicalLimitBonus}}" placeholder="0" onfocus="this.select()"/></div>
+</li>
+{{/ife}}
 <li class="grid">
     <div class="col-4">{{localize 'SR5.Armor'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-1 SR-TextRight">P ×</div>
