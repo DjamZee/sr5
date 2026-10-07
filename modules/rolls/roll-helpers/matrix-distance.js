@@ -4,6 +4,9 @@ import {
 import {
   SR5_ConverterHelpers
 } from "./converter.js"
+import {
+  isMatrixScene
+} from "../../canvas/pan-crown/pan-visibility.js"
 
 // The noise of a Matrix action grows with the physical distance to the target (SR5 p. 232). SR5 counts in meters
 // and the scene is converted, whatever its unit (arbitrage de DjamZ, 24/09).
@@ -28,7 +31,8 @@ function actorToken(actor, scene, placeables){
 /**
  * Meters between the acting actor's token and the single targeted token, both on the scene shown.
  * Null when it cannot be measured: no target or several, a target or an actor on another scene, no token,
- * or a host on either side, which has no physical distance (p. 236).
+ * or a host on either side, which has no physical distance (p. 236), as the inside of a host has none (a scene
+ * marked flags.sr5.matrixScene, A2 of the API pour Matrice v1).
  * @param {Object} actor     the acting actor
  * @param {Object} [canvasLike]  {scene, grid, tokens: {placeables}}, the canvas by default
  * @param {Set} [targets]    the user's targets
@@ -36,7 +40,7 @@ function actorToken(actor, scene, placeables){
  */
 export function matrixTargetDistance(actor, canvasLike = globalThis.canvas, targets = globalThis.game?.user?.targets){
   const scene = canvasLike?.scene, grid = canvasLike?.grid
-  if (!actor || !scene || !grid || targets?.size !== 1 || isHost(actor)) return null
+  if (!actor || !scene || !grid || targets?.size !== 1 || isHost(actor) || isMatrixScene(scene)) return null
   const target = Array.from(targets)[0]
   if (target?.document?.parent !== scene || isHost(target.actor)) return null
   const token = actorToken(actor, scene, canvasLike.tokens?.placeables ?? [])

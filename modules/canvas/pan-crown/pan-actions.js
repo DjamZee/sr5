@@ -197,3 +197,20 @@ export function menuEntries(node, graph, viewer, {
   }))
   return entries
 }
+
+/**
+ * The actor and the device a uuid names (API pour Matrice v1, A1): an item names its device and the actor that
+ * carries it; an actor, or a token, names that actor and its persona.
+ * @param {Object|null} document  what fromUuid gives for the uuid
+ * @return {{actor: Object, itemUuid: String|null}|null}
+ */
+export function uuidTarget(document){
+  if (!document) return null
+  if (document.documentName === "Item") return document.actor ? {
+    actor: document.actor, itemUuid: document.uuid
+  } : null
+  const actor = document.documentName === "Token" ? document.actor : document.documentName === "Actor" ? document : null
+  return actor ? {
+    actor, itemUuid: null
+  } : null
+}

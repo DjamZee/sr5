@@ -47,7 +47,7 @@ describe('no wireless matrix action on a switched-off drone (N91)', () => {
   })
 
   it('refuses the roll before checking marks, with the rule in the message', () => {
-    const refusal = SOURCE.indexOf('checksTargetMarks(rollKey) && targetsWirelessOffDrone(actor)')
+    const refusal = SOURCE.indexOf('checksTargetMarks(rollKey) && targetsWirelessOffDrone(actor, rollData)')
     expect(refusal).toBeGreaterThan(-1)
     expect(SOURCE.slice(refusal, refusal + 200)).toMatch(/WARN_TargetWirelessOff"\)\)\s*return\b/)
     expect(refusal).toBeLessThan(SOURCE.indexOf('await checkTargetMarks('))

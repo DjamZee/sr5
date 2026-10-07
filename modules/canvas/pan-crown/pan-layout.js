@@ -102,7 +102,7 @@ export function layoutCrown(graph, {
     // A sprite's line to the technomancer who compiled it: hers and the gamemaster's alone (pan-graph.js)
     if (node.linkOwnerOnly && !["gm", "owner"].includes(node.visibility?.reason)) continue
     lines.push({
-      from, to, mode: node.mode, uuid: node.uuid
+      from, to, mode: node.mode, uuid: node.uuid, color: link.color ?? null
     })
   }
   return {

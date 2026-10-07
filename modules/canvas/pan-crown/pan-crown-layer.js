@@ -582,7 +582,8 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
   #drawLines(graphics, lines, scale){
     graphics.clear()
     for (const line of lines){
-      const color = line.mode === "offline" ? COLORS.offline : COLORS.line
+      // A module's decorative color (A8); an offline line stays grey, which tells its mode
+      const color = line.mode === "offline" ? COLORS.offline : (line.color ?? COLORS.line)
       graphics.lineStyle({
         width: 1.6 * scale, color, alpha: 0.85
       })

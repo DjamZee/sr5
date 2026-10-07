@@ -29,6 +29,11 @@ export class sr5ActorDeviceDataModel extends foundry.abstract.TypeDataModel {
         panMaster: new fields.StringField({
           initial: ''
         }),
+        // The host an IC runs in (SR5 p. 247-248: the IC are programs of the host): the uuid of a host actorDevice,
+        // set by the gamemaster on the sheet; empty for no host (API pour Matrice v1, A6)
+        hostUuid: new fields.StringField({
+          initial: ''
+        }),
         // Host type (Kill Code p. 48-52): empty = no type, the attributes stay as entered
         hostType: new fields.StringField({
           initial: ''

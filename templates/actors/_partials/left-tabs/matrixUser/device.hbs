@@ -98,6 +98,23 @@
 				{{selectOptions lists.iceTypes selected=system.matrix.deviceSubType localize=true}}
 			</select>
 		</li>
+		{{#if iceHostOptions}}
+		<li class="grid"
+		  data-helpTitle="{{localize 'SR5.DEVICE_IceHost'}}"
+		  data-helpMessage="{{localize 'SR5.HELP_IceHostMsg'}}"
+		>
+			<div class="col-5">{{localize 'SR5.DEVICE_IceHost'}}</div>
+			<div class="col-7">
+				<select name="system.matrix.hostUuid" data-dtype="String" {{#unless system.isGM}}disabled{{/unless}}>
+					<option value="">{{localize 'SR5.DEVICE_IceHostNone'}}</option>
+					{{#if iceHostOptions.unknown}}
+					<option value="{{iceHostOptions.unknown}}" selected>{{iceHostOptions.unknown}}</option>
+					{{/if}}
+					{{selectOptions iceHostOptions.hosts selected=system.matrix.hostUuid valueAttr="value" labelAttr="label"}}
+				</select>
+			</div>
+		</li>
+		{{/if}}
 		{{/ife}}
 
 		{{#if (and (eq actor.type 'actorDevice') (eq system.matrix.deviceType "host"))}}

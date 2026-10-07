@@ -139,6 +139,9 @@ import {
   SR5PanCrown
 } from "../canvas/pan-crown/pan-crown.js"
 import {
+  SR5CombatApi
+} from "../system/combat-api.js"
+import {
   SR5PanCrownLayer
 } from "../canvas/pan-crown/pan-crown-layer.js"
 
@@ -396,6 +399,8 @@ export async function sr5HookInit() {
     activateAutomaticPowers,
     // The crown of a PAN (lot 1: the graph and what the observer sees of it; lot 2: open and close it)
     panCrown: SR5PanCrown,
+    // The combat for the modules: count an action (API pour Matrice v1, A4)
+    combat: SR5CombatApi,
   }
 
   // Register DataModels

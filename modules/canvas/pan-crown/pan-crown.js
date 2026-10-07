@@ -10,7 +10,7 @@ import {
   buildPanGraph, hasAntenna, idsOf
 } from "./pan-graph.js"
 import {
-  hiddenFromPlayers, nodeVisibility, pickViewer, viewerMarksOn
+  hiddenFromPlayers, isMatrixScene, nodeVisibility, pickViewer, viewerMarksOn
 } from "./pan-visibility.js"
 import {
   SR5_SystemHelpers
@@ -69,10 +69,11 @@ export function tokenOfNode(node, crown){
   return canvas?.tokens?.placeables?.find(t => t.actor && idsOf(t.actor).some(id => ids.includes(id))) ?? null
 }
 
-// Meters between two tokens of the scene on the canvas, or null (SR5 counts in meters: arbitrage of 24/09)
+// Meters between two tokens of the scene on the canvas, or null (SR5 counts in meters: arbitrage of 24/09). On a
+// scene marked as the inside of a host (A2), there is no distance: 0, so that the 100 m of p. 236 never hide an icon
 function distanceInMeters(a, b){
   if (!a || !b || !canvas?.scene || a.scene !== canvas.scene || b.scene !== canvas.scene) return null
-  if (a === b) return 0
+  if (a === b || isMatrixScene(canvas.scene)) return 0
   const units = canvas.grid.measurePath([a.center, b.center]).distance
   return units * SR5_SystemHelpers.getSceneUnitInMeters(canvas.scene)
 }

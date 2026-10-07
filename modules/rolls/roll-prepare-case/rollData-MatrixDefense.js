@@ -10,6 +10,15 @@ import {
 import {
   trustedMatrixAction, tellMatrixCard
 } from "../roll-helpers/matrix-card.js"
+import {
+  defendsWithMaster, directConnectionVerdict, wanMasterOf
+} from "../roll-helpers/direct-connection.js"
+
+//The master's defense for this action, put in place of the slave's own (SR5 p. 234)
+function useMasterDefense(rollData, master, rollKey){
+  rollData.dicePool.composition = master.system.matrix.actions[rollKey].defense.modifiers.filter(mod => (mod.type === "skillRating" || mod.type === "linkedAttribute" || mod.type === "skillGroup" || mod.type === "matrixAttribute"))
+  rollData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(rollData, master.system.matrix.actions[rollKey].defense.modifiers)
+}
 
 export default async function matrixDefense(rollData, rollKey, actor, chatData){
   if (actor.type === "actorSpirit") return
@@ -25,6 +34,9 @@ export default async function matrixDefense(rollData, rollKey, actor, chatData){
     }
   }
   let matrixAction = actor.system.matrix.actions[rollKey]
+  //The attacker, for the direct connection to a slave (SR5 p. 234, A3 of the API pour Matrice v1): read for a slave only
+  const attacker = () => SR5_EntityHelpers.getRealActorFromID(chatData.owner?.speakerId ?? chatData.owner?.actorId, chatData.actorUuids) ?? null
+  let slavedToPan = false
 
   //Determine title
   rollData.test.title = `${game.i18n.localize("SR5.MatrixDefenseTest")}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize(SR5.matrixRolledActions[rollKey])} (${chatData.roll.hits})`
@@ -60,8 +72,12 @@ export default async function matrixDefense(rollData, rollKey, actor, chatData){
           },
         ])
       } else {
+        slavedToPan = true
         let panMaster = SR5_EntityHelpers.getRealActorFromID(targetItem.system.panMaster)
-        if (targetItem.system.deviceRating * 2 > panMaster.system.matrix.actions[rollKey].defense.dicePool){
+        //Attacked through a direct connection, the slave has its own ratings alone (SR5 p. 234); a module may rule it
+        //attacker by attacker (sr5.matrixDirectConnection)
+        const direct = directConnectionVerdict(attacker(), targetItem, false)
+        if (direct || targetItem.system.deviceRating * 2 > panMaster.system.matrix.actions[rollKey].defense.dicePool){
           rollData.dicePool.composition = ([
             {
               source: game.i18n.localize("SR5.DeviceRating"), type: "linkedAttribute", value: targetItem.system.deviceRating
@@ -70,10 +86,7 @@ export default async function matrixDefense(rollData, rollKey, actor, chatData){
               source: game.i18n.localize("SR5.DeviceRating"), type: "linkedAttribute", value: targetItem.system.deviceRating
             },
           ])
-        } else {
-          rollData.dicePool.composition = panMaster.system.matrix.actions[rollKey].defense.modifiers.filter(mod => (mod.type === "skillRating" || mod.type === "linkedAttribute" || mod.type === "skillGroup" || mod.type === "matrixAttribute"))
-          rollData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(rollData, panMaster.system.matrix.actions[rollKey].defense.modifiers)
-        }
+        } else useMasterDefense(rollData, panMaster, rollKey)
       }
       rollData.dicePool.base = SR5_PrepareRollHelper.getBaseDicepool(rollData)
     } 
@@ -81,6 +94,23 @@ export default async function matrixDefense(rollData, rollKey, actor, chatData){
     let deck = actor.items.find(d => d.type === "itemDevice" && d.system.isActive)
     //An AI outside any device defends with its persona alone, no device is targeted (Data Trails p. 157)
     if (deck) rollData.target.itemUuid = deck.uuid
+  }
+
+  //SR5 p. 234: a device of the scenery slaved to a host or to a master (panMaster, lot 7 of the crown) defends with
+  //its master when the master's pool is at least as large, unless the attacker is directly connected to it: by
+  //default its isDirectlyConnected switch, which a module may rule attacker by attacker (A3). Before, the master
+  //protected none of them: a defect of the alpha, mended
+  const wanMaster = slavedToPan ? null : wanMasterOf(actor)
+  if (wanMaster && wanMaster.system.matrix.actions[rollKey]?.defense) {
+    const device = actor.items.find(d => d.type === "itemDevice" && d.system.isActive) ?? actor
+    const direct = directConnectionVerdict(attacker(), device, actor.system.isDirectlyConnected === true)
+    const ownPool = matrixAction.defense.dicePool
+    if (defendsWithMaster({
+      direct, ownPool, masterPool: wanMaster.system.matrix.actions[rollKey].defense.dicePool
+    })) {
+      useMasterDefense(rollData, wanMaster, rollKey)
+      rollData.dicePool.base = SR5_PrepareRollHelper.getBaseDicepool(rollData)
+    }
   }
     
   //Add others informations

@@ -52,6 +52,19 @@ function plainCopy(value){
 const strings = list => Array.isArray(list) ? list.filter(id => typeof id === "string") : []
 
 /**
+ * A decorative color a subscriber put on a line (A8 of the API pour Matrice v1): "#rgb", "#rrggbb" or a number
+ * 0xrrggbb. It only paints the line: the visibility and the kind stay the system's.
+ * @return {Number|null}  the color as a number, null when there is none or it is not one
+ */
+export function lineColor(value){
+  if (Number.isInteger(value) && value >= 0 && value <= 0xffffff) return value
+  if (typeof value !== "string") return null
+  const hex = value.trim().match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i)?.[1]
+  if (!hex) return null
+  return parseInt(hex.length === 3 ? [...hex].map(c => c + c).join("") : hex, 16)
+}
+
+/**
  * A node a subscriber added, made whole: what the system reads of a node, with its defaults. It follows the same rules
  * of visibility as any node (owner, marked, revealed, within 100 m of its token: holderIds).
  * @return {Object|null}  null when it has no uuid of its own
@@ -95,6 +108,16 @@ export function contributeToGraph(graph, {
   const copy = plainCopy(graph)
   if (!copy) return graph
   safeCall(PAN_CROWN_HOOKS.graph, [copy, token, actor], call)
+  // A8: a color the subscriber put on a line of the system, and on nothing else of it
+  const colors = new Map()
+  for (const link of Array.isArray(copy.links) ? copy.links : []){
+    const color = lineColor(link?.color)
+    if (color !== null && typeof link.from === "string" && typeof link.to === "string") colors.set(`${link.from}>${link.to}`, color)
+  }
+  for (const link of graph.links){
+    const color = colors.get(`${link.from}>${link.to}`)
+    if (color !== undefined) link.color = color
+  }
   const uuids = new Set(graph.nodes.map(n => n.uuid))
   for (const node of Array.isArray(copy.nodes) ? copy.nodes : []){
     if (uuids.has(node?.uuid)) continue
@@ -108,9 +131,12 @@ export function contributeToGraph(graph, {
     const from = link?.from, to = link?.to
     if (typeof from !== "string" || typeof to !== "string" || from === to) continue
     if (!uuids.has(to) || (from !== "owner" && !uuids.has(from)) || linked.has(`${from}>${to}`)) continue
-    graph.links.push({
+    const added = {
       from, to, kind: typeof link.kind === "string" && link.kind ? link.kind : "module"
-    })
+    }
+    const color = lineColor(link.color)
+    if (color !== null) added.color = color
+    graph.links.push(added)
     linked.add(`${from}>${to}`)
   }
   return graph

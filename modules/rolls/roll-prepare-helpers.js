@@ -108,15 +108,19 @@ export class SR5_PrepareRollHelper {
    * The target chosen on the crown of a PAN (lot 4, Q6): its token, and the device aimed at when it is not the
    * persona's own (the defender then has nothing to choose: chooseMatrixDefender is skipped)
    * @param {Object} rollData
-   * @param {Object} panTarget  {tokenId, itemUuid}
+   * A1 (API pour Matrice v1): {actorId, itemUuid} without a token names an actor wherever its token stands; the
+   * checks of the test read it instead of the user's targets (panActorOnly)
+   * @param {Object} panTarget  {tokenId, itemUuid}, or {actorId, itemUuid}
    */
   static getPanTargetData(rollData, panTarget){
-    const token = canvas?.tokens?.get(panTarget?.tokenId)
-    if (!token?.actor) return rollData
+    const token = panTarget?.tokenId ? canvas?.tokens?.get(panTarget.tokenId) : null
+    const actor = token?.actor ?? (panTarget?.actorId && !panTarget?.tokenId ? SR5_EntityHelpers.getRealActorFromID(panTarget.actorId) : null)
+    if (!actor) return rollData
     rollData.target.hasTarget = true
-    rollData.target.actorId = token.actor.isToken ? token.actor.token.id : token.actor.id
+    rollData.target.actorId = actor.isToken ? actor.token.id : actor.id
     rollData.target.itemUuid = panTarget.itemUuid ?? null
     rollData.target.panPicked = true
+    if (!token) rollData.target.panActorOnly = true
     return rollData
   }
 

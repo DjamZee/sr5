@@ -7,7 +7,7 @@ import {
   SR5
 } from "../../config.js"
 import {
-  aimedItemUuid, menuEntries, modeSwitchCost, modeUpdate, ownModeOf
+  aimedItemUuid, menuEntries, modeSwitchCost, modeUpdate, ownModeOf, uuidTarget
 } from "./pan-actions.js"
 import {
   currentViewer, getGraph, setPanReveal, tokenOfNode
@@ -47,24 +47,38 @@ const REASON_LABELS = {
  * Launch a Matrix action of the system against a device chosen on a crown (lot 4, Q6). The token is targeted for
  * the user, as a click on it would, so that every check of the existing test reads it; the device goes in the card's
  * target.itemUuid and the defender is not asked to choose it again.
+ * A1 (API pour Matrice v1): without a token, a uuid alone (an actor, a token or an item) names the target, wherever
+ * its token stands, or with none at all; the user's targets are then released, so that no other token is read in
+ * its place.
  * @param {Object} actor           the attacker
  * @param {String} actionKey       a key of matrix.actions
  * @param {Object} target
- * @param {String} target.targetTokenId  the token that carries the device
- * @param {String} [target.targetUuid]   the device aimed at; none for the persona
+ * @param {String} [target.targetTokenId]  the token that carries the device, on the scene shown
+ * @param {String} [target.targetUuid]     the device aimed at; none for the persona. Alone, the target itself
  */
 export async function rollMatrixActionOn(actor, actionKey, {
   targetTokenId, targetUuid = null
 } = {
 }){
-  const token = canvas?.tokens?.get(targetTokenId)
-  if (!actor || !token) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_PanTargetMissing"))
-  token.setTarget(true, {
-    releaseOthers: true, groupSelection: false
+  const token = targetTokenId ? canvas?.tokens?.get(targetTokenId) : null
+  if (actor && token) {
+    token.setTarget(true, {
+      releaseOthers: true, groupSelection: false
+    })
+    return actor.rollTest("matrixAction", actionKey, {
+      panTarget: {
+        tokenId: token.id, itemUuid: targetUuid
+      }
+    })
+  }
+  const aimed = actor && !targetTokenId && targetUuid ? uuidTarget(await globalThis.fromUuid?.(targetUuid)) : null
+  if (!aimed) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_PanTargetMissing"))
+  for (const targeted of Array.from(game.user?.targets ?? [])) targeted.setTarget(false, {
+    releaseOthers: false, groupSelection: false
   })
   return actor.rollTest("matrixAction", actionKey, {
     panTarget: {
-      tokenId: token.id, itemUuid: targetUuid
+      actorId: aimed.actor.isToken ? aimed.actor.token.id : aimed.actor.id, itemUuid: aimed.itemUuid
     }
   })
 }

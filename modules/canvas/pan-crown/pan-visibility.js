@@ -18,6 +18,16 @@
 export const PAN_SPOT_RANGE_METERS = 100
 
 /**
+ * A scene the gamemaster marked as the inside of a host (API pour Matrice v1, A2): flags.sr5.matrixScene. In a host
+ * there is no physical distance (SR5 p. 236): every icon of the scene is within range, as for the crown of a host.
+ * @param {Object} scene  a Scene
+ * @return {Boolean}
+ */
+export function isMatrixScene(scene){
+  return scene?.flags?.sr5?.matrixScene === true
+}
+
+/**
  * Who looks (Q3): the first token the user controls, otherwise the user's assigned character.
  * @param {Object} options
  * @param {Array} options.controlled   the tokens the user controls

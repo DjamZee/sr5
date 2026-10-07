@@ -32,6 +32,21 @@ export function canTryMatrixAction(rollKey, actor){
   return (actor?.system?.specialAttributes?.resonance?.augmented?.value || 0) > 0
 }
 
+/** The icons a Matrix action is aimed at, each {actor}: the user's targets, or the actor a uuid named on its own
+ * (A1, API pour Matrice v1: rollMatrixActionOn with no token)
+ * @param {Object} [rollData] - the roll being prepared
+ * @return {Array<{actor: Object}>}
+ */
+function matrixTargets(rollData){
+  if (rollData?.target?.panActorOnly) {
+    const actor = SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId)
+    return actor ? [{
+      actor
+    }] : []
+  }
+  return Array.from(game.user.targets ?? [])
+}
+
 export default async function matrixAction(rollData, rollKey, actor){
   if (!canTryMatrixAction(rollKey, actor)) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_NeedResonance"))
   let matrixAction = actor.system.matrix.actions[rollKey]
@@ -133,13 +148,13 @@ export default async function matrixAction(rollData, rollKey, actor){
   //A drone with its wireless off can no longer be hacked wirelessly (SR5 p. 424): no wireless matrix
   //action reaches it, hacking or not. Only a direct connection does (p. 234), which the GM plays by
   //switching its wireless on for the action (N91). IC, complex forms and resonance actions: roll-prepare.js
-  if (checksTargetMarks(rollKey) && targetsWirelessOffDrone(actor)) {
+  if (checksTargetMarks(rollKey) && targetsWirelessOffDrone(actor, rollData)) {
     ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetWirelessOff"))
     return
   }
 
   //Check target's Marks before rolling if a target is selected
-  if (game.user.targets.size && checksTargetMarks(rollKey)) {
+  if (matrixTargets(rollData).length && checksTargetMarks(rollKey)) {
     let canContinue = await checkTargetMarks(rollData, matrixAction, actor)
     if (!canContinue) return
   }
@@ -161,8 +176,9 @@ export default async function matrixAction(rollData, rollKey, actor){
  * @return {Boolean} true if the interruption actions are open against that target
  */
 function hasWatchdogMarkOnTarget(rollData){
-  if (game.user.targets.size !== 1) return false
-  const target = Array.from(game.user.targets)[0]
+  const targets = matrixTargets(rollData)
+  if (targets.length !== 1) return false
+  const target = targets[0]
   return SR5_MarkHelpers.hasWatchdogMark(target.actor, rollData.owner.speakerId)
 }
 
@@ -177,10 +193,11 @@ function isWirelessOffDrone(target, actor){
 
 /** N91: tell whether one of the user's targets is a drone no wireless matrix action can reach
  * @param {Object} actor - the acting actor
+ * @param {Object} [rollData] - the roll being prepared, whose target may be named without a token (A1)
  * @return {Boolean} true if the roll must be refused
  */
-function targetsWirelessOffDrone(actor){
-  return Array.from(game.user.targets ?? []).some(t => isWirelessOffDrone(t.actor, actor))
+function targetsWirelessOffDrone(actor, rollData){
+  return matrixTargets(rollData).some(t => isWirelessOffDrone(t.actor, actor))
 }
 
 /** A drone created from an unlinked token records the token id as its creator: the token and its
@@ -197,13 +214,11 @@ function isCreator(creatorId, actor, speakerId){
 }
 
 async function checkTargetMarks(rollData, matrixAction, actor){
-  if (game.user.targets.size > 1) {
+  const cibles = matrixTargets(rollData)
+  if (cibles.length > 1) {
     ui.notifications.warn(`${game.i18n.localize("SR5.WARN_TargetTooMany")}`)
     return false
   }
-
-  const targeted = game.user.targets
-  const cibles = Array.from(targeted)
 
   for (let t of cibles) {
     rollData.target.grid = t.actor.system.matrix.userGrid
@@ -239,5 +254,5 @@ async function checkTargetMarks(rollData, matrixAction, actor){
 
 // Exported for the tests
 export {
-  checkTargetMarks, checksTargetMarks, isWirelessOffDrone, targetsWirelessOffDrone
+  checkTargetMarks, checksTargetMarks, isWirelessOffDrone, matrixTargets, targetsWirelessOffDrone
 }

@@ -357,7 +357,9 @@ function upwardMasterOf(actor, graph, {
       node, mode, slaved, owner: rigger
     }
   }
-  const key = actor.type === "actorDevice" && !isHostActor(actor) ? actor.system?.matrix?.panMaster : null
+  // An IC goes up to the host it runs in (SR5 p. 247-248, A6 of the API pour Matrice v1), with a mode of its own
+  const isIce = actor.type === "actorDevice" && actor.system?.matrix?.deviceType === "ice"
+  const key = actor.type !== "actorDevice" || isHostActor(actor) ? null : isIce ? actor.system?.matrix?.hostUuid : actor.system?.matrix?.panMaster
   if (!key) return null
   const target = resolve(key)
   if (!target) {
@@ -379,7 +381,7 @@ function upwardMasterOf(actor, graph, {
     uuid: key, actorId: realIdOf(holder), isHost: isHostActor(holder)
   }
   return {
-    node, mode, slaved: true
+    node, mode, slaved: !isIce
   }
 }
 

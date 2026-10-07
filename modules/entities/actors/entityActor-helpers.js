@@ -1,4 +1,7 @@
 import {
+  overwatchScoreShownTo
+} from "../../rolls/roll-helpers/overwatch-notice.js"
+import {
   SR5
 } from "../../config.js"
 import {
@@ -771,7 +774,8 @@ export class SR5_ActorHelper {
       sr5OverwatchLower: "emulate"
     } : {
     })
-    ui.notifications.info(`${actor.name}, ${game.i18n.localize("SR5.OverwatchScoreActual")} ${actorData.matrix.overwatchScore}`)
+    //SR5 p. 233: the gamemaster keeps the score in secret; a player reads it only with Baby Monitor (sr5OverwatchGMOnly, A7)
+    if (overwatchScoreShownTo(actor)) ui.notifications.info(`${actor.name}, ${game.i18n.localize("SR5.OverwatchScoreActual")} ${actorData.matrix.overwatchScore}`)
   }
 
   //Socket for increasing overwatch score;

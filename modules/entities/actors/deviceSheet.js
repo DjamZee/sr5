@@ -41,6 +41,7 @@ export class SR5AppareilSheet extends ActorSheetSR5 {
     context.rulesKillCode = game.settings.get("sr5", "sr5KillCodeRules")
     context.matrixActionsRigger5 = game.settings.get("sr5", "sr5Rigger5Actions")
     context.panMasterOptions = this._panMasterOptions(context.actor)
+    context.iceHostOptions = this._iceHostOptions(context.actor)
 
     return context
   }
@@ -105,6 +106,21 @@ export class SR5AppareilSheet extends ActorSheetSR5 {
       devices: devices.sort(byLabel),
       // A master that is gone stays shown, so that saving the sheet does not erase it silently
       unknown: current && !known ? current : null,
+    }
+  }
+
+  // The hosts an IC can run in (SR5 p. 247-248, A6 of the API pour Matrice v1): the hosts of the world
+  _iceHostOptions(actor) {
+    if (actor.type !== "actorDevice" || actor.system.matrix.deviceType !== "ice") return null
+    const hosts = (game.actors ?? []).filter(other => other.id !== actor.id && other.type === "actorDevice" &&
+      other.system.matrix?.deviceType === "host").map(other => ({
+      value: other.uuid, label: other.name
+    })).sort((a, b) => a.label.localeCompare(b.label))
+    const current = actor.system.matrix.hostUuid
+    return {
+      hosts,
+      // A host that is gone stays shown, so that saving the sheet does not erase it silently
+      unknown: current && !hosts.some(o => o.value === current) ? current : null,
     }
   }
 

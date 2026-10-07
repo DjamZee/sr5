@@ -720,6 +720,17 @@ export class SR5_SystemHelpers {
       onChange: () => canvas?.sr5PanCrown?.refresh()
     })
 
+    // The Overwatch Score in the notice of a rise: the gamemaster's alone, as the book keeps it (SR5 p. 233; A7 of
+    // the API pour Matrice v1). The sheet already shows it to the gamemaster alone, or to the owner whose Baby Monitor runs
+    game.settings.register("sr5", "sr5OverwatchGMOnly", {
+      name: "SR5.SETTINGS_OverwatchGMOnly_T",
+      hint: "SR5.SETTINGS_OverwatchGMOnly_D",
+      scope: "world",
+      config: true,
+      default: true,
+      type: Boolean
+    })
+
     // How each user opens the PAN crowns (couronne du PAN, lot 8; Q8 of DjamZ, 07/10); its key is in init.js
     registerPanOpeningSettings()
 
