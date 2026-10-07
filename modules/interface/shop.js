@@ -411,6 +411,8 @@ export class SR5Shop {
           hours: orderHours(hours, extra ? terms : null), express: !!extra, extra, now,
         })
         order.mods = mods.map(line => line.source.uuid)
+        // The mods the gamemaster fitted at once arrive fitted when he delivers the order (review 32)
+        if (mods.some(line => line.fitted)) order.fitted = mods.map(line => line.fitted)
         vehicle.order = order
         orders.push(order)
       }

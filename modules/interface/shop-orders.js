@@ -454,7 +454,9 @@ async function assembledOrder(vehicleData, vehicle, order) {
   const {
     assembledVehicleData
   } = await import('../system/vehicle-dealership.js')
-  return assembledVehicleData(vehicleData, mods, foundry.utils.randomID)
+  return assembledVehicleData(vehicleData, mods.map((mod, i) => ({
+    ...mod, fitted: order.fitted?.[i] === true
+  })), foundry.utils.randomID)
 }
 
 /** The gamemaster hands an order over: the goods reach the sheet, the order goes. */
@@ -484,7 +486,8 @@ export async function deliverOrder(actor, id) {
   // Système sensible taken since the order (SR5 p. 89): the gamemaster decides before the order goes. Declined,
   // the order stays on the sheet, paid: he cancels it to refund the buyer, nothing is lost without a word
   const payload = SR5Shop._itemPayload(source, order.quantity, order.grade)
-  // A build of the dealership: the vehicle comes with its mods aboard, waiting to be installed (lot R9)
+  // A build of the dealership: the vehicle comes with its mods aboard, waiting to be installed (lot R9), or fitted when
+  // the gamemaster fitted them at the purchase
   if (order.mods?.length) {
     const built = await assembledOrder(payload[0], source, order)
     if (!built) return false

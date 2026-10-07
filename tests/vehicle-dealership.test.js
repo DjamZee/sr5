@@ -405,4 +405,20 @@ describe('SR5Shop.checkout, assemble (the dealership)', () => {
     ])
     expect(flags.shopOrders).toHaveLength(0)
   })
+
+  it("the gamemaster's fitted mod keeps its tick through a delayed order and arrives fitted (review 32)", async () => {
+    delivery = 'delayed'
+    await SR5Shop.checkout(buyer, lines(true), {
+      assemble: true
+    })
+    expect(flags.shopOrders[0].fitted).toEqual([true, false])
+    created = []
+    const {
+      deliverOrder
+    } = await import('../modules/interface/shop-orders.js')
+    expect(await deliverOrder(buyer, flags.shopOrders[0].id)).toBe(true)
+    expect(created[0].system.vehiclesMod.map(m => [m.name, m.system.isActive])).toEqual([
+      ['mount', true], ['armor', false],
+    ])
+  })
 })
