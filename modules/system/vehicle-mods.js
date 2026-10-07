@@ -85,6 +85,14 @@ export function replacedVehicleAttribute(items, attribute) {
   return replaced
 }
 
+// R5 p. 164 (Pare-buffle): "Lorsqu'un véhicule effectue une attaque pour Percuter (p. 203, SR5), les dégâts infligés sont
+// augmentés d'un cran, comme si le véhicule roulait à une catégorie de vitesse supérieure" (converter.js)
+
+/** Whether a vehicle rams with a ram plate fitted */
+export function hasBullBar(items) {
+  return fittedMods(items, "bullBar").length > 0
+}
+
 // R5 p. 161: "Un véhicule ne peut ajouter au maximum qu'un nombre de points de blindage égal à sa Structure (ce qui
 // donne un Blindage maximal = Structure + Blindage d'origine)", whatever slots are left. Factory armor is the printed
 // Armor (R5 p. 156): only the armor added afterwards counts

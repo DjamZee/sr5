@@ -2,6 +2,15 @@ import {
   SR5_BARRIER_RATINGS
 } from "../../config.js"
 
+//The damage steps of the collision table (SR5 p. 203, Rigger 5 p. 179): half the Structure (rounded up), then x1, x2,
+//x3, x5, x10. The speed picks a step from its bounds; `steps` raises it, never beyond the last
+const COLLISION_STEPS = [s => Math.ceil(s/2), s => s, s => s*2, s => s*3, s => s*5, s => s*10]
+function collisionStepDamage(structure, speed, bounds, steps = 0){
+  if (!(speed > 0)) return 0
+  const step = bounds.findIndex(max => speed <= max)
+  return COLLISION_STEPS[Math.min((step < 0 ? bounds.length : step) + (Number(steps) || 0), COLLISION_STEPS.length - 1)](structure)
+}
+
 export class SR5_ConverterHelpers {
 
   //Convert firing mode choice to  number of bullets
@@ -449,14 +458,9 @@ export class SR5_ConverterHelpers {
   }
 
   //Collision damage table (Rigger 5 p. 179, update of SR5 p. 203): damage value from the initiator's Structure and the speed of the impact
-  static collisionDamage(structure, speed){
-    if (speed <= 0) return 0
-    if (speed <= 2) return Math.ceil(structure/2)
-    if (speed <= 4) return structure
-    if (speed <= 6) return structure*2
-    if (speed <= 8) return structure*3
-    if (speed <= 10) return structure*5
-    return structure*10
+  //A ram plate raises the damage one step, as if the vehicle went one speed category faster (Rigger 5 p. 163-164)
+  static collisionDamage(structure, speed, steps = 0){
+    return collisionStepDamage(structure, speed, [2, 4, 6, 8, 10], steps)
   }
 
   //Speed of the impact, depending on its angle (Rigger 5 p. 179): speed difference from the rear, initiator's speed on the side, sum of both head-on
@@ -478,14 +482,8 @@ export class SR5_ConverterHelpers {
   }
 
   //Collision damage table in m/turn (SR5 p. 203): damage value from a Structure (or Body) and the relative speed
-  static collisionDamageMeters(structure, metersPerTurn){
-    if (metersPerTurn <= 0) return 0
-    if (metersPerTurn <= 10) return Math.ceil(structure/2)
-    if (metersPerTurn <= 50) return structure
-    if (metersPerTurn <= 200) return structure*2
-    if (metersPerTurn <= 300) return structure*3
-    if (metersPerTurn <= 500) return structure*5
-    return structure*10
+  static collisionDamageMeters(structure, metersPerTurn, steps = 0){
+    return collisionStepDamage(structure, metersPerTurn, [10, 50, 200, 300, 500], steps)
   }
 
   //Vehicle movement rates (SR5 p. 203): 5 m walking and 10 m running at Speed 1, doubled at each Speed point
@@ -561,10 +559,14 @@ export class SR5_ConverterHelpers {
     return this.rammingSpeed(ramming.angle, this.rammingEffectiveSpeed(ramming.attackerSpeed || 0, ramming.attackerLocomotion), this.rammingEffectiveSpeed(ramming.targetSpeed || 0, ramming.targetLocomotion))
   }
 
-  //Base damage value of a ramming attack, from the initiator's Structure
+  //Base damage value of a ramming attack, from the initiator's Structure. A ram plate (ramming.bullBar) adds a step;
+  //what it adds is kept on the ramming (bullBarBonus), since the initiator's own damage stays unchanged (Rigger 5 p. 164)
   static rammingAttackDamage(ramming, structure){
     let speed = this.rammingImpactSpeed(ramming)
-    return ramming.targetIsVehicle ? this.collisionDamage(structure, speed) : this.collisionDamageMeters(structure, speed)
+    const damage = steps => ramming.targetIsVehicle ? this.collisionDamage(structure, speed, steps) : this.collisionDamageMeters(structure, speed, steps)
+    const plain = damage(0), raised = ramming.bullBar ? damage(1) : plain
+    ramming.bullBarBonus = raised - plain
+    return raised
   }
 
   //Damage dealt to the target and to the initiator once the attack hits; the defender's actual type picks the table.
@@ -578,7 +580,8 @@ export class SR5_ConverterHelpers {
     }
     let target = damageBase + netHits
     //Rigger 5 p. 179 between two vehicles; SR5 p. 204 otherwise: the target's Body, halved (rounded up)
-    let initiator = defenderIsVehicle ? this.rammingInitiatorDamage(target, ramming.angle) : Math.ceil(this.collisionDamageMeters(defenderBody, speed)/2)
+    //The ram plate's step is left out of the initiator's own damage (Rigger 5 p. 164)
+    let initiator = defenderIsVehicle ? this.rammingInitiatorDamage(Math.max(0, target - (Number(ramming.bullBarBonus) || 0)), ramming.angle) : Math.ceil(this.collisionDamageMeters(defenderBody, speed)/2)
     return {
       target, initiator
     }

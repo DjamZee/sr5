@@ -2,11 +2,15 @@ import {
   describe, it, expect
 } from 'vitest'
 import {
-  vehicleModKind, fittedMods, fittedRating, replacedVehicleAttribute, replacedVehicleAttributeOf, armorCapReduction, addedArmor
+  vehicleModKind, fittedMods, fittedRating, replacedVehicleAttribute, replacedVehicleAttributeOf, armorCapReduction, addedArmor,
+  hasBullBar
 } from '../modules/system/vehicle-mods.js'
 import {
   droneAutopilot
 } from '../modules/entities/actors/rcc.js'
+import {
+  SR5_ConverterHelpers
+} from '../modules/rolls/roll-helpers/converter.js'
 
 const mod = (name, system = {
 }) => ({
@@ -143,5 +147,43 @@ describe('Armor added to a vehicle: at most its Body (Rigger 5.0 p. 161)', () =>
       source: "Blindage (dissimulé)", value: 2
     }]
     expect(addedArmor(items, modifiers)).toBe(5)
+  })
+})
+
+describe('Ram plate (Rigger 5.0 p. 164)', () => {
+  it('is read on the fitted mods', () => {
+    expect(hasBullBar([mod("Pare-buffle")])).toBe(true)
+    expect(hasBullBar([mod("Pare-buffle", {
+      isActive: false
+    })])).toBe(false)
+  })
+  it('the collision table keeps its values, one step up with a ram plate, never beyond the last', () => {
+    expect(SR5_ConverterHelpers.collisionDamage(10, 3)).toBe(10)
+    expect(SR5_ConverterHelpers.collisionDamage(10, 3, 1)).toBe(20)
+    expect(SR5_ConverterHelpers.collisionDamage(5, 1, 1)).toBe(5)
+    expect(SR5_ConverterHelpers.collisionDamage(10, 11, 1)).toBe(100)
+    expect(SR5_ConverterHelpers.collisionDamage(10, 0, 1)).toBe(0)
+    expect(SR5_ConverterHelpers.collisionDamageMeters(10, 30)).toBe(10)
+    expect(SR5_ConverterHelpers.collisionDamageMeters(10, 30, 1)).toBe(20)
+  })
+  it('raises the damage dealt, not the damage the rammer takes', () => {
+    const ramming = {
+      targetIsVehicle: true, angle: "side", attackerSpeed: 3, attackerLocomotion: "ground", bullBar: true
+    }
+    const base = SR5_ConverterHelpers.rammingAttackDamage(ramming, 10)
+    expect(base).toBe(20)
+    expect(ramming.bullBarBonus).toBe(10)
+    const damages = SR5_ConverterHelpers.rammingDefenseDamages(ramming, {
+      defenderIsVehicle: true, defenderBody: 8, damageBase: base, netHits: 2
+    })
+    expect(damages.target).toBe(22)
+    expect(damages.initiator).toBe(6)
+  })
+  it('without a ram plate nothing changes', () => {
+    const ramming = {
+      targetIsVehicle: true, angle: "side", attackerSpeed: 3, attackerLocomotion: "ground"
+    }
+    expect(SR5_ConverterHelpers.rammingAttackDamage(ramming, 10)).toBe(10)
+    expect(ramming.bullBarBonus).toBe(0)
   })
 })
