@@ -18,6 +18,11 @@
 			{{/each}}
 		</div>
 	</div>
+	{{#if workshop.points}}
+	<p class="sr5-workshop-points" data-tooltip="{{localize 'SR5.DroneModPointsYHint'}}">{{localize 'SR5.DroneModPointsY'}}
+		{{#if workshop.isGM}}<input type="number" name="system.modPoints" value="{{workshop.modPoints}}" min="0" step="1" placeholder="{{localize 'SR5.DroneModPointsYPlaceholder'}}">{{else}}{{valueOrDash workshop.modPoints}}{{/if}}
+	</p>
+	{{/if}}
 	<p class="sr5-workshop-cost">
 		{{localize 'SR5.VehicleModWorkshopCost' vehicle=workshop.cost.vehicleLabel mods=workshop.cost.modsLabel total=workshop.cost.totalLabel}}
 		{{#if workshop.buyer}}<br><span class="SR-LightGreyColor">{{localize 'SR5.VehicleModWorkshopBuyer' buyer=workshop.buyer balance=workshop.balanceLabel}}</span>{{/if}}
@@ -26,7 +31,7 @@
 	<ul class="sr5-workshop-drop" data-category="{{key}}">
 		<li class="SR-EnTete grid">
 			<div class="col-5 SR-TextUppercase">{{label}}</div>
-			<div class="col-1 SR-TextCenter" data-tooltip="{{localize 'SR5.VehicleModSlotsFull'}}">{{localize 'SR5.VehicleModSlotsShort'}}</div>
+			<div class="col-1 SR-TextCenter" data-tooltip="{{@root.workshop.slotsFull}}">{{@root.workshop.slotsShort}}</div>
 			<div class="col-1 SR-TextCenter" data-tooltip="{{localize 'SR5.Threshold'}}">{{localize 'SR5.ThresholdShort'}}</div>
 			<div class="col-2 SR-TextCenter">{{localize 'SR5.VehicleModToolsHeader'}}</div>
 			<div class="col-1 SR-TextCenter">&yen;</div>

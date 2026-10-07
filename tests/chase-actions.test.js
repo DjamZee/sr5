@@ -3,7 +3,8 @@ import {
 } from 'vitest'
 import {
   CHASE_ACTIONS, actionsFor, actionRefusal, actionThreshold, actionDice, resolveAction, resolveFollowUp, opposedNet,
-  optimalSpeedModifier, catchUpSteps, behindRange, sixPackBonus, collisionMultiplier, collisionDamage, winsOpposed
+  optimalSpeedModifier, catchUpSteps, behindRange, sixPackBonus, collisionMultiplier, collisionDamage, winsOpposed,
+  cardActions
 } from '../modules/system/chase-actions.js'
 
 // Vehicle chases (R12, part 2): the chase actions of the core book (SR5 p. 204-205) and of Rigger 5.0 (p. 176-181)
@@ -13,8 +14,9 @@ const ids = {
 }
 
 describe('the actions of each rule set', () => {
-  it('the core book has Catch-Up / Break Away, Cut Off and Ram, and Control a Vehicle in both', () => {
-    expect(actionsFor(false).map(a => a.key)).toEqual(['control', 'catchUpBook', 'cutOffBook', 'rammingBook'])
+  it('the core book has Catch-Up / Break Away, Cut Off, Ram and Stunt, and Control a Vehicle in both', () => {
+    expect(actionsFor(false).map(a => a.key)).toEqual(['control', 'catchUpBook', 'cutOffBook', 'rammingBook',
+      'stuntBook'])
     const r5 = actionsFor(true).map(a => a.key)
     expect(r5).toContain('control')
     expect(r5).toContain('catchUp')
@@ -24,9 +26,9 @@ describe('the actions of each rule set', () => {
       'fallingLeaf', 'strafe', 'swarm']))
   })
 
-  it('no stunt and no Edge action in this part (part 3)', () => {
-    expect(Object.keys(CHASE_ACTIONS)).not.toContain('stunt')
-    expect(Object.keys(CHASE_ACTIONS)).not.toContain('zenDriving')
+  it('the stunts and the Edge actions of part 3 belong to their rule set', () => {
+    expect(CHASE_ACTIONS.stuntBook.rules).toBe('book')
+    for (const key of ['stunt', 'zenDriving', 'holdOn', 'leafInWind']) expect(CHASE_ACTIONS[key].rules).toBe('r5')
   })
 
   it('refuses an action at the wrong range, for the wrong kind, without target, or twice a turn', () => {
@@ -373,5 +375,21 @@ describe('the other actions', () => {
     expect(resolveAction('control', ids).effects).toEqual([{
       type: 'control', id: 'A'
     }])
+  })
+})
+
+// Solène's review 33: Control a Vehicle from the window posted its card without counting its Complex Action, which the
+// vehicle test of every other action counts (rollData-VehicleTest.js)
+describe('the combat actions of an action that rolls nothing', () => {
+  it('Control a Vehicle spends a Complex Action, as the vehicle test does (SR5 p. 203)', () => {
+    expect(cardActions('control')).toEqual([{
+      type: 'complex', value: 1, source: 'vehicleTest'
+    }])
+  })
+
+  it('Zen Driving takes its place without one (R5 p. 176), Hang On Baby is none', () => {
+    expect(cardActions('zenDriving')).toEqual([])
+    expect(cardActions('holdOn')).toEqual([])
+    expect(cardActions('nothing')).toEqual([])
   })
 })

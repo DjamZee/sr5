@@ -1128,6 +1128,7 @@ export class SR5_ActorHelper {
         "system.modificationSlots.body.base": itemData.modificationSlots.body,
         "system.modificationSlots.electromagnetic.base": itemData.modificationSlots.electromagnetic,
         "system.modificationSlots.cosmetic.base": itemData.modificationSlots.cosmetic,
+        "system.modPoints": itemData.modPoints ?? null,
         "system.conditionMonitors.condition.actual": itemData.conditionMonitors.condition.actual,
         "system.conditionMonitors.matrix.actual": itemData.conditionMonitors.matrix.actual,
         "system.isSecondaryPropulsion": itemData.secondaryPropulsion.isSecondaryPropulsion,
@@ -1561,6 +1562,7 @@ export class SR5_ActorHelper {
       modifiedItem.system.modificationSlots.body = actor.system.modificationSlots.body.base
       modifiedItem.system.modificationSlots.electromagnetic = actor.system.modificationSlots.electromagnetic.base
       modifiedItem.system.modificationSlots.cosmetic = actor.system.modificationSlots.cosmetic.base
+      modifiedItem.system.modPoints = actor.system.modPoints ?? null
       modifiedItem.system.conditionMonitors.condition.actual = actor.system.conditionMonitors.condition.actual
       modifiedItem.system.conditionMonitors.matrix.actual = actor.system.conditionMonitors.matrix.actual
       modifiedItem.system.secondaryPropulsion.isSecondaryPropulsion = actor.system.isSecondaryPropulsion

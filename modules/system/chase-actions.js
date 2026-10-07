@@ -7,8 +7,9 @@
 // test of the drone sheet (manual, remote, jumped in, or Pilot + autosoft on autopilot). The thresholds below come
 // before the control rig, which the vehicle test lowers itself (SR5 p. 200, 268).
 //
-// Where part 3 plugs in: the stunts and the Edge actions (Cascade, Hang On Baby, Zen Driving, Leaf in the Wind) are
-// new entries of CHASE_ACTIONS, with their own resolve(); registerChaseAction() adds one.
+// Part 3: the stunts (SR5 p. 205, R5 p. 182-183) and the Edge actions (Hang On Baby, Zen Driving, Leaf in the Wind)
+// are entries of CHASE_ACTIONS too, added by registerChaseAction(); a stunt within another action goes through
+// withStunt().
 
 import {
   chaseRanges
@@ -178,7 +179,7 @@ export function registerChaseAction(key, action) {
 
 // Control a Vehicle (SR5 p. 203, R5 p. 176-177): a Complex Action, no test
 registerChaseAction("control", {
-  rules: "both", page: "SR5 p. 203", roll: false, threshold: () => 0,
+  rules: "both", page: "SR5 p. 203", roll: false, complexAction: true, threshold: () => 0,
   resolve: r => ({
     success: true, net: 0, effects: [{
       type: "control", id: r.initiatorId
@@ -259,7 +260,7 @@ registerChaseAction("quickTurn", {
     if (net < 1) return noEffect(false)
     return {
       success: true, net, notes: [], effects: [{
-        type: "setRange", a: r.initiatorId, b: r.targetId, range: behindRange(net, true, "contact")
+        type: "setRange", a: r.initiatorId, b: r.targetId, range: behindRange(net + stuntRangeBonus(r.stunt, "quickTurn"), true, "contact")
       }, {
         type: "roles", pursuer: r.initiatorId, pursued: r.targetId
       }]
@@ -276,8 +277,11 @@ registerChaseAction("catchUp", {
   resolve: r => {
     const net = opposedNet(r)
     if (!net) return noEffect(false)
+    // A won stunt's successes may go past the Acceleration, never past its double (R5 p. 182)
+    const bonus = stuntRangeBonus(r.stunt, "catchUp")
+    const acceleration = (Number(r.acceleration) || 0) * (bonus ? 2 : 1)
     const move = catchUpSteps({
-      net, acceleration: r.acceleration, role: r.initiatorRole, range: r.range, advanced: true, aircraft: r.aircraft
+      net: net + bonus, acceleration, role: r.initiatorRole, range: r.range, advanced: true, aircraft: r.aircraft
     })
     const effects = []
     if (move.now) effects.push({
@@ -458,7 +462,7 @@ registerChaseAction("sixPack", {
     const net = Math.max(1, opposedNet(r))
     return {
       success: true, net, notes: [], effects: [{
-        type: "setRange", a: r.initiatorId, b: r.targetId, range: behindRange(net, true, "short")
+        type: "setRange", a: r.initiatorId, b: r.targetId, range: behindRange(net + stuntRangeBonus(r.stunt, "sixPack"), true, "short")
       }, {
         type: "roles", pursuer: r.initiatorId, pursued: r.targetId
       }]
@@ -579,6 +583,190 @@ registerChaseAction("swarm", {
   }]),
 })
 
+// ---- Part 3: the stunts and the Edge actions ----
+
+// Core book's Stunt (SR5 p. 205): the pursued only, [Speed or Handling] by the environment, threshold set by the
+// gamemaster from the maneuver (p. 200) and the Terrain (p. 201). Failed: out of control at once, the gamemaster
+// decides what comes of it. Made: every pursuer rolls the same test, same threshold, or falls a range back (getting
+// away past Extreme)
+registerChaseAction("stuntBook", {
+  rules: "book", page: "SR5 p. 205", limit: "environment", pursuedOnly: true, stunt: true,
+  threshold: ctx => (ctx.maneuver ?? 2) + ctx.terrain,
+  resolve: r => {
+    if (r.hits < r.threshold) return {
+      success: false, net: 0, effects: [{
+        type: "outOfControl", id: r.initiatorId
+      }], notes: [{
+        key: "SR5.CHASE_NoteStuntBookFailed", data: {
+        }
+      }]
+    }
+    const pursuers = r.pursuers ?? []
+    return {
+      success: true, net: excessHits(r.hits, r.threshold), notes: pursuers.length ? [] : [{
+        key: "SR5.CHASE_NoteNobodyNear", data: {
+        }
+      }], effects: pursuers.map(id => ({
+        type: "followUp", vehicle: id, test: "stuntFollow", threshold: r.rawThreshold, a: r.initiatorId, b: id,
+        limit: r.limit,
+      }))
+    }
+  },
+})
+
+// Rigger 5.0's stunts (« Conduire avec style », R5 p. 183, the advantages p. 182). The pilot picks the level. Alone, a
+// Complex Action (level + Terrain); within another action, the level goes on its threshold. Never the autopilot.
+export const STUNT_ADVANTAGES = ["range", "handling", "slow", "soak", "dodge", "social", "crazy"]
+// The advantages written to dice never add more than +4 to a test (R5 p. 182)
+export const STUNT_DICE_CAP = 4
+// The actions whose range change a stunt's successes add to (R5 p. 182)
+export const STUNT_RANGE_ACTIONS = ["catchUp", "quickTurn", "sixPack"]
+
+/** The level of a stunt, 0 for none */
+export function stuntLevel(stunt) {
+  return Math.max(0, Math.floor(Number(stunt?.level) || 0))
+}
+
+/** The successes a won stunt adds to a range change (R5 p. 182), 0 when it is not this advantage or action */
+export function stuntRangeBonus(stunt, key) {
+  return stunt?.advantage === "range" && STUNT_RANGE_ACTIONS.includes(key) ? stuntLevel(stunt) : 0
+}
+
+/** The advantages a stunt may give within the action `key` (alone: `key` is "stunt") */
+export function stuntAdvantagesFor(key) {
+  return STUNT_ADVANTAGES.filter(a => a !== "range" || STUNT_RANGE_ACTIONS.includes(key))
+}
+
+/**
+ * What a won stunt gives (R5 p. 182), its value being its level: the Handling of the vehicle for the turn (never past
+ * the double), the Speed or the Handling of another vehicle, or, out of the chase, a note on the card.
+ * @param {object} r turnHandling: the Handling the vehicle already gained this turn
+ */
+export function stuntAdvantage(stunt, {
+  initiatorId, targetId, handling = 0, turnHandling = 0, targetSpeed = 0
+}) {
+  const level = stuntLevel(stunt)
+  const none = {
+    effects: [], notes: []
+  }
+  if (!level) return none
+  const note = (key, data = {
+  }) => ({
+    effects: [], notes: [{
+      key, data
+    }]
+  })
+  switch (stunt.advantage) {
+    case "handling": {
+      const bonus = Math.max(0, Math.min(level, (Number(handling) || 0) - Math.max(0, Number(turnHandling) || 0)))
+      return bonus ? {
+        effects: [{
+          type: "turnHandling", id: initiatorId, delta: bonus
+        }], notes: []
+      } : note("SR5.CHASE_NoteStuntCapped")
+    }
+    case "slow":
+      if (!targetId) return note("SR5.CHASE_NoteNobodyNear")
+      return stunt.slow === "speed" ? {
+        effects: [{
+          type: "speed", id: targetId, value: Math.max(0, (Number(targetSpeed) || 0) - level)
+        }], notes: []
+      } : {
+        effects: [{
+          type: "turnHandling", id: targetId, delta: -level
+        }], notes: []
+      }
+    case "soak": return note("SR5.CHASE_NoteStuntSoak", {
+      dice: Math.min(level, STUNT_DICE_CAP)
+    })
+    case "dodge": return note("SR5.CHASE_NoteStuntDodge", {
+      hits: level
+    })
+    case "social": return note("SR5.CHASE_NoteStuntSocial", {
+      dice: Math.min(level, STUNT_DICE_CAP)
+    })
+    case "crazy": return note("SR5.CHASE_NoteStuntCrazy")
+    default: return none
+  }
+}
+
+/**
+ * A stunt within an action, or alone (R5 p. 183): won, its advantage; failed, a driving test at once, the level as a
+ * dice penalty, or a crash. The book gives neither the sign of that modifier nor the threshold: −level dice and the
+ * Terrain, the threshold every vehicle action starts from (R5 p. 176): arbitrage de DjamZ (08/10), kept in this one place.
+ */
+export function withStunt(outcome, r) {
+  const level = stuntLevel(r.stunt)
+  if (!level) return outcome
+  if (!outcome.success) return {
+    ...outcome, effects: [...(outcome.effects ?? []), {
+      type: "followUp", vehicle: r.initiatorId, test: "stuntCrash", threshold: Number(r.terrain) || 0,
+      a: r.initiatorId, dice: -level, diceKey: "SR5.CHASE_DiceStunt",
+    }]
+  }
+  const gained = stuntAdvantage(r.stunt, r)
+  return {
+    ...outcome, effects: [...(outcome.effects ?? []), ...gained.effects], notes: [...(outcome.notes ?? []), ...gained.notes]
+  }
+}
+
+// A stunt alone: a Complex Action, (level + Terrain) — the level comes with every stunt in actionThreshold
+registerChaseAction("stunt", {
+  rules: "r5", page: "R5 p. 182-183", targetOptional: true, stunt: true, noAutopilot: true,
+  resolve: r => noEffect(r.hits >= r.threshold, excessHits(r.hits, r.threshold)),
+})
+
+// Edge (R5 p. 178-181): one point of the pilot's Edge, spent by the system's own path as the action is launched
+
+// Zen Driving (riggers only, jumped into this vehicle): a point of Edge keeps the vehicle under control this turn, in
+// place of the Control a Vehicle action, once a turn (R5 p. 176, 179)
+registerChaseAction("zenDriving", {
+  rules: "r5", page: "R5 p. 179", roll: false, oncePerTurn: true, edge: "rigger", threshold: () => 0,
+  resolve: r => ({
+    success: true, net: 0, effects: [{
+      type: "control", id: r.initiatorId
+    }], notes: []
+  }),
+})
+
+// Hang On Baby (riggers only, jumped in): the condition monitor is full, a point of Edge keeps the vehicle going for
+// this Combat Turn, again each turn; its damage modifiers stay (R5 p. 178)
+registerChaseAction("holdOn", {
+  rules: "r5", page: "R5 p. 178", roll: false, edge: "rigger", needs: "destroyed", threshold: () => 0,
+  resolve: r => ({
+    success: true, net: 0, effects: [{
+      type: "flag", id: r.initiatorId, flag: "holdOn"
+    }], notes: []
+  }),
+})
+
+// Leaf in the Wind (aircraft destroyed or at Speed 0, any pilot but the autopilot): a point of Edge, then a test
+// (Terrain + damage modifier); each net hit takes 1 off the damage modifier of the Control a Vehicle test that softens
+// the landing (R5 p. 181). Its threshold is written out: no optimal Speed gap is added
+registerChaseAction("leafInWind", {
+  rules: "r5", page: "R5 p. 181", kinds: ["rotor", "jet"], edge: "pilot", needs: "falling",
+  threshold: ctx => ctx.terrain + Math.abs(Number(ctx.damageModifier) || 0),
+  resolve: r => {
+    const net = excessHits(r.hits, r.threshold)
+    return noEffect(r.hits >= r.threshold, net, [{
+      key: "SR5.CHASE_NoteLeafInWind", data: {
+        net
+      }
+    }])
+  },
+})
+
+/**
+ * The combat actions an action that rolls nothing spends, as the vehicle test counts its own (rollData-VehicleTest.js):
+ * Control a Vehicle is a Complex Action (SR5 p. 203); Zen Driving takes its place without one (R5 p. 176), and Hang On
+ * Baby is no action at all (R5 p. 178). An action that rolls spends its actions through its roll.
+ */
+export function cardActions(key) {
+  return CHASE_ACTIONS[key]?.complexAction ? [{
+    type: "complex", value: 1, source: "vehicleTest"
+  }] : []
+}
+
 /** The actions of a rule set, in the order of the book */
 export function actionsFor(advanced) {
   return Object.values(CHASE_ACTIONS).filter(a => a.rules === "both" || a.rules === (advanced ? "r5" : "book"))
@@ -586,11 +774,12 @@ export function actionsFor(advanced) {
 
 /**
  * Why an action may not be taken now, or null. `range`: the range of the pair with the target.
- * @param {object} p {advanced, kind, range, hasTarget, flags}
+ * @param {object} p {advanced, kind, range, hasTarget, flags}; for part 3: role, controlMode (of the vehicle), edgeLeft
+ *   (its pilot has a point of Edge left), monitorFull, speed
  */
 export function actionRefusal(key, {
   advanced, kind, range, hasTarget, flags = {
-  }
+  }, role, controlMode, edgeLeft = false, monitorFull = false, speed = 0
 }) {
   const action = CHASE_ACTIONS[key]
   if (!action || !actionsFor(advanced).includes(action)) return "unknown"
@@ -599,16 +788,22 @@ export function actionRefusal(key, {
   if (action.target && action.ranges && !action.ranges.includes(range)) return "range"
   if (action.oncePerTurn && flags[`${key}Used`]) return "once"
   if ((key === "catchUp" || key === "catchUpBook") && flags.noCatchUp) return "noCatchUp"
+  if (action.pursuedOnly && role !== "pursued") return "pursuedOnly"
+  if ((action.noAutopilot || action.edge) && controlMode === "autopilot") return "autopilot"
+  if (action.edge === "rigger" && controlMode !== "rigging") return "jumpedIn"
+  if (action.needs === "destroyed" && !monitorFull) return "notDestroyed"
+  if (action.needs === "falling" && !monitorFull && (Number(speed) || 0) > 0) return "notFalling"
+  if (action.edge && !edgeLeft) return "noEdge"
   return null
 }
 
-/** The threshold of an action, before the control rig, never under 0 */
+/** The threshold of an action, before the control rig, never under 0; a stunt's level comes on top (R5 p. 183) */
 export function actionThreshold(key, ctx) {
   const action = CHASE_ACTIONS[key]
   if (!action) return 0
   return Math.max(0, Math.ceil(Number(action.threshold({
     ...ctx, terrain: Number(ctx?.terrain) || 0
-  })) || 0))
+  })) || 0) + stuntLevel(ctx?.stunt))
 }
 
 /**
@@ -644,9 +839,10 @@ export function actionDice(key, {
 export function resolveAction(key, r) {
   const action = CHASE_ACTIONS[key]
   if (!action?.resolve) return noEffect(false)
-  return action.resolve({
+  const full = {
     opposingHits: 0, terrain: 0, ...r, hits: Number(r.hits) || 0, threshold: Number(r.threshold) || 0,
-  })
+  }
+  return withStunt(action.resolve(full), full)
 }
 
 /**
@@ -708,6 +904,24 @@ export function resolveFollowUp(pending, {
       return won ? noEffect(true) : {
         success: false, net: 0, notes: [], effects: [{
           type: "handling", id: pending.vehicle, delta: -(t - h)
+        }]
+      }
+      // The core book's Stunt made: a pursuer who misses the same test falls a range back, getting away past Extreme
+      // (SR5 p. 205)
+    case "stuntFollow":
+      return won ? noEffect(true) : {
+        success: false, net: 0, notes: [], effects: [{
+          type: "shift", a: pending.a, b: pending.b, steps: 1
+        }]
+      }
+      // A Rigger 5.0 stunt that failed: missed, the vehicle crashes (R5 p. 183)
+    case "stuntCrash":
+      return won ? noEffect(true) : {
+        success: false, net: 0, notes: [{
+          key: "SR5.CHASE_NoteCrash", data: {
+          }
+        }], effects: [{
+          type: "outOfControl", id: pending.vehicle
         }]
       }
     default:

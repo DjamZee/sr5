@@ -5,6 +5,13 @@ export function hasRiggerInterface(vehicleData) {
   return vehicleData?.type === "drone" || !!vehicleData?.riggerInterface
 }
 
+//The character whose Edge a vehicle's test spends: its controller by hand, remotely or jumped in, never the autopilot,
+//which tests without him (arbitrage de DjamZ, 08/10). The id of that character, or null.
+export function vehiclePilotId(vehicleSystem) {
+  if (!["manual", "remote", "rigging"].includes(vehicleSystem?.controlMode)) return null
+  return vehicleSystem?.vehicleOwner?.id || null
+}
+
 //Piloting in VR raises the limit of every piloting test by 2 (SR5 p. 201); a jumped in rigger is always in VR (SR5 p. 268)
 export const VR_PILOTING_LIMIT_BONUS = 2
 
