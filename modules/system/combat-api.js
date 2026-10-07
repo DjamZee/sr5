@@ -1,6 +1,7 @@
 // The public API of the combat for the modules (API pour Matrice v1, A4): game.sr5.combat. A module counts an action
 // of a combatant as the system does (the crown's mode switch, lot 0, calls SR5Combat.changeActionInCombat), without
-// reaching for an inner function that may be renamed.
+// reaching for an inner function that may be renamed. It also switches an actor to another initiative, with no import
+// of utilityActor.js by an absolute path that a routePrefix breaks.
 
 import {
   SR5
@@ -8,6 +9,9 @@ import {
 import {
   SR5Combat
 } from "./srcombat.js"
+import {
+  SR5_CharacterUtility
+} from "../entities/actors/utilityActor.js"
 
 // The actions a module may count: the interruptions carry their own cost in Initiative, and stay with the system
 export const SPENDABLE_ACTION_TYPES = ["free", "simple", "complex"]
@@ -52,6 +56,26 @@ export async function spendAction(actor, type, options = {
   return true
 }
 
+// The initiatives a module may switch an actor to
+export const SWITCHABLE_INITIATIVES = ["physicalInit", "astralInit", "matrixInit"]
+
+/**
+ * Switch an actor to another initiative, as the sheet's checkbox does (SR5_CharacterUtility.switchToInitiative): the
+ * cost of the switch (a complex action to or from the astral, a simple one to or from the Matrix out of AR) is
+ * counted in the combat, and the effect of the initiative is set.
+ * @param {Object} actor        the actor who switches (a token's actor for an unlinked token)
+ * @param {String} initiative   physicalInit, astralInit or matrixInit
+ * @param {Object} [utility]    SR5_CharacterUtility (the tests give their own)
+ * @return {Promise<Boolean>}   false when the switch is not made (unknown initiative, none on the actor, or refused
+ *                              by canSwitchToInitiative: no action left, Blight); true otherwise
+ */
+export async function switchInitiative(actor, initiative, utility = SR5_CharacterUtility){
+  if (!actor || !SWITCHABLE_INITIATIVES.includes(initiative) || !actor.system?.initiatives?.[initiative]) return false
+  if (!utility.canSwitchToInitiative(actor, initiative)) return false
+  return await utility.switchToInitiative(actor, initiative) !== false
+}
+
 export const SR5CombatApi = {
   spendAction,
+  switchInitiative,
 }

@@ -211,18 +211,41 @@ describe('R7: the rigger command console, master of its drones (SR5 p. 269)', ()
     })
   })
 
-  it('does not make a commlink the master of a drone ticked "Asservi" (its PAN list says so)', () => {
+  // Any master takes a drone ticked "Asservi", as the matrix defense does (SR5 p. 234; decision of DjamZ, 2026-10-08)
+  for (const type of ['commlink', 'cyberdeck']) it(`makes a ${type} the master of a drone ticked "Asservi", silent mode and room included`, () => {
     const {
-      rigger, droneActor
+      rigger, console: master, droneActor
     } = rig({
-      type: 'commlink'
+      type
     })
+    rigger.system.matrix.runningSilent = true
     const g = buildPanGraph(rigger, {
       resolve: () => null, actors: [droneActor]
     })
     const node = g.nodes.find(x => x.kind === 'drone')
     expect(g.links).toContainEqual({
-      from: 'owner', to: node.uuid, kind: 'drone'
+      from: master.uuid, to: node.uuid, kind: 'drone'
+    })
+    expect(node).toMatchObject({
+      mode: 'silent', silentFrom: 'master'
+    })
+    expect(g.capacity).toEqual({
+      max: 12, used: 1
+    })
+  })
+
+  it('in the drone\'s own crown, goes up to a commlink as a slave when ticked "Asservi"', () => {
+    const {
+      rigger, droneActor
+    } = rig({
+      type: 'commlink'
+    })
+    rigger.system.matrix.runningSilent = true
+    const g = buildPanGraph(droneActor, {
+      resolve: () => null, actors: [rigger, droneActor]
+    })
+    expect(g.nodes.find(x => x.uuid === 'Actor.rigger.Item.dd')).toMatchObject({
+      mode: 'silent', silentFrom: 'master'
     })
   })
 
