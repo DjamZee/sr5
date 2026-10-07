@@ -258,7 +258,7 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
     const totals = dealerTotals(lines)
     const terms = this._express ? currentExpress() : null
     const waits = lineWaits({
-      delayed: deliveryDelayed(), availability: totals.availability, free
+      delayed: deliveryDelayed(buyer), availability: totals.availability, free
     })
     const extra = waits && terms ? lines.reduce((sum, l, i) => sum + expressCost(i === 0 ? vehicleDescribed.price : l.price, terms), 0) : 0
     const total = totals.total + extra

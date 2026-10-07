@@ -18,6 +18,9 @@ import {
 import {
   dealerPrice
 } from '../system/rigger-qualities.js'
+import {
+  actorInCreation
+} from '../system/creation-actor.js'
 
 export const ORDERS_FLAG = 'shopOrders'
 export const DELIVERY_SETTING = 'sr5ShopDelivery'
@@ -95,7 +98,12 @@ function setting(key, fallback) {
   }
 }
 
-export function deliveryDelayed() {
+/**
+ * Whether purchases wait on their search time. A buyer the gamemaster put in creation (lot C0) gets them at once,
+ * whatever the world's setting: arbitrage de DjamZ (M4, 2026-10-09).
+ */
+export function deliveryDelayed(buyer = null) {
+  if (actorInCreation(buyer)) return false
   return setting(DELIVERY_SETTING, 'delayed') === 'delayed'
 }
 

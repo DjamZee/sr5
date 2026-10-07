@@ -338,7 +338,7 @@ export class SR5Shop {
 
     const free = equip || SR5Shop.creationMode
     // SR5 p. 420: what has an availability is found after the search time, and waits on the buyer
-    const delayed = deliveryDelayed()
+    const delayed = deliveryDelayed(actor)
     const terms = express ? currentExpress() : null
     for (const line of resolved) {
       line.waits = lineWaits({

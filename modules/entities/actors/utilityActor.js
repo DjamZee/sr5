@@ -1224,7 +1224,7 @@ export class SR5_CharacterUtility extends Actor {
         }
         break
       case "dwarf":
-        // TODO : lifestyle cost * 1.2
+        // Lifestyle cost +20 %: lifestyle-metatype.js
         this.grantMetatypeVision(actor, "thermographic")
         for (let vector of Object.keys(SR5.propagationVectors)) {
           SR5_EntityHelpers.updateModifier(actorData.resistances.disease[vector], label, "metatype", 2)
@@ -1247,7 +1247,7 @@ export class SR5_CharacterUtility extends Actor {
         }
         break
       case "troll":
-        // TODO : lifestyle cost * 2
+        // Lifestyle cost +100 %: lifestyle-metatype.js
         this.grantMetatypeVision(actor, "thermographic")
         SR5_EntityHelpers.updateModifier(actorData.reach, label, "metatype", 1)
         SR5_EntityHelpers.updateModifier(actorData.resistances.physicalDamage, label, "metatype", 1)

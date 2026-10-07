@@ -347,7 +347,7 @@ export class SR5Item extends Item {
         break
       case "itemLifestyle":
         if (typeof itemData.options === "object") itemData.options = Object.values(itemData.options)
-        SR5_UtilityItem._handleLifeStyle(itemData)
+        SR5_UtilityItem._handleLifeStyle(itemData, this.actor)
         SR5_UtilityItem._handleItemPrice(itemData)
         break
       case "itemStorage":
