@@ -1352,6 +1352,7 @@ SR5.weaponAccessories = {
   krimePack                 : "SR5.AccessoryKrimePack",
   krimeStunONet             : "SR5.AccessoryKrimeStunONet",
   laserSight                : "SR5.AccessoryLaserSight",
+  kick                      : "SR5.AccessoryKick",
   laserWeapon               : "SR5.AccessoryLaserWeapon",
   longbarrel                : "SR5.AccessoryLongbarrel",
   meleeHardening            : "SR5.AccessoryMeleeHardening",

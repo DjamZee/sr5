@@ -127,6 +127,8 @@
 	"SR5.AccessoryKrimeStunONet_GE": "",
 	"SR5.AccessoryLaserSight": "Laser Sight",
 	"SR5.AccessoryLaserSight_GE": "",
+	"SR5.AccessoryKick": "Kick",
+	"SR5.AccessoryKick_GE": "<p>An unarmed attack made with the legs. The \"Weapons / DV\" effects aimed at \"Kick\" (Satyr Legs: +2) only add to the unarmed weapons with this trait.</p><hr><p><em>Run Faster p. 83.</em></p>",
 	"SR5.AccessoryLaserWeapon": "Laser weapon",
 	"SR5.AccessoryLaserWeapon_GE": "<p><em>The DV drops by 1 per range band beyond short range, and by 1 per level of the visibility modifier (light -1, moderate -2, heavy -3); both add up. Run & Gun p. 64.</em></p>",
 	"SR5.AccessoryLongbarrel": "Longbarrel",

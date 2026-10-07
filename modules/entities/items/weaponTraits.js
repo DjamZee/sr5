@@ -25,6 +25,19 @@ export function hasWeaponTrait(weaponData, key) {
   return accessories.some(a => a?.name === key)
 }
 
+export const KICK_TRAIT = "kick"
+
+/**
+ * Whether a "Weapons / DV" bonus of the actor (its target `details`: a melee category, or "kick") reaches this weapon.
+ * Jambes de satyre: "un modificateur de VD de +2 aux attaques par coup de pied" (Run Faster p. 83, VF): a kick is an
+ * unarmed weapon wearing the Kick trait, the other unarmed attacks do not take it.
+ */
+export function weaponDamageBonusApplies(weaponData, details) {
+  const category = weaponData?.weaponSkill?.category
+  if (details === KICK_TRAIT) return category === "unarmedCombat" && hasWeaponTrait(weaponData, KICK_TRAIT)
+  return details === category
+}
+
 /**
  * Vintage (GH3 p. 3): "not compatible with modern electronics […] Physical upgrades are possible,
  * but adding them […] costs twice the normal listed amount". Traits themselves stay free.
