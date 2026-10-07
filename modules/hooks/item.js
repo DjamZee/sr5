@@ -37,6 +37,16 @@ import {
 import {
   forgetKnowledgeAttribute
 } from "../rolls/roll-helpers/skillAttribute.js"
+import {
+  controllerOf, scheduleVehicleOwnerSync, syncsHere
+} from "../entities/actors/vehicle-owner-sync.js"
+
+// An item of a rigger added, changed or deleted (an autosoft installed on the console) reaches the copy its drones
+// carry: no updateActor is sent for it (vehicle-owner-sync.js)
+function followController(item, userId) {
+  const controller = controllerOf(item)
+  if (controller && syncsHere(game.users, game.user, userId)) scheduleVehicleOwnerSync(controller, a => SR5_CharacterUtility.updateControledVehicle(a))
+}
 
 // An item can take the vision in use away, or give it back (cybereyes, goggles) : the tokens of
 // its actor follow, served by the user who made the change.
@@ -54,6 +64,7 @@ async function moveInitiativeOf(item) {
 }
 
 export async function sr5HookCreateItem(item, options, userId) {
+  followController(item, userId)
   await sr5HookItemVision(item, userId)
   await moveInitiativeOf(item)
   //Séance H, H3 (decision of DjamZ): a player may still add an item that carries effects to a sheet (a drop from a
@@ -148,6 +159,7 @@ export function sr5HookPreUpdateItem(document, data, options, userId) {
 }
 
 export async function sr5HookUpdateItem(document, data, options, userId) {
+  followController(document, userId)
   await sr5HookItemVision(document, userId)
   //A player's client can be made to skip the refusal above: the active gamemaster is told of every write of effects by a
   //player. The option of a system write (acid, Apply to item) comes from that same client and can be forged: it no
@@ -200,6 +212,7 @@ export async function sr5HookUpdateItem(document, data, options, userId) {
 }
 
 export async function sr5HookDeleteItem(item, _options, userId) {
+  followController(item, userId)
   await sr5HookItemVision(item, userId)
   await moveInitiativeOf(item)
   if (SR5_Jammer.isJammer(item)) SR5_Jammer.refreshItem(item)

@@ -5228,7 +5228,7 @@ export class SR5_CharacterUtility extends Actor {
     let actorObject = actor.toObject(false)
     if (game.actors) {
       for (let a of game.actors) {
-        if (a.type === "actorDrone" && a.system.vehicleOwner.id === actor.id) {
+        if (a.type === "actorDrone" && a.system.vehicleOwner.id === actor.id && a.isOwner) {
           await a.update({
             "system.vehicleOwner.system": actorObject.system,
             "system.vehicleOwner.items": actorObject.items,
@@ -5239,7 +5239,8 @@ export class SR5_CharacterUtility extends Actor {
 
     if (canvas.scene) {
       for (let t of canvas.tokens.placeables) {
-        if (t.actor.type === "actorDrone" && t.actor.system.vehicleOwner.id === actor.id) {
+        //A linked token is the world actor, copied just above
+        if (t.actor?.type === "actorDrone" && !t.document.actorLink && t.actor.system.vehicleOwner.id === actor.id && t.actor.isOwner) {
           await t.actor.update({
             "system.vehicleOwner.system": actorObject.system,
             "system.vehicleOwner.items": actorObject.items,

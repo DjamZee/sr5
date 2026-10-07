@@ -2,6 +2,9 @@ import {
   SR5_CharacterUtility
 } from "../entities/actors/utilityActor.js"
 import {
+  controllerOf, scheduleVehicleOwnerSync, syncsHere
+} from "../entities/actors/vehicle-owner-sync.js"
+import {
   hasBaseDevice
 } from "../entities/actors/base-device.js"
 import {
@@ -124,9 +127,10 @@ export async function sr5HookUpdateActor(document, data, _options, userId) {
     }
   }
 
-  //Propagate owner data changes to linked drones and agents
+  //The drones' copy of their controller, by one client only (vehicle-owner-sync.js)
+  if (controllerOf(document) && syncsHere(game.users, game.user, userId)) scheduleVehicleOwnerSync(document, a => SR5_CharacterUtility.updateControledVehicle(a))
+  //Propagate owner data changes to linked agents
   if ((document.type === "actorPc" || document.type === "actorGrunt") && (document.testUserPermission(game.user, 3))) {
-    await SR5_CharacterUtility.updateControledVehicle(document)
     if (document.items.find(item => item.system.type === "agent")) await SR5_CharacterUtility.updateProgramAgent(document)
   }
 
