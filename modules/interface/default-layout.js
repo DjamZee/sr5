@@ -197,7 +197,7 @@ function _droneDefaultLayout() {
       _panel('MAIN', 2, [
         _tab('Combat', 'combat', [
           _block('droneRoll'), _block('activeSkills'),
-          _block('rangedWeapons'), _block('armors'),
+          _block('rangedWeapons'), _block('meleeWeapons'), _block('armors'),
           _block('ammunitions'), _block('externalEffects'),
         ]),
         _tab('Matrix', 'matrix', [

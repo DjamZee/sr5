@@ -43,6 +43,9 @@ import {
 import {
   isFactoryMod
 } from "../../system/vehicle-factory.js"
+import {
+  isMountedWeapon, vehicleMeleeStrength, vehicleMeleeSpeedBonus, vehicleWeaponSkill
+} from "../../system/vehicle-melee.js"
 
 // The implants whose unknown grade the gamemaster was told of, once each per session
 const unknownGradesTold = new Set()
@@ -456,6 +459,10 @@ export class SR5_UtilityItem extends Actor {
         let controlerData
         if (actor.system.vehicleOwner.id) controlerData = actor.system.vehicleOwner.system
         itemData.weaponSkill.base = 0
+        //Gunnery for a mounted weapon, the weapon's melee skill for a drone arm (SR5 p. 134, Rigger 5.0 p. 129)
+        const skillKey = vehicleWeaponSkill(itemData.category, isMountedWeapon(item.id, actor.items), itemData.weaponSkill.category)
+        const skillLabel = `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize(SR5.skills[skillKey] ?? 'SR5.SkillGunnery')})`
+        const controlerSkill = controlerData?.skills?.[skillKey]
 
         switch (actor.system.controlMode){
           case "autopilot": {
@@ -471,17 +478,17 @@ export class SR5_UtilityItem extends Actor {
             break
           }
           case "manual":
-            SR5_EntityHelpers.updateModifier(itemData.weaponSkill, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.SkillGunnery')})`, "controleMode", controlerData.skills.gunnery.test.dicePool)
+            SR5_EntityHelpers.updateModifier(itemData.weaponSkill, skillLabel, "controleMode", controlerSkill.test.dicePool)
             if (actor.system.passiveTargeting) itemData.accuracy.base = actor.system.attributes.sensor.augmented.value
             break
           case "remote":
-            SR5_EntityHelpers.updateModifier(itemData.weaponSkill, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.SkillGunnery')})`, "controleMode", controlerData.skills.gunnery.rating.value, false, true)
+            SR5_EntityHelpers.updateModifier(itemData.weaponSkill, skillLabel, "controleMode", controlerSkill.rating.value, false, true)
             SR5_EntityHelpers.updateModifier(itemData.weaponSkill, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.Logic')})`, "controleMode", controlerData.attributes.logic.augmented.value, false, true)
             //The Data Processing cap on Accuracy is set once the Accuracy is final, in _generateWeaponDamage
             if (actor.system.passiveTargeting) itemData.accuracy.base = actor.system.attributes.sensor.augmented.value
             break
           case "rigging":
-            SR5_EntityHelpers.updateModifier(itemData.weaponSkill, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.SkillGunnery')})`, "controleMode", controlerData.skills.gunnery.test.dicePool)
+            SR5_EntityHelpers.updateModifier(itemData.weaponSkill, skillLabel, "controleMode", controlerSkill.test.dicePool)
             //Jumped in, the Accuracy of a mounted weapon gains the control rig rating only; its dice go to piloting skill tests, not Gunnery (SR5 p. 268)
             if (controlerData.specialProperties.controlRig.value) SR5_EntityHelpers.updateModifier(itemData.accuracy, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)
             if (controlerData.matrix.userMode === "hotsim") SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 1)
@@ -521,9 +528,16 @@ export class SR5_UtilityItem extends Actor {
     SR5_EntityHelpers.updateDicePool(itemData.weaponSkill, 0)
   }
 
-  static _generateWeaponDamage(itemData, actor) {
+  static _generateWeaponDamage(itemData, actor, itemId) {
     if (actor) {
       if (itemData.accuracy.isPhysicalLimitBased) itemData.accuracy.base = actor.system.limits.physicalLimit.value
+      //A melee weapon of a drone: half its Body mounted, its Body in a drone arm, and its Speed (Rigger 5.0 p. 129, 182)
+      if (actor.type === "actorDrone" && itemData.category === "meleeWeapon") {
+        const attributes = actor.system.attributes
+        if (itemData.damageValue.isStrengthBased) SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.VehicleStat_BodyShort'), "linkedAttribute", vehicleMeleeStrength(attributes.body.augmented.value, isMountedWeapon(itemId, actor.items)))
+        const speed = vehicleMeleeSpeedBonus(attributes.speed.augmented.value)
+        if (speed) SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.VehicleStat_SpeedShort'), "linkedAttribute", speed)
+      }
       if (itemData.damageValue.isStrengthBased && actor.type !=="actorDrone") {
         if ((actor.system.initiatives.astralInit.isActive || itemData.isUsedAsFocus) && itemData.isLinkedToFocus) SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.Charisma'), "linkedAttribute", actor.system.attributes.charisma.augmented.value)
         else SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.Strength'), "linkedAttribute", weaponAttribute("strength", itemData, actor))
@@ -2422,7 +2436,8 @@ export class SR5_UtilityItem extends Actor {
   static _generateWeaponMountWeaponList(itemData, actor) {
     let weaponList = []
     for (let i of actor.items) {
-      if (i.type === "itemWeapon" && i.system.category === "rangedWeapon") { 
+      //A melee weapon can be mounted on a vehicle too (Rigger 5.0 p. 182)
+      if (i.type === "itemWeapon" && (i.system.category === "rangedWeapon" || i.system.category === "meleeWeapon")) {
         if (i.system.systemEffects.length) continue
         let weapon = {
           "name": i.name,

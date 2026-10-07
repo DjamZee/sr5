@@ -179,7 +179,7 @@ export class SR5Item extends Item {
         SR5_UtilityItem._handleWeaponAmmunition(itemData, owner)
         SR5_UtilityItem._generateWeaponRange(itemData, owner)
         SR5_UtilityItem._generateWeaponDicepool(item, owner)
-        SR5_UtilityItem._generateWeaponDamage(itemData, owner)
+        SR5_UtilityItem._generateWeaponDamage(itemData, owner, item.id)
         SR5_UtilityItem._handleMatrixMonitor(item)
         SR5_EntityHelpers.GenerateMonitorBoxes(itemData, 'matrix')
         SR5_UtilityItem._handleItemPrice(itemData)

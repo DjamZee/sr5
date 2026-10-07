@@ -159,7 +159,8 @@ export class SR5DroneSheet extends ActorSheetSR5 {
   async _onDropItemCreate(item) {
     switch(item.type){
       case "itemWeapon":
-        if (item.system.category !== "rangedWeapon") {
+        //A melee weapon is mounted on the vehicle or held by a drone arm (Rigger 5.0 p. 129, 182)
+        if (item.system.category !== "rangedWeapon" && item.system.category !== "meleeWeapon") {
           ui.notifications.info(game.i18n.localize('SR5.INFO_ForbiddenItemType'))
           return
         }
