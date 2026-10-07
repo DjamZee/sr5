@@ -329,6 +329,35 @@ describe('the next Combat Turn', () => {
     expect(ChatMessage.create).not.toHaveBeenCalled()
   })
 
+  it('only the drones under the status are looked at: no unmarked token has its actor built', async () => {
+    const d = ejected()
+    const built = vi.fn()
+    const quiet = {
+      actorLink: false, delta: {
+        effects: []
+      }, get actor() {
+        built()
+        return drone()
+      }
+    }
+    const marked = {
+      actorLink: false, delta: {
+        effects: d.effects
+      }, actor: d
+    }
+    game.actors = []
+    game.scenes = [{
+      tokens: [quiet, marked]
+    }]
+    await _test.onCombatRound({
+      id: 'c1', round: 3
+    }, {
+      round: 3
+    })
+    expect(built).not.toHaveBeenCalled()
+    expect(d.deleteEmbeddedDocuments).toHaveBeenCalledWith('ActiveEffect', ['e1'])
+  })
+
   it('not before: a new initiative pass of the same turn changes nothing', async () => {
     const d = ejected()
     game.actors = [d]

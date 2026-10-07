@@ -38,6 +38,19 @@ function worldDrones() {
   return [...drones.values()]
 }
 
+// The drones under the ejection's status, found without building every unlinked token's actor: the effects of one
+// live in its token's delta
+function ejectedDrones() {
+  const marked = effects => Array.from(effects ?? []).some(e => e.flags?.sr5?.ejection)
+  const drones = new Map()
+  for (const actor of game.actors ?? []) if (actor.type === "actorDrone" && marked(actor.effects)) drones.set(actor.uuid, actor)
+  for (const scene of game.scenes ?? []) for (const token of scene.tokens) {
+    if (token.actorLink || !marked(token.delta?.effects)) continue
+    if (token.actor?.type === "actorDrone") drones.set(token.actor.uuid, token.actor)
+  }
+  return [...drones.values()]
+}
+
 /** The drones a rigger is jumped into, found by his actor or his token */
 export function dronesJumpedInBy(rigger, drones = worldDrones()) {
   const ids = new Set([rigger?.id, rigger?.token?.id].filter(Boolean))
@@ -116,7 +129,7 @@ function ejectionEffects(drone) {
 async function onCombatRound(combat, changed) {
   if (!isActiveGM() || !("round" in (changed ?? {
   }))) return
-  for (const drone of worldDrones()) {
+  for (const drone of ejectedDrones()) {
     if (droneWrecked(drone.system)) continue
     const over = ejectionEffects(drone).filter(e => ejectionOver(e.flags.sr5.ejection, combat, pilotOf(drone)))
     if (over.length) await endEjection(drone, over, "SR5.INFO_AutopilotTakesOver")
@@ -126,7 +139,7 @@ async function onCombatRound(combat, changed) {
 // The encounter ends: there is no next Combat Turn to wait for, the autopilot has the vehicle
 async function onCombatDeleted(combat) {
   if (!isActiveGM()) return
-  for (const drone of worldDrones()) {
+  for (const drone of ejectedDrones()) {
     if (!(Number(pilotOf(drone)) > 0) || droneWrecked(drone.system)) continue
     const over = ejectionEffects(drone).filter(e => e.flags.sr5.ejection.combatId === combat.id)
     if (over.length) await endEjection(drone, over, "SR5.INFO_AutopilotTakesOver")
