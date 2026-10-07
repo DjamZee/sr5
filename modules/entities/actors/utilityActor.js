@@ -96,7 +96,7 @@ import {
   actsAsRcc, rccRatings, hasLocalAutosoftRunning, rccAutosoftsForDrone, autosoftFitsDrone, droneAutopilot, localAutosoftRating
 } from "./rcc.js"
 import {
-  VR_PILOTING_LIMIT_BONUS, controlRigThresholdModifier
+  VR_PILOTING_LIMIT_BONUS, controlRigThresholdModifier, dataProcessingCapModifier
 } from "../../system/rigging-rules.js"
 
 
@@ -2653,10 +2653,9 @@ export class SR5_CharacterUtility extends Actor {
           let mod = controlerData.matrix.attributes.dataProcessing.value - attributes.sensor.augmented.value
           SR5_EntityHelpers.updateModifier(skills.perception.limit, game.i18n.localize('SR5.DataProcessingLimit'), actorData.controlMode, mod)
         }
-        //TODO : sneaking is equal to lesser value between pilotSkill and Sneaking(pilotSkill)
-        if (actorData.pilotSkill) {
-          SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName}`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
-        }
+        //Through a controlled device: the skill and the attribute normally used, Sneaking + Agility (SR5 p. 239, arbitrage de DjamZ du 07/10)
+        SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.SkillSneaking')})`, actorData.controlMode, controlerData.skills.sneaking.rating.value)
+        SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.Agility')})`, actorData.controlMode, controlerData.attributes.agility.augmented.value)
         SR5_EntityHelpers.updateModifier(skills.sneaking.limit, handlingName, "linkedAttribute", handlingMode)
         if (controlerData.matrix.attributes.dataProcessing.value < handlingMode) {
           let mod = controlerData.matrix.attributes.dataProcessing.value - handlingMode
@@ -2682,10 +2681,9 @@ export class SR5_CharacterUtility extends Actor {
         SR5_EntityHelpers.updateModifier(skills.perception.limit, game.i18n.localize('SR5.VehicleStat_SensorShort'), "linkedAttribute", attributes.sensor.augmented.value)
         //Jumped in, the limits based on Sensor and Handling gain the control rig rating (SR5 p. 268 and errata)
         if (controlerData.specialProperties.controlRig.value) SR5_EntityHelpers.updateModifier(skills.perception.limit, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)
-        //TODO : sneaking is equal to lesser value between pilotSkill and Sneaking(pilotSkill)
-        if (actorData.pilotSkill) {
-          SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName}`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
-        }
+        //Jumped in: Sneaking + Intuition [Handling] (SR5 p. 272)
+        SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.SkillSneaking')})`, actorData.controlMode, controlerData.skills.sneaking.rating.value)
+        SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.Intuition')})`, actorData.controlMode, controlerData.attributes.intuition.augmented.value)
         SR5_EntityHelpers.updateModifier(skills.sneaking.limit, handlingName, "linkedAttribute", handlingMode)
         if (controlerData.matrix.userMode === "hotsim") {
           SR5_EntityHelpers.updateModifier(skills.perception.test, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 1)
@@ -2767,6 +2765,17 @@ export class SR5_CharacterUtility extends Actor {
     //update vehicle Actions Value
     SR5_EntityHelpers.updateDicePool(vehicleTest.test, 0)
     SR5_EntityHelpers.updateValue(vehicleTest.limit, 0)
+    SR5_CharacterUtility.capRemoteLimit(actor, vehicleTest.limit)
+  }
+
+  //Remote control: the limit is the lower of the normal limit and the controller's Data Processing (SR5 p. 239-240)
+  static capRemoteLimit(actor, limit) {
+    let actorData = actor.system
+    if (actorData.controlMode !== "remote" || !actorData.vehicleOwner.id) return
+    let mod = dataProcessingCapModifier(limit.value, actorData.vehicleOwner.system.matrix.attributes.dataProcessing.value)
+    if (!mod) return
+    SR5_EntityHelpers.updateModifier(limit, game.i18n.localize('SR5.DataProcessingLimit'), actorData.controlMode, mod)
+    SR5_EntityHelpers.updateValue(limit, 0)
   }
 
   //
@@ -2818,6 +2827,7 @@ export class SR5_CharacterUtility extends Actor {
     //update vehicle Actions Value
     SR5_EntityHelpers.updateDicePool(rammingTest.test, 0)
     SR5_EntityHelpers.updateValue(rammingTest.limit, 0)
+    SR5_CharacterUtility.capRemoteLimit(actor, rammingTest.limit)
   }
 
   // Vehicle Slots Calculations

@@ -31,6 +31,9 @@ import {
 import {
   rccAutosoftsForDrone, droneAutopilot, localAutosoftRating
 } from "../actors/rcc.js"
+import {
+  dataProcessingCapModifier
+} from "../../system/rigging-rules.js"
 
 // The implants whose unknown grade the gamemaster was told of, once each per session
 const unknownGradesTold = new Set()
@@ -462,10 +465,8 @@ export class SR5_UtilityItem extends Actor {
           case "remote":
             SR5_EntityHelpers.updateModifier(itemData.weaponSkill, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.SkillGunnery')})`, "controleMode", controlerData.skills.gunnery.rating.value, false, true)
             SR5_EntityHelpers.updateModifier(itemData.weaponSkill, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.Logic')})`, "controleMode", controlerData.attributes.logic.augmented.value, false, true)
-            if (actor.system.passiveTargeting) {
-              if (actor.system.attributes.sensor.augmented.value > controlerData.matrix.attributes.dataProcessing.value) itemData.accuracy.base = controlerData.matrix.attributes.dataProcessing.value
-              else itemData.accuracy.base = actor.system.attributes.sensor.augmented.value
-            }
+            //The Data Processing cap on Accuracy is set once the Accuracy is final, in _generateWeaponDamage
+            if (actor.system.passiveTargeting) itemData.accuracy.base = actor.system.attributes.sensor.augmented.value
             break
           case "rigging":
             SR5_EntityHelpers.updateModifier(itemData.weaponSkill, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.SkillGunnery')})`, "controleMode", controlerData.skills.gunnery.test.dicePool)
@@ -575,6 +576,14 @@ export class SR5_UtilityItem extends Actor {
     SR5_EntityHelpers.updateValue(itemData.armorPenetration)
     SR5_EntityHelpers.updateValue(itemData.recoilCompensation)
     SR5_EntityHelpers.updateValue(itemData.accuracy)
+    //Remote control: Accuracy capped by the controller's Data Processing (SR5 p. 239-240)
+    if (actor?.type === "actorDrone" && actor.system.controlMode === "remote" && actor.system.vehicleOwner.id) {
+      const mod = dataProcessingCapModifier(itemData.accuracy.value, actor.system.vehicleOwner.system.matrix.attributes.dataProcessing.value)
+      if (mod) {
+        SR5_EntityHelpers.updateModifier(itemData.accuracy, game.i18n.localize('SR5.DataProcessingLimit'), "controleMode", mod)
+        SR5_EntityHelpers.updateValue(itemData.accuracy)
+      }
+    }
   }
 
   // Apply effects from a linked itemAmmunitionType (custom ammo)

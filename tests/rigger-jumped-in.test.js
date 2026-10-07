@@ -73,6 +73,14 @@ function drone({
                 dicePool: 7
               }
             },
+            sneaking: {
+              rating: {
+                value: 4
+              }
+            },
+          },
+          attributes: {
+            agility: rated(5), intuition: rated(3)
           },
         },
       },
