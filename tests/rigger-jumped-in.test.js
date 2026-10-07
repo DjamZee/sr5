@@ -234,7 +234,8 @@ describe("jumped in control rig dice", () => {
     SR5_CharacterUtility.updateDefenses(actor)
     expect(rigDice(actor.system.defenses.defend)).toBe(0)
   })
-  it("a mounted weapon (Gunnery) gets none, only Accuracy", async () => {
+  // Gunnery is a vehicle skill (SR5 p. 149, « Compétences de pilotage »): it gets the dice too
+  it("a mounted weapon (Gunnery) gets +2 dice and +2 Accuracy", async () => {
     const {
       SR5_UtilityItem
     } = await import("../modules/entities/items/utilityItem.js")
@@ -252,7 +253,7 @@ describe("jumped in control rig dice", () => {
       }
     }
     SR5_UtilityItem._generateWeaponDicepool(item, actor)
-    expect(rigDice(item.system.weaponSkill)).toBe(0)
+    expect(rigDice(item.system.weaponSkill)).toBe(2)
     expect(rigDice(item.system.accuracy)).toBe(2)
   })
   it("not jumped in: no dice", () => {

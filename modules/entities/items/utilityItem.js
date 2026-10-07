@@ -489,8 +489,11 @@ export class SR5_UtilityItem extends Actor {
             break
           case "rigging":
             SR5_EntityHelpers.updateModifier(itemData.weaponSkill, skillLabel, "controleMode", controlerSkill.test.dicePool)
-            //Jumped in, the Accuracy of a mounted weapon gains the control rig rating only; its dice go to piloting skill tests, not Gunnery (SR5 p. 268)
-            if (controlerData.specialProperties.controlRig.value) SR5_EntityHelpers.updateModifier(itemData.accuracy, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)
+            //Jumped in, the control rig rating adds to piloting skill tests, Gunnery among them (SR5 p. 149, 268, 455), and to the Accuracy of a mounted weapon (SR5 p. 268)
+            if (controlerData.specialProperties.controlRig.value) {
+              SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)
+              SR5_EntityHelpers.updateModifier(itemData.accuracy, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)
+            }
             if (controlerData.matrix.userMode === "hotsim") SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 1)
             if (actor.system.passiveTargeting) itemData.accuracy.base = actor.system.attributes.sensor.augmented.value
             SR5_EntityHelpers.updateValue(itemData.accuracy)
