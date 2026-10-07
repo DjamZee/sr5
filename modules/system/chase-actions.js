@@ -33,19 +33,16 @@ export function optimalSpeedModifier(speed, optimal) {
 }
 
 /**
- * How many range steps an opposed Rigger 5.0 action wins (R5 p. 177-179): the initiator must reach the threshold and
- * beat the target's hits; the steps are its hits over the higher of the two.
- * The book says « test opposé » and « seuil » without saying how they combine: this reading is a proposal waiting for
- * DjamZ (Q1 of 07/10), kept in this one place.
+ * How many net hits an opposed Rigger 5.0 action wins (R5 p. 177-179): the initiator's hits less the target's, then
+ * those beyond the threshold.
+ * The book says « test opposé » and « seuil » without saying how they combine, in French (p. 177) as in English
+ * (p. 174-175): arbitrage de DjamZ (08/10), net hits less the threshold, kept in this one place.
  */
 export function opposedNet({
   hits, threshold = 0, opposingHits = 0
 }) {
-  const h = Math.max(0, Number(hits) || 0)
-  const t = Math.max(0, Number(threshold) || 0)
-  const o = Math.max(0, Number(opposingHits) || 0)
-  if (h < t || h <= o) return 0
-  return h - Math.max(t, o)
+  const net = Math.max(0, Number(hits) || 0) - Math.max(0, Number(opposingHits) || 0)
+  return Math.max(0, net - Math.max(0, Number(threshold) || 0))
 }
 
 /** Hits over a threshold (no opponent): 0 when it is missed */
@@ -53,12 +50,12 @@ export function excessHits(hits, threshold = 0) {
   return Math.max(0, (Number(hits) || 0) - Math.max(0, Number(threshold) || 0))
 }
 
-/** The initiator wins an opposed test: more hits than the target, and its threshold reached */
+/** The initiator wins an opposed test: more hits than the target, its net hits reaching the threshold (as opposedNet) */
 export function winsOpposed({
   hits, threshold = 0, opposingHits = 0
 }) {
-  const h = Number(hits) || 0
-  return h >= (Number(threshold) || 0) && h > (Number(opposingHits) || 0)
+  const net = (Number(hits) || 0) - (Number(opposingHits) || 0)
+  return net > 0 && net >= (Number(threshold) || 0)
 }
 
 // Catch-Up / Break Away: the pursuer closes in, the pursued opens the gap
@@ -438,9 +435,14 @@ registerChaseAction("sowChaos", {
   rules: "r5", page: "R5 p. 179", oncePerTurn: true,
   resolve: r => {
     if (r.hits < r.threshold) return noEffect(false)
+    const net = excessHits(r.hits, r.threshold)
+    if (!r.nearOpponents?.length) return noEffect(true, net, [{
+      key: "SR5.CHASE_NoteNobodyNear", data: {
+      }
+    }])
     return {
-      success: true, net: excessHits(r.hits, r.threshold), notes: [], effects: [{
-        type: "turnTerrain", ids: r.nearOpponents ?? [], delta: 1
+      success: true, net, notes: [], effects: [{
+        type: "turnTerrain", ids: r.nearOpponents, delta: 1
       }]
     }
   },
@@ -500,6 +502,10 @@ const clearPath = registerChaseAction("clearPath", {
       }
     }]
     if (r.hits < r.threshold || !net) return noEffect(r.hits >= r.threshold, net, notes)
+    if (!r.nearAllies?.length) return noEffect(true, net, [...notes, {
+      key: "SR5.CHASE_NoteNobodyNear", data: {
+      }
+    }])
     return {
       success: true, net, notes, effects: [{
         type: "turnTerrain", ids: r.nearAllies ?? [], delta: -net

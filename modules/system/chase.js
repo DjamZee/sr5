@@ -552,8 +552,13 @@ export class SR5Chase {
   // player whose vehicle just entered a new chase sees it open
   static #changed() {
     const state = readState()
-    if (isActiveGM()) syncOutOfControlEffects(state).then(() => syncHandlingEffects(state))
-      .catch(e => console.error("SR5 | chase effects", e))
+    // One sync at a time, each on the register as it is when its turn comes: an action writes the register several
+    // times in a row, and two syncs running together each created the same effect
+    if (isActiveGM()) SR5Chase.#syncing = SR5Chase.#syncing.then(async () => {
+      const latest = readState()
+      await syncOutOfControlEffects(latest)
+      await syncHandlingEffects(latest)
+    }).catch(e => console.error("SR5 | chase effects", e))
     const app = foundry.applications.instances.get(APP_ID)
     if (app?.rendered) app.render()
     else if (!game.user.isGM && state.active && state.id !== SR5Chase.#seen && involves(state)) {
@@ -564,6 +569,7 @@ export class SR5Chase {
   }
 
   static #seen = ""
+  static #syncing = Promise.resolve()
 }
 
 /**
@@ -729,7 +735,8 @@ export class SR5ChaseApp extends foundry.applications.api.HandlebarsApplicationM
   }
 
   static async #act(event, target) {
-    const row = target.closest("[data-vehicle]")
+    // The row of the action, not the button: it carries data-vehicle too
+    const row = target.closest(".sr-chase-act")
     const key = row?.querySelector("[name=chaseAction]")?.value
     const targetId = row?.querySelector("[name=chaseTarget]")?.value ?? ""
     if (!key) return

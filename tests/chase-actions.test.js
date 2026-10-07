@@ -117,14 +117,14 @@ describe('thresholds', () => {
   })
 })
 
-describe('opposed tests with a threshold (proposal, Q1)', () => {
-  it('steps = hits over the higher of the threshold and the target\'s hits', () => {
+describe('opposed tests with a threshold (arbitrage de DjamZ, 08/10)', () => {
+  it('net hits (the initiator\'s less the target\'s) beyond the threshold', () => {
     expect(opposedNet({
       hits: 6, threshold: 2, opposingHits: 3
-    })).toBe(3)
+    })).toBe(1)
     expect(opposedNet({
       hits: 6, threshold: 4, opposingHits: 1
-    })).toBe(2)
+    })).toBe(1)
     expect(opposedNet({
       hits: 3, threshold: 4, opposingHits: 0
     })).toBe(0)
@@ -202,7 +202,7 @@ describe('Catch-Up / Break Away', () => {
 
   it('Rigger 5.0: opposed, the steps follow the proposal of Q1', () => {
     const out = resolveAction('catchUp', {
-      ...ids, hits: 5, threshold: 2, opposingHits: 3, acceleration: 3, initiatorRole: 'pursuer', range: 'long'
+      ...ids, hits: 7, threshold: 2, opposingHits: 3, acceleration: 3, initiatorRole: 'pursuer', range: 'long'
     })
     expect(out.effects).toEqual([{
       type: 'shift', a: 'A', b: 'B', steps: -2
@@ -278,7 +278,7 @@ describe('the other actions', () => {
     expect(resolveAction('pit', {
       ...ids, hits: 5, opposingHits: 2, threshold: 1
     }).effects).toEqual([{
-      type: 'handling', id: 'B', delta: -3
+      type: 'handling', id: 'B', delta: -2
     }])
     expect(resolveAction('pit', {
       ...ids, hits: 1, opposingHits: 3, threshold: 1, speed: 4
@@ -343,6 +343,17 @@ describe('the other actions', () => {
       type: 'turnTerrain', ids: ['C'], delta: -2
     }])
     expect(path.notes[0].data.dv).toBe(7)
+  })
+
+  it('nobody under 100 m: the terrain stays, the card says why', () => {
+    const chaos = resolveAction('sowChaos', {
+      ...ids, hits: 3, threshold: 2, nearOpponents: []
+    })
+    expect(chaos.effects).toEqual([])
+    expect(chaos.notes[0].key).toBe('SR5.CHASE_NoteNobodyNear')
+    expect(resolveAction('clearPath', {
+      ...ids, hits: 4, threshold: 2, body: 9, terrain: 2, nearAllies: []
+    }).effects).toEqual([])
   })
 
   it('Falling Leaf: out of the chase at Speed 0; a glitch, out of control and a Handling test (R5 p. 181)', () => {
