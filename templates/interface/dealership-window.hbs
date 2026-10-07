@@ -1,0 +1,105 @@
+{{!-- The dealership (lot R9 of the rigging plan): data from interface/dealership-window.js --}}
+<div class="sr-dealer">
+	<header class="sr-dealer-bar">
+		<label>{{localize 'SR5.ShopBuyer'}}
+			<select data-dealer-buyer>
+				<option value="">—</option>
+				{{#each buyers}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}
+			</select>
+		</label>
+		{{#if buyer}}{{#unless free}}<span>{{localize 'SR5.DealerBalance' balance=balanceLabel}}</span>{{/unless}}{{/if}}
+		{{#if isGM}}<label class="sr-dealer-equip"><input type="checkbox" data-dealer-equip {{#if equip}}checked{{/if}}> {{localize 'SR5.DealerEquipMode'}}</label>{{/if}}
+	</header>
+
+	<div class="sr-dealer-body">
+		<section class="sr-dealer-col">
+			<h3>{{localize 'SR5.DealerModels'}}</h3>
+			<input type="search" placeholder="{{localize 'SR5.Search'}}" value="{{modelSearch}}" data-dealer-search="_modelSearch" data-target=".sr-dealer-models">
+			{{#if loading}}<p class="hint">{{loadingLabel}}</p>{{/if}}
+			<ul class="sr-dealer-models sr-dealer-list">
+				{{#each models}}
+				<li class="{{#if selected}}is-selected{{/if}}" data-uuid="{{uuid}}" data-search="{{search}}" data-action="selectModel">
+					<img src="{{img}}" alt="">
+					<span class="sr-dealer-name">{{name}}</span>
+					<span class="sr-dealer-figures">{{price}} · {{localize 'SR5.AvailabilityShort'}} {{availability}}</span>
+				</li>
+				{{/each}}
+			</ul>
+		</section>
+
+		<section class="sr-dealer-center sr5-workshop">
+			{{#if build}}
+			<h2><a data-action="viewItem" data-uuid="{{build.uuid}}">{{build.name}}</a></h2>
+			<div class="sr5-workshop-head">
+				<div>{{#each build.gaugesLeft}}{{> systems/sr5/templates/interface/dealership-gauge.hbs}}{{/each}}</div>
+				<div class="sr5-workshop-image"><img src="{{build.img}}" alt="{{build.name}}"></div>
+				<div>{{#each build.gaugesRight}}{{> systems/sr5/templates/interface/dealership-gauge.hbs}}{{/each}}</div>
+			</div>
+			{{#if build.over}}<p class="sr-dealer-warn">{{localize 'SR5.DealerOverSlots'}}</p>{{/if}}
+
+			<ul class="sr-dealer-build sr-dealer-list">
+				{{#each build.own}}
+				<li class="is-own">
+					<span class="sr-dealer-name">{{name}} <small>({{#if factory}}{{localize 'SR5.VehicleModFactory'}}{{else}}{{localize 'SR5.DealerOwnMod'}}{{/if}})</small></span>
+					<span>{{category}} · {{slots}}</span><span>{{price}}</span><span></span>
+				</li>
+				{{/each}}
+				{{#each build.added}}
+				<li data-key="{{key}}" data-uuid="{{uuid}}">
+					<span class="sr-dealer-name"><a data-action="viewItem">{{name}}</a>
+						<small>({{#if fitted}}{{localize 'SR5.DealerFitted'}}{{else}}{{localize 'SR5.VehicleModPending'}}{{/if}})</small></span>
+					<span data-tooltip="{{localize 'SR5.Threshold'}} {{threshold}}, {{tools}}">{{category}} · {{slots}}</span>
+					<span>{{price}}</span>
+					<span class="sr-dealer-actions">
+						{{#if @root.isGM}}<a data-action="toggleFit" data-tooltip="{{#if fitted}}{{localize 'SR5.DealerUnfit'}}{{else}}{{localize 'SR5.VehicleModWorkshopFit'}}{{/if}}"><em class="fas {{#if fitted}}fa-screwdriver{{else}}fa-wrench{{/if}}"></em></a>{{/if}}
+						<a data-action="removeMod" data-tooltip="{{localize 'SR5.DealerRemoveMod'}}"><em class="fas fa-trash"></em></a>
+					</span>
+				</li>
+				{{else}}
+				<li class="hint">{{localize 'SR5.DealerAddHint'}}</li>
+				{{/each}}
+			</ul>
+
+			<table class="sr-dealer-price">
+				<tr><td>{{localize 'SR5.DealerVehiclePrice'}}{{#if build.dealer}} <small>({{localize 'SR5.DealerDiscount' price=build.vehicleListLabel}})</small>{{/if}}</td><td>{{build.vehicleLabel}}</td></tr>
+				<tr><td>{{localize 'SR5.DealerModsPrice'}}</td><td>{{build.modsLabel}}</td></tr>
+				{{#if build.extraLabel}}<tr><td>{{localize 'SR5.ShopOrderExpress'}}</td><td>{{build.extraLabel}}</td></tr>{{/if}}
+				<tr class="sr-dealer-total"><td>{{localize 'SR5.DealerTotal'}}</td><td>{{build.totalLabel}}</td></tr>
+				<tr><td>{{localize 'SR5.DealerAvailability'}}</td><td>{{build.availability}}</td></tr>
+				{{#if build.afterLabel}}<tr class="{{#if build.short}}sr-dealer-warn{{/if}}"><td>{{localize 'SR5.DealerAfter'}}</td><td>{{build.afterLabel}}</td></tr>{{/if}}
+			</table>
+			{{#if build.waits}}<p class="hint">{{localize 'SR5.DealerWaits'}}</p>
+			{{#if expressOffered}}<label><input type="checkbox" data-dealer-express {{#if express}}checked{{/if}}> {{localize 'SR5.ShopOrderExpress'}}</label>{{/if}}{{/if}}
+			<p class="hint">{{localize 'SR5.DealerInstallHint'}}</p>
+			<div class="sr-dealer-buttons">
+				<button type="button" data-action="clearBuild"><em class="fas fa-rotate-left"></em> {{localize 'SR5.DealerClear'}}</button>
+				<button type="button" data-action="buy" {{#unless buyer}}disabled{{/unless}}><em class="fas fa-cart-shopping"></em> {{build.buyLabel}}</button>
+			</div>
+			{{else}}
+			<p class="hint sr-dealer-empty">{{localize 'SR5.DealerChooseHint'}}</p>
+			{{/if}}
+		</section>
+
+		<section class="sr-dealer-col">
+			<h3>{{localize 'SR5.DealerMods'}}</h3>
+			{{#if build}}
+			<select data-dealer-category>
+				<option value="">{{localize 'SR5.DealerAllCategories'}}</option>
+				{{#each categories}}<option value="{{key}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+			</select>
+			<input type="search" placeholder="{{localize 'SR5.Search'}}" value="{{modSearch}}" data-dealer-search="_modSearch" data-target=".sr-dealer-catalog">
+			<ul class="sr-dealer-catalog sr-dealer-list">
+				{{#each catalog}}
+				<li data-uuid="{{uuid}}" data-search="{{search}}" data-action="addMod" data-tooltip="{{localize 'SR5.DealerAddMod'}}">
+					<img src="{{img}}" alt="">
+					<span class="sr-dealer-name">{{name}}</span>
+					<span class="sr-dealer-figures">{{category}} · {{localize 'SR5.DealerBasePrice' price=price}} · {{localize 'SR5.AvailabilityShort'}} {{availability}}</span>
+				</li>
+				{{/each}}
+			</ul>
+			{{else}}
+			<p class="hint">{{localize 'SR5.DealerChooseHint'}}</p>
+			{{/if}}
+		</section>
+	</div>
+</div>

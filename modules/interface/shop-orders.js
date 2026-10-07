@@ -15,6 +15,9 @@ import {
 import {
   screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED
 } from '../system/implant-essence.js'
+import {
+  dealerPrice
+} from '../system/rigger-qualities.js'
 
 export const ORDERS_FLAG = 'shopOrders'
 export const DELIVERY_SETTING = 'sr5ShopDelivery'
@@ -420,6 +423,40 @@ export function surchargedUnit(unit, percent) {
 
 /* -------------------------------------------- */
 
+/** The mods of a dealership order, each read again from its shelf and priced on the vehicle; null, the gamemaster
+ *  told, when one is gone: the order stays paid on the sheet, for him to cancel */
+async function orderMods(vehicle, order) {
+  const {
+    pricedModData
+  } = await import('../system/vehicle-workshop-apply.js')
+  const mods = []
+  for (const uuid of order.mods ?? []) {
+    let mod = null
+    try {
+      mod = await fromUuid(uuid)
+    } catch {
+      mod = null
+    }
+    if (mod?.type !== 'itemVehicleMod') {
+      ui.notifications.warn(game.i18n.format('SR5.WARN_ShopItemGone', {
+        name: `${order.name} (${uuid})`
+      }))
+      return null
+    }
+    mods.push(pricedModData(mod, vehicle))
+  }
+  return mods
+}
+
+async function assembledOrder(vehicleData, vehicle, order) {
+  const mods = await orderMods(vehicle, order)
+  if (!mods) return null
+  const {
+    assembledVehicleData
+  } = await import('../system/vehicle-dealership.js')
+  return assembledVehicleData(vehicleData, mods, foundry.utils.randomID)
+}
+
 /** The gamemaster hands an order over: the goods reach the sheet, the order goes. */
 export async function deliverOrder(actor, id) {
   if (!game.user.isGM || !actor) return false
@@ -447,6 +484,12 @@ export async function deliverOrder(actor, id) {
   // Système sensible taken since the order (SR5 p. 89): the gamemaster decides before the order goes. Declined,
   // the order stays on the sheet, paid: he cancels it to refund the buyer, nothing is lost without a word
   const payload = SR5Shop._itemPayload(source, order.quantity, order.grade)
+  // A build of the dealership: the vehicle comes with its mods aboard, waiting to be installed (lot R9)
+  if (order.mods?.length) {
+    const built = await assembledOrder(payload[0], source, order)
+    if (!built) return false
+    payload[0] = built
+  }
   const {
     refused, confirmed
   } = await screenRejectedImplants(actor, payload.slice(0, 1), {
@@ -537,8 +580,10 @@ export function debitIsFresh(createdTime, now) {
   return Number.isFinite(created) && created > 0 && now - created >= -5000 && now - created <= DEBIT_FRESHNESS
 }
 
-/** What an order costs at the catalogue, read on the GM's browser: null when its item is gone. */
-async function catalogueCost(order) {
+/** What an order costs at the catalogue, read on the GM's browser: null when its item is gone. The buyer's Relation
+ *  avec un concessionnaire takes its 10 % off a vehicle, as at the till (Rigger 5.0 p. 37); a dealership order adds
+ *  its mods, priced on the vehicle (lot R9). Without them an honest purchase stayed out of the ledger */
+async function catalogueCost(order, buyer = null) {
   let source = null
   try {
     source = await fromUuid(order?.uuid ?? '')
@@ -549,8 +594,18 @@ async function catalogueCost(order) {
   const {
     SR5Shop
   } = await import('./shop.js')
-  const base = SR5Shop.gradedPrice(source.system, order.grade ?? null) * Math.max(1, Math.floor(Number(order.quantity) || 1))
-  return base + (order.express ? expressCost(base, currentExpress()) : 0)
+  const quantity = Math.max(1, Math.floor(Number(order.quantity) || 1))
+  const unit = SR5Shop.gradedPrice(source.system, order.grade ?? null)
+  let base = unit * quantity
+  let paid = dealerPrice(unit, source, buyer?.items ?? []) * quantity
+  if (order.mods?.length) {
+    const mods = await orderMods(source, order)
+    if (!mods) return null
+    const modsTotal = mods.reduce((sum, mod) => sum + mod.price, 0)
+    base += modsTotal
+    paid += modsTotal
+  }
+  return paid + (order.express ? expressCost(base, currentExpress()) : 0)
 }
 
 /**
@@ -576,7 +631,7 @@ export async function registerOrders(actor, ids, transactionId, requester) {
   if (!orders.length) return false
   const priced = []
   for (const order of orders) {
-    const paid = await catalogueCost(order)
+    const paid = await catalogueCost(order, actor)
     if (paid === null) return false
     priced.push({
       order, paid
