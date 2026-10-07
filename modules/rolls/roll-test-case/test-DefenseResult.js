@@ -26,7 +26,7 @@ import {
   applyReagentDrainReduction
 } from "../../system/reagents.js"
 import {
-  streamOf, streamSpriteFadingReduction, reducedFading
+  streamOf, compilingFading
 } from "../../entities/actors/technomancer-streams.js"
 
 export default async function defenseResultInfo(cardData, type){
@@ -57,10 +57,10 @@ export default async function defenseResultInfo(cardData, type){
       label = game.i18n.localize("SR5.CompileSprite")
       labelEnd = game.i18n.localize("SR5.FailedCompiling")
       key = "compileSprite"
-      //Technoshaman: compiling costs 2 less fading, never under 2 (Kill Code p. 102, SR5 p. 254)
+      //Technoshaman: compiling costs 2 less fading, down to 1, and a major form doubles it (Kill Code p. 102, SR5 p. 254)
       {
         const compiler = prevData?.owner?.actorId ? SR5_EntityHelpers.getRealActorFromID(prevData.owner.actorId, prevData.actorUuids) : null
-        cardData.matrix.fading.value = reducedFading(cardData.roll.hits * 2, streamSpriteFadingReduction(streamOf(compiler)))
+        cardData.matrix.fading.value = compilingFading(cardData.roll.hits, streamOf(compiler), cardData.matrix.majorForm)
       }
       cardData.chatCard.buttons.fadingResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "fading", `${game.i18n.localize("SR5.ResistFading")} (${cardData.matrix.fading.value})`)
       break

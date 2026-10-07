@@ -8,7 +8,7 @@ import {
   SR5_MiscellaneousHelpers 
 } from "../roll-helpers/miscellaneous.js"
 import {
-  streamOf, streamSpriteDice
+  streamOf, streamSpriteDice, mayCompileMajorForm
 } from "../../entities/actors/technomancer-streams.js"
 
 export default async function resonanceAction(rollData, rollKey, actor){
@@ -43,6 +43,11 @@ export default async function resonanceAction(rollData, rollKey, actor){
   //SR5 p. 252: only compiling asks the sprite level (Resonance by default); the level becomes the limit,
   //so the other actions keep their own (Decompile [Social], Kill Complex Form [Mental])
   if (rollKey === "compileSprite") rollData.matrix.level = actor.system.specialAttributes.resonance.augmented.value
+  //Kill Code p. 102: a Technoshaman may compile a sprite in its major form, the dialog offers it
+  if (rollKey === "compileSprite") {
+    rollData.matrix.canMajorForm = mayCompileMajorForm(streamOf(actor))
+    rollData.matrix.majorForm = false
+  }
   //Without a targeted sprite, its level is unknown: the Resonance stays the limit, as before
   if (rollKey === "registerSprite") rollData.matrix.level = actor.system.specialAttributes.resonance.augmented.value
   rollData.dialogSwitch.specialization = true
