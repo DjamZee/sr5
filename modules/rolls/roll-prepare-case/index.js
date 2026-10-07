@@ -197,6 +197,9 @@ export {
   default as vehicleRepair
 } from "./rollData-VehicleRepair.js"
 export {
+  default as vehicleModInstall
+} from "./rollData-VehicleModInstall.js"
+export {
   default as weapon
 } from "./rollData-Weapon.js"
 export {

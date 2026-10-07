@@ -2316,7 +2316,8 @@ export class SR5_UtilityItem extends Actor {
   static _handleVehicle(itemData) {
     for (let vehicleMod of itemData.vehiclesMod){
       //A factory mod is already in the vehicle's price (Rigger 5.0 p. 156)
-      if (isFactoryMod(vehicleMod)) continue
+      //Taken off in the workshop, a factory mod stays paid with it (vehicle-workshop.js)
+      if (isFactoryMod(vehicleMod) || vehicleMod.flags?.sr5?.wasFactory === true) continue
       SR5_EntityHelpers.updateModifier(itemData.price, `${vehicleMod.name}`, 'vehicleMod', vehicleMod.system.price.value)
     }
 

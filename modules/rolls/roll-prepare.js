@@ -332,6 +332,10 @@ export class SR5_PrepareRollTest {
       case "vehicleRepair":
         rollData = await SR5_GetRollData.vehicleRepair(rollData, actor, rollKey)
         break
+      //Rigger 5.0 p. 153-154: the options come from the workshop of the drone sheet, in place of a roll key
+      case "vehicleModInstall":
+        rollData = await SR5_GetRollData.vehicleModInstall(rollData, actor, rollKey)
+        break
       case "autopilotUnforeseen":
         rollData = SR5_GetRollData.autopilotUnforeseen(rollData, actor, chatData)
         break

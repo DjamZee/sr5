@@ -62,7 +62,7 @@
     {{/if}}
 
     <!-- SPECIFIC SKILL TEST -->
-    {{#if (or (eq test.type 'skill') (eq test.type 'skillDicePool') (eq test.type 'vehicleRepair'))}}
+    {{#if (or (eq test.type 'skill') (eq test.type 'skillDicePool') (eq test.type 'vehicleRepair') (eq test.type 'vehicleModInstall'))}}
         <!-- PERCEPTION -->
         {{#if (eq test.typeSub "perception")}}
             {{> systems/sr5/templates/rolls/rollDialogPartial/perceptionType.hbs}}
