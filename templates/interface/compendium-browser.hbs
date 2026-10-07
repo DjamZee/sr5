@@ -60,6 +60,9 @@
       <button type="button" class="sr-browser-open-shop" data-action="openShop">
         <i class="fas fa-sm fa-cart-shopping"></i> {{localize 'SR5.ShopOpen'}}
       </button>
+      <button type="button" class="sr-browser-table-action" data-action="drawAtRandom" data-tooltip="SR5.CompendiumDrawBrowserHint">
+        <i class="fas fa-sm fa-dice"></i> {{localize 'SR5.CompendiumDraw'}}
+      </button>
       <div class="sr-browser-sort">
         <a data-sort-key="name" class="{{#if (eq sortKey 'name')}}active{{/if}}">
           {{localize 'SR5.Name'}}

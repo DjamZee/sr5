@@ -7,6 +7,10 @@
 // Neither hands anything over, so there is nothing for the game master to
 // review: a draw made again is a new card, reviewed like any other.
 
+import {
+  sr5DrawEntries, sr5EntriesOfSource
+} from "./table-from-compendium.js"
+
 /**
  * The roll mode a card was drawn in, read back from whom it is shown to.
  *
@@ -70,11 +74,17 @@ export function sr5CanRerollDraw(message, user = game.user) {
 }
 
 /**
- * What "Relancer" draws from, or null when the card cannot be drawn again.
+ * What "Relancer" draws from, or null when the card cannot be drawn again:
+ * a table, or the compendium entries a card drawn from a compendium was
+ * drawn among (table-from-compendium.js).
  * @param {ChatMessage} message
- * @returns {{uuid: string}|null}
+ * @returns {{uuid: string}|{drawn: object}|null}
  */
 function rerollSource(message) {
+  const drawn = message.getFlag("sr5", "tableDrawSource")
+  if (drawn?.kind) return {
+    drawn
+  }
   const uuid = sr5DrawTableUuid(message)
   return uuid ? {
     uuid
@@ -101,6 +111,7 @@ function mayDraw(table) {
  */
 async function reroll(message) {
   const source = rerollSource(message)
+  if (source?.drawn) return rerollEntries(message, source.drawn)
   const table = source ? await fromUuid(source.uuid).catch(() => null) : null
   if (!table) {
     ui.notifications.warn(game.i18n.localize("SR5.TableRerollGone"))
@@ -112,6 +123,26 @@ async function reroll(message) {
   }
   await table.draw({
     rollMode: sr5RollModeOf(message)
+  })
+}
+
+/**
+ * Draw again among the compendium entries a card was drawn among, as many
+ * times. They are read anew: an entry added since can come up.
+ * @param {ChatMessage} message
+ * @param {object} drawn  flags.sr5.tableDrawSource
+ */
+async function rerollEntries(message, drawn) {
+  const entries = await sr5EntriesOfSource(drawn)
+  if (!entries) {
+    ui.notifications.warn(game.i18n.localize("SR5.TableRerollGone"))
+    return
+  }
+  const {
+    name, img, count, ...source
+  } = drawn
+  await sr5DrawEntries(entries, {
+    name, img, count, source, rollMode: sr5RollModeOf(message)
   })
 }
 

@@ -55,7 +55,7 @@ import {
 
 export function sr5HookRenderChatMessageHTML(message, html, _data) {
   // A table draw is rendered by core and wears no SR5 header of its own
-  sr5DressTableDraw(html)
+  sr5DressTableDraw(html, message)
 
   // Apply SR5 custom styling for messages with SR5 roll data
   if (message.flags?.sr5data) {

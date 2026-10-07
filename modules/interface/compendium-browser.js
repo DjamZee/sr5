@@ -13,6 +13,9 @@ import {
 import {
   SR5ShopWindow
 } from './shop-window.js'
+import {
+  sr5PromptDraw
+} from './table-from-compendium.js'
 
 const ALL_FILTERS = {
   ...BROWSER_FILTERS, ...ACTOR_BROWSER_FILTERS, ...OTHER_BROWSER_FILTERS
@@ -73,6 +76,7 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
       refreshIndex: SR5CompendiumBrowser.#onRefreshIndex,
       // The browser is for looking things up; buying happens in the shop's own window (lot B)
       openShop: () => SR5ShopWindow.open(),
+      drawAtRandom: SR5CompendiumBrowser.#onDrawAtRandom,
     },
   }
 
@@ -252,6 +256,51 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
     return results
   }
 
+  /** The entries this user may see, indices loaded on first use. */
+  async _visibleEntries() {
+    if (!this._indexCache) await this._loadAllIndices()
+    // A prototype is the gamemaster's (Élise's choice, 2026-10-05): a player never sees it, nor counts it
+    return game.user.isGM ? this._indexCache : this._indexCache.filter(e => e.flags?.sr5?.notForSale !== true)
+  }
+
+  /** What the filters let through of `entries`: the whole list, before it is cut into pages. */
+  async _applyFilters(entries) {
+    // A filter reading beyond the light index needs the documents themselves.
+    // Only the selected types can match it, so that is all we fetch.
+    if (this._needsDetails()) {
+      const selected = [...this._selectedTypes].map(sel => sel.includes(':') ? sel.split(':')[0] : sel)
+      await this._ensureDetails(selected.length ?
+        entries.filter(e => selected.includes(e.type)) :
+        entries)
+    }
+    return this._filterEntries(entries)
+  }
+
+  /** The filters, as a card keeps them to draw again from the same list (table-from-compendium.js). */
+  get filterState() {
+    return {
+      types: [...this._selectedTypes], search: this._searchText, filters: {
+        ...this._activeFilters
+      }
+    }
+  }
+
+  /**
+   * The entries a set of filters lets through, read anew: what "Relancer" draws from on a card drawn
+   * from the browser. The browser is built for it and never shown.
+   * @param {{types: string[], search: string, filters: object}} state
+   */
+  static async entriesFor(state) {
+    const browser = new SR5CompendiumBrowser()
+    browser._selectedTypes = new Set(state?.types ?? [])
+    browser._searchText = String(state?.search ?? '')
+    browser._activeFilters = {
+      ...(state?.filters ?? {
+      })
+    }
+    return browser._applyFilters(await browser._visibleEntries())
+  }
+
   /* -------------------------------------------- */
   /*  Context Preparation                         */
   /* -------------------------------------------- */
@@ -259,10 +308,7 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
   async _prepareContext(options) {
     const context = await super._prepareContext(options)
 
-    // Load indices if not cached
-    if (!this._indexCache) await this._loadAllIndices()
-    // A prototype is the gamemaster's (Élise's choice, 2026-10-05): a player never sees it, nor counts it
-    const allEntries = game.user.isGM ? this._indexCache : this._indexCache.filter(e => e.flags?.sr5?.notForSale !== true)
+    const allEntries = await this._visibleEntries()
 
     // Build type/subtype counts
     const typeCounts = {
@@ -339,17 +385,8 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
       }
     }
 
-    // A filter reading beyond the light index needs the documents themselves.
-    // Only the selected types can match it, so that is all we fetch.
-    if (this._needsDetails()) {
-      const selected = [...this._selectedTypes].map(sel => sel.includes(':') ? sel.split(':')[0] : sel)
-      await this._ensureDetails(selected.length ?
-        allEntries.filter(e => selected.includes(e.type)) :
-        allEntries)
-    }
-
     // Filter entries
-    const filtered = this._filterEntries(allEntries)
+    const filtered = await this._applyFilters(allEntries)
     const totalCount = filtered.length
 
     // Paginate, then fetch the details of that page alone
@@ -509,5 +546,17 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
     this._indexCache = null
     this._page = 0
     this.render()
+  }
+
+  /** "Tirer au hasard": among everything the filters let through, every page included */
+  static async #onDrawAtRandom() {
+    const entries = await this._applyFilters(await this._visibleEntries())
+    return sr5PromptDraw({
+      name: game.i18n.localize('SR5.CompendiumBrowser'),
+      entries,
+      source: {
+        kind: 'browser', state: this.filterState
+      }
+    })
   }
 }

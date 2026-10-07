@@ -85,6 +85,9 @@ import {
   sr5HookRenderTableActions
 } from './interface/table-actions.js'
 import {
+  sr5HookCompendiumDrawContext, sr5HookCompendiumDrawHeader, sr5HookCompendiumDrawFolder
+} from './interface/table-from-compendium.js'
+import {
   sr5KeepSidebarSettingsLast
 } from './interface/sidebar-tab-order.js'
 import {
@@ -201,6 +204,10 @@ Hooks.on('renderRollTableSheet', sr5AddTableFormulaField)
 Hooks.on('renderTableResultConfig', sr5AddResultQuantityField)
 Hooks.on('renderChatMessageHTML', sr5HookRenderTablePayout)
 Hooks.on('renderChatMessageHTML', sr5HookRenderTableActions)
+// A compendium, or one of its folders, drawn as a table
+Hooks.on('getCompendiumContextOptions', sr5HookCompendiumDrawContext)
+Hooks.on('getHeaderControlsCompendium', sr5HookCompendiumDrawHeader)
+Hooks.on('getFolderContextOptions', sr5HookCompendiumDrawFolder)
 Hooks.on('renderSidebar', SR5ShopWindow.onRenderSidebar)
 // A sale or a restock on a vendor: its open shop window redraws
 for (const hook of ['createItem', 'updateItem', 'deleteItem', 'updateActor']) Hooks.on(hook, SR5ShopVendor.onVendorChanged)
