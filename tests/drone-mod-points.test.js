@@ -240,3 +240,52 @@ describe('Weapon mounts under the Modification Points (R5 p. 128)', () => {
     expect(modPointsUsage(drone, [mount('heavy'), pointsMod(1)]).used).toBe(7)
   })
 })
+
+// The Sensor replacement of the Mégapack (R5 p. 171): its slots are its rating, its effect a ratingReplace
+const sensorReplacement = (rating, extra = {
+}) => ({
+  name: 'Remplacement des Senseurs', type: 'itemVehicleMod', system: {
+    itemRating: rating, isActive: true, slots: {
+      value: rating
+    }, customEffects: {
+      0: {
+        target: 'system.attributes.sensor.augmented', type: 'ratingReplace', value: 0
+      }
+    }, ...extra
+  }
+})
+
+describe('Sensor replacement under the Modification Points (R5 p. 128)', () => {
+  it('is a raise of the Sensor to its rating, not its slots', () => {
+    // Sensor 3 to 6: +3, 2 points on its own line, priced as the new Sensor × 1,000 ¥
+    expect(modPointsDemand(sensorReplacement(6), drone)).toEqual({
+      kind: 'upgrade', key: 'sensor', steps: 3
+    })
+    expect(modPointsOf(sensorReplacement(6), drone)).toBe(2)
+    expect(modPointsPrice(sensorReplacement(6), drone)).toBe(6000)
+  })
+  it('takes the free +1 once per drone with the other upgrades', () => {
+    expect(modPointsUsage(drone, [sensorReplacement(5), upgrade('speed', 1)]).used).toBe(2)
+    expect(modPointsLines([sensorReplacement(5), upgrade('speed', 1)], () => true, drone)).toEqual([1, 1])
+  })
+  it('costs nothing when no higher than the drone Sensor', () => {
+    expect(modPointsOf(sensorReplacement(3), drone)).toBe(0)
+    expect(modPointsPrice(sensorReplacement(3), drone)).toBeNull()
+  })
+  it('is known by its name when it carries no effect', () => {
+    expect(modPointsOf({
+      ...sensorReplacement(5), system: {
+        itemRating: 5, isActive: true, slots: {
+          value: 5
+        }
+      }
+    }, drone)).toBe(1)
+  })
+  it('keeps the double cap of the Sensor (R5 p. 127)', () => {
+    expect(modPointsRefusal({
+      ...drone, body: 12
+    }, [], null, sensorReplacement(7))).toEqual({
+      attribute: 'sensor', cap: 6
+    })
+  })
+})

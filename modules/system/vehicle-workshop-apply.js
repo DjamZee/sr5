@@ -93,7 +93,7 @@ export function workshopContext(vehicle){
   const stats = vehicleStats(s)
   const priceOf = points ? m => modPointsCost(m, stats) : modCost
   //The free +1 is once per drone: one line takes it, not each upgrade (review 40)
-  const pointLines = points ? modPointsLines(mods) : []
+  const pointLines = points ? modPointsLines(mods, undefined, stats) : []
   const row = (m, index) => {
     const ms = m.system ?? {
     }
@@ -177,10 +177,12 @@ export async function dropModOnWorkshop(vehicle, dropData){
     <ul>
       <li>${usesModPoints(droneModRule(), vehicle.system.type) ?
     `${L("SR5.DroneModPoints")}${L("SR5.Colons")} ${modPointsOf({
-      ...s, slots: {
-        value: slots
+      name: source.name, system: {
+        ...s, slots: {
+          value: slots
+        }
       }
-    })}` :
+    }, vehicleStats(vehicle.system))}` :
     `${L("SR5.VehicleModSlotsShort")}${L("SR5.Colons")} ${s.slots?.value ?? 0}`}</li>
       <li>${L("SR5.Threshold")}${L("SR5.Colons")} ${s.threshold?.value ?? 0}${s.tools ? `, ${L(SR5.vehicleModTools[s.tools] ?? s.tools)}` : ""}</li>
       <li>${game.i18n.format("SR5.VehicleModWorkshopPriceOn", {
