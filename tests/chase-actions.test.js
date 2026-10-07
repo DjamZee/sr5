@@ -13,8 +13,9 @@ const ids = {
 }
 
 describe('the actions of each rule set', () => {
-  it('the core book has Catch-Up / Break Away, Cut Off and Ram, and Control a Vehicle in both', () => {
-    expect(actionsFor(false).map(a => a.key)).toEqual(['control', 'catchUpBook', 'cutOffBook', 'rammingBook'])
+  it('the core book has Catch-Up / Break Away, Cut Off, Ram and Stunt, and Control a Vehicle in both', () => {
+    expect(actionsFor(false).map(a => a.key)).toEqual(['control', 'catchUpBook', 'cutOffBook', 'rammingBook',
+      'stuntBook'])
     const r5 = actionsFor(true).map(a => a.key)
     expect(r5).toContain('control')
     expect(r5).toContain('catchUp')
@@ -24,9 +25,9 @@ describe('the actions of each rule set', () => {
       'fallingLeaf', 'strafe', 'swarm']))
   })
 
-  it('no stunt and no Edge action in this part (part 3)', () => {
-    expect(Object.keys(CHASE_ACTIONS)).not.toContain('stunt')
-    expect(Object.keys(CHASE_ACTIONS)).not.toContain('zenDriving')
+  it('the stunts and the Edge actions of part 3 belong to their rule set', () => {
+    expect(CHASE_ACTIONS.stuntBook.rules).toBe('book')
+    for (const key of ['stunt', 'zenDriving', 'holdOn', 'leafInWind']) expect(CHASE_ACTIONS[key].rules).toBe('r5')
   })
 
   it('refuses an action at the wrong range, for the wrong kind, without target, or twice a turn', () => {

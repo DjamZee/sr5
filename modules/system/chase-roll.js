@@ -8,7 +8,8 @@
 // against the console (decision of 06/10).
 
 import {
-  CHASE_ACTIONS, NEAR_RANGES, actionRefusal, actionThreshold, actionDice, resolveAction, resolveFollowUp
+  CHASE_ACTIONS, NEAR_RANGES, actionRefusal, actionThreshold, actionDice, resolveAction, resolveFollowUp,
+  stuntAdvantagesFor
 } from "./chase-actions.js"
 import {
   chaseRanges, normalizeRange, terrainList, normalizeTerrain, terrainValue, effectiveSpeed, isFastest, isAircraft,
@@ -17,6 +18,9 @@ import {
 import {
   SR5Chase, advancedDriving, chaseVehicleActor, chaseAttribute, chaseSpeedOf
 } from "./chase.js"
+import {
+  monitorFull
+} from "./rigging-rules.js"
 
 export const CHASE_ROLL_PREFIX = "chaseRoll_"
 export const CHASE_APPLY = "chaseApply"
@@ -73,10 +77,18 @@ function nearOf(state, vehicle, list) {
 
 // What an action asks before its test: the new Terrain of Like a Glove, the angle of a Collision, the drones of a
 // Swarm, the maneuver of the core book's Catch-Up (SR5 p. 200)
-async function askOptions(key, state, vehicle) {
+async function askOptions(key, state, vehicle, stunt = 0) {
   const advanced = advancedDriving()
   const fields = []
-  if (key === "catchUpBook") {
+  // A stunt alone, or within the action (R5 p. 182-183): its level, and the advantage it gives if it is made
+  if (key === "stunt" || stunt > 0) {
+    fields.push(`<label>${esc(game.i18n.localize("SR5.CHASE_StuntLevel"))} <input type="number" name="stuntLevel" min="1" value="${Math.max(1, stunt)}"></label>`)
+    const options = stuntAdvantagesFor(key).map(a => `<option value="${a}">${esc(game.i18n.localize(`SR5.CHASE_StuntAdvantage_${a}`))}</option>`).join("")
+    fields.push(`<label>${esc(game.i18n.localize("SR5.CHASE_StuntAdvantage"))} <select name="stuntAdvantage">${options}</select></label>`)
+    const slow = ["handling", "speed"].map(s => `<option value="${s}">${esc(game.i18n.localize(`SR5.CHASE_StuntSlow_${s}`))}</option>`).join("")
+    fields.push(`<label>${esc(game.i18n.localize("SR5.CHASE_StuntSlow"))} <select name="stuntSlow">${slow}</select></label>`)
+  }
+  if (key === "catchUpBook" || key === "stuntBook") {
     const options = [1, 2, 3, 4].map(n => `<option value="${n}" ${n === 2 ? "selected" : ""}>${esc(game.i18n.localize(`SR5.CHASE_Maneuver_${n}`))}</option>`).join("")
     fields.push(`<label>${esc(game.i18n.localize("SR5.CHASE_Maneuver"))} <select name="maneuver">${options}</select></label>`)
   }
@@ -119,6 +131,10 @@ async function askOptions(key, state, vehicle) {
           endRunHarder: !!f.endRunHarder?.checked,
           angle: f.angle?.value,
           droneCount: f.droneCount ? Math.max(2, Math.floor(Number(f.droneCount.value) || 2)) : undefined,
+          stunt: f.stuntLevel ? {
+            level: Math.max(1, Math.floor(Number(f.stuntLevel.value) || 1)), advantage: f.stuntAdvantage?.value,
+            slow: f.stuntSlow?.value,
+          } : undefined,
         }
       },
     }, {
@@ -133,7 +149,7 @@ async function askOptions(key, state, vehicle) {
  * A button of the window: the pilot of `vehicleId` takes the chase action `key` (against `targetId`).
  * Rolled by whoever owns the vehicle, the gamemaster included.
  */
-export async function launchChaseAction(vehicleId, key, targetId = "") {
+export async function launchChaseAction(vehicleId, key, targetId = "", stunt = 0) {
   const state = SR5Chase.state
   const advanced = advancedDriving()
   const action = CHASE_ACTIONS[key]
@@ -141,18 +157,26 @@ export async function launchChaseAction(vehicleId, key, targetId = "") {
   if (!state.active || !vehicle || vehicle.ended || !action) return false
   const actor = chaseVehicleActor(vehicle)
   if (!actor?.isOwner) return ui.notifications?.warn(game.i18n.localize("SR5.CHASE_NotYourVehicle"))
-  const target = action.target ? state.vehicles.find(v => v.id === targetId && !v.ended && v.id !== vehicleId) : null
+  const target = action.target || action.targetOptional ? state.vehicles.find(v => v.id === targetId && !v.ended && v.id !== vehicleId) : null
   const range = target ? pairRange(state, vehicleId, target.id) : null
+  const pilot = await edgePilot(actor)
+  const controlMode = actor.system?.controlMode
+  // A stunt within the action: Rigger 5.0 only, never the autopilot nor an action that rolls nothing (R5 p. 183)
+  const stuntWithin = advanced && action.roll !== false && key !== "stunt" ? Math.max(0, Math.floor(Number(stunt) || 0)) : 0
   const refusal = actionRefusal(key, {
     advanced, kind: vehicle.kind, range, hasTarget: !!target, flags: state.turnFlags?.[vehicleId] ?? {
-    }
-  }) ?? (target && state.lost[pairKey(vehicleId, target.id)] ? "lost" : null)
+    }, role: vehicle.role, controlMode, edgeLeft: !!pilot?.edgeLeft, speed: chaseSpeedOf(vehicle),
+    monitorFull: monitorFull(actor.system?.conditionMonitors?.condition),
+  }) ?? (target && state.lost[pairKey(vehicleId, target.id)] ? "lost" : null) ??
+    (stuntWithin && controlMode === "autopilot" ? "autopilot" : null)
   if (refusal) return ui.notifications?.warn(game.i18n.format(`SR5.CHASE_Refused_${refusal}`, {
     action: actionLabel(key)
   }))
 
-  const options = await askOptions(key, state, vehicle)
+  const options = await askOptions(key, state, vehicle, stuntWithin)
   if (!options) return false
+  // Edge (R5 p. 178-181): the pilot's own point, by the system's path, once the player confirms
+  if (action.edge && !(await spendPilotEdge(pilot, key))) return false
   const newTerrain = options.newTerrain ? normalizeTerrain(options.newTerrain, advanced) : undefined
   const live = liveVehicles(state).map(withSpeed)
   const ctx = {
@@ -160,7 +184,8 @@ export async function launchChaseAction(vehicleId, key, targetId = "") {
     targetSpeed: target ? chaseSpeedOf(target) : 0, gap: speedGap(vehicle, target),
     fastest: isFastest(live.find(v => v.id === vehicleId), live), range, maneuver: options.maneuver,
     newTerrainValue: newTerrain ? terrainValue(newTerrain, advanced) : 0, endRun: options.endRun,
-    endRunHarder: options.endRunHarder, droneCount: options.droneCount,
+    endRunHarder: options.endRunHarder, droneCount: options.droneCount, stunt: options.stunt,
+    damageModifier: Number(actor.system?.penalties?.condition?.actual?.value) || 0,
   }
   const chase = {
     mode: "initiate", key, chaseId: state.id, initiatorId: vehicleId, targetId: target?.id ?? "",
@@ -169,15 +194,72 @@ export async function launchChaseAction(vehicleId, key, targetId = "") {
       side: "initiator", range, flags: state.turnFlags?.[vehicleId] ?? {
       }, gloveMalus: !!state.glove?.[vehicleId] && state.glove[vehicleId] === state.terrain, advanced
     }),
+    limitMods: turnHandlingMods(state, vehicleId),
     options: {
       ...options, newTerrain, newTerrainValue: ctx.newTerrainValue
     },
   }
   if (action.roll === false) return postChaseCard(actor, chase, {
-    title: actionLabel(key), apply: true
+    title: actionLabel(key), apply: true, lines: action.edge ? [edgeLine(pilot)] : []
   })
   return actor.rollTest("vehicleTest", null, {
     chaseRoll: chase
+  })
+}
+
+// The Handling a stunt gave or took this turn (R5 p. 182), as a limit modifier of the vehicle's chase tests
+function turnHandlingMods(state, vehicleId) {
+  const value = Number(state.turnHandling?.[vehicleId]) || 0
+  return value ? [{
+    key: "SR5.CHASE_LimitStunt", value
+  }] : []
+}
+
+/**
+ * The character whose Edge a vehicle's pilot spends (R5 p. 178-181): its controller by hand, remotely or jumped in,
+ * never the autopilot. Read by the system's own test (SR5_RollTestHelper.hasEdgeLeft).
+ * @returns {Promise<null|{actor: object, edgeLeft: boolean}>}
+ */
+async function edgePilot(vehicleActor) {
+  const system = vehicleActor?.system
+  if (!system?.vehicleOwner?.id || system.controlMode === "autopilot") return null
+  const {
+    SR5_EntityHelpers
+  } = await import("../entities/helpers.js")
+  const {
+    SR5_RollTestHelper
+  } = await import("../rolls/roll-test-helper.js")
+  const actor = SR5_EntityHelpers.getRealActorFromID(system.vehicleOwner.id)
+  return actor ? {
+    actor, edgeLeft: SR5_RollTestHelper.hasEdgeLeft(actor)
+  } : null
+}
+
+// The player confirms, then a point of the pilot's Edge is spent as for any test (removeEdgeFromActor)
+async function spendPilotEdge(pilot, key) {
+  if (!pilot?.actor?.isOwner) {
+    ui.notifications?.warn(game.i18n.localize("SR5.CHASE_NotYourPilot"))
+    return false
+  }
+  const confirmed = await foundry.applications.api.DialogV2.confirm({
+    window: {
+      title: actionLabel(key)
+    },
+    content: `<p>${esc(game.i18n.format("SR5.CHASE_EdgeConfirm", {
+      name: pilot.actor.name
+    }))}</p>`,
+  })
+  if (!confirmed) return false
+  const {
+    SR5_RollTestHelper
+  } = await import("../rolls/roll-test-helper.js")
+  await SR5_RollTestHelper.removeEdgeFromActor(null, pilot.actor)
+  return true
+}
+
+function edgeLine(pilot) {
+  return game.i18n.format("SR5.CHASE_EdgeSpent", {
+    name: pilot?.actor?.name ?? "?"
   })
 }
 
@@ -242,7 +324,7 @@ export async function chaseButton(type, messageData, messageId) {
   if (chase.mode === "initiate") return actor.rollTest("vehicleTest", null, {
     chaseRoll: {
       mode: "oppose", key: chase.key, chaseId: chase.chaseId, originId: messageId, initiatorId: chase.initiatorId,
-      targetId: vehicleId, threshold: 0, limit: chase.limit,
+      targetId: vehicleId, threshold: 0, limit: chase.limit, limitMods: turnHandlingMods(state, vehicleId),
       dice: actionDice(chase.key, {
         side: "target", range: pairRange(state, chase.initiatorId, vehicleId), advanced: advancedDriving()
       }),
@@ -254,9 +336,10 @@ export async function chaseButton(type, messageData, messageId) {
   return actor.rollTest("vehicleTest", null, {
     chaseRoll: {
       mode: "followUp", key: chase.key, chaseId: chase.chaseId, originId: messageId, sourceId: messageId,
-      vehicleId, test: pending.test, threshold: pending.threshold, limit: "handling",
+      vehicleId, test: pending.test, threshold: pending.threshold, limit: pending.limit ?? "handling",
+      limitMods: turnHandlingMods(state, vehicleId),
       dice: pending.dice ? [{
-        key: "SR5.CHASE_DiceCriticalGlitch", value: pending.dice
+        key: pending.diceKey ?? "SR5.CHASE_DiceCriticalGlitch", value: pending.dice
       }] : [],
     }
   })
@@ -278,12 +361,14 @@ function resolveContext(state, chase, roll) {
   return {
     ...roll, ...chase.options,
     initiatorId: chase.initiatorId, targetId: chase.targetId, initiatorRole: initiator?.role,
-    rawThreshold: chase.threshold, range, ranges: chaseRanges(advanced),
+    rawThreshold: chase.threshold, limit: chase.limit, range, ranges: chaseRanges(advanced),
     aircraft: !!(initiator && isAircraft(initiator.kind)) || !!(target && isAircraft(target.kind)),
     terrain: SR5Chase.terrainFor(chase.initiatorId, state), acceleration: chaseAttribute(actor, "acceleration"),
     handling: chaseAttribute(actor, "handling"), body: chaseAttribute(actor, "body"),
     speed: initiator ? chaseSpeedOf(initiator) : 0, targetSpeed: target ? chaseSpeedOf(target) : 0,
     opponents: opponents.map(v => v.id), nearOpponents: initiator ? nearOf(state, initiator, opponents) : [],
+    pursuers: opponents.filter(v => v.role === "pursuer").map(v => v.id),
+    turnHandling: Number(state.turnHandling?.[chase.initiatorId]) || 0,
     nearAllies: initiator ? nearOf(state, initiator, allies) : [],
   }
 }
@@ -386,6 +471,7 @@ async function applyEffects(effects) {
       case "handling": if (e.delta < 0) await SR5Chase.addHandlingLoss(e.id, -e.delta); break
       case "terrain": await SR5Chase.setTerrain(e.key); break
       case "turnTerrain": await SR5Chase.addTurnTerrain(e.ids, e.delta); break
+      case "turnHandling": await SR5Chase.addTurnHandling(e.id, e.delta); break
       case "flag": await SR5Chase.setTurnFlag(e.id, e.flag); break
       case "glove": await SR5Chase.setGlove(e.id, e.terrain); break
       case "leave": await SR5Chase.leaveChase(e.id, e.reason); break
@@ -416,7 +502,7 @@ async function postOutcome(source, chase, outcome, followUps) {
     lines.push(game.i18n.format(`SR5.CHASE_Effect_${key}`, {
       terrain: e.key ? game.i18n.localize(`${prefix}${e.key}`) : "",
       a: name(e.a), b: name(e.b), name: name(e.id ?? e.pursuer), other: name(e.pursued), steps: Math.abs(e.steps ?? 0),
-      range: e.range ? game.i18n.localize(`SR5.CHASE_Range_${e.range}`) : "", value: e.type === "turnTerrain" ? (e.delta > 0 ? `+${e.delta}` : `−${-e.delta}`) :
+      range: e.range ? game.i18n.localize(`SR5.CHASE_Range_${e.range}`) : "", value: e.type === "turnTerrain" || e.type === "turnHandling" ? (e.delta > 0 ? `+${e.delta}` : `−${-e.delta}`) :
         e.type === "handling" ? Math.abs(e.delta) : e.value ?? 0,
       names: (e.ids ?? []).map(name).join(", "),
     }))
@@ -427,7 +513,7 @@ async function postOutcome(source, chase, outcome, followUps) {
   }
   for (const f of followUps) pending[f.vehicle] = {
     test: f.test, threshold: f.threshold, a: f.a, b: f.b, vehicle: f.vehicle, applied: f.applied, total: f.total,
-    toEscape: f.toEscape, terrain: f.terrain, dice: f.dice ?? 0,
+    toEscape: f.toEscape, terrain: f.terrain, dice: f.dice ?? 0, diceKey: f.diceKey, limit: f.limit,
   }
   for (const text of lines) await SR5Chase.log(text)
   const actor = initiator ? chaseVehicleActor(initiator) : null

@@ -2,8 +2,11 @@
 // chase-roll.js, which needs the chase window: the roll preparation reads only what the window put in chatData.
 
 import {
-  CHASE_ACTIONS
+  CHASE_ACTIONS, stuntLevel
 } from "./chase-actions.js"
+import {
+  chaseQualityDice
+} from "./rigger-qualities.js"
 
 // The base of a limit whose modifiers are added back afterwards (SR5_PrepareRollHelper.getBaseLimit)
 function baseLimit(value, modifiers) {
@@ -16,6 +19,21 @@ function speedAttribute(actor) {
   if (!attributes) return 0
   const offRoad = actor.system.offRoadMode ? Number(attributes.speedOffRoad?.augmented?.value) : 0
   return offRoad || Number(attributes.speed?.augmented?.value) || 0
+}
+
+/**
+ * What a chase test is for the two qualities: a chase action the character takes (not an opposition, not a
+ * follow-up test, not one that rolls nothing), and a Stunt test — a stunt alone, within an action (arbitrage de DjamZ,
+ * 08/10), or the pursuer's same test after the core book's Stunt (SR5 p. 205).
+ */
+export function chaseTestKind(chase) {
+  const action = CHASE_ACTIONS[chase?.key]
+  const initiate = chase?.mode === "initiate" && !!action && action.roll !== false
+  return {
+    action: initiate,
+    stunt: (initiate && (!!action.stunt || stuntLevel(chase.options?.stunt) > 0)) ||
+      (chase?.mode === "followUp" && chase.test === "stuntFollow"),
+  }
 }
 
 /**
@@ -34,7 +52,17 @@ export function prepareChaseRoll(rollData, actor, chatData) {
     rollData.limit.base = baseLimit(speedAttribute(actor), actor?.system?.vehicleTest?.limit?.modifiers)
     rollData.limit.type = "speed"
   }
-  for (const d of chase.dice ?? []) rollData.dicePool.modifiers.push({
+  // The Handling a stunt gave or took this turn (R5 p. 182): on the Handling only, never on the Speed limit
+  if (chase.limit !== "speed") for (const m of chase.limitMods ?? []) {
+    let key = "chaseStunt", n = 1
+    while (rollData.limit.modifiers[key] !== undefined) key = `chaseStunt_${++n}`
+    rollData.limit.modifiers[key] = {
+      label: game.i18n.localize(m.key), value: Number(m.value) || 0
+    }
+  }
+  // Cascadeur and Poursuivant infatigable (R5 p. 37), of the character at the controls
+  const dice = [...(chase.dice ?? []), ...chaseQualityDice(actor?.system, actor?.system?.vehicleOwner?.items, chaseTestKind(chase))]
+  for (const d of dice) rollData.dicePool.modifiers.push({
     type: "chaseAction", label: game.i18n.localize(d.key), value: Number(d.value) || 0
   })
   if (chase.originId) rollData.previousMessage.messageId = chase.originId
