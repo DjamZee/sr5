@@ -43,6 +43,9 @@ import {
   addIndirectEffects
 } from "../system/indirect-effects.js"
 import {
+  applyRiggerNoise
+} from "../system/rigger-noise.js"
+import {
   SR5
 } from "../config.js"
 import {
@@ -366,6 +369,10 @@ export class SR5_PrepareRollTest {
       if (always.length) rollData.dicePool.modifiers = (rollData.dicePool.modifiers || []).concat(always)
       //Effects other actors carry on this roll: its target's, the auras around the roller (roll-helpers/indirect.js)
       addIndirectEffects(rollData, actor)
+      //SR5 p. 268: a drone's action suffers the noise of the distance to its wireless rigger (rigger-noise.js)
+      applyRiggerNoise(rollData, actor, {
+        resolve: id => SR5_EntityHelpers.getRealActorFromID(id), label: game.i18n.localize("SR5.RiggerNoise")
+      })
       //Bullets & Bandages p. 14-16: the dialog of First Aid and Medicine asks what the test is for
       if (underFireRules() && (rollData.test.typeSub === "firstAid" || rollData.test.typeSub === "medecine")) rollData.various.bbUnderFire = true
       //Bullets & Bandages p. 18: improvised supplies take the hits of an improvising roll off the -3

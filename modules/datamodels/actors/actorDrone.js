@@ -395,6 +395,10 @@ export class sr5ActorDroneDataModel extends foundry.abstract.TypeDataModel {
       creatorItemId: new fields.StringField({
         initial: ''
       }),
+      // Wired to its rigger: no noise of distance on its actions (SR5 p. 268, rigger-noise.js)
+      riggerCabled: new fields.BooleanField({
+        initial: false
+      }),
       // The vehicle item's wireless switch: copied at deployment, given back at dismissal.
       // Null on a drone deployed before the field existed, so dismissal leaves the item's own value.
       wirelessTurnedOn: new fields.BooleanField({
