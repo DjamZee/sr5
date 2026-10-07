@@ -1,0 +1,91 @@
+// Workshop tab of a drone and of a vehicle item (Chop Shop, Rigger 5.0 p. 153-156): the vehicle's picture between
+// its six slot gauges, then one drop zone per mod category
+.sr5-workshop {
+  margin-bottom: 8px;
+
+  .sr5-workshop-head {
+    display: grid;
+    grid-template-columns: 1fr 140px 1fr;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .sr5-workshop-image {
+    text-align: center;
+
+    img {
+      max-width: 140px;
+      max-height: 140px;
+      border: none;
+      object-fit: contain;
+      // The system's own pictures are white drawings: a dark disc makes them readable on the light sheet
+      background: var(--sr-ui-border-color);
+      border-radius: 6px;
+    }
+  }
+
+  .sr5-workshop-gauge {
+    margin: 4px 0;
+
+    .sr5-workshop-gauge-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: var(--sr-font-size-small);
+    }
+
+    .sr5-workshop-gauge-bar {
+      height: 8px;
+      border: 1px solid var(--sr-ui-border-color);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .sr5-workshop-gauge-fill {
+      height: 100%;
+      background: var(--sr-ui-border-color);
+    }
+
+    &.is-full .sr5-workshop-gauge-fill {
+      background: var(--sr-ui-pop-color);
+    }
+
+    &.is-full .sr5-workshop-gauge-label {
+      color: var(--sr-ui-pop-color);
+      font-weight: bold;
+    }
+
+    &.is-over .sr5-workshop-gauge-fill {
+      background: var(--sr-text-color-flash);
+    }
+  }
+
+  .sr5-workshop-cost {
+    text-align: center;
+    margin: 4px 0 8px;
+  }
+
+  .sr5-workshop-drop {
+    border: 1px dashed var(--sr-ui-border-color);
+    border-radius: 4px;
+    padding: 2px 4px;
+    margin-bottom: 6px;
+    min-height: 28px;
+
+    &.is-dragover {
+      border-style: solid;
+      background: rgba(0, 0, 0, 0.06);
+    }
+  }
+
+  .sr5-workshop-empty {
+    opacity: 0.6;
+    font-style: italic;
+  }
+
+  .sr5-workshop-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+}

@@ -26,6 +26,7 @@ export const ITEM_TAB_ICONS = {
   bio:      `${ICON_ROOT}/nav-bio.svg`,
   stat:     `${ICON_ROOT}/nav-configuration.svg`,
   effects:  `${ICON_ROOT}/nav-modifiers.svg`,
+  workshop: `${ICON_ROOT}/nav-configuration.svg`,
 }
 
 // ---------------------------------------------------------------------------
@@ -236,6 +237,9 @@ export const ITEM_BLOCK_REGISTRY = {
   },
   vehicleStat:         {
     partial: `${PARTIAL_ROOT}/blocks/vehicle/vehicle-stat.hbs`,              label: 'SR5.ItemConfiguration', size: ITEM_BLOCK_SIZE.DOUBLE 
+  },
+  vehicleWorkshop:     {
+    partial: `systems/sr5/templates/actors/_partials/right-tabs/droneStuff/atelier.hbs`, label: 'SR5.VehicleModWorkshop', size: ITEM_BLOCK_SIZE.DOUBLE
   },
   vehicleModStat:      {
     partial: `${PARTIAL_ROOT}/blocks/vehicleMod/vehicleMod-stat.hbs`,       label: 'SR5.ItemConfiguration', size: ITEM_BLOCK_SIZE.DOUBLE 

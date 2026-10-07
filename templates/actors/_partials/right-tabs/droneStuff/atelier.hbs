@@ -1,0 +1,71 @@
+{{!-- Workshop of a drone or of a vehicle item (Chop Shop, Rigger 5.0 p. 153-156); data from vehicle-workshop-apply.js --}}
+<div class="SRBlockSheet sr5-workshop">
+	<ul>
+		<li class="SR-LigneEnTete grid">
+			<div class="col-12"><p class="SR-TextUppercase">{{localize 'SR5.VehicleModWorkshop'}}</p></div>
+		</li>
+	</ul>
+	<div class="sr5-workshop-head">
+		<div>
+			{{#each workshop.gaugesLeft}}
+			{{> systems/sr5/templates/actors/_partials/right-tabs/droneStuff/atelier-gauge.hbs}}
+			{{/each}}
+		</div>
+		<div class="sr5-workshop-image"><img src="{{workshop.img}}" alt="{{workshop.name}}"></div>
+		<div>
+			{{#each workshop.gaugesRight}}
+			{{> systems/sr5/templates/actors/_partials/right-tabs/droneStuff/atelier-gauge.hbs}}
+			{{/each}}
+		</div>
+	</div>
+	<p class="sr5-workshop-cost">
+		{{localize 'SR5.VehicleModWorkshopCost' vehicle=workshop.cost.vehicleLabel mods=workshop.cost.modsLabel total=workshop.cost.totalLabel}}
+		{{#if workshop.buyer}}<br><span class="SR-LightGreyColor">{{localize 'SR5.VehicleModWorkshopBuyer' buyer=workshop.buyer balance=workshop.balanceLabel}}</span>{{/if}}
+	</p>
+	{{#each workshop.groups}}
+	<ul class="sr5-workshop-drop" data-category="{{key}}">
+		<li class="SR-EnTete grid">
+			<div class="col-5 SR-TextUppercase">{{label}}</div>
+			<div class="col-1 SR-TextCenter" data-tooltip="{{localize 'SR5.VehicleModSlotsFull'}}">{{localize 'SR5.VehicleModSlotsShort'}}</div>
+			<div class="col-1 SR-TextCenter" data-tooltip="{{localize 'SR5.Threshold'}}">{{localize 'SR5.ThresholdShort'}}</div>
+			<div class="col-2 SR-TextCenter">{{localize 'SR5.VehicleModToolsHeader'}}</div>
+			<div class="col-1 SR-TextCenter">&yen;</div>
+			<div class="col-2"></div>
+		</li>
+		{{#each mods}}
+		<li class="grid" data-item-id="{{id}}" data-index="{{index}}">
+			<div class="col-5">{{name}}{{#if rating}} ({{rating}}){{/if}}
+				{{#if factory}} <span class="SR-LightGreyColor">({{localize 'SR5.VehicleModFactory'}})</span>{{/if}}
+				{{#if pending}} <span class="SR-LightGreyColor">({{localize 'SR5.VehicleModPending'}})</span>{{/if}}
+			</div>
+			<div class="col-1 SR-TextCenter">{{slots}}</div>
+			<div class="col-1 SR-TextCenter">{{threshold}}</div>
+			<div class="col-2 SR-TextCenter">{{valueOrDash tools}}</div>
+			<div class="col-1 SR-TextCenter">{{price}}</div>
+			<div class="col-2 sr5-workshop-actions">
+				{{#if @root.workshop.canTest}}
+				{{#if pending}}
+				<a class="workshop-install" data-tooltip="{{localize 'SR5.VehicleModInstallByBook'}}"><em class="fas fa-dice"></em></a>
+				{{else}}
+				<a class="workshop-remove" data-tooltip="{{localize 'SR5.VehicleModRemoveByBook'}}"><em class="fas fa-dice"></em></a>
+				{{/if}}
+				{{/if}}
+				{{#if @root.workshop.isGM}}
+				{{#if @root.workshop.isItem}}
+				<a class="workshop-item-remove" data-tooltip="{{localize 'SR5.VehicleModWorkshopUnfit'}}"><em class="fas fa-trash"></em></a>
+				{{else}}
+				{{#if pending}}
+				<a class="workshop-fit" data-tooltip="{{localize 'SR5.VehicleModWorkshopFit'}}"><em class="fas fa-wrench"></em></a>
+				{{else}}
+				<a class="workshop-unfit" data-tooltip="{{localize 'SR5.VehicleModWorkshopUnfit'}}"><em class="fas fa-screwdriver"></em></a>
+				{{/if}}
+				{{/if}}
+				{{/if}}
+			</div>
+		</li>
+		{{else}}
+		<li class="sr5-workshop-empty">{{localize 'SR5.VehicleModWorkshopDropHere'}}</li>
+		{{/each}}
+	</ul>
+	{{/each}}
+</div>
