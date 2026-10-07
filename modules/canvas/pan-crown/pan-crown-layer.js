@@ -383,9 +383,9 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     for (const other of this.crowns.values()){
       if (other === crown ? other.droneTokenIds.size : other.droneTokenIds.has(token.id)) this.#relayout(other)
     }
-    // The viewer moved: what she sees within 100 m may change; for the gamemaster, a player's token that moves
-    // changes what the players see (the yellow ring)
-    if (token.controlled || (game.user?.isGM && token.actor?.hasPlayerOwner)) this.#settleLater()
+    // What is seen within 100 m (SR5 p. 236) may change, whoever moved: the viewer, an observed token (an NPC whose
+    // commlink comes within range, or goes out of it: M5), a player's token for the gamemaster's yellow ring
+    this.#settleLater()
   }
 
   // Once the moves are over (no frame of a move for a while), the crowns are built again, and drawn again only if what

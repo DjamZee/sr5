@@ -92,6 +92,14 @@ describe('M1: a move lays the crowns out again, it does not build them again', (
     expect(source).toMatch(/if \(soft && crown\.graph && signature !== null && signature === crown\.signature\)/)
   })
 
+  it('M5: works out what is seen again when any token ends its move, an observed one too', () => {
+    const source = read(LAYER)
+    const body = source.slice(source.indexOf('  onRefreshToken(token){'), source.indexOf('  #settleLater(){'))
+    // Not only the viewer's token or a player's: an NPC that comes within 100 m (SR5 p. 236)
+    expect(body).not.toMatch(/token\.controlled/)
+    expect(body).toMatch(/\r?\n {4}this\.#settleLater\(\)\r?\n {2}\}/)
+  })
+
   it('makes the name of an icon the first time it is read, not at each build', () => {
     const source = read(LAYER)
     expect(source).toMatch(/let label = null/)
