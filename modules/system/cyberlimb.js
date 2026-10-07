@@ -22,6 +22,8 @@ export function enhancementBonuses(system){
   for (const effect of effectsOf(system)){
     const attribute = effect?.target?.match?.(ENHANCEMENT_TARGET)?.[1]
     if (!attribute) continue
+    //A wireless bonus with the wireless off counts no more in the limb than on the body (applyCustomEffects)
+    if (effect.wifi && !system?.wirelessTurnedOn) continue
     const value = situationalValue(effect, system)
     if (value) bonuses.push({
       attribute, value
@@ -58,6 +60,8 @@ export function limbAttributes(limb, actorItems){
     const base = (Number(data.base) || 0) + (Number(data.customization) || 0)
     let enhancement = null
     for (const accessory of limbAccessories(limb, actorItems)){
+      //An enhancement switched off raises nothing, as any augmentation off (entityActor.js)
+      if (!accessory.system?.isActive) continue
       for (const bonus of enhancementBonuses(accessory.system)){
         if (bonus.attribute === attribute && (!enhancement || bonus.value > enhancement.value)) enhancement = {
           value: bonus.value, name: accessory.name

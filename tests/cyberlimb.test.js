@@ -143,6 +143,18 @@ describe("a cyberlimb's own attributes", () => {
     expect(hostLimb("e1", [left, right, str])).toBe(left)
     expect(hostLimb("e1", [right, str])).toBeNull()
   })
+
+  it("an enhancement switched off, or a wireless bonus with the wireless off, raises nothing", () => {
+    const str = enhancement("e1", "FOR 3", "strength", 3)
+    const limb = arm("a1", 6, 6, [str])
+    str.system.isActive = false
+    expect(limbAttributes(limb, items([limb, str])).strength.value).toBe(6)
+    str.system.isActive = true
+    str.system.customEffects[0].wifi = true
+    expect(limbAttributes(limb, items([limb, str])).strength.value).toBe(6)
+    str.system.wirelessTurnedOn = true
+    expect(limbAttributes(limb, items([limb, str])).strength.value).toBe(9)
+  })
 })
 
 describe("the limb a weapon is held by", () => {
