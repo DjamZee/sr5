@@ -124,6 +124,9 @@ import {
   choosePerceptionInfo
 } from "../canvas/pan-crown/pan-perception-card.js"
 import {
+  requestFileAction
+} from "./roll-helpers/file-actions.js"
+import {
   applyManaShift
 } from "../system/mana-shift.js"
 import {
@@ -785,6 +788,12 @@ export class SR5_RollMessage {
         //On a defense card it is the observer's button, taken below (attackerTest)
         if (action === "nonOpposedTest") await choosePerceptionInfo(messageData, messageId)
         break
+      //A file of the Matrix (SR5 p. 240-243): the active GM rolls the file's dice and writes it; the button stays until then
+      case "fileResolve":
+      case "fileEdit":
+      case "fileProtect":
+        if (action === "nonOpposedTest") await requestFileAction(messageData, messageId, type)
+        break
       case "matrixJamSignals":
         SR5_MatrixHelpers.jamSignals(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
@@ -957,6 +966,10 @@ export class SR5_RollMessage {
           if (await SR5_MatrixHelpers.breakTargetLock(messageData, hacker, locker)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
           break
         }
+        //SR5 p. 240: Edit File defended, the attacker applies it to the file (a bomb may go off, a protection refuse it)
+        case "fileApply":
+          await requestFileAction(messageData, messageId, type)
+          break
         default:
           SR5_SystemHelpers.srLog(1, `Unknown '${type}' type in chatButtonAction (attacker Test)`)
       }
@@ -1135,6 +1148,11 @@ export class SR5_RollMessage {
         break
       case "matrixPerceptionInfo":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.MatrixPerceptionInfoDone"))
+        break
+      case "fileResolve":
+      case "fileEdit":
+      case "fileApply":
+        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.FileActionDone"))
         break
       case "jackOutSuccess":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.MatrixActionJackOutSuccessFul"))

@@ -19,6 +19,9 @@ import {
 import {
   PERCEPTION_BUTTON, perceptionNeedsDefense, recordLastMatrixAction
 } from "../../canvas/pan-crown/pan-perception-card.js"
+import {
+  fileActionButtons
+} from "../roll-helpers/file-actions.js"
 
 export default async function matrixActionInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
@@ -108,6 +111,10 @@ export default async function matrixActionInfo(cardData, actorId){
     cardData.chatCard.buttons[PERCEPTION_BUTTON] = SR5_RollMessage.generateChatButton("nonOpposedTest", PERCEPTION_BUTTON, `${game.i18n.localize("SR5.MatrixPerceptionInfoButton")} (${cardData.roll.hits})`)
     return
   }
+
+  //A file aimed at (objet Fichier): its own dice oppose Crack File and the data bombs, its owner edits it undefended
+  //(SR5 p. 240-243); the other actions keep the defense of its host or owner
+  if (await fileActionButtons(cardData, actor)) return
 
   if (cardData.roll.hits > 0) {
     if (cardData.test.typeSub === "jackOut" && actorData.matrix.isLinkLocked) cardData.chatCard.buttons.jackOut = SR5_RollMessage.generateChatButton("nonOpposedTest", "jackOut", game.i18n.localize("SR5.MatrixActionJackOutResistance"), true)

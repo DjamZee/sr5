@@ -61,7 +61,9 @@ export class SR5_MarkHelpers {
       if (targetActor.system.activeSpecialAttribute === "depth") await SR5_MarkHelpers.markPersona(targetActor, attacker, attackerID, mark, isWatchdog)
       return
     }
-    if (item.parent.type === "actorDevice" && item.parent.isToken) item = targetActor.items.find(i => i.type === "itemDevice" && i.system.isActive)
+    //A file is marked itself, as any icon (SR5 p. 237), whatever carries it
+    const onFile = item.type === "itemFile"
+    if (!onFile && item.parent.type === "actorDevice" && item.parent.isToken) item = targetActor.items.find(i => i.type === "itemDevice" && i.system.isActive)
 
     let itemToMark = foundry.utils.duplicate(item.system)
 
@@ -108,7 +110,7 @@ export class SR5_MarkHelpers {
           messageId,
         })
       }
-      if (targetActor.system.matrix.deviceType === "host"){
+      if (!onFile && targetActor.system.matrix.deviceType === "host"){
         await SR5_SocketHandler.emitForGM("markSlavedDevice", {
           targetActorID: targetActorID
         })
@@ -116,7 +118,7 @@ export class SR5_MarkHelpers {
     } else {  
       await SR5_MarkHelpers.updateDeckMarkedItems(realAttackerID, item.uuid, mark)
       if (itemToMark.isSlavedToPan) await SR5_MarkHelpers.markPanMaster(itemToMark, realAttackerID, mark)
-      if (targetActor.system.matrix.deviceType === "host") await SR5_MarkHelpers.markSlavedDevice(targetActorID)
+      if (!onFile && targetActor.system.matrix.deviceType === "host") await SR5_MarkHelpers.markSlavedDevice(targetActorID)
     }
   }
 

@@ -2,6 +2,9 @@ import {
   SR5FactionRegistry
 } from "../../interface/faction-registry.js"
 import {
+  fileLastEditText
+} from "../../rolls/roll-helpers/file-actions.js"
+import {
   canEditItemEffects, clearTargetsOnCategoryChange, keepUnlistedEffectFields, lockEffectFields
 } from "../../system/effect-editor.js"
 import {
@@ -540,6 +543,12 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     // Illusionist (Forbidden Arcana p. 37): the spell type chosen with each level
     if (item.type === "itemQuality") context.showMasteryOption = (item.system.customEffects || [])
       .some(e => e?.target === "system.magic.masteries.illusionist")
+
+    // A file of the Matrix: its content, the gamemaster's, and its last edit in words (SR5 p. 237, 240)
+    if (item.type === "itemFile") {
+      context.enrichedFileContent = await enrich(item.system.content)
+      context.fileLastEdit = fileLastEditText(item.system.lastEdit)
+    }
 
     // Custom spirit type: pickers, and labels for the read-only summary
     if (item.type === "itemSpiritType") {

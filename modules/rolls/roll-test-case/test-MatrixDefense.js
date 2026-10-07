@@ -22,6 +22,12 @@ import {
 import {
   confusePilotThreshold
 } from "../roll-helpers/electronic-warfare.js"
+import {
+  fileDefenseButton
+} from "../roll-helpers/file-actions.js"
+import {
+  isFile
+} from "../../system/matrix-files.js"
 
 export default async function matrixDefenseInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId),
@@ -91,7 +97,8 @@ export default async function matrixDefenseInfo(cardData, actorId){
         cardData.chatCard.buttons.attackerPlaceMark = SR5_RollMessage.generateChatButton("nonOpposedTest", "attackerPlaceMark", `${game.i18n.format('SR5.AttackerPlaceMarkTo', {
           key: cardData.matrix.mark, item: targetName, name: cardData.owner.speakerActor
         })}`)
-        if (actorData.matrix.deviceType !== "host") cardData.chatCard.buttons.matrixResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "matrixResistance", `${game.i18n.localize('SR5.TakeOnDamageMatrix')} (${cardData.damage.matrix.value})`)
+        //Neither a host nor a file can be damaged (SR5 p. 230)
+        if (actorData.matrix.deviceType !== "host" && !isFile(targetItem)) cardData.chatCard.buttons.matrixResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "matrixResistance", `${game.i18n.localize('SR5.TakeOnDamageMatrix')} (${cardData.damage.matrix.value})`)
         break
       case "dataSpike":
       case "iceBlueGoo":
@@ -169,6 +176,9 @@ export default async function matrixDefenseInfo(cardData, actorId){
         cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.DefenseFailure"))
     }
   }
+
+  //Edit File on a file (SR5 p. 240): whatever the hits, the attacker applies it, as a bomb goes off at the try
+  await fileDefenseButton(cardData)
 
   //Remove chat button from previous chat message
   if (cardData.previousMessage.messageId){

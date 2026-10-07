@@ -13,6 +13,9 @@ import {
 import {
   defendsWithMaster, directConnectionVerdict, wanMasterOf
 } from "../roll-helpers/direct-connection.js"
+import {
+  isFile
+} from "../../system/matrix-files.js"
 
 //The master's defense for this action, put in place of the slave's own (SR5 p. 234)
 function useMasterDefense(rollData, master, rollKey){
@@ -59,9 +62,11 @@ export default async function matrixDefense(rollData, rollKey, actor, chatData){
       return
     }
     rollData.target.itemUuid = chatData.target.itemUuid
+    //A file has no rating: it defends with its owner's, the actor that carries it (SR5 p. 228, 240)
+    if (isFile(targetItem)) rollData.test.title = `${targetItem.name} - ${rollData.test.title}`
     //The base device of a drone, a device of the scenery or a host is the actor itself: it defends with the actor's
     //own pool, whose rating is the actor's (the item's stays 0); a device of the scenery may then take its master's below
-    if (targetItem.system.type !== "device" && targetItem.system.type !== "baseDevice"){
+    else if (targetItem.system.type !== "device" && targetItem.system.type !== "baseDevice"){
       //The defending device is named, slaved to a PAN or not
       rollData.test.title = `${targetItem.name} - ${game.i18n.localize("SR5.MatrixDefenseTest")}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize(SR5.matrixRolledActions[rollKey])} (${chatData.roll.hits})`
       if (!targetItem.system.isSlavedToPan){
