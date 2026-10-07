@@ -102,7 +102,7 @@ export class SR5_RollTest {
     }
 
     //Threshold modifier of the character (Bliss, Purple Orchid), shown in the dialog and added once it closes
-    dialogData.thresholdModifier = hasOwnThreshold(dialogData.test) ? thresholdModifierOf(actorData) : {
+    dialogData.thresholdModifier = hasOwnThreshold(dialogData.test) ? thresholdModifierOf(actorData, dialogData.test) : {
       value: 0, sources: []
     }
 

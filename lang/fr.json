@@ -914,6 +914,7 @@
 	"SR5.TemplateFlagsIgnored": "Gabarit de {user} ({item}) : la lumière, la visibilité, le bruit ou le champ magique écrits dessus sont ignorés. Seuls comptent ceux que donne l'objet. Posez vous-même un gabarit si la scène le demande.",
 	"SR5.ThresholdModifier": "Seuil de tous les tests (+)",
 	"SR5.ThresholdModifierHint": "s'ajoute au seuil du test s'il en a un, sans effet sur un test sans seuil.",
+	"SR5.ThresholdModifierLowered": "Seuil du test (−), minimum 1",
 	"SR5.DiceHitsReplace": "Succès (remplace)",
 	"SR5.NetHitsReplace": "Succès excédentaires (remplace)",
 	"SR5.CalledShotHalved": "Attaque ciblée : malus divisé par deux",

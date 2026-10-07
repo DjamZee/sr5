@@ -469,7 +469,7 @@ export class SR5_UtilityItem extends Actor {
             break
           case "rigging":
             SR5_EntityHelpers.updateModifier(itemData.weaponSkill, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.SkillGunnery')})`, "controleMode", controlerData.skills.gunnery.test.dicePool)
-            SR5_EntityHelpers.updateModifier(itemData.accuracy, game.i18n.localize('SR5.ControlRigging'), "controleMode", 1, false, true)
+            //Jumped in, the Accuracy of a mounted weapon gains the control rig rating only (SR5 p. 268)
             if (controlerData.specialProperties.controlRig.value) {
               SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)
               SR5_EntityHelpers.updateModifier(itemData.accuracy, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)

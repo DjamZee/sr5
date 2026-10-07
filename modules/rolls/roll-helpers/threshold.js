@@ -1,10 +1,12 @@
 //Threshold modifier carried by the character: Bliss (SR5 p. 412) and Purple Orchid (Chrome Flesh p. 190) give
 //"+1 to all thresholds". It raises the threshold of every test that has one, and leaves a test without threshold alone.
 
-//The modifier and its sources, read from the actor (specialProperties.thresholdModifier)
-export function thresholdModifierOf(actorData){
+//The modifier and its sources, read from the actor (specialProperties.thresholdModifier). The vehicle test of a drone
+//adds the control rig of a jumped in rigger (SR5 p. 268), prepared on vehicleTest.thresholdModifier
+export function thresholdModifierOf(actorData, test){
   const property = actorData?.specialProperties?.thresholdModifier
-  const modifiers = (property?.modifiers || []).filter(m => Number(m.value))
+  let modifiers = (property?.modifiers || []).filter(m => Number(m.value))
+  if (test?.type === "vehicleTest") modifiers = modifiers.concat(actorData?.vehicleTest?.thresholdModifier?.sources || [])
   const value = modifiers.reduce((sum, m) => sum + Number(m.value), 0)
   return {
     value, sources: modifiers.map(m => ({

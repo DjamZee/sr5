@@ -914,6 +914,7 @@
 	"SR5.TemplateFlagsIgnored": "Template from {user} ({item}): the light, visibility, noise or background count written on it are ignored. Only the ones its item gives count. Place a template yourself if the scene calls for it.",
 	"SR5.ThresholdModifier": "Threshold of all tests (+)",
 	"SR5.ThresholdModifierHint": "added to the threshold of the test if it has one, no effect on a test without threshold.",
+	"SR5.ThresholdModifierLowered": "Threshold of the test (−), minimum 1",
 	"SR5.DiceHitsReplace": "Hits (replace)",
 	"SR5.NetHitsReplace": "Net hits (replace)",
 	"SR5.CalledShotHalved": "Called Shot: penalty halved",

@@ -95,6 +95,9 @@ import {
 import {
   actsAsRcc, rccRatings, hasLocalAutosoftRunning, rccAutosoftsForDrone, autosoftFitsDrone, droneAutopilot, localAutosoftRating
 } from "./rcc.js"
+import {
+  VR_PILOTING_LIMIT_BONUS, controlRigThresholdModifier
+} from "../../system/rigging-rules.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -2677,12 +2680,13 @@ export class SR5_CharacterUtility extends Actor {
         }
         SR5_EntityHelpers.updateModifier(skills.perception.test, game.i18n.localize('SR5.Controler'), actorData.controlMode, controlerData.skills.perception.test.dicePool)
         SR5_EntityHelpers.updateModifier(skills.perception.limit, game.i18n.localize('SR5.VehicleStat_SensorShort'), "linkedAttribute", attributes.sensor.augmented.value)
+        //Jumped in, the limits based on Sensor and Handling gain the control rig rating (SR5 p. 268 and errata)
+        if (controlerData.specialProperties.controlRig.value) SR5_EntityHelpers.updateModifier(skills.perception.limit, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)
         //TODO : sneaking is equal to lesser value between pilotSkill and Sneaking(pilotSkill)
         if (actorData.pilotSkill) {
           SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName}`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
         }
         SR5_EntityHelpers.updateModifier(skills.sneaking.limit, handlingName, "linkedAttribute", handlingMode)
-        SR5_EntityHelpers.updateModifier(skills.sneaking.limit, game.i18n.localize('SR5.ControlRigging'), actorData.controlMode, 1)
         if (controlerData.matrix.userMode === "hotsim") {
           SR5_EntityHelpers.updateModifier(skills.perception.test, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 1)
           SR5_EntityHelpers.updateModifier(skills.sneaking.test, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 1)
@@ -2723,6 +2727,7 @@ export class SR5_CharacterUtility extends Actor {
       else vehicleTest.limit.base = attributes.handling.augmented.value
     }
     vehicleTest.test.base = 0
+    vehicleTest.thresholdModifier = controlRigThresholdModifier(0)
     let controlerData, controlerName
     if (actorData.vehicleOwner.id) {
       controlerData = actorData.vehicleOwner.system
@@ -2746,10 +2751,12 @@ export class SR5_CharacterUtility extends Actor {
         break
       case "rigging":
         if (actorData.pilotSkill) SR5_EntityHelpers.updateModifier(vehicleTest.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName} (${game.i18n.localize(SR5.pilotSkills[actorData.pilotSkill])})`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
-        SR5_EntityHelpers.updateModifier(vehicleTest.limit, game.i18n.localize('SR5.ControlRigging'), game.i18n.localize('SR5.ControlMode'), 3)
+        //A jumped in rigger is in VR: +2 to the limit (SR5 p. 201), plus the control rig (SR5 p. 268)
+        SR5_EntityHelpers.updateModifier(vehicleTest.limit, game.i18n.localize('SR5.VirtualReality'), "matrixUserMode", VR_PILOTING_LIMIT_BONUS)
         if (controlerData.specialProperties.controlRig.value) {
           SR5_EntityHelpers.updateModifier(vehicleTest.test, game.i18n.localize('SR5.ControlRig'), game.i18n.localize('SR5.Augmentation'), controlerData.specialProperties.controlRig.value)
           SR5_EntityHelpers.updateModifier(vehicleTest.limit, game.i18n.localize('SR5.ControlRig'), game.i18n.localize('SR5.Augmentation'), controlerData.specialProperties.controlRig.value)
+          vehicleTest.thresholdModifier = controlRigThresholdModifier(controlerData.specialProperties.controlRig.value, game.i18n.localize('SR5.ControlRig'))
         }
         if (controlerData.matrix.userMode === "hotsim") SR5_EntityHelpers.updateModifier(vehicleTest.test, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 1)
         break
@@ -2796,7 +2803,8 @@ export class SR5_CharacterUtility extends Actor {
         break
       case "rigging":
         if (actorData.pilotSkill) SR5_EntityHelpers.updateModifier(rammingTest.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName} (${game.i18n.localize(SR5.pilotSkills[actorData.pilotSkill])})`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
-        SR5_EntityHelpers.updateModifier(rammingTest.limit, game.i18n.localize('SR5.ControlRigging'), game.i18n.localize('SR5.ControlMode'), 3)
+        //A jumped in rigger is in VR: +2 to the limit (SR5 p. 201), plus the control rig (SR5 p. 268)
+        SR5_EntityHelpers.updateModifier(rammingTest.limit, game.i18n.localize('SR5.VirtualReality'), "matrixUserMode", VR_PILOTING_LIMIT_BONUS)
         if (controlerData.specialProperties.controlRig.value) {
           SR5_EntityHelpers.updateModifier(rammingTest.test, game.i18n.localize('SR5.ControlRig'), game.i18n.localize('SR5.Augmentation'), controlerData.specialProperties.controlRig.value)
           SR5_EntityHelpers.updateModifier(rammingTest.limit, game.i18n.localize('SR5.ControlRig'), game.i18n.localize('SR5.Augmentation'), controlerData.specialProperties.controlRig.value)

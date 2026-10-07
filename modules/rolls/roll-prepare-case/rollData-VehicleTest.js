@@ -4,6 +4,9 @@ import {
 import {
   SR5_MiscellaneousHelpers 
 } from "../roll-helpers/miscellaneous.js"
+import {
+  thresholdModifierOf, applyThresholdModifier
+} from "../roll-helpers/threshold.js"
 
 export default function vehicleTest(rollData, actor, chatData){
   //Determine title
@@ -39,7 +42,9 @@ export default function vehicleTest(rollData, actor, chatData){
     if (chatData.test.type === "rammingDefense") {rollData.threshold.value = 3}
     if (chatData.test.type === "ramming") rollData.threshold.value = 2
     rollData.test.typeSub = chatData.test.type
-    rollData.test.title = `${game.i18n.localize("SR5.VehicleTest")} (${rollData.threshold.value})`
+    //The title shows the threshold once lowered by a jumped in rigger's control rig (SR5 p. 268), as the card does
+    const shown = applyThresholdModifier(rollData.threshold, thresholdModifierOf(actor.system, rollData.test)).value
+    rollData.test.title = `${game.i18n.localize("SR5.VehicleTest")} (${shown})`
   }
 
   return rollData
