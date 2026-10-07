@@ -534,6 +534,11 @@ async function rammingOf(roller, defender, cardRamming) {
     targetLocomotion: targetIsVehicle ? SR5_ConverterHelpers.rammingLocomotion(locomotionData(defender)) : "ground",
     metersPerTurn: (speed, gait) => SR5_ConverterHelpers.vehicleMetersPerTurn(speed, gait),
   })
+  //The ram plate is read on the roller's sheet, as its speed (Rigger 5 p. 164)
+  const {
+    hasBullBar
+  } = await import("../../system/vehicle-mods.js")
+  ramming.bullBar = hasBullBar(roller?.items)
   return {
     ramming, base: SR5_ConverterHelpers.rammingAttackDamage(ramming, Number(roller.system?.attributes?.body?.augmented?.value) || 0)
   }

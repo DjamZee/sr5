@@ -499,6 +499,9 @@ export class SR5Actor extends Actor {
         SR5_CharacterUtility.applyRacialModifers(actor)
         break
       case "actorDrone":
+        SR5_CharacterUtility.resetCalculatedValues(actor)
+        SR5_CharacterUtility.applyVehicleReplacements(actor)
+        break
       case "actorDevice":
       case "actorSprite":
       case "actorAgent":
@@ -530,6 +533,7 @@ export class SR5Actor extends Actor {
         actor.system.canJumpIn = mayJumpIn(actor.system, actor.system.hasRiggerInterface)
         if (actor.system.vehicleOwner.items.length) SR5_CharacterUtility.applyAutosoftEffect(actor)
         SR5_CharacterUtility.updateAttributes(actor)
+        SR5_CharacterUtility.capVehicleArmor(actor)
         SR5_CharacterUtility.updateResistances(actor)
         SR5_CharacterUtility.updateConditionMonitors(actor)        
         SR5_CharacterUtility.updatePenalties(actor)  

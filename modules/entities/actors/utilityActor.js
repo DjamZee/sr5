@@ -108,6 +108,10 @@ import {
   modTakesSlots, factorySkipsEffect
 } from "../../system/vehicle-factory.js"
 import {
+  replacedVehicleAttribute, replacedVehicleAttributeOf, armorCapReduction, addedArmor, crashArmorPenetration,
+  tactileSensorsOn, TACTILE_PERCEPTION_DICE, TACTILE_HANDLING, metahumanAdaptationPenalty
+} from "../../system/vehicle-mods.js"
+import {
   consoleNoiseReductionDice
 } from "../../rolls/roll-helpers/electronic-warfare.js"
 
@@ -2603,6 +2607,15 @@ export class SR5_CharacterUtility extends Actor {
               SR5_EntityHelpers.updateModifier(resistances[key], game.i18n.localize('SR5.Body'), "linkedAttribute", attributes.body.augmented.value)
               SR5_EntityHelpers.updateModifier(resistances[key], game.i18n.localize('SR5.VehicleStat_ArmorShort'), "linkedAttribute", attributes.armor.augmented.value)
               SR5_EntityHelpers.updateDicePool(resistances[key], 0)
+            } else {
+              //A passenger in a crash: Body + Armor, AP -6 (SR5 p. 202). The vehicle's SPP and cocoon join at the roll
+              resistances[key].base = 0
+              SR5_EntityHelpers.updateModifier(resistances[key], game.i18n.localize('SR5.Body'), "linkedAttribute", attributes.body.augmented.value)
+              const armor = actorData.itemsProperties?.armor?.modifiers ?? []
+              resistances[key].modifiers = resistances[key].modifiers.concat(armor, anyDamageModifiers)
+              const penetration = crashArmorPenetration(SR5_EntityHelpers.modifiersSum(armor))
+              if (penetration) SR5_EntityHelpers.updateModifier(resistances[key], game.i18n.localize('SR5.ArmorPenetrationShort'), "armorPenetration", penetration)
+              SR5_EntityHelpers.updateDicePool(resistances[key], 0)
             }
             break
           case "astralDamage":
@@ -2704,6 +2717,7 @@ export class SR5_CharacterUtility extends Actor {
         //TODO : sneaking is equal to lesser value between pilotSkill and Sneaking(pilotSkill)
         if (actorData.pilotSkill) {
           SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName}`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
+          this.applyMetahumanAdaptation(actor, skills.sneaking.test)
         }
         SR5_EntityHelpers.updateModifier(skills.sneaking.limit, handlingName, "linkedAttribute", handlingMode)
         break
@@ -2722,6 +2736,8 @@ export class SR5_CharacterUtility extends Actor {
           SR5_EntityHelpers.updateModifier(skills.perception.test, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 1)
           SR5_EntityHelpers.updateModifier(skills.sneaking.test, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 1)
         }
+        //Tactile sensors: +2 dice to Perception and Sensor tests (Rigger 5.0 p. 170)
+        if (tactileSensorsOn(actor.items, actorData.controlMode)) SR5_EntityHelpers.updateModifier(skills.perception.test, game.i18n.localize('SR5.VehicleModEffectKind_tactileSensors'), "itemVehicleMod", TACTILE_PERCEPTION_DICE)
         break
       default:
         SR5_SystemHelpers.srLog(1, `Unknown controle mode '${actorData.controlMode}' in 'generateVehicleSkills()'`)
@@ -2777,6 +2793,7 @@ export class SR5_CharacterUtility extends Actor {
         break
       case "manual":
         if (actorData.pilotSkill) SR5_EntityHelpers.updateModifier(vehicleTest.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName} (${game.i18n.localize(SR5.pilotSkills[actorData.pilotSkill])})`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
+        this.applyMetahumanAdaptation(actor, vehicleTest.test)
         if (controlerData.matrix.userMode === "ar") SR5_EntityHelpers.updateModifier(vehicleTest.limit, game.i18n.localize('SR5.AugmentedReality'), "matrixUserMode", 1)
         else if (controlerData.matrix.userMode === "coldsim" || controlerData.matrix.userMode === "hotsim") SR5_EntityHelpers.updateModifier(vehicleTest.limit, game.i18n.localize('SR5.VirtualReality'), "matrixUserMode", 2)
         break
@@ -2799,6 +2816,13 @@ export class SR5_CharacterUtility extends Actor {
     SR5_EntityHelpers.updateDicePool(vehicleTest.test, 0)
     SR5_EntityHelpers.updateValue(vehicleTest.limit, 0)
     SR5_CharacterUtility.capRemoteLimit(actor, vehicleTest.limit)
+  }
+
+  //A metahuman at the controls of a vehicle not adapted to them (Rigger 5.0 p. 171)
+  static applyMetahumanAdaptation(actor, test) {
+    const actorData = actor.system
+    const penalty = metahumanAdaptationPenalty(this.getMetatype(actorData.vehicleOwner), actor.items, actorData.controlMode)
+    if (penalty) SR5_EntityHelpers.updateModifier(test, game.i18n.localize("SR5.VehicleModAdaptationMissing"), "itemVehicleMod", penalty)
   }
 
   //Remote control: the limit is the lower of the normal limit and the controller's Data Processing (SR5 p. 239-240)
@@ -2842,6 +2866,7 @@ export class SR5_CharacterUtility extends Actor {
         if (actorData.pilotSkill) SR5_EntityHelpers.updateModifier(rammingTest.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName} (${game.i18n.localize(SR5.pilotSkills[actorData.pilotSkill])})`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
         if (controlerData.matrix.userMode === "ar") SR5_EntityHelpers.updateModifier(rammingTest.limit, game.i18n.localize('SR5.AugmentedReality'), "matrixUserMode", 1)
         else if (controlerData.matrix.userMode === "coldsim" || controlerData.matrix.userMode === "hotsim") SR5_EntityHelpers.updateModifier(rammingTest.limit, game.i18n.localize('SR5.VirtualReality'), "matrixUserMode", 2)
+        if (actorData.controlMode === "manual") this.applyMetahumanAdaptation(actor, rammingTest.test)
         break
       case "rigging":
         if (actorData.pilotSkill) SR5_EntityHelpers.updateModifier(rammingTest.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName} (${game.i18n.localize(SR5.pilotSkills[actorData.pilotSkill])})`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
@@ -2953,6 +2978,33 @@ export class SR5_CharacterUtility extends Actor {
       default:
     }
 
+  }
+
+  // Autopilot and Sensor replacements (Rigger 5.0 p. 170): the printed value gives way to the mod's rating, read in the
+  // base of the attribute so that the other mods still add to it. A modifier on natural, never the base the sheet edits.
+  // Read in prepareBaseData, before the item effects
+  static applyVehicleReplacements(actor) {
+    const attributes = actor.system.attributes
+    for (const [key, label] of [["pilot", "SR5.VehicleModEffectKind_autopilotReplacement"], ["sensor", "SR5.VehicleModEffectKind_sensorReplacement"]]) {
+      const replaced = replacedVehicleAttribute(actor.items, key)
+      if (replaced === null || !attributes[key]) continue
+      SR5_EntityHelpers.updateModifier(attributes[key].natural, game.i18n.localize(label), "itemVehicleMod", replaced - (Number(attributes[key].natural.base) || 0))
+    }
+    //Tactile sensors: +1 Handling while a rigger is jumped in (Rigger 5.0 p. 170)
+    if (tactileSensorsOn(actor.items, actor.system.controlMode)) {
+      for (const key of ["handling", "handlingOffRoad", "secondaryPropulsionHandling", "secondaryPropulsionHandlingOffRoad"]) {
+        if (attributes[key]) SR5_EntityHelpers.updateModifier(attributes[key].augmented, game.i18n.localize("SR5.VehicleModEffectKind_tactileSensors"), "itemVehicleMod", TACTILE_HANDLING)
+      }
+    }
+  }
+
+  // Armor added by mods: at most the vehicle's Body (Rigger 5.0 p. 161), the excess taken off as a visible modifier
+  static capVehicleArmor(actor) {
+    const attributes = actor.system.attributes, armor = attributes.armor.augmented
+    const cut = armorCapReduction(addedArmor(actor.items, armor.modifiers), attributes.body.augmented.value)
+    if (!cut) return
+    SR5_EntityHelpers.updateModifier(armor, game.i18n.localize("SR5.VehicleArmorCap"), "itemVehicleMod", -cut)
+    SR5_EntityHelpers.updateValue(armor, 0)
   }
 
   // Vehicle slots Update
@@ -5555,6 +5607,8 @@ export class SR5_CharacterUtility extends Actor {
       if (customEffect.transfer) skipCustomEffect = true
       // A factory mod: its effect on the printed profile is already there (Rigger 5.0 p. 156)
       if (item.type === "itemVehicleMod" && factorySkipsEffect(itemData.isFactory, customEffect)) skipCustomEffect = true
+      // An Autopilot or Sensor replacement is in the base of the attribute already (applyVehicleReplacements)
+      if (item.type === "itemVehicleMod" && actor.type === "actorDrone" && replacedVehicleAttributeOf(customEffect)) skipCustomEffect = true
       // Drugs
       // Drugs: an effect applies in its own phase, the rise or the crash (entities/items/drug-phase.js)
       if (item.type === "itemDrug") {

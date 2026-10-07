@@ -10,6 +10,9 @@ import {
 import {
   SR5
 } from "../../config.js"
+import {
+  hasBullBar
+} from "../../system/vehicle-mods.js"
 
 export default function ramming(rollData, actor){
   //Determine title
@@ -42,6 +45,7 @@ export default function ramming(rollData, actor){
   ramming.targetSpeed = ramming.targetIsVehicle ? vehicleSpeed(target) : 0
   ramming.targetLocomotion = ramming.targetIsVehicle ? SR5_ConverterHelpers.rammingLocomotion(locomotionData(target)) : "ground"
   SR5_ConverterHelpers.rammingRefreshRelativeSpeed(ramming)
+  ramming.bullBar = hasBullBar(actor.items)
   rollData.damage.base = SR5_ConverterHelpers.rammingAttackDamage(ramming, actor.system.attributes.body.augmented.value)
   rollData.damage.value = rollData.damage.base
   rollData.lists.rammingAngles = SR5.rammingAngles

@@ -5,6 +5,9 @@ import {
   SR5_SystemHelpers 
 } from "../../system/utilitySystem.js"
 import {
+  TACTILE_BIOFEEDBACK_DICE
+} from "../../system/vehicle-mods.js"
+import {
   SR5_CombatHelpers 
 } from "../roll-helpers/combat.js"
 import {
@@ -465,6 +468,10 @@ async function handleBiofeedbackDamage(rollData, actorData, chatData){
   //Determine base dicepool & composition
   rollData.dicePool.base = actorData.matrix.resistances.biofeedback.dicePool
   rollData.dicePool.composition = actorData.matrix.resistances.biofeedback.modifiers
+  //A drone hit through its tactile sensors (Rigger 5.0 p. 170)
+  if (chatData.tactileSensors) rollData.dicePool.modifiers.push({
+    type: "tactileSensors", label: game.i18n.localize("SR5.VehicleModEffectKind_tactileSensors"), value: TACTILE_BIOFEEDBACK_DICE
+  })
 
   //Determine damage type
   if (chatData.blackout) rollData.damage.type = "stun"
