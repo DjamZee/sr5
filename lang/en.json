@@ -308,7 +308,7 @@
 	"SR5.RULELOCKS_Case_lockpick": "Lockpicking requires a lockpick set (SR5 p. 450)",
 	"SR5.RULELOCKS_ShopHint": "The shop keeps its own rules (buyers, creation caps, availability) in the Shop tab.",
 	"SR5.RULELOCKS_Save": "Save",
-	"SR5.RULELOCKS_Whisper": "Lock lifted ({family}) — {actor}: {message}",
+	"SR5.RULELOCKS_Whisper": "{actor}: rule \"{family}\" lifted, the action went through. Lifted refusal: {message}",
 	"SR5.SETTINGS_Tag_Book": "book option",
 	"SR5.SETTINGS_Tag_House": "house rule",
 	"SR5.SETTINGS_Default": "Default: {value}.",

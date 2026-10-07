@@ -308,7 +308,7 @@
 	"SR5.RULELOCKS_Case_lockpick": "Le crochetage exige un kit de serrurerie (SR5 p. 450)",
 	"SR5.RULELOCKS_ShopHint": "La boutique garde ses propres règles (acheteurs, plafonds de création, disponibilité) dans l'onglet Boutique.",
 	"SR5.RULELOCKS_Save": "Enregistrer",
-	"SR5.RULELOCKS_Whisper": "Verrou levé ({family}) — {actor} : {message}",
+	"SR5.RULELOCKS_Whisper": "{actor} : règle « {family} » levée, l'action est partie. Motif du refus levé : {message}",
 	"SR5.SETTINGS_Tag_Book": "option du livre",
 	"SR5.SETTINGS_Tag_House": "règle maison",
 	"SR5.SETTINGS_Default": "Défaut : {value}.",

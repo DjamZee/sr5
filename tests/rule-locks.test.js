@@ -22,8 +22,11 @@ vi.mock('../modules/entities/actors/entityActor-helpers.js', () => ({
 const {
   RULE_LOCK_FAMILIES, RULE_LOCK_KEYS, presetLocks, presetOf, normalizeLocks, locksFromLegacy, legacyFromLocks,
   currentRuleLocks, ruleLockActive, refuseByRule, capByRule, shouldWhisper, resetWhispers, setRuleLocks,
-  runRuleLocksMigration, socketRuleLockWhisper,
+  runRuleLocksMigration, socketRuleLockWhisper, ruleLockWhisperText,
 } = await import('../modules/system/rule-locks.js')
+const {
+  readFileSync
+} = await import('node:fs')
 
 // B13, lot 0 (PLAN-AUTOMATISATION-LEGERE.md, § 2): the shared function and its settings, no site wired yet
 
@@ -387,5 +390,34 @@ describe('refuseByRule and capByRule', () => {
     })).toBe(7)
     await flush()
     expect(emits).toHaveLength(1)
+  })
+})
+
+describe('the text of the whisper (B13, lot 2)', () => {
+  // The site's message says what the refusal did ("nothing is spent"): the whisper says the action went, and gives
+  // that message as the reason of the refusal lifted only
+  const lang = file => JSON.parse(readFileSync(new URL(`../lang/${file}`, import.meta.url), 'utf8'))
+
+  it('says who acted, which rule was lifted and that the action went, then the site\'s message', () => {
+    for (const [file, went] of [['fr.json', "l'action est partie"], ['en.json', 'the action went through']]) {
+      const text = lang(file)['SR5.RULELOCKS_Whisper']
+      expect(text.startsWith('{actor}')).toBe(true)
+      expect(text).toContain(went)
+      expect(text.indexOf('{family}')).toBeLessThan(text.indexOf(went))
+      expect(text.indexOf(went)).toBeLessThan(text.indexOf('{message}'))
+    }
+  })
+
+  it('is written with the family, the actor and the site\'s message', () => {
+    const fr = lang('fr.json')
+    game.i18n = {
+      localize: k => fr[k] ?? k,
+      format: (k, d = {
+      }) => (fr[k] ?? k).replace(/\{(\w+)\}/g, (_m, name) => d[name] ?? `{${name}}`),
+    }
+    expect(ruleLockWhisperText('ammo', 'SR5.WARN_FiringModeAmmo', {
+      needed: 20, left: 3
+    }, 'Dodger')).toBe("Dodger : règle « Munitions et armes » levée, l'action est partie. Motif du refus levé : " +
+      'Ce mode de tir demande 20 unités de munitions, il en reste 3.')
   })
 })
