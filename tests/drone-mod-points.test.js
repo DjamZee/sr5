@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 import {
   usesModPoints, attributeChange, modPointsDemand, modPointsOf, modPointsUsage, modPointsRefusal, modPointsPrice,
-  armorOverload, attributeCap
+  armorOverload, attributeCap, modPointsLines
 } from '../modules/system/drone-mod-points.js'
 import {
   dealerPointsGauge, buildPointsRefusal
@@ -108,6 +108,26 @@ describe('The drone\'s points (R5 p. 126-127)', () => {
     expect(modPointsUsage({
       ...drone, body: 4
     }, [lowered('body', 3)]).total).toBe(6)
+  })
+})
+
+describe('The points on each line (review 40)', () => {
+  it('the free +1 is taken once per drone: two +2 show 1 and 2, as the gauge counts 3', () => {
+    const mods = [upgrade('speed', 2), upgrade('handling', 2), pointsMod(2), lowered('sensor', 1)]
+    expect(modPointsLines(mods)).toEqual([1, 2, 2, 0])
+    expect(modPointsUsage(drone, mods.slice(0, 2)).used).toBe(3)
+  })
+  it('the free +1 goes to an upgrade that takes its points, the one waiting to be installed shows its full steps', () => {
+    const waiting = upgrade('speed', 2, {
+      isActive: false
+    })
+    const fitted = upgrade('handling', 2)
+    expect(modPointsLines([waiting, fitted], m => m.system.isActive)).toEqual([2, 1])
+    // None fitted yet: the first upgrade of the list shows it
+    expect(modPointsLines([waiting, upgrade('sensor', 2, {
+      isActive: false
+    })], m => m.system.isActive)).toEqual([1, 2])
+    expect(modPointsLines(null)).toEqual([])
   })
 })
 

@@ -106,6 +106,20 @@ export function modPointsOf(system) {
   return d.points
 }
 
+/** The points of each line of a drone's mods, the free +1 taken once per drone (arbitrage de DjamZ, 08/10): by the first
+ *  upgrade that takes its points (`takesPoints`), or the first upgrade of the list when none does yet. The lines that
+ *  take their points then add up to `used` (review 40) */
+export function modPointsLines(mods, takesPoints = takesModPoints) {
+  const list = Array.from(mods ?? [])
+  const demands = list.map(m => modPointsDemand(m))
+  const upgrades = demands.map((d, i) => d.kind === "upgrade" ? i : -1).filter(i => i >= 0)
+  const freeAt = upgrades.find(i => takesPoints(list[i])) ?? upgrades[0]
+  return demands.map((d, i) => {
+    if (d.kind === "upgrade") return Math.max(0, d.steps - (i === freeAt ? 1 : 0))
+    return d.kind === "downgrade" ? 0 : d.points
+  })
+}
+
 /** The drone's points: `total` its Y (or its Structure) plus what the downgrades give back, `used` what the mods take.
  *  `vehicle` = {body, modPoints}: the Structure and the Y the gamemaster wrote, null when they are the same */
 export function modPointsUsage(vehicle, mods) {
@@ -196,7 +210,11 @@ export function modPointsCost(mod, vehicle) {
 
 /** The mods that take their points: fitted, or from the factory (R5 p. 156, Q6 of DjamZ) */
 export function modsTakingPoints(mods) {
-  return Array.from(mods ?? []).filter(m => modTakesSlots(sys(m), isFactoryMod(m)))
+  return Array.from(mods ?? []).filter(takesModPoints)
+}
+
+function takesModPoints(mod) {
+  return modTakesSlots(sys(mod), isFactoryMod(mod))
 }
 
 /** R5 p. 127-128: beyond 3 × Structure of Armor, -1 Handling and -1 Speed every 3 points, -1 Acceleration every 6 */
