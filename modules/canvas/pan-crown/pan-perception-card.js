@@ -13,8 +13,14 @@ import {
   SR5
 } from "../../config.js"
 import {
-  answerOf, checkChoices, entryOf, forgetHolder, intelEntry, intelFor, intelKey, intelUpdateData, perceptionBudget, PERCEPTION_ENTRIES, silentAround
+  answerOf, checkChoices, entryOf, forgetHolder, intelEntry, intelFor, intelKey, intelUpdateData, perceptionBudget, PERCEPTION_ENTRIES, silentAround, sourceOf
 } from "./pan-perception.js"
+import {
+  fileFacts, isFile
+} from "../../system/matrix-files.js"
+import {
+  fileLastEditText
+} from "../../rolls/roll-helpers/file-actions.js"
 import {
   activeDeviceOf, buildPanGraph, idsOf
 } from "./pan-graph.js"
@@ -118,6 +124,7 @@ function monitorOf(document){
 }
 
 function iconTypeOf(target){
+  if (isFile(target.item)) return "file"
   const actor = target.actor
   if (actor.type === "actorDevice") {
     const type = actor.system?.matrix?.deviceType
@@ -149,6 +156,18 @@ export function perceptionFacts(target, silentNearby = null){
   facts.iconType = iconTypeOf(target)
   facts.marks = item ? (item.system?.marks ?? []) : (matrix.marks ?? [])
   facts.commcode = item?.type === "itemDevice" ? item.system?.commcode ?? "" : ""
+  // A file has no rating nor monitor (SR5 p. 228, 230), runs no program; what it tells is its own (SR5 p. 237)
+  if (isFile(item)) {
+    facts.file = fileFacts(item)
+    facts.monitor = null
+    facts.deviceRating = 0
+    facts.programs = []
+    facts.attributes = {
+      attack: null, sleaze: null, dataProcessing: null, firewall: null
+    }
+    facts.lastAction = null
+    return facts
+  }
   if (persona) {
     facts.programs = Array.from(actor.items ?? []).filter(i => i.type === "itemProgram" && i.system?.isActive).map(i => i.name)
     facts.attributes = Object.fromEntries(["attack", "sleaze", "dataProcessing", "firewall"].map(key => {
@@ -244,7 +263,7 @@ export async function silentNearbyOf(observer){
 
 const ICON_TYPES = {
   persona: "SR5.MatrixPerceptionIconPersona", device: "SR5.MatrixPerceptionIconDevice",
-  host: "SR5.MatrixPerceptionIconHost", ice: "SR5.MatrixPerceptionIconIce",
+  host: "SR5.MatrixPerceptionIconHost", ice: "SR5.MatrixPerceptionIconIce", file: "SR5.MatrixPerceptionIconFile",
 }
 
 /** The label of an entry, with its attribute */
@@ -286,6 +305,16 @@ export function answerText(answer){
       return game.i18n.localize(SR5.gridTypes[value] ?? value)
     case "lastAction":
       return `${game.i18n.localize(SR5.matrixRolledActions[value.key] ?? value.key)} (${whenText(value)})`
+    case "fileEdited":
+      // A text the gamemaster typed, or the file's own date (objet Fichier)
+      return typeof value === "string" ? value : fileLastEditText(value)
+    case "fileBomb":
+      return typeof value === "string" ? value : game.i18n.localize(value ? "SR5.MatrixPerceptionFileBombYes" : "SR5.MatrixPerceptionFileBombNo")
+    case "fileProtection":
+      if (typeof value === "string") return value
+      return value > 0 ? game.i18n.format("SR5.MatrixPerceptionFileProtected", {
+        rating: value
+      }) : game.i18n.localize("SR5.FileNotProtected")
     default:
       return String(value)
   }
@@ -330,7 +359,7 @@ export async function choosePerceptionInfo(data, messageId){
         } : {
         })
       }
-      const gm = entry.source === "gm" ? ` <em>(${esc(game.i18n.localize("SR5.MatrixPerceptionAskGM"))})</em>` : ""
+      const gm = sourceOf(entry, isFile(target?.item)) === "gm" ? ` <em>(${esc(game.i18n.localize("SR5.MatrixPerceptionAskGM"))})</em>` : ""
       rows.push(`<label class="sr5-perception-choice"><input type="checkbox" name="choice" value="${entry.key}|${param ?? ""}"> ${esc(entryLabel(choice))}${gm}</label>`)
     }
   }
@@ -432,7 +461,7 @@ async function gmAnswers({
   }
   const rows = choices.map(choice => {
     const entry = entryOf(choice.key)
-    if (entry.source === "gm") return `<label class="sr5-perception-answer">${esc(entryLabel(choice))}
+    if (sourceOf(entry, !!facts.file) === "gm") return `<label class="sr5-perception-answer">${esc(entryLabel(choice))}
       <input type="text" name="${choice.key}" value="${esc(typed[choice.key] ?? "")}"></label>`
     return `<div class="sr5-perception-answer">${esc(entryLabel(choice))}${game.i18n.localize("SR5.Colons")} ${esc(answerText(answerOf(choice, facts, typed)))}</div>`
   })
@@ -464,8 +493,8 @@ async function gmAnswers({
  * @param {Object} typed   the answers already given, by key
  */
 export function needsGMWindow(choices, typed = {
-}){
-  return (choices ?? []).some(c => entryOf(c.key)?.source === "gm" && !String(typed?.[c.key] ?? "").trim())
+}, targetIsFile = false){
+  return (choices ?? []).some(c => sourceOf(entryOf(c.key), targetIsFile) === "gm" && !String(typed?.[c.key] ?? "").trim())
 }
 
 /**
@@ -512,7 +541,7 @@ export async function answerPerception(request, sender){
   }
   // The window opens only when an answer is the gamemaster's to type (DjamZ, 07/10, lot 8); the answers the system
   // works out leave at once, still written by the active gamemaster after the card is read again and counted
-  if (needsGMWindow(checked.choices, typed)) {
+  if (needsGMWindow(checked.choices, typed, !!facts.file)) {
     typed = await gmAnswers({
       observer, target: target ? {
         ...target, facts
