@@ -219,6 +219,8 @@ export const preloadHandlebarsTemplates = async function () {
     //Right Tab - Drone
     "systems/sr5/templates/actors/_partials/right-tabs/droneStuff/droneRoll.hbs",
     "systems/sr5/templates/actors/_partials/right-tabs/droneStuff/modifications.hbs",
+    "systems/sr5/templates/actors/_partials/right-tabs/droneStuff/atelier.hbs",
+    "systems/sr5/templates/actors/_partials/right-tabs/droneStuff/atelier-gauge.hbs",
 		
 
     /************************************************************************************* */

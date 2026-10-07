@@ -103,3 +103,6 @@ export {
 export {
   default as vehicleRepairInfo
 } from "./test-VehicleRepair.js"
+export {
+  default as vehicleModInstallInfo
+} from "./test-VehicleModInstall.js"

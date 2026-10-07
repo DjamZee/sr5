@@ -64,6 +64,9 @@ import {
   applyVehicleRepair
 } from "../system/vehicle-repair-apply.js"
 import {
+  applyVehicleModInstall
+} from "../system/vehicle-workshop-apply.js"
+import {
   SR5 
 } from "../config.js"
 import {
@@ -911,6 +914,13 @@ export class SR5_RollMessage {
         if (await applyVehicleRepair(messageData.various?.vehicleRepair) === false) return
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      //Rigger 5.0 p. 153-154: the mod is fitted, taken off, or its parts are lost
+      case "installVehicleMod":
+      case "removeVehicleMod":
+      case "lostVehicleModParts":
+        if (await applyVehicleModInstall(messageData.various?.vehicleModInstall, type) === false) return
+        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
       case "decreaseReach":
       case "decreaseAccuracy":
         //Only on the weapon of the actor the resistance was rolled for, from a card a GM or an owner wrote (matrix-card.js)
@@ -1122,6 +1132,13 @@ export class SR5_RollMessage {
       case "repairVehicle":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.format("SR5.VehicleRepairDone", {
           boxes: messageData.various?.vehicleRepair?.repaired ?? 0
+        }))
+        break
+      case "installVehicleMod":
+      case "removeVehicleMod":
+      case "lostVehicleModParts":
+        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.format(`SR5.VehicleModDone_${buttonToUpdate}`, {
+          mod: messageData.various?.vehicleModInstall?.modName ?? ""
         }))
         break
       case "firstAid":

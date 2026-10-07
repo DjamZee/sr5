@@ -209,17 +209,22 @@ export class SR5Shop {
    * @param {object} [options]
    * @param {boolean} [options.equip] the gamemaster's Equip mode: free, no
    *   transaction, any actor, prototypes and every grade allowed
+   * @param {Actor} [options.recipient] where the gear goes when it is not the
+   *   buyer: a vehicle mod bought from a drone's workshop lands on the drone,
+   *   waiting to be installed, and its owner pays (Rigger 5.0 p. 153)
+   * @param {Function} [options.priceOn] the unit price of a source on the
+   *   recipient (a mod's price is multiplied by the vehicle's attributes)
    * @returns {Promise<boolean>} whether the gear was added
    */
   static async checkout(actor, lines, {
-    equip = false, express = false, messageId = null, userId = game.user.id, cashToken = null
+    equip = false, express = false, messageId = null, userId = game.user.id, cashToken = null, recipient = null, priceOn = null
   } = {
   }) {
     if (!actor) {
       ui.notifications.warn(game.i18n.localize('SR5.WARN_ShopNoBuyer'))
       return false
     }
-    if (!actor.isOwner) {
+    if (!actor.isOwner || (recipient && !recipient.isOwner)) {
       ui.notifications.warn(game.i18n.localize('SR5.WARN_ShopNotOwner'))
       return false
     }
@@ -287,7 +292,7 @@ export class SR5Shop {
         continue
       }
       const quantity = Math.max(1, Math.floor(Number(line.quantity) || 1))
-      const base = SR5Shop.gradedPrice(source.system, grade)
+      const base = priceOn ? Math.max(0, Number(priceOn(source)) || 0) : SR5Shop.gradedPrice(source.system, grade)
       // The surcharge that bought dice on the card is paid (SR5 p. 420); the search time and the express
       // surcharge stay on the base price (DjamZ's ruling, 05/10)
       const unit = surchargedUnit(base, cardSurcharge(messageId, line.uuid, userId, card))
@@ -368,6 +373,18 @@ export class SR5Shop {
       game.i18n.format('SR5.ShopPurchaseLines', {
         count: labels.length
       })
+
+    // Bought for a vehicle: the gear goes aboard, waiting to be installed, and only the debit stays with the buyer.
+    // A line that waits on its search time is still delivered to the buyer, who brings it to the workshop
+    if (recipient && payload.length) {
+      const aboard = payload.splice(0).map(data => foundry.utils.mergeObject(data, {
+        'system.isActive': false
+      }, {
+        inplace: false
+      }))
+      const landed = await recipient.createEmbeddedDocuments('Item', aboard)
+      if (!landed?.length) return false
+    }
 
     if (!free) payload.push({
       name: game.i18n.format('SR5.ShopPurchaseOf', {

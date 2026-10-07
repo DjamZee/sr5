@@ -207,6 +207,10 @@ function _droneDefaultLayout() {
         _tab('Modifications', 'drone', [
           _block('modifications'), _block('variousGear'),
         ]),
+        //The Chop Shop (Rigger 5.0 p. 153-156)
+        _tab('Workshop', 'workshop', [
+          _block('workshop'),
+        ]),
         _tab('Bio', 'bio', [
           _block('description'),
         ]),

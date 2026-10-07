@@ -10,8 +10,9 @@ import {
 
 const REPAIRER_TYPES = ["actorPc", "actorGrunt"]
 
-/** The mechanic: the selected token, else the user's character, else the owner of the vehicle */
-function findRepairer(vehicle){
+/** The mechanic: the selected token, else the user's character, else the owner of the vehicle (also the one who
+ *  installs a mod, vehicle-workshop-apply.js) */
+export function findRepairer(vehicle){
   const candidates = [
     ...(canvas?.tokens?.controlled ?? []).map(t => t.actor),
     game.user.character,
