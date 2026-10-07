@@ -29,6 +29,10 @@ export class sr5ActorDeviceDataModel extends foundry.abstract.TypeDataModel {
         panMaster: new fields.StringField({
           initial: ''
         }),
+        // Host type (Kill Code p. 48-52): empty = no type, the attributes stay as entered
+        hostType: new fields.StringField({
+          initial: ''
+        }),
         ice: new fields.SchemaField({
           attackDicepool: new fields.NumberField({
             initial: 0

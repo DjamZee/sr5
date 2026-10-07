@@ -38,6 +38,9 @@ import {
   homunculusMaterialRatings
 } from "./homunculus.js"
 import {
+  HOST_ATTRIBUTES, HOST_TYPE_PAGES, resolveHostAttributes, hostTypeOffsetLabel
+} from "./host-type.js"
+import {
   augmentationCapExcess, uncappedRating, limitBase, limitCapNote, CAP_NOTE_LIMITS
 } from "./augmentationCap.js"
 import {
@@ -4907,6 +4910,29 @@ export class SR5_CharacterUtility extends Actor {
     SR5_EntityHelpers.updateValue(actorData.matrix.noise)
   }
 
+  // Host types (Kill Code p. 48-52): a typed host takes its attributes from its rating and its type, the free ones
+  // keeping the gamemaster's arrangement while it fits; with no type the attributes stay as entered
+  static applyHostType(matrix) {
+    const resolved = resolveHostAttributes(matrix.hostType, matrix.deviceRating, Object.fromEntries(
+      HOST_ATTRIBUTES.map(key => [key, matrix.attributes[key].base])
+    ))
+    if (!resolved) return
+    // The collection only offers the free values, all of them already dealt
+    for (let i = 1; i <= 4; i++) {
+      matrix.attributesCollection[`value${i}`] = resolved.collection[i - 1] ?? 0
+      matrix.attributesCollection[`value${i}isSet`] = true
+    }
+    const type = `${game.i18n.localize(SR5.hostTypes[matrix.hostType])} (KC p. ${HOST_TYPE_PAGES[matrix.hostType]})`
+    for (const key of HOST_ATTRIBUTES) {
+      const value = resolved.values[key]
+      matrix.attributes[key].base = value
+      const label = game.i18n.format(resolved.fixed.includes(key) ? 'SR5.HostTypeFixed' : 'SR5.HostTypeDealt', {
+        type, offset: hostTypeOffsetLabel(value, matrix.deviceRating)
+      })
+      SR5_EntityHelpers.updateModifier(matrix.attributes[key], label, "hostType", 0)
+    }
+  }
+
   static generateDeviceMatrix(actor, itemData) {
     let actorData = actor.system, matrix = actorData.matrix,
       matrixAttributes = matrix.attributes
@@ -4920,6 +4946,7 @@ export class SR5_CharacterUtility extends Actor {
       matrix.attributesCollection.value2 = matrix.deviceRating + 1
       matrix.attributesCollection.value3 = matrix.deviceRating + 2
       matrix.attributesCollection.value4 = matrix.deviceRating + 3
+      this.applyHostType(matrix)
     }
 
     //Handle Ice attack and defense

@@ -3666,6 +3666,16 @@ SR5.deviceTypes = {
   maglock					  : "SR5.DEVICE_TYPE_Maglock",
 }
 
+// Host types (Kill Code p. 48-52); none = the attributes stay as entered
+SR5.hostTypes = {
+  data                      : "SR5.HostTypeData",
+  industrial                : "SR5.HostTypeIndustrial",
+  destination               : "SR5.HostTypeDestination",
+  obsolete                  : "SR5.HostTypeObsolete",
+  offline                   : "SR5.HostTypeOffline",
+  rogue                     : "SR5.HostTypeRogue",
+}
+
 // Ice types
 SR5.iceTypes = {
   iceAcid                   : "SR5.IceAcid",
@@ -4224,6 +4234,7 @@ SR5.modifiersTypes = {
   spell 					  : "SR5.Spell",
   spiritType                : "SR5.SpiritType",
   spriteType 				  : "SR5.SpriteType",
+  hostType 				  : "SR5.HostType",
   vehicleMod				  : "SR5.VehicleMod",
   visionType				  : "SR5.VisionType",
   weaponAccessory 		  : "SR5.WeaponAccessory",

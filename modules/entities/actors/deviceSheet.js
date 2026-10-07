@@ -1,6 +1,9 @@
 import {
   ActorSheetSR5 
 } from "./baseSheet.js"
+import {
+  HOST_ATTRIBUTES, hostTypeLayout
+} from "./host-type.js"
 
 /**
  * An Actor sheet for device type actors in the Shadowrun 5 system.
@@ -40,6 +43,38 @@ export class SR5AppareilSheet extends ActorSheetSR5 {
     context.panMasterOptions = this._panMasterOptions(context.actor)
 
     return context
+  }
+
+  // A typed host (Kill Code p. 48-52): an attribute the type sets is not swapped; before a swap of two free ones, the
+  // values the type dealt are saved, so that the swap is made on what the sheet shows and not on older saved values
+  async _onDrop(event) {
+    const matrix = this.actor.system.matrix
+    if (this.actor.type === "actorDevice" && matrix.deviceType === "host" && hostTypeLayout(matrix.hostType)) {
+      let dropData = null
+      try {
+        dropData = JSON.parse(event.dataTransfer.getData('text/plain'))
+      } catch {
+        dropData = null
+      }
+      const dropZone = event.target.closest('[data-dropmatrixattribute]')
+      if (dropData?.valueFromAttribute && dropZone) {
+        const fixed = Object.keys(hostTypeLayout(matrix.hostType).fixed).map(key => `system.matrix.attributes.${key}.base`)
+        if (fixed.includes(dropData.valueFromAttribute) || fixed.includes(dropZone.dataset.dropmatrixattribute)) {
+          event.preventDefault()
+          event.stopPropagation()
+          ui.notifications.info(game.i18n.localize('SR5.HostTypeLockedAttribute'))
+          return
+        }
+        const updates = {
+        }
+        for (const key of HOST_ATTRIBUTES) {
+          const shown = matrix.attributes[key].base
+          if (this.actor._source.system.matrix.attributes[key].base !== shown) updates[`system.matrix.attributes.${key}.base`] = shown
+        }
+        if (Object.keys(updates).length) await this.actor.update(updates)
+      }
+    }
+    return super._onDrop(event)
   }
 
   // The masters a device can be slaved to (SR5 p. 234, couronne du PAN lot 7): the hosts of the world, and the master

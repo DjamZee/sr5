@@ -99,5 +99,20 @@
 			</select>
 		</li>
 		{{/ife}}
+
+		{{#if (and (eq actor.type 'actorDevice') (eq system.matrix.deviceType "host"))}}
+		<li class="grid"
+		  data-helpTitle="{{localize 'SR5.HostType'}}"
+		  data-helpMessage="{{localize 'SR5.HELP_HostTypeMsg'}}"
+		>
+			<div class="col-5">{{localize 'SR5.HostType'}}</div>
+			<div class="col-7">
+				<select name="system.matrix.hostType" data-dtype="String">
+					<option value="">{{localize 'SR5.HostTypeNone'}}</option>
+					{{selectOptions lists.hostTypes selected=system.matrix.hostType localize=true}}
+				</select>
+			</div>
+		</li>
+		{{/if}}
 	</ul>
 </div>
