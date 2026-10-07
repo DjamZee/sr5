@@ -5,6 +5,9 @@ import {
   SR5 
 } from "../config.js"
 
+//The augmentation cap's line that cuts nothing (the help of the sheet, worth 0) is noise in a roll and on its card
+export const capNoteOnly = m => m?.type === "augmentationCap" && !Number(m.value)
+
 export class SR5_PrepareRollHelper {
   //Get rolling actor
   static getRollingActor(document){
@@ -47,6 +50,7 @@ export class SR5_PrepareRollHelper {
   static getDicepoolModifiers(rollData, modifiers){
     rollData.dicePool.modifiers = []
     for (let m of modifiers){
+      if (capNoteOnly(m)) continue
       if (m.type !== "skillRating" && m.type !== "linkedAttribute" && m.type !== "skillGroup" && m.type !== "matrixAttribute" && m.type !== "devicRating"){
         rollData.dicePool.modifiers.push({
           type: m.type, label: m.source, value: m.value
@@ -69,6 +73,7 @@ export class SR5_PrepareRollHelper {
   //getBaseLimit took both off the base, so both must come back
   static getLimitModifiers(rollData, limitModifiers){
     for (let m of limitModifiers){
+      if (capNoteOnly(m)) continue
       let key = m.type, n = 1
       while (rollData.limit.modifiers[key] !== undefined) key = `${m.type}_${++n}`
       rollData.limit.modifiers[key] = {
