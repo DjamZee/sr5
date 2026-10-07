@@ -8,7 +8,7 @@ import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
-  implantEssenceEffects, roundImplantEssence, essenceSettingOn, AUGMENTATION_BUNDLE_SETTING
+  implantEssenceEffects, roundImplantEssence, essenceSettingOn, AUGMENTATION_BUNDLE_SETTING, takesBoneDamage
 } from "../../system/implant-essence.js"
 import {
   SR5_EntityHelpers 
@@ -572,8 +572,9 @@ export class SR5_UtilityItem extends Actor {
           if (!modifier.damageType) itemData.damageValue.modifiers = itemData.damageValue.modifiers.concat(modifier)
         }
         //The bone augmentations (SR5 p. 458 and 463) are not compatible with each other: should several be
-        //carried anyway, only the highest counts, as for any SR5 bonus. A weapon without a category takes none.
-        const bones = itemData.weaponSkill.category ? actor.system.itemsProperties.weapon.damageValue.modifiers
+        //carried anyway, only the highest counts, as for any SR5 bonus. They change the bare-handed damage alone: a
+        //weapon with its own Damage Value (retractable blades, SR5 p. 461) keeps it, and so does one without a category.
+        const bones = takesBoneDamage(itemData) ? actor.system.itemsProperties.weapon.damageValue.modifiers
           .filter(m => m.damageType && m.details === itemData.weaponSkill.category) : []
         if (bones.length) {
           const highest = bones.reduce((a, b) => (b.value > a.value ? b : a))

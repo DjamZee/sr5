@@ -346,6 +346,16 @@ export function isBoneLacing(data) {
   return effects.some(e => e?.category === "itemArmor") && effects.some(e => unarmed(e) || resistance(e))
 }
 
+/**
+ * Whether a weapon is the bare-handed attack whose damage the bone augmentations change (SR5 p. 458 and 462: "les
+ * dommages à mains nues"): Unarmed Combat on Strength with nothing of its own to add. A weapon with its own Damage
+ * Value keeps it: retractable blades (STR + 3)P (SR5 p. 461), spurs, knuckles, a natural weapon.
+ */
+export function takesBoneDamage(weapon) {
+  return weapon?.weaponSkill?.category === "unarmedCombat" && weapon.damageValue?.isStrengthBased === true &&
+    !(Number(weapon.damageValue.base) > 0)
+}
+
 /** The Augmentations de densité osseuse of the compendiums: sr5-compendiums fr_bioware, then the Megapack (and (NE)). */
 const BONE_DENSITY_SOURCES = ["J3aTcMzhQgzjhL5T", "vRsjmjPwxyoQszgl", "H6bRPeyZzxEFIC7S"]
 

@@ -163,6 +163,24 @@ describe("unarmed damage of the bone augmentations", () => {
     expect([w.damageValue.value, w.damageType]).toEqual([4, "stun"])
   })
 
+  it("leaves an Unarmed Combat weapon with its own Damage Value alone (retractable blades, SR5 p. 461)", () => {
+    const titanium = prepared("Titane", 0, {
+      type: "unarmedCombat", value: 3, damageType: "physical"
+    })
+    const blades = weapon()
+    blades.damageValue.base = 3
+    blades.damageType = "physical"
+    SR5_UtilityItem._generateWeaponDamage(blades, actorWith(titanium))
+    expect(blades.damageValue.value).toBe(4 + 3)
+    const natural = weapon()
+    natural.damageValue.isStrengthBased = false
+    SR5_UtilityItem._generateWeaponDamage(natural, actorWith(titanium))
+    expect([natural.damageValue.value, natural.damageType]).toEqual([0, "stun"])
+    const punch = weapon()
+    SR5_UtilityItem._generateWeaponDamage(punch, actorWith(titanium))
+    expect([punch.damageValue.value, punch.damageType]).toEqual([4 + 3, "physical"])
+  })
+
   it("an effect without the new fields works as before: fixed value, not the rating, damage type untouched", () => {
     const mods = prepared("Gants", 5, {
       type: "unarmedCombat", value: 1
