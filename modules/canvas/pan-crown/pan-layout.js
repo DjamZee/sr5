@@ -19,6 +19,31 @@ export const PAN_LAYOUT = {
 }
 
 /**
+ * What a crown shows of its graph, as a string (relecture, M1): two builds with the same signature draw the same
+ * icons, so that a crown is only laid out again after a move. The distances are left out (they change at each step);
+ * what they decide, the visibility, is in. Null when it cannot be told (a module's node that does not turn into
+ * JSON): the crown is then drawn again.
+ * @param {Object} graph        the graph of getGraph
+ * @param {Object} [token]      the crown's token, {w, h}
+ * @param {Map} [nodeTokens]    node uuid -> the token its line goes to, {id}
+ * @return {String|null}
+ */
+export function signatureOf(graph, token = null, nodeTokens = new Map()){
+  try {
+    return JSON.stringify([
+      token?.w ?? null, token?.h ?? null, graph?.master ?? null, graph?.links ?? [],
+      (graph?.nodes ?? []).map(n => [
+        n.uuid, n.kind, n.name, n.mode, n.silentFrom, n.icon, n.customIcon, n.via, n.ownerOnly, n.linkOwnerOnly,
+        n.revealed, n.visibility?.visible, n.visibility?.reason, n.hiddenFromPlayers, n.viewerMarks, n.intel,
+        nodeTokens.get(n.uuid)?.id ?? null,
+      ]),
+    ])
+  } catch {
+    return null
+  }
+}
+
+/**
  * Lay out a crown.
  * @param {Object} graph                    the graph of getGraph (nodes, links, master), each node with visibility
  * @param {Object} options

@@ -18,7 +18,7 @@ import {
   openRadialMenu
 } from "./pan-radial-menu.js"
 import {
-  crownAngle, dashesOf, layoutCrown
+  crownAngle, dashesOf, layoutCrown, signatureOf
 } from "./pan-layout.js"
 import {
   iconPathOf, isTintedIcon, nodeIconPathOf
@@ -43,6 +43,8 @@ import {
 // from the base texture of the first one
 const RAIN_GLYPHS = "アイウエオカキクケコサシスセソタチツテト01ABCDEF"
 const RAIN_CELL = 28
+// How long no frame of a move must come before the crowns are built again (M1, M5)
+export const PAN_SETTLE_MS = 250
 
 // The colors of the mock-up
 const COLORS = {
@@ -80,8 +82,12 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     // token id -> {token, container, lines, icons, angle, droneTokenIds, version}
     this.crowns = new Map()
     this.lastClick = null
-    this._pending = new Set()
+    // token id -> soft (pending refresh: true after a move, false for a full drawing)
+    this._pending = new Map()
     this._frame = false
+    // token id -> its center at its last refresh, and the timer of the end of the moves (M1)
+    this._centers = new Map()
+    this._settleTimer = null
     this._discs = new Map()
     // Lot 8: what opened the crowns (pan-openings.js)
     this.manual = new Set()
@@ -187,6 +193,9 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     this.crowns.clear()
     this._pending.clear()
     this._frame = false
+    this._centers.clear()
+    clearTimeout(this._settleTimer)
+    this._settleTimer = null
     for (const texture of this._discs.values()) texture.destroy(true)
     this._discs.clear()
     // The tokens of another scene: the AR view stays, the rest goes
@@ -295,6 +304,8 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     const sceneCenter = canvas.dimensions.sceneRect.center
     const crown = {
       token, container, decor, lines, icons, halos, pulses, pulseData: [], droneTokenIds: new Set(), version: 0,
+      // The last build (M1): its graph, the tokens its lines go to, what it showed, its scale
+      graph: null, nodeTokens: new Map(), signature: null, scale: 1,
       // Fixed once open, so that the crown does not swing round while its token moves
       angle: crownAngle(token.center, sceneCenter),
       deployStart: null,
@@ -321,36 +332,110 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     safeCall(PAN_CROWN_HOOKS.closed, [token])
   }
 
-  /** Draw again, once in the next frame, the crowns whose token or graph changed (all of them by default) */
-  refresh(tokenIds = null){
+  /**
+   * Draw again, once in the next frame, the crowns whose token or graph changed (all of them by default).
+   * @param {Array<String>|null} tokenIds
+   * @param {Object} [options]
+   * @param {Boolean} [options.soft]  after a move: drawn again only if what is seen changed, else its lines are laid
+   *                                  out again (M1). Any other refresh draws the crown again in full.
+   */
+  refresh(tokenIds = null, {
+    soft = false
+  } = {
+  }){
     if (!this.crowns.size) return
-    for (const id of tokenIds ?? this.crowns.keys()) if (this.crowns.has(id)) this._pending.add(id)
+    for (const id of tokenIds ?? this.crowns.keys()){
+      if (!this.crowns.has(id)) continue
+      // A full refresh asked in the same frame wins over a soft one
+      this._pending.set(id, soft && (this._pending.get(id) ?? true))
+    }
     if (this._frame || !this._pending.size) return
     // On the canvas's own clock: nothing is drawn between two of its frames anyway
     this._frame = true
     canvas.app.ticker.addOnce(() => {
       this._frame = false
-      const ids = [...this._pending]
+      const pending = [...this._pending]
       this._pending.clear()
-      for (const id of ids){
+      for (const [id, isSoft] of pending){
         const crown = this.crowns.get(id)
-        if (crown) this.#build(crown)
+        if (crown) this.#build(crown, {
+          soft: isSoft
+        })
       }
     })
   }
 
-  /** A token was redrawn (moved, animated, hidden): follow it, and the lines that lead to it */
+  /**
+   * A token was redrawn (moved, animated, hidden): follow it, and the lines that lead to it. This fires at each frame
+   * of a move: the crowns are only placed and their lines drawn again there, from the graph of their last build; what
+   * a move may change in what is seen (100 m, SR5 p. 236) is worked out once, when the move is over (relecture, M1).
+   */
   onRefreshToken(token){
     const crown = this.crowns.get(token.id)
     if (crown) this.#place(crown)
     if (!this.crowns.size) return
-    const linked = [...this.crowns.values()].filter(c => c.droneTokenIds.has(token.id)).map(c => c.token.id)
-    // The viewer moved: what she sees within 100 m may change. A crown with lines to other tokens is laid out again.
-    if (token.controlled) return this.refresh()
-    // For the gamemaster, a player's token that moves changes what the players see (the yellow ring)
-    if (game.user?.isGM && token.actor?.hasPlayerOwner) return this.refresh()
-    if (crown?.droneTokenIds.size) linked.push(token.id)
-    if (linked.length) this.refresh(linked)
+    const center = token.center
+    const at = `${center.x},${center.y}`
+    const before = this._centers.get(token.id)
+    this._centers.set(token.id, at)
+    // A token seen for the first time, or redrawn where it stands (hover, target, border): nothing moved
+    if (before === undefined || before === at) return
+    for (const other of this.crowns.values()){
+      if (other === crown ? other.droneTokenIds.size : other.droneTokenIds.has(token.id)) this.#relayout(other)
+    }
+    // The viewer moved: what she sees within 100 m may change; for the gamemaster, a player's token that moves
+    // changes what the players see (the yellow ring)
+    if (token.controlled || (game.user?.isGM && token.actor?.hasPlayerOwner)) this.#settleLater()
+  }
+
+  // Once the moves are over (no frame of a move for a while), the crowns are built again, and drawn again only if what
+  // is seen changed
+  #settleLater(){
+    clearTimeout(this._settleTimer)
+    this._settleTimer = setTimeout(() => {
+      this._settleTimer = null
+      this.refresh(null, {
+        soft: true
+      })
+    }, PAN_SETTLE_MS)
+  }
+
+  // The lines of a crown laid out again where the tokens stand now, from the graph of its last build: no graph, no
+  // picture, no text is made again
+  #relayout(crown){
+    const {
+      token, graph
+    } = crown
+    if (!graph || token.destroyed) return
+    if ([...crown.nodeTokens.values()].some(t => t.destroyed)) return void this.refresh([token.id])
+    const layout = layoutCrown(graph, this.#layoutOptions(crown, (node) => crown.nodeTokens.get(node.uuid) ?? null))
+    this.#drawLines(crown.lines, layout.lines, crown.scale)
+    const pulsing = layout.lines.filter(line => line.mode !== "offline")
+    if (pulsing.length !== crown.pulseData.length) return void this.refresh([token.id])
+    pulsing.forEach((line, i) => {
+      crown.pulseData[i].from = line.from
+      crown.pulseData[i].to = line.to
+    })
+  }
+
+  // The options of layoutCrown for a crown: a node on a token of its own is a line to that token (lot 7)
+  #layoutOptions(crown, tokenOf){
+    const {
+      token
+    } = crown
+    return {
+      tokenRadius: Math.max(token.w, token.h) / 2,
+      scale: crown.scale,
+      angle: crown.angle,
+      tokenOffset: node => {
+        if (!PAN_TOKEN_KINDS.includes(node.kind)) return null
+        const other = tokenOf(node)
+        if (!other || other === token) return null
+        return {
+          x: other.center.x - token.center.x, y: other.center.y - token.center.y
+        }
+      },
+    }
   }
 
   #place(crown){
@@ -363,7 +448,10 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     container.visible = token.visible
   }
 
-  async #build(crown){
+  async #build(crown, {
+    soft = false
+  } = {
+  }){
     const version = ++crown.version
     const {
       token
@@ -371,6 +459,23 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     if (token.destroyed || !token.actor) return this.#hide(token)
     const graph = getGraph(token)
     if (!graph) return this.#hide(token)
+    // The tokens the lines go to (lot 7), looked up once per build: a move only lays the lines out again (M1)
+    const nodeTokens = new Map()
+    for (const node of graph.nodes){
+      if (!PAN_TOKEN_KINDS.includes(node.kind)) continue
+      const other = tokenOfNode(node, {
+        actor: token.actor, token
+      })
+      if (other) nodeTokens.set(node.uuid, other)
+    }
+    const signature = signatureOf(graph, token, nodeTokens)
+    // After a move, nothing seen changed: the lines follow the tokens, the icons stay as they are
+    if (soft && crown.graph && signature !== null && signature === crown.signature) {
+      crown.graph = graph
+      crown.nodeTokens = nodeTokens
+      this.#place(crown)
+      return this.#relayout(crown)
+    }
 
     // The pictures first, each loaded once for all the crowns. An item's own picture that cannot be loaded falls back
     // on the generic one of its category (lot 10); the sign of the marks is the generic "mark" picture.
@@ -386,24 +491,17 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
 
     crown.droneTokenIds.clear()
     const scale = Math.max(canvas.dimensions.size / 100, 0.5)
-    const layout = layoutCrown(graph, {
-      tokenRadius: Math.max(token.w, token.h) / 2,
-      scale,
-      angle: crown.angle,
-      tokenOffset: node => {
-        // A drone, the rigger's master, the master of a device of the scenery, a device of the scenery: a line to its
-        // token, wherever it is on the scene (lot 7); with no token, an icon in the crown
-        if (!PAN_TOKEN_KINDS.includes(node.kind)) return null
-        const other = tokenOfNode(node, {
-          actor: token.actor, token
-        })
-        if (!other || other === token) return null
-        crown.droneTokenIds.add(other.id)
-        return {
-          x: other.center.x - token.center.x, y: other.center.y - token.center.y
-        }
-      },
-    })
+    crown.scale = scale
+    crown.graph = graph
+    crown.nodeTokens = nodeTokens
+    crown.signature = signature
+    // A drone, the rigger's master, the master of a device of the scenery, a device of the scenery: a line to its
+    // token, wherever it is on the scene (lot 7); with no token, an icon in the crown
+    const layout = layoutCrown(graph, this.#layoutOptions(crown, node => {
+      const other = nodeTokens.get(node.uuid) ?? null
+      if (other && other !== token) crown.droneTokenIds.add(other.id)
+      return other
+    }))
 
     this.#drawLines(crown.lines, layout.lines, scale)
     for (const child of crown.icons.removeChildren()) child.destroy({
@@ -632,13 +730,19 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
       }
     }
 
-    const style = foundry.canvas.containers.PreciseText.getTextStyle({
-      fontSize: Math.round(radius * 0.9), anchor: CONST.TEXT_ANCHOR_POINTS.TOP
-    })
-    const label = icon.addChild(new foundry.canvas.containers.PreciseText(labelOf(node, graph), style))
-    label.anchor.set(0.5, 0)
-    label.position.set(0, radius + 4)
-    label.visible = false
+    // The name on hover, made the first time it is read: a crown drawn again makes no text (M1)
+    let label = null
+    const showLabel = () => {
+      if (!label) {
+        const style = foundry.canvas.containers.PreciseText.getTextStyle({
+          fontSize: Math.round(radius * 0.9), anchor: CONST.TEXT_ANCHOR_POINTS.TOP
+        })
+        label = icon.addChild(new foundry.canvas.containers.PreciseText(labelOf(node, graph), style))
+        label.anchor.set(0.5, 0)
+        label.position.set(0, radius + 4)
+      }
+      label.visible = true
+    }
 
     // The observer's own marks (SR5 p. 238): one diamond per mark, over the icon, on her screen alone
     if (node.viewerMarks > 0) icon.addChild(this.#marksOf(Math.min(node.viewerMarks, 4), radius, markTexture))
@@ -648,14 +752,14 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     if (typeof node.intel?.marks === "number") icon.addChild(marksCountOf(node.intel.marks, radius))
 
     icon.on("pointerover", () => {
-      label.visible = true
+      showLabel()
       // Over its neighbours while it is read
       icon.parent?.setChildIndex(icon, icon.parent.children.length - 1)
       // On hover (lot 8), the crown stays while the pointer goes from its token to its icons
       if (this.hovered === crown.token.id) clearTimeout(this._hoverTimer)
     })
     icon.on("pointerout", () => {
-      label.visible = false
+      if (label) label.visible = false
       if (this.hovered === crown.token.id) this.#leaveHover()
     })
     // The token stays selected, and the canvas does not start a selection box under the icon
