@@ -797,6 +797,18 @@ export class SR5_RollMessage {
         SR5_MatrixHelpers.applyHaywireEffect(messageData, originalActionActor, actor)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      //Rigger 5.0 p. 34-35: electronic warfare. The button stays when nothing was written
+      case "targetDevice":
+        if (await SR5_MatrixHelpers.applyTargetDeviceEffect(messageData, originalActionActor, actor)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
+      case "suppressNoise":
+        if (await SR5_MatrixHelpers.applyNoiseSuppressionEffect(messageData, actor)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
+      //The drone rolls from the defense card, which carries the net hits its threshold is read from
+      case "confusePilot":
+        actor.rollTest("autopilotUnforeseen", null, messageData)
+        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
       case "iAmTheFirewall":
         SR5_MatrixHelpers.applyIAmTheFirewallEffect(messageData, speaker, SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId, messageData.actorUuids))
         break
@@ -938,6 +950,13 @@ export class SR5_RollMessage {
         case "matrixPerceptionInfo":
           await choosePerceptionInfo(messageData, messageId)
           break
+        //Rigger 5.0 p. 35: the hacker breaks the lock of the defender, written on himself
+        case "breakTargetLock": {
+          let hacker = SR5_EntityHelpers.getRealActorFromID(messageData.previousMessage.actorId, messageData.actorUuids)
+          let locker = SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId, messageData.actorUuids)
+          if (await SR5_MatrixHelpers.breakTargetLock(messageData, hacker, locker)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+          break
+        }
         default:
           SR5_SystemHelpers.srLog(1, `Unknown '${type}' type in chatButtonAction (attacker Test)`)
       }

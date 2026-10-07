@@ -94,6 +94,15 @@ export default async function matrixActionInfo(cardData, actorId){
     return
   }
 
+  //Rigger 5.0 p. 35: Suppress Noise is a simple test, nobody defends against it; its hits reduce the noise
+  if (cardData.test.typeSub === "suppressNoise") {
+    if (cardData.roll.hits > 0) cardData.chatCard.buttons.suppressNoise = SR5_RollMessage.generateChatButton("nonOpposedTest", "suppressNoise", game.i18n.format("SR5.NoiseSuppressionApply", {
+      hits: cardData.roll.hits
+    }))
+    else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.ActionFailure"))
+    return
+  }
+
   //SR5 p. 242: a simple test, one piece of information per hit; only a silent icon defends (couronne du PAN, lot 5)
   if (cardData.test.typeSub === "matrixPerception" && cardData.roll.hits > 0 && !perceptionNeedsDefense(cardData)) {
     cardData.chatCard.buttons[PERCEPTION_BUTTON] = SR5_RollMessage.generateChatButton("nonOpposedTest", PERCEPTION_BUTTON, `${game.i18n.localize("SR5.MatrixPerceptionInfoButton")} (${cardData.roll.hits})`)

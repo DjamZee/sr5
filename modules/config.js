@@ -3787,6 +3787,8 @@ SR5.effectTypes = {
   backgroundCount			  : "SR5.SceneBackgroundCount",
   anticoagulantDamage       : "SR5.Anticoagulant",
   matrixAction              : "SR5.MatrixAction",
+  targetDevice              : "SR5.MatrixActionTargetDevice",
+  noiseSuppression          : "SR5.MatrixActionSuppressNoise",
 }
 
 SR5.effectDuration = {
