@@ -26,6 +26,9 @@ import {
   lineWaits, deliveryDelayed, currentExpress, expressCost, orderHours, newOrder, addOrders, testedHours, cardResult, cardSurcharge, surchargedUnit,
   requestRegister
 } from './shop-orders.js'
+import {
+  STACKABLE_TYPES, sr5StackPayload, sr5LineLabel
+} from './item-payload.js'
 
 /**
  * Purchases made from the compendium browser.
@@ -38,7 +41,7 @@ import {
 export class SR5Shop {
 
   /** Item types that carry their own quantity: they are bought as one stack. */
-  static STACKABLE_TYPES = ['itemAmmunition', 'itemDrug', 'itemGear', 'itemWeapon']
+  static STACKABLE_TYPES = STACKABLE_TYPES
 
   /**
    * The actors the current user may spend for, by the gamemaster's buyer rule
@@ -178,24 +181,16 @@ export class SR5Shop {
     if (source.pack) foundry.utils.setProperty(itemData, 'flags.sr5.shopSource', source.uuid)
     // The item computes Essence, price and availability from its grade itself
     if (grade) itemData.system.grade = grade
-    const stackable = SR5Shop.STACKABLE_TYPES.includes(itemData.type) &&
-      itemData.system.quantity !== undefined
-    if (stackable) {
-      // Ammunition is sold by its entry: the compendiums hold boxes of 10 rounds, whose computed price is the
-      // box's (utilityItem.js _handleAmmoPrice). One bought is one box, not one round for the box's price.
-      const perEntry = itemData.type === 'itemAmmunition' ?
-        Math.max(1, Math.floor(Number(source.system?.quantity) || 1)) : 1
-      itemData.system.quantity = quantity * perEntry
-      return [itemData]
-    }
-    const payload = []
-    for (let i = 0; i < quantity; i++) payload.push(foundry.utils.deepClone(itemData))
-    return payload
+    // Ammunition is sold by its entry: the compendiums hold boxes of 10 rounds, whose computed price is the
+    // box's (utilityItem.js _handleAmmoPrice). One bought is one box, not one round for the box's price.
+    const perEntry = itemData.type === 'itemAmmunition' ?
+      Math.max(1, Math.floor(Number(source.system?.quantity) || 1)) : 1
+    return sr5StackPayload(itemData, quantity, perEntry)
   }
 
   /** `Nom (x3)` when there is more than one. */
   static lineLabel(name, quantity) {
-    return quantity > 1 ? `${name} (x${quantity})` : name
+    return sr5LineLabel(name, quantity)
   }
 
   /**

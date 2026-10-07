@@ -9,23 +9,15 @@
 // type `gain`, the same document a sale creates; gear is copied onto the
 // character the way the sheet itself holds it.
 
-/**
- * The item types that hold a count rather than coming one per line.
- *
- * The shop of PR #592 knows the same list, as `SR5Shop.STACKABLE_TYPES`. It
- * lives on a branch this one is not built on, so the knowledge is repeated
- * here rather than imported from a file that does not exist yet: once that
- * PR lands, the two should become one.
- */
-const STACKABLE_TYPES = ["itemAmmunition", "itemDrug", "itemGear", "itemWeapon"]
+import {
+  sr5StackPayload, sr5LineLabel
+} from "./item-payload.js"
 
 /**
  * The documents to create so that a character ends up holding `quantity` of
- * `source`.
- *
- * Ten rounds of ammunition are one line holding ten; two swords are two
- * swords, because a sword carries its own condition and its own
- * modifications.
+ * `source`: the shop's rule (item-payload.js), on a plain copy. A table's
+ * quantity counts rounds, not the compendium's boxes, so nothing is
+ * multiplied by the entry.
  *
  * @param {Item} source
  * @param {number} quantity
@@ -34,25 +26,7 @@ const STACKABLE_TYPES = ["itemAmmunition", "itemDrug", "itemGear", "itemWeapon"]
 function itemPayload(source, quantity) {
   const itemData = source.toObject()
   delete itemData._id
-
-  if (STACKABLE_TYPES.includes(itemData.type) && itemData.system.quantity !== undefined) {
-    itemData.system.quantity = quantity
-    return [itemData]
-  }
-
-  const payload = []
-  for (let i = 0; i < quantity; i++) payload.push(foundry.utils.deepClone(itemData))
-  return payload
-}
-
-/**
- * `Nom (x3)` when there is more than one.
- * @param {string} name
- * @param {number} quantity
- * @returns {string}
- */
-function lineLabel(name, quantity) {
-  return quantity > 1 ? `${name} (x${quantity})` : name
+  return sr5StackPayload(itemData, quantity)
 }
 
 /**
@@ -286,7 +260,7 @@ export async function sr5HandOverLoot(message, actor, shown) {
       continue
     }
     payload.push(...itemPayload(item, line.quantity))
-    names.push(lineLabel(item.name, line.quantity))
+    names.push(sr5LineLabel(item.name, line.quantity))
   }
 
   // A compendium disabled since the draw leaves holes. Saying how many is
