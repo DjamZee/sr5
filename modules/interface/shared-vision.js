@@ -17,6 +17,9 @@ import {
 import {
   SR5_EntityHelpers
 } from "../entities/helpers.js"
+import {
+  refuseByRule
+} from "../system/rule-locks.js"
 
 //The pending writes of the shared vision list, by token uuid
 const viewerQueues = new Map()
@@ -174,12 +177,12 @@ export class SR5SharedVision {
       return false
     }
     //No mark, no traffic to intercept (SR5 p. 241): the mark may have gone since the roll
-    if (!hasMarkFrom(target, hackerId)) {
-      ui.notifications.warn(game.i18n.format("SR5.SharedVisionNoMark", {
-        name: target.name
-      }))
-      return false
-    }
+    //The "matrix" rule lock lifted (B13), the Snoop goes without a mark (snoopHolds), and the gamemaster hears of it
+    if (!hasMarkFrom(target, hackerId) && refuseByRule("matrix", "SR5.SharedVisionNoMark", {
+      name: target.name
+    }, {
+      actor: SR5_EntityHelpers.getRealActorFromID(hackerId)
+    })) return false
     const hacker = SR5_EntityHelpers.getRealActorFromID(hackerId)
     const userIds = game.user.isGM ?
       game.users.filter(u => !u.isGM && hacker?.testUserPermission(u, "OWNER")).map(u => u.id) :

@@ -2719,6 +2719,7 @@
 	"SR5.INFO_NoScattering": "No scatter.",
 	"SR5.INFO_NoSpendHitsLeft": "You can't spend more net hits on effects.",
 	"SR5.INFO_PanIsFull": "max number of slaved device is reached.",
+	"SR5.INFO_PanFullOf": "{actor}: max number of slaved devices (Rating × 3) is reached.",
 	"SR5.INFO_ScatterDistance": "Scatter : {distance}m.",
 	"SR5.INFO_ServicesReduced": "services reduced by {service}",
 	"SR5.INFO_ShakeUp": "is shake up ! Initiative reduced by 5.",
