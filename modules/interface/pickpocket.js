@@ -18,6 +18,9 @@ import {
 import {
   screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED
 } from "../system/implant-essence.js"
+import {
+  refuseByRule
+} from "../system/rule-locks.js"
 
 /**
  * Picking a pocket from the token HUD (SR5 p. 135, p. 422).
@@ -151,7 +154,9 @@ export class SR5Pickpocket {
   static async start(thiefDocument, targetDocument, mode = "take") {
     const thief = thiefDocument.actor
     //SR5 p. 135: Palming cannot be used untrained
-    if (!(thief.system.skills.palming.rating?.value > 0)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_PickpocketNeedsPalming"))
+    if (!(thief.system.skills.palming.rating?.value > 0) && refuseByRule("objects", "SR5.WARN_PickpocketNeedsPalming", null, {
+      actor: thief
+    })) return
 
     if (mode === "plant") {
       const planted = await SR5Pickpocket.askPlant(thief, targetDocument)

@@ -5,6 +5,9 @@ import {
   DRUG_BASES, DRUG_BLOCKS, DRUG_ATTRIBUTES, DRUG_ENHANCER_MAX, computeCustomDrug, customDrugItemData, effectLines,
   normalizeRecipe
 } from "../entities/items/drug-designer.js"
+import {
+  refuseByRule, ruleLockActive
+} from "../system/rule-locks.js"
 
 const t = key => game.i18n.localize(key)
 const escape = s => foundry.utils.escapeHTML?.(String(s ?? "")) ?? String(s ?? "")
@@ -17,6 +20,11 @@ const LABELS = {
 export function canDesignDrug(actor, user = game.user) {
   if (user?.isGM) return true
   return !!actor?.isOwner && (Number(actor.system?.skills?.chemistry?.rating?.value) || 0) > 0
+}
+
+/** The "objects" rule lock lifted (B13), a player designs for an actor of theirs without Chemistry; never for another's. */
+export function canOfferDrugDesign(actor, user = game.user) {
+  return canDesignDrug(actor, user) || (!!actor?.isOwner && !ruleLockActive("objects"))
 }
 
 /**
@@ -144,7 +152,7 @@ export class SR5DrugDesigner extends foundry.applications.api.HandlebarsApplicat
       negativeAttributes: DRUG_ATTRIBUTES.some(a => (stat.effects.attributes[a] ?? 0) < 0),
       reviewing,
       pending: this.item?.system?.designer?.status === "pending",
-      canCreate: !this.item && canDesignDrug(this.actor, user),
+      canCreate: !this.item && canOfferDrugDesign(this.actor, user),
       isGM: user.isGM,
       target: this.actor?.name ?? t("SR5.DrugDesignerWorldItems"),
     }
@@ -204,7 +212,12 @@ export class SR5DrugDesigner extends foundry.applications.api.HandlebarsApplicat
   static async #create() {
     if (this.#blocked()) return
     const user = game.user
-    if (!canDesignDrug(this.actor, user)) return ui.notifications.warn(t("SR5.WARN_DrugDesignerNoSkill"))
+    if (!canDesignDrug(this.actor, user)) {
+      if (!this.actor?.isOwner) return ui.notifications.warn(t("SR5.WARN_DrugDesignerNoSkill"))
+      if (refuseByRule("objects", "SR5.WARN_DrugDesignerNoSkill", null, {
+        actor: this.actor
+      })) return
+    }
     const data = this.#itemData(user.isGM ? "" : "pending")
     if (user.isGM) {
       const [item] = this.actor ? await this.actor.createEmbeddedDocuments("Item", [data]) : [await Item.create(data)]

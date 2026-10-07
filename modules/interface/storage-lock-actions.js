@@ -196,9 +196,14 @@ export class SR5StorageLock {
     if (!allowed) return SR5_SystemHelpers.srLog(1, `Lock pick refused for user '${senderId}'`, data)
 
     const tools = lockTools(picker.items, item => isStoredAway(item, picker))
-    if (!tools.kit && game.settings.get("sr5", "sr5LockpickRequiresKit")) {
-      return SR5StorageLock.#card(picker, storage, {
+    // The "lockpick" box of the "objects" rule lock (formerly sr5LockpickRequiresKit): on, the card says a kit is
+    // needed, as before; lifted, the picker works bare-handed and the GM, whose browser this is, is told
+    if (!tools.kit) {
+      if (ruleLockActive("objects", "lockpick")) return SR5StorageLock.#card(picker, storage, {
         noKit: true
+      })
+      refuseByRule("objects", "SR5.StorageLockNoKit", null, {
+        actor: picker, lockCase: "lockpick"
       })
     }
 
