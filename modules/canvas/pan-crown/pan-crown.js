@@ -222,7 +222,11 @@ function onPointerOutside(event){
 }
 
 function onEscape(event){
-  if (event.key === "Escape") closeGmMenu()
+  if (event.key !== "Escape" || !gmMenu) return
+  // Escape closes this menu only, not Foundry's main menu as well
+  event.stopPropagation()
+  event.preventDefault()
+  closeGmMenu()
 }
 
 /**
