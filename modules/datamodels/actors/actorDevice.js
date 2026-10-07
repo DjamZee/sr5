@@ -24,6 +24,11 @@ export class sr5ActorDeviceDataModel extends foundry.abstract.TypeDataModel {
     return {
       matrix: new fields.SchemaField({
         ...matrixPartialModel.matrixFields(),
+        // The master this device is slaved to (SR5 p. 234): the uuid of a host (a WAN, no ceiling), or of the master
+        // item of a PAN; empty when it is slaved to nothing (couronne du PAN, lot 7)
+        panMaster: new fields.StringField({
+          initial: ''
+        }),
         ice: new fields.SchemaField({
           attackDicepool: new fields.NumberField({
             initial: 0

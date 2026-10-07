@@ -21,6 +21,9 @@ import {
   iconPathOf, isTintedIcon, nodeIconPathOf
 } from "./pan-icons.js"
 import {
+  PAN_TOKEN_KINDS
+} from "./pan-graph.js"
+import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 
@@ -190,7 +193,9 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
       scale,
       angle: crown.angle,
       tokenOffset: node => {
-        if (node.kind !== "drone") return null
+        // A drone, the rigger's master, the master of a device of the scenery, a device of the scenery: a line to its
+        // token, wherever it is on the scene (lot 7); with no token, an icon in the crown
+        if (!PAN_TOKEN_KINDS.includes(node.kind)) return null
         const other = tokenOfNode(node, {
           actor: token.actor, token
         })
@@ -396,9 +401,13 @@ function dashedCircle(graphics, radius, count){
 export function registerPanCrownHooks(){
   const layer = () => canvas?.sr5PanCrown
   Hooks.on("refreshToken", token => layer()?.onRefreshToken(token))
-  Hooks.on("deleteToken", document => layer()?.close(document.object ?? {
-    id: document.id
-  }))
+  Hooks.on("deleteToken", document => {
+    layer()?.close(document.object ?? {
+      id: document.id
+    })
+    // The lines that led to it (a drone, a rigger, a device of the scenery: lot 7)
+    layer()?.refresh()
+  })
   for (const hook of ["updateItem", "createItem", "deleteItem", "updateActor", "controlToken", "updateUser", "createToken"]){
     Hooks.on(hook, () => layer()?.refresh())
   }

@@ -37,8 +37,40 @@ export class SR5AppareilSheet extends ActorSheetSR5 {
     context.rulesCalledShot = game.settings.get("sr5", "sr5CalledShotsRules")
     context.rulesKillCode = game.settings.get("sr5", "sr5KillCodeRules")
     context.matrixActionsRigger5 = game.settings.get("sr5", "sr5Rigger5Actions")
+    context.panMasterOptions = this._panMasterOptions(context.actor)
 
     return context
+  }
+
+  // The masters a device can be slaved to (SR5 p. 234, couronne du PAN lot 7): the hosts of the world, and the master
+  // devices of a PAN (commlink, cyberdeck, rigger command console) of the world's actors. A host is slaved to nothing.
+  _panMasterOptions(actor) {
+    if (actor.system.matrix.deviceType === "host" || actor.system.matrix.deviceType === "ice") return null
+    const hosts = []
+    const devices = []
+    for (const other of game.actors ?? []) {
+      if (other.id === actor.id) continue
+      if (other.type === "actorDevice" && other.system.matrix?.deviceType === "host") {
+        hosts.push({
+          value: other.uuid, label: other.name
+        })
+        continue
+      }
+      const master = other.items.find(i => i.type === "itemDevice" && i.system.isActive &&
+        ["commlink", "cyberdeck", "riggerCommandConsole"].includes(i.system.type))
+      if (master) devices.push({
+        value: master.uuid, label: `${other.name} — ${master.name}`
+      })
+    }
+    const byLabel = (a, b) => a.label.localeCompare(b.label)
+    const current = actor.system.matrix.panMaster
+    const known = [...hosts, ...devices].some(o => o.value === current)
+    return {
+      hosts: hosts.sort(byLabel),
+      devices: devices.sort(byLabel),
+      // A master that is gone stays shown, so that saving the sheet does not erase it silently
+      unknown: current && !known ? current : null,
+    }
   }
 
   _prepareItems(actor) {

@@ -61,6 +61,33 @@
 		</li>
 		{{/if}}
 
+		{{#if (and (eq actor.type 'actorDevice') panMasterOptions)}}
+		<li class="grid"
+		  data-helpTitle="{{localize 'SR5.DEVICE_PanMaster'}}"
+		  data-helpMessage="{{localize 'SR5.HELP_PanMasterMsg'}}"
+		>
+			<div class="col-5">{{localize 'SR5.DEVICE_PanMaster'}}</div>
+			<div class="col-7">
+				<select name="system.matrix.panMaster" data-dtype="String">
+					<option value="">{{localize 'SR5.DEVICE_PanMasterNone'}}</option>
+					{{#if panMasterOptions.unknown}}
+					<option value="{{panMasterOptions.unknown}}" selected>{{panMasterOptions.unknown}}</option>
+					{{/if}}
+					{{#if panMasterOptions.hosts.length}}
+					<optgroup label="{{localize 'SR5.DEVICE_PanMasterHosts'}}">
+						{{selectOptions panMasterOptions.hosts selected=system.matrix.panMaster valueAttr="value" labelAttr="label"}}
+					</optgroup>
+					{{/if}}
+					{{#if panMasterOptions.devices.length}}
+					<optgroup label="{{localize 'SR5.DEVICE_PanMasterDevices'}}">
+						{{selectOptions panMasterOptions.devices selected=system.matrix.panMaster valueAttr="value" labelAttr="label"}}
+					</optgroup>
+					{{/if}}
+				</select>
+			</div>
+		</li>
+		{{/if}}
+
 		{{#ife system.matrix.deviceType "ice"}}
 		<li class="grid" 
 		  data-helpTitle="{{localize 'SR5.IceType'}}"

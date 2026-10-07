@@ -17,7 +17,11 @@ import {
   customIconOf, iconCategoryOf
 } from "./pan-icons.js"
 
-export const PAN_NODE_KINDS = ["master", "slave", "drone", "device"]
+// rigger: the master of the rigger, in a drone's crown; wan: the master of a device of the scenery (a host, or the
+// master item of a PAN); decor: a device of the scenery slaved to the crown's master (lot 7)
+export const PAN_NODE_KINDS = ["master", "slave", "drone", "device", "rigger", "wan", "decor"]
+// The nodes drawn as a line to their own token, when it is on the scene, rather than as an icon (lot 7)
+export const PAN_TOKEN_KINDS = ["drone", "rigger", "wan", "decor"]
 export const PAN_MODES = ["active", "silent", "offline"]
 
 // Items that can be an icon of the Matrix: those that carry the wireless switch. A drug has one too, for its own
@@ -130,6 +134,9 @@ export function buildPanGraph(actor, {
     links: [],
     missing: [],
     rigger: null,
+    wan: null,
+    // How many slaves the master takes (SR5 p. 233: Device Rating x 3); null for a host, which has no ceiling (p. 234)
+    capacity: null,
   }
   if (!actor) return graph
 
@@ -148,8 +155,26 @@ export function buildPanGraph(actor, {
   }
 
   const device = activeDeviceOf(actor)
+  // A drone or a device of the scenery is slaved to another master (SR5 p. 234: no device is master and slave at
+  // once): its own device is an icon of the crown, and the line goes up to that master, on its token (lot 7)
+  const up = upwardMasterOf(actor, graph, {
+    resolve, actors
+  })
+  if (up){
+    if (device){
+      const own = masterMode(device, actor)
+      const {
+        mode, silentFrom
+      } = up.slaved ? slaveMode(own, up.mode) : {
+        mode: own, silentFrom: own === "silent" ? "self" : null
+      }
+      add(nodeOf(device, "device", actor, mode, silentFrom), "owner", "device")
+    }
+    add(up.node, "owner", up.node.kind)
+  }
+
   let masterState = null
-  if (device){
+  if (device && !up){
     masterState = masterMode(device, actor)
     graph.master = device.uuid
     add(nodeOf(device, "master", actor, masterState, null), "owner", "persona")
@@ -170,6 +195,26 @@ export function buildPanGraph(actor, {
       } = slaveMode(ownMode(item, drone), masterState)
       add(nodeOf(item, drone ? "drone" : "slave", holder, mode, silentFrom, drone, actor), device.uuid, drone ? "drone" : "slave")
     }
+
+    // The devices of the scenery slaved to this master (actorDevice.system.matrix.panMaster, lot 7)
+    let decorCount = 0
+    for (const decor of decorSlavesOf(actor, device, actors)){
+      const decorDevice = activeDeviceOf(decor)
+      if (!decorDevice || seen.has(decorDevice.uuid)) continue
+      const {
+        mode, silentFrom
+      } = slaveMode(masterMode(decorDevice, decor), masterState)
+      const node = nodeOf(decorDevice, "decor", decor, mode, silentFrom, null, actor)
+      // Its own token: the token's id for an unlinked token, so that two doors of one actor stay two
+      node.holderIds = [realIdOf(decor)]
+      node.icon = decorIconOf(decor)
+      add(node, device.uuid, "decor")
+      decorCount++
+    }
+    if (!isHostActor(actor)) graph.capacity = {
+      max: Number(device.system?.pan?.max) || (Number(device.system?.deviceRating) || 0) * 3,
+      used: arrayOf(device.system?.pan?.content).length + decorCount,
+    }
   }
 
   // The actor's other devices in the Matrix, slaved to nothing: each one is an icon of its own (SR5 p. 233). Only
@@ -185,6 +230,80 @@ export function buildPanGraph(actor, {
     add(nodeOf(item, drone ? "drone" : "device", actor, own, own === "silent" ? "self" : null, drone), "owner", drone ? "drone" : "device")
   }
   return graph
+}
+
+export function isHostActor(actor){
+  return actor?.type === "actorDevice" && actor.system?.matrix?.deviceType === "host"
+}
+
+// What a master answers to in the field panMaster of a device of the scenery: the uuid of a host (the world actor's,
+// which the sheet's selector offers), or the uuid of the master item of a PAN
+export function panMasterKeysOf(actor, device){
+  const keys = []
+  if (isHostActor(actor)) keys.push(actor.uuid, `Actor.${actor.id}`)
+  if (device) keys.push(device.uuid, `Actor.${actor?.id}.Item.${device.id ?? device._id}`)
+  return keys.filter(Boolean)
+}
+
+/**
+ * The devices of the scenery slaved to a master: the actorDevice whose panMaster names it. A host takes them all
+ * (SR5 p. 234: a WAN has no ceiling). The token actors of the scene stand for their world actor.
+ */
+export function decorSlavesOf(actor, device, actors){
+  const keys = panMasterKeysOf(actor, device)
+  if (!keys.length) return []
+  const list = arrayOf(actors)
+  const tokenIds = new Set(list.filter(a => a?.isToken).map(a => a.id))
+  return list.filter(a => a?.type === "actorDevice" && !isHostActor(a) && a !== actor &&
+    keys.includes(a.system?.matrix?.panMaster) && (a.isToken || !tokenIds.has(a.id)))
+}
+
+// The generic icon of a device of the scenery: a maglock, otherwise the device (lot 10 may refine it)
+function decorIconOf(actor){
+  return actor?.system?.matrix?.deviceType === "maglock" ? "maglock" : "device"
+}
+
+// The master a drone (its rigger's) or a device of the scenery (panMaster) goes up to, as a node of the crown
+function upwardMasterOf(actor, graph, {
+  resolve, actors
+}){
+  if (graph.rigger){
+    const rigger = arrayOf(actors).find(a => a?.type !== "actorDrone" && idsOf(a).includes(graph.rigger.actorId))
+    const device = activeDeviceOf(rigger)
+    if (!device) return null
+    const mode = masterMode(device, rigger)
+    // The drone is slaved when its vehicle item is in the PAN of the rigger's master
+    const vehicle = itemsOf(rigger).find(i => (i.id ?? i._id) === graph.rigger.itemId)
+    const slaved = !!vehicle && arrayOf(device.system?.pan?.content).some(e => e?.uuid === vehicle.uuid)
+    const node = nodeOf(device, "rigger", rigger, mode, mode === "silent" ? "self" : null, null, actor)
+    node.holderIds = [realIdOf(rigger)]
+    return {
+      node, mode, slaved
+    }
+  }
+  const key = actor.type === "actorDevice" && !isHostActor(actor) ? actor.system?.matrix?.panMaster : null
+  if (!key) return null
+  const target = resolve(key)
+  if (!target) {
+    graph.missing.push({
+      uuid: key, name: ""
+    })
+    return null
+  }
+  // A host (or another actor), or the master item of a PAN
+  const holder = target.items ? target : target.parent
+  const device = target.items ? activeDeviceOf(target) : target
+  if (!holder || !device || holder === actor || idsOf(holder).some(id => idsOf(actor).includes(id))) return null
+  const mode = masterMode(device, holder)
+  const node = nodeOf(device, "wan", holder, mode, mode === "silent" ? "self" : null, null, actor)
+  node.holderIds = [realIdOf(holder)]
+  if (isHostActor(holder)) node.icon = "host"
+  graph.wan = {
+    uuid: key, actorId: realIdOf(holder), isHost: isHostActor(holder)
+  }
+  return {
+    node, mode, slaved: true
+  }
 }
 
 function nodeOf(item, kind, holder, mode, silentFrom, drone = null, panOwner = null){
