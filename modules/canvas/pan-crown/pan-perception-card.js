@@ -19,7 +19,7 @@ import {
   activeDeviceOf, buildPanGraph, idsOf
 } from "./pan-graph.js"
 import {
-  PAN_SPOT_RANGE_METERS
+  PAN_SPOT_RANGE_METERS, isMatrixScene
 } from "./pan-visibility.js"
 import {
   SR5_EntityHelpers
@@ -72,11 +72,24 @@ export function perceptionTargetOf(data){
   }
 }
 
+// The unlinked tokens' actors of a scene: a deployed drone, a sprite, a door are often unlinked, and none of them is
+// in game.actors (relecture)
+export function tokenActorsOf(scene){
+  return Array.from(scene?.tokens ?? []).map(document => document?.actor).filter(actor => actor?.isToken)
+}
+
+// The actors a graph looks a deployed drone up in: the unlinked tokens' first (the scene shown and the target's own),
+// then the world's. The drone's base actor in game.actors carries the same links but not the token's own switches.
+function actorsAround(target){
+  const scenes = new Set([globalThis.canvas?.scene, target?.actor?.token?.parent].filter(Boolean))
+  return [...[...scenes].flatMap(tokenActorsOf), ...Array.from(game.actors ?? [])]
+}
+
 /** The mode of the icon aimed at: offline, silent or active (pan-graph.js, Kill Code p. 39 for a slave) */
 export function perceptionTargetMode(target){
   if (!target?.actor) return "active"
   const node = buildPanGraph(target.actor, {
-    resolve: uuid => globalThis.fromUuidSync?.(uuid) ?? null, actors: Array.from(game.actors ?? [])
+    resolve: uuid => globalThis.fromUuidSync?.(uuid) ?? null, actors: actorsAround(target)
   }).nodes.find(n => n.uuid === target.uuid)
   if (node) return node.mode
   const system = target.actor.system ?? {
@@ -162,11 +175,56 @@ function tokenOfActor(actor){
   return canvas?.tokens?.placeables?.find(t => t.document?.actorLink && t.actor?.id === actor.id) ?? null
 }
 
-/** The silent icons within 100 m of the observer's antenna (SR5 p. 236), read on the gamemaster's canvas: null when
- * the observer has no token on it */
+/**
+ * The silent icons within 100 m of the observer's antenna (SR5 p. 236), read on the scene's documents when the
+ * gamemaster's canvas shows another scene (relecture): the observer's own scene for an unlinked token, otherwise the
+ * scene the players are on. Null when the observer has no token there.
+ * @param {Object} observer
+ * @param {Object} scene        a Scene, with tokens (TokenDocuments: actor, actorLink, actorId, getCenterPoint) and grid
+ * @param {Object} options
+ * @param {Function} options.resolve      uuid -> item
+ * @param {Array} [options.worldActors]   game.actors
+ * @param {Number} [options.unit]         meters per unit of the scene
+ * @param {Boolean} [options.inHost]      a scene marked as the inside of a host: no distance (A2)
+ * @return {Number|null}
+ */
+export function silentNearbyOnScene(observer, scene, {
+  resolve = () => null, worldActors = [], unit = 1, inHost = false
+} = {
+}){
+  const tokens = Array.from(scene?.tokens ?? [])
+  const own = observer?.isToken ? tokens.find(d => d === observer.token || d?.id === observer.token?.id) :
+    tokens.find(d => d?.actorLink && d.actorId === observer?.id)
+  if (!own) return null
+  const actors = [...tokenActorsOf(scene), ...Array.from(worldActors ?? [])]
+  const from = own.getCenterPoint()
+  const nodes = []
+  for (const other of tokens){
+    if (!other?.actor || other === own) continue
+    for (const node of buildPanGraph(other.actor, {
+      resolve, actors
+    }).nodes){
+      // Where the device stands: its holder's token, a deployed drone's own, a sprite's technomancer (SR5 p. 256)
+      const ids = node.droneId ? [node.droneId] : (node.anchorIds ?? node.holderIds ?? [])
+      const at = idsOf(other.actor).some(id => ids.includes(id)) ? other : tokens.find(d => d?.actor && idsOf(d.actor).some(id => ids.includes(id)))
+      node.distance = !at ? null : inHost ? 0 : scene.grid.measurePath([from, at.getCenterPoint()]).distance * unit
+      nodes.push(node)
+    }
+  }
+  return silentAround(nodes, idsOf(observer), PAN_SPOT_RANGE_METERS)
+}
+
+/** The silent icons within 100 m of the observer's antenna (SR5 p. 236), read on the gamemaster's canvas, or on the
+ * documents of the observer's scene when the canvas shows another one: null when the observer has no token */
 export async function silentNearbyOf(observer){
   const token = tokenOfActor(observer)
-  if (!token) return null
+  if (!token) {
+    const scene = observer?.isToken ? observer.token?.parent : (game.scenes?.active ?? null)
+    return silentNearbyOnScene(observer, scene, {
+      resolve: uuid => globalThis.fromUuidSync?.(uuid) ?? null, worldActors: game.actors ?? [],
+      unit: SR5_SystemHelpers.getSceneUnitInMeters(scene), inHost: isMatrixScene(scene),
+    })
+  }
   const {
     getGraph
   } = await import("./pan-crown.js")

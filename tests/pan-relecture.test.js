@@ -12,6 +12,9 @@ import {
 import {
   nodeVisibility
 } from '../modules/canvas/pan-crown/pan-visibility.js'
+import {
+  silentNearbyOnScene, tokenActorsOf
+} from '../modules/canvas/pan-crown/pan-perception-card.js'
 
 // The defects of the crown found by the grouped review of Fleur (alpha 32df8eae6), one block per defect
 
@@ -232,6 +235,64 @@ describe('M1: a move lays the crowns out again, it does not build them again', (
     expect(layer).toMatch(/catch \(error\) \{\s*console\.error\("SR5 \| PAN crown: a crown could not be drawn", error\)\s*if \(this\.crowns\.get\(crown\.token\.id\) === crown\) this\.#hide\(crown\.token\)/)
     expect(layer).toMatch(/"updateActor", "deleteActor", "controlToken"/)
     expect(layer).toMatch(/\["canvasReady", "createToken", "deleteToken", "deleteActor"\]/)
+  })
+
+  it('Matrix Perception counts the silent icons within 100 m on the scene\'s documents, the canvas elsewhere', () => {
+    const commlink = (id, owner, silent = false) => ({
+      id, uuid: `Actor.${owner}.Item.${id}`, type: 'itemDevice', name: 'Commlink', parent: null,
+      system: {
+        isWireless: true, wirelessTurnedOn: true, isActive: true, isSilent: silent, deviceRating: 3, pan: {
+          content: []
+        }
+      },
+    })
+    const actor = (id, items, extra = {
+    }) => ({
+      id, uuid: `Actor.${id}`, type: 'actorPc', name: id, items, system: {
+        matrix: {
+        }
+      }, ...extra
+    })
+    const decker = actor('decker', [commlink('c1', 'decker')])
+    const near = actor('near', [commlink('c2', 'near', true)])
+    const far = actor('far', [commlink('c3', 'far', true)])
+    const loud = actor('loud', [commlink('c4', 'loud')])
+    const doc = (id, a, x, linked = true) => ({
+      id, actor: a, actorLink: linked, actorId: a.id, getCenterPoint: () => ({
+        x, y: 0
+      })
+    })
+    const scene = {
+      tokens: [doc('t1', decker, 0), doc('t2', near, 50), doc('t3', far, 150), doc('t4', loud, 10)],
+      // one unit per meter
+      grid: {
+        measurePath: ([a, b]) => ({
+          distance: Math.abs(b.x - a.x)
+        })
+      },
+    }
+    expect(silentNearbyOnScene(decker, scene)).toBe(1)
+    // inside a host there is no distance (A2): the far one counts too
+    expect(silentNearbyOnScene(decker, scene, {
+      inHost: true
+    })).toBe(2)
+    // an observer with no token on that scene
+    expect(silentNearbyOnScene(actor('nobody', []), scene)).toBeNull()
+    // the unlinked tokens' actors, which game.actors does not hold
+    expect(tokenActorsOf({
+      tokens: [{
+        actor: {
+          isToken: true, id: 'drone'
+        }
+      }, {
+        actor: decker
+      }, {
+        actor: null
+      }]
+    }).map(a => a.id)).toEqual(['drone'])
+    const card = read('../modules/canvas/pan-crown/pan-perception-card.js')
+    expect(card).toMatch(/resolve: uuid => globalThis\.fromUuidSync\?\.\(uuid\) \?\? null, actors: actorsAround\(target\)/)
+    expect(card).toMatch(/if \(!token\) \{\s*const scene = observer\?\.isToken \? observer\.token\?\.parent : \(game\.scenes\?\.active \?\? null\)/)
   })
 
   it('makes the name of an icon the first time it is read, not at each build', () => {
