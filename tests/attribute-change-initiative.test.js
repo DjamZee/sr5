@@ -16,6 +16,9 @@ import {
 import {
   sr5HookUpdateActor
 } from "../modules/hooks/actor.js"
+import {
+  cancelVehicleOwnerSyncs
+} from "../modules/entities/actors/vehicle-owner-sync.js"
 
 // An attribute changed on the sheet (Reaction 0 -> 3, Intuition 0 -> 2) left the fighter at its initiative:
 // the updateActor hook only compared on initiatives, condition monitors or matrix, so the change waited for the
@@ -79,6 +82,8 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  //The updateActor hook schedules the copy of the rigger on its drones: none outlives a test
+  cancelVehicleOwnerSyncs()
   game.user = saved.user
   game.users = saved.users
   game.combat = saved.combat

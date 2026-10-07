@@ -1,3 +1,14 @@
+import {
+  afterEach
+} from 'vitest'
+import {
+  cancelVehicleOwnerSyncs
+} from '../modules/entities/actors/vehicle-owner-sync.js'
+
+// The updateActor and item hooks schedule the copy of a rigger on its drones, 100 ms later: none outlives its test,
+// or it fires in another file on a mock actor (Unhandled Rejection "actor.toObject is not a function")
+afterEach(() => cancelVehicleOwnerSyncs())
+
 // Foundry VTT document class stubs
 globalThis.Actor = class {}
 globalThis.Item = class {}

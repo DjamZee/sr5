@@ -1,11 +1,11 @@
 import {
-  describe, it, expect, vi
+  describe, it, expect, vi, afterEach
 } from 'vitest'
 import {
   readFileSync
 } from 'node:fs'
 import {
-  controllerOf, syncsHere, scheduleVehicleOwnerSync
+  controllerOf, syncsHere, scheduleVehicleOwnerSync, isStillThere, cancelVehicleOwnerSyncs
 } from '../modules/entities/actors/vehicle-owner-sync.js'
 
 // The copy of the rigger a drone carries follows the rigger's items, not only the edits of the sheet (lot R4, Blanche)
@@ -64,16 +64,64 @@ describe('syncsHere', () => {
 })
 
 describe('scheduleVehicleOwnerSync', () => {
-  it('several changes in a row send one copy', () => {
+  const live = {
+    ...rigger, name: 'Rigger', toObject: () => ({
+    })
+  }
+  const savedActors = globalThis.game?.actors
+  afterEach(() => {
+    cancelVehicleOwnerSyncs()
+    vi.useRealTimers()
+    vi.restoreAllMocks()
+    globalThis.game.actors = savedActors
+  })
+
+  it('several changes in a row send one copy', async () => {
     vi.useFakeTimers()
     const sync = vi.fn()
-    scheduleVehicleOwnerSync(rigger, sync)
-    scheduleVehicleOwnerSync(rigger, sync)
-    scheduleVehicleOwnerSync(rigger, sync)
-    vi.runAllTimers()
+    scheduleVehicleOwnerSync(live, sync)
+    scheduleVehicleOwnerSync(live, sync)
+    scheduleVehicleOwnerSync(live, sync)
+    await vi.runAllTimersAsync()
     expect(sync).toHaveBeenCalledTimes(1)
-    expect(sync).toHaveBeenCalledWith(rigger)
-    vi.useRealTimers()
+    expect(sync).toHaveBeenCalledWith(live)
+  })
+
+  it('a controller deleted, or no full document, by the end of the delay is not copied', async () => {
+    vi.useFakeTimers()
+    globalThis.game.actors = new Map()
+    const sync = vi.fn()
+    scheduleVehicleOwnerSync(live, sync)
+    scheduleVehicleOwnerSync({
+      id: 'fake', type: 'actorPc'
+    }, sync)
+    await vi.runAllTimersAsync()
+    expect(sync).not.toHaveBeenCalled()
+    expect(isStillThere(live)).toBe(false)
+    globalThis.game.actors.set(live.id, live)
+    expect(isStillThere(live)).toBe(true)
+  })
+
+  it('a copy that fails is reported, not left as an unhandled rejection', async () => {
+    vi.useFakeTimers()
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    scheduleVehicleOwnerSync(live, () => {
+      throw new TypeError('boom')
+    })
+    scheduleVehicleOwnerSync({
+      ...live, id: 'r2'
+    }, () => Promise.reject(new Error('refused')))
+    await vi.runAllTimersAsync()
+    expect(warn).toHaveBeenCalledTimes(2)
+  })
+
+  it('cancelVehicleOwnerSyncs drops the copies still waiting', async () => {
+    vi.useFakeTimers()
+    const sync = vi.fn()
+    scheduleVehicleOwnerSync(live, sync)
+    cancelVehicleOwnerSyncs()
+    await vi.runAllTimersAsync()
+    expect(sync).not.toHaveBeenCalled()
   })
 })
 
