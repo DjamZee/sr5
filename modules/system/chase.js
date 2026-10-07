@@ -4,7 +4,7 @@ import {
 import {
   chaseRanges, normalizeRange, rangeDistance, shiftRange, terrainList, normalizeTerrain, terrainValue, kindOfCategory, isAircraft,
   VEHICLE_KINDS, speedBounds, clampSpeed, chaseThreshold, isFastest, pairKey, markControlled, endOfTurn,
-  chaseEndReason
+  chaseEndReason, restoreTurnSpeed
 } from "./chase-rules.js"
 import {
   monitorFull
@@ -42,8 +42,10 @@ const EMPTY = () => ({
   }, glove: {
   }, handlingLoss: {
   },
-  // Part 3: the Handling a stunt gave or took for the turn (R5 p. 182)
+  // Part 3: the Handling a stunt gave or took for the turn, and the Speed it took, given back at the end of the turn
+  // (R5 p. 182)
   turnHandling: {
+  }, turnSpeedLoss: {
   },
 })
 
@@ -400,6 +402,25 @@ export class SR5Chase {
     return written
   }
 
+  /** A stunt slows another vehicle (R5 p. 182): its Speed drops now and comes back at the end of the Combat Turn */
+  static async slowForTurn(id, value) {
+    const vehicle = readState().vehicles.find(v => v.id === id)
+    if (!vehicle) return false
+    const actor = vehicleActor(vehicle)
+    const before = speedOf(vehicle, actor)
+    if (!await this.forceSpeed(id, value)) return false
+    const loss = before - speedOf(readState().vehicles.find(v => v.id === id) ?? vehicle, actor)
+    if (!(loss > 0)) return true
+    return this.update(state => {
+      if (!state.vehicles.some(v => v.id === id)) return false
+      state.turnSpeedLoss = {
+        ...(state.turnSpeedLoss ?? {
+        })
+      }
+      state.turnSpeedLoss[id] = (Number(state.turnSpeedLoss[id]) || 0) + loss
+    })
+  }
+
   /** The initiator gets behind the target (Quick Turn, Six Pack): it pursues, the target is pursued */
   static setRoles(pursuerId, pursuedId) {
     return this.update(state => {
@@ -516,13 +537,19 @@ export class SR5Chase {
    */
   static nextTurn() {
     const advanced = advancedDriving()
-    let events = []
+    let events = [], restored = []
     return this.update(state => {
       events = []
+      restored = []
       for (const [index, vehicle] of state.vehicles.entries()) {
         if (vehicle.ended) continue
         const actor = vehicleActor(vehicle)
-        vehicle.speed = speedOf(vehicle, actor)
+        // The Speed a stunt took for this turn comes back (R5 p. 182)
+        const speed = speedOf(vehicle, actor)
+        vehicle.speed = restoreTurnSpeed(speed, state.turnSpeedLoss?.[vehicle.id], attribute(actor, "speed"))
+        if (vehicle.speed !== speed && hasSpeedField(actor)) restored.push({
+          actor, speed: vehicle.speed
+        })
         const {
           vehicle: next, event
         } = endOfTurn(vehicle, {
@@ -556,7 +583,12 @@ export class SR5Chase {
       }
       state.turnHandling = {
       }
+      state.turnSpeedLoss = {
+      }
     }).then(async written => {
+      if (written) for (const r of restored) await r.actor.update({
+        "system.currentSpeed": r.speed
+      })
       if (written && events.length) await ChatMessage.create({
         content: `<h3>${game.i18n.format("SR5.CHASE_ChatTitle", {
           turn: readState().turn - 1
@@ -912,7 +944,7 @@ export function registerChaseHooks() {
 
 // What the chase actions read of a vehicle (chase-roll.js)
 export {
-  vehicleActor as chaseVehicleActor, attribute as chaseAttribute, speedOf as chaseSpeedOf
+  vehicleActor as chaseVehicleActor, attribute as chaseAttribute, speedOf as chaseSpeedOf, aboard as chaseAboard
 }
 
 export const _test = {

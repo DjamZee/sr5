@@ -236,6 +236,8 @@ describe('the other actions', () => {
       hits: 1, threshold: 3
     }).effects).toEqual([{
       type: 'outOfControl', id: 'B'
+    }, {
+      type: 'crash', id: 'B'
     }])
     expect(resolveAction('cutOff', {
       ...ids, hits: 2, opposingHits: 2, terrain: 1, threshold: 1
@@ -249,6 +251,26 @@ describe('the other actions', () => {
     expect(out.notes[0].data).toEqual({
       target: 14, initiator: 6
     })
+    // The card's « Apply the damage » buttons: each vehicle resists its own DV
+    expect(out.effects).toEqual([{
+      type: 'damage', id: 'B', dv: 14
+    }, {
+      type: 'damage', id: 'A', dv: 6
+    }])
+  })
+
+  it('Collision (R5 p. 179): the damage of each vehicle goes to the card\'s buttons', () => {
+    const won = resolveAction('collision', {
+      ...ids, hits: 5, opposingHits: 2, angle: 'side', speed: 3, targetSpeed: 2, body: 10
+    })
+    expect(won.effects).toEqual([{
+      type: 'damage', id: 'B', dv: 13
+    }, {
+      type: 'damage', id: 'A', dv: 7
+    }])
+    expect(resolveAction('collision', {
+      ...ids, hits: 2, opposingHits: 2, speed: 3, body: 10
+    }).effects).toEqual([])
   })
 
   it('Quick Turn and Six Pack put the initiator behind the target (R5 p. 176, 179)', () => {
@@ -328,7 +350,9 @@ describe('the other actions', () => {
     const failed = resolveAction('likeAGlove', {
       ...ids, hits: 1, threshold: 3, speed: 4, newTerrainValue: 3
     })
-    expect(failed.effects).toEqual([])
+    expect(failed.effects).toEqual([{
+      type: 'damage', id: 'A', dv: 7
+    }])
     expect(failed.notes[0].data.dv).toBe(7)
   })
 
@@ -368,6 +392,25 @@ describe('the other actions', () => {
     }).effects).toEqual([{
       type: 'handling', id: 'A', delta: -3
     }])
+  })
+
+  it('Falling Leaf: each net hit puts the aircraft a range farther from each of its pursuers (R5 p. 181)', () => {
+    const out = resolveAction('fallingLeaf', {
+      ...ids, hits: 4, threshold: 2, pursuers: ['B', 'C']
+    })
+    expect(out.effects).toEqual([{
+      type: 'speed', id: 'A', value: 0
+    }, {
+      type: 'shift', a: 'A', b: 'B', steps: 2
+    }, {
+      type: 'shift', a: 'A', b: 'C', steps: 2
+    }, {
+      type: 'leave', id: 'A', reason: 'fallingLeaf'
+    }])
+    // Made with no hit to spare: it drops out where it is
+    expect(resolveAction('fallingLeaf', {
+      ...ids, hits: 2, threshold: 2, pursuers: ['B']
+    }).effects.map(e => e.type)).toEqual(['speed', 'leave'])
   })
 
   it('Control a Vehicle rolls nothing and gives the control back (SR5 p. 203)', () => {

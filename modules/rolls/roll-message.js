@@ -214,7 +214,7 @@ export class SR5_RollMessage {
         import("../system/chase-roll.js").then(({
           mayUseChaseButton
         }) => chaseButtons.forEach(el => {
-          if (mayUseChaseButton(el.dataset.type)) el.style.display = ""
+          if (mayUseChaseButton(el.dataset.type, message.flags?.sr5data)) el.style.display = ""
           else el.remove()
         }))
       }
@@ -342,8 +342,8 @@ export class SR5_RollMessage {
       return participant.rollTest("drain", null, messageData)
     }
 
-    //R12: the buttons of a chase action, opposed, followed up or applied (system/chase-roll.js)
-    if (type === "chaseApply" || type?.startsWith?.("chaseRoll_")) {
+    //R12: the buttons of a chase action, opposed, followed up or applied, and its damage resisted (system/chase-roll.js)
+    if (type === "chaseApply" || ["chaseRoll_", "chaseDamage_", "chaseCrash_"].some(p => type?.startsWith?.(p))) {
       const {
         chaseButton
       } = await import("../system/chase-roll.js")

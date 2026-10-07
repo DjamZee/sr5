@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 import {
   actionRefusal, actionThreshold, resolveAction, resolveFollowUp, stuntAdvantage, stuntAdvantagesFor, stuntRangeBonus,
-  withStunt, STUNT_DICE_CAP
+  withStunt, STUNT_DICE_CAP, crazyStuntEdge
 } from '../modules/system/chase-actions.js'
 import {
   prepareChaseRoll, chaseTestKind
@@ -42,6 +42,8 @@ describe('the core book\'s Stunt (SR5 p. 205)', () => {
     expect(out.success).toBe(false)
     expect(out.effects).toEqual([{
       type: 'outOfControl', id: 'A'
+    }, {
+      type: 'crash', id: 'A'
     }])
     expect(out.notes[0].key).toBe('SR5.CHASE_NoteStuntBookFailed')
   })
@@ -114,6 +116,8 @@ describe('Rigger 5.0\'s stunts (R5 p. 182-183)', () => {
       hits: 1, threshold: 2
     }).effects).toEqual([{
       type: 'outOfControl', id: 'A'
+    }, {
+      type: 'crash', id: 'A'
     }])
   })
 
@@ -154,7 +158,7 @@ describe('Rigger 5.0\'s stunts (R5 p. 182-183)', () => {
     }, {
       ...ids, targetSpeed: 3
     }).effects).toEqual([{
-      type: 'speed', id: 'B', value: 1
+      type: 'turnSpeed', id: 'B', value: 1
     }])
     expect(stuntAdvantage({
       level: 2, advantage: 'slow', slow: 'handling'
@@ -168,6 +172,47 @@ describe('Rigger 5.0\'s stunts (R5 p. 182-183)', () => {
     }, {
       initiatorId: 'A'
     }).notes[0].key).toBe('SR5.CHASE_NoteNobodyNear')
+  })
+
+  it('a crazy stunt costs a point of Edge and gets the usual Edge dice (R5 p. 182)', () => {
+    expect(crazyStuntEdge({
+      level: 2, advantage: 'crazy'
+    }, 4)).toBe(4)
+    expect(crazyStuntEdge({
+      level: 2, advantage: 'soak'
+    }, 4)).toBe(0)
+    expect(crazyStuntEdge({
+      level: 0, advantage: 'crazy'
+    }, 4)).toBe(0)
+    expect(crazyStuntEdge(undefined, 4)).toBe(0)
+    // A crazy stunt prepares its test with the point already spent: the test pushes the limit, no other one
+    const data = {
+      test: {
+        title: ''
+      }, threshold: {
+        value: 0
+      }, limit: {
+        base: 4, modifiers: {
+        }, type: 'handling'
+      }, dicePool: {
+        modifiers: []
+      }, previousMessage: {
+        messageId: ''
+      }, edge: {
+        canUseEdge: true
+      }
+    }
+    prepareChaseRoll(data, {
+      system: {
+      }
+    }, {
+      chaseRoll: {
+        mode: 'initiate', key: 'stunt', threshold: 3, edgePush: 4
+      }
+    })
+    expect(data.edge).toEqual({
+      canUseEdge: true, prepaidPush: 4
+    })
   })
 
   it('the dice outside the chase never go past +4', () => {

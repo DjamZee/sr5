@@ -37,6 +37,17 @@ export function chaseTestKind(chase) {
 }
 
 /**
+ * Whether a vehicle test costs its complex action. A test the action of another imposes (opposing it, following a
+ * stunt, avoiding the crash after Cut Off, the final test beyond Extreme) is free, as a defense is, and so is a test
+ * that only follows up an action already paid: neither action nor initiative (SR5 p. 205, arbitrage de DjamZ, 08/10).
+ * Control a Vehicle, a chase action and a stunt the character takes stay actions.
+ */
+export function vehicleTestCostsAction(chatData) {
+  const mode = chatData?.chaseRoll?.mode
+  return mode !== "oppose" && mode !== "followUp"
+}
+
+/**
  * The vehicle test of a chase action: its title, threshold, limit and dice. chatData.chaseRoll comes from the chase
  * window (launchChaseAction) or from a chase card (chaseButton).
  * @return {Boolean} true when the roll is a chase action's
@@ -65,6 +76,11 @@ export function prepareChaseRoll(rollData, actor, chatData) {
   for (const d of dice) rollData.dicePool.modifiers.push({
     type: "chaseAction", label: game.i18n.localize(d.key), value: Number(d.value) || 0
   })
+  // A crazy stunt: the point of Edge spent as it was launched pushes the limit of its test (R5 p. 182, roll-test.js)
+  if (Number(chase.edgePush) > 0) rollData.edge = {
+    ...(rollData.edge ?? {
+    }), prepaidPush: Number(chase.edgePush)
+  }
   if (chase.originId) rollData.previousMessage.messageId = chase.originId
   const action = game.i18n.localize(`SR5.CHASE_Action_${chase.key}`)
   const what = chase.mode === "followUp" ? game.i18n.localize(`SR5.CHASE_FollowUp_${chase.test}`) :

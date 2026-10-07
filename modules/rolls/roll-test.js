@@ -67,7 +67,8 @@ export class SR5_RollTest {
       template = "systems/sr5/templates/rolls/roll-dialog.hbs"
 
     //Handle Edge
-    dialogData.edge.canUseEdge = await SR5_RollTestHelper.canUseEdge(actor, dialogData)
+    //An Edge point already spent pushes the limit of the roll (a crazy stunt, chase-roll-prepare.js): no other one
+    dialogData.edge.canUseEdge = !(dialogData.edge.prepaidPush > 0) && await SR5_RollTestHelper.canUseEdge(actor, dialogData)
     let edgeActor = await SR5_RollTestHelper.determineEdgeActor(actor)
 
     // Capture final DOM values before dialog closes
@@ -146,6 +147,13 @@ export class SR5_RollTest {
     if (result.action === "edge") {
       edge = true
       if (edgeActor) dialogData = await SR5_RollTestHelper.handleEdgeUse(edgeActor, dialogData)
+    } else if (dialogData.edge.prepaidPush > 0) {
+      //Its point was spent as the test was launched (R5 p. 182): the usual Edge dice, nothing more to spend
+      edge = true
+      dialogData.dicePool.modifiers.push({
+        type: "edge", label: game.i18n.localize("SR5.Edge"), value: dialogData.edge.prepaidPush,
+      })
+      dialogData.edge.canUseEdge = false
     }
 
     //Verify if reagents are used, if so, remove from actor
