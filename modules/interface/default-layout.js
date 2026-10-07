@@ -204,7 +204,7 @@ function _droneDefaultLayout() {
           _block('matrixProgramsList'), _block('matrixActionsList'),
         ]),
         _tab('Modifications', 'drone', [
-          _block('modifications'),
+          _block('modifications'), _block('variousGear'),
         ]),
       ]),
     ],

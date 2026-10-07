@@ -79,6 +79,9 @@ import {
 import {
   isAreaSpellTemplateGone
 } from "../../system/areaEffectScene.js"
+import {
+  carriedGear
+} from "../../system/vehicle-factory.js"
 
 export class SR5_ActorHelper {
     
@@ -1073,6 +1076,7 @@ export class SR5_ActorHelper {
       for (let weapon of itemData.weapons) baseItems.push(weapon)
       for (let armor of itemData.armors) baseItems.push(armor)
       for (let vehicleMod of itemData.vehiclesMod) baseItems.push(vehicleMod)
+      for (let gear of itemData.gears ?? []) baseItems.push(gear)
       for (let deck of itemData.decks) {
         deck.system.marks = []
         baseItems.push(deck)
@@ -1489,6 +1493,8 @@ export class SR5_ActorHelper {
         armors = [],
         decks = [],
         vehiclesMod = []
+      //Its vehicle equipment comes back aboard (Rigger 5.0 p. 154-156)
+      const gears = carriedGear(actor.items)
       for (let a of actor.items){
         if (a.type === "itemProgram") autosoft.push(a)
         if (a.type === "itemWeapon") weapons.push(a)
@@ -1505,6 +1511,7 @@ export class SR5_ActorHelper {
       modifiedItem.system.armors = armors
       modifiedItem.system.decks = decks
       modifiedItem.system.vehiclesMod = vehiclesMod
+      modifiedItem.system.gears = gears
       modifiedItem.system.model = actor.system.model
       modifiedItem.system.slaved = actor.system.slaved
       //A drone deployed before the field existed carries null: the item keeps its own switch

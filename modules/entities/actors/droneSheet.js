@@ -122,6 +122,7 @@ export class SR5DroneSheet extends ActorSheetSR5 {
     const marks = []
     const ammunitions = []
     const vehiclesMod = []
+    const gears = []
     const externalEffects = []
 
     // Iterate through items, allocating to containers
@@ -135,6 +136,7 @@ export class SR5DroneSheet extends ActorSheetSR5 {
       else if (i.type === "itemAmmunition") ammunitions.push(i)
       else if (i.type === "itemEffect") externalEffects.push(i)
       else if (i.type === "itemVehicleMod") vehiclesMod.push(i)
+      else if (i.type === "itemGear") gears.push(i)
     }
 
     actor.weapons = weapons
@@ -148,6 +150,8 @@ export class SR5DroneSheet extends ActorSheetSR5 {
     actor.marks = marks
     actor.ammunitions = ammunitions
     actor.vehiclesMod = vehiclesMod
+    //Vehicle equipment (Rigger 5.0 p. 154-156): carried aboard, not built in
+    actor.gears = gears
     actor.externalEffects = externalEffects
   }
 
@@ -166,6 +170,7 @@ export class SR5DroneSheet extends ActorSheetSR5 {
       case "itemMark":
       case "itemAmmunition":
       case "itemVehicleMod":
+      case "itemGear":
       case "itemEffect":
         return super._onDropItemCreate(item)
       default:

@@ -111,6 +111,8 @@ export class sr5ItemVehicleDataModel extends foundry.abstract.TypeDataModel {
       armors: new fields.ArrayField(new fields.ObjectField()),
       decks: new fields.ArrayField(new fields.ObjectField()),
       vehiclesMod: new fields.ArrayField(new fields.ObjectField()),
+      //Vehicle equipment, which is not a mod (Rigger 5.0 p. 154-156): kits, scanners, jammers, commlinks
+      gears: new fields.ArrayField(new fields.ObjectField()),
       secondaryPropulsion: new fields.SchemaField({
         isSecondaryPropulsion: new fields.BooleanField({
           initial: false

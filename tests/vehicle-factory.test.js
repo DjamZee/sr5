@@ -2,7 +2,7 @@ import {
   describe, it, expect
 } from 'vitest'
 import {
-  isFactoryMod, modTakesSlots, modAppliesEffects
+  carriedGear, isFactoryMod, modTakesSlots, modAppliesEffects
 } from '../modules/system/vehicle-factory.js'
 
 describe('Factory equipment of a vehicle (Rigger 5.0 p. 154-156)', () => {
@@ -54,5 +54,20 @@ describe('Factory equipment of a vehicle (Rigger 5.0 p. 154-156)', () => {
     expect(modAppliesEffects({
       isActive: false
     }, false)).toBe(false)
+  })
+})
+describe('Vehicle equipment (Rigger 5.0 p. 154-156)', () => {
+  it('the gear carried aboard goes with the drone, never its mods nor weapons', () => {
+    const items = [{
+      type: 'itemGear', name: 'Scanner'
+    }, {
+      type: 'itemVehicleMod', name: 'Blindage'
+    }, {
+      type: 'itemWeapon', name: 'Ares Alpha'
+    }, {
+      type: 'itemGear', name: 'Kit de mécanique'
+    }]
+    expect(carriedGear(items).map(i => i.name)).toEqual(['Scanner', 'Kit de mécanique'])
+    expect(carriedGear(undefined)).toEqual([])
   })
 })
