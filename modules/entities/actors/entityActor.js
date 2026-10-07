@@ -731,6 +731,8 @@ export class SR5Actor extends Actor {
           i.prepareData()
           SR5_UtilityItem._handleAugmentation(iData, actor)
           // An implant improved or lowered in place keeps the highest Essence it took (Chrome Flesh p. 74, SR5 p. 53)
+          // The cost before that peak is kept: the end of creation starts the peak from it (peaksAtCreationEnd)
+          iData.essenceCost.withoutPeak = iData.essenceCost.value
           iData.essenceCost.value = essenceTaken(i, iData.essenceCost.value)
           if (!iData.isAccessory) SR5_EntityHelpers.updateModifier(actor.system.essence, `${i.name}`, `itemAugmentation`, -iData.essenceCost.value)
           if (iData.isActive && Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)

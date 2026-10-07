@@ -226,13 +226,16 @@ export function creationEnded(changes) {
 
 /**
  * The register once `actor` leaves creation: each implant's peak is its cost of now, whatever peak an earlier stay in
- * play left; null when nothing changes.
+ * play left; null when nothing changes. The hook runs once the character is prepared again without its flag, its cost
+ * already raised to that old peak (essenceTaken): the cost before the peak is read (relecture 70).
  */
 export function peaksAtCreationEnd(register, actor) {
   let changed = false
   for (const item of actor?.items ?? []) {
     if (item?.type !== "itemAugmentation" || item.system?.reversibleEssence) continue
-    const peak = Math.round((Number(item.system?.essenceCost?.value) || 0) * 100) / 100
+    const cost = item.system?.essenceCost ?? {
+    }
+    const peak = Math.round((Number(cost.withoutPeak ?? cost.value) || 0) * 100) / 100
     if (register[item.uuid]?.[PEAK_COST] === peak) continue
     register[item.uuid] = {
       ...(register[item.uuid] ?? {
