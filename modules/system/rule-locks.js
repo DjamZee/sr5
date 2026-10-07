@@ -190,8 +190,8 @@ export async function setRuleLocks(raw) {
   const locks = normalizeLocks(raw)
   await game.settings.set("sr5", "sr5RuleLocks", locks)
   await game.settings.set("sr5", "sr5RuleLocksPreset", presetOf(locks))
-  for (const [setting, value] of Object.entries(legacyFromLocks(locks))) {
-    if (game.settings.get("sr5", setting) !== value) await game.settings.set("sr5", setting, value)
+  for (const [legacyRuleLock, value] of Object.entries(legacyFromLocks(locks))) {
+    if (game.settings.get("sr5", legacyRuleLock) !== value) await game.settings.set("sr5", legacyRuleLock, value)
   }
   if (game.settings.get("sr5", "sr5RuleLocksMigration") < RULE_LOCKS_MIGRATION_VERSION) {
     await game.settings.set("sr5", "sr5RuleLocksMigration", RULE_LOCKS_MIGRATION_VERSION)
