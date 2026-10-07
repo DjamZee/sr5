@@ -77,6 +77,14 @@ describe('spirit types: "none" for a base skill', () => {
     for (const key of BASE) expect(actor.system.skills[key].rating.value).toBe(5)
   })
 
+  it('gives the official Anarch no Astral Combat, as its block (Howling Shadows p. 130)', () => {
+    const actor = spirit('anarch', 5)
+    SR5_CharacterUtility.generateSpiritSkills(actor)
+    expect(actor.system.skills.astralCombat.rating.value ?? 0).toBe(0)
+    expect(actor.system.skills.assensing.rating.value).toBe(5)
+    expect(actor.system.skills.perception.rating.value).toBe(5)
+  })
+
   it('leaves a custom type that says nothing its three base skills at Force', () => {
     SR5_SpiritTypes.registry.set('erinye', customType('erinye'))
     const actor = spirit('erinye', 6)

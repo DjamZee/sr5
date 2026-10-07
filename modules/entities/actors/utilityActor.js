@@ -3056,6 +3056,8 @@ export class SR5_CharacterUtility extends Actor {
         skills.unarmedCombat.rating.base = actorData.force.value
         break
       case "anarch":
+        // No Astral Combat in its block (Howling Shadows p. 130)
+        skills.astralCombat.rating.base = 0
         skills.assensing.rating.base = actorData.force.value
         skills.automatics.rating.base = actorData.force.value
         skills.blades.rating.base = actorData.force.value
