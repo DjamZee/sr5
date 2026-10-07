@@ -60,7 +60,7 @@ export class SR5DrugDesigner extends foundry.applications.api.HandlebarsApplicat
     this.actor = options.actor ?? null
     this.item = options.item ?? null
     const s = this.item?.system
-    this.state = {
+    this.draft = {
       name: this.item?.name ?? t("SR5.DrugDesignerDefaultName"),
       recipe: normalizeRecipe(s?.designer?.recipe ?? {
         base: "tank"
@@ -79,7 +79,7 @@ export class SR5DrugDesigner extends foundry.applications.api.HandlebarsApplicat
   async _prepareContext() {
     const {
       recipe, quality, addictionType, name
-    } = this.state
+    } = this.draft
     const stat = computeCustomDrug(recipe, quality)
     const option = (value, label, selected) => ({
       value, label, selected: value === selected
@@ -167,8 +167,8 @@ export class SR5DrugDesigner extends foundry.applications.api.HandlebarsApplicat
     }
     for (const [key, level] of Object.entries(data.blocks ?? {
     })) if (Number(level) > 0) blocks[key] = Number(level)
-    this.state = {
-      name: String(data.name ?? "").trim() || this.state.name,
+    this.draft = {
+      name: String(data.name ?? "").trim() || this.draft.name,
       recipe: normalizeRecipe({
         base: data.base, blocks, enhancers: {
           ingestion: !!data.enhancers?.ingestion, inhalation: !!data.enhancers?.inhalation,
@@ -184,7 +184,7 @@ export class SR5DrugDesigner extends foundry.applications.api.HandlebarsApplicat
   #itemData(status) {
     const {
       name, recipe, quality, addictionType
-    } = this.state
+    } = this.draft
     const owner = this.item?.parent ?? this.actor
     return customDrugItemData({
       name, recipe, quality, addictionType, status, t, labels: LABELS,
@@ -194,7 +194,7 @@ export class SR5DrugDesigner extends foundry.applications.api.HandlebarsApplicat
   }
 
   #blocked() {
-    const errors = computeCustomDrug(this.state.recipe).errors
+    const errors = computeCustomDrug(this.draft.recipe).errors
     if (!errors.length) return false
     ui.notifications.warn(t("SR5.DrugDesignerHasErrors"))
     return true
@@ -247,6 +247,14 @@ export class SR5DrugDesigner extends foundry.applications.api.HandlebarsApplicat
     //The effects are replaced, not merged: a recipe with fewer effects leaves none of the former ones behind
     for (const key of Object.keys(this.item.system.customEffects ?? {
     })) if (!(key in data.system.customEffects)) update[`system.customEffects.-=${key}`] = null
+    //So are the blocks of the recipe: a block the gamemaster took out must not stay in it
+    delete update["system.designer"]
+    update["system.designer.status"] = "approved"
+    update["system.designer.recipe.base"] = data.system.designer.recipe.base
+    update["system.designer.recipe.enhancers"] = data.system.designer.recipe.enhancers
+    for (const [key, level] of Object.entries(data.system.designer.recipe.blocks)) update[`system.designer.recipe.blocks.${key}`] = level
+    for (const key of Object.keys(this.item.system.designer?.recipe?.blocks ?? {
+    })) if (!(key in data.system.designer.recipe.blocks)) update[`system.designer.recipe.blocks.-=${key}`] = null
     await this.item.update(update)
     await SR5DrugDesigner.#tell(this.item, "SR5.DrugDesignerApproved")
     this.close()

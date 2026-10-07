@@ -1443,7 +1443,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       value = !oldValue
     }
     //A drug a player made with the designer is taken once the gamemaster approved it (decision of DjamZ, 07/10)
-    if (target === "system.isActive" && value && realItem?.type === "itemDrug" && !drugDesignApproved(realItem.system)) return ui.notifications.warn(game.i18n.format("SR5.WARN_DrugDesignNotApproved", {
+    if (target === "system.isActive" && value && realItem?.type === "itemDrug" && !drugDesignApproved(realItem.system)) return ui.notifications.warn(game.i18n.format(realItem.system.designer.status === "refused" ? "SR5.WARN_DrugDesignRefused" : "SR5.WARN_DrugDesignNotApproved", {
       drug: realItem.name
     }))
     //Vintage (Gun H(e)aven 3 p. 3): never wireless, so no switch and no action spent

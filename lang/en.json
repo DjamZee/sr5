@@ -1695,6 +1695,7 @@
 	"SR5.DrugNeostigmine": "Neostigmine",
 	"SR5.DrugOndansetron": "Ondansetron",
 	"SR5.DrugKamiPlus": "KAMI+",
+	"SR5.WARN_DrugDesignRefused": "The GM refused {drug}: it cannot be taken.",
 	"SR5.DrugCustomDesigned": "Designed drug (designer)",
 	"SR5.DrugBaseTank": "Tank",
 	"SR5.DrugBaseDefender": "Defender",
