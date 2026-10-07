@@ -15,6 +15,9 @@
 import {
   SR5ShopGrades
 } from "../interface/shop-grades.js"
+import {
+  refuseByRule, ruleLockActive
+} from "./rule-locks.js"
 
 /** The `systemEffects` values a quality carries for this. */
 export const IMPLANT_ESSENCE_EFFECTS = {
@@ -394,6 +397,28 @@ export function activeBoneClash(actor, item) {
   return listOf(actor?.items).find(i => i !== item && !(i.id && i.id === item?.id) && isInstalled(i) && i.system?.isActive && bonesClash(item, i)) ?? null
 }
 
+/**
+ * Switching `item` on beside a bone augmentation it clashes with (SR5 p. 458, 462): refused to a player, the gamemaster
+ * warned and going past it (decision H5 of DjamZ). The "body" rule lock family lifted (B13, lot 4), the player goes
+ * past it too and the gamemaster hears of it.
+ * @returns {boolean} true if the switch must stop
+ */
+export function boneSwitchRefused(actor, item, isGM = game.user?.isGM) {
+  const lacing = activeBoneClash(actor, item)
+  if (!lacing) return false
+  const lacings = isBoneLacing(item) && isBoneLacing(lacing)
+  const data = {
+    name: item.name, actor: actor?.name ?? "", lacing: lacing.name
+  }
+  if (isGM) {
+    ui.notifications.warn(game.i18n.format(boneClashKey(lacings, "gm"), data))
+    return false
+  }
+  return refuseByRule("body", boneClashKey(lacings, "player"), data, {
+    actor
+  })
+}
+
 /** The message key for a bone augmentation refused: two lacings keep DjamZ's words, a lacing and a density their own */
 export function boneClashKey(lacings, kind) {
   return {
@@ -408,14 +433,15 @@ export function boneClashKey(lacings, kind) {
  * moves — a transfer that deletes first and creates afterwards would lose them on both sides. The qualities among
  * `incoming` count, as they arrive with the same batch. A second Ossature renforcée is refused the same way
  * (SR5 p. 458, decision H5 of DjamZ). A player is told and the implants are left out; the gamemaster is asked, in
- * his own window, and may keep them.
+ * his own window, and may keep them. The "body" rule lock family lifted, a player keeps them too and the gamemaster
+ * is told.
  * @param {Actor} actor the receiving body, read on the client that runs the transfer
  * @param {Array<{type: string, name: string, system: object}>} incoming
  * @param {object} [options]
  * @param {boolean} [options.isGM] whether the gamemaster decides
  * @param {Function} [options.warn] how a refusal is told (key, data)
  * @returns {Promise<{refused: object[], confirmed: boolean}>} `refused`: entries of `incoming` to leave out;
- *   `confirmed`: the gamemaster kept rejected implants, pass IMPLANT_REJECTION_CONFIRMED with the creation
+ *   `confirmed`: the gamemaster kept rejected implants (or the "body" family is lifted), pass IMPLANT_REJECTION_CONFIRMED with the creation
  */
 export async function screenRejectedImplants(actor, incoming, {
   isGM = game.user?.isGM, warn = (key, data) => ui.notifications?.warn(game.i18n.format(key, data))
@@ -463,6 +489,33 @@ export async function screenRejectedImplants(actor, incoming, {
       rejectClose: false,
     }) === true
     if (kept) return {
+      refused: [], confirmed: true
+    }
+  } else if (!ruleLockActive("body")) {
+    // The "body" rule lock family lifted (B13, lot 4): the player is not refused, the gamemaster hears of the list,
+    // one line per reason (several implants of the same reason share it)
+    const reasons = new Map()
+    for (const r of rejected) {
+      const key = r.quality ? "SR5.WARN_ImplantRejected" : boneClashKey(r.twoLacings, "player")
+      const id = `${key}|${r.quality ?? r.lacing}`
+      if (!reasons.has(id)) reasons.set(id, {
+        key, names: [], data: r.quality ? {
+          quality: r.quality
+        } : {
+          lacing: r.lacing
+        }
+      })
+      reasons.get(id).names.push(r.data.name)
+    }
+    for (const {
+      key, names, data
+    } of reasons.values()) refuseByRule("body", key, {
+      name: names.join(", "), actor: actor?.name ?? "", ...data
+    }, {
+      actor
+    })
+    // Confirmed as the gamemaster's choice is: a transfer the gamemaster's browser runs (the vendor) does not ask him
+    return {
       refused: [], confirmed: true
     }
   } else {
