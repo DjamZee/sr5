@@ -5,7 +5,8 @@
 //
 // Who writes: the active gamemaster, for every register (as the cards the gamemaster reads again, gm-ledger.js): the
 // observer's client asks, the gamemaster's reads the card again from the chat log (cardOf), counts its hits again,
-// spends it once (consume), confirms a card a player wrote, and writes. The writes of one register wait for each other.
+// spends it once (consume), and writes. Its window opens only for an answer she types (lot 8, DjamZ 07/10); a card a
+// player wrote is then confirmed in the same window. The writes of one register wait for each other.
 // Nothing here is hardened further against the console (decision of 06/10).
 
 import {
@@ -392,6 +393,17 @@ async function gmAnswers({
 }
 
 /**
+ * Whether the gamemaster's window must open: a piece of information only she can answer (files, "in this host"),
+ * which no provider answered.
+ * @param {Array<{key: String}>} choices
+ * @param {Object} typed   the answers already given, by key
+ */
+export function needsGMWindow(choices, typed = {
+}){
+  return (choices ?? []).some(c => entryOf(c.key)?.source === "gm" && !String(typed?.[c.key] ?? "").trim())
+}
+
+/**
  * Answer a request, on the active gamemaster's client.
  * @param {{messageId: String, choices: Array}} request
  * @param {User} sender
@@ -431,15 +443,15 @@ export async function answerPerception(request, sender){
   let typed = {
     ...context.answers
   }
-  const confirm = !card.byGM
-  const needsTyping = checked.choices.some(c => entryOf(c.key).source === "gm" && !String(typed[c.key] ?? "").trim())
-  if (confirm || needsTyping) {
+  // The window opens only when an answer is the gamemaster's to type (DjamZ, 07/10, lot 8); the answers the system
+  // works out leave at once, still written by the active gamemaster after the card is read again and counted
+  if (needsGMWindow(checked.choices, typed)) {
     typed = await gmAnswers({
       observer, target: target ? {
         ...target, facts
       } : {
         facts
-      }, choices: checked.choices, typed, sender, confirm
+      }, choices: checked.choices, typed, sender, confirm: !card.byGM
     })
     // A refusal is not kept: the button stays, and its next click asks again
     if (!typed) return refuse("gm")

@@ -1,8 +1,9 @@
 // The canvas layer that draws the crowns of PANs (couronne du PAN, lot 2): the constellation B at the Static level,
 // with its full (wireless on), dashed (silent) and grey (offline) lines, a generic icon per category and the name on
 // hover. A crown shows what getGraph() makes visible to the current user. Lot 3: the observer's own marks as small
-// diamonds over an icon, a purple ring for the gamemaster on what no player sees, and the gamemaster's menu to reveal
-// a device (pan-crown.js); the radial menu comes with lot 4. Which crowns are open is the client's own state.
+// diamonds over an icon, a yellow ring for the gamemaster on what no player sees, and the gamemaster's menu to reveal
+// a device (pan-crown.js); the radial menu comes with lot 4. Which crowns are open is the client's own state: lot 8
+// opens them by the HUD button, on hover, always, or with the key of the AR view (pan-openings.js).
 //
 // A layer of its own in the interface group, above the tokens and under the HTML HUD (PLAN-COURONNE-PAN-MATRICE § 3).
 // Each crown is a container placed on its token's center by the refreshToken hook, which also fires during the
@@ -26,6 +27,9 @@ import {
 import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
+import {
+  crownsToShow, panOpeningMode
+} from "./pan-openings.js"
 
 // The colors of the mock-up
 const COLORS = {
@@ -34,8 +38,8 @@ const COLORS = {
   disc: 0x041311,
   picture: 0xbfffee,
   pictureOffline: 0x7d8a88,
-  // The gamemaster's ring on what no player sees (lot 3)
-  hidden: 0xb04dff,
+  // The gamemaster's ring on what no player sees (lot 3): yellow since lot 8, the Mark picture of DjamZ being purple
+  hidden: 0xffd23f,
   mark: 0xff4d6d,
 }
 
@@ -58,6 +62,13 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     this._pending = new Set()
     this._frame = false
     this._discs = new Map()
+    // Lot 8: what opened the crowns (pan-openings.js)
+    this.manual = new Set()
+    this.dismissed = new Set()
+    this.hovered = null
+    this.arView = false
+    this._hoverTimer = null
+    this._syncing = Promise.resolve()
   }
 
   static get layerOptions(){
@@ -80,13 +91,18 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     this._frame = false
     for (const texture of this._discs.values()) texture.destroy(true)
     this._discs.clear()
+    // The tokens of another scene: the AR view stays, the rest goes
+    this.manual.clear()
+    this.dismissed.clear()
+    this.hovered = null
+    clearTimeout(this._hoverTimer)
   }
 
   isOpen(token){
     return this.crowns.has(token?.id)
   }
 
-  /** Open or close the crown of a token. @return {Boolean} whether it is open now */
+  /** Open or close the crown of a token, by hand (the HUD button). @return {Boolean} whether it is open now */
   async toggle(token){
     if (this.isOpen(token)) {
       this.close(token)
@@ -96,7 +112,77 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     return true
   }
 
+  /** Open a crown by hand: it stays open whatever the other openings do */
   async open(token){
+    if (!token?.id) return
+    this.manual.add(token.id)
+    this.dismissed.delete(token.id)
+    await this.#show(token)
+  }
+
+  /** Close a crown by hand: the AR view and "always visible" leave it closed until they are shown again */
+  close(token){
+    if (!token?.id) return
+    this.manual.delete(token.id)
+    this.dismissed.add(token.id)
+    this.#hide(token)
+  }
+
+  /** The tokens of the scene that may carry a crown (a storage on the ground has no PAN) */
+  #crownTokens(){
+    return (canvas?.tokens?.placeables ?? []).filter(t => t.actor && t.actor.type !== "actorStorage" && !t.destroyed)
+  }
+
+  /** Open and close the crowns as the openings of lot 8 say, once at a time */
+  sync(){
+    this._syncing = this._syncing.then(() => this.#sync()).catch(error => console.error(error))
+    return this._syncing
+  }
+
+  async #sync(){
+    if (!canvas?.ready) return
+    const tokens = this.#crownTokens()
+    const shown = crownsToShow({
+      tokenIds: tokens.map(t => t.id), manual: this.manual, dismissed: this.dismissed, hovered: this.hovered,
+      mode: panOpeningMode(), arView: this.arView,
+    })
+    for (const crown of [...this.crowns.values()]) if (!shown.has(crown.token.id)) this.#hide(crown.token)
+    await Promise.all(tokens.filter(t => shown.has(t.id) && !this.isOpen(t)).map(t => this.#show(t)))
+  }
+
+  /** The AR view of the key (pan-openings.js): every crown, or back to the others */
+  async setArView(shown){
+    shown = !!shown
+    if (shown === this.arView) return
+    this.arView = shown
+    // A crown closed by hand comes back with the next AR view
+    this.dismissed.clear()
+    await this.sync()
+  }
+
+  /** The mode "on hover": the crown of the token under the pointer, kept while the pointer is on the crown */
+  onHoverToken(token, hovered){
+    if (panOpeningMode() !== "hover") return
+    clearTimeout(this._hoverTimer)
+    if (hovered) {
+      if (this.hovered === token.id) return
+      this.hovered = token.id
+      return void this.sync()
+    }
+    if (this.hovered !== token.id) return
+    this.#leaveHover()
+  }
+
+  // Close the hovered crown a moment later, unless the pointer reaches one of its icons meanwhile
+  #leaveHover(){
+    clearTimeout(this._hoverTimer)
+    this._hoverTimer = setTimeout(() => {
+      this.hovered = null
+      this.sync()
+    }, 400)
+  }
+
+  async #show(token){
     if (!token?.actor || this.isOpen(token)) return
     const container = this.addChild(new PIXI.Container())
     container.eventMode = "passive"
@@ -114,7 +200,7 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     await this.#build(crown)
   }
 
-  close(token){
+  #hide(token){
     const crown = this.crowns.get(token?.id)
     if (!crown) return
     this.crowns.delete(token.id)
@@ -149,7 +235,7 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     const linked = [...this.crowns.values()].filter(c => c.droneTokenIds.has(token.id)).map(c => c.token.id)
     // The viewer moved: what she sees within 100 m may change. A crown with lines to other tokens is laid out again.
     if (token.controlled) return this.refresh()
-    // For the gamemaster, a player's token that moves changes what the players see (the purple ring)
+    // For the gamemaster, a player's token that moves changes what the players see (the yellow ring)
     if (game.user?.isGM && token.actor?.hasPlayerOwner) return this.refresh()
     if (crown?.droneTokenIds.size) linked.push(token.id)
     if (linked.length) this.refresh(linked)
@@ -170,9 +256,9 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     const {
       token
     } = crown
-    if (token.destroyed || !token.actor) return this.close(token)
+    if (token.destroyed || !token.actor) return this.#hide(token)
     const graph = getGraph(token)
-    if (!graph) return this.close(token)
+    if (!graph) return this.#hide(token)
 
     // The pictures first, each loaded once for all the crowns. An item's own picture that cannot be loaded falls back
     // on the generic one of its category (lot 10); the sign of the marks is the generic "mark" picture.
@@ -292,8 +378,13 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
       label.visible = true
       // Over its neighbours while it is read
       icon.parent?.setChildIndex(icon, icon.parent.children.length - 1)
+      // On hover (lot 8), the crown stays while the pointer goes from its token to its icons
+      if (this.hovered === crown.token.id) clearTimeout(this._hoverTimer)
     })
-    icon.on("pointerout", () => label.visible = false)
+    icon.on("pointerout", () => {
+      label.visible = false
+      if (this.hovered === crown.token.id) this.#leaveHover()
+    })
     // The token stays selected, and the canvas does not start a selection box under the icon
     icon.on("pointerdown", event => {
       event.stopPropagation()
@@ -325,7 +416,7 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
       })
       disc.drawCircle(0, 0, radius * 1.17)
     }
-    // What no player sees, for the gamemaster: a purple ring outside the others
+    // What no player sees, for the gamemaster: a yellow ring outside the others
     if (hidden) {
       disc.lineStyle({
         width: radius / 7, color: COLORS.hidden, alpha: 0.95
@@ -450,4 +541,9 @@ export function registerPanCrownHooks(){
   }
   // Lot 4: a click on an icon opens its radial menu, for everyone (the gamemaster's reveal is in it)
   Hooks.on("sr5.panCrownClickIcon", data => openRadialMenu(data))
+  // Lot 8: the openings on hover, always, and in the AR view follow the scene and its tokens
+  Hooks.on("hoverToken", (token, hovered) => layer()?.onHoverToken(token, hovered))
+  for (const hook of ["canvasReady", "createToken", "deleteToken"]){
+    Hooks.on(hook, () => layer()?.sync())
+  }
 }

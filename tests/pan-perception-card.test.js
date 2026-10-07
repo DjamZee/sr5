@@ -2,7 +2,7 @@ import {
   describe, it, expect
 } from 'vitest'
 import {
-  cardBudget, perceptionFacts
+  cardBudget, needsGMWindow, perceptionFacts
 } from '../modules/canvas/pan-crown/pan-perception-card.js'
 import {
   answerOf
@@ -132,5 +132,40 @@ describe('the facts of a Matrix Perception', () => {
         hits: 1
       }
     })).toBe(3)
+  })
+})
+
+// DjamZ, 07/10 (lot 8): the gamemaster's window opens only for an answer she types
+describe('the gamemaster\'s window after a Matrix Perception', () => {
+  it('stays shut when the system works out every answer', () => {
+    expect(needsGMWindow([{
+      key: 'monitor'
+    }, {
+      key: 'programs'
+    }, {
+      key: 'attribute', param: 'firewall'
+    }, {
+      key: 'silentNearby'
+    }])).toBe(false)
+  })
+
+  it('opens for a file or "in this host", unless a provider answered it', () => {
+    for (const key of ['fileEdited', 'fileBomb', 'fileProtection', 'silentInHost']){
+      expect(needsGMWindow([{
+        key: 'monitor'
+      }, {
+        key
+      }])).toBe(true)
+    }
+    expect(needsGMWindow([{
+      key: 'silentInHost'
+    }], {
+      silentInHost: 'Oui, deux'
+    })).toBe(false)
+    expect(needsGMWindow([{
+      key: 'silentInHost'
+    }], {
+      silentInHost: '  '
+    })).toBe(true)
   })
 })

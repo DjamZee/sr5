@@ -17,6 +17,9 @@ import {
   registerSpiritLedger
 } from "./spirit-ledger.js"
 import {
+  registerPanArKey, registerPanOpeningSettings
+} from "../canvas/pan-crown/pan-openings.js"
+import {
   registerImplantRegisterSetting
 } from "./implant-register.js"
 import {
@@ -713,6 +716,10 @@ export class SR5_SystemHelpers {
       },
       onChange: () => canvas?.sr5PanCrown?.refresh()
     })
+
+    // How each user opens the PAN crowns, and the key of the AR view (couronne du PAN, lot 8; Q8 of DjamZ, 07/10)
+    registerPanOpeningSettings()
+    registerPanArKey()
   }
 
   /* Display Shadowrun Themed Log Entries Based on Logging Level
