@@ -127,6 +127,8 @@ export class SR5_SocketHandler {
       "matrixPerceptionInfo": [async (message, senderId) => (await import("./canvas/pan-crown/pan-perception-card.js"))._socketPerceptionInfo(message, senderId)],
       "matrixPerceptionRefused": [async (message, senderId) => (await import("./canvas/pan-crown/pan-perception-card.js"))._socketPerceptionRefused(message, senderId)],
       "matrixIntelForget": [async (message, senderId) => (await import("./canvas/pan-crown/pan-perception-card.js"))._socketForgetIntel(message, senderId)],
+      //B13: a lock lifted by the world, told to the gamemaster by his own browser, so the player does not read it
+      "ruleLockWhisper": [async (message, senderId) => (await import("./system/rule-locks.js")).socketRuleLockWhisper(message, senderId)],
       "tacnetRoster": [async (message, senderId) => (await import("./system/tacnet.js"))._socketTacnetRoster(message, senderId)],
     }
 

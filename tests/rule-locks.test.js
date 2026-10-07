@@ -3,6 +3,14 @@ import {
 } from 'vitest'
 
 const whispers = []
+const emits = []
+vi.mock('../modules/socket.js', () => ({
+  SR5_SocketHandler: {
+    emitForGM: async (type, data) => {
+      emits.push([type, data])
+    },
+  },
+}))
 vi.mock('../modules/entities/actors/entityActor-helpers.js', () => ({
   SR5_ActorHelper: {
     whisperGM: async text => {
@@ -14,7 +22,7 @@ vi.mock('../modules/entities/actors/entityActor-helpers.js', () => ({
 const {
   RULE_LOCK_FAMILIES, RULE_LOCK_KEYS, presetLocks, presetOf, normalizeLocks, locksFromLegacy, legacyFromLocks,
   currentRuleLocks, ruleLockActive, refuseByRule, capByRule, shouldWhisper, resetWhispers, setRuleLocks,
-  runRuleLocksMigration,
+  runRuleLocksMigration, socketRuleLockWhisper,
 } = await import('../modules/system/rule-locks.js')
 
 // B13, lot 0 (PLAN-AUTOMATISATION-LEGERE.md, § 2): the shared function and its settings, no site wired yet
@@ -25,6 +33,7 @@ const flush = () => new Promise(resolve => setTimeout(resolve, 30))
 beforeEach(() => {
   resetWhispers()
   whispers.length = 0
+  emits.length = 0
   notes = []
   // A world as Foundry gives it before any change: every setting at its registered default
   store = {
@@ -40,6 +49,14 @@ beforeEach(() => {
   }
   game.user = {
     id: 'p1', isGM: false, name: 'Joueuse'
+  }
+  game.users = {
+    activeGM: {
+      id: 'gm'
+    },
+    get: id => ({
+      id, name: id === 'p1' ? 'Joueuse' : 'MJ'
+    }),
   }
   game.combat = null
   game.i18n = {
@@ -238,9 +255,70 @@ describe('refuseByRule and capByRule', () => {
     })).toBe(false)
     await flush()
     expect(notes).toEqual([])
+    // The player's browser writes no chat line (Foundry would show her own whisper to her): it asks the active GM
+    expect(whispers).toEqual([])
+    expect(emits).toEqual([['ruleLockWhisper', {
+      family: 'ammo', key: 'SR5.WARN_FiringModeAmmo', data: {
+      }, actor: 'Dodger'
+    }]])
+    // ... whose browser writes the whisper
+    game.user = {
+      id: 'gm', isGM: true, name: 'MJ'
+    }
+    await socketRuleLockWhisper({
+      type: 'ruleLockWhisper', data: emits[0][1], userId: 'gm'
+    }, 'p1')
     expect(whispers).toHaveLength(1)
     expect(whispers[0]).toContain('SR5.RULELOCKS_Whisper')
     expect(whispers[0]).toContain('Dodger')
+  })
+
+  it('no active gamemaster: nobody to tell, and the action still goes on', async () => {
+    store.sr5RuleLocksMigration = 2
+    store.sr5RuleLocks = presetLocks('light')
+    game.users.activeGM = null
+    expect(refuseByRule('ammo', 'SR5.WARN_FiringModeAmmo', null, {
+      actor
+    })).toBe(false)
+    await flush()
+    expect(emits).toEqual([])
+    expect(notes).toEqual([])
+  })
+
+  it('the whisper is written only by the active gamemaster, for a family and a key the system knows', async () => {
+    const ask = (data, userId = 'gm') => socketRuleLockWhisper({
+      type: 'ruleLockWhisper', data, userId
+    }, 'p1')
+    game.user = {
+      id: 'gm2', isGM: true, name: 'MJ 2'
+    }
+    await ask({
+      family: 'ammo', key: 'SR5.WARN_FiringModeAmmo', data: {
+      }, actor: 'Dodger'
+    })
+    game.user = {
+      id: 'gm', isGM: true, name: 'MJ'
+    }
+    await ask({
+      family: 'nope', key: 'SR5.WARN_FiringModeAmmo'
+    })
+    await ask({
+      family: 'ammo', key: '<b>x</b>'
+    })
+    await ask({
+      family: 'ammo', key: 'SR5.WARN_FiringModeAmmo', data: {
+        a: {
+          b: 1
+        }
+      }
+    })
+    expect(whispers).toEqual([])
+    await ask({
+      family: 'actions', key: 'SR5.WARN_NoActionLeft', data: {
+        actor: 'Dodger', value: 1
+      }
+    })
+    expect(whispers).toHaveLength(1)
   })
 
   it('the gamemaster acting with a lock lifted gets a notification, no chat line', async () => {
@@ -275,13 +353,13 @@ describe('refuseByRule and capByRule', () => {
       actor
     })
     await flush()
-    expect(whispers).toHaveLength(3)
+    expect(emits).toHaveLength(3)
     game.combat.round = 2
     refuseByRule('ranges', 'SR5.WARN_FanningTooMany', null, {
       actor
     })
     await flush()
-    expect(whispers).toHaveLength(4)
+    expect(emits).toHaveLength(4)
   })
 
   it('out of combat, the same whisper waits ten seconds', () => {
@@ -308,6 +386,6 @@ describe('refuseByRule and capByRule', () => {
       actor
     })).toBe(7)
     await flush()
-    expect(whispers).toHaveLength(1)
+    expect(emits).toHaveLength(1)
   })
 })

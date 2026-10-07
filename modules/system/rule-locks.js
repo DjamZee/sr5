@@ -152,23 +152,62 @@ export function resetWhispers() {
 }
 
 let actorHelper = null
+let socketHandler = null
 
-// The lifted lock, told to the gamemaster. The gamemaster acting alone gets a notification instead of a chat line
-async function tellGM(family, key, data, actor) {
-  const message = game.i18n.format(key, data ?? {
+// The text of the whisper, in the language of the gamemaster who writes it
+export function ruleLockWhisperText(family, key, data, actorName) {
+  return game.i18n.format("SR5.RULELOCKS_Whisper", {
+    family: game.i18n.localize(`SR5.RULELOCKS_Family_${family}`),
+    actor: actorName ?? "",
+    message: game.i18n.format(key, data ?? {
+    }),
   })
-  if (game.user?.isGM) return ui.notifications.info(message)
+}
+
+/**
+ * The lifted lock, told to the gamemaster. The gamemaster acting alone gets a notification instead of a chat line.
+ * A player's browser does not write the whisper: Foundry shows a whisper to its author, so she would read it too.
+ * It asks the active gamemaster, whose browser writes it (socket "ruleLockWhisper"). No gamemaster: nobody to tell.
+ */
+async function tellGM(family, key, data, actor) {
+  if (game.user?.isGM) return ui.notifications.info(game.i18n.format(key, data ?? {
+  }))
+  if (!game.users?.activeGM) return
   if (!shouldWhisper(actor?.id ?? actor?.uuid, key)) return
-  // Loaded on first use (the actor helpers import half the system); one promise for every caller
+  // Loaded on first use (the socket imports half the system); one promise for every caller
+  socketHandler ??= import("../socket.js")
+  const {
+    SR5_SocketHandler
+  } = await socketHandler
+  return SR5_SocketHandler.emitForGM("ruleLockWhisper", {
+    family, key, data: data ?? {
+    }, actor: actor?.name ?? game.user?.name ?? ""
+  })
+}
+
+// Format data a refusal sends: plain values only (names, numbers)
+const plainData = data => data && typeof data === "object" && !Array.isArray(data) &&
+  Object.values(data).every(v => ["string", "number", "boolean"].includes(typeof v))
+
+/**
+ * The active gamemaster's browser writes the whisper a player's browser asked for. The family and the key must be
+ * ones the system knows; the whisper escapes its text (whisperGM), and goes to the gamemasters only.
+ */
+export async function socketRuleLockWhisper(message, senderId) {
+  if (game.users?.activeGM?.id !== game.user?.id) return
+  const {
+    family, key, data, actor
+  } = message?.data ?? {
+  }
+  if (!RULE_LOCK_FAMILIES.includes(family) || typeof key !== "string" || !/^SR5\.[A-Za-z0-9_]+$/.test(key)) return
+  if ((game.i18n.has && !game.i18n.has(key)) || !plainData(data ?? {
+  })) return
+  const actorName = typeof actor === "string" ? actor : (game.users.get(senderId)?.name ?? "")
   actorHelper ??= import("../entities/actors/entityActor-helpers.js")
   const {
     SR5_ActorHelper
   } = await actorHelper
-  return SR5_ActorHelper.whisperGM(game.i18n.format("SR5.RULELOCKS_Whisper", {
-    family: game.i18n.localize(`SR5.RULELOCKS_Family_${family}`),
-    actor: actor?.name ?? game.user?.name ?? "",
-    message,
-  }))
+  return SR5_ActorHelper.whisperGM(ruleLockWhisperText(family, key, data, actorName))
 }
 
 /**
