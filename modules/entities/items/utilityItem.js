@@ -2320,7 +2320,7 @@ export class SR5_UtilityItem extends Actor {
     itemData.comforts.gameEffects = game.i18n.localize('SR5.LifestyleComforts_GE')
     itemData.security.gameEffects = game.i18n.localize('SR5.LifestyleSecurity_GE')
 
-    // The owner's metatype (SR5 p. 68), after the options and before the Outings and Services (Hard Targets p. 141)
+    // The owner's metatype (SR5 p. 68), after the options and before the increases, Outings and Services (Hard Targets p. 141)
     const metatype = owner?.system?.biography?.metatype || owner?.system?.biography?.characterMetatype
     const surcharge = lifestyleMetatypeSurcharge(itemData.price.base, itemData.options, metatype)
     if (surcharge) SR5_EntityHelpers.updateModifier(itemData.price, game.i18n.localize(SR5.metatypes[metatype]), 'metatype', surcharge)

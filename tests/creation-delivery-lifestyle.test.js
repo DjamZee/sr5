@@ -72,6 +72,16 @@ describe("the lifestyle's metatype surcharge (SR5 p. 68, Hard Targets p. 141)", 
     }]
     expect(lifestyleMetatypeSurcharge(5000, options, "troll")).toBe(4500)
   })
+  it("leaves out the increases of Comforts, Security or Neighborhood, added after the metatype (Hard Targets p. 141)", () => {
+    // Streets raised one level for a troll: the 50 ¥ flat cost is paid once, not doubled
+    expect(lifestyleMetatypeSurcharge(0, [{
+      type: "modification", price: 50
+    }], "troll")).toBe(0)
+    // Low (2 000 ¥) with one +10 % increase: only the 2 000 ¥ are doubled
+    expect(lifestyleMetatypeSurcharge(2000, [{
+      type: "modification", price: 200
+    }], "troll")).toBe(2000)
+  })
   it("never goes below zero, and reads no price as zero", () => {
     expect(lifestyleMetatypeSurcharge(0, [{
       type: "negativeOption", price: -100
