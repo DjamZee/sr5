@@ -327,7 +327,7 @@ export class SR5_MarkHelpers {
     let targetActor = await SR5_EntityHelpers.getRealActorFromID(targetActorID),
       item = targetActor.items.find(i => i.type === "itemDevice" && i.system.isActive)
 
-    for (let token of canvas.tokens.placeables){
+    for (let token of canvas?.tokens?.placeables ?? []){
       if (token.actor.id === targetActorID) {
         let tokenDeck = token.actor.items.find(i => i.type === "itemDevice" && i.system.isActive)
         let tokenDeckData = foundry.utils.duplicate(tokenDeck.system)
@@ -382,7 +382,7 @@ export class SR5_MarkHelpers {
 
     //For host, update all unlinked token with same marked items
     if (owner.system.matrix.deviceType === "host"){
-      for (let token of canvas.tokens.placeables){
+      for (let token of canvas?.tokens?.placeables ?? []){
         if (token.actor.id === ownerID) {
           let tokenDeck = token.actor.items.find(i => i.type === "itemDevice" && i.system.isActive)
           let tokenDeckData = foundry.utils.duplicate(tokenDeck.system)
