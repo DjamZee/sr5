@@ -132,6 +132,9 @@ import {
 import {
   SR5ShopWindow, SR5ShopWorldSource
 } from "../interface/shop-window.js"
+import {
+  SR5PanCrown
+} from "../canvas/pan-crown/pan-crown.js"
 
 // Item DataModels
 import {
@@ -370,6 +373,8 @@ export async function sr5HookInit() {
     revertMentorConversion,
     // GM macro: switch on the always active powers of the sheets made before (SR5 p. 396, H39)
     activateAutomaticPowers,
+    // The crown of a PAN (lot 1: the graph and what the observer sees of it, nothing drawn yet)
+    panCrown: SR5PanCrown,
   }
 
   // Register DataModels
