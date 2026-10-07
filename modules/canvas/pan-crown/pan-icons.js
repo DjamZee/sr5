@@ -135,8 +135,27 @@ export function iconCategoryOf(item, holder = item?.parent){
  * @return {String}           the path of the image; the generic device for an unknown category
  */
 export function iconPathOf(category, table = null){
+  // A category a module brought (registerPanIcon, lot 11)
+  if (typeof category === "string" && !PAN_ICON_CATEGORIES.includes(category) && typeof table?.[category] === "string" && table[category]) return table[category]
   const key = PAN_ICON_CATEGORIES.includes(category) ? category : "device"
   return table?.[key] || `${PAN_ICON_FOLDER}/${key}.${PAN_ICON_EXTENSION}`
+}
+
+// A category is a key of letters, digits, dashes and underscores (a module's own: "matrice-zone-hall")
+const CATEGORY_KEY = /^[a-z0-9][a-z0-9_-]*$/i
+
+/**
+ * A generic icon brought by a module (lot 11): a category of its own, or a picture in place of the system's.
+ * @param {Object} table       category -> path (CONFIG.SR5.panIcons), changed in place
+ * @param {String} category    a key of letters, digits, dashes and underscores
+ * @param {String} path        the path of the image
+ * @return {Boolean}           false when the category or the path is not usable
+ */
+export function registerPanIcon(table, category, path){
+  if (!table || typeof category !== "string" || !CATEGORY_KEY.test(category)) return false
+  if (typeof path !== "string" || !path.trim()) return false
+  table[category] = path.trim()
+  return true
 }
 
 /**

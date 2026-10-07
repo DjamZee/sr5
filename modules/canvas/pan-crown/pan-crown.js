@@ -3,7 +3,8 @@
 // crown, drawn by the layer of pan-crown-layer.js. Lot 3: the world setting "the gamemaster decides", the
 // gamemaster's reveal device by device (flags.sr5.panReveal, written by the gamemaster alone, for the whole table:
 // Q4), the observer's own marks, and what the players do not see, for the gamemaster. Lot 4: the radial menu of an
-// icon (pan-radial-menu.js), which also holds the gamemaster's reveal.
+// icon (pan-radial-menu.js), which also holds the gamemaster's reveal. Lot 11: the hooks for the modules
+// (pan-hooks.js), registerIcon and refresh.
 
 import {
   buildPanGraph, hasAntenna, idsOf
@@ -20,6 +21,12 @@ import {
 import {
   intelFor, spottedUuids
 } from "./pan-perception.js"
+import {
+  applyVisibilityHooks, contributeToGraph
+} from "./pan-hooks.js"
+import {
+  registerPanIcon
+} from "./pan-icons.js"
 
 // A token placeable, a TokenDocument, an Actor, or the id of a token of the canvas or of a world actor
 function resolveSubject(subject){
@@ -176,6 +183,10 @@ export function getGraph(subject, options = {
     resolve: uuid => globalThis.fromUuidSync?.(uuid) ?? null,
     actors: sceneActors(),
   })
+  // Lot 11: the nodes and lines of the modules (sr5.panCrownGraph), added to what the system builds
+  contributeToGraph(graph, {
+    token: crown.token, actor: crown.actor
+  })
   const viewer = viewerFrom(options)
   const looker = lookerOf(viewer?.actor, !!viewer?.isGM)
   graph.viewer = {
@@ -184,7 +195,7 @@ export function getGraph(subject, options = {
   }
   // The gamemaster's yellow ring (lot 3, yellow since lot 8): what no player sees
   const players = looker.isGM ? playerViewers().map(p => ({
-    token: p.token, looker: lookerOf(p.actor, false)
+    actor: p.actor, token: p.token, looker: lookerOf(p.actor, false)
   })) : null
   for (const node of graph.nodes){
     // A sprite stands where its technomancer stands (SR5 p. 256): measured from her token (anchorIds)
@@ -193,16 +204,21 @@ export function getGraph(subject, options = {
     } : node, crown)
     const isHost = isHostActor(holderActorOf(node, crown))
     node.distance = distanceInMeters(viewer?.token, nodeToken)
-    node.visibility = nodeVisibility(node, looker, {
+    // Lot 11: a module may hide it (sr5.panCrownVisibility), never show what the system hides
+    node.visibility = applyVisibilityHooks(node, {
+      actor: viewer?.actor ?? null, token: viewer?.token ?? null, isGM: looker.isGM, ids: looker.ids
+    }, nodeVisibility(node, looker, {
       distance: node.distance, isHost
-    })
+    }))
     // The observer's own marks on it, which she alone sees (SR5 p. 238)
     node.viewerMarks = viewerMarksOn(node, looker.ids)
     // What her Matrix Perceptions brought back that the crown draws: the monitor, the number of marks (lot 5)
     node.intel = intelFor(intelOf(viewer?.actor), node.uuid)
-    if (players) node.hiddenFromPlayers = hiddenFromPlayers(players.map(p => nodeVisibility(node, p.looker, {
+    if (players) node.hiddenFromPlayers = hiddenFromPlayers(players.map(p => applyVisibilityHooks(node, {
+      actor: p.actor, token: p.token ?? null, isGM: false, ids: p.looker.ids
+    }, nodeVisibility(node, p.looker, {
       distance: distanceInMeters(p.token, nodeToken), isHost
-    })))
+    }))))
   }
   return graph
 }
@@ -246,4 +262,18 @@ export const SR5PanCrown = {
   setReveal: setPanReveal,
   // Lot 4: launch a Matrix action of the system against a device chosen on a crown, {targetTokenId, targetUuid}
   rollMatrixActionOn,
+  // Lot 11: draw a crown again (a token, an actor or an id), or every open crown
+  refresh: subject => {
+    if (!subject) return canvas?.sr5PanCrown?.refresh()
+    const id = tokenOf(subject)?.id
+    if (id) canvas?.sr5PanCrown?.refresh([id])
+  },
+  // Lot 11: a generic icon of a module, a category of its own or in place of the system's (pan-icons.js)
+  registerIcon: (category, path) => {
+    CONFIG.SR5.panIcons ??= {
+    }
+    const done = registerPanIcon(CONFIG.SR5.panIcons, category, path)
+    if (done) canvas?.sr5PanCrown?.refresh()
+    return done
+  },
 }

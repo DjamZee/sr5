@@ -16,6 +16,9 @@ import {
   radialColumns
 } from "./pan-layout.js"
 import {
+  contributeActions
+} from "./pan-hooks.js"
+import {
   canTryMatrixAction
 } from "../../rolls/roll-prepare-case/rollData-MatrixAction.js"
 import {
@@ -96,12 +99,14 @@ function reasonOf(entry){
 }
 
 function button(label, {
-  tooltip = "", disabled = false, current = false, onClick
+  tooltip = "", disabled = false, current = false, onClick, key = ""
 } = {
 }){
   const element = document.createElement("button")
   element.type = "button"
   element.className = "sr5-pan-radial-entry"
+  // The key a module reads in sr5.panCrownActions (lot 11)
+  if (key) element.dataset.key = key
   if (current) element.classList.add("current")
   element.textContent = label
   if (tooltip) element.dataset.tooltip = tooltip
@@ -170,7 +175,10 @@ export function openRadialMenu({
   const graph = getGraph(token)
   const node = graph?.nodes.find(n => n.uuid === clicked.uuid)
   if (!node || (!node.visibility?.visible && !game.user?.isGM)) return
-  const entries = menuEntries(node, graph, viewer, {
+  // A node a module added (lot 11) has the system's actions only if it asks for them
+  const entries = node.contributed && node.systemActions !== true ? {
+    actions: [], modes: [], slave: null
+  } : menuEntries(node, graph, viewer, {
     canTry: canTryMatrixAction
   })
 
@@ -180,6 +188,7 @@ export function openRadialMenu({
   const gm = []
   for (const action of entries.actions){
     buttons.push(button(game.i18n.localize(SR5.matrixRolledActions[action.key] ?? action.key), {
+      key: action.key,
       tooltip: reasonOf(action),
       disabled: !action.enabled,
       onClick: () => rollMatrixActionOn(viewer.actor, action.key, {
@@ -192,7 +201,7 @@ export function openRadialMenu({
   }
   for (const mode of entries.modes){
     owners.push(button(game.i18n.localize(MODE_LABELS[mode.mode]), {
-      current: mode.current, disabled: mode.current, onClick: () => switchMode(node, mode.mode, graph)
+      key: `mode-${mode.mode}`, current: mode.current, disabled: mode.current, onClick: () => switchMode(node, mode.mode, graph)
     }))
   }
   if (entries.slave) owners.push(button(entries.slave.action === "free" ?
@@ -200,12 +209,42 @@ export function openRadialMenu({
     game.i18n.format("SR5.PanMenuSlave", {
       master: graph.nodes.find(n => n.uuid === graph.master)?.name ?? ""
     }), {
+    key: `pan-${entries.slave.action}`,
     onClick: () => entries.slave.action === "free" ? freeFromPan(node, graph) : slaveToPan(node, graph)
   }))
   // The gamemaster's reveal (lot 3), for the whole table
-  if (game.user?.isGM) gm.push(button(game.i18n.localize(node.revealed ? "SR5.PanCrownHide" : "SR5.PanCrownReveal"), {
+  if (game.user?.isGM && !node.contributed) gm.push(button(game.i18n.localize(node.revealed ? "SR5.PanCrownHide" : "SR5.PanCrownReveal"), {
+    key: "reveal",
     tooltip: node.hiddenFromPlayers === undefined ? "" : game.i18n.localize(node.hiddenFromPlayers ? "SR5.PanCrownHiddenFromPlayers" : "SR5.PanCrownSeenByPlayers"),
     onClick: () => setPanReveal(node, !node.revealed),
+  }))
+
+  // Lot 11: the entries of the modules (sr5.panCrownActions), and the system's they grey out
+  const describe = (element, group) => ({
+    key: element.dataset.key, label: element.textContent, enabled: element.getAttribute("aria-disabled") !== "true",
+    tooltip: element.dataset.tooltip ?? "", group
+  })
+  const {
+    greyed, added
+  } = contributeActions(node, {
+    actor: viewer?.actor ?? null, token: viewer?.token ?? null, isGM: !!game.user?.isGM
+  }, [...buttons.map(e => describe(e, "actions")), ...owners.map(e => describe(e, "owner")), ...gm.map(e => describe(e, "gm"))])
+  for (const list of [buttons, owners, gm]) list.forEach((element, i) => {
+    if (greyed.has(element.dataset.key)) list[i] = button(element.textContent, {
+      key: element.dataset.key, tooltip: greyed.get(element.dataset.key), disabled: true
+    })
+  })
+  const modules = added.map(entry => button(entry.label, {
+    key: entry.key, tooltip: entry.tooltip, disabled: !entry.enabled,
+    onClick: async () => {
+      try {
+        await entry.onClick({
+          token, node, viewer, graph
+        })
+      } catch (error) {
+        console.error(`SR5 | sr5.panCrownActions: the entry "${entry.label}" failed`, error)
+      }
+    },
   }))
 
   const menu = document.createElement("nav")
@@ -216,7 +255,7 @@ export function openRadialMenu({
   center.className = "sr5-pan-radial-center"
   center.textContent = node.name
   menu.appendChild(center)
-  if (!buttons.length && !owners.length && !gm.length) {
+  if (!buttons.length && !owners.length && !gm.length && !modules.length) {
     const empty = document.createElement("span")
     empty.className = "sr5-pan-radial-empty"
     empty.textContent = game.i18n.localize("SR5.PanMenuNoViewer")
@@ -226,7 +265,7 @@ export function openRadialMenu({
   // In the page first: the layout measures the entries
   document.body.appendChild(menu)
   layOut(menu, {
-    right: [buttons], left: [owners, gm]
+    right: [buttons, modules], left: [owners, gm]
   })
   openMenu = menu
   document.addEventListener("pointerdown", onPointerOutside, true)

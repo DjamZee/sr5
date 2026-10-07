@@ -30,6 +30,9 @@ import {
 import {
   crownsToShow, panOpeningMode
 } from "./pan-openings.js"
+import {
+  PAN_CROWN_HOOKS, safeCall
+} from "./pan-hooks.js"
 
 // The colors of the mock-up
 const COLORS = {
@@ -186,12 +189,14 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     if (!token?.actor || this.isOpen(token)) return
     const container = this.addChild(new PIXI.Container())
     container.eventMode = "passive"
+    // Lot 11: the free drawing of the modules (sr5.panCrownRendered), under the lines, emptied at each drawing
+    const decor = container.addChild(new PIXI.Container())
     const lines = container.addChild(new PIXI.Graphics())
     const icons = container.addChild(new PIXI.Container())
     icons.eventMode = "passive"
     const sceneCenter = canvas.dimensions.sceneRect.center
     const crown = {
-      token, container, lines, icons, droneTokenIds: new Set(), version: 0,
+      token, container, decor, lines, icons, droneTokenIds: new Set(), version: 0,
       // Fixed once open, so that the crown does not swing round while its token moves
       angle: crownAngle(token.center, sceneCenter),
     }
@@ -207,6 +212,7 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     crown.container.destroy({
       children: true
     })
+    safeCall(PAN_CROWN_HOOKS.closed, [token])
   }
 
   /** Draw again, once in the next frame, the crowns whose token or graph changed (all of them by default) */
@@ -304,6 +310,10 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
         texture: textures.get(path), tinted: isTintedIcon(path), markTexture
       }, graph, crown))
     }
+    for (const child of crown.decor.removeChildren()) child.destroy({
+      children: true
+    })
+    safeCall(PAN_CROWN_HOOKS.rendered, [token, crown.decor, graph])
     this.#place(crown)
   }
 
