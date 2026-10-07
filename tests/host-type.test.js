@@ -153,7 +153,7 @@ describe("host types: the gamemaster's arrangement of the free values", () => {
   it("the bubble's offset", () => {
     expect(hostTypeOffsetLabel(9, 6)).toBe("+3")
     expect(hostTypeOffsetLabel(4, 6)).toBe("-2")
-    expect(hostTypeOffsetLabel(6, 6)).toBe("=")
+    expect(hostTypeOffsetLabel(6, 6)).toBe("+0")
   })
 })
 

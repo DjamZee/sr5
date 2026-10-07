@@ -98,6 +98,6 @@ export function resolveHostAttributes(type, rating, stored = {
 // The offset from the rating, as the bubble shows it ("rating + 3", "rating - 2")
 export function hostTypeOffsetLabel(value, rating) {
   const offset = value - rating
-  if (offset === 0) return "="
+  if (offset === 0) return "+0"
   return offset > 0 ? `+${offset}` : `${offset}`
 }
