@@ -39,6 +39,8 @@ export function canBeConcealed(item) {
 export function concealedState(item) {
   const state = item?.flags?.sr5?.[CONCEALED_FLAG]
   if (!state || typeof state !== "object") return null
+  //A weapon in hand is out, whichever way it was made ready (the sheet's box writes through the actor)
+  if (item.type === "itemWeapon" && item.system?.isActive === true) return null
   const hits = Math.floor(Number(state.hits))
   return Number.isFinite(hits) && hits >= 0 ? {
     ...state, hits
@@ -132,4 +134,22 @@ export function updateTakesOut(item, changes) {
   if (!concealedState(item) || item?.type !== "itemWeapon") return false
   const active = changes?.system?.isActive ?? changes?.["system.isActive"]
   return active === true
+}
+
+/**
+ * The same for the items an actor's update rewrites: the sheet's boxes write the whole list through the actor, which
+ * calls no Item#_preUpdate. A hidden weapon made ready there loses its hidden state too. Changes the update in place.
+ */
+export function stripTakenOut(actor, changes) {
+  if (!Array.isArray(changes?.items)) return
+  for (const entry of changes.items) {
+    const item = entry?._id ? actor?.items?.get(entry._id) : null
+    if (!item || !updateTakesOut(item, entry)) continue
+    if (entry.flags?.sr5) delete entry.flags.sr5[CONCEALED_FLAG]
+    entry.flags ??= {
+    }
+    entry.flags.sr5 ??= {
+    }
+    entry.flags.sr5[`-=${CONCEALED_FLAG}`] = null
+  }
 }

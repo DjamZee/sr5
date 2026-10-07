@@ -4,7 +4,7 @@ import {
 
 const {
   canBeConcealed, concealedState, concealedItems, concealResult, searchConcealment, searchBasePool, searchModifiers,
-  searchPool, isFound, searchPlan, updateTakesOut
+  searchPool, isFound, searchPlan, updateTakesOut, stripTakenOut
 } = await import('../modules/rolls/roll-helpers/conceal-rules.js')
 
 const holdout = (flag, extra = {
@@ -135,6 +135,68 @@ describe('the hidden state', () => {
         isActive: true
       }
     })).toBe(false)
+  })
+  it('a weapon in hand is not hidden, whichever way it was made ready', () => {
+    const inHand = holdout({
+      hits: 2
+    })
+    inHand.system.isActive = true
+    expect(concealedState(inHand)).toBe(null)
+    expect(concealedItems({
+      items: [inHand]
+    })).toEqual([])
+  })
+  it("the sheet's box, written through the actor, takes the weapon out too", () => {
+    const hidden = holdout({
+      hits: 2
+    })
+    const other = holdout({
+      hits: 1
+    })
+    const ids = {
+      a: hidden, b: other
+    }
+    const actor = {
+      items: {
+        get: id => ids[id]
+      }
+    }
+    const changes = {
+      items: [{
+        _id: 'a', system: {
+          isActive: true
+        }, flags: {
+          sr5: {
+            concealed: {
+              hits: 2
+            }
+          }
+        }
+      }, {
+        _id: 'b', system: {
+          isActive: false
+        }, flags: {
+          sr5: {
+            concealed: {
+              hits: 1
+            }
+          }
+        }
+      }]
+    }
+    stripTakenOut(actor, changes)
+    expect(changes.items[0].flags.sr5).toEqual({
+      '-=concealed': null
+    })
+    expect(changes.items[1].flags.sr5).toEqual({
+      concealed: {
+        hits: 1
+      }
+    })
+    stripTakenOut(actor, {
+      system: {
+      }
+    })
   })
 })
 

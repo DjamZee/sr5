@@ -17,6 +17,9 @@ import {
   reservedChangedBy
 } from "../../system/reserved-fields.js"
 import {
+  stripTakenOut
+} from "../../rolls/roll-helpers/conceal-rules.js"
+import {
   SR5_EntityHelpers
 } from "../helpers.js"
 import {
@@ -327,6 +330,8 @@ export class SR5Actor extends Actor {
       ui.notifications?.warn(game.i18n.localize("SR5.WARN_GMOnlyField"))
       return false
     }
+    //SR5 p. 422: a hidden weapon made ready from the sheet is taken out, as through Item#_preUpdate
+    stripTakenOut(this, changes)
     return super._preUpdate(changes, options, user)
   }
 
