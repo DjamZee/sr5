@@ -120,8 +120,9 @@ export function modPointsUsage(vehicle, mods) {
     else if (d.key === "body") bodyGain += d.amount
     else downgraded = true
   }
-  // R5 p. 127: the Structure goes no lower than half its value (rounded down): no point beyond that
-  const gain = Math.min(bodyGain, body - Math.floor(body / 2)) + (downgraded ? 1 : 0)
+  // R5 p. 127: the Structure goes no lower than half its value, rounded up (Structure 3: "pas à 1 (car 1 < 1,5)"):
+  // no point beyond that
+  const gain = Math.min(bodyGain, body - Math.ceil(body / 2)) + (downgraded ? 1 : 0)
   const total = capacity + gain
   const used = points + Math.max(0, steps - 1)
   return {

@@ -99,9 +99,15 @@ describe('The drone\'s points (R5 p. 126-127)', () => {
   it('the downgrades give back one point at most', () => {
     expect(modPointsUsage(drone, [lowered('sensor', 1), lowered('handling', 1)]).total).toBe(4)
   })
-  it('lowering the Structure by 1 is a net gain of 1, never below half of it', () => {
+  it('lowering the Structure by 1 is a net gain of 1, never below half of it rounded up', () => {
     expect(modPointsUsage(drone, [lowered('body', 1)]).total).toBe(4)
-    expect(modPointsUsage(drone, [lowered('body', 3)]).total).toBe(5)
+    // Structure 3: down to 2, "pas à 1 (car 1 < 1,5)" (R5 p. 127): 1 point at most
+    expect(modPointsUsage(drone, [lowered('body', 2)]).total).toBe(4)
+    expect(modPointsUsage(drone, [lowered('body', 3)]).total).toBe(4)
+    // An even Structure goes down to its half: 4 to 2
+    expect(modPointsUsage({
+      ...drone, body: 4
+    }, [lowered('body', 3)]).total).toBe(6)
   })
 })
 
