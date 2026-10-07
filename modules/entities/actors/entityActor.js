@@ -94,9 +94,6 @@ import {
 import {
   mayJumpIn
 } from "./technomancer-streams.js"
-import {
-  modAppliesEffects
-} from "../../system/vehicle-factory.js"
 
 /**
  * Extend the base Actor class to implement additional logic specialized for Shadowrun 5.
@@ -920,8 +917,7 @@ export class SR5Actor extends Actor {
             let weapon = this.items.find(w => w.id === iData.mountedWeapon)
             iData.mountedWeaponName = weapon.name
           }
-          //A factory mod: its effect is already in the printed profile (Rigger 5.0 p. 156)
-          if (modAppliesEffects(iData, iData.isFactory) && Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
+          if (iData.isActive && Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
           if (iData.secondaryPropulsion.isSecondaryPropulsion && iData.isActive) SR5_CharacterUtility.handleSecondaryAttributes(actor, iData)
           SR5_CharacterUtility.updateModificationsSlots(actor, iData)
           SR5_CharacterUtility.handleVehiclePriceMultiplier(actor, iData)

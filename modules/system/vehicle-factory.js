@@ -22,7 +22,9 @@ export function modTakesSlots(itemData, factory) {
   return itemData?.isActive === true || factory === true
 }
 
-/** The effects of a mod apply while it is active, never for a factory mod: the profile already carries them */
-export function modAppliesEffects(itemData, factory) {
-  return itemData?.isActive === true && factory !== true
+/** The printed profile is the vehicle's attributes (Handling, Speed, Acceleration, Body, Armor, Pilot, Sensor,
+ *  Seats): a factory mod's effect on one of them is already counted. What the system works out from them (the
+ *  condition monitor a drone arm adds a box to, R5 p. 129) is not printed, and the effect still applies */
+export function factorySkipsEffect(factory, effect) {
+  return factory === true && typeof effect?.target === "string" && effect.target.startsWith("system.attributes.")
 }

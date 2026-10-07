@@ -2503,7 +2503,7 @@
 	"SR5.HELP_VehicleModel": "Vehicle or Drone model",
 	"SR5.HELP_VehicleModelMsg": "Edit the drone or vehicle model.<br>Name must be the exactly the same as the one present in autosoft model field.",
 	"SR5.HELP_VehicleModSlots": "Modifications Slots<br>({key})",
-	"SR5.HELP_VehicleModFactoryMsg": "Factory equipment (Rigger 5.0 p. 156): the modification takes up its slots, but its effect is already in the vehicle's profile and its price in the vehicle's price.",
+	"SR5.HELP_VehicleModFactoryMsg": "Factory equipment (Rigger 5.0 p. 156): the modification takes up its slots, its price is in the vehicle's price, and its effects on the vehicle's attributes (Handling, Speed, Armor…) are already in its printed profile: they are not added a second time. Its other effects (a drone arm's condition box) apply.",
 	"SR5.HELP_VehiclePilotSkill": "Pilot skill",
 	"SR5.HELP_VehiclePilotSkillMsg": "Select the Pilot Skill used to control the vehicle.",
 	"SR5.HELP_VehicleRiggerInterface": "Rigging interface",

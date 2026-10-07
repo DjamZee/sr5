@@ -2503,7 +2503,7 @@
 	"SR5.HELP_VehicleModel": "Modèle de Vehicule ou de Drone",
 	"SR5.HELP_VehicleModelMsg": "Éditez le modèle du Drone ou du Véhicule.<br>Ce nom doit être exactement le même que celui renseigné dans le champ Modèle d'un programme autosoft.",
 	"SR5.HELP_VehicleModSlots": "Emplacements<br>({key})",
-	"SR5.HELP_VehicleModFactoryMsg": "Monté d'origine (Rigger 5.0 p. 156) : la modification occupe ses emplacements, mais son effet est déjà compris dans le profil du véhicule et son prix dans celui du véhicule.",
+	"SR5.HELP_VehicleModFactoryMsg": "Monté d'origine (Rigger 5.0 p. 156) : la modification occupe ses emplacements, son prix est compris dans celui du véhicule, et ses effets sur les attributs du véhicule (Maniabilité, Vitesse, Blindage…) sont déjà dans son profil imprimé : ils ne s'ajoutent pas une seconde fois. Ses autres effets (la case de moniteur d'un bras de drone) s'appliquent.",
 	"SR5.HELP_VehiclePilotSkill": "Compétence de pilotage",
 	"SR5.HELP_VehiclePilotSkillMsg": "Sélectionnez la Compétence de pilotage utilisée pour contrôler le véhicule.",
 	"SR5.HELP_VehicleRiggerInterface": "Interface de rigging",

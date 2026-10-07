@@ -105,7 +105,7 @@ import {
   isLimbAttributeTarget, hostLimb
 } from "../../system/cyberlimb.js"
 import {
-  modTakesSlots
+  modTakesSlots, factorySkipsEffect
 } from "../../system/vehicle-factory.js"
 
 
@@ -5544,6 +5544,8 @@ export class SR5_CharacterUtility extends Actor {
       if (customEffect.wifi && !itemData.wirelessTurnedOn) skipCustomEffect = true
       // For transferable effect
       if (customEffect.transfer) skipCustomEffect = true
+      // A factory mod: its effect on the printed profile is already there (Rigger 5.0 p. 156)
+      if (item.type === "itemVehicleMod" && factorySkipsEffect(itemData.isFactory, customEffect)) skipCustomEffect = true
       // Drugs
       // Drugs: an effect applies in its own phase, the rise or the crash (entities/items/drug-phase.js)
       if (item.type === "itemDrug") {
