@@ -2,6 +2,9 @@ import {
   SR5_CharacterUtility
 } from "../entities/actors/utilityActor.js"
 import {
+  hasBaseDevice
+} from "../entities/actors/base-device.js"
+import {
   GM_ONLY_ACTOR_PATHS, stripGMOnlyChanges
 } from "../entities/items/spirit-bonds.js"
 import {
@@ -27,14 +30,9 @@ export async function sr5HookCreateActor(actor) {
   SR5_ActorHelper.redrawCreatorSheet(actor)
   if ( !game.user.isGM ) return
 
-  //Add itemDevice to Drone/Sprite/Agent if they have none.
+  //Add a base device to Drone/Sprite/Agent if they have none: a commlink carried aboard is not one (base-device.js)
   if (actor.type === "actorDrone" || actor.type === "actorSprite" || actor.type === "actorAgent"){
-    let hasDevice = false
-    for (let i of actor.items){
-      if (i.type === "itemDevice") hasDevice = true
-    }
-
-    if (!hasDevice){
+    if (!hasBaseDevice(actor.items)){
       let deviceItem = {
         "name": game.i18n.localize("SR5.Device"),
         "type": "itemDevice",
