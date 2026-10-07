@@ -400,6 +400,12 @@ export class sr5ActorDroneDataModel extends foundry.abstract.TypeDataModel {
       wirelessTurnedOn: new fields.BooleanField({
         nullable: true, initial: null
       }),
+      // The vehicle item's description: copied at deployment, given back at dismissal (as a storage's)
+      biography: new fields.SchemaField({
+        description: new fields.StringField({
+          initial: ''
+        }),
+      }),
     }
   }
 }

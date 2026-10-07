@@ -1089,6 +1089,7 @@ export class SR5_ActorHelper {
         "system.creatorItemId": item._id,
         "system.type": itemData.type,
         "system.model": itemData.model,
+        "system.biography.description": itemData.description,
         "system.attributes.handling.natural.base": itemData.attributes.handling,
         "system.attributes.handlingOffRoad.natural.base": itemData.attributes.handlingOffRoad,
         "system.attributes.secondaryPropulsionHandling.natural.base": itemData.secondaryPropulsion.handling,
@@ -1513,6 +1514,9 @@ export class SR5_ActorHelper {
       modifiedItem.system.vehiclesMod = vehiclesMod
       modifiedItem.system.gears = gears
       modifiedItem.system.model = actor.system.model
+      //Written on the drone while it was out, the description comes back to the vehicle item. A drone deployed
+      //before the field existed has none: the item keeps its own
+      if (actor.system.biography?.description) modifiedItem.system.description = actor.system.biography.description
       modifiedItem.system.slaved = actor.system.slaved
       //A drone deployed before the field existed carries null: the item keeps its own switch
       if (typeof actor.system.wirelessTurnedOn === "boolean") modifiedItem.system.wirelessTurnedOn = actor.system.wirelessTurnedOn

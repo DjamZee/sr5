@@ -174,7 +174,7 @@ function _spiritDefaultLayout() {
 }
 
 // ---------------------------------------------------------------------------
-//  Drone — 2 left tabs, 3 right tabs
+//  Drone — 2 left tabs, 4 right tabs
 // ---------------------------------------------------------------------------
 
 function _droneDefaultLayout() {
@@ -205,6 +205,9 @@ function _droneDefaultLayout() {
         ]),
         _tab('Modifications', 'drone', [
           _block('modifications'), _block('variousGear'),
+        ]),
+        _tab('Bio', 'bio', [
+          _block('description'),
         ]),
       ]),
     ],
