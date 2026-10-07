@@ -314,9 +314,14 @@ import {
 import {
   activateAutomaticPowers
 } from "../entities/items/always-active-macro.js"
+import {
+  registerPanArKey
+} from "../canvas/pan-crown/pan-openings.js"
 
 export async function sr5HookInit() {
   SR5_SystemHelpers.registerSystemSettings()
+  //The key of the AR view: every PAN crown (couronne du PAN, lot 8)
+  registerPanArKey()
   SR5_CompendiumUtility.registerSettings()
   registerSheetSizeSetting()
   registerIndirectEffectSetting()
