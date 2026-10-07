@@ -35,7 +35,7 @@ import {
   SR5_CharacterUtility
 } from "./utilityActor.js"
 import {
-  personaPanMax
+  personaMayBeSlaved, personaPanMax
 } from "./living-persona.js"
 import {
   SR5_CompendiumUtility 
@@ -975,6 +975,8 @@ export class SR5Actor extends Actor {
               //A living persona is no device and takes no slave (SR5 p. 253), save with Fusion avec la matrice (KC p. 107)
               iData.pan.max = iData.type === "livingPersona" ? personaPanMax(actor, actorData.matrix.deviceRating) : actorData.matrix.deviceRating * 3
             }
+            //Fusion avec la matrice at 2 or 10 Karma: the persona may join another PAN as a slave (Kill Code p. 107)
+            if (iData.type === "livingPersona" && personaMayBeSlaved(actor, i)) actorData.matrix.potentialPanObject.gears[i.uuid] = i.name
           } else if (actor.type === "actorDrone"){
             SR5_CharacterUtility.generateVehicleMatrix(actor, iData)
             SR5_CharacterUtility.generateMatrixResistances(actor, i)

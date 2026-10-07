@@ -15,4 +15,17 @@
 <li class="grid">
     <div class="col-12 SR-GreyColor">{{localize 'SR5.LivingPersonaManaged'}}</div>
 </li>
+<li class="grid" data-helpTitle="{{localize 'SR5.MatrixFusion'}}" data-helpMessage="{{localize 'SR5.HELP_MatrixFusionMsg'}}">
+    <div class="col-4">{{localize 'SR5.MatrixFusion'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8">
+        <select name="system.matrixFusion" data-dtype="String">
+            {{#select system.matrixFusion}}
+            <option value="">{{localize 'SR5.MatrixFusionNone'}}</option>
+            <option value="slave">{{localize 'SR5.MatrixFusionSlave'}}</option>
+            <option value="master">{{localize 'SR5.MatrixFusionMaster'}}</option>
+            <option value="both">{{localize 'SR5.MatrixFusionBoth'}}</option>
+            {{/select}}
+        </select>
+    </div>
+</li>
 {{/if}}

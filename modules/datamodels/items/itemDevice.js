@@ -64,6 +64,11 @@ export class sr5ItemDeviceDataModel extends foundry.abstract.TypeDataModel {
       managed: new fields.BooleanField({
         initial: false
       }),
+      // "Fusion avec la matrice" chosen by hand on the persona (Kill Code p. 107), when no quality carries it:
+      // "", "slave", "master" or "both"
+      matrixFusion: new fields.StringField({
+        initial: ''
+      }),
       // Strain of a head case's CFD (Dark Terrors p. 91): Lockdown p. 206 or the original one, Dark Terrors p. 88
       strain: new fields.StringField({
         initial: 'lockdown'

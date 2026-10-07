@@ -15,6 +15,12 @@
 //   she is (SR5 p. 253, Data Trails p. 63) keeps that choice, and the persona is created switched off beside it.
 // The rules below have no Foundry in them, so that tests can read them.
 
+// The special cases a quality "Fusion avec la matrice" carries (the 10 Karma level carries both)
+export const FUSION_EFFECTS = {
+  slave: "matrixFusionSlave",
+  master: "matrixFusionMaster",
+}
+
 export function isTechnomancer(actor){
   return !!actor && (actor.type === "actorPc" || actor.type === "actorGrunt") &&
     actor.system?.activeSpecialAttribute === "resonance"
@@ -86,9 +92,45 @@ export function changesPersonaType(item, data){
 }
 
 /**
- * How many slaves the living persona takes: none (SR5 p. 253).
+ * The quality "Fusion avec la matrice" (Kill Code p. 107): read on the actor's qualities, through their system effects
+ * (special case matrixFusionSlave / matrixFusionMaster), the 10 Karma level carrying both; failing that, the choice made
+ * by hand on the persona (system.matrixFusion: "", "slave", "master" or "both").
+ * @return {{slave: Boolean, master: Boolean}}
  */
-export function personaPanMax(){
-  return 0
+export function matrixFusionOf(actor){
+  const fusion = {
+    slave: false, master: false
+  }
+  for (const item of itemsOf(actor)){
+    if (item.type !== "itemQuality") continue
+    for (const effect of Object.values(item.system?.systemEffects ?? {
+    })){
+      if (effect?.category !== "specialCase") continue
+      if (effect.value === FUSION_EFFECTS.slave) fusion.slave = true
+      if (effect.value === FUSION_EFFECTS.master) fusion.master = true
+    }
+  }
+  const byHand = personaOf(actor)?.system?.matrixFusion ?? ""
+  if (byHand === "slave" || byHand === "both") fusion.slave = true
+  if (byHand === "master" || byHand === "both") fusion.master = true
+  return fusion
+}
+
+/**
+ * How many slaves the living persona takes: none by the book (SR5 p. 253), Resonance x 3 with the quality "Fusion avec
+ * la matrice" at 8 or 10 Karma (Kill Code p. 107).
+ */
+export function personaPanMax(actor, resonance){
+  return matrixFusionOf(actor).master ? (Number(resonance) || 0) * 3 : 0
+}
+
+/**
+ * May the persona be offered as a slave to another PAN? With the quality at 2 or 10 Karma (Kill Code p. 107), when it
+ * is no slave yet and is not a master itself (Kill Code p. 39: no device is master and slave at once).
+ */
+export function personaMayBeSlaved(actor, persona){
+  if (!persona || persona.system?.isSlavedToPan) return false
+  if ((persona.system?.pan?.content ?? []).length) return false
+  return matrixFusionOf(actor).slave
 }
 
