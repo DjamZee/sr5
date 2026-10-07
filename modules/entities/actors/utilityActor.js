@@ -109,7 +109,7 @@ import {
 } from "../../system/vehicle-factory.js"
 import {
   replacedVehicleAttribute, replacedVehicleAttributeOf, armorCapReduction, addedArmor, crashArmorPenetration,
-  tactileSensorsOn, TACTILE_PERCEPTION_DICE, TACTILE_HANDLING
+  tactileSensorsOn, TACTILE_PERCEPTION_DICE, TACTILE_HANDLING, metahumanAdaptationPenalty
 } from "../../system/vehicle-mods.js"
 
 
@@ -2714,6 +2714,7 @@ export class SR5_CharacterUtility extends Actor {
         //TODO : sneaking is equal to lesser value between pilotSkill and Sneaking(pilotSkill)
         if (actorData.pilotSkill) {
           SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName}`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
+          this.applyMetahumanAdaptation(actor, skills.sneaking.test)
         }
         SR5_EntityHelpers.updateModifier(skills.sneaking.limit, handlingName, "linkedAttribute", handlingMode)
         break
@@ -2789,6 +2790,7 @@ export class SR5_CharacterUtility extends Actor {
         break
       case "manual":
         if (actorData.pilotSkill) SR5_EntityHelpers.updateModifier(vehicleTest.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName} (${game.i18n.localize(SR5.pilotSkills[actorData.pilotSkill])})`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
+        this.applyMetahumanAdaptation(actor, vehicleTest.test)
         if (controlerData.matrix.userMode === "ar") SR5_EntityHelpers.updateModifier(vehicleTest.limit, game.i18n.localize('SR5.AugmentedReality'), "matrixUserMode", 1)
         else if (controlerData.matrix.userMode === "coldsim" || controlerData.matrix.userMode === "hotsim") SR5_EntityHelpers.updateModifier(vehicleTest.limit, game.i18n.localize('SR5.VirtualReality'), "matrixUserMode", 2)
         break
@@ -2811,6 +2813,13 @@ export class SR5_CharacterUtility extends Actor {
     SR5_EntityHelpers.updateDicePool(vehicleTest.test, 0)
     SR5_EntityHelpers.updateValue(vehicleTest.limit, 0)
     SR5_CharacterUtility.capRemoteLimit(actor, vehicleTest.limit)
+  }
+
+  //A metahuman at the controls of a vehicle not adapted to them (Rigger 5.0 p. 171)
+  static applyMetahumanAdaptation(actor, test) {
+    const actorData = actor.system
+    const penalty = metahumanAdaptationPenalty(this.getMetatype(actorData.vehicleOwner), actor.items, actorData.controlMode)
+    if (penalty) SR5_EntityHelpers.updateModifier(test, game.i18n.localize("SR5.VehicleModAdaptationMissing"), "itemVehicleMod", penalty)
   }
 
   //Remote control: the limit is the lower of the normal limit and the controller's Data Processing (SR5 p. 239-240)
@@ -2854,6 +2863,7 @@ export class SR5_CharacterUtility extends Actor {
         if (actorData.pilotSkill) SR5_EntityHelpers.updateModifier(rammingTest.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName} (${game.i18n.localize(SR5.pilotSkills[actorData.pilotSkill])})`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
         if (controlerData.matrix.userMode === "ar") SR5_EntityHelpers.updateModifier(rammingTest.limit, game.i18n.localize('SR5.AugmentedReality'), "matrixUserMode", 1)
         else if (controlerData.matrix.userMode === "coldsim" || controlerData.matrix.userMode === "hotsim") SR5_EntityHelpers.updateModifier(rammingTest.limit, game.i18n.localize('SR5.VirtualReality'), "matrixUserMode", 2)
+        if (actorData.controlMode === "manual") this.applyMetahumanAdaptation(actor, rammingTest.test)
         break
       case "rigging":
         if (actorData.pilotSkill) SR5_EntityHelpers.updateModifier(rammingTest.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName} (${game.i18n.localize(SR5.pilotSkills[actorData.pilotSkill])})`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)

@@ -5677,6 +5677,7 @@
 	"SR5.VehicleModEffectKind_signatureMasking": "Camouflage de la signature",
 	"SR5.VehicleModEffectKind_metahumanAdaptation": "Adaptation métahumaine",
 	"SR5.VehicleArmorCap": "Plafond du blindage ajouté (Structure, Rigger 5.0 p. 161)",
+	"SR5.VehicleModAdaptationMissing": "Véhicule non adapté à son métatype (Rigger 5.0 p. 171)",
 	"SR5.WARN_VehicleModSlotsFull": "{name} : il faut {needed} emplacement(s) {category}, il en reste {free}. Un véhicule ne peut pas dépasser ses emplacements (Rigger 5.0 p. 153).",
 	"SR5.VehicleModSkill": "Compétence",
 	"SR5.VehicleModSlots": "Emplacement",

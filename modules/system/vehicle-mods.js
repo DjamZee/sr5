@@ -186,3 +186,18 @@ export function signatureMaskingPenalty(target) {
   if (target?.type !== "actorDrone") return 0
   return -fittedRating(target.items, "signatureMasking") || 0
 }
+
+// R5 p. 171 (Adaptation métahumaine): "Un ork ou un elfe pilotant un véhicule non ajusté subit un malus de –1 à tous ses
+// tests de Pilotage. Un nain ou un troll non ajusté subit un malus de –2". The controls are under the pilot's hands in
+// manual control only: remote and jumped in, nobody sits at them (arbitrage d'Hélène, 07/10, lot R8). Any adaptation
+// fitted counts: the system does not read which metatype it was made for
+const ADAPTATION_PENALTIES = {
+  ork: -1, elf: -1, dwarf: -2, troll: -2
+}
+
+/** The dice a metahuman loses piloting a vehicle not adapted to them */
+export function metahumanAdaptationPenalty(metatype, items, controlMode) {
+  if (controlMode !== "manual") return 0
+  const penalty = ADAPTATION_PENALTIES[metatype] ?? 0
+  return penalty && !fittedMods(items, "metahumanAdaptation").length ? penalty : 0
+}

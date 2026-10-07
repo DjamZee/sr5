@@ -5677,6 +5677,7 @@
 	"SR5.VehicleModEffectKind_signatureMasking": "Signature masking",
 	"SR5.VehicleModEffectKind_metahumanAdaptation": "Metahuman adjustment",
 	"SR5.VehicleArmorCap": "Added armor cap (Body, Rigger 5.0 p. 161)",
+	"SR5.VehicleModAdaptationMissing": "Vehicle not adjusted to their metatype (Rigger 5.0 p. 171)",
 	"SR5.WARN_VehicleModSlotsFull": "{name}: it takes {needed} {category} slot(s), {free} left. A vehicle cannot go beyond its slots (Rigger 5.0 p. 153).",
 	"SR5.VehicleModSkill": "Skill required",
 	"SR5.VehicleModSlots": "Modification Slots",

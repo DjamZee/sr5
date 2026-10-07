@@ -4,7 +4,8 @@ import {
 import {
   vehicleModKind, fittedMods, fittedRating, replacedVehicleAttribute, replacedVehicleAttributeOf, armorCapReduction, addedArmor,
   hasBullBar, modSlotUse, slotsRefusal, crashArmorPenetration, occupantCrashBonus,
-  tactileSensorsOn, TACTILE_PERCEPTION_DICE, TACTILE_HANDLING, TACTILE_BIOFEEDBACK_DICE, signatureMaskingPenalty
+  tactileSensorsOn, TACTILE_PERCEPTION_DICE, TACTILE_HANDLING, TACTILE_BIOFEEDBACK_DICE, signatureMaskingPenalty,
+  metahumanAdaptationPenalty
 } from '../modules/system/vehicle-mods.js'
 import {
   droneAutopilot
@@ -332,5 +333,23 @@ describe('Signature masking against a lock (Rigger 5.0 p. 169)', () => {
       })]
     })).toBe(0)
     expect(signatureMaskingPenalty(undefined)).toBe(0)
+  })
+})
+
+describe('Metahuman adjustment (Rigger 5.0 p. 171)', () => {
+  it('-1 for an ork or an elf, -2 for a dwarf or a troll, at the controls of a vehicle not adjusted', () => {
+    expect(metahumanAdaptationPenalty("ork", [], "manual")).toBe(-1)
+    expect(metahumanAdaptationPenalty("elf", [], "manual")).toBe(-1)
+    expect(metahumanAdaptationPenalty("dwarf", [], "manual")).toBe(-2)
+    expect(metahumanAdaptationPenalty("troll", [], "manual")).toBe(-2)
+    expect(metahumanAdaptationPenalty("human", [], "manual")).toBe(0)
+    expect(metahumanAdaptationPenalty("", [], "manual")).toBe(0)
+  })
+  it('nothing once the vehicle is adjusted', () => {
+    expect(metahumanAdaptationPenalty("troll", [mod("Adaptation métahumaine (troll)")], "manual")).toBe(0)
+  })
+  it('nobody sits at the controls of a remote or jumped-in vehicle', () => {
+    expect(metahumanAdaptationPenalty("troll", [], "remote")).toBe(0)
+    expect(metahumanAdaptationPenalty("troll", [], "rigging")).toBe(0)
   })
 })
