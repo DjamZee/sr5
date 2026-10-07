@@ -35,7 +35,7 @@ import {
   homunculusMaterialRatings
 } from "./homunculus.js"
 import {
-  augmentationCapExcess
+  augmentationCapExcess, uncappedRating, limitBase, limitCapNote, CAP_NOTE_LIMITS
 } from "./augmentationCap.js"
 import {
   limitAttributeValue
@@ -2551,37 +2551,28 @@ export class SR5_CharacterUtility extends Actor {
     // AI on a device (Data Trails p. 160): Data Processing can replace the Mental limit and joins the Social limit
     let aiDataProcessing = (this.isDepthActive(actor) && actorData.matrix?.deviceType) ? actorData.matrix.attributes.dataProcessing.value : null
 
+    const context = {
+      attributes, essence: actorData.essence?.value, aiDataProcessing
+    }
+    const kept = {
+      ...context, rating: a => a.augmented.value, physical: limitAttributeValue
+    }
+    const uncapped = {
+      ...context, rating: a => uncappedRating(a), physical: a => uncappedRating(a, true)
+    }
+
     for (let key of Object.keys(SR5.characterLimits)) {
-      switch (key) {
-        case "astralLimit":
-          if (limits[key]) {
-            limits[key].base = Math.max(
-              Math.ceil((attributes.logic.augmented.value * 2 + attributes.intuition.augmented.value + attributes.willpower.augmented.value) / 3),
-              Math.ceil((attributes.charisma.augmented.value * 2 + attributes.willpower.augmented.value + actorData.essence.value) / 3)
-            )
-          }
-          break
-        case "mentalLimit":
-          if (limits[key]) {
-            limits[key].base = Math.ceil((attributes.logic.augmented.value * 2 + attributes.intuition.augmented.value + attributes.willpower.augmented.value) / 3)
-            if (aiDataProcessing !== null) limits[key].base = Math.max(limits[key].base, aiDataProcessing)
-          }
-          break
-        case "physicalLimit":
-          if (limits[key]) {
-            limits[key].base = Math.ceil((limitAttributeValue(attributes.strength) * 2 + limitAttributeValue(attributes.body) + limitAttributeValue(attributes.reaction)) / 3)
-          }
-          break
-        case "socialLimit":
-          if (limits[key]) {
-            limits[key].base = Math.ceil((attributes.charisma.augmented.value * 2 + attributes.willpower.augmented.value + actorData.essence.value) / 3)
-            if (aiDataProcessing !== null) limits[key].base = Math.ceil((attributes.charisma.augmented.value + aiDataProcessing + attributes.willpower.augmented.value + actorData.essence.value) / 3)
-          }
-          break
-        default:
-          SR5_SystemHelpers.srLog(1, `Unknown limit '${key}' in 'updateLimits()'`)
-      }
-      if (limits[key]) SR5_EntityHelpers.updateValue(limits[key], 0)
+      const base = limitBase(key, kept)
+      if (base === undefined) SR5_SystemHelpers.srLog(1, `Unknown limit '${key}' in 'updateLimits()'`)
+      if (!limits[key]) continue
+      if (base !== undefined) limits[key].base = base
+      limits[key].modifiers = (limits[key].modifiers ?? []).filter(m => m.type !== "augmentationCap")
+      SR5_EntityHelpers.updateValue(limits[key], 0)
+      //Augmentation cap (SR5 p. 96): the limit reads the kept ratings; when the cap did cut something, the help
+      //also gives the limit the real ratings would reach (arbitrage de DjamZ). The line counts for 0.
+      if (base === undefined || !CAP_NOTE_LIMITS.includes(key)) continue
+      const note = limitCapNote(limits[key].value, base, limitBase(key, uncapped))
+      if (note) SR5_EntityHelpers.updateModifier(limits[key], game.i18n.format("SR5.AugmentationCapLimitModifier", note), "augmentationCap", 0)
     }
   }
 
