@@ -40,6 +40,9 @@ import {
   registerAgilityZeroHooks
 } from './system/agility-zero.js'
 import {
+  registerCyberlimbNotice
+} from './system/cyberlimb-notice.js'
+import {
   registerRiggerEjectionHooks
 } from './system/rigger-ejection.js'
 import {
@@ -255,6 +258,8 @@ registerPreparationRegisterHooks()
 registerBoneAugmentationGuard()
 // Agility brought to 0: the "immobilized" status follows it (séance H, H8)
 registerAgilityZeroHooks()
+// The cyberlimb enhancements raise the limb only: the active GM is told once which characters to check (SR5 p. 459)
+registerCyberlimbNotice()
 // A rigger ejected from his vehicle: it is out of control until the next Combat Turn, then on autopilot (SR5 p. 271)
 registerRiggerEjectionHooks()
 // The crown of a PAN follows its token and its devices (couronne du PAN, lot 2)
