@@ -30,3 +30,18 @@ export function controlRigThresholdModifier(controlRig, source) {
     }]
   }
 }
+
+//A rigger is ejected from the vehicle he is jumped into when it is destroyed or bricked, or when the commlink or RCC
+//he uses is (SR5 p. 268, 271). A monitor is full once its boxes reach its size; a monitor without size never is.
+export function monitorFull(monitor) {
+  const size = Number(monitor?.value)
+  return size > 0 && Number(monitor?.actual?.value) >= size
+}
+
+//The ejected vehicle is out of control (SR5 p. 203) until the start of the next Combat Turn, when its autopilot takes
+//over again; one without a Pilot rating stays out of control until someone else takes it (SR5 p. 271).
+//mark: {combatId, round} written at the ejection; combat: the encounter whose round has just changed
+export function ejectionOver(mark, combat, pilot) {
+  if (!mark || !(Number(pilot) > 0)) return false
+  return !!combat && combat.id === mark.combatId && Number(combat.round) > Number(mark.round)
+}

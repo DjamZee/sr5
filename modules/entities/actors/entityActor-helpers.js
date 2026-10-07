@@ -59,6 +59,9 @@ import {
   _getSRStatusEffect
 } from "../../system/effectsList.js"
 import {
+  monitorFull
+} from "../../system/rigging-rules.js"
+import {
   SR5_SpiritTypes
 } from "../items/spirit-types.js"
 import {
@@ -237,9 +240,18 @@ export class SR5_ActorHelper {
         }
         else if (SR5_ActorHelper.knocksDown(damage, actorData.limits.physicalLimit.value, gelAmmo, options.damage.isAttack)){ await SR5_ActorHelper.createProneEffect(actorId, damage, gelAmmo)}
         break
-      case "actorDrone":
-        if (actorData.conditionMonitors.condition.actual.value >= actorData.conditionMonitors.condition.value) await SR5_ActorHelper.createDeadEffect(actorId)
+      case "actorDrone": {
+        const destroyed = actorData.conditionMonitors.condition.actual.value >= actorData.conditionMonitors.condition.value
+        if (destroyed) await SR5_ActorHelper.createDeadEffect(actorId)
+        //Destroyed or bricked with a rigger jumped in: he is ejected, dumpshock and loss of control (SR5 p. 268, 271)
+        if (actorData.controlMode === "rigging" && (destroyed || monitorFull(actorData.conditionMonitors.matrix))) {
+          const {
+            ejectFromDrone
+          } = await import("../../system/rigger-ejection.js")
+          await ejectFromDrone(realActor)
+        }
         break
+      }
       case "actorSprite":
       case "actorDevice":
         if (actorData.conditionMonitors.matrix.actual.value >= actorData.conditionMonitors.matrix.value) await SR5_ActorHelper.createDeadEffect(actorId)
@@ -722,12 +734,13 @@ export class SR5_ActorHelper {
   //DjamZ's ruling, 2026-10-06: "ce sont les débranchements d'urgence qui provoquent le choc". An AI (Depth active,
   //Data Trails p. 152) has no dumpshock, it is dissipated instead (decided by DjamZ, 04/10)
   //bricked: the deck threw the character out by bricking, Willpower alone resists (SR5 p. 231)
+  //jumpedIn: a rigger ejected from the vehicle he was jumped into, always in VR whatever his sheet says (SR5 p. 268, 271)
   static dumpshockIfInVR(actor, {
-    bricked = false
+    bricked = false, jumpedIn = false
   } = {
   }) {
     let userMode = actor?.system.matrix?.userMode
-    if (!userMode || userMode === "ar") return false
+    if (!userMode || (userMode === "ar" && !jumpedIn)) return false
     if ((actor.type === "actorPc" || actor.type === "actorGrunt") && actor.system.activeSpecialAttribute === "depth") return false
     //The resistance card reads owner and roll from the card it follows: a bare object crashed it (SR5 p. 229)
     let dumpshockData = SR5_PrepareRollTest.getBaseRollData(null, actor)

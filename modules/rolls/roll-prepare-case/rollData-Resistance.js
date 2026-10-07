@@ -496,8 +496,8 @@ async function handleDumpshockDamage(rollData, actorData, chatData){
   }
 
   //Determine damage type & value
-  if (actorData.matrix.userMode === "coldsim") rollData.damage.type = "stun"
-  else if (actorData.matrix.userMode === "hotsim") rollData.damage.type = "physical"
+  //A rigger ejected while his sheet says AR was in VR all the same (SR5 p. 268): cold sim unless hot sim is set
+  rollData.damage.type = (actorData.matrix.userMode === "hotsim") ? "physical" : "stun"
   rollData.damage.base = 6
 
   //Add others informations
