@@ -86,7 +86,7 @@ import {
   migrateNegotiationSkill
 } from "../../datamodels/common/negotiationMigration.js"
 import {
-  missingBaseDevice
+  missingBaseDevice, hasBaseDevice
 } from "./base-device.js"
 import {
   SR5_SpiritTypes
@@ -995,6 +995,8 @@ export class SR5Actor extends Actor {
             //Fusion avec la matrice at 2 or 10 Karma: the persona may join another PAN as a slave (Kill Code p. 107)
             if (iData.type === "livingPersona" && personaMayBeSlaved(actor, i)) actorData.matrix.potentialPanObject.gears[i.uuid] = i.name
           } else if (actor.type === "actorDrone"){
+            //Its matrix is its base device's: a commlink carried aboard does not overwrite its marks (base-device.js)
+            if (iData.type !== "baseDevice" && hasBaseDevice(actor.items)) break
             SR5_CharacterUtility.generateVehicleMatrix(actor, iData)
             SR5_CharacterUtility.generateMatrixResistances(actor, i)
             SR5_CharacterUtility.generateMatrixActionsDefenses(actor)
