@@ -15,7 +15,7 @@ import {
   crownAngle, dashesOf, layoutCrown
 } from "./pan-layout.js"
 import {
-  iconPathOf
+  iconPathOf, isTintedIcon, nodeIconPathOf
 } from "./pan-icons.js"
 import {
   SR5_SystemHelpers
@@ -168,11 +168,14 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     const graph = getGraph(token)
     if (!graph) return this.close(token)
 
-    // The pictures first, each loaded once for all the crowns
-    const paths = new Set(graph.nodes.map(n => iconPathOf(n.icon, CONFIG.SR5?.panIcons)))
+    // The pictures first, each loaded once for all the crowns. An item's own picture that cannot be loaded falls back
+    // on the generic one of its category (lot 10); the sign of the marks is the generic "mark" picture.
+    const table = CONFIG.SR5?.panIcons
+    const paths = new Map([[iconPathOf("mark", table), iconPathOf("device")]])
+    for (const node of graph.nodes) paths.set(nodeIconPathOf(node, table), iconPathOf(node.icon, table))
     const textures = new Map()
-    await Promise.all([...paths].map(async path => textures.set(path, await foundry.canvas.loadTexture(path, {
-      fallback: iconPathOf("device")
+    await Promise.all([...paths].map(async ([path, fallback]) => textures.set(path, await foundry.canvas.loadTexture(path, {
+      fallback
     }))))
     // A newer build started while this one waited, or the crown was closed
     if (version !== crown.version || this.crowns.get(token.id) !== crown) return
@@ -200,8 +203,12 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     for (const child of crown.icons.removeChildren()) child.destroy({
       children: true
     })
+    const markTexture = textures.get(iconPathOf("mark", table))
     for (const icon of layout.icons){
-      crown.icons.addChild(this.#iconOf(icon, textures.get(iconPathOf(icon.node.icon, CONFIG.SR5?.panIcons)), graph, crown))
+      const path = nodeIconPathOf(icon.node, table)
+      crown.icons.addChild(this.#iconOf(icon, {
+        texture: textures.get(path), tinted: isTintedIcon(path), markTexture
+      }, graph, crown))
     }
     this.#place(crown)
   }
@@ -227,7 +234,9 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
 
   #iconOf({
     node, x, y, radius
-  }, texture, graph, crown){
+  }, {
+    texture, tinted, markTexture
+  }, graph, crown){
     const icon = new PIXI.Container()
     icon.position.set(x, y)
     icon.eventMode = "static"
@@ -244,8 +253,16 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     if (texture) {
       const picture = icon.addChild(new PIXI.Sprite(texture))
       picture.anchor.set(0.5)
-      picture.width = picture.height = radius * 1.3
-      picture.tint = offline ? COLORS.pictureOffline : COLORS.picture
+      // A picture in colour keeps the colour of its family (DjamZ); a white pictogram (SVG) takes the colour of the
+      // crown. Offline, both go grey and dim.
+      if (tinted) {
+        picture.width = picture.height = radius * 1.3
+        picture.tint = offline ? COLORS.pictureOffline : COLORS.picture
+      } else {
+        picture.width = picture.height = radius * 1.6
+        picture.tint = offline ? COLORS.pictureOffline : 0xffffff
+        if (offline) picture.alpha = 0.6
+      }
     }
 
     const style = foundry.canvas.containers.PreciseText.getTextStyle({
@@ -257,7 +274,7 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     label.visible = false
 
     // The observer's own marks (SR5 p. 238): one diamond per mark, over the icon, on her screen alone
-    if (node.viewerMarks > 0) icon.addChild(this.#marksOf(Math.min(node.viewerMarks, 4), radius))
+    if (node.viewerMarks > 0) icon.addChild(this.#marksOf(Math.min(node.viewerMarks, 4), radius, markTexture))
 
     icon.on("pointerover", () => {
       label.visible = true
@@ -312,8 +329,21 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     return texture
   }
 
-  // The marks of the observer: small diamonds in a row over the icon
-  #marksOf(count, radius){
+  // The marks of the observer: small diamonds in a row over the icon, the Mark picture of DjamZ (lot 10), or drawn
+  // diamonds without it
+  #marksOf(count, radius, texture = null){
+    if (texture) {
+      const row = new PIXI.Container()
+      const size = radius * 0.8
+      const step = size * 0.9
+      for (let i = 0; i < count; i++){
+        const mark = row.addChild(new PIXI.Sprite(texture))
+        mark.anchor.set(0.5)
+        mark.width = mark.height = size
+        mark.position.set((i - (count - 1) / 2) * step, -radius * 1.3)
+      }
+      return row
+    }
     const marks = new PIXI.Graphics()
     const size = radius * 0.28
     const step = size * 2.4

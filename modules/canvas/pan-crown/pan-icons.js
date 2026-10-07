@@ -1,9 +1,10 @@
 // The icons of the crown of a PAN (couronne du PAN, lot 2): which generic icon an item of the Matrix takes, and
 // where its image lives. Plain rules with no Foundry in them, so that tests can read them.
 //
-// One generic icon per category, delivered in the system (decision of DjamZ, Q1): assets/img/pan/<category>.svg
-// for now, provisional pictograms; lot 10 puts in their place the images of DjamZ under the same names, and the
-// custom icon of an item (flags.sr5.panIcon). The categories are the list of the specification (27 icons).
+// One generic icon per category, delivered in the system (decision of DjamZ, Q1): assets/img/pan/<category>.webp,
+// the images of DjamZ (lot 10), converted by tools/pan-icons/convert-pan-icons.py. They carry the colour of their
+// family and no frame: the disc around them is drawn by the crown. The categories are the list of the specification
+// (27 icons). An item can wear its own picture instead (flags.sr5.panIcon, lot 10), which follows it when copied.
 
 export const PAN_ICON_CATEGORIES = [
   // Base
@@ -16,7 +17,7 @@ export const PAN_ICON_CATEGORIES = [
 ]
 
 export const PAN_ICON_FOLDER = "systems/sr5/assets/img/pan"
-export const PAN_ICON_EXTENSION = "svg"
+export const PAN_ICON_EXTENSION = "webp"
 
 const DECK_CATEGORIES = {
   commlink: "commlink",
@@ -73,4 +74,29 @@ export function iconCategoryOf(item){
 export function iconPathOf(category, table = null){
   const key = PAN_ICON_CATEGORIES.includes(category) ? category : "device"
   return table?.[key] || `${PAN_ICON_FOLDER}/${key}.${PAN_ICON_EXTENSION}`
+}
+
+/**
+ * The picture an item or an actor (a drone, a device of the scenery) chose for itself (lot 10).
+ * @param {Object} document   an Item or an Actor, or its plain data
+ * @return {String|null}      the path in flags.sr5.panIcon; null when there is none
+ */
+export function customIconOf(document){
+  const path = document?.flags?.sr5?.panIcon
+  return typeof path === "string" && path.trim() ? path.trim() : null
+}
+
+/**
+ * The picture of a node of the crown: its own if it has one, else the generic one of its category.
+ * @param {Object} node       a node of the graph ({icon, customIcon})
+ * @param {Object} [table]    category -> path (CONFIG.SR5.panIcons)
+ * @return {String}
+ */
+export function nodeIconPathOf(node, table = null){
+  return node?.customIcon || iconPathOf(node?.icon, table)
+}
+
+/** Is it one of the provisional pictograms, drawn in white to be tinted, rather than a picture in colour? */
+export function isTintedIcon(path){
+  return /\.svg$/i.test(path ?? "")
 }

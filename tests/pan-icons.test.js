@@ -4,7 +4,7 @@ import {
 import fs from 'node:fs'
 import path from 'node:path'
 import {
-  PAN_ICON_CATEGORIES, iconCategoryOf, iconPathOf
+  PAN_ICON_CATEGORIES, iconCategoryOf, iconPathOf, customIconOf, nodeIconPathOf, isTintedIcon
 } from '../modules/canvas/pan-crown/pan-icons.js'
 import {
   buildPanGraph
@@ -91,8 +91,93 @@ describe('pan icons: images', () => {
     })).toBe('worlds/x/gun.webp')
     expect(iconPathOf('armor', {
       weapon: 'worlds/x/gun.webp'
-    })).toBe('systems/sr5/assets/img/pan/armor.svg')
-    expect(iconPathOf('nothing')).toBe('systems/sr5/assets/img/pan/device.svg')
+    })).toBe('systems/sr5/assets/img/pan/armor.webp')
+    expect(iconPathOf('nothing')).toBe('systems/sr5/assets/img/pan/device.webp')
+  })
+
+  it('delivers the 27 pictures of DjamZ as WebP, and nothing else in the folder', () => {
+    const folder = path.resolve(__dirname, '..', 'assets/img/pan')
+    const files = fs.readdirSync(folder).sort()
+    expect(files).toEqual(PAN_ICON_CATEGORIES.map(c => `${c}.webp`).sort())
+    for (const file of files){
+      const head = fs.readFileSync(path.join(folder, file)).subarray(0, 12)
+      expect(head.toString('latin1', 0, 4), file).toBe('RIFF')
+      expect(head.toString('latin1', 8, 12), file).toBe('WEBP')
+    }
+  })
+})
+
+describe('pan icons: the picture an item chose (lot 10)', () => {
+  const gun = (flags = {
+  }) => ({
+    type: 'itemWeapon', flags, system: {
+    }
+  })
+
+  it('reads flags.sr5.panIcon, and nothing from an empty or missing flag', () => {
+    expect(customIconOf(gun({
+      sr5: {
+        panIcon: 'worlds/x/gun.webp'
+      }
+    }))).toBe('worlds/x/gun.webp')
+    expect(customIconOf(gun({
+      sr5: {
+        panIcon: '  '
+      }
+    }))).toBeNull()
+    expect(customIconOf(gun())).toBeNull()
+    expect(customIconOf(null)).toBeNull()
+  })
+
+  it('lets the chosen picture win over the generic one and the table, and falls back on the generic one', () => {
+    expect(nodeIconPathOf({
+      icon: 'weapon', customIcon: 'worlds/x/gun.webp'
+    }, {
+      weapon: 'modules/m/weapon.webp'
+    })).toBe('worlds/x/gun.webp')
+    expect(nodeIconPathOf({
+      icon: 'weapon', customIcon: null
+    })).toBe('systems/sr5/assets/img/pan/weapon.webp')
+    expect(nodeIconPathOf({
+      icon: 'weapon'
+    }, {
+      weapon: 'modules/m/weapon.webp'
+    })).toBe('modules/m/weapon.webp')
+  })
+
+  it('carries the chosen picture on the node of the graph, and it follows a copy of the item', () => {
+    const own = {
+      id: 'g', uuid: 'Actor.pc.Item.g', name: 'Predator', type: 'itemWeapon',
+      flags: {
+        sr5: {
+          panIcon: 'worlds/x/gun.webp'
+        }
+      },
+      system: {
+        isWireless: true, wirelessTurnedOn: true, isActive: true, marks: []
+      }
+    }
+    // A copy, as Item.toObject() then createEmbeddedDocuments make it: the flags go with the data
+    const copy = {
+      ...structuredClone(own), id: 'h', uuid: 'Actor.npc.Item.h'
+    }
+    for (const [actorId, weapon] of [['pc', own], ['npc', copy]]){
+      const actor = {
+        id: actorId, name: actorId, type: 'actorPc', items: [weapon], system: {
+          matrix: {
+          }
+        }
+      }
+      const node = buildPanGraph(actor).nodes[0]
+      expect(node.icon).toBe('weapon')
+      expect(node.customIcon).toBe('worlds/x/gun.webp')
+    }
+  })
+
+  it('draws the provisional pictograms in the crown colour, the pictures in their own', () => {
+    expect(isTintedIcon('systems/sr5/assets/img/pan/weapon.svg')).toBe(true)
+    expect(isTintedIcon('systems/sr5/assets/img/pan/weapon.webp')).toBe(false)
+    expect(isTintedIcon(null)).toBe(false)
   })
 
   it('puts the category on each node of the graph', () => {

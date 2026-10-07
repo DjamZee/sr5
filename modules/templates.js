@@ -371,6 +371,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/items/_partial/editable/_common/deviceRating-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/_common/price-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/_common/priceMultiplier-edit.hbs",
+    "systems/sr5/templates/items/_partial/editable/_common/panIcon-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/_common/rating-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/_common/concealabilityModifier-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/_common/charge-edit.hbs",
