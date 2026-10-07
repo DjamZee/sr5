@@ -80,6 +80,7 @@ export const SETTINGS_CATALOG = {
   // Matrix
   sr5MatrixGridRules: ["matrix"],
   sr5KillCodeRules: ["matrix", "book"],
+  sr5OverwatchGMOnly: ["matrix", "book"],
   sr5DevicelessAILogicDefense: ["matrix"],
   sr5WifiRequiresDNI: ["matrix"],
   // Rigging
