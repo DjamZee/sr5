@@ -14,7 +14,7 @@ import {
   SR5ShopWindow
 } from './shop-window.js'
 import {
-  sr5PromptDraw
+  sr5PromptDraw, SR5WeightedTableBuilder
 } from './table-from-compendium.js'
 
 const ALL_FILTERS = {
@@ -77,6 +77,7 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
       // The browser is for looking things up; buying happens in the shop's own window (lot B)
       openShop: () => SR5ShopWindow.open(),
       drawAtRandom: SR5CompendiumBrowser.#onDrawAtRandom,
+      buildTable: SR5CompendiumBrowser.#onBuildTable,
     },
   }
 
@@ -420,6 +421,7 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
     context.hasTypeFilter = this._selectedTypes.size > 0
     context.sortKey = this._sortKey
     context.sortDirection = this._sortDirection
+    context.canBuildTable = foundry.documents.RollTable.implementation.canUserCreate(game.user)
 
     return context
   }
@@ -558,5 +560,11 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
         kind: 'browser', state: this.filterState
       }
     })
+  }
+
+  /** "Créer une table pondérée": of everything the filters let through */
+  static async #onBuildTable() {
+    const entries = await this._applyFilters(await this._visibleEntries())
+    return SR5WeightedTableBuilder.open(this._searchText || game.i18n.localize('SR5.CompendiumBrowser'), entries)
   }
 }

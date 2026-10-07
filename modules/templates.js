@@ -40,6 +40,7 @@ export const preloadHandlebarsTemplates = async function () {
     // Sheet config dialog
     "systems/sr5/templates/interface/sheet-config.hbs",
     "systems/sr5/templates/interface/compendium-browser.hbs",
+    "systems/sr5/templates/interface/table-builder.hbs",
 
     // Actor sheet - Headers
     "systems/sr5/templates/actors/_partials/header/header.hbs",

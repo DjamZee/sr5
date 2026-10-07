@@ -195,6 +195,160 @@ function drawable(pack) {
   return Boolean(pack?.visible && pack.documentName !== "Adventure")
 }
 
+/** Whether this user may make a table of a compendium: a world table is the game master's to create. */
+function buildable(pack) {
+  return drawable(pack) && foundry.documents.RollTable.implementation.canUserCreate(game.user)
+}
+
+/**
+ * The window that makes a world table of compendium entries, each with a
+ * weight: one by default, more for what should come up more often, zero for
+ * what should not be on the table at all.
+ *
+ * Nothing in the window is written anywhere until "Créer la table": the
+ * weights live in the form, and a filter only hides rows, so a weight set
+ * before filtering is still there after.
+ */
+export class SR5WeightedTableBuilder extends foundry.applications.api.HandlebarsApplicationMixin(
+  foundry.applications.api.ApplicationV2
+) {
+  /**
+   * @param {object} options
+   * @param {string} options.name       the table's name, to begin with
+   * @param {Array<{uuid: string, name: string, img?: string}>} options.entries
+   */
+  constructor({
+    name, entries, ...options
+  } = {
+  }) {
+    super(options)
+    this.tableName = name ?? ""
+    this.entries = [...(entries ?? [])].sort((a, b) => a.name.localeCompare(b.name))
+  }
+
+  static DEFAULT_OPTIONS = {
+    tag: "form",
+    classes: ["sr5", "sr-application", "sr-table-builder-window"],
+    position: {
+      width: 520, height: 640
+    },
+    window: {
+      title: "SR5.TableBuilderTitle",
+      icon: "fa-solid fa-table-list",
+      resizable: true
+    },
+    form: {
+      handler: SR5WeightedTableBuilder.#onSubmit,
+      // Closed by the handler, once the table exists: a table with every weight at zero keeps the window open
+      closeOnSubmit: false
+    },
+    actions: {
+      excludeHidden: SR5WeightedTableBuilder.#onExcludeHidden,
+      resetWeights: SR5WeightedTableBuilder.#onResetWeights
+    }
+  }
+
+  static PARTS = {
+    form: {
+      template: "systems/sr5/templates/interface/table-builder.hbs",
+      scrollable: [".sr-table-builder-list"]
+    }
+  }
+
+  /**
+   * Open the window on some entries, or say there are none.
+   * @param {string} name
+   * @param {Array} entries
+   */
+  static open(name, entries) {
+    if (!entries?.length) {
+      ui.notifications.warn(game.i18n.localize("SR5.CompendiumDrawEmpty"))
+      return null
+    }
+    const app = new SR5WeightedTableBuilder({
+      name, entries
+    })
+    app.render(true)
+    return app
+  }
+
+  /** @inheritDoc */
+  async _prepareContext(options) {
+    const context = await super._prepareContext(options)
+    context.name = this.tableName
+    context.entries = this.entries.map(entry => ({
+      ...entry,
+      img: entry.img || "icons/svg/item-bag.svg",
+      search: entry.name.toLocaleLowerCase()
+    }))
+    return context
+  }
+
+  /** @inheritDoc */
+  _onRender(context, options) {
+    super._onRender(context, options)
+    const filter = this.element.querySelector(".sr-table-builder-filter")
+    filter?.addEventListener("input", () => {
+      const text = filter.value.trim().toLocaleLowerCase()
+      for (const row of this.element.querySelectorAll(".sr-table-builder-entry")) {
+        row.hidden = Boolean(text) && !row.dataset.search.includes(text)
+      }
+    })
+  }
+
+  /** The weight inputs, in the order of the entries. */
+  #weightInputs() {
+    return [...this.element.querySelectorAll("input[data-weight]")]
+  }
+
+  /** "Exclure les masquées": every row the filter hides weighs nothing. */
+  static #onExcludeHidden() {
+    for (const input of this.#weightInputs()) {
+      if (input.closest(".sr-table-builder-entry")?.hidden) input.value = 0
+    }
+  }
+
+  /** "Tout remettre à 1". */
+  static #onResetWeights() {
+    for (const input of this.#weightInputs()) input.value = 1
+  }
+
+  /**
+   * Create the world table, and open it.
+   * @param {SubmitEvent} _event
+   * @param {HTMLFormElement} form
+   */
+  static async #onSubmit(_event, form) {
+    const weights = []
+    for (const input of this.#weightInputs()) weights[Number(input.dataset.weight)] = input.value
+    const {
+      results, formula
+    } = sr5EntryResults(this.entries, weights)
+    if (!results.length) {
+      ui.notifications.warn(game.i18n.localize("SR5.TableBuilderEmpty"))
+      return
+    }
+    const name = String(form.elements.name?.value ?? "").trim() || this.tableName
+    await foundry.documents.RollTable.implementation.create({
+      name, formula, replacement: true, results
+    }, {
+      renderSheet: true
+    })
+    return this.close()
+  }
+}
+
+/**
+ * Open the weighted table window on a compendium, or one of its folders.
+ * @param {CompendiumCollection} pack
+ * @param {Folder} [folder]
+ */
+async function buildFromPack(pack, folder = null) {
+  if (!pack) return
+  return SR5WeightedTableBuilder.open(folder ? folder.name : pack.title,
+    await sr5PackEntries(pack, folder?.id ?? null))
+}
+
 /**
  * "Tirer au hasard" in the context menu of a compendium, in the sidebar.
  * Hook `getCompendiumContextOptions`.
@@ -207,6 +361,11 @@ export function sr5HookCompendiumDrawContext(_app, options) {
     icon: "<i class=\"fa-solid fa-dice\"></i>",
     condition: li => drawable(game.packs.get(li.dataset.pack)),
     callback: li => promptPack(game.packs.get(li.dataset.pack))
+  }, {
+    name: "SR5.TableBuilderTitle",
+    icon: "<i class=\"fa-solid fa-table-list\"></i>",
+    condition: li => buildable(game.packs.get(li.dataset.pack)),
+    callback: li => buildFromPack(game.packs.get(li.dataset.pack))
   })
 }
 
@@ -223,6 +382,13 @@ export function sr5HookCompendiumDrawHeader(app, controls) {
     label: "SR5.CompendiumDraw",
     action: "sr5CompendiumDraw",
     onClick: () => promptPack(app.collection)
+  })
+  if (!buildable(app.collection)) return
+  controls.push({
+    icon: "fa-solid fa-table-list",
+    label: "SR5.TableBuilderTitle",
+    action: "sr5CompendiumBuildTable",
+    onClick: () => buildFromPack(app.collection)
   })
 }
 
@@ -242,6 +408,14 @@ export function sr5HookCompendiumDrawFolder(app, options) {
     callback: async header => {
       const folder = await fromUuid(header.closest(".directory-item")?.dataset.uuid)
       if (folder) return promptPack(app.collection, folder)
+    }
+  }, {
+    name: "SR5.TableBuilderTitle",
+    icon: "<i class=\"fa-solid fa-table-list\"></i>",
+    condition: () => buildable(app.collection),
+    callback: async header => {
+      const folder = await fromUuid(header.closest(".directory-item")?.dataset.uuid)
+      if (folder) return buildFromPack(app.collection, folder)
     }
   })
 }

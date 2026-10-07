@@ -63,6 +63,11 @@
       <button type="button" class="sr-browser-table-action" data-action="drawAtRandom" data-tooltip="SR5.CompendiumDrawBrowserHint">
         <i class="fas fa-sm fa-dice"></i> {{localize 'SR5.CompendiumDraw'}}
       </button>
+      {{#if canBuildTable}}
+      <button type="button" class="sr-browser-table-action" data-action="buildTable" data-tooltip="SR5.TableBuilderBrowserHint">
+        <i class="fas fa-sm fa-table-list"></i> {{localize 'SR5.TableBuilderTitle'}}
+      </button>
+      {{/if}}
       <div class="sr-browser-sort">
         <a data-sort-key="name" class="{{#if (eq sortKey 'name')}}active{{/if}}">
           {{localize 'SR5.Name'}}
