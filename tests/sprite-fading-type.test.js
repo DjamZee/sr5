@@ -36,6 +36,13 @@ globalThis.game = {
       }
     })
   },
+  // The decompiler is looked up for the Technoshaman's fading (Kill Code p. 102): none here, so no stream
+  actors: {
+    get: () => null
+  },
+}
+globalThis.canvas = {
+  scene: null
 }
 
 const {
