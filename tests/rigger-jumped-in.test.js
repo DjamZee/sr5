@@ -202,6 +202,70 @@ describe("jumped in accuracy", () => {
   })
 })
 
+// SR5 p. 200, 268, 455: the control rig dice go to piloting skill tests only
+describe("jumped in control rig dice", () => {
+  const rigDice = property => property.modifiers
+    .filter(m => m.source === "SR5.ControlRig")
+    .reduce((sum, m) => sum + m.value, 0)
+
+  it("a piloting test jumped in with a control rig 2 gets +2 dice", () => {
+    const system = prepared({
+      controlRig: 2
+    })
+    expect(rigDice(system.vehicleTest.test)).toBe(2)
+    expect(rigDice(system.rammingTest.test)).toBe(2)
+  })
+  it("Perception and Sneaking get none, only their limits", () => {
+    const system = prepared({
+      controlRig: 2
+    })
+    expect(rigDice(system.skills.perception.test)).toBe(0)
+    expect(rigDice(system.skills.sneaking.test)).toBe(0)
+    expect(rigDice(system.skills.sneaking.limit)).toBe(2)
+  })
+  it("the defense of the drone gets none", () => {
+    const actor = drone({
+      controlRig: 2
+    })
+    actor.system.vehicleOwner.system.attributes.reaction = rated(4)
+    actor.system.defenses = {
+      defend: pool()
+    }
+    SR5_CharacterUtility.updateDefenses(actor)
+    expect(rigDice(actor.system.defenses.defend)).toBe(0)
+  })
+  it("a mounted weapon (Gunnery) gets none, only Accuracy", async () => {
+    const {
+      SR5_UtilityItem
+    } = await import("../modules/entities/items/utilityItem.js")
+    const actor = drone({
+      controlRig: 2
+    })
+    actor.system.vehicleOwner.system.skills.gunnery = {
+      test: {
+        dicePool: 6
+      }
+    }
+    const item = {
+      name: "Ares Alpha", system: {
+        weaponSkill: pool(), accuracy: stat(5)
+      }
+    }
+    SR5_UtilityItem._generateWeaponDicepool(item, actor)
+    expect(rigDice(item.system.weaponSkill)).toBe(0)
+    expect(rigDice(item.system.accuracy)).toBe(2)
+  })
+  it("not jumped in: no dice", () => {
+    for (const controlMode of ["remote", "manual", "autopilot"]) {
+      const system = prepared({
+        controlMode, controlRig: 2
+      })
+      expect(rigDice(system.vehicleTest.test)).toBe(0)
+      expect(rigDice(system.rammingTest.test)).toBe(0)
+    }
+  })
+})
+
 // SR5 p. 268: thresholds of the piloting tests lowered by the control rig, never under 1
 describe("jumped in threshold", () => {
   it("a control rig 2 turns a threshold of 3 into 1", () => {
