@@ -64,6 +64,22 @@
           {{localize 'SR5.CHASE_Controlled'}}
         </label>
       </div>
+      {{#if canAct}}
+      <div class="sr-chase-row sr-chase-act" data-chase-act>
+        <label>{{localize 'SR5.CHASE_ActionLabel'}}
+          <select name="chaseAction" data-chase-act>
+            {{#each actions}}<option value="{{key}}" data-target="{{target}}" {{#if unavailable}}disabled{{/if}}>{{label}} ({{page}})</option>{{/each}}
+          </select>
+        </label>
+        <label>{{localize 'SR5.CHASE_ActionTarget'}}
+          <select name="chaseTarget" data-chase-act>
+            <option value="">—</option>
+            {{#each targets}}<option value="{{id}}">{{name}} ({{range}})</option>{{/each}}
+          </select>
+        </label>
+        <button type="button" data-action="chaseAct" data-vehicle="{{id}}" data-chase-act><i class="fas fa-dice"></i> {{localize 'SR5.CHASE_ActionRoll'}}</button>
+      </div>
+      {{/if}}
       <div class="sr-chase-row">
         <span>{{localize 'SR5.CHASE_Aboard'}} :</span>
         {{#each passengerList}}<span class="sr-chase-tag">{{name}} <a data-action="removePassenger" data-vehicle="{{../id}}" data-uuid="{{uuid}}"><i class="fas fa-xmark"></i></a></span>{{/each}}
