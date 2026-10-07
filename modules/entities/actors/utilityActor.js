@@ -50,6 +50,9 @@ import {
   isOriginalStrainMonad, originalStrainDevice, activeHeadcase, naniteVolume, matrixEntityConcentration, monitorSize, corePenalty
 } from "../../system/monad-matrix.js"
 import {
+  ICE_HOST_ATTRIBUTES, iceHostAttributes, iceHostOf
+} from "../../system/ice-host.js"
+import {
   situationalValue, isRollTestsTarget, ROLL_TESTS_PREFIX, SITUATIONAL_PREFIX, attributeRedirect, situationalReadable,
   situationalMovement, movementEffectKey, movementEffectOn
 } from "../../rolls/roll-helpers/situational.js"
@@ -5111,6 +5114,14 @@ export class SR5_CharacterUtility extends Actor {
       }
       matrix.ice.attackDicepool = matrix.deviceRating * 2
       matrix.actions.matrixPerception.test.dicePool = matrix.deviceRating * 2
+      //SR5 p. 249: an IC uses its host's matrix attributes; with no host, its own
+      const host = iceHostOf(actor), hostValues = iceHostAttributes(host)
+      if (hostValues) for (const key of ICE_HOST_ATTRIBUTES) {
+        matrixAttributes[key].base = hostValues[key]
+        SR5_EntityHelpers.updateModifier(matrixAttributes[key], game.i18n.format('SR5.IceHostAttribute', {
+          host: host.name
+        }), "iceHost", 0)
+      }
       SR5_EntityHelpers.updateValue(matrixAttributes.dataProcessing, 0)
       matrix.actions.matrixPerception.limit.value = matrixAttributes.dataProcessing.value
       switch (matrix.deviceSubType) {

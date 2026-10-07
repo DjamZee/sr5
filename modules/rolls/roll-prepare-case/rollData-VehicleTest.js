@@ -10,6 +10,9 @@ import {
 import {
   applyInformationOverload
 } from "../roll-helpers/rigger-overload.js"
+import {
+  prepareChaseRoll
+} from "../../system/chase-roll-prepare.js"
 
 export default function vehicleTest(rollData, actor, chatData){
   //Determine title
@@ -33,13 +36,16 @@ export default function vehicleTest(rollData, actor, chatData){
   rollData.limit.type = "handling"
 
   //Add others informations
-  if (chatData) rollData.previousMessage.messageId = chatData.owner.messageId
+  if (chatData?.owner) rollData.previousMessage.messageId = chatData.owner.messageId
   rollData.test.type = "vehicleTest"
 
   //Handle Actions
   rollData.combat.actions = SR5_MiscellaneousHelpers.addActions(rollData.combat.actions, {
     type: "complex", value: 1, source: "vehicleTest"
   })
+
+  //A chase action of the chase window (R12): its threshold, limit and dice (system/chase-roll.js)
+  if (prepareChaseRoll(rollData, actor, chatData)) return rollData
 
   //Special, for ramming test
   if (chatData){

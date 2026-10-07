@@ -5,7 +5,7 @@ import {
   vehicleModKind, fittedMods, fittedRating, replacedVehicleAttribute, replacedVehicleAttributeOf, armorCapReduction, addedArmor,
   hasBullBar, modSlotUse, slotsRefusal, crashArmorPenetration, occupantCrashBonus,
   tactileSensorsOn, TACTILE_PERCEPTION_DICE, TACTILE_HANDLING, TACTILE_BIOFEEDBACK_DICE, signatureMaskingPenalty,
-  metahumanAdaptationPenalty
+  metahumanAdaptationPenalty, droneInWorld
 } from '../modules/system/vehicle-mods.js'
 import {
   droneAutopilot
@@ -256,6 +256,32 @@ describe('Slots cannot be gone beyond (Rigger 5.0 p. 153-154)', () => {
     expect(slotsRefusal(over, {
       category: "protection", slots: 3
     }, null)).toBe(null)
+  })
+
+  it('checks a drone already in the world, linked or the synthetic actor of an unlinked token', () => {
+    const actors = new Set(["d1"]), tokens = new Set(["t1"])
+    const has = set => ({
+      has: id => set.has(id)
+    })
+    expect(droneInWorld({
+      id: "d1", collection: has(actors)
+    })).toBe(true)
+    //Being created with its mods: in no collection yet
+    expect(droneInWorld({
+      id: "d2", collection: has(actors)
+    })).toBe(false)
+    //Unlinked token: the synthetic actor shares the base actor's id, its token says where it stands
+    expect(droneInWorld({
+      id: "d9", isToken: true, collection: has(actors), token: {
+        id: "t1", collection: has(tokens)
+      }
+    })).toBe(true)
+    expect(droneInWorld({
+      id: "d1", isToken: true, collection: has(actors), token: {
+        id: "t2", collection: has(tokens)
+      }
+    })).toBe(false)
+    expect(droneInWorld(null)).toBe(false)
   })
 })
 

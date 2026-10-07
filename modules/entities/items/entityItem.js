@@ -60,7 +60,7 @@ import {
   isFactoryMod
 } from "../../system/vehicle-factory.js"
 import {
-  modSlotUse, slotsRefusal
+  modSlotUse, slotsRefusal, droneInWorld
 } from "../../system/vehicle-mods.js"
 
 /** Rigger 5.0 p. 153-154: a mod fitted on a drone beyond the slots of its category is refused (rule lock "objects").
@@ -146,7 +146,7 @@ export class SR5Item extends Item {
     })
     //Rigger 5.0 p. 153: no slot beyond the vehicle's. Only on a drone already in the world: a drone being deployed
     //brings its mods along with it
-    if (this.type === "itemVehicleMod" && this.parent?.type === "actorDrone" && this.parent.collection?.has?.(this.parent.id) &&
+    if (this.type === "itemVehicleMod" && this.parent?.type === "actorDrone" && droneInWorld(this.parent) &&
       vehicleModSlotsRefused(this.parent, null, preparedCopy(this))) return false
     const defaultImg = `systems/sr5/assets/img/items/${data.type}.svg`
     if (!data.img || data.img === "icons/svg/item-bag.svg") {

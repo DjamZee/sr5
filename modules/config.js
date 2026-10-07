@@ -1762,6 +1762,7 @@ SR5.testLimits = {
   replaced                  : "SR5.LimitReplaced",
   level					  : "SR5.Level",
   handling				  : "SR5.VehicleStat_HandlingShort",
+  speed                     : "SR5.VehicleStat_SpeedShort",
 }
 
 //-----------------------------------//
