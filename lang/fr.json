@@ -4616,7 +4616,7 @@
 	"SR5.CHASE_NoteStuntSoak": "+{dice} dé(s) pour encaisser les dommages du véhicule (attaque ou accident) ce tour.",
 	"SR5.CHASE_NoteStuntDodge": "+{hits} succès pour éviter d'être touché par une attaque.",
 	"SR5.CHASE_NoteStuntSocial": "+{dice} dé(s) à un test social, devant un public qui a vu la cascade.",
-	"SR5.CHASE_NoteStuntCrazy": "Cascade folle : son effet est celui que le MJ accorde.",
+	"SR5.CHASE_NoteStuntCrazy": "Cascade folle : son effet est celui que le MJ accorde ; son point de Chance, dépensé au lancer, a repoussé les limites du test.",
 	"SR5.CHASE_NoteLeafInWind": "Malus de dommages du test Contrôler un véhicule à l'atterrissage : réduit de {net}.",
 	"SR5.SETTINGS_Rigger5AdvancedDriving_T": "Règles de conduite avancées (Rigger 5.0)",
 	"SR5.SETTINGS_Rigger5AdvancedDriving_D": "Poursuites selon Rigger 5.0 p. 175-185 : Vitesse actuelle, portée Contact, terrain étendu. Décoché : la course-poursuite du livre de base (SR5 p. 204-205).",

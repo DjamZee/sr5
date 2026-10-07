@@ -632,6 +632,14 @@ export function stuntRangeBonus(stunt, key) {
   return stunt?.advantage === "range" && STUNT_RANGE_ACTIONS.includes(key) ? stuntLevel(stunt) : 0
 }
 
+/**
+ * A crazy stunt costs a point of the pilot's Edge to try, and gets the usual Edge dice for it (R5 p. 182): the Edge
+ * rating the test pushes its limit with, 0 when the stunt is not a crazy one
+ */
+export function crazyStuntEdge(stunt, edgeRating) {
+  return stunt?.advantage === "crazy" && stuntLevel(stunt) > 0 ? Math.max(0, Number(edgeRating) || 0) : 0
+}
+
 /** The advantages a stunt may give within the action `key` (alone: `key` is "stunt") */
 export function stuntAdvantagesFor(key) {
   return STUNT_ADVANTAGES.filter(a => a !== "range" || STUNT_RANGE_ACTIONS.includes(key))

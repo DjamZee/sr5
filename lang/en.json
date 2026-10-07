@@ -4616,7 +4616,7 @@
 	"SR5.CHASE_NoteStuntSoak": "+{dice} dice to resist the vehicle's damage (attack or crash) this turn.",
 	"SR5.CHASE_NoteStuntDodge": "+{hits} hits to avoid being hit by an attack.",
 	"SR5.CHASE_NoteStuntSocial": "+{dice} dice to a social test, before an audience who saw the stunt.",
-	"SR5.CHASE_NoteStuntCrazy": "Crazy stunt: its effect is what the gamemaster grants.",
+	"SR5.CHASE_NoteStuntCrazy": "Crazy stunt: its effect is what the gamemaster grants; its point of Edge was spent as it was launched and pushed the limit of the test.",
 	"SR5.CHASE_NoteLeafInWind": "Damage modifier of the Control a Vehicle test on landing: lowered by {net}.",
 	"SR5.SETTINGS_Rigger5AdvancedDriving_T": "Advanced driving rules (Rigger 5.0)",
 	"SR5.SETTINGS_Rigger5AdvancedDriving_D": "Chases by Rigger 5.0 p. 175-185: current Speed, Contact range, extended terrain. Unchecked: the core rulebook chase (SR5 p. 204-205).",

@@ -76,6 +76,11 @@ export function prepareChaseRoll(rollData, actor, chatData) {
   for (const d of dice) rollData.dicePool.modifiers.push({
     type: "chaseAction", label: game.i18n.localize(d.key), value: Number(d.value) || 0
   })
+  // A crazy stunt: the point of Edge spent as it was launched pushes the limit of its test (R5 p. 182, roll-test.js)
+  if (Number(chase.edgePush) > 0) rollData.edge = {
+    ...(rollData.edge ?? {
+    }), prepaidPush: Number(chase.edgePush)
+  }
   if (chase.originId) rollData.previousMessage.messageId = chase.originId
   const action = game.i18n.localize(`SR5.CHASE_Action_${chase.key}`)
   const what = chase.mode === "followUp" ? game.i18n.localize(`SR5.CHASE_FollowUp_${chase.test}`) :

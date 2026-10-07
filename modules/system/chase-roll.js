@@ -9,7 +9,7 @@
 
 import {
   CHASE_ACTIONS, NEAR_RANGES, actionRefusal, actionThreshold, actionDice, resolveAction, resolveFollowUp,
-  stuntAdvantagesFor, cardActions
+  stuntAdvantagesFor, cardActions, crazyStuntEdge
 } from "./chase-actions.js"
 import {
   chaseRanges, normalizeRange, terrainList, normalizeTerrain, terrainValue, effectiveSpeed, isFastest, isAircraft,
@@ -180,7 +180,12 @@ export async function launchChaseAction(vehicleId, key, targetId = "", stunt = 0
   const options = await askOptions(key, state, vehicle, stuntWithin)
   if (!options) return false
   // Edge (R5 p. 178-181): the pilot's own point, by the system's path, once the player confirms
-  if (action.edge && !(await spendPilotEdge(pilot, key))) return false
+  // A crazy stunt too (R5 p. 182): its point pushes the limit of the test, which spends no other
+  const crazyEdge = crazyStuntEdge(options.stunt, pilot?.actor?.system?.specialAttributes?.edge?.augmented?.value)
+  if (options.stunt?.advantage === "crazy" && !pilot?.edgeLeft) return ui.notifications?.warn(game.i18n.format("SR5.CHASE_Refused_noEdge", {
+    action: actionLabel(key)
+  }))
+  if ((action.edge || options.stunt?.advantage === "crazy") && !(await spendPilotEdge(pilot, key))) return false
   const newTerrain = options.newTerrain ? normalizeTerrain(options.newTerrain, advanced) : undefined
   const live = liveVehicles(state).map(withSpeed)
   const ctx = {
@@ -198,7 +203,7 @@ export async function launchChaseAction(vehicleId, key, targetId = "", stunt = 0
       side: "initiator", range, flags: state.turnFlags?.[vehicleId] ?? {
       }, gloveMalus: !!state.glove?.[vehicleId] && state.glove[vehicleId] === state.terrain, advanced
     }),
-    limitMods: turnHandlingMods(state, vehicleId),
+    limitMods: turnHandlingMods(state, vehicleId), edgePush: crazyEdge,
     options: {
       ...options, newTerrain, newTerrainValue: ctx.newTerrainValue
     },
