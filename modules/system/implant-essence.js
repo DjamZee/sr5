@@ -169,13 +169,48 @@ export function implantEssence(gradedCost, effects, gradeMultiplier = 1) {
 }
 
 /**
+ * The hook through which a module adjusts the Essence an implant line costs when the shop checks a purchase
+ * (essenceAllows): the system counts the book's cost; a world whose house rule changes it (the character creator's
+ * Essence at half price for a non-Awakened, Règles Maison 7) tells the till so in a module, never in the system.
+ * Called with `{actor, item, cost, creation}`: `item` a copy of the line `{type, name, system, grade, quantity}`,
+ * `cost` the Essence of the whole line (quantity included). A subscriber sets `cost`; a value that is not a finite
+ * number ≥ 0, or a subscriber that throws, leaves the book's. Without a module, no subscriber: the book's cost.
+ */
+export const ESSENCE_COST_HOOK = "sr5.essenceCostFor"
+
+/** The cost of a line once the subscribers of sr5.essenceCostFor have had their say. */
+export function essenceCostFor(actor, line, cost, {
+  creation = false, call = (hook, data) => globalThis.Hooks?.callAll(hook, data)
+} = {
+}) {
+  let item
+  try {
+    item = structuredClone(line)
+  } catch {
+    item = JSON.parse(JSON.stringify(line ?? null))
+  }
+  const data = {
+    actor, item, cost, creation
+  }
+  try {
+    call(ESSENCE_COST_HOOK, data)
+  } catch (error) {
+    console.error(`SR5 | ${ESSENCE_COST_HOOK}: a subscriber failed, ignored`, error)
+    return cost
+  }
+  const value = data.cost
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : cost
+}
+
+/**
  * The Essence a buyer keeps after a purchase, read on the buyer's own items. A line: `{type, name, system,
  * grade, quantity}` — the item as sold and the grade chosen. The lines a sensitive body rejects are screened
  * out before (screenRejectedImplants); what is left here is installed. Accessories cost no Essence, as on the
  * sheet (entityActor.js).
+ * @param {Function} [options.costFor] (line, cost) => the cost to count for that line (essenceCostFor)
  */
 export function essenceAfterPurchase(essence, items, lines, {
-  creation = false, hole = 0
+  creation = false, hole = 0, costFor = null
 } = {
 }) {
   let left = Number(essence) || 0, bioware = 0, total = 0
@@ -190,7 +225,8 @@ export function essenceAfterPurchase(essence, items, lines, {
       underAdapsine, reversibleEssence: fixed
     })
     const graded = SR5ShopGrades.essence(line.system, grade)
-    const cost = implantEssence(graded, effects, SR5ShopGrades.row(grade).essence) * Math.max(1, Math.floor(Number(line.quantity) || 1))
+    const book = implantEssence(graded, effects, SR5ShopGrades.row(grade).essence) * Math.max(1, Math.floor(Number(line.quantity) || 1))
+    const cost = costFor ? costFor(line, book) : book
     total += cost
     if (implantFamily(line.system?.type) === "bioware") bioware += cost
   }
