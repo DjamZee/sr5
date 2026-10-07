@@ -1525,7 +1525,11 @@ export default class SR5_RollDialog {
                 dialogData.limit.modifiers.healingSupplies.label = game.i18n.localize(SR5.dicePoolModTypes[modifierName])
                 if (suppliesLimitInput) suppliesLimitInput.value = value
               } else {
-                ui.notifications.warn(game.i18n.format('SR5.WARN_NoMedkit'))
+                // No kit, no rating to read: 0 either way. The "body" rule lock family lifted (B13, lot 4), the
+                // player is not told off and the gamemaster hears of it; a kit the sheet lacks goes in "Various"
+                refuseByRule("body", 'SR5.WARN_NoMedkit', null, {
+                  actor
+                })
                 value = 0
               }
               break
