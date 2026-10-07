@@ -20,6 +20,9 @@ import {
   SR5Chase, ADVANCED_DRIVING_SETTING
 } from "./chase.js"
 import {
+  DRONE_MOD_SETTING, DRONE_MOD_RULES
+} from "./drone-mod-points.js"
+import {
   registerBBHealingSettings
 } from "./bb-healing-rules.js"
 import {
@@ -627,6 +630,24 @@ export class SR5_SystemHelpers {
     })
     // The chase itself: the gamemaster's register (chase.js); its window opens from the token controls
     SR5Chase.register()
+
+    // Drone mods (R13): the slots of the main rule by default (Rigger 5.0 p. 153), the optional Modification Points
+    // (p. 126-128) when chosen. Arbitrage de DjamZ (07/10, Q5) : les deux existent, le défaut reste la règle principale
+    game.settings.register("sr5", DRONE_MOD_SETTING, {
+      name: "SR5.SETTINGS_DroneModRules_T",
+      hint: "SR5.SETTINGS_DroneModRules_D",
+      scope: "world",
+      config: true,
+      default: "slots",
+      type: String,
+      choices: DRONE_MOD_RULES,
+      onChange: () => {
+        for (const actor of game.actors ?? []) if (actor.type === "actorDrone") {
+          actor.reset()
+          actor.sheet?.rendered && actor.sheet.render()
+        }
+      },
+    })
 
     // Hide the die and its face on a random table's chat card
     game.settings.register("sr5", "sr5HideTableRoll", {
