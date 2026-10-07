@@ -7,7 +7,7 @@ import {
   SR5
 } from "../../config.js"
 import {
-  aimedItemUuid, menuEntries, modeSwitchCost, modeUpdate, ownModeOf, uuidTarget
+  menuEntries, modeSwitchCost, modeUpdate, ownModeOf, radialTargetOf, uuidTarget
 } from "./pan-actions.js"
 import {
   currentViewer, getGraph, setPanReveal, tokenOfNode
@@ -211,12 +211,13 @@ export function openRadialMenu({
       key: action.key,
       tooltip: reasonOf(action),
       disabled: !action.enabled,
-      onClick: () => rollMatrixActionOn(viewer.actor, action.key, {
-        targetTokenId: tokenOfNode(node, {
+      onClick: () => rollMatrixActionOn(viewer.actor, action.key, radialTargetOf(node, graph, {
+        token: tokenOfNode(node, {
           actor: token.actor, token
-        })?.id,
-        targetUuid: aimedItemUuid(node, graph),
-      }),
+        }),
+        resolve: uuid => globalThis.fromUuidSync?.(uuid) ?? null,
+        actorById: id => game.actors?.get(id) ?? null,
+      })),
     }))
   }
   for (const mode of entries.modes){

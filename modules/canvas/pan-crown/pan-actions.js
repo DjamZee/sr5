@@ -144,6 +144,33 @@ export function aimedItemUuid(node, graph){
 }
 
 /**
+ * The target of an action launched from the radial menu (relecture, M7): the token that carries the device when it
+ * is on the scene, with the device aimed at. A sprite or a deployed drone with no token on the scene is aimed at by
+ * the uuid of its own actor (A1 of the API pour Matrice v1): never through its technomancer's or its rigger's token,
+ * whose persona would then defend in its place.
+ * @param {Object} node       a node of getGraph
+ * @param {Object} graph      its graph
+ * @param {Object} options
+ * @param {Object|null} options.token          the token found for the node on the scene (tokenOfNode), or null
+ * @param {Function} [options.resolve]         uuid -> item (fromUuidSync)
+ * @param {Function} [options.actorById]       id -> world actor (game.actors.get)
+ * @return {{targetTokenId: String|undefined, targetUuid: String|null}}
+ */
+export function radialTargetOf(node, graph, {
+  token = null, resolve = () => null, actorById = () => null
+} = {
+}){
+  const targetUuid = aimedItemUuid(node, graph)
+  if (token || targetUuid) return {
+    targetTokenId: token?.id, targetUuid
+  }
+  const actor = node?.droneId ? actorById(node.droneId) : (resolve(node?.uuid)?.parent ?? null)
+  return {
+    targetTokenId: undefined, targetUuid: actor?.uuid ?? null
+  }
+}
+
+/**
  * The entries of the menu for a viewer: the actions with their state, or the owner's switches.
  * @param {Object} node     a node of getGraph
  * @param {Object} graph    its graph, with viewer

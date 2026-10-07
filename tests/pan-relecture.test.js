@@ -6,6 +6,9 @@ import fs from 'node:fs'
 import {
   signatureOf
 } from '../modules/canvas/pan-crown/pan-layout.js'
+import {
+  radialTargetOf
+} from '../modules/canvas/pan-crown/pan-actions.js'
 
 // The defects of the crown found by the grouped review of Fleur (alpha 32df8eae6), one block per defect
 
@@ -110,6 +113,63 @@ describe('M1: a move lays the crowns out again, it does not build them again', (
     // the sheets' way: the lock against a double click, and the master's box cleared
     expect(sheet).toMatch(/if \(switching\.has\(item\.uuid\)\) return/)
     expect(sheet).toMatch(/if \(item\.system\.isSilent\) await item\.update\(\{\s*"system\.isSilent": false/)
+  })
+
+  it('M7: aims at a sprite with no token by the uuid of its own actor, never through its technomancer', () => {
+    const graph = {
+      master: 'Actor.techno.Item.persona', nodes: []
+    }
+    const sprite = {
+      uuid: 'Actor.sprite.Item.device', kind: 'sprite', holderIds: ['sprite'], anchorIds: ['techno']
+    }
+    const resolve = uuid => uuid === sprite.uuid ? {
+      parent: {
+        uuid: 'Actor.sprite'
+      }
+    } : null
+    expect(radialTargetOf(sprite, graph, {
+      token: null, resolve
+    })).toEqual({
+      targetTokenId: undefined, targetUuid: 'Actor.sprite'
+    })
+    // with its own token on the scene, the token as before
+    expect(radialTargetOf(sprite, graph, {
+      token: {
+        id: 'spriteToken'
+      }, resolve
+    })).toEqual({
+      targetTokenId: 'spriteToken', targetUuid: null
+    })
+  })
+
+  it('M7: aims at a deployed drone with no token by its actor, at a device by its item', () => {
+    const graph = {
+      master: 'Actor.rigger.Item.deck', nodes: []
+    }
+    expect(radialTargetOf({
+      uuid: 'Actor.rigger.Item.vehicle', kind: 'drone', droneId: 'drone'
+    }, graph, {
+      actorById: id => id === 'drone' ? {
+        uuid: 'Actor.drone'
+      } : null
+    })).toEqual({
+      targetTokenId: undefined, targetUuid: 'Actor.drone'
+    })
+    expect(radialTargetOf({
+      uuid: 'Actor.guard.Item.gun', kind: 'slave'
+    }, graph, {
+      token: {
+        id: 'guardToken'
+      }
+    })).toEqual({
+      targetTokenId: 'guardToken', targetUuid: 'Actor.guard.Item.gun'
+    })
+    // nothing to aim at: rollMatrixActionOn says the target is missing, as before
+    expect(radialTargetOf({
+      uuid: 'Actor.gone.Item.x', kind: 'drone', droneId: 'gone'
+    }, graph)).toEqual({
+      targetTokenId: undefined, targetUuid: null
+    })
   })
 
   it('makes the name of an icon the first time it is read, not at each build', () => {
