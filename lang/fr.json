@@ -2676,6 +2676,7 @@
 	"SR5.INFO_RiggerEjectedAutopilot": "{name} : le rigger est éjecté (SR5 p. 271). L'autopilote reprend le contrôle.",
 	"SR5.INFO_RiggerEjectedOutOfControl": "{name} : le rigger est éjecté (SR5 p. 271). Hors de contrôle jusqu'au début du prochain tour de combat, puis l'autopilote reprend le contrôle.",
 	"SR5.INFO_RiggerEjectedNoPilot": "{name} : le rigger est éjecté (SR5 p. 271). Sans indice d'Autopilote, le véhicule reste hors de contrôle jusqu'à ce que quelqu'un d'autre en prenne le contrôle.",
+	"SR5.INFO_RiggerEjectedWrecked": "{name} : le rigger est éjecté (SR5 p. 271). Le véhicule est détruit ou briqué : aucun autopilote n'en reprend le contrôle.",
 	"SR5.INFO_AutopilotTakesOver": "{name} : l'autopilote reprend le contrôle (SR5 p. 271).",
 	"SR5.INFO_IsLinkLocked": "connexion verrouillée par",
 	"SR5.INFO_NeedAtLeastThreeNetHits": "Les fléchettes à injection nécessite au moins 3 succès excédentaires",

@@ -17,7 +17,7 @@ import {
   isJumpedInDrone
 } from "./shared-vision.js"
 import {
-  monitorFull, ejectionOver
+  monitorFull, ejectionOver, droneWrecked
 } from "./rigging-rules.js"
 
 function isActiveGM() {
@@ -84,6 +84,8 @@ async function loseControl(drone) {
     await drone.createEmbeddedDocuments("ActiveEffect", [effect])
     message = hasPilot ? "SR5.INFO_RiggerEjectedOutOfControl" : "SR5.INFO_RiggerEjectedNoPilot"
   }
+  //Destroyed or bricked: no autopilot is left to take it over
+  if (droneWrecked(drone.system)) message = "SR5.INFO_RiggerEjectedWrecked"
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({
       actor: drone
@@ -115,6 +117,7 @@ async function onCombatRound(combat, changed) {
   if (!isActiveGM() || !("round" in (changed ?? {
   }))) return
   for (const drone of worldDrones()) {
+    if (droneWrecked(drone.system)) continue
     const over = ejectionEffects(drone).filter(e => ejectionOver(e.flags.sr5.ejection, combat, pilotOf(drone)))
     if (over.length) await endEjection(drone, over, "SR5.INFO_AutopilotTakesOver")
   }
@@ -124,7 +127,7 @@ async function onCombatRound(combat, changed) {
 async function onCombatDeleted(combat) {
   if (!isActiveGM()) return
   for (const drone of worldDrones()) {
-    if (!(Number(pilotOf(drone)) > 0)) continue
+    if (!(Number(pilotOf(drone)) > 0) || droneWrecked(drone.system)) continue
     const over = ejectionEffects(drone).filter(e => e.flags.sr5.ejection.combatId === combat.id)
     if (over.length) await endEjection(drone, over, "SR5.INFO_AutopilotTakesOver")
   }

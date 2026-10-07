@@ -305,6 +305,30 @@ describe('the next Combat Turn', () => {
     expect(d.deleteEmbeddedDocuments).toHaveBeenCalledWith('ActiveEffect', ['e1'])
   })
 
+  it('a destroyed drone is told destroyed at the ejection, and no autopilot takes it over later', async () => {
+    // The monitor written by takeDamage before the ejection
+    await _test.loseControl(drone({
+      damage: 8
+    }))
+    const said = ChatMessage.create.mock.calls.map(([data]) => data.content)
+    expect(said.some(c => c.includes('SR5.INFO_RiggerEjectedWrecked'))).toBe(true)
+    expect(said.some(c => c.includes('Autopilot'))).toBe(false)
+    const wreck = ejected()
+    wreck.system.conditionMonitors.condition = monitor(8, 8)
+    game.actors = [wreck]
+    ChatMessage.create.mockClear()
+    await _test.onCombatRound({
+      id: 'c1', round: 3
+    }, {
+      round: 3
+    })
+    await _test.onCombatDeleted({
+      id: 'c1'
+    })
+    expect(wreck.deleteEmbeddedDocuments).not.toHaveBeenCalled()
+    expect(ChatMessage.create).not.toHaveBeenCalled()
+  })
+
   it('not before: a new initiative pass of the same turn changes nothing', async () => {
     const d = ejected()
     game.actors = [d]

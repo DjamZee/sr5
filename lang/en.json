@@ -2676,6 +2676,7 @@
 	"SR5.INFO_RiggerEjectedAutopilot": "{name}: the rigger is ejected (SR5 p. 271). The autopilot takes control again.",
 	"SR5.INFO_RiggerEjectedOutOfControl": "{name}: the rigger is ejected (SR5 p. 271). Out of control until the start of the next Combat Turn, then the autopilot takes control again.",
 	"SR5.INFO_RiggerEjectedNoPilot": "{name}: the rigger is ejected (SR5 p. 271). Without a Pilot rating, the vehicle stays out of control until someone else takes control of it.",
+	"SR5.INFO_RiggerEjectedWrecked": "{name}: the rigger is ejected (SR5 p. 271). The vehicle is destroyed or bricked: no autopilot takes control of it.",
 	"SR5.INFO_AutopilotTakesOver": "{name}: the autopilot takes control again (SR5 p. 271).",
 	"SR5.INFO_IsLinkLocked": "is link-locked by",
 	"SR5.INFO_NeedAtLeastThreeNetHits": "Injection darts needs at least 3 net hits.",

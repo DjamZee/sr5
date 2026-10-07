@@ -38,6 +38,11 @@ export function monitorFull(monitor) {
   return size > 0 && Number(monitor?.actual?.value) >= size
 }
 
+//A vehicle destroyed (its condition monitor full) or bricked (its matrix monitor full): no autopilot takes it over
+export function droneWrecked(system) {
+  return monitorFull(system?.conditionMonitors?.condition) || monitorFull(system?.conditionMonitors?.matrix)
+}
+
 //The ejected vehicle is out of control (SR5 p. 203) until the start of the next Combat Turn, when its autopilot takes
 //over again; one without a Pilot rating stays out of control until someone else takes it (SR5 p. 271).
 //mark: {combatId, round} written at the ejection; combat: the encounter whose round has just changed
