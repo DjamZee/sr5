@@ -40,6 +40,9 @@ import {
 import {
   weaponLimb, limbAttributes, weaponAttribute, withLimbAgility
 } from "../../system/cyberlimb.js"
+import {
+  isFactoryMod
+} from "../../system/vehicle-factory.js"
 
 // The implants whose unknown grade the gamemaster was told of, once each per session
 const unknownGradesTold = new Set()
@@ -2287,6 +2290,8 @@ export class SR5_UtilityItem extends Actor {
   ////////////////////// VEHICULES  ///////////////////////
   static _handleVehicle(itemData) {
     for (let vehicleMod of itemData.vehiclesMod){
+      //A factory mod is already in the vehicle's price (Rigger 5.0 p. 156)
+      if (isFactoryMod(vehicleMod)) continue
       SR5_EntityHelpers.updateModifier(itemData.price, `${vehicleMod.name}`, 'vehicleMod', vehicleMod.system.price.value)
     }
 
