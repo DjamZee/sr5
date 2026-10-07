@@ -36,7 +36,9 @@ export function layoutCrown(graph, {
   const center = {
     x: 0, y: 0
   }
-  const shown = graph.nodes.filter(n => n.visibility?.visible !== false)
+  const seen = n => n.visibility?.visible !== false
+  // A node reached through another one (the line up to the master of a drone or of a door, lot 7) is shown with it
+  const shown = graph.nodes.filter(n => seen(n) && (!n.via || graph.nodes.some(o => o.uuid === n.via && seen(o))))
   const at = {
   }
   const place = (node, x, y) => {

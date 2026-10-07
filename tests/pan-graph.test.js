@@ -4,6 +4,9 @@ import {
 import {
   buildPanGraph, slaveMode, ownMode, hasAntenna, droneOf
 } from '../modules/canvas/pan-crown/pan-graph.js'
+import {
+  layoutCrown
+} from '../modules/canvas/pan-crown/pan-layout.js'
 
 // The graph of a PAN (couronne du PAN, lot 1): master, slaves, drones by creatorItemId, and the silent mode a
 // master passes on to its slaves (Kill Code p. 39, VO: "Slaved devices run silent when their master devices do").
@@ -277,6 +280,39 @@ describe('pan graph: drones (creatorItemId)', () => {
     expect(g.nodes.find(n => n.uuid === droneDevice.uuid)).toMatchObject({
       kind: 'device', mode: 'silent', silentFrom: 'master'
     })
+    // The rigger owns the drone's device; the line up leaves from it
+    expect(g.nodes.find(n => n.uuid === droneDevice.uuid).ownerIds).toContain('pc')
+    expect(up.via).toBe(droneDevice.uuid)
+  })
+
+  it('hides the line up to the master when the device it leaves from is hidden (a silent door)', () => {
+    const graph = {
+      master: null,
+      nodes: [{
+        uuid: 'door', kind: 'device', mode: 'silent', visibility: {
+          visible: false
+        }
+      }, {
+        uuid: 'host', kind: 'wan', mode: 'active', via: 'door', visibility: {
+          visible: true
+        }
+      }],
+      links: [{
+        from: 'owner', to: 'door', kind: 'device'
+      }, {
+        from: 'owner', to: 'host', kind: 'wan'
+      }],
+    }
+    const offset = node => (node.kind === 'wan' ? {
+      x: 500, y: 0
+    } : null)
+    expect(layoutCrown(graph, {
+      tokenOffset: offset
+    }).lines).toHaveLength(0)
+    graph.nodes[0].visibility.visible = true
+    expect(layoutCrown(graph, {
+      tokenOffset: offset
+    }).lines.map(l => l.uuid)).toEqual(['door', 'host'])
   })
 
   it('keeps the drone\'s crown whole when its rigger is not found', () => {

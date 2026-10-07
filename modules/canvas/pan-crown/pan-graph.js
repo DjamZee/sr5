@@ -168,9 +168,12 @@ export function buildPanGraph(actor, {
       } = up.slaved ? slaveMode(own, up.mode) : {
         mode: own, silentFrom: own === "silent" ? "self" : null
       }
-      const ownNode = nodeOf(device, "device", actor, mode, silentFrom)
+      // The rigger owns the drone, and sees its device as her own
+      const ownNode = nodeOf(device, "device", actor, mode, silentFrom, null, up.owner)
       ownNode.customIcon ??= customIconOf(actor)
       add(ownNode, "owner", "device")
+      // The line up to the master is seen with the device it leaves from: a silent door does not betray itself
+      up.node.via = device.uuid
     }
     add(up.node, "owner", up.node.kind)
   }
@@ -295,7 +298,7 @@ function upwardMasterOf(actor, graph, {
     const node = nodeOf(device, "rigger", rigger, mode, mode === "silent" ? "self" : null, null, actor)
     node.holderIds = [realIdOf(rigger)]
     return {
-      node, mode, slaved
+      node, mode, slaved, owner: rigger
     }
   }
   const key = actor.type === "actorDevice" && !isHostActor(actor) ? actor.system?.matrix?.panMaster : null
