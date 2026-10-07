@@ -2848,6 +2848,19 @@ SR5.vehicleModType = {
   cosmetic                  : "SR5.VehicleModTypeCosmetic",
 }
 
+// What the system works out by code for a vehicle mod (system/vehicle-mods.js, Rigger 5.0 p. 153-173)
+SR5.vehicleModEffectKinds = {
+  autopilotReplacement      : "SR5.VehicleModEffectKind_autopilotReplacement",
+  sensorReplacement         : "SR5.VehicleModEffectKind_sensorReplacement",
+  armor                     : "SR5.VehicleModEffectKind_armor",
+  bullBar                   : "SR5.VehicleModEffectKind_bullBar",
+  passengerProtection       : "SR5.VehicleModEffectKind_passengerProtection",
+  riggerCocoon              : "SR5.VehicleModEffectKind_riggerCocoon",
+  tactileSensors            : "SR5.VehicleModEffectKind_tactileSensors",
+  signatureMasking          : "SR5.VehicleModEffectKind_signatureMasking",
+  metahumanAdaptation       : "SR5.VehicleModEffectKind_metahumanAdaptation",
+}
+
 // Type d'installation nécessaires
 SR5.vehicleModTools = {
   kit                       : "SR5.VehicleModToolsKit",

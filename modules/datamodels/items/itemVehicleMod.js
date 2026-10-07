@@ -58,6 +58,10 @@ export class sr5ItemVehicleModDataModel extends foundry.abstract.TypeDataModel {
       isFactory: new fields.BooleanField({
         initial: false
       }),
+      //What the system works out for it by code (system/vehicle-mods.js); empty: known by its name, or none
+      effectKind: new fields.StringField({
+        initial: ''
+      }),
       isWeaponMounted: new fields.BooleanField({
         initial: false
       }),
