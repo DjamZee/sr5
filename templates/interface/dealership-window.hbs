@@ -35,7 +35,7 @@
 				<div class="sr5-workshop-image"><img src="{{build.img}}" alt="{{build.name}}"></div>
 				<div>{{#each build.gaugesRight}}{{> systems/sr5/templates/interface/dealership-gauge.hbs}}{{/each}}</div>
 			</div>
-			{{#if build.over}}<p class="sr-dealer-warn">{{localize 'SR5.DealerOverSlots'}}</p>{{/if}}
+			{{#if build.over}}<p class="sr-dealer-warn">{{#if build.points}}{{localize 'SR5.DealerOverModPoints'}}{{else}}{{localize 'SR5.DealerOverSlots'}}{{/if}}</p>{{/if}}
 
 			<ul class="sr-dealer-build sr-dealer-list">
 				{{#each build.own}}

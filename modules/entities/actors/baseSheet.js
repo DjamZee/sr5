@@ -2147,12 +2147,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
     //A link-locked character cannot reboot their device and must jack out (SR5 p. 231 and 244);
     //the IC that force a reboot (p. 250) call rebootDeck directly and are not held back
-    if (this.actor.system.matrix?.isLinkLocked) {
-      ui.notifications.warn(game.i18n.format("SR5.WARN_RebootLinkLocked", {
-        name: this.actor.name
-      }))
-      return false
-    }
+    //The "matrix" rule lock lifted (B13), the reboot goes, and the gamemaster hears of it
+    if (this.actor.system.matrix?.isLinkLocked && refuseByRule("matrix", "SR5.WARN_RebootLinkLocked", {
+      name: this.actor.name
+    }, {
+      actor: this.actor
+    })) return false
     //Same for an action the character no longer has, when the world setting asks for it
     if (!SR5Combat.hasActionsLeft(this.actor, [{
       type: "complex", value: 1, source: "rebootDeck"
@@ -2576,10 +2576,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       },
       baseActor = this.actor.id
 
-    if (actor.system.matrix.pan.current === actor.system.matrix.pan.max){
-      ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.INFO_PanIsFull")}`)
-      return
-    }
+    //The "matrix" rule lock lifted (B13), the PAN grows past its Device Rating x 3 (SR5 p. 233), the gamemaster told
+    if (Number(actor.system.matrix.pan.current) >= Number(actor.system.matrix.pan.max) && refuseByRule("matrix", "SR5.INFO_PanFullOf", {
+      actor: actor.name
+    }, {
+      actor, level: "info"
+    })) return
 
     for (let key of Object.keys(actor.system.matrix.potentialPanObject)){
       if (Object.keys(actor.system.matrix.potentialPanObject[key]).length) {

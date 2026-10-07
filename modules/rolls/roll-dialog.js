@@ -402,16 +402,16 @@ export default class SR5_RollDialog {
 
   // AI Emulate (Data Trails p. 159): rating capped by Depth, -(rating / 2) dice, the limit becomes the emulated rating.
   // Without a device the rating cannot drop below 1: there is no attribute to act with otherwise (Data Trails p. 157)
-  _applyEmulateRating(html, dialogData, value){
+  // The "matrix" rule lock lifted (B13), a rating past Depth is kept, the dice and the limit follow it, the gamemaster told
+  _applyEmulateRating(html, dialogData, value, actor = null){
     let max = dialogData.matrix.emulateMax || 0,
       min = dialogData.matrix.emulateRequired ? Math.min(1, max) : 0
     if (isNaN(value) || value < min) value = min
-    if (value > max) {
-      value = max
-      ui.notifications.warn(game.i18n.format('SR5.WARN_EmulateMaxDepth', {
-        depth: max
-      }))
-    }
+    value = capByRule("matrix", value, max, 'SR5.WARN_EmulateMaxDepth', {
+      depth: max
+    }, {
+      actor
+    })
     html.querySelector('[name="emulateRating"]').value = value
     dialogData.matrix.emulateRating = value
     SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "emulate")
@@ -937,7 +937,7 @@ export default class SR5_RollDialog {
 
     switch (target){
       case "emulateRating":
-        this._applyEmulateRating(html, dialogData, value)
+        this._applyEmulateRating(html, dialogData, value, actor)
         return
       case "force":
         this.updateDrainValue(html)

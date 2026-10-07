@@ -225,7 +225,7 @@
       <button type="button" data-action="newVendor"><i class="fas fa-store"></i> {{localize 'SR5.ShopVendorNew'}}</button>
       <label data-tooltip="{{localize 'SR5.ShopCreationModeHint'}}">
         <input type="checkbox" data-shop-creation {{#if creationMode}}checked{{/if}}> {{localize 'SR5.ShopCreationMode'}}
-        {{#if creationLimits}}<span class="muted">({{creationLimitsLabel}})</span>{{/if}}
+        {{#if creationLimits}}<span class="muted">({{#unless creationMode}}{{localize 'SR5.CreationActorBadge'}}, {{/unless}}{{creationLimitsLabel}})</span>{{/if}}
       </label>
       <label data-tooltip="{{localize 'SR5.ShopEquipModeHint'}}">
         <input type="checkbox" data-shop-equip {{#if equipMode}}checked{{/if}}> {{localize 'SR5.ShopEquipMode'}}
@@ -233,6 +233,9 @@
     </div>
     {{else if creationMode}}
     <p class="muted" data-tooltip="{{localize 'SR5.ShopCreationModeHint'}}">{{localize 'SR5.ShopCreationMode'}}
+      ({{creationLimitsLabel}})</p>
+    {{else if creationLimits}}
+    <p class="muted" data-tooltip="{{localize 'SR5.ShopCreationActorHint'}}">{{localize 'SR5.CreationActorBadge'}}
       ({{creationLimitsLabel}})</p>
     {{/if}}
   </aside>

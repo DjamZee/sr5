@@ -25,6 +25,9 @@ import {
 import {
   assembledVehicleData
 } from "./vehicle-dealership.js"
+import {
+  usesModPoints, droneModRule, vehicleStats, modPointsCost, modPointsOf, modPointsGauge, modsTakingPoints, modPointsPrice
+} from "./drone-mod-points.js"
 
 // The Foundry side of the workshop (Chop Shop, B12; Rigger 5.0 p. 153-156): the "Workshop" tab of the drone sheet and
 // of the vehicle item, the drop of a mod, its purchase through the shop, the direct fitting by the gamemaster and the
@@ -66,8 +69,10 @@ export function pricedModData(source, vehicle){
   data.system.vehiclePriceMultiplier = priceMultipliers(vehicle)
   const temp = new CONFIG.Item.documentClass(data)
   SR5_UtilityItem._handleItemPrice(temp.system)
+  //Under the Modification Points, an attribute upgrade of a drone is priced by the book's formula (R5 p. 127-128)
+  const pointsPrice = usesModPoints(droneModRule(), vehicle.system.type) ? modPointsPrice(temp.system, vehicleStats(vehicle.system)) : null
   return {
-    data, price: Number(temp.system.price.value) || 0,
+    data, price: pointsPrice ?? (Number(temp.system.price.value) || 0),
     // The slots once prepared (a count multiplied by the rating): the stored data holds 0 (lot R9, the dealership)
     slots: Number(temp.system.slots?.value) || 0,
   }
@@ -83,6 +88,10 @@ export function workshopContext(vehicle){
     Object.fromEntries(Object.entries(s.modificationSlots).filter(([, v]) => typeof v === "object").map(([k, v]) => [k, v.base]))
   const category = isItem ? s.category : sourceVehicleItem(vehicle)?.system?.category
   const buyer = workshopBuyer(vehicle)
+  //Under the optional Modification Points a drone has one pool of points (R5 p. 126-128); vehicles keep their slots
+  const points = usesModPoints(droneModRule(), s.type)
+  const stats = vehicleStats(s)
+  const priceOf = points ? m => modPointsCost(m, stats) : modCost
   const row = (m, index) => {
     const ms = m.system ?? {
     }
@@ -90,24 +99,30 @@ export function workshopContext(vehicle){
     const fitted = factory || ms.isActive === true
     return {
       id: m._id ?? m.id, index, name: `${m.name}${ms.isWeaponMounted && ms.surname ? ms.surname : ""}`, img: m.img,
-      rating: ms.itemRating && !m.name.includes(`(${ms.itemRating})`) ? ms.itemRating : 0, slots: Number(ms.slots?.value) || 0, threshold: Number(ms.threshold?.value) || 0,
-      tools: ms.tools ? L(SR5.vehicleModTools[ms.tools] ?? ms.tools) : "", price: modCost(m).toLocaleString(),
+      rating: ms.itemRating && !m.name.includes(`(${ms.itemRating})`) ? ms.itemRating : 0,
+      slots: points ? modPointsOf(ms) : Number(ms.slots?.value) || 0, threshold: Number(ms.threshold?.value) || 0,
+      tools: ms.tools ? L(SR5.vehicleModTools[ms.tools] ?? ms.tools) : "", price: priceOf(m).toLocaleString(),
       factory, fitted, pending: !fitted,
     }
   }
   const rows = mods.map(row)
   const byId = new Map(rows.map(r => [r.index, r]))
-  const gauges = slotGauges(capacity, mods).map(g => ({
+  const gauges = points ? [{
+    ...modPointsGauge(stats, modsTakingPoints(mods)), label: L("SR5.DroneModPoints")
+  }] : slotGauges(capacity, mods).map(g => ({
     ...g, label: L(SR5.vehicleModType[g.key])
   }))
-  const cost = workshopCost(isItem ? s.price?.base : s.price, mods)
+  const cost = workshopCost(isItem ? s.price?.base : s.price, mods, priceOf)
   const yen = n => `${n.toLocaleString()} ¥`
   return {
     isItem, isGM: game.user.isGM, canTest: !isItem && vehicle.isOwner,
     name: vehicle.name, img: workshopImage(vehicle.img, {
       type: s.type, category
     }),
-    gauges, gaugesLeft: gauges.slice(0, 3), gaugesRight: gauges.slice(3),
+    gauges, gaugesLeft: gauges.slice(0, 3), gaugesRight: gauges.slice(3), points,
+    slotsShort: L(points ? "SR5.DroneModPointsShort" : "SR5.VehicleModSlotsShort"),
+    slotsFull: L(points ? "SR5.DroneModPoints" : "SR5.VehicleModSlotsFull"),
+    modPoints: s.modPoints ?? "",
     groups: modsByCategory(mods.map((m, index) => ({
       ...m, system: m.system, name: m.name, index
     }))).map(g => ({
@@ -158,7 +173,13 @@ export async function dropModOnWorkshop(vehicle, dropData){
   const content = `<div class="sr5-workshop-drop-dialog">
     <p><strong>${source.name}</strong> — ${L(SR5.vehicleModType[s.type] ?? "SR5.VehicleModWorkshopOther")}</p>
     <ul>
-      <li>${L("SR5.VehicleModSlotsShort")}${L("SR5.Colons")} ${s.slots?.value ?? 0}</li>
+      <li>${usesModPoints(droneModRule(), vehicle.system.type) ?
+    `${L("SR5.DroneModPoints")}${L("SR5.Colons")} ${modPointsOf({
+      ...s, slots: {
+        value: slots
+      }
+    })}` :
+    `${L("SR5.VehicleModSlotsShort")}${L("SR5.Colons")} ${s.slots?.value ?? 0}`}</li>
       <li>${L("SR5.Threshold")}${L("SR5.Colons")} ${s.threshold?.value ?? 0}${s.tools ? `, ${L(SR5.vehicleModTools[s.tools] ?? s.tools)}` : ""}</li>
       <li>${game.i18n.format("SR5.VehicleModWorkshopPriceOn", {
     price: price.toLocaleString(), vehicle: vehicle.name

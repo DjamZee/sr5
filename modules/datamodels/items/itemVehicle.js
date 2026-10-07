@@ -67,6 +67,10 @@ export class sr5ItemVehicleDataModel extends foundry.abstract.TypeDataModel {
           initial: 0
         }),
       }),
+      //The Y of Structure X(Y), the Modification Points a drone has left (Rigger 5.0 p. 126); empty: its Structure
+      modPoints: new fields.NumberField({
+        initial: null, nullable: true, integer: true, min: 0
+      }),
       modificationSlots: new fields.SchemaField({
         powerTrain: new fields.NumberField({
           initial: 0

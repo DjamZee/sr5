@@ -32,8 +32,11 @@ import {
   pricedModData
 } from '../system/vehicle-workshop-apply.js'
 import {
-  dealerCapacity, dealerGauges, buildSlotsRefusal, dealerTotals
+  dealerCapacity, dealerGauges, buildSlotsRefusal, dealerTotals, dealerPointsGauge, buildPointsRefusal
 } from '../system/vehicle-dealership.js'
+import {
+  usesModPoints, droneModRule, vehicleStats, modPointsOf
+} from '../system/drone-mod-points.js'
 
 const L = k => game.i18n.localize(k)
 const yen = n => `${(Number(n) || 0).toLocaleString()} ¥`
@@ -161,6 +164,11 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
     return dealerCapacity(this._vehicle?.system?.attributes?.body)
   }
 
+  /** Under the optional Modification Points, a drone has one pool of points (Rigger 5.0 p. 126-128) */
+  #points() {
+    return usesModPoints(droneModRule(), this._vehicle?.system?.type)
+  }
+
   async _prepareContext(options) {
     const context = await super._prepareContext(options)
     const isGM = game.user.isGM
@@ -221,9 +229,10 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
     const lines = [{
       price: vehicleUnit, availability: vehicleDescribed.availability, legality: vehicleDescribed.legality,
     }]
+    const points = this.#points()
     const own = (vehicle.system.vehiclesMod ?? []).map(m => ({
       name: m.name, factory: isFactoryMod(m), price: yen(modCost(m)), fitted: isFactoryMod(m) || m.system?.isActive === true,
-      slots: Number(m.system?.slots?.value) || 0, category: L(SR5.vehicleModType[m.system?.type] ?? 'SR5.VehicleModWorkshopOther'),
+      slots: points ? modPointsOf(m.system) : Number(m.system?.slots?.value) || 0, category: L(SR5.vehicleModType[m.system?.type] ?? 'SR5.VehicleModWorkshopOther'),
     }))
     const added = this._mods.map(m => {
       const {
@@ -236,7 +245,12 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
       const s = m.source.system
       return {
         key: m.key, uuid: m.uuid, name: m.source.name, img: m.source.img, fitted: m.fitted, price: yen(price),
-        slots, threshold: Number(s.threshold?.value) || 0,
+        slots: points ? modPointsOf({
+          ...s, slots: {
+            value: slots
+          }
+        }) : slots,
+        threshold: Number(s.threshold?.value) || 0,
         tools: s.tools ? L(SR5.vehicleModTools[s.tools] ?? s.tools) : '—',
         category: L(SR5.vehicleModType[s.type] ?? 'SR5.VehicleModWorkshopOther'),
         availability: availabilityLabel(d.availability, d.legality),
@@ -249,7 +263,9 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
     })
     const extra = waits && terms ? lines.reduce((sum, l, i) => sum + expressCost(i === 0 ? vehicleDescribed.price : l.price, terms), 0) : 0
     const total = totals.total + extra
-    const gauges = dealerGauges(this.#capacity(), this.#buildMods()).map(g => ({
+    const gauges = points ? [{
+      ...dealerPointsGauge(vehicleStats(vehicle.system), this.#buildMods()), label: L('SR5.DroneModPoints')
+    }] : dealerGauges(this.#capacity(), this.#buildMods()).map(g => ({
       ...g, label: L(SR5.vehicleModType[g.key])
     }))
     const dealer = !!buyer && vehicleUnit < vehicleDescribed.price && !!dealerEffectFor(vehicle)
@@ -258,7 +274,7 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
       img: workshopImage(vehicle.img, {
         type: vehicle.system.type, category: vehicle.system.category
       }),
-      gaugesLeft: gauges.slice(0, 3), gaugesRight: gauges.slice(3), over: gauges.some(g => g.over),
+      gaugesLeft: gauges.slice(0, 3), gaugesRight: gauges.slice(3), over: gauges.some(g => g.over), points,
       own, added,
       vehicleLabel: yen(vehicleUnit), vehicleListLabel: dealer ? yen(vehicleDescribed.price) : '', dealer,
       modsLabel: yen(totals.total - vehicleUnit), extraLabel: extra ? yen(extra) : '', totalLabel: yen(total),
@@ -359,7 +375,17 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
     if (!game.user.isGM) return
     const mod = this._mods.find(m => m.key === target.closest('[data-key]').dataset.key)
     if (!mod) return
-    if (!mod.fitted) {
+    if (!mod.fitted && this.#points()) {
+      const refusal = buildPointsRefusal(vehicleStats(this._vehicle.system), this.#buildMods(), {
+        ...mod.source.system, slots: {
+          value: pricedModData(mod.source, this._vehicle).slots
+        }
+      })
+      if (refusal && refuseByRule('objects', refusal.attribute ? 'SR5.WARN_DroneModAttributeCap' : 'SR5.WARN_DroneModPointsFull', {
+        name: mod.source.name, needed: refusal.needed, free: refusal.free, cap: refusal.cap,
+        attribute: L(SR5.vehicleAttributes[refusal.attribute] ?? '')
+      })) return this.render()
+    } else if (!mod.fitted) {
       const refusal = buildSlotsRefusal(this.#capacity(), this.#buildMods(), mod.source)
       if (refusal && refuseByRule('objects', 'SR5.WARN_VehicleModSlotsFull', {
         name: mod.source.name, needed: refusal.needed, free: refusal.free,

@@ -20,6 +20,9 @@ import {
   screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED, installationFlags, GM_ONLY_FIELDS
 } from "../../system/implant-essence.js"
 import {
+  creationModeFor
+} from "../../system/creation-actor.js"
+import {
   reservedChangedBy
 } from "../../system/reserved-fields.js"
 import {
@@ -54,8 +57,11 @@ import {
   migrateTemplateNoise
 } from "../../datamodels/common/templateNoiseMigration.js"
 import {
-  isFactoryMod
+  isFactoryMod, modTakesSlots
 } from "../../system/vehicle-factory.js"
+import {
+  usesModPoints, droneModRule, modPointsRefusal, vehicleStats
+} from "../../system/drone-mod-points.js"
 import {
   modSlotUse, slotsRefusal, droneInWorld
 } from "../../system/vehicle-mods.js"
@@ -64,6 +70,22 @@ import {
  *  `after` is the mod as it would be, prepared; factory equipment fits by definition */
 function vehicleModSlotsRefused(drone, before, after) {
   if (drone?.type !== "actorDrone" || isFactoryMod(after)) return false
+  //Under the optional Modification Points (R5 p. 126-127), a drone has one pool of points, not slots by category
+  if (usesModPoints(droneModRule(), drone.system?.type)) {
+    const fitted = drone.items.filter(i => i.type === "itemVehicleMod" && modTakesSlots(i.system, isFactoryMod(i)))
+    const refusal = modPointsRefusal(vehicleStats(drone.system), fitted, before && fitted.includes(before) ? before : null,
+      modTakesSlots(after.system, false) ? after : null)
+    if (!refusal) return false
+    return refusal.attribute ? refuseByRule("objects", "SR5.WARN_DroneModAttributeCap", {
+      name: after.name, cap: refusal.cap, attribute: game.i18n.localize(SR5.vehicleAttributes?.[refusal.attribute] ?? refusal.attribute)
+    }, {
+      actor: drone
+    }) : refuseByRule("objects", "SR5.WARN_DroneModPointsFull", {
+      name: after.name, needed: refusal.needed, free: refusal.free
+    }, {
+      actor: drone
+    })
+  }
   const refusal = slotsRefusal(drone.system?.modificationSlots, before ? modSlotUse(before.system) : null, modSlotUse(after.system))
   if (!refusal) return false
   return refuseByRule("objects", "SR5.WARN_VehicleModSlotsFull", {
@@ -127,7 +149,7 @@ export class SR5Item extends Item {
     // Chrome Flesh (séance G, G16, G19): Adapsine and Prototype de transhumain read on the body at the installation
     if (this.type === "itemAugmentation" && this.parent instanceof Actor) {
       const flags = installationFlags(this.parent, this.system, {
-        isGM: game.user.isGM, creation: game.settings.get("sr5", "sr5ShopCreationMode") === true
+        isGM: game.user.isGM, creation: creationModeFor(this.parent)
       })
       this.updateSource(Object.fromEntries(Object.entries(flags).map(([key, value]) => [`system.${key}`, value])))
     } else if (!game.user.isGM && this.type === "itemQuality") this.updateSource({
