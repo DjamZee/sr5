@@ -85,8 +85,8 @@ export function workshopContext(vehicle){
     const fitted = factory || ms.isActive === true
     return {
       id: m._id ?? m.id, index, name: `${m.name}${ms.isWeaponMounted && ms.surname ? ms.surname : ""}`, img: m.img,
-      rating: ms.itemRating, slots: Number(ms.slots?.value) || 0, threshold: Number(ms.threshold?.value) || 0,
-      tools: ms.tools ? L(SR5.vehicleModTools[ms.tools] ?? ms.tools) : "", price: modCost(m),
+      rating: ms.itemRating && !m.name.includes(`(${ms.itemRating})`) ? ms.itemRating : 0, slots: Number(ms.slots?.value) || 0, threshold: Number(ms.threshold?.value) || 0,
+      tools: ms.tools ? L(SR5.vehicleModTools[ms.tools] ?? ms.tools) : "", price: modCost(m).toLocaleString(),
       factory, fitted, pending: !fitted,
     }
   }
@@ -147,7 +147,7 @@ export async function dropModOnWorkshop(vehicle, dropData){
   })
   if (!buttons.length) return ui.notifications.warn(L(isItem ? "SR5.WARN_WorkshopItemGMOnly" : "SR5.WARN_WorkshopNoBuyer"))
   buttons.push({
-    action: "cancel", label: L("Cancel")
+    action: "cancel", label: L("SR5.Cancel")
   })
 
   const content = `<div class="sr5-workshop-drop-dialog">
@@ -162,7 +162,7 @@ export async function dropModOnWorkshop(vehicle, dropData){
     buyer: buyer.name, balance: `${SR5Shop.balance(buyer).toLocaleString()} ¥`
   })}</li>` : ""}
     </ul>
-    <p class="hint">${L("SR5.VehicleModWorkshopDropHint")}</p>
+    ${buttons.some(b => b.action === "buy" || b.action === "move") ? `<p class="hint">${L("SR5.VehicleModWorkshopDropHint")}</p>` : ""}
   </div>`
   const choice = await foundry.applications.api.DialogV2.wait({
     window: {
@@ -276,7 +276,7 @@ export async function openModInstall(vehicle, mod, {
   }))
   return mechanic.rollTest("vehicleModInstall", {
     ...choice, vehicleUuid: vehicle.uuid, vehicleName: vehicle.name, modUuid: mod.uuid, modName: mod.name,
-    threshold, tools: required, removal, specialSkill: mod.system.skill ? L(SR5.skills[mod.system.skill] ?? mod.system.skill) : "",
+    threshold, tools: required, removal, specialSkill: mod.system.skill && !MECHANIC_SKILLS.includes(mod.system.skill) ? L(SR5.skills[mod.system.skill] ?? mod.system.skill) : "",
   })
 }
 
