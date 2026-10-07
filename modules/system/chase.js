@@ -72,6 +72,24 @@ function attribute(actor, key) {
   return offRoad || Number(attributes[key]?.augmented?.value) || 0
 }
 
+// The current Speed of a vehicle lives on the vehicle itself when its sheet has the field (system.currentSpeed, R11:
+// Speed Demon and Information Overload read it): one Speed, not two. The register keeps its own copy for a vehicle
+// whose data has no such field.
+function hasSpeedField(actor) {
+  return Number.isFinite(actor?.system?.currentSpeed)
+}
+
+function speedOf(vehicle, actor = vehicleActor(vehicle)) {
+  return hasSpeedField(actor) ? actor.system.currentSpeed : (Number(vehicle.speed) || 0)
+}
+
+/** The chase state of a vehicle with the Speed it really has now */
+function withSpeed(vehicle) {
+  return {
+    ...vehicle, speed: speedOf(vehicle)
+  }
+}
+
 /** Whoever is aboard: the vehicle, its driver when he drives it by hand, and the passengers the gamemaster added */
 function aboard(vehicle, actor = vehicleActor(vehicle)) {
   const actors = []
@@ -215,15 +233,27 @@ export class SR5Chase {
     })
   }
 
-  static setVehicle(id, field, value) {
-    return this.update(state => {
+  static async setVehicle(id, field, value) {
+    let speed = null
+    let actor = null
+    const written = await this.update(state => {
       const vehicle = state.vehicles.find(v => v.id === id)
       if (!vehicle) return false
       if (field === "role" && ["pursuer", "pursued"].includes(value)) vehicle.role = value
       else if (field === "kind" && value in VEHICLE_KINDS) vehicle.kind = value
-      else if (field === "speed") vehicle.speed = clampSpeed(value, this.speedBounds(vehicle))
-      else return false
+      else if (field === "speed") {
+        speed = clampSpeed(value, this.speedBounds(vehicle))
+        vehicle.speed = speed
+        actor = vehicleActor(vehicle)
+      } else return false
     })
+    // The vehicle's own field follows, read by its qualities (R11)
+    if (written && speed !== null && hasSpeedField(actor) && actor.system.currentSpeed !== speed) {
+      await actor.update({
+        "system.currentSpeed": speed
+      })
+    }
+    return written
   }
 
   /** The Speeds a vehicle may take now; a vehicle just added takes any up to its Speed attribute */
@@ -305,12 +335,13 @@ export class SR5Chase {
   /** Threshold of an advanced driving action by `initiatorId` against `targetId` (R5 p. 177), before the control rig */
   static threshold(initiatorId, targetId, controlRig = 0) {
     const state = readState()
-    const initiator = state.vehicles.find(v => v.id === initiatorId)
-    const target = state.vehicles.find(v => v.id === targetId)
+    const vehicles = state.vehicles.filter(v => !v.ended).map(withSpeed)
+    const initiator = vehicles.find(v => v.id === initiatorId)
+    const target = vehicles.find(v => v.id === targetId)
     if (!initiator) return null
     return chaseThreshold({
       terrain: terrainValue(state.terrain, advancedDriving()), initiator, target, controlRig,
-      fastest: isFastest(initiator, state.vehicles.filter(v => !v.ended)),
+      fastest: isFastest(initiator, vehicles),
     })
   }
 
@@ -327,6 +358,7 @@ export class SR5Chase {
       for (const [index, vehicle] of state.vehicles.entries()) {
         if (vehicle.ended) continue
         const actor = vehicleActor(vehicle)
+        vehicle.speed = speedOf(vehicle, actor)
         const {
           vehicle: next, event
         } = endOfTurn(vehicle, {
@@ -522,6 +554,7 @@ export class SR5ChaseApp extends foundry.applications.api.HandlebarsApplicationM
       else if (actor?.system?.controlMode === "autopilot") status = "SR5.CHASE_OnAutopilot"
       return {
         ...v,
+        speed: speedOf(v, actor),
         missing: !actor,
         maxSpeed: attribute(actor, "speed"),
         acceleration: attribute(actor, "acceleration"),
@@ -616,6 +649,12 @@ function onSceneControls(controls) {
 export function registerChaseHooks() {
   Hooks.on("updateCombat", (combat, changed) => onCombatRound(combat, changed).catch(e => console.error("SR5 | chase", e)))
   Hooks.on("getSceneControlButtons", onSceneControls)
+  // A vehicle's Speed or damage changed on its sheet: the open window follows
+  Hooks.on("updateActor", actor => {
+    if (actor?.type !== "actorDrone") return
+    const app = foundry.applications.instances.get(APP_ID)
+    if (app?.rendered) app.render()
+  })
 }
 
 export const _test = {

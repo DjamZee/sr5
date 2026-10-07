@@ -11,6 +11,16 @@
     gap: 0.4rem;
     align-items: center;
     margin: 0.2rem 0;
+    label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    // Foundry stretches a select to the full width: here it sits in a row
+    select {
+      width: auto;
+      flex: 0 0 auto;
+    }
   }
   .sr-chase-tools {
     margin-left: auto;

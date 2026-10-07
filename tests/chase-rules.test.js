@@ -66,20 +66,28 @@ describe('engagement ranges', () => {
 describe('terrain', () => {
   it('keeps the two lists apart: « Restreint » is +3 in the core book, +2 in Rigger 5.0 (SR5 p. 201, R5 p. 175)', () => {
     expect(terrainValue('restricted', false)).toBe(3)
-    expect(terrainValue('restricted', true)).toBe(2)
+    expect(terrainValue('r5Restricted', true)).toBe(2)
     expect(terrainList(false).map(t => [t.key, t.value])).toEqual([
       ['clear', 0], ['normal', 1], ['limited', 2], ['restricted', 3]
     ])
     expect(terrainList(true).map(t => [t.key, t.value])).toEqual([
-      ['open', 0], ['light', 1], ['restricted', 2], ['obstructed', 3], ['tight', 4], ['impossible', 6]
+      ['r5Open', 0], ['r5Light', 1], ['r5Restricted', 2], ['r5Obstructed', 3], ['r5Tight', 4], ['r5Impossible', 6]
     ])
+    // No key is shared: the core book's « Restreint » is never read as Rigger 5.0's
+    const book = terrainList(false).map(t => t.key)
+    expect(terrainList(true).some(t => book.includes(t.key))).toBe(false)
+    // A core « Restreint » left in the register is worth Rigger 5.0's « Exigu » once the setting is checked
+    expect(terrainValue('restricted', true)).toBe(4)
   })
 
-  it('a terrain of the other list falls back on the easiest one', () => {
-    expect(normalizeTerrain('limited', true)).toBe('open')
-    expect(normalizeTerrain('tight', false)).toBe('clear')
-    expect(normalizeTerrain('restricted', true)).toBe('restricted')
-    expect(terrainValue('impossible', false)).toBe(0)
+  it('switching rule sets moves the terrain to the same place, by the printed examples', () => {
+    // Core « Restreint » (+3: dense forests, swamps) is Rigger 5.0's « Exigu » (+4), not its « Restreint » (+2)
+    expect(normalizeTerrain('restricted', true)).toBe('r5Tight')
+    expect(normalizeTerrain('limited', true)).toBe('r5Restricted')
+    expect(normalizeTerrain('r5Restricted', false)).toBe('limited')
+    expect(normalizeTerrain('r5Impossible', false)).toBe('restricted')
+    expect(normalizeTerrain('', true)).toBe('r5Open')
+    expect(normalizeTerrain(undefined, false)).toBe('clear')
   })
 })
 

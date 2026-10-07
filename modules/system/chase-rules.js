@@ -76,34 +76,52 @@ export const TERRAINS_BOOK = [
     key: "restricted", value: 3
   },
 ]
+// Keys of their own (r5…), so that no terrain of one list is ever read as the other's
 export const TERRAINS_R5 = [
   {
-    key: "open", value: 0
+    key: "r5Open", value: 0
   }, {
-    key: "light", value: 1
+    key: "r5Light", value: 1
   }, {
-    key: "restricted", value: 2
+    key: "r5Restricted", value: 2
   }, {
-    key: "obstructed", value: 3
+    key: "r5Obstructed", value: 3
   }, {
-    key: "tight", value: 4
+    key: "r5Tight", value: 4
   }, {
-    key: "impossible", value: 6
+    key: "r5Impossible", value: 6
   },
 ]
+
+// The same places in both tables, by their printed examples (SR5 p. 201, R5 p. 175): highways → Ouvert, wide avenues
+// → Léger, side streets → Restreint (+2), dense forests, steep slopes, swamps → Exigu (+4). Obstrué and Impossible
+// have no core book counterpart: going back, they take the hardest one.
+const BOOK_TO_R5 = {
+  clear: "r5Open", normal: "r5Light", limited: "r5Restricted", restricted: "r5Tight"
+}
+const R5_TO_BOOK = {
+  r5Open: "clear", r5Light: "normal", r5Restricted: "limited", r5Obstructed: "restricted", r5Tight: "restricted",
+  r5Impossible: "restricted",
+}
 
 export function terrainList(advanced) {
   return advanced ? TERRAINS_R5 : TERRAINS_BOOK
 }
 
-/** The terrain kept when the rule set changes, or an unknown key comes in: the first (easiest) one of the list */
+/**
+ * The terrain in the list of the rule set in force. When the rule set changes during a chase, the terrain moves to the
+ * same place in the other table; an unknown key falls back on the easiest terrain.
+ */
 export function normalizeTerrain(key, advanced) {
   const list = terrainList(advanced)
-  return list.some(t => t.key === key) ? key : list[0].key
+  if (list.some(t => t.key === key)) return key
+  const moved = advanced ? BOOK_TO_R5[key] : R5_TO_BOOK[key]
+  return moved ?? list[0].key
 }
 
 export function terrainValue(key, advanced) {
-  return terrainList(advanced).find(t => t.key === key)?.value ?? 0
+  const normalized = normalizeTerrain(key, advanced)
+  return terrainList(advanced).find(t => t.key === normalized)?.value ?? 0
 }
 
 // Vehicle kinds and the factor that makes their Speeds comparable in a chase (R5 p. 184): ×0.8 water, ×1 ground,
