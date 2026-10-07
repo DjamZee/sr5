@@ -55,6 +55,8 @@ export class SR5DroneSheet extends ActorSheetSR5 {
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options)
+    //Computed in prepareDerivedData, not a schema field: toObject() leaves it out (SR5 p. 267, every drone has the interface)
+    context.system.hasRiggerInterface = this.actor.system.hasRiggerInterface
 
     this._prepareItems(context.actor)
 

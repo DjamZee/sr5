@@ -19,7 +19,7 @@
                     {{selectOptions lists.vehicleControlModesAutopilot selected=system.controlMode localize=true}}
                     {{#ifne system.vehicleOwner.id ""}}
                         {{selectOptions lists.vehicleControlModesSimple selected=system.controlMode localize=true}}
-                        {{#if system.riggerInterface}}
+                        {{#if system.hasRiggerInterface}}
                             {{selectOptions lists.vehicleControlModesRigging selected=system.controlMode localize=true}}
                         {{/if}}
                     {{/ifne}}
@@ -37,9 +37,15 @@
         </li>
         <li class="grid">
             <div class="col-10">{{localize 'SR5.Vehicle_RI_S'}}</div>
+            {{#ife system.type "drone"}}
+            <div class="col-2 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_VehicleRiggerInterface'}}" data-helpMessage="{{localize 'SR5.HELP_DroneRiggerInterfaceMsg'}}">
+                <input type="checkbox" checked disabled>
+            </div>
+            {{else}}
             <div class="col-2 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_VehicleRiggerInterface'}}" data-helpMessage="{{localize 'SR5.HELP_VehicleRiggerInterfaceMsg'}}">
                 <input type="checkbox" name="system.riggerInterface" data-dtype="Boolean" {{checked system.riggerInterface}}>
             </div>
+            {{/ife}}
         </li>
         {{#ifne system.vehicleOwner.id ""}}
         <li class="grid">

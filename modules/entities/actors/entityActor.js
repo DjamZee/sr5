@@ -88,6 +88,9 @@ import {
 import {
   requestForgetIntel
 } from "../../canvas/pan-crown/pan-perception-card.js"
+import {
+  hasRiggerInterface
+} from "../../system/rigging-rules.js"
 
 /**
  * Extend the base Actor class to implement additional logic specialized for Shadowrun 5.
@@ -511,6 +514,7 @@ export class SR5Actor extends Actor {
     }
     switch (actor.type) {
       case "actorDrone":
+        actor.system.hasRiggerInterface = hasRiggerInterface(actor.system)
         if (actor.system.vehicleOwner.items.length) SR5_CharacterUtility.applyAutosoftEffect(actor)
         SR5_CharacterUtility.updateAttributes(actor)
         SR5_CharacterUtility.updateResistances(actor)

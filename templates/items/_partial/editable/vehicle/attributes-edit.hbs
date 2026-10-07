@@ -46,7 +46,11 @@
 {{/ife}}
 <li class="grid">
     <div class="col-5">{{localize 'SR5.Vehicle_RI_F'}}{{localize 'SR5.Colons'}}</div>
+    {{#ife system.type "drone"}}
+    <div class="col-1" title="{{localize 'SR5.HELP_DroneRiggerInterfaceMsg'}}"><input type="checkbox" checked disabled /></div>
+    {{else}}
     <div class="col-1"><input type="checkbox" name="system.riggerInterface" data-dtype="Boolean" {{checked system.riggerInterface}} /></div>
+    {{/ife}}
 </li>
 <li class="grid">
 <div class="col-5">{{localize 'SR5.Vehicle_ModExtraBody'}}{{localize 'SR5.Colons'}}</div>
