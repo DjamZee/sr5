@@ -738,7 +738,7 @@ export class SR5ShopVendor {
     }
     const free = equip || SR5Shop.creationMode
     const terms = request.express === true ? currentExpress() : null
-    const limits = !equip && SR5Shop.creationMode ? SR5Shop.creationLimits : null
+    const limits = !equip && SR5Shop.creationModeFor(buyer) ? SR5Shop.creationLimits : null
     // Told to the requester; read on the buyer here, on the gamemaster's client, never from the request
     const warnRequester = (key, data) => SR5ShopVendor.#notify(requester, 'warn', key, data)
     const resolved = []
@@ -784,7 +784,7 @@ export class SR5ShopVendor {
         equip
       })) continue
       const offered = SR5Shop.gradesFor(source.type, source.system, {
-        equip
+        equip, actor: buyer
       })
       const grade = offered.includes(line.grade) ? line.grade : null
       const described = SR5ShopCatalog.describe({

@@ -14,6 +14,9 @@ import {
   guardActorOverwatch
 } from "../system/overwatch-guard.js"
 import {
+  refusedCreationChanges
+} from "../system/creation-actor.js"
+import {
   SR5_ActorHelper
 } from "../entities/actors/entityActor-helpers.js"
 import {
@@ -79,6 +82,8 @@ export function sr5HookPreUpdateActor(document, changes, options = {
       ui.notifications.warn(game.i18n.localize("SR5.WARN_SpiritBondsGMOnly"))
       return false
     }
+    //A character "in creation" is the gamemaster's call (lot C0, DjamZ's ruling Q2): never set or lifted by a player
+    if (sr5CreationFlagRefused(document, changes, options)) return false
     //The Overwatch Score only rises, but for a reboot or an Emulate swap: an update that would leave it lower, in
     //whatever form, is refused (overwatch-guard.js)
     if (!guardActorOverwatch(document, changes, options)) return false
@@ -87,6 +92,21 @@ export function sr5HookPreUpdateActor(document, changes, options = {
   if (!SR5_CharacterUtility.isDepthActive(document) || SR5_CharacterUtility.isDevicelessAI(document)) return
   delete changes["system.matrix.marks"]
   if (changes.system?.matrix) delete changes.system.matrix.marks
+}
+
+/** The creation flag in a player's update (an actor, or an unlinked token's delta): refused, with a word. */
+export function sr5CreationFlagRefused(document, changes, options = {
+}) {
+  if (game.user?.isGM) return false
+  if (!refusedCreationChanges(document, changes, options).length) return false
+  ui.notifications.warn(game.i18n.localize("SR5.WARN_CreationFlagGMOnly"))
+  return true
+}
+
+/** preUpdateActorDelta: an unlinked token's actor carries its flags in its delta. */
+export function sr5HookPreUpdateActorDeltaCreation(delta, changes, options = {
+}) {
+  if (sr5CreationFlagRefused(delta, changes, options)) return false
 }
 
 export async function sr5HookUpdateActor(document, data, _options, userId) {

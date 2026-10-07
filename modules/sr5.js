@@ -64,8 +64,11 @@ import {
   sr5HookCloseCombatantConfig,
 } from './hooks/combat.js'
 import {
-  sr5HookCreateActor, sr5HookPreUpdateActor, sr5HookUpdateActor, sr5HookDeleteActor 
+  sr5HookCreateActor, sr5HookPreUpdateActor, sr5HookUpdateActor, sr5HookDeleteActor, sr5HookPreUpdateActorDeltaCreation
 } from './hooks/actor.js'
+import {
+  onCreationHeaderControls, stripCreationOnCreate
+} from './system/creation-actor.js'
 import {
   sr5HookPreUpdateItem, sr5HookCreateItem, sr5HookUpdateItem, sr5HookDeleteItem
 } from './hooks/item.js'
@@ -233,6 +236,10 @@ for (const hook of ['createItem', 'updateItem', 'deleteItem', 'updateActor']) Ho
 Hooks.on('createItem', SR5ShopVendor.onContactAdded)
 Hooks.on('renderSidebar', sr5KeepSidebarSettingsLast)
 Hooks.on('getHeaderControlsDocumentSheetV2', SR5ShopStock.onHeaderControls)
+// A character in creation (lot C0): the gamemaster's switch, refused to a player
+Hooks.on('getHeaderControlsDocumentSheetV2', onCreationHeaderControls)
+Hooks.on('preCreateActor', stripCreationOnCreate)
+Hooks.on('preUpdateActorDelta', sr5HookPreUpdateActorDeltaCreation)
 Hooks.on('drawMeasuredTemplate', sr5HookDrawMeasuredTemplate)
 Hooks.on('deleteMeasuredTemplate', sr5HookDeleteMeasuredTemplate)
 Hooks.on('createMeasuredTemplate', sr5HookCreateMeasuredTemplate)
