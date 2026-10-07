@@ -171,6 +171,16 @@ export function clampSpeed(value, bounds) {
 }
 
 /**
+ * The Speed a vehicle gets back at the end of the Combat Turn a stunt slowed it (R5 p. 182: "during this Combat
+ * Turn"), never past its Speed attribute
+ */
+export function restoreTurnSpeed(speed, loss, maxSpeed) {
+  const s = Number(speed) || 0
+  const l = Math.max(0, Number(loss) || 0)
+  return l ? Math.min(Math.max(s, Number(maxSpeed) || 0), s + l) : s
+}
+
+/**
  * Threshold of a Rigger 5.0 chase action taken against another vehicle (R5 p. 177): Terrain + the gap between the two
  * Speeds, only the Terrain when the initiator is the fastest of all; lowered by a jumped in rigger's control rig, never
  * under 1 once lowered (SR5 p. 200, 268). Speeds are compared once made comparable by kind (R5 p. 184).

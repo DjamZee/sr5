@@ -154,7 +154,7 @@ describe('Rigger 5.0\'s stunts (R5 p. 182-183)', () => {
     }, {
       ...ids, targetSpeed: 3
     }).effects).toEqual([{
-      type: 'speed', id: 'B', value: 1
+      type: 'turnSpeed', id: 'B', value: 1
     }])
     expect(stuntAdvantage({
       level: 2, advantage: 'slow', slow: 'handling'

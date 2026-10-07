@@ -4609,6 +4609,7 @@
 	"SR5.CHASE_FollowUp_stuntCrash": "éviter l'accident après la cascade",
 	"SR5.CHASE_DiceStunt": "Cascade ratée",
 	"SR5.CHASE_Effect_turnHandling": "Maniabilité {value} pour {name} jusqu'à la fin du tour.",
+	"SR5.CHASE_Effect_turnSpeed": "Vitesse actuelle de {name} : {value} jusqu'à la fin du tour.",
 	"SR5.CHASE_Effect_flag_holdOn": "{name} continue de rouler ce tour malgré ses dommages.",
 	"SR5.CHASE_NoteStuntBookFailed": "Cascade ratée : le véhicule est hors de contrôle ; le MJ décide (accident SR5 p. 202, ou les poursuivants gagnent une portée).",
 	"SR5.CHASE_NoteStuntCapped": "La Maniabilité a déjà doublé ce tour : la cascade n'ajoute rien (Rigger 5.0 p. 182).",

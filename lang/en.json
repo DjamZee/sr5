@@ -4609,6 +4609,7 @@
 	"SR5.CHASE_FollowUp_stuntCrash": "avoid a crash after the stunt",
 	"SR5.CHASE_DiceStunt": "Failed stunt",
 	"SR5.CHASE_Effect_turnHandling": "Handling {value} for {name} until the end of the turn.",
+	"SR5.CHASE_Effect_turnSpeed": "{name}'s current Speed: {value} until the end of the turn.",
 	"SR5.CHASE_Effect_flag_holdOn": "{name} keeps going this turn despite its damage.",
 	"SR5.CHASE_NoteStuntBookFailed": "Failed stunt: the vehicle is out of control; the gamemaster decides (crash SR5 p. 202, or the pursuers gain a range).",
 	"SR5.CHASE_NoteStuntCapped": "The Handling already doubled this turn: the stunt adds nothing (Rigger 5.0 p. 182).",

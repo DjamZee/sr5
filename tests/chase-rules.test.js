@@ -4,7 +4,7 @@ import {
 import {
   chaseRanges, normalizeRange, rangeDistance, shiftRange, terrainList, normalizeTerrain, terrainValue,
   kindOfCategory, effectiveSpeed, speedBounds, clampSpeed, chaseThreshold, isFastest, pairKey, markControlled,
-  endOfTurn, chaseEndReason
+  endOfTurn, chaseEndReason, restoreTurnSpeed
 } from '../modules/system/chase-rules.js'
 
 // Vehicle chases (R12, part 1): the core book's chase (SR5 p. 199-205) by default, Rigger 5.0's advanced driving
@@ -283,5 +283,19 @@ describe('end of the chase', () => {
 describe('pairs', () => {
   it('one key whichever vehicle comes first', () => {
     expect(pairKey('b', 'a')).toBe(pairKey('a', 'b'))
+  })
+})
+
+// A stunt slows another vehicle "during this Combat Turn" (R5 p. 182): its Speed comes back at the end of the turn
+describe('restoreTurnSpeed', () => {
+  it('gives back the Speed the stunt took', () => {
+    expect(restoreTurnSpeed(1, 2, 5)).toBe(3)
+  })
+  it('never past the Speed attribute', () => {
+    expect(restoreTurnSpeed(4, 3, 5)).toBe(5)
+  })
+  it('leaves a vehicle nothing slowed as it is', () => {
+    expect(restoreTurnSpeed(4, undefined, 5)).toBe(4)
+    expect(restoreTurnSpeed(4, 0, 2)).toBe(4)
   })
 })

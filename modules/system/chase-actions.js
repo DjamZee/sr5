@@ -667,9 +667,10 @@ export function stuntAdvantage(stunt, {
     }
     case "slow":
       if (!targetId) return note("SR5.CHASE_NoteNobodyNear")
+      // Its Speed for this Combat Turn only, as its Handling (R5 p. 182)
       return stunt.slow === "speed" ? {
         effects: [{
-          type: "speed", id: targetId, value: Math.max(0, (Number(targetSpeed) || 0) - level)
+          type: "turnSpeed", id: targetId, value: Math.max(0, (Number(targetSpeed) || 0) - level)
         }], notes: []
       } : {
         effects: [{

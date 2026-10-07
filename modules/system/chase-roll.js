@@ -472,6 +472,7 @@ async function applyEffects(effects) {
       case "control": await SR5Chase.markControlled(e.id); break
       case "outOfControl": await SR5Chase.markOutOfControl(e.id); break
       case "speed": await SR5Chase.forceSpeed(e.id, e.value); break
+      case "turnSpeed": await SR5Chase.slowForTurn(e.id, e.value); break
       case "handling": if (e.delta < 0) await SR5Chase.addHandlingLoss(e.id, -e.delta); break
       case "terrain": await SR5Chase.setTerrain(e.key); break
       case "turnTerrain": await SR5Chase.addTurnTerrain(e.ids, e.delta); break
