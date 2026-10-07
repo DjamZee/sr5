@@ -452,7 +452,8 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     const balance = stick ? SR5Credstick.funds(stick) : buyer ? SR5Shop.balance(buyer) : 0
     const creationMode = SR5Shop.creationMode
     const free = creationMode || equip
-    const limits = creationMode && !equip ? SR5Shop.creationLimits : null
+    // A buyer the gamemaster put in creation is capped, and pays (lot C0)
+    const limits = SR5Shop.creationModeFor(buyer) && !equip ? SR5Shop.creationLimits : null
     const pool = this.#searchPool(buyer)
 
     // The shelves are read once per session; until then the window shows how far it has got
@@ -497,7 +498,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     const rows = entries.map(entry => {
       const kind = `${entry.type}|${entry.system?.type ?? ''}`
       if (!offeredByKind.has(kind)) offeredByKind.set(kind, SR5Shop.gradesFor(entry.type, entry.system, {
-        equip
+        equip, actor: buyer
       }))
       // An implant on a vendor's counter is of the grade it is: the vendor has what it has
       const offered = entry.vendor && !entry.onOrder ? [] : offeredByKind.get(kind)

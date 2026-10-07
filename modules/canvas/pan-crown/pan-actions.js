@@ -98,24 +98,27 @@ export function marksFor(key, node, graph = {
  * @param {Boolean} data.known              the viewer's sheet has the action
  * @param {Boolean} data.hasAntenna         she has a device in the Matrix (Q2)
  * @param {Boolean} [data.canTry]           false when she lacks what the action asks (Resonance)
+ * @param {Boolean} [data.ruleLocked]       false when the "matrix" rule lock is lifted (B13): the entries the book
+ *   greys out (Resonance, owner, marks) stay enabled, their reason kept as a hint, and the roll tells the gamemaster
  * @return {{enabled: Boolean, reason: String|null, needed: Number|null, marks: Number}}
  *   reason: "unknown", "noAntenna", "cannotTry", "owner" (an owner's action) or "marks"; "varies" on an action
  *   left enabled whose marks the book does not fix
  */
 export function actionState({
-  neededMarks, marks = 0, known = true, hasAntenna = true, canTry = true
+  neededMarks, marks = 0, known = true, hasAntenna = true, canTry = true, ruleLocked = true
 } = {
 }){
   const needed = marksNeeded(neededMarks)
   const state = (enabled, reason) => ({
     enabled, reason, needed, marks
   })
+  const byRule = reason => state(!ruleLocked, reason)
   if (!known) return state(false, "unknown")
   if (!hasAntenna) return state(false, "noAntenna")
-  if (!canTry) return state(false, "cannotTry")
+  if (!canTry) return byRule("cannotTry")
   if (needed === null) return state(true, "varies")
-  if (needed >= OWNER_MARKS && marks < OWNER_MARKS) return state(false, "owner")
-  if (marks < needed) return state(false, "marks")
+  if (needed >= OWNER_MARKS && marks < OWNER_MARKS) return byRule("owner")
+  if (marks < needed) return byRule("marks")
   return state(true, null)
 }
 
@@ -207,10 +210,11 @@ export function radialTargetOf(node, graph, {
  * @param {Object} [options]
  * @param {Function} [options.canTry]  (key, actor) -> false when the actor lacks what the action asks (Resonance)
  * @param {Boolean} [options.rigger5]   the world plays the actions of Rigger 5.0 (actionsForNode)
+ * @param {Boolean} [options.ruleLocked] false when the "matrix" rule lock is lifted (actionState)
  * @return {{owner: Boolean, actions: Array, modes: Array, slave: Object|null}}
  */
 export function menuEntries(node, graph, viewer, {
-  canTry = () => true, rigger5 = false
+  canTry = () => true, rigger5 = false, ruleLocked = true
 } = {
 }){
   const ids = graph?.viewer?.ids ?? []
@@ -226,7 +230,7 @@ export function menuEntries(node, graph, viewer, {
       key,
       ...actionState({
         neededMarks: actions[key]?.neededMarks, marks: OWNER_MARKS, known: !!actions[key],
-        hasAntenna: !!graph.viewer?.hasAntenna, canTry: canTry(key, viewer?.actor),
+        hasAntenna: !!graph.viewer?.hasAntenna, canTry: canTry(key, viewer?.actor), ruleLocked,
       }),
     }))
     return entries
@@ -265,6 +269,7 @@ export function menuEntries(node, graph, viewer, {
       known: !!actions[key],
       hasAntenna: !!graph.viewer?.hasAntenna,
       canTry: canTry(key, actor),
+      ruleLocked,
     }),
   }))
   return entries

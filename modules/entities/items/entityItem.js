@@ -20,6 +20,9 @@ import {
   screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED, installationFlags, GM_ONLY_FIELDS
 } from "../../system/implant-essence.js"
 import {
+  creationModeFor
+} from "../../system/creation-actor.js"
+import {
   reservedChangedBy
 } from "../../system/reserved-fields.js"
 import {
@@ -146,7 +149,7 @@ export class SR5Item extends Item {
     // Chrome Flesh (séance G, G16, G19): Adapsine and Prototype de transhumain read on the body at the installation
     if (this.type === "itemAugmentation" && this.parent instanceof Actor) {
       const flags = installationFlags(this.parent, this.system, {
-        isGM: game.user.isGM, creation: game.settings.get("sr5", "sr5ShopCreationMode") === true
+        isGM: game.user.isGM, creation: creationModeFor(this.parent)
       })
       this.updateSource(Object.fromEntries(Object.entries(flags).map(([key, value]) => [`system.${key}`, value])))
     } else if (!game.user.isGM && this.type === "itemQuality") this.updateSource({

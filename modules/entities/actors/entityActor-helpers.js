@@ -1660,7 +1660,8 @@ export class SR5_ActorHelper {
     const offered = SR5_ActorHelper.socketOwns(senderId, holder) ||
       (holder?.hasPlayerOwner && (holder.type === "actorPc" || (holder.type === "actorGrunt" && holder.prototypeToken?.actorLink)))
     const pan = master?.system?.matrix?.pan
-    const room = !pan || !(Number(pan.current) >= Number(pan.max))
+    //The "matrix" rule lock lifted (B13), a full PAN still has room: the player's sheet told the gamemaster already
+    const room = !pan || !(Number(pan.current) >= Number(pan.max)) || !ruleLockActive("matrix")
     if (!SR5_ActorHelper.socketOwns(senderId, master) || !listed || !offered || !room) return SR5_ActorHelper.refuseSocket("addItemToPan", senderId, data)
     await SR5_ActorHelper.addItemtoPan(data.targetItem, data.actorId)
   }
