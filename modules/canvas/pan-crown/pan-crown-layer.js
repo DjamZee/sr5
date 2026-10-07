@@ -331,7 +331,7 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     const unfolds = ambienceRank(this.ambience) > 0
     if (unfolds) container.scale.set(0)
     this.#updateTicker()
-    await this.#build(crown)
+    await this.#rebuild(crown)
     if (unfolds && this.crowns.get(token.id) === crown) crown.deployStart = performance.now()
   }
 
@@ -374,11 +374,21 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
       this._pending.clear()
       for (const [id, isSoft] of pending){
         const crown = this.crowns.get(id)
-        if (crown) this.#build(crown, {
+        if (crown) this.#rebuild(crown, {
           soft: isSoft
         })
       }
     })
+  }
+
+  // A build that fails takes its crown away, rather than leave it half drawn at the scale 0 of its unfolding
+  async #rebuild(crown, options){
+    try {
+      await this.#build(crown, options)
+    } catch (error) {
+      console.error("SR5 | PAN crown: a crown could not be drawn", error)
+      if (this.crowns.get(crown.token.id) === crown) this.#hide(crown.token)
+    }
   }
 
   /**
@@ -931,7 +941,8 @@ export function registerPanCrownHooks(){
     // The lines that led to it (a drone, a rigger, a device of the scenery: lot 7)
     layer()?.refresh()
   })
-  for (const hook of ["updateItem", "createItem", "deleteItem", "updateActor", "controlToken", "updateUser", "createToken"]){
+  // (an actor deleted: the crowns of its tokens go, the lines to them too)
+  for (const hook of ["updateItem", "createItem", "deleteItem", "updateActor", "deleteActor", "controlToken", "updateUser", "createToken"]){
     Hooks.on(hook, () => layer()?.refresh())
   }
   // The gamemaster hides a token, or shows it again: the lines that lead to it come and go for the players
@@ -943,7 +954,7 @@ export function registerPanCrownHooks(){
   Hooks.on("sr5.panCrownClickIcon", data => openRadialMenu(data))
   // Lot 8: the openings on hover, always, and in the AR view follow the scene and its tokens
   Hooks.on("hoverToken", (token, hovered) => layer()?.onHoverToken(token, hovered))
-  for (const hook of ["canvasReady", "createToken", "deleteToken"]){
+  for (const hook of ["canvasReady", "createToken", "deleteToken", "deleteActor"]){
     Hooks.on(hook, () => layer()?.sync())
   }
 }

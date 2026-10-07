@@ -223,6 +223,17 @@ describe('M1: a move lays the crowns out again, it does not build them again', (
     expect(layer).toMatch(/safeCall\(PAN_CROWN_HOOKS\.closed, \[crown\.token\]\)/)
   })
 
+  it('takes a crown away whose build fails, and follows a deleted actor', () => {
+    const layer = read(LAYER)
+    // every build goes through the catch: at the opening and at each refresh
+    expect(layer.match(/this\.#build\(/g)).toHaveLength(1)
+    expect(layer).toMatch(/await this\.#rebuild\(crown\)/)
+    expect(layer).toMatch(/if \(crown\) this\.#rebuild\(crown, \{/)
+    expect(layer).toMatch(/catch \(error\) \{\s*console\.error\("SR5 \| PAN crown: a crown could not be drawn", error\)\s*if \(this\.crowns\.get\(crown\.token\.id\) === crown\) this\.#hide\(crown\.token\)/)
+    expect(layer).toMatch(/"updateActor", "deleteActor", "controlToken"/)
+    expect(layer).toMatch(/\["canvasReady", "createToken", "deleteToken", "deleteActor"\]/)
+  })
+
   it('makes the name of an icon the first time it is read, not at each build', () => {
     const source = read(LAYER)
     expect(source).toMatch(/let label = null/)
