@@ -1139,6 +1139,7 @@ export class SR5_ActorHelper {
         "system.offRoadMode": itemData.offRoadMode,
         "system.price": itemData.price.base,
         "system.slaved": itemData.slaved,
+        "system.swarm": Number(itemData.swarm) || 0,
         "system.wirelessTurnedOn": itemData.wirelessTurnedOn,
         "system.isSlavedToPan": itemData.isSlavedToPan,
         "system.panMaster": itemData.panMaster,
@@ -1534,6 +1535,7 @@ export class SR5_ActorHelper {
       //before the field existed has none: the item keeps its own
       if (actor.system.biography?.description) modifiedItem.system.description = actor.system.biography.description
       modifiedItem.system.slaved = actor.system.slaved
+      modifiedItem.system.swarm = Number(actor.system.swarm) || 0
       //A drone deployed before the field existed carries null: the item keeps its own switch
       if (typeof actor.system.wirelessTurnedOn === "boolean") modifiedItem.system.wirelessTurnedOn = actor.system.wirelessTurnedOn
       modifiedItem.system.controlMode = actor.system.controlMode

@@ -21,6 +21,9 @@ import {
 import {
   monitorFull, vehiclePilotId
 } from "./rigging-rules.js"
+import {
+  swarmCountOf
+} from "./swarm.js"
 
 export const CHASE_ROLL_PREFIX = "chaseRoll_"
 export const CHASE_APPLY = "chaseApply"
@@ -110,7 +113,8 @@ async function askOptions(key, state, vehicle, stunt = 0) {
     fields.push(`<label>${esc(game.i18n.localize("SR5.CHASE_Angle"))} <select name="angle">${options}</select></label>`)
   }
   if (key === "swarm") {
-    const drones = liveVehicles(state).filter(v => v.role === vehicle.role).length
+    // The drones of its swarm when it has one (Rigger 5.0 p. 35), otherwise the vehicles of its side
+    const drones = swarmCountOf(chaseVehicleActor(vehicle)) || liveVehicles(state).filter(v => v.role === vehicle.role).length
     fields.push(`<label>${esc(game.i18n.localize("SR5.CHASE_DroneCount"))} <input type="number" name="droneCount" min="2" value="${Math.max(2, drones)}"></label>`)
   }
   if (!fields.length) return {

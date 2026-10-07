@@ -319,6 +319,10 @@ export class sr5ActorDroneDataModel extends foundry.abstract.TypeDataModel {
       slaved: new fields.BooleanField({
         initial: false
       }),
+      //The swarm of its rigger the drone belongs to, 0: none (Rigger 5.0 p. 35, swarm-rules.js)
+      swarm: new fields.NumberField({
+        initial: 0, min: 0, integer: true
+      }),
       type: new fields.StringField({
         initial: ''
       }),

@@ -16,6 +16,9 @@ import {
   tacnetOfferFor
 } from "./tacnet.js"
 import {
+  swarmOffersFor
+} from "./swarm.js"
+import {
   targetDeviceBonus, targetDeviceOffer
 } from "../rolls/roll-helpers/electronic-warfare.js"
 
@@ -100,6 +103,8 @@ export function addIndirectEffects(rollData, actor){
   if (blindFire) offers.push(blindFire)
   const tacnet = tacnetOfferFor(rollData, actor)
   if (tacnet) offers.push(tacnet)
+  //A swarm's action: the number of drones minus one, to the pool and the limit (Rigger 5.0 p. 35)
+  offers.push(...swarmOffersFor(rollData, actor))
   //A device a rigger tracks for his slaved attackers (Rigger 5.0 p. 34)
   const tracked = kinds.has("attack") ? targetDeviceOfferFor(rollData, actor, targetToken?.actor) : null
   if (tracked) offers.push(tracked)

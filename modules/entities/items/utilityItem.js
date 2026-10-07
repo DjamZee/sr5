@@ -35,6 +35,9 @@ import {
   rccAutosoftsForDrone, droneAutopilot, localAutosoftRating
 } from "../actors/rcc.js"
 import {
+  swarmTargetingRating
+} from "../../system/swarm.js"
+import {
   dataProcessingCapModifier
 } from "../../system/rigging-rules.js"
 import {
@@ -475,12 +478,16 @@ export class SR5_UtilityItem extends Actor {
             const shared = local ? null : rccAutosoftsForDrone(actor.system, actor.items).find(i => i.system.model === item.name)
             //A melee weapon in a drone arm: the arm's Agility replaces the Pilot (Rigger 5.0 p. 129)
             const arm = skillKey === "gunnery" ? null : droneArmProfile(actor.items, actor.system.attributes.body.augmented.value, actor.system.attributes.pilot.augmented.value)
-            if (local || shared) {
+            //A swarm's member: the highest Targeting of the swarm and its console (Rigger 5.0 p. 35)
+            const usedTargeting = local ? localAutosoftRating(local.system.itemRating, droneAutopilot(actor.system, actor.items)) : (Number(shared?.system.itemRating) || 0)
+            const swarmTargeting = Math.max(0, swarmTargetingRating(actor, item.name) - usedTargeting)
+            if (local || shared || swarmTargeting) {
               if (arm) SR5_EntityHelpers.updateModifier(itemData.weaponSkill, `${arm.name} (${game.i18n.localize('SR5.AgilityShort')})`, "linkedAttribute", arm.agility)
               else SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.VehicleStat_PilotShort'), "linkedAttribute", actor.system.attributes.pilot.augmented.value)
             }
             if (local) SR5_EntityHelpers.updateModifier(itemData.weaponSkill, local.name, "program", localAutosoftRating(local.system.itemRating, droneAutopilot(actor.system, actor.items)))
             if (shared) SR5_EntityHelpers.updateModifier(itemData.weaponSkill, shared.name, "controlerProgram", shared.system.itemRating)
+            if (swarmTargeting) SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.SwarmValue'), "swarm", swarmTargeting)
             itemData.weaponSkill.modifiers = itemData.weaponSkill.modifiers.concat(actor.system.penalties.special.actual.modifiers)
             if (actor.system.passiveTargeting) itemData.accuracy.base = actor.system.attributes.sensor.augmented.value
             break
