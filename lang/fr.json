@@ -2279,7 +2279,7 @@
 	"SR5.HELP_RitualActivateToggle": "Activer le Rituel<br>({key})",
 	"SR5.HELP_RitualActivateToggleMsg": "Cliquez pour activer ou désactiver les effets du rituel.",
 	"SR5.HELP_RitualRollMsg": "Cliquez pour lancer le rituel.",
-	"SR5.HELP_RunningSilentMsg": "Active ou désactive le mode silencieux.",
+	"SR5.HELP_RunningSilentMsg": "Active ou désactive le mode silencieux. En combat, c'est une action simple (SR5 p. 236).",
 	"SR5.HELP_SensorTargetingActive": "Cliquez pour effectuer un Test d'Acquisition active par senseur.",
 	"SR5.HELP_SensorTargetingPassiveMsg": "Activez ou désactivez l'acquisition passive par senseur",
 	"SR5.HELP_ServiceEdit": "Éditez les services de l'esprit",

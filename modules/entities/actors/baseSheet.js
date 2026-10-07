@@ -2590,12 +2590,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     let actorId = this.actor.id
     if (this.actor.isToken) actorId = this.actor.token.id
 		
-    //manage actions
-    let action = [{
-      type: "free", value: 1, source: "changeSilentMode"
-    }]
-    //action = [{type: "simple", value: 1}];
-    SR5Combat.changeActionInCombat(actorId, action)
+    //manage actions: switching to or from silent mode is a simple action (SR5 p. 236)
+    SR5Combat.changeActionInCombat(actorId, [{
+      type: "simple", value: 1, source: "changeSilentMode"
+    }])
   }
 
 }

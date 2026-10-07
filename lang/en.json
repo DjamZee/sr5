@@ -2279,7 +2279,7 @@
 	"SR5.HELP_RitualActivateToggle": "Activate ritual<br>({key})",
 	"SR5.HELP_RitualActivateToggleMsg": "Activate or desactivate ritual effects.",
 	"SR5.HELP_RitualRollMsg": "Click to roll a Ritual Test.",
-	"SR5.HELP_RunningSilentMsg": "Activate or desactivate silent running mode",
+	"SR5.HELP_RunningSilentMsg": "Activate or deactivate silent running mode. In combat, this is a simple action (SR5 p. 236).",
 	"SR5.HELP_SensorTargetingActive": "Click to roll a sensor active targeting roll",
 	"SR5.HELP_SensorTargetingPassiveMsg": "Activate or desactivate passive sensor targeting.",
 	"SR5.HELP_ServiceEdit": "Edit Sprite task",
