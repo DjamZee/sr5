@@ -56,7 +56,7 @@ import {
   TACNET_COMBAT_SKILLS
 } from "../../rolls/roll-helpers/tacnet.js"
 import {
-  enhancementFits
+  enhancementRefused
 } from "./weapon-accessory-rules.js"
 import {
   deviceModeSheetContext, switchDeviceMode
@@ -1092,7 +1092,7 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     if (!gear) return
     //The prepared copy carries the Capacity the enhancement takes (a rated one: rating × its Capacity)
     const copy = gear.toObject(false)
-    if (!enhancementFits(this.item, copy)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_AccessoryCapacityFull"))
+    if (enhancementRefused(this.item, copy, actor)) return
     let mounted = foundry.utils.deepClone(this.item._source.system.weaponAccessory?.visionEnhancements ?? [])
     if (!Array.isArray(mounted)) mounted = Object.values(mounted)
     mounted.push(copy)
