@@ -64,7 +64,9 @@ export function pricedModData(source, vehicle){
   const temp = new CONFIG.Item.documentClass(data)
   SR5_UtilityItem._handleItemPrice(temp.system)
   return {
-    data, price: Number(temp.system.price.value) || 0
+    data, price: Number(temp.system.price.value) || 0,
+    // The slots once prepared (a count multiplied by the rating): the stored data holds 0 (lot R9, the dealership)
+    slots: Number(temp.system.slots?.value) || 0,
   }
 }
 

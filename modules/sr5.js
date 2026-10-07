@@ -122,6 +122,9 @@ import {
   SR5ShopWindow
 } from './interface/shop-window.js'
 import {
+  SR5DealershipWindow
+} from './interface/dealership-window.js'
+import {
   SR5ShopVendor
 } from './interface/shop-vendor.js'
 import {
@@ -223,6 +226,7 @@ Hooks.on('getCompendiumContextOptions', sr5HookCompendiumDrawContext)
 Hooks.on('getHeaderControlsCompendium', sr5HookCompendiumDrawHeader)
 Hooks.on('getFolderContextOptions', sr5HookCompendiumDrawFolder)
 Hooks.on('renderSidebar', SR5ShopWindow.onRenderSidebar)
+Hooks.on('renderSidebar', SR5DealershipWindow.onRenderSidebar)
 // A sale or a restock on a vendor: its open shop window redraws
 for (const hook of ['createItem', 'updateItem', 'deleteItem', 'updateActor']) Hooks.on(hook, SR5ShopVendor.onVendorChanged)
 // A contact the gamemaster puts on a vendor searches for it

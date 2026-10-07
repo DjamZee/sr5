@@ -221,6 +221,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/actors/_partials/right-tabs/droneStuff/modifications.hbs",
     "systems/sr5/templates/actors/_partials/right-tabs/droneStuff/atelier.hbs",
     "systems/sr5/templates/actors/_partials/right-tabs/droneStuff/atelier-gauge.hbs",
+    "systems/sr5/templates/interface/dealership-gauge.hbs",
 		
 
     /************************************************************************************* */
