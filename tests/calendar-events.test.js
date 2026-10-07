@@ -2,7 +2,8 @@ import {
   describe, it, expect
 } from "vitest"
 import {
-  dueEvents, markNotified, upsertEvent, removeEvent, visibleEvents, eventsInMonth, monthGrid, validEvents
+  dueEvents, markNotified, upsertEvent, removeEvent, visibleEvents, eventsInMonth, monthGrid, validEvents,
+  changeCalendarEvents
 } from "../modules/system/calendar-events.js"
 import {
   shiftMonth, parseJournalLink
@@ -118,6 +119,29 @@ describe("Calendar events: the list", () => {
     }, 0)
     expect(eventsInMonth(events, 2071, 0, start).map(e => e.id)).toEqual(["jan"])
     expect(eventsInMonth(events, 2070, 11, start).map(e => e.id)).toEqual(["dec"])
+  })
+})
+
+describe("Calendar events: the GM's register", () => {
+  it("two events written at once both stay in the list", async () => {
+    //A server that answers late: the setting changes only once each write has come back
+    const store = {
+      sr5CalendarEvents: []
+    }
+    globalThis.foundry.utils.deepClone ??= (o) => JSON.parse(JSON.stringify(o))
+    globalThis.game.settings = {
+      get: (scope, key) => store[key],
+      set: (scope, key, value) => new Promise(resolve => setTimeout(() => resolve(store[key] = value), 10)),
+    }
+    await Promise.all([
+      changeCalendarEvents(events => upsertEvent(events, {
+        id: "p", title: "Premier", date: DAY
+      }, 0)),
+      changeCalendarEvents(events => upsertEvent(events, {
+        id: "s", title: "Second", date: 2 * DAY
+      }, 0)),
+    ])
+    expect(store.sr5CalendarEvents.map(e => e.id)).toEqual(["p", "s"])
   })
 })
 

@@ -8,6 +8,9 @@ import {
 import {
   SR5_SystemHelpers
 } from "./utilitySystem.js"
+import {
+  updateLedger
+} from "./gm-ledger.js"
 
 export const CALENDAR_EVENTS_SETTING = "sr5CalendarEvents"
 export const EVENT_VISIBILITY = ["gm", "all"]
@@ -89,8 +92,12 @@ export function getCalendarEvents(){
   }
 }
 
-export function setCalendarEvents(events){
-  return game.settings.set("sr5", CALENDAR_EVENTS_SETTING, validEvents(events))
+// The list is a register of the GM: each change waits for the previous one and starts from the latest list
+export function changeCalendarEvents(change){
+  return updateLedger(CALENDAR_EVENTS_SETTING, async (events) => {
+    const next = await change(validEvents(events))
+    return next ? validEvents(next) : null
+  })
 }
 
 function isWriter(){
@@ -120,11 +127,12 @@ async function postReminder(event){
 
 export async function checkCalendarEvents(){
   if (!isWriter()) return
-  const events = getCalendarEvents()
-  const due = dueEvents(events, game.time.worldTime)
-  if (!due.length) return
   // Marked first: a second check while the messages are written finds nothing to remind
-  await setCalendarEvents(markNotified(events, due.map(e => e.id)))
+  let due = []
+  await changeCalendarEvents((events) => {
+    due = dueEvents(events, game.time.worldTime)
+    return due.length ? markNotified(events, due.map(e => e.id)) : null
+  })
   for (const event of due) await postReminder(event)
 }
 

@@ -5,7 +5,7 @@ import {
   thirdPartyCalendarModule, componentsToWorldTime, calendarStartYear, worldTimeToComponents
 } from "../system/calendar.js"
 import {
-  getCalendarEvents, setCalendarEvents, visibleEvents, eventsInMonth, monthGrid, upsertEvent, removeEvent,
+  getCalendarEvents, changeCalendarEvents, visibleEvents, eventsInMonth, monthGrid, upsertEvent, removeEvent,
   registerCalendarEventSettings, initCalendarEvents
 } from "../system/calendar-events.js"
 
@@ -243,8 +243,9 @@ async function editEvent(initial){
   })
   if (!data) return
   if (!data.title.trim() || data.date === null) return ui.notifications.warn(game.i18n.localize("SR5.CALENDAR_EventInvalid"))
-  await setCalendarEvents(upsertEvent(getCalendarEvents(), {
-    ...data, id: initial.id || foundry.utils.randomID()
+  const id = initial.id || foundry.utils.randomID()
+  await changeCalendarEvents(events => upsertEvent(events, {
+    ...data, id
   }, game.time.worldTime))
 }
 
@@ -274,7 +275,7 @@ async function deleteEvent(id){
     })}</p>`,
     rejectClose: false,
   })
-  if (ok) await setCalendarEvents(removeEvent(getCalendarEvents(), id))
+  if (ok) await changeCalendarEvents(events => removeEvent(events, id))
 }
 
 // Quick clicks: game.time.advance reads worldTime before the server has answered the previous click, and the
