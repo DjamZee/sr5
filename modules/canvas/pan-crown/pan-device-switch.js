@@ -24,11 +24,19 @@ import {
 // The items whose switch is being written: a second click before the counters come back would pass on the old count
 const switching = new Set()
 
-// The world actors and those of the scene's tokens, where a deployed drone is looked up (pan-graph.js, droneOf)
-function knownActors(){
-  const actors = [...(game.actors ?? [])]
-  for (const token of globalThis.canvas?.tokens?.placeables ?? []) if (token.actor && !token.document?.actorLink) actors.push(token.actor)
-  return actors
+// The drones where a deployed drone is looked up (pan-graph.js, droneOf): the world's and those of the scene's unlinked
+// tokens. Gathered once for all the items of a sheet drawn in one go, not once per item (relecture).
+let knownDrones = null
+
+export function knownActors(){
+  if (knownDrones) return knownDrones
+  const drones = Array.from(globalThis.game?.actors ?? []).filter(actor => actor.type === "actorDrone")
+  for (const token of globalThis.canvas?.tokens?.placeables ?? []){
+    if (token.actor?.type === "actorDrone" && !token.document?.actorLink) drones.push(token.actor)
+  }
+  knownDrones = drones
+  queueMicrotask(() => knownDrones = null)
+  return drones
 }
 
 /**
