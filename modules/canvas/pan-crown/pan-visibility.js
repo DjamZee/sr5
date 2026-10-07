@@ -46,7 +46,7 @@ export function pickViewer({
  * @param {Object} where    {distance: meters from the viewer's antenna to the device, or null when not measurable
  *                          (another scene, no token); isHost: a host has no physical distance}
  * @return {{visible: Boolean, reason: String}}
- *   reason: gm, owner, revealed, gmDecides, offline, noAntenna, marked, spotted, silent, host, inRange, outOfRange
+ *   reason: gm, owner, revealed, ownerOnly, gmDecides, offline, noAntenna, marked, spotted, silent, host, inRange, outOfRange
  */
 export function nodeVisibility(node, viewer, where = {
 }){
@@ -57,6 +57,8 @@ export function nodeVisibility(node, viewer, where = {
   if (viewer?.isGM) return verdict(true, "gm")
   if ((node.ownerIds ?? []).some(id => ids.includes(id))) return verdict(true, "owner")
   if (node.revealed) return verdict(true, "revealed")
+  // A technomancer's persona out of the Matrix, her sprites while she hides (pan-graph.js, addResonanceNodes)
+  if (node.ownerOnly) return verdict(false, "ownerOnly")
   if (viewer?.gmDecides) return verdict(false, "gmDecides")
   if (node.mode === "offline") return verdict(false, "offline")
   if (!viewer?.hasAntenna) return verdict(false, "noAntenna")

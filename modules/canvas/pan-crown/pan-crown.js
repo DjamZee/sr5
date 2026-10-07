@@ -187,7 +187,10 @@ export function getGraph(subject, options = {
     token: p.token, looker: lookerOf(p.actor, false)
   })) : null
   for (const node of graph.nodes){
-    const nodeToken = tokenOfNode(node, crown)
+    // A sprite stands where its technomancer stands (SR5 p. 256): measured from her token (anchorIds)
+    const nodeToken = tokenOfNode(node.anchorIds ? {
+      holderIds: node.anchorIds
+    } : node, crown)
     const isHost = isHostActor(holderActorOf(node, crown))
     node.distance = distanceInMeters(viewer?.token, nodeToken)
     node.visibility = nodeVisibility(node, looker, {

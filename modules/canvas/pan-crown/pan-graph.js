@@ -16,10 +16,14 @@
 import {
   customIconOf, iconCategoryOf
 } from "./pan-icons.js"
+import {
+  isAwake, isLivingPersona, isTechnomancer, personaOf
+} from "../../entities/actors/living-persona.js"
 
 // rigger: the master of the rigger, in a drone's crown; wan: the master of a device of the scenery (a host, or the
-// master item of a PAN); decor: a device of the scenery slaved to the crown's master (lot 7)
-export const PAN_NODE_KINDS = ["master", "slave", "drone", "device", "rigger", "wan", "decor"]
+// master item of a PAN); decor: a device of the scenery slaved to the crown's master (lot 7); persona: a
+// technomancer's living persona while she does not use it; sprite: a sprite she compiled (lot Technomanciens)
+export const PAN_NODE_KINDS = ["master", "slave", "drone", "device", "rigger", "wan", "decor", "persona", "sprite"]
 // The nodes drawn as a line to their own token, when it is on the scene, rather than as an icon (lot 7)
 export const PAN_TOKEN_KINDS = ["drone", "rigger", "wan", "decor"]
 export const PAN_MODES = ["active", "silent", "offline"]
@@ -41,7 +45,9 @@ export function hasAntenna(actor){
   if (!actor) return false
   if (actor.type === "actorDrone" || actor.type === "actorDevice") return actor.system?.wirelessTurnedOn !== false
   const device = activeDeviceOf(actor)
-  return !!device && device.system?.wirelessTurnedOn !== false
+  if (!device || device.system?.wirelessTurnedOn === false) return false
+  // A living persona carries its own antenna, while the technomancer is awake (SR5 p. 236)
+  return !isLivingPersona(device) || isAwake(actor)
 }
 
 // The id the system gives an actor in marks and links: the token's for an unlinked token, the actor's otherwise
@@ -75,6 +81,8 @@ export function ownMode(item, drone = null){
  */
 export function masterMode(item, actor){
   if (item.system?.wirelessTurnedOn === false) return "offline"
+  // A living persona exists in the Matrix while its technomancer is awake (SR5 p. 236)
+  if (isLivingPersona(item) && actor && !isAwake(actor)) return "offline"
   if (item.system?.isSilent === true || actor?.system?.matrix?.runningSilent === true) return "silent"
   return "active"
 }
@@ -237,7 +245,56 @@ export function buildPanGraph(actor, {
     if (own === "offline" || (!drone && !item.system?.isActive)) continue
     add(nodeOf(item, drone ? "drone" : "device", actor, own, own === "silent" ? "self" : null, drone), "owner", drone ? "drone" : "device")
   }
+  if (isTechnomancer(actor)) addResonanceNodes(actor, device, {
+    add, seen, actors
+  })
   return graph
+}
+
+/**
+ * A technomancer's persona when she does not use it, and the sprites she compiled (lot Technomanciens).
+ * - Connected through a commlink or a deck (her cover: SR5 p. 253, Data Trails p. 63), unplugged, or asleep, her persona
+ *   is out of the Matrix (SR5 p. 236): it is drawn for her and the gamemaster alone, as a reminder (ownerOnly).
+ * - A sprite has its own persona (SR5 p. 236); its physical place is its owner's (SR5 p. 256), so the distance is
+ *   measured from her (anchorIds). Who compiled it is no public knowledge: the line to her is drawn for her and the
+ *   gamemaster alone (linkOwnerOnly). While her persona is out of the Matrix, her sprites betray nothing either.
+ */
+function addResonanceNodes(actor, device, {
+  add, seen, actors
+}){
+  const persona = personaOf(actor)
+  const inPersona = !!persona && !!device && persona.uuid === device.uuid
+  const online = inPersona && masterMode(device, actor) !== "offline"
+  if (persona && !inPersona && !seen.has(persona.uuid)){
+    const node = nodeOf(persona, "persona", actor, "offline", null)
+    node.ownerOnly = true
+    add(node, "owner", "persona")
+  }
+  for (const sprite of spritesOf(actor, actors)){
+    const spriteDevice = activeDeviceOf(sprite)
+    if (!spriteDevice || seen.has(spriteDevice.uuid)) continue
+    const mode = masterMode(spriteDevice, sprite)
+    const node = nodeOf(spriteDevice, "sprite", sprite, mode, mode === "silent" ? "self" : null, null, actor)
+    node.name = sprite.name ?? node.name
+    node.icon = "sprite"
+    node.customIcon ??= customIconOf(sprite)
+    node.anchorIds = idsOf(actor)
+    node.linkOwnerOnly = true
+    if (!online) node.ownerOnly = true
+    add(node, "owner", "sprite")
+  }
+}
+
+// The sprites a technomancer compiled (system.creatorId), each one once
+export function spritesOf(actor, actors){
+  const ids = idsOf(actor)
+  const found = new Map()
+  for (const a of arrayOf(actors)){
+    if (a?.type !== "actorSprite" || !ids.includes(a.system?.creatorId)) continue
+    const key = realIdOf(a)
+    if (!found.has(key)) found.set(key, a)
+  }
+  return [...found.values()]
 }
 
 // The PAN of an unlinked token lists the uuids of its world actor's items (Actor.x.Item.y), while the token carries

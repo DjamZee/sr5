@@ -134,3 +134,21 @@ export function personaMayBeSlaved(actor, persona){
   return matrixFusionOf(actor).slave
 }
 
+/**
+ * Is the technomancer awake? Her persona only exists while she is (SR5 p. 236): a full Stun or Physical track puts her
+ * out of the Matrix, as does the status "unconscious" (a knockout, Cram's crash) or "dead".
+ */
+export function isAwake(actor){
+  const statuses = actor?.statuses
+  if (statuses?.has?.("unconscious") || statuses?.has?.("dead")) return false
+  const monitors = actor?.system?.conditionMonitors
+  if (!monitors) return true
+  for (const key of ["stun", "physical"]){
+    const monitor = monitors[key]
+    const max = Number(monitor?.value)
+    const taken = Number(monitor?.actual?.value)
+    if (max > 0 && taken >= max) return false
+  }
+  return true
+}
+

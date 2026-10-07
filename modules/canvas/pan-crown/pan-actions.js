@@ -28,7 +28,8 @@ export function actionsForNode(node, graph = {
   if (!node) return []
   const keys = [...PAN_DEVICE_ACTIONS]
   if (node.kind === "drone" || node.itemType === "itemVehicle") keys.push(...PAN_RIGGED_ACTIONS)
-  if (node.uuid && node.uuid === graph.master) keys.push(...PAN_PERSONA_ACTIONS)
+  // A sprite is a persona of its own (SR5 p. 236)
+  if ((node.uuid && node.uuid === graph.master) || node.kind === "sprite") keys.push(...PAN_PERSONA_ACTIONS)
   return keys
 }
 
@@ -138,7 +139,7 @@ export function ownModeOf(node){
 // device, which defends with the persona's pool, rollData-MatrixDefense.js) nor for a deployed drone, which defends
 // on its own
 export function aimedItemUuid(node, graph){
-  if (!node || node.uuid === graph?.master || node.kind === "drone") return null
+  if (!node || node.uuid === graph?.master || node.kind === "drone" || node.kind === "sprite") return null
   return node.uuid
 }
 
@@ -163,9 +164,11 @@ export function menuEntries(node, graph, viewer, {
   if (owner) {
     // A deployed drone holds its own switches, on its sheet; the master's wireless goes through the sheet too, which
     // throws a hacker in VR out of the Matrix (SR5 p. 231)
-    if (node.kind !== "drone") {
+    // A persona out of the Matrix is switched on from the sheet, by choosing the device in use (SR5 p. 236)
+    if (node.kind !== "drone" && node.kind !== "persona") {
       const current = ownModeOf(node)
-      const modes = node.kind === "master" ? ["active", "silent"] : ["active", "silent", "offline"]
+      // A persona (the master, a sprite) runs silent or not, and has no wireless to switch off (SR5 p. 236)
+      const modes = node.kind === "master" || node.kind === "sprite" ? ["active", "silent"] : ["active", "silent", "offline"]
       entries.modes = modes.map(mode => ({
         mode, current: mode === current
       }))
