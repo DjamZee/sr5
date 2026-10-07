@@ -98,7 +98,7 @@ function _characterDefaultLayout() {
         ]),
         _tab('Matrix', 'matrix', [
           _block('matrixDevicesList'), _block('matrixProgramsList'),
-          _block('matrixActionsList'),
+          _block('matrixFilesList'), _block('matrixActionsList'),
         ]),
         _tab('Social', 'social', [
           _block('contacts'), _block('lifestyles'),
@@ -201,7 +201,8 @@ function _droneDefaultLayout() {
           _block('ammunitions'), _block('externalEffects'),
         ]),
         _tab('Matrix', 'matrix', [
-          _block('matrixProgramsList'), _block('matrixActionsList'),
+          _block('matrixProgramsList'), _block('matrixFilesList'),
+          _block('matrixActionsList'),
         ]),
         _tab('Modifications', 'drone', [
           _block('modifications'), _block('variousGear'),
@@ -259,8 +260,8 @@ function _deviceDefaultLayout() {
       ]),
       _panel('MAIN', 2, [
         _tab('Matrix', 'matrix', [
-          _block('iceAttack'), _block('matrixActionsList'),
-          _block('externalEffects'),
+          _block('iceAttack'), _block('matrixFilesList'),
+          _block('matrixActionsList'), _block('externalEffects'),
         ]),
         _tab('Bio', 'bio', [
           _block('description'),

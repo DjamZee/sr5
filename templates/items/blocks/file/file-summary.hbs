@@ -1,0 +1,24 @@
+<ul>
+	{{> systems/sr5/templates/items/_partial/title/summary.hbs}}
+	<li class="grid">
+		<p>
+			<span class="col-auto">{{localize 'SR5.FileProtection'}}{{localize 'SR5.Colons'}}</span>
+			<span class="col-auto SR-GreyColor">{{#if system.protection}}{{system.protection}}{{else}}{{localize 'SR5.FileNotProtected'}}{{/if}}</span>
+		</p>
+	</li>
+	{{#if userIsGM}}
+	<li class="grid">
+		<p>
+			<span class="col-auto">{{localize 'SR5.FileDataBomb'}}{{localize 'SR5.Colons'}}</span>
+			<span class="col-auto SR-GreyColor">{{#if system.dataBomb.rating}}{{system.dataBomb.rating}}{{#if system.dataBomb.destroysFile}} ({{localize 'SR5.FileDataBombDestroysShort'}}){{/if}}{{else}}{{localize 'SR5.FileNoDataBomb'}}{{/if}}</span>
+		</p>
+	</li>
+	{{/if}}
+	<li class="grid">
+		<p>
+			<span class="col-auto">{{localize 'SR5.FileLastEdit'}}{{localize 'SR5.Colons'}}</span>
+			<span class="col-auto SR-GreyColor">{{fileLastEdit}}</span>
+		</p>
+	</li>
+	{{> systems/sr5/templates/items/_partial/summary/_common/source-summary.hbs}}
+</ul>

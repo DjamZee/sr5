@@ -4105,6 +4105,7 @@ SR5.itemTypes = {
   itemDrug                  : "TYPES.Item.itemDrug",
   itemEcho                  : "TYPES.Item.itemEcho",
   itemEffect                : "TYPES.Item.itemEffect",
+  itemFile                  : "TYPES.Item.itemFile",
   itemFocus                 : "TYPES.Item.itemFocus",
   itemGear                  : "TYPES.Item.itemGear",
   itemKarma                 : "TYPES.Item.itemKarma",

@@ -87,6 +87,9 @@ export class SR5_UtilityItem extends Actor {
       case "itemMark":
         displayName = game.i18n.localize("SR5.MarkNew")
         break
+      case "itemFile":
+        displayName = game.i18n.localize("SR5.FileNew")
+        break
       case "itemProgram":
         displayName = game.i18n.localize("SR5.ProgramNew")
         break

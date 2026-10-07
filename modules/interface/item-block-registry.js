@@ -142,6 +142,9 @@ export const ITEM_BLOCK_REGISTRY = {
   echoSummary:         {
     partial: `${PARTIAL_ROOT}/blocks/echo/echo-summary.hbs`,                 label: 'SR5.Summary', size: ITEM_BLOCK_SIZE.SINGLE 
   },
+  fileSummary:         {
+    partial: `${PARTIAL_ROOT}/blocks/file/file-summary.hbs`,                 label: 'SR5.Summary', size: ITEM_BLOCK_SIZE.SINGLE
+  },
   markSummary:         {
     partial: `${PARTIAL_ROOT}/blocks/mark/mark-summary.hbs`,                 label: 'SR5.Summary', size: ITEM_BLOCK_SIZE.SINGLE 
   },
@@ -260,6 +263,9 @@ export const ITEM_BLOCK_REGISTRY = {
   },
   spritePowerStat:     {
     partial: `${PARTIAL_ROOT}/blocks/spritePower/spritePower-stat.hbs`,      label: 'SR5.ItemConfiguration', size: ITEM_BLOCK_SIZE.DOUBLE 
+  },
+  fileStat:            {
+    partial: `${PARTIAL_ROOT}/blocks/file/file-stat.hbs`,                    label: 'SR5.ItemConfiguration', size: ITEM_BLOCK_SIZE.DOUBLE
   },
   viergeStat:          {
     partial: `${PARTIAL_ROOT}/blocks/vierge/vierge-stat.hbs`,                label: 'SR5.ItemConfiguration', size: ITEM_BLOCK_SIZE.DOUBLE 
