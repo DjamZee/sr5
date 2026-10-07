@@ -88,6 +88,7 @@ export const SETTINGS_CATALOG = {
   // Rigging
   sr5Rigger5Actions: ["rigging", "book"],
   sr5FlightSkill: ["rigging"],
+  sr5Rigger5AdvancedDriving: ["rigging", "book"],
   // PAN crown
   panCrownVisibility: ["panCrown"],
   panCrownAmbienceCap: ["panCrown"],

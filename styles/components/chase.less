@@ -1,0 +1,56 @@
+// Vehicle chase, the gamemaster's window (SR5 p. 204-205, Rigger 5.0 p. 175-185)
+.sr-chase {
+  .sr-chase-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .sr-chase-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+    margin: 0.2rem 0;
+  }
+  .sr-chase-tools {
+    margin-left: auto;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .sr-chase-vehicle {
+    border-bottom: 1px solid var(--color-border-light-2, #8884);
+    padding: 0.25rem 0;
+    img {
+      border: none;
+      object-fit: contain;
+    }
+    input[type="number"] {
+      width: 3.5rem;
+    }
+    &.warning .sr-chase-status {
+      color: var(--color-level-error, #c33);
+    }
+  }
+  .sr-chase-status {
+    font-weight: bold;
+  }
+  .sr-chase-tag {
+    border: 1px solid var(--color-border-light-2, #8884);
+    border-radius: 3px;
+    padding: 0 0.3rem;
+  }
+  .sr-chase-names {
+    min-width: 16rem;
+  }
+  .sr-chase-log {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  // Not the active gamemaster: read only
+  a[data-action].disabled {
+    pointer-events: none;
+    opacity: 0.4;
+  }
+}
