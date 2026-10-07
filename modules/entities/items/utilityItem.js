@@ -44,7 +44,7 @@ import {
   isFactoryMod
 } from "../../system/vehicle-factory.js"
 import {
-  isMountedWeapon, vehicleMeleeStrength, vehicleMeleeSpeedBonus, vehicleWeaponSkill
+  isMountedWeapon, vehicleMeleeStrength, vehicleMeleeSpeedBonus, vehicleWeaponSkill, droneArmProfile
 } from "../../system/vehicle-melee.js"
 
 // The implants whose unknown grade the gamemaster was told of, once each per session
@@ -473,7 +473,12 @@ export class SR5_UtilityItem extends Actor {
             //p. 131), or, when it runs none, the one its console shares; never both (SR5 p. 269)
             const local = actor.items.find(i => i.type === "itemProgram" && i.system.isActive && i.system.model === item.name)
             const shared = local ? null : rccAutosoftsForDrone(actor.system, actor.items).find(i => i.system.model === item.name)
-            if (local || shared) SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.VehicleStat_PilotShort'), "linkedAttribute", actor.system.attributes.pilot.augmented.value)
+            //A melee weapon in a drone arm: the arm's Agility replaces the Pilot (Rigger 5.0 p. 129)
+            const arm = skillKey === "gunnery" ? null : droneArmProfile(actor.items, actor.system.attributes.body.augmented.value, actor.system.attributes.pilot.augmented.value)
+            if (local || shared) {
+              if (arm) SR5_EntityHelpers.updateModifier(itemData.weaponSkill, `${arm.name} (${game.i18n.localize('SR5.AgilityShort')})`, "linkedAttribute", arm.agility)
+              else SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.VehicleStat_PilotShort'), "linkedAttribute", actor.system.attributes.pilot.augmented.value)
+            }
             if (local) SR5_EntityHelpers.updateModifier(itemData.weaponSkill, local.name, "program", localAutosoftRating(local.system.itemRating, droneAutopilot(actor.system, actor.items)))
             if (shared) SR5_EntityHelpers.updateModifier(itemData.weaponSkill, shared.name, "controlerProgram", shared.system.itemRating)
             itemData.weaponSkill.modifiers = itemData.weaponSkill.modifiers.concat(actor.system.penalties.special.actual.modifiers)
@@ -538,10 +543,13 @@ export class SR5_UtilityItem extends Actor {
   static _generateWeaponDamage(itemData, actor, itemId) {
     if (actor) {
       if (itemData.accuracy.isPhysicalLimitBased) itemData.accuracy.base = actor.system.limits.physicalLimit.value
-      //A melee weapon of a drone: half its Body mounted, its Body in a drone arm, and its Speed (Rigger 5.0 p. 129, 182)
+      //A melee weapon of a drone: half its Body mounted, the Strength of its drone arm otherwise, and its Speed (Rigger 5.0 p. 129, 182)
       if (actor.type === "actorDrone" && itemData.category === "meleeWeapon") {
         const attributes = actor.system.attributes
-        if (itemData.damageValue.isStrengthBased) SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.VehicleStat_BodyShort'), "linkedAttribute", vehicleMeleeStrength(attributes.body.augmented.value, isMountedWeapon(itemId, actor.items)))
+        const mounted = isMountedWeapon(itemId, actor.items)
+        const arm = mounted ? null : droneArmProfile(actor.items, attributes.body.augmented.value, attributes.pilot.augmented.value)
+        const label = arm ? `${arm.name} (${game.i18n.localize('SR5.StrengthShort')})` : game.i18n.localize('SR5.VehicleStat_BodyShort')
+        if (itemData.damageValue.isStrengthBased) SR5_EntityHelpers.updateModifier(itemData.damageValue, label, "linkedAttribute", vehicleMeleeStrength(attributes.body.augmented.value, mounted, arm?.strength))
         const speed = vehicleMeleeSpeedBonus(attributes.speed.augmented.value)
         if (speed) SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.VehicleStat_SpeedShort'), "linkedAttribute", speed)
       }

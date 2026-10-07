@@ -82,6 +82,18 @@ export class sr5ItemVehicleModDataModel extends foundry.abstract.TypeDataModel {
       mountedWeaponName: new fields.StringField({
         initial: ''
       }),
+      //A drone arm has its own Strength and Agility, 0 for the starting ones: Body and Pilot (Rigger 5.0 p. 129)
+      droneArm: new fields.SchemaField({
+        isDroneArm: new fields.BooleanField({
+          initial: false
+        }),
+        strength: new fields.NumberField({
+          initial: 0, integer: true, min: 0
+        }),
+        agility: new fields.NumberField({
+          initial: 0, integer: true, min: 0
+        }),
+      }),
       secondaryPropulsion: new fields.SchemaField({
         isSecondaryPropulsion: new fields.BooleanField({
           initial: false

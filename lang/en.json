@@ -5725,6 +5725,8 @@
 	"SR5.VehicleModNew": "New Modification",
 	"SR5.VehicleMods": "Modifications",
 	"SR5.VehicleModFactory": "Factory",
+	"SR5.VehicleModDroneArm": "Drone arm",
+	"SR5.HELP_VehicleModDroneArmMsg": "Drone arm (Rigger 5.0 p. 129): a melee weapon the drone holds without a mount hits with the arm's Strength, and on autopilot the arm's Agility replaces the Pilot. 0 = starting value (Strength = Body, Agility = Pilot); otherwise the value given, capped at twice the drone's. A modification named \"Drone arm (Strength 6, Agility 2)\" is recognized without ticking the box.",
 	"SR5.VehicleModSkill": "Skill required",
 	"SR5.VehicleModSlots": "Modification Slots",
 	"SR5.VehicleModSlotsFull": "Modifications Slots",

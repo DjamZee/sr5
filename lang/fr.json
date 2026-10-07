@@ -5725,6 +5725,8 @@
 	"SR5.VehicleModNew": "Nouvelle modification",
 	"SR5.VehicleMods": "Modifications",
 	"SR5.VehicleModFactory": "D'origine",
+	"SR5.VehicleModDroneArm": "Bras de drone",
+	"SR5.HELP_VehicleModDroneArmMsg": "Bras de drone (Rigger 5.0 p. 129) : une arme de mêlée que le drone tient sans monture frappe avec la Force du bras, et en pilote automatique l'Agilité du bras remplace l'Autopilote. 0 = valeur de départ (Force = Structure, Agilité = Autopilote) ; sinon la valeur indiquée, plafonnée au double de celle du drone. Une modification nommée « Bras de drone (Force 6, Agilité 2) » est reconnue sans cocher la case.",
 	"SR5.VehicleModSkill": "Compétence",
 	"SR5.VehicleModSlots": "Emplacement",
 	"SR5.VehicleModSlotsFull": "Emplacements",
