@@ -227,8 +227,8 @@ export function refuseByRule(family, key, data, {
 } = {
 }) {
   if (ruleLockActive(family, lockCase)) {
-    ui.notifications[level](game.i18n.format(key, data ?? {
-    }))
+    //A message without data is localized as the sites did before B13 (lot 6: blight-blocks-spellcasting.test.js)
+    ui.notifications[level](data ? game.i18n.format(key, data) : game.i18n.localize(key))
     return true
   }
   tellGM(family, key, data, actor).catch(err => console.error("SR5 | rule lock whisper failed", err))

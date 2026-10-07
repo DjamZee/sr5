@@ -11,6 +11,9 @@ import {
   mayDefend
 } from "../system/defense-once.js"
 import {
+  refuseByRule
+} from "../system/rule-locks.js"
+import {
   trustedDefenderDamage, cardStandsFor, damageReachable
 } from "./roll-helpers/matrix-card.js"
 import {
@@ -446,7 +449,10 @@ export class SR5_RollMessage {
         actor.rollTest("resistanceCard", null, messageData)
         break
       case "bindingResistance":
-        if (actor.system.isBounded) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_SpiritAlreadyBounded")}`)
+        //The "magic" rule lock lifted (B13), the binding goes on and the gamemaster hears of it
+        if (actor.system.isBounded && refuseByRule("magic", "SR5.WARN_SpiritAlreadyBounded", null, {
+          actor
+        })) return
         actor.rollTest(type, null, messageData)
         break
       case "applyEffect":

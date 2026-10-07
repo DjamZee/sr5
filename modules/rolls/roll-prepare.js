@@ -51,6 +51,9 @@ import {
 import {
   SR5_Toxins
 } from "../entities/items/toxins.js"
+import {
+  refuseByRule
+} from "../system/rule-locks.js"
 
 // N91: matrix rolls aimed at a target besides matrixAction, which guards itself. Each refuses a drone
 // with its wireless off (SR5 p. 424)
@@ -85,7 +88,10 @@ export class SR5_PrepareRollTest {
     }
 
     //Better Than Bad p. 141: cut from the manasphere by Blight, no magic of any kind (decisions G2 and H1 of DjamZ)
-    if (SR5_Toxins.blightBlocksRoll(actor, rollType, rollKey)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
+    //The "magic" rule lock lifted (B13), the roll goes, on the values Blight leaves (Magic at 0), and the gamemaster hears of it
+    if (SR5_Toxins.blightBlocksRoll(actor, rollType, rollKey) && refuseByRule("magic", "SR5.WARN_BlightNoSpell", null, {
+      actor
+    })) return
 
     //Iterate through roll type and add data to rollData;
     switch (rollType){
@@ -229,7 +235,9 @@ export class SR5_PrepareRollTest {
         break
       case "preparation":
         // SR5 p. 309: at 0 Potency the preparation is no longer magical, its spell is lost
-        if (!(Number(item.system?.potency) > 0)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_PreparationSpent"))
+        if (!(Number(item.system?.potency) > 0) && refuseByRule("magic", "SR5.WARN_PreparationSpent", null, {
+          actor
+        })) return
         rollData = await SR5_GetRollData.preparation(rollData, actor, item)
         break
       case "preparationFormula":

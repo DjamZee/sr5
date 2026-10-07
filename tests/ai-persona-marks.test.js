@@ -1,5 +1,5 @@
 import {
-  describe, it, expect, vi, beforeEach
+  describe, it, expect, vi, beforeEach, afterEach
 } from 'vitest'
 
 vi.mock('../modules/socket.js', () => ({
@@ -32,6 +32,12 @@ const {
 const {
   sr5HookPreUpdateActor, sr5HookUpdateActor
 } = await import('../modules/hooks/actor.js')
+const {
+  cancelVehicleOwnerSyncs
+} = await import('../modules/entities/actors/vehicle-owner-sync.js')
+
+// The updateActor hook schedules the copy of a rigger on its drones: none outlives a test
+afterEach(() => cancelVehicleOwnerSyncs())
 
 /** A document whose update merges the flattened changes the way Foundry does */
 function documentWith(data) {

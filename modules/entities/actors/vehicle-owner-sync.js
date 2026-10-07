@@ -28,6 +28,22 @@ export function scheduleVehicleOwnerSync(actor, sync, delay = SYNC_DELAY){
   clearTimeout(pending.get(actor.id))
   pending.set(actor.id, setTimeout(() => {
     pending.delete(actor.id)
-    sync(actor)
+    if (!isStillThere(actor)) return
+    //A copy that fails (a drone deleted meanwhile, a write refused) is reported, never left as an unhandled rejection
+    Promise.resolve().then(() => sync(actor)).catch(err => console.warn(`SR5 | copy of ${actor.name ?? actor.id} on its drones failed`, err))
   }, delay))
+}
+
+/** The controller may have been deleted, or be no full document, by the time the delay is over: then nothing is copied */
+export function isStillThere(actor){
+  if (typeof actor?.toObject !== "function") return false
+  if (actor.isToken) return !!actor.token?.parent
+  const actors = globalThis.game?.actors
+  return typeof actors?.has !== "function" || actors.has(actor.id)
+}
+
+/** Drop every copy still waiting (tests, or a world being left) */
+export function cancelVehicleOwnerSyncs(){
+  for (const timer of pending.values()) clearTimeout(timer)
+  pending.clear()
 }

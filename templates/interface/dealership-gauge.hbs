@@ -1,0 +1,4 @@
+<div class="sr5-workshop-gauge{{#if full}} is-full{{/if}}{{#if over}} is-over{{/if}}">
+	<div class="sr5-workshop-gauge-label"><span>{{label}}</span><span>{{used}}{{#if pending}} + {{pending}}{{/if}} / {{total}}</span></div>
+	<div class="sr5-workshop-gauge-bar"><div class="sr5-workshop-gauge-fill" style="width: {{percent}}%"></div><div class="sr-dealer-gauge-pending" style="width: {{pendingPercent}}%"></div></div>
+</div>
