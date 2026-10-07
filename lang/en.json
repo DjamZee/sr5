@@ -2640,6 +2640,7 @@
 	"SR5.HostTypeRogue": "Rogue",
 	"SR5.HostTypeFixed": "{type}, set by the type: rating {offset}",
 	"SR5.HostTypeDealt": "{type}, dealt by the type: rating {offset}",
+	"SR5.HostUntypedDealt": "No type, default order (SR5 p. 248): rating {offset}; swap two attributes to choose your own",
 	"SR5.HostTypeLockedAttribute": "This attribute is set by the host type: it cannot be swapped.",
 	"SR5.HELP_HostTypeMsg": "Kill Code p. 48-52. The type replaces the usual array (rating, +1, +2, +3) with its own; an attribute that would drop to 0 goes to 1. The attributes \"at the gamemaster's choice\" are rearranged by swapping them on the sheet. A nested host takes the type it imitates. \"None\" keeps manual entry.",
 	"SR5.IceType": "ICE Type",

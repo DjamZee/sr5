@@ -38,7 +38,7 @@ import {
   homunculusMaterialRatings
 } from "./homunculus.js"
 import {
-  HOST_ATTRIBUTES, HOST_TYPE_PAGES, resolveHostAttributes, hostTypeOffsetLabel
+  HOST_ATTRIBUTES, HOST_TYPE_PAGES, resolveHostAttributes, hostTypeOffsetLabel, untypedHostDefaults
 } from "./host-type.js"
 import {
   augmentationCapExcess, uncappedRating, limitBase, limitCapNote, CAP_NOTE_LIMITS
@@ -4983,12 +4983,24 @@ export class SR5_CharacterUtility extends Actor {
   }
 
   // Host types (Kill Code p. 48-52): a typed host takes its attributes from its rating and its type, the free ones
-  // keeping the gamemaster's arrangement while it fits; with no type the attributes stay as entered
+  // keeping the gamemaster's arrangement while it fits; with no type the attributes stay as entered, save for a host
+  // never arranged, which gets the default order of SR5 p. 248 instead of four attributes at 0
   static applyHostType(matrix) {
-    const resolved = resolveHostAttributes(matrix.hostType, matrix.deviceRating, Object.fromEntries(
-      HOST_ATTRIBUTES.map(key => [key, matrix.attributes[key].base])
-    ))
-    if (!resolved) return
+    const stored = Object.fromEntries(HOST_ATTRIBUTES.map(key => [key, matrix.attributes[key].base]))
+    const resolved = resolveHostAttributes(matrix.hostType, matrix.deviceRating, stored)
+    if (!resolved) {
+      const collection = matrix.attributesCollection
+      const defaults = untypedHostDefaults(matrix.deviceRating, stored, [1, 2, 3, 4].some(i => collection[`value${i}isSet`]))
+      if (!defaults) return
+      for (let i = 1; i <= 4; i++) collection[`value${i}isSet`] = true
+      for (const key of HOST_ATTRIBUTES) {
+        matrix.attributes[key].base = defaults[key]
+        SR5_EntityHelpers.updateModifier(matrix.attributes[key], game.i18n.format('SR5.HostUntypedDealt', {
+          offset: hostTypeOffsetLabel(defaults[key], matrix.deviceRating)
+        }), "hostType", 0)
+      }
+      return
+    }
     // The collection only offers the free values, all of them already dealt
     for (let i = 1; i <= 4; i++) {
       matrix.attributesCollection[`value${i}`] = resolved.collection[i - 1] ?? 0
