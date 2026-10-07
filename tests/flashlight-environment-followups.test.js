@@ -97,10 +97,11 @@ describe("standard weapon flashlight (Run & Gun p. 69: partial light)", () => {
     expect(SR5_UtilityItem.getWeaponLightCap(weapon([builtIn("flashLight")], false))).toBeNull()
   })
 
-  it("works for an accessory item, including the compendium's lamp whose specialEffect is empty", () => {
+  it("works for an accessory item that carries the effect, and not by its name", () => {
     const actor = holder()
     expect(shot(3, weapon([accessoryItem("Ma lampe", "flashLight")]), actor)).toBe(-1)
-    expect(shot(3, weapon([accessoryItem("Lampe torche")]), actor)).toBe(-1)
+    // The effect is the item's data (specialEffect), not its name
+    expect(shot(3, weapon([accessoryItem("Lampe torche")]), actor)).toBe(-6)
     // Another item with no effect is not taken for a flashlight
     expect(shot(3, weapon([accessoryItem("Crosse pliable")]), actor)).toBe(-6)
   })

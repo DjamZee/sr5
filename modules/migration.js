@@ -154,6 +154,83 @@ export default class Migration {
 
   /* -------------------------------------------- */
 
+  // Names the standard flashlight was created under while its catalog entry had no effect (Run & Gun p. 69)
+  static FLASHLIGHT_NAMES = ["Lampe torche", "Flash Light", "Flashlight"]
+
+  static isStandardFlashlight(accessory) {
+    const wa = accessory?.system?.weaponAccessory
+    if (!wa || wa.specialEffect) return false
+    const names = [...Migration.FLASHLIGHT_NAMES, globalThis.game?.i18n?.localize("SR5.AccessoryFlashLight")]
+    return names.includes(accessory.name)
+  }
+
+  /**
+   * The standard flashlight is recognised by its specialEffect only: give it "flashLight" when it has none, on the
+   * accessory item itself and on the copies a weapon keeps of its mounted accessories. Idempotent.
+   * @param item   An Item document or its data
+   * @return {object} The update data, empty when nothing is to change
+   */
+  static migrateFlashlightData(item) {
+    const updateData = {
+    }
+    if (item?.type !== "itemWeapon") return updateData
+    if (Migration.isStandardFlashlight(item)) updateData["system.weaponAccessory.specialEffect"] = "flashLight"
+    const source = item._source?.system?.accessory ?? item.system?.accessory
+    if (source && typeof source === "object") {
+      const accessory = foundry.utils.deepClone(source)
+      let changed = false
+      for (const a of Object.values(accessory)) {
+        if (!Migration.isStandardFlashlight(a)) continue
+        a.system.weaponAccessory.specialEffect = "flashLight"
+        changed = true
+      }
+      if (changed) updateData["system.accessory"] = accessory
+    }
+    return updateData
+  }
+
+  /**
+   * Run the flashlight migration once per world: world items, the items of world actors and unlinked tokens, and
+   * unlocked world compendiums; module packs are fixed at their source (the Megapack carries the effect).
+   * @return {Promise<boolean>} true when the migration is done (now or before)
+   */
+  async migrateFlashlightEffect() {
+    if (game.settings.get("sr5", "migrationFlashlightEffect")) return true
+    const items = [...game.items.contents]
+    const actors = [...game.actors.contents]
+    for (const s of game.scenes.contents) {
+      for (const t of s.tokens.contents) {
+        if (!t.actorLink && t.actor) actors.push(t.actor)
+      }
+    }
+    for (const p of game.packs) {
+      if (p.metadata.packageType !== "world" || p.locked) continue
+      if (p.documentName === "Actor") actors.push(...await p.getDocuments())
+      else if (p.documentName === "Item") items.push(...await p.getDocuments())
+    }
+    for (const a of actors) items.push(...(a.items?.contents ?? a.items ?? []))
+
+    let failed = false
+    for (const i of items) {
+      try {
+        const updateData = Migration.migrateFlashlightData(i)
+        if (foundry.utils.isEmpty(updateData)) continue
+        SR5_SystemHelpers.srLog(2, `Migrating flashlight effect of ${i.name}`)
+        await i.update(updateData)
+      } catch (err) {
+        failed = true
+        err.message = `Failed sr5 flashlight migration for Item ${i.name}: ${err.message}`
+        console.error(err)
+      }
+    }
+    if (failed) return false
+    // The world flag is written as every GM register is, in its turn (gm-ledger.js)
+    await updateLedger("migrationFlashlightEffect", () => true)
+    return true
+  }
+
+  /* -------------------------------------------- */
+
   /**
 	 * Apply migration rules to all Entities within a single Compendium pack
 	 * @param pack

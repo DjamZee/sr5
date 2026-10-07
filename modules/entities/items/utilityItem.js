@@ -1180,12 +1180,7 @@ export class SR5_UtilityItem extends Actor {
     if (!a) return null
     if (!a.system) return WEAPON_ACCESSORY_CATALOG[a.name]?.systemEffects?.[0]?.value || null
     const effect = a.system.weaponAccessory?.specialEffect
-    if (effect) return effect
-    // The compendium's standard flashlight was generated while its catalog entry had no effect, so its
-    // specialEffect is empty and the sheet offers no way to set it: recognise it by its name.
-    const i18n = globalThis.game?.i18n
-    if (i18n && a.name && a.name === i18n.localize("SR5.AccessoryFlashLight")) return "flashLight"
-    return null
+    return effect || null
   }
 
   //Handle if an accessory gives environmental modifiers (actor-level effects)

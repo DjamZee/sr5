@@ -177,4 +177,5 @@ export async function sr5RunMigrations(needsMigration) {
   const migration = new game.sr5.migration()
   if (needsMigration) await migration.migrateWorld()
   await migration.migrateHeadcaseNanite()
+  await migration.migrateFlashlightEffect()
 }

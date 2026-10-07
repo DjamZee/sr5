@@ -90,6 +90,15 @@ export class SR5_SystemHelpers {
       default: false
     })
 
+    // Standard flashlight given its specialEffect ("flashLight") instead of being recognised by its name: once per world
+    game.settings.register("sr5", "migrationFlashlightEffect", {
+      name: "SR5.TEXT_TBD",
+      scope: "world",
+      config: false,
+      type: Boolean,
+      default: false
+    })
+
     // Developper Extra Logging Toggle
     game.settings.register("sr5", "sr5Log.active", {
       name: "SR5.SETTINGS_DevLogActive_T",
