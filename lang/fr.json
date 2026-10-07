@@ -545,7 +545,7 @@
 	"SR5.MatrixConvergenceLocated": "Le demi-DIEU indique sa position physique au propriétaire de la grille, et à celui du serveur où il se trouvait.",
 	"SR5.MatrixConvergenceStealth": "Discrétion était actif : sa position physique reste inconnue (SR5 p. 247).",
 	"SR5.MatrixConvergenceHost": "Convergence dans le serveur {host} : {name} n'est ni grillé ni éjecté. Le serveur pose {marks} marks sur son persona et commence à déployer des CI ; s'il quitte le serveur, le demi-DIEU converge aussitôt (SR5 p. 249).",
-	"SR5.MatrixConvergenceHostNoMark": "Convergence dans le serveur {host} : {name} n'est ni grillé ni éjecté. Le serveur devrait poser {marks} marks sur son persona, mais aucune n'a été posée : {name} n'a pas d'appareil actif pour les porter (sprite, persona hors ligne). À tenir à la main. Le serveur commence à déployer des CI ; s'il quitte le serveur, le demi-DIEU converge aussitôt (SR5 p. 249).",
+	"SR5.MatrixConvergenceHostNoMark": "Convergence dans le serveur {host} : {name} n'est ni grillé ni éjecté. Le serveur devrait poser {marks} marks sur son persona, mais aucune n'a été posée : {name} n'a pas d'appareil actif pour les porter (appareil éteint, persona hors ligne). À tenir à la main. Le serveur commence à déployer des CI ; s'il quitte le serveur, le demi-DIEU converge aussitôt (SR5 p. 249).",
 	"SR5.MatrixConvergenceSprite": "Un sprite sur lequel on converge disparaît, même s'il lui reste des tâches (SR5 p. 256).",
 	"SR5.SocketUse_grappleStartHold": "prise sur {target}",
 	"SR5.SocketUse_grappleSetHold": "changer la prise sur {target}",

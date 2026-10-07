@@ -175,7 +175,8 @@ async function gmConverge(actor, hostActor){
   const plan = convergencePlan({
     inHost: !!hostActor, stealth: !!actor.system?.matrix?.programs?.sneak?.isActive
   })
-  //A persona with no active device (a sprite, a persona offline) carries no mark: placeMarks then puts none
+  //A persona with no active device (turned off, a persona offline) carries no mark: placeMarks then puts none. A sprite
+  //has its own active device and takes them (measured on the 30009, 07/10)
   const placed = plan.marks ? await placeMarks(hostActor, actor, plan.marks, {
     source: "convergence"
   }) === true : false
