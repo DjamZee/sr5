@@ -21,6 +21,9 @@ import {
 import {
   modCost
 } from "./vehicle-workshop.js"
+import {
+  replacedVehicleAttributeOf, vehicleModKind
+} from "./vehicle-mods.js"
 
 export const DRONE_MOD_SETTING = "sr5DroneModRules"
 export const DRONE_MOD_RULES = {
@@ -63,10 +66,39 @@ export function vehicleStats(system) {
   }
 }
 
+/** The attribute a Pilot or Sensor replacement stands in for (R5 p. 170-171) and its new value, {key, value}, read from
+ *  its effect (ratingReplace, valueReplace) or else from its kind (chosen on its sheet, or told by its name); or null */
+export function replacementOf(mod) {
+  const s = sys(mod)
+  for (const effect of Object.values(s.customEffects ?? {
+  })) {
+    const key = replacedVehicleAttributeOf(effect)
+    if (key && !effect.transfer) return {
+      key, value: effect.type === "ratingReplace" ? num(s.itemRating) : num(effect.value)
+    }
+  }
+  const kind = vehicleModKind(mod?.system ? mod : {
+    system: s
+  })
+  const key = kind === "autopilotReplacement" ? "pilot" : kind === "sensorReplacement" ? "sensor" : null
+  return key ? {
+    key, value: num(s.itemRating)
+  } : null
+}
+
 /** The attribute a mod changes and by how much, read from its effects: {key, amount} or null. The off-road twins
- *  (speedOffRoad, handlingOffRoad) follow their attribute and are not counted again */
-export function attributeChange(system) {
+ *  (speedOffRoad, handlingOffRoad) follow their attribute and are not counted again. A Sensor replacement is a raise of
+ *  the Sensor to its rating (R5 p. 128: "Coût = Nouvelle valeur de Senseurs × 1 000 ¥"), its amount the rating less the
+ *  drone's starting Sensor (`vehicle` = {attributes: {sensor}}; 0 without the drone) */
+export function attributeChange(system, vehicle) {
   const s = sys(system)
+  const replaced = replacementOf(system)
+  if (replaced?.key === "sensor") {
+    const amount = replaced.value - num(vehicle?.attributes?.sensor)
+    return amount > 0 ? {
+      key: "sensor", amount
+    } : null
+  }
   const changes = {
   }
   for (const effect of Object.values(s.customEffects ?? {
@@ -84,23 +116,47 @@ export function attributeChange(system) {
   } : null
 }
 
-/** What one mod asks of the drone: an attribute raised (in steps, Armor by 3), an attribute lowered, or points */
-export function modPointsDemand(system) {
-  const change = attributeChange(system)
+/** The points of a weapon mount on a drone, table "Monture d'armes" (R5 p. 128): Micro 0, Mini 1, Petite 2, Standard 3,
+ *  Grande 4, Énorme 5, Lourde 6. "Une monture standard escamotable coûtera 4 PM au lieu de 3": a hidden mount (internal
+ *  or concealed) is the pop-up one, +1; the ejectable panels cost no point, and the book gives none to the flexibility or
+ *  the control. The vehicle "light" mount is not in the drone table: 3 points, by the weapons it carries (up to the
+ *  submachine guns, R5 p. 162, as the drone Standard), arbitrage de DjamZ (08/10). The slots of the vehicles
+ *  (utilityItem._handleWeaponMounted) are not touched; null when the size is unknown, the mod's own slots then stand */
+export const WEAPON_MOUNT_POINTS = {
+  micro: 0, mini: 1, small: 2, light: 3, standard: 3, large: 4, huge: 5, heavy: 6
+}
+export function weaponMountPoints(system) {
+  const s = sys(system)
+  if (!s.isWeaponMounted) return null
+  const points = WEAPON_MOUNT_POINTS[s.weaponMount?.size]
+  if (points === undefined) return null
+  return points + (["internal", "concealed"].includes(s.weaponMount?.visibility) ? 1 : 0)
+}
+
+/** What one mod asks of the drone: an attribute raised (in steps, Armor by 3), an attribute lowered, or points (a weapon
+ *  mount by the drone table, any other mod its slots). `vehicle` = {attributes}: the drone, for a Sensor replacement */
+export function modPointsDemand(system, vehicle) {
+  const change = attributeChange(system, vehicle)
   if (change && change.amount > 0 && change.key !== "body") return {
     kind: "upgrade", key: change.key, steps: change.key === "armor" ? Math.ceil(change.amount / ARMOR_STEP) : change.amount
   }
   if (change && change.amount < 0) return {
     kind: "downgrade", key: change.key, amount: -change.amount
   }
+  //A Sensor replacement no higher than the drone's own Sensor raises nothing: no point. The Autopilot replacement costs
+  //no point either: the book sends it to "Solutions logicielles" (R5 p. 128, 130-131), which gives no Modification
+  //Points; arbitrage de DjamZ (08/10), "Gratuit (0 point)"
+  if (replacementOf(system)) return {
+    kind: "points", points: 0
+  }
   return {
-    kind: "points", points: whole(sys(system).slots?.value)
+    kind: "points", points: weaponMountPoints(system) ?? whole(sys(system).slots?.value)
   }
 }
 
 /** The points a mod shows on its own line: an upgrade its steps less the free one, as if alone (R5 p. 127) */
-export function modPointsOf(system) {
-  const d = modPointsDemand(system)
+export function modPointsOf(system, vehicle) {
+  const d = modPointsDemand(system, vehicle)
   if (d.kind === "upgrade") return Math.max(0, d.steps - 1)
   if (d.kind === "downgrade") return 0
   return d.points
@@ -108,10 +164,10 @@ export function modPointsOf(system) {
 
 /** The points of each line of a drone's mods, the free +1 taken once per drone (arbitrage de DjamZ, 08/10): by the first
  *  upgrade that takes its points (`takesPoints`), or the first upgrade of the list when none does yet. The lines that
- *  take their points then add up to `used` (review 40) */
-export function modPointsLines(mods, takesPoints = takesModPoints) {
+ *  take their points then add up to `used` (review 40). `vehicle` = {attributes}: the drone, for a Sensor replacement */
+export function modPointsLines(mods, takesPoints = takesModPoints, vehicle = null) {
   const list = Array.from(mods ?? [])
-  const demands = list.map(m => modPointsDemand(m))
+  const demands = list.map(m => modPointsDemand(m, vehicle))
   const upgrades = demands.map((d, i) => d.kind === "upgrade" ? i : -1).filter(i => i >= 0)
   const freeAt = upgrades.find(i => takesPoints(list[i])) ?? upgrades[0]
   return demands.map((d, i) => {
@@ -128,7 +184,7 @@ export function modPointsUsage(vehicle, mods) {
   const capacity = own === null || own === undefined || own === "" ? body : whole(own)
   let steps = 0, points = 0, downgraded = false, bodyGain = 0
   for (const m of Array.from(mods ?? [])) {
-    const d = modPointsDemand(m)
+    const d = modPointsDemand(m, vehicle)
     if (d.kind === "upgrade") steps += d.steps
     else if (d.kind === "points") points += d.points
     else if (d.key === "body") bodyGain += d.amount
@@ -168,13 +224,13 @@ export function modPointsRefusal(vehicle, mods, before, after) {
   if (will.used > was.used && will.used > will.total) return {
     needed: will.used - was.used, free: Math.max(0, was.total - was.used)
   }
-  const change = attributeChange(after)
+  const change = attributeChange(after, vehicle)
   if (change && change.amount > 0 && change.key !== "armor" && change.key !== "body") {
     const base = num(vehicle?.attributes?.[change.key])
-    const raised = [...others, after].map(attributeChange).filter(c => c?.key === change.key && c.amount > 0)
+    const raised = [...others, after].map(m => attributeChange(m, vehicle)).filter(c => c?.key === change.key && c.amount > 0)
       .reduce((sum, c) => sum + c.amount, 0)
     const cap = attributeCap(base)
-    const previous = before ? attributeChange(before) : null
+    const previous = before ? attributeChange(before, vehicle) : null
     const held = previous?.key === change.key && previous.amount > 0 ? previous.amount : 0
     if (base + raised > cap && change.amount > held) return {
       attribute: change.key, cap
@@ -186,9 +242,9 @@ export function modPointsRefusal(vehicle, mods, before, after) {
 /** The price of an attribute upgrade on this drone (R5 p. 127-128), or null for any other mod (its own price stands).
  *  `vehicle` = {body, attributes: {key: starting value}}; a Structure of 0 counts as 0.5 */
 export function modPointsPrice(system, vehicle) {
-  const d = modPointsDemand(system)
+  const d = modPointsDemand(system, vehicle)
   if (d.kind !== "upgrade") return null
-  const change = attributeChange(system)
+  const change = attributeChange(system, vehicle)
   const body = Math.max(0.5, num(vehicle?.body))
   const value = num(vehicle?.attributes?.[d.key]) + change.amount
   switch (d.key) {
