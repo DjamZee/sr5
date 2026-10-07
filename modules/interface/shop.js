@@ -217,10 +217,14 @@ export class SR5Shop {
    *   waiting to be installed, and its owner pays (Rigger 5.0 p. 153)
    * @param {Function} [options.priceOn] the unit price of a source on the
    *   recipient (a mod's price is multiplied by the vehicle's attributes)
+   * @param {boolean} [options.assemble] the dealership (lot R9): the first line is a vehicle, the others mods
+   *   bought for it, priced on it, one of each. All or nothing: the vehicle arrives with the mods aboard, waiting to
+   *   be installed (Rigger 5.0 p. 153), or fitted when the gamemaster ticked `fitted` on a line; and when one line
+   *   waits on its search time, the whole lot is one order
    * @returns {Promise<boolean>} whether the gear was added
    */
   static async checkout(actor, lines, {
-    equip = false, express = false, messageId = null, userId = game.user.id, cashToken = null, recipient = null, priceOn = null
+    equip = false, express = false, messageId = null, userId = game.user.id, cashToken = null, recipient = null, priceOn = null, assemble = false
   } = {
   }) {
     if (!actor) {
@@ -294,8 +298,10 @@ export class SR5Shop {
         }))
         continue
       }
-      const quantity = Math.max(1, Math.floor(Number(line.quantity) || 1))
-      const base = priceOn ? Math.max(0, Number(priceOn(source)) || 0) : SR5Shop.gradedPrice(source.system, grade)
+      const quantity = assemble ? 1 : Math.max(1, Math.floor(Number(line.quantity) || 1))
+      // A mod of the dealership is priced at the till on the vehicle it is bought for (R5 p. 156)
+      const onVehicle = assemble && resolved.length && source.type === 'itemVehicleMod' ? resolved[0].source : null
+      const base = onVehicle ? (await import('../system/vehicle-workshop-apply.js')).pricedModData(source, onVehicle).price : priceOn ? Math.max(0, Number(priceOn(source)) || 0) : SR5Shop.gradedPrice(source.system, grade)
       // The surcharge that bought dice on the card is paid (SR5 p. 420); the search time and the express
       // surcharge stay on the base price (DjamZ's ruling, 05/10)
       // Relation avec un concessionnaire (Rigger 5.0 p. 37): 10 % off, after the surcharge
@@ -304,9 +310,13 @@ export class SR5Shop {
         source, quantity, unit, grade, total: unit * quantity, baseTotal: base * quantity,
         name: SR5Shop.gradedName(source.name, grade),
         availability: Number(described.availability) || 0,
+        fitted: assemble && line.fitted === true && game.user.isGM,
       })
     }
     if (!resolved.length) return false
+    // The dealership sells the build whole: a vehicle and its mods, never the mods without it nor part of them
+    if (assemble && (resolved.length !== lines.length || resolved[0].source.type !== 'itemVehicle' ||
+      resolved.slice(1).some(line => line.source.type !== 'itemVehicleMod'))) return false
     const screened = await SR5Shop.screenLines(actor, resolved)
     resolved.splice(0, resolved.length, ...screened.lines)
     if (!resolved.length) return false
@@ -323,6 +333,11 @@ export class SR5Shop {
         delayed, availability: line.availability, free
       })
       line.extra = line.waits ? expressCost(line.baseTotal, terms) : 0
+    }
+    // The build waits as one: the vehicle is not delivered without its mods
+    if (assemble && resolved.some(line => line.waits)) for (const line of resolved) {
+      line.waits = true
+      line.extra = expressCost(line.baseTotal, terms)
     }
     const total = resolved.reduce((sum, line) => sum + line.total + line.extra, 0)
     const balance = SR5Shop.balance(actor)
@@ -356,7 +371,39 @@ export class SR5Shop {
 
     const payload = [], orders = []
     const now = game.time.worldTime
-    for (const line of resolved) {
+    if (assemble) {
+      const {
+        pricedModData
+      } = await import('../system/vehicle-workshop-apply.js')
+      const {
+        assembledVehicleData
+      } = await import('../system/vehicle-dealership.js')
+      const [vehicle, ...mods] = resolved
+      if (!vehicle.waits) {
+        const [vehicleData] = SR5Shop._itemPayload(vehicle.source, 1)
+        payload.push(assembledVehicleData(vehicleData, mods.map(line => ({
+          ...pricedModData(line.source, vehicle.source), price: line.unit, fitted: line.fitted
+        })), foundry.utils.randomID))
+      } else {
+        // One order for the lot: the longest search of its lines (SR5 p. 420), the sum of what they cost
+        const hours = Math.max(...resolved.map(line => SR5Shop.searchHours({
+          ...line, total: line.baseTotal
+        }, messageId, userId, card)))
+        const extra = resolved.reduce((sum, line) => sum + line.extra, 0)
+        const order = newOrder({
+          ...vehicle, quantity: 1, total: resolved.reduce((sum, line) => sum + line.total, 0),
+          name: mods.length ? game.i18n.format('SR5.DealerOrderName', {
+            name: vehicle.name, count: mods.length
+          }) : vehicle.name,
+        }, {
+          hours: orderHours(hours, extra ? terms : null), express: !!extra, extra, now,
+        })
+        order.mods = mods.map(line => line.source.uuid)
+        vehicle.order = order
+        orders.push(order)
+      }
+    }
+    for (const line of assemble ? [] : resolved) {
       if (!line.waits) {
         payload.push(...SR5Shop._itemPayload(line.source, line.quantity, line.grade))
         continue

@@ -136,6 +136,9 @@ import {
   SR5ShopWindow, SR5ShopWorldSource
 } from "../interface/shop-window.js"
 import {
+  SR5DealershipWindow
+} from "../interface/dealership-window.js"
+import {
   SR5PanCrown
 } from "../canvas/pan-crown/pan-crown.js"
 import {
@@ -393,6 +396,8 @@ export async function sr5HookInit() {
     rollMacro: macros.rollMacro,
     compendiumBrowser: SR5CompendiumBrowser,
     shop: SR5ShopWindow,
+    // The dealership (lot R9): build a vehicle or a drone and buy it
+    dealership: SR5DealershipWindow,
     // The shop against the till, item by item: should answer no difference
     shopAudit: () => SR5ShopWorldSource.audit(),
     // GM macro: old-style Mentor Spirit qualities -> quality linked to a mentor item (SR5 p. 76), and back
