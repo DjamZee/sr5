@@ -20,6 +20,9 @@ import {
 import {
   raisedThreshold
 } from "../rolls/roll-helpers/threshold.js"
+import {
+  refuseByRule, ruleLockActive
+} from "../system/rule-locks.js"
 
 // How close the picker must stand, in squares, centre to centre: beside it
 const PICK_REACH = 2
@@ -141,8 +144,13 @@ export class SR5StorageLock {
     const pickerToken = picker?.token ?? picker?.getActiveTokens(false, true)
       .find(t => t.parent?.id === storageToken?.parent?.id)
     // Said here, since the GM refuses it without a word
-    if (!(SR5StorageLock.squaresBetween(storageToken, pickerToken) <= PICK_REACH)) {
-      return ui.notifications.warn(game.i18n.localize("SR5.WARN_StorageLockTooFar"))
+    // The "ranges" rule lock lifted, the picker may work from afar; never from no token, or from another scene
+    const distance = SR5StorageLock.squaresBetween(storageToken, pickerToken)
+    if (!(distance <= PICK_REACH)) {
+      if (!Number.isFinite(distance)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_StorageLockTooFar"))
+      if (refuseByRule("ranges", "SR5.WARN_StorageLockTooFar", null, {
+        actor: picker
+      })) return
     }
     const data = {
       storageTokenUuid: storageToken.uuid, pickerTokenUuid: pickerToken.uuid, relock
@@ -180,7 +188,8 @@ export class SR5StorageLock {
     const picker = pickerToken?.actor
     const sender = game.users.get(senderId)
     const allowed = isPickRequestAllowed({
-      storage, picker, relock: !!data.relock, reach: PICK_REACH,
+      // Lifted, any distance on the same scene will do (squaresBetween is Infinity across scenes)
+      storage, picker, relock: !!data.relock, reach: ruleLockActive("ranges") ? PICK_REACH : Number.MAX_VALUE,
       distance: SR5StorageLock.squaresBetween(storageToken, pickerToken),
       senderOwns: actor => !!sender && actor.testUserPermission(sender, "OWNER"),
     })
