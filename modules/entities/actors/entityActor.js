@@ -1234,8 +1234,9 @@ export class SR5Actor extends Actor {
       }
     }
 
-    //deviceName is prepared from the active device, the copy only holds the source
-    ui.notifications.info(`${this.system.matrix.deviceName} ${game.i18n.localize("SR5.Rebooted")}.`)
+    //deviceName is prepared from the active device, the copy only holds the source; empty when that device was just
+    //turned off: the persona's name then (Anatolie)
+    ui.notifications.info(`${this.system.matrix.deviceName || SR5_EntityHelpers.displayName(this)} ${game.i18n.localize("SR5.Rebooted")}.`)
   }
 
   //Reset Cumulative Recoil (SR5 p. 178)
