@@ -77,6 +77,16 @@ describe('the turn order (SR5 p. 161, CRIP) is the one Foundry reads the current
     }
   })
 
+  it('a copy of the combat, without id, sorts a tie the same way (Combatant._preUpdateOperation)', () => {
+    const list = ['a', 'b', 'c', 'd', 'e'].map(id => combatant(id, 10))
+    const copies = list.map(c => ({
+      ...c, parent: {
+        id: null, round: 2
+      }
+    }))
+    expect([...copies].sort(SR5Combat.sortByRERIC).map(c => c.id)).toEqual([...list].sort(SR5Combat.sortByRERIC).map(c => c.id))
+  })
+
   it('the Edge still comes first in a tie, and the rolled score stands in for a missing base', () => {
     const a = combatant('a', 10, 2), b = combatant('b', 10, 5)
     expect([a, b].sort(SR5Combat.sortByRERIC).map(c => c.id)).toEqual(['b', 'a'])

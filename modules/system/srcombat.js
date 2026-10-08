@@ -202,7 +202,9 @@ export class SR5Combat extends Combat {
 
   // The coin toss of a tie (SR5 p. 161, CRIP): the same for a combatant all the round, so that every sort agrees
   static coinToss(combatant) {
-    const key = `${combatant.parent?.id ?? ""}:${combatant.parent?.round ?? 0}:${combatant.id ?? ""}`
+    //Not the combat's id: Foundry sorts a copy of the combat, without id, to find the current combatant again
+    //(Combatant._preUpdateOperation), and both sorts must agree
+    const key = `${combatant.parent?.round ?? 0}:${combatant.id ?? ""}`
     let hash = 0
     for (const char of key) hash = (hash * 31 + char.charCodeAt(0)) | 0
     return (Math.abs(hash) % 2) + 1
