@@ -2,7 +2,8 @@ import {
   SR5_MiscellaneousHelpers 
 } from "../roll-helpers/miscellaneous.js"
 
-export default function iceAttack(rollData, actor){
+//rollKey "blueGooExplosion": the attack Blue Goo makes as it explodes (Kill Code p. 74), launched from its resistance card
+export default function iceAttack(rollData, actor, rollKey){
   //Determine title
   rollData.test.title = game.i18n.localize("SR5.IceAttack")
 
@@ -35,6 +36,10 @@ export default function iceAttack(rollData, actor){
   rollData.damage.matrix.base = actor.system.matrix.attributes.attack.value
   rollData.various.defenseFirstAttribute = actor.system.matrix.ice.defenseFirstAttribute
   rollData.various.defenseSecondAttribute = actor.system.matrix.ice.defenseSecondAttribute
+  if (rollKey === "blueGooExplosion" && rollData.test.typeSub === "iceBlueGoo") {
+    rollData.various.blueGooExplosion = true
+    rollData.test.title = game.i18n.localize("SR5.IceBlueGooExplosion")
+  }
   if (rollData.test.typeSub === "iceCatapult") {
     rollData.damage.value = rollData.damage.matrix.value 
     rollData.damage.type = "stun"

@@ -196,4 +196,32 @@ describe('defense against an IC attack card', () => {
     const data = await iceDefense(rollData(), defender, clicked)
     expect(data.damage.matrix.base).toBe(6)
   })
+
+  // Kill Code p. 74: the explosion's DV is the Attack alone; a button saying "explosion" on an ordinary card says nothing
+  it('reads the explosion of a Blue Goo on its card, never on the button', async () => {
+    const goo = foundry.utils.deepClone(ice)
+    goo.system.matrix.deviceSubType = 'iceBlueGoo'
+    const card = (explodes) => {
+      const c = attackCard({
+        roller: goo
+      })
+      c.data.various = {
+        blueGooExplosion: explodes
+      }
+      return c
+    }
+    const button = {
+      ...clicked, various: {
+        ...clicked.various, blueGooExplosion: true
+      }
+    }
+    const withVarious = () => ({
+      ...rollData(), various: {
+      }
+    })
+    vi.spyOn(SR5_MiscellaneousHelpers, 'cardOf').mockReturnValue(card(false))
+    expect((await iceDefense(withVarious(), defender, button)).various.blueGooExplosion).toBeUndefined()
+    SR5_MiscellaneousHelpers.cardOf.mockReturnValue(card(true))
+    expect((await iceDefense(withVarious(), defender, clicked)).various.blueGooExplosion).toBe(true)
+  })
 })
