@@ -6545,6 +6545,8 @@
 	"SR5.NEGO_REPAIR_LastRun": "Last repair on {date} by {user} ({count} sheet(s)).",
 	"SR5.NEGO_REPAIR_OnlyGM": "Gamemaster only.",
 	"SR5.NEGO_REPAIR_OnlyActiveGM": "Only the active gamemaster can apply the repair.",
+	"SR5.NEGO_REPAIR_SearchingStart": "Looking for the sheets…",
+	"SR5.NEGO_REPAIR_Searching": "Looking for the sheets: {done} of {total}…",
 	"SR5.FACTION_Hint": "Faction Reputation (Cutting Aces p. 156-160). Pending movements apply at the end of the mission, with Karma. The gamemaster always keeps the last word on NPC attitude.",
 	"SR5.FACTION_List": "Factions",
 	"SR5.FACTION_Edit": "Edit",
