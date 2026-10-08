@@ -43,6 +43,9 @@ import {
 import {
   dealerPrice
 } from '../system/rigger-qualities.js'
+import {
+  lineWaits, deliveryDelayed
+} from './shop-orders.js'
 
 /**
  * Where the shop's goods come from: the world's shelves, the compendiums the
@@ -542,7 +545,10 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       }
       // An item on a vendor's counter is there: it adds no search time (SR5 p. 420)
       const onCounter = row?.entry.vendor && !row.entry.onOrder && !SR5ShopVendor.testInStock
-      if (described?.availability && !onCounter) cartDelay = Math.max(cartDelay, SR5ShopAvailability.delayFor(total))
+      // Only what the till makes wait: in creation, as in equip mode, the purchase arrives at once (review P4)
+      if (lineWaits({
+        delayed: deliveryDelayed(buyer), availability: described?.availability, onCounter, free
+      })) cartDelay =Math.max(cartDelay, SR5ShopAvailability.delayFor(total))
       // A line put in the cart before creation was switched on, or at another grade, is out of reach
       const blocked = described ? SR5ShopCatalog.creationBlock(described, limits) : null
       // ...and so is a grade the shop no longer offers (creation offers no betaware): the till
@@ -768,7 +774,10 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       oddsLabel: odds ? game.i18n.format('SR5.ShopOdds', {
         pool, availability: row.availability
       }) : '',
-      delay: row.availability && tested ?
+      // A search time only where the till makes the purchase wait: none in creation nor in equip mode (review P4)
+      delay: tested && lineWaits({
+        delayed: deliveryDelayed(buyer), availability: row.availability, free
+      }) ?
         SR5ShopAvailability.formatDelay(SR5ShopAvailability.delayFor(row.price)) :
         game.i18n.localize('SR5.ShopDelayNow'),
       grades: row.offered.map(key => ({

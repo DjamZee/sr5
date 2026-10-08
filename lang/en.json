@@ -509,6 +509,7 @@
 	"SR5.ShopOrderCancel": "Cancel and refund",
 	"SR5.ShopOrderAskCancel": "Ask the GM to cancel",
 	"SR5.ShopOrderCancelAsked": "Cancellation request sent to the GM.",
+	"SR5.ShopOrderAwaitsGM": "Order placed and paid. No GM is connected: it will be entered in the GM's ledger as soon as one is back.",
 	"SR5.ShopOrderCancelTitle": "Cancel an order",
 	"SR5.ShopOrderCancelText": "{user} asks to cancel the order of <strong>{actor}</strong>: {name}. {price} ¥ will be refunded.",
 	"SR5.ShopOrderCancelRefused": "The GM refused to cancel the order of {actor}: {name}.",

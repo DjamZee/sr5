@@ -626,15 +626,20 @@ async function catalogueCost(order, buyer = null) {
  * @param {string} transactionId the loss transaction of the purchase
  * @param {User} requester who asks: an owner of the buyer
  */
-export async function registerOrders(actor, ids, transactionId, requester) {
+export async function registerOrders(actor, ids, transactionId, requester, {
+  deferred = false
+} = {
+}) {
   if (!isWriter() || !actor || !requester) return false
   if (!requester.isGM && !actor.testUserPermission?.(requester, 'OWNER')) return false
   const ledger = orderLedger()
   const debit = actor.items?.get(transactionId)
   if (!debit || debit.type !== 'itemNuyen' || debit.system?.type !== 'loss') return false
   // The debit of this very purchase: created just now, by the server's clock (an older one, from
-  // before the ledger kept the used debits, would stand behind a forged order)
-  if (!debitIsFresh(debit._stats?.createdTime, Date.now())) return false
+  // before the ledger kept the used debits, would stand behind a forged order). A purchase made with no GM
+  // connected waits on its debit, which names its orders, until one comes back (registerAwaitingOrders)
+  const awaited = deferred && (ids ?? []).length && (ids ?? []).every(id => awaitedOrders(debit).includes(id))
+  if (!awaited && !debitIsFresh(debit._stats?.createdTime, Date.now())) return false
   // One purchase, one entry: a transaction already used stands behind nothing more
   const debitKey = `${actor.uuid}.${transactionId}`
   if (usedDebits()[debitKey] || Object.values(ledger).some(entry => entry?.transactionId === transactionId)) return false
@@ -665,12 +670,43 @@ export async function requestRegister(actor, orders, transactionId) {
   if (!orders.length || !transactionId) return
   const ids = orders.map(o => o.id)
   if (game.user.isGM) return registerOrders(actor, ids, transactionId, game.user)
+  // No GM to enter them: the purchase is made all the same, and its debit keeps the orders until a GM comes back.
+  // The warning of a relay nobody takes ("n'a pas été appliquée") said the purchase had failed (review P4)
+  if (!(game.users.activeGM ?? game.users.find(user => user.isGM && user.active))) {
+    await actor.items.get(transactionId)?.setFlag('sr5', AWAITS_LEDGER_FLAG, ids)
+    ui.notifications.info(game.i18n.localize('SR5.ShopOrderAwaitsGM'))
+    return
+  }
   const {
     SR5_SocketHandler
   } = await import('../socket.js')
   await SR5_SocketHandler.emitForGM('shopOrderLedger', {
     actorUuid: actor.uuid, ids, transactionId
   })
+}
+
+// The orders a debit keeps while no GM was connected to enter them in his ledger
+export const AWAITS_LEDGER_FLAG = 'awaitsLedger'
+
+export function awaitedOrders(debit) {
+  const ids = debit?.flags?.sr5?.[AWAITS_LEDGER_FLAG]
+  return Array.isArray(ids) ? ids : []
+}
+
+/** On the active GM's browser, once he is back: the purchases made while no GM was connected enter his ledger. */
+export async function registerAwaitingOrders() {
+  if (!isWriter()) return
+  for (const actor of game.actors ?? []) {
+    for (const debit of actor.items ?? []) {
+      const ids = awaitedOrders(debit)
+      if (!ids.length) continue
+      await registerOrders(actor, ids, debit.id, game.user, {
+        deferred: true
+      })
+      // Entered or refused, it is not asked again
+      await debit.unsetFlag('sr5', AWAITS_LEDGER_FLAG)
+    }
+  }
 }
 
 /** The server stamps `senderId`: the GM checks who asks, and works the prices out himself. */
