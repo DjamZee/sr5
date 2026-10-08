@@ -3,7 +3,8 @@
 <div class="SR-PaddingTop10">
     <ul>
         <li class="grid SR-EnTete">
-            <div class="col-8 SR-TextUppercase">{{localize 'SR5.WeaponAccessories'}}</div>
+            {{!-- Shared by armor, gear and implants: the heading names their own accessories (Adrore's feedback C6) --}}
+            <div class="col-8 SR-TextUppercase">{{#if (eq item.type 'itemArmor')}}{{localize 'SR5.ArmorAccessories'}}{{else}}{{localize 'SR5.ItemAccessories'}}{{/if}}</div>
             <div class="col-3 SR-TextCenter">{{localize 'SR5.CapacityUsed'}}</div>
             <div class="col-1 SR-TextRight">
                 {{#if owner}}
