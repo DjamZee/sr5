@@ -9,7 +9,8 @@
 //
 // A layer of its own in the interface group, above the tokens and under the HTML HUD (PLAN-COURONNE-PAN-MATRICE § 3).
 // Each crown is a container placed on its token's center by the refreshToken hook, which also fires during the
-// animation of a move: the crown follows the token.
+// animation of a move: the crown of the token that moves folds, and unfolds where it stops (arbitrage de DjamZ du
+// 08/10); the lines of the other crowns follow it.
 
 import {
   getGraph, tokenOfNode
@@ -88,6 +89,8 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     // token id -> its center at its last refresh, and the timer of the end of the moves (M1)
     this._centers = new Map()
     this._settleTimer = null
+    // token id -> the timer that unfolds its crown once it stops (folded while it moves, arbitrage de DjamZ du 08/10)
+    this._stops = new Map()
     this._discs = new Map()
     // Lot 8: what opened the crowns (pan-openings.js)
     this.manual = new Set()
@@ -196,6 +199,8 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     this._centers.clear()
     clearTimeout(this._settleTimer)
     this._settleTimer = null
+    for (const timer of this._stops.values()) clearTimeout(timer)
+    this._stops.clear()
     for (const texture of this._discs.values()) texture.destroy(true)
     this._discs.clear()
     // The tokens of another scene: the AR view stays, the rest goes
@@ -244,6 +249,8 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     this.manual.delete(tokenId)
     this.dismissed.delete(tokenId)
     this._centers.delete(tokenId)
+    clearTimeout(this._stops.get(tokenId))
+    this._stops.delete(tokenId)
     if (this.hovered === tokenId) this.hovered = null
     this.#hide({
       id: tokenId
@@ -406,12 +413,35 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     this._centers.set(token.id, at)
     // A token seen for the first time, or redrawn where it stands (hover, target, border): nothing moved
     if (before === undefined || before === at) return
+    // Its own crown folds while it moves, and unfolds where it stops (arbitrage de DjamZ du 08/10)
+    if (crown) this.#foldWhileMoving(crown)
     for (const other of this.crowns.values()){
       if (other === crown ? other.droneTokenIds.size : other.droneTokenIds.has(token.id)) this.#relayout(other)
     }
     // What is seen within 100 m (SR5 p. 236) may change, whoever moved: the viewer, an observed token (an NPC whose
     // commlink comes within range, or goes out of it: M5), a player's token for the gamemaster's yellow ring
     this.#settleLater()
+  }
+
+  // A frame of a move: the crown is hidden, and its unfolding put off until no frame came for PAN_SETTLE_MS. It then
+  // unfolds from its token as when it opens (Sober and above), or simply shows again (Static)
+  #foldWhileMoving(crown){
+    const id = crown.token.id
+    crown.folded = true
+    crown.deployStart = null
+    crown.container.visible = false
+    clearTimeout(this._stops.get(id))
+    this._stops.set(id, setTimeout(() => {
+      this._stops.delete(id)
+      if (this.crowns.get(id) !== crown || crown.token.destroyed) return
+      crown.folded = false
+      if (ambienceRank(this.ambience) > 0) {
+        crown.container.scale.set(0)
+        crown.deployStart = performance.now()
+      } else crown.container.scale.set(1)
+      this.#place(crown)
+      this.#updateTicker()
+    }, PAN_SETTLE_MS))
   }
 
   // Once the moves are over (no frame of a move for a while), the crowns are built again, and drawn again only if what
@@ -471,7 +501,7 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     if (token.destroyed) return
     const center = token.center
     container.position.set(center.x, center.y)
-    container.visible = token.visible
+    container.visible = token.visible && !crown.folded
   }
 
   async #build(crown, {

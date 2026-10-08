@@ -101,6 +101,21 @@ describe('M1: a move lays the crowns out again, it does not build them again', (
     expect(source).toMatch(/if \(soft && crown\.graph && signature !== null && signature === crown\.signature\)/)
   })
 
+  it('the crown of a token that moves folds, and unfolds where it stops (arbitrage de DjamZ du 08/10)', () => {
+    const source = read(LAYER)
+    const refresh = source.slice(source.indexOf('  onRefreshToken(token){'), source.indexOf('  #foldWhileMoving(crown){'))
+    // Only after a real move (the early return for a token redrawn where it stands comes first), only its own crown
+    expect(refresh.indexOf('if (crown) this.#foldWhileMoving(crown)')).toBeGreaterThan(refresh.indexOf('if (before === undefined || before === at) return'))
+    const fold = source.slice(source.indexOf('  #foldWhileMoving(crown){'), source.indexOf('  #settleLater(){'))
+    expect(fold).toMatch(/crown\.folded = true[\s\S]*crown\.container\.visible = false/)
+    // One timer per token, put off at each frame: the crown unfolds once the token stops
+    expect(fold).toMatch(/clearTimeout\(this\._stops\.get\(id\)\)[\s\S]*setTimeout\([\s\S]*crown\.folded = false[\s\S]*crown\.deployStart = performance\.now\(\)[\s\S]*PAN_SETTLE_MS\)/)
+    // A crown placed while it is folded stays hidden
+    expect(source).toContain('container.visible = token.visible && !crown.folded')
+    // Its timers go with the token and with the canvas
+    expect(source).toMatch(/forget\(tokenId\)\{[\s\S]*clearTimeout\(this\._stops\.get\(tokenId\)\)/)
+  })
+
   it('M5: works out what is seen again when any token ends its move, an observed one too', () => {
     const source = read(LAYER)
     const body = source.slice(source.indexOf('  onRefreshToken(token){'), source.indexOf('  #settleLater(){'))
