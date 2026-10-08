@@ -434,7 +434,9 @@ describe('a spirit already bound (SR5 p. 300)', () => {
 })
 
 describe('spell shaping beyond the Magic (SR5 p. 329)', () => {
-  const shape = async entered => {
+  //The two inputs of the #633 port: metres of radius and characters spared, positive, sharing the cap of Magic
+  const shape = async (entered, target = 'spellShapingArea', preset = {
+  }) => {
     const actor = {
       system: {
         magic: {
@@ -448,6 +450,12 @@ describe('spell shaping beyond the Magic (SR5 p. 329)', () => {
     }
     vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockReturnValue(actor)
     const fields = {
+      '[name="spellShapingArea"]': {
+        value: preset.area ?? 0
+      },
+      '[name="spellShapingSpared"]': {
+        value: preset.spared ?? 0
+      },
     }
     const html = {
       querySelector: sel => (fields[sel] ??= {
@@ -473,7 +481,7 @@ describe('spell shaping beyond the Magic (SR5 p. 329)', () => {
     vi.spyOn(roll, 'updateDicePoolValue').mockImplementation(() => {})
     roll._manualInputModifier({
       currentTarget: {
-        getAttribute: () => 'dicePoolModSpellShaping', dataset: {
+        getAttribute: () => target, dataset: {
           modifier: 'spellShaping'
         }
       }, target: {
@@ -481,26 +489,26 @@ describe('spell shaping beyond the Magic (SR5 p. 329)', () => {
       },
     }, html, dialogData)
     return {
-      dialogData, field: fields['[name=dicePoolModSpellShaping]']
+      dialogData, area: fields['[name="spellShapingArea"]'], spared: fields['[name="spellShapingSpared"]']
     }
   }
-  it('book: the value is brought back to the Magic', async () => {
+  it('book: the radius is brought back to the Magic', async () => {
     const {
-      dialogData, field
-    } = await shape(-5)
-    expect(field.value).toBe(-3)
-    expect(dialogData.magic.spell.area).toBe(3)
+      dialogData, area
+    } = await shape(5)
+    expect(area.value).toBe(3)
+    expect(dialogData.magic.spell.areaShaping).toBe(3)
     expect(dialogData.dicePool.modifiers.at(-1).value).toBe(-3)
     expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_SpellShapingMaxMagic')
   })
   it('lifted: the value entered is kept, the dice pool and the area follow it', async () => {
     lift()
     const {
-      dialogData, field
-    } = await shape(-5)
+      dialogData, area
+    } = await shape(5)
     await flush()
-    expect(field.value).toBe(-5)
-    expect(dialogData.magic.spell.area).toBe(5)
+    expect(area.value).toBe(5)
+    expect(dialogData.magic.spell.areaShaping).toBe(5)
     expect(dialogData.dicePool.modifiers.at(-1).value).toBe(-5)
     expect(ui.notifications.warn).not.toHaveBeenCalled()
     expect(magicKeys()).toEqual(['SR5.WARN_SpellShapingMaxMagic'])
@@ -508,18 +516,52 @@ describe('spell shaping beyond the Magic (SR5 p. 329)', () => {
   it('within the Magic: untouched, nobody told', async () => {
     lift()
     const {
-      field
-    } = await shape(-2)
+      area
+    } = await shape(2)
     await flush()
-    expect(field.value).toBe(-2)
+    expect(area.value).toBe(2)
     expect(emits).toEqual([])
   })
-  it('a positive value stays refused, lifted or not: it is no shaping', async () => {
+  it('the bubbles share the same cap: the input just moved keeps its value, the other is trimmed', async () => {
+    const {
+      dialogData, area, spared
+    } = await shape(2, 'spellShapingSpared', {
+      area: 2
+    })
+    expect(spared.value).toBe(2)
+    expect(area.value).toBe(1)
+    expect(dialogData.magic.spell.sparedCount).toBe(2)
+    expect(dialogData.dicePool.modifiers.at(-1).value).toBe(-3)
+    expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_SpellShapingMaxMagic')
+  })
+  it('lifted: bubbles beyond the Magic are kept too, and the gamemaster told', async () => {
     lift()
     const {
-      field
-    } = await shape(2)
-    expect(field.value).toBe(0)
-    expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_SpellShapingMin')
+      dialogData, area, spared
+    } = await shape(2, 'spellShapingSpared', {
+      area: 2
+    })
+    await flush()
+    expect([area.value, spared.value]).toEqual([2, 2])
+    expect(dialogData.dicePool.modifiers.at(-1).value).toBe(-4)
+    expect(magicKeys()).toEqual(['SR5.WARN_SpellShapingMaxMagic'])
+  })
+  it('the cost of a bubble is the world setting, not a constant', async () => {
+    settings.sr5SpellShapingBubbleCost = 2
+    const {
+      dialogData, spared
+    } = await shape(2, 'spellShapingSpared')
+    expect(spared.value).toBe(1)
+    expect(dialogData.dicePool.modifiers.at(-1).value).toBe(-2)
+  })
+  it('a negative value is no shaping: it reads 0, lifted or not, with no penalty', async () => {
+    lift()
+    const {
+      dialogData, area
+    } = await shape(-2)
+    await flush()
+    expect(area.value).toBe(0)
+    expect(dialogData.dicePool.modifiers).toEqual([])
+    expect(emits).toEqual([])
   })
 })

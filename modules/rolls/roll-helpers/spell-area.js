@@ -3,7 +3,7 @@
  * - An area spell: its Force in metres.
  * - A detection spell: Force × Magic of the caster, × 10 at extended range (SR5, Detection spells).
  * - Spell Shaping adds 1 m of radius per die given up (SR5 p. 329): added to the radius above, never multiplied.
- * The bubbles of Spell Shaping are not handled here (the #633 port will bring them, a world setting).
+ * The bubbles of Spell Shaping are not handled here: see spell-shaping.js (a world setting).
  * Kept free of Foundry globals so the rule can be read, and tested, alone.
  */
 export function spellAreaRadius({

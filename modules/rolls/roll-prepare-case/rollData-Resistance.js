@@ -25,6 +25,9 @@ import {
 import {
   drugResistance
 } from "../../entities/items/drug-damage.js"
+import {
+  SR5_SpellShapingHelpers
+} from "../roll-helpers/spell-shaping.js"
 
 // Show a notification and return undefined so the caller aborts the test.
 // In Foundry V13, ui.notifications.info() returns a Notification object: returning it directly
@@ -41,6 +44,9 @@ function abortWithWarn(message){
 
 //Add info for Resistance Roll
 export default async function resistance(rollData, rollType, actor, chatData){
+  //SR5 p. 329: a Spell Shaping bubble leaves its occupant untouched, so a direct area spell does no damage there and
+  //there is nothing to resist
+  if (SR5_SpellShapingHelpers.skips(actor, chatData)) return void SR5_SpellShapingHelpers.announceSpared(actor)
   //An attack card resisted without a defense (grenade, direct spell, spell that missed its threshold) is read again
   //as for the defense; a defense or a resistance card stands only when its author owns the actor who resists
   //(attack-card.js). The aura is read on its owner's sheet

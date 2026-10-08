@@ -103,7 +103,7 @@ export default class SR5Template extends foundry.canvas.placeables.MeasuredTempl
     // its own terms: a cap meant to keep the circle inside the map would bound the diameter.
     //
     // How large a radius can actually reach here: an area spell is its Force (plus the metres bought with
-    // spell shaping once #633 lands, which changes target a few lines above), and a detection spell is Force
+    // spell shaping, read from the card a few lines above), and a detection spell is Force
     // x augmented Magic, x10 again with extended range (see spellAreaOfEffect in utilityItem.js), so Force 6
     // for a Magic 6 mage reaches 360 m. The cap would have cut every one of those down to the smaller side
     // of the map. It never did in practice only because that Magic factor currently reads 0 -- a separate

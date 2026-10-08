@@ -79,6 +79,8 @@ export const SETTINGS_CATALOG = {
   mentorMask: ["magic", "book"],
   spiritLeash: ["magic", "book"],
   sr5HomunculusMaterialArmor: ["magic", "house"],
+  // No tag: the book gives the bubbles (SR5 p. 329) but no rate on a grid; this only says how they are automated
+  sr5SpellShapingBubbleCost: ["magic"],
   // Matrix
   sr5MatrixGridRules: ["matrix"],
   sr5KillCodeRules: ["matrix", "book"],

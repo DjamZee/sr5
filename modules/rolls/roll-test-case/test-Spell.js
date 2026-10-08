@@ -101,12 +101,15 @@ export default async function spellInfo(cardData){
     // A preparation's area is read from the item, where its Potency and Force take the place of the caster's (SR5 p. 309)
     if (cardData.magic.spell.range === "area" && cardData.test.type === "preparation") cardData.magic.spell.area += item.system.spellAreaOfEffect.value
     else if (cardData.magic.spell.range === "area"){
-      //spell.area holds the metres of spell shaping chosen in the dialog: +1 m of radius per die given up (SR5 p. 329),
+      //spell.areaShaping holds the metres of spell shaping chosen in the dialog: +1 m of radius per die given up (SR5 p. 329),
       //added to the radius, never multiplied. Area: Force metres; detection: Force × Magic, × 10 at extended range
       cardData.magic.spell.area = spellAreaRadius({
-        shaping: cardData.magic.spell.area, force: cardData.magic.force, detection: item.system.category === "detection",
+        shaping: cardData.magic.spell.areaShaping, force: cardData.magic.force, detection: item.system.category === "detection",
         magic: actorData.specialAttributes.magic.augmented.value, extended: item.system.spellAreaExtended === true
       })
+      //Bubbles are declared at casting; which characters they cover is picked once the area is on the canvas, hence a
+      //button rather than a dialog list. How many characters one bubble spares is a world setting (an approximation)
+      if (cardData.magic.spell.sparedCount > 0) cardData.chatCard.buttons.spellShapingSpare = SR5_RollMessage.generateChatButton("nonOpposedTest", "spellShapingSpare", `${game.i18n.localize("SR5.SpellShapingSpare")} (0/${cardData.magic.spell.sparedCount})`)
     }
 
     //Bullets & Bandages p. 15-16: Stabilize (Force at least the boxes of bleeding and overflow) and Heal (out of the
