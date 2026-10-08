@@ -23,7 +23,7 @@ import {
   drugDesignApproved
 } from "../items/drug-designer.js"
 import {
-  SR5DrugDesigner
+  SR5DrugDesigner, canOfferDrugDesign
 } from "../../interface/drug-designer.js"
 import {
   setCharacterField, setSpiritTrait, banishKey
@@ -290,6 +290,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     context.system = actorData.system
     context.items = actorData.items
     context.owner = this.actor.isOwner
+    //The drug designer's button: Chemistry, the gamemaster, or the "objects" rule lock lifted (drug-designer.js)
+    context.canOfferDrugDesign = canOfferDrugDesign(this.actor)
     context.editable = this.isEditable
     context.isEmbedded = true  // Items rendered on actor sheets are always embedded
     context.filters = this._filters || {

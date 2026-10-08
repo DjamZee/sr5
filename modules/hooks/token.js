@@ -38,7 +38,8 @@ export function sr5HookDeleteToken(tokenDocument) {
 }
 
 export function sr5HookPreDeleteToken(tokenDocument, _options, _userId) {
-  let deleteToken = canvas.tokens.get(tokenDocument.id)
+  //No canvas (disabled, or a scene deleted from the sidebar): canvas.tokens is undefined
+  let deleteToken = canvas?.tokens?.get(tokenDocument.id)
   if (!deleteToken) return
   // GSAP/TweenMax was removed in Foundry v12+; no animation cleanup needed
 }

@@ -1190,7 +1190,10 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
         if (property.modifiers && property.modifiers.length) {
           if (property.base) detailsHTML += `<li>${game.i18n.localize('SR5.HELP_CalculationBase')}${game.i18n.localize('SR5.Colons')} ${property.base}</li>`
           for (let modifier of Object.values(property.modifiers)) {
-            detailsHTML = detailsHTML + `<li>${modifier.source} [${modifier.type}]${game.i18n.localize('SR5.Colons')} ${(modifier.isMultiplier ? 'x' : (modifier.value >= 0 ? '+' : ''))}${modifier.value}</li>`
+            //The type's label, as on the actor sheet; a type the system does not list (already a label: ammunition's quantity) as is
+            const typeKey = SR5.modifierTypes[modifier.type]
+            const typeLabel = typeKey ? game.i18n.localize(typeKey) : modifier.type
+            detailsHTML = detailsHTML + `<li>${modifier.source} [${typeLabel}]${game.i18n.localize('SR5.Colons')} ${(modifier.isMultiplier ? 'x' : (modifier.value >= 0 ? '+' : ''))}${modifier.value}</li>`
           }
         }
         detailsHTML += `<li>${game.i18n.localize('SR5.HELP_CalculationTotal')}${game.i18n.localize('SR5.Colons')} ${property.value}</li></ul>`
