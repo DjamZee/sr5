@@ -41,6 +41,10 @@ export default async function iceDefenseInfo(cardData, actorId){
       cardData.chatCard.buttons.defenderDoMatrixDamage = SR5_RollMessage.generateChatButton("nonOpposedTest", "defenderDoMatrixDamage", `${game.i18n.format('SR5.DoMatrixDamage', {
         key: cardData.damage.matrix.value, name: cardData.attackerName
       })}`)
+      //Kill Code p. 74: hurt by the avatar, Blue Goo explodes. The IC's to roll: a button for the GM alone
+      if (cardData.test.typeSub === "iceBlueGoo" && !cardData.various?.blueGooExplosion) {
+        cardData.chatCard.buttons.blueGooExplosion = SR5_RollMessage.generateChatButton("nonOpposedTest", "blueGooExplosion", game.i18n.localize("SR5.IceBlueGooExplosion"), true)
+      }
     }
   } else {
     cardData.damage.matrix.value = netHits
@@ -78,7 +82,13 @@ export default async function iceDefenseInfo(cardData, actorId){
       case "iceSparky":
       case "iceBlueGoo":          
         if (cardData.test.typeSub === "iceBlueGoo") cardData.damage.matrix.base = originalActor.system.matrix.attributes.attack.value  
-        cardData = await SR5_MatrixHelpers.updateMatrixDamage(cardData, netHits, actor)
+        //Kill Code p. 74: the explosion deals "une VD de (Attaque)", where the IC of SR5 p. 250 add their net hits and
+        //marks in so many words. Blue Goo's ordinary attack is left as it was: the book gives it no effect of its own
+        if (cardData.various?.blueGooExplosion) {
+          cardData.damage.matrix.value = cardData.damage.matrix.base
+          cardData.damage.matrix.modifiers = {
+          }
+        } else cardData = await SR5_MatrixHelpers.updateMatrixDamage(cardData, netHits, actor)
         if (!devicelessAI && ((cardData.test.typeSub === "iceBlaster" || cardData.test.typeSub === "iceBlack") && (!actorData.matrix.isLinkLocked) || cardData.test.typeSub === "iceBlueGoo")) {
           cardData.chatCard.buttons.iceEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "iceEffect", game.i18n.localize("SR5.LinkLockConnection"))
         }  

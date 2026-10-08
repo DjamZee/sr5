@@ -12,8 +12,8 @@ vi.mock('../modules/socket.js', () => ({
 }))
 vi.mock('../modules/rolls/roll-message.js', () => ({
   SR5_RollMessage: {
-    generateChatButton: (type, action, label) => ({
-      type, action, label
+    generateChatButton: (type, action, label, gm) => ({
+      type, action, label, gm: !!gm
     }),
   },
 }))
@@ -88,6 +88,84 @@ describe('Blue Goo (Kill Code p. 74)', () => {
     expect(data.chatCard.buttons.attackerPlaceMark).toBeDefined()
     expect(data.chatCard.buttons.iceEffect).toBeDefined()
     expect(data.chatCard.buttons.matrixResistance).toBeDefined()
+  })
+
+  // "L'avatar doit résister une VD de (Attaque)": no net hits, no +2 per mark, unlike the IC of SR5 p. 250
+  it('deals the Attack alone as the DV of its explosion', async () => {
+    const data = card('iceBlueGoo')
+    data.various = {
+      blueGooExplosion: true
+    }
+    await iceDefenseInfo(data, 'decker')
+    expect(SR5_MatrixHelpers.updateMatrixDamage).not.toHaveBeenCalled()
+    expect(data.damage.matrix.value).toBe(4)
+    expect(data.chatCard.buttons.iceEffect).toBeDefined()
+    expect(data.chatCard.buttons.attackerPlaceMark).toBeDefined()
+  })
+
+  it('leaves its ordinary attack as it was', async () => {
+    const data = card('iceBlueGoo')
+    await iceDefenseInfo(data, 'decker')
+    expect(SR5_MatrixHelpers.updateMatrixDamage).toHaveBeenCalledTimes(1)
+  })
+
+  it('marks the attack card of its explosion, and only for a Blue Goo', async () => {
+    const {
+      default: iceAttack
+    } = await import('../modules/rolls/roll-prepare-case/rollData-IceAttack.js')
+    const rollData = () => ({
+      test: {
+      }, dicePool: {
+      }, limit: {
+      }, combat: {
+        actions: []
+      }, damage: {
+        matrix: {
+        }
+      }, various: {
+      }
+    })
+    const actor = subType => ({
+      system: {
+        matrix: {
+          deviceRating: 3, deviceSubType: subType, attributes: {
+            attack: {
+              value: 4
+            }
+          }, ice: {
+            attackDicepool: 6
+          }
+        }
+      }
+    })
+    expect(iceAttack(rollData(), actor('iceBlueGoo'), 'blueGooExplosion').various.blueGooExplosion).toBe(true)
+    expect(iceAttack(rollData(), actor('iceBlueGoo'), null).various.blueGooExplosion).toBeUndefined()
+    expect(iceAttack(rollData(), actor('iceKiller'), 'blueGooExplosion').various.blueGooExplosion).toBeUndefined()
+  })
+
+  // Hurt by the avatar's defense (SR5 p. 249), it explodes: the GM's button on the defense card
+  it('offers its explosion to the GM on a defense that beats it, once only', async () => {
+    const data = card('iceBlueGoo')
+    data.previousMessage.hits = 1
+    data.roll.hits = 3
+    await iceDefenseInfo(data, 'decker')
+    expect(data.chatCard.buttons.defenderDoMatrixDamage).toBeDefined()
+    expect(data.chatCard.buttons.blueGooExplosion).toMatchObject({
+      action: 'blueGooExplosion', gm: true
+    })
+    const exploded = card('iceBlueGoo')
+    exploded.previousMessage.hits = 1
+    exploded.roll.hits = 3
+    exploded.various = {
+      blueGooExplosion: true
+    }
+    await iceDefenseInfo(exploded, 'decker')
+    expect(exploded.chatCard.buttons.blueGooExplosion).toBeUndefined()
+    const killer = card('iceKiller')
+    killer.previousMessage.hits = 1
+    killer.roll.hits = 3
+    await iceDefenseInfo(killer, 'decker')
+    expect(killer.chatCard.buttons.blueGooExplosion).toBeUndefined()
   })
 
   it('leaves the other damaging ICs without a mark', async () => {

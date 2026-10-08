@@ -2659,6 +2659,7 @@
 	"SR5.IceShocker": "Shocker",
 	"SR5.IceShocker_GE": "",
 	"SR5.IceSleuther": "Sleuther",
+	"SR5.IceSleutherMarks": "Sleuther IC marks",
 	"SR5.IceSleuther_GE": "This IC puts a mark on you if it hits. Each mark provides a legitimate user with +2 dice on any Matrix Search actions or Matrix Perception tests involving you. It works by applying different behavioral algorithms and heuristics to try to work out what sort of person you are. This IC also installs tracker code into your avatar, enabling the IC to identify which grids and hosts your avatar visits after the mark lands. Marks from this IC may be removed normally",
 	"SR5.IceSparky": "Sparky",
 	"SR5.IceSparky_GE": "Sparky IC is also known as “Psycho Killer,” an upgraded version of the popular Killer IC. It causes (Attack) DV Matrix damage (+1 DV per net hit and +2 DV per mark on the target) with biofeedback damage.",

@@ -176,7 +176,7 @@ export class SR5_PrepareRollTest {
         break
       case "iceAttack":
         if (game.user.targets.size) rollData = await SR5_PrepareRollHelper.getTargetData(rollData)
-        rollData = await SR5_GetRollData.iceAttack(rollData, actor)
+        rollData = await SR5_GetRollData.iceAttack(rollData, actor, rollKey)
         break
       case "iceDefense":
         rollData = await SR5_GetRollData.iceDefense(rollData, actor, chatData)

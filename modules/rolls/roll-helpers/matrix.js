@@ -46,6 +46,9 @@ import {
 import {
   refuseByRule
 } from "../../system/rule-locks.js"
+import {
+  isLinkLockEffect
+} from "../../system/link-lock.js"
 
 //A warning, and false: nothing was written, the card's button stays
 function warned(key) {
@@ -380,8 +383,7 @@ export class SR5_MatrixHelpers {
 
   //The link lock effects of an actor, one per icon that locked it
   static getLinkLocks(actor){
-    return actor.items.filter(i => i.type === "itemEffect" && Object.values(i.system.customEffects ?? {
-    }).some(e => e.target === "system.matrix.isLinkLocked"))
+    return actor.items.filter(isLinkLockEffect)
   }
 
   //Jack out (SR5 p. 244): free of the link lock, the character reboots the device used

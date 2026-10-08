@@ -2659,6 +2659,7 @@
 	"SR5.IceShocker": "Choc",
 	"SR5.IceShocker_GE": "Généralement utilisée en duo avec d’autres formes de CI, le but de Choc est de ralentir l’opposition. Si son attaque touche, au lieu d’infliger des dommages matriciels, elle réduit de 5 le Score d’initiative de la cible.",
 	"SR5.IceSleuther": "Détective",
+	"SR5.IceSleutherMarks": "Marks de la CI Détective",
 	"SR5.IceSleuther_GE": "Cette CI appose une mark sur vous si elle vous touche. Chaque mark procure à l'utilisateur légitime un +2D sur toute action de recherche matricielle ou test de perception matricielle vous impliquant. Elle fonctionne en appliquant différents algorithmes comportementaux et heuristiques pour essayer de déterminer quel genre de personne vous êtes. Cette CI installe également un code de traçage dans votre avatar, lui permettant d'identifier les grilles et les serveurs que votre avatar visite après l'apposition de la mark. Les marks de cette CI peuvent être retirés normalement.",
 	"SR5.IceSparky": "Furie",
 	"SR5.IceSparky_GE": "La CI Furie est aussi connue sous le nom de « Tueuse psychopathe », et est une version améliorée de la fameuse CI Tueuse. Elle inflige des dommages matriciels de VD égale à son Attaque (+1 par succès excédentaire et +2 par mark sur la cible) ainsi qu’un montant égal de dommages de biofeedback.",
