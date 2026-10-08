@@ -204,7 +204,7 @@ describe('Slots cannot be gone beyond (Rigger 5.0 p. 153-154)', () => {
       value: 0
     }
   }
-  it('reads the slots a fitted mod takes, factory ones even switched off', () => {
+  it('reads the slots a fitted mod takes, none for a factory one (R5 p. 191)', () => {
     expect(modSlotUse(use("weapons", 2))).toEqual({
       category: "weapons", slots: 2
     })
@@ -213,9 +213,10 @@ describe('Slots cannot be gone beyond (Rigger 5.0 p. 153-154)', () => {
     }))).toBe(null)
     expect(modSlotUse(use("weapons", 2, {
       isActive: false, isFactory: true
-    }))).toEqual({
-      category: "weapons", slots: 2
-    })
+    }))).toBe(null)
+    expect(modSlotUse(use("weapons", 2, {
+      isFactory: true
+    }))).toBe(null)
     expect(modSlotUse(use("equipment", 2))).toBe(null)
   })
   it('refuses a mod fitted beyond the slots left', () => {

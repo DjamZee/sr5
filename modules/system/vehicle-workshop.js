@@ -15,7 +15,7 @@ const num = v => Math.max(0, Math.floor(Number(v) || 0))
 const sys = m => m?.system ?? {
 }
 
-/** One gauge per category: the slots the fitted mods (and the factory ones) take up out of the vehicle's.
+/** One gauge per category: the slots the fitted mods take up out of the vehicle's (factory ones free, R5 p. 191).
  *  "Il est strictement interdit de dépasser ce nombre d'emplacements" (R5 p. 154): over shows a vehicle
  *  modified before the refusal existed */
 export function slotGauges(capacity, mods) {

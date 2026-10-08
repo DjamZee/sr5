@@ -34,11 +34,16 @@ const mod = (type, slots, extra = {
 })
 
 describe('the slots of a build', () => {
-  it('counts the factory and fitted mods as used, the others as waiting, and says when the whole goes over', () => {
+  it('counts the fitted mods as used, the factory ones as free (R5 p. 191), the others as waiting, and says when the whole goes over', () => {
     const gauges = dealerGauges(dealerCapacity(3), [
       {
         ...mod('weapons', 1, {
-          isFactory: true
+          isActive: true
+        }), pending: false
+      },
+      {
+        ...mod('weapons', 2, {
+          isActive: true, isFactory: true
         }), pending: false
       },
       {

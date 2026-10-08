@@ -271,14 +271,14 @@ export function modPointsPrice(system, vehicle) {
   }
 }
 
-/** The price of a mod on a drone under the points: the factory ones stay free (Q6), an attribute upgrade costs what
+/** The price of a mod on a drone under the points: the factory ones stay free (R5 p. 191), an attribute upgrade costs what
  *  the book says (p. 127-128), any other mod its own price */
 export function modPointsCost(mod, vehicle) {
   if (isFactoryMod(mod) || mod?.flags?.sr5?.wasFactory === true) return 0
   return modPointsPrice(sys(mod), vehicle) ?? modCost(mod)
 }
 
-/** The mods that take their points: fitted, or from the factory (R5 p. 156, Q6 of DjamZ) */
+/** The mods that take their points: fitted, never from the factory (R5 p. 191, arbitrage de DjamZ du 08/10) */
 export function modsTakingPoints(mods) {
   return Array.from(mods ?? []).filter(takesModPoints)
 }

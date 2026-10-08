@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 import {
   usesModPoints, attributeChange, modPointsDemand, modPointsOf, modPointsUsage, modPointsRefusal, modPointsPrice,
-  armorOverload, attributeCap, modPointsLines, weaponMountPoints
+  armorOverload, attributeCap, modPointsLines, weaponMountPoints, modsTakingPoints, modPointsCost
 } from '../modules/system/drone-mod-points.js'
 import {
   dealerPointsGauge, buildPointsRefusal
@@ -82,6 +82,37 @@ describe('What a mod asks (R5 p. 127)', () => {
   })
   it('takes a drone mod at its points, ignoring the vehicle slots of an attribute upgrade', () => {
     expect(modPointsOf(pointsMod(2))).toBe(2)
+  })
+})
+
+// R5 p. 191 (Body without (Y)), arbitrage de DjamZ du 08/10 replacing Q6: factory equipment is free
+describe('Factory equipment takes no point', () => {
+  it('a new Steel Lynx keeps its 6 points, its factory mount free', () => {
+    const lynx = {
+      body: 6, attributes: {
+      }
+    }
+    const factoryMount = {
+      system: {
+        isActive: true, isFactory: true, isWeaponMounted: true, weaponMount: {
+          size: 'heavy', visibility: 'external'
+        }, slots: {
+          value: 2
+        }
+      }
+    }
+    const bought = {
+      system: {
+        isActive: true, slots: {
+          value: 2
+        }
+      }
+    }
+    expect(modsTakingPoints([factoryMount, bought])).toEqual([bought])
+    expect(modPointsUsage(lynx, modsTakingPoints([factoryMount]).map(m => m.system))).toMatchObject({
+      total: 6, used: 0, free: 6
+    })
+    expect(modPointsCost(factoryMount, lynx)).toBe(0)
   })
 })
 
