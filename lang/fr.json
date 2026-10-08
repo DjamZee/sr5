@@ -6545,6 +6545,8 @@
 	"SR5.NEGO_REPAIR_LastRun": "Dernière réparation le {date} par {user} ({count} fiche(s)).",
 	"SR5.NEGO_REPAIR_OnlyGM": "Réservé au MJ.",
 	"SR5.NEGO_REPAIR_OnlyActiveGM": "Seul le MJ actif peut appliquer la réparation.",
+	"SR5.NEGO_REPAIR_SearchingStart": "Recherche des fiches…",
+	"SR5.NEGO_REPAIR_Searching": "Recherche des fiches : {done} sur {total}…",
 	"SR5.FACTION_Hint": "Réputation de faction (Cutting Aces p. 156-160). Les mouvements en attente s'appliquent en fin de mission, avec le Karma. Le MJ garde toujours la main sur l'attitude des PNJ.",
 	"SR5.FACTION_List": "Factions",
 	"SR5.FACTION_Edit": "Modifier",
