@@ -28,13 +28,14 @@ describe('Factory equipment of a vehicle (Rigger 5.0 p. 154-156)', () => {
     })).toBe(false)
     expect(isFactoryMod(undefined)).toBe(false)
   })
-  it('a factory mod takes up its slots, even switched off', () => {
+  // R5 p. 191 (Body without (Y)), arbitrage de DjamZ du 08/10 replacing Q6: factory equipment is free
+  it('a factory mod takes up neither slots nor points, fitted or not', () => {
     expect(modTakesSlots({
       isActive: false
-    }, true)).toBe(true)
+    }, true)).toBe(false)
     expect(modTakesSlots({
       isActive: true
-    }, true)).toBe(true)
+    }, true)).toBe(false)
   })
   it('a mod bought afterwards takes up its slots while it is fitted', () => {
     expect(modTakesSlots({

@@ -18,17 +18,17 @@ const mod = (type, slots, extra = {
 const capacity = Object.fromEntries(MOD_CATEGORIES.map(k => [k, 4]))
 
 describe('Workshop slots (Rigger 5.0 p. 153-154)', () => {
-  it('counts the fitted mods and the factory ones, not those waiting to be installed', () => {
+  it('counts the fitted mods, not those waiting to be installed nor the factory ones (R5 p. 191)', () => {
     const gauges = slotGauges(capacity, [
       mod('powerTrain', 2), mod('powerTrain', 1, {
         isActive: false
       }), mod('powerTrain', 1, {
-        isActive: false, isFactory: true
+        isActive: true, isFactory: true
       }),
     ])
     const powerTrain = gauges.find(g => g.key === 'powerTrain')
     expect(powerTrain).toMatchObject({
-      used: 3, total: 4, free: 1, full: false, over: false, percent: 75
+      used: 2, total: 4, free: 2, full: false, over: false, percent: 50
     })
   })
 
