@@ -1181,7 +1181,8 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
 
       let details = el.dataset.helpdetails
       if (details) {
-        property = SR5_EntityHelpers.resolveObjectPath(`item.system.${details}`, this)
+        // The templates write the path from the item ("system.price"), as the actor sheet's do from the actor
+        property = SR5_EntityHelpers.resolveObjectPath(`item.${details.startsWith("system.") ? details : `system.${details}`}`, this)
       }
 
       if (property) {
