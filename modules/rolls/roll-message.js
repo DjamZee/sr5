@@ -141,6 +141,9 @@ import {
 import {
   chatButtonAllowed
 } from "./roll-helpers/socket-senders.js"
+import {
+  blueGooToExplode
+} from "../system/blue-goo.js"
 
 // The button a card stores under this key; the template buttons are flags of their own (removeTemplate)
 export function storedButton(cardData, key) {
@@ -758,9 +761,16 @@ export class SR5_RollMessage {
       }
       case "blueGooExplosion": {
         //From the IC's resistance card, the IC is the card's actor; from the defense of the avatar that hurt it, the
-        //attacker of that defense
-        const goo = actor?.system?.matrix?.deviceSubType === "iceBlueGoo" ? actor : originalActionActor
-        if (goo?.system?.matrix?.deviceSubType !== "iceBlueGoo") break
+        //attacker of that defense. Already down (its other button used), it explodes no more: this button goes
+        const {
+          goo, down
+        } = blueGooToExplode(actor, originalActionActor)
+        if (down) {
+          SR5_RollMessage.updateChatButtonHelper(messageId, type)
+          ui.notifications.info(game.i18n.localize("SR5.INFO_BlueGooAlreadyExploded"))
+          break
+        }
+        if (!goo) break
         goo.rollTest("iceAttack", "blueGooExplosion", messageData)
         //Kill Code p. 74: the IC is gone once it has exploded, it explodes only once
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
