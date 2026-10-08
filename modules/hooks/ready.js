@@ -178,14 +178,15 @@ export function sr5HookReady() {
 /**
  * The system migration recorded in this world, and whether the world is new. Foundry V13 returns the default of
  * systemMigrationVersion cast to its type ("0", truthy), so the stored setting is read instead: a new world never
- * wrote it and holds no document. A world with documents but no record (made before the migrations) still migrates.
+ * wrote it and holds no actor nor item. A world with actors or items but no record (made before the migrations)
+ * still migrates. Scenes and journals are not counted: Foundry's welcome scene appears at the first launch.
  * @returns {{version: string|null, newWorld: boolean}}
  */
 export function sr5WorldMigrationState() {
   const stored = game.settings.storage?.get("world")?.getSetting?.("sr5.systemMigrationVersion")
   const value = stored ? game.settings.get("sr5", "systemMigrationVersion") : null
   const version = value && value !== "0" ? String(value) : null
-  const empty = ["actors", "items", "scenes", "journal"].every(key => !game[key]?.size)
+  const empty = ["actors", "items"].every(key => !game[key]?.size)
   return {
     version, newWorld: !stored && empty
   }

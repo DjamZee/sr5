@@ -86,6 +86,19 @@ describe('new world detection (systemMigrationVersion)', () => {
     })
   })
 
+  it('Foundry\'s welcome scene does not make a new world old', () => {
+    world()
+    globalThis.game.scenes.size = 1
+    globalThis.game.journal.size = 1
+    expect(sr5WorldMigrationState().newWorld).toBe(true)
+  })
+
+  it('a world with items only and no record is not new', () => {
+    world()
+    globalThis.game.items.size = 2
+    expect(sr5WorldMigrationState().newWorld).toBe(false)
+  })
+
   it('a stored "0" is no version, but not a new world either', () => {
     world({
       stored: {
