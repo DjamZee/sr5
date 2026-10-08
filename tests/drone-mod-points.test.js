@@ -248,6 +248,17 @@ describe('Dealership under the points (R5 p. 126-128)', () => {
       key: 'modPoints', used: 1, pending: 1, planned: 2, total: 3, over: false
     })
   })
+  it('leaves the factory equipment out of the gauge and of the refusal (R5 p. 191)', () => {
+    const factory = {
+      system: {
+        ...pointsMod(3).system, isFactory: true
+      }
+    }
+    expect(dealerPointsGauge(drone, [factory, pointsMod(1)])).toMatchObject({
+      used: 1, total: 3, over: false
+    })
+    expect(buildPointsRefusal(drone, [factory], pointsMod(2))).toBeNull()
+  })
   it('refuses the gamemaster\'s fitting beyond the points', () => {
     expect(buildPointsRefusal(drone, [pointsMod(3)], upgrade('speed', 2))).toEqual({
       needed: 1, free: 0

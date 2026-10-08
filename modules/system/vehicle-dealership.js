@@ -6,7 +6,7 @@ import {
   slotGauges, MOD_CATEGORIES
 } from "./vehicle-workshop.js"
 import {
-  MOD_POINTS_KEY, modPointsUsage, modPointsRefusal
+  MOD_POINTS_KEY, modPointsUsage, modPointsRefusal, modsTakingPoints
 } from "./drone-mod-points.js"
 
 const num = v => Math.max(0, Math.floor(Number(v) || 0))
@@ -60,7 +60,8 @@ export function buildSlotsRefusal(capacity, mods, added) {
  *  gauges (`pending` what the mods waiting to be installed will take) */
 export function dealerPointsGauge(vehicle, mods) {
   const list = Array.from(mods ?? [])
-  const fitted = fittedOf(list)
+  //The factory equipment takes no points (R5 p. 191), as on the workshop's gauge
+  const fitted = modsTakingPoints(fittedOf(list))
   const now = modPointsUsage(vehicle, fitted)
   const all = modPointsUsage(vehicle, [...fitted, ...list.filter(m => m.pending)])
   const total = all.total
@@ -75,7 +76,7 @@ export function dealerPointsGauge(vehicle, mods) {
 
 /** The refusal of a mod fitted at once by the gamemaster, under the points: the same as on a drone (entityItem.js) */
 export function buildPointsRefusal(vehicle, mods, added) {
-  return modPointsRefusal(vehicle, fittedOf(mods), null, added)
+  return modPointsRefusal(vehicle, modsTakingPoints(fittedOf(mods)), null, added)
 }
 
 const LEGALITY_RANK = {
