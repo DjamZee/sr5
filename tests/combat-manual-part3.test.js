@@ -80,6 +80,8 @@ describe('an unlinked token is named after its token', () => {
     const grapple = read('../modules/rolls/roll-helpers/grapple.js')
     expect(grapple).toContain('holder: SR5_EntityHelpers.displayName(holder), held: SR5_EntityHelpers.displayName(held), hold')
     expect(grapple).toContain('alias: SR5_EntityHelpers.displayName(holder)')
+    // ... and the actions spent or missing
+    expect(read('../modules/system/srcombat.js')).not.toContain('actor: actor.name,')
   })
 })
 
