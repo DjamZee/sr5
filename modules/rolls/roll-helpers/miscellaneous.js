@@ -12,7 +12,7 @@ import {
 } from "../../system/gm-ledger.js"
 import {
   ownsTarget, cardTrusted, matrixDamageAllowed, deactivateAllowed, reduceAllowed, supportEffectAllowed,
-  serviceSpentAllowed, maglockAllowed, testAllowed, recountHits, consumedKey, REDUCER_POOLS, hitsUnderPush, edgeSpentOn, chanceSpent, standsAsGM
+  serviceSpentAllowed, maglockAllowed, testAllowed, recountHits, consumedKey, REDUCER_POOLS, hitsUnderPush, edgeSpentOn, chanceSpent, standsAsGM, cardPoolCap
 } from "./socket-guard.js"
 import {
   linkedEntryOf, effectHits
@@ -175,7 +175,7 @@ export class SR5_MiscellaneousHelpers {
    * within the pool at `path` (null when it shows no dice). */
   static hitsOf(card, path) {
     if (card.byGM) return Math.max(0, Number(card.data.roll?.hits) || 0)
-    return recountHits(card.data.roll?.r, path === null ? Infinity : SR5_MiscellaneousHelpers.poolCap(card.roller, path), {
+    return recountHits(card.data.roll?.r, path === null ? Infinity : cardPoolCap(card, SR5_MiscellaneousHelpers.poolCap(card.roller, path)), {
       secondChance: chanceSpent(card.data, card.roller)
     })
   }

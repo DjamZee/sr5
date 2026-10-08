@@ -32,7 +32,7 @@ import {
   SR5_MiscellaneousHelpers
 } from "./miscellaneous.js"
 import {
-  recountHits, consumedKey, chanceSpent
+  recountHits, consumedKey, chanceSpent, rolledPool, cardPoolCap
 } from "./socket-guard.js"
 import {
   originalStrainDevice
@@ -317,8 +317,9 @@ export class SR5_MatrixHelpers {
       }
     }
     const action = card.roller?.system?.matrix?.actions?.jackOut
-    const pool = Math.max(0, Number(action?.test?.dicePool) || 0)
-    const withEdge = SR5_MiscellaneousHelpers.poolCap(card.roller, "matrix.actions.jackOut.test.dicePool")
+    //The pool the card was rolled with counts when the sheet dropped since (socket-guard.js cardPoolCap)
+    const pool = Math.max(0, Number(action?.test?.dicePool) || 0, rolledPool(card.data))
+    const withEdge = cardPoolCap(card, SR5_MiscellaneousHelpers.poolCap(card.roller, "matrix.actions.jackOut.test.dicePool"))
     const chance = {
       secondChance: chanceSpent(card.data, card.roller)
     }

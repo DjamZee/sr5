@@ -131,6 +131,22 @@ export function chanceHits(rollJSON, counted) {
   return chance.slice(0, counted.filter(d => Number(d.result) < 5).length).filter(isHit).length
 }
 
+/** The pool a card was rolled with (its dicePool.value), without the Edge a push of the limit added to it
+ * (modifiers "edge" in the dialog, "pushTheLimit" after the roll): that push is counted apart, once granted. */
+export function rolledPool(data) {
+  const edge = (data?.dicePool?.modifiers ?? []).filter(m => m?.type === "edge" || m?.type === "pushTheLimit")
+    .reduce((sum, m) => sum + (Number(m.value) || 0), 0)
+  return Math.max(0, (Number(data?.dicePool?.value) || 0) - edge)
+}
+
+/** The most dice a card may count: `sheetCap` (its pool on the sheet, plus Chance), or the pool it was rolled with
+ * plus Chance when larger: the sheet may have dropped since the roll (a deck switched off, silent mode, a wound;
+ * Laurine, 08/10). Dice past both still do not count. */
+export function cardPoolCap(card, sheetCap) {
+  const edge = Number(card?.roller?.system?.specialAttributes?.edge?.augmented?.value) || 0
+  return Math.max(Number(sheetCap) || 0, rolledPool(card?.data) + edge)
+}
+
 /** Whether the dice a card's Second Chance rerolled may count (recountHits): the card says it, and the roller's
  * sheet shows Edge spent, as for a push of the limit (edgeSpentOn). */
 export function chanceSpent(data, roller) {

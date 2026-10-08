@@ -14,7 +14,7 @@ import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
-  ownsTarget, recountHits, consumedKey, chanceSpent
+  ownsTarget, recountHits, consumedKey, chanceSpent, cardPoolCap
 } from "./socket-guard.js"
 import {
   MARK_DEFENSE_TESTS, attackerMarks, markPenalty, markOutcome, eraseWins
@@ -201,7 +201,8 @@ export class SR5_MarkHelpers {
       pools.push(Number(foundry.utils.getProperty(master?.system ?? {
       }, `matrix.actions.${key}.defense.dicePool`)) || 0)
     }
-    return Math.max(...pools) + (Number(defense.roller?.system?.specialAttributes?.edge?.augmented?.value) || 0)
+    //The pool the card was rolled with, when the sheets dropped since (socket-guard.js cardPoolCap)
+    return cardPoolCap(defense, Math.max(...pools) + (Number(defense.roller?.system?.specialAttributes?.edge?.augmented?.value) || 0))
   }
 
   /** The defense card behind a mark request, the attack card it answers, and what they allow: null
@@ -216,7 +217,7 @@ export class SR5_MarkHelpers {
       marks = attackerMarks(typeSub, chosen)
     //The attacker's dice within its pool for this action, less the dice the marks cost
     const attackerHits = attack.byGM ? hitsWritten(attack) :
-      recountHits(attack.data.roll?.r, SR5_MiscellaneousHelpers.poolCap(attack.roller, `matrix.actions.${typeSub}.test.dicePool`) + markPenalty(marks), {
+      recountHits(attack.data.roll?.r, cardPoolCap(attack, SR5_MiscellaneousHelpers.poolCap(attack.roller, `matrix.actions.${typeSub}.test.dicePool`) + markPenalty(marks)), {
         secondChance: chanceSpent(attack.data, attack.roller)
       })
     const defenderHits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, await SR5_MarkHelpers.defenseCap(defense), {
@@ -531,7 +532,7 @@ export class SR5_MarkHelpers {
     const action = SR5_MiscellaneousHelpers.cardOf(defense.data.previousMessage?.messageId)
     if (!action || action.data.test?.type !== "matrixAction" || action.data.test?.typeSub !== "eraseMark") return null
     const eraserHits = action.byGM ? hitsWritten(action) :
-      recountHits(action.data.roll?.r, SR5_MiscellaneousHelpers.poolCap(action.roller, "matrix.actions.eraseMark.test.dicePool"), {
+      recountHits(action.data.roll?.r, cardPoolCap(action, SR5_MiscellaneousHelpers.poolCap(action.roller, "matrix.actions.eraseMark.test.dicePool")), {
         secondChance: chanceSpent(action.data, action.roller)
       })
     const defenderHits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, Infinity, {

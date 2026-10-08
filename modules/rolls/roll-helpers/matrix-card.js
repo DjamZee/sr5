@@ -8,7 +8,7 @@
  * A card a GM wrote stands as written. Pure rules first; the lookups are passed in (tests) or imported.
  */
 import {
-  hitsUnderPush, edgeSpentOn, chanceSpent
+  hitsUnderPush, edgeSpentOn, chanceSpent, rolledPool
 } from "./socket-guard.js"
 
 /** The hits a card stands for: a GM's as written, a player's counted again (null: no dice, 0), never above the claim. */
@@ -101,12 +101,8 @@ export async function grantPush(card, {
   }).catch(() => false)
 }
 
-/** The pool a card was rolled with (its dicePool.value), without the Edge a push of the limit added to it
- * (modifiers "edge" in the dialog, "pushTheLimit" after the roll): that push is counted apart, once granted. */
-export function rolledPool(data) {
-  const edge = (data?.dicePool?.modifiers ?? []).filter(m => m?.type === "edge" || m?.type === "pushTheLimit")
-    .reduce((sum, m) => sum + (Number(m.value) || 0), 0)
-  return Math.max(0, (Number(data?.dicePool?.value) || 0) - edge)
+export {
+  rolledPool
 }
 
 /**
