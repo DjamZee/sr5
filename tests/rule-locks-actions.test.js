@@ -134,7 +134,7 @@ describe('actions left in the pass (hasActionsLeft)', () => {
     expect(emits).toHaveLength(1)
     expect(emits[0][0]).toBe('ruleLockWhisper')
     expect(emits[0][1]).toMatchObject({
-      family: 'actions', key: 'SR5.WARN_NoActionLeft', actor: 'Dodger'
+      family: 'actions', key: 'SR5.RULELOCKS_NoActionLeftLifted', actor: 'Dodger'
     })
   })
 

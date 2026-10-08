@@ -791,11 +791,11 @@ export class SR5Combat extends Combat {
         action.value = -action.value
         let sign = action.value > 0 ? "+" : ""
         ui.notifications.info(`${game.i18n.format("SR5.INFO_TakeActionsManually", {
-          actor: actor.name, actionValue: action.value, actionType: game.i18n.localize(SR5.actionTypes[action.type]), sign: sign
+          actor: SR5_EntityHelpers.displayName(actor), actionValue: action.value, actionType: game.i18n.localize(SR5.actionTypes[action.type]), sign: sign
         })}`) 
       }
       else ui.notifications.info(`${game.i18n.format("SR5.INFO_TakeActions", {
-        actor: actor.name, actionValue: action.value, actionType: game.i18n.localize(SR5.actionTypes[action.type]), actionSource: game.i18n.localize(SR5.actionSources[action.source])
+        actor: SR5_EntityHelpers.displayName(actor), actionValue: action.value, actionType: game.i18n.localize(SR5.actionTypes[action.type]), actionSource: game.i18n.localize(SR5.actionSources[action.source])
       })}`) 
     }
     // SR5 p. 170: every interruption action of the list lowers the Initiative score by its own cost
@@ -854,7 +854,7 @@ export class SR5Combat extends Combat {
         initiative: combatant.initiative, isCurrent: game.combat.combatant?.id === combatant.id
       })
       const data = {
-        actor: actor.name, initiative: combatant.initiative
+        actor: SR5_EntityHelpers.displayName(actor), initiative: combatant.initiative
       }
       if (problem === "outOfPhase") ui.notifications.warn(game.i18n.format("SR5.WARN_ActionOutOfPhase", data))
       if (problem === "noInitiative" && refuseByRule("actions", "SR5.WARN_ActionNoInitiative", data, lock)) return false
@@ -862,8 +862,10 @@ export class SR5Combat extends Combat {
     let missing = SR5_MiscellaneousHelpers.missingAction(actions, actor.system.specialProperties?.actions)
     if (!missing) return true
     return !refuseByRule("actions", "SR5.WARN_NoActionLeft", {
-      actor: actor.name, value: missing.value, action: game.i18n.localize(SR5.actionTypes[missing.type]), current: missing.current
-    }, lock)
+      actor: SR5_EntityHelpers.displayName(actor), value: missing.value, action: game.i18n.localize(SR5.actionTypes[missing.type]), current: missing.current
+    }, {
+      ...lock, liftedKey: "SR5.RULELOCKS_NoActionLeftLifted"
+    })
   }
 
   //Reset actions on actor

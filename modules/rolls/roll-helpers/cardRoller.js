@@ -41,7 +41,8 @@ export function defenseActorId(selectedId, card, resolveActor) {
 
 // The actor defending against a matrix attack card: its target first, then the selected one; never
 // its author, still selected after the attack, whose deck the choice offered (Anatole's matrix trial).
-// Null when nobody may defend: the button refuses
+// Null when nobody may defend: the button refuses. The clinch (Run & Gun p. 133) follows it too: the gamemaster
+// still holding the attacker defended with the attacker's Reaction (manual, part 3)
 export function matrixDefenseActorId(selectedId, card, resolveActor) {
   const attacker = card?.owner?.speakerId ? resolveActor(card.owner.speakerId) : null
   const isAttacker = actor => !!attacker && actor?.uuid === attacker.uuid

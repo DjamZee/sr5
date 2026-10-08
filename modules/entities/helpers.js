@@ -13,6 +13,12 @@ import {
 
 export class SR5_EntityHelpers {
 
+  //The name shown at the table: an unlinked token's synthetic actor answers to its token ("Garde B"), not to the
+  //base actor it copies (manual, part 3)
+  static displayName(actor) {
+    return (actor?.isToken && actor.token?.name) || actor?.name || ""
+  }
+
   // Fonction générique pour arrondir
   static roundDecimal(nombre, precision) {
     precision = precision || 2

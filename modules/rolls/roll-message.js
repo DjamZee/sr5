@@ -358,6 +358,11 @@ export class SR5_RollMessage {
         actor = SR5_EntityHelpers.getRealActorFromID(matrixDefenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids)
         if (!actor) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoMatrixDefender"))
       }
+      //The clinched character defends, the card's target, never its author still selected (Run & Gun p. 133)
+      if (type === "grappleClinchDefense") {
+        actor = SR5_EntityHelpers.getRealActorFromID(matrixDefenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids)
+        if (!actor) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoClinchDefender"))
+      }
       // Matrix support actions (Kill Code p. 43-44) go to the targeted tokens: no selected token needed
       let supportAction = (type === "iAmTheFirewall" || type === "intervene")
       //A spell effect may go to a targeted token without any token selected (Heal, below)
