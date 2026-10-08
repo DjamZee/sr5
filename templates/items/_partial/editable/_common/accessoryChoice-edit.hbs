@@ -8,7 +8,7 @@
             <div class="col-3 SR-TextCenter">{{localize 'SR5.CapacityUsed'}}</div>
             <div class="col-1 SR-TextRight">
                 {{#if owner}}
-                <a class="accessoryChoice" data-title="{{localize 'SR5.Add'}}" data-type="{{item.type}}"><em class="fas fa-plus"></em></a>
+                <a class="accessoryChoice" data-tooltip="{{localize 'SR5.Add'}}" data-type="{{item.type}}"><em class="fas fa-plus"></em></a>
                 {{/if}}
             </div>
         </li>
@@ -22,7 +22,7 @@
                 {{/if}}
             </div>
             <div class="col-3 SR-TextCenter">{{a.system.capacityTaken.value}}</div>
-            <div class="col-1 SR-TextRight"><a class="subItem" data-title="{{localize 'SR5.Delete'}}" data-index="{{@key}}" data-binding="accessory" data-subaction="delete"><i class="fas fa-trash"></i></a></div>
+            <div class="col-1 SR-TextRight"><a class="subItem" data-tooltip="{{localize 'SR5.Delete'}}" data-index="{{@key}}" data-binding="accessory" data-subaction="delete"><i class="fas fa-trash"></i></a></div>
         </li>
         {{/each}}
     </ul>

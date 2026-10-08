@@ -1315,14 +1315,16 @@ export class SR5_ActorHelper {
 
   /**
    * Who may flip the wireless icon of a drone's sheet. Turning it off: anyone who holds the sheet (SR5 p. 424).
-   * Turning a switched-off drone back on is a GM shortcut (ruling of 2026-10-05): nobody can reach the drone
-   * wirelessly to ask it, so a player does not do it from her sheet (l. 845)
+   * Turning a switched-off drone back on: its owner too, at the book's action cost, since the drone may do it itself
+   * (p. 424) and its rigger reaches it by direct connection (p. 234). Arbitrage de DjamZ, 08/10 (Adrore's feedback
+   * C7b), which replaces the GM shortcut of 05/10 (N91). A wireless Matrix action on a switched-off drone stays refused.
    * @param {Boolean} isGM - whether the user is a GM
    * @param {Boolean} turningOn - true when the wireless would be switched on
+   * @param {Boolean} isOwner - whether the user owns the drone
    * @return {Boolean}
    */
-  static droneWirelessToggleAllowed(isGM, turningOn){
-    return !!isGM || !turningOn
+  static droneWirelessToggleAllowed(isGM, turningOn, isOwner = false){
+    return !!isGM || !turningOn || !!isOwner
   }
 
   /**

@@ -10,7 +10,7 @@
 </li>
 <li class="grid">
     <div class="col-11">
-        <label><input type="checkbox" class="SR-SkillAttributeKeep" name="skillAttributeKeep" {{checked skillAttribute.keep}} /> {{localize 'SR5.SkillAttributeKeep'}}</label>
+        <label><input type="checkbox" class="SR-SkillAttributeKeep" name="skillAttributeKeep" {{checked skillAttribute.keep}} /> {{#if skillAttribute.keepLabel}}{{localize skillAttribute.keepLabel}}{{else}}{{localize 'SR5.SkillAttributeKeep'}}{{/if}}</label>
     </div>
     <div class="col-1"></div>
 </li>

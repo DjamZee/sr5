@@ -6,7 +6,7 @@
 			<div class="col-1 SR-TextCenter"><em class="fas fa-sm fa-thumbtack"></em></div>
 			<div class="col-1 SR-TextRight">
 				{{#if owner}}
-				<a class="item-create" data-title="{{localize 'SR5.Add'}}" data-type="itemQuality"><em class="fas fa-plus"></em></a>
+				<a class="item-create" data-tooltip="{{localize 'SR5.Add'}}" data-type="itemQuality"><em class="fas fa-plus"></em></a>
 				{{/if}}
 			</div>
 		</li>
@@ -14,7 +14,7 @@
 		<li class="item grid" data-item-id="{{_id}}" draggable="true">
 			<div class="col-10 deplie" data-helpTitle="{{localize 'SR5.HELP_MoreInfos'}}" data-helpMessage="{{localize 'SR5.HELP_MoreInfosMsg'}}">
 				{{#if (missing system.type system.karmaCost)}}
-				<p class="incomplete" data-title="{{localize 'SR5.UI_WarningMissingValues' type=(localize 'ITEM.TypeTrait')}}">
+				<p class="incomplete" data-tooltip="{{localize 'SR5.UI_WarningMissingValues' type=(localize 'ITEM.TypeTrait')}}">
 					{{name}}
 				</p>
 				{{else}}
@@ -23,11 +23,11 @@
 			</div>
 			<div class="col-1 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_QualityToggle' key=name}}" data-helpMessage="{{localize 'SR5.HELP_QualityToggleMsg'}}">
 				{{#if system.isActive}}
-					<a class="toggle-value" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.isActive" data-title="{{localize 'SR5.Unequip'}}">
+					<a class="toggle-value" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.isActive" data-tooltip="{{localize 'SR5.Unequip'}}">
 						<em class="fas fa-sm fa-thumbtack SR-SubColor"></em>
 					</a>
 				{{else}}
-					<a class="toggle-value" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.isActive" data-title="{{localize 'SR5.Equip'}}">
+					<a class="toggle-value" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.isActive" data-tooltip="{{localize 'SR5.Equip'}}">
 						<em class="fas fa-sm fa-thumbtack"></em>
 					</a>
 				{{/if}}
