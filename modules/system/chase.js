@@ -203,7 +203,7 @@ export class SR5Chase {
         state.vehicles.push({
           id, tokenUuid, actorUuid: token.actor.uuid, name: token.name ?? token.actor.name,
           img: token.document?.texture?.src ?? token.actor.img,
-          kind: kindOfCategory(token.actor.system?.category), role: state.vehicles.length ? "pursuer" : "pursued",
+          kind: kindOfCategory(token.actor.system?.category, token.actor.system?.pilotSkill), role: state.vehicles.length ? "pursuer" : "pursued",
           // No Speed yet: the gamemaster gives the one it enters the chase with, freely (turnStartSpeed null)
           speed: 0, turnStartSpeed: null, controlled: false, outOfControl: false, uncontrolledTurns: 0,
           autopilot: false, passengers: [], ended: "",

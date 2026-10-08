@@ -128,6 +128,11 @@ describe('speed', () => {
     expect(kindOfCategory('fixedWingAircraft')).toBe('jet')
     expect(kindOfCategory('car')).toBe('ground')
     expect(kindOfCategory(undefined)).toBe('ground')
+    // A drone's category is its size: its piloting skill says it flies (Lancelot, F7)
+    expect(kindOfCategory('smallDrone', 'pilotAircraft')).toBe('rotor')
+    expect(kindOfCategory('mediumDrone', 'pilotWatercraft')).toBe('water')
+    expect(kindOfCategory('smallDrone', 'pilotGroundCraft')).toBe('ground')
+    expect(kindOfCategory('boat', 'pilotAircraft')).toBe('water')
   })
 })
 

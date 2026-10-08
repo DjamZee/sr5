@@ -186,6 +186,8 @@ export class SR5_ActorHelper {
             let chatData = SR5_PrepareRollTest.getBaseRollData(null, controler)
             chatData.damage.resistanceType = "biofeedback"
             chatData.damage.value = Math.ceil(damage/2)
+            //Jumped in, the rigger is in VR even when his sheet says AR (SR5 p. 268)
+            chatData.jumpedIn = true
             //Its tactile sensors make the rigger feel the hit: -2 to resist (Rigger 5.0 p. 170)
             chatData.tactileSensors = tactileSensorsOn(actor.items, actorData.controlMode)
             chatData.owner.messageId = options.owner.messageId

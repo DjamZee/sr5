@@ -214,7 +214,8 @@ export function attributeCap(base) {
 }
 
 /** Whether fitting `after` in place of `before` among the drone's fitted `mods` is refused: {needed, free} when the
- *  points run out, {attribute, cap} when an attribute would pass twice its start, else null. A change that asks no more
+ *  points run out, {attribute, cap} when an attribute would pass twice its start, {attribute: "body", floor} when the
+ *  Structure would go below half its start, else null. A change that asks no more
  *  is never refused, even on a drone already over. `vehicle` = {body, modPoints, attributes: {key: starting value}} */
 export function modPointsRefusal(vehicle, mods, before, after) {
   if (!after) return null
@@ -234,6 +235,18 @@ export function modPointsRefusal(vehicle, mods, before, after) {
     const held = previous?.key === change.key && previous.amount > 0 ? previous.amount : 0
     if (base + raised > cap && change.amount > held) return {
       attribute: change.key, cap
+    }
+  }
+  // R5 p. 127: the Structure goes no lower than half its value, rounded up (Structure 3: "pas à 1 (car 1 < 1,5)")
+  if (change && change.amount < 0 && change.key === "body") {
+    const base = whole(vehicle?.body)
+    const lowered = [...others, after].map(m => attributeChange(m, vehicle)).filter(c => c?.key === "body" && c.amount < 0)
+      .reduce((sum, c) => sum - c.amount, 0)
+    const floor = Math.ceil(base / 2)
+    const previous = before ? attributeChange(before, vehicle) : null
+    const held = previous?.key === "body" && previous.amount < 0 ? -previous.amount : 0
+    if (base - lowered < floor && -change.amount > held) return {
+      attribute: "body", floor
     }
   }
   return null

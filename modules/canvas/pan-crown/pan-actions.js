@@ -28,10 +28,11 @@ export const FILE_OWNER_ACTIONS = ["editFile", "setDataBomb"]
 // SR5 p. 238: the owner counts as four marks, more than anyone else can place
 export const OWNER_MARKS = 4
 
-// In a drone's own crown, the drone is the device it carries (pan-graph.js): the node stands for the drone itself
+// In a drone's own crown, the drone is the device it carries (pan-graph.js): the node stands for the drone itself.
+// Slaved, it is a "device" under its rigger; autonomous, it is the master of its own PAN
 export function isOwnDroneDevice(node, graph = {
 }){
-  return node?.kind === "device" && graph?.owner?.type === "actorDrone" && !!graph.owner.id &&
+  return (node?.kind === "device" || node?.kind === "master") && graph?.owner?.type === "actorDrone" && !!graph.owner.id &&
     (node.holderIds ?? []).includes(graph.owner.id)
 }
 
