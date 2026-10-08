@@ -2,6 +2,9 @@ import {
   describe, it, expect
 } from 'vitest'
 import {
+  existsSync
+} from 'node:fs'
+import {
   MOD_CATEGORIES, slotGauges, modsByCategory, modCost, workshopCost, toolsModifier, installPlan, installOutcome, workshopImage
 } from '../modules/system/vehicle-workshop.js'
 
@@ -140,18 +143,46 @@ describe('Install and removal (Rigger 5.0 p. 153-154)', () => {
 })
 
 describe('Workshop picture (Q9 of DjamZ)', () => {
-  it('shows the vehicle, else the generic drone or vehicle picture', () => {
+  it('shows the vehicle, else the picture of its category', () => {
     expect(workshopImage('worlds/x/bulldog.webp', {
-      type: 'vehicle'
+      type: 'vehicle', category: 'truck'
     })).toBe('worlds/x/bulldog.webp')
-    expect(workshopImage('systems/sr5/assets/img/actors/actorDrone.svg', {
-      type: 'drone'
-    })).toBe('systems/sr5/assets/img/items/itemDrone.svg')
     expect(workshopImage('', {
       category: 'car'
-    })).toBe('systems/sr5/assets/img/items/itemVehicle.svg')
+    })).toBe('systems/sr5/assets/img/vehicles/car.webp')
     expect(workshopImage(null, {
       category: 'minidrone'
+    })).toBe('systems/sr5/assets/img/vehicles/minidrone.webp')
+    // The system's default icons are no picture of the vehicle's own
+    expect(workshopImage('systems/sr5/assets/img/items/itemVehicle.svg', {
+      type: 'vehicle', category: 'bike'
+    })).toBe('systems/sr5/assets/img/vehicles/bike.webp')
+    expect(workshopImage('systems/sr5/assets/img/actors/actorDrone.svg', {
+      type: 'drone', category: 'hugeDrone'
+    })).toBe('systems/sr5/assets/img/vehicles/largeDrone.webp')
+  })
+
+  it('falls back on the drone or vehicle icon for a category without a picture', () => {
+    expect(workshopImage('', {
+      category: 'submarine'
+    })).toBe('systems/sr5/assets/img/items/itemVehicle.svg')
+    expect(workshopImage('systems/sr5/assets/img/items/itemDrone.svg', {
+      type: 'drone'
     })).toBe('systems/sr5/assets/img/items/itemDrone.svg')
+    expect(workshopImage(null, {
+      type: 'vehicle', category: 'lta'
+    })).toBe('systems/sr5/assets/img/items/itemVehicle.svg')
+  })
+
+  it('has a picture on disk for every category it names', () => {
+    const categories = ['microdrone', 'minidrone', 'smallDrone', 'mediumDrone', 'largeDrone', 'hugeDrone', 'bike',
+      'car', 'truck', 'boat', 'rotorCraft', 'vectorThrustCraft', 'fixedWingAircraft']
+    for (const category of categories) {
+      const path = workshopImage('', {
+        category
+      })
+      expect(path).toMatch(/^systems\/sr5\/assets\/img\/vehicles\//)
+      expect(existsSync(path.replace('systems/sr5/', ''))).toBe(true)
+    }
   })
 })
