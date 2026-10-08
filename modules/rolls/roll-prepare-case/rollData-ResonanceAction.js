@@ -11,6 +11,9 @@ import {
   streamOf, streamSpriteDice, mayCompileMajorForm
 } from "../../entities/actors/technomancer-streams.js"
 
+//The resonance actions limited by a level, sprite or form (SR5 p. 252), and not by a limit of the actor
+const LEVEL_LIMITED = ["compileSprite", "registerSprite"]
+
 export default async function resonanceAction(rollData, rollKey, actor){
   let resonanceAction = actor.system.matrix?.resonanceActions[rollKey]
 
@@ -26,7 +29,11 @@ export default async function resonanceAction(rollData, rollKey, actor){
   //Determine dicepool modififiers
   rollData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(rollData, resonanceAction.test.modifiers)
 
-  if (resonanceAction.limit){
+  //Compile and Register are limited by the sprite level (SR5 p. 252), set in roll-test.js: only the effects on that
+  //limit come from the actor (Kill Code p. 110, 115)
+  if (LEVEL_LIMITED.includes(rollKey)){
+    rollData.limit.modifiers = SR5_PrepareRollHelper.getLimitModifiers(rollData, resonanceAction.limit?.modifiers ?? [])
+  } else if (resonanceAction.limit){
     //Determine base limit
     rollData.limit.base = SR5_PrepareRollHelper.getBaseLimit(resonanceAction.limit.value, resonanceAction.limit.modifiers)
 
