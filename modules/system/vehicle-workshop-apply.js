@@ -102,7 +102,8 @@ export function workshopContext(vehicle){
     return {
       id: m._id ?? m.id, index, name: `${m.name}${ms.isWeaponMounted && ms.surname ? ms.surname : ""}`, img: m.img,
       rating: ms.itemRating && !m.name.includes(`(${ms.itemRating})`) ? ms.itemRating : 0,
-      slots: points ? pointLines[index] : Number(ms.slots?.value) || 0, threshold: Number(ms.threshold?.value) || 0,
+      //A factory mod takes neither slots nor points (R5 p. 191): its column shows 0, like the gauge
+      slots: factory ? 0 : points ? pointLines[index] : Number(ms.slots?.value) || 0, threshold: Number(ms.threshold?.value) || 0,
       tools: ms.tools ? L(SR5.vehicleModTools[ms.tools] ?? ms.tools) : "", price: priceOf(m).toLocaleString(),
       factory, fitted, pending: !fitted,
     }

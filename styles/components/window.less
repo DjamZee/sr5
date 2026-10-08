@@ -867,8 +867,9 @@
 
 /* System windows that keep Foundry's own surface (sr-application): in the light theme that surface is light, so
    the controls drawn for the dark one (controls.less: dark red fill, teal text) and the white text of the sell
-   counter turn dark on light; the rule locks menu too (Romuald). The dark theme is left as it is (Eudes, manual part 7) */
-&.theme-light .application.sr-application:is(.sr-sell-dialog, .sr-factions, .sr-shop-config, .sr-rule-locks-config) .window-content {
+   counter turn dark on light; the rule locks menu and the chase window too (Romuald, Honorine). The dark theme is left
+   as it is (Eudes, manual part 7) */
+&.theme-light .application.sr-application:is(.sr-sell-dialog, .sr-factions, .sr-shop-config, .sr-rule-locks-config, .sr-chase) .window-content {
   --sr-text-color-light: var(--sr-text-color-dark);
 
   :is(input[type="text"], input[type="number"], input[type="search"], input:not([type]), select, textarea) {
@@ -882,7 +883,7 @@
   select option { color: var(--sr-text-color-dark); background: #f0f0f0; }
 }
 
-&.theme-light .application.sr-application:is(.sr-factions, .sr-shop-config, .sr-rule-locks-config) .window-content button {
+&.theme-light .application.sr-application:is(.sr-factions, .sr-shop-config, .sr-rule-locks-config, .sr-chase) .window-content button {
   color: var(--sr-text-color-dark);
   background: transparent;
   border-color: color-mix(in srgb, var(--sr-text-color-dark) 35%, transparent);
