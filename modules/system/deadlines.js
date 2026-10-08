@@ -59,6 +59,16 @@ export function rentCounts(system){
   return !system?.rent?.bought && system?.rent?.paidUntil !== null && system?.rent?.paidUntil !== undefined
 }
 
+/**
+ * When a rent with no end yet runs out: at the end of the months paid in advance, or now when none was paid, since
+ * a character pays each month (SR5 p. 377). Only a player's character pays: a lifestyle on a GM's NPC is a
+ * description, not a rent to claim (null, left alone).
+ */
+export function rentStart(months, now, startYear, playerOwned){
+  if (Number(months) > 0) return addMonths(now, Number(months), startYear)
+  return playerOwned ? now : null
+}
+
 /* -------------------------------------------- */
 
 function isWriter(){
@@ -110,14 +120,18 @@ async function collect(actor, now, startYear){
 
   // Lifestyles rented: the months paid count down, and the end of them is a deadline
   for (const item of actor.items.filter(i => i.type === "itemLifestyle" && !i.system.rent?.bought)){
-    const rent = item.system.rent
+    const rent = {
+      ...item.system.rent
+    }
     if ((rent.paidUntil === null || rent.paidUntil === undefined)){
-      if (Number(rent.duration) > 0) await item.update({
-        "system.rent.paidUntil": addMonths(now, Number(rent.duration), startYear)
+      rent.paidUntil = rentStart(rent.duration, now, startYear, actor.hasPlayerOwner)
+      if (rent.paidUntil !== null) await item.update({
+        "system.rent.paidUntil": rent.paidUntil
       }, {
         sr5Calendar: true
       })
-      continue
+      // Months paid: nothing due before their end. None: the first month is due now, below
+      if (rent.paidUntil === null || rent.paidUntil > now) continue
     }
     const left = monthsLeft(now, rent.paidUntil, startYear)
     const notified = !!item.flags?.sr5?.rentNotified
