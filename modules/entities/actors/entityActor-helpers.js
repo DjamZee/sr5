@@ -23,7 +23,7 @@ import {
   SR5_EntityHelpers 
 } from "../helpers.js"
 import {
-  ownsTarget, bounded, consumedKey
+  ownsTarget, bounded, consumedKey, chanceSpent
 } from "../../rolls/roll-helpers/socket-guard.js"
 import {
   vouch
@@ -2191,7 +2191,7 @@ export class SR5_ActorHelper {
       rollJSON: data.roll?.r, pool, edge: caster?.system?.specialAttributes?.edge?.augmented?.value ?? 0,
       force: isForm ? data.matrix?.level : data.magic?.force,
       magic: isForm ? caster?.system?.specialAttributes?.resonance?.augmented?.value : caster?.system?.specialAttributes?.magic?.augmented?.value,
-      claimedHits: claimed.hits, claimedNetHits: claimed.netHits,
+      claimedHits: claimed.hits, claimedNetHits: claimed.netHits, secondChance: chanceSpent(data, caster),
     })
     if (!verdict.ok) {
       await ChatMessage.create({
@@ -2847,6 +2847,7 @@ export class SR5_ActorHelper {
       pool,
       edge: actor.system.specialAttributes?.edge?.augmented?.value,
       claimedHits: data.roll?.hits,
+      secondChance: chanceSpent(data, actor),
     })
     if (!verdict.ok) {
       await SR5_ActorHelper.whisperGM(game.i18n.format("SR5.ToxinCardRejected", {

@@ -71,9 +71,11 @@ export const REDUCER_POOLS = {
  * The hits of a card counted again on its dice (SR5 p. 44): only the first `allowed` dice of the pool
  * count, the rerolls of the Rule of Six after them (p. 58). null when the card shows no dice.
  * `rerolls` false: no Rule of Six at all, for a test that did not push the limit (SR5 p. 58: only Edge brings it).
+ * `secondChance` true (chanceSpent): the dice Second Chance rerolled (SR5 p. 58), kept apart on the roll, count too,
+ * one per failed die among those counted at most. Without it an honest card lost them (Laurine, 08/10).
  */
 export function recountHits(rollJSON, allowed, {
-  rerolls = true
+  rerolls = true, secondChance = false
 } = {
 }) {
   let roll = rollJSON
@@ -87,22 +89,47 @@ export function recountHits(rollJSON, allowed, {
   const results = roll?.terms?.[0]?.results
   if (!Array.isArray(results)) return null
   const kept = results.filter(d => !d.ruleOfSix).slice(0, Math.max(0, Math.floor(Number(allowed)) || 0))
-  return [...kept, ...(rerolls ? earnedRerolls(kept, results.filter(d => d.ruleOfSix)) : [])]
-    .filter(d => d.active !== false && d.discarded !== true && Number(d.result) >= 5).length
+  const counted = [...kept, ...(rerolls ? earnedRerolls(kept, results.filter(d => d.ruleOfSix)) : [])]
+  return counted.filter(isHit).length + (secondChance ? chanceHits(roll, counted) : 0)
+}
+
+const isHit = d => d.active !== false && d.discarded !== true && Number(d.result) >= 5
+
+/** The hits of the dice Second Chance rerolled (SR5 p. 58), kept apart on the roll (roll-test.js secondeChance): one
+ * die per failure among the `counted` dice at most. 0 when the roll shows none. */
+export function chanceHits(rollJSON, counted) {
+  let roll = rollJSON
+  if (typeof roll === "string") {
+    try {
+      roll = JSON.parse(roll)
+    } catch {
+      return 0
+    }
+  }
+  const chance = roll?.secondChance?.terms?.[0]?.results
+  if (!Array.isArray(chance) || !Array.isArray(counted)) return 0
+  return chance.slice(0, counted.filter(d => Number(d.result) < 5).length).filter(isHit).length
+}
+
+/** Whether the dice a card's Second Chance rerolled may count (recountHits): the card says it, and the roller's
+ * sheet shows Edge spent, as for a push of the limit (edgeSpentOn). */
+export function chanceSpent(data, roller) {
+  return !!data?.edge?.hasUsedSecondChance && edgeSpentOn(roller)
 }
 
 /**
  * The hits a card may count, with or without the Edge it says it spent (SR5 p. 58, Push the Limit: Edge added to the
  * pool, Rule of Six, no limit). Without Edge: the first `pool` dice, no reroll, within the test's `limit` (0: none).
  * With it: `pool` + `edge` dice, the rerolls they earn (never more than the dice), no limit. null without dice.
+ * `secondChance` (chanceSpent): the dice Second Chance rerolled count too, within the same limit (SR5 p. 58).
  */
 export function hitsUnderPush({
-  rollJSON, pool, edge = 0, limit = 0, pushed = false
+  rollJSON, pool, edge = 0, limit = 0, pushed = false, secondChance = false
 }) {
   const base = Math.max(0, Math.floor(Number(pool)) || 0)
   if (pushed) return recountHits(rollJSON, base + Math.max(0, Math.floor(Number(edge)) || 0))
   const hits = recountHits(rollJSON, base, {
-    rerolls: false
+    rerolls: false, secondChance
   })
   if (hits === null) return null
   const cap = Math.floor(Number(limit)) || 0

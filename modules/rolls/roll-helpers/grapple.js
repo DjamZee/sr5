@@ -22,7 +22,7 @@ import {
   refuseByRule, ruleLockActive
 } from "../../system/rule-locks.js"
 import {
-  ownsTarget, recountHits, consumedKey
+  ownsTarget, recountHits, consumedKey, chanceSpent
 } from "./socket-guard.js"
 import {
   grappleNeedsCard, grappleWarnAllowed
@@ -277,7 +277,9 @@ export class SR5_GrappleHelpers {
     }
     const cap = SR5_MiscellaneousHelpers.poolCap(held, "skills.unarmedCombat.test.dicePool") +
       Math.max(0, (Number(attributes.strength?.augmented?.value) || 0) - (Number(attributes.agility?.augmented?.value) || 0))
-    const hits = card.byGM ? Math.max(0, Number(card.data.roll?.hits) || 0) : recountHits(card.data.roll?.r, cap)
+    const hits = card.byGM ? Math.max(0, Number(card.data.roll?.hits) || 0) : recountHits(card.data.roll?.r, cap, {
+      secondChance: chanceSpent(card.data, card.roller)
+    })
     const stored = Math.max(Number(hold.data.hold) || 0, 0)
     if (!(hits >= Math.max(stored, 1))) return null
     return {

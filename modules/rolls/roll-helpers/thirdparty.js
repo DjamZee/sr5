@@ -18,6 +18,9 @@ import {
   isActiveGM, readLedger, banishKey, banishCardSeen, setBanishTotal
 } from "../../system/spirit-ledger.js"
 import {
+  chanceSpent
+} from "./socket-guard.js"
+import {
   SR5_ActorHelper
 } from "../../entities/actors/entityActor-helpers.js"
 import {
@@ -352,6 +355,7 @@ export class SR5_ThirdPartyHelpers {
       astralLimit: banisher.system.limits?.astralLimit?.value,
       spiritRoll: cardData.roll?.r,
       force,
+      banisherChance: chanceSpent(banishingData, banisher), spiritChance: chanceSpent(cardData, spirit),
     })
     if (!verdict.ok) return reject(verdict.reason)
     const total = Number(ledger.banish?.[banishKey(spirit)]) || 0
@@ -414,7 +418,8 @@ export class SR5_ThirdPartyHelpers {
     //Its skills and its powers: the card does not tell which test it was, and its type is the author's to write
     const largestPool = Math.max(0, ...Object.values(spirit.system.skills ?? {
     }).map(s => Number(s?.test?.dicePool) || 0), ...spirit.items.map(i => Number(i.system?.test?.dicePool) || 0))
-    const hits = recountHits(cardData.roll?.r, largestPool, spirit.system.specialAttributes?.edge?.augmented?.value)
+    const hits = recountHits(cardData.roll?.r, largestPool, spirit.system.specialAttributes?.edge?.augmented?.value, 0,
+      chanceSpent(cardData, spirit))
     if (hits === null) return rejectLeash("dice")
     if (!testsLeash({
       hits, force, services: spirit.system.services.value

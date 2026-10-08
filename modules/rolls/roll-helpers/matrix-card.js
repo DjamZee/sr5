@@ -8,7 +8,7 @@
  * A card a GM wrote stands as written. Pure rules first; the lookups are passed in (tests) or imported.
  */
 import {
-  hitsUnderPush, edgeSpentOn
+  hitsUnderPush, edgeSpentOn, chanceSpent
 } from "./socket-guard.js"
 
 /** The hits a card stands for: a GM's as written, a player's counted again (null: no dice, 0), never above the claim. */
@@ -117,7 +117,7 @@ export async function trustedHits({
   const rollJSON = card.data.roll?.r
   const edge = Number(card.roller?.system?.specialAttributes?.edge?.augmented?.value) || 0
   const without = hitsUnderPush({
-    rollJSON, pool, limit
+    rollJSON, pool, limit, secondChance: chanceSpent(card.data, card.roller)
   })
   if (without === null) return null
   let hits = without, pushed = false
