@@ -208,6 +208,31 @@ describe('the readings capped by the sheet alone', () => {
     expect(r.capped).toBe(7)
     expect(r.pushed).toBe(7)
   })
+  it('matrixDamageOf: the damage a winning defender deals back, both cards within the pools rolled with (review 137)', () => {
+    const attack = card('a', {
+      type: 'matrixAction', typeSub: 'hackOnTheFly'
+    }, [5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+    const defense = {
+      ...card('d', {
+        type: 'matrixDefense', typeSub: 'hackOnTheFly'
+      }, HONEST, 12, {
+        previousMessage: {
+          messageId: 'a', actorId: 'h'
+        }, damage: {
+          matrix: {
+            value: 6
+          }
+        }
+      }), roller: {
+        id: 'x', system: roller.system
+      }
+    }
+    vi.spyOn(SR5_MiscellaneousHelpers, 'cardOf').mockImplementation(id => id === 'a' ? attack : null)
+    //7 hits against 1, the sheets at 0 since: 6 boxes, not 0
+    expect(SR5_MiscellaneousHelpers.matrixDamageOf(defense, {
+      parent: roller
+    })).toBe(6)
+  })
   it('the grapple\'s escape: within the pool rolled with', () => {
     const escape = card('e', {
       type: 'grappleEscape'

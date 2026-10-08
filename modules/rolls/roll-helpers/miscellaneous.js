@@ -12,7 +12,7 @@ import {
 } from "../../system/gm-ledger.js"
 import {
   ownsTarget, cardTrusted, matrixDamageAllowed, deactivateAllowed, reduceAllowed, supportEffectAllowed,
-  serviceSpentAllowed, maglockAllowed, testAllowed, recountHits, consumedKey, REDUCER_POOLS, hitsUnderPush, edgeSpentOn, chanceSpent, standsAsGM, cardPoolCap
+  serviceSpentAllowed, maglockAllowed, testAllowed, recountHits, consumedKey, REDUCER_POOLS, hitsUnderPush, edgeSpentOn, chanceSpent, standsAsGM, cardPoolCap, rolledPool
 } from "./socket-guard.js"
 import {
   linkedEntryOf, effectHits
@@ -162,7 +162,8 @@ export class SR5_MiscellaneousHelpers {
     if (card.byGM) return Math.max(0, Number(card.data.roll?.hits) || 0)
     const sheet = Number(foundry.utils.getProperty(card.roller?.system ?? {
     }, path)) || 0
-    const pool = rolled ? Math.max(sheet, Number(card.data.dicePool?.value) || 0) : sheet
+    //Without the Edge of a push, counted apart below (rolledPool)
+    const pool = rolled ? Math.max(sheet, rolledPool(card.data)) : sheet
     const pushed = !!card.data.edge?.hasUsedPushTheLimit && edgeSpentOn(card.roller)
     const counted = hitsUnderPush({
       rollJSON: card.data.roll?.r, pool, edge: Number(card.roller?.system?.specialAttributes?.edge?.augmented?.value) || 0, limit, pushed,
@@ -384,9 +385,14 @@ export class SR5_MiscellaneousHelpers {
       //shows Edge spent for, within the test's limit otherwise (D1, SR5 p. 58). The GM confirms the boxes after this
       const typeSub = attack.data.test?.typeSub
       if (attack.data.test?.type !== "matrixAction" || !typeSub || card.data.test?.typeSub !== typeSub) return 0
+      //The pools the cards were rolled with count when the sheets dropped since (Bérénice's review 137)
       const attackHits = SR5_MiscellaneousHelpers.pushAwareHits(attack, `matrix.actions.${typeSub}.test.dicePool`,
-        Number(attack.roller?.system?.matrix?.actions?.[typeSub]?.limit?.value) || 0)
-      const defenseHits = SR5_MiscellaneousHelpers.pushAwareHits(card, `matrix.actions.${typeSub}.defense.dicePool`, 0)
+        Number(attack.roller?.system?.matrix?.actions?.[typeSub]?.limit?.value) || 0, {
+          rolled: true
+        })
+      const defenseHits = SR5_MiscellaneousHelpers.pushAwareHits(card, `matrix.actions.${typeSub}.defense.dicePool`, 0, {
+        rolled: true
+      })
       if (attackHits === null || defenseHits === null) return 0
       return Math.min(claimed, Math.max(0, defenseHits - attackHits))
     }
