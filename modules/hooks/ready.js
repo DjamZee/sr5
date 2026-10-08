@@ -144,11 +144,15 @@ export function sr5HookReady() {
   //game.settings.set("sr5", "systemMigrationVersion", "0.0.1");
   // Determine whether a system migration is required and feasible
   if ( !game.user.isGM ) return
-  const currentVersion = game.settings.get("sr5", "systemMigrationVersion")
+  const {
+    version: currentVersion, newWorld
+  } = sr5WorldMigrationState()
   const NEEDS_MIGRATION_VERSION = "13.0.0-alpha.22"
-  const needsMigration = !currentVersion || foundry.utils.isNewerVersion(NEEDS_MIGRATION_VERSION, currentVersion) //isNewerVersion(v0, v1)
+  const needsMigration = !newWorld && (!currentVersion || foundry.utils.isNewerVersion(NEEDS_MIGRATION_VERSION, currentVersion)) //isNewerVersion(v0, v1)
 
-  // Perform the migration, then the migrations tied to a feature rather than to a version number
+  // Perform the migration, then the migrations tied to a feature rather than to a version number;
+  // a new world has nothing to migrate, it is recorded at the version of the system
+  if (newWorld) game.settings.set("sr5", "systemMigrationVersion", game.system.version)
   sr5RunMigrations(needsMigration)
 
   // Computed modifiers written in the source by a prepared copy: emptied once per world
@@ -160,7 +164,7 @@ export function sr5HookReady() {
   // The three settings that were rule locks, copied into the boxes of the rule locks menu once per world (B13);
   // a world no migration ever ran in is new, and starts with the book
   runRuleLocksMigration({
-    newWorld: !currentVersion
+    newWorld
   }).catch(err => console.error("SR5 | rule locks migration failed", err))
 
   // The spent cards whose card left the chat log: the registry is written whole at every card spent
@@ -169,6 +173,22 @@ export function sr5HookReady() {
       SR5_MiscellaneousHelpers
     }) => SR5_MiscellaneousHelpers.purgeConsumed())
     .catch(err => console.error("SR5 | spent cards purge failed", err))
+}
+
+/**
+ * The system migration recorded in this world, and whether the world is new. Foundry V13 returns the default of
+ * systemMigrationVersion cast to its type ("0", truthy), so the stored setting is read instead: a new world never
+ * wrote it and holds no document. A world with documents but no record (made before the migrations) still migrates.
+ * @returns {{version: string|null, newWorld: boolean}}
+ */
+export function sr5WorldMigrationState() {
+  const stored = game.settings.storage?.get("world")?.getSetting?.("sr5.systemMigrationVersion")
+  const value = stored ? game.settings.get("sr5", "systemMigrationVersion") : null
+  const version = value && value !== "0" ? String(value) : null
+  const empty = ["actors", "items", "scenes", "journal"].every(key => !game[key]?.size)
+  return {
+    version, newWorld: !stored && empty
+  }
 }
 
 /**
