@@ -29,6 +29,9 @@ import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
+  isLinkLockEffect
+} from "../../system/link-lock.js"
+import {
   applyDiseaseEffects
 } from "../../system/diseases.js"
 import {
@@ -1227,12 +1230,12 @@ export class SR5Actor extends Actor {
       sr5OverwatchLower: "reboot"
     })
 
-    //Delete effects from Deck
-    for (let i of this.items){
-      if (i.type === "itemEffect" && i.system.durationType === "reboot"){
-        await this.deleteEmbeddedDocuments("Item", [i.id])
-      }
-    }
+    //Delete effects from Deck. A reboot cuts the connection (SR5 p. 231, 250; Kill Code p. 74): every link lock goes
+    //with it, permanent as its effect is, and so does its status
+    const ended = this.items.filter(i => i.type === "itemEffect" && (i.system.durationType === "reboot" || isLinkLockEffect(i))).map(i => i.id)
+    if (ended.length) await this.deleteEmbeddedDocuments("Item", ended)
+    const lockStatuses = Array.from(this.effects ?? []).filter(e => e.origin === "linkLock" || e.statuses?.has?.("linkLock")).map(e => e.id)
+    if (lockStatuses.length) await this.deleteEmbeddedDocuments("ActiveEffect", lockStatuses)
 
     //deviceName is prepared from the active device, the copy only holds the source; empty when that device was just
     //turned off: the persona's name then (Anatolie)

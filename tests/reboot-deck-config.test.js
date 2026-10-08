@@ -712,3 +712,45 @@ describe('Every ejection from VR deals one dumpshock', () => {
     expect(dumpshocks()).toBe(0)
   })
 })
+
+// SR5 p. 231 and 250, Kill Code p. 74: a reboot cuts the connection, so the link lock goes with it. Its effect is
+// permanent and used to stay on the sheet after a reboot forced by Flicker or Scramble (Armance's measure, 08/10)
+describe('A reboot frees a link-locked connection', () => {
+  const lock = (id, owner) => ({
+    id, type: 'itemEffect', system: {
+      durationType: 'permanent', ownerID: owner, customEffects: {
+        0: {
+          target: 'system.matrix.isLinkLocked', type: 'boolean', value: 'true'
+        }
+      }
+    }
+  })
+
+  it('deletes every link lock effect and its status, and keeps the other permanent effects', async () => {
+    const other = {
+      id: 'other', type: 'itemEffect', system: {
+        durationType: 'permanent', customEffects: {
+          0: {
+            target: 'system.matrix.attributes.firewall'
+          }
+        }
+      }
+    }
+    hacker.items.push(lock('lockA', 'ice'), lock('lockB', 'spider'), other)
+    hacker.effects = [{
+      id: 'st1', origin: 'linkLock', statuses: new Set(['linkLock'])
+    }, {
+      id: 'st2', origin: 'dead', statuses: new Set(['dead'])
+    }]
+    hacker.system.matrix.isLinkLocked = true
+    await hacker.rebootDeck()
+    expect(hacker.deleteEmbeddedDocuments).toHaveBeenCalledWith('Item', ['lockA', 'lockB'])
+    expect(hacker.deleteEmbeddedDocuments).toHaveBeenCalledWith('ActiveEffect', ['st1'])
+  })
+
+  it('deletes nothing on a free connection', async () => {
+    hacker.effects = []
+    await hacker.rebootDeck()
+    expect(hacker.deleteEmbeddedDocuments).not.toHaveBeenCalled()
+  })
+})
