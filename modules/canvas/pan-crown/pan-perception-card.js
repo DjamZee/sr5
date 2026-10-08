@@ -360,7 +360,7 @@ export async function choosePerceptionInfo(data, messageId){
         })
       }
       const gm = sourceOf(entry, isFile(target?.item)) === "gm" ? ` <em>(${esc(game.i18n.localize("SR5.MatrixPerceptionAskGM"))})</em>` : ""
-      rows.push(`<label class="sr5-perception-choice"><input type="checkbox" name="choice" value="${entry.key}|${param ?? ""}"> ${esc(entryLabel(choice))}${gm}</label>`)
+      rows.push(`<label class="sr5-perception-choice"><input type="checkbox" name="choice" value="${entry.key}|${param ?? ""}"><span>${esc(entryLabel(choice))}${gm}</span></label>`)
     }
   }
   const head = target ? game.i18n.format("SR5.MatrixPerceptionChooseOn", {
