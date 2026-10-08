@@ -1,6 +1,11 @@
 import {
-  describe, it, expect
+  describe, it, expect, vi
 } from 'vitest'
+
+vi.mock('../modules/socket.js', () => ({
+  SR5_SocketHandler: {
+  },
+}))
 
 // Second Chance (SR5 p. 58) rerolls the failed dice; its dice are kept apart on the roll (roll.r.secondChance), and
 // the GM's reading again of a card counts them, one per failure at most, when the sheet shows Edge spent.
@@ -142,5 +147,51 @@ describe('the readings again keep the hits of an honest Second Chance', () => {
     expect(toxinCardVerdict({
       authorOwnsTarget: true, sourceFound: true, power: 6, rollJSON: roll(), pool: 12, claimedHits: 9, secondChance: true,
     }).hits).toBe(9)
+  })
+  it('Erase Mark: the owner of the mark keeps the hits of his Second Chance (Bérénice\'s review 135)', async () => {
+    const {
+      SR5_MiscellaneousHelpers
+    } = await import('../modules/rolls/roll-helpers/miscellaneous.js')
+    const {
+      SR5_MarkHelpers
+    } = await import('../modules/rolls/roll-helpers/mark.js')
+    const card = (type, typeSub, r, spent) => ({
+      id: type, byGM: false, roller: {
+        system: {
+          ...roller(spent).system, matrix: {
+            actions: {
+              eraseMark: {
+                test: {
+                  dicePool: 12
+                }
+              }
+            }
+          }
+        }
+      }, data: {
+        test: {
+          type, typeSub
+        }, roll: {
+          r
+        }, edge: {
+          hasUsedSecondChance: true
+        }, previousMessage: {
+          messageId: 'action', itemUuid: 'Item.x'
+        }
+      }
+    })
+    //The eraser: 6 hits. The owner of the mark: 4 hits, 9 with his Second Chance
+    const action = card('matrixAction', 'eraseMark', roll(null), 0)
+    action.data.roll.r.terms[0].results = results([5, 5, 5, 5, 5, 5])
+    globalThis.fromUuid = vi.fn(async () => null)
+    for (const [spent, reached] of [[1, false], [0, true]]) {
+      const defense = card('eraseMark', '', roll(), spent)
+      vi.spyOn(SR5_MiscellaneousHelpers, 'cardOf').mockImplementation(id => id === 'action' ? action : defense)
+      globalThis.fromUuid.mockClear()
+      expect(await SR5_MarkHelpers.eraseUse('defense')).toBe(null)
+      //Edge spent on the sheet: 9 hits, the erasing fails before the item is read; without it, 4 hits, it goes on
+      expect(globalThis.fromUuid.mock.calls.length > 0).toBe(reached)
+    }
+    vi.restoreAllMocks()
   })
 })

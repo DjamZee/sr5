@@ -534,7 +534,9 @@ export class SR5_MarkHelpers {
       recountHits(action.data.roll?.r, SR5_MiscellaneousHelpers.poolCap(action.roller, "matrix.actions.eraseMark.test.dicePool"), {
         secondChance: chanceSpent(action.data, action.roller)
       })
-    const defenderHits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, Infinity)
+    const defenderHits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, Infinity, {
+      secondChance: chanceSpent(defense.data, defense.roller)
+    })
     if (!eraseWins(eraserHits, defenderHits)) return null
     //The item erased belongs to the actor the card names, and carries a mark of the defender
     const item = await fromUuid(defense.data.previousMessage?.itemUuid ?? "")
