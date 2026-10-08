@@ -23,6 +23,12 @@ import {
 import {
   refuseByRule
 } from "../../system/rule-locks.js"
+import {
+  SLEUTHER_ACTIONS, sleutherDice
+} from "../../system/ice-sleuther.js"
+import {
+  iceHostOf
+} from "../../system/ice-host.js"
 
 // Actions whose marks are not checked on the target: the support actions target allies, not Matrix icons,
 // and Jack Out and Jam Signals ask for ownership of the hacker's own device (SR5 p. 239 and 244), as Suppress Noise
@@ -78,6 +84,15 @@ export default async function matrixAction(rollData, rollKey, actor){
 
   //Determine limit modififiers
   rollData.limit.modifiers = SR5_PrepareRollHelper.getLimitModifiers(rollData, matrixAction.limit.modifiers)
+
+  //Kill Code p. 74: +2 dice per Sleuther mark on the single icon the test concerns, for the legitimate user (ice-sleuther.js)
+  if (SLEUTHER_ACTIONS.includes(rollKey)) {
+    const targets = matrixTargets(rollData)
+    const dice = targets.length === 1 ? sleutherDice(actor, targets[0].actor, id => SR5_EntityHelpers.getRealActorFromID(id), iceHostOf) : 0
+    if (dice) rollData.dicePool.modifiers.push({
+      type: "sleutherMarks", label: game.i18n.localize("SR5.IceSleutherMarks"), value: dice,
+    })
+  }
 
   //Add others informations
   rollData.test.type = "matrixAction"
