@@ -21,6 +21,9 @@ export default function complexForm(rollData, actor, item){
   //Determine dicepool modififiers
   rollData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(rollData, actor.system.matrix.resonanceActions.threadComplexForm.test.modifiers)
 
+  //SR5 p. 252: Thread is limited by the form's level (roll-test.js); the effects on that limit add to it (Kill Code p. 114)
+  rollData.limit.modifiers = SR5_PrepareRollHelper.getLimitModifiers(rollData, actor.system.matrix.resonanceActions.threadComplexForm.limit?.modifiers ?? [])
+
   //Add others informations
   rollData.test.type = "complexForm"
   rollData.matrix.fading.type = "stun"

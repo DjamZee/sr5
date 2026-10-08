@@ -106,4 +106,23 @@ describe("Resonance action limits (SR5 p. 252)", () => {
     const data = await resonanceAction(rollData(), "compileSprite", technomancer())
     expect(data.matrix.level).toBe(6)
   })
+
+  // Kill Code p. 110 (Marked by Dissonance -1) and p. 115 (Pistolero -1): effects on the [Level] limit of compiling and
+  // registering reach the roll as limit modifiers, the level staying the base (roll-test.js)
+  it("carries the effects on the compiling and registering limit, without a base of its own", async () => {
+    const actor = technomancer()
+    for (const key of ["compileSprite", "registerSprite"]) actor.system.matrix.resonanceActions[key].limit = {
+      base: "", value: 0, modifiers: [{
+        source: "Marqué par la dissonance", type: "itemQuality", value: -1
+      }]
+    }
+    for (const key of ["compileSprite", "registerSprite"]) {
+      const data = await resonanceAction(rollData(), key, actor)
+      expect(data.limit.modifiers.itemQuality).toEqual({
+        label: "Marqué par la dissonance", value: -1
+      })
+      expect(data.limit.base).toBeUndefined()
+      expect(data.matrix.level).toBe(6)
+    }
+  })
 })
