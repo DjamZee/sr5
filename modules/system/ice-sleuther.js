@@ -1,9 +1,11 @@
 // Sleuther IC (Kill Code p. 74): "Chaque mark donne à l'utilisateur légitime +2 dés sur toutes les actions de recherche
 // matricielle ou les tests de perception matricielle vous concernant".
-// The legitimate user, which Kill Code does not define, is read in SR5: a host and its IC share their marks (p. 249), and
-// "dès qu'un persona a une mark, il est considéré comme un utilisateur légitime" of the host (p. 250, Patrol IC). So the
-// host of the Sleuther, any IC of that host, and any persona holding a mark on that host: its spider, and a hacker
-// whose marks the host takes for legitimate ones, as the book has it. A Sleuther tied to no host: the IC alone
+// "L'utilisateur légitime", in the singular, is the one the IC works for (Lone Star in the text, KC p. 74): the host of
+// the Sleuther, its IC, which share its marks (SR5 p. 249), and the spider tied to that host. A persona that only holds
+// marks on the host is not one: SR5 p. 250 (Patrol IC) speaks of what the host lets through, and illegal marks do not
+// always fool it (SR5 p. 237). Arbitrage de DjamZ, 08/10. The system keeps no list of spiders: a module names them by
+// answering the hook sr5.iceLegitimateUser ({roller, ice, host, legitimate}), setting legitimate = true.
+// A Sleuther tied to no host: the IC alone
 
 /** The actions that read the Sleuther marks */
 export const SLEUTHER_ACTIONS = ["matrixPerception", "matrixSearch"]
@@ -53,16 +55,30 @@ export function sleutherMarksOn(target, resolve){
  * @param {Object} roller - the actor rolling
  * @param {Object} ice - the Sleuther
  * @param {Object|null} host - the host the Sleuther runs in
+ * @param {Function} isSpider - ({roller, ice, host}) => whether a module names the roller a spider of that host
  */
-export function isLegitimateUser(roller, ice, host){
+export function isLegitimateUser(roller, ice, host, isSpider = () => false){
   if (!roller || !ice) return false
   if (roller === ice || idsOf(roller).some(id => idsOf(ice).includes(id))) return true
   if (!host) return false
   if (roller === host || (roller.uuid && roller.uuid === host.uuid)) return true
   const hostUuid = ice.system?.matrix?.hostUuid
   if (roller.type === "actorDevice" && roller.system?.matrix?.deviceType === "ice" && hostUuid && roller.system.matrix.hostUuid === hostUuid) return true
-  const ids = idsOf(roller)
-  return marksCarried(host).some(m => ids.includes(m?.ownerId) && (Number(m?.value) || 0) > 0)
+  return isSpider({
+    roller, ice, host
+  }) === true
+}
+
+/** Asks the modules whether the roller is a spider of the host (hook sr5.iceLegitimateUser); a failing subscriber is
+ *  logged by Foundry and counts for nothing */
+export function spiderByHook({
+  roller, ice, host
+}){
+  const verdict = {
+    roller, ice, host, legitimate: false
+  }
+  globalThis.Hooks?.callAll?.("sr5.iceLegitimateUser", verdict)
+  return verdict.legitimate === true
 }
 
 /**
@@ -71,10 +87,11 @@ export function isLegitimateUser(roller, ice, host){
  * @param {Object} target - the icon the test concerns
  * @param {Function} resolve - id => actor
  * @param {Function} hostOf - ice => its host, or null
+ * @param {Function} isSpider - see isLegitimateUser
  */
-export function sleutherDice(roller, target, resolve, hostOf){
+export function sleutherDice(roller, target, resolve, hostOf, isSpider = spiderByHook){
   if (!roller || !target || roller === target) return 0
   return sleutherMarksOn(target, resolve).reduce((dice, {
     ice, value
-  }) => dice + (isLegitimateUser(roller, ice, hostOf(ice)) ? value * SLEUTHER_DICE_PER_MARK : 0), 0)
+  }) => dice + (isLegitimateUser(roller, ice, hostOf(ice), isSpider) ? value * SLEUTHER_DICE_PER_MARK : 0), 0)
 }

@@ -2,11 +2,11 @@ import {
   describe, it, expect
 } from 'vitest'
 import {
-  sleutherMarksOn, isLegitimateUser, sleutherDice
+  sleutherMarksOn, isLegitimateUser, sleutherDice, spiderByHook
 } from '../modules/system/ice-sleuther.js'
 
 // Kill Code p. 74: each Sleuther mark gives the legitimate user +2 dice on Matrix Search and Matrix Perception about the
-// marked icon. Legitimate user read in SR5 p. 249-250: the host, its IC, a persona with a mark on the host
+// marked icon. Legitimate user: the host, its IC, its spider (arbitrage de DjamZ, 08/10)
 
 const ice = (id, subType, hostUuid = 'Actor.host') => ({
   id, type: 'actorDevice', system: {
@@ -82,13 +82,37 @@ describe('Sleuther IC (Kill Code p. 74)', () => {
     for (const roller of [host, killer, sleuther]) expect(sleutherDice(roller, target, resolve, hostOf)).toBe(4)
   })
 
-  it('gives them to a persona holding a mark on the host (SR5 p. 250), and to nobody else', () => {
+  // Arbitrage de DjamZ, 08/10: the spider of the host, named by a module; a persona with only marks on the host has nothing
+  it('gives them to the spider a module names, never to a persona that only holds marks on the host', () => {
     const target = decker([{
       ownerId: 'sleuther', value: 1
     }])
-    expect(sleutherDice(spider, target, resolve, hostOf)).toBe(2)
-    expect(sleutherDice(stranger, target, resolve, hostOf)).toBe(0)
-    expect(sleutherDice(foreignIce, target, resolve, hostOf)).toBe(0)
+    const namesSpider = ({
+      roller, host: h
+    }) => roller === spider && h === host
+    expect(sleutherDice(spider, target, resolve, hostOf, namesSpider)).toBe(2)
+    expect(sleutherDice(spider, target, resolve, hostOf, () => false)).toBe(0)
+    expect(sleutherDice(stranger, target, resolve, hostOf, namesSpider)).toBe(0)
+    expect(sleutherDice(foreignIce, target, resolve, hostOf, namesSpider)).toBe(0)
+  })
+
+  it('asks the modules through the hook sr5.iceLegitimateUser', () => {
+    const calls = []
+    const saved = globalThis.Hooks
+    globalThis.Hooks = {
+      callAll: (name, verdict) => {
+        calls.push(name)
+        if (verdict.roller === spider) verdict.legitimate = true
+      }
+    }
+    expect(spiderByHook({
+      roller: spider, ice: sleuther, host
+    })).toBe(true)
+    expect(spiderByHook({
+      roller: stranger, ice: sleuther, host
+    })).toBe(false)
+    expect(calls).toEqual(['sr5.iceLegitimateUser', 'sr5.iceLegitimateUser'])
+    globalThis.Hooks = saved
   })
 
   it('adds the marks of every Sleuther of the host, never the marked icon about itself', () => {
