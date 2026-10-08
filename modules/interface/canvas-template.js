@@ -64,7 +64,10 @@ export default class SR5Template extends foundry.canvas.placeables.MeasuredTempl
     }
 
     if ((item.type === "itemSpell" || item.type === "itemPreparation")) {
-      target = item.system.spellAreaOfEffect.value
+      //The area the card was cast with: the Force chosen and the metres of spell shaping (SR5 p. 329), where the item
+      //only knows its own Force. Without a card (or a card without area), the item's
+      const cardArea = Number(game.messages?.get(messageId)?.flags?.sr5data?.magic?.spell?.area)
+      target = cardArea > 0 ? cardArea : item.system.spellAreaOfEffect.value
       //if spell has a transferable effect, add item to canvas template
       for (let e of Object.values(item.system.customEffects)){
         if (e.transfer){

@@ -2,6 +2,9 @@ import {
   drainShown
 } from "../roll-helpers/mentorMaskDrain.js"
 import {
+  spellAreaRadius
+} from "../roll-helpers/spell-area.js"
+import {
   SR5_EntityHelpers 
 } from "../../entities/helpers.js"
 import {
@@ -98,11 +101,12 @@ export default async function spellInfo(cardData){
     // A preparation's area is read from the item, where its Potency and Force take the place of the caster's (SR5 p. 309)
     if (cardData.magic.spell.range === "area" && cardData.test.type === "preparation") cardData.magic.spell.area += item.system.spellAreaOfEffect.value
     else if (cardData.magic.spell.range === "area"){
-      cardData.magic.spell.area += cardData.magic.force
-      if (item.system.category === "detection") {
-        if (item.system.spellAreaExtended === true) cardData.magic.spell.area = cardData.magic.spell.area * actorData.specialAttributes.magic.augmented.value * 10
-        else cardData.magic.spell.area = cardData.magic.spell.area * actorData.specialAttributes.magic.augmented.value
-      }
+      //spell.area holds the metres of spell shaping chosen in the dialog: +1 m of radius per die given up (SR5 p. 329),
+      //added to the radius, never multiplied. Area: Force metres; detection: Force × Magic, × 10 at extended range
+      cardData.magic.spell.area = spellAreaRadius({
+        shaping: cardData.magic.spell.area, force: cardData.magic.force, detection: item.system.category === "detection",
+        magic: actorData.specialAttributes.magic.augmented.value, extended: item.system.spellAreaExtended === true
+      })
     }
 
     //Bullets & Bandages p. 15-16: Stabilize (Force at least the boxes of bleeding and overflow) and Heal (out of the
