@@ -115,6 +115,40 @@ describe('the facts of a Matrix Perception', () => {
     }, facts).missing).toBe(true)
   })
 
+  // A door aimed at without a chosen item stands for its base device (persona): it answers « — » for Attack and
+  // Sleaze as the device branch does, not 0 (SR5 p. 235-236; relecture 152)
+  it('answers « — » for the Attack and Sleaze of a device of the scenery aimed at as a persona', () => {
+    const door = {
+      uuid: 'Actor.door', type: 'actorDevice', name: 'Porte', items: [],
+      system: {
+        matrix: {
+          deviceType: 'slavedDevice', deviceRating: 3, attributes: {
+            attack: {
+              value: 0
+            }, sleaze: {
+              value: 0
+            }, dataProcessing: {
+              value: 3
+            }, firewall: {
+              value: 3
+            }
+          }
+        }
+      },
+    }
+    const facts = perceptionFacts({
+      actor: door, item: null, persona: true
+    })
+    expect(facts.attributes.attack).toBe(null)
+    expect(facts.attributes.sleaze).toBe(null)
+    expect(answerOf({
+      key: 'attribute', param: 'sleaze'
+    }, facts).missing).toBe(true)
+    expect(answerOf({
+      key: 'attribute', param: 'firewall'
+    }, facts).value).toBe(3)
+  })
+
   it('counts the hits of the attacker\'s card, the net hits of the defense card', () => {
     expect(cardBudget({
       test: {

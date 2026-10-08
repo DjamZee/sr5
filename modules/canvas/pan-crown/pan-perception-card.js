@@ -31,6 +31,9 @@ import {
   SR5_EntityHelpers
 } from "../../entities/helpers.js"
 import {
+  lacksAttackAndSleaze
+} from "../../entities/actors/device-attributes.js"
+import {
   SR5_SocketHandler
 } from "../../socket.js"
 import {
@@ -174,6 +177,8 @@ export function perceptionFacts(target, silentNearby = null){
       const value = matrix.attributes?.[key]?.value
       return [key, typeof value === "number" ? value : null]
     }))
+    // A device of the scenery aimed at without a chosen item answers as one: no Attack, no Sleaze (SR5 p. 235-236)
+    if (lacksAttackAndSleaze(actor)) facts.attributes.attack = facts.attributes.sleaze = null
     facts.lastAction = actor.flags?.sr5?.lastMatrixAction ?? null
   } else {
     // A device runs no program, and only has Data Processing and Firewall (SR5 p. 227), at its Device Rating as the
