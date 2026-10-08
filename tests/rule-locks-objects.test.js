@@ -378,7 +378,7 @@ describe('B13 lot 5, lock picked without a kit (SR5 p. 450)', () => {
       noPool: true
     })])
     expect(rendered[0].noKit).toBeUndefined()
-    expect(ui.notifications.info).toHaveBeenCalledWith('SR5.StorageLockNoKit')
+    expect(ui.notifications.info).toHaveBeenCalledWith('SR5.RULELOCKS_Whisper')
   })
   it('family lifted: the same', async () => {
     lift()
@@ -423,7 +423,7 @@ describe('B13 lot 5, a hold on someone already held (SR5 p. 195)', () => {
     expect(SR5_GrappleHelpers.warn).not.toHaveBeenCalled()
     expect(holder.createEmbeddedDocuments).toHaveBeenCalled()
     expect(held.createEmbeddedDocuments).toHaveBeenCalled()
-    expect(ui.notifications.info).toHaveBeenCalledWith('SR5.WARN_GrappleAlreadyHeld')
+    expect(ui.notifications.info).toHaveBeenCalledWith('SR5.RULELOCKS_Whisper')
   })
 })
 

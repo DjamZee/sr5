@@ -174,8 +174,9 @@ export function ruleLockWhisperText(family, key, data, actorName) {
  * It asks the active gamemaster, whose browser writes it (socket "ruleLockWhisper"). No gamemaster: nobody to tell.
  */
 async function tellGM(family, key, data, actor) {
-  if (game.user?.isGM) return ui.notifications.info(game.i18n.format(key, data ?? {
-  }))
+  //The gamemaster's own notification says the lock was lifted, as the whisper does: the bare refusal would read
+  //as if the action had stopped (manual, 08/10: "nothing is spent" while the action was spent)
+  if (game.user?.isGM) return ui.notifications.info(ruleLockWhisperText(family, key, data, actor?.name))
   if (!game.users?.activeGM) return
   if (!shouldWhisper(actor?.id ?? actor?.uuid, key)) return
   // Loaded on first use (the socket imports half the system); one promise for every caller
@@ -220,10 +221,11 @@ export async function socketRuleLockWhisper(message, senderId) {
  * @param {string} family
  * @param {string} key the message's localization key
  * @param {object} [data] its format data
- * @param {object} [options] actor: who acts (for the whisper) ; lockCase: a box of the family ; level: "warn" or "info"
+ * @param {object} [options] actor: who acts (for the whisper) ; lockCase: a box of the family ; level: "warn" or "info" ;
+ * liftedKey: the message told to the gamemaster when the lock is lifted, for a refusal whose text says the action stops
  */
 export function refuseByRule(family, key, data, {
-  actor = null, lockCase = null, level = "warn"
+  actor = null, lockCase = null, level = "warn", liftedKey = null
 } = {
 }) {
   if (ruleLockActive(family, lockCase)) {
@@ -231,7 +233,7 @@ export function refuseByRule(family, key, data, {
     ui.notifications[level](data ? game.i18n.format(key, data) : game.i18n.localize(key))
     return true
   }
-  tellGM(family, key, data, actor).catch(err => console.error("SR5 | rule lock whisper failed", err))
+  tellGM(family, liftedKey ?? key, data, actor).catch(err => console.error("SR5 | rule lock whisper failed", err))
   return false
 }
 

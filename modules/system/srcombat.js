@@ -863,7 +863,9 @@ export class SR5Combat extends Combat {
     if (!missing) return true
     return !refuseByRule("actions", "SR5.WARN_NoActionLeft", {
       actor: actor.name, value: missing.value, action: game.i18n.localize(SR5.actionTypes[missing.type]), current: missing.current
-    }, lock)
+    }, {
+      ...lock, liftedKey: "SR5.RULELOCKS_NoActionLeftLifted"
+    })
   }
 
   //Reset actions on actor

@@ -315,7 +315,7 @@ describe('a spell that does not stabilize (Better Than Bad p. 15-16)', () => {
     lift()
     await applyStabilization(card, patient, body())
     expect(ui.notifications.warn).not.toHaveBeenCalled()
-    expect(ui.notifications.info).toHaveBeenCalledWith('SR5.BB_SpellDoesNotStabilize')
+    expect(ui.notifications.info).toHaveBeenCalledWith('SR5.RULELOCKS_Whisper')
     expect(asked).toBe(1)
   })
 })
@@ -342,7 +342,7 @@ describe('CFD treatments (Dark Terrors p. 87)', () => {
       product: 'nanoscrub', doses: 0, vector: 'aerosol'
     })
     expect(ui.notifications.warn).not.toHaveBeenCalled()
-    expect(ui.notifications.info).toHaveBeenCalledWith('SR5.CFD_NanoScrubIVOnly')
+    expect(ui.notifications.info).toHaveBeenCalledWith('SR5.RULELOCKS_Whisper')
   })
   const fighting = () => {
     globalThis.game.combats = [{
@@ -363,7 +363,7 @@ describe('CFD treatments (Dark Terrors p. 87)', () => {
     fighting()
     await resolveOverwritersNow(head)
     expect(ui.notifications.warn).not.toHaveBeenCalled()
-    expect(ui.notifications.info).toHaveBeenCalledWith('SR5.CFD_ResolveInCombat')
+    expect(ui.notifications.info).toHaveBeenCalledWith('SR5.RULELOCKS_Whisper')
   })
 })
 

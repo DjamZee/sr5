@@ -334,8 +334,27 @@ describe('refuseByRule and capByRule', () => {
       actor
     })).toBe(false)
     await flush()
-    expect(notes).toEqual([['info', 'SR5.WARN_TargetIsTooFar']])
+    // Worded as the whisper (the rule lifted, the action gone), never as the bare refusal
+    expect(notes).toHaveLength(1)
+    expect(notes[0][0]).toBe('info')
+    expect(notes[0][1]).toContain('SR5.RULELOCKS_Whisper')
+    expect(notes[0][1]).toContain('SR5.WARN_TargetIsTooFar')
     expect(whispers).toEqual([])
+  })
+
+  it('a refusal with a lifted wording tells the gamemaster that wording, not the refusal', async () => {
+    store.sr5RuleLocksMigration = 2
+    store.sr5RuleLocks = presetLocks('light')
+    game.user = {
+      id: 'gm', isGM: true, name: 'MJ'
+    }
+    expect(refuseByRule('actions', 'SR5.WARN_NoActionLeft', null, {
+      actor, liftedKey: 'SR5.RULELOCKS_NoActionLeftLifted'
+    })).toBe(false)
+    await flush()
+    expect(notes).toHaveLength(1)
+    expect(notes[0][1]).toContain('SR5.RULELOCKS_NoActionLeftLifted')
+    expect(notes[0][1]).not.toContain('SR5.WARN_NoActionLeft')
   })
 
   it('whispers once per actor, message and combat round', async () => {

@@ -299,7 +299,7 @@ export class SR5_GrappleHelpers {
     }
     if (!kind || !(value > 0)) return null
     return {
-      card, key: consumedKey(card.id, "grappleStartHold"), label: "grappleStartHold", target: held.name, value, kind, readOnly: true,
+      card, key: consumedKey(card.id, "grappleStartHold"), label: "grappleStartHold", target: SR5_EntityHelpers.displayName(held), value, kind, readOnly: true,
     }
   }
 
@@ -314,7 +314,7 @@ export class SR5_GrappleHelpers {
     const value = Number(effect.value)
     if (!Number.isFinite(value) || value < 0) return null
     return {
-      card, key: consumedKey(card.id, "grappleSetHold"), label: "grappleSetHold", target: actor.name, value, holdId: effect.holdId, readOnly: true,
+      card, key: consumedKey(card.id, "grappleSetHold"), label: "grappleSetHold", target: SR5_EntityHelpers.displayName(actor), value, holdId: effect.holdId, readOnly: true,
     }
   }
 
@@ -329,7 +329,7 @@ export class SR5_GrappleHelpers {
       if (!effect || !hold || !sameFighter(hold.held, reverser) || !sameFighter(SR5_EntityHelpers.getRealActorFromID(card.data.previousMessage?.actorId), reverser) ||
         hold.data.holdId !== effect.holdId || !(Number(effect.value) > 0)) return null
       return {
-        card, key: consumedKey(card.id, "grappleReverseHold"), label: "grappleReverseHold", target: hold.holder.name, readOnly: true,
+        card, key: consumedKey(card.id, "grappleReverseHold"), label: "grappleReverseHold", target: SR5_EntityHelpers.displayName(hold.holder), readOnly: true,
         value: Number(effect.value), holdId: hold.data.holdId,
       }
     }
@@ -337,7 +337,7 @@ export class SR5_GrappleHelpers {
     if (!escape || !sameFighter(escape.hold.held, reverser) || !reverser.system?.itemsProperties?.martialArts?.counterGrapple?.isActive) return null
     return {
       card: escape.card, key: consumedKey(escape.card.id, "grappleEscape"), label: "grappleReverseHold",
-      target: escape.hold.holder.name, value: counterGrappleHold(escape.hits, escape.stored), holdId: escape.hold.data.holdId,
+      target: SR5_EntityHelpers.displayName(escape.hold.holder), value: counterGrappleHold(escape.hits, escape.stored), holdId: escape.hold.data.holdId,
     }
   }
 
@@ -370,7 +370,7 @@ export class SR5_GrappleHelpers {
       held = SR5_EntityHelpers.getRealActorFromID(heldId)
     const button = (action, label) => `<button type="button" class="sr5-grapple-button" data-grapple="${action}">${label}</button>`
     const content = `<p>${game.i18n.format(messageKey, {
-      holder: holder.name, held: held.name, hold
+      holder: SR5_EntityHelpers.displayName(holder), held: SR5_EntityHelpers.displayName(held), hold
     })}</p>` +
       //Crushing is an option of the one who subdues (SR5 p. 196), not of a clinch (Run & Gun p. 133)
       (grappleHoldOf(holder.effects)?.kind === "subdue" ? button("crush", game.i18n.format("SR5.GrappleCrush", {
@@ -380,7 +380,7 @@ export class SR5_GrappleHelpers {
     await ChatMessage.create({
       content,
       speaker: {
-        alias: holder.name
+        alias: SR5_EntityHelpers.displayName(holder)
       },
       flags: {
         sr5: {
@@ -539,7 +539,7 @@ export class SR5_GrappleHelpers {
         const escape = SR5_GrappleHelpers.escapeOf(d.messageId)
         allowed = !!escape && sameFighter(escape.hold.held, hold.held) && await SR5_MiscellaneousHelpers.grant({
           card: escape.card, key: consumedKey(escape.card.id, "grappleEscape"), label: "grappleEscape",
-          target: hold.holder.name, value: escape.hits,
+          target: SR5_EntityHelpers.displayName(hold.holder), value: escape.hits,
         }, sender)
       }
       if (!allowed) return refuse("grappleReleaseHold", senderId, d)
@@ -557,7 +557,7 @@ export class SR5_GrappleHelpers {
     const key = consumedKey(escape.card.id, "grappleEscape")
     if (SR5_MiscellaneousHelpers.isConsumed(key)) return
     const granted = await SR5_MiscellaneousHelpers.grant({
-      card: escape.card, key, label: "grappleEscape", target: escape.hold.holder.name, value: escape.hits,
+      card: escape.card, key, label: "grappleEscape", target: SR5_EntityHelpers.displayName(escape.hold.holder), value: escape.hits,
     }, message.author)
     if (!granted) return refuse("grappleEscape", message.author?.id, message.id)
     await deleteGrappleEffectOnce(escape.hold.held, PENDING_DELETIONS, escape.hold.data.holdId)
