@@ -200,7 +200,7 @@ export class SR5Combat extends Combat {
     return SR5Combat.sortByRERIC(left, right)
   }
 
-  // The coin toss of a tie (SR5 p. 159): the same for a combatant all the round, so that every sort agrees
+  // The coin toss of a tie (SR5 p. 161, CRIP): the same for a combatant all the round, so that every sort agrees
   static coinToss(combatant) {
     const key = `${combatant.parent?.id ?? ""}:${combatant.parent?.round ?? 0}:${combatant.id ?? ""}`
     let hash = 0

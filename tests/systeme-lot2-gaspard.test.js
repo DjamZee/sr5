@@ -28,7 +28,7 @@ const {
 const read = path => readFileSync(new URL(path, import.meta.url), 'utf8')
 
 // Second lot of system fixes (Élise, 08/10): reviews of Firmine, Ermeline, Anatolie, Eudes, Gervaise
-describe('the turn order (SR5 p. 159) is the one Foundry reads the current combatant in', () => {
+describe('the turn order (SR5 p. 161, CRIP) is the one Foundry reads the current combatant in', () => {
   const combat = {
     id: 'cb', round: 2
   }
