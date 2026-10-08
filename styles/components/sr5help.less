@@ -28,8 +28,27 @@
   h3 {
     font-family: var(--sr-font-title);
     text-transform: uppercase;
+    margin: 0 0 4px;
     padding-bottom: 4px;
     border-bottom: 1px solid color-mix(in srgb, var(--sr-text-color-flash) 50%, transparent);
+  }
+
+  // An empty message or details paragraph kept its height and margins: a blank gap under the title
+  #sr5helpMessage, #sr5helpDetails {
+    margin: 0 0 6px;
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  // Calculation details right under the title, a little larger than the default text
+  #sr5helpDetails {
+    font-size: 1.1em;
+
+    ul {
+      margin: 2px 0 0;
+    }
   }
 
   ul {
