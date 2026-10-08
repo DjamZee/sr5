@@ -102,8 +102,9 @@ function setting(key, fallback) {
  * Whether purchases wait on their search time. A buyer the gamemaster put in creation (lot C0) gets them at once,
  * whatever the world's setting: arbitrage de DjamZ (M4, 2026-10-09).
  */
-export function deliveryDelayed(buyer = null) {
-  if (actorInCreation(buyer)) return false
+export function deliveryDelayed(buyer = null, creation = false) {
+  // In creation (the flag, or the shop opened in creation for this buyer, C1) the purchase arrives at once
+  if (creation === true || actorInCreation(buyer)) return false
   return setting(DELIVERY_SETTING, 'delayed') === 'delayed'
 }
 

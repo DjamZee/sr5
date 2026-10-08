@@ -154,6 +154,20 @@ describe('C0: the shop for a character in creation', () => {
     expect(debits()).toHaveLength(1)
   })
 
+  it('C1: the shop opened in creation for a character without the flag caps it and charges it', async () => {
+    const opened = (id) => SR5Shop.checkout(character(), [{
+      uuid: `Compendium.sr5.weapons.Item.${id}`, quantity: 1
+    }], {
+      creation: true
+    })
+    expect(SR5Shop.creationModeFor(character(), true)).toBe(true)
+    expect(await opened('a14')).toBe(false)
+    expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_ShopCreationLimit_availability')
+    expect(await opened('a8')).toBe(true)
+    expect(debits()).toHaveLength(1)
+    expect(debits()[0].system.amount).toBe(500)
+  })
+
   it('the world mode stays free for every actor, flagged or not, under the caps', async () => {
     world = true
     expect(await buy(character(), 'a8')).toBe(true)
