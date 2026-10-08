@@ -135,9 +135,15 @@ const KIND_OF_CATEGORY = {
   fixedWingAircraft: "jet",
 }
 
-/** The kind of a vehicle from its category (SR5.vehiclesCategories), ground when it says nothing */
-export function kindOfCategory(category) {
-  return KIND_OF_CATEGORY[category] ?? "ground"
+// A drone's category is only its size: what it flies or sails comes from its piloting skill (an aircraft drone is a
+// rotorcraft by default; the gamemaster still changes the kind in the chase window, Lancelot F7)
+const KIND_OF_PILOT_SKILL = {
+  pilotAircraft: "rotor", pilotAerospace: "jet", pilotWatercraft: "water",
+}
+
+/** The kind of a vehicle from its category (SR5.vehiclesCategories), else its piloting skill, ground when both say nothing */
+export function kindOfCategory(category, pilotSkill) {
+  return KIND_OF_CATEGORY[category] ?? KIND_OF_PILOT_SKILL[pilotSkill] ?? "ground"
 }
 
 export function isAircraft(kind) {

@@ -457,8 +457,9 @@ async function handleFatigueDamage(rollData, actorData){
 }
 
 async function handleBiofeedbackDamage(rollData, actorData, chatData){
-  // SR5 p. 231: characters in AR take no biofeedback damage
-  if (actorData.matrix.userMode === "ar") {
+  // SR5 p. 231: characters in AR take no biofeedback damage; a rigger jumped into the hit drone is in VR whatever
+  // his sheet says (SR5 p. 268), cold sim unless hot sim is set
+  if (actorData.matrix.userMode === "ar" && !chatData.jumpedIn) {
     ui.notifications.info(`${game.i18n.localize("SR5.INFO_ImmunityToBiofeedback")}`)
     return
   }
@@ -476,10 +477,8 @@ async function handleBiofeedbackDamage(rollData, actorData, chatData){
 
   //Determine damage type
   if (chatData.blackout) rollData.damage.type = "stun"
-  else {
-    if (actorData.matrix.userMode === "coldsim") rollData.damage.type = "stun"
-    else if (actorData.matrix.userMode === "hotsim") rollData.damage.type = "physical"
-  }
+  else if (actorData.matrix.userMode === "hotsim") rollData.damage.type = "physical"
+  else if (actorData.matrix.userMode === "coldsim" || chatData.jumpedIn) rollData.damage.type = "stun"
 
   //Handle defender's biofeedback
   if (chatData.chatCard.buttons.defenderDoBiofeedbackDamage) rollData.matrix.defenderDoBiofeedbackDamage = true

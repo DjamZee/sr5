@@ -76,6 +76,11 @@ function vehicleModSlotsRefused(drone, before, after) {
     const refusal = modPointsRefusal(vehicleStats(drone.system), fitted, before && fitted.includes(before) ? before : null,
       modTakesSlots(after.system, false) ? after : null)
     if (!refusal) return false
+    if (refusal.floor !== undefined) return refuseByRule("objects", "SR5.WARN_DroneModBodyFloor", {
+      name: after.name, floor: refusal.floor
+    }, {
+      actor: drone
+    })
     return refusal.attribute ? refuseByRule("objects", "SR5.WARN_DroneModAttributeCap", {
       name: after.name, cap: refusal.cap, attribute: game.i18n.localize(SR5.vehicleAttributes?.[refusal.attribute] ?? refusal.attribute)
     }, {
@@ -101,6 +106,17 @@ function preparedCopy(item, changes = {
   const copy = item.clone(changes)
   copy.prepareData()
   return copy
+}
+
+/** Whether fitting a mod on its drone would be refused, asked before its install test is rolled rather than once the
+ *  hours are spent (Lancelot, E3). A lifted lock is left to the fitting itself, which tells the gamemaster */
+export function modFitRefused(mod) {
+  if (mod?.type !== "itemVehicleMod" || mod.parent?.type !== "actorDrone" || !ruleLockActive("objects")) return false
+  return vehicleModSlotsRefused(mod.parent, mod, preparedCopy(mod, {
+    system: {
+      isActive: true
+    }
+  }))
 }
 
 /**

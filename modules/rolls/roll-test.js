@@ -281,8 +281,15 @@ export class SR5_RollTest {
 
     //Change actions in combat tracker
     if (game.combat && dialogData.combat.actions.length){
-      await SR5Combat.changeActionInCombat(dialogData.owner.actorId, dialogData.combat.actions)
+      const fighter = SR5_RollTest.actionsFighter(actor, dialogData)
+      await SR5Combat.changeActionInCombat(fighter === actor ? dialogData.owner.actorId : SR5Combat.fighterIdOf(fighter), dialogData.combat.actions)
     }
+  }
+
+  //The fighter whose actions a test spends: a vehicle test's (a chase action, Control a Vehicle) is the vehicle's
+  //when it is in the combat, else its driver's (SR5Combat.vehicleFighter)
+  static actionsFighter(actor, dialogData) {
+    return dialogData?.test?.type === "vehicleTest" ? SR5Combat.vehicleFighter(actor) : actor
   }
 
   //SR5 p. 305-306: aiding a test is a service of a bound spirit. The dice pool modifiers are a list, and an
@@ -302,7 +309,7 @@ export class SR5_RollTest {
       actor
     })
     if (missingAmmo && ruleLockActive("ammo")) return refuse()
-    if (!SR5Combat.hasActionsLeft(actor, dialogData.combat.actions)) return true
+    if (!SR5Combat.hasActionsLeft(SR5_RollTest.actionsFighter(actor, dialogData), dialogData.combat.actions)) return true
     if (missingAmmo) refuse()
     return false
   }

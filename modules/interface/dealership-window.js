@@ -380,8 +380,9 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
           value: pricedModData(mod.source, this._vehicle).slots
         }
       })
-      if (refusal && refuseByRule('objects', refusal.attribute ? 'SR5.WARN_DroneModAttributeCap' : 'SR5.WARN_DroneModPointsFull', {
-        name: mod.source.name, needed: refusal.needed, free: refusal.free, cap: refusal.cap,
+      const key = refusal?.floor !== undefined ? 'SR5.WARN_DroneModBodyFloor' : refusal?.attribute ? 'SR5.WARN_DroneModAttributeCap' : 'SR5.WARN_DroneModPointsFull'
+      if (refusal && refuseByRule('objects', key, {
+        name: mod.source.name, needed: refusal.needed, free: refusal.free, cap: refusal.cap, floor: refusal.floor,
         attribute: L(SR5.vehicleAttributes[refusal.attribute] ?? '')
       })) return this.render()
     } else if (!mod.fitted) {

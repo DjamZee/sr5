@@ -34,6 +34,9 @@ import {
 import {
   turnStepAllowed, passAllowed, initChangeAllowed
 } from "../rolls/roll-helpers/socket-senders.js"
+import {
+  vehiclePilotId
+} from "./rigging-rules.js"
 
 export class SR5Combat extends Combat {
   //Pass effects whose deletion is under way (see endOwnerPassEffects)
@@ -629,6 +632,15 @@ export class SR5Combat extends Combat {
     //of the first token of the combat (Blandine)
     else combatant = game.combat.combatants.find(c => c.actorId === document.id && c.token?.actorLink !== false)
     return combatant
+  }
+
+  //Who spends the actions of a vehicle test: the vehicle when it is in the combat, else its driver, remote pilot or
+  //jumped in rigger when he is (the common case: the rigger has the initiative, not his car), else the vehicle
+  static vehicleFighter(vehicle){
+    if (!game.combat || !vehicle || SR5Combat.getCombatantFromActor(vehicle)) return vehicle
+    const pilotId = vehiclePilotId(vehicle.system)
+    const pilot = pilotId ? SR5_EntityHelpers.getRealActorFromID(pilotId) : null
+    return pilot && SR5Combat.getCombatantFromActor(pilot) ? pilot : vehicle
   }
 
   //The id a change of initiative names a fighter by: an unlinked token's actor shares its base actor's id, so its token's

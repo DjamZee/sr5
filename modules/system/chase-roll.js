@@ -346,7 +346,11 @@ export async function chaseButton(type, messageData, messageId) {
   if (!vehicle || !chase || !state.active || chase.chaseId !== state.id) return ui.notifications?.warn(game.i18n.localize("SR5.CHASE_Stale"))
   const actor = chaseVehicleActor(vehicle)
   if (!actor?.isOwner) return ui.notifications?.warn(game.i18n.localize("SR5.CHASE_NotYourVehicle"))
-  // The target opposes the initiator's test, with no threshold of its own
+  // The target opposes the initiator's test, with no threshold of its own; once, and its button goes once rolled
+  if (chase.mode === "initiate" && alreadyOpposed(game.messages?.values(), messageId, vehicleId)) {
+    return ui.notifications?.warn(game.i18n.localize("SR5.CHASE_AlreadyOpposed"))
+  }
+  if (chase.mode === "initiate") dropButtonOnceAnswered(messageId, type, answer => answer.chase?.mode === "oppose" && answer.chase.targetId === vehicleId)
   if (chase.mode === "initiate") return actor.rollTest("vehicleTest", null, {
     chaseRoll: {
       mode: "oppose", key: chase.key, chaseId: chase.chaseId, originId: messageId, initiatorId: chase.initiatorId,
@@ -677,19 +681,34 @@ async function resistChaseDamage(type, messageId) {
   data.target.actorId = null
   // Rolled (its card answers this one, for this actor): the button goes. The roll window closes after rollTest returns
   const actorId = data.owner.actorId
+  dropButtonOnceAnswered(messageId, type, answer => answer.owner?.actorId === actorId)
+  await actor.rollTest("resistanceCard", null, data)
+  return true
+}
+
+/**
+ * The button of a card goes once this user's card answers it (the hold of button-claim.js is for the card speaker's
+ * own buttons only). A window left closed without a roll: the button stays, and the hook goes after a while.
+ */
+function dropButtonOnceAnswered(messageId, type, matches) {
   const hook = Hooks.on("createChatMessage", async message => {
     const answer = message.flags?.sr5data
-    if (message.author?.id !== game.user.id || answer?.previousMessage?.messageId !== messageId || answer.owner?.actorId !== actorId) return
+    if (message.author?.id !== game.user.id || answer?.previousMessage?.messageId !== messageId || !matches(answer)) return
     Hooks.off("createChatMessage", hook)
     const {
       SR5_RollMessage
     } = await import("../rolls/roll-message.js")
     await SR5_RollMessage.updateChatButtonHelper(messageId, type)
   })
-  // A window left closed without a roll: the button stays, and the hook goes after a while
   setTimeout(() => Hooks.off("createChatMessage", hook), 10 * 60 * 1000)
-  await actor.rollTest("resistanceCard", null, data)
-  return true
+}
+
+/** Whether a vehicle already opposed the action of a card: one opposition per card (SR5 p. 205, Lancelot F2) */
+export function alreadyOpposed(messages, messageId, vehicleId) {
+  return [...(messages ?? [])].some(m => {
+    const chase = m?.flags?.sr5data?.chase
+    return chase?.mode === "oppose" && chase.originId === messageId && chase.targetId === vehicleId
+  })
 }
 
 /** A card without dice: the result of an action, or the Control a Vehicle action that rolls nothing */
@@ -702,7 +721,9 @@ async function postChaseCard(actor, chase, {
     SR5Combat
   } = actions.length ? await import("./srcombat.js") : {
   }
-  if (actions.length && !SR5Combat.hasActionsLeft(actor, actions)) return false
+  // On the fighter who acts: the vehicle in the combat, else its driver (SR5Combat.vehicleFighter)
+  const fighter = actions.length ? SR5Combat.vehicleFighter(actor) : actor
+  if (actions.length && !SR5Combat.hasActionsLeft(fighter, actions)) return false
   const {
     SR5_PrepareRollTest
   } = await import("../rolls/roll-prepare.js")
@@ -730,7 +751,7 @@ async function postChaseCard(actor, chase, {
     game.i18n.localize("SR5.CHASE_ApplyButton"), true)
   rollData.combat.actions = actions
   const card = await SR5_RollTest.renderRollCard(rollData)
-  if (game.combat && actions.length) await SR5Combat.changeActionInCombat(rollData.owner.actorId, actions)
+  if (game.combat && actions.length) await SR5Combat.changeActionInCombat(fighter === actor ? rollData.owner.actorId : SR5Combat.fighterIdOf(fighter), actions)
   return card
 }
 

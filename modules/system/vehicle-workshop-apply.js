@@ -270,6 +270,13 @@ export async function openModInstall(vehicle, mod, {
 }){
   const mechanic = findRepairer(vehicle)
   if (!mechanic) return ui.notifications.warn(L("SR5.WARN_VehicleRepairNoMechanic"))
+  //No slot or point left: refused before the hours of the extended test, not after (R5 p. 153-154, Lancelot E3)
+  if (!removal) {
+    const {
+      modFitRefused
+    } = await import("../entities/items/entityItem.js")
+    if (modFitRefused(mod)) return
+  }
   const category = sourceVehicleItem(vehicle)?.system?.category
   const defaultSkill = mechanicSkillFor({
     category, pilotSkill: vehicle.system.pilotSkill

@@ -232,6 +232,8 @@ describe('a drone destroyed under its jumped in rigger (SR5 p. 268, 271)', () =>
     const sent = SR5_SocketHandler.emitForPlayer.mock.calls.find(([type, data]) => type === 'actorRoll' && data.chatData.damage.resistanceType === 'biofeedback')
     expect(sent?.[1].actorId).toBe('r1')
     expect(sent?.[1].chatData.damage.value).toBe(2)
+    // Jumped in, in VR whatever the sheet says (SR5 p. 268, Lancelot F9)
+    expect(sent?.[1].chatData.jumpedIn).toBe(true)
     expect(sent?.[2]).toBe('p1')
     expect(r.rollTest).not.toHaveBeenCalled()
   })

@@ -72,6 +72,28 @@ describe('R7: electronic warfare in the radial menu (Rigger 5.0 p. 34-35)', () =
     })).not.toContain('confusePilot')
   })
 
+  it('offers them on an autonomous drone, master of its own PAN (Lancelot, F11)', () => {
+    const master = {
+      uuid: 'Actor.drone1.Item.dd', kind: 'master', itemType: 'itemDevice', holderIds: ['drone1'], ownerIds: ['drone1']
+    }
+    const droneCrown = graph({
+      master: master.uuid, owner: {
+        id: 'drone1', type: 'actorDrone'
+      }
+    })
+    expect(actionsForNode(master, droneCrown, {
+      rigger5: true
+    })).toEqual(expect.arrayContaining(['jumpIntoRiggedDevice', 'confusePilot', 'breakTargetLock']))
+    // A character's master device is no drone
+    expect(actionsForNode(master, graph({
+      master: master.uuid, owner: {
+        id: 'drone1', type: 'actorPc'
+      }
+    }), {
+      rigger5: true
+    })).not.toContain('confusePilot')
+  })
+
   it('offers Target Device on any wireless device, but the autopilot and the lock only on a drone', () => {
     const keys = actionsForNode(gun, graph(), {
       rigger5: true

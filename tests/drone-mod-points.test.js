@@ -153,6 +153,20 @@ describe('Refusal (R5 p. 126-127)', () => {
       ...drone, body: 9
     }, [], null, upgrade('armor', 6))).toBe(null)
   })
+  it('refuses a Structure below half its start, rounded up (R5 p. 127, Lancelot E4)', () => {
+    // Structure 3: down to 2, not to 1
+    expect(modPointsRefusal(drone, [], null, lowered('body', 1))).toBe(null)
+    expect(modPointsRefusal(drone, [], null, lowered('body', 2))).toEqual({
+      attribute: 'body', floor: 2
+    })
+    // Two lowerings add up; one already there and kept as it is stays allowed
+    const first = lowered('body', 1)
+    expect(modPointsRefusal(drone, [first], null, lowered('body', 1))).toEqual({
+      attribute: 'body', floor: 2
+    })
+    const deep = lowered('body', 2)
+    expect(modPointsRefusal(drone, [deep], deep, lowered('body', 2))).toBe(null)
+  })
   it('a starting 0 counts as 0.5', () => {
     expect(attributeCap(0)).toBe(1)
   })
