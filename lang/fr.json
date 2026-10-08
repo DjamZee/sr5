@@ -492,7 +492,7 @@
 	"SR5.SETTINGS_ShopDeliveryDelayed": "Après le délai de recherche (SR5 p. 420)",
 	"SR5.SETTINGS_ShopDeliveryImmediate": "Immédiate",
 	"SR5.SETTINGS_ShopExpress_T": "Livraison express (règle maison)",
-	"SR5.SETTINGS_ShopExpress_D": "Absente du livre. La joueuse peut cocher « Express » à la commande : elle paie un surcoût et reçoit plus vite. C'est plus avantageux que la surenchère du livre (SR5 p. 420), et c'est voulu.",
+	"SR5.SETTINGS_ShopExpress_D": "Absente du livre. Le joueur ou la joueuse peut cocher « Express » à la commande : un surcoût, contre une livraison plus rapide. C'est plus avantageux que la surenchère du livre (SR5 p. 420), et c'est voulu.",
 	"SR5.SETTINGS_ShopExpressSurcharge_T": "Express : surcoût (%)",
 	"SR5.SETTINGS_ShopExpressSurcharge_D": "Pourcentage du prix de base ajouté à une ligne livrée en express.",
 	"SR5.SETTINGS_ShopExpressFactor_T": "Express : délai divisé par",

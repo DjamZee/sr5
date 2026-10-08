@@ -2,7 +2,7 @@ import {
   describe, it, expect
 } from "vitest"
 import {
-  WITHDRAWAL_INTERVALS, addMonths, addInterval, monthsLeft, withdrawalDue, rentCounts
+  WITHDRAWAL_INTERVALS, addMonths, addInterval, monthsLeft, withdrawalDue, rentCounts, rentStart
 } from "../modules/system/deadlines.js"
 import {
   componentsToWorldTime
@@ -65,6 +65,16 @@ describe("months of rent paid in advance (SR5 p. 377)", () => {
     expect(monthsLeft(at(2070, 1, 1), end, 2070)).toBe(2)
     expect(monthsLeft(at(2070, 2, 15), end, 2070)).toBe(1)
     expect(monthsLeft(end, end, 2070)).toBe(0)
+  })
+
+  it("with no month paid in advance, the first month is due at once for a player's character (Eudes)", () => {
+    const now = at(2070, 3, 10)
+    expect(rentStart(0, now, 2070, true)).toBe(now)
+    expect(rentStart(undefined, now, 2070, true)).toBe(now)
+    expect(rentStart(2, now, 2070, true)).toBe(at(2070, 5, 10))
+    // A lifestyle on a GM's NPC is not claimed
+    expect(rentStart(0, now, 2070, false)).toBe(null)
+    expect(rentStart(2, now, 2070, false)).toBe(at(2070, 5, 10))
   })
 
   it("count only for a rented lifestyle with an end", () => {
