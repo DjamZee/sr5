@@ -57,7 +57,11 @@ export class SR5ShopCatalog {
       key: 'gear', label: 'SR5.ShopShelfGear', icon: 'fa-toolbox', types: ['itemGear']
     },
     {
-      key: 'vehicles', label: 'SR5.ShopShelfVehicles', icon: 'fa-car', types: ['itemVehicle', 'itemVehicleMod']
+      key: 'vehicles', label: 'SR5.ShopShelfVehicles', icon: 'fa-car', types: ['itemVehicle', 'itemVehicleMod'],
+      // The vehicles apart from their mods: the workshop's button opens on the mods (Adrore's feedback C7c)
+      sub: {
+        field: 'type', options: 'itemTypes'
+      },
     },
     {
       key: 'drugs', label: 'SR5.ShopShelfDrugs', icon: 'fa-pills', types: ['itemDrug', 'itemToxin']
@@ -81,6 +85,15 @@ export class SR5ShopCatalog {
       return shelf.key
     }
     return null
+  }
+
+  /**
+   * A vehicle mod has no price off a vehicle: the till prices it on the one it is bought for (R5 p. 156, its
+   * multipliers read the vehicle's attributes). The shop shows it, to be dragged onto a workshop, which buys it at
+   * that price (vehicle-workshop-apply.js); it never goes in the cart (Adrore's feedback C7c).
+   */
+  static pricedOnVehicle(entry) {
+    return entry?.type === 'itemVehicleMod' && !(Number(entry.system?.price?.value) > 0) && Number(entry.system?.price?.base) > 0
   }
 
   /** The sub-shelf value of an entry, `_none` when its shelf is split and the field is empty. */

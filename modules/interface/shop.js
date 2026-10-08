@@ -314,6 +314,19 @@ export class SR5Shop {
       // A mod of the dealership is priced at the till on the vehicle it is bought for (R5 p. 156)
       const onVehicle = assemble && resolved.length && source.type === 'itemVehicleMod' ? resolved[0].source : null
       const base = onVehicle ? (await import('../system/vehicle-workshop-apply.js')).pricedModData(source, onVehicle).price : priceOn ? Math.max(0, Number(priceOn(source)) || 0) : SR5Shop.gradedPrice(source.system, grade)
+      // A vehicle mod off a vehicle has no price: it is bought on the vehicle's workshop, never for nothing here
+      if (!equip && !onVehicle && !priceOn && SR5ShopCatalog.pricedOnVehicle({
+        type: source.type, system: {
+          price: {
+            value: base, base: source.system?.price?.base
+          }
+        }
+      })) {
+        ui.notifications.warn(game.i18n.format('SR5.WARN_ShopModOnVehicle', {
+          name: source.name
+        }))
+        continue
+      }
       // The surcharge that bought dice on the card is paid (SR5 p. 420); the search time and the express
       // surcharge stay on the base price (DjamZ's ruling, 05/10)
       // Relation avec un concessionnaire (Rigger 5.0 p. 37): 10 % off, after the surcharge

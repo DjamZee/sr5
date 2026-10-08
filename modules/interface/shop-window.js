@@ -209,7 +209,7 @@ export class SR5ShopWorldSource {
     const excluded = SR5ShopStock.excludedPacks
     const isGM = game.user.isGM
     return index.filter(entry => {
-      if (!equip && !(SR5ShopCatalog.describe(entry).price > 0)) return false
+      if (!equip && !(SR5ShopCatalog.describe(entry).price > 0) && !SR5ShopCatalog.pricedOnVehicle(entry)) return false
       if (SR5ShopStock.canSell(entry, {
         equip, excluded
       })) return true
@@ -268,9 +268,11 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
    * Open the shop, or bring it forward.
    * @param {object} [options]
    * @param {Actor} [options.actor] the buyer to select, from a character sheet
+   * @param {string} [options.shelf] the shelf to show (a key of SR5ShopCatalog.SHELVES), from a vehicle's workshop
+   * @param {string} [options.sub] and its sub-shelf
    */
   static open({
-    actor = null, source = null
+    actor = null, source = null, shelf = null, sub = ''
   } = {
   }) {
     let shop = SR5ShopWindow._instance
@@ -282,6 +284,11 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       SR5ShopWindow._instance = shop
     } else if (source && shop._source?.key !== source.key) shop.setSource(source)
     if (actor) shop._buyerId = actor.id
+    if (shelf) {
+      shop._shelf = shelf
+      shop._sub = sub
+      shop._page = 0
+    }
     shop.render(true).then(() => shop.bringToFront?.()).catch(err => {
       console.error('SR5 Shop: failed to open', err)
       ui.notifications?.error(game.i18n.localize('SR5.ShopWindowFailed'))
@@ -753,7 +760,9 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       value: row.essence.toLocaleString()
     }))
     const blocked = SR5ShopCatalog.creationBlock(row, limits)
-    const forSale = !row.notForSale || equip
+    // A vehicle mod is bought on a vehicle's workshop, at its price there (R5 p. 156): no cart, a drag
+    const onVehicle = !equip && SR5ShopCatalog.pricedOnVehicle(entry)
+    const forSale = (!row.notForSale || equip) && !onVehicle
     // On a vendor's counter the item is there: no search, no test, unless the table wants one
     const onCounter = entry.vendor && !entry.onOrder
     const tested = !onCounter || SR5ShopVendor.testInStock
@@ -784,14 +793,15 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
         // A short name keeps the column narrow; the cart line spells it out
         key, label: game.i18n.localize(`SR5.ShopGradeShort_${key}`), selected: key === row.grade,
       })),
-      price: SR5ShopWindow.#nuyen(row.price),
-      tooExpensive: !free && row.price > budget,
+      price: onVehicle ? game.i18n.localize('SR5.ShopPriceOnVehicle') : SR5ShopWindow.#nuyen(row.price),
+      onVehicle,
+      tooExpensive: !free && !onVehicle && row.price > budget,
       blocked: !!blocked,
       blockedLabel: blocked ? SR5ShopWindow.#creationMessage(blocked, entry.name, limits) : '',
       notForSale: row.notForSale,
       canBuy: buyer !== null && forSale && !blocked,
       // Without a buyer the list stays readable: only what cannot be sold at all is dimmed
-      dim: !forSale || !!blocked,
+      dim: (!forSale && !onVehicle) || !!blocked,
     }
   }
 

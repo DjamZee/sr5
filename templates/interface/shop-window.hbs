@@ -85,6 +85,7 @@
           {{#if this.stock}}<span class="sr-shop-tag stock">{{localize 'SR5.ShopVendorInStock' count=this.stock}}</span>{{/if}}
           {{#if this.onOrder}}<span class="sr-shop-tag on-order"><i class="fas fa-truck"></i> {{localize 'SR5.ShopVendorOnOrder'}}</span>{{/if}}
           {{#if this.notForSale}}<span class="sr-shop-tag"><i class="fas fa-store-slash"></i> {{localize 'SR5.ShopNotForSale'}}</span>{{/if}}
+          {{#if this.onVehicle}}<span class="sr-shop-tag" data-tooltip="{{localize 'SR5.ShopOnVehicleHint'}}"><i class="fas fa-car"></i> {{localize 'SR5.ShopOnVehicle'}}</span>{{/if}}
           <small>{{this.summary}}</small>
           {{#if this.blocked}}<small class="sr-shop-blocked">{{this.blockedLabel}}</small>{{/if}}
         </div>

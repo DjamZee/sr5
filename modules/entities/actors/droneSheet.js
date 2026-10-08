@@ -20,7 +20,7 @@ import {
   rccAutosoftRows, droneAutopilot
 } from "./rcc.js"
 import {
-  workshopContext, dropModOnWorkshop, openModInstall, fitModDirectly
+  workshopContext, dropModOnWorkshop, openModInstall, fitModDirectly, openWorkshopShop
 } from "../../system/vehicle-workshop-apply.js"
 
 /**
@@ -98,6 +98,10 @@ export class SR5DroneSheet extends ActorSheetSR5 {
     }))
     on(".workshop-fit", mod => fitModDirectly(mod, true))
     on(".workshop-unfit", mod => fitModDirectly(mod, false))
+    this.element.querySelectorAll(".workshop-shop").forEach(el => el.addEventListener("click", ev => {
+      ev.preventDefault()
+      openWorkshopShop(this.actor)
+    }))
   }
 
   //A mod dropped on the workshop is bought, moved aboard or fitted there (vehicle-workshop-apply.js); any other drop

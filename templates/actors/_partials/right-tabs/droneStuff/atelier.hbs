@@ -2,7 +2,8 @@
 <div class="SRBlockSheet sr5-workshop">
 	<ul>
 		<li class="SR-LigneEnTete grid">
-			<div class="col-12"><p class="SR-TextUppercase">{{localize 'SR5.VehicleModWorkshop'}}</p></div>
+			<div class="col-11"><p class="SR-TextUppercase">{{localize 'SR5.VehicleModWorkshop'}}</p></div>
+			<div class="col-1 SR-TextRight">{{#if workshop.canShop}}<a class="workshop-shop" data-tooltip="{{localize 'SR5.VehicleModWorkshopShop'}}"><em class="fas fa-store"></em></a>{{/if}}</div>
 		</li>
 	</ul>
 	<div class="sr5-workshop-head">
