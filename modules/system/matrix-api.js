@@ -64,8 +64,15 @@ export async function markTarget(value){
 export function markable(on){
   if (!on?.actor) return false
   if (on.itemUuid) return true
-  if (on.actor.items?.some?.(i => i.type === "itemDevice" && i.system?.isActive)) return true
-  return on.actor.system?.activeSpecialAttribute === "depth"
+  return isConnectedPersona(on.actor)
+}
+
+/** A persona in the Matrix: an active device, or an AI (Data Trails p. 157). The grid converges on nothing else
+ * (arbitrage de DjamZ du 08/10 : une persona sans appareil actif ne subit pas la convergence) */
+export function isConnectedPersona(actor){
+  if (!actor) return false
+  if (actor.items?.some?.(i => i.type === "itemDevice" && i.system?.isActive)) return true
+  return actor.system?.activeSpecialAttribute === "depth"
 }
 
 /**
@@ -172,6 +179,16 @@ export async function converge(persona, {
 
 // On the GM's browser: the convergence itself
 async function gmConverge(actor, hostActor){
+  //Not connected (no active device, not an AI): no damage, no reboot, no mark; the GM is told why nothing happened
+  if (!isConnectedPersona(actor)) {
+    await ChatMessage.create({
+      content: `<p>${game.i18n.format("SR5.MatrixConvergenceNotConnected", {
+        name: foundry.utils.escapeHTML(String(actor.name ?? ""))
+      })}</p>`,
+      whisper: ChatMessage.getWhisperRecipients("GM").map(u => u.id),
+    })
+    return false
+  }
   const plan = convergencePlan({
     inHost: !!hostActor, stealth: !!actor.system?.matrix?.programs?.sneak?.isActive
   })
