@@ -742,6 +742,8 @@ export class SR5_RollMessage {
       }
       case "blueGooExplosion":
         actor.rollTest("iceAttack", null, messageData)
+        //Kill Code p. 74: the IC is gone once it has exploded, it explodes only once
+        SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "defenderDoBiofeedbackDamage": {
         //Biofeedback deals the defender's net hits (SR5 p. 232), counted again on both cards (matrix-card.js)

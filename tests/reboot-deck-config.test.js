@@ -308,6 +308,41 @@ describe('Rebooting a deck (SR5 p. 244)', () => {
     expect(serverFile.system.marks).toEqual([])
   })
 
+  // Kill Code p. 74: the second mark disconnects, the hit's own counted while its button is still on the card. "Reboot"
+  // clicked before "Place the mark" used to leave the deck on with its two marks to come
+  it.each([[true, 1], [false, 0]])('Flicker on one mark, its own still to place: %s, reboots %s time(s)', async (pending, times) => {
+    hacker.system.matrix.userMode = 'ar'
+    activeDeck.uuid = 'Actor.hacker.Item.deck'
+    activeDeck.system.marks = [{
+      ownerId: 'ice', value: 1
+    }]
+    globalThis.fromUuid.mockImplementation(async uuid => ({
+      [commlink.uuid]: commlink, [serverFile.uuid]: serverFile, [activeDeck.uuid]: activeDeck
+    })[uuid] ?? null)
+    vi.spyOn(SR5_MatrixHelpers, 'applylinkLockEffect').mockResolvedValue()
+    const reboot = vi.spyOn(hacker, 'rebootDeck')
+    await SR5_MatrixHelpers.applyIceEffect({
+      test: {
+        typeSub: 'iceFlicker'
+      }, target: {
+        itemUuid: activeDeck.uuid
+      }, damage: {
+      }, matrix: {
+        mark: 1
+      }, chatCard: {
+        buttons: pending ? {
+          attackerPlaceMark: {
+          }
+        } : {
+        }
+      }
+    }, {
+      id: 'ice', name: 'CI'
+    }, hacker)
+    if (times) await reboot.mock.results[0].value
+    expect(reboot).toHaveBeenCalledTimes(times)
+  })
+
   // A reboot forced by an IC (SR5 p. 250) is no action of the character's: only the sheet button spends one
   it('spends none of the character actions by itself', async () => {
     await hacker.rebootDeck()

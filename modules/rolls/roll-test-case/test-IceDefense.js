@@ -83,8 +83,15 @@ export default async function iceDefenseInfo(cardData, actorId){
           cardData.chatCard.buttons.iceEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "iceEffect", game.i18n.localize("SR5.LinkLockConnection"))
         }  
         cardData.chatCard.buttons.matrixResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "matrixResistance", `${game.i18n.localize('SR5.TakeOnDamageMatrix')} (${(cardData.damage.matrix.value)})`)
+        //Kill Code p. 74: the server also marks the avatar Blue Goo's explosion hits
+        if (cardData.test.typeSub === "iceBlueGoo") {
+          cardData.matrix.mark = 1
+          cardData.chatCard.buttons.attackerPlaceMark = SR5_RollMessage.generateChatButton("nonOpposedTest", "attackerPlaceMark", `${game.i18n.format('SR5.AttackerPlaceMarkTo', {
+            key: cardData.matrix.mark, item: targetName, name: cardData.owner.speakerActor
+          })}`)
+        }
         break
-      case "iceFlicker":                
+      case "iceFlicker":
         cardData.matrix.mark = 1
         if (!devicelessAI && !actorData.matrix.isLinkLocked) cardData.chatCard.buttons.iceEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "iceEffect", game.i18n.localize("SR5.LinkLockConnection"))
         cardData.chatCard.buttons.attackerPlaceMark = SR5_RollMessage.generateChatButton("nonOpposedTest", "attackerPlaceMark", `${game.i18n.format('SR5.AttackerPlaceMarkTo', {
