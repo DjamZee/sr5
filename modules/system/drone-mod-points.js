@@ -237,7 +237,8 @@ export function modPointsRefusal(vehicle, mods, before, after) {
       attribute: change.key, cap
     }
   }
-  // R5 p. 127: the Structure goes no lower than half its value, rounded up (Structure 3: "pas à 1 (car 1 < 1,5)")
+  // R5 p. 127: the Structure goes no lower than half its value, rounded up as the example of the book reasons (Structure 3:
+  // "pas à 1 (car 1 < 1,5)"), though the French text says "arrondie à l'inférieur" (review 101, Bérénice)
   if (change && change.amount < 0 && change.key === "body") {
     const base = whole(vehicle?.body)
     const lowered = [...others, after].map(m => attributeChange(m, vehicle)).filter(c => c?.key === "body" && c.amount < 0)

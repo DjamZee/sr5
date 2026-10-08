@@ -4647,7 +4647,7 @@
 	"SR5.DroneModPointsYPlaceholder": "Body",
 	"SR5.DroneArmorOverload": "Armor beyond 3 × Body",
 	"SR5.WARN_DroneModPointsFull": "{name}: it needs {needed} Modification Point(s), {free} left (Rigger 5.0 p. 126-127).",
-	"SR5.WARN_DroneModBodyFloor": "{name}: the Body cannot go below {floor}, half its starting value rounded up (Rigger 5.0 p. 127).",
+	"SR5.WARN_DroneModBodyFloor": "{name}: the Body cannot go below {floor}, half its starting value rounded up (the book's example, Rigger 5.0 p. 127).",
 	"SR5.WARN_DroneModAttributeCap": "{name}: {attribute} cannot go beyond {cap}, twice its starting value (Rigger 5.0 p. 127).",
 	"SR5.SETTINGS_FlightSkill_D": "Add the Flight skill to player character sheets, in the Athletics skill group.",
 	"SR5.SETTINGS_FlightSkill_T": "Flight skill for characters",

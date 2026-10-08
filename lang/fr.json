@@ -4647,7 +4647,7 @@
 	"SR5.DroneModPointsYPlaceholder": "Structure",
 	"SR5.DroneArmorOverload": "Blindage au-delà de 3 × Structure",
 	"SR5.WARN_DroneModPointsFull": "{name} : il faut {needed} Point(s) de Modification, il en reste {free} (Rigger 5.0 p. 126-127).",
-	"SR5.WARN_DroneModBodyFloor": "{name} : la Structure ne peut pas descendre sous {floor}, la moitié de sa valeur de départ arrondie au supérieur (Rigger 5.0 p. 127).",
+	"SR5.WARN_DroneModBodyFloor": "{name} : la Structure ne peut pas descendre sous {floor}, la moitié de sa valeur de départ arrondie au supérieur (exemple du livre, Rigger 5.0 p. 127).",
 	"SR5.WARN_DroneModAttributeCap": "{name} : {attribute} ne peut pas dépasser {cap}, le double de sa valeur de départ (Rigger 5.0 p. 127).",
 	"SR5.SETTINGS_FlightSkill_D": "Ajoute la compétence Vol aux fiches de personnage, dans le groupe de compétences Athlétisme.",
 	"SR5.SETTINGS_FlightSkill_T": "Compétence Vol pour les personnages",
