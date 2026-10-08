@@ -756,13 +756,18 @@ export class SR5_RollMessage {
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       }
-      case "blueGooExplosion":
-        actor.rollTest("iceAttack", "blueGooExplosion", messageData)
+      case "blueGooExplosion": {
+        //From the IC's resistance card, the IC is the card's actor; from the defense of the avatar that hurt it, the
+        //attacker of that defense
+        const goo = actor?.system?.matrix?.deviceSubType === "iceBlueGoo" ? actor : originalActionActor
+        if (goo?.system?.matrix?.deviceSubType !== "iceBlueGoo") break
+        goo.rollTest("iceAttack", "blueGooExplosion", messageData)
         //Kill Code p. 74: the IC is gone once it has exploded, it explodes only once
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         //"elle se désactive en explosant": down as an IC that crashes (SR5 p. 249), its combatant defeated
-        if (game.user?.isGM) await SR5_ActorHelper.createDeadEffect(actor.isToken ? actor.token.id : actor.id)
+        if (game.user?.isGM) await SR5_ActorHelper.createDeadEffect(goo.isToken ? goo.token.id : goo.id)
         break
+      }
       case "defenderDoBiofeedbackDamage": {
         //Biofeedback deals the defender's net hits (SR5 p. 232), counted again on both cards (matrix-card.js)
         const value = await trustedDefenderDamage(messageId, messageData.damage.value)

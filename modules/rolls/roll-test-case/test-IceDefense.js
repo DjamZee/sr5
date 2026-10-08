@@ -41,6 +41,10 @@ export default async function iceDefenseInfo(cardData, actorId){
       cardData.chatCard.buttons.defenderDoMatrixDamage = SR5_RollMessage.generateChatButton("nonOpposedTest", "defenderDoMatrixDamage", `${game.i18n.format('SR5.DoMatrixDamage', {
         key: cardData.damage.matrix.value, name: cardData.attackerName
       })}`)
+      //Kill Code p. 74: hurt by the avatar, Blue Goo explodes. The IC's to roll: a button for the GM alone
+      if (cardData.test.typeSub === "iceBlueGoo" && !cardData.various?.blueGooExplosion) {
+        cardData.chatCard.buttons.blueGooExplosion = SR5_RollMessage.generateChatButton("nonOpposedTest", "blueGooExplosion", game.i18n.localize("SR5.IceBlueGooExplosion"), true)
+      }
     }
   } else {
     cardData.damage.matrix.value = netHits
