@@ -121,6 +121,9 @@ import {
   ritualDrainActorId
 } from "./roll-helpers/ritualTeam.js"
 import {
+  SR5_SpellShapingHelpers
+} from "./roll-helpers/spell-shaping.js"
+import {
   SR5_GrappleHelpers
 } from "./roll-helpers/grapple.js"
 import {
@@ -479,10 +482,20 @@ export class SR5_RollMessage {
           break
         }
         if (!actor) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+        //SR5 p. 329: a Spell Shaping bubble leaves its occupant untouched. These buttons post the effect with no test
+        //at all, so without this guard a spared character would dodge every roll and still take the effect
+        if (SR5_SpellShapingHelpers.skips(actor, messageData)) {
+          SR5_SpellShapingHelpers.announceSpared(actor)
+          break
+        }
         if (await SR5_RollMessage.applyOnce(messageId, type, () => actor.applyExternalEffect(messageData, "customEffects")) === false) break
         if (messageData.magic.spell.area < 1) SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "applyEffectOnItem":
+        if (SR5_SpellShapingHelpers.skips(actor, messageData)) {
+          SR5_SpellShapingHelpers.announceSpared(actor)
+          break
+        }
         if (await SR5_RollMessage.applyOnce(messageId, type, () => actor.applyExternalEffect(messageData, "itemEffects")) === false) break
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
@@ -636,6 +649,9 @@ export class SR5_RollMessage {
         await item.placeGabarit(messageId)
         break
       }
+      case "spellShapingSpare":
+        await SR5_RollMessage.spareWithSpellShaping(messageId, messageData)
+        break
       case "templateRemove":
         SR5_RollMessage.removeTemplate(messageId, messageData.owner.itemUuid, messageData.combat?.grenade?.templateId)
         break
@@ -1277,6 +1293,44 @@ export class SR5_RollMessage {
   }
 
   //Return data for a chat button
+  //SR5 p. 329: the bubbles were paid for at casting; this names who stands in them.
+  //The tokens chosen are recorded on the card, and their defense and resistance are skipped
+  static async spareWithSpellShaping(messageId, messageData){
+    let spellData = messageData.magic.spell
+    let spared = Array.isArray(spellData.sparedActors) ? spellData.sparedActors : []
+    let allowed = spellData.sparedCount || 0
+    //Targets or selection, whichever the caster used, and a refusal when the two disagree: targets persist and the GM
+    //still has the victim targeted from the cast itself. See SR5_SpellShapingHelpers.tokensToSpare
+    let choice = SR5_SpellShapingHelpers.tokensToSpare([...(game.user.targets ?? [])], [...(canvas.tokens?.controlled ?? [])])
+    if (choice.ambiguous) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_SpellShapingTargetAndSelectionDiffer")}`)
+    let chosen = choice.tokens
+    if (!chosen.length) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_SpellShapingNoTokenSelected")}`)
+
+    let added = 0
+    for (let token of chosen){
+      if (spared.length >= allowed) {
+        ui.notifications.warn(`${game.i18n.format("SR5.WARN_SpellShapingNoBubbleLeft", {
+          number: allowed
+        })}`)
+        break
+      }
+      let key = SR5_SpellShapingHelpers.actorKey(token.actor)
+      if (!key || spared.some(alreadySpared => alreadySpared.id === key)) continue
+      spared.push({
+        id: key, name: token.name
+      })
+      added++
+    }
+    if (!added) return
+
+    spellData.sparedActors = spared
+    //Deleted when used up: updateRollCard removes from the flags a button the new card no longer has
+    if (spared.length >= allowed) delete messageData.chatCard.buttons.spellShapingSpare
+    else messageData.chatCard.buttons.spellShapingSpare = SR5_RollMessage.generateChatButton("nonOpposedTest", "spellShapingSpare", `${game.i18n.localize("SR5.SpellShapingSpare")} (${spared.length}/${allowed})`)
+
+    await SR5_RollMessage.updateRollCardHelper(messageId, messageData)
+  }
+
   static generateChatButton(testType, actionType, label, gmAction){
     if (gmAction) gmAction = "chat-button-gm"
     else gmAction = ""

@@ -10,10 +10,16 @@ import {
 import {
   trustedAttackCard
 } from "../roll-helpers/attack-card.js"
+import {
+  SR5_SpellShapingHelpers
+} from "../roll-helpers/spell-shaping.js"
 
 //Add info for Defense Roll
 export default async function defense(rollData, actor, chatData){
   if (actor.type === "actorDevice" || actor.type === "actorSprite") return
+  //SR5 p. 329: a Spell Shaping bubble leaves its occupant untouched, so there is no defense test to roll at all.
+  //Checked here rather than inside the area template handler, which only runs for spells that have one
+  if (SR5_SpellShapingHelpers.skips(actor, chatData)) return void SR5_SpellShapingHelpers.announceSpared(actor)
   //The attack card read again from the chat log: a player's card never sets the DV, AP or hits (attack-card.js)
   chatData = await trustedAttackCard(chatData, actor)
   if (!chatData) return

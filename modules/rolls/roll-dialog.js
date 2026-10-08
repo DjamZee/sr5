@@ -38,6 +38,9 @@ import {
   SR5_CalledShotHelpers 
 } from "./roll-helpers/calledShot.js"
 import {
+  SR5_SpellShapingHelpers
+} from "./roll-helpers/spell-shaping.js"
+import {
   martialArtsLocationBonus
 } from "./roll-helpers/martialArtsLocation.js"
 import {
@@ -968,22 +971,10 @@ export default class SR5_RollDialog {
         this.updateFadingValue(html)
         if (html.querySelector('#level')) html.querySelector('#level').value = value
         return
-      case "dicePoolModSpellShaping":
-        if (value > 0) {
-          ui.notifications.warn(game.i18n.format('SR5.WARN_SpellShapingMin'))
-          value = 0
-        } else {
-          //SR5 p. 329: no more than the Magic. The "magic" rule lock lifted (B13), the value entered is kept, the dice
-          //pool and the area follow it, and the gamemaster hears of it. A positive value stays refused: it is no shaping
-          const cap = actor.system.magic.metamagics.spellShapingValue.value
-          value = -capByRule("magic", -value, cap, 'SR5.WARN_SpellShapingMaxMagic', {
-            magic: -cap
-          }, {
-            actor
-          })
-        }
-        dialogData.magic.spell.area = -value
-        break
+      case "spellShapingArea":
+      case "spellShapingSpared":
+        this._updateSpellShaping(html, dialogData, actor, target, value)
+        return
       case "toxinDoses": {
         //Several doses at once: +1 Power per extra dose (SR5 p. 410)
         let doses = Math.max(1, parseInt(html.querySelector('[name="toxinDoses"]').value) || 1)
@@ -1032,6 +1023,46 @@ export default class SR5_RollDialog {
       type: modifierName,
       label: game.i18n.localize(SR5.dicePoolModTypes[modifierName]),
       value: value
+    })
+    this.updateDicePoolValue(html)
+  }
+
+  //SR5 p. 329: each -1 die buys either one metre of radius or one bubble, and the total penalty may not exceed Magic
+  //(plus a Spell Shaping focus, SR5 p. 323). The "magic" rule lock lifted (B13), the values entered are kept, the dice
+  //pool follows them, and the gamemaster hears of it. A negative value is no shaping: it reads 0 either way
+  _updateSpellShaping(html, dialogData, actor, target, value){
+    const readInput = inputName => html.querySelector(`[name="${inputName}"]`)?.value ?? 0
+    const changed = (target === "spellShapingSpared") ? "spared" : "area"
+    const cap = actor.system.magic.metamagics.spellShapingValue.value
+    const asked = {
+      area: (changed === "area") ? value : readInput("spellShapingArea"),
+      spared: (changed === "spared") ? value : readInput("spellShapingSpared"),
+      bubbleCost: game.settings.get("sr5", "sr5SpellShapingBubbleCost"),
+      changed,
+    }
+    const unbounded = SR5_SpellShapingHelpers.share({
+      ...asked, max: Number.MAX_SAFE_INTEGER
+    })
+    let shaping = unbounded
+    if (unbounded.penalty > cap && refuseByRule("magic", 'SR5.WARN_SpellShapingMaxMagic', {
+      magic: cap
+    }, {
+      actor
+    })) shaping = SR5_SpellShapingHelpers.share({
+      ...asked, max: cap
+    })
+
+    if (html.querySelector('[name="spellShapingArea"]')) html.querySelector('[name="spellShapingArea"]').value = shaping.area
+    if (html.querySelector('[name="spellShapingSpared"]')) html.querySelector('[name="spellShapingSpared"]').value = shaping.spared
+
+    dialogData.magic.spell.areaShaping = shaping.area
+    dialogData.magic.spell.sparedCount = shaping.spared
+
+    SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "spellShaping")
+    if (shaping.penalty > 0) dialogData.dicePool.modifiers.push({
+      type: "spellShaping",
+      label: `${game.i18n.localize(SR5.dicePoolModTypes.spellShaping)} (${shaping.area} ${game.i18n.localize("SR5.MeterUnit")} / ${shaping.spared})`,
+      value: -shaping.penalty,
     })
     this.updateDicePoolValue(html)
   }
