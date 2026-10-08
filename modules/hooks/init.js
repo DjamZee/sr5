@@ -5,6 +5,9 @@ import {
   initSpiritLedger
 } from "../system/spirit-ledger.js"
 import {
+  primaryLifestyle
+} from "../system/lifestyle-primary.js"
+import {
   registerIndirectEffectSetting
 } from "../system/indirect-effects.js"
 import {
@@ -399,6 +402,8 @@ export async function sr5HookInit() {
     rollMacro: macros.rollMacro,
     compendiumBrowser: SR5CompendiumBrowser,
     shop: SR5ShopWindow,
+    // The main lifestyle of an actor, the one the starting nuyen are rolled for (SR5 p. 97): read by the Concepteur
+    primaryLifestyle: actor => primaryLifestyle(actor?.items),
     // The dealership (lot R9): build a vehicle or a drone and buy it
     dealership: SR5DealershipWindow,
     // The shop against the till, item by item: should answer no difference

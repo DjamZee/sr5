@@ -20,6 +20,10 @@ export class sr5ItemLifestyleDataModel extends foundry.abstract.TypeDataModel {
       level: new fields.StringField({
         initial: ''
       }),
+      // The main lifestyle, the one the starting nuyen are rolled for (SR5 p. 97; lifestyle-primary.js)
+      isPrimary: new fields.BooleanField({
+        initial: false
+      }),
       rent: new fields.SchemaField({
         duration: new fields.NumberField({
           initial: 0

@@ -128,6 +128,9 @@ import {
 import {
   actsAsRcc, fixedRccRatings, programSwitchActionType, sharingSlotsLeft
 } from "./rcc.js"
+import {
+  primaryLifestyleUpdates
+} from "../../system/lifestyle-primary.js"
 
 /**
  * Extend the basic ActorSheet class to do all the SR5 things!
@@ -547,6 +550,13 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     on(".item-clone", "click", this._onItemClone.bind(this))
     on(".item-edit", "click", this._onItemEdit.bind(this))
     on(".item-delete", "click", this._onItemDelete.bind(this))
+    // The main lifestyle (SR5 p. 97): one at a time
+    on(".lifestyle-primary", "click", ev => {
+      ev.preventDefault()
+      ev.stopPropagation()
+      const updates = primaryLifestyleUpdates(this.actor.items, ev.currentTarget.dataset.itemId)
+      if (updates.length) this.actor.updateEmbeddedDocuments("Item", updates)
+    })
     on(".item-management", "mousedown", this._onItemManagement.bind(this))
     on(".subItem", "click", this._onManageSubItem.bind(this))
     //The gamemaster puts a drug back to "not taken" by a right click on its switch (entities/items/drug-crash.js)
