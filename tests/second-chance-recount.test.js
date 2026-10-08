@@ -27,6 +27,14 @@ const spiritBonds = await import('../modules/entities/items/spirit-bonds.js')
 const {
   toxinCardVerdict
 } = await import('../modules/rolls/roll-helpers/toxin-card.js')
+//Imported here, not in the test: their chain of modules took 2.5 s to load inside the Erase Mark test, past the 5 s
+//timeout under the load of a whole `npm run check` (flaky once, seen by Mélisande)
+const {
+  SR5_MiscellaneousHelpers
+} = await import('../modules/rolls/roll-helpers/miscellaneous.js')
+const {
+  SR5_MarkHelpers
+} = await import('../modules/rolls/roll-helpers/mark.js')
 
 const results = values => values.map(result => ({
   result, active: true
@@ -149,12 +157,6 @@ describe('the readings again keep the hits of an honest Second Chance', () => {
     }).hits).toBe(9)
   })
   it('Erase Mark: the owner of the mark keeps the hits of his Second Chance (Bérénice\'s review 135)', async () => {
-    const {
-      SR5_MiscellaneousHelpers
-    } = await import('../modules/rolls/roll-helpers/miscellaneous.js')
-    const {
-      SR5_MarkHelpers
-    } = await import('../modules/rolls/roll-helpers/mark.js')
     const card = (type, typeSub, r, spent) => ({
       id: type, byGM: false, roller: {
         system: {
@@ -183,15 +185,20 @@ describe('the readings again keep the hits of an honest Second Chance', () => {
     //The eraser: 6 hits. The owner of the mark: 4 hits, 9 with his Second Chance
     const action = card('matrixAction', 'eraseMark', roll(null), 0)
     action.data.roll.r.terms[0].results = results([5, 5, 5, 5, 5, 5])
+    const previousFromUuid = globalThis.fromUuid
     globalThis.fromUuid = vi.fn(async () => null)
-    for (const [spent, reached] of [[1, false], [0, true]]) {
-      const defense = card('eraseMark', '', roll(), spent)
-      vi.spyOn(SR5_MiscellaneousHelpers, 'cardOf').mockImplementation(id => id === 'action' ? action : defense)
-      globalThis.fromUuid.mockClear()
-      expect(await SR5_MarkHelpers.eraseUse('defense')).toBe(null)
-      //Edge spent on the sheet: 9 hits, the erasing fails before the item is read; without it, 4 hits, it goes on
-      expect(globalThis.fromUuid.mock.calls.length > 0).toBe(reached)
+    try {
+      for (const [spent, reached] of [[1, false], [0, true]]) {
+        const defense = card('eraseMark', '', roll(), spent)
+        vi.spyOn(SR5_MiscellaneousHelpers, 'cardOf').mockImplementation(id => id === 'action' ? action : defense)
+        globalThis.fromUuid.mockClear()
+        expect(await SR5_MarkHelpers.eraseUse('defense')).toBe(null)
+        //Edge spent on the sheet: 9 hits, the erasing fails before the item is read; without it, 4 hits, it goes on
+        expect(globalThis.fromUuid.mock.calls.length > 0).toBe(reached)
+      }
+    } finally {
+      vi.restoreAllMocks()
+      globalThis.fromUuid = previousFromUuid
     }
-    vi.restoreAllMocks()
   })
 })
