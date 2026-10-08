@@ -546,7 +546,7 @@
 	"SR5.MatrixApiConfirmConverge": "faire converger la grille sur {name}",
 	"SR5.MatrixConvergence": "Convergence de la grille",
 	"SR5.MatrixConvergenceNotConnected": "Convergence demandée sur {name}, qui n'a aucun appareil actif : hors de la Matrice, sa persona n'est pas touchée (ni dommages, ni reboot, ni marks).",
-	"SR5.MatrixConvergenceGrid":"Convergence sur {name} : dommages matriciels VD {damage} à encaisser, reboot forcé (marks effacées, Score de Surveillance remis à 0, choc d'éjection en RV).",
+	"SR5.MatrixConvergenceGrid": "Convergence sur {name} : dommages matriciels VD {damage} à encaisser, reboot forcé (marks effacées, Score de Surveillance remis à 0, choc d'éjection en RV).",
 	"SR5.MatrixConvergenceLocated": "Le demi-DIEU indique sa position physique au propriétaire de la grille, et à celui du serveur où il se trouvait.",
 	"SR5.MatrixConvergenceStealth": "Discrétion était actif : sa position physique reste inconnue (SR5 p. 247).",
 	"SR5.MatrixConvergenceHost": "Convergence dans le serveur {host} : {name} n'est ni grillé ni éjecté. Le serveur pose {marks} marks sur son persona et commence à déployer des CI ; s'il quitte le serveur, le demi-DIEU converge aussitôt (SR5 p. 249).",
