@@ -871,8 +871,10 @@ export class SR5_MatrixHelpers {
         let existingMark = await SR5_MarkHelpers.findMarkValue(item.system, ice.id)
         if (!target.system.matrix.isLinkLocked) 
           await SR5_MatrixHelpers.applylinkLockEffect(ice, target)
-        //The forced reboot deals the dumpshock in VR (rebootDeck, SR5 p. 244)
-        if (existingMark >= 2) {
+        //Kill Code p. 74: two marks disconnect, this hit's own counted while its button is still on the card, whatever
+        //the order of the clicks. The forced reboot deals the dumpshock in VR (rebootDeck, SR5 p. 244)
+        const pendingMark = cardData.chatCard?.buttons?.attackerPlaceMark ? (cardData.matrix?.mark ?? 0) : 0
+        if (existingMark + pendingMark >= 2) {
           let deck_iceFlicker = target.items.find((item) => item.type === "itemDevice" && item.system.isActive)
           target.rebootDeck(deck_iceFlicker)
         }
