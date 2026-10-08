@@ -194,9 +194,11 @@ async function requestCards(request){
       SR5_MarkHelpers
     } = await import("./mark.js")
     const {
-      recountHits
+      recountHits, chanceSpent
     } = await import("./socket-guard.js")
-    const defenseHits = card.byGM ? Math.max(0, Number(data.roll?.hits) || 0) : recountHits(data.roll?.r, await SR5_MarkHelpers.defenseCap(card))
+    const defenseHits = card.byGM ? Math.max(0, Number(data.roll?.hits) || 0) : recountHits(data.roll?.r, await SR5_MarkHelpers.defenseCap(card), {
+      secondChance: chanceSpent(data, card.roller)
+    })
     if (defenseHits === null) return {
       refused: "card"
     }

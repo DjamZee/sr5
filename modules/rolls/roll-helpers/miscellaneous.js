@@ -12,7 +12,7 @@ import {
 } from "../../system/gm-ledger.js"
 import {
   ownsTarget, cardTrusted, matrixDamageAllowed, deactivateAllowed, reduceAllowed, supportEffectAllowed,
-  serviceSpentAllowed, maglockAllowed, testAllowed, recountHits, consumedKey, REDUCER_POOLS, hitsUnderPush, edgeSpentOn
+  serviceSpentAllowed, maglockAllowed, testAllowed, recountHits, consumedKey, REDUCER_POOLS, hitsUnderPush, edgeSpentOn, chanceSpent
 } from "./socket-guard.js"
 import {
   linkedEntryOf, effectHits
@@ -163,6 +163,7 @@ export class SR5_MiscellaneousHelpers {
     const pushed = !!card.data.edge?.hasUsedPushTheLimit && edgeSpentOn(card.roller)
     const counted = hitsUnderPush({
       rollJSON: card.data.roll?.r, pool, edge: Number(card.roller?.system?.specialAttributes?.edge?.augmented?.value) || 0, limit, pushed,
+      secondChance: chanceSpent(card.data, card.roller),
     })
     return counted === null ? null : Math.min(counted, Math.max(0, Number(card.data.roll?.hits) || 0))
   }
@@ -171,7 +172,9 @@ export class SR5_MiscellaneousHelpers {
    * within the pool at `path` (null when it shows no dice). */
   static hitsOf(card, path) {
     if (card.byGM) return Math.max(0, Number(card.data.roll?.hits) || 0)
-    return recountHits(card.data.roll?.r, path === null ? Infinity : SR5_MiscellaneousHelpers.poolCap(card.roller, path))
+    return recountHits(card.data.roll?.r, path === null ? Infinity : SR5_MiscellaneousHelpers.poolCap(card.roller, path), {
+      secondChance: chanceSpent(card.data, card.roller)
+    })
   }
 
   static #refuse(kind, senderId, data) {

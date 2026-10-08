@@ -393,7 +393,7 @@ async function confirmAndApply(message, button, ref, entry){
   //The card is the player's: its hits are counted on its dice, never above pool + Chance (cardWindowStart)
   const {
     claimed, alert, prefill
-  } = cardWindowStart(message, pool, cap)
+  } = cardWindowStart(message, pool, cap, actor)
   const power = entry.request.power
   const hits = await foundry.applications.api.DialogV2.prompt({
     window: {

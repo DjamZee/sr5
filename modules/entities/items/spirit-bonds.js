@@ -3,6 +3,9 @@
 import {
   valueAfterUpdate
 } from "../../system/reserved-fields.js"
+import {
+  chanceHits
+} from "../../rolls/roll-helpers/socket-guard.js"
 
 // What only the gamemaster writes (DjamZ's ruling, 2026-10-06): the indexes, the reputation adjustment, and the
 // spirit traits that change what a spirit is or owes. Many updates send the whole system back unchanged, so a player's
@@ -48,26 +51,28 @@ export function stripGMOnlyChanges(changes, current, paths, options){
 
 // The hits of a card counted again by the gamemaster: on its first dice only, as many as the pool he works out allows
 // (plus the Chance for a Push the Limit, SR5 p. 56), the rerolls of the Rule of Six kept, within the Limit.
-// null when the card has no dice to count.
-export function recountHits(rollJSON, pool, edge = 0, limit = 0){
+// null when the card has no dice to count. `secondChance` (socket-guard.js chanceSpent): its rerolled dice count too.
+export function recountHits(rollJSON, pool, edge = 0, limit = 0, secondChance = false){
   const results = rollJSON?.terms?.[0]?.results
   if (!Array.isArray(results)) return null
   const allowed = Math.max(0, (Number(pool) || 0) + Math.max(0, Number(edge) || 0))
   const kept = results.filter(d => !d.ruleOfSix).slice(0, allowed).concat(results.filter(d => d.ruleOfSix))
-  const hits = kept.filter(d => d.active !== false && d.discarded !== true && Number(d.result) >= 5).length
+  const hits = kept.filter(d => d.active !== false && d.discarded !== true && Number(d.result) >= 5).length +
+    (secondChance ? chanceHits(rollJSON, kept) : 0)
   return Number(limit) > 0 ? Math.min(hits, Number(limit)) : hits
 }
 
 // Banishing a wild spirit from two cards (Forbidden Arcana p. 172): the banisher's card must be written by one who
 // owns the banisher, the resistance card by the gamemaster or one who owns the spirit. Both are counted again.
 export function wildBanishVerdict({
-  banisherAuthorOwns, resistanceAuthorOwns, banisherRoll, banisherPool, banisherEdge, astralLimit, spiritRoll, force
+  banisherAuthorOwns, resistanceAuthorOwns, banisherRoll, banisherPool, banisherEdge, astralLimit, spiritRoll, force,
+  banisherChance = false, spiritChance = false
 }){
   if (!banisherAuthorOwns || !resistanceAuthorOwns) return {
     ok: false, reason: "owner"
   }
-  const banisherHits = recountHits(banisherRoll, banisherPool, banisherEdge, astralLimit)
-  const spiritHits = recountHits(spiritRoll, 2 * (Number(force) || 0), 0, 0)
+  const banisherHits = recountHits(banisherRoll, banisherPool, banisherEdge, astralLimit, banisherChance)
+  const spiritHits = recountHits(spiritRoll, 2 * (Number(force) || 0), 0, 0, spiritChance)
   if (banisherHits === null || spiritHits === null) return {
     ok: false, reason: "dice"
   }

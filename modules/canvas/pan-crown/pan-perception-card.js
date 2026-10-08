@@ -40,7 +40,7 @@ import {
   SR5_MiscellaneousHelpers
 } from "../../rolls/roll-helpers/miscellaneous.js"
 import {
-  consumedKey, recountHits
+  consumedKey, recountHits, chanceSpent
 } from "../../rolls/roll-helpers/socket-guard.js"
 
 export const PERCEPTION_BUTTON = "matrixPerceptionInfo"
@@ -438,7 +438,9 @@ async function perceptionCard(messageId){
   const {
     SR5_MarkHelpers
   } = await import("../../rolls/roll-helpers/mark.js")
-  const defenseHits = card.byGM ? Math.max(0, Number(data.roll?.hits) || 0) : recountHits(data.roll?.r, await SR5_MarkHelpers.defenseCap(card))
+  const defenseHits = card.byGM ? Math.max(0, Number(data.roll?.hits) || 0) : recountHits(data.roll?.r, await SR5_MarkHelpers.defenseCap(card), {
+    secondChance: chanceSpent(data, card.roller)
+  })
   if (hits === null || defenseHits === null) return null
   return {
     card: {

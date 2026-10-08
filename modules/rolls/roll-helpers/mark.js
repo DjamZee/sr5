@@ -14,7 +14,7 @@ import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
-  ownsTarget, recountHits, consumedKey
+  ownsTarget, recountHits, consumedKey, chanceSpent
 } from "./socket-guard.js"
 import {
   MARK_DEFENSE_TESTS, attackerMarks, markPenalty, markOutcome, eraseWins
@@ -216,8 +216,12 @@ export class SR5_MarkHelpers {
       marks = attackerMarks(typeSub, chosen)
     //The attacker's dice within its pool for this action, less the dice the marks cost
     const attackerHits = attack.byGM ? hitsWritten(attack) :
-      recountHits(attack.data.roll?.r, SR5_MiscellaneousHelpers.poolCap(attack.roller, `matrix.actions.${typeSub}.test.dicePool`) + markPenalty(marks))
-    const defenderHits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, await SR5_MarkHelpers.defenseCap(defense))
+      recountHits(attack.data.roll?.r, SR5_MiscellaneousHelpers.poolCap(attack.roller, `matrix.actions.${typeSub}.test.dicePool`) + markPenalty(marks), {
+        secondChance: chanceSpent(attack.data, attack.roller)
+      })
+    const defenderHits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, await SR5_MarkHelpers.defenseCap(defense), {
+      secondChance: chanceSpent(defense.data, defense.roller)
+    })
     //Sleaze or Attack is read on the attacker's sheet, not on a card: the limit of the action, as
     //rollData-MatrixAction.js writes it (its actionType is the length of the action, "complex")
     const actionType = attack.roller?.system?.matrix?.actions?.[typeSub]?.limit?.linkedAttribute
@@ -249,7 +253,9 @@ export class SR5_MarkHelpers {
     const defense = SR5_MiscellaneousHelpers.cardOf(messageId)
     if (!defense || defense.data.test?.type !== "matrixDefense" || !defense.data.matrix?.overwatchScore) return null
     if (!sameActor(actor, SR5_EntityHelpers.getRealActorFromID(defense.data.previousMessage?.actorId, defense.data.actorUuids))) return null
-    const hits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, await SR5_MarkHelpers.defenseCap(defense))
+    const hits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, await SR5_MarkHelpers.defenseCap(defense), {
+      secondChance: chanceSpent(defense.data, defense.roller)
+    })
     if (!(hits > 0)) return null
     return {
       card: defense, key: consumedKey(defense.id, "overwatch"), label: "overwatch", target: actor.name, value: hits,
@@ -525,7 +531,9 @@ export class SR5_MarkHelpers {
     const action = SR5_MiscellaneousHelpers.cardOf(defense.data.previousMessage?.messageId)
     if (!action || action.data.test?.type !== "matrixAction" || action.data.test?.typeSub !== "eraseMark") return null
     const eraserHits = action.byGM ? hitsWritten(action) :
-      recountHits(action.data.roll?.r, SR5_MiscellaneousHelpers.poolCap(action.roller, "matrix.actions.eraseMark.test.dicePool"))
+      recountHits(action.data.roll?.r, SR5_MiscellaneousHelpers.poolCap(action.roller, "matrix.actions.eraseMark.test.dicePool"), {
+        secondChance: chanceSpent(action.data, action.roller)
+      })
     const defenderHits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, Infinity)
     if (!eraseWins(eraserHits, defenderHits)) return null
     //The item erased belongs to the actor the card names, and carries a mark of the defender

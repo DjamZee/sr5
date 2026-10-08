@@ -512,6 +512,9 @@ export class SR5_RollTest {
     newMessage.roll.hits = messageData.roll.hits + chanceHit
     newMessage.roll.dices = dicesKeeped.concat(chance.dices)
     if (rollDices) newMessage.roll.rollDices = rollDices.filter(d => d.result > 4).concat(chance.dices)
+    //The rerolled dice, kept apart on the roll the GM reads again (socket-guard.js recountHits): its own dice stay as rolled
+    if (typeof newMessage.roll.r === "string") newMessage.roll.r = JSON.parse(newMessage.roll.r)
+    if (newMessage.roll.r) newMessage.roll.r.secondChance = chance.r
     //Glitch status not read again: it stays the one of the initial roll. Second Chance cannot erase a glitch
     //(SR5 p. 58), and rerolled dice full of 1 do not create one (ruling of DjamZ, 2026-10-06, G5)
     newMessage.edge.hasUsedSecondChance = true

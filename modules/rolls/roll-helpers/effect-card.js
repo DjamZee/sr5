@@ -8,7 +8,7 @@ import {
   countHits, poolDice
 } from "./illusion.js"
 import {
-  earnedRerolls
+  earnedRerolls, chanceHits
 } from "./socket-guard.js"
 
 // Whether one of the effects passed on reads the roll
@@ -24,24 +24,26 @@ export function cardNetHits(roll, threshold){
   return Math.max(0, (Number(roll?.hits) || 0) - (Number(threshold) || 0))
 }
 
-// The hits counted on the first dice of the card only, as many as the pool allows
-function hitsWithinPool(rollJSON, allowed, limit){
+// The hits counted on the first dice of the card only, as many as the pool allows, and those of Second Chance
+// when it may count (socket-guard.js chanceSpent), within the limit (SR5 p. 58)
+function hitsWithinPool(rollJSON, allowed, limit, secondChance = false){
   const results = rollJSON?.terms?.[0]?.results
   if (!Array.isArray(results)) return null
   const kept = results.filter(d => !d.ruleOfSix).slice(0, Math.max(0, allowed))
-  const rerolls = earnedRerolls(kept, results.filter(d => d.ruleOfSix))
-  return countHits({
+  const counted = [...kept, ...earnedRerolls(kept, results.filter(d => d.ruleOfSix))]
+  const hits = countHits({
     terms: [{
-      results: [...kept, ...rerolls]
+      results: counted
     }]
-  }, limit)
+  }) + (secondChance ? chanceHits(rollJSON, counted) : 0)
+  return Number(limit) > 0 ? Math.min(hits, Number(limit)) : hits
 }
 
 // The verdict on the card: who wrote it, and the hits and net hits the GM can stand by.
 // The net hits keep what the card took off the hits (a threshold, the resistance), never less, so they cannot
 // grow past the hits counted again
 export function effectCardVerdict({
-  authorOwnsCaster, itemOnCaster, rollJSON, pool, edge = 0, force, magic, claimedHits, claimedNetHits
+  authorOwnsCaster, itemOnCaster, rollJSON, pool, edge = 0, force, magic, claimedHits, claimedNetHits, secondChance = false
 }){
   if (!authorOwnsCaster || !itemOnCaster) return {
     ok: false, reason: "owner"
@@ -49,7 +51,7 @@ export function effectCardVerdict({
   const maxForce = Math.max(1, 2 * (Number(magic) || 0))
   const limit = Math.min(Number(force) > 0 ? Number(force) : maxForce, maxForce)
   const allowed = (Number(pool) || 0) + Math.max(0, Number(edge) || 0)
-  const hits = hitsWithinPool(rollJSON, allowed, limit)
+  const hits = hitsWithinPool(rollJSON, allowed, limit, secondChance)
   if (hits === null) return {
     ok: false, reason: "dice"
   }

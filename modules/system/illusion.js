@@ -15,6 +15,9 @@ import {
 import {
   updateLedger
 } from "./gm-ledger.js"
+import {
+  chanceSpent
+} from "../rolls/roll-helpers/socket-guard.js"
 
 export const ILLUSION_LEDGER = "sr5IllusionLedger"
 
@@ -76,7 +79,7 @@ async function recordCast(message, data){
     spellOnCaster: !!caster && (item.parent === caster || item.parent?.id === caster.id),
     messageUsed: messageUsed(ledger(), message.id),
     rollJSON: data.roll?.r, force: data.magic?.force, magic: caster?.system?.specialAttributes?.magic?.augmented?.value,
-    claimedHits: data.roll?.hits,
+    claimedHits: data.roll?.hits, secondChance: chanceSpent(data, caster),
   })
   if (!verdict.ok){
     if (verdict.reason !== "noHits") await warnGM("SR5.IllusionCardRejected", {
@@ -123,6 +126,7 @@ async function recordResistance(message, data){
   const verdict = resistanceVerdict({
     authorOwnsObserver: owns(message.author, observer), rollJSON: data.roll?.r,
     pool: resistancePool(observer, entry.spellType), edge: observer.system.specialAttributes?.edge?.augmented?.value ?? 0,
+    secondChance: chanceSpent(data, observer),
   })
   const spell = globalThis.fromUuidSync?.(spellUuid)
   if (!verdict.ok) return warnGM("SR5.IllusionCardRejected", {

@@ -54,10 +54,11 @@ export function toxinVectors(toxin) {
  * @param {number} power from toxinCardPower
  * @param {number} pool the resister's best toxin resistance pool on the open vectors (penetration only lowers it)
  * @param {number} edge Chance, which may add dice (SR5 p. 56)
+ * @param {boolean} secondChance the dice Second Chance rerolled count too (socket-guard.js chanceSpent)
  * @returns {{ok: boolean, reason?: string, hits?: number, value?: number, mismatch?: boolean}}
  */
 export function toxinCardVerdict({
-  authorOwnsTarget, sourceFound, power, rollJSON, pool, edge = 0, claimedHits
+  authorOwnsTarget, sourceFound, power, rollJSON, pool, edge = 0, claimedHits, secondChance = false
 }) {
   if (!authorOwnsTarget) return {
     ok: false, reason: "notOwner"
@@ -66,7 +67,9 @@ export function toxinCardVerdict({
     ok: false, reason: "noSource"
   }
   const allowed = Math.max(0, Number(pool) || 0) + Math.max(0, Number(edge) || 0)
-  const counted = recountHits(rollJSON, allowed)
+  const counted = recountHits(rollJSON, allowed, {
+    secondChance
+  })
   if (counted === null) return {
     ok: false, reason: "noDice"
   }
