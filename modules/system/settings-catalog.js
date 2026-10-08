@@ -149,6 +149,7 @@ export const SETTINGS_CATALOG = {
   "compendium.spritePowers": ["gm"],
   "compendium.baseWeapons": ["gm"],
   sr5GMOnlyItemEffects: ["gm"],
+  sr5CheckPlayerRolls: ["gm"],
   // Interface
   sr5ChooseStyle: ["interface"],
   "sr5Help.active": ["interface"],

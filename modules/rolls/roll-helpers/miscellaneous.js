@@ -12,7 +12,7 @@ import {
 } from "../../system/gm-ledger.js"
 import {
   ownsTarget, cardTrusted, matrixDamageAllowed, deactivateAllowed, reduceAllowed, supportEffectAllowed,
-  serviceSpentAllowed, maglockAllowed, testAllowed, recountHits, consumedKey, REDUCER_POOLS, hitsUnderPush, edgeSpentOn, chanceSpent
+  serviceSpentAllowed, maglockAllowed, testAllowed, recountHits, consumedKey, REDUCER_POOLS, hitsUnderPush, edgeSpentOn, chanceSpent, standsAsGM
 } from "./socket-guard.js"
 import {
   linkedEntryOf, effectHits
@@ -134,9 +134,12 @@ export class SR5_MiscellaneousHelpers {
     if (!data) return null
     const roller = SR5_EntityHelpers.getRealActorFromID(data.owner?.actorId, data.actorUuids)
     const author = message.author
-    if (!cardTrusted(author, !!roller && !!author && roller.testUserPermission(author, "OWNER"))) return null
+    const owned = !!roller && !!author && roller.testUserPermission(author, "OWNER")
+    if (!cardTrusted(author, owned)) return null
+    //byGM: the card stands as written, a player's too while the players' rolls are not checked (world setting,
+    //socket-guard.js standsAsGM). gm: a GM wrote it, for what a player's card never does (the GM's say in grant)
     return {
-      id: message.id, data, roller, author, byGM: !!author?.isGM
+      id: message.id, data, roller, author, byGM: standsAsGM(author, owned), gm: !!author?.isGM
     }
   }
 
@@ -189,7 +192,8 @@ export class SR5_MiscellaneousHelpers {
    * @param {User} sender who asks
    */
   static async grant(use, sender) {
-    if (!use.card.byGM) {
+    //The GM's say stays on a player's card, checked rolls or not (gm: a GM wrote every card behind the use)
+    if (!(use.card.gm ?? use.card.byGM)) {
       let asked = SR5_MiscellaneousHelpers.#confirmations.get(use.card.id)
       if (!asked) {
         asked = SR5_MiscellaneousHelpers.confirmUse(use, sender)

@@ -444,7 +444,7 @@ async function perceptionCard(messageId){
   if (hits === null || defenseHits === null) return null
   return {
     card: {
-      ...card, byGM: card.byGM && attack.byGM
+      ...card, byGM: card.byGM && attack.byGM, gm: card.gm && attack.gm
     }, observer, budget: perceptionBudget({
       hits, defenseHits
     }), hasTarget: true
@@ -549,7 +549,7 @@ export async function answerPerception(request, sender){
         ...target, facts
       } : {
         facts
-      }, choices: checked.choices, typed, sender, confirm: !card.byGM
+      }, choices: checked.choices, typed, sender, confirm: !(card.gm ?? card.byGM)
     })
     // A refusal is not kept: the button stays, and its next click asks again
     if (!typed) return refuse("gm")

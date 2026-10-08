@@ -13,7 +13,7 @@ import {
 // Flux / Mana Ebb named by the ritual item itself, and a whole Force above 0. null when refused
 export async function manaShiftOf(messageId){
   const card = SR5_MiscellaneousHelpers.cardOf(messageId)
-  if (!card?.byGM || card.data.test?.type !== "ritualResistance") return null
+  if (!(card?.gm ?? card?.byGM) || card.data.test?.type !== "ritualResistance") return null
   const ritual = card.data.owner?.itemUuid ? await fromUuid(card.data.owner.itemUuid) : null
   const kind = manaShiftKind(ritual?.name)
   const force = Number(card.data.magic?.force)

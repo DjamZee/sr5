@@ -18,7 +18,7 @@ import {
   isActiveGM, readLedger, banishKey, banishCardSeen, setBanishTotal
 } from "../../system/spirit-ledger.js"
 import {
-  chanceSpent
+  chanceSpent, playerRollsChecked
 } from "./socket-guard.js"
 import {
   SR5_ActorHelper
@@ -358,6 +358,12 @@ export class SR5_ThirdPartyHelpers {
       banisherChance: chanceSpent(banishingData, banisher), spiritChance: chanceSpent(cardData, spirit),
     })
     if (!verdict.ok) return reject(verdict.reason)
+    //The players' rolls not checked (world setting): the hits both cards announce
+    if (!playerRollsChecked()) {
+      verdict.banisherHits = Math.max(0, Number(banishingData.roll?.hits) || 0)
+      verdict.spiritHits = Math.max(0, Number(cardData.roll?.hits) || 0)
+      verdict.netHits = Math.max(0, verdict.banisherHits - verdict.spiritHits)
+    }
     const total = Number(ledger.banish?.[banishKey(spirit)]) || 0
     const confirmed = await foundry.applications.api.DialogV2.confirm({
       window: {
@@ -418,8 +424,9 @@ export class SR5_ThirdPartyHelpers {
     //Its skills and its powers: the card does not tell which test it was, and its type is the author's to write
     const largestPool = Math.max(0, ...Object.values(spirit.system.skills ?? {
     }).map(s => Number(s?.test?.dicePool) || 0), ...spirit.items.map(i => Number(i.system?.test?.dicePool) || 0))
-    const hits = recountHits(cardData.roll?.r, largestPool, spirit.system.specialAttributes?.edge?.augmented?.value, 0,
-      chanceSpent(cardData, spirit))
+    //The players' rolls not checked (world setting): the hits the card announces
+    const hits = playerRollsChecked() ? recountHits(cardData.roll?.r, largestPool, spirit.system.specialAttributes?.edge?.augmented?.value, 0,
+      chanceSpent(cardData, spirit)) : Math.max(0, Number(cardData.roll?.hits) || 0)
     if (hits === null) return rejectLeash("dice")
     if (!testsLeash({
       hits, force, services: spirit.system.services.value

@@ -61,7 +61,7 @@ export function sameActor(roller, actor) {
  * the one it was rolled for (or the rigger of that drone). */
 export function standsFor(card, actor) {
   if (!card || !actor) return false
-  if (card.byGM) return true
+  if (card.gm ?? card.byGM) return true
   if (!card.author || !actor.testUserPermission?.(card.author, "OWNER")) return false
   return sameActor(card.roller, actor)
 }

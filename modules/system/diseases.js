@@ -20,7 +20,7 @@ import {
   SR5_Toxins
 } from "../entities/items/toxins.js"
 import {
-  recountHits, chanceSpent
+  recountHits, chanceSpent, standsAsGM
 } from "../rolls/roll-helpers/socket-guard.js"
 
 export const DISEASE_LEDGER = "sr5DiseaseLedger"
@@ -609,6 +609,10 @@ export function addDiseaseApplyButton(message, html){
 // the field is empty and the GM types his figure (Bodo, 06/10)
 export function cardWindowStart(message, pool, cap, actor = null){
   const claimed = Math.max(0, Number(message.flags?.sr5data?.roll?.hits) || 0)
+  //The players' rolls not checked (world setting): the card of an owner of the actor starts the window as written
+  if (!cardFromGM(message) && standsAsGM(message.author, !!actor && actor.testUserPermission?.(message.author, "OWNER"))) return {
+    claimed, alert: "", prefill: claimed
+  }
   const counted = diseaseCardHits(message.flags?.sr5data, cardFromGM(message), pool, chanceSpent(message.flags?.sr5data, actor))
   const warn = (text) => `<p class="sr5-disease-alert" style="color: #c00; font-weight: bold;">${text}</p>`
   const above = hitsAboveDice(claimed, pool)

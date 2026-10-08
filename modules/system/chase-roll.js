@@ -456,7 +456,7 @@ export async function applyChaseCard(messageId) {
   } else if (chase.mode === "followUp") {
     // The gamemaster's card that asked for it
     const asked = SR5_MiscellaneousHelpers.cardOf(chase.sourceId)
-    const pending = asked?.byGM ? asked.data?.chase?.pending?.[chase.vehicleId] : null
+    const pending = (asked?.gm ?? asked?.byGM) ? asked.data?.chase?.pending?.[chase.vehicleId] : null
     if (!pending) return refuse()
     source = asked.data.chase
     spentOn = asked.id
@@ -612,7 +612,7 @@ async function setCrashDamage(type, messageId) {
   const card = SR5_MiscellaneousHelpers.cardOf(messageId)
   const vehicleId = type.slice(CHASE_CRASH_PREFIX.length)
   const vehicle = SR5Chase.state.vehicles.find(v => v.id === vehicleId)
-  if (!card?.byGM || !card.data.chase?.crashes?.includes(vehicleId) || !vehicle) return ui.notifications?.warn(game.i18n.localize("SR5.CHASE_Stale"))
+  if (!(card?.gm ?? card?.byGM) || !card.data.chase?.crashes?.includes(vehicleId) || !vehicle) return ui.notifications?.warn(game.i18n.localize("SR5.CHASE_Stale"))
   const actor = chaseVehicleActor(vehicle)
   if (!actor) return ui.notifications?.warn(game.i18n.localize("SR5.CHASE_Stale"))
   const suggested = collisionDamage({
@@ -661,7 +661,7 @@ async function resistChaseDamage(type, messageId) {
     SR5_MiscellaneousHelpers
   } = await import("../rolls/roll-helpers/miscellaneous.js")
   const card = SR5_MiscellaneousHelpers.cardOf(messageId)
-  const damage = card?.byGM ? card.data.chase?.damages?.[Number(type.slice(CHASE_DAMAGE_PREFIX.length))] : null
+  const damage = (card?.gm ?? card?.byGM) ? card.data.chase?.damages?.[Number(type.slice(CHASE_DAMAGE_PREFIX.length))] : null
   const actor = damage ? damageActor(card.data.chase, type) : null
   if (!damage || !actor) return ui.notifications?.warn(game.i18n.localize("SR5.CHASE_Stale"))
   if (!actor.isOwner) return ui.notifications?.warn(game.i18n.localize("SR5.CHASE_NotYourVehicle"))

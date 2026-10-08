@@ -234,7 +234,7 @@ export class SR5_MarkHelpers {
       //The hits counted again that decided it, shown to the GM (not the number of marks: Jakob's review)
       hits: outcome.winner === "defender" ? defenderHits : attackerHits,
       card: {
-        id: defense.id, byGM: defense.byGM && attack.byGM
+        id: defense.id, byGM: defense.byGM && attack.byGM, gm: defense.gm && attack.gm
       },
     }
   }
@@ -544,7 +544,7 @@ export class SR5_MarkHelpers {
     if (!item.system?.marks?.some(m => m.ownerId === defense.data.owner?.actorId && m.value > 0)) return null
     return {
       card: {
-        id: defense.id, byGM: defense.byGM && action.byGM
+        id: defense.id, byGM: defense.byGM && action.byGM, gm: defense.gm && action.gm
       },
       key: consumedKey(defense.id, "eraseMark", item.uuid), label: "eraseMark", target: item.name, value: eraserHits,
       cardData: defense.data,

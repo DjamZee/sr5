@@ -709,7 +709,7 @@ export async function trustedResistanceCard(chatData, actor, rollType = "", help
   const cardOf = helpers?.cardOf ?? (await import("./miscellaneous.js")).SR5_MiscellaneousHelpers.cardOf
   const card = cardOf(messageId)
   if (!card) return false
-  if (card.byGM) return true
+  if (card.gm ?? card.byGM) return true
   if (rollType === "resistanceCardAura") {
     if (card.data.test?.type !== "defense") return false
     const attack = cardOf(card.data.previousMessage?.messageId)

@@ -32,6 +32,26 @@ export function cardTrusted(author, rollerOwned) {
   return author.isGM || !!rollerOwned
 }
 
+/** The world setting that has the GM's browser check the rolls of the players (DjamZ, 08/10: off by default). */
+export const PLAYER_ROLLS_SETTING = "sr5CheckPlayerRolls"
+
+/** Whether the GM's browser checks a player's card (hits counted again, dice past the pool, alerts). Where no setting
+ * can be read (the tests), it does. */
+export function playerRollsChecked() {
+  try {
+    return game.settings.get("sr5", PLAYER_ROLLS_SETTING) !== false
+  } catch {
+    return true
+  }
+}
+
+/** Whether a card stands as a GM's would, as written: a GM's, or, while the players' rolls are not checked
+ * (playerRollsChecked), one an owner of the actor that rolled it wrote (`rollerOwned`). */
+export function standsAsGM(author, rollerOwned) {
+  if (!author) return false
+  return !!author.isGM || (!!rollerOwned && !playerRollsChecked())
+}
+
 const isNumber = value => typeof value === "number" && Number.isFinite(value)
 
 /**

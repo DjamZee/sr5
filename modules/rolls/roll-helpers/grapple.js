@@ -207,7 +207,7 @@ export class SR5_GrappleHelpers {
     if (!(await asked)) return false
     return SR5_MiscellaneousHelpers.grant({
       ...use, card: {
-        id: use.card.id, byGM: true
+        id: use.card.id, byGM: true, gm: true
       }
     }, sender)
   }

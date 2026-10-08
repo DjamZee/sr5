@@ -16,7 +16,7 @@ import {
   updateLedger
 } from "./gm-ledger.js"
 import {
-  chanceSpent
+  chanceSpent, standsAsGM
 } from "../rolls/roll-helpers/socket-guard.js"
 
 export const ILLUSION_LEDGER = "sr5IllusionLedger"
@@ -55,6 +55,18 @@ function owns(user, actor){
   return !!user && !!actor && (user.isGM || actor.testUserPermission?.(user, "OWNER"))
 }
 
+//The players' rolls not checked (world setting, socket-guard.js): a player's card on an actor she owns stands with the
+//hits it announces, and the GM still confirms the casting (option A of 06/10)
+//`needsHits`: a casting without hits sets no threshold (castVerdict's "noHits")
+function asWritten(verdict, author, actor, data, needsHits = true){
+  if (author?.isGM || ["owner", "message"].includes(verdict.reason) || !standsAsGM(author, owns(author, actor))) return verdict
+  const hits = Math.max(0, Math.floor(Number(data.roll?.hits)) || 0)
+  const ok = !needsHits || hits > 0
+  return {
+    ...verdict, ok, reason: ok ? null : "noHits", hits, mismatch: false,
+  }
+}
+
 function warnGM(key, data){
   return ChatMessage.create({
     whisper: game.users.filter(u => u.isGM).map(u => u.id),
@@ -74,13 +86,14 @@ async function recordCast(message, data){
   if (!kind) return
   const author = message.author
   const caster = SR5_EntityHelpers.getRealActorFromID(data.owner.actorId, data.actorUuids)
-  const verdict = castVerdict({
+  let verdict = castVerdict({
     authorOwnsCaster: owns(author, caster),
     spellOnCaster: !!caster && (item.parent === caster || item.parent?.id === caster.id),
     messageUsed: messageUsed(ledger(), message.id),
     rollJSON: data.roll?.r, force: data.magic?.force, magic: caster?.system?.specialAttributes?.magic?.augmented?.value,
     claimedHits: data.roll?.hits, secondChance: chanceSpent(data, caster),
   })
+  verdict = asWritten(verdict, author, caster, data)
   if (!verdict.ok){
     if (verdict.reason !== "noHits") await warnGM("SR5.IllusionCardRejected", {
       user: author?.name ?? "?", spell: item.name
@@ -123,11 +136,11 @@ async function recordResistance(message, data){
   const spellUuid = data.previousMessage?.itemUuid
   const entry = ledger()[spellUuid]
   if (!observer || !entry) return
-  const verdict = resistanceVerdict({
+  const verdict = asWritten(resistanceVerdict({
     authorOwnsObserver: owns(message.author, observer), rollJSON: data.roll?.r,
     pool: resistancePool(observer, entry.spellType), edge: observer.system.specialAttributes?.edge?.augmented?.value ?? 0,
     secondChance: chanceSpent(data, observer),
-  })
+  }), message.author, observer, data, false)
   const spell = globalThis.fromUuidSync?.(spellUuid)
   if (!verdict.ok) return warnGM("SR5.IllusionCardRejected", {
     user: message.author?.name ?? "?", spell: spell?.name ?? ""

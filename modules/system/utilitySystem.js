@@ -214,6 +214,18 @@ export class SR5_SystemHelpers {
       type: Boolean,
     })
 
+    // The GM's browser checks the rolls of the players: hits counted again on the dice, dice past the pool, alerts
+    // (socket-guard.js playerRollsChecked). Off by default (DjamZ, 08/10): a player's card on an actor she owns stands
+    // as written, as a GM's
+    game.settings.register("sr5", "sr5CheckPlayerRolls", {
+      name: "SR5.SETTINGS_CheckPlayerRolls_T",
+      hint: "SR5.SETTINGS_CheckPlayerRolls_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+    })
+
     game.settings.register("sr5", "sr5StorageDropOnDeathShare", {
       name: "SR5.SETTINGS_StorageDropOnDeathShare_T",
       hint: "SR5.SETTINGS_StorageDropOnDeathShare_D",

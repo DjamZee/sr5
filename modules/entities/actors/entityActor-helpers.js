@@ -23,7 +23,7 @@ import {
   SR5_EntityHelpers 
 } from "../helpers.js"
 import {
-  ownsTarget, bounded, consumedKey, chanceSpent
+  ownsTarget, bounded, consumedKey, chanceSpent, standsAsGM, playerRollsChecked
 } from "../../rolls/roll-helpers/socket-guard.js"
 import {
   vouch
@@ -2180,6 +2180,8 @@ export class SR5_ActorHelper {
     //(another player's resistance card) is rejected, the GM warned, and applied by hand
     if (!author || author.isGM || author.id === game.user?.id) return claimed
     const caster = SR5_EntityHelpers.getRealActorFromID(data.owner.actorId, data.actorUuids)
+    //The players' rolls not checked (world setting): the card of an owner of the caster stands as written
+    if (standsAsGM(author, !!caster && caster.testUserPermission?.(author, "OWNER"))) return claimed
     const isForm = item.type === "itemComplexForm"
     //The wounds taken since the roll (its Drain, typically) are given back to the pool (attack-card.js, woundAllowance)
     const pool = (Number(isForm ? caster?.system?.matrix?.resonanceActions?.threadComplexForm?.test?.dicePool :
@@ -2239,7 +2241,8 @@ export class SR5_ActorHelper {
   static async confirmUnresistedDamage(actor, item, key, value, data, effectType){
     if (!game.user?.isGM) return true
     const author = game.messages?.get(data.owner?.messageId)?.author
-    if (author && !author.isGM && readsRoll(item.system[effectType])) return true
+    //Its hits confirmed by checkEffectCard, unless the players' rolls are not checked: the GM still sees the boxes
+    if (author && !author.isGM && readsRoll(item.system[effectType]) && playerRollsChecked()) return true
     if (author?.isGM && !item.parent?.hasPlayerOwner) return true
     return foundry.applications.api.DialogV2.confirm({
       window: {
@@ -2808,6 +2811,8 @@ export class SR5_ActorHelper {
     const author = message?.author
     if (!data || !actor) return null
     if (!game.user?.isGM || !author || author.isGM || author.id === game.user.id) return data
+    //The players' rolls not checked (world setting): the card of an owner of the actor it lands on stands as written
+    if (standsAsGM(author, actor.testUserPermission?.(author, "OWNER"))) return data
     const {
       toxinCardPower, toxinCardVerdict, toxinVectors
     } = await import("../../rolls/roll-helpers/toxin-card.js")
