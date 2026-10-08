@@ -38,7 +38,7 @@ import {
   shopSettings
 } from './shop-vendor-rules.js'
 import {
-  implantEssenceEffects, implantEssence, hasAdapsine
+  implantEssenceEffects, implantEssence, hasAdapsine, essenceCostFor
 } from '../system/implant-essence.js'
 import {
   dealerPrice
@@ -531,7 +531,15 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       line.unit = unit
       const total = unit * line.quantity
       cartTotal += total
-      if (described?.essence) cartEssence += essenceFor(row.entry, described.essence, line.grade) * line.quantity
+      if (described?.essence) {
+        const book = essenceFor(row.entry, described.essence, line.grade) * line.quantity
+        // The cost the till counts: a module may adjust it (sr5.essenceCostFor, shop.js essenceAllows), the cart says the same
+        cartEssence += buyer && row.entry.type === 'itemAugmentation' && !row.entry.system?.isAccessory ? essenceCostFor(buyer, {
+          type: row.entry.type, name: row.entry.name, system: row.entry.system, grade: line.grade, quantity: line.quantity
+        }, book, {
+          creation: !!SR5Shop.creationModeFor(buyer)
+        }) : book
+      }
       // An item on a vendor's counter is there: it adds no search time (SR5 p. 420)
       const onCounter = row?.entry.vendor && !row.entry.onOrder && !SR5ShopVendor.testInStock
       if (described?.availability && !onCounter) cartDelay = Math.max(cartDelay, SR5ShopAvailability.delayFor(total))

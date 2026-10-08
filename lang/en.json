@@ -228,6 +228,7 @@
 	"SR5.ActionSourceCallSprite": "Call sprite",
 	"SR5.ActionSourceCastRecklessSpell": "Cast reckless spell",
 	"SR5.ActionSourceCastSpell": "Cast spell",
+	"SR5.ActionSourceConcealItem": "Conceal an item",
 	"SR5.ActionSourceChangeChokeSettings": "Switch choke settings",
 	"SR5.ActionSourceChangeFiringMode": "Switch firing mode",
 	"SR5.ActionSourceChangeSilentMode": "Switch silent mode",

@@ -5,7 +5,8 @@
  * the one who looks Perception + Intuition [Mental] with the object's concealability added to his pool; he may
  * use Palming instead of Perception. In a pat-down, he may use Agility and the Physical limit instead of
  * Intuition and the Mental limit, and the concealability is changed: a negative one is halved, a positive one
- * doubled. "Repérer les objets dissimulés" (same page): at least one hit is needed to notice anything.
+ * doubled (last sentence of the section, right after the pat-down one, checked in the VF 2026-10-08; no erratum).
+ * "Repérer les objets dissimulés" (same page): at least one hit is needed to notice anything.
  *
  * What the book leaves open was ruled by DjamZ (2026-10-07): the hidden object keeps its state, the hits of
  * the one who hid it, until it is taken out; Perception or a pat-down meets it later. The searcher, who

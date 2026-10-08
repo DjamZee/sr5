@@ -913,6 +913,7 @@ SR5.actionSources = {
   callSprite 				  : "SR5.ActionSourceCallSprite",
   castRecklessSpell		  : "SR5.ActionSourceCastRecklessSpell",
   castSpell				  : "SR5.ActionSourceCastSpell",
+  concealItem				  : "SR5.ActionSourceConcealItem",
   changeChokeSettings       : "SR5.ActionSourceChangeChokeSettings",
   changeFiringMode		  : "SR5.ActionSourceChangeFiringMode",
   changeSilentMode		  : "SR5.ActionSourceChangeSilentMode",
@@ -4227,6 +4228,13 @@ SR5.sourceList = {
 //-----------------------------------//
 
 SR5.modifiersTypes = {
+  //Types written by the item computations (utilityItem.js), shown in an item sheet's calculation details
+  addComforts				  : "SR5.LifestyleComforts",
+  addNeighborhood			  : "SR5.LifestyleNeighborhood",
+  addSecurity				  : "SR5.LifestyleSecurity",
+  CustomCyberlimb			  : "SR5.AugmentationCyberlimbs",
+  factory					  : "SR5.VehicleModFactory",
+  swarm					  : "SR5.SwarmValue",
   adeptPower				  : "SR5.AdeptPower",
   ammunitionType 			  : "SR5.AmmunitionType",
   armor 					  : "SR5.Armor",

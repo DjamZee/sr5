@@ -80,8 +80,13 @@ describe("I Am the Firewall through the combat flow", () => {
       })
     })
     const list = [make("hacker", hacker, 20), make("ally", ally, 15), make("grunt", grunt, 5)]
+    // A Foundry collection: its contents and has, for the new round's single update
+    Object.assign(list, {
+      contents: list, has: id => list.some(c => c.id === id)
+    })
     flow = {
       id: "c1", combatants: list, turn: 0,
+      updateEmbeddedDocuments: vi.fn(),
       get turns(){
         return [...list].sort((a, b) => b.initiative - a.initiative)
       },

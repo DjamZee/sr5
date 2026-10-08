@@ -348,7 +348,8 @@ export class SR5ActorSheet extends ActorSheetSR5 {
         // field sums every transaction and is not a balance.
         const value = contents.reduce((total, i) => {
           const price = i.system.price?.value ?? i.system.price?.base ?? 0
-          return total + price * (i.system.quantity ?? 1)
+          // Ammunition carries its whole stack in its computed price (utilityItem.js _handleAmmoPrice)
+          return total + price * (i.type === "itemAmmunition" ? 1 : (i.system.quantity ?? 1))
         }, 0)
         return {
           _id: storage._id,

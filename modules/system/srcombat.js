@@ -154,6 +154,14 @@ export class SR5Combat extends Combat {
     return
   }
 
+  //One update of the combatants still in the combat, read at the moment of writing (none: nothing written)
+  static async updatePresentCombatants(combat, changesOf){
+    const updates = combat.combatants.contents.map(combatant => ({
+      _id: combatant.id, ...changesOf(combatant)
+    }))
+    if (updates.length) await combat.updateEmbeddedDocuments("Combatant", updates)
+  }
+
   static async handleNextRound(combatId){
     //SR5_SystemHelpers.srLog(3, "New combat round");
     const combat = game.combats?.get(combatId)
@@ -161,12 +169,14 @@ export class SR5Combat extends Combat {
     //SR5 p. 164: a character runs until the end of the Combat Turn
     await clearRunning(combat)
     await combat.resetAll()
-    for (let combatant of combat.combatants) {
-      combatant.update({
-        "flags.sr5.seizeInitiative": false,
-        "flags.sr5.blitz": false,
-        "flags.sr5.hasPlayed": combatant.isDefeated,
-      })
+    await SR5Combat.updatePresentCombatants(combat, combatant => ({
+      "flags.sr5.seizeInitiative": false,
+      "flags.sr5.blitz": false,
+      "flags.sr5.hasPlayed": combatant.isDefeated,
+    }))
+    for (let combatant of [...combat.combatants]) {
+      //Deleted by a module during an earlier await: nothing to write on it
+      if (!combat.combatants.has(combatant.id)) continue
       await SR5Combat.decreaseInitiativePassEffects(combatant)
       await SR5Combat.manageTurnEnd(combatant)
       //Update actor's action: done here, on the gamemaster's side, whoever started the new round
@@ -184,10 +194,20 @@ export class SR5Combat extends Combat {
     await SR5Combat.endOwnerPassEffects(combat, combat.combatant)
   }
 
-  setupTurns(){
-    // Determine the turn order and the current turn
-    const turns = super.setupTurns()
-    return turns.sort(SR5Combat.sortByRERIC)
+  // Foundry's setupTurns sorts with this and reads the current combatant in that order: re-sorting its result
+  // afterwards left this.turn on another combatant ("not the action phase of…" on a second action). Called unbound
+  _sortCombatants(left, right){
+    return SR5Combat.sortByRERIC(left, right)
+  }
+
+  // The coin toss of a tie (SR5 p. 161, CRIP): the same for a combatant all the round, so that every sort agrees
+  static coinToss(combatant) {
+    //Not the combat's id: Foundry sorts a copy of the combat, without id, to find the current combatant again
+    //(Combatant._preUpdateOperation), and both sorts must agree
+    const key = `${combatant.parent?.round ?? 0}:${combatant.id ?? ""}`
+    let hash = 0
+    for (const char of key) hash = (hash * 31 + char.charCodeAt(0)) | 0
+    return (Math.abs(hash) % 2) + 1
   }
 
   static sortByRERIC(left, right) {
@@ -196,35 +216,36 @@ export class SR5Combat extends Combat {
     const rightSeizeInit = right.flags.sr5?.seizeInitiative
     if (leftSeizeInit === true && rightSeizeInit === false) return -1
     if (rightSeizeInit === true && leftSeizeInit === false) return 1
-    // First sort by initiative value if different
-    const leftInit = Number(left.flags.sr5?.baseCombatantInitiative)
-    const rightInit = Number(right.flags.sr5?.baseCombatantInitiative)
-    if (isNaN(leftInit)) return 1
-    if (isNaN(rightInit)) return -1
+    // First sort by initiative value if different; the score rolled when the base is not written yet
+    const initOf = c => Number(c.flags.sr5?.baseCombatantInitiative ?? c.initiative ?? NaN)
+    const leftInit = initOf(left)
+    const rightInit = initOf(right)
+    if (isNaN(leftInit) !== isNaN(rightInit)) return isNaN(leftInit) ? 1 : -1
     if (leftInit > rightInit) return -1
     if (leftInit < rightInit) return 1
 
     // now we sort by ERIC
-    const genData = (actor) => {
-      if (!actor) return [0, 0, 0, 0]
+    const genData = (combatant) => {
+      const actor = combatant.actor
       // edge, reaction, intuition, coinflip
       return [
-        actor.system.specialAttributes?.edge?.augmented.value,
-        actor.system.attributes?.reaction?.augmented.value,
-        actor.system.attributes?.intuition?.augmented.value,
-        Math.ceil(Math.random() * 2),
+        actor?.system.specialAttributes?.edge?.augmented.value ?? 0,
+        actor?.system.attributes?.reaction?.augmented.value ?? 0,
+        actor?.system.attributes?.intuition?.augmented.value ?? 0,
+        SR5Combat.coinToss(combatant),
       ]
     }
 
-    const leftData = genData(left.actor)
-    const rightData = genData(right.actor)
+    const leftData = genData(left)
+    const rightData = genData(right)
     // if we find a difference that isn't 0, return it
     for (let index = 0; index < leftData.length; index++) {
-      const diff = rightData[index] - leftData[index]
+      const diff = (Number(rightData[index]) || 0) - (Number(leftData[index]) || 0)
       if (diff !== 0) return diff
     }
 
-    return 0
+    // Same coin: the id decides, so that the order never depends on the order of the list
+    return String(left.id ?? "").localeCompare(String(right.id ?? ""))
   }
 
   /**
@@ -391,9 +412,10 @@ export class SR5Combat extends Combat {
 
     // Let Foundry handle time and some other things.
     await super.nextRound()
-    for (let combatant of this.combatants){
-      await combatant.setFlag("sr5", "hasPlayed", combatant.isDefeated)
-    }
+    //One write, on the combatants still there: a module may delete one while the round turns (Anatolie)
+    await SR5Combat.updatePresentCombatants(this, combatant => ({
+      "flags.sr5.hasPlayed": combatant.isDefeated
+    }))
     await SR5Combat.handleNextRound(this.id)
   }
 

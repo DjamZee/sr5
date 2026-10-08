@@ -228,6 +228,7 @@
 	"SR5.ActionSourceCallSprite": "Appeler un sprite",
 	"SR5.ActionSourceCastRecklessSpell": "Lancer un sort précipité",
 	"SR5.ActionSourceCastSpell": "Lancer un sort",
+	"SR5.ActionSourceConcealItem": "Cacher un objet",
 	"SR5.ActionSourceChangeChokeSettings": "Changer de mode de dispersion",
 	"SR5.ActionSourceChangeFiringMode": "Changer de mode de tir",
 	"SR5.ActionSourceChangeSilentMode": "Entrer ou Sortir du mode silencieux",
