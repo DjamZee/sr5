@@ -61,12 +61,12 @@ describe('Maglock matrix attributes (SR5 p. 235-236)', () => {
     expect(actor.system.matrix.attributes.attack.value).toBe(0)
   })
 
-  it('leaves an ordinary device as it was', () => {
+  it('treats an ordinary device the same way', () => {
     const actor = device("device", 0)
     SR5_CharacterUtility.generateDeviceMatrix(actor, {
       marks: [], markedItems: []
     })
     expect(actor.system.matrix.attributes.firewall.value).toBe(3)
-    expect(actor.system.matrix.attributes.attack.value).toBe(3)
+    expect(actor.system.matrix.attributes.attack.value).toBe(0)
   })
 })

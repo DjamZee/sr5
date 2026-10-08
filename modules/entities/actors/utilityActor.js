@@ -126,6 +126,9 @@ import {
 import {
   refuseByRule
 } from "../../system/rule-locks.js"
+import {
+  isPlainDevice, lacksAttackAndSleaze
+} from "./device-attributes.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -4878,6 +4881,9 @@ export class SR5_CharacterUtility extends Actor {
       dataProcessingValue = matrix.deviceRating
       attackValue = matrix.deviceRating
     }
+    //A device of the scenery has no Attack nor Sleaze (SR5 p. 235-236): it defends with the first element alone
+    //(SR5 p. 237, « Logique seule si l'objet ne dispose pas d'un attribut Corruption »)
+    const noAttackSleaze = lacksAttackAndSleaze(actor)
 
     SR5_EntityHelpers.updateModifier(matrixActions.editFile.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.editFile.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
@@ -4899,7 +4905,7 @@ export class SR5_CharacterUtility extends Actor {
     SR5_EntityHelpers.updateModifier(matrixActions.bruteForce.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.bruteForce.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.matrixPerception.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.matrixPerception.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
+    if (!noAttackSleaze) SR5_EntityHelpers.updateModifier(matrixActions.matrixPerception.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
     SR5_EntityHelpers.updateModifier(matrixActions.dataSpike.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.dataSpike.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.crashProgram.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
@@ -4911,9 +4917,9 @@ export class SR5_CharacterUtility extends Actor {
     SR5_EntityHelpers.updateModifier(matrixActions.hide.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.hide.defense, game.i18n.localize('SR5.DataProcessing'), modifierTypeDataProcessing, dataProcessingValue)
     SR5_EntityHelpers.updateModifier(matrixActions.jackOut.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.jackOut.defense, game.i18n.localize('SR5.MatrixAttack'), modifierTypeAttack, attackValue)
+    if (!noAttackSleaze) SR5_EntityHelpers.updateModifier(matrixActions.jackOut.defense, game.i18n.localize('SR5.MatrixAttack'), modifierTypeAttack, attackValue)
     SR5_EntityHelpers.updateModifier(matrixActions.traceIcon.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.traceIcon.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
+    if (!noAttackSleaze) SR5_EntityHelpers.updateModifier(matrixActions.traceIcon.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
     SR5_EntityHelpers.updateModifier(matrixActions.controlDevice.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.controlDevice.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
 
@@ -4929,11 +4935,11 @@ export class SR5_CharacterUtility extends Actor {
       SR5_EntityHelpers.updateModifier(matrixActions.popupCybercombat.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
       SR5_EntityHelpers.updateModifier(matrixActions.popupCybercombat.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
       SR5_EntityHelpers.updateModifier(matrixActions.squelch.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.squelch.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
+      if (!noAttackSleaze) SR5_EntityHelpers.updateModifier(matrixActions.squelch.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
       SR5_EntityHelpers.updateModifier(matrixActions.subvertInfrastructure.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
       SR5_EntityHelpers.updateModifier(matrixActions.subvertInfrastructure.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
       SR5_EntityHelpers.updateModifier(matrixActions.tag.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.tag.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
+      if (!noAttackSleaze) SR5_EntityHelpers.updateModifier(matrixActions.tag.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
       SR5_EntityHelpers.updateModifier(matrixActions.watchdog.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
       SR5_EntityHelpers.updateModifier(matrixActions.watchdog.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     }
@@ -5186,15 +5192,11 @@ export class SR5_CharacterUtility extends Actor {
     }
 
     //Handle Attributes
-    //A maglock is a device: Data Processing and Firewall equal its Device Rating (SR5 p. 235-236), no Attack nor Sleaze
-    if (matrix.deviceType === "maglock") {
+    //A device, a maglock among them, has a Device Rating and two matrix attributes, Data Processing and Firewall, equal
+    //to it (SR5 p. 235-236): no Attack, no Sleaze, and Noise Reduction and Sharing belong to rigger consoles
+    if (isPlainDevice(matrix.deviceType, actorData.isDirectlyConnected)) {
       for (let key of Object.keys(SR5.matrixAttributes)) {
         matrixAttributes[key].base = (key === "dataProcessing" || key === "firewall") ? matrix.deviceRating : 0
-        SR5_EntityHelpers.updateValue(matrixAttributes[key], 0)
-      }
-    } else if ((matrix.deviceType === "device") || (matrix.deviceType === "slavedDevice" && actorData.isDirectlyConnected)) {
-      for (let key of Object.keys(SR5.matrixAttributes)) {
-        matrixAttributes[key].base = matrix.deviceRating
         SR5_EntityHelpers.updateValue(matrixAttributes[key], 0)
       }
     } else {
