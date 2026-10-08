@@ -124,6 +124,7 @@ export const SETTINGS_CATALOG = {
   sr5ShopCreationLevel: ["shop"],
   sr5ShopCreationMaxAvailability: ["shop"],
   sr5ShopCreationMaxRating: ["shop"],
+  sr5ShopCreationOverLimit: ["shop", "house"],
   sr5ShopGradeGamma: ["shop", "book"],
   sr5ShopGradeGreyware: ["shop", "book"],
   sr5ShopVendorTest: ["shop"],

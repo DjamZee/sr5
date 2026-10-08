@@ -30,7 +30,8 @@
 		<li class="item" data-item-id="{{_id}}" draggable="true">
 			<div class="grid">
 				<div class="col-5 deplie">
-					<p>{{name}}</p>
+					{{!-- The main lifestyle, the one the starting nuyen are rolled for (SR5 p. 97): marked, or the only one --}}
+					<p>{{#if ../owner}}<a class="lifestyle-primary" data-item-id="{{_id}}" data-tooltip="{{#if (or system.isPrimary (eq ../actor.lifestyles.length 1))}}{{localize 'SR5.LifestylePrimary'}}{{else}}{{localize 'SR5.LifestyleMakePrimary'}}{{/if}}">{{/if}}<em class="fa{{#if (or system.isPrimary (eq ../actor.lifestyles.length 1))}}s SR-SubColor{{else}}r{{/if}} fa-sm fa-star"></em>{{#if ../owner}}</a>{{/if}} {{name}}</p>
 				</div>
 				<div class="col-2">
 					<p class="SR-TextCenter">{{findTranslation "lifestyleTypes" system.type}}</p>

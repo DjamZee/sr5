@@ -60,7 +60,7 @@ describe('vehicle row at the deploy click (N83, review)', () => {
     } = rowWithToggle(true)
     ActorSheetSR5.lockDeployedWireless(row)
     expect(cell.inert).toBe(true)
-    expect(cell.dataset.title).toBe('SR5.WirelessHeldByDeployedDrone')
+    expect(cell.dataset.tooltip).toBe('SR5.WirelessHeldByDeployedDrone')
     expect(icon.classList.has('SR-GreyColor')).toBe(true)
     expect(icon.classList.has('SR-SubColor')).toBe(false)
   })

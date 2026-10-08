@@ -5,6 +5,12 @@ import {
   initSpiritLedger
 } from "../system/spirit-ledger.js"
 import {
+  primaryLifestyle
+} from "../system/lifestyle-primary.js"
+import {
+  creationOverLimitItems
+} from "../system/creation-actor.js"
+import {
   registerIndirectEffectSetting
 } from "../system/indirect-effects.js"
 import {
@@ -399,6 +405,10 @@ export async function sr5HookInit() {
     rollMacro: macros.rollMacro,
     compendiumBrowser: SR5CompendiumBrowser,
     shop: SR5ShopWindow,
+    // The main lifestyle of an actor, the one the starting nuyen are rolled for (SR5 p. 97): read by the Concepteur
+    primaryLifestyle: actor => primaryLifestyle(actor?.items),
+    // The items bought past the creation limits where the table allows it: read by the Concepteur's summary (C3)
+    creationOverLimitItems,
     // The dealership (lot R9): build a vehicle or a drone and buy it
     dealership: SR5DealershipWindow,
     // The shop against the till, item by item: should answer no difference

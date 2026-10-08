@@ -209,7 +209,7 @@ export class SR5ShopWorldSource {
     const excluded = SR5ShopStock.excludedPacks
     const isGM = game.user.isGM
     return index.filter(entry => {
-      if (!equip && !(SR5ShopCatalog.describe(entry).price > 0)) return false
+      if (!equip && !(SR5ShopCatalog.describe(entry).price > 0) && !SR5ShopCatalog.pricedOnVehicle(entry)) return false
       if (SR5ShopStock.canSell(entry, {
         equip, excluded
       })) return true
@@ -268,9 +268,13 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
    * Open the shop, or bring it forward.
    * @param {object} [options]
    * @param {Actor} [options.actor] the buyer to select, from a character sheet
+   * @param {string} [options.shelf] the shelf to show (a key of SR5ShopCatalog.SHELVES), from a vehicle's workshop
+   * @param {string} [options.sub] and its sub-shelf
+   * @param {boolean} [options.creation] the shop in creation for this actor, from the Concepteur: its creation limits
+   *   and grades, and it pays, even without the gamemaster's flag, as long as the window shows it (C1)
    */
   static open({
-    actor = null, source = null
+    actor = null, source = null, shelf = null, sub = '', creation = false
   } = {
   }) {
     let shop = SR5ShopWindow._instance
@@ -281,7 +285,15 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       })
       SR5ShopWindow._instance = shop
     } else if (source && shop._source?.key !== source.key) shop.setSource(source)
-    if (actor) shop._buyerId = actor.id
+    if (actor) {
+      shop._buyerId = actor.id
+      shop._creationFor = creation === true ? actor.id : null
+    }
+    if (shelf) {
+      shop._shelf = shelf
+      shop._sub = sub
+      shop._page = 0
+    }
     shop.render(true).then(() => shop.bringToFront?.()).catch(err => {
       console.error('SR5 Shop: failed to open', err)
       ui.notifications?.error(game.i18n.localize('SR5.ShopWindowFailed'))
@@ -341,6 +353,8 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     // 50 wide rows fill the window twice over; more only slows every redraw (second review: < 100 ms)
     this._pageSize = 50
     this._buyerId = null
+    // The character the window was opened in creation for (open({creation: true}), C1)
+    this._creationFor = null
     this._equipMode = false
     // The grade chosen on each implant row, by uuid. Never overwritten by a
     // render: a grade the row stops offering for a moment comes back with it.
@@ -444,6 +458,9 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     const buyers = SR5Shop.getBuyers({
       equip
     })
+    // The character the window was opened in creation for stays a buyer, whatever the world's buyer rule (C1)
+    const opened = this._creationFor ? game.actors.get(this._creationFor) : null
+    if (opened?.isOwner && !buyers.some(a => a.id === opened.id)) buyers.push(opened)
     if (this._buyerId && !buyers.some(a => a.id === this._buyerId)) this._buyerId = null
     if (!this._buyerId) this._buyerId = SR5Shop.defaultBuyerId(buyers)
     const buyer = buyers.find(a => a.id === this._buyerId) || null
@@ -455,8 +472,10 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     const balance = stick ? SR5Credstick.funds(stick) : buyer ? SR5Shop.balance(buyer) : 0
     const creationMode = SR5Shop.creationMode
     const free = creationMode || equip
-    // A buyer the gamemaster put in creation is capped, and pays (lot C0)
-    const limits = SR5Shop.creationModeFor(buyer) && !equip ? SR5Shop.creationLimits : null
+    // A buyer the gamemaster put in creation is capped, and pays (lot C0); so is the one the window was opened in
+    // creation for (C1)
+    const forced = this.#creationForced(buyer)
+    const limits = SR5Shop.creationModeFor(buyer, forced) && !equip ? SR5Shop.creationLimits : null
     const pool = this.#searchPool(buyer)
 
     // The shelves are read once per session; until then the window shows how far it has got
@@ -501,7 +520,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     const rows = entries.map(entry => {
       const kind = `${entry.type}|${entry.system?.type ?? ''}`
       if (!offeredByKind.has(kind)) offeredByKind.set(kind, SR5Shop.gradesFor(entry.type, entry.system, {
-        equip, actor: buyer
+        equip, actor: buyer, creation: forced
       }))
       // An implant on a vendor's counter is of the grade it is: the vendor has what it has
       const offered = entry.vendor && !entry.onOrder ? [] : offeredByKind.get(kind)
@@ -540,17 +559,18 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
         cartEssence += buyer && row.entry.type === 'itemAugmentation' && !row.entry.system?.isAccessory ? essenceCostFor(buyer, {
           type: row.entry.type, name: row.entry.name, system: row.entry.system, grade: line.grade, quantity: line.quantity
         }, book, {
-          creation: !!SR5Shop.creationModeFor(buyer)
+          creation: !!SR5Shop.creationModeFor(buyer, forced)
         }) : book
       }
       // An item on a vendor's counter is there: it adds no search time (SR5 p. 420)
       const onCounter = row?.entry.vendor && !row.entry.onOrder && !SR5ShopVendor.testInStock
       // Only what the till makes wait: in creation, as in equip mode, the purchase arrives at once (review P4)
       if (lineWaits({
-        delayed: deliveryDelayed(buyer), availability: described?.availability, onCounter, free
+        delayed: deliveryDelayed(buyer, forced), availability: described?.availability, onCounter, free
       })) cartDelay =Math.max(cartDelay, SR5ShopAvailability.delayFor(total))
       // A line put in the cart before creation was switched on, or at another grade, is out of reach
-      const blocked = described ? SR5ShopCatalog.creationBlock(described, limits) : null
+      const blocked = described ? SR5ShopCatalog.creationRefusal(described, limits) : null
+      const overLimit = described ? SR5ShopCatalog.overLimitMark(described, limits) : null
       // ...and so is a grade the shop no longer offers (creation offers no betaware): the till
       // would sell the item at no grade, a price and an Essence the cart does not show
       const gradeGone = row && line.grade && !row.offered.includes(line.grade)
@@ -562,6 +582,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
           gradeGone ? game.i18n.format('SR5.ShopGradeGone', {
             name: line.name
           }) : '',
+        overLimitLabel: overLimit ? SR5ShopWindow.#overLimitMessage(overLimit) : '',
       }
     })
     // No buyer yet: nothing is too dear, there is no purse to compare with
@@ -587,7 +608,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     const shown = filtered.slice(0, (this._page + 1) * this._pageSize)
 
     context.rows = shown.map(row => this.#rowContext(row, {
-      buyer, budget, limits, pool, equip, free
+      buyer, budget, limits, pool, equip, free, forced
     }))
     context.totalCount = filtered.length
     context.countLabel = game.i18n.format(filtered.length === 1 ? 'SR5.ShopCountOne' : 'SR5.ShopCount', {
@@ -743,17 +764,30 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     })
   }
 
+  /** Is the window in creation for this buyer, the one it was opened in creation for (C1)? */
+  #creationForced(buyer) {
+    return !!buyer && buyer.id === this._creationFor
+  }
+
+  /** A line bought past the creation limits where the table allows it: told, not refused (C3). */
+  static #overLimitMessage(mark) {
+    return game.i18n.format(`SR5.ShopCreationOverLimit_${mark.reason}`, mark)
+  }
+
   /** What one row of the list shows. */
   #rowContext(row, {
-    buyer, budget, limits, pool, equip, free
+    buyer, budget, limits, pool, equip, free, forced
   }) {
     const entry = row.entry
     const summary = [entry.info]
     if (row.essence) summary.push(game.i18n.format('SR5.ShopEssenceShort', {
       value: row.essence.toLocaleString()
     }))
-    const blocked = SR5ShopCatalog.creationBlock(row, limits)
-    const forSale = !row.notForSale || equip
+    const blocked = SR5ShopCatalog.creationRefusal(row, limits)
+    const overLimit = SR5ShopCatalog.overLimitMark(row, limits)
+    // A vehicle mod is bought on a vehicle's workshop, at its price there (R5 p. 156): no cart, a drag
+    const onVehicle = !equip && SR5ShopCatalog.pricedOnVehicle(entry)
+    const forSale = (!row.notForSale || equip) && !onVehicle
     // On a vendor's counter the item is there: no search, no test, unless the table wants one
     const onCounter = entry.vendor && !entry.onOrder
     const tested = !onCounter || SR5ShopVendor.testInStock
@@ -776,7 +810,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       }) : '',
       // A search time only where the till makes the purchase wait: none in creation nor in equip mode (review P4)
       delay: tested && lineWaits({
-        delayed: deliveryDelayed(buyer), availability: row.availability, free
+        delayed: deliveryDelayed(buyer, forced), availability: row.availability, free
       }) ?
         SR5ShopAvailability.formatDelay(SR5ShopAvailability.delayFor(row.price)) :
         game.i18n.localize('SR5.ShopDelayNow'),
@@ -784,14 +818,16 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
         // A short name keeps the column narrow; the cart line spells it out
         key, label: game.i18n.localize(`SR5.ShopGradeShort_${key}`), selected: key === row.grade,
       })),
-      price: SR5ShopWindow.#nuyen(row.price),
-      tooExpensive: !free && row.price > budget,
+      price: onVehicle ? game.i18n.localize('SR5.ShopPriceOnVehicle') : SR5ShopWindow.#nuyen(row.price),
+      onVehicle,
+      tooExpensive: !free && !onVehicle && row.price > budget,
       blocked: !!blocked,
       blockedLabel: blocked ? SR5ShopWindow.#creationMessage(blocked, entry.name, limits) : '',
+      overLimitLabel: overLimit ? SR5ShopWindow.#overLimitMessage(overLimit) : '',
       notForSale: row.notForSale,
       canBuy: buyer !== null && forSale && !blocked,
       // Without a buyer the list stays readable: only what cannot be sold at all is dimmed
-      dim: !forSale || !!blocked,
+      dim: (!forSale && !onVehicle) || !!blocked,
     }
   }
 
@@ -1060,7 +1096,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     const bought = await SR5Shop.checkout(game.actors.get(this._buyerId), this._cart.map(line => ({
       uuid: line.uuid, quantity: line.quantity, name: line.name, grade: line.grade,
     })), {
-      equip: this._equipMode
+      equip: this._equipMode, creation: this.#creationForced(game.actors.get(this._buyerId))
     })
     if (bought) this._cart = []
     this.render()

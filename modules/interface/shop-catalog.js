@@ -57,7 +57,11 @@ export class SR5ShopCatalog {
       key: 'gear', label: 'SR5.ShopShelfGear', icon: 'fa-toolbox', types: ['itemGear']
     },
     {
-      key: 'vehicles', label: 'SR5.ShopShelfVehicles', icon: 'fa-car', types: ['itemVehicle', 'itemVehicleMod']
+      key: 'vehicles', label: 'SR5.ShopShelfVehicles', icon: 'fa-car', types: ['itemVehicle', 'itemVehicleMod'],
+      // The vehicles apart from their mods: the workshop's button opens on the mods (Adrore's feedback C7c)
+      sub: {
+        field: 'type', options: 'itemTypes'
+      },
     },
     {
       key: 'drugs', label: 'SR5.ShopShelfDrugs', icon: 'fa-pills', types: ['itemDrug', 'itemToxin']
@@ -81,6 +85,15 @@ export class SR5ShopCatalog {
       return shelf.key
     }
     return null
+  }
+
+  /**
+   * A vehicle mod has no price off a vehicle: the till prices it on the one it is bought for (R5 p. 156, its
+   * multipliers read the vehicle's attributes). The shop shows it, to be dragged onto a workshop, which buys it at
+   * that price (vehicle-workshop-apply.js); it never goes in the cart (Adrore's feedback C7c).
+   */
+  static pricedOnVehicle(entry) {
+    return entry?.type === 'itemVehicleMod' && !(Number(entry.system?.price?.value) > 0) && Number(entry.system?.price?.base) > 0
   }
 
   /** The sub-shelf value of an entry, `_none` when its shelf is split and the field is empty. */
@@ -151,6 +164,26 @@ export class SR5ShopCatalog {
     if (limits.availability && line.availability > limits.availability) return 'availability'
     if (limits.rating && line.rating > limits.rating) return 'rating'
     return null
+  }
+
+  /**
+   * Why creation refuses a line, or null: a line past the limits goes through when the table allows it
+   * (sr5ShopCreationOverLimit, `limits.overLimit`), marked for the gamemaster (Adrore's feedback C3).
+   */
+  static creationRefusal(line, limits) {
+    return limits?.overLimit ? null : SR5ShopCatalog.creationBlock(line, limits)
+  }
+
+  /**
+   * The mark an item bought past the creation limits carries (flags.sr5.creationOverLimit), or null: what it
+   * passed, its value and the limit, read by the creation summary.
+   */
+  static overLimitMark(line, limits) {
+    const reason = limits?.overLimit ? SR5ShopCatalog.creationBlock(line, limits) : null
+    if (!reason) return null
+    return {
+      reason, value: Number(line[reason]) || 0, limit: Number(limits[reason]) || 0
+    }
   }
 
   /* -------------------------------------------- */
@@ -257,7 +290,7 @@ export class SR5ShopCatalog {
       if (!legality.includes(row.legality)) return false
       if (filters.affordable) {
         if (Number.isFinite(filters.budget) && row.price > filters.budget) return false
-        if (SR5ShopCatalog.creationBlock(row, filters.creation)) return false
+        if (SR5ShopCatalog.creationRefusal(row, filters.creation)) return false
       }
       return true
     })

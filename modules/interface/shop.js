@@ -36,7 +36,7 @@ import {
   STACKABLE_TYPES, sr5StackPayload, sr5LineLabel
 } from './item-payload.js'
 import {
-  creationModeFor
+  creationModeFor, CREATION_OVER_LIMIT_FLAG
 } from '../system/creation-actor.js'
 
 /**
@@ -68,7 +68,7 @@ export class SR5Shop {
 
   /** The grades offered for an augmentation, by the shop's mode and the world options. */
   static gradesFor(type, system, {
-    equip = false, actor = null
+    equip = false, actor = null, creation = false
   } = {
   }) {
     if (!SR5ShopGrades.isGraded(type, system)) return []
@@ -76,7 +76,7 @@ export class SR5Shop {
       augmentationType: system.type,
       // Equip mode places every grade, the world options aside — greyware still cyberware only
       all: equip,
-      creation: SR5Shop.creationModeFor(actor),
+      creation: SR5Shop.creationModeFor(actor, creation),
       gamma: game.settings.get('sr5', 'sr5ShopGradeGamma') === true,
       greyware: game.settings.get('sr5', 'sr5ShopGradeGreyware') === true,
     })
@@ -149,8 +149,10 @@ export class SR5Shop {
    * personnage, lot C0). The flag caps availability, rating and grades, but the purchase is charged: whether it is
    * free stays `creationMode`, the world's (DjamZ's ruling Q2, 2026-10-08).
    */
-  static creationModeFor(actor) {
-    return creationModeFor(actor)
+  static creationModeFor(actor, forced = false) {
+    // forced: the shop opened in creation for this character (shop.open({actor, creation: true}), Adrore's feedback
+    // C1): its limits and grades, and it pays, even without the gamemaster's flag; never freer than the flag
+    return forced === true || creationModeFor(actor)
   }
 
   /**
@@ -158,10 +160,14 @@ export class SR5Shop {
    * world settings, the book's 12 and 6 by default (SR5 p. 66, p. 420; DjamZ's ruling, 2026-10-05).
    */
   static get creationLimits() {
-    return SR5ShopCatalog.creationLimits(game.settings.get('sr5', 'sr5ShopCreationLevel'), {
-      availability: game.settings.get('sr5', 'sr5ShopCreationMaxAvailability'),
-      rating: game.settings.get('sr5', 'sr5ShopCreationMaxRating'),
-    })
+    return {
+      ...SR5ShopCatalog.creationLimits(game.settings.get('sr5', 'sr5ShopCreationLevel'), {
+        availability: game.settings.get('sr5', 'sr5ShopCreationMaxAvailability'),
+        rating: game.settings.get('sr5', 'sr5ShopCreationMaxRating'),
+      }),
+      // Past them: refused (the book), or bought and marked for the gamemaster (Adrore's feedback C3)
+      overLimit: game.settings.get('sr5', 'sr5ShopCreationOverLimit') === true,
+    }
   }
   /**
    * The documents to create for `quantity` of `source`.
@@ -236,7 +242,8 @@ export class SR5Shop {
    * @returns {Promise<boolean>} whether the gear was added
    */
   static async checkout(actor, lines, {
-    equip = false, express = false, messageId = null, userId = game.user.id, cashToken = null, recipient = null, priceOn = null, assemble = false
+    equip = false, express = false, messageId = null, userId = game.user.id, cashToken = null, recipient = null, priceOn = null, assemble = false,
+    creation = false
   } = {
   }) {
     if (!actor) {
@@ -294,15 +301,16 @@ export class SR5Shop {
       }
       // A grade the shop does not offer here falls back to none, never to a free upgrade
       const offered = SR5Shop.gradesFor(source.type, source.system, {
-        equip, actor
+        equip, actor, creation
       })
       const grade = offered.includes(line.grade) ? line.grade : null
       // Creation caps availability and rating (SR5 p. 66, p. 420), at the level the gamemaster
       // set (DjamZ's ruling, 2026-10-05); Equip mode is how the gamemaster goes past them
       const described = SR5ShopCatalog.describe(source, grade)
-      const block = !equip && SR5Shop.creationModeFor(actor) ?
-        SR5ShopCatalog.creationBlock(described, SR5Shop.creationLimits) :
-        null
+      const creationLimits = !equip && SR5Shop.creationModeFor(actor, creation) ? SR5Shop.creationLimits : null
+      const block = creationLimits ? SR5ShopCatalog.creationRefusal(described, creationLimits) : null
+      // Past the limits where the table allows it: bought, and marked for the creation summary (C3)
+      const overLimit = creationLimits ? SR5ShopCatalog.overLimitMark(described, creationLimits) : null
       if (block) {
         ui.notifications.warn(game.i18n.format(`SR5.WARN_ShopCreationLimit_${block}`, {
           name: SR5Shop.gradedName(source.name, grade), ...SR5Shop.creationLimits,
@@ -314,6 +322,19 @@ export class SR5Shop {
       // A mod of the dealership is priced at the till on the vehicle it is bought for (R5 p. 156)
       const onVehicle = assemble && resolved.length && source.type === 'itemVehicleMod' ? resolved[0].source : null
       const base = onVehicle ? (await import('../system/vehicle-workshop-apply.js')).pricedModData(source, onVehicle).price : priceOn ? Math.max(0, Number(priceOn(source)) || 0) : SR5Shop.gradedPrice(source.system, grade)
+      // A vehicle mod off a vehicle has no price: it is bought on the vehicle's workshop, never for nothing here
+      if (!equip && !onVehicle && !priceOn && SR5ShopCatalog.pricedOnVehicle({
+        type: source.type, system: {
+          price: {
+            value: base, base: source.system?.price?.base
+          }
+        }
+      })) {
+        ui.notifications.warn(game.i18n.format('SR5.WARN_ShopModOnVehicle', {
+          name: source.name
+        }))
+        continue
+      }
       // The surcharge that bought dice on the card is paid (SR5 p. 420); the search time and the express
       // surcharge stay on the base price (DjamZ's ruling, 05/10)
       // Relation avec un concessionnaire (Rigger 5.0 p. 37): 10 % off, after the surcharge
@@ -323,6 +344,7 @@ export class SR5Shop {
         name: SR5Shop.gradedName(source.name, grade),
         availability: Number(described.availability) || 0,
         fitted: assemble && line.fitted === true && game.user.isGM,
+        overLimit,
       })
     }
     if (!resolved.length) return false
@@ -334,11 +356,13 @@ export class SR5Shop {
     if (!resolved.length) return false
     if (!(await SR5Shop.essenceAllows(actor, resolved.map(line => ({
       type: line.source.type, name: line.name, system: line.source.system, grade: line.grade, quantity: line.quantity,
-    }))))) return false
+    })), {
+      creation
+    }))) return false
 
     const free = equip || SR5Shop.creationMode
     // SR5 p. 420: what has an availability is found after the search time, and waits on the buyer
-    const delayed = deliveryDelayed(actor)
+    const delayed = deliveryDelayed(actor, creation)
     const terms = express ? currentExpress() : null
     for (const line of resolved) {
       line.waits = lineWaits({
@@ -419,7 +443,9 @@ export class SR5Shop {
     }
     for (const line of assemble ? [] : resolved) {
       if (!line.waits) {
-        payload.push(...SR5Shop._itemPayload(line.source, line.quantity, line.grade))
+        const items = SR5Shop._itemPayload(line.source, line.quantity, line.grade)
+        if (line.overLimit) for (const data of items) foundry.utils.setProperty(data, `flags.sr5.${CREATION_OVER_LIMIT_FLAG}`, line.overLimit)
+        payload.push(...items)
         continue
       }
       const order = newOrder(line, {
@@ -581,12 +607,12 @@ export class SR5Shop {
    * @returns {Promise<boolean>}
    */
   static async essenceAllows(actor, lines, {
-    isGM = game.user.isGM, warn = (key, data) => ui.notifications.warn(game.i18n.format(key, data))
+    isGM = game.user.isGM, warn = (key, data) => ui.notifications.warn(game.i18n.format(key, data)), creation: forced = false
   } = {
   }) {
     const current = actor?.system?.essence?.value
     if (typeof current !== 'number') return true
-    const creation = SR5Shop.creationModeFor(actor)
+    const creation = SR5Shop.creationModeFor(actor, forced)
     const {
       essence
     } = essenceAfterPurchase(current, actor.items, lines, {

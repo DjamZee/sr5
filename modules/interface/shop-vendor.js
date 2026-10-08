@@ -47,6 +47,9 @@ import {
 import {
   dealerPrice
 } from '../system/rigger-qualities.js'
+import {
+  CREATION_OVER_LIMIT_FLAG
+} from '../system/creation-actor.js'
 
 /**
  * The gamemaster's vendor (shop lot C, part 1).
@@ -750,7 +753,7 @@ export class SR5ShopVendor {
       const described = SR5ShopCatalog.describe({
         type: item.type, system: counterSystem(item), margin: shop.margin
       })
-      const block = limits ? SR5ShopCatalog.creationBlock(described, limits) : null
+      const block = limits ? SR5ShopCatalog.creationRefusal(described, limits) : null
       if (block) {
         SR5ShopVendor.#notify(requester, 'warn', `SR5.WARN_ShopCreationLimit_${block}`, {
           name: item.name, ...limits, source: game.i18n.localize(`SR5.ShopCreationSource_${limits.source}`),
@@ -763,6 +766,8 @@ export class SR5ShopVendor {
       }, buyer.items)
       resolved.push({
         item, quantity, unit, total: unit * quantity, name: item.name,
+        // Past the creation limits where the table allows it: marked for the creation summary (C3)
+        overLimit: limits ? SR5ShopCatalog.overLimitMark(described, limits) : null,
       })
     }
     for (const line of orderLines) {
@@ -797,7 +802,7 @@ export class SR5ShopVendor {
         })
         continue
       }
-      const block = limits ? SR5ShopCatalog.creationBlock(described, limits) : null
+      const block = limits ? SR5ShopCatalog.creationRefusal(described, limits) : null
       if (block) continue
       // An order is searched for (SR5 p. 420): it waits on the buyer; the counter's stock does not
       const waits = lineWaits({
@@ -811,6 +816,7 @@ export class SR5ShopVendor {
       resolved.push({
         source, grade, quantity, unit, total, baseTotal, extra, waits,
         name: SR5Shop.gradedName(source.name, grade),
+        overLimit: limits ? SR5ShopCatalog.overLimitMark(described, limits) : null,
       })
     }
     if (!resolved.length) return false
@@ -918,9 +924,9 @@ export class SR5ShopVendor {
           _id: line.item.id, 'system.quantity': left
         })
         else toDelete.push(line.item.id)
-        payload.push(...SR5ShopVendor.#handedOver(line.item, line.quantity))
+        payload.push(...SR5ShopVendor.#overLimit(SR5ShopVendor.#handedOver(line.item, line.quantity), line))
       } else {
-        payload.push(...SR5Shop._itemPayload(line.source, line.quantity, line.grade))
+        payload.push(...SR5ShopVendor.#overLimit(SR5Shop._itemPayload(line.source, line.quantity, line.grade), line))
       }
     }
     if (toUpdate.length) await actor.updateEmbeddedDocuments('Item', toUpdate)
@@ -996,6 +1002,12 @@ export class SR5ShopVendor {
     })
     SR5_SystemHelpers.srLog(3, `Shop vendor: ${buyer.name} buys ${summary} from ${label} (${total})`)
     return true
+  }
+
+  /** The items of a line bought past the creation limits, marked for the creation summary (C3). */
+  static #overLimit(items, line) {
+    if (line.overLimit) for (const data of items) foundry.utils.setProperty(data, `flags.sr5.${CREATION_OVER_LIMIT_FLAG}`, line.overLimit)
+    return items
   }
 
   /** The vendor's own item, as it reaches the buyer: out of the shop, the quantity bought. */

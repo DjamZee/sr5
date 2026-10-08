@@ -11,6 +11,20 @@ export const CREATION_FLAG = "creation"
 // What a player's update may not change, whatever its form (flat, nested, "==" replacement, "-=" deletion)
 export const CREATION_FLAG_PATHS = [`flags.sr5.${CREATION_FLAG}.active`, `flags.sr5.${CREATION_FLAG}.by`]
 
+// An item bought past the creation limits where the table allows it (sr5ShopCreationOverLimit, Adrore's feedback C3):
+// {reason: "availability"|"rating", value, limit}, read by the creation summary of the Concepteur
+export const CREATION_OVER_LIMIT_FLAG = "creationOverLimit"
+
+/** The items of an actor bought past the creation limits: [{id, name, reason, value, limit}]. */
+export function creationOverLimitItems(actor) {
+  return Array.from(actor?.items ?? []).flatMap(item => {
+    const mark = item.flags?.sr5?.[CREATION_OVER_LIMIT_FLAG]
+    return mark?.reason ? [{
+      id: item.id, name: item.name, reason: mark.reason, value: mark.value, limit: mark.limit
+    }] : []
+  })
+}
+
 /** The world's creation mode: every actor, gear handed over without being charged. */
 export function worldCreationMode() {
   return game.settings.get("sr5", "sr5ShopCreationMode") === true

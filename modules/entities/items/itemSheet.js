@@ -2,7 +2,7 @@ import {
   SR5FactionRegistry
 } from "../../interface/faction-registry.js"
 import {
-  workshopContext, dropModOnWorkshop, removeModFromVehicleItem
+  workshopContext, dropModOnWorkshop, removeModFromVehicleItem, openWorkshopShop
 } from "../../system/vehicle-workshop-apply.js"
 import {
   fileLastEditText
@@ -647,6 +647,10 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       for (const remove of el.querySelectorAll('.workshop-item-remove')) {
         remove.addEventListener('click', ev => removeModFromVehicleItem(this.document, Number(ev.currentTarget.closest('[data-index]').dataset.index)))
       }
+      for (const shop of el.querySelectorAll('.workshop-shop')) shop.addEventListener('click', ev => {
+        ev.preventDefault()
+        openWorkshopShop(this.document)
+      })
     }
 
     // Spirit type: drop an item to give it to every spirit of the type, or take one back

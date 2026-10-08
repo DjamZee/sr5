@@ -78,6 +78,13 @@ export function pricedModData(source, vehicle){
   }
 }
 
+/** The shop of the workshop's button, on its vehicles shelf, for the workshop's buyer (Adrore's feedback C7c) */
+export function openWorkshopShop(vehicle){
+  game.sr5?.shop?.open({
+    actor: workshopBuyer(vehicle), shelf: "vehicles", sub: "itemVehicleMod"
+  })
+}
+
 /** The data the "Workshop" block renders, the same for the drone sheet and the vehicle item sheet */
 export function workshopContext(vehicle){
   const isItem = vehicle.documentName === "Item"
@@ -136,6 +143,9 @@ export function workshopContext(vehicle){
       ...cost, vehicleLabel: yen(cost.vehicle), modsLabel: yen(cost.mods), totalLabel: yen(cost.total)
     },
     buyer: isItem ? "" : (buyer?.name ?? ""), balanceLabel: buyer ? yen(SR5Shop.balance(buyer)) : "",
+    // The shop, open on its vehicles shelf, to drag a mod onto the workshop: a drone's buyer buys there, only the
+    // gamemaster fits a mod on a vehicle item (dropModOnWorkshop; Adrore's feedback C7c)
+    canShop: isItem ? game.user.isGM : !!buyer,
   }
 }
 
