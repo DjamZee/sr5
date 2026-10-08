@@ -283,6 +283,17 @@ export function spiritTypeOffers(spiritTypes, effects){
   return offers
 }
 
+// The names of what a spirit type adds to its skill (a mentor's +2 to summon spirits of plants): the line of the
+// dialog bears them, as the other bonuses of a mentor do, rather than "Spirit type" (review P4). The skill's own
+// modifiers are copied into every type: those are left out, as are the markers of the boxes (worth 0)
+export function spiritTypeSources(typeModifiers, skillModifiers){
+  const key = m => `${m.type}|${m.source}|${m.value}`
+  const shared = new Set((skillModifiers || []).map(key))
+  const sources = (typeModifiers || []).filter(m => m.value && m.source && !shared.has(key(m)) &&
+    !["skillRating", "linkedAttribute", "skillGroup"].includes(m.type)).map(m => m.source)
+  return [...new Set(sources)]
+}
+
 // Shows the boxes of the spirit type in use and hides the others; returns the keys of the boxes hidden
 // while ticked, whose modifier the dialog must take out of the dice pool
 export function spiritTypeVisible(offers, spiritType){

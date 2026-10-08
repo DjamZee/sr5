@@ -133,6 +133,10 @@ export function sr5HookReady() {
   initTacnet()
   // Every technomancer has her living persona, kept by the system (SR5 p. 236, 253): the active GM gives it
   initLivingPersona()
+  // The purchases made while no GM was connected: the active GM, back, enters them in his ledger
+  import("../interface/shop-orders.js").then(({
+    registerAwaitingOrders
+  }) => registerAwaitingOrders()).catch(err => console.error("SR5 | awaiting shop orders not entered", err))
 
   // The deeper table of contents also reaches the window of Monk's Enhanced Journal
   sr5DeepenModuleTableOfContents()

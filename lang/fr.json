@@ -509,6 +509,7 @@
 	"SR5.ShopOrderCancel": "Annuler et rembourser",
 	"SR5.ShopOrderAskCancel": "Demander l'annulation au MJ",
 	"SR5.ShopOrderCancelAsked": "Demande d'annulation envoyée au MJ.",
+	"SR5.ShopOrderAwaitsGM": "Commande passée et payée. Aucun MJ n'est connecté : elle entrera dans son registre dès son retour.",
 	"SR5.ShopOrderCancelTitle": "Annuler une commande",
 	"SR5.ShopOrderCancelText": "{user} demande d'annuler la commande de <strong>{actor}</strong> : {name}. Elle sera remboursée de {price} ¥.",
 	"SR5.ShopOrderCancelRefused": "Le MJ a refusé d'annuler la commande de {actor} : {name}.",

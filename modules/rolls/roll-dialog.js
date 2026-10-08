@@ -68,7 +68,8 @@ import {
   attributeValue, swapLinkedAttribute, skillAttributeTitle, SKILL_ATTRIBUTE_FLAG, syncBackgroundCount, backgroundCountApplies, setDialogWindowTitle
 } from "./roll-helpers/skillAttribute.js"
 import {
-  rollAttributes, attributeTestsState, ROLL_TESTS_TYPE, situationalListShown, spiritTypeVisible, withoutSituationalMarkers
+  rollAttributes, attributeTestsState, ROLL_TESTS_TYPE, situationalListShown, spiritTypeVisible, withoutSituationalMarkers,
+  spiritTypeSources
 } from "./roll-helpers/situational.js"
 import {
   normalizeTier, tierStock
@@ -580,6 +581,15 @@ export default class SR5_RollDialog {
       if (offer.hidden) box.checked = false
     })
     this._toggleSituationalList(html, dialogData)
+  }
+
+  //The line of the spirit type bears the names of what the type adds (a mentor's bonus), or "Spirit type"
+  _labelSpiritType(html, actor, spiritType){
+    const el = html.querySelector('.SR-SpiritTypeLabel')
+    const skill = actor?.system.skills.summoning
+    if (!el || !skill) return
+    const sources = spiritTypeSources(skill.spiritType[spiritType]?.modifiers, skill.test.modifiers)
+    el.textContent = `${sources.length ? sources.join(", ") : game.i18n.localize("SR5.SpiritType")}${game.i18n.localize("SR5.Colons")}`
   }
 
   //The list of situational boxes, and its separator, only shows when one box does
@@ -1422,6 +1432,7 @@ export default class SR5_RollDialog {
                 }
               }, actor.system.skills.summoning.spiritType[ev.target.value].modifiers))
           }
+          this._labelSpiritType(html, actor, ev.target.value)
           dialogData.magic.spiritType = ev.target.value
           this.updateDicePoolValue(html)
           return
@@ -1801,6 +1812,7 @@ export default class SR5_RollDialog {
               dicePool: {
               }
             }, actor.system.skills.summoning.spiritType[selectValue].modifiers))
+          this._labelSpiritType(html, actor, selectValue)
           dialogData.magic.spiritType = selectValue
           this.updateDicePoolValue(html)
           continue
