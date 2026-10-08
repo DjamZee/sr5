@@ -159,24 +159,27 @@ describe('Workshop picture (Q9 of DjamZ)', () => {
     })).toBe('systems/sr5/assets/img/vehicles/bike.webp')
     expect(workshopImage('systems/sr5/assets/img/actors/actorDrone.svg', {
       type: 'drone', category: 'hugeDrone'
-    })).toBe('systems/sr5/assets/img/vehicles/largeDrone.webp')
-  })
-
-  it('falls back on the drone or vehicle icon for a category without a picture', () => {
+    })).toBe('systems/sr5/assets/img/vehicles/hugeDrone.webp')
     expect(workshopImage('', {
       category: 'submarine'
-    })).toBe('systems/sr5/assets/img/items/itemVehicle.svg')
+    })).toBe('systems/sr5/assets/img/vehicles/submarine.webp')
+    expect(workshopImage(null, {
+      type: 'vehicle', category: 'lta'
+    })).toBe('systems/sr5/assets/img/vehicles/lta.webp')
+  })
+
+  it('falls back on the drone or vehicle icon without a known category', () => {
     expect(workshopImage('systems/sr5/assets/img/items/itemDrone.svg', {
       type: 'drone'
     })).toBe('systems/sr5/assets/img/items/itemDrone.svg')
-    expect(workshopImage(null, {
-      type: 'vehicle', category: 'lta'
+    expect(workshopImage('', {
+      type: 'vehicle', category: 'hovercraft'
     })).toBe('systems/sr5/assets/img/items/itemVehicle.svg')
   })
 
-  it('has a picture on disk for every category it names', () => {
+  it('has a picture on disk for every category of the system', () => {
     const categories = ['microdrone', 'minidrone', 'smallDrone', 'mediumDrone', 'largeDrone', 'hugeDrone', 'bike',
-      'car', 'truck', 'boat', 'rotorCraft', 'vectorThrustCraft', 'fixedWingAircraft']
+      'car', 'truck', 'boat', 'submarine', 'rotorCraft', 'vectorThrustCraft', 'fixedWingAircraft', 'lta']
     for (const category of categories) {
       const path = workshopImage('', {
         category
