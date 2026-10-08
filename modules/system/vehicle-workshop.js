@@ -100,20 +100,18 @@ export function installOutcome({
   return stillExtended ? "ongoing" : "unfinished"
 }
 
-/** Q9 of DjamZ: the vehicle's own picture, else the generic picture of its category (DjamZ's own pictures, 08/10),
- *  else the system's drone or vehicle icon. The system's default icons count as no picture of its own */
+/** Q9 of DjamZ: the vehicle's own picture, else the generic picture of its category, else the system's drone or
+ *  vehicle icon. The category pictures are DjamZ's own, made with Midjourney (his folders named after the books
+ *  hold no Catalyst illustration; DjamZ, 08/10). The system's default icons count as no picture of its own */
 const DEFAULT_IMAGES = [
   "icons/svg/mystery-man.svg", "systems/sr5/assets/img/actors/actorDrone.svg",
   "systems/sr5/assets/img/items/itemDrone.svg", "systems/sr5/assets/img/items/itemVehicle.svg"
 ]
 const DRONE_CATEGORIES = ["microdrone", "minidrone", "smallDrone", "mediumDrone", "largeDrone", "hugeDrone"]
-const CATEGORY_IMAGES = {
-  microdrone: "microdrone", minidrone: "minidrone", smallDrone: "smallDrone", mediumDrone: "mediumDrone",
-  // No huge drone among the pictures: it shares the large one
-  largeDrone: "largeDrone", hugeDrone: "largeDrone",
-  bike: "bike", car: "car", truck: "truck", boat: "boat",
-  rotorCraft: "rotorCraft", vectorThrustCraft: "vectorThrustCraft", fixedWingAircraft: "fixedWingAircraft"
-}
+const CATEGORY_IMAGES = Object.fromEntries([
+  ...DRONE_CATEGORIES, "bike", "car", "truck", "boat", "submarine",
+  "rotorCraft", "vectorThrustCraft", "fixedWingAircraft", "lta"
+].map(category => [category, category]))
 export function workshopImage(img, {
   type, category
 } = {
