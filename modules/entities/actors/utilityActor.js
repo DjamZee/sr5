@@ -5186,7 +5186,13 @@ export class SR5_CharacterUtility extends Actor {
     }
 
     //Handle Attributes
-    if ((matrix.deviceType === "device") || (matrix.deviceType === "slavedDevice" && actorData.isDirectlyConnected)) {
+    //A maglock is a device: Data Processing and Firewall equal its Device Rating (SR5 p. 235-236), no Attack nor Sleaze
+    if (matrix.deviceType === "maglock") {
+      for (let key of Object.keys(SR5.matrixAttributes)) {
+        matrixAttributes[key].base = (key === "dataProcessing" || key === "firewall") ? matrix.deviceRating : 0
+        SR5_EntityHelpers.updateValue(matrixAttributes[key], 0)
+      }
+    } else if ((matrix.deviceType === "device") || (matrix.deviceType === "slavedDevice" && actorData.isDirectlyConnected)) {
       for (let key of Object.keys(SR5.matrixAttributes)) {
         matrixAttributes[key].base = matrix.deviceRating
         SR5_EntityHelpers.updateValue(matrixAttributes[key], 0)
