@@ -30,19 +30,22 @@ function marksCarried(actor){
 }
 
 /**
- * The Sleuther marks on an icon, each {ice, value}: the marks whose owner is a Sleuther IC
+ * The Sleuther marks on an icon, each {ice, ices, value}: the marks whose owner is a Sleuther IC. An unlinked IC token
+ * marks under its world actor's id (mark.js), while its host may be set on the token alone: `resolve` may give every
+ * actor that id stands for (the world actor and its unlinked tokens), and each Sleuther among them is kept in `ices`
+ * (Bérénice's review 126)
  * @param {Object} target - the marked actor
- * @param {Function} resolve - id => actor
+ * @param {Function} resolve - id => actor, or [actors]
  */
 export function sleutherMarksOn(target, resolve){
   const found = new Map()
   for (const m of marksCarried(target)){
     const value = Number(m?.value) || 0
     if (value <= 0) continue
-    const ice = resolve(m.ownerId)
-    if (!isSleuther(ice)) continue
+    const ices = [resolve(m.ownerId)].flat().filter(isSleuther)
+    if (!ices.length) continue
     const entry = found.get(m.ownerId) ?? {
-      ice, value: 0
+      ice: ices[0], ices, value: 0
     }
     entry.value = Math.min(3, entry.value + value)
     found.set(m.ownerId, entry)
@@ -92,6 +95,6 @@ export function spiderByHook({
 export function sleutherDice(roller, target, resolve, hostOf, isSpider = spiderByHook){
   if (!roller || !target || roller === target) return 0
   return sleutherMarksOn(target, resolve).reduce((dice, {
-    ice, value
-  }) => dice + (isLegitimateUser(roller, ice, hostOf(ice), isSpider) ? value * SLEUTHER_DICE_PER_MARK : 0), 0)
+    ices, value
+  }) => dice + (ices.some(ice => isLegitimateUser(roller, ice, hostOf(ice), isSpider)) ? value * SLEUTHER_DICE_PER_MARK : 0), 0)
 }

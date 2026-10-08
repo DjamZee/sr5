@@ -2707,6 +2707,7 @@
 	"SR5.INFO_ComplexFormKilled": "{name} est tué(e)",
 	"SR5.INFO_ComplexFormReduced": "{name} réduit(e) de {hits}",
 	"SR5.INFO_CrashProgram": "est planté !",
+	"SR5.INFO_BlueGooAlreadyExploded": "Cette Blue Goo a déjà explosé : elle n'explose qu'une fois.",
 	"SR5.INFO_CreatePreparation": "a créé une préparation à partir du sort :",
 	"SR5.INFO_DamageActorDead": "est hors de combat.",
 	"SR5.INFO_DamageActorKo": "est KO.",
