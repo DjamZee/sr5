@@ -2483,7 +2483,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     if (!toggle) return
     const cell = toggle.parentElement
     cell.inert = true
-    cell.dataset.title = game.i18n.localize("SR5.WirelessHeldByDeployedDrone")
+    cell.dataset.tooltip = game.i18n.localize("SR5.WirelessHeldByDeployedDrone")
     const icon = toggle.querySelector("em")
     if (icon?.classList.contains("SR-SubColor")) icon.classList.replace("SR-SubColor", "SR-GreyColor")
     else icon?.classList.add("SR-LightGreyColor")
