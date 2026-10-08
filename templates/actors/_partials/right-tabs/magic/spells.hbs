@@ -22,7 +22,7 @@
 					<div class="col-6 SR-TextCenter">{{localize 'SR5.SpellDurationAbbrev'}}</div>
 					<div class="col-6 SR-TextRight add-item" data-helpTitle="{{localize 'SR5.HELP_ItemAdd' key=(findTranslation 'itemTypes' 'itemSpell')}}" 
 					  data-helpMessage="{{localize 'SR5.HELP_ItemAddMsg'}}">
-						<a class="item-create" data-title="{{localize 'SR5.Add'}}" data-type="itemSpell"><em class="fas fa-plus"></em></a>
+						<a class="item-create" data-tooltip="{{localize 'SR5.Add'}}" data-type="itemSpell"><em class="fas fa-plus"></em></a>
 					</div>
 				</div>
 			</div>
@@ -32,7 +32,7 @@
 		<li class="item grid" data-item-id="{{_id}}" draggable="true">
 			<div class="col-5 deplie" data-helpTitle="{{localize 'SR5.HELP_MoreInfos'}}" data-helpMessage="{{localize 'SR5.HELP_MoreInfosMsg'}}">
 				{{#if (missing system.category system.range system.type system.duration system.drainValue)}}
-					<p class="incomplete" data-title="{{localize 'SR5.UI_WarningMissingValues' type=(localize 'ITEM.TypeSort')}}">{{name}}</p>
+					<p class="incomplete" data-tooltip="{{localize 'SR5.UI_WarningMissingValues' type=(localize 'ITEM.TypeSort')}}">{{name}}</p>
 				{{else}}
 					<p>{{name}}</p>
 				{{/if}}
@@ -172,7 +172,7 @@
 		<li class="item grid" data-item-id="{{_id}}" draggable="true">
 			<div class="col-5 deplie" data-helpTitle="{{localize 'SR5.HELP_MoreInfos'}}" data-helpMessage="{{localize 'SR5.HELP_MoreInfosMsg'}}">
 				{{#if (missing system.category system.range system.type system.duration system.drainValue)}}
-					<p class="incomplete" data-title="{{localize 'SR5.UI_WarningMissingValues' type=(localize 'ITEM.TypeSort')}}">{{name}}</p>
+					<p class="incomplete" data-tooltip="{{localize 'SR5.UI_WarningMissingValues' type=(localize 'ITEM.TypeSort')}}">{{name}}</p>
 				{{else}}
 					<p>{{name}}</p>
 				{{/if}}

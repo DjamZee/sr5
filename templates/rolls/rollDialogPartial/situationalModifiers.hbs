@@ -3,7 +3,7 @@
 {{#if situational.length}}
 <div class="SR-TopSeparator SR-SituationalList">
 {{#each situational}}
-<li class="grid"{{#if hidden}} style="display: none;"{{/if}} data-title="{{localize 'SR5.SituationalHint'}}">
+<li class="grid"{{#if hidden}} style="display: none;"{{/if}} data-tooltip="{{localize 'SR5.SituationalHint'}}">
     <div class="col-10{{#if isMalus}} SR-AlertColor{{/if}}">
         {{label}}{{#if when}} <em>({{when}})</em>{{/if}}{{#if (eq kind 'limit')}} [{{localize 'SR5.Limit'}}]{{/if}}{{localize 'SR5.Colons'}}
     </div>

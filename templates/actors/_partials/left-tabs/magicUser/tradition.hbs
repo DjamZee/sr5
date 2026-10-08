@@ -8,7 +8,7 @@
 						{{#if owner}}
 						<p class="SR-TextRight add-item" data-helpTitle="{{localize 'SR5.HELP_ItemAdd' key=(findTranslation 'itemTypes' 'itemTradition')}}" 
 						data-helpMessage="{{localize 'SR5.HELP_ItemAddMsg'}}">
-							<a class="item-create" data-title="{{localize 'SR5.Add'}}" data-type="itemTradition"><em class="fas fa-plus"></em></a>
+							<a class="item-create" data-tooltip="{{localize 'SR5.Add'}}" data-type="itemTradition"><em class="fas fa-plus"></em></a>
 						</p>
 						{{/if}}
 					</div>
@@ -63,7 +63,7 @@
 						{{#if owner}}
 						<p class="SR-TextRight add-item" data-helpTitle="{{localize 'SR5.HELP_ItemAdd' key=(findTranslation 'itemTypes' 'itemMentorSpirit')}}"
 						data-helpMessage="{{localize 'SR5.HELP_ItemAddMsg'}}">
-							<a class="item-create" data-title="{{localize 'SR5.Add'}}" data-type="itemMentorSpirit"><em class="fas fa-plus"></em></a>
+							<a class="item-create" data-tooltip="{{localize 'SR5.Add'}}" data-type="itemMentorSpirit"><em class="fas fa-plus"></em></a>
 						</p>
 						{{/if}}
 					</div>
@@ -71,7 +71,7 @@
 				{{#each actor.mentorSpirits}}
 				<li class="item grid" data-item-id="{{_id}}">
 					<div class="col-9">{{name}}{{#unless (gt ../system.specialAttributes.magic.augmented.value 0)}} <em class="SR-SubColor">({{localize 'SR5.MentorDormant'}})</em>{{/unless}}</div>
-					<div class="col-2 SR-TextCenter roll-logo sr-roll" data-rolltype="mentorDrawback" data-title="{{localize 'SR5.MentorResistDrawback'}}">
+					<div class="col-2 SR-TextCenter roll-logo sr-roll" data-rolltype="mentorDrawback" data-tooltip="{{localize 'SR5.MentorResistDrawback'}}">
 						<em class="fas fa-dice"></em>
 					</div>
 					<div class="col-1 grid SR-TextRight">

@@ -5,7 +5,7 @@
             <div class="col-1 SR-TextCenter">
                 {{#if owner}}
                 <p class="SR-TextCenter add-item">
-                    <a class="addItemToPan" data-title="{{localize 'SR5.Add'}}"><em class="fas fa-plus"></em></a>
+                    <a class="addItemToPan" data-tooltip="{{localize 'SR5.Add'}}"><em class="fas fa-plus"></em></a>
                 </p>
                 {{/if}}
             </div>
@@ -18,7 +18,7 @@
         <li class="grid panItems">
             <div class="col-11">{{name}}</div>
             <div class="col-1 SR-TextCenter">
-                <a class="deleteItemFromPan" data-title="{{localize 'SR5.Delete'}}" data-index="{{@key}}" data-key="{{uuid}}"><i class="fas fa-trash"></i></a>
+                <a class="deleteItemFromPan" data-tooltip="{{localize 'SR5.Delete'}}" data-index="{{@key}}" data-key="{{uuid}}"><i class="fas fa-trash"></i></a>
             </div>
         </li>
         {{/each}}

@@ -11,15 +11,15 @@
 			</div>
 			<div class="col-6 SR-TextRight">
 				{{#if storageLock.hasKey}}
-				<a class="storage-lock-toggle" data-title="{{#if storageLock.locked}}{{localize 'SR5.StorageLockOpen'}}{{else}}{{localize 'SR5.StorageLockShut'}}{{/if}}">
+				<a class="storage-lock-toggle" data-tooltip="{{#if storageLock.locked}}{{localize 'SR5.StorageLockOpen'}}{{else}}{{localize 'SR5.StorageLockShut'}}{{/if}}">
 					<em class="fas fa-key"></em>
 				</a>
 				{{/if}}
-				<a class="storage-lock-pick" data-title="{{#if storageLock.locked}}{{localize 'SR5.StorageLockPick'}}{{else}}{{localize 'SR5.StorageLockRelock'}}{{/if}}">
+				<a class="storage-lock-pick" data-tooltip="{{#if storageLock.locked}}{{localize 'SR5.StorageLockPick'}}{{else}}{{localize 'SR5.StorageLockRelock'}}{{/if}}">
 					<em class="fas fa-screwdriver"></em>
 				</a>
 				{{#if storageLock.canHack}}
-				<a class="storage-lock-hack" data-title="{{localize 'SR5.StorageLockHack'}}">
+				<a class="storage-lock-hack" data-tooltip="{{localize 'SR5.StorageLockHack'}}">
 					<em class="fas fa-wifi"></em>
 				</a>
 				{{/if}}
@@ -37,7 +37,7 @@
 			<div class="col-2 SR-TextCenter">{{localize 'SR5.Quantity'}}</div>
 			<div class="col-1 SR-TextRight">
 				{{#if actor.contents.length}}
-				<a class="storage-loot-all" data-title="{{localize 'SR5.StorageLootAll'}}"
+				<a class="storage-loot-all" data-tooltip="{{localize 'SR5.StorageLootAll'}}"
 				  data-helpTitle="{{localize 'SR5.HELP_StorageLootAll'}}"
 				  data-helpMessage="{{localize 'SR5.HELP_StorageLootMsg'}}">
 					<em class="fas fa-sm fa-hand-holding"></em>
@@ -54,7 +54,7 @@
 			<div class="col-3 SR-TextCenter SR-GreyColor">{{findTranslation 'itemTypes' content.type}}</div>
 			<div class="col-2 SR-TextCenter">{{valueOrDash content.system.quantity}}</div>
 			<div class="col-1 SR-TextRight">
-				<a class="storage-loot" data-item-id="{{content._id}}" data-title="{{localize 'SR5.StorageLoot'}}"
+				<a class="storage-loot" data-item-id="{{content._id}}" data-tooltip="{{localize 'SR5.StorageLoot'}}"
 				  data-helpTitle="{{localize 'SR5.HELP_StorageLoot' key=content.name}}"
 				  data-helpMessage="{{localize 'SR5.HELP_StorageLootMsg'}}">
 					<em class="fas fa-sm fa-hand-holding"></em>
