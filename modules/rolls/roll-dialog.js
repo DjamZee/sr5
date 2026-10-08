@@ -366,8 +366,10 @@ export default class SR5_RollDialog {
     //Toggle hidden div
     element.querySelectorAll(".SR-DialogToggle").forEach(el => el.addEventListener('click', ev => this._toggleDiv(ev, element)))
     //Attribute paired with the skill (SR5 p. 130)
-    element.querySelectorAll(".SR-SkillAttribute").forEach(el => el.addEventListener('change', ev => this._onChangeSkillAttribute(ev.target.value, element, dialogData, actor)))
-    element.querySelectorAll(".SR-SkillAttributeKeep").forEach(el => el.addEventListener('change', ev => this._onKeepSkillAttribute(ev.target.checked, dialogData, actor)))
+    //A driven vehicle's test reads its driver's attributes, and keeps the choice on the driver's sheet (A15)
+    const holder = dialogData.skillAttribute?.holderUuid ? (fromUuidSync(dialogData.skillAttribute.holderUuid) ?? actor) : actor
+    element.querySelectorAll(".SR-SkillAttribute").forEach(el => el.addEventListener('change', ev => this._onChangeSkillAttribute(ev.target.value, element, dialogData, holder)))
+    element.querySelectorAll(".SR-SkillAttributeKeep").forEach(el => el.addEventListener('change', ev => this._onKeepSkillAttribute(ev.target.checked, dialogData, holder)))
   }
 
   // SR5 p. 130: another attribute replaces the linked one in the pool and the title; the limit stays the skill's

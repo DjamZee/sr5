@@ -115,6 +115,66 @@ export async function forgetKnowledgeAttribute(item){
   return true
 }
 
+// The key of the attribute the pool is built with: the one whose label is the source of its linkedAttribute share
+export function linkedAttributeKey(composition, labels, localize){
+  let share = (composition || []).find(m => m.type === "linkedAttribute")
+  if (!share) return null
+  return Object.keys(labels).find(key => localize(labels[key]) === share.source) ?? null
+}
+
+// A15 (arbitrage of Élise, 08/10, by SR5 p. 130, which the book applies itself: Gymnastics + Strength p. 137, Unarmed
+// Combat + Agility to slip a net, Run & Gun): the attribute menu of a skill test, kept per character, on a test the
+// system builds itself (attack, vehicle, ramming, palming, sensors, grapple, movement). Its default is the pair the
+// test had; a test without an attribute share of the character (a drone's) is left as it is.
+export function offerTestAttribute(rollData, actor, {
+  flagKey, titleBase, labels, localize
+}){
+  if (!actor || actor.type === "actorDrone") return rollData
+  let linked = linkedAttributeKey(rollData.dicePool.composition, labels, localize)
+  if (!linked) return rollData
+  rollData = prepareSkillAttribute(rollData, actor.system, actor.getFlag?.("sr5", SKILL_ATTRIBUTE_FLAG)?.[flagKey], {
+    flagKey, linked, titleBase: titleBase ?? rollData.test.title, labels, localize
+  })
+  //Kept for this test, not for the skill
+  if (rollData.skillAttribute) rollData.skillAttribute.keepLabel = "SR5.TestAttributeKeep"
+  return rollData
+}
+
+// A15, a vehicle test or a ramming by a driven vehicle (manual, remote or jumped in; never the autopilot): the pool
+// carries the driver's whole skill test as one share (Vehicle skill + Reaction, Rigger 5.0 p. 175 sq.). It is split
+// into the skill and the driver's attribute, which the menu then changes; the choice is kept on the driver's sheet.
+export function offerVehicleAttribute(rollData, vehicle, {
+  flagKey, labels, localize, driver
+}){
+  let mode = vehicle?.system?.controlMode, skillKey = vehicle?.system?.pilotSkill
+  if (!driver || !skillKey || !["manual", "remote", "rigging"].includes(mode)) return rollData
+  let linked = driver.system?.skills?.[skillKey]?.linkedAttribute
+  if (!linked || !labels[linked]) return rollData
+  let share = rollData.dicePool.composition.find(m => m.type === mode)
+  if (share) rollData.dicePool.composition = rollData.dicePool.composition.filter(m => m !== share)
+  else {
+    share = (rollData.dicePool.modifiers || []).find(m => m.type === mode)
+    if (!share) return rollData
+    rollData.dicePool.modifiers = rollData.dicePool.modifiers.filter(m => m !== share)
+  }
+  let linkedValue = attributeValue(driver.system, linked)
+  rollData.dicePool.composition.push({
+    source: share.source ?? share.label, type: "skillRating", value: (Number(share.value) || 0) - linkedValue
+  }, {
+    source: localize(labels[linked]), type: "linkedAttribute", value: linkedValue
+  })
+  rollData.dicePool.base = rollData.dicePool.composition.reduce((total, m) => total + m.value, 0)
+  rollData = prepareSkillAttribute(rollData, driver.system, driver.getFlag?.("sr5", SKILL_ATTRIBUTE_FLAG)?.[flagKey], {
+    flagKey, linked, titleBase: rollData.test.title, labels, localize
+  })
+  if (rollData.skillAttribute){
+    rollData.skillAttribute.keepLabel = "SR5.TestAttributeKeep"
+    //The attributes, and the kept choice, are the driver's, not the vehicle's
+    rollData.skillAttribute.holderUuid = driver.uuid
+  }
+  return rollData
+}
+
 // Fill rollData.skillAttribute for the roll dialog and apply the kept attribute, if any
 export function prepareSkillAttribute(rollData, actorData, kept, {
   flagKey, linked, titleBase, alwaysInTitle, labels, localize

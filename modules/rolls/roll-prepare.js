@@ -54,11 +54,25 @@ import {
 import {
   refuseByRule
 } from "../system/rule-locks.js"
+import {
+  offerTestAttribute, offerVehicleAttribute
+} from "./roll-helpers/skillAttribute.js"
 
 // N91: matrix rolls aimed at a target besides matrixAction, which guards itself. Each refuses a drone
 // with its wireless off (SR5 p. 424)
 const WIRELESS_TARGETED_ROLLS = ["iceAttack", "complexForm", "resonanceAction"]
 const WIRELESS_DEFENSE_ROLLS = ["matrixDefense", "iceDefense", "complexFormDefense", "matrixResistance"]
+
+// A15, group A (inventory of Mélisande, arbitrage of Élise, 08/10): skill tests the system builds itself, where the
+// book's rule of p. 130 lets the attribute change (repair and mod installation have it through the skill test)
+export const ATTRIBUTE_CHOICE_TESTS = ["weapon", "vehicleTest", "ramming", "pickpocket", "concealItem", "sensorDefense", "sensorTarget",
+  "grappleClinch", "grappleEscape", "movement"]
+
+// The key the choice is kept under, per character: the test, and its movement or weapon type
+export function testAttributeFlagKey(rollType, rollKey, item){
+  let sub = rollType === "movement" && typeof rollKey === "string" ? rollKey : rollType === "weapon" ? item?.system?.type : ""
+  return `test-${rollType}${sub ? `-${String(sub).replace(/[^A-Za-z0-9]/g, "")}` : ""}`
+}
 
 export class SR5_PrepareRollTest {
 
@@ -354,6 +368,18 @@ export class SR5_PrepareRollTest {
     }
         
     if (rollData) {
+      //A15 (SR5 p. 130): the attribute menu, kept per character, on the skill tests the system builds itself; the
+      //default stays the pair of the test (arbitrage of Élise, 08/10)
+      if (ATTRIBUTE_CHOICE_TESTS.includes(rollType) && !rollData.skillAttribute) {
+        const choice = {
+          flagKey: testAttributeFlagKey(rollType, rollKey, item), labels: SR5.allAttributes, localize: k => game.i18n.localize(k),
+        }
+        //A driven vehicle rolls with its driver's skill and attribute
+        if (actor?.type === "actorDrone") rollData = offerVehicleAttribute(rollData, actor, {
+          ...choice, driver: game.actors.get(actor.system.vehicleOwner?.id) ?? null,
+        })
+        else rollData = offerTestAttribute(rollData, actor, choice)
+      }
       //Running (SR5 p. 164): the running box of the modifiers list, for the tests that have no box of their own
       const runningKind = runningModifierKind(rollData.test)
       rollData.dialogSwitch.running = (runningKind === "general" || runningKind === "defense") ? runningKind : false

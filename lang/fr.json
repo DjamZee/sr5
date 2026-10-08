@@ -4990,6 +4990,7 @@
 	"SR5.SkillSwimming": "Natation",
 	"SR5.SkillAttribute": "Attribut du jet",
 	"SR5.SkillAttributeKeep": "Garder cet attribut pour cette compétence",
+	"SR5.TestAttributeKeep": "Garder cet attribut pour ce jet",
 	"SR5.SkillAttributeKept": "Attribut retenu au jet : {attribute}. La réserve affichée sur la fiche reste celle de l'attribut associé.",
 	"SR5.HELP_SkillAttributeMsg": "Une compétence ne se joue pas toujours avec son attribut associé (SR5 p. 130), par exemple Gymnastique + Force pour l'escalade. Le joueur ou la joueuse choisit l'attribut ; le meneur de jeu arbitre à voix haute. La Limite reste celle de la compétence.",
 	"SR5.SkillTest": "Test de compétence",
