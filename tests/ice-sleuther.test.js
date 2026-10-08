@@ -71,7 +71,7 @@ describe('Sleuther IC (Kill Code p. 74)', () => {
       ownerId: 'probe', value: 3
     }])
     expect(sleutherMarksOn(target, resolve)).toEqual([{
-      ice: sleuther, value: 2
+      ice: sleuther, ices: [sleuther], value: 2
     }])
   })
 
@@ -134,6 +134,19 @@ describe('Sleuther IC (Kill Code p. 74)', () => {
     expect(sleutherDice(lone, target, r, hostOf)).toBe(6)
     expect(sleutherDice(killer, target, r, hostOf)).toBe(0)
     expect(isLegitimateUser(spider, lone, null)).toBe(false)
+  })
+
+  // Bérénice's review 126, measured 08/10: an unlinked token marks under its world actor's id, its host set on the token
+  it('reads the host of an unlinked Sleuther token, its world actor tied to none', () => {
+    const base = ice('sleutherTok', 'iceSleuther', '')
+    const token = ice('sleutherTok', 'iceSleuther')
+    const target = decker([{
+      ownerId: 'sleutherTok', value: 2
+    }])
+    const r = id => id === 'sleutherTok' ? [base, token] : resolve(id)
+    expect(sleutherDice(killer, target, r, hostOf)).toBe(4)
+    expect(sleutherDice(host, target, r, hostOf)).toBe(4)
+    expect(sleutherDice(killer, target, id => id === 'sleutherTok' ? base : resolve(id), hostOf)).toBe(0)
   })
 
   it('reads the marks on the persona of an AI outside any device', () => {

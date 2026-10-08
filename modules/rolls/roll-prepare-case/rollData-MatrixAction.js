@@ -88,7 +88,10 @@ export default async function matrixAction(rollData, rollKey, actor){
   //Kill Code p. 74: +2 dice per Sleuther mark on the single icon the test concerns, for the legitimate user (ice-sleuther.js)
   if (SLEUTHER_ACTIONS.includes(rollKey)) {
     const targets = matrixTargets(rollData)
-    const dice = targets.length === 1 ? sleutherDice(actor, targets[0].actor, id => SR5_EntityHelpers.getRealActorFromID(id), iceHostOf) : 0
+    //A mark of an unlinked IC token bears its world actor's id: its tokens are read too, their host may be theirs alone
+    const marker = id => [SR5_EntityHelpers.getRealActorFromID(id), ...Array.from(game.scenes ?? []).flatMap(scene =>
+      Array.from(scene.tokens ?? []).filter(token => !token.actorLink && token.actorId === id).map(token => token.actor))]
+    const dice = targets.length === 1 ? sleutherDice(actor, targets[0].actor, marker, iceHostOf) : 0
     if (dice) rollData.dicePool.modifiers.push({
       type: "sleutherMarks", label: game.i18n.localize("SR5.IceSleutherMarks"), value: dice,
     })
