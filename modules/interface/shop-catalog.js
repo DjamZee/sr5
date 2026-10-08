@@ -166,6 +166,26 @@ export class SR5ShopCatalog {
     return null
   }
 
+  /**
+   * Why creation refuses a line, or null: a line past the limits goes through when the table allows it
+   * (sr5ShopCreationOverLimit, `limits.overLimit`), marked for the gamemaster (Adrore's feedback C3).
+   */
+  static creationRefusal(line, limits) {
+    return limits?.overLimit ? null : SR5ShopCatalog.creationBlock(line, limits)
+  }
+
+  /**
+   * The mark an item bought past the creation limits carries (flags.sr5.creationOverLimit), or null: what it
+   * passed, its value and the limit, read by the creation summary.
+   */
+  static overLimitMark(line, limits) {
+    const reason = limits?.overLimit ? SR5ShopCatalog.creationBlock(line, limits) : null
+    if (!reason) return null
+    return {
+      reason, value: Number(line[reason]) || 0, limit: Number(limits[reason]) || 0
+    }
+  }
+
   /* -------------------------------------------- */
   /*  A row                                       */
   /* -------------------------------------------- */
@@ -270,7 +290,7 @@ export class SR5ShopCatalog {
       if (!legality.includes(row.legality)) return false
       if (filters.affordable) {
         if (Number.isFinite(filters.budget) && row.price > filters.budget) return false
-        if (SR5ShopCatalog.creationBlock(row, filters.creation)) return false
+        if (SR5ShopCatalog.creationRefusal(row, filters.creation)) return false
       }
       return true
     })

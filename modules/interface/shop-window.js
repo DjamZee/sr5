@@ -557,7 +557,8 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
         delayed: deliveryDelayed(buyer), availability: described?.availability, onCounter, free
       })) cartDelay =Math.max(cartDelay, SR5ShopAvailability.delayFor(total))
       // A line put in the cart before creation was switched on, or at another grade, is out of reach
-      const blocked = described ? SR5ShopCatalog.creationBlock(described, limits) : null
+      const blocked = described ? SR5ShopCatalog.creationRefusal(described, limits) : null
+      const overLimit = described ? SR5ShopCatalog.overLimitMark(described, limits) : null
       // ...and so is a grade the shop no longer offers (creation offers no betaware): the till
       // would sell the item at no grade, a price and an Essence the cart does not show
       const gradeGone = row && line.grade && !row.offered.includes(line.grade)
@@ -569,6 +570,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
           gradeGone ? game.i18n.format('SR5.ShopGradeGone', {
             name: line.name
           }) : '',
+        overLimitLabel: overLimit ? SR5ShopWindow.#overLimitMessage(overLimit) : '',
       }
     })
     // No buyer yet: nothing is too dear, there is no purse to compare with
@@ -750,6 +752,11 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     })
   }
 
+  /** A line bought past the creation limits where the table allows it: told, not refused (C3). */
+  static #overLimitMessage(mark) {
+    return game.i18n.format(`SR5.ShopCreationOverLimit_${mark.reason}`, mark)
+  }
+
   /** What one row of the list shows. */
   #rowContext(row, {
     buyer, budget, limits, pool, equip, free
@@ -759,7 +766,8 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     if (row.essence) summary.push(game.i18n.format('SR5.ShopEssenceShort', {
       value: row.essence.toLocaleString()
     }))
-    const blocked = SR5ShopCatalog.creationBlock(row, limits)
+    const blocked = SR5ShopCatalog.creationRefusal(row, limits)
+    const overLimit = SR5ShopCatalog.overLimitMark(row, limits)
     // A vehicle mod is bought on a vehicle's workshop, at its price there (R5 p. 156): no cart, a drag
     const onVehicle = !equip && SR5ShopCatalog.pricedOnVehicle(entry)
     const forSale = (!row.notForSale || equip) && !onVehicle
@@ -798,6 +806,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       tooExpensive: !free && !onVehicle && row.price > budget,
       blocked: !!blocked,
       blockedLabel: blocked ? SR5ShopWindow.#creationMessage(blocked, entry.name, limits) : '',
+      overLimitLabel: overLimit ? SR5ShopWindow.#overLimitMessage(overLimit) : '',
       notForSale: row.notForSale,
       canBuy: buyer !== null && forSale && !blocked,
       // Without a buyer the list stays readable: only what cannot be sold at all is dimmed

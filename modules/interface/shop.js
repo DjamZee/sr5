@@ -36,7 +36,7 @@ import {
   STACKABLE_TYPES, sr5StackPayload, sr5LineLabel
 } from './item-payload.js'
 import {
-  creationModeFor
+  creationModeFor, CREATION_OVER_LIMIT_FLAG
 } from '../system/creation-actor.js'
 
 /**
@@ -158,10 +158,14 @@ export class SR5Shop {
    * world settings, the book's 12 and 6 by default (SR5 p. 66, p. 420; DjamZ's ruling, 2026-10-05).
    */
   static get creationLimits() {
-    return SR5ShopCatalog.creationLimits(game.settings.get('sr5', 'sr5ShopCreationLevel'), {
-      availability: game.settings.get('sr5', 'sr5ShopCreationMaxAvailability'),
-      rating: game.settings.get('sr5', 'sr5ShopCreationMaxRating'),
-    })
+    return {
+      ...SR5ShopCatalog.creationLimits(game.settings.get('sr5', 'sr5ShopCreationLevel'), {
+        availability: game.settings.get('sr5', 'sr5ShopCreationMaxAvailability'),
+        rating: game.settings.get('sr5', 'sr5ShopCreationMaxRating'),
+      }),
+      // Past them: refused (the book), or bought and marked for the gamemaster (Adrore's feedback C3)
+      overLimit: game.settings.get('sr5', 'sr5ShopCreationOverLimit') === true,
+    }
   }
   /**
    * The documents to create for `quantity` of `source`.
@@ -300,9 +304,10 @@ export class SR5Shop {
       // Creation caps availability and rating (SR5 p. 66, p. 420), at the level the gamemaster
       // set (DjamZ's ruling, 2026-10-05); Equip mode is how the gamemaster goes past them
       const described = SR5ShopCatalog.describe(source, grade)
-      const block = !equip && SR5Shop.creationModeFor(actor) ?
-        SR5ShopCatalog.creationBlock(described, SR5Shop.creationLimits) :
-        null
+      const creationLimits = !equip && SR5Shop.creationModeFor(actor) ? SR5Shop.creationLimits : null
+      const block = creationLimits ? SR5ShopCatalog.creationRefusal(described, creationLimits) : null
+      // Past the limits where the table allows it: bought, and marked for the creation summary (C3)
+      const overLimit = creationLimits ? SR5ShopCatalog.overLimitMark(described, creationLimits) : null
       if (block) {
         ui.notifications.warn(game.i18n.format(`SR5.WARN_ShopCreationLimit_${block}`, {
           name: SR5Shop.gradedName(source.name, grade), ...SR5Shop.creationLimits,
@@ -336,6 +341,7 @@ export class SR5Shop {
         name: SR5Shop.gradedName(source.name, grade),
         availability: Number(described.availability) || 0,
         fitted: assemble && line.fitted === true && game.user.isGM,
+        overLimit,
       })
     }
     if (!resolved.length) return false
@@ -432,7 +438,9 @@ export class SR5Shop {
     }
     for (const line of assemble ? [] : resolved) {
       if (!line.waits) {
-        payload.push(...SR5Shop._itemPayload(line.source, line.quantity, line.grade))
+        const items = SR5Shop._itemPayload(line.source, line.quantity, line.grade)
+        if (line.overLimit) for (const data of items) foundry.utils.setProperty(data, `flags.sr5.${CREATION_OVER_LIMIT_FLAG}`, line.overLimit)
+        payload.push(...items)
         continue
       }
       const order = newOrder(line, {

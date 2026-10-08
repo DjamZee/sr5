@@ -385,6 +385,14 @@ export class SR5_SystemHelpers {
       scope: "world", config: true, default: 6, type: Number,
     })
 
+    // Past the creation limits: refused by default, as the book (SR5 p. 66, p. 420); checked, the item is bought and
+    // marked on the sheet, for the gamemaster to see in the creation summary (Adrore's feedback C3, 08/10)
+    game.settings.register("sr5", "sr5ShopCreationOverLimit", {
+      name: "SR5.SETTINGS_ShopCreationOverLimit_T",
+      hint: "SR5.SETTINGS_ShopCreationOverLimit_D",
+      scope: "world", config: true, default: false, type: Boolean,
+    })
+
     // What a bonus die costs on an availability test. SR5 p. 420 sells one
     // die per 25 % of the price, up to +12 (four times the price); both are
     // values a table may want to move.
