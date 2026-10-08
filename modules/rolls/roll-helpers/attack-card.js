@@ -23,7 +23,7 @@ import {
   SR5_ConverterHelpers
 } from "./converter.js"
 import {
-  sameActor, standsFor, diceShown, trustedHits, sheetValue
+  sameActor, standsFor, diceShown, trustedHits, sheetValue, rolledPool
 } from "./matrix-card.js"
 import {
   energyAuraApplies, jugularToxin, laserDamageReduction, LASER_TRAIT
@@ -507,7 +507,8 @@ export async function vetAttackCard(chatData, {
   data.roll.hits = vetted.hits
   //More dice on the card than the pool worked out on the sheet allows: the ones beyond are not counted, and said
   //(situational bonuses of the roll dialog are not on the sheet)
-  const cap = poolWithEdge(roller, pool), shown = diceShown(card.data.roll?.r)
+  //The pool the card was rolled with counts when the sheet dropped since, as in trustedHits
+  const cap = poolWithEdge(roller, Math.max(Number(pool) || 0, rolledPool(card.data))), shown = diceShown(card.data.roll?.r)
   const overPool = shown > cap ? {
     dice: shown, cap
   } : null

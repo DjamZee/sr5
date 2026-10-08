@@ -9,7 +9,7 @@ import {
 
 const {
   cardHits, defenderNetHits, sameActor, standsFor, trustedHits, trustedMatrixAction, trustedDefenderDamage, cardStandsFor,
-  trustedComplexForm, complexFormSubType,
+  trustedComplexForm, complexFormSubType, rolledPool, sheetValue,
 } = await import('../modules/rolls/roll-helpers/matrix-card.js')
 
 const dice = (kept, rerolls = []) => ({
@@ -495,5 +495,78 @@ describe('cardStandsFor', () => {
     }))).toBe(true)
     expect(await cardStandsFor('x', npc, helpers({
     }))).toBe(false)
+  })
+})
+
+describe('the sheet dropped between the roll and the defense (Laurine, 08/10)', () => {
+  //Rolled with 12 dice, 7 hits; the deck switched off since: the sheet shows a pool of 0
+  const offline = actor('Actor.o', 'actorPc', {
+    ...hacker.system, matrix: {
+      actions: {
+        dataSpike: {
+          limit: {
+            linkedAttribute: 'attack', value: 0
+          }, test: {
+            dicePool: 0
+          }
+        }
+      }
+    }
+  }, ['Clo'])
+  const card = (kept, value, modifiers = []) => ({
+    id: 'a', roller: offline, byGM: false, author: {
+      name: 'Clo'
+    }, data: {
+      test: {
+        type: 'matrixAction', typeSub: 'dataSpike'
+      }, dicePool: {
+        value, modifiers
+      }, roll: {
+        r: dice(kept)
+      }
+    }
+  })
+  const read = (c, hits) => trustedMatrixAction({
+    owner: {
+      messageId: 'a'
+    }, roll: {
+      hits
+    }
+  }, {
+    ...helpers({
+      a: c
+    }), poolCap: (roller, path) => sheetValue(roller, path) + 2,
+  })
+  const honest = [5, 5, 5, 5, 5, 5, 5, 1, 2, 3, 4, 2]
+  it('counts the honest card within the pool it was rolled with: no cut, no alert', async () => {
+    const r = await read(card(honest, 12), 7)
+    expect(r.hits).toBe(7)
+    expect(r.overPool).toBe(null)
+  })
+  it('still tells and cuts dice past the pool the card was rolled with', async () => {
+    const r = await read(card([...honest, ...new Array(18).fill(5)], 12), 25)
+    expect(r.hits).toBe(7)
+    expect(r.overPool).toEqual({
+      dice: 30, cap: 14
+    })
+  })
+  it('leaves out of that pool the Edge of a push the GM did not grant', async () => {
+    expect(rolledPool({
+      dicePool: {
+        value: 14, modifiers: [{
+          type: 'edge', value: 2
+        }]
+      }
+    })).toBe(12)
+    expect(rolledPool({
+      dicePool: {
+        value: 14, modifiers: [{
+          type: 'pushTheLimit', value: 2
+        }, {
+          type: 'misc', value: 3
+        }]
+      }
+    })).toBe(12)
+    expect(rolledPool(undefined)).toBe(0)
   })
 })

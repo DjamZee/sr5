@@ -101,6 +101,14 @@ export async function grantPush(card, {
   }).catch(() => false)
 }
 
+/** The pool a card was rolled with (its dicePool.value), without the Edge a push of the limit added to it
+ * (modifiers "edge" in the dialog, "pushTheLimit" after the roll): that push is counted apart, once granted. */
+export function rolledPool(data) {
+  const edge = (data?.dicePool?.modifiers ?? []).filter(m => m?.type === "edge" || m?.type === "pushTheLimit")
+    .reduce((sum, m) => sum + (Number(m.value) || 0), 0)
+  return Math.max(0, (Number(data?.dicePool?.value) || 0) - edge)
+}
+
 /**
  * The hits a card stands for (Hyacinthe's review, D1): a GM's as written; a player's counted again on its dice, within
  * the sheet's `pool` and the test's `limit`, with no reroll, unless its push of the limit is granted (grantPush), then
@@ -114,6 +122,9 @@ export async function trustedHits({
   if (card.byGM) return {
     hits: announced, pushed: false
   }
+  //The sheet may have dropped since the roll (a deck switched off, silent mode, a wound): the pool the card was rolled
+  //with counts when larger (Laurine, 08/10; as pushAwareHits "rolled", Anselmine 07/10). Dice past it still do not
+  pool = Math.max(Number(pool) || 0, rolledPool(card.data))
   const rollJSON = card.data.roll?.r
   const edge = Number(card.roller?.system?.specialAttributes?.edge?.augmented?.value) || 0
   const without = hitsUnderPush({
@@ -246,7 +257,9 @@ export async function tellMatrixCard(result, claimedHits) {
 //More dice on a player's card than the pool worked out on the sheet allows (plus Chance): said to the GM, never cut silently
 function overPoolOf(h, card, path) {
   if (!h.poolCap) return null
-  const cap = h.poolCap(card.roller, path), dice = diceShown(card.data.roll?.r)
+  //The pool the card was rolled with, plus Chance, when the sheet dropped since (trustedHits)
+  const edge = Number(card.roller?.system?.specialAttributes?.edge?.augmented?.value) || 0
+  const cap = Math.max(h.poolCap(card.roller, path), rolledPool(card.data) + edge), dice = diceShown(card.data.roll?.r)
   return dice > cap ? {
     dice, cap
   } : null
