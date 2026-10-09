@@ -493,7 +493,10 @@ export class SR5_RollTest {
     //Re roll failed dices
     let rollDices = messageData.roll.rollDices
     let rollHits = messageData.roll.rollHits ?? messageData.roll.hits
-    let dicePool = rollDices ? rollDices.filter(d => d.result < 5).length : messageData.dicePool.value - messageData.roll.hits
+    //The dice that did not hit, counted on the dice themselves: the pool less the hits rerolled too many dice when the
+    //limit had cut the hits (séance de DjamZ du 09/10)
+    const rolled = rollDices ?? messageData.roll.dices
+    let dicePool = Array.isArray(rolled) ? rolled.filter(d => d.result < 5).length : messageData.dicePool.value - messageData.roll.hits
     if (dicePool < 0) dicePool = 0
     //SR5 p. 58: Second Chance has no effect on limits. A test whose hits already reached its limit gains nothing,
     //only a test without limit (value 0, or lifted by radical reagents) keeps every new hit

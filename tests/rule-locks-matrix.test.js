@@ -287,17 +287,19 @@ describe('an action at 3 marks with no mark (SR5 p. 238)', () => {
     delete globalThis.fromUuidSync
   })
 
-  for (const [where, roll] of [['the sheet', fromSheet], ['the crown', fromCrown], ['a file', onFile]]) {
+  // A file names its own marks: those on its host do not count (SR5 p. 240)
+  for (const [where, roll, key] of [['the sheet', fromSheet, 'SR5.NotEnoughMarksOnTarget'], ['the crown', fromCrown, 'SR5.NotEnoughMarksOnTarget'],
+    ['a file', onFile, 'SR5.NotEnoughMarksOnFile']]) {
     it(`book: refused from ${where}`, async () => {
       expect(await roll()).toBe(false)
-      expect(ui.notifications.info).toHaveBeenCalledWith('SR5.NotEnoughMarksOnTarget')
+      expect(ui.notifications.info).toHaveBeenCalledWith(key)
     })
     it(`lifted: goes from ${where}, the gamemaster hears of it`, async () => {
       lift()
       expect(await roll()).toBe(true)
       await flush()
       expect(ui.notifications.info).not.toHaveBeenCalled()
-      expect(matrixKeys()).toEqual(['SR5.NotEnoughMarksOnTarget'])
+      expect(matrixKeys()).toEqual([key])
     })
   }
   it('with the marks, nothing to tell', async () => {

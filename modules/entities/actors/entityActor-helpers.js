@@ -1839,7 +1839,14 @@ export class SR5_ActorHelper {
   //Delete an itemEffect when the activeEffect is deleted
   static async deleteItemEffectLinkedToActiveEffect(actorId, itemId){
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
-    await actor.deleteEmbeddedDocuments("Item", [itemId])
+    // The item may be gone already (deleted with its status from the sheet): the server then threw
+    // « Item … does not exist » in the console (séance de DjamZ du 09/10, image 12)
+    if (!actor?.items.has(itemId)) return
+    try {
+      await actor.deleteEmbeddedDocuments("Item", [itemId])
+    } catch (err) {
+      if (actor.items.has(itemId)) throw err
+    }
   }
 
   //Keep Agent condition Monitor synchro with Owner deck
