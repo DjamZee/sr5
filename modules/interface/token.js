@@ -65,7 +65,9 @@ export class SR5Token extends foundry.canvas.placeables.Token {
    * @override
    */
   _onClickRight(event) {
-    if (this.document.isOwner || !this.layer.hud || !SR5Pickpocket.canPickFrom(this.document)) return super._onClickRight(event)
+    // The same for a player who reads the PAN of the target through her own token (séance de DjamZ du 09/10)
+    const foreign = SR5Pickpocket.canPickFrom(this.document) || (!!canvas.sr5PanCrown && playerMayOpenPan(this))
+    if (this.document.isOwner || !this.layer.hud || !foreign) return super._onClickRight(event)
     if (this.hasActiveHUD) this.layer.hud.close()
     else this.layer.hud.bind(this)
     if (!this._propagateRightClick(event)) event.stopPropagation()

@@ -47,6 +47,8 @@ export default class SR5TokenHud extends foundry.applications.hud.TokenHUD {
       for (const el of this.element?.querySelectorAll(".control-icon, .attribute, input, .palette") ?? []) {
         if (!el.closest(".sr-hud-pickpocket, .sr-hud-pickpocket-plant, .sr-hud-pan")) el.remove()
       }
+      // Nothing left of it for her: no empty HUD
+      if (!this.element?.querySelector(".control-icon")) this.close()
     }
   }
 
