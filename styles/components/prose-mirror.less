@@ -164,10 +164,12 @@ prose-mirror menu.editor-menu,
     }
   }
 
+  /* Bare buttons, no box (DjamZ's session of 08/10): only the hover and the pressed state get a background */
   button {
-    background-color: color-mix(in srgb, var(--sr-ui-bg-color-dark) 30%, transparent);
+    background: none;
     color: var(--sr-ui-border-color-active);
-    border: 1px solid var(--sr-ui-border-color-active);
+    border: none;
+    box-shadow: none;
     border-radius: 3px;
     width: auto;
     height: 26px;
@@ -184,9 +186,14 @@ prose-mirror menu.editor-menu,
     margin: 0;
     line-height: 1;
 
-    &:hover {
+    &:hover, &:focus-visible {
       background-color: var(--sr-ui-border-color-active);
       color: var(--sr-text-color-light);
+      outline: none;
+    }
+
+    &.active:not(:hover) {
+      background-color: color-mix(in srgb, var(--sr-ui-border-color-active) 25%, transparent);
     }
 
     &::before {

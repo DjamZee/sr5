@@ -1115,4 +1115,14 @@ export class SR5_UiModifications {
     }
   }
 
+  // The help overlay sits right above the players list, at least as wide as it:
+  // a fixed bottom offset covered the list as soon as several players were connected
+  static placeHelpWindow(target) {
+    const rect = document.getElementById("players")?.getBoundingClientRect()
+    if (!rect?.height) return
+    target.style.left = `${rect.left}px`
+    target.style.bottom = `${window.innerHeight - rect.top + 6}px`
+    target.style.width = `${Math.max(rect.width, 240)}px`
+  }
+
 }

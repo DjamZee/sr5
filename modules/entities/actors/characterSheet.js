@@ -61,7 +61,7 @@ export class SR5ActorSheet extends ActorSheetSR5 {
   static DEFAULT_OPTIONS = {
     classes: ["app", "window-app", "sr5", "actor", "pc"],
     position: {
-      width: 800, height: 618 
+      width: 900, height: 618 
     },
     window: {
       resizable: true
