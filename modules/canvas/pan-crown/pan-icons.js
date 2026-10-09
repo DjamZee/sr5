@@ -115,7 +115,9 @@ const VISION_FUNCTIONS = [
  * @param {Object} item
  */
 export function visionFunctionOf(item){
-  const targets = Object.values(item?.system?.customEffects ?? {}).map(effect => effect?.target ?? "")
+  const effects = item?.system?.customEffects ?? {
+  }
+  const targets = Object.values(effects).map(effect => effect?.target ?? "")
   for (const [key, target, name] of VISION_FUNCTIONS){
     if (targets.some(t => target.test(t)) || name.test(item?.name ?? "")) return key
   }
