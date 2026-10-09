@@ -900,3 +900,17 @@
     flex: none;
   }
 }
+
+/* Resize handle (bottom right corner). Core inverts it to white in the dark theme, black otherwise, whatever the
+   window shows under it: white on a light journal page, black on the dark footer of our sheets in the light theme
+   (DjamZ's session of 08/10). A halo of the opposite colour keeps it visible on both. */
+.application .window-resize-handle {
+  filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff);
+}
+
+&.theme-dark .application .window-resize-handle,
+.themed.theme-dark .application .window-resize-handle,
+.themed.theme-dark.application .window-resize-handle,
+.application.image-popout .window-resize-handle {
+  filter: invert(1) drop-shadow(0 0 1px #000) drop-shadow(0 0 1px #000);
+}

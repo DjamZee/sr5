@@ -140,6 +140,15 @@ prose-mirror {
   }
 }
 
+/* Pen under a plain title (.SR-EnTete: coloured text on the light sheet, no band): white was invisible */
+.SR-EnTete + li prose-mirror button.icon.toggle {
+  color: var(--sr-ui-border-color);
+
+  &:hover {
+    color: var(--sr-ui-border-color-active);
+  }
+}
+
 /* Toolbar (menu) when editor is active.
    Also applies to the legacy {{editor}} ProseMirror (.editor) still used by some modules,
    whose toolbar buttons otherwise get the generic themed button look. */
