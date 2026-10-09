@@ -3563,6 +3563,7 @@
 	"SR5.None": "None",
 	"SR5.NormalWeaponsImmunity": "Immunity to normal weapons",
 	"SR5.NotEnoughMarksOnTarget": "The target does not have enough marks",
+	"SR5.NotEnoughMarksOnFile": "Not enough marks on the file itself: a mark on the host that holds it does not count for its files. Hack the file on the fly to mark it (SR5 p. 240).",
 	"SR5.WARN_OwnerOnlyAction": "Owner-only action (SR5 p. 238): the GM rules.",
 	"SR5.Notes": "Notes",
 	"SR5.NotResisted": "Not Resisted",

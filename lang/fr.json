@@ -3563,6 +3563,7 @@
 	"SR5.None": "Aucun(e)",
 	"SR5.NormalWeaponsImmunity": "Immunité aux armes normales",
 	"SR5.NotEnoughMarksOnTarget": "La cible n'a pas assez de marks",
+	"SR5.NotEnoughMarksOnFile": "Pas assez de marks sur le fichier lui-même : une mark sur le serveur qui le contient ne compte pas pour ses fichiers. Hackez le fichier à la volée pour le marker (SR5 p. 240).",
 	"SR5.WARN_OwnerOnlyAction": "Action réservée au propriétaire (SR5 p. 238) : le MJ arbitre.",
 	"SR5.Notes": "Notes",
 	"SR5.NotResisted": "Non résisté",

@@ -249,8 +249,9 @@ function fileAimedAt(rollData){
 }
 
 //Too few marks (SR5 p. 238). The "matrix" rule lock lifted (B13), the action goes, and the gamemaster hears of it
-function refuseMarks(actor){
-  return refuseByRule("matrix", "SR5.NotEnoughMarksOnTarget", null, {
+function refuseMarks(actor, onFile = false){
+  //A file asks for marks on itself: those on its host do not count (SR5 p. 240), which the table took for a defect
+  return refuseByRule("matrix", onFile ? "SR5.NotEnoughMarksOnFile" : "SR5.NotEnoughMarksOnTarget", null, {
     actor, level: "info"
   })
 }
@@ -282,7 +283,7 @@ async function checkTargetMarks(rollData, matrixAction, actor){
       const file = fileAimedAt(rollData)
       if (file) {
         const fileMark = (file.system.marks ?? []).find(m => m.ownerId === rollData.owner.speakerId)
-        return !((Number(fileMark?.value) || 0) < neededMarks && refuseMarks(actor))
+        return !((Number(fileMark?.value) || 0) < neededMarks && refuseMarks(actor, true))
       }
       for (let item of t.actor.items){
         const mark = item.system.marks?.find(m => m.ownerId === rollData.owner.speakerId)
