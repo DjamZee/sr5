@@ -1,7 +1,17 @@
-import { describe, expect, it } from "vitest"
-import { hostMasterCandidates, hostNodesAllowed } from "../modules/system/host-nodes.js"
+import {
+  describe, expect, it 
+} from "vitest"
+import {
+  hostMasterCandidates, hostNodesAllowed 
+} from "../modules/system/host-nodes.js"
 
-const host = (id, panMaster = "") => ({ id, uuid: `Actor.${id}`, system: { matrix: { deviceType: "host", panMaster } } })
+const host = (id, panMaster = "") => ({
+  id, uuid: `Actor.${id}`, system: {
+    matrix: {
+      deviceType: "host", panMaster 
+    } 
+  } 
+})
 
 describe("serveurs asservis à d'autres serveurs (« nodes », hors livre, arbitrage de DjamZ)", () => {
   it("décoché par défaut, ou illisible : la règle du livre", () => {
