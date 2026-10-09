@@ -903,13 +903,22 @@
     font-weight: bold;
 }
 
-// The silent switch of a device, beside its wireless one in the lists (couronne du PAN, lot 6): both on one line
-.app.window-app.actor :has(> .device-silent-toggle) {
-    display        : flex;
-    justify-content: center;
-    align-items    : center;
-    gap            : 1px;
-    white-space    : nowrap;
+// The silent switch of a device has its own column, right of the wireless one (couronne du PAN, lot 6;
+// own column since DjamZ's session of 08/10): the wireless cell splits in two and takes two thirds of its group
+.app.window-app.actor {
+    :has(> .sr-silent-slot) {
+        display        : grid;
+        grid-template-columns: 1fr 1fr;
+        align-items    : center;
+        justify-items  : center;
+    }
 
-    > .device-silent-toggle em { font-size: 0.75em; }
+    [class*="col-"] > .grid > [class*="col-"]:has(> .sr-silent-slot, > p > .sr-silent-slot) {
+        width: 66.66666667%;
+    }
+
+    [class*="col-"] > .grid:has(> [class*="col-"] > .sr-silent-slot, > [class*="col-"] > p > .sr-silent-slot)
+      > [class*="col-"]:not(:has(> .sr-silent-slot, > p > .sr-silent-slot)) {
+        width: 33.33333333%;
+    }
 }
