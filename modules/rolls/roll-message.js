@@ -218,9 +218,9 @@ export class SR5_RollMessage {
       if (chaseButtons.length) {
         chaseButtons.forEach(el => el.style.display = "none")
         import("../system/chase-roll.js").then(({
-          mayUseChaseButton
+          mayUseChaseButton, chaseButtonSpent
         }) => chaseButtons.forEach(el => {
-          if (mayUseChaseButton(el.dataset.type, message.flags?.sr5data)) el.style.display = ""
+          if (mayUseChaseButton(el.dataset.type, message.flags?.sr5data) && !chaseButtonSpent(el.dataset.type, message)) el.style.display = ""
           else el.remove()
         }))
       }

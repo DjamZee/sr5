@@ -8,7 +8,7 @@ vi.mock('../modules/socket.js', () => ({
 }))
 
 const {
-  alreadyOpposed
+  alreadyOpposed, chaseButtonSpent
 } = await import('../modules/system/chase-roll.js')
 
 // Lancelot (relecture groupée, F2): the "opposes" button stayed after the opposition and let a second one be rolled
@@ -32,5 +32,31 @@ describe('one opposition per chase card (SR5 p. 205)', () => {
     expect(alreadyOpposed([{
     }, null], 'm1', 'v2')).toBe(false)
     expect(alreadyOpposed(undefined, 'm1', 'v2')).toBe(false)
+  })
+
+  // Lot 5 (séance de DjamZ, F2): the used button goes from the card at its render
+  it('a used opposition button is spent, only on the initiating card', () => {
+    const initiate = {
+      id: 'm1', flags: {
+        sr5data: {
+          chase: {
+            mode: 'initiate'
+          }
+        }
+      }
+    }
+    const answers = [card('oppose', 'm1', 'v2')]
+    expect(chaseButtonSpent('chaseRoll_v2', initiate, answers)).toBe(true)
+    expect(chaseButtonSpent('chaseRoll_v3', initiate, answers)).toBe(false)
+    expect(chaseButtonSpent('chaseApply', initiate, answers)).toBe(false)
+    expect(chaseButtonSpent('chaseRoll_v2', {
+      id: 'm1', flags: {
+        sr5data: {
+          chase: {
+            mode: 'oppose'
+          }
+        }
+      }
+    }, answers)).toBe(false)
   })
 })
