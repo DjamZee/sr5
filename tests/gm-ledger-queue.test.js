@@ -271,8 +271,9 @@ describe('no register is written outside the queue', () => {
   it('finds game.settings.set on a register nowhere but in gm-ledger.js', async () => {
     const fs = await import('node:fs')
     const path = await import('node:path')
-    // The settings a GM or a user sets from a form, not registers read again and written back
-    const allowed = /sr5StorageViewMode|systemMigrationVersion|sourceModifiersMigration|legacyBiographyMigration|SHEET_SIZE_SETTING|sr5ShopExcludedPacks|sr5ShopBuyerMode|sr5ShopBuyerFolder|sr5ShopCreationMode|CLOCK_VIEW_SETTING|sr5RuleLocks|legacyRuleLock/
+    // The settings a GM or a user sets from a form, not registers read again and written back (the chase's rule set:
+    // the switch at the top of its window, lot 5)
+    const allowed = /sr5StorageViewMode|systemMigrationVersion|sourceModifiersMigration|legacyBiographyMigration|SHEET_SIZE_SETTING|sr5ShopExcludedPacks|sr5ShopBuyerMode|sr5ShopBuyerFolder|sr5ShopCreationMode|CLOCK_VIEW_SETTING|sr5RuleLocks|legacyRuleLock|ADVANCED_DRIVING_SETTING/
     const offenders = []
     const walk = dir => {
       for (const entry of fs.readdirSync(dir, {

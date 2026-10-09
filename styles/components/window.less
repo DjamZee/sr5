@@ -908,6 +908,11 @@
   &:hover { background: color-mix(in srgb, var(--sr-text-color-dark) 10%, transparent); }
 }
 
+/* The chase window's box titles (chase.less, lot 5): lightened for the dark theme, darkened on the light surface */
+&.theme-light .application.sr-chase .sr-chase-card legend {
+  color: color-mix(in srgb, var(--sr-chase-accent) 75%, black);
+}
+
 /* The window to share a vision (shared-vision.js): a box per player, the flex row stretched it into a bar (Romuald) */
 .sr5-shared-vision-users label.flexrow {
   align-items: center;
