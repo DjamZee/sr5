@@ -41,7 +41,7 @@ export class SR5NegotiationRepair extends foundry.applications.api.HandlebarsApp
 
   static DEFAULT_OPTIONS = {
     id: "sr5-negotiation-repair",
-    classes: ["sr5", "sr-application", "sr-negotiation-repair"],
+    classes: ["sr5", "sr-negotiation-repair"],
     position: {
       width: 640, height: 600
     },
@@ -55,7 +55,7 @@ export class SR5NegotiationRepair extends foundry.applications.api.HandlebarsApp
 
   static PARTS = {
     body: {
-      template: "systems/sr5/templates/interface/negotiation-repair.hbs", scrollable: [""]
+      template: "systems/sr5/templates/interface/negotiation-repair.hbs", scrollable: [".sr-negotiation-repair-list"]
     }
   }
 
