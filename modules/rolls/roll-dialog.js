@@ -1235,7 +1235,7 @@ export default class SR5_RollDialog {
           break
         case "incomingFiringMode":
           value = SR5_ConverterHelpers.firingModeToDefenseMod(ev.target.value)
-          label = game.i18n.localize(SR5.dicePoolModTypes[modifierName])
+          label = SR5_ConverterHelpers.firingModeDefenseLabel(ev.target.value)
           break
         case "targetRange": {
           let baseRange = SR5_ConverterHelpers.rangeToEnvironmentalLine(ev.target.value)
@@ -1761,6 +1761,7 @@ export default class SR5_RollDialog {
         case "incomingFiringMode":
           selectValue = dialogData.combat.firingMode.selected
           inputValue = SR5_ConverterHelpers.firingModeToDefenseMod(selectValue)
+          label = SR5_ConverterHelpers.firingModeDefenseLabel(selectValue)
           break
         case "targetRange": {
           selectValue = dialogData.target.range
@@ -1886,7 +1887,8 @@ export default class SR5_RollDialog {
       html.querySelector(name).value = selectValue
       dialogData.dicePool.modifiers.push({
         type: modifierName,
-        label: label,
+        // Every line of the card says where its modifier comes from: by default, the name of its line in the dialog
+        label: label ?? (SR5.dicePoolModTypes[modifierName] ? game.i18n.localize(SR5.dicePoolModTypes[modifierName]) : undefined),
         value: inputValue,
       })
       this.updateDicePoolValue(html)

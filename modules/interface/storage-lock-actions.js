@@ -163,9 +163,9 @@ export class SR5StorageLock {
    * who opens the lock once the action succeeds (SR5 p. 239-240). */
   static async requestHack(actor, picker) {
     const storage = SR5StorageLock.base(actor)
-    const content = game.i18n.format("SR5.StorageLockHackCard", {
+    const content = `<p>${game.i18n.format("SR5.StorageLockHackCard", {
       actor: picker?.name ?? game.user.name, storage: storage.name, rating: storage.system.lock.rating,
-    })
+    })}</p>`
     await ChatMessage.create({
       content, whisper: ChatMessage.getWhisperRecipients("GM").map(u => u.id).concat(game.user.id),
     })
@@ -272,10 +272,10 @@ export class SR5StorageLock {
     // alarm went off
     if (result.antiTamper) {
       await ChatMessage.create({
-        content: game.i18n.format(result.alarm ? "SR5.StorageLockAlarm" : "SR5.StorageLockAntiTamperHeld", {
+        content: `<p class="${result.alarm ? "sr5-notice-alert" : ""}">${game.i18n.format(result.alarm ? "SR5.StorageLockAlarm" : "SR5.StorageLockAntiTamperHeld", {
           actor: picker.name, storage: storage.name,
           hits: result.antiTamper.hits, threshold: result.antiTamper.threshold,
-        }),
+        })}</p>`,
         whisper: ChatMessage.getWhisperRecipients("GM").map(u => u.id),
       })
     }

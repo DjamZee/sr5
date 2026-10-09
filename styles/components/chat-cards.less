@@ -1,0 +1,199 @@
+// Charte des cartes de discussion écrites en JS (lot 7, séance de DjamZ du 09/10)
+// Une carte = un bandeau de titre (comme les cartes de jet), un corps aéré, des lignes séparées,
+// des boutons aux couleurs des autres boutons de carte. La famille ne change que le liseré du bandeau.
+// Les cartes du chat restent blanches dans les deux thèmes (roll-message.less) : texte sombre partout.
+
+@sr5-card-roots: ~".sr5-deadline-card, .sr5-expiry-card, .sr5-drug-card, .sr5-drug-design-card, .sr5-disease-card, .sr5-infection-card, .sr5-hunger-card, .sr5-radiation-card, .sr5-bb-card, .sr5-cfd-card, .sr5-perception-message, .sr5-monad-card, .sr5-defrag-card, .sr5-ai-dissipation-card";
+
+.chat-message .message-content {
+  // Familles : calendrier, santé, matrice ; les autres gardent le rouge du système
+  --sr5-card-accent: var(--sr-ui-border-color);
+
+  :is(.sr5-deadline-card, .sr5-expiry-card, .sr5-drug-card) {
+    --sr5-card-accent: #c98a00;
+  }
+
+  :is(.sr5-disease-card, .sr5-infection-card, .sr5-hunger-card, .sr5-radiation-card, .sr5-bb-card, .sr5-cfd-card, .sr5-drug-design-card) {
+    --sr5-card-accent: #0f8f8f;
+  }
+
+  :is(.sr5-perception-message, .sr5-monad-card, .sr5-defrag-card, .sr5-ai-dissipation-card) {
+    --sr5-card-accent: #22a35a;
+  }
+
+  // Un simple avis (un paragraphe, sans gabarit) ne colle plus aux bords
+  > p,
+  > ul,
+  > ol {
+    margin: 6px 8px;
+  }
+
+  // La liste d'un avis à titre (poursuite, pouvoirs toujours actifs) : des lignes séparées, sans puces
+  > h3:first-child ~ ul {
+    list-style: none;
+    padding: 0;
+
+    > li {
+      padding: 3px 0;
+      border-top: 1px solid color-mix(in srgb, var(--sr-text-color-dark) 12%, transparent);
+
+      &:first-child {
+        border-top: none;
+      }
+    }
+  }
+
+  // Une alarme : le liseré rouge du système
+  > p.sr5-notice-alert {
+    padding-left: 6px;
+    border-left: 4px solid var(--sr-ui-border-color);
+    font-family: var(--sr-font-body-bold);
+  }
+
+  // Le bandeau : la première ligne de titre d'une carte, ou d'un avis qui commence par un titre
+  > h3:first-child,
+  :is(@{sr5-card-roots}) > :is(h3, h4):first-child {
+    margin: 0;
+    padding: 4px 8px 4px 6px;
+    border: none;
+    border-left: 5px solid var(--sr5-card-accent);
+    background-color: var(--sr-text-color-dark);
+    color: var(--sr-text-color-light);
+    font-family: var(--sr-font-body-bold);
+    font-size: var(--sr-font-size-normal);
+    line-height: 1.3;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+
+    i {
+      color: var(--sr5-card-accent);
+      margin-right: 4px;
+    }
+  }
+
+  :is(@{sr5-card-roots}) {
+    padding-bottom: 6px;
+    font-family: var(--sr-font-body);
+    line-height: 1.35;
+
+    > p {
+      margin: 6px 8px 0;
+    }
+
+    > ul {
+      list-style: none;
+      margin: 6px 8px 0;
+      padding: 0;
+
+      > li {
+        padding: 4px 0;
+        border-top: 1px solid color-mix(in srgb, var(--sr-text-color-dark) 12%, transparent);
+
+        &:first-child {
+          border-top: none;
+        }
+      }
+    }
+
+    button {
+      flex: 0 0 auto;
+      width: auto;
+      min-height: 0;
+      margin: 0;
+      padding: 3px 8px;
+      line-height: normal;
+      background-color: var(--sr-text-color-dark);
+      border: 0;
+      border-left: 3px solid var(--sr5-card-accent);
+      border-radius: 0;
+      color: var(--sr-text-color-light);
+      font-family: var(--sr-font-body-bold);
+      font-size: var(--sr-font-size-small);
+      text-transform: uppercase;
+
+      &:hover:not(:disabled) {
+        color: var(--sr-text-color-flash);
+        box-shadow: none;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+      }
+    }
+  }
+
+  // Sous-titre : qui a agi
+  .sr5-card-by {
+    margin: 4px 8px 0;
+    font-style: italic;
+    color: var(--sr-text-color-grey-dark);
+  }
+
+  // Les faits : le libellé à gauche, la valeur à droite
+  .sr5-card-facts > li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+
+    .sr5-card-label {
+      color: var(--sr-text-color-grey-dark);
+    }
+
+    .sr5-card-value {
+      font-family: var(--sr-font-body-bold);
+      text-align: right;
+    }
+  }
+
+  // Échéances : le texte et la date sur une ligne, les boutons du MJ en dessous
+  .sr5-deadline-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: 8px;
+    row-gap: 4px;
+
+    .sr5-deadline-due {
+      color: var(--sr-text-color-grey-dark);
+      font-size: var(--sr-font-size-small);
+      white-space: nowrap;
+    }
+
+    .sr5-deadline-buttons {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 4px;
+    }
+  }
+}
+
+// La fenêtre de choix de la Perception matricielle : deux colonnes, une boîte par type d'information
+.sr5-perception-dialog {
+  .sr5-perception-head {
+    margin: 0 0 6px;
+  }
+
+  .sr5-perception-choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: 6px 10px;
+    max-height: 30rem;
+  }
+
+  .sr5-perception-group {
+    margin: 0;
+    padding: 2px 8px 6px;
+    border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+    border-radius: 3px;
+
+    legend {
+      padding: 0 4px;
+      font-family: var(--sr-font-body-bold);
+      text-transform: uppercase;
+      font-size: var(--sr-font-size-small);
+    }
+  }
+}

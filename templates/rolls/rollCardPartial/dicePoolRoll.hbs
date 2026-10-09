@@ -41,7 +41,7 @@
     {{#each dicePool.modifiers}}
     {{#if (ne value 0)}}
     <li class="grid SR-GreyColor">
-        <div class="col-10">{{label}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-10">{{#if label}}{{label}}{{else}}{{localize 'SR5.Modifier'}}{{/if}}{{localize 'SR5.Colons'}}</div>
         <div class="col-2 SR-TextRight">{{#if (gt value 0)}}+{{/if}}{{value}}</div>
     </li>
     {{/if}}
