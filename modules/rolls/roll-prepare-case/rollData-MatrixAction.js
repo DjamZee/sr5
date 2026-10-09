@@ -40,6 +40,19 @@ function checksTargetMarks(rollKey){
 
 // SR5 p. 240: Erase Matrix Signature is Computer + Resonance; without Resonance nobody can try it,
 // not even an AI emulating it (DjamZ's ruling T8, 2026-10-06)
+/** Is the action limited by Attack or Sleaze, which the persona lacks (SR5 p. 227)? An AI with its Depth active emulates it.
+ * @param {Object} matrixAction - the action as the actor carries it
+ * @param {Object} actor - the acting actor
+ * @return {Boolean}
+ */
+export function lacksLimitAttribute(matrixAction, actor){
+  const attribute = matrixAction?.limit?.linkedAttribute
+  if (attribute !== "attack" && attribute !== "sleaze") return false
+  if (actor?.system?.activeSpecialAttribute === "depth") return false
+  const value = actor?.system?.matrix?.attributes?.[attribute]?.value
+  return typeof value === "number" && value <= 0
+}
+
 export function canTryMatrixAction(rollKey, actor){
   if (rollKey !== "eraseMatrixSignature") return true
   return (actor?.system?.specialAttributes?.resonance?.augmented?.value || 0) > 0
@@ -66,6 +79,14 @@ export default async function matrixAction(rollData, rollKey, actor){
     actor
   })) return
   let matrixAction = actor.system.matrix.actions[rollKey]
+  //SR5 p. 227: only decks and hosts have Attack and Sleaze. A persona without them (a commlink, an RCC) has a limit of 0
+  //on these actions, which the roll read as no limit at all: a rigger hacked with every hit (séance de DjamZ du 09/10).
+  //An AI acting with its Depth emulates the attribute (Data Trails p. 157). The "matrix" rule lock lifted, the action goes
+  if (lacksLimitAttribute(matrixAction, actor) && refuseByRule("matrix", "SR5.WARN_NoAttackSleaze", {
+    attribute: game.i18n.localize(SR5.matrixAttributes?.[matrixAction.limit.linkedAttribute] ?? matrixAction.limit.linkedAttribute)
+  }, {
+    actor
+  })) return
 
   //Determine title
   rollData.test.title = `${game.i18n.localize("SR5.MatrixActionTest") + game.i18n.localize("SR5.Colons") + " " + game.i18n.localize(SR5.matrixRolledActions[rollKey])}`
