@@ -56,6 +56,14 @@ export class SR5_ConverterHelpers {
     }
   }
 
+  //The line of the defense modifier on the card: the attacker's firing mode, by its full name (SR5 p. 180)
+  static firingModeDefenseLabel(mode){
+    const name = game.i18n.localize(`SR5.WeaponMode${mode}`)
+    return game.i18n.format("SR5.IncomingFiringModeLabel", {
+      mode: name.startsWith("SR5.") ? mode : name
+    })
+  }
+
   //Resolve the firing mode code (SS, SA, BF, FA...) to preselect for a ranged weapon.
   //firingMode.value holds translated abbreviations for display ("CC", "TR", "TA" in French),
   //and rolls made before this fix saved such an abbreviation in firingMode.current.

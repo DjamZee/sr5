@@ -8,7 +8,7 @@
 			<div class="col-1">
 				<div class="grid">
 					<div class="col-6"><p class="SR-TextCenter" data-tooltip="{{localize 'SR5.Activated'}}"><em class="fas fa-sm fa-thumbtack"></em></p></div>
-					<div class="col-6"><p class="SR-TextCenter" data-tooltip="{{localize 'SR5.WirelessMode'}}"><em class="fas fa-sm fa-wifi"></em></p></div>
+					<div class="col-6"><p class="SR-TextCenter" data-tooltip="{{localize 'SR5.WirelessMode'}}"><em class="fas fa-sm fa-wifi"></em><span class="sr-silent-slot" data-tooltip="{{localize 'SR5.PanMenuModeSilent'}}"><em class="fas fa-sm fa-user-secret"></em></span></p></div>
 				</div>
 			</div>
 			<div class="col-1">
@@ -42,7 +42,7 @@
 					</div>
 					<div class="col-6" data-helpTitle="{{localize 'SR5.HELP_Accessory' key=name}}" data-helpMessage="{{localize 'SR5.HELP_AccessoryMsg'}}">
 						<p class="SR-TextCenter">
-							<em class="fas fa-sm fa-wifi SR-SubColor25"></em>
+							<em class="fas fa-sm fa-wifi SR-SubColor25"></em><span class="sr-silent-slot"></span>
 						</p>
 					</div>
 				</div>
@@ -138,7 +138,7 @@
 					{{else}}
 					<div class="col-6">
 						<p class="SR-TextCenter">
-							<em class="fas fa-sm fa-wifi {{#if accessory.system.wirelessTurnedOn}}SR-SubColor{{else}}SR-SubColor25{{/if}}"></em>
+							<em class="fas fa-sm fa-wifi {{#if accessory.system.wirelessTurnedOn}}SR-SubColor{{else}}SR-SubColor25{{/if}}"></em><span class="sr-silent-slot"></span>
 						</p>
 					</div>
 					{{/if}}

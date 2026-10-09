@@ -277,6 +277,31 @@ export function entryLabel(choice){
   return choice.param ? `${label} (${game.i18n.localize(SR5.matrixAttributes[choice.param])})` : label
 }
 
+/** The kinds of information of the choice window, in their order on the screen */
+export const PERCEPTION_GROUP_ORDER = ["identity", "state", "ratings", "file", "around"]
+const PERCEPTION_GROUPS = {
+  spot: "identity", iconType: "identity", grid: "identity", commcode: "identity",
+  monitor: "state", marks: "state", programs: "state", lastAction: "state",
+  deviceRating: "ratings", attribute: "ratings",
+}
+
+/** The kind of information an entry of PERCEPTION_ENTRIES gives */
+export function perceptionGroupOf(entry){
+  if (entry?.kind === "around") return "around"
+  if (entry?.fileFact) return "file"
+  return PERCEPTION_GROUPS[entry?.key] ?? "state"
+}
+
+/** The icon aimed at, in full: a device with its owner (« Meta Link de Harry »), a persona by its name */
+export function perceptionTargetName(target){
+  if (!target) return ""
+  const owner = target.actor?.name
+  if (!target.item || !owner || target.item.name === owner) return target.name ?? owner ?? ""
+  return game.i18n.format("SR5.MatrixPerceptionTargetOf", {
+    item: target.item.name, owner
+  })
+}
+
 function whenText(action){
   const combat = action.combatId ? game.combats?.get(action.combatId) : null
   if (combat && Number(action.round) > 0) return game.i18n.format("SR5.MatrixPerceptionWhenRound", {
@@ -353,10 +378,12 @@ export async function choosePerceptionInfo(data, messageId){
   const hasTarget = hasTargetOn(data)
   const target = hasTarget ? perceptionTargetOf(data) : null
   const esc = foundry.utils.escapeHTML
-  const rows = []
+  const groups = new Map()
   for (const entry of PERCEPTION_ENTRIES){
     if (entry.kind === "target" && !hasTarget) continue
     const params = entry.params ?? [null]
+    const group = perceptionGroupOf(entry)
+    if (!groups.has(group)) groups.set(group, [])
     for (const param of params){
       const choice = {
         key: entry.key, ...(param ? {
@@ -365,11 +392,14 @@ export async function choosePerceptionInfo(data, messageId){
         })
       }
       const gm = sourceOf(entry, isFile(target?.item)) === "gm" ? ` <em>(${esc(game.i18n.localize("SR5.MatrixPerceptionAskGM"))})</em>` : ""
-      rows.push(`<label class="sr5-perception-choice"><input type="checkbox" name="choice" value="${entry.key}|${param ?? ""}"><span>${esc(entryLabel(choice))}${gm}</span></label>`)
+      groups.get(group).push(`<label class="sr5-perception-choice"><input type="checkbox" name="choice" value="${entry.key}|${param ?? ""}"><span>${esc(entryLabel(choice))}${gm}</span></label>`)
     }
   }
+  // Two columns, one box per kind of information (DjamZ, séance du 09/10)
+  const boxes = PERCEPTION_GROUP_ORDER.filter(group => groups.get(group)?.length).map(group =>
+    `<fieldset class="sr5-perception-group"><legend>${esc(game.i18n.localize(`SR5.MatrixPerceptionGroup_${group}`))}</legend>${groups.get(group).join("")}</fieldset>`)
   const head = target ? game.i18n.format("SR5.MatrixPerceptionChooseOn", {
-    name: esc(target.name), budget
+    name: esc(perceptionTargetName(target)), budget
   }) : game.i18n.format("SR5.MatrixPerceptionChooseAround", {
     budget
   })
@@ -377,7 +407,11 @@ export async function choosePerceptionInfo(data, messageId){
     window: {
       title: game.i18n.localize("SR5.MatrixPerceptionInfoButton")
     },
-    content: `<p>${head}</p><div class="sr5-perception-choices">${rows.join("")}</div>`,
+    position: {
+      width: 620
+    },
+    classes: ["sr5-perception-dialog"],
+    content: `<p class="sr5-perception-head">${head}</p><div class="sr5-perception-choices">${boxes.join("")}</div>`,
     buttons: [{
       action: "ask", label: game.i18n.localize("SR5.MatrixPerceptionAsk"), default: true,
       callback: (event, button) => Array.from(button.form.querySelectorAll("input[name=choice]:checked")).map(input => {
@@ -579,14 +613,16 @@ export async function answerPerception(request, sender){
 async function whisperAnswers(observer, target, answers){
   const esc = foundry.utils.escapeHTML
   const users = (game.users ?? []).filter(u => u.isGM || observer.testUserPermission(u, "OWNER")).map(u => u.id)
-  const items = answers.map(answer => `<li><strong>${esc(entryLabel(answer))}</strong>${game.i18n.localize("SR5.Colons")} ${esc(answerText(answer))}</li>`)
-  const title = target ? game.i18n.format("SR5.MatrixPerceptionMessageOn", {
-    observer: esc(observer.name), target: esc(target.name)
-  }) : game.i18n.format("SR5.MatrixPerceptionMessageAround", {
+  const items = answers.map(answer => `<li><span class="sr5-card-label">${esc(entryLabel(answer))}</span><span class="sr5-card-value">${esc(answerText(answer))}</span></li>`)
+  // The icon aimed at first, in full; who acted on the line below (DjamZ, séance du 09/10)
+  const title = target ? game.i18n.format("SR5.MatrixPerceptionCardOn", {
+    target: esc(perceptionTargetName(target))
+  }) : game.i18n.localize("SR5.MatrixPerceptionCardAround")
+  const by = game.i18n.format("SR5.MatrixPerceptionDoneBy", {
     observer: esc(observer.name)
   })
   return ChatMessage.create({
-    content: `<div class="sr5-perception-message"><h4>${title}</h4><ul>${items.join("")}</ul></div>`,
+    content: `<div class="sr5-perception-message"><h4>${title}</h4><p class="sr5-card-by">${by}</p><ul class="sr5-card-facts">${items.join("")}</ul></div>`,
     whisper: users,
     speaker: {
       alias: game.i18n.localize("SR5.MatrixActionMatrixPerception")
