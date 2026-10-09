@@ -14,7 +14,7 @@
 //   and is read here already so that lot 6 only adds the field.
 
 import {
-  customIconOf, iconCategoryOf
+  customIconOf, iconBadgesOf, iconCategoryOf
 } from "./pan-icons.js"
 import {
   isAwake, isLivingPersona, isTechnomancer, personaOf
@@ -446,6 +446,8 @@ function nodeOf(item, kind, holder, mode, silentFrom, drone = null, panOwner = n
     // The generic icon of its category (lot 2)
     // (the base device of a drone, a host, an IC or a device of the scenery: the picture of what it is)
     icon: iconCategoryOf(item, holder),
+    // What a piece of vision does, and whether it is cyber: the badges of its icon (séance de DjamZ du 09/10)
+    badges: iconBadgesOf(item),
     // Its own picture, if the item (or the deployed drone) has one: it takes the place of the generic one (lot 10)
     customIcon: customIconOf(item) ?? customIconOf(drone),
     holderIds: idsOf(holder),

@@ -34,7 +34,7 @@ export function signatureOf(graph, token = null, nodeTokens = new Map()){
       token?.w ?? null, token?.h ?? null, graph?.master ?? null, graph?.links ?? [],
       (graph?.nodes ?? []).map(n => [
         n.uuid, n.kind, n.name, n.mode, n.silentFrom, n.icon, n.customIcon, n.via, n.ownerOnly, n.linkOwnerOnly,
-        n.revealed, n.visibility?.visible, n.visibility?.reason, n.hiddenFromPlayers, n.viewerMarks, n.intel,
+        n.revealed, n.visibility?.visible, n.visibility?.reason, n.hiddenFromPlayers, n.viewerMarks, n.intel, n.badges,
         nodeTokens.get(n.uuid)?.id ?? null,
       ]),
     ])

@@ -10,6 +10,57 @@ import {
 import {
   addPanArViewTool, syncPanArViewTool
 } from '../modules/canvas/pan-crown/pan-openings.js'
+import {
+  iconBadgesOf, iconCategoryOf, visionFunctionOf
+} from '../modules/canvas/pan-crown/pan-icons.js'
+
+describe('the pieces of vision wear their badges (proposal A, chosen by DjamZ on 09/10)', () => {
+  const eye = (name, extra = {
+  }) => ({
+    type: 'itemAugmentation', name, system: {
+      type: 'cyberware', category: 'eyeware', ...extra
+    }
+  })
+
+  it('reads what it does in its effects, else in its name', () => {
+    expect(visionFunctionOf(eye('Compensation anti-flash (NE)'))).toBe('flare')
+    expect(visionFunctionOf(eye('Vision nocturne'))).toBe('lowLight')
+    expect(visionFunctionOf(eye('Low-light vision'))).toBe('lowLight')
+    expect(visionFunctionOf(eye('Mod', {
+      customEffects: {
+        0: {
+          target: 'system.visions.thermographic.augmented'
+        }
+      }
+    }))).toBe('thermo')
+    expect(visionFunctionOf(eye('Smartlink'))).toBeNull()
+  })
+
+  it('a cog for an implant, none for an accessory, which becomes an eye', () => {
+    expect(iconBadgesOf(eye('Vision nocturne'))).toEqual({
+      vision: 'lowLight', cyber: true
+    })
+    expect(iconBadgesOf(eye('Smartlink'))).toEqual({
+      vision: null, cyber: true
+    })
+    const goggles = {
+      type: 'itemGear', name: 'Vision thermographique', system: {
+      }
+    }
+    expect(iconBadgesOf(goggles)).toEqual({
+      vision: 'thermo', cyber: false
+    })
+    expect(iconCategoryOf(goggles)).toBe('implant-eye')
+    expect(iconBadgesOf({
+      type: 'itemGear', name: 'Kit de crochetage', system: {
+      }
+    })).toBeNull()
+    expect(iconBadgesOf({
+      type: 'itemDevice', name: 'Commlink', system: {
+      }
+    })).toBeNull()
+  })
+})
 
 // Lot 3 of the séance de DjamZ du 09/10 (couronne du PAN): the lines of a small token, a player's crown through her
 // commlink, the AR view button, the monitor and the order of the radial menu
