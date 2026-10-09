@@ -6343,7 +6343,7 @@
 	"SR5.WARN_NoMoreHitsToSpend": "Plus de succès à dépenser.",
 	"SR5.WARN_NoReagents": "Vous n'avez plus de réactifs !",
 	"SR5.WARN_NeedResonance": "Cette action demande l'attribut Résonance (SR5 p. 240).",
-	"SR5.WARN_NoAttackSleaze": "Votre persona n'a pas d'attribut {attribute} : seuls les decks et les serveurs ont Attaque et Corruption, pas une CCR ni un commlink (SR5 p. 227). Sans lui, cette action ne peut obtenir aucun succès.",
+	"SR5.WARN_NoAttackSleaze": "Votre persona n'a pas d'attribut {attribute} : seuls les decks et les serveurs ont Attaque et Corruption, pas une CCR ni un commlink (SR5 p. 227) ; sur un deck, répartissez ses attributs. Sans lui, cette action ne peut obtenir aucun succès.",
 	"SR5.WARN_NotASpirit": "Vous devez sélectionner un esprit !",
 	"SR5.WARN_NotASprite": "Vous devez sélectionner un sprite !",
 	"SR5.WARN_ActionNoInitiative": "{actor} a un score d'initiative de {initiative} : seule une action gratuite est permise dans cette passe (SR5 p. 162).",
