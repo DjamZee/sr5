@@ -19,7 +19,7 @@ import {
   closeRadialMenu, closeRadialMenuOf, openRadialMenu
 } from "./pan-radial-menu.js"
 import {
-  crownAngle, dashesOf, layoutCrown, signatureOf
+  crownAngle, dashesOf, layoutCrown, lineRadiusOf, signatureOf
 } from "./pan-layout.js"
 import {
   iconPathOf, isTintedIcon, nodeIconPathOf
@@ -31,7 +31,7 @@ import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
-  crownsToShow, panOpeningMode
+  crownsToShow, panOpeningMode, syncPanArViewTool
 } from "./pan-openings.js"
 import {
   PAN_CROWN_HOOKS, safeCall
@@ -58,6 +58,8 @@ const COLORS = {
   hidden: 0xffd23f,
   mark: 0xff4d6d,
   pulse: 0xd6fff3,
+  // The cog of an implant (séance de DjamZ du 09/10)
+  chrome: 0xc9d3dc,
 }
 
 // A container of the ambience (lot 9) that the pointer goes through
@@ -286,6 +288,7 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     this.arView = shown
     // A crown closed by hand comes back with the next AR view
     this.dismissed.clear()
+    syncPanArViewTool(shown)
     await this.sync()
   }
 
@@ -481,6 +484,9 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     } = crown
     return {
       tokenRadius: Math.max(token.w, token.h) / 2,
+      lineRadius: lineRadiusOf({
+        w: token.w, h: token.h, scaleX: token.document.texture?.scaleX, scaleY: token.document.texture?.scaleY
+      }, canvas.grid?.size ?? 100),
       scale: crown.scale,
       angle: crown.angle,
       tokenOffset: node => {
@@ -806,6 +812,15 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     // anyone, without their owners, at its side. Never drawn without a perception (decision 6 of DjamZ)
     if (node.intel?.monitor?.boxes > 0) icon.addChild(monitorOf(node.intel.monitor, radius))
     if (typeof node.intel?.marks === "number") icon.addChild(marksCountOf(node.intel.marks, radius))
+    // What a piece of vision does, at the bottom left, and the chrome cog of an implant, at the top right (séance de
+    // DjamZ du 09/10, proposal A)
+    const badge = (kind, side) => {
+      const sprite = icon.addChild(new PIXI.Sprite(this.#badgeTexture(kind, offline, radius)))
+      sprite.anchor.set(0.5)
+      sprite.position.set(side * radius * 0.72, -side * radius * 0.72)
+    }
+    if (node.badges?.vision) badge(node.badges.vision, -1)
+    if (node.badges?.cyber) badge("cyber", 1)
 
     icon.on("pointerover", () => {
       showLabel()
@@ -825,6 +840,31 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     })
     icon.on("pointerup", event => event.stopPropagation())
     return icon
+  }
+
+  // A badge of an icon (séance de DjamZ du 09/10), drawn once per kind and size: a small disc and its glyph, both
+  // centered on the same point, so that the glyph sits exactly in the middle of its disc
+  #badgeTexture(kind, offline, radius){
+    const key = `badge|${kind}|${offline}|${radius}`
+    let texture = this._discs.get(key)
+    if (texture) return texture
+    const r = radius * 0.3
+    const fill = offline ? COLORS.offline : kind === "cyber" ? COLORS.chrome : COLORS.line
+    const badge = new PIXI.Graphics()
+    badge.lineStyle({
+      width: r * 0.18, color: COLORS.disc
+    })
+    badge.beginFill(fill)
+    badge.drawCircle(0, 0, r)
+    badge.endFill()
+    badge.lineStyle(0)
+    drawBadgeGlyph(badge, kind, r, fill)
+    texture = canvas.app.renderer.generateTexture(badge, {
+      resolution: 3
+    })
+    badge.destroy()
+    this._discs.set(key, texture)
+    return texture
   }
 
   // The disc of an icon: its mode (full, dashed, grey) and the second ring of the master, drawn once per size
@@ -948,6 +988,59 @@ function labelOf(node, graph){
   const master = node.uuid === graph.master ? ` · ${game.i18n.localize("SR5.PanCrownMaster")}` : ""
   const swarm = node.swarm ? ` · ${game.i18n.format("SR5.PanCrownSwarm", node.swarm)}` : ""
   return `${node.name} — ${mode}${master}${swarm}`
+}
+
+// The glyph of a badge, in the dark of the discs, drawn around (0, 0): each shape is symmetric about the center of its
+// box, which is the center of the badge
+function drawBadgeGlyph(graphics, kind, r, background){
+  const ink = COLORS.disc
+  const at = points => points.flatMap(([x, y]) => [x * r, y * r])
+  switch (kind){
+    case "flare":
+      // A lightning bolt, point-symmetric about the center
+      graphics.beginFill(ink)
+      graphics.drawPolygon(at([[0.12, -0.62], [-0.36, 0.08], [-0.04, 0.08], [-0.12, 0.62], [0.36, -0.08], [0.04, -0.08]]))
+      graphics.endFill()
+      break
+    case "lowLight": {
+      // A crescent: a disc bitten by one of the badge's colour. The bite leaves it from 0.5 left of the disc's center
+      // to its right horn, 0.449 right of it: the disc stands 0.025 right of the badge's, so that the box is centered
+      graphics.beginFill(ink)
+      graphics.drawCircle(0.025 * r, 0, 0.5 * r)
+      graphics.endFill()
+      graphics.beginFill(background)
+      graphics.drawCircle(0.345 * r, -0.16 * r, 0.4 * r)
+      graphics.endFill()
+      break
+    }
+    case "thermo":
+      // Three rising waves of heat
+      graphics.lineStyle({
+        width: r * 0.16, color: ink, cap: PIXI.LINE_CAP.ROUND
+      })
+      for (const x of [-0.3, 0, 0.3]){
+        graphics.moveTo((x - 0.08) * r, 0.5 * r)
+        graphics.bezierCurveTo((x + 0.16) * r, 0.2 * r, (x - 0.16) * r, -0.2 * r, (x + 0.08) * r, -0.5 * r)
+      }
+      graphics.lineStyle(0)
+      break
+    case "cyber": {
+      // A cog of eight teeth and its hole
+      const teeth = []
+      for (let i = 0; i < 16; i++){
+        const angle = (i - 0.5) * Math.PI / 8
+        const rr = i % 2 === 0 ? 0.62 : 0.44
+        teeth.push([Math.cos(angle) * rr, Math.sin(angle) * rr], [Math.cos(angle + Math.PI / 8) * rr, Math.sin(angle + Math.PI / 8) * rr])
+      }
+      graphics.beginFill(ink)
+      graphics.drawPolygon(at(teeth))
+      graphics.endFill()
+      graphics.beginFill(background)
+      graphics.drawCircle(0, 0, 0.2 * r)
+      graphics.endFill()
+      break
+    }
+  }
 }
 
 function dashedCircle(graphics, radius, count){

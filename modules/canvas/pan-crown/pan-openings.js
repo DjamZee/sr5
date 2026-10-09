@@ -56,7 +56,7 @@ function clientSetting(key, fallback, allowed){
 }
 
 export function panOpeningMode(){
-  return clientSetting("panCrownOpening", "hud", PAN_OPENING_MODES)
+  return clientSetting("panCrownOpening", "hover", PAN_OPENING_MODES)
 }
 
 export function panArKeyBehavior(){
@@ -70,7 +70,7 @@ export function registerPanOpeningSettings(){
     hint: "SR5.SETTINGS_PanCrownOpening_D",
     scope: "client",
     config: true,
-    default: "hud",
+    default: "hover",
     type: String,
     choices: {
       hud: "SR5.SETTINGS_PanCrownOpening_hud",
@@ -116,11 +116,37 @@ export function registerPanArKey(){
     repeat: false,
     precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL,
   })
+  Hooks.on("getSceneControlButtons", addPanArViewTool)
   // A key held while the window loses the focus is never released for Foundry
   window.addEventListener("blur", () => {
     if (panArKeyBehavior() === "hold") canvas?.sr5PanCrown?.setArView(false)
   })
   Hooks.once("ready", adaptPanArKeyToLayout)
+}
+
+/** The button of the AR view in the token tools, for the gamemaster, beside its key (séance de DjamZ du 09/10: some
+ * prefer a button to a key) */
+export function addPanArViewTool(controls){
+  const tokens = controls?.tokens ?? controls?.token
+  if (!tokens?.tools || !game.user?.isGM) return
+  tokens.tools.sr5PanArView = {
+    name: "sr5PanArView",
+    title: "SR5.PanCrownArViewTool",
+    icon: "fas fa-circle-nodes",
+    order: Object.keys(tokens.tools).length,
+    toggle: true,
+    active: !!canvas?.sr5PanCrown?.arView,
+    onChange: (_event, active) => canvas?.sr5PanCrown?.setArView(active),
+  }
+}
+
+/** The button follows the AR view when the key changes it */
+export function syncPanArViewTool(shown){
+  const controls = globalThis.ui?.controls
+  const tool = controls?.controls?.tokens?.tools?.sr5PanArView
+  if (!tool || tool.active === shown) return
+  tool.active = shown
+  controls.render()
 }
 
 /**
