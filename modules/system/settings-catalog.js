@@ -89,6 +89,7 @@ export const SETTINGS_CATALOG = {
   sr5MatrixGridRules: ["matrix"],
   sr5KillCodeRules: ["matrix", "book"],
   sr5OverwatchGMOnly: ["matrix", "book"],
+  sr5HostNodes: ["matrix", "house"],
   sr5DevicelessAILogicDefense: ["matrix"],
   sr5WifiRequiresDNI: ["matrix"],
   // Rigging

@@ -5640,6 +5640,8 @@
 	"SR5.SETTINGS_PanCrownVisibility_T": "Visibilité des couronnes de PAN",
 	"SR5.SETTINGS_OverwatchGMOnly_T": "Score de Surveillance gardé par le MJ",
 	"SR5.SETTINGS_OverwatchGMOnly_D": "Coché (règle du livre, SR5 p. 233) : quand le Score de Surveillance monte, seul le MJ en voit le chiffre ; le joueur ou la joueuse le connaît par l'action Vérifier son Score de Surveillance ou le programme Surveillance. Décoché : le chiffre s'affiche aussi chez celui ou celle qui a agi. La fiche le montre toujours au MJ, ou à qui fait tourner le programme Surveillance.",
+	"SR5.SETTINGS_HostNodes_T": "Serveurs asservis à d'autres serveurs (« nodes »)",
+	"SR5.SETTINGS_HostNodes_D": "Hors livre (le Livre de base p. 234 n'asservit aucun serveur). Coché : sur la fiche d'un serveur, « Maître du PAN » propose les autres serveurs ; le serveur asservi s'accroche à la couronne de son maître et se défend avec lui quand le maître est le plus fort, comme un appareil de son WAN. Décoché (par défaut) : la règle du livre.",
 	"SR5.SETTINGS_PanCrownVisibility_D": "Règles du livre (SR5 p. 236-238) : chacun voit sa couronne, et des autres les appareils repérés (sans fil actif à moins de 100 m de son antenne, ceux qu'il a markés ou repérés par Perception matricielle). Le MJ décide : un joueur ou une joueuse ne voit que sa couronne et les appareils que le MJ a dévoilés d'un clic sur l'icône. Le MJ voit tout, et un contour jaune marque ce que les joueurs et les joueuses ne voient pas.",
 	"SR5.SETTINGS_PanCrownVisibility_book": "Règles du livre",
 	"SR5.SETTINGS_PanCrownVisibility_gm": "Le MJ décide",

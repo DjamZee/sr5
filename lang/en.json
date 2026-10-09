@@ -5640,6 +5640,8 @@
 	"SR5.SETTINGS_PanCrownVisibility_T": "Visibility of PAN crowns",
 	"SR5.SETTINGS_OverwatchGMOnly_T": "Overwatch Score kept by the gamemaster",
 	"SR5.SETTINGS_OverwatchGMOnly_D": "Checked (book rule, SR5 p. 233): when the Overwatch Score rises, only the gamemaster sees the number; the player learns it with the Check Overwatch Score action or the Baby Monitor program. Unchecked: the number also shows to whoever acted. The sheet always shows it to the gamemaster, or to whoever runs Baby Monitor.",
+	"SR5.SETTINGS_HostNodes_T": "Hosts slaved to other hosts (\"nodes\")",
+	"SR5.SETTINGS_HostNodes_D": "Off the book (Core p. 234 slaves no host). Checked: on a host's sheet, \"PAN master\" offers the other hosts; the slaved host hangs in its master's crown and defends with it when the master is the stronger, as a device of its WAN. Unchecked (default): the book's rule.",
 	"SR5.SETTINGS_PanCrownVisibility_D": "Book rules (SR5 p. 236-238): everyone sees their own crown, and of the others the devices they spotted (wireless on within 100 m of their antenna, those they marked or spotted with Matrix Perception). The gamemaster decides: a player only sees their own crown and the devices the gamemaster revealed by clicking the icon. The gamemaster sees everything, and a yellow ring shows what the players do not see.",
 	"SR5.SETTINGS_PanCrownVisibility_book": "Book rules",
 	"SR5.SETTINGS_PanCrownVisibility_gm": "The gamemaster decides",
