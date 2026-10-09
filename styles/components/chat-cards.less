@@ -126,7 +126,7 @@
   .sr5-card-by {
     margin: 4px 8px 0;
     font-style: italic;
-    color: var(--sr-text-color-grey-dark);
+    color: color-mix(in srgb, var(--sr-text-color-dark) 72%, transparent);
   }
 
   // Les faits : le libellé à gauche, la valeur à droite
@@ -137,7 +137,7 @@
     gap: 8px;
 
     .sr5-card-label {
-      color: var(--sr-text-color-grey-dark);
+      color: color-mix(in srgb, var(--sr-text-color-dark) 72%, transparent);
     }
 
     .sr5-card-value {
@@ -154,7 +154,7 @@
     row-gap: 4px;
 
     .sr5-deadline-due {
-      color: var(--sr-text-color-grey-dark);
+      color: color-mix(in srgb, var(--sr-text-color-dark) 72%, transparent);
       font-size: var(--sr-font-size-small);
       white-space: nowrap;
     }
@@ -180,11 +180,20 @@
     grid-template-columns: 1fr 1fr;
     align-items: start;
     gap: 6px 10px;
-    max-height: 30rem;
+    max-height: none;
+  }
+
+  .sr5-perception-choice {
+    margin: 0;
+    padding: 2px 0;
+    line-height: 1.25;
   }
 
   .sr5-perception-group {
     margin: 0;
+    // Foundry espace les lignes d'un fieldset de 16 px : trop pour une liste de cases
+    flex-direction: column;
+    gap: 0;
     padding: 2px 8px 6px;
     border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
     border-radius: 3px;
