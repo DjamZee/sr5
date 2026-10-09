@@ -4,6 +4,9 @@ import {
 import {
   SR5Pickpocket
 } from "./pickpocket.js"
+import {
+  playerMayOpenPan
+} from "../canvas/pan-crown/pan-crown.js"
 
 /**
  * Icons of the system on the token HUD.
@@ -42,7 +45,7 @@ export default class SR5TokenHud extends foundry.applications.hud.TokenHUD {
     //Opened on someone else's token to pick his pocket: nothing else of his is the user's to touch
     if (!this.document?.isOwner) {
       for (const el of this.element?.querySelectorAll(".control-icon, .attribute, input, .palette") ?? []) {
-        if (!el.closest(".sr-hud-pickpocket, .sr-hud-pickpocket-plant")) el.remove()
+        if (!el.closest(".sr-hud-pickpocket, .sr-hud-pickpocket-plant, .sr-hud-pan")) el.remove()
       }
     }
   }
@@ -98,6 +101,8 @@ export default class SR5TokenHud extends foundry.applications.hud.TokenHUD {
     const token = this.object
     const layer = canvas?.sr5PanCrown
     if (!token?.actor || !layer || token.actor.type === "actorStorage") return
+    // Someone else's token: for a player with a commlink, a deck or an RCC (séance de DjamZ du 09/10)
+    if (!this.document?.isOwner && !game.user?.isGM && !playerMayOpenPan(token)) return
 
     const column = this.element?.querySelector(".col.right")
     if (!column || column.querySelector(".sr-hud-pan")) return

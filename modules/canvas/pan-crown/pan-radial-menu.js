@@ -37,11 +37,17 @@ import {
   SR5_SocketHandler
 } from "../../socket.js"
 import {
+  monitorOf
+} from "./pan-perception-card.js"
+import {
   refuseByRule, ruleLockActive
 } from "../../system/rule-locks.js"
 
 const MODE_LABELS = {
   active: "SR5.PanMenuModeActive", silent: "SR5.PanMenuModeSilent", offline: "SR5.PanMenuModeOffline"
+}
+const MODE_HELPS = {
+  active: "SR5.PanMenuModeActive_D", silent: "SR5.PanMenuModeSilent_D", offline: "SR5.PanMenuModeOffline_D"
 }
 const REASON_LABELS = {
   marks: "SR5.PanMenuReasonMarks",
@@ -90,6 +96,58 @@ export async function rollMatrixActionOn(actor, actionKey, {
       actorId: aimed.actor.isToken ? aimed.actor.token.id : aimed.actor.id, itemUuid: aimed.itemUuid
     }
   })
+}
+
+/**
+ * The entries in the order of the alphabet of their labels.
+ * @param {Array} entries
+ * @param {Function} labelOf   entry -> label
+ * @param {String} [lang]
+ */
+export function sortedByLabel(entries, labelOf, lang = "fr"){
+  return [...entries].sort((a, b) => labelOf(a).localeCompare(labelOf(b), lang, {
+    sensitivity: "base"
+  }))
+}
+
+/**
+ * The Matrix condition monitor the menu of an icon shows: the device's own for its owner and the gamemaster, what a
+ * Matrix Perception brought back for the others (SR5 p. 237), or nothing.
+ * @param {Object} node
+ * @param {Object} [options]
+ * @param {Function} [options.resolve]   uuid -> document
+ * @param {Boolean} [options.isGM]
+ * @return {{damage: Number, boxes: Number}|null}
+ */
+export function menuMonitorOf(node, {
+  resolve = uuid => globalThis.fromUuidSync?.(uuid) ?? null, isGM = !!game.user?.isGM
+} = {
+}){
+  const document = node?.uuid ? resolve(node.uuid) : null
+  if (document && (isGM || document.isOwner)) {
+    const own = monitorOf(document) ?? monitorOf(document.actor)
+    if (own) return own
+  }
+  return node?.intel?.monitor?.boxes > 0 ? node.intel.monitor : null
+}
+
+function monitorElement(monitor){
+  if (!monitor) return null
+  const element = document.createElement("span")
+  element.className = "sr5-pan-radial-monitor"
+  const damage = Math.min(monitor.damage, monitor.boxes)
+  element.dataset.tooltip = game.i18n.format("SR5.PanMenuMonitor", {
+    damage, boxes: monitor.boxes
+  })
+  for (let i = 0; i < monitor.boxes; i++){
+    const box = document.createElement("i")
+    if (i < damage) box.className = "damaged"
+    element.appendChild(box)
+  }
+  const count = document.createElement("small")
+  count.textContent = `${monitor.boxes - damage}/${monitor.boxes}`
+  element.appendChild(count)
+  return element
 }
 
 let openMenu = null
@@ -214,7 +272,10 @@ export function openRadialMenu({
   const buttons = []
   const owners = []
   const gm = []
-  for (const action of entries.actions){
+  // In the order of the alphabet, as they read (séance de DjamZ du 09/10)
+  const labelOf = action => game.i18n.localize(SR5.matrixRolledActions[action.key] ?? action.key)
+  const actions = sortedByLabel(entries.actions, labelOf, game.i18n.lang)
+  for (const action of actions){
     buttons.push(button(game.i18n.localize(SR5.matrixRolledActions[action.key] ?? action.key), {
       key: action.key,
       tooltip: reasonOf(action),
@@ -229,8 +290,11 @@ export function openRadialMenu({
     }))
   }
   for (const mode of entries.modes){
+    // What the mode is, also on the current one, greyed out (séance de DjamZ du 09/10: a "?" and no help)
+    const help = game.i18n.localize(MODE_HELPS[mode.mode])
     owners.push(button(game.i18n.localize(MODE_LABELS[mode.mode]), {
-      key: `mode-${mode.mode}`, current: mode.current, disabled: mode.current, onClick: () => switchMode(node, mode.mode, graph)
+      key: `mode-${mode.mode}`, current: mode.current,
+      tooltip: mode.current ? `${game.i18n.localize("SR5.PanMenuModeCurrent")} ${help}` : help, disabled: mode.current, onClick: () => switchMode(node, mode.mode, graph)
     }))
   }
   if (entries.slave) owners.push(button(entries.slave.action === "free" ?
@@ -283,6 +347,9 @@ export function openRadialMenu({
   const center = document.createElement("strong")
   center.className = "sr5-pan-radial-center"
   center.textContent = node.name
+  // The device's Matrix condition monitor, without opening its sheet (séance de DjamZ du 09/10)
+  const monitor = monitorElement(menuMonitorOf(node))
+  if (monitor) center.appendChild(monitor)
   menu.appendChild(center)
   if (!buttons.length && !owners.length && !gm.length && !modules.length) {
     const empty = document.createElement("span")

@@ -19,7 +19,7 @@ import {
   closeRadialMenu, closeRadialMenuOf, openRadialMenu
 } from "./pan-radial-menu.js"
 import {
-  crownAngle, dashesOf, layoutCrown, signatureOf
+  crownAngle, dashesOf, layoutCrown, lineRadiusOf, signatureOf
 } from "./pan-layout.js"
 import {
   iconPathOf, isTintedIcon, nodeIconPathOf
@@ -31,7 +31,7 @@ import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
-  crownsToShow, panOpeningMode
+  crownsToShow, panOpeningMode, syncPanArViewTool
 } from "./pan-openings.js"
 import {
   PAN_CROWN_HOOKS, safeCall
@@ -286,6 +286,7 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     this.arView = shown
     // A crown closed by hand comes back with the next AR view
     this.dismissed.clear()
+    syncPanArViewTool(shown)
     await this.sync()
   }
 
@@ -481,6 +482,9 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     } = crown
     return {
       tokenRadius: Math.max(token.w, token.h) / 2,
+      lineRadius: lineRadiusOf({
+        w: token.w, h: token.h, scaleX: token.document.texture?.scaleX, scaleY: token.document.texture?.scaleY
+      }, canvas.grid?.size ?? 100),
       scale: crown.scale,
       angle: crown.angle,
       tokenOffset: node => {

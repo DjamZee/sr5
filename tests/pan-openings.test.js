@@ -20,9 +20,9 @@ describe('the client settings of the openings', () => {
   })
   afterEach(() => delete globalThis.game)
 
-  it('opens by the HUD button only, and the key toggles, by default; both for the user alone', () => {
+  it('opens on hover (séance de DjamZ du 09/10), and the key toggles, by default; both for the user alone', () => {
     registerPanOpeningSettings()
-    expect(registered.panCrownOpening.default).toBe('hud')
+    expect(registered.panCrownOpening.default).toBe('hover')
     expect(Object.keys(registered.panCrownOpening.choices)).toEqual(['hud', 'hover', 'always'])
     expect(registered.panCrownArKey.default).toBe('toggle')
     expect(Object.keys(registered.panCrownArKey.choices)).toEqual(['toggle', 'hold'])
@@ -70,7 +70,8 @@ describe('the key of the AR view', () => {
       globalThis.window ??= globalThis
       globalThis.window.addEventListener ??= () => {}
       globalThis.Hooks = {
-        once: () => {}
+        once: () => {},
+        on: () => {}
       }
       globalThis.game = {
         keybindings: {

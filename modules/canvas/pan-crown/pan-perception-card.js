@@ -117,7 +117,7 @@ export function perceptionNeedsDefense(data){
 /*  The facts the answers read                   */
 /* -------------------------------------------- */
 
-function monitorOf(document){
+export function monitorOf(document){
   const monitor = document?.system?.conditionMonitors?.matrix
   const boxes = Number(monitor?.value) || 0
   if (!boxes) return null

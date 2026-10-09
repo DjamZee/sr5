@@ -7,7 +7,7 @@
 // (pan-hooks.js), registerIcon and refresh.
 
 import {
-  PAN_TOKEN_KINDS, buildPanGraph, hasAntenna, idsOf
+  PAN_TOKEN_KINDS, buildPanGraph, hasAntenna, hasCommDevice, idsOf
 } from "./pan-graph.js"
 import {
   hiddenFromPlayers, isMatrixScene, nodeVisibility, pickViewer, viewerMarksOn
@@ -103,6 +103,18 @@ function spottedBy(actor){
 export function currentViewer(){
   return viewerFrom({
   })
+}
+
+/**
+ * May the user open the crown of a token she does not own, by the HUD button (séance de DjamZ du 09/10)? A token she
+ * sees, while she looks through a character who carries a commlink, a cyberdeck or a rigger command console. What the
+ * crown shows her follows the setting "PAN crowns visibility", as any crown.
+ * @param {Object} token    a Token of the canvas
+ * @param {Object} [viewer] {actor} of currentViewer()
+ */
+export function playerMayOpenPan(token, viewer = currentViewer()){
+  if (!token?.actor || token.actor.type === "actorStorage" || !token.visible) return false
+  return hasCommDevice(viewer?.actor)
 }
 
 function viewerFrom(options){

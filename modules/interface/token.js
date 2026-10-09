@@ -8,6 +8,9 @@ import {
   SR5Pickpocket
 } from "./pickpocket.js"
 import {
+  playerMayOpenPan
+} from "../canvas/pan-crown/pan-crown.js"
+import {
   vendorShopOfToken
 } from "./shop-vendor-rules.js"
 
@@ -24,7 +27,8 @@ export class SR5Token extends foundry.canvas.placeables.Token {
     //The core's own guards, before its ownership test
     if (this.layer._draggedToken || !this.layer.active || this.isPreview) return false
     if (canvas.controls.ruler?.active || (CONFIG.Canvas.rulerClass.canMeasure && (event?.type === "pointerdown"))) return false
-    return SR5Pickpocket.canPickFrom(this.document)
+    // A player with a commlink, a deck or an RCC opens the crown of a token she sees (séance de DjamZ du 09/10)
+    return SR5Pickpocket.canPickFrom(this.document) || (!!canvas.sr5PanCrown && playerMayOpenPan(this))
   }
 
   /**
