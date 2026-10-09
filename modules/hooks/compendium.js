@@ -9,6 +9,11 @@ export async function sr5HookRenderCompendium(pack, html, compendiumData) {
   SR5CompendiumInfo.onRenderCompendium(pack, html, compendiumData)
 }
 
+// A document of a compendium created, changed or deleted: the browser's shared index is read again (lot 9)
+export function sr5HookCompendiumDocumentChanged(document) {
+  SR5CompendiumBrowser.onDocumentChanged(document)
+}
+
 // Add Compendium Browser button to the compendium sidebar
 export function sr5HookRenderCompendiumDirectory(_app, html) {
   const header = html.querySelector('.directory-header')

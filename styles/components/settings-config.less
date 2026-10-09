@@ -207,6 +207,23 @@
         max-width: 100%;
         min-width: 16rem;
       }
+
+      /* A list of several choices (the "+" of the compendiums, lot 9): its tags above, the list to add one under
+         them, as wide as a single choice list */
+      > multi-select {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.25rem;
+        width: 100%;
+
+        > select,
+        > .sr-dropdown {
+          width: auto;
+          max-width: 100%;
+          min-width: 16rem;
+        }
+      }
     }
   }
 
@@ -382,6 +399,94 @@
     flex: none;
 
     button {
+      color: var(--sr-ui-border-color-active);
+      border: 1px solid var(--sr-ui-border-color-active);
+      background: color-mix(in srgb, var(--sr-ui-border-color-active) 10%, transparent);
+
+      &:hover {
+        background: color-mix(in srgb, var(--sr-ui-border-color-active) 22%, transparent);
+      }
+    }
+  }
+}
+
+/* === Token of what the system creates (token-defaults-config.hbs, lot 9) ===
+   One row per family, one column per field; the controls take the window's own text colour, as the rule locks
+   do, so that they stay readable in both themes. */
+.application.sr-token-defaults-config {
+  max-height: calc(100vh - 1rem);
+
+  .window-content {
+    overflow: auto;
+  }
+
+  .sr-token-defaults-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .sr-token-defaults-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    border: none;
+    background: transparent !important;
+
+    /* Core and the theme paint table rows and headers: here they take the window's own colours */
+    thead,
+    tr,
+    th,
+    td {
+      background: transparent !important;
+      text-shadow: none;
+    }
+
+    th {
+      font-family: var(--sr-font-title);
+      text-transform: uppercase;
+      font-size: var(--sr-font-size-small);
+      color: var(--sr-ui-border-color-active) !important;
+      text-align: left;
+      padding: 0.2rem 0.3rem;
+      white-space: nowrap;
+    }
+
+    /* The family, at the head of its row: the text colour, bold */
+    tbody th {
+      color: inherit !important;
+      font-weight: bold;
+    }
+
+    td {
+      padding: 0.15rem 0.2rem;
+    }
+
+    tbody tr {
+      border-top: 1px solid color-mix(in srgb, var(--sr-ui-border-color-active) 30%, transparent);
+
+      &:hover {
+        background: color-mix(in srgb, var(--sr-ui-border-color-active) 8%, transparent) !important;
+      }
+    }
+
+    select,
+    input[type="number"] {
+      width: 100%;
+      min-width: 4.5rem;
+      color: inherit;
+      background: color-mix(in srgb, currentColor 6%, transparent);
+      border: 1px solid color-mix(in srgb, var(--sr-ui-border-color-active) 60%, transparent);
+    }
+  }
+
+  /* The two buttons side by side, in the accent, as in the rule locks menu */
+  .form-footer {
+    display: flex;
+    gap: 0.5rem;
+
+    button {
+      flex: 1;
       color: var(--sr-ui-border-color-active);
       border: 1px solid var(--sr-ui-border-color-active);
       background: color-mix(in srgb, var(--sr-ui-border-color-active) 10%, transparent);

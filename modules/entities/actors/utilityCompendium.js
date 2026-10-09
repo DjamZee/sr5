@@ -20,6 +20,23 @@ export class SR5_CompendiumUtility extends Actor {
   static _compendiumCache = new Map()
   static _compendiumChoices = {
   }
+  // The item compendiums that may be added after the main one (lot 9): every item pack, read at the time it is
+  // asked, so that a compendium created during the session can be chosen at once; a saved one since removed stays
+  static extraCompendiumChoices() {
+    const choices = {
+    }
+    for (const pack of game.packs?.filter(p => p.documentName === "Item") ?? []) {
+      choices[pack.collection] = `${pack.title} (${pack.collection})`
+    }
+    for (const categoryKey of Object.keys(SR5_CompendiumUtility.CATEGORIES)) {
+      for (const id of SR5_CompendiumUtility.getExtraCompendiumIds(categoryKey)) {
+        choices[id] ??= game.i18n.format("SR5.SETTINGS.CompendiumMissing", {
+          name: id
+        })
+      }
+    }
+    return choices
+  }
 
   // Compendiums used to build actors: each one can be chosen by the GM in the system settings.
   // "auto" reads the Megapack first (megapack-sr5-foundry-vtt, every kind of item in one pack), then the
@@ -72,7 +89,33 @@ export class SR5_CompendiumUtility extends Actor {
         choices: SR5_CompendiumUtility._compendiumChoices,
         onChange: () => SR5_CompendiumUtility._compendiumCache.clear()
       })
+      // The "+": custom compendiums read after the main one (DjamZ, séance du 08/10). The first item found with a
+      // power key still wins, so a custom compendium adds powers and weapons without doubling the official ones
+      const fields = foundry.data.fields
+      game.settings.register("sr5", `${category.setting}Extra`, {
+        name: `SR5.SETTINGS_Compendium${label}Extra_T`,
+        hint: "SR5.SETTINGS_CompendiumExtra_D",
+        scope: "world",
+        config: true,
+        type: new fields.SetField(new fields.StringField({
+          required: true, blank: false, choices: () => SR5_CompendiumUtility.extraCompendiumChoices()
+        })),
+        default: [],
+        onChange: () => SR5_CompendiumUtility._compendiumCache.clear()
+      })
     }
+  }
+
+  // The extra compendiums of a category, as saved (a Set once read, an array before)
+  static getExtraCompendiumIds(categoryKey) {
+    const category = SR5_CompendiumUtility.CATEGORIES[categoryKey]
+    let value
+    try {
+      value = game.settings.get("sr5", `${category.setting}Extra`)
+    } catch (_err) {
+      return []
+    }
+    return [...(value ?? [])].filter(id => typeof id === "string" && id)
   }
 
   static refreshCompendiumChoices() {
@@ -91,8 +134,15 @@ export class SR5_CompendiumUtility extends Actor {
     }
   }
 
-  // The compendiums read for a category, in order: the first that provides a key wins
+  // The compendiums read for a category, in order: the first that provides a key wins. The main choice (or the
+  // official ones), then the extra compendiums added by the GM (lot 9)
   static getCompendiumIds(categoryKey) {
+    const ids = SR5_CompendiumUtility.getMainCompendiumIds(categoryKey)
+    for (const id of SR5_CompendiumUtility.getExtraCompendiumIds(categoryKey)) if (!ids.includes(id)) ids.push(id)
+    return ids
+  }
+
+  static getMainCompendiumIds(categoryKey) {
     const category = SR5_CompendiumUtility.CATEGORIES[categoryKey]
     const chosen = game.settings.get("sr5", category.setting)
     if (chosen && chosen !== "auto") return [chosen]

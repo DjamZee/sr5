@@ -1,0 +1,40 @@
+<div class="sr-token-defaults-body">
+  <p class="hint">{{localize 'SR5.TOKENDEFAULTS_Intro'}}</p>
+  <table class="sr-token-defaults-table">
+    <thead>
+      <tr>
+        <th></th>
+        {{#each columns}}
+        <th>{{localize label}}</th>
+        {{/each}}
+      </tr>
+    </thead>
+    <tbody>
+      {{#each families}}
+      <tr>
+        <th>{{localize label}}</th>
+        {{#each cells}}
+        <td>
+          {{#if number}}
+          <input type="number" name="{{name}}" value="{{value}}" step="{{step}}" min="0" placeholder="—">
+          {{else}}
+          <select name="{{name}}">
+            <option value="">—</option>
+            {{#each choices}}
+            <option value="{{value}}" {{#if selected}}selected{{/if}}>{{localize label}}</option>
+            {{/each}}
+          </select>
+          {{/if}}
+        </td>
+        {{/each}}
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  <p class="hint">{{localize 'SR5.TOKENDEFAULTS_Hint'}}</p>
+
+  <footer class="form-footer">
+    <button type="button" data-action="reset"><i class="fas fa-rotate-left"></i> {{localize 'SR5.TOKENDEFAULTS_Reset'}}</button>
+    <button type="submit"><i class="fas fa-save"></i> {{localize 'SR5.TOKENDEFAULTS_Save'}}</button>
+  </footer>
+</div>
