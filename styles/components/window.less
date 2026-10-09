@@ -444,6 +444,23 @@
   /* Generic nav.tabs wraps; a vertical list must scroll instead of wrapping into a hidden column */
   nav.tabs.vertical {
     flex-wrap: nowrap;
+
+    /* Without the dark band of the tabs above, the light text of a tab stood on the window's own surface: white
+       on near white in the light theme (core's "Prototype token overrides", séance de DjamZ du 08/10) */
+    [data-tab] {
+      color: var(--sr-text-color-dark);
+      opacity: 0.85;
+
+      &:hover {
+        color: var(--sr-text-color-dark);
+        opacity: 1;
+      }
+
+      &.active {
+        color: var(--sr-text-color-flash);
+        opacity: 1;
+      }
+    }
   }
 
   /* === Roll Table sheet === */
