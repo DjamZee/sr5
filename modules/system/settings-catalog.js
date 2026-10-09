@@ -152,6 +152,10 @@ export const SETTINGS_CATALOG = {
   "compendium.creaturePowers": ["gm"],
   "compendium.spritePowers": ["gm"],
   "compendium.baseWeapons": ["gm"],
+  // The "+" of each one: custom compendiums read after it (lot 9)
+  "compendium.creaturePowersExtra": ["gm"],
+  "compendium.spritePowersExtra": ["gm"],
+  "compendium.baseWeaponsExtra": ["gm"],
   sr5GMOnlyItemEffects: ["gm"],
   sr5CheckPlayerRolls: ["gm"],
   // Interface
@@ -169,6 +173,7 @@ export const MENU_CATALOG = {
   sr5ShopConfigMenu: "shop",
   sr5FactionsMenu: "gm",
   sr5NegotiationRepairMenu: "gm",
+  sr5TokenDefaultsMenu: "gm",
 }
 
 // What captureSystemSettings took out of Foundry's list: setting ids, and the submenus by key

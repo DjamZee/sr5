@@ -19,6 +19,9 @@
           <span class="sr-browser-type-count">{{this.count}}</span>
         </label>
         {{/each}}
+        {{#if indexPending}}
+        <span class="sr-browser-type-pending"><i class="fas fa-spinner fa-spin"></i> {{localize 'SR5.CompendiumBrowserSubtypesPending'}}</span>
+        {{/if}}
       </div>
     </div>
 
@@ -43,6 +46,21 @@
     </div>
     {{/if}}
 
+    {{!-- What to do with the list: under the types, in the left panel (DjamZ, séance du 08/10, image 15) --}}
+    <div class="sr-browser-list-actions">
+      <button type="button" class="sr-browser-open-shop" data-action="openShop">
+        <i class="fas fa-sm fa-cart-shopping"></i> {{localize 'SR5.ShopOpen'}}
+      </button>
+      <button type="button" class="sr-browser-table-action" data-action="drawAtRandom" data-tooltip="SR5.CompendiumDrawBrowserHint">
+        <i class="fas fa-sm fa-dice"></i> {{localize 'SR5.CompendiumDraw'}}
+      </button>
+      {{#if canBuildTable}}
+      <button type="button" class="sr-browser-table-action" data-action="buildTable" data-tooltip="SR5.TableBuilderBrowserHint">
+        <i class="fas fa-sm fa-table-list"></i> {{localize 'SR5.TableBuilderTitle'}}
+      </button>
+      {{/if}}
+    </div>
+
     <div class="sr-browser-sidebar-actions">
       <button type="button" data-action="clearFilters">
         <i class="fas fa-eraser"></i> {{localize 'SR5.Clear'}}
@@ -56,18 +74,7 @@
   {{!-- Right: results --}}
   <section class="sr-browser-results">
     <header class="sr-browser-results-header">
-      <span class="sr-browser-count">{{shownCount}} / {{totalCount}}</span>
-      <button type="button" class="sr-browser-open-shop" data-action="openShop">
-        <i class="fas fa-sm fa-cart-shopping"></i> {{localize 'SR5.ShopOpen'}}
-      </button>
-      <button type="button" class="sr-browser-table-action" data-action="drawAtRandom" data-tooltip="SR5.CompendiumDrawBrowserHint">
-        <i class="fas fa-sm fa-dice"></i> {{localize 'SR5.CompendiumDraw'}}
-      </button>
-      {{#if canBuildTable}}
-      <button type="button" class="sr-browser-table-action" data-action="buildTable" data-tooltip="SR5.TableBuilderBrowserHint">
-        <i class="fas fa-sm fa-table-list"></i> {{localize 'SR5.TableBuilderTitle'}}
-      </button>
-      {{/if}}
+      {{!-- The count is under the list, by "Charger plus": the header holds the column names alone --}}
       <div class="sr-browser-sort">
         <a data-sort-key="name" class="{{#if (eq sortKey 'name')}}active{{/if}}">
           {{localize 'SR5.Name'}}
@@ -108,13 +115,15 @@
       {{/each}}
     </ul>
 
-    {{#if hasMore}}
     <footer class="sr-browser-footer">
+      {{#if hasMore}}
       <button type="button" class="sr-browser-load-more">
         {{localize 'SR5.LoadMore'}} ({{shownCount}} / {{totalCount}})
       </button>
+      {{else}}
+      <span class="sr-browser-count">{{shownCount}} / {{totalCount}}</span>
+      {{/if}}
     </footer>
-    {{/if}}
   </section>
 
 </div>

@@ -5,6 +5,9 @@ import {
   SR5_Toxins
 } from "../items/toxins.js"
 import {
+  prototypeChanges, tokenFamily
+} from "../../system/token-defaults.js"
+import {
   cleanCreatedSource
 } from "../../migration-source-modifiers.js"
 import {
@@ -428,6 +431,10 @@ export class SR5Actor extends Actor {
       default :
         SR5_SystemHelpers.srLog(1, `Unknown '${this.type}' type in 'base _preCreate()'`)
     }
+
+    // The GM's token for this family (lot 9, system/token-defaults.js): nothing set, nothing changed
+    const family = tokenFamily(this.type, this.system?.matrix?.deviceType)
+    if (family) foundry.utils.mergeObject(createData, prototypeChanges(family))
 
     // A summoned actor wears the token kept when it was last dismissed. That
     // token may be empty or half written on older items, so never let it erase

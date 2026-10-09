@@ -139,6 +139,9 @@ import {
   SR5CompendiumBrowser
 } from "../interface/compendium-browser.js"
 import {
+  SR5TokenDefaultsApi
+} from "../system/token-defaults.js"
+import {
   SR5ShopWindow, SR5ShopWorldSource
 } from "../interface/shop-window.js"
 import {
@@ -424,6 +427,8 @@ export async function sr5HookInit() {
     combat: SR5CombatApi,
     // The Matrix for the modules: put marks, converge (API pour Matrice v1, A11, A12)
     matrix: SR5MatrixApi,
+    // The GM's token of each family the system creates (lot 9): for a module that lays IC or sprites itself
+    tokenDefaults: SR5TokenDefaultsApi,
   }
 
   // Register DataModels

@@ -85,7 +85,7 @@ import {
   sr5HookCanvasReady, sr5HookCanvasReadyAreaEffects, sr5HookCanvasReadyVisionRanges, sr5HookDrawMeasuredTemplate, sr5HookDeleteMeasuredTemplate, sr5HookUpdateMeasuredTemplate, sr5HookCreateMeasuredTemplate, sr5HookUpdateScene 
 } from './hooks/canvas.js'
 import {
-  sr5HookRenderCompendium, sr5HookRenderCompendiumDirectory
+  sr5HookRenderCompendium, sr5HookRenderCompendiumDirectory, sr5HookCompendiumDocumentChanged
 } from './hooks/compendium.js'
 import {
   renderSceneIndicators, sr5HookUpdateSceneIndicators
@@ -226,6 +226,9 @@ Hooks.on('createActiveEffect', sr5HookCreateActiveEffect)
 Hooks.on('deleteActiveEffect', sr5HookDeleteActiveEffect)
 Hooks.on('renderCompendium', sr5HookRenderCompendium)
 Hooks.on('renderCompendiumDirectory', sr5HookRenderCompendiumDirectory)
+for (const hook of ['createItem', 'updateItem', 'deleteItem', 'createActor', 'updateActor', 'deleteActor']) {
+  Hooks.on(hook, sr5HookCompendiumDocumentChanged)
+}
 Hooks.on('renderRollTableSheet', sr5AddTableFormulaField)
 Hooks.on('renderTableResultConfig', sr5AddResultQuantityField)
 Hooks.on('renderChatMessageHTML', sr5HookRenderTablePayout)

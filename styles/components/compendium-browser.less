@@ -21,8 +21,9 @@
   }
 
   /* ── Sidebar ────────────────────────────────────── */
+  // Wider, and the types fill its height (DjamZ, séance du 08/10, image 15)
   .sr-browser-sidebar {
-    flex: 0 0 300px;
+    flex: 0 0 340px;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -111,6 +112,8 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    flex: 1 1 0;
+    min-height: 140px;
 
     > label {
       margin-bottom: 4px;
@@ -121,9 +124,17 @@
     display: flex;
     flex-direction: column;
     gap: 1px;
-    max-height: 250px;
+    flex: 1 1 0;
+    min-height: 0;
     overflow-y: auto;
     padding-right: 4px;
+  }
+
+  .sr-browser-type-pending {
+    padding: 2px 4px;
+    font-size: var(--sr-font-size-small);
+    font-style: italic;
+    opacity: 0.7;
   }
 
   .sr-browser-type-item {
@@ -237,12 +248,22 @@
   }
 
   .sr-browser-count {
+    flex: 1;
+    text-align: center;
+    align-self: center;
+    font-family: var(--sr-font-title);
+    font-size: 11px;
+    color: var(--sr-text-color-dark);
     opacity: 0.7;
   }
 
+  // The column names over their columns: Name over the names (after the picture), Type over the badges
   .sr-browser-sort {
+    flex: 1;
     display: flex;
+    justify-content: space-between;
     gap: 10px;
+    padding-left: 28px;
 
     a {
       cursor: pointer;
@@ -394,23 +415,22 @@
     }
   }
 
-  // Buying moved to the shop's own window (lot B): the browser only links to it
-  button.sr-browser-open-shop {
-    .sr-button-footer();
-    width: auto !important;
-    height: auto !important;
-    min-height: unset !important;
-    padding: 2px 8px !important;
-    margin-left: auto;
-  }
+  // The shop (buying moved to its own window, lot B), a draw at random among what the filters show, or a table
+  // of it: one under the other in the left panel, above Clear
+  .sr-browser-list-actions {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 
-  // Draw at random among what the filters show, or make a table of it
-  button.sr-browser-table-action {
-    .sr-button-footer();
-    width: auto !important;
-    height: auto !important;
-    min-height: unset !important;
-    padding: 2px 8px !important;
+    button {
+      .sr-button-footer();
+      width: 100% !important;
+      height: auto !important;
+      min-height: unset !important;
+      padding: 3px 8px !important;
+      font-size: 11px;
+    }
   }
 }
 

@@ -5,6 +5,12 @@ import {
   SR5RuleLocksConfig
 } from "../interface/rule-locks-config.js"
 import {
+  SR5TokenDefaultsConfig
+} from "../interface/token-defaults-config.js"
+import {
+  TOKEN_DEFAULTS_MENU, TOKEN_DEFAULTS_SETTING
+} from "./token-defaults.js"
+import {
   RULE_LOCK_PRESETS, presetLocks
 } from "./rule-locks.js"
 import {
@@ -319,6 +325,20 @@ export class SR5_SystemHelpers {
       hint: "SR5.RULELOCKS_Menu_D",
       icon: "fas fa-lock",
       type: SR5RuleLocksConfig,
+      restricted: true,
+    })
+
+    // The token of what the system creates in play, family by family (lot 9, system/token-defaults.js): empty = as before
+    game.settings.register("sr5", TOKEN_DEFAULTS_SETTING, {
+      scope: "world", config: false, default: {
+      }, type: Object,
+    })
+    game.settings.registerMenu("sr5", TOKEN_DEFAULTS_MENU, {
+      name: "SR5.TOKENDEFAULTS_Menu_T",
+      label: "SR5.TOKENDEFAULTS_Menu_L",
+      hint: "SR5.TOKENDEFAULTS_Menu_D",
+      icon: "fas fa-chess-pawn",
+      type: SR5TokenDefaultsConfig,
       restricted: true,
     })
 
