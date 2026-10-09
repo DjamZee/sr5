@@ -120,4 +120,36 @@ export function registerPanArKey(){
   window.addEventListener("blur", () => {
     if (panArKeyBehavior() === "hold") canvas?.sr5PanCrown?.setArView(false)
   })
+  Hooks.once("ready", adaptPanArKeyToLayout)
+}
+
+/**
+ * The physical key that types a letter on this keyboard, from the entries of the browser's layout map; null when
+ * none does.
+ * @param {Iterable<[String, String]>} layoutEntries  [code, character] pairs (KeyboardLayoutMap)
+ * @param {String} letter
+ * @return {String|null}
+ */
+export function codeOfLetter(layoutEntries, letter){
+  for (const [code, character] of layoutEntries ?? []) if (character?.toLowerCase() === letter) return code
+  return null
+}
+
+/** Foundry reads a key by its place on a QWERTY keyboard (event.code): on AZERTY, KeyM is the "," key (séance de
+ * DjamZ du 09/10). A user who kept the default gets the key that types "m" on their keyboard instead. The browser gives
+ * the layout only on a secure page (https or localhost): elsewhere the default stays KeyM. */
+async function adaptPanArKeyToLayout(){
+  let layout
+  try {
+    layout = await navigator.keyboard?.getLayoutMap?.()
+  } catch (_err) {
+    return
+  }
+  const code = layout && codeOfLetter(layout.entries(), "m")
+  if (!code || code === PAN_AR_KEY_DEFAULT) return
+  const current = game.keybindings.get("sr5", "panCrownArView") ?? []
+  const isDefault = current.length === 1 && current[0].key === PAN_AR_KEY_DEFAULT && !current[0].modifiers?.length
+  if (isDefault) await game.keybindings.set("sr5", "panCrownArView", [{
+    key: code
+  }])
 }

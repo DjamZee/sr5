@@ -5577,7 +5577,7 @@
 	"SR5.SETTINGS_PanCrownOpening_hover": "Au survol",
 	"SR5.SETTINGS_PanCrownOpening_always": "Toujours visible",
 	"SR5.SETTINGS_PanCrownArKey_T": "Touche de la vue RA",
-	"SR5.SETTINGS_PanCrownArKey_D": "Pour vous seulement. Bascule : un appui affiche les couronnes de tous les jetons visibles, un second les masque. Maintien : elles restent affichées tant que la touche est enfoncée. La touche se règle dans « Configurer les contrôles » (M par défaut).",
+	"SR5.SETTINGS_PanCrownArKey_D": "Pour vous seulement. Bascule : un appui affiche les couronnes de tous les jetons visibles, un second les masque. Maintien : elles restent affichées tant que la touche est enfoncée. La touche se règle dans « Configurer les contrôles » (par défaut, la touche qui tape « m » sur votre clavier, AZERTY compris ; sur une page non sécurisée, hors https et localhost, la position du M d’un clavier QWERTY).",
 	"SR5.SETTINGS_PanCrownArKey_toggle": "Bascule",
 	"SR5.SETTINGS_PanCrownArKey_hold": "Maintien",
 	"SR5.SETTINGS_PanCrownAmbience_T": "Ambiance des couronnes de PAN",

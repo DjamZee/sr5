@@ -2,7 +2,7 @@ import {
   describe, it, expect, beforeEach, afterEach
 } from 'vitest'
 import {
-  arViewAfter, crownsToShow, PAN_AR_KEY_DEFAULT, registerPanArKey, registerPanOpeningSettings
+  arViewAfter, codeOfLetter, crownsToShow, PAN_AR_KEY_DEFAULT, registerPanArKey, registerPanOpeningSettings
 } from '../modules/canvas/pan-crown/pan-openings.js'
 
 // How the PAN crowns open (couronne du PAN, lot 8; decision 4 and Q8 of DjamZ, 07/10)
@@ -69,6 +69,9 @@ describe('the key of the AR view', () => {
       }
       globalThis.window ??= globalThis
       globalThis.window.addEventListener ??= () => {}
+      globalThis.Hooks = {
+        once: () => {}
+      }
       globalThis.game = {
         keybindings: {
           register: (scope, key, data) => binding = data
@@ -88,6 +91,7 @@ describe('the key of the AR view', () => {
       delete globalThis.game
       delete globalThis.canvas
       delete globalThis.CONST
+      delete globalThis.Hooks
     })
 
     it('is M by default, and does not repeat', () => {
@@ -150,5 +154,16 @@ describe('the crowns shown', () => {
     expect(crownsToShow({
       tokenIds
     }).size).toBe(0)
+  })
+})
+
+// Foundry reads a key by its QWERTY place: on AZERTY the "m" is the Semicolon key (séance de DjamZ du 09/10)
+describe('the key that types a letter', () => {
+  it('finds the M of an AZERTY keyboard', () => {
+    expect(codeOfLetter([['KeyM', ','], ['Semicolon', 'm']], 'm')).toBe('Semicolon')
+  })
+  it('keeps KeyM on QWERTY, and gives nothing without a layout', () => {
+    expect(codeOfLetter([['KeyM', 'm']], 'm')).toBe('KeyM')
+    expect(codeOfLetter(null, 'm')).toBe(null)
   })
 })
