@@ -12,8 +12,12 @@
 
 export const SETTINGS_WINDOW_MENU = "sr5SettingsWindow"
 
-// The tabs, in the order the window shows them. A tab with nothing the user may see is left out.
+// The tabs, in the order the window shows them (DjamZ's order, 09/10; the Matrix tab, which he did not name, stays
+// after Magic). A tab with nothing the user may see is left out; "other" only catches a setting without its line.
 export const SETTINGS_TABS = [
+  {
+    id: "interface", label: "SR5.SETTINGS_Tab_Interface", icon: "fas fa-display"
+  },
   {
     id: "ruleLocks", label: "SR5.SETTINGS_Tab_RuleLocks", icon: "fas fa-lock"
   },
@@ -51,9 +55,6 @@ export const SETTINGS_TABS = [
     id: "gm", label: "SR5.SETTINGS_Tab_GM", icon: "fas fa-user-secret"
   },
   {
-    id: "interface", label: "SR5.SETTINGS_Tab_Interface", icon: "fas fa-display"
-  },
-  {
     id: "other", label: "SR5.SETTINGS_Tab_Other", icon: "fas fa-ellipsis"
   },
 ]
@@ -73,6 +74,9 @@ export const SETTINGS_CATALOG = {
   sr5GrapplingRules: ["combat", "book"],
   sr5RunningFromDistance: ["combat"],
   sr5MeleeEnvironmentBalanced: ["combat", "book"],
+  // Healing under fire and advanced medkits are played in combat (DjamZ, 09/10)
+  sr5BBUnderFireRules: ["combat", "book"],
+  sr5BBAdvancedMedkits: ["combat", "book"],
   // Magic
   sr5ReagentSystem: ["magic", "book"],
   sr5SpiritDrainAttribute: ["magic"],
@@ -89,7 +93,6 @@ export const SETTINGS_CATALOG = {
   sr5WifiRequiresDNI: ["matrix"],
   // Rigging
   sr5Rigger5Actions: ["rigging", "book"],
-  sr5FlightSkill: ["rigging"],
   sr5Rigger5AdvancedDriving: ["rigging", "book"],
   sr5DroneModRules: ["rigging", "book"],
   // PAN crown
@@ -106,15 +109,15 @@ export const SETTINGS_CATALOG = {
   sr5VisionRangeAstral: ["vision"],
   sr5LowLightGreenTint: ["vision", "house"],
   // Body, health and augmentations
+  // A character's Flight skill: no tab fits it better (DjamZ, 09/10)
+  sr5FlightSkill: ["body"],
   sr5AugmentationCap: ["body"],
   sr5EssenceHole: ["body", "book"],
   sr5AugmentationBundles: ["body", "book"],
-  sr5BBUnderFireRules: ["body", "book"],
-  sr5BBAdvancedMedkits: ["body", "book"],
   sr5RevealDiseases: ["body"],
   sr5WithdrawalModifier: ["body"],
   sr5HungerMonthDays: ["body"],
-  // Gear and storage (sr5LockpickRequiresKit and sr5StorageCheckGarageLifestyle, rule locks, are edited from the
+  // Looting and spoils, once "gear and storage" (sr5LockpickRequiresKit and sr5StorageCheckGarageLifestyle, rule locks, are edited from the
   // rule locks menu since B13)
   sr5PickpocketThiefChooses: ["gear", "house"],
   sr5StorageDropOnDeath: ["gear", "house"],

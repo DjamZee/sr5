@@ -206,6 +206,16 @@ describe('settings registered by the system', () => {
     }
   })
 
+  it('shows the tabs in DjamZ\'s order, with the settings he moved (09/10)', () => {
+    expect(SETTINGS_TABS.map(t => t.id)).toEqual([
+      'interface', 'ruleLocks', 'combat', 'magic', 'matrix', 'rigging', 'panCrown', 'vision', 'body', 'gear', 'shop',
+      'time', 'gm', 'other'
+    ])
+    expect(catalogEntry('sr5BBUnderFireRules').tab).toBe('combat')
+    expect(catalogEntry('sr5BBAdvancedMedkits').tab).toBe('combat')
+    expect(catalogEntry('sr5FlightSkill').tab).toBe('body')
+  })
+
   it('lists in the catalog only settings that are registered and visible', () => {
     for (const key of Object.keys(SETTINGS_CATALOG)) {
       expect(registered.settings.get(`sr5.${key}`)?.config, key).toBe(true)
