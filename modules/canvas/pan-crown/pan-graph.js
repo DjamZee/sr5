@@ -14,7 +14,7 @@
 //   and is read here already so that lot 6 only adds the field.
 
 import {
-  customIconOf, iconCategoryOf
+  customIconOf, iconBadgesOf, iconCategoryOf
 } from "./pan-icons.js"
 import {
   isAwake, isLivingPersona, isTechnomancer, personaOf
@@ -46,6 +46,14 @@ export function isMatrixItem(item){
 // The device through which the actor reaches the Matrix: its active commlink, deck, rigger console or living persona
 export function activeDeviceOf(actor){
   return itemsOf(actor).find(i => i.type === "itemDevice" && i.system?.isActive) ?? null
+}
+
+// The devices a player opens the crown of another's token with (séance de DjamZ du 09/10)
+export const PAN_COMM_DEVICE_TYPES = ["commlink", "cyberdeck", "riggerCommandConsole"]
+
+/** Does the actor carry a commlink, a cyberdeck or a rigger command console? */
+export function hasCommDevice(actor){
+  return itemsOf(actor).some(i => i.type === "itemDevice" && PAN_COMM_DEVICE_TYPES.includes(i.system?.type))
 }
 
 // Does the actor have an antenna switched on (decision of DjamZ, Q2: without a commlink or a deck switched on, one
@@ -444,6 +452,8 @@ function nodeOf(item, kind, holder, mode, silentFrom, drone = null, panOwner = n
     // The generic icon of its category (lot 2)
     // (the base device of a drone, a host, an IC or a device of the scenery: the picture of what it is)
     icon: iconCategoryOf(item, holder),
+    // What a piece of vision does, and whether it is cyber: the badges of its icon (séance de DjamZ du 09/10)
+    badges: iconBadgesOf(item),
     // Its own picture, if the item (or the deployed drone) has one: it takes the place of the generic one (lot 10)
     customIcon: customIconOf(item) ?? customIconOf(drone),
     holderIds: idsOf(holder),

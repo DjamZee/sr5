@@ -1,4 +1,7 @@
 import {
+  SR5_UiModifications
+} from "../../system/utilitySystem.js"
+import {
   SR5FactionRegistry
 } from "../../interface/faction-registry.js"
 import {
@@ -1203,6 +1206,7 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
         detailsHTML += `<li>${game.i18n.localize('SR5.HELP_CalculationTotal')}${game.i18n.localize('SR5.Colons')} ${property.value}</li></ul>`
         if (helpDetails) helpDetails.innerHTML = detailsHTML
       }
+      SR5_UiModifications.placeHelpWindow(target)
       target.classList.add("active")
     }
   }

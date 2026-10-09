@@ -27,7 +27,7 @@
 				</div>
 				{{else if item.deployedWireless}}
 				<div class="col-1 SR-TextCenter" data-tooltip="{{localize 'SR5.WirelessHeldByDeployedDrone'}}">
-					<em class="fas fa-sm fa-wifi {{#if item.deployedWireless.on}}SR-GreyColor{{else}}SR-LightGreyColor{{/if}}"></em>
+					<em class="fas fa-sm fa-wifi {{#if item.deployedWireless.on}}SR-GreyColor{{else}}SR-LightGreyColor{{/if}}"></em><span class="sr-silent-slot"></span>
 				</div>
 				{{else}}
 				<div class="col-1 SR-TextCenter"

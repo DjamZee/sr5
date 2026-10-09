@@ -101,6 +101,46 @@ function isReflexImplant(item){
   return Array.from(effects).some(effect => REFLEX_TARGET.test(effect?.target ?? ""))
 }
 
+// What a piece of vision does (séance de DjamZ du 09/10, proposal A): read in what it changes, else in its name, in
+// French and in English. The first that matches wins.
+const VISION_FUNCTIONS = [
+  ["flare", /environmentalMod\.glare/, /anti-?flash|flare/i],
+  ["thermo", /visions\.thermographic/, /thermo/i],
+  ["lowLight", /visions\.lowLight/, /nocturne|low[- ]?light/i],
+]
+
+/**
+ * What a piece of vision does: "flare" (flare compensation), "thermo" (thermographic vision), "lowLight" (low-light
+ * vision), or null.
+ * @param {Object} item
+ */
+export function visionFunctionOf(item){
+  const effects = item?.system?.customEffects ?? {
+  }
+  const targets = Object.values(effects).map(effect => effect?.target ?? "")
+  for (const [key, target, name] of VISION_FUNCTIONS){
+    if (targets.some(t => target.test(t)) || name.test(item?.name ?? "")) return key
+  }
+  return null
+}
+
+/**
+ * The small badges of an icon (séance de DjamZ du 09/10, proposal A): what a piece of vision does, at the bottom left,
+ * and a chrome cog at the top right for an implant, nothing for an accessory.
+ * @param {Object} item
+ * @return {{vision: String|null, cyber: Boolean}|null}   null when it wears none
+ */
+export function iconBadgesOf(item){
+  if (!["itemAugmentation", "itemGear"].includes(item?.type)) return null
+  const vision = visionFunctionOf(item)
+  // Every eye that is an implant wears the cog, so that it tells apart from an accessory
+  const cyber = item.type === "itemAugmentation" && (!!vision || item.system?.category === "eyeware")
+  if (!vision && !cyber) return null
+  return {
+    vision, cyber
+  }
+}
+
 /**
  * The generic icon category of an item of the Matrix.
  * @param {Object} item       the item (an itemDevice, itemWeapon, itemAugmentation, itemVehicle...)
@@ -113,6 +153,8 @@ export function iconCategoryOf(item, holder = item?.parent){
     case "itemDevice":
       return DECK_CATEGORIES[item.system?.type] ?? actorIconCategoryOf(holder, item) ?? "device"
     case "itemGear":
+      // An accessory of vision (thermographic vision of goggles...) is an eye (séance de DjamZ du 09/10)
+      if (visionFunctionOf(item)) return "implant-eye"
       return GEAR_NAMES.find(([, pattern]) => pattern.test(item.name ?? ""))?.[0] ?? "device"
     case "itemWeapon":
       return "weapon"

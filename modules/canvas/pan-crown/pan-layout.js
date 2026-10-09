@@ -34,7 +34,7 @@ export function signatureOf(graph, token = null, nodeTokens = new Map()){
       token?.w ?? null, token?.h ?? null, graph?.master ?? null, graph?.links ?? [],
       (graph?.nodes ?? []).map(n => [
         n.uuid, n.kind, n.name, n.mode, n.silentFrom, n.icon, n.customIcon, n.via, n.ownerOnly, n.linkOwnerOnly,
-        n.revealed, n.visibility?.visible, n.visibility?.reason, n.hiddenFromPlayers, n.viewerMarks, n.intel,
+        n.revealed, n.visibility?.visible, n.visibility?.reason, n.hiddenFromPlayers, n.viewerMarks, n.intel, n.badges,
         nodeTokens.get(n.uuid)?.id ?? null,
       ]),
     ])
@@ -50,6 +50,8 @@ export function signatureOf(graph, token = null, nodeTokens = new Map()){
  * @param {Number} options.tokenRadius      half the token's width, in canvas pixels
  * @param {Number} [options.scale]          grid size / 100
  * @param {Number} [options.angle]          the direction of the master, in radians (default: up)
+ * @param {Number} [options.lineRadius]     where the token's own lines start, from its center (default: tokenRadius);
+ *                                          0 for a small token, whose lines reach the middle of its cell
  * @param {Function} [options.tokenOffset]  node -> {x, y} of the node's own token relative to this one (a deployed
  *                                          drone on the scene), or null; such a node has no icon, only its line
  * @return {{icons: Array, lines: Array}}
@@ -57,7 +59,7 @@ export function signatureOf(graph, token = null, nodeTokens = new Map()){
  *   lines: [{from: {x, y}, to: {x, y}, mode, uuid}]; the mode is the one of the node the line leads to
  */
 export function layoutCrown(graph, {
-  tokenRadius = 50, scale = 1, angle = -Math.PI / 2, tokenOffset = () => null
+  tokenRadius = 50, scale = 1, angle = -Math.PI / 2, tokenOffset = () => null, lineRadius = tokenRadius
 } = {
 }){
   const icons = []
@@ -119,8 +121,9 @@ export function layoutCrown(graph, {
   for (const link of graph.links){
     const to = at[link.to]
     if (!to) continue
-    // From the token's edge rather than its middle, so that the line does not cross its picture
-    const from = link.from === "owner" ? edgeToward(to, tokenRadius) : at[link.from]
+    // From the token's edge rather than its middle, so that the line does not cross its picture; a small token's
+    // lines reach the middle of its cell, or they would stop short of its picture (séance de DjamZ du 09/10)
+    const from = link.from === "owner" ? edgeToward(to, lineRadius) : at[link.from]
     // A slave seen while its master is not: no line to an icon that is not there
     if (!from) continue
     const node = shown.find(n => n.uuid === link.to)
@@ -133,6 +136,25 @@ export function layoutCrown(graph, {
   return {
     icons, lines
   }
+}
+
+/**
+ * Where the lines of a token start, from its center (séance de DjamZ du 09/10): the edge of its picture, so that they
+ * touch it; the middle of its cell when the picture is smaller than a cell, where its edge would leave them too short.
+ * @param {Object} token
+ * @param {Number} token.w            width of the token, in canvas pixels
+ * @param {Number} token.h            height
+ * @param {Number} [token.scaleX]     the scale of its picture (texture)
+ * @param {Number} [token.scaleY]
+ * @param {Number} gridSize           the size of a cell, in canvas pixels
+ * @return {Number}
+ */
+export function lineRadiusOf({
+  w, h, scaleX = 1, scaleY = 1
+}, gridSize){
+  const picture = Math.max(w * Math.abs(scaleX), h * Math.abs(scaleY))
+  if (picture < gridSize) return 0
+  return Math.min(Math.max(w, h), picture) / 2
 }
 
 function edgeToward(point, radius){

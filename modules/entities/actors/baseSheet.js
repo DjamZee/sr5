@@ -8,7 +8,8 @@ import {
   boneSwitchRefused
 } from '../../system/implant-essence.js'
 import {
-  SR5_SystemHelpers
+  SR5_SystemHelpers,
+  SR5_UiModifications
 } from "../../system/utilitySystem.js"
 import {
   phaseFromFlags, unitKey
@@ -2267,6 +2268,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         else detailsHTML += `<li>${game.i18n.localize('SR5.HELP_CalculationTotal')}${game.i18n.localize('SR5.Colons')} ${property.dicePool}</li></ul>`
         if (helpDetails) helpDetails.innerHTML = detailsHTML
       }
+      SR5_UiModifications.placeHelpWindow(target)
       target.classList.add("active")
     }
   }

@@ -711,6 +711,16 @@ export function alreadyOpposed(messages, messageId, vehicleId) {
   })
 }
 
+/**
+ * An opposition button already used goes from the card at its next render, whoever looks at it: the card's own update
+ * (dropButtonOnceAnswered) may not come, a window closed or a gamemaster away (lot 5, séance de DjamZ F2)
+ */
+export function chaseButtonSpent(type, message, messages = game.messages?.values()) {
+  const vehicleId = chaseRollVehicleId(type)
+  if (!vehicleId || message?.flags?.sr5data?.chase?.mode !== "initiate") return false
+  return alreadyOpposed(messages, message.id, vehicleId)
+}
+
 /** A card without dice: the result of an action, or the Control a Vehicle action that rolls nothing */
 async function postChaseCard(actor, chase, {
   title, lines = [], followUps = [], apply = false, actions = [], extra = []

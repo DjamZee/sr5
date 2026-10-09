@@ -28,7 +28,8 @@ export const ADVANCED_DRIVING_SETTING = "sr5Rigger5AdvancedDriving"
 export const CHASE_EFFECT = "chaseOutOfControl"
 export const CHASE_HANDLING_EFFECT = "chaseHandling"
 const APP_ID = "sr5-chase"
-const LOG_SIZE = 30
+// The log scrolls in its box (lot 5): riggers with several passes write many lines a turn
+const LOG_SIZE = 200
 
 const EMPTY = () => ({
   active: false, id: "", turn: 1, combatId: "", round: 0, environment: "speed", terrain: "",
@@ -737,7 +738,7 @@ export class SR5ChaseApp extends foundry.applications.api.HandlebarsApplicationM
     id: APP_ID,
     classes: ["sr5", "sr-application", "sr-chase"],
     position: {
-      width: 820, height: 680
+      width: 920, height: 760
     },
     window: {
       title: "SR5.CHASE_Title", icon: "fas fa-car-side", resizable: true
@@ -760,7 +761,7 @@ export class SR5ChaseApp extends foundry.applications.api.HandlebarsApplicationM
 
   static PARTS = {
     body: {
-      template: "systems/sr5/templates/interface/chase.hbs", scrollable: [""]
+      template: "systems/sr5/templates/interface/chase.hbs", scrollable: ["", ".sr-chase-log"]
     }
   }
 
@@ -808,15 +809,28 @@ export class SR5ChaseApp extends foundry.applications.api.HandlebarsApplicationM
     context.canWrite = SR5Chase.canWrite
     context.active = state.active
     context.advanced = advanced
-    context.rules = advanced ? "SR5.CHASE_RulesR5" : "SR5.CHASE_RulesBook"
     context.turn = state.turn
     context.linkedCombat = !!(state.combatId && game.combats?.get(state.combatId)?.started)
     context.environments = ["speed", "handling"].map(key => ({
       key, label: `SR5.CHASE_Env_${key}`, selected: key === state.environment
     }))
+    // Lot 5 (séance de DjamZ, 08/10): the rule set is chosen at the top of the window, and each terrain shows examples,
+    // the book's (SR5 p. 201, R5 p. 175) and the table's own ones, which are ours
+    context.ruleSets = [{
+      key: "book", label: "SR5.CHASE_RulesOptBook", selected: !advanced
+    }, {
+      key: "r5", label: "SR5.CHASE_RulesOptR5", selected: advanced
+    }]
+    const examples = advanced ? "SR5.CHASE_TerrainR5" : "SR5.CHASE_TerrainBook"
     context.terrains = terrainList(advanced).map(t => ({
-      key: t.key, label: game.i18n.localize(`${prefix}${t.key}`), value: t.value, selected: t.key === terrain
+      key: t.key, label: game.i18n.localize(`${prefix}${t.key}`), value: t.value, selected: t.key === terrain,
+      example: game.i18n.localize(`${examples}Short_${t.key}`),
     }))
+    context.terrainExamples = {
+      source: `${examples}In`,
+      book: game.i18n.localize(`${examples}Book_${terrain}`),
+      table: game.i18n.localize(`${examples}Table_${terrain}`),
+    }
     context.kinds = Object.keys(VEHICLE_KINDS)
     const {
       windowActions
@@ -894,6 +908,8 @@ export class SR5ChaseApp extends foundry.applications.api.HandlebarsApplicationM
     const on = (selector, handler) => {
       for (const el of this.element.querySelectorAll(selector)) el.addEventListener("change", () => handler(el))
     }
+    // The world setting's own switch; its onChange renders the window again (utilitySystem.js)
+    on("[name=ruleSet]", el => game.settings.set("sr5", ADVANCED_DRIVING_SETTING, el.value === "r5"))
     on("[name=environment]", el => SR5Chase.setEnvironment(el.value))
     on("[name=terrain]", el => SR5Chase.setTerrain(el.value))
     on("[data-field]", el => {
@@ -934,6 +950,12 @@ function onSceneControls(controls) {
 export function registerChaseHooks() {
   Hooks.on("updateCombat", (combat, changed) => onCombatRound(combat, changed).catch(e => console.error("SR5 | chase", e)))
   Hooks.on("getSceneControlButtons", onSceneControls)
+  // An opposition card: the card it answers renders again for everyone, and its button goes (chaseButtonSpent, lot 5)
+  Hooks.on("createChatMessage", message => {
+    const chase = message?.flags?.sr5data?.chase
+    const origin = chase?.mode === "oppose" && chase.originId ? game.messages?.get(chase.originId) : null
+    if (origin) ui.chat?.updateMessage?.(origin)
+  })
   // A vehicle's Speed or damage changed on its sheet: the open window follows
   Hooks.on("updateActor", actor => {
     if (actor?.type !== "actorDrone") return

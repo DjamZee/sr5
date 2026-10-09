@@ -57,7 +57,7 @@
     "sr5.panCrownOpening": {
       "scope": "client",
       "type": "String",
-      "default": "hud",
+      "default": "hover",
       "config": true
     },
     "sr5.panCrownVisibility": {
