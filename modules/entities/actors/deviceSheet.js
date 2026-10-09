@@ -4,6 +4,9 @@ import {
 import {
   HOST_ATTRIBUTES, hostTypeLayout
 } from "./host-type.js"
+import {
+  hostMasterCandidates, hostNodesAllowed
+} from "../../system/host-nodes.js"
 
 /**
  * An Actor sheet for device type actors in the Shadowrun 5 system.
@@ -84,9 +87,22 @@ export class SR5AppareilSheet extends ActorSheetSR5 {
   }
 
   // The masters a device can be slaved to (SR5 p. 234, couronne du PAN lot 7): the hosts of the world, and the master
-  // devices of a PAN (commlink, cyberdeck, rigger command console) of the world's actors. A host is slaved to nothing.
+  // devices of a PAN (commlink, cyberdeck, rigger command console) of the world's actors. A host is slaved to nothing,
+  // unless the world setting sr5HostNodes is checked (host-nodes.js, arbitrage de DjamZ): then to another host only
   _panMasterOptions(actor) {
-    if (actor.system.matrix.deviceType === "host" || actor.system.matrix.deviceType === "ice") return null
+    if (actor.system.matrix.deviceType === "ice") return null
+    if (actor.system.matrix.deviceType === "host") {
+      if (!hostNodesAllowed()) return null
+      const others = (game.actors ?? []).filter(other => other.type === "actorDevice" && other.system.matrix?.deviceType === "host")
+      const hosts = hostMasterCandidates(actor, others, key => globalThis.fromUuidSync?.(key) ?? null)
+        .map(other => ({
+          value: other.uuid, label: other.name
+        })).sort((a, b) => a.label.localeCompare(b.label))
+      const current = actor.system.matrix.panMaster
+      return {
+        hosts, devices: [], unknown: current && !hosts.some(o => o.value === current) ? current : null
+      }
+    }
     const hosts = []
     const devices = []
     for (const other of game.actors ?? []) {

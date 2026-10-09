@@ -858,6 +858,18 @@ export class SR5_SystemHelpers {
       type: Boolean
     })
 
+    // Hosts slaved to other hosts, « nodes » (host-nodes.js): off the book (SR5 p. 234 slaves no host), unchecked by
+    // default — arbitrage de DjamZ (09/10)
+    game.settings.register("sr5", "sr5HostNodes", {
+      name: "SR5.SETTINGS_HostNodes_T",
+      hint: "SR5.SETTINGS_HostNodes_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+      onChange: () => canvas?.sr5PanCrown?.refresh?.()
+    })
+
     // How each user opens the PAN crowns (couronne du PAN, lot 8; Q8 of DjamZ, 07/10); its key is in init.js
     registerPanOpeningSettings()
 

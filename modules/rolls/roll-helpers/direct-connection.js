@@ -7,6 +7,9 @@
 import {
   safeCall
 } from "../../canvas/pan-crown/pan-hooks.js"
+import {
+  hostNodesAllowed
+} from "../../system/host-nodes.js"
 
 export const MATRIX_DIRECT_CONNECTION_HOOK = "sr5.matrixDirectConnection"
 
@@ -58,7 +61,8 @@ export function defendsWithMaster({
  */
 export function wanMasterOf(actor, resolve = uuid => globalThis.fromUuidSync?.(uuid) ?? null){
   const matrix = actor?.system?.matrix
-  if (actor?.type !== "actorDevice" || ["host", "ice"].includes(matrix?.deviceType)) return null
+  // A host is slaved to nothing, unless the world setting sr5HostNodes is checked (host-nodes.js, arbitrage de DjamZ)
+  if (actor?.type !== "actorDevice" || matrix?.deviceType === "ice" || (matrix?.deviceType === "host" && !hostNodesAllowed())) return null
   const key = matrix?.panMaster
   if (typeof key !== "string" || !key) return null
   let target = null
