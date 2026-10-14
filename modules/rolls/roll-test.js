@@ -21,6 +21,9 @@ import {
 } from "./roll-test-helper.js"
 import * as SR5_AddRollInfo from "./roll-test-case/index.js"
 
+//The fixed id of the roll window: one at a time (SR5_RollTest.dialogQueue)
+const ROLL_WINDOW_ID = "jet"
+
 //An object hidden on oneself is the GM's to know too, not the table's (SR5 p. 422)
 const PICKPOCKET_TESTS = ["pickpocket", "pickpocketPerception", "concealItem"]
 import {
@@ -68,6 +71,50 @@ import {
 export class SR5_RollTest {
   //The roll window open now, if any: the next one waits for it (generateRollDialog)
   static dialogQueue = Promise.resolve()
+
+  //DialogV2.wait answers at the click of a button, before its window is closed: the next window of the same id,
+  //rendered meanwhile, neither opened nor answered, and held every later roll of the client until a reload (lot 17b,
+  //présentation de DjamZ du 08/10). The next one now waits for the window to be gone from Foundry's registry.
+  static rollWindowClosed({
+    step = 50, max = 5000
+  } = {
+  }){
+    const open = () => !!globalThis.foundry?.applications?.instances?.get?.(ROLL_WINDOW_ID)
+    return new Promise(resolve => {
+      const started = Date.now()
+      const check = () => (!open() || Date.now() - started >= max) ? resolve() : setTimeout(check, step)
+      check()
+    })
+  }
+
+  //The queue never holds the rolls of the client for good: a turn still pending with no roll window on screen for
+  //`quiet` ms is stale (a window that failed to open), and the next roll goes on
+  static queueSettled(queue, {
+    step = 250, quiet = 2000
+  } = {
+  }){
+    let settled = false
+    const done = queue.then(() => {
+      settled = true
+    }, () => {
+      settled = true
+    })
+    const stale = new Promise(resolve => {
+      let since = null
+      const check = () => {
+        if (settled) return resolve()
+        const open = !!globalThis.foundry?.applications?.instances?.get?.(ROLL_WINDOW_ID)
+        since = open ? null : since ?? Date.now()
+        if (since !== null && Date.now() - since >= quiet) {
+          SR5_SystemHelpers.srLog(1, "Roll window queue stale: the next roll goes on")
+          return resolve()
+        }
+        setTimeout(check, step)
+      }
+      setTimeout(check, step)
+    })
+    return Promise.race([done, stale])
+  }
 
   //Prepare the roll window
   static async generateRollDialog(dialogData, edge = false) {
@@ -123,11 +170,11 @@ export class SR5_RollTest {
     const dlg = await foundry.applications.handlebars.renderTemplate(template, dialogData)
     //One roll window at a time (its id is fixed): a second one asked meanwhile (two actors of the same user in the
     //area of a spell, M5 D3) opens once the first is closed, instead of being lost
-    const turn = SR5_RollTest.dialogQueue.then(() => foundry.applications.api.DialogV2.wait({
+    const turn = SR5_RollTest.queueSettled(SR5_RollTest.dialogQueue).then(() => SR5_RollTest.rollWindowClosed()).then(() => foundry.applications.api.DialogV2.wait({
       window: {
-        title: dialogData.test.title 
+        title: dialogData.test.title
       },
-      id: "jet",
+      id: ROLL_WINDOW_ID,
       position: {
         width: 450 
       },
