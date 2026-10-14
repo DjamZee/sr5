@@ -2,7 +2,7 @@ import {
   BLOCK_REGISTRY, BLOCK_SIZE, BLOCK_MIN_COLUMNS, TAB_ICONS
 } from './block-registry.js'
 import {
-  getDefaultLayout 
+  getDefaultLayout, layoutLabel
 } from './default-layout.js'
 
 /**
@@ -194,7 +194,7 @@ export class SR5SheetConfigDialog extends foundry.applications.api.HandlebarsApp
         }).filter(Boolean)
         return {
           id: tab.id,
-          label: tab.label ?? '',
+          label: layoutLabel(tab),
           icon: tab.icon?.replace(/\.svg\.hbs$/, '.svg') ?? TAB_ICONS.core,
           hidden: !!tab.hidden,
           blocks,
@@ -202,7 +202,7 @@ export class SR5SheetConfigDialog extends foundry.applications.api.HandlebarsApp
       })
       return {
         id: panel.id,
-        label: panel.label ?? '',
+        label: layoutLabel(panel),
         width: panel.width ?? 1,
         hidden: !!panel.hidden,
         tabs,

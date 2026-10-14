@@ -338,3 +338,28 @@ export function getDefaultLayout(actorType) {
     default:                  return _characterDefaultLayout()
   }
 }
+
+// ---------------------------------------------------------------------------
+//  Display names of the default panels and tabs (lot 34)
+// ---------------------------------------------------------------------------
+
+// The English names above stay the identifiers (searched by name in this file,
+// saved as is in the actors' custom layouts); only what is shown is translated.
+const DEFAULT_LABELS = [
+  'SIDEBAR', 'MAIN', 'Abilities', 'Augmentations', 'Bio', 'Combat', 'Contents', 'Core', 'Derived',
+  'Device', 'Gear', 'Magic', 'Magician', 'Matrix', 'Modifications', 'Qualities', 'Skills', 'Social',
+  'Storage', 'Technomancer', 'Workshop',
+]
+
+/**
+ * The name to show for a panel or tab of a layout. A default panel or tab (id `default-N`, built
+ * above, possibly saved in an actor's custom layout) shows its translated name; any other name —
+ * one the GM typed, or a panel added in the dialog — is shown as written.
+ * @param {{id?: string, label?: string}} entry
+ * @returns {string}
+ */
+export function layoutLabel(entry) {
+  const label = entry?.label ?? ''
+  if (!/^default-\d+$/.test(entry?.id ?? '') || !DEFAULT_LABELS.includes(label)) return label
+  return game.i18n.localize(`SR5.SheetConfig.Default.${label}`)
+}
