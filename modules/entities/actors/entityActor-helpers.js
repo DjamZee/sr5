@@ -281,7 +281,10 @@ export class SR5_ActorHelper {
     // A drone's side effect from electricity is the matrix damage above (SR5 p. 173), not the dice and Initiative penalty
     if (options.damage.element === "electricity" && actor.type !== "actorDrone") await SR5_ActorHelper.electricityDamageEffect(actorId)
     if (options.damage.element === "anticoagulant" && actor.type !== "actorDrone") await SR5_ActorHelper.anticoagulantDamageEffect(actorId)
-    if (options.damage.element === "acid") await SR5_ActorHelper.acidDamageEffect(actorId, damage, options.damage.source)
+    //The acid of a spell evaporates once the spell ends (SR5 p. 172): spells and preparations say "magical", never "spell";
+    //a weapon focus is a weapon. The burn the acid deals each turn (srcombat.js) never lays a new acid of its own
+    const acidSource = options.damage.source === "magical" && !options.damage.weaponFocus ? "spell" : options.damage.source
+    if (options.damage.element === "acid" && options.damage.source !== "acidLingering") await SR5_ActorHelper.acidDamageEffect(actorId, damage, acidSource)
     if (options.damage.element === "fire"){
       if (actorData.itemsProperties.armor.value <= 0) await SR5_ActorHelper.fireDamageEffect(actorId)
       else await SR5_ActorHelper.checkIfCatchFire(actorId, options.threshold.value, options.damage.source, options.combat.armorPenetration)

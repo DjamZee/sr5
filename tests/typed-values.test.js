@@ -79,6 +79,9 @@ import {
 import {
   SR5_SocketHandler
 } from '../modules/socket.js'
+import {
+  SR5_EntityHelpers
+} from '../modules/entities/helpers.js'
 
 // An embedded collection: iterable, with find and get as Foundry's Collection has them
 function collection(docs){
@@ -209,6 +212,31 @@ describe('acid damage drops by 1 each Combat Turn (SR5 p. 172)', () => {
 
     expect(actor.rollTest).not.toHaveBeenCalled()
     expect(actor.updateEmbeddedDocuments).not.toHaveBeenCalled()
+  })
+
+  it('marks the burn as the same acid, so that its damage lays no new acid effect', async () => {
+    const acid = effectItem('acidDamage', 4)
+    const actor = combatActor([acid, armor()])
+
+    await endTurn(actor)
+
+    expect(actor.rollTest.mock.calls[0][2].damage.source).toBe('acidLingering')
+  })
+
+  it('no burn once the effect ends this very turn (a spell\'s acid evaporates, SR5 p. 172)', async () => {
+    const acid = effectItem('acidDamage', 6)
+    acid.system.durationType = 'round'
+    acid.system.duration = 1
+    const actor = combatActor([acid, armor()])
+    actor.deleteEmbeddedDocuments = vi.fn(async (type, ids) => {
+      for (const id of ids) actor.items.splice(actor.items.findIndex(i => i.id === id), 1)
+    })
+    vi.spyOn(SR5_EntityHelpers, 'deleteEffectOnActor').mockImplementation(async () => {})
+
+    await endTurn(actor)
+
+    expect(actor.deleteEmbeddedDocuments).toHaveBeenCalledWith('Item', ['acidDamage'])
+    expect(actor.rollTest).not.toHaveBeenCalled()
   })
 })
 
