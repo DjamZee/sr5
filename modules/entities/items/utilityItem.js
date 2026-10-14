@@ -932,6 +932,12 @@ export class SR5_UtilityItem extends Actor {
       if (itemData.category === "meleeWeapon" && actor.system.reach) {
         itemData.reach.modifiers = itemData.reach.modifiers.concat(actor.system.reach.modifiers)
       }
+      //"Weapons / Reach" effects: the melee weapons of a type (or the kicks), as the "Weapons / DV" ones
+      if (itemData.category === "meleeWeapon") {
+        for (let modifier of actor.system.itemsProperties?.weapon?.reach?.modifiers ?? []) {
+          if (weaponDamageBonusApplies(itemData, modifier.details)) itemData.reach.modifiers = itemData.reach.modifiers.concat(modifier)
+        }
+      }
       if (itemData.systemEffects.length){
         for (let systemEffect of Object.values(itemData.systemEffects)){
           if (systemEffect.value === "noxiousBreath" || systemEffect.value === "corrosiveSpit"){

@@ -2,6 +2,9 @@ import {
   bbPenaltyReduction
 } from "../../system/bb-healing.js"
 import {
+  calledShotSkillsOf, calledShotEffectValue, isMartialArtsModifierTarget
+} from "../../rolls/roll-helpers/calledShotSkills.js"
+import {
   usesModPoints, droneModRule, armorOverload, droneCannotMove
 } from "../../system/drone-mod-points.js"
 import {
@@ -221,6 +224,7 @@ export class SR5_CharacterUtility extends Actor {
           actorData.defenses[key].modifiers = []
           actorData.defenses[key].limit.value = 0
           actorData.defenses[key].limit.modifiers = []
+          actorData.defenses[key].unlimited = false
         }
       }
     }
@@ -285,6 +289,10 @@ export class SR5_CharacterUtility extends Actor {
       actorData.itemsProperties.weapon.accuracy.modifiers = []
       actorData.itemsProperties.weapon.damageValue.value = 0
       actorData.itemsProperties.weapon.damageValue.modifiers = []
+      if (actorData.itemsProperties.weapon.reach) {
+        actorData.itemsProperties.weapon.reach.value = 0
+        actorData.itemsProperties.weapon.reach.modifiers = []
+      }
     }
 
     if (actorData.itemsProperties?.environmentalMod) {
@@ -5790,6 +5798,12 @@ export class SR5_CharacterUtility extends Actor {
             SR5_EntityHelpers.updateModifier(targetObject, `${item.name}`, item.type, customEffect.value * customEffect.multiplier, isMultiplier, cumulative, customEffect.type)
             continue
           }
+          //Reach of the melee weapons of a type (or of the kicks), as their Damage Value: read by utilityItem.js
+          if (customEffect.target === "system.itemsProperties.weapon.reach") {
+            customEffect.value = (customEffect.value || 0)
+            SR5_EntityHelpers.updateModifier(targetObject, `${item.name}`, item.type, customEffect.value * customEffect.multiplier, isMultiplier, cumulative, customEffect.type)
+            continue
+          }
           if (customEffect.target === "system.itemsProperties.weapon.damageValue") {
             //A bonus read from the item's rating with an offset: bone density adds its rating − 1 (SR5 p. 463 ; arbitrage de DjamZ : table VF)
             //(worked out apart: the effect itself is left untouched, it is read again at each preparation)
@@ -5807,6 +5821,16 @@ export class SR5_CharacterUtility extends Actor {
             SR5_EntityHelpers.updateModifier(targetObject, `${item.name}`, item.type, value * customEffect.multiplier, isMultiplier, cumulative, customEffect.type)
             continue
           }
+        }
+
+        //A called shot eased for some attacks only (effect field "skills"): the modifier keeps them, handleMartialArtsCalledShot
+        //leaves it out of the attacks made with another skill. Without the field, the effect goes the usual way
+        const calledShotSkills = calledShotSkillsOf(customEffect)
+        if (calledShotSkills && isMartialArtsModifierTarget(customEffect.target)) {
+          targetObject.modifiers.push({
+            source: item.name, type: item.type, value: calledShotEffectValue(customEffect, itemData) * customEffect.multiplier, isMultiplier, skills: calledShotSkills
+          })
+          continue
         }
 
         //Special case for Hardened Armor : value based on actor attributes are not yet calculated, so we need a trick

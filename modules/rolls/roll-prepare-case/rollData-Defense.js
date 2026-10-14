@@ -11,6 +11,12 @@ import {
   trustedAttackCard
 } from "../roll-helpers/attack-card.js"
 import {
+  unarmedReachBonus
+} from "../../entities/items/weaponTraits.js"
+import {
+  defenseUnlimitedHits
+} from "../roll-helpers/limit.js"
+import {
   SR5_SpellShapingHelpers
 } from "../roll-helpers/spell-shaping.js"
 import {
@@ -71,6 +77,7 @@ export default async function defense(rollData, actor, chatData){
   rollData.combat.activeDefenses.parryBlades = SR5_PrepareRollHelper.getActiveDefenseValue(actorData, "parryBlades", "blades")
   // SR5 p. 191-192: dodge, block and parry add a skill, so the Physical limit applies to them
   rollData.combat.activeDefenses.limit = actorData.limits?.physicalLimit?.value || 0
+  rollData.combat.activeDefenses.unlimited = defenseUnlimitedHits(actorData.defenses)
 
   //Transfering data from chatCard
   rollData.previousMessage.hits = chatData.roll.hits
@@ -202,7 +209,8 @@ async function handleSuppressiveFire(rollData, actorData){
 
 async function handleMeleeWeaponModifiers(rollData, actor, chatData){
   //Add reach modifiers
-  let reach = (actor.system.reach?.value || 0) - chatData.combat.reach
+  //Bare-handed, the defender adds its "Weapons / Reach" effects on Unarmed Combat to its own Reach
+  let reach = (actor.system.reach?.value || 0) + unarmedReachBonus(actor.system) - chatData.combat.reach
   let weaponUsedToDefend = actor.items.find(i => (i.type === "itemWeapon") && (i.system.category === "meleeWeapon") && (i.system.isActive))
   if (weaponUsedToDefend) reach = weaponUsedToDefend.system.reach.value - chatData.combat.reach
   //Run & Gun p. 133 (Saisie): the Reach of both fighters is cancelled between them (grappling rules only)

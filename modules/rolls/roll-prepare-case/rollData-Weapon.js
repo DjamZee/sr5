@@ -20,6 +20,9 @@ import {
   isRecoilCarriedOver
 } from "../roll-helpers/recoil.js"
 import {
+  calledShotModifierFor
+} from "../roll-helpers/calledShotSkills.js"
+import {
   SR5_RollMessage 
 } from "../roll-message.js"
 import {
@@ -116,7 +119,7 @@ export default async function weapon(rollData, actor, item){
   }
 
   //Handle Martial Arts for Called Shots
-  rollData = await handleMartialArtsCalledShot(rollData, actor)
+  rollData = await handleMartialArtsCalledShot(rollData, actor, itemData.weaponSkill?.category)
 
   //Handle ranged weapon current firing mode here too: handleTargetInfo skips it when no scene is viewed
   if (itemData.category === "rangedWeapon" && !rollData.combat.firingMode.selected) rollData.combat.firingMode.selected = SR5_ConverterHelpers.initialFiringMode(itemData.firingMode, rollData.target.fanning)
@@ -564,11 +567,12 @@ export async function checkIfTargetIsInTemplate(actor, targetActor, areaEffect, 
 // cette attaque ciblée est réduite de 1" — the "Attaque ciblée" techniques of the called shots anyone may make
 export const OPEN_CALLED_SHOT_TECHNIQUES = ["disarm", "feint", "pin"]
 
-export async function handleMartialArtsCalledShot(rollData, actor){
+export async function handleMartialArtsCalledShot(rollData, actor, weaponSkill){
   for (let [key, value] of Object.entries(actor.system.itemsProperties.martialArts)){
     if (value.isActive) rollData.combat.calledShot.martialArts[key] = true
     // A technique lowers the penalty on its own (Run & Gun p. 125): no unlocking flag needed
-    const modifier = (value.modifier?.value || 0) + (value.isActive && OPEN_CALLED_SHOT_TECHNIQUES.includes(key) ? 1 : 0)
+    // An effect kept for some skills (its "skills" field) does not ease the attacks made with another one
+    const modifier = calledShotModifierFor(value.modifier, weaponSkill) +(value.isActive && OPEN_CALLED_SHOT_TECHNIQUES.includes(key) ? 1 : 0)
     if (modifier) rollData.combat.calledShot.martialArtsModifiers[key] = modifier
   }
   // Any item can ease the other called shots (effect category "calledShots", G14)

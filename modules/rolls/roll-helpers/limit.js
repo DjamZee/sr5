@@ -6,6 +6,13 @@ export function rollLimitValue(limit){
   return value > 0 ? value : 0
 }
 
+// The active defenses whose hits an effect leaves unlimited (system.defenses.<key>.unlimited): the defense dialog
+// lifts the Physical limit when one of them is picked
+export const UNLIMITED_ACTIVE_DEFENSES = ["dodge", "block", "parryBlades", "parryClubs"]
+export function defenseUnlimitedHits(defenses){
+  return Object.fromEntries(UNLIMITED_ACTIVE_DEFENSES.map(key => [key, defenses?.[key]?.unlimited === true]))
+}
+
 // SR5 p. 58: Second Chance has no effect on limits. The new hits fill what the limit leaves;
 // without a limit they all count. Returns null when nothing caps them
 export function secondChanceLimit(limit, rollHits){
