@@ -176,12 +176,13 @@ export function offerVehicleAttribute(rollData, vehicle, {
 }
 
 // Fill rollData.skillAttribute for the roll dialog and apply the kept attribute, if any
+// `preferred`: the attribute a trait offers first (social-traits.js, Cutting Aces p. 150), when none is kept
 export function prepareSkillAttribute(rollData, actorData, kept, {
-  flagKey, linked, titleBase, alwaysInTitle, labels, localize
+  flagKey, linked, titleBase, alwaysInTitle, labels, localize, preferred = null
 }){
   let choices = skillAttributeChoices(actorData, labels)
   if (!choices[linked]) return rollData
-  let selected = selectedSkillAttribute(kept, linked, choices)
+  let selected = selectedSkillAttribute(kept && choices[kept] ? kept : preferred, linked, choices)
   rollData.skillAttribute = {
     flagKey, linked, selected, choices, titleBase, alwaysInTitle, keep: !!(kept && choices[kept])
   }

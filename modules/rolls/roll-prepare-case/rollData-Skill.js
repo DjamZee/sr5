@@ -17,8 +17,12 @@ import {
   spendableStock, bindingCost
 } from "../../system/reagents.js"
 import {
-  prepareSkillAttribute, SKILL_ATTRIBUTE_FLAG, syncBackgroundCount, backgroundCountApplies, backgroundCountInModifiers
+  prepareSkillAttribute, SKILL_ATTRIBUTE_FLAG, syncBackgroundCount, backgroundCountApplies, backgroundCountInModifiers,
+  attributeValue
 } from "../roll-helpers/skillAttribute.js"
+import {
+  socialTraitsOf, traitAttribute, IGNORED_NEGATIVE_POINTS
+} from "../../system/social-traits.js"
 import {
   isSituationalType
 } from "../roll-helpers/situational.js"
@@ -81,7 +85,10 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
 
     //SR5 p. 130: the attribute can be changed in the dialog, except on an opposed test whose pair the book sets
     if (actor.type !== "actorDrone" && !chatData?.test?.isOpposed){
+      //Cutting Aces p. 150: a trait offers Intuition or Logic in place of Charisma (social-traits.js)
+      const preferred = traitAttribute(rollKey, socialTraitsOf(actor.items), key => attributeValue(actor.system, key))
       rollData = prepareSkillAttribute(rollData, actor.system, actor.getFlag?.("sr5", SKILL_ATTRIBUTE_FLAG)?.[rollKey], {
+        preferred,
         flagKey: rollKey,
         linked: actor.system.skills[rollKey].linkedAttribute,
         titleBase: `${game.i18n.localize("SR5.SkillTest") + game.i18n.localize("SR5.Colons") + " " + game.i18n.localize(SR5.skills[rollKey])}`,
@@ -90,6 +97,12 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
         localize: k => game.i18n.localize(k),
       })
     }
+  }
+
+  //Cutting Aces p. 150, « Il a la classe et il le sait »: 2 points of negative social modifiers ignored, counted by
+  //the roll dialog as the modifiers are ticked (social-traits.js)
+  if (Object.hasOwn(SR5.socialSkills, rollKey) && socialTraitsOf(actor.items).has("socialIgnoreNegative")) {
+    rollData.dicePool.ignoreNegativeSocial = IGNORED_NEGATIVE_POINTS
   }
 
   //Determine base limit
