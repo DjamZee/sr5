@@ -88,11 +88,11 @@ export class SR5_SpiritTypes {
       } catch {
         continue
       }
-      const ids = index.filter(e => e.type === "itemSpiritType").map(e => e._id)
-      for (const id of ids) {
-        const item = await pack.getDocument(id)
-        if (item) SR5_SpiritTypes._add(found, item)
-      }
+      if (!index.some(e => e.type === "itemSpiritType")) continue
+      // One request for all of them: the server answers each request by reading the whole pack (lot 34)
+      for (const item of await pack.getDocuments({
+        type: "itemSpiritType"
+      })) SR5_SpiritTypes._add(found, item)
     }
 
     SR5_SpiritTypes.registry = found

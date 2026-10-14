@@ -50,5 +50,5 @@
 {{/if}}
 <li class="grid">
     <div class="col-12">{{localize 'SR5.MentorDrawback'}}{{localize 'SR5.Colons'}}</div>
-    <div class="col-12"><textarea name="system.drawback" rows="4">{{system.drawback}}</textarea></div>
+    <div class="col-12"><prose-mirror name="system.drawback" value="{{system.drawback}}" toggled>{{{enrichedDrawback}}}</prose-mirror></div>
 </li>

@@ -604,6 +604,8 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       context.enrichedFileContent = await enrich(item.system.content)
       context.fileLastEdit = fileLastEditText(item.system.lastEdit)
     }
+    // A mentor spirit's drawback is HTML (Megapack data, the editor): shown read, never as tags (lot 34)
+    if (item.type === "itemMentorSpirit") context.enrichedDrawback = await enrich(item.system.drawback)
 
     // Custom spirit type: pickers, and labels for the read-only summary
     if (item.type === "itemSpiritType") {
