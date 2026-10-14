@@ -562,7 +562,9 @@ export class SR5_RollMessage {
         })
         //Bullets & Bandages p. 18-19: one use of the medkit supplies per patient treated
         await useMedkitSupplies(messageData.test.bbMedkitUuid)
-        SR5_RollMessage.updateChatButtonHelper(messageId, type, healData.test.typeSub)
+        //Healed by the GM: the card says so once he has applied it (_socketHeal). Marked here, it read "1P Soigné"
+        //after the GM had declined, and nothing was healed (lot 17c)
+        if (healLocally) SR5_RollMessage.updateChatButtonHelper(messageId, type, healData.test.typeSub)
         break
       }
       //Cutting Aces (lot 21, social-card.js, imported here to keep it out of this module's own imports): what a

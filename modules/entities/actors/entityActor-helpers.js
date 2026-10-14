@@ -2111,6 +2111,13 @@ export class SR5_ActorHelper {
       recordTreatment, woundTotal
     } = await import("../../system/heal-ledger.js")
     await recordTreatment(patient.uuid, "firstAid", woundTotal(patient))
+    //The player's card is marked here, once healed: declined, it keeps its button (lot 17c)
+    if (game.messages?.get(data.messageId)) {
+      const {
+        SR5_RollMessage
+      } = await import("../../rolls/roll-message.js")
+      await SR5_RollMessage.updateChatButton(data.messageId, "firstAid", healData.test?.typeSub)
+    }
   }
 
   /**
