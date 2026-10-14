@@ -57,6 +57,19 @@ import {
 import {
   offerTestAttribute, offerVehicleAttribute
 } from "./roll-helpers/skillAttribute.js"
+import {
+  socialDialogData
+} from "./roll-helpers/social-dialog.js"
+
+// Cutting Aces social maneuvers, con steps and carried effects (lot 21): offered in the dialog when they apply
+function addSocialDialog(rollData, actor, test, chatData){
+  const ca = socialDialogData(actor, rollData, test, chatData)
+  if (ca) rollData.social = {
+    ...(rollData.social ?? {
+    }), ca
+  }
+  return rollData
+}
 
 // N91: matrix rolls aimed at a target besides matrixAction, which guards itself. Each refuses a drone
 // with its wireless off (SR5 p. 424)
@@ -156,6 +169,8 @@ export class SR5_PrepareRollTest {
         break
       case "derivedAttribute":
         rollData = await SR5_GetRollData.derived(rollData, rollKey, actor)
+        // Zanshin (Cutting Aces p. 154) is a Judge Intentions test
+        if (rollData && rollKey === "judgeIntentions") rollData = addSocialDialog(rollData, actor, rollKey, chatData)
         break
       case "drain":
         rollData = await SR5_GetRollData.drain(rollData, actor, chatData)
@@ -201,6 +216,8 @@ export class SR5_PrepareRollTest {
       case "knowledgeSkill":
       case "languageSkill":
         rollData = await SR5_GetRollData.knowledgeSkill(rollData, rollType, item)
+        // Informed Opinion (Cutting Aces p. 153) is a Knowledge test
+        if (rollData && rollType === "knowledgeSkill") rollData = addSocialDialog(rollData, actor, "knowledge", chatData)
         break
       case "lift":
         rollData = await SR5_GetRollData.lift(rollData, rollKey, actor)
@@ -326,6 +343,7 @@ export class SR5_PrepareRollTest {
             attitude: faction.attitude
           }
         }
+        rollData = addSocialDialog(rollData, actor, rollKey, chatData)
         break
       case "spell":
         if (game.user.targets.size) rollData = await SR5_PrepareRollHelper.getTargetData(rollData)

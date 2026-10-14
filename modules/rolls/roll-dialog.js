@@ -14,6 +14,9 @@ import {
   advancedMedkitDice, bbModeDiagnosisDice, improvisedSuppliesDice
 } from "../system/bb-healing-rules.js"
 import {
+  activateSocialDialog
+} from "./roll-helpers/social-dialog.js"
+import {
   SR5 
 } from "../config.js"
 import {
@@ -335,6 +338,8 @@ export default class SR5_RollDialog {
     element.querySelectorAll('.SR-GrappleEscapeThreshold').forEach(el => el.addEventListener('change', ev => {
       dialogData.threshold.value = Math.max(parseInt(ev.target.value) || 0, 0)
     }))
+    //Cutting Aces: the con step, the social maneuver and what an earlier one left (social-dialog.js, lot 21)
+    activateSocialDialog(this, element, dialogData)
 
     // Reset Recoil
     element.querySelectorAll(".resetRecoil").forEach(el => el.addEventListener('click', ev => this._onResetRecoil(ev, element, dialogData, actor)))

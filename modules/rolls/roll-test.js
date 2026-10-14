@@ -11,6 +11,12 @@ import {
   SR5_RollMessage 
 } from "./roll-message.js"
 import {
+  spendPending
+} from "../system/social-pending.js"
+import {
+  socialCardInfo
+} from "../system/social-card.js"
+import {
   SR5_RollTestHelper 
 } from "./roll-test-helper.js"
 import * as SR5_AddRollInfo from "./roll-test-case/index.js"
@@ -231,6 +237,13 @@ export class SR5_RollTest {
 
     //Add dice pool modifiers
     dialogData = await SR5_RollTestHelper.handleDicePoolModifiers(dialogData)
+
+    //Cutting Aces p. 153-154: what an earlier maneuver left is spent by this test (social-dialog.js); the card
+    //keeps no copy of the dialog's lists
+    if (dialogData.social?.ca) {
+      await spendPending(actor, dialogData.social.usedPending, dialogData.social.droppedPending)
+      delete dialogData.social.ca
+    }
 
     // SR5 p. 178: recoil builds up shot after shot until the character spends a simple or complex action on something other than firing
     // SR5 p. 180: single-shot (SS) and suppressive fire (SF) weapons neither build nor suffer progressive recoil,
@@ -889,5 +902,8 @@ export class SR5_RollTest {
       default:
         SR5_SystemHelpers.srLog(1, `Unknown '${cardData.test.type}' type in addInfoToCard`)
     }
+
+    //Cutting Aces (lot 21): a social maneuver's outcome, the con step, the bartering window, on any card
+    socialCardInfo(cardData)
   }
 }
