@@ -21,8 +21,11 @@ import {
   isFile
 } from "../../system/matrix-files.js"
 import {
-  refuseByRule
+  refuseByRule, noticeGM
 } from "../../system/rule-locks.js"
+import {
+  matrixOwnership, OWNER, UNKNOWN_OWNER
+} from "../../system/matrix-ownership.js"
 import {
   SLEUTHER_ACTIONS, sleutherDice
 } from "../../system/ice-sleuther.js"
@@ -249,17 +252,33 @@ function targetsWirelessOffDrone(actor, rollData){
   return matrixTargets(rollData).some(t => isWirelessOffDrone(t.actor, actor))
 }
 
-/** A drone created from an unlinked token records the token id as its creator: the token and its
- * base actor are the same character, so both are recognised as owner (SR5 p. 238).
- * Deployed from the base sheet, it records the base actor id: an unlinked token carries that same id but is
- * a copy that deployed nothing, so only the base actor (its sheet or a linked token) owns it
+/** An action only the owner takes (SR5 p. 238, lot 19). The owner goes; anyone else is refused by the book, the
+ * "matrix" rule lock lifted the action goes and the gamemaster hears of it. An icon whose owner the system cannot
+ * tell (a device with no master, a drone with no creator) is never refused: the gamemaster is told (Élise, lot 19)
+ * @return {Boolean} true if the roll goes on
  */
-function isCreator(creatorId, actor, speakerId){
-  if (!creatorId) return false
-  if (creatorId === speakerId || (creatorId === actor.id && !actor.isToken)) return true
-  const creator = SR5_EntityHelpers.getRealActorFromID(creatorId)
-  // A synthetic actor carries the id of its base actor: only the base sheet takes this path, never another token copy
-  return !!creator && creator.id === actor.id && !actor.isToken
+function ownershipOf(actor, target, speakerId){
+  return matrixOwnership(actor, target, {
+    speakerId,
+    resolve: uuid => globalThis.fromUuidSync?.(uuid) ?? null,
+    hostOf: iceHostOf,
+    actorById: id => SR5_EntityHelpers.getRealActorFromID(id),
+  })
+}
+
+function ownerActionAllowed(actor, target, speakerId){
+  const ownership = ownershipOf(actor, target, speakerId)
+  if (ownership === OWNER) return true
+  const data = {
+    name: target.name ?? ""
+  }
+  if (ownership === UNKNOWN_OWNER) {
+    noticeGM("matrix", "SR5.WARN_OwnerUnknown", data, actor)
+    return true
+  }
+  return !refuseByRule("matrix", "SR5.WARN_OwnerOnlyAction", data, {
+    actor
+  })
 }
 
 // The file the card aims at (the crown, or rollMatrixActionOn with its uuid), or null
@@ -288,17 +307,12 @@ async function checkTargetMarks(rollData, matrixAction, actor){
     rollData.target.grid = t.actor.system.matrix.userGrid
 
     // "S" (special) is not a number and asks for no check here
-    let neededMarks = Number(matrixAction.neededMarks)
+    const neededMarks = Number(matrixAction.neededMarks)
     if (neededMarks > 0 && t.actor.id !== actor.id){
-      // SR5 p. 238: owning an icon counts as four marks, more than anyone else can place.
-      // The creator of a drone, agent, sprite or spirit owns it and needs no mark
-      if (neededMarks > 3) {
-        const creatorId = t.actor.system.creatorId
-        if (isCreator(creatorId, actor, rollData.owner.speakerId)) return true
-        // Ownership is recorded nowhere else: the GM rules, and the roll goes on with a single mark
-        ui.notifications.warn(game.i18n.localize("SR5.WARN_OwnerOnlyAction"))
-        neededMarks = 1
-      }
+      // SR5 p. 238: owning an icon counts as four marks, more than anyone else can place (lot 19, matrix-ownership.js)
+      if (neededMarks > 3) return ownerActionAllowed(actor, t.actor, rollData.owner.speakerId)
+      // The owner holds four marks, more than any action asks: the creator of a drone, the spider of a host (KC p. 51)
+      if (ownershipOf(actor, t.actor, rollData.owner.speakerId) === OWNER) return true
       let marks = 0
       //A file aimed at counts its own marks, as any icon (SR5 p. 233: the mark is placed on the file itself)
       const file = fileAimedAt(rollData)

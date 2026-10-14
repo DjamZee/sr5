@@ -20,7 +20,7 @@ const TOKEN = 'tokenOfRigger'
 function check(creatorId, speakerId, isToken = false){
   game.user.targets = new Set([{
     actor: {
-      id: 'drone', items: [], system: {
+      id: 'drone', type: 'actorDrone', items: [], system: {
         creatorId, matrix: {
           userGrid: 'local'
         }

@@ -604,6 +604,11 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     on(".deplieMatrix", "click", this._onMatrixSummary.bind(this))
     // Lancés de dés
     on(".sr-roll", "click", this._onRoll.bind(this))
+    // The owner's actions with no test, Change Icon and the others (lot 19, SR5 p. 238)
+    on(".matrix-owner-action", "click", event => {
+      event.preventDefault()
+      import("../../system/matrix-owner-actions.js").then(m => m.takeOwnerAction(this.actor, event.currentTarget.dataset.rollkey))
+    })
     on(".sr-rollGrenade", "click", this._onRollGrenade.bind(this))
     // Summon Spirit
     on(".sidekickCreate", "click", this._OnSidekickCreate.bind(this))
