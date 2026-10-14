@@ -3428,6 +3428,7 @@
 	"SR5.MANEUVER_Rolls_attack": "attacks",
 	"SR5.MANEUVER_Rolls_autoAttack": "semi-auto, burst or full-auto attacks",
 	"SR5.MANEUVER_Rolls_defense": "defense",
+	"SR5.MANEUVER_Rolls_initiative": "+{value} Initiative",
 	"SR5.MANEUVER_Rolls_meleeAttack": "melee attacks",
 	"SR5.MANEUVER_Rolls_perception": "Perception",
 	"SR5.MANEUVER_Rolls_pilot": "piloting",

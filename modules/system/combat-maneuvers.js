@@ -14,8 +14,11 @@ import {
   SR5_EntityHelpers
 } from "../entities/helpers.js"
 import {
-  updateLedger, cardTrusted
+  updateLedger
 } from "./gm-ledger.js"
+import {
+  cardTrusted
+} from "../rolls/roll-helpers/socket-guard.js"
 import {
   COMBAT_MANEUVERS, maneuverThreshold, resolveManeuver, maneuverOffers, prunedLedger, tacnetCoordination, assistPool,
 } from "../rolls/roll-helpers/combat-maneuvers.js"
@@ -504,7 +507,10 @@ async function resolveFromRoll(message) {
       if (actor && SR5Combat.getCombatantFromActor(actor)) await SR5Combat.changeInitInCombatHelper(cardActorId(actor), m.initiative)
     }
   }
-  const bonusText = result.bonuses.map(b => `${t(`SR5.MANEUVER_Rolls_${b.rolls}`)} +${b.value}`).join(", ")
+  const bonusText = result.bonuses.map(b => `${t(`SR5.MANEUVER_Rolls_${b.rolls}`)} +${b.value}`)
+    .concat(m.initiative ? [t("SR5.MANEUVER_Rolls_initiative", {
+      value: m.initiative
+    })] : []).join(", ")
   let outcome
   if (result.critical) outcome = t("SR5.MANEUVER_OutcomeCritical", {
     penalty: Object.values(result.members)[0]?.penalty ?? 0
