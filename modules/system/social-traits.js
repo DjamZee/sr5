@@ -55,13 +55,16 @@ export function traitAttribute(skillKey, traits, valueOf) {
 // The social modifiers of SR5 p. 142 in the roll dialog are the dice modifiers whose type starts with "social".
 // A maneuver's own -4 is the price of the maneuver, not a modifier of the situation (Cutting Aces p. 153)
 const NOT_SITUATION = ["socialManeuver", "socialIgnoreNegative"]
+// « sur tout test social »: the effects other actors put on this social test count too (a target's Cynical, the
+// subliminal subacoustics of an area, roll-helpers/indirect.js), arbitrage of the coordinator (lot 42)
+const isSocialSituation = type => (type.startsWith("social") && !NOT_SITUATION.includes(type)) || type.startsWith("indirect_")
 
 /** How many dice the trait gives back: the negative social modifiers, 2 points at most. */
 export function ignoredNegative(modifiers, points = IGNORED_NEGATIVE_POINTS) {
   let negative = 0
   for (const m of Object.values(modifiers ?? {
   })) {
-    if (!m?.type?.startsWith?.("social") || NOT_SITUATION.includes(m.type)) continue
+    if (typeof m?.type !== "string" || !isSocialSituation(m.type)) continue
     const v = Number(m.value) || 0
     if (v < 0) negative -= v
   }

@@ -33,6 +33,9 @@ export function indirectEffectOf(customEffect, source, value){
     source, value, when: customEffect.when || "", rolls, kind: on === "limit" ? "limit" : "dicePool",
     applyTo: customEffect.applyTo === APPLY_AURA ? APPLY_AURA : APPLY_TARGETER,
     range: customEffect.auraRange, who: AURA_WHO.includes(customEffect.auraWho) ? customEffect.auraWho : "all",
+    // Offered unticked, its condition in the label: only some of the rolls reached take it (subliminal
+    // subacoustics, Cutting Aces p. 146: a failed Logic + Willpower (2) test, an action against the emotion)
+    situational: !!customEffect.situational,
   }
 }
 
@@ -84,7 +87,7 @@ export function indirectOffer(effect, bearerName, index, display, labels, player
   let label = display === "name" ? `${effect.source} (${reach} : ${bearerName})` : labels.neutral
   return {
     key: `indirect_${effect.kind}_${index}`, kind: effect.kind, label, when: effect.when || "",
-    value: effect.value, isMalus: effect.value < 0, checked: true, hidden: display === "hidden", indirect: true
+    value: effect.value, isMalus: effect.value < 0, checked: !effect.situational, hidden: display === "hidden" && !effect.situational, indirect: true
   }
 }
 

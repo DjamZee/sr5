@@ -56,6 +56,21 @@ describe('the social traits carried as system effects', () => {
     }])).toBe(1)
     expect(ignoredNegative([])).toBe(0)
   })
+
+  it('counts the others\' effects on the test too: a target\'s Cynical, a subliminal area (lot 42)', () => {
+    expect(ignoredNegative([{
+      type: 'indirect_dicePool_0', value: -1
+    }])).toBe(1)
+    expect(ignoredNegative([{
+      type: 'indirect_dicePool_0', value: -1
+    }, {
+      type: 'indirect_dicePool_1', value: -2
+    }])).toBe(2)
+    // A bonus from another actor is not a penalty
+    expect(ignoredNegative([{
+      type: 'indirect_dicePool_0', value: 1
+    }])).toBe(0)
+  })
 })
 
 describe('the attribute a trait preselects, SR5 p. 130', () => {
