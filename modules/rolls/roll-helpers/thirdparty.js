@@ -279,7 +279,7 @@ export class SR5_ThirdPartyHelpers {
           },
           {
             action: "cancel",
-            label: "Cancel",
+            label: game.i18n.localize("SR5.Cancel"),
             callback: () => ({
               action: "cancel" 
             }),

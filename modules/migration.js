@@ -17,9 +17,11 @@ export default class Migration {
   }
 
   async migrateWorld() {
-    ui.notifications.info(`Applying SR5 System Migration for version ${game.system.version}. Please be patient and do not close your game or shut down your server.`, {
+    ui.notifications.info(game.i18n.format("SR5.INFO_MigrationStart", {
+      version: game.system.version
+    }), {
       permanent: true 
-    }) //To Translate
+    })
 
     // Migrate World Items
     for (let i of game.items.contents) {
@@ -81,9 +83,11 @@ export default class Migration {
 
     // Set the migration as complete
     game.settings.set("sr5", "systemMigrationVersion", game.system.version)
-    ui.notifications.info(`SR5 System Migration to version ${game.system.version} completed!`, {
+    ui.notifications.info(game.i18n.format("SR5.INFO_MigrationDone", {
+      version: game.system.version
+    }), {
       permanent: true 
-    }) //To Translate.
+    })
   }
 
   /* -------------------------------------------- */
