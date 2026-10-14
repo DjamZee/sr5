@@ -101,7 +101,8 @@ describe("lot 17b : la file des fenêtres de jet ne se bloque plus", () => {
     await tick()
     expect(foundry.applications.api.DialogV2.wait).toHaveBeenCalledTimes(1)
     // La première fenêtre est à l'écran
-    instances.set("jet", {})
+    instances.set("jet", {
+    })
     // Clic sur « Lancer » : la promesse répond, la fenêtre est encore là
     waits[0](null)
     await first
@@ -118,7 +119,8 @@ describe("lot 17b : la file des fenêtres de jet ne se bloque plus", () => {
   it("rollWindowClosed répond tout de suite sans fenêtre, et au plus tard après max", async () => {
     foundry.applications.instances = new Map()
     await SR5_RollTest.rollWindowClosed()
-    foundry.applications.instances = new Map([["jet", {}]])
+    foundry.applications.instances = new Map([["jet", {
+    }]])
     const started = Date.now()
     await SR5_RollTest.rollWindowClosed({
       step: 10, max: 60
@@ -137,7 +139,8 @@ describe("lot 17b : la file des fenêtres de jet ne se bloque plus", () => {
   })
 
   it("un tour dont la fenêtre est ouverte garde la file", async () => {
-    foundry.applications.instances = new Map([["jet", {}]])
+    foundry.applications.instances = new Map([["jet", {
+    }]])
     let release
     const pending = new Promise(r => release = r)
     let passed = false
