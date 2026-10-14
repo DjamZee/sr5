@@ -133,6 +133,8 @@ export class SR5_SocketHandler {
       "matrixFileAction": [async (message, senderId) => (await import("./rolls/roll-helpers/file-actions.js"))._socketFileAction(message, senderId)],
       "matrixFileRefused": [async (message, senderId) => (await import("./rolls/roll-helpers/file-actions.js"))._socketFileRefused(message, senderId)],
       "tacnetRoster": [async (message, senderId) => (await import("./system/tacnet.js"))._socketTacnetRoster(message, senderId)],
+      //A player closed the resistance window of an area spell: the active GM asks again at her next move inside
+      "areaResistanceDeclined": [async (message) => (await import("./system/effectArea.js")).SR5_EffectArea._socketResistanceDeclined(message)],
       //API pour Matrice v1 (A11, A12): a module on a player's browser asks the active GM to put marks, or to converge
       "apiPlaceMarks": [async (message, senderId) => (await import("./system/matrix-api.js"))._socketPlaceMarks(message, senderId)],
       "apiConverge": [async (message, senderId) => (await import("./system/matrix-api.js"))._socketConverge(message, senderId)],

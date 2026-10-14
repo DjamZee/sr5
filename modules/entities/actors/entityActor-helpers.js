@@ -281,7 +281,10 @@ export class SR5_ActorHelper {
     // A drone's side effect from electricity is the matrix damage above (SR5 p. 173), not the dice and Initiative penalty
     if (options.damage.element === "electricity" && actor.type !== "actorDrone") await SR5_ActorHelper.electricityDamageEffect(actorId)
     if (options.damage.element === "anticoagulant" && actor.type !== "actorDrone") await SR5_ActorHelper.anticoagulantDamageEffect(actorId)
-    if (options.damage.element === "acid") await SR5_ActorHelper.acidDamageEffect(actorId, damage, options.damage.source)
+    //The acid of a spell evaporates once the spell ends (SR5 p. 172): spells and preparations say "magical", never "spell";
+    //a weapon focus is a weapon. The burn the acid deals each turn (srcombat.js) never lays a new acid of its own
+    const acidSource = options.damage.source === "magical" && !options.damage.weaponFocus ? "spell" : options.damage.source
+    if (options.damage.element === "acid" && options.damage.source !== "acidLingering") await SR5_ActorHelper.acidDamageEffect(actorId, damage, acidSource)
     if (options.damage.element === "fire"){
       if (actorData.itemsProperties.armor.value <= 0) await SR5_ActorHelper.fireDamageEffect(actorId)
       else await SR5_ActorHelper.checkIfCatchFire(actorId, options.threshold.value, options.damage.source, options.combat.armorPenetration)
@@ -450,6 +453,10 @@ export class SR5_ActorHelper {
       }
     }
     await actor.createEmbeddedDocuments('ActiveEffect', [effect])
+    //A grunt knocked out then finished off was both Unconscious and Dead: the knockout laid by the damage goes,
+    //never one the GM set by hand (same filter as clearDamageKnockout)
+    let knockouts = actor.effects.filter(e => e.origin === "unconscious" && e.statuses.has("unconscious")).map(e => e.id)
+    if (knockouts.length) await actor.deleteEmbeddedDocuments('ActiveEffect', knockouts)
     ui.notifications.info(`${SR5_EntityHelpers.displayName(actor)}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.INFO_DamageActorDead")}`)
     await SR5_ActorHelper.dropSpoilsOnDeath(actor)
   }
@@ -1925,6 +1932,22 @@ export class SR5_ActorHelper {
     if (SR5_ActorHelper.stunHealsFirstRefused(targetActor, data.test.type, damageType)) return false
 				
     actorData = actorData.toObject(false)
+    //Physical overflow boxes lie beyond the monitor (SR5 p. 171, 209): a heal takes them off first, as regenerate()
+    //does. Left in the source, they came back the next time the monitor filled up (8/8 + 5, healed 7: 1 instead of 6)
+    let overflow = damageType === "physical" ? actorData.system.conditionMonitors.overflow : null
+    if (overflow?.actual.value > 0 && damageToRemove > 0) {
+      let used = Math.min(damageToRemove, overflow.actual.value)
+      overflow.actual.base = Math.max(0, overflow.actual.base - used)
+      damageToRemove -= used
+      await SR5_EntityHelpers.updateValue(overflow.actual, 0)
+    } else overflow = null
+    //An overflow the preparation hides (Physical no longer full, utilityActor.js) but the source still holds is spent
+    //too, or it would come back with the next box of damage
+    if (damageType === "physical" && !overflow && targetActor._source?.system?.conditionMonitors?.overflow?.actual?.base > 0) overflow = {
+      actual: {
+        base: 0
+      }
+    }
     if (damageType === "physical" || damageType === "condition") SR5_ActorHelper.healMonitorBoxes(actorData.system.conditionMonitors[damageType], damageToRemove)
     else {
       actorData.system.conditionMonitors[damageType].actual.base -= damageToRemove
@@ -1932,7 +1955,11 @@ export class SR5_ActorHelper {
     }
     //Only the stored fields of the monitor: the whole prepared system written back put every computed value in the
     //source, and the next preparation added its modifiers again (fatigue resistance 7, then 14, then 21)
-    await targetActor.update(SR5_ActorHelper.monitorSourceUpdate(damageType, actorData.system.conditionMonitors[damageType]))
+    await targetActor.update({
+      ...SR5_ActorHelper.monitorSourceUpdate(damageType, actorData.system.conditionMonitors[damageType]),
+      ...(overflow ? SR5_ActorHelper.monitorSourceUpdate("overflow", overflow) : {
+      })
+    })
     await SR5_ActorHelper.clearDamageKnockout(targetActor)
   }
 
@@ -2296,6 +2323,53 @@ export class SR5_ActorHelper {
     else if (actor.type === "actorGrunt" && full(monitors.condition)) await SR5_ActorHelper.createKoEffect(actorId)
     else if (actor.type === "actorDrone" && full(monitors.condition)) await SR5_ActorHelper.createDeadEffect(actorId)
     else if ((actor.type === "actorSprite" || actor.type === "actorDevice") && full(monitors.matrix)) await SR5_ActorHelper.createDeadEffect(actorId)
+  }
+
+  /**
+   * An effect that raised Willpower or Body ends (Increase Attribute, a drug): the Stun or Physical monitor shrinks
+   * under the damage it holds. The preparation only clipped the excess, which the next damage then wrote away.
+   * It is carried as damage beyond a full monitor is (SR5 p. 171: half of the excess Stun, rounded down, goes to
+   * Physical; excess Physical fills a character's overflow, p. 172), and a full monitor knocks out as it would.
+   * Run by the user who deleted the effect, once the actor is prepared again.
+   */
+  static async settleMonitorExcess(actorId, actor){
+    if (actor?.type !== "actorPc" && actor?.type !== "actorSpirit") return false
+    const monitors = actor.toObject(false).system.conditionMonitors
+    if (!monitors?.stun?.actual || !monitors.physical?.actual) return false
+    const stored = actor._source?.system?.conditionMonitors ?? {
+    }
+    let excess = false
+    for (const key of ["stun", "physical"]) {
+      const base = Number(stored[key]?.actual?.base) || 0
+      if (base <= monitors[key].actual.base) continue
+      monitors[key].actual.base = base
+      SR5_EntityHelpers.updateValue(monitors[key].actual, 0)
+      if (monitors[key].actual.value > monitors[key].value) excess = true
+    }
+    if (!excess) return false
+    //The overflow the preparation hid while Physical was not full: what the source holds
+    if (monitors.overflow?.actual) {
+      monitors.overflow.actual.base = Math.max(monitors.overflow.actual.base, Number(stored.overflow?.actual?.base) || 0)
+      SR5_EntityHelpers.updateValue(monitors.overflow.actual, 0)
+    }
+    const {
+      isDead
+    } = SR5_ActorHelper.carryMonitorOverflow(monitors, actor.type)
+    const updates = {
+    }
+    for (const key of ["stun", "physical", "overflow"]) {
+      if (monitors[key]?.actual) updates[`system.conditionMonitors.${key}.actual.base`] = Math.min(monitors[key].actual.base, monitors[key].value ?? monitors[key].actual.base)
+    }
+    await actor.update(updates)
+    const full = m => m?.actual && m.actual.value >= m.value
+    if (full(monitors.physical)) {
+      if (isDead || actor.type === "actorSpirit") await SR5_ActorHelper.createDeadEffect(actorId)
+      else await SR5_ActorHelper.createKoEffect(actorId)
+    } else if (full(monitors.stun)) {
+      if (actor.type === "actorSpirit") await SR5_ActorHelper.createDeadEffect(actorId)
+      else await SR5_ActorHelper.createKoEffect(actorId)
+    }
+    return true
   }
 
   //The reference of an item a player's sheet carries: the compendium document it was taken from, else an item of the

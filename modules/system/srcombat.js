@@ -1037,7 +1037,8 @@ export class SR5Combat extends Combat {
         //1 more point of armor until its DV reaches 0. The effect value is a text field: convert it before
         //subtracting, and store the reduced DV for the next turn
         let acidValue = Number(itemData.value) - 1
-        if (itemData.type === "acidDamage" && acidValue > 0) {
+        //Not once the effect is gone this very turn: the acid is cleaned off or evaporated (a spell's, after one turn)
+        if (itemData.type === "acidDamage" && acidValue > 0 && actor.items.get(item.id)) {
           let armor = actor.items.find((i) => i.type === "itemArmor" && i.system.isActive && !i.system.isAccessory)
           if (armor){
             //Only the effects, copied from the source: the prepared armor written back put its computed values in the source
@@ -1069,6 +1070,8 @@ export class SR5Combat extends Combat {
           damageInfo.damage.value = acidValue
           damageInfo.damage.type = "physical"
           damageInfo.damage.element = "acid"
+          //The same acid burning on: its damage never lays a new acid effect (entityActor-helpers.js, takeDamage)
+          damageInfo.damage.source = "acidLingering"
 
           actor.rollTest("resistanceCard", null, damageInfo)
           if (actor.items.get(item.id)) await item.update({

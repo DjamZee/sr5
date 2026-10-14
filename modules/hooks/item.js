@@ -230,6 +230,10 @@ export async function sr5HookDeleteItem(item, _options, userId) {
       }
     }
     if (item.type === "itemEffect"){
+      //An end of Increase Attribute may leave more damage than the monitor now holds: carried as the book says, by
+      //the user who deleted the effect, once its actor is prepared without it
+      const actor = item.parent
+      if (userId === game.user?.id && actor?.documentName === "Actor") setTimeout(() => SR5_ActorHelper.settleMonitorExcess(actor.isToken ? actor.token.id : actor.id, actor), 0)
       if (item.system.hasEffectOnItem && item.parent){
         if (item.parent.isToken) await SR5_ActorHelper.deleteItemEffectFromItem(item.parent.token.id, item.system.ownerItem)
         else await SR5_ActorHelper.deleteItemEffectFromItem(item.parent.id, item.system.ownerItem)
