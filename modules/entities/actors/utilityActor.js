@@ -4172,7 +4172,8 @@ export class SR5_CharacterUtility extends Actor {
           "speed": item.system.speed,
           "duration": rollRoll.total,
           "durationType": "minute",
-          "durationContrecoup": duration,
+          //Chrome Flesh p. 190: disorientation "pour une durée égale à celle de l'effet de la drogue"
+          "durationContrecoup": rollRoll.total,
           "durationContrecoupType": "minute",
         }
         break
@@ -4344,8 +4345,9 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "minute",
+          //Chrome Flesh p. 187: "une durée 10 fois supérieure à la durée de l'effet", which is in minutes
           "durationContrecoup": 10 * duration,
-          "durationContrecoupType": "hour",
+          "durationContrecoupType": "minute",
         }
         break
       case "wuduAku":
