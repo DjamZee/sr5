@@ -8,7 +8,7 @@
 				{{#each buyers}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}
 			</select>
 		</label>
-		{{#if buyer}}{{#unless free}}<span>{{localize 'SR5.DealerBalance' balance=balanceLabel}}</span>{{/unless}}{{/if}}
+		<span class="sr-dealer-balance">{{#if buyer}}{{#unless free}}{{localize 'SR5.DealerBalance' balance=balanceLabel}}{{/unless}}{{/if}}</span>
 		{{#if isGM}}<label class="sr-dealer-equip"><input type="checkbox" data-dealer-equip {{#if equip}}checked{{/if}}> {{localize 'SR5.DealerEquipMode'}}</label>{{/if}}
 	</header>
 
@@ -43,7 +43,7 @@
 				<div class="sr5-workshop-image"><img src="{{build.img}}" alt="{{build.name}}"></div>
 				<div>{{#each build.gaugesRight}}{{> systems/sr5/templates/interface/dealership-gauge.hbs}}{{/each}}</div>
 			</div>
-			<dl class="sr-dealer-showcase">{{#each build.stats}}<div><dt>{{label}}</dt><dd>{{value}}</dd></div>{{/each}}</dl>
+			<dl class="sr-dealer-showcase">{{#each build.stats}}<div><dt>{{label}}</dt><dd>{{#if changed}}<span class="sr-dealer-changed" data-tooltip="{{localize 'SR5.DealerStatModified' base=base}}">{{value}}</span> <s class="sr-dealer-base">{{base}}</s>{{else}}{{value}}{{/if}}</dd></div>{{/each}}</dl>
 			{{#if build.over}}<p class="sr-dealer-warn">{{#if build.points}}{{localize 'SR5.DealerOverModPoints'}}{{else}}{{localize 'SR5.DealerOverSlots'}}{{/if}}</p>{{/if}}
 
 			<ul class="sr-dealer-build sr-dealer-list">

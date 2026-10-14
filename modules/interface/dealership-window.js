@@ -33,7 +33,7 @@ import {
 } from '../system/vehicle-workshop-apply.js'
 import {
   dealerCapacity, dealerGauges, buildSlotsRefusal, dealerTotals, dealerPointsGauge, buildPointsRefusal,
-  dealerShelf, vehicleShowcase, isDroneModel
+  dealerShelf, vehicleShowcase, modifiedShowcase, isDroneModel
 } from '../system/vehicle-dealership.js'
 import {
   usesModPoints, droneModRule, vehicleStats, modPointsLines
@@ -329,7 +329,18 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
     }))
     const dealer = !!buyer && vehicleUnit < vehicleDescribed.price && !!dealerEffectFor(vehicle)
     context.build = {
-      name: vehicle.name, uuid: vehicle.uuid, stats: showcase(vehicle.system),
+      name: vehicle.name, uuid: vehicle.uuid,
+      // The figures once the mods fitted by the gamemaster are on, the printed ones struck out beside (lot 35)
+      stats: modifiedShowcase(vehicle.system, [...(vehicle.system.vehiclesMod ?? []), ...this._mods.map(m => {
+        const data = m.source.toObject()
+        return {
+          ...data, system: {
+            ...data.system, isActive: m.fitted
+          }
+        }
+      })]).map(s => ({
+        ...s, label: L(STAT_LABELS[s.key])
+      })),
       img: workshopImage(vehicle.img, {
         type: vehicle.system.type, category: vehicle.system.category
       }),

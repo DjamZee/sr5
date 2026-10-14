@@ -63,6 +63,9 @@ function withAdministratorMarks(node, actor){
 const MODE_LABELS = {
   active: "SR5.PanMenuModeActive", silent: "SR5.PanMenuModeSilent", offline: "SR5.PanMenuModeOffline"
 }
+const MODE_STATES = {
+  active: "SR5.DeviceModeActive", silent: "SR5.DeviceModeSilent", offline: "SR5.DeviceModeOffline"
+}
 const MODE_HELPS = {
   active: "SR5.PanMenuModeActive_D", silent: "SR5.PanMenuModeSilent_D", offline: "SR5.PanMenuModeOffline_D"
 }
@@ -314,7 +317,8 @@ export function openRadialMenu({
   for (const mode of entries.modes){
     // What the mode is, also on the current one, greyed out (séance de DjamZ du 09/10: a "?" and no help)
     const help = game.i18n.localize(MODE_HELPS[mode.mode])
-    owners.push(button(game.i18n.localize(MODE_LABELS[mode.mode]), {
+    // The current one says the state, the others the switch: never the one for the other (lot 35, DjamZ 14/10)
+    owners.push(button(game.i18n.localize((mode.current ? MODE_STATES : MODE_LABELS)[mode.mode]), {
       key: `mode-${mode.mode}`, current: mode.current,
       tooltip: mode.current ? `${game.i18n.localize("SR5.PanMenuModeCurrent")} ${help}` : help, disabled: mode.current, onClick: () => switchMode(node, mode.mode, graph)
     }))

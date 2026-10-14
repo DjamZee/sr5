@@ -486,7 +486,7 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
       tokenRadius: Math.max(token.w, token.h) / 2,
       lineRadius: lineRadiusOf({
         w: token.w, h: token.h, scaleX: token.document.texture?.scaleX, scaleY: token.document.texture?.scaleY
-      }, canvas.grid?.size ?? 100),
+      }),
       scale: crown.scale,
       angle: crown.angle,
       tokenOffset: node => {

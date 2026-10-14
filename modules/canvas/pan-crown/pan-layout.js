@@ -121,8 +121,7 @@ export function layoutCrown(graph, {
   for (const link of graph.links){
     const to = at[link.to]
     if (!to) continue
-    // From the token's edge rather than its middle, so that the line does not cross its picture; a small token's
-    // lines reach the middle of its cell, or they would stop short of its picture (séance de DjamZ du 09/10)
+    // From the edge of the token's picture rather than its middle, so that the line does not cross it (lot 35)
     const from = link.from === "owner" ? edgeToward(to, lineRadius) : at[link.from]
     // A slave seen while its master is not: no line to an icon that is not there
     if (!from) continue
@@ -139,21 +138,21 @@ export function layoutCrown(graph, {
 }
 
 /**
- * Where the lines of a token start, from its center (séance de DjamZ du 09/10): the edge of its picture, so that they
- * touch it; the middle of its cell when the picture is smaller than a cell, where its edge would leave them too short.
+ * Where the lines of a token start, from its center: the edge of its picture, so that they touch it (séance de DjamZ
+ * du 09/10) and never cross it, small picture included: they seem to run under the token that makes them and over the
+ * others (lot 35, DjamZ 14/10). Drawing them truly under its picture is not clean in Foundry V13: a token's picture is
+ * in the primary group, lit and sorted by elevation then sort, the crown in the interface group above the whole of it.
  * @param {Object} token
  * @param {Number} token.w            width of the token, in canvas pixels
  * @param {Number} token.h            height
  * @param {Number} [token.scaleX]     the scale of its picture (texture)
  * @param {Number} [token.scaleY]
- * @param {Number} gridSize           the size of a cell, in canvas pixels
  * @return {Number}
  */
 export function lineRadiusOf({
   w, h, scaleX = 1, scaleY = 1
-}, gridSize){
+}){
   const picture = Math.max(w * Math.abs(scaleX), h * Math.abs(scaleY))
-  if (picture < gridSize) return 0
   return Math.min(Math.max(w, h), picture) / 2
 }
 
