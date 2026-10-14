@@ -5,6 +5,21 @@
 <!--FORCE-->
 {{> systems/sr5/templates/rolls/rollDialogPartial/force.hbs}}
 
+<!-- INCREASE / DECREASE NOISE (Street Grimoire p. 113): the grid affected sets the threshold (2 / 4 / 6) -->
+{{#if dialogSwitch.noiseGrid}}
+<li class="grid">
+    <div class="col-4">{{localize 'SR5.NoiseSpellGrid'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-7">
+        <select class="SR-ModSelect SR-ModSelectFilled" data-target="noiseGridThreshold" data-modifier="noiseGrid">
+            {{selectOptions magic.noiseSpell.grids selected=magic.noiseSpell.grid localize=true sort=false}}
+        </select>
+    </div>
+    <div class="col-1 SR-TextCenter" data-tooltip="{{localize 'SR5.Threshold'}}">
+        <input disabled type="number" name="noiseGridThreshold" value="{{threshold.value}}" placeholder="0" data-dtype="Number" />
+    </div>
+</li>
+{{/if}}
+
 <!--RECKLESS SPELLCASTING-->
 {{#unless magic.structured}}
 {{> systems/sr5/templates/rolls/rollDialogPartial/recklessSpellcasting.hbs}}

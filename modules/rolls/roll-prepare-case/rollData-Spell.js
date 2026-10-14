@@ -13,6 +13,9 @@ import {
 import {
   combatSpellMasteryBonus, rapidFireRemaining
 } from "../../entities/items/magic-masteries.js"
+import {
+  noiseSpellKind, noiseGridThreshold
+} from "../../system/noise-spells.js"
 
 //Add info for skill dicePool roll
 export default async function spell(rollData, actor, item){
@@ -94,6 +97,18 @@ export default async function spell(rollData, actor, item){
       level, remaining: rapidFireRemaining(level, actor.getFlag?.("sr5", "rapidFireCaster"), game.time?.worldTime ?? 0), used: false
     }
     rollData.dialogSwitch.rapidFireCaster = true
+  }
+  //Increase / Decrease Noise (Street Grimoire p. 113): the threshold depends on the grid affected, chosen in the dialog
+  const noiseKind = noiseSpellKind(item)
+  if (noiseKind){
+    rollData.magic.noiseSpell = {
+      kind: noiseKind, grid: "public", grids: {
+        public: SR5.gridTypes.public, local: SR5.gridTypes.local, global: SR5.gridTypes.global
+      }
+    }
+    rollData.threshold.value = noiseGridThreshold("public")
+    rollData.threshold.type = "noiseGrid"
+    rollData.dialogSwitch.noiseGrid = true
   }
   rollData.dialogSwitch.specialization = true
   rollData.owner.itemUuid = item.uuid

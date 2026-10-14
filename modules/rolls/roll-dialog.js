@@ -14,6 +14,9 @@ import {
   guruBonus
 } from "../entities/items/magic-masteries.js"
 import {
+  noiseGridThreshold, actorNoiseModifier
+} from "../system/noise-spells.js"
+import {
   advancedMedkitDice, bbModeDiagnosisDice, improvisedSuppliesDice
 } from "../system/bb-healing-rules.js"
 import {
@@ -1150,7 +1153,7 @@ export default class SR5_RollDialog {
           else {
             let rangeMod = dialogData.matrix.noiseRangeValue || 0,
               sceneNoise = dialogData.matrix.noiseScene || 0,
-              actorNoise = dialogData.matrix.personalNoise || 0
+              actorNoise = actorNoiseModifier(dialogData.matrix.personalNoise, rangeMod, sceneNoise)
             //Morphinae daemon: one point of noise ignored per submersion grade (Kill Code p. 145)
             value = actor.system.matrix.attributes.noiseReduction.value + noiseIgnoredByStream(streamOf(actor), actor.system.matrix.submersionGrade)
             if (-value < rangeMod + sceneNoise + actorNoise) value = -(rangeMod + sceneNoise + actorNoise)
@@ -1162,7 +1165,8 @@ export default class SR5_RollDialog {
           else value = 0
           break
         case "matrixActorNoise":
-          if (html.querySelector('[data-modifier="matrixRange"]').value !== "wired") value = dialogData.matrix.personalNoise
+          //A lowered Noise (Decrease Noise, Street Grimoire p. 114) only takes away the Noise of the range and the scene
+          if (html.querySelector('[data-modifier="matrixRange"]').value !== "wired") value = actorNoiseModifier(dialogData.matrix.personalNoise, dialogData.matrix.noiseRangeValue, dialogData.matrix.noiseScene)
           else value = 0
           break
         case "incomingPA": {
@@ -1442,7 +1446,7 @@ export default class SR5_RollDialog {
               })
               this.dicePoolModifier.targetGrid = -2
             }
-            if ((dialogData.matrix.personalNoise < 0) && (html.querySelector('#matrixNoiseActor'))) {
+            if ((dialogData.matrix.personalNoise !== 0) && (html.querySelector('#matrixNoiseActor'))) {
               const matrixNoiseActorEl = html.querySelector('#matrixNoiseActor')
               if (matrixNoiseActorEl) matrixNoiseActorEl.style.display = ''
             }
@@ -1554,6 +1558,12 @@ export default class SR5_RollDialog {
           value = SR5_ConverterHelpers.signatureToMod(ev.target.value)
           label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.targetSignature[ev.target.value])})`
           break
+        case "noiseGrid":
+          value = noiseGridThreshold(ev.target.value)
+          dialogData.threshold.value = value
+          dialogData.magic.noiseSpell.grid = ev.target.value
+          html.querySelector(name).value = value
+          return
         case "searchType":
           value = SR5_ConverterHelpers.searchTypeToThreshold(ev.target.value)
           dialogData.threshold.value = value
@@ -1883,6 +1893,14 @@ export default class SR5_RollDialog {
           }
           this.drainModifier.preparationTrigger = inputValue
           this.updateDrainValue(html)
+          continue
+        case "noiseGrid":
+          //Increase / Decrease Noise (Street Grimoire p. 113): public grid 2, local 4, global 6
+          selectValue = html.querySelector(name).value
+          inputValue = noiseGridThreshold(selectValue)
+          dialogData.threshold.value = inputValue
+          dialogData.magic.noiseSpell.grid = selectValue
+          html.querySelector(targetInputName).value = inputValue
           continue
         case "searchType":
           selectValue = html.querySelector(name).value
