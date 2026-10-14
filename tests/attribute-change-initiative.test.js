@@ -148,6 +148,26 @@ describe("an attribute change moves the initiative at once", () => {
     expect(combatant.initiative).toBe(5)
   })
 
+  // Measured in game (lot 17a): a jumped-in drone went from 12 to 10 when its rigger lost 2 Intuition, its fighter
+  // stayed at 22. The drone is only written its copy of the rigger (vehicleOwner), or its control mode
+  it("a drone's new copy of its rigger, or its control mode, adjusts the fighter", async () => {
+    await sr5HookUpdateActor(actor, {
+      system: {
+        vehicleOwner: {
+          system: {
+          }
+        }
+      }
+    }, {
+    }, "gm")
+    expect(combatant.initiative).toBe(7)
+    expect(SR5Combat.updateMovesInitiative({
+      system: {
+        controlMode: "rigging"
+      }
+    })).toBe(true)
+  })
+
   it("an update that cannot change the initiative is not compared", () => {
     expect(SR5Combat.updateMovesInitiative({
       name: "x"
