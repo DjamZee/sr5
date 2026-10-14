@@ -232,6 +232,13 @@ export class SR5ShopCatalog {
         seating: Number(system.seating) || 0,
       } : {
       }),
+      // A weapon accessory priced on its weapon (pricedOnWeapon)
+      ...(Number(system?.weaponAccessory?.priceMultiplier) > 0 ? {
+        weaponAccessory: {
+          priceMultiplier: Number(system.weaponAccessory.priceMultiplier)
+        }
+      } : {
+      }),
     }
   }
 

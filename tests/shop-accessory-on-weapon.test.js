@@ -44,8 +44,13 @@ describe('weapon accessories priced on their weapon', () => {
     })).toBe(false)
     expect(SR5ShopCatalog.weaponPriceMultiplier(accessory(0, 500))).toBe(0)
   })
-  it('the shop index carries the multiplier', () => {
+  it('the shop index and the kept essentials carry the multiplier', () => {
     expect(SR5ShopCatalog.INDEX_FIELDS).toContain('system.weaponAccessory.priceMultiplier')
+    const kept = {
+      type: 'itemWeapon', system: SR5ShopCatalog.essentials(accessory(2).system)
+    }
+    expect(SR5ShopCatalog.pricedOnWeapon(kept)).toBe(true)
+    expect(SR5ShopCatalog.essentials(accessory(0, 500).system).weaponAccessory).toBeUndefined()
   })
   it('the book prices of the catalogue: long barrel the weapon once, internal smartgun once (doubles the weapon)', () => {
     expect(WEAPON_ACCESSORY_CATALOG.longbarrel.priceMultiplier).toBe(1)
