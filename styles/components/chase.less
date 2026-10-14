@@ -1,15 +1,34 @@
 // Vehicle chase, the gamemaster's window (SR5 p. 204-205, Rigger 5.0 p. 175-185)
 // Lot 5 (séance de DjamZ, 08/10): the same cards as the chat (chat-cards.less), a colour per box, the rule set at the
 // top, the log in a scrolling box, the controls of one height
+// Lot 36 (14/10): the Concepteur's look (commons/window-tokens.less), light by default, dark under Foundry's dark
+// theme. Each box keeps a colour of its own, taken from the Concepteur's: amber turn, cyan vehicles, magenta ranges,
+// green log; the pursued in amber, the pursuers in red.
+@import "../commons/window-tokens.less";
+
 .sr-chase {
-  --sr-chase-turn: #c98a00;
-  --sr-chase-vehicles: var(--sr-ui-border-color, #b3261e);
-  --sr-chase-ranges: #0f8f8f;
-  --sr-chase-log: #22a35a;
-  --sr-chase-pursued: #c98a00;
-  --sr-chase-pursuer: var(--sr-ui-border-color, #b3261e);
-  --sr-chase-line: color-mix(in srgb, currentColor 15%, transparent);
+  .srw-tokens();
+  --sr-chase-turn: var(--srw-left);
+  --sr-chase-vehicles: var(--srw-sel-border);
+  --sr-chase-ranges: var(--srw-essence);
+  --sr-chase-log: var(--srw-ok);
+  --sr-chase-pursued: var(--srw-left);
+  --sr-chase-pursuer: var(--srw-over);
+  --sr-chase-line: var(--srw-border);
   --sr-chase-control: 28px;
+  .srw-window();
+
+  .window-content {
+    button {
+      .srw-button();
+      .srw-cut();
+    }
+    :is(select, input[type="number"], input[type="text"], input:not([type])) {
+      .srw-field();
+    }
+    select option { color: var(--srw-text); background: var(--srw-panel); }
+    .hint { color: var(--srw-muted); }
+  }
 
   .sr-chase-body {
     display: flex;
@@ -23,9 +42,7 @@
     align-items: center;
     gap: 0.6rem;
     padding: 0.4rem 0.6rem;
-    border-radius: 4px;
-    background: color-mix(in srgb, var(--sr-chase-vehicles) 14%, transparent);
-    border: 1px solid color-mix(in srgb, var(--sr-chase-vehicles) 45%, transparent);
+    .srw-box(var(--sr-chase-vehicles));
   }
   .sr-chase-rules-label {
     font-weight: bold;
@@ -34,8 +51,7 @@
   .sr-chase-switch {
     display: flex;
     margin-left: auto;
-    border: 1px solid color-mix(in srgb, var(--sr-chase-vehicles) 60%, transparent);
-    border-radius: 4px;
+    gap: 4px;
     overflow: hidden;
     label {
       display: inline-flex;
@@ -44,15 +60,11 @@
       padding: 0 0.8rem;
       cursor: pointer;
       white-space: nowrap;
-      opacity: 0.75;
+      // The Concepteur's step tabs
+      .srw-tab();
+      .srw-cut();
       &.active {
-        background: var(--sr-chase-vehicles);
-        color: #fff;
-        font-weight: bold;
-        opacity: 1;
-      }
-      & + label {
-        border-left: 1px solid color-mix(in srgb, var(--sr-chase-vehicles) 60%, transparent);
+        .srw-tab-active();
       }
     }
     input[type="radio"] {
@@ -67,17 +79,19 @@
     min-width: 0;
     margin: 0;
     padding: 0.4rem 0.7rem 0.6rem;
-    border: 1px solid color-mix(in srgb, var(--sr-chase-accent) 45%, transparent);
-    border-left: 5px solid var(--sr-chase-accent);
-    border-radius: 4px;
-    background: color-mix(in srgb, var(--sr-chase-accent) 6%, transparent);
+    // A Concepteur frame, its rule in the box's colour
+    .srw-box(var(--sr-chase-accent));
+    border-radius: 0;
     legend {
       padding: 0 0.4rem;
+      .srw-title();
+      font-size: 11px;
       font-weight: bold;
-      // Lightened in the dark theme: the system's red alone is too dark on the window (DjamZ's dark theme)
-      color: color-mix(in srgb, var(--sr-chase-accent) 70%, white);
+      color: var(--srw-heading);
+      background: var(--srw-panel);
       i {
         margin-right: 0.2rem;
+        color: var(--sr-chase-accent);
       }
     }
     &.sr-chase-turn {
@@ -171,9 +185,9 @@
     margin: 0.4rem 0;
     padding: 0.3rem 0.5rem;
     border: 1px solid var(--sr-chase-line);
-    border-left: 4px solid var(--sr-chase-role, var(--sr-chase-line));
-    border-radius: 4px;
-    background: color-mix(in srgb, var(--sr-chase-role, transparent) 7%, transparent);
+    border-left: 3px solid var(--sr-chase-role, var(--srw-border-strong));
+    border-radius: 0;
+    background: var(--srw-field);
     &.role-pursued {
       --sr-chase-role: var(--sr-chase-pursued);
     }
@@ -183,15 +197,17 @@
     header strong {
       font-size: var(--font-size-16, 1rem);
     }
+    // The system's pictures are white drawings: a night tile keeps them readable on the light set
     img {
       border: none;
       object-fit: contain;
+      background: var(--srw-header-bg);
     }
     input[type="number"] {
       width: 3.5rem;
     }
     &.warning .sr-chase-status {
-      color: var(--color-level-error, #c33);
+      color: var(--srw-over);
     }
   }
   .sr-chase-act {
@@ -251,8 +267,9 @@
   .sr-chase-log-turn {
     flex: 0 0 auto;
     padding: 0 0.35rem;
-    border-radius: 3px;
-    background: color-mix(in srgb, var(--sr-chase-log) 25%, transparent);
+    background: var(--srw-ok-bg);
+    color: var(--srw-ok);
+    font-family: var(--srw-font-num);
     font-size: var(--font-size-11, 0.7rem);
     font-weight: bold;
     white-space: nowrap;
@@ -271,4 +288,10 @@
   .sr-chase-switch:has(input:disabled) label {
     cursor: default;
   }
+}
+
+// The dark set under Foundry's dark theme, unless the window itself is light (as the Concepteur)
+&.theme-dark .sr-chase:not(.theme-light),
+.sr-chase.theme-dark {
+  .srw-tokens-dark();
 }

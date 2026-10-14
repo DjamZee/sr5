@@ -65,20 +65,25 @@
     gap: 6px;
     min-height: 0;
     padding: 8px;
-    background: var(--shop-panel);
-    border: 1px solid var(--shop-line);
-    border-radius: 4px;
+    // A Concepteur frame (lot 36): panel, firm border, a rule on top
+    background: var(--srw-panel);
+    border: 1px solid var(--srw-border-strong);
+    border-top: 3px solid var(--srw-sel-border);
+    border-radius: 0;
   }
 
   .sr-dealer-center {
     overflow-y: auto;
   }
 
+  // The Concepteur's step heading: display face in capitals, a tinted line under it
   h2,
   h3 {
+    .srw-heading(var(--font-size-20, 20px));
     margin: 0;
-    border-bottom: 1px solid var(--sr-shop-accent);
-    color: var(--shop-text);
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--srw-border);
+    background: linear-gradient(90deg, var(--srw-sel-bg), transparent 45%) bottom / 100% 2px no-repeat;
   }
 
   .sr-dealer-list {
@@ -97,15 +102,22 @@
 
       &:hover,
       &.is-selected {
-        background: color-mix(in srgb, var(--sr-shop-accent) 25%, transparent);
+        background: var(--srw-sel-bg);
+        color: var(--srw-sel-text);
       }
 
+      &.is-selected {
+        box-shadow: inset 3px 0 0 var(--srw-sel-border);
+      }
+
+      // The system's pictures are white drawings: a night tile keeps them readable on the light set
       img {
         grid-row: span 2;
         width: 32px;
         height: 32px;
         border: none;
         object-fit: contain;
+        background: var(--srw-header-bg);
       }
     }
   }
@@ -129,23 +141,20 @@
       flex: 1;
       padding: 2px 6px;
       text-align: center;
-      border: 1px solid var(--shop-line);
-      border-radius: 3px;
-      color: var(--shop-text);
+      .srw-tab();
+      .srw-cut();
 
       &.is-selected {
-        background: color-mix(in srgb, var(--sr-shop-accent) 35%, transparent);
-        border-color: var(--sr-shop-accent);
+        .srw-tab-active();
       }
     }
   }
 
   .sr-dealer-models li.sr-dealer-group {
     display: block;
-    padding: 4px 4px 2px;
-    font-weight: bold;
-    color: var(--shop-text);
-    border-bottom: 1px solid var(--sr-shop-accent);
+    padding: 6px 4px 2px;
+    .srw-title();
+    border-bottom: 1px solid var(--srw-border);
     cursor: default;
 
     &:hover {
@@ -180,7 +189,8 @@
     dd {
       margin: 0;
       font-weight: bold;
-      color: var(--shop-text);
+      font-family: var(--srw-font-num) !important;
+      color: var(--srw-heading);
     }
   }
 
@@ -226,19 +236,27 @@
     grid-template-columns: minmax(110px, 1fr) 160px minmax(110px, 1fr);
   }
 
-  .sr5-workshop-gauge-bar {
+  // The gauges as the Concepteur's budget bars
+  .sr5-workshop-gauge .sr5-workshop-gauge-bar {
     display: flex;
-    border-color: var(--shop-muted);
+    height: 6px;
+    border: none;
+    border-radius: 0;
+    background: var(--srw-track);
   }
 
-  .sr5-workshop-gauge-fill {
-    background: var(--shop-muted);
+  .sr5-workshop-gauge .sr5-workshop-gauge-fill {
+    background: var(--srw-accent);
+  }
+
+  .sr5-workshop-gauge-label {
+    font-family: var(--srw-font-num) !important;
   }
 
   // What the mods waiting to be installed will take: hatched after the fitted ones
   .sr-dealer-gauge-pending {
     height: 100%;
-    background: repeating-linear-gradient(45deg, var(--shop-muted) 0 3px, transparent 3px 6px);
+    background: repeating-linear-gradient(45deg, var(--srw-accent) 0 3px, transparent 3px 6px);
   }
 
   .sr-dealer-price {
@@ -247,7 +265,8 @@
 
     td {
       padding: 2px 4px;
-      border-bottom: 1px solid var(--shop-line);
+      border: none;
+      border-bottom: 1px solid var(--srw-border);
     }
 
     td:last-child {
@@ -255,10 +274,14 @@
       white-space: nowrap;
     }
 
+    td:last-child {
+      font-family: var(--srw-font-num) !important;
+    }
+
     .sr-dealer-total td {
       font-weight: bold;
       font-size: 14px;
-      color: var(--shop-text);
+      color: var(--srw-heading);
     }
   }
 
@@ -274,9 +297,9 @@
 
     button {
       width: auto;
-      background: var(--shop-button);
-      color: var(--shop-text);
-      border-color: var(--sr-shop-accent);
+      padding: 0 0.9rem;
+      font-weight: bold;
+      .srw-cut();
     }
   }
 

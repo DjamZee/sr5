@@ -1,3 +1,5 @@
+@import "../commons/window-tokens.less";
+
 // Workshop tab of a drone and of a vehicle item (Chop Shop, Rigger 5.0 p. 153-156): the vehicle's picture between
 // its six slot gauges, then one drop zone per mod category
 .sr5-workshop {
@@ -157,4 +159,78 @@
 .sr-icon-nav a.active .sr-tab-fa {
   border-color: var(--sr-ui-border-color);
   color: var(--sr-ui-border-color);
+}
+
+// Lot 36: every workshop (Armurerie, Personnalisation, Clinique, Établi, Atelier) is a Concepteur frame in a sheet
+// that stays red (Élise, 14/10). The sheet is light in both Foundry themes, so is the frame: the light set only.
+.sr5-workshop {
+  .srw-tokens();
+  padding: 6px 8px 8px;
+  color: var(--srw-text);
+  background: var(--srw-panel);
+  border: 1px solid var(--srw-border-strong);
+  border-top: 3px solid var(--srw-sel-border);
+
+  // The block's own title: the Concepteur's window header. The sheets paint their headers deep in their own
+  // nesting, hence the !important
+  > ul:first-of-type > .SR-LigneEnTete {
+    background: var(--srw-header-bg) !important;
+    background-image: none !important;
+    border-top: none !important;
+    border-bottom: 1px solid var(--srw-frame) !important;
+    p, a { color: var(--srw-header-text) !important; font-family: var(--srw-font-head); letter-spacing: 0.06em; }
+    em { color: var(--srw-essence); }
+  }
+
+  // The lists' headers: the Concepteur's table headers, small capitals in the heading colour
+  .SR-EnTete {
+    background: none !important;
+    border: none !important;
+    border-bottom: 1px solid var(--srw-border) !important;
+    color: var(--srw-heading) !important;
+    font-family: var(--srw-font-num) !important;
+    font-size: 10px !important;
+    letter-spacing: 0.1em;
+    text-shadow: none;
+  }
+
+  .sr5-workshop-gauge-label { font-family: var(--srw-font-num); color: var(--srw-text); }
+  .sr5-workshop-gauge .sr5-workshop-gauge-bar { height: 6px; border: none; border-radius: 0; background: var(--srw-track); }
+  .sr5-workshop-gauge .sr5-workshop-gauge-fill { background: var(--srw-accent); }
+  .sr5-workshop-gauge.is-full .sr5-workshop-gauge-fill { background: var(--srw-ok); }
+  .sr5-workshop-gauge.is-full .sr5-workshop-gauge-label { color: var(--srw-ok); }
+  .sr5-workshop-gauge.is-over .sr5-workshop-gauge-fill { background: var(--srw-over); }
+  .sr5-workshop-gauge.is-over .sr5-workshop-gauge-label { color: var(--srw-over); }
+
+  .sr5-workshop-image img { background: var(--srw-header-bg); border-radius: 0; }
+  .sr5-workshop-cost { font-family: var(--srw-font-num); font-size: 12px; }
+
+  .sr5-workshop-drop {
+    background: var(--srw-field);
+    border: 1px dashed var(--srw-border-strong);
+    border-radius: 0;
+
+    &.is-dragover { border-style: solid; border-color: var(--srw-sel-border); background: var(--srw-sel-bg); }
+  }
+
+  .sr5-workshop-empty { color: var(--srw-muted); }
+  .sr5-workshop-actions a:hover { color: var(--srw-essence); }
+}
+
+.sr5-item-workshop-banner img { border-radius: 0; }
+
+.sr5-item-workshop .sr5-item-workshop-slots li {
+  background: var(--srw-field);
+  border: 1px solid var(--srw-border);
+  border-left: 3px solid var(--srw-border-strong);
+  border-radius: 0;
+
+  &.is-over { border-color: var(--srw-over); }
+}
+
+.sr5-item-workshop .sr5-item-workshop-slot {
+  color: var(--srw-heading);
+  font-family: var(--srw-font-num);
+  font-size: 10px;
+  letter-spacing: 0.08em;
 }
