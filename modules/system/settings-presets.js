@@ -86,6 +86,25 @@ export function presetChanges(choice, settings){
   }
 }
 
+// The question of a new world (rule-locks.js, askNewWorldPreset) is this menu's automation choice (lot 16b): "Livre"
+// and "Livre, actions libres" are the advanced preset, the second with the missing actions let through; "Léger" the
+// light one. The rules half is left to the menu
+export const NEW_WORLD_AUTOMATION = {
+  book: "advanced", bookFreeActions: "advanced", light: "light"
+}
+
+/** What a new world's choice writes, as the menu would: anything else (the window closed) is "Livre" */
+export function newWorldPresetChanges(choice){
+  const key = Object.hasOwn(NEW_WORLD_AUTOMATION, choice) ? choice : "book"
+  const changes = presetChanges({
+    automation: NEW_WORLD_AUTOMATION[key], rules: ""
+  }, [])
+  if (key === "bookFreeActions") changes.locks = {
+    ...changes.locks, missingActions: false
+  }
+  return changes
+}
+
 /**
  * The settings of this world a rules preset reads: boolean, world-scoped, tagged in the catalog.
  * @param registry game.settings.settings
@@ -133,7 +152,7 @@ export async function applySettingValues(values, locks = null){
   let reload = false
   for (const [key, presetValue] of Object.entries(values ?? {
   })) {
-    const setting = game.settings.settings.get(`sr5.${key}`)
+    const setting = game.settings.settings?.get(`sr5.${key}`)
     if (!setting || setting.scope !== "world") continue
     if (sameSettingValue(game.settings.get("sr5", key), presetValue)) continue
     //A setting of the window, written whole by the gamemaster's own choice, as its tab writes it: not a register

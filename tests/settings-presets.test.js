@@ -3,7 +3,7 @@ import {
 } from "vitest"
 import {
   AUTOMATION_PRESETS, rulesPresetValues, presetChanges, taggedBooleanSettings, RULES_PRESET_EXCLUDED,
-  plainSettingValue, sameSettingValue
+  plainSettingValue, sameSettingValue, newWorldPresetChanges
 } from "../modules/system/settings-presets.js"
 import {
   presetLocks
@@ -108,5 +108,22 @@ describe("settings presets (lot 10)", () => {
       }],
     ])
     expect(taggedBooleanSettings(registry).map(s => s.key).sort()).toEqual(["sr5FreeReload", "sr5GrapplingRules"])
+  })
+})
+
+describe("the question of a new world applies the Presets menu (lot 16b)", () => {
+  it("Livre = the advanced preset, Léger = the light one, the rules half untouched", () => {
+    expect(newWorldPresetChanges("book")).toEqual({
+      values: AUTOMATION_PRESETS.advanced.values, locks: presetLocks("book")
+    })
+    expect(newWorldPresetChanges("light")).toEqual({
+      values: AUTOMATION_PRESETS.light.values, locks: presetLocks("light")
+    })
+  })
+  it("Livre, actions libres = advanced, the missing actions let through ; the window closed = Livre", () => {
+    expect(newWorldPresetChanges("bookFreeActions").locks).toEqual({
+      ...presetLocks("book"), missingActions: false
+    })
+    expect(newWorldPresetChanges(null)).toEqual(newWorldPresetChanges("book"))
   })
 })

@@ -302,7 +302,8 @@ export function newWorldPresetLocks(choice) {
 /**
  * Once per new world, the active gamemaster chooses its preset (wish of DjamZ, 07/10). sr5RuleLocksAsk is "pending"
  * only in a world the migration found new; an existing world never had it, and is never asked. The window closed
- * without a choice is the book, already set. Asked once: the flag goes to "done" in its turn (gm-ledger.js)
+ * without a choice is the book. Asked once: the flag goes to "done" in its turn (gm-ledger.js)
+ * Each choice applies the automation preset of the Presets menu (lot 16b, settings-presets.js): one system, not two.
  */
 export async function askNewWorldPreset() {
   if (game.settings.get("sr5", "sr5RuleLocksAsk") !== "pending") return
@@ -321,5 +322,12 @@ export async function askNewWorldPreset() {
     rejectClose: false,
   })
   await updateLedger("sr5RuleLocksAsk", () => "done")
-  if (choice && choice !== "book") await setRuleLocks(newWorldPresetLocks(choice))
+  // Loaded here: the presets read this file
+  const {
+    newWorldPresetChanges, applySettingValues
+  } = await import("./settings-presets.js")
+  const {
+    values, locks
+  } = newWorldPresetChanges(choice)
+  await applySettingValues(values, locks)
 }
