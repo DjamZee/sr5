@@ -565,8 +565,13 @@ const fallingLeaf = registerChaseAction("fallingLeaf", {
       type: "followUp", vehicle: r.initiatorId, test: "handlingCheck", threshold: Number(r.handling) || 0,
       a: r.initiatorId, dice: r.criticalGlitch ? -4 : 0,
     })
+    // Won with net hits but pursued by no one: they put it farther from nobody, the card says so (lot 16b)
+    const notes = r.hits >= r.threshold && net && !(r.pursuers ?? []).length ? [{
+      key: "SR5.CHASE_NoteFallingLeafNoPursuer", data: {
+      }
+    }] : []
     return {
-      success: r.hits >= r.threshold, net: excessHits(r.hits, r.threshold), effects, notes: []
+      success: r.hits >= r.threshold, net: excessHits(r.hits, r.threshold), effects, notes
     }
   },
 })

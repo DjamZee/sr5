@@ -197,7 +197,8 @@ export async function launchChaseAction(vehicleId, key, targetId = "", stunt = 0
   if (options.stunt?.advantage === "crazy" && !pilot?.edgeLeft) return ui.notifications?.warn(game.i18n.format("SR5.CHASE_Refused_noEdge", {
     action: actionLabel(key)
   }))
-  if ((action.edge || options.stunt?.advantage === "crazy") && !(await spendPilotEdge(pilot, key))) return false
+  const edgePaid = !!(action.edge || options.stunt?.advantage === "crazy")
+  if (edgePaid && !(await spendPilotEdge(pilot, key))) return false
   const newTerrain = options.newTerrain ? normalizeTerrain(options.newTerrain, advanced) : undefined
   const live = liveVehicles(state).map(withSpeed)
   const ctx = {
@@ -216,6 +217,8 @@ export async function launchChaseAction(vehicleId, key, targetId = "", stunt = 0
       }, gloveMalus: !!state.glove?.[vehicleId] && state.glove[vehicleId] === state.terrain, advanced
     }),
     limitMods: turnHandlingMods(state, vehicleId), edgePush: crazyEdge,
+    // Whose point to give back if the test window is closed without rolling (handleCanceledTest)
+    edgePilotUuid: edgePaid ? pilot?.actor?.uuid ?? null : null,
     options: {
       ...options, newTerrain, newTerrainValue: ctx.newTerrainValue
     },
@@ -523,7 +526,12 @@ async function postOutcome(source, chase, outcome, followUps) {
   const name = id => state.vehicles.find(v => v.id === id)?.name ?? "?"
   const lines = []
   const subject = chase.mode === "followUp" ? name(chase.vehicleId) : initiator?.name ?? "?"
-  lines.push(game.i18n.format(outcome.success ? "SR5.CHASE_OutcomeWon" : "SR5.CHASE_OutcomeLost", {
+  // A follow-up test says which one it was (avoid the crash after the stunt…), not the stunt as if it had succeeded
+  // (lot 16b: in Open terrain, threshold 0, "Cascade… réussit" was read as the stunt made)
+  const followUpTest = chase.mode === "followUp" && chase.test ? game.i18n.localize(`SR5.CHASE_FollowUp_${chase.test}`) : ""
+  lines.push(followUpTest ? game.i18n.format(outcome.success ? "SR5.CHASE_OutcomeFollowUpWon" : "SR5.CHASE_OutcomeFollowUpLost", {
+    name: subject, test: followUpTest
+  }) : game.i18n.format(outcome.success ? "SR5.CHASE_OutcomeWon" : "SR5.CHASE_OutcomeLost", {
     name: subject, net: outcome.net
   }))
   for (const e of outcome.effects ?? []) {
@@ -555,7 +563,8 @@ async function postOutcome(source, chase, outcome, followUps) {
     mode: followUps.length ? "pending" : "done", key: source.key, chaseId: state.id, initiatorId: source.initiatorId,
     pending, damages, crashes,
   }, {
-    title: actionLabel(source.key), lines, followUps: followUps.map(f => ({
+    title: followUpTest ? `${actionLabel(source.key)}${game.i18n.localize("SR5.Colons")} ${followUpTest}` : actionLabel(source.key),
+    lines, followUps: followUps.map(f => ({
       id: f.vehicle, label: game.i18n.format("SR5.CHASE_FollowUpButton", {
         name: name(f.vehicle), test: game.i18n.localize(`SR5.CHASE_FollowUp_${f.test}`), threshold: f.threshold
       })

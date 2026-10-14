@@ -27,6 +27,18 @@ export class SR5_RollTestHelper {
     //The resistance to an area spell closed without rolling: the GM's browser kept the request as waiting, and nothing
     //was asked again while the token stayed inside (Liliane, 04/10). Dropped, the next move inside asks again
     if (dialogData.test?.type === "spellResistance") SR5_RollTestHelper.dropPendingAreaResistance(actor, dialogData.previousMessage?.itemUuid)
+    //A chase action paid with the pilot's Edge as it was launched (a crazy stunt, R5 p. 182; Pilotage zen…), closed
+    //without rolling: the point comes back to the pilot (lot 16b)
+    if (dialogData.chase?.edgePilotUuid) SR5_RollTestHelper.refundEdge(fromUuidSync(dialogData.chase.edgePilotUuid))
+  }
+
+  //Give back a point of Edge spent (removeEdgeFromActor) on a test that was not rolled
+  static async refundEdge(actor){
+    const spent = Number(actor?.system?.conditionMonitors?.edge?.actual?.base) || 0
+    if (!actor?.isOwner || spent <= 0) return
+    await actor.update({
+      "system.conditionMonitors.edge.actual.base": spent - 1
+    })
   }
 
   static async dropPendingAreaResistance(actor, itemUuid){

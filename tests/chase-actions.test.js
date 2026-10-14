@@ -413,6 +413,18 @@ describe('the other actions', () => {
     }).effects.map(e => e.type)).toEqual(['speed', 'leave'])
   })
 
+  it('Falling Leaf with net hits but no pursuer: a note says they put it farther from nobody (lot 16b)', () => {
+    expect(resolveAction('fallingLeaf', {
+      ...ids, hits: 4, threshold: 2, pursuers: []
+    }).notes).toEqual([{
+      key: 'SR5.CHASE_NoteFallingLeafNoPursuer', data: {
+      }
+    }])
+    expect(resolveAction('fallingLeaf', {
+      ...ids, hits: 4, threshold: 2, pursuers: ['B']
+    }).notes).toEqual([])
+  })
+
   it('Control a Vehicle rolls nothing and gives the control back (SR5 p. 203)', () => {
     expect(CHASE_ACTIONS.control.roll).toBe(false)
     expect(resolveAction('control', ids).effects).toEqual([{
