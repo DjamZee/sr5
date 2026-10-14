@@ -1039,6 +1039,27 @@ export class SR5_RollMessage {
           if (await SR5SharedVision.startSnoop(snooped, messageData.previousMessage.actorId)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
           break
         }
+        //Lot 14: Snoop succeeded, the hacker intercepts the messages and calls of the target while his mark lasts. The
+        //GM checks the mark; a second click is harmless, so the button stays until he has written it
+        case "snoopComm": {
+          const {
+            requestCommcode
+          } = await import("../interface/commcode-traffic.js")
+          const done = await requestCommcode("snoop", {
+            targetId: messageData.owner.actorId, snooperId: messageData.previousMessage.actorId
+          })
+          if (done === true) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+          break
+        }
+        //SR5 p. 246: Trace Icon succeeded, the hacker learns where the target is (lot 14)
+        case "traceLocate": {
+          const {
+            locateTraced
+          } = await import("../interface/commcode-trace.js")
+          await locateTraced(SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId, messageData.actorUuids),
+            SR5_EntityHelpers.getRealActorFromID(messageData.previousMessage.actorId, messageData.actorUuids))
+          break
+        }
         //SR5 p. 242: the silent icon was found, the observer chooses what she learns (couronne du PAN, lot 5)
         case "matrixPerceptionInfo":
           await choosePerceptionInfo(messageData, messageId)

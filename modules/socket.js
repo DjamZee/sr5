@@ -138,6 +138,9 @@ export class SR5_SocketHandler {
       //API pour Matrice v1 (A11, A12): a module on a player's browser asks the active GM to put marks, or to converge
       "apiPlaceMarks": [async (message, senderId) => (await import("./system/matrix-api.js"))._socketPlaceMarks(message, senderId)],
       "apiConverge": [async (message, senderId) => (await import("./system/matrix-api.js"))._socketConverge(message, senderId)],
+      //Lot 14: a message or a call between commcodes (SR5 p. 241), written by the active GM in his register
+      "commcodeRequest": [async (message, senderId) => (await import("./interface/commcode-traffic.js"))._socketCommcodeRequest(message, senderId)],
+      "commcodeRefused": [async (message, senderId) => (await import("./interface/commcode-traffic.js"))._socketCommcodeRefused(message, senderId)],
     }
 
     //senderId is added by the server to every custom socket message: a client cannot forge it

@@ -153,7 +153,17 @@ export default async function matrixDefenseInfo(cardData, actorId){
         if (SHARED_VISION_ACTOR_TYPES.includes(actor.type)) cardData.chatCard.buttons.snoopVision = SR5_RollMessage.generateChatButton("attackerTest", "snoopVision", game.i18n.format("SR5.SharedVisionSeeThrough", {
           name: actor.name
         }))
-        else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.DefenseFailure"))
+        //Lot 14: the messages and calls sent from or to the target, read in the hacker's commcode window
+        cardData.chatCard.buttons.snoopComm = SR5_RollMessage.generateChatButton("attackerTest", "snoopComm", game.i18n.format("SR5.COMMCODE_SnoopButton", {
+          name: actor.name
+        }))
+        break
+      //SR5 p. 246: the physical location of the target is found, and stays known while a mark stays (lot 14). The
+      //button is the hacker's, as Snoop's
+      case "traceIcon":
+        cardData.chatCard.buttons.traceLocate = SR5_RollMessage.generateChatButton("attackerTest", "traceLocate", game.i18n.format("SR5.COMMCODE_TraceButton", {
+          name: actor.name
+        }))
         break
       //SR5 p. 242: a silent icon found, the net hits go to information, the first one spotting it (couronne du PAN,
       //lot 5). The button is the observer's, as Snoop's

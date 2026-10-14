@@ -102,3 +102,36 @@ describe('Snoop on a drone or a device (SR5 p. 241)', () => {
     expect(card.chatCard.buttons.snoopVision).toBeUndefined()
   })
 })
+
+describe('Snoop and Trace Icon on the commcode traffic (lot 14, SR5 p. 241, 246)', () => {
+  it('a Snoop that gets through a persona offers its messages and calls, to the hacker', async () => {
+    vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockImplementation(() => icon('actorPc'))
+    const card = snoopCard(4, 1)
+    await matrixDefenseInfo(card, 'd1')
+    expect(card.chatCard.buttons.snoopComm?.action).toBe('snoopComm')
+    expect(card.chatCard.buttons.snoopComm?.type).toBe('attackerTest')
+  })
+
+  it('a camera offers both its eyes and its traffic', async () => {
+    vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockImplementation(id => (id === 'd1' ? icon('actorDevice') : icon('actorPc')))
+    const card = snoopCard(4, 1)
+    await matrixDefenseInfo(card, 'd1')
+    expect(card.chatCard.buttons.snoopVision).toBeDefined()
+    expect(card.chatCard.buttons.snoopComm).toBeDefined()
+  })
+
+  it('a Snoop that fails intercepts nothing', async () => {
+    vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockImplementation(() => icon('actorPc'))
+    const card = snoopCard(1, 3)
+    await matrixDefenseInfo(card, 'd1')
+    expect(card.chatCard.buttons.snoopComm).toBeUndefined()
+  })
+
+  it('a Trace Icon that gets through offers to locate the target, to the hacker', async () => {
+    vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockImplementation(() => icon('actorPc'))
+    const card = snoopCard(4, 1)
+    card.test.typeSub = 'traceIcon'
+    await matrixDefenseInfo(card, 'd1')
+    expect(card.chatCard.buttons.traceLocate?.type).toBe('attackerTest')
+  })
+})

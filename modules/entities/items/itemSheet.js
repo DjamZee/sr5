@@ -137,6 +137,14 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
         event.preventDefault()
         return switchDeviceMode(this.document, target.dataset.mode)
       },
+      // The messaging of the device (lot 14, SR5 p. 241)
+      openCommcode: async function (event) {
+        event.preventDefault()
+        const {
+          SR5CommcodeWindow
+        } = await import("../../interface/commcode-window.js")
+        return SR5CommcodeWindow.openDevice(this.document.uuid)
+      },
     },
   }
 

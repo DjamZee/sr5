@@ -1,0 +1,205 @@
+<div class="sr-commcode-shell {{#if device}}state-{{device.state}}{{else}}gm-view{{/if}}">
+{{#if device}}
+  <header class="sr-commcode-head">
+    <div class="sr-commcode-id">
+      <i class="fas fa-satellite-dish"></i>
+      <strong>{{device.name}}</strong>
+      {{#if device.commcode}}<span class="sr-commcode-code">{{device.commcode}}</span>{{/if}}
+      <small>{{device.holder}}</small>
+    </div>
+    <span class="sr-commcode-state {{device.state}}"><i class="fas fa-circle"></i> {{device.stateLabel}}</span>
+  </header>
+
+  <nav class="sr-commcode-tabs">
+    <button type="button" data-action="commTab" data-tab="messages" class="{{#if (eq tab 'messages')}}active{{/if}}"><i class="fas fa-comments"></i> {{localize "SR5.COMMCODE_TabMessages"}}</button>
+    <button type="button" data-action="commTab" data-tab="contacts" class="{{#if (eq tab 'contacts')}}active{{/if}}"><i class="fas fa-address-book"></i> {{localize "SR5.COMMCODE_TabContacts"}}</button>
+    {{#if hasIntercepts}}
+    <button type="button" data-action="commTab" data-tab="intercept" class="{{#if (eq tab 'intercept')}}active{{/if}}"><i class="fas fa-user-secret"></i> {{localize "SR5.COMMCODE_TabIntercept"}}</button>
+    {{/if}}
+  </nav>
+
+  {{#if noCommcode}}<p class="sr-commcode-warning"><i class="fas fa-triangle-exclamation"></i> {{localize "SR5.COMMCODE_NoCommcodeHint"}}</p>{{/if}}
+  {{#unless device.online}}<p class="sr-commcode-warning"><i class="fas fa-plug-circle-xmark"></i> {{localize "SR5.COMMCODE_OfflineHint"}}</p>{{/unless}}
+
+  {{#if call}}
+  <section class="sr-commcode-call {{call.status}}">
+    <div class="sr-commcode-call-head">
+      <i class="fas {{#if call.active}}fa-phone-volume{{else}}fa-phone{{/if}}"></i>
+      <strong>{{call.name}}</strong>
+      <span>{{#if call.incoming}}{{localize "SR5.COMMCODE_CallIncoming"}}{{/if}}{{#if call.outgoing}}{{localize "SR5.COMMCODE_CallOutgoing"}}{{/if}}{{#if call.active}}{{localize "SR5.COMMCODE_CallActive"}}{{/if}}</span>
+      <div class="sr-commcode-call-buttons">
+        {{#if call.incoming}}
+        <button type="button" class="answer" data-action="answer" data-id="{{call.id}}" data-side="{{call.side}}"><i class="fas fa-phone"></i> {{localize "SR5.COMMCODE_Answer"}}</button>
+        <button type="button" class="hangup" data-action="refuse" data-id="{{call.id}}" data-side="{{call.side}}"><i class="fas fa-phone-slash"></i> {{localize "SR5.COMMCODE_Refuse"}}</button>
+        {{else}}
+        <button type="button" class="hangup" data-action="hangup" data-id="{{call.id}}" data-side="{{call.side}}"><i class="fas fa-phone-slash"></i> {{localize "SR5.COMMCODE_Hangup"}}</button>
+        {{/if}}
+      </div>
+    </div>
+    {{#if call.active}}
+    <ol class="sr-commcode-lines">
+      {{#each call.lines}}<li class="{{#if mine}}mine{{/if}}">{{text}}</li>{{/each}}
+    </ol>
+    <div class="sr-commcode-compose">
+      <textarea name="line" rows="1" data-enter="line" placeholder="{{localize 'SR5.COMMCODE_LinePlaceholder'}}"></textarea>
+      <button type="button" data-action="line" data-id="{{call.id}}" data-side="{{call.side}}" data-tooltip="{{localize 'SR5.COMMCODE_Send'}}"><i class="fas fa-paper-plane"></i></button>
+    </div>
+    {{/if}}
+  </section>
+  {{/if}}
+
+  {{#if (eq tab "messages")}}
+  <div class="sr-commcode-main">
+    <aside class="sr-commcode-threads">
+      <div class="sr-commcode-new">
+        <input type="text" name="newCommcode" list="sr-commcode-directory" placeholder="{{localize 'SR5.COMMCODE_NewPlaceholder'}}">
+        <button type="button" data-action="newThread" data-tooltip="{{localize 'SR5.COMMCODE_NewThread'}}"><i class="fas fa-pen-to-square"></i></button>
+        <datalist id="sr-commcode-directory">
+          {{#each directory}}<option value="{{commcode}}">{{name}}</option>{{/each}}
+        </datalist>
+      </div>
+      <ul>
+        {{#each threads}}
+        <li class="{{#if active}}active{{/if}}" data-action="thread" data-commcode="{{commcode}}">
+          <div class="sr-commcode-thread-name">{{#if known}}<i class="fas fa-user"></i>{{else}}<i class="fas fa-hashtag"></i>{{/if}} {{name}}
+            {{#if unread}}<span class="sr-commcode-unread">{{unread}}</span>{{/if}}</div>
+          <div class="sr-commcode-thread-last"><span>{{last}}</span><time>{{time}}</time></div>
+        </li>
+        {{else}}
+        <li class="empty">{{localize "SR5.COMMCODE_NoThread"}}</li>
+        {{/each}}
+      </ul>
+    </aside>
+
+    <section class="sr-commcode-thread">
+      {{#if current}}
+      <div class="sr-commcode-thread-head">
+        <div>
+          <strong>{{current.name}}</strong>
+          {{#if current.known}}<small>{{current.commcode}}</small>{{/if}}
+        </div>
+        {{#unless current.known}}
+        <div class="sr-commcode-save">
+          <input type="text" name="currentName" placeholder="{{localize 'SR5.COMMCODE_ContactName'}}">
+          <button type="button" data-action="saveContact" data-tooltip="{{localize 'SR5.COMMCODE_SaveContact'}}"><i class="fas fa-user-plus"></i></button>
+        </div>
+        {{/unless}}
+        <button type="button" class="call" data-action="call" data-tooltip="{{localize 'SR5.COMMCODE_Call'}}" {{#unless device.online}}disabled{{/unless}}><i class="fas fa-phone"></i></button>
+      </div>
+      <ol class="sr-commcode-bubbles">
+        {{#each current.bubbles}}
+        <li class="{{#if mine}}mine{{else}}theirs{{/if}} {{#if call}}call{{/if}} {{#if pending}}pending{{/if}}">
+          {{#if call}}<i class="fas fa-phone"></i> {{status}}{{#if lines}} · {{lines}} {{localize "SR5.COMMCODE_Lines"}}{{/if}}{{else}}<span class="text">{{text}}</span>{{/if}}
+          <footer><time>{{time}}</time>{{#unless call}}{{#if status}} · {{status}}{{/if}}{{/unless}}</footer>
+        </li>
+        {{else}}
+        <li class="empty">{{localize "SR5.COMMCODE_FirstMessage"}}</li>
+        {{/each}}
+      </ol>
+      <div class="sr-commcode-compose">
+        <textarea name="message" rows="2" maxlength="{{maxText}}" data-enter="send" data-focus placeholder="{{localize 'SR5.COMMCODE_MessagePlaceholder'}}" {{#unless device.online}}disabled{{/unless}}></textarea>
+        <button type="button" data-action="send" data-tooltip="{{localize 'SR5.COMMCODE_Send'}}" {{#unless device.online}}disabled{{/unless}}><i class="fas fa-paper-plane"></i></button>
+      </div>
+      <p class="sr-commcode-hint">{{localize "SR5.COMMCODE_LengthHint"}}</p>
+      {{else}}
+      <p class="sr-commcode-empty">{{localize "SR5.COMMCODE_PickThread"}}</p>
+      {{/if}}
+    </section>
+  </div>
+  {{/if}}
+
+  {{#if (eq tab "contacts")}}
+  <section class="sr-commcode-contacts">
+    <div class="sr-commcode-new">
+      <input type="text" name="contactName" placeholder="{{localize 'SR5.COMMCODE_ContactName'}}">
+      <input type="text" name="contactCommcode" placeholder="{{localize 'SR5.Commcode'}}">
+      <button type="button" data-action="addContact"><i class="fas fa-user-plus"></i> {{localize "SR5.COMMCODE_AddContact"}}</button>
+    </div>
+    <ul>
+      {{#each directory}}
+      <li>
+        <span class="name"><i class="fas fa-user"></i> {{#if name}}{{name}}{{else}}—{{/if}}</span>
+        <span class="sr-commcode-code">{{commcode}}</span>
+        <button type="button" data-action="writeTo" data-commcode="{{commcode}}" data-tooltip="{{localize 'SR5.COMMCODE_WriteTo'}}"><i class="fas fa-comment"></i></button>
+        <button type="button" data-action="removeContact" data-id="{{id}}" data-tooltip="{{localize 'SR5.COMMCODE_RemoveContact'}}"><i class="fas fa-trash"></i></button>
+      </li>
+      {{else}}
+      <li class="empty">{{localize "SR5.COMMCODE_NoContact"}}</li>
+      {{/each}}
+    </ul>
+  </section>
+  {{/if}}
+
+  {{#if (eq tab "intercept")}}
+  <section class="sr-commcode-intercepts">
+    <p class="sr-commcode-hint">{{localize "SR5.COMMCODE_InterceptHint"}}</p>
+    {{#each intercepts}}
+    <article>
+      <header><i class="fas fa-user-secret"></i> <strong>{{target}}</strong>
+        <button type="button" data-action="stopSnoop" data-id="{{id}}"><i class="fas fa-eye-slash"></i> {{localize "SR5.COMMCODE_StopSnoop"}}</button></header>
+      <ol>
+        {{#each entries}}
+        <li><time>{{time}}</time> <span class="sr-commcode-code">{{from}}</span>{{#if fromDevice}} ({{fromDevice}}){{/if}} → <span class="sr-commcode-code">{{to}}</span>{{#if toDevice}} ({{toDevice}}){{/if}}
+          {{#if call}}<em><i class="fas fa-phone"></i> {{status}}</em>{{#each lines}}<div class="line">{{this}}</div>{{/each}}{{else}}<div class="line">{{text}}</div>{{/if}}</li>
+        {{else}}
+        <li class="empty">{{localize "SR5.COMMCODE_NothingIntercepted"}}</li>
+        {{/each}}
+      </ol>
+    </article>
+    {{/each}}
+  </section>
+  {{/if}}
+
+{{else}}
+  {{!-- The gamemaster's window: the whole traffic --}}
+  <header class="sr-commcode-head">
+    <div class="sr-commcode-id"><i class="fas fa-tower-broadcast"></i> <strong>{{localize "SR5.COMMCODE_GMTitle"}}</strong></div>
+  </header>
+  <section class="sr-commcode-gm-compose">
+    <input type="text" name="gmFrom" placeholder="{{localize 'SR5.COMMCODE_GMFrom'}}">
+    <input type="text" name="gmName" placeholder="{{localize 'SR5.COMMCODE_GMName'}}">
+    <input type="text" name="gmTo" placeholder="{{localize 'SR5.COMMCODE_GMTo'}}">
+    <textarea name="gmText" rows="2" maxlength="{{maxText}}" placeholder="{{localize 'SR5.COMMCODE_MessagePlaceholder'}}"></textarea>
+    <div class="sr-commcode-call-buttons">
+      <button type="button" data-action="gmSend" data-kind="message"><i class="fas fa-paper-plane"></i> {{localize "SR5.COMMCODE_Send"}}</button>
+      <button type="button" data-action="gmSend" data-kind="call"><i class="fas fa-phone"></i> {{localize "SR5.COMMCODE_Call"}}</button>
+    </div>
+    <p class="sr-commcode-hint">{{localize "SR5.COMMCODE_GMHint"}}</p>
+  </section>
+  {{#if gm.interceptions.length}}
+  <p class="sr-commcode-hint"><i class="fas fa-user-secret"></i> {{#each gm.interceptions}}{{snooper}} → {{target}} <button type="button" class="inline" data-action="stopSnoop" data-id="{{id}}"><i class="fas fa-xmark"></i></button>{{/each}}</p>
+  {{/if}}
+  <ol class="sr-commcode-log">
+    {{#each gm.entries}}
+    <li class="{{#if call}}call{{/if}} {{#if pending}}pending{{/if}} {{#if open}}open{{/if}}">
+      <div class="route"><time>{{time}}</time> {{from}} → {{to}} <em>{{status}}</em></div>
+      {{#if call}}
+        {{#each lines}}<div class="line">{{this}}</div>{{/each}}
+        {{#if answerable}}
+        <div class="sr-commcode-call-buttons">
+          <button type="button" class="answer" data-action="answer" data-id="{{id}}" data-side="to"><i class="fas fa-phone"></i> {{localize "SR5.COMMCODE_Answer"}}</button>
+          <button type="button" class="hangup" data-action="refuse" data-id="{{id}}" data-side="to"><i class="fas fa-phone-slash"></i> {{localize "SR5.COMMCODE_Refuse"}}</button>
+        </div>
+        {{/if}}
+        {{#if outgoing}}
+        <div class="sr-commcode-call-buttons">
+          <button type="button" class="hangup" data-action="hangup" data-id="{{id}}" data-side="from"><i class="fas fa-phone-slash"></i> {{localize "SR5.COMMCODE_Hangup"}}</button>
+        </div>
+        {{/if}}
+        {{#if active}}{{#if side}}
+        <div class="sr-commcode-compose">
+          <textarea name="line-{{id}}" rows="1" placeholder="{{localize 'SR5.COMMCODE_LinePlaceholder'}}"></textarea>
+          <button type="button" data-action="line" data-id="{{id}}" data-side="{{side}}"><i class="fas fa-paper-plane"></i></button>
+          <button type="button" class="hangup" data-action="hangup" data-id="{{id}}" data-side="{{side}}"><i class="fas fa-phone-slash"></i></button>
+        </div>
+        {{/if}}{{/if}}
+      {{else}}
+        <div class="line">{{text}}</div>
+      {{/if}}
+    </li>
+    {{else}}
+    <li class="empty">{{localize "SR5.COMMCODE_NoTraffic"}}</li>
+    {{/each}}
+  </ol>
+{{/if}}
+</div>
