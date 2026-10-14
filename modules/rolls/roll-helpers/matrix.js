@@ -47,6 +47,7 @@ import {
   refuseByRule
 } from "../../system/rule-locks.js"
 import {
+  linkLockStatusIds,
   isLinkLockEffect
 } from "../../system/link-lock.js"
 
@@ -396,8 +397,13 @@ export class SR5_MatrixHelpers {
     //Only the lock this card beat goes: each lock is beaten on its own (SR5 p. 246)
     let beaten = cardData.previousMessage.itemUuid
     if (beaten && actor.items.find(i => i.id === beaten)) await actor.deleteEmbeddedDocuments("Item", [beaten])
-    //While another lock holds, the character is not free and the device does not reboot
-    if (SR5_MatrixHelpers.getLinkLocks(actor).length) return
+    //While another lock holds, the character is not free and the device does not reboot. One status icon stands for
+    //all the locks: the extra ones an older version left (one per lock) go
+    if (SR5_MatrixHelpers.getLinkLocks(actor).length) {
+      const extra = linkLockStatusIds(actor).slice(1)
+      if (extra.length) await actor.deleteEmbeddedDocuments("ActiveEffect", extra)
+      return
+    }
     await SR5_EntityHelpers.deleteEffectOnActor(actor, "linkLock")
 
     //rebootDeck spends no action: the jack out has already paid for its own. It deals the dumpshock
@@ -483,8 +489,11 @@ export class SR5_MatrixHelpers {
       },
     }
     target.createEmbeddedDocuments("Item", [effect])
-    let statusEffect = await _getSRStatusEffect("linkLock")
-    await target.createEmbeddedDocuments('ActiveEffect', [statusEffect])
+    //One "Connexion verrouillée" status, however many icons lock the connection: each lock is its own effect item
+    if (!linkLockStatusIds(target).length) {
+      let statusEffect = await _getSRStatusEffect("linkLock")
+      await target.createEmbeddedDocuments('ActiveEffect', [statusEffect])
+    }
     ui.notifications.info(`${target.name}${game.i18n.format('SR5.Colons')} ${game.i18n.localize('SR5.INFO_IsLinkLocked')} ${attacker.name}`)
   }
 

@@ -108,6 +108,52 @@ describe('link lock on an AI without a device (Data Trails p. 157)', () => {
     }
   })
 
+  it('a second lock adds its effect but no second "Connexion verrouillée" status', async () => {
+    const target = persona({
+      depth: false
+    })
+    target.effects = [{
+      id: 'st1', statuses: new Set(['linkLock'])
+    }]
+    await SR5_MatrixHelpers.applylinkLockEffect(decker, target)
+    expect(target.createEmbeddedDocuments).toHaveBeenCalledTimes(1)
+    expect(target.createEmbeddedDocuments.mock.calls[0][0]).toBe('Item')
+  })
+
+  it('jacking out of one lock of two keeps a single status icon', async () => {
+    const lock = id => ({
+      id, type: 'itemEffect', system: {
+        customEffects: {
+          0: {
+            target: 'system.matrix.isLinkLocked'
+          }
+        }
+      }
+    })
+    const target = {
+      items: [lock('l1'), lock('l2')],
+      effects: [{
+        id: 'st1', statuses: new Set(['linkLock'])
+      }, {
+        id: 'st2', origin: 'linkLock'
+      }],
+      deleteEmbeddedDocuments: vi.fn(async (type, ids) => {
+        if (type === 'Item') target.items = target.items.filter(i => !ids.includes(i.id))
+      }),
+      rebootDeck: vi.fn(),
+    }
+    vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockReturnValue(target)
+    await SR5_MatrixHelpers.jackOut({
+      owner: {
+        actorId: 'target'
+      }, previousMessage: {
+        itemUuid: 'l1'
+      }
+    })
+    expect(target.deleteEmbeddedDocuments).toHaveBeenCalledWith('ActiveEffect', ['st2'])
+    expect(target.rebootDeck).not.toHaveBeenCalled()
+  })
+
   it('offers no "Lock the connection" button against an AI outside any device', async () => {
     const card = () => ({
       previousMessage: {
