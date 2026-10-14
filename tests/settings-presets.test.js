@@ -2,7 +2,8 @@ import {
   describe, it, expect
 } from "vitest"
 import {
-  AUTOMATION_PRESETS, rulesPresetValues, presetChanges, taggedBooleanSettings, RULES_PRESET_EXCLUDED
+  AUTOMATION_PRESETS, rulesPresetValues, presetChanges, taggedBooleanSettings, RULES_PRESET_EXCLUDED,
+  plainSettingValue, sameSettingValue
 } from "../modules/system/settings-presets.js"
 import {
   presetLocks
@@ -77,6 +78,18 @@ describe("settings presets (lot 10)", () => {
     for (const preset of Object.values(AUTOMATION_PRESETS)) {
       for (const key of Object.keys(preset.values)) expect(SETTINGS_CATALOG[key]).toBeDefined()
     }
+  })
+
+  it("keep a Set as the array it is written with, and find it equal to that array (measured in game, 14/10)", () => {
+    expect(plainSettingValue(new Set(["a", "b"]))).toEqual(["a", "b"])
+    expect(plainSettingValue(new Set())).toEqual([])
+    expect(sameSettingValue(new Set(["a"]), ["a"])).toBe(true)
+    expect(sameSettingValue(new Set(["a"]), [])).toBe(false)
+    expect(plainSettingValue({
+      book: true
+    })).toEqual({
+      book: true
+    })
   })
 
   it("read the world's tagged boxes from the registry, world scope only", () => {

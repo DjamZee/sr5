@@ -108,6 +108,23 @@ export function savableSettingKeys(registry = globalThis.game?.settings?.setting
 }
 
 /**
+ * A setting's value as it can be stored and compared: a Set (the "+" compendiums of lot 9, a SetField) becomes the
+ * array the setting is written with. deepClone turned it into {}, and restoring wrote {} over the list (measured in
+ * game, 14/10).
+ */
+export function plainSettingValue(value){
+  if (value instanceof Set) return [...value]
+  if (value instanceof Map) return Object.fromEntries(value)
+  if (value && typeof value === "object") return JSON.parse(JSON.stringify(value))
+  return value
+}
+
+// Same value, a Set and the array it was saved as included
+export function sameSettingValue(a, b){
+  return JSON.stringify(plainSettingValue(a)) === JSON.stringify(plainSettingValue(b))
+}
+
+/**
  * Write what a preset or a saved set holds: only the values that change. The rule locks through setRuleLocks, which
  * keeps the three former settings in step. Returns the keys written, and whether one of them asks for a reload.
  */
@@ -118,7 +135,7 @@ export async function applySettingValues(values, locks = null){
   })) {
     const setting = game.settings.settings.get(`sr5.${key}`)
     if (!setting || setting.scope !== "world") continue
-    if (foundry.utils.objectsEqual?.(game.settings.get("sr5", key), value) ?? game.settings.get("sr5", key) === value) continue
+    if (sameSettingValue(game.settings.get("sr5", key), value)) continue
     await game.settings.set("sr5", key, value)
     written.push(key)
     if (setting.requiresReload) reload = true
@@ -140,7 +157,7 @@ export async function applySettingValues(values, locks = null){
 export async function saveCurrentSettings(){
   const values = {
   }
-  for (const key of savableSettingKeys()) values[key] = foundry.utils.deepClone(game.settings.get("sr5", key))
+  for (const key of savableSettingKeys()) values[key] = plainSettingValue(game.settings.get("sr5", key))
   await game.settings.set("sr5", PRESETS_SAVED_SETTING, {
     time: Date.now(), user: game.user?.name ?? "", values, locks: currentRuleLocks(),
   })

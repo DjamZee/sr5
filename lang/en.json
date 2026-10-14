@@ -6826,5 +6826,6 @@
 	"SR5.RG_TargetMovement": "Target speed (RG3)",
 	"SR5.RG_OwnMovement": "Speed on defense (RG3)",
 	"SR5.RG_ArmorPenalty": "Target armor (RG5)",
-	"SR5.RG_DefenselessInfo": "Defense pool {dice} die(dice) below 0: +{bonus} DV (RG6)."
+	"SR5.RG_DefenselessInfo": "Defense pool {dice} die(dice) below 0: +{bonus} DV (RG6).",
+	"SR5.RG_AlternativeInitiativeHeader": "Alternative initiative (RG4)"
 }

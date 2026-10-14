@@ -6826,5 +6826,6 @@
 	"SR5.RG_TargetMovement": "Vitesse de la cible (RG3)",
 	"SR5.RG_OwnMovement": "Vitesse en défense (RG3)",
 	"SR5.RG_ArmorPenalty": "Armure de la cible (RG5)",
-	"SR5.RG_DefenselessInfo": "Réserve de défense {dice} dé(s) sous 0 : +{bonus} à la VD (RG6)."
+	"SR5.RG_DefenselessInfo": "Réserve de défense {dice} dé(s) sous 0 : +{bonus} à la VD (RG6).",
+	"SR5.RG_AlternativeInitiativeHeader": "Initiative alternative (RG4)"
 }
