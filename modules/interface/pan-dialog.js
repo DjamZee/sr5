@@ -27,7 +27,7 @@ export default class SR5_PanDialog {
         },
         {
           action: "cancel",
-          label: "Cancel",
+          label: game.i18n.localize("SR5.Cancel"),
           callback: () => ({
             action: "cancel" 
           }),
