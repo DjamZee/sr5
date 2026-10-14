@@ -125,6 +125,8 @@
 					{{else ife category 'rollTests'}}
 						<!-- Chrome Flesh p. 167: "+1 die to tests linked to Logic"; "any roll" for situational effects only -->
 						<option value="system.rollTests.anyRoll">{{localize 'SR5.RollTestsAny'}}</option>
+						<!-- Chrome Flesh p. 186 (dopadrine): "toutes les actions physiques", counted once per test -->
+						<option value="system.rollTests.physicalActions">{{localize 'SR5.RollTestsPhysicalActions'}}</option>
 						<optgroup label="{{localize 'SR5.RollTestsLinkedTo'}}">
 							{{#each ../lists.characterAttributes}}
 								<option value="system.rollTests.{{@key}}">{{localize this}}</option>
@@ -589,6 +591,10 @@
 										{{#if (eq @root.item.type 'itemDrug')}}
 										<!-- A drug has no wireless: its effects apply in the rise or in the crash (entities/items/drug-phase.js) -->
 										<input type="checkbox" name="system.customEffects.{{@key}}.phase" data-dtype="Boolean" data-tooltip="{{localize 'SR5.DrugPhaseCrash'}}" {{#if (eq phase 'crash')}}checked{{/if}}>
+										{{#if (eq phase 'crash')}}
+										<!-- eX, galak (Chrome Flesh p. 186): a part of the crash with its own duration (system/drug-clock.js, crashParts) -->
+										<input type="checkbox" name="system.customEffects.{{@key}}.tail" data-dtype="Boolean" data-tooltip="{{localize 'SR5.DrugEffectTail'}}" {{checked tail}}>
+										{{/if}}
 										{{else}}
 										<input type="checkbox" name="system.customEffects.{{@key}}.wifi" data-dtype="Boolean" {{checked wifi}}>
 										{{/if}}

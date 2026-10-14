@@ -253,6 +253,27 @@ export function overdoseOf(item, consumer){
   }
 }
 
+//Chrome Flesh p. 186-187: "Si un second traitement au P4MO est pris alors que le premier fait encore effet, le personnage
+//fera une embolie, lui infligeant 15P (non-résistés)"
+export const SECOND_TREATMENT_DAMAGE = {
+  oxygenatedFluorocarbons: {
+    value: 15, type: "physical", resist: "none"
+  }
+}
+
+// The damage of a second treatment taken while another one of the same drug is in its rise, or null. `item`: the drug
+// being taken, left out of the count; `consumer`: the actor
+export function secondTreatmentOf(item, consumer){
+  const key = drugKeyOf(item?.system)
+  const damage = SECOND_TREATMENT_DAMAGE[key]
+  if (!damage) return null
+  const id = item.id ?? item._id
+  const first = [...(consumer?.items ?? [])].some(d => d?.type === "itemDrug" && (d.id ?? d._id) !== id && drugKeyOf(d.system) === key && d.system?.phase === "rise")
+  return first ? {
+    key, ...damage, phase: "intake", itemId: id
+  } : null
+}
+
 // The resistance test of a drug damage, called by the resistance card (rolls/roll-prepare-case/rollData-Resistance.js).
 // Only for a damage the system works out itself, without a card: the value and the pool come from the drug key, the
 // item and the addictions, not from what was handed in. Returns undefined to refuse

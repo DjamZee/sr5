@@ -10,6 +10,16 @@ export const SITUATIONAL_PREFIX = "situational:"
 export const ROLL_TESTS_PREFIX = "system.rollTests."
 export const ROLL_TESTS_TYPE = "rollTests_"
 export const ANY_ROLL = "anyRoll"
+// Dopadrine (Chrome Flesh p. 186): "-1 dé à toutes les actions physiques", read as the tests linked to a physical
+// attribute, counted once however many of them the test uses
+export const PHYSICAL_ACTIONS = "physicalActions"
+export const PHYSICAL_ATTRIBUTES = ["body", "agility", "reaction", "strength"]
+
+// Whether an effect on "tests linked to" applies to a test made with these attributes
+export function scopeMatches(scope, attributes){
+  if (scope === PHYSICAL_ACTIONS) return attributes.some(a => PHYSICAL_ATTRIBUTES.includes(a))
+  return attributes.includes(scope)
+}
 
 // The targets a roll dialog reads the modifiers of: a situational effect anywhere else (an augmented
 // attribute, initiative dice, a condition monitor, armor...) would never be offered
@@ -145,7 +155,7 @@ export function attributeEffects(effects){
 export function attributeTestsState(scoped, attributes){
   let always = [], visible = []
   for (let effect of scoped){
-    if (!attributes.includes(effect.scope)) continue
+    if (!scopeMatches(effect.scope, attributes)) continue
     if (effect.situational) visible.push(effect.index)
     else always.push({
       type: `${ROLL_TESTS_TYPE}${effect.index}`, label: effect.source, value: effect.value

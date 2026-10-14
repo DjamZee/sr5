@@ -18,7 +18,7 @@ import {
   startDrugCrash, resetDrugPhase, applyDrugDamage, askDrugDoses
 } from "../items/drug-crash.js"
 import {
-  DRUG_DAMAGE, DRUG_INTERACTION_DAMAGE, intakeDamageOf, dosesTaken, overdoseOf
+  DRUG_DAMAGE, DRUG_INTERACTION_DAMAGE, intakeDamageOf, dosesTaken, overdoseOf, secondTreatmentOf
 } from "../items/drug-damage.js"
 import {
   drugDesignApproved
@@ -1703,6 +1703,14 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                 actor: actor.name, drugs: overdose.drugs.join(", "), value: overdose.value
               }))
               drugDamages.push(overdose)
+            }
+            //Chrome Flesh p. 186-187: a second treatment of P4MO while the first is in effect, an embolism (drug-damage.js)
+            const embolism = secondTreatmentOf(item, actor)
+            if (embolism) {
+              await ui.notifications.warn(game.i18n.format("SR5.DrugEmbolism", {
+                actor: actor.name, drug: item.name
+              }))
+              drugDamages.push(embolism)
             }
             //Chrome Flesh p. 185: Aisa, 4S more per extra dose taken at once, unresisted
             const extraDose = DRUG_DAMAGE[drugType.value]?.extraDose
