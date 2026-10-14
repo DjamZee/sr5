@@ -179,7 +179,9 @@ export class SR5ShopWorldSource {
       packId: pack.collection,
       flags: {
         sr5: {
-          notForSale: entry.flags?.sr5?.notForSale === true
+          notForSale: entry.flags?.sr5?.notForSale === true,
+          // The English name, when the compendium gives one: found by the search too (lot 12)
+          nameVO: SR5ShopCatalog.nameVO(entry)
         }
       },
       system: SR5ShopCatalog.essentials(system),
@@ -529,6 +531,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       return {
         entry, offered, grade,
         name: entry.name,
+        nameVO: SR5ShopCatalog.nameVO(entry),
         shelf: entry.shelf ?? SR5ShopCatalog.shelfOf(entry),
         sub: entry.sub ?? SR5ShopCatalog.subOf(entry),
         notForSale: SR5ShopStock.isNotForSale(entry),
@@ -799,6 +802,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       uuid: entry.uuid,
       img: entry.img,
       name: entry.name,
+      nameVO: row.nameVO,
       summary: summary.filter(Boolean).join(' · '),
       // `5R`, `12P`; a letter with no rating is printed alone, a legal item with none is a dash
       availability: `${row.availability || ''}${row.legality ? game.i18n.localize(SR5.legalTypesShort[row.legality]) : ''}` || '—',

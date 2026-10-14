@@ -1749,7 +1749,8 @@ export class SR5ShopVendorSource {
         packId: null,
         flags: {
           sr5: {
-            notForSale: item.flags?.sr5?.notForSale === true
+            notForSale: item.flags?.sr5?.notForSale === true,
+            nameVO: SR5ShopCatalog.nameVO(item)
           }
         },
         system: SR5ShopCatalog.essentials(counterSystem(item)),

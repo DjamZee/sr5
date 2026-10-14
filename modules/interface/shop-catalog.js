@@ -267,7 +267,7 @@ export class SR5ShopCatalog {
    * @param {object} filters
    * @param {string} [filters.shelf] a shelf key, empty for all
    * @param {string} [filters.sub] a sub-shelf value
-   * @param {string} [filters.search] part of the name, accents and case ignored
+   * @param {string} [filters.search] part of the name or of the English name, accents and case ignored
    * @param {number|null} [filters.maxPrice]
    * @param {number|null} [filters.maxAvailability]
    * @param {string[]} [filters.legality] the letters let through: '' (legal), 'R', 'F'
@@ -284,7 +284,9 @@ export class SR5ShopCatalog {
       if (row.notForSale && !filters.prototypes) return false
       if (filters.shelf && row.shelf !== filters.shelf) return false
       if (filters.shelf && filters.sub && row.sub !== filters.sub) return false
-      if (search && !SR5ShopCatalog.normalize(row.name).includes(search)) return false
+      // By its French name or, when the compendium gives one, its English name (lot 12)
+      if (search && !SR5ShopCatalog.normalize(row.name).includes(search)
+        && !SR5ShopCatalog.normalize(row.nameVO).includes(search)) return false
       if (Number.isFinite(filters.maxPrice) && row.price > filters.maxPrice) return false
       if (Number.isFinite(filters.maxAvailability) && row.availability > filters.maxAvailability) return false
       if (!legality.includes(row.legality)) return false
@@ -294,6 +296,15 @@ export class SR5ShopCatalog {
       }
       return true
     })
+  }
+
+  /**
+   * The English (VO) name of an item or index entry, from `flags.sr5.nameVO`
+   * (set on the Megapack's items), '' when it has none.
+   */
+  static nameVO(entry) {
+    const name = entry?.flags?.sr5?.nameVO
+    return typeof name === 'string' ? name.trim() : ''
   }
 
   /** Lowercase, accents removed: "Épée" is found by "epee". */
