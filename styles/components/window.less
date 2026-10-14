@@ -882,37 +882,9 @@
   }
 }
 
-/* System windows that keep Foundry's own surface (sr-application): in the light theme that surface is light, so
-   the controls drawn for the dark one (controls.less: dark red fill, teal text) and the white text of the sell
-   counter turn dark on light; the rule locks menu and the chase window too (Romuald, Honorine). The dark theme is left
-   as it is (Eudes, manual part 7) */
-// The chase window left these lists in lot 36: it draws its own light and dark sets (window-tokens.less)
-&.theme-light .application.sr-application:is(.sr-sell-dialog, .sr-factions, .sr-shop-config, .sr-rule-locks-config, .sr-presets-config, .sr-con, .sr-barter) .window-content {
-  --sr-text-color-light: var(--sr-text-color-dark);
-
-  :is(input[type="text"], input[type="number"], input[type="search"], input:not([type]), select, textarea) {
-    color: var(--sr-text-color-dark);
-    background: color-mix(in srgb, var(--sr-text-color-dark) 6%, transparent);
-    border-color: color-mix(in srgb, var(--sr-text-color-dark) 35%, transparent);
-
-    &::placeholder { color: color-mix(in srgb, var(--sr-text-color-dark) 55%, transparent); }
-  }
-
-  select option { color: var(--sr-text-color-dark); background: #f0f0f0; }
-}
-
-&.theme-light .application.sr-application:is(.sr-factions, .sr-shop-config, .sr-rule-locks-config, .sr-presets-config, .sr-con, .sr-barter) .window-content button {
-  color: var(--sr-text-color-dark);
-  background: transparent;
-  border-color: color-mix(in srgb, var(--sr-text-color-dark) 35%, transparent);
-
-  &:hover { background: color-mix(in srgb, var(--sr-text-color-dark) 10%, transparent); }
-}
-
-/* The con tracker's titles and status (con-tracker.less, lot 21): darkened on the light surface */
-&.theme-light .application.sr-con :is(.sr-con-card legend, .sr-con-status) {
-  color: color-mix(in srgb, var(--sr-con-accent) 75%, black);
-}
+/* The system's own windows (sell counter, factions, shop settings, rule locks, presets, con tracker, barter, chase…)
+   had here their light theme fixes; since lot 36 they draw the Concepteur's light and dark sets themselves
+   (window-skin.less, chase.less) */
 
 /* The window to share a vision (shared-vision.js): a box per player, the flex row stretched it into a bar (Romuald) */
 .sr5-shared-vision-users label.flexrow {
