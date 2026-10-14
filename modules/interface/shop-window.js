@@ -458,14 +458,14 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
 
     // Buyer, balance, free modes
     const buyers = SR5Shop.getBuyers({
-      equip
+      equip, tokens: !this._source?.vendor
     })
     // The character the window was opened in creation for stays a buyer, whatever the world's buyer rule (C1)
     const opened = this._creationFor ? game.actors.get(this._creationFor) : null
     if (opened?.isOwner && !buyers.some(a => a.id === opened.id)) buyers.push(opened)
-    if (this._buyerId && !buyers.some(a => a.id === this._buyerId)) this._buyerId = null
+    if (this._buyerId && !buyers.some(a => SR5Shop.buyerKey(a) === this._buyerId)) this._buyerId = null
     if (!this._buyerId) this._buyerId = SR5Shop.defaultBuyerId(buyers)
-    const buyer = buyers.find(a => a.id === this._buyerId) || null
+    const buyer = buyers.find(a => SR5Shop.buyerKey(a) === this._buyerId) || null
     // At a vendor's, cash on a carried credstick pays too (SR5 p. 445)
     const vendorSource = this._source?.vendor ? this._source : null
     const sticks = vendorSource && buyer ? SR5Credstick.carried(buyer) : []
@@ -668,7 +668,9 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
 
     // Buyer and searcher
     context.buyers = buyers.map(a => ({
-      id: a.id, name: a.name, selected: a.id === this._buyerId
+      //An unlinked token of the scene (Equip mode) is told apart from its base actor
+      id: SR5Shop.buyerKey(a), name: a.isToken ? `${a.token.name} (${game.i18n.localize('SR5.ShopSceneToken')})` : a.name,
+      selected: SR5Shop.buyerKey(a) === this._buyerId
     }))
     context.buyer = buyer ? {
       id: buyer.id, name: buyer.name, balance: SR5ShopWindow.#nuyen(balance),
@@ -1097,17 +1099,17 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       this.render()
       return
     }
-    const bought = await SR5Shop.checkout(game.actors.get(this._buyerId), this._cart.map(line => ({
+    const bought = await SR5Shop.checkout(SR5Shop.buyerFromKey(this._buyerId), this._cart.map(line => ({
       uuid: line.uuid, quantity: line.quantity, name: line.name, grade: line.grade,
     })), {
-      equip: this._equipMode, creation: this.#creationForced(game.actors.get(this._buyerId))
+      equip: this._equipMode, creation: this.#creationForced(SR5Shop.buyerFromKey(this._buyerId))
     })
     if (bought) this._cart = []
     this.render()
   }
 
   #searchingContact() {
-    const buyer = game.actors.get(this._buyerId)
+    const buyer = SR5Shop.buyerFromKey(this._buyerId)
     return this._contactId ? buyer?.items.get(this._contactId) ?? null : null
   }
 
@@ -1133,7 +1135,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     event.stopPropagation()
     const row = target.closest('[data-uuid]')
     if (!row) return
-    await SR5ShopAvailability.testLines(game.actors.get(this._buyerId), this._source?.vendor ? null : this.#searchingContact(), [{
+    await SR5ShopAvailability.testLines(SR5Shop.buyerFromKey(this._buyerId), this._source?.vendor ? null : this.#searchingContact(), [{
       uuid: row.dataset.uuid,
       grade: row.querySelector('[data-shop-grade]')?.value || null,
       quantity: SR5ShopWindow.#rowQuantity(row),
@@ -1143,7 +1145,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
 
   static async #onTestCartAvailability() {
     if (!this._cart.length) return
-    await SR5ShopAvailability.testLines(game.actors.get(this._buyerId), this._source?.vendor ? null : this.#searchingContact(), this._cart.map(line => ({
+    await SR5ShopAvailability.testLines(SR5Shop.buyerFromKey(this._buyerId), this._source?.vendor ? null : this.#searchingContact(), this._cart.map(line => ({
       uuid: line.uuid, quantity: line.quantity, name: line.name, grade: line.grade,
     })), this._surcharge, this.#overrides())
   }
@@ -1159,7 +1161,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
   static #onOpenSell() {
     // At a vendor's, the vendor buys (lot C, part 2); elsewhere, a contact or the open market
     const source = this._source?.vendor ? this._source : null
-    SR5SellDialog.open(game.actors.get(this._buyerId), {
+    SR5SellDialog.open(SR5Shop.buyerFromKey(this._buyerId), {
       vendor: source ? {
         uuid: source.actorUuid, storageId: source.storageId
       } : null

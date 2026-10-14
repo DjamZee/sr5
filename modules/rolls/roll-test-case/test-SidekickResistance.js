@@ -69,8 +69,11 @@ export default async function sidekickResistanceInfo(cardData, type){
     newMessage.matrix.fading.value = reducedFading(cardData.roll.hits * 2, streamSpriteFadingReduction(streamOf(technomancer)))
     newMessage.chatCard.buttons.fadingResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "fading", `${game.i18n.localize("SR5.ResistFading")} (${newMessage.matrix.fading.value})`)
   } else if (resistType === "drain"){
-    // Keep the spirit's Force on the card: it decides if the drain is physical (SR5 p. 303-304)
+    // Keep the spirit's Force on the card: it decides if the drain is physical (banishing SR5 p. 304, binding
+    // FRAG p. 83 — SR5 p. 304 does not say it for binding)
     newMessage.magic.force = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)?.system.force.value
+    //A spirit that cannot be found leaves no Force to compare: the drain would be stun without a word
+    if (newMessage.magic.force === undefined) ui.notifications.warn(game.i18n.localize("SR5.WARN_SpiritForceUnknownDrain"))
     newMessage.magic.drain.value = spirit?.system?.isWild ? cardData.roll.hits : cardData.roll.hits * 2
     applyReagentDrainReduction(newMessage.magic, newMessage.magic.reagentDrainReduction, newMessage.magic.reagentTier)
     if (newMessage.magic.drain.value < 2) newMessage.magic.drain.value = 2

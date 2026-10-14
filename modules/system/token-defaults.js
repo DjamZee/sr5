@@ -44,7 +44,7 @@ export const TOKEN_DISPLAY_CHOICES = ["NONE", "CONTROL", "OWNER_HOVER", "HOVER",
 
 /**
  * What each field accepts. "" everywhere = as the system does.
- * size: a number of squares (0.5 to 10); sightRange: metres (0 to 1000).
+ * size: a number of squares (0.5 to 10); sightRange: scene units, written as is on the token (0 to 1000).
  */
 export const TOKEN_FIELDS = {
   size: "number", disposition: TOKEN_DISPOSITION_CHOICES, displayName: TOKEN_DISPLAY_CHOICES,

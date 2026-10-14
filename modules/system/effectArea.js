@@ -278,17 +278,31 @@ export class SR5_EffectArea {
     if (sourceItem) sourceName = sourceItem.name
     //A template a player placed: its light, noise and background count are worked out from its item, not read
     templateData = SR5_EffectArea.trustedTemplateData(template, sourceItem)
+    //The effect this template already gave for one target: a template changed while the token is inside must give
+    //its new value (or none) without the token having to step out and back in
+    const existingEffect = (target) => actor.items.find(i => i.type === "itemEffect" && i.system.ownerID === template.id && i.system.customEffects?.find(e => e.target === target))
+    const staleEffect = async (target, value) => {
+      let current = existingEffect(target)
+      if (!current) return false
+      if (current.system.customEffects.find(e => e.target === target)?.value == value) return true
+      await current.delete()
+      return false
+    }
 
     //environmental effects
     if (templateData.environmentalModifiers){
       for (let [key, value] of Object.entries(templateData.environmentalModifiers)){
         value = parseInt(value)
-        if (value === 0) continue
+        let target = `system.itemsProperties.environmentalMod.${key}`
+        if (!value){
+          await existingEffect(target)?.delete()
+          continue
+        }
         let effectTarget = 'SR5.EnvironmentalMod'+(key[0].toUpperCase() + key.slice(1))
         effect = await SR5_EntityHelpers.generateItemEffect(sourceName, "areaEffect", template, game.i18n.localize(effectTarget), value, 0, "permanent")
-        customEffect = await SR5_EntityHelpers.generateCustomEffect("environmentalModifiers", `system.itemsProperties.environmentalMod.${key}`, "value", value, true)
+        customEffect = await SR5_EntityHelpers.generateCustomEffect("environmentalModifiers", target, "value", value, true)
         effect.system.customEffects.push(customEffect)
-        hasItem = actor.items.find(i => i.type === "itemEffect" && i.system.ownerID === effect.system?.ownerID && i.system.customEffects?.find(e => e.target === `system.itemsProperties.environmentalMod.${key}`))
+        hasItem = await staleEffect(target, value)
         if (!hasItem) await actor.createEmbeddedDocuments("Item", [effect])
       }
     }
@@ -296,25 +310,27 @@ export class SR5_EffectArea {
     //A spam or static zone adds its rating to the Noise (SR5 p. 232). system.matrix.noise holds that rating as a
     //positive number, turned into a malus when a matrix test reads it, like the jam of SR5 p. 239 : a negative
     //value here gave every device inside the template bonus dice.
-    if (templateData.matrixNoise && templateData.matrixNoise !== 0){
+    if (!parseInt(templateData.matrixNoise)) await existingEffect("system.matrix.noise")?.delete()
+    else {
       let noise = parseInt(templateData.matrixNoise)
       effect = await SR5_EntityHelpers.generateItemEffect(sourceName, "areaEffect", template, `${game.i18n.localize("SR5.MatrixNoise")}`, noise, 0, "permanent")
       customEffect = await SR5_EntityHelpers.generateCustomEffect("matrixAttributes", "system.matrix.noise", "value", noise, true)
       effect.system.customEffects.push(customEffect)
       if (effect && effect.system.customEffects.length) {
-        hasItem = actor.items.find(i => i.type === "itemEffect" && i.system.ownerID === effect.system.ownerID && i.system.customEffects?.find(e => e.target ==="system.matrix.noise"))
+        hasItem = await staleEffect("system.matrix.noise", noise)
         if (!hasItem) await actor.createEmbeddedDocuments("Item", [effect])
       }
     }
     //Background count
-    if (templateData.backgroundCountValue && templateData.backgroundCountValue !== 0){
+    if (!parseInt(templateData.backgroundCountValue)) await existingEffect("system.magic.bgCount")?.delete()
+    else {
       sourceName = game.i18n.localize("SR5.SceneBackgroundCount")
       //Aetherologie p. 34: a negative count (ebb) is a penalty for everyone, not a bonus for the non-aligned
       let effectValue = backgroundCountFor(templateData.backgroundCountValue, templateData.backgroundCountAlignement, actor.system.magic?.tradition)
       effect = await SR5_EntityHelpers.generateItemEffect(sourceName, "areaEffect", template, `${game.i18n.localize("SR5.Magic")}`, effectValue, 0, "permanent")
       effect.system.customEffects.push(await SR5_EntityHelpers.generateCustomEffect("astralValues", "system.magic.bgCount", "value", effectValue, true))
       if (effect && effect.system.customEffects.length) {
-        hasItem = actor.items.find(i => i.type === "itemEffect" && i.system.ownerID === effect.system.ownerID && i.system.customEffects?.find(e => e.target ==="system.magic.bgCount"))
+        hasItem = await staleEffect("system.magic.bgCount", effectValue)
         if (!hasItem) await actor.createEmbeddedDocuments("Item", [effect])
       }
     }
