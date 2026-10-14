@@ -8,6 +8,12 @@ import {
 import {
   MOD_POINTS_KEY, modPointsUsage, modPointsRefusal, modsTakingPoints
 } from "./drone-mod-points.js"
+import {
+  isFactoryMod
+} from "./vehicle-factory.js"
+import {
+  replacedVehicleAttribute
+} from "./vehicle-mods.js"
 
 const num = v => Math.max(0, Math.floor(Number(v) || 0))
 
@@ -138,6 +144,45 @@ export function vehicleShowcase(system) {
       key: "seating", value: `${n(system?.seating)}`
     },
   ]
+}
+
+const SHOWCASE_TARGET = /^system\.attributes\.(\w+)\.(augmented|natural)$/
+
+/** The showcase of a vehicle once its mods are fitted (lot 35, DjamZ 14/10): the mods fitted afterwards (its own ones
+ *  fitted, or the ones the gamemaster fitted in the build) add their effects; a factory mod is the printed profile
+ *  already (R5 p. 156), a mod waiting to be installed changes nothing yet, a wireless bonus counts only with the
+ *  wireless on. A Pilot or Sensor replacement stands in for the printed value and the other mods still add to it
+ *  (R5 p. 170-171). Each row of `vehicleShowcase` with its `base` and whether it `changed` */
+export function modifiedShowcase(system, mods) {
+  const fitted = Array.from(mods ?? []).filter(m => m?.system?.isActive === true && !isFactoryMod(m)).map(m => ({
+    ...m, type: "itemVehicleMod"
+  }))
+  const a = system?.attributes ?? {
+  }
+  const attributes = {
+    ...a
+  }
+  for (const key of ["pilot", "sensor"]) {
+    const replaced = replacedVehicleAttribute(fitted, key)
+    if (replaced !== null && replaced !== undefined) attributes[key] = replaced
+  }
+  for (const mod of fitted) {
+    const s = mod.system
+    for (const effect of Object.values(s.customEffects ?? {
+    })) {
+      const key = SHOWCASE_TARGET.exec(effect?.target ?? "")?.[1]
+      if (!key || !(key in a) || effect.transfer || (effect.wifi && !s.wirelessTurnedOn)) continue
+      const value = effect.type === "rating" ? Number(s.itemRating) || 0 : effect.type === "value" ? Number(effect.value) || 0 : 0
+      const multiplier = Number(effect.multiplier)
+      attributes[key] = (Number(attributes[key]) || 0) + value * (Number.isFinite(multiplier) && multiplier ? multiplier : 1)
+    }
+  }
+  const base = vehicleShowcase(system)
+  return vehicleShowcase({
+    ...system, attributes
+  }).map((row, i) => ({
+    ...row, base: base[i].value, changed: row.value !== base[i].value
+  }))
 }
 
 const LEGALITY_RANK = {

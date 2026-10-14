@@ -14,9 +14,40 @@
     gap: 16px;
     align-items: center;
 
-    select {
-      min-width: 220px;
+    // A fixed size, whatever the names the list holds: ticking « Équiper » lists every actor (lot 35)
+    label {
+      display: flex;
+      flex: none;
+      gap: 6px;
+      align-items: center;
+      white-space: nowrap;
     }
+
+    select {
+      width: 260px;
+      flex: none;
+    }
+
+    .sr-dealer-balance {
+      flex: 1;
+      white-space: nowrap;
+    }
+
+    input[type="checkbox"] {
+      flex: none;
+      margin: 0;
+    }
+  }
+
+  // A figure changed by the mods fitted, the printed one struck out beside (lot 35)
+  .sr-dealer-changed {
+    color: var(--sr-shop-accent);
+  }
+
+  .sr-dealer-base {
+    font-weight: normal;
+    font-size: 11px;
+    color: var(--shop-muted);
   }
 
   .sr-dealer-body {

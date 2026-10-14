@@ -85,13 +85,14 @@ describe('the lines of a small token reach it', () => {
     }, 100)).toBe(75)
   })
 
-  it('start in the middle of the cell when the picture is smaller than a cell', () => {
+  // Lot 35 (DjamZ 14/10): under the token that makes them, a small picture included
+  it('start at the edge of a picture smaller than a cell, never over it', () => {
     expect(lineRadiusOf({
       w: 100, h: 100, scaleX: 0.5, scaleY: 0.5
-    }, 100)).toBe(0)
+    })).toBe(25)
     expect(lineRadiusOf({
       w: 50, h: 50
-    }, 100)).toBe(0)
+    })).toBe(25)
   })
 
   it('a crown draws its lines from there, its icons where they were', () => {
