@@ -30,6 +30,9 @@ import {
   ritualAcceptsHelp
 } from "./roll-helpers/ritualTeam.js"
 import {
+  isTacticsKnowledge
+} from "./roll-helpers/tacnet.js"
+import {
   targetsWirelessOffDrone, isWirelessOffDrone
 } from "./roll-prepare-case/rollData-MatrixAction.js"
 import {
@@ -217,11 +220,16 @@ export class SR5_PrepareRollTest {
         rollData = await SR5_GetRollData.itemRoll(rollData, item)
         break
       case "knowledgeSkill":
-      case "languageSkill":
+      case "languageSkill": {
+        //Run & Gun p. 113: Small Unit Tactics opens the combat maneuver window; its plain test stays a click away there
+        const maneuvers = rollType === "knowledgeSkill" && isTacticsKnowledge(item.name) ? await import("../system/combat-maneuvers.js") : null
+        if (maneuvers && !chatData?.combatManeuver && !chatData?.combatManeuverSkip) return maneuvers.SR5CombatManeuverWindow.open(actor, item)
         rollData = await SR5_GetRollData.knowledgeSkill(rollData, rollType, item)
+        if (rollData && maneuvers && chatData?.combatManeuver) rollData = maneuvers.applyManeuverTeamwork(rollData, chatData.combatManeuver)
         // Informed Opinion (Cutting Aces p. 153) is a Knowledge test
         if (rollData && rollType === "knowledgeSkill") rollData = addSocialDialog(rollData, actor, "knowledge", chatData)
         break
+      }
       case "lift":
         rollData = await SR5_GetRollData.lift(rollData, rollKey, actor)
         break

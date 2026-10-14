@@ -1,0 +1,18 @@
+<li class="grid">
+    <div class="col-4">{{localize 'SR5.EXPLOSIVE_Type'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8">
+        <select name="system.explosive.type" data-dtype="String">
+            <option value="">{{localize 'SR5.EXPLOSIVE_None'}}</option>
+            {{selectOptions lists.explosiveTypes selected=system.explosive.type localize=true}}
+        </select>
+    </div>
+</li>
+{{#if system.explosive.type}}
+<li class="grid">
+    <div class="col-4">{{localize 'SR5.EXPLOSIVE_Homemade'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8"><input type="checkbox" name="system.explosive.homemade" {{checked system.explosive.homemade}}></div>
+</li>
+<li class="grid">
+    <div class="col-12 SR-GreyColor SR-TextSmall">{{localize 'SR5.EXPLOSIVE_ItemHint'}}</div>
+</li>
+{{/if}}

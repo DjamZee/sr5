@@ -284,8 +284,10 @@ export class SR5ShopFence {
     if (skill?.test) return Math.max(0, Number(skill.test.dicePool) || 0)
     const rating = Number(skill?.rating?.value ?? 0)
     const charisma = Number(actor.system.attributes?.charisma?.augmented?.value ?? 0)
-    // Defaulting, SR5 p. 55: an untrained social skill is Charisma - 1.
-    return rating ? rating + charisma : Math.max(0, charisma - 1)
+    // Defaulting, SR5 p. 55: an untrained social skill is Charisma - 1. The wound modifiers weigh on it too (SR5 p. 171)
+    const penalties = actor.system.penalties
+    const penalty = ["condition", "magic", "special"].reduce((t, k) => t + (Number(penalties?.[k]?.actual?.value) || 0), 0)
+    return Math.max(0, (rating ? rating + charisma : charisma - 1) + penalty)
   }
 
   /** Resolve the lines against the character's own items. */

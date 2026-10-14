@@ -46,6 +46,9 @@ import {
   isStructuredSpell, pushedHits
 } from "./roll-helpers/arcana-metamagics.js"
 import {
+  refreshWoundModifiers
+} from "./roll-helpers/extended-wounds.js"
+import {
   rapidFireAfterUse
 } from "../entities/items/magic-masteries.js"
 import {
@@ -553,6 +556,11 @@ export class SR5_RollTest {
     let newMessage = foundry.utils.duplicate(messageData)
     newMessage.test.extended.roll += 1
     SR5_EntityHelpers.removeElementFromArray(newMessage.dicePool.modifiers, 'type', "extendedTest")
+    //SR5 p. 50 and 171: each roll is made with the wounds the character has at that time, not those of the first roll
+    const skillKey = ["skill", "skillDicePool"].includes(newMessage.test.type) ? newMessage.test.typeSub : null
+    newMessage.dicePool.modifiers = refreshWoundModifiers(newMessage.dicePool.modifiers, actor.system?.penalties, {
+      sheetModifiers: skillKey ? actor.system?.skills?.[skillKey]?.test?.modifiers ?? null : null
+    })
     delete newMessage.originalModifiers
     let pushedTheLimit = !!messageData.edge.hasUsedPushTheLimit
     newMessage.edge.canUseEdge = false

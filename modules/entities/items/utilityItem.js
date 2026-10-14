@@ -820,6 +820,8 @@ export class SR5_UtilityItem extends Actor {
       case "smokeThermalMini":
       case "gas":
       case "gasMini":
+      case "paint":
+        //Paint grenade (Run & Gun p. 116-117, errata p. 102: "10m radius"): no damage, splashes everyone in its blast
         damageType = ""
         blastRadius = 10
         break

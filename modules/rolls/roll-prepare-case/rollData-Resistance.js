@@ -31,6 +31,9 @@ import {
 import {
   rgOption
 } from "../../system/rg-combat-options.js"
+import {
+  outsideBlast
+} from "../roll-helpers/explosives.js"
 
 /**
  * Run & Gun RG5 (RG p. 124-125): the armor went into the attack test as a penalty, so it stays out of this one.
@@ -597,6 +600,8 @@ async function handleGrenade(rollData, chatData, actor){
   // A blast loses its damage per meter travelled (SR5 p. 184), so the measured distance becomes meters
   // before it is multiplied by the fall-off.
   let distance = Math.round(SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint(grenadePosition, defenserPosition))
+  // A blast of fixed radius (flashbang, gas: "rayon de 10 m", SR5 p. 437) loses nothing inside and reaches no one outside
+  if (outsideBlast(distance, chatData.combat.grenade.blastRadius)) return abortWithInfo(`${game.i18n.localize("SR5.WARN_TargetIsTooFar")}`)
   let modToDamage = distance * chatData.combat.grenade.damageFallOff
   rollData.damage.base  = chatData.damage.base + modToDamage
   if (rollData.damage.base <= 0 && chatData.damage.element !== "toxin") return abortWithInfo(`${game.i18n.localize("SR5.WARN_TargetIsTooFar")}`)  

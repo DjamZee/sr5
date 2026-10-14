@@ -134,6 +134,9 @@ export class SR5_SocketHandler {
       "matrixFileAction": [async (message, senderId) => (await import("./rolls/roll-helpers/file-actions.js"))._socketFileAction(message, senderId)],
       "matrixFileRefused": [async (message, senderId) => (await import("./rolls/roll-helpers/file-actions.js"))._socketFileRefused(message, senderId)],
       "tacnetRoster": [async (message, senderId) => (await import("./system/tacnet.js"))._socketTacnetRoster(message, senderId)],
+      //Lot 37b: an explosive charge set off (Run & Gun p. 188), and a combat maneuver (Run & Gun p. 113), worked out by the active GM
+      "explosiveDetonate": [async (message, senderId) => (await import("./system/explosive-charge.js"))._socketExplosiveDetonate(message, senderId)],
+      "combatManeuver": [async (message, senderId) => (await import("./system/combat-maneuvers.js"))._socketCombatManeuver(message, senderId)],
       //A player closed the resistance window of an area spell: the active GM asks again at her next move inside
       "areaResistanceDeclined": [async (message) => (await import("./system/effectArea.js")).SR5_EffectArea._socketResistanceDeclined(message)],
       //API pour Matrice v1 (A11, A12): a module on a player's browser asks the active GM to put marks, or to converge

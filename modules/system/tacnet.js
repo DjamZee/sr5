@@ -102,6 +102,25 @@ export function tacnetOfferFor(rollData, actor){
   }))
 }
 
+// Lot 37b: the dice an RP-Tac gives a member's Small Unit Tactics test (Street Lethal p. 176), 0 for none
+export function tacnetTacticsBonus(actor){
+  if (!actor) return 0
+  return tacnetBonus(networks(), actor.uuid, {
+    knowledgeName: "Small Unit Tactics"
+  })?.value ?? 0
+}
+
+// Lot 37b: the best switched-on network an actor is a member of, for the coordination of a maneuver (RG p. 119)
+export function tacnetOf(actor){
+  if (!actor) return null
+  let best = null
+  for (const net of networks()){
+    if (!net.active || !net.members.includes(actor.uuid)) continue
+    if (!best || net.level > best.level) best = net
+  }
+  return best
+}
+
 // The roster as the GM writes it; the error said to whoever asked
 async function applyRoster({
   deviceUuid, memberUuid, action

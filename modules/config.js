@@ -445,6 +445,19 @@ SR5.tacnetLevels = {
   2                         : "SR5.TacnetLevel2",
   3                         : "SR5.TacnetLevel3",
 }
+// The explosives (Run & Gun p. 202-206, SR5 p. 438; rules in rolls/roll-helpers/explosives.js)
+SR5.explosiveTypes = {
+  commercial                : "SR5.EXPLOSIVE_commercial",
+  foam                      : "SR5.EXPLOSIVE_foam",
+  plastic                   : "SR5.EXPLOSIVE_plastic",
+  anfo                      : "SR5.EXPLOSIVE_anfo",
+  linearCharge              : "SR5.EXPLOSIVE_linearCharge",
+  dynamite                  : "SR5.EXPLOSIVE_dynamite",
+  liquid                    : "SR5.EXPLOSIVE_liquid",
+  ammoniumNitrate           : "SR5.EXPLOSIVE_ammoniumNitrate",
+  nitroglycerin             : "SR5.EXPLOSIVE_nitroglycerin",
+  tnt                       : "SR5.EXPLOSIVE_tnt",
+}
 
 // Special Skills
 SR5.specialSkills = {
@@ -913,6 +926,7 @@ SR5.actionSources = {
   callSpirit 				  : "SR5.ActionSourceCallSpirit",
   callSprite 				  : "SR5.ActionSourceCallSprite",
   castRecklessSpell		  : "SR5.ActionSourceCastRecklessSpell",
+  combatManeuver            : "SR5.ActionSourceCombatManeuver",
   castSpell				  : "SR5.ActionSourceCastSpell",
   concealItem				  : "SR5.ActionSourceConcealItem",
   changeChokeSettings       : "SR5.ActionSourceChangeChokeSettings",
@@ -1210,6 +1224,7 @@ SR5.grenadeTypes = {
   smokeThermal              : "SR5.GrenadeTypeSmokeThermal",
   gas                       : "SR5.GrenadeTypeGas",
   highlyExplosive           : "SR5.GrenadeTypeHighlyExplosive",
+  paint                     : "SR5.GrenadeTypePaint",
 }
 
 // Types de munitions d'arme de trait

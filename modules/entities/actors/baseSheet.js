@@ -579,6 +579,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     on(".select-value", "change", this._onEditItemValue.bind(this))
     on(".toggle-value", "click", this._onEditItemValue.bind(this))
     on(".jammer-toggle", "click", this._onToggleJammer.bind(this))
+    //An explosive charge: its window (Run & Gun p. 188-207, system/explosive-charge.js)
+    on(".explosive-detonate", "click", ev => {
+      ev.preventDefault()
+      const item = this.actor.items.get(ev.target.closest(".item")?.dataset.itemId)
+      if (item) import("../../system/explosive-charge.js").then(m => m.SR5ExplosiveCharge.open(item))
+    })
     on(".changeValueByClick", "mousedown", this._onChangeValueByClick.bind(this))
     //Indexes and spirit traits go to the gamemaster's ledger, never to the sheet (system/spirit-ledger.js)
     on(".sr5-spirit-ledger", "change", ev => {
@@ -1329,7 +1335,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
   async _onItemSummary(event) {
     // Don't expand/collapse when clicking interactive elements inside .deplie
-    if (event.target.closest(".toggle-value, .edit-value, .select-value, .changeValueByClick, .reload-ammo, .accessory-activate, .item-summary, .jammer-toggle")) return
+    if (event.target.closest(".toggle-value, .edit-value, .select-value, .changeValueByClick, .reload-ammo, .accessory-activate, .item-summary, .jammer-toggle, .explosive-detonate")) return
     event.preventDefault()
     // The browser clears currentTarget once the handler yields: keep the clicked element before any await
     const clicked = event.currentTarget

@@ -16,6 +16,9 @@ import {
   tacnetOfferFor
 } from "./tacnet.js"
 import {
+  maneuverOffersFor
+} from "./combat-maneuvers.js"
+import {
   swarmOffersFor
 } from "./swarm.js"
 import {
@@ -103,6 +106,8 @@ export function addIndirectEffects(rollData, actor){
   if (blindFire) offers.push(blindFire)
   const tacnet = tacnetOfferFor(rollData, actor)
   if (tacnet) offers.push(tacnet)
+  //The combat maneuver he takes part in: its bonus, or his penalty out of place (Run & Gun p. 113)
+  offers.push(...maneuverOffersFor(rollData, actor))
   //A swarm's action: the number of drones minus one, to the pool and the limit (Rigger 5.0 p. 35)
   offers.push(...swarmOffersFor(rollData, actor))
   //A device a rigger tracks for his slaved attackers (Rigger 5.0 p. 34)

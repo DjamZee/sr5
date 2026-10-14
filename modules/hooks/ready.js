@@ -66,6 +66,9 @@ import {
   initIllusions
 } from "../system/illusion.js"
 import {
+  initCombatManeuvers
+} from "../system/combat-maneuvers.js"
+import {
   initTacnet
 } from "../system/tacnet.js"
 import {
@@ -131,6 +134,8 @@ export function sr5HookReady() {
   initIllusions()
   // RP-Tac: a lowered Device Rating trims the roster (Run & Gun p. 119)
   initTacnet()
+  // Combat maneuvers: the active GM reads the leader's test and keeps the ledger (Run & Gun p. 113)
+  initCombatManeuvers()
   // Every technomancer has her living persona, kept by the system (SR5 p. 236, 253): the active GM gives it
   initLivingPersona()
   // The purchases made while no GM was connected: the active GM, back, enters them in his ledger
