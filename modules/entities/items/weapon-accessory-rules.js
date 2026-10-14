@@ -24,7 +24,11 @@ const NAME_PATTERNS = {
   foldingStock     : /crosse pliable|folding stock/,
   hipPad           : /hanche|hip pad/,
   shockPad         : /crosse rembourree|rembourrage antichoc|shock pad|padded stock/,
+  triggerRemoval   : /suppression de la detente|trigger removal/,
 }
+
+//The Accuracy modifier a smartgun system gives with a smartlink is marked with this, for the trigger removal below
+export const SMARTGUN_ACCURACY = "smartgun"
 
 const SMARTGUN_KEYS = ["smartgunSystemInternal", "smartgunSystemExternal", "smartgunInternal", "smartgunExternal"]
 
@@ -166,6 +170,24 @@ export function redDotAttackBonus(weaponData, hasSmartlink, range) {
   const bonus = redDotSightBonus(range)
   return {
     dice: bonus.dice, accuracy: Math.max(0, bonus.accuracy - nonCumulativeAccessoryAccuracy(weaponData))
+  }
+}
+
+/**
+ * Trigger removal (Hard Targets p. 182): "augmente la Précision de 1, mais n'est pas cumulable avec d'autres modifications
+ * qui augmentent également la Précision, à l'exception du smartlink requis", and "un système de visée intelligente est
+ * nécessaire". Its +1 competes with the other non-cumulative Accuracy bonuses, but adds to the smartgun's. Read once the
+ * other accessories are applied: the active trigger removal, and whether its +1 stacks; null without a smartgun system
+ * on the weapon (it cannot fire) or without the modification.
+ * @returns {{accessory: object, cumulative: boolean}|null}
+ */
+export function triggerRemovalAccuracy(weaponData) {
+  const active = accessoryList(weaponData).filter(a => a.isActive)
+  const accessory = active.find(a => isAccessoryKind(a, "triggerRemoval"))
+  if (!accessory || !active.some(isSmartgun)) return null
+  const strongest = (weaponData?.accuracy?.modifiers ?? []).find(m => m.nonCumulative && m.type === "weaponAccessory")
+  return {
+    accessory, cumulative: strongest?.details === SMARTGUN_ACCURACY
   }
 }
 
