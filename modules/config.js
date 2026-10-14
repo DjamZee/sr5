@@ -949,6 +949,7 @@ SR5.actionSources = {
   useCentering 			  : "SR5.ActionSourceUseCentering",
   usePreparation			  : "SR5.ActionSourceUsePreparation",
   useSkill				  : "SR5.ActionSourceUseSkill",
+  socialManeuver		  : "SR5.ActionSourceSocialManeuver",
   vehicleTest				  : "SR5.ActionSourceVehicleTest",
   astralTracking			  : "SR5.ActionSourceAstralTracking",
   createPreparation		  : "SR5.ActionSourceCreatePreparation",

@@ -55,6 +55,9 @@ import {
   registerFactionsControl
 } from './interface/factions-app.js'
 import {
+  registerConControls
+} from './interface/con-app.js'
+import {
   registerSwarmHooks
 } from './system/swarm.js'
 import {
@@ -297,6 +300,8 @@ registerRiggerEjectionHooks()
 registerChaseHooks()
 // Faction Reputation: the gamemaster's window in the token controls too (lot 10)
 registerFactionsControl()
+// Cutting Aces social rules: the con tracker and the bartering window in the token controls (lot 21)
+registerConControls()
 // Drone swarms: a member that changes, enters or leaves the scene prepares its swarm again (Rigger 5.0 p. 35)
 registerSwarmHooks()
 // The crown of a PAN follows its token and its devices (couronne du PAN, lot 2)

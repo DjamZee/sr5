@@ -31,6 +31,12 @@ import {
 import {
   sensorSpottingMasking
 } from "../../system/vehicle-mods.js"
+import {
+  checkedConStep, conResistance
+} from "../../system/con-card.js"
+import {
+  carrySocialToResistance
+} from "../../system/social-card.js"
 
 //Add info for skill dicePool roll
 export default async function skill(rollData, rollType, rollKey, actor, chatData){
@@ -195,6 +201,37 @@ function skillWithAttribute(actorData, skillKey, attributeKey, attributeLabel){
   }].concat(skillPart)
 }
 
+// The target's pool against a con step (Cutting Aces p. 163-164, con-card.js)
+function conStepOpposition(rollData, chatData, con, actorData){
+  const step = chatData.test.con.step
+  const conPart = skillWithAttribute(actorData, "con", "intuition", "SR5.Intuition")
+  const conIntuition = conPart.reduce((sum, m) => sum + (Number(m.value) || 0), 0)
+  const opposition = conResistance(con, step, actorData, conIntuition)
+  rollData.test.con = {
+    id: con.id, step
+  }
+  if (opposition.pool === "judgeIntentions"){
+    // The derived test as the sheet rolls it (rollData-Derived.js): the Con skill's bonuses do not apply, the
+    // general penalties stay
+    const judge = actorData.derivedAttributes.judgeIntentions.modifiers
+    rollData.dicePool.composition = judge.filter(m => m.type === "skillRating" || m.type === "linkedAttribute" || m.type === "skillGroup")
+    rollData.dicePool.modifiers = rollData.dicePool.modifiers.filter(m => m.type?.startsWith("penalty"))
+    rollData.dicePool.modifiers.push(...judge.filter(m => !rollData.dicePool.composition.includes(m) && !m.type?.startsWith("penalty"))
+      .map(m => ({
+        type: m.type, label: m.source, value: m.value
+      })))
+    rollData.test.title = `${game.i18n.localize("SR5.OpposedTest") + game.i18n.localize("SR5.Colons") + " " + game.i18n.localize("SR5.JudgeIntentions") + " (" + chatData.roll.hits + ")"}`
+  } else {
+    rollData.dicePool.composition = conPart
+    rollData.test.title = `${game.i18n.localize("SR5.OpposedTest") + game.i18n.localize("SR5.Colons") + " " + game.i18n.localize(SR5.skills.con) + " + " + game.i18n.localize("SR5.Intuition") + " (" + chatData.roll.hits + ")"}`
+  }
+  rollData.dicePool.base = SR5_PrepareRollHelper.getBaseDicepool(rollData)
+  if (opposition.intelModifier) rollData.dicePool.modifiers.push({
+    type: "conIntel", label: game.i18n.localize("SR5.CON_Intel"), value: opposition.intelModifier
+  })
+  return rollData
+}
+
 //Exported for its tests (rule-locks-magic.test.js)
 export async function getTargetedData(rollData, rollKey, actor){
   let targetActor = SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId, rollData.actorUuids)
@@ -284,6 +321,8 @@ function getOpposedData(rollData, chatData, rollKey, actor){
   rollData.test.isOpposed = true
   rollData.test.isOpposedResistance = true
   rollData.threshold.value = chatData.roll.hits
+  // Cutting Aces: the maneuver, its author and an Intimidation's glitch follow to the resistance card (social-card.js)
+  rollData = carrySocialToResistance(rollData, chatData)
   // SR5 p. 141-143: the target keeps the limit of the skill it rolls
   // (Con, Leadership, Negotiation [Social]; Perception [Mental] against
   // Impersonation). Etiquette, Intimidation and Performance are set below.
@@ -327,6 +366,13 @@ function getOpposedData(rollData, chatData, rollKey, actor){
         source: game.i18n.localize("SR5.Charisma"), type: "linkedAttribute", value: actorData.attributes.charisma.augmented.value
       },
     ])
+  }
+
+  // Cutting Aces p. 163-164: a con step resisted with the higher of Judge Intentions or Con + Intuition
+  // (Judge Intentions alone to reinforce), less the Intel Level on the bait. Read from the gamemaster's registry
+  if (chatData.test.typeSub === "con" && chatData.test.con){
+    const con = checkedConStep(chatData.test.con, chatData.owner?.actorId)
+    if (con) return conStepOpposition(rollData, chatData, con, actorData)
   }
 
   if (chatData.test.typeSub === "impersonation") rollData.test.title = `${game.i18n.localize("SR5.OpposedTest") + game.i18n.localize("SR5.Colons") + " " + game.i18n.localize(SR5.skills[rollKey]) + " + " + game.i18n.localize(SR5.allAttributes[actorData.skills[rollKey].linkedAttribute])  + " (" + chatData.roll.hits + ")"}`

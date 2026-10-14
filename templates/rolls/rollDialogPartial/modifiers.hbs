@@ -13,6 +13,10 @@
 {{> systems/sr5/templates/rolls/rollDialogPartial/customModifier.hbs}}
 <!-- SITUATIONAL EFFECTS: outside the folded list, so that they are seen -->
 {{> systems/sr5/templates/rolls/rollDialogPartial/situationalModifiers.hbs}}
+<!-- CUTTING ACES: con step, social maneuver, carried effects (lot 21) -->
+{{#if social.ca}}
+{{> systems/sr5/templates/rolls/rollDialogPartial/socialCuttingAces.hbs}}
+{{/if}}
 
 <div id="dicePoolModifier" style="display: none;">
     <!-- ALREADY APPLIED MODIFIERS-->

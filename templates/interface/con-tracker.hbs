@@ -1,0 +1,165 @@
+<div class="sr-con-body">
+
+  <nav class="sr-con-list">
+    {{#each cons}}
+    <a class="sr-con-tab {{#if active}}active{{/if}} status-{{status}}" data-action="selectCon" data-con="{{id}}">
+      <span class="sr-con-tab-name">{{name}}</span>
+      <span class="sr-con-pill">{{localize statusLabel}}</span>
+    </a>
+    {{/each}}
+  </nav>
+
+  {{#if con}}
+  <header class="sr-con-banner status-{{con.status}}">
+    <div class="sr-con-title">
+      <i class="fas fa-masks-theater"></i>
+      <strong>{{con.name}}</strong>
+      <span class="sr-con-kind">{{localize con.kindLabel}}</span>
+      <a class="sr-con-delete" data-action="deleteCon" data-con="{{con.id}}" data-tooltip="{{localize 'SR5.CON_Delete'}}"><i class="fas fa-trash"></i></a>
+    </div>
+    <div class="sr-con-parties">
+      <span><i class="fas fa-user-secret"></i> {{con.artists}}</span>
+      <span><i class="fas fa-crosshairs"></i> {{con.targetLabel}}</span>
+      <span class="sr-con-status">{{localize con.statusLabel}}</span>
+    </div>
+    <div class="sr-con-gauges">
+      <div class="sr-con-gauge intel" data-tooltip="{{localize 'SR5.CON_Intel_D'}}">
+        <span class="sr-con-gauge-label">{{localize 'SR5.CON_Intel'}}</span>
+        <span class="sr-con-gauge-value">{{con.intelSign}}{{con.intel}}</span>
+        <span class="sr-con-gauge-tools">
+          <a data-action="setIntel" data-step="-1"><i class="fas fa-minus"></i></a>
+          <a data-action="setIntel" data-step="1"><i class="fas fa-plus"></i></a>
+        </span>
+      </div>
+      <div class="sr-con-gauge props" data-tooltip="{{localize 'SR5.CON_Props_D'}}">
+        <span class="sr-con-gauge-label">{{localize 'SR5.CON_Props'}}</span>
+        <span class="sr-con-gauge-value">{{con.propTotal}}</span>
+        <span class="sr-con-gauge-tags">
+          {{#each con.props}}<span class="sr-con-tag">{{name}} {{rating}} <a data-action="removeProp" data-prop="{{id}}"><i class="fas fa-xmark"></i></a></span>{{/each}}
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <fieldset class="sr-con-card phase-1">
+    <legend><i class="fas fa-binoculars"></i> {{localize 'SR5.CON_Phase1'}}</legend>
+    {{#each prep}}
+    <div class="sr-con-step {{#if done}}done{{/if}} {{#if locked}}locked{{/if}}">
+      <div class="sr-con-step-head">
+        <span class="sr-con-step-name" data-tooltip="{{localize hint}}">{{#if done}}<i class="fas fa-check"></i>{{/if}} {{localize label}}</span>
+        {{#if mandatory}}<span class="sr-con-badge">{{localize 'SR5.CON_Mandatory'}}</span>{{/if}}
+      </div>
+      <div class="sr-con-step-row">
+        {{#if manual}}
+        <label>{{localize 'SR5.CON_NetHits'}} <input type="number" name="net-{{key}}" value="0"></label>
+        <button type="button" data-action="investigation"><i class="fas fa-pen"></i> {{localize 'SR5.CON_Record'}}</button>
+        {{/if}}
+        {{#if oppose}}
+        {{#if degree}}
+        <select name="matrixDegree">{{#each @root.degrees}}<option value="{{key}}" {{#if selected}}selected{{/if}}>{{localize label}} ({{dice}})</option>{{/each}}</select>
+        {{/if}}
+        <label>{{localize 'SR5.CON_ArtistHits'}} <input type="number" name="hits-{{key}}" value="0" min="0"></label>
+        <label>{{localize 'SR5.CON_TargetHits'}} <input type="number" name="opp-{{key}}" placeholder="{{#if dice}}{{dice}} {{localize 'SR5.CON_Dice'}}{{else}}—{{/if}}" min="0"></label>
+        <button type="button" data-action="oppose" data-step="{{key}}" data-dice="{{dice}}" {{#if locked}}disabled{{/if}}><i class="fas fa-dice"></i> {{localize 'SR5.CON_Oppose'}}</button>
+        {{/if}}
+      </div>
+    </div>
+    {{/each}}
+
+    <div class="sr-con-step {{#if fabrication.done}}done{{/if}}">
+      <div class="sr-con-step-head">
+        <span class="sr-con-step-name" data-tooltip="{{localize fabrication.hint}}">{{localize fabrication.label}}</span>
+        <span class="hint">{{localize 'SR5.CON_FabricationRule' threshold=fabrication.threshold rating=fabrication.rating}}</span>
+      </div>
+      <div class="sr-con-step-row">
+        <input type="text" name="fabName" value="{{fabrication.name}}" placeholder="{{localize 'SR5.CON_Prop'}}">
+        <label>{{localize 'SR5.CON_Rating'}} <input type="number" name="fabWanted" value="{{fabrication.wanted}}" min="1"></label>
+        <label>{{localize 'SR5.CON_Hits'}} <input type="number" name="fabHits" value="{{fabrication.hits}}" min="0"></label>
+        <button type="button" data-action="fabricate"><i class="fas fa-hammer"></i> {{localize 'SR5.CON_AddProp'}}</button>
+      </div>
+    </div>
+
+    <div class="sr-con-step">
+      <div class="sr-con-step-head">
+        <span class="sr-con-step-name" data-tooltip="{{localize acquisition.hint}}">{{localize acquisition.label}}</span>
+        <span class="hint">{{localize 'SR5.CON_AcquisitionRule'}}</span>
+      </div>
+      <div class="sr-con-step-row">
+        <input type="text" name="acqName" placeholder="{{localize 'SR5.CON_Prop'}}">
+        <label>{{localize 'SR5.CON_Rating'}} <input type="number" name="acqRating" value="1" min="1"></label>
+        <button type="button" data-action="acquire"><i class="fas fa-cart-shopping"></i> {{localize 'SR5.CON_AddProp'}}</button>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset class="sr-con-card phase-2">
+    <legend><i class="fas fa-fish"></i> {{localize 'SR5.CON_Phase2'}} · {{localize 'SR5.CON_Phase3'}}</legend>
+    <p class="hint">{{localize 'SR5.CON_RolledHint' bonus=opposition.artistBonus intel=opposition.intel}}</p>
+    {{#each rolled}}
+    <div class="sr-con-step {{#if done}}done{{/if}} {{#unless open}}locked{{/unless}}">
+      <div class="sr-con-step-head">
+        <span class="sr-con-step-name" data-tooltip="{{localize hint}}">{{#if done}}<i class="fas fa-check"></i>{{/if}} {{localize label}}</span>
+        {{#if mandatory}}<span class="sr-con-badge">{{localize 'SR5.CON_Mandatory'}}</span>{{/if}}
+      </div>
+      {{#if open}}
+      <div class="sr-con-step-row">
+        <label>{{localize 'SR5.CON_NetHits'}} <input type="number" name="net-{{key}}" value="0"></label>
+        <button type="button" data-action="recordRolled" data-step="{{key}}"><i class="fas fa-pen"></i> {{localize 'SR5.CON_RecordByHand'}}</button>
+      </div>
+      {{/if}}
+    </div>
+    {{/each}}
+    {{#if con.active}}
+    <div class="sr-con-step-row">
+      <button type="button" data-action="vanish"><i class="fas fa-person-running"></i> {{localize 'SR5.CON_Vanish'}}</button>
+    </div>
+    {{/if}}
+    {{#if faction}}
+    <div class="sr-con-faction">
+      <i class="fas fa-people-group"></i> {{faction.name}} : {{localize faction.reasonLabel}} ({{faction.delta}})
+      {{#if faction.done}}<span class="sr-con-badge">{{localize 'SR5.CON_FactionDone'}}</span>
+      {{else}}<button type="button" data-action="factionMove"><i class="fas fa-scale-balanced"></i> {{localize 'SR5.CON_FactionMove'}}</button>{{/if}}
+    </div>
+    {{/if}}
+  </fieldset>
+
+  <fieldset class="sr-con-card log">
+    <legend><i class="fas fa-scroll"></i> {{localize 'SR5.CON_Log'}}</legend>
+    <ol class="sr-con-log">
+      {{#each con.log}}
+      <li>
+        <span class="sr-con-log-step">{{localize label}}</span>
+        {{#if netLabel}}<span class="sr-con-log-net">{{netLabel}}</span>{{/if}}
+        {{#if intelLabel}}<span class="sr-con-log-intel">{{localize 'SR5.CON_Intel'}} {{intelLabel}}</span>{{/if}}
+        {{#if outcomeLabel}}<span class="sr-con-pill">{{localize outcomeLabel}}</span>{{/if}}
+        {{#if note}}<span class="hint">{{note}}</span>{{/if}}
+      </li>
+      {{else}}
+      <li class="hint">{{localize 'SR5.CON_LogEmpty'}}</li>
+      {{/each}}
+    </ol>
+  </fieldset>
+  {{else}}
+  <p class="hint">{{localize 'SR5.CON_None'}}</p>
+  {{/if}}
+
+  <fieldset class="sr-con-card new">
+    <legend><i class="fas fa-plus"></i> {{localize 'SR5.CON_New'}}</legend>
+    <div class="sr-con-step-row">
+      <input type="text" name="newName" placeholder="{{localize 'SR5.CON_Name'}}">
+      <select name="newKind">
+        <option value="long">{{localize 'SR5.CON_Kind_long'}}</option>
+        <option value="short">{{localize 'SR5.CON_Kind_short'}}</option>
+      </select>
+      <select name="newTarget">
+        <option value="">{{localize 'SR5.CON_TargetTargeted'}}</option>
+        {{#each people}}<option value="{{id}}">{{name}}</option>{{/each}}
+      </select>
+    </div>
+    <div class="sr-con-step-row">
+      <span>{{localize 'SR5.CON_Artists'}} :</span>
+      {{#each people}}{{#if pc}}<label class="checkbox"><input type="checkbox" name="newArtist" value="{{id}}"> {{name}}</label>{{/if}}{{/each}}
+      <button type="button" data-action="createCon"><i class="fas fa-masks-theater"></i> {{localize 'SR5.CON_Create'}}</button>
+    </div>
+  </fieldset>
+</div>

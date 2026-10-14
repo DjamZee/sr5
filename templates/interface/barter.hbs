@@ -1,0 +1,61 @@
+<div class="sr-con-body">
+  <fieldset class="sr-con-card phase-2">
+    <legend><i class="fas fa-handshake"></i> {{#if intimidation}}{{localize 'SR5.BARTER_Intimidation'}}{{else}}{{localize 'SR5.BARTER_Negotiation'}}{{/if}}</legend>
+    <div class="sr-con-step-row">
+      <select data-field="mode">
+        <option value="negotiation" {{#unless intimidation}}selected{{/unless}}>{{localize 'SR5.BARTER_Negotiation'}}</option>
+        <option value="intimidation" {{#if intimidation}}selected{{/if}}>{{localize 'SR5.BARTER_Intimidation'}}</option>
+      </select>
+      <label>{{localize 'SR5.BARTER_Offer'}} <input type="number" data-field="offer" value="{{state.offer}}" min="0"> ¥</label>
+      <label>{{localize 'SR5.CON_NetHits'}} <input type="number" data-field="net" value="{{state.net}}"></label>
+      {{#unless intimidation}}
+      <select data-field="side">
+        <option value="pay" {{#if (eq state.side "pay")}}selected{{/if}}>{{localize 'SR5.BARTER_SidePay'}}</option>
+        <option value="receive" {{#if (eq state.side "receive")}}selected{{/if}}>{{localize 'SR5.BARTER_SideReceive'}}</option>
+      </select>
+      {{/unless}}
+    </div>
+    <div class="sr-con-gauges">
+      <div class="sr-con-gauge props">
+        <span class="sr-con-gauge-label">{{#if intimidation}}{{localize 'SR5.BARTER_Obtained'}}{{else}}{{localize 'SR5.BARTER_Value'}}{{/if}}</span>
+        <span class="sr-con-gauge-value">{{value}} ¥</span>
+      </div>
+      <p class="hint">{{#if intimidation}}{{localize 'SR5.BARTER_IntimidationHint'}}{{else}}{{localize 'SR5.BARTER_NegotiationHint'}}{{/if}}</p>
+    </div>
+  </fieldset>
+
+  {{#unless intimidation}}
+  <fieldset class="sr-con-card">
+    <legend><i class="fas fa-scale-balanced"></i> {{localize 'SR5.BARTER_Table'}}</legend>
+    {{#each lines}}
+    <div class="sr-con-step">
+      <div class="sr-con-step-row">
+        <strong>{{localize label}}</strong>
+        {{#if isCash}}<label>¥ <input type="number" data-line="{{index}}" data-field="amount" value="{{amount}}" min="0"></label>{{/if}}
+        {{#if isEquipment}}
+        <label>{{localize 'SR5.BARTER_Cost'}} <input type="number" data-line="{{index}}" data-field="cost" value="{{cost}}" min="0"></label>
+        <label>{{localize 'SR5.BARTER_Availability'}} <input type="number" data-line="{{index}}" data-field="availability" value="{{availability}}" min="0"></label>
+        <label>{{localize 'SR5.BARTER_Quantity'}} <input type="number" data-line="{{index}}" data-field="quantity" value="{{quantity}}" min="1"></label>
+        {{/if}}
+        {{#if isContact}}<label>{{localize 'SR5.BARTER_Influence'}} <input type="number" data-line="{{index}}" data-field="influence" value="{{influence}}" min="0"></label>{{/if}}
+        {{#if isService}}
+        <label>{{localize 'SR5.BARTER_DicePool'}} <input type="number" data-line="{{index}}" data-field="dicePool" value="{{dicePool}}" min="0"></label>
+        <label>{{localize 'SR5.BARTER_Hours'}} <input type="number" data-line="{{index}}" data-field="hours" value="{{hours}}" min="0" step="0.5"></label>
+        {{/if}}
+        {{#if isInformation}}<label>{{localize 'SR5.BARTER_DicePool'}} <input type="number" data-line="{{index}}" data-field="dicePool" value="{{dicePool}}" min="0"></label>{{/if}}
+        <span class="sr-con-log-net">{{value}} ¥</span>
+        <a data-action="removeLine" data-line="{{index}}"><i class="fas fa-xmark"></i></a>
+      </div>
+    </div>
+    {{/each}}
+    <div class="sr-con-step-row">
+      <select name="newKind">{{#each kinds}}<option value="{{key}}">{{localize label}}</option>{{/each}}</select>
+      <button type="button" data-action="addLine"><i class="fas fa-plus"></i> {{localize 'SR5.BARTER_AddLine'}}</button>
+    </div>
+    <div class="sr-con-faction">
+      <i class="fas fa-coins"></i> {{localize remainderLabel}} : <strong>{{remainder}} ¥</strong>
+    </div>
+    <p class="hint">{{localize 'SR5.BARTER_TableHint'}}</p>
+  </fieldset>
+  {{/unless}}
+</div>

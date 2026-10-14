@@ -546,6 +546,25 @@ export class SR5_RollMessage {
         SR5_RollMessage.updateChatButtonHelper(messageId, type, healData.test.typeSub)
         break
       }
+      //Cutting Aces (lot 21, social-card.js, imported here to keep it out of this module's own imports): what a
+      //social maneuver carries, applied by the GM; the con step written in his tracker; the bartering window
+      case "maneuverApply":
+      case "conRecord": {
+        const social = await import("../system/social-card.js")
+        const done = type === "maneuverApply" ? await social.applyManeuver(messageData) : await social.recordConFromCard(messageData)
+        if (done) SR5_RollMessage.updateChatButtonHelper(messageId, type, done)
+        break
+      }
+      case "barterOpen": {
+        const {
+          SR5BarterApp
+        } = await import("../interface/barter-app.js")
+        const net = (Number(messageData.threshold?.value) || 0) - (Number(messageData.roll?.hits) || 0)
+        SR5BarterApp.open({
+          mode: messageData.test.typeSub === "intimidation" ? "intimidation" : "negotiation", net
+        })
+        break
+      }
       //Bullets & Bandages p. 14-15: the GM writes the stabilization and the diagnosis in his ledger
       case "bbStabilize":
       case "bbDiagnose": {
@@ -1282,6 +1301,11 @@ export class SR5_RollMessage {
         break
       case "applyReagents":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.ReagentApplied"))
+        break
+      //Cutting Aces (lot 21): what the GM applied or wrote, said on the card
+      case "maneuverApply":
+      case "conRecord":
+        messageData.chatCard.buttons[`${buttonToUpdate}Done`] = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", String(firstOption ?? ""))
         break
       //Bullets & Bandages p. 15: what the GM applied, marked done
       case "bbStabilize":

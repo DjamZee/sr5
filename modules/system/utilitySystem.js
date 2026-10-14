@@ -20,6 +20,15 @@ import {
   SR5FactionsApp
 } from "../interface/factions-app.js"
 import {
+  SR5ConRegistry
+} from "../interface/con-registry.js"
+import {
+  SR5ConApp
+} from "../interface/con-app.js"
+import {
+  registerSocialSettings
+} from "./social-settings.js"
+import {
   SR5NegotiationRepair
 } from "../interface/negotiation-repair.js"
 import {
@@ -297,6 +306,18 @@ export class SR5_SystemHelpers {
       hint: "SR5.FACTION_MenuHint",
       icon: "fas fa-people-group",
       type: SR5FactionsApp,
+      restricted: true,
+    })
+
+    // Cutting Aces social rules (lot 21): the dialog's maneuvers and con steps, the con tracker (p. 153-164)
+    registerSocialSettings()
+    SR5ConRegistry.register()
+    game.settings.registerMenu("sr5", "sr5ConTrackerMenu", {
+      name: "SR5.CON_Title",
+      label: "SR5.CON_Open",
+      hint: "SR5.CON_MenuHint",
+      icon: "fas fa-masks-theater",
+      type: SR5ConApp,
       restricted: true,
     })
 

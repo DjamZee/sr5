@@ -1,0 +1,253 @@
+// The con tracker, gamemaster's window (Cutting Aces p. 162-164), lot 21
+// Same grammar as the chase window (chase.less): a coloured box per phase, a banner for the con, its two figures
+// as gauges, a colour per status
+.sr-con {
+  --sr-con-prep: #0f8f8f;
+  --sr-con-bait: #c98a00;
+  --sr-con-log: #22a35a;
+  --sr-con-new: var(--sr-ui-border-color, #b3261e);
+  --sr-con-ok: #22a35a;
+  --sr-con-wary: #c98a00;
+  --sr-con-bad: var(--sr-ui-border-color, #b3261e);
+  --sr-con-line: color-mix(in srgb, currentColor 15%, transparent);
+
+  .sr-con-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  // The cons, a row of tabs
+  .sr-con-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    &:empty { display: none; }
+  }
+  .sr-con-tab {
+    --sr-con-accent: var(--sr-con-prep);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.2rem 0.6rem;
+    border: 1px solid color-mix(in srgb, var(--sr-con-accent) 45%, transparent);
+    border-radius: 999px;
+    opacity: 0.75;
+    &.active {
+      opacity: 1;
+      background: color-mix(in srgb, var(--sr-con-accent) 18%, transparent);
+      font-weight: bold;
+    }
+  }
+
+  // A colour per status
+  .status-hooked, .status-exitClean { --sr-con-accent: var(--sr-con-ok); }
+  .status-wary { --sr-con-accent: var(--sr-con-wary); }
+  .status-exposed, .status-exitCrumbled, .status-vanished { --sr-con-accent: var(--sr-con-bad); }
+
+  .sr-con-pill {
+    font-size: 0.8em;
+    padding: 0 0.45rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--sr-con-accent, var(--sr-con-prep)) 30%, transparent);
+  }
+
+  // The banner of the con shown
+  .sr-con-banner {
+    --sr-con-accent: var(--sr-con-prep);
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.5rem 0.7rem;
+    border-radius: 4px;
+    border: 1px solid color-mix(in srgb, var(--sr-con-accent) 50%, transparent);
+    border-left: 6px solid var(--sr-con-accent);
+    background: linear-gradient(100deg, color-mix(in srgb, var(--sr-con-accent) 22%, transparent), transparent 75%);
+  }
+  .sr-con-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25em;
+    i { color: var(--sr-con-accent); }
+  }
+  .sr-con-kind {
+    font-size: 0.7em;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.05rem 0.4rem;
+    border: 1px solid var(--sr-con-line);
+    border-radius: 3px;
+  }
+  .sr-con-delete { margin-left: auto; font-size: 0.8em; }
+  .sr-con-parties {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    i { opacity: 0.7; margin-right: 0.2rem; }
+  }
+  .sr-con-status {
+    margin-left: auto;
+    font-weight: bold;
+    color: color-mix(in srgb, var(--sr-con-accent) 70%, white);
+  }
+
+  // The Intel Level and the Prop Rating, as two gauges
+  .sr-con-gauges {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 0.5rem;
+  }
+  .sr-con-gauge {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 0.6rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    background: color-mix(in srgb, currentColor 6%, transparent);
+    border: 1px solid var(--sr-con-line);
+    &.intel { --sr-con-gauge: var(--sr-con-prep); }
+    &.props { --sr-con-gauge: var(--sr-con-bait); }
+  }
+  .sr-con-gauge-label {
+    grid-column: 1 / -1;
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.8;
+  }
+  .sr-con-gauge-value {
+    font-size: 1.9em;
+    font-weight: bold;
+    line-height: 1.1;
+    color: var(--sr-con-gauge);
+    text-shadow: 0 0 8px color-mix(in srgb, var(--sr-con-gauge) 45%, transparent);
+  }
+  .sr-con-gauge-tools, .sr-con-gauge-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    align-items: center;
+  }
+  .sr-con-tag {
+    border: 1px solid color-mix(in srgb, var(--sr-con-bait) 55%, transparent);
+    border-radius: 3px;
+    padding: 0 0.3rem;
+    font-size: 0.85em;
+  }
+
+  // The boxes: a coloured edge and title, as in the chase window
+  .sr-con-card {
+    --sr-con-accent: var(--sr-con-prep);
+    min-width: 0;
+    margin: 0;
+    padding: 0.4rem 0.7rem 0.6rem;
+    border: 1px solid color-mix(in srgb, var(--sr-con-accent) 45%, transparent);
+    border-left: 5px solid var(--sr-con-accent);
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--sr-con-accent) 6%, transparent);
+    &.phase-2 { --sr-con-accent: var(--sr-con-bait); }
+    &.log { --sr-con-accent: var(--sr-con-log); }
+    &.new { --sr-con-accent: var(--sr-con-new); }
+    legend {
+      padding: 0 0.4rem;
+      font-weight: bold;
+      color: color-mix(in srgb, var(--sr-con-accent) 70%, white);
+      i { margin-right: 0.2rem; }
+    }
+  }
+
+  .sr-con-step {
+    padding: 0.3rem 0;
+    border-bottom: 1px solid var(--sr-con-line);
+    &:last-of-type { border-bottom: none; }
+    &.done .sr-con-step-name i { color: var(--sr-con-ok); }
+    &.locked { opacity: 0.55; }
+  }
+  .sr-con-step-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    .hint { margin-left: auto; }
+  }
+  .sr-con-step-name {
+    font-weight: bold;
+    cursor: help;
+  }
+  .sr-con-badge {
+    font-size: 0.7em;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0 0.35rem;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--sr-con-accent) 35%, transparent);
+  }
+  .sr-con-step-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+    margin-top: 0.25rem;
+    label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      white-space: nowrap;
+    }
+    input[type="number"] { width: 4.5em; }
+    input[type="text"] { flex: 1 1 8em; }
+    select { flex: 0 1 auto; width: auto; }
+    button { flex: 0 0 auto; width: auto; margin-left: auto; }
+  }
+  .sr-con-faction {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.4rem;
+    padding: 0.3rem 0.5rem;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--sr-con-accent) 12%, transparent);
+    button { margin-left: auto; width: auto; }
+  }
+
+  .sr-con-log {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 12rem;
+    overflow-y: auto;
+    li {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: baseline;
+      padding: 0.15rem 0;
+      border-bottom: 1px solid var(--sr-con-line);
+    }
+  }
+  .sr-con-log-step { font-weight: bold; }
+  .sr-con-log-net { color: var(--sr-con-bait); font-weight: bold; }
+  .sr-con-log-intel { color: var(--sr-con-prep); }
+
+  // The bartering window (barter.hbs): one line per offer, its value and its cross at the end
+  &.sr-barter {
+    .sr-con-step-row {
+      flex-wrap: nowrap;
+      input[type="number"] { width: 5.5em; }
+      select { min-width: 0; }
+      > a { flex: 0 0 auto; }
+    }
+    .sr-con-step .sr-con-step-row { flex-wrap: wrap; }
+    .sr-con-log-net { margin-left: auto; }
+    .sr-con-gauges { align-items: center; }
+  }
+
+  // Not the active gamemaster: read only
+  a[data-action].disabled {
+    pointer-events: none;
+    opacity: 0.4;
+  }
+}

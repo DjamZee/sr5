@@ -174,6 +174,8 @@ export const SETTINGS_CATALOG = {
   "compendium.baseWeaponsExtra": ["gm"],
   sr5GMOnlyItemEffects: ["gm"],
   sr5CheckPlayerRolls: ["gm"],
+  // Cutting Aces social rules (lot 21): next to the factions and the con tracker
+  sr5CuttingAcesSocial: ["gm", "book"],
   // Interface
   sr5ChooseStyle: ["interface"],
   "sr5Help.active": ["interface"],
@@ -189,6 +191,7 @@ export const MENU_CATALOG = {
   sr5RuleLocksMenu: "ruleLocks",
   sr5ShopConfigMenu: "shop",
   sr5FactionsMenu: "gm",
+  sr5ConTrackerMenu: "gm",
   sr5NegotiationRepairMenu: "gm",
   sr5TokenDefaultsMenu: "gm",
 }
