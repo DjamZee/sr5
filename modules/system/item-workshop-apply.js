@@ -287,7 +287,7 @@ export async function dropOnItemWorkshop(host, dropData) {
     buyer: actor.name, balance: yen(SR5Shop.balance(actor))
   })}</li>`}
     </ul>
-    ${test ? `<p class="hint">${creation ? L("SR5.ItemWorkshopCreationHint") : test}</p>` : ""}
+    ${test ? `<p class="hint">${creation ? `${L("SR5.ItemWorkshopCreationHint")} ${test}` : test}</p>` : ""}
   </div>`
   const choice = await foundry.applications.api.DialogV2.wait({
     window: {

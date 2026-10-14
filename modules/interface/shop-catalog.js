@@ -209,6 +209,12 @@ export class SR5ShopCatalog {
       price: system?.price === undefined ? undefined : pair(system.price),
       availability: pair(system?.availability),
       essenceCost: pair(system?.essenceCost),
+      // A vehicle's figures, shown by the dealership's showroom (Adrore's feedback C8)
+      ...(typeof system?.attributes?.handling === 'number' ? {
+        attributes: Object.fromEntries(Object.entries(system.attributes).filter(([, v]) => typeof v === 'number')),
+        seating: Number(system.seating) || 0,
+      } : {
+      }),
     }
   }
 
