@@ -4425,9 +4425,11 @@ export class SR5_CharacterUtility extends Actor {
           "durationType": "hour",
         }
         break
-      //Bullets & Bandages p. 20: 1D6 × 10 minutes, one die times ten
+      //Bullets & Bandages p. 20: 1D6 × 10 minutes, one die times ten. A BTL program (SR5 p. 414): speed "Immédiate",
+      //duration "typically (10 × 1D6) minutes", the same die; its rebound (p. 415) has no figure, so no crash
       case "neostigmine":
       case "ondansetron":
+      case "btl":
         roll = new Roll(`1d6 * 10`)
         rollRoll = await roll.evaluate()
         drugStat = {

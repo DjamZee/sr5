@@ -121,15 +121,15 @@ describe('the keys read in the book', () => {
       duration: 24, durationType: 'hour'
     })
   })
-  for (const key of ['neostigmine', 'ondansetron']) {
-    it(`${key}: 1D6 x 10 minutes (Bullets & Bandages p. 20)`, async () => {
+  for (const key of ['neostigmine', 'ondansetron', 'btl']) {
+    it(`${key}: 1D6 x 10 minutes (Bullets & Bandages p. 20, SR5 p. 414)`, async () => {
       expect(await shots(key)).toMatchObject({
         duration: 30, durationType: 'minute'
       })
     })
   }
   it('every new key has its label', () => {
-    for (const key of ['psychochip', 'cryo', 'hemoSynth', 'nanoScan', 'neostigmine', 'ondansetron']) expect(SR5.drugs[key]).toBeTruthy()
+    for (const key of ['psychochip', 'cryo', 'hemoSynth', 'nanoScan', 'neostigmine', 'ondansetron', 'btl']) expect(SR5.drugs[key]).toBeTruthy()
   })
   it('an unknown key gives no stat', async () => {
     expect(await shots('notADrug')).toBeUndefined()
