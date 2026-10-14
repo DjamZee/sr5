@@ -54,7 +54,7 @@
 			<div class="col-1 SR-TextCenter"
 				data-helpTitle="{{localize 'SR5.DicePool'}}" data-helpMessage="{{localize 'SR5.HELP_CantRollTestInAstral'}}">
 			{{else}}
-			<div class="col-1 SR-TextCenter roll-logo {{#if (or (eq system.type 'grenadeLauncher') (eq system.type 'missileLauncher'))}}sr-rollGrenade{{else}}sr-roll{{/if}} }} " 
+			<div class="col-1 SR-TextCenter roll-logo {{#if (or (eq system.type 'grenadeLauncher') (eq system.type 'missileLauncher'))}}sr-rollGrenade{{else}}sr-roll{{/if}}" 
 				data-rolltype="weapon" data-helpTitle="{{localize 'SR5.DicePool'}}" data-helpMessage="{{localize 'SR5.HELP_AttackRollMsg'}}"
 				data-helpDetailsItem="system.weaponSkill"	data-helpItemId="{{_id}}">
 			{{/if}}

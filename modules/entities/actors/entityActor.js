@@ -97,6 +97,9 @@ import {
   migrateNegotiationSkill
 } from "../../datamodels/common/negotiationMigration.js"
 import {
+  migrateLegacyImages, migrateLegacyDescription, migrateLocksmithLimit
+} from "../../datamodels/common/v12ImportMigration.js"
+import {
   missingBaseDevice, hasBaseDevice
 } from "./base-device.js"
 import {
@@ -130,6 +133,10 @@ export class SR5Actor extends Actor {
   //The Negotiation skill under its former key, on an actor imported after the world migration (datamodels/common/negotiationMigration.js)
   static migrateData(source) {
     migrateNegotiationSkill(source?.system)
+    //What an actor exported from V12 still carries, imported after the world migration (datamodels/common/v12ImportMigration.js)
+    migrateLegacyImages(source)
+    migrateLegacyDescription(source?.system)
+    migrateLocksmithLimit(source)
     return super.migrateData(source)
   }
 

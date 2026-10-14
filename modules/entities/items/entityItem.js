@@ -60,6 +60,9 @@ import {
   migrateTemplateNoise
 } from "../../datamodels/common/templateNoiseMigration.js"
 import {
+  migrateLegacyImages
+} from "../../datamodels/common/v12ImportMigration.js"
+import {
   isFactoryMod, modTakesSlots
 } from "../../system/vehicle-factory.js"
 import {
@@ -135,6 +138,8 @@ export class SR5Item extends Item {
     migrateTargetOfEffect(source?.system)
     //A template's matrix noise stored negative before N32 (datamodels/common/templateNoiseMigration.js)
     migrateTemplateNoise(source)
+    //The V12 icon of an item imported after the world migration (datamodels/common/v12ImportMigration.js)
+    migrateLegacyImages(source)
     return super.migrateData(source)
   }
 
