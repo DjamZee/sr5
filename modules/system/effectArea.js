@@ -478,8 +478,20 @@ export class SR5_EffectArea {
 
   //Delete an effect applied by a template on actor
   static async deleteTemplateEffect(actor, effectID){
-    for (let item of actor.items){
-      if (item.type === "itemEffect" && item.system.ownerItem === effectID) await actor.deleteEmbeddedDocuments("Item", [item.id])
+    let ids = actor.items.filter(item => item.type === "itemEffect" && item.system.ownerItem === effectID).map(item => item.id)
+    await SR5_EffectArea.deleteStillThere(actor, ids)
+  }
+
+  //Two removals of the same effects at once (the template deleted while the token moves, a player who takes the
+  //effect off her sheet meanwhile) asked for an item already gone, and Foundry threw "does not exist": only what is
+  //still there is deleted, and an error is passed on only if one of them is still there afterwards
+  static async deleteStillThere(actor, ids){
+    let live = ids.filter(id => !actor.items.get || actor.items.get(id))
+    if (!live.length) return
+    try {
+      await actor.deleteEmbeddedDocuments("Item", live)
+    } catch (error) {
+      if (live.some(id => actor.items.get?.(id))) throw error
     }
   }
 
@@ -527,8 +539,22 @@ export class SR5_EffectArea {
     return `${actor.uuid ?? actor.id}|${itemUuid}|${messageId}`
   }
   static clearPendingResistances(actor, itemUuid){
-    const prefix = `${actor.uuid ?? actor.id}|${itemUuid}|`
+    SR5_EffectArea.dropPendingResistance(actor.uuid ?? actor.id, itemUuid)
+  }
+  static dropPendingResistance(actorUuid, itemUuid){
+    const prefix = `${actorUuid}|${itemUuid}|`
     for (const key of SR5_EffectArea.PENDING_RESISTANCES) if (key.startsWith(prefix)) SR5_EffectArea.PENDING_RESISTANCES.delete(key)
+  }
+  //A player closed the resistance window of an area spell (roll-test-helper.js): the request is no longer waiting.
+  //Only the active GM holds the requests; dropping one only lets the next move inside the area ask again
+  static _socketResistanceDeclined(message){
+    if (game.users?.activeGM && game.users.activeGM.id !== game.user?.id) return
+    const {
+      actorUuid, itemUuid
+    } = message?.data ?? {
+    }
+    if (typeof actorUuid !== "string" || typeof itemUuid !== "string" || !actorUuid || !itemUuid) return
+    SR5_EffectArea.dropPendingResistance(actorUuid, itemUuid)
   }
   static runForSpell(actor, itemUuid, fn){
     const key = `${actor.uuid ?? actor.id}|${itemUuid}`
@@ -562,14 +588,14 @@ export class SR5_EffectArea {
       if (!covering){
         //Out of every template: a resistance asked for is dropped, coming back in asks again
         SR5_EffectArea.clearPendingResistances(actor, itemUuid)
-        if (effects.length) await actor.deleteEmbeddedDocuments("Item", effects.map(i => i.id))
+        if (effects.length) await SR5_EffectArea.deleteStillThere(actor, effects.map(i => i.id))
         return
       }
       if (!effects.length) return await this.createTemplateEffect(tokenDocument, covering)
       SR5_EffectArea.clearPendingResistances(actor, itemUuid)
       let kept = effects[0].system.ownerID
       let extra = effects.filter(i => i.system.ownerID !== kept)
-      if (extra.length) await actor.deleteEmbeddedDocuments("Item", extra.map(i => i.id))
+      if (extra.length) await SR5_EffectArea.deleteStillThere(actor, extra.map(i => i.id))
     })
   }
 

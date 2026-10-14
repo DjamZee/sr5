@@ -23,7 +23,22 @@ export class SR5_RollTestHelper {
     //Remove last cumulative Defense if roll is cancelled.
     if (actor.flags?.sr5?.cumulativeDefense){
       actor.setFlag("sr5", "cumulativeDefense", (actor.flags.sr5.cumulativeDefense -1))
-    }    
+    }
+    //The resistance to an area spell closed without rolling: the GM's browser kept the request as waiting, and nothing
+    //was asked again while the token stayed inside (Liliane, 04/10). Dropped, the next move inside asks again
+    if (dialogData.test?.type === "spellResistance") SR5_RollTestHelper.dropPendingAreaResistance(actor, dialogData.previousMessage?.itemUuid)
+  }
+
+  static async dropPendingAreaResistance(actor, itemUuid){
+    if (!actor || typeof itemUuid !== "string" || !itemUuid) return
+    const actorUuid = actor.uuid ?? actor.id
+    if (!game.user?.isGM) return SR5_SocketHandler.emitForGM("areaResistanceDeclined", {
+      actorUuid, itemUuid
+    })
+    const {
+      SR5_EffectArea
+    } = await import("../system/effectArea.js")
+    SR5_EffectArea.dropPendingResistance(actorUuid, itemUuid)
   }
 
 

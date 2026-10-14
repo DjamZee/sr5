@@ -95,6 +95,54 @@ describe("a resisted area spell asks for resistance once", () => {
     expect(SR5_SocketHandler.emitForPlayer).toHaveBeenCalledTimes(1)
   })
 
+  it("the window closed without rolling: the next move inside asks again (Liliane, 04/10)", async () => {
+    await moves(2)
+    SR5_EffectArea._socketResistanceDeclined({
+      data: {
+        actorUuid: "Actor.victim", itemUuid: SPELL
+      }
+    })
+    await moves(2)
+    expect(actor.rollTest).toHaveBeenCalledTimes(2)
+  })
+
+  it("a declined request names another spell or actor: the one waiting stays", async () => {
+    await moves(1)
+    SR5_EffectArea._socketResistanceDeclined({
+      data: {
+        actorUuid: "Actor.other", itemUuid: SPELL
+      }
+    })
+    SR5_EffectArea._socketResistanceDeclined({
+      data: {
+        actorUuid: "Actor.victim", itemUuid: 42
+      }
+    })
+    await moves(1)
+    expect(actor.rollTest).toHaveBeenCalledTimes(1)
+  })
+
+  it("closing the window at the player's tells the GM, with the actor and the spell", async () => {
+    const {
+      SR5_RollTestHelper
+    } = await import("../modules/rolls/roll-test-helper.js")
+    globalThis.game.user = {
+      isGM: false
+    }
+    SR5_SocketHandler.emitForGM.mockClear()
+    SR5_RollTestHelper.handleCanceledTest(actor, {
+      dialogSwitch: {
+      }, test: {
+        type: "spellResistance"
+      }, previousMessage: {
+        itemUuid: SPELL
+      }
+    })
+    expect(SR5_SocketHandler.emitForGM).toHaveBeenCalledWith("areaResistanceDeclined", {
+      actorUuid: "Actor.victim", itemUuid: SPELL
+    })
+  })
+
   it("leaving every template then coming back asks again", async () => {
     await moves(2)
     inside = false
