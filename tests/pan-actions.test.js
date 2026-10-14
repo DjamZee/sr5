@@ -114,6 +114,24 @@ describe('R7: electronic warfare in the radial menu (Rigger 5.0 p. 34-35)', () =
     })).not.toContain('targetDevice')
   })
 
+  it('offers no Target Device on a device out of the Matrix, nor on an unused persona (R5 p. 34 "en sans-fil")', () => {
+    expect(actionsForNode({
+      ...gun, mode: 'offline'
+    }, graph(), {
+      rigger5: true
+    })).not.toContain('targetDevice')
+    expect(actionsForNode({
+      uuid: 'p', kind: 'persona', mode: 'offline'
+    }, graph(), {
+      rigger5: true
+    })).not.toContain('targetDevice')
+    expect(actionsForNode({
+      ...gun, mode: 'silent'
+    }, graph(), {
+      rigger5: true
+    })).toContain('targetDevice')
+  })
+
   it('needs no mark (Rigger 5.0 p. 34-35: "Marks requises : Aucune")', () => {
     const entries = menuEntries(drone, graph(), hacker(['confusePilot', 'breakTargetLock', 'targetDevice']), {
       rigger5: true

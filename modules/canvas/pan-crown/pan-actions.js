@@ -53,8 +53,9 @@ export function actionsForNode(node, graph = {
   // A file (objet Fichier): the actions on files, and those any icon takes (SR5 p. 237, 245)
   if (node.kind === "file") return [...FILE_NODE_ACTIONS]
   const keys = [...PAN_DEVICE_ACTIONS]
-  // A sprite is no device (SR5 p. 236)
-  if (rigger5 && node.kind !== "sprite") keys.push(...PAN_TARGET_DEVICE_ACTIONS)
+  // A sprite is no device (SR5 p. 236) ; Target Device aims at "un appareil fonctionnant en sans-fil" (R5 p. 34): not
+  // at a device out of the Matrix, nor at the persona a technomancer does not use (drawn as a reminder, offline)
+  if (rigger5 && !["sprite", "persona"].includes(node.kind) && node.mode !== "offline") keys.push(...PAN_TARGET_DEVICE_ACTIONS)
   const drone = node.kind === "drone" || isOwnDroneDevice(node, graph)
   if (drone || node.itemType === "itemVehicle") keys.push(...PAN_RIGGED_ACTIONS)
   if (rigger5 && drone) keys.push(...PAN_RIGGER5_DRONE_ACTIONS)
