@@ -29,6 +29,9 @@ import {
   vouch
 } from "../../rolls/roll-helpers/attack-card.js"
 import {
+  NAMED_BY_TYPE_TARGETS
+} from "../../rolls/roll-helpers/spell-aura.js"
+import {
   isStorable, isStoredAway 
 } from "../../interface/storage-rules.js"
 import {
@@ -2635,7 +2638,8 @@ export class SR5_ActorHelper {
               "0": {
                 "category": e.category,
                 "target": e.target,
-                "type": replaces ? "valueReplace" : "value",
+                //An element named by the effect's type (energy aura, Aura of [element]) keeps its type
+                "type": replaces ? "valueReplace" : (NAMED_BY_TYPE_TARGETS.includes(e.target) ? e.type : "value"),
                 "value": value,
                 "forceAdd": true,
                 //Attribute Boost (SR5 p. 312): dice pools only, see limitAttributeValue()

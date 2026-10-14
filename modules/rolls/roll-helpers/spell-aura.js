@@ -7,6 +7,9 @@
 // The subject is willing: the spell is not opposed, its net hits are its hits. The attack that burns its author is read
 // as a melee one, as for the energy aura of the spirits (SR5 p. 397): the aura wraps the subject's body.
 
+/** The effect targets whose value is a name held in the effect's type: a transferred copy keeps that type */
+export const NAMED_BY_TYPE_TARGETS = ["system.specialProperties.energyAura", "system.specialProperties.spellAuraElement"]
+
 /** The aura the actor wears: its value (the hits) and its element, or null */
 export function spellAuraOf(actorSystem) {
   const value = Number(actorSystem?.specialProperties?.spellAura?.value) || 0
