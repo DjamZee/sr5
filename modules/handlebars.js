@@ -16,6 +16,9 @@ import {
 import {
   drugTakesDoseInCrash
 } from "./entities/items/drug-damage.js"
+import {
+  astralProjectionLimit
+} from "./rolls/roll-helpers/arcana-metamagics.js"
 
 export const registerHandlebarsHelpers = function () {
   //Only a technique that is an action chosen for the roll keeps its switch on the sheet
@@ -157,6 +160,18 @@ export const registerHandlebarsHelpers = function () {
       return null
     }
     return translatedTerm
+  })
+
+  // How long the character may stay projected (SR5 p. 317; Improved Astral Form and Astralnaut, Forbidden Arcana p. 43)
+  Handlebars.registerHelper('astralProjectionLimit', function (system) {
+    const magic = system?.magic
+    const limit = astralProjectionLimit(system?.specialAttributes?.magic?.augmented?.value, magic?.initiationGrade,
+      magic?.metamagics?.improvedAstralForm, magic?.metamagics?.astralnaut)
+    let text = game.i18n.format(limit.unit === "days" ? "SR5.AstralProjectionDays" : "SR5.AstralProjectionHours", {
+      value: limit.value
+    })
+    if (limit.wake) text += ` (${game.i18n.localize(limit.wake === "day" ? "SR5.AstralProjectionWakeDay" : "SR5.AstralProjectionWakeMinute")})`
+    return text
   })
 
   Handlebars.registerHelper('valueOrDash', function () {

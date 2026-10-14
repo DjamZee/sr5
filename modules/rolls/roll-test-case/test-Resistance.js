@@ -16,6 +16,9 @@ import {
 import {
   SR5_CombatHelpers
 } from "../roll-helpers/combat.js"
+import {
+  electromancerInitiative
+} from "../../entities/items/magic-masteries.js"
 
 export default async function resistanceInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
@@ -129,8 +132,27 @@ export default async function resistanceInfo(cardData, actorId){
   // SR5 p. 231: dumpshock also disorients the character, whatever the damage resisted
   if (cardData.test.typeSub === "dumpshock") await SR5_ActorHelper.dumpshockEffect(actorId)
 
+  //Electromancer (Forbidden Arcana p. 35): once the damage is resisted, a combat spell that hurts takes (caster's excess
+  //hits / 2, rounded up) off the target's Initiative. Excess hits: over the resistance for a direct spell, over the
+  //defense for an indirect one
+  if (cardData.magic?.electromancer && cardData.damage.value > 0) {
+    const direct = cardData.damage.resistanceType === "directSpellMana" || cardData.damage.resistanceType === "directSpellPhysical"
+    const excess = direct ? (Number(cardData.previousMessage.hits) || 0) - (Number(cardData.roll.hits) || 0) : cardData.previousMessage.attackerNetHits
+    const initiative = electromancerInitiative(excess)
+    if (initiative > 0) {
+      const fighterId = SR5Combat.fighterIdOf(actor)
+      if (fighterId) SR5Combat.changeInitInCombatHelper(fighterId, -initiative)
+      ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_Electromancer", {
+        value: initiative
+      })}`)
+      cardData.chatCard.buttons.electromancer = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.format("SR5.INFO_Electromancer", {
+        value: initiative
+      }))
+    }
+  }
+
   //Normal damage
-  if (cardData.damage.value > 0) cardData.chatCard.buttons.damage = SR5_RollMessage.generateChatButton("nonOpposedTest", "damage",`${game.i18n.localize("SR5.ApplyDamage")} ${cardData.damage.value}${game.i18n.localize(SR5.damageTypesShort[cardData.damage.type])}`)		
+  if (cardData.damage.value > 0) cardData.chatCard.buttons.damage = SR5_RollMessage.generateChatButton("nonOpposedTest", "damage",`${game.i18n.localize("SR5.ApplyDamage")} ${cardData.damage.value}${game.i18n.localize(SR5.damageTypesShort[cardData.damage.type])}`)
 }
 
 

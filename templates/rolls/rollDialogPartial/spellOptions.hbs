@@ -10,6 +10,23 @@
 {{> systems/sr5/templates/rolls/rollDialogPartial/recklessSpellcasting.hbs}}
 {{/unless}}
 
+<!-- RAPID-FIRE CASTER (Forbidden Arcana p. 38): reckless casting without the Drain increase, once per day per level -->
+{{#if dialogSwitch.rapidFireCaster}}
+<li class="grid">
+    {{#if magic.rapidFireCaster.remaining}}
+    <div class="col-10">{{localize 'SR5.MagicMasteryRapidFireCaster'}} ({{localize 'SR5.RapidFireCasterRemaining' remaining=magic.rapidFireCaster.remaining level=magic.rapidFireCaster.level}}){{localize 'SR5.Colons'}}</div>
+    <div class="col-1 SR-TextRight">
+        <input type="checkbox" class="SR-ModCheckbox" data-modifier="rapidFireCaster">
+    </div>
+    {{else}}
+    <div class="col-10" data-tooltip="{{localize 'SR5.RapidFireCasterRest_D'}}">{{localize 'SR5.MagicMasteryRapidFireCaster'}} ({{localize 'SR5.RapidFireCasterRest'}}){{localize 'SR5.Colons'}}</div>
+    <div class="col-1 SR-TextRight">
+        <input type="checkbox" class="SR-ModCheckbox" data-modifier="rapidFireCasterRest">
+    </div>
+    {{/if}}
+</li>
+{{/if}}
+
 <!-- MAGE HUNTER (Forbidden Arcana p. 34): +1 Drain per level for -2 per level to the counterspelling against the spell -->
 {{#if dialogSwitch.mageHunter}}
 <li class="grid">

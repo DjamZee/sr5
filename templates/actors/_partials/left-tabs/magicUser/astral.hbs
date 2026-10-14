@@ -76,5 +76,12 @@
 				{{valueOrDash system.magic.astralTracking.dicePool}}
 			</div>
 	  	</li>
+		<!-- How long the character may stay projected (SR5 p. 317; Forbidden Arcana p. 43): magicians only -->
+		{{#if (or (eq system.magic.magicType 'magician') (eq system.magic.magicType 'aspectedMagician') (eq system.magic.magicType 'mysticalAdept'))}}
+		<li class="grid">
+			<div class="col-6">{{localize 'SR5.AstralProjectionLimit'}}</div>
+			<div class="col-6 SR-TextRight" data-tooltip="{{localize 'SR5.AstralProjectionLimit_D'}}">{{astralProjectionLimit system}}</div>
+		</li>
+		{{/if}}
 	</ul>
 </div>

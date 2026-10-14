@@ -46,6 +46,14 @@ export default function ritual(rollData, actor, item, chatData){
   rollData.dialogSwitch.reagents = true
   rollData.dialogSwitch.specialization = true
   rollData.owner.itemUuid = item.uuid
+  //Guru (Forbidden Arcana p. 37): the ordinary participants, counted in the dialog
+  if (actor.system.magic.masteries?.guru?.value > 0) {
+    rollData.magic.guru = {
+      charisma: actor.system.attributes.charisma.augmented.value,
+      rank: actor.system.skills.ritualSpellcasting.rating.value || 0,
+    }
+    rollData.dialogSwitch.guru = true
+  }
 
   //SR5 p. 299 and p. 51: the participants' teamwork test, rolled on the circle card at the Force chosen there
   const circle = chatData?.ritualCircle

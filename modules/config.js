@@ -2180,6 +2180,12 @@ SR5.metamagics = {
   // Forbidden Arcana p. 43, 45
   structuredSpellcasting   : "SR5.MetamagicStructuredSpellcasting",
   harmoniousDefense        : "SR5.MetamagicHarmoniousDefense",
+  improvedAstralForm       : "SR5.MetamagicImprovedAstralForm",
+  astralnaut               : "SR5.MetamagicAstralnaut",
+  rapidNecroInvocation     : "SR5.MetamagicRapidNecroInvocation",
+  // Dark Terrors p. 187 (printed): recognised, not automated (the system keeps no stored Essence maximum, nor mist speed)
+  essenceExpansion         : "SR5.MetamagicEssenceExpansion",
+  improvedMistForm         : "SR5.MetamagicImprovedMistForm",
 }
 
 //Magical masteries (Forbidden Arcana p. 30-41): level = quality rating
@@ -2191,6 +2197,10 @@ SR5.magicMasteries = {
   illusionist              : "SR5.MagicMasteryIllusionist",
   mageHunter               : "SR5.MagicMasteryMageHunter",
   masterManipulator        : "SR5.MagicMasteryMasterManipulator",
+  // Forbidden Arcana p. 35, 37, 38
+  electromancer            : "SR5.MagicMasteryElectromancer",
+  guru                     : "SR5.MagicMasteryGuru",
+  rapidFireCaster          : "SR5.MagicMasteryRapidFireCaster",
 }
 
 //-----------------------------------//

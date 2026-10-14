@@ -161,13 +161,19 @@ export class magicPartialModel extends foundry.abstract.TypeDataModel {
           harmoniousDefense: new fields.BooleanField({
             initial: false
           }),
+          // Forbidden Arcana p. 43-44, Dark Terrors p. 187
+          ...Object.fromEntries(["improvedAstralForm", "astralnaut", "rapidNecroInvocation", "essenceExpansion", "improvedMistForm"]
+            .map(key => [key, new fields.BooleanField({
+              initial: false
+            })])),
           spellShapingValue: new fields.SchemaField({
             ...sr5ModsPartialModel.defineSchema()
           }),
         }),
         // Magical masteries (Forbidden Arcana p. 30-41): level = quality rating
         masteries: new fields.SchemaField(Object.fromEntries(
-          ["archivist", "arcaneBodyguard", "conjuringSpecialist", "deathSower", "illusionist", "mageHunter", "masterManipulator"]
+          ["archivist", "arcaneBodyguard", "conjuringSpecialist", "deathSower", "illusionist", "mageHunter", "masterManipulator",
+            "electromancer", "guru", "rapidFireCaster"]
             .map(key => [key, new fields.SchemaField({
               ...sr5ModsPartialModel.defineSchema()
             })])

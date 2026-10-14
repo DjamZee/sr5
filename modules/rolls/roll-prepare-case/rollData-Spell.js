@@ -11,7 +11,7 @@ import {
   SR5
 } from "../../config.js"
 import {
-  combatSpellMasteryBonus
+  combatSpellMasteryBonus, rapidFireRemaining
 } from "../../entities/items/magic-masteries.js"
 
 //Add info for skill dicePool roll
@@ -85,6 +85,16 @@ export default async function spell(rollData, actor, item){
     label: game.i18n.localize(SR5.drainModTypes.deathSower),
   }
   rollData.magic.spell.damageBonus = masteryBonus.damage
+  //Electromancer (Forbidden Arcana p. 35): a combat spell that hurts lowers the target's Initiative (test-Resistance.js)
+  if (spellCategory === "combat" && masteries?.electromancer?.value > 0) rollData.magic.electromancer = true
+  //Rapid-Fire Caster (Forbidden Arcana p. 38): reckless casting without the Drain increase, once per day per level
+  if (masteries?.rapidFireCaster?.value > 0 && !rollData.magic.structured){
+    const level = masteries.rapidFireCaster.value
+    rollData.magic.rapidFireCaster = {
+      level, remaining: rapidFireRemaining(level, actor.getFlag?.("sr5", "rapidFireCaster"), game.time?.worldTime ?? 0), used: false
+    }
+    rollData.dialogSwitch.rapidFireCaster = true
+  }
   rollData.dialogSwitch.specialization = true
   rollData.owner.itemUuid = item.uuid
 

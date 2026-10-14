@@ -20,6 +20,9 @@ import {
   magicForDrainType
 } from "../../entities/items/magic-masteries.js"
 import {
+  isRapidNecroSummoning, RAPID_NECRO_DRAIN_FLOOR
+} from "../roll-helpers/arcana-metamagics.js"
+import {
   manaShiftKind
 } from "../../system/background-count.js"
 import {
@@ -71,6 +74,11 @@ export default async function defenseResultInfo(cardData, type){
       cardData.magic.drain.value = cardData.roll.hits * 2
       applyReagentDrainReduction(cardData.magic, prevData?.magic?.reagentDrainReduction, prevData?.magic?.reagentTier)
       if (cardData.magic.drain.value < 2) cardData.magic.drain.value = 2
+      //Rapid Necro-Summoning (Forbidden Arcana p. 44): the same Drain, at least 4
+      {
+        const summoner = prevData?.owner?.actorId ? SR5_EntityHelpers.getRealActorFromID(prevData.owner.actorId, prevData.actorUuids) : null
+        if (isRapidNecroSummoning(summoner?.system?.magic)) cardData.magic.drain.value = Math.max(cardData.magic.drain.value, RAPID_NECRO_DRAIN_FLOOR)
+      }
       cardData.chatCard.buttons.drain = SR5_RollMessage.generateChatButton("nonOpposedTest", "drain", `${game.i18n.localize("SR5.ResistDrain")} (${drainShown(cardData, cardData.owner.actorId)})`)
       break
     case "ritualResistance": {
