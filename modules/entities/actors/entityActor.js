@@ -10,6 +10,7 @@ import {
 import {
   cleanCreatedSource
 } from "../../migration-source-modifiers.js"
+import Migration from "../../migration.js"
 import {
   GM_ONLY_FIELDS
 } from "../../system/implant-essence.js"
@@ -348,8 +349,9 @@ export class SR5Actor extends Actor {
     await super._preCreate(data, options, user)
     // An actor exported prepared (the Mégapack actors) arrives without its computed modifiers
     cleanCreatedSource(this)
-    let createData = {
-    }
+    // A head case saved the old way (Nanite Volume in Resonance) and imported after the world's migration ran
+    // (a JSON file, another world, a module pack) is moved here, as the migration does (migration.js)
+    let createData = Migration.migrateHeadcaseNaniteData(this)
     foundry.utils.mergeObject(createData, {
       "prototypeToken.sight.enabled": true,
       "prototypeToken.sight.range": 0,

@@ -89,6 +89,44 @@ describe('base device of an actor created by script', () => {
     expect((await created('actorSprite')).items).toEqual([])
   })
 
+  // A head case saved the old way (Nanite Volume in Resonance) and imported after the world's migration ran
+  it('moves a head case\'s Nanite Volume out of Resonance on creation, as the world migration does', async () => {
+    const actor = Object.create(SR5Actor.prototype)
+    const headcase = {
+      type: 'itemDevice', system: {
+        type: 'headcase'
+      }
+    }
+    Object.assign(actor, {
+      type: 'actorPc', name: 'Défracté', img: 'pc.svg', items: [headcase], system: {
+        activeSpecialAttribute: 'resonance', specialAttributes: {
+          resonance: {
+            natural: {
+              base: 5
+            }
+          }, nanite: {
+            natural: {
+              base: 0
+            }
+          }
+        }
+      }
+    })
+    actor._source = {
+      items: [headcase], effects: []
+    }
+    const written = {
+    }
+    actor.updateSource = data => Object.assign(written, data)
+    await actor._preCreate({
+    }, {
+    }, {
+    })
+    expect(written['system.specialAttributes.nanite.natural.base']).toBe(5)
+    expect(written['system.specialAttributes.resonance.natural.base']).toBe(0)
+    expect(written['system.activeSpecialAttribute']).toBe('nanite')
+  })
+
   it('is not added twice, nor to other actors', () => {
     expect(missingBaseDevice('actorDevice', [{
       type: 'itemDevice', system: {
