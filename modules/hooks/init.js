@@ -151,6 +151,9 @@ import {
   SR5ShopWindow, SR5ShopWorldSource
 } from "../interface/shop-window.js"
 import {
+  vendorsApi
+} from "../interface/shop-vendor.js"
+import {
   SR5DealershipWindow
 } from "../interface/dealership-window.js"
 import {
@@ -443,6 +446,8 @@ export async function sr5HookInit() {
     matrix: SR5MatrixApi,
     // The GM's token of each family the system creates (lot 9): for a module that lays IC or sprites itself
     tokenDefaults: SR5TokenDefaultsApi,
+    // The shop's vendors for the modules: the Concepteur's NPC generator creates one from a template (lot 43)
+    vendors: vendorsApi(),
   }
 
   // Register DataModels

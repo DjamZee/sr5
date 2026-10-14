@@ -1809,3 +1809,15 @@ export class SR5ShopVendorSource {
     return entries.sort((a, b) => collator.compare(a.name, b.name))
   }
 }
+
+/**
+ * The vendors for the modules, set in game.sr5.vendors (lot 43): the Concepteur's NPC generator lists the templates
+ * and creates a vendor from one, the gamemaster only, as the shop's own button does.
+ */
+export function vendorsApi() {
+  return {
+    create: options => SR5ShopVendor.createFromTemplate(options),
+    templates: VENDOR_TEMPLATES,
+    families: VENDOR_FAMILIES,
+  }
+}
