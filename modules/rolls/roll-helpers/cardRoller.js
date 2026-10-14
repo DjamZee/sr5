@@ -96,8 +96,10 @@ export function firstAidPatient(hasTarget, targetActor, selectedActor) {
 // or a single condition monitor (grunt, AI core, homunculus and watcher, SR5 p. 301). Empty when it has neither.
 // SR5 p. 148: first aid is emergency medical care (no surgery, no implant repair); drones and vehicles are repaired with
 // the vehicle mechanic skills (p. 147): their condition monitor is structure, no patient, nor is a device with only a Matrix monitor
+// An AI's core is code, not flesh: it heals by the Medic program or a device repair (Data Trails p. 165), never by first aid
 export function patientMonitors(patient) {
   if (patient?.type === "actorDrone") return []
+  if (patient?.system?.activeSpecialAttribute === "depth") return []
   let monitors = patient?.system?.conditionMonitors ?? {
   }
   if (monitors.physical && monitors.stun) return ["physical", "stun"]
