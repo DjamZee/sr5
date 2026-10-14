@@ -139,6 +139,23 @@ export class SR5_EntityHelpers {
     this.updatePropertyTotal('value', property, minValue, maxValue)
   }
 
+  //The modifiers a rating passes on to its test. A ceiling (Little Smoke, Chrome Flesh p. 192: "la Perception […] réduits
+  //à 1") caps the rating, not the dice pool: copied as is, it brought the whole pool down to 1, Intuition included.
+  //In its place, what the cap takes off the rating, as a plain modifier
+  static ratingModifiersForTest(rating) {
+    const all = rating?.modifiers ?? []
+    const modifiers = all.filter(m => typeof m?.ceiling !== "number")
+    const cap = all.find(m => typeof m?.ceiling === "number")
+    if (!cap) return modifiers
+    const uncapped = (Number(rating.base) || 0) + (this.modifiersSum(modifiers) || 0)
+    const cut = (Number(rating.value) || 0) - uncapped
+    if (cut >= 0) return modifiers
+    const { ceiling, ...rest } = cap
+    return modifiers.concat({
+      ...rest, value: cut
+    })
+  }
+
   static updateDicePool(property, minValue, maxValue) {
     if (property === undefined) {
       SR5_SystemHelpers.srLog(1, `Missing or non-existing property sent to 'updateDicePool()'`)

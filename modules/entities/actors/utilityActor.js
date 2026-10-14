@@ -2809,9 +2809,9 @@ export class SR5_CharacterUtility extends Actor {
     SR5_EntityHelpers.updateValue(skills.perception.rating, 0)
     //Update DicePools
     skills.sneaking.test.base = 0
-    skills.sneaking.test.modifiers = skills.sneaking.test.modifiers.concat(skills.sneaking.rating.modifiers)
+    skills.sneaking.test.modifiers = skills.sneaking.test.modifiers.concat(SR5_EntityHelpers.ratingModifiersForTest(skills.sneaking.rating))
     skills.perception.test.base = 0
-    skills.perception.test.modifiers = skills.perception.test.modifiers.concat(skills.perception.rating.modifiers)
+    skills.perception.test.modifiers = skills.perception.test.modifiers.concat(SR5_EntityHelpers.ratingModifiersForTest(skills.perception.rating))
     //Special for autopilot drone
     if (actorData.controlMode === "autopilot") {
       skills.sneaking.test.modifiers = skills.sneaking.test.modifiers.concat(actor.system.penalties.special.actual.modifiers)
@@ -3399,7 +3399,7 @@ export class SR5_CharacterUtility extends Actor {
         if (actorData.skills[key].rating.value) {
           actorData.skills[key].test.base = 0
           if (actorData.skills[key].rating.base > 0) SR5_EntityHelpers.updateModifier(actorData.skills[key].test, `${game.i18n.localize(SR5.skills[key])}`, "skillRating", actorData.skills[key].rating.base)
-          actorData.skills[key].test.modifiers = actorData.skills[key].test.modifiers.concat(actorData.skills[key].rating.modifiers)
+          actorData.skills[key].test.modifiers = actorData.skills[key].test.modifiers.concat(SR5_EntityHelpers.ratingModifiersForTest(actorData.skills[key].rating))
           this.keepStrongestFocusOn(actorData.skills[key].test)
         } else {
           if (actorData.skills[key].canDefault) {
