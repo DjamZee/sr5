@@ -34,6 +34,19 @@
       "path": "lang/fr.json"
     }
   ],
+  "packs": [
+    {
+      "name": "manuel",
+      "label": "Manuel Shadowrun 5",
+      "path": "packs/manuel",
+      "type": "JournalEntry",
+      "system": "sr5",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    }
+  ],
   "socket": true,
   "url": "https://github.com/shadowfoundry/sr5",
   "manifest": "https://github.com/shadowfoundry/sr5/releases/latest/download/system.json",
