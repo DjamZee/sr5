@@ -29,9 +29,21 @@ import {
   COMMCODE_SETTING, cleanText, deviceReachability, interceptedBy, isOpen, nextCallStatus, normalizeCommcode,
   pruneEntries, sameCommcode, seenByRecipient, trafficOf
 } from "../system/commcode-rules.js"
+import {
+  CIPHER_SETTING, cipherOf, crackDice, encipher, hasKey, resolveCrack
+} from "../system/commcode-cipher.js"
 
 export const COMMCODE_REFUSALS = ["noDevice", "owner", "noCommcode", "offline", "jammed", "bricked", "noRecipient", "self",
-  "empty", "busy", "unknown", "noMark", "gm"]
+  "empty", "busy", "unknown", "noMark", "gm", "cipherOff"]
+
+/** The world setting « Cryptage des messages commcode » (lot 39, a house rule: unchecked by default) */
+export function cipherEnabled(){
+  try {
+    return game.settings.get("sr5", CIPHER_SETTING) === true
+  } catch {
+    return false
+  }
+}
 const DIRECTORY_FLAG = "commcodeDirectory"
 
 /* -------------------------------------------- */
@@ -168,6 +180,7 @@ export async function handleCommcodeRequest(data, senderId){
     case "line": return callLine(data, user)
     case "snoop": return startInterception(data, user)
     case "stopSnoop": return stopInterception(data, user)
+    case "crack": return crackMessage(data, user)
     default: return refuse("unknown", user.id)
   }
 }
@@ -180,7 +193,7 @@ async function send(data, user){
   if (!normalizeCommcode(to)) return refuse("noRecipient", user.id)
 
   // The gamemaster speaks for a commcode that no actor carries (a contact played without a sheet)
-  let from
+  let from, senderActor = null
   if (data.asCommcode) {
     if (!user.isGM) return refuse("gm", user.id)
     from = {
@@ -196,6 +209,7 @@ async function send(data, user){
     if (!normalizeCommcode(item.system?.commcode)) return refuse("noCommcode", user.id)
     const state = deviceStateOf(item, actor)
     if (state !== "online") return refuse(state, user.id)
+    senderActor = actor
     from = {
       commcode: String(item.system.commcode).trim(), ...endOf({
         actor, item
@@ -203,6 +217,16 @@ async function send(data, user){
     }
   }
   if (sameCommcode(from.commcode, to)) return refuse("self", user.id)
+
+  // A message ciphered with a key (lot 39): protected as a file is, the hits being its rating (SR5 p. 240)
+  let cipher = null
+  if (kind === "message" && hasKey(data.key)) {
+    if (!cipherEnabled()) return refuse("cipherOff", user.id)
+    const rating = senderActor ? await rollProtection(senderActor, user) : Math.max(0, Math.floor(Number(data.cipherRating) || 0))
+    cipher = {
+      key: String(data.key).trim(), rating, crackedBy: []
+    }
+  }
 
   const targets = devicesOfCommcode(to).filter(d => d.item.uuid !== from.deviceUuid)
   const reachable = targets.filter(d => deviceStateOf(d.item, d.actor) === "online")
@@ -220,7 +244,11 @@ async function send(data, user){
       return null
     }
     traffic.entries.push({
-      id: foundry.utils.randomID(), kind, status, text, lines: [], sentAt: now, worldTime: game.time?.worldTime ?? 0,
+      id: foundry.utils.randomID(), kind, status, text: cipher ? encipher(text, cipher.key) : text, lines: [], sentAt: now,
+      worldTime: game.time?.worldTime ?? 0, ...(cipher ? {
+        cipher
+      } : {
+      }),
       deliveredAt: status === "delivered" ? now : null,
       from, to: {
         commcode: to, devices: (reachable.length ? reachable : targets).map(endOf)
@@ -324,6 +352,105 @@ async function stopInterception(data, user){
     traffic.interceptions = traffic.interceptions.filter(i => i !== found)
     return traffic
   })
+}
+
+/* -------------------------------------------- */
+/*  The cipher of the messages (lot 39)          */
+/* -------------------------------------------- */
+
+// The dice of an action of the sheet (Computer + Logic [Data Processing] for Edit File, Hacking + Logic [Attack] for
+// Crack File), rolled by the active gamemaster as the file's own dice are (file-actions.js)
+async function rollAction(actor, key){
+  const action = actor?.system?.matrix?.actions?.[key]
+  const dicePool = Math.max(0, Math.floor(Number(action?.test?.dicePool) || 0))
+  const limit = Math.max(0, Math.floor(Number(action?.limit?.value) || 0))
+  return rollPool(dicePool, limit)
+}
+
+async function rollPool(dicePool, limit = 0){
+  if (dicePool <= 0) return {
+    dicePool: 0, hits: 0, dices: [], limit
+  }
+  const {
+    SR5_RollTest
+  } = await import("../rolls/roll-test.js")
+  return SR5_RollTest.rollDice({
+    dicePool, limit
+  })
+}
+
+const facesOf = roll => (roll?.dices ?? []).map(d => d.result).join(" ")
+
+// The card of a cipher, for the user who acted and the gamemasters: the dice, and what they come to
+async function postCipherCard(user, actor, lines){
+  const whisper = [...new Set([user.id, ...game.users.filter(u => u.isGM).map(u => u.id)])]
+  const esc = foundry.utils.escapeHTML
+  await ChatMessage.create({
+    content: `<div class="sr-commcode-cipher-card">${lines.map(l => `<p>${esc(l)}</p>`).join("")}</div>`, whisper,
+    speaker: ChatMessage.getSpeaker({
+      actor: actor ?? undefined
+    }),
+  })
+}
+
+/** The sender protects her message as a file (SR5 p. 240): Computer + Logic [Data Processing], the hits its rating */
+async function rollProtection(actor, user){
+  const roll = await rollAction(actor, "editFile")
+  await postCipherCard(user, actor, [
+    game.i18n.format("SR5.COMMCODE_CipherProtect", {
+      name: actor.name, dice: roll.dicePool, limit: roll.limit || "—", faces: facesOf(roll) || "—", rating: roll.hits
+    })
+  ])
+  return roll.hits
+}
+
+/**
+ * A snooper tries to break a ciphered message she intercepted, as Crack File (SR5 p. 242): Hacking + Logic [Attack]
+ * v. rating x 2. A success shows her the clear text, to her alone; the cipher's hits raise her Overwatch Score, as
+ * any Attack action's defense does (SR5 p. 233).
+ */
+async function crackMessage(data, user){
+  if (!cipherEnabled()) return refuse("cipherOff", user.id)
+  const traffic = readTraffic()
+  const interception = traffic.interceptions.find(i => i.id === data.interceptionId)
+  if (!interception) return refuse("unknown", user.id)
+  const snooper = SR5_EntityHelpers.getRealActorFromID(interception.snooperId)
+  if (!snooper) return refuse("unknown", user.id)
+  if (!speaksFor(user, snooper)) return refuse("owner", user.id)
+  const intercepted = interceptedBy(traffic, interception.snooperId, interceptionHolds).find(s => s.interception.id === interception.id)
+  if (!intercepted) return refuse("noMark", user.id)
+  const entry = intercepted.entries.find(e => e.id === data.entryId)
+  if (!entry || !cipherOf(entry)) return refuse("unknown", user.id)
+  if (cipherOf(entry).crackedBy.includes(interception.snooperId)) return
+
+  const attack = await rollAction(snooper, "crackFile")
+  const dice = crackDice(entry)
+  const defense = await rollPool(dice)
+  const result = resolveCrack(entry, interception.snooperId, attack.hits, defense.hits)
+  if (defense.hits > 0) {
+    const {
+      SR5_ActorHelper
+    } = await import("../entities/actors/entityActor-helpers.js")
+    await SR5_ActorHelper.overwatchIncrease(defense.hits, interception.snooperId)
+  }
+  if (result.outcome === "cracked") await updateLedger(COMMCODE_SETTING, raw => {
+    const next = trafficOf(raw)
+    const found = next.entries.find(e => e.id === entry.id)
+    if (!found?.cipher) return null
+    const crackedBy = Array.isArray(found.cipher.crackedBy) ? found.cipher.crackedBy : []
+    if (crackedBy.includes(interception.snooperId)) return null
+    found.cipher.crackedBy = [...crackedBy, interception.snooperId]
+    return next
+  })
+  await postCipherCard(user, snooper, [
+    game.i18n.format("SR5.COMMCODE_CipherCrackRoll", {
+      name: snooper.name, dice: attack.dicePool, limit: attack.limit || "—", faces: facesOf(attack) || "—", hits: attack.hits
+    }),
+    game.i18n.format("SR5.COMMCODE_CipherCrackDefense", {
+      dice, faces: facesOf(defense) || "—", hits: defense.hits
+    }),
+    game.i18n.localize(`SR5.COMMCODE_CipherCrack_${result.outcome}`),
+  ])
 }
 
 /** Is the snooper's mark still on her target */
@@ -524,6 +651,13 @@ export function registerCommcodeHooks(){
       scope: "world", config: false, type: Object, default: trafficOf(null),
       onChange: () => onTrafficChanged().catch(error => console.error("SR5 | commcode", error)),
     })
+    // The key cipher of the messages (lot 39): a house rule, the book has no key cipher of messages (SR5 p. 241);
+    // unchecked by default — arbitrage de DjamZ (14/10)
+    game.settings.register("sr5", CIPHER_SETTING, {
+      name: "SR5.SETTINGS_CommcodeCipher_T", hint: "SR5.SETTINGS_CommcodeCipher_D", scope: "world", config: true,
+      default: false, type: Boolean,
+      onChange: () => scheduleRefresh(),
+    })
     // A key to open the messaging of one's device, unbound by default: no button is added to the toolbars
     game.keybindings.register("sr5", "commcodeOpen", {
       name: "SR5.COMMCODE_Key_T", hint: "SR5.COMMCODE_Key_D", editable: [],
@@ -543,6 +677,10 @@ export function registerCommcodeHooks(){
         SR5CommcodeWindow
       }) => SR5CommcodeWindow.openMine()),
       openDevice: uuid => openFor(uuid),
+      // The gamemaster's cipher tool, for a riddle (lot 39)
+      cipherTool: () => import("./commcode-cipher-tool.js").then(({
+        SR5CipherTool
+      }) => SR5CipherTool.open()),
     }
     scheduleSettle()
   })
