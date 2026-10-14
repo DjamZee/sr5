@@ -305,6 +305,12 @@ export function openRadialMenu({
     key: `pan-${entries.slave.action}`,
     onClick: () => entries.slave.action === "free" ? freeFromPan(node, graph) : slaveToPan(node, graph)
   }))
+  // Lot 14: the messaging of a device its holder speaks through (SR5 p. 241), to its owner and the gamemaster
+  const commDevice = node.itemType === "itemDevice" && !node.contributed ? globalThis.fromUuidSync?.(node.uuid) ?? null : null
+  if (commDevice?.type === "itemDevice" && commDevice.parent && (commDevice.isOwner || game.user?.isGM)) owners.push(button(game.i18n.localize("SR5.COMMCODE_Open"), {
+    key: "commcode",
+    onClick: async () => (await import("../../interface/commcode-window.js")).SR5CommcodeWindow.openDevice(commDevice.uuid),
+  }))
   // The gamemaster's reveal (lot 3), for the whole table
   if (game.user?.isGM && !node.contributed) gm.push(button(game.i18n.localize(node.revealed ? "SR5.PanCrownHide" : "SR5.PanCrownReveal"), {
     key: "reveal",

@@ -1,5 +1,6 @@
-<!-- Commcode, read by a Matrix Perception (SR5 p. 237) -->
+<!-- Commcode, read by a Matrix Perception (SR5 p. 237), and the messaging of the device (SR5 p. 241, lot 14) -->
 <li class="grid">
   <div class="col-4">{{localize 'SR5.Commcode'}}{{localize 'SR5.Colons'}}</div>
-  <div class="col-8"><input type="text" data-dtype="String" name="system.commcode" value="{{system.commcode}}" placeholder="{{localize 'SR5.CommcodePlaceholder'}}"/></div>
+  <div class="col-7"><input type="text" data-dtype="String" name="system.commcode" value="{{system.commcode}}" placeholder="{{localize 'SR5.CommcodePlaceholder'}}"/></div>
+  <div class="col-1"><a data-action="openCommcode" data-tooltip="{{localize 'SR5.COMMCODE_Open'}}"><i class="fas fa-comment-dots"></i></a></div>
 </li>

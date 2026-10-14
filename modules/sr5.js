@@ -155,6 +155,9 @@ import {
 import {
   registerPanCrownHooks
 } from './canvas/pan-crown/pan-crown-layer.js'
+import {
+  registerCommcodeHooks
+} from './interface/commcode-traffic.js'
 
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
@@ -293,6 +296,8 @@ registerChaseHooks()
 registerSwarmHooks()
 // The crown of a PAN follows its token and its devices (couronne du PAN, lot 2)
 registerPanCrownHooks()
+// Messages and calls between commcodes (lot 14, SR5 p. 241): the register, the requests to the GM, the windows
+registerCommcodeHooks()
 // Blight strikes: sustained spells, active foci and astral fall (Better Than Bad p. 141)
 Hooks.on('createItem', onBlightCreated)
 // ...and an actor under Blight is put in order at the world's load, by the active GM (Clémence's review)
