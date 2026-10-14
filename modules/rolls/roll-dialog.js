@@ -573,8 +573,9 @@ export default class SR5_RollDialog {
   //The type's modifiers are copied without their markers, which the boxes stand for; boxes ticked
   //elsewhere in the dialog are kept
   _syncSpiritTypeOffers(html, dialogData, spiritType, typeModifiers){
-    //The Astral Reputation penalty (Street Grimoire p. 207) is the summoner's, whatever the type: kept too
-    const kept = (dialogData.dicePool.modifiers || []).filter(m => m.type?.startsWith?.("situational_") || m.type === "astralReputation")
+    //The Astral Reputation penalty (Street Grimoire p. 207) is the summoner's, whatever the type: kept too, and so is
+    //the Wild Reputation bonus of a call (Forbidden Arcana p. 170)
+    const kept = (dialogData.dicePool.modifiers || []).filter(m => m.type?.startsWith?.("situational_") || m.type === "astralReputation" || m.type === "wildReputation")
     dialogData.dicePool.modifiers = withoutSituationalMarkers(typeModifiers).concat(kept)
     const unticked = spiritTypeVisible(dialogData.situational, spiritType)
     dialogData.dicePool.modifiers = dialogData.dicePool.modifiers.filter(m => !unticked.includes(m.type))

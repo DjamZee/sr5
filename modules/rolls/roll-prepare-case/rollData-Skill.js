@@ -26,6 +26,9 @@ import {
   SR5_SpiritTypes
 } from "../../entities/items/spirit-types.js"
 import {
+  wildReputationBonus
+} from "../../entities/items/spirit-bonds.js"
+import {
   refuseByRule
 } from "../../system/rule-locks.js"
 
@@ -159,6 +162,15 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
     rollData.damage.value = actor.system.magic.astralDamage.value
     rollData.dialogSwitch.extended = false
     rollData.dialogSwitch.chooseDamageType = true
+  }
+
+  //Wild Reputation (Forbidden Arcana p. 170): its dice to call a wild spirit, or to deal with one by a social skill
+  if (rollData.target.hasTarget){
+    const wild = wildReputationBonus(rollKey, actor.system.magic?.wildReputation,
+      SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId, rollData.actorUuids))
+    if (wild > 0) rollData.dicePool.modifiers.push({
+      type: "wildReputation", label: game.i18n.localize("SR5.WildReputation"), value: wild,
+    })
   }
 
   //If roll has target, add special info to roll
