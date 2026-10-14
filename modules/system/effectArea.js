@@ -323,6 +323,8 @@ export class SR5_EffectArea {
       let noise = matrixNoise
       effect = await SR5_EntityHelpers.generateItemEffect(sourceName, "areaEffect", template, `${game.i18n.localize("SR5.MatrixNoise")}`, noise, 0, "permanent")
       customEffect = await SR5_EntityHelpers.generateCustomEffect("matrixAttributes", "system.matrix.noise", "value", noise, true)
+      //A Noise lowered by Decrease Noise is negative on purpose: the migration of the old negative noise leaves it
+      if (noiseKind) customEffect.noiseSpell = noiseKind
       effect.system.customEffects.push(customEffect)
       if (effect && effect.system.customEffects.length) {
         hasItem = await staleEffect("system.matrix.noise", noise)
@@ -414,7 +416,10 @@ export class SR5_EffectArea {
     if (!cast) return 0
     //The grid's threshold at least: a card from before the grid was asked has none
     const threshold = Math.max(Number(cast.threshold?.value) || 0, noiseGridThreshold(cast.magic?.noiseSpell?.grid))
-    const roll = await SR5_EffectArea.templateRoll(sourceItem, {
+    //A cast the GM rolled stands as written (he may roll for a player's character); a player's is counted again
+    const roll = message.author?.isGM ? {
+      hits: cast.roll?.hits
+    } : await SR5_EffectArea.templateRoll(sourceItem, {
       ...templateData, messageId: message.id
     }, template, actor)
     if (!roll) return 0

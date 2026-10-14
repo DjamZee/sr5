@@ -7,6 +7,9 @@ import {
 import {
   noiseSpellKind, noiseGridThreshold, noiseSpellValue, noiseOverwatchDice, actorNoiseModifier
 } from "../modules/system/noise-spells.js"
+import {
+  migrateTemplateNoise
+} from "../modules/datamodels/common/templateNoiseMigration.js"
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), "utf8")
 
@@ -55,6 +58,22 @@ describe("Increase / Decrease Noise (Street Grimoire p. 113-114)", () => {
     expect(actorNoiseModifier(3, 0, 0)).toBe(0)
     //a raised Noise stays a malus
     expect(actorNoiseModifier(-3, -2, 0)).toBe(-3)
+  })
+
+  it("keeps a Noise lowered by Decrease Noise negative, where the old template noise is turned back", () => {
+    const effect = (value, extra = {
+    }) => ({
+      type: "itemEffect", system: {
+        type: "areaEffect", value, customEffects: [{
+          target: "system.matrix.noise", value, ...extra
+        }]
+      }
+    })
+    expect(migrateTemplateNoise(effect(-3)).system.customEffects[0].value).toBe(3)
+    expect(migrateTemplateNoise(effect(-3, {
+      noiseSpell: "decrease"
+    })).system.customEffects[0].value).toBe(-3)
+    expect(read("modules/system/effectArea.js")).toMatch(/message\.author\?\.isGM \? \{/)
   })
 
   it("asks the grid in the spell's dialog and gives the Noise by the spell's template", () => {
