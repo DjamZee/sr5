@@ -6174,6 +6174,8 @@
 	"SR5.VehicleModEffectKind_riggerCocoon": "Cocon de rigger",
 	"SR5.VehicleModEffectKind_tactileSensors": "Senseurs tactiles",
 	"SR5.VehicleModEffectKind_signatureMasking": "Camouflage de la signature",
+	"SR5.SignatureMaskingSpotting": "Repérer via des senseurs (camouflage de la signature)",
+	"SR5.SignatureMaskingSpottingHint": "Rigger 5.0 p. 169 : le camouflage de la signature du véhicule visé pénalise qui le repère par un test de Senseurs. Coché d'office pour un drone ou un véhicule ; à cocher si le personnage regarde par des senseurs.",
 	"SR5.VehicleModEffectKind_metahumanAdaptation": "Adaptation métahumaine",
 	"SR5.VehicleArmorCap": "Plafond du blindage ajouté (Structure, Rigger 5.0 p. 161)",
 	"SR5.VehicleModAdaptationMissing": "Véhicule non adapté à son métatype (Rigger 5.0 p. 171)",

@@ -195,6 +195,17 @@ export function signatureMaskingPenalty(target) {
   return -fittedRating(target.items, "signatureMasking") || 0
 }
 
+/** The same penalty on a Perception test that spots the vehicle with sensors (SR5 p. 183 "test de Senseurs"):
+ *  null without masking ; ticked by default when a drone or vehicle perceives (it only perceives through its
+ *  sensors), offered unticked to a character, who may be looking with her own eyes */
+export function sensorSpottingMasking(perceiver, target) {
+  const value = signatureMaskingPenalty(target)
+  if (!value) return null
+  return {
+    value, checked: perceiver?.type === "actorDrone"
+  }
+}
+
 // R5 p. 171 (Adaptation métahumaine): "Un ork ou un elfe pilotant un véhicule non ajusté subit un malus de –1 à tous ses
 // tests de Pilotage. Un nain ou un troll non ajusté subit un malus de –2". The controls are under the pilot's hands in
 // manual control only: remote and jumped in, nobody sits at them (arbitrage d'Hélène, 07/10, lot R8). Any adaptation

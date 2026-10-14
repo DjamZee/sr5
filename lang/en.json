@@ -6174,6 +6174,8 @@
 	"SR5.VehicleModEffectKind_riggerCocoon": "Rigger cocoon",
 	"SR5.VehicleModEffectKind_tactileSensors": "Tactile sensors",
 	"SR5.VehicleModEffectKind_signatureMasking": "Signature masking",
+	"SR5.SignatureMaskingSpotting": "Spotting with sensors (signature masking)",
+	"SR5.SignatureMaskingSpottingHint": "Rigger 5.0 p. 169: the signature masking of the targeted vehicle penalizes whoever spots it with a Sensor test. Ticked for a drone or vehicle; tick it when the character looks through sensors.",
 	"SR5.VehicleModEffectKind_metahumanAdaptation": "Metahuman adjustment",
 	"SR5.VehicleArmorCap": "Added armor cap (Body, Rigger 5.0 p. 161)",
 	"SR5.VehicleModAdaptationMissing": "Vehicle not adjusted to their metatype (Rigger 5.0 p. 171)",

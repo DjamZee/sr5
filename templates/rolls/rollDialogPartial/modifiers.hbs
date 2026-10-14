@@ -134,6 +134,17 @@
     {{> systems/sr5/templates/rolls/rollDialogPartial/signature.hbs}}
 {{/if}}
 
+<!-- SIGNATURE MASKING OF A VEHICLE SPOTTED WITH SENSORS (Rigger 5.0 p. 169) -->
+{{#if dialogSwitch.signatureMasking}}
+<li class="grid">
+    <div class="col-10" data-tooltip="{{localize 'SR5.SignatureMaskingSpottingHint'}}">{{localize 'SR5.SignatureMaskingSpotting'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1 SR-TextRight"><input type="checkbox" class="SR-ModCheckbox" data-target="dicePoolModSignatureMasking" data-modifier="signatureMasking" {{#if dialogSwitch.signatureMaskingChecked}}checked{{/if}}></div>
+    <div class="col-1 SR-TextCenter">
+        <input disabled type="number" name="dicePoolModSignatureMasking" value="{{#if dialogSwitch.signatureMaskingChecked}}{{dialogSwitch.signatureMasking}}{{else}}0{{/if}}" placeholder="0" data-dtype="Number" />
+    </div>
+</li>
+{{/if}}
+
 <!-- CENTERING METAMAGIC -->
 {{#if dialogSwitch.centering}}
     {{> systems/sr5/templates/rolls/rollDialogPartial/centering.hbs}}

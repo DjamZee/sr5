@@ -674,6 +674,9 @@ export default class SR5_RollDialog {
       case "astralReputation":
         value = dialogData.magic.astralReputationMod || 0
         break
+      case "signatureMasking":
+        value = dialogData.dialogSwitch.signatureMasking || 0
+        break
       case "centering":
         value = actor.system.magic.metamagics.centeringValue.value
         if (isChecked) dialogData.combat.actions = SR5_MiscellaneousHelpers.addActions(dialogData.combat.actions, {
