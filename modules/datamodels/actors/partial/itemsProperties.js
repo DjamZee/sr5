@@ -20,6 +20,9 @@ export class itemsPropertiesPartialModel extends foundry.abstract.TypeDataModel 
           accuracy: new fields.SchemaField({
             ...sr5ModsPartialModel.defineSchema()
           }),
+          reach: new fields.SchemaField({
+            ...sr5ModsPartialModel.defineSchema()
+          }),
         }),
         armor: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema(),

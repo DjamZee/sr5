@@ -1302,6 +1302,7 @@ SR5.weaponDamageTypes = {
 SR5.weaponEffectTargets = {
   accuracy                  : "SR5.Accuracy",
   damageValue               : "SR5.DamageValue",
+  reach                     : "SR5.WeaponReach",
 }
 
 // Accessoires pour armes à feu

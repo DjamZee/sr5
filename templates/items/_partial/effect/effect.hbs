@@ -159,6 +159,9 @@
 							<optgroup label="{{localize this}}">
 								<option value="system.defenses.{{@key}}">{{localize this}}</option>
 								<option value="system.defenses.{{@key}}.limit">{{localize this}} [{{localize 'SR5.Limit'}}]</option>
+								{{#if (ne @key 'defend')}}
+								<option value="system.defenses.{{@key}}.unlimited">{{localize this}} [{{localize 'SR5.DefenseUnlimitedHits'}}]</option>
+								{{/if}}
 							</optgroup>
 						{{/each}}
 
@@ -443,7 +446,7 @@
 				<div class="col-2 SR-PaddingRight5">
 					{{#if (and category target)}}
 						{{#ife this.category 'weaponEffectTargets'}}
-							{{#ife this.target 'system.itemsProperties.weapon.damageValue'}}
+							{{#if (or (eq this.target 'system.itemsProperties.weapon.damageValue') (eq this.target 'system.itemsProperties.weapon.reach'))}}
 								<select name="system.customEffects.{{@key}}.type" required>
 									{{#select type}}
 										<option class="SR-LightGreyColor" value="">{{localize 'SR5.ChooseOne'}}</option>
@@ -453,7 +456,7 @@
 										<option value="kick">{{localize 'SR5.AccessoryKick'}}</option>
 									{{/select}}
 								</select>
-							{{/ife}}
+							{{/if}}
 							{{#ife this.target 'system.itemsProperties.weapon.accuracy'}}
 								<select name="system.customEffects.{{@key}}.type" required>
 									{{#select type}}
@@ -537,7 +540,7 @@
 					{{else}}
 						<select name="system.customEffects.{{@key}}.type" required>
 							{{#select type}}
-								{{#if (endsWith target '.isActive')}}
+								{{#if (or (endsWith target '.isActive') (endsWith target '.unlimited'))}}
 									{{dropdownOptions 'boolean'}}
 								{{else if (includes target '.visions.')}}
 									{{dropdownOptions 'boolean'}}
@@ -546,6 +549,19 @@
 								{{/if}}
 							{{/select}}
 						</select>
+						{{#if (and (eq category 'martialArts') (endsWith target '.modifier'))}}
+						<!-- The attacks the called shot technique eases (rolls/roll-helpers/calledShotSkills.js): every attack when empty -->
+						<select name="system.customEffects.{{@key}}.skills" data-tooltip="{{localize 'SR5.CalledShotSkillsHint'}}">
+							{{#select skills}}
+								<option value="">{{localize 'SR5.CalledShotSkillsAll'}}</option>
+								<option value="unarmedCombat">{{localize 'SR5.SkillUnarmedCombat'}}</option>
+								<option value="armed">{{localize 'SR5.CalledShotSkillsArmed'}}</option>
+								{{#each ../lists.combatSkills}}
+									{{#if (ne @key 'unarmedCombat')}}<option value="{{@key}}">{{localize this}}</option>{{/if}}
+								{{/each}}
+							{{/select}}
+						</select>
+						{{/if}}
 						{{/ife}}
 					{{/if}}
 				</div>

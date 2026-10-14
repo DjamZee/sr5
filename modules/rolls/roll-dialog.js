@@ -1449,13 +1449,18 @@ export default class SR5_RollDialog {
           let usesSkill = ["dodge", "block", "parryClubs", "parryBlades"].includes(ev.target.value)
           // A test that already had a limit (a ramming defense) gets it back when the active defense is dropped
           dialogData.combat.activeDefenses.ownLimit ??= {
-            base: dialogData.limit.base || 0, type: dialogData.limit.type || ""
+            base: dialogData.limit.base || 0, type: dialogData.limit.type || "", unlimited: !!dialogData.limit.unlimited
           }
           let ownLimit = dialogData.combat.activeDefenses.ownLimit
           dialogData.limit.base = usesSkill ? (dialogData.combat.activeDefenses.limit || 0) : ownLimit.base
           dialogData.limit.type = usesSkill ? "physicalLimit" : ownLimit.type
+          // An effect may lift the limit of this active defense (system.defenses.<key>.unlimited): its hits are not limited
+          let unlimitedDefense = usesSkill && !!dialogData.combat.activeDefenses.unlimited?.[ev.target.value]
+          dialogData.limit.unlimited = unlimitedDefense || ownLimit.unlimited
           let limitRow = html.querySelector('#activeDefenseLimit')
-          if (limitRow) limitRow.style.display = usesSkill ? '' : 'none'
+          if (limitRow) limitRow.style.display = usesSkill && !unlimitedDefense ? '' : 'none'
+          let unlimitedRow = html.querySelector('#activeDefenseUnlimited')
+          if (unlimitedRow) unlimitedRow.style.display = unlimitedDefense ? '' : 'none'
           break
         }
         case "cover":

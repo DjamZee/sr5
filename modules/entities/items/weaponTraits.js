@@ -39,6 +39,16 @@ export function weaponDamageBonusApplies(weaponData, details) {
 }
 
 /**
+ * The bare hands' share of the actor's "Weapons / Reach" effects: what an unarmed defender adds to its own Reach
+ * (the kicks are left out, a block is no kick).
+ */
+export function unarmedReachBonus(actorSystem) {
+  return (actorSystem?.itemsProperties?.weapon?.reach?.modifiers ?? [])
+    .filter(m => m?.details === "unarmedCombat")
+    .reduce((sum, m) => sum + (Number(m.value) || 0), 0)
+}
+
+/**
  * Vintage (GH3 p. 3): "not compatible with modern electronics […] Physical upgrades are possible,
  * but adding them […] costs twice the normal listed amount". Traits themselves stay free.
  */
