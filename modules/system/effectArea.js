@@ -335,6 +335,7 @@ export class SR5_EffectArea {
           },
           //Built here by the GM, never read from a card: one decision on the sheet's definition for the whole template
           areaTemplate: true,
+          castMessageId: templateData.messageId ?? "",
         }
         //A player's spell on an actor she does not own: what its sheet defines, shown in the window of the hits
         const review = await SR5_ActorHelper.definitionReview(sourceItem, actor, "customEffects", data)
@@ -567,34 +568,55 @@ export class SR5_EffectArea {
     return next
   }
 
+  //The copies of a spell's effect that its templates on this scene gave: a template's own (its id as ownerID, or the
+  //cast it was placed from), and the resistance card of a cast one of them was placed from (flags.sr5.castMessageId).
+  //An effect made before that flag existed, and not given by a template of another scene, counts as before
+  static areaEffectsOf(effects, templates, excludedTemplateId){
+    const ids = new Set(templates.map(t => t.id))
+    if (excludedTemplateId) ids.add(excludedTemplateId)
+    const casts = new Set(templates.map(t => t.flags?.sr5?.messageId).filter(Boolean))
+    return effects.filter(effect => {
+      if (ids.has(effect.system.ownerID)) return true
+      const cast = effect.flags?.sr5?.castMessageId
+      if (cast) return casts.has(cast)
+      return !game.scenes?.some(s => s.templates?.get(effect.system.ownerID))
+    })
+  }
+
   //A spell's effect on a token, whatever the number of its templates: a token covered by at least one template of
   //the spell keeps exactly one copy, and loses it only when it leaves the last one. A copy is never lifted while
   //the token stays covered, so a resisted spell is not resisted again. One copy is the itemEffects one apply gives
   //(one per custom effect), all with the template that gave them as ownerID.
-  //excludedTemplateId: a template being deleted, which may still be listed on its scene
-  static async syncSpellEffect(tokenDocument, itemUuid, excludedTemplateId){
+  //Only the copies a template of this scene gave are lifted (areaEffectsOf): the same spell cast by card, or through a
+  //template on another scene (a linked actor), keeps its effect.
+  //excluded: a template being deleted (its document, or its id), which may still be listed on its scene
+  static async syncSpellEffect(tokenDocument, itemUuid, excluded){
     let actor = await SR5_EntityHelpers.getRealActorFromID(tokenDocument.id)
     if (!actor) return
+    const excludedTemplateId = typeof excluded === "string" ? excluded : excluded?.id
     return SR5_EffectArea.runForSpell(actor, itemUuid, async () => {
       let covering
+      const templates = []
       for (let template of Array.from(tokenDocument.parent?.templates ?? [])){
-        if (template.id === excludedTemplateId || !template.flags?.sr5?.itemHasEffect || template.flags.sr5.itemUuid !== itemUuid) continue
-        if (await this.templateCoversActor(template, tokenDocument)){
-          covering = template
-          break
-        }
+        if (!template.flags?.sr5?.itemHasEffect || template.flags.sr5.itemUuid !== itemUuid) continue
+        templates.push(template)
+        if (covering || template.id === excludedTemplateId) continue
+        if (await this.templateCoversActor(template, tokenDocument)) covering = template
       }
+      if (excluded && typeof excluded !== "string" && !templates.some(t => t.id === excluded.id)) templates.push(excluded)
       let effects = actor.items.filter(i => i.type === "itemEffect" && i.system.ownerItem === itemUuid)
+      let managed = SR5_EffectArea.areaEffectsOf(effects, templates, excludedTemplateId)
       if (!covering){
         //Out of every template: a resistance asked for is dropped, coming back in asks again
         SR5_EffectArea.clearPendingResistances(actor, itemUuid)
-        if (effects.length) await SR5_EffectArea.deleteStillThere(actor, effects.map(i => i.id))
+        if (managed.length) await SR5_EffectArea.deleteStillThere(actor, managed.map(i => i.id))
         return
       }
       if (!effects.length) return await this.createTemplateEffect(tokenDocument, covering)
       SR5_EffectArea.clearPendingResistances(actor, itemUuid)
-      let kept = effects[0].system.ownerID
-      let extra = effects.filter(i => i.system.ownerID !== kept)
+      if (!managed.length) return
+      let kept = managed[0].system.ownerID
+      let extra = managed.filter(i => i.system.ownerID !== kept)
       if (extra.length) await SR5_EffectArea.deleteStillThere(actor, extra.map(i => i.id))
     })
   }
@@ -654,7 +676,7 @@ export class SR5_EffectArea {
     for (let t of templateDocument.parent.tokens){
       //A spell's effect stays while another template of the spell still covers the token
       if (templateDocument.flags.sr5.itemHasEffect){
-        await this.syncSpellEffect(t, templateDocument.flags.sr5.itemUuid, templateDocument.id)
+        await this.syncSpellEffect(t, templateDocument.flags.sr5.itemUuid, templateDocument)
         continue
       }
       let actor = await SR5_EntityHelpers.getRealActorFromID(t.id)

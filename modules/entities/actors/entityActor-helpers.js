@@ -2608,6 +2608,8 @@ export class SR5_ActorHelper {
           "system.ownerItem": data.owner.itemUuid,
           "system.duration": 0,
           "system.durationType": "sustained",
+          //The cast it comes from (its spell card): a template of another cast of the spell leaves it alone (effectArea.js)
+          "flags.sr5.castMessageId": data.castMessageId || data.previousMessage?.messageId || data.owner?.messageId || "",
           //The entry of the source item it comes from: dispelling lowers it only if that entry read the hits (dispel-rules.js)
           "flags.sr5.sourceEntry": entryKey,
           //The hits its value stands on, and the spell's hits then: dispelling works the value out again from them
