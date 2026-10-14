@@ -11,6 +11,9 @@ import {
   bbPatientEntry, advancedMedkitRules
 } from "../system/bb-healing.js"
 import {
+  guruBonus
+} from "../entities/items/magic-masteries.js"
+import {
   advancedMedkitDice, bbModeDiagnosisDice, improvisedSuppliesDice
 } from "../system/bb-healing-rules.js"
 import {
@@ -578,8 +581,9 @@ export default class SR5_RollDialog {
   //The type's modifiers are copied without their markers, which the boxes stand for; boxes ticked
   //elsewhere in the dialog are kept
   _syncSpiritTypeOffers(html, dialogData, spiritType, typeModifiers){
-    //The Astral Reputation penalty (Street Grimoire p. 207) is the summoner's, whatever the type: kept too
-    const kept = (dialogData.dicePool.modifiers || []).filter(m => m.type?.startsWith?.("situational_") || m.type === "astralReputation")
+    //The Astral Reputation penalty (Street Grimoire p. 207) is the summoner's, whatever the type: kept too, and so is
+    //the Wild Reputation bonus of a call (Forbidden Arcana p. 170)
+    const kept = (dialogData.dicePool.modifiers || []).filter(m => m.type?.startsWith?.("situational_") || m.type === "astralReputation" || m.type === "wildReputation")
     dialogData.dicePool.modifiers = withoutSituationalMarkers(typeModifiers).concat(kept)
     const unticked = spiritTypeVisible(dialogData.situational, spiritType)
     dialogData.dicePool.modifiers = dialogData.dicePool.modifiers.filter(m => !unticked.includes(m.type))
@@ -644,8 +648,10 @@ export default class SR5_RollDialog {
         return
       case "recklessSpellcasting":
         dialogData.combat.actions = []
+        dialogData.magic.recklessCast = isChecked
         if (isChecked) {
-          value = 3
+          //Rapid-Fire Caster (Forbidden Arcana p. 38): a use of the mastery takes the Drain increase away
+          value = dialogData.magic.rapidFireCaster?.used ? 0 : 3
           dialogData.combat.actions = SR5_MiscellaneousHelpers.addActions(dialogData.combat.actions, {
             type: "simple", value: 1, source: "castRecklessSpell"
           })
@@ -662,6 +668,16 @@ export default class SR5_RollDialog {
         this.drainModifier.recklessSpellcasting = value
         this.updateDrainValue(html)
         return
+      case "rapidFireCaster":
+      case "rapidFireCasterRest": {
+        //Rapid-Fire Caster (Forbidden Arcana p. 38): counted when the spell is cast, and only with reckless casting.
+        //With no use left, the box says the eight hours of full rest were taken: the uses come back, this one counts
+        dialogData.magic.rapidFireCaster.used = isChecked
+        dialogData.magic.rapidFireCaster.rest = isChecked && modifierName === "rapidFireCasterRest"
+        const reckless = html.querySelector('[data-modifier="recklessSpellcasting"]')
+        if (reckless?.checked) reckless.dispatchEvent(new Event("change"))
+        return
+      }
       case "mageHunter": {
         //Mage Hunter (Forbidden Arcana p. 34): the Drain is paid only when the trade is made
         const level = dialogData.magic.mageHunter?.level || 0
@@ -992,6 +1008,27 @@ export default class SR5_RollDialog {
       case "reagentsSpent":
         this._updateReagents(value, actor, html, dialogData)
         return
+      case "guruParticipants": {
+        //Guru (Forbidden Arcana p. 37): +1 die and +1 limit per (60 / Charisma) ordinary participants, at most the
+        //Ritual Spellcasting rank
+        const participants = Math.max(0, parseInt(value) || 0)
+        html.querySelector(name).value = participants
+        const bonus = guruBonus(participants, dialogData.magic.guru?.charisma, dialogData.magic.guru?.rank)
+        const label = `${game.i18n.localize("SR5.MagicMasteryGuru")} (${participants})`
+        SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "guru")
+        delete dialogData.limit.modifiers.guru
+        if (bonus > 0) {
+          dialogData.dicePool.modifiers.push({
+            type: "guru", label, value: bonus
+          })
+          dialogData.limit.modifiers.guru = {
+            value: bonus, label
+          }
+        }
+        this.updateDicePoolValue(html)
+        this.updateLimitValue(html)
+        return
+      }
       case "level":
         this.updateFadingValue(html)
         if (html.querySelector('#level')) html.querySelector('#level').value = value

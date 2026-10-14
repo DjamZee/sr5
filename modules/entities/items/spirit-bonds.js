@@ -111,6 +111,17 @@ export function wildReputation(wildIndex){
   return Math.max(0, Math.floor((Number(wildIndex) || 0) / 25))
 }
 
+// Its use (p. 170): "Lorsqu'il appelle un esprit sauvage ou qu'il mène des interactions avec des esprits sauvages qui
+// nécessitent des compétences sociales, le personnage gagne un modificateur de dé positif égal à sa Réputation
+// Sauvage". Calling by Conjuration is a Summoning test; the social skills are those of SR5 p. 143-146.
+export const WILD_REPUTATION_SKILLS = ["summoning", "con", "etiquette", "impersonation", "instruction", "intimidation", "leadership",
+  "negotiation", "performance"]
+
+export function wildReputationBonus(skillKey, reputation, target){
+  if (!WILD_REPUTATION_SKILLS.includes(skillKey) || target?.type !== "actorSpirit" || !target?.system?.isWild) return 0
+  return Math.max(0, Number(reputation) || 0)
+}
+
 // Elemental trait (Forbidden Arcana p. 175): Logic, Intuition, Charisma and Willpower "réduits de la moitié de leur
 // Puissance (arrondi à l'inférieur) […] jusqu'à un attribut minimum modifié de 1".
 export const ELEMENTAL_MENTAL_ATTRIBUTES = ["logic", "intuition", "charisma", "willpower"]

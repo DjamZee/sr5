@@ -89,6 +89,8 @@ export default async function defense(rollData, actor, chatData){
   //A weapon focus deals magical damage but stays a weapon; a spell's Force sets the AP of its fire (SR5 p. 173)
   rollData.damage.weaponFocus = chatData.damage.weaponFocus
   if (chatData.damage.source === "magical") rollData.magic.force = chatData.magic?.force
+  //Electromancer (Forbidden Arcana p. 35): carried to the damage resistance, which lowers the Initiative
+  if (chatData.magic?.electromancer) rollData.magic.electromancer = true
   rollData.combat.ammo.type = chatData.combat.ammo.type
   rollData.combat.calledShot = chatData.combat.calledShot
   rollData.combat.armorPenetration = chatData.combat.armorPenetration

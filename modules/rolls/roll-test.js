@@ -37,6 +37,9 @@ import {
   isStructuredSpell, pushedHits
 } from "./roll-helpers/arcana-metamagics.js"
 import {
+  rapidFireAfterUse
+} from "../entities/items/magic-masteries.js"
+import {
   isRecoilCarriedOver, buildsProgressiveRecoil
 } from "./roll-helpers/recoil.js"
 import {
@@ -176,6 +179,12 @@ export class SR5_RollTest {
       })
     } else dialogData.magic.hasUsedReagents = false
     if (result.harvestZone) dialogData.magic.reagentHarvestZone = result.harvestZone
+
+    //Rapid-Fire Caster (Forbidden Arcana p. 38): a reckless spell cast without the Drain increase uses one of the day
+    if (dialogData.magic.rapidFireCaster?.used && dialogData.magic.recklessCast) {
+      const record = dialogData.magic.rapidFireCaster.rest ? null : actor.getFlag("sr5", "rapidFireCaster")
+      await actor.setFlag("sr5", "rapidFireCaster", rapidFireAfterUse(record, game.time?.worldTime ?? 0))
+    }
 
     //Rename chatCard title for extended test
     if (dialogData.test.isExtended) dialogData.test.title = dialogData.test.title.replace("Test", game.i18n.localize("SR5.ExtendedTest"))

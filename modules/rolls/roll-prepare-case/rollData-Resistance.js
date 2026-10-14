@@ -125,6 +125,8 @@ export default async function resistance(rollData, rollType, actor, chatData){
   rollData.previousMessage.hits = chatData.roll.hits
   rollData.previousMessage.attackerNetHits = chatData.roll.netHits
   rollData.combat.calledShot = chatData.combat.calledShot
+  //Electromancer (Forbidden Arcana p. 35): the combat spell lowers the Initiative once resisted (test-Resistance.js)
+  if (chatData.magic?.electromancer) rollData.magic.electromancer = true
 
   rollData.test.title = game.i18n.localize("SR5.TakeOnDamageShort")
     

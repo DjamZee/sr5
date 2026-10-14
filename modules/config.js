@@ -1996,6 +1996,8 @@ SR5.traditionTypes = {
   toxic                     : "SR5.TraditionToxic",
   egyptian                  : "SR5.TraditionEgyptian",
   draconic                  : "SR5.TraditionDraconic",
+  // Dark Terrors p. 169: Drain CHA + WIL
+  darkMagic                 : "SR5.TraditionDarkMagic",
 }
 
 // Types de sorts
@@ -2191,6 +2193,12 @@ SR5.metamagics = {
   // Forbidden Arcana p. 43, 45
   structuredSpellcasting   : "SR5.MetamagicStructuredSpellcasting",
   harmoniousDefense        : "SR5.MetamagicHarmoniousDefense",
+  improvedAstralForm       : "SR5.MetamagicImprovedAstralForm",
+  astralnaut               : "SR5.MetamagicAstralnaut",
+  rapidNecroInvocation     : "SR5.MetamagicRapidNecroInvocation",
+  // Dark Terrors p. 169: recognised, not automated (the system keeps no stored Essence maximum, nor mist speed)
+  essenceExpansion         : "SR5.MetamagicEssenceExpansion",
+  improvedMistForm         : "SR5.MetamagicImprovedMistForm",
 }
 
 //Magical masteries (Forbidden Arcana p. 30-41): level = quality rating
@@ -2202,6 +2210,10 @@ SR5.magicMasteries = {
   illusionist              : "SR5.MagicMasteryIllusionist",
   mageHunter               : "SR5.MagicMasteryMageHunter",
   masterManipulator        : "SR5.MagicMasteryMasterManipulator",
+  // Forbidden Arcana p. 35, 37, 38
+  electromancer            : "SR5.MagicMasteryElectromancer",
+  guru                     : "SR5.MagicMasteryGuru",
+  rapidFireCaster          : "SR5.MagicMasteryRapidFireCaster",
 }
 
 //-----------------------------------//
@@ -3904,6 +3916,13 @@ SR5.specialPropertiesList = {
   naniteToxinResistance     : "SR5.NaniteToxinResistance",
   immunodeficiency          : "SR5.Immunodeficiency",
   hardenedArmorHitsOnly     : "SR5.HardenedArmorHitsOnly",
+  // Better Than Bad p. 143
+  purityState               : "SR5.AdeptPowerPurityState",
+  purityStateStun           : "SR5.AdeptPowerPurityStateStun",
+  mysticAptitudeBody        : "SR5.AdeptPowerMysticAptitudeBody",
+  mysticAptitudeAgility     : "SR5.AdeptPowerMysticAptitudeAgility",
+  mysticAptitudeReaction    : "SR5.AdeptPowerMysticAptitudeReaction",
+  mysticAptitudeStrength    : "SR5.AdeptPowerMysticAptitudeStrength",
 }
 
 SR5.transactionsTypes = {
@@ -4242,6 +4261,7 @@ SR5.sourceList = {
   bulletsAndBandages        : "SOURCE.BulletsAndBandages",
   shadowSpells              : "SOURCE.ShadowSpells",
   lockdown 				  : "SOURCE.Lockdown",
+  aetherology               : "SOURCE.Aetherology",
 }
 
 //-----------------------------------//

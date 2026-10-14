@@ -10,6 +10,9 @@ import {
 import {
   SR5_SpiritTypes
 } from "../items/spirit-types.js"
+import {
+  INSECT_RACES, isInsectCaste, insectRaceOptions
+} from "../items/insect-races.js"
 
 /**
  * An Actor sheet for spirit type actors in the Shadowrun 5 system.
@@ -58,6 +61,12 @@ export class SR5SpiritSheet extends ActorSheetSR5 {
     context.spiritBaseType = SR5_SpiritTypes.baseType(this.actor.system.type)
     context.singleMonitor = SR5_SpiritTypes.hasSingleMonitor(this.actor.system.type)
     context.isHomunculus = context.spiritBaseType === "homunculus"
+    // Insect castes take a race (Dark Terrors p. 22-34); its rules that are not automated are shown as a note
+    if (isInsectCaste(context.spiritBaseType)) {
+      context.insectRaces = insectRaceOptions()
+      const race = INSECT_RACES[this.actor.system.insectRace]
+      if (race?.note) context.insectRaceNote = game.i18n.localize(`SR5.InsectRace_${this.actor.system.insectRace}_D`)
+    }
     if (!context.isHomunculus) return
     const structure = game.i18n.localize("SR5.Structure"), armor = game.i18n.localize("SR5.VehicleStat_ArmorShort")
     context.homunculusMaterials = {

@@ -89,3 +89,38 @@ export function deathSowerAdeptDamage(magicType, level, weaponCategory) {
   if (weaponCategory !== "meleeWeapon" || (magicType !== "adept" && magicType !== "mysticalAdept")) return 0
   return (Number(level) || 0) > 0 ? 1 : 0
 }
+
+// Rapid-Fire Caster (p. 38): "once per day per level", a reckless spell without the Drain increase (SR5 p. 284), then
+// eight hours of full rest. The uses are counted on the actor ({used, since}: world time in seconds of the first use
+// counted), read as a day of world time from that first use; the rest the book asks for is also a reset by hand.
+export const RAPID_FIRE_DAY = 24 * 3600
+
+const rapidFireExpired = (record, now) => !record || !(Number(record.used) > 0) || (Number(now) - (Number(record.since) || 0)) >= RAPID_FIRE_DAY
+
+export function rapidFireRemaining(level, record, now){
+  const max = Math.max(0, Math.floor(Number(level) || 0))
+  if (rapidFireExpired(record, now)) return max
+  return Math.max(0, max - Number(record.used))
+}
+
+export function rapidFireAfterUse(record, now){
+  if (rapidFireExpired(record, now)) return {
+    used: 1, since: Number(now) || 0
+  }
+  return {
+    used: Number(record.used) + 1, since: Number(record.since) || 0
+  }
+}
+
+// Electromancer (p. 35): after the damage resistance test of a combat spell that hurts, the target's Initiative loses
+// (caster's excess hits / 2), rounded up
+export function electromancerInitiative(excessHits){
+  return Math.ceil(Math.max(0, Number(excessHits) || 0) / 2)
+}
+
+// Guru (p. 37): +1 die and +1 limit per (60 / Charisma) ordinary participants, at most the Ritual Spellcasting rank
+export function guruBonus(participants, charisma, ritualRank){
+  const cha = Number(charisma) || 0
+  if (cha <= 0) return 0
+  return Math.max(0, Math.min(Math.floor((Math.max(0, Number(participants) || 0) * cha) / 60), Number(ritualRank) || 0))
+}

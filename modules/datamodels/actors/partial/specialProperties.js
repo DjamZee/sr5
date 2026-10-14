@@ -120,6 +120,26 @@ export class specialPropertiesPartialModel extends foundry.abstract.TypeDataMode
         hardenedArmorHitsOnly: new fields.BooleanField({
           initial: false
         }),
+        // Purity State (Better Than Bad p. 143): bare-handed DV (Magic + Strength), Physical unless the Stun one is set
+        purityState: new fields.BooleanField({
+          initial: false
+        }),
+        purityStateStun: new fields.BooleanField({
+          initial: false
+        }),
+        // Mystic Aptitude (Better Than Bad p. 143): level of the power on the Physical Attribute it stands in for
+        mysticAptitudeBody: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema()
+        }),
+        mysticAptitudeAgility: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema()
+        }),
+        mysticAptitudeReaction: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema()
+        }),
+        mysticAptitudeStrength: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema()
+        }),
         essenceDrain: new fields.BooleanField({
           initial: false
         }),

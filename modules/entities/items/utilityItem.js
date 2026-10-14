@@ -26,6 +26,9 @@ import {
   lifestyleMetatypeSurcharge
 } from "./lifestyle-metatype.js"
 import {
+  purityStateArmorPenetration
+} from "./adept-powers-btb.js"
+import {
   deathSowerAdeptDamage
 } from "./magic-masteries.js"
 import {
@@ -623,6 +626,17 @@ export class SR5_UtilityItem extends Actor {
       if (itemData.choke[key]) {
         itemData.choke.value.push(game.i18n.localize(SR5.chokeSettings[key]))
       }
+    }
+
+    //Purity State (Better Than Bad p. 143): the bare hands deal (Magic + Strength), "no further DV can be added",
+    //AP -(Magic x 0.5), Physical or Stun as the adept chooses
+    if (actor?.system?.specialProperties?.purityState && takesBoneDamage(itemData)) {
+      const magic = actor.system.specialAttributes?.magic?.augmented?.value || 0
+      const label = game.i18n.localize('SR5.AdeptPowerPurityState')
+      itemData.damageValue.modifiers = itemData.damageValue.modifiers.filter(m => m.type === "linkedAttribute")
+      SR5_EntityHelpers.updateModifier(itemData.damageValue, label, "adeptPower", magic)
+      SR5_EntityHelpers.updateModifier(itemData.armorPenetration, label, "adeptPower", purityStateArmorPenetration(magic))
+      itemData.damageType = actor.system.specialProperties.purityStateStun ? "stun" : "physical"
     }
 
     SR5_EntityHelpers.updateValue(itemData.damageValue, 0)

@@ -38,6 +38,15 @@ import {
   masteryFreeSustainedSpells, illusionistLevelsByType
 } from "../items/magic-masteries.js"
 import {
+  insectRaceOf
+} from "../items/insect-races.js"
+import {
+  MYSTIC_APTITUDE_ATTRIBUTES, mysticAptitudeKey, mysticAptitudeChoice, mysticAptitudeValue
+} from "../items/adept-powers-btb.js"
+import {
+  skillsFromPowers
+} from "../items/spirit-skill-power.js"
+import {
   homunculusMaterialRatings
 } from "./homunculus.js"
 import {
@@ -1549,6 +1558,9 @@ export class SR5_CharacterUtility extends Actor {
     }
 
     if (customType) SR5_SpiritTypes.applyAttributes(customType, attributes, label)
+    //Race of an insect spirit: Subterranean Termites +2, Goliath Beetles +4 to damage resistance (Dark Terrors p. 26-27)
+    const insectRace = insectRaceOf(SR5_SpiritTypes.baseType(actorData.type) || actorData.type, actorData.insectRace)
+    if (insectRace?.damageResistance) SR5_EntityHelpers.updateModifier(actorData.resistances.physicalDamage, game.i18n.localize(`SR5.InsectRace_${actorData.insectRace}`), "spiritType", insectRace.damageResistance)
 
     // Elemental trait (Forbidden Arcana p. 175): mental attributes lowered by half the Force, to a minimum of 1
     if (actorData.isElemental) {
@@ -1775,10 +1787,33 @@ export class SR5_CharacterUtility extends Actor {
     }
   }
 
+  static applyMysticAptitude(actor) {
+    const actorData = actor.system, levels = {
+    }
+    for (const attribute of MYSTIC_APTITUDE_ATTRIBUTES) {
+      const property = actorData.specialProperties?.[mysticAptitudeKey(attribute)]
+      if (!property) continue
+      SR5_EntityHelpers.updateValue(property, 0)
+      levels[attribute] = property.value
+    }
+    const aptitude = mysticAptitudeChoice(levels)
+    const augmented = aptitude ? actorData.attributes?.[aptitude.attribute]?.augmented : null
+    if (!augmented || !actorData.specialAttributes?.magic) return
+    const value = mysticAptitudeValue(actorData.specialAttributes.magic.augmented, aptitude.level)
+    augmented.modifiers.push({
+      source: game.i18n.localize("SR5.AdeptPowerMysticAptitude"), type: "adeptPower", value: value - augmented.value, isMultiplier: false, replace: true
+    })
+    augmented.value = value
+  }
+
   // Generate Special Properties
   static updateSpecialProperties(actor) {
     let actorData = actor.system
     let hardenedArmors = actorData.specialProperties.hardenedArmors
+
+    //Mystic Aptitude (Better Than Bad p. 143): Magic (without power focus) + level stands in for the Physical Attribute
+    //chosen, once the Magic is known and before the limits, Initiative and dice pools that read it (not the monitors)
+    this.applyMysticAptitude(actor)
 
     //Hardened Armors
     for (let key of Object.keys(SR5.hardenedArmorTypes)) {
@@ -3255,6 +3290,11 @@ export class SR5_CharacterUtility extends Actor {
       for (const key of SR5_SpiritTypes.noBaseSkills(customType)) skills[key].rating.base = 0
       SR5_SpiritTypes.applySkills(customType, skills, actorData.force.value)
     }
+    //Skills an insect race always has, at Force like the caste's (Dark Terrors p. 25-33)
+    const insectRace = insectRaceOf(SR5_SpiritTypes.baseType(actorData.type) || actorData.type, actorData.insectRace)
+    for (const key of insectRace?.skills || []) if (skills[key]) skills[key].rating.base = actorData.force.value
+    //Skill power (Aetherology p. 39): an active skill in place of a power, at Force like the type's own
+    for (const key of skillsFromPowers(actor.items)) if (skills[key]) skills[key].rating.base = actorData.force.value
 
     for (let key of Object.keys(SR5.skills)) {
       if (skills[key] && skills[key].rating.base) {

@@ -5,6 +5,16 @@
 <!--FORCE-->
 {{> systems/sr5/templates/rolls/rollDialogPartial/force.hbs}}
 
+<!-- GURU (Forbidden Arcana p. 37): +1 die and +1 limit per (60 / Charisma) ordinary participants -->
+{{#if dialogSwitch.guru}}
+<li class="grid">
+    <div class="col-10" data-tooltip="{{localize 'SR5.GuruParticipants_D'}}">{{localize 'SR5.GuruParticipants'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-2 SR-TextCenter">
+        <input type="number" class="SR-ModInput" data-modifier="guru" name="guruParticipants" value="0" min="0" data-dtype="Number" placeholder="0" />
+    </div>
+</li>
+{{/if}}
+
 <!--REAGENTS-->
 {{#if dialogSwitch.reagents}}
       {{> systems/sr5/templates/rolls/rollDialogPartial/reagents.hbs}}
