@@ -1,0 +1,52 @@
+<!-- The chips between the character and the contact (Run Faster p. 170-172, SR5 p. 388-391), lot 37a -->
+<div class="sr-favors">
+	<div class="sr-favors-balance side-{{favors.side}}">
+		<div class="sr-favors-count">{{favors.pill}}</div>
+		<div class="sr-favors-what">
+			<strong>{{favors.label}}</strong>
+			<span class="sr-favors-sub">{{localize 'SR5.FAVOR_BalanceHint'}}</span>
+		</div>
+		<div class="sr-favors-tags">
+			<span class="sr-favors-tag">{{localize 'SR5.ContactLoyaltyShort'}} {{system.loyalty}}</span>
+			{{#if favors.relationLabel}}<span class="sr-favors-tag">{{favors.relationLabel}}</span>{{/if}}
+			{{#if favors.intimidated}}<span class="sr-favors-tag warn" data-tooltip="{{localize 'SR5.FAVOR_IntimidatedHint'}}">{{localize 'SR5.FAVOR_Intimidated'}}</span>{{/if}}
+		</div>
+	</div>
+
+	{{#if owner}}
+	<div class="sr-favors-actions">
+		<button type="button" data-action="contactFavor" data-favor="ask" data-tooltip="{{localize 'SR5.FAVOR_AskHint'}}"><em class="fas fa-hand-holding-heart"></em> {{localize 'SR5.FAVOR_Ask'}}</button>
+		<button type="button" data-action="contactFavor" data-favor="obtained" data-tooltip="{{localize 'SR5.FAVOR_ObtainedHint'}}"><em class="fas fa-file-signature"></em> {{localize 'SR5.FAVOR_Obtained'}}</button>
+		<button type="button" data-action="contactFavor" data-favor="service" data-tooltip="{{localize 'SR5.FAVOR_ServiceHint'}}"><em class="fas fa-handshake-angle"></em> {{localize 'SR5.FAVOR_Service'}}</button>
+		<button type="button" data-action="contactFavor" data-favor="repay" data-tooltip="{{localize 'SR5.FAVOR_RepayHint'}}" {{#unless (eq favors.side 'characterOwes')}}disabled{{/unless}}><em class="fas fa-coins"></em> {{localize 'SR5.FAVOR_Repay'}}</button>
+		<button type="button" data-action="contactFavor" data-favor="improve" data-tooltip="{{localize 'SR5.FAVOR_ImproveHint'}}"><em class="fas fa-arrow-up"></em> {{localize 'SR5.FAVOR_Improve'}}</button>
+		<button type="button" data-action="contactFavor" data-favor="intimidate" data-tooltip="{{localize 'SR5.FAVOR_IntimidateHint'}}"><em class="fas fa-fist-raised"></em> {{localize 'SR5.FAVOR_Intimidate'}}</button>
+		<button type="button" data-action="contactFavor" data-favor="adjust" data-tooltip="{{localize 'SR5.FAVOR_AdjustHint'}}"><em class="fas fa-sliders"></em> {{localize 'SR5.FAVOR_Adjust'}}</button>
+	</div>
+
+	<div class="sr-favors-relation">
+		<label>{{localize 'SR5.FAVOR_Relation'}}
+			<select name="system.favors.relation">
+				<option value="" {{#unless favors.relation}}selected{{/unless}}>{{localize 'SR5.FAVOR_Relation_none'}}</option>
+				<option value="family" {{#if (eq favors.relation 'family')}}selected{{/if}}>{{localize 'SR5.FAVOR_Relation_family'}}</option>
+				<option value="blackmail" {{#if (eq favors.relation 'blackmail')}}selected{{/if}}>{{localize 'SR5.FAVOR_Relation_blackmail'}}</option>
+			</select>
+		</label>
+		<span class="sr-favors-sub">{{localize 'SR5.FAVOR_RelationHint'}}</span>
+	</div>
+	{{/if}}
+
+	<div class="sr-favors-log">
+		<div class="sr-favors-log-title">{{localize 'SR5.FAVOR_History'}}</div>
+		{{#each favors.log}}
+		<div class="sr-favors-line">
+			<span class="sr-favors-delta {{deltaClass}}">{{deltaLabel}}</span>
+			<span class="sr-favors-note">{{note}}</span>
+			<span class="sr-favors-who">{{user}} · {{date}}</span>
+		</div>
+		{{else}}
+		<div class="sr-favors-line empty">{{localize 'SR5.FAVOR_HistoryEmpty'}}</div>
+		{{/each}}
+	</div>
+	<p class="sr-favors-source">{{localize 'SR5.FAVOR_Source'}}</p>
+</div>

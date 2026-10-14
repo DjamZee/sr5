@@ -39,7 +39,8 @@
           class="col-4 deplie SR-PaddingRight3 {{#if (missing name system.type system.loyalty system.connection)}}incomplete{{/if}}"
           data-helpTitle="{{localize 'SR5.HELP_ContactName' key=name}}"
           data-helpMessage="{{localize 'SR5.HELP_ContactNameMsg'}}">
-          <p>{{name}}</p>
+          <p>{{name}}{{#if system.favors.chips}} <span class="sr-favor-pill {{#if (gt system.favors.chips 0)}}up{{else}}down{{/if}}"
+            data-tooltip="{{#if (gt system.favors.chips 0)}}{{localize 'SR5.FAVOR_PillContactOwes'}}{{else}}{{localize 'SR5.FAVOR_PillCharacterOwes'}}{{/if}}"><em class="fas fa-handshake"></em> {{system.favors.chips}}</span>{{/if}}</p>
         </div>
         <div class="col-4 SR-PaddingRight3 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_ContactType' key=name}}"
           data-helpMessage="{{localize 'SR5.HELP_ContactTypeMsg'}}">

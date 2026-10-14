@@ -247,6 +247,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/items/blocks/complexForm/complexForm-summary.hbs",
     "systems/sr5/templates/items/blocks/contact/contact-stat.hbs",
     "systems/sr5/templates/items/blocks/contact/contact-summary.hbs",
+    "systems/sr5/templates/items/blocks/contact/contact-favors.hbs",
     "systems/sr5/templates/items/blocks/device/device-stat.hbs",
     "systems/sr5/templates/items/blocks/device/device-summary.hbs",
     "systems/sr5/templates/items/blocks/drug/drug-stat.hbs",

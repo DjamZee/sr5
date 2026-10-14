@@ -1,0 +1,162 @@
+// The favors of a contact (Run Faster p. 170-172), lot 37a
+// Same grammar as the con tracker (con-tracker.less): colours mixed with the text colour, so the block reads in the
+// dark theme as in the light one; green when the contact owes, red when the character does
+.sr-favors,
+.sr-favor-pill {
+  --sr-favor-up: #22a35a;
+  --sr-favor-down: var(--sr-ui-border-color, #b3261e);
+  --sr-favor-even: #0f8f8f;
+  --sr-favor-line: color-mix(in srgb, currentColor 15%, transparent);
+}
+
+.sr-favors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.3rem 0.2rem;
+
+  // The balance: a big figure, what it means, the tags of the relationship
+  .sr-favors-balance {
+    --sr-favor-accent: var(--sr-favor-even);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.2rem 0.8rem;
+    align-items: center;
+    padding: 0.6rem 0.8rem;
+    border-radius: 6px;
+    border: 1px solid color-mix(in srgb, var(--sr-favor-accent) 50%, transparent);
+    border-left: 6px solid var(--sr-favor-accent);
+    background: linear-gradient(100deg, color-mix(in srgb, var(--sr-favor-accent) 24%, transparent), transparent 80%);
+    &.side-contactOwes { --sr-favor-accent: var(--sr-favor-up); }
+    &.side-characterOwes { --sr-favor-accent: var(--sr-favor-down); }
+  }
+  .sr-favors-count {
+    grid-row: span 2;
+    min-width: 3.2rem;
+    text-align: center;
+    font-size: 2.2em;
+    font-weight: bold;
+    line-height: 1;
+    color: var(--sr-favor-accent);
+    text-shadow: 0 0 10px color-mix(in srgb, var(--sr-favor-accent) 45%, transparent);
+  }
+  .sr-favors-what {
+    display: flex;
+    flex-direction: column;
+    strong { font-size: 1.15em; }
+  }
+  .sr-favors-sub {
+    font-size: 0.8em;
+    opacity: 0.75;
+  }
+  .sr-favors-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+  .sr-favors-tag {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.05rem 0.45rem;
+    border: 1px solid var(--sr-favor-line);
+    border-radius: 999px;
+    &.warn {
+      border-color: color-mix(in srgb, var(--sr-favor-down) 60%, transparent);
+      background: color-mix(in srgb, var(--sr-favor-down) 18%, transparent);
+    }
+  }
+
+  // The actions: a wrap of small buttons
+  .sr-favors-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    button {
+      flex: 1 1 auto;
+      width: auto;
+      white-space: nowrap;
+      font-size: 0.85em;
+      padding: 0.2rem 0.6rem;
+      &:disabled { opacity: 0.4; }
+    }
+  }
+
+  .sr-favors-relation {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    select { width: auto; }
+  }
+
+  // The short history, newest first
+  .sr-favors-log {
+    border-top: 1px solid var(--sr-favor-line);
+    padding-top: 0.3rem;
+  }
+  .sr-favors-log-title {
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.7;
+    margin-bottom: 0.2rem;
+  }
+  .sr-favors-line {
+    display: grid;
+    grid-template-columns: 2.4rem 1fr auto;
+    gap: 0.5rem;
+    align-items: baseline;
+    padding: 0.15rem 0;
+    border-bottom: 1px dashed var(--sr-favor-line);
+    &.empty {
+      display: block;
+      opacity: 0.6;
+      font-style: italic;
+    }
+  }
+  .sr-favors-delta {
+    font-weight: bold;
+    text-align: right;
+    &.up { color: var(--sr-favor-up); }
+    &.down { color: var(--sr-favor-down); }
+  }
+  .sr-favors-who {
+    font-size: 0.75em;
+    opacity: 0.65;
+  }
+  .sr-favors-source {
+    font-size: 0.75em;
+    opacity: 0.6;
+    margin: 0;
+  }
+}
+
+// The pill of the contacts list on the character sheet
+.sr-favor-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: 0.3rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  font-size: 0.8em;
+  font-weight: bold;
+  &.up {
+    color: var(--sr-favor-up);
+    background: color-mix(in srgb, var(--sr-favor-up) 16%, transparent);
+  }
+  &.down {
+    color: var(--sr-favor-down);
+    background: color-mix(in srgb, var(--sr-favor-down) 16%, transparent);
+  }
+}
+
+.sr-favors-dialog .sr-favors-rule {
+  font-size: 0.9em;
+  opacity: 0.85;
+}

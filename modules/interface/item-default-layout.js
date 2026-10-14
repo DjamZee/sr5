@@ -116,6 +116,15 @@ function _descStatLayout(summaryBlock, statBlock) {
   }
 }
 
+// The contact: Description + Configuration + its favors (Run Faster p. 170-172, lot 37a)
+function _contactLayout() {
+  const layout = _descStatLayout('contactSummary', 'contactStat')
+  layout.panels[1].tabs.push(_tab('Favors', 'favors', [
+    _block('contactFavors'),
+  ]))
+  return layout
+}
+
 // The vehicle: Description + Configuration + its workshop (Chop Shop, Rigger 5.0 p. 153-156)
 function _vehicleLayout() {
   const layout = _descStatLayout('vehicleSummary', 'vehicleStat')
@@ -201,7 +210,7 @@ const ITEM_LAYOUTS = {
   itemFile:         () => _descStatLayout('fileSummary', 'fileStat'),
   itemStorage:      () => _descStatLayout('storageSummary', 'storageStat'),
   itemLifestyle:    () => _descStatLayout('lifestyleSummary', 'lifestyleStat'),
-  itemContact:      () => _descStatLayout('contactSummary', 'contactStat'),
+  itemContact:      () => _contactLayout(),
   itemAmmunition:     () => _descStatLayout('ammunitionSummary', 'ammunitionStat'),
   itemAmmunitionType: () => _descStatLayout('ammunitionTypeSummary', 'ammunitionTypeStat'),
 

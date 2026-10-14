@@ -84,6 +84,8 @@ export const VENDOR_TEMPLATES = [
   t('capsuleHotel', 'misc', 'Marchand-de-sommeil-capsules', ['gear'], [L], 0, 4),
   t('slumCoffinHotel', 'misc', 'Marchand-de-sommeil-taudis', ['gear', 'drugs'], [L, R], 0, 6),
   t('corporateCounter', 'misc', 'Comptoir corporatiste haut de gamme', ['weapons', 'armor', 'electronics', 'gear'], [L, R], 25, 14),
+  // Lot 37a: data, not goods (Cutting Aces p. 148-149): no shelf, its own window (info-broker.js)
+  t('infoBroker', 'misc', 'Courtier-en-informations', [], [L, R, F], 0, 0),
 ]
 
 /** A template by its key. */

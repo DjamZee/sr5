@@ -83,6 +83,9 @@ import {
   attributeValue, swapLinkedAttribute, skillAttributeTitle, SKILL_ATTRIBUTE_FLAG, syncBackgroundCount, backgroundCountApplies, setDialogWindowTitle
 } from "./roll-helpers/skillAttribute.js"
 import {
+  ignoredNegative
+} from "../system/social-traits.js"
+import {
   rollAttributes, attributeTestsState, ROLL_TESTS_TYPE, situationalListShown, spiritTypeVisible, withoutSituationalMarkers,
   spiritTypeSources
 } from "./roll-helpers/situational.js"
@@ -116,6 +119,15 @@ export default class SR5_RollDialog {
   }
 
   updateDicePoolValue(html) {
+    //Cutting Aces p. 150, « Il a la classe et il le sait »: the negative social modifiers ticked, 2 points given back
+    const ignore = this.dialogData.dicePool.ignoreNegativeSocial
+    if (ignore && Array.isArray(this.dialogData.dicePool.modifiers)) {
+      SR5_MiscellaneousHelpers.removeElementFromArray(this.dialogData.dicePool.modifiers, 'type', 'socialIgnoreNegative')
+      const back = ignoredNegative(this.dialogData.dicePool.modifiers, ignore)
+      if (back) this.dialogData.dicePool.modifiers.push({
+        type: 'socialIgnoreNegative', label: game.i18n.localize('SR5.SOCIALTRAIT_IgnoreNegative'), value: back
+      })
+    }
     let dicePoolModifier = 0
     for (let key of Object.values(this.dialogData.dicePool.modifiers)){
       dicePoolModifier += key.value

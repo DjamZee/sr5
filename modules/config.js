@@ -4084,6 +4084,7 @@ SR5.dicePoolModTypes = {
   socialFan                 : "SR5.SocialModFan",
   socialLacksKnowledge      : "SR5.SocialModLacksKnowledge",
   socialBlackmailed         : "SR5.SocialModBlackmailed",
+  socialIgnoreNegative      : "SR5.SOCIALTRAIT_IgnoreNegative",
   workingCondition          : "SR5.WorkingCondition",
   toolsAndParts             : "SR5.ToolsAndParts",
   plansMaterial             : "SR5.PlansMaterial",
