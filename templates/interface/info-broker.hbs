@@ -17,9 +17,9 @@
   </header>
 
   <nav class="sr-infobroker-tabs">
-    <a data-action="tab" data-tab="buy" class="{{#if (eq tab 'buy')}}active{{/if}}"><em class="fas fa-magnifying-glass"></em> {{localize 'SR5.INFOBROKER_TabBuy'}}</a>
-    <a data-action="tab" data-tab="sell" class="{{#if (eq tab 'sell')}}active{{/if}}"><em class="fas fa-hand-holding-dollar"></em> {{localize 'SR5.INFOBROKER_TabSell'}}</a>
-    <a data-action="tab" data-tab="requests" class="{{#if (eq tab 'requests')}}active{{/if}}"><em class="fas fa-inbox"></em> {{localize 'SR5.INFOBROKER_TabRequests'}}{{#if openCount}} <span class="sr-infobroker-count">{{openCount}}</span>{{/if}}</a>
+    <a data-action="brokerTab" data-tab="buy" class="{{#if (eq tab 'buy')}}active{{/if}}"><em class="fas fa-magnifying-glass"></em> {{localize 'SR5.INFOBROKER_TabBuy'}}</a>
+    <a data-action="brokerTab" data-tab="sell" class="{{#if (eq tab 'sell')}}active{{/if}}"><em class="fas fa-hand-holding-dollar"></em> {{localize 'SR5.INFOBROKER_TabSell'}}</a>
+    <a data-action="brokerTab" data-tab="requests" class="{{#if (eq tab 'requests')}}active{{/if}}"><em class="fas fa-inbox"></em> {{localize 'SR5.INFOBROKER_TabRequests'}}{{#if openCount}} <span class="sr-infobroker-count">{{openCount}}</span>{{/if}}</a>
   </nav>
 
   <div class="sr-infobroker-scroll">

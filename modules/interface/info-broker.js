@@ -236,7 +236,7 @@ export class SR5InfoBrokerApp extends HandlebarsApplicationMixin(ApplicationV2) 
       offer: SR5InfoBrokerApp.#onOffer,
       answer: SR5InfoBrokerApp.#onAnswer,
       gmMove: SR5InfoBrokerApp.#onGmMove,
-      tab: SR5InfoBrokerApp.#onTab,
+      brokerTab: SR5InfoBrokerApp.#onTab,
     },
   }
 
