@@ -22,7 +22,7 @@ export default async function attackInfo(cardData){
 
   //Aura of [element] (Street Grimoire p. 114): its elemental damage is Physical, whatever type the dialog let the
   //attacker pick for a weapon that has none (the GM works it out the same way, attack-card.js)
-  if (cardData.test.typeSub === "meleeWeapon") {
+  if (cardData.test?.typeSub === "meleeWeapon" && cardData.owner?.actorId) {
     const aura = spellAuraOf(SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)?.system)
     if (aura) cardData.damage.type = spellAuraDamageType(aura.element, cardData.damage.type)
   }
