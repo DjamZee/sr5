@@ -113,6 +113,7 @@ export function addIndirectEffects(rollData, actor){
   //A device a rigger tracks for his slaved attackers (Rigger 5.0 p. 34)
   const tracked = kinds.has("attack") ? targetDeviceOfferFor(rollData, actor, targetToken?.actor) : null
   if (tracked) offers.push(tracked)
-  for (let offer of offers) applyOffer(rollData, offer)
+  //An unticked box (a situational effect) is counted only once ticked in the dialog
+  for (let offer of offers) if (offer.checked !== false) applyOffer(rollData, offer)
   rollData.situational = (rollData.situational || []).concat(offers)
 }

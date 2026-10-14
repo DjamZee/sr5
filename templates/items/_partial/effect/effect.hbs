@@ -630,7 +630,7 @@
 					</div>
 				</div>
 
-				{{#if (and (or (eq type 'value') (eq type 'rating') (eq type 'hits')) (or situational (situationalReadable target) (situationalMovement target)))}}
+				{{#if (and (or (eq type 'value') (eq type 'rating') (eq type 'hits')) (or situational (situationalReadable target) (situationalMovement target) (eq category 'indirectEffects')))}}
 				<!-- SITUATIONAL (SR5 p. 462, Chrome Flesh p. 160-172): offered in the roll dialog instead of applied,
 				     only for the targets a roll dialog reads -->
 				<div class="col-3 SR-PaddingRight5" data-tooltip="{{localize 'SR5.SituationalEffectHint'}}">
@@ -638,7 +638,10 @@
 				</div>
 				<div class="col-9">
 					{{#if situational}}
-						{{#if (situationalMovement target)}}
+						{{#if (eq category 'indirectEffects')}}
+						<!-- Cutting Aces p. 146: offered unticked in the others' rolls, its condition (the field below) as label -->
+						<div class="SR-SubColor"><em>{{localize 'SR5.IndirectSituationalHint'}}</em></div>
+						{{else if (situationalMovement target)}}
 						<!-- Dark Terrors p. 180: a box of the movement block of the sheet, labelled by the item and this text -->
 						<input type="text" data-dtype="String" name="system.customEffects.{{@key}}.when" value="{{when}}" placeholder="{{localize 'SR5.SituationalMovementWhen'}}">
 						<div class="SR-SubColor"><em>{{localize 'SR5.SituationalMovementHint'}}</em></div>

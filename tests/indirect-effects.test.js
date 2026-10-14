@@ -264,3 +264,34 @@ describe("indirect effects: review of Alma", () => {
     expect(auraReaches(zero, 1000, 1, 1, false)).toBe(true)
   })
 })
+
+// Subliminal subacoustics (Cutting Aces p. 146): -2 dice to the actions against the induced emotion, for whoever in
+// the area failed a Logic + Willpower (2) test. The system knows neither: a situational box, unticked
+describe("a situational indirect effect", () => {
+  const when = "Logique + Volonté (2) raté, action contraire à l'émotion induite"
+  const subliminal = indirectEffectOf({
+    target: "indirect.all.test", applyTo: "aura", situational: true, when
+  }, "Subliminaux", -2)
+  const offersFor = (effect, display = "name") => gatherIndirectOffers({
+    kinds: new Set(["all"]), auras: [{
+      name: "Haut-parleur", effects: [effect], distance: 5, disposition: 0
+    }], rollerDisposition: 1, display, labels: LABELS,
+  })
+
+  it("is offered unticked, its condition with it", () => {
+    const [offer] = offersFor(subliminal)
+    expect(offer).toMatchObject({
+      checked: false, when, value: -2, isMalus: true
+    })
+  })
+  it("stays shown when the world hides the others' effects: hidden and unticked, it could never be ticked", () => {
+    expect(offersFor(subliminal, "hidden")[0].hidden).toBe(false)
+  })
+  it("leaves an effect without the box ticked, as before", () => {
+    const plain = indirectEffectOf({
+      target: "indirect.all.test", applyTo: "aura", when: "Mode caméléon actif"
+    }, "Caméléon", -3)
+    expect(offersFor(plain)[0].checked).toBe(true)
+    expect(offersFor(plain, "hidden")[0].hidden).toBe(true)
+  })
+})
