@@ -578,14 +578,6 @@ export class SR5_UtilityItem extends Actor {
       //Death Sower, adept side (Forbidden Arcana p. 40): +1 DV with the melee skills
       const deathSower = deathSowerAdeptDamage(actor.system.magic?.magicType, actor.system.magic?.masteries?.deathSower?.value, itemData.category)
       if (deathSower) SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.MagicMasteryDeathSower'), "itemQuality", deathSower)
-      //Purity State (Better Than Bad p. 143): the bare hands deal (Magic + Strength), AP -(Magic / 2), P or S as chosen
-      if (actor.system.specialProperties?.purityState && takesBoneDamage(itemData)) {
-        const magic = actor.system.specialAttributes?.magic?.augmented?.value || 0
-        const label = game.i18n.localize('SR5.AdeptPowerPurityState')
-        SR5_EntityHelpers.updateModifier(itemData.damageValue, label, "adeptPower", magic)
-        SR5_EntityHelpers.updateModifier(itemData.armorPenetration, label, "adeptPower", purityStateArmorPenetration(magic))
-        itemData.damageType = actor.system.specialProperties.purityStateStun ? "stun" : "physical"
-      }
       //Osmium mace (The Complete Trog p. 177): the listed profile only holds for Strength 5-6
       if (hasWeaponTrait(itemData, "osmium") && actor.type !== "actorDrone") {
         const profile = osmiumProfile(weaponAttribute("strength", itemData, actor))
@@ -634,6 +626,17 @@ export class SR5_UtilityItem extends Actor {
       if (itemData.choke[key]) {
         itemData.choke.value.push(game.i18n.localize(SR5.chokeSettings[key]))
       }
+    }
+
+    //Purity State (Better Than Bad p. 143): the bare hands deal (Magic + Strength), "no further DV can be added",
+    //AP -(Magic x 0.5), Physical or Stun as the adept chooses
+    if (actor?.system?.specialProperties?.purityState && takesBoneDamage(itemData)) {
+      const magic = actor.system.specialAttributes?.magic?.augmented?.value || 0
+      const label = game.i18n.localize('SR5.AdeptPowerPurityState')
+      itemData.damageValue.modifiers = itemData.damageValue.modifiers.filter(m => m.type === "linkedAttribute")
+      SR5_EntityHelpers.updateModifier(itemData.damageValue, label, "adeptPower", magic)
+      SR5_EntityHelpers.updateModifier(itemData.armorPenetration, label, "adeptPower", purityStateArmorPenetration(magic))
+      itemData.damageType = actor.system.specialProperties.purityStateStun ? "stun" : "physical"
     }
 
     SR5_EntityHelpers.updateValue(itemData.damageValue, 0)

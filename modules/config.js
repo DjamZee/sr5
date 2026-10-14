@@ -4246,6 +4246,7 @@ SR5.sourceList = {
   bulletsAndBandages        : "SOURCE.BulletsAndBandages",
   shadowSpells              : "SOURCE.ShadowSpells",
   lockdown 				  : "SOURCE.Lockdown",
+  aetherology               : "SOURCE.Aetherology",
 }
 
 //-----------------------------------//
