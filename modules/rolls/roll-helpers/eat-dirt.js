@@ -90,7 +90,7 @@ export async function dropProneUnderFire(actor, attackData, attackMessageId) {
   } = await import("../../system/srcombat.js")
   if (choice === "interruption") {
     const {
-      SR5_RollDialog
+      default: SR5_RollDialog
     } = await import("../roll-dialog.js")
     if (!SR5_RollDialog.hasInitiativeForInterruption(actor, EAT_DIRT_COST)) return
     if (game.combat) await SR5Combat.changeInitInCombatHelper(fighterId(actor), -EAT_DIRT_COST)
