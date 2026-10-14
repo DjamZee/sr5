@@ -1865,6 +1865,8 @@
 	"SR5.DrugNeostigmine": "Neostigmine",
 	"SR5.DrugOndansetron": "Ondansetron",
 	"SR5.DrugBTL": "BTL chip",
+	"SR5.CyberpsychosisGlitch": "Cyberpsychosis: the character acts inappropriately or overreacts violently (Chrome Flesh p. 59)",
+	"SR5.CyberpsychosisCriticalGlitch": "Cyberpsychosis: psychotic break, the gamemaster decides what the character does until recovery (Chrome Flesh p. 59)",
 	"SR5.DrugKamiPlus": "KAMI+",
 	"SR5.WARN_DrugDesignRefused": "The GM refused {drug}: it cannot be taken.",
 	"SR5.DrugCustomDesigned": "Designed drug (designer)",
