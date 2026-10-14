@@ -81,7 +81,7 @@
       <li class="sr-shop-row {{#if this.dim}}dim{{/if}}" data-uuid="{{this.uuid}}" data-name="{{this.name}}" draggable="true" data-action="viewItem">
         <img src="{{this.img}}" alt="" loading="lazy" decoding="async">
         <div class="sr-shop-name">
-          <b>{{this.name}}</b>
+          <b {{#if this.nameVO}}data-tooltip="{{localize 'SR5.ShopNameVO' name=this.nameVO}}"{{/if}}>{{this.name}}</b>
           {{#if this.stock}}<span class="sr-shop-tag stock">{{localize 'SR5.ShopVendorInStock' count=this.stock}}</span>{{/if}}
           {{#if this.onOrder}}<span class="sr-shop-tag on-order"><i class="fas fa-truck"></i> {{localize 'SR5.ShopVendorOnOrder'}}</span>{{/if}}
           {{#if this.notForSale}}<span class="sr-shop-tag"><i class="fas fa-store-slash"></i> {{localize 'SR5.ShopNotForSale'}}</span>{{/if}}

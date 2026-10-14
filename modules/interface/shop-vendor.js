@@ -50,6 +50,9 @@ import {
 import {
   CREATION_OVER_LIMIT_FLAG
 } from '../system/creation-actor.js'
+import {
+  purchaseStamp, stampAll, withoutPurchase, PURCHASE_FLAG
+} from './shop-purchase.js'
 
 /**
  * The gamemaster's vendor (shop lot C, part 1).
@@ -903,6 +906,11 @@ export class SR5ShopVendor {
 
     // The goods leave the counter first, then reach the buyer
     const toDelete = [], toUpdate = [], payload = [], orders = []
+    // One id for the debit and every piece, as the shop writes it (lot 12, shop-purchase.js)
+    const stamp = purchaseStamp({
+      buyer, userId: senderId, worldTime: game.time?.worldTime, vendor: label,
+      place: equip ? 'equip' : SR5Shop.creationModeFor(buyer) ? 'creation' : 'vendor',
+    })
     for (const line of resolved) {
       if (line.waits) {
         line.order = newOrder(line, {
@@ -924,10 +932,13 @@ export class SR5ShopVendor {
           _id: line.item.id, 'system.quantity': left
         })
         else toDelete.push(line.item.id)
-        payload.push(...SR5ShopVendor.#overLimit(SR5ShopVendor.#handedOver(line.item, line.quantity), line))
+        payload.push(...stampAll(SR5ShopVendor.#overLimit(SR5ShopVendor.#handedOver(line.item, line.quantity), line), stamp, line.total))
       } else {
-        payload.push(...SR5ShopVendor.#overLimit(SR5Shop._itemPayload(line.source, line.quantity, line.grade), line))
+        payload.push(...stampAll(SR5ShopVendor.#overLimit(SR5Shop._itemPayload(line.source, line.quantity, line.grade), line), stamp, line.total))
       }
+    }
+    for (const order of orders) order.purchase = {
+      ...stamp, price: order.paid
     }
     if (toUpdate.length) await actor.updateEmbeddedDocuments('Item', toUpdate)
     if (toDelete.length) await actor.deleteEmbeddedDocuments('Item', toDelete)
@@ -948,6 +959,13 @@ export class SR5ShopVendor {
           }), game.i18n.format('SR5.ShopVendorPurchaseDescription', {
             name: labels.join(', '), price: total.toLocaleString(), shop: label,
           })), _id: debitId,
+          flags: {
+            sr5: {
+              [PURCHASE_FLAG]: {
+                ...stamp, price: total
+              }
+            }
+          },
         })
       }
     }
@@ -1483,6 +1501,8 @@ export class SR5ShopVendor {
       if (stocked._stats) delete stocked._stats.compendiumSource
       if (stocked.flags?.core) delete stocked.flags.core.sourceId
       if (stocked.flags?.sr5) delete stocked.flags.sr5.shopSource
+      // On the counter it is no longer the seller's purchase: a refund of hers must not reach it (lot 12)
+      withoutPurchase(stocked)
       const verified = answer.sources?.[lines.indexOf(line)]
       if (verified) foundry.utils.setProperty(stocked, 'flags.sr5.shopSource', verified)
       stocked.system.storedIn = storage.id
@@ -1749,7 +1769,8 @@ export class SR5ShopVendorSource {
         packId: null,
         flags: {
           sr5: {
-            notForSale: item.flags?.sr5?.notForSale === true
+            notForSale: item.flags?.sr5?.notForSale === true,
+            nameVO: SR5ShopCatalog.nameVO(item)
           }
         },
         system: SR5ShopCatalog.essentials(counterSystem(item)),

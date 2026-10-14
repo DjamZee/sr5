@@ -21,6 +21,9 @@ import {
 import {
   actorInCreation
 } from '../system/creation-actor.js'
+import {
+  stampAll
+} from './shop-purchase.js'
 
 export const ORDERS_FLAG = 'shopOrders'
 export const DELIVERY_SETTING = 'sr5ShopDelivery'
@@ -513,6 +516,8 @@ export async function deliverOrder(actor, id) {
     }))
     return false
   }
+  // The trace of the purchase that paid for it, written when it was ordered (lot 12)
+  if (order.purchase?.id) stampAll(payload, order.purchase, order.paid)
   await removeOrder(actor, id)
   await ledgerDrop(id)
   await actor.createEmbeddedDocuments('Item', payload, confirmed ? {
