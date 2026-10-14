@@ -20,7 +20,7 @@ import {
   isBloodSpell, isSelfCostBloodSpell
 } from "../../system/blood-magic-rules.js"
 import {
-  bloodPointsOf, knowsBloodMagic
+  bloodPointsOf, knowsBloodMagic, athamePointsOf
 } from "../../system/blood-magic.js"
 
 //Add info for skill dicePool roll
@@ -109,9 +109,11 @@ export default async function spell(rollData, actor, item){
   const bloodSpell = isBloodSpell(item)
   if (bloodSpell || knowsBloodMagic(actor)) {
     rollData.magic.bloodMagic = {
-      available: bloodPointsOf(actor), athame: 0, force: 0, drainMagic: 0, drain: 0, martyrBoxes: 0,
+      //The athame's points are spent with a Free Action as the spell is cast (Street Grimoire p. 90)
+      available: bloodPointsOf(actor), athame: athamePointsOf(actor), force: 0, drainMagic: 0, drain: 0, martyrBoxes: 0,
       bloodSpell, selfCost: isSelfCostBloodSpell(item),
     }
+    rollData.magic.bloodMagic.total = rollData.magic.bloodMagic.available + rollData.magic.bloodMagic.athame
     rollData.dialogSwitch.bloodMagic = knowsBloodMagic(actor)
   }
   //Increase / Decrease Noise (Street Grimoire p. 113): the threshold depends on the grid affected, chosen in the dialog

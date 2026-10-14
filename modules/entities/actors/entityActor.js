@@ -914,6 +914,9 @@ export class SR5Actor extends Actor {
             case "sustaining":
               iData.spellChoices = SR5_UtilityItem._generateSustainFocusSpellList(iData, actor)
               break
+            //Street Grimoire p. 90: no bonus, it stores Blood Magic Points (blood-magic.js)
+            case "athame":
+              break
             default:
               SR5_SystemHelpers.srLog(1,`Unknown focus type '${iData.type}' in 'prepareEmbeddedDocuments()'`)
           }

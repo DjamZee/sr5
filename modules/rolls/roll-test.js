@@ -34,7 +34,7 @@ import {
   bloodSpending, martyrPoints, bloodAddictionThreshold, bloodDrain, bloodSpellUnpaid
 } from "../system/blood-magic-rules.js"
 import {
-  bloodPointsOf, spendBloodPoints
+  bloodPointsOf, spendBloodPoints, athamePointsOf, spendAthamePoints
 } from "../system/blood-magic.js"
 import {
   thresholdModifierOf, applyThresholdModifier, hasOwnThreshold
@@ -212,15 +212,17 @@ export class SR5_RollTest {
     if (blood) {
       const martyr = martyrPoints(blood.martyrBoxes, blood.selfCost)
       const spent = bloodSpending({
-        force: blood.force, drainMagic: blood.drainMagic, drain: blood.drain, martyr, athame: blood.athame, pool: bloodPointsOf(actor)
+        force: blood.force, drainMagic: blood.drainMagic, drain: blood.drain, martyr, athame: athamePointsOf(actor), pool: bloodPointsOf(actor)
       })
       Object.assign(blood, spent, {
         martyrPoints: martyr
       })
       delete blood.woundModifier
       delete dialogData.limit.modifiers.bloodMagic
-      if (spent.fromPool > 0) {
-        await spendBloodPoints(actor, spent.fromPool)
+      if (spent.fromAthame > 0) await spendAthamePoints(actor, spent.fromAthame)
+      if (spent.fromPool > 0) await spendBloodPoints(actor, spent.fromPool)
+      //The athame's points come from sacrifices too: only the martyr's call for no test
+      if (spent.fromPool + spent.fromAthame > 0) {
         blood.addictionThreshold = bloodAddictionThreshold(spent, actorData.specialAttributes?.magic?.augmented?.value)
       }
       dialogData.magic.force = (Number(dialogData.magic.force) || 0) + spent.force

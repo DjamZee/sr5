@@ -2146,6 +2146,8 @@ SR5.focusTypes = {
   power                     : "SR5.FocusPower",
   flexibleSignature         : "SR5.FocusFlexibleSignature",
   qi                        : "SR5.FocusQi",
+  // Street Grimoire p. 90: stores Blood Magic Points (blood-magic.js)
+  athame                    : "SR5.FocusAthame",
 }
 
 // Attributes for sprite powers

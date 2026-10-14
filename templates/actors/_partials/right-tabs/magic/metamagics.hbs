@@ -40,9 +40,22 @@
 		{{#if actor.bloodMagicPoints.known}}
 		<!-- Blood Magic Points (Street Grimoire p. 90): granted by the GM, lost after the following Combat Turn -->
 		<li class="grid">
-			<div class="col-10" data-tooltip="{{localize 'SR5.BloodMagicPoints_D'}}"><p>{{localize 'SR5.BloodMagicPoints'}}</p></div>
+			<div class="col-8" data-tooltip="{{localize 'SR5.BloodMagicPoints_D'}}"><p>{{localize 'SR5.BloodMagicPoints'}}</p></div>
+			<div class="col-2 SR-TextCenter">
+				{{#if owner}}
+				{{#if actor.bloodMagicPoints.hasAthame}}<a data-sr5-blood="store" data-tooltip="{{localize 'SR5.AthameStore'}}"><em class="fas fa-sm fa-khanda"></em></a>{{/if}}
+				{{#if actor.bloodMagicPoints.cannibalize}}<a data-sr5-blood="cannibalize" data-tooltip="{{localize 'SR5.MetamagicCannibalize'}}"><em class="fas fa-sm fa-tint"></em></a>{{/if}}
+				{{/if}}
+			</div>
 			<div class="col-2 SR-TextCenter"><p>{{actor.bloodMagicPoints.value}}</p></div>
 		</li>
+		{{#if actor.bloodMagicPoints.hasAthame}}
+		<!-- Athame (Street Grimoire p. 90): the points stored, halved after 1 week, 1 month and 3 months -->
+		<li class="grid">
+			<div class="col-10" data-tooltip="{{localize 'SR5.AthamePoints_D'}}"><p>{{localize 'SR5.AthamePoints'}}</p></div>
+			<div class="col-2 SR-TextCenter"><p>{{actor.bloodMagicPoints.athame}}</p></div>
+		</li>
+		{{/if}}
 		{{/if}}
 	</ul>
 </div>

@@ -134,6 +134,61 @@ export function bloodDrain(drainBeforeBlood, bloodPoints){
   return Math.max(0, (Number(drainBeforeBlood) || 0) - Math.max(0, Number(bloodPoints) || 0))
 }
 
+// The athame (Street Grimoire p. 90): a focus that stores Blood Magic Points, at most its Force. Half the points still
+// stored are lost 1 week, 1 month and 3 months after the Blood Rite that put them there. The book does not say how the
+// half rounds: the lower half is kept, the most prudent reading
+export const DAY_SECONDS = 86400
+export const ATHAME_DECAY_DAYS = [7, 30, 90]
+
+export function athameBatchPoints(batch, worldTime){
+  let points = Math.max(0, Math.floor(Number(batch?.points) || 0))
+  const days = ((Number(worldTime) || 0) - (Number(batch?.time) || 0)) / DAY_SECONDS
+  for (const limit of ATHAME_DECAY_DAYS) if (days >= limit) points = Math.floor(points / 2)
+  return points
+}
+
+export function athameStored(batches, worldTime){
+  return (Array.isArray(batches) ? batches : []).reduce((sum, b) => sum + athameBatchPoints(b, worldTime), 0)
+}
+
+// What an athame of Force `force` can still take
+export function athameRoom(batches, force, worldTime){
+  return Math.max(0, (Math.floor(Number(force) || 0)) - athameStored(batches, worldTime))
+}
+
+// The points of an athame once `spent` are taken, oldest first; the decayed ones written as they now are, the
+// decay intervals already passed remembered so they do not halve them again
+export function spendAthame(batches, spent, worldTime){
+  let left = Math.max(0, Math.floor(Number(spent) || 0))
+  const kept = []
+  for (const b of (Array.isArray(batches) ? batches : [])) {
+    const points = athameBatchPoints(b, worldTime)
+    const take = Math.min(left, points)
+    left -= take
+    if (points - take > 0) kept.push({
+      ...b, points: (points - take) * 2 ** decaysPassed(b, worldTime)
+    })
+  }
+  return kept
+}
+
+function decaysPassed(batch, worldTime){
+  const days = ((Number(worldTime) || 0) - (Number(batch?.time) || 0)) / DAY_SECONDS
+  return ATHAME_DECAY_DAYS.filter(limit => days >= limit).length
+}
+
+// Cannibalize (Street Grimoire p. 90, adepts): +1 to a physical attribute per 3 Blood Magic Points, for
+// (Magic x initiate grade) Combat Turns, or as many days if the adept spends Karma equal to the points of attribute
+export const CANNIBALIZE_ATTRIBUTES = ["body", "agility", "reaction", "strength"]
+
+export function cannibalizeCost(increases){
+  return 3 * CANNIBALIZE_ATTRIBUTES.reduce((sum, key) => sum + Math.max(0, Math.floor(Number(increases?.[key]) || 0)), 0)
+}
+
+export function cannibalizeDuration(magic, grade){
+  return Math.max(0, (Number(magic) || 0) * (Number(grade) || 0))
+}
+
 // Forbidden Arcana p. 130: a psychological addiction, rating = Magic, threshold 2, +1 if more points than the Magic are
 // spent on a single effect. Martyr points never call for the test
 export function bloodAddictionThreshold(uses, magic){

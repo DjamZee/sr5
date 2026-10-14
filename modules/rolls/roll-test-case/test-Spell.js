@@ -60,7 +60,7 @@ export default async function spellInfo(cardData){
     cardData.chatCard.buttons.bloodMagic = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.format("SR5.BloodMagicSpent", {
       force: blood.force || 0, drainMagic: blood.drainMagic || 0, drain: blood.drain || 0, martyr: blood.fromMartyr || 0
     }))
-    if (blood.fromPool > 0) cardData.chatCard.buttons.bloodAddiction = SR5_RollMessage.generateChatButton("nonOpposedTest", "bloodAddiction", game.i18n.format("SR5.BloodMagicAddictionTest", {
+    if ((blood.fromPool || 0) + (blood.fromAthame || 0) > 0) cardData.chatCard.buttons.bloodAddiction = SR5_RollMessage.generateChatButton("nonOpposedTest", "bloodAddiction", game.i18n.format("SR5.BloodMagicAddictionTest", {
       threshold: blood.addictionThreshold ?? 2
     }))
   }
