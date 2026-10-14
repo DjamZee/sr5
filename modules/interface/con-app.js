@@ -150,7 +150,8 @@ export class SR5ConApp extends foundry.applications.api.HandlebarsApplicationMix
     }))
     context.opposition = {
       artistBonus: propTotal(con.props),
-      intel: con.intel ?? 0,
+      // The modifier the target takes, signed: a negative Intel Level helps it (con-rules.js, conOpposition)
+      intel: (con.intel ?? 0) > 0 ? `−${con.intel}` : `+${-(con.intel ?? 0)}`,
     }
 
     // Faction Reputation (p. 158): offered once the con is over, when its target belongs to a faction

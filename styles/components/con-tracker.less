@@ -232,6 +232,19 @@
   .sr-con-log-net { color: var(--sr-con-bait); font-weight: bold; }
   .sr-con-log-intel { color: var(--sr-con-prep); }
 
+  // The bartering window (barter.hbs): one line per offer, its value and its cross at the end
+  &.sr-barter {
+    .sr-con-step-row {
+      flex-wrap: nowrap;
+      input[type="number"] { width: 5.5em; }
+      select { min-width: 0; }
+      > a { flex: 0 0 auto; }
+    }
+    .sr-con-step .sr-con-step-row { flex-wrap: wrap; }
+    .sr-con-log-net { margin-left: auto; }
+    .sr-con-gauges { align-items: center; }
+  }
+
   // Not the active gamemaster: read only
   a[data-action].disabled {
     pointer-events: none;

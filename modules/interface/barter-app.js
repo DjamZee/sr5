@@ -67,7 +67,10 @@ export class SR5BarterApp extends foundry.applications.api.HandlebarsApplication
       isCash: l.kind === "cash", isEquipment: l.kind === "equipment", isContact: l.kind === "contact",
       isService: l.kind === "service", isInformation: l.kind === "information",
     }))
-    context.remainder = intimidation ? null : remainder(value, s.lines)
+    // What is left to pay in cash, or what the lines offer beyond the value (the GM then gives change, or not)
+    const left = intimidation ? 0 : remainder(value, s.lines)
+    context.remainder = Math.abs(left)
+    context.remainderLabel = left < 0 ? "SR5.BARTER_Surplus" : "SR5.BARTER_Remainder"
     return context
   }
 
