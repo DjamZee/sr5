@@ -6,9 +6,14 @@
 // the system's dialog style (dialog.less).
 @import "../commons/window-tokens.less";
 
-@srw-skinned: ~".sr-con, .sr-factions, .sr-shop-config, .sr-sell-dialog, .sr-drug-designer, .sr-negotiation-repair, .sr-presets-config, .sr-rule-locks-config, .sr-token-defaults-config, .sr-table-builder-window, .sr-compendium-browser, .sr-commcode";
+@srw-skinned: ~".sr-con, .sr-factions, .sr-shop-config, .sr-sell-dialog, .sr-drug-designer, .sr-negotiation-repair, .sr-presets-config, .sr-rule-locks-config, .sr-token-defaults-config, .sr-table-builder-window, .sr-compendium-browser, .sr-commcode, .sr-infobroker";
+// Lot 36b: the windows without the sr-application class take the theme's window dress (window.less, a long
+// :not() chain with !important): an id that no element carries (#srw-raise) lifts their selector above it, as :is()
+// counts its heaviest argument
+@srw-skinned-plain: ~".sr-combat-maneuver, .sr-explosive-charge, #srw-raise";
 
-.application:is(@{srw-skinned}) {
+.application:is(@{srw-skinned}),
+.application:is(@{srw-skinned-plain}) {
   .srw-tokens();
   .srw-window();
 
@@ -110,6 +115,8 @@
 
 // The dark set under Foundry's dark theme, unless the window itself is light (as the Concepteur)
 &.theme-dark .application:is(@{srw-skinned}):not(.theme-light),
-.application:is(@{srw-skinned}).theme-dark {
+.application:is(@{srw-skinned}).theme-dark,
+&.theme-dark .application:is(@{srw-skinned-plain}):not(.theme-light),
+.application:is(@{srw-skinned-plain}).theme-dark {
   .srw-tokens-dark();
 }
