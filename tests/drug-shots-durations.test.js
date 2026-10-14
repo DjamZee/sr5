@@ -95,6 +95,21 @@ describe('drug durations rolled as the book says', () => {
       expect(stat.socialLimitContrecoup).toBe(2)
     })
   }
+
+  // Chrome Flesh p. 190: the disorientation of oneiro lasts as the effect (3D6 minutes); the crash read an
+  // unset variable and had no duration
+  it('oneiro: the crash lasts as the effect', async () => {
+    const stat = await shots('oneiro')
+    expect(stat.durationContrecoup).toBe(stat.duration)
+    expect(stat.durationContrecoupType).toBe('minute')
+  })
+
+  // Chrome Flesh p. 187: the crash of woad lasts 10 times the effect, (5 × 1D6) minutes: minutes, not hours
+  it('woad: the crash lasts ten times the effect, in minutes', async () => {
+    const stat = await shots('woad')
+    expect(stat.durationContrecoup).toBe(10 * stat.duration)
+    expect(stat.durationContrecoupType).toBe(stat.durationType)
+  })
 })
 
 describe('the crash shows the social Limit duration of eX and galak', () => {
