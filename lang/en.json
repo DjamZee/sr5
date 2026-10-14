@@ -5885,7 +5885,7 @@
 	"SR5.TabLeft": "Left tab",
 	"SR5.TabRight": "Right tab",
 	"SR5.TableFormulaInvalid": "Invalid table formula “{formula}” on “{name}”: a single draw was made.",
-	"SR5.TableLootFound": "Loot: {count} item(s)",
+	"SR5.TableLootFound": "Loot: {count} line(s)",
 	"SR5.TableLootGive": "Hand over",
 	"SR5.TableLootGiven": "{names} given to {actor}.",
 	"SR5.TableLootGone": "{count} item(s) of the loot cannot be found: has their compendium been disabled?",

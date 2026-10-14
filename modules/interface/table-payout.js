@@ -60,7 +60,8 @@ export function sr5PayoutFooter({
 
   if (loot.length) {
     rows.push(row("loot", game.i18n.format("SR5.TableLootFound", {
-      count: loot.reduce((sum, line) => sum + line.quantity, 0)
+      // The lines of the card, each with its own count: 17 rounds and a jacket are two, not 18
+      count: loot.length
     }), "sr5GiveTableLoot", game.i18n.localize("SR5.TableLootGive"), "fa-hand-holding-box"))
   }
 

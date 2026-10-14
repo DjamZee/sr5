@@ -104,6 +104,48 @@ async function innerTableOf(result) {
  */
 export class SR5RollTable extends foundry.documents.RollTable {
 
+  /** The draws of the drawMany() under way: how many yielded a line, and the lines drawn since the last recycling. */
+  #batch = null
+
+  /**
+   * Core's drawMany(), with two holes closed.
+   *
+   * When no line can come up at all (core has just said why), core still builds the card's roll from no draw: an
+   * empty pool, which throws. Nothing is drawn, and the game master already has core's warning.
+   *
+   * At the end of the batch, a table without replacement marks every line the batch drew, those drawn before
+   * #rollOnce() put the table back in play included: after 1, 2, 3, recycling, 3, lines 1 and 2 stayed "drawn".
+   * Only the lines drawn since the last recycling stay so.
+   *
+   * @inheritDoc
+   */
+  async drawMany(number, options = {
+  }) {
+    const batch = this.#batch = {
+      draws: 0, recycled: false, since: new Set()
+    }
+    let drawn
+    try {
+      drawn = await super.drawMany(number, options)
+    } catch (err) {
+      if (batch.draws) throw err
+      return {
+        roll: null, results: []
+      }
+    } finally {
+      this.#batch = null
+    }
+    if (batch.recycled && !this.replacement && !this.pack) {
+      const updates = this.results.filter(r => r.drawn && !batch.since.has(r.id)).map(r => ({
+        _id: r.id, drawn: false
+      }))
+      if (updates.length) await this.updateEmbeddedDocuments("TableResult", updates, {
+        diff: false
+      })
+    }
+    return drawn
+  }
+
   /**
    * Draw from the table, as many times as its own formula asks.
    *
@@ -159,7 +201,7 @@ export class SR5RollTable extends foundry.documents.RollTable {
       recursive, displayChat: false, rollMode
     })
 
-    const rolls = [first.roll, ...rest.roll.terms.flatMap(term => term.rolls ?? [])]
+    const rolls = [first.roll, ...(rest.roll?.terms ?? []).flatMap(term => term.rolls ?? [])]
     const pool = CONFIG.Dice.termTypes.PoolTerm.fromRolls(rolls)
     const drawn = {
       roll: Roll.defaultImplementation.fromTerms([pool]),
@@ -265,15 +307,25 @@ export class SR5RollTable extends foundry.documents.RollTable {
   async #rollOnce({
     roll, _depth
   }) {
-    const draw = await super.roll({
+    let draw = await super.roll({
       roll, recursive: false, _depth
     })
-    if (draw.results.length || this.replacement || this.pack || !this.results.size) return draw
-
-    await this.resetResults()
-    return super.roll({
-      roll, recursive: false, _depth
-    })
+    // A table with replacement whose lines were left "drawn" (replacement switched on afterwards) is put back too
+    if (!draw.results.length && !this.pack && this.results.size && this.results.some(r => r.drawn)) {
+      await this.resetResults()
+      if (this.#batch) {
+        this.#batch.recycled = true
+        this.#batch.since.clear()
+      }
+      draw = await super.roll({
+        roll, recursive: false, _depth
+      })
+    }
+    if (this.#batch && draw.results.length) {
+      this.#batch.draws++
+      for (const result of draw.results) this.#batch.since.add(result.id)
+    }
+    return draw
   }
 
   /* -------------------------------------------- */

@@ -5885,7 +5885,7 @@
 	"SR5.TabLeft": "Onglet gauche",
 	"SR5.TabRight": "Onglet droit",
 	"SR5.TableFormulaInvalid": "Formule de table invalide « {formula} » sur « {name} » : un seul tirage a été fait.",
-	"SR5.TableLootFound": "Butin : {count} objet(s)",
+	"SR5.TableLootFound": "Butin : {count} ligne(s)",
 	"SR5.TableLootGive": "Donner",
 	"SR5.TableLootGiven": "{names} remis à {actor}.",
 	"SR5.TableLootGone": "{count} objet(s) du butin sont introuvables : leur compendium a-t-il été désactivé ?",

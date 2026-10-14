@@ -294,6 +294,10 @@ export class SR5WeightedTableBuilder extends foundry.applications.api.Handlebars
         row.hidden = Boolean(text) && !row.dataset.search.includes(text)
       }
     })
+    this.element.addEventListener("input", event => {
+      if (event.target.matches?.("input[data-weight]")) this.#refreshCount()
+    })
+    this.#refreshCount()
   }
 
   /** The weight inputs, in the order of the entries. */
@@ -301,16 +305,24 @@ export class SR5WeightedTableBuilder extends foundry.applications.api.Handlebars
     return [...this.element.querySelectorAll("input[data-weight]")]
   }
 
+  /** "Créer la table (n)": the entries the table will hold, a weight of zero left out (sr5EntryResults). */
+  #refreshCount() {
+    const count = this.element.querySelector(".sr-table-builder-count")
+    if (count) count.textContent = this.#weightInputs().filter(input => Math.floor(Number(input.value)) >= 1).length
+  }
+
   /** "Exclure les masquées": every row the filter hides weighs nothing. */
   static #onExcludeHidden() {
     for (const input of this.#weightInputs()) {
       if (input.closest(".sr-table-builder-entry")?.hidden) input.value = 0
     }
+    this.#refreshCount()
   }
 
   /** "Tout remettre à 1". */
   static #onResetWeights() {
     for (const input of this.#weightInputs()) input.value = 1
+    this.#refreshCount()
   }
 
   /**
