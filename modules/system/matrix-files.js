@@ -98,6 +98,8 @@ export function fileOppositionDice(action, file, ownerDeviceRating = 0){
  * @param {String} [data.mode]          Edit File: "edit" or "protect" (the owner's protection)
  * @param {Object} [data.by]            the attacker {id, name}: who set the bomb, who edited the file
  * @param {Number} [data.now]           game.time.worldTime, the time of the edit
+ * @param {Boolean} [data.ciphered]     the file is ciphered with a key (lot 39, a house rule): it counts as protected,
+ *                                      and Crack File removes the cipher with the protection
  * @return {{outcome: String, update: Object|null, explosion: Object|null, net: Number}}
  *   outcome: cracked, notProtected, failed, bombSet, alreadyBombed, disarmed, noBomb, exploded, edited, protected,
  *            locked (a protected file refuses the edit);
@@ -106,7 +108,7 @@ export function fileOppositionDice(action, file, ownerDeviceRating = 0){
 export function resolveFileAction({
   action, file, hits = 0, oppositionHits = 0, knowsPassword: password = false, bomb: wished = null, mode = "edit",
   by = {
-  }, now = 0
+  }, now = 0, ciphered = false
 } = {
 }){
   const edited = {
@@ -124,9 +126,12 @@ export function resolveFileAction({
   })
   switch (action){
     case "crackFile":
-      if (!protectionOf(file)) return result("notProtected")
+      if (!protectionOf(file) && !ciphered) return result("notProtected")
       return net > 0 ? result("cracked", {
-        "system.protection": 0
+        "system.protection": 0, ...(ciphered ? {
+          "system.cipher.key": "", "system.cipher.known": ""
+        } : {
+        })
       }) : result("failed")
     case "disarmDataBomb":
       if (!bomb) return result("noBomb")
@@ -150,7 +155,7 @@ export function resolveFileAction({
       if (mode === "protect") return rating(hits) > 0 ? result("protected", {
         "system.protection": rating(hits), ...edited
       }) : result("failed")
-      if (protectionOf(file)) return result("locked")
+      if (protectionOf(file) || ciphered) return result("locked")
       return net > 0 ? result("edited", edited) : result("failed")
     default:
       return result("failed")

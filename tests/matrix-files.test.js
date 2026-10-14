@@ -103,6 +103,19 @@ describe('Crack File (SR5 p. 242)', () => {
       outcome: 'notProtected', update: null
     })
   })
+
+  it('a file ciphered with a key counts as protected, and a crack removes the cipher too (lot 39)', () => {
+    expect(resolveFileAction({
+      action: 'crackFile', file: file(), hits: 1, ciphered: true
+    })).toMatchObject({
+      outcome: 'cracked', update: {
+        'system.protection': 0, 'system.cipher.key': '', 'system.cipher.known': ''
+      }
+    })
+    expect(resolveFileAction({
+      action: 'editFile', file: file(), hits: 3, oppositionHits: 0, knowsPassword: true, ciphered: true
+    }).outcome).toBe('locked')
+  })
 })
 
 describe('Set Data Bomb (SR5 p. 243)', () => {

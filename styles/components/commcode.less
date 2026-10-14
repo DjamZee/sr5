@@ -435,6 +435,73 @@
     color: var(--cc-muted);
   }
 
+  // The cipher of the messages (lot 39): the key of the correspondent, the lock of the composer, a ciphered text
+  .sr-commcode-key {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--cc-muted);
+
+    input {
+      flex: 1;
+      font-family: monospace;
+    }
+
+    button {
+      flex: none;
+      padding: 0 0.5rem;
+    }
+  }
+
+  .sr-commcode-lock {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+    flex: none;
+    color: var(--cc-accent);
+    cursor: pointer;
+  }
+
+  .sr-commcode-bubbles li.locked .text,
+  .sr-commcode-intercepts .line.locked {
+    font-family: monospace;
+    letter-spacing: 0.04em;
+  }
+
+  .sr-commcode-cipher-state {
+    font-size: 0.72rem;
+    color: var(--cc-muted);
+
+    button.inline {
+      margin-left: 0.35rem;
+      padding: 0 0.4rem;
+      color: var(--cc-accent);
+    }
+  }
+
+  .sr-commcode-rating input {
+    width: 3.5rem;
+  }
+
+  // The gamemaster's cipher tool (commcode-cipher-tool.js)
+  .sr-cipher-tool-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    textarea,
+    input {
+      font-family: monospace;
+    }
+  }
+
   .sr-commcode-call {
     padding: 0.45rem 0.6rem;
     border: 1px solid var(--cc-accent);
@@ -665,4 +732,18 @@
   .sr-commcode * {
     animation: none !important;
   }
+}
+
+// A ciphered text in the chat (lot 39): the cards of the cipher, and a riddle the gamemaster posts
+.sr-commcode-cipher-card .cipher {
+  font-family: monospace;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+}
+
+// The content of a file ciphered with a key, on its sheet (lot 39)
+.sr-file-cipher-content.ciphered {
+  font-family: monospace;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
 }

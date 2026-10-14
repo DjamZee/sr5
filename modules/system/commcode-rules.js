@@ -180,21 +180,27 @@ export function directoryOf(raw){
   return (Array.isArray(raw) ? raw : [])
     .filter(c => normalizeCommcode(c?.commcode))
     .map(c => ({
-      id: String(c.id ?? normalizeCommcode(c.commcode)), name: String(c.name ?? "").trim(), commcode: String(c.commcode).trim()
+      id: String(c.id ?? normalizeCommcode(c.commcode)), name: String(c.name ?? "").trim(), commcode: String(c.commcode).trim(),
+      // The key of the cipher agreed with this contact (lot 39), "" when none
+      key: String(c.key ?? "")
     }))
 }
 
-/** The directory with one more contact, or the same one renamed (a commcode is listed once) */
+/**
+ * The directory with one more contact, or the same one renamed (a commcode is listed once). A key given (a string,
+ * even empty) replaces the contact's (lot 39); none leaves it.
+ */
 export function withContact(directory, contact, newId = () => Math.random().toString(36).slice(2, 10)){
   const commcode = String(contact?.commcode ?? "").trim()
   if (!normalizeCommcode(commcode)) return directory
   const name = String(contact?.name ?? "").trim()
+  const key = typeof contact?.key === "string" ? contact.key.trim() : null
   const found = directory.find(c => sameCommcode(c.commcode, commcode))
   if (found) return directory.map(c => c === found ? {
-    ...c, name: name || c.name
+    ...c, name: name || c.name, key: key ?? c.key ?? ""
   } : c)
   return [...directory, {
-    id: newId(), name, commcode
+    id: newId(), name, commcode, key: key ?? ""
   }]
 }
 

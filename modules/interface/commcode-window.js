@@ -4,8 +4,11 @@
 // through the gamemaster (commcode-traffic.js); the window only reads the register.
 
 import {
-  readTraffic, requestCommcode, deviceStateOf, directoryFlagOf, setDirectory, mySnoops, speaksFor
+  readTraffic, requestCommcode, deviceStateOf, directoryFlagOf, setDirectory, mySnoops, speaksFor, cipherEnabled
 } from "./commcode-traffic.js"
+import {
+  cipherOf, hasKey, readMessage
+} from "../system/commcode-cipher.js"
 import {
   counterpartOf, directoryOf, displayNameOf, entriesOfDevice, isOpen, normalizeCommcode, sameCommcode, threadsOf,
   withContact, COMMCODE_MAX_TEXT
@@ -77,6 +80,9 @@ export class SR5CommcodeWindow extends HandlebarsApplicationMixin(ApplicationV2)
       writeTo: SR5CommcodeWindow.#onWriteTo,
       stopSnoop: SR5CommcodeWindow.#onStopSnoop,
       gmSend: SR5CommcodeWindow.#onGmSend,
+      saveKey: SR5CommcodeWindow.#onSaveKey,
+      crack: SR5CommcodeWindow.#onCrack,
+      cipherTool: SR5CommcodeWindow.#onCipherTool,
     },
   }
 
@@ -165,6 +171,7 @@ export class SR5CommcodeWindow extends HandlebarsApplicationMixin(ApplicationV2)
     context.isGM = !!game.user?.isGM
     context.tab = this.tab
     context.maxText = COMMCODE_MAX_TEXT
+    context.cipherOn = cipherEnabled()
     if (!device) return {
       ...context, ...this.#gmContext(traffic)
     }
@@ -183,6 +190,11 @@ export class SR5CommcodeWindow extends HandlebarsApplicationMixin(ApplicationV2)
       writeMarks(this.readKey, marks)
     }
     const mine = entry => sameCommcode(entry.from?.commcode, commcode)
+    // A ciphered message (lot 39): its sender reads it, its recipient with the key she keeps for her correspondent
+    const keyFor = other => directory.find(c => sameCommcode(c.commcode, other))?.key ?? ""
+    const read = entry => readMessage(entry, {
+      author: mine(entry), key: keyFor(counterpartOf(entry, commcode))
+    })
     context.device = {
       name: device.name, commcode, holder: actor?.name ?? "", state, stateLabel: game.i18n.localize(`SR5.COMMCODE_State_${state}`),
       online: state === "online",
@@ -193,7 +205,7 @@ export class SR5CommcodeWindow extends HandlebarsApplicationMixin(ApplicationV2)
       const unread = t.entries.filter(e => !mine(e) && (e.deliveredAt ?? e.sentAt ?? 0) > (marks[t.key] ?? 0)).length
       return {
         commcode: t.commcode, name: displayNameOf(t.commcode, directory), known: directory.some(c => sameCommcode(c.commcode, t.commcode)),
-        last: last?.kind === "call" ? game.i18n.localize(`SR5.COMMCODE_Call_${last.status}`) : (last?.text ?? ""),
+        last: last?.kind === "call" ? game.i18n.localize(`SR5.COMMCODE_Call_${last.status}`) : (last ? read(last).text : ""),
         time: last ? timeOf(last) : "", unread, active: sameCommcode(t.commcode, this.current),
       }
     })
@@ -201,7 +213,10 @@ export class SR5CommcodeWindow extends HandlebarsApplicationMixin(ApplicationV2)
     context.current = this.current ? {
       commcode: this.current, name: displayNameOf(this.current, directory),
       known: directory.some(c => sameCommcode(c.commcode, this.current)),
-      bubbles: (current?.entries ?? []).map(e => this.#bubble(e, mine(e))),
+      bubbles: (current?.entries ?? []).map(e => this.#bubble(e, mine(e), read(e))),
+      key: keyFor(this.current),
+      // The lock of the composer: ticked when a key is kept for this correspondent, until the user unticks it
+      encrypt: this.encrypt?.[normalizeCommcode(this.current)] ?? hasKey(keyFor(this.current)),
     } : null
 
     // The open call of the device, wherever its thread is
@@ -224,11 +239,15 @@ export class SR5CommcodeWindow extends HandlebarsApplicationMixin(ApplicationV2)
     return context
   }
 
-  #bubble(entry, mine){
+  #bubble(entry, mine, seen = readMessage(entry, {
+    author: mine
+  })){
     const status = entry.kind === "call" ? game.i18n.localize(`SR5.COMMCODE_Call_${entry.status}`) :
       (mine ? game.i18n.localize(`SR5.COMMCODE_Status_${entry.status}`) : "")
     return {
-      mine, call: entry.kind === "call", text: entry.text, time: timeOf(entry), status, pending: entry.status === "pending",
+      mine, call: entry.kind === "call", text: seen.text, ciphered: seen.ciphered, locked: seen.ciphered && !seen.clear,
+      cipherLabel: seen.ciphered ? game.i18n.localize(`SR5.COMMCODE_Cipher_${seen.how}`) : "",
+      time: timeOf(entry), status, pending: entry.status === "pending",
       lines: entry.kind === "call" ? (entry.lines ?? []).length : 0,
     }
   }
@@ -240,11 +259,20 @@ export class SR5CommcodeWindow extends HandlebarsApplicationMixin(ApplicationV2)
       interception, entries
     }) => ({
       id: interception.id, target: interception.targetName,
-      entries: entries.map(e => ({
-        from: e.from?.commcode, fromDevice: e.from?.deviceName, to: e.to?.commcode, toDevice: (e.to?.devices ?? [])[0]?.deviceName ?? "",
-        call: e.kind === "call", text: e.text, time: timeOf(e), status: e.kind === "call" ? game.i18n.localize(`SR5.COMMCODE_Call_${e.status}`) : "",
-        lines: (e.lines ?? []).map(l => `${l.side === "from" ? e.from?.commcode : e.to?.commcode} : ${l.text}`),
-      })),
+      entries: entries.map(e => {
+        // A ciphered message: the cipher, until the snooper breaks it (lot 39, Crack File SR5 p. 242)
+        const seen = readMessage(e, {
+          snooperId: interception.snooperId
+        })
+        return {
+          id: e.id, from: e.from?.commcode, fromDevice: e.from?.deviceName, to: e.to?.commcode,
+          toDevice: (e.to?.devices ?? [])[0]?.deviceName ?? "", call: e.kind === "call", text: seen.text, time: timeOf(e),
+          ciphered: seen.ciphered, locked: seen.ciphered && !seen.clear, crackable: seen.ciphered && !seen.clear && cipherEnabled(),
+          cipherLabel: seen.ciphered ? game.i18n.localize(`SR5.COMMCODE_Cipher_${seen.how}`) : "",
+          status: e.kind === "call" ? game.i18n.localize(`SR5.COMMCODE_Call_${e.status}`) : "",
+          lines: (e.lines ?? []).map(l => `${l.side === "from" ? e.from?.commcode : e.to?.commcode} : ${l.text}`),
+        }
+      }),
     }))
   }
 
@@ -259,7 +287,12 @@ export class SR5CommcodeWindow extends HandlebarsApplicationMixin(ApplicationV2)
     return {
       gm: {
         entries: entries.map(e => ({
-          id: e.id, from: label(e.from), to: toLabel(e), call: e.kind === "call", text: e.text, time: timeOf(e),
+          // The gamemaster reads a ciphered message in clear, told it is ciphered (lot 39)
+          id: e.id, from: label(e.from), to: toLabel(e), call: e.kind === "call", text: readMessage(e, {
+            isGM: true
+          }).text, ciphered: !!cipherOf(e), cipherRating: cipherOf(e)?.rating ?? 0, cipherKey: cipherOf(e)?.key ?? "",
+          crackedBy: (cipherOf(e)?.crackedBy ?? []).map(id => traffic.interceptions.find(i => i.snooperId === id)?.snooperName ?? game.actors?.get(id)?.name ?? id).join(", "),
+          time: timeOf(e),
           status: game.i18n.localize(e.kind === "call" ? `SR5.COMMCODE_Call_${e.status}` : `SR5.COMMCODE_Status_${e.status}`),
           pending: e.status === "pending", open: isOpen(e),
           // The gamemaster answers for the commcodes no sheet carries, and for those she speaks as
@@ -302,6 +335,13 @@ export class SR5CommcodeWindow extends HandlebarsApplicationMixin(ApplicationV2)
         this.element.querySelector(`[data-action="${area.dataset.enter}"]`)?.click()
       })
     }
+    // The lock of the composer stays as the user left it for this correspondent (lot 39)
+    this.element.querySelector("input[name=encrypt]")?.addEventListener("change", event => {
+      this.encrypt = {
+        ...(this.encrypt ?? {
+        }), [normalizeCommcode(this.current)]: event.target.checked
+      }
+    })
     const thread = this.element.querySelector(".sr-commcode-bubbles")
     if (thread) thread.scrollTop = thread.scrollHeight
     // The field the user was in keeps the focus; a conversation just opened gives it to its message
@@ -334,6 +374,8 @@ export class SR5CommcodeWindow extends HandlebarsApplicationMixin(ApplicationV2)
     this.current = target.dataset.commcode
     this.wantFocus = true
     this.#take("textarea[name=message]")
+    // The key field is the correspondent's: another conversation shows its own
+    this.#take("input[name=threadKey]")
     this.render()
   }
 
@@ -343,15 +385,53 @@ export class SR5CommcodeWindow extends HandlebarsApplicationMixin(ApplicationV2)
     this.tab = "messages"
     this.current = to
     this.wantFocus = true
+    this.#take("input[name=threadKey]")
     this.render()
+  }
+
+  /** The key of the cipher agreed with the correspondent, kept in the character's directory (lot 39) */
+  async #keepKey(key){
+    const actor = this.device?.parent
+    if (!actor || !this.current) return
+    const directory = directoryOf(directoryFlagOf(actor))
+    const kept = directory.find(c => sameCommcode(c.commcode, this.current))?.key ?? ""
+    if (kept === key.trim()) return
+    await setDirectory(actor, withContact(directory, {
+      commcode: this.current, key
+    }, () => foundry.utils.randomID()))
   }
 
   static async #onSend(){
     if (!this.#value("textarea[name=message]").trim() || !this.current) return
+    // Ciphered when the lock is ticked: with the key of the field, kept for this correspondent
+    let key = ""
+    if (cipherEnabled() && this.element.querySelector("input[name=encrypt]")?.checked) {
+      key = this.#value("input[name=threadKey]").trim()
+      if (!hasKey(key)) return ui.notifications?.warn(game.i18n.localize("SR5.COMMCODE_CipherNoKey"))
+      await this.#keepKey(key)
+    }
     const text = this.#take("textarea[name=message]")
     await requestCommcode("send", {
-      deviceUuid: this.deviceUuid, to: this.current, text, kind: "message"
+      deviceUuid: this.deviceUuid, to: this.current, text, kind: "message", key
     })
+  }
+
+  static async #onSaveKey(){
+    await this.#keepKey(this.#value("input[name=threadKey]"))
+    this.render()
+  }
+
+  static async #onCrack(event, target){
+    await requestCommcode("crack", {
+      interceptionId: target.dataset.interception, entryId: target.dataset.id
+    })
+  }
+
+  static async #onCipherTool(){
+    const {
+      SR5CipherTool
+    } = await import("./commcode-cipher-tool.js")
+    return SR5CipherTool.open()
   }
 
   static async #onCall(){
@@ -423,8 +503,11 @@ export class SR5CommcodeWindow extends HandlebarsApplicationMixin(ApplicationV2)
     const to = this.#value("input[name=gmTo]")
     const kind = target.dataset.kind === "call" ? "call" : "message"
     const text = kind === "message" ? this.#take("textarea[name=gmText]") : ""
+    // A contact without a sheet ciphers with the rating the gamemaster gives (lot 39)
+    const key = kind === "message" && cipherEnabled() ? this.#value("input[name=gmKey]").trim() : ""
+    const cipherRating = this.#value("input[name=gmCipherRating]")
     await requestCommcode("send", {
-      asCommcode, asName, to, text, kind
+      asCommcode, asName, to, text, kind, key, cipherRating
     })
   }
 }

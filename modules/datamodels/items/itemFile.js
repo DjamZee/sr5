@@ -47,6 +47,16 @@ export class sr5ItemFileDataModel extends foundry.abstract.TypeDataModel {
           initial: ''
         }),
       }),
+      // The key cipher of its content (lot 39, a house rule: world setting sr5CommcodeCipher). key: the cipher's, set by
+      // the gamemaster or the owner; known: the key its holder's player typed, that opens it when it is the same
+      cipher: new fields.SchemaField({
+        key: new fields.StringField({
+          initial: ''
+        }),
+        known: new fields.StringField({
+          initial: ''
+        }),
+      }),
       // The marks placed on it, as on a device: [{ownerId, value, ownerName, watchdog}]
       marks: new fields.ArrayField(new fields.ObjectField()),
     }

@@ -11,6 +11,28 @@
 	<li class="grid">
 		<div class="col-12 SR-GreyColor SR-TextSmall">{{localize 'SR5.FileProtectionHint'}}</div>
 	</li>
+	<!-- The key cipher of its content (lot 39, a house rule): the key, and the one its holder's player typed -->
+	{{#if fileCipher.on}}
+	{{#if fileCipher.canSetKey}}
+	<li class="grid">
+		<div class="col-8">{{localize 'SR5.FileCipherKey'}}{{localize 'SR5.Colons'}}</div>
+		<div class="col-4">
+			<input type="text" name="system.cipher.key" value="{{system.cipher.key}}" autocomplete="off" spellcheck="false"/>
+		</div>
+	</li>
+	{{/if}}
+	{{#unless userIsGM}}{{#if fileCipher.ciphered}}
+	<li class="grid">
+		<div class="col-8">{{localize 'SR5.FileCipherKnown'}}{{localize 'SR5.Colons'}}</div>
+		<div class="col-4">
+			<input type="text" name="system.cipher.known" value="{{system.cipher.known}}" autocomplete="off" spellcheck="false"/>
+		</div>
+	</li>
+	{{/if}}{{/unless}}
+	<li class="grid">
+		<div class="col-12 SR-GreyColor SR-TextSmall">{{localize 'SR5.FileCipherHint'}}</div>
+	</li>
+	{{/if}}
 	<!-- Data bomb: the gamemaster's (Set Data Bomb, SR5 p. 243) -->
 	{{#if userIsGM}}
 	<li class="grid">

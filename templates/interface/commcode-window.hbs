@@ -86,11 +86,18 @@
         {{/unless}}
         <button type="button" class="call" data-action="call" data-tooltip="{{localize 'SR5.COMMCODE_Call'}}" {{#unless device.online}}disabled{{/unless}}><i class="fas fa-phone"></i></button>
       </div>
+      {{#if cipherOn}}
+      <div class="sr-commcode-key">
+        <i class="fas fa-key"></i>
+        <input type="text" name="threadKey" value="{{current.key}}" autocomplete="off" spellcheck="false" placeholder="{{localize 'SR5.COMMCODE_CipherKeyPlaceholder'}}">
+        <button type="button" data-action="saveKey" data-tooltip="{{localize 'SR5.COMMCODE_CipherSaveKey'}}"><i class="fas fa-floppy-disk"></i></button>
+      </div>
+      {{/if}}
       <ol class="sr-commcode-bubbles">
         {{#each current.bubbles}}
-        <li class="{{#if mine}}mine{{else}}theirs{{/if}} {{#if call}}call{{/if}} {{#if pending}}pending{{/if}}">
+        <li class="{{#if mine}}mine{{else}}theirs{{/if}} {{#if call}}call{{/if}} {{#if pending}}pending{{/if}} {{#if locked}}locked{{/if}}">
           {{#if call}}<i class="fas fa-phone"></i> {{status}}{{#if lines}} · {{lines}} {{localize "SR5.COMMCODE_Lines"}}{{/if}}{{else}}<span class="text">{{text}}</span>{{/if}}
-          <footer><time>{{time}}</time>{{#unless call}}{{#if status}} · {{status}}{{/if}}{{/unless}}</footer>
+          <footer><time>{{time}}</time>{{#unless call}}{{#if status}} · {{status}}{{/if}}{{/unless}}{{#if ciphered}} · <i class="fas {{#if locked}}fa-lock{{else}}fa-lock-open{{/if}}"></i> {{cipherLabel}}{{/if}}</footer>
         </li>
         {{else}}
         <li class="empty">{{localize "SR5.COMMCODE_FirstMessage"}}</li>
@@ -98,9 +105,10 @@
       </ol>
       <div class="sr-commcode-compose">
         <textarea name="message" rows="2" maxlength="{{maxText}}" data-enter="send" data-focus placeholder="{{localize 'SR5.COMMCODE_MessagePlaceholder'}}" {{#unless device.online}}disabled{{/unless}}></textarea>
+        {{#if cipherOn}}<label class="sr-commcode-lock" data-tooltip="{{localize 'SR5.COMMCODE_CipherEncrypt'}}"><input type="checkbox" name="encrypt" {{#if current.encrypt}}checked{{/if}}><i class="fas fa-lock"></i></label>{{/if}}
         <button type="button" data-action="send" data-tooltip="{{localize 'SR5.COMMCODE_Send'}}" {{#unless device.online}}disabled{{/unless}}><i class="fas fa-paper-plane"></i></button>
       </div>
-      <p class="sr-commcode-hint">{{localize "SR5.COMMCODE_LengthHint"}}</p>
+      <p class="sr-commcode-hint">{{localize "SR5.COMMCODE_LengthHint"}}{{#if cipherOn}} {{localize "SR5.COMMCODE_CipherHint"}}{{/if}}</p>
       {{else}}
       <p class="sr-commcode-empty">{{localize "SR5.COMMCODE_PickThread"}}</p>
       {{/if}}
@@ -140,7 +148,9 @@
       <ol>
         {{#each entries}}
         <li><time>{{time}}</time> <span class="sr-commcode-code">{{from}}</span>{{#if fromDevice}} ({{fromDevice}}){{/if}} → <span class="sr-commcode-code">{{to}}</span>{{#if toDevice}} ({{toDevice}}){{/if}}
-          {{#if call}}<em><i class="fas fa-phone"></i> {{status}}</em>{{#each lines}}<div class="line">{{this}}</div>{{/each}}{{else}}<div class="line">{{text}}</div>{{/if}}</li>
+          {{#if call}}<em><i class="fas fa-phone"></i> {{status}}</em>{{#each lines}}<div class="line">{{this}}</div>{{/each}}{{else}}<div class="line {{#if locked}}locked{{/if}}">{{text}}</div>{{/if}}
+          {{#if ciphered}}<div class="sr-commcode-cipher-state"><i class="fas {{#if locked}}fa-lock{{else}}fa-lock-open{{/if}}"></i> {{cipherLabel}}
+            {{#if crackable}}<button type="button" class="inline" data-action="crack" data-id="{{id}}" data-interception="{{../id}}" data-tooltip="{{localize 'SR5.COMMCODE_CipherCrackHint'}}"><i class="fas fa-unlock-keyhole"></i> {{localize "SR5.COMMCODE_CipherCrack"}}</button>{{/if}}</div>{{/if}}</li>
         {{else}}
         <li class="empty">{{localize "SR5.COMMCODE_NothingIntercepted"}}</li>
         {{/each}}
@@ -154,11 +164,16 @@
   {{!-- The gamemaster's window: the whole traffic --}}
   <header class="sr-commcode-head">
     <div class="sr-commcode-id"><i class="fas fa-tower-broadcast"></i> <strong>{{localize "SR5.COMMCODE_GMTitle"}}</strong></div>
+    <button type="button" data-action="cipherTool"><i class="fas fa-key"></i> {{localize "SR5.CIPHERTOOL_Title"}}</button>
   </header>
   <section class="sr-commcode-gm-compose">
     <input type="text" name="gmFrom" placeholder="{{localize 'SR5.COMMCODE_GMFrom'}}">
     <input type="text" name="gmName" placeholder="{{localize 'SR5.COMMCODE_GMName'}}">
     <input type="text" name="gmTo" placeholder="{{localize 'SR5.COMMCODE_GMTo'}}">
+    {{#if cipherOn}}
+    <input type="text" name="gmKey" autocomplete="off" spellcheck="false" placeholder="{{localize 'SR5.COMMCODE_CipherKeyPlaceholder'}}">
+    <label class="sr-commcode-rating" data-tooltip="{{localize 'SR5.COMMCODE_CipherRatingHint'}}"><i class="fas fa-lock"></i> <input type="number" name="gmCipherRating" min="0" max="12" value="3"></label>
+    {{/if}}
     <textarea name="gmText" rows="2" maxlength="{{maxText}}" placeholder="{{localize 'SR5.COMMCODE_MessagePlaceholder'}}"></textarea>
     <div class="sr-commcode-call-buttons">
       <button type="button" data-action="gmSend" data-kind="message"><i class="fas fa-paper-plane"></i> {{localize "SR5.COMMCODE_Send"}}</button>
@@ -195,6 +210,7 @@
         {{/if}}{{/if}}
       {{else}}
         <div class="line">{{text}}</div>
+        {{#if ciphered}}<div class="sr-commcode-cipher-state"><i class="fas fa-lock"></i> {{localize "SR5.COMMCODE_CipherGMLabel" key=cipherKey rating=cipherRating}}{{#if crackedBy}} · {{localize "SR5.COMMCODE_CipherGMCracked" names=crackedBy}}{{/if}}</div>{{/if}}
       {{/if}}
     </li>
     {{else}}

@@ -6,6 +6,18 @@
 			<span class="col-auto SR-GreyColor">{{#if system.protection}}{{system.protection}}{{else}}{{localize 'SR5.FileNotProtected'}}{{/if}}</span>
 		</p>
 	</li>
+	<!-- A file ciphered with a key (lot 39, a house rule): its content, ciphered, or in clear with the key -->
+	{{#if fileCipher.ciphered}}
+	<li class="grid">
+		<p>
+			<span class="col-auto">{{localize 'SR5.FileCipher'}}{{localize 'SR5.Colons'}}</span>
+			<span class="col-auto SR-GreyColor"><i class="fas {{#if (eq fileCipher.how 'ciphered')}}fa-lock{{else}}fa-lock-open{{/if}}"></i> {{localize (concat 'SR5.FileCipher_' fileCipher.how)}}</span>
+		</p>
+	</li>
+	{{#if fileCipher.html}}
+	<li class="sr-file-cipher-content {{fileCipher.how}}">{{{fileCipher.html}}}</li>
+	{{/if}}
+	{{/if}}
 	{{#if userIsGM}}
 	<li class="grid">
 		<p>

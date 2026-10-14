@@ -17,6 +17,9 @@ import {
   fileLastEditText
 } from "../../rolls/roll-helpers/file-actions.js"
 import {
+  CIPHER_SETTING, readFile, hasKey, sameKey
+} from "../../system/commcode-cipher.js"
+import {
   canEditItemEffects, clearTargetsOnCategoryChange, keepUnlistedEffectFields, lockEffectFields
 } from "../../system/effect-editor.js"
 import {
@@ -603,6 +606,17 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     if (item.type === "itemFile") {
       context.enrichedFileContent = await enrich(item.system.content)
       context.fileLastEdit = fileLastEditText(item.system.lastEdit)
+      // Its content as the reader sees it: clear, protected, or ciphered with a key (lot 39, a house rule)
+      const cipherOn = game.settings.settings.has(`sr5.${CIPHER_SETTING}`) && game.settings.get("sr5", CIPHER_SETTING) === true
+      const reading = readFile(item, {
+        isGM: game.user.isGM, cipherOn
+      })
+      const key = item.system.cipher?.key ?? ""
+      context.fileCipher = {
+        on: cipherOn, how: reading.how, ciphered: reading.ciphered, html: reading.how === "gm" ? "" : await enrich(reading.html),
+        // The holder's player sets the key of a file that has none, or changes the one she knows; the gamemaster any
+        canSetKey: cipherOn && (game.user.isGM || !hasKey(key) || sameKey(item.system.cipher?.known, key)),
+      }
     }
     // A mentor spirit's drawback is HTML (Megapack data, the editor): shown read, never as tags (lot 34)
     if (item.type === "itemMentorSpirit") context.enrichedDrawback = await enrich(item.system.drawback)

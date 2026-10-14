@@ -158,8 +158,20 @@ describe('commcode: the directory', () => {
     }, {
       id: "1", name: "Fixer", commcode: "fx"
     }])).toEqual([{
-      id: "1", name: "Fixer", commcode: "fx"
+      id: "1", name: "Fixer", commcode: "fx", key: ""
     }])
+  })
+  it('keeps the key of a contact, and replaces it only when one is given (lot 39)', () => {
+    const one = withContact([], {
+      name: "Fixer", commcode: "fx", key: " LUNE "
+    }, () => "id1")
+    expect(one[0].key).toBe("LUNE")
+    expect(withContact(one, {
+      name: "", commcode: "FX"
+    })[0].key).toBe("LUNE")
+    expect(withContact(one, {
+      commcode: "fx", key: ""
+    })[0].key).toBe("")
   })
   it('lists a commcode once: adding it again renames it', () => {
     const one = withContact([], {
@@ -169,7 +181,7 @@ describe('commcode: the directory', () => {
       name: "Le fixer", commcode: "FX"
     }, () => "id2")
     expect(two).toEqual([{
-      id: "id1", name: "Le fixer", commcode: "fx"
+      id: "id1", name: "Le fixer", commcode: "fx", key: ""
     }])
   })
   it('shows the contact name, or the commcode', () => {
