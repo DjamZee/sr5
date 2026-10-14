@@ -1,83 +1,86 @@
-/* === Shop window (lot B) ===
-   DjamZ's choice (mock-up, revision 2, 2026-10-05): neutral greys everywhere,
-   and only the accent follows the system theme ("Style" setting): SR5 red or
-   SR6 violet, on lines, header, active shelf and buttons, never on surfaces.
-   --sr-shop-accent and --sr-shop-accent-line are set by the two themes. */
-.sr-shop-window {
-  --shop-bg: #14161b;
-  --shop-panel: #1c1f26;
-  --shop-line: #2a2e37;
-  --shop-button: #2a2e37;
-  --shop-text: #e6e6e6;
-  // #a9b0bd on #14161b: 8.6:1, readable for the small summary line (WCAG AA asks 4.5:1)
-  --shop-muted: #a9b0bd;
-  // Legality and the odds dot, the same in both themes. A prohibited item is a
-  // filled red badge, so it never reads as the red accent of the SR5 theme.
-  --shop-restricted: #e0a526;
-  --shop-prohibited: #ff5c4d;
-  --shop-good: #4cc46a;
-  --shop-even: #e0a526;
-  --shop-poor: #ff5c4d;
+/* === Shop window (lot B, restyled by lot 36) ===
+   Lot 36 (14/10): the Concepteur's look (commons/window-tokens.less), light by default, dark under Foundry's dark
+   theme. The shop keeps its own variable names, which read the tokens. */
+@import "../commons/window-tokens.less";
 
-  // The validated mock-up's type: Signika at 12 px, names at 13 px. The SR5 theme's narrow
-  // display face made the rows hard to read.
-  font-family: var(--font-body, "Signika"), sans-serif;
+.sr-shop-window {
+  .srw-tokens();
+  // The accent is ONE variable. The SR5 red / SR6 violet the « Style » setting lent it (DjamZ's mock-up of 05/10)
+  // give way to the Concepteur's (Élise, 14/10); to bring them back, delete this line.
+  --sr-shop-accent: var(--srw-accent-fill);
+  --shop-bg: var(--srw-bg);
+  --shop-panel: var(--srw-panel);
+  --shop-line: var(--srw-border);
+  --shop-button: var(--srw-field);
+  --shop-text: var(--srw-text);
+  --shop-muted: var(--srw-muted);
+  // Legality and the odds dot: the Concepteur's state colours. A prohibited item is a filled badge
+  --shop-restricted: var(--srw-left);
+  --shop-prohibited: var(--srw-over);
+  --shop-good: var(--srw-ok);
+  --shop-even: var(--srw-left);
+  --shop-poor: var(--srw-over);
+  .srw-window();
+
+  font-family: var(--srw-font-body);
   font-size: 12px;
   // Icons keep their own face: only text elements are reset
   .window-content :is(input, select, button, label, span, b, small, a, h4, p, li, div):not([class*="fa-"]) {
     font-family: inherit;
   }
 
-  .window-header {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--sr-shop-accent) 55%, transparent), #0d0e11 60%) !important;
-    border-bottom: 2px solid var(--sr-shop-accent) !important;
-  }
-
   .window-content {
     padding: 0 !important;
-    background: var(--shop-bg) !important;
     color: var(--shop-text) !important;
   }
 
   .muted { color: var(--shop-muted) !important; }
 
   input[type="text"], input[type="number"] {
-    background: var(--shop-bg) !important;
-    border: 1px solid var(--shop-line) !important;
-    border-radius: 2px !important;
+    .srw-field();
+    border: 1px solid var(--srw-border-strong) !important;
+    background-color: var(--srw-field) !important;
     color: var(--shop-text) !important;
     height: 22px;
     font-size: 12px;
   }
   input[type="number"] { width: 64px; text-align: right; }
+  // The search fields and the native selects: the theme draws them dark red with teal text
+  .window-content :is(input[type="search"], input:not([type]), select) {
+    .srw-field();
+    border: 1px solid var(--srw-border-strong) !important;
+    background-color: var(--srw-field) !important;
+    color: var(--shop-text) !important;
+  }
+  .window-content select option { color: var(--srw-text); background: var(--srw-panel); }
+  // The tables keep the window's ground, not the theme's red rows
+  .window-content :is(table, thead, tbody, tr, th, td) { background: transparent !important; text-shadow: none; }
 
   // Scoped to the content: the window header's controls (close, menu) are buttons
   // too, and a shop font or background there hides their Font Awesome glyph.
   // :where() keeps the old specificity for the rules below that refine buttons.
   :where(.window-content) button {
+    .srw-button();
     background: var(--shop-button) !important;
-    border: 1px solid #3a3f4a !important;
+    border: 1px solid var(--srw-border-strong) !important;
     color: var(--shop-text) !important;
-    border-radius: 3px;
     line-height: 22px;
     font-size: 12px;
-    &:hover:not([disabled]) { border-color: var(--sr-shop-accent-line) !important; }
+    &:hover:not([disabled]) { border-color: var(--srw-sel-border) !important; }
     &.accent {
+      .srw-button-primary();
+      .srw-cut();
       background: var(--sr-shop-accent) !important;
       border-color: var(--sr-shop-accent) !important;
-      color: #fffffe !important;
-      font-weight: bold;
+      color: var(--srw-on-accent) !important;
     }
     &.too-expensive { outline: 1px solid var(--shop-prohibited); }
   }
 
   h4 {
+    .srw-title();
     margin: 10px 0 4px;
-    font-size: 11px;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    color: var(--shop-muted) !important;
-    border: none;
+    color: var(--srw-heading) !important;
   }
 
   .sr-shop {
@@ -98,16 +101,18 @@
     display: flex;
     justify-content: space-between;
     gap: 6px;
+    margin-bottom: 3px;
     padding: 5px 8px;
-    border-radius: 3px;
+    .srw-tab();
+    .srw-cut();
     color: var(--shop-text) !important;
-    .count { color: var(--shop-muted); }
-    &:hover { background: var(--shop-line); }
+    .count { color: var(--shop-muted); font-family: var(--srw-font-num); }
+    &:hover { border-color: var(--srw-sel-border); }
+    // The Concepteur's active step
     &.active {
-      background: var(--sr-shop-accent);
-      color: #fffffe !important;
-      font-weight: bold;
-      .count { color: #fffffe; }
+      .srw-tab-active();
+      color: var(--srw-sel-text) !important;
+      .count { color: var(--srw-sel-text); }
     }
     &.sub { padding-left: 22px; }
   }
@@ -145,17 +150,20 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    border: 1px solid var(--shop-line) !important;
-    border-radius: 12px !important;
+    border: 1px solid var(--srw-border) !important;
+    border-radius: 0 !important;
+    outline: none !important;
     padding: 0 10px;
     line-height: 20px !important;
-    background: none !important;
+    background: var(--srw-panel) !important;
     color: var(--shop-muted) !important;
     cursor: pointer;
     input { display: none; }
     &.active {
-      border-color: var(--sr-shop-accent-line) !important;
-      color: var(--shop-text) !important;
+      border-color: var(--srw-sel-border) !important;
+      background: var(--srw-sel-bg) !important;
+      color: var(--srw-sel-text) !important;
+      font-weight: bold;
     }
   }
   .sr-shop-filter-actions { display: flex; gap: 4px; margin-left: auto; button { width: 28px; padding: 0; } }
@@ -171,9 +179,11 @@
   .sr-shop-head {
     padding-top: 6px;
     padding-bottom: 6px;
-    font-size: 11px;
+    font-family: var(--srw-font-num) !important;
+    font-size: 10px;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--shop-muted);
+    color: var(--srw-heading);
     border-bottom: 1px solid var(--shop-line);
     .right { text-align: right; }
   }
@@ -200,11 +210,16 @@
   }
   .sr-shop-row {
     min-height: 50px;
-    border-bottom: 1px solid var(--shop-line);
+    // A framed row of the Concepteur: panel, thin border, a rule on the left
+    margin: 3px 6px;
+    background: var(--srw-panel);
+    border: 1px solid var(--srw-border);
+    border-left: 3px solid var(--srw-border-strong);
     cursor: pointer;
-    &:hover { background: var(--shop-panel); }
+    &:hover { border-color: var(--srw-sel-border); background: var(--srw-sel-bg); }
     &.dim { opacity: .45; }
-    img { width: 34px; height: 34px; border: none; object-fit: contain; }
+    // The system's pictures are white drawings: a night tile keeps them readable on the light set
+    img { width: 34px; height: 34px; border: none; object-fit: contain; background: var(--srw-header-bg); }
   }
   .sr-shop-name {
     padding: 4px 0;
@@ -231,7 +246,7 @@
     small { display: block; font-size: 11px; color: var(--shop-muted); }
     .legality-R { color: var(--shop-restricted); }
     .legality-F {
-      color: #fffffe;
+      color: var(--srw-panel);
       background: var(--shop-prohibited);
       border-radius: 3px;
       padding: 0 4px;
@@ -251,6 +266,7 @@
     text-align: right;
     font-weight: bold;
     font-size: 13px;
+    font-family: var(--srw-font-num) !important;
     &.too-expensive { color: var(--shop-prohibited); }
   }
   .sr-shop-row-buy {
@@ -264,10 +280,10 @@
   .sr-shop-grade select, select.sr-shop-source {
     width: 100%;
     height: 22px;
-    background: var(--shop-bg) !important;
+    background-color: var(--srw-field) !important;
     color: var(--shop-text) !important;
-    border: 1px solid var(--shop-line) !important;
-    border-radius: 2px;
+    border: 1px solid var(--srw-border-strong) !important;
+    border-radius: 0;
     font-size: 12px;
     option { background: var(--shop-panel); color: var(--shop-text); }
   }
@@ -276,14 +292,14 @@
   .sr-dropdown .sr-dropdown-trigger {
     height: 22px;
     padding: 0 6px;
-    background: var(--shop-bg);
-    border: 1px solid var(--shop-line);
-    border-radius: 2px;
+    background: var(--srw-field);
+    border: 1px solid var(--srw-border-strong);
+    border-radius: 0;
     .sr-dropdown-chevron { color: var(--shop-muted); font-size: 11px; }
-    &:hover { border-color: var(--sr-shop-accent-line); .sr-dropdown-chevron { color: var(--shop-text); } }
+    &:hover { border-color: var(--srw-sel-border); .sr-dropdown-chevron { color: var(--shop-text); } }
   }
   .sr-dropdown.sr-dropdown-open .sr-dropdown-trigger {
-    border-color: var(--sr-shop-accent-line);
+    border-color: var(--srw-sel-border);
     .sr-dropdown-chevron { color: var(--shop-text); }
   }
   .sr-shop-empty { padding: 20px; text-align: center; color: var(--shop-muted); }
@@ -313,13 +329,10 @@
     flex-direction: column;
     gap: 6px;
     padding: 8px;
-    border: 1px solid var(--shop-line);
-    border-left: 2px solid var(--sr-shop-accent-line);
-    border-radius: 4px;
-    background: var(--shop-bg);
+    .srw-box();
     label { display: flex; align-items: center; gap: 6px; }
   }
-  .sr-shop-balance b { font-size: 18px; }
+  .sr-shop-balance b { font-size: 18px; font-family: var(--srw-font-num) !important; }
   // Wide enough for the hint "Réserve" (Eudes)
   .sr-shop-inline { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; input { width: 64px; } }
   .sr-shop-cart-line {
@@ -380,6 +393,12 @@
   }
   .sr-shop-tag.stock { border-color: var(--shop-good); color: var(--shop-good); }
   .sr-shop-tag.on-order { border-color: var(--shop-restricted); color: var(--shop-restricted); }
+}
+
+// The dark set under Foundry's dark theme, unless the window itself is light (as the Concepteur)
+&.theme-dark .sr-shop-window:not(.theme-light),
+.sr-shop-window.theme-dark {
+  .srw-tokens-dark();
 }
 
 /* The vendor's block on the storage sheet (lot C): the shelves and legality boxes, readable on the light sheet */

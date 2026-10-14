@@ -1,0 +1,217 @@
+// Window tokens (lot 36): the look of the Concepteur de personnage (module createur-sr5, direction B « Matrice »,
+// chosen by DjamZ on 07/10), shared by the system's own windows. The values are the Concepteur's, a light set by
+// default and a dark one under Foundry's dark theme; each window reads the --srw-* variables, nothing is copied.
+
+// The light set: « RA plein jour », greyish blue ground, fields lighter than it, firm borders
+.srw-tokens() {
+  --srw-font-body: "srfoundry_regular", "Signika", "Segoe UI", system-ui, sans-serif;
+  --srw-font-head: "srfoundry_primary", "Signika", "Segoe UI", system-ui, sans-serif;
+  --srw-font-num: "Cascadia Mono", Consolas, Menlo, "DejaVu Sans Mono", ui-monospace, monospace;
+  --srw-cut: 7px;
+
+  --srw-bg: #d6e0e8;
+  --srw-panel: #f1f5f8;
+  --srw-field: #fbfcfd;
+  --srw-text: #0a1624;
+  --srw-muted: #3b4e63;
+  --srw-heading: #00566b;
+  --srw-border: #8ba0b4;
+  --srw-border-strong: #4c6680;
+  --srw-accent: #00809e;
+  --srw-track: #c0cdd8;
+  --srw-sel-bg: #c6eaf4;
+  --srw-sel-border: #006b85;
+  --srw-sel-text: #00485a;
+  --srw-on-accent: #ffffff;
+  --srw-accent-fill: #a3127f;
+  --srw-focus: #a3127f;
+  --srw-ok: #0b6538;
+  --srw-ok-bg: #cdecdb;
+  --srw-over: #b4233c;
+  --srw-over-bg: #f6d6dc;
+  --srw-left: #8a5000;
+  --srw-warn-bg: #f5e3bf;
+  --srw-header-bg: #0a1626;
+  --srw-header-text: #5ee6ff;
+  --srw-frame: #00809e;
+  --srw-disabled-bg: #e0e6eb;
+  --srw-essence: #a3127f;
+  --srw-glow: 0 1px 2px rgba(10, 22, 36, 0.25);
+  --srw-glow-in: inset 0 0 0 transparent;
+  --srw-grid-line: rgba(0, 86, 107, 0.08);
+}
+
+// The dark set: neon on night blue
+.srw-tokens-dark() {
+  --srw-bg: #0a0f1a;
+  --srw-panel: #0f1828;
+  --srw-field: #0b1322;
+  --srw-text: #dbe7f5;
+  --srw-muted: #8ea3bd;
+  --srw-heading: #5ee6ff;
+  --srw-border: #1e3350;
+  --srw-border-strong: #5580b5;
+  --srw-accent: #3fe0ff;
+  --srw-track: #13243a;
+  --srw-sel-bg: #062a3a;
+  --srw-sel-border: #3fe0ff;
+  --srw-sel-text: #bff4ff;
+  --srw-on-accent: #001820;
+  --srw-accent-fill: #3fe0ff;
+  --srw-focus: #ff4fd8;
+  --srw-ok: #4dffa6;
+  --srw-ok-bg: #0b2a1f;
+  --srw-over: #ff5c7a;
+  --srw-over-bg: #2d0d17;
+  --srw-left: #ffc94d;
+  --srw-warn-bg: #2a2008;
+  --srw-header-bg: #070b13;
+  --srw-header-text: #5ee6ff;
+  --srw-frame: #3fe0ff;
+  --srw-disabled-bg: #0a111d;
+  --srw-essence: #ff4fd8;
+  --srw-glow: 0 0 10px rgba(63, 224, 255, 0.45);
+  --srw-glow-in: inset 0 0 9px rgba(63, 224, 255, 0.55);
+  --srw-grid-line: rgba(63, 224, 255, 0.05);
+}
+
+// The Concepteur's signature: cut corners
+.srw-cut(@c: var(--srw-cut)) {
+  clip-path: polygon(0 0, calc(100% - @c) 0, 100% @c, 100% 100%, @c 100%, 0 calc(100% - @c));
+}
+
+// A section title: small capitals in the heading colour, after a magenta « // »
+.srw-title() {
+  margin: 0;
+  border: none;
+  color: var(--srw-heading);
+  font-family: var(--srw-font-num);
+  font-size: 10px;
+  font-weight: normal;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-shadow: none;
+
+  &::before { content: "// "; color: var(--srw-essence); }
+}
+
+// A heading: the display face in capitals
+.srw-heading(@size: var(--font-size-17, 17px)) {
+  border: none;
+  color: var(--srw-heading);
+  font-family: var(--srw-font-head);
+  font-size: @size;
+  font-weight: normal;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-shadow: none;
+}
+
+// A framed box: panel, thin border, a 3 px rule on the left
+.srw-box(@rule: var(--srw-sel-border)) {
+  background: var(--srw-panel);
+  border: 1px solid var(--srw-border);
+  border-left: 3px solid @rule;
+}
+
+// A button: square, firm border, no theme picture
+.srw-button() {
+  background: var(--srw-field);
+  background-image: none;
+  box-shadow: none;
+  color: var(--srw-text);
+  border: 1px solid var(--srw-border-strong);
+  border-radius: 0;
+  font-family: var(--srw-font-body);
+  text-transform: none;
+  letter-spacing: normal;
+  text-shadow: none;
+
+  &:hover:not(:disabled) { border-color: var(--srw-sel-border); }
+  &:disabled { color: var(--srw-muted); opacity: 0.55; }
+  &:focus-visible { outline: 2px solid var(--srw-focus); outline-offset: 2px; box-shadow: none; }
+}
+
+// The main action: filled, magenta in light, cyan in dark
+.srw-button-primary() {
+  background: var(--srw-accent-fill);
+  border-color: var(--srw-accent-fill);
+  color: var(--srw-on-accent);
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+// A field: the colour only, so a select keeps the chevron the theme draws as a picture
+.srw-field() {
+  color: var(--srw-text);
+  background-color: var(--srw-field);
+  border: 1px solid var(--srw-border-strong);
+  border-radius: 0;
+  box-shadow: none;
+  font-family: var(--srw-font-body);
+
+  &::placeholder { color: var(--srw-muted); opacity: 1; }
+  &:focus-visible { outline: 2px solid var(--srw-focus); outline-offset: 1px; }
+}
+
+// A tab like the Concepteur's steps; the active one tinted, a rule under it
+.srw-tab() {
+  background: var(--srw-panel);
+  border: 1px solid var(--srw-border);
+  border-radius: 0;
+  color: var(--srw-text);
+  text-shadow: none;
+}
+.srw-tab-active() {
+  background: var(--srw-sel-bg);
+  border-color: var(--srw-sel-border);
+  color: var(--srw-sel-text);
+  box-shadow: var(--srw-glow-in), inset 0 -3px 0 var(--srw-sel-border);
+  font-weight: bold;
+}
+
+// The window itself: night header with cyan capitals, a faint grid on the ground
+.srw-window() {
+  border: 1px solid var(--srw-frame);
+  border-radius: 0;
+
+  > .window-header {
+    background: var(--srw-header-bg) !important;
+    background-image: none !important;
+    color: var(--srw-header-text);
+    border-bottom: 1px solid var(--srw-frame) !important;
+
+    .window-title {
+      color: var(--srw-header-text);
+      font-family: var(--srw-font-head);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-shadow: none;
+    }
+    .window-icon { color: var(--srw-essence); }
+    .header-control {
+      color: var(--srw-header-text);
+      background: transparent !important;
+      border-color: transparent !important;
+      &:hover { color: var(--srw-essence); }
+    }
+  }
+
+  // The window's scroll bars in its own colours, not the theme's red
+  * { scrollbar-color: var(--srw-border-strong) transparent; }
+
+  > .window-content {
+    // The theme forces the fields of every window to this colour (!important): it is set to the window's text
+    --sr-text-color-dark: var(--srw-text);
+    --sr-text-color-light: var(--srw-text);
+    color: var(--srw-text);
+    font-family: var(--srw-font-body);
+    font-variant-numeric: tabular-nums;
+    background-color: var(--srw-bg) !important;
+    background-image:
+      linear-gradient(var(--srw-grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--srw-grid-line) 1px, transparent 1px) !important;
+    background-size: 24px 24px !important;
+  }
+}

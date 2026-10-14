@@ -434,6 +434,76 @@
   }
 }
 
+// Lot 36: the Concepteur's look (window-skin.less lays the tokens); the theme's pictures and dark red give way. The
+// rules above paint with !important deep in their nesting, hence these
+.application.sr-compendium-browser {
+  .sr-browser-sidebar {
+    background-image: none !important;
+    background-color: var(--srw-panel) !important;
+    color: var(--srw-text) !important;
+    border-right: 1px solid var(--srw-border);
+
+    > label,
+    > .sr-browser-type-list > label,
+    > .sr-browser-filters > label {
+      .srw-title();
+      padding: 3px 0;
+      background-image: none;
+      color: var(--srw-heading) !important;
+    }
+
+    input[type="checkbox"] { border-color: var(--srw-border-strong) !important; }
+  }
+
+  .sr-browser-search {
+    border-bottom-color: var(--srw-border);
+    i { color: var(--srw-accent); }
+    input { border-bottom: 1px solid var(--srw-border-strong) !important; color: var(--srw-text) !important; }
+  }
+
+  .sr-browser-type-item {
+    color: var(--srw-text) !important;
+    &:hover { background: var(--srw-sel-bg); }
+    &.active { .srw-tab-active(); color: var(--srw-sel-text) !important; }
+  }
+  .sr-browser-type-count { color: var(--srw-muted); font-family: var(--srw-font-num); }
+  .sr-browser-filter-group label { color: var(--srw-muted) !important; }
+  :is(.sr-browser-filters, .sr-browser-sidebar-actions) { border-top-color: var(--srw-border); }
+
+  .sr-browser-results { background-image: none; }
+
+  // The column names: the Concepteur's window header
+  .sr-browser-results-header {
+    background: var(--srw-header-bg);
+    color: var(--srw-header-text);
+    font-family: var(--srw-font-num);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    border-bottom: 1px solid var(--srw-frame);
+  }
+  .sr-browser-sort a { color: var(--srw-header-text); }
+  .sr-browser-count { color: var(--srw-muted); font-family: var(--srw-font-num); }
+
+  .sr-browser-result {
+    border-bottom-color: var(--srw-border);
+    &:nth-child(even) { background-color: var(--srw-panel); }
+    &:hover, &:nth-child(even):hover { background-color: var(--srw-sel-bg); }
+  }
+  .sr-browser-result-img { background: var(--srw-header-bg); border-radius: 0; }
+  .sr-browser-result-name { color: var(--srw-text); }
+  .sr-browser-result-type {
+    color: var(--srw-sel-border);
+    border-color: var(--srw-sel-border);
+    border-radius: 0;
+    background: var(--srw-panel);
+    font-family: var(--srw-font-num);
+    font-size: 10px;
+  }
+  .sr-browser-result-info, .sr-browser-no-results { color: var(--srw-muted); }
+
+  .sr-browser-footer { background-image: none; border-top: 1px solid var(--srw-border); }
+}
+
 // Shop settings menu: shelves and buyers (lot A)
 .sr-shop-config {
   .sr-shop-config-body {

@@ -671,46 +671,26 @@
   }
 }
 
-// The light theme: the same accents, darker to be read on a pale glass (imported inside the body's rule, base.less:
-// "&" is the body, which carries Foundry's theme)
-&.theme-light .sr-commcode,
-.sr-commcode.theme-light {
-  --cc-accent: #0b8f66;
-  --cc-accent-2: #0a6fa8;
-  --cc-alert: #c2183a;
-  --cc-warn: #a86a00;
-  --cc-bg: radial-gradient(120% 80% at 0% 0%, rgba(10, 111, 168, 0.10), transparent 60%),
-    radial-gradient(120% 90% at 100% 100%, rgba(11, 143, 102, 0.10), transparent 60%), rgba(244, 251, 249, 0.97);
-  --cc-panel: rgba(11, 143, 102, 0.06);
-  --cc-line: rgba(11, 143, 102, 0.32);
-  --cc-text: #0f2420;
-  --cc-muted: rgba(15, 36, 32, 0.62);
-  --cc-mine: linear-gradient(135deg, rgba(10, 111, 168, 0.16), rgba(11, 143, 102, 0.14));
-  --cc-theirs: rgba(15, 36, 32, 0.06);
-  --cc-glow: 0 0 8px rgba(11, 143, 102, 0.25);
-  --cc-input: rgba(255, 255, 255, 0.85);
+// Lot 36: the Matrix greens give way to the Concepteur's colours (window-tokens.less, laid with their light and dark
+// sets by window-skin.less); the window keeps its own names, which read the tokens
+.application.sr-commcode {
+  --cc-accent: var(--srw-accent);
+  --cc-accent-2: var(--srw-essence);
+  --cc-alert: var(--srw-over);
+  --cc-warn: var(--srw-left);
+  --cc-bg: var(--srw-bg);
+  --cc-panel: var(--srw-panel);
+  --cc-line: var(--srw-border);
+  --cc-text: var(--srw-text);
+  --cc-muted: var(--srw-muted);
+  --cc-mine: var(--srw-sel-bg);
+  --cc-theirs: var(--srw-panel);
+  --cc-glow: var(--srw-glow);
+  --cc-input: var(--srw-field);
 
   .sr-commcode-unread {
-    color: #fff;
+    color: var(--srw-on-accent);
   }
-}
-
-// A window Foundry themes on its own keeps its own theme
-.sr-commcode.theme-dark {
-  --cc-accent: #39f3b1;
-  --cc-accent-2: #29c6ff;
-  --cc-alert: #ff4d6d;
-  --cc-warn: #ffc857;
-  --cc-bg: radial-gradient(120% 80% at 0% 0%, rgba(41, 198, 255, 0.10), transparent 60%),
-    radial-gradient(120% 90% at 100% 100%, rgba(57, 243, 177, 0.10), transparent 60%), rgba(4, 16, 18, 0.96);
-  --cc-panel: rgba(57, 243, 177, 0.05);
-  --cc-line: rgba(57, 243, 177, 0.28);
-  --cc-text: #d8fff4;
-  --cc-muted: rgba(216, 255, 244, 0.62);
-  --cc-mine: linear-gradient(135deg, rgba(41, 198, 255, 0.30), rgba(57, 243, 177, 0.22));
-  --cc-theirs: rgba(255, 255, 255, 0.07);
-  --cc-glow: 0 0 10px rgba(57, 243, 177, 0.35);
-  --cc-input: rgba(0, 0, 0, 0.35);
 }
 
 @keyframes sr-commcode-pulse {
