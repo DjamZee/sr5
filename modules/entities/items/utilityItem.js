@@ -26,6 +26,9 @@ import {
   lifestyleMetatypeSurcharge
 } from "./lifestyle-metatype.js"
 import {
+  purityStateArmorPenetration
+} from "./adept-powers-btb.js"
+import {
   deathSowerAdeptDamage
 } from "./magic-masteries.js"
 import {
@@ -575,6 +578,14 @@ export class SR5_UtilityItem extends Actor {
       //Death Sower, adept side (Forbidden Arcana p. 40): +1 DV with the melee skills
       const deathSower = deathSowerAdeptDamage(actor.system.magic?.magicType, actor.system.magic?.masteries?.deathSower?.value, itemData.category)
       if (deathSower) SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.MagicMasteryDeathSower'), "itemQuality", deathSower)
+      //Purity State (Better Than Bad p. 143): the bare hands deal (Magic + Strength), AP -(Magic / 2), P or S as chosen
+      if (actor.system.specialProperties?.purityState && takesBoneDamage(itemData)) {
+        const magic = actor.system.specialAttributes?.magic?.augmented?.value || 0
+        const label = game.i18n.localize('SR5.AdeptPowerPurityState')
+        SR5_EntityHelpers.updateModifier(itemData.damageValue, label, "adeptPower", magic)
+        SR5_EntityHelpers.updateModifier(itemData.armorPenetration, label, "adeptPower", purityStateArmorPenetration(magic))
+        itemData.damageType = actor.system.specialProperties.purityStateStun ? "stun" : "physical"
+      }
       //Osmium mace (The Complete Trog p. 177): the listed profile only holds for Strength 5-6
       if (hasWeaponTrait(itemData, "osmium") && actor.type !== "actorDrone") {
         const profile = osmiumProfile(weaponAttribute("strength", itemData, actor))

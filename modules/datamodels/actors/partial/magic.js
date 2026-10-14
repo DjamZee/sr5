@@ -161,7 +161,7 @@ export class magicPartialModel extends foundry.abstract.TypeDataModel {
           harmoniousDefense: new fields.BooleanField({
             initial: false
           }),
-          // Forbidden Arcana p. 43-44, Dark Terrors p. 187
+          // Forbidden Arcana p. 43-44, Dark Terrors p. 169
           ...Object.fromEntries(["improvedAstralForm", "astralnaut", "rapidNecroInvocation", "essenceExpansion", "improvedMistForm"]
             .map(key => [key, new fields.BooleanField({
               initial: false

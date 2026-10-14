@@ -58,7 +58,7 @@ describe("Insect spirit races (Dark Terrors p. 22-34)", () => {
     expect(insectRaceOptions(k => k).bee).toBe("SR5.InsectRace_bee (DTER p. 26)")
   })
 
-  it("Dark Magic is a tradition (Dark Terrors p. 187)", () => {
+  it("Dark Magic is a tradition (Dark Terrors p. 169)", () => {
     expect(SR5.traditionTypes.darkMagic).toBe("SR5.TraditionDarkMagic")
   })
 })

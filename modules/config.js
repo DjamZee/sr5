@@ -1983,7 +1983,7 @@ SR5.traditionTypes = {
   toxic                     : "SR5.TraditionToxic",
   egyptian                  : "SR5.TraditionEgyptian",
   draconic                  : "SR5.TraditionDraconic",
-  // Dark Terrors p. 187 (printed): Drain CHA + WIL
+  // Dark Terrors p. 169: Drain CHA + WIL
   darkMagic                 : "SR5.TraditionDarkMagic",
 }
 
@@ -2183,7 +2183,7 @@ SR5.metamagics = {
   improvedAstralForm       : "SR5.MetamagicImprovedAstralForm",
   astralnaut               : "SR5.MetamagicAstralnaut",
   rapidNecroInvocation     : "SR5.MetamagicRapidNecroInvocation",
-  // Dark Terrors p. 187 (printed): recognised, not automated (the system keeps no stored Essence maximum, nor mist speed)
+  // Dark Terrors p. 169: recognised, not automated (the system keeps no stored Essence maximum, nor mist speed)
   essenceExpansion         : "SR5.MetamagicEssenceExpansion",
   improvedMistForm         : "SR5.MetamagicImprovedMistForm",
 }
@@ -3902,6 +3902,13 @@ SR5.specialPropertiesList = {
   naniteToxinResistance     : "SR5.NaniteToxinResistance",
   immunodeficiency          : "SR5.Immunodeficiency",
   hardenedArmorHitsOnly     : "SR5.HardenedArmorHitsOnly",
+  // Better Than Bad p. 143
+  purityState               : "SR5.AdeptPowerPurityState",
+  purityStateStun           : "SR5.AdeptPowerPurityStateStun",
+  mysticAptitudeBody        : "SR5.AdeptPowerMysticAptitudeBody",
+  mysticAptitudeAgility     : "SR5.AdeptPowerMysticAptitudeAgility",
+  mysticAptitudeReaction    : "SR5.AdeptPowerMysticAptitudeReaction",
+  mysticAptitudeStrength    : "SR5.AdeptPowerMysticAptitudeStrength",
 }
 
 SR5.transactionsTypes = {

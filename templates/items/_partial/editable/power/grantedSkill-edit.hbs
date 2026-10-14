@@ -1,0 +1,12 @@
+{{!-- Skill power (Aetherology p. 39): the active skill the spirit has in place of a power --}}
+{{#if grantsSkill}}
+<li class="grid">
+    <div class="col-4" data-tooltip="{{localize 'SR5.SpiritPowerSkill_D'}}">{{localize 'SR5.SpiritPowerSkillGranted'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8">
+        <select name="system.grantedSkill" data-dtype="String">
+            <option class="SR-LightGreyColor" value="">{{localize 'SR5.ChooseOne'}}</option>
+            {{selectOptions grantableSkills selected=system.grantedSkill}}
+        </select>
+    </div>
+</li>
+{{/if}}

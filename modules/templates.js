@@ -489,6 +489,7 @@ export const preloadHandlebarsTemplates = async function () {
 
     //Power
     "systems/sr5/templates/items/_partial/editable/power/attributeTest-edit.hbs",
+    "systems/sr5/templates/items/_partial/editable/power/grantedSkill-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/power/defenseTest-edit.hbs",
 
     //Program
