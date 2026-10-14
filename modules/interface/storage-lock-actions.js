@@ -210,7 +210,9 @@ export class SR5StorageLock {
     const lock = storage.system.lock
     const skill = picker.system.skills?.locksmith
     const autopicker = lock.type === "mechanical" ? tools.autopicker : 0
-    const pool = pickPool(skill, picker.system.attributes?.agility?.augmented?.value, autopicker)
+    const penalties = picker.system.penalties
+    const penalty = (Number(penalties?.condition?.actual?.value) || 0) + (Number(penalties?.special?.actual?.value) || 0)
+    const pool = pickPool(skill, picker.system.attributes?.agility?.augmented?.value, autopicker, penalty)
     const limit = pickLimit(skill?.limit?.value || picker.system.limits?.physicalLimit?.value, autopicker, lock.type)
     // No die, no test: Locksmith cannot be defaulted
     if (!pool) return SR5StorageLock.#card(picker, storage, {
