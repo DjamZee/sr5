@@ -104,8 +104,8 @@ export class SR5ShopCatalog {
    * priceOnHost), as a vehicle mod. Off a weapon it would be sold for nothing.
    */
   static pricedOnWeapon(entry) {
-    return entry?.type === 'itemWeapon' && entry.system?.category === 'weaponAccessory'
-      && Number(entry.system?.weaponAccessory?.priceMultiplier) > 0 && !(Number(entry.system?.price?.base) > 0)
+    return entry?.type === 'itemWeapon' && entry.system?.category === 'weaponAccessory' &&
+      Number(entry.system?.weaponAccessory?.priceMultiplier) > 0 && !(Number(entry.system?.price?.base) > 0)
   }
 
   /** The multiple of the weapon's price an accessory costs, for the shop's label; 0 when it has a price of its own */

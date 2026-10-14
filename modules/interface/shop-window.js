@@ -211,8 +211,8 @@ export class SR5ShopWorldSource {
     const excluded = SR5ShopStock.excludedPacks
     const isGM = game.user.isGM
     return index.filter(entry => {
-      if (!equip && !(SR5ShopCatalog.describe(entry).price > 0) && !SR5ShopCatalog.pricedOnVehicle(entry)
-        && !SR5ShopCatalog.pricedOnWeapon(entry)) return false
+      if (!equip && !(SR5ShopCatalog.describe(entry).price > 0) && !SR5ShopCatalog.pricedOnVehicle(entry) &&
+        !SR5ShopCatalog.pricedOnWeapon(entry)) return false
       if (SR5ShopStock.canSell(entry, {
         equip, excluded
       })) return true
