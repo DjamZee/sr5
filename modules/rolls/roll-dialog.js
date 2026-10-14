@@ -14,6 +14,12 @@ import {
   guruBonus
 } from "../entities/items/magic-masteries.js"
 import {
+  noiseGridThreshold, actorNoiseModifier
+} from "../system/noise-spells.js"
+import {
+  bloodDrain, bloodSpending, martyrPoints
+} from "../system/blood-magic-rules.js"
+import {
   advancedMedkitDice, bbModeDiagnosisDice, improvisedSuppliesDice
 } from "../system/bb-healing-rules.js"
 import {
@@ -165,18 +171,62 @@ export default class SR5_RollDialog {
     this.dialogData.magic.force = parseInt(html.querySelector('[name="force"]').value)
     if (html.querySelector('[name="drainValue"]')){
       let drainModifier = 0
-      for (let key of Object.values(this.dialogData.magic.drain.modifiers)){
-        drainModifier += key.value
+      for (let [key, modifier] of Object.entries(this.dialogData.magic.drain.modifiers)){
+        if (key !== "bloodMagic") drainModifier += modifier.value
       }
       let drainFinalValue = parseInt(html.querySelector('[name="force"]').value) + drainModifier
       //SR5 p. 284: never under 2; Structured Spellcasting (Forbidden Arcana p. 43): never under 1
       const drainFloor = this.dialogData.magic.drainFloor ?? 2
       if (drainFinalValue < drainFloor) drainFinalValue = drainFloor
+      //Blood Magic Points (Street Grimoire p. 90) lower the Drain "to a minimum of 0", below the floor
+      if (this.dialogData.magic.drain.modifiers.bloodMagic) drainFinalValue = bloodDrain(drainFinalValue, -this.dialogData.magic.drain.modifiers.bloodMagic.value)
       //Bullets & Bandages p. 15 (VO): the Drain of Stabilize follows the patient's wounds, not the Force
       if (Number.isFinite(this.dialogData.magic.bbStabilizeDrain)) drainFinalValue = this.dialogData.magic.bbStabilizeDrain
       html.querySelector('[name="drainValue"]').value = drainFinalValue
       this.dialogData.magic.drain.value = drainFinalValue
     }
+  }
+
+  //Blood magic (Street Grimoire p. 90, Forbidden Arcana p. 130): the points the caster spends, never more than he has
+  //(those of his own wounds, of his athame, of his sacrifices). Force without Drain raises the limit, the Drain lowered
+  //goes down to 0, and the wounds the caster gives himself let him ignore his wound modifiers for the spell
+  _updateBloodMagic(html, dialogData){
+    const blood = dialogData.magic.bloodMagic
+    if (!blood) return
+    const read = name => Math.max(0, parseInt(html.querySelector(`[name="${name}"]`)?.value) || 0)
+    blood.martyrBoxes = read("bloodMartyrBoxes")
+    const martyr = martyrPoints(blood.martyrBoxes, blood.selfCost)
+    const spent = bloodSpending({
+      force: read("bloodForce"), drainMagic: read("bloodDrainMagic"), drain: read("bloodDrain"), martyr, athame: blood.athame, pool: blood.available
+    })
+    blood.force = spent.force
+    blood.drainMagic = spent.drainMagic
+    blood.drain = spent.drain
+    for (const [name, value] of [["bloodMartyrBoxes", blood.martyrBoxes], ["bloodForce", spent.force], ["bloodDrainMagic", spent.drainMagic], ["bloodDrain", spent.drain]]) {
+      const el = html.querySelector(`[name="${name}"]`)
+      if (el) el.value = value
+    }
+    const left = html.querySelector('[name="bloodLeft"]')
+    if (left) left.value = martyr + blood.athame + blood.available - spent.force - spent.drainMagic - spent.drain
+    const label = game.i18n.localize("SR5.BloodMagicPoints")
+    if (spent.force) dialogData.limit.modifiers.bloodMagic = {
+      value: spent.force, label
+    }
+    else delete dialogData.limit.modifiers.bloodMagic
+    if (spent.drain) dialogData.magic.drain.modifiers.bloodMagic = {
+      value: -spent.drain, label
+    }
+    else delete dialogData.magic.drain.modifiers.bloodMagic
+    if (blood.martyrBoxes > 0) {
+      const index = dialogData.dicePool.modifiers.findIndex(m => m.type === "penaltycondition")
+      if (index >= 0) blood.woundModifier = dialogData.dicePool.modifiers.splice(index, 1)[0]
+    } else if (blood.woundModifier) {
+      dialogData.dicePool.modifiers.push(blood.woundModifier)
+      delete blood.woundModifier
+    }
+    this.updateDrainValue(html)
+    this.updateLimitValue(html)
+    this.updateDicePoolValue(html)
   }
 
   updateFadingValue(html) {
@@ -1008,6 +1058,12 @@ export default class SR5_RollDialog {
       case "reagentsSpent":
         this._updateReagents(value, actor, html, dialogData)
         return
+      case "bloodMartyrBoxes":
+      case "bloodForce":
+      case "bloodDrainMagic":
+      case "bloodDrain":
+        this._updateBloodMagic(html, dialogData)
+        return
       case "guruParticipants": {
         //Guru (Forbidden Arcana p. 37): +1 die and +1 limit per (60 / Charisma) ordinary participants, at most the
         //Ritual Spellcasting rank
@@ -1150,7 +1206,7 @@ export default class SR5_RollDialog {
           else {
             let rangeMod = dialogData.matrix.noiseRangeValue || 0,
               sceneNoise = dialogData.matrix.noiseScene || 0,
-              actorNoise = dialogData.matrix.personalNoise || 0
+              actorNoise = actorNoiseModifier(dialogData.matrix.personalNoise, rangeMod, sceneNoise)
             //Morphinae daemon: one point of noise ignored per submersion grade (Kill Code p. 145)
             value = actor.system.matrix.attributes.noiseReduction.value + noiseIgnoredByStream(streamOf(actor), actor.system.matrix.submersionGrade)
             if (-value < rangeMod + sceneNoise + actorNoise) value = -(rangeMod + sceneNoise + actorNoise)
@@ -1162,7 +1218,8 @@ export default class SR5_RollDialog {
           else value = 0
           break
         case "matrixActorNoise":
-          if (html.querySelector('[data-modifier="matrixRange"]').value !== "wired") value = dialogData.matrix.personalNoise
+          //A lowered Noise (Decrease Noise, Street Grimoire p. 114) only takes away the Noise of the range and the scene
+          if (html.querySelector('[data-modifier="matrixRange"]').value !== "wired") value = actorNoiseModifier(dialogData.matrix.personalNoise, dialogData.matrix.noiseRangeValue, dialogData.matrix.noiseScene)
           else value = 0
           break
         case "incomingPA": {
@@ -1442,7 +1499,7 @@ export default class SR5_RollDialog {
               })
               this.dicePoolModifier.targetGrid = -2
             }
-            if ((dialogData.matrix.personalNoise < 0) && (html.querySelector('#matrixNoiseActor'))) {
+            if ((dialogData.matrix.personalNoise !== 0) && (html.querySelector('#matrixNoiseActor'))) {
               const matrixNoiseActorEl = html.querySelector('#matrixNoiseActor')
               if (matrixNoiseActorEl) matrixNoiseActorEl.style.display = ''
             }
@@ -1554,6 +1611,12 @@ export default class SR5_RollDialog {
           value = SR5_ConverterHelpers.signatureToMod(ev.target.value)
           label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.targetSignature[ev.target.value])})`
           break
+        case "noiseGrid":
+          value = noiseGridThreshold(ev.target.value)
+          dialogData.threshold.value = value
+          dialogData.magic.noiseSpell.grid = ev.target.value
+          html.querySelector(name).value = value
+          return
         case "searchType":
           value = SR5_ConverterHelpers.searchTypeToThreshold(ev.target.value)
           dialogData.threshold.value = value
@@ -1883,6 +1946,14 @@ export default class SR5_RollDialog {
           }
           this.drainModifier.preparationTrigger = inputValue
           this.updateDrainValue(html)
+          continue
+        case "noiseGrid":
+          //Increase / Decrease Noise (Street Grimoire p. 113): public grid 2, local 4, global 6
+          selectValue = html.querySelector(name).value
+          inputValue = noiseGridThreshold(selectValue)
+          dialogData.threshold.value = inputValue
+          dialogData.magic.noiseSpell.grid = selectValue
+          html.querySelector(targetInputName).value = inputValue
           continue
         case "searchType":
           selectValue = html.querySelector(name).value

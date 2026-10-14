@@ -150,10 +150,14 @@ export function weaponAttackDamage(weapon, actor, choices = {
  */
 export function spellDrainCheck({
   force, drainValue, modifiers = {
-  }, itemDrain = 0, floor = 2, structured = false, magic = 0, reagentCap = 0
+  }, itemDrain = 0, floor = 2, structured = false, magic = 0, reagentCap = 0, blood = false, bloodForce = 0
 }) {
+  //Blood Magic Points (Street Grimoire p. 90), counted only for a caster whose sheet knows Sacrifice: those on the Force
+  //call for no Drain, those on the Drain come off after its floor, down to 0
+  const bloodOff = blood ? Math.max(0, -(Number(modifiers?.bloodMagic?.value) || 0)) : 0
+  const bloodAdded = blood ? Math.max(0, Math.floor(Number(bloodForce)) || 0) : 0
   const others = Object.entries(modifiers ?? {
-  }).filter(([key]) => key !== "spell").reduce((sum, [key, m]) => {
+  }).filter(([key]) => key !== "spell" && key !== "bloodMagic").reduce((sum, [key, m]) => {
     const value = Number(m?.value) || 0
     if (value >= 0) return sum + value
     if (key === "structuredSpellcasting") return sum + (structured ? -1 : 0)
@@ -167,9 +171,9 @@ export function spellDrainCheck({
   //A card without a Drain proves nothing: read as the least Drain a spell can call for (Hyacinthe's review, L3-1)
   const read = drainValue === null || drainValue === undefined || drainValue === "" ? NaN : Number(drainValue)
   const drain = Number.isFinite(read) ? read : Math.max(0, Number(floor) || 0)
-  kept = Math.max(0, Math.min(kept, drain - sum))
+  kept = Math.max(0, Math.min(kept, drain + bloodOff - sum + bloodAdded))
   return {
-    force: kept, expected: Math.max(Number(floor) || 0, kept + sum)
+    force: kept, expected: Math.max(0, Math.max(Number(floor) || 0, kept - bloodAdded + sum) - bloodOff)
   }
 }
 
@@ -445,8 +449,11 @@ export async function vetAttackCard(chatData, {
   } else if (family === "spell" || family === "preparation") {
     if (!item || item.type !== (family === "spell" ? "itemSpell" : "itemPreparation")) return null
     const magic = system.specialAttributes?.magic?.augmented?.value
+    //Blood Magic Points on the Force may take it beyond twice the Magic (Street Grimoire p. 90), for a caster who knows Sacrifice
+    const blood = family === "spell" && !!system.magic?.metamagics?.sacrifice
+    const bloodForce = blood ? Math.max(0, Math.floor(Number(chatData.magic?.bloodMagic?.force)) || 0) : 0
     let force = family === "preparation" ? Number(item.system.force) || 0 :
-      Math.min(Math.max(0, Math.floor(Number(chatData.magic?.force)) || 0), spellForceCap(magic))
+      Math.min(Math.max(0, Math.floor(Number(chatData.magic?.force)) || 0), spellForceCap(magic) + bloodForce)
     //The Drain the caster resists follows the Force (SR5 p. 281-284): a Force the card's Drain cannot stand for is
     //lowered to what it can (decided by DjamZ through Élise, 06/10), and the GM is shown both
     if (family === "spell") {
@@ -458,14 +465,17 @@ export async function vetAttackCard(chatData, {
         floor: system.magic?.metamagics?.structuredSpellcasting ? 1 : 2,
         //What the reagent tier the card names gives a spell under the world's rules (Forbidden Arcana p. 181), 0 otherwise
         reagentCap: await spellReagentCap(chatData.magic?.reagentTier, helpers),
+        blood, bloodForce,
       })
       force = drain.force
       drainInfo = {
         announced: chatData.magic?.force, expected: drain.expected, drainValue: chatData.magic?.drain?.value
       }
-      //Above the Magic, the Drain turns Physical (SR5 p. 281): where a forged Force pays most, said to the GM
-      if (force > (Number(magic) || 0)) overcast = {
-        force, magic: Number(magic) || 0
+      //Above the Magic, the Drain turns Physical (SR5 p. 281): where a forged Force pays most, said to the GM. Blood Magic
+      //Points spent on it count as Magic (Street Grimoire p. 90)
+      const drainMagic = (Number(magic) || 0) + (blood ? Math.max(0, Number(chatData.magic?.bloodMagic?.drainMagic) || 0) : 0)
+      if (force > drainMagic) overcast = {
+        force, magic: drainMagic
       }
     }
     const masteries = system.magic?.masteries

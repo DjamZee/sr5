@@ -13,6 +13,15 @@ import {
 import {
   combatSpellMasteryBonus, rapidFireRemaining
 } from "../../entities/items/magic-masteries.js"
+import {
+  noiseSpellKind, noiseGridThreshold
+} from "../../system/noise-spells.js"
+import {
+  isBloodSpell, isSelfCostBloodSpell
+} from "../../system/blood-magic-rules.js"
+import {
+  bloodPointsOf, knowsBloodMagic, athamePointsOf
+} from "../../system/blood-magic.js"
 
 //Add info for skill dicePool roll
 export default async function spell(rollData, actor, item){
@@ -94,6 +103,30 @@ export default async function spell(rollData, actor, item){
       level, remaining: rapidFireRemaining(level, actor.getFlag?.("sr5", "rapidFireCaster"), game.time?.worldTime ?? 0), used: false
     }
     rollData.dialogSwitch.rapidFireCaster = true
+  }
+  //Blood magic (Street Grimoire p. 90): the points at hand, spent at casting; a Blood spell needs one (Forbidden Arcana
+  //p. 122), and the caster who knows no Sacrifice has none to give it
+  const bloodSpell = isBloodSpell(item)
+  if (bloodSpell || knowsBloodMagic(actor)) {
+    rollData.magic.bloodMagic = {
+      //The athame's points are spent with a Free Action as the spell is cast (Street Grimoire p. 90)
+      available: bloodPointsOf(actor), athame: athamePointsOf(actor), force: 0, drainMagic: 0, drain: 0, martyrBoxes: 0,
+      bloodSpell, selfCost: isSelfCostBloodSpell(item),
+    }
+    rollData.magic.bloodMagic.total = rollData.magic.bloodMagic.available + rollData.magic.bloodMagic.athame
+    rollData.dialogSwitch.bloodMagic = knowsBloodMagic(actor)
+  }
+  //Increase / Decrease Noise (Street Grimoire p. 113): the threshold depends on the grid affected, chosen in the dialog
+  const noiseKind = noiseSpellKind(item)
+  if (noiseKind){
+    rollData.magic.noiseSpell = {
+      kind: noiseKind, grid: "public", grids: {
+        public: SR5.gridTypes.public, local: SR5.gridTypes.local, global: SR5.gridTypes.global
+      }
+    }
+    rollData.threshold.value = noiseGridThreshold("public")
+    rollData.threshold.type = "noiseGrid"
+    rollData.dialogSwitch.noiseGrid = true
   }
   rollData.dialogSwitch.specialization = true
   rollData.owner.itemUuid = item.uuid

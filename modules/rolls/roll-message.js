@@ -967,6 +967,13 @@ export class SR5_RollMessage {
       case "manaShift":
         if (await applyManaShift(messageData, messageId)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      case "bloodAddiction":
+        //Forbidden Arcana p. 130: the addiction test the sacrifice's points call for, rolled by the caster
+        if (actor?.isOwner) {
+          await (await import("../system/blood-magic.js")).bloodAddictionTest(actor, messageData.magic?.bloodMagic?.addictionThreshold ?? 2)
+          SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        }
+        break
       case "killComplexFormResistance":
       case "dispellResistance":
       case "disjointingResistance":

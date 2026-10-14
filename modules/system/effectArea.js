@@ -12,6 +12,9 @@ import {
   backgroundCountFor
 } from "./background-count.js"
 import {
+  noiseSpellKind, noiseSpellValue, noiseGridThreshold
+} from "./noise-spells.js"
+import {
   _getSRStatusEffect 
 } from "../system/effectsList.js"
 import {
@@ -310,11 +313,18 @@ export class SR5_EffectArea {
     //A spam or static zone adds its rating to the Noise (SR5 p. 232). system.matrix.noise holds that rating as a
     //positive number, turned into a malus when a matrix test reads it, like the jam of SR5 p. 239 : a negative
     //value here gave every device inside the template bonus dice.
-    if (!parseInt(templateData.matrixNoise)) await existingEffect("system.matrix.noise")?.delete()
+    //Increase / Decrease Noise (Street Grimoire p. 113-114): the net hits of the cast over the threshold of the grid
+    //chosen raise or lower the Noise in the area. Added to the template's own, which a player's template never has
+    let matrixNoise = parseInt(templateData.matrixNoise) || 0
+    const noiseKind = noiseSpellKind(sourceItem)
+    if (noiseKind) matrixNoise += await SR5_EffectArea.noiseSpellRating(sourceItem, noiseKind, templateData, template, actor)
+    if (!matrixNoise) await existingEffect("system.matrix.noise")?.delete()
     else {
-      let noise = parseInt(templateData.matrixNoise)
+      let noise = matrixNoise
       effect = await SR5_EntityHelpers.generateItemEffect(sourceName, "areaEffect", template, `${game.i18n.localize("SR5.MatrixNoise")}`, noise, 0, "permanent")
       customEffect = await SR5_EntityHelpers.generateCustomEffect("matrixAttributes", "system.matrix.noise", "value", noise, true)
+      //A Noise lowered by Decrease Noise is negative on purpose: the migration of the old negative noise leaves it
+      if (noiseKind) customEffect.noiseSpell = noiseKind
       effect.system.customEffects.push(customEffect)
       if (effect && effect.system.customEffects.length) {
         hasItem = await staleEffect("system.matrix.noise", noise)
@@ -394,6 +404,26 @@ export class SR5_EffectArea {
         }
       }
     }
+  }
+
+  //The Noise an Increase or Decrease Noise template gives: the hits of its cast (counted again on the card for a
+  //player's caster, as for any effect that reads the hits), less the threshold of the grid chosen at casting. 0 when
+  //the cast is not found or the GM declines it
+  static async noiseSpellRating(sourceItem, kind, templateData, template, actor){
+    const message = (templateData.messageId && game.messages.get(templateData.messageId)) ||
+      [...(game.messages?.contents ?? [])].reverse().find(m => m.flags?.sr5data?.test?.type === "spell" && m.flags.sr5data.owner?.itemUuid === templateData.itemUuid)
+    const cast = message?.flags?.sr5data
+    if (!cast) return 0
+    //The grid's threshold at least: a card from before the grid was asked has none
+    const threshold = Math.max(Number(cast.threshold?.value) || 0, noiseGridThreshold(cast.magic?.noiseSpell?.grid))
+    //A cast the GM rolled stands as written (he may roll for a player's character); a player's is counted again
+    const roll = message.author?.isGM ? {
+      hits: cast.roll?.hits
+    } : await SR5_EffectArea.templateRoll(sourceItem, {
+      ...templateData, messageId: message.id
+    }, template, actor)
+    if (!roll) return 0
+    return noiseSpellValue(kind, roll.hits, threshold)
   }
 
   //The flags of a template are its author's to write (the template's form, the console). A GM's are kept. A

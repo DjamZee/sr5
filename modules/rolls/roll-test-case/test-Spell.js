@@ -19,6 +19,12 @@ import {
 import {
   spellStabilizes, stabilizationLabelKey
 } from "../../system/bb-healing-rules.js"
+import {
+  noiseGridThreshold, noiseSpellValue, noiseOverwatchDice
+} from "../../system/noise-spells.js"
+import {
+  SR5
+} from "../../config.js"
 
 export default async function spellInfo(cardData){
   let actionType, label, item
@@ -46,6 +52,37 @@ export default async function spellInfo(cardData){
     game.i18n.format("SR5.MageHunterCounterspell", {
       value: 2 * (cardData.magic.mageHunter.level || 0)
     }))
+
+  //Blood magic (Street Grimoire p. 90, Forbidden Arcana p. 130): what the points were spent on, and the addiction test
+  //that the sacrifice's points call for (never the martyr's)
+  const blood = cardData.test.type === "spell" ? cardData.magic.bloodMagic : null
+  if (blood && (blood.force || blood.drainMagic || blood.drain)) {
+    cardData.chatCard.buttons.bloodMagic = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.format("SR5.BloodMagicSpent", {
+      force: blood.force || 0, drainMagic: blood.drainMagic || 0, drain: blood.drain || 0, martyr: blood.fromMartyr || 0
+    }))
+    if ((blood.fromPool || 0) + (blood.fromAthame || 0) > 0) cardData.chatCard.buttons.bloodAddiction = SR5_RollMessage.generateChatButton("nonOpposedTest", "bloodAddiction", game.i18n.format("SR5.BloodMagicAddictionTest", {
+      threshold: blood.addictionThreshold ?? 2
+    }))
+  }
+
+  //Increase / Decrease Noise (Street Grimoire p. 113-114): the net hits over the grid's threshold change the Noise of the
+  //area, given by the spell's template; beyond 4, the Overwatch Score of the hackers affected rises, for the GM
+  if (cardData.test.type === "spell" && cardData.magic.noiseSpell?.kind) {
+    const threshold = Math.max(Number(cardData.threshold?.value) || 0, noiseGridThreshold(cardData.magic.noiseSpell.grid))
+    const noise = noiseSpellValue(cardData.magic.noiseSpell.kind, cardData.roll.hits, threshold)
+    const grid = game.i18n.localize(SR5.gridTypes[cardData.magic.noiseSpell.grid] ?? SR5.gridTypes.public)
+    cardData.chatCard.buttons.noiseSpell = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", noise ?
+      game.i18n.format("SR5.NoiseSpellResult", {
+        noise: noise > 0 ? `+${noise}` : noise, grid, threshold
+      }) :
+      game.i18n.format("SR5.NoiseSpellNoEffect", {
+        grid, threshold
+      }))
+    const overwatch = noiseOverwatchDice(Math.abs(noise))
+    if (overwatch) cardData.chatCard.buttons.noiseOverwatch = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.format("SR5.NoiseSpellOverwatch", {
+      dice: overwatch
+    }))
+  }
 
   //Roll Succeed
   if (cardData.roll.hits > 0) {

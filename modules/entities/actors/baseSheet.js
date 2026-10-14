@@ -465,6 +465,15 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       event.preventDefault()
       tryInfection(this.actor)
     }))
+    //Blood magic (Street Grimoire p. 90): store points in an athame, or Cannibalize
+    element.querySelectorAll("[data-sr5-blood]").forEach(b => b.addEventListener("click", async (event) => {
+      event.preventDefault()
+      //Read before the import: the event no longer has its target once awaited
+      const use = event.currentTarget.dataset.sr5Blood
+      const blood = await import("../../system/blood-magic.js")
+      if (use === "store") blood.storeInAthame(this.actor)
+      else if (use === "cannibalize") blood.cannibalize(this.actor)
+    }))
     element.querySelectorAll("[data-sr5-hunger]").forEach(b => b.addEventListener("click", (event) => {
       event.preventDefault()
       if (event.currentTarget.dataset.sr5Hunger === "hasten") hastenHunger(this.actor)

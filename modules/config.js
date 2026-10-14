@@ -2149,6 +2149,8 @@ SR5.focusTypes = {
   power                     : "SR5.FocusPower",
   flexibleSignature         : "SR5.FocusFlexibleSignature",
   qi                        : "SR5.FocusQi",
+  // Street Grimoire p. 90: stores Blood Magic Points (blood-magic.js)
+  athame                    : "SR5.FocusAthame",
 }
 
 // Attributes for sprite powers
@@ -2202,6 +2204,9 @@ SR5.metamagics = {
   // Dark Terrors p. 169: recognised, not automated (the system keeps no stored Essence maximum, nor mist speed)
   essenceExpansion         : "SR5.MetamagicEssenceExpansion",
   improvedMistForm         : "SR5.MetamagicImprovedMistForm",
+  // Street Grimoire p. 89-90: blood magic (blood-magic.js)
+  sacrifice                : "SR5.MetamagicSacrifice",
+  cannibalize              : "SR5.MetamagicCannibalize",
 }
 
 //Magical masteries (Forbidden Arcana p. 30-41): level = quality rating

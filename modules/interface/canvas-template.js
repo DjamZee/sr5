@@ -4,6 +4,9 @@ import {
 import {
   JAMMER_CONE_ANGLE, jammerRating, jammerReachInMeters
 } from "../system/jammerRules.js"
+import {
+  noiseSpellKind
+} from "../system/noise-spells.js"
 
 export default class SR5Template extends foundry.canvas.placeables.MeasuredTemplate {
   /**
@@ -74,6 +77,10 @@ export default class SR5Template extends foundry.canvas.placeables.MeasuredTempl
           flags.sr5.itemHasEffect = true
           continue
         }
+      }
+      //Increase / Decrease Noise (Street Grimoire p. 113): no effect of their own, the template gives the Noise of the
+      //cast (effectArea.js, noiseSpellRating). An empty environment makes the template one whose tokens are followed
+      if (noiseSpellKind(item) && !flags.sr5.itemHasEffect) flags.sr5.environmentalModifiers = {
       }
     }
 

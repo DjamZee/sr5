@@ -70,7 +70,7 @@ export function resistanceVerdict({
 // A casting card: its author owns the caster, the spell is the caster's, the message counts once, and the hits
 // counted again stay within the Force, itself at most twice the Magic (SR5 p. 281). What is left is for the GM
 export function castVerdict({
-  authorOwnsCaster, spellOnCaster, messageUsed, rollJSON, force, magic, claimedHits, secondChance = false
+  authorOwnsCaster, spellOnCaster, messageUsed, rollJSON, force, magic, claimedHits, secondChance = false, bonusForce = 0
 }){
   if (!authorOwnsCaster || !spellOnCaster) return {
     ok: false, reason: "owner"
@@ -78,7 +78,8 @@ export function castVerdict({
   if (messageUsed) return {
     ok: false, reason: "message"
   }
-  const maxForce = Math.max(1, 2 * (Number(magic) || 0))
+  //`bonusForce`: the Blood Magic Points on the Force, beyond twice the Magic (Street Grimoire p. 90)
+  const maxForce = Math.max(1, 2 * (Number(magic) || 0)) + Math.max(0, Number(bonusForce) || 0)
   const limit = Math.min(Number(force) > 0 ? Number(force) : maxForce, maxForce)
   const hits = countHits(rollJSON, limit, secondChance)
   if (hits === null) return {

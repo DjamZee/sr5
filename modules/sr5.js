@@ -6,6 +6,9 @@ import {
   SR5Conceal
 } from './interface/conceal.js'
 import {
+  onRenderSacrificeCard
+} from './system/blood-magic.js'
+import {
   sr5HookInit 
 } from './hooks/init.js'
 import {
@@ -218,6 +221,8 @@ Hooks.on('createChatMessage', message => onSprintCard(message).catch(e => consol
 Hooks.on('renderChatMessageHTML', SR5_GrappleHelpers.onRenderHoldCard)
 //SR5 p. 422: the request of a search for hidden objects, resolved by the GM (conceal.js)
 Hooks.on('renderChatMessageHTML', SR5Conceal.onRenderSearchCard)
+//Sacrifice (Street Grimoire p. 90): the card of a melee wound, its points asked by the magician's owner (blood-magic.js)
+Hooks.on('renderChatMessageHTML', onRenderSacrificeCard)
 //An escape a player rolled frees her once the active GM has read its card again (grapple.js)
 Hooks.on('createChatMessage', message => SR5_GrappleHelpers.onEscapeCard(message))
 Hooks.on('updateChatMessage', message => SR5_GrappleHelpers.onEscapeCard(message))
