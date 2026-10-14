@@ -2,6 +2,9 @@ import {
   describe, it, expect
 } from "vitest"
 import {
+  readFileSync
+} from "node:fs"
+import {
   lacksLimitAttribute
 } from "../modules/rolls/roll-prepare-case/rollData-MatrixAction.js"
 
@@ -44,6 +47,15 @@ describe("an action limited by an attribute the persona lacks", () => {
     expect(lacksLimitAttribute(action("attack"), persona(0, 0, {
       activeSpecialAttribute: "depth"
     }))).toBe(false)
+  })
+  it("the rule lock lifted, tells the gamemaster the roll went with no limit, not that it scores no hit", () => {
+    const read = path => readFileSync(new URL(path, import.meta.url), "utf8")
+    expect(read("../modules/rolls/roll-prepare-case/rollData-MatrixAction.js")).toContain('liftedKey: "SR5.WARN_NoAttackSleazeLifted"')
+    for (const lang of ["fr", "en"]) {
+      const text = JSON.parse(read(`../lang/${lang}.json`))["SR5.WARN_NoAttackSleazeLifted"]
+      expect(text).toContain("{attribute}")
+      expect(text).toMatch(lang === "fr" ? /sans limite/ : /no limit/)
+    }
   })
   it("says nothing of a persona whose attribute is not known", () => {
     expect(lacksLimitAttribute(action("attack"), {

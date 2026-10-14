@@ -23,16 +23,19 @@ export function hostNodesAllowed(read = () => globalThis.game?.settings?.get("sr
  * @return {Object[]}
  */
 export function hostMasterCandidates(host, hosts = [], resolve = () => null){
+  // The sheet hands the data copy of its actor (_id, no id), the world hands documents (id): read either
+  const idOf = actor => actor?.id ?? actor?._id
+  const hostId = idOf(host)
   const leadsTo = candidate => {
     const seen = new Set()
     let current = candidate
-    while (current && !seen.has(current.id)){
-      if (current.id === host.id) return true
-      seen.add(current.id)
+    while (current && !seen.has(idOf(current))){
+      if (idOf(current) === hostId) return true
+      seen.add(idOf(current))
       const key = current.system?.matrix?.panMaster
       current = key ? resolve(key) : null
     }
     return false
   }
-  return hosts.filter(other => other && other.id !== host.id && !leadsTo(other))
+  return hosts.filter(other => other && idOf(other) !== hostId && !leadsTo(other))
 }

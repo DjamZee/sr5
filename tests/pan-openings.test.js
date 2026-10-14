@@ -2,7 +2,8 @@ import {
   describe, it, expect, beforeEach, afterEach
 } from 'vitest'
 import {
-  arViewAfter, codeOfLetter, crownsToShow, PAN_AR_KEY_DEFAULT, registerPanArKey, registerPanOpeningSettings
+  arViewAfter, codeOfLetter, codeTypingLetter, crownsToShow, keptDefaultArKey, PAN_AR_KEY_DEFAULT, registerPanArKey,
+  registerPanOpeningSettings
 } from '../modules/canvas/pan-crown/pan-openings.js'
 
 // How the PAN crowns open (couronne du PAN, lot 8; decision 4 and Q8 of DjamZ, 07/10)
@@ -166,5 +167,32 @@ describe('the key that types a letter', () => {
   it('keeps KeyM on QWERTY, and gives nothing without a layout', () => {
     expect(codeOfLetter([['KeyM', 'm']], 'm')).toBe('KeyM')
     expect(codeOfLetter(null, 'm')).toBe(null)
+  })
+  // Without a layout map (Firefox, Safari, an empty map in Chromium: relecture 161), the character typed tells the key
+  it('reads the key that types "m" from a keydown, AZERTY or QWERTY', () => {
+    expect(codeTypingLetter({
+      key: 'm', code: 'Semicolon'
+    }, 'm')).toBe('Semicolon')
+    expect(codeTypingLetter({
+      key: 'M', code: 'KeyM'
+    }, 'm')).toBe('KeyM')
+    expect(codeTypingLetter({
+      key: ',', code: 'KeyM'
+    }, 'm')).toBe(null)
+    expect(codeTypingLetter({
+      key: 'm', code: 'Semicolon', ctrlKey: true
+    }, 'm')).toBe(null)
+  })
+  it('changes the key only when the default was kept', () => {
+    expect(keptDefaultArKey([{
+      key: PAN_AR_KEY_DEFAULT
+    }])).toBe(true)
+    expect(keptDefaultArKey([{
+      key: PAN_AR_KEY_DEFAULT, modifiers: ['Shift']
+    }])).toBe(false)
+    expect(keptDefaultArKey([{
+      key: 'KeyV'
+    }])).toBe(false)
+    expect(keptDefaultArKey(undefined)).toBe(false)
   })
 })

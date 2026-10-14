@@ -38,8 +38,6 @@ function checksTargetMarks(rollKey){
   return !NO_TARGET_MARK_CHECK.includes(rollKey)
 }
 
-// SR5 p. 240: Erase Matrix Signature is Computer + Resonance; without Resonance nobody can try it,
-// not even an AI emulating it (DjamZ's ruling T8, 2026-10-06)
 /** Is the action limited by Attack or Sleaze, which the persona lacks (SR5 p. 227)? An AI with its Depth active emulates it.
  * @param {Object} matrixAction - the action as the actor carries it
  * @param {Object} actor - the acting actor
@@ -53,6 +51,8 @@ export function lacksLimitAttribute(matrixAction, actor){
   return typeof value === "number" && value <= 0
 }
 
+// SR5 p. 240: Erase Matrix Signature is Computer + Resonance; without Resonance nobody can try it,
+// not even an AI emulating it (DjamZ's ruling T8, 2026-10-06)
 export function canTryMatrixAction(rollKey, actor){
   if (rollKey !== "eraseMatrixSignature") return true
   return (actor?.system?.specialAttributes?.resonance?.augmented?.value || 0) > 0
@@ -85,7 +85,7 @@ export default async function matrixAction(rollData, rollKey, actor){
   if (lacksLimitAttribute(matrixAction, actor) && refuseByRule("matrix", "SR5.WARN_NoAttackSleaze", {
     attribute: game.i18n.localize(SR5.matrixAttributes?.[matrixAction.limit.linkedAttribute] ?? matrixAction.limit.linkedAttribute)
   }, {
-    actor
+    actor, liftedKey: "SR5.WARN_NoAttackSleazeLifted"
   })) return
 
   //Determine title

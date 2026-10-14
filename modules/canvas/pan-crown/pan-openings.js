@@ -97,14 +97,16 @@ export function registerPanOpeningSettings(){
 
 /** The key of the AR view, in the controls of Foundry (to be called at init). Foundry does not run it while a text
  * field has the focus (KeyboardManager#hasFocus). */
+function pressPanArKey(event){
+  if (game.keyboard?.hasFocus) return false
+  const layer = canvas?.sr5PanCrown
+  if (!layer) return false
+  layer.setArView(arViewAfter(layer.arView, event, panArKeyBehavior()))
+  return true
+}
+
 export function registerPanArKey(){
-  const press = event => {
-    if (game.keyboard?.hasFocus) return false
-    const layer = canvas?.sr5PanCrown
-    if (!layer) return false
-    layer.setArView(arViewAfter(layer.arView, event, panArKeyBehavior()))
-    return true
-  }
+  const press = pressPanArKey
   game.keybindings.register("sr5", "panCrownArView", {
     name: "SR5.KEYBINDING_PanCrownArView_T",
     hint: "SR5.KEYBINDING_PanCrownArView_D",
@@ -162,20 +164,56 @@ export function codeOfLetter(layoutEntries, letter){
 }
 
 /** Foundry reads a key by its place on a QWERTY keyboard (event.code): on AZERTY, KeyM is the "," key (séance de
- * DjamZ du 09/10). A user who kept the default gets the key that types "m" on their keyboard instead. The browser gives
- * the layout only on a secure page (https or localhost): elsewhere the default stays KeyM. */
+ * DjamZ du 09/10). A user who kept the default gets the key that types "m" on their keyboard instead. The browser's
+ * layout map is read first; it is missing in Firefox and Safari, and comes back empty in some Chromium browsers even
+ * on a secure page (relecture 161): then the first key that types "m" teaches it (learnPanArKeyFromTyping). */
 async function adaptPanArKeyToLayout(){
-  let layout
+  let layout = null
   try {
     layout = await navigator.keyboard?.getLayoutMap?.()
   } catch (_err) {
-    return
+    layout = null
   }
   const code = layout && codeOfLetter(layout.entries(), "m")
-  if (!code || code === PAN_AR_KEY_DEFAULT) return
-  const current = game.keybindings.get("sr5", "panCrownArView") ?? []
-  const isDefault = current.length === 1 && current[0].key === PAN_AR_KEY_DEFAULT && !current[0].modifiers?.length
-  if (isDefault) await game.keybindings.set("sr5", "panCrownArView", [{
+  if (!code) return learnPanArKeyFromTyping()
+  if (code === PAN_AR_KEY_DEFAULT) return
+  if (keptDefaultArKey(game.keybindings.get("sr5", "panCrownArView"))) await game.keybindings.set("sr5", "panCrownArView", [{
     key: code
   }])
+}
+
+/** Is the key of the AR view still the default one, alone and without modifier? */
+export function keptDefaultArKey(bindings){
+  return bindings?.length === 1 && bindings[0].key === PAN_AR_KEY_DEFAULT && !bindings[0].modifiers?.length
+}
+
+/** The physical key of a keydown that types a letter (event.key, read through the layout of the keyboard), with no
+ * Control, Alt or Meta; null otherwise. */
+export function codeTypingLetter(event, letter){
+  if (!event || event.ctrlKey || event.altKey || event.metaKey) return null
+  if (event.key?.toLowerCase() !== letter) return null
+  return event.code || null
+}
+
+/** Without a layout map: the first keydown that types "m" gives its key. If it is not KeyM and the default was kept, the
+ * binding takes it, and this press already works (Foundry, still bound to KeyM, did not see it). */
+function learnPanArKeyFromTyping(){
+  const learn = event => {
+    const code = codeTypingLetter(event, "m")
+    if (!code) return
+    window.removeEventListener("keydown", learn, true)
+    if (code === PAN_AR_KEY_DEFAULT || !keptDefaultArKey(game.keybindings.get("sr5", "panCrownArView"))) return
+    game.keybindings.set("sr5", "panCrownArView", [{
+      key: code
+    }]).catch(err => console.error("SR5 | AR view key not saved", err))
+    if (event.repeat || !pressPanArKey("down")) return
+    // Held: let go at the release of this key
+    const release = up => {
+      if (up.code !== code) return
+      window.removeEventListener("keyup", release, true)
+      pressPanArKey("up")
+    }
+    window.addEventListener("keyup", release, true)
+  }
+  window.addEventListener("keydown", learn, true)
 }

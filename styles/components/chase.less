@@ -263,6 +263,11 @@
     pointer-events: none;
     opacity: 0.4;
   }
+  // The controls a player cannot use look it, in both themes (relecture 161: they had the look of the active ones)
+  :is(button, select, input):disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
   .sr-chase-switch:has(input:disabled) label {
     cursor: default;
   }
