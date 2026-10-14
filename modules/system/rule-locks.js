@@ -168,8 +168,9 @@ let actorHelper = null
 let socketHandler = null
 
 // The text of the whisper, in the language of the gamemaster who writes it
-export function ruleLockWhisperText(family, key, data, actorName) {
-  return game.i18n.format("SR5.RULELOCKS_Whisper", {
+// A notice (noticeGM) tells of no lock: only who acted, and what the gamemaster is to rule
+export function ruleLockWhisperText(family, key, data, actorName, notice = false) {
+  return game.i18n.format(notice ? "SR5.RULELOCKS_Notice" : "SR5.RULELOCKS_Whisper", {
     family: game.i18n.localize(`SR5.RULELOCKS_Family_${family}`),
     actor: actorName ?? "",
     message: game.i18n.format(key, data ?? {
@@ -182,10 +183,10 @@ export function ruleLockWhisperText(family, key, data, actorName) {
  * A player's browser does not write the whisper: Foundry shows a whisper to its author, so she would read it too.
  * It asks the active gamemaster, whose browser writes it (socket "ruleLockWhisper"). No gamemaster: nobody to tell.
  */
-async function tellGM(family, key, data, actor) {
+async function tellGM(family, key, data, actor, notice = false) {
   //The gamemaster's own notification says the lock was lifted, as the whisper does: the bare refusal would read
   //as if the action had stopped (manual, 08/10: "nothing is spent" while the action was spent)
-  if (game.user?.isGM) return ui.notifications.info(ruleLockWhisperText(family, key, data, actor?.name))
+  if (game.user?.isGM) return ui.notifications.info(ruleLockWhisperText(family, key, data, actor?.name, notice))
   if (!game.users?.activeGM) return
   if (!shouldWhisper(actor?.id ?? actor?.uuid, key)) return
   // Loaded on first use (the socket imports half the system); one promise for every caller
@@ -195,8 +196,19 @@ async function tellGM(family, key, data, actor) {
   } = await socketHandler
   return SR5_SocketHandler.emitForGM("ruleLockWhisper", {
     family, key, data: data ?? {
-    }, actor: actor?.name ?? game.user?.name ?? ""
+    }, actor: actor?.name ?? game.user?.name ?? "", ...(notice ? {
+      notice: true
+    } : {
+    })
   })
+}
+
+/**
+ * Something the system lets through for the gamemaster to rule, with no lock involved (lot 19: an owner's action on an
+ * icon whose owner the system cannot tell). Told as a lifted lock is, without the words "lock lifted".
+ */
+export function noticeGM(family, key, data, actor) {
+  tellGM(family, key, data, actor, true).catch(err => console.error("SR5 | rule notice whisper failed", err))
 }
 
 // Format data a refusal sends: plain values only (names, numbers)
@@ -210,7 +222,7 @@ const plainData = data => data && typeof data === "object" && !Array.isArray(dat
 export async function socketRuleLockWhisper(message, senderId) {
   if (game.users?.activeGM?.id !== game.user?.id) return
   const {
-    family, key, data, actor
+    family, key, data, actor, notice
   } = message?.data ?? {
   }
   if (!RULE_LOCK_FAMILIES.includes(family) || typeof key !== "string" || !/^SR5\.[A-Za-z0-9_]+$/.test(key)) return
@@ -221,7 +233,7 @@ export async function socketRuleLockWhisper(message, senderId) {
   const {
     SR5_ActorHelper
   } = await actorHelper
-  return SR5_ActorHelper.whisperGM(ruleLockWhisperText(family, key, data, actorName))
+  return SR5_ActorHelper.whisperGM(ruleLockWhisperText(family, key, data, actorName, notice === true))
 }
 
 // The world spares the gamemaster every rule lock (idea 11, sr5RuleLocksGMExempt): his own action goes, and his

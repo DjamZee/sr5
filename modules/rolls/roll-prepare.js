@@ -237,6 +237,8 @@ export class SR5_PrepareRollTest {
         //rollMatrixActionOn, so that the checks on game.user.targets read it) and the device
         if (chatData?.panTarget) rollData = SR5_PrepareRollHelper.getPanTargetData(rollData, chatData.panTarget)
         else if (game.user.targets.size) rollData = await SR5_PrepareRollHelper.getTargetData(rollData)
+        //Lot 19: an action a module offers after another (the chained action of the module Matrice): no action spent
+        if (chatData?.offeredAction === true) rollData.matrix.offeredAction = true
         rollData = await SR5_GetRollData.matrixAction(rollData, rollKey, actor)
         break
       case "matrixDefense":

@@ -42,13 +42,17 @@ export function sleutherMarksOn(target, resolve){
   for (const m of marksCarried(target)){
     const value = Number(m?.value) || 0
     if (value <= 0) continue
+    // Lot 19: a mark placed by a copy launched in one host names that host; the copies of the same IC in another host
+    // are not its marker
     const ices = [resolve(m.ownerId)].flat().filter(isSleuther)
+      .filter(ice => !m.hostUuid || ice.system?.matrix?.hostUuid === m.hostUuid)
     if (!ices.length) continue
-    const entry = found.get(m.ownerId) ?? {
+    const key = `${m.ownerId}|${m.hostUuid ?? ""}`
+    const entry = found.get(key) ?? {
       ice: ices[0], ices, value: 0
     }
     entry.value = Math.min(3, entry.value + value)
-    found.set(m.ownerId, entry)
+    found.set(key, entry)
   }
   return [...found.values()]
 }

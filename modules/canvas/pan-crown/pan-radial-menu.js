@@ -7,7 +7,7 @@ import {
   SR5
 } from "../../config.js"
 import {
-  menuEntries, modeSwitchCost, modeUpdate, ownModeOf, radialTargetOf, uuidTarget
+  menuEntries, modeSwitchCost, modeUpdate, ownModeOf, radialTargetOf, uuidTarget, OWNER_MARKS
 } from "./pan-actions.js"
 import {
   currentViewer, getGraph, setPanReveal, tokenOfNode, revealByPlayer, askPanRevealTo
@@ -42,6 +42,23 @@ import {
 import {
   refuseByRule, ruleLockBinds
 } from "../../system/rule-locks.js"
+import {
+  administersIcon
+} from "../../system/matrix-ownership.js"
+import {
+  iceHostOf
+} from "../../system/ice-host.js"
+
+// KC p. 51 (lot 19): a spider commands any device of its system without a mark; its menu counts four marks on them
+function withAdministratorMarks(node, actor){
+  const item = globalThis.fromUuidSync?.(node?.uuid) ?? null
+  const holder = item?.parent ?? null
+  return administersIcon(actor, holder, {
+    resolve: uuid => globalThis.fromUuidSync?.(uuid) ?? null, hostOf: iceHostOf
+  }) ? {
+      ...node, viewerMarks: OWNER_MARKS
+    } : node
+}
 
 const MODE_LABELS = {
   active: "SR5.PanMenuModeActive", silent: "SR5.PanMenuModeSilent", offline: "SR5.PanMenuModeOffline"
@@ -72,9 +89,14 @@ const REASON_LABELS = {
  * @param {String} [target.targetUuid]     the device aimed at; none for the persona. Alone, the target itself
  */
 export async function rollMatrixActionOn(actor, actionKey, {
-  targetTokenId, targetUuid = null
+  targetTokenId, targetUuid = null, offered = false
 } = {
 }){
+  // Lot 19: an action a module offers after another (the chained action of the module Matrice) spends no action
+  const extra = offered === true ? {
+    offeredAction: true
+  } : {
+  }
   const token = targetTokenId ? canvas?.tokens?.get(targetTokenId) : null
   if (actor && token) {
     token.setTarget(true, {
@@ -83,7 +105,7 @@ export async function rollMatrixActionOn(actor, actionKey, {
     return actor.rollTest("matrixAction", actionKey, {
       panTarget: {
         tokenId: token.id, itemUuid: targetUuid
-      }
+      }, ...extra
     })
   }
   const aimed = actor && !targetTokenId && targetUuid ? uuidTarget(await globalThis.fromUuid?.(targetUuid)) : null
@@ -94,7 +116,7 @@ export async function rollMatrixActionOn(actor, actionKey, {
   return actor.rollTest("matrixAction", actionKey, {
     panTarget: {
       actorId: aimed.actor.isToken ? aimed.actor.token.id : aimed.actor.id, itemUuid: aimed.itemUuid
-    }
+    }, ...extra
   })
 }
 
@@ -262,7 +284,7 @@ export function openRadialMenu({
   // A node a module added (lot 11) has the system's actions only if it asks for them
   const entries = node.contributed && node.systemActions !== true ? {
     actions: [], modes: [], slave: null
-  } : menuEntries(node, graph, viewer, {
+  } : menuEntries(withAdministratorMarks(node, viewer?.actor), graph, viewer, {
     canTry: canTryMatrixAction, rigger5: !!game.settings?.get("sr5", "sr5Rigger5Actions"),
     // The "matrix" rule lock lifted (B13): the entries the marks grey out are enabled, the roll tells the gamemaster
     ruleLocked: ruleLockBinds("matrix"),

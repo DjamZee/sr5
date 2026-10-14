@@ -29,6 +29,9 @@ import {
   SR5FactionRegistry
 } from "../../interface/faction-registry.js"
 import {
+  SHEET_ACTIONS_WITHOUT_TEST
+} from "../../system/matrix-ownership.js"
+import {
   SR5FactionsApp
 } from "../../interface/factions-app.js"
 import {
@@ -148,6 +151,8 @@ export class SR5ActorSheet extends ActorSheetSR5 {
         this._shownNonRollableMatrixActions)) {
         activeMatrixActions[key] = matrixAction
       }
+      //Lot 19: the actions with no test the sheet takes (owner's actions, Grid Hop), in the unfolded list
+      else if (this._shownNonRollableMatrixActions && SHEET_ACTIONS_WITHOUT_TEST.includes(key)) activeMatrixActions[key] = matrixAction
     }
     actor.system.matrix.actions = activeMatrixActions
   }
