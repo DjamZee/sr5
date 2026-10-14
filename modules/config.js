@@ -3878,6 +3878,7 @@ SR5.specialProperties = {
   antirad                   : "SR5.Antirad",
   streetCredDivisor         : "SR5.StreetCredDivisor",
   thresholdModifier         : "SR5.ThresholdModifier",
+  spellAura                 : "SR5.SpellAura",
 }
 
 SR5.specialPropertiesList = {

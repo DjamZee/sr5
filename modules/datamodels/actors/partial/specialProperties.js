@@ -98,6 +98,13 @@ export class specialPropertiesPartialModel extends foundry.abstract.TypeDataMode
         energyAura: new fields.StringField({
           initial: ''
         }),
+        // Aura of [element] (Street Grimoire p. 114): its hits, and its element
+        spellAura: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema(),
+        }),
+        spellAuraElement: new fields.StringField({
+          initial: ''
+        }),
         regeneration: new fields.BooleanField({
           initial: false
         }),

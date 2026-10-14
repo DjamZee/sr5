@@ -58,6 +58,9 @@ import {
 import {
   weaponLightKinds
 } from "../roll-helpers/flashlight-glare.js"
+import {
+  spellAuraOf, spellAuraDamageType
+} from "../roll-helpers/spell-aura.js"
 
 //Add info for weapon Roll
 export default async function weapon(rollData, actor, item){
@@ -251,6 +254,14 @@ export default async function weapon(rollData, actor, item){
     rollData.combat.armorPenetration = -actorData.specialAttributes.magic.augmented.value
     rollData.damage.element = actorData.specialProperties.energyAura
     if (actorData.specialProperties.energyAura !== "electricity") rollData.damage.type = "physical"
+  }
+  //Aura of [element] (Street Grimoire p. 114): +1 DV per hit to melee attacks, elemental, AP unchanged
+  const spellAura = spellAuraOf(actorData)
+  if (spellAura && energyAuraApplies(itemData.category)){
+    rollData.damage.base += spellAura.value
+    rollData.damage.value += spellAura.value
+    rollData.damage.element = spellAura.element
+    rollData.damage.type = spellAuraDamageType(spellAura.element, rollData.damage.type)
   }
 
   //What depends on the range the dialog picks: red dot sight (Street Lethal p. 49), laser weapon (Run & Gun p. 64)

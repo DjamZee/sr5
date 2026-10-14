@@ -490,6 +490,7 @@ export class SR5_CharacterUtility extends Actor {
       actorData.specialProperties.doublePenalties = false
       actorData.specialProperties.calledShotHalved = false
       actorData.specialProperties.energyAura = ""
+      actorData.specialProperties.spellAuraElement = ""
       actorData.specialProperties.regeneration = ""
       actorData.specialProperties.naniteToxinResistance = false
       actorData.specialProperties.immunodeficiency = false
@@ -5763,6 +5764,12 @@ export class SR5_CharacterUtility extends Actor {
 
         //Special case for Energetic Aura
         if (customEffect.target === "system.specialProperties.energyAura") {
+          foundry.utils.setProperty(actor, customEffect.target, customEffect.type)
+          continue
+        }
+
+        //Aura of [element] (Street Grimoire p. 114): the element is named by the effect's type, as the energy aura's
+        if (customEffect.target === "system.specialProperties.spellAuraElement") {
           foundry.utils.setProperty(actor, customEffect.target, customEffect.type)
           continue
         }
