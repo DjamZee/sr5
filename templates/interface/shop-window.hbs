@@ -61,8 +61,8 @@
         <input type="checkbox" data-shop-affordable {{#if affordable}}checked{{/if}}> {{localize 'SR5.ShopAffordableOnly'}}
       </label>
       <span class="sr-shop-filter-actions">
-        <button type="button" data-action="clearFilters" data-tooltip="{{localize 'SR5.Clear'}}"><i class="fas fa-eraser"></i></button>
-        <button type="button" data-action="refresh" data-tooltip="{{localize 'SR5.ShopRefresh'}}"><i class="fas fa-sync"></i></button>
+        <button type="button" data-action="clearFilters" data-tooltip="{{localize 'SR5.Clear'}}" aria-label="{{localize 'SR5.Clear'}}"><i class="fas fa-eraser"></i></button>
+        <button type="button" data-action="refresh" data-tooltip="{{localize 'SR5.ShopRefresh'}}" aria-label="{{localize 'SR5.ShopRefresh'}}"><i class="fas fa-sync"></i></button>
       </span>
     </header>
 
@@ -192,7 +192,7 @@
         <span class="name">{{#if this.overLimitLabel}}<i class="fas fa-triangle-exclamation"></i> {{/if}}{{this.name}}</span>
         <input type="number" min="1" value="{{this.quantity}}" data-cart-qty aria-label="{{localize 'SR5.Quantity'}}">
         <span class="price">{{this.totalLabel}}</span>
-        <button type="button" data-action="removeFromCart" data-tooltip="{{localize 'SR5.ShopRemoveFromCart'}}"><i class="fas fa-xmark"></i></button>
+        <button type="button" data-action="removeFromCart" data-tooltip="{{localize 'SR5.ShopRemoveFromCart'}}" aria-label="{{localize 'SR5.ShopRemoveFromCart'}}"><i class="fas fa-xmark"></i></button>
       </div>
       {{else}}
       <p class="muted">{{localize 'SR5.ShopCartEmpty'}}</p>

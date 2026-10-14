@@ -83,6 +83,9 @@ export default async function defense(rollData, actor, chatData){
   rollData.damage.isContinuous = chatData.damage.isContinuous
   rollData.damage.aggravated = chatData.damage.aggravated
   rollData.damage.originalValue = chatData.damage.originalValue
+  //A weapon focus deals magical damage but stays a weapon; a spell's Force sets the AP of its fire (SR5 p. 173)
+  rollData.damage.weaponFocus = chatData.damage.weaponFocus
+  if (chatData.damage.source === "magical") rollData.magic.force = chatData.magic?.force
   rollData.combat.ammo.type = chatData.combat.ammo.type
   rollData.combat.calledShot = chatData.combat.calledShot
   rollData.combat.armorPenetration = chatData.combat.armorPenetration

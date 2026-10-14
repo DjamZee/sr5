@@ -2426,15 +2426,16 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       })
     const result = await foundry.applications.api.DialogV2.wait({
       window: {
-        title: game.i18n.format("SR5.StoragePutInTitle", {
-          storage: storage.name 
-        }) 
+        // A garage parks a vehicle, it does not put away an object
+        title: game.i18n.format(storage.system.type === "garage" ? "SR5.StoragePutInVehicleTitle" : "SR5.StoragePutInTitle", {
+          storage: storage.name
+        })
       },
       content: content,
       buttons: [
         {
           action: "ok",
-          label: game.i18n.localize("SR5.StoragePutIn"),
+          label: game.i18n.localize(storage.system.type === "garage" ? "SR5.StoragePutInVehicle" : "SR5.StoragePutIn"),
           default: true,
           callback: (event, button, dialog) => ({
             action: "ok", element: dialog.element 
