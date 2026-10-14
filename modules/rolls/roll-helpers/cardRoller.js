@@ -107,6 +107,16 @@ export function patientMonitors(patient) {
   return []
 }
 
+// Health spells affect "un organisme vivant" (SR5 p. 285): not a drone, nor an AI's core, nor what has no Physical
+// or single condition monitor to heal (a device, an agent, a sprite)
+export function isLivingPatient(patient) {
+  if (patient?.type === "actorDrone") return false
+  if (patient?.system?.activeSpecialAttribute === "depth") return false
+  const monitors = patient?.system?.conditionMonitors ?? {
+  }
+  return !!(monitors.physical || monitors.condition)
+}
+
 // True when the patient wears a full armor (SR5 p. 207): an active armor flagged as such
 export function wearsFullArmor(patient) {
   return !!patient?.items?.some(i => i.type === "itemArmor" && i.system?.isActive && i.system?.isFullArmor)

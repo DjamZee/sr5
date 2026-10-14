@@ -2573,6 +2573,17 @@ export class SR5_ActorHelper {
         //Handle heal effect
         if (e.target.includes("removeDamage")){
           key = e.target.replace('.removeDamage','')
+          //Health spells affect "un organisme vivant" (SR5 p. 285): a drone's structure or an AI's core is no patient,
+          //as for first aid (cardRoller.js). Lot 17c: Heal brought a drone from 5 boxes to 0
+          const {
+            isLivingPatient
+          } = await import("../../rolls/roll-helpers/cardRoller.js")
+          if (!isLivingPatient(actor)) {
+            ui.notifications.warn(game.i18n.format("SR5.WARN_HealNotLiving", {
+              name: actor.name
+            }))
+            continue
+          }
           //A grunt has one condition monitor for its Physical damage (SR5 p. 381): Heal reaches it (Quitterie, S2)
           if (key === "physical" && !actor.system.conditionMonitors?.physical && actor.system.conditionMonitors?.condition) key = "condition"
           //A copy, as in heal(): an update made of actor.system itself wrote nothing, and the healing was only shown

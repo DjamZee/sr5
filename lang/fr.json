@@ -6661,6 +6661,7 @@
 	"SR5.RelayKindAction": "action",
 	"SR5.DefenseRepeated": "Seconde défense de {name} contre la même attaque (carte de {author}) : la première fait foi.",
 	"SR5.WARN_PatientWithoutMonitor": "{name} n'a ni moniteur physique ni moniteur étourdissant : les premiers soins ne s'appliquent pas (SR5 p. 207).",
+	"SR5.WARN_HealNotLiving": "{name} n'est pas un organisme vivant : un sort de Santé ne le soigne pas (SR5 p. 285).",
 	"SR5.WARN_TargetItemMissing": "Objet visé introuvable (supprimé depuis le test) : l'action ne peut pas être appliquée.",
 	"SR5.WARN_MatrixResistanceDeviceMissing": "Appareil visé introuvable (supprimé depuis l'attaque) : la résistance aux dommages matriciels ne peut pas être lancée.",
 	"SR5.WARN_MatrixDamageDeviceMissing": "Appareil visé introuvable (supprimé depuis l'attaque) : les dommages matriciels ne sont appliqués à aucun appareil.",
