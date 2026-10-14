@@ -249,16 +249,19 @@ async function editEvent(initial){
   }, game.time.worldTime))
 }
 
-// A new event on a day of the shown month, at midnight
+// A new event on a day of the shown month, at the clock's time of day rather than midnight
 function newEventOn(day, extra = {
 }){
   const {
     year, month
   } = shownMonthOrClock()
+  const {
+    hour, minute, second
+  } = game.time.components
   return editEvent({
     title: "", journal: "", visibility: "gm", ...extra,
     date: componentsToWorldTime({
-      year, month, dayOfMonth: day - 1
+      year, month, dayOfMonth: day - 1, hour, minute, second
     }, calendarStartYear()),
   })
 }

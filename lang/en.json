@@ -5469,6 +5469,7 @@
 	"SR5.SETTINGS_StorageViewMode_T": "Storage display",
 	"SR5.SETTINGS_StorageViewMode_D": "Icons in cells, or a detailed list.",
 	"SR5.StoragePutInVehicle": "Park a vehicle",
+	"SR5.StoragePutInVehicleTitle": "Park in {storage}",
 	"SR5.WARN_StorageNoVehicleToStore": "No vehicle or drone to park: they are all parked, or this character owns none.",
 	"SR5.GearIsIntangible": "Intangible property",
 	"SR5.Jammer": "Jammer",

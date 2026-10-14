@@ -5469,6 +5469,7 @@
 	"SR5.SETTINGS_StorageViewMode_T": "Affichage des stockages",
 	"SR5.SETTINGS_StorageViewMode_D": "Cases avec icônes, ou liste détaillée.",
 	"SR5.StoragePutInVehicle": "Garer un véhicule",
+	"SR5.StoragePutInVehicleTitle": "Garer dans {storage}",
 	"SR5.WARN_StorageNoVehicleToStore": "Aucun véhicule ni drone à garer : tout est déjà garé, ou ce personnage n'en possède pas.",
 	"SR5.GearIsIntangible": "Bien immatériel",
 	"SR5.Jammer": "Brouilleur",
