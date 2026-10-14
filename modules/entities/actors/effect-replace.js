@@ -21,11 +21,3 @@ export function replaceModifierValue(base, value){
   if (typeof base !== "number") return value
   return -Math.max(base, 0) + value
 }
-
-//Whether replacing the target with `value` lowers it: base and the added modifiers met so far, above the value. A target
-//whose base is not a number (a skill Limit) cannot be compared: replaced
-export function replaceLowers(target, value){
-  if (typeof target?.base !== "number") return true
-  const current = target.base + (target.modifiers ?? []).filter(m => !m?.isMultiplier).reduce((sum, m) => sum + (Number(m?.value) || 0), 0)
-  return current > (Number(value) || 0)
-}

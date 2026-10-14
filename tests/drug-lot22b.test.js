@@ -23,8 +23,8 @@ const {
   attributeTestsState, scopeMatches, PHYSICAL_ACTIONS
 } = await import("../modules/rolls/roll-helpers/situational.js")
 const {
-  replaceLowers
-} = await import("../modules/entities/actors/effect-replace.js")
+  SR5_EntityHelpers
+} = await import("../modules/entities/helpers.js")
 
 const H = 3600
 const drug = (key, extra = {
@@ -194,17 +194,24 @@ describe("Dopadrine: -1 die to physical actions (Chrome Flesh p. 186)", () => {
 })
 
 describe("Little Smoke: brought down to 1, never up (Chrome Flesh p. 192)", () => {
-  it("replaces only a value above the one given", () => {
-    expect(replaceLowers({
-      base: 4, modifiers: []
-    }, 1)).toBe(true)
-    expect(replaceLowers({
-      base: 0, modifiers: []
-    }, 1)).toBe(false)
-    expect(replaceLowers({
-      base: 1, modifiers: [{
-        value: 2
-      }]
-    }, 1)).toBe(true)
+  //The base of an attribute is set after the effects: the cap is read when the total is worked out
+  const total = (base, modifiers) => {
+    const property = {
+      base, modifiers
+    }
+    SR5_EntityHelpers.updateValue(property, 0)
+    return property.value
+  }
+  const smoke = {
+    source: "Petite fumée", value: 0, ceiling: 1
+  }
+  it("caps the total at the value, whatever the base and the other modifiers", () => {
+    expect(total(4, [smoke])).toBe(1)
+    expect(total(3, [{
+      source: "Cyber", value: 2
+    }, smoke])).toBe(1)
+  })
+  it("never raises a total below the value", () => {
+    expect(total(0, [smoke])).toBe(0)
   })
 })

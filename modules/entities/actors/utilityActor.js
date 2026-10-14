@@ -69,7 +69,7 @@ import {
   drugEffectApplies, phaseFromFlags, effectPhase
 } from "../items/drug-phase.js"
 import {
-  replacedValue, replaceModifierValue, replaceLowers
+  replacedValue, replaceModifierValue
 } from "./effect-replace.js"
 import {
   SR5 
@@ -5812,8 +5812,14 @@ export class SR5_CharacterUtility extends Actor {
             //The target takes this value. A skill Limit, whose base is the key of its linked Limit, reads it back through
             //skillLimitValue(): the value stands in for the linked Limit, and the other effects on the skill Limit still
             //add to it (No Future p. 152: an instrument gives the Limit, a Synthlink raises it)
-            //A crash only lowers: Little Smoke brings Perception and Willpower "réduits à 1" (Chrome Flesh p. 192), never up to 1
-            if (item.type === "itemDrug" && effectPhase(customEffect) === "crash" && !replaceLowers(targetObject, customEffect.value)) break
+            //A crash only lowers: Little Smoke brings Perception and Willpower "réduits à 1" (Chrome Flesh p. 192), never up
+            //to 1. The base of an attribute is set after the effects: the total is capped when it is worked out (helpers.js)
+            if (item.type === "itemDrug" && effectPhase(customEffect) === "crash") {
+              targetObject.modifiers.push({
+                source: item.name, type: modifierType, value: 0, isMultiplier: false, ceiling: Number(customEffect.value) || 0
+              })
+              break
+            }
             if (typeof targetObject.base === "number") targetObject.modifiers = []
             if (customEffect.type === "ratingReplace") customEffect.value = (itemData.itemRating || 0)
             if (customEffect.type === "hitsReplace") customEffect.value = (itemData.hits || 0)
