@@ -20,9 +20,7 @@
 </li>
 {{#if system.drawback}}
 <li class="grid">
-    <p>
-        <span class="col-auto">{{localize 'SR5.MentorDrawback'}}{{localize 'SR5.Colons'}}</span>
-        <span class="col-auto SR-GreyColor">{{system.drawback}}</span>
-    </p>
+    <div class="col-12">{{localize 'SR5.MentorDrawback'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-12 SR-GreyColor">{{{enrichedDrawback}}}</div>
 </li>
 {{/if}}
