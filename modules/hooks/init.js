@@ -148,6 +148,9 @@ import {
   SR5DealershipWindow
 } from "../interface/dealership-window.js"
 import {
+  SR5FactionsApp
+} from "../interface/factions-app.js"
+import {
   SR5PanCrown
 } from "../canvas/pan-crown/pan-crown.js"
 import {
@@ -414,6 +417,8 @@ export async function sr5HookInit() {
     creationOverLimitItems,
     // The dealership (lot R9): build a vehicle or a drone and buy it
     dealership: SR5DealershipWindow,
+    // The factions window (lot 10), for the modules: topologie-sr5 opens it by game.sr5.factions.open() (lot 16b)
+    factions: SR5FactionsApp,
     // The shop against the till, item by item: should answer no difference
     shopAudit: () => SR5ShopWorldSource.audit(),
     // GM macro: old-style Mentor Spirit qualities -> quality linked to a mentor item (SR5 p. 76), and back
