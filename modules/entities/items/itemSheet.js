@@ -8,6 +8,12 @@ import {
   workshopContext, dropModOnWorkshop, removeModFromVehicleItem, openWorkshopShop
 } from "../../system/vehicle-workshop-apply.js"
 import {
+  itemWorkshopContext, vendorBanner, dropOnItemWorkshop, mountAccessory, removeAccessory, openItemWorkshopShop, openAccessoryInstall
+} from "../../system/item-workshop-apply.js"
+import {
+  WORKSHOP_FAMILIES, workshopFamily
+} from "../../system/item-workshop.js"
+import {
   fileLastEditText
 } from "../../rolls/roll-helpers/file-actions.js"
 import {
@@ -390,6 +396,18 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
 	 */
   _computeSheetLayout() {
     const layout = computeItemLayout(this.item.type)
+    // The workshop tab (lot 12, C9): only on an item that takes accessories, with its family's name and icon
+    const family = workshopFamily(this.item)
+    const isWorkshop = tab => tab.sections.some(s => (s.blocks ?? s.columns?.flat() ?? []).some(b => b.id === 'itemWorkshop'))
+    for (const panel of layout.panels) {
+      if (!family) panel.tabs = panel.tabs.filter(tab => !isWorkshop(tab))
+      for (const tab of panel.tabs) {
+        if (family && isWorkshop(tab)) Object.assign(tab, {
+          faIcon: WORKSHOP_FAMILIES[family].icon, tooltip: game.i18n.localize(WORKSHOP_FAMILIES[family].label)
+        })
+        else if (this.item.type === 'itemVehicle' && tab.iconKey === 'workshop') tab.tooltip = game.i18n.localize('SR5.VehicleModWorkshop')
+      }
+    }
 
     // Sync Foundry's tabGroups — one independent group per panel
     for (const panel of layout.panels) {
@@ -613,7 +631,11 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     }
 
     // The vehicle's workshop (Chop Shop, Rigger 5.0 p. 153-156)
-    if (item.type === 'itemVehicle') context.workshop = workshopContext(item)
+    if (item.type === 'itemVehicle') context.workshop = {
+      ...workshopContext(item), banner: await vendorBanner('tuner')
+    }
+    // The workshop of a weapon, an armor, an implant or a piece of gear (lot 12, C9)
+    context.itemWorkshop = await itemWorkshopContext(item)
 
     // Dynamic layout
     context.layout = this._computeSheetLayout()
@@ -653,6 +675,34 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       for (const shop of el.querySelectorAll('.workshop-shop')) shop.addEventListener('click', ev => {
         ev.preventDefault()
         openWorkshopShop(this.document)
+      })
+    }
+
+    // The workshop of a weapon, an armor, an implant or a piece of gear (lot 12, C9): drop to buy or put on, take off,
+    // put on from the inventory, the shop, the installation test of RG p. 67
+    if (context.itemWorkshop && this.isEditable) {
+      const item = this.document
+      const at = ev => Number(ev.currentTarget.closest('[data-index]').dataset.index)
+      for (const zone of el.querySelectorAll('.sr5-item-workshop-drop')) {
+        zone.addEventListener('dragover', ev => ev.preventDefault())
+        zone.addEventListener('drop', ev => {
+          ev.preventDefault()
+          ev.stopPropagation()
+          dropOnItemWorkshop(item, foundry.applications.ux.TextEditor.implementation.getDragEventData(ev))
+        })
+      }
+      for (const a of el.querySelectorAll('.item-workshop-remove')) a.addEventListener('click', ev => removeAccessory(item, at(ev)))
+      for (const a of el.querySelectorAll('.item-workshop-install')) a.addEventListener('click', ev => openAccessoryInstall(item, at(ev)))
+      for (const a of el.querySelectorAll('.item-workshop-mount')) a.addEventListener('click', ev => {
+        const accessory = item.actor?.items?.get(ev.currentTarget.closest('[data-id]').dataset.id)
+        if (accessory) mountAccessory(item, accessory)
+      })
+      for (const a of el.querySelectorAll('.item-workshop-shop')) a.addEventListener('click', ev => {
+        ev.preventDefault()
+        openItemWorkshopShop(item)
+      })
+      for (const a of el.querySelectorAll('.item-workshop-view')) a.addEventListener('click', ev => {
+        item.actor?.items?.get(ev.currentTarget.closest('[data-id]').dataset.id)?.sheet?.render(true)
       })
     }
 

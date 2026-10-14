@@ -22,6 +22,9 @@ import {
 import {
   workshopContext, dropModOnWorkshop, openModInstall, fitModDirectly, openWorkshopShop
 } from "../../system/vehicle-workshop-apply.js"
+import {
+  vendorBanner
+} from "../../system/item-workshop-apply.js"
 
 /**
  * An Actor sheet for drone type actors in the Shadowrun 5 system.
@@ -72,7 +75,9 @@ export class SR5DroneSheet extends ActorSheetSR5 {
     context.rulesKillCode = game.settings.get("sr5", "sr5KillCodeRules")
     context.matrixActionsRigger5 = game.settings.get("sr5", "sr5Rigger5Actions")
     //The Chop Shop (Rigger 5.0 p. 153-156)
-    context.workshop = workshopContext(this.actor)
+    context.workshop = {
+      ...workshopContext(this.actor), banner: await vendorBanner("tuner")
+    }
 
     return context
   }

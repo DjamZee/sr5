@@ -89,3 +89,72 @@
     gap: 6px;
   }
 }
+
+// The workshop of a weapon, an armor, an implant or a piece of gear (lot 12, C9): the family's banner when the
+// Megapack's banner folder has one, the slots of a weapon (RG p. 67) or the Capacity gauge, then the parts
+// The banner heads every workshop: the items', the vehicles' Atelier and the dealership
+.sr5-item-workshop-banner img {
+  width: 100%;
+  max-height: 160px;
+  aspect-ratio: 3 / 1;
+  object-fit: cover;
+  border: none;
+  border-radius: 4px;
+}
+
+.sr5-item-workshop {
+  .sr5-item-workshop-slots {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    margin: 6px 0;
+
+    li {
+      display: flex;
+      flex-direction: column;
+      padding: 3px 6px;
+      border: 1px solid var(--sr-ui-border-color);
+      border-radius: 4px;
+
+      &.is-missing {
+        opacity: 0.45;
+        border-style: dashed;
+      }
+
+      &.is-over {
+        border-color: var(--sr-text-color-flash);
+      }
+    }
+  }
+
+  .sr5-item-workshop-slot {
+    font-size: 11px;
+    text-transform: uppercase;
+  }
+
+  // The name opens the part: readable as the rest of the line, not as a pale link
+  a.item-workshop-view {
+    color: inherit;
+  }
+
+  .sr5-item-workshop-capacity {
+    max-width: 50%;
+  }
+}
+
+// A workshop tab shows its family's icon (Armurerie, Personnalisation, Clinique, Établi) beside the drawn ones
+.sr-icon-nav .sr-tab-fa {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  border: 2px solid color-mix(in srgb, var(--sr-ui-border-color) 40%, transparent);
+  color: color-mix(in srgb, var(--sr-text-color-dark) 80%, transparent);
+}
+
+.sr-icon-nav a.active .sr-tab-fa {
+  border-color: var(--sr-ui-border-color);
+  color: var(--sr-ui-border-color);
+}

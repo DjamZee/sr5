@@ -200,6 +200,9 @@ export {
   default as vehicleModInstall
 } from "./rollData-VehicleModInstall.js"
 export {
+  default as accessoryInstall
+} from "./rollData-AccessoryInstall.js"
+export {
   default as weapon
 } from "./rollData-Weapon.js"
 export {

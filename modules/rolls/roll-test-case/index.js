@@ -106,3 +106,6 @@ export {
 export {
   default as vehicleModInstallInfo
 } from "./test-VehicleModInstall.js"
+export {
+  default as accessoryInstallInfo
+} from "./test-AccessoryInstall.js"

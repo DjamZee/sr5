@@ -304,6 +304,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/items/blocks/tradition/tradition-summary.hbs",
     "systems/sr5/templates/items/blocks/vehicle/vehicle-stat.hbs",
     "systems/sr5/templates/items/blocks/vehicle/vehicle-summary.hbs",
+    "systems/sr5/templates/items/blocks/workshop/item-workshop.hbs",
     "systems/sr5/templates/items/blocks/vehicleMod/vehicleMod-stat.hbs",
     "systems/sr5/templates/items/blocks/vehicleMod/vehicleMod-summary.hbs",
     "systems/sr5/templates/items/blocks/vierge/vierge-stat.hbs",

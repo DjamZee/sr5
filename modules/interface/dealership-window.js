@@ -32,16 +32,26 @@ import {
   pricedModData
 } from '../system/vehicle-workshop-apply.js'
 import {
-  dealerCapacity, dealerGauges, buildSlotsRefusal, dealerTotals, dealerPointsGauge, buildPointsRefusal
+  dealerCapacity, dealerGauges, buildSlotsRefusal, dealerTotals, dealerPointsGauge, buildPointsRefusal,
+  dealerShelf, vehicleShowcase, isDroneModel
 } from '../system/vehicle-dealership.js'
 import {
   usesModPoints, droneModRule, vehicleStats, modPointsLines
 } from '../system/drone-mod-points.js'
+import {
+  vendorBanner
+} from '../system/item-workshop-apply.js'
 
 const L = k => game.i18n.localize(k)
 const yen = n => `${(Number(n) || 0).toLocaleString()} ¥`
 // A mod's availability may hang on the vehicle too: its legality alone then, or a dash
 const availabilityLabel = (availability, legality) => availability || legality ? `${availability || ''}${legality ?? ''}` : '—'
+// The short labels of the showroom's figures
+const STAT_LABELS = {
+  handling: 'SR5.VehicleStat_HandlingAbbrev', acceleration: 'SR5.VehicleStat_AccelerationAbbrev', speed: 'SR5.VehicleStat_SpeedAbbrev',
+  pilot: 'SR5.VehicleStat_PilotAbbrev', body: 'SR5.VehicleStat_BodyAbbrev', armor: 'SR5.VehicleStat_ArmorAbbrev',
+  sensor: 'SR5.VehicleStat_SensorAbbrev', seating: 'SR5.VehicleStat_SeatingAbbrev',
+}
 
 /**
  * The dealership (lot R9 of the rigging plan; Q8 to Q10 of DjamZ): a window of its own where a vehicle or a drone of
@@ -88,6 +98,7 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
     },
     actions: {
       selectModel: SR5DealershipWindow.#onSelectModel,
+      selectShelf: SR5DealershipWindow.#onSelectShelf,
       addMod: SR5DealershipWindow.#onAddMod,
       removeMod: SR5DealershipWindow.#onRemoveMod,
       toggleFit: SR5DealershipWindow.#onToggleFit,
@@ -116,6 +127,8 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
     this._modCategory = ''
     this._modelSearch = ''
     this._modSearch = ''
+    // The shelf shown on the left: vehicles or drones, apart (Adrore's feedback C8)
+    this._shelf = 'vehicles'
   }
 
   /** Choose a model: the build starts again from it */
@@ -124,6 +137,7 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
     if (vehicle?.type !== 'itemVehicle') return
     this._vehicle = vehicle
     this._mods = []
+    this._shelf = isDroneModel(vehicle.system) ? 'drones' : 'vehicles'
   }
 
   /** Add a mod of the shelves to the build; one the gamemaster fits at once is refused past the slots (lot R8) */
@@ -134,10 +148,36 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
     if (!SR5Shop.sellableSource(source)) return ui.notifications.warn(game.i18n.format('SR5.WARN_ShopNotForSale', {
       name: source.name
     }))
-    this._mods.push({
+    const mod = {
       key: foundry.utils.randomID(), uuid, source, fitted: false
-    })
+    }
+    this._mods.push(mod)
+    // The gamemaster's mods are fitted at once when they fit (Adrore's feedback C8); one past the slots or the points
+    // stays waiting to be installed, with the refusal's warning
+    if (game.user.isGM) mod.fitted = !this.#fitRefused(mod)
     this.render()
+  }
+
+  /** Whether fitting this mod at once goes past the slots, or the points of a drone (lot R8): the same refusal as on a
+   *  drone, which warns and may let it pass by the rule locks */
+  #fitRefused(mod) {
+    if (this.#points()) {
+      const refusal = buildPointsRefusal(vehicleStats(this._vehicle.system), this.#buildMods(), {
+        ...mod.source.system, slots: {
+          value: pricedModData(mod.source, this._vehicle).slots
+        }
+      })
+      const key = refusal?.floor !== undefined ? 'SR5.WARN_DroneModBodyFloor' : refusal?.attribute ? 'SR5.WARN_DroneModAttributeCap' : 'SR5.WARN_DroneModPointsFull'
+      return !!refusal && refuseByRule('objects', key, {
+        name: mod.source.name, needed: refusal.needed, free: refusal.free, cap: refusal.cap, floor: refusal.floor,
+        attribute: L(SR5.vehicleAttributes[refusal.attribute] ?? '')
+      })
+    }
+    const refusal = buildSlotsRefusal(this.#capacity(), this.#buildMods(), mod.source)
+    return !!refusal && refuseByRule('objects', 'SR5.WARN_VehicleModSlotsFull', {
+      name: mod.source.name, needed: refusal.needed, free: refusal.free,
+      category: L(SR5.vehicleModType[refusal.category])
+    })
   }
 
   /* -------------------------------------------- */
@@ -201,8 +241,24 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
       }
     }
     const vehicle = this._vehicle
-    context.models = index.filter(e => e.type === 'itemVehicle' && onShelf(e)).map(e => ({
-      ...row(e), selected: e.uuid === vehicle?.uuid
+    // The vehicles and the drones apart, by category then name, each with its figures (Adrore's feedback C8)
+    const showcase = system => vehicleShowcase(system).map(s => ({
+      ...s, label: L(STAT_LABELS[s.key])
+    }))
+    const models = index.filter(e => e.type === 'itemVehicle' && onShelf(e)).map(e => ({
+      ...row(e), system: e.system, stats: showcase(e.system), selected: e.uuid === vehicle?.uuid
+    }))
+    const categoryLabels = {
+      ...SR5.vehicleCategories, ...SR5.droneCategories
+    }
+    context.shelves = ['vehicles', 'drones'].map(key => ({
+      key, label: L(key === 'drones' ? 'SR5.DealerShelfDrones' : 'SR5.DealerShelfVehicles'), selected: key === this._shelf,
+      count: models.filter(m => isDroneModel(m.system) === (key === 'drones')).length,
+    }))
+    // The banner of the shelf, read in the Megapack's banner folder (agreed with Élise and DjamZ, 14/10)
+    context.banner = await vendorBanner(this._shelf === 'drones' ? 'droneDealer' : 'ordinaryCars')
+    context.modelGroups = dealerShelf(models, this._shelf).map(g => ({
+      label: g.key ? L(categoryLabels[g.key]) : L('SR5.DealerOtherCategory'), models: g.rows
     }))
     context.catalog = vehicle ? index.filter(e => e.type === 'itemVehicleMod' && onShelf(e) &&
       (!this._modCategory || e.system?.type === this._modCategory)).map(row) : []
@@ -269,7 +325,7 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
     }))
     const dealer = !!buyer && vehicleUnit < vehicleDescribed.price && !!dealerEffectFor(vehicle)
     context.build = {
-      name: vehicle.name, uuid: vehicle.uuid,
+      name: vehicle.name, uuid: vehicle.uuid, stats: showcase(vehicle.system),
       img: workshopImage(vehicle.img, {
         type: vehicle.system.type, category: vehicle.system.category
       }),
@@ -354,6 +410,11 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
     this.render()
   }
 
+  static #onSelectShelf(event, target) {
+    this._shelf = target.dataset.shelf === 'drones' ? 'drones' : 'vehicles'
+    this.render()
+  }
+
   static #onAddMod(event, target) {
     return this.addMod(target.closest('[data-uuid]').dataset.uuid)
   }
@@ -374,24 +435,7 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
     if (!game.user.isGM) return
     const mod = this._mods.find(m => m.key === target.closest('[data-key]').dataset.key)
     if (!mod) return
-    if (!mod.fitted && this.#points()) {
-      const refusal = buildPointsRefusal(vehicleStats(this._vehicle.system), this.#buildMods(), {
-        ...mod.source.system, slots: {
-          value: pricedModData(mod.source, this._vehicle).slots
-        }
-      })
-      const key = refusal?.floor !== undefined ? 'SR5.WARN_DroneModBodyFloor' : refusal?.attribute ? 'SR5.WARN_DroneModAttributeCap' : 'SR5.WARN_DroneModPointsFull'
-      if (refusal && refuseByRule('objects', key, {
-        name: mod.source.name, needed: refusal.needed, free: refusal.free, cap: refusal.cap, floor: refusal.floor,
-        attribute: L(SR5.vehicleAttributes[refusal.attribute] ?? '')
-      })) return this.render()
-    } else if (!mod.fitted) {
-      const refusal = buildSlotsRefusal(this.#capacity(), this.#buildMods(), mod.source)
-      if (refusal && refuseByRule('objects', 'SR5.WARN_VehicleModSlotsFull', {
-        name: mod.source.name, needed: refusal.needed, free: refusal.free,
-        category: L(SR5.vehicleModType[refusal.category])
-      })) return this.render()
-    }
+    if (!mod.fitted && this.#fitRefused(mod)) return this.render()
     mod.fitted = !mod.fitted
     this.render()
   }

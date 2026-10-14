@@ -70,6 +70,9 @@ import {
   applyVehicleModInstall
 } from "../system/vehicle-workshop-apply.js"
 import {
+  applyAccessoryInstall
+} from "../system/item-workshop-apply.js"
+import {
   SR5 
 } from "../config.js"
 import {
@@ -987,6 +990,11 @@ export class SR5_RollMessage {
         if (await applyVehicleModInstall(messageData.various?.vehicleModInstall, type) === false) return
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      //RG p. 67: the weapon accessory works once installed
+      case "installAccessory":
+        if (await applyAccessoryInstall(messageData.various?.accessoryInstall) === false) return
+        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
       case "decreaseReach":
       case "decreaseAccuracy":
         //Only on the weapon of the actor the resistance was rolled for, from a card a GM or an owner wrote (matrix-card.js)
@@ -1205,6 +1213,11 @@ export class SR5_RollMessage {
       case "lostVehicleModParts":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.format(`SR5.VehicleModDone_${buttonToUpdate}`, {
           mod: messageData.various?.vehicleModInstall?.modName ?? ""
+        }))
+        break
+      case "installAccessory":
+        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.format("SR5.ItemWorkshopInstalledCard", {
+          name: messageData.various?.accessoryInstall?.accessoryName ?? ""
         }))
         break
       case "firstAid":

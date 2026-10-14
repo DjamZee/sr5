@@ -11,8 +11,8 @@
 				<div class="sr-nav-separator"></div>
 			{{/unless}}
 			{{#each this.tabs}}
-				<a data-action="tab" data-group="{{this.group}}" data-tab="{{this.id}}" class="{{this.cssClass}}">
-					{{> (lookup this "icon") }}
+				<a data-action="tab" data-group="{{this.group}}" data-tab="{{this.id}}" class="{{this.cssClass}}" {{#if this.tooltip}}data-tooltip="{{this.tooltip}}"{{/if}}>
+					{{#if this.faIcon}}<em class="fas {{this.faIcon}} sr-tab-fa"></em>{{else}}{{> (lookup this "icon") }}{{/if}}
 				</a>
 			{{/each}}
 		{{/each}}
