@@ -241,6 +241,10 @@ export const ITEM_BLOCK_REGISTRY = {
   vehicleWorkshop:     {
     partial: `systems/sr5/templates/actors/_partials/right-tabs/droneStuff/atelier.hbs`, label: 'SR5.VehicleModWorkshop', size: ITEM_BLOCK_SIZE.DOUBLE
   },
+  // The workshop of a weapon, an armor, an implant or a piece of gear (lot 12, C9)
+  itemWorkshop:        {
+    partial: `${PARTIAL_ROOT}/blocks/workshop/item-workshop.hbs`, label: 'SR5.ItemWorkshop', size: ITEM_BLOCK_SIZE.DOUBLE
+  },
   vehicleModStat:      {
     partial: `${PARTIAL_ROOT}/blocks/vehicleMod/vehicleMod-stat.hbs`,       label: 'SR5.ItemConfiguration', size: ITEM_BLOCK_SIZE.DOUBLE 
   },

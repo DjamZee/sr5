@@ -1,5 +1,6 @@
 {{!-- The dealership (lot R9 of the rigging plan): data from interface/dealership-window.js --}}
 <div class="sr-dealer">
+	{{#if banner}}<div class="sr5-item-workshop-banner sr-dealer-banner"><img src="{{banner}}" alt="" onerror="this.parentElement.remove()"></div>{{/if}}
 	<header class="sr-dealer-bar">
 		<label>{{localize 'SR5.ShopBuyer'}}
 			<select data-dealer-buyer>

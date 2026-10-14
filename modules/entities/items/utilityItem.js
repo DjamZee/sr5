@@ -1138,7 +1138,9 @@ export class SR5_UtilityItem extends Actor {
     if (!actor || !a._id) return
     const liveItem = actor.items?.get(a._id)
     if (!liveItem) return
-    a.isActive = liveItem.system.isActive
+    //An accessory waiting for its installation test works only once it is over (RG p. 67, item-workshop-apply.js)
+    a.isActive = liveItem.system.isActive && liveItem.flags?.sr5?.installPending !== true
+    a.installPending = liveItem.flags?.sr5?.installPending === true
     //Its Capacity and the vision enhancements mounted in it since it was put on the weapon (SR5 p. 434), for the sheets
     let mounted = liveItem.system.weaponAccessory?.visionEnhancements ?? []
     if (!Array.isArray(mounted)) mounted = Object.values(mounted)

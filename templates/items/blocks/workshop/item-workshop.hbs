@@ -1,0 +1,81 @@
+{{!-- The workshop of a weapon, an armor, an implant or a piece of gear (lot 12, C9); data from item-workshop-apply.js --}}
+{{#with itemWorkshop as |w|}}
+<div class="SRBlockSheet sr5-workshop sr5-item-workshop sr5-item-workshop-drop" data-family="{{w.family}}">
+	{{#if w.banner}}<div class="sr5-item-workshop-banner"><img src="{{w.banner}}" alt="{{w.label}}" onerror="this.parentElement.remove()"></div>{{/if}}
+	<ul>
+		<li class="SR-LigneEnTete grid">
+			<div class="col-11"><p class="SR-TextUppercase"><em class="fas {{w.icon}}"></em> {{w.label}}</p></div>
+			<div class="col-1 SR-TextRight">{{#if w.canEdit}}<a class="item-workshop-shop" data-tooltip="{{localize 'SR5.ItemWorkshopShop'}}"><em class="fas fa-store"></em></a>{{/if}}</div>
+		</li>
+	</ul>
+
+	{{#unless w.owned}}<p class="hint">{{localize 'SR5.ItemWorkshopNotOwnedHint'}}</p>{{/unless}}
+
+	{{#if w.slots}}
+	{{!-- RG p. 67: one accessory per slot, the slots of this kind of weapon --}}
+	<ul class="sr5-item-workshop-slots">
+		{{#each w.slots}}
+		<li class="{{#unless exists}}is-missing{{/unless}}{{#if over}} is-over{{/if}}{{#if missing}} is-over{{/if}}">
+			<span class="sr5-item-workshop-slot">{{label}}</span>
+			<span>{{#if used}}{{#each names}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}{{#if exists}}<span class="SR-LightGreyColor">{{localize 'SR5.ItemWorkshopSlotFree'}}</span>{{else}}<span class="SR-LightGreyColor">{{localize 'SR5.ItemWorkshopSlotNone'}}</span>{{/if}}{{/if}}</span>
+		</li>
+		{{/each}}
+	</ul>
+	{{#if w.gmSlots}}<p class="hint">{{localize 'SR5.ItemWorkshopGMSlots'}}</p>{{/if}}
+	{{/if}}
+
+	{{#if w.capacity}}
+	<div class="sr5-item-workshop-capacity">
+		{{> systems/sr5/templates/actors/_partials/right-tabs/droneStuff/atelier-gauge.hbs label=(localize 'SR5.Capacity') used=w.capacity.used total=w.capacity.total percent=w.capacity.percent full=w.capacity.full over=w.capacity.over}}
+	</div>
+	{{/if}}
+
+	<p class="sr5-workshop-cost">
+		{{localize 'SR5.ItemWorkshopCost' host=w.totals.hostLabel accessories=w.totals.accessoriesLabel total=w.totals.totalLabel}}
+		· {{localize 'SR5.AvailabilityShort'}} {{w.totals.availability}}
+		{{#if w.balanceLabel}}<br><span class="SR-LightGreyColor">{{localize 'SR5.ItemWorkshopBalance' balance=w.balanceLabel}}</span>{{/if}}
+		{{#if w.creation}}<br><span class="SR-LightGreyColor">{{localize 'SR5.ItemWorkshopCreationHint'}}</span>{{/if}}
+	</p>
+
+	<ul>
+		<li class="SR-EnTete grid">
+			<div class="col-5 SR-TextUppercase">{{localize 'SR5.ItemWorkshopMounted'}}</div>
+			<div class="col-2 SR-TextCenter">{{#if w.slots}}{{localize 'SR5.WeaponSlot'}}{{else}}{{localize 'SR5.Capacity'}}{{/if}}</div>
+			<div class="col-1 SR-TextCenter">{{localize 'SR5.AvailabilityShort'}}</div>
+			<div class="col-2 SR-TextCenter">&yen;</div>
+			<div class="col-2"></div>
+		</li>
+		{{#each w.rows}}
+		<li class="grid" data-index="{{index}}" data-id="{{id}}">
+			<div class="col-5"><a class="item-workshop-view">{{name}}</a>
+				{{#if kind}} <span class="SR-LightGreyColor">({{kind}})</span>{{/if}}
+				{{#if free}} <span class="SR-LightGreyColor">({{localize 'SR5.ItemWorkshopBuiltIn'}})</span>{{/if}}
+				{{#if pending}} <span class="SR-LightGreyColor">({{localize 'SR5.ItemWorkshopPending'}})</span>{{/if}}
+			</div>
+			<div class="col-2 SR-TextCenter">{{#if w.slots}}{{valueOrDash slot}}{{else}}{{capacity}}{{/if}}</div>
+			<div class="col-1 SR-TextCenter">{{#if availability}}{{availability}}{{legality}}{{else}}—{{/if}}</div>
+			<div class="col-2 SR-TextCenter">{{#if free}}—{{else}}{{price}}{{/if}}</div>
+			<div class="col-2 sr5-workshop-actions">
+				{{#if pending}}<a class="item-workshop-install" data-tooltip="{{localize 'SR5.ItemWorkshopInstallTooltip' tools=tools}}"><em class="fas fa-dice"></em></a>{{/if}}
+				{{#if w.canEdit}}<a class="item-workshop-remove" data-tooltip="{{localize 'SR5.ItemWorkshopRemove'}}"><em class="fas fa-trash"></em></a>{{/if}}
+			</div>
+		</li>
+		{{else}}
+		<li class="sr5-workshop-empty">{{localize 'SR5.ItemWorkshopDropHere'}}</li>
+		{{/each}}
+	</ul>
+
+	{{#if w.inventory.length}}
+	<ul>
+		<li class="SR-EnTete grid"><div class="col-12 SR-TextUppercase">{{localize 'SR5.ItemWorkshopInventory'}}</div></li>
+		{{#each w.inventory}}
+		<li class="grid" data-id="{{id}}">
+			<div class="col-10"><a class="item-workshop-view">{{name}}</a></div>
+			<div class="col-2 sr5-workshop-actions">{{#if w.canEdit}}<a class="item-workshop-mount" data-tooltip="{{localize 'SR5.ItemWorkshopMount'}}"><em class="fas fa-wrench"></em></a>{{/if}}</div>
+		</li>
+		{{/each}}
+	</ul>
+	{{/if}}
+	{{#if w.slots}}<p class="hint">{{localize 'SR5.ItemWorkshopWeaponHint'}}</p>{{/if}}
+</div>
+{{/with}}

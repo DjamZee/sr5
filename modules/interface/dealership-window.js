@@ -38,6 +38,9 @@ import {
 import {
   usesModPoints, droneModRule, vehicleStats, modPointsLines
 } from '../system/drone-mod-points.js'
+import {
+  vendorBanner
+} from '../system/item-workshop-apply.js'
 
 const L = k => game.i18n.localize(k)
 const yen = n => `${(Number(n) || 0).toLocaleString()} ¥`
@@ -252,6 +255,8 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
       key, label: L(key === 'drones' ? 'SR5.DealerShelfDrones' : 'SR5.DealerShelfVehicles'), selected: key === this._shelf,
       count: models.filter(m => isDroneModel(m.system) === (key === 'drones')).length,
     }))
+    // The banner of the shelf, read in the Megapack's banner folder (agreed with Élise and DjamZ, 14/10)
+    context.banner = await vendorBanner(this._shelf === 'drones' ? 'droneDealer' : 'ordinaryCars')
     context.modelGroups = dealerShelf(models, this._shelf).map(g => ({
       label: g.key ? L(categoryLabels[g.key]) : L('SR5.DealerOtherCategory'), models: g.rows
     }))

@@ -360,6 +360,10 @@ export class SR5_PrepareRollTest {
       case "vehicleModInstall":
         rollData = await SR5_GetRollData.vehicleModInstall(rollData, actor, rollKey)
         break
+      //RG p. 67: the options come from the weapon's Armurerie tab, in place of a roll key
+      case "accessoryInstall":
+        rollData = await SR5_GetRollData.accessoryInstall(rollData, actor, rollKey)
+        break
       case "autopilotUnforeseen":
         rollData = SR5_GetRollData.autopilotUnforeseen(rollData, actor, chatData)
         break

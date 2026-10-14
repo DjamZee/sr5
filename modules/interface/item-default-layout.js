@@ -125,6 +125,15 @@ function _vehicleLayout() {
   return layout
 }
 
+// A weapon, an armor, an implant, a piece of gear: its workshop after its tabs (lot 12, C9: Armurerie, Personnalisation,
+// Clinique, Établi). The item sheet drops the tab of an item that takes no accessory (item-workshop.js)
+function _withWorkshop(layout) {
+  layout.panels[1].tabs.push(_tab('Workshop', 'workshop', [
+    _block('itemWorkshop'),
+  ]))
+  return layout
+}
+
 // ---------------------------------------------------------------------------
 //  1-tab items: Description only (no stat, no effects)
 //  (4 types: Karma, Knowledge, Language, Nuyen)
@@ -154,10 +163,10 @@ function _descOnlyLayout(summaryBlock) {
 
 const ITEM_LAYOUTS = {
   // 3-tab: Description + Configuration + Effects
-  itemWeapon:       () => _threeTabLayout('weaponSummary', 'weaponStat'),
-  itemArmor:        () => _threeTabLayout('armorSummary', 'armorStat'),
-  itemAugmentation: () => _threeTabLayout('augmentationSummary', 'augmentationStat'),
-  itemGear:         () => _threeTabLayout('gearSummary', 'gearStat'),
+  itemWeapon:       () => _withWorkshop(_threeTabLayout('weaponSummary', 'weaponStat')),
+  itemArmor:        () => _withWorkshop(_threeTabLayout('armorSummary', 'armorStat')),
+  itemAugmentation: () => _withWorkshop(_threeTabLayout('augmentationSummary', 'augmentationStat')),
+  itemGear:         () => _withWorkshop(_threeTabLayout('gearSummary', 'gearStat')),
   itemDevice:       () => _threeTabLayout('deviceSummary', 'deviceStat'),
   itemSpell:        () => _threeTabLayout('spellSummary', 'spellStat'),
   itemComplexForm:  () => _threeTabLayout('complexFormSummary', 'complexFormStat'),

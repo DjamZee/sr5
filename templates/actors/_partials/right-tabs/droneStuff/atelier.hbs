@@ -1,5 +1,6 @@
 {{!-- Workshop of a drone or of a vehicle item (Chop Shop, Rigger 5.0 p. 153-156); data from vehicle-workshop-apply.js --}}
 <div class="SRBlockSheet sr5-workshop">
+	{{#if workshop.banner}}<div class="sr5-item-workshop-banner"><img src="{{workshop.banner}}" alt="" onerror="this.parentElement.remove()"></div>{{/if}}
 	<ul>
 		<li class="SR-LigneEnTete grid">
 			<div class="col-11"><p class="SR-TextUppercase">{{localize 'SR5.VehicleModWorkshop'}}</p></div>

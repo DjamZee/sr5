@@ -864,6 +864,9 @@ export class SR5_RollTest {
       case "vehicleModInstall":
         await SR5_AddRollInfo.vehicleModInstallInfo(cardData)
         break
+      case "accessoryInstall":
+        await SR5_AddRollInfo.accessoryInstallInfo(cardData)
+        break
       case "mentorDrawback":
         await SR5_AddRollInfo.mentorDrawbackInfo(cardData)
         break
