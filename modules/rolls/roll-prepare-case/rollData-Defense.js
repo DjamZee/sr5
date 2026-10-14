@@ -16,6 +16,9 @@ import {
 import {
   rgOption, movementModifiers, phaseMeters
 } from "../../system/rg-combat-options.js"
+import {
+  flashlightDazzles, WEAK_GLARE
+} from "../roll-helpers/flashlight-glare.js"
 
 //The defense modifier of RG3 for the defender's own token (its first one on the scene when the actor is linked)
 export function defenderMovementModifier(actor, combat = globalThis.game?.combat){
@@ -116,11 +119,15 @@ export default async function defense(rollData, actor, chatData){
   //"the shooter will have to compensate" and range is the attacker's, so neither applies (DjamZ, 2026-10-03).
   //Suppressive fire has its own Reaction + Edge test (p. 181) and is left as it was.
   if (chatData.test.typeSub === "rangedWeapon" && chatData.combat.firingMode.selected !== "SF"){
-    let environmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(chatData.target.sceneId), actor.system, true)
+    //Run & Gun p. 69: the target is in the beam of the flashlight on the weapon, weak glare if it suits its vision
+    const dazzled = flashlightDazzles(chatData.combat.weaponLights, actor.system.visions)
+    let environmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(chatData.target.sceneId), actor.system, true, dazzled ? {
+      visibility: 0, light: 0, glare: 0, wind: 0, glareAtLeast: WEAK_GLARE
+    } : undefined)
     if (environmentalMod !== 0){
       rollData.dicePool.modifiers.push({
         type: "environmentalSceneMod",
-        label: game.i18n.localize("SR5.EnvironmentalModifiers"),
+        label: dazzled ? `${game.i18n.localize("SR5.EnvironmentalModifiers")} (${game.i18n.localize("SR5.FlashlightGlare")})` : game.i18n.localize("SR5.EnvironmentalModifiers"),
         value: environmentalMod,
       })
     }

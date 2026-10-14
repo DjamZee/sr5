@@ -2035,6 +2035,7 @@
 	"SR5.EnvironmentalLightPartial": "Partial Light (1)",
 	"SR5.EnvironmentalModGlare": "Glare",
 	"SR5.EnvironmentalModifiers": "Environmental Modifiers",
+	"SR5.FlashlightGlare": "weak glare from the weapon flashlight",
 	"SR5.EnvironmentalModifiersShort": "Environmental Modifiers",
 	"SR5.EnvironmentalModLight": "Light",
 	"SR5.EnvironmentalModRange": "Range",

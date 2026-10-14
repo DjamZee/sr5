@@ -55,6 +55,9 @@ import {
 import {
   netOf
 } from "../roll-helpers/net-rules.js"
+import {
+  weaponLightKinds
+} from "../roll-helpers/flashlight-glare.js"
 
 //Add info for weapon Roll
 export default async function weapon(rollData, actor, item){
@@ -216,6 +219,8 @@ export default async function weapon(rollData, actor, item){
   rollData.combat.range.long = itemData.range.long.value
   rollData.combat.range.extreme = itemData.range.extreme.value
   rollData.combat.weaponType = itemData.type
+  //The flashlights lit on the weapon: their beam may dazzle the target on its defense (Run & Gun p. 69)
+  if (itemData.category === "rangedWeapon") rollData.combat.weaponLights = weaponLightKinds(itemData, SR5_UtilityItem.weaponAccessoryEffect)
   //A net or a net gun (Run & Gun p. 25, 28): the ShockNet's charge is electric, "6E(e)" / "8E(e)"
   const net = netOf(item)
   if (net) {

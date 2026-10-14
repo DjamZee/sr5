@@ -213,6 +213,9 @@ export class SR5_CombatHelpers {
     if ((actor.visions.lowLight.isActive || weaponVision?.lowLight) && sceneLight > 0 && sceneLight <= 2) lightMod = 0
     const glareOffset = actorRow("glare") + Math.min(0, (Number(weaponVision?.glare) || 0) - Math.min(actorRow("glare"), 0))
     let glareMod = Math.min(Math.max(sceneRow("environModGlare") + row(areaEffect.glare) + glareOffset, 0), 4)
+    // Run & Gun p. 69: in the beam of a flashlight suited to one's vision, weak glare at least, less what compensates
+    // glare (flashlight-glare.js)
+    if (areaEffect.glareAtLeast) glareMod = Math.max(glareMod, Math.min(Math.max(row(areaEffect.glareAtLeast) + glareOffset, 0), 4))
     let windMod = Math.min(Math.max(sceneRow("environModWind") + row(areaEffect.wind) + actorRow("wind"), 0), 4)
 
     // SR5 p. 176: Light and Glare are a single column of the Environmental Modifiers table,
