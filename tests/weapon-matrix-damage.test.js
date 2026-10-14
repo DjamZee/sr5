@@ -118,6 +118,15 @@ describe('what a DSP pulse reaches', () => {
     expect(hasMatrixMonitorInReach(character([device(false)]))).toBe(false)
     for (const type of ['actorSpirit', 'actorSprite', 'actorAgent']) expect(hasMatrixMonitorInReach(character([device()], type))).toBe(false)
   })
+  //Street Lethal p. 56: the pulse goes "par le biais de sa connexion sans fil"
+  it('nothing through a device or a drone with its wireless off', () => {
+    const offline = device()
+    offline.system.wirelessTurnedOn = false
+    expect(hasMatrixMonitorInReach(character([offline]))).toBe(false)
+    const drone = character([], 'actorDrone')
+    drone.system.wirelessTurnedOn = false
+    expect(hasMatrixMonitorInReach(drone)).toBe(false)
+  })
 })
 
 describe('after the defense', () => {
