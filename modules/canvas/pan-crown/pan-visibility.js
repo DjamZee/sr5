@@ -66,9 +66,11 @@ export function nodeVisibility(node, viewer, where = {
   })
   const ids = viewer?.ids ?? []
   if (viewer?.isGM) return verdict(true, "gm")
-  // A node drawn as a line to a token the gamemaster hid: no line betrays that token (relecture)
-  if (where.tokenHidden) return verdict(false, "hiddenToken")
+  // The owner keeps her own devices, even a drone whose token the gamemaster hid: the rigger knows her drone, it is
+  // in her PAN (lot 16b)
   if ((node.ownerIds ?? []).some(id => ids.includes(id))) return verdict(true, "owner")
+  // A node drawn as a line to a token the gamemaster hid: no line betrays that token to anyone else (relecture)
+  if (where.tokenHidden) return verdict(false, "hiddenToken")
   if (node.revealed) return verdict(true, "revealed")
   // A technomancer's persona out of the Matrix, her sprites while she hides (pan-graph.js, addResonanceNodes)
   if (node.ownerOnly) return verdict(false, "ownerOnly")
