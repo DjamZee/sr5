@@ -11,6 +11,9 @@ import {
   mayDefend
 } from "../system/defense-once.js"
 import {
+  dropProneUnderFire, proneUnderSuppressiveFire
+} from "./roll-helpers/eat-dirt.js"
+import {
   refuseByRule
 } from "../system/rule-locks.js"
 import {
@@ -393,7 +396,14 @@ export class SR5_RollMessage {
       case "defenseRangedWeapon":
       case "defenseAstralCombat":
         actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids)
-        if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest("defense", null, messageData)
+        if (!await mayDefend(type, messageId, messageData, actor)) break
+        //SR5 p. 182: a prone character risks nothing from a suppressive fire, no test
+        if (type === "defenseRangedWeapon" && await proneUnderSuppressiveFire(actor, messageData)) break
+        actor.rollTest("defense", null, messageData)
+        break
+      case "dropProneUnderFire":
+        actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids)
+        await dropProneUnderFire(actor, messageData, messageId)
         break
       case "defenseThroughAndInto": {
         //Through and Into (Run & Gun p. 131): the second target defends against the attack card itself, read again from

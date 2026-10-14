@@ -45,6 +45,8 @@ export default async function attackInfo(cardData){
     } else if (cardData.damage.value > 0) cardData.chatCard.buttons.resistanceCard = SR5_RollMessage.generateChatButton("opposedTest","resistanceCard",label)
   } else if (cardData.roll.hits > 0) {
     if (cardData.test.typeSub === "rangedWeapon") cardData.chatCard.buttons.defenseRangedWeapon = SR5_RollMessage.generateChatButton("opposedTest","defenseRangedWeapon",game.i18n.localize("SR5.Defend"))
+    //SR5 p. 170 and 182: under suppressive fire, going prone (free action, or "manger la poussière") instead of the test
+    if (cardData.test.typeSub === "rangedWeapon" && cardData.combat.firingMode?.selected === "SF") cardData.chatCard.buttons.dropProneUnderFire = SR5_RollMessage.generateChatButton("opposedTest","dropProneUnderFire",game.i18n.localize("SR5.EatDirtButton"))
     else if (cardData.test.typeSub === "meleeWeapon") cardData.chatCard.buttons.defenseMeleeWeapon = SR5_RollMessage.generateChatButton("opposedTest","defenseMeleeWeapon",game.i18n.localize("SR5.Defend"))
   } else {
     if (cardData.test.type === "ramming") cardData.chatCard.buttons.defenseRamming = SR5_RollMessage.generateChatButton("opposedTest","defenseRamming",game.i18n.localize("SR5.Defend"))
