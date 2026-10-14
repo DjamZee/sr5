@@ -65,6 +65,9 @@ export {
   default as grappleEscape
 } from "./rollData-GrappleEscape.js"
 export {
+  default as netEscape
+} from "./rollData-NetEscape.js"
+export {
   default as grappleClinch
 } from "./rollData-GrappleClinch.js"
 export {

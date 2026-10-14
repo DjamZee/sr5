@@ -192,6 +192,68 @@ export const WEAPON_ACCESSORY_CATALOG = {
   underbarrelChainsaw:      {
     price: 500, slot: "", type: "accessory" 
   },
+  // Instrument of death (No Future p. 152-153): a weapon built into a musical instrument, Accuracy -1, Availability +2,
+  // and the price of the weapon twice (the instrument's own is its item's)
+  deathInstrument:          {
+    price: 0, priceMultiplier: 1, slot: "", type: "trait",
+    itemEffects: [
+      {
+        target: "system.accuracy", type: "value", value: -1
+      },
+      {
+        target: "system.availability", type: "value", value: 2
+      },
+    ],
+  },
+  // Special modifications (Better Than Bad p. 145), the quality of their owner: each level gives +1 DV, or two of these
+  // options (cumulative). Only on what the weapon already has, and only for the one who paid the Karma (the GM sees to it)
+  specialModDamage:         {
+    price: 0, slot: "", type: "trait",
+    itemEffects: [{
+      target: "system.damageValue", type: "value", value: 1
+    }],
+  },
+  specialModArmorPenetration: {
+    price: 0, slot: "", type: "trait",
+    itemEffects: [{
+      target: "system.armorPenetration", type: "value", value: -1
+    }],
+  },
+  specialModAccuracy:       {
+    price: 0, slot: "", type: "trait",
+    itemEffects: [{
+      target: "system.accuracy", type: "value", value: 1
+    }],
+  },
+  specialModRecoil:         {
+    price: 0, slot: "", type: "trait",
+    itemEffects: [{
+      target: "system.recoilCompensation", type: "value", value: 1
+    }],
+  },
+  specialModConcealment:    {
+    price: 0, slot: "", type: "trait",
+    itemEffects: [{
+      target: "system.concealment", type: "value", value: -1
+    }],
+  },
+  specialModReach:          {
+    price: 0, slot: "", type: "trait",
+    itemEffects: [{
+      target: "system.reach", type: "value", value: 1
+    }],
+  },
+  // Nets (Run & Gun p. 25, 28): the net lands on a hit, a graze included, and subdues the target (net-rules.js). The
+  // compendium nets are recognised by their name; these traits put the rule on any weapon
+  net:                      {
+    price: 0, slot: "", type: "trait"
+  },
+  netXL:                    {
+    price: 0, slot: "", type: "trait"
+  },
+  shockNet:                 {
+    price: 0, slot: "", type: "trait"
+  },
   // Flamethrower (Gun H(e)aven 3 p. 3): Fire damage, Suppressive Fire, fanning sweep over up to three targets
   flamethrower:             {
     price: 0, slot: "", type: "trait", systemEffects: [{

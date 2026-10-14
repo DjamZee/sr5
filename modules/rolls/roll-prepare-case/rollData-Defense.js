@@ -16,6 +16,9 @@ import {
 import {
   rgOption, movementModifiers, phaseMeters
 } from "../../system/rg-combat-options.js"
+import {
+  flashlightDazzles, WEAK_GLARE
+} from "../roll-helpers/flashlight-glare.js"
 
 //The defense modifier of RG3 for the defender's own token (its first one on the scene when the actor is linked)
 export function defenderMovementModifier(actor, combat = globalThis.game?.combat){
@@ -95,7 +98,11 @@ export default async function defense(rollData, actor, chatData){
   rollData.target.sceneId = chatData.target.sceneId ?? null
   rollData.target.range = chatData.target.range 
   rollData.combat.choke = chatData.combat.choke  
-  rollData.combat.weaponType = chatData.combat.weaponType    
+  rollData.combat.weaponType = chatData.combat.weaponType
+  //A net (Run & Gun p. 25): it lands on a hit, a graze included (test-Defense.js)
+  if (chatData.combat.net) rollData.combat.net = {
+    xl: !!chatData.combat.net.xl, shock: !!chatData.combat.net.shock
+  }
 
   //Add special info for Suppressive fire
   if (chatData.combat.firingMode.selected === "SF"){
@@ -112,11 +119,15 @@ export default async function defense(rollData, actor, chatData){
   //"the shooter will have to compensate" and range is the attacker's, so neither applies (DjamZ, 2026-10-03).
   //Suppressive fire has its own Reaction + Edge test (p. 181) and is left as it was.
   if (chatData.test.typeSub === "rangedWeapon" && chatData.combat.firingMode.selected !== "SF"){
-    let environmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(chatData.target.sceneId), actor.system, true)
+    //Run & Gun p. 69: the target is in the beam of the flashlight on the weapon, weak glare if it suits its vision
+    const dazzled = flashlightDazzles(chatData.combat.weaponLights, actor.system.visions)
+    let environmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(chatData.target.sceneId), actor.system, true, dazzled ? {
+      visibility: 0, light: 0, glare: 0, wind: 0, glareAtLeast: WEAK_GLARE
+    } : undefined)
     if (environmentalMod !== 0){
       rollData.dicePool.modifiers.push({
         type: "environmentalSceneMod",
-        label: game.i18n.localize("SR5.EnvironmentalModifiers"),
+        label: dazzled ? `${game.i18n.localize("SR5.EnvironmentalModifiers")} (${game.i18n.localize("SR5.FlashlightGlare")})` : game.i18n.localize("SR5.EnvironmentalModifiers"),
         value: environmentalMod,
       })
     }

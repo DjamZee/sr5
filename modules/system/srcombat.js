@@ -1134,6 +1134,14 @@ export class SR5Combat extends Combat {
           })
         }
 
+        //Run & Gun p. 28: the second charge of a ShockNet, at the start of the next Combat Turn, on the one still caught
+        if (itemData.type === "shockNetCharge") {
+          const {
+            shockNetSecondCharge
+          } = await import("../rolls/roll-helpers/net.js")
+          await shockNetSecondCharge(actor, itemData, item.flags?.sr5?.shockNet)
+        }
+
         //Apply Fire effect if any
         //SR5 p. 173: the fire DV starts at 3 and goes up by 1 each Combat Turn. The effect value is a text field:
         //adding 1 to it would append a digit ("3" + 1 = "31")

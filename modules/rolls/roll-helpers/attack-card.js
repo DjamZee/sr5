@@ -29,6 +29,12 @@ import {
   energyAuraApplies, jugularToxin, laserDamageReduction, LASER_TRAIT
 } from "./weapon-attack-rules.js"
 import {
+  netOf
+} from "./net-rules.js"
+import {
+  spellAuraOf, spellAuraDamageType, spellAuraBackfireType
+} from "./spell-aura.js"
+import {
   hasWeaponTrait
 } from "../../entities/items/weaponTraits.js"
 import {
@@ -99,6 +105,13 @@ export function weaponAttackDamage(weapon, actor, choices = {
     result.ap = -magic
     result.element = a.specialProperties.energyAura
     if (a.specialProperties.energyAura !== "electricity") result.type = "physical"
+  }
+  //Aura of [element] (Street Grimoire p. 114), as rollData-Weapon.js adds it
+  const spellAura = spellAuraOf(a)
+  if (spellAura && energyAuraApplies(w.category)) {
+    result.base += spellAura.value
+    result.element = spellAura.element
+    result.type = spellAuraDamageType(spellAura.element, result.type)
   }
   switch (calledShot) {
     case "bullsEye":
@@ -384,6 +397,8 @@ export async function vetAttackCard(chatData, {
       pool = (Number(pool) || 0) + sight.dice
       limit += sight.accuracy
     }
+    //A ShockNet's charge is electric, as rollData-Weapon.js puts it on the card (Run & Gun p. 25, 28)
+    if (family === "weapon" && netOf(item)?.shock) damage.element = "electricity"
     vetted = {
       base: damage.base, value: damage.base, ap: damage.ap, type: damage.type, element: damage.element ?? "", source: damage.source,
     }
@@ -630,7 +645,7 @@ export async function trustedAttackCard(chatData, defender, messageId = chatData
 const VOUCHED = new WeakSet()
 
 /** The cards a defense writes in the attacker's name: an energy aura that burns him, the crash of his ramming. */
-export const CROSS_CARDS = ["energeticAura", "accident"]
+export const CROSS_CARDS = ["energeticAura", "spellAura", "accident"]
 
 /**
  * The card a defense wrote in the attacker's name (test-Defense.js: energy aura, SR5 p. 397; ramming crash, Rigger 5
@@ -675,6 +690,15 @@ export async function rebuildCrossCard(chatData, actor, helpers = null) {
     data.damage.base = data.damage.value = magic * 2
     data.combat.armorPenetration = -magic
     data.damage.type = "physical"
+    data.damage.source = "magical"
+  } else if (kind === "spellAura") {
+    //Aura of [element] (Street Grimoire p. 114): DV = the spell's hits, its element, read on the defender's sheet
+    const aura = spellAuraOf(defender?.system)
+    if (!aura || attack.data.test?.typeSub !== "meleeWeapon") return null
+    data.damage.base = data.damage.value = aura.value
+    data.combat.armorPenetration = 0
+    data.damage.type = spellAuraBackfireType(aura.element)
+    data.damage.element = aura.element
     data.damage.source = "magical"
   } else {
     if (attack.data.test?.type !== "ramming" || attack.roller?.type !== "actorDrone") return null

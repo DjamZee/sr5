@@ -18,12 +18,16 @@ export function isWeaponPulse(damage) {
   return !!damage?.fromWeapon
 }
 
-/** Whether `actor` has a matrix monitor a DSP pulse reaches (see above). */
+/**
+ * Whether `actor` has a matrix monitor a DSP pulse reaches (see above). The pulse goes "par le biais de sa connexion sans
+ * fil" (p. 56): a drone, or the device of a character, with its wireless off is not reached.
+ */
 export function hasMatrixMonitorInReach(actor) {
   if (!actor) return false
-  if (actor.type === "actorDrone" || actor.type === "actorDevice") return true
+  if (actor.type === "actorDrone") return actor.system?.wirelessTurnedOn !== false
+  if (actor.type === "actorDevice") return true
   if (actor.type !== "actorPc" && actor.type !== "actorGrunt") return false
-  return !!actor.items?.find(i => i.type === "itemDevice" && i.system?.isActive)
+  return !!actor.items?.find(i => i.type === "itemDevice" && i.system?.isActive && i.system?.wirelessTurnedOn !== false)
 }
 
 /**

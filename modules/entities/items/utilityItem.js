@@ -17,7 +17,7 @@ import {
   WEAPON_ACCESSORY_CATALOG 
 } from "../../data/weaponAccessoryCatalog.js"
 import {
-  isAccessoryKind, ignoredRecoilAccessories, accessoryCapacity, capacityTaken
+  isAccessoryKind, ignoredRecoilAccessories, accessoryCapacity, capacityTaken, SMARTGUN_ACCURACY, triggerRemovalAccuracy
 } from "./weapon-accessory-rules.js"
 import {
   SR5_Toxins
@@ -1010,6 +1010,13 @@ export class SR5_UtilityItem extends Actor {
         SR5_EntityHelpers.updateModifier(itemData.price, label, "weaponAccessory", a.price)
       }
     }
+
+    // Trigger removal (Hard Targets p. 182), once the other Accuracy bonuses are known: it adds to the smartgun's
+    const trigger = triggerRemovalAccuracy(itemData)
+    if (trigger) {
+      const label = trigger.accessory.system ? trigger.accessory.name : game.i18n.localize(SR5.weaponAccessories[trigger.accessory.name])
+      SR5_EntityHelpers.updateModifier(itemData.accuracy, label, "weaponAccessory", 1, false, trigger.cumulative)
+    }
   }
 
   /** Handle accessories with conditional / actor-dependent logic */
@@ -1057,7 +1064,7 @@ export class SR5_UtilityItem extends Actor {
         if (accessory.isActive && actor !== undefined && actor.type !== "actorDrone") {
           let smartlink = actor.system.specialProperties.smartlink.value
           if (smartlink) {
-            SR5_EntityHelpers.updateModifier(itemData.accuracy, label, "weaponAccessory", 2, false, false)
+            SR5_EntityHelpers.updateModifier(itemData.accuracy, label, "weaponAccessory", 2, false, false, SMARTGUN_ACCURACY)
             if (itemData.wirelessTurnedOn) {
               SR5_EntityHelpers.updateModifier(itemData.weaponSkill, label, "weaponAccessory", smartlink >= 2 ? 2 : 1, false, false)
             }
@@ -1069,7 +1076,7 @@ export class SR5_UtilityItem extends Actor {
         if (accessory.isActive && actor !== undefined && actor.type !== "actorDrone") {
           let smartlink = actor.system.specialProperties.smartlink.value
           if (smartlink) {
-            SR5_EntityHelpers.updateModifier(itemData.accuracy, label, "weaponAccessory", 2, false, false)
+            SR5_EntityHelpers.updateModifier(itemData.accuracy, label, "weaponAccessory", 2, false, false, SMARTGUN_ACCURACY)
             if (itemData.wirelessTurnedOn) {
               SR5_EntityHelpers.updateModifier(itemData.weaponSkill, label, "weaponAccessory", smartlink >= 2 ? 2 : 1, false, false)
             }
@@ -1161,6 +1168,8 @@ export class SR5_UtilityItem extends Actor {
   //- a recoil system that does not stack with a better one on the weapon (Run & Gun p. 71)
   static _skipAccessoryEffect(a, effect, recoilIgnored) {
     if (effect.target === "system.accuracy" && isAccessoryKind(a, "redDotSight")) return true
+    //- the trigger removal's Accuracy, applied after the others (Hard Targets p. 182, triggerRemovalAccuracy)
+    if (effect.target === "system.accuracy" && isAccessoryKind(a, "triggerRemoval")) return true
     if (recoilIgnored && effect.target === "system.recoilCompensation") return true
     return false
   }

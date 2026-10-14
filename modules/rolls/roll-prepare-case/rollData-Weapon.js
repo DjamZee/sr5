@@ -52,6 +52,15 @@ import {
 import {
   rgOption, targetSizeModifier, droneCategoryOf, movementModifiers, phaseMeters, armorPenalty
 } from "../../system/rg-combat-options.js"
+import {
+  netOf
+} from "../roll-helpers/net-rules.js"
+import {
+  weaponLightKinds
+} from "../roll-helpers/flashlight-glare.js"
+import {
+  spellAuraOf, spellAuraDamageType
+} from "../roll-helpers/spell-aura.js"
 
 //Add info for weapon Roll
 export default async function weapon(rollData, actor, item){
@@ -213,6 +222,14 @@ export default async function weapon(rollData, actor, item){
   rollData.combat.range.long = itemData.range.long.value
   rollData.combat.range.extreme = itemData.range.extreme.value
   rollData.combat.weaponType = itemData.type
+  //The flashlights lit on the weapon: their beam may dazzle the target on its defense (Run & Gun p. 69)
+  if (itemData.category === "rangedWeapon") rollData.combat.weaponLights = weaponLightKinds(itemData, SR5_UtilityItem.weaponAccessoryEffect)
+  //A net or a net gun (Run & Gun p. 25, 28): the ShockNet's charge is electric, "6E(e)" / "8E(e)"
+  const net = netOf(item)
+  if (net) {
+    rollData.combat.net = net
+    if (net.shock) rollData.damage.element = "electricity"
+  }
   rollData.lists.weaponRanges = {
     short: `${game.i18n.localize("SR5.WeaponRangeShort")} (${game.i18n.localize("SR5.WeaponRangeUpTo")} ${rollData.combat.range.short}) ${game.i18n.localize("SR5.MeterUnit")}`,
     medium: `${game.i18n.localize("SR5.WeaponRangeMedium")} (${game.i18n.localize("SR5.WeaponRangeUpTo")} ${rollData.combat.range.medium}) ${game.i18n.localize("SR5.MeterUnit")}`,
@@ -237,6 +254,14 @@ export default async function weapon(rollData, actor, item){
     rollData.combat.armorPenetration = -actorData.specialAttributes.magic.augmented.value
     rollData.damage.element = actorData.specialProperties.energyAura
     if (actorData.specialProperties.energyAura !== "electricity") rollData.damage.type = "physical"
+  }
+  //Aura of [element] (Street Grimoire p. 114): +1 DV per hit to melee attacks, elemental, AP unchanged
+  const spellAura = spellAuraOf(actorData)
+  if (spellAura && energyAuraApplies(itemData.category)){
+    rollData.damage.base += spellAura.value
+    rollData.damage.value += spellAura.value
+    rollData.damage.element = spellAura.element
+    rollData.damage.type = spellAuraDamageType(spellAura.element, rollData.damage.type)
   }
 
   //What depends on the range the dialog picks: red dot sight (Street Lethal p. 49), laser weapon (Run & Gun p. 64)

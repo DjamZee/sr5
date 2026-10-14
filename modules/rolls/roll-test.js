@@ -786,6 +786,9 @@ export class SR5_RollTest {
       case "grappleEscape":
         await SR5_AddRollInfo.grappleEscapeInfo(cardData, actorId)
         break
+      case "netEscape":
+        await SR5_AddRollInfo.netEscapeInfo(cardData, actorId)
+        break
       case "grappleClinchDefense":
         await SR5_AddRollInfo.grappleClinchDefenseInfo(cardData)
         break
