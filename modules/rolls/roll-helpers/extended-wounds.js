@@ -18,9 +18,12 @@ const KEY = type => type.replace("penalty", "")
  *   null when the test has none: then only the wound types the first roll had are read again
  * @returns {Array} a new list
  */
-export function refreshWoundModifiers(modifiers = [], penalties = {}, {
-  sheetModifiers = null, labels = {}
-} = {}){
+export function refreshWoundModifiers(modifiers = [], penalties = {
+}, {
+  sheetModifiers = null, labels = {
+  }
+} = {
+}){
   const current = type => Number(penalties?.[KEY(type)]?.actual?.value) || 0
   const had = modifiers.filter(m => WOUND_TYPES.includes(m.type))
   let wounds
