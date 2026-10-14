@@ -854,7 +854,9 @@ export class SR5Item extends Item {
       }
     }
     if (stop) return
-    for (const key of liftedAmmo) refuseByRule("ammo", key, null, {
+    //One gesture, one whisper: a Cap & Ball whose casing is not a cylinder, filled round by round, lifts two rules
+    //at once (review 12); the first one tells the gamemaster enough
+    if (liftedAmmo.length) refuseByRule("ammo", liftedAmmo[0], null, {
       actor
     })
 
