@@ -15,6 +15,10 @@ export class sr5ItemMartialArtDataModel extends foundry.abstract.TypeDataModel {
       ...descriptionPartialModel.defineSchema(),
       ...effectsPartialModel.defineSchema(),
       ...activationPartialModel.defineSchema(),
+      //The style of the technique, a key of SR5.martialArtsTypes. No strict choices: a module may add its own styles
+      type: new fields.StringField({
+        initial: '', blank: true
+      }),
       actionType: new fields.StringField({
         initial: ''
       }),
