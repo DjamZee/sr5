@@ -1,12 +1,14 @@
 // The information broker (Cutting Aces p. 148-149), lot 37a
 // A data market in AR: a cyan accent with a glow, colours mixed with the text colour so the window reads in the
 // dark theme as in the light one; one colour per request status, as in the con tracker
+// Lot 36b: the colours are the Concepteur's (window-tokens.less, laid with their light and dark sets by
+// window-skin.less), the same meaning per status; square corners, the Concepteur's tabs and frames
 .sr-infobroker {
-  --sr-ib-accent: #14b8c9;
-  --sr-ib-gold: #c98a00;
-  --sr-ib-ok: #22a35a;
-  --sr-ib-bad: var(--sr-ui-border-color, #b3261e);
-  --sr-ib-line: color-mix(in srgb, currentColor 15%, transparent);
+  --sr-ib-accent: var(--srw-accent);
+  --sr-ib-gold: var(--srw-left);
+  --sr-ib-ok: var(--srw-ok);
+  --sr-ib-bad: var(--srw-over);
+  --sr-ib-line: var(--srw-border);
 
   .window-content { padding: 0; }
 
@@ -22,7 +24,9 @@
     position: relative;
     min-height: 4.5rem;
     border-bottom: 2px solid var(--sr-ib-accent);
-    background: linear-gradient(110deg, color-mix(in srgb, var(--sr-ib-accent) 22%, transparent), transparent 70%);
+    background: linear-gradient(110deg, var(--srw-sel-bg), transparent 70%);
+    // The broker's name: the Concepteur's step heading
+    b { .srw-heading(var(--font-size-20, 20px)); }
     &.has-banner { aspect-ratio: 3 / 1; max-height: 210px; }
   }
   .sr-infobroker-banner {
@@ -49,9 +53,8 @@
     width: 64px;
     height: 64px;
     object-fit: cover;
-    border-radius: 6px;
     border: 2px solid var(--sr-ib-accent);
-    box-shadow: 0 0 12px color-mix(in srgb, var(--sr-ib-accent) 50%, transparent);
+    box-shadow: var(--srw-glow);
   }
   .sr-infobroker-buyer {
     margin-left: auto;
@@ -67,14 +70,10 @@
     padding: 0 0.8rem;
     a {
       padding: 0.25rem 0.8rem;
-      border: 1px solid var(--sr-ib-line);
-      border-radius: 999px;
-      opacity: 0.75;
+      .srw-tab();
+      .srw-cut();
       &.active {
-        opacity: 1;
-        font-weight: bold;
-        border-color: var(--sr-ib-accent);
-        background: color-mix(in srgb, var(--sr-ib-accent) 18%, transparent);
+        .srw-tab-active();
       }
     }
   }
@@ -82,10 +81,10 @@
     display: inline-block;
     min-width: 1.3em;
     padding: 0 0.3em;
-    border-radius: 999px;
     text-align: center;
     background: var(--sr-ib-gold);
-    color: #fff;
+    color: var(--srw-panel);
+    font-family: var(--srw-font-num);
     font-size: 0.8em;
   }
 
@@ -116,28 +115,28 @@
     padding: 0.45rem 0.6rem;
     text-align: left;
     border: 1px solid var(--sr-ib-line);
-    border-left: 4px solid color-mix(in srgb, var(--sr-ib-accent) 60%, transparent);
-    border-radius: 4px;
-    background: color-mix(in srgb, var(--sr-ib-accent) 6%, transparent);
+    border-left: 3px solid var(--srw-border-strong);
+    border-radius: 0;
+    background: var(--srw-panel);
     transition: background 0.15s, box-shadow 0.15s;
-    &:hover { background: color-mix(in srgb, var(--sr-ib-accent) 14%, transparent); }
+    &:hover { border-color: var(--srw-sel-border); }
+    // The Concepteur's selected choice
     &.picked {
-      border-color: var(--sr-ib-accent);
-      background: color-mix(in srgb, var(--sr-ib-accent) 22%, transparent);
-      box-shadow: 0 0 10px color-mix(in srgb, var(--sr-ib-accent) 45%, transparent);
+      border-color: var(--srw-sel-border);
+      background: var(--srw-sel-bg);
+      color: var(--srw-sel-text);
+      box-shadow: var(--srw-glow-in);
     }
   }
   .sr-infobroker-type-name { font-weight: bold; }
-  .sr-infobroker-type-range { font-size: 0.85em; color: var(--sr-ib-gold); font-weight: bold; }
+  .sr-infobroker-type-range { font-size: 0.85em; color: var(--sr-ib-gold); font-weight: bold; font-family: var(--srw-font-num); }
 
   .sr-infobroker-order {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
     padding: 0.6rem 0.8rem;
-    border-radius: 6px;
-    border: 1px solid color-mix(in srgb, var(--sr-ib-accent) 50%, transparent);
-    border-left: 6px solid var(--sr-ib-accent);
+    .srw-box(var(--sr-ib-accent));
     label { display: flex; align-items: center; gap: 0.5rem; }
     input[type="text"] { flex: 1; }
     button { align-self: flex-end; width: auto; padding: 0.2rem 1rem; }
@@ -150,10 +149,7 @@
     flex-direction: column;
     gap: 0.35rem;
     padding: 0.5rem 0.7rem;
-    border-radius: 6px;
-    border: 1px solid color-mix(in srgb, var(--sr-ib-status) 45%, transparent);
-    border-left: 6px solid var(--sr-ib-status);
-    background: linear-gradient(100deg, color-mix(in srgb, var(--sr-ib-status) 14%, transparent), transparent 75%);
+    .srw-box(var(--sr-ib-status));
     &.status-quoted, &.status-bid, &.status-paid { --sr-ib-status: var(--sr-ib-gold); }
     &.status-delivered, &.status-sold { --sr-ib-status: var(--sr-ib-ok); }
     &.status-notFound, &.status-declined, &.status-cancelled, &.status-refused { --sr-ib-status: var(--sr-ib-bad); opacity: 0.8; }
@@ -169,8 +165,9 @@
   .sr-infobroker-pill {
     font-size: 0.75em;
     padding: 0 0.5rem;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--sr-ib-status) 30%, transparent);
+    border: 1px solid var(--sr-ib-status);
+    color: var(--sr-ib-status);
+    font-family: var(--srw-font-num);
   }
   .sr-infobroker-request-line {
     display: flex;
@@ -183,8 +180,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.35rem 0.8rem;
     padding: 0.4rem;
-    border: 1px dashed var(--sr-ib-line);
-    border-radius: 4px;
+    border: 1px dashed var(--srw-border-strong);
     label { display: flex; align-items: center; gap: 0.4rem; }
     label.wide { grid-column: 1 / -1; align-items: flex-start; }
     textarea { flex: 1; resize: vertical; }
@@ -208,6 +204,6 @@
   align-self: center;
   white-space: nowrap;
   padding: 0.2rem 0.8rem;
-  border: 1px solid #14b8c9;
-  box-shadow: 0 0 8px rgba(20, 184, 201, 0.4);
+  border: 1px solid var(--srw-accent, #14b8c9);
+  box-shadow: var(--srw-glow, 0 0 8px rgba(20, 184, 201, 0.4));
 }

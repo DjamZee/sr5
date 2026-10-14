@@ -39,11 +39,11 @@
     margin: 0;
   }
 
+  // Lot 36b: the Concepteur's frame (window-skin.less lays the tokens)
   .sr-maneuver-description,
   .sr-explosive-result {
     padding: 0.35rem 0.5rem;
-    border-left: 3px solid var(--sr-ui-border-color-active);
-    background: color-mix(in srgb, var(--sr-ui-border-color-idle) 12%, transparent);
+    .srw-box();
   }
 
   .sr-maneuver-buttons {
@@ -56,7 +56,7 @@
   }
 
   .sr-explosive-gm {
-    border: 1px dashed var(--sr-ui-border-color-idle);
+    border: 1px dashed var(--srw-border-strong);
     padding: 0.2rem 0.4rem;
   }
 

@@ -1,19 +1,34 @@
+@import "../commons/window-tokens.less";
+
 // The favors of a contact (Run Faster p. 170-172), lot 37a
 // Same grammar as the con tracker (con-tracker.less): colours mixed with the text colour, so the block reads in the
 // dark theme as in the light one; green when the contact owes, red when the character does
+// Lot 36b: like the workshops (workshop.less), a Concepteur frame in the contact's sheet, which stays red; the sheet
+// is light in both Foundry themes, so is the frame (the light set of window-tokens.less), and so is the pill
 .sr-favors,
 .sr-favor-pill {
-  --sr-favor-up: #22a35a;
-  --sr-favor-down: var(--sr-ui-border-color, #b3261e);
-  --sr-favor-even: #0f8f8f;
-  --sr-favor-line: color-mix(in srgb, currentColor 15%, transparent);
+  .srw-tokens();
+  --sr-favor-up: var(--srw-ok);
+  --sr-favor-down: var(--srw-over);
+  --sr-favor-even: var(--srw-sel-border);
+  --sr-favor-line: var(--srw-border);
 }
 
 .sr-favors {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  padding: 0.3rem 0.2rem;
+  padding: 0.5rem 0.6rem;
+  color: var(--srw-text);
+  background: var(--srw-panel);
+  border: 1px solid var(--srw-border-strong);
+  border-top: 3px solid var(--srw-sel-border);
+
+  button {
+    .srw-button();
+    .srw-cut();
+  }
+  select { .srw-field(); }
 
   // The balance: a big figure, what it means, the tags of the relationship
   .sr-favors-balance {
@@ -23,10 +38,9 @@
     gap: 0.2rem 0.8rem;
     align-items: center;
     padding: 0.6rem 0.8rem;
-    border-radius: 6px;
-    border: 1px solid color-mix(in srgb, var(--sr-favor-accent) 50%, transparent);
-    border-left: 6px solid var(--sr-favor-accent);
-    background: linear-gradient(100deg, color-mix(in srgb, var(--sr-favor-accent) 24%, transparent), transparent 80%);
+    background: var(--srw-field);
+    border: 1px solid var(--srw-border);
+    border-left: 3px solid var(--sr-favor-accent);
     &.side-contactOwes { --sr-favor-accent: var(--sr-favor-up); }
     &.side-characterOwes { --sr-favor-accent: var(--sr-favor-down); }
   }
@@ -37,8 +51,8 @@
     font-size: 2.2em;
     font-weight: bold;
     line-height: 1;
+    font-family: var(--srw-font-num);
     color: var(--sr-favor-accent);
-    text-shadow: 0 0 10px color-mix(in srgb, var(--sr-favor-accent) 45%, transparent);
   }
   .sr-favors-what {
     display: flex;
@@ -60,7 +74,7 @@
     letter-spacing: 0.06em;
     padding: 0.05rem 0.45rem;
     border: 1px solid var(--sr-favor-line);
-    border-radius: 999px;
+    font-family: var(--srw-font-num);
     &.warn {
       border-color: color-mix(in srgb, var(--sr-favor-down) 60%, transparent);
       background: color-mix(in srgb, var(--sr-favor-down) 18%, transparent);
@@ -99,11 +113,9 @@
     border-top: 1px solid var(--sr-favor-line);
     padding-top: 0.3rem;
   }
+  // The Concepteur's « // » section title
   .sr-favors-log-title {
-    font-size: 0.8em;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    opacity: 0.7;
+    .srw-title();
     margin-bottom: 0.2rem;
   }
   .sr-favors-line {
@@ -143,7 +155,7 @@
   gap: 0.2rem;
   margin-left: 0.3rem;
   padding: 0 0.4rem;
-  border-radius: 999px;
+  font-family: var(--srw-font-num);
   font-size: 0.8em;
   font-weight: bold;
   &.up {
