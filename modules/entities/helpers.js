@@ -150,10 +150,11 @@ export class SR5_EntityHelpers {
     const uncapped = (Number(rating.base) || 0) + (this.modifiersSum(modifiers) || 0)
     const cut = (Number(rating.value) || 0) - uncapped
     if (cut >= 0) return modifiers
-    const { ceiling, ...rest } = cap
-    return modifiers.concat({
-      ...rest, value: cut
-    })
+    const cutModifier = {
+      ...cap, value: cut
+    }
+    delete cutModifier.ceiling
+    return modifiers.concat(cutModifier)
   }
 
   static updateDicePool(property, minValue, maxValue) {
