@@ -272,9 +272,9 @@ export class SR5_MatrixHelpers {
         },
         {
           action: "cancel",
-          label: "Cancel",
+          label: game.i18n.localize("SR5.Cancel"),
           callback: () => ({
-            action: "cancel" 
+            action: "cancel"
           }),
         },
       ],

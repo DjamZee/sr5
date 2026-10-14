@@ -368,8 +368,9 @@ export class SR5_RollMessage {
     //Define actor for Opposed test or Non opposed tests
     if (action === "opposedTest") {
       actor = SR5_EntityHelpers.getRealActorFromID(opposedTestActorId(speaker))
-      //A matrix defense goes to the card's target, never to its author still selected (Anatole's matrix trial)
-      if (type === "matrixDefense") {
+      //A matrix defense goes to the card's target, never to its author still selected (Anatole's matrix trial); so does
+      //the defense against an IC: a player owning two personas defended her AI with her decker (lot 17b, M6)
+      if (type === "matrixDefense" || type === "iceDefense") {
         actor = SR5_EntityHelpers.getRealActorFromID(matrixDefenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids)
         if (!actor) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoMatrixDefender"))
       }
