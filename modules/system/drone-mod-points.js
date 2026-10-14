@@ -176,6 +176,17 @@ export function modPointsLines(mods, takesPoints = takesModPoints, vehicle = nul
   })
 }
 
+/** The points a mod about to be fitted will take on its line, beside the drone's mods (lot 16b): the free +1 is not its
+ *  own when an upgrade already fitted took it, unlike modPointsOf ("as if alone") */
+export function modPointsOnDrone(mods, system, vehicle = null) {
+  const fitted = {
+    system: {
+      ...sys(system), isActive: true, isFactory: false
+    }
+  }
+  return modPointsLines([...Array.from(mods ?? []), fitted], undefined, vehicle).at(-1)
+}
+
 /** The drone's points: `total` its Y (or its Structure) plus what the downgrades give back, `used` what the mods take.
  *  `vehicle` = {body, modPoints}: the Structure and the Y the gamemaster wrote, null when they are the same */
 export function modPointsUsage(vehicle, mods) {
