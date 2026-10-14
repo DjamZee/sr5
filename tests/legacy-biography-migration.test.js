@@ -3,7 +3,7 @@ import {
 } from "vitest"
 
 const {
-  legacyBiographyUpdate, legacyDeltaUpdate, migrateLegacyBiography, runLegacyBiographyMigration, LEGACY_BIOGRAPHY_MIGRATION
+  legacyBiographyUpdate, legacySystemUpdate, legacyDeltaUpdate, migrateLegacyBiography, runLegacyBiographyMigration, LEGACY_BIOGRAPHY_MIGRATION
 } = await import("../modules/migration-legacy-biography.js")
 
 // Bérénice's review: migrateData read characterGender into gender in memory only. The database kept the old key, and a
@@ -61,6 +61,40 @@ describe("the update of one biography", () => {
     expect(Object.keys(update).filter(k => !k.includes("-="))).toEqual(["delta.system.biography.gender"])
     expect(update["delta.system.biography.-=characterGender"]).toBeNull()
     expect(update["delta.system.biography.-=characterSkin"]).toBeNull()
+    expect(update["delta.system.-=characterDescription"]).toBeNull()
+  })
+
+  // Lot 44, measured on the server: neither "system.-=characterDescription" nor "system.==biography" removes the key
+  it("an actor's system: written whole by a forced replacement, without characterDescription nor the legacy keys", () => {
+    const system = {
+      characterDescription: "<p>V12</p>", karma: {
+        value: 3
+      }, biography: {
+        description: "<p>V12</p>", characterGender: "female", gender: "female"
+      }
+    }
+    expect(legacySystemUpdate(system)).toEqual({
+      "==system": {
+        karma: {
+          value: 3
+        }, biography: {
+          description: "<p>V12</p>", gender: "female"
+        }
+      }
+    })
+    // the source itself is left as read
+    expect(system.characterDescription).toBe("<p>V12</p>")
+  })
+
+  it("leaves a V13 system as it is", () => {
+    const system = {
+      karma: {
+        value: 3
+      }, biography: {
+        description: "<p>V13</p>", gender: ""
+      }
+    }
+    expect(legacySystemUpdate(system)["==system"]).toEqual(system)
   })
 })
 
@@ -76,8 +110,10 @@ describe("the migration of a world", () => {
     expect(await migrateLegacyBiography()).toEqual({
       actors: 2, tokens: 0, packed: 0, failed: 0
     })
-    expect(pc.update.mock.calls[0][0]["system.==biography"]).toEqual({
-      gender: "female"
+    expect(pc.update.mock.calls[0][0]["==system"]).toEqual({
+      biography: {
+        gender: "female"
+      }
     })
     expect(pc.update.mock.calls[0][1]).toMatchObject({
       diff: false
