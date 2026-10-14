@@ -205,6 +205,22 @@ describe('M1: a move lays the crowns out again, it does not build them again', (
     })).toEqual({
       visible: false, reason: 'hiddenToken'
     })
+    // revealed to some characters only (idea 10): they see it, the others do not
+    const toSome = {
+      kind: 'device', mode: 'silent', ownerIds: ['owner'], marks: [], revealedTo: ['sam']
+    }
+    expect(nodeVisibility(toSome, {
+      ids: ['sam'], hasAntenna: true
+    }, {
+      distance: 500
+    })).toEqual({
+      visible: true, reason: 'revealed'
+    })
+    expect(nodeVisibility(toSome, {
+      ids: ['hacker'], hasAntenna: true
+    }, {
+      distance: 500
+    }).visible).toBe(false)
     // but the rigger keeps her own drone (lot 16b)
     expect(nodeVisibility(node, {
       ids: ['rigger'], hasAntenna: true

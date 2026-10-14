@@ -9,7 +9,8 @@
 // The rulings of DjamZ (07/10, CAHIER-COURONNE-PAN.md):
 // - Q2: without a commlink or a deck switched on, one only sees one's own crown (the gamemaster may reveal);
 // - Q3: the observer is the token one controls, otherwise one's assigned character;
-// - Q4: a device the gamemaster reveals is revealed to the whole table;
+// - Q4: a device the gamemaster reveals is revealed to the whole table; or, with the world setting "player by player"
+//   (idea 10, lot 16b), to the characters he ticked (revealedTo);
 // - with the world setting "the gamemaster decides" (lot 3), a player only sees her own crown and what the gamemaster
 //   revealed: no spotting, no mark, no range.
 // Nothing here is hardened against the console (decision of 06/10): every client works out its own view, a comfort
@@ -71,7 +72,7 @@ export function nodeVisibility(node, viewer, where = {
   if ((node.ownerIds ?? []).some(id => ids.includes(id))) return verdict(true, "owner")
   // A node drawn as a line to a token the gamemaster hid: no line betrays that token to anyone else (relecture)
   if (where.tokenHidden) return verdict(false, "hiddenToken")
-  if (node.revealed) return verdict(true, "revealed")
+  if (node.revealed || (node.revealedTo ?? []).some(id => ids.includes(id))) return verdict(true, "revealed")
   // A technomancer's persona out of the Matrix, her sprites while she hides (pan-graph.js, addResonanceNodes)
   if (node.ownerOnly) return verdict(false, "ownerOnly")
   if (viewer?.gmDecides) return verdict(false, "gmDecides")

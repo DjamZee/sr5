@@ -145,6 +145,16 @@ export function gmDecides(){
   }
 }
 
+// The world setting of idea 10 (lot 16b): the gamemaster's reveal to the whole table ("table", default) or player by
+// player ("player")
+export function revealByPlayer(){
+  try {
+    return game.settings.get("sr5", "panCrownRevealScope") === "player"
+  } catch {
+    return false
+  }
+}
+
 function lookerOf(actor, isGM){
   return {
     isGM,
@@ -201,6 +211,8 @@ export function getGraph(subject, options = {
     token: crown.token ?? null, actor: crown.actor
   }
   contributeToGraph(graph, crownContext)
+  // A reveal to some players only counts while the world reveals player by player
+  if (!revealByPlayer()) for (const node of graph.nodes) node.revealedTo = []
   const viewer = viewerFrom(options)
   const looker = lookerOf(viewer?.actor, !!viewer?.isGM)
   graph.viewer = {
@@ -260,6 +272,58 @@ export async function setPanReveal(node, revealed){
   for (const document of [item, drone]){
     if (document?.flags?.sr5?.panReveal !== undefined) await document.unsetFlag("sr5", "panReveal")
   }
+}
+
+/**
+ * Reveal a device to some characters only (idea 10, lot 16b), or to none: their actor ids, on the item. The gamemaster
+ * alone writes it.
+ * @param {Object} node   a node of getGraph
+ * @param {String[]} ids  the actor ids it is revealed to
+ */
+export async function setPanRevealTo(node, ids){
+  if (!game.user?.isGM || !node?.uuid) return
+  const [item, drone] = revealSourcesOf(node)
+  if (!item) return
+  const list = [...new Set((ids ?? []).filter(id => typeof id === "string" && id))]
+  if (list.length) await item.setFlag("sr5", "panRevealTo", list)
+  else if (item.flags?.sr5?.panRevealTo !== undefined) await item.unsetFlag("sr5", "panRevealTo")
+  // The drone that may carry the old list too
+  if (drone?.flags?.sr5?.panRevealTo !== undefined) await drone.unsetFlag("sr5", "panRevealTo")
+}
+
+/** The characters the gamemaster may reveal a device to: those of the players (playerViewers), each once */
+export function revealCandidates(){
+  const seen = new Map()
+  for (const {
+    actor
+  } of playerViewers()) if (actor?.id && !seen.has(actor.id)) seen.set(actor.id, {
+    id: actor.id, name: actor.name ?? actor.id
+  })
+  return [...seen.values()].sort((a, b) => a.name.localeCompare(b.name, game.i18n?.lang))
+}
+
+/** The gamemaster ticks the characters a device is revealed to (idea 10) */
+export async function askPanRevealTo(node){
+  if (!game.user?.isGM) return
+  const candidates = revealCandidates()
+  const current = new Set(node?.revealedTo ?? [])
+  const esc = s => foundry.utils.escapeHTML?.(String(s)) ?? String(s)
+  const content = candidates.length ? `<p>${esc(game.i18n.format("SR5.PanCrownRevealToIntro", {
+    name: node?.name ?? ""
+  }))}</p>${candidates.map(c => `<p><label><input type="checkbox" name="revealTo" value="${esc(c.id)}"${current.has(c.id) ? " checked" : ""}> ${esc(c.name)}</label></p>`).join("")}` :
+    `<p>${esc(game.i18n.localize("SR5.PanCrownRevealToNone"))}</p>`
+  const ids = await foundry.applications.api.DialogV2.wait({
+    window: {
+      title: "SR5.PanCrownRevealTo"
+    },
+    content,
+    buttons: [{
+      action: "ok", label: "SR5.PanCrownRevealToSave", default: true,
+      callback: (_event, button) => [...button.form.querySelectorAll('input[name="revealTo"]:checked')].map(i => i.value)
+    }],
+    rejectClose: false,
+  })
+  if (Array.isArray(ids)) await setPanRevealTo(node, ids)
 }
 
 // The token placeable of a subject, for the layer (lot 2)
