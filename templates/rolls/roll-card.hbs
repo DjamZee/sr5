@@ -125,7 +125,7 @@
 
 		<!-- EXTENDED TEST -->
 		{{#if test.isExtended}}
-			{{#unless roll.criticalGlitchRoll}}
+			{{#unless (or roll.criticalGlitchRoll (eq extendedTest false))}}
 			<button class="messageAction nonOpposedTest chat-button-owner" data-action="nonOpposedTest" data-type="extended">{{localize 'SR5.NewRoll'}}</button>
 			{{/unless}}
 		{{/if}}

@@ -6649,6 +6649,7 @@
 	"SR5.WARN_EdgeExtendedTestPushOnly": "Pendant un test étendu, seule Repousser les limites est permise parmi les usages de la Chance.",
 	"SR5.WARN_EdgeExtendedTestStartOnly": "Pendant un test étendu, Repousser les limites s'ajoute à la réserve de départ, une seule fois : plus possible sur un jet suivant.",
 	"SR5.WARN_StunHealsFirst": "Les dommages physiques ne guérissent pas tant que le personnage a des dommages étourdissants : soignez d'abord l'étourdissant (SR5 p. 207).",
+	"SR5.WARN_ExtendedTestOver": "Ce test est terminé : ses soins ont été appliqués. Lancez un nouveau test pour soigner encore (SR5 p. 207).",
 	"SR5.WARN_NoActor": "Vous devez sélectionner un Acteur !",
 	"SR5.WARN_NoActiveGM": "Aucun MJ connecté : cette action doit passer par le MJ et n'a pas été appliquée.",
 	"SR5.WARN_AlreadyDefended": "{name} s'est déjà défendu contre cette attaque : une seule défense par cible. Le MJ peut la rouvrir.",

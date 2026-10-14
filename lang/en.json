@@ -6649,6 +6649,7 @@
 	"SR5.WARN_EdgeExtendedTestPushOnly": "During an extended test, Push the limit is the only use of Edge allowed.",
 	"SR5.WARN_EdgeExtendedTestStartOnly": "During an extended test, Push the limit is added to the starting pool, once: it is no longer possible on a later roll.",
 	"SR5.WARN_StunHealsFirst": "Physical damage cannot heal while the character has Stun damage: heal Stun first (SR5 p. 207).",
+	"SR5.WARN_ExtendedTestOver": "This test is over: its healing was applied. Start a new test to heal more (SR5 p. 207).",
 	"SR5.WARN_NoActor": "You must select an Actor first.",
 	"SR5.WARN_NoActiveGM": "No GM connected: this action goes through the GM and was not applied.",
 	"SR5.WARN_AlreadyDefended": "{name} has already defended against this attack: one defense per target. The GM may reopen it.",
