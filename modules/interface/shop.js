@@ -38,6 +38,9 @@ import {
 import {
   creationModeFor, CREATION_OVER_LIMIT_FLAG
 } from '../system/creation-actor.js'
+import {
+  purchaseStamp, stampAll, PURCHASE_FLAG
+} from './shop-purchase.js'
 
 /**
  * Purchases made from the compendium browser.
@@ -407,6 +410,11 @@ export class SR5Shop {
 
     const payload = [], orders = []
     const now = game.time.worldTime
+    // One id for the debit and every piece it pays for, in play as in creation (lot 12, shop-purchase.js)
+    const stamp = purchaseStamp({
+      buyer: actor, recipient, userId, worldTime: now,
+      place: equip ? 'equip' : SR5Shop.creationModeFor(actor, creation) ? 'creation' : 'shop',
+    })
     if (assemble) {
       const {
         pricedModData
@@ -417,9 +425,9 @@ export class SR5Shop {
       const [vehicle, ...mods] = resolved
       if (!vehicle.waits) {
         const [vehicleData] = SR5Shop._itemPayload(vehicle.source, 1)
-        payload.push(assembledVehicleData(vehicleData, mods.map(line => ({
+        payload.push(...stampAll([assembledVehicleData(vehicleData, mods.map(line => ({
           ...pricedModData(line.source, vehicle.source), price: line.unit, fitted: line.fitted
-        })), foundry.utils.randomID))
+        })), foundry.utils.randomID)], stamp, resolved.reduce((sum, line) => sum + line.total, 0)))
       } else {
         // One order for the lot: the longest search of its lines (SR5 p. 420), the sum of what they cost
         const hours = Math.max(...resolved.map(line => SR5Shop.searchHours({
@@ -445,7 +453,7 @@ export class SR5Shop {
       if (!line.waits) {
         const items = SR5Shop._itemPayload(line.source, line.quantity, line.grade)
         if (line.overLimit) for (const data of items) foundry.utils.setProperty(data, `flags.sr5.${CREATION_OVER_LIMIT_FLAG}`, line.overLimit)
-        payload.push(...items)
+        payload.push(...stampAll(items, stamp, line.total))
         continue
       }
       const order = newOrder(line, {
@@ -456,6 +464,10 @@ export class SR5Shop {
       })
       line.order = order
       orders.push(order)
+    }
+    // An order delivered later carries the same trace onto what it brings (shop-orders.js, deliverOrder)
+    for (const order of orders) order.purchase = {
+      ...stamp, price: order.paid
     }
 
     const labels = resolved.map(line => SR5Shop.lineLabel(line.name, line.quantity))
@@ -490,6 +502,13 @@ export class SR5Shop {
         description: game.i18n.format('SR5.ShopPurchaseDescription', {
           name: labels.join(', '), price: total.toLocaleString()
         }),
+      },
+      flags: {
+        sr5: {
+          [PURCHASE_FLAG]: {
+            ...stamp, price: total
+          }
+        }
       },
     })
 
