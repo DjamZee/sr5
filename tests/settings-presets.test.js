@@ -112,18 +112,17 @@ describe("settings presets (lot 10)", () => {
 })
 
 describe("the question of a new world applies the Presets menu (lot 16b)", () => {
-  it("Livre = the advanced preset, Léger = the light one, the rules half untouched", () => {
-    expect(newWorldPresetChanges("book")).toEqual({
+  it("Automatisation : Avancée = the advanced preset, Légère = the light one, the rules half untouched", () => {
+    expect(newWorldPresetChanges("advanced")).toEqual({
       values: AUTOMATION_PRESETS.advanced.values, locks: presetLocks("book")
     })
     expect(newWorldPresetChanges("light")).toEqual({
       values: AUTOMATION_PRESETS.light.values, locks: presetLocks("light")
     })
   })
-  it("Livre, actions libres = advanced, the missing actions let through ; the window closed = Livre", () => {
-    expect(newWorldPresetChanges("bookFreeActions").locks).toEqual({
-      ...presetLocks("book"), missingActions: false
-    })
-    expect(newWorldPresetChanges(null)).toEqual(newWorldPresetChanges("book"))
+  it("Personnalisée applies nothing; the window closed, or an old answer, is Avancée (DjamZ, 14/10)", () => {
+    expect(newWorldPresetChanges("custom")).toBeNull()
+    expect(newWorldPresetChanges(null)).toEqual(newWorldPresetChanges("advanced"))
+    expect(newWorldPresetChanges("bookFreeActions")).toEqual(newWorldPresetChanges("advanced"))
   })
 })

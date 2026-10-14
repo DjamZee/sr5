@@ -86,23 +86,22 @@ export function presetChanges(choice, settings){
   }
 }
 
-// The question of a new world (rule-locks.js, askNewWorldPreset) is this menu's automation choice (lot 16b): "Livre"
-// and "Livre, actions libres" are the advanced preset, the second with the missing actions let through; "Léger" the
-// light one. The rules half is left to the menu
+// The question of a new world (rule-locks.js, askNewWorldPreset) is this menu's automation choice (lot 16b), in three
+// answers (DjamZ, 14/10): « Automatisation : Légère », « Avancée », « Personnalisée ». The first two apply the menu's
+// preset of that name; Personnalisée applies nothing and opens the Presets tab (Élise's decision). The rules half is
+// left to the menu
 export const NEW_WORLD_AUTOMATION = {
-  book: "advanced", bookFreeActions: "advanced", light: "light"
+  light: "light", advanced: "advanced", custom: null
 }
 
-/** What a new world's choice writes, as the menu would: anything else (the window closed) is "Livre" */
+/** What a new world's choice writes, as the menu would: null for Personnalisée, and the window closed is Avancée
+ *  (the book) */
 export function newWorldPresetChanges(choice){
-  const key = Object.hasOwn(NEW_WORLD_AUTOMATION, choice) ? choice : "book"
-  const changes = presetChanges({
+  const key = Object.hasOwn(NEW_WORLD_AUTOMATION, choice) ? choice : "advanced"
+  if (!NEW_WORLD_AUTOMATION[key]) return null
+  return presetChanges({
     automation: NEW_WORLD_AUTOMATION[key], rules: ""
   }, [])
-  if (key === "bookFreeActions") changes.locks = {
-    ...changes.locks, missingActions: false
-  }
-  return changes
 }
 
 /**

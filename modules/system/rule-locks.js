@@ -302,29 +302,23 @@ export async function runRuleLocksMigration({
   await game.settings.set("sr5", "sr5RuleLocksMigration", RULE_LOCKS_MIGRATION_VERSION)
 }
 
-// The presets offered in a new world (askNewWorldPreset): the book, the book with the missing actions let through, light
-export const NEW_WORLD_PRESETS = ["book", "bookFreeActions", "light"]
-
-// The boxes of a preset chosen in a new world; anything else (the window closed) is the book
-export function newWorldPresetLocks(choice) {
-  if (choice === "light") return presetLocks("light")
-  if (choice === "bookFreeActions") return {
-    ...presetLocks("book"), missingActions: false
-  }
-  return presetLocks("book")
-}
+// The answers offered in a new world (askNewWorldPreset): « Automatisation : Légère / Avancée / Personnalisée »
+// (DjamZ, 14/10), Avancée ticked, being the book
+export const NEW_WORLD_PRESETS = ["light", "advanced", "custom"]
+const NEW_WORLD_DEFAULT = "advanced"
 
 /**
  * Once per new world, the active gamemaster chooses its preset (wish of DjamZ, 07/10). sr5RuleLocksAsk is "pending"
  * only in a world the migration found new; an existing world never had it, and is never asked. The window closed
- * without a choice is the book. Asked once: the flag goes to "done" in its turn (gm-ledger.js)
- * Each choice applies the automation preset of the Presets menu (lot 16b, settings-presets.js): one system, not two.
+ * without a choice is Avancée, the book. Asked once: the flag goes to "done" in its turn (gm-ledger.js)
+ * Légère and Avancée apply the automation preset of that name of the Presets menu (lot 16b, settings-presets.js): one
+ * system, not two. Personnalisée applies nothing and opens the system's settings on the Presets tab (Élise, 14/10).
  */
 export async function askNewWorldPreset() {
   if (game.settings.get("sr5", "sr5RuleLocksAsk") !== "pending") return
   if (!game.users?.activeGM?.isSelf) return
   const option = (key, checked) => `<p><label><input type="radio" name="preset" value="${key}"${checked ? " checked" : ""}> <strong>${game.i18n.localize(`SR5.RULELOCKS_Ask_${key}`)}</strong> — ${game.i18n.localize(`SR5.RULELOCKS_Ask_${key}_D`)}</label></p>`
-  const content = `<p>${game.i18n.localize("SR5.RULELOCKS_Ask_Intro")}</p>${NEW_WORLD_PRESETS.map((key, i) => option(key, i === 0)).join("")}<p><em>${game.i18n.localize("SR5.RULELOCKS_Ask_Later")}</em></p>`
+  const content = `<p>${game.i18n.localize("SR5.RULELOCKS_Ask_Intro")}</p>${NEW_WORLD_PRESETS.map(key => option(key, key === NEW_WORLD_DEFAULT)).join("")}<p><em>${game.i18n.localize("SR5.RULELOCKS_Ask_Later")}</em></p>`
   const choice = await foundry.applications.api.DialogV2.wait({
     window: {
       title: "SR5.RULELOCKS_Ask_T"
@@ -341,8 +335,14 @@ export async function askNewWorldPreset() {
   const {
     newWorldPresetChanges, applySettingValues
   } = await import("./settings-presets.js")
+  const changes = newWorldPresetChanges(choice)
+  if (changes) return applySettingValues(changes.values, changes.locks)
   const {
-    values, locks
-  } = newWorldPresetChanges(choice)
-  await applySettingValues(values, locks)
+    SR5SettingsConfig
+  } = await import("../interface/settings-window.js")
+  return new SR5SettingsConfig({
+    initialCategory: "presets"
+  }).render({
+    force: true
+  })
 }

@@ -18,6 +18,18 @@ vi.mock('../modules/entities/actors/entityActor-helpers.js', () => ({
     },
   },
 }))
+// Automatisation : Personnalisée opens the system's settings on the Presets tab
+const openedSettings = []
+vi.mock('../modules/interface/settings-window.js', () => ({
+  SR5SettingsConfig: class {
+    constructor(options){
+      this.options = options
+    }
+    render(){
+      openedSettings.push(this.options)
+    }
+  },
+}))
 
 const {
   RULE_LOCK_FAMILIES, RULE_LOCK_KEYS, presetLocks, presetOf, normalizeLocks, locksFromLegacy, legacyFromLocks,
@@ -448,7 +460,8 @@ describe('the preset asked in a new world (wish of DjamZ, 07/10)', () => {
     game.users.activeGM = {
       id: 'p1', isSelf: true
     }
-    wait = vi.fn(async () => 'bookFreeActions')
+    wait = vi.fn(async () => 'advanced')
+    openedSettings.length = 0
     globalThis.foundry.applications = {
       api: {
         DialogV2: {
@@ -458,17 +471,14 @@ describe('the preset asked in a new world (wish of DjamZ, 07/10)', () => {
     }
   })
 
-  it('a new world: the active gamemaster is asked once, "book, free actions" lets the missing actions through', async () => {
+  it('a new world: the active gamemaster is asked once, "Automatisation : Avancée" is the book', async () => {
     await runRuleLocksMigration({
       newWorld: true
     })
     expect(wait).toHaveBeenCalledTimes(1)
-    expect(store.sr5RuleLocks).toEqual({
-      ...presetLocks('book'), missingActions: false
-    })
-    expect(store.sr5RuleLocksPreset).toBe('custom')
-    expect(store.sr5BlockMissingActions).toBe(false)
+    expect(store.sr5RuleLocks).toEqual(presetLocks('book'))
     expect(store.sr5RuleLocksAsk).toBe('done')
+    expect(openedSettings).toEqual([])
     // The page reloaded: no window any more
     await runRuleLocksMigration()
     expect(wait).toHaveBeenCalledTimes(1)
@@ -490,6 +500,28 @@ describe('the preset asked in a new world (wish of DjamZ, 07/10)', () => {
     })
     expect(store.sr5RuleLocks).toEqual(presetLocks('light'))
     expect(store.sr5RuleLocksPreset).toBe('light')
+  })
+
+  it('"Personnalisée" applies nothing and opens the settings on the Presets tab (Élise, 14/10)', async () => {
+    wait.mockResolvedValue('custom')
+    await runRuleLocksMigration({
+      newWorld: true
+    })
+    // The book the migration wrote stays, untouched by a preset
+    expect(store.sr5RuleLocks).toEqual(presetLocks('book'))
+    expect(store.sr5RuleLocksAsk).toBe('done')
+    expect(openedSettings).toEqual([{
+      initialCategory: 'presets'
+    }])
+  })
+
+  it('the window offers exactly the three automation answers, Avancée ticked', async () => {
+    await runRuleLocksMigration({
+      newWorld: true
+    })
+    const content = wait.mock.calls[0][0].content
+    expect([...content.matchAll(/value="(\w+)"/g)].map(m => m[1])).toEqual(['light', 'advanced', 'custom'])
+    expect(content).toMatch(/value="advanced" checked/)
   })
 
   it('an existing world, migrated now or long ago: no window, nothing changes', async () => {
