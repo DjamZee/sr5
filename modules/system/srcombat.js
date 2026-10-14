@@ -706,7 +706,10 @@ export class SR5Combat extends Combat {
   //An actor update that can change the initiative of its fighter: the comparison with the combatant is harmless otherwise.
   //Items written through the actor (the sheet's toggles) count: wired reflexes switched on add Reaction and a die (SR5 p. 162)
   static updateMovesInitiative(data){
-    return !!(data?.system?.initiatives || data?.system?.conditionMonitors || data?.system?.matrix || data?.system?.attributes || Array.isArray(data?.items))
+    //A drone reads its controller's initiative from the copy of the rigger it keeps (vehicleOwner) and by its control
+    //mode: a change of either moves its initiative too (SR5 p. 162, measured in game, lot 17a)
+    return !!(data?.system?.initiatives || data?.system?.conditionMonitors || data?.system?.matrix || data?.system?.attributes ||
+      data?.system?.vehicleOwner || data?.system?.controlMode || Array.isArray(data?.items))
   }
 
   //The ids to compare again after an update of this actor: an unlinked token's own, or every fighter of a base actor,

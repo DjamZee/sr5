@@ -560,11 +560,16 @@ export async function checkIfTargetIsInTemplate(actor, targetActor, areaEffect, 
   return areaEffect
 }
 
+// Run & Gun p. 147: "S'il s'agit d'une attaque ciblée autorisée à tous les personnages, alors la pénalité pour
+// cette attaque ciblée est réduite de 1" — the "Attaque ciblée" techniques of the called shots anyone may make
+export const OPEN_CALLED_SHOT_TECHNIQUES = ["disarm", "feint", "pin"]
+
 export async function handleMartialArtsCalledShot(rollData, actor){
   for (let [key, value] of Object.entries(actor.system.itemsProperties.martialArts)){
     if (value.isActive) rollData.combat.calledShot.martialArts[key] = true
     // A technique lowers the penalty on its own (Run & Gun p. 125): no unlocking flag needed
-    if (value.modifier?.value) rollData.combat.calledShot.martialArtsModifiers[key] = value.modifier.value
+    const modifier = (value.modifier?.value || 0) + (value.isActive && OPEN_CALLED_SHOT_TECHNIQUES.includes(key) ? 1 : 0)
+    if (modifier) rollData.combat.calledShot.martialArtsModifiers[key] = modifier
   }
   // Any item can ease the other called shots (effect category "calledShots", G14)
   rollData.combat.calledShot.itemModifiers ??= {
