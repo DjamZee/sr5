@@ -67,6 +67,8 @@ export class SR5DroneSheet extends ActorSheetSR5 {
     context.system.canJumpIn = this.actor.system.canJumpIn
     //And the swarm the drone is a body of (Rigger 5.0 p. 35, system/swarm.js)
     context.system.swarmState = this.actor.system.swarmState
+    //And whether it can still move (Rigger 5.0 p. 128, capVehicleArmor)
+    context.system.cannotMove = this.actor.system.cannotMove
 
     this._prepareItems(context.actor)
 
