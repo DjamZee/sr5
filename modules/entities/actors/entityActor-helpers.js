@@ -1957,7 +1957,8 @@ export class SR5_ActorHelper {
     //source, and the next preparation added its modifiers again (fatigue resistance 7, then 14, then 21)
     await targetActor.update({
       ...SR5_ActorHelper.monitorSourceUpdate(damageType, actorData.system.conditionMonitors[damageType]),
-      ...(overflow ? SR5_ActorHelper.monitorSourceUpdate("overflow", overflow) : {})
+      ...(overflow ? SR5_ActorHelper.monitorSourceUpdate("overflow", overflow) : {
+      })
     })
     await SR5_ActorHelper.clearDamageKnockout(targetActor)
   }
