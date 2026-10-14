@@ -20,7 +20,7 @@ import {
   SR5_Toxins
 } from "../items/toxins.js"
 import {
-  applyDrugQuality, drugAddictionThreshold, effectiveDrugQuality
+  applyDrugQuality, drugAddictionThreshold, effectiveDrugQuality, crashSinceIntake
 } from "../items/drug-stat.js"
 import {
   longHaulDoseKind
@@ -75,7 +75,7 @@ import {
   SR5Combat
 } from "../../system/srcombat.js"
 import {
-  drugEffectApplies, phaseFromFlags
+  drugEffectApplies, phaseFromFlags, effectPhase
 } from "../items/drug-phase.js"
 import {
   replacedValue, replaceModifierValue
@@ -4411,8 +4411,9 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.Minutes",
           "duration": duration,
           "durationType": "hour",
-          "durationContrecoup": 24,
-          "durationContrecoupType": "hour",
+          //Chrome Flesh p. 193: "une fois la drogue ingérée", -2 dice to the other spirits "pendant une durée de 24 heures",
+          //counted from the intake: the crash holds what is left of them once the speed and the effect are over
+          "sinceIntake": 24 * 60,
         }
         break
       case "zero":
@@ -4509,6 +4510,8 @@ export class SR5_CharacterUtility extends Actor {
     if (antitoxin > 1) drugStat.duration = SR5_Toxins.drugDuration(drugStat.duration, antitoxin)
     //The quality of the drug changes the duration of its crash (Chrome Flesh p. 194)
     applyDrugQuality(drugStat, effectiveDrugQuality(item.system, consumer))
+    //After the quality: 24 hours from the intake are not a crash the quality lengthens
+    if (drugStat.sinceIntake) Object.assign(drugStat, crashSinceIntake(drugStat))
     return drugStat
   }
 
@@ -5739,7 +5742,7 @@ export class SR5_CharacterUtility extends Actor {
       // Drugs: an effect applies in its own phase, the rise or the crash (entities/items/drug-phase.js)
       if (item.type === "itemDrug") {
         skipCustomEffect = !customEffect.target || !customEffect.type || !!customEffect.transfer ||
-          !drugEffectApplies(customEffect, phaseFromFlags(itemData.isActive, itemData.wirelessTurnedOn))
+          !drugEffectApplies(customEffect, phaseFromFlags(itemData.isActive, itemData.wirelessTurnedOn), item.flags?.sr5)
       }
       // Quality : if an effect has "wifi on" check box to true, effect is always turned on, even if quality is not "equiped"
       if (item.type === "itemQuality") {
@@ -5864,6 +5867,14 @@ export class SR5_CharacterUtility extends Actor {
             //The target takes this value. A skill Limit, whose base is the key of its linked Limit, reads it back through
             //skillLimitValue(): the value stands in for the linked Limit, and the other effects on the skill Limit still
             //add to it (No Future p. 152: an instrument gives the Limit, a Synthlink raises it)
+            //A crash only lowers: Little Smoke brings Perception and Willpower "réduits à 1" (Chrome Flesh p. 192), never up
+            //to 1. The base of an attribute is set after the effects: the total is capped when it is worked out (helpers.js)
+            if (item.type === "itemDrug" && effectPhase(customEffect) === "crash") {
+              targetObject.modifiers.push({
+                source: item.name, type: modifierType, value: 0, isMultiplier: false, ceiling: Number(customEffect.value) || 0
+              })
+              break
+            }
             if (typeof targetObject.base === "number") targetObject.modifiers = []
             if (customEffect.type === "ratingReplace") customEffect.value = (itemData.itemRating || 0)
             if (customEffect.type === "hitsReplace") customEffect.value = (itemData.hits || 0)

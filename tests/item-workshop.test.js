@@ -78,6 +78,14 @@ describe('weapon slots (RG p. 67)', () => {
     expect(slotRefusal('assaultRifle', [], acc('Canon long', 'barrel', 'trait'))).toBe('trait')
     // The gamemaster's discretion: any slot
     expect(slotRefusal('bow', [], acc('Viseur', 'underneath'))).toBe(null)
+    //Hard Targets p. 183: two slots at once, both needed and both free
+    const crossbow = acc('Arbalète montée', 'barrel+underneath', 'modification')
+    expect(slotRefusal('assaultRifle', [], crossbow)).toBe(null)
+    expect(slotRefusal('assaultRifle', [acc('Silencieux', 'barrel')], crossbow)).toBe('slotTaken')
+    expect(slotRefusal('assaultRifle', [crossbow], acc('Bipied', 'underneath'))).toBe('slotTaken')
+    expect(slotRefusal('lightPistol', [], crossbow)).toBe('noSlot')
+    expect(slotLines('assaultRifle', [crossbow]).filter(l => l.used).map(l => l.key)).toEqual(['underneath', 'barrel'])
+    expect(toolsFor(acc('Laser sous le canon', 'underneath+side'))).toBe('kit')
   })
 
   it('asks for a kit and no test on top, a shop and a test inside or for a modification', () => {

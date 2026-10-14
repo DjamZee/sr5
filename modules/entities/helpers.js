@@ -151,6 +151,9 @@ export class SR5_EntityHelpers {
     let value = this.roundDecimal((property.base + this.modifiersSum(property.modifiers)) * this.modifiersProduct(property.modifiers), 2)
     if (minValue !== undefined) value = Math.max(value, minValue)
     if (maxValue !== undefined) value = Math.min(value, maxValue)
+    //A modifier may bring the total down to a value, never up (Little Smoke: "réduits à 1", Chrome Flesh p. 192)
+    const ceilings = (property.modifiers ?? []).filter(m => typeof m?.ceiling === "number").map(m => m.ceiling)
+    if (ceilings.length) value = Math.min(value, ...ceilings)
     property[total] = value
   }
 

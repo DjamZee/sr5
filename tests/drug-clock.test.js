@@ -113,14 +113,18 @@ describe("drugs on the world clock (SR5 p. 411-412, Chrome Flesh p. 194)", () =>
   })
 
   it("notes the start of each phase, and forgets the alert of the old one", () => {
+    //The part of a crash with a tail (lot 22b) is forgotten too
+    const part = {
+      crashPartOver: null, crashPartNotified: false
+    }
     expect(phaseStartFlags("", "rise", 50)).toEqual({
-      riseStart: 50, crashStart: null, drugNotified: false
+      riseStart: 50, crashStart: null, drugNotified: false, ...part
     })
     expect(phaseStartFlags("rise", "crash", 90)).toEqual({
-      crashStart: 90, drugNotified: false
+      crashStart: 90, drugNotified: false, ...part
     })
     expect(phaseStartFlags("crash", "", 120)).toEqual({
-      riseStart: null, crashStart: null, drugNotified: false
+      riseStart: null, crashStart: null, drugNotified: false, ...part
     })
     expect(phaseStartFlags("rise", "rise", 10)).toBe(null)
   })

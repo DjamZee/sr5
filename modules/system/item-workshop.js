@@ -68,6 +68,12 @@ export function accessorySlot(accessory) {
   return accessory?.slot || accessory?.system?.weaponAccessory?.slot || ""
 }
 
+/** The slots an accessory takes: one, or two joined by "+" (Hard Targets p. 183: the mounted crossbow takes the barrel
+ *  and under the barrel, the underbarrel laser under the barrel and a side) */
+export function accessorySlots(accessory) {
+  return accessorySlot(accessory).split("+").filter(Boolean)
+}
+
 /** The kind of an accessory: an accessory, a modification, or a trait (RG p. 67); a catalogue entry (the old form)
  *  has its kind in the catalogue */
 export function accessoryKind(accessory) {
@@ -80,7 +86,7 @@ export function accessoryKind(accessory) {
 export function slotLines(type, accessories) {
   const available = weaponSlots(type)
   return WEAPON_SLOTS.map(key => {
-    const on = Array.from(accessories ?? []).filter(a => accessorySlot(a) === key)
+    const on = Array.from(accessories ?? []).filter(a => accessorySlots(a).includes(key))
     const exists = available === null || available.includes(key)
     return {
       key, exists, names: on.map(a => a.name), used: on.length, over: on.length > 1, missing: !exists && on.length > 0,
@@ -92,19 +98,19 @@ export function slotLines(type, accessories) {
  *  p. 67), "noSlot" (the weapon does not have the slot), "slotTaken", or null */
 export function slotRefusal(type, accessories, added) {
   if (accessoryKind(added) === "trait") return "trait"
-  const slot = accessorySlot(added)
-  if (!slot) return null
+  const slots = accessorySlots(added)
+  if (!slots.length) return null
   const available = weaponSlots(type)
-  if (available !== null && !available.includes(slot)) return "noSlot"
-  if (Array.from(accessories ?? []).some(a => accessorySlot(a) === slot)) return "slotTaken"
+  if (available !== null && slots.some(slot => !available.includes(slot))) return "noSlot"
+  if (Array.from(accessories ?? []).some(a => accessorySlots(a).some(slot => slots.includes(slot)))) return "slotTaken"
   return null
 }
 
 /** RG p. 67, step 2: a kit for the top, the sides and under the barrel; a workshop for the internal, barrel and stock
  *  slots and for any modification */
 export function toolsFor(accessory) {
-  const slot = accessorySlot(accessory)
-  return accessoryKind(accessory) === "modification" || ["internal", "barrel", "stock"].includes(slot) ? "shop" : "kit"
+  const slots = accessorySlots(accessory)
+  return accessoryKind(accessory) === "modification" || slots.some(slot => ["internal", "barrel", "stock"].includes(slot)) ? "shop" : "kit"
 }
 
 /** RG p. 67: an accessory on the top, a side or under the barrel goes on in five minutes, without a test; one on the

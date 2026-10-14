@@ -60,6 +60,25 @@ export function effectiveDrugQuality(system, consumer){
   return system.preparedFor === consumer.id ? quality : "street"
 }
 
+// Minutes of each unit a duration of the stat is given in (keys of SR5.extendedIntervals)
+const UNIT_MINUTES = {
+  combatTurn: 0.05, minute: 1, hour: 60, day: 1440, week: 10080, month: 43200
+}
+
+// A crash counted from the intake (Wudu'aku, Chrome Flesh p. 193: 24 hours "une fois la drogue ingérée"): what is left
+// of `sinceIntake` minutes once the speed and the effect are over, in minutes
+export function crashSinceIntake(shot){
+  const speed = Number(shot?.speed) || 0
+  const speedType = String(shot?.speedType ?? "").toLowerCase()
+  const speedMinutes = speedType.includes("combatturn") ? speed * UNIT_MINUTES.combatTurn :
+    speedType.includes("hour") ? speed * UNIT_MINUTES.hour : speedType.includes("minute") ? speed : 0
+  const effectMinutes = (Number(shot?.duration) || 0) * (UNIT_MINUTES[shot?.durationType] ?? 0)
+  return {
+    durationContrecoup: Math.max(Math.ceil((Number(shot?.sinceIntake) || 0) - speedMinutes - effectMinutes), 0),
+    durationContrecoupType: "minute"
+  }
+}
+
 // The drug stat (handleShot) with the crash duration of its quality, changed in place
 export function applyDrugQuality(shot, quality){
   const factor = DRUG_QUALITY_CRASH_FACTORS[quality] ?? 1
