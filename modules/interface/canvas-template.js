@@ -41,7 +41,7 @@ export default class SR5Template extends foundry.canvas.placeables.MeasuredTempl
 	 * @return {AbilityTemplate|null}     The template object, or null if the item does not produce a template
 	 */
 
-  static fromItem(item, messageId) {
+  static fromItem(item, messageId, area = null) {
     let target = 0
     let flags = {
     }
@@ -91,6 +91,15 @@ export default class SR5Template extends foundry.canvas.placeables.MeasuredTempl
       angle = JAMMER_CONE_ANGLE
       target = jammerReachInMeters("directional", jammerRating(item.system))
       flags.sr5.jammerUuid = item.uuid
+    }
+
+    //An area the caller worked out itself: an explosive charge's blast, circular or a cone (Run & Gun p. 188)
+    if (area?.radius > 0) {
+      target = area.radius
+      if (area.angle) {
+        templateShape = "cone"
+        angle = area.angle
+      }
     }
 
     // target holds a radius taken from the books, in meters: a blast radius (SR5 p. 184) or an area spell's

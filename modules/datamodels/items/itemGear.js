@@ -57,6 +57,19 @@ export class sr5ItemGearDataModel extends foundry.abstract.TypeDataModel {
       tacnetLevel: new fields.NumberField({
         initial: 0
       }),
+      // An explosive (Run & Gun p. 202-206, SR5 p. 438): its compound, "" for none; the quantity is its kilos (or
+      // litres), the rating its rating. A homemade lot carries the gamemaster's secret change of rating (RG p. 189)
+      explosive: new fields.SchemaField({
+        type: new fields.StringField({
+          initial: "", blank: true
+        }),
+        homemade: new fields.BooleanField({
+          initial: false
+        }),
+        gmOffset: new fields.NumberField({
+          initial: 0, integer: true, min: -15, max: 15
+        }),
+      }),
       // A physical jammer (SR5 p. 443): area, directional or cranial, turned on from the actor's sheet. In
       // wireless mode it spares the actors listed here.
       jammer: new fields.SchemaField({

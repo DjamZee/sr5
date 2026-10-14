@@ -91,6 +91,9 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   }) => SR5ShopVendor.chatListeners(html, message))
   // Ritual circle card: join and seal (SR5 p. 298-299)
   if (message.flags?.sr5?.ritualCircle) SR5_RitualCircle.activateListeners(html, message)
+  // Lot 37b: an explosion to resist (Run & Gun p. 188), a combat maneuver to join and roll (Run & Gun p. 113)
+  if (message.flags?.sr5?.explosion) import("../system/explosive-charge.js").then(m => m.activateExplosionListeners(html, message))
+  if (message.flags?.sr5?.combatManeuver) import("../system/combat-maneuvers.js").then(m => m.activateManeuverListeners(html, message))
   // Effects run out on the world clock: the GM removes them
   if (message.flags?.sr5?.effectExpiry) activateExpiryCardListeners(html, message)
   // Withdrawal tests and rent fall due: the GM acts
