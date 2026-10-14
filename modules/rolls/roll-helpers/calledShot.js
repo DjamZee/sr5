@@ -74,7 +74,7 @@ export class SR5_CalledShotHelpers {
         ok: {
           label: "Ok" 
         }, cancel: {
-          label: "Cancel" 
+          label: game.i18n.localize("SR5.Cancel") 
         } 
       },
     })
