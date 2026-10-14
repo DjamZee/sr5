@@ -2525,6 +2525,7 @@
 	"SR5.RccShareAutosoft": "Partager avec les drones<br>({key})",
 	"SR5.HELP_RccShareAutosoftMsg": "Un autosoft partagé et actif tourne sur tous les drones asservis à la console qui n'exécutent aucun autosoft propre. Nombre d'autosofts partagés limité par l'indice de Partage (SR5 p. 269).",
 	"SR5.WARN_RccSharingFull": "La console partage déjà {sharing} autosoft(s), son indice de Partage. Retirez-en un, ou augmentez le Partage (SR5 p. 269).",
+	"SR5.WARN_MachinistAutosoftNoEcho": "Le persona incarné ne fait tourner que les autosofts que copie un écho [Programme] de résonance : ajoutez l'écho « [{name}] de résonance » pour partager {name} (SR5 p. 261, Kill Code p. 101).",
 	"SR5.AutosoftCapped": "Plafonné par l'Autopilote",
 	"SR5.HELP_AutosoftCappedMsg": "Un autopilote n'exécute pas d'autosoft d'indice supérieur au sien : cet autosoft tourne à l'indice {cap}. Partagé par une console, il garderait son indice (Rigger 5.0 p. 131).",
 	"SR5.AutopilotUnforeseen": "Autopilote face à l'imprévu",

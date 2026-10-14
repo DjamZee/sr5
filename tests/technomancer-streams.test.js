@@ -164,7 +164,9 @@ describe('the daemons', () => {
 })
 
 describe('Machinist: the living persona acts as a console (KC p. 100-101)', () => {
-  const machinist = technomancer([quality('streamMachinist'), autosoft('clearsight'), autosoft('targeting')])
+  // Each autosoft copied by an echo [Programme] de résonance (SR5 p. 261, KC p. 101)
+  const machinist = technomancer([quality('streamMachinist'), echo('[clearsight] de résonance'),
+    echo('[Programme] de résonance (targeting)'), autosoft('clearsight'), autosoft('targeting')])
 
   it('acts as a console, with Willpower and Charisma, fixed', () => {
     expect(personaActsAsRcc(machinist)).toBe(true)
@@ -198,7 +200,8 @@ describe('Machinist: the living persona acts as a console (KC p. 100-101)', () =
     expect(rccAutosoftRows(drone, []).map(r => r.state)).toEqual(['used', 'used'])
   })
   it('Sharing = Charisma caps the shared autosofts, whatever the Resonance', () => {
-    const shy = technomancer([quality('streamMachinist'), autosoft('a'), autosoft('b'), autosoft('c')], {
+    const shy = technomancer([quality('streamMachinist'), echo('[a] de résonance'), echo('[b] de résonance'),
+      echo('[c] de résonance'), autosoft('a'), autosoft('b'), autosoft('c')], {
       charisma: 2
     })
     const drone = {

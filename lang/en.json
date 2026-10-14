@@ -2525,6 +2525,7 @@
 	"SR5.RccShareAutosoft": "Share with the drones<br>({key})",
 	"SR5.HELP_RccShareAutosoftMsg": "A shared, running autosoft runs on every drone slaved to the console that runs no autosoft of its own. The number of shared autosofts is limited by the Sharing rating (SR5 p. 269).",
 	"SR5.WARN_RccSharingFull": "The console already shares {sharing} autosoft(s), its Sharing rating. Remove one, or raise the Sharing (SR5 p. 269).",
+	"SR5.WARN_MachinistAutosoftNoEcho": "The living persona only runs the autosofts a Resonance [Program] echo copies: add the echo \"Resonance [{name}]\" to share {name} (SR5 p. 261, Kill Code p. 101).",
 	"SR5.AutosoftCapped": "Capped by the Autopilot",
 	"SR5.HELP_AutosoftCappedMsg": "An autopilot cannot run an autosoft rated above itself: this autosoft runs at rating {cap}. Shared by a console, it would keep its rating (Rigger 5.0 p. 131).",
 	"SR5.AutopilotUnforeseen": "Autopilot facing the unexpected",
