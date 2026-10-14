@@ -37,6 +37,9 @@ import {
 import {
   vehiclePilotId
 } from "./rigging-rules.js"
+import {
+  rgOption, nextAlternativeTurn
+} from "./rg-combat-options.js"
 
 export class SR5Combat extends Combat {
   //Pass effects whose deletion is under way (see endOwnerPassEffects)
@@ -308,6 +311,15 @@ export class SR5Combat extends Combat {
       return
     }
 
+    //Run & Gun RG4 (RG p. 123, world setting): no passes, each phase costs 10 at once. The GM works it out; a player
+    //who ends her turn asks him, as for an ordinary turn
+    if (rgOption("initiative") && this.round > 0) {
+      if (game.user?.isGM) return this.stepAlternativeTurn()
+      return SR5_SocketHandler.emitForGM("rgAlternativeTurn", {
+        combatId: this.id, round: this.round, combatantId: this.current.combatantId,
+      })
+    }
+
     // Just step from one combatant to the next!
     if (nextTurn < this.turns.length) {
       //The GM works out the combatants himself: a player only asks for the turn (security lot, Thomas)
@@ -369,6 +381,49 @@ export class SR5Combat extends Combat {
       turn: nextTurn
     })
     await SR5Combat.endOwnerPassEffects(this, this.combatant)
+  }
+
+  /**
+   * Run & Gun RG4 (RG p. 123): "Le personnage avec le score d'initiative le plus élevé agit en premier, puis retranche
+   * 10 à son score d'initiative. Le tour continue avec le personnage suivant dans l'ordre d'initiative", who may be the
+   * same one. The combatant who acted loses 10 (never below 0) and, still above 0, gets his actions back for his next
+   * phase; the highest score above 0 acts next; with none left, the Combat Turn ends. The pass counter stays where it
+   * is: this rule has no passes. Effects counted in passes lose one at each phase of the combatant who bears them.
+   * On the GM's browser.
+   */
+  async stepAlternativeTurn(){
+    const current = this.combatant
+    if (current) {
+      const initiative = SR5Combat.reduceIniResultAfterPass(Number(current.initiative))
+      await current.update({
+        initiative,
+        "flags.sr5.baseCombatantInitiative": initiative,
+        "flags.sr5.hasPlayed": initiative <= 0 || current.isDefeated,
+        "flags.sr5.delayedAction": false,
+      })
+      await SR5Combat.decreaseInitiativePassEffects(current)
+      if (initiative > 0) await SR5Combat.resetActionInCombat(current.actor?.isToken ? current.tokenId : current.actorId, current)
+    }
+    const next = nextAlternativeTurn(this.turns.map(c => ({
+      initiative: c.initiative, hasPlayed: c.flags.sr5?.hasPlayed, defeated: c.isDefeated
+    })), this.settings?.skipDefeated)
+    if (next < 0) return this.nextRound()
+    await this.update({
+      turn: next
+    })
+    await SR5Combat.endOwnerPassEffects(this, this.combatant)
+  }
+
+  //A player ends her phase under RG4: believed from the owner of the current combatant, for the phase still current
+  static async _socketAlternativeTurn(message, senderId){
+    const sender = game.users.get(senderId),
+      data = message?.data ?? {
+      },
+      combat = game.combats?.get(data.combatId)
+    if (!sender || !combat || !rgOption("initiative")) return SR5Combat.#refuse("rgAlternativeTurn", senderId, data)
+    if (data.round !== combat.round || data.combatantId !== combat.current?.combatantId || !SR5Combat.ownsCurrentTurn(combat, sender)) return SR5Combat.#refuse("rgAlternativeTurn", senderId, data)
+    await combat.stepAlternativeTurn()
+    return true
   }
 
   /** Whether the sender is a GM or owns the combatant whose turn it is: the one who may end it */

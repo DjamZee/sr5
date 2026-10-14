@@ -15,6 +15,10 @@ export const SETTINGS_WINDOW_MENU = "sr5SettingsWindow"
 // The tabs, in the order the window shows them (DjamZ's order, 09/10; the Matrix tab, which he did not name, stays
 // after Magic). A tab with nothing the user may see is left out; "other" only catches a setting without its line.
 export const SETTINGS_TABS = [
+  // The presets head the window (lot 10, decision of 09/10): its only entry is their menu
+  {
+    id: "presets", label: "SR5.SETTINGS_Tab_Presets", icon: "fas fa-wand-magic-sparkles"
+  },
   {
     id: "interface", label: "SR5.SETTINGS_Tab_Interface", icon: "fas fa-display"
   },
@@ -74,6 +78,13 @@ export const SETTINGS_CATALOG = {
   sr5GrapplingRules: ["combat", "book"],
   sr5RunningFromDistance: ["combat"],
   sr5MeleeEnvironmentBalanced: ["combat", "book"],
+  // The optional rules of Run & Gun, RG1 to RG6 (RG p. 121-125, lot 10): together, in the book's order
+  sr5RGNoAttackLimit: ["combat", "book"],
+  sr5RGTargetSize: ["combat", "book"],
+  sr5RGMovementModifiers: ["combat", "book"],
+  sr5RGAlternativeInitiative: ["combat", "book"],
+  sr5RGArmorAsPenalty: ["combat", "book"],
+  sr5RGDefenselessDamage: ["combat", "book"],
   // Healing under fire and advanced medkits are played in combat (DjamZ, 09/10)
   sr5BBUnderFireRules: ["combat", "book"],
   sr5BBAdvancedMedkits: ["combat", "book"],
@@ -170,6 +181,7 @@ export const SETTINGS_CATALOG = {
 
 // Submenus (registerMenu key, without the namespace) → tab. They head their tab.
 export const MENU_CATALOG = {
+  sr5PresetsMenu: "presets",
   sr5RuleLocksMenu: "ruleLocks",
   sr5ShopConfigMenu: "shop",
   sr5FactionsMenu: "gm",

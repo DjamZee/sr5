@@ -13,6 +13,17 @@ import {
 import {
   SR5_SpellShapingHelpers
 } from "../roll-helpers/spell-shaping.js"
+import {
+  rgOption, movementModifiers, phaseMeters
+} from "../../system/rg-combat-options.js"
+
+//The defense modifier of RG3 for the defender's own token (its first one on the scene when the actor is linked)
+export function defenderMovementModifier(actor, combat = globalThis.game?.combat){
+  if (!rgOption("movement") || !combat?.started) return 0
+  const token = actor.token ?? globalThis.canvas?.scene?.tokens?.find(t => t.actorId === actor.id && t.actorLink)
+  const meters = phaseMeters(token?.getFlag?.("sr5", "runDistance"), combat.id, combat.round)
+  return movementModifiers(meters).defense
+}
 
 //Add info for Defense Roll
 export default async function defense(rollData, actor, chatData){
@@ -106,6 +117,17 @@ export default async function defense(rollData, actor, chatData){
         value: environmentalMod,
       })
     }
+  }
+
+  //Run & Gun RG3 (RG p. 122-123, world setting): the defender who moved in his last Action Phase defends the worse
+  //for it, by the speed table; ranged and melee attacks alike ("les tests de défense des personnages en mouvement")
+  if ((chatData.test.typeSub === "rangedWeapon" || chatData.test.typeSub === "meleeWeapon") && chatData.combat.firingMode?.selected !== "SF"){
+    const ownMovement = defenderMovementModifier(actor)
+    if (ownMovement) rollData.dicePool.modifiers.push({
+      type: "rgOwnMovement",
+      label: game.i18n.localize("SR5.RG_OwnMovement"),
+      value: ownMovement,
+    })
   }
 
   //Handle Astral combat defense

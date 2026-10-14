@@ -3942,7 +3942,12 @@ SR5.dicePoolModTypes = {
   targetRange               : "SR5.Range",
   reach                     : "SR5.WeaponReach",
   environmentalSceneMod     : "SR5.EnvironmentalModifiers",
-  perceptionType            : "SR5.SkillPerceptionType",
+  // The optional rules of Run & Gun (RG p. 122-124, lot 10)
+  rgTargetSize              : "SR5.RG_TargetSize",
+  rgTargetMovement          : "SR5.RG_TargetMovement",
+  rgArmorPenalty            : "SR5.RG_ArmorPenalty",
+  rgOwnMovement             : "SR5.RG_OwnMovement",
+  perceptionType           : "SR5.SkillPerceptionType",
   cumulativeDefense         : "SR5.CumulativeDefense",
   defenseMode               : "SR5.ActiveDefense",
   fullDefense               : "SR5.FullDefense",

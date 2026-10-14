@@ -25,6 +25,15 @@
     </p>
 </li>
 
+{{#if rentDebit}}
+<li class="grid">
+    <p>
+        <span class="col-auto">{{rentDebit.label}}{{localize 'SR5.Colons'}}</span>
+        <span class="col-auto SR-GreyColor">{{rentDebit.text}}</span>
+    </p>
+</li>
+{{/if}}
+
 <li class="grid">
     <p>
         <span class="col-auto">{{localize 'SR5.RentCost'}}{{localize 'SR5.Colons'}}</span>

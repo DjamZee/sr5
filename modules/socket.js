@@ -76,6 +76,7 @@ export class SR5_SocketHandler {
       "doNextRound": [SR5Combat._socketDoNextRound],
       "doInitPass": [SR5Combat._socketDoInitPass],
       "updateCombat": [SR5Combat._socketUpdateCombat],
+      "rgAlternativeTurn": [SR5Combat._socketAlternativeTurn],
       "changeInitInCombat": [SR5Combat._socketChangeInitInCombat],
       "createSidekick": [SR5_ActorHelper._socketCreateSidekick],
       "createDeadEffect": [SR5_ActorHelper._socketCreateDeadEffect],

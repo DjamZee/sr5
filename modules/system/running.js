@@ -8,6 +8,9 @@
 import {
   SR5Combat
 } from "./srcombat.js"
+import {
+  nextPhase
+} from "./rg-combat-options.js"
 
 export const RUNNING_STATUS = "running"
 export const RUNNING_ACTIONS = ["run", "sprint"]
@@ -155,6 +158,10 @@ export async function onMoveToken(tokenDocument, movement) {
   }
   const freePass = roundFreePass(before, combat.id, combat.round)
   if (freePass) flag.freePass = freePass
+  //The meters of the token's current Action Phase, for the movement modifiers of Run & Gun (RG3, RG p. 122): a
+  //phase is a pass and the score the combatant acts at, so that the alternative initiative (RG4) counts its phases too
+  const phaseKey = `${combat.getFlag?.("sr5", "combatInitiativePass") || 1}:${Number(combatant.initiative) || 0}`
+  flag.phase = nextPhase(roundMeters(before, combat.id, combat.round) ? before.phase : null, phaseKey, moved)
 
   const {
     walk

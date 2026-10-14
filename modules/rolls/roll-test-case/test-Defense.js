@@ -28,6 +28,9 @@ import {
 import {
   WEAPON_MATRIX_DAMAGE, weaponMatrixResistance
 } from "../roll-helpers/weapon-matrix-damage.js"
+import {
+  rgOption, defenselessDamageBonus
+} from "../../system/rg-combat-options.js"
 
 export default async function defenseInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
@@ -106,6 +109,17 @@ export default async function defenseInfo(cardData, actorId){
   if (cardData.combat.firingMode.selected === "SF") cardData.damage.value = cardData.damage.base
   else if (cardData.magic.spell.areaThreshold) cardData.damage.value = SR5_CombatHelpers.indirectAreaSpellDamage(cardData.damage.base, cardData.roll.netHits, cardData.magic.spell.areaThreshold)
   else cardData.damage.value = cardData.damage.base + cardData.roll.netHits
+
+  //Run & Gun RG6 (RG p. 125, world setting): a defense pool driven below 0 adds 1 DV per 2 dice past it
+  if (rgOption("defenseless") && (cardData.test.typeSub === "rangedWeapon" || cardData.test.typeSub === "meleeWeapon") && cardData.combat.firingMode.selected !== "SF") {
+    const bonus = defenselessDamageBonus(cardData.dicePool?.belowZero)
+    if (bonus) {
+      cardData.damage.value += bonus
+      ui.notifications.info(game.i18n.format("SR5.RG_DefenselessInfo", {
+        bonus, dice: -cardData.dicePool.belowZero
+      }))
+    }
+  }
 
   //A DSP weapon (Street Lethal p. 57): matrix damage, resisted with Device Rating + Firewall; no armor, no Body
   if (cardData.damage.type === WEAPON_MATRIX_DAMAGE) return weaponMatrixResistance(cardData, actor, SR5_RollMessage.generateChatButton)

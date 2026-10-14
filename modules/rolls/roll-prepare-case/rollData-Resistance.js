@@ -28,6 +28,19 @@ import {
 import {
   SR5_SpellShapingHelpers
 } from "../roll-helpers/spell-shaping.js"
+import {
+  rgOption
+} from "../../system/rg-combat-options.js"
+
+/**
+ * Run & Gun RG5 (RG p. 124-125): the armor went into the attack test as a penalty, so it stays out of this one.
+ * Weapon attacks on a target only: a grenade's blast and suppressive fire aim at no one's armor.
+ */
+export function armorLeftToAttack(chatData){
+  if (!rgOption("armorPenalty")) return false
+  if (!["rangedWeapon", "meleeWeapon"].includes(chatData?.test?.typeSub)) return false
+  return !chatData.combat?.grenade?.isGrenade && chatData.combat?.firingMode?.selected !== "SF"
+}
 
 // Show a notification and return undefined so the caller aborts the test.
 // In Foundry V13, ui.notifications.info() returns a Notification object: returning it directly
@@ -255,6 +268,14 @@ async function handlePhysicalDamage(rollData, actor, chatData, rollType){
 }
 
 async function handleNormalPhysicalDamage(rollData, actor, chatData, armor){
+  //Run & Gun RG5 (RG p. 124-125, world setting): the armor was a penalty on the attack, after the AP. Body alone
+  //resists, and the damage keeps its type (no conversion to Stun)
+  if (armorLeftToAttack(chatData)) {
+    rollData.dicePool.composition = actor.system.resistances.physicalDamage.modifiers.filter(m => !actor.system.itemsProperties.armor.modifiers.includes(m))
+    rollData.dicePool.base = actor.system.resistances.physicalDamage.dicePool - armor
+    return rollData
+  }
+
   //Check if AP is greater than Armor
   if (-chatData.combat.armorPenetration > armor) chatData.combat.armorPenetration = -armor
 
