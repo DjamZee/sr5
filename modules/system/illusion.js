@@ -92,6 +92,7 @@ async function recordCast(message, data){
     messageUsed: messageUsed(ledger(), message.id),
     rollJSON: data.roll?.r, force: data.magic?.force, magic: caster?.system?.specialAttributes?.magic?.augmented?.value,
     claimedHits: data.roll?.hits, secondChance: chanceSpent(data, caster),
+    bonusForce: caster?.system?.magic?.metamagics?.sacrifice ? Number(data.magic?.bloodMagic?.force) || 0 : 0,
   })
   verdict = asWritten(verdict, author, caster, data)
   if (!verdict.ok){

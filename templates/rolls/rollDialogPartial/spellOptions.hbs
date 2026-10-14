@@ -5,6 +5,45 @@
 <!--FORCE-->
 {{> systems/sr5/templates/rolls/rollDialogPartial/force.hbs}}
 
+<!-- BLOOD MAGIC (Street Grimoire p. 90, Forbidden Arcana p. 122-130): the points at hand, those the caster draws from his
+own wounds (martyr), and what they are spent on -->
+{{#if dialogSwitch.bloodMagic}}
+<li class="SR-LigneEnTete SR-PaddingTop10 grid SR-TextUppercase">
+    <div class="col-10">{{localize 'SR5.BloodMagicPoints'}}</div>
+    <div class="col-2 SR-TextRight">{{localize 'SR5.Value'}}</div>
+</li>
+<li class="grid">
+    <div class="col-11" data-tooltip="{{localize 'SR5.BloodMagicLeft_D'}}">{{localize 'SR5.BloodMagicLeft'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1 SR-TextCenter">
+        <input disabled type="number" name="bloodLeft" value="{{magic.bloodMagic.available}}" data-dtype="Number" placeholder="0" />
+    </div>
+</li>
+<li class="grid">
+    <div class="col-11" data-tooltip="{{localize 'SR5.BloodMartyrBoxes_D'}}">{{localize 'SR5.BloodMartyrBoxes'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1 SR-TextCenter">
+        <input type="number" class="SR-ModInput" name="bloodMartyrBoxes" min="0" value="0" data-dtype="Number" placeholder="0" />
+    </div>
+</li>
+<li class="grid">
+    <div class="col-11">{{localize 'SR5.BloodSpendForce'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1 SR-TextCenter">
+        <input type="number" class="SR-ModInput" name="bloodForce" min="0" value="0" data-dtype="Number" placeholder="0" />
+    </div>
+</li>
+<li class="grid">
+    <div class="col-11">{{localize 'SR5.BloodSpendDrainMagic'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1 SR-TextCenter">
+        <input type="number" class="SR-ModInput" name="bloodDrainMagic" min="0" value="0" data-dtype="Number" placeholder="0" />
+    </div>
+</li>
+<li class="grid">
+    <div class="col-11">{{localize 'SR5.BloodSpendDrain'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1 SR-TextCenter">
+        <input type="number" class="SR-ModInput" name="bloodDrain" min="0" value="0" data-dtype="Number" placeholder="0" />
+    </div>
+</li>
+{{/if}}
+
 <!-- INCREASE / DECREASE NOISE (Street Grimoire p. 113): the grid affected sets the threshold (2 / 4 / 6) -->
 {{#if dialogSwitch.noiseGrid}}
 <li class="grid">

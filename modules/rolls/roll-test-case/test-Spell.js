@@ -53,6 +53,18 @@ export default async function spellInfo(cardData){
       value: 2 * (cardData.magic.mageHunter.level || 0)
     }))
 
+  //Blood magic (Street Grimoire p. 90, Forbidden Arcana p. 130): what the points were spent on, and the addiction test
+  //that the sacrifice's points call for (never the martyr's)
+  const blood = cardData.test.type === "spell" ? cardData.magic.bloodMagic : null
+  if (blood && (blood.force || blood.drainMagic || blood.drain)) {
+    cardData.chatCard.buttons.bloodMagic = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.format("SR5.BloodMagicSpent", {
+      force: blood.force || 0, drainMagic: blood.drainMagic || 0, drain: blood.drain || 0, martyr: blood.fromMartyr || 0
+    }))
+    if (blood.fromPool > 0) cardData.chatCard.buttons.bloodAddiction = SR5_RollMessage.generateChatButton("nonOpposedTest", "bloodAddiction", game.i18n.format("SR5.BloodMagicAddictionTest", {
+      threshold: blood.addictionThreshold ?? 2
+    }))
+  }
+
   //Increase / Decrease Noise (Street Grimoire p. 113-114): the net hits over the grid's threshold change the Noise of the
   //area, given by the spell's template; beyond 4, the Overwatch Score of the hackers affected rises, for the GM
   if (cardData.test.type === "spell" && cardData.magic.noiseSpell?.kind) {

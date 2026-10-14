@@ -37,5 +37,12 @@
 			</div>
 		</li>
 		{{/each}}
+		{{#if actor.bloodMagicPoints.known}}
+		<!-- Blood Magic Points (Street Grimoire p. 90): granted by the GM, lost after the following Combat Turn -->
+		<li class="grid">
+			<div class="col-10" data-tooltip="{{localize 'SR5.BloodMagicPoints_D'}}"><p>{{localize 'SR5.BloodMagicPoints'}}</p></div>
+			<div class="col-2 SR-TextCenter"><p>{{actor.bloodMagicPoints.value}}</p></div>
+		</li>
+		{{/if}}
 	</ul>
 </div>

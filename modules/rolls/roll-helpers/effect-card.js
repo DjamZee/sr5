@@ -43,12 +43,14 @@ function hitsWithinPool(rollJSON, allowed, limit, secondChance = false){
 // The net hits keep what the card took off the hits (a threshold, the resistance), never less, so they cannot
 // grow past the hits counted again
 export function effectCardVerdict({
-  authorOwnsCaster, itemOnCaster, rollJSON, pool, edge = 0, force, magic, claimedHits, claimedNetHits, secondChance = false
+  authorOwnsCaster, itemOnCaster, rollJSON, pool, edge = 0, force, magic, claimedHits, claimedNetHits, secondChance = false,
+  bonusForce = 0
 }){
   if (!authorOwnsCaster || !itemOnCaster) return {
     ok: false, reason: "owner"
   }
-  const maxForce = Math.max(1, 2 * (Number(magic) || 0))
+  //`bonusForce`: the Blood Magic Points on the Force, beyond twice the Magic (Street Grimoire p. 90)
+  const maxForce = Math.max(1, 2 * (Number(magic) || 0)) + Math.max(0, Number(bonusForce) || 0)
   const limit = Math.min(Number(force) > 0 ? Number(force) : maxForce, maxForce)
   const allowed = (Number(pool) || 0) + Math.max(0, Number(edge) || 0)
   const hits = hitsWithinPool(rollJSON, allowed, limit, secondChance)

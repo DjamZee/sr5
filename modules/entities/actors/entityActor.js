@@ -37,6 +37,9 @@ import {
   isLinkLockEffect
 } from "../../system/link-lock.js"
 import {
+  bloodMetamagicKey
+} from "../../system/blood-magic-rules.js"
+import {
   applyDiseaseEffects
 } from "../../system/diseases.js"
 import {
@@ -698,6 +701,9 @@ export class SR5Actor extends Actor {
         case "itemMetamagic":
         case "itemEcho":
           if (iData.isActive && Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
+          //Sacrifice and Cannibalize (Street Grimoire p. 89-90) are known once learned, recognised by their name: the
+          //items copied into a world carry no effect. Nothing happens without a choice of their owner (blood-magic.js)
+          if (i.type === "itemMetamagic" && bloodMetamagicKey(i) && actor.system.magic?.metamagics) actor.system.magic.metamagics[bloodMetamagicKey(i)] = true
           break
 					
         case "itemPreparation":

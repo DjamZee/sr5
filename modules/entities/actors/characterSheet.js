@@ -26,6 +26,9 @@ import {
   SR5_ActorHelper
 } from "./entityActor-helpers.js"
 import {
+  knowsBloodMagic, bloodPointsOf
+} from "../../system/blood-magic.js"
+import {
   SR5FactionRegistry
 } from "../../interface/faction-registry.js"
 import {
@@ -258,6 +261,10 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     actor.focuses = focuses
     actor.adeptPowers = adeptPowers
     actor.metamagics = metamagics
+    //Blood Magic Points at hand (Street Grimoire p. 90), for a magician who knows Sacrifice or Cannibalize
+    actor.bloodMagicPoints = {
+      known: knowsBloodMagic(this.actor), value: bloodPointsOf(this.actor)
+    }
     actor.spirits = spirits
     actor.gears = gears
     actor.cyberdecks = cyberdecks

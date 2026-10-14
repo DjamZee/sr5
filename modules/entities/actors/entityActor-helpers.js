@@ -229,6 +229,16 @@ export class SR5_ActorHelper {
     }
     await realActor.update(monitorUpdates)
 
+    //Sacrifice (Street Grimoire p. 90): a melee wound dealt by a blood magician offers him its points, which his owner
+    //asks for and the GM grants. Never in the way of the damage
+    if (damageType === "physical" && damage > 0 && (actor.type === "actorPc" || actor.type === "actorGrunt") && !singleMonitor) {
+      try {
+        await (await import("../../system/blood-magic.js")).offerSacrifice(realActor, options, damage)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+
     //Status
     switch (actor.type){
       case "actorPc":
@@ -2238,6 +2248,7 @@ export class SR5_ActorHelper {
       force: isForm ? data.matrix?.level : data.magic?.force,
       magic: isForm ? caster?.system?.specialAttributes?.resonance?.augmented?.value : caster?.system?.specialAttributes?.magic?.augmented?.value,
       claimedHits: claimed.hits, claimedNetHits: claimed.netHits, secondChance: chanceSpent(data, caster),
+      bonusForce: !isForm && caster?.system?.magic?.metamagics?.sacrifice ? Number(data.magic?.bloodMagic?.force) || 0 : 0,
     })
     if (!verdict.ok) {
       await ChatMessage.create({

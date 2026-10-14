@@ -31,6 +31,12 @@ import {
   testsLeash
 } from "../entities/items/spirit-bonds.js"
 import {
+  bloodSpending, martyrPoints, bloodAddictionThreshold, bloodDrain, bloodSpellUnpaid
+} from "../system/blood-magic-rules.js"
+import {
+  bloodPointsOf, spendBloodPoints
+} from "../system/blood-magic.js"
+import {
   thresholdModifierOf, applyThresholdModifier, hasOwnThreshold
 } from "./roll-helpers/threshold.js"
 import {
@@ -199,6 +205,28 @@ export class SR5_RollTest {
       dialogData.matrix.level = actorData.specialAttributes.resonance.augmented.value
     }
 
+    //Blood magic (Street Grimoire p. 90, Forbidden Arcana p. 130): the points spent, read again against those at hand.
+    //The Force they add calls for no Drain and may exceed twice the Magic; the martyr's wounds are taken now; the
+    //sacrifice's points call for an addiction test, offered on the card
+    const blood = dialogData.test.type === "spell" ? dialogData.magic.bloodMagic : null
+    if (blood) {
+      const martyr = martyrPoints(blood.martyrBoxes, blood.selfCost)
+      const spent = bloodSpending({
+        force: blood.force, drainMagic: blood.drainMagic, drain: blood.drain, martyr, athame: blood.athame, pool: bloodPointsOf(actor)
+      })
+      Object.assign(blood, spent, {
+        martyrPoints: martyr
+      })
+      delete blood.woundModifier
+      delete dialogData.limit.modifiers.bloodMagic
+      if (spent.fromPool > 0) {
+        await spendBloodPoints(actor, spent.fromPool)
+        blood.addictionThreshold = bloodAddictionThreshold(spent, actorData.specialAttributes?.magic?.augmented?.value)
+      }
+      dialogData.magic.force = (Number(dialogData.magic.force) || 0) + spent.force
+      if (blood.martyrBoxes > 0) await SR5_RollTest.martyrWounds(actor, blood.martyrBoxes)
+    }
+
     //Add limit for force, reagents and level
     if ((dialogData.magic.force || dialogData.magic.hasUsedReagents) && dialogData.test.type !== "spellResistance"){
       if (dialogData.magic.force > 0) {
@@ -229,7 +257,9 @@ export class SR5_RollTest {
           dialogData.magic.drain.modifiers.reagentTier = {
             value: -dialogData.magic.reagentDrainReduction, label: game.i18n.localize(TIER_LABELS[dialogData.magic.reagentTier]),
           }
-          dialogData.magic.drain.value = Math.max(dialogData.magic.drainFloor ?? 2, dialogData.magic.drain.value - dialogData.magic.reagentDrainReduction)
+          //Blood Magic Points come off after the floor, down to 0 (Street Grimoire p. 90)
+          const bloodOff = Math.max(0, -(Number(dialogData.magic.drain.modifiers.bloodMagic?.value) || 0))
+          dialogData.magic.drain.value = bloodDrain(Math.max(dialogData.magic.drainFloor ?? 2, dialogData.magic.drain.value + bloodOff - dialogData.magic.reagentDrainReduction), bloodOff)
         }
       }
     }
@@ -322,7 +352,23 @@ export class SR5_RollTest {
    * left and the clip stops at 0 (roll-test-helper); the gamemaster hears of it only once the roll really goes,
    * after the actions check (B13, lot 2)
    */
+  //Martyr blood magic (Forbidden Arcana p. 130): the Physical damage the caster gives himself, unresisted
+  static async martyrWounds(actor, boxes){
+    const {
+      SR5_PrepareRollTest
+    } = await import("./roll-prepare.js")
+    const chatData = SR5_PrepareRollTest.getBaseRollData(null, actor)
+    chatData.damage.value = boxes
+    chatData.damage.type = "physical"
+    await actor.takeDamage(chatData)
+  }
+
   static rollClickRefused(actor, dialogData) {
+    //A Blood spell is cast with at least one Blood Magic Point spent (Forbidden Arcana p. 122): the dialog stays open
+    if (bloodSpellUnpaid(dialogData.magic?.bloodMagic)) {
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_BloodSpellNeedsPoint"))
+      return true
+    }
     const mode = dialogData.combat.firingMode.selected, left = dialogData.combat.ammo.value ?? 0
     const missingAmmo = dialogData.test.typeSub === "rangedWeapon" && SR5_ConverterHelpers.missingAmmo(mode, left)
     const refuse = () => refuseByRule("ammo", "SR5.WARN_FiringModeAmmo", {
