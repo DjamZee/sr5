@@ -149,6 +149,29 @@ describe('Sleuther IC (Kill Code p. 74)', () => {
     expect(sleutherDice(killer, target, id => id === 'sleutherTok' ? base : resolve(id), hostOf)).toBe(0)
   })
 
+  // Lot 19: two unlinked copies of one Sleuther, launched in two hosts, mark under the same id; each mark names its host
+  it('two copies of one Sleuther in two hosts: each host reads its own marks only', () => {
+    const otherHost = {
+      id: 'otherHost', uuid: 'Actor.otherHost', type: 'actorDevice', items: [], system: {
+        matrix: {
+          deviceType: 'host'
+        }
+      }
+    }
+    const here = ice('sleutherTok', 'iceSleuther')
+    const there = ice('sleutherTok', 'iceSleuther', 'Actor.otherHost')
+    const target = decker([{
+      ownerId: 'sleutherTok', value: 2, hostUuid: 'Actor.host'
+    }])
+    const r = id => id === 'sleutherTok' ? [here, there] : resolve(id)
+    const hostOfBoth = i => ({
+      'Actor.host': host, 'Actor.otherHost': otherHost
+    })[i.system.matrix.hostUuid] ?? null
+    expect(sleutherDice(host, target, r, hostOfBoth)).toBe(4)
+    expect(sleutherDice(otherHost, target, r, hostOfBoth)).toBe(0)
+    expect(sleutherDice(foreignIce, target, r, hostOfBoth)).toBe(0)
+  })
+
   it('reads the marks on the persona of an AI outside any device', () => {
     const ai = {
       id: 'ai', items: [], system: {

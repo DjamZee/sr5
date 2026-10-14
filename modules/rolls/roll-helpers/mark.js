@@ -28,6 +28,18 @@ const refuse = (kind, senderId, data) => {
   return false
 }
 
+/** Lot 19: the host an unlinked IC token marks for (its own system.matrix.hostUuid), or null for any other marker:
+ *  its copies launched in two hosts share one id, the host tells their marks apart */
+export function iceMarkHost(attacker){
+  if (attacker?.system?.matrix?.deviceType !== "ice" || !attacker.isToken) return null
+  return attacker.system.matrix.hostUuid || null
+}
+
+/** Whether a mark is the one this marker adds to: an IC's of the same host, or any mark with no host for the others */
+export function sameIceHost(mark, iceHost){
+  return (mark?.hostUuid || null) === (iceHost || null)
+}
+
 /** Kill Code p. 45: Initiative cost of the actions a Watchdog mark can turn into an Interruption action.
  * It lives here rather than in config.js, which holds translation tables only.
  */
@@ -71,9 +83,12 @@ export class SR5_MarkHelpers {
     if(attacker.system.matrix.deviceType === "ice" && attacker.isToken){
       realAttackerID = attacker.id
     }
+    //Lot 19: the copies of one IC launched in two hosts mark under the same id; the mark keeps the host of the copy
+    //that placed it, so that each host's marks stay its own (Sleuther, Kill Code p. 74)
+    const iceHost = iceMarkHost(attacker)
     // If item is already marked, increase marks
     for (let m of itemToMark.marks){
-      if (m.ownerId === realAttackerID) {
+      if (m.ownerId === realAttackerID && sameIceHost(m, iceHost)) {
         m.value += mark
         if (m.value > 3) m.value = 3
         if (isWatchdog) m.watchdog = true
@@ -88,6 +103,7 @@ export class SR5_MarkHelpers {
         "ownerName": attacker.name,
         "watchdog": isWatchdog,
       }
+      if (iceHost) newMark.hostUuid = iceHost
       itemToMark.marks.push(newMark)
     }
     await item.update({
@@ -130,9 +146,10 @@ export class SR5_MarkHelpers {
    * @param {Boolean} isWatchdog - Kill Code p. 45: the mark comes from a Watchdog action
    */
   static async markPersona(targetActor, attacker, attackerID, mark, isWatchdog = false) {
+    const iceHost = iceMarkHost(attacker)
     let realAttackerID = (attacker.system.matrix.deviceType === "ice" && attacker.isToken) ? attacker.id : attackerID,
       marks = foundry.utils.duplicate(targetActor.system.matrix.marks || []),
-      existing = marks.find(m => m.ownerId === realAttackerID)
+      existing = marks.find(m => m.ownerId === realAttackerID && sameIceHost(m, iceHost))
 
     if (existing) {
       existing.value = Math.min(existing.value + mark, 3)
@@ -142,6 +159,10 @@ export class SR5_MarkHelpers {
       "value": mark,
       "ownerName": attacker.name,
       "watchdog": isWatchdog,
+      ...(iceHost ? {
+        hostUuid: iceHost
+      } : {
+      }),
     })
     await targetActor.update({
       "system.matrix.marks": marks
