@@ -10,7 +10,7 @@ import {
   menuEntries, modeSwitchCost, modeUpdate, ownModeOf, radialTargetOf, uuidTarget
 } from "./pan-actions.js"
 import {
-  currentViewer, getGraph, setPanReveal, tokenOfNode
+  currentViewer, getGraph, setPanReveal, tokenOfNode, revealByPlayer, askPanRevealTo
 } from "./pan-crown.js"
 import {
   radialColumns
@@ -40,7 +40,7 @@ import {
   monitorOf
 } from "./pan-perception-card.js"
 import {
-  refuseByRule, ruleLockActive
+  refuseByRule, ruleLockBinds
 } from "../../system/rule-locks.js"
 
 const MODE_LABELS = {
@@ -265,7 +265,7 @@ export function openRadialMenu({
   } : menuEntries(node, graph, viewer, {
     canTry: canTryMatrixAction, rigger5: !!game.settings?.get("sr5", "sr5Rigger5Actions"),
     // The "matrix" rule lock lifted (B13): the entries the marks grey out are enabled, the roll tells the gamemaster
-    ruleLocked: ruleLockActive("matrix"),
+    ruleLocked: ruleLockBinds("matrix"),
   })
 
   // Three families: the Matrix actions on the right; the owner's (mode, PAN) and the gamemaster's on the left
@@ -311,11 +311,14 @@ export function openRadialMenu({
     key: "commcode",
     onClick: async () => (await import("../../interface/commcode-window.js")).SR5CommcodeWindow.openDevice(commDevice.uuid),
   }))
-  // The gamemaster's reveal (lot 3), for the whole table
-  if (game.user?.isGM && !node.contributed) gm.push(button(game.i18n.localize(node.revealed ? "SR5.PanCrownHide" : "SR5.PanCrownReveal"), {
+  // The gamemaster's reveal (lot 3), for the whole table; player by player when the world says so (idea 10): he ticks
+  // the characters. A device revealed to the whole table keeps its "Hide" first
+  const byPlayer = revealByPlayer() && !node.revealed
+  if (game.user?.isGM && !node.contributed) gm.push(button(game.i18n.localize(byPlayer ? "SR5.PanCrownRevealTo" :
+    node.revealed ? "SR5.PanCrownHide" : "SR5.PanCrownReveal"), {
     key: "reveal",
     tooltip: node.hiddenFromPlayers === undefined ? "" : game.i18n.localize(node.hiddenFromPlayers ? "SR5.PanCrownHiddenFromPlayers" : "SR5.PanCrownSeenByPlayers"),
-    onClick: () => setPanReveal(node, !node.revealed),
+    onClick: () => byPlayer ? askPanRevealTo(node) : setPanReveal(node, !node.revealed),
   }))
 
   // Lot 11: the entries of the modules (sr5.panCrownActions), and the system's they grey out

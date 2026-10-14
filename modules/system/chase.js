@@ -86,6 +86,12 @@ function attribute(actor, key) {
   return offRoad || Number(attributes[key]?.augmented?.value) || 0
 }
 
+// The highest Speed a vehicle may be given: its Speed attribute; no cap for a vehicle without actor or without
+// Speed, whose register Speed is all there is (lot 16b: it was held at 0, and never given back at the end of the turn)
+function speedCap(actor) {
+  return attribute(actor, "speed") || Infinity
+}
+
 // The current Speed of a vehicle lives on the vehicle itself when its sheet has the field (system.currentSpeed, R11:
 // Speed Demon and Information Overload read it): one Speed, not two. The register keeps its own copy for a vehicle
 // whose data has no such field.
@@ -390,7 +396,7 @@ export class SR5Chase {
     if (!vehicle) return false
     const actor = vehicleActor(vehicle)
     const speed = clampSpeed(value, {
-      min: 0, max: attribute(actor, "speed")
+      min: 0, max: speedCap(actor)
     })
     const written = await this.update(state => {
       const v = state.vehicles.find(x => x.id === id)
@@ -547,7 +553,7 @@ export class SR5Chase {
         const actor = vehicleActor(vehicle)
         // The Speed a stunt took for this turn comes back (R5 p. 182)
         const speed = speedOf(vehicle, actor)
-        vehicle.speed = restoreTurnSpeed(speed, state.turnSpeedLoss?.[vehicle.id], attribute(actor, "speed"))
+        vehicle.speed = restoreTurnSpeed(speed, state.turnSpeedLoss?.[vehicle.id], speedCap(actor))
         if (vehicle.speed !== speed && hasSpeedField(actor)) restored.push({
           actor, speed: vehicle.speed
         })

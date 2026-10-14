@@ -475,6 +475,9 @@ function nodeOf(item, kind, holder, mode, silentFrom, drone = null, panOwner = n
     } : null,
     // The gamemaster's reveal (lot 3), for the whole table (decision of DjamZ, Q4)
     revealed: source.flags?.sr5?.panReveal === true || item.flags?.sr5?.panReveal === true,
+    // Or to some characters only (idea 10, setting panCrownRevealScope): their actor ids
+    revealedTo: [...new Set([...arrayOf(source.flags?.sr5?.panRevealTo), ...arrayOf(item.flags?.sr5?.panRevealTo)])]
+      .filter(id => typeof id === "string"),
   }
 }
 

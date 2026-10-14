@@ -33,6 +33,7 @@ import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
+  linkLockStatusIds,
   isLinkLockEffect
 } from "../../system/link-lock.js"
 import {
@@ -1243,7 +1244,7 @@ export class SR5Actor extends Actor {
     //with it, permanent as its effect is, and so does its status
     const ended = this.items.filter(i => i.type === "itemEffect" && (i.system.durationType === "reboot" || isLinkLockEffect(i))).map(i => i.id)
     if (ended.length) await this.deleteEmbeddedDocuments("Item", ended)
-    const lockStatuses = Array.from(this.effects ?? []).filter(e => e.origin === "linkLock" || e.statuses?.has?.("linkLock")).map(e => e.id)
+    const lockStatuses = linkLockStatusIds(this)
     if (lockStatuses.length) await this.deleteEmbeddedDocuments("ActiveEffect", lockStatuses)
 
     //deviceName is prepared from the active device, the copy only holds the source; empty when that device was just

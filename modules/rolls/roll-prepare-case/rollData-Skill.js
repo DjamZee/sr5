@@ -28,6 +28,9 @@ import {
 import {
   refuseByRule
 } from "../../system/rule-locks.js"
+import {
+  sensorSpottingMasking
+} from "../../system/vehicle-mods.js"
 
 //Add info for skill dicePool roll
 export default async function skill(rollData, rollType, rollKey, actor, chatData){
@@ -258,6 +261,18 @@ export async function getTargetedData(rollData, rollKey, actor){
         }
       }
       break
+    case "perception": {
+      //Rigger 5.0 p. 169: the signature masking of a vehicle also penalizes whoever spots it through a Sensor test
+      const masking = sensorSpottingMasking(actor, targetActor)
+      if (masking) {
+        rollData.dialogSwitch.signatureMasking = masking.value
+        rollData.dialogSwitch.signatureMaskingChecked = masking.checked
+        if (masking.checked) rollData.dicePool.modifiers.push({
+          type: "signatureMasking", label: game.i18n.localize(SR5.dicePoolModTypes.signatureMasking), value: masking.value
+        })
+      }
+      break
+    }
   }
 
   return rollData

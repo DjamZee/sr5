@@ -299,6 +299,9 @@ describe('restoreTurnSpeed', () => {
   it('never past the Speed attribute', () => {
     expect(restoreTurnSpeed(4, 3, 5)).toBe(5)
   })
+  it('a vehicle without actor (no cap) gets its Speed back too (lot 16b)', () => {
+    expect(restoreTurnSpeed(0, 3, Infinity)).toBe(3)
+  })
   it('leaves a vehicle nothing slowed as it is', () => {
     expect(restoreTurnSpeed(4, undefined, 5)).toBe(4)
     expect(restoreTurnSpeed(4, 0, 2)).toBe(4)

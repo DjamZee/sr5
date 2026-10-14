@@ -32,7 +32,7 @@ import {
   isStorable, isStoredAway 
 } from "../../interface/storage-rules.js"
 import {
-  refuseByRule, ruleLockActive
+  refuseByRule, ruleLockActive, ruleLockBinds
 } from "../../system/rule-locks.js"
 import {
   SR5Combat 
@@ -1918,7 +1918,7 @@ export class SR5_ActorHelper {
   // (B13, lot 4), the Physical damage heals and the gamemaster hears of it
   static stunHealsFirstRefused(actor, testType, damageType){
     if (!SR5_ActorHelper.stunBlocksNaturalHealing(actor?.system, testType, damageType)) return false
-    if (!ruleLockActive("body")) return refuseByRule("body", "SR5.WARN_StunHealsFirst", null, {
+    if (!ruleLockBinds("body")) return refuseByRule("body", "SR5.WARN_StunHealsFirst", null, {
       actor
     })
     ui.notifications.warn(game.i18n.localize("SR5.WARN_StunHealsFirst"))

@@ -1,5 +1,5 @@
 import {
-  refuseByRule, ruleLockActive
+  refuseByRule, ruleLockBinds
 } from "../system/rule-locks.js"
 import {
   SR5_SystemHelpers 
@@ -308,7 +308,7 @@ export class SR5_RollTest {
     }, {
       actor
     })
-    if (missingAmmo && ruleLockActive("ammo")) return refuse()
+    if (missingAmmo && ruleLockBinds("ammo")) return refuse()
     if (!SR5Combat.hasActionsLeft(SR5_RollTest.actionsFighter(actor, dialogData), dialogData.combat.actions)) return true
     if (missingAmmo) refuse()
     return false

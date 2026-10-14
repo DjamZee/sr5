@@ -72,6 +72,8 @@ export const SETTINGS_TAGS = {
 // Key (without the "sr5." namespace) → [tab, tag]. The tag is left out when the setting only tells
 // the system how far to automate the book's rule, or how to show it.
 export const SETTINGS_CATALOG = {
+  // Rule locks: the gamemaster never stopped by them (idea 11, lot 16b), under the menu of its tab
+  sr5RuleLocksGMExempt: ["ruleLocks"],
   // Combat (sr5BlockMissingActions, a rule lock, is edited from the rule locks menu since B13)
   sr5FreeReload: ["combat", "house"],
   sr5CalledShotsRules: ["combat", "book"],
@@ -109,6 +111,8 @@ export const SETTINGS_CATALOG = {
   sr5DroneModRules: ["rigging", "book"],
   // PAN crown
   panCrownVisibility: ["panCrown"],
+  // The gamemaster's reveal, to the whole table or player by player (idea 10, lot 16b)
+  panCrownRevealScope: ["panCrown"],
   panCrownAmbienceCap: ["panCrown"],
   panCrownOpening: ["panCrown"],
   panCrownArKey: ["panCrown"],

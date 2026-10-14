@@ -126,6 +126,15 @@ export function ruleLockActive(family, lockCase = null, locks = currentRuleLocks
   return !lockCase || locks[lockCase] !== false
 }
 
+/**
+ * Does this lock stop the user of this browser? As ruleLockActive, but a gamemaster the world spares
+ * (sr5RuleLocksGMExempt, idea 11) is never stopped. For a site that acts in the browser of the one acting only: a
+ * gamemaster's browser handling a player's request (a socket) reads ruleLockActive
+ */
+export function ruleLockBinds(family, lockCase = null) {
+  return ruleLockActive(family, lockCase) && !gmExempt()
+}
+
 // Whispers already sent: by actor and message, once per combat round (or within WHISPER_WINDOW out of combat)
 const WHISPER_WINDOW = 10000
 const whispered = new Map()
@@ -215,6 +224,12 @@ export async function socketRuleLockWhisper(message, senderId) {
   return SR5_ActorHelper.whisperGM(ruleLockWhisperText(family, key, data, actorName))
 }
 
+// The world spares the gamemaster every rule lock (idea 11, sr5RuleLocksGMExempt): his own action goes, and his
+// notification says which lock it passed (tellGM)
+export function gmExempt() {
+  return !!globalThis.game?.user?.isGM && readSetting("sr5RuleLocksGMExempt") === true
+}
+
 /**
  * At a refusal: true if the action must stop.
  * Lock on: the site's message, as it was, and true. Lock lifted: the action goes on, the gamemaster is told, false.
@@ -228,7 +243,7 @@ export function refuseByRule(family, key, data, {
   actor = null, lockCase = null, level = "warn", liftedKey = null
 } = {
 }) {
-  if (ruleLockActive(family, lockCase)) {
+  if (ruleLockActive(family, lockCase) && !gmExempt()) {
     //A message without data is localized as the sites did before B13 (lot 6: blight-blocks-spellcasting.test.js)
     ui.notifications[level](data ? game.i18n.format(key, data) : game.i18n.localize(key))
     return true
@@ -302,7 +317,8 @@ export function newWorldPresetLocks(choice) {
 /**
  * Once per new world, the active gamemaster chooses its preset (wish of DjamZ, 07/10). sr5RuleLocksAsk is "pending"
  * only in a world the migration found new; an existing world never had it, and is never asked. The window closed
- * without a choice is the book, already set. Asked once: the flag goes to "done" in its turn (gm-ledger.js)
+ * without a choice is the book. Asked once: the flag goes to "done" in its turn (gm-ledger.js)
+ * Each choice applies the automation preset of the Presets menu (lot 16b, settings-presets.js): one system, not two.
  */
 export async function askNewWorldPreset() {
   if (game.settings.get("sr5", "sr5RuleLocksAsk") !== "pending") return
@@ -321,5 +337,12 @@ export async function askNewWorldPreset() {
     rejectClose: false,
   })
   await updateLedger("sr5RuleLocksAsk", () => "done")
-  if (choice && choice !== "book") await setRuleLocks(newWorldPresetLocks(choice))
+  // Loaded here: the presets read this file
+  const {
+    newWorldPresetChanges, applySettingValues
+  } = await import("./settings-presets.js")
+  const {
+    values, locks
+  } = newWorldPresetChanges(choice)
+  await applySettingValues(values, locks)
 }

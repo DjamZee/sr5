@@ -22,7 +22,7 @@ vi.mock('../modules/entities/actors/entityActor-helpers.js', () => ({
 const {
   RULE_LOCK_FAMILIES, RULE_LOCK_KEYS, presetLocks, presetOf, normalizeLocks, locksFromLegacy, legacyFromLocks,
   currentRuleLocks, ruleLockActive, refuseByRule, capByRule, shouldWhisper, resetWhispers, setRuleLocks,
-  runRuleLocksMigration, socketRuleLockWhisper, ruleLockWhisperText,
+  runRuleLocksMigration, socketRuleLockWhisper, ruleLockWhisperText, ruleLockBinds,
 } = await import('../modules/system/rule-locks.js')
 const {
   readFileSync
@@ -239,6 +239,35 @@ describe('refuseByRule and capByRule', () => {
   const actor = {
     id: 'a1', name: 'Dodger'
   }
+
+  it('the gamemaster spared by the world (idea 11): his action goes, he reads which lock it passed', async () => {
+    store.sr5RuleLocksMigration = 2
+    game.user = {
+      id: 'gm', isGM: true, name: 'MJ'
+    }
+    // Unchecked (default): refused like anyone
+    expect(refuseByRule('ammo', 'SR5.WARN_FiringModeAmmo', null, {
+      actor
+    })).toBe(true)
+    expect(ruleLockBinds('ammo')).toBe(true)
+    store.sr5RuleLocksGMExempt = true
+    notes.length = 0
+    expect(refuseByRule('ammo', 'SR5.WARN_FiringModeAmmo', null, {
+      actor
+    })).toBe(false)
+    await flush()
+    expect(notes[0][0]).toBe('info')
+    expect(ruleLockBinds('ammo')).toBe(false)
+    // The lock itself stays on, for the players and the sockets the gamemaster's browser handles
+    expect(ruleLockActive('ammo')).toBe(true)
+    // A player is never spared
+    game.user = {
+      id: 'p1', isGM: false, name: 'Joueuse'
+    }
+    expect(refuseByRule('ammo', 'SR5.WARN_FiringModeAmmo', null, {
+      actor
+    })).toBe(true)
+  })
 
   it('lock on: the site\'s message, and the action stops', async () => {
     store.sr5RuleLocksMigration = 1

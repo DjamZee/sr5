@@ -26,7 +26,7 @@ import {
   assembledVehicleData
 } from "./vehicle-dealership.js"
 import {
-  usesModPoints, droneModRule, vehicleStats, modPointsCost, modPointsOf, modPointsLines, modPointsGauge, modsTakingPoints, modPointsPrice
+  usesModPoints, droneModRule, vehicleStats, modPointsCost, modPointsOnDrone, modPointsLines, modPointsGauge, modsTakingPoints, modPointsPrice
 } from "./drone-mod-points.js"
 
 // The Foundry side of the workshop (Chop Shop, B12; Rigger 5.0 p. 153-156): the "Workshop" tab of the drone sheet and
@@ -187,11 +187,11 @@ export async function dropModOnWorkshop(vehicle, dropData){
     <p><strong>${source.name}</strong> — ${L(SR5.vehicleModType[s.type] ?? "SR5.VehicleModWorkshopOther")}</p>
     <ul>
       <li>${usesModPoints(droneModRule(), vehicle.system.type) ?
-    `${L("SR5.DroneModPoints")}${L("SR5.Colons")} ${modPointsOf({
-      name: source.name, system: {
-        ...s, slots: {
-          value: slots
-        }
+    //What the line will cost once fitted, beside the drone's mods (the free +1 is once per drone): not "as if alone"
+    `${L("SR5.DroneModPoints")}${L("SR5.Colons")} ${modPointsOnDrone(isItem ? (vehicle.system.vehiclesMod ?? []) :
+      vehicle.items.filter(i => i.type === "itemVehicleMod"), {
+      ...s, slots: {
+        value: slots
       }
     }, vehicleStats(vehicle.system))}` :
     `${L("SR5.VehicleModSlotsShort")}${L("SR5.Colons")} ${s.slots?.value ?? 0}`}</li>

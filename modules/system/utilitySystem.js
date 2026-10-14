@@ -339,6 +339,16 @@ export class SR5_SystemHelpers {
     game.settings.register("sr5", "sr5RuleLocksAsk", {
       scope: "world", config: false, default: "", type: String,
     })
+    // The gamemaster is never stopped by a rule lock (idea 11, lot 16b): the action goes and he reads why it would
+    // have been refused. Unchecked by default: he is refused like anyone, as before
+    game.settings.register("sr5", "sr5RuleLocksGMExempt", {
+      name: "SR5.SETTINGS_RuleLocksGMExempt_T",
+      hint: "SR5.SETTINGS_RuleLocksGMExempt_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+    })
     game.settings.registerMenu("sr5", "sr5RuleLocksMenu", {
       name: "SR5.RULELOCKS_Menu_T",
       label: "SR5.RULELOCKS_Menu_L",
@@ -886,6 +896,21 @@ export class SR5_SystemHelpers {
       choices: {
         book: "SR5.SETTINGS_PanCrownVisibility_book",
         gm: "SR5.SETTINGS_PanCrownVisibility_gm",
+      },
+      onChange: () => canvas?.sr5PanCrown?.refresh()
+    })
+    // The gamemaster's reveal of a device (lot 3): to the whole table (Q4 of DjamZ, the default), or player by player
+    // (idea 10, lot 16b): he then ticks the characters it is revealed to
+    game.settings.register("sr5", "panCrownRevealScope", {
+      name: "SR5.SETTINGS_PanCrownRevealScope_T",
+      hint: "SR5.SETTINGS_PanCrownRevealScope_D",
+      scope: "world",
+      config: true,
+      default: "table",
+      type: String,
+      choices: {
+        table: "SR5.SETTINGS_PanCrownRevealScope_table",
+        player: "SR5.SETTINGS_PanCrownRevealScope_player",
       },
       onChange: () => canvas?.sr5PanCrown?.refresh()
     })

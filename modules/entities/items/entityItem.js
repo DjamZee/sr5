@@ -1,5 +1,5 @@
 import {
-  refuseByRule, ruleLockActive
+  refuseByRule, ruleLockActive, ruleLockBinds
 } from "../../system/rule-locks.js"
 import {
   hasWeaponTrait, capBallReloadStep, CAP_BALL_STEPS, firearmCommandIsFree
@@ -111,7 +111,7 @@ function preparedCopy(item, changes = {
 /** Whether fitting a mod on its drone would be refused, asked before its install test is rolled rather than once the
  *  hours are spent (Lancelot, E3). A lifted lock is left to the fitting itself, which tells the gamemaster */
 export function modFitRefused(mod) {
-  if (mod?.type !== "itemVehicleMod" || mod.parent?.type !== "actorDrone" || !ruleLockActive("objects")) return false
+  if (mod?.type !== "itemVehicleMod" || mod.parent?.type !== "actorDrone" || !ruleLockBinds("objects")) return false
   return vehicleModSlotsRefused(mod.parent, mod, preparedCopy(mod, {
     system: {
       isActive: true

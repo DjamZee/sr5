@@ -5,7 +5,7 @@ import {
   vehicleModKind, fittedMods, fittedRating, replacedVehicleAttribute, replacedVehicleAttributeOf, armorCapReduction, addedArmor,
   hasBullBar, modSlotUse, slotsRefusal, crashArmorPenetration, occupantCrashBonus,
   tactileSensorsOn, TACTILE_PERCEPTION_DICE, TACTILE_HANDLING, TACTILE_BIOFEEDBACK_DICE, signatureMaskingPenalty,
-  metahumanAdaptationPenalty, droneInWorld
+  metahumanAdaptationPenalty, droneInWorld, sensorSpottingMasking
 } from '../modules/system/vehicle-mods.js'
 import {
   droneAutopilot
@@ -360,6 +360,33 @@ describe('Signature masking against a lock (Rigger 5.0 p. 169)', () => {
       })]
     })).toBe(0)
     expect(signatureMaskingPenalty(undefined)).toBe(0)
+  })
+})
+
+describe('sensorSpottingMasking (Rigger 5.0 p. 169, spotting with sensors)', () => {
+  const masked = {
+    type: "actorDrone", items: [mod("Camouflage de la signature", {
+      itemRating: 3
+    })]
+  }
+  it('ticked for a drone that perceives, offered unticked to a character', () => {
+    expect(sensorSpottingMasking({
+      type: "actorDrone"
+    }, masked)).toEqual({
+      value: -3, checked: true
+    })
+    expect(sensorSpottingMasking({
+      type: "actorPc"
+    }, masked)).toEqual({
+      value: -3, checked: false
+    })
+  })
+  it('nothing against a vehicle without masking', () => {
+    expect(sensorSpottingMasking({
+      type: "actorDrone"
+    }, {
+      type: "actorDrone", items: []
+    })).toBeNull()
   })
 })
 

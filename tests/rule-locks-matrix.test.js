@@ -365,9 +365,9 @@ describe('the radial menu of the crown', () => {
       neededMarks: 0, known: false, ruleLocked: false
     }).enabled).toBe(false)
   })
-  it('the menu reads the family of the world', () => {
+  it('the menu reads the family of the world (the gamemaster spared by the world: idea 11, ruleLockBinds)', () => {
     const source = fs.readFileSync('modules/canvas/pan-crown/pan-radial-menu.js', 'utf8')
-    expect(source).toMatch(/menuEntries\(node, graph, viewer, \{[\s\S]{0,300}ruleLocked: ruleLockActive\("matrix"\)/)
+    expect(source).toMatch(/menuEntries\(node, graph, viewer, \{[\s\S]{0,300}ruleLocked: ruleLockBinds\("matrix"\)/)
   })
 })
 

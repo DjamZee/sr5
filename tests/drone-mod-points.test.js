@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 import {
   usesModPoints, attributeChange, modPointsDemand, modPointsOf, modPointsUsage, modPointsRefusal, modPointsPrice,
-  armorOverload, attributeCap, modPointsLines, weaponMountPoints, modsTakingPoints, modPointsCost
+  armorOverload, attributeCap, modPointsLines, weaponMountPoints, modsTakingPoints, modPointsCost, modPointsOnDrone
 } from '../modules/system/drone-mod-points.js'
 import {
   dealerPointsGauge, buildPointsRefusal
@@ -159,6 +159,16 @@ describe('The points on each line (review 40)', () => {
       isActive: false
     })], m => m.system.isActive)).toEqual([1, 2])
     expect(modPointsLines(null)).toEqual([])
+  })
+  it('the pose window tells the cost of the line, the free +1 once per drone (lot 16b)', () => {
+    // Speed +1 as if alone: 0 ; beside a fitted Handling upgrade that took the free +1: 1, as on its line
+    expect(modPointsOf(upgrade('speed', 1))).toBe(0)
+    expect(modPointsOnDrone([upgrade('handling', 1)], upgrade('speed', 1))).toBe(1)
+    expect(modPointsOnDrone([], upgrade('speed', 1))).toBe(0)
+    // A waiting upgrade does not take it: the mod being fitted does
+    expect(modPointsOnDrone([upgrade('handling', 1, {
+      isActive: false
+    })], upgrade('speed', 2))).toBe(1)
   })
 })
 

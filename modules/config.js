@@ -3971,6 +3971,7 @@ SR5.dicePoolModTypes = {
   sensorLockMod             : "SR5.SensorLockedTarget",
   rccNoiseReduction         : "SR5.NoiseReduction",
   signatureSize             : "SR5.TargetSize",
+  signatureMasking          : "SR5.VehicleModEffectKind_signatureMasking",
   mark                      : "SR5.NumberOfWantedMarks",
   emulate                   : "SR5.MatrixActionEmulate",
   centering                 : "SR5.MetamagicCentering",
