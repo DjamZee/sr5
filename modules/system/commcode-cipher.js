@@ -59,6 +59,11 @@ export function decipher(text, key){
   return shift(text, key, -1)
 }
 
+/** The text of an HTML content ciphered, its tags and entities left whole (the content of a file) */
+export function encipherHtml(html, key){
+  return String(html ?? "").split(/(<[^>]*>|&[#a-zA-Z0-9]+;)/).map((part, i) => i % 2 ? part : encipher(part, key)).join("")
+}
+
 /** Two keys that cipher alike */
 export function sameKey(a, b){
   const left = cipherKeyOf(a)
@@ -110,6 +115,39 @@ export function readMessage(entry, {
   if (sameKey(key, cipher.key)) return clear("key")
   return {
     text, ciphered: true, clear: false, how: hasKey(key) ? "wrongKey" : "locked"
+  }
+}
+
+/**
+ * What a reader sees of a file's content (lot 39, DjamZ: « et cryptage sur les fichiers aussi »). The book: a
+ * protected file cannot be read (SR5 p. 240); the house rule: a file ciphered with a key shows its cipher, and its
+ * clear text to whoever holds the key. Crack File removes both (SR5 p. 242).
+ * @param {Object} file           the itemFile
+ * @param {Object} reader
+ * @param {Boolean} reader.isGM   the gamemaster reads it, always
+ * @param {Boolean} reader.cipherOn  the world setting of the cipher
+ * @return {{how: "gm"|"clear"|"key"|"ciphered"|"protected", html: String, ciphered: Boolean}}
+ */
+export function readFile(file, {
+  isGM = false, cipherOn = false
+} = {
+}){
+  const html = String(file?.system?.content ?? "")
+  const key = cipherOn ? String(file?.system?.cipher?.key ?? "") : ""
+  const ciphered = hasKey(key)
+  if (isGM) return {
+    how: "gm", html, ciphered
+  }
+  if (ciphered) return sameKey(file?.system?.cipher?.known, key) ? {
+    how: "key", html, ciphered
+  } : {
+    how: "ciphered", html: encipherHtml(html, key), ciphered
+  }
+  if (rating(file?.system?.protection) > 0) return {
+    how: "protected", html: "", ciphered
+  }
+  return {
+    how: "clear", html, ciphered
   }
 }
 

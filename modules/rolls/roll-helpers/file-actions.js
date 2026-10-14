@@ -10,6 +10,15 @@
 import {
   FILE_ROLLED_ACTIONS, bombDamage, bombOf, fileOppositionDice, isFile, knowsPassword, resolveFileAction
 } from "../../system/matrix-files.js"
+import {
+  CIPHER_SETTING, hasKey
+} from "../../system/commcode-cipher.js"
+
+// A file ciphered with a key (lot 39), while the world setting of the cipher is on
+function isCiphered(file){
+  return game.settings.settings.has(`sr5.${CIPHER_SETTING}`) && game.settings.get("sr5", CIPHER_SETTING) === true &&
+    hasKey(file?.system?.cipher?.key)
+}
 
 export const FILE_BUTTONS = ["fileResolve", "fileEdit", "fileProtect", "fileApply"]
 // The reasons the attacker is told of, when the gamemaster refuses her request
@@ -279,7 +288,7 @@ export async function resolveFileRequest(request, sender){
     action: typeSub, file, hits, oppositionHits, knowsPassword: password, bomb: request.bomb, mode,
     by: {
       id: realIdOf(attacker), name: attacker.name
-    }, now: game.time?.worldTime ?? 0,
+    }, now: game.time?.worldTime ?? 0, ciphered: isCiphered(file),
   })
 
   // Crack File is an Attack action, Set Data Bomb a Sleaze one: the file's hits raise the Overwatch Score (SR5 p. 233)

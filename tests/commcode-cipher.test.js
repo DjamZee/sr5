@@ -2,7 +2,8 @@ import {
   describe, it, expect
 } from 'vitest'
 import {
-  plainLetters, cipherKeyOf, encipher, decipher, sameKey, cipherOf, readMessage, crackDice, resolveCrack
+  plainLetters, cipherKeyOf, encipher, encipherHtml, decipher, sameKey, cipherOf, readMessage, readFile, crackDice,
+  resolveCrack
 } from '../modules/system/commcode-cipher.js'
 
 describe('cipher: the key cipher (lot 39)', () => {
@@ -80,6 +81,52 @@ describe('cipher: who reads a message', () => {
     expect(readMessage(entry, {
       snooperId: "other"
     }).how).toBe("locked")
+  })
+})
+
+describe('cipher: the content of a file', () => {
+  const file = (system = {
+  }) => ({
+    type: 'itemFile', system: {
+      content: '<p>Code d&apos;accès : <b>Héron</b> 7</p>', protection: 0, cipher: {
+        key: '', known: ''
+      }, ...system
+    }
+  })
+  it('ciphers the text of an HTML content, its tags and entities whole', () => {
+    expect(encipherHtml('<p class="a">ab &amp; c</p>', 'b')).toBe('<p class="a">bc &amp; d</p>')
+  })
+  it('shows a ciphered file in cipher, in clear with the key, always in clear to the gamemaster', () => {
+    const f = file({
+      cipher: {
+        key: 'lune', known: ''
+      }
+    })
+    expect(readFile(f, {
+      cipherOn: true
+    })).toMatchObject({
+      how: 'ciphered', ciphered: true, html: encipherHtml(f.system.content, 'lune')
+    })
+    expect(readFile(file({
+      cipher: {
+        key: 'lune', known: 'LUNE'
+      }
+    }), {
+      cipherOn: true
+    })).toMatchObject({
+      how: 'key', html: f.system.content
+    })
+    expect(readFile(f, {
+      isGM: true, cipherOn: true
+    }).how).toBe('gm')
+  })
+  it('without the setting, the key is ignored: the book\'s protection only', () => {
+    expect(readFile(file({
+      protection: 2, cipher: {
+        key: 'lune', known: ''
+      }
+    })).how).toBe('protected')
+    expect(readFile(file()).how).toBe('clear')
   })
 })
 

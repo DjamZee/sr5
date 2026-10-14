@@ -684,6 +684,12 @@ export function registerCommcodeHooks(){
     }
     scheduleSettle()
   })
+  // A player who ciphers a file she holds knows its key (lot 39): the key she sets is the one she opens it with
+  Hooks.on("preUpdateItem", (item, changes) => {
+    if (item.type !== "itemFile" || game.user?.isGM) return
+    const key = foundry.utils.getProperty(changes, "system.cipher.key")
+    if (typeof key === "string") foundry.utils.setProperty(changes, "system.cipher.known", key)
+  })
   for (const hook of ["updateItem", "createItem", "deleteItem", "updateActor", "createToken", "deleteToken", "updateToken"]) {
     Hooks.on(hook, scheduleSettle)
     // An open window shows its device's state: switched off, jammed, bricked
