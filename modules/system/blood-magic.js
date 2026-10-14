@@ -336,7 +336,7 @@ export async function bloodAddictionTest(actor, threshold){
   let index = list.findIndex(a => a?.name === name)
   if (index < 0) {
     list.push({
-      name,
+      name, kind: "bloodMagic",
       shot: {
         value: 1, base: 1, modifiers: []
       },

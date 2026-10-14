@@ -3711,6 +3711,8 @@ export class SR5_CharacterUtility extends Actor {
     if (item.type === "itemDrug") {
       drugTaken = {
         "name": item.name,
+        //A drug's addiction: the dice of Drug Tolerance are for it alone (rollData-Addiction.js)
+        "kind": "drug",
         "shot": {
           "value": 0,
           "base": 1,

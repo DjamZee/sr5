@@ -14,6 +14,11 @@ export class specialPropertiesPartialModel extends foundry.abstract.TypeDataMode
         addictionResistance: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema()
         }),
+        // Dice on the addiction tests of drugs only, never when treating an addiction (Drug Tolerance, Chrome Flesh
+        // p. 58; renal shield, p. 116)
+        drugAddictionResistance: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema()
+        }),
         // Dice on every toxin resistance, whatever the vector (The Complete Trog p. 180)
         toxinResistance: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema()

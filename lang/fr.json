@@ -6906,6 +6906,7 @@
 	"SR5.SituationalTargetIsNot": "n'est pas",
 	"SR5.SituationalTargetAny": "(sans condition)",
 	"SR5.AddictionResistance": "Tests d'addiction",
+	"SR5.DrugAddictionResistance": "Tests d'addiction aux drogues",
 	"SR5.ToxinResistanceAll": "Résistance aux toxines (tous vecteurs)",
 	"SR5.AddictionLevel": "Niveau",
 	"SR5.AddictionLevelNone": "—",

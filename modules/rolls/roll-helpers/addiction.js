@@ -49,6 +49,14 @@ export function focusAddictionRating(items){
     .reduce((total, i) => total + (Number(i.system.itemRating) || 0), 0)
 }
 
+// An addiction to a drug: so marked when the drug is taken, or, for the older entries, named after a drug the
+// character carries. Foci, blood magic and the Addiction quality are not drugs (Chrome Flesh p. 58: "drogues
+// naturelles et de synthèse")
+export function isDrugAddiction(entry, drugNames){
+  if (entry?.kind) return entry.kind === "drug"
+  return (drugNames || []).includes(entry?.name)
+}
+
 // The one addiction to foci (SR5 p. 416, "Focus : Puissance totale de tous les focus actifs"), once a focus is
 // activated. Each focus used to get an entry of its own, rated by the total when it was activated: two foci, two
 // addictions and two tests (lot 17c). The entries of the older data, named after a focus, are merged into it: the
