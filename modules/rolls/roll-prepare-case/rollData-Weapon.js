@@ -268,8 +268,18 @@ export default async function weapon(rollData, actor, item){
     _addGrapplingCalledShots(rollData, actor)
     _addClinchModifiers(rollData, actor)
   }
+  _addDisarmPenalty(rollData, actor)
 
   return rollData
+}
+
+//Run & Gun p. 126 (Désarmer, failed): the penalty is "pour utiliser cette arme", on weapon attacks only, not on
+//every test. The card does not say which weapon was aimed at: every weapon attack of the next action phase takes it.
+function _addDisarmPenalty(rollData, actor){
+  const value = actor.items.filter(i => i.type === "itemEffect" && i.system.type === "disarm").reduce((sum, i) => sum + (Number(i.system.value) || 0), 0)
+  if (value) rollData.dicePool.modifiers.push({
+    type: "disarmPenalty", label: game.i18n.localize("SR5.CS_Disarm"), value
+  })
 }
 
 //Run & Gun p. 133 (Saisie): melee weapons take a penalty equal to their Reach, firearms one equal to the net hits

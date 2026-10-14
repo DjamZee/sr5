@@ -1933,7 +1933,8 @@ export class SR5_CharacterUtility extends Actor {
   }
 
   // Handle Actors Movement
-  // TODO : Add toggle for running modifiers p.162
+  // Running modifiers (SR5 p. 179, 188, 190) are offered by the roll dialog, see modules/system/running.js; the
+  // movement modifiers of Run & Gun come on top of them (rg-combat-options.js)
   static updateMovements(actor) {
     let movements = actor.system.movements,
       attributes = actor.system.attributes,
@@ -2384,7 +2385,13 @@ export class SR5_CharacterUtility extends Actor {
     if (currentInitiative) initiatives[currentInitiative].isActive = false
     if (currentInitiative === "astralInit") actorData.visions.astral.isActive = false
     initiatives[initiative].isActive = true
-    if (initiative === "astralInit") actorData.visions.astral.isActive = true
+    //Astral perception replaces the vision in use, as switchVision does: low-light or thermographic vision stayed
+    //active beside it
+    if (initiative === "astralInit") {
+      for (let key of Object.keys(SR5.visionActive)) {
+        if (actorData.visions[key]) actorData.visions[key].isActive = (key === "astral")
+      }
+    }
 
     await actor.update({
       'system': actorData 

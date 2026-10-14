@@ -192,6 +192,14 @@ export default async function defenseInfo(cardData, actorId){
       cardData.chatCard.buttons.resistanceCard = SR5_RollMessage.generateChatButton("nonOpposedTest","resistanceCard",label)
     }
   }
+
+  //The buttons show in the order they were added: the "Fatigued" resistance, added by the called shot, came before
+  //the main one
+  if (cardData.chatCard.buttons.fatiguedCard){
+    const fatiguedButton = cardData.chatCard.buttons.fatiguedCard
+    delete cardData.chatCard.buttons.fatiguedCard
+    cardData.chatCard.buttons.fatiguedCard = fatiguedButton
+  }
 }
 
 

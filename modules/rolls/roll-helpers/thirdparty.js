@@ -733,7 +733,7 @@ export class SR5_ThirdPartyHelpers {
           ["system.description"]: `${game.i18n.localize(SR5.spriteTypesDescription[messageData.matrix.spriteType])}${majorText}`,
           ["system.compiler"]: actor.id,
         }
-        ui.notifications.info(`${actor.name} ${game.i18n.localize("SR5.INFO_CompileSprite")} ${game.i18n.localize(SR5.spriteTypes[messageData.matrix.spriteType])} (${messageData.matrix.level})`)
+        ui.notifications.info(`${actor.name} ${game.i18n.localize("SR5.INFO_CompileSprite")} ${game.i18n.localize(SR5.spriteTypes[messageData.matrix.spriteType])} (${messageData.matrix.level}${majorName})`)
         break
       }
       case "createPreparation": {

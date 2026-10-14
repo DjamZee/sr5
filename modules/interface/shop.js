@@ -61,12 +61,31 @@ export class SR5Shop {
    * every actor of the world for the gamemaster.
    */
   static getBuyers({
-    equip = false
+    equip = false, tokens = false
   } = {
   }) {
-    return SR5ShopStock.buyers(game.actors, game.user, {
+    const buyers = SR5ShopStock.buyers(game.actors, game.user, {
       equip: equip && game.user.isGM, ...SR5ShopStock.buyerRule,
     })
+    //Equip mode, gamemaster: the unlinked tokens of the scene, each with its own actor (an object given to the base
+    //actor would land on every future token of it, and on none already placed)
+    if (equip && tokens && game.user.isGM) {
+      buyers.push(...(globalThis.canvas?.scene?.tokens ?? []).filter(t => !t.actorLink && t.actor).map(t => t.actor))
+    }
+    return buyers
+  }
+
+  /** How the window names a buyer: a world actor by its id, a token's own actor by the token's uuid. */
+  static buyerKey(actor) {
+    if (!actor) return null
+    return actor.isToken ? actor.token.uuid : actor.id
+  }
+
+  /** The buyer a key names (see buyerKey). */
+  static buyerFromKey(key) {
+    if (!key) return null
+    if (key.startsWith('Scene.')) return globalThis.fromUuidSync?.(key)?.actor ?? null
+    return game.actors.get(key) ?? null
   }
 
   /** The grades offered for an augmentation, by the shop's mode and the world options. */
@@ -95,11 +114,12 @@ export class SR5Shop {
    * control (how a gamemaster points at someone), else the only actor they own.
    */
   static defaultBuyerId(buyers) {
-    const ids = new Set(buyers.map(a => a.id))
+    const ids = new Set(buyers.map(a => SR5Shop.buyerKey(a)))
     if (game.user.character && ids.has(game.user.character.id)) return game.user.character.id
-    const controlled = canvas?.tokens?.controlled?.map(t => t.actor?.id).find(id => ids.has(id))
+    //An unlinked token is its own buyer when listed (Equip mode), else its base actor as before
+    const controlled = canvas?.tokens?.controlled?.flatMap(t => [SR5Shop.buyerKey(t.actor), t.actor?.id]).find(id => ids.has(id))
     if (controlled) return controlled
-    return buyers.length === 1 ? buyers[0].id : null
+    return buyers.length === 1 ? SR5Shop.buyerKey(buyers[0]) : null
   }
 
   /**
