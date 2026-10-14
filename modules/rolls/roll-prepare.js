@@ -166,6 +166,9 @@ export class SR5_PrepareRollTest {
       case "grappleEscape":
         rollData = await SR5_GetRollData.grappleEscape(rollData, actor)
         break
+      case "netEscape":
+        rollData = await SR5_GetRollData.netEscape(rollData, actor)
+        break
       case "grappleClinch":
         rollData = await SR5_GetRollData.grappleClinch(rollData, actor)
         break

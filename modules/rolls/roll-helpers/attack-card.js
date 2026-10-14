@@ -29,6 +29,9 @@ import {
   energyAuraApplies, jugularToxin, laserDamageReduction, LASER_TRAIT
 } from "./weapon-attack-rules.js"
 import {
+  netOf
+} from "./net-rules.js"
+import {
   hasWeaponTrait
 } from "../../entities/items/weaponTraits.js"
 import {
@@ -384,6 +387,8 @@ export async function vetAttackCard(chatData, {
       pool = (Number(pool) || 0) + sight.dice
       limit += sight.accuracy
     }
+    //A ShockNet's charge is electric, as rollData-Weapon.js puts it on the card (Run & Gun p. 25, 28)
+    if (family === "weapon" && netOf(item)?.shock) damage.element = "electricity"
     vetted = {
       base: damage.base, value: damage.base, ap: damage.ap, type: damage.type, element: damage.element ?? "", source: damage.source,
     }

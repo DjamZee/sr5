@@ -192,6 +192,17 @@ export const WEAPON_ACCESSORY_CATALOG = {
   underbarrelChainsaw:      {
     price: 500, slot: "", type: "accessory" 
   },
+  // Nets (Run & Gun p. 25, 28): the net lands on a hit, a graze included, and subdues the target (net-rules.js). The
+  // compendium nets are recognised by their name; these traits put the rule on any weapon
+  net:                      {
+    price: 0, slot: "", type: "trait"
+  },
+  netXL:                    {
+    price: 0, slot: "", type: "trait"
+  },
+  shockNet:                 {
+    price: 0, slot: "", type: "trait"
+  },
   // Flamethrower (Gun H(e)aven 3 p. 3): Fire damage, Suppressive Fire, fanning sweep over up to three targets
   flamethrower:             {
     price: 0, slot: "", type: "trait", systemEffects: [{

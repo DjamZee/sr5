@@ -52,6 +52,9 @@ import {
 import {
   rgOption, targetSizeModifier, droneCategoryOf, movementModifiers, phaseMeters, armorPenalty
 } from "../../system/rg-combat-options.js"
+import {
+  netOf
+} from "../roll-helpers/net-rules.js"
 
 //Add info for weapon Roll
 export default async function weapon(rollData, actor, item){
@@ -213,6 +216,12 @@ export default async function weapon(rollData, actor, item){
   rollData.combat.range.long = itemData.range.long.value
   rollData.combat.range.extreme = itemData.range.extreme.value
   rollData.combat.weaponType = itemData.type
+  //A net or a net gun (Run & Gun p. 25, 28): the ShockNet's charge is electric, "6E(e)" / "8E(e)"
+  const net = netOf(item)
+  if (net) {
+    rollData.combat.net = net
+    if (net.shock) rollData.damage.element = "electricity"
+  }
   rollData.lists.weaponRanges = {
     short: `${game.i18n.localize("SR5.WeaponRangeShort")} (${game.i18n.localize("SR5.WeaponRangeUpTo")} ${rollData.combat.range.short}) ${game.i18n.localize("SR5.MeterUnit")}`,
     medium: `${game.i18n.localize("SR5.WeaponRangeMedium")} (${game.i18n.localize("SR5.WeaponRangeUpTo")} ${rollData.combat.range.medium}) ${game.i18n.localize("SR5.MeterUnit")}`,

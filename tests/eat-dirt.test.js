@@ -8,7 +8,8 @@ import {
 const prone = new Set(["prone"])
 const actor = ({
   statuses = new Set(), free
-} = {}) => ({
+} = {
+}) => ({
   effects: [{
     statuses
   }], system: {

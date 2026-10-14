@@ -14,6 +14,9 @@ import {
   dropProneUnderFire, proneUnderSuppressiveFire
 } from "./roll-helpers/eat-dirt.js"
 import {
+  applyNet
+} from "./roll-helpers/net.js"
+import {
   refuseByRule
 } from "../system/rule-locks.js"
 import {
@@ -396,10 +399,8 @@ export class SR5_RollMessage {
       case "defenseRangedWeapon":
       case "defenseAstralCombat":
         actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids)
-        if (!await mayDefend(type, messageId, messageData, actor)) break
         //SR5 p. 182: a prone character risks nothing from a suppressive fire, no test
-        if (type === "defenseRangedWeapon" && await proneUnderSuppressiveFire(actor, messageData)) break
-        actor.rollTest("defense", null, messageData)
+        if (await mayDefend(type, messageId, messageData, actor) && !(type === "defenseRangedWeapon" && await proneUnderSuppressiveFire(actor, messageData))) actor.rollTest("defense", null, messageData)
         break
       case "dropProneUnderFire":
         actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids)
@@ -467,6 +468,14 @@ export class SR5_RollMessage {
         if (TARGET_RESISTS_CARD.includes(type) && messageData.magic?.spell?.range !== "area") actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids) ?? actor
         //A defense among them: once per target and attack (system/defense-once.js)
         if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest(type, null, messageData)
+        break
+      //Run & Gun p. 25: the net lands on the defender of this card, once; then the netted character tries to get free
+      case "netEntangle":
+        await SR5_RollMessage.applyOnce(messageId, type, () => applyNet(actor, messageData))
+        await SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
+      case "netEscape":
+        actor.rollTest("netEscape", null, messageData)
         break
       case "resistanceCardContinuousDamage":
         messageData.test.typeSub = "continuousDamage"

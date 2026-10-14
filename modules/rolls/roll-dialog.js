@@ -62,6 +62,9 @@ import {
   holdsTarget, isSubdued
 } from "./roll-helpers/grapple-rules.js"
 import {
+  netEffectOf
+} from "./roll-helpers/net-rules.js"
+import {
   isRunning, runningModifierValue
 } from "../system/running.js"
 import {
@@ -829,6 +832,8 @@ export default class SR5_RollDialog {
       grappling = game.settings.get("sr5", "sr5GrapplingRules")
     //SR5 p. 195: a subdued character counts as prone for any attack against them (grappling rules only)
     if (grappling && isSubdued(actor.effects)) isProned = true
+    //Run & Gun p. 25: caught in a net, the character is subdued, so prone for any attack against them
+    if (netEffectOf(actor)) isProned = true
     //SR5 p. 164: the running status of the roller
     const running = isRunning(actor)
 

@@ -31,6 +31,9 @@ import {
 import {
   rgOption, defenselessDamageBonus
 } from "../../system/rg-combat-options.js"
+import {
+  netLands, netDamage
+} from "../roll-helpers/net-rules.js"
 
 export default async function defenseInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
@@ -78,8 +81,26 @@ export default async function defenseInfo(cardData, actorId){
     return
   }
 
+  //Nets (Run & Gun p. 25): the net lands on a hit, a graze included. A net without DV deals nothing, and a graze only
+  //the electric charge of a ShockNet, a contact attack (SR5 p. 175-176)
+  let netGraze = false
+  if (cardData.combat.net && netLands(cardData.roll.netHits)) {
+    cardData.combat.net.threshold = cardData.roll.netHits
+    cardData.chatCard.buttons.netEntangle = SR5_RollMessage.generateChatButton("nonOpposedTest", "netEntangle", game.i18n.format("SR5.NetApply", {
+      threshold: cardData.roll.netHits
+    }))
+    const dv = netDamage({
+      base: cardData.damage.base, netHits: cardData.roll.netHits, electric: cardData.damage.element === "electricity"
+    })
+    if (!(dv > 0)) {
+      cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.NetNoDamage"))
+      return
+    }
+    netGraze = cardData.roll.netHits === 0
+  }
+
   //If Defenser win, return
-  if (cardData.roll.netHits <= 0) {
+  if (cardData.roll.netHits <= 0 && !netGraze) {
     if (cardData.combat.calledShot.name === "throughAndInto") {
       let originalAttackMessage = foundry.utils.duplicate(game.messages.get(cardData.previousMessage.messageId))
       originalAttackMessage.flags.sr5data.combat.calledShot.name = ''

@@ -41,6 +41,9 @@ export {
   default as grappleEscapeInfo
 } from "./test-GrappleEscape.js"
 export {
+  default as netEscapeInfo
+} from "./test-NetEscape.js"
+export {
   default as grappleClinchDefenseInfo
 } from "./test-GrappleClinchDefense.js"
 export {

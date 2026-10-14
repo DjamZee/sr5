@@ -95,7 +95,11 @@ export default async function defense(rollData, actor, chatData){
   rollData.target.sceneId = chatData.target.sceneId ?? null
   rollData.target.range = chatData.target.range 
   rollData.combat.choke = chatData.combat.choke  
-  rollData.combat.weaponType = chatData.combat.weaponType    
+  rollData.combat.weaponType = chatData.combat.weaponType
+  //A net (Run & Gun p. 25): it lands on a hit, a graze included (test-Defense.js)
+  if (chatData.combat.net) rollData.combat.net = {
+    xl: !!chatData.combat.net.xl, shock: !!chatData.combat.net.shock
+  }
 
   //Add special info for Suppressive fire
   if (chatData.combat.firingMode.selected === "SF"){
