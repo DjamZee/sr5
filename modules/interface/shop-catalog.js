@@ -285,8 +285,8 @@ export class SR5ShopCatalog {
       if (filters.shelf && row.shelf !== filters.shelf) return false
       if (filters.shelf && filters.sub && row.sub !== filters.sub) return false
       // By its French name or, when the compendium gives one, its English name (lot 12)
-      if (search && !SR5ShopCatalog.normalize(row.name).includes(search)
-        && !SR5ShopCatalog.normalize(row.nameVO).includes(search)) return false
+      if (search && !SR5ShopCatalog.normalize(row.name).includes(search) &&
+        !SR5ShopCatalog.normalize(row.nameVO).includes(search)) return false
       if (Number.isFinite(filters.maxPrice) && row.price > filters.maxPrice) return false
       if (Number.isFinite(filters.maxAvailability) && row.availability > filters.maxAvailability) return false
       if (!legality.includes(row.legality)) return false
