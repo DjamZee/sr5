@@ -272,8 +272,9 @@ describe('no register is written outside the queue', () => {
     const fs = await import('node:fs')
     const path = await import('node:path')
     // The settings a GM or a user sets from a form, not registers read again and written back (the chase's rule set:
-    // the switch at the top of its window, lot 5; the defaults of the tokens created in play, lot 9)
-    const allowed = /sr5StorageViewMode|systemMigrationVersion|sourceModifiersMigration|legacyBiographyMigration|SHEET_SIZE_SETTING|sr5ShopExcludedPacks|sr5ShopBuyerMode|sr5ShopBuyerFolder|sr5ShopCreationMode|CLOCK_VIEW_SETTING|sr5RuleLocks|legacyRuleLock|ADVANCED_DRIVING_SETTING|TOKEN_DEFAULTS_SETTING/
+    // the switch at the top of its window, lot 5; the defaults of the tokens created in play, lot 9; the values a preset
+    // writes and the settings the gamemaster saves, written whole from the presets window, lot 10)
+    const allowed = /sr5StorageViewMode|systemMigrationVersion|sourceModifiersMigration|legacyBiographyMigration|SHEET_SIZE_SETTING|sr5ShopExcludedPacks|sr5ShopBuyerMode|sr5ShopBuyerFolder|sr5ShopCreationMode|CLOCK_VIEW_SETTING|sr5RuleLocks|legacyRuleLock|ADVANCED_DRIVING_SETTING|TOKEN_DEFAULTS_SETTING|presetValue|PRESETS_SAVED_SETTING/
     const offenders = []
     const walk = dir => {
       for (const entry of fs.readdirSync(dir, {

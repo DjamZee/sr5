@@ -131,12 +131,13 @@ export function sameSettingValue(a, b){
 export async function applySettingValues(values, locks = null){
   const written = []
   let reload = false
-  for (const [key, value] of Object.entries(values ?? {
+  for (const [key, presetValue] of Object.entries(values ?? {
   })) {
     const setting = game.settings.settings.get(`sr5.${key}`)
     if (!setting || setting.scope !== "world") continue
-    if (sameSettingValue(game.settings.get("sr5", key), value)) continue
-    await game.settings.set("sr5", key, value)
+    if (sameSettingValue(game.settings.get("sr5", key), presetValue)) continue
+    //A setting of the window, written whole by the gamemaster's own choice, as its tab writes it: not a register
+    await game.settings.set("sr5", key, presetValue)
     written.push(key)
     if (setting.requiresReload) reload = true
   }
