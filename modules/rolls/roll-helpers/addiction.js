@@ -49,6 +49,60 @@ export function focusAddictionRating(items){
     .reduce((total, i) => total + (Number(i.system.itemRating) || 0), 0)
 }
 
+// An addiction to a drug: so marked when the drug is taken, or, for the older entries, named after a drug the
+// character carries. Foci, blood magic and the Addiction quality are not drugs (Chrome Flesh p. 58: "drogues
+// naturelles et de synthèse")
+export function isDrugAddiction(entry, drugNames){
+  if (entry?.kind) return entry.kind === "drug"
+  return (drugNames || []).includes(entry?.name)
+}
+
+// The one addiction to foci (SR5 p. 416, "Focus : Puissance totale de tous les focus actifs"), once a focus is
+// activated. Each focus used to get an entry of its own, rated by the total when it was activated: two foci, two
+// addictions and two tests (lot 17c). The entries of the older data, named after a focus, are merged into it: the
+// furthest level of addiction is kept. `name` is the shared entry's name, `rating` the total Force now active
+export function focusAddictionEntries(addictions, focusNames, name, rating){
+  const list = [...(addictions || [])]
+  const legacy = list.filter(d => d?.kind !== "focus" && (focusNames || []).includes(d?.name))
+  let shared = list.find(d => d?.kind === "focus")
+  const kept = shared ?? [...legacy].sort((a, b) => addictionLevelIndex(b.level) - addictionLevelIndex(a.level))[0]
+  const others = new Set(legacy.filter(d => d !== kept))
+  const result = list.filter(d => !others.has(d))
+  const weeks = addictionWeeks(rating)
+  if (kept) {
+    const index = result.indexOf(kept)
+    result[index] = {
+      ...kept, name, kind: "focus",
+      shot: {
+        ...(kept.shot ?? {
+          base: 1, modifiers: []
+        }), value: (Number(kept.shot?.value) || 0) + 1
+      },
+      addiction: {
+        ...(kept.addiction ?? {
+        }), type: "psychological", rating, threshold: 2
+      },
+      weekAddiction: {
+        ...(kept.weekAddiction ?? {
+          modifiers: []
+        }), base: weeks, value: weeks
+      },
+    }
+  } else result.push({
+    name, kind: "focus",
+    shot: {
+      value: 1, base: 1, modifiers: []
+    },
+    addiction: {
+      type: "psychological", rating, threshold: 2
+    },
+    weekAddiction: {
+      value: weeks, base: weeks, modifiers: []
+    },
+  })
+  return result
+}
+
 // Index of a level, 0 when there is no addiction yet
 export function addictionLevelIndex(level){
   return Math.max(0, ADDICTION_LEVELS.indexOf(level || ""))

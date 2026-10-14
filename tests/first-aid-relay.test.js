@@ -156,6 +156,7 @@ describe('First aid without a GM connected', () => {
     patient = makePatient(monitors, false)
     await clickFirstAid()
     expect(emitForGM).toHaveBeenCalledWith('heal', expect.anything())
-    expect(emitForGM).toHaveBeenCalledWith('updateChatButton', expect.anything())
+    //The GM marks the card once he has healed (lot 17c: it read "Soigné" after he had declined)
+    expect(emitForGM).not.toHaveBeenCalledWith('updateChatButton', expect.anything())
   })
 })

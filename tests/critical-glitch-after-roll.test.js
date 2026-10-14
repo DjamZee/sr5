@@ -160,7 +160,8 @@ describe('Extended test (SR5 p. 51)', () => {
 
   it('a critical glitch hides "New roll" on the card', () => {
     const template = readFileSync(new URL('../templates/rolls/roll-card.hbs', import.meta.url), 'utf8')
-    expect(template).toMatch(/\{\{#if test\.isExtended\}\}\s*\{\{#unless roll\.criticalGlitchRoll\}\}\s*<button[^>]*data-type="extended"/)
+    //Nor once the healing of the test is applied (lot 17c)
+    expect(template).toMatch(/\{\{#if test\.isExtended\}\}\s*\{\{#unless \(or roll\.criticalGlitchRoll \(eq extendedTest false\)\)\}\}\s*<button[^>]*data-type="extended"/)
   })
 
   it('a critical glitch erased by Push the limit reopens the test (SR5 p. 51, 58)', async () => {

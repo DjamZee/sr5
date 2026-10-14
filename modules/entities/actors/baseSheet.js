@@ -91,7 +91,7 @@ import {
   isMilkBrick, soothe
 } from "../items/milkBrick.js"
 import {
-  addictionWeeks, focusAddictionRating
+  addictionWeeks, focusAddictionRating, focusAddictionEntries
 } from "../../rolls/roll-helpers/addiction.js"
 import {
   warnDrugWithoutStat, drugAddictionThreshold, drugInteractionModifier, effectiveDrugQuality, drugCrashIsInstant, drugHasCrash, isSameDrug, distinctDrugs
@@ -1926,27 +1926,11 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         }]
         if (this._spendsActionCounters()) SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
 
-        // Handle focus addicition
-        let alreadyTaken = actorData.addictions.find((d) => item.name === d.name)
-        let addiction = []
+        // Handle focus addiction: one entry for all foci (SR5 p. 416), rated by the total Force of the active foci,
+        // this one included
         if (item.system.isActive){
-          //SR5 p. 416: the rating is the total Force of the active foci, this one included
-          let rating = focusAddictionRating(itemList)
-          if (alreadyTaken) {
-            alreadyTaken.shot.value += 1
-            alreadyTaken.weekAddiction.value = addictionWeeks(rating)
-            //An entry written before with dotted keys has no addiction object: it gets one
-            alreadyTaken.addiction = {
-              ...(alreadyTaken.addiction ?? {
-              }), type: "psychological", rating, threshold: 2
-            }
-          }
-          else {
-            addiction = SR5_CharacterUtility.generateDrugAddiction(item, rating)
-            actorData.addictions = actorData.addictions.concat(addiction)
-          }		
-          if (actorData.addictions.shot) SR5_EntityHelpers.updateValue(actorData.addictions.shot)
-          if (actorData.addictions.weekAddiction) SR5_EntityHelpers.updateValue(actorData.addictions.weekAddiction)		
+          const focusNames = itemList.filter(i => i.type === "itemFocus").map(i => i.name)
+          actorData.addictions = focusAddictionEntries(actorData.addictions, focusNames, game.i18n.localize("SR5.Foci"), focusAddictionRating(itemList))
         }
 
       } else {

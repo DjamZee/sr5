@@ -537,6 +537,12 @@ export class SR5_RollTest {
   //Handle extended roll
   static async extendedRoll(message, actor){
     let messageData = message.flags.sr5data
+    //A test whose healing was applied is over (SR5 p. 207): a new roll added its hits to those already healed, and the
+    //card offered to heal them all again (lot 17c: 4 boxes, then 6 more, from 6 hits)
+    if (messageData.extendedTest === false) {
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_ExtendedTestOver"))
+      return false
+    }
     //SR5 p. 207: the next roll of a natural Physical recovery waits for the Stun damage to be healed, as the first one
     if (SR5_ActorHelper.stunHealsFirstRefused(actor, messageData.test.type, messageData.test.typeSub)) return false
 

@@ -3889,6 +3889,7 @@ SR5.radiationLevels = {
 
 SR5.specialProperties = {
   addictionResistance       : "SR5.AddictionResistance",
+  drugAddictionResistance   : "SR5.DrugAddictionResistance",
   toxinResistance           : "SR5.ToxinResistanceAll",
   concentration             : "SR5.Concentration",
   controlRig                : "SR5.ControlRig",
@@ -3907,6 +3908,7 @@ SR5.specialPropertiesList = {
   streetCredDivisor         : "SR5.StreetCredDivisor",
   thresholdModifier         : "SR5.ThresholdModifier",
   addictionResistance       : "SR5.AddictionResistance",
+  drugAddictionResistance   : "SR5.DrugAddictionResistance",
   toxinResistance           : "SR5.ToxinResistanceAll",
   concentration             : "SR5.Concentration",
   controlRig                : "SR5.ControlRig",
