@@ -22,6 +22,7 @@ export class SR5ShopCatalog {
   static INDEX_FIELDS = [
     'system.category', 'system.type', 'system.price', 'system.availability', 'system.legality',
     'system.essenceCost', 'system.grade', 'system.itemRating', 'system.deviceRating', 'flags.sr5.notForSale',
+    'system.weaponAccessory.priceMultiplier',
   ]
 
   /**
@@ -94,6 +95,22 @@ export class SR5ShopCatalog {
    */
   static pricedOnVehicle(entry) {
     return entry?.type === 'itemVehicleMod' && !(Number(entry.system?.price?.value) > 0) && Number(entry.system?.price?.base) > 0
+  }
+
+  /**
+   * A weapon accessory priced as a multiple of its weapon's price (long barrel HT p. 180 and its table p. 183, ceramic /
+   * plasteel components HT p. 181, internal smartgun SR5 p. 435, extra clip slot SL p. 48) has no price of its own:
+   * the shop shows it, to be dragged onto the weapon's workshop, which prices it there (item-workshop-apply.js
+   * priceOnHost), as a vehicle mod. Off a weapon it would be sold for nothing.
+   */
+  static pricedOnWeapon(entry) {
+    return entry?.type === 'itemWeapon' && entry.system?.category === 'weaponAccessory' &&
+      Number(entry.system?.weaponAccessory?.priceMultiplier) > 0 && !(Number(entry.system?.price?.base) > 0)
+  }
+
+  /** The multiple of the weapon's price an accessory costs, for the shop's label; 0 when it has a price of its own */
+  static weaponPriceMultiplier(entry) {
+    return SR5ShopCatalog.pricedOnWeapon(entry) ? Number(entry.system.weaponAccessory.priceMultiplier) : 0
   }
 
   /** The sub-shelf value of an entry, `_none` when its shelf is split and the field is empty. */
@@ -213,6 +230,13 @@ export class SR5ShopCatalog {
       ...(typeof system?.attributes?.handling === 'number' ? {
         attributes: Object.fromEntries(Object.entries(system.attributes).filter(([, v]) => typeof v === 'number')),
         seating: Number(system.seating) || 0,
+      } : {
+      }),
+      // A weapon accessory priced on its weapon (pricedOnWeapon)
+      ...(Number(system?.weaponAccessory?.priceMultiplier) > 0 ? {
+        weaponAccessory: {
+          priceMultiplier: Number(system.weaponAccessory.priceMultiplier)
+        }
       } : {
       }),
     }

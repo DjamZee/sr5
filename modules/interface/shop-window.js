@@ -211,7 +211,8 @@ export class SR5ShopWorldSource {
     const excluded = SR5ShopStock.excludedPacks
     const isGM = game.user.isGM
     return index.filter(entry => {
-      if (!equip && !(SR5ShopCatalog.describe(entry).price > 0) && !SR5ShopCatalog.pricedOnVehicle(entry)) return false
+      if (!equip && !(SR5ShopCatalog.describe(entry).price > 0) && !SR5ShopCatalog.pricedOnVehicle(entry) &&
+        !SR5ShopCatalog.pricedOnWeapon(entry)) return false
       if (SR5ShopStock.canSell(entry, {
         equip, excluded
       })) return true
@@ -792,7 +793,9 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     const overLimit = SR5ShopCatalog.overLimitMark(row, limits)
     // A vehicle mod is bought on a vehicle's workshop, at its price there (R5 p. 156): no cart, a drag
     const onVehicle = !equip && SR5ShopCatalog.pricedOnVehicle(entry)
-    const forSale = (!row.notForSale || equip) && !onVehicle
+    // ...and a weapon accessory priced on its weapon, on the weapon's workshop (HT p. 180-181, SR5 p. 435)
+    const onWeapon = !equip && SR5ShopCatalog.pricedOnWeapon(entry)
+    const forSale = (!row.notForSale || equip) && !onVehicle && !onWeapon
     // On a vendor's counter the item is there: no search, no test, unless the table wants one
     const onCounter = entry.vendor && !entry.onOrder
     const tested = !onCounter || SR5ShopVendor.testInStock
@@ -824,16 +827,19 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
         // A short name keeps the column narrow; the cart line spells it out
         key, label: game.i18n.localize(`SR5.ShopGradeShort_${key}`), selected: key === row.grade,
       })),
-      price: onVehicle ? game.i18n.localize('SR5.ShopPriceOnVehicle') : SR5ShopWindow.#nuyen(row.price),
+      price: onVehicle ? game.i18n.localize('SR5.ShopPriceOnVehicle') : onWeapon ? game.i18n.format('SR5.ShopPriceOnWeapon', {
+        multiplier: SR5ShopCatalog.weaponPriceMultiplier(entry)
+      }) : SR5ShopWindow.#nuyen(row.price),
       onVehicle,
-      tooExpensive: !free && !onVehicle && row.price > budget,
+      onWeapon,
+      tooExpensive: !free && !onVehicle && !onWeapon && row.price > budget,
       blocked: !!blocked,
       blockedLabel: blocked ? SR5ShopWindow.#creationMessage(blocked, entry.name, limits) : '',
       overLimitLabel: overLimit ? SR5ShopWindow.#overLimitMessage(overLimit) : '',
       notForSale: row.notForSale,
       canBuy: buyer !== null && forSale && !blocked,
       // Without a buyer the list stays readable: only what cannot be sold at all is dimmed
-      dim: (!forSale && !onVehicle) || !!blocked,
+      dim: (!forSale && !onVehicle && !onWeapon) || !!blocked,
     }
   }
 
