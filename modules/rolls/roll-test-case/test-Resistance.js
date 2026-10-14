@@ -140,8 +140,7 @@ export default async function resistanceInfo(cardData, actorId){
     const excess = direct ? (Number(cardData.previousMessage.hits) || 0) - (Number(cardData.roll.hits) || 0) : cardData.previousMessage.attackerNetHits
     const initiative = electromancerInitiative(excess)
     if (initiative > 0) {
-      const fighterId = SR5Combat.fighterIdOf(actor)
-      if (fighterId) SR5Combat.changeInitInCombatHelper(fighterId, -initiative)
+      SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), -initiative)
       ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_Electromancer", {
         value: initiative
       })}`)
