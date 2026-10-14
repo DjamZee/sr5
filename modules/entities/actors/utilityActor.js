@@ -2,7 +2,7 @@ import {
   bbPenaltyReduction
 } from "../../system/bb-healing.js"
 import {
-  usesModPoints, droneModRule, armorOverload
+  usesModPoints, droneModRule, armorOverload, droneCannotMove
 } from "../../system/drone-mod-points.js"
 import {
   emptyPreparedModifiers
@@ -3037,6 +3037,7 @@ export class SR5_CharacterUtility extends Actor {
     const attributes = actor.system.attributes, armor = attributes.armor.augmented
     //Under the optional Modification Points a drone carries up to 3 × its Structure of Armor, then slows down
     //(Rigger 5.0 p. 127-128) instead of the cap of vehicles
+    actor.system.cannotMove = false
     if (usesModPoints(droneModRule(), actor.system.type)) {
       const overload = armorOverload(armor.value, attributes.body.augmented.value)
       const label = game.i18n.localize("SR5.DroneArmorOverload")
@@ -3046,6 +3047,13 @@ export class SR5_CharacterUtility extends Actor {
         SR5_EntityHelpers.updateModifier(attributes[key].augmented, label, "itemVehicleMod", penalty)
         SR5_EntityHelpers.updateValue(attributes[key].augmented, 0)
       }
+      //Below 1 in Handling or below 0 in Speed or Acceleration, the drone can no longer move (R5 p. 128): read before
+      //the floor at 0 the sheet shows
+      const raw = p => ((Number(p?.base) || 0) + (SR5_EntityHelpers.modifiersSum(p?.modifiers ?? []) || 0)) *
+        (SR5_EntityHelpers.modifiersProduct(p?.modifiers ?? []) ?? 1)
+      actor.system.cannotMove = droneCannotMove({
+        handling: raw(attributes.handling.augmented), speed: raw(attributes.speed.augmented), acceleration: raw(attributes.acceleration.augmented)
+      })
       return
     }
     const cut = armorCapReduction(addedArmor(actor.items, armor.modifiers), attributes.body.augmented.value)

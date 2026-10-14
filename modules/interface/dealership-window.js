@@ -295,9 +295,13 @@ export class SR5DealershipWindow extends foundry.applications.api.HandlebarsAppl
     }))
     const added = this._mods.map((m, i) => {
       const {
-        price, slots
+        price, slots, availability
       } = pricedModData(m.source, vehicle)
-      const d = SR5ShopCatalog.describe(m.source)
+      //An attribute upgrade of a drone has the book's availability (Rigger 5.0 p. 127-128), not the mod's
+      const d = {
+        ...SR5ShopCatalog.describe(m.source), ...(availability ?? {
+        })
+      }
       lines.push({
         price, availability: d.availability, legality: d.legality
       })

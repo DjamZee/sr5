@@ -4743,6 +4743,8 @@
 	"SR5.DroneModPointsYHint": "Structure X(Y), Rigger 5.0 p. 126 : le nombre de Points de Modification que le drone a encore. Vide : sa Structure. L'équipement d'origine ne prend pas de points (Rigger 5.0 p. 191) : un Steel Lynx neuf garde ses 6 points.",
 	"SR5.DroneModPointsYPlaceholder": "Structure",
 	"SR5.DroneArmorOverload": "Blindage au-delà de 3 × Structure",
+	"SR5.DroneCannotMove": "Ce drone ne peut plus se déplacer",
+	"SR5.DroneCannotMoveHint": "Maniabilité sous 1, ou Vitesse ou Accélération sous 0, après ses modifications (Rigger 5.0 p. 128).",
 	"SR5.WARN_DroneModPointsFull": "{name} : il faut {needed} Point(s) de Modification, il en reste {free} (Rigger 5.0 p. 126-127).",
 	"SR5.WARN_DroneModBodyFloor": "{name} : la Structure ne peut pas descendre sous {floor}, la moitié de sa valeur de départ arrondie au supérieur (exemple du livre, Rigger 5.0 p. 127).",
 	"SR5.WARN_DroneModAttributeCap": "{name} : {attribute} ne peut pas dépasser {cap}, le double de sa valeur de départ (Rigger 5.0 p. 127).",

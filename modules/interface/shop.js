@@ -258,6 +258,8 @@ export class SR5Shop {
    *   waiting to be installed, and its owner pays (Rigger 5.0 p. 153)
    * @param {Function} [options.priceOn] the unit price of a source on the
    *   recipient (a mod's price is multiplied by the vehicle's attributes)
+   * @param {Function} [options.availabilityOn] the {availability, legality} of a source on the recipient, or null for
+   *   its own (an attribute upgrade of a drone under the Modification Points, Rigger 5.0 p. 127-128)
    * @param {boolean} [options.assemble] the dealership (lot R9): the first line is a vehicle, the others mods
    *   bought for it, priced on it, one of each. All or nothing: the vehicle arrives with the mods aboard, waiting to
    *   be installed (Rigger 5.0 p. 153), or fitted when the gamemaster ticked `fitted` on a line; and when one line
@@ -266,7 +268,7 @@ export class SR5Shop {
    */
   static async checkout(actor, lines, {
     equip = false, express = false, messageId = null, userId = game.user.id, cashToken = null, recipient = null, priceOn = null, assemble = false,
-    creation = false
+    creation = false, availabilityOn = null
   } = {
   }) {
     if (!actor) {
@@ -329,7 +331,15 @@ export class SR5Shop {
       const grade = offered.includes(line.grade) ? line.grade : null
       // Creation caps availability and rating (SR5 p. 66, p. 420), at the level the gamemaster
       // set (DjamZ's ruling, 2026-10-05); Equip mode is how the gamemaster goes past them
-      const described = SR5ShopCatalog.describe(source, grade)
+      // A mod of the dealership is priced at the till on the vehicle it is bought for (R5 p. 156)
+      const onVehicle = assemble && resolved.length && source.type === 'itemVehicleMod' ? resolved[0].source : null
+      const priced = onVehicle ? (await import('../system/vehicle-workshop-apply.js')).pricedModData(source, onVehicle) : null
+      // ...and so is the availability of an attribute upgrade of a drone (Rigger 5.0 p. 127-128)
+      const availableOn = priced ? priced.availability : availabilityOn ? availabilityOn(source) : null
+      const described = {
+        ...SR5ShopCatalog.describe(source, grade), ...(availableOn ?? {
+        })
+      }
       const creationLimits = !equip && SR5Shop.creationModeFor(actor, creation) ? SR5Shop.creationLimits : null
       const block = creationLimits ? SR5ShopCatalog.creationRefusal(described, creationLimits) : null
       // Past the limits where the table allows it: bought, and marked for the creation summary (C3)
@@ -342,9 +352,7 @@ export class SR5Shop {
         continue
       }
       const quantity = assemble ? 1 : Math.max(1, Math.floor(Number(line.quantity) || 1))
-      // A mod of the dealership is priced at the till on the vehicle it is bought for (R5 p. 156)
-      const onVehicle = assemble && resolved.length && source.type === 'itemVehicleMod' ? resolved[0].source : null
-      const base = onVehicle ? (await import('../system/vehicle-workshop-apply.js')).pricedModData(source, onVehicle).price : priceOn ? Math.max(0, Number(priceOn(source)) || 0) : SR5Shop.gradedPrice(source.system, grade)
+      const base = priced ? priced.price : priceOn ? Math.max(0, Number(priceOn(source)) || 0) : SR5Shop.gradedPrice(source.system, grade)
       // A vehicle mod off a vehicle has no price: it is bought on the vehicle's workshop, never for nothing here
       if (!equip && !onVehicle && !priceOn && SR5ShopCatalog.pricedOnVehicle({
         type: source.type, system: {

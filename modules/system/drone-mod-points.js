@@ -282,6 +282,44 @@ export function modPointsPrice(system, vehicle) {
   }
 }
 
+/** The availability of an attribute change on this drone (R5 p. 127-128), {availability, legality}, or null for any other
+ *  mod (its own availability stands). Handling, Speed and Sensor: new value × 2; Acceleration: new value × 4; Armor: the
+ *  new value, Restricted beyond 6 and Forbidden beyond 12 (the others keep the mod's own legality); a lowered Structure:
+ *  the Modification Points gained × 3, 2 points for each point of Structure ("Réduire la Structure de 1 donne 2 Points de
+ *  Modifications"). `vehicle` = {attributes: {key: starting value}} */
+export function modPointsAvailability(system, vehicle) {
+  const change = attributeChange(system, vehicle)
+  if (!change) return null
+  const own = sys(system).legality
+  const legality = own === "R" || own === "F" ? own : ""
+  if (change.key === "body") return change.amount < 0 ? {
+    availability: -change.amount * 2 * 3, legality
+  } : null
+  if (change.amount <= 0) return null
+  const value = num(vehicle?.attributes?.[change.key]) + change.amount
+  switch (change.key) {
+    case "handling": case "speed": case "sensor": return {
+      availability: value * 2, legality
+    }
+    case "acceleration": return {
+      availability: value * 4, legality
+    }
+    case "armor": return {
+      availability: value, legality: value > 12 ? "F" : value > 6 ? "R" : ""
+    }
+    default: return null
+  }
+}
+
+/** R5 p. 128: "Si Maniabilité < 1 ou si Vitesse ou Accélération < 0, le drone ne peut plus se déplacer". The values are
+ *  read before the sheet floors them at 0, so that a Speed pushed below 0 by too much Armor still tells */
+export function droneCannotMove({
+  handling, speed, acceleration
+} = {
+}) {
+  return num(handling) < 1 || num(speed) < 0 || num(acceleration) < 0
+}
+
 /** The price of a mod on a drone under the points: the factory ones stay free (R5 p. 191), an attribute upgrade costs what
  *  the book says (p. 127-128), any other mod its own price */
 export function modPointsCost(mod, vehicle) {

@@ -80,6 +80,11 @@
                 <input type="number" name="system.currentSpeed" value="{{system.currentSpeed}}" min="0" step="1" data-dtype="Number">
             </div>
         </li>
+        {{#if system.cannotMove}}
+        <li class="grid">
+            <div class="col-12 SR-popColor SR-Bold" data-tooltip="{{localize 'SR5.DroneCannotMoveHint'}}"><i class="fas fa-triangle-exclamation"></i> {{localize 'SR5.DroneCannotMove'}}</div>
+        </li>
+        {{/if}}
         <li class="grid">
             <div class="col-10">{{localize 'SR5.OffRoadMode'}}</div>
             <div class="col-2 SR-TextCenter" data-helpTitle="{{localize 'SR5.OffRoadMode'}}" data-helpMessage="{{localize 'SR5.HELP_OffRoadModeMsg'}}">

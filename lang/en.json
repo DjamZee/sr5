@@ -4743,6 +4743,8 @@
 	"SR5.DroneModPointsYHint": "Body X(Y), Rigger 5.0 p. 126: the Modification Points the drone has left. Empty: its Body. Factory equipment takes no points (Rigger 5.0 p. 191): a new Steel Lynx keeps its 6 points.",
 	"SR5.DroneModPointsYPlaceholder": "Body",
 	"SR5.DroneArmorOverload": "Armor beyond 3 × Body",
+	"SR5.DroneCannotMove": "This drone can no longer move",
+	"SR5.DroneCannotMoveHint": "Handling below 1, or Speed or Acceleration below 0, after its modifications (Rigger 5.0 p. 128).",
 	"SR5.WARN_DroneModPointsFull": "{name}: it needs {needed} Modification Point(s), {free} left (Rigger 5.0 p. 126-127).",
 	"SR5.WARN_DroneModBodyFloor": "{name}: the Body cannot go below {floor}, half its starting value rounded up (the book's example, Rigger 5.0 p. 127).",
 	"SR5.WARN_DroneModAttributeCap": "{name}: {attribute} cannot go beyond {cap}, twice its starting value (Rigger 5.0 p. 127).",
