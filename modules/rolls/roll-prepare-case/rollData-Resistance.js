@@ -240,8 +240,13 @@ async function handlePhysicalDamage(rollData, actor, chatData, rollType){
   rollData.test.typeSub = "physicalDamage"
   if (rollType === "resistanceToxin") rollData.test.typeSub = "toxinDamage"
   rollData.damage.source = chatData.damage.source
+  rollData.damage.weaponFocus = chatData.damage.weaponFocus
   rollData.previousMessage.actorId = chatData.previousMessage.actorId
-  if (rollData.damage.element === "fire") rollData.threshold.value = chatData.roll.netHits
+  //Catching fire (SR5 p. 173): the attack's net hits, and a fire spell's Force for its AP
+  if (rollData.damage.element === "fire"){
+    rollData.threshold.value = chatData.roll.netHits
+    if (chatData.damage.source === "magical") rollData.magic.force = chatData.magic?.force
+  }
 
   //handle continuous damage;
   rollData.damage.originalValue = chatData.damage.originalValue

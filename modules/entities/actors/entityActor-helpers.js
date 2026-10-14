@@ -287,7 +287,7 @@ export class SR5_ActorHelper {
     if (options.damage.element === "acid" && options.damage.source !== "acidLingering") await SR5_ActorHelper.acidDamageEffect(actorId, damage, acidSource)
     if (options.damage.element === "fire"){
       if (actorData.itemsProperties.armor.value <= 0) await SR5_ActorHelper.fireDamageEffect(actorId)
-      else await SR5_ActorHelper.checkIfCatchFire(actorId, options.threshold.value, options.damage.source, options.combat.armorPenetration)
+      else await SR5_ActorHelper.checkIfCatchFire(actorId, options.threshold.value, options)
     }
   }
 
@@ -741,11 +741,15 @@ export class SR5_ActorHelper {
     await actor.createEmbeddedDocuments('ActiveEffect', [statusEffect])
   }
 
-  //Check if an actor catch fire
-  static async checkIfCatchFire (actorId, firethreshold, source, force){
+  //Check if an actor catch fire. SR5 p. 173: a fire spell's AP is -Force, a fire-based weapon's -6. A spell or a
+  //preparation says "magical", never "spell"; a weapon focus is a weapon. The card's AP is not the Force: the
+  //resistance capped it at the armor before the fire protection was counted
+  static async checkIfCatchFire (actorId, firethreshold, options){
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
-    let ap = (source === "spell") ? force : -6
-    let fireType = (source === "spell") ? "fireMagical" : "fire"
+    const isSpell = options.damage.source === "magical" && !options.damage.weaponFocus
+    const force = Number(options.magic?.force) || -(Number(options.combat?.armorPenetration) || 0)
+    let ap = isSpell ? -force : -6
+    let fireType = isSpell ? "fireMagical" : "fire"
         
     let rollInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
     rollInfo.threshold.type = fireType

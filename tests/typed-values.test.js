@@ -82,6 +82,9 @@ import {
 import {
   SR5_EntityHelpers
 } from '../modules/entities/helpers.js'
+import {
+  SR5_ActorHelper
+} from '../modules/entities/actors/entityActor-helpers.js'
 
 // An embedded collection: iterable, with find and get as Foundry's Collection has them
 function collection(docs){
@@ -157,6 +160,67 @@ describe('fire damage goes up by 1 each Combat Turn (SR5 p. 173)', () => {
 
     expect(actor.takeDamage.mock.calls[0][0].damage.value).toBe(4)
     expect(fire.update.mock.calls[0][0].system.value).toBe(5)
+  })
+})
+
+describe('catching fire (SR5 p. 173): a fire spell has an AP of -Force', () => {
+  async function catchFire(options){
+    const actor = combatActor([])
+    vi.spyOn(SR5_EntityHelpers, 'getRealActorFromID').mockReturnValue(actor)
+    vi.spyOn(SR5_PrepareRollTest, 'getBaseRollData').mockImplementation(() => ({
+      threshold: {
+      }, combat: {
+      }
+    }))
+    await SR5_ActorHelper.checkIfCatchFire('a1', 2, options)
+    return actor.rollTest.mock.calls[0][2]
+  }
+
+  it('a spell or a preparation ("magical") uses its Force, not the AP capped at the armor', async () => {
+    const rollInfo = await catchFire({
+      damage: {
+        source: 'magical'
+      }, magic: {
+        force: 7
+      }, combat: {
+        armorPenetration: -4
+      }
+    })
+    expect(rollInfo.threshold.type).toBe('fireMagical')
+    expect(rollInfo.combat.armorPenetration).toBe(-7)
+    expect(rollInfo.threshold.value).toBe(2)
+  })
+
+  it('without the Force on the card, falls back on the AP', async () => {
+    const rollInfo = await catchFire({
+      damage: {
+        source: 'magical'
+      }, combat: {
+        armorPenetration: -5
+      }
+    })
+    expect(rollInfo.combat.armorPenetration).toBe(-5)
+  })
+
+  it('a flamethrower or a weapon focus stays a fire-based weapon (-6)', async () => {
+    expect((await catchFire({
+      damage: {
+        source: ''
+      }, combat: {
+        armorPenetration: 0
+      }
+    })).combat.armorPenetration).toBe(-6)
+    vi.restoreAllMocks()
+    const focus = await catchFire({
+      damage: {
+        source: 'magical', weaponFocus: true
+      }, magic: {
+        force: 9
+      }, combat: {
+      }
+    })
+    expect(focus.threshold.type).toBe('fire')
+    expect(focus.combat.armorPenetration).toBe(-6)
   })
 })
 
