@@ -19,7 +19,8 @@ describe('the balance of chips', () => {
   })
 
   it('gives a contact without favors an even balance', () => {
-    expect(favorsOf({})).toEqual({
+    expect(favorsOf({
+    })).toEqual({
       chips: 0, relation: '', intimidated: false, log: []
     })
     expect(favorsOf({

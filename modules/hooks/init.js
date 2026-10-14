@@ -32,6 +32,9 @@ import {
   registerAegisLedger
 } from "../system/aegis.js"
 import {
+  registerInfoBrokerLedger
+} from "../interface/info-broker.js"
+import {
   SR5_MiscellaneousHelpers
 } from "../rolls/roll-helpers/miscellaneous.js"
 import {
@@ -365,6 +368,8 @@ export async function sr5HookInit() {
   registerRetryLedger()
   //Aegis (Kill Code p. 112): the shield boxes, kept by the active GM
   registerAegisLedger()
+  //The information broker (Cutting Aces p. 148-149): the requests, kept by the active GM
+  registerInfoBrokerLedger()
   //The cards spent through the generic sockets, once per use and target (security lot)
   SR5_MiscellaneousHelpers.registerSettings()
   registerExtendedClockSetting()

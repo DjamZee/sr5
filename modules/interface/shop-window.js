@@ -330,6 +330,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       testCartAvailability: SR5ShopWindow.#onTestCartAvailability,
       openSell: SR5ShopWindow.#onOpenSell,
       newVendor: SR5ShopWindow.#onNewVendor,
+      openInfoBroker: SR5ShopWindow.#onOpenInfoBroker,
     },
   }
 
@@ -752,6 +753,9 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       closed: !shop.isOpen,
       margin: shop.margin,
       marginLabel: shop.margin ? `${shop.margin > 0 ? '+' : ''}${shop.margin}%` : '',
+      // Lot 37a: an information broker sells data from its own window (Cutting Aces p. 148-149); the gamemaster
+      // may open it at any vendor's
+      infoBroker: shop.template === 'infoBroker' || game.user.isGM,
     }
   }
 
@@ -1162,6 +1166,16 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     if (!created) return
     this.setSource(new SR5ShopVendorSource(created.actor, created.storage))
     this.render()
+  }
+
+  /** The information broker's window, for the buyer shown (lot 37a, Cutting Aces p. 148-149). */
+  static async #onOpenInfoBroker() {
+    const {
+      SR5InfoBrokerApp
+    } = await import('./info-broker.js')
+    SR5InfoBrokerApp.open({
+      vendor: this._source?.vendor ? this._source.actor : null, buyer: SR5Shop.buyerFromKey(this._buyerId)
+    })
   }
 
   static #onOpenSell() {

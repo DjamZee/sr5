@@ -28,7 +28,8 @@ const int = v => {
 
 /** The favors block of a contact, with its defaults. */
 export function favorsOf(system) {
-  const f = system?.favors ?? {}
+  const f = system?.favors ?? {
+  }
   return {
     chips: int(f.chips),
     relation: RELATIONS.includes(f.relation) ? f.relation : "",
@@ -82,7 +83,8 @@ export function spendableChips(chips) {
  */
 export function afterFavorObtained(chips, rating, {
   spent = 0, relation = ""
-} = {}) {
+} = {
+}) {
   const spend = Math.min(Math.max(0, int(spent)), spendableChips(chips))
   return int(chips) - spend - chipsForFavor(rating, relation)
 }
@@ -106,7 +108,8 @@ export const CHIPS_FOR_SERVICE = 1
  */
 export function loyaltyImprovement(loyalty, chips, {
   relation = "", intimidated = false
-} = {}) {
+} = {
+}) {
   const target = int(loyalty) + 1
   const cost = Math.max(0, relation === "family" ? target - 1 : target)
   let refused = null

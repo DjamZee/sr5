@@ -37,6 +37,10 @@
           <small>{{vendor.name}}{{#if vendor.marginLabel}} · {{localize 'SR5.ShopVendorMarginShort' value=vendor.marginLabel}}{{/if}}</small>
           {{#if vendor.closed}}<small class="sr-shop-blocked"><i class="fas fa-door-closed"></i> {{localize 'SR5.ShopVendorClosedHint'}}</small>{{/if}}
         </div>
+        {{#if vendor.infoBroker}}
+        {{!-- Lot 37a: data for sale (Cutting Aces p. 148-149) --}}
+        <button type="button" class="sr-shop-infobroker" data-action="openInfoBroker"><i class="fas fa-user-secret"></i> {{localize 'SR5.INFOBROKER_Open'}}</button>
+        {{/if}}
       </div>
     </header>
     {{/if}}

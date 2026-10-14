@@ -144,6 +144,9 @@ export class SR5_SocketHandler {
       //Lot 14: a message or a call between commcodes (SR5 p. 241), written by the active GM in his register
       "commcodeRequest": [async (message, senderId) => (await import("./interface/commcode-traffic.js"))._socketCommcodeRequest(message, senderId)],
       "commcodeRefused": [async (message, senderId) => (await import("./interface/commcode-traffic.js"))._socketCommcodeRefused(message, senderId)],
+      //Lot 37a: data bought from or sold to an information broker (Cutting Aces p. 148-149), written by the active GM
+      "infoBrokerRequest": [async (message, senderId) => (await import("./interface/info-broker.js"))._socketInfoBrokerRequest(message, senderId)],
+      "infoBrokerAnswer": [async (message, senderId) => (await import("./interface/info-broker.js"))._socketInfoBrokerAnswer(message, senderId)],
     }
 
     //senderId is added by the server to every custom socket message: a client cannot forge it

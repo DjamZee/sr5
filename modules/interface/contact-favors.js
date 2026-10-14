@@ -38,7 +38,8 @@ export function favorsContext(system) {
   }
 }
 
-async function write(item, chips, entry, extra = {}) {
+async function write(item, chips, entry, extra = {
+}) {
   const f = favorsOf(item.system)
   const delta = chips - f.chips
   await item.update({
@@ -128,7 +129,8 @@ async function askFavor(item) {
 }
 
 /** The favor granted: the contact gains its chips, less what the character holds (RF p. 170, 172). */
-async function favorObtained(item, preset = {}) {
+async function favorObtained(item, preset = {
+}) {
   const f = favorsOf(item.system)
   let rating = preset.rating
   if (!rating) {
@@ -245,7 +247,8 @@ async function intimidate(item) {
     rejectClose: false,
   })
   if (!ok) return
-  const extra = blackmail ? {} : {
+  const extra = blackmail ? {
+  } : {
     "system.loyalty": Math.max(0, loyalty - 1), "system.favors.intimidated": true
   }
   return write(item, f.chips, {
