@@ -1,0 +1,6 @@
+<li class="grid">
+    <div class="col-5" data-tooltip="{{localize 'SR5.WeaponAccessoryPriceMultiplier_D'}}">{{localize 'SR5.WeaponAccessoryPriceMultiplier'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-7">
+        <input type="number" name="system.weaponAccessory.priceMultiplier" value="{{system.weaponAccessory.priceMultiplier}}" min="0" step="1" data-dtype="Number" {{#unless owner}}disabled{{/unless}} />
+    </div>
+</li>

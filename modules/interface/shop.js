@@ -366,6 +366,13 @@ export class SR5Shop {
         }))
         continue
       }
+      // ...nor a weapon accessory priced on its weapon off a weapon: its Armory prices it (HT p. 180-181, SR5 p. 435)
+      if (!equip && !priceOn && SR5ShopCatalog.pricedOnWeapon(source)) {
+        ui.notifications.warn(game.i18n.format('SR5.WARN_ShopAccessoryOnWeapon', {
+          name: source.name
+        }))
+        continue
+      }
       // The surcharge that bought dice on the card is paid (SR5 p. 420); the search time and the express
       // surcharge stay on the base price (DjamZ's ruling, 05/10)
       // Relation avec un concessionnaire (Rigger 5.0 p. 37): 10 % off, after the surcharge

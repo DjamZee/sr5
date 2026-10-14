@@ -607,6 +607,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/items/_partial/editable/weapon/reloadingMethod-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/weapon/requiredHands-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/weapon/specialEffect-edit.hbs",
+    "systems/sr5/templates/items/_partial/editable/weapon/weaponPriceMultiplier-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/weapon/skill-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/weapon/toxin-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/weapon/type-edit.hbs",

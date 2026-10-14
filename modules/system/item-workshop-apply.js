@@ -17,6 +17,9 @@ import {
   SR5_UtilityItem
 } from "../entities/items/utilityItem.js"
 import {
+  vintageAccessoryPrice
+} from "../entities/items/weaponTraits.js"
+import {
   refuseByRule
 } from "./rule-locks.js"
 import {
@@ -45,11 +48,13 @@ export function installPending(item) {
 }
 
 /** The price of a part on this host: a weapon accessory priced as a multiple of the weapon's price (a modification,
- *  utilityItem.js _handleItemBasedWeaponAccessory) costs that multiple of this weapon's base price, else its own */
+ *  utilityItem.js _handleItemBasedWeaponAccessory) costs that multiple of this weapon's base price, else its own; on
+ *  a vintage weapon, twice that (RG p. 73), as the weapon's sheet counts it */
 export function priceOnHost(source, host) {
   const multiplier = Number(source?.system?.weaponAccessory?.priceMultiplier) || 0
-  if (host?.type === "itemWeapon" && multiplier > 0) return multiplier * (Number(host.system?.price?.base) || 0)
-  return SR5ShopCatalog.describe(source).price
+  if (host?.type !== "itemWeapon") return SR5ShopCatalog.describe(source).price
+  const price = multiplier > 0 ? multiplier * (Number(host.system?.price?.base) || 0) : SR5ShopCatalog.describe(source).price
+  return vintageAccessoryPrice(price, source?.system?.weaponAccessory?.type, host.system?.isVintage === true)
 }
 
 /** Whether an item of the inventory fits this host as an accessory, as the "+" of the accessory list chooses them */

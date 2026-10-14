@@ -520,8 +520,9 @@ export const WEAPON_ACCESSORY_CATALOG = {
     }],
   },
 
+  // "Installer un smartgun interne dans une arme en double le prix" (SR5 p. 435): the weapon's price once more
   smartgunSystemInternal: {
-    price: 0, priceMultiplier: 2, slot: "internal", type: "modification",
+    price: 0, priceMultiplier: 1, slot: "internal", type: "modification",
     systemEffects: [{
       value: "smartgunInternal" 
     }],
