@@ -1412,6 +1412,9 @@ SR5.weaponAccessorySlots = {
   internal                  : "SR5.WeaponAccessorySlotInternal",
   barrel                    : "SR5.WeaponAccessorySlotBarrel",
   stock                     : "SR5.WeaponAccessorySlotStock",
+  //Hard Targets p. 183: two slots at once (system/item-workshop.js, accessorySlots)
+  "barrel+underneath"       : "SR5.WeaponAccessorySlotBarrelUnderneath",
+  "underneath+side"         : "SR5.WeaponAccessorySlotUnderneathSide",
 }
 
 //The special effects the system reads on a weapon accessory (weaponAccessory.specialEffect), chosen on its sheet

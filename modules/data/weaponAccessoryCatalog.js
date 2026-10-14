@@ -128,7 +128,7 @@ export const WEAPON_ACCESSORY_CATALOG = {
     price: 300, slot: "", type: "modification" 
   },
   mountedCrossbow:          {
-    price: 1000, slot: "", type: "accessory" 
+    price: 1000, slot: "barrel+underneath", type: "modification" 
   },
   narcojectDazzler:         {
     price: 1000, slot: "top", type: "accessory" 
@@ -203,7 +203,7 @@ export const WEAPON_ACCESSORY_CATALOG = {
     price: 0, slot: "", type: "trait" 
   },
   underbarrelLaser:         {
-    price: 22000, slot: "", type: "accessory" 
+    price: 22000, slot: "underneath+side", type: "modification" 
   },
   underbarrelFlamethrower:  {
     price: 200, slot: "", type: "accessory" 
