@@ -336,6 +336,12 @@ describe('greyware Magic penalty (BTB p. 142)', () => {
     }
   })
 
+  // BTB p. 142: "ne fournit jamais de bonus sans-fil"; measured in game (lot 17a), a greyware implant kept its wireless
+  it('never lets a greyware implant go wireless', () => {
+    expect(SR5ShopGrades.wirelessAllowed(aug('greyware').system)).toBe(false)
+    expect(SR5ShopGrades.wirelessAllowed(aug('alphaware').system)).toBe(true)
+  })
+
   it('costs one point per greyware implant installed', () => {
     expect(SR5ShopGrades.greywareMagicPenalty([aug('greyware'), aug('greyware'), aug('alphaware')])).toBe(2)
   })

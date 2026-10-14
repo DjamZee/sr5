@@ -115,6 +115,14 @@ export class SR5ShopGrades {
   }
 
   /**
+   * GreyWare "ne fournit jamais de bonus sans-fil" (BTB p. 142): measured in game (lot 17a), an implant placed in
+   * greyware kept its wireless switched on, and with it the bonuses of its wireless effects.
+   */
+  static wirelessAllowed(system) {
+    return system?.grade !== 'greyware'
+  }
+
+  /**
    * Magic points lost to greyware, BTB p. 142: one per greyware implant
    * installed. Accessories go uncounted, as they are for Essence
    * (`entityActor.js`): they share their host's grade and are not a second implant.

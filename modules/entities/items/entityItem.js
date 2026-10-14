@@ -28,6 +28,9 @@ import {
 import {
   SR5_CharacterUtility 
 } from "../actors/utilityActor.js"
+import {
+  SR5ShopGrades
+} from "../../interface/shop-grades.js"
 import AbilityTemplate from "../../interface/canvas-template.js"
 import {
   SR5_EntityHelpers 
@@ -283,6 +286,8 @@ export class SR5Item extends Item {
         SR5_UtilityItem._handleMatrixMonitor(item)
         SR5_EntityHelpers.GenerateMonitorBoxes(itemData, 'matrix')
         if (itemData.conditionMonitors.matrix.actual.value >= itemData.conditionMonitors.matrix.value) itemData.wirelessTurnedOn = false
+        //GreyWare has no wireless at all (BTB p. 142)
+        if (!SR5ShopGrades.wirelessAllowed(itemData)) itemData.wirelessTurnedOn = false
         if (this.actor && itemData.isAccessory){
           SR5_UtilityItem._checkIfAccessoryIsPlugged(item, this.actor)
           if (!itemData.isPlugged) {
