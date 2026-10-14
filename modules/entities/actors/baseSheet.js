@@ -127,7 +127,7 @@ import {
   deviceModeSheetContext, switchDeviceMode
 } from "../../canvas/pan-crown/pan-device-switch.js"
 import {
-  actsAsRcc, fixedRccRatings, programSwitchActionType, sharingSlotsLeft
+  actsAsRcc, fixedRccRatings, programSwitchActionType, sharingSlotsLeft, autosoftShareRefused
 } from "./rcc.js"
 import {
   primaryLifestyleUpdates
@@ -1552,6 +1552,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     //de densité osseuse (p. 458, 462). One switched on beside another is refused to a player; the gamemaster is warned
     //and goes past it (decision H5 of DjamZ); the "body" rule lock family lifted, so does a player (B13, lot 4)
     if (target === "system.isActive" && value === true && boneSwitchRefused(actor, realItem)) return
+    //A Machinist's persona shares only the autosofts its echoes [Programme] copy (SR5 p. 261, Kill Code p. 101)
+    if (target === "system.isShared" && value === true && autosoftShareRefused(actor, realItem)) return ui.notifications.warn(game.i18n.format("SR5.WARN_MachinistAutosoftNoEcho", {
+      name: realItem.name
+    }))
     //A console shares as many autosofts as its Sharing rating (SR5 p. 269)
     if (target === "system.isShared" && value === true && sharingSlotsLeft(itemList, actor.system.matrix.attributes.sharing.value) < 1) return ui.notifications.warn(game.i18n.format("SR5.WARN_RccSharingFull", {
       sharing: actor.system.matrix.attributes.sharing.value

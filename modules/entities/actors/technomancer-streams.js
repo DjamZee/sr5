@@ -169,6 +169,39 @@ export function personaActsAsRcc(holder){
   return system?.matrix?.deviceType === "livingPersona" && streamOf(holder) === "machinist"
 }
 
+// Echo [Programme] de résonance (SR5 p. 261): it copies the effects of one common or hacking program, chosen when the
+// echo is taken, once per program. Its name tells the program, in its brackets ("[Lecture] de résonance") or, when they
+// still read "Programme", in parentheses at the end ("[Programme] de résonance (Lecture)"); English: "Resonance [Program]"
+const RESONANCE_PROGRAM = /\[([^\]]+)\]\s*de\s+r[ée]sonance|resonance\s*\[([^\]]+)\]/i
+const GENERIC_PROGRAM = /^programs?$|^programmes?$/i
+const comparable = s => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim()
+
+// The program an echo [Programme] copies: its name, "" while the echo names none, null for any other item
+export function echoedProgramName(item){
+  if (item?.type !== "itemEcho") return null
+  const name = item.name ?? ""
+  const match = RESONANCE_PROGRAM.exec(name)
+  if (!match) return null
+  const program = (match[1] ?? match[2]).trim()
+  if (!GENERIC_PROGRAM.test(program)) return program
+  return /\(([^)]+)\)\s*$/.exec(name)?.[1]?.trim() ?? ""
+}
+
+// The program types an echo [Programme] may copy: common and hacking programs (SR5 p. 261); a Machinist's also
+// copies autosofts and cyberprograms (Kill Code p. 101), the cyberprograms being the common and hacking ones (SR5 p. 246)
+export function echoableProgramTypes(stream){
+  return stream === "machinist" ? ["common", "hacking", "autosoft"] : ["common", "hacking"]
+}
+
+// Whether a program on the technomancer's sheet is copied by one of its echoes [Programme], and of a type the echo may
+// copy. Read by its name, which may go on after the echo's ("Acquisition" copies "Acquisition (Ares Alpha)")
+export function echoCopiesProgram(holder, program){
+  if (!echoableProgramTypes(streamOf(holder)).includes(program?.system?.type)) return false
+  const name = comparable(program.name)
+  return itemsOf(holder).map(echoedProgramName).filter(Boolean).map(comparable)
+    .some(echoed => name === echoed || name.startsWith(`${echoed} `) || name.startsWith(`${echoed}(`) || name.startsWith(`${echoed}[`))
+}
+
 export function machinistRccRatings(attributes){
   return {
     noiseReduction: Math.max(0, Number(attributes?.willpower?.augmented?.value) || 0),

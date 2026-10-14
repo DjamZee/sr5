@@ -264,6 +264,21 @@ describe('reloading (entityItem.reloadAmmo)', () => {
     expect(ammoKeys()).toEqual(['SR5.WARN_CapBallRoundByRound'])
   })
 
+  it('Cap & Ball lifted, a casing filled round by round: one gesture, one whisper (review 12)', async () => {
+    lift({
+      ammo: false
+    })
+    const item = weapon({
+      casing: 'breakAction', accessory: [{
+        name: 'capBall'
+      }]
+    })
+    await item.reloadAmmo('insertRoundFull')
+    expect(item.update).toHaveBeenCalled()
+    await flush()
+    expect(ammoKeys()).toEqual(['SR5.WARN_CapBallRoundByRound'])
+  })
+
   it('Cap & Ball lifted, but no action for the reload: refused, and nothing is said of the rule', async () => {
     lift({
       ammo: false

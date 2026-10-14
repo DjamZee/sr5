@@ -6,7 +6,7 @@ import {
   SR5_EntityHelpers
 } from "../entities/helpers.js"
 import {
-  localAutosoftRating, droneAutopilot, rccAutosoftsForDrone, autosoftFitsDrone
+  localAutosoftRating, droneAutopilot, rccAutosoftsForDrone, autosoftFitsDrone, consoleAutosoftItems
 } from "../entities/actors/rcc.js"
 import {
   swarmNumber, swarmMembers, swarmState, swarmProfile, swarmAttributeDelta, swarmAutosoftDeltas, autosoftKey,
@@ -45,7 +45,8 @@ function ownAutosofts(actor){
   }))
 }
 
-// The autosofts running on the console: all of them, shared or not ("fonctionnant sur la CCR")
+// The autosofts running on the console: all of them, shared or not ("fonctionnant sur la CCR"); on a Machinist's persona,
+// those its echoes copy
 function consoleAutosofts(consoleItems){
   return (consoleItems ?? []).filter(i => isAutosoft(i) && i.system?.isActive).map(i => ({
     name: i.name, model: i.system.model ?? "", source: i, rating: Number(i.system.itemRating) || 0,
@@ -109,7 +110,7 @@ export function applySwarm(actor, applyCustomEffects){
   const profile = swarmProfile(members.map(m => m.id === selfId ? own : (m.actor._swarmOwn ?? {
     values: ownValues(m.actor), autosofts: ownAutosofts(m.actor)
   })), {
-    deviceRating: system.vehicleOwner?.system?.matrix?.deviceRating, autosofts: consoleAutosofts(consoleItems),
+    deviceRating: system.vehicleOwner?.system?.matrix?.deviceRating, autosofts: consoleAutosofts(consoleAutosoftItems(system.vehicleOwner)),
   })
   actor._swarmProfile = profile
   const label = game.i18n.localize("SR5.SwarmValue")

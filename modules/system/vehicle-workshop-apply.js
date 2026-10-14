@@ -26,7 +26,8 @@ import {
   assembledVehicleData
 } from "./vehicle-dealership.js"
 import {
-  usesModPoints, droneModRule, vehicleStats, modPointsCost, modPointsOnDrone, modPointsLines, modPointsGauge, modsTakingPoints, modPointsPrice
+  usesModPoints, droneModRule, vehicleStats, modPointsCost, modPointsOnDrone, modPointsLines, modPointsGauge, modsTakingPoints, modPointsPrice,
+  modPointsAvailability
 } from "./drone-mod-points.js"
 
 // The Foundry side of the workshop (Chop Shop, B12; Rigger 5.0 p. 153-156): the "Workshop" tab of the drone sheet and
@@ -70,9 +71,12 @@ export function pricedModData(source, vehicle){
   const temp = new CONFIG.Item.documentClass(data)
   SR5_UtilityItem._handleItemPrice(temp.system)
   //Under the Modification Points, an attribute upgrade of a drone is priced by the book's formula (R5 p. 127-128)
-  const pointsPrice = usesModPoints(droneModRule(), vehicle.system.type) ? modPointsPrice(temp.system, vehicleStats(vehicle.system)) : null
+  const points = usesModPoints(droneModRule(), vehicle.system.type)
+  const pointsPrice = points ? modPointsPrice(temp.system, vehicleStats(vehicle.system)) : null
   return {
     data, price: pointsPrice ?? (Number(temp.system.price.value) || 0),
+    //...and its availability too (R5 p. 127-128): null when the mod's own stands
+    availability: points ? modPointsAvailability(temp.system, vehicleStats(vehicle.system)) : null,
     // The slots once prepared (a count multiplied by the rating): the stored data holds 0 (lot R9, the dealership)
     slots: Number(temp.system.slots?.value) || 0,
   }
@@ -161,7 +165,7 @@ export async function dropModOnWorkshop(vehicle, dropData){
   }))
   const isItem = vehicle.documentName === "Item"
   const {
-    data, price, slots
+    data, price, slots, availability
   } = pricedModData(source, vehicle)
   const owned = source.parent?.documentName === "Actor"
   const buyer = workshopBuyer(vehicle)
@@ -195,6 +199,7 @@ export async function dropModOnWorkshop(vehicle, dropData){
       }
     }, vehicleStats(vehicle.system))}` :
     `${L("SR5.VehicleModSlotsShort")}${L("SR5.Colons")} ${s.slots?.value ?? 0}`}</li>
+      ${availability ? `<li>${L("SR5.ShopAvailability")}${L("SR5.Colons")} ${availability.availability}${availability.legality}</li>` : ""}
       <li>${L("SR5.Threshold")}${L("SR5.Colons")} ${s.threshold?.value ?? 0}${s.tools ? `, ${L(SR5.vehicleModTools[s.tools] ?? s.tools)}` : ""}</li>
       <li>${game.i18n.format("SR5.VehicleModWorkshopPriceOn", {
     price: price.toLocaleString(), vehicle: vehicle.name
@@ -216,7 +221,7 @@ export async function dropModOnWorkshop(vehicle, dropData){
   if (choice === "buy") return SR5Shop.checkout(buyer, [{
     uuid: source.uuid, quantity: 1, name: source.name
   }], {
-    recipient: vehicle, priceOn: () => price
+    recipient: vehicle, priceOn: () => price, availabilityOn: availability ? () => availability : null
   })
   if (choice === "move"){
     data.system.isActive = false

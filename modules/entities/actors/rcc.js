@@ -1,7 +1,7 @@
 // Rigger command console (SR5 p. 269-272, Rigger 5.0 p. 131): who acts as one, what it shares with its drones,
 // and what a drone runs on its own. Pure functions, read by utilityActor.js, utilityItem.js and the sheets.
 import {
-  personaActsAsRcc, machinistRccRatings
+  personaActsAsRcc, machinistRccRatings, echoCopiesProgram
 } from "./technomancer-streams.js"
 import {
   replacedVehicleAttribute
@@ -35,6 +35,18 @@ export function rccRatings(noiseReduction, sharing, deviceRating, isRcc){
 }
 
 const isAutosoft = item => item?.type === "itemProgram" && item.system?.type === "autosoft"
+
+// The autosofts a console runs. A Machinist's persona has no program slot: it runs those its echoes [Programme] copy,
+// and no other (SR5 p. 261, Kill Code p. 101)
+export function consoleAutosoftItems(console){
+  const items = (console?.items || []).filter(isAutosoft)
+  return personaActsAsRcc(console) ? items.filter(i => echoCopiesProgram(console, i)) : items
+}
+
+// A Machinist marks as shared only an autosoft one of its echoes copies
+export function autosoftShareRefused(console, item){
+  return isAutosoft(item) && personaActsAsRcc(console) && !echoCopiesProgram(console, item)
+}
 
 // The autosofts a console shares with its slaved drones: those running on it that the rigger chose to share,
 // as many as its Sharing rating (SR5 p. 269), in the order of the sheet
@@ -71,7 +83,7 @@ export function autosoftFitsDrone(autosoftSystem, droneModel){
 export function rccAutosoftsForDrone(droneSystem, droneItems){
   if (!droneUsesRccAutosofts(droneSystem, droneItems)) return []
   const console = droneSystem.vehicleOwner
-  return sharedAutosofts(console.items, consoleSharing(console))
+  return sharedAutosofts(consoleAutosoftItems(console), consoleSharing(console))
 }
 
 // The Sharing of the console a drone carries a copy of ({system, items}), read from its source values and kept within
@@ -125,8 +137,8 @@ export function rccAutosoftRows(droneSystem, droneItems){
   const console = droneSystem?.vehicleOwner
   if (!console?.id || !actsAsRcc(console)) return []
   const used = new Set(rccAutosoftsForDrone(droneSystem, droneItems).map(i => i._id))
-  const shared = new Set(sharedAutosofts(console.items, consoleSharing(console)).map(i => i._id))
-  return (console.items || []).filter(isAutosoft).map(i => ({
+  const shared = new Set(sharedAutosofts(consoleAutosoftItems(console), consoleSharing(console)).map(i => i._id))
+  return consoleAutosoftItems(console).map(i => ({
     _id: i._id, name: i.name, rating: i.system.itemRating,
     state: used.has(i._id) ? "used" : (shared.has(i._id) ? "idle" : "notShared")
   }))
