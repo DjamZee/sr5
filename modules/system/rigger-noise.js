@@ -85,13 +85,21 @@ export function controllerIdOf(drone){
   return drone?.system?.vehicleOwner?.id || drone?.system?.creatorId || null
 }
 
-/** Is this mod a relay unit (R5 p. 170)? Its system effect "relayUnit", or failing that its name (the mods of the
- *  compendiums do not carry the effect), as nanomaintenance does */
+/** The names of the relay unit (R5 p. 170 "Retrans Unit" ; Mégapack "Unité de Relais"), accents and case aside */
+const RELAY_UNIT_NAMES = ["unite de relais", "unite relais", "relay unit", "retrans unit", "retransmission unit"]
+
+const normalizedName = name => String(name ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
+  .replace(/\s+/g, " ").trim()
+
+/** Is this mod a relay unit (R5 p. 170)? Its system effect "relayUnit", or failing that its whole name or its English
+ *  name (flags.sr5.nameVO ; the mods of the compendiums do not carry the effect). A name that merely contains
+ *  "relais" is not enough, so a neighbouring name is never taken for it */
 export function isRelayUnit(item){
   if (item?.type !== "itemVehicleMod" || item.system?.isActive === false) return false
   const effects = Object.values(item.system?.systemEffects ?? {
   })
-  return effects.some(e => e?.value === "relayUnit") || /relais|relay/i.test(item.name ?? "")
+  if (effects.some(e => e?.value === "relayUnit")) return true
+  return [item.name, item.flags?.sr5?.nameVO].some(name => RELAY_UNIT_NAMES.includes(normalizedName(name)))
 }
 
 /** A drone of the controller's network that carries a relay unit, its wireless on */

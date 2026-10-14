@@ -149,6 +149,27 @@ describe('isRelayUnit', () => {
       }
     })).toBe(false)
   })
+
+  it('knows it by its English name, never by a neighbouring name', () => {
+    expect(isRelayUnit({
+      type: "itemVehicleMod", name: "Mon relais perso", flags: {
+        sr5: {
+          nameVO: "Retrans Unit"
+        }
+      }, system: {
+      }
+    })).toBe(true)
+    expect(isRelayUnit({
+      type: "itemVehicleMod", name: "UNITE  DE RELAIS", system: {
+      }
+    })).toBe(true)
+    for (const name of ["Relais satellite", "Antenne relais", "Relay booster", "Module d'Interface de rigging"]) {
+      expect(isRelayUnit({
+        type: "itemVehicleMod", name, system: {
+        }
+      })).toBe(false)
+    }
+  })
 })
 
 describe('on the canvas', () => {
