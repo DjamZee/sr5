@@ -43,6 +43,9 @@ import {
   registerIceHostHooks
 } from './system/ice-host.js'
 import {
+  registerInsectRaceHooks
+} from './entities/actors/insect-race-hooks.js'
+import {
   registerCyberlimbNotice
 } from './system/cyberlimb-notice.js'
 import {
@@ -289,6 +292,7 @@ registerBoneAugmentationGuard()
 registerAgilityZeroHooks()
 // An IC uses its host's matrix attributes (SR5 p. 249): prepared again once the host is, or when it changes
 registerIceHostHooks()
+registerInsectRaceHooks()
 // The cyberlimb enhancements raise the limb only: the active GM is told once which characters to check (SR5 p. 459)
 registerCyberlimbNotice()
 // A rigger ejected from his vehicle: it is out of control until the next Combat Turn, then on autopilot (SR5 p. 271)

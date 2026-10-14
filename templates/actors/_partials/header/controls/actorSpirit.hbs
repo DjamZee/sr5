@@ -5,6 +5,15 @@
 <div class="SRemptyBox" title="{{localize 'SR5.Force'}}">
   <input class="SRinputInBox" type="number" data-dtype="Number" name="system.force.base" value="{{system.force.base}}">
 </div>
+{{!-- Race of an insect spirit, on top of its caste (Dark Terrors p. 22-34) --}}
+{{#if insectRaces}}
+<div class="SR-EspritType" title="{{localize 'SR5.InsectRace'}}"{{#if insectRaceNote}} data-tooltip="{{insectRaceNote}}"{{/if}}>
+  <select name="system.insectRace" data-dtype="String">
+    <option class="SR-LightGreyColor" value="">{{localize 'SR5.InsectRaceNone'}}</option>
+    {{selectOptions insectRaces selected=system.insectRace}}
+  </select>
+</div>
+{{/if}}
 {{!-- Homunculus material: its Structure is the Body (SR5 p. 301, table SR5 p. 198) --}}
 {{#if isHomunculus}}
 <div class="SR-EspritType" title="{{localize 'SR5.HomunculusMaterial'}}">

@@ -1983,6 +1983,8 @@ SR5.traditionTypes = {
   toxic                     : "SR5.TraditionToxic",
   egyptian                  : "SR5.TraditionEgyptian",
   draconic                  : "SR5.TraditionDraconic",
+  // Dark Terrors p. 187 (printed): Drain CHA + WIL
+  darkMagic                 : "SR5.TraditionDarkMagic",
 }
 
 // Types de sorts

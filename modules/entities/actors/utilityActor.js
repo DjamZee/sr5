@@ -38,6 +38,9 @@ import {
   masteryFreeSustainedSpells, illusionistLevelsByType
 } from "../items/magic-masteries.js"
 import {
+  insectRaceOf
+} from "../items/insect-races.js"
+import {
   homunculusMaterialRatings
 } from "./homunculus.js"
 import {
@@ -1548,6 +1551,9 @@ export class SR5_CharacterUtility extends Actor {
     }
 
     if (customType) SR5_SpiritTypes.applyAttributes(customType, attributes, label)
+    //Race of an insect spirit: Subterranean Termites +2, Goliath Beetles +4 to damage resistance (Dark Terrors p. 26-27)
+    const insectRace = insectRaceOf(SR5_SpiritTypes.baseType(actorData.type) || actorData.type, actorData.insectRace)
+    if (insectRace?.damageResistance) SR5_EntityHelpers.updateModifier(actorData.resistances.physicalDamage, game.i18n.localize(`SR5.InsectRace_${actorData.insectRace}`), "spiritType", insectRace.damageResistance)
 
     // Elemental trait (Forbidden Arcana p. 175): mental attributes lowered by half the Force, to a minimum of 1
     if (actorData.isElemental) {
@@ -3246,6 +3252,9 @@ export class SR5_CharacterUtility extends Actor {
       for (const key of SR5_SpiritTypes.noBaseSkills(customType)) skills[key].rating.base = 0
       SR5_SpiritTypes.applySkills(customType, skills, actorData.force.value)
     }
+    //Skills an insect race always has, at Force like the caste's (Dark Terrors p. 25-33)
+    const insectRace = insectRaceOf(SR5_SpiritTypes.baseType(actorData.type) || actorData.type, actorData.insectRace)
+    for (const key of insectRace?.skills || []) if (skills[key]) skills[key].rating.base = actorData.force.value
 
     for (let key of Object.keys(SR5.skills)) {
       if (skills[key] && skills[key].rating.base) {

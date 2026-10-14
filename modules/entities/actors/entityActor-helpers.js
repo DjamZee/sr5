@@ -975,7 +975,7 @@ export class SR5_ActorHelper {
 
     // Handle specific data for Actor creation
     if (item.type === "itemSpirit") {
-      let baseItems = await SR5_CompendiumUtility.getBaseItems("actorSpirit", itemData.type, itemData.itemRating)
+      let baseItems = await SR5_CompendiumUtility.getBaseItems("actorSpirit", itemData.type, itemData.itemRating, itemData.insectRace)
       baseItems = await SR5_CompendiumUtility.addOptionalSpiritPowersFromItem(baseItems, itemData.optionalPowers)
 
       for (let power of baseItems){
@@ -996,6 +996,7 @@ export class SR5_ActorHelper {
       sideKickData = foundry.utils.mergeObject(sideKickData, {
         "system.sideKickPrototypeToken": itemData.sideKickPrototypeToken,
         "system.type": itemData.type,
+        "system.insectRace": itemData.insectRace,
         "system.force.base": itemData.itemRating,
         "system.isBounded": itemData.isBounded,
         "system.isElemental": itemData.isElemental,

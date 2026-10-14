@@ -246,6 +246,10 @@ export class sr5ActorSpiritDataModel extends foundry.abstract.TypeDataModel {
       type: new fields.StringField({
         initial: ''
       }),
+      // Race of an insect spirit (Dark Terrors p. 22-34), on top of its caste
+      insectRace: new fields.StringField({
+        initial: '', blank: true
+      }),
       services: new fields.SchemaField({
         value: new fields.NumberField({
           initial: 0

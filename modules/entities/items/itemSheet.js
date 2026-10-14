@@ -41,6 +41,9 @@ import {
   SR5_SpiritTypes
 } from "./spirit-types.js"
 import {
+  isInsectCaste, insectRaceOptions
+} from "./insect-races.js"
+import {
   isMentorQuality
 } from "./mentor-link.js"
 import {
@@ -466,6 +469,8 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     })
     context.enrichedDescription = await enrich(item.system.description)
     context.enrichedGameEffect = await enrich(item.system.gameEffect)
+    // Race of an insect spirit (Dark Terrors p. 22-34), for the insect castes only
+    if (item.type === "itemSpirit" && isInsectCaste(SR5_SpiritTypes.baseType(item.system.type))) context.insectRaces = insectRaceOptions()
     // Faction of a contact (Cutting Aces p. 157), kept in the gamemaster's registry
     if (item.type === "itemContact") context.contactFaction = SR5FactionRegistry.factionOfContact(item.uuid)?.name ?? ""
     // Whom a custom drug can be made for (Chrome Flesh p. 194): the actors this user sees, and the one already named
