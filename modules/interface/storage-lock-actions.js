@@ -211,7 +211,8 @@ export class SR5StorageLock {
     const skill = picker.system.skills?.locksmith
     const autopicker = lock.type === "mechanical" ? tools.autopicker : 0
     const penalties = picker.system.penalties
-    const penalty = (Number(penalties?.condition?.actual?.value) || 0) + (Number(penalties?.special?.actual?.value) || 0)
+    //Wounds weigh on every test, and add up with the spells and other conditions (SR5 p. 171)
+    const penalty = ["condition", "magic", "special"].reduce((t, k) => t + (Number(penalties?.[k]?.actual?.value) || 0), 0)
     const pool = pickPool(skill, picker.system.attributes?.agility?.augmented?.value, autopicker, penalty)
     const limit = pickLimit(skill?.limit?.value || picker.system.limits?.physicalLimit?.value, autopicker, lock.type)
     // No die, no test: Locksmith cannot be defaulted
