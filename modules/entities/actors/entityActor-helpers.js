@@ -2324,6 +2324,53 @@ export class SR5_ActorHelper {
     else if ((actor.type === "actorSprite" || actor.type === "actorDevice") && full(monitors.matrix)) await SR5_ActorHelper.createDeadEffect(actorId)
   }
 
+  /**
+   * An effect that raised Willpower or Body ends (Increase Attribute, a drug): the Stun or Physical monitor shrinks
+   * under the damage it holds. The preparation only clipped the excess, which the next damage then wrote away.
+   * It is carried as damage beyond a full monitor is (SR5 p. 171: half of the excess Stun, rounded down, goes to
+   * Physical; excess Physical fills a character's overflow, p. 172), and a full monitor knocks out as it would.
+   * Run by the user who deleted the effect, once the actor is prepared again.
+   */
+  static async settleMonitorExcess(actorId, actor){
+    if (actor?.type !== "actorPc" && actor?.type !== "actorSpirit") return false
+    const monitors = actor.toObject(false).system.conditionMonitors
+    if (!monitors?.stun?.actual || !monitors.physical?.actual) return false
+    const stored = actor._source?.system?.conditionMonitors ?? {
+    }
+    let excess = false
+    for (const key of ["stun", "physical"]) {
+      const base = Number(stored[key]?.actual?.base) || 0
+      if (base <= monitors[key].actual.base) continue
+      monitors[key].actual.base = base
+      SR5_EntityHelpers.updateValue(monitors[key].actual, 0)
+      if (monitors[key].actual.value > monitors[key].value) excess = true
+    }
+    if (!excess) return false
+    //The overflow the preparation hid while Physical was not full: what the source holds
+    if (monitors.overflow?.actual) {
+      monitors.overflow.actual.base = Math.max(monitors.overflow.actual.base, Number(stored.overflow?.actual?.base) || 0)
+      SR5_EntityHelpers.updateValue(monitors.overflow.actual, 0)
+    }
+    const {
+      isDead
+    } = SR5_ActorHelper.carryMonitorOverflow(monitors, actor.type)
+    const updates = {
+    }
+    for (const key of ["stun", "physical", "overflow"]) {
+      if (monitors[key]?.actual) updates[`system.conditionMonitors.${key}.actual.base`] = Math.min(monitors[key].actual.base, monitors[key].value ?? monitors[key].actual.base)
+    }
+    await actor.update(updates)
+    const full = m => m?.actual && m.actual.value >= m.value
+    if (full(monitors.physical)) {
+      if (isDead || actor.type === "actorSpirit") await SR5_ActorHelper.createDeadEffect(actorId)
+      else await SR5_ActorHelper.createKoEffect(actorId)
+    } else if (full(monitors.stun)) {
+      if (actor.type === "actorSpirit") await SR5_ActorHelper.createDeadEffect(actorId)
+      else await SR5_ActorHelper.createKoEffect(actorId)
+    }
+    return true
+  }
+
   //The reference of an item a player's sheet carries: the compendium document it was taken from, else an item of the
   //same type and name in the Item compendiums, then in the world. null when there is none
   static async findReferenceItem(item){
