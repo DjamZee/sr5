@@ -410,6 +410,164 @@
   }
 }
 
+/* The note that sends the rule locks' former selector to the presets menu (lot 10) */
+.application.sr-rule-locks-config .sr-rule-locks-presets-note {
+  margin-bottom: 0.5rem;
+
+  > i {
+    color: var(--sr-ui-border-color-active);
+  }
+}
+
+/* === Presets menu (presets-config.hbs, lot 10) ===
+   Built as the rule locks menu: the list scrolls, the apply button stays in view. Each choice is a select in the
+   window's own text colour, its presets described under it (the chosen one in the accent), then what it would change,
+   setting by setting, and the settings the table saved. */
+.application.sr-presets-config {
+  max-height: calc(100vh - 1rem);
+
+  .window-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .sr-presets-config-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    gap: 0.5rem;
+  }
+
+  .sr-presets-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 0.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  fieldset {
+    margin: 0;
+    padding: 0.25rem 0.5rem 0.5rem;
+    border: 1px solid color-mix(in srgb, var(--sr-ui-border-color-active) 45%, transparent);
+    border-radius: 3px;
+
+    > legend {
+      padding: 0 0.4rem;
+      font-family: var(--sr-font-title);
+      text-transform: uppercase;
+      color: var(--sr-ui-border-color-active);
+    }
+  }
+
+  .sr-preset-choice > select {
+    width: 100%;
+    color: inherit;
+    background: color-mix(in srgb, currentColor 6%, transparent);
+    border: 1px solid var(--sr-ui-border-color-active);
+  }
+
+  .sr-preset-hints {
+    list-style: none;
+    margin: 0.35rem 0 0;
+    padding: 0;
+    font-size: var(--sr-font-size-small);
+    line-height: 1.35;
+
+    > li {
+      padding: 0.15rem 0.4rem;
+      border-left: 2px solid transparent;
+      opacity: 0.8;
+
+      &.active {
+        opacity: 1;
+        border-left-color: var(--sr-ui-border-color-active);
+        background: color-mix(in srgb, var(--sr-ui-border-color-active) 8%, transparent);
+      }
+    }
+  }
+
+  /* What the choice changes: the setting, its value now, an arrow, the new value in the accent */
+  .sr-preset-preview table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    border: none;
+    background: transparent !important;
+
+    tr,
+    th,
+    td {
+      background: transparent !important;
+      text-shadow: none;
+    }
+
+    tr + tr {
+      border-top: 1px solid color-mix(in srgb, var(--sr-ui-border-color-active) 25%, transparent);
+    }
+
+    /* The setting's name takes what the two values leave, so that it does not wrap into a narrow column */
+    th {
+      width: 100%;
+      text-align: left;
+      font-weight: normal;
+      padding: 0.2rem 0.3rem;
+    }
+
+    td {
+      padding: 0.2rem 0.3rem;
+      white-space: nowrap;
+    }
+
+    .from {
+      opacity: 0.7;
+    }
+
+    .arrow {
+      color: var(--sr-ui-border-color-active);
+    }
+
+    .to {
+      font-weight: bold;
+      color: var(--sr-ui-border-color-active);
+    }
+  }
+
+  .sr-preset-mine-buttons {
+    display: flex;
+    gap: 0.5rem;
+
+    > button {
+      flex: 1;
+    }
+  }
+
+  /* The buttons in the accent, as in the rule locks menu (the light theme's rule in window.less wins there) */
+  :is(.form-footer, .sr-preset-mine-buttons) button {
+    color: var(--sr-ui-border-color-active);
+    border: 1px solid var(--sr-ui-border-color-active);
+    background: color-mix(in srgb, var(--sr-ui-border-color-active) 10%, transparent);
+
+    &:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--sr-ui-border-color-active) 22%, transparent);
+    }
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+  }
+
+  .form-footer {
+    flex: none;
+  }
+}
+
 /* === Token of what the system creates (token-defaults-config.hbs, lot 9) ===
    One row per family, one column per field; the controls take the window's own text colour, as the rule locks
    do, so that they stay readable in both themes. */

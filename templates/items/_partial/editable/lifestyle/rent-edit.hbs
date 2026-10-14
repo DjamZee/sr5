@@ -11,3 +11,16 @@
     <div class="col-3 SR-TextRight">{{localize 'SR5.LifeStyleBought'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-2 SR-TextRight"><input type="checkbox" name="system.rent.bought" data-dtype="Boolean" {{checked system.rent.bought}} /></div>
 </li>
+{{#if rentDebit}}
+<li class="grid sr5-rent-debit">
+    <div class="col-5">{{rentDebit.label}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-7">
+        {{#if rentDebit.editable}}
+            <input type="datetime-local" step="1" class="sr5-rent-first-debit" value="{{rentDebit.input}}"
+                data-tooltip="{{localize 'SR5.LifeStyleFirstDebit_D'}}" />
+        {{else}}
+            <span class="SR-GreyColor">{{rentDebit.text}}</span>
+        {{/if}}
+    </div>
+</li>
+{{/if}}

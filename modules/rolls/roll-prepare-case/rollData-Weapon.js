@@ -49,6 +49,9 @@ import {
 import {
   refuseByRule
 } from "../../system/rule-locks.js"
+import {
+  rgOption, targetSizeModifier, droneCategoryOf, movementModifiers, phaseMeters, armorPenalty
+} from "../../system/rg-combat-options.js"
 
 //Add info for weapon Roll
 export default async function weapon(rollData, actor, item){
@@ -246,6 +249,13 @@ export default async function weapon(rollData, actor, item){
     rollData.combat.laser = {
       isLaser: hasWeaponTrait(itemData, LASER_TRAIT), damageModify: 0, visibility: rollData.combat.airVisibility ?? 0
     }
+  }
+
+  //The optional rules of Run & Gun the table plays (RG p. 121-125, world settings, off by default): here, once the AP
+  //is known (ammunition, energy aura), since RG5 subtracts it from the armor
+  if (rollData.target.hasTarget) {
+    const targetActor = await SR5_PrepareRollHelper.getTargetedActor()
+    if (targetActor) addRGTargetModifiers(rollData, targetActor, Array.from(game.user.targets).at(-1)?.document, itemData)
   }
 
   // Aggravated Wounds (Howling Shadows p. 213): the critter's attacks leave boxes that count double for healing
@@ -465,13 +475,37 @@ export async function handleTargetInfo(rollData, actor, item){
   //Add environmental modifiers
   if (sceneEnvironmentalMod !== 0){
     rollData.dicePool.modifiers.push({
-      type: "environmentalSceneMod", 
+      type: "environmentalSceneMod",
       label: game.i18n.localize("SR5.EnvironmentalModifiers"),
       value: sceneEnvironmentalMod,
     })
   }
 
   return rollData
+}
+
+/**
+ * The target's own share of the attack, under the optional rules of Run & Gun: its size (RG2, RG p. 122), its speed
+ * in its last Action Phase (RG3, RG p. 122-123, ranged attacks) and its armor turned into a penalty (RG5, RG p. 124).
+ * Shots are what RG2 speaks of ("tirer sur des cibles de différentes tailles"): a melee attack keeps its pool.
+ */
+export function addRGTargetModifiers(rollData, targetActor, targetToken, itemData){
+  const push = (type, label, value) => {
+    if (value) rollData.dicePool.modifiers.push({
+      type, label: game.i18n.localize(label), value
+    })
+  }
+  const ranged = itemData.category !== "meleeWeapon"
+  if (ranged && rgOption("targetSize")) push("rgTargetSize", "SR5.RG_TargetSize", targetSizeModifier(targetActor, droneCategoryOf(targetActor)))
+  const combat = game.combat
+  if (ranged && rgOption("movement") && combat?.started) {
+    const meters = phaseMeters(targetToken?.getFlag?.("sr5", "runDistance"), combat.id, combat.round)
+    push("rgTargetMovement", "SR5.RG_TargetMovement", movementModifiers(meters).attack)
+  }
+  //Not on a drone or a vehicle: their Armor is a vehicle's, resisted apart (handleDroneDamage)
+  if (rgOption("armorPenalty") && targetActor.type !== "actorDrone") {
+    push("rgArmorPenalty", "SR5.RG_ArmorPenalty", armorPenalty(targetActor.system.itemsProperties?.armor?.value, rollData.combat.armorPenetration))
+  }
 }
 
 //A linked target carries the effects of templates on every scene it stands on: only those of the scene the

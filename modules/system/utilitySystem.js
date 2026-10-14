@@ -46,6 +46,15 @@ import {
 import {
   registerPreparationRegisterSetting
 } from "./preparation-register.js"
+import {
+  registerRGCombatSettings
+} from "./rg-combat-options.js"
+import {
+  PRESETS_MENU, registerPresetSettings
+} from "./settings-presets.js"
+import {
+  SR5PresetsConfig
+} from "../interface/presets-config.js"
 
 export class SR5_SystemHelpers {
 
@@ -299,6 +308,17 @@ export class SR5_SystemHelpers {
       hint: "SR5.NEGO_REPAIR_MenuHint",
       icon: "fas fa-handshake",
       type: SR5NegotiationRepair,
+      restricted: true,
+    })
+
+    // Presets (lot 10, system/settings-presets.js): automation and rules in one menu, at the head of the settings window
+    registerPresetSettings()
+    game.settings.registerMenu("sr5", PRESETS_MENU, {
+      name: "SR5.PRESETS_Menu_T",
+      label: "SR5.PRESETS_Menu_L",
+      hint: "SR5.PRESETS_Menu_D",
+      icon: "fas fa-wand-magic-sparkles",
+      type: SR5PresetsConfig,
       restricted: true,
     })
 
@@ -726,6 +746,9 @@ export class SR5_SystemHelpers {
       default: false,
       type: Boolean,
     })
+
+    // The optional combat rules of Run & Gun, RG1 to RG6 (RG p. 121-125), off as the book has them (lot 10)
+    registerRGCombatSettings()
 
     // Data Trails p. 157: an AI outside any device defends with its Willpower or Intuition alone. The book does not
     // say which one stands in for Logic: the higher one by default. The same one resists matrix damage, which the book

@@ -395,3 +395,25 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
     })
   }
 }
+
+/**
+ * The "Factions" button of the token controls (lot 10), beside the chase's: the gamemaster opens the window from the
+ * scene as well as from the settings and the character sheet. Hidden from the players, whom open() would refuse.
+ */
+export function addFactionsTool(controls) {
+  const tokens = controls?.tokens ?? controls?.token
+  if (!tokens?.tools || !game.user?.isGM) return
+  tokens.tools.sr5Factions = {
+    name: "sr5Factions",
+    title: "SR5.FACTION_Title",
+    icon: "fas fa-people-group",
+    order: Object.keys(tokens.tools).length,
+    button: true,
+    visible: true,
+    onChange: () => SR5FactionsApp.open(),
+  }
+}
+
+export function registerFactionsControl() {
+  Hooks.on("getSceneControlButtons", addFactionsTool)
+}

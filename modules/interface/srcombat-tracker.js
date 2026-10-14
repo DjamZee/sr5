@@ -1,6 +1,9 @@
 import {
-  SR5Combat 
+  SR5Combat
 } from "../system/srcombat.js"
+import {
+  rgOption
+} from "../system/rg-combat-options.js"
 
 // Custom Combat Tracker (v13 AppV2 — builds on Foundry's native rendering)
 export class SR5CombatTracker extends foundry.applications.sidebar.tabs.CombatTracker {
@@ -100,7 +103,10 @@ export class SR5CombatTracker extends foundry.applications.sidebar.tabs.CombatTr
       if (header && !header.querySelector('.sr5-initiative-pass')) {
         const passDisplay = document.createElement('div')
         passDisplay.classList.add('sr5-initiative-pass')
-        passDisplay.innerHTML = `<strong>${game.i18n.localize('SR5.InitiativePass')} ${this.viewed.initiativePass}</strong>`
+        //Run & Gun RG4 has no passes: the header says which rule turns the order, not a pass that never changes
+        passDisplay.innerHTML = rgOption("initiative") ?
+          `<strong>${game.i18n.localize('SR5.RG_AlternativeInitiativeHeader')}</strong>` :
+          `<strong>${game.i18n.localize('SR5.InitiativePass')} ${this.viewed.initiativePass}</strong>`
         header.appendChild(passDisplay)
       }
     }

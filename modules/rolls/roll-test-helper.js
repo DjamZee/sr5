@@ -123,6 +123,8 @@ export class SR5_RollTestHelper {
       dialogData.dicePool.hasModifier = true
     }
     dialogData.dicePool.value = dialogData.dicePool.base + dialogData.dicePool.modifiersTotal
+    //What the modifiers took past 0, kept for Run & Gun RG6 (RG p. 125: the excess raises the DV of the attack)
+    dialogData.dicePool.belowZero = Math.min(dialogData.dicePool.value, 0)
     //Debug DicePool can't be negative
     if (dialogData.dicePool.value < 0) dialogData.dicePool.value = 0
     return dialogData

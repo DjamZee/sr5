@@ -220,8 +220,9 @@ describe('settings registered by the system', () => {
   })
 
   it('shows the tabs in DjamZ\'s order, with the settings he moved (09/10)', () => {
+    // The presets head the window (lot 10, decision of 09/10)
     expect(SETTINGS_TABS.map(t => t.id)).toEqual([
-      'interface', 'ruleLocks', 'combat', 'magic', 'matrix', 'rigging', 'panCrown', 'vision', 'body', 'gear', 'shop',
+      'presets', 'interface', 'ruleLocks', 'combat', 'magic', 'matrix', 'rigging', 'panCrown', 'vision', 'body', 'gear', 'shop',
       'time', 'gm', 'other'
     ])
     expect(catalogEntry('sr5BBUnderFireRules').tab).toBe('combat')
@@ -263,7 +264,7 @@ describe('settings registered by the system', () => {
     }
     // Foundry's list keeps the window's button alone
     expect([...fresh.menus.keys()]).toEqual([`sr5.${SETTINGS_WINDOW_MENU}`])
-    expect([...capturedMenus().keys()].sort()).toEqual(['sr5.sr5FactionsMenu', 'sr5.sr5NegotiationRepairMenu', 'sr5.sr5RuleLocksMenu', 'sr5.sr5ShopConfigMenu', 'sr5.sr5TokenDefaultsMenu'])
+    expect([...capturedMenus().keys()].sort()).toEqual(['sr5.sr5FactionsMenu', 'sr5.sr5NegotiationRepairMenu', 'sr5.sr5PresetsMenu', 'sr5.sr5RuleLocksMenu', 'sr5.sr5ShopConfigMenu', 'sr5.sr5TokenDefaultsMenu'])
   })
 })
 

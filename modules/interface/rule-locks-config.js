@@ -1,13 +1,13 @@
 import {
-  RULE_LOCK_CASES, RULE_LOCK_FAMILIES, RULE_LOCK_PRESETS, currentRuleLocks, presetLocks, presetOf, setRuleLocks
+  RULE_LOCK_CASES, RULE_LOCK_FAMILIES, currentRuleLocks, setRuleLocks
 } from "../system/rule-locks.js"
 
 /**
- * The gamemaster's rule locks (B13): a preset and one box per family of rules.
+ * The gamemaster's rule locks (B13): one box per family of rules.
  *
- * Opened from the "Rule locks" tab of the settings window (`sr5RuleLocksMenu`). Choosing "Book" or "Light"
- * checks or unchecks every box; touching a box turns the preset to "Custom". The values live in
- * system/rule-locks.js (sr5RuleLocks, sr5RuleLocksPreset).
+ * Opened from the "Rule locks" tab of the settings window (`sr5RuleLocksMenu`). The Book / Light selector it had went
+ * to the presets menu (lot 10, automation advanced / light), so that the window has one selector only; the preset the
+ * boxes amount to is still written (sr5RuleLocksPreset) by setRuleLocks. The values live in system/rule-locks.js.
  */
 export class SR5RuleLocksConfig extends foundry.applications.api.HandlebarsApplicationMixin(
   foundry.applications.api.ApplicationV2
@@ -37,10 +37,6 @@ export class SR5RuleLocksConfig extends foundry.applications.api.HandlebarsAppli
   async _prepareContext(options) {
     const context = await super._prepareContext(options)
     const locks = currentRuleLocks()
-    const preset = presetOf(locks)
-    context.presets = RULE_LOCK_PRESETS.map(key => ({
-      key, label: `SR5.RULELOCKS_Preset_${key}`, selected: key === preset
-    }))
     context.families = RULE_LOCK_FAMILIES.map(family => ({
       key: family,
       label: `SR5.RULELOCKS_Family_${family}`,
@@ -53,23 +49,6 @@ export class SR5RuleLocksConfig extends foundry.applications.api.HandlebarsAppli
         })),
     }))
     return context
-  }
-
-  async _onRender(context, options) {
-    await super._onRender(context, options)
-    const select = this.element.querySelector("select[name=preset]")
-    const boxes = [...this.element.querySelectorAll("input[type=checkbox][data-lock]")]
-    // A preset checks or unchecks every box; "custom" leaves them as they are
-    select?.addEventListener("change", () => {
-      if (select.value === "custom") return
-      const locks = presetLocks(select.value)
-      for (const box of boxes) box.checked = locks[box.dataset.lock]
-    })
-    // A box touched: the preset says what the boxes now amount to
-    for (const box of boxes) box.addEventListener("change", () => {
-      if (!select) return
-      select.value = presetOf(Object.fromEntries(boxes.map(b => [b.dataset.lock, b.checked])))
-    })
   }
 
   static async #onSubmit(_event, _form, formData) {

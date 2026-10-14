@@ -52,6 +52,9 @@ import {
   registerChaseHooks
 } from './system/chase.js'
 import {
+  registerFactionsControl
+} from './interface/factions-app.js'
+import {
   registerSwarmHooks
 } from './system/swarm.js'
 import {
@@ -292,6 +295,8 @@ registerCyberlimbNotice()
 registerRiggerEjectionHooks()
 // Vehicle chases: the window in the token controls, and the turn that follows the encounter (R12)
 registerChaseHooks()
+// Faction Reputation: the gamemaster's window in the token controls too (lot 10)
+registerFactionsControl()
 // Drone swarms: a member that changes, enters or leaves the scene prepares its swarm again (Rigger 5.0 p. 35)
 registerSwarmHooks()
 // The crown of a PAN follows its token and its devices (couronne du PAN, lot 2)

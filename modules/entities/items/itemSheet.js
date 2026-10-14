@@ -73,6 +73,15 @@ import {
 import {
   deviceModeSheetContext, switchDeviceMode
 } from "../../canvas/pan-crown/pan-device-switch.js"
+import {
+  rentDebitState
+} from "../../system/deadlines.js"
+import {
+  calendarStartYear, worldTimeToComponents
+} from "../../system/calendar.js"
+import {
+  dateTimeInputValue, parseDateTimeInput
+} from "../../interface/calendar-clock.js"
 
 // Item types that include a footer (condition monitors, price/availability)
 const ITEM_FOOTER_TYPES = new Set([
@@ -645,6 +654,20 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     // The workshop of a weapon, an armor, an implant or a piece of gear (lot 12, C9)
     context.itemWorkshop = await itemWorkshopContext(item)
 
+    // The lifestyle's first (then next) debit: chosen by the player before the rent starts, corrected by the GM (lot 10)
+    if (item.type === 'itemLifestyle') {
+      const debit = rentDebitState(item.system.rent, {
+        isGM: game.user.isGM, isOwner: item.isOwner
+      })
+      if (debit) context.rentDebit = {
+        ...debit,
+        editable: debit.editable && this.isEditable,
+        input: debit.time === null ? "" : dateTimeInputValue(worldTimeToComponents(debit.time, calendarStartYear())),
+        label: game.i18n.localize(debit.started ? 'SR5.LifeStyleNextDebit' : 'SR5.LifeStyleFirstDebit'),
+        text: debit.time === null ? game.i18n.localize('SR5.LifeStyleDebitUnset') : game.time.calendar.format(debit.time),
+      }
+    }
+
     // Dynamic layout
     context.layout = this._computeSheetLayout()
     context.hasFooter = ITEM_FOOTER_TYPES.has(item.type)
@@ -729,6 +752,14 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
         })
       }
     }
+
+    // Lifestyle: the date of the first debit, written as world time (the input has no name: the form leaves it alone)
+    el.querySelector('.sr5-rent-first-debit')?.addEventListener('change', ev => {
+      ev.stopPropagation()
+      this.document.update({
+        "system.rent.firstDebit": parseDateTimeInput(ev.currentTarget.value, calendarStartYear())
+      })
+    })
 
     // Pathogen: the active GM infects the tokens he selected or targeted (system/diseases.js)
     el.querySelector('.sr5-pathogen-infect')?.addEventListener('click', () => infectWith(this.document))

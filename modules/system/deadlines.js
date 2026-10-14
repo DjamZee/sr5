@@ -60,13 +60,33 @@ export function rentCounts(system){
 }
 
 /**
- * When a rent with no end yet runs out: at the end of the months paid in advance, or now when none was paid, since
- * a character pays each month (SR5 p. 377). Only a player's character pays: a lifestyle on a GM's NPC is a
- * description, not a rent to claim (null, left alone).
+ * When a rent with no end yet runs out (a character pays each month, SR5 p. 377): at the first debit the player chose,
+ * or else at the end of the months paid in advance. With neither, nothing yet (null): the rent waits for the player
+ * to choose the date of its first debit, instead of claiming a month at the first minute of play (lot 10). Only a
+ * player's character pays: a lifestyle on a GM's NPC is a description, not a rent to claim, unless a date was set.
  */
-export function rentStart(months, now, startYear, playerOwned){
+export function rentStart(months, now, startYear, playerOwned, firstDebit = null){
+  if (Number.isFinite(firstDebit)) return firstDebit
   if (Number(months) > 0) return addMonths(now, Number(months), startYear)
-  return playerOwned ? now : null
+  return null
+}
+
+/**
+ * What the lifestyle sheet shows of the next debit: the date (the first one while the rent has not started), and
+ * whether this user may change it. The player chooses the first debit while nothing runs yet; the gamemaster sees it
+ * and corrects it at any time (lot 10). Bought lifestyles have no rent.
+ * @returns {{time: number|null, started: boolean, editable: boolean}|null}
+ */
+export function rentDebitState(rent, {
+  isGM = false, isOwner = false
+} = {
+}){
+  if (!rent || rent.bought) return null
+  const started = rent.paidUntil !== null && rent.paidUntil !== undefined
+  const time = started ? rent.paidUntil : (Number.isFinite(rent.firstDebit) ? rent.firstDebit : null)
+  return {
+    time, started, editable: isGM || (isOwner && !started)
+  }
 }
 
 /* -------------------------------------------- */
@@ -124,13 +144,14 @@ async function collect(actor, now, startYear){
       ...item.system.rent
     }
     if ((rent.paidUntil === null || rent.paidUntil === undefined)){
-      rent.paidUntil = rentStart(rent.duration, now, startYear, actor.hasPlayerOwner)
+      rent.paidUntil = rentStart(rent.duration, now, startYear, actor.hasPlayerOwner, rent.firstDebit)
       if (rent.paidUntil !== null) await item.update({
         "system.rent.paidUntil": rent.paidUntil
       }, {
         sr5Calendar: true
       })
-      // Months paid: nothing due before their end. None: the first month is due now, below
+      // Months paid or a first debit to come: nothing due before. No date yet: the player chooses it on the sheet.
+      // A first debit already past is due now, below
       if (rent.paidUntil === null || rent.paidUntil > now) continue
     }
     const left = monthsLeft(now, rent.paidUntil, startYear)
@@ -417,10 +438,26 @@ export function initDeadlines(){
   // A GM who changes the months paid by hand starts them again from now
   Hooks.on("updateItem", (item, changes, options) => {
     if (options?.sr5Calendar || !isWriter() || item.type !== "itemLifestyle") return
+    if (item.system.rent.bought) return
+    const startYear = calendarStartYear()
+    // The date of the first debit, chosen by the player or corrected by the GM: the rent runs from it (lot 10)
+    const firstDebit = changes.system?.rent?.firstDebit
+    if (firstDebit !== undefined){
+      const paidUntil = Number.isFinite(firstDebit) ? firstDebit : null
+      item.update({
+        "system.rent.paidUntil": paidUntil,
+        "system.rent.duration": paidUntil === null ? 0 : monthsLeft(game.time.worldTime, paidUntil, startYear),
+        "flags.sr5.rentNotified": false,
+      }, {
+        sr5Calendar: true
+      })
+      return
+    }
     const months = changes.system?.rent?.duration
-    if (months === undefined || item.system.rent.bought) return
+    if (months === undefined) return
     item.update({
-      "system.rent.paidUntil": Number(months) > 0 ? addMonths(game.time.worldTime, Number(months), calendarStartYear()) : null,
+      "system.rent.paidUntil": Number(months) > 0 ? addMonths(game.time.worldTime, Number(months), startYear) : null,
+      "system.rent.firstDebit": null,
       "flags.sr5.rentNotified": false,
     }, {
       sr5Calendar: true
