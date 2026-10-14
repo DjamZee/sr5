@@ -222,6 +222,9 @@ export class SR5_ConverterHelpers {
         return 30
       case "hidden":
         return 12
+      // Inside the host, 1 minute whatever the information (SR5 p. 244)
+      case "host":
+        return 1
       default: return 1
     }
   }
@@ -231,6 +234,7 @@ export class SR5_ConverterHelpers {
     switch (type){
       case "general":
       case "limited":
+      case "host":
         return "minute"
       case "hidden":
         return "hour"
@@ -461,6 +465,11 @@ export class SR5_ConverterHelpers {
         return 3
       case "hidden":
         return 6
+      // SR5 p. 244: protected or secret, searched inside the host that holds it. The book gives its base time (1 minute)
+      // and no threshold (N/A outside the host): 3, the threshold of private data, which its users reach now and then
+      // (lot 19, a ruling to say as such in the wiki)
+      case "host":
+        return 3
       default: return 0
     }
   }

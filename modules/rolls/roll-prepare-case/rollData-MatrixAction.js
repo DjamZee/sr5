@@ -155,6 +155,13 @@ export default async function matrixAction(rollData, rollKey, actor){
     }
   }
 
+  //An action a module offers after another (lot 19, the chained action of the module Matrice): it costs no action,
+  //and the card says so
+  if (rollData.matrix.offeredAction) {
+    rollData.test.title += ` (${game.i18n.localize("SR5.MatrixOfferedAction")})`
+    return finishMatrixAction(rollData, rollKey, actor)
+  }
+
   //Manage actions
   rollData.combat.actions = SR5_MiscellaneousHelpers.addActions(rollData.combat.actions, {
     type: matrixAction.actionType, value: 1, source: "matrixAction"
@@ -194,6 +201,12 @@ export default async function matrixAction(rollData, rollKey, actor){
     })
   }
 
+  return finishMatrixAction(rollData, rollKey, actor)
+}
+
+// What every Matrix action checks and adds, its cost counted or offered
+async function finishMatrixAction(rollData, rollKey, actor){
+  const matrixAction = actor.system.matrix.actions[rollKey]
   //Add public grid switch
   if (actor.system.matrix.userGrid === "public") rollData.dialogSwitch.publicGrid = true
     

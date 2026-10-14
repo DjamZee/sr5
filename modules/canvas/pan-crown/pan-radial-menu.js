@@ -89,9 +89,14 @@ const REASON_LABELS = {
  * @param {String} [target.targetUuid]     the device aimed at; none for the persona. Alone, the target itself
  */
 export async function rollMatrixActionOn(actor, actionKey, {
-  targetTokenId, targetUuid = null
+  targetTokenId, targetUuid = null, offered = false
 } = {
 }){
+  // Lot 19: an action a module offers after another (the chained action of the module Matrice) spends no action
+  const extra = offered === true ? {
+    offeredAction: true
+  } : {
+  }
   const token = targetTokenId ? canvas?.tokens?.get(targetTokenId) : null
   if (actor && token) {
     token.setTarget(true, {
@@ -100,7 +105,7 @@ export async function rollMatrixActionOn(actor, actionKey, {
     return actor.rollTest("matrixAction", actionKey, {
       panTarget: {
         tokenId: token.id, itemUuid: targetUuid
-      }
+      }, ...extra
     })
   }
   const aimed = actor && !targetTokenId && targetUuid ? uuidTarget(await globalThis.fromUuid?.(targetUuid)) : null
@@ -111,7 +116,7 @@ export async function rollMatrixActionOn(actor, actionKey, {
   return actor.rollTest("matrixAction", actionKey, {
     panTarget: {
       actorId: aimed.actor.isToken ? aimed.actor.token.id : aimed.actor.id, itemUuid: aimed.itemUuid
-    }
+    }, ...extra
   })
 }
 

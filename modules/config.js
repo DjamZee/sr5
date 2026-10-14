@@ -2699,6 +2699,7 @@ SR5.matrixSearchInfoType = {
   general                   :"SR5.MatrixSearchInfoTypeGeneral",
   limited                   :"SR5.MatrixSearchInfoTypeLimited",
   hidden                    :"SR5.MatrixSearchInfoTypeHidden",
+  host                      :"SR5.MatrixSearchInfoTypeHost",
 }
 
 //Matrix marks
