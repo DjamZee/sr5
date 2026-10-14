@@ -14,15 +14,22 @@
 	<div class="sr-dealer-body">
 		<section class="sr-dealer-col">
 			<h3>{{localize 'SR5.DealerModels'}}</h3>
+			<nav class="sr-dealer-shelves">
+				{{#each shelves}}<a class="{{#if selected}}is-selected{{/if}}" data-action="selectShelf" data-shelf="{{key}}">{{label}} ({{count}})</a>{{/each}}
+			</nav>
 			<input type="search" placeholder="{{localize 'SR5.Search'}}" value="{{modelSearch}}" data-dealer-search="_modelSearch" data-target=".sr-dealer-models">
 			{{#if loading}}<p class="hint">{{loadingLabel}}</p>{{/if}}
 			<ul class="sr-dealer-models sr-dealer-list">
+				{{#each modelGroups}}
+				<li class="sr-dealer-group">{{label}}</li>
 				{{#each models}}
 				<li class="{{#if selected}}is-selected{{/if}}" data-uuid="{{uuid}}" data-search="{{search}}" data-action="selectModel">
 					<img src="{{img}}" alt="">
 					<span class="sr-dealer-name">{{name}}</span>
 					<span class="sr-dealer-figures">{{price}} · {{localize 'SR5.AvailabilityShort'}} {{availability}}</span>
+					<span class="sr-dealer-stats">{{#each stats}}<span data-tooltip="{{label}}">{{label}} {{value}}</span>{{/each}}</span>
 				</li>
+				{{/each}}
 				{{/each}}
 			</ul>
 		</section>
@@ -35,6 +42,7 @@
 				<div class="sr5-workshop-image"><img src="{{build.img}}" alt="{{build.name}}"></div>
 				<div>{{#each build.gaugesRight}}{{> systems/sr5/templates/interface/dealership-gauge.hbs}}{{/each}}</div>
 			</div>
+			<dl class="sr-dealer-showcase">{{#each build.stats}}<div><dt>{{label}}</dt><dd>{{value}}</dd></div>{{/each}}</dl>
 			{{#if build.over}}<p class="sr-dealer-warn">{{#if build.points}}{{localize 'SR5.DealerOverModPoints'}}{{else}}{{localize 'SR5.DealerOverSlots'}}{{/if}}</p>{{/if}}
 
 			<ul class="sr-dealer-build sr-dealer-list">

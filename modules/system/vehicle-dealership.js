@@ -79,6 +79,67 @@ export function buildPointsRefusal(vehicle, mods, added) {
   return modPointsRefusal(vehicle, modsTakingPoints(fittedOf(mods)), null, added)
 }
 
+/** The shelves of the showroom (Adrore's feedback C8): vehicles and drones apart, each sorted by category in the
+ *  order below (drones from the smallest), then by name; an unknown category comes last */
+export const VEHICLE_SHELF_ORDER = ["bike", "car", "truck", "boat", "submarine", "rotorCraft", "vectorThrustCraft", "fixedWingAircraft", "lta"]
+export const DRONE_SHELF_ORDER = ["microdrone", "minidrone", "smallDrone", "mediumDrone", "largeDrone", "hugeDrone"]
+
+/** A model is a drone by its type, or by a drone category when the type is missing */
+export function isDroneModel(system) {
+  return system?.type === "drone" || (!system?.type && DRONE_SHELF_ORDER.includes(system?.category))
+}
+
+/** The rows of one shelf ("vehicles" or "drones") in groups: [{key, rows}], `key` the category ("" when unknown) */
+export function dealerShelf(rows, shelf) {
+  const drones = shelf === "drones"
+  const order = drones ? DRONE_SHELF_ORDER : VEHICLE_SHELF_ORDER
+  const groups = new Map()
+  for (const row of Array.from(rows ?? []).filter(r => isDroneModel(r.system) === drones)) {
+    const key = order.includes(row.system?.category) ? row.system.category : ""
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key).push(row)
+  }
+  const rank = key => key ? order.indexOf(key) : order.length
+  return [...groups.entries()].sort(([a], [b]) => rank(a) - rank(b)).map(([key, list]) => ({
+    key, rows: list.sort((a, b) => String(a.name).localeCompare(String(b.name)))
+  }))
+}
+
+/** The figures of the showroom, in the order of the vehicle stat blocks: Handling and Speed on road/off road,
+ *  Acceleration, Body, Armor, Pilot, Sensor, Seats. Read on the stored data of the vehicle item */
+export function vehicleShowcase(system) {
+  const a = system?.attributes ?? {
+  }
+  const n = v => Math.floor(Number(v) || 0)
+  const pair = (on, off) => n(off) && n(off) !== n(on) ? `${n(on)}/${n(off)}` : `${n(on)}`
+  return [
+    {
+      key: "handling", value: pair(a.handling, a.handlingOffRoad)
+    },
+    {
+      key: "acceleration", value: pair(a.acceleration, a.accelerationOffRoad)
+    },
+    {
+      key: "speed", value: pair(a.speed, a.speedOffRoad)
+    },
+    {
+      key: "pilot", value: `${n(a.pilot)}`
+    },
+    {
+      key: "body", value: `${n(a.body)}`
+    },
+    {
+      key: "armor", value: `${n(a.armor)}`
+    },
+    {
+      key: "sensor", value: `${n(a.sensor)}`
+    },
+    {
+      key: "seating", value: `${n(system?.seating)}`
+    },
+  ]
+}
+
 const LEGALITY_RANK = {
   "": 0, R: 1, F: 2
 }

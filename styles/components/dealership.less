@@ -84,6 +84,70 @@
     flex: 1;
   }
 
+  // Vehicles and drones apart (Adrore's feedback C8), each shelf by category
+  .sr-dealer-shelves {
+    display: flex;
+    gap: 4px;
+
+    a {
+      flex: 1;
+      padding: 2px 6px;
+      text-align: center;
+      border: 1px solid var(--shop-line);
+      border-radius: 3px;
+      color: var(--shop-text);
+
+      &.is-selected {
+        background: color-mix(in srgb, var(--sr-shop-accent) 35%, transparent);
+        border-color: var(--sr-shop-accent);
+      }
+    }
+  }
+
+  .sr-dealer-models li.sr-dealer-group {
+    display: block;
+    padding: 4px 4px 2px;
+    font-weight: bold;
+    color: var(--shop-text);
+    border-bottom: 1px solid var(--sr-shop-accent);
+    cursor: default;
+
+    &:hover {
+      background: none;
+    }
+  }
+
+  .sr-dealer-models li img {
+    grid-row: span 3;
+  }
+
+  // The figures of a model, as the book prints them
+  .sr-dealer-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 8px;
+    font-size: 11px;
+    color: var(--shop-muted);
+  }
+
+  .sr-dealer-showcase {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    margin: 0;
+    text-align: center;
+
+    dt {
+      font-size: 11px;
+      color: var(--shop-muted);
+    }
+
+    dd {
+      margin: 0;
+      font-weight: bold;
+      color: var(--shop-text);
+    }
+  }
+
   .sr-dealer-name {
     font-size: 13px;
   }
