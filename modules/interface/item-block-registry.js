@@ -92,6 +92,10 @@ export const ITEM_BLOCK_REGISTRY = {
   contactSummary:      {
     partial: `${PARTIAL_ROOT}/blocks/contact/contact-summary.hbs`,           label: 'SR5.Summary', size: ITEM_BLOCK_SIZE.SINGLE 
   },
+  // The chips between the character and the contact (Run Faster p. 170-172, lot 37a)
+  contactFavors:       {
+    partial: `${PARTIAL_ROOT}/blocks/contact/contact-favors.hbs`,            label: 'SR5.FAVOR_Tab', size: ITEM_BLOCK_SIZE.DOUBLE
+  },
   lifestyleSummary:    {
     partial: `${PARTIAL_ROOT}/blocks/lifestyle/lifestyle-summary.hbs`,       label: 'SR5.Summary', size: ITEM_BLOCK_SIZE.SINGLE 
   },

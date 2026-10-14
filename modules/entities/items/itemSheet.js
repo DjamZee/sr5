@@ -88,6 +88,9 @@ import {
 import {
   dateTimeInputValue, parseDateTimeInput
 } from "../../interface/calendar-clock.js"
+import {
+  favorsContext, onFavorAction
+} from "../../interface/contact-favors.js"
 
 // Item types that include a footer (condition monitors, price/availability)
 const ITEM_FOOTER_TYPES = new Set([
@@ -147,6 +150,11 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       shopOpen: SR5ItemSheet._onShopAction,
       shopClientAdd: SR5ItemSheet._onShopAction,
       shopClientRemove: SR5ItemSheet._onShopAction,
+      // The chips between the character and the contact (Run Faster p. 170-172, contact-favors.js)
+      contactFavor: function (event, target) {
+        event.preventDefault()
+        return onFavorAction(this.document, target.dataset.favor)
+      },
       // The owner switches the device's mode (pan-device-switch.js)
       switchDeviceMode: function (event, target) {
         event.preventDefault()
@@ -429,6 +437,10 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
           faIcon: WORKSHOP_FAMILIES[family].icon, tooltip: game.i18n.localize(WORKSHOP_FAMILIES[family].label)
         })
         else if (this.item.type === 'itemVehicle' && tab.iconKey === 'workshop') tab.tooltip = game.i18n.localize('SR5.VehicleModWorkshop')
+        // The favors of a contact (Run Faster p. 170-172)
+        else if (tab.iconKey === 'favors') Object.assign(tab, {
+          faIcon: 'fa-handshake', tooltip: game.i18n.localize('SR5.FAVOR_Tab')
+        })
       }
     }
 
@@ -482,6 +494,7 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     }
     // Faction of a contact (Cutting Aces p. 157), kept in the gamemaster's registry
     if (item.type === "itemContact") context.contactFaction = SR5FactionRegistry.factionOfContact(item.uuid)?.name ?? ""
+    if (item.type === "itemContact") context.favors = favorsContext(item.system)
     // Whom a custom drug can be made for (Chrome Flesh p. 194): the actors this user sees, and the one already named
     if (item.type === "itemDrug" && item.system.quality === "custom") {
       const recipients = Object.fromEntries((game.actors?.contents ?? []).filter(a => ["actorPc", "actorGrunt"].includes(a.type))

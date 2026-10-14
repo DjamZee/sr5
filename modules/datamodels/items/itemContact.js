@@ -99,6 +99,20 @@ export class sr5ItemContactDataModel extends foundry.abstract.TypeDataModel {
       isCreated: new fields.BooleanField({
         initial: false
       }),
+      // The chips between the character and the contact (Run Faster p. 170-172, favor-rules.js):
+      // > 0 the contact owes the character, < 0 the character owes the contact
+      favors: new fields.SchemaField({
+        chips: new fields.NumberField({
+          initial: 0, integer: true
+        }),
+        relation: new fields.StringField({
+          initial: ''
+        }),
+        intimidated: new fields.BooleanField({
+          initial: false
+        }),
+        log: new fields.ArrayField(new fields.ObjectField()),
+      }),
     }
   }
 }
