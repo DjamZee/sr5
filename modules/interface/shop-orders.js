@@ -24,6 +24,9 @@ import {
 import {
   stampAll
 } from './shop-purchase.js'
+import {
+  sr5LineLabel
+} from './item-payload.js'
 
 export const ORDERS_FLAG = 'shopOrders'
 export const DELIVERY_SETTING = 'sr5ShopDelivery'
@@ -210,7 +213,7 @@ function transaction(type, amount, name, description = '') {
 }
 
 function lineLabel(order) {
-  return order.quantity > 1 ? `${order.name} (x${order.quantity})` : order.name
+  return sr5LineLabel(order.name, order.quantity)
 }
 
 function owners(actor) {
