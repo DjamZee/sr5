@@ -449,7 +449,7 @@
     "sr5.sr5ShopDealerKeywords": {
       "scope": "world",
       "type": "String",
-      "default": "fixer, intermediaire, intermédiaire, receleur, recéleur, fourgue, marchand, armurier, talismonger, talismancien, dealer, trafiquant, contrebandier, smuggler, arms dealer",
+      "default": "fixer, intermediaire, intermédiaire, receleur, recéleur, fourgue, marchand, armurier, talismonger, marchand de talismans, dealer, trafiquant, contrebandier, smuggler, arms dealer",
       "config": true
     },
     "sr5.sr5ShopDelivery": {

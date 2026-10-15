@@ -552,7 +552,7 @@ export class SR5_SystemHelpers {
       hint: "SR5.SETTINGS_ShopDealerKeywords_D",
       scope: "world",
       config: true,
-      default: "fixer, intermediaire, intermédiaire, receleur, recéleur, fourgue, marchand, armurier, talismonger, talismancien, dealer, trafiquant, contrebandier, smuggler, arms dealer",
+      default: "fixer, intermediaire, intermédiaire, receleur, recéleur, fourgue, marchand, armurier, talismonger, marchand de talismans, dealer, trafiquant, contrebandier, smuggler, arms dealer",
       type: String,
     })
 
