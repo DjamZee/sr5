@@ -2,8 +2,7 @@
 <div class="SRBlockSheet">
 	<ul>
 	  	<li class="SR-LigneEnTete grid">
-			<div class="col-9 SR-TextUppercase">{{localize 'SR5.Vehicles'}} & {{localize 'SR5.Drones'}}</div>
-			<div class="col-1"></div>
+			<div class="col-10 SR-TextUppercase">{{localize 'SR5.Vehicles'}} & {{localize 'SR5.Drones'}}</div>
 			<div class="col-1"></div>
 			<div class="col-1">
 		  		{{#if owner}}
@@ -17,20 +16,25 @@
 	  	{{#each actor.vehicles as |item i|}}
 	  	<li class="item {{#if storedInName}}sr-stored{{/if}}" data-item-id="{{item._id}}" draggable="true">
 			<div class="grid">
-		  		<div class="col-9 deplie">{{item.name}}{{#if storedInName}} <span class="sr-stored-note">({{localize 'SR5.StoredIn' storage=storedInName}})</span>{{/if}}</div>
+		  		<div class="col-10 deplie">{{item.name}}{{#if storedInName}} <span class="sr-stored-note">({{localize 'SR5.StoredIn' storage=storedInName}})</span>{{/if}}</div>
+				<!-- Relecture djamz.13, R1 (img 09-10): the icons in the columns of the other lists, in one order: wireless and
+				     silent in the shared column (its first third, the "equipped" one, stays empty), then deployment and edit -->
+				<div class="col-1">
+				<div class="grid">
+				<div class="col-6"></div>
 				{{#if (gte system.conditionMonitors.matrix.actual.value system.conditionMonitors.matrix.value)}}
-				<div class="col-1 SR-TextCenter"
+				<div class="col-6 SR-TextCenter"
 				  data-helpTitle="{{localize 'SR5.HELP_BrickedItem' key=name}}"
 				  data-helpMessage="{{localize 'SR5.HELP_BrickedItemMsg'}}"
 				>
-					<em class="fas fa-sm fa-exclamation-triangle SR-popColor"></em>
+					<em class="fas fa-sm fa-exclamation-triangle SR-popColor"></em><span class="sr-silent-slot"></span>
 				</div>
 				{{else if item.deployedWireless}}
-				<div class="col-1 SR-TextCenter" data-tooltip="{{localize 'SR5.WirelessHeldByDeployedDrone'}}">
+				<div class="col-6 SR-TextCenter" data-tooltip="{{localize 'SR5.WirelessHeldByDeployedDrone'}}">
 					<em class="fas fa-sm fa-wifi {{#if item.deployedWireless.on}}SR-GreyColor{{else}}SR-LightGreyColor{{/if}}"></em><span class="sr-silent-slot"></span>
 				</div>
 				{{else}}
-				<div class="col-1 SR-TextCenter"
+				<div class="col-6 SR-TextCenter"
 				  data-helpTitle="{{localize 'SR5.HELP_WifiToggle' key=name}}"
 				  data-helpMessage="{{localize 'SR5.HELP_WifiToggleMsg'}}"
 				>
@@ -42,7 +46,10 @@
 					{{~> systems/sr5/templates/actors/_partials/right-tabs/_common/device-silent.hbs deviceMode=(lookup @root.deviceModes _id) itemId=_id}}
 				</div>
 				{{/if}}
-				<div class="col-1 SR-TextCenter">
+				</div>
+				</div>
+				<div class="col-1 sr-row-tail">
+					<span class="sr-row-tail-slot">
 					{{#if system.isCreated}}
 					<a class="sidekickDestroy" data-dtype="Boolean" data-item-id="{{_id}}" data-binding="system.isCreated"
 					  data-helpTitle="{{localize 'SR5.HELP_DroneDismiss'key=name}}"
@@ -54,10 +61,10 @@
 					  data-helpTitle="{{localize 'SR5.HELP_DroneCreate'key=name}}"
 					  data-helpMessage="{{localize 'SR5.HELP_DroneCreateMsg'}}">
 						<em class="fas fa-external-link-alt"></em>
-					</a>					
+					</a>
 					{{/if}}
-				</div>
-		  		<div class="col-1 grid SR-TextRight">
+					</span>
+					<span class="sr-row-tail-slot">
 					{{#if ../owner}}
 					{{#if system.isCreated}}
 					{{else}}
@@ -66,6 +73,7 @@
 					</a>
 					{{/if}}
 					{{/if}}
+					</span>
 				</div>
 			</div>
 	  	</li>

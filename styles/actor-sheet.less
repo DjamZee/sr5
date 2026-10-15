@@ -903,6 +903,24 @@
         justify-items  : center;
     }
 
+    // The last column of a vehicle row (relecture djamz.13, R1, img 09-10): deployment, then edit at the right edge,
+    // where the edit of every other list stands
+    .sr-row-tail {
+        display        : flex;
+        justify-content: flex-end;
+        align-items    : center;
+        gap            : 2px;
+
+        .sr-row-tail-slot {
+            display        : inline-flex;
+            justify-content: center;
+            min-width      : 1.3em;
+        }
+        .sr-row-tail-slot:last-child {
+            justify-content: flex-end;
+        }
+    }
+
     [class*="col-"] > .grid > [class*="col-"]:has(> .sr-silent-slot, > p > .sr-silent-slot) {
         width: 66.66666667%;
     }
