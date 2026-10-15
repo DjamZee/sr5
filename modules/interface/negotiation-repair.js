@@ -284,6 +284,19 @@ export class SR5NegotiationRepair extends foundry.applications.api.HandlebarsApp
     return context
   }
 
+  /** "Tout réparer" (relecture djamz.13, R9): ticks or unticks every sheet of the list, all at 0. */
+  async _onRender(context, options) {
+    await super._onRender(context, options)
+    const all = this.element.querySelector("input[name=repairAll]")
+    const boxes = () => [...this.element.querySelectorAll("input[name=candidate]")]
+    all?.addEventListener("change", () => {
+      for (const box of boxes()) box.checked = all.checked
+    })
+    for (const box of boxes()) box.addEventListener("change", () => {
+      if (all) all.checked = boxes().every(b => b.checked)
+    })
+  }
+
   /** The candidates found, null while they are being looked for. */
   #candidates = null
   #searching = false

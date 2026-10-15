@@ -7139,6 +7139,7 @@
 	"SR5.NEGO_REPAIR_MenuHint": "Actors and contacts imported before the Negotiation fix lost it (0). The window lists those whose source compendium gives more, and the gamemaster ticks what applies; each correction is applied once per sheet.",
 	"SR5.NEGO_REPAIR_Intro": "These sheets read a Negotiation of 0 while their source compendium gives one. A 0 set on purpose looks the same as a lost one: tick only what you want back. A sheet already restored is not offered again; what is left unticked stays.",
 	"SR5.NEGO_REPAIR_Value": "Negotiation",
+	"SR5.NEGO_REPAIR_All": "Repair all (ticks every sheet at 0 in the list)",
 	"SR5.NEGO_REPAIR_Apply": "Restore what is ticked",
 	"SR5.NEGO_REPAIR_None": "Nothing to repair.",
 	"SR5.NEGO_REPAIR_NoneTicked": "Nothing is ticked.",

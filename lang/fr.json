@@ -7139,6 +7139,7 @@
 	"SR5.NEGO_REPAIR_MenuHint": "Les acteurs et contacts importés avant le correctif de la Négociation l'ont perdue (0). La fenêtre liste ceux dont le compendium d'origine donne plus, et le MJ coche ce qui s'applique ; chaque correction ne s'applique qu'une fois par fiche.",
 	"SR5.NEGO_REPAIR_Intro": "Ces fiches lisent une Négociation à 0 alors que leur compendium d'origine en donne une. Un 0 voulu ne se distingue pas d'un 0 perdu : cochez seulement ce que vous voulez rétablir. Une fiche déjà rétablie n'est plus proposée ; ce qui n'est pas coché le reste.",
 	"SR5.NEGO_REPAIR_Value": "Négociation",
+	"SR5.NEGO_REPAIR_All": "Tout réparer (coche toutes les fiches à 0 de la liste)",
 	"SR5.NEGO_REPAIR_Apply": "Rétablir ce qui est coché",
 	"SR5.NEGO_REPAIR_None": "Aucune fiche à réparer.",
 	"SR5.NEGO_REPAIR_NoneTicked": "Rien n'est coché.",
