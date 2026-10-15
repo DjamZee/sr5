@@ -23,6 +23,9 @@ export const PAN_LAYOUT = {
   // How wide a ring opens: the slaves around the master, away from the token; the loose devices around the token,
   // on the side opposite the master, never beyond its sides (so they never meet the slaves)
   slaveSpread: Math.PI * 1.1,
+  // Beyond 8 slaves, their fan opens up to here (the token's picture and name kept clear)
+  crowdedSlaves: 8,
+  crowdedSpread: Math.PI * 1.7,
   deviceSpread: Math.PI,
 }
 
@@ -125,17 +128,32 @@ export function layoutCrown(graph, {
   const slaves = shown.filter(n => graph.links.some(l => l.to === n.uuid && l.from === graph.master))
   const gap = PAN_LAYOUT.minSpacing * scale
   for (const node of slaves.filter(n => !onRing(n))) place(node, 0, 0)
-  fan(slaves.filter(onRing), angle, PAN_LAYOUT.slaveRing * scale, masterAt, place, {
-    maxSpread: PAN_LAYOUT.slaveSpread, gap, forbidden: onName
-  })
-
   // The devices slaved to nothing ring the token, on the side opposite the master
   // (a node a module links to both the token and the master is placed once, as a slave: lot 11)
-  const loose = shown.filter(n => graph.links.some(l => l.to === n.uuid && l.from === "owner") && n.uuid !== graph.master && !at[n.uuid])
-  for (const node of loose.filter(n => !onRing(n))) place(node, 0, 0)
-  fan(loose.filter(onRing), angle + Math.PI, tokenRadius + PAN_LAYOUT.deviceGap * scale, center, place, {
-    maxSpread: PAN_LAYOUT.deviceSpread, gap, forbidden: underName
+  const loose = shown.filter(n => graph.links.some(l => l.to === n.uuid && l.from === "owner") && n.uuid !== graph.master &&
+    !slaves.includes(n))
+  const placeLoose = () => {
+    for (const node of loose.filter(n => !onRing(n))) place(node, 0, 0)
+    fan(loose.filter(onRing), angle + Math.PI, tokenRadius + PAN_LAYOUT.deviceGap * scale, center, place, {
+      maxSpread: PAN_LAYOUT.deviceSpread, gap, forbidden: underName
+    })
+  }
+  // Many slaves (a samurai and his ~20 pieces, passe 2): the loose devices first, then a fan that opens wider round
+  // the master, never on the token's picture, its name, or a spacing from an icon already there
+  const crowded = slaves.filter(onRing).length > PAN_LAYOUT.crowdedSlaves
+  if (crowded) placeLoose()
+  // ...and its line from the master crosses neither the picture nor the name
+  const clear = (x, y) => Math.hypot(x, y) < tokenRadius + iconRadius + 4 * scale || !!onName?.(x, y) ||
+    icons.some(i => Math.hypot(i.x - x, i.y - y) < gap - 1e-6) ||
+    segmentToPoint(masterAt, {
+      x, y
+    }, center) < tokenRadius + 4 * scale || (!!nameBox && segmentHitsBox(masterAt, {
+    x, y
+  }, nameBox))
+  fan(slaves.filter(onRing), angle, PAN_LAYOUT.slaveRing * scale, masterAt, place, {
+    maxSpread: crowded ? PAN_LAYOUT.crowdedSpread : PAN_LAYOUT.slaveSpread, gap, forbidden: crowded ? clear : onName
   })
+  if (!crowded) placeLoose()
 
   for (const link of graph.links){
     const to = at[link.to]
@@ -204,6 +222,23 @@ export function crownScaleOf(gridSize, w, h){
   const grid = Math.max(gridSize / 100, 0.5)
   const cells = Math.max(w, h) / (gridSize || 100)
   return grid * Math.min(PAN_LAYOUT.maxSizeScale, Math.max(1, Math.sqrt(cells || 1)))
+}
+
+// The least distance from point p to the segment a-b
+function segmentToPoint(a, b, p){
+  const dx = b.x - a.x, dy = b.y - a.y
+  const length = dx * dx + dy * dy
+  const t = length ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / length)) : 0
+  return Math.hypot(a.x + t * dx - p.x, a.y + t * dy - p.y)
+}
+
+// Does the segment a-b cross the box {x0, x1, y0, y1} (sampled: the box is a name, a few dozen pixels)
+function segmentHitsBox(a, b, box){
+  for (let k = 0; k <= 40; k++) {
+    const x = a.x + (b.x - a.x) * k / 40, y = a.y + (b.y - a.y) * k / 40
+    if (x > box.x0 && x < box.x1 && y > box.y0 && y < box.y1) return true
+  }
+  return false
 }
 
 function boxEdgeToward(point, {

@@ -65,7 +65,8 @@ describe('relecture djamz.13, passe 2: the picture as shown', () => {
 })
 
 describe('relecture djamz.13, passe 2: the name stays clear', () => {
-  for (const [slaves, loose, angle] of [[6, 14, -Math.PI / 4], [0, 20, -Math.PI / 2], [8, 12, Math.PI / 2], [4, 10, 0]]) {
+  for (const [slaves, loose, angle] of [[6, 14, -Math.PI / 4], [0, 20, -Math.PI / 2], [8, 12, Math.PI / 2], [4, 10, 0],
+    [20, 0, Math.PI], [20, 0, -Math.PI / 2], [12, 8, Math.PI / 2]]) {
     it(`${slaves} slaves and ${loose} loose devices, master at ${angle.toFixed(2)} rad`, () => {
       const {
         icons, lines
@@ -79,6 +80,15 @@ describe('relecture djamz.13, passe 2: the name stays clear', () => {
         const crosses = line.to.y > nameBox.y0 && line.to.x > nameBox.x0 - r && line.to.x < nameBox.x1 + r
         expect(crosses).toBe(false)
       }
+      // No line from the master across the token's picture
+      const master = icons.find(i => i.node.uuid === 'm')
+      for (const line of lines.filter(l => l.from === master || (l.from.x === master.x && l.from.y === master.y))) {
+        const dx = line.to.x - line.from.x, dy = line.to.y - line.from.y
+        const t = Math.max(0, Math.min(1, -(line.from.x * dx + line.from.y * dy) / (dx * dx + dy * dy)))
+        if (slaves > 8) expect(Math.hypot(line.from.x + t * dx, line.from.y + t * dy)).toBeGreaterThan(50)
+      }
+      // None on the token's picture
+      for (const icon of icons) expect(Math.hypot(icon.x, icon.y)).toBeGreaterThan(50)
       // No two icons on top of each other
       for (let i = 0; i < icons.length; i++) for (let j = i + 1; j < icons.length; j++) {
         expect(Math.hypot(icons[i].x - icons[j].x, icons[i].y - icons[j].y)).toBeGreaterThan(2 * r)
