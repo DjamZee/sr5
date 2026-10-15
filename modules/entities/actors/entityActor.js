@@ -223,6 +223,8 @@ export class SR5Actor extends Actor {
     })
   }
 
+  // Returns the actor it creates, as Foundry's Actor.create does: a module that made a device got nothing back (the
+  // tab « CI » of matrice-sr5). A dialog closed without a choice (spirit, sprite) still creates nothing
   static async create(data, options) {
     if (!data.img) data.img = `systems/sr5/assets/img/actors/${data.type}.svg`
 
@@ -281,8 +283,7 @@ export class SR5Actor extends Actor {
           "type": spiritType
         }
         SR5_EntityHelpers.updateValue(data.system.force)
-        super.create(data, options)
-        break
+        return super.create(data, options)
       }
       case "actorSprite": {
         const spriteDlg = await foundry.applications.handlebars.renderTemplate("systems/sr5/templates/interface/createSprite.hbs", dialogData)
@@ -317,8 +318,7 @@ export class SR5Actor extends Actor {
           "level": parseInt(spriteLevel) || 0,
           "type": spriteType
         }
-        super.create(data, options)
-        break
+        return super.create(data, options)
       }
       case "actorDevice":
       case "actorDrone":
@@ -337,10 +337,9 @@ export class SR5Actor extends Actor {
         const effects = data.effects.map(e => e.toObject())
         effects.push(initiativeEffect.toObject())
         foundry.utils.mergeObject(data, {
-          "effects": effects 
+          "effects": effects
         })
-        super.create(data, options)
-        break
+        return super.create(data, options)
       }
       case "actorGrunt":
       case "actorPc":
@@ -348,10 +347,9 @@ export class SR5Actor extends Actor {
         for (let baseItem of baseItems) {
           data.items.push(baseItem)
         }
-        super.create(data, options)
-        break
+        return super.create(data, options)
       default:
-        super.create(data, options)
+        return super.create(data, options)
     }
   }
 
