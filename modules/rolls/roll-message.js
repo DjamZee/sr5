@@ -1403,11 +1403,12 @@ export class SR5_RollMessage {
     let spellData = messageData.magic.spell
     let spared = Array.isArray(spellData.sparedActors) ? spellData.sparedActors : []
     let allowed = spellData.sparedCount || 0
-    //Targets or selection, whichever the caster used, and a refusal when the two disagree: targets persist and the GM
-    //still has the victim targeted from the cast itself. See SR5_SpellShapingHelpers.tokensToSpare
-    let choice = SR5_SpellShapingHelpers.tokensToSpare([...(game.user.targets ?? [])], [...(canvas.tokens?.controlled ?? [])])
-    if (choice.ambiguous) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_SpellShapingTargetAndSelectionDiffer")}`)
-    let chosen = choice.tokens
+    //Targets or selection, whichever the caster used. When the two disagree (targets persist, and a player nearly always
+    //has their own token selected), the caster ticks the tokens to spare. See SR5_SpellShapingHelpers.tokensToSpare
+    let targeted = [...(game.user.targets ?? [])], selected = [...(canvas.tokens?.controlled ?? [])]
+    let choice = SR5_SpellShapingHelpers.tokensToSpare(targeted, selected)
+    let chosen = choice.ambiguous ? await SR5_RollMessage._pickTokensToSpare(SR5_SpellShapingHelpers.candidates(targeted, selected), allowed - spared.length) : choice.tokens
+    if (chosen === null) return
     if (!chosen.length) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_SpellShapingNoTokenSelected")}`)
 
     let added = 0
@@ -1433,6 +1434,36 @@ export class SR5_RollMessage {
     else messageData.chatCard.buttons.spellShapingSpare = SR5_RollMessage.generateChatButton("nonOpposedTest", "spellShapingSpare", `${game.i18n.localize("SR5.SpellShapingSpare")} (${spared.length}/${allowed})`)
 
     await SR5_RollMessage.updateRollCardHelper(messageId, messageData)
+  }
+
+  //The caster ticks the tokens to spare among those targeted or selected, at most the bubbles left.
+  //Returns null when the window is closed or cancelled.
+  static async _pickTokensToSpare(tokens, left){
+    const rows = tokens.map((token, index) => `<label class="checkbox"><input type="checkbox" name="spare" value="${index}"> ${Handlebars.escapeExpression(token.name)}</label>`).join("")
+    const content = `<p>${game.i18n.format("SR5.SpellShapingPickHint", {
+      number: left
+    })}</p>${rows}`
+    const result = await foundry.applications.api.DialogV2.wait({
+      window: {
+        title: game.i18n.localize("SR5.SpellShapingSpare")
+      },
+      content,
+      buttons: [
+        {
+          action: "ok",
+          label: game.i18n.localize("SR5.SpellShapingPickConfirm"),
+          default: true,
+          callback: (event, button, dialog) => [...dialog.element.querySelectorAll('input[name="spare"]:checked')].map(input => tokens[Number(input.value)]),
+        },
+        {
+          action: "cancel",
+          label: game.i18n.localize("SR5.Cancel"),
+          callback: () => null,
+        },
+      ],
+      rejectClose: false,
+    })
+    return Array.isArray(result) ? result : null
   }
 
   static generateChatButton(testType, actionType, label, gmAction){

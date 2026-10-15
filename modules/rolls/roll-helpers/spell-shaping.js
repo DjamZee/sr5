@@ -124,6 +124,25 @@ export class SR5_SpellShapingHelpers {
     }
   }
 
+  /**
+   * Every token the caster may mean when targets and selection disagree: both
+   * lists, each token once. The caster then ticks the ones to spare. A player
+   * nearly always has their own token selected, so refusing there (as the first
+   * version did) refused the ordinary case: target the ally, click, warning.
+   *
+   * @returns {object[]}
+   */
+  static candidates(targeted, selected){
+    let seen = new Set()
+    let tokens = []
+    for (let token of [...(targeted ?? []), ...(selected ?? [])]){
+      if (!token || seen.has(token.id)) continue
+      seen.add(token.id)
+      tokens.push(token)
+    }
+    return tokens
+  }
+
   /** The single wording every path uses to say it. */
   static announceSpared(actor){
     ui.notifications.info(`${game.i18n.format("SR5.INFO_SparedBySpellShaping", {
