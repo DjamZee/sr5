@@ -188,6 +188,20 @@ export function vendorShopOfToken(token) {
 }
 
 /**
+ * The shop a token's HUD opens (relecture djamz.13, lot R6): the gamemaster opens any shop the actor
+ * carries, the open one first; anyone else only an open shop of an actor they do not own.
+ */
+export function hudShopOfToken(token, isGM) {
+  if (!isGM) return vendorShopOfToken(token)
+  const actor = token?.actor
+  const shops = actor?.items?.filter(item => isShopStorage(item)) ?? []
+  const storage = shops.find(item => shopSettings(item).isOpen) ?? shops[0]
+  return storage ? {
+    actor, storage
+  } : null
+}
+
+/**
  * What the gamemaster needs to see of an item before buying it back (Élise's ruling after Nora's
  * second review): its kind, its category, and its key figures — damage, armor penetration and
  * firing modes for a weapon, the rating for anything else.

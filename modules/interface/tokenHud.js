@@ -7,6 +7,9 @@ import {
 import {
   playerMayOpenPan
 } from "../canvas/pan-crown/pan-crown.js"
+import {
+  hudShopOfToken
+} from "./shop-vendor-rules.js"
 
 /**
  * Icons of the system on the token HUD.
@@ -40,12 +43,13 @@ export default class SR5TokenHud extends foundry.applications.hud.TokenHUD {
     this.#dressControlIcons()
     this.#addStorageButton()
     this.#addPanCrownButton()
+    this.#addShopButton()
     SR5SharedVision.addHudButton(this)
     SR5Pickpocket.addHudButton(this)
     //Opened on someone else's token to pick his pocket: nothing else of his is the user's to touch
     if (!this.document?.isOwner) {
       for (const el of this.element?.querySelectorAll(".control-icon, .attribute, input, .palette") ?? []) {
-        if (!el.closest(".sr-hud-pickpocket, .sr-hud-pickpocket-plant, .sr-hud-pan")) el.remove()
+        if (!el.closest(".sr-hud-pickpocket, .sr-hud-pickpocket-plant, .sr-hud-pan, .sr-hud-shop")) el.remove()
       }
       // Nothing left of it for her: no empty HUD
       if (!this.element?.querySelector(".control-icon")) this.close()
@@ -93,6 +97,36 @@ export default class SR5TokenHud extends foundry.applications.hud.TokenHUD {
       this.document?.actor?.sheet?.render(true)
     })
     middle.appendChild(button)
+  }
+
+  /**
+   * A vendor's shop from the right-click (relecture djamz.13, lot R6): the gamemaster's way into the
+   * counter, since his double-click opens the Grunt's sheet; the double-click stays as it was.
+   */
+  #addShopButton() {
+    const shop = hudShopOfToken(this.document, game.user?.isGM)
+    if (!shop) return
+
+    const column = this.element?.querySelector(".col.left")
+    if (!column || column.querySelector(".sr-hud-shop")) return
+
+    const button = document.createElement("button")
+    button.type = "button"
+    button.className = "control-icon sr-hud-shop"
+    button.dataset.tooltip = game.i18n.localize("SR5.HUD.OpenShop")
+    button.setAttribute("aria-label", button.dataset.tooltip)
+    button.innerHTML = "<i class=\"fas fa-store\"></i>"
+    button.addEventListener("click", async event => {
+      event.preventDefault()
+      event.stopPropagation()
+      this.close()
+      // Loaded on demand, as the double-click does
+      const {
+        SR5ShopVendor
+      } = await import("./shop-vendor.js")
+      SR5ShopVendor.openShop(shop.actor, shop.storage)
+    })
+    column.appendChild(button)
   }
 
   /**
