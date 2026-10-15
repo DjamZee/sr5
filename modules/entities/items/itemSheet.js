@@ -94,6 +94,9 @@ import {
 import {
   favorsContext, onFavorAction
 } from "../../interface/contact-favors.js"
+import {
+  tooltipsToHelp, fillHelpBubble
+} from "../../interface/help-tooltips.js"
 
 // Item types that include a footer (condition monitors, price/availability)
 const ITEM_FOOTER_TYPES = new Set([
@@ -982,7 +985,9 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       if (actor?.isOwner) await actor.setFlag("sr5", TACNET_COMBAT_FLAG, ev.target.value)
     }))
 
-    // Help Display (mouseover/mouseout — cannot use data-action)
+    // Help Display (mouseover/mouseout — cannot use data-action). The tooltips go into the bubble when it is on
+    // and free (help-tooltips.js)
+    tooltipsToHelp(el.querySelector(".window-content") ?? el, game.settings.get("sr5", "sr5Help.active"), text => game.i18n.localize(text))
     el.querySelectorAll("[data-helpTitle]").forEach(node => {
       node.addEventListener("mouseover", this._displayHelpText.bind(this))
       node.addEventListener("mouseout", this._hideHelpText.bind(this))
@@ -1314,9 +1319,7 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
 
     {
       const el = event.currentTarget
-      if (helpTitle) helpTitle.innerHTML = el.dataset.helptitle || ""
-
-      if (el.dataset.helpmessage && helpMessage) helpMessage.innerHTML = "<div class='helpMessage'><em>" + el.dataset.helpmessage + "</em></div>"
+      fillHelpBubble(el, helpTitle, helpMessage)
 
       let details = el.dataset.helpdetails
       if (details) {

@@ -132,6 +132,9 @@ import {
 import {
   primaryLifestyleUpdates
 } from "../../system/lifestyle-primary.js"
+import {
+  tooltipsToHelp, fillHelpBubble
+} from "../../interface/help-tooltips.js"
 
 /**
  * Extend the basic ActorSheet class to do all the SR5 things!
@@ -744,7 +747,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     // Custom dropdown enhancement
     enhanceSelects(element)
 
-    // Help Display
+    // Help Display. The tooltips go into the bubble when it is on and free (help-tooltips.js)
+    tooltipsToHelp(element.querySelector(".window-content") ?? element, game.settings.get("sr5", "sr5Help.active"), text => game.i18n.localize(text))
     element.querySelectorAll("[data-helpTitle]").forEach(el => {
       el.addEventListener("mouseover", this._displayHelpText.bind(this))
       el.addEventListener("mouseout", this._hideHelpText.bind(this))
@@ -2257,9 +2261,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
     {
       const el = event.currentTarget
-      if (helpTitle) helpTitle.innerHTML = el.dataset.helptitle || ""
-
-      if (el.dataset.helpmessage && helpMessage) helpMessage.innerHTML = "<div class='helpMessage'><em>" + el.dataset.helpmessage + "</em></div>"
+      fillHelpBubble(el, helpTitle, helpMessage)
 
       let details = el.dataset.helpdetails
       if (details) {
