@@ -170,6 +170,9 @@ import {
 import {
   registerCommcodeHooks
 } from './interface/commcode-traffic.js'
+import {
+  onDroneSlavedChange
+} from './system/slave-sync.js'
 
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
@@ -208,6 +211,8 @@ Hooks.on('createToken', sr5HookCreateToken)
 Hooks.on('updateToken', sr5HookUpdateToken)
 Hooks.on('preDeleteToken', sr5HookPreDeleteToken)
 Hooks.on('deleteToken', sr5HookDeleteToken)
+//Slaving (lot R5): the box "Appareil asservi" of a deployed drone puts its vehicle in the rigger's PAN list, or takes it out
+Hooks.on('updateActor', (...args) => onDroneSlavedChange(...args).catch(e => console.error(e)))
 Hooks.on('createCombatant', sr5HookCreateCombatant)
 Hooks.on('updateCombatant', sr5HookUpdateCombatant)
 Hooks.on('deleteCombat', sr5HookDeleteCombatCumulativeDefense)

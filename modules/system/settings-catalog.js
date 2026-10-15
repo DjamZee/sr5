@@ -179,6 +179,7 @@ export const SETTINGS_CATALOG = {
   // Interface
   sr5ChooseStyle: ["interface"],
   "sr5Help.active": ["interface"],
+  sr5RuleReminders: ["interface"],
   sr5HideTableRoll: ["interface"],
   sr5IndirectEffectDisplay: ["interface"],
   "sr5Log.active": ["interface"],

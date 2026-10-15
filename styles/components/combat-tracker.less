@@ -2,7 +2,15 @@
 // Themes Foundry's native combat tracker via CSS custom properties,
 // with direct overrides only for SR5-specific injected elements.
 
-#combat {
+// "Mettre à jour le participant" (lot R2, img 02): the system's sheets take the window's padding off, and the labels
+// touched the edges of this one. Important: the theme's ".window-app:not(.actor):not(.SR-Item)… .window-content" is
+// more specific
+.application.combatant-config .window-content {
+    padding: 0.5rem 0.75rem !important;
+}
+
+// The sidebar tab and its detached window (lot R2: a hidden combatant vanished from the latter too)
+#combat, #combat-popout {
     // -- v13 CSS custom properties for theming native elements --
     --entry-hover-bg: color-mix(in srgb, var(--sr-ui-border-color-active) 15%, transparent);
     --entry-active-bg: color-mix(in srgb, var(--sr-ui-border-color-active) 25%, transparent);
@@ -53,6 +61,12 @@
     // -- Combatant list --
     .combat-tracker {
         li.combatant {
+            // Foundry marks a hidden combatant with "hide" and only greys it; the system-wide .hide rule
+            // (display: none) made it vanish from the GM's tracker although it stays in the turn order
+            &.hide {
+                display: flex;
+            }
+
             .token-name .name.hasPlayed {
                 color: color-mix(in srgb, var(--sr-text-color-light) 25%, transparent);
             }
@@ -82,6 +96,23 @@
                 }
             }
 
+            // Initiative die (lot R2, DjamZ): smaller, and SR5 red on hover, drawn as a mask coloured by the background.
+            // Foundry's own die: its inline "../icons/svg/d20.svg" would be read from this stylesheet's folder
+            .token-initiative button.combatant-control.roll {
+                flex: none;
+                width: 24px;
+                height: 24px;
+                background: var(--sr-text-color-light);
+                -webkit-mask: url("../../../icons/svg/d20.svg") no-repeat center / contain;
+                mask: url("../../../icons/svg/d20.svg") no-repeat center / contain;
+                filter: none;
+
+                &:hover, &:focus-visible {
+                    background: var(--sr-text-color-alert);
+                    filter: drop-shadow(0 0 3px var(--sr-text-color-alert));
+                }
+            }
+
             .token-initiative .initiative {
                 font-size: 1.5em;
                 font-family: var(--sr-font-title);
@@ -105,6 +136,15 @@
         button:not([class*="fa-"]),
         a:not([class*="fa-"]) {
             font-family: var(--sr-font-title);
+            // "Finir la rencontre" wrapped on two lines and spilled out of its 30px button (lot R2)
+            white-space: nowrap;
+            overflow: hidden;
+
+            span {
+                font-size: 12px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         }
 
         button, a {

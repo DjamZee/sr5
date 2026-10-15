@@ -147,6 +147,46 @@ export class SR5CombatTracker extends foundry.applications.sidebar.tabs.CombatTr
     })
   }
 
+  /**
+   * Hovering a combatant highlights its token like Foundry does, but without the hoverToken hook:
+   * that hook opens the token's PAN crown when the crown opens on hover (lot R2, DjamZ: not wanted from the tracker)
+   * @override
+   */
+  _onCombatantHoverIn(event) {
+    const {
+      combatantId 
+    } = event.target.closest(".combatant[data-combatant-id]")?.dataset ?? {
+    }
+    if (!canvas.ready || !combatantId) return
+    const token = this.viewed?.combatants.get(combatantId)?.token?.object
+    if (!token || token === this._sr5Highlighted || !token._canHover(game.user, event) || !this._isTokenVisible(token)) return
+    this._sr5Unhighlight()
+    if (token.hover) return
+    token.hover = true
+    token.renderFlags.set({
+      refreshState: true
+    })
+    this._sr5Highlighted = token
+  }
+
+  /** @override */
+  _onCombatantHoverOut(event) {
+    // pointerout also fires when moving between children of the same row
+    const row = event.target.closest(".combatant[data-combatant-id]")
+    if (row && event.relatedTarget && row.contains(event.relatedTarget)) return
+    this._sr5Unhighlight()
+  }
+
+  _sr5Unhighlight() {
+    const token = this._sr5Highlighted
+    this._sr5Highlighted = null
+    if (!token || token.destroyed || !token.hover || token.layer?.hover === token) return
+    token.hover = false
+    token.renderFlags.set({
+      refreshState: true
+    })
+  }
+
   _editActions(ev) {
     let target = ev.currentTarget.dataset.control
     let combatantId = ev.currentTarget.closest(".combatant").dataset.combatantId

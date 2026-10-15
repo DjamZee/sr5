@@ -353,9 +353,15 @@ import {
 import {
   registerSettingsWindow
 } from "../interface/settings-window.js"
+import {
+  installRuleReminders
+} from "../system/rule-reminders.js"
 
 export async function sr5HookInit() {
   SR5_SystemHelpers.registerSystemSettings()
+  //"Rappel des règles" unchecked: the page references leave the texts, before the actors are prepared (their
+  //modifiers' labels are written then)
+  installRuleReminders()
   //The key of the AR view: every PAN crown (couronne du PAN, lot 8)
   registerPanArKey()
   SR5_CompendiumUtility.registerSettings()
