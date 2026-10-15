@@ -745,6 +745,15 @@
                 width: 100px;
             }
 
+            // The enhanced select (render-ui.js) draws its own trigger: light on the dark footer, as the plain select
+            // (relecture djamz.13, R1, img 08)
+            .sr-dropdown-trigger, .sr-dropdown-label, .sr-dropdown-chevron {
+                color: var(--sr-text-color-light);
+            }
+            .sr-dropdown:has(.SRMetatype) {
+                min-width: 100px;
+            }
+
             .SR-TextCenter {
                 text-align: center;
             }
