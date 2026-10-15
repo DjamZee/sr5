@@ -90,12 +90,17 @@ export function sr5HookRenderDialog(_app, html) {
   }
 }
 
+// The classes a dialog of Foundry carries by itself (renderDialogV2 below)
+const DIALOG_CORE_CLASSES = new Set(["application", "dialog", "themed", "minimized", "maximized", "sr-skin-dialog"])
 export function sr5HookRenderDialogV2(app, html) {
   enhanceSelects(html)
   // Relecture djamz.13, R1: the dialogs wear the Concepteur's look (window-skin.less), as the system's windows; the
-  // roll window keeps its own (dialog.less, .SR5jet)
+  // roll window keeps its own (dialog.less, .SR5jet), and so does a module's dialog that brings its own classes (the
+  // Matrice module's dark dialogs): only Foundry's classes and the system's (sr…) take the dress
   const element = app?.element ?? html
-  if (element?.classList && app?.id !== "jet" && !element.querySelector(".SR5jet")) element.classList.add("sr-skin-dialog")
+  if (!element?.classList || app?.id === "jet" || element.querySelector(".SR5jet")) return
+  const own = [...element.classList].filter(c => !DIALOG_CORE_CLASSES.has(c) && !/^theme-/.test(c) && !/^sr/i.test(c))
+  if (!own.length) element.classList.add("sr-skin-dialog")
 }
 export function sr5HookRenderSettingsConfig(_app, html) {
   enhanceSelects(html)
