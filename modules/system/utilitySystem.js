@@ -567,6 +567,18 @@ export class SR5_SystemHelpers {
       requiresReload: true
     })
 
+    // Rule reminders (lot R2, DjamZ): the page references of the texts and the cap notes of the help bubble.
+    // Checked by default, as the system always showed them; read once the settings are, hence the reload
+    game.settings.register("sr5", "sr5RuleReminders", {
+      name: "SR5.SETTINGS_RuleReminders_T",
+      hint: "SR5.SETTINGS_RuleReminders_D",
+      scope: "world",
+      config: true,
+      default: true,
+      type: Boolean,
+      requiresReload: true
+    })
+
     // Matrix Grid Rules
     game.settings.register("sr5", "sr5MatrixGridRules", {
       name: "SR5.SETTINGS_MatrixGridRules_T",

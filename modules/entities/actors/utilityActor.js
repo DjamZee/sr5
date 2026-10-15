@@ -956,7 +956,10 @@ export class SR5_CharacterUtility extends Actor {
             }
             details.push(detail)
           }
-          SR5_EntityHelpers.updateModifier(property, `${game.i18n.localize(SR5.modifiersTypes[`penalty${penalty}`])}`, `penalty${penalty}`, actorData.penalties[penalty].actual.value, false, true, details)
+          //The label names its sources: "Effet spécial" alone left the player guessing (lot R2: a suppressive fire's -6)
+          const sources = [...new Set(details.map(d => d.source).filter(Boolean))].join(", ")
+          const label = game.i18n.localize(SR5.modifiersTypes[`penalty${penalty}`]) + (sources ? ` (${sources})` : "")
+          SR5_EntityHelpers.updateModifier(property, label, `penalty${penalty}`, actorData.penalties[penalty].actual.value, false, true, details)
         }
         break
       default:

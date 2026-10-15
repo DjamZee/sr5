@@ -5,6 +5,9 @@ import {
   SR5_Toxins
 } from '../items/toxins.js'
 import {
+  isCapReminder, ruleRemindersShown
+} from '../../system/rule-reminders.js'
+import {
   boneSwitchRefused
 } from '../../system/implant-essence.js'
 import {
@@ -2273,6 +2276,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         if (property.modifiers && property.modifiers.length) {
           if (property.base) detailsHTML += `<li>${game.i18n.localize('SR5.HELP_CalculationBase')}${game.i18n.localize('SR5.Colons')} ${property.base}</li>`
           for (let modifier of Object.values(property.modifiers)) {
+            //"Rappel des règles" unchecked: no cap note that counts for 0 (rule-reminders.js)
+            if (isCapReminder(modifier) && !ruleRemindersShown()) continue
             if (modifier.value != undefined) {
               if (modifier.type === "penaltyspecial" && modifier.details.length){
                 let modifierDetails = ""

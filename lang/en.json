@@ -5088,6 +5088,8 @@
 	"SR5.SETTINGS_FlightSkill_D": "Add the Flight skill to player character sheets, in the Athletics skill group.",
 	"SR5.SETTINGS_FlightSkill_T": "Flight skill for characters",
 	"SR5.SETTINGS_HelpActive_D": "Display the contextual help window in the interface.",
+	"SR5.SETTINGS_RuleReminders_T": "Rule reminders",
+	"SR5.SETTINGS_RuleReminders_D": "Checked (default): chat cards, roll windows and the help bubble refer to the books' pages, and the help bubble recalls the augmentation caps that take nothing off. Unchecked: these references and reminders are gone; the rules apply all the same. Item descriptions are left as they are.",
 	"SR5.SETTINGS_HelpActive_T": "Show Help Window",
 	"SR5.SETTINGS_HideTableRoll_D": "Hide the die and its result on random table chat cards. The roll still happens, it is simply no longer shown.",
 	"SR5.SETTINGS_HideTableRoll_T": "Hide the roll on random tables",

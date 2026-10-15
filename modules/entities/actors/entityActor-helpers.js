@@ -91,6 +91,9 @@ import {
 import {
   carriedGear
 } from "../../system/vehicle-factory.js"
+import {
+  syncDroneBox
+} from "../../system/slave-sync.js"
 
 export class SR5_ActorHelper {
     
@@ -966,7 +969,11 @@ export class SR5_ActorHelper {
     else if (item.type === "itemContact") petType = "actorGrunt"
     else if (item.type === "itemStorage") petType = "actorStorage"
 
-    if (item.img === `systems/sr5/assets/img/items/${item.type}.svg`) img = `systems/sr5/assets/img/actors/${petType}.svg`
+    //The system's own item icon gives way to the actor's, drawn on a black square for the map. A drone bought at the
+    //dealer or built at the workshop carries the drone icon (vehicle-workshop.js): it lost its black square (lot R5, img 22)
+    const defaultIcons = [`systems/sr5/assets/img/items/${item.type}.svg`]
+    if (item.type === "itemVehicle") defaultIcons.push("systems/sr5/assets/img/items/itemDrone.svg")
+    if (defaultIcons.includes(item.img)) img = `systems/sr5/assets/img/actors/${petType}.svg`
     else img = item.img
 
     // Handle base data for Actor Creation
@@ -974,8 +981,8 @@ export class SR5_ActorHelper {
       "name": item.name,
       "type": petType,
       "img": img,
-      // The token picture picked on the item, or the portrait when left empty
-      "prototypeToken.texture.src": itemData.tokenImg || img,
+      // The token picture picked on the item, or the portrait when left empty (an item icon of the system counts as none)
+      "prototypeToken.texture.src": (!defaultIcons.includes(itemData.tokenImg) && itemData.tokenImg) || img,
     }
 
     // Give permission to player
@@ -1662,6 +1669,8 @@ export class SR5_ActorHelper {
 
     itemToAdd.system.isSlavedToPan = true
     itemToAdd.system.panMaster = actorId
+    //A vehicle in the PAN is slaved: its box "Appareil asservi" follows (lot R5, slave-sync.js)
+    if (item.type === "itemVehicle") itemToAdd.system.slaved = true
     await item.update({
       "system": itemToAdd.system
     })
@@ -1675,6 +1684,7 @@ export class SR5_ActorHelper {
     await deck.update({
       "system.pan": currentPan
     })
+    await syncDroneBox(item, actor, true)
   }
 
   //The PAN's owner slaves a device the dialog could offer her (SR5 p. 233): one of her own, or one of a
@@ -1709,6 +1719,7 @@ export class SR5_ActorHelper {
       let newItem = foundry.utils.duplicate(item.system)
       newItem.isSlavedToPan = false
       newItem.panMaster = ""
+      if (item.type === "itemVehicle") newItem.slaved = false
       await item.update({
         "system": newItem
       })
@@ -1734,6 +1745,8 @@ export class SR5_ActorHelper {
     await deck.update({
       "system.pan": currentPan
     })
+    //The list written, the drone's box follows (lot R5, slave-sync.js)
+    if (item) await syncDroneBox(item, actor, false)
   }
 
   //The PAN's owner takes a device out, or the device's owner takes hers back; the index is only believed when
