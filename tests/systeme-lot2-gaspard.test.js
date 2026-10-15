@@ -158,7 +158,7 @@ describe('Firmine\'s review', () => {
   })
 
   it('I5: a stored ammunition stack is not counted twice', () => {
-    expect(read('../modules/entities/actors/characterSheet.js')).toContain('i.type === "itemAmmunition" ? 1 : (i.system.quantity ?? 1)')
+    expect(read('../modules/entities/actors/baseSheet.js')).toContain('i.type === "itemAmmunition" ? 1 : (i.system.quantity ?? 1)')
   })
 
   it('the cart counts the Essence the till counts (sr5.essenceCostFor)', () => {

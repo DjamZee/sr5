@@ -61,6 +61,9 @@ import {
   STORABLE_TYPES, isStorable, isStoredAway, garageRequirement, meetsGarageLifestyle 
 } from "../../interface/storage-rules.js"
 import {
+  isLocked
+} from "../../interface/storage-lock.js"
+import {
   bindOrderClicks
 } from "../../interface/shop-orders.js"
 import {
@@ -2376,6 +2379,61 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
   // The rules themselves live in interface/storage-rules.js, free of Foundry
   // globals so they can be read and tested on their own.
   static STORABLE_TYPES = STORABLE_TYPES
+
+  /**
+   * Build the view model for the Storage tab: each storage with what sits
+   * inside it, for the character and the Grunt sheets (a vendor is a Grunt).
+   * Stored items are left in their usual lists on purpose — being
+   * stored does not yet take an item out of play.
+   */
+  // One icon per kind of storage. Font Awesome, so it takes the sheet's own
+  // text colour and stays readable on a light surface.
+  static STORAGE_ICONS = {
+    stash: "fa-house",
+    safe: "fa-vault",
+    backpack: "fa-suitcase",
+    cache: "fa-box-archive",
+    garage: "fa-warehouse",
+  }
+
+  _prepareStorages(actor, storages) {
+    const stored = actor.items.filter(i => i.system?.storedIn)
+    return storages
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(storage => {
+        const contents = stored
+          .filter(i => i.system.storedIn === storage._id)
+          .sort((a, b) => a.name.localeCompare(b.name))
+        const max = storage.system.capacity.value
+        // What the lot is worth. Item prices, not the actor's nuyen: that
+        // field sums every transaction and is not a balance.
+        const value = contents.reduce((total, i) => {
+          const price = i.system.price?.value ?? i.system.price?.base ?? 0
+          // Ammunition carries its whole stack in its computed price (utilityItem.js _handleAmmoPrice)
+          return total + price * (i.type === "itemAmmunition" ? 1 : (i.system.quantity ?? 1))
+        }, 0)
+        return {
+          _id: storage._id,
+          name: storage.name,
+          img: storage.img,
+          type: storage.system.type,
+          icon: ActorSheetSR5.STORAGE_ICONS[storage.system.type] ?? "fa-box",
+          isDeployable: storage.system.isDeployable,
+          isDeployed: storage.system.isDeployed,
+          isLocked: isLocked(storage),
+          // Shut, its contents are not shown to a player who only looks at
+          // the sheet. A courtesy, not a protection: they are still in the
+          // actor's data that player's browser holds.
+          hideContents: isLocked(storage) && !this.actor.isOwner,
+          contents: contents,
+          used: contents.length,
+          max: max,
+          value: value,
+          hasLimit: max > 0,
+          isFull: max > 0 && contents.length >= max,
+        }
+      })
+  }
 
   static isStorable(item, storage) {
     return isStorable(item, storage)
