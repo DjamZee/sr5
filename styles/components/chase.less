@@ -19,6 +19,11 @@
   .srw-window();
 
   .window-content {
+    // The whole window scrolls when it is smaller than its content (relecture djamz.13, R1)
+    overflow-x: hidden;
+    overflow-y: auto;
+    min-height: 0;
+
     button {
       .srw-button();
       .srw-cut();

@@ -121,8 +121,10 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
     super._onRender?.(context, options)
     // A gamemaster who is not the active one reads, but cannot act: every control is off
     if (!SR5FactionRegistry.canWrite){
-      for (const el of this.element.querySelectorAll("button, input, select, textarea")) el.disabled = true
-      for (const el of this.element.querySelectorAll("a[data-action]")) el.classList.add("disabled")
+      // The content only: the header's close button stays usable (relecture djamz.13, R1)
+      const content = this.element.querySelector(".window-content") ?? this.element
+      for (const el of content.querySelectorAll("button, input, select, textarea")) el.disabled = true
+      for (const el of content.querySelectorAll("a[data-action]")) el.classList.add("disabled")
     }
     // The reason prefills the points with the book's value (p. 157); the gamemaster may change them
     const reason = this.element.querySelector("[name=reason]")

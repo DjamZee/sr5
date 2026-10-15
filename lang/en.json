@@ -1933,6 +1933,7 @@
 	"SR5.DrugTraitShakyHands": "Shaky Hands (SR5 p. 89)",
 	"SR5.DrugTraitUncouth": "Uncouth (SR5 p. 80)",
 	"SR5.DrugDesignerTitle": "Drug designer",
+	"SR5.DrugDesignerFor": "For the character",
 	"SR5.DrugDesignerIntro": "Custom drugs (Chrome Flesh p. 194-196): pick a base, then blocks and their level, then enhancers. The drug is worked out as you go.",
 	"SR5.DrugDesignerDefaultName": "Custom drug",
 	"SR5.DrugDesignerBase": "Base",

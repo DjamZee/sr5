@@ -106,7 +106,7 @@ export class SR5CombatManeuverWindow extends foundry.applications.api.Handlebars
   static DEFAULT_OPTIONS = {
     classes: ["sr5", "sr-combat-maneuver"],
     position: {
-      width: 480, height: "auto"
+      width: 640, height: "auto"
     },
     window: {
       title: "SR5.MANEUVER_Title", icon: "fas fa-people-group", resizable: true

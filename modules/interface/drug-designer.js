@@ -28,6 +28,15 @@ export function canOfferDrugDesign(actor, user = game.user) {
 }
 
 /**
+ * The characters a player may design a drug for, from the Items tab (relecture djamz.13, R1, decision of DjamZ: the
+ * designer opens from the Items tab, no longer from the sheet): those of hers the designer is offered for.
+ */
+export function designableActors(user = game.user) {
+  return (game.actors?.contents ?? []).filter(a => ["actorPc", "actorGrunt"].includes(a.type) &&
+    a.testUserPermission?.(user, "OWNER") && canOfferDrugDesign(a, user))
+}
+
+/**
  * The drug designer (Chrome Flesh p. 194-196): a base, blocks at a level, enhancers; the drug is worked out as the
  * choices change (entities/items/drug-designer.js) and made as an itemDrug. The gamemaster makes it at once; a player's
  * waits for the gamemaster's approval (decision of DjamZ, 07/10), who reviews it in the same window.
@@ -41,7 +50,7 @@ export class SR5DrugDesigner extends foundry.applications.api.HandlebarsApplicat
     classes: ["sr5", "sr-application", "sr-drug-designer"],
     tag: "form",
     position: {
-      width: 720, height: 680
+      width: 900, height: 720
     },
     window: {
       title: "SR5.DrugDesignerTitle", icon: "fas fa-flask", resizable: true
@@ -67,6 +76,11 @@ export class SR5DrugDesigner extends foundry.applications.api.HandlebarsApplicat
     super(options)
     this.actor = options.actor ?? null
     this.item = options.item ?? null
+    // A player opens it from the Items tab: her own character first, else the first she may design for
+    if (!this.actor && !this.item && !game.user?.isGM) {
+      const choices = designableActors()
+      this.actor = choices.find(a => a.id === game.user?.character?.id) ?? choices[0] ?? null
+    }
     const s = this.item?.system
     this.draft = {
       name: this.item?.name ?? t("SR5.DrugDesignerDefaultName"),
@@ -155,6 +169,12 @@ export class SR5DrugDesigner extends foundry.applications.api.HandlebarsApplicat
       canCreate: !this.item && canOfferDrugDesign(this.actor, user),
       isGM: user.isGM,
       target: this.actor?.name ?? t("SR5.DrugDesignerWorldItems"),
+      // The choice of character: the player's own ones; for the gamemaster, the world items first, then the characters
+      // (the sheet's button is gone)
+      actorChoices: this.item ? [] : [
+        ...(user.isGM ? [option("", t("SR5.DrugDesignerWorldItems"), this.actor?.id ?? "")] : []),
+        ...designableActors(user).map(a => option(a.id, a.name, this.actor?.id)),
+      ],
     }
   }
 
@@ -171,6 +191,13 @@ export class SR5DrugDesigner extends foundry.applications.api.HandlebarsApplicat
   /** The form, read back into the state at each change, then the window drawn again with the new figures. */
   static async #onChange(_event, _form, formData) {
     const data = foundry.utils.expandObject(formData.object)
+    if ("actorId" in data && (data.actorId || "") !== (this.actor?.id ?? "")) {
+      // An empty choice: the world items, the gamemaster's only
+      const actor = data.actorId ? designableActors().find(a => a.id === data.actorId) : null
+      if (actor || (!data.actorId && game.user.isGM)) this.actor = actor
+      // The window's title names the character the drug is for
+      if (this.window?.title) this.window.title.textContent = this.title
+    }
     const blocks = {
     }
     for (const [key, level] of Object.entries(data.blocks ?? {
@@ -307,10 +334,13 @@ export class SR5DrugDesigner extends foundry.applications.api.HandlebarsApplicat
     })
   }
 
-  /** A gamemaster's button in the Items tab, for a drug that goes in the world items. */
+  /**
+   * The button in the Items tab, the designer's only way in: for the gamemaster, a drug that goes in the world items;
+   * for a player who may design one, a drug for one of her characters (relecture djamz.13, R1).
+   */
   static registerHooks() {
     Hooks.on("renderItemDirectory", (app, html) => {
-      if (!game.user.isGM) return
+      if (!game.user.isGM && !designableActors().length) return
       const root = html instanceof HTMLElement ? html : html[0]
       const actions = root?.querySelector(".header-actions")
       if (!actions || actions.querySelector(".sr5-drug-designer")) return

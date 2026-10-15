@@ -506,25 +506,6 @@
                 .sr-dropdown-chevron {
                     color: var(--sr-text-color-light);
                 }
-
-                //The gamemaster's spirit traits: five boxes and the Edge of a free spirit, on as many lines as needed
-                &.SR-SpiritTraits {
-                    font-size  : 13px;
-                    height     : auto;
-                    min-height : 30px;
-                    display    : flex;
-                    flex-wrap  : wrap;
-                    align-items: center;
-                    gap        : 0 6px;
-                    //Light text on the dark red box, like the spirit type: the inherited dark text was unreadable
-                    color      : var(--sr-text-color-light);
-
-                    input[type="number"] {
-                        width : 3em;
-                        height: 18px;
-                        color : var(--sr-text-color-light);
-                    }
-                }
             }
 
             .SR-AppareilType {
@@ -745,6 +726,15 @@
                 width: 100px;
             }
 
+            // The enhanced select (render-ui.js) draws its own trigger: light on the dark footer, as the plain select
+            // (relecture djamz.13, R1, img 08)
+            .sr-dropdown-trigger, .sr-dropdown-label, .sr-dropdown-chevron {
+                color: var(--sr-text-color-light);
+            }
+            .sr-dropdown:has(.SRMetatype) {
+                min-width: 100px;
+            }
+
             .SR-TextCenter {
                 text-align: center;
             }
@@ -911,6 +901,30 @@
         grid-template-columns: 1fr 1fr;
         align-items    : center;
         justify-items  : center;
+    }
+
+    // The last column of a vehicle row (relecture djamz.13, R1, img 09-10): three fixed cells, deployment, « place on
+    // the map », edit at the right edge where the edit of every other list stands. The « place on the map » button is
+    // the SFX module's (sfx-sr5, poser-sur-carte.js), put right after the deployment link: the deployment cell lets its
+    // links be the grid's own items, so that button takes the middle cell in every row, an empty one keeps its width
+    .sr-row-tail {
+        display              : grid;
+        grid-template-columns: repeat(3, 1.3em);
+        justify-content      : end;
+        align-items          : center;
+        justify-items        : center;
+
+        > .sr-row-tail-slot:first-child {
+            display: contents;
+
+            > a { grid-column: 1; grid-row: 1; }
+            > .sfx-sr5-poser { grid-column: 2; grid-row: 1; }
+        }
+        > .sr-row-tail-slot:last-child {
+            grid-column : 3;
+            grid-row    : 1;
+            justify-self: end;
+        }
     }
 
     [class*="col-"] > .grid > [class*="col-"]:has(> .sr-silent-slot, > p > .sr-silent-slot) {

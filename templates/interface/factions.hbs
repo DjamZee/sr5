@@ -52,7 +52,7 @@
       <label>{{localize 'SR5.FACTION_Faction'}}</label>
       <select name="mvFaction">{{#each factions}}<option value="{{id}}">{{name}}</option>{{/each}}</select>
     </div>
-    <div class="sr-faction-row">
+    <div class="sr-faction-row sr-faction-pick">
       {{#each characters}}<label class="checkbox"><input type="checkbox" name="mvActor" value="{{id}}"> {{name}}</label>{{/each}}
     </div>
     <div class="form-group">

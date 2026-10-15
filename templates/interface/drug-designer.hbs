@@ -6,6 +6,12 @@
     <label>{{localize 'SR5.Name'}}</label>
     <input type="text" name="name" value="{{name}}">
   </div>
+  {{#if actorChoices.length}}
+  <div class="sr-drug-designer-row">
+    <label>{{localize 'SR5.DrugDesignerFor'}}</label>
+    <select name="actorId">{{#each actorChoices}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+  </div>
+  {{/if}}
 
   <h3>{{localize 'SR5.DrugDesignerBase'}}</h3>
   <div class="sr-drug-designer-row">

@@ -24,6 +24,13 @@
 
   font-family: var(--srw-font-body);
   font-size: 12px;
+
+  // Relecture djamz.13, R1 (img 20): the shop stops shrinking before its list falls under 700 px, where the column
+  // names go (the shelves and the till take about 510 px); a smaller screen still gets the whole window
+  &#sr5-shop {
+    min-width: min(1230px, 100vw);
+    min-height: min(560px, 100vh);
+  }
   // Icons keep their own face: only text elements are reset
   .window-content :is(input, select, button, label, span, b, small, a, h4, p, li, div):not([class*="fa-"]) {
     font-family: inherit;

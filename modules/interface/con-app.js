@@ -171,8 +171,10 @@ export class SR5ConApp extends foundry.applications.api.HandlebarsApplicationMix
   _onRender(context, options){
     super._onRender?.(context, options)
     if (!SR5ConRegistry.canWrite){
-      for (const el of this.element.querySelectorAll("button, input, select, textarea")) el.disabled = true
-      for (const el of this.element.querySelectorAll("a[data-action]")) el.classList.add("disabled")
+      // The content only: the header's close button stays usable (relecture djamz.13, R1)
+      const content = this.element.querySelector(".window-content") ?? this.element
+      for (const el of content.querySelectorAll("button, input, select, textarea")) el.disabled = true
+      for (const el of content.querySelectorAll("a[data-action]")) el.classList.add("disabled")
     }
     // The matrix degree changes the dice the target opposes with (p. 163)
     this.element.querySelector("[name=matrixDegree]")?.addEventListener("change", ev => {
