@@ -698,6 +698,7 @@
 	"SR5.ShopOnVehicle": "Sur un véhicule",
 	"SR5.ShopOnVehicleHint": "Son prix dépend du véhicule (Rigger 5.0 p. 156) : glissez-la sur l'Atelier du véhicule ou du drone, qui la chiffre et l'achète.",
 	"SR5.ShopPriceOnVehicle": "Selon le véhicule",
+	"SR5.ShopPriceTimes": "{price} × {multiplier}",
 	"SR5.ShopOnWeapon": "Sur une arme",
 	"SR5.ShopOnWeaponHint": "Son prix dépend de l'arme (Hard Targets p. 180-181, SR5 p. 435) : glissez-le sur l'Armurerie de l'arme, qui le chiffre et l'achète.",
 	"SR5.ShopPriceOnWeapon": "Prix de l'arme × {multiplier}",

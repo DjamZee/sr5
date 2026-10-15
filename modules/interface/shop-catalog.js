@@ -243,7 +243,14 @@ export class SR5ShopCatalog {
       }),
       itemRating: Number(system?.itemRating) || 0,
       deviceRating: Number(system?.deviceRating) || 0,
-      price: system?.price === undefined ? undefined : pair(system.price),
+      price: system?.price === undefined ? undefined : {
+        ...pair(system.price),
+        // A vehicle mod priced on its vehicle's attribute (R5 p. 156): shown as « base × Structure » (lot R6)
+        ...(system.price.multiplier ? {
+          multiplier: String(system.price.multiplier)
+        } : {
+        }),
+      },
       availability: pair(system?.availability),
       essenceCost: pair(system?.essenceCost),
       // A vehicle's figures, shown by the dealership's showroom (Adrore's feedback C8)

@@ -49,6 +49,23 @@ describe('the Drones shelf', () => {
     expect(SR5ShopCatalog.INDEX_FIELDS).toEqual(expect.arrayContaining(['system.source', 'system.page']))
   })
 
+  it('the index keeps the multiplier of a mod priced on its vehicle, for « base × Structure »', () => {
+    expect(SR5ShopCatalog.essentials({
+      price: {
+        base: 1000, value: 0, multiplier: 'body'
+      }
+    }).price).toEqual({
+      base: 1000, value: 0, multiplier: 'body'
+    })
+    expect(SR5ShopCatalog.essentials({
+      price: {
+        base: 50, value: 50
+      }
+    }).price).toEqual({
+      base: 50, value: 50
+    })
+  })
+
   it('a shop set before still sells its drones on its vehicles shelf', () => {
     const old = {
       system: {

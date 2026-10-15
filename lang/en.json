@@ -698,6 +698,7 @@
 	"SR5.ShopOnVehicle": "On a vehicle",
 	"SR5.ShopOnVehicleHint": "Its price depends on the vehicle (Rigger 5.0 p. 156): drag it onto the workshop of the vehicle or drone, which prices and buys it.",
 	"SR5.ShopPriceOnVehicle": "Depends on the vehicle",
+	"SR5.ShopPriceTimes": "{price} × {multiplier}",
 	"SR5.ShopOnWeapon": "On a weapon",
 	"SR5.ShopOnWeaponHint": "Its price depends on the weapon (Hard Targets p. 180-181, SR5 p. 435): drag it onto the weapon's Armory, which prices and buys it.",
 	"SR5.ShopPriceOnWeapon": "Weapon's price × {multiplier}",

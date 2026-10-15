@@ -835,7 +835,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
         // A short name keeps the column narrow; the cart line spells it out
         key, label: game.i18n.localize(`SR5.ShopGradeShort_${key}`), selected: key === row.grade,
       })),
-      price: onVehicle ? game.i18n.localize('SR5.ShopPriceOnVehicle') : onWeapon ? game.i18n.format('SR5.ShopPriceOnWeapon', {
+      price: onVehicle ? SR5ShopWindow.#onVehiclePrice(entry) : onWeapon ? game.i18n.format('SR5.ShopPriceOnWeapon', {
         multiplier: SR5ShopCatalog.weaponPriceMultiplier(entry)
       }) : SR5ShopWindow.#nuyen(row.price),
       onVehicle,
@@ -853,6 +853,17 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
 
   static #nuyen(value) {
     return `${Math.round(value).toLocaleString()}¥`
+  }
+
+  /** A vehicle mod off a vehicle: « 1 000¥ × Structure » when it names its multiplier, else « Selon le véhicule » (lot R6). */
+  static #onVehiclePrice(entry) {
+    const price = entry.system?.price ?? {
+    }
+    const label = price.multiplier ? SR5.valueMultipliersAll?.[price.multiplier] : null
+    if (!label || !(price.base > 0)) return game.i18n.localize('SR5.ShopPriceOnVehicle')
+    return game.i18n.format('SR5.ShopPriceTimes', {
+      price: SR5ShopWindow.#nuyen(price.base), multiplier: game.i18n.localize(label)
+    })
   }
 
   /** One cart line per item and grade. */
