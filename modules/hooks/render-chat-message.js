@@ -128,6 +128,8 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   if (message.flags?.sr5?.infectionCard) activateInfectionListeners(html, message)
   // Treating CFD (Dark Terrors p. 87): the GM destroys the implants a NanoScrub glitch reached
   if (message.flags?.sr5?.cfdTreatment) activateCfdListeners(html, message)
+  // A player asks the GM for the commcode of his character (relecture djamz.13): Accept or Refuse, the active GM
+  if (message.flags?.sr5?.commcodeRequest) import("../interface/commcode-request.js").then(m => m.activateCommcodeRequestListeners(html, message))
   // Deactivation (Dark Terrors p. 90): the GM confirms a player's roll, then opens the technomancer's Fading test
   if (message.flags?.sr5?.deactivation || message.flags?.sr5?.deactivationRequest) activateDeactivationListeners(html, message)
   // Dissipation of an AI (Data Trails p. 161): the GM confirms the overflow and rolls the resistance

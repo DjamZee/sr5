@@ -512,11 +512,13 @@ export class SR5CommcodeWindow extends HandlebarsApplicationMixin(ApplicationV2)
     if (!targets.length) return ui.notifications?.warn(game.i18n.localize("SR5.COMMCODE_NoTarget"))
     for (const token of targets) {
       const actor = token.actor
-      // A player takes the commcode of a player's character; that of a character of the gamemaster, he gives it
+      // A player takes the commcode of a player's character; that of a character of the gamemaster, she asks him for
+      // it (relecture djamz.13, DjamZ): a card with Accept and Refuse
       if (!game.user.isGM && !actor?.hasPlayerOwner) {
-        ui.notifications?.warn(game.i18n.format("SR5.COMMCODE_TargetGM", {
-          name: token.name 
-        }))
+        const {
+          requestNpcCommcode
+        } = await import("./commcode-request.js")
+        await requestNpcCommcode(this.device?.parent, token)
         continue
       }
       const commcode = commcodeOfActor(actor)
