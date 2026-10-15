@@ -47,10 +47,10 @@ export const VENDOR_TEMPLATES = [
   // Vehicles and drones
   t('luxuryCars', 'vehicles', 'Concessionnaire-de-luxe', ['vehicles'], [L], 10, 12),
   t('ordinaryCars', 'vehicles', 'Concessionnaire-vehicules-ordinaires', ['vehicles'], [L], 0, 8),
-  t('milSpecVehicles', 'vehicles', 'Revendeur-de-vehicule-MilSpec', ['vehicles', 'weapons'], [L, R, F], 30, 20),
+  t('milSpecVehicles', 'vehicles', 'Revendeur-de-vehicule-MilSpec', ['vehicles', 'drones', 'weapons'], [L, R, F], 30, 20),
   t('tuner', 'vehicles', 'Preparateur-de-bolides', ['vehicles'], [L, R], 10, 12),
-  t('riggerShop', 'vehicles', 'Boutique-de-rigger', ['vehicles', 'electronics'], [L, R], 0, 12),
-  t('droneDealer', 'vehicles', 'Verndeur de Drones', ['vehicles'], [L, R], 0, 12),
+  t('riggerShop', 'vehicles', 'Boutique-de-rigger', ['vehicles', 'drones', 'electronics'], [L, R], 0, 12),
+  t('droneDealer', 'vehicles', 'Verndeur de Drones', ['drones'], [L, R], 0, 12),
   // Implants and care
   t('streetDoc', 'implants', 'Charcudoc', ['cyberware', 'bioware', 'augmentations'], [L, R, F], 20, 12),
   t('deltaClinic', 'implants', 'Clinique-delta', ['cyberware', 'bioware', 'augmentations'], [L, R], 50, 20),
@@ -150,6 +150,7 @@ export function templateShop(template, {
     label,
     template: template.key,
     shelves: [...template.shelves],
+    dronesApart: true,
     legality: [...template.legality],
     margin: template.margin,
     maxAvailability: template.maxAvailability,

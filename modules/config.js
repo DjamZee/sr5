@@ -2787,6 +2787,12 @@ SR5.vehicleTypes = {
   vehicle                   : "SR5.VehicleFull",
 }
 
+// Sous-rayons du rayon Drones de la boutique (relecture djamz.13, lot R6)
+SR5.droneShelfSubs = {
+  itemVehicle               : "SR5.DroneFull",
+  itemVehicleMod            : "SR5.ShopSubDroneMod",
+}
+
 // Types de drones et véhicules
 SR5.vehiclesCategories = {
   microdrone                : "SR5.DRONES_Microdrone_F",

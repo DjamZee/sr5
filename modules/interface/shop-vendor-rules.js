@@ -37,10 +37,15 @@ export function isShopStorage(item) {
 
 /** The shop's settings, the defaults filling what is missing. */
 export function shopSettings(storage) {
-  return {
+  const shop = {
     ...SHOP_DEFAULTS, ...(storage?.system?.shop ?? {
     })
   }
+  // A shop set before the Drones shelf (lot R6) sold the drones on its "vehicles" shelf: it still does
+  if (!shop.dronesApart && shop.shelves?.includes('vehicles') && !shop.shelves.includes('drones')) {
+    shop.shelves = [...shop.shelves, 'drones']
+  }
+  return shop
 }
 
 /**

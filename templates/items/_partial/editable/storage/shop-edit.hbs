@@ -86,6 +86,8 @@
             <multi-checkbox name="system.shop.shelves" class="sr-shop-edit-checks">
                 {{#each shop.shelves}}<option value="{{this.key}}" {{#if this.checked}}selected{{/if}}>{{this.label}}</option>{{/each}}
             </multi-checkbox>
+            {{!-- The shelves shown already split vehicles and drones (lot R6): saved as they are --}}
+            <input type="hidden" data-dtype="Boolean" name="system.shop.dronesApart" value="true">
         </div>
     </li>
     <li class="grid">

@@ -6,6 +6,9 @@ import {
   slotGauges, MOD_CATEGORIES
 } from "./vehicle-workshop.js"
 import {
+  DRONE_SHELF_ORDER, isDroneModel
+} from "./drone-shelf.js"
+import {
   MOD_POINTS_KEY, modPointsUsage, modPointsRefusal, modsTakingPoints
 } from "./drone-mod-points.js"
 import {
@@ -88,11 +91,9 @@ export function buildPointsRefusal(vehicle, mods, added) {
 /** The shelves of the showroom (Adrore's feedback C8): vehicles and drones apart, each sorted by category in the
  *  order below (drones from the smallest), then by name; an unknown category comes last */
 export const VEHICLE_SHELF_ORDER = ["bike", "car", "truck", "boat", "submarine", "rotorCraft", "vectorThrustCraft", "fixedWingAircraft", "lta"]
-export const DRONE_SHELF_ORDER = ["microdrone", "minidrone", "smallDrone", "mediumDrone", "largeDrone", "hugeDrone"]
-
-/** A model is a drone by its type, or by a drone category when the type is missing */
-export function isDroneModel(system) {
-  return system?.type === "drone" || (!system?.type && DRONE_SHELF_ORDER.includes(system?.category))
+// The drones' order and test moved to drone-shelf.js, shared with the shop's shelves (relecture djamz.13, lot R6)
+export {
+  DRONE_SHELF_ORDER, isDroneModel
 }
 
 /** The rows of one shelf ("vehicles" or "drones") in groups: [{key, rows}], `key` the category ("" when unknown) */

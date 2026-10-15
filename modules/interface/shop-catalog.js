@@ -4,6 +4,9 @@ import {
 import {
   vendorPrice
 } from './shop-vendor-rules.js'
+import {
+  isDroneEntry
+} from '../system/drone-shelf.js'
 
 /**
  * The shop window's catalogue: shelves, filters, creation limits and the
@@ -23,6 +26,8 @@ export class SR5ShopCatalog {
     'system.category', 'system.type', 'system.price', 'system.availability', 'system.legality',
     'system.essenceCost', 'system.grade', 'system.itemRating', 'system.deviceRating', 'flags.sr5.notForSale',
     'system.weaponAccessory.priceMultiplier',
+    // A drone mod is told by its book and page (drone-shelf.js, lot R6)
+    'system.source', 'system.page',
   ]
 
   /**
@@ -59,9 +64,18 @@ export class SR5ShopCatalog {
     },
     {
       key: 'vehicles', label: 'SR5.ShopShelfVehicles', icon: 'fa-car', types: ['itemVehicle', 'itemVehicleMod'],
+      // The drones and their mods have a shelf of their own (relecture djamz.13, lot R6; Rigger 5.0 p. 126, 153)
+      match: entry => !isDroneEntry(entry),
       // The vehicles apart from their mods: the workshop's button opens on the mods (Adrore's feedback C7c)
       sub: {
         field: 'type', options: 'itemTypes'
+      },
+    },
+    {
+      key: 'drones', label: 'SR5.ShopShelfDrones', icon: 'fa-helicopter', types: ['itemVehicle', 'itemVehicleMod'],
+      match: entry => isDroneEntry(entry),
+      sub: {
+        field: 'type', options: 'droneShelfSubs'
       },
     },
     {
@@ -83,6 +97,7 @@ export class SR5ShopCatalog {
     for (const shelf of SR5ShopCatalog.SHELVES) {
       if (!shelf.types.includes(entry?.type)) continue
       if (shelf.augmentation && !shelf.augmentation.includes(entry.system?.type)) continue
+      if (shelf.match && !shelf.match(entry)) continue
       return shelf.key
     }
     return null
@@ -221,6 +236,11 @@ export class SR5ShopCatalog {
       category: system?.category,
       grade: system?.grade,
       legality: system?.legality,
+      // Book and page tell a drone mod from a vehicle mod (drone-shelf.js, lot R6)
+      ...(system?.page ? {
+        source: system.source, page: system.page
+      } : {
+      }),
       itemRating: Number(system?.itemRating) || 0,
       deviceRating: Number(system?.deviceRating) || 0,
       price: system?.price === undefined ? undefined : pair(system.price),
