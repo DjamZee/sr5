@@ -141,6 +141,9 @@ import {
 import {
   isPlainDevice, lacksAttackAndSleaze
 } from "./device-attributes.js"
+import {
+  iceDefenseType, iceDesignOf
+} from "../../system/ice-design.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -5207,7 +5210,8 @@ export class SR5_CharacterUtility extends Actor {
 
     //Handle Ice attack and defense
     if (matrix.deviceType === "ice") {
-      actorData.description = game.i18n.localize(SR5.iceTypes[matrix.deviceSubType] + "_GE")
+      //A designed IC keeps its own description (its recipe, written by the module that made it)
+      if (!iceDesignOf(matrix)) actorData.description = game.i18n.localize(SR5.iceTypes[matrix.deviceSubType] + "_GE")
       if (!matrix.ice) matrix.ice = {
         attackDicepool: 0, defenseFirstAttribute: "", defenseSecondAttribute: "" 
       }
@@ -5223,7 +5227,8 @@ export class SR5_CharacterUtility extends Actor {
       }
       SR5_EntityHelpers.updateValue(matrixAttributes.dataProcessing, 0)
       matrix.actions.matrixPerception.limit.value = matrixAttributes.dataProcessing.value
-      switch (matrix.deviceSubType) {
+      //A designed IC defends against with the pair of the book's IC its recipe names (system/ice-design.js)
+      switch (iceDefenseType(matrix)) {
         case "iceAcid":
         case "iceScramble":
           matrix.ice.defenseFirstAttribute = "willpower"

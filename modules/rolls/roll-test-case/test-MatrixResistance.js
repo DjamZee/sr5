@@ -13,6 +13,9 @@ import {
 import {
   isWeaponPulse
 } from "../roll-helpers/weapon-matrix-damage.js"
+import {
+  designedBiofeedback, iceDesignOf
+} from "../../system/ice-design.js"
 
 export default async function matrixResistanceInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId),
@@ -36,16 +39,20 @@ export default async function matrixResistanceInfo(cardData, actorId){
     //Handle Blue Goo Ice
     if (actorData.matrix.deviceSubType === "iceBlueGoo") cardData.chatCard.buttons.blueGooExplosion = SR5_RollMessage.generateChatButton("nonOpposedTest", "blueGooExplosion", `${game.i18n.format('SR5.IceBlueGooExplosion')}`)
         
-    //Handle Biofeedback
+    //Handle Biofeedback. A designed IC deals it by its recipe only (system/ice-design.js), whatever its type says
+    const designed = attackerData ? iceDesignOf(attackerData.matrix) : null
+    const designedBio = designed ? designedBiofeedback(attackerData.matrix, actorData.matrix.userMode) : null
+    const bookIce = !designed && ((attackerData?.matrix.deviceSubType === "iceBlack") || (attackerData?.matrix.deviceSubType === "iceBlaster") ||
+          (attackerData?.matrix.deviceSubType === "iceSparky"))
     if (!fromWeapon && attackerData && (attackerData.matrix.programs.biofeedback.isActive || attackerData.matrix.programs.blackout.isActive ||
-          (attackerData.matrix.deviceSubType === "iceBlack") || (attackerData.matrix.deviceSubType === "iceBlaster") ||
-          (attackerData.matrix.deviceSubType === "iceSparky"))) {
+          bookIce || designedBio)) {
       if (((actor.type === "actorPc" || actor.type === "actorGrunt") && (actorData.matrix.userMode !== "ar") && (targetItem?.type === "itemDevice")) ||
               (actor.type === "actorDrone" && actorData.controlMode === "rigging")) {
         cardData.damage.resistanceType = "biofeedback"
         cardData.damage.isAttack = true
         cardData.damage.value = cardData.damage.matrix.base
-        if ((attackerData.matrix.programs.biofeedback.isActive && actorData.matrix.userMode === "hotsim") || (attackerData.matrix.deviceSubType === "iceBlack")) cardData.damage.type = "physical"
+        if (designedBio) cardData.damage.type = designedBio
+        else if ((attackerData.matrix.programs.biofeedback.isActive && actorData.matrix.userMode === "hotsim") || (attackerData.matrix.deviceSubType === "iceBlack")) cardData.damage.type = "physical"
         else cardData.damage.type = "stun"
         cardData.chatCard.buttons.attackerDoBiofeedbackDamage = SR5_RollMessage.generateChatButton("nonOpposedTest", "attackerDoBiofeedbackDamage", `${game.i18n.localize('SR5.TakeOnDamageBiofeedback')} ${game.i18n.localize('SR5.DamageValueShort')} ${cardData.damage.value}${game.i18n.localize(SR5.damageTypesShort[cardData.damage.type])}`)
       }

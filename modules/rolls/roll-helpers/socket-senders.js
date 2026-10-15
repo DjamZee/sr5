@@ -18,14 +18,19 @@ export const FIXED_MARKS = {
   iceBloodhound: 2,
 }
 
+/** The test sub-type of a designed IC's cards (system/ice-design.js): its marks are read on its recipe. */
+const DESIGNED_ICE = "iceDesigned"
+
 /** The actions whose success puts marks on the defender. */
-export const MARK_ACTIONS = ["hackOnTheFly", "bruteForce", ...Object.keys(FIXED_MARKS)]
+export const MARK_ACTIONS = ["hackOnTheFly", "bruteForce", ...Object.keys(FIXED_MARKS), DESIGNED_ICE]
 
 /** The test types of the defense card the mark buttons stand on. */
 export const MARK_DEFENSE_TESTS = ["matrixDefense", "iceDefense"]
 
-/** How many marks the attacker's card puts, 1 to 3 (SR5 p. 240: no more than three per icon). */
-export function attackerMarks(typeSub, chosen) {
+/** How many marks the attacker's card puts, 1 to 3 (SR5 p. 240: no more than three per icon). A
+ * designed IC puts those of its recipe, read on its sheet (`designed`, designedMarks), never on the card. */
+export function attackerMarks(typeSub, chosen, designed = 0) {
+  if (typeSub === DESIGNED_ICE) return Math.min(Math.max(Math.floor(Number(designed)) || 0, 0), 3)
   if (typeSub in FIXED_MARKS) return FIXED_MARKS[typeSub]
   const value = Math.floor(Number(chosen))
   return Number.isFinite(value) ? Math.min(Math.max(value, 1), 3) : 1
@@ -44,13 +49,15 @@ export function markPenalty(marks) {
  * gives the defender one mark on the attacker (SR5 p. 232). null when neither.
  */
 export function markOutcome({
-  typeSub, actionType, attackerHits, defenderHits, chosen
+  typeSub, actionType, attackerHits, defenderHits, chosen, designed = 0
 }) {
   if (!Number.isFinite(attackerHits) || !Number.isFinite(defenderHits)) return null
   if (attackerHits > defenderHits) {
     if (!MARK_ACTIONS.includes(typeSub)) return null
+    const marks = attackerMarks(typeSub, chosen, designed)
+    if (!marks) return null
     return {
-      winner: "attacker", marks: attackerMarks(typeSub, chosen), watchdog: typeSub === "watchdog"
+      winner: "attacker", marks, watchdog: typeSub === "watchdog"
     }
   }
   if (actionType === "sleaze") return {

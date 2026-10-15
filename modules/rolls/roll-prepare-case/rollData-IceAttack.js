@@ -1,6 +1,9 @@
 import {
   SR5_MiscellaneousHelpers 
 } from "../roll-helpers/miscellaneous.js"
+import {
+  iceTestSubType
+} from "../../system/ice-design.js"
 
 //rollKey "blueGooExplosion": the attack Blue Goo makes as it explodes (Kill Code p. 74), launched from its resistance card
 export default function iceAttack(rollData, actor, rollKey){
@@ -31,7 +34,8 @@ export default function iceAttack(rollData, actor, rollKey){
 
   //Add others informations
   rollData.test.type = "iceAttack"
-  rollData.test.typeSub = actor.system.matrix.deviceSubType
+  // A designed IC (system/ice-design.js) is none of the book's IC: its blocks are read on its defense card
+  rollData.test.typeSub = iceTestSubType(actor.system.matrix)
   rollData.damage.matrix.value = actor.system.matrix.attributes.attack.value
   rollData.damage.matrix.base = actor.system.matrix.attributes.attack.value
   rollData.various.defenseFirstAttribute = actor.system.matrix.ice.defenseFirstAttribute

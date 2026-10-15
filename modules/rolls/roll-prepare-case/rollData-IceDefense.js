@@ -10,6 +10,9 @@ import {
 import {
   recountHits
 } from "../roll-helpers/socket-guard.js"
+import {
+  iceTestSubType
+} from "../../system/ice-design.js"
 
 // The hits of an IC attack the defense stands by. A GM's card as written; the card of an owner of the IC counted
 // again on its dice, within the IC's pool (Host rating x 2, SR5 p. 248) and its Attack limit, read on its sheet.
@@ -101,7 +104,7 @@ export default async function iceDefense(rollData, actor, chatData){
 
   //Add others informations
   rollData.test.type = "iceDefense"
-  rollData.test.typeSub = iceMatrix.deviceSubType ?? chatData.test.typeSub
+  rollData.test.typeSub = iceTestSubType(iceMatrix) ?? chatData.test.typeSub
   rollData.previousMessage.hits = attack.hits
   rollData.previousMessage.actorId = attack.card.data.owner.actorId
   //The IC's card, read again by the GM when a player relays the marks it puts (mark.js)

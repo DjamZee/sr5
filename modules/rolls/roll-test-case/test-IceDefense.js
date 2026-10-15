@@ -19,6 +19,60 @@ import {
 import {
   SR5 
 } from "../../config.js"
+import {
+  DESIGNED_ICE, designActionOf, designedHit, iceDesignOf
+} from "../../system/ice-design.js"
+
+//The label of the button that calls the effect of a book's IC, as its own hit writes it below
+const DESIGN_EFFECT_LABELS = {
+  iceAcid: "SR5.EffectReduceFirewall",
+  iceCatapult: "SR5.EffectReduceFirewall",
+  iceBinder: "SR5.EffectReduceDataProcessing",
+  iceJammer: "SR5.EffectReduceAttack",
+  iceMarker: "SR5.EffectReduceSleaze",
+  iceCrash: "SR5.MatrixActionCrashProgram",
+  iceScramble: "SR5.DeviceReboot",
+  iceTrack: "SR5.Geolocated",
+}
+
+//The hit of a designed IC: what each block's IC puts on the card, in its own words (the switch of iceDefenseInfo)
+async function designedIceHit(cardData, design, {
+  actor, actorData, netHits, devicelessAI, existingMark, targetName
+}) {
+  const attributes = Object.fromEntries(Object.entries(actorData.matrix.attributes ?? {
+  }).map(([key, attribute]) => [key, attribute?.value]))
+  const hit = designedHit({
+    blocks: design.blocks, existingMark, isLinkLocked: !!actorData.matrix.isLinkLocked, devicelessAI, attributes
+  })
+  const buttons = cardData.chatCard.buttons
+  if (hit.matrixDamage) {
+    await SR5_MatrixHelpers.updateMatrixDamage(cardData, netHits, actor)
+    buttons.matrixResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "matrixResistance", `${game.i18n.localize('SR5.TakeOnDamageMatrix')} (${(cardData.damage.matrix.value)})`)
+  } else if (hit.takeMatrixDamage) {
+    buttons.takeMatrixDamage = SR5_RollMessage.generateChatButton("nonOpposedTest", "takeMatrixDamage", `${game.i18n.localize("SR5.ApplyDamage")} (${cardData.damage.matrix.value})`)
+  }
+  if (hit.catapult) {
+    cardData.damage.value = netHits + existingMark
+    cardData.damage.type = "stun"
+    cardData.damage.resistanceType = "physicalDamage"
+    buttons.resistanceCard = SR5_RollMessage.generateChatButton("nonOpposedTest", "resistanceCard", `${game.i18n.localize("SR5.TakeOnDamageShort")} ${game.i18n.localize("SR5.DamageValueShort")}${game.i18n.localize("SR5.Colons")} ${cardData.damage.value}${game.i18n.localize(SR5.damageTypesShort[cardData.damage.type])}`)
+  }
+  //The existing action of the Lockdown program (roll-message.js, linkLock): the IC locks the link
+  if (hit.linkLock) buttons.linkLock = SR5_RollMessage.generateChatButton("nonOpposedTest", "linkLock", game.i18n.localize("SR5.LinkLockConnection"))
+  for (const source of hit.effects) {
+    let label = DESIGN_EFFECT_LABELS[source]
+    //Flicker (Kill Code p. 74): the link locked, then a disconnection at two marks
+    if (source === "iceFlicker") label = existingMark >= 1 ? "SR5.DeviceReboot" : "SR5.LinkLockConnection"
+    buttons[designActionOf(source)] = SR5_RollMessage.generateChatButton("nonOpposedTest", designActionOf(source), game.i18n.localize(label))
+  }
+  if (hit.marks > 0) {
+    cardData.matrix.mark = hit.marks
+    buttons.attackerPlaceMark = SR5_RollMessage.generateChatButton("nonOpposedTest", "attackerPlaceMark", `${game.i18n.format('SR5.AttackerPlaceMarkTo', {
+      key: cardData.matrix.mark, item: targetName, name: cardData.owner.speakerActor
+    })}`)
+  }
+  if (hit.shocker) SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), -5)
+}
 
 export default async function iceDefenseInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId),
@@ -50,6 +104,11 @@ export default async function iceDefenseInfo(cardData, actorId){
     cardData.damage.matrix.value = netHits
     // An IC attack is a matrix attack (SR5 p. 195)
     cardData.damage.isAttack = true
+    //A designed IC: its blocks, each with the buttons of the book's IC it comes from (system/ice-design.js)
+    const design = cardData.test.typeSub === DESIGNED_ICE ? iceDesignOf(originalActor.system.matrix) : null
+    if (design) return designedIceHit(cardData, design, {
+      actor, actorData, netHits, devicelessAI, existingMark, targetName
+    })
     switch(cardData.test.typeSub){
       case "iceAcid":
         if (actorData.matrix.attributes.firewall.value > 0) cardData.chatCard.buttons.iceEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "iceEffect", game.i18n.localize("SR5.EffectReduceFirewall"))

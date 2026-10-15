@@ -19,6 +19,9 @@ import {
 import {
   MARK_DEFENSE_TESTS, attackerMarks, markPenalty, markOutcome, eraseWins
 } from "./socket-senders.js"
+import {
+  designedMarks
+} from "../../system/ice-design.js"
 
 //The same fighter, whether the card names its token or its actor (a token's actor shares the actor's id)
 const sameActor = (a, b) => !!a && !!b && (a === b || a.id === b.id)
@@ -235,7 +238,9 @@ export class SR5_MarkHelpers {
     if (!attack || !sameActor(attack.roller, SR5_EntityHelpers.getRealActorFromID(defense.data.previousMessage?.actorId, defense.data.actorUuids))) return null
     const typeSub = defense.data.test.typeSub,
       chosen = attack.data.matrix?.mark,
-      marks = attackerMarks(typeSub, chosen)
+      //A designed IC puts the marks of its recipe, read on its sheet (system/ice-design.js)
+      designed = designedMarks(attack.roller?.system?.matrix),
+      marks = attackerMarks(typeSub, chosen, designed)
     //The attacker's dice within its pool for this action, less the dice the marks cost
     const attackerHits = attack.byGM ? hitsWritten(attack) :
       recountHits(attack.data.roll?.r, cardPoolCap(attack, SR5_MiscellaneousHelpers.poolCap(attack.roller, `matrix.actions.${typeSub}.test.dicePool`) + markPenalty(marks)), {
@@ -248,7 +253,7 @@ export class SR5_MarkHelpers {
     //rollData-MatrixAction.js writes it (its actionType is the length of the action, "complex")
     const actionType = attack.roller?.system?.matrix?.actions?.[typeSub]?.limit?.linkedAttribute
     const outcome = markOutcome({
-      typeSub, actionType, attackerHits, defenderHits, chosen
+      typeSub, actionType, attackerHits, defenderHits, chosen, designed
     })
     if (!outcome) return null
     return {
