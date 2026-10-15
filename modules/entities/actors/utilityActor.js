@@ -1041,8 +1041,9 @@ export class SR5_CharacterUtility extends Actor {
       actorData.visions.astral.isActive = true
     }
     this.settleMetatypeVision(actor)
-    if (actorData.initiatives.astralInit.isActive) actorData.visions.augmented = true
-    if (actorData.visions.astral.natural || actorData.visions.augmented) actorData.visions.astral.hasVision = true
+    //Astral initiative is astral sight: it was written on visions.augmented, a key nothing reads
+    if (actorData.initiatives.astralInit.isActive) actorData.visions.astral.augmented = true
+    if (actorData.visions.astral.natural || actorData.visions.astral.augmented) actorData.visions.astral.hasVision = true
     if (actorData.visions.astral.isActive) actorData.visions.astral.hasVision = true
 
     if (actorData.visions.astral.isActive) {

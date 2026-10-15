@@ -294,6 +294,11 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     context.system = actorData.system
     context.items = actorData.items
     context.owner = this.actor.isOwner
+    //Astral perception in the vision types block (relecture djamz.13, img 18): a spirit and a magician
+    //perceive astrally (SR5 p. 313), an adept once the power has given it the vision
+    const visions = this.actor.system.visions
+    context.canPerceiveAstral = this.actor.type === "actorSpirit" || !!visions?.astral?.hasVision ||
+      ["magician", "aspectedMagician", "mysticalAdept"].includes(this.actor.system.magic?.magicType)
     //The drug designer's button: Chemistry, the gamemaster, or the "objects" rule lock lifted (drug-designer.js)
     context.canOfferDrugDesign = canOfferDrugDesign(this.actor)
     context.editable = this.isEditable
