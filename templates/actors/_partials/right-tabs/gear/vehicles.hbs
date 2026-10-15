@@ -27,11 +27,13 @@
 				  data-helpTitle="{{localize 'SR5.HELP_BrickedItem' key=name}}"
 				  data-helpMessage="{{localize 'SR5.HELP_BrickedItemMsg'}}"
 				>
-					<em class="fas fa-sm fa-exclamation-triangle SR-popColor"></em><span class="sr-silent-slot"></span>
+					<span><em class="fas fa-sm fa-exclamation-triangle SR-popColor"></em></span><span class="sr-silent-slot"></span>
 				</div>
 				{{else if item.deployedWireless}}
+				<!-- The icon in a span, as the links of the other rows: alone, it left the grid cell 1 px high, at the top of
+				     the row (relecture djamz.13, passe 2) -->
 				<div class="col-6 SR-TextCenter" data-tooltip="{{localize 'SR5.WirelessHeldByDeployedDrone'}}">
-					<em class="fas fa-sm fa-wifi {{#if item.deployedWireless.on}}SR-GreyColor{{else}}SR-LightGreyColor{{/if}}"></em><span class="sr-silent-slot"></span>
+					<span><em class="fas fa-sm fa-wifi {{#if item.deployedWireless.on}}SR-GreyColor{{else}}SR-LightGreyColor{{/if}}"></em></span><span class="sr-silent-slot"></span>
 				</div>
 				{{else}}
 				<div class="col-6 SR-TextCenter"
