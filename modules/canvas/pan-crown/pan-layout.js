@@ -67,7 +67,8 @@ export function signatureOf(graph, token = null, nodeTokens = new Map()){
  *   lines: [{from: {x, y}, to: {x, y}, mode, uuid}]; the mode is the one of the node the line leads to
  */
 export function layoutCrown(graph, {
-  tokenRadius = 50, scale = 1, angle = -Math.PI / 2, tokenOffset = () => null, lineRadius = tokenRadius, lineBox = null
+  tokenRadius = 50, scale = 1, angle = -Math.PI / 2, tokenOffset = () => null, lineRadius = tokenRadius, lineBox = null,
+  nameBox = null
 } = {
 }){
   const icons = []
@@ -103,8 +104,18 @@ export function layoutCrown(graph, {
     })
   }
 
+  // The token's name (relecture djamz.13, passe 2): no icon on it, and no line of the token across it
+  const onName = nameBox ? (x, y) => x > nameBox.x0 - iconRadius && x < nameBox.x1 + iconRadius &&
+    y > nameBox.y0 - iconRadius && y < nameBox.y1 + iconRadius : null
+  const underName = nameBox ? (x, y) => onName(x, y) || (x > nameBox.x0 - iconRadius && x < nameBox.x1 + iconRadius &&
+    y > nameBox.y0) : null
+
   const master = shown.find(n => n.uuid === graph.master)
   const r1 = tokenRadius + PAN_LAYOUT.masterGap * scale
+  // A master that would fall on the name, or below it, turns aside, and its slaves and the loose devices with it
+  if (underName) for (let k = 1; k <= 12 && underName(Math.cos(angle) * r1, Math.sin(angle) * r1); k++) {
+    angle += (k % 2 ? 1 : -1) * k * Math.PI / 12
+  }
   const masterAt = {
     x: Math.cos(angle) * r1, y: Math.sin(angle) * r1
   }
@@ -115,7 +126,7 @@ export function layoutCrown(graph, {
   const gap = PAN_LAYOUT.minSpacing * scale
   for (const node of slaves.filter(n => !onRing(n))) place(node, 0, 0)
   fan(slaves.filter(onRing), angle, PAN_LAYOUT.slaveRing * scale, masterAt, place, {
-    maxSpread: PAN_LAYOUT.slaveSpread, gap
+    maxSpread: PAN_LAYOUT.slaveSpread, gap, forbidden: onName
   })
 
   // The devices slaved to nothing ring the token, on the side opposite the master
@@ -123,7 +134,7 @@ export function layoutCrown(graph, {
   const loose = shown.filter(n => graph.links.some(l => l.to === n.uuid && l.from === "owner") && n.uuid !== graph.master && !at[n.uuid])
   for (const node of loose.filter(n => !onRing(n))) place(node, 0, 0)
   fan(loose.filter(onRing), angle + Math.PI, tokenRadius + PAN_LAYOUT.deviceGap * scale, center, place, {
-    maxSpread: PAN_LAYOUT.deviceSpread, gap
+    maxSpread: PAN_LAYOUT.deviceSpread, gap, forbidden: underName
   })
 
   for (const link of graph.links){
@@ -161,8 +172,8 @@ export function layoutCrown(graph, {
 export function lineRadiusOf({
   w, h, scaleX = 1, scaleY = 1
 }){
-  const picture = Math.max(w * Math.abs(scaleX), h * Math.abs(scaleY))
-  return Math.min(Math.max(w, h), picture) / 2
+  // The picture as shown, bigger than its cell included (relecture djamz.13, passe 2: a big ring, lines from inside it)
+  return Math.max(w * Math.abs(scaleX), h * Math.abs(scaleY)) / 2
 }
 
 /**
@@ -178,7 +189,7 @@ export function lineBoxOf({
 }, margin = 0){
   if (round) return null
   return {
-    hw: Math.min(w, w * Math.abs(scaleX)) / 2 + margin, hh: Math.min(h, h * Math.abs(scaleY)) / 2 + margin
+    hw: w * Math.abs(scaleX) / 2 + margin, hh: h * Math.abs(scaleY) / 2 + margin
   }
 }
 
@@ -225,19 +236,21 @@ function edgeToward(point, radius){
  * @return {Array<{radius: Number, count: Number, spread: Number}>}  the arcs used, for the tests
  */
 export function fan(nodes, direction, radius, origin, place, {
-  maxSpread = PAN_LAYOUT.slaveSpread, gap = PAN_LAYOUT.minSpacing
+  maxSpread = PAN_LAYOUT.slaveSpread, gap = PAN_LAYOUT.minSpacing, forbidden = null
 } = {
 }){
   const arcs = []
   let rest = [...nodes]
   let r = radius
-  while (rest.length){
+  // The token's name kept clear (relecture djamz.13, passe 2): an angle whose place on the arc covers it is taken by
+  // no icon
+  const blocked = a => !!forbidden && forbidden(origin.x + Math.cos(direction + a) * r, origin.y + Math.sin(direction + a) * r)
+  for (let guard = 0; rest.length && guard < 40; guard++){
     // The least angle between two neighbours on this arc
     const step = 2 * Math.asin(Math.min(1, gap / (2 * r)))
     const capacity = Math.max(1, Math.floor(maxSpread / step + 1e-9) + 1)
-    const arc = rest.slice(0, capacity)
-    rest = rest.slice(capacity)
-    const n = arc.length
+    let arc = rest.slice(0, capacity)
+    let n = arc.length
     // As before for a few icons (0.62 rad apiece), wider when they need it, never wider than the arc may open
     let spread = n === 1 ? 0 : Math.min(maxSpread, Math.max(step * (n - 1), 0.62 * n))
     // An outer arc opens and turns a little, so that its lines run between the icons of the inner arcs, not through
@@ -249,16 +262,37 @@ export function fan(nodes, direction, radius, origin, place, {
     if (arcs.length) ({
       spread, angles
     } = staggerOf(n, spread, maxSpread, arcs.flatMap(a => a.angles), evenly))
+    // On the name: the places of the arc a step apart that leave it clear, taken evenly; the rest goes further out
+    if (angles.some(blocked)) {
+      const slots = Array.from({
+        length: capacity
+      }, (_, i) => capacity === 1 ? 0 : -maxSpread / 2 + maxSpread * i / (capacity - 1)).filter(a => !blocked(a))
+      n = Math.min(n, slots.length)
+      arc = rest.slice(0, n)
+      angles = pickSpread(slots, n)
+      spread = n > 1 ? angles[n - 1] - angles[0] : 0
+    }
+    rest = rest.slice(n)
     angles.forEach((angle, i) => {
       const a = direction + angle
       place(arc[i], origin.x + Math.cos(a) * r, origin.y + Math.sin(a) * r)
     })
-    arcs.push({
+    if (n) arcs.push({
       radius: r, count: n, spread, angles
     })
     r += gap
   }
   return arcs
+}
+
+// n of the sorted slots, as evenly spread among them as can be (the first and the last when there are two or more)
+function pickSpread(slots, n){
+  if (n <= 0) return []
+  if (n >= slots.length) return [...slots]
+  if (n === 1) return [slots[Math.floor((slots.length - 1) / 2)]]
+  return Array.from({
+    length: n
+  }, (_, i) => slots[Math.round(i * (slots.length - 1) / (n - 1))])
 }
 
 // The opening and the turn of an arc, never wider than it may open, that keep its angles furthest from the angles of

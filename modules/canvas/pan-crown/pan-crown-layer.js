@@ -63,6 +63,34 @@ const COLORS = {
 }
 
 // A container of the ambience (lot 9) that the pointer goes through
+// The picture of a token as shown (relecture djamz.13, passe 2): its size times the scale of its texture, the
+// dynamic ring of V13 with it; round when the ring is on
+function pictureOf(token){
+  return {
+    w: token.w, h: token.h, scaleX: token.document.texture?.scaleX ?? 1, scaleY: token.document.texture?.scaleY ?? 1,
+    round: !!token.document.ring?.enabled
+  }
+}
+
+/** [width, height] of the picture as shown, in canvas pixels */
+function shownSizeOf(token){
+  const p = pictureOf(token)
+  return [Math.abs(p.w * p.scaleX), Math.abs(p.h * p.scaleY)]
+}
+
+// The token's name under it, relative to its center, while it is shown at all: the crown keeps off it
+function nameBoxOf(token){
+  const plate = token.nameplate
+  if (!plate || plate.destroyed || !token.document.name) return null
+  if (token.document.displayName === CONST.TOKEN_DISPLAY_MODES.NONE) return null
+  const width = plate.width || 0, height = plate.height || 0
+  if (!width || !height) return null
+  const top = (plate.y ?? token.h + 2) - token.h / 2
+  return {
+    x0: -width / 2, x1: width / 2, y0: top, y1: top + height
+  }
+}
+
 function inert(container){
   container.eventMode = "none"
   container.interactiveChildren = false
@@ -333,7 +361,7 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
       graph: null, nodeTokens: new Map(), signature: null, scale: 1,
       // Fixed once open, so that the crown does not swing round while its token moves
       angle: crownAngle(token.center, sceneCenter, canvas.dimensions.sceneRect,
-        crownReachOf(Math.max(token.w, token.h) / 2, crownScaleOf(canvas.dimensions.size, token.w, token.h))),
+        crownReachOf(lineRadiusOf(pictureOf(token)), crownScaleOf(canvas.dimensions.size, ...shownSizeOf(token)))),
       deployStart: null,
     }
     this.crowns.set(token.id, crown)
@@ -483,15 +511,14 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     const {
       token
     } = crown
-    const picture = {
-      w: token.w, h: token.h, scaleX: token.document.texture?.scaleX, scaleY: token.document.texture?.scaleY,
-      round: !!token.document.ring?.enabled
-    }
+    const picture = pictureOf(token)
     const margin = PAN_LAYOUT.lineMargin * crown.scale
     return {
-      tokenRadius: Math.max(token.w, token.h) / 2,
+      // The picture as shown, not its cell (relecture djamz.13, passe 2): a small picture, a big ring
+      tokenRadius: lineRadiusOf(picture),
       lineRadius: lineRadiusOf(picture) + margin,
       lineBox: lineBoxOf(picture, margin),
+      nameBox: nameBoxOf(token),
       scale: crown.scale,
       angle: crown.angle,
       tokenOffset: node => {
@@ -557,7 +584,7 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     if (version !== crown.version || this.crowns.get(token.id) !== crown) return
 
     crown.droneTokenIds.clear()
-    const scale = crownScaleOf(canvas.dimensions.size, token.w, token.h)
+    const scale = crownScaleOf(canvas.dimensions.size, ...shownSizeOf(token))
     crown.scale = scale
     crown.graph = graph
     crown.nodeTokens = nodeTokens
