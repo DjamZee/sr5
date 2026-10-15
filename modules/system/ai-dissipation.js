@@ -144,7 +144,7 @@ const resolving = new Set()
 // The GM confirms the overflow; the pool is the actor's, the roll the GM's
 async function resolveDissipation(row, message){
   const actor = await fromUuid(row.dataset.actorUuid)
-  if (!actor || !isAI(actor)) return ui.notifications.warn(game.i18n.localize("SR5.AIDISSIPATION_Gone"))
+  if (!actor || !isAI(actor)) return void ui.notifications.warn(game.i18n.localize("SR5.AIDISSIPATION_Gone"))
   const context = {
     bricked: row.dataset.bricked === "1", onDevice: row.dataset.onDevice === "1", deviceRating: boundCount(row.dataset.deviceRating, 20)
   }

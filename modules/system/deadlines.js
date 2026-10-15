@@ -302,7 +302,7 @@ async function rollWithdrawal(row){
   const index = Number(row.dataset.index)
   const addictions = foundry.utils.duplicate(actor?.system?.addictions ?? [])
   const a = addictions[index]
-  if (!a || a.name !== row.dataset.name) return ui.notifications.warn(game.i18n.localize("SR5.WARN_AddictionNotFound"))
+  if (!a || a.name !== row.dataset.name) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_AddictionNotFound"))
   const pools = a.addiction?.type === "both" ? ["physiological", "psychological"] : [a.addiction?.type || "physiological"]
   // The deadline moves on once a withdrawal roll is in the chat, not when its window opens: a window closed
   // without rolling leaves the deadline where it is
@@ -372,7 +372,7 @@ async function payRent(row){
 async function revealRow(row){
   const actor = await fromUuid(row.dataset.actorUuid)
   const owners = actor ? playerOwners(actor) : []
-  if (!owners.length) return ui.notifications.warn(game.i18n.localize("SR5.CALENDAR_DeadlineNoPlayer"))
+  if (!owners.length) return void ui.notifications.warn(game.i18n.localize("SR5.CALENDAR_DeadlineNoPlayer"))
   await ChatMessage.create({
     content: `<div class="sr5-deadline-card"><h3>${game.i18n.localize("SR5.CALENDAR_DeadlineTitle")}</h3><p>${row.querySelector(".sr5-deadline-text")?.innerHTML ?? ""} — ${escape(row.querySelector(".sr5-deadline-due")?.textContent)}</p></div>`,
     whisper: [...owners, ...ChatMessage.getWhisperRecipients("GM").map(u => u.id)],
