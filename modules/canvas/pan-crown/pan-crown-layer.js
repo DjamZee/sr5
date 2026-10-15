@@ -19,7 +19,7 @@ import {
   closeRadialMenu, closeRadialMenuOf, openRadialMenu
 } from "./pan-radial-menu.js"
 import {
-  crownAngle, dashesOf, layoutCrown, lineRadiusOf, lineBoxOf, crownScaleOf, crownReachOf, signatureOf, PAN_LAYOUT
+  crownAngle, dashesOf, layoutCrown, lineRadiusOf, lineBoxOf, crownScaleOf, crownReachOf, signatureOf, pictureEdgeAlong, PAN_LAYOUT
 } from "./pan-layout.js"
 import {
   iconPathOf, isTintedIcon, nodeIconPathOf
@@ -72,6 +72,35 @@ function pictureOf(token){
   }
 }
 
+// The transparency of the tokens' pictures, n × n, read once per picture (passe 2: a round picture in a square texture)
+const ALPHA_SIZE = 64
+const alphaMaps = new Map()
+async function alphaMapOf(src){
+  if (!src) return null
+  if (alphaMaps.has(src)) return alphaMaps.get(src)
+  const promise = (async () => {
+    try {
+      const blob = await (await fetch(foundry.utils.getRoute?.(src) ?? src)).blob()
+      const bitmap = await createImageBitmap(blob)
+      const surface = new OffscreenCanvas(ALPHA_SIZE, ALPHA_SIZE)
+      const context = surface.getContext("2d")
+      context.drawImage(bitmap, 0, 0, ALPHA_SIZE, ALPHA_SIZE)
+      const data = context.getImageData(0, 0, ALPHA_SIZE, ALPHA_SIZE).data
+      const alpha = new Uint8Array(ALPHA_SIZE * ALPHA_SIZE)
+      for (let i = 0; i < alpha.length; i++) alpha[i] = data[i * 4 + 3]
+      return alpha
+    } catch {
+      // A picture that cannot be read: the edge of its box, as before
+      return null
+    }
+  })()
+  alphaMaps.set(src, promise)
+  return promise
+}
+
+// Of the dynamic ring of V13, the share of the token's shown size its frame takes (measured in play, passe 2)
+const RING_SHARE = 0.86
+
 /** [width, height] of the picture as shown, in canvas pixels */
 function shownSizeOf(token){
   const p = pictureOf(token)
@@ -83,9 +112,19 @@ function nameBoxOf(token){
   const plate = token.nameplate
   if (!plate || plate.destroyed || !token.document.name) return null
   if (token.document.displayName === CONST.TOKEN_DISPLAY_MODES.NONE) return null
-  const width = plate.width || 0, height = plate.height || 0
+  // Measured on the name itself: right after the canvas is drawn, the nameplate has no text yet (passe 2: the first
+  // crowns of a scene crossed the name, those opened again did not)
+  let width = 0, height = 0
+  try {
+    const metrics = PIXI.TextMetrics.measureText(token.document.name, plate.style ?? CONFIG.canvasTextStyle)
+    width = metrics.width
+    height = metrics.height
+  } catch {
+    width = plate.width || 0
+    height = plate.height || 0
+  }
   if (!width || !height) return null
-  const top = (plate.y ?? token.h + 2) - token.h / 2
+  const top = (plate.y || token.h + 2) - token.h / 2
   return {
     x0: -width / 2, x1: width / 2, y0: top, y1: top + height
   }
@@ -513,7 +552,15 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     } = crown
     const picture = pictureOf(token)
     const margin = PAN_LAYOUT.lineMargin * crown.scale
+    const [shownW, shownH] = shownSizeOf(token)
+    const box = {
+      hw: shownW / 2, hh: shownH / 2
+    }
+    // Where the lines start: the ring's frame, or the picture where it stops being transparent
+    const lineEdge = picture.round ? () => Math.max(box.hw, box.hh) * RING_SHARE + margin :
+      crown.alpha ? dir => pictureEdgeAlong(crown.alpha, ALPHA_SIZE, dir, box) + margin : null
     return {
+      lineEdge,
       // The picture as shown, not its cell (relecture djamz.13, passe 2): a small picture, a big ring
       tokenRadius: lineRadiusOf(picture),
       lineRadius: lineRadiusOf(picture) + margin,
@@ -580,6 +627,8 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     await Promise.all([...paths].map(async ([path, fallback]) => textures.set(path, await foundry.canvas.loadTexture(path, {
       fallback
     }))))
+    // ...and the transparency of the token's own picture, where its lines start
+    crown.alpha = await alphaMapOf(token.document.texture?.src)
     // A newer build started while this one waited, or the crown was closed
     if (version !== crown.version || this.crowns.get(token.id) !== crown) return
 

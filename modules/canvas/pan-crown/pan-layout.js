@@ -71,7 +71,7 @@ export function signatureOf(graph, token = null, nodeTokens = new Map()){
  */
 export function layoutCrown(graph, {
   tokenRadius = 50, scale = 1, angle = -Math.PI / 2, tokenOffset = () => null, lineRadius = tokenRadius, lineBox = null,
-  nameBox = null
+  nameBox = null, lineEdge = null
 } = {
 }){
   const icons = []
@@ -110,8 +110,15 @@ export function layoutCrown(graph, {
   // The token's name (relecture djamz.13, passe 2): no icon on it, and no line of the token across it
   const onName = nameBox ? (x, y) => x > nameBox.x0 - iconRadius && x < nameBox.x1 + iconRadius &&
     y > nameBox.y0 - iconRadius && y < nameBox.y1 + iconRadius : null
+  // ...nor below it, nor where the line from the token to the icon would brush it (passe 2: the ends of a long name)
   const underName = nameBox ? (x, y) => onName(x, y) || (x > nameBox.x0 - iconRadius && x < nameBox.x1 + iconRadius &&
-    y > nameBox.y0) : null
+    y > nameBox.y0) || segmentHitsBox(edgeToward({
+    x, y
+  }, tokenRadius), {
+    x, y
+  }, {
+    x0: nameBox.x0 - 4 * scale, x1: nameBox.x1 + 4 * scale, y0: nameBox.y0, y1: nameBox.y1
+  }) : null
 
   const master = shown.find(n => n.uuid === graph.master)
   const r1 = tokenRadius + PAN_LAYOUT.masterGap * scale
@@ -132,10 +139,21 @@ export function layoutCrown(graph, {
   // (a node a module links to both the token and the master is placed once, as a slave: lot 11)
   const loose = shown.filter(n => graph.links.some(l => l.to === n.uuid && l.from === "owner") && n.uuid !== graph.master &&
     !slaves.includes(n))
+  // Many loose devices (the samurai's ~15, passe 2): a wider fan, each a spacing from the icons already there, and
+  // its line from the token crossing none of them
+  const crowdedLoose = loose.filter(onRing).length > PAN_LAYOUT.crowdedSlaves
+  const looseClear = (x, y) => !!underName?.(x, y) || icons.some(i => Math.hypot(i.x - x, i.y - y) < gap - 1e-6 ||
+    segmentToPoint(edgeToward({
+      x, y
+    }, tokenRadius), {
+      x, y
+    }, i) < iconRadius + 2 * scale)
   const placeLoose = () => {
     for (const node of loose.filter(n => !onRing(n))) place(node, 0, 0)
     fan(loose.filter(onRing), angle + Math.PI, tokenRadius + PAN_LAYOUT.deviceGap * scale, center, place, {
-      maxSpread: PAN_LAYOUT.deviceSpread, gap, forbidden: underName
+      maxSpread: crowdedLoose ? PAN_LAYOUT.crowdedSpread : PAN_LAYOUT.deviceSpread, gap,
+      // A line through an icon is refused for every loose device (passe 2, the rigger), not for many only
+      forbidden: looseClear
     })
   }
   // Many slaves (a samurai and his ~20 pieces, passe 2): the loose devices first, then a fan that opens wider round
@@ -160,7 +178,9 @@ export function layoutCrown(graph, {
     if (!to) continue
     // From the edge of the token's picture rather than its middle, so that the line does not cross it (lot 35)
     // A square picture: from the edge of the square, corners included (relecture djamz.13, img 01)
-    const from = link.from === "owner" ? (lineBox ? boxEdgeToward(to, lineBox) : edgeToward(to, lineRadius)) : at[link.from]
+    // Where the picture really ends, read on its transparency, when it is known (relecture djamz.13, passe 2)
+    const from = link.from !== "owner" ? at[link.from] : lineEdge ? edgeToward(to, lineEdge(unit(to))) :
+      lineBox ? boxEdgeToward(to, lineBox) : edgeToward(to, lineRadius)
     // A slave seen while its master is not: no line to an icon that is not there
     if (!from) continue
     const node = shown.find(n => n.uuid === link.to)
@@ -224,6 +244,29 @@ export function crownScaleOf(gridSize, w, h){
   return grid * Math.min(PAN_LAYOUT.maxSizeScale, Math.max(1, Math.sqrt(cells || 1)))
 }
 
+/**
+ * Where the picture really ends along a direction (relecture djamz.13, passe 2: a round picture in a square texture
+ * left the lines starting in the void on its diagonals). The alpha of the texture, n × n, is read from the edge of
+ * the shown box inward; the first pixel that is not transparent is the edge.
+ * @param {Uint8Array} alpha   n × n alphas, row by row, 0-255
+ * @param {Number} n
+ * @param {{x, y}} dir         a unit vector from the center
+ * @param {{hw, hh}} box       half sides of the picture as shown, canvas pixels
+ * @return {Number}            the distance from the center to the edge of the picture, canvas pixels
+ */
+export function pictureEdgeAlong(alpha, n, dir, box, threshold = 40){
+  const reach = Math.min(dir.x ? box.hw / Math.abs(dir.x) : Infinity, dir.y ? box.hh / Math.abs(dir.y) : Infinity)
+  if (!alpha?.length || !Number.isFinite(reach)) return Number.isFinite(reach) ? reach : 0
+  const steps = 2 * n
+  for (let k = steps; k > 0; k--) {
+    const d = reach * k / steps
+    const u = (dir.x * d / box.hw + 1) / 2, v = (dir.y * d / box.hh + 1) / 2
+    const col = Math.min(n - 1, Math.max(0, Math.floor(u * n))), row = Math.min(n - 1, Math.max(0, Math.floor(v * n)))
+    if (alpha[row * n + col] >= threshold) return d
+  }
+  return 0
+}
+
 // The least distance from point p to the segment a-b
 function segmentToPoint(a, b, p){
   const dx = b.x - a.x, dy = b.y - a.y
@@ -251,6 +294,13 @@ function boxEdgeToward(point, {
   const t = Math.min(ax ? hw / ax : Infinity, ay ? hh / ay : Infinity)
   return {
     x: point.x * t, y: point.y * t
+  }
+}
+
+function unit(point){
+  const length = Math.hypot(point.x, point.y) || 1
+  return {
+    x: point.x / length, y: point.y / length
   }
 }
 
@@ -304,7 +354,7 @@ export function fan(nodes, direction, radius, origin, place, {
       }, (_, i) => capacity === 1 ? 0 : -maxSpread / 2 + maxSpread * i / (capacity - 1)).filter(a => !blocked(a))
       n = Math.min(n, slots.length)
       arc = rest.slice(0, n)
-      angles = pickSpread(slots, n)
+      angles = pickSpread(slots, n, arcs.flatMap(a => a.angles))
       spread = n > 1 ? angles[n - 1] - angles[0] : 0
     }
     rest = rest.slice(n)
@@ -320,14 +370,21 @@ export function fan(nodes, direction, radius, origin, place, {
   return arcs
 }
 
-// n of the sorted slots, as evenly spread among them as can be (the first and the last when there are two or more)
-function pickSpread(slots, n){
+// n of the sorted slots, as evenly spread among them as can be; on an outer arc, the choice whose angles keep furthest
+// from those of the inner arcs, so that the lines run between their icons (passe 2: they crossed them)
+function pickSpread(slots, n, inner = []){
   if (n <= 0) return []
   if (n >= slots.length) return [...slots]
-  if (n === 1) return [slots[Math.floor((slots.length - 1) / 2)]]
-  return Array.from({
+  const candidates = [n === 1 ? [slots[Math.floor((slots.length - 1) / 2)]] : Array.from({
     length: n
-  }, (_, i) => slots[Math.round(i * (slots.length - 1) / (n - 1))])
+  }, (_, i) => slots[Math.round(i * (slots.length - 1) / (n - 1))])]
+  const stride = n === 1 ? 1 : Math.max(1, Math.floor((slots.length - 1) / (n - 1)))
+  for (let start = 0; start + (n - 1) * stride < slots.length; start++) candidates.push(Array.from({
+    length: n
+  }, (_, i) => slots[start + i * stride]))
+  if (!inner.length) return candidates[0]
+  const clearance = angles => Math.min(...angles.flatMap(a => inner.map(b => Math.abs(a - b))))
+  return candidates.reduce((best, c) => clearance(c) > clearance(best) + 1e-9 ? c : best)
 }
 
 // The opening and the turn of an arc, never wider than it may open, that keep its angles furthest from the angles of
