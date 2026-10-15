@@ -317,6 +317,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     },
     actions: {
       setShelf: SR5ShopWindow.#onSetShelf,
+      setWhere: SR5ShopWindow.#onSetWhere,
       toggleLegality: SR5ShopWindow.#onToggleLegality,
       clearFilters: SR5ShopWindow.#onClearFilters,
       refresh: SR5ShopWindow.#onRefresh,
@@ -497,6 +498,9 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     }) : []
     context.marketClosed = marketClosed
     context.sources = this.#sourcesContext()
+    context.sourceWorld = context.sources.find(s => s.key === 'world') ?? null
+    context.vendorSources = context.sources.filter(s => s.key !== 'world')
+    context.onVendor = !!this._source?.vendor || !context.sourceWorld
     context.vendor = vendorSource ? this.#vendorContext(vendorSource) : null
     context.payChoices = sticks.length ? [{
       id: '', label: game.i18n.localize('SR5.ShopVendorPayAccounts'), selected: !this._payWith
@@ -1016,6 +1020,18 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     this._sub = shelf === this._shelf && !target.dataset.sub ? '' : sub
     this._shelf = shelf
     this._page = 0
+    this.render()
+  }
+
+  /** Shelves or vendors (relecture djamz.13, lot R6): the vendors' side opens on the first of them. */
+  static #onSetWhere(event, target) {
+    const where = target.dataset.where
+    if (where === 'world') {
+      if (this._source?.vendor) this.setSource(new SR5ShopWorldSource())
+    } else if (!this._source?.vendor) {
+      const [first] = SR5ShopVendor.vendors()
+      if (first) this.setSource(new SR5ShopVendorSource(first.actor, first.storage))
+    }
     this.render()
   }
 
