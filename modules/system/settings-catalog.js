@@ -136,6 +136,8 @@ export const SETTINGS_CATALOG = {
   sr5PickpocketThiefChooses: ["gear", "house"],
   sr5StorageDropOnDeath: ["gear", "house"],
   sr5StorageDropOnDeathShare: ["gear", "house"],
+  // A backpack, a locker and a credstick for each new player character (relecture djamz.13, R8)
+  sr5StarterKit: ["gear"],
   // Shop
   sr5ShopMarketOpen: ["shop"],
   sr5ShopCreationLevel: ["shop"],

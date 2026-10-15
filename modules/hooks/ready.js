@@ -74,6 +74,9 @@ import {
 import {
   initLivingPersona
 } from "../entities/actors/living-persona-hooks.js"
+import {
+  initStarterKit
+} from "../system/starter-kit.js"
 
 export function sr5HookReady() {
   // Register the GM-authored spirit types, so that they are offered wherever
@@ -138,6 +141,8 @@ export function sr5HookReady() {
   initCombatManeuvers()
   // Every technomancer has her living persona, kept by the system (SR5 p. 236, 253): the active GM gives it
   initLivingPersona()
+  // A new player character gets a backpack, a locker and a credstick (relecture djamz.13, R8): the active GM gives them
+  initStarterKit()
   // The purchases made while no GM was connected: the active GM, back, enters them in his ledger
   import("../interface/shop-orders.js").then(({
     registerAwaitingOrders

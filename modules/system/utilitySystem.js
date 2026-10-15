@@ -67,6 +67,9 @@ import {
 import {
   defaultBannerFolder
 } from "../interface/shop-vendor-templates.js"
+import {
+  registerStarterKitSetting
+} from "./starter-kit.js"
 
 export class SR5_SystemHelpers {
 
@@ -334,6 +337,9 @@ export class SR5_SystemHelpers {
       type: SR5NegotiationRepair,
       restricted: true,
     })
+
+    // Starting kit of a new player character (relecture djamz.13, R8, system/starter-kit.js)
+    registerStarterKitSetting()
 
     // Presets (lot 10, system/settings-presets.js): automation and rules in one menu, at the head of the settings window
     registerPresetSettings()
