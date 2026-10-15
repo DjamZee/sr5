@@ -23,9 +23,6 @@ export const SETTINGS_TABS = [
     id: "interface", label: "SR5.SETTINGS_Tab_Interface", icon: "fas fa-display"
   },
   {
-    id: "ruleLocks", label: "SR5.SETTINGS_Tab_RuleLocks", icon: "fas fa-lock"
-  },
-  {
     id: "combat", label: "SR5.SETTINGS_Tab_Combat", icon: "fas fa-crosshairs"
   },
   {
@@ -72,8 +69,9 @@ export const SETTINGS_TAGS = {
 // Key (without the "sr5." namespace) → [tab, tag]. The tag is left out when the setting only tells
 // the system how far to automate the book's rule, or how to show it.
 export const SETTINGS_CATALOG = {
-  // Rule locks: the gamemaster never stopped by them (idea 11, lot 16b), under the menu of its tab
-  sr5RuleLocksGMExempt: ["ruleLocks"],
+  // Rule locks: the gamemaster never stopped by them (idea 11, lot 16b), under their menu, which
+  // sits in the presets tab since the rule locks tab was merged into it (relecture djamz.13, R9)
+  sr5RuleLocksGMExempt: ["presets"],
   // Combat (sr5BlockMissingActions, a rule lock, is edited from the rule locks menu since B13)
   sr5FreeReload: ["combat", "house"],
   sr5CalledShotsRules: ["combat", "book"],
@@ -188,7 +186,7 @@ export const SETTINGS_CATALOG = {
 // Submenus (registerMenu key, without the namespace) → tab. They head their tab.
 export const MENU_CATALOG = {
   sr5PresetsMenu: "presets",
-  sr5RuleLocksMenu: "ruleLocks",
+  sr5RuleLocksMenu: "presets",
   sr5ShopConfigMenu: "shop",
   sr5FactionsMenu: "gm",
   sr5ConTrackerMenu: "gm",
