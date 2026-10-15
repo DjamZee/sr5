@@ -100,7 +100,7 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
       }).filter(s => log.some(e => e.factionId === f.id && e.actorId === s.id)),
     }))
     context.characters = pcs.map(pc => ({
-      id: pc.id, name: pc.name
+      id: pc.id, name: pc.name, isPlayer: pc.hasPlayerOwner
     }))
     context.contacts = contacts
     context.reasons = Object.entries(FACTION_REASONS).map(([key, value]) => ({
@@ -130,6 +130,48 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
     reason?.addEventListener("change", () => {
       delta.value = FACTION_REASONS[reason.value] ?? 0
     })
+    this.#pickTools()
+  }
+
+  /**
+   * The characters of a movement: searched and sorted in place, so the boxes already ticked stay ticked
+   * (relecture djamz.13, P1-36). The players' characters first by default: the NPCs come after them.
+   */
+  #pickTools(){
+    const list = this.element.querySelector(".sr-faction-pick")
+    const search = this.element.querySelector(".sr-faction-pick-search")
+    const sort = this.element.querySelector(".sr-faction-pick-sort")
+    const count = this.element.querySelector(".sr-faction-pick-count")
+    if (!list || !search || !sort) return
+    const labels = [...list.querySelectorAll("label[data-name]")]
+    const collator = new Intl.Collator(game.i18n.lang, {
+      sensitivity: "base", numeric: true
+    })
+    const fold = text => text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase()
+    const apply = () => {
+      const query = fold(search.value.trim())
+      const ticked = label => label.querySelector("input")?.checked ? 1 : 0
+      const rank = {
+        players: label => -Number(label.dataset.player), checked: label => -ticked(label), name: () => 0
+      }[sort.value] ?? (() => 0)
+      labels.sort((a, b) => rank(a) - rank(b) || collator.compare(a.dataset.name, b.dataset.name))
+      for (const label of labels) {
+        label.hidden = !!query && !fold(label.dataset.name).includes(query)
+        list.appendChild(label)
+      }
+      counter()
+    }
+    const counter = () => {
+      if (count) count.textContent = game.i18n.format("SR5.FACTION_PickCount", {
+        shown: labels.filter(l => !l.hidden).length, total: labels.length,
+        picked: labels.filter(l => l.querySelector("input")?.checked).length,
+      })
+    }
+    search.addEventListener("input", apply)
+    sort.addEventListener("change", apply)
+    // A box ticked does not move under the pointer: only the count follows
+    list.addEventListener("change", counter)
+    apply()
   }
 
   #value(name){
