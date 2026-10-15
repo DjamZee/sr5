@@ -453,24 +453,6 @@ export default class Migration {
 
   /* -------------------------------------------- */
 
-
-  /**
-	 * Scrub an Actor's system data, removing all keys which are not explicitly defined in the system template
-	 * @param {Object} actorData    The data object for an Actor
-	 * @return {Object}             The scrubbed Actor data
-	 */
-  cleanActorData(actorData) {
-
-    // Scrub system data
-    const model = game.system.model.Actor[actorData.type]
-    actorData.system = foundry.utils.filterObject(actorData.system, model)
-
-    // Return the scrubbed data
-    return actorData
-  }
-
-  /* -------------------------------------------- */
-
   /**
 	* Migrate a single Item entity to incorporate latest data model changes
 	*

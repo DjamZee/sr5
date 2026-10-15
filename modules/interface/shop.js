@@ -123,19 +123,6 @@ export class SR5Shop {
   }
 
   /**
-   * Can this entry go on the counter? A sellable type with a price, on one of
-   * the shelves, and not flagged as a prototype — Equip mode skips the last two.
-   */
-  static isPurchasable(entry, {
-    equip = false
-  } = {
-  }) {
-    return SR5ShopStock.canSell(entry, {
-      equip
-    })
-  }
-
-  /**
    * What the character can actually spend.
    *
    * `system.nuyen.value` is the sum of every transaction, expenses included, so

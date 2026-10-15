@@ -448,14 +448,6 @@ export class SR5_CompendiumUtility extends Actor {
     return baseItems
   }
 
-  static async createItemFromArray(ItemArray) {
-    let baseItems = []
-    for (let i of ItemArray) {
-      baseItems.push(i)
-    }
-    return baseItems
-  }
-
   //Get a particular item from a particular compendium
   static async getWeaponFromCompendium(weapon, force) {
     let weapons = await SR5_CompendiumUtility.getCategoryItems("baseWeapons")
