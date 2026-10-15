@@ -28,6 +28,7 @@ export const ADVANCED_DRIVING_SETTING = "sr5Rigger5AdvancedDriving"
 export const CHASE_EFFECT = "chaseOutOfControl"
 export const CHASE_HANDLING_EFFECT = "chaseHandling"
 const APP_ID = "sr5-chase"
+const SEEN_KEY = "sr5.chaseSeen"
 // The log scrolls in its box (lot 5): riggers with several passes write many lines a turn
 const LOG_SIZE = 200
 
@@ -625,7 +626,32 @@ export class SR5Chase {
     ui.controls?.render?.()
   }
 
-  static #seen = ""
+  // The chase already opened for this player, kept through a reload of the tab: closed once, the window does not come
+  // back at each change of the register (relecture djamz.13, R1: « F5 n'y fait rien »)
+  static get #seen() {
+    try {
+      return sessionStorage.getItem(SEEN_KEY) ?? ""
+    } catch {
+      return SR5Chase.#seenHere
+    }
+  }
+
+  static set #seen(id) {
+    SR5Chase.#seenHere = id
+    try {
+      sessionStorage.setItem(SEEN_KEY, id)
+    } catch {
+      // No storage (private window): this page only
+    }
+  }
+
+  static #seenHere = ""
+
+  /** The window shows this chase to a player: it counts as seen, whether it opened by itself or by her button */
+  static markSeen() {
+    const state = readState()
+    if (state.active) SR5Chase.#seen = state.id
+  }
   static #syncing = Promise.resolve()
 }
 
@@ -906,9 +932,12 @@ export class SR5ChaseApp extends foundry.applications.api.HandlebarsApplicationM
   _onRender(context, options) {
     super._onRender?.(context, options)
     if (!SR5Chase.canWrite) {
-      // A player still takes the chase actions of her own vehicle (part 2)
-      for (const el of this.element.querySelectorAll("button, input, select")) el.disabled = !el.hasAttribute("data-chase-act")
-      for (const el of this.element.querySelectorAll("a[data-action]")) el.classList.add("disabled")
+      if (!game.user.isGM) SR5Chase.markSeen()
+      // A player still takes the chase actions of her own vehicle (part 2). The window's content only: the header's
+      // buttons (close, the controls menu) stay hers, or she could not close the window (relecture djamz.13, R1)
+      const content = this.element.querySelector(".window-content") ?? this.element
+      for (const el of content.querySelectorAll("button, input, select")) el.disabled = !el.hasAttribute("data-chase-act")
+      for (const el of content.querySelectorAll("a[data-action]")) el.classList.add("disabled")
       return
     }
     const on = (selector, handler) => {
