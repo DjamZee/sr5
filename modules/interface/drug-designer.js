@@ -169,8 +169,12 @@ export class SR5DrugDesigner extends foundry.applications.api.HandlebarsApplicat
       canCreate: !this.item && canOfferDrugDesign(this.actor, user),
       isGM: user.isGM,
       target: this.actor?.name ?? t("SR5.DrugDesignerWorldItems"),
-      // The player's choice of character, when she may design for several
-      actorChoices: !this.item && !user.isGM ? designableActors(user).map(a => option(a.id, a.name, this.actor?.id)) : [],
+      // The choice of character: the player's own ones; for the gamemaster, the world items first, then the characters
+      // (the sheet's button is gone)
+      actorChoices: this.item ? [] : [
+        ...(user.isGM ? [option("", t("SR5.DrugDesignerWorldItems"), this.actor?.id ?? "")] : []),
+        ...designableActors(user).map(a => option(a.id, a.name, this.actor?.id)),
+      ],
     }
   }
 
@@ -187,9 +191,10 @@ export class SR5DrugDesigner extends foundry.applications.api.HandlebarsApplicat
   /** The form, read back into the state at each change, then the window drawn again with the new figures. */
   static async #onChange(_event, _form, formData) {
     const data = foundry.utils.expandObject(formData.object)
-    if (data.actorId && data.actorId !== this.actor?.id) {
-      const actor = designableActors().find(a => a.id === data.actorId)
-      if (actor) this.actor = actor
+    if ("actorId" in data && (data.actorId || "") !== (this.actor?.id ?? "")) {
+      // An empty choice: the world items, the gamemaster's only
+      const actor = data.actorId ? designableActors().find(a => a.id === data.actorId) : null
+      if (actor || (!data.actorId && game.user.isGM)) this.actor = actor
       // The window's title names the character the drug is for
       if (this.window?.title) this.window.title.textContent = this.title
     }
