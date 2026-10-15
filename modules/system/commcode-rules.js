@@ -209,3 +209,44 @@ export function displayNameOf(commcode, directory){
   const contact = directory.find(c => sameCommcode(c.commcode, commcode))
   return contact?.name || String(commcode ?? "")
 }
+
+// Relecture djamz.13 (arbitrage de DjamZ): a communication device set on a character gets a commcode of its own,
+// #XX-XXXX-XXXX-XX. Its owner may change it once; the gamemaster, as often as he likes.
+export const COMMCODE_DEVICE_TYPES = ["commlink", "cyberdeck", "riggerCommandConsole"]
+export const COMMCODE_ACTOR_TYPES = ["actorPc", "actorGrunt"]
+const COMMCODE_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+/** Does this device, on this actor, get a commcode of its own */
+export function needsCommcode(device, actorType){
+  return device?.type === "itemDevice" && COMMCODE_DEVICE_TYPES.includes(device.system?.type) &&
+    COMMCODE_ACTOR_TYPES.includes(actorType) && !normalizeCommcode(device.system?.commcode)
+}
+
+/**
+ * A new commcode, #XX-XXXX-XXXX-XX, none of those already given
+ * @param {Iterable<String>} taken   the commcodes of the world
+ * @param {Function} random          returns a number in [0, 1)
+ */
+export function generateCommcode(taken = [], random = Math.random){
+  const used = new Set([...taken].map(normalizeCommcode))
+  const draw = n => Array.from({
+    length: n 
+  }, () => COMMCODE_CHARS[Math.floor(random() * COMMCODE_CHARS.length)]).join("")
+  for (let i = 0; i < 100; i++){
+    const code = `#${draw(2)}-${draw(4)}-${draw(4)}-${draw(2)}`
+    if (!used.has(normalizeCommcode(code))) return code
+  }
+  return null
+}
+
+/**
+ * A change of commcode asked by a user: "allowed" (nothing to note), "first" (the owner's one change, to note) or
+ * "refused" (the owner already used it)
+ */
+export function commcodeChange({
+  isGM = false, before = "", after = "", edited = false 
+} = {
+}){
+  if (isGM || String(after ?? "").trim() === String(before ?? "").trim()) return "allowed"
+  return edited ? "refused" : "first"
+}

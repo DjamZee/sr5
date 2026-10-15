@@ -19,7 +19,7 @@ import {
   closeRadialMenu, closeRadialMenuOf, openRadialMenu
 } from "./pan-radial-menu.js"
 import {
-  crownAngle, dashesOf, layoutCrown, lineRadiusOf, signatureOf
+  crownAngle, dashesOf, layoutCrown, lineRadiusOf, lineBoxOf, crownScaleOf, signatureOf, PAN_LAYOUT
 } from "./pan-layout.js"
 import {
   iconPathOf, isTintedIcon, nodeIconPathOf
@@ -482,11 +482,15 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     const {
       token
     } = crown
+    const picture = {
+      w: token.w, h: token.h, scaleX: token.document.texture?.scaleX, scaleY: token.document.texture?.scaleY,
+      round: !!token.document.ring?.enabled
+    }
+    const margin = PAN_LAYOUT.lineMargin * crown.scale
     return {
       tokenRadius: Math.max(token.w, token.h) / 2,
-      lineRadius: lineRadiusOf({
-        w: token.w, h: token.h, scaleX: token.document.texture?.scaleX, scaleY: token.document.texture?.scaleY
-      }),
+      lineRadius: lineRadiusOf(picture) + margin,
+      lineBox: lineBoxOf(picture, margin),
       scale: crown.scale,
       angle: crown.angle,
       tokenOffset: node => {
@@ -552,7 +556,7 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     if (version !== crown.version || this.crowns.get(token.id) !== crown) return
 
     crown.droneTokenIds.clear()
-    const scale = Math.max(canvas.dimensions.size / 100, 0.5)
+    const scale = crownScaleOf(canvas.dimensions.size, token.w, token.h)
     crown.scale = scale
     crown.graph = graph
     crown.nodeTokens = nodeTokens

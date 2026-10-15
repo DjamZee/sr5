@@ -1,6 +1,11 @@
 <!-- Commcode, read by a Matrix Perception (SR5 p. 237), and the messaging of the device (SR5 p. 241, lot 14) -->
+<!-- Given at once; its owner changes it once, the gamemaster as often as he likes (relecture djamz.13) -->
 <li class="grid">
   <div class="col-4">{{localize 'SR5.Commcode'}}{{localize 'SR5.Colons'}}</div>
-  <div class="col-7"><input type="text" data-dtype="String" name="system.commcode" value="{{system.commcode}}" placeholder="{{localize 'SR5.CommcodePlaceholder'}}"/></div>
+  {{#if (and system.commcodeEdited (not userIsGM))}}
+  <div class="col-7"><input type="text" data-dtype="String" name="system.commcode" value="{{system.commcode}}" readonly data-tooltip="{{localize 'SR5.CommcodeLocked'}}"/></div>
+  {{else}}
+  <div class="col-7"><input type="text" data-dtype="String" name="system.commcode" value="{{system.commcode}}" placeholder="{{localize 'SR5.CommcodePlaceholder'}}"{{#unless userIsGM}} data-tooltip="{{localize 'SR5.CommcodeOnceHint'}}"{{/unless}}/></div>
+  {{/if}}
   <div class="col-1"><a data-action="openCommcode" data-tooltip="{{localize 'SR5.COMMCODE_Open'}}"><i class="fas fa-comment-dots"></i></a></div>
 </li>

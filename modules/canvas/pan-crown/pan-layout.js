@@ -5,13 +5,20 @@
 // Sizes of the model, in canvas pixels for a grid of 100 px (an icon of 30 px, as on the mock-up)
 export const PAN_LAYOUT = {
   iconRadius: 15,
-  masterGap: 46,
-  slaveRing: 56,
+  // Aired out at the relecture djamz.13 (DjamZ, img 11-12): 46, 56 and 54 before
+  masterGap: 52,
+  slaveRing: 64,
   deviceGap: 40,
   // The least distance between the centers of two icons (retours de DjamZ, 07/10): an icon with all it can wear, four
   // marks over it (1.7 radius high, 1.5 wide), the monitor under it (1.3), the count of marks at its side (2), fits
   // in 3.6 radii; a crowded ring grows, then a second ring opens one spacing further out
-  minSpacing: 54,
+  // 62 and not 64: at 64 the lines of an outer ring of eight slaves cross the icons of the inner one
+  minSpacing: 62,
+  // A token bigger than a cell gets a bigger crown, by the square root of its size in cells, up to twice (relecture
+  // djamz.13, DjamZ: « à la taille du jeton »)
+  maxSizeScale: 2,
+  // Between the edge of the token and the start of its lines
+  lineMargin: 3,
   // How wide a ring opens: the slaves around the master, away from the token; the loose devices around the token,
   // on the side opposite the master, never beyond its sides (so they never meet the slaves)
   slaveSpread: Math.PI * 1.1,
@@ -59,7 +66,7 @@ export function signatureOf(graph, token = null, nodeTokens = new Map()){
  *   lines: [{from: {x, y}, to: {x, y}, mode, uuid}]; the mode is the one of the node the line leads to
  */
 export function layoutCrown(graph, {
-  tokenRadius = 50, scale = 1, angle = -Math.PI / 2, tokenOffset = () => null, lineRadius = tokenRadius
+  tokenRadius = 50, scale = 1, angle = -Math.PI / 2, tokenOffset = () => null, lineRadius = tokenRadius, lineBox = null
 } = {
 }){
   const icons = []
@@ -122,7 +129,8 @@ export function layoutCrown(graph, {
     const to = at[link.to]
     if (!to) continue
     // From the edge of the token's picture rather than its middle, so that the line does not cross it (lot 35)
-    const from = link.from === "owner" ? edgeToward(to, lineRadius) : at[link.from]
+    // A square picture: from the edge of the square, corners included (relecture djamz.13, img 01)
+    const from = link.from === "owner" ? (lineBox ? boxEdgeToward(to, lineBox) : edgeToward(to, lineRadius)) : at[link.from]
     // A slave seen while its master is not: no line to an icon that is not there
     if (!from) continue
     const node = shown.find(n => n.uuid === link.to)
@@ -154,6 +162,49 @@ export function lineRadiusOf({
 }){
   const picture = Math.max(w * Math.abs(scaleX), h * Math.abs(scaleY))
   return Math.min(Math.max(w, h), picture) / 2
+}
+
+/**
+ * The half sides of a token's square picture, a margin added, where its lines start (relecture djamz.13, img 01: a
+ * circle inside the square let the lines cross its corners). Null for a token in a ring of V13 or a round picture:
+ * the circle of lineRadiusOf holds then.
+ * @param {Object} token   {w, h, scaleX, scaleY, round}
+ * @param {Number} [margin]
+ * @return {{hw: Number, hh: Number}|null}
+ */
+export function lineBoxOf({
+  w, h, scaleX = 1, scaleY = 1, round = false
+}, margin = 0){
+  if (round) return null
+  return {
+    hw: Math.min(w, w * Math.abs(scaleX)) / 2 + margin, hh: Math.min(h, h * Math.abs(scaleY)) / 2 + margin
+  }
+}
+
+/**
+ * The scale of a crown: the grid's (an icon of 30 px on a grid of 100), grown with the size of the token in cells
+ * by its square root, up to PAN_LAYOUT.maxSizeScale (relecture djamz.13)
+ * @param {Number} gridSize   canvas pixels of a cell
+ * @param {Number} w          width of the token, in canvas pixels
+ * @param {Number} h          height
+ */
+export function crownScaleOf(gridSize, w, h){
+  const grid = Math.max(gridSize / 100, 0.5)
+  const cells = Math.max(w, h) / (gridSize || 100)
+  return grid * Math.min(PAN_LAYOUT.maxSizeScale, Math.max(1, Math.sqrt(cells || 1)))
+}
+
+function boxEdgeToward(point, {
+  hw, hh
+}){
+  const ax = Math.abs(point.x), ay = Math.abs(point.y)
+  if (!ax && !ay) return {
+    x: 0, y: 0
+  }
+  const t = Math.min(ax ? hw / ax : Infinity, ay ? hh / ay : Infinity)
+  return {
+    x: point.x * t, y: point.y * t
+  }
 }
 
 function edgeToward(point, radius){

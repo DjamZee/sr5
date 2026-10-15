@@ -36,6 +36,36 @@ function timeOf(entry){
   }
 }
 
+/** The commcode an actor answers on: that of its active device, or of the first of its devices that has one */
+export function commcodeOfActor(actor){
+  if (!actor) return ""
+  const device = activeDeviceOf(actor)
+  const own = normalizeCommcode(device?.system?.commcode) ? device :
+    Array.from(actor.items ?? []).find(i => i.type === "itemDevice" && normalizeCommcode(i.system?.commcode))
+  return String(own?.system?.commcode ?? "").trim()
+}
+
+/**
+ * The contacts the list offers (relecture djamz.13): the players' characters, and for the gamemaster the actors of
+ * the tokens of the scene too; neither the holder, nor a commcode already in the directory
+ */
+function contactCandidates(holder, directory, ownCommcode){
+  const actors = new Map()
+  for (const actor of game.actors ?? []) if (actor.hasPlayerOwner && actor.type === "actorPc") actors.set(actor.uuid, actor)
+  if (game.user?.isGM) for (const token of globalThis.canvas?.scene?.tokens ?? []) if (token.actor) actors.set(token.actor.uuid, token.actor)
+  const out = []
+  for (const actor of actors.values()) {
+    if (actor === holder) continue
+    const commcode = commcodeOfActor(actor)
+    if (!commcode || sameCommcode(commcode, ownCommcode) || out.some(c => sameCommcode(c.commcode, commcode)) ||
+      directory.some(c => sameCommcode(c.commcode, commcode))) continue
+    out.push({
+      name: actor.token?.name ?? actor.name, commcode
+    })
+  }
+  return out.sort((a, b) => a.name.localeCompare(b.name))
+}
+
 // What the reader of a window has read: per viewer, a convenience kept in her browser only
 function readMarks(key){
   try {
@@ -75,6 +105,8 @@ export class SR5CommcodeWindow extends HandlebarsApplicationMixin(ApplicationV2)
       hangup: SR5CommcodeWindow.#onCallEvent,
       line: SR5CommcodeWindow.#onLine,
       addContact: SR5CommcodeWindow.#onAddContact,
+      addPicked: SR5CommcodeWindow.#onAddPicked,
+      addTarget: SR5CommcodeWindow.#onAddTarget,
       saveContact: SR5CommcodeWindow.#onSaveContact,
       removeContact: SR5CommcodeWindow.#onRemoveContact,
       writeTo: SR5CommcodeWindow.#onWriteTo,
@@ -234,6 +266,7 @@ export class SR5CommcodeWindow extends HandlebarsApplicationMixin(ApplicationV2)
       }
     }
     context.directory = directory
+    context.candidates = contactCandidates(actor, directory, commcode)
     context.intercepts = this.#interceptContext(traffic, actor)
     context.hasIntercepts = context.intercepts.length > 0
     return context
@@ -460,6 +493,45 @@ export class SR5CommcodeWindow extends HandlebarsApplicationMixin(ApplicationV2)
     const actor = this.device?.parent
     const name = this.#value("input[name=contactName]")
     const commcode = this.#value("input[name=contactCommcode]")
+    if (!actor || !normalizeCommcode(commcode)) return
+    await setDirectory(actor, withContact(directoryOf(directoryFlagOf(actor)), {
+      name, commcode
+    }, () => foundry.utils.randomID()))
+    this.render()
+  }
+
+  // Relecture djamz.13 (DjamZ): a contact picked in the list, or taken from the token the user targets on the map
+  static async #onAddPicked(){
+    const option = this.element?.querySelector("select[name=contactPick]")?.selectedOptions?.[0]
+    if (!option?.value) return
+    await this.#addContact(option.dataset.name ?? "", option.value)
+  }
+
+  static async #onAddTarget(){
+    const targets = [...(game.user?.targets ?? [])]
+    if (!targets.length) return ui.notifications?.warn(game.i18n.localize("SR5.COMMCODE_NoTarget"))
+    for (const token of targets) {
+      const actor = token.actor
+      // A player takes the commcode of a player's character; that of a character of the gamemaster, he gives it
+      if (!game.user.isGM && !actor?.hasPlayerOwner) {
+        ui.notifications?.warn(game.i18n.format("SR5.COMMCODE_TargetGM", {
+          name: token.name 
+        }))
+        continue
+      }
+      const commcode = commcodeOfActor(actor)
+      if (!commcode) {
+        ui.notifications?.warn(game.i18n.format("SR5.COMMCODE_TargetNone", {
+          name: token.name 
+        }))
+        continue
+      }
+      await this.#addContact(token.name, commcode)
+    }
+  }
+
+  async #addContact(name, commcode){
+    const actor = this.device?.parent
     if (!actor || !normalizeCommcode(commcode)) return
     await setDirectory(actor, withContact(directoryOf(directoryFlagOf(actor)), {
       name, commcode

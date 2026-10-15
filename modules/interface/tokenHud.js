@@ -7,6 +7,12 @@ import {
 import {
   playerMayOpenPan
 } from "../canvas/pan-crown/pan-crown.js"
+import {
+  activeDeviceOf
+} from "../canvas/pan-crown/pan-graph.js"
+import {
+  normalizeCommcode
+} from "../system/commcode-rules.js"
 
 /**
  * Icons of the system on the token HUD.
@@ -40,6 +46,7 @@ export default class SR5TokenHud extends foundry.applications.hud.TokenHUD {
     this.#dressControlIcons()
     this.#addStorageButton()
     this.#addPanCrownButton()
+    this.#addCommcodeButton()
     SR5SharedVision.addHudButton(this)
     SR5Pickpocket.addHudButton(this)
     //Opened on someone else's token to pick his pocket: nothing else of his is the user's to touch
@@ -120,6 +127,35 @@ export default class SR5TokenHud extends foundry.applications.hud.TokenHUD {
       event.preventDefault()
       event.stopPropagation()
       button.classList.toggle("active", await layer.toggle(token))
+    })
+    column.appendChild(button)
+  }
+
+  /**
+   * The messaging of the token's device (relecture djamz.13, SR5 p. 241, lot 14): for its owner and the gamemaster,
+   * when it has a device with a commcode
+   */
+  #addCommcodeButton() {
+    const actor = this.object?.actor
+    if (!actor || !this.document?.isOwner) return
+    const device = activeDeviceOf(actor)
+    const own = normalizeCommcode(device?.system?.commcode) ? device :
+      Array.from(actor.items ?? []).find(i => i.type === "itemDevice" && normalizeCommcode(i.system?.commcode))
+    if (!own) return
+
+    const column = this.element?.querySelector(".col.right")
+    if (!column || column.querySelector(".sr-hud-commcode")) return
+
+    const button = document.createElement("button")
+    button.type = "button"
+    button.className = "control-icon sr-hud-commcode"
+    button.dataset.tooltip = game.i18n.localize("SR5.COMMCODE_Open")
+    button.setAttribute("aria-label", button.dataset.tooltip)
+    button.innerHTML = "<i class=\"fas fa-comment-dots\"></i>"
+    button.addEventListener("click", async event => {
+      event.preventDefault()
+      event.stopPropagation()
+      ;(await import("./commcode-window.js")).SR5CommcodeWindow.openDevice(own.uuid)
     })
     column.appendChild(button)
   }
