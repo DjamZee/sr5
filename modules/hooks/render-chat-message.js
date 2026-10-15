@@ -56,7 +56,21 @@ import {
   activateBleedCardListeners
 } from "../system/bb-healing.js"
 
+/**
+ * A card posted by the system or a module, as opposed to a line typed in the chat (/w): flags of its own,
+ * or markup that a typed message does not carry.
+ */
+export function isSystemCard(message) {
+  const flags = Object.keys(message.flags ?? {
+  }).filter(k => k !== "core")
+  if (flags.length) return true
+  return /<(div|section|table|button|header|h[1-6])\b/i.test(message.content ?? "")
+}
+
 export function sr5HookRenderChatMessageHTML(message, html, _data) {
+  // Arbitrage de DjamZ (relecture djamz.13) : no card shows the line of its recipients; a typed whisper keeps it
+  if (isSystemCard(message)) html.querySelectorAll(".whisper-to").forEach(el => el.remove())
+
   // A table draw is rendered by core and wears no SR5 header of its own
   sr5DressTableDraw(html, message)
 
@@ -114,6 +128,8 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   if (message.flags?.sr5?.infectionCard) activateInfectionListeners(html, message)
   // Treating CFD (Dark Terrors p. 87): the GM destroys the implants a NanoScrub glitch reached
   if (message.flags?.sr5?.cfdTreatment) activateCfdListeners(html, message)
+  // A player asks the GM for the commcode of his character (relecture djamz.13): Accept or Refuse, the active GM
+  if (message.flags?.sr5?.commcodeRequest) import("../interface/commcode-request.js").then(m => m.activateCommcodeRequestListeners(html, message))
   // Deactivation (Dark Terrors p. 90): the GM confirms a player's roll, then opens the technomancer's Fading test
   if (message.flags?.sr5?.deactivation || message.flags?.sr5?.deactivationRequest) activateDeactivationListeners(html, message)
   // Dissipation of an AI (Data Trails p. 161): the GM confirms the overflow and rolls the resistance

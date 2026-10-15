@@ -91,6 +91,10 @@ export class sr5ItemDeviceDataModel extends foundry.abstract.TypeDataModel {
       commcode: new fields.StringField({
         initial: ''
       }),
+      // The owner changed it once already (relecture djamz.13, arbitrage de DjamZ): the next change is the GM's
+      commcodeEdited: new fields.BooleanField({
+        initial: false
+      }),
       modifiers: new fields.ArrayField(new fields.ObjectField()),
       pan: new fields.SchemaField({
         max: new fields.NumberField({

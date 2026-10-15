@@ -36,7 +36,7 @@
 		<li class="item" data-item-id="{{item._id}}" draggable="true">
 			<div class="grid">
 				<div class="col-8">
-					<p>{{item.name}}</p>
+					<p>{{item.name}}{{#if item.system.commcode}} <a class="open-commcode" data-item-id="{{item._id}}" data-tooltip="{{localize 'SR5.COMMCODE_Open'}}"><em class="fas fa-sm fa-comment-dots"></em></a>{{/if}}</p>
 				</div>
 				<div class="col-2">
 					<p class="SR-TextCenter">{{valueOrDash system.deviceRating}}</p>

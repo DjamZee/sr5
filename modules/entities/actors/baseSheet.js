@@ -616,6 +616,13 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     bindOrderClicks(element, (event, target) => this._onShopOrder(event, target))
     //Reboot le deck
     on(".reset-deck", "click", this._onRebootDeck.bind(this))
+    //The messaging of a device, from its line (relecture djamz.13, img 14; SR5 p. 241, lot 14)
+    on(".open-commcode", "click", async ev => {
+      ev.preventDefault()
+      ev.stopPropagation()
+      const item = this.actor.items.get(ev.currentTarget.dataset.itemId)
+      if (item) (await import("../../interface/commcode-window.js")).SR5CommcodeWindow.openDevice(item.uuid)
+    })
     // Déplie les infos
     on(".deplie", "click", this._onItemSummary.bind(this))
     // Déplie les infos matricielles

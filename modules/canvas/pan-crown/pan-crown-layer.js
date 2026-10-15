@@ -19,7 +19,7 @@ import {
   closeRadialMenu, closeRadialMenuOf, openRadialMenu
 } from "./pan-radial-menu.js"
 import {
-  crownAngle, dashesOf, layoutCrown, lineRadiusOf, signatureOf
+  crownAngle, dashesOf, layoutCrown, lineRadiusOf, lineBoxOf, crownScaleOf, crownReachOf, signatureOf, PAN_LAYOUT
 } from "./pan-layout.js"
 import {
   iconPathOf, isTintedIcon, nodeIconPathOf
@@ -332,7 +332,8 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
       // The last build (M1): its graph, the tokens its lines go to, what it showed, its scale
       graph: null, nodeTokens: new Map(), signature: null, scale: 1,
       // Fixed once open, so that the crown does not swing round while its token moves
-      angle: crownAngle(token.center, sceneCenter),
+      angle: crownAngle(token.center, sceneCenter, canvas.dimensions.sceneRect,
+        crownReachOf(Math.max(token.w, token.h) / 2, crownScaleOf(canvas.dimensions.size, token.w, token.h))),
       deployStart: null,
     }
     this.crowns.set(token.id, crown)
@@ -482,11 +483,15 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     const {
       token
     } = crown
+    const picture = {
+      w: token.w, h: token.h, scaleX: token.document.texture?.scaleX, scaleY: token.document.texture?.scaleY,
+      round: !!token.document.ring?.enabled
+    }
+    const margin = PAN_LAYOUT.lineMargin * crown.scale
     return {
       tokenRadius: Math.max(token.w, token.h) / 2,
-      lineRadius: lineRadiusOf({
-        w: token.w, h: token.h, scaleX: token.document.texture?.scaleX, scaleY: token.document.texture?.scaleY
-      }),
+      lineRadius: lineRadiusOf(picture) + margin,
+      lineBox: lineBoxOf(picture, margin),
       scale: crown.scale,
       angle: crown.angle,
       tokenOffset: node => {
@@ -552,7 +557,7 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     if (version !== crown.version || this.crowns.get(token.id) !== crown) return
 
     crown.droneTokenIds.clear()
-    const scale = Math.max(canvas.dimensions.size / 100, 0.5)
+    const scale = crownScaleOf(canvas.dimensions.size, token.w, token.h)
     crown.scale = scale
     crown.graph = graph
     crown.nodeTokens = nodeTokens

@@ -26,6 +26,12 @@ import {
   reservedChangedBy
 } from "../../system/reserved-fields.js"
 import {
+  needsCommcode, generateCommcode, commcodeChange
+} from "../../system/commcode-rules.js"
+import {
+  worldCommcodes
+} from "../../interface/commcode-default.js"
+import {
   SR5_CharacterUtility 
 } from "../actors/utilityActor.js"
 import {
@@ -191,6 +197,13 @@ export class SR5Item extends Item {
     //brings its mods along with it
     if (this.type === "itemVehicleMod" && this.parent?.type === "actorDrone" && droneInWorld(this.parent) &&
       vehicleModSlotsRefused(this.parent, null, preparedCopy(this))) return false
+    //Relecture djamz.13 (arbitrage de DjamZ): a communication device set on a character comes with its commcode
+    if (this.parent instanceof Actor && needsCommcode(this, this.parent.type)) {
+      const commcode = generateCommcode(worldCommcodes())
+      if (commcode) this.updateSource({
+        "system.commcode": commcode, "system.commcodeEdited": false
+      })
+    }
     const defaultImg = `systems/sr5/assets/img/items/${data.type}.svg`
     if (!data.img || data.img === "icons/svg/item-bag.svg") {
       this.updateSource({
@@ -206,6 +219,20 @@ export class SR5Item extends Item {
     if (!game.user.isGM && reservedChangedBy(this._source, changes, GM_ONLY_FIELDS[this.type], options).length) {
       ui.notifications?.warn(game.i18n.localize("SR5.WARN_GMOnlyField"))
       return false
+    }
+    //Relecture djamz.13 (arbitrage de DjamZ): the owner changes the commcode once, the gamemaster as often as he likes
+    if (this.type === "itemDevice" && foundry.utils.hasProperty(changes, "system.commcode")) {
+      const verdict = commcodeChange({
+        isGM: game.user.isGM, before: this._source.system?.commcode,
+        after: foundry.utils.getProperty(changes, "system.commcode"), edited: this._source.system?.commcodeEdited
+      })
+      if (verdict === "refused") {
+        // Only the commcode is left out: the rest of the sheet's form goes through
+        ui.notifications?.warn(game.i18n.localize("SR5.WARN_CommcodeChangedOnce"))
+        delete changes["system.commcode"]
+        if (changes.system) delete changes.system.commcode
+      }
+      if (verdict === "first") foundry.utils.setProperty(changes, "system.commcodeEdited", true)
     }
     //SR5 p. 422: a hidden weapon made ready is taken out, its hidden state goes (arbitrage de DjamZ, 2026-10-07)
     if (updateTakesOut(this, changes)) foundry.utils.setProperty(changes, `flags.sr5.-=${CONCEALED_FLAG}`, null)

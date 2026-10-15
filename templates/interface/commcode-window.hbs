@@ -123,6 +123,16 @@
       <input type="text" name="contactCommcode" placeholder="{{localize 'SR5.Commcode'}}">
       <button type="button" data-action="addContact"><i class="fas fa-user-plus"></i> {{localize "SR5.COMMCODE_AddContact"}}</button>
     </div>
+    <div class="sr-commcode-new">
+      <select name="contactPick">
+        <option value="">{{localize "SR5.COMMCODE_PickContact"}}</option>
+        {{#each candidates}}
+        <option value="{{commcode}}" data-name="{{name}}">{{name}}</option>
+        {{/each}}
+      </select>
+      <button type="button" data-action="addPicked"><i class="fas fa-user-plus"></i> {{localize "SR5.COMMCODE_AddContact"}}</button>
+      <button type="button" data-action="addTarget" data-tooltip="{{localize 'SR5.COMMCODE_AddTarget_D'}}"><i class="fas fa-crosshairs"></i> {{localize "SR5.COMMCODE_AddTarget"}}</button>
+    </div>
     <ul>
       {{#each directory}}
       <li>
