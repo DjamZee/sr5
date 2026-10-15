@@ -132,6 +132,9 @@ import {
 import {
   primaryLifestyleUpdates
 } from "../../system/lifestyle-primary.js"
+import {
+  tooltipsToHelp, fillHelpBubble
+} from "../../interface/help-tooltips.js"
 
 /**
  * Extend the basic ActorSheet class to do all the SR5 things!
@@ -294,6 +297,11 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     context.system = actorData.system
     context.items = actorData.items
     context.owner = this.actor.isOwner
+    //Astral perception in the vision types block (relecture djamz.13, img 18): a spirit and a magician
+    //perceive astrally (SR5 p. 313), an adept once the power has given it the vision
+    const visions = this.actor.system.visions
+    context.canPerceiveAstral = this.actor.type === "actorSpirit" || !!visions?.astral?.hasVision ||
+      ["magician", "aspectedMagician", "mysticalAdept"].includes(this.actor.system.magic?.magicType)
     //The drug designer's button: Chemistry, the gamemaster, or the "objects" rule lock lifted (drug-designer.js)
     context.canOfferDrugDesign = canOfferDrugDesign(this.actor)
     context.editable = this.isEditable
@@ -739,7 +747,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     // Custom dropdown enhancement
     enhanceSelects(element)
 
-    // Help Display
+    // Help Display. The tooltips go into the bubble when it is on and free (help-tooltips.js)
+    tooltipsToHelp(element.querySelector(".window-content") ?? element, game.settings.get("sr5", "sr5Help.active"), text => game.i18n.localize(text))
     element.querySelectorAll("[data-helpTitle]").forEach(el => {
       el.addEventListener("mouseover", this._displayHelpText.bind(this))
       el.addEventListener("mouseout", this._hideHelpText.bind(this))
@@ -2252,9 +2261,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
     {
       const el = event.currentTarget
-      if (helpTitle) helpTitle.innerHTML = el.dataset.helptitle || ""
-
-      if (el.dataset.helpmessage && helpMessage) helpMessage.innerHTML = "<div class='helpMessage'><em>" + el.dataset.helpmessage + "</em></div>"
+      fillHelpBubble(el, helpTitle, helpMessage)
 
       let details = el.dataset.helpdetails
       if (details) {

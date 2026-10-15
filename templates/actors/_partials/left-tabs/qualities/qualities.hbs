@@ -41,5 +41,19 @@
 			</div>
 		</li>
 		{{/each}}
+		{{!-- Spirit traits (Forbidden Arcana p. 172-175, Street Grimoire p. 133, SR5 p. 306): moved from the header
+		     (relecture djamz.13, img 17). The gamemaster's only, as in the header: ticked through the ledger --}}
+		{{#ife actor.type 'actorSpirit'}}
+		{{#if system.isGM}}
+		<li class="grid"><label class="col-12" data-tooltip="{{localize 'SR5.SpiritElemental_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="isElemental" {{checked system.isElemental}}> {{localize 'SR5.SpiritElemental'}}</label></li>
+		<li class="grid"><label class="col-12" data-tooltip="{{localize 'SR5.SpiritWild_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="isWild" {{checked system.isWild}}> {{localize 'SR5.SpiritWild'}}</label></li>
+		<li class="grid"><label class="col-12" data-tooltip="{{localize 'SR5.SpiritDomain_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="hasDomain" {{checked system.hasDomain}}> {{localize 'SR5.SpiritDomain'}}</label></li>
+		<li class="grid"><label class="col-12" data-tooltip="{{localize 'SR5.SpiritMagicPact_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="magicPact" {{checked system.magicPact}}> {{localize 'SR5.SpiritMagicPact'}}</label></li>
+		<li class="grid"><label class="col-12" data-tooltip="{{localize 'SR5.SpiritFree_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="isFree" {{checked system.isFree}}> {{localize 'SR5.SpiritFree'}}</label></li>
+		{{#if system.isFree}}
+		<li class="grid"><label class="col-12" data-tooltip="{{localize 'SR5.SpiritFreeEdge_D'}}">{{localize 'SR5.Edge'}} <input type="number" min="0" class="SRinputInBox sr5-spirit-ledger" data-trait="freeEdge" value="{{system.freeEdge}}" placeholder="{{system.specialAttributes.edge.natural.value}}"></label></li>
+		{{/if}}
+		{{/if}}
+		{{/ife}}
 	</ul>
 </div>

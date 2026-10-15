@@ -4,6 +4,18 @@
 		<li class="grid SR-LigneEnTete SR-TextUppercase">
 			<div class="col-12">{{localize 'SR5.VisionTypes'}}</div>
 		</li>
+        {{!-- A spirit perceives astrally all the time (SR5 p. 304): no ordinary sight to come back to, no switch --}}
+        {{#ife actor.type 'actorSpirit'}}
+        <li class="grid">
+            <div class="col-11">{{localize 'SR5.AstralPerception'}}</div>
+            <div class="col-1 SR-TextCenter"
+		  	  data-helpTitle="{{localize 'SR5.AstralPerception'}}"
+			  data-helpMessage="{{localize 'SR5.HELP_VisionAstralSpiritMsg'}}"
+			>
+            <em class="fas fa-sm fa-thumbtack SR-SubColor"></em>
+			</div>
+        </li>
+        {{else}}
         <li class="grid">
             <div class="col-11">{{localize 'SR5.VISION.ModeNatural'}}</div>
             <div class="col-1 SR-TextCenter"
@@ -17,6 +29,23 @@
 			{{/if}}
 			</div>
         </li>
+        {{!-- The same switch as the astral plane block, where a magician looks for the visions in use --}}
+        {{#if canPerceiveAstral}}
+        <li class="grid">
+            <div class="col-11">{{localize 'SR5.AstralPerception'}}</div>
+            <div class="col-1 SR-TextCenter"
+		  	  data-helpTitle="{{localize 'SR5.AstralPerception'}}"
+			  data-helpMessage="{{localize 'SR5.HELP_AstralPreceptionMsg'}}"
+			>
+            {{#if system.visions.astral.isActive}}
+            <a class= "vision-switch" data-binding="astral" data-dtype="Boolean"><em class="fas fa-sm fa-thumbtack SR-SubColor"></em></a>
+			{{else}}
+			    <a class= "vision-switch" data-binding="astral" data-dtype="Boolean"><em class="fas fa-sm fa-thumbtack"></em></a>
+			{{/if}}
+			</div>
+        </li>
+        {{/if}}
+        {{/ife}}
         {{#if system.visions.lowLight.hasVision}}
         <li class="grid">
             <div class="col-11">{{localize 'SR5.LowLightVision'}}</div>

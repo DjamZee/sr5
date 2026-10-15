@@ -106,12 +106,27 @@ describe('the button that names who stands in a bubble', () => {
     expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_SpellShapingNoBubbleLeft')
   })
 
-  it('refuses to guess when the targets and the selection differ', async () => {
+  // P1-21 (relecture djamz.13): a player nearly always has their own token selected; targeting the ally then hit a
+  // refusal. Now the caster ticks the tokens to spare among both lists.
+  it('lets the caster pick when the targets and the selection differ', async () => {
+    game.user.targets = new Set([token('ally', 'Ally')])
+    canvas.tokens.controlled = [token('own', 'Own')]
+    const pick = vi.spyOn(SR5_RollMessage, '_pickTokensToSpare').mockImplementation(async tokens => tokens.filter(t => t.id === 'ally'))
+    await SR5_RollMessage.spareWithSpellShaping('m1', card(1))
+    expect(pick.mock.calls[0][0].map(t => t.id)).toEqual(['ally', 'own'])
+    expect(pick.mock.calls[0][1]).toBe(1)
+    expect(updated[0][1].magic.spell.sparedActors).toEqual([{
+      id: 'ally', name: 'Ally'
+    }])
+  })
+
+  it('spares nobody when the caster closes the choice', async () => {
     game.user.targets = new Set([token('victim')])
     canvas.tokens.controlled = [token('ally')]
+    vi.spyOn(SR5_RollMessage, '_pickTokensToSpare').mockResolvedValue(null)
     await SR5_RollMessage.spareWithSpellShaping('m1', card(1))
     expect(updated).toEqual([])
-    expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_SpellShapingTargetAndSelectionDiffer')
+    expect(ui.notifications.warn).not.toHaveBeenCalled()
   })
 
   it('asks for a token when none is targeted or selected', async () => {

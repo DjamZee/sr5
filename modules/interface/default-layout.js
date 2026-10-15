@@ -152,14 +152,15 @@ function _spiritDefaultLayout() {
       _panel('SIDEBAR', 1, [
         _tab('Core', 'core', [
           _block('attributes'), _block('resistances'),
-          _block('defenses'), _block('initiatives'),
+          _block('defenses'), _block('initiatives'), _block('visions'),
         ]),
         _tab('Derived', 'derived', [
           _block('limits'), _block('derivedAttributes'),
           _block('essence'), _block('carrying'), _block('movement'),
         ]),
+        //Traits: the spirit's own (Elemental, Wild, Domain...) and its qualities (relecture djamz.13, img 17)
         _tab('Magic', 'magic', [
-          _block('astral'), _block('tradition'),
+          _block('astral'), _block('tradition'), _block('qualities'),
         ]),
       ]),
       _panel('MAIN', 2, [

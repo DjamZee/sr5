@@ -284,6 +284,20 @@ describe("Spell Shaping — who stands in a bubble", () => {
     expect(choix.ambiguous).toBe(true)
   })
 
+  it("offers every targeted or selected token once, targets first", () => {
+    const tokens = SR5_SpellShapingHelpers.candidates([{
+      id: "a"
+    }, {
+      id: "b"
+    }], [{
+      id: "b"
+    }, {
+      id: "c"
+    }])
+    expect(tokens.map(t => t.id)).toEqual(["a", "b", "c"])
+    expect(SR5_SpellShapingHelpers.candidates(undefined, null)).toEqual([])
+  })
+
   it("spares nobody when neither is set", () => {
     const choix = SR5_SpellShapingHelpers.tokensToSpare([], [])
     expect(choix.tokens).toEqual([])
