@@ -1933,6 +1933,7 @@
 	"SR5.DrugTraitShakyHands": "Tremblements des mains (SR5 p. 89)",
 	"SR5.DrugTraitUncouth": "Asocial (SR5 p. 80)",
 	"SR5.DrugDesignerTitle": "Concepteur de drogue",
+	"SR5.DrugDesignerFor": "Pour le personnage",
 	"SR5.DrugDesignerIntro": "Drogues customisées (Chrome Flesh p. 194-196) : choisissez une base, puis des blocs et leur niveau, puis des améliorateurs. La drogue se calcule à mesure.",
 	"SR5.DrugDesignerDefaultName": "Drogue customisée",
 	"SR5.DrugDesignerBase": "Base",

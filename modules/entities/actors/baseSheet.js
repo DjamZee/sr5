@@ -24,9 +24,6 @@ import {
   drugDesignApproved
 } from "../items/drug-designer.js"
 import {
-  SR5DrugDesigner, canOfferDrugDesign
-} from "../../interface/drug-designer.js"
-import {
   setCharacterField, setSpiritTrait, banishKey
 } from "../../system/spirit-ledger.js"
 import {
@@ -294,8 +291,6 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     context.system = actorData.system
     context.items = actorData.items
     context.owner = this.actor.isOwner
-    //The drug designer's button: Chemistry, the gamemaster, or the "objects" rule lock lifted (drug-designer.js)
-    context.canOfferDrugDesign = canOfferDrugDesign(this.actor)
     context.editable = this.isEditable
     context.isEmbedded = true  // Items rendered on actor sheets are always embedded
     context.filters = this._filters || {
@@ -554,9 +549,6 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
     // Owned Item management
     on(".item-create", "click", this._onItemCreate.bind(this))
-    on(".drug-designer-open", "click", () => new SR5DrugDesigner({
-      actor: this.actor
-    }).render(true))
     on(".item-clone", "click", this._onItemClone.bind(this))
     on(".item-edit", "click", this._onItemEdit.bind(this))
     on(".item-delete", "click", this._onItemDelete.bind(this))

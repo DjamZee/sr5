@@ -152,9 +152,11 @@ describe('labels', () => {
 
 describe('Firmine\'s review', () => {
   it('I2: the drug designer\'s button follows canOfferDrugDesign (the "objects" lock lifted included)', () => {
-    const template = read('../templates/actors/_partials/right-tabs/gear/variousGear.hbs')
-    expect(template).toContain('{{#if canOfferDrugDesign}}')
-    expect(read('../modules/entities/actors/baseSheet.js')).toContain('context.canOfferDrugDesign = canOfferDrugDesign(this.actor)')
+    // Relecture djamz.13, R1: the button left the sheet for the Items tab, where the player picks her character
+    const designer = read('../modules/interface/drug-designer.js')
+    expect(designer).toContain('canOfferDrugDesign(a, user)')
+    expect(designer).toContain('if (!game.user.isGM && !designableActors().length) return')
+    expect(read('../templates/actors/_partials/right-tabs/gear/variousGear.hbs')).not.toContain('drug-designer-open')
   })
 
   it('I5: a stored ammunition stack is not counted twice', () => {
