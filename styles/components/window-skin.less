@@ -10,7 +10,7 @@
 // Lot 36b: the windows without the sr-application class take the theme's window dress (window.less, a long
 // :not() chain with !important): an id that no element carries (#srw-raise) lifts their selector above it, as :is()
 // counts its heaviest argument
-@srw-skinned-plain: ~".sr-combat-maneuver, .sr-explosive-charge, #srw-raise";
+@srw-skinned-plain: ~".sr-combat-maneuver, .sr-explosive-charge, .sr-skin-dialog, #srw-raise";
 
 .application:is(@{srw-skinned}),
 .application:is(@{srw-skinned-plain}) {
@@ -111,6 +111,54 @@
     background: transparent;
     border-top: 1px solid var(--srw-border);
   }
+}
+
+// Relecture djamz.13, R1: the dialogs (DialogV2) in the Concepteur's look too (sr-skin-dialog, put on by the
+// renderDialogV2 hook, render-ui.js), the roll window aside. The white picture of dialog.less gives way to the
+// window's ground, the buttons keep one line and a modest size (img 04, img 21)
+.application.dialog.sr-skin-dialog:is(.sr-skin-dialog, #srw-raise) {
+  > .window-content {
+    overflow-x: hidden;
+    overflow-y: auto;
+    min-height: 0;
+    padding: 0.6rem 0.75rem;
+  }
+  .dialog-form, .dialog-content {
+    background: transparent !important;
+    background-image: none !important;
+    color: var(--srw-text);
+  }
+  .dialog-content { padding: 0 0 0.4rem; }
+  .form-footer {
+    gap: 0.4rem;
+    padding-top: 0.5rem;
+    button {
+      min-height: 30px;
+      height: auto;
+      padding: 0.25rem 0.6rem;
+      font-size: var(--font-size-13, 13px);
+      line-height: 1.2;
+      white-space: normal;
+    }
+    // Every DialogV2 button is a submit: only the default one (autofocus) is filled, the others as plain buttons
+    button[type="submit"]:not(.default, [autofocus]) {
+      background: var(--srw-field) !important;
+      border-color: var(--srw-border-strong) !important;
+      color: var(--srw-text) !important;
+      font-weight: normal;
+      clip-path: none;
+    }
+  }
+}
+
+// Relecture djamz.13, R1: the windows whose content is one long column scroll as a whole when the window is smaller
+// than it (the core gives .window-content overflow: hidden). The windows with scrolling panes of their own (shop,
+// commcode, compendium browser, broker) keep theirs.
+@srw-scrolling: ~".sr-con, .sr-factions, .sr-drug-designer, .sr-shop-config, .sr-combat-maneuver, .sr-explosive-charge, .sr-cipher-tool, #srw-raise";
+.application:is(@{srw-scrolling}) > .window-content {
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 // The dark set under Foundry's dark theme, unless the window itself is light (as the Concepteur)

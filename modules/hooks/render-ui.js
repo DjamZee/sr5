@@ -90,7 +90,13 @@ export function sr5HookRenderDialog(_app, html) {
   }
 }
 
-export function sr5HookRenderDialogV2(_app, html) { enhanceSelects(html) }
+export function sr5HookRenderDialogV2(app, html) {
+  enhanceSelects(html)
+  // Relecture djamz.13, R1: the dialogs wear the Concepteur's look (window-skin.less), as the system's windows; the
+  // roll window keeps its own (dialog.less, .SR5jet)
+  const element = app?.element ?? html
+  if (element?.classList && app?.id !== "jet" && !element.querySelector(".SR5jet")) element.classList.add("sr-skin-dialog")
+}
 export function sr5HookRenderSettingsConfig(_app, html) {
   enhanceSelects(html)
   _promoteAsideFooter(html)
