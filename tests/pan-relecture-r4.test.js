@@ -2,8 +2,39 @@ import {
   describe, it, expect
 } from 'vitest'
 import {
-  layoutCrown, lineBoxOf, crownScaleOf
+  layoutCrown, lineBoxOf, crownScaleOf, crownAngle, crownReachOf
 } from '../modules/canvas/pan-crown/pan-layout.js'
+
+describe('relecture djamz.13: a crown stays in its scene', () => {
+  const rect = {
+    x: 500, y: 500, width: 2000, height: 2000
+  }
+  const center = {
+    x: 1500, y: 1500
+  }
+  it('opens away from the center while it fits', () => {
+    expect(crownAngle({
+      x: 1000, y: 1500
+    }, center, rect, crownReachOf(50))).toBeCloseTo(Math.PI)
+  })
+  it('turns inward for a big token in a corner', () => {
+    const at = {
+      x: 650, y: 650
+    }
+    const reach = crownReachOf(150, Math.sqrt(3))
+    const a = crownAngle(at, center, rect, reach)
+    const x = at.x + Math.cos(a) * reach, y = at.y + Math.sin(a) * reach
+    expect(x).toBeGreaterThanOrEqual(rect.x)
+    expect(y).toBeGreaterThanOrEqual(rect.y)
+  })
+  it('keeps the old behaviour without a scene', () => {
+    expect(crownAngle({
+      x: 0, y: 0
+    }, {
+      x: 10, y: 0
+    })).toBeCloseTo(Math.PI)
+  })
+})
 
 const graph = () => ({
   master: null, nodes: [{

@@ -8,7 +8,8 @@ export const PAN_LAYOUT = {
   // Aired out at the relecture djamz.13 (DjamZ, img 11-12): 46, 56 and 54 before
   masterGap: 52,
   slaveRing: 64,
-  deviceGap: 40,
+  // 40 before: the loose devices sat on the token's name
+  deviceGap: 48,
   // The least distance between the centers of two icons (retours de DjamZ, 07/10): an icon with all it can wear, four
   // marks over it (1.7 radius high, 1.5 wide), the monitor under it (1.3), the count of marks at its side (2), fits
   // in 3.6 radii; a crowded ring grows, then a second ring opens one spacing further out
@@ -292,11 +293,34 @@ function staggerOf(n, spread, maxSpread, inner, evenly){
  * The direction of the master: away from the middle of the scene, so that crowns at the edge of a group open
  * outwards (as on the mock-up); straight up for a token at the very middle.
  */
-export function crownAngle(tokenCenter, sceneCenter){
+export function crownAngle(tokenCenter, sceneCenter, sceneRect = null, reach = 0){
   const dx = tokenCenter.x - sceneCenter.x
   const dy = tokenCenter.y - sceneCenter.y
   if (Math.hypot(dx, dy) < 1) return -Math.PI / 2
-  return Math.atan2(dy, dx)
+  const outward = Math.atan2(dy, dx)
+  // Relecture djamz.13 (Élise): a crown that would leave the scene, a big token at its edge, turns inward
+  if (!sceneRect || !reach) return outward
+  const holds = (a, r) => {
+    const x = tokenCenter.x + Math.cos(a) * r, y = tokenCenter.y + Math.sin(a) * r
+    return x >= sceneRect.x && x <= sceneRect.x + sceneRect.width && y >= sceneRect.y && y <= sceneRect.y + sceneRect.height
+  }
+  // Its axis, and the sides of the fan of the slaves
+  const inside = a => holds(a, reach) && holds(a - Math.PI / 3, reach * 0.85) && holds(a + Math.PI / 3, reach * 0.85)
+  if (inside(outward)) return outward
+  // The nearest turn from outward that keeps it in, else straight to the center
+  for (let step = 1; step <= 12; step++) for (const sign of [1, -1]) {
+    const a = outward + sign * step * Math.PI / 12
+    if (inside(a)) return a
+  }
+  return outward + Math.PI
+}
+
+/**
+ * How far a crown reaches from its token's center along its direction: the master, the ring of its slaves and a
+ * second ring, an icon's radius beyond
+ */
+export function crownReachOf(tokenRadius, scale = 1){
+  return tokenRadius + (PAN_LAYOUT.masterGap + PAN_LAYOUT.slaveRing + PAN_LAYOUT.minSpacing + PAN_LAYOUT.iconRadius) * scale
 }
 
 /**

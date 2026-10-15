@@ -19,7 +19,7 @@ import {
   closeRadialMenu, closeRadialMenuOf, openRadialMenu
 } from "./pan-radial-menu.js"
 import {
-  crownAngle, dashesOf, layoutCrown, lineRadiusOf, lineBoxOf, crownScaleOf, signatureOf, PAN_LAYOUT
+  crownAngle, dashesOf, layoutCrown, lineRadiusOf, lineBoxOf, crownScaleOf, crownReachOf, signatureOf, PAN_LAYOUT
 } from "./pan-layout.js"
 import {
   iconPathOf, isTintedIcon, nodeIconPathOf
@@ -332,7 +332,8 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
       // The last build (M1): its graph, the tokens its lines go to, what it showed, its scale
       graph: null, nodeTokens: new Map(), signature: null, scale: 1,
       // Fixed once open, so that the crown does not swing round while its token moves
-      angle: crownAngle(token.center, sceneCenter),
+      angle: crownAngle(token.center, sceneCenter, canvas.dimensions.sceneRect,
+        crownReachOf(Math.max(token.w, token.h) / 2, crownScaleOf(canvas.dimensions.size, token.w, token.h))),
       deployStart: null,
     }
     this.crowns.set(token.id, crown)
