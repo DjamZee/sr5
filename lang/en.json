@@ -5947,7 +5947,7 @@
 	"SR5.StorageSpoilsDropped": "{count} item(s) fall from {actor}.",
 	"SR5.SETTINGS_StorageDropOnDeath_T": "Leave spoils on death",
 	"SR5.SETTINGS_StarterKit_T": "Starting kit",
-	"SR5.SETTINGS_StarterKit_D": "Each new player character gets a \"Backpack\" storage, a \"Locker\" storage and an empty standard credstick (5,000¥ at most). Only what it lacks; the characters already in the world get nothing.",
+	"SR5.SETTINGS_StarterKit_D": "Each player character created in the world (not one taken from a compendium) gets a \"Backpack\" storage, a \"Locker\" storage and an empty standard credstick (5,000¥ at most). Only what it lacks; the characters already in the world get nothing.",
 	"SR5.StarterKit_Backpack": "Backpack",
 	"SR5.StarterKit_Locker": "Locker",
 	"SR5.StarterKit_Credstick": "Standard credstick",

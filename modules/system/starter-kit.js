@@ -2,7 +2,8 @@
 // a backpack and a locker to store gear in, and a standard credstick. Run Faster p. 222-223 puts a backpack (20 ¥)
 // and a standard credstick in every runner pack; the standard credstick costs 5 ¥ and holds 5 000 ¥ at most
 // (SR5 p. 443). The locker is the table's convenience, a storage of the Stash kind.
-// Given once, when a player character is created (by hand, from a compendium, from a JSON file, by the Concepteur),
+// Given once, when a player character is created (by hand, then filled by the Concepteur or a JSON file), never to one
+// taken from a compendium,
 // by the active gamemaster alone; never to the actors already in the world. World setting "Starting kit", on by default.
 
 export const STARTER_KIT_SETTING = "sr5StarterKit"
@@ -19,8 +20,10 @@ export const STARTER_CREDSTICK_MAX = 5000
  * @param {(key: string) => string} localize
  * @returns {object[]} item data to create
  */
-export function starterKitPlan(actorType, items, enabled, localize = key => key) {
-  if (!enabled || actorType !== "actorPc") return []
+export function starterKitPlan(actorType, items, enabled, localize = key => key, fromCompendium = false) {
+  // A character taken from a compendium is a ready-made one: the Megapack's NPCs and creatures are actorPc too
+  // (measured in game: a unicorn got a backpack), and its archetypes carry their own gear
+  if (!enabled || actorType !== "actorPc" || fromCompendium) return []
   const list = [...(items ?? [])]
   const hasStorage = kind => list.some(i => i?.type === "itemStorage" && i.system?.type === kind)
   const hasCredstick = list.some(i => i?.type === "itemGear" && i.system?.isCredstick)
@@ -63,11 +66,18 @@ export function registerStarterKitSetting() {
 
 const given = new Set()
 
-/** The active gamemaster gives the kit to a player character just created in the world. */
-export async function giveStarterKit(actor) {
-  if (!game.users?.activeGM?.isSelf || !actor || actor.isToken || actor.pack || given.has(actor.id)) return
+/**
+ * The active gamemaster gives the kit to a player character just created in the world. again: after an "Import Data",
+ * which replaced the items given at the creation (the kit is given only for what is missing all the same).
+ */
+export async function giveStarterKit(actor, {
+  again = false
+} = {
+}) {
+  if (!game.users?.activeGM?.isSelf || !actor || actor.isToken || actor.pack || (!again && given.has(actor.id))) return
   const plan = starterKitPlan(actor.type, actor.items?.contents ?? [...(actor.items ?? [])],
-    game.settings.get("sr5", STARTER_KIT_SETTING), key => game.i18n.localize(key))
+    game.settings.get("sr5", STARTER_KIT_SETTING), key => game.i18n.localize(key),
+    String(actor._stats?.compendiumSource ?? "").startsWith("Compendium."))
   if (!plan.length) return
   given.add(actor.id)
   await actor.createEmbeddedDocuments("Item", plan)

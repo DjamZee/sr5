@@ -27,6 +27,8 @@ describe('starting kit of a new player character (R8)', () => {
       expect(starterKitPlan(type, [], true)).toEqual([])
     }
     expect(starterKitPlan('actorPc', [], false)).toEqual([])
+    // Taken from a compendium (the Megapack's NPCs and creatures are actorPc too)
+    expect(starterKitPlan('actorPc', [], true, key => key, true)).toEqual([])
   })
 
   it('adds only what the actor lacks', () => {
