@@ -257,7 +257,7 @@ function readRegister() {
 }
 
 /** The register without the peak of `uuid`, or null when it holds none. */
-export function withoutPeak(register, uuid) {
+export function registerWithoutPeak(register, uuid) {
   const entry = register?.[uuid]
   if (!entry || !(PEAK_COST in entry)) return null
   const {
@@ -285,7 +285,7 @@ export async function resetEssencePeak(item) {
     rejectClose: false,
   })
   if (confirmed !== true) return false
-  await updateLedger(IMPLANT_REGISTER, register => withoutPeak(register, item.uuid))
+  await updateLedger(IMPLANT_REGISTER, register => registerWithoutPeak(register, item.uuid))
   // Every client prepares the character again; the GM's own look then notes the cost of now as the peak
   await item.update({
     "flags.sr5.essencePeakReset": Date.now()
@@ -358,7 +358,11 @@ async function onUpdate(doc, changes, _options, userId) {
   // The gamemaster ends the creation: the peaks start from the costs of now (inCreation). Every client prepares the
   // character again once they have arrived (onWorldCreationModeChange), or it shows an old peak until then
   if (doc.documentName === "Actor" && creationEnded(changes) && !creationMode(doc)) {
-    endedPending.add(doc)
+    // A register already at these peaks is not written, so nothing would take the character off the queue: it is
+    // prepared right already (max(cost, peak) = cost) and is not queued
+    if (peaksAtCreationEnd({
+      ...readRegister()
+    }, doc)) endedPending.add(doc)
     if (isActiveGM()) await updateLedger(IMPLANT_REGISTER, register => peaksAtCreationEnd(register, doc))
   }
   const fields = reservedFieldsOf(doc)
