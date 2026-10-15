@@ -17,9 +17,9 @@
   </header>
 
   <nav class="sr-infobroker-tabs">
-    <a data-action="brokerTab" data-tab="buy" class="{{#if (eq tab 'buy')}}active{{/if}}"><em class="fas fa-magnifying-glass"></em> {{localize 'SR5.INFOBROKER_TabBuy'}}</a>
-    <a data-action="brokerTab" data-tab="sell" class="{{#if (eq tab 'sell')}}active{{/if}}"><em class="fas fa-hand-holding-dollar"></em> {{localize 'SR5.INFOBROKER_TabSell'}}</a>
-    <a data-action="brokerTab" data-tab="requests" class="{{#if (eq tab 'requests')}}active{{/if}}"><em class="fas fa-inbox"></em> {{localize 'SR5.INFOBROKER_TabRequests'}}{{#if openCount}} <span class="sr-infobroker-count">{{openCount}}</span>{{/if}}</a>
+    <a data-action="brokerTab" data-tab="buy" class="{{#if (eq tab 'buy')}}active{{/if}}"><em class="fas fa-magnifying-glass"></em> {{tabLabels.buy}}</a>
+    <a data-action="brokerTab" data-tab="sell" class="{{#if (eq tab 'sell')}}active{{/if}}"><em class="fas fa-hand-holding-dollar"></em> {{tabLabels.sell}}</a>
+    <a data-action="brokerTab" data-tab="requests" class="{{#if (eq tab 'requests')}}active{{/if}}"><em class="fas fa-inbox"></em> {{tabLabels.requests}}{{#if waitingCount}} <span class="sr-infobroker-count" data-tooltip="{{localize 'SR5.INFOBROKER_WaitingTip'}}">{{waitingCount}}</span>{{/if}}</a>
   </nav>
 
   <div class="sr-infobroker-scroll">
@@ -62,60 +62,77 @@
   {{/if}}
 
   {{#if (eq tab 'requests')}}
-    {{#each requests}}
-    <article class="sr-infobroker-request status-{{status}}" data-request="{{id}}">
-      <div class="sr-infobroker-request-head">
-        <em class="fas {{#if isSell}}fa-hand-holding-dollar{{else}}fa-magnifying-glass{{/if}}"></em>
-        <b>{{typeLabel}}</b>{{#if subject}} — {{subject}}{{/if}}
-        <span class="sr-infobroker-pill">{{statusLabel}}</span>
-        <small>{{actorName}}{{#if vendorName}} · {{vendorName}}{{/if}} · {{date}}</small>
-      </div>
-      <div class="sr-infobroker-request-line">
-        <span>{{localize 'SR5.INFOBROKER_Range'}} {{range}}</span>
-        {{#if isSell}}{{#if asked}}<span>{{localize 'SR5.INFOBROKER_AskedShort'}} {{asked}} ¥</span>{{/if}}{{/if}}
-        {{#if (or (eq status 'quoted') (eq status 'paid') (eq status 'delivered') (eq status 'bid') (eq status 'sold'))}}<span class="sr-infobroker-price">{{priceLabel}}</span>{{/if}}
-      </div>
+    {{#each groups}}
+    <details class="sr-infobroker-group group-{{turn}}" {{#unless closed}}open{{/unless}}>
+      <summary>{{label}} <span class="sr-infobroker-group-count">{{requests.length}}</span></summary>
+      {{#each requests}}
+      <article class="sr-infobroker-request status-{{status}}" data-request="{{id}}">
+        <div class="sr-infobroker-request-head">
+          <em class="fas {{#if isSell}}fa-arrow-right-from-bracket{{else}}fa-arrow-right-to-bracket{{/if}}"></em>
+          <b class="sr-infobroker-role">{{roleLine}}</b>
+          <span class="sr-infobroker-pill">{{statusLabel}}</span>
+          <small>{{date}}</small>
+        </div>
+        <div class="sr-infobroker-what"><b>{{what}}</b></div>
+        {{!-- The steps of the request, the current one lit (P1-38) --}}
+        <ol class="sr-infobroker-steps">
+          {{#each steps}}<li class="step-{{state}}">{{label}}</li>{{/each}}
+        </ol>
+        <div class="sr-infobroker-request-line">
+          <span>{{localize 'SR5.INFOBROKER_Range'}} {{range}}</span>
+          {{#if isSell}}{{#if asked}}<span>{{localize 'SR5.INFOBROKER_AskedShort'}} {{asked}} ¥</span>{{/if}}{{/if}}
+          {{#if (or (eq status 'quoted') (eq status 'paid') (eq status 'delivered') (eq status 'bid') (eq status 'sold'))}}<span class="sr-infobroker-price">{{priceLabel}}</span>{{/if}}
+        </div>
 
-      {{#if ../isGM}}
-        {{#if (or gmQuote gmBid gmDeliver)}}
-        <div class="sr-infobroker-gm">
-          {{#unless gmDeliver}}
-          <label>{{#if isSell}}{{localize 'SR5.INFOBROKER_Bid'}}{{else}}{{localize 'SR5.INFOBROKER_Price'}}{{/if}} <input type="number" name="price" min="0" value="{{price}}"></label>
-          {{#unless inRange}}<small class="sr-infobroker-warn">{{localize 'SR5.INFOBROKER_OutOfRange'}}</small>{{/unless}}
-          {{/unless}}
-          {{#unless isSell}}
-          <label>{{localize 'SR5.INFOBROKER_Reliability'}}
-            <select name="reliability">{{#each reliabilities}}<option value="{{key}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
-          </label>
-          <label class="wide">{{localize 'SR5.INFOBROKER_Content'}} <textarea name="content" rows="3">{{content}}</textarea></label>
-          {{/unless}}
-          <label class="wide">{{localize 'SR5.INFOBROKER_GmNote'}} <input type="text" name="gmNote" value="{{gmNote}}"></label>
-          <div class="sr-infobroker-buttons">
-            {{#if gmQuote}}
-            <button type="button" data-action="gmMove" data-id="{{id}}" data-move="quote"><em class="fas fa-tag"></em> {{localize 'SR5.INFOBROKER_Quote'}}</button>
-            <button type="button" data-action="gmMove" data-id="{{id}}" data-move="notFound"><em class="fas fa-ban"></em> {{localize 'SR5.INFOBROKER_NotFound'}}</button>
-            {{/if}}
-            {{#if gmBid}}
-            <button type="button" data-action="gmMove" data-id="{{id}}" data-move="bid"><em class="fas fa-tag"></em> {{localize 'SR5.INFOBROKER_MakeBid'}}</button>
-            <button type="button" data-action="gmMove" data-id="{{id}}" data-move="refuse"><em class="fas fa-ban"></em> {{localize 'SR5.INFOBROKER_Refuse'}}</button>
-            {{/if}}
-            {{#if gmDeliver}}
-            <button type="button" data-action="gmMove" data-id="{{id}}" data-move="deliver"><em class="fas fa-file-export"></em> {{localize 'SR5.INFOBROKER_Deliver'}}</button>
-            {{/if}}
+        {{#if @root.isGM}}
+          {{#if (or gmQuote gmBid gmDeliver)}}
+          <div class="sr-infobroker-gm">
+            {{#unless gmDeliver}}
+            <label>{{#if isSell}}{{localize 'SR5.INFOBROKER_Bid'}}{{else}}{{localize 'SR5.INFOBROKER_Price'}}{{/if}} <input type="number" name="price" min="0" value="{{price}}"></label>
+            {{#unless inRange}}<small class="sr-infobroker-warn">{{localize 'SR5.INFOBROKER_OutOfRange'}}</small>{{/unless}}
+            {{/unless}}
+            {{#unless isSell}}
+            <label>{{localize 'SR5.INFOBROKER_Reliability'}}
+              <select name="reliability">{{#each reliabilities}}<option value="{{key}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+            </label>
+            <label class="wide">{{localize 'SR5.INFOBROKER_Content'}} <textarea name="content" rows="3">{{content}}</textarea></label>
+            {{/unless}}
+            <label class="wide">{{localize 'SR5.INFOBROKER_GmNote'}} <input type="text" name="gmNote" value="{{gmNote}}"></label>
+            <div class="sr-infobroker-buttons">
+              {{#if gmQuote}}
+              <button type="button" data-action="gmMove" data-id="{{id}}" data-move="quote"><em class="fas fa-tag"></em> {{localize 'SR5.INFOBROKER_Quote'}}</button>
+              <button type="button" data-action="gmMove" data-id="{{id}}" data-move="notFound"><em class="fas fa-ban"></em> {{localize 'SR5.INFOBROKER_NotFound'}}</button>
+              {{/if}}
+              {{#if gmBid}}
+              <button type="button" data-action="gmMove" data-id="{{id}}" data-move="bid"><em class="fas fa-tag"></em> {{localize 'SR5.INFOBROKER_MakeBid'}}</button>
+              <button type="button" data-action="gmMove" data-id="{{id}}" data-move="refuse"><em class="fas fa-ban"></em> {{localize 'SR5.INFOBROKER_Refuse'}}</button>
+              {{/if}}
+              {{#if gmDeliver}}
+              <button type="button" data-action="gmMove" data-id="{{id}}" data-move="deliver"><em class="fas fa-file-export"></em> {{localize 'SR5.INFOBROKER_Deliver'}}</button>
+              {{/if}}
+            </div>
           </div>
+          {{/if}}
+        {{/if}}
+
+        {{#if (or canAccept canSell)}}
+        <div class="sr-infobroker-offer {{#if short}}is-short{{/if}}">
+          <span class="sr-infobroker-offer-label">{{#if isSell}}{{localize 'SR5.INFOBROKER_OfferReceived'}}{{else}}{{localize 'SR5.INFOBROKER_PriceAsked'}}{{/if}}</span>
+          <span class="sr-infobroker-offer-price">{{priceLabel}}</span>
+          {{#if balanceLabel}}<span class="sr-infobroker-offer-balance">{{localize 'SR5.INFOBROKER_Balance' actor=actorName balance=balanceLabel}}{{#if short}} — {{localize 'SR5.INFOBROKER_Short'}}{{/if}}</span>{{/if}}
         </div>
         {{/if}}
-      {{/if}}
-
-      {{#if (or canAccept canSell canDecline canCancel)}}
-      <div class="sr-infobroker-buttons">
-        {{#if canAccept}}<button type="button" data-action="answer" data-id="{{id}}" data-move="accept"><em class="fas fa-check"></em> {{localize 'SR5.INFOBROKER_Accept' price=priceLabel}}</button>{{/if}}
-        {{#if canSell}}<button type="button" data-action="answer" data-id="{{id}}" data-move="sell"><em class="fas fa-check"></em> {{localize 'SR5.INFOBROKER_AcceptBid' price=priceLabel}}</button>{{/if}}
-        {{#if canDecline}}<button type="button" data-action="answer" data-id="{{id}}" data-move="decline"><em class="fas fa-xmark"></em> {{localize 'SR5.INFOBROKER_Decline'}}</button>{{/if}}
-        {{#if canCancel}}<button type="button" data-action="answer" data-id="{{id}}" data-move="cancel"><em class="fas fa-trash"></em> {{localize 'SR5.INFOBROKER_Cancel'}}</button>{{/if}}
-      </div>
-      {{/if}}
-    </article>
+        {{#if (or canAccept canSell canDecline canCancel)}}
+        <div class="sr-infobroker-buttons">
+          {{#if canAccept}}<button type="button" data-action="answer" data-id="{{id}}" data-move="accept"><em class="fas fa-check"></em> {{localize 'SR5.INFOBROKER_Accept' price=priceLabel}}</button>{{/if}}
+          {{#if canSell}}<button type="button" data-action="answer" data-id="{{id}}" data-move="sell"><em class="fas fa-check"></em> {{localize 'SR5.INFOBROKER_AcceptBid' price=priceLabel}}</button>{{/if}}
+          {{#if canDecline}}<button type="button" data-action="answer" data-id="{{id}}" data-move="decline"><em class="fas fa-xmark"></em> {{localize 'SR5.INFOBROKER_Decline'}}</button>{{/if}}
+          {{#if canCancel}}<button type="button" data-action="answer" data-id="{{id}}" data-move="cancel"><em class="fas fa-trash"></em> {{localize 'SR5.INFOBROKER_Cancel'}}</button>{{/if}}
+        </div>
+        {{/if}}
+      </article>
+      {{/each}}
+    </details>
     {{else}}
     <p class="sr-infobroker-empty">{{localize 'SR5.INFOBROKER_NoRequests'}}</p>
     {{/each}}
