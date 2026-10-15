@@ -64,6 +64,9 @@ import {
 import {
   SR5PresetsConfig
 } from "../interface/presets-config.js"
+import {
+  defaultBannerFolder
+} from "../interface/shop-vendor-templates.js"
 
 export class SR5_SystemHelpers {
 
@@ -531,10 +534,12 @@ export class SR5_SystemHelpers {
     // (SR5 p. 420, the test is the search). A table may want it all the same.
     // Where the vendor banners are (lot C, part 2): never shipped with the system, the table
     // points at its own folder. Empty, vendors have the plain sign of part 1.
+    // Relecture djamz.13 (R9): the field shows the Megapack's folder by default when the module is active,
+    // instead of an empty field that read as "no banner" (an empty value still falls back on it, bannerFolderOf)
     game.settings.register("sr5", "sr5ShopBannerFolder", {
       name: "SR5.SETTINGS_ShopBannerFolder_T",
       hint: "SR5.SETTINGS_ShopBannerFolder_D",
-      scope: "world", config: true, default: "", type: String,
+      scope: "world", config: true, default: defaultBannerFolder(!!game.modules?.get("megapack-sr5-foundry-vtt")?.active), type: String,
       filePicker: "folder",
     })
 

@@ -110,6 +110,11 @@ export const MEGAPACK_BANNER_FOLDER = 'modules/megapack-sr5-foundry-vtt/assets/b
 export function bannerFolderOf(setting, megapackActive) {
   const folder = String(setting ?? '').trim()
   if (folder) return folder
+  return defaultBannerFolder(megapackActive)
+}
+
+/** The default of the "banner folder" setting: the Megapack's when it is active (the system ships none). */
+export function defaultBannerFolder(megapackActive) {
   return megapackActive ? MEGAPACK_BANNER_FOLDER : ''
 }
 

@@ -2,7 +2,7 @@ import {
   describe, it, expect, beforeEach, afterEach, vi
 } from 'vitest'
 import {
-  VENDOR_TEMPLATES, VENDOR_FAMILIES, templateBanners, templateShop, vendorTemplate, bannerFolderOf, MEGAPACK_BANNER_FOLDER
+  VENDOR_TEMPLATES, VENDOR_FAMILIES, templateBanners, templateShop, vendorTemplate, bannerFolderOf, defaultBannerFolder, MEGAPACK_BANNER_FOLDER
 } from '../modules/interface/shop-vendor-templates.js'
 import {
   SR5ShopCatalog
@@ -39,6 +39,11 @@ describe('vendor templates (shop lot C, part 2)', () => {
     expect(bannerFolderOf(null, false)).toBe('')
     // The gamemaster's own folder always wins
     expect(bannerFolderOf(' mes/bannieres ', true)).toBe('mes/bannieres')
+  })
+
+  it('shows the Megapack folder as the default of the setting when the module is active (R9)', () => {
+    expect(defaultBannerFolder(true)).toBe(MEGAPACK_BANNER_FOLDER)
+    expect(defaultBannerFolder(false)).toBe('')
   })
 
   it('gives a new vendor the template settings and its accent', () => {
