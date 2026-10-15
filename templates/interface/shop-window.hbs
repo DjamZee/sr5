@@ -4,9 +4,18 @@
   <nav class="sr-shop-shelves">
     {{#if (gt sources.length 1)}}
     <h4>{{localize 'SR5.ShopWhere'}}</h4>
-    <select class="sr-shop-source" data-shop-source aria-label="{{localize 'SR5.ShopWhere'}}">
-      {{#each sources}}<option value="{{this.key}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>{{/each}}
+    {{!-- Shelves or vendors first, then which vendor (relecture djamz.13, lot R6) --}}
+    {{#if (and sourceWorld vendorSources.length)}}
+    <div class="sr-shop-where" role="tablist">
+      <a class="sr-shop-where-tab {{#unless onVendor}}active{{/unless}}" data-action="setWhere" data-where="world" role="tab"><i class="fas fa-fw fa-store"></i> {{localize 'SR5.ShopWhereShelves'}}</a>
+      <a class="sr-shop-where-tab {{#if onVendor}}active{{/if}}" data-action="setWhere" data-where="vendor" role="tab"><i class="fas fa-fw fa-user-tie"></i> {{localize 'SR5.ShopWhereVendors'}} <span class="count">{{vendorSources.length}}</span></a>
+    </div>
+    {{/if}}
+    {{#if onVendor}}
+    <select class="sr-shop-source" data-shop-source aria-label="{{localize 'SR5.ShopWhereVendors'}}">
+      {{#each vendorSources}}<option value="{{this.key}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>{{/each}}
     </select>
+    {{/if}}
     {{/if}}
     <h4>{{localize 'SR5.ShopShelves'}}</h4>
     <a class="sr-shop-shelf {{#if allActive}}active{{/if}}" data-action="setShelf" data-shelf="">

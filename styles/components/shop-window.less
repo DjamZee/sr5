@@ -123,6 +123,31 @@
     }
     &.sub { padding-left: 22px; }
   }
+  // Shelves or vendors (lot R6): two tabs side by side, drawn as the shelves
+  .sr-shop-where {
+    display: flex;
+    gap: 3px;
+    margin-bottom: 6px;
+    .sr-shop-where-tab {
+      flex: 1 1 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 4px;
+      white-space: nowrap;
+      .srw-tab();
+      .srw-cut();
+      color: var(--shop-text) !important;
+      .count { color: var(--shop-muted); font-family: var(--srw-font-num); }
+      &:hover { border-color: var(--srw-sel-border); }
+      &.active {
+        .srw-tab-active();
+        color: var(--srw-sel-text) !important;
+        .count { color: var(--srw-sel-text); }
+      }
+    }
+  }
 
   /* ── Filters ─────────────────────────── */
   .sr-shop-main {

@@ -3,8 +3,31 @@ import {
 } from 'vitest'
 import {
   INFO_TYPES, infoType, priceRangeLabel, startingQuote, quoteInRange, nextStatus, sortRequests, forOwner, fileName,
-  cleanRequest
+  cleanRequest, requestTurn, requestSteps
 } from '../modules/system/info-broker-rules.js'
+
+// Relecture djamz.13, P1-38: who has the next move, and the steps of a request as a strip
+describe('the course of a request', () => {
+  it('says whose move it is', () => {
+    expect(['asked', 'offered', 'paid'].map(requestTurn)).toEqual(['gm', 'gm', 'gm'])
+    expect(['quoted', 'bid'].map(requestTurn)).toEqual(['owner', 'owner'])
+    expect(['delivered', 'sold', 'notFound', 'declined', 'cancelled', 'refused'].every(s => requestTurn(s) === 'closed')).toBe(true)
+  })
+
+  const states = steps => steps.map(s => `${s.key}:${s.state}`).join(' ')
+  it('lights the step reached on a purchase', () => {
+    expect(states(requestSteps('buy', 'asked'))).toBe('asked:current quoted:todo paid:todo delivered:todo')
+    expect(states(requestSteps('buy', 'quoted'))).toBe('asked:done quoted:current paid:todo delivered:todo')
+    expect(states(requestSteps('buy', 'delivered'))).toBe('asked:done quoted:done paid:done delivered:done')
+  })
+
+  it('stops on the failed step', () => {
+    expect(states(requestSteps('buy', 'notFound'))).toBe('asked:done notFound:failed')
+    expect(states(requestSteps('buy', 'declined'))).toBe('asked:done quoted:done declined:failed')
+    expect(states(requestSteps('sell', 'refused'))).toBe('offered:done refused:failed')
+    expect(states(requestSteps('sell', 'bid'))).toBe('offered:done bid:current sold:todo')
+  })
+})
 
 // Cutting Aces p. 148-149 (VF), checked against the VO table
 describe('the price list of p. 149', () => {

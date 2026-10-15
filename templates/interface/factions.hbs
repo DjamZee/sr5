@@ -52,8 +52,18 @@
       <label>{{localize 'SR5.FACTION_Faction'}}</label>
       <select name="mvFaction">{{#each factions}}<option value="{{id}}">{{name}}</option>{{/each}}</select>
     </div>
+    {{!-- Search and sort: the list grows with every NPC (relecture djamz.13, P1-36) --}}
+    <div class="sr-faction-pick-tools">
+      <input type="search" class="sr-faction-pick-search" placeholder="{{localize 'SR5.FACTION_PickSearch'}}" aria-label="{{localize 'SR5.FACTION_PickSearch'}}">
+      <select class="sr-faction-pick-sort" aria-label="{{localize 'SR5.FACTION_PickSort'}}">
+        <option value="players">{{localize 'SR5.FACTION_PickSortPlayers'}}</option>
+        <option value="name">{{localize 'SR5.FACTION_PickSortName'}}</option>
+        <option value="checked">{{localize 'SR5.FACTION_PickSortChecked'}}</option>
+      </select>
+      <span class="sr-faction-pick-count"></span>
+    </div>
     <div class="sr-faction-row sr-faction-pick">
-      {{#each characters}}<label class="checkbox"><input type="checkbox" name="mvActor" value="{{id}}"> {{name}}</label>{{/each}}
+      {{#each characters}}<label class="checkbox" data-name="{{name}}" data-player="{{#if isPlayer}}1{{else}}0{{/if}}"><input type="checkbox" name="mvActor" value="{{id}}"> {{#if isPlayer}}<i class="fas fa-user" data-tooltip="{{localize 'SR5.FACTION_PickPlayer'}}"></i> {{/if}}{{name}}</label>{{/each}}
     </div>
     <div class="form-group">
       <label>{{localize 'SR5.FACTION_Reason'}}</label>

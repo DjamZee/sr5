@@ -317,6 +317,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     },
     actions: {
       setShelf: SR5ShopWindow.#onSetShelf,
+      setWhere: SR5ShopWindow.#onSetWhere,
       toggleLegality: SR5ShopWindow.#onToggleLegality,
       clearFilters: SR5ShopWindow.#onClearFilters,
       refresh: SR5ShopWindow.#onRefresh,
@@ -497,6 +498,9 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     }) : []
     context.marketClosed = marketClosed
     context.sources = this.#sourcesContext()
+    context.sourceWorld = context.sources.find(s => s.key === 'world') ?? null
+    context.vendorSources = context.sources.filter(s => s.key !== 'world')
+    context.onVendor = !!this._source?.vendor || !context.sourceWorld
     context.vendor = vendorSource ? this.#vendorContext(vendorSource) : null
     context.payChoices = sticks.length ? [{
       id: '', label: game.i18n.localize('SR5.ShopVendorPayAccounts'), selected: !this._payWith
@@ -831,7 +835,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
         // A short name keeps the column narrow; the cart line spells it out
         key, label: game.i18n.localize(`SR5.ShopGradeShort_${key}`), selected: key === row.grade,
       })),
-      price: onVehicle ? game.i18n.localize('SR5.ShopPriceOnVehicle') : onWeapon ? game.i18n.format('SR5.ShopPriceOnWeapon', {
+      price: onVehicle ? SR5ShopWindow.#onVehiclePrice(entry) : onWeapon ? game.i18n.format('SR5.ShopPriceOnWeapon', {
         multiplier: SR5ShopCatalog.weaponPriceMultiplier(entry)
       }) : SR5ShopWindow.#nuyen(row.price),
       onVehicle,
@@ -849,6 +853,17 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
 
   static #nuyen(value) {
     return `${Math.round(value).toLocaleString()}¥`
+  }
+
+  /** A vehicle mod off a vehicle: « 1 000¥ × Structure » when it names its multiplier, else « Selon le véhicule » (lot R6). */
+  static #onVehiclePrice(entry) {
+    const price = entry.system?.price ?? {
+    }
+    const label = price.multiplier ? SR5.valueMultipliersAll?.[price.multiplier] : null
+    if (!label || !(price.base > 0)) return game.i18n.localize('SR5.ShopPriceOnVehicle')
+    return game.i18n.format('SR5.ShopPriceTimes', {
+      price: SR5ShopWindow.#nuyen(price.base), multiplier: game.i18n.localize(label)
+    })
   }
 
   /** One cart line per item and grade. */
@@ -1016,6 +1031,18 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     this._sub = shelf === this._shelf && !target.dataset.sub ? '' : sub
     this._shelf = shelf
     this._page = 0
+    this.render()
+  }
+
+  /** Shelves or vendors (relecture djamz.13, lot R6): the vendors' side opens on the first of them. */
+  static #onSetWhere(event, target) {
+    const where = target.dataset.where
+    if (where === 'world') {
+      if (this._source?.vendor) this.setSource(new SR5ShopWorldSource())
+    } else if (!this._source?.vendor) {
+      const [first] = SR5ShopVendor.vendors()
+      if (first) this.setSource(new SR5ShopVendorSource(first.actor, first.storage))
+    }
     this.render()
   }
 

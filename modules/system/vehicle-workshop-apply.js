@@ -82,10 +82,12 @@ export function pricedModData(source, vehicle){
   }
 }
 
-/** The shop of the workshop's button, on its vehicles shelf, for the workshop's buyer (Adrore's feedback C7c) */
+/** The shop of the workshop's button, on its mods, for the workshop's buyer (Adrore's feedback C7c). A drone under the
+ *  Modification Points opens on the drone mods (Rigger 5.0 p. 126); with slots, it takes the vehicle mods (p. 152) */
 export function openWorkshopShop(vehicle){
+  const drones = usesModPoints(droneModRule(), vehicle.system?.type)
   game.sr5?.shop?.open({
-    actor: workshopBuyer(vehicle), shelf: "vehicles", sub: "itemVehicleMod"
+    actor: workshopBuyer(vehicle), shelf: drones ? "drones" : "vehicles", sub: "itemVehicleMod"
   })
 }
 

@@ -138,6 +138,54 @@ export function sortRequests(entries) {
   })
 }
 
+/**
+ * Who has the next move (relecture djamz.13, P1-38): 'gm' (a request to quote, an offer to bid on, a file to
+ * deliver), 'owner' (a price or a bid to answer), or 'closed'.
+ */
+export function requestTurn(status) {
+  if (['asked', 'offered', 'paid'].includes(status)) return 'gm'
+  if (['quoted', 'bid'].includes(status)) return 'owner'
+  return 'closed'
+}
+
+// The steps of a purchase and of a sale, in order; a request that ends early stops on a failed step
+const STEPS = {
+  buy: ['asked', 'quoted', 'paid', 'delivered'],
+  sell: ['offered', 'bid', 'sold'],
+}
+// Where each failed end stops the path: on the step it would have reached
+const FAILED_AT = {
+  buy: {
+    notFound: 'quoted', cancelled: 'quoted', declined: 'paid'
+  },
+  sell: {
+    refused: 'bid', cancelled: 'bid', declined: 'sold'
+  },
+}
+
+/**
+ * The steps of a request as a strip (P1-38): [{key, state}], state 'done', 'current', 'todo' or 'failed'.
+ * A failed request shows the step it did not reach as 'failed', with its own status as the key.
+ */
+export function requestSteps(kind, status) {
+  const side = kind === 'sell' ? 'sell' : 'buy'
+  const steps = STEPS[side]
+  const failedAt = FAILED_AT[side][status]
+  if (failedAt) {
+    const stop = steps.indexOf(failedAt)
+    return steps.slice(0, stop + 1).map((key, i) => i < stop ? {
+      key, state: 'done'
+    } : {
+      key: status, state: 'failed'
+    })
+  }
+  const at = steps.indexOf(status)
+  const last = at === steps.length - 1
+  return steps.map((key, i) => ({
+    key, state: i < at || (last && i === at) ? 'done' : i === at ? 'current' : 'todo'
+  }))
+}
+
 /** A request as the buyer sees it: the gamemaster's notes taken out. */
 export function forOwner(entry) {
   const seen = {

@@ -12,8 +12,11 @@ import {
 } from "../system/gm-ledger.js"
 import {
   INFO_TYPES, infoType, priceRangeLabel, startingQuote, quoteInRange, RELIABILITY, nextStatus, sortRequests, forOwner,
-  fileName, cleanRequest
+  fileName, cleanRequest, requestTurn, requestSteps
 } from "../system/info-broker-rules.js"
+import {
+  SR5Credstick
+} from "./credstick.js"
 import {
   SR5_SocketHandler
 } from "../socket.js"
@@ -52,6 +55,7 @@ export function registerInfoBrokerLedger(){
       for (const app of foundry.applications.instances.values()) if (app instanceof SR5InfoBrokerApp) app.render()
     },
   })
+  Hooks.on("renderChatMessageHTML", onRenderChatMessage)
 }
 
 function typeLabel(key){
@@ -69,15 +73,35 @@ function transaction(type, amount, name){
   }
 }
 
-async function whisper(actor, content){
+/** A card to the gamemasters and the owners; with a request, its status and a button to open it (P1-38). */
+async function whisper(actor, content, entry = null, status = ""){
   const ids = game.users.filter(u => u.isGM || actor?.testUserPermission?.(u, "OWNER")).map(u => u.id)
+  const esc = foundry.utils.escapeHTML
+  const head = `<header class="sr-infobroker-card-head"><i class="fas fa-user-secret"></i> ${esc(entry?.vendorName || L("SR5.INFOBROKER_Title"))}${
+    status ? ` <span class="sr-infobroker-card-status status-${esc(status)}">${esc(L(`SR5.INFOBROKER_Status_${status}`))}</span>` : ""}</header>`
+  const button = entry?.id ? `<button type="button" data-infobroker-open="${esc(entry.id)}"><i class="fas fa-inbox"></i> ${esc(L("SR5.INFOBROKER_SeeRequest"))}</button>` : ""
   await foundry.documents.ChatMessage.create({
     speaker: foundry.documents.ChatMessage.getSpeaker({
       actor
     }),
     whisper: ids,
-    content: `<div class="sr-infobroker-card">${content}</div>`,
+    content: `<div class="sr-infobroker-card">${head}<p>${content}</p>${button}</div>`,
   })
+}
+
+/** The button of a broker's card opens the window on the requests (P1-38). */
+function onRenderChatMessage(message, html){
+  for (const button of html.querySelectorAll?.("[data-infobroker-open]") ?? []) {
+    button.addEventListener("click", event => {
+      event.preventDefault()
+      // At the broker's of the request, when this user's browser knows the vendor
+      const entry = brokerLedger()[button.dataset.infobrokerOpen]
+      const vendor = entry?.vendorUuid ? fromUuidSync(entry.vendorUuid) : null
+      SR5InfoBrokerApp.open({
+        tab: "requests", vendor
+      })
+    })
+  }
 }
 
 /* -------------------------------------------- */
@@ -134,7 +158,7 @@ async function gmAccept(entry){
   } : null)
   await whisper(actor, L("SR5.INFOBROKER_CardPaid", {
     actor: actor.name, name: fileName(typeLabel(entry.type), entry.subject), price: nuyen(entry.price)
-  }))
+  }), entry, "paid")
 }
 
 /** The seller accepts a bid: she is paid, the broker keeps a copy (the file stays on her sheet). */
@@ -149,7 +173,7 @@ async function gmSell(entry){
   } : null)
   await whisper(actor, L("SR5.INFOBROKER_CardSold", {
     actor: actor.name, name: entry.fileLabel || typeLabel(entry.type), price: nuyen(entry.price)
-  }))
+  }), entry, "sold")
 }
 
 /** The data delivered: a file on the buyer's sheet, with what the gamemaster wrote. */
@@ -178,7 +202,7 @@ async function gmDeliver(entry){
   } : null)
   await whisper(actor, L("SR5.INFOBROKER_CardDelivered", {
     actor: actor.name, name
-  }))
+  }), entry, "delivered")
 }
 
 /** The buyer's or seller's answer, checked on the gamemaster's browser. */
@@ -251,12 +275,13 @@ export class SR5InfoBrokerApp extends HandlebarsApplicationMixin(ApplicationV2) 
    * @param {{vendor?: Actor, buyer?: Actor}} options
    */
   static open({
-    vendor = null, buyer = null
+    vendor = null, buyer = null, tab = null
   } = {
   }){
     const app = foundry.applications.instances.get("sr5-info-broker") ?? new SR5InfoBrokerApp()
     app.vendor = vendor ?? app.vendor ?? null
     app.buyer = buyer ?? app.buyer ?? null
+    if (tab) app.tab = tab
     return app.render({
       force: true
     })
@@ -283,14 +308,29 @@ export class SR5InfoBrokerApp extends HandlebarsApplicationMixin(ApplicationV2) 
     const requests = sortRequests(mine).map(raw => {
       const e = isGM ? raw : forOwner(raw)
       const type = infoType(e.type)
+      const isSell = e.kind === "sell"
+      const turn = requestTurn(e.status)
+      const owner = turn === "owner" ? fromUuidSync(e.actorUuid) : null
+      const balance = owner && !isSell ? SR5Credstick.ledgerBalance(owner) : null
       return {
         ...e,
+        // Who buys and who sells, said in full on every request (P1-38)
+        roleLine: L(`SR5.INFOBROKER_Role${isSell ? "Sells" : "Buys"}${e.vendorName ? "" : "Broker"}`, {
+          actor: e.actorName, broker: e.vendorName,
+        }),
+        what: isSell ? (e.fileLabel || typeLabel(e.type)) : fileName(typeLabel(e.type), e.subject),
+        turn,
+        steps: requestSteps(e.kind, e.status).map(s => ({
+          ...s, label: L(`SR5.INFOBROKER_Status_${s.key}`)
+        })),
+        balanceLabel: balance === null ? "" : nuyen(balance),
+        short: balance !== null && balance < (Number(e.price) || 0),
         typeLabel: typeLabel(e.type),
         range: priceRangeLabel(type),
         priceLabel: nuyen(e.price),
         statusLabel: statusLabel(e.status),
-        isSell: e.kind === "sell",
-        inRange: e.kind === "sell" || quoteInRange(type, e.price),
+        isSell,
+        inRange: isSell || quoteInRange(type, e.price),
         canAccept: !!nextStatus(e.status, "accept", "owner"),
         canSell: !!nextStatus(e.status, "sell", "owner"),
         canDecline: !!nextStatus(e.status, "decline", "owner"),
@@ -326,7 +366,22 @@ export class SR5InfoBrokerApp extends HandlebarsApplicationMixin(ApplicationV2) 
       picked: this.picked ? types.find(t => t.picked) : null,
       files,
       requests,
-      openCount: requests.filter(r => ["asked", "quoted", "paid", "offered", "bid"].includes(r.status)).length,
+      // The requests by who has the next move, the closed ones folded (P1-38); the gamemaster's side first for him,
+      // the player's for her
+      groups: (isGM ? ["gm", "owner", "closed"] : ["owner", "gm", "closed"]).map(turn => ({
+        turn, closed: turn === "closed",
+        label: L(`SR5.INFOBROKER_Group_${turn}${isGM ? "_GM" : ""}`),
+        requests: requests.filter(r => r.turn === turn),
+      })).filter(g => g.requests.length),
+      // The tabs said from each side: the broker sells / buys for the gamemaster, the character buys / sells for her
+      tabLabels: {
+        buy: L(isGM ? "SR5.INFOBROKER_TabBuy_GM" : "SR5.INFOBROKER_TabBuy"),
+        sell: L(isGM ? "SR5.INFOBROKER_TabSell_GM" : "SR5.INFOBROKER_TabSell"),
+        requests: L(isGM ? "SR5.INFOBROKER_TabRequests" : "SR5.INFOBROKER_TabRequestsMine"),
+      },
+      openCount: requests.filter(r => r.turn !== "closed").length,
+      // The ones waiting on this user: the gamemaster's to handle, or the player's to answer
+      waitingCount: requests.filter(r => r.turn === (isGM ? "gm" : "owner")).length,
     }
   }
 
@@ -435,6 +490,6 @@ export class SR5InfoBrokerApp extends HandlebarsApplicationMixin(ApplicationV2) 
     if (key && actor) await whisper(actor, L(key, {
       actor: actor.name, name: entry.kind === "sell" ? (entry.fileLabel || typeLabel(entry.type)) : fileName(typeLabel(entry.type), entry.subject),
       price: nuyen(fields.price)
-    }))
+    }), entry, nextStatus(entry.status, move, "gm"))
   }
 }

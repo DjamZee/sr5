@@ -28,7 +28,8 @@ export class SR5Token extends foundry.canvas.placeables.Token {
     if (this.layer._draggedToken || !this.layer.active || this.isPreview) return false
     if (canvas.controls.ruler?.active || (CONFIG.Canvas.rulerClass.canMeasure && (event?.type === "pointerdown"))) return false
     // A player with a commlink, a deck or an RCC opens the crown of a token she sees (séance de DjamZ du 09/10)
-    return SR5Pickpocket.canPickFrom(this.document) || (!!canvas.sr5PanCrown && playerMayOpenPan(this))
+    // A vendor's open shop: the right-click goes to the counter (relecture djamz.13, lot R6)
+    return SR5Pickpocket.canPickFrom(this.document) || (!!canvas.sr5PanCrown && playerMayOpenPan(this)) || !!vendorShopOfToken(this.document)
   }
 
   /**
@@ -67,6 +68,15 @@ export class SR5Token extends foundry.canvas.placeables.Token {
   _onClickRight(event) {
     // The same for a player who reads the PAN of the target through her own token (séance de DjamZ du 09/10)
     const foreign = SR5Pickpocket.canPickFrom(this.document) || (!!canvas.sr5PanCrown && playerMayOpenPan(this))
+    // A vendor's token with no HUD of hers to open: the right-click goes to the counter, as the
+    // double-click does (relecture djamz.13, lot R6). With a HUD, its shop button does it
+    const vendor = !this.document.isOwner && !foreign ? vendorShopOfToken(this.document) : null
+    if (vendor) {
+      import("./shop-vendor.js").then(({
+        SR5ShopVendor
+      }) => SR5ShopVendor.openShop(vendor.actor, vendor.storage))
+      return
+    }
     if (this.document.isOwner || !this.layer.hud || !foreign) return super._onClickRight(event)
     if (this.hasActiveHUD) this.layer.hud.close()
     else this.layer.hud.bind(this)

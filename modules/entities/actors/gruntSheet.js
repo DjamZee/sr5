@@ -143,6 +143,7 @@ export class SR5GruntSheet extends ActorSheetSR5 {
     const traditions = []
     const mentorSpirits = []
     const rituals = []
+    const storages = []
 
     // Iterate through items, allocating to containers
     for (let i of actor.items) {
@@ -177,6 +178,7 @@ export class SR5GruntSheet extends ActorSheetSR5 {
       else if (i.type === "itemTradition") traditions.push(i)
       else if (i.type === "itemMentorSpirit") mentorSpirits.push(i)
       else if (i.type === "itemRitual") rituals.push(i)
+      else if (i.type === "itemStorage") storages.push(i)
     }
 
     actor.knowledges = knowledges
@@ -213,6 +215,8 @@ export class SR5GruntSheet extends ActorSheetSR5 {
     actor.mentorSpirits = mentorSpirits
     actor.mentorWarnings = mentorWarningLines(this.actor)
     actor.rituals = rituals
+    // A vendor is a Grunt: its shop and any storage added with the + are listed, as on a character
+    actor.storages = this._prepareStorages(actor, storages)
   }
 
   /** @override */
