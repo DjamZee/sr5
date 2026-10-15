@@ -516,6 +516,8 @@ export async function sr5HookInit() {
   CONFIG.Actor.documentClass = SR5Actor
   CONFIG.Item.documentClass = SR5Item
   CONFIG.Combat.documentClass = SR5Combat
+  //Default turn marker: DjamZ's ouroboros (relecture djamz.13, R10); a marker chosen in Foundry's combat settings wins
+  CONFIG.Combat.fallbackTurnMarker = "systems/sr5/assets/img/ui/turn-marker-ouroboros.webp"
   CONFIG.RollTable.documentClass = SR5RollTable
   CONFIG.TableResult.documentClass = SR5TableResult
   CONFIG.ui.combat = SR5CombatTracker
