@@ -152,13 +152,23 @@
   align-items: center;
   justify-content: center;
   font-size: 17px;
+  // As the drawn icons (icons.less): a white symbol on a dark box; red with a glow when the tab is open (relecture
+  // djamz.13, R1, img 05)
   border: 2px solid color-mix(in srgb, var(--sr-ui-border-color) 40%, transparent);
-  color: color-mix(in srgb, var(--sr-text-color-dark) 80%, transparent);
+  background: color-mix(in srgb, var(--sr-text-color-dark) 80%, transparent);
+  color: var(--sr-text-color-light);
+  transition: all 0.2s ease-out;
+}
+
+.sr-icon-nav a:hover .sr-tab-fa {
+  border-color: var(--sr-ui-border-color);
 }
 
 .sr-icon-nav a.active .sr-tab-fa {
   border-color: var(--sr-ui-border-color);
-  color: var(--sr-ui-border-color);
+  background: var(--sr-ui-border-color);
+  color: var(--sr-text-color-light);
+  box-shadow: 0 0 8px var(--sr-ui-border-color);
 }
 
 // Lot 36: every workshop (Armurerie, Personnalisation, Clinique, Établi, Atelier) is a Concepteur frame in a sheet
