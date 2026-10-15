@@ -110,8 +110,15 @@ export function layoutCrown(graph, {
   // The token's name (relecture djamz.13, passe 2): no icon on it, and no line of the token across it
   const onName = nameBox ? (x, y) => x > nameBox.x0 - iconRadius && x < nameBox.x1 + iconRadius &&
     y > nameBox.y0 - iconRadius && y < nameBox.y1 + iconRadius : null
+  // ...nor below it, nor where the line from the token to the icon would brush it (passe 2: the ends of a long name)
   const underName = nameBox ? (x, y) => onName(x, y) || (x > nameBox.x0 - iconRadius && x < nameBox.x1 + iconRadius &&
-    y > nameBox.y0) : null
+    y > nameBox.y0) || segmentHitsBox(edgeToward({
+    x, y
+  }, tokenRadius), {
+    x, y
+  }, {
+    x0: nameBox.x0 - 4 * scale, x1: nameBox.x1 + 4 * scale, y0: nameBox.y0, y1: nameBox.y1
+  }) : null
 
   const master = shown.find(n => n.uuid === graph.master)
   const r1 = tokenRadius + PAN_LAYOUT.masterGap * scale
@@ -145,7 +152,8 @@ export function layoutCrown(graph, {
     for (const node of loose.filter(n => !onRing(n))) place(node, 0, 0)
     fan(loose.filter(onRing), angle + Math.PI, tokenRadius + PAN_LAYOUT.deviceGap * scale, center, place, {
       maxSpread: crowdedLoose ? PAN_LAYOUT.crowdedSpread : PAN_LAYOUT.deviceSpread, gap,
-      forbidden: crowdedLoose ? looseClear : underName
+      // A line through an icon is refused for every loose device (passe 2, the rigger), not for many only
+      forbidden: looseClear
     })
   }
   // Many slaves (a samurai and his ~20 pieces, passe 2): the loose devices first, then a fan that opens wider round

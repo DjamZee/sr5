@@ -112,9 +112,19 @@ function nameBoxOf(token){
   const plate = token.nameplate
   if (!plate || plate.destroyed || !token.document.name) return null
   if (token.document.displayName === CONST.TOKEN_DISPLAY_MODES.NONE) return null
-  const width = plate.width || 0, height = plate.height || 0
+  // Measured on the name itself: right after the canvas is drawn, the nameplate has no text yet (passe 2: the first
+  // crowns of a scene crossed the name, those opened again did not)
+  let width = 0, height = 0
+  try {
+    const metrics = PIXI.TextMetrics.measureText(token.document.name, plate.style ?? CONFIG.canvasTextStyle)
+    width = metrics.width
+    height = metrics.height
+  } catch {
+    width = plate.width || 0
+    height = plate.height || 0
+  }
   if (!width || !height) return null
-  const top = (plate.y ?? token.h + 2) - token.h / 2
+  const top = (plate.y || token.h + 2) - token.h / 2
   return {
     x0: -width / 2, x1: width / 2, y0: top, y1: top + height
   }

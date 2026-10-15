@@ -80,7 +80,7 @@ describe('relecture djamz.13, passe 2 (R4c): each line ends on its icon', () => 
       }
       const r = PAN_LAYOUT.iconRadius
       // Many loose devices: no line of the token through another icon
-      if (loose > 8) for (const line of lines.filter(l => l.uuid.startsWith('d'))) {
+      if (loose) for (const line of lines.filter(l => l.uuid.startsWith('d'))) {
         for (const icon of icons.filter(i => i.node.uuid !== line.uuid)) {
           const dx = line.to.x - line.from.x, dy = line.to.y - line.from.y
           const t = Math.max(0, Math.min(1, ((icon.x - line.from.x) * dx + (icon.y - line.from.y) * dy) / (dx * dx + dy * dy)))
