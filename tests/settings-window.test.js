@@ -222,7 +222,7 @@ describe('settings registered by the system', () => {
   it('shows the tabs in DjamZ\'s order, with the settings he moved (09/10)', () => {
     // The presets head the window (lot 10, decision of 09/10)
     expect(SETTINGS_TABS.map(t => t.id)).toEqual([
-      'presets', 'interface', 'ruleLocks', 'combat', 'magic', 'matrix', 'rigging', 'panCrown', 'vision', 'body', 'gear', 'shop',
+      'presets', 'interface', 'combat', 'magic', 'matrix', 'rigging', 'panCrown', 'vision', 'body', 'gear', 'shop',
       'time', 'gm', 'other'
     ])
     expect(catalogEntry('sr5BBUnderFireRules').tab).toBe('combat')

@@ -1,6 +1,9 @@
 import {
   SETTINGS_TABS, SETTINGS_TAGS, SETTINGS_WINDOW_MENU, capturedMenus, capturedSettingIds, captureSystemSettings, catalogEntry
 } from "../system/settings-catalog.js"
+import {
+  defaultBannerFolder
+} from "./shop-vendor-templates.js"
 
 /**
  * The system's settings, by tab (B10). Opened from the one button left in Foundry's settings.
@@ -96,6 +99,10 @@ export class SR5SettingsConfig extends foundry.applications.settings.SettingsCon
   /** @inheritDoc */
   async _onRender(context, options) {
     await super._onRender(context, options)
+    // Relecture djamz.13 (R9): an empty banner folder reads the Megapack's (bannerFolderOf); the field says so
+    // instead of staying empty, worlds that saved the window having kept an empty value whatever the default
+    const banner = this.element.querySelector('[name="sr5.sr5ShopBannerFolder"]')
+    if (banner && !banner.value?.trim()) banner.value = defaultBannerFolder(!!game.modules?.get("megapack-sr5-foundry-vtt")?.active)
     for (const [name, note] of this.#notes) {
       const group = this.element.querySelector(`[name="${name}"]`)?.closest(".form-group")
       if (!group) continue

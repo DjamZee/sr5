@@ -117,6 +117,9 @@ import {
 import {
   applySwarm
 } from "../../system/swarm.js"
+import {
+  giveStarterKit
+} from "../../system/starter-kit.js"
 
 /**
  * Extend the base Actor class to implement additional logic specialized for Shadowrun 5.
@@ -128,6 +131,16 @@ export class SR5Actor extends Actor {
     super(...args)
     //The core fills statuses in applyActiveEffects, which this system never calls : hasStatusEffect reads them
     installLiveStatuses(this)
+  }
+
+  //"Import Data" replaces the items with the file's: a player character gets back the starting kit it lacks
+  //(relecture djamz.13, R8, system/starter-kit.js; measured in game: the import had wiped it)
+  async importFromJSON(json) {
+    const result = await super.importFromJSON(json)
+    await giveStarterKit(this, {
+      again: true
+    })
+    return result
   }
 
   //The Negotiation skill under its former key, on an actor imported after the world migration (datamodels/common/negotiationMigration.js)
