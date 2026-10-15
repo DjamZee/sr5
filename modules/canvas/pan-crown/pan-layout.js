@@ -267,6 +267,24 @@ export function pictureEdgeAlong(alpha, n, dir, box, threshold = 40){
   return 0
 }
 
+/**
+ * The box the mask of a crown's lines covers (R4d), relative to the token's center, in whole pixels: every end of a
+ * line and the whole picture, a pad around. Outside it a sprite mask hides everything, so nothing may be left out.
+ * @param {Number[]} xs   the x of the ends of the lines
+ * @param {Number[]} ys   their y
+ * @param {Number} w      width of the picture as shown
+ * @param {Number} h      height
+ * @param {Number} pad
+ * @return {{x, y, w, h}}
+ */
+export function maskBoundsOf(xs, ys, w, h, pad = 0){
+  const x0 = Math.floor(Math.min(-w / 2, ...xs) - pad), y0 = Math.floor(Math.min(-h / 2, ...ys) - pad)
+  const x1 = Math.ceil(Math.max(w / 2, ...xs) + pad), y1 = Math.ceil(Math.max(h / 2, ...ys) + pad)
+  return {
+    x: x0, y: y0, w: x1 - x0, h: y1 - y0
+  }
+}
+
 // The least distance from point p to the segment a-b
 function segmentToPoint(a, b, p){
   const dx = b.x - a.x, dy = b.y - a.y

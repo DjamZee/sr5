@@ -19,7 +19,7 @@ import {
   closeRadialMenu, closeRadialMenuOf, openRadialMenu
 } from "./pan-radial-menu.js"
 import {
-  crownAngle, dashesOf, layoutCrown, lineRadiusOf, lineBoxOf, crownScaleOf, crownReachOf, signatureOf, pictureEdgeAlong, PAN_LAYOUT
+  crownAngle, dashesOf, layoutCrown, lineRadiusOf, lineBoxOf, crownScaleOf, crownReachOf, signatureOf, pictureEdgeAlong, maskBoundsOf, PAN_LAYOUT
 } from "./pan-layout.js"
 import {
   iconPathOf, isTintedIcon, nodeIconPathOf
@@ -75,13 +75,35 @@ function pictureOf(token){
 // The transparency of the tokens' pictures, n × n, read once per picture (passe 2: a round picture in a square texture)
 const ALPHA_SIZE = 64
 const alphaMaps = new Map()
+// The pictures of the tokens, read once each: the transparency of the lines' start (R4c) and the mask (R4d)
+const bitmaps = new Map()
+function bitmapOf(src){
+  if (!src) return Promise.resolve(null)
+  if (!bitmaps.has(src)) bitmaps.set(src, (async () => {
+    try {
+      const response = await fetch(foundry.utils.getRoute?.(src) ?? src)
+      if (!response.ok) return null
+      return await createImageBitmap(await response.blob())
+    } catch {
+      // A picture that cannot be read (a video, a protected address): no mask, the edge of its box
+      return null
+    }
+  })())
+  return bitmaps.get(src)
+}
+
+// The largest side of a crown's mask, in pixels: beyond, it is drawn at a lower resolution
+const MASK_MAX = 1024
+// Where a masked line starts, as a share of the picture's edge
+const MASK_INSET = 0.5
+
 async function alphaMapOf(src){
   if (!src) return null
   if (alphaMaps.has(src)) return alphaMaps.get(src)
   const promise = (async () => {
     try {
-      const blob = await (await fetch(foundry.utils.getRoute?.(src) ?? src)).blob()
-      const bitmap = await createImageBitmap(blob)
+      const bitmap = await bitmapOf(src)
+      if (!bitmap) return null
       const surface = new OffscreenCanvas(ALPHA_SIZE, ALPHA_SIZE)
       const context = surface.getContext("2d")
       context.drawImage(bitmap, 0, 0, ALPHA_SIZE, ALPHA_SIZE)
@@ -259,9 +281,12 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     this._haloTexture = null
     for (const texture of this._dots.values()) texture.destroy(true)
     this._dots.clear()
-    for (const crown of this.crowns.values()) crown.container.destroy({
-      children: true
-    })
+    for (const crown of this.crowns.values()) {
+      crown.linkMask?.texture?.destroy?.(true)
+      crown.container.destroy({
+        children: true
+      })
+    }
     this.crowns.clear()
     this._pending.clear()
     this._frame = false
@@ -389,13 +414,17 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     const decor = container.addChild(new PIXI.Container())
     // Lot 9: the halos under the lines, the pulses on them, both out of the pointer's way
     const halos = container.addChild(inert(new PIXI.Container()))
-    const lines = container.addChild(new PIXI.Graphics())
-    const pulses = container.addChild(inert(new PIXI.Container()))
+    // The lines and their pulses, masked by the shape of the token: they seem to run under it (R4d, DjamZ 16/10)
+    const links = container.addChild(inert(new PIXI.Container()))
+    const lines = links.addChild(new PIXI.Graphics())
+    const pulses = links.addChild(inert(new PIXI.Container()))
+    const linkMask = container.addChild(new PIXI.Sprite(PIXI.Texture.EMPTY))
     const icons = container.addChild(new PIXI.Container())
     icons.eventMode = "passive"
     const sceneCenter = canvas.dimensions.sceneRect.center
     const crown = {
       token, container, decor, lines, icons, halos, pulses, pulseData: [], droneTokenIds: new Set(), version: 0,
+      links, linkMask, maskKey: null, layoutLines: [],
       // The last build (M1): its graph, the tokens its lines go to, what it showed, its scale
       graph: null, nodeTokens: new Map(), signature: null, scale: 1,
       // Fixed once open, so that the crown does not swing round while its token moves
@@ -418,6 +447,7 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     if (!crown) return
     this.crowns.delete(token.id)
     if (this._flicker?.crown === crown) this._flicker = null
+    crown.linkMask?.texture?.destroy?.(true)
     crown.container.destroy({
       children: true
     })
@@ -537,6 +567,8 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     if ([...crown.nodeTokens.values()].some(t => t.destroyed)) return void this.refresh([token.id])
     const layout = layoutCrown(graph, this.#layoutOptions(crown, (node) => crown.nodeTokens.get(node.uuid) ?? null))
     this.#drawLines(crown.lines, layout.lines, crown.scale)
+    crown.layoutLines = layout.lines
+    this.#updateMask(crown).catch(error => console.error("SR5 | PAN mask", error))
     const pulsing = layout.lines.filter(line => line.mode !== "offline")
     if (pulsing.length !== crown.pulseData.length) return void this.refresh([token.id])
     pulsing.forEach((line, i) => {
@@ -557,8 +589,11 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
       hw: shownW / 2, hh: shownH / 2
     }
     // Where the lines start: the ring's frame, or the picture where it stops being transparent
-    const lineEdge = picture.round ? () => Math.max(box.hw, box.hh) * RING_SHARE + margin :
-      crown.alpha ? dir => pictureEdgeAlong(crown.alpha, ALPHA_SIZE, dir, box) + margin : null
+    // Under a mask (R4d), they start halfway in: the mask hides them up to the picture's edge, which they seem to
+    // come out from
+    const inset = picture.round || crown.alpha ? MASK_INSET : 1
+    const lineEdge = picture.round ? () => (Math.max(box.hw, box.hh) * RING_SHARE + margin) * inset :
+      crown.alpha ? dir => (pictureEdgeAlong(crown.alpha, ALPHA_SIZE, dir, box) + margin) * inset : null
     return {
       lineEdge,
       // The picture as shown, not its cell (relecture djamz.13, passe 2): a small picture, a big ring
@@ -647,6 +682,8 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     }))
 
     this.#drawLines(crown.lines, layout.lines, scale)
+    crown.layoutLines = layout.lines
+    this.#updateMask(crown).catch(error => console.error("SR5 | PAN mask", error))
     for (const child of crown.icons.removeChildren()) child.destroy({
       children: true
     })
@@ -818,6 +855,65 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
     const icon = this._flicker?.icon
     if (icon && !icon.destroyed) icon.alpha = 1
     this._flicker = null
+  }
+
+  /**
+   * The mask of a crown's lines (R4d, DjamZ 16/10): white everywhere they may go, a hole the shape of the token, its
+   * picture where it is not transparent, or its dynamic ring. The lines then seem to run under the token, the icons
+   * stay above them. Made again only when what it shows changes: the lines' reach, the picture, its size, scale or
+   * rotation, the ring; a move needs nothing, the crown follows its token. No picture to read: no mask, the lines
+   * start at its edge as before (R4c).
+   */
+  async #updateMask(crown){
+    const {
+      token, links, linkMask
+    } = crown
+    if (token.destroyed || !links || !linkMask || linkMask.destroyed) return
+    const lines = crown.layoutLines ?? []
+    const doc = token.document
+    const ring = !!doc.ring?.enabled
+    const src = doc.texture?.src ?? ""
+    const bitmap = ring ? null : await bitmapOf(src)
+    if (token.destroyed || linkMask.destroyed) return
+    if (!lines.length || (!ring && !bitmap)) {
+      links.mask = null
+      linkMask.visible = false
+      crown.maskKey = null
+      return
+    }
+    const [shownW, shownH] = shownSizeOf(token)
+    const pad = 24 * crown.scale
+    const xs = lines.flatMap(l => [l.from.x, l.to.x]), ys = lines.flatMap(l => [l.from.y, l.to.y])
+    const bounds = maskBoundsOf(xs, ys, shownW, shownH, pad)
+    const key = [src, ring, shownW, shownH, Math.sign(doc.texture?.scaleX ?? 1), Math.sign(doc.texture?.scaleY ?? 1),
+      doc.rotation ?? 0, bounds.x, bounds.y, bounds.w, bounds.h].join("|")
+    if (key === crown.maskKey && links.mask === linkMask) return
+    const resolution = Math.min(1, MASK_MAX / Math.max(bounds.w, bounds.h))
+    const surface = document.createElement("canvas")
+    surface.width = Math.max(1, Math.ceil(bounds.w * resolution))
+    surface.height = Math.max(1, Math.ceil(bounds.h * resolution))
+    const context = surface.getContext("2d")
+    context.fillStyle = "#ffffff"
+    context.fillRect(0, 0, surface.width, surface.height)
+    context.globalCompositeOperation = "destination-out"
+    context.setTransform(resolution, 0, 0, resolution, -bounds.x * resolution, -bounds.y * resolution)
+    context.rotate(Math.toRadians?.(doc.rotation ?? 0) ?? (doc.rotation ?? 0) * Math.PI / 180)
+    if (ring) {
+      context.beginPath()
+      context.arc(0, 0, Math.max(shownW, shownH) / 2 * RING_SHARE, 0, Math.PI * 2)
+      context.fill()
+    } else {
+      context.scale(Math.sign(doc.texture?.scaleX ?? 1) || 1, Math.sign(doc.texture?.scaleY ?? 1) || 1)
+      context.drawImage(bitmap, -shownW / 2, -shownH / 2, shownW, shownH)
+    }
+    const old = linkMask.texture
+    linkMask.texture = PIXI.Texture.from(surface)
+    if (old && old !== PIXI.Texture.EMPTY) old.destroy(true)
+    linkMask.position.set(bounds.x, bounds.y)
+    linkMask.scale.set(1 / resolution)
+    linkMask.visible = true
+    links.mask = linkMask
+    crown.maskKey = key
   }
 
   #drawLines(graphics, lines, scale){
@@ -1154,6 +1250,9 @@ export function registerPanCrownHooks(){
   Hooks.on("updateToken", (document, changes) => {
     if ("hidden" in (changes ?? {
     })) layer()?.refresh()
+    // Its picture, size, rotation or ring changed: its crown, and the mask of its lines, are made again (R4d)
+    else if (["texture", "width", "height", "rotation", "ring"].some(key => key in (changes ?? {
+    }))) layer()?.refresh([document.id])
   })
   // Lot 4: a click on an icon opens its radial menu, for everyone (the gamemaster's reveal is in it)
   Hooks.on("sr5.panCrownClickIcon", data => openRadialMenu(data))
