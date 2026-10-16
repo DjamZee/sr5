@@ -1,4 +1,7 @@
 import {
+  instanceName
+} from "../../system/pan-candidates.js"
+import {
   SR5_EntityHelpers 
 } from "../../entities/helpers.js"
 import {
@@ -129,7 +132,7 @@ export class SR5_MarkHelpers {
       let newMark = {
         "ownerId": realAttackerID,
         "value": value,
-        "ownerName": attacker.name,
+        "ownerName": instanceName(attacker),
         "watchdog": isWatchdog,
       }
       if (iceHost) newMark.hostUuid = iceHost
@@ -188,7 +191,7 @@ export class SR5_MarkHelpers {
     } else marks.push({
       "ownerId": realAttackerID,
       "value": Math.min(mark, cap),
-      "ownerName": attacker.name,
+      "ownerName": instanceName(attacker),
       "watchdog": isWatchdog,
       ...(iceHost ? {
         hostUuid: iceHost

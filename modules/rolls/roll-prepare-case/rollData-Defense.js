@@ -11,7 +11,7 @@ import {
   trustedAttackCard, vouch
 } from "../roll-helpers/attack-card.js"
 import {
-  isElectricHitOnDevice, deviceElectricResistanceData
+  isElectricHitOnDevice, isPlainHitOnDevice, deviceElectricResistanceData
 } from "../roll-helpers/electric-device.js"
 import {
   unarmedReachBonus
@@ -49,7 +49,9 @@ async function electricHitOnDevice(actor, chatData){
 export default async function defense(rollData, actor, chatData){
   //An electric weapon on a device (SR5 p. 172-173): no defense, its resistance comes at once (electric-device.js)
   if (isElectricHitOnDevice(actor, chatData)) return void await electricHitOnDevice(actor, chatData)
-  if (actor.type === "actorDevice" || actor.type === "actorSprite") return
+  //Any other hit on a device: no defense to roll, the gamemaster rules on it, and is told so (Lucas#2058, R3)
+  if (isPlainHitOnDevice(actor, chatData)) return void ui.notifications.info(game.i18n.localize("SR5.INFO_DeviceOnlyElectricity"))
+  if (actor.type === "actorSprite") return
   //SR5 p. 329: a Spell Shaping bubble leaves its occupant untouched, so there is no defense test to roll at all.
   //Checked here rather than inside the area template handler, which only runs for spells that have one
   if (SR5_SpellShapingHelpers.skips(actor, chatData)) return void SR5_SpellShapingHelpers.announceSpared(actor)

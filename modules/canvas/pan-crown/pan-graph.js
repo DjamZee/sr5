@@ -22,6 +22,9 @@ import {
 import {
   hostNodesAllowed
 } from "../../system/host-nodes.js"
+import {
+  isSceneryDevice
+} from "../../system/pan-candidates.js"
 
 // rigger: the master of the rigger, in a drone's crown; wan: the master of a device of the scenery (a host, or the
 // master item of a PAN); decor: a device of the scenery slaved to the crown's master (lot 7); persona: a
@@ -387,7 +390,7 @@ export function decorSlavesOf(actor, device, actors){
   const tokenIds = new Set(list.filter(a => a?.isToken).map(a => a.id))
   // A host slaved to another host: only with the world setting sr5HostNodes (host-nodes.js, arbitrage de DjamZ)
   const nodes = isHostActor(actor) && hostNodesAllowed()
-  return list.filter(a => a?.type === "actorDevice" && (!isHostActor(a) || nodes) && a !== actor &&
+  return list.filter(a => isSceneryDevice(a) && (!isHostActor(a) || nodes) && a !== actor &&
     keys.includes(a.system?.matrix?.panMaster) && (a.isToken || !tokenIds.has(a.id)))
 }
 
@@ -415,7 +418,7 @@ function upwardMasterOf(actor, graph, {
   }
   // An IC goes up to the host it runs in (SR5 p. 247-248, A6 of the API pour Matrice v1), with a mode of its own
   const isIce = actor.type === "actorDevice" && actor.system?.matrix?.deviceType === "ice"
-  const key = actor.type !== "actorDevice" || (isHostActor(actor) && !hostNodesAllowed()) ? null :
+  const key = !isSceneryDevice(actor) || (isHostActor(actor) && !hostNodesAllowed()) ? null :
     isIce ? actor.system?.matrix?.hostUuid : actor.system?.matrix?.panMaster
   if (!key) return null
   const target = resolve(key)

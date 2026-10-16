@@ -2,6 +2,9 @@ import {
   vintageWirelessRefused
 } from '../items/weaponTraits.js'
 import {
+  livingPersonaModes
+} from './technomancer-streams.js'
+import {
   sceneCandidatesOf
 } from '../../interface/scene-actors.js'
 import {
@@ -312,7 +315,11 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     context.isEmbedded = true  // Items rendered on actor sheets are always embedded
     context.filters = this._filters || {
     }
-    context.lists = this.actor.system.lists
+    //A technomancer with Résonance dissonante may choose cold sim (Better Than Bad p. 145): a copy, the lists are shared
+    const lists = this.actor.system.lists
+    context.lists = lists ? {
+      ...lists, personaModes: livingPersonaModes(this.actor, lists) 
+    } : lists
     context.isPlay = this.isPlayMode
     // Read on the sheet, descriptions show their links (@UUID to a journal, the Library) enriched; the editor keeps
     // the raw text

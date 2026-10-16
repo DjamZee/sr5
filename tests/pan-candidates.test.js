@@ -166,3 +166,80 @@ describe('two instances of one generic host as masters of each other', () => {
     expect(hostMasterCandidates(a, [a, b])).toEqual([b])
   })
 })
+
+// Lucas#2058, C1: with two instances of one generic host on the table, the cards named the actor, not the instance
+describe('the name an icon is told by', () => {
+  it('an unlinked token: its token\'s name; a world actor: its own', async () => {
+    const {
+      instanceName
+    } = await import('../modules/system/pan-candidates.js')
+    expect(instanceName({
+      isToken: true, name: 'Serveur générique (indice 3)', token: {
+        name: 'Serveur — Siège'
+      }
+    })).toBe('Serveur — Siège')
+    expect(instanceName({
+      isToken: false, name: 'Serveur générique (indice 3)'
+    })).toBe('Serveur générique (indice 3)')
+    expect(instanceName(null)).toBe('')
+  })
+})
+
+// Lucas#2058, S2: the cameras of the Mégapack are drones with no rigger, which no host could take
+describe('a drone with no rigger is a device of the scenery', () => {
+  const drone = (id, rigger = '', panMaster = '') => ({
+    id, uuid: `Actor.${id}`, name: id, type: 'actorDrone', items: [], system: {
+      vehicleOwner: {
+        id: rigger
+      }, matrix: {
+        panMaster
+      }
+    }
+  })
+  const host = actor('host', 'actorDevice', {
+    deviceType: 'host'
+  })
+  host.system.matrix.actions = {
+    dataSpike: {
+      defense: {
+        dicePool: 8
+      }
+    }
+  }
+  const camera = drone('camera')
+  const riggerDrone = drone('rotodrone', 'rigger')
+
+  it('a camera can be slaved, a rigger\'s drone cannot', async () => {
+    const {
+      isSceneryDevice
+    } = await import('../modules/system/pan-candidates.js')
+    expect(isSceneryDevice(camera)).toBe(true)
+    expect(isSceneryDevice(riggerDrone)).toBe(false)
+    const candidates = sceneCandidates({
+      tokens: [camera, riggerDrone, host].map(a => ({
+        id: a.id, actorLink: true, actor: a
+      }))
+    })
+    expect(freeSlaves(slaveCandidates(candidates, host)).map(c => c.ref)).toEqual(['camera'])
+  })
+
+  it('slaved to a host, it defends with the host and belongs to its owner; its rigger wins over its panMaster', async () => {
+    const {
+      wanMasterOf
+    } = await import('../modules/rolls/roll-helpers/direct-connection.js')
+    const {
+      ownerOf
+    } = await import('../modules/system/matrix-ownership.js')
+    const slaved = drone('camera', '', 'Actor.host')
+    const resolve = uuid => (uuid === 'Actor.host' ? host : null)
+    expect(wanMasterOf(slaved, resolve)).toBe(host)
+    expect(ownerOf(slaved, {
+      resolve
+    }).host).toBe(host)
+    const taken = drone('camera', 'rigger', 'Actor.host')
+    expect(wanMasterOf(taken, resolve)).toBe(null)
+    expect(ownerOf(taken, {
+      resolve
+    }).host).toBe(null)
+  })
+})
