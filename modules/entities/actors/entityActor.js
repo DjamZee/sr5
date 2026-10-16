@@ -5,6 +5,9 @@ import {
   SR5_Toxins
 } from "../items/toxins.js"
 import {
+  HOST_CHANGED_HOOK, exitHostInPlace
+} from "../../system/matrix-host-presence.js"
+import {
   prototypeChanges, tokenFamily
 } from "../../system/token-defaults.js"
 import {
@@ -1191,7 +1194,10 @@ export class SR5Actor extends Actor {
 
   //Reboot deck = reset Overwatch score and delete any marks on or from the actor
   //A character in VR when the device reboots takes dumpshock (SR5 p. 244), whatever made it reboot
-  async rebootDeck() {
+  async rebootDeck(_device = null, {
+    hostExitReason = "reboot"
+  } = {
+  }) {
     SR5_ActorHelper.dumpshockIfInVR(this)
     //SR5 p. 236: whoever had spotted its icons loses sight of them, and it starts again without what it had spotted
     //(couronne du PAN, lot 5)
@@ -1207,6 +1213,9 @@ export class SR5Actor extends Actor {
     //The deck keeps its configuration: attributes are assigned at its first start and only change by reconfiguring (SR5 p. 229)
     let actorData = foundry.utils.duplicate(this.system)
     actorData.matrix.overwatchScore = 0
+    //A reboot leaves the host the persona was in, back to its grid (S3, SR5 p. 240, 244)
+    const previousHost = actorData.matrix.currentHost || null
+    exitHostInPlace(actorData.matrix)
     //The marks placed on an AI's persona go too, with their trace on the decks of those who placed them (SR5 p. 244)
     if (SR5_CharacterUtility.isDepthActive(this)) {
       await SR5_MarkHelpers.clearPersonaMarks(this)
@@ -1266,6 +1275,7 @@ export class SR5Actor extends Actor {
     await this.update(dataToUpdate, {
       sr5OverwatchLower: "reboot"
     })
+    if (previousHost) Hooks.callAll(HOST_CHANGED_HOOK, this, null, previousHost, hostExitReason)
 
     //Delete effects from Deck. A reboot cuts the connection (SR5 p. 231, 250; Kill Code p. 74): every link lock goes
     //with it, permanent as its effect is, and so does its status

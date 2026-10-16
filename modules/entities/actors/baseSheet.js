@@ -647,6 +647,11 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       event.preventDefault()
       import("../../system/matrix-grid-hop.js").then(m => m.takeGridHop(this.actor))
     })
+    // Enter / Exit Host, with no test (S3, SR5 p. 240)
+    on(".matrix-host-presence", "click", event => {
+      event.preventDefault()
+      import("../../system/matrix-host-presence.js").then(m => m.takeHostPresence(this.actor))
+    })
     on(".sr-rollGrenade", "click", this._onRollGrenade.bind(this))
     // Summon Spirit
     on(".sidekickCreate", "click", this._OnSidekickCreate.bind(this))

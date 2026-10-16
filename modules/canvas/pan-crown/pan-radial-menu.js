@@ -337,6 +337,22 @@ export function openRadialMenu({
     key: "commcode",
     onClick: async () => (await import("../../interface/commcode-window.js")).SR5CommcodeWindow.openDevice(commDevice.uuid),
   }))
+  // S3 (SR5 p. 240): Enter / Exit Host on the icon of a host, for the persona that looks (one mark asked to enter)
+  const hostActor = (() => {
+    const doc = node.contributed ? null : globalThis.fromUuidSync?.(node.uuid) ?? null
+    const holder = doc?.items ? doc : doc?.parent
+    return holder?.type === "actorDevice" && holder.system?.matrix?.deviceType === "host" ? holder : null
+  })()
+  if (hostActor && viewer?.actor && viewer.actor !== hostActor && viewer.actor.system?.matrix?.actions?.enterOrExitHost) {
+    const inside = viewer.actor.system.matrix.currentHost === hostActor.uuid
+    buttons.push(button(game.i18n.localize(inside ? "SR5.HostExit" : "SR5.HostEnter"), {
+      key: "enterOrExitHost",
+      onClick: async () => {
+        const presence = await import("../../system/matrix-host-presence.js")
+        return inside ? presence.exitHost(viewer.actor) : presence.enterHost(viewer.actor, hostActor)
+      },
+    }))
+  }
   // The gamemaster's reveal (lot 3), for the whole table; player by player when the world says so (idea 10): he ticks
   // the characters. A device revealed to the whole table keeps its "Hide" first
   const byPlayer = revealByPlayer() && !node.revealed

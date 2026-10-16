@@ -411,7 +411,9 @@ export class SR5_MatrixHelpers {
 
     //rebootDeck spends no action: the jack out has already paid for its own. It deals the dumpshock
     //in VR, cold or hot sim, link lock or not (SR5 p. 231 and 244)
-    await actor.rebootDeck()
+    await actor.rebootDeck(null, {
+      hostExitReason: "jackOut"
+    })
   }
 
   //Jam Signals adds the hits to the Noise rating (SR5 p. 239). system.matrix.noise holds that rating as a

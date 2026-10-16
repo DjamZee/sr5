@@ -161,6 +161,8 @@ export async function converge(persona, {
 }, helpers = null){
   const actor = await actorOf(persona)
   if (!actor) return false
+  //S3: a persona inside a host is converged on by its host, and stays inside (SR5 p. 249, Adrore 16/10)
+  host ||= actor.system?.matrix?.currentHost || null
   const hostActor = host ? await actorOf(host) : null
   if (host && !hostActor) return false
   const h = helpers ?? await systemHelpers()
@@ -361,7 +363,16 @@ export function announceMatrixAction(entry, call = (...args) => globalThis.Hooks
   }
 }
 
+// S3: being inside a host (matrix-host-presence.js), loaded when called
+const presence = () => import("./matrix-host-presence.js")
+
 export const SR5MatrixApi = {
   placeMarks: (attacker, target, count, options) => placeMarks(attacker, target, count, options),
   converge: (persona, options) => converge(persona, options),
+  /** Put a persona inside a host (SR5 p. 240): options {spendAction = true, force = false, chat = true} */
+  enterHost: async (persona, host, options) => (await presence()).enterHost(await actorOf(persona), await actorOf(host), options),
+  /** Take a persona out of its host: options {reason = "exit", spendAction, chat = true} */
+  exitHost: async (persona, options) => (await presence()).exitHost(await actorOf(persona), options),
+  /** The host a persona is inside, or null */
+  currentHost: async persona => (await presence()).currentHostOf(await actorOf(persona)),
 }
