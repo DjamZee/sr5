@@ -7150,6 +7150,7 @@
 	"SR5.ACTOR_PICKER_Empty": "Aucun acteur ne correspond.",
 	"SR5.ACTOR_PICKER_Remove": "Retirer",
 	"SR5.ACTOR_PICKER_InCon": "Dans l'arnaque « {name} »",
+	"SR5.ACTOR_PICKER_OnScene": "Sur la scène",
 	"SR5.CON_Create": "Monter l'arnaque",
 	"SR5.CON_Kind_long": "Arnaque longue",
 	"SR5.CON_Kind_short": "Arnaque courte",

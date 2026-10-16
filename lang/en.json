@@ -7150,6 +7150,7 @@
 	"SR5.ACTOR_PICKER_Empty": "No actor matches.",
 	"SR5.ACTOR_PICKER_Remove": "Remove",
 	"SR5.ACTOR_PICKER_InCon": "In the con \"{name}\"",
+	"SR5.ACTOR_PICKER_OnScene": "On the scene",
 	"SR5.CON_Create": "Set up the con",
 	"SR5.CON_Kind_long": "Long con",
 	"SR5.CON_Kind_short": "Short con",
