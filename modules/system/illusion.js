@@ -18,6 +18,9 @@ import {
 import {
   chanceSpent, standsAsGM
 } from "../rolls/roll-helpers/socket-guard.js"
+import {
+  isActiveGM
+} from "./card-helpers.js"
 
 export const ILLUSION_LEDGER = "sr5IllusionLedger"
 
@@ -29,10 +32,6 @@ export function registerIllusionSetting(){
     default: {
     },
   })
-}
-
-function isActiveGM(){
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
 }
 
 function ledger(){

@@ -20,6 +20,9 @@ import {
 import {
   markRowDoneInMessage, cardFromGM
 } from "./card-rows.js"
+import {
+  escape, isActiveGM as isWriter, fmt, allActors, queuedCheck
+} from "./card-helpers.js"
 
 // Seconds of each unit a drug duration is given in (keys of SR5.extendedIntervals); a Combat Turn is 3 s (SR5 p. 51)
 export const DRUG_UNITS = {
@@ -115,20 +118,6 @@ export function phaseStartFlags(oldPhase, newPhase, now, riseEnd = null){
 
 /* -------------------------------------------- */
 
-function isWriter(){
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
-}
-
-function allActors(){
-  const actors = new Set(game.actors)
-  for (const scene of game.scenes){
-    for (const token of scene.tokens){
-      if (!token.actorLink && token.actor) actors.add(token.actor)
-    }
-  }
-  return [...actors]
-}
-
 export async function checkDrugs(){
   if (!isWriter()) return
   const now = game.time.worldTime
@@ -160,30 +149,10 @@ export async function checkDrugs(){
   if (rows.length) await postDrugCard(rows)
 }
 
-let checking = null
-let again = false
-function queueCheck(){
-  if (checking){
-    again = true
-    return checking
-  }
-  checking = (async () => {
-    do {
-      again = false
-      await checkDrugs().catch(e => SR5_SystemHelpers.srLog(1, `Drugs not checked: ${e}`))
-    } while (again)
-    checking = null
-  })()
-  return checking
-}
-
-function escape(text){
-  return foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "")
-}
+const queueCheck = queuedCheck(() => checkDrugs(), "Drugs not checked")
 
 async function postDrugCard(rows){
-  const fmt = (t) => game.time.calendar.format(t)
-  const over = r => r.part ? `SR5.CALENDAR_DrugCrashPartOver_${r.part}` : (r.phase === "rise" ? "SR5.CALENDAR_DrugRiseOver" : "SR5.CALENDAR_DrugCrashOver")
+    const over = r => r.part ? `SR5.CALENDAR_DrugCrashPartOver_${r.part}` : (r.phase === "rise" ? "SR5.CALENDAR_DrugRiseOver" : "SR5.CALENDAR_DrugCrashOver")
   const button = r => r.part ? "SR5.CALENDAR_DrugEndCrashPart" : (r.phase === "rise" ? "SR5.CALENDAR_DrugStartCrash" : "SR5.CALENDAR_DrugEndCrash")
   const list = rows.map(r => `<li class="sr5-drug-row" data-item-uuid="${r.item.uuid}" data-phase="${r.phase}"${r.part ? ` data-part="${r.part}"` : ""}>
       <span><strong>${escape(r.actor.name)}</strong> : ${escape(r.item.name)} — ${game.i18n.localize(over(r))}</span>

@@ -12,6 +12,9 @@
 import {
   SR5_SystemHelpers
 } from "./utilitySystem.js"
+import {
+  isActiveGM as isWriter, allActors
+} from "./card-helpers.js"
 
 export const FULL_POTENCY_MULTIPLIERS = [2, 3, 4]
 // Written at the making, then the gamemaster's: a player's update that would change them loses those paths
@@ -45,20 +48,6 @@ export function decayedPotency(system, now){
 /* -------------------------------------------- */
 /* Foundry                                      */
 /* -------------------------------------------- */
-
-function isWriter(){
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
-}
-
-function allActors(){
-  const actors = new Set(game.actors)
-  for (const scene of game.scenes){
-    for (const token of scene.tokens){
-      if (!token.actorLink && token.actor) actors.add(token.actor)
-    }
-  }
-  return [...actors]
-}
 
 export async function checkPreparationPotency(){
   if (!isWriter()) return

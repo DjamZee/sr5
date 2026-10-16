@@ -27,6 +27,9 @@ import {
 import {
   sr5LineLabel
 } from './item-payload.js'
+import {
+  isActiveGM as isWriter
+} from "../system/card-helpers.js"
 
 export const ORDERS_FLAG = 'shopOrders'
 export const DELIVERY_SETTING = 'sr5ShopDelivery'
@@ -241,10 +244,6 @@ async function tell(actor, key, order) {
 // GM's till, with its amount and its vendor: a cancellation refunds and debits only what is written here,
 // and an order missing from it never touches a vendor (Quitterie's review, Élise's decision, 05/10)
 export const ORDER_LEDGER = 'sr5ShopOrderLedger'
-
-function isWriter() {
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
-}
 
 export function orderLedger() {
   try {

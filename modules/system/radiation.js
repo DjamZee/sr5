@@ -18,6 +18,9 @@ import {
 import {
   hitsCeiling, hitsCap, diseaseCardTrusted, cardWindowStart
 } from "./diseases.js"
+import {
+  escape, isActiveGM, gmIds, playerOwners, queuedCheck
+} from "./card-helpers.js"
 
 export const RADIATION_LEDGER = "sr5RadiationLedger"
 
@@ -119,10 +122,6 @@ export function dueExposures(ledger, now){
 /* Foundry                                      */
 /* -------------------------------------------- */
 
-function isActiveGM(){
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
-}
-
 export function radiationLedger(){
   try {
     return game.settings.get("sr5", RADIATION_LEDGER) ?? {
@@ -162,16 +161,7 @@ async function writeRequested(ref, change){
   return written
 }
 
-function escape(text){
-  return foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "")
-}
-
-const gmIds = () => ChatMessage.getWhisperRecipients("GM").map(u => u.id)
 const levelName = (level) => game.i18n.localize(CONFIG.SR5.radiationLevels?.[level] ?? level)
-
-function playerOwners(actor){
-  return game.users.filter(u => !u.isGM && actor?.testUserPermission(u, "OWNER")).map(u => u.id)
-}
 
 function reminders(){
   return `<p class="notes">${game.i18n.localize("SR5.RADIATION_Reminders")}</p>`
@@ -474,22 +464,7 @@ export async function removeRadiationNausea(actor){
 
 /* -------------------------------------------- */
 
-let checking = null
-let again = false
-function queueCheck(){
-  if (checking){
-    again = true
-    return checking
-  }
-  checking = (async () => {
-    do {
-      again = false
-      await checkRadiation().catch(e => SR5_SystemHelpers.srLog(1, `Radiation not checked: ${e}`))
-    } while (again)
-    checking = null
-  })()
-  return checking
-}
+const queueCheck = queuedCheck(() => checkRadiation(), "Radiation not checked")
 
 export function initRadiation(){
   Hooks.on("updateWorldTime", () => queueCheck())

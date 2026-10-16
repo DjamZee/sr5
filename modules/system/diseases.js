@@ -22,6 +22,9 @@ import {
 import {
   recountHits, chanceSpent, standsAsGM
 } from "../rolls/roll-helpers/socket-guard.js"
+import {
+  escape, isActiveGM, gmIds, fmt, playerOwners, queuedCheck
+} from "./card-helpers.js"
 
 export const DISEASE_LEDGER = "sr5DiseaseLedger"
 export const REVEAL_DISEASES_SETTING = "sr5RevealDiseases"
@@ -291,10 +294,6 @@ export function openInfectionOf(ledger, actorUuid, name){
 /* Foundry                                      */
 /* -------------------------------------------- */
 
-function isActiveGM(){
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
-}
-
 export function diseaseLedger(){
   try {
     return game.settings.get("sr5", DISEASE_LEDGER) ?? {
@@ -343,17 +342,6 @@ function refreshActor(uuid){
   if (!actor) return
   actor.reset()
   actor.sheet?.rendered && actor.sheet.render(false)
-}
-
-function escape(text){
-  return foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "")
-}
-
-const fmt = (t) => game.time.calendar.format(t)
-const gmIds = () => ChatMessage.getWhisperRecipients("GM").map(u => u.id)
-
-function playerOwners(actor){
-  return game.users.filter(u => !u.isGM && actor?.testUserPermission(u, "OWNER")).map(u => u.id)
 }
 
 function isImmunodeficient(actor){
@@ -769,22 +757,7 @@ export function applyDiseaseEffects(actor, updateModifier, label){
 
 /* -------------------------------------------- */
 
-let checking = null
-let again = false
-function queueCheck(){
-  if (checking){
-    again = true
-    return checking
-  }
-  checking = (async () => {
-    do {
-      again = false
-      await checkDiseases().catch(e => SR5_SystemHelpers.srLog(1, `Diseases not checked: ${e}`))
-    } while (again)
-    checking = null
-  })()
-  return checking
-}
+const queueCheck = queuedCheck(() => checkDiseases(), "Diseases not checked")
 
 export function initDiseases(){
   Hooks.on("updateWorldTime", () => queueCheck())

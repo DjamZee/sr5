@@ -11,6 +11,9 @@ import {
 import {
   markRowDoneInMessage, cardFromGM
 } from "./card-rows.js"
+import {
+  escape, isActiveGM, gmIds
+} from "./card-helpers.js"
 
 const num = (v) => Number.isFinite(Number(v)) ? Number(v) : 0
 
@@ -57,15 +60,6 @@ export function isAI(actor){
 /* Foundry                                      */
 /* -------------------------------------------- */
 
-function isActiveGM(){
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
-}
-
-function escape(text){
-  return foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "")
-}
-
-const gmIds = () => ChatMessage.getWhisperRecipients("GM").map(u => u.id)
 const isFull = (monitor) => !!monitor && monitor.value > 0 && monitor.actual?.base >= monitor.value
 
 // Where the AI was when it was dissipated, read by the GM: the device named by the damage is believed only if it

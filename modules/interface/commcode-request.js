@@ -9,11 +9,13 @@ import {
 import {
   directoryOf, withContact
 } from "../system/commcode-rules.js"
+import {
+  gmIds
+} from "../system/card-helpers.js"
 
 export const COMMCODE_REQUEST_FLAG = "commcodeRequest"
 
 const isActiveGM = () => game.user.isGM && game.users.activeGM?.id === game.user.id
-const gmIds = () => ChatMessage.getWhisperRecipients("GM").map(u => u.id)
 const escape = text => foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "")
 
 /** The answer a request carries: "accepted", "refused", or "" while it waits */

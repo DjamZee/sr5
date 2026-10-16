@@ -12,6 +12,9 @@ import {
 import {
   updateLedger
 } from "./gm-ledger.js"
+import {
+  escape, isActiveGM, gmIds, fmt, queuedCheck
+} from "./card-helpers.js"
 
 export const HUNGER_LEDGER = "sr5HungerLedger"
 export const HUNGER_MONTH_SETTING = "sr5HungerMonthDays"
@@ -68,10 +71,6 @@ export function deadlineFrom(now, body, willpower){
 /* Foundry                                      */
 /* -------------------------------------------- */
 
-function isActiveGM(){
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
-}
-
 // A GM who is not the active one clicks a button: told why nothing happens, instead of a silent refusal
 export function activeGMOrWarn(){
   if (isActiveGM()) return true
@@ -116,12 +115,6 @@ async function writeLedger(mutate){
 }
 
 const month = () => monthSeconds(game.settings.get("sr5", HUNGER_MONTH_SETTING))
-const fmt = (t) => game.time.calendar.format(t)
-const gmIds = () => ChatMessage.getWhisperRecipients("GM").map(u => u.id)
-
-function escape(text){
-  return foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "")
-}
 
 /* The sheet ----------------------------------- */
 
@@ -305,22 +298,7 @@ export function activateHungerListeners(html, message){
 
 /* -------------------------------------------- */
 
-let checking = null
-let again = false
-function queueCheck(){
-  if (checking){
-    again = true
-    return checking
-  }
-  checking = (async () => {
-    do {
-      again = false
-      await checkHunger().catch(e => SR5_SystemHelpers.srLog(1, `Hunger not checked: ${e}`))
-    } while (again)
-    checking = null
-  })()
-  return checking
-}
+const queueCheck = queuedCheck(() => checkHunger(), "Hunger not checked")
 
 export function initHunger(){
   Hooks.on("updateWorldTime", () => queueCheck())

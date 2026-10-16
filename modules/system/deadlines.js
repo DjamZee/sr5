@@ -13,6 +13,9 @@ import {
 import {
   ORDERS_FLAG, freshlyDue, deliverOrder
 } from "../interface/shop-orders.js"
+import {
+  escape, isActiveGM as isWriter, fmt, allActors, queuedCheck
+} from "./card-helpers.js"
 
 export const REVEAL_DEADLINES_SETTING = "sr5CalendarRevealDeadlines"
 const DAY = 86400
@@ -90,22 +93,6 @@ export function rentDebitState(rent, {
 }
 
 /* -------------------------------------------- */
-
-function isWriter(){
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
-}
-
-function allActors(){
-  const actors = new Set(game.actors)
-  for (const scene of game.scenes){
-    for (const token of scene.tokens){
-      if (!token.actorLink && token.actor) actors.add(token.actor)
-    }
-  }
-  return [...actors]
-}
-
-const fmt = (t) => game.time.calendar.format(t)
 
 // Stamps what has no date yet, counts the rent down, and returns the deadlines the clock has just passed
 async function collect(actor, now, startYear){
@@ -198,28 +185,9 @@ export async function checkDeadlines(){
   if (game.settings.get("sr5", REVEAL_DEADLINES_SETTING)) await revealToOwners(rows)
 }
 
-let checking = null
-let again = false
-function queueCheck(){
-  if (checking){
-    again = true
-    return checking
-  }
-  checking = (async () => {
-    do {
-      again = false
-      await checkDeadlines().catch(e => SR5_SystemHelpers.srLog(1, `Deadlines not checked: ${e}`))
-    } while (again)
-    checking = null
-  })()
-  return checking
-}
+const queueCheck = queuedCheck(() => checkDeadlines(), "Deadlines not checked")
 
 /* -------------------------------------------- */
-
-function escape(text){
-  return foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "")
-}
 
 function rowText(r){
   if (r.kind === "addiction") return game.i18n.format("SR5.CALENDAR_DeadlineAddiction", {
