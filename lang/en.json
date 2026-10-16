@@ -6472,7 +6472,7 @@
 	"SR5.WARN_InvalidActorType": "Invalid Actor Type for this action.",
 	"SR5.WARN_MaxReagents": "You can't spend more reagents than you have ({reagents})",
 	"SR5.WARN_MissingCasing": "You must define a reload method for this weapon.",
-	"SR5.WARN_MissingCompendium": "Compendium '{name}' not found: base items and powers could not be added. Enable the 'Megapack SR5 - Foundry VTT' module in this world, or choose another compendium in the system settings.",
+	"SR5.WARN_MissingCompendium": "Compendium '{name}' not found: base items and powers could not be added. Enable the 'Megapack SR5 - Foundry VTT' module (or the Megapack Lite) in this world, or choose another compendium in the system settings.",
 	"SR5.WARN_NoBaseItems": "This actor was created with no power and no weapon: the reference compendium is missing, or does not carry the expected system effects.",
 	"SR5.WARN_NoActiveScene": "No active scene !",
 	"SR5.WARN_RebootLinkLocked": "{name}: link-locked connection, the device cannot reboot. Jack out first (SR5 p. 231 and 244).",

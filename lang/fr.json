@@ -6472,7 +6472,7 @@
 	"SR5.WARN_InvalidActorType": "Type d'Acteur invalide pour cette action.",
 	"SR5.WARN_MaxReagents": "Vous ne pouvez pas dépenser plus de réactifs que vous n'en possédez ({reagents})",
 	"SR5.WARN_MissingCasing": "Vous devez définir une méthode de rechargement pour cette arme.",
-	"SR5.WARN_MissingCompendium": "Compendium « {name} » introuvable : les objets et pouvoirs de base n'ont pas pu être ajoutés. Activez le module « Megapack SR5 - Foundry VTT » dans ce monde, ou choisissez un autre compendium dans les paramètres du système.",
+	"SR5.WARN_MissingCompendium": "Compendium « {name} » introuvable : les objets et pouvoirs de base n'ont pas pu être ajoutés. Activez le module « Megapack SR5 - Foundry VTT » (ou le Mégapack Lite) dans ce monde, ou choisissez un autre compendium dans les paramètres du système.",
 	"SR5.WARN_NoBaseItems": "Cet acteur a été créé sans aucun pouvoir ni arme : le compendium de référence est introuvable ou ne contient pas les effets système attendus.",
 	"SR5.WARN_NoActiveScene": "Pas de scène active !",
 	"SR5.WARN_RebootLinkLocked": "{name} : connexion verrouillée, l'appareil ne peut pas rebooter. Il faut d'abord se débrancher (SR5 p. 231 et 244).",

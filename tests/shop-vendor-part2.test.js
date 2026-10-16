@@ -33,17 +33,20 @@ describe('vendor templates (shop lot C, part 2)', () => {
   })
 
   it('reads the Megapack banners when the setting is empty and the Megapack is active', () => {
-    expect(bannerFolderOf('', true)).toBe('modules/megapack-sr5-foundry-vtt/assets/banners-shop')
-    expect(bannerFolderOf('  ', true)).toBe(MEGAPACK_BANNER_FOLDER)
-    expect(bannerFolderOf('', false)).toBe('')
-    expect(bannerFolderOf(null, false)).toBe('')
+    expect(bannerFolderOf('', 'megapack-sr5-foundry-vtt')).toBe('modules/megapack-sr5-foundry-vtt/assets/banners-shop')
+    expect(bannerFolderOf('  ', 'megapack-sr5-foundry-vtt')).toBe(MEGAPACK_BANNER_FOLDER)
+    expect(bannerFolderOf('', null)).toBe('')
+    expect(bannerFolderOf(null, null)).toBe('')
     // The gamemaster's own folder always wins
-    expect(bannerFolderOf(' mes/bannieres ', true)).toBe('mes/bannieres')
+    expect(bannerFolderOf(' mes/bannieres ', 'megapack-sr5-foundry-vtt')).toBe('mes/bannieres')
+    // The Lite edition ships its banners at the same place in its own module
+    expect(bannerFolderOf('', 'megapack-sr5-lite')).toBe('modules/megapack-sr5-lite/assets/banners-shop')
   })
 
   it('shows the Megapack folder as the default of the setting when the module is active (R9)', () => {
-    expect(defaultBannerFolder(true)).toBe(MEGAPACK_BANNER_FOLDER)
-    expect(defaultBannerFolder(false)).toBe('')
+    expect(defaultBannerFolder('megapack-sr5-foundry-vtt')).toBe(MEGAPACK_BANNER_FOLDER)
+    expect(defaultBannerFolder('megapack-sr5-lite')).toBe('modules/megapack-sr5-lite/assets/banners-shop')
+    expect(defaultBannerFolder(null)).toBe('')
   })
 
   it('gives a new vendor the template settings and its accent', () => {

@@ -11,6 +11,9 @@ import {
   isAlwaysActive
 } from "../items/always-active.js"
 import {
+  MEGAPACK_FULL_ID, activeMegapackId
+} from "../../system/megapack.js"
+import {
   insectRacePowers
 } from "../items/insect-races.js"
 
@@ -42,11 +45,15 @@ export class SR5_CompendiumUtility extends Actor {
   }
 
   // Compendiums used to build actors: each one can be chosen by the GM in the system settings.
-  // "auto" reads the Megapack first (megapack-sr5-foundry-vtt, every kind of item in one pack), then the
+  // "auto" reads the active Megapack first (full or Lite, every kind of item in one pack), then the
   // sr5-compendiums packs of the world language as a fallback (arbitrage de DjamZ, séance H, H18).
   // Items are recognized by their systemEffects (KEY_CATEGORIES), never by their name.
-  static MEGAPACK = {
-    module: "megapack-sr5-foundry-vtt", pack: "megapack-sr5-foundry-vtt.sr5-megapack-items"
+  // With no Megapack active, the full one is named (the missing compendium warning asks for it).
+  static get MEGAPACK() {
+    const module = activeMegapackId() ?? MEGAPACK_FULL_ID
+    return {
+      module, pack: `${module}.sr5-megapack-items`
+    }
   }
 
   // The systemEffect categories that name what an item gives an actor. A spirit or sprite power key is

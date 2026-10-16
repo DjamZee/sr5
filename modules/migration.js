@@ -4,13 +4,16 @@ import {
 import {
   updateLedger
 } from "./system/gm-ledger.js"
+import {
+  MEGAPACK_IDS
+} from "./system/megapack.js"
 
 export default class Migration {
 
   // Modules whose compendiums are kept up to date at their source, for the current system: the migration
   // leaves them alone instead of unlocking and rewriting them in each world (Megapack: arbitrage de DjamZ,
-  // séance H, H19)
-  static SOURCE_MAINTAINED_PACKAGES = ["sr5-compendiums", "megapack-sr5-foundry-vtt"]
+  // séance H, H19), in both its editions
+  static SOURCE_MAINTAINED_PACKAGES = ["sr5-compendiums", ...MEGAPACK_IDS]
 
   static isMaintainedAtSource(pack) {
     return Migration.SOURCE_MAINTAINED_PACKAGES.includes(pack?.metadata?.packageName)
