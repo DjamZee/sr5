@@ -61,12 +61,10 @@
     </li>
     {{/each}}
     {{#if shop.isGM}}
+    {{!-- The characters not clients yet, a searchable list by folder drawn by the sheet (actor-picker.js) --}}
+    <li><div class="sr5-shop-client-picker" aria-label="{{localize 'SR5.ShopVendorClients'}}"></div></li>
     <li class="grid">
-        <div class="col-6">
-            <select data-shop-client-actor aria-label="{{localize 'SR5.ShopVendorClients'}}">
-                {{#each shop.clientCandidates}}<option value="{{this.id}}">{{this.name}}</option>{{/each}}
-            </select>
-        </div>
+        <div class="col-6"></div>
         <div class="col-2"><input type="number" data-shop-client-loyalty value="1" min="1" max="6" aria-label="{{localize 'SR5.ContactLoyaltyShort'}}"/></div>
         <div class="col-4"><button type="button" data-action="shopClientAdd">{{localize 'SR5.ShopVendorClientAdd'}}</button></div>
     </li>

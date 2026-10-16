@@ -17,6 +17,9 @@ import {
 import {
   escape, isActiveGM, gmIds, fmt
 } from "./card-helpers.js"
+import {
+  ActorPicker, actorEntries, actorFolders
+} from "../interface/actor-picker.js"
 
 export const INFECTION_LEDGER = "sr5InfectionLedger"
 export const COMA = 86400
@@ -175,15 +178,32 @@ export async function tryInfection(victim){
   if (!creatures.length) return ui.notifications.warn(game.i18n.localize("SR5.INFECTION_NoCreature"))
   const controlled = (canvas?.tokens?.controlled ?? []).map(t => t.actor?.uuid)
   const picked = creatures.find(a => controlled.includes(a.uuid)) ?? creatures[0]
-  const options = creatures.map(a => `<option value="${escape(a.uuid)}" ${a === picked ? "selected" : ""}>${escape(a.name)} (${infectorPool(a)})</option>`).join("")
+  // The creatures, a searchable list by folder (actor-picker.js): those of the scene marked, the pool by the name
+  const picker = new ActorPicker({
+    name: "creature", markIcon: "fa-location-dot"
+  })
+  picker.selected.add(picked.uuid)
+  const onScene = new Set(sceneActors().map(a => a.uuid))
+  const marks = new Map(creatures.filter(a => onScene.has(a.uuid)).map(a => [a.uuid, game.i18n.localize("SR5.ACTOR_PICKER_OnScene")]))
+  const entries = actorEntries(creatures, {
+    key: "uuid"
+  }).map(e => ({
+    ...e, name: `${e.name} (${infectorPool(creatures.find(a => a.uuid === e.id))})`
+  }))
   const data = await foundry.applications.api.DialogV2.prompt({
     window: {
       title: game.i18n.format("SR5.INFECTION_Title", {
         name: victim.name
       })
     },
+    position: {
+      width: 420
+    },
+    render: (_event, dialog) => picker.render(dialog.element.querySelector(".sr5-infection-creatures"), {
+      entries, folders: actorFolders(), marks
+    }),
     content: `<p>${game.i18n.localize("SR5.INFECTION_Rule")}</p>
-      <div class="form-group"><label>${game.i18n.localize("SR5.INFECTION_Creature")}</label><select name="creature">${options}</select></div>
+      <label>${game.i18n.localize("SR5.INFECTION_Creature")}</label><div class="sr5-infection-creatures"></div>
       <div class="form-group"><label>${game.i18n.localize("SR5.INFECTION_CreatureModifier")}</label><input type="number" name="creatureMod" value="0"></div>
       <div class="form-group"><label>${game.i18n.format("SR5.INFECTION_VictimPool", {
     name: escape(victim.name), n: victimPool(victim)
@@ -191,7 +211,7 @@ export async function tryInfection(victim){
     ok: {
       label: game.i18n.localize("SR5.INFECTION_Roll"),
       callback: (event, button) => ({
-        creature: button.form.elements.creature.value,
+        creature: picker.value(),
         creatureMod: num(button.form.elements.creatureMod.value),
         victimMod: num(button.form.elements.victimMod.value),
       })

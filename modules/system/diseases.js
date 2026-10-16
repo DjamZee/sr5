@@ -25,6 +25,9 @@ import {
 import {
   escape, isActiveGM, gmIds, fmt, playerOwners, queuedCheck
 } from "./card-helpers.js"
+import {
+  ActorPicker, actorEntries, actorFolders
+} from "../interface/actor-picker.js"
 
 export const DISEASE_LEDGER = "sr5DiseaseLedger"
 export const REVEAL_DISEASES_SETTING = "sr5RevealDiseases"
@@ -364,13 +367,26 @@ export async function infectWith(item){
   const volunteer = profile.volunteerPenalty ? `<div class="form-group"><label>${game.i18n.format("SR5.DISEASE_Volunteer", {
     n: profile.volunteerPenalty
   })}</label><input type="checkbox" name="volunteer"></div>` : ""
+  // The characters, a searchable list by folder (actor-picker.js); the tokens picked come ticked
+  const picker = new ActorPicker({
+    name: "actor", multiple: true
+  })
+  for (const a of picked) picker.selected.add(a.uuid)
   const data = await foundry.applications.api.DialogV2.prompt({
     window: {
       title: game.i18n.format("SR5.DISEASE_InfectTitle", {
         name: item.name
       })
     },
-    content: `<div class="sr5-disease-actors">${candidates.map(a => `<label><input type="checkbox" name="actor" value="${a.uuid}" ${picked.length ? "checked" : ""}> ${escape(a.name)}</label>`).join("<br>")}</div>
+    position: {
+      width: 420
+    },
+    render: (_event, dialog) => picker.render(dialog.element.querySelector(".sr5-disease-actors"), {
+      entries: actorEntries(candidates, {
+        key: "uuid"
+      }), folders: actorFolders()
+    }),
+    content: `<div class="sr5-disease-actors"></div>
       <div class="form-group"><label>${game.i18n.localize("SR5.ToxinVector")}</label><select name="vector">${vectorOptions}</select></div>
       <div class="form-group"><label>${game.i18n.localize("SR5.DISEASE_Doses")}</label><input type="number" name="doses" value="1" min="1"></div>
       ${volunteer}`,
@@ -379,7 +395,7 @@ export async function infectWith(item){
         vector: button.form.elements.vector.value,
         doses: Number(button.form.elements.doses.value) || 1,
         volunteer: !!button.form.elements.volunteer?.checked,
-        actors: [...button.form.querySelectorAll("input[name=actor]:checked")].map(i => i.value),
+        actors: picker.values(),
       })
     },
     rejectClose: false,

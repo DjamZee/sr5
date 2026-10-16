@@ -110,6 +110,27 @@ async function onCreate(doc, _options, userId) {
   if (Object.keys(mismatches).length) await restore(doc, mismatches, userId)
 }
 
+// An actor created with its items (a compendium import, a duplicate, an adventure) fires no createItem for them:
+// its preparations are read as if each were made apart, or the gamemaster's next arrival would take an import of
+// his own for a player's write (Isaure, 16/10). A player's actor gets the book's reading without a warning: a
+// character brought from a compendium is honest play, and its preparations are only read as made now.
+async function onCreateActor(actor, _options, userId) {
+  if (!isActiveGM()) return
+  const byGM = !!game.users.get(userId)?.isGM
+  for (const doc of actor?.items ?? []) {
+    if (!isPreparation(doc)) continue
+    const current = preparationValues(doc.system)
+    if (byGM) {
+      await record(doc.uuid, current)
+      continue
+    }
+    const expected = expectedAtMaking(doc.system, game.time.worldTime)
+    await record(doc.uuid, expected)
+    const mismatches = preparationMismatches(current, expected)
+    if (Object.keys(mismatches).length) await doc.update(Object.fromEntries(Object.entries(mismatches).map(([f, v]) => [`system.${f}`, v])))
+  }
+}
+
 async function onUpdate(doc, _changes, _options, userId) {
   if (!isPreparation(doc) || !isActiveGM()) return
   const current = preparationValues(doc.system)
@@ -167,6 +188,7 @@ export async function reconcilePreparationRegister() {
 export function registerPreparationRegisterHooks() {
   const guard = fn => (...args) => Promise.resolve(fn(...args)).catch(e => console.error("SR5 | preparation register", e))
   Hooks.on("createItem", guard(onCreate))
+  Hooks.on("createActor", guard(onCreateActor))
   Hooks.on("updateItem", guard(onUpdate))
   Hooks.on("deleteItem", guard(onDelete))
   Hooks.on("deleteActor", guard(onDelete))

@@ -66,10 +66,13 @@ beforeAll(async () => {
 
 const fakeApp = kind => {
   const values = {
-    spFaction: 'hw', spActor: 'pc', spKind: kind, spContact: 'Actor.pc.Item.c'
+    spFaction: 'hw', spKind: kind
   }
   // A real instance: the window's private helpers refuse any other receiver
   const app = new SR5FactionsApp()
+  // The spender and the contact come from their lists (actor-picker.js), not from a field
+  app.pickers.spActor.selected.add('pc')
+  app.pickers.spContact.selected.add('Actor.pc.Item.c')
   Object.defineProperty(app, 'element', {
     value: {
       querySelector: sel => {
