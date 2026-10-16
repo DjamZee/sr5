@@ -264,6 +264,19 @@ async function lireModule(repo, tag, chemin) {
   return JSON.parse((await reponse.text()).replace(/^\uFEFF/, ''))
 }
 
+// Une étiquette posée avant les liens Dropbox (Topologie et Arts martiaux 0.1.0, 16/10) n'a pas de manifest :
+// on prend alors le module.json de la branche principale, s'il annonce la même version.
+async function lireModulePublie(repo, tag, chemin) {
+  const auTag = await lireModule(repo, tag, chemin)
+  if (auTag?.manifest || process.env.MODULE_JSON) return auTag
+  const principal = await lireModule(repo, 'HEAD', chemin).catch(() => null)
+  if (principal?.manifest && principal.version === auTag?.version) {
+    console.log(`module.json sans « manifest » au tag ${tag} : liens repris de la branche principale (même version ${principal.version}).`)
+    return principal
+  }
+  return auTag
+}
+
 async function lireRelease(repo, tag) {
   if (process.env.RELEASE_JSON) return JSON.parse(readFileSync(process.env.RELEASE_JSON, 'utf8'))
   const entetes = {
@@ -300,7 +313,7 @@ async function principal() {
     thumbnailUrl: env.THUMBNAIL_URL || undefined,
   }
   const message = module
-    ? construireMessageModule(release, await lireModule(repo, tag, options.manifest), options)
+    ? construireMessageModule(release, await lireModulePublie(repo, tag, options.manifest), options)
     : construireMessage(release, options)
   if (env.DRY_RUN === 'true') {
     console.log(JSON.stringify(message, null, 2))
