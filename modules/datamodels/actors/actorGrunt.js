@@ -253,6 +253,14 @@ export class sr5ActorGruntDataModel extends foundry.abstract.TypeDataModel {
       activeSpecialAttribute: new fields.StringField({
         initial: 'magic'
       }),
+      // A contact brought to life from its item (createSidekick): who holds the item, and which one, so that
+      // findSidekick finds it and the dismissal sends it back to its item, as a spirit's does
+      creatorId: new fields.StringField({
+        initial: ''
+      }),
+      creatorItemId: new fields.StringField({
+        initial: ''
+      }),
     }
   }
 

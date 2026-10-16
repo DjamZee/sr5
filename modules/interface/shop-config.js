@@ -1,6 +1,9 @@
 import {
   SR5ShopStock
 } from './shop-stock.js'
+import {
+  isShadowedMegapackPack
+} from '../system/megapack.js'
 
 /**
  * The gamemaster's shop settings: which compendiums are shelves, and who may buy.
@@ -37,6 +40,7 @@ export class SR5ShopConfig extends foundry.applications.api.HandlebarsApplicatio
   async _prepareContext(options) {
     const context = await super._prepareContext(options)
     const excluded = SR5ShopStock.excludedPacks
+    const included = SR5ShopStock.includedPacks
     // A compendium holding nothing sellable (spells, qualities, powers) is not a shelf to offer.
     // The light index carries the type of each entry, so this costs no document read.
     const itemPacks = game.packs.filter(pack => pack.documentName === 'Item')
@@ -47,7 +51,9 @@ export class SR5ShopConfig extends foundry.applications.api.HandlebarsApplicatio
         id: pack.collection,
         label: pack.metadata.label,
         source: pack.metadata.packageName ?? pack.metadata.package ?? '',
-        checked: SR5ShopStock.isShelf(pack.collection, excluded),
+        checked: SR5ShopStock.isShelf(pack.collection, excluded, included),
+        // Both Megapacks active: this one is not read, its items are the active one's
+        shadowed: isShadowedMegapackPack(pack),
       }))
       .sort((a, b) => a.label.localeCompare(b.label))
 
@@ -70,12 +76,12 @@ export class SR5ShopConfig extends foundry.applications.api.HandlebarsApplicatio
 
   static async #onSubmit(event, form, formData) {
     const data = formData.object
-    // Only the boxes the form showed and left unticked: a compendium the menu did not list
-    // (nothing sellable in it today) stays a shelf, in case goods are added to it later
-    const excluded = Object.entries(data)
-      .filter(([key, value]) => key.startsWith('pack.') && !value)
-      .map(([key]) => key.slice(5))
-    await game.settings.set('sr5', 'sr5ShopExcludedPacks', excluded)
+    const boxes = Object.fromEntries(Object.entries(data)
+      .filter(([key]) => key.startsWith('pack.'))
+      .map(([key, value]) => [key.slice(5), !!value]))
+    const shelves = SR5ShopStock.shelvesFromBoxes(boxes)
+    await game.settings.set('sr5', 'sr5ShopExcludedPacks', shelves.excluded)
+    if (shelves.included.join() !== SR5ShopStock.includedPacks.join()) await game.settings.set('sr5', 'sr5ShopIncludedPacks', shelves.included)
     const mode = SR5ShopStock.BUYER_MODES.includes(data.buyerMode) ? data.buyerMode : 'owned'
     await game.settings.set('sr5', 'sr5ShopBuyerMode', mode)
     await game.settings.set('sr5', 'sr5ShopBuyerFolder', data.buyerFolder ?? '')

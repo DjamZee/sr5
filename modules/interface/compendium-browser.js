@@ -1,4 +1,7 @@
 import {
+  withoutShadowedMegapack
+} from '../system/megapack.js'
+import {
   SR5 
 } from '../config.js'
 import {
@@ -142,10 +145,13 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
   /*  Data Loading                                */
   /* -------------------------------------------- */
 
-  /** The packs the browser lists: items, actors, and the other documents it has filters for. */
+  /**
+   * The packs the browser lists: items, actors, and the other documents it has filters for. Without those of a
+   * shadowed Megapack (both active): same entries, same _id, every row would be shown twice.
+   */
   static _browsedPacks() {
     const otherDocTypes = Object.keys(OTHER_BROWSER_FILTERS)
-    return game.packs.filter(p => p.documentName === 'Item' || p.documentName === 'Actor' || otherDocTypes.includes(p.documentName))
+    return withoutShadowedMegapack(game.packs).filter(p => p.documentName === 'Item' || p.documentName === 'Actor' || otherDocTypes.includes(p.documentName))
   }
 
   /** The browser's entries, built from the indices in memory: no request to the server. */

@@ -14,3 +14,31 @@ export function activeMegapackId(modules = globalThis.game?.modules) {
 export function isMegapackPackage(id) {
   return MEGAPACK_IDS.includes(id)
 }
+
+/**
+ * The Megapacks that are active but not read: the Lite one when both are. Their packs hold the same items, with the
+ * same _id, as the active one's, so a list of every pack shows each item twice (Maëlle#3381, 16/10: 5 776 shop rows
+ * for 2 888 items). Empty when at most one Megapack is active.
+ */
+export function shadowedMegapackIds(modules = globalThis.game?.modules) {
+  const active = activeMegapackId(modules)
+  return MEGAPACK_IDS.filter(id => id !== active && modules?.get(id)?.active)
+}
+
+/** The package a compendium belongs to: its metadata, else the head of its collection id ("module.pack"). */
+function packageOf(pack) {
+  if (typeof pack === "string") return pack.split(".")[0]
+  return pack?.metadata?.packageName ?? pack?.metadata?.package ?? pack?.collection?.split(".")[0] ?? null
+}
+
+/** Is this compendium (a pack or its collection id) one of a Megapack shadowed by the active one? */
+export function isShadowedMegapackPack(pack, modules = globalThis.game?.modules) {
+  return shadowedMegapackIds(modules).includes(packageOf(pack))
+}
+
+/** The packs without those of the shadowed Megapack: the list to read when every item must appear once. */
+export function withoutShadowedMegapack(packs, modules = globalThis.game?.modules) {
+  const shadowed = shadowedMegapackIds(modules)
+  const list = [...(packs ?? [])]
+  return shadowed.length ? list.filter(pack => !shadowed.includes(packageOf(pack))) : list
+}

@@ -8,6 +8,7 @@
         <input type="checkbox" name="pack.{{id}}" {{#if checked}}checked{{/if}}>
         <span class="sr-shop-config-label">{{label}}</span>
         {{#if source}}<span class="sr-shop-config-source">{{source}}</span>{{/if}}
+        {{#if shadowed}}<span class="sr-shop-config-source" data-tooltip="{{localize 'SR5.ShopConfigShadowedHint'}}">{{localize 'SR5.ShopConfigShadowed'}}</span>{{/if}}
       </label>
       {{else}}
       <p class="hint">{{localize 'SR5.ShopConfigNoPack'}}</p>

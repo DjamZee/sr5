@@ -6,6 +6,10 @@
  * chosen by the gamemaster. Pure functions over documents, no DOM: the shop
  * window (lot B) and the gamemaster's shop (lot C) call them as they are.
  */
+import {
+  isShadowedMegapackPack
+} from '../system/megapack.js'
+
 export class SR5ShopStock {
 
   /**
@@ -30,9 +34,35 @@ export class SR5ShopStock {
     return Array.isArray(value) ? value : []
   }
 
-  /** Is this compendium one of the shop's shelves? */
-  static isShelf(packId, excluded = SR5ShopStock.excludedPacks) {
+  /**
+   * Compendiums of a shadowed Megapack the gamemaster put back on the shelves. Stored as inclusions: when both
+   * Megapacks are active, the one not read is left off by default (its items are the active one's, same _id).
+   */
+  static get includedPacks() {
+    const value = game.settings.get('sr5', 'sr5ShopIncludedPacks')
+    return Array.isArray(value) ? value : []
+  }
+
+  /** Is this compendium one of the shop's shelves? A shadowed Megapack's only when the gamemaster ticked it. */
+  static isShelf(packId, excluded = SR5ShopStock.excludedPacks, included = null) {
+    if (isShadowedMegapackPack(packId)) return (included ?? SR5ShopStock.includedPacks).includes(packId)
     return !excluded.includes(packId)
+  }
+
+  /**
+   * The two shelf settings from the configuration's boxes ({packId: ticked}). Only the unticked boxes the form
+   * showed are exclusions: a compendium the menu did not list (nothing sellable in it today) stays a shelf, in case
+   * goods are added to it later. A shadowed Megapack's box writes an inclusion instead, and its exclusion is kept as
+   * it was, so a Lite pack the GM had left off while it was alone is still off when the full one is turned off.
+   */
+  static shelvesFromBoxes(boxes, excluded = SR5ShopStock.excludedPacks, included = SR5ShopStock.includedPacks) {
+    const shown = Object.keys(boxes)
+    const shadowed = shown.filter(id => isShadowedMegapackPack(id))
+    const other = shown.filter(id => !shadowed.includes(id))
+    return {
+      excluded: [...excluded.filter(id => shadowed.includes(id)), ...other.filter(id => !boxes[id])],
+      included: [...included.filter(id => !shadowed.includes(id)), ...shadowed.filter(id => boxes[id])],
+    }
   }
 
   /** Is this type of item ever sold? */
@@ -63,7 +93,8 @@ export class SR5ShopStock {
     const docName = entry?.docName ?? entry?.documentName
     if (docName !== 'Item' || !SR5ShopStock.isSellableType(entry.type)) return false
     if (entry.system?.price === undefined) return false
-    if (equip) return true
+    // Equip mode opens every shelf, but a shadowed Megapack would only double them
+    if (equip) return !entry.packId || !isShadowedMegapackPack(entry.packId) || SR5ShopStock.includedPacks.includes(entry.packId)
     if (entry.packId && !SR5ShopStock.isShelf(entry.packId, excluded ?? SR5ShopStock.excludedPacks)) return false
     return !SR5ShopStock.isNotForSale(entry)
   }
