@@ -359,6 +359,9 @@ import {
 import {
   installRuleReminders
 } from "../system/rule-reminders.js"
+import {
+  spriteTypesApi
+} from "../entities/actors/sprite-types.js"
 
 export async function sr5HookInit() {
   SR5_SystemHelpers.registerSystemSettings()
@@ -458,6 +461,9 @@ export async function sr5HookInit() {
     tokenDefaults: SR5TokenDefaultsApi,
     // The shop's vendors for the modules: the Concepteur's NPC generator creates one from a template (lot 43)
     vendors: vendorsApi(),
+    // The sprite types for the modules: register a type of their own during init or setup (sprite-types.js).
+    // The Fading attribute has its hook, sr5.fadingResistance (fading-resistance.js)
+    spriteTypes: spriteTypesApi,
   }
 
   // Register DataModels

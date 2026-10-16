@@ -11,6 +11,9 @@ import {
   isAlwaysActive
 } from "../items/always-active.js"
 import {
+  spriteGivenPowers
+} from "./sprite-types.js"
+import {
   MEGAPACK_FULL_ID, activeMegapackId
 } from "../../system/megapack.js"
 import {
@@ -274,6 +277,8 @@ export class SR5_CompendiumUtility extends Actor {
     if (actorType === "actorSprite") {
       const spritePowers = await SR5_CompendiumUtility.getCategoryItems("spritePowers")
       baseItems = await SR5_CompendiumUtility.findBaseItemInCompendium(baseItems, spritePowers, actorSubType)
+      // A type registered by a module may name its own powers (sprite-types.js), wherever they are kept
+      baseItems = baseItems.concat(await SR5_CompendiumUtility.givenSpritePowers(actorSubType, baseItems))
     }
 
     // A spirit or a sprite that comes with nothing at all is almost always a
@@ -308,6 +313,27 @@ export class SR5_CompendiumUtility extends Actor {
     if (SR5_CompendiumUtility._warnedEmptyBaseItems.has(key)) return
     SR5_CompendiumUtility._warnedEmptyBaseItems.add(key)
     ui.notifications.warn(game.i18n.localize("SR5.WARN_NoBaseItems"))
+  }
+
+  /** The powers a registered sprite type gives by UUID, minus those already found by name. Unreadable UUIDs are skipped. */
+  static async givenSpritePowers(spriteType, already = [], {
+    resolve = uuid => globalThis.fromUuid?.(uuid)
+  } = {
+  }) {
+    const names = new Set(already.map(i => i.name))
+    const given = []
+    for (const uuid of spriteGivenPowers(spriteType)) {
+      let doc = null
+      try {
+        doc = await resolve(uuid)
+      } catch {
+        doc = null
+      }
+      if (!doc || names.has(doc.name)) continue
+      names.add(doc.name)
+      given.push(SR5_CompendiumUtility.givenItem(doc))
+    }
+    return given
   }
 
   static async findBaseItemInCompendium(baseItems, compendium, actorType) {
