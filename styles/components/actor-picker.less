@@ -1,0 +1,91 @@
+// A searchable list of actors by folder (actor-picker.js), first in the con tracker
+// The colours are the Concepteur's (window-tokens.less, laid by window-skin.less), light and dark alike
+.sr-actor-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+
+  [hidden] { display: none !important; }
+
+  .sr-ap-tools {
+    display: flex;
+    gap: 0.3rem;
+    input[type=search] { flex: 1 1 auto; min-width: 0; }
+    select { flex: 0 0 auto; width: auto; }
+  }
+
+  // The chosen ones, always in sight whatever the search
+  .sr-ap-chosen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  .sr-ap-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0 0.4rem;
+    font-size: 0.85em;
+    border: 1px solid var(--srw-sel-border);
+    background: var(--srw-sel-bg);
+    color: var(--srw-sel-text);
+    a { color: inherit; }
+  }
+
+  // The scrolling box: a fixed height, the rest of the window stays in sight
+  .sr-ap-list {
+    height: 13rem;
+    overflow-y: auto;
+    padding: 0.2rem;
+    border: 1px solid var(--srw-border-strong);
+    background: var(--srw-field);
+  }
+
+  .sr-ap-folder-head {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.1rem 0.2rem;
+    cursor: pointer;
+    color: var(--srw-heading);
+    font-weight: bold;
+    &:hover { background: var(--srw-sel-bg); }
+    .sr-ap-folder-icon { width: 1.1em; color: var(--srw-accent); }
+    .sr-ap-folder-name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sr-ap-count { font-weight: normal; font-size: 0.8em; color: var(--srw-muted); }
+  }
+  .sr-ap-children {
+    display: none;
+    padding-left: 0.9rem;
+    border-left: 1px solid var(--srw-border);
+    margin-left: 0.55rem;
+  }
+  .sr-ap-folder.open > .sr-ap-children { display: block; }
+
+  .sr-ap-actor {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.05rem 0.2rem;
+    cursor: pointer;
+    color: var(--srw-text);
+    input { flex: 0 0 auto; margin: 0; }
+    img { flex: 0 0 auto; width: 20px; height: 20px; object-fit: cover; border: none; }
+    .sr-ap-name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    &:hover { background: var(--srw-sel-bg); }
+    &.selected { background: var(--srw-sel-bg); color: var(--srw-sel-text); font-weight: bold; }
+    &.marked .sr-ap-mark { color: var(--srw-accent); }
+  }
+  .sr-ap-none { font-style: italic; }
+  .sr-ap-empty { margin: 0; }
+}
+
+// In the con tracker: the artists and the target side by side
+.sr-con .sr-con-pickers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  .sr-con-picker-box { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+  .sr-con-picker-label { font-weight: bold; }
+}
