@@ -41,6 +41,12 @@ import {
   SR5_SpiritTypes
 } from "../items/spirit-types.js"
 import {
+  spriteTypeDefinition, spriteSkills, spriteMatrixModifiers, spriteInitiativeDice, SPRITE_MATRIX_KEYS
+} from "./sprite-types.js"
+import {
+  fadingResistanceAttribute
+} from "./fading-resistance.js"
+import {
   masteryFreeSustainedSpells, illusionistLevelsByType
 } from "../items/magic-masteries.js"
 import {
@@ -2355,7 +2361,7 @@ export class SR5_CharacterUtility extends Actor {
       case "actorSprite":
         SR5_EntityHelpers.updateModifier(initMat, game.i18n.localize('SR5.Level'), "linkedAttribute", actorData.level)
         SR5_EntityHelpers.updateModifier(initMat, game.i18n.localize('SR5.DataProcessing'), "linkedAttribute", matrixAttributes.dataProcessing.value)
-        SR5_EntityHelpers.updateModifier(initMat.dice, game.i18n.localize(SR5.spriteTypes[actorData.type]), `${game.i18n.localize('TYPES.Actor.actorSprite')}`, 4)
+        SR5_EntityHelpers.updateModifier(initMat.dice, game.i18n.localize(SR5.spriteTypes[actorData.type]), `${game.i18n.localize('TYPES.Actor.actorSprite')}`, spriteInitiativeDice(actorData.type))
         break
       case "actorAgent":
         SR5_EntityHelpers.updateModifier(initMat, `${game.i18n.localize('SR5.Rating')}`, "linkedAttribute", actorData.rating)
@@ -3336,42 +3342,13 @@ export class SR5_CharacterUtility extends Actor {
   static generateSpriteSkills(actor) {
     let actorData = actor.system, skills = actorData.skills
 
-    switch (actorData.type) {
-      case "courier":
-        skills.computer.rating.base = actorData.level
-        skills.hacking.rating.base = actorData.level
-        break
-      case "crack":
-        skills.computer.rating.base = actorData.level
-        skills.hacking.rating.base = actorData.level
-        skills.electronicWarfare.rating.base = actorData.level
-        break
-      case "data":
-        skills.computer.rating.base = actorData.level
-        skills.electronicWarfare.rating.base = actorData.level
-        break
-      case "fault":
-        skills.computer.rating.base = actorData.level
-        skills.cybercombat.rating.base = actorData.level
-        skills.hacking.rating.base = actorData.level
-        break
-      case "machine":
-        skills.computer.rating.base = actorData.level
-        skills.electronicWarfare.rating.base = actorData.level
-        skills.hardware.rating.base = actorData.level
-        break
-      case "companion":
-        skills.computer.rating.base = actorData.level
-        skills.electronicWarfare.rating.base = actorData.level
-        break
-      case "generalist":
-        skills.computer.rating.base = actorData.level
-        skills.electronicWarfare.rating.base = actorData.level
-        skills.hacking.rating.base = actorData.level
-        break
-      default:
-        SR5_SystemHelpers.srLog(1, `Unknown '${actorData.type}' sprite type in '_generateSpriteSkills()'`)
-        return
+    // The type's skills are rated at the Level (SR5 p. 261, Kill Code p. 110; module types: sprite-types.js)
+    if (!spriteTypeDefinition(actorData.type)) {
+      SR5_SystemHelpers.srLog(1, `Unknown '${actorData.type}' sprite type in '_generateSpriteSkills()'`)
+      return
+    }
+    for (let key of spriteSkills(actorData.type)) {
+      if (skills[key]) skills[key].rating.base = actorData.level
     }
 
     for (let key of Object.keys(SR5.skills)) {
@@ -5111,7 +5088,9 @@ export class SR5_CharacterUtility extends Actor {
         let personaKey = item.system.type === "headcase" ? "nanite" : "resonance"
         let personaLabel = game.i18n.localize(SR5.characterSpecialAttributes[personaKey])
         SR5_EntityHelpers.updateModifier(matrixResistances.fading, personaLabel, "linkedAttribute", specialAttributes[personaKey].augmented.value)
-        SR5_EntityHelpers.updateModifier(matrixResistances.fading, game.i18n.localize('SR5.Willpower'), "linkedAttribute", attributes.willpower.augmented.value)
+        // Willpower by the book (SR5 p. 254); a module may name another attribute (hook sr5.fadingResistance)
+        const fadingAttribute = fadingResistanceAttribute(actor, personaKey)
+        SR5_EntityHelpers.updateModifier(matrixResistances.fading, game.i18n.localize(SR5.characterAttributes[fadingAttribute]), "linkedAttribute", attributes[fadingAttribute].augmented.value)
         // A Monad of the original strain resists with Willpower + Firewall, on both its monitors (Dark Terrors p. 88)
         if (originalStrainDevice(actor) === item) SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, game.i18n.localize('SR5.Willpower'), "linkedAttribute", attributes.willpower.augmented.value)
         else SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, personaLabel, "linkedAttribute", specialAttributes[personaKey].augmented.value)
@@ -5324,47 +5303,15 @@ export class SR5_CharacterUtility extends Actor {
 
     //Apply matrix attributes by type
     let label = `${game.i18n.localize(SR5.spriteTypes[actorData.type])}`
-    switch (actorData.type) {
-      case "courier":
-        SR5_EntityHelpers.updateModifier(matrixAttributes.sleaze, label, "spriteType", +3)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.dataProcessing, label, "spriteType", +1)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.firewall, label, "spriteType", +2)
-        break
-      case "crack":
-        SR5_EntityHelpers.updateModifier(matrixAttributes.sleaze, label, "spriteType", +3)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.dataProcessing, label, "spriteType", +2)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.firewall, label, "spriteType", +1)
-        break
-      case "data":
-        SR5_EntityHelpers.updateModifier(matrixAttributes.attack, label, "spriteType", -1)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.dataProcessing, label, "spriteType", +4)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.firewall, label, "spriteType", +2)
-        break
-      case "fault":
-        SR5_EntityHelpers.updateModifier(matrixAttributes.attack, label, "spriteType", +3)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.dataProcessing, label, "spriteType", +1)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.firewall, label, "spriteType", +2)
-        break
-      case "machine":
-        SR5_EntityHelpers.updateModifier(matrixAttributes.attack, label, "spriteType", +1)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.dataProcessing, label, "spriteType", +3)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.firewall, label, "spriteType", +2)
-        break
-      case "companion":
-        SR5_EntityHelpers.updateModifier(matrixAttributes.attack, label, "spriteType", -1)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.sleaze, label, "spriteType", +1)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.firewall, label, "spriteType", +4)
-        break
-      case "generalist":
-        SR5_EntityHelpers.updateModifier(matrixAttributes.attack, label, "spriteType", +1)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.sleaze, label, "spriteType", +1)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.dataProcessing, label, "spriteType", +1)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.firewall, label, "spriteType", +1)
-        SR5_EntityHelpers.updateModifier(actorData.initiatives.matrixInit, label, "spriteType", +1)
-        break
-      default:
-        SR5_SystemHelpers.srLog(1, `Unknown '${actorData.type}' sprite type in generateSpriteMatrix()`)
+    // The type's modifiers to the Level (SR5 p. 261, Kill Code p. 110; module types: sprite-types.js)
+    if (!spriteTypeDefinition(actorData.type)) {
+      SR5_SystemHelpers.srLog(1, `Unknown '${actorData.type}' sprite type in generateSpriteMatrix()`)
     }
+    const typeModifiers = spriteMatrixModifiers(actorData.type)
+    for (let key of SPRITE_MATRIX_KEYS) {
+      if (typeModifiers[key]) SR5_EntityHelpers.updateModifier(matrixAttributes[key], label, "spriteType", typeModifiers[key])
+    }
+    if (typeModifiers.initiative) SR5_EntityHelpers.updateModifier(actorData.initiatives.matrixInit, label, "spriteType", typeModifiers.initiative)
 
     //handle matrix attributes
     for (let key of Object.keys(SR5.matrixAttributes)) {
