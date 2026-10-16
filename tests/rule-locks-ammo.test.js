@@ -97,8 +97,9 @@ const runner = (actions = {
   items: [],
 })
 
-describe('suppressive fire with too few rounds (roll-test, SR5 p. 179)', () => {
-  const dialog = () => ({
+//SR5 p. 181: under 20 rounds the zone narrows by 1 m for every 2 missing; refused only once it is 0 m wide
+describe('suppressive fire with too few rounds (roll-test, SR5 p. 181)', () => {
+  const dialog = (value = 0) => ({
     test: {
       typeSub: 'rangedWeapon'
     },
@@ -106,11 +107,22 @@ describe('suppressive fire with too few rounds (roll-test, SR5 p. 179)', () => {
       firingMode: {
         selected: 'SF'
       }, ammo: {
-        value: 3
+        value
       }, actions: [{
         type: 'complex', value: 1, source: 'attack'
       }]
     },
+  })
+
+  it('3 rounds left: the fire goes, narrowed to 2 m, nothing for the GM', async () => {
+    globalThis.game.i18n.format = vi.fn(key => key)
+    expect(SR5_RollTest.rollClickRefused(runner(), dialog(3))).toBe(false)
+    expect(ui.notifications.warn).not.toHaveBeenCalled()
+    expect(game.i18n.format).toHaveBeenCalledWith('SR5.INFO_SuppressiveFireNarrowed', {
+      left: 3, width: 2
+    })
+    await flush()
+    expect(emits).toEqual([])
   })
 
   it('the "ammo" family checked: the dialog stays open, as before', async () => {
@@ -130,7 +142,7 @@ describe('suppressive fire with too few rounds (roll-test, SR5 p. 179)', () => {
     expect(emits).toHaveLength(1)
     expect(emits[0][1]).toMatchObject({
       family: 'ammo', key: 'SR5.WARN_FiringModeAmmo', actor: 'Dodger', data: {
-        needed: 20, left: 3
+        needed: 20, left: 0
       }
     })
   })
