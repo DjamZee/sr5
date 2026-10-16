@@ -6560,6 +6560,7 @@
 	"SR5.WARN_ActiveDefenseNoSkill": "{actor} lacks the {skill} skill: this active defense is not available.",
 	"SR5.WARN_NotEnoughInitiative": "{actor} does not have enough initiative ({initiative}) for an interruption action costing {cost}.",
 	"SR5.WARN_AreaSpellTemplateGone": "This area spell's template was removed during the resistance: the effect is not applied.",
+	"SR5.WARN_AreaSpellNoTemplate": "No template of this area spell is placed: the effect is not applied. Place the spell's template to apply it.",
 	"SR5.WARN_NoTemplateForBlast": "This throw's template was removed: the distance to the blast cannot be measured. Place it again or settle the damage by hand.",
 	"SR5.WARN_NoTemplateInScene": "No template in scene !",
 	"SR5.WARN_ScatterCardTooOld": "This card predates template tracking: it cannot tell which template is its own. Roll the scatter by hand and move the template yourself.",
