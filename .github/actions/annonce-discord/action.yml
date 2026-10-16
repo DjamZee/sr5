@@ -1,0 +1,59 @@
+# Action composite réutilisable : annonce une release GitHub sur Discord (embed « shadowtalk »).
+# Depuis un autre dépôt (un module) :
+#   - uses: DjamZee/sr5/.github/actions/annonce-discord@<tag ou branche>
+#     with:
+#       tag: ${{ github.event.release.tag_name }}
+#       manifest: module.json
+#       webhook: ${{ secrets.DISCORD_WEBHOOK }}
+name: Annonce Discord d'une release
+description: Poste sur Discord un embed qui annonce une release GitHub, ou affiche le JSON en mode à blanc.
+inputs:
+  tag:
+    description: Tag de la release à annoncer
+    required: true
+  repo:
+    description: Dépôt « propriétaire/nom » (défaut, le dépôt courant)
+    default: ${{ github.repository }}
+  manifest:
+    description: Nom de l'asset manifeste (system.json ou module.json)
+    default: system.json
+  wiki-url:
+    description: Adresse du wiki (défaut, le wiki du dépôt)
+    default: ''
+  username:
+    description: Nom affiché par le webhook
+    default: Shadow Talker DjamZ
+  avatar-url:
+    description: Image de l'avatar du webhook
+    default: https://raw.githubusercontent.com/DjamZee/sr5/13.0.0-djamz.13/assets/img/pan/commlink.webp
+  thumbnail-url:
+    description: Vignette de l'embed (vide = aucune)
+    default: https://raw.githubusercontent.com/DjamZee/sr5/13.0.0-djamz.13/assets/img/ui/SR5_Logo.png
+  dry-run:
+    description: « true » affiche le JSON au lieu de l'envoyer
+    default: 'false'
+  webhook:
+    description: Adresse du webhook Discord (secret ; inutile à blanc)
+    default: ''
+  github-token:
+    description: Jeton pour lire la release (indispensable pour un dépôt privé)
+    default: ${{ github.token }}
+runs:
+  using: composite
+  steps:
+    - name: Composer et envoyer l'annonce
+      shell: bash
+      env:
+        REPO: ${{ inputs.repo }}
+        TAG: ${{ inputs.tag }}
+        MANIFEST: ${{ inputs.manifest }}
+        WIKI_URL: ${{ inputs.wiki-url }}
+        USERNAME: ${{ inputs.username }}
+        AVATAR_URL: ${{ inputs.avatar-url }}
+        THUMBNAIL_URL: ${{ inputs.thumbnail-url }}
+        DRY_RUN: ${{ inputs.dry-run }}
+        DISCORD_WEBHOOK: ${{ inputs.webhook }}
+        GH_TOKEN: ${{ inputs.github-token }}
+      run: |
+        if [ -n "$DISCORD_WEBHOOK" ]; then echo "::add-mask::$DISCORD_WEBHOOK"; fi
+        node "$GITHUB_ACTION_PATH/annonce.mjs"
