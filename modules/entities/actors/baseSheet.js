@@ -8,7 +8,7 @@ import {
   isCapReminder, ruleRemindersShown
 } from '../../system/rule-reminders.js'
 import {
-  boneSwitchRefused
+  boneSwitchRefused, bundleWirelessRefused
 } from '../../system/implant-essence.js'
 import {
   SR5_SystemHelpers,
@@ -1586,6 +1586,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }))
     //Vintage (Gun H(e)aven 3 p. 3): never wireless, so no switch and no action spent (the "ammo" rule lock family, B13 lot 2)
     if (target === "system.wirelessTurnedOn" && vintageWirelessRefused(realItem, actor)) return
+    //Lots d'augmentations (Chrome Flesh p. 96): the wireless of a lot is never cut (the "body" rule lock family)
+    if (target === "system.wirelessTurnedOn" && bundleWirelessRefused(realItem, actor, value)) return
     //Better Than Bad p. 141: under Blight no adept power, focus nor sustained spell is switched on (decisions of DjamZ;
     //the "magic" rule lock family, B13 lot 6)
     if (target === "system.isActive" && value && SR5_Toxins.blightSwitchRefused(actor, realItem)) return

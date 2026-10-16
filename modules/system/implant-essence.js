@@ -455,6 +455,22 @@ export function boneSwitchRefused(actor, item, isGM = game.user?.isGM) {
   })
 }
 
+/**
+ * Lots d'augmentations (Chrome Flesh p. 96): « La capacité sans fil d'un lot ne peut pas être coupée. » With the world
+ * setting on, switching off the wireless of an implant of a lot is refused by the "body" rule lock family; with the
+ * family lifted, the switch goes and the gamemaster hears of it.
+ * @returns {boolean} true if the switch must stop
+ */
+export function bundleWirelessRefused(item, actor, turningOn) {
+  if (turningOn || item?.type !== "itemAugmentation" || item.system?.augmentationBundle !== true) return false
+  if (!essenceSettingOn(AUGMENTATION_BUNDLE_SETTING)) return false
+  return refuseByRule("body", "SR5.WARN_BundleWirelessOn", {
+    name: item.name
+  }, {
+    actor
+  })
+}
+
 /** The message key for a bone augmentation refused: two lacings keep DjamZ's words, a lacing and a density their own */
 export function boneClashKey(lacings, kind) {
   return {
