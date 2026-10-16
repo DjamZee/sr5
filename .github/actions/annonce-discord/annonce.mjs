@@ -282,8 +282,15 @@ async function principal() {
   const repo = env.REPO || env.GITHUB_REPOSITORY
   const tag = env.TAG
   if (!repo || !tag) throw new Error('REPO et TAG sont obligatoires')
-  const release = await lireRelease(repo, tag)
   const module = env.TYPE === 'module'
+  // À blanc, un module dont le tag n'a pas encore de release s'aperçoit quand même (notes vides).
+  const release = await lireRelease(repo, tag).catch(erreur => {
+    if (!module || env.DRY_RUN !== 'true') throw erreur
+    console.log(`${erreur.message} : aperçu sans notes.`)
+    return {
+      tag_name: tag, name: tag, prerelease: false, body: ''
+    }
+  })
   const options = {
     repo,
     manifest: env.MANIFEST || (module ? 'module.json' : 'system.json'),
