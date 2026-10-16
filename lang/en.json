@@ -4963,6 +4963,7 @@
 	"SR5.SheetConfig.Block.Limits": "Limits",
 	"SR5.SheetConfig.Block.MagicUserType": "Magic User Type",
 	"SR5.SheetConfig.Block.MaglockType": "Maglock Type",
+	"SR5.SheetConfig.Block.HostSlaves": "Slaved devices (host)",
 	"SR5.SheetConfig.Block.MarksControled": "Marks (Controlled)",
 	"SR5.SheetConfig.Block.MartialArts": "Martial Arts",
 	"SR5.SheetConfig.Block.MatrixActions": "Matrix Actions",

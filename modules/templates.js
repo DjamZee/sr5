@@ -111,6 +111,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/actors/_partials/left-tabs/matrixUser/grid.hbs",
     "systems/sr5/templates/actors/_partials/left-tabs/matrixUser/pan.hbs",
     "systems/sr5/templates/actors/_partials/left-tabs/matrixUser/maglockType.hbs",
+    "systems/sr5/templates/actors/_partials/left-tabs/matrixUser/hostSlaves.hbs",
 
     //Left Tab - Qualities partials
     "systems/sr5/templates/actors/_partials/left-tabs/qualities/qualities.hbs",
