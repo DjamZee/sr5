@@ -1,4 +1,7 @@
 import {
+  withoutShadowedMegapack
+} from "../../system/megapack.js"
+import {
   SR5
 } from "../../config.js"
 import {
@@ -81,7 +84,8 @@ export class SR5_SpiritTypes {
       SR5_SpiritTypes._add(found, item)
     }
 
-    for (const pack of game.packs.filter(p => p.documentName === "Item")) {
+    // A shadowed Megapack (both active) holds the same types: not read twice
+    for (const pack of withoutShadowedMegapack(game.packs).filter(p => p.documentName === "Item")) {
       let index
       try {
         index = await pack.getIndex()

@@ -606,6 +606,8 @@
 	"SR5.ShopConfigBuyersHint": "A player only ever sees the characters they own.",
 	"SR5.ShopConfigNoPack": "No item compendium.",
 	"SR5.ShopConfigSave": "Save",
+	"SR5.ShopConfigShadowed": "duplicate",
+	"SR5.ShopConfigShadowedHint": "Both Megapacks are active: this one holds the same items as the other, so it is unticked by default to avoid listing everything twice.",
 	"SR5.ShopConfigShelves": "Shop shelves",
 	"SR5.ShopConfigShelvesHint": "Ticked compendiums are sold. Qualities, spells, powers and other non-goods never are. A compendium added later is sold by default.",
 	"SR5.ShopCount": "{count} items",

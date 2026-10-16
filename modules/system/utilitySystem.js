@@ -420,6 +420,13 @@ export class SR5_SystemHelpers {
       scope: "world", config: false, default: [], type: Array,
     })
 
+    // Compendiums of a shadowed Megapack (both active: the one not read) put back on the shelves by the GM. They are
+    // left off by default and not read, so a change reads the shelves again on every client
+    game.settings.register("sr5", "sr5ShopIncludedPacks", {
+      scope: "world", config: false, default: [], type: Array,
+      onChange: () => import("../interface/shop-window.js").then(m => m.SR5ShopWorldSource.reset()),
+    })
+
     // Who may buy: player characters (as before), a folder, the actor's "Can shop" box, or folder or box
     game.settings.register("sr5", "sr5ShopBuyerMode", {
       scope: "world", config: false, default: "owned", type: String,

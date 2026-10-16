@@ -606,6 +606,8 @@
 	"SR5.ShopConfigBuyersHint": "Un joueur ou une joueuse ne voit jamais que les personnages qui lui appartiennent.",
 	"SR5.ShopConfigNoPack": "Aucun compendium d'objets.",
 	"SR5.ShopConfigSave": "Enregistrer",
+	"SR5.ShopConfigShadowed": "en double",
+	"SR5.ShopConfigShadowedHint": "Les deux Mégapacks sont actifs : celui-ci a les mêmes objets que l'autre, il est décoché par défaut pour ne pas tout afficher deux fois.",
 	"SR5.ShopConfigShelves": "Rayons de la boutique",
 	"SR5.ShopConfigShelvesHint": "Les compendiums cochés sont vendus. Qualités, sorts, pouvoirs et autres non-marchandises ne le sont jamais. Un compendium ajouté plus tard est vendu d'office.",
 	"SR5.ShopCount": "{count} objets",

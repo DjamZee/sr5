@@ -1,4 +1,7 @@
 import {
+  withoutShadowedMegapack
+} from "../../system/megapack.js"
+import {
   overwatchScoreShownTo
 } from "../../rolls/roll-helpers/overwatch-notice.js"
 import {
@@ -2424,7 +2427,7 @@ export class SR5_ActorHelper {
       }
     }
     const same = d => d.type === item.type && d.name === item.name
-    for (const pack of game.packs?.filter(p => p.documentName === "Item") ?? []) {
+    for (const pack of withoutShadowedMegapack(game.packs).filter(p => p.documentName === "Item")) {
       const entry = (await pack.getIndex({
         fields: ["type"]
       })).find(same)

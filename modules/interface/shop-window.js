@@ -29,6 +29,9 @@ import {
   SR5ShopCatalog
 } from './shop-catalog.js'
 import {
+  isShadowedMegapackPack
+} from '../system/megapack.js'
+import {
   SR5ShopVendor, SR5ShopVendorSource
 } from './shop-vendor.js'
 import {
@@ -116,7 +119,10 @@ export class SR5ShopWorldSource {
    */
   static async #read() {
     const raw = []
-    await Promise.all(game.packs.filter(p => p.documentName === 'Item').map(async pack => {
+    // A shadowed Megapack's packs are not read unless the gamemaster put them back: same items, same _id
+    const included = SR5ShopStock.includedPacks
+    const read = p => p.documentName === 'Item' && (!isShadowedMegapackPack(p) || included.includes(p.collection))
+    await Promise.all(game.packs.filter(read).map(async pack => {
       try {
         const index = await pack.getIndex({
           fields: ['system', 'effects', 'flags']
