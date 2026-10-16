@@ -568,6 +568,16 @@ export class SR5ShopVendor {
     })
   }
 
+  /**
+   * Open a vendor's shop from its uuid, for a module (the Landing Page's deck): the same window and the same
+   * rights as the shop's own list, the gamemaster any shop, anyone else an open one. Null when refused.
+   */
+  static async openFor(actorUuid, storageId) {
+    const vendor = SR5ShopVendor.resolve(actorUuid, storageId)
+    if (!vendor || (!game.user?.isGM && !shopSettings(vendor.storage).isOpen)) return null
+    return SR5ShopVendor.openShop(vendor.actor, vendor.storage)
+  }
+
   /* -------------------------------------------- */
   /*  Buying                                      */
   /* -------------------------------------------- */
@@ -1812,11 +1822,13 @@ export class SR5ShopVendorSource {
 
 /**
  * The vendors for the modules, set in game.sr5.vendors (lot 43): the Concepteur's NPC generator lists the templates
- * and creates a vendor from one, the gamemaster only, as the shop's own button does.
+ * and creates a vendor from one, the gamemaster only, as the shop's own button does. The Landing Page opens a
+ * vendor's shop: the window, or null when the user may not enter.
  */
 export function vendorsApi() {
   return {
     create: options => SR5ShopVendor.createFromTemplate(options),
+    open: (actorUuid, storageId) => SR5ShopVendor.openFor(actorUuid, storageId),
     templates: VENDOR_TEMPLATES,
     families: VENDOR_FAMILIES,
   }
