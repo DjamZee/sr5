@@ -302,8 +302,9 @@ export class SR5_ActorHelper {
     }
 
     //Special Element Damage
-    // A drone's side effect from electricity is the matrix damage above (SR5 p. 173), not the dice and Initiative penalty
-    if (options.damage.element === "electricity" && actor.type !== "actorDrone") await SR5_ActorHelper.electricityDamageEffect(actorId)
+    // A drone's or a device's side effect from electricity is the matrix damage above (SR5 p. 173), not the dice and
+    // Initiative penalty
+    if (options.damage.element === "electricity" && actor.type !== "actorDrone" && actor.type !== "actorDevice") await SR5_ActorHelper.electricityDamageEffect(actorId)
     if (options.damage.element === "anticoagulant" && actor.type !== "actorDrone") await SR5_ActorHelper.anticoagulantDamageEffect(actorId)
     //The acid of a spell evaporates once the spell ends (SR5 p. 172): spells and preparations say "magical", never "spell";
     //a weapon focus is a weapon. The burn the acid deals each turn (srcombat.js) never lays a new acid of its own

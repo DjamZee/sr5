@@ -7,7 +7,17 @@ vi.mock('../modules/rolls/roll-helpers/attack-card.js', async (importOriginal) =
   ...(await importOriginal()),
   trustedResistanceCard: async () => true,
 }))
+vi.hoisted(() => {
+  globalThis.CONFIG ??= {
+  }
+})
 import resistance from "../modules/rolls/roll-prepare-case/rollData-Resistance.js"
+import {
+  SR5_ActorHelper
+} from "../modules/entities/actors/entityActor-helpers.js"
+import {
+  SR5_EntityHelpers
+} from "../modules/entities/helpers.js"
 import {
   isElectricHitOnDevice, deviceElectricResistanceData, deviceElectricPool, electricMatrixDamage
 } from "../modules/rolls/roll-helpers/electric-device.js"
@@ -120,6 +130,44 @@ describe("Arme électrique contre un appareil (SR5 p. 172-173)", () => {
     expect(r.damage.base).toBe(11)
     expect(r.damage.type).toBe("physical")
     expect(r.dicePool.modifiers.some(m => m.type === "armorPenetration")).toBe(false)
+  })
+
+  it("appliqués : la moitié des dommages physiques au moniteur matriciel, sans l'effet « Électricité » (mesuré en jeu le 16/10)", async () => {
+    const system = {
+      specialProperties: {
+      }, conditionMonitors: {
+        matrix: {
+          value: 10, base: 10, modifiers: [], actual: {
+            value: 0, base: 0, modifiers: []
+          }
+        }
+      }
+    }
+    const actor = {
+      id: "d1", type: "actorDevice", name: "Caméra", system, items: [],
+      toObject: () => JSON.parse(JSON.stringify({
+        type: "actorDevice", system
+      })),
+      update: vi.fn(async () => {}),
+    }
+    vi.spyOn(SR5_EntityHelpers, "getRealActorFromID").mockImplementation(() => actor)
+    vi.spyOn(SR5_ActorHelper, "createDeadEffect").mockImplementation(async () => {})
+    const electric = vi.spyOn(SR5_ActorHelper, "electricityDamageEffect").mockImplementation(async () => {})
+    await SR5_ActorHelper.takeDamage("d1", {
+      damage: {
+        value: 8, type: "physical", matrix: {
+          value: 0
+        }, element: "electricity", isAttack: true
+      },
+      combat: {
+        ammo: {
+        }
+      },
+      threshold: {
+      },
+    })
+    expect(actor.update.mock.calls[0][0]["system.conditionMonitors.matrix.actual.base"]).toBe(4)
+    expect(electric).not.toHaveBeenCalled()
   })
 
   it("une arme non électrique n'atteint pas l'appareil : le MJ est prévenu, aucun jet", async () => {
