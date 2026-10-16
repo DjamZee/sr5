@@ -43,6 +43,9 @@ import {
   refuseByRule, ruleLockBinds
 } from "../../system/rule-locks.js"
 import {
+  hostEntryOffered
+} from "../../system/matrix-hooks.js"
+import {
   administersIcon
 } from "../../system/matrix-ownership.js"
 import {
@@ -343,7 +346,10 @@ export function openRadialMenu({
     const holder = doc?.items ? doc : doc?.parent
     return holder?.type === "actorDevice" && holder.system?.matrix?.deviceType === "host" ? holder : null
   })()
-  if (hostActor && viewer?.actor && viewer.actor !== hostActor && viewer.actor.system?.matrix?.actions?.enterOrExitHost) {
+  if (hostActor && viewer?.actor && viewer.actor !== hostActor && viewer.actor.system?.matrix?.actions?.enterOrExitHost &&
+    hostEntryOffered({
+      actor: viewer.actor, host: hostActor
+    })) {
     const inside = viewer.actor.system.matrix.currentHost === hostActor.uuid
     buttons.push(button(game.i18n.localize(inside ? "SR5.HostExit" : "SR5.HostEnter"), {
       key: "enterOrExitHost",

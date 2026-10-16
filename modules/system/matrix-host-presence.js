@@ -221,10 +221,11 @@ export async function enterHost(actor, hostOrUuid, {
  * @param {String} [options.reason="exit"]
  * @param {Boolean} [options.spendAction]   true for the action Exit Host
  * @param {Boolean} [options.chat=true]
+ * @param {Boolean} [options.warn=true]    the gamemaster told of the demi-GOD after a convergence
  * @return {Promise<Boolean>}
  */
 export async function exitHost(actor, {
-  reason = "exit", spendAction = reason === "exit", chat = true
+  reason = "exit", spendAction = reason === "exit", chat = true, warn = true
 } = {
 }){
   const update = exitHostUpdate(actor?.system?.matrix)
@@ -237,7 +238,8 @@ export async function exitHost(actor, {
   if (chat) await tell(actor, game.i18n.format("SR5.HostLeft", {
     host: host ? nameOf(host) : game.i18n.localize("SR5.HostUnknown")
   }))
-  warnConvergenceOnExit(actor)
+  //A module that tracks the demi-GOD itself (Matrice) passes warn: false
+  if (warn) warnConvergenceOnExit(actor)
   return true
 }
 

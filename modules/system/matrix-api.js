@@ -379,7 +379,7 @@ export const SR5MatrixApi = {
   converge: (persona, options) => converge(persona, options),
   /** Put a persona inside a host (SR5 p. 240): options {spendAction = true, force = false, chat = true} */
   enterHost: async (persona, host, options) => (await presence()).enterHost(await actorOf(persona), await actorOf(host), options),
-  /** Take a persona out of its host: options {reason = "exit", spendAction, chat = true} */
+  /** Take a persona out of its host: options {reason = "exit", spendAction, chat = true, warn = true} */
   exitHost: async (persona, options) => (await presence()).exitHost(await actorOf(persona), options),
   /** The host a persona is inside, or null */
   currentHost: async persona => (await presence()).currentHostOf(await actorOf(persona)),

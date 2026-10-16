@@ -5,6 +5,7 @@
 // - C3 sr5.matrixEffectiveMarks, a verdict {viewer, target, key, marks}: the marks that count for an action
 // - C4 sr5.matrixMarksChanged (target, ownerId, value, previous, source): told once marks are put or erased
 // - C5 sr5.overwatchChanged (actor, value, previous): told once an Overwatch Score changes
+// - sr5.matrixHostEntry, a verdict {actor, host, offer}: a module with its own way into a host hides the system's entry
 // A verdict hook hands an object the subscriber may change; a value that is not one the system takes is ignored. A
 // subscriber that fails is logged and goes no further. Plain rules, no Foundry in them: the tests give `call`.
 
@@ -14,6 +15,7 @@ export const MATRIX_HOOKS = {
   effectiveMarks: "sr5.matrixEffectiveMarks",
   marksChanged: "sr5.matrixMarksChanged",
   overwatchChanged: "sr5.overwatchChanged",
+  hostEntry: "sr5.matrixHostEntry",
 }
 
 // SR5 p. 237
@@ -73,6 +75,22 @@ export function announceMarksChanged(target, ownerId, value, previous, source = 
 export function announceOverwatchChanged(actor, value, previous, call = defaultCall){
   if ((Number(value) || 0) === (Number(previous) || 0)) return
   safely(MATRIX_HOOKS.overwatchChanged, [actor, Number(value) || 0, Number(previous) || 0], call)
+}
+
+/**
+ * sr5.matrixHostEntry, a verdict {actor, host, offer}: does the crown of a host offer the system's Enter / Exit Host?
+ * A module that has its own way in for this host (the zones of Matrice) sets offer to false: no entry twice.
+ * @return {Boolean}
+ */
+export function hostEntryOffered({
+  actor = null, host = null
+} = {
+}, call = defaultCall){
+  const verdict = {
+    actor, host, offer: true
+  }
+  safely(MATRIX_HOOKS.hostEntry, [verdict], call)
+  return verdict.offer !== false
 }
 
 /** The Overwatch Score a change sets, or undefined when it sets none (flat or nested changes) */
