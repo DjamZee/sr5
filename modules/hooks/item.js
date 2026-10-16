@@ -11,6 +11,9 @@ import {
   GM_ONLY_PREPARATION_PATHS
 } from '../system/preparation-potency.js'
 import {
+  GM_ONLY_DRUG_PATHS
+} from '../entities/items/drug-designer.js'
+import {
   WEAPON_ACCESSORY_CATALOG
 } from '../data/weaponAccessoryCatalog.js'
 import {
@@ -34,6 +37,16 @@ import {
 import {
   forgetKnowledgeAttribute
 } from "../rolls/roll-helpers/skillAttribute.js"
+import {
+  controllerOf, scheduleVehicleOwnerSync, syncsHere
+} from "../entities/actors/vehicle-owner-sync.js"
+
+// An item of a rigger added, changed or deleted (an autosoft installed on the console) reaches the copy its drones
+// carry: no updateActor is sent for it (vehicle-owner-sync.js)
+function followController(item, userId) {
+  const controller = controllerOf(item)
+  if (controller && syncsHere(game.users, game.user, userId)) scheduleVehicleOwnerSync(controller, a => SR5_CharacterUtility.updateControledVehicle(a))
+}
 
 // An item can take the vision in use away, or give it back (cybereyes, goggles) : the tokens of
 // its actor follow, served by the user who made the change.
@@ -51,6 +64,7 @@ async function moveInitiativeOf(item) {
 }
 
 export async function sr5HookCreateItem(item, options, userId) {
+  followController(item, userId)
   await sr5HookItemVision(item, userId)
   await moveInitiativeOf(item)
   //Séance H, H3 (decision of DjamZ): a player may still add an item that carries effects to a sheet (a drop from a
@@ -110,6 +124,11 @@ export function sr5HookPreUpdateItem(document, data, options, userId) {
     ui.notifications.warn(game.i18n.localize('SR5.WARN_PreparationDecayGMOnly'))
     return false
   }
+  //The approval of a drug a player made with the designer is the gamemaster's (decision of DjamZ, 07/10)
+  if (document.type === 'itemDrug' && !game.user?.isGM && stripGMOnlyChanges(data, document, GM_ONLY_DRUG_PATHS, options).length) {
+    ui.notifications.warn(game.i18n.localize('SR5.WARN_DrugDesignGMOnly'))
+    return false
+  }
   //Vintage (Gun H(e)aven 3 p. 3): an electronic accessory is allowed but warned about, it gets no wireless
   if (document.type === 'itemWeapon' && data.system?.accessory !== undefined && userId === game.user?.id) {
     for (const a of electronicAddedToVintage(document.system.accessory, data.system.accessory, WEAPON_ACCESSORY_CATALOG)) {
@@ -140,6 +159,7 @@ export function sr5HookPreUpdateItem(document, data, options, userId) {
 }
 
 export async function sr5HookUpdateItem(document, data, options, userId) {
+  followController(document, userId)
   await sr5HookItemVision(document, userId)
   //A player's client can be made to skip the refusal above: the active gamemaster is told of every write of effects by a
   //player. The option of a system write (acid, Apply to item) comes from that same client and can be forged: it no
@@ -192,6 +212,7 @@ export async function sr5HookUpdateItem(document, data, options, userId) {
 }
 
 export async function sr5HookDeleteItem(item, _options, userId) {
+  followController(item, userId)
   await sr5HookItemVision(item, userId)
   await moveInitiativeOf(item)
   if (SR5_Jammer.isJammer(item)) SR5_Jammer.refreshItem(item)
@@ -209,6 +230,10 @@ export async function sr5HookDeleteItem(item, _options, userId) {
       }
     }
     if (item.type === "itemEffect"){
+      //An end of Increase Attribute may leave more damage than the monitor now holds: carried as the book says, by
+      //the user who deleted the effect, once its actor is prepared without it
+      const actor = item.parent
+      if (userId === game.user?.id && actor?.documentName === "Actor") setTimeout(() => SR5_ActorHelper.settleMonitorExcess(actor.isToken ? actor.token.id : actor.id, actor), 0)
       if (item.system.hasEffectOnItem && item.parent){
         if (item.parent.isToken) await SR5_ActorHelper.deleteItemEffectFromItem(item.parent.token.id, item.system.ownerItem)
         else await SR5_ActorHelper.deleteItemEffectFromItem(item.parent.id, item.system.ownerItem)

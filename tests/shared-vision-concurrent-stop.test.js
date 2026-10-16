@@ -9,6 +9,7 @@ import {
 vi.mock('../modules/socket.js', () => ({
   SR5_SocketHandler: {
     emitForGM: vi.fn(),
+    emitForPlayer: vi.fn(),
   },
 }))
 vi.mock('../modules/system/srcombat.js', () => ({
@@ -234,5 +235,44 @@ describe('shared vision: one writer for the owner and the others', () => {
       }, true),
     ])
     expect(drone.flags.sr5.sharedVision).toEqual([])
+  })
+})
+
+// Oskar, after F4: a second gamemaster, not the active one, still wrote the list himself, out of the queue
+// of the active gamemaster. Only the active gamemaster writes.
+describe('shared vision: a second gamemaster asks the active one', () => {
+  it('a gamemaster who is not the active one sends his change to the active one', async () => {
+    game.user = {
+      id: 'gm2', isGM: true
+    }
+    const drone = token([viewer('a'), viewer('b')])
+    await SR5SharedVision.setViewer(drone, {
+      userId: 'a'
+    }, true)
+    expect(drone.update).not.toHaveBeenCalled()
+    expect(SR5_SocketHandler.emitForPlayer).toHaveBeenCalledWith('sharedVisionSetViewer', {
+      tokenUuid: drone.uuid, entry: {
+        userId: 'a'
+      }, remove: true
+    }, 'gm')
+  })
+
+  it("the active gamemaster writes what the second one asked, a Snoop for a player included", async () => {
+    const drone = token([viewer('a')])
+    drone.actor = {
+      type: 'actorDrone', testUserPermission: () => false
+    }
+    globalThis.fromUuid = async () => drone
+    game.users.get = id => ({
+      id, isGM: id === 'gm2'
+    })
+    await SR5SharedVision._socketSetViewer({
+      data: {
+        tokenUuid: drone.uuid, entry: {
+          userId: 'b', source: 'snoop', markOwnerId: 'hacker'
+        }
+      }
+    }, 'gm2')
+    expect(drone.flags.sr5.sharedVision.map(e => e.userId)).toEqual(['a', 'b'])
   })
 })

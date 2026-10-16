@@ -5,6 +5,9 @@ import {
   SR5 
 } from "../config.js"
 
+//The augmentation cap's line that cuts nothing (the help of the sheet, worth 0) is noise in a roll and on its card
+export const capNoteOnly = m => m?.type === "augmentationCap" && !Number(m.value)
+
 export class SR5_PrepareRollHelper {
   //Get rolling actor
   static getRollingActor(document){
@@ -47,6 +50,7 @@ export class SR5_PrepareRollHelper {
   static getDicepoolModifiers(rollData, modifiers){
     rollData.dicePool.modifiers = []
     for (let m of modifiers){
+      if (capNoteOnly(m)) continue
       if (m.type !== "skillRating" && m.type !== "linkedAttribute" && m.type !== "skillGroup" && m.type !== "matrixAttribute" && m.type !== "devicRating"){
         rollData.dicePool.modifiers.push({
           type: m.type, label: m.source, value: m.value
@@ -69,6 +73,7 @@ export class SR5_PrepareRollHelper {
   //getBaseLimit took both off the base, so both must come back
   static getLimitModifiers(rollData, limitModifiers){
     for (let m of limitModifiers){
+      if (capNoteOnly(m)) continue
       let key = m.type, n = 1
       while (rollData.limit.modifiers[key] !== undefined) key = `${m.type}_${++n}`
       rollData.limit.modifiers[key] = {
@@ -101,6 +106,26 @@ export class SR5_PrepareRollHelper {
         "target.actorId": await this.getTargetedActorID(),
       })
     }
+    return rollData
+  }
+
+  /**
+   * The target chosen on the crown of a PAN (lot 4, Q6): its token, and the device aimed at when it is not the
+   * persona's own (the defender then has nothing to choose: chooseMatrixDefender is skipped)
+   * @param {Object} rollData
+   * A1 (API pour Matrice v1): {actorId, itemUuid} without a token names an actor wherever its token stands; the
+   * checks of the test read it instead of the user's targets (panActorOnly)
+   * @param {Object} panTarget  {tokenId, itemUuid}, or {actorId, itemUuid}
+   */
+  static getPanTargetData(rollData, panTarget){
+    const token = panTarget?.tokenId ? canvas?.tokens?.get(panTarget.tokenId) : null
+    const actor = token?.actor ?? (panTarget?.actorId && !panTarget?.tokenId ? SR5_EntityHelpers.getRealActorFromID(panTarget.actorId) : null)
+    if (!actor) return rollData
+    rollData.target.hasTarget = true
+    rollData.target.actorId = actor.isToken ? actor.token.id : actor.id
+    rollData.target.itemUuid = panTarget.itemUuid ?? null
+    rollData.target.panPicked = true
+    if (!token) rollData.target.panActorOnly = true
     return rollData
   }
 

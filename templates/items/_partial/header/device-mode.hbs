@@ -1,0 +1,9 @@
+{{!-- The device's mode, active / silent / offline, switched by its owner (couronne du PAN, lot 6, SR5 p. 236-237) --}}
+{{#if deviceMode}}
+<div class="sr-device-mode" data-mode="{{deviceMode.mode}}">
+	{{#each deviceMode.buttons}}
+	<a class="sr-device-mode-button{{#if this.current}} current{{/if}}" {{#if ../deviceMode.locked}}aria-disabled="true"{{else}}data-action="switchDeviceMode"{{/if}} data-mode="{{this.mode}}" data-tooltip="{{this.title}}"><em class="fas fa-sm {{this.icon}}"></em></a>
+	{{/each}}
+	{{#if deviceMode.note}}<span class="sr-device-mode-note">{{deviceMode.note}}</span>{{/if}}
+</div>
+{{/if}}

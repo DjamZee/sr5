@@ -5,6 +5,9 @@ import {
   SR5_SystemHelpers 
 } from "../../system/utilitySystem.js"
 import {
+  TACTILE_BIOFEEDBACK_DICE
+} from "../../system/vehicle-mods.js"
+import {
   SR5_CombatHelpers 
 } from "../roll-helpers/combat.js"
 import {
@@ -22,6 +25,25 @@ import {
 import {
   drugResistance
 } from "../../entities/items/drug-damage.js"
+import {
+  SR5_SpellShapingHelpers
+} from "../roll-helpers/spell-shaping.js"
+import {
+  rgOption
+} from "../../system/rg-combat-options.js"
+import {
+  outsideBlast
+} from "../roll-helpers/explosives.js"
+
+/**
+ * Run & Gun RG5 (RG p. 124-125): the armor went into the attack test as a penalty, so it stays out of this one.
+ * Weapon attacks on a target only: a grenade's blast and suppressive fire aim at no one's armor.
+ */
+export function armorLeftToAttack(chatData){
+  if (!rgOption("armorPenalty")) return false
+  if (!["rangedWeapon", "meleeWeapon"].includes(chatData?.test?.typeSub)) return false
+  return !chatData.combat?.grenade?.isGrenade && chatData.combat?.firingMode?.selected !== "SF"
+}
 
 // Show a notification and return undefined so the caller aborts the test.
 // In Foundry V13, ui.notifications.info() returns a Notification object: returning it directly
@@ -38,6 +60,9 @@ function abortWithWarn(message){
 
 //Add info for Resistance Roll
 export default async function resistance(rollData, rollType, actor, chatData){
+  //SR5 p. 329: a Spell Shaping bubble leaves its occupant untouched, so a direct area spell does no damage there and
+  //there is nothing to resist
+  if (SR5_SpellShapingHelpers.skips(actor, chatData)) return void SR5_SpellShapingHelpers.announceSpared(actor)
   //An attack card resisted without a defense (grenade, direct spell, spell that missed its threshold) is read again
   //as for the defense; a defense or a resistance card stands only when its author owns the actor who resists
   //(attack-card.js). The aura is read on its owner's sheet
@@ -103,6 +128,8 @@ export default async function resistance(rollData, rollType, actor, chatData){
   rollData.previousMessage.hits = chatData.roll.hits
   rollData.previousMessage.attackerNetHits = chatData.roll.netHits
   rollData.combat.calledShot = chatData.combat.calledShot
+  //Electromancer (Forbidden Arcana p. 35): the combat spell lowers the Initiative once resisted (test-Resistance.js)
+  if (chatData.magic?.electromancer) rollData.magic.electromancer = true
 
   rollData.test.title = game.i18n.localize("SR5.TakeOnDamageShort")
     
@@ -231,8 +258,13 @@ async function handlePhysicalDamage(rollData, actor, chatData, rollType){
   rollData.test.typeSub = "physicalDamage"
   if (rollType === "resistanceToxin") rollData.test.typeSub = "toxinDamage"
   rollData.damage.source = chatData.damage.source
+  rollData.damage.weaponFocus = chatData.damage.weaponFocus
   rollData.previousMessage.actorId = chatData.previousMessage.actorId
-  if (rollData.damage.element === "fire") rollData.threshold.value = chatData.roll.netHits
+  //Catching fire (SR5 p. 173): the attack's net hits, and a fire spell's Force for its AP
+  if (rollData.damage.element === "fire"){
+    rollData.threshold.value = chatData.roll.netHits
+    if (chatData.damage.source === "magical") rollData.magic.force = chatData.magic?.force
+  }
 
   //handle continuous damage;
   rollData.damage.originalValue = chatData.damage.originalValue
@@ -246,6 +278,14 @@ async function handlePhysicalDamage(rollData, actor, chatData, rollType){
 }
 
 async function handleNormalPhysicalDamage(rollData, actor, chatData, armor){
+  //Run & Gun RG5 (RG p. 124-125, world setting): the armor was a penalty on the attack, after the AP. Body alone
+  //resists, and the damage keeps its type (no conversion to Stun)
+  if (armorLeftToAttack(chatData)) {
+    rollData.dicePool.composition = actor.system.resistances.physicalDamage.modifiers.filter(m => !actor.system.itemsProperties.armor.modifiers.includes(m))
+    rollData.dicePool.base = actor.system.resistances.physicalDamage.dicePool - armor
+    return rollData
+  }
+
   //Check if AP is greater than Armor
   if (-chatData.combat.armorPenetration > armor) chatData.combat.armorPenetration = -armor
 
@@ -372,9 +412,10 @@ async function handleDroneDamage(rollData, actorData, chatData){
     armor += a.value
   }  
     
-  //SR5 p. 205: a vehicle takes no damage unless the modified DV exceeds its Armor
-  if ((rollData.damage.base <= (armor + chatData.combat.armorPenetration)) && 
-        chatData.test.typeSub !== "accident" && chatData.test.type !== "rammingDefense") return abortWithInfo(`${game.i18n.format("SR5.INFO_ArmorGreaterThanDV", {
+  //SR5 p. 205: a vehicle takes no damage unless the modified DV exceeds its Armor. A collision or a crash is no attack:
+  //resisted all the same, as the ramming's (the chase's too, system/chase-roll.js)
+  if ((rollData.damage.base <= (armor + chatData.combat.armorPenetration)) &&
+        !["accident", "chaseDamage"].includes(chatData.test.typeSub) && chatData.test.type !== "rammingDefense") return abortWithInfo(`${game.i18n.format("SR5.INFO_ArmorGreaterThanDV", {
     armor: armor + chatData.combat.armorPenetration, damage: rollData.damage.base
   })}`)
   if (-chatData.combat.armorPenetration > armor) chatData.combat.armorPenetration = -armor
@@ -453,8 +494,9 @@ async function handleFatigueDamage(rollData, actorData){
 }
 
 async function handleBiofeedbackDamage(rollData, actorData, chatData){
-  // SR5 p. 231: characters in AR take no biofeedback damage
-  if (actorData.matrix.userMode === "ar") {
+  // SR5 p. 231: characters in AR take no biofeedback damage; a rigger jumped into the hit drone is in VR whatever
+  // his sheet says (SR5 p. 268), cold sim unless hot sim is set
+  if (actorData.matrix.userMode === "ar" && !chatData.jumpedIn) {
     ui.notifications.info(`${game.i18n.localize("SR5.INFO_ImmunityToBiofeedback")}`)
     return
   }
@@ -465,13 +507,15 @@ async function handleBiofeedbackDamage(rollData, actorData, chatData){
   //Determine base dicepool & composition
   rollData.dicePool.base = actorData.matrix.resistances.biofeedback.dicePool
   rollData.dicePool.composition = actorData.matrix.resistances.biofeedback.modifiers
+  //A drone hit through its tactile sensors (Rigger 5.0 p. 170)
+  if (chatData.tactileSensors) rollData.dicePool.modifiers.push({
+    type: "tactileSensors", label: game.i18n.localize("SR5.VehicleModEffectKind_tactileSensors"), value: TACTILE_BIOFEEDBACK_DICE
+  })
 
   //Determine damage type
   if (chatData.blackout) rollData.damage.type = "stun"
-  else {
-    if (actorData.matrix.userMode === "coldsim") rollData.damage.type = "stun"
-    else if (actorData.matrix.userMode === "hotsim") rollData.damage.type = "physical"
-  }
+  else if (actorData.matrix.userMode === "hotsim") rollData.damage.type = "physical"
+  else if (actorData.matrix.userMode === "coldsim" || chatData.jumpedIn) rollData.damage.type = "stun"
 
   //Handle defender's biofeedback
   if (chatData.chatCard.buttons.defenderDoBiofeedbackDamage) rollData.matrix.defenderDoBiofeedbackDamage = true
@@ -496,8 +540,8 @@ async function handleDumpshockDamage(rollData, actorData, chatData){
   }
 
   //Determine damage type & value
-  if (actorData.matrix.userMode === "coldsim") rollData.damage.type = "stun"
-  else if (actorData.matrix.userMode === "hotsim") rollData.damage.type = "physical"
+  //A rigger ejected while his sheet says AR was in VR all the same (SR5 p. 268): cold sim unless hot sim is set
+  rollData.damage.type = (actorData.matrix.userMode === "hotsim") ? "physical" : "stun"
   rollData.damage.base = 6
 
   //Add others informations
@@ -556,6 +600,8 @@ async function handleGrenade(rollData, chatData, actor){
   // A blast loses its damage per meter travelled (SR5 p. 184), so the measured distance becomes meters
   // before it is multiplied by the fall-off.
   let distance = Math.round(SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint(grenadePosition, defenserPosition))
+  // A blast of fixed radius (flashbang, gas: "rayon de 10 m", SR5 p. 437) loses nothing inside and reaches no one outside
+  if (outsideBlast(distance, chatData.combat.grenade.blastRadius)) return abortWithInfo(`${game.i18n.localize("SR5.WARN_TargetIsTooFar")}`)
   let modToDamage = distance * chatData.combat.grenade.damageFallOff
   rollData.damage.base  = chatData.damage.base + modToDamage
   if (rollData.damage.base <= 0 && chatData.damage.element !== "toxin") return abortWithInfo(`${game.i18n.localize("SR5.WARN_TargetIsTooFar")}`)  

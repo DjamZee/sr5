@@ -13,6 +13,10 @@
 {{> systems/sr5/templates/rolls/rollDialogPartial/customModifier.hbs}}
 <!-- SITUATIONAL EFFECTS: outside the folded list, so that they are seen -->
 {{> systems/sr5/templates/rolls/rollDialogPartial/situationalModifiers.hbs}}
+<!-- CUTTING ACES: con step, social maneuver, carried effects (lot 21) -->
+{{#if social.ca}}
+{{> systems/sr5/templates/rolls/rollDialogPartial/socialCuttingAces.hbs}}
+{{/if}}
 
 <div id="dicePoolModifier" style="display: none;">
     <!-- ALREADY APPLIED MODIFIERS-->
@@ -21,7 +25,7 @@
         <div class="col-11">
             {{label}}{{localize 'SR5.Colons'}}
             {{#if (eq type 'cumulativeDefense')}}
-                <a class="resetCumulativeDefense"><em class="fas fa-sm fa-sync"></em></a>
+                <a class="resetCumulativeDefense" data-tooltip="{{localize 'SR5.HELP_CumulativeDefenseResetMsg'}}"><em class="fas fa-sm fa-sync"></em></a>
             {{/if}}
         </div>
         <div class="col-1 SR-TextCenter">
@@ -62,7 +66,7 @@
     {{/if}}
 
     <!-- SPECIFIC SKILL TEST -->
-    {{#if (or (eq test.type 'skill') (eq test.type 'skillDicePool'))}}
+    {{#if (or (eq test.type 'skill') (eq test.type 'skillDicePool') (eq test.type 'vehicleRepair') (eq test.type 'vehicleModInstall') (eq test.type 'accessoryInstall'))}}
         <!-- PERCEPTION -->
         {{#if (eq test.typeSub "perception")}}
             {{> systems/sr5/templates/rolls/rollDialogPartial/perceptionType.hbs}}
@@ -97,7 +101,7 @@
     <!-- SUMMONING SPIRIT TYPE -->
 	{{#if (eq test.typeSub "summoning")}}
     <li class="grid">
-        <div class="col-11">{{localize 'SR5.SpiritType'}}{{localize 'SR5.Colons'}}</div>
+        <div class="col-11 SR-SpiritTypeLabel">{{localize 'SR5.SpiritType'}}{{localize 'SR5.Colons'}}</div>
         <div class="col-1 SR-TextCenter">
             <input disabled type="number" name="dicePoolModSpiritType" value="" placeholder="0" data-dtype="Number" />
         </div>
@@ -132,6 +136,17 @@
 <!-- SIGNATURE TARGETING -->
 {{#if (eq test.type "sensorTarget")}}
     {{> systems/sr5/templates/rolls/rollDialogPartial/signature.hbs}}
+{{/if}}
+
+<!-- SIGNATURE MASKING OF A VEHICLE SPOTTED WITH SENSORS (Rigger 5.0 p. 169) -->
+{{#if dialogSwitch.signatureMasking}}
+<li class="grid">
+    <div class="col-10" data-tooltip="{{localize 'SR5.SignatureMaskingSpottingHint'}}">{{localize 'SR5.SignatureMaskingSpotting'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1 SR-TextRight"><input type="checkbox" class="SR-ModCheckbox" data-target="dicePoolModSignatureMasking" data-modifier="signatureMasking" {{#if dialogSwitch.signatureMaskingChecked}}checked{{/if}}></div>
+    <div class="col-1 SR-TextCenter">
+        <input disabled type="number" name="dicePoolModSignatureMasking" value="{{#if dialogSwitch.signatureMaskingChecked}}{{dialogSwitch.signatureMasking}}{{else}}0{{/if}}" placeholder="0" data-dtype="Number" />
+    </div>
+</li>
 {{/if}}
 
 <!-- CENTERING METAMAGIC -->

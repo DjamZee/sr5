@@ -85,6 +85,14 @@ export class sr5ItemDrugDataModel extends foundry.abstract.TypeDataModel {
       wirelessTurnedOn: new fields.BooleanField({
         initial: false
       }),
+      //A drug made with the designer (Chrome Flesh p. 194-196, entities/items/drug-designer.js): its recipe, from which
+      //its stat is worked out, and the gamemaster's approval of a drug a player made ("", "pending", "approved", "refused")
+      designer: new fields.SchemaField({
+        recipe: new fields.ObjectField(),
+        status: new fields.StringField({
+          initial: ''
+        }),
+      }),
       //"", "rise" or "crash" (entities/items/drug-phase.js): isActive and wirelessTurnedOn follow it
       phase: new fields.StringField({
         initial: ''

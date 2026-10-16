@@ -20,6 +20,10 @@ export class sr5ItemLifestyleDataModel extends foundry.abstract.TypeDataModel {
       level: new fields.StringField({
         initial: ''
       }),
+      // The main lifestyle, the one the starting nuyen are rolled for (SR5 p. 97; lifestyle-primary.js)
+      isPrimary: new fields.BooleanField({
+        initial: false
+      }),
       rent: new fields.SchemaField({
         duration: new fields.NumberField({
           initial: 0
@@ -29,6 +33,11 @@ export class sr5ItemLifestyleDataModel extends foundry.abstract.TypeDataModel {
         }),
         // World time (seconds) the months paid in advance run out at (SR5 p. 377): duration counts down to it
         paidUntil: new fields.NumberField({
+          initial: null, nullable: true
+        }),
+        // World time (seconds) of the first debit, chosen by the player before the rent starts, corrected by the
+        // gamemaster at any time (lot 10): the rent runs from it instead of being due at the first minute of play
+        firstDebit: new fields.NumberField({
           initial: null, nullable: true
         }),
       }),

@@ -6,7 +6,7 @@
 			<div class="col-1 SR-TextCenter"><em class="fas fa-sm fa-thumbtack"></em></div>
 			<div class="col-1 SR-TextRight">
 				{{#if owner}}
-				<a class="item-create" data-title="{{localize 'SR5.Add'}}" data-type="itemQuality"><em class="fas fa-plus"></em></a>
+				<a class="item-create" data-tooltip="{{localize 'SR5.Add'}}" data-type="itemQuality"><em class="fas fa-plus"></em></a>
 				{{/if}}
 			</div>
 		</li>
@@ -14,7 +14,7 @@
 		<li class="item grid" data-item-id="{{_id}}" draggable="true">
 			<div class="col-10 deplie" data-helpTitle="{{localize 'SR5.HELP_MoreInfos'}}" data-helpMessage="{{localize 'SR5.HELP_MoreInfosMsg'}}">
 				{{#if (missing system.type system.karmaCost)}}
-				<p class="incomplete" data-title="{{localize 'SR5.UI_WarningMissingValues' type=(localize 'ITEM.TypeTrait')}}">
+				<p class="incomplete" data-tooltip="{{localize 'SR5.UI_WarningMissingValues' type=(localize 'ITEM.TypeTrait')}}">
 					{{name}}
 				</p>
 				{{else}}
@@ -23,11 +23,11 @@
 			</div>
 			<div class="col-1 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_QualityToggle' key=name}}" data-helpMessage="{{localize 'SR5.HELP_QualityToggleMsg'}}">
 				{{#if system.isActive}}
-					<a class="toggle-value" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.isActive" data-title="{{localize 'SR5.Unequip'}}">
+					<a class="toggle-value" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.isActive" data-tooltip="{{localize 'SR5.Unequip'}}">
 						<em class="fas fa-sm fa-thumbtack SR-SubColor"></em>
 					</a>
 				{{else}}
-					<a class="toggle-value" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.isActive" data-title="{{localize 'SR5.Equip'}}">
+					<a class="toggle-value" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.isActive" data-tooltip="{{localize 'SR5.Equip'}}">
 						<em class="fas fa-sm fa-thumbtack"></em>
 					</a>
 				{{/if}}
@@ -41,5 +41,19 @@
 			</div>
 		</li>
 		{{/each}}
+		{{!-- Spirit traits (Forbidden Arcana p. 172-175, Street Grimoire p. 133, SR5 p. 306): moved from the header
+		     (relecture djamz.13, img 17). The gamemaster's only, as in the header: ticked through the ledger --}}
+		{{#ife actor.type 'actorSpirit'}}
+		{{#if system.isGM}}
+		<li class="grid"><label class="col-12" data-tooltip="{{localize 'SR5.SpiritElemental_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="isElemental" {{checked system.isElemental}}> {{localize 'SR5.SpiritElemental'}}</label></li>
+		<li class="grid"><label class="col-12" data-tooltip="{{localize 'SR5.SpiritWild_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="isWild" {{checked system.isWild}}> {{localize 'SR5.SpiritWild'}}</label></li>
+		<li class="grid"><label class="col-12" data-tooltip="{{localize 'SR5.SpiritDomain_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="hasDomain" {{checked system.hasDomain}}> {{localize 'SR5.SpiritDomain'}}</label></li>
+		<li class="grid"><label class="col-12" data-tooltip="{{localize 'SR5.SpiritMagicPact_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="magicPact" {{checked system.magicPact}}> {{localize 'SR5.SpiritMagicPact'}}</label></li>
+		<li class="grid"><label class="col-12" data-tooltip="{{localize 'SR5.SpiritFree_D'}}"><input type="checkbox" class="sr5-spirit-ledger" data-trait="isFree" {{checked system.isFree}}> {{localize 'SR5.SpiritFree'}}</label></li>
+		{{#if system.isFree}}
+		<li class="grid"><label class="col-12" data-tooltip="{{localize 'SR5.SpiritFreeEdge_D'}}">{{localize 'SR5.Edge'}} <input type="number" min="0" class="SRinputInBox sr5-spirit-ledger" data-trait="freeEdge" value="{{system.freeEdge}}" placeholder="{{system.specialAttributes.edge.natural.value}}"></label></li>
+		{{/if}}
+		{{/if}}
+		{{/ife}}
 	</ul>
 </div>

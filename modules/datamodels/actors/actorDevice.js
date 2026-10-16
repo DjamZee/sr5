@@ -24,6 +24,20 @@ export class sr5ActorDeviceDataModel extends foundry.abstract.TypeDataModel {
     return {
       matrix: new fields.SchemaField({
         ...matrixPartialModel.matrixFields(),
+        // The master this device is slaved to (SR5 p. 234): the uuid of a host (a WAN, no ceiling), or of the master
+        // item of a PAN; empty when it is slaved to nothing (couronne du PAN, lot 7)
+        panMaster: new fields.StringField({
+          initial: ''
+        }),
+        // The host an IC runs in (SR5 p. 247-248: the IC are programs of the host): the uuid of a host actorDevice,
+        // set by the gamemaster on the sheet; empty for no host (API pour Matrice v1, A6)
+        hostUuid: new fields.StringField({
+          initial: ''
+        }),
+        // Host type (Kill Code p. 48-52): empty = no type, the attributes stay as entered
+        hostType: new fields.StringField({
+          initial: ''
+        }),
         ice: new fields.SchemaField({
           attackDicepool: new fields.NumberField({
             initial: 0

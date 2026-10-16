@@ -83,11 +83,15 @@
     <p>
         <span class="col-auto">{{localize 'SR5.Vehicle_RI_S'}}{{localize 'SR5.Colons'}}</span>
         <span class="col-auto SR-GreyColor">
+        {{#ife system.type "drone"}}
+          {{localize 'SR5.Vehicle_RI_Builtin_S'}}
+        {{else}}
         {{#if system.riggerInterface}}
           {{localize 'SR5.Vehicle_RI_Installed_S'}}
         {{else}}
           {{localize 'SR5.Vehicle_RI_NotInstalled_S'}}
         {{/if}}
+        {{/ife}}
         </span>
     </p>
 </li>

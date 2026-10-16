@@ -20,7 +20,7 @@ import {
   SR5_Toxins
 } from "../entities/items/toxins.js"
 import {
-  recountHits
+  recountHits, chanceSpent, standsAsGM
 } from "../rolls/roll-helpers/socket-guard.js"
 
 export const DISEASE_LEDGER = "sr5DiseaseLedger"
@@ -219,9 +219,11 @@ export function diseaseCardTrusted(author, actor){
 
 // The hits the GM's window starts from: a GM's card as written; a player's counted again on its dice, the first `pool`
 // of them and the rerolls of the Rule of Six after (SR5 p. 44, 58), never what the card says. null: no dice shown
-export function diseaseCardHits(card, fromGM, pool){
+export function diseaseCardHits(card, fromGM, pool, secondChance = false){
   if (fromGM) return Math.max(0, Number(card?.roll?.hits) || 0)
-  return recountHits(card?.roll?.r, pool)
+  return recountHits(card?.roll?.r, pool, {
+    secondChance
+  })
 }
 
 // One day of recovery more (Bullets & Bandages p. 21)
@@ -605,9 +607,13 @@ export function addDiseaseApplyButton(message, html){
 // hits counted on the dice, not from those the card claims (security 06/10). The sixes of a pushed limit explode without
 // end, so dice a player writes can say anything: it never starts above the pool plus Chance the GM works out; past it
 // the field is empty and the GM types his figure (Bodo, 06/10)
-export function cardWindowStart(message, pool, cap){
+export function cardWindowStart(message, pool, cap, actor = null){
   const claimed = Math.max(0, Number(message.flags?.sr5data?.roll?.hits) || 0)
-  const counted = diseaseCardHits(message.flags?.sr5data, cardFromGM(message), pool)
+  //The players' rolls not checked (world setting): the card of an owner of the actor starts the window as written
+  if (!cardFromGM(message) && standsAsGM(message.author, !!actor && actor.testUserPermission?.(message.author, "OWNER"))) return {
+    claimed, alert: "", prefill: claimed
+  }
+  const counted = diseaseCardHits(message.flags?.sr5data, cardFromGM(message), pool, chanceSpent(message.flags?.sr5data, actor))
   const warn = (text) => `<p class="sr5-disease-alert" style="color: #c00; font-weight: bold;">${text}</p>`
   const above = hitsAboveDice(claimed, pool)
   let alert = above ? warn(game.i18n.localize("SR5.DISEASE_HitsAbovePool")) : ""
@@ -654,7 +660,7 @@ async function confirmAndApply(message, button, ref, entry){
   const cap = hitsCap(base, message.flags?.sr5data)
   const {
     alert, prefill
-  } = cardWindowStart(message, pool, cap)
+  } = cardWindowStart(message, pool, cap, actor)
   const hits = await foundry.applications.api.DialogV2.prompt({
     window: {
       title: "SR5.DISEASE_Apply"

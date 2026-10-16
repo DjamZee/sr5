@@ -24,6 +24,10 @@ export class characterDefensesPartialModel extends foundry.abstract.TypeDataMode
         }),
         modifiers: new fields.ArrayField(new fields.ObjectField()),
         limit: defenseLimit(limitBase),
+        //An effect may leave the hits of this active defense unlimited (roll-helpers/limit.js, defenseUnlimitedHits)
+        unlimited: new fields.BooleanField({
+          initial: false
+        }),
       })
     }
 

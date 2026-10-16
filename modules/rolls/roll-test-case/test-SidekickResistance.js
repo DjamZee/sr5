@@ -7,6 +7,9 @@ import {
 import {
   applyReagentDrainReduction
 } from "../../system/reagents.js"
+import {
+  streamOf, streamSpriteFadingReduction, reducedFading
+} from "../../entities/actors/technomancer-streams.js"
 
 export default async function sidekickResistanceInfo(cardData, type){
   let originalMessage = game.messages.get(cardData.previousMessage.messageId)
@@ -61,12 +64,16 @@ export default async function sidekickResistanceInfo(cardData, type){
   if (resistType === "fading"){
     // SR5 p. 254: the fading is physical when the sprite Level exceeds the technomancer's Resonance
     newMessage.matrix.fadingLevel = cardData.matrix.spriteLevel
-    newMessage.matrix.fading.value = cardData.roll.hits * 2
-    if (newMessage.matrix.fading.value < 2) newMessage.matrix.fading.value = 2
+    //Technoshaman: decompiling costs 2 less fading, never under 2 (Kill Code p. 102, SR5 p. 254); registering does not
+    const technomancer = (type === "decompilingResistance" && newMessage.owner?.actorId) ? SR5_EntityHelpers.getRealActorFromID(newMessage.owner.actorId, newMessage.actorUuids) : null
+    newMessage.matrix.fading.value = reducedFading(cardData.roll.hits * 2, streamSpriteFadingReduction(streamOf(technomancer)))
     newMessage.chatCard.buttons.fadingResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "fading", `${game.i18n.localize("SR5.ResistFading")} (${newMessage.matrix.fading.value})`)
   } else if (resistType === "drain"){
-    // Keep the spirit's Force on the card: it decides if the drain is physical (SR5 p. 303-304)
+    // Keep the spirit's Force on the card: it decides if the drain is physical (banishing SR5 p. 304, binding
+    // FRAG p. 83 — SR5 p. 304 does not say it for binding)
     newMessage.magic.force = SR5_EntityHelpers.getRealActorFromID(cardData.owner.actorId, cardData.actorUuids)?.system.force.value
+    //A spirit that cannot be found leaves no Force to compare: the drain would be stun without a word
+    if (newMessage.magic.force === undefined) ui.notifications.warn(game.i18n.localize("SR5.WARN_SpiritForceUnknownDrain"))
     newMessage.magic.drain.value = spirit?.system?.isWild ? cardData.roll.hits : cardData.roll.hits * 2
     applyReagentDrainReduction(newMessage.magic, newMessage.magic.reagentDrainReduction, newMessage.magic.reagentTier)
     if (newMessage.magic.drain.value < 2) newMessage.magic.drain.value = 2

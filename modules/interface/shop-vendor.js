@@ -44,6 +44,15 @@ import {
 import {
   lineWaits, deliveryDelayed, currentExpress, expressCost, orderHours, newOrder, addOrders, ledgerOrders, cardSurcharge, surchargedUnit
 } from './shop-orders.js'
+import {
+  dealerPrice
+} from '../system/rigger-qualities.js'
+import {
+  CREATION_OVER_LIMIT_FLAG
+} from '../system/creation-actor.js'
+import {
+  purchaseStamp, stampAll, withoutPurchase, PURCHASE_FLAG
+} from './shop-purchase.js'
 
 /**
  * The gamemaster's vendor (shop lot C, part 1).
@@ -735,7 +744,7 @@ export class SR5ShopVendor {
     }
     const free = equip || SR5Shop.creationMode
     const terms = request.express === true ? currentExpress() : null
-    const limits = !equip && SR5Shop.creationMode ? SR5Shop.creationLimits : null
+    const limits = !equip && SR5Shop.creationModeFor(buyer) ? SR5Shop.creationLimits : null
     // Told to the requester; read on the buyer here, on the gamemaster's client, never from the request
     const warnRequester = (key, data) => SR5ShopVendor.#notify(requester, 'warn', key, data)
     const resolved = []
@@ -747,17 +756,21 @@ export class SR5ShopVendor {
       const described = SR5ShopCatalog.describe({
         type: item.type, system: counterSystem(item), margin: shop.margin
       })
-      const block = limits ? SR5ShopCatalog.creationBlock(described, limits) : null
+      const block = limits ? SR5ShopCatalog.creationRefusal(described, limits) : null
       if (block) {
         SR5ShopVendor.#notify(requester, 'warn', `SR5.WARN_ShopCreationLimit_${block}`, {
           name: item.name, ...limits, source: game.i18n.localize(`SR5.ShopCreationSource_${limits.source}`),
         })
         continue
       }
-      // The surcharge that bought dice on the card is paid (SR5 p. 420)
-      const unit = surchargedUnit(described.price, cardSurcharge(messageId, item.uuid, senderId, card))
+      // The surcharge that bought dice on the card is paid (SR5 p. 420); a dealer takes 10 % off after it (Rigger 5.0 p. 37)
+      const unit = dealerPrice(surchargedUnit(described.price, cardSurcharge(messageId, item.uuid, senderId, card)), {
+        type: item.type, system: counterSystem(item)
+      }, buyer.items)
       resolved.push({
         item, quantity, unit, total: unit * quantity, name: item.name,
+        // Past the creation limits where the table allows it: marked for the creation summary (C3)
+        overLimit: limits ? SR5ShopCatalog.overLimitMark(described, limits) : null,
       })
     }
     for (const line of orderLines) {
@@ -779,7 +792,7 @@ export class SR5ShopVendor {
         equip
       })) continue
       const offered = SR5Shop.gradesFor(source.type, source.system, {
-        equip
+        equip, actor: buyer
       })
       const grade = offered.includes(line.grade) ? line.grade : null
       const described = SR5ShopCatalog.describe({
@@ -792,13 +805,13 @@ export class SR5ShopVendor {
         })
         continue
       }
-      const block = limits ? SR5ShopCatalog.creationBlock(described, limits) : null
+      const block = limits ? SR5ShopCatalog.creationRefusal(described, limits) : null
       if (block) continue
       // An order is searched for (SR5 p. 420): it waits on the buyer; the counter's stock does not
       const waits = lineWaits({
-        delayed: deliveryDelayed(), availability: described.availability, free
+        delayed: deliveryDelayed(buyer), availability: described.availability, free
       })
-      const unit = surchargedUnit(described.price, cardSurcharge(messageId, line.uuid, senderId, card))
+      const unit = dealerPrice(surchargedUnit(described.price, cardSurcharge(messageId, line.uuid, senderId, card)), source, buyer.items)
       const total = unit * quantity
       // The express surcharge and the search time stay on the price before the surcharge (DjamZ's ruling, 05/10)
       const baseTotal = described.price * quantity
@@ -806,6 +819,7 @@ export class SR5ShopVendor {
       resolved.push({
         source, grade, quantity, unit, total, baseTotal, extra, waits,
         name: SR5Shop.gradedName(source.name, grade),
+        overLimit: limits ? SR5ShopCatalog.overLimitMark(described, limits) : null,
       })
     }
     if (!resolved.length) return false
@@ -892,6 +906,11 @@ export class SR5ShopVendor {
 
     // The goods leave the counter first, then reach the buyer
     const toDelete = [], toUpdate = [], payload = [], orders = []
+    // One id for the debit and every piece, as the shop writes it (lot 12, shop-purchase.js)
+    const stamp = purchaseStamp({
+      buyer, userId: senderId, worldTime: game.time?.worldTime, vendor: label,
+      place: equip ? 'equip' : SR5Shop.creationModeFor(buyer) ? 'creation' : 'vendor',
+    })
     for (const line of resolved) {
       if (line.waits) {
         line.order = newOrder(line, {
@@ -913,10 +932,13 @@ export class SR5ShopVendor {
           _id: line.item.id, 'system.quantity': left
         })
         else toDelete.push(line.item.id)
-        payload.push(...SR5ShopVendor.#handedOver(line.item, line.quantity))
+        payload.push(...stampAll(SR5ShopVendor.#overLimit(SR5ShopVendor.#handedOver(line.item, line.quantity), line), stamp, line.total))
       } else {
-        payload.push(...SR5Shop._itemPayload(line.source, line.quantity, line.grade))
+        payload.push(...stampAll(SR5ShopVendor.#overLimit(SR5Shop._itemPayload(line.source, line.quantity, line.grade), line), stamp, line.total))
       }
+    }
+    for (const order of orders) order.purchase = {
+      ...stamp, price: order.paid
     }
     if (toUpdate.length) await actor.updateEmbeddedDocuments('Item', toUpdate)
     if (toDelete.length) await actor.deleteEmbeddedDocuments('Item', toDelete)
@@ -937,6 +959,13 @@ export class SR5ShopVendor {
           }), game.i18n.format('SR5.ShopVendorPurchaseDescription', {
             name: labels.join(', '), price: total.toLocaleString(), shop: label,
           })), _id: debitId,
+          flags: {
+            sr5: {
+              [PURCHASE_FLAG]: {
+                ...stamp, price: total
+              }
+            }
+          },
         })
       }
     }
@@ -991,6 +1020,12 @@ export class SR5ShopVendor {
     })
     SR5_SystemHelpers.srLog(3, `Shop vendor: ${buyer.name} buys ${summary} from ${label} (${total})`)
     return true
+  }
+
+  /** The items of a line bought past the creation limits, marked for the creation summary (C3). */
+  static #overLimit(items, line) {
+    if (line.overLimit) for (const data of items) foundry.utils.setProperty(data, `flags.sr5.${CREATION_OVER_LIMIT_FLAG}`, line.overLimit)
+    return items
   }
 
   /** The vendor's own item, as it reaches the buyer: out of the shop, the quantity bought. */
@@ -1466,6 +1501,8 @@ export class SR5ShopVendor {
       if (stocked._stats) delete stocked._stats.compendiumSource
       if (stocked.flags?.core) delete stocked.flags.core.sourceId
       if (stocked.flags?.sr5) delete stocked.flags.sr5.shopSource
+      // On the counter it is no longer the seller's purchase: a refund of hers must not reach it (lot 12)
+      withoutPurchase(stocked)
       const verified = answer.sources?.[lines.indexOf(line)]
       if (verified) foundry.utils.setProperty(stocked, 'flags.sr5.shopSource', verified)
       stocked.system.storedIn = storage.id
@@ -1732,7 +1769,8 @@ export class SR5ShopVendorSource {
         packId: null,
         flags: {
           sr5: {
-            notForSale: item.flags?.sr5?.notForSale === true
+            notForSale: item.flags?.sr5?.notForSale === true,
+            nameVO: SR5ShopCatalog.nameVO(item)
           }
         },
         system: SR5ShopCatalog.essentials(counterSystem(item)),
@@ -1769,5 +1807,17 @@ export class SR5ShopVendorSource {
     }
     const collator = new Intl.Collator(game.i18n.lang)
     return entries.sort((a, b) => collator.compare(a.name, b.name))
+  }
+}
+
+/**
+ * The vendors for the modules, set in game.sr5.vendors (lot 43): the Concepteur's NPC generator lists the templates
+ * and creates a vendor from one, the gamemaster only, as the shop's own button does.
+ */
+export function vendorsApi() {
+  return {
+    create: options => SR5ShopVendor.createFromTemplate(options),
+    templates: VENDOR_TEMPLATES,
+    families: VENDOR_FAMILIES,
   }
 }

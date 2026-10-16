@@ -1,0 +1,86 @@
+<div class="sr-drug-designer-body">
+  <p class="hint">{{localize 'SR5.DrugDesignerIntro'}}</p>
+  {{#if pending}}<p class="sr-drug-designer-pending"><i class="fas fa-hourglass-half"></i> {{localize 'SR5.DrugDesignerPendingHint'}}</p>{{/if}}
+
+  <div class="sr-drug-designer-row">
+    <label>{{localize 'SR5.Name'}}</label>
+    <input type="text" name="name" value="{{name}}">
+  </div>
+  {{#if actorChoices.length}}
+  <div class="sr-drug-designer-row">
+    <label>{{localize 'SR5.DrugDesignerFor'}}</label>
+    <select name="actorId">{{#each actorChoices}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+  </div>
+  {{/if}}
+
+  <h3>{{localize 'SR5.DrugDesignerBase'}}</h3>
+  <div class="sr-drug-designer-row">
+    <select name="base">
+      {{#each bases}}<option value="{{value}}" {{#if selected}}selected{{/if}} title="{{text}}">{{label}}</option>{{/each}}
+    </select>
+    <span class="hint">{{baseText}}</span>
+  </div>
+
+  <h3>{{localize 'SR5.DrugDesignerBlocks'}}</h3>
+  <ul class="sr-drug-designer-blocks">
+    {{#each blocks}}
+    <li class="{{#if level}}chosen{{/if}}">
+      <span class="sr-drug-designer-block-name">{{number}}. {{label}}</span>
+      <select name="blocks.{{key}}">
+        {{#each levels}}<option value="{{value}}" {{#if selected}}selected{{/if}} title="{{text}}">{{label}}</option>{{/each}}
+      </select>
+      <span class="hint">{{text}}</span>
+    </li>
+    {{/each}}
+  </ul>
+
+  <h3>{{localize 'SR5.DrugDesignerEnhancers'}}</h3>
+  <div class="sr-drug-designer-row">
+    <label class="checkbox"><input type="checkbox" name="enhancers.ingestion" {{#if enhancers.ingestion}}checked{{/if}}> {{localize 'SR5.DrugEnhancerIngestion'}}</label>
+    <label class="checkbox"><input type="checkbox" name="enhancers.inhalation" {{#if enhancers.inhalation}}checked{{/if}}> {{localize 'SR5.DrugEnhancerInhalation'}}</label>
+    <label>{{localize 'SR5.DrugEnhancerSpeed'}}
+      <select name="enhancers.speed">{{#each enhancers.speed}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+    </label>
+    <label>{{localize 'SR5.DrugEnhancerDuration'}}
+      <select name="enhancers.duration">{{#each enhancers.duration}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+    </label>
+  </div>
+
+  <div class="sr-drug-designer-row">
+    <label>{{localize 'SR5.DrugQuality'}}
+      <select name="quality">{{#each qualities}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+    </label>
+    <label>{{localize 'SR5.AddictionType'}}
+      <select name="addictionType">{{#each addictionTypes}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+    </label>
+  </div>
+
+  <h3>{{localize 'SR5.DrugDesignerResult'}}</h3>
+  {{#if errors.length}}
+  <ul class="sr-drug-designer-errors">
+    {{#each errors}}<li><i class="fas fa-triangle-exclamation"></i> {{this}}</li>{{/each}}
+  </ul>
+  {{/if}}
+  <dl class="sr-drug-designer-result">
+    <dt>{{localize 'SR5.DrugDesignerEffects'}}</dt><dd>{{effects}}</dd>
+    <dt>{{localize 'SR5.DrugDesignerVector'}}</dt><dd>{{vectors}}</dd>
+    <dt>{{localize 'SR5.DrugDesignerSpeed'}}</dt><dd>{{speed}}</dd>
+    <dt>{{localize 'SR5.Duration'}}</dt><dd>{{duration}}</dd>
+    <dt>{{localize 'SR5.DrugDesignerCrash'}}</dt><dd>{{crash}}</dd>
+    <dt>{{localize 'SR5.AddictionRating'}}</dt><dd>{{stat.addictionRating}}</dd>
+    <dt>{{localize 'SR5.AddictionThreshold'}}</dt><dd>{{threshold}}</dd>
+    <dt>{{localize 'SR5.Availability'}}</dt><dd>{{stat.availability}}{{stat.legality}}</dd>
+    <dt>{{localize 'SR5.Price'}}</dt><dd>{{stat.cost}} ¥</dd>
+  </dl>
+  {{#if negativeAttributes}}<p class="hint">{{localize 'SR5.DrugDesignerAttributeFloor'}}</p>{{/if}}
+
+  <footer class="sr-drug-designer-buttons">
+    {{#if reviewing}}
+    <button type="button" data-action="approve"><i class="fas fa-check"></i> {{localize 'SR5.DrugDesignerApprove'}}</button>
+    <button type="button" data-action="refuse"><i class="fas fa-xmark"></i> {{localize 'SR5.DrugDesignerRefuse'}}</button>
+    {{else if canCreate}}
+    <button type="button" data-action="create"><i class="fas fa-flask"></i>
+      {{#if isGM}}{{localize 'SR5.DrugDesignerCreate'}} ({{target}}){{else}}{{localize 'SR5.DrugDesignerSubmit'}}{{/if}}</button>
+    {{/if}}
+  </footer>
+</div>

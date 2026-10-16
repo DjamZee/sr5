@@ -24,7 +24,7 @@ export default class SR5_SpendDialog {
         },
         {
           action: "cancel",
-          label: buttons.cancel?.label ?? "Cancel",
+          label: buttons.cancel?.label ?? game.i18n.localize("SR5.Cancel"),
           callback: () => ({
             action: "cancel" 
           }),

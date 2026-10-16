@@ -13,7 +13,7 @@ vi.mock('../modules/system/effectsList.js', () => ({
 }))
 
 const {
-  missingBaseDevice
+  missingBaseDevice, hasBaseDevice
 } = await import('../modules/entities/actors/base-device.js')
 const {
   SR5Actor
@@ -89,11 +89,74 @@ describe('base device of an actor created by script', () => {
     expect((await created('actorSprite')).items).toEqual([])
   })
 
+  // A head case saved the old way (Nanite Volume in Resonance) and imported after the world's migration ran
+  it('moves a head case\'s Nanite Volume out of Resonance on creation, as the world migration does', async () => {
+    const actor = Object.create(SR5Actor.prototype)
+    const headcase = {
+      type: 'itemDevice', system: {
+        type: 'headcase'
+      }
+    }
+    Object.assign(actor, {
+      type: 'actorPc', name: 'Défracté', img: 'pc.svg', items: [headcase], system: {
+        activeSpecialAttribute: 'resonance', specialAttributes: {
+          resonance: {
+            natural: {
+              base: 5
+            }
+          }, nanite: {
+            natural: {
+              base: 0
+            }
+          }
+        }
+      }
+    })
+    actor._source = {
+      items: [headcase], effects: []
+    }
+    const written = {
+    }
+    actor.updateSource = data => Object.assign(written, data)
+    await actor._preCreate({
+    }, {
+    }, {
+    })
+    expect(written['system.specialAttributes.nanite.natural.base']).toBe(5)
+    expect(written['system.specialAttributes.resonance.natural.base']).toBe(0)
+    expect(written['system.activeSpecialAttribute']).toBe('nanite')
+  })
+
   it('is not added twice, nor to other actors', () => {
     expect(missingBaseDevice('actorDevice', [{
-      type: 'itemDevice'
+      type: 'itemDevice', system: {
+        type: 'baseDevice'
+      }
     }])).toBeNull()
     expect(missingBaseDevice('actorPc', [])).toBeNull()
     expect(missingBaseDevice('actorSprite', [])).toBeNull()
+  })
+
+  // A commlink stowed in a vehicle's gear went with the deployed drone, which then got no base device (Tatiana, 07/10)
+  it('is added to a drone deployed with a commlink only, and not again when it comes back with its own', () => {
+    const commlink = {
+      type: 'itemDevice', system: {
+        type: 'commlink'
+      }
+    }
+    const base = {
+      type: 'itemDevice', system: {
+        type: 'baseDevice'
+      }
+    }
+    expect(missingBaseDevice('actorDrone', [commlink])).toMatchObject({
+      system: {
+        type: 'baseDevice'
+      }
+    })
+    // Recalled, the drone stores its base device in the vehicle's decks with the commlink: deployed again, it has one
+    expect(missingBaseDevice('actorDrone', [commlink, base])).toBeNull()
+    expect(hasBaseDevice([commlink])).toBe(false)
+    expect(hasBaseDevice([commlink, base])).toBe(true)
   })
 })

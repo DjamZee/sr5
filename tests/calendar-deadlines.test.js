@@ -2,7 +2,7 @@ import {
   describe, it, expect
 } from "vitest"
 import {
-  WITHDRAWAL_INTERVALS, addMonths, addInterval, monthsLeft, withdrawalDue, rentCounts
+  WITHDRAWAL_INTERVALS, addMonths, addInterval, monthsLeft, withdrawalDue, rentCounts, rentStart, rentDebitState
 } from "../modules/system/deadlines.js"
 import {
   componentsToWorldTime
@@ -65,6 +65,60 @@ describe("months of rent paid in advance (SR5 p. 377)", () => {
     expect(monthsLeft(at(2070, 1, 1), end, 2070)).toBe(2)
     expect(monthsLeft(at(2070, 2, 15), end, 2070)).toBe(1)
     expect(monthsLeft(end, end, 2070)).toBe(0)
+  })
+
+  it("with no month paid in advance and no date chosen, nothing is claimed at the first minute of play (lot 10)", () => {
+    const now = at(2070, 3, 10)
+    expect(rentStart(0, now, 2070, true)).toBe(null)
+    expect(rentStart(undefined, now, 2070, true)).toBe(null)
+    expect(rentStart(2, now, 2070, true)).toBe(at(2070, 5, 10))
+    // A lifestyle on a GM's NPC is not claimed
+    expect(rentStart(0, now, 2070, false)).toBe(null)
+    expect(rentStart(2, now, 2070, false)).toBe(at(2070, 5, 10))
+  })
+
+  it("run from the first debit the player chose, before or after the months paid (lot 10)", () => {
+    const now = at(2070, 3, 10)
+    expect(rentStart(0, now, 2070, true, at(2070, 4, 1))).toBe(at(2070, 4, 1))
+    expect(rentStart(2, now, 2070, true, at(2070, 4, 1))).toBe(at(2070, 4, 1))
+    // A date already past is due at once
+    expect(rentStart(0, now, 2070, true, at(2070, 2, 1))).toBe(at(2070, 2, 1))
+    expect(rentStart(0, now, 2070, true, null)).toBe(null)
+  })
+
+  it("the first debit: the player chooses it before the rent starts, the GM corrects it at any time (lot 10)", () => {
+    const waiting = {
+      bought: false, paidUntil: null, firstDebit: null, duration: 0
+    }
+    expect(rentDebitState(waiting, {
+      isOwner: true
+    })).toEqual({
+      time: null, started: false, editable: true
+    })
+    const chosen = {
+      ...waiting, firstDebit: at(2070, 4, 1)
+    }
+    expect(rentDebitState(chosen, {
+      isOwner: true
+    }).time).toBe(at(2070, 4, 1))
+    const running = {
+      ...chosen, paidUntil: at(2070, 5, 1)
+    }
+    expect(rentDebitState(running, {
+      isOwner: true
+    })).toEqual({
+      time: at(2070, 5, 1), started: true, editable: false
+    })
+    expect(rentDebitState(running, {
+      isGM: true
+    }).editable).toBe(true)
+    // Another player sees it without changing it; a bought lifestyle has no rent
+    expect(rentDebitState(waiting).editable).toBe(false)
+    expect(rentDebitState({
+      ...waiting, bought: true
+    }, {
+      isGM: true
+    })).toBe(null)
   })
 
   it("count only for a rented lifestyle with an end", () => {

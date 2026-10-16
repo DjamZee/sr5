@@ -60,6 +60,15 @@ export class sr5ItemDeviceDataModel extends foundry.abstract.TypeDataModel {
       type: new fields.StringField({
         initial: ''
       }),
+      // A technomancer's living persona kept by the system: created when missing, never deleted (living-persona.js)
+      managed: new fields.BooleanField({
+        initial: false
+      }),
+      // "Fusion avec la matrice" chosen by hand on the persona (Kill Code p. 107), when no quality carries it:
+      // "", "slave", "master" or "both"
+      matrixFusion: new fields.StringField({
+        initial: ''
+      }),
       // Strain of a head case's CFD (Dark Terrors p. 91): Lockdown p. 206 or the original one, Dark Terrors p. 88
       strain: new fields.StringField({
         initial: 'lockdown'
@@ -77,6 +86,14 @@ export class sr5ItemDeviceDataModel extends foundry.abstract.TypeDataModel {
       }),
       dongle: new fields.StringField({
         initial: ''
+      }),
+      // The commcode of the device (SR5 p. 237: a Matrix Perception can read it); empty, it answers "not written"
+      commcode: new fields.StringField({
+        initial: ''
+      }),
+      // The owner changed it once already (relecture djamz.13, arbitrage de DjamZ): the next change is the GM's
+      commcodeEdited: new fields.BooleanField({
+        initial: false
       }),
       modifiers: new fields.ArrayField(new fields.ObjectField()),
       pan: new fields.SchemaField({

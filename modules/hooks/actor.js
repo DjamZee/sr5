@@ -2,11 +2,20 @@ import {
   SR5_CharacterUtility
 } from "../entities/actors/utilityActor.js"
 import {
+  controllerOf, scheduleVehicleOwnerSync, syncsHere
+} from "../entities/actors/vehicle-owner-sync.js"
+import {
+  hasBaseDevice
+} from "../entities/actors/base-device.js"
+import {
   GM_ONLY_ACTOR_PATHS, stripGMOnlyChanges
 } from "../entities/items/spirit-bonds.js"
 import {
   guardActorOverwatch
 } from "../system/overwatch-guard.js"
+import {
+  refusedCreationChanges
+} from "../system/creation-actor.js"
 import {
   SR5_ActorHelper
 } from "../entities/actors/entityActor-helpers.js"
@@ -27,14 +36,9 @@ export async function sr5HookCreateActor(actor) {
   SR5_ActorHelper.redrawCreatorSheet(actor)
   if ( !game.user.isGM ) return
 
-  //Add itemDevice to Drone/Sprite/Agent if they have none.
+  //Add a base device to Drone/Sprite/Agent if they have none: a commlink carried aboard is not one (base-device.js)
   if (actor.type === "actorDrone" || actor.type === "actorSprite" || actor.type === "actorAgent"){
-    let hasDevice = false
-    for (let i of actor.items){
-      if (i.type === "itemDevice") hasDevice = true
-    }
-
-    if (!hasDevice){
+    if (!hasBaseDevice(actor.items)){
       let deviceItem = {
         "name": game.i18n.localize("SR5.Device"),
         "type": "itemDevice",
@@ -78,6 +82,8 @@ export function sr5HookPreUpdateActor(document, changes, options = {
       ui.notifications.warn(game.i18n.localize("SR5.WARN_SpiritBondsGMOnly"))
       return false
     }
+    //A character "in creation" is the gamemaster's call (lot C0, DjamZ's ruling Q2): never set or lifted by a player
+    if (sr5CreationFlagRefused(document, changes, options)) return false
     //The Overwatch Score only rises, but for a reboot or an Emulate swap: an update that would leave it lower, in
     //whatever form, is refused (overwatch-guard.js)
     if (!guardActorOverwatch(document, changes, options)) return false
@@ -86,6 +92,21 @@ export function sr5HookPreUpdateActor(document, changes, options = {
   if (!SR5_CharacterUtility.isDepthActive(document) || SR5_CharacterUtility.isDevicelessAI(document)) return
   delete changes["system.matrix.marks"]
   if (changes.system?.matrix) delete changes.system.matrix.marks
+}
+
+/** The creation flag in a player's update (an actor, or an unlinked token's delta): refused, with a word. */
+export function sr5CreationFlagRefused(document, changes, options = {
+}) {
+  if (game.user?.isGM) return false
+  if (!refusedCreationChanges(document, changes, options).length) return false
+  ui.notifications.warn(game.i18n.localize("SR5.WARN_CreationFlagGMOnly"))
+  return true
+}
+
+/** preUpdateActorDelta: an unlinked token's actor carries its flags in its delta. */
+export function sr5HookPreUpdateActorDeltaCreation(delta, changes, options = {
+}) {
+  if (sr5CreationFlagRefused(delta, changes, options)) return false
 }
 
 export async function sr5HookUpdateActor(document, data, _options, userId) {
@@ -126,9 +147,11 @@ export async function sr5HookUpdateActor(document, data, _options, userId) {
     }
   }
 
-  //Propagate owner data changes to linked drones and agents
-  if ((document.type === "actorPc" || document.type === "actorGrunt") && (document.testUserPermission(game.user, 3))) {
-    await SR5_CharacterUtility.updateControledVehicle(document)
+  //The drones' copy of their controller, by one client only (vehicle-owner-sync.js)
+  if (controllerOf(document) && syncsHere(game.users, game.user, userId)) scheduleVehicleOwnerSync(document, a => SR5_CharacterUtility.updateControledVehicle(a))
+  //Propagate owner data changes to linked agents, by one client only, as for the drones (vehicle-owner-sync.js): every
+  //owner of the character used to write, a player without rights on the agent with an error
+  if (controllerOf(document) && syncsHere(game.users, game.user, userId)) {
     if (document.items.find(item => item.system.type === "agent")) await SR5_CharacterUtility.updateProgramAgent(document)
   }
 

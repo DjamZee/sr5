@@ -1,6 +1,12 @@
 import {
+  refuseByRule, ruleLockActive, ruleLockBinds
+} from "../../system/rule-locks.js"
+import {
   hasWeaponTrait, capBallReloadStep, CAP_BALL_STEPS, firearmCommandIsFree
 } from './weaponTraits.js'
+import {
+  CONCEALED_FLAG, updateTakesOut
+} from "../../rolls/roll-helpers/conceal-rules.js"
 import {
   accessoryCapacity, capacityTaken
 } from './weapon-accessory-rules.js'
@@ -14,11 +20,23 @@ import {
   screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED, installationFlags, GM_ONLY_FIELDS
 } from "../../system/implant-essence.js"
 import {
+  creationModeFor
+} from "../../system/creation-actor.js"
+import {
   reservedChangedBy
 } from "../../system/reserved-fields.js"
 import {
+  needsCommcode, generateCommcode, commcodeChange
+} from "../../system/commcode-rules.js"
+import {
+  worldCommcodes
+} from "../../interface/commcode-default.js"
+import {
   SR5_CharacterUtility 
 } from "../actors/utilityActor.js"
+import {
+  SR5ShopGrades
+} from "../../interface/shop-grades.js"
 import AbilityTemplate from "../../interface/canvas-template.js"
 import {
   SR5_EntityHelpers 
@@ -47,6 +65,71 @@ import {
 import {
   migrateTemplateNoise
 } from "../../datamodels/common/templateNoiseMigration.js"
+import {
+  migrateLegacyImages
+} from "../../datamodels/common/v12ImportMigration.js"
+import {
+  isFactoryMod, modTakesSlots
+} from "../../system/vehicle-factory.js"
+import {
+  usesModPoints, droneModRule, modPointsRefusal, vehicleStats
+} from "../../system/drone-mod-points.js"
+import {
+  modSlotUse, slotsRefusal, droneInWorld
+} from "../../system/vehicle-mods.js"
+
+/** Rigger 5.0 p. 153-154: a mod fitted on a drone beyond the slots of its category is refused (rule lock "objects").
+ *  `after` is the mod as it would be, prepared; factory equipment fits by definition */
+function vehicleModSlotsRefused(drone, before, after) {
+  if (drone?.type !== "actorDrone" || isFactoryMod(after)) return false
+  //Under the optional Modification Points (R5 p. 126-127), a drone has one pool of points, not slots by category
+  if (usesModPoints(droneModRule(), drone.system?.type)) {
+    const fitted = drone.items.filter(i => i.type === "itemVehicleMod" && modTakesSlots(i.system, isFactoryMod(i)))
+    const refusal = modPointsRefusal(vehicleStats(drone.system), fitted, before && fitted.includes(before) ? before : null,
+      modTakesSlots(after.system, false) ? after : null)
+    if (!refusal) return false
+    if (refusal.floor !== undefined) return refuseByRule("objects", "SR5.WARN_DroneModBodyFloor", {
+      name: after.name, floor: refusal.floor
+    }, {
+      actor: drone
+    })
+    return refusal.attribute ? refuseByRule("objects", "SR5.WARN_DroneModAttributeCap", {
+      name: after.name, cap: refusal.cap, attribute: game.i18n.localize(SR5.vehicleAttributes?.[refusal.attribute] ?? refusal.attribute)
+    }, {
+      actor: drone
+    }) : refuseByRule("objects", "SR5.WARN_DroneModPointsFull", {
+      name: after.name, needed: refusal.needed, free: refusal.free
+    }, {
+      actor: drone
+    })
+  }
+  const refusal = slotsRefusal(drone.system?.modificationSlots, before ? modSlotUse(before.system) : null, modSlotUse(after.system))
+  if (!refusal) return false
+  return refuseByRule("objects", "SR5.WARN_VehicleModSlotsFull", {
+    name: after.name, needed: refusal.needed, free: refusal.free, category: game.i18n.localize(SR5.vehicleModType[refusal.category])
+  }, {
+    actor: drone
+  })
+}
+
+/** The mod as an update or a creation would leave it, prepared, without touching the document */
+function preparedCopy(item, changes = {
+}) {
+  const copy = item.clone(changes)
+  copy.prepareData()
+  return copy
+}
+
+/** Whether fitting a mod on its drone would be refused, asked before its install test is rolled rather than once the
+ *  hours are spent (Lancelot, E3). A lifted lock is left to the fitting itself, which tells the gamemaster */
+export function modFitRefused(mod) {
+  if (mod?.type !== "itemVehicleMod" || mod.parent?.type !== "actorDrone" || !ruleLockBinds("objects")) return false
+  return vehicleModSlotsRefused(mod.parent, mod, preparedCopy(mod, {
+    system: {
+      isActive: true
+    }
+  }))
+}
 
 /**
  * Override and extend the basic :class:`Item` implementation
@@ -61,6 +144,8 @@ export class SR5Item extends Item {
     migrateTargetOfEffect(source?.system)
     //A template's matrix noise stored negative before N32 (datamodels/common/templateNoiseMigration.js)
     migrateTemplateNoise(source)
+    //The V12 icon of an item imported after the world migration (datamodels/common/v12ImportMigration.js)
+    migrateLegacyImages(source)
     return super.migrateData(source)
   }
 
@@ -94,16 +179,35 @@ export class SR5Item extends Item {
     // Chrome Flesh (séance G, G16, G19): Adapsine and Prototype de transhumain read on the body at the installation
     if (this.type === "itemAugmentation" && this.parent instanceof Actor) {
       const flags = installationFlags(this.parent, this.system, {
-        isGM: game.user.isGM, creation: game.settings.get("sr5", "sr5ShopCreationMode") === true
+        isGM: game.user.isGM, creation: creationModeFor(this.parent)
       })
       this.updateSource(Object.fromEntries(Object.entries(flags).map(([key, value]) => [`system.${key}`, value])))
     } else if (!game.user.isGM && this.type === "itemQuality") this.updateSource({
       "system.transhumanEssence": 1
     })
+    //SR5 p. 422: hidden on someone's body, not on whoever gets a copy of it (pickpocket, loot, gift, duplicate)
+    if (data.flags?.sr5?.[CONCEALED_FLAG] !== undefined) this.updateSource({
+      [`flags.sr5.-=${CONCEALED_FLAG}`]: null
+    })
+    //Rigger 5.0 p. 156: the Mégapack's factory flag becomes the box of the sheet, which the player can untick
+    if (this.type === "itemVehicleMod" && data.flags?.sr5?.isFactory === true) this.updateSource({
+      "system.isFactory": true, "flags.sr5.-=isFactory": null
+    })
+    //Rigger 5.0 p. 153: no slot beyond the vehicle's. Only on a drone already in the world: a drone being deployed
+    //brings its mods along with it
+    if (this.type === "itemVehicleMod" && this.parent?.type === "actorDrone" && droneInWorld(this.parent) &&
+      vehicleModSlotsRefused(this.parent, null, preparedCopy(this))) return false
+    //Relecture djamz.13 (arbitrage de DjamZ): a communication device set on a character comes with its commcode
+    if (this.parent instanceof Actor && needsCommcode(this, this.parent.type)) {
+      const commcode = generateCommcode(worldCommcodes())
+      if (commcode) this.updateSource({
+        "system.commcode": commcode, "system.commcodeEdited": false
+      })
+    }
     const defaultImg = `systems/sr5/assets/img/items/${data.type}.svg`
     if (!data.img || data.img === "icons/svg/item-bag.svg") {
       this.updateSource({
-        img: defaultImg 
+        img: defaultImg
       })
     }
   }
@@ -116,6 +220,27 @@ export class SR5Item extends Item {
       ui.notifications?.warn(game.i18n.localize("SR5.WARN_GMOnlyField"))
       return false
     }
+    //Relecture djamz.13 (arbitrage de DjamZ): the owner changes the commcode once, the gamemaster as often as he likes
+    if (this.type === "itemDevice" && foundry.utils.hasProperty(changes, "system.commcode")) {
+      const verdict = commcodeChange({
+        isGM: game.user.isGM, before: this._source.system?.commcode,
+        after: foundry.utils.getProperty(changes, "system.commcode"), edited: this._source.system?.commcodeEdited
+      })
+      if (verdict === "refused") {
+        // Only the commcode is left out: the rest of the sheet's form goes through
+        ui.notifications?.warn(game.i18n.localize("SR5.WARN_CommcodeChangedOnce"))
+        delete changes["system.commcode"]
+        if (changes.system) delete changes.system.commcode
+      }
+      if (verdict === "first") foundry.utils.setProperty(changes, "system.commcodeEdited", true)
+    }
+    //SR5 p. 422: a hidden weapon made ready is taken out, its hidden state goes (arbitrage de DjamZ, 2026-10-07)
+    if (updateTakesOut(this, changes)) foundry.utils.setProperty(changes, `flags.sr5.-=${CONCEALED_FLAG}`, null)
+    //The factory box unticked: the Mégapack's flag goes with it, or it would tick it again (Rigger 5.0 p. 156)
+    if (foundry.utils.getProperty(changes, "system.isFactory") === false && this.flags?.sr5?.isFactory) foundry.utils.setProperty(changes, "flags.sr5.-=isFactory", null)
+    //Rigger 5.0 p. 153: fitting it, or making it bigger, beyond the slots left is refused
+    if (this.type === "itemVehicleMod" && this.parent?.type === "actorDrone" && changes.system &&
+      vehicleModSlotsRefused(this.parent, this, preparedCopy(this, changes))) return false
     return super._preUpdate(changes, options, user)
   }
 
@@ -161,7 +286,7 @@ export class SR5Item extends Item {
         SR5_UtilityItem._handleWeaponAmmunition(itemData, owner)
         SR5_UtilityItem._generateWeaponRange(itemData, owner)
         SR5_UtilityItem._generateWeaponDicepool(item, owner)
-        SR5_UtilityItem._generateWeaponDamage(itemData, owner)
+        SR5_UtilityItem._generateWeaponDamage(itemData, owner, item.id)
         SR5_UtilityItem._handleMatrixMonitor(item)
         SR5_EntityHelpers.GenerateMonitorBoxes(itemData, 'matrix')
         SR5_UtilityItem._handleItemPrice(itemData)
@@ -193,6 +318,8 @@ export class SR5Item extends Item {
         SR5_UtilityItem._handleMatrixMonitor(item)
         SR5_EntityHelpers.GenerateMonitorBoxes(itemData, 'matrix')
         if (itemData.conditionMonitors.matrix.actual.value >= itemData.conditionMonitors.matrix.value) itemData.wirelessTurnedOn = false
+        //GreyWare has no wireless at all (BTB p. 142)
+        if (!SR5ShopGrades.wirelessAllowed(itemData)) itemData.wirelessTurnedOn = false
         if (this.actor && itemData.isAccessory){
           SR5_UtilityItem._checkIfAccessoryIsPlugged(item, this.actor)
           if (!itemData.isPlugged) {
@@ -202,6 +329,8 @@ export class SR5Item extends Item {
         }
         break
       case "itemVehicleMod":
+        //The Mégapack marks its factory copies by a flag: the box of the sheet reads it too (Rigger 5.0 p. 156)
+        if (isFactoryMod(item)) itemData.isFactory = true
         if (Object.keys(itemData.itemEffects).length) SR5_UtilityItem.applyItemEffects(item)
         if (itemData.isWeaponMounted) SR5_UtilityItem._handleWeaponMounted(item)
         SR5_UtilityItem._handleSlotsMultiplier(itemData)
@@ -271,7 +400,7 @@ export class SR5Item extends Item {
         break
       case "itemLifestyle":
         if (typeof itemData.options === "object") itemData.options = Object.values(itemData.options)
-        SR5_UtilityItem._handleLifeStyle(itemData)
+        SR5_UtilityItem._handleLifeStyle(itemData, this.actor)
         SR5_UtilityItem._handleItemPrice(itemData)
         break
       case "itemStorage":
@@ -615,8 +744,21 @@ export class SR5Item extends Item {
 
     //Manage action in combat, eventually return if no action available
     //Cap & Ball (Gun H(e)aven 3 p. 3): round by round, three Complex Actions each, one per click
-    const isCapBall = hasWeaponTrait(weaponData, "capBall") && game.combat && !freeReload
-    if (isCapBall && option !== "insertRound") return ui.notifications.warn(game.i18n.localize("SR5.WARN_CapBallRoundByRound"))
+    //B13, lot 2: the "ammo" rule lock family refuses; lifted, the gamemaster hears of it once the reload really goes
+    const liftedAmmo = []
+    const ammoRefused = key => {
+      if (ruleLockActive("ammo")) return refuseByRule("ammo", key, null, {
+        actor
+      })
+      liftedAmmo.push(key)
+      return false
+    }
+    //Lifted, it reloads like any other weapon of its casing
+    let isCapBall = hasWeaponTrait(weaponData, "capBall") && game.combat && !freeReload
+    if (isCapBall && option !== "insertRound") {
+      if (ammoRefused("SR5.WARN_CapBallRoundByRound")) return
+      isCapBall = false
+    }
 
     if (game.combat && !freeReload){
       if (isCapBall) option = "capBall"
@@ -661,10 +803,11 @@ export class SR5Item extends Item {
           }]
           break
         case "insertRoundFull":
-          if (weaponData.ammunition.casing === "cylinder") action = [{
+          //B13, lot 2: the "ammo" rule lock family lifted, any casing fills round by round as a cylinder does
+          if (weaponData.ammunition.casing !== "cylinder" && ammoRefused("SR5.WARN_NotPossibleInCombat")) return
+          action = [{
             type: "complex", value: 1, source: "insertRound"
           }]
-          else return ui.notifications.warn(game.i18n.format('SR5.WARN_NotPossibleInCombat'))
           break
         case "remove":
           if (weaponData.ammunition.casing === "clip") {
@@ -681,12 +824,14 @@ export class SR5Item extends Item {
           break
       }
 
-      //chek if actor has enought action left
-      for (let a of action){
-        if (a.value > actor.system.specialProperties.actions[a.type].current) return ui.notifications.warn(game.i18n.format('SR5.WARN_NotEnoughAction', {
-          value: a.value, action: game.i18n.localize(SR5.actionTypes[a.type])
-        }))
-      }
+      //chek if actor has enought action left. B13: it refused in every world, whatever sr5BlockMissingActions said,
+      //so it follows the "actions" rule lock family, checked in every world, and not its "missing actions" box
+      let short = action.find(a => a.value > actor.system.specialProperties.actions[a.type].current)
+      if (short && refuseByRule("actions", 'SR5.WARN_NotEnoughAction', {
+        value: short.value, action: game.i18n.localize(SR5.actionTypes[short.type])
+      }, {
+        actor
+      })) return
     }
 
     if (isCapBall) {
@@ -746,12 +891,19 @@ export class SR5Item extends Item {
       }
     }
     if (stop) return
-	
+    //One gesture, one whisper: a Cap & Ball whose casing is not a cylinder, filled round by round, lifts two rules
+    //at once (review 12); the first one tells the gamemaster enough
+    if (liftedAmmo.length) refuseByRule("ammo", liftedAmmo[0], null, {
+      actor
+    })
+
     switch (option){
       case "insert":
       case "replace":
       case "insertRoundFull":
-        if (option === "insert" && weaponData.ammunition.clipInserted && game.combat) return ui.notifications.warn(game.i18n.localize("SR5.WARN_RemoveClipFirst"))
+        if (option === "insert" && weaponData.ammunition.clipInserted && game.combat && refuseByRule("ammo", "SR5.WARN_RemoveClipFirst", null, {
+          actor
+        })) return
         if (ammoSpent > ammoData.quantity) ammoNeeded = ammoData.quantity
         else ammoNeeded = ammoSpent
         weaponData.ammunition.value += ammoNeeded

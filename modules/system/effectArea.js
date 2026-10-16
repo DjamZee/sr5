@@ -12,6 +12,9 @@ import {
   backgroundCountFor
 } from "./background-count.js"
 import {
+  noiseSpellKind, noiseSpellValue, noiseGridThreshold
+} from "./noise-spells.js"
+import {
   _getSRStatusEffect 
 } from "../system/effectsList.js"
 import {
@@ -278,17 +281,31 @@ export class SR5_EffectArea {
     if (sourceItem) sourceName = sourceItem.name
     //A template a player placed: its light, noise and background count are worked out from its item, not read
     templateData = SR5_EffectArea.trustedTemplateData(template, sourceItem)
+    //The effect this template already gave for one target: a template changed while the token is inside must give
+    //its new value (or none) without the token having to step out and back in
+    const existingEffect = (target) => actor.items.find(i => i.type === "itemEffect" && i.system.ownerID === template.id && i.system.customEffects?.find(e => e.target === target))
+    const staleEffect = async (target, value) => {
+      let current = existingEffect(target)
+      if (!current) return false
+      if (current.system.customEffects.find(e => e.target === target)?.value == value) return true
+      await current.delete()
+      return false
+    }
 
     //environmental effects
     if (templateData.environmentalModifiers){
       for (let [key, value] of Object.entries(templateData.environmentalModifiers)){
         value = parseInt(value)
-        if (value === 0) continue
+        let target = `system.itemsProperties.environmentalMod.${key}`
+        if (!value){
+          await existingEffect(target)?.delete()
+          continue
+        }
         let effectTarget = 'SR5.EnvironmentalMod'+(key[0].toUpperCase() + key.slice(1))
         effect = await SR5_EntityHelpers.generateItemEffect(sourceName, "areaEffect", template, game.i18n.localize(effectTarget), value, 0, "permanent")
-        customEffect = await SR5_EntityHelpers.generateCustomEffect("environmentalModifiers", `system.itemsProperties.environmentalMod.${key}`, "value", value, true)
+        customEffect = await SR5_EntityHelpers.generateCustomEffect("environmentalModifiers", target, "value", value, true)
         effect.system.customEffects.push(customEffect)
-        hasItem = actor.items.find(i => i.type === "itemEffect" && i.system.ownerID === effect.system?.ownerID && i.system.customEffects?.find(e => e.target === `system.itemsProperties.environmentalMod.${key}`))
+        hasItem = await staleEffect(target, value)
         if (!hasItem) await actor.createEmbeddedDocuments("Item", [effect])
       }
     }
@@ -296,25 +313,34 @@ export class SR5_EffectArea {
     //A spam or static zone adds its rating to the Noise (SR5 p. 232). system.matrix.noise holds that rating as a
     //positive number, turned into a malus when a matrix test reads it, like the jam of SR5 p. 239 : a negative
     //value here gave every device inside the template bonus dice.
-    if (templateData.matrixNoise && templateData.matrixNoise !== 0){
-      let noise = parseInt(templateData.matrixNoise)
+    //Increase / Decrease Noise (Street Grimoire p. 113-114): the net hits of the cast over the threshold of the grid
+    //chosen raise or lower the Noise in the area. Added to the template's own, which a player's template never has
+    let matrixNoise = parseInt(templateData.matrixNoise) || 0
+    const noiseKind = noiseSpellKind(sourceItem)
+    if (noiseKind) matrixNoise += await SR5_EffectArea.noiseSpellRating(sourceItem, noiseKind, templateData, template, actor)
+    if (!matrixNoise) await existingEffect("system.matrix.noise")?.delete()
+    else {
+      let noise = matrixNoise
       effect = await SR5_EntityHelpers.generateItemEffect(sourceName, "areaEffect", template, `${game.i18n.localize("SR5.MatrixNoise")}`, noise, 0, "permanent")
       customEffect = await SR5_EntityHelpers.generateCustomEffect("matrixAttributes", "system.matrix.noise", "value", noise, true)
+      //A Noise lowered by Decrease Noise is negative on purpose: the migration of the old negative noise leaves it
+      if (noiseKind) customEffect.noiseSpell = noiseKind
       effect.system.customEffects.push(customEffect)
       if (effect && effect.system.customEffects.length) {
-        hasItem = actor.items.find(i => i.type === "itemEffect" && i.system.ownerID === effect.system.ownerID && i.system.customEffects?.find(e => e.target ==="system.matrix.noise"))
+        hasItem = await staleEffect("system.matrix.noise", noise)
         if (!hasItem) await actor.createEmbeddedDocuments("Item", [effect])
       }
     }
     //Background count
-    if (templateData.backgroundCountValue && templateData.backgroundCountValue !== 0){
+    if (!parseInt(templateData.backgroundCountValue)) await existingEffect("system.magic.bgCount")?.delete()
+    else {
       sourceName = game.i18n.localize("SR5.SceneBackgroundCount")
       //Aetherologie p. 34: a negative count (ebb) is a penalty for everyone, not a bonus for the non-aligned
       let effectValue = backgroundCountFor(templateData.backgroundCountValue, templateData.backgroundCountAlignement, actor.system.magic?.tradition)
       effect = await SR5_EntityHelpers.generateItemEffect(sourceName, "areaEffect", template, `${game.i18n.localize("SR5.Magic")}`, effectValue, 0, "permanent")
       effect.system.customEffects.push(await SR5_EntityHelpers.generateCustomEffect("astralValues", "system.magic.bgCount", "value", effectValue, true))
       if (effect && effect.system.customEffects.length) {
-        hasItem = actor.items.find(i => i.type === "itemEffect" && i.system.ownerID === effect.system.ownerID && i.system.customEffects?.find(e => e.target ==="system.magic.bgCount"))
+        hasItem = await staleEffect("system.magic.bgCount", effectValue)
         if (!hasItem) await actor.createEmbeddedDocuments("Item", [effect])
       }
     }
@@ -335,6 +361,7 @@ export class SR5_EffectArea {
           },
           //Built here by the GM, never read from a card: one decision on the sheet's definition for the whole template
           areaTemplate: true,
+          castMessageId: templateData.messageId ?? "",
         }
         //A player's spell on an actor she does not own: what its sheet defines, shown in the window of the hits
         const review = await SR5_ActorHelper.definitionReview(sourceItem, actor, "customEffects", data)
@@ -377,6 +404,26 @@ export class SR5_EffectArea {
         }
       }
     }
+  }
+
+  //The Noise an Increase or Decrease Noise template gives: the hits of its cast (counted again on the card for a
+  //player's caster, as for any effect that reads the hits), less the threshold of the grid chosen at casting. 0 when
+  //the cast is not found or the GM declines it
+  static async noiseSpellRating(sourceItem, kind, templateData, template, actor){
+    const message = (templateData.messageId && game.messages.get(templateData.messageId)) ||
+      [...(game.messages?.contents ?? [])].reverse().find(m => m.flags?.sr5data?.test?.type === "spell" && m.flags.sr5data.owner?.itemUuid === templateData.itemUuid)
+    const cast = message?.flags?.sr5data
+    if (!cast) return 0
+    //The grid's threshold at least: a card from before the grid was asked has none
+    const threshold = Math.max(Number(cast.threshold?.value) || 0, noiseGridThreshold(cast.magic?.noiseSpell?.grid))
+    //A cast the GM rolled stands as written (he may roll for a player's character); a player's is counted again
+    const roll = message.author?.isGM ? {
+      hits: cast.roll?.hits
+    } : await SR5_EffectArea.templateRoll(sourceItem, {
+      ...templateData, messageId: message.id
+    }, template, actor)
+    if (!roll) return 0
+    return noiseSpellValue(kind, roll.hits, threshold)
   }
 
   //The flags of a template are its author's to write (the template's form, the console). A GM's are kept. A
@@ -478,8 +525,20 @@ export class SR5_EffectArea {
 
   //Delete an effect applied by a template on actor
   static async deleteTemplateEffect(actor, effectID){
-    for (let item of actor.items){
-      if (item.type === "itemEffect" && item.system.ownerItem === effectID) await actor.deleteEmbeddedDocuments("Item", [item.id])
+    let ids = actor.items.filter(item => item.type === "itemEffect" && item.system.ownerItem === effectID).map(item => item.id)
+    await SR5_EffectArea.deleteStillThere(actor, ids)
+  }
+
+  //Two removals of the same effects at once (the template deleted while the token moves, a player who takes the
+  //effect off her sheet meanwhile) asked for an item already gone, and Foundry threw "does not exist": only what is
+  //still there is deleted, and an error is passed on only if one of them is still there afterwards
+  static async deleteStillThere(actor, ids){
+    let live = ids.filter(id => !actor.items.get || actor.items.get(id))
+    if (!live.length) return
+    try {
+      await actor.deleteEmbeddedDocuments("Item", live)
+    } catch (error) {
+      if (live.some(id => actor.items.get?.(id))) throw error
     }
   }
 
@@ -527,8 +586,22 @@ export class SR5_EffectArea {
     return `${actor.uuid ?? actor.id}|${itemUuid}|${messageId}`
   }
   static clearPendingResistances(actor, itemUuid){
-    const prefix = `${actor.uuid ?? actor.id}|${itemUuid}|`
+    SR5_EffectArea.dropPendingResistance(actor.uuid ?? actor.id, itemUuid)
+  }
+  static dropPendingResistance(actorUuid, itemUuid){
+    const prefix = `${actorUuid}|${itemUuid}|`
     for (const key of SR5_EffectArea.PENDING_RESISTANCES) if (key.startsWith(prefix)) SR5_EffectArea.PENDING_RESISTANCES.delete(key)
+  }
+  //A player closed the resistance window of an area spell (roll-test-helper.js): the request is no longer waiting.
+  //Only the active GM holds the requests; dropping one only lets the next move inside the area ask again
+  static _socketResistanceDeclined(message){
+    if (game.users?.activeGM && game.users.activeGM.id !== game.user?.id) return
+    const {
+      actorUuid, itemUuid
+    } = message?.data ?? {
+    }
+    if (typeof actorUuid !== "string" || typeof itemUuid !== "string" || !actorUuid || !itemUuid) return
+    SR5_EffectArea.dropPendingResistance(actorUuid, itemUuid)
   }
   static runForSpell(actor, itemUuid, fn){
     const key = `${actor.uuid ?? actor.id}|${itemUuid}`
@@ -541,35 +614,56 @@ export class SR5_EffectArea {
     return next
   }
 
+  //The copies of a spell's effect that its templates on this scene gave: a template's own (its id as ownerID, or the
+  //cast it was placed from), and the resistance card of a cast one of them was placed from (flags.sr5.castMessageId).
+  //An effect made before that flag existed, and not given by a template of another scene, counts as before
+  static areaEffectsOf(effects, templates, excludedTemplateId){
+    const ids = new Set(templates.map(t => t.id))
+    if (excludedTemplateId) ids.add(excludedTemplateId)
+    const casts = new Set(templates.map(t => t.flags?.sr5?.messageId).filter(Boolean))
+    return effects.filter(effect => {
+      if (ids.has(effect.system.ownerID)) return true
+      const cast = effect.flags?.sr5?.castMessageId
+      if (cast) return casts.has(cast)
+      return !game.scenes?.some(s => s.templates?.get(effect.system.ownerID))
+    })
+  }
+
   //A spell's effect on a token, whatever the number of its templates: a token covered by at least one template of
   //the spell keeps exactly one copy, and loses it only when it leaves the last one. A copy is never lifted while
   //the token stays covered, so a resisted spell is not resisted again. One copy is the itemEffects one apply gives
   //(one per custom effect), all with the template that gave them as ownerID.
-  //excludedTemplateId: a template being deleted, which may still be listed on its scene
-  static async syncSpellEffect(tokenDocument, itemUuid, excludedTemplateId){
+  //Only the copies a template of this scene gave are lifted (areaEffectsOf): the same spell cast by card, or through a
+  //template on another scene (a linked actor), keeps its effect.
+  //excluded: a template being deleted (its document, or its id), which may still be listed on its scene
+  static async syncSpellEffect(tokenDocument, itemUuid, excluded){
     let actor = await SR5_EntityHelpers.getRealActorFromID(tokenDocument.id)
     if (!actor) return
+    const excludedTemplateId = typeof excluded === "string" ? excluded : excluded?.id
     return SR5_EffectArea.runForSpell(actor, itemUuid, async () => {
       let covering
+      const templates = []
       for (let template of Array.from(tokenDocument.parent?.templates ?? [])){
-        if (template.id === excludedTemplateId || !template.flags?.sr5?.itemHasEffect || template.flags.sr5.itemUuid !== itemUuid) continue
-        if (await this.templateCoversActor(template, tokenDocument)){
-          covering = template
-          break
-        }
+        if (!template.flags?.sr5?.itemHasEffect || template.flags.sr5.itemUuid !== itemUuid) continue
+        templates.push(template)
+        if (covering || template.id === excludedTemplateId) continue
+        if (await this.templateCoversActor(template, tokenDocument)) covering = template
       }
+      if (excluded && typeof excluded !== "string" && !templates.some(t => t.id === excluded.id)) templates.push(excluded)
       let effects = actor.items.filter(i => i.type === "itemEffect" && i.system.ownerItem === itemUuid)
+      let managed = SR5_EffectArea.areaEffectsOf(effects, templates, excludedTemplateId)
       if (!covering){
         //Out of every template: a resistance asked for is dropped, coming back in asks again
         SR5_EffectArea.clearPendingResistances(actor, itemUuid)
-        if (effects.length) await actor.deleteEmbeddedDocuments("Item", effects.map(i => i.id))
+        if (managed.length) await SR5_EffectArea.deleteStillThere(actor, managed.map(i => i.id))
         return
       }
       if (!effects.length) return await this.createTemplateEffect(tokenDocument, covering)
       SR5_EffectArea.clearPendingResistances(actor, itemUuid)
-      let kept = effects[0].system.ownerID
-      let extra = effects.filter(i => i.system.ownerID !== kept)
-      if (extra.length) await actor.deleteEmbeddedDocuments("Item", extra.map(i => i.id))
+      if (!managed.length) return
+      let kept = managed[0].system.ownerID
+      let extra = managed.filter(i => i.system.ownerID !== kept)
+      if (extra.length) await SR5_EffectArea.deleteStillThere(actor, extra.map(i => i.id))
     })
   }
 
@@ -628,7 +722,7 @@ export class SR5_EffectArea {
     for (let t of templateDocument.parent.tokens){
       //A spell's effect stays while another template of the spell still covers the token
       if (templateDocument.flags.sr5.itemHasEffect){
-        await this.syncSpellEffect(t, templateDocument.flags.sr5.itemUuid, templateDocument.id)
+        await this.syncSpellEffect(t, templateDocument.flags.sr5.itemUuid, templateDocument)
         continue
       }
       let actor = await SR5_EntityHelpers.getRealActorFromID(t.id)

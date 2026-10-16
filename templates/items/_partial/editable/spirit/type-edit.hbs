@@ -7,6 +7,17 @@
         </select>
     </div>
 </li>
+{{#if insectRaces}}
+<li class="grid">
+    <div class="col-4">{{localize 'SR5.InsectRace'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8">
+        <select name="system.insectRace" data-dtype="String">
+            <option class="SR-LightGreyColor" value="">{{localize 'SR5.InsectRaceNone'}}</option>
+            {{selectOptions insectRaces selected=system.insectRace}}
+        </select>
+    </div>
+</li>
+{{/if}}
 <li hidden>
     <input hidden value="{{system.type}}">
 </li>

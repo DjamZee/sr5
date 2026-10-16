@@ -61,6 +61,32 @@ describe('handleMartialArtsCalledShot', () => {
     expect(data.combat.calledShot.martialArts.reversal).toBe(true)
     expect(data.combat.calledShot.martialArtsModifiers.reversal).toBe(1)
   })
+
+  // Run & Gun p. 147: the "Attaque ciblée" technique of a called shot open to all lowers its penalty by 1.
+  // Measured in game (lot 17a): Clouer + Capture précise gave -3 on a bow, the book -2
+  it('lowers by 1 the penalty of an open called shot whose technique is known', async () => {
+    const data = await handleMartialArtsCalledShot(rollData(), actorWith({
+      pin: {
+        isActive: true, modifier: {
+          value: 1
+        }
+      },
+      feint: {
+        isActive: true, modifier: {
+          value: 0
+        }
+      },
+      reversal: {
+        isActive: true, modifier: {
+          value: 0
+        }
+      },
+    }))
+    expect(data.combat.calledShot.martialArtsModifiers.pin).toBe(2)
+    expect(data.combat.calledShot.martialArtsModifiers.feint).toBe(1)
+    // Renversement de situation is only open to its technique: knowing it unlocks it, no reduction
+    expect(data.combat.calledShot.martialArtsModifiers.reversal).toBeUndefined()
+  })
 })
 
 // Jiao Di (Run & Gun p. 150) lowers the Knockdown penalty, Choquer (p. 148) the Shake Up one:

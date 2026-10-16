@@ -13,6 +13,12 @@ import {
 
 export class SR5_EntityHelpers {
 
+  //The name shown at the table: an unlinked token's synthetic actor answers to its token ("Garde B"), not to the
+  //base actor it copies (manual, part 3)
+  static displayName(actor) {
+    return (actor?.isToken && actor.token?.name) || actor?.name || ""
+  }
+
   // Fonction générique pour arrondir
   static roundDecimal(nombre, precision) {
     precision = precision || 2
@@ -133,6 +139,24 @@ export class SR5_EntityHelpers {
     this.updatePropertyTotal('value', property, minValue, maxValue)
   }
 
+  //The modifiers a rating passes on to its test. A ceiling (Little Smoke, Chrome Flesh p. 192: "la Perception […] réduits
+  //à 1") caps the rating, not the dice pool: copied as is, it brought the whole pool down to 1, Intuition included.
+  //In its place, what the cap takes off the rating, as a plain modifier
+  static ratingModifiersForTest(rating) {
+    const all = rating?.modifiers ?? []
+    const modifiers = all.filter(m => typeof m?.ceiling !== "number")
+    const cap = all.find(m => typeof m?.ceiling === "number")
+    if (!cap) return modifiers
+    const uncapped = (Number(rating.base) || 0) + (this.modifiersSum(modifiers) || 0)
+    const cut = (Number(rating.value) || 0) - uncapped
+    if (cut >= 0) return modifiers
+    const cutModifier = {
+      ...cap, value: cut
+    }
+    delete cutModifier.ceiling
+    return modifiers.concat(cutModifier)
+  }
+
   static updateDicePool(property, minValue, maxValue) {
     if (property === undefined) {
       SR5_SystemHelpers.srLog(1, `Missing or non-existing property sent to 'updateDicePool()'`)
@@ -145,6 +169,9 @@ export class SR5_EntityHelpers {
     let value = this.roundDecimal((property.base + this.modifiersSum(property.modifiers)) * this.modifiersProduct(property.modifiers), 2)
     if (minValue !== undefined) value = Math.max(value, minValue)
     if (maxValue !== undefined) value = Math.min(value, maxValue)
+    //A modifier may bring the total down to a value, never up (Little Smoke: "réduits à 1", Chrome Flesh p. 192)
+    const ceilings = (property.modifiers ?? []).filter(m => typeof m?.ceiling === "number").map(m => m.ceiling)
+    if (ceilings.length) value = Math.min(value, ...ceilings)
     property[total] = value
   }
 
@@ -398,7 +425,8 @@ export class SR5_EntityHelpers {
         case "rammingAngles":
         case "rammingGaits":
         case "drugQualities":
-          //Book order for the last three: Rigger 5 p. 179, SR5 p. 203, Chrome Flesh p. 194
+        case "matrixNoiseDistance":
+          //Book order for the last four: Rigger 5 p. 179, SR5 p. 203, Chrome Flesh p. 194, SR5 p. 232 (nearest first)
           break
         default:
           object[key] = this.sortByTranslatedTerm(object[key], key)

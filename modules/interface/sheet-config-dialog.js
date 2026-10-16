@@ -2,7 +2,7 @@ import {
   BLOCK_REGISTRY, BLOCK_SIZE, BLOCK_MIN_COLUMNS, TAB_ICONS
 } from './block-registry.js'
 import {
-  getDefaultLayout 
+  getDefaultLayout, layoutLabel
 } from './default-layout.js'
 
 /**
@@ -194,7 +194,7 @@ export class SR5SheetConfigDialog extends foundry.applications.api.HandlebarsApp
         }).filter(Boolean)
         return {
           id: tab.id,
-          label: tab.label ?? '',
+          label: layoutLabel(tab),
           icon: tab.icon?.replace(/\.svg\.hbs$/, '.svg') ?? TAB_ICONS.core,
           hidden: !!tab.hidden,
           blocks,
@@ -202,7 +202,7 @@ export class SR5SheetConfigDialog extends foundry.applications.api.HandlebarsApp
       })
       return {
         id: panel.id,
-        label: panel.label ?? '',
+        label: layoutLabel(panel),
         width: panel.width ?? 1,
         hidden: !!panel.hidden,
         tabs,
@@ -468,7 +468,7 @@ export class SR5SheetConfigDialog extends foundry.applications.api.HandlebarsApp
 
       const minCols = BLOCK_MIN_COLUMNS[def.size] ?? 1
       if (targetPanel.width < minCols) {
-        ui.notifications.warn('Block is too large for this panel width.')
+        ui.notifications.warn(game.i18n.localize("SR5.SheetConfig.UI.WARN_BlockTooLarge"))
         if (removedBlock) {
           const sourcePanel = this._draft.panels.find(p => p.id === sourcePanelId)
           const sourceTab = sourcePanel?.tabs?.find(t => t.id === sourceTabId)
@@ -640,12 +640,12 @@ export class SR5SheetConfigDialog extends foundry.applications.api.HandlebarsApp
   static _onAddPanel(_event) {
     const currentTotal = this._draft.panels.reduce((s, p) => s + (p.width ?? 1), 0)
     if (currentTotal >= 3) {
-      ui.notifications.warn('Maximum total panel width (3) reached.')
+      ui.notifications.warn(game.i18n.localize("SR5.SheetConfig.UI.WARN_MaxPanelWidth"))
       return
     }
     this._draft.panels.push({
       id: foundry.utils.randomID(),
-      label: 'New Panel',
+      label: game.i18n.localize("SR5.SheetConfig.UI.NewPanel"),
       width: 1,
       tabs: [],
     })
@@ -660,9 +660,9 @@ export class SR5SheetConfigDialog extends foundry.applications.api.HandlebarsApp
     if (blockCount > 0) {
       const yes = await foundry.applications.api.DialogV2.confirm({
         window: {
-          title: 'Delete Panel' 
+          title: game.i18n.localize("SR5.SheetConfig.UI.DeletePanel") 
         },
-        content: '<p>This panel contains blocks. Delete anyway?</p>',
+        content: `<p>${game.i18n.localize("SR5.SheetConfig.UI.ConfirmDeletePanel")}</p>`,
       })
       if (!yes) return
     }
@@ -681,7 +681,7 @@ export class SR5SheetConfigDialog extends foundry.applications.api.HandlebarsApp
       .reduce((s, p) => s + (p.width ?? 1), 0)
 
     if (otherWidth + newWidth > 3) {
-      ui.notifications.warn('Maximum total panel width (3) reached.')
+      ui.notifications.warn(game.i18n.localize("SR5.SheetConfig.UI.WARN_MaxPanelWidth"))
       return
     }
 
@@ -696,9 +696,11 @@ export class SR5SheetConfigDialog extends foundry.applications.api.HandlebarsApp
       if (removeCount > 0) {
         const yes = await foundry.applications.api.DialogV2.confirm({
           window: {
-            title: 'Reduce Panel Width' 
+            title: game.i18n.localize("SR5.SheetConfig.UI.ReducePanelWidth") 
           },
-          content: `<p>${removeCount} block(s) will be removed because they no longer fit. Continue?</p>`,
+          content: `<p>${game.i18n.format("SR5.SheetConfig.UI.ConfirmReducePanelWidth", {
+            count: removeCount
+          })}</p>`,
         })
         if (!yes) return
       }
@@ -733,7 +735,7 @@ export class SR5SheetConfigDialog extends foundry.applications.api.HandlebarsApp
     if (!panel) return
     panel.tabs.push({
       id: foundry.utils.randomID(),
-      label: 'New Tab',
+      label: game.i18n.localize("SR5.SheetConfig.UI.NewTab"),
       icon: TAB_ICONS.core,
       blocks: [],
     })
@@ -749,9 +751,9 @@ export class SR5SheetConfigDialog extends foundry.applications.api.HandlebarsApp
     if (tab?.blocks?.length) {
       const yes = await foundry.applications.api.DialogV2.confirm({
         window: {
-          title: 'Delete Tab' 
+          title: game.i18n.localize("SR5.SheetConfig.UI.DeleteTab") 
         },
-        content: '<p>This tab contains blocks. Delete anyway?</p>',
+        content: `<p>${game.i18n.localize("SR5.SheetConfig.UI.ConfirmDeleteTab")}</p>`,
       })
       if (!yes) return
     }
@@ -853,9 +855,9 @@ export class SR5SheetConfigDialog extends foundry.applications.api.HandlebarsApp
   static async _onClearAll(_event) {
     const yes = await foundry.applications.api.DialogV2.confirm({
       window: {
-        title: 'Clear All' 
+        title: game.i18n.localize("SR5.SheetConfig.UI.ClearAll") 
       },
-      content: '<p>Remove all panels and blocks? This cannot be undone.</p>',
+      content: `<p>${game.i18n.localize("SR5.SheetConfig.UI.ConfirmClearAll")}</p>`,
     })
     if (!yes) return
     this._draft = {
@@ -867,9 +869,9 @@ export class SR5SheetConfigDialog extends foundry.applications.api.HandlebarsApp
   static async _onResetDefaults(_event) {
     const yes = await foundry.applications.api.DialogV2.confirm({
       window: {
-        title: 'Reset to Defaults' 
+        title: game.i18n.localize("SR5.SheetConfig.UI.ResetDefaults") 
       },
-      content: '<p>Reset the layout to defaults? Any custom changes will be lost.</p>',
+      content: `<p>${game.i18n.localize("SR5.SheetConfig.UI.ConfirmResetDefaults")}</p>`,
     })
     if (!yes) return
     this._draft = getDefaultLayout(this.actor.sheet?.constructor?.name ?? 'SR5ActorSheet')

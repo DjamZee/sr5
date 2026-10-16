@@ -15,13 +15,13 @@
 				<p class="SR-TextCenter"></p>
 			</div>
 			<div class="col-1">
-				<p class="SR-TextCenter" data-title="{{localize 'SR5.Equipped'}}"><em class="fas fa-sm fa-thumbtack"></em></p>
+				<p class="SR-TextCenter" data-tooltip="{{localize 'SR5.Equipped'}}"><em class="fas fa-sm fa-thumbtack"></em></p>
 			</div>
 			<div class="col-1">
 				{{#if owner}}
 				<p class="SR-TextRight add-item" data-helpTitle="{{localize 'SR5.HELP_ItemAdd' key=(findTranslation 'itemTypes' 'itemFocus')}}" 
 				data-helpMessage="{{localize 'SR5.HELP_ItemAddMsg'}}">
-					<a class="item-create" data-title="{{localize 'SR5.Add'}}" data-type="itemFocus"><em class="fas fa-plus"></em></a>
+					<a class="item-create" data-tooltip="{{localize 'SR5.Add'}}" data-type="itemFocus"><em class="fas fa-plus"></em></a>
 				</p>
 				{{/if}}
 			</div>
@@ -31,7 +31,7 @@
 			<div class="col-4">
 				{{#if (missing system.type system.itemRating)}}
 				<p class="incomplete"
-					data-title="{{localize 'SR5.UI_WarningMissingValues' type=(localize 'ITEM.TypeFocus')}}">{{name}}
+					data-tooltip="{{localize 'SR5.UI_WarningMissingValues' type=(localize 'ITEM.TypeFocus')}}">{{name}}
 				</p>
 				{{else}}
 				<p>{{name}}</p>
@@ -61,7 +61,7 @@
 			<div class="col-1">
 				<p class="SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_EquipToggle' key=name}}" data-helpMessage="{{localize 'SR5.HELP_EquipToggleMsg'}}">
 					<a class="toggle-value" data-dtype="Boolean" data-item-id="{{_id}}" data-binding="system.isActive"
-						data-title="{{#if system.isActive}}{{localize 'SR5.Unequip'}}{{else}}{{localize 'SR5.Equip'}}{{/if}}">
+						data-tooltip="{{#if system.isActive}}{{localize 'SR5.Unequip'}}{{else}}{{localize 'SR5.Equip'}}{{/if}}">
 						<em class="fas fa-sm fa-thumbtack {{#if system.isActive}}SR-SubColor{{/if}}"></em></a>
 				</p>
 			</div>

@@ -55,18 +55,23 @@ export function pickStages(lock, relock = false) {
  * Untrained, Agility - 1 only if the skill allows defaulting: the system's
  * Locksmith does not (canDefault false), so an untrained character cannot pick a lock at all.
  */
-export function pickPool(skill, agility, autopicker = 0) {
+export function pickPool(skill, agility, autopicker = 0, penalty = 0) {
   const rating = Math.max(0, Number(skill?.rating?.value) || 0)
+  const sheetPool = Number(skill?.test?.dicePool)
   // On a mechanical lock, an autopicker's rating can stand in for Locksmith
   // (SR5 p. 365), when it is the better of the two. Arbitrage de DjamZ
   // (2026-10-05): the text of p. 365 holds alongside the gear table p. 450.
+  // Only the rating is replaced: the wound modifiers of the sheet's pool stay (measured in game, lot 17a: 7 dice
+  // instead of 6 for a picker at -1); with no Locksmith, the caller gives the penalties
   const tool = Math.max(0, Number(autopicker) || 0)
-  if (tool > rating) return tool + Math.max(0, Number(agility) || 0)
+  if (tool > rating) {
+    const others = rating && Number.isFinite(sheetPool) && sheetPool > 0 ? sheetPool - rating - (Number(agility) || 0) : Number(penalty) || 0
+    return Math.max(0, tool + Math.max(0, Number(agility) || 0) + others)
+  }
   if (rating) {
-    const sheetPool = Number(skill?.test?.dicePool)
     return Math.max(0, Number.isFinite(sheetPool) && sheetPool > 0 ? sheetPool : rating + (Number(agility) || 0))
   }
-  return skill?.canDefault ? Math.max(0, (Number(agility) || 0) - 1) : 0
+  return skill?.canDefault ? Math.max(0, (Number(agility) || 0) - 1 + (Number(penalty) || 0)) : 0
 }
 
 /**

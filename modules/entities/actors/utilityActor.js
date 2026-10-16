@@ -2,6 +2,12 @@ import {
   bbPenaltyReduction
 } from "../../system/bb-healing.js"
 import {
+  calledShotSkillsOf, calledShotEffectValue, isMartialArtsModifierTarget
+} from "../../rolls/roll-helpers/calledShotSkills.js"
+import {
+  usesModPoints, droneModRule, armorOverload, droneCannotMove
+} from "../../system/drone-mod-points.js"
+import {
   emptyPreparedModifiers
 } from "../../migration-source-modifiers.js"
 import {
@@ -17,11 +23,14 @@ import {
   SR5_Toxins
 } from "../items/toxins.js"
 import {
-  applyDrugQuality, drugAddictionThreshold, effectiveDrugQuality
+  applyDrugQuality, drugAddictionThreshold, effectiveDrugQuality, crashSinceIntake
 } from "../items/drug-stat.js"
 import {
   longHaulDoseKind
 } from "../items/drug-damage.js"
+import {
+  computeCustomDrug, customDrugShot
+} from "../items/drug-designer.js"
 import {
   SR5_SystemHelpers 
 } from "../../system/utilitySystem.js"
@@ -32,10 +41,22 @@ import {
   masteryFreeSustainedSpells, illusionistLevelsByType
 } from "../items/magic-masteries.js"
 import {
+  insectRaceOf
+} from "../items/insect-races.js"
+import {
+  MYSTIC_APTITUDE_ATTRIBUTES, mysticAptitudeKey, mysticAptitudeChoice, mysticAptitudeValue
+} from "../items/adept-powers-btb.js"
+import {
+  skillsFromPowers
+} from "../items/spirit-skill-power.js"
+import {
   homunculusMaterialRatings
 } from "./homunculus.js"
 import {
-  augmentationCapExcess
+  HOST_ATTRIBUTES, HOST_TYPE_PAGES, resolveHostAttributes, hostTypeOffsetLabel, untypedHostDefaults
+} from "./host-type.js"
+import {
+  augmentationCapExcess, uncappedRating, limitBase, limitCapNote, CAP_NOTE_LIMITS
 } from "./augmentationCap.js"
 import {
   limitAttributeValue
@@ -43,6 +64,9 @@ import {
 import {
   isOriginalStrainMonad, originalStrainDevice, activeHeadcase, naniteVolume, matrixEntityConcentration, monitorSize, corePenalty
 } from "../../system/monad-matrix.js"
+import {
+  ICE_HOST_ATTRIBUTES, iceHostAttributes, iceHostOf
+} from "../../system/ice-host.js"
 import {
   situationalValue, isRollTestsTarget, ROLL_TESTS_PREFIX, SITUATIONAL_PREFIX, attributeRedirect, situationalReadable,
   situationalMovement, movementEffectKey, movementEffectOn
@@ -54,7 +78,7 @@ import {
   SR5Combat
 } from "../../system/srcombat.js"
 import {
-  drugEffectApplies, phaseFromFlags
+  drugEffectApplies, phaseFromFlags, effectPhase
 } from "../items/drug-phase.js"
 import {
   replacedValue, replaceModifierValue
@@ -86,6 +110,37 @@ import {
 import {
   updateGreyMana
 } from "../../system/grey-mana.js"
+import {
+  actsAsRcc, fixedRccRatings, rccRatings, hasLocalAutosoftRunning, rccAutosoftsForDrone, autosoftFitsDrone, droneAutopilot, localAutosoftRating
+} from "./rcc.js"
+import {
+  streamOf, firewallBonusOfStream, sleazeBonusOfStream, sourcererFreeSustain, resonanceRestoredByStream, machineMindRating
+} from "./technomancer-streams.js"
+import {
+  VR_PILOTING_LIMIT_BONUS, controlRigThresholdModifier, dataProcessingCapModifier
+} from "../../system/rigging-rules.js"
+import {
+  isLimbAttributeTarget, hostLimb, strengthRecoil
+} from "../../system/cyberlimb.js"
+import {
+  modTakesSlots, factorySkipsEffect
+} from "../../system/vehicle-factory.js"
+import {
+  replacedVehicleAttribute, replacedVehicleAttributeOf, armorCapReduction, addedArmor, crashArmorPenetration,
+  tactileSensorsOn, TACTILE_PERCEPTION_DICE, TACTILE_HANDLING, metahumanAdaptationPenalty
+} from "../../system/vehicle-mods.js"
+import {
+  consoleNoiseReductionDice
+} from "../../rolls/roll-helpers/electronic-warfare.js"
+import {
+  speedDemonBonus
+} from "../../system/rigger-qualities.js"
+import {
+  refuseByRule
+} from "../../system/rule-locks.js"
+import {
+  isPlainDevice, lacksAttackAndSleaze
+} from "./device-attributes.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -169,6 +224,7 @@ export class SR5_CharacterUtility extends Actor {
           actorData.defenses[key].modifiers = []
           actorData.defenses[key].limit.value = 0
           actorData.defenses[key].limit.modifiers = []
+          actorData.defenses[key].unlimited = false
         }
       }
     }
@@ -233,6 +289,10 @@ export class SR5_CharacterUtility extends Actor {
       actorData.itemsProperties.weapon.accuracy.modifiers = []
       actorData.itemsProperties.weapon.damageValue.value = 0
       actorData.itemsProperties.weapon.damageValue.modifiers = []
+      if (actorData.itemsProperties.weapon.reach) {
+        actorData.itemsProperties.weapon.reach.value = 0
+        actorData.itemsProperties.weapon.reach.modifiers = []
+      }
     }
 
     if (actorData.itemsProperties?.environmentalMod) {
@@ -447,6 +507,7 @@ export class SR5_CharacterUtility extends Actor {
       actorData.specialProperties.doublePenalties = false
       actorData.specialProperties.calledShotHalved = false
       actorData.specialProperties.energyAura = ""
+      actorData.specialProperties.spellAuraElement = ""
       actorData.specialProperties.regeneration = ""
       actorData.specialProperties.naniteToxinResistance = false
       actorData.specialProperties.immunodeficiency = false
@@ -895,7 +956,10 @@ export class SR5_CharacterUtility extends Actor {
             }
             details.push(detail)
           }
-          SR5_EntityHelpers.updateModifier(property, `${game.i18n.localize(SR5.modifiersTypes[`penalty${penalty}`])}`, `penalty${penalty}`, actorData.penalties[penalty].actual.value, false, true, details)
+          //The label names its sources: "Effet spécial" alone left the player guessing (lot R2: a suppressive fire's -6)
+          const sources = [...new Set(details.map(d => d.source).filter(Boolean))].join(", ")
+          const label = game.i18n.localize(SR5.modifiersTypes[`penalty${penalty}`]) + (sources ? ` (${sources})` : "")
+          SR5_EntityHelpers.updateModifier(property, label, `penalty${penalty}`, actorData.penalties[penalty].actual.value, false, true, details)
         }
         break
       default:
@@ -942,6 +1006,13 @@ export class SR5_CharacterUtility extends Actor {
       }
     }
 
+    //Sourcerer daemon (Kill Code p. 101): half the submersion grade, rounded down, of complex forms sustained without
+    //penalty; worked out at every preparation, like the masteries above
+    if (itemType === "itemComplexForm") {
+      const free = sourcererFreeSustain(streamOf(actor), actor.system.matrix?.submersionGrade)
+      actor.items.filter(i => i.type === "itemComplexForm" && i.system.isActive && !i.system.freeSustain).slice(0, free).forEach(i => freedByMastery.add(i.id))
+    }
+
     //Apply sustaining malus.
     for (let i of actor.items) {
       if (freedByMastery.has(i.id)) continue
@@ -973,8 +1044,9 @@ export class SR5_CharacterUtility extends Actor {
       actorData.visions.astral.isActive = true
     }
     this.settleMetatypeVision(actor)
-    if (actorData.initiatives.astralInit.isActive) actorData.visions.augmented = true
-    if (actorData.visions.astral.natural || actorData.visions.augmented) actorData.visions.astral.hasVision = true
+    //Astral initiative is astral sight: it was written on visions.augmented, a key nothing reads
+    if (actorData.initiatives.astralInit.isActive) actorData.visions.astral.augmented = true
+    if (actorData.visions.astral.natural || actorData.visions.astral.augmented) actorData.visions.astral.hasVision = true
     if (actorData.visions.astral.isActive) actorData.visions.astral.hasVision = true
 
     if (actorData.visions.astral.isActive) {
@@ -1085,7 +1157,10 @@ export class SR5_CharacterUtility extends Actor {
       if (actorData.visions[key].isActive) currentVision = key
     }
     //Better Than Bad p. 141: cut from the manasphere by Blight, no astral perception (decision of DjamZ); leaving it stays free
-    if (vision === "astral" && currentVision !== "astral" && SR5_Toxins.blightBlocksAstral(actor)) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
+    //The "magic" rule lock lifted (B13), the switch goes and the gamemaster hears of it
+    if (vision === "astral" && currentVision !== "astral" && SR5_Toxins.blightBlocksAstral(actor) && refuseByRule("magic", "SR5.WARN_BlightNoSpell", null, {
+      actor
+    })) return
     if ((vision === "astral" || currentVision === "astral") && !SR5Combat.hasActionsLeft(actor, [{
       type: "simple", value: 1, source: "switchPerception"
     }])) return
@@ -1174,7 +1249,7 @@ export class SR5_CharacterUtility extends Actor {
         }
         break
       case "dwarf":
-        // TODO : lifestyle cost * 1.2
+        // Lifestyle cost +20 %: lifestyle-metatype.js
         this.grantMetatypeVision(actor, "thermographic")
         for (let vector of Object.keys(SR5.propagationVectors)) {
           SR5_EntityHelpers.updateModifier(actorData.resistances.disease[vector], label, "metatype", 2)
@@ -1197,7 +1272,7 @@ export class SR5_CharacterUtility extends Actor {
         }
         break
       case "troll":
-        // TODO : lifestyle cost * 2
+        // Lifestyle cost +100 %: lifestyle-metatype.js
         this.grantMetatypeVision(actor, "thermographic")
         SR5_EntityHelpers.updateModifier(actorData.reach, label, "metatype", 1)
         SR5_EntityHelpers.updateModifier(actorData.resistances.physicalDamage, label, "metatype", 1)
@@ -1305,8 +1380,14 @@ export class SR5_CharacterUtility extends Actor {
     specialAttributes.magic.natural.base = actorData.force.value
     SR5_EntityHelpers.updateValue(specialAttributes.magic.natural)
     //Only a free spirit has Edge of its own (SR5 p. 306-307); a summoned or bound one has none, its summoner lends his (p. 306)
+    //An extraplanar entity prints its own, CHC P/2 or P (Howling Shadows p. 128 and following)
+    const customType = SR5_SpiritTypes.get(actorData.type)
+    const typeEdge = SR5_SpiritTypes.edgeRating(customType, actorData.force.value)
     if (actorData.isFree && specialAttributes.edge) {
       specialAttributes.edge.natural.base = freeSpiritEdge(actorData.force.value, actorData.freeEdge)
+      SR5_EntityHelpers.updateValue(specialAttributes.edge.natural)
+    } else if (typeEdge !== null && specialAttributes.edge) {
+      specialAttributes.edge.natural.base = typeEdge
       SR5_EntityHelpers.updateValue(specialAttributes.edge.natural)
     } else {
       delete specialAttributes.edge
@@ -1314,9 +1395,10 @@ export class SR5_CharacterUtility extends Actor {
       delete actorData.statusBars?.edge
     }
     essence.base = actorData.force.value
-    SR5_EntityHelpers.updateValue(essence)
-    const customType = SR5_SpiritTypes.get(actorData.type)
     let label = `${game.i18n.localize('SR5.SpiritType')} (${SR5_SpiritTypes.label(actorData.type)})`
+    const essenceModifier = SR5_SpiritTypes.essenceModifier(customType)
+    if (essenceModifier) SR5_EntityHelpers.updateModifier(essence, label, "spiritType", essenceModifier)
+    SR5_EntityHelpers.updateValue(essence)
 
     switch (SR5_SpiritTypes.baseType(actorData.type)) {
       case "watcher":
@@ -1488,6 +1570,9 @@ export class SR5_CharacterUtility extends Actor {
     }
 
     if (customType) SR5_SpiritTypes.applyAttributes(customType, attributes, label)
+    //Race of an insect spirit: Subterranean Termites +2, Goliath Beetles +4 to damage resistance (Dark Terrors p. 26-27)
+    const insectRace = insectRaceOf(SR5_SpiritTypes.baseType(actorData.type) || actorData.type, actorData.insectRace)
+    if (insectRace?.damageResistance) SR5_EntityHelpers.updateModifier(actorData.resistances.physicalDamage, game.i18n.localize(`SR5.InsectRace_${actorData.insectRace}`), "spiritType", insectRace.damageResistance)
 
     // Elemental trait (Forbidden Arcana p. 175): mental attributes lowered by half the Force, to a minimum of 1
     if (actorData.isElemental) {
@@ -1620,6 +1705,14 @@ export class SR5_CharacterUtility extends Actor {
           }
           if (edgeLoss < 0) {
             SR5_EntityHelpers.updateModifier(actorData.specialAttributes[key].augmented, game.i18n.localize('SR5.EssenceLoss'), "augmentations", Math.floor(edgeLoss))
+            //Cyberadept daemon (Kill Code p. 100): the Resonance lost to cyberware alone comes back, up to half the
+            //submersion grade rounded up
+            if (key == 'resonance') {
+              const cyberwareLost = actor.items.filter(i => i.type === "itemAugmentation" && i.system.type === "cyberware" && !i.system.isAccessory)
+                .reduce((sum, i) => sum + (Number(i.system.essenceCost?.value) || 0), 0)
+              const restored = resonanceRestoredByStream(streamOf(actor), actorData.matrix?.submersionGrade, -edgeLoss, cyberwareLost)
+              if (restored) SR5_EntityHelpers.updateModifier(actorData.specialAttributes[key].augmented, game.i18n.localize('SR5.StreamCyberadept'), "technomancerStream", restored)
+            }
             SR5_EntityHelpers.updateValue(actorData.specialAttributes[key].augmented, 0)
           }
         }
@@ -1686,6 +1779,14 @@ export class SR5_CharacterUtility extends Actor {
 
   static updateSpiritValues(actor) {
     SR5_EntityHelpers.updateValue(actor.system.force)
+    //Hardened armor of a spirit type, "12R", "(P x 2) mystique (renforcée)" (Howling Shadows p. 128 and following):
+    //a mystic one protects in the astral, the other against ordinary weapons; read by updateSpecialProperties
+    const typeArmor = SR5_SpiritTypes.armor(SR5_SpiritTypes.get(actor.system.type), actor.system.force.value)
+    const hardenedArmors = actor.system.specialProperties?.hardenedArmors
+    if (typeArmor?.kind && hardenedArmors) {
+      const key = typeArmor.kind === "mystic" ? "astral" : "normalWeapon"
+      SR5_EntityHelpers.updateModifier(hardenedArmors[key], SR5_SpiritTypes.label(actor.system.type), "spiritType", typeArmor.value)
+    }
     // A homunculus is always physical, custom types based on it included: physical initiative too, (P + 1) + 1D6
     // (SR5 p. 301), even when it was made astral first (a spirit created as another type, then changed)
     if (SR5_SpiritTypes.baseType(actor.system.type) === "homunculus") {
@@ -1698,10 +1799,33 @@ export class SR5_CharacterUtility extends Actor {
     }
   }
 
+  static applyMysticAptitude(actor) {
+    const actorData = actor.system, levels = {
+    }
+    for (const attribute of MYSTIC_APTITUDE_ATTRIBUTES) {
+      const property = actorData.specialProperties?.[mysticAptitudeKey(attribute)]
+      if (!property) continue
+      SR5_EntityHelpers.updateValue(property, 0)
+      levels[attribute] = property.value
+    }
+    const aptitude = mysticAptitudeChoice(levels)
+    const augmented = aptitude ? actorData.attributes?.[aptitude.attribute]?.augmented : null
+    if (!augmented || !actorData.specialAttributes?.magic) return
+    const value = mysticAptitudeValue(actorData.specialAttributes.magic.augmented, aptitude.level)
+    augmented.modifiers.push({
+      source: game.i18n.localize("SR5.AdeptPowerMysticAptitude"), type: "adeptPower", value: value - augmented.value, isMultiplier: false, replace: true
+    })
+    augmented.value = value
+  }
+
   // Generate Special Properties
   static updateSpecialProperties(actor) {
     let actorData = actor.system
     let hardenedArmors = actorData.specialProperties.hardenedArmors
+
+    //Mystic Aptitude (Better Than Bad p. 143): Magic (without power focus) + level stands in for the Physical Attribute
+    //chosen, once the Magic is known and before the limits, Initiative and dice pools that read it (not the monitors)
+    this.applyMysticAptitude(actor)
 
     //Hardened Armors
     for (let key of Object.keys(SR5.hardenedArmorTypes)) {
@@ -1762,6 +1886,15 @@ export class SR5_CharacterUtility extends Actor {
       } else actorData.specialProperties.fullDefenseValue = actorData.attributes[actorData.specialProperties.fullDefenseAttribute].augmented.value
     }
 
+    //Echo Possession de la machine (SR5 p. 261): the benefit of a control rig of rating 1 to 3, the higher of the two
+    //when the technomancer also has one
+    const machineMind = machineMindRating(actor)
+    const controlRig = actorData.specialProperties.controlRig
+    if (machineMind && controlRig) {
+      const implanted = controlRig.modifiers.reduce((sum, m) => sum + (Number(m.value) || 0), 0)
+      if (machineMind > implanted) SR5_EntityHelpers.updateModifier(controlRig, game.i18n.localize('SR5.EchoMachineMind'), "echo", machineMind - implanted)
+    }
+
     for (let key of Object.keys(SR5.specialProperties)) {
       if (actorData.specialProperties[key]) {
         SR5_EntityHelpers.updateValue(actorData.specialProperties[key])
@@ -1807,7 +1940,7 @@ export class SR5_CharacterUtility extends Actor {
   // Generate Actors Recoil Compensation
   static updateRecoil(actor) {
     if (actor.type === "actorDrone") actor.system.recoilCompensation.base = actor.system.attributes.body.augmented.value
-    else actor.system.recoilCompensation.base = parseInt(1 + Math.ceil(actor.system.attributes.strength.augmented.value / 3))
+    else actor.system.recoilCompensation.base = strengthRecoil(actor.system.attributes.strength.augmented.value)
 
     SR5_EntityHelpers.updateValue(actor.system.recoilCompensation)
   }
@@ -1848,7 +1981,8 @@ export class SR5_CharacterUtility extends Actor {
   }
 
   // Handle Actors Movement
-  // TODO : Add toggle for running modifiers p.162
+  // Running modifiers (SR5 p. 179, 188, 190) are offered by the roll dialog, see modules/system/running.js; the
+  // movement modifiers of Run & Gun come on top of them (rg-combat-options.js)
   static updateMovements(actor) {
     let movements = actor.system.movements,
       attributes = actor.system.attributes,
@@ -2094,6 +2228,8 @@ export class SR5_CharacterUtility extends Actor {
           customDice :
           (SR5_SpiritTypes.baseType(actorData.type) === "homunculus" ? 0 : 1)
         if (spiritDice) SR5_EntityHelpers.updateModifier(initPhy.dice, SR5_SpiritTypes.label(actorData.type), "spiritType", spiritDice)
+        const spiritBonus = customType ? SR5_SpiritTypes.physicalBonus(customType) : 0
+        if (spiritBonus) SR5_EntityHelpers.updateModifier(initPhy, SR5_SpiritTypes.label(actorData.type), "spiritType", spiritBonus)
         break
       }
       default:
@@ -2268,10 +2404,10 @@ export class SR5_CharacterUtility extends Actor {
     let currentInitiative = this.findActiveInitiative(actor.system),
       switchCost = []
     //Better Than Bad p. 141: cut from the manasphere by Blight, no astral projection (decision of DjamZ)
-    if (initiative === "astralInit" && currentInitiative !== "astralInit" && SR5_Toxins.blightBlocksAstral(actor)) {
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
-      return false
-    }
+    //The "magic" rule lock lifted (B13), the switch goes and the gamemaster hears of it
+    if (initiative === "astralInit" && currentInitiative !== "astralInit" && SR5_Toxins.blightBlocksAstral(actor) && refuseByRule("magic", "SR5.WARN_BlightNoSpell", null, {
+      actor
+    })) return false
     if (initiative === "astralInit" || (initiative === "physicalInit" && currentInitiative === "astralInit")) switchCost = [{
       type: "complex", value: 1
     }]
@@ -2297,7 +2433,13 @@ export class SR5_CharacterUtility extends Actor {
     if (currentInitiative) initiatives[currentInitiative].isActive = false
     if (currentInitiative === "astralInit") actorData.visions.astral.isActive = false
     initiatives[initiative].isActive = true
-    if (initiative === "astralInit") actorData.visions.astral.isActive = true
+    //Astral perception replaces the vision in use, as switchVision does: low-light or thermographic vision stayed
+    //active beside it
+    if (initiative === "astralInit") {
+      for (let key of Object.keys(SR5.visionActive)) {
+        if (actorData.visions[key]) actorData.visions[key].isActive = (key === "astral")
+      }
+    }
 
     await actor.update({
       'system': actorData 
@@ -2365,7 +2507,7 @@ export class SR5_CharacterUtility extends Actor {
                 case "rigging":
                   SR5_EntityHelpers.updateModifier(defenses[key], game.i18n.localize('SR5.Reaction'), "controler", controlerData.attributes.reaction.augmented.value)
                   SR5_EntityHelpers.updateModifier(defenses[key], game.i18n.localize('SR5.Intuition'), "controler", controlerData.attributes.intuition.augmented.value)
-                  if (controlerData.specialProperties.controlRig.value) SR5_EntityHelpers.updateModifier(defenses[key], `${game.i18n.localize('SR5.ControlRig')}`, `${game.i18n.localize('SR5.Augmentation')}`, controlerData.specialProperties.controlRig.value)
+                  //The control rig dice go to piloting skill tests only, not to this Reaction + Intuition defense (SR5 p. 205, 268)
                   if (controlerData.matrix.userMode === "hotsim") SR5_EntityHelpers.updateModifier(defenses[key], `${game.i18n.localize('SR5.VirtualRealityHotSimShort')}`, "matrixUserMode", 1)
                   break
                 default:
@@ -2411,6 +2553,12 @@ export class SR5_CharacterUtility extends Actor {
       game.settings.get("sr5", "sr5HomunculusMaterialArmor")) {
       const armor = homunculusMaterialRatings(actor.system.homunculusMaterial).armor
       if (armor) SR5_EntityHelpers.updateModifier(actor.system.itemsProperties.armor, game.i18n.localize("SR5.HomunculusMaterial"), "actorSpirit", armor)
+    }
+    //Ordinary armor of a spirit type, "Armure (P x 2)" (Howling Shadows p. 128 and following); the hardened one is
+    //given in updateSpiritValues, as hardened armor
+    if (actor.type === "actorSpirit") {
+      const typeArmor = SR5_SpiritTypes.armor(SR5_SpiritTypes.get(actor.system.type), actor.system.force?.value)
+      if (typeArmor && !typeArmor.kind) SR5_EntityHelpers.updateModifier(actor.system.itemsProperties.armor, SR5_SpiritTypes.label(actor.system.type), "spiritType", typeArmor.value)
     }
     SR5_EntityHelpers.updateValue(actor.system.itemsProperties.armor, 0)
     for (let key of Object.keys(SR5.specialDamageTypes)) {
@@ -2532,6 +2680,15 @@ export class SR5_CharacterUtility extends Actor {
               SR5_EntityHelpers.updateModifier(resistances[key], game.i18n.localize('SR5.Body'), "linkedAttribute", attributes.body.augmented.value)
               SR5_EntityHelpers.updateModifier(resistances[key], game.i18n.localize('SR5.VehicleStat_ArmorShort'), "linkedAttribute", attributes.armor.augmented.value)
               SR5_EntityHelpers.updateDicePool(resistances[key], 0)
+            } else {
+              //A passenger in a crash: Body + Armor, AP -6 (SR5 p. 202). The vehicle's SPP and cocoon join at the roll
+              resistances[key].base = 0
+              SR5_EntityHelpers.updateModifier(resistances[key], game.i18n.localize('SR5.Body'), "linkedAttribute", attributes.body.augmented.value)
+              const armor = actorData.itemsProperties?.armor?.modifiers ?? []
+              resistances[key].modifiers = resistances[key].modifiers.concat(armor, anyDamageModifiers)
+              const penetration = crashArmorPenetration(SR5_EntityHelpers.modifiersSum(armor))
+              if (penetration) SR5_EntityHelpers.updateModifier(resistances[key], game.i18n.localize('SR5.ArmorPenetrationShort'), "armorPenetration", penetration)
+              SR5_EntityHelpers.updateDicePool(resistances[key], 0)
             }
             break
           case "astralDamage":
@@ -2550,38 +2707,33 @@ export class SR5_CharacterUtility extends Actor {
     let actorData = actor.system, limits = actorData.limits, attributes = actorData.attributes
     // AI on a device (Data Trails p. 160): Data Processing can replace the Mental limit and joins the Social limit
     let aiDataProcessing = (this.isDepthActive(actor) && actorData.matrix?.deviceType) ? actorData.matrix.attributes.dataProcessing.value : null
+    const spiritType = actor.type === "actorSpirit" ? SR5_SpiritTypes.get(actorData.type) : null
+
+    const context = {
+      attributes, essence: actorData.essence?.value, aiDataProcessing
+    }
+    const kept = {
+      ...context, rating: a => a.augmented.value, physical: limitAttributeValue
+    }
+    const uncapped = {
+      ...context, rating: a => uncappedRating(a), physical: a => uncappedRating(a, true)
+    }
 
     for (let key of Object.keys(SR5.characterLimits)) {
-      switch (key) {
-        case "astralLimit":
-          if (limits[key]) {
-            limits[key].base = Math.max(
-              Math.ceil((attributes.logic.augmented.value * 2 + attributes.intuition.augmented.value + attributes.willpower.augmented.value) / 3),
-              Math.ceil((attributes.charisma.augmented.value * 2 + attributes.willpower.augmented.value + actorData.essence.value) / 3)
-            )
-          }
-          break
-        case "mentalLimit":
-          if (limits[key]) {
-            limits[key].base = Math.ceil((attributes.logic.augmented.value * 2 + attributes.intuition.augmented.value + attributes.willpower.augmented.value) / 3)
-            if (aiDataProcessing !== null) limits[key].base = Math.max(limits[key].base, aiDataProcessing)
-          }
-          break
-        case "physicalLimit":
-          if (limits[key]) {
-            limits[key].base = Math.ceil((limitAttributeValue(attributes.strength) * 2 + limitAttributeValue(attributes.body) + limitAttributeValue(attributes.reaction)) / 3)
-          }
-          break
-        case "socialLimit":
-          if (limits[key]) {
-            limits[key].base = Math.ceil((attributes.charisma.augmented.value * 2 + attributes.willpower.augmented.value + actorData.essence.value) / 3)
-            if (aiDataProcessing !== null) limits[key].base = Math.ceil((attributes.charisma.augmented.value + aiDataProcessing + attributes.willpower.augmented.value + actorData.essence.value) / 3)
-          }
-          break
-        default:
-          SR5_SystemHelpers.srLog(1, `Unknown limit '${key}' in 'updateLimits()'`)
-      }
-      if (limits[key]) SR5_EntityHelpers.updateValue(limits[key], 0)
+      const base = limitBase(key, kept)
+      if (base === undefined) SR5_SystemHelpers.srLog(1, `Unknown limit '${key}' in 'updateLimits()'`)
+      if (!limits[key]) continue
+      if (base !== undefined) limits[key].base = base
+      //The extraplanar entities print (P x 4) / 3 for every limit (Howling Shadows p. 130 and following)
+      const forceLimit = spiritType ? SR5_SpiritTypes.forceLimit(spiritType, actorData.force?.value, key) : null
+      if (forceLimit !== null) limits[key].base = forceLimit
+      limits[key].modifiers = (limits[key].modifiers ?? []).filter(m => m.type !== "augmentationCap")
+      SR5_EntityHelpers.updateValue(limits[key], 0)
+      //Augmentation cap (SR5 p. 96): the limit reads the kept ratings; when the cap did cut something, the help
+      //also gives the limit the real ratings would reach (arbitrage de DjamZ). The line counts for 0.
+      if (base === undefined || forceLimit !== null || !CAP_NOTE_LIMITS.includes(key)) continue
+      const note = limitCapNote(limits[key].value, base, limitBase(key, uncapped))
+      if (note) SR5_EntityHelpers.updateModifier(limits[key], game.i18n.format("SR5.AugmentationCapLimitModifier", note), "augmentationCap", 0)
     }
   }
 
@@ -2623,10 +2775,9 @@ export class SR5_CharacterUtility extends Actor {
           let mod = controlerData.matrix.attributes.dataProcessing.value - attributes.sensor.augmented.value
           SR5_EntityHelpers.updateModifier(skills.perception.limit, game.i18n.localize('SR5.DataProcessingLimit'), actorData.controlMode, mod)
         }
-        //TODO : sneaking is equal to lesser value between pilotSkill and Sneaking(pilotSkill)
-        if (actorData.pilotSkill) {
-          SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName}`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
-        }
+        //Through a controlled device: the skill and the attribute normally used, Sneaking + Agility (SR5 p. 239, arbitrage de DjamZ du 07/10)
+        SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.SkillSneaking')})`, actorData.controlMode, controlerData.skills.sneaking.rating.value)
+        SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.Agility')})`, actorData.controlMode, controlerData.attributes.agility.augmented.value)
         SR5_EntityHelpers.updateModifier(skills.sneaking.limit, handlingName, "linkedAttribute", handlingMode)
         if (controlerData.matrix.attributes.dataProcessing.value < handlingMode) {
           let mod = controlerData.matrix.attributes.dataProcessing.value - handlingMode
@@ -2639,27 +2790,27 @@ export class SR5_CharacterUtility extends Actor {
         //TODO : sneaking is equal to lesser value between pilotSkill and Sneaking(pilotSkill)
         if (actorData.pilotSkill) {
           SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName}`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
+          this.applyMetahumanAdaptation(actor, skills.sneaking.test)
         }
         SR5_EntityHelpers.updateModifier(skills.sneaking.limit, handlingName, "linkedAttribute", handlingMode)
         break
       case "rigging":
-        if (controlerData.specialProperties.controlRig.value) {
-          SR5_EntityHelpers.updateModifier(skills.perception.test, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)
-          SR5_EntityHelpers.updateModifier(skills.sneaking.test, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)
-          SR5_EntityHelpers.updateModifier(skills.sneaking.limit, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)
-        }
+        //Jumped in, the control rig raises the Handling-based limit; its dice go to piloting skill tests only, not to Perception or Sneaking (SR5 p. 268, 455)
+        if (controlerData.specialProperties.controlRig.value) SR5_EntityHelpers.updateModifier(skills.sneaking.limit, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)
         SR5_EntityHelpers.updateModifier(skills.perception.test, game.i18n.localize('SR5.Controler'), actorData.controlMode, controlerData.skills.perception.test.dicePool)
         SR5_EntityHelpers.updateModifier(skills.perception.limit, game.i18n.localize('SR5.VehicleStat_SensorShort'), "linkedAttribute", attributes.sensor.augmented.value)
-        //TODO : sneaking is equal to lesser value between pilotSkill and Sneaking(pilotSkill)
-        if (actorData.pilotSkill) {
-          SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName}`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
-        }
+        //Jumped in, the limits based on Sensor and Handling gain the control rig rating (SR5 p. 268 and errata)
+        if (controlerData.specialProperties.controlRig.value) SR5_EntityHelpers.updateModifier(skills.perception.limit, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)
+        //Jumped in: Sneaking + Intuition [Handling] (SR5 p. 272)
+        SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.SkillSneaking')})`, actorData.controlMode, controlerData.skills.sneaking.rating.value)
+        SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.Intuition')})`, actorData.controlMode, controlerData.attributes.intuition.augmented.value)
         SR5_EntityHelpers.updateModifier(skills.sneaking.limit, handlingName, "linkedAttribute", handlingMode)
-        SR5_EntityHelpers.updateModifier(skills.sneaking.limit, game.i18n.localize('SR5.ControlRigging'), actorData.controlMode, 1)
         if (controlerData.matrix.userMode === "hotsim") {
           SR5_EntityHelpers.updateModifier(skills.perception.test, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 1)
           SR5_EntityHelpers.updateModifier(skills.sneaking.test, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 1)
         }
+        //Tactile sensors: +2 dice to Perception and Sensor tests (Rigger 5.0 p. 170)
+        if (tactileSensorsOn(actor.items, actorData.controlMode)) SR5_EntityHelpers.updateModifier(skills.perception.test, game.i18n.localize('SR5.VehicleModEffectKind_tactileSensors'), "itemVehicleMod", TACTILE_PERCEPTION_DICE)
         break
       default:
         SR5_SystemHelpers.srLog(1, `Unknown controle mode '${actorData.controlMode}' in 'generateVehicleSkills()'`)
@@ -2670,9 +2821,9 @@ export class SR5_CharacterUtility extends Actor {
     SR5_EntityHelpers.updateValue(skills.perception.rating, 0)
     //Update DicePools
     skills.sneaking.test.base = 0
-    skills.sneaking.test.modifiers = skills.sneaking.test.modifiers.concat(skills.sneaking.rating.modifiers)
+    skills.sneaking.test.modifiers = skills.sneaking.test.modifiers.concat(SR5_EntityHelpers.ratingModifiersForTest(skills.sneaking.rating))
     skills.perception.test.base = 0
-    skills.perception.test.modifiers = skills.perception.test.modifiers.concat(skills.perception.rating.modifiers)
+    skills.perception.test.modifiers = skills.perception.test.modifiers.concat(SR5_EntityHelpers.ratingModifiersForTest(skills.perception.rating))
     //Special for autopilot drone
     if (actorData.controlMode === "autopilot") {
       skills.sneaking.test.modifiers = skills.sneaking.test.modifiers.concat(actor.system.penalties.special.actual.modifiers)
@@ -2696,6 +2847,7 @@ export class SR5_CharacterUtility extends Actor {
       else vehicleTest.limit.base = attributes.handling.augmented.value
     }
     vehicleTest.test.base = 0
+    vehicleTest.thresholdModifier = controlRigThresholdModifier(0)
     let controlerData, controlerName
     if (actorData.vehicleOwner.id) {
       controlerData = actorData.vehicleOwner.system
@@ -2714,25 +2866,54 @@ export class SR5_CharacterUtility extends Actor {
         break
       case "manual":
         if (actorData.pilotSkill) SR5_EntityHelpers.updateModifier(vehicleTest.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName} (${game.i18n.localize(SR5.pilotSkills[actorData.pilotSkill])})`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
+        this.applyMetahumanAdaptation(actor, vehicleTest.test)
         if (controlerData.matrix.userMode === "ar") SR5_EntityHelpers.updateModifier(vehicleTest.limit, game.i18n.localize('SR5.AugmentedReality'), "matrixUserMode", 1)
         else if (controlerData.matrix.userMode === "coldsim" || controlerData.matrix.userMode === "hotsim") SR5_EntityHelpers.updateModifier(vehicleTest.limit, game.i18n.localize('SR5.VirtualReality'), "matrixUserMode", 2)
         break
       case "rigging":
         if (actorData.pilotSkill) SR5_EntityHelpers.updateModifier(vehicleTest.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName} (${game.i18n.localize(SR5.pilotSkills[actorData.pilotSkill])})`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
-        SR5_EntityHelpers.updateModifier(vehicleTest.limit, game.i18n.localize('SR5.ControlRigging'), game.i18n.localize('SR5.ControlMode'), 3)
+        //A jumped in rigger is in VR: +2 to the limit (SR5 p. 201), plus the control rig (SR5 p. 268)
+        SR5_EntityHelpers.updateModifier(vehicleTest.limit, game.i18n.localize('SR5.VirtualReality'), "matrixUserMode", VR_PILOTING_LIMIT_BONUS)
         if (controlerData.specialProperties.controlRig.value) {
           SR5_EntityHelpers.updateModifier(vehicleTest.test, game.i18n.localize('SR5.ControlRig'), game.i18n.localize('SR5.Augmentation'), controlerData.specialProperties.controlRig.value)
           SR5_EntityHelpers.updateModifier(vehicleTest.limit, game.i18n.localize('SR5.ControlRig'), game.i18n.localize('SR5.Augmentation'), controlerData.specialProperties.controlRig.value)
+          vehicleTest.thresholdModifier = controlRigThresholdModifier(controlerData.specialProperties.controlRig.value, game.i18n.localize('SR5.ControlRig'))
         }
         if (controlerData.matrix.userMode === "hotsim") SR5_EntityHelpers.updateModifier(vehicleTest.test, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 1)
         break
       default:
         SR5_SystemHelpers.srLog(1, `Unknown controle mode '${actorData.controlMode}' in 'generateVehicleTest()'`)
     }
+    SR5_CharacterUtility.applySpeedDemon(actor, vehicleTest.test)
 
     //update vehicle Actions Value
     SR5_EntityHelpers.updateDicePool(vehicleTest.test, 0)
     SR5_EntityHelpers.updateValue(vehicleTest.limit, 0)
+    SR5_CharacterUtility.capRemoteLimit(actor, vehicleTest.limit)
+  }
+
+  //A metahuman at the controls of a vehicle not adapted to them (Rigger 5.0 p. 171)
+  static applyMetahumanAdaptation(actor, test) {
+    const actorData = actor.system
+    const penalty = metahumanAdaptationPenalty(this.getMetatype(actorData.vehicleOwner), actor.items, actorData.controlMode)
+    if (penalty) SR5_EntityHelpers.updateModifier(test, game.i18n.localize("SR5.VehicleModAdaptationMissing"), "itemVehicleMod", penalty)
+  }
+
+  //Démon de la vitesse (Rigger 5.0 p. 37): +1 to the piloting test of a vehicle moving fast, its rigger aboard or jumped in
+  static applySpeedDemon(actor, test) {
+    let actorData = actor.system
+    let bonus = speedDemonBonus(actorData, actorData.vehicleOwner?.items)
+    if (bonus) SR5_EntityHelpers.updateModifier(test, game.i18n.localize('SR5.RiggerSpeedDemon'), "itemQuality", bonus)
+  }
+
+  //Remote control: the limit is the lower of the normal limit and the controller's Data Processing (SR5 p. 239-240)
+  static capRemoteLimit(actor, limit) {
+    let actorData = actor.system
+    if (actorData.controlMode !== "remote" || !actorData.vehicleOwner.id) return
+    let mod = dataProcessingCapModifier(limit.value, actorData.vehicleOwner.system.matrix.attributes.dataProcessing.value)
+    if (!mod) return
+    SR5_EntityHelpers.updateModifier(limit, game.i18n.localize('SR5.DataProcessingLimit'), actorData.controlMode, mod)
+    SR5_EntityHelpers.updateValue(limit, 0)
   }
 
   //
@@ -2766,10 +2947,12 @@ export class SR5_CharacterUtility extends Actor {
         if (actorData.pilotSkill) SR5_EntityHelpers.updateModifier(rammingTest.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName} (${game.i18n.localize(SR5.pilotSkills[actorData.pilotSkill])})`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
         if (controlerData.matrix.userMode === "ar") SR5_EntityHelpers.updateModifier(rammingTest.limit, game.i18n.localize('SR5.AugmentedReality'), "matrixUserMode", 1)
         else if (controlerData.matrix.userMode === "coldsim" || controlerData.matrix.userMode === "hotsim") SR5_EntityHelpers.updateModifier(rammingTest.limit, game.i18n.localize('SR5.VirtualReality'), "matrixUserMode", 2)
+        if (actorData.controlMode === "manual") this.applyMetahumanAdaptation(actor, rammingTest.test)
         break
       case "rigging":
         if (actorData.pilotSkill) SR5_EntityHelpers.updateModifier(rammingTest.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName} (${game.i18n.localize(SR5.pilotSkills[actorData.pilotSkill])})`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
-        SR5_EntityHelpers.updateModifier(rammingTest.limit, game.i18n.localize('SR5.ControlRigging'), game.i18n.localize('SR5.ControlMode'), 3)
+        //A jumped in rigger is in VR: +2 to the limit (SR5 p. 201), plus the control rig (SR5 p. 268)
+        SR5_EntityHelpers.updateModifier(rammingTest.limit, game.i18n.localize('SR5.VirtualReality'), "matrixUserMode", VR_PILOTING_LIMIT_BONUS)
         if (controlerData.specialProperties.controlRig.value) {
           SR5_EntityHelpers.updateModifier(rammingTest.test, game.i18n.localize('SR5.ControlRig'), game.i18n.localize('SR5.Augmentation'), controlerData.specialProperties.controlRig.value)
           SR5_EntityHelpers.updateModifier(rammingTest.limit, game.i18n.localize('SR5.ControlRig'), game.i18n.localize('SR5.Augmentation'), controlerData.specialProperties.controlRig.value)
@@ -2779,17 +2962,20 @@ export class SR5_CharacterUtility extends Actor {
       default:
         SR5_SystemHelpers.srLog(1, `Unknown controle mode '${actorData.controlMode}' in 'generateRammingTest()'`)
     }
+    SR5_CharacterUtility.applySpeedDemon(actor, rammingTest.test)
 
     //update vehicle Actions Value
     SR5_EntityHelpers.updateDicePool(rammingTest.test, 0)
     SR5_EntityHelpers.updateValue(rammingTest.limit, 0)
+    SR5_CharacterUtility.capRemoteLimit(actor, rammingTest.limit)
   }
 
   // Vehicle Slots Calculations
   static updateModificationsSlots(actor, itemData) {
     let actorData = actor.system
 
-    if (itemData.isActive) {
+    //A factory mod takes up its slots even when its effect is off (Rigger 5.0 p. 154, 156)
+    if (modTakesSlots(itemData, itemData.isFactory)) {
       switch (itemData.type) {
         case "powerTrain":
           SR5_EntityHelpers.updateModifier(actorData.modificationSlots.powerTrain, itemData.name, itemData.type, -itemData.slots.value)
@@ -2874,6 +3060,54 @@ export class SR5_CharacterUtility extends Actor {
       default:
     }
 
+  }
+
+  // Autopilot and Sensor replacements (Rigger 5.0 p. 170): the printed value gives way to the mod's rating, read in the
+  // base of the attribute so that the other mods still add to it. A modifier on natural, never the base the sheet edits.
+  // Read in prepareBaseData, before the item effects
+  static applyVehicleReplacements(actor) {
+    const attributes = actor.system.attributes
+    for (const [key, label] of [["pilot", "SR5.VehicleModEffectKind_autopilotReplacement"], ["sensor", "SR5.VehicleModEffectKind_sensorReplacement"]]) {
+      const replaced = replacedVehicleAttribute(actor.items, key)
+      if (replaced === null || !attributes[key]) continue
+      SR5_EntityHelpers.updateModifier(attributes[key].natural, game.i18n.localize(label), "itemVehicleMod", replaced - (Number(attributes[key].natural.base) || 0))
+    }
+    //Tactile sensors: +1 Handling while a rigger is jumped in (Rigger 5.0 p. 170)
+    if (tactileSensorsOn(actor.items, actor.system.controlMode)) {
+      for (const key of ["handling", "handlingOffRoad", "secondaryPropulsionHandling", "secondaryPropulsionHandlingOffRoad"]) {
+        if (attributes[key]) SR5_EntityHelpers.updateModifier(attributes[key].augmented, game.i18n.localize("SR5.VehicleModEffectKind_tactileSensors"), "itemVehicleMod", TACTILE_HANDLING)
+      }
+    }
+  }
+
+  // Armor added by mods: at most the vehicle's Body (Rigger 5.0 p. 161), the excess taken off as a visible modifier
+  static capVehicleArmor(actor) {
+    const attributes = actor.system.attributes, armor = attributes.armor.augmented
+    //Under the optional Modification Points a drone carries up to 3 × its Structure of Armor, then slows down
+    //(Rigger 5.0 p. 127-128) instead of the cap of vehicles
+    actor.system.cannotMove = false
+    if (usesModPoints(droneModRule(), actor.system.type)) {
+      const overload = armorOverload(armor.value, attributes.body.augmented.value)
+      const label = game.i18n.localize("SR5.DroneArmorOverload")
+      for (const [key, penalty] of [["handling", overload.handling], ["handlingOffRoad", overload.handling], ["speed", overload.speed],
+        ["speedOffRoad", overload.speed], ["acceleration", overload.acceleration], ["accelerationOffRoad", overload.acceleration]]) {
+        if (!penalty || !attributes[key]) continue
+        SR5_EntityHelpers.updateModifier(attributes[key].augmented, label, "itemVehicleMod", penalty)
+        SR5_EntityHelpers.updateValue(attributes[key].augmented, 0)
+      }
+      //Below 1 in Handling or below 0 in Speed or Acceleration, the drone can no longer move (R5 p. 128): read before
+      //the floor at 0 the sheet shows
+      const raw = p => ((Number(p?.base) || 0) + (SR5_EntityHelpers.modifiersSum(p?.modifiers ?? []) || 0)) *
+        (SR5_EntityHelpers.modifiersProduct(p?.modifiers ?? []) ?? 1)
+      actor.system.cannotMove = droneCannotMove({
+        handling: raw(attributes.handling.augmented), speed: raw(attributes.speed.augmented), acceleration: raw(attributes.acceleration.augmented)
+      })
+      return
+    }
+    const cut = armorCapReduction(addedArmor(actor.items, armor.modifiers), attributes.body.augmented.value)
+    if (!cut) return
+    SR5_EntityHelpers.updateModifier(armor, game.i18n.localize("SR5.VehicleArmorCap"), "itemVehicleMod", -cut)
+    SR5_EntityHelpers.updateValue(armor, 0)
   }
 
   // Vehicle slots Update
@@ -3035,6 +3269,8 @@ export class SR5_CharacterUtility extends Actor {
         skills.unarmedCombat.rating.base = actorData.force.value
         break
       case "anarch":
+        // No Astral Combat in its block (Howling Shadows p. 130)
+        skills.astralCombat.rating.base = 0
         skills.assensing.rating.base = actorData.force.value
         skills.automatics.rating.base = actorData.force.value
         skills.blades.rating.base = actorData.force.value
@@ -3063,8 +3299,14 @@ export class SR5_CharacterUtility extends Actor {
         skills.assensing.rating.base = rating
         skills.perception.rating.base = rating
       }
+      for (const key of SR5_SpiritTypes.noBaseSkills(customType)) skills[key].rating.base = 0
       SR5_SpiritTypes.applySkills(customType, skills, actorData.force.value)
     }
+    //Skills an insect race always has, at Force like the caste's (Dark Terrors p. 25-33)
+    const insectRace = insectRaceOf(SR5_SpiritTypes.baseType(actorData.type) || actorData.type, actorData.insectRace)
+    for (const key of insectRace?.skills || []) if (skills[key]) skills[key].rating.base = actorData.force.value
+    //Skill power (Aetherology p. 39): an active skill in place of a power, at Force like the type's own
+    for (const key of skillsFromPowers(actor.items)) if (skills[key]) skills[key].rating.base = actorData.force.value
 
     for (let key of Object.keys(SR5.skills)) {
       if (skills[key] && skills[key].rating.base) {
@@ -3169,7 +3411,7 @@ export class SR5_CharacterUtility extends Actor {
         if (actorData.skills[key].rating.value) {
           actorData.skills[key].test.base = 0
           if (actorData.skills[key].rating.base > 0) SR5_EntityHelpers.updateModifier(actorData.skills[key].test, `${game.i18n.localize(SR5.skills[key])}`, "skillRating", actorData.skills[key].rating.base)
-          actorData.skills[key].test.modifiers = actorData.skills[key].test.modifiers.concat(actorData.skills[key].rating.modifiers)
+          actorData.skills[key].test.modifiers = actorData.skills[key].test.modifiers.concat(SR5_EntityHelpers.ratingModifiersForTest(actorData.skills[key].rating))
           this.keepStrongestFocusOn(actorData.skills[key].test)
         } else {
           if (actorData.skills[key].canDefault) {
@@ -3481,6 +3723,8 @@ export class SR5_CharacterUtility extends Actor {
     if (item.type === "itemDrug") {
       drugTaken = {
         "name": item.name,
+        //A drug's addiction: the dice of Drug Tolerance are for it alone (rollData-Addiction.js)
+        "kind": "drug",
         "shot": {
           "value": 0,
           "base": 1,
@@ -3634,6 +3878,15 @@ export class SR5_CharacterUtility extends Actor {
           "durationType": "minute",
         }
         break
+      //A drug made with the designer (Chrome Flesh p. 194-196): Speed, (10 × ND6) minutes and crash worked out from its
+      //recipe (drug-designer.js), the crash damage carried by the stat (drug-damage.js)
+      case "customDrug": {
+        const recipe = item.system?.designer?.recipe
+        roll = new Roll(`${computeCustomDrug(recipe).durationDice}d6 * 10`)
+        rollRoll = await roll.evaluate()
+        drugStat = customDrugShot(recipe, rollRoll.total)
+        break
+      }
       case "nitro":
         //(10 × 1D6) minutes, one die times ten (SR5 p. 413), not the sum of ten dice
         roll = new Roll(`1d6 * 10`)
@@ -3982,7 +4235,8 @@ export class SR5_CharacterUtility extends Actor {
           "speed": item.system.speed,
           "duration": rollRoll.total,
           "durationType": "minute",
-          "durationContrecoup": duration,
+          //Chrome Flesh p. 190: disorientation "pour une durée égale à celle de l'effet de la drogue"
+          "durationContrecoup": rollRoll.total,
           "durationContrecoupType": "minute",
         }
         break
@@ -4154,8 +4408,9 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.CombatTurn",
           "duration": duration,
           "durationType": "minute",
+          //Chrome Flesh p. 187: "une durée 10 fois supérieure à la durée de l'effet", which is in minutes
           "durationContrecoup": 10 * duration,
-          "durationContrecoupType": "hour",
+          "durationContrecoupType": "minute",
         }
         break
       case "wuduAku":
@@ -4170,8 +4425,9 @@ export class SR5_CharacterUtility extends Actor {
           "speedType": "SR5.Minutes",
           "duration": duration,
           "durationType": "hour",
-          "durationContrecoup": 24,
-          "durationContrecoupType": "hour",
+          //Chrome Flesh p. 193: "une fois la drogue ingérée", -2 dice to the other spirits "pendant une durée de 24 heures",
+          //counted from the intake: the crash holds what is left of them once the speed and the effect are over
+          "sinceIntake": 24 * 60,
         }
         break
       case "zero":
@@ -4242,9 +4498,11 @@ export class SR5_CharacterUtility extends Actor {
           "durationType": "hour",
         }
         break
-      //Bullets & Bandages p. 20: 1D6 × 10 minutes, one die times ten
+      //Bullets & Bandages p. 20: 1D6 × 10 minutes, one die times ten. A BTL program (SR5 p. 414): speed "Immédiate",
+      //duration "typically (10 × 1D6) minutes", the same die; its rebound (p. 415) has no figure, so no crash
       case "neostigmine":
       case "ondansetron":
+      case "btl":
         roll = new Roll(`1d6 * 10`)
         rollRoll = await roll.evaluate()
         drugStat = {
@@ -4266,6 +4524,8 @@ export class SR5_CharacterUtility extends Actor {
     if (antitoxin > 1) drugStat.duration = SR5_Toxins.drugDuration(drugStat.duration, antitoxin)
     //The quality of the drug changes the duration of its crash (Chrome Flesh p. 194)
     applyDrugQuality(drugStat, effectiveDrugQuality(item.system, consumer))
+    //After the quality: 24 hours from the intake are not a crash the quality lengthens
+    if (drugStat.sinceIntake) Object.assign(drugStat, crashSinceIntake(drugStat))
     return drugStat
   }
 
@@ -4311,6 +4571,8 @@ export class SR5_CharacterUtility extends Actor {
         matrix.attributes.dataProcessing.base = attributes.logic.augmented.value
         matrix.attributes.firewall.base = attributes.willpower.augmented.value
         matrix.deviceRating = actorData.specialAttributes.resonance.augmented.value
+        //Worked out, never typed: the persona's Device Rating is the Resonance (SR5 p. 253), shown on its own sheet too
+        item.system.deviceRating = matrix.deviceRating
         break
       case "headcase": {
         let nanite = actorData.specialAttributes.nanite.augmented.value
@@ -4345,6 +4607,21 @@ export class SR5_CharacterUtility extends Actor {
     matrix.pan = item.system.pan
     matrix.marks = item.system.marks
     matrix.markedItems = item.system.markedItems
+    //Noise Reduction and Sharing belong to a console, their total within its Device Rating (SR5 p. 269): a deck or a
+    //commlink equipped instead no longer reduces the noise with the console's setting
+    //A Machinist's persona takes Willpower and Charisma instead (Kill Code p. 101)
+    const rcc = fixedRccRatings(actor) ?? rccRatings(matrixAttributes.noiseReduction.base, matrixAttributes.sharing.base, matrix.deviceRating, actsAsRcc(actor))
+    matrixAttributes.noiseReduction.base = rcc.noiseReduction
+    matrixAttributes.sharing.base = rcc.sharing
+    //Erisian daemon: half the submersion grade, rounded up, on the persona's Firewall (Kill Code p. 146). Non-cumulative,
+    //since this function runs twice in a preparation
+    if (item.system.type === "livingPersona") {
+      const firewallBonus = firewallBonusOfStream(streamOf(actor), matrix.submersionGrade)
+      if (firewallBonus) SR5_EntityHelpers.updateModifier(matrixAttributes.firewall, game.i18n.localize('SR5.StreamErisian'), "technomancerStream", firewallBonus, false, false)
+      //Apophenian daemon: the same on Sleaze (Kill Code p. 146)
+      const sleazeBonus = sleazeBonusOfStream(streamOf(actor), matrix.submersionGrade)
+      if (sleazeBonus) SR5_EntityHelpers.updateModifier(matrixAttributes.sleaze, game.i18n.localize('SR5.StreamApophenian'), "technomancerStream", sleazeBonus, false, false)
+    }
     SR5_EntityHelpers.updateValue(matrix.noise)
     SR5_EntityHelpers.updateValue(matrix.programsMaximumActive, 0)
     SR5_EntityHelpers.updateValue(matrix.programsCurrentActive, 0)
@@ -4503,21 +4780,23 @@ export class SR5_CharacterUtility extends Actor {
       SR5_EntityHelpers.updateModifier(matrixActions.watchdog.test, game.i18n.localize('SR5.Logic'), "linkedAttribute", attributes.logic.augmented.value)
     }		
     if (game.settings.get("sr5", "sr5Rigger5Actions")) {
+      //The console's own noise reduction, without the Suppress Noise of the turn (Rigger 5.0 p. 34-35)
+      const consoleNoise = consoleNoiseReductionDice(matrixAttributes.noiseReduction)
       SR5_EntityHelpers.updateModifier(matrixActions.breakTargetLock.test, game.i18n.localize('SR5.SkillElectronicWarfare'), "skillRating", skills.electronicWarfare.rating.value)
       SR5_EntityHelpers.updateModifier(matrixActions.breakTargetLock.test, game.i18n.localize('SR5.Intuition'), "linkedAttribute", attributes.intuition.augmented.value)
-      SR5_EntityHelpers.updateModifier(matrixActions.breakTargetLock.test, game.i18n.localize('SR5.NoiseReduction'), "matrixAttribute", matrixAttributes.noiseReduction.value)
+      SR5_EntityHelpers.updateModifier(matrixActions.breakTargetLock.test, game.i18n.localize('SR5.NoiseReduction'), "rccNoiseReduction", consoleNoise)
       SR5_EntityHelpers.updateModifier(matrixActions.confusePilot.test, game.i18n.localize('SR5.SkillElectronicWarfare'), "skillRating", skills.electronicWarfare.rating.value)
       SR5_EntityHelpers.updateModifier(matrixActions.confusePilot.test, game.i18n.localize('SR5.Logic'), "linkedAttribute", attributes.logic.augmented.value)
-      SR5_EntityHelpers.updateModifier(matrixActions.confusePilot.test, game.i18n.localize('SR5.NoiseReduction'), "matrixAttribute", matrixAttributes.noiseReduction.value)
+      SR5_EntityHelpers.updateModifier(matrixActions.confusePilot.test, game.i18n.localize('SR5.NoiseReduction'), "rccNoiseReduction", consoleNoise)
       SR5_EntityHelpers.updateModifier(matrixActions.detectTargetLock.test, game.i18n.localize('SR5.SkillComputer'), "skillRating", skills.computer.rating.value)
       SR5_EntityHelpers.updateModifier(matrixActions.detectTargetLock.test, game.i18n.localize('SR5.Logic'), "linkedAttribute", attributes.logic.augmented.value)
-      SR5_EntityHelpers.updateModifier(matrixActions.detectTargetLock.test, game.i18n.localize('SR5.NoiseReduction'), "matrixAttribute", matrixAttributes.noiseReduction.value)
+      SR5_EntityHelpers.updateModifier(matrixActions.detectTargetLock.test, game.i18n.localize('SR5.NoiseReduction'), "rccNoiseReduction", consoleNoise)
       SR5_EntityHelpers.updateModifier(matrixActions.suppressNoise.test, game.i18n.localize('SR5.SkillElectronicWarfare'), "skillRating", skills.electronicWarfare.rating.value)
       SR5_EntityHelpers.updateModifier(matrixActions.suppressNoise.test, game.i18n.localize('SR5.Logic'), "linkedAttribute", attributes.logic.augmented.value)
-      SR5_EntityHelpers.updateModifier(matrixActions.suppressNoise.test, game.i18n.localize('SR5.NoiseReduction'), "matrixAttribute", matrixAttributes.noiseReduction.value)
+      SR5_EntityHelpers.updateModifier(matrixActions.suppressNoise.test, game.i18n.localize('SR5.NoiseReduction'), "rccNoiseReduction", consoleNoise)
       SR5_EntityHelpers.updateModifier(matrixActions.targetDevice.test, game.i18n.localize('SR5.SkillElectronicWarfare'), "skillRating", skills.electronicWarfare.rating.value)
       SR5_EntityHelpers.updateModifier(matrixActions.targetDevice.test, game.i18n.localize('SR5.Logic'), "linkedAttribute", attributes.logic.augmented.value)
-      SR5_EntityHelpers.updateModifier(matrixActions.targetDevice.test, game.i18n.localize('SR5.NoiseReduction'), "matrixAttribute", matrixAttributes.noiseReduction.value)
+      SR5_EntityHelpers.updateModifier(matrixActions.targetDevice.test, game.i18n.localize('SR5.NoiseReduction'), "rccNoiseReduction", consoleNoise)
     }
 
     // AI Depth action (Data Trails p. 160): Redefine Ownership, Logic + Computer [Depth]
@@ -4679,6 +4958,9 @@ export class SR5_CharacterUtility extends Actor {
       dataProcessingValue = matrix.deviceRating
       attackValue = matrix.deviceRating
     }
+    //A device of the scenery has no Attack nor Sleaze (SR5 p. 235-236): it defends with the first element alone
+    //(SR5 p. 237, « Logique seule si l'objet ne dispose pas d'un attribut Corruption »)
+    const noAttackSleaze = lacksAttackAndSleaze(actor)
 
     SR5_EntityHelpers.updateModifier(matrixActions.editFile.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.editFile.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
@@ -4700,7 +4982,7 @@ export class SR5_CharacterUtility extends Actor {
     SR5_EntityHelpers.updateModifier(matrixActions.bruteForce.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
     SR5_EntityHelpers.updateModifier(matrixActions.bruteForce.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.matrixPerception.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.matrixPerception.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
+    if (!noAttackSleaze) SR5_EntityHelpers.updateModifier(matrixActions.matrixPerception.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
     SR5_EntityHelpers.updateModifier(matrixActions.dataSpike.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.dataSpike.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     SR5_EntityHelpers.updateModifier(matrixActions.crashProgram.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
@@ -4712,9 +4994,9 @@ export class SR5_CharacterUtility extends Actor {
     SR5_EntityHelpers.updateModifier(matrixActions.hide.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.hide.defense, game.i18n.localize('SR5.DataProcessing'), modifierTypeDataProcessing, dataProcessingValue)
     SR5_EntityHelpers.updateModifier(matrixActions.jackOut.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.jackOut.defense, game.i18n.localize('SR5.MatrixAttack'), modifierTypeAttack, attackValue)
+    if (!noAttackSleaze) SR5_EntityHelpers.updateModifier(matrixActions.jackOut.defense, game.i18n.localize('SR5.MatrixAttack'), modifierTypeAttack, attackValue)
     SR5_EntityHelpers.updateModifier(matrixActions.traceIcon.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
-    SR5_EntityHelpers.updateModifier(matrixActions.traceIcon.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
+    if (!noAttackSleaze) SR5_EntityHelpers.updateModifier(matrixActions.traceIcon.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
     SR5_EntityHelpers.updateModifier(matrixActions.controlDevice.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
     SR5_EntityHelpers.updateModifier(matrixActions.controlDevice.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
 
@@ -4730,11 +5012,11 @@ export class SR5_CharacterUtility extends Actor {
       SR5_EntityHelpers.updateModifier(matrixActions.popupCybercombat.defense, game.i18n.localize(willpowerLabel), modifierTypeWillpower, willpowerValue)
       SR5_EntityHelpers.updateModifier(matrixActions.popupCybercombat.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
       SR5_EntityHelpers.updateModifier(matrixActions.squelch.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.squelch.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
+      if (!noAttackSleaze) SR5_EntityHelpers.updateModifier(matrixActions.squelch.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
       SR5_EntityHelpers.updateModifier(matrixActions.subvertInfrastructure.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
       SR5_EntityHelpers.updateModifier(matrixActions.subvertInfrastructure.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
       SR5_EntityHelpers.updateModifier(matrixActions.tag.defense, game.i18n.localize(intuitionLabel), modifierTypeIntuition, intuitionValue)
-      SR5_EntityHelpers.updateModifier(matrixActions.tag.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
+      if (!noAttackSleaze) SR5_EntityHelpers.updateModifier(matrixActions.tag.defense, game.i18n.localize('SR5.Sleaze'), modifierTypeSleaze, sleazeValue)
       SR5_EntityHelpers.updateModifier(matrixActions.watchdog.defense, game.i18n.localize(logicLabel), modifierTypeLogic, logicValue)
       SR5_EntityHelpers.updateModifier(matrixActions.watchdog.defense, game.i18n.localize('SR5.Firewall'), modifierTypeFirewall, firewallValue)
     }
@@ -4872,6 +5154,41 @@ export class SR5_CharacterUtility extends Actor {
     SR5_EntityHelpers.updateValue(actorData.matrix.noise)
   }
 
+  // Host types (Kill Code p. 48-52): a typed host takes its attributes from its rating and its type, the free ones
+  // keeping the gamemaster's arrangement while it fits; with no type the attributes stay as entered, save for a host
+  // never arranged, which gets the default order of SR5 p. 248 instead of four attributes at 0
+  static applyHostType(matrix) {
+    const stored = Object.fromEntries(HOST_ATTRIBUTES.map(key => [key, matrix.attributes[key].base]))
+    const resolved = resolveHostAttributes(matrix.hostType, matrix.deviceRating, stored)
+    if (!resolved) {
+      const collection = matrix.attributesCollection
+      const defaults = untypedHostDefaults(matrix.deviceRating, stored, [1, 2, 3, 4].some(i => collection[`value${i}isSet`]))
+      if (!defaults) return
+      for (let i = 1; i <= 4; i++) collection[`value${i}isSet`] = true
+      for (const key of HOST_ATTRIBUTES) {
+        matrix.attributes[key].base = defaults[key]
+        SR5_EntityHelpers.updateModifier(matrix.attributes[key], game.i18n.format('SR5.HostUntypedDealt', {
+          offset: hostTypeOffsetLabel(defaults[key], matrix.deviceRating)
+        }), "hostType", 0)
+      }
+      return
+    }
+    // The collection only offers the free values, all of them already dealt
+    for (let i = 1; i <= 4; i++) {
+      matrix.attributesCollection[`value${i}`] = resolved.collection[i - 1] ?? 0
+      matrix.attributesCollection[`value${i}isSet`] = true
+    }
+    const type = `${game.i18n.localize(SR5.hostTypes[matrix.hostType])} (KC p. ${HOST_TYPE_PAGES[matrix.hostType]})`
+    for (const key of HOST_ATTRIBUTES) {
+      const value = resolved.values[key]
+      matrix.attributes[key].base = value
+      const label = game.i18n.format(resolved.fixed.includes(key) ? 'SR5.HostTypeFixed' : 'SR5.HostTypeDealt', {
+        type, offset: hostTypeOffsetLabel(value, matrix.deviceRating)
+      })
+      SR5_EntityHelpers.updateModifier(matrix.attributes[key], label, "hostType", 0)
+    }
+  }
+
   static generateDeviceMatrix(actor, itemData) {
     let actorData = actor.system, matrix = actorData.matrix,
       matrixAttributes = matrix.attributes
@@ -4885,6 +5202,7 @@ export class SR5_CharacterUtility extends Actor {
       matrix.attributesCollection.value2 = matrix.deviceRating + 1
       matrix.attributesCollection.value3 = matrix.deviceRating + 2
       matrix.attributesCollection.value4 = matrix.deviceRating + 3
+      this.applyHostType(matrix)
     }
 
     //Handle Ice attack and defense
@@ -4895,6 +5213,14 @@ export class SR5_CharacterUtility extends Actor {
       }
       matrix.ice.attackDicepool = matrix.deviceRating * 2
       matrix.actions.matrixPerception.test.dicePool = matrix.deviceRating * 2
+      //SR5 p. 249: an IC uses its host's matrix attributes; with no host, its own
+      const host = iceHostOf(actor), hostValues = iceHostAttributes(host)
+      if (hostValues) for (const key of ICE_HOST_ATTRIBUTES) {
+        matrixAttributes[key].base = hostValues[key]
+        SR5_EntityHelpers.updateModifier(matrixAttributes[key], game.i18n.format('SR5.IceHostAttribute', {
+          host: host.name
+        }), "iceHost", 0)
+      }
       SR5_EntityHelpers.updateValue(matrixAttributes.dataProcessing, 0)
       matrix.actions.matrixPerception.limit.value = matrixAttributes.dataProcessing.value
       switch (matrix.deviceSubType) {
@@ -4943,9 +5269,11 @@ export class SR5_CharacterUtility extends Actor {
     }
 
     //Handle Attributes
-    if ((matrix.deviceType === "device") || (matrix.deviceType === "slavedDevice" && actorData.isDirectlyConnected)) {
+    //A device, a maglock among them, has a Device Rating and two matrix attributes, Data Processing and Firewall, equal
+    //to it (SR5 p. 235-236): no Attack, no Sleaze, and Noise Reduction and Sharing belong to rigger consoles
+    if (isPlainDevice(matrix.deviceType, actorData.isDirectlyConnected)) {
       for (let key of Object.keys(SR5.matrixAttributes)) {
-        matrixAttributes[key].base = matrix.deviceRating
+        matrixAttributes[key].base = (key === "dataProcessing" || key === "firewall") ? matrix.deviceRating : 0
         SR5_EntityHelpers.updateValue(matrixAttributes[key], 0)
       }
     } else {
@@ -5071,7 +5399,7 @@ export class SR5_CharacterUtility extends Actor {
     let actorObject = actor.toObject(false)
     if (game.actors) {
       for (let a of game.actors) {
-        if (a.type === "actorAgent" && a.system.creatorId === actor.id) {
+        if (a.type === "actorAgent" && a.system.creatorId === actor.id && a.isOwner) {
           await a.update({
             "system.creatorData.items": actorObject.items
           })
@@ -5081,7 +5409,8 @@ export class SR5_CharacterUtility extends Actor {
 
     if (canvas.scene) {
       for (let t of canvas.tokens.placeables) {
-        if (t.actor.type === "actorAgent" && t.actor.system.creatorId === actor.id) {
+        //A linked token is the world actor, copied just above
+        if (t.actor?.type === "actorAgent" && !t.document.actorLink && t.actor.system.creatorId === actor.id && t.actor.isOwner) {
           await t.actor.update({
             "system.creatorData.items": actorObject.items
           })
@@ -5094,7 +5423,7 @@ export class SR5_CharacterUtility extends Actor {
     let actorObject = actor.toObject(false)
     if (game.actors) {
       for (let a of game.actors) {
-        if (a.type === "actorDrone" && a.system.vehicleOwner.id === actor.id) {
+        if (a.type === "actorDrone" && a.system.vehicleOwner.id === actor.id && a.isOwner) {
           await a.update({
             "system.vehicleOwner.system": actorObject.system,
             "system.vehicleOwner.items": actorObject.items,
@@ -5105,7 +5434,8 @@ export class SR5_CharacterUtility extends Actor {
 
     if (canvas.scene) {
       for (let t of canvas.tokens.placeables) {
-        if (t.actor.type === "actorDrone" && t.actor.system.vehicleOwner.id === actor.id) {
+        //A linked token is the world actor, copied just above
+        if (t.actor?.type === "actorDrone" && !t.document.actorLink && t.actor.system.vehicleOwner.id === actor.id && t.actor.isOwner) {
           await t.actor.update({
             "system.vehicleOwner.system": actorObject.system,
             "system.vehicleOwner.items": actorObject.items,
@@ -5115,26 +5445,17 @@ export class SR5_CharacterUtility extends Actor {
     }
   }
 
+  //An autosoft the drone carries itself, not one of the console's copied items (those have no parent)
+  static isLocalDroneAutosoft(item, actor) {
+    return actor?.type === "actorDrone" && item?.type === "itemProgram" && item.system?.type === "autosoft" && !!item.parent && item.parent.id === actor.id
+  }
+
+  //The console's autosofts a slaved drone on autopilot runs (SR5 p. 269, 272): those the rigger shares, up to the
+  //console's Sharing, and none if the drone runs one of its own (rcc.js)
   static applyAutosoftEffect(actor) {
-    let controlerItems = actor.system.vehicleOwner.items
-    let hasLocalAutosoftRunning = actor.items.find(a => a.system.type === "autosoft" && a.system.isActive)
-    if (hasLocalAutosoftRunning) actor.system.matrix.hasLocalAutosoftRunning = true
-    else actor.system.matrix.hasLocalAutosoftRunning = false
-
-    if (actor.system.controlMode !== "autopilot") actor.system.matrix.hasLocalAutosoftRunning = false
-
-    if (actor.system.controlMode === "autopilot") {
-      for (let i of controlerItems) {
-        if (i.type === "itemProgram" && i.system.type === "autosoft" && i.system.isActive && !hasLocalAutosoftRunning) {
-          if (i.system.isModelBased) {
-            if (i.system.model === actor.system.model) {
-              if (Object.keys(i.system.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
-            }
-          } else {
-            if (Object.keys(i.system.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
-          }
-        }
-      }
+    actor.system.matrix.hasLocalAutosoftRunning = actor.system.controlMode === "autopilot" && hasLocalAutosoftRunning(actor.items)
+    for (let i of rccAutosoftsForDrone(actor.system, actor.items)) {
+      if (autosoftFitsDrone(i.system, actor.system.model) && Object.keys(i.system.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
     }
   }
 
@@ -5420,15 +5741,22 @@ export class SR5_CharacterUtility extends Actor {
         skipCustomEffect = true
       }
 
+      // A Strength or Agility enhancement plugged into a cyberlimb raises that limb only (SR5 p. 460, cyberlimb.js);
+      // a situational one stays a box, for the tests made with that limb that no weapon carries
+      if (item.type === "itemAugmentation" && !customEffect.situational && isLimbAttributeTarget(customEffect.target) && hostLimb(item.id, actor.items)) skipCustomEffect = true
       // For effect depending on wifi
       if (customEffect.wifi && !itemData.wirelessTurnedOn) skipCustomEffect = true
       // For transferable effect
       if (customEffect.transfer) skipCustomEffect = true
+      // A factory mod: its effect on the printed profile is already there (Rigger 5.0 p. 156)
+      if (item.type === "itemVehicleMod" && factorySkipsEffect(itemData.isFactory, customEffect)) skipCustomEffect = true
+      // An Autopilot or Sensor replacement is in the base of the attribute already (applyVehicleReplacements)
+      if (item.type === "itemVehicleMod" && actor.type === "actorDrone" && replacedVehicleAttributeOf(customEffect)) skipCustomEffect = true
       // Drugs
       // Drugs: an effect applies in its own phase, the rise or the crash (entities/items/drug-phase.js)
       if (item.type === "itemDrug") {
         skipCustomEffect = !customEffect.target || !customEffect.type || !!customEffect.transfer ||
-          !drugEffectApplies(customEffect, phaseFromFlags(itemData.isActive, itemData.wirelessTurnedOn))
+          !drugEffectApplies(customEffect, phaseFromFlags(itemData.isActive, itemData.wirelessTurnedOn), item.flags?.sr5)
       }
       // Quality : if an effect has "wifi on" check box to true, effect is always turned on, even if quality is not "equiped"
       if (item.type === "itemQuality") {
@@ -5474,6 +5802,12 @@ export class SR5_CharacterUtility extends Actor {
             SR5_EntityHelpers.updateModifier(targetObject, `${item.name}`, item.type, customEffect.value * customEffect.multiplier, isMultiplier, cumulative, customEffect.type)
             continue
           }
+          //Reach of the melee weapons of a type (or of the kicks), as their Damage Value: read by utilityItem.js
+          if (customEffect.target === "system.itemsProperties.weapon.reach") {
+            customEffect.value = (customEffect.value || 0)
+            SR5_EntityHelpers.updateModifier(targetObject, `${item.name}`, item.type, customEffect.value * customEffect.multiplier, isMultiplier, cumulative, customEffect.type)
+            continue
+          }
           if (customEffect.target === "system.itemsProperties.weapon.damageValue") {
             //A bonus read from the item's rating with an offset: bone density adds its rating − 1 (SR5 p. 463 ; arbitrage de DjamZ : table VF)
             //(worked out apart: the effect itself is left untouched, it is read again at each preparation)
@@ -5493,6 +5827,16 @@ export class SR5_CharacterUtility extends Actor {
           }
         }
 
+        //A called shot eased for some attacks only (effect field "skills"): the modifier keeps them, handleMartialArtsCalledShot
+        //leaves it out of the attacks made with another skill. Without the field, the effect goes the usual way
+        const calledShotSkills = calledShotSkillsOf(customEffect)
+        if (calledShotSkills && isMartialArtsModifierTarget(customEffect.target)) {
+          targetObject.modifiers.push({
+            source: item.name, type: item.type, value: calledShotEffectValue(customEffect, itemData) * customEffect.multiplier, isMultiplier, skills: calledShotSkills
+          })
+          continue
+        }
+
         //Special case for Hardened Armor : value based on actor attributes are not yet calculated, so we need a trick
         if (customEffect.category === "hardenedArmors") {
           if (customEffect.type !== "rating") {
@@ -5503,6 +5847,12 @@ export class SR5_CharacterUtility extends Actor {
 
         //Special case for Energetic Aura
         if (customEffect.target === "system.specialProperties.energyAura") {
+          foundry.utils.setProperty(actor, customEffect.target, customEffect.type)
+          continue
+        }
+
+        //Aura of [element] (Street Grimoire p. 114): the element is named by the effect's type, as the energy aura's
+        if (customEffect.target === "system.specialProperties.spellAuraElement") {
           foundry.utils.setProperty(actor, customEffect.target, customEffect.type)
           continue
         }
@@ -5523,6 +5873,8 @@ export class SR5_CharacterUtility extends Actor {
         switch (customEffect.type) {
           case "rating":
             customEffect.value = (itemData.itemRating || 0)
+            //A drone's own autosoft runs at most at its autopilot's rating; the console's keeps its own (Rigger 5.0 p. 131)
+            if (SR5_CharacterUtility.isLocalDroneAutosoft(item, actor)) customEffect.value = localAutosoftRating(customEffect.value, droneAutopilot(actor.system, actor.items))
             SR5_EntityHelpers.updateModifier(targetObject, item.name, modifierType, customEffect.value * customEffect.multiplier, isMultiplier, cumulative)
             break
           case "hits":
@@ -5545,6 +5897,14 @@ export class SR5_CharacterUtility extends Actor {
             //The target takes this value. A skill Limit, whose base is the key of its linked Limit, reads it back through
             //skillLimitValue(): the value stands in for the linked Limit, and the other effects on the skill Limit still
             //add to it (No Future p. 152: an instrument gives the Limit, a Synthlink raises it)
+            //A crash only lowers: Little Smoke brings Perception and Willpower "réduits à 1" (Chrome Flesh p. 192), never up
+            //to 1. The base of an attribute is set after the effects: the total is capped when it is worked out (helpers.js)
+            if (item.type === "itemDrug" && effectPhase(customEffect) === "crash") {
+              targetObject.modifiers.push({
+                source: item.name, type: modifierType, value: 0, isMultiplier: false, ceiling: Number(customEffect.value) || 0
+              })
+              break
+            }
             if (typeof targetObject.base === "number") targetObject.modifiers = []
             if (customEffect.type === "ratingReplace") customEffect.value = (itemData.itemRating || 0)
             if (customEffect.type === "hitsReplace") customEffect.value = (itemData.hits || 0)

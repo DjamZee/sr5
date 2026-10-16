@@ -1,14 +1,18 @@
 import {
-  hasWeaponTrait
+  vintageWirelessRefused
 } from '../items/weaponTraits.js'
 import {
   SR5_Toxins
 } from '../items/toxins.js'
 import {
-  activeBoneClash, boneClashKey, isBoneLacing
+  isCapReminder, ruleRemindersShown
+} from '../../system/rule-reminders.js'
+import {
+  boneSwitchRefused
 } from '../../system/implant-essence.js'
 import {
-  SR5_SystemHelpers
+  SR5_SystemHelpers,
+  SR5_UiModifications
 } from "../../system/utilitySystem.js"
 import {
   phaseFromFlags, unitKey
@@ -17,8 +21,11 @@ import {
   startDrugCrash, resetDrugPhase, applyDrugDamage, askDrugDoses
 } from "../items/drug-crash.js"
 import {
-  DRUG_DAMAGE, DRUG_INTERACTION_DAMAGE, intakeDamageOf, dosesTaken, overdoseOf
+  DRUG_DAMAGE, DRUG_INTERACTION_DAMAGE, intakeDamageOf, dosesTaken, overdoseOf, secondTreatmentOf
 } from "../items/drug-damage.js"
+import {
+  drugDesignApproved
+} from "../items/drug-designer.js"
 import {
   setCharacterField, setSpiritTrait, banishKey
 } from "../../system/spirit-ledger.js"
@@ -45,11 +52,17 @@ import {
   SR5Credstick 
 } from "../../interface/credstick.js"
 import {
-  SR5 
+  SR5
 } from "../../config.js"
+import {
+  refuseByRule
+} from "../../system/rule-locks.js"
 import {
   STORABLE_TYPES, isStorable, isStoredAway, garageRequirement, meetsGarageLifestyle 
 } from "../../interface/storage-rules.js"
+import {
+  isLocked
+} from "../../interface/storage-lock.js"
 import {
   bindOrderClicks
 } from "../../interface/shop-orders.js"
@@ -81,7 +94,7 @@ import {
   isMilkBrick, soothe
 } from "../items/milkBrick.js"
 import {
-  addictionWeeks, focusAddictionRating
+  addictionWeeks, focusAddictionRating, focusAddictionEntries
 } from "../../rolls/roll-helpers/addiction.js"
 import {
   warnDrugWithoutStat, drugAddictionThreshold, drugInteractionModifier, effectiveDrugQuality, drugCrashIsInstant, drugHasCrash, isSameDrug, distinctDrugs
@@ -107,6 +120,24 @@ import {
 import {
   deactivationStatus, deactivationDialog, deactivationLauncher, launchDeactivation
 } from "../../system/deactivation.js"
+import {
+  SR5Conceal
+} from "../../interface/conceal.js"
+import {
+  canBeConcealed, concealedState, concealedItems
+} from "../../rolls/roll-helpers/conceal-rules.js"
+import {
+  deviceModeSheetContext, switchDeviceMode
+} from "../../canvas/pan-crown/pan-device-switch.js"
+import {
+  actsAsRcc, fixedRccRatings, programSwitchActionType, sharingSlotsLeft, autosoftShareRefused
+} from "./rcc.js"
+import {
+  primaryLifestyleUpdates
+} from "../../system/lifestyle-primary.js"
+import {
+  tooltipsToHelp, fillHelpBubble
+} from "../../interface/help-tooltips.js"
 
 /**
  * Extend the basic ActorSheet class to do all the SR5 things!
@@ -146,6 +177,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         game.sr5.shop.open({
           actor: this.actor
         })
+      },
+      //SR5 p. 422: look for an object hidden on the targeted token, or pat it down
+      concealSearch: function (event, target) {
+        SR5Conceal.startSearch(this.actor, target.dataset.mode === "patDown" ? "patDown" : "spot")
       },
     },
   }
@@ -265,12 +300,27 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     context.system = actorData.system
     context.items = actorData.items
     context.owner = this.actor.isOwner
+    //Astral perception in the vision types block (relecture djamz.13, img 18): a spirit and a magician
+    //perceive astrally (SR5 p. 313), an adept once the power has given it the vision
+    const visions = this.actor.system.visions
+    context.canPerceiveAstral = this.actor.type === "actorSpirit" || !!visions?.astral?.hasVision ||
+      ["magician", "aspectedMagician", "mysticalAdept"].includes(this.actor.system.magic?.magicType)
     context.editable = this.isEditable
     context.isEmbedded = true  // Items rendered on actor sheets are always embedded
     context.filters = this._filters || {
     }
     context.lists = this.actor.system.lists
     context.isPlay = this.isPlayMode
+    // Read on the sheet, descriptions show their links (@UUID to a journal, the Library) enriched; the editor keeps
+    // the raw text
+    const enrich = text => foundry.applications.ux.TextEditor.implementation.enrichHTML(typeof text === "string" ? text : "", {
+      secrets: this.actor.isOwner, relativeTo: this.actor
+    })
+    const biography = this.actor.system.biography
+    context.enrichedBiography = {
+      description: await enrich(biography?.description), background: await enrich(biography?.background),
+    }
+    context.enrichedDescription = await enrich(this.actor.system.description)
     //Reagent stocks shown: the raw one alone in the core rules (modules/system/reagents.js)
     context.reagentSystem = reagentSystem()
     context.reagentTiers = hasTiers(context.reagentSystem)
@@ -314,6 +364,17 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     context.emulateOnlyDepth = context.canReboot ? null : (this.actor.system.specialAttributes?.depth?.augmented?.value || 0)
     //An active cyberdeck whose attribute array is not assigned rolls with matrix limits at 0 (SR5 p. 229)
     context.deckUnconfigured = SR5_CharacterUtility.isDeckUnconfigured(this.actor.system)
+    //The mode of each device of the lists, its silent switch beside its wireless one (couronne du PAN, lot 6)
+    context.deviceModes = {
+    }
+    for (const item of this.actor.items) {
+      const mode = deviceModeSheetContext(item)
+      if (mode) context.deviceModes[item.id] = mode
+    }
+    //A rigger command console: Noise Reduction, Sharing and the shared autosofts (SR5 p. 269)
+    context.actsAsRcc = actsAsRcc(this.actor)
+    //A Machinist's persona: Willpower and Charisma, not set by hand (Kill Code p. 101)
+    context.rccFixed = !!fixedRccRatings(this.actor)
 
     // Compute dynamic layout (SR6-style panel/tab/block system)
     context.layout = this._computeSheetLayout(this.actor)
@@ -365,7 +426,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       configBtn.type = "button"
       configBtn.classList.add("header-control", "icon", "fa-solid", "fa-tools")
       configBtn.dataset.action = "customizeDisplay"
-      configBtn.dataset.tooltip = "SR5.CustomizeSheetDisplay"
+      configBtn.dataset.tooltip = game.i18n.localize("SR5.CustomizeSheetDisplay")
       if (closeButton) closeButton.before(configBtn)
       else header?.appendChild(configBtn)
     }
@@ -399,7 +460,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     if (toggleBtn) {
       toggleBtn.classList.toggle("fa-lock", this.isPlayMode)
       toggleBtn.classList.toggle("fa-lock-open", this.isEditMode)
-      toggleBtn.dataset.tooltip = this.isPlayMode ? "SR5.SwitchToEdit" : "SR5.SwitchToPlay"
+      toggleBtn.dataset.tooltip = game.i18n.localize(this.isPlayMode ? "SR5.SwitchToEdit" : "SR5.SwitchToPlay")
     }
 
     //Essence Loss (SR5 p. 403): the GM starts or stops the clock, or brings it one week closer by hand
@@ -412,6 +473,15 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     element.querySelectorAll("[data-sr5-infection-try]").forEach(b => b.addEventListener("click", (event) => {
       event.preventDefault()
       tryInfection(this.actor)
+    }))
+    //Blood magic (Street Grimoire p. 90): store points in an athame, or Cannibalize
+    element.querySelectorAll("[data-sr5-blood]").forEach(b => b.addEventListener("click", async (event) => {
+      event.preventDefault()
+      //Read before the import: the event no longer has its target once awaited
+      const use = event.currentTarget.dataset.sr5Blood
+      const blood = await import("../../system/blood-magic.js")
+      if (use === "store") blood.storeInAthame(this.actor)
+      else if (use === "cannibalize") blood.cannibalize(this.actor)
     }))
     element.querySelectorAll("[data-sr5-hunger]").forEach(b => b.addEventListener("click", (event) => {
       event.preventDefault()
@@ -482,6 +552,9 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     // Scroll indicators — toggle .can-scroll-up / .can-scroll-down on panels
     this._updateScrollFades(element)
 
+    //SR5 p. 422: an object hidden on oneself is marked for whoever plays the actor (and the GM)
+    if (this.actor.isOwner) this._markConcealedItems(element)
+
     // Everything below here is only needed if the sheet is editable
     if (!this.isEditable) return
 
@@ -493,6 +566,13 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     on(".item-clone", "click", this._onItemClone.bind(this))
     on(".item-edit", "click", this._onItemEdit.bind(this))
     on(".item-delete", "click", this._onItemDelete.bind(this))
+    // The main lifestyle (SR5 p. 97): one at a time
+    on(".lifestyle-primary", "click", ev => {
+      ev.preventDefault()
+      ev.stopPropagation()
+      const updates = primaryLifestyleUpdates(this.actor.items, ev.currentTarget.dataset.itemId)
+      if (updates.length) this.actor.updateEmbeddedDocuments("Item", updates)
+    })
     on(".item-management", "mousedown", this._onItemManagement.bind(this))
     on(".subItem", "click", this._onManageSubItem.bind(this))
     //The gamemaster puts a drug back to "not taken" by a right click on its switch (entities/items/drug-crash.js)
@@ -505,6 +585,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     on(".select-value", "change", this._onEditItemValue.bind(this))
     on(".toggle-value", "click", this._onEditItemValue.bind(this))
     on(".jammer-toggle", "click", this._onToggleJammer.bind(this))
+    //An explosive charge: its window (Run & Gun p. 188-207, system/explosive-charge.js)
+    on(".explosive-detonate", "click", ev => {
+      ev.preventDefault()
+      const item = this.actor.items.get(ev.target.closest(".item")?.dataset.itemId)
+      if (item) import("../../system/explosive-charge.js").then(m => m.SR5ExplosiveCharge.open(item))
+    })
     on(".changeValueByClick", "mousedown", this._onChangeValueByClick.bind(this))
     //Indexes and spirit traits go to the gamemaster's ledger, never to the sheet (system/spirit-ledger.js)
     on(".sr5-spirit-ledger", "change", ev => {
@@ -533,12 +619,31 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     bindOrderClicks(element, (event, target) => this._onShopOrder(event, target))
     //Reboot le deck
     on(".reset-deck", "click", this._onRebootDeck.bind(this))
+    //The messaging of a device, from its line (relecture djamz.13, img 14; SR5 p. 241, lot 14)
+    on(".open-commcode", "click", async ev => {
+      ev.preventDefault()
+      ev.stopPropagation()
+      const item = this.actor.items.get(ev.currentTarget.dataset.itemId)
+      if (item) (await import("../../interface/commcode-window.js")).SR5CommcodeWindow.openDevice(item.uuid)
+    })
     // Déplie les infos
     on(".deplie", "click", this._onItemSummary.bind(this))
     // Déplie les infos matricielles
     on(".deplieMatrix", "click", this._onMatrixSummary.bind(this))
     // Lancés de dés
     on(".sr-roll", "click", this._onRoll.bind(this))
+    // The owner's actions with no test, Change Icon and the others (lot 19, SR5 p. 238)
+    on(".matrix-owner-action", "click", event => {
+      event.preventDefault()
+      // Read before the import: currentTarget is gone once the handler has waited
+      const key = event.currentTarget.dataset.rollkey
+      import("../../system/matrix-owner-actions.js").then(m => m.takeOwnerAction(this.actor, key))
+    })
+    // Grid Hop, with no test (lot 19, SR5 p. 244)
+    on(".matrix-grid-hop", "click", event => {
+      event.preventDefault()
+      import("../../system/matrix-grid-hop.js").then(m => m.takeGridHop(this.actor))
+    })
     on(".sr-rollGrenade", "click", this._onRollGrenade.bind(this))
     // Summon Spirit
     on(".sidekickCreate", "click", this._OnSidekickCreate.bind(this))
@@ -562,6 +667,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     on(".changeMatrixMode", "change", this._onChangeMatrixMode.bind(this))
     // Change matrix silent mode
     on(".changeSilentMode", "click", this._onChangeSilentMode.bind(this))
+    // A device of the lists runs silent or leaves it (pan-device-switch.js)
+    on(".device-silent-toggle", "click", event => {
+      event.preventDefault()
+      const item = this.actor.items.get(event.currentTarget.dataset.itemId)
+      if (item) switchDeviceMode(item, event.currentTarget.dataset.mode)
+    })
     // Custom drag start — AppV2 does not wire DragDrop.dragSelector, so we bind manually
     on(".draggableAttribute, [data-skill], [data-matrix], [data-resonance]", "dragstart", this._onDragStart.bind(this))
     // Owned item dragging (to the sidebar, chat or another sheet) — core ActorSheetV2 only binds `.draggable`
@@ -641,7 +752,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     // Custom dropdown enhancement
     enhanceSelects(element)
 
-    // Help Display
+    // Help Display. The tooltips go into the bubble when it is on and free (help-tooltips.js)
+    tooltipsToHelp(element.querySelector(".window-content") ?? element, game.settings.get("sr5", "sr5Help.active"), text => game.i18n.localize(text))
     element.querySelectorAll("[data-helpTitle]").forEach(el => {
       el.addEventListener("mouseover", this._displayHelpText.bind(this))
       el.addEventListener("mouseout", this._hideHelpText.bind(this))
@@ -1202,9 +1314,42 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
   /* -------------------------------------------- */
 
+  //An eye crossed out after the name of each hidden object, the hits of the one who hid it in its tooltip
+  _markConcealedItems(root) {
+    for (const item of concealedItems(this.actor)) {
+      const name = root.querySelector(`.item[data-item-id="${item.id}"] .deplie`)
+      if (!name || name.querySelector(".sr5-concealed-mark")) continue
+      name.insertAdjacentHTML("beforeend", ` <i class="fas fa-eye-slash sr5-concealed-mark" data-tooltip="${foundry.utils.escapeHTML(game.i18n.format("SR5.ConcealHidden", {
+        hits: concealedState(item).hits
+      }))}"></i>`)
+    }
+  }
+
+  //SR5 p. 422: hide the object on oneself, or take it out, from its details
+  _appendConcealToggle(div, item) {
+    if (!this.actor.isOwner || !canBeConcealed(item) || !this.actor.system.skills?.palming) return
+    const state = concealedState(item)
+    const label = state ? game.i18n.format("SR5.ConcealTakeOut", {
+      item: item.name
+    }) : game.i18n.localize("SR5.ConcealItem")
+    const tooltip = state ? game.i18n.format("SR5.ConcealHidden", {
+      hits: state.hits
+    }) : game.i18n.localize("SR5.ConcealItemTooltip")
+    const box = document.createElement("div")
+    box.className = "item-properties"
+    box.innerHTML = `<span class="tag sr5-conceal-toggle" style="cursor:pointer;" data-tooltip="${foundry.utils.escapeHTML(tooltip)}"><i class="fas ${state ? "fa-eye" : "fa-eye-slash"}"></i> ${foundry.utils.escapeHTML(label)}</span>`
+    box.querySelector(".sr5-conceal-toggle").addEventListener("click", event => {
+      event.stopPropagation()
+      event.preventDefault()
+      if (state) SR5Conceal.takeOut(item)
+      else SR5Conceal.startHide(this.actor, item)
+    })
+    div.appendChild(box)
+  }
+
   async _onItemSummary(event) {
     // Don't expand/collapse when clicking interactive elements inside .deplie
-    if (event.target.closest(".toggle-value, .edit-value, .select-value, .changeValueByClick, .reload-ammo, .accessory-activate, .item-summary, .jammer-toggle")) return
+    if (event.target.closest(".toggle-value, .edit-value, .select-value, .changeValueByClick, .reload-ammo, .accessory-activate, .item-summary, .jammer-toggle, .explosive-detonate")) return
     event.preventDefault()
     // The browser clears currentTarget once the handler yields: keep the clicked element before any await
     const clicked = event.currentTarget
@@ -1252,6 +1397,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         }
         div.appendChild(accDiv)
       }
+
+      this._appendConcealToggle(div, item)
 
       li.appendChild(div)
 
@@ -1389,7 +1536,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       type: (oldValue === false) ? "simple" : "free", value: 1
     }]
     if (item.type === "itemProgram" && target === "system.isActive") return [{
-      type: "free", value: 1
+      type: programSwitchActionType(item, this.actor.type, oldValue === false), value: 1
     }]
     if (target === "system.wirelessTurnedOn") return [{
       type: SR5_ActorHelper.wirelessSwitchActionType(!oldValue, game.settings.get("sr5", "sr5WifiRequiresDNI"), this.actor.system.hasDNI), value: 1
@@ -1433,23 +1580,27 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       oldValue = foundry.utils.getProperty(item, target)
       value = !oldValue
     }
-    //Vintage (Gun H(e)aven 3 p. 3): never wireless, so no switch and no action spent
-    if (target === "system.wirelessTurnedOn" && realItem?.type === "itemWeapon" && hasWeaponTrait(realItem.system, "vintage")) return ui.notifications.warn(game.i18n.localize("SR5.WARN_VintageNoWireless"))
-    //Better Than Bad p. 141: under Blight no adept power, focus nor sustained spell is switched on (decisions of DjamZ)
-    if (target === "system.isActive" && value && ["itemAdeptPower", "itemFocus", "itemSpell"].includes(realItem?.type) && SR5_Toxins.isCutFromManasphere(actor)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
+    //A drug a player made with the designer is taken once the gamemaster approved it (decision of DjamZ, 07/10)
+    if (target === "system.isActive" && value && realItem?.type === "itemDrug" && !drugDesignApproved(realItem.system)) return ui.notifications.warn(game.i18n.format(realItem.system.designer.status === "refused" ? "SR5.WARN_DrugDesignRefused" : "SR5.WARN_DrugDesignNotApproved", {
+      drug: realItem.name
+    }))
+    //Vintage (Gun H(e)aven 3 p. 3): never wireless, so no switch and no action spent (the "ammo" rule lock family, B13 lot 2)
+    if (target === "system.wirelessTurnedOn" && vintageWirelessRefused(realItem, actor)) return
+    //Better Than Bad p. 141: under Blight no adept power, focus nor sustained spell is switched on (decisions of DjamZ;
+    //the "magic" rule lock family, B13 lot 6)
+    if (target === "system.isActive" && value && SR5_Toxins.blightSwitchRefused(actor, realItem)) return
     //Ossature renforcée (SR5 p. 458): "un seul type pouvant être installé à la fois", and never beside an Augmentation
     //de densité osseuse (p. 458, 462). One switched on beside another is refused to a player; the gamemaster is warned
-    //and goes past it (decision H5 of DjamZ)
-    if (target === "system.isActive" && value === true) {
-      const lacing = activeBoneClash(actor, realItem)
-      if (lacing) {
-        const key = boneClashKey(isBoneLacing(realItem) && isBoneLacing(lacing), game.user.isGM ? "gm" : "player")
-        ui.notifications.warn(game.i18n.format(key, {
-          name: realItem.name, actor: actor.name, lacing: lacing.name
-        }))
-        if (!game.user.isGM) return
-      }
-    }
+    //and goes past it (decision H5 of DjamZ); the "body" rule lock family lifted, so does a player (B13, lot 4)
+    if (target === "system.isActive" && value === true && boneSwitchRefused(actor, realItem)) return
+    //A Machinist's persona shares only the autosofts its echoes [Programme] copy (SR5 p. 261, Kill Code p. 101)
+    if (target === "system.isShared" && value === true && autosoftShareRefused(actor, realItem)) return ui.notifications.warn(game.i18n.format("SR5.WARN_MachinistAutosoftNoEcho", {
+      name: realItem.name
+    }))
+    //A console shares as many autosofts as its Sharing rating (SR5 p. 269)
+    if (target === "system.isShared" && value === true && sharingSlotsLeft(itemList, actor.system.matrix.attributes.sharing.value) < 1) return ui.notifications.warn(game.i18n.format("SR5.WARN_RccSharingFull", {
+      sharing: actor.system.matrix.attributes.sharing.value
+    }))
     //The guard reads the actor's counters, which change only when the server answers: a second click before
     //that would pass on the old count. Toggles that cost an action wait for the previous one to be written
     let actionCost = this._itemValueActionCost(item, target, oldValue)
@@ -1597,6 +1748,14 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                 actor: actor.name, drugs: overdose.drugs.join(", "), value: overdose.value
               }))
               drugDamages.push(overdose)
+            }
+            //Chrome Flesh p. 186-187: a second treatment of P4MO while the first is in effect, an embolism (drug-damage.js)
+            const embolism = secondTreatmentOf(item, actor)
+            if (embolism) {
+              await ui.notifications.warn(game.i18n.format("SR5.DrugEmbolism", {
+                actor: actor.name, drug: item.name
+              }))
+              drugDamages.push(embolism)
             }
             //Chrome Flesh p. 185: Aisa, 4S more per extra dose taken at once, unresisted
             const extraDose = DRUG_DAMAGE[drugType.value]?.extraDose
@@ -1787,27 +1946,11 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         }]
         if (this._spendsActionCounters()) SR5_MiscellaneousHelpers.spendActions(actorData.specialProperties.actions, actions)
 
-        // Handle focus addicition
-        let alreadyTaken = actorData.addictions.find((d) => item.name === d.name)
-        let addiction = []
+        // Handle focus addiction: one entry for all foci (SR5 p. 416), rated by the total Force of the active foci,
+        // this one included
         if (item.system.isActive){
-          //SR5 p. 416: the rating is the total Force of the active foci, this one included
-          let rating = focusAddictionRating(itemList)
-          if (alreadyTaken) {
-            alreadyTaken.shot.value += 1
-            alreadyTaken.weekAddiction.value = addictionWeeks(rating)
-            //An entry written before with dotted keys has no addiction object: it gets one
-            alreadyTaken.addiction = {
-              ...(alreadyTaken.addiction ?? {
-              }), type: "psychological", rating, threshold: 2
-            }
-          }
-          else {
-            addiction = SR5_CharacterUtility.generateDrugAddiction(item, rating)
-            actorData.addictions = actorData.addictions.concat(addiction)
-          }		
-          if (actorData.addictions.shot) SR5_EntityHelpers.updateValue(actorData.addictions.shot)
-          if (actorData.addictions.weekAddiction) SR5_EntityHelpers.updateValue(actorData.addictions.weekAddiction)		
+          const focusNames = itemList.filter(i => i.type === "itemFocus").map(i => i.name)
+          actorData.addictions = focusAddictionEntries(actorData.addictions, focusNames, game.i18n.localize("SR5.Foci"), focusAddictionRating(itemList))
         }
 
       } else {
@@ -1824,7 +1967,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         if (warning) ui.notifications.warn(warning)
       }
       if(oldValue === false) actions = [{
-        type: "free", value: 1, source: "loadProgram"
+        type: programSwitchActionType(item, actor.type, true), value: 1, source: "loadProgram"
       }]
       else actions = [{
         type: "free", value: 1, source: "unloadProgram"
@@ -2054,12 +2197,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
     //A link-locked character cannot reboot their device and must jack out (SR5 p. 231 and 244);
     //the IC that force a reboot (p. 250) call rebootDeck directly and are not held back
-    if (this.actor.system.matrix?.isLinkLocked) {
-      ui.notifications.warn(game.i18n.format("SR5.WARN_RebootLinkLocked", {
-        name: this.actor.name
-      }))
-      return false
-    }
+    //The "matrix" rule lock lifted (B13), the reboot goes, and the gamemaster hears of it
+    if (this.actor.system.matrix?.isLinkLocked && refuseByRule("matrix", "SR5.WARN_RebootLinkLocked", {
+      name: this.actor.name
+    }, {
+      actor: this.actor
+    })) return false
     //Same for an action the character no longer has, when the world setting asks for it
     if (!SR5Combat.hasActionsLeft(this.actor, [{
       type: "complex", value: 1, source: "rebootDeck"
@@ -2123,9 +2266,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
     {
       const el = event.currentTarget
-      if (helpTitle) helpTitle.innerHTML = el.dataset.helptitle || ""
-
-      if (el.dataset.helpmessage && helpMessage) helpMessage.innerHTML = "<div class='helpMessage'><em>" + el.dataset.helpmessage + "</em></div>"
+      fillHelpBubble(el, helpTitle, helpMessage)
 
       let details = el.dataset.helpdetails
       if (details) {
@@ -2144,6 +2285,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         if (property.modifiers && property.modifiers.length) {
           if (property.base) detailsHTML += `<li>${game.i18n.localize('SR5.HELP_CalculationBase')}${game.i18n.localize('SR5.Colons')} ${property.base}</li>`
           for (let modifier of Object.values(property.modifiers)) {
+            //"Rappel des règles" unchecked: no cap note that counts for 0 (rule-reminders.js)
+            if (isCapReminder(modifier) && !ruleRemindersShown()) continue
             if (modifier.value != undefined) {
               if (modifier.type === "penaltyspecial" && modifier.details.length){
                 let modifierDetails = ""
@@ -2162,6 +2305,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         else detailsHTML += `<li>${game.i18n.localize('SR5.HELP_CalculationTotal')}${game.i18n.localize('SR5.Colons')} ${property.dicePool}</li></ul>`
         if (helpDetails) helpDetails.innerHTML = detailsHTML
       }
+      SR5_UiModifications.placeHelpWindow(target)
       target.classList.add("active")
     }
   }
@@ -2206,7 +2350,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         },
         {
           action: "cancel",
-          label: "Cancel",
+          label: game.i18n.localize("SR5.Cancel"),
           callback: () => ({
             action: "cancel" 
           }),
@@ -2247,6 +2391,61 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
   // globals so they can be read and tested on their own.
   static STORABLE_TYPES = STORABLE_TYPES
 
+  /**
+   * Build the view model for the Storage tab: each storage with what sits
+   * inside it, for the character and the Grunt sheets (a vendor is a Grunt).
+   * Stored items are left in their usual lists on purpose — being
+   * stored does not yet take an item out of play.
+   */
+  // One icon per kind of storage. Font Awesome, so it takes the sheet's own
+  // text colour and stays readable on a light surface.
+  static STORAGE_ICONS = {
+    stash: "fa-house",
+    safe: "fa-vault",
+    backpack: "fa-suitcase",
+    cache: "fa-box-archive",
+    garage: "fa-warehouse",
+  }
+
+  _prepareStorages(actor, storages) {
+    const stored = actor.items.filter(i => i.system?.storedIn)
+    return storages
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(storage => {
+        const contents = stored
+          .filter(i => i.system.storedIn === storage._id)
+          .sort((a, b) => a.name.localeCompare(b.name))
+        const max = storage.system.capacity.value
+        // What the lot is worth. Item prices, not the actor's nuyen: that
+        // field sums every transaction and is not a balance.
+        const value = contents.reduce((total, i) => {
+          const price = i.system.price?.value ?? i.system.price?.base ?? 0
+          // Ammunition carries its whole stack in its computed price (utilityItem.js _handleAmmoPrice)
+          return total + price * (i.type === "itemAmmunition" ? 1 : (i.system.quantity ?? 1))
+        }, 0)
+        return {
+          _id: storage._id,
+          name: storage.name,
+          img: storage.img,
+          type: storage.system.type,
+          icon: ActorSheetSR5.STORAGE_ICONS[storage.system.type] ?? "fa-box",
+          isDeployable: storage.system.isDeployable,
+          isDeployed: storage.system.isDeployed,
+          isLocked: isLocked(storage),
+          // Shut, its contents are not shown to a player who only looks at
+          // the sheet. A courtesy, not a protection: they are still in the
+          // actor's data that player's browser holds.
+          hideContents: isLocked(storage) && !this.actor.isOwner,
+          contents: contents,
+          used: contents.length,
+          max: max,
+          value: value,
+          hasLimit: max > 0,
+          isFull: max > 0 && contents.length >= max,
+        }
+      })
+  }
+
   static isStorable(item, storage) {
     return isStorable(item, storage)
   }
@@ -2255,8 +2454,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
    * What this garage asks for that the character has not got, or null when it
    * will take the vehicle (Run Faster p. 216).
    */
+  // Whether it refuses is the "garage" box of the "objects" rule lock (formerly sr5StorageCheckGarageLifestyle), at _onStoragePutIn
   static garageShortfall(actor, storage) {
-    if (!game.settings.get("sr5", "sr5StorageCheckGarageLifestyle")) return null
     const requirement = garageRequirement(storage)
     if (!requirement) return null
 
@@ -2293,22 +2492,24 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }
 
     const shortfall = ActorSheetSR5.garageShortfall(this.actor, storage)
-    if (shortfall) {
-      return ui.notifications.warn(game.i18n.format("SR5.WARN_StorageGarageLifestyle", {
-        storage: storage.name,
-        lifestyle: game.i18n.localize(SR5.lifestyleTypes[shortfall.lifestyle]),
-        cost: shortfall.cost,
-      }))
-    }
+    if (shortfall && refuseByRule("objects", "SR5.WARN_StorageGarageLifestyle", {
+      storage: storage.name,
+      lifestyle: game.i18n.localize(SR5.lifestyleTypes[shortfall.lifestyle]),
+      cost: shortfall.cost,
+    }, {
+      actor: this.actor, lockCase: "garage"
+    })) return
 
     const max = storage.system.capacity.value
     const used = this.actor.items.filter(i => i.system?.storedIn === storageId).length
     const room = max > 0 ? max - used : Infinity
-    if (room <= 0) {
-      return ui.notifications.warn(game.i18n.format("SR5.WARN_StorageFull", {
-        storage: storage.name 
-      }))
-    }
+    // The "objects" rule lock lifted, a full storage takes more, and the GM is told once (not again for the overflow)
+    const full = room <= 0
+    if (full && refuseByRule("objects", "SR5.WARN_StorageFull", {
+      storage: storage.name
+    }, {
+      actor: this.actor
+    })) return
 
     const content = await foundry.applications.handlebars.renderTemplate(
       "systems/sr5/templates/interface/storage-put-in.hbs", {
@@ -2317,15 +2518,16 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       })
     const result = await foundry.applications.api.DialogV2.wait({
       window: {
-        title: game.i18n.format("SR5.StoragePutInTitle", {
-          storage: storage.name 
-        }) 
+        // A garage parks a vehicle, it does not put away an object
+        title: game.i18n.format(storage.system.type === "garage" ? "SR5.StoragePutInVehicleTitle" : "SR5.StoragePutInTitle", {
+          storage: storage.name
+        })
       },
       content: content,
       buttons: [
         {
           action: "ok",
-          label: game.i18n.localize("SR5.StoragePutIn"),
+          label: game.i18n.localize(storage.system.type === "garage" ? "SR5.StoragePutInVehicle" : "SR5.StoragePutIn"),
           default: true,
           callback: (event, button, dialog) => ({
             action: "ok", element: dialog.element 
@@ -2345,11 +2547,11 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
     const chosen = [...result.element.querySelectorAll("[name=storedItem]:checked")].map(i => i.value)
     if (!chosen.length) return
-    if (chosen.length > room) {
-      return ui.notifications.warn(game.i18n.format("SR5.WARN_StorageNotEnoughRoom", {
-        storage: storage.name, room: room 
-      }))
-    }
+    if (!full && chosen.length > room && refuseByRule("objects", "SR5.WARN_StorageNotEnoughRoom", {
+      storage: storage.name, room: room
+    }, {
+      actor: this.actor
+    })) return
 
     await this.actor.updateEmbeddedDocuments("Item", chosen.map(id => ({
       _id: id, "system.storedIn": storageId 
@@ -2386,7 +2588,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     if (!toggle) return
     const cell = toggle.parentElement
     cell.inert = true
-    cell.dataset.title = game.i18n.localize("SR5.WirelessHeldByDeployedDrone")
+    cell.dataset.tooltip = game.i18n.localize("SR5.WirelessHeldByDeployedDrone")
     const icon = toggle.querySelector("em")
     if (icon?.classList.contains("SR-SubColor")) icon.classList.replace("SR-SubColor", "SR-GreyColor")
     else icon?.classList.add("SR-LightGreyColor")
@@ -2481,10 +2683,12 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       },
       baseActor = this.actor.id
 
-    if (actor.system.matrix.pan.current === actor.system.matrix.pan.max){
-      ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.INFO_PanIsFull")}`)
-      return
-    }
+    //The "matrix" rule lock lifted (B13), the PAN grows past its Device Rating x 3 (SR5 p. 233), the gamemaster told
+    if (Number(actor.system.matrix.pan.current) >= Number(actor.system.matrix.pan.max) && refuseByRule("matrix", "SR5.INFO_PanFullOf", {
+      actor: actor.name
+    }, {
+      actor, level: "info"
+    })) return
 
     for (let key of Object.keys(actor.system.matrix.potentialPanObject)){
       if (Object.keys(actor.system.matrix.potentialPanObject[key]).length) {
@@ -2590,12 +2794,10 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     let actorId = this.actor.id
     if (this.actor.isToken) actorId = this.actor.token.id
 		
-    //manage actions
-    let action = [{
-      type: "free", value: 1, source: "changeSilentMode"
-    }]
-    //action = [{type: "simple", value: 1}];
-    SR5Combat.changeActionInCombat(actorId, action)
+    //manage actions: switching to or from silent mode is a simple action (SR5 p. 236)
+    SR5Combat.changeActionInCombat(actorId, [{
+      type: "simple", value: 1, source: "changeSilentMode"
+    }])
   }
 
 }

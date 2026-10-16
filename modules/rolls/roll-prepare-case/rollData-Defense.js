@@ -10,10 +10,36 @@ import {
 import {
   trustedAttackCard
 } from "../roll-helpers/attack-card.js"
+import {
+  unarmedReachBonus
+} from "../../entities/items/weaponTraits.js"
+import {
+  defenseUnlimitedHits
+} from "../roll-helpers/limit.js"
+import {
+  SR5_SpellShapingHelpers
+} from "../roll-helpers/spell-shaping.js"
+import {
+  rgOption, movementModifiers, phaseMeters
+} from "../../system/rg-combat-options.js"
+import {
+  flashlightDazzles, WEAK_GLARE
+} from "../roll-helpers/flashlight-glare.js"
+
+//The defense modifier of RG3 for the defender's own token (its first one on the scene when the actor is linked)
+export function defenderMovementModifier(actor, combat = globalThis.game?.combat){
+  if (!rgOption("movement") || !combat?.started) return 0
+  const token = actor.token ?? globalThis.canvas?.scene?.tokens?.find(t => t.actorId === actor.id && t.actorLink)
+  const meters = phaseMeters(token?.getFlag?.("sr5", "runDistance"), combat.id, combat.round)
+  return movementModifiers(meters).defense
+}
 
 //Add info for Defense Roll
 export default async function defense(rollData, actor, chatData){
   if (actor.type === "actorDevice" || actor.type === "actorSprite") return
+  //SR5 p. 329: a Spell Shaping bubble leaves its occupant untouched, so there is no defense test to roll at all.
+  //Checked here rather than inside the area template handler, which only runs for spells that have one
+  if (SR5_SpellShapingHelpers.skips(actor, chatData)) return void SR5_SpellShapingHelpers.announceSpared(actor)
   //The attack card read again from the chat log: a player's card never sets the DV, AP or hits (attack-card.js)
   chatData = await trustedAttackCard(chatData, actor)
   if (!chatData) return
@@ -51,6 +77,7 @@ export default async function defense(rollData, actor, chatData){
   rollData.combat.activeDefenses.parryBlades = SR5_PrepareRollHelper.getActiveDefenseValue(actorData, "parryBlades", "blades")
   // SR5 p. 191-192: dodge, block and parry add a skill, so the Physical limit applies to them
   rollData.combat.activeDefenses.limit = actorData.limits?.physicalLimit?.value || 0
+  rollData.combat.activeDefenses.unlimited = defenseUnlimitedHits(actorData.defenses)
 
   //Transfering data from chatCard
   rollData.previousMessage.hits = chatData.roll.hits
@@ -66,6 +93,11 @@ export default async function defense(rollData, actor, chatData){
   rollData.damage.isContinuous = chatData.damage.isContinuous
   rollData.damage.aggravated = chatData.damage.aggravated
   rollData.damage.originalValue = chatData.damage.originalValue
+  //A weapon focus deals magical damage but stays a weapon; a spell's Force sets the AP of its fire (SR5 p. 173)
+  rollData.damage.weaponFocus = chatData.damage.weaponFocus
+  if (chatData.damage.source === "magical") rollData.magic.force = chatData.magic?.force
+  //Electromancer (Forbidden Arcana p. 35): carried to the damage resistance, which lowers the Initiative
+  if (chatData.magic?.electromancer) rollData.magic.electromancer = true
   rollData.combat.ammo.type = chatData.combat.ammo.type
   rollData.combat.calledShot = chatData.combat.calledShot
   rollData.combat.armorPenetration = chatData.combat.armorPenetration
@@ -75,7 +107,11 @@ export default async function defense(rollData, actor, chatData){
   rollData.target.sceneId = chatData.target.sceneId ?? null
   rollData.target.range = chatData.target.range 
   rollData.combat.choke = chatData.combat.choke  
-  rollData.combat.weaponType = chatData.combat.weaponType    
+  rollData.combat.weaponType = chatData.combat.weaponType
+  //A net (Run & Gun p. 25): it lands on a hit, a graze included (test-Defense.js)
+  if (chatData.combat.net) rollData.combat.net = {
+    xl: !!chatData.combat.net.xl, shock: !!chatData.combat.net.shock
+  }
 
   //Add special info for Suppressive fire
   if (chatData.combat.firingMode.selected === "SF"){
@@ -92,14 +128,29 @@ export default async function defense(rollData, actor, chatData){
   //"the shooter will have to compensate" and range is the attacker's, so neither applies (DjamZ, 2026-10-03).
   //Suppressive fire has its own Reaction + Edge test (p. 181) and is left as it was.
   if (chatData.test.typeSub === "rangedWeapon" && chatData.combat.firingMode.selected !== "SF"){
-    let environmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(chatData.target.sceneId), actor.system, true)
+    //Run & Gun p. 69: the target is in the beam of the flashlight on the weapon, weak glare if it suits its vision
+    const dazzled = flashlightDazzles(chatData.combat.weaponLights, actor.system.visions)
+    let environmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(chatData.target.sceneId), actor.system, true, dazzled ? {
+      visibility: 0, light: 0, glare: 0, wind: 0, glareAtLeast: WEAK_GLARE
+    } : undefined)
     if (environmentalMod !== 0){
       rollData.dicePool.modifiers.push({
         type: "environmentalSceneMod",
-        label: game.i18n.localize("SR5.EnvironmentalModifiers"),
+        label: dazzled ? `${game.i18n.localize("SR5.EnvironmentalModifiers")} (${game.i18n.localize("SR5.FlashlightGlare")})` : game.i18n.localize("SR5.EnvironmentalModifiers"),
         value: environmentalMod,
       })
     }
+  }
+
+  //Run & Gun RG3 (RG p. 122-123, world setting): the defender who moved in his last Action Phase defends the worse
+  //for it, by the speed table; ranged and melee attacks alike ("les tests de défense des personnages en mouvement")
+  if ((chatData.test.typeSub === "rangedWeapon" || chatData.test.typeSub === "meleeWeapon") && chatData.combat.firingMode?.selected !== "SF"){
+    const ownMovement = defenderMovementModifier(actor)
+    if (ownMovement) rollData.dicePool.modifiers.push({
+      type: "rgOwnMovement",
+      label: game.i18n.localize("SR5.RG_OwnMovement"),
+      value: ownMovement,
+    })
   }
 
   //Handle Astral combat defense
@@ -158,7 +209,8 @@ async function handleSuppressiveFire(rollData, actorData){
 
 async function handleMeleeWeaponModifiers(rollData, actor, chatData){
   //Add reach modifiers
-  let reach = (actor.system.reach?.value || 0) - chatData.combat.reach
+  //Bare-handed, the defender adds its "Weapons / Reach" effects on Unarmed Combat to its own Reach
+  let reach = (actor.system.reach?.value || 0) + unarmedReachBonus(actor.system) - chatData.combat.reach
   let weaponUsedToDefend = actor.items.find(i => (i.type === "itemWeapon") && (i.system.category === "meleeWeapon") && (i.system.isActive))
   if (weaponUsedToDefend) reach = weaponUsedToDefend.system.reach.value - chatData.combat.reach
   //Run & Gun p. 133 (Saisie): the Reach of both fighters is cancelled between them (grappling rules only)

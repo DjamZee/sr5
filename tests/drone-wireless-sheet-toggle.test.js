@@ -33,12 +33,13 @@ describe('wireless toggle on the drone sheet (N91)', () => {
     expect(DRONE_SHEET).toContain('SR5Combat.hasActionsLeft(actor, actions)')
   })
 
-  //l. 845: turning a switched-off drone back on is a GM shortcut (ruling of 2026-10-05)
-  it('lets a player turn her drone off, not back on; the GM does both', () => {
+  //Arbitrage de DjamZ, 08/10 (C7b), replacing the GM shortcut of 05/10: the drone's owner turns it back on too
+  it('lets the owner turn her drone off and back on; the GM does both; nobody else turns it on', () => {
     expect(SR5_ActorHelper.droneWirelessToggleAllowed(false, false)).toBe(true)
-    expect(SR5_ActorHelper.droneWirelessToggleAllowed(false, true)).toBe(false)
+    expect(SR5_ActorHelper.droneWirelessToggleAllowed(false, true, true)).toBe(true)
+    expect(SR5_ActorHelper.droneWirelessToggleAllowed(false, true, false)).toBe(false)
     expect(SR5_ActorHelper.droneWirelessToggleAllowed(true, true)).toBe(true)
-    expect(DRONE_SHEET).toContain('droneWirelessToggleAllowed(game.user?.isGM, !oldValue)')
+    expect(DRONE_SHEET).toContain('droneWirelessToggleAllowed(game.user?.isGM, !oldValue, actor.isOwner)')
   })
 
   it('costs a free action when the world does not ask for a DNI', () => {

@@ -2,7 +2,7 @@ import {
   SR5_PrepareRollHelper
 } from "../roll-prepare-helpers.js"
 import {
-  withdrawalModifier
+  withdrawalModifier, isDrugAddiction
 } from "../roll-helpers/addiction.js"
 
 //Addiction test (SR5 p. 415): rollKey "<pool>_<index of the addiction>", pool being physiological or psychological.
@@ -18,7 +18,14 @@ export default async function addictionTest(rollData, rollKey, actor){
 
   rollData.test.title = `${game.i18n.localize(withdrawal ? "SR5.WithdrawalTest" : "SR5.AddictionTest")} : ${addiction.name} (${threshold})`
   rollData.dicePool.composition = resistance.modifiers.filter(mod => (mod.type === "skillRating" || mod.type === "linkedAttribute" || mod.type === "skillGroup"))
-  rollData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(rollData, resistance.modifiers)
+  //Drug Tolerance (Chrome Flesh p. 58): its dice count for the addiction tests of natural and synthetic drugs, not
+  //for a focus nor blood magic, and not when the character tries to get rid of an addiction he already has
+  let modifiers = resistance.modifiers
+  const drugNames = (actor.items ?? []).filter(i => i.type === "itemDrug").map(i => i.name)
+  if (!withdrawal && !addiction.level && isDrugAddiction(addiction, drugNames)) {
+    modifiers = modifiers.concat(actor.system.specialProperties?.drugAddictionResistance?.modifiers ?? [])
+  }
+  rollData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(rollData, modifiers)
   if (withdrawal){
     let value = withdrawalModifier(addiction.level, game.settings.get("sr5", "sr5WithdrawalModifier"))
     if (value) rollData.dicePool.modifiers.push({

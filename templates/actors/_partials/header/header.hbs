@@ -1,6 +1,6 @@
 <div class="SR-Header">
-	<div><img class="SRImgPortrait" src="{{actor.img}}" data-edit="img" data-action="editImage" data-title="{{localize 'SR5.UI_ChangePicture'}}" /></div>
-	<input name="name" type="text" value="{{actor.name}}" placeholder="Name" />
+	<div><img class="SRImgPortrait" src="{{actor.img}}" data-edit="img" data-action="editImage" data-tooltip="{{localize 'SR5.UI_ChangePicture'}}" /></div>
+	<input name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'SR5.Name'}}" />
 	<nav class="sr-icon-nav tabs">
 		{{#each layout.panels}}
 			{{#unless @first}}

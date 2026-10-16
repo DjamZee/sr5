@@ -28,6 +28,122 @@
     font-weight: bold;
   }
 
+  &[data-view="collapsed"] {
+    padding: 2px;
+  }
+
+  button {
+    flex: 0 0 auto;
+    width: auto;
+    min-height: 0;
+    height: 22px;
+    padding: 0 6px;
+    font-size: var(--font-size-11);
+    line-height: 20px;
+  }
+
+  .sr5-clock-views {
+    display: flex;
+    gap: 2px;
+  }
+
+  .sr5-clock-month {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    width: 18rem;
+    max-width: 100%;
+    color: var(--sr-text-color-light);
+  }
+
+  .sr5-clock-month-nav {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+
+    .sr5-clock-month-title {
+      flex: 1;
+      text-align: center;
+      font-weight: bold;
+      text-transform: capitalize;
+    }
+  }
+
+  .sr5-clock-grid {
+    width: 100%;
+    margin: 0;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 3px;
+    background: none;
+    border: none;
+
+    th, td {
+      padding: 1px 0;
+      text-align: center;
+      vertical-align: middle;
+      font-size: var(--font-size-11);
+      font-variant-numeric: tabular-nums;
+    }
+
+    // Square day cells: a table cell ignores aspect-ratio, so its height is the width of one of the 7 columns
+    td {
+      height: calc((18rem - 8 * 3px) / 7);
+    }
+
+    td[data-sr5-clock-day] {
+      cursor: pointer;
+      border-radius: 4px;
+
+      &:hover {
+        outline: 1px solid var(--sr-text-color-light);
+      }
+    }
+
+    .sr5-clock-today {
+      font-weight: bold;
+      outline: 1px solid var(--sr-text-color-light);
+    }
+
+    .sr5-clock-has-event {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+  }
+
+  .sr5-clock-events {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    max-height: 10rem;
+    overflow-y: auto;
+    font-size: var(--font-size-12);
+
+    li {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      padding: 1px 0;
+    }
+
+    .sr5-clock-event-date {
+      flex: 0 0 auto;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .sr5-clock-event-title {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sr5-clock-event-tools {
+      display: flex;
+      gap: 2px;
+    }
+  }
+
   .sr5-clock-steps {
     display: flex;
     flex-wrap: wrap;

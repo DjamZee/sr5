@@ -5,6 +5,10 @@
 //succeeded (SR5 p. 241), which lasts as long as the snooper keeps a mark on the device.
 //This file holds the rules only: no canvas, no document update, so the tests can read it.
 
+import {
+  ruleLockActive
+} from "./rule-locks.js"
+
 export const SHARED_VISION_FLAG = "sharedVision"
 
 //Actors one can see through: a drone, or a device such as a camera (SR5 p. 446)
@@ -62,6 +66,16 @@ export function hasMarkFrom(actor, ownerId) {
   return (actor.system?.matrix?.marks ?? []).some(isFrom)
 }
 
+/** Tell whether a Snoop may run: the snooper's mark on the device (SR5 p. 241), or the "matrix" rule lock lifted
+ * (B13), the gamemaster told when the Snoop started (interface/shared-vision.js)
+ * @param {Object} actor - the snooped actor
+ * @param {String} ownerId - id of the snooper
+ * @return {Boolean}
+ */
+export function snoopHolds(actor, ownerId) {
+  return hasMarkFrom(actor, ownerId) || !ruleLockActive("matrix")
+}
+
 /** Tell whether a device can still send what it sees: it is not destroyed, not bricked (SR5 p. 229)
  * and its wireless is on (SR5 p. 424). Distance never cuts it: the book plays distance as noise on
  * the rolls (SR5 p. 231), not as a loss of signal (arbitrage de DjamZ, 2026-10-04)
@@ -93,7 +107,7 @@ export function isViewerStillValid(entry, actor) {
   if (!canStreamVision(actor)) return false
   //Snoop works as long as the snooper keeps at least one mark on the target (SR5 p. 241), with no
   //new roll each turn (arbitrage de DjamZ, 2026-10-04)
-  if (entry.source === "snoop") return hasMarkFrom(actor, entry.markOwnerId)
+  if (entry.source === "snoop") return snoopHolds(actor, entry.markOwnerId)
   return true
 }
 
@@ -129,7 +143,7 @@ export function isViewerRequestAllowed({
   //Only the owner invites (SR5 p. 241: Invite Mark asks for 4 marks, the owner's)
   if (entry.source !== "snoop") return senderOwns(actor)
   //A Snoop is the sender's own, for a hacker he owns, who holds a mark on the device (SR5 p. 241)
-  return entry.userId === senderId && senderOwns(getActor(entry.markOwnerId)) && hasMarkFrom(actor, entry.markOwnerId)
+  return entry.userId === senderId && senderOwns(getActor(entry.markOwnerId)) && snoopHolds(actor, entry.markOwnerId)
 }
 
 /** Tell whether a device the user sees through must hide from his own sight of it: he sees what the

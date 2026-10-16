@@ -20,6 +20,9 @@ import {
   isRecoilCarriedOver
 } from "../roll-helpers/recoil.js"
 import {
+  calledShotModifierFor
+} from "../roll-helpers/calledShotSkills.js"
+import {
   SR5_RollMessage 
 } from "../roll-message.js"
 import {
@@ -43,6 +46,24 @@ import {
 import {
   redDotSightWorks, scopeVision, nonCumulativeAccessoryAccuracy
 } from "../../entities/items/weapon-accessory-rules.js"
+import {
+  weaponLimb, limbEnhancementNames, weaponRecoilCompensation
+} from "../../system/cyberlimb.js"
+import {
+  refuseByRule
+} from "../../system/rule-locks.js"
+import {
+  rgOption, targetSizeModifier, droneCategoryOf, movementModifiers, phaseMeters, armorPenalty
+} from "../../system/rg-combat-options.js"
+import {
+  netOf
+} from "../roll-helpers/net-rules.js"
+import {
+  weaponLightKinds
+} from "../roll-helpers/flashlight-glare.js"
+import {
+  spellAuraOf, spellAuraDamageType
+} from "../roll-helpers/spell-aura.js"
 
 //Add info for weapon Roll
 export default async function weapon(rollData, actor, item){
@@ -61,6 +82,9 @@ export default async function weapon(rollData, actor, item){
   //Determine dicepool modififiers
   rollData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(rollData, itemData.weaponSkill.modifiers)
 
+  //Held by a cyberlimb (SR5 p. 459): its Agility already counts its enhancement, whose box is not offered again
+  if (weaponLimb(itemData, actor.items)) rollData.various.limbEnhancements = [...limbEnhancementNames(actor.items)]
+
   //Determine limit
   if (itemData.category === "grenade") {
     rollData.limit.base = SR5_PrepareRollHelper.getBaseLimit(actorData.limits.physicalLimit.value, actorData.limits.physicalLimit.modifiers)
@@ -73,13 +97,17 @@ export default async function weapon(rollData, actor, item){
   }
 
   //Recoil Compensation calculation
-  rollData.combat.recoil.compensationActor = actorData.recoilCompensation.value
+  //Held by a cyberlimb, the weapon fires with the limb's Strength (SR5 p. 178, 459)
+  rollData.combat.recoil.compensationActor = weaponRecoilCompensation(itemData, actor)
   rollData.combat.recoil.compensationWeapon = itemData.recoilCompensation.value
   rollData.combat.recoil.cumulative = actor.getFlag("sr5", "cumulativeRecoil") || 0
   // SR5 p. 179: a mounted weapon gets the vehicle's Body as compensation on top of the weapon's own (updateRecoil sets
   // the drone's compensation to its Body); the dialog (calculRecoil) already adds both, keep the stored value consistent
   rollData.combat.recoil.value = rollData.combat.recoil.compensationActor + rollData.combat.recoil.compensationWeapon - rollData.combat.recoil.cumulative
     
+  //The weapon's Reach goes on the card whatever the scene: handleTargetInfo stops early when none is viewed
+  if (itemData.category === "meleeWeapon") rollData.combat.reach = itemData.reach.value
+
   //Handle Targets & range
   rollData = await handleTargetInfo(rollData, actor, item)
   if(!rollData) return
@@ -91,7 +119,7 @@ export default async function weapon(rollData, actor, item){
   }
 
   //Handle Martial Arts for Called Shots
-  rollData = await handleMartialArtsCalledShot(rollData, actor)
+  rollData = await handleMartialArtsCalledShot(rollData, actor, itemData.weaponSkill?.category)
 
   //Handle ranged weapon current firing mode here too: handleTargetInfo skips it when no scene is viewed
   if (itemData.category === "rangedWeapon" && !rollData.combat.firingMode.selected) rollData.combat.firingMode.selected = SR5_ConverterHelpers.initialFiringMode(itemData.firingMode, rollData.target.fanning)
@@ -197,6 +225,14 @@ export default async function weapon(rollData, actor, item){
   rollData.combat.range.long = itemData.range.long.value
   rollData.combat.range.extreme = itemData.range.extreme.value
   rollData.combat.weaponType = itemData.type
+  //The flashlights lit on the weapon: their beam may dazzle the target on its defense (Run & Gun p. 69)
+  if (itemData.category === "rangedWeapon") rollData.combat.weaponLights = weaponLightKinds(itemData, SR5_UtilityItem.weaponAccessoryEffect)
+  //A net or a net gun (Run & Gun p. 25, 28): the ShockNet's charge is electric, "6E(e)" / "8E(e)"
+  const net = netOf(item)
+  if (net) {
+    rollData.combat.net = net
+    if (net.shock) rollData.damage.element = "electricity"
+  }
   rollData.lists.weaponRanges = {
     short: `${game.i18n.localize("SR5.WeaponRangeShort")} (${game.i18n.localize("SR5.WeaponRangeUpTo")} ${rollData.combat.range.short}) ${game.i18n.localize("SR5.MeterUnit")}`,
     medium: `${game.i18n.localize("SR5.WeaponRangeMedium")} (${game.i18n.localize("SR5.WeaponRangeUpTo")} ${rollData.combat.range.medium}) ${game.i18n.localize("SR5.MeterUnit")}`,
@@ -222,6 +258,14 @@ export default async function weapon(rollData, actor, item){
     rollData.damage.element = actorData.specialProperties.energyAura
     if (actorData.specialProperties.energyAura !== "electricity") rollData.damage.type = "physical"
   }
+  //Aura of [element] (Street Grimoire p. 114): +1 DV per hit to melee attacks, elemental, AP unchanged
+  const spellAura = spellAuraOf(actorData)
+  if (spellAura && energyAuraApplies(itemData.category)){
+    rollData.damage.base += spellAura.value
+    rollData.damage.value += spellAura.value
+    rollData.damage.element = spellAura.element
+    rollData.damage.type = spellAuraDamageType(spellAura.element, rollData.damage.type)
+  }
 
   //What depends on the range the dialog picks: red dot sight (Street Lethal p. 49), laser weapon (Run & Gun p. 64)
   if (itemData.category === "rangedWeapon") {
@@ -235,6 +279,13 @@ export default async function weapon(rollData, actor, item){
     }
   }
 
+  //The optional rules of Run & Gun the table plays (RG p. 121-125, world settings, off by default): here, once the AP
+  //is known (ammunition, energy aura), since RG5 subtracts it from the armor
+  if (rollData.target.hasTarget) {
+    const targetActor = await SR5_PrepareRollHelper.getTargetedActor()
+    if (targetActor) addRGTargetModifiers(rollData, targetActor, Array.from(game.user.targets).at(-1)?.document, itemData)
+  }
+
   // Aggravated Wounds (Howling Shadows p. 213): the critter's attacks leave boxes that count double for healing
   if (actorData.specialProperties?.aggravatedWounds) rollData.damage.aggravated = true
 
@@ -245,8 +296,18 @@ export default async function weapon(rollData, actor, item){
     _addGrapplingCalledShots(rollData, actor)
     _addClinchModifiers(rollData, actor)
   }
+  _addDisarmPenalty(rollData, actor)
 
   return rollData
+}
+
+//Run & Gun p. 126 (Désarmer, failed): the penalty is "pour utiliser cette arme", on weapon attacks only, not on
+//every test. The card does not say which weapon was aimed at: every weapon attack of the next action phase takes it.
+function _addDisarmPenalty(rollData, actor){
+  const value = actor.items.filter(i => i.type === "itemEffect" && i.system.type === "disarm").reduce((sum, i) => sum + (Number(i.system.value) || 0), 0)
+  if (value) rollData.dicePool.modifiers.push({
+    type: "disarmPenalty", label: game.i18n.localize("SR5.CS_Disarm"), value
+  })
 }
 
 //Run & Gun p. 133 (Saisie): melee weapons take a penalty equal to their Reach, firearms one equal to the net hits
@@ -297,8 +358,11 @@ const GRAPPLING_CALLED_SHOT_LABELS = {
 //               Helpers             //
 //-----------------------------------//
 
-async function handleTargetInfo(rollData, actor, item){
+export async function handleTargetInfo(rollData, actor, item){
   let itemData = item.system
+  //Unmeasured, the range is short (+0, SR5 p. 186) and a shotgun keeps its own spread: the dialog shows both
+  rollData.target.range = "short"
+  if (itemData.type === "shotgun") rollData.combat.choke.selected = SR5_ConverterHelpers.chokeToCode(itemData.choke)
   // No scene on the canvas: no distance and no environment to read. Say so rather than roll as if all were normal.
   if (!SR5_CombatHelpers.environmentScene()) {
     ui.notifications.warn(game.i18n.localize("SR5.WARN_NoSceneForEnvironment"))
@@ -309,8 +373,7 @@ async function handleTargetInfo(rollData, actor, item){
   let target = 0,
     sceneEnvironmentalMod,
     targetActor
-  rollData.target.range = "short"
-    
+
   //Initialize area environmental modifiers
   let areaEffect = {
     visibility:0, light:0, glare:0, wind:0
@@ -324,18 +387,17 @@ async function handleTargetInfo(rollData, actor, item){
     //Flamethrower fanning (Gun H(e)aven 3 p. 3): up to three targets, linked within 4 m, all in range
     const isFanning = game.user.targets.size > 1 && hasWeaponTrait(itemData, "flamethrower")
     if (isFanning) {
-      const fanning = await checkFanningTargets(Array.from(game.user.targets), attacker, itemData.range.extreme.value)
+      const fanning = await checkFanningTargets(Array.from(game.user.targets), attacker, itemData.range.extreme.value, actor)
       if (!fanning) return false
       rollData.target.fanning = fanning.actorIds
       rollData.target.fanningFarthest = fanning.farthest
       rollData.combat.firingMode.selected = "FN"
       rollData.combat.ammo.fired = FANNING_AMMO
     }
-    //Otherwise, only allow one target for attack;
-    else if (game.user.targets.size > 1) {
-      ui.notifications.warn(`${game.i18n.localize("SR5.WARN_TargetTooMany")}`)
-      return false
-    }
+    //Otherwise, only allow one target for attack; the "ranges" lock lifted, the last one targeted is attacked
+    else if (game.user.targets.size > 1 && refuseByRule("ranges", "SR5.WARN_TargetTooMany", null, {
+      actor
+    })) return false
 
     //Get target actor
     targetActor = await SR5_PrepareRollHelper.getTargetedActor()
@@ -388,7 +450,6 @@ async function handleTargetInfo(rollData, actor, item){
 
   //Handle Melee specifics
   if (itemData.category === "meleeWeapon") {
-    rollData.combat.reach = itemData.reach.value
     // Melee range is a number of grid spaces: the adjacent one, diagonal included, plus one per point of
     // Reach (SR5 p. 187). It is counted between the spaces both tokens cover rather than compared to a
     // distance, which would depend on the scene's scale, its diagonal rule and the tokens' sizes. Only a
@@ -398,10 +459,9 @@ async function handleTargetInfo(rollData, actor, item){
     const targetDocument = Array.from(game.user.targets).at(-1)?.document
     let inReach = SR5_SystemHelpers.isInMeleeRange(canvas.grid, attackerDocument?.getOccupiedGridSpaceOffsets(), targetDocument?.getOccupiedGridSpaceOffsets(), itemData.reach.value)
     if (inReach === null) inReach = rollData.target.rangeInMeters <= (Math.max(itemData.reach.value, 0) + 1) * SR5_SystemHelpers.convertSceneUnitsToMeters(canvas.scene.grid.distance)
-    if (Number.isFinite(rollData.target.rangeInMeters) && !inReach) {
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetIsTooFar"))
-      return false
-    }
+    if (Number.isFinite(rollData.target.rangeInMeters) && !inReach && refuseByRule("ranges", "SR5.WARN_TargetIsTooFar", null, {
+      actor
+    })) return false
     sceneEnvironmentalMod = SR5_CombatHelpers.handleEnvironmentalModifiers(SR5_CombatHelpers.environmentScene(), actor.system, true, areaEffect, true, weaponLight, weaponLightCap, weaponVision)
     // Kept on the card for the defense to compare with (SR5 p. 188 option), before the option clears it here
     rollData.combat.environmentalMod = sceneEnvironmentalMod
@@ -424,11 +484,16 @@ async function handleTargetInfo(rollData, actor, item){
     // unmeasurable distance carries no range modifier, which is short range (+0, SR5 p. 186); the GM
     // applies a band by hand if the fiction calls for one.
     else if (Number.isFinite(rollData.target.rangeInMeters)) {
-      // removeTemplate matches on flags.sr5.itemUuid, which AbilityTemplate.fromItem fills from
-      // item.uuid; flags.sr5.item holds the id and is what getTemplateItemPosition looks up.
-      if (itemData.category === "grenade"|| itemData.type === "grenadeLauncher" || itemData.type === "missileLauncher") SR5_RollMessage.removeTemplate(null, item.uuid)
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetIsTooFar"))
-      return false
+      if (refuseByRule("ranges", "SR5.WARN_TargetIsTooFar", null, {
+        actor
+      })) {
+        // removeTemplate matches on flags.sr5.itemUuid, which AbilityTemplate.fromItem fills from
+        // item.uuid; flags.sr5.item holds the id and is what getTemplateItemPosition looks up.
+        if (itemData.category === "grenade"|| itemData.type === "grenadeLauncher" || itemData.type === "missileLauncher") SR5_RollMessage.removeTemplate(null, item.uuid)
+        return false
+      }
+      // The "ranges" lock lifted: the shot goes with the extreme range modifier, the farthest band of the table
+      rollData.target.range = "extreme"
     }
     const environmentalColumns = SR5_CombatHelpers.environmentalColumns(SR5_CombatHelpers.environmentScene(), actor.system, false, areaEffect, false, weaponLight, weaponLightCap, weaponVision)
     //A laser loses DV to the particles in the air, whatever the shooter sees through (Run & Gun p. 64)
@@ -444,22 +509,41 @@ async function handleTargetInfo(rollData, actor, item){
   if (itemData.category === "rangedWeapon") {
     rollData.combat.firingMode.selected = SR5_ConverterHelpers.initialFiringMode(itemData.firingMode, rollData.target.fanning)
   }
-    
-  //Handle shotgun current choke settings
-  if (itemData.type === "shotgun") {
-    rollData.combat.choke.selected = SR5_ConverterHelpers.chokeToCode(itemData.choke)
-  }
 
   //Add environmental modifiers
   if (sceneEnvironmentalMod !== 0){
     rollData.dicePool.modifiers.push({
-      type: "environmentalSceneMod", 
+      type: "environmentalSceneMod",
       label: game.i18n.localize("SR5.EnvironmentalModifiers"),
       value: sceneEnvironmentalMod,
     })
   }
 
   return rollData
+}
+
+/**
+ * The target's own share of the attack, under the optional rules of Run & Gun: its size (RG2, RG p. 122), its speed
+ * in its last Action Phase (RG3, RG p. 122-123, ranged attacks) and its armor turned into a penalty (RG5, RG p. 124).
+ * Shots are what RG2 speaks of ("tirer sur des cibles de différentes tailles"): a melee attack keeps its pool.
+ */
+export function addRGTargetModifiers(rollData, targetActor, targetToken, itemData){
+  const push = (type, label, value) => {
+    if (value) rollData.dicePool.modifiers.push({
+      type, label: game.i18n.localize(label), value
+    })
+  }
+  const ranged = itemData.category !== "meleeWeapon"
+  if (ranged && rgOption("targetSize")) push("rgTargetSize", "SR5.RG_TargetSize", targetSizeModifier(targetActor, droneCategoryOf(targetActor)))
+  const combat = game.combat
+  if (ranged && rgOption("movement") && combat?.started) {
+    const meters = phaseMeters(targetToken?.getFlag?.("sr5", "runDistance"), combat.id, combat.round)
+    push("rgTargetMovement", "SR5.RG_TargetMovement", movementModifiers(meters).attack)
+  }
+  //Not on a drone or a vehicle: their Armor is a vehicle's, resisted apart (handleDroneDamage)
+  if (rgOption("armorPenalty") && targetActor.type !== "actorDrone") {
+    push("rgArmorPenalty", "SR5.RG_ArmorPenalty", armorPenalty(targetActor.system.itemsProperties?.armor?.value, rollData.combat.armorPenetration))
+  }
 }
 
 //A linked target carries the effects of templates on every scene it stands on: only those of the scene the
@@ -479,11 +563,17 @@ export async function checkIfTargetIsInTemplate(actor, targetActor, areaEffect, 
   return areaEffect
 }
 
-export async function handleMartialArtsCalledShot(rollData, actor){
+// Run & Gun p. 147: "S'il s'agit d'une attaque ciblée autorisée à tous les personnages, alors la pénalité pour
+// cette attaque ciblée est réduite de 1" — the "Attaque ciblée" techniques of the called shots anyone may make
+export const OPEN_CALLED_SHOT_TECHNIQUES = ["disarm", "feint", "pin"]
+
+export async function handleMartialArtsCalledShot(rollData, actor, weaponSkill){
   for (let [key, value] of Object.entries(actor.system.itemsProperties.martialArts)){
     if (value.isActive) rollData.combat.calledShot.martialArts[key] = true
     // A technique lowers the penalty on its own (Run & Gun p. 125): no unlocking flag needed
-    if (value.modifier?.value) rollData.combat.calledShot.martialArtsModifiers[key] = value.modifier.value
+    // An effect kept for some skills (its "skills" field) does not ease the attacks made with another one
+    const modifier = calledShotModifierFor(value.modifier, weaponSkill) +(value.isActive && OPEN_CALLED_SHOT_TECHNIQUES.includes(key) ? 1 : 0)
+    if (modifier) rollData.combat.calledShot.martialArtsModifiers[key] = modifier
   }
   // Any item can ease the other called shots (effect category "calledShots", G14)
   rollData.combat.calledShot.itemModifiers ??= {
@@ -659,30 +749,28 @@ export function _buildCalledShotList(rollData){
 }
 //Flamethrower fanning (Gun H(e)aven 3 p. 3): at most three targets, all in range, linked within 4 m of one another.
 //Distances are measured on the scene in meters, a grid space being 1.5 m.
-async function checkFanningTargets(tokens, attacker, maxRange){
-  if (tokens.length > FANNING_MAX_TARGETS) {
-    ui.notifications.warn(game.i18n.localize("SR5.WARN_FanningTooMany"))
-    return false
-  }
+//Each refusal goes through the "ranges" rule lock: lifted, the sweep strikes every target as aimed.
+export async function checkFanningTargets(tokens, attacker, maxRange, actor = null){
+  if (tokens.length > FANNING_MAX_TARGETS && refuseByRule("ranges", "SR5.WARN_FanningTooMany", null, {
+    actor
+  })) return false
   const points = tokens.map(t => ({
     x: t.document.x, y: t.document.y
   }))
   const fromAttacker = []
   for (const point of points) fromAttacker.push(await SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint(attacker, point))
-  if (fromAttacker.some(d => d > maxRange)) {
-    ui.notifications.warn(game.i18n.localize("SR5.WARN_FanningOutOfRange"))
-    return false
-  }
+  if (fromAttacker.some(d => d > maxRange) && refuseByRule("ranges", "SR5.WARN_FanningOutOfRange", null, {
+    actor
+  })) return false
   const distances = []
   for (const a of points) {
     const row = []
     for (const b of points) row.push(a === b ? 0 : await SR5_SystemHelpers.getDistanceInMetersBetweenTwoPoint(a, b))
     distances.push(row)
   }
-  if (!fanningTargetsLinked(distances)) {
-    ui.notifications.warn(game.i18n.localize("SR5.WARN_FanningTooFar"))
-    return false
-  }
+  if (!fanningTargetsLinked(distances) && refuseByRule("ranges", "SR5.WARN_FanningTooFar", null, {
+    actor
+  })) return false
   const farthest = fromAttacker.indexOf(Math.max(...fromAttacker))
   return {
     actorIds: tokens.map(t => t.actor.isToken ? t.actor.token.id : t.actor.id),

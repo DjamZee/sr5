@@ -1,7 +1,13 @@
 <div class="sr-negotiation-repair-body">
   <p class="hint">{{localize 'SR5.NEGO_REPAIR_Intro'}}</p>
   {{#if last}}<p class="hint">{{last}}</p>{{/if}}
-  {{#if candidates.length}}
+  {{#if searching}}
+  <p><i class="fas fa-spinner fa-spin"></i> <span class="sr-negotiation-repair-progress">{{#if progress}}{{progress}}{{else}}{{localize 'SR5.NEGO_REPAIR_SearchingStart'}}{{/if}}</span></p>
+  {{else if candidates.length}}
+  <label class="checkbox sr-negotiation-repair-all">
+    <input type="checkbox" name="repairAll">
+    <strong>{{localize 'SR5.NEGO_REPAIR_All'}}</strong>
+  </label>
   <ul class="sr-negotiation-repair-list">
     {{#each candidates}}
     <li>

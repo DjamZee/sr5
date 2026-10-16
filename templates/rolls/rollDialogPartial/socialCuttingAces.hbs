@@ -1,0 +1,39 @@
+<!-- Cutting Aces (lot 21): the con step (p. 163-164), the social maneuver (p. 153-154), and what an earlier maneuver left -->
+{{#if social.ca.cons.length}}
+<li class="grid SR-TopSeparator">
+    <div class="col-4" data-tooltip="{{localize 'SR5.CON_StepHint'}}">{{localize 'SR5.CON_StepChoice'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-7 SR-TextRight">
+        <select data-ca="conStep">
+            <option value="">{{localize 'SR5.ChooseOne'}}</option>
+            {{#each social.ca.cons}}<option value="{{value}}">{{label}} — {{localize step}}</option>{{/each}}
+        </select>
+    </div>
+    <div class="col-1 SR-TextCenter">
+        <input disabled type="number" name="dicePoolModConProps" value="0" placeholder="0" data-dtype="Number" />
+    </div>
+</li>
+{{/if}}
+{{#if social.ca.maneuvers.length}}
+<li class="grid SR-TopSeparator">
+    <div class="col-4" data-tooltip="{{localize 'SR5.CA_ManeuverHint'}}">{{localize 'SR5.CA_Maneuver'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-7 SR-TextRight">
+        <select data-ca="maneuver">
+            <option value="">{{localize 'SR5.ChooseOne'}}</option>
+            {{#each social.ca.maneuvers}}<option value="{{key}}">{{localize label}} ({{dice}})</option>{{/each}}
+        </select>
+    </div>
+    <div class="col-1 SR-TextCenter">
+        <input disabled type="number" name="dicePoolModSocialManeuver" value="0" placeholder="0" data-dtype="Number" />
+    </div>
+</li>
+{{/if}}
+{{#each social.ca.pending}}
+<li class="grid {{#if @first}}SR-TopSeparator{{/if}}">
+    <div class="col-9">
+        {{localize 'SR5.CA_Pending'}} : {{label}}{{#if (eq kind "limit")}} ({{localize 'SR5.Limit'}}){{/if}}{{#if persistent}} · {{localize 'SR5.CA_PendingEncounter'}}{{/if}}
+        <a data-ca="dropPending" data-id="{{id}}" data-tooltip="{{localize 'SR5.CA_PendingDrop'}}"><i class="fas fa-trash fa-sm"></i></a>
+    </div>
+    <div class="col-1 SR-TextRight"><input type="checkbox" data-ca="pending" data-id="{{id}}" {{#if checked}}checked{{/if}}></div>
+    <div class="col-2 SR-TextCenter">{{#if (gt value 0)}}+{{/if}}{{value}}</div>
+</li>
+{{/each}}

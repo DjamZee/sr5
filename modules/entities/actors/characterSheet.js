@@ -17,17 +17,20 @@ import {
   ordersForSheet
 } from "../../interface/shop-orders.js"
 import {
-  isLocked
-} from "../../interface/storage-lock.js"
-import {
   SR5_CharacterUtility
 } from "./utilityActor.js"
 import {
   SR5_ActorHelper
 } from "./entityActor-helpers.js"
 import {
+  knowsBloodMagic, bloodPointsOf, athamesOf, athamePointsOf
+} from "../../system/blood-magic.js"
+import {
   SR5FactionRegistry
 } from "../../interface/faction-registry.js"
+import {
+  SHEET_ACTIONS_WITHOUT_TEST
+} from "../../system/matrix-ownership.js"
 import {
   SR5FactionsApp
 } from "../../interface/factions-app.js"
@@ -61,7 +64,7 @@ export class SR5ActorSheet extends ActorSheetSR5 {
   static DEFAULT_OPTIONS = {
     classes: ["app", "window-app", "sr5", "actor", "pc"],
     position: {
-      width: 800, height: 618 
+      width: 900, height: 618 
     },
     window: {
       resizable: true
@@ -148,6 +151,8 @@ export class SR5ActorSheet extends ActorSheetSR5 {
         this._shownNonRollableMatrixActions)) {
         activeMatrixActions[key] = matrixAction
       }
+      //Lot 19: the actions with no test the sheet takes (owner's actions, Grid Hop), in the unfolded list
+      else if (this._shownNonRollableMatrixActions && SHEET_ACTIONS_WITHOUT_TEST.includes(key)) activeMatrixActions[key] = matrixAction
     }
     actor.system.matrix.actions = activeMatrixActions
   }
@@ -258,10 +263,18 @@ export class SR5ActorSheet extends ActorSheetSR5 {
     actor.focuses = focuses
     actor.adeptPowers = adeptPowers
     actor.metamagics = metamagics
+    //Blood Magic Points at hand (Street Grimoire p. 90), for a magician who knows Sacrifice or Cannibalize
+    actor.bloodMagicPoints = {
+      known: knowsBloodMagic(this.actor) || athamesOf(this.actor).length > 0, value: bloodPointsOf(this.actor),
+      athame: athamePointsOf(this.actor), hasAthame: athamesOf(this.actor).length > 0,
+      cannibalize: !!this.actor.system.magic?.metamagics?.cannibalize,
+    }
     actor.spirits = spirits
     actor.gears = gears
     actor.cyberdecks = cyberdecks
     actor.programs = programs
+    // The files it stores (SR5 p. 228)
+    actor.files = Array.from(actor.items).filter(i => i.type === "itemFile")
     actor.karmas = karmas
     actor.nuyens = nuyens
     actor.credsticks = credsticks
@@ -316,59 +329,6 @@ export class SR5ActorSheet extends ActorSheetSR5 {
         if (isStored(item)) item.storedInName = names.get(item.system.storedIn) ?? ""
       }
     }
-  }
-
-  /**
-   * Build the view model for the Storage tab: each storage with what sits
-   * inside it. Stored items are left in their usual lists on purpose — being
-   * stored does not yet take an item out of play.
-   */
-  // One icon per kind of storage. Font Awesome, so it takes the sheet's own
-  // text colour and stays readable on a light surface.
-  static STORAGE_ICONS = {
-    stash: "fa-house",
-    safe: "fa-vault",
-    backpack: "fa-suitcase",
-    cache: "fa-box-archive",
-    garage: "fa-warehouse",
-  }
-
-  _prepareStorages(actor, storages) {
-    const stored = actor.items.filter(i => i.system?.storedIn)
-    return storages
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map(storage => {
-        const contents = stored
-          .filter(i => i.system.storedIn === storage._id)
-          .sort((a, b) => a.name.localeCompare(b.name))
-        const max = storage.system.capacity.value
-        // What the lot is worth. Item prices, not the actor's nuyen: that
-        // field sums every transaction and is not a balance.
-        const value = contents.reduce((total, i) => {
-          const price = i.system.price?.value ?? i.system.price?.base ?? 0
-          return total + price * (i.system.quantity ?? 1)
-        }, 0)
-        return {
-          _id: storage._id,
-          name: storage.name,
-          img: storage.img,
-          type: storage.system.type,
-          icon: SR5ActorSheet.STORAGE_ICONS[storage.system.type] ?? "fa-box",
-          isDeployable: storage.system.isDeployable,
-          isDeployed: storage.system.isDeployed,
-          isLocked: isLocked(storage),
-          // Shut, its contents are not shown to a player who only looks at
-          // the sheet. A courtesy, not a protection: they are still in the
-          // actor's data that player's browser holds.
-          hideContents: isLocked(storage) && !this.actor.isOwner,
-          contents: contents,
-          used: contents.length,
-          max: max,
-          value: value,
-          hasLimit: max > 0,
-          isFull: max > 0 && contents.length >= max,
-        }
-      })
   }
 
   /** @override */

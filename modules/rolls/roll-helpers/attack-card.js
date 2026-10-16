@@ -23,11 +23,17 @@ import {
   SR5_ConverterHelpers
 } from "./converter.js"
 import {
-  sameActor, standsFor, diceShown, trustedHits, sheetValue
+  sameActor, standsFor, diceShown, trustedHits, sheetValue, rolledPool
 } from "./matrix-card.js"
 import {
   energyAuraApplies, jugularToxin, laserDamageReduction, LASER_TRAIT
 } from "./weapon-attack-rules.js"
+import {
+  netOf
+} from "./net-rules.js"
+import {
+  spellAuraOf, spellAuraDamageType, spellAuraBackfireType
+} from "./spell-aura.js"
 import {
   hasWeaponTrait
 } from "../../entities/items/weaponTraits.js"
@@ -100,6 +106,13 @@ export function weaponAttackDamage(weapon, actor, choices = {
     result.element = a.specialProperties.energyAura
     if (a.specialProperties.energyAura !== "electricity") result.type = "physical"
   }
+  //Aura of [element] (Street Grimoire p. 114), as rollData-Weapon.js adds it
+  const spellAura = spellAuraOf(a)
+  if (spellAura && energyAuraApplies(w.category)) {
+    result.base += spellAura.value
+    result.element = spellAura.element
+    result.type = spellAuraDamageType(spellAura.element, result.type)
+  }
   switch (calledShot) {
     case "bullsEye":
       result.ap += (Number(w.armorPenetration?.base) || 0) * bullsEyeBullets(choices.firingMode)
@@ -137,10 +150,14 @@ export function weaponAttackDamage(weapon, actor, choices = {
  */
 export function spellDrainCheck({
   force, drainValue, modifiers = {
-  }, itemDrain = 0, floor = 2, structured = false, magic = 0, reagentCap = 0
+  }, itemDrain = 0, floor = 2, structured = false, magic = 0, reagentCap = 0, blood = false, bloodForce = 0
 }) {
+  //Blood Magic Points (Street Grimoire p. 90), counted only for a caster whose sheet knows Sacrifice: those on the Force
+  //call for no Drain, those on the Drain come off after its floor, down to 0
+  const bloodOff = blood ? Math.max(0, -(Number(modifiers?.bloodMagic?.value) || 0)) : 0
+  const bloodAdded = blood ? Math.max(0, Math.floor(Number(bloodForce)) || 0) : 0
   const others = Object.entries(modifiers ?? {
-  }).filter(([key]) => key !== "spell").reduce((sum, [key, m]) => {
+  }).filter(([key]) => key !== "spell" && key !== "bloodMagic").reduce((sum, [key, m]) => {
     const value = Number(m?.value) || 0
     if (value >= 0) return sum + value
     if (key === "structuredSpellcasting") return sum + (structured ? -1 : 0)
@@ -154,9 +171,9 @@ export function spellDrainCheck({
   //A card without a Drain proves nothing: read as the least Drain a spell can call for (Hyacinthe's review, L3-1)
   const read = drainValue === null || drainValue === undefined || drainValue === "" ? NaN : Number(drainValue)
   const drain = Number.isFinite(read) ? read : Math.max(0, Number(floor) || 0)
-  kept = Math.max(0, Math.min(kept, drain - sum))
+  kept = Math.max(0, Math.min(kept, drain + bloodOff - sum + bloodAdded))
   return {
-    force: kept, expected: Math.max(Number(floor) || 0, kept + sum)
+    force: kept, expected: Math.max(0, Math.max(Number(floor) || 0, kept - bloodAdded + sum) - bloodOff)
   }
 }
 
@@ -384,6 +401,8 @@ export async function vetAttackCard(chatData, {
       pool = (Number(pool) || 0) + sight.dice
       limit += sight.accuracy
     }
+    //A ShockNet's charge is electric, as rollData-Weapon.js puts it on the card (Run & Gun p. 25, 28)
+    if (family === "weapon" && netOf(item)?.shock) damage.element = "electricity"
     vetted = {
       base: damage.base, value: damage.base, ap: damage.ap, type: damage.type, element: damage.element ?? "", source: damage.source,
     }
@@ -430,8 +449,11 @@ export async function vetAttackCard(chatData, {
   } else if (family === "spell" || family === "preparation") {
     if (!item || item.type !== (family === "spell" ? "itemSpell" : "itemPreparation")) return null
     const magic = system.specialAttributes?.magic?.augmented?.value
+    //Blood Magic Points on the Force may take it beyond twice the Magic (Street Grimoire p. 90), for a caster who knows Sacrifice
+    const blood = family === "spell" && !!system.magic?.metamagics?.sacrifice
+    const bloodForce = blood ? Math.max(0, Math.floor(Number(chatData.magic?.bloodMagic?.force)) || 0) : 0
     let force = family === "preparation" ? Number(item.system.force) || 0 :
-      Math.min(Math.max(0, Math.floor(Number(chatData.magic?.force)) || 0), spellForceCap(magic))
+      Math.min(Math.max(0, Math.floor(Number(chatData.magic?.force)) || 0), spellForceCap(magic) + bloodForce)
     //The Drain the caster resists follows the Force (SR5 p. 281-284): a Force the card's Drain cannot stand for is
     //lowered to what it can (decided by DjamZ through Élise, 06/10), and the GM is shown both
     if (family === "spell") {
@@ -443,14 +465,17 @@ export async function vetAttackCard(chatData, {
         floor: system.magic?.metamagics?.structuredSpellcasting ? 1 : 2,
         //What the reagent tier the card names gives a spell under the world's rules (Forbidden Arcana p. 181), 0 otherwise
         reagentCap: await spellReagentCap(chatData.magic?.reagentTier, helpers),
+        blood, bloodForce,
       })
       force = drain.force
       drainInfo = {
         announced: chatData.magic?.force, expected: drain.expected, drainValue: chatData.magic?.drain?.value
       }
-      //Above the Magic, the Drain turns Physical (SR5 p. 281): where a forged Force pays most, said to the GM
-      if (force > (Number(magic) || 0)) overcast = {
-        force, magic: Number(magic) || 0
+      //Above the Magic, the Drain turns Physical (SR5 p. 281): where a forged Force pays most, said to the GM. Blood Magic
+      //Points spent on it count as Magic (Street Grimoire p. 90)
+      const drainMagic = (Number(magic) || 0) + (blood ? Math.max(0, Number(chatData.magic?.bloodMagic?.drainMagic) || 0) : 0)
+      if (force > drainMagic) overcast = {
+        force, magic: drainMagic
       }
     }
     const masteries = system.magic?.masteries
@@ -507,7 +532,8 @@ export async function vetAttackCard(chatData, {
   data.roll.hits = vetted.hits
   //More dice on the card than the pool worked out on the sheet allows: the ones beyond are not counted, and said
   //(situational bonuses of the roll dialog are not on the sheet)
-  const cap = poolWithEdge(roller, pool), shown = diceShown(card.data.roll?.r)
+  //The pool the card was rolled with counts when the sheet dropped since, as in trustedHits
+  const cap = poolWithEdge(roller, Math.max(Number(pool) || 0, rolledPool(card.data))), shown = diceShown(card.data.roll?.r)
   const overPool = shown > cap ? {
     dice: shown, cap
   } : null
@@ -534,6 +560,11 @@ async function rammingOf(roller, defender, cardRamming) {
     targetLocomotion: targetIsVehicle ? SR5_ConverterHelpers.rammingLocomotion(locomotionData(defender)) : "ground",
     metersPerTurn: (speed, gait) => SR5_ConverterHelpers.vehicleMetersPerTurn(speed, gait),
   })
+  //The ram plate is read on the roller's sheet, as its speed (Rigger 5 p. 164)
+  const {
+    hasBullBar
+  } = await import("../../system/vehicle-mods.js")
+  ramming.bullBar = hasBullBar(roller?.items)
   return {
     ramming, base: SR5_ConverterHelpers.rammingAttackDamage(ramming, Number(roller.system?.attributes?.body?.augmented?.value) || 0)
   }
@@ -624,7 +655,7 @@ export async function trustedAttackCard(chatData, defender, messageId = chatData
 const VOUCHED = new WeakSet()
 
 /** The cards a defense writes in the attacker's name: an energy aura that burns him, the crash of his ramming. */
-export const CROSS_CARDS = ["energeticAura", "accident"]
+export const CROSS_CARDS = ["energeticAura", "spellAura", "accident"]
 
 /**
  * The card a defense wrote in the attacker's name (test-Defense.js: energy aura, SR5 p. 397; ramming crash, Rigger 5
@@ -670,6 +701,15 @@ export async function rebuildCrossCard(chatData, actor, helpers = null) {
     data.combat.armorPenetration = -magic
     data.damage.type = "physical"
     data.damage.source = "magical"
+  } else if (kind === "spellAura") {
+    //Aura of [element] (Street Grimoire p. 114): DV = the spell's hits, its element, read on the defender's sheet
+    const aura = spellAuraOf(defender?.system)
+    if (!aura || attack.data.test?.typeSub !== "meleeWeapon") return null
+    data.damage.base = data.damage.value = aura.value
+    data.combat.armorPenetration = 0
+    data.damage.type = spellAuraBackfireType(aura.element)
+    data.damage.element = aura.element
+    data.damage.source = "magical"
   } else {
     if (attack.data.test?.type !== "ramming" || attack.roller?.type !== "actorDrone") return null
     const ramming = await (helpers?.ramming ?? rammingOf)(attack.roller, defender, attack.data.combat?.ramming)
@@ -704,7 +744,7 @@ export async function trustedResistanceCard(chatData, actor, rollType = "", help
   const cardOf = helpers?.cardOf ?? (await import("./miscellaneous.js")).SR5_MiscellaneousHelpers.cardOf
   const card = cardOf(messageId)
   if (!card) return false
-  if (card.byGM) return true
+  if (card.gm ?? card.byGM) return true
   if (rollType === "resistanceCardAura") {
     if (card.data.test?.type !== "defense") return false
     const attack = cardOf(card.data.previousMessage?.messageId)

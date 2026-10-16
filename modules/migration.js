@@ -1,6 +1,9 @@
 import {
   SR5_SystemHelpers 
 } from "./system/utilitySystem.js"
+import {
+  updateLedger
+} from "./system/gm-ledger.js"
 
 export default class Migration {
 
@@ -14,9 +17,11 @@ export default class Migration {
   }
 
   async migrateWorld() {
-    ui.notifications.info(`Applying SR5 System Migration for version ${game.system.version}. Please be patient and do not close your game or shut down your server.`, {
+    ui.notifications.info(game.i18n.format("SR5.INFO_MigrationStart", {
+      version: game.system.version
+    }), {
       permanent: true 
-    }) //To Translate
+    })
 
     // Migrate World Items
     for (let i of game.items.contents) {
@@ -78,9 +83,154 @@ export default class Migration {
 
     // Set the migration as complete
     game.settings.set("sr5", "systemMigrationVersion", game.system.version)
-    ui.notifications.info(`SR5 System Migration to version ${game.system.version} completed!`, {
+    ui.notifications.info(game.i18n.format("SR5.INFO_MigrationDone", {
+      version: game.system.version
+    }), {
       permanent: true 
-    }) //To Translate.
+    })
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Head cases used to store their Nanite Volume in Resonance: move it to the dedicated special attribute.
+   * Idempotent: once moved, Resonance is 0 and the actor is left alone.
+   * @param actor   An Actor document or its data (type, system, items)
+   * @return {object} The update data, empty when nothing is to move
+   */
+  static migrateHeadcaseNaniteData(actor) {
+    const updateData = {
+    }
+    if (actor.type !== "actorPc" && actor.type !== "actorGrunt") return updateData
+    if (!actor.system?.specialAttributes?.resonance) return updateData
+    const items = actor.items ?? []
+    let hasHeadcaseDevice = false
+    for (const i of items) {
+      if (i.type === "itemDevice" && i.system?.type === "headcase") hasHeadcaseDevice = true
+    }
+    const resonanceBase = actor.system.specialAttributes.resonance.natural?.base ?? 0
+    const naniteBase = actor.system.specialAttributes.nanite?.natural?.base ?? 0
+    if (hasHeadcaseDevice && resonanceBase > 0 && naniteBase === 0) {
+      updateData["system.specialAttributes.nanite.natural.base"] = resonanceBase
+      updateData["system.specialAttributes.resonance.natural.base"] = 0
+      updateData["system.activeSpecialAttribute"] = "nanite"
+    }
+    return updateData
+  }
+
+  /**
+   * Run the head case migration once per world, whatever the system version the world was migrated to.
+   * World actors, unlinked tokens (their delta) and unlocked world compendiums; module packs are not touched.
+   * The world setting is only set when every update went through, so a failure is retried at the next load.
+   * @return {Promise<boolean>} true when the migration is done (now or before)
+   */
+  async migrateHeadcaseNanite() {
+    if (game.settings.get("sr5", "migrationHeadcaseNanite")) return true
+    const actors = [...game.actors.contents]
+    for (const s of game.scenes.contents) {
+      for (const t of s.tokens.contents) {
+        if (!t.actorLink && t.actor) actors.push(t.actor)
+      }
+    }
+    for (const p of game.packs) {
+      if (p.documentName !== "Actor" || p.metadata.packageType !== "world" || p.locked) continue
+      actors.push(...await p.getDocuments())
+    }
+
+    let failed = false
+    for (const a of actors) {
+      try {
+        const updateData = Migration.migrateHeadcaseNaniteData(a)
+        if (foundry.utils.isEmpty(updateData)) continue
+        SR5_SystemHelpers.srLog(2, `Migrating head case Nanite Volume of ${a.name}`)
+        await a.update(updateData)
+      } catch (err) {
+        failed = true
+        err.message = `Failed sr5 head case migration for Actor ${a.name}: ${err.message}`
+        console.error(err)
+      }
+    }
+    if (failed) return false
+    // The world flag is written as every GM register is, in its turn (gm-ledger.js)
+    await updateLedger("migrationHeadcaseNanite", () => true)
+    return true
+  }
+
+  /* -------------------------------------------- */
+
+  // Names the standard flashlight was created under while its catalog entry had no effect (Run & Gun p. 69)
+  static FLASHLIGHT_NAMES = ["Lampe torche", "Flash Light", "Flashlight"]
+
+  static isStandardFlashlight(accessory) {
+    const wa = accessory?.system?.weaponAccessory
+    if (!wa || wa.specialEffect) return false
+    const names = [...Migration.FLASHLIGHT_NAMES, globalThis.game?.i18n?.localize("SR5.AccessoryFlashLight")]
+    return names.includes(accessory.name)
+  }
+
+  /**
+   * The standard flashlight is recognised by its specialEffect only: give it "flashLight" when it has none, on the
+   * accessory item itself and on the copies a weapon keeps of its mounted accessories. Idempotent.
+   * @param item   An Item document or its data
+   * @return {object} The update data, empty when nothing is to change
+   */
+  static migrateFlashlightData(item) {
+    const updateData = {
+    }
+    if (item?.type !== "itemWeapon") return updateData
+    if (Migration.isStandardFlashlight(item)) updateData["system.weaponAccessory.specialEffect"] = "flashLight"
+    const source = item._source?.system?.accessory ?? item.system?.accessory
+    if (source && typeof source === "object") {
+      const accessory = foundry.utils.deepClone(source)
+      let changed = false
+      for (const a of Object.values(accessory)) {
+        if (!Migration.isStandardFlashlight(a)) continue
+        a.system.weaponAccessory.specialEffect = "flashLight"
+        changed = true
+      }
+      if (changed) updateData["system.accessory"] = accessory
+    }
+    return updateData
+  }
+
+  /**
+   * Run the flashlight migration once per world: world items, the items of world actors and unlinked tokens, and
+   * unlocked world compendiums; module packs are fixed at their source (the Megapack carries the effect).
+   * @return {Promise<boolean>} true when the migration is done (now or before)
+   */
+  async migrateFlashlightEffect() {
+    if (game.settings.get("sr5", "migrationFlashlightEffect")) return true
+    const items = [...game.items.contents]
+    const actors = [...game.actors.contents]
+    for (const s of game.scenes.contents) {
+      for (const t of s.tokens.contents) {
+        if (!t.actorLink && t.actor) actors.push(t.actor)
+      }
+    }
+    for (const p of game.packs) {
+      if (p.metadata.packageType !== "world" || p.locked) continue
+      if (p.documentName === "Actor") actors.push(...await p.getDocuments())
+      else if (p.documentName === "Item") items.push(...await p.getDocuments())
+    }
+    for (const a of actors) items.push(...(a.items?.contents ?? a.items ?? []))
+
+    let failed = false
+    for (const i of items) {
+      try {
+        const updateData = Migration.migrateFlashlightData(i)
+        if (foundry.utils.isEmpty(updateData)) continue
+        SR5_SystemHelpers.srLog(2, `Migrating flashlight effect of ${i.name}`)
+        await i.update(updateData)
+      } catch (err) {
+        failed = true
+        err.message = `Failed sr5 flashlight migration for Item ${i.name}: ${err.message}`
+        console.error(err)
+      }
+    }
+    if (failed) return false
+    // The world flag is written as every GM register is, in its turn (gm-ledger.js)
+    await updateLedger("migrationFlashlightEffect", () => true)
+    return true
   }
 
   /* -------------------------------------------- */
@@ -268,21 +418,7 @@ export default class Migration {
         updateData["flags.sr5.-=vehicleControler"] = null
       }
 
-      //Head cases used to store their Nanite Volume in Resonance: move it to the dedicated special attribute
-      if ((actor.type === "actorPc" || actor.type === "actorGrunt") && actor.system.specialAttributes?.resonance) {
-        const items = actor.items ?? []
-        let hasHeadcaseDevice = false
-        for (const i of items) {
-          if (i.type === "itemDevice" && i.system?.type === "headcase") hasHeadcaseDevice = true
-        }
-        const resonanceBase = actor.system.specialAttributes.resonance.natural?.base ?? 0
-        const naniteBase = actor.system.specialAttributes.nanite?.natural?.base ?? 0
-        if (hasHeadcaseDevice && resonanceBase > 0 && naniteBase === 0) {
-          updateData["system.specialAttributes.nanite.natural.base"] = resonanceBase
-          updateData["system.specialAttributes.resonance.natural.base"] = 0
-          updateData["system.activeSpecialAttribute"] = "nanite"
-        }
-      }
+      Object.assign(updateData, Migration.migrateHeadcaseNaniteData(actor))
 
       //Change on hardened armors
       if (actor.system.specialProperties) {
@@ -305,7 +441,7 @@ export default class Migration {
         // Update the Owned Item
         if (!foundry.utils.isEmpty(itemUpdate)) {
           itemUpdate._id = itemData._id
-          arr.push(expandObject(itemUpdate))
+          arr.push(foundry.utils.expandObject(itemUpdate))
         }
         return arr
       }, [])
@@ -502,7 +638,7 @@ export default class Migration {
         // Update the Owned Item
         if (!foundry.utils.isEmpty(effectUpdate)) {
           effectUpdate._id = effectData._id
-          arr.push(expandObject(effectUpdate))
+          arr.push(foundry.utils.expandObject(effectUpdate))
         }
 
         return arr

@@ -62,6 +62,12 @@
 			{{else}}
 			<div class="col-1 SR-TextCenter">-</div>
 			{{/if}}
+			{{#if (and (eq @key 'perception') (ne ../actor.type 'actorDrone'))}}
+			<div class="col-1 SR-TextCenter sr5-conceal-search-icons">
+				<a data-action="concealSearch" data-mode="spot" data-tooltip="{{localize 'SR5.ConcealSearchSpotTooltip'}}"><i class="fas fa-magnifying-glass"></i></a>
+				<a data-action="concealSearch" data-mode="patDown" data-tooltip="{{localize 'SR5.ConcealSearchPatDownTooltip'}}"><i class="fas fa-hand-sparkles"></i></a>
+			</div>
+			{{else}}
 			<div class="col-1 SR-TextCenter changeValueByClick" data-binding="system.magic.counterSpellPool.current"
 			  data-helpTitle="{{localize 'SR5.HELP_CounterSpellPool'}}"
 			  data-helpMessage="{{localize 'SR5.HELP_CounterSpellPoolMsg'}}">
@@ -69,6 +75,7 @@
 				{{../system.magic.counterSpellPool.current}} / {{../system.magic.counterSpellPool.value}}
 				{{/if}}
 			</div>
+			{{/if}}
 		</li>
 		{{/if}}
 		{{/each}}

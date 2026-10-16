@@ -10,6 +10,9 @@ import {
 import {
   readLedger, spiritSummoner
 } from "../system/spirit-ledger.js"
+import {
+  vehiclePilotId
+} from "../system/rigging-rules.js"
 
 export class SR5_RollTestHelper {
 
@@ -20,7 +23,34 @@ export class SR5_RollTestHelper {
     //Remove last cumulative Defense if roll is cancelled.
     if (actor.flags?.sr5?.cumulativeDefense){
       actor.setFlag("sr5", "cumulativeDefense", (actor.flags.sr5.cumulativeDefense -1))
-    }    
+    }
+    //The resistance to an area spell closed without rolling: the GM's browser kept the request as waiting, and nothing
+    //was asked again while the token stayed inside (Liliane, 04/10). Dropped, the next move inside asks again
+    if (dialogData.test?.type === "spellResistance") SR5_RollTestHelper.dropPendingAreaResistance(actor, dialogData.previousMessage?.itemUuid)
+    //A chase action paid with the pilot's Edge as it was launched (a crazy stunt, R5 p. 182; Pilotage zen…), closed
+    //without rolling: the point comes back to the pilot (lot 16b)
+    if (dialogData.chase?.edgePilotUuid) SR5_RollTestHelper.refundEdge(fromUuidSync(dialogData.chase.edgePilotUuid))
+  }
+
+  //Give back a point of Edge spent (removeEdgeFromActor) on a test that was not rolled
+  static async refundEdge(actor){
+    const spent = Number(actor?.system?.conditionMonitors?.edge?.actual?.base) || 0
+    if (!actor?.isOwner || spent <= 0) return
+    await actor.update({
+      "system.conditionMonitors.edge.actual.base": spent - 1
+    })
+  }
+
+  static async dropPendingAreaResistance(actor, itemUuid){
+    if (!actor || typeof itemUuid !== "string" || !itemUuid) return
+    const actorUuid = actor.uuid ?? actor.id
+    if (!game.user?.isGM) return SR5_SocketHandler.emitForGM("areaResistanceDeclined", {
+      actorUuid, itemUuid
+    })
+    const {
+      SR5_EffectArea
+    } = await import("../system/effectArea.js")
+    SR5_EffectArea.dropPendingResistance(actorUuid, itemUuid)
   }
 
 
@@ -29,7 +59,14 @@ export class SR5_RollTestHelper {
   //spirit lets it spend its character's Edge too (Street Grimoire p. 133); the character is the summoner it keeps.
   //The summoner is the one the active GM wrote in the spirit ledger when he created the spirit, never the creatorId its
   //owner can rewrite; and only one the user rolling may write to, or the point spent would not be taken (Victoire)
+  //A vehicle has no Edge either: its pilot's is spent on its tests, by hand, remotely or jumped in, never on autopilot
+  //(arbitrage de DjamZ, 08/10); only a pilot the user rolling may write to, as for the summoner
   static edgeCharacter(actor, ledger = readLedger()){
+    if (actor?.type === "actorDrone") {
+      const pilotId = vehiclePilotId(actor.system)
+      const pilot = pilotId ? SR5_EntityHelpers.getRealActorFromID(pilotId) : null
+      return pilot?.isOwner ? pilot : null
+    }
     if (actor?.type !== "actorSpirit") return null
     //A free spirit is at no one's service: its own Edge, and its character's under a magic pact only
     if (actor.system?.isFree && !actor.system.magicPact) return null
@@ -98,6 +135,8 @@ export class SR5_RollTestHelper {
       dialogData.dicePool.hasModifier = true
     }
     dialogData.dicePool.value = dialogData.dicePool.base + dialogData.dicePool.modifiersTotal
+    //What the modifiers took past 0, kept for Run & Gun RG6 (RG p. 125: the excess raises the DV of the attack)
+    dialogData.dicePool.belowZero = Math.min(dialogData.dicePool.value, 0)
     //Debug DicePool can't be negative
     if (dialogData.dicePool.value < 0) dialogData.dicePool.value = 0
     return dialogData

@@ -7,6 +7,10 @@
 // The threshold and who has seen through it live in a hidden world setting written by the active GM alone:
 // a card or an item is its author's to write, a threshold the GM must trust is not.
 
+import {
+  chanceHits
+} from "./socket-guard.js"
+
 export const ILLUSION_KINDS = ["invisibility", "mask"]
 export const BLIND_FIRE = -6
 
@@ -27,10 +31,12 @@ export function isFooledBy(spellType, observerType){
 // can work out himself. Dice forged but plausible remain possible: a casting is confirmed by the GM.
 
 // The hits on the dice of a card (roll.r of its flags): 5s and 6s still kept, at most the limit
-export function countHits(rollJSON, limit){
+// `secondChance` (socket-guard.js chanceSpent): the dice Second Chance rerolled, kept apart on the roll, count too
+export function countHits(rollJSON, limit, secondChance = false){
   const results = rollJSON?.terms?.[0]?.results
   if (!Array.isArray(results)) return null
-  const hits = results.filter(d => d.active !== false && d.discarded !== true && Number(d.result) >= 5).length
+  const hits = results.filter(d => d.active !== false && d.discarded !== true && Number(d.result) >= 5).length +
+    (secondChance ? chanceHits(rollJSON, results) : 0)
   const cap = Number(limit) > 0 ? Number(limit) : Infinity
   return Math.min(hits, cap)
 }
@@ -44,12 +50,12 @@ export function poolDice(rollJSON){
 // A resistance card: its author owns the observer, and it rolled no more dice than the observer has (his
 // resistance pool worked out by the GM, plus his Chance for a Push the Limit, SR5 p. 56)
 export function resistanceVerdict({
-  authorOwnsObserver, rollJSON, pool, edge = 0
+  authorOwnsObserver, rollJSON, pool, edge = 0, secondChance = false
 }){
   if (!authorOwnsObserver) return {
     ok: false, reason: "owner"
   }
-  const hits = countHits(rollJSON)
+  const hits = countHits(rollJSON, 0, secondChance)
   if (hits === null) return {
     ok: false, reason: "dice"
   }
@@ -64,7 +70,7 @@ export function resistanceVerdict({
 // A casting card: its author owns the caster, the spell is the caster's, the message counts once, and the hits
 // counted again stay within the Force, itself at most twice the Magic (SR5 p. 281). What is left is for the GM
 export function castVerdict({
-  authorOwnsCaster, spellOnCaster, messageUsed, rollJSON, force, magic, claimedHits
+  authorOwnsCaster, spellOnCaster, messageUsed, rollJSON, force, magic, claimedHits, secondChance = false, bonusForce = 0
 }){
   if (!authorOwnsCaster || !spellOnCaster) return {
     ok: false, reason: "owner"
@@ -72,9 +78,10 @@ export function castVerdict({
   if (messageUsed) return {
     ok: false, reason: "message"
   }
-  const maxForce = Math.max(1, 2 * (Number(magic) || 0))
+  //`bonusForce`: the Blood Magic Points on the Force, beyond twice the Magic (Street Grimoire p. 90)
+  const maxForce = Math.max(1, 2 * (Number(magic) || 0)) + Math.max(0, Number(bonusForce) || 0)
   const limit = Math.min(Number(force) > 0 ? Number(force) : maxForce, maxForce)
-  const hits = countHits(rollJSON, limit)
+  const hits = countHits(rollJSON, limit, secondChance)
   if (hits === null) return {
     ok: false, reason: "dice"
   }

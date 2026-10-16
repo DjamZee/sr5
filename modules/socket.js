@@ -76,6 +76,7 @@ export class SR5_SocketHandler {
       "doNextRound": [SR5Combat._socketDoNextRound],
       "doInitPass": [SR5Combat._socketDoInitPass],
       "updateCombat": [SR5Combat._socketUpdateCombat],
+      "rgAlternativeTurn": [SR5Combat._socketAlternativeTurn],
       "changeInitInCombat": [SR5Combat._socketChangeInitInCombat],
       "createSidekick": [SR5_ActorHelper._socketCreateSidekick],
       "createDeadEffect": [SR5_ActorHelper._socketCreateDeadEffect],
@@ -123,7 +124,32 @@ export class SR5_SocketHandler {
       "shopOrderLedger": [orderLedger],
       "claimChatButton": [async (message, senderId) => (await import("./rolls/roll-helpers/button-claim.js")).socketClaimChatButton(message, senderId)],
       "claimChatButtonReply": [async (message, senderId) => (await import("./rolls/roll-helpers/button-claim.js")).socketClaimChatButtonReply(message, senderId)],
+      //Couronne du PAN, lot 5: the observer asks for her Matrix Perception, an owner makes the table lose sight
+      "matrixPerceptionInfo": [async (message, senderId) => (await import("./canvas/pan-crown/pan-perception-card.js"))._socketPerceptionInfo(message, senderId)],
+      "matrixPerceptionRefused": [async (message, senderId) => (await import("./canvas/pan-crown/pan-perception-card.js"))._socketPerceptionRefused(message, senderId)],
+      "matrixIntelForget": [async (message, senderId) => (await import("./canvas/pan-crown/pan-perception-card.js"))._socketForgetIntel(message, senderId)],
+      //B13: a lock lifted by the world, told to the gamemaster by his own browser, so the player does not read it
+      "ruleLockWhisper": [async (message, senderId) => (await import("./system/rule-locks.js")).socketRuleLockWhisper(message, senderId)],
+      //Objet Fichier: the attacker asks for an action on a file (SR5 p. 240-243), the active GM resolves it
+      "matrixFileAction": [async (message, senderId) => (await import("./rolls/roll-helpers/file-actions.js"))._socketFileAction(message, senderId)],
+      "matrixFileRefused": [async (message, senderId) => (await import("./rolls/roll-helpers/file-actions.js"))._socketFileRefused(message, senderId)],
       "tacnetRoster": [async (message, senderId) => (await import("./system/tacnet.js"))._socketTacnetRoster(message, senderId)],
+      //Lot 37b: an explosive charge set off (Run & Gun p. 188), and a combat maneuver (Run & Gun p. 113), worked out by the active GM
+      "explosiveDetonate": [async (message, senderId) => (await import("./system/explosive-charge.js"))._socketExplosiveDetonate(message, senderId)],
+      "combatManeuver": [async (message, senderId) => (await import("./system/combat-maneuvers.js"))._socketCombatManeuver(message, senderId)],
+      //A player closed the resistance window of an area spell: the active GM asks again at her next move inside
+      "areaResistanceDeclined": [async (message) => (await import("./system/effectArea.js")).SR5_EffectArea._socketResistanceDeclined(message)],
+      //API pour Matrice v1 (A11, A12): a module on a player's browser asks the active GM to put marks, or to converge
+      "apiPlaceMarks": [async (message, senderId) => (await import("./system/matrix-api.js"))._socketPlaceMarks(message, senderId)],
+      "apiConverge": [async (message, senderId) => (await import("./system/matrix-api.js"))._socketConverge(message, senderId)],
+      //Sacrifice (Street Grimoire p. 90): the owner of a blood magician asks for the points of a wound, the GM grants them
+      "bloodSacrifice": [async (message, senderId) => (await import("./system/blood-magic.js"))._socketBloodSacrifice(message, senderId)],
+      //Lot 14: a message or a call between commcodes (SR5 p. 241), written by the active GM in his register
+      "commcodeRequest": [async (message, senderId) => (await import("./interface/commcode-traffic.js"))._socketCommcodeRequest(message, senderId)],
+      "commcodeRefused": [async (message, senderId) => (await import("./interface/commcode-traffic.js"))._socketCommcodeRefused(message, senderId)],
+      //Lot 37a: data bought from or sold to an information broker (Cutting Aces p. 148-149), written by the active GM
+      "infoBrokerRequest": [async (message, senderId) => (await import("./interface/info-broker.js"))._socketInfoBrokerRequest(message, senderId)],
+      "infoBrokerAnswer": [async (message, senderId) => (await import("./interface/info-broker.js"))._socketInfoBrokerAnswer(message, senderId)],
     }
 
     //senderId is added by the server to every custom socket message: a client cannot forge it

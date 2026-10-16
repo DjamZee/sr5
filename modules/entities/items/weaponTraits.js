@@ -1,12 +1,51 @@
 // Weapon traits from Gun H(e)aven 3 p. 3 and The Complete Trog p. 177.
 // Pure helpers, kept apart from the item preparation so the tests can reach them.
 
+import {
+  refuseByRule
+} from "../../system/rule-locks.js"
+
+/**
+ * Vintage (Gun H(e)aven 3 p. 3): never wireless, so the switch is refused and no action spent. The "ammo" rule lock
+ * family lifted (B13, lot 2), the switch goes and the gamemaster hears of it.
+ * @returns {boolean} true if the switch must stop
+ */
+export function vintageWirelessRefused(item, actor) {
+  if (item?.type !== "itemWeapon" || !hasWeaponTrait(item.system, "vintage")) return false
+  return refuseByRule("ammo", "SR5.WARN_VintageNoWireless", null, {
+    actor
+  })
+}
+
 /** Does the weapon carry this catalog accessory or trait? */
 export function hasWeaponTrait(weaponData, key) {
   let accessories = weaponData?.accessory
   if (!accessories) return false
   if (!Array.isArray(accessories)) accessories = Object.values(accessories)
   return accessories.some(a => a?.name === key)
+}
+
+export const KICK_TRAIT = "kick"
+
+/**
+ * Whether a "Weapons / DV" bonus of the actor (its target `details`: a melee category, or "kick") reaches this weapon.
+ * Jambes de satyre: "un modificateur de VD de +2 aux attaques par coup de pied" (Run Faster p. 83, VF): a kick is an
+ * unarmed weapon wearing the Kick trait, the other unarmed attacks do not take it.
+ */
+export function weaponDamageBonusApplies(weaponData, details) {
+  const category = weaponData?.weaponSkill?.category
+  if (details === KICK_TRAIT) return category === "unarmedCombat" && hasWeaponTrait(weaponData, KICK_TRAIT)
+  return details === category
+}
+
+/**
+ * The bare hands' share of the actor's "Weapons / Reach" effects: what an unarmed defender adds to its own Reach
+ * (the kicks are left out, a block is no kick).
+ */
+export function unarmedReachBonus(actorSystem) {
+  return (actorSystem?.itemsProperties?.weapon?.reach?.modifiers ?? [])
+    .filter(m => m?.details === "unarmedCombat")
+    .reduce((sum, m) => sum + (Number(m.value) || 0), 0)
 }
 
 /**

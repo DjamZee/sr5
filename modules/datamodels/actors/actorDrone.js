@@ -283,6 +283,11 @@ export class sr5ActorDroneDataModel extends foundry.abstract.TypeDataModel {
       controlMode: new fields.StringField({
         initial: 'autopilot'
       }),
+      // The Speed the vehicle moves at now, 0 when it stands still (Rigger 5.0 p. 37-38: Démon de la vitesse,
+      // Surcharge d'informations); set by the gamemaster or the pilot
+      currentSpeed: new fields.NumberField({
+        initial: 0, min: 0, integer: true
+      }),
       vehicleOwner: new fields.SchemaField({
         id: new fields.StringField({
           initial: ''
@@ -314,6 +319,10 @@ export class sr5ActorDroneDataModel extends foundry.abstract.TypeDataModel {
       slaved: new fields.BooleanField({
         initial: false
       }),
+      //The swarm of its rigger the drone belongs to, 0: none (Rigger 5.0 p. 35, swarm-rules.js)
+      swarm: new fields.NumberField({
+        initial: 0, min: 0, integer: true
+      }),
       type: new fields.StringField({
         initial: ''
       }),
@@ -321,6 +330,10 @@ export class sr5ActorDroneDataModel extends foundry.abstract.TypeDataModel {
         initial: 0
       }),
       vehiclesMod: new fields.ArrayField(new fields.ObjectField()),
+      //The Y of Structure X(Y), the Modification Points a drone has left (Rigger 5.0 p. 126); empty: its Structure
+      modPoints: new fields.NumberField({
+        initial: null, nullable: true, integer: true, min: 0
+      }),
       modificationSlots: new fields.SchemaField({
         powerTrain: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema() 
@@ -395,10 +408,20 @@ export class sr5ActorDroneDataModel extends foundry.abstract.TypeDataModel {
       creatorItemId: new fields.StringField({
         initial: ''
       }),
+      // Wired to its rigger: no noise of distance on its actions (SR5 p. 268, rigger-noise.js)
+      riggerCabled: new fields.BooleanField({
+        initial: false
+      }),
       // The vehicle item's wireless switch: copied at deployment, given back at dismissal.
       // Null on a drone deployed before the field existed, so dismissal leaves the item's own value.
       wirelessTurnedOn: new fields.BooleanField({
         nullable: true, initial: null
+      }),
+      // The vehicle item's description: copied at deployment, given back at dismissal (as a storage's)
+      biography: new fields.SchemaField({
+        description: new fields.StringField({
+          initial: ''
+        }),
       }),
     }
   }

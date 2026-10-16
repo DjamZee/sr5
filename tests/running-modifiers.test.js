@@ -327,8 +327,13 @@ describe('the running status follows the moves and the Combat Turns', () => {
     const combatant = {
       id: 'k1', actorId: 'a1', actor: runner, isDefeated: false, update: vi.fn()
     }
+    // A Foundry collection: its contents, has, and one update of the combatants
+    const combatants = Object.assign([combatant], {
+      contents: [combatant], has: id => id === combatant.id
+    })
     const combat = {
-      id: 'c1', combatants: [combatant], turns: [combatant], combatant, update: vi.fn(), resetAll: vi.fn(), rollAll: vi.fn()
+      id: 'c1', combatants, turns: [combatant], combatant, update: vi.fn(), resetAll: vi.fn(), rollAll: vi.fn(),
+      updateEmbeddedDocuments: vi.fn()
     }
     globalThis.game.combats = {
       get: () => combat

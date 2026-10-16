@@ -37,6 +37,10 @@ export class sr5ItemProgramDataModel extends foundry.abstract.TypeDataModel {
       isModelBased: new fields.BooleanField({
         initial: false
       }),
+      //An autosoft a rigger command console shares with its slaved drones (SR5 p. 269)
+      isShared: new fields.BooleanField({
+        initial: false
+      }),
     }
   }
 }

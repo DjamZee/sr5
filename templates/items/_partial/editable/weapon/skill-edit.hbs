@@ -7,3 +7,14 @@
         </select>
     </div>
 </li>
+{{#if weaponLimbChoices}}
+<li class="grid">
+    <div class="col-4">{{localize 'SR5.WeaponHeldByLimb'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8">
+        <select name="system.heldByLimb">
+            <option value="">{{localize 'SR5.WeaponHeldByBody'}}</option>
+            {{selectOptions weaponLimbChoices selected=system.heldByLimb}}
+        </select>
+    </div>
+</li>
+{{/if}}

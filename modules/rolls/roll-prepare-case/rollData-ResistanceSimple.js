@@ -13,6 +13,9 @@ import {
 import {
   radiationModifiers
 } from "../../system/radiation.js"
+import {
+  occupantCrashBonus
+} from "../../system/vehicle-mods.js"
 
 //Add info for Resistance Roll
 export default async function resistanceSimple(rollData, rollKey, actor){
@@ -51,6 +54,24 @@ export default async function resistanceSimple(rollData, rollKey, actor){
       rollData.dicePool.composition = actor.system.resistances.specialDamage[subKey].modifiers.filter(mod => (mod.type === "skillRating" || mod.type === "linkedAttribute" || mod.type === "skillGroup"))
       rollData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(rollData, actor.system.resistances.specialDamage[subKey].modifiers)
       break
+    case "crashDamage": {
+      rollData.test.title = game.i18n.localize(SR5.characterResistances.crashDamage)
+      rollData.dicePool.composition = actor.system.resistances.crashDamage.modifiers.filter(mod => (mod.type === "skillRating" || mod.type === "linkedAttribute" || mod.type === "skillGroup"))
+      rollData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(rollData, actor.system.resistances.crashDamage.modifiers)
+      //The SPP and the cocoon of the vehicles the character drives or jumps into (Rigger 5.0 p. 157, 162)
+      const aboard = (game.actors ?? []).filter(a => a.type === "actorDrone" && a.system.vehicleOwner?.id === actor.id)
+        .map(a => ({
+          items: a.items, controlMode: a.system.controlMode
+        }))
+      const bonus = occupantCrashBonus(aboard)
+      if (bonus.protection) rollData.dicePool.modifiers.push({
+        type: "passengerProtection", label: game.i18n.localize("SR5.VehicleModEffectKind_passengerProtection"), value: bonus.protection
+      })
+      if (bonus.cocoon) rollData.dicePool.modifiers.push({
+        type: "riggerCocoon", label: game.i18n.localize("SR5.VehicleModEffectKind_riggerCocoon"), value: bonus.cocoon
+      })
+      break
+    }
     default:
       SR5_SystemHelpers.srLog(1, `Unknown '${resistanceKey}' Damage Resistance Type in roll`)
   }

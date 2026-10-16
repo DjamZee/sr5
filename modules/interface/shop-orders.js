@@ -15,6 +15,15 @@ import {
 import {
   screenRejectedImplants, IMPLANT_REJECTION_CONFIRMED
 } from '../system/implant-essence.js'
+import {
+  dealerPrice
+} from '../system/rigger-qualities.js'
+import {
+  actorInCreation
+} from '../system/creation-actor.js'
+import {
+  stampAll
+} from './shop-purchase.js'
 
 export const ORDERS_FLAG = 'shopOrders'
 export const DELIVERY_SETTING = 'sr5ShopDelivery'
@@ -92,7 +101,13 @@ function setting(key, fallback) {
   }
 }
 
-export function deliveryDelayed() {
+/**
+ * Whether purchases wait on their search time. A buyer the gamemaster put in creation (lot C0) gets them at once,
+ * whatever the world's setting: arbitrage de DjamZ (M4, 2026-10-09).
+ */
+export function deliveryDelayed(buyer = null, creation = false) {
+  // In creation (the flag, or the shop opened in creation for this buyer, C1) the purchase arrives at once
+  if (creation === true || actorInCreation(buyer)) return false
   return setting(DELIVERY_SETTING, 'delayed') === 'delayed'
 }
 
@@ -420,6 +435,42 @@ export function surchargedUnit(unit, percent) {
 
 /* -------------------------------------------- */
 
+/** The mods of a dealership order, each read again from its shelf and priced on the vehicle; null, the gamemaster
+ *  told, when one is gone: the order stays paid on the sheet, for him to cancel */
+async function orderMods(vehicle, order) {
+  const {
+    pricedModData
+  } = await import('../system/vehicle-workshop-apply.js')
+  const mods = []
+  for (const uuid of order.mods ?? []) {
+    let mod = null
+    try {
+      mod = await fromUuid(uuid)
+    } catch {
+      mod = null
+    }
+    if (mod?.type !== 'itemVehicleMod') {
+      ui.notifications.warn(game.i18n.format('SR5.WARN_ShopItemGone', {
+        name: `${order.name} (${uuid})`
+      }))
+      return null
+    }
+    mods.push(pricedModData(mod, vehicle))
+  }
+  return mods
+}
+
+async function assembledOrder(vehicleData, vehicle, order) {
+  const mods = await orderMods(vehicle, order)
+  if (!mods) return null
+  const {
+    assembledVehicleData
+  } = await import('../system/vehicle-dealership.js')
+  return assembledVehicleData(vehicleData, mods.map((mod, i) => ({
+    ...mod, fitted: order.fitted?.[i] === true
+  })), foundry.utils.randomID)
+}
+
 /** The gamemaster hands an order over: the goods reach the sheet, the order goes. */
 export async function deliverOrder(actor, id) {
   if (!game.user.isGM || !actor) return false
@@ -447,6 +498,13 @@ export async function deliverOrder(actor, id) {
   // Système sensible taken since the order (SR5 p. 89): the gamemaster decides before the order goes. Declined,
   // the order stays on the sheet, paid: he cancels it to refund the buyer, nothing is lost without a word
   const payload = SR5Shop._itemPayload(source, order.quantity, order.grade)
+  // A build of the dealership: the vehicle comes with its mods aboard, waiting to be installed (lot R9), or fitted when
+  // the gamemaster fitted them at the purchase
+  if (order.mods?.length) {
+    const built = await assembledOrder(payload[0], source, order)
+    if (!built) return false
+    payload[0] = built
+  }
   const {
     refused, confirmed
   } = await screenRejectedImplants(actor, payload.slice(0, 1), {
@@ -458,6 +516,8 @@ export async function deliverOrder(actor, id) {
     }))
     return false
   }
+  // The trace of the purchase that paid for it, written when it was ordered (lot 12)
+  if (order.purchase?.id) stampAll(payload, order.purchase, order.paid)
   await removeOrder(actor, id)
   await ledgerDrop(id)
   await actor.createEmbeddedDocuments('Item', payload, confirmed ? {
@@ -537,8 +597,10 @@ export function debitIsFresh(createdTime, now) {
   return Number.isFinite(created) && created > 0 && now - created >= -5000 && now - created <= DEBIT_FRESHNESS
 }
 
-/** What an order costs at the catalogue, read on the GM's browser: null when its item is gone. */
-async function catalogueCost(order) {
+/** What an order costs at the catalogue, read on the GM's browser: null when its item is gone. The buyer's Relation
+ *  avec un concessionnaire takes its 10 % off a vehicle, as at the till (Rigger 5.0 p. 37); a dealership order adds
+ *  its mods, priced on the vehicle (lot R9). Without them an honest purchase stayed out of the ledger */
+async function catalogueCost(order, buyer = null) {
   let source = null
   try {
     source = await fromUuid(order?.uuid ?? '')
@@ -549,8 +611,18 @@ async function catalogueCost(order) {
   const {
     SR5Shop
   } = await import('./shop.js')
-  const base = SR5Shop.gradedPrice(source.system, order.grade ?? null) * Math.max(1, Math.floor(Number(order.quantity) || 1))
-  return base + (order.express ? expressCost(base, currentExpress()) : 0)
+  const quantity = Math.max(1, Math.floor(Number(order.quantity) || 1))
+  const unit = SR5Shop.gradedPrice(source.system, order.grade ?? null)
+  const terms = order.express ? currentExpress() : null
+  let paid = dealerPrice(unit, source, buyer?.items ?? []) * quantity + expressCost(unit * quantity, terms)
+  if (order.mods?.length) {
+    const mods = await orderMods(source, order)
+    if (!mods) return null
+    // The express of a lot is rounded line by line, as the till charges it: rounded on the sum, it came 1 ¥ above
+    // the debit and the honest purchase stayed out of the ledger (review 32)
+    paid += mods.reduce((sum, mod) => sum + mod.price + expressCost(mod.price, terms), 0)
+  }
+  return paid
 }
 
 /**
@@ -560,15 +632,20 @@ async function catalogueCost(order) {
  * @param {string} transactionId the loss transaction of the purchase
  * @param {User} requester who asks: an owner of the buyer
  */
-export async function registerOrders(actor, ids, transactionId, requester) {
+export async function registerOrders(actor, ids, transactionId, requester, {
+  deferred = false
+} = {
+}) {
   if (!isWriter() || !actor || !requester) return false
   if (!requester.isGM && !actor.testUserPermission?.(requester, 'OWNER')) return false
   const ledger = orderLedger()
   const debit = actor.items?.get(transactionId)
   if (!debit || debit.type !== 'itemNuyen' || debit.system?.type !== 'loss') return false
   // The debit of this very purchase: created just now, by the server's clock (an older one, from
-  // before the ledger kept the used debits, would stand behind a forged order)
-  if (!debitIsFresh(debit._stats?.createdTime, Date.now())) return false
+  // before the ledger kept the used debits, would stand behind a forged order). A purchase made with no GM
+  // connected waits on its debit, which names its orders, until one comes back (registerAwaitingOrders)
+  const awaited = deferred && (ids ?? []).length && (ids ?? []).every(id => awaitedOrders(debit).includes(id))
+  if (!awaited && !debitIsFresh(debit._stats?.createdTime, Date.now())) return false
   // One purchase, one entry: a transaction already used stands behind nothing more
   const debitKey = `${actor.uuid}.${transactionId}`
   if (usedDebits()[debitKey] || Object.values(ledger).some(entry => entry?.transactionId === transactionId)) return false
@@ -576,7 +653,7 @@ export async function registerOrders(actor, ids, transactionId, requester) {
   if (!orders.length) return false
   const priced = []
   for (const order of orders) {
-    const paid = await catalogueCost(order)
+    const paid = await catalogueCost(order, actor)
     if (paid === null) return false
     priced.push({
       order, paid
@@ -599,12 +676,43 @@ export async function requestRegister(actor, orders, transactionId) {
   if (!orders.length || !transactionId) return
   const ids = orders.map(o => o.id)
   if (game.user.isGM) return registerOrders(actor, ids, transactionId, game.user)
+  // No GM to enter them: the purchase is made all the same, and its debit keeps the orders until a GM comes back.
+  // The warning of a relay nobody takes ("n'a pas été appliquée") said the purchase had failed (review P4)
+  if (!(game.users.activeGM ?? game.users.find(user => user.isGM && user.active))) {
+    await actor.items.get(transactionId)?.setFlag('sr5', AWAITS_LEDGER_FLAG, ids)
+    ui.notifications.info(game.i18n.localize('SR5.ShopOrderAwaitsGM'))
+    return
+  }
   const {
     SR5_SocketHandler
   } = await import('../socket.js')
   await SR5_SocketHandler.emitForGM('shopOrderLedger', {
     actorUuid: actor.uuid, ids, transactionId
   })
+}
+
+// The orders a debit keeps while no GM was connected to enter them in his ledger
+export const AWAITS_LEDGER_FLAG = 'awaitsLedger'
+
+export function awaitedOrders(debit) {
+  const ids = debit?.flags?.sr5?.[AWAITS_LEDGER_FLAG]
+  return Array.isArray(ids) ? ids : []
+}
+
+/** On the active GM's browser, once he is back: the purchases made while no GM was connected enter his ledger. */
+export async function registerAwaitingOrders() {
+  if (!isWriter()) return
+  for (const actor of game.actors ?? []) {
+    for (const debit of actor.items ?? []) {
+      const ids = awaitedOrders(debit)
+      if (!ids.length) continue
+      await registerOrders(actor, ids, debit.id, game.user, {
+        deferred: true
+      })
+      // Entered or refused, it is not asked again
+      await debit.unsetFlag('sr5', AWAITS_LEDGER_FLAG)
+    }
+  }
 }
 
 /** The server stamps `senderId`: the GM checks who asks, and works the prices out himself. */

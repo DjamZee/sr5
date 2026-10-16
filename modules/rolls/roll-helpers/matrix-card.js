@@ -8,7 +8,7 @@
  * A card a GM wrote stands as written. Pure rules first; the lookups are passed in (tests) or imported.
  */
 import {
-  hitsUnderPush, edgeSpentOn
+  hitsUnderPush, edgeSpentOn, chanceSpent, rolledPool
 } from "./socket-guard.js"
 
 /** The hits a card stands for: a GM's as written, a player's counted again (null: no dice, 0), never above the claim. */
@@ -61,7 +61,7 @@ export function sameActor(roller, actor) {
  * the one it was rolled for (or the rigger of that drone). */
 export function standsFor(card, actor) {
   if (!card || !actor) return false
-  if (card.byGM) return true
+  if (card.gm ?? card.byGM) return true
   if (!card.author || !actor.testUserPermission?.(card.author, "OWNER")) return false
   return sameActor(card.roller, actor)
 }
@@ -101,6 +101,10 @@ export async function grantPush(card, {
   }).catch(() => false)
 }
 
+export {
+  rolledPool
+}
+
 /**
  * The hits a card stands for (Hyacinthe's review, D1): a GM's as written; a player's counted again on its dice, within
  * the sheet's `pool` and the test's `limit`, with no reroll, unless its push of the limit is granted (grantPush), then
@@ -114,10 +118,13 @@ export async function trustedHits({
   if (card.byGM) return {
     hits: announced, pushed: false
   }
+  //The sheet may have dropped since the roll (a deck switched off, silent mode, a wound): the pool the card was rolled
+  //with counts when larger (Laurine, 08/10; as pushAwareHits "rolled", Anselmine 07/10). Dice past it still do not
+  pool = Math.max(Number(pool) || 0, rolledPool(card.data))
   const rollJSON = card.data.roll?.r
   const edge = Number(card.roller?.system?.specialAttributes?.edge?.augmented?.value) || 0
   const without = hitsUnderPush({
-    rollJSON, pool, limit
+    rollJSON, pool, limit, secondChance: chanceSpent(card.data, card.roller)
   })
   if (without === null) return null
   let hits = without, pushed = false
@@ -246,7 +253,9 @@ export async function tellMatrixCard(result, claimedHits) {
 //More dice on a player's card than the pool worked out on the sheet allows (plus Chance): said to the GM, never cut silently
 function overPoolOf(h, card, path) {
   if (!h.poolCap) return null
-  const cap = h.poolCap(card.roller, path), dice = diceShown(card.data.roll?.r)
+  //The pool the card was rolled with, plus Chance, when the sheet dropped since (trustedHits)
+  const edge = Number(card.roller?.system?.specialAttributes?.edge?.augmented?.value) || 0
+  const cap = Math.max(h.poolCap(card.roller, path), rolledPool(card.data) + edge), dice = diceShown(card.data.roll?.r)
   return dice > cap ? {
     dice, cap
   } : null
@@ -260,6 +269,8 @@ function overPoolOf(h, card, path) {
 export async function trustedDefenderDamage(messageId, claimed, helpers = null) {
   const h = helpers ?? await lookups()
   const card = h.cardOf(messageId)
+  //A defense that beats an IC deals it damage too (SR5 p. 249): refused here, the button failed in honest play
+  if (card?.data.test?.type === "iceDefense") return trustedIceDefenderDamage(card, claimed, h)
   if (!card || card.data.test?.type !== "matrixDefense") return null
   if (card.byGM) return Math.max(0, Math.floor(Number(claimed)) || 0)
   const attacker = h.actorOf(card.data.previousMessage?.actorId, card.data.actorUuids)
@@ -278,6 +289,37 @@ export async function trustedDefenderDamage(messageId, claimed, helpers = null) 
     label: typeSub, helpers: h,
   })
   //Dice that cannot be counted do not stand for 0 hits: the card is refused
+  if (!attackHits || !defenseHits) return null
+  return defenderNetHits({
+    claimed, defenseHits: defenseHits.hits, attackHits: attackHits.hits
+  })
+}
+
+/**
+ * The boxes a defense against an IC deals back (SR5 p. 249: "une attaque ayant échoué cause des dommages à la CI"), as
+ * trustedIceAttack reads the IC's card (rollData-IceDefense.js): a GM's defense as written; a player's counted again on
+ * its dice, within the defender's pool read on its sheet (the IC's two defense attributes), against the IC attack card it
+ * answers, read again from the chat log (Host rating x 2, limit Attack, SR5 p. 248). null when refused.
+ */
+export async function trustedIceDefenderDamage(card, claimed, h) {
+  if (card.byGM) return Math.max(0, Math.floor(Number(claimed)) || 0)
+  const attack = h.cardOf(card.data.previousMessage?.messageId)
+  const ice = attack?.roller
+  if (!attack || attack.data.test?.type !== "iceAttack" || ice?.system?.matrix?.deviceType !== "ice") return null
+  const attackHits = await trustedHits({
+    card: attack, claimed: attack.data.roll?.hits, pool: sheetValue(ice, "matrix.ice.attackDicepool"),
+    limit: sheetValue(ice, "matrix.attributes.attack.value"), label: "iceAttack", helpers: h,
+  })
+  //An AI outside any device defends with Willpower or Intuition in place of Logic (Data Trails p. 157): the largest bounds it
+  const defender = card.roller
+  const first = ice.system.matrix.ice?.defenseFirstAttribute, second = ice.system.matrix.ice?.defenseSecondAttribute
+  let firstValue = first ? sheetValue(defender, `attributes.${first}.augmented.value`) : 0
+  if (defender?.system?.activeSpecialAttribute === "depth") firstValue = Math.max(firstValue,
+    sheetValue(defender, "attributes.willpower.augmented.value"), sheetValue(defender, "attributes.intuition.augmented.value"))
+  const defenseHits = await trustedHits({
+    card, claimed: card.data.roll?.hits, pool: firstValue + (second ? sheetValue(defender, `matrix.attributes.${second}.value`) : 0),
+    label: "iceDefense", helpers: h,
+  })
   if (!attackHits || !defenseHits) return null
   return defenderNetHits({
     claimed, defenseHits: defenseHits.hits, attackHits: attackHits.hits

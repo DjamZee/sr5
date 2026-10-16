@@ -1,4 +1,12 @@
 <li class="grid">
     <div class="col-5">{{localize 'SR5.ArmorPenetration'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-1"><input type="number" data-dtype="Number" name="system.armorPenetration.base" value="{{system.armorPenetration.base}}" placeholder="0" onfocus="this.select()"/></div>
+    <div class="col-1"></div>
+    <div class="col-3 SR-TextRight">{{localize 'SR5.WeaponAPLinkedAttribute'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-2">
+        <select name="system.armorPenetration.linkedAttribute" data-dtype="String">
+            <option value="">—</option>
+            {{selectOptions lists.weaponAPLinkedAttributes selected=system.armorPenetration.linkedAttribute localize=true}}
+        </select>
+    </div>
 </li>

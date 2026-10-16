@@ -20,13 +20,13 @@
 			<div class="col-1">
 				<div class="grid">
 					<div class="col-6 SR-TextCenter">
-						<em class="fas fa-sm fa-wifi"></em>
+						<em class="fas fa-sm fa-wifi"></em><span class="sr-silent-slot" data-tooltip="{{localize 'SR5.PanMenuModeSilent'}}"><em class="fas fa-sm fa-user-secret"></em></span>
 					</div>
 					<div class="col-6">
 						{{#if owner}}
 						<p class="SR-TextRight add-item" data-helpTitle="{{localize 'SR5.HELP_ItemAdd' key=(findTranslation 'weaponCategories' 'rangedWeapon')}}" 
 						data-helpMessage="{{localize 'SR5.HELP_ItemAddMsg'}}">
-							<a class="item-create" data-title="{{localize 'SR5.Add'}}" data-type="itemWeapon" data-weaponCategory="rangedWeapon">
+							<a class="item-create" data-tooltip="{{localize 'SR5.Add'}}" data-type="itemWeapon" data-weaponCategory="rangedWeapon">
 								<em class="fas fa-plus"></em>
 							</a>
 						</p>
@@ -43,9 +43,9 @@
 				  data-helpTitle="{{localize 'SR5.Specialization'}}"
 				  data-helpMessage="{{localize 'SR5.HELP_SpecializationMsg'}}">
 					{{#if system.weaponSkill.specialization}}
-				  	<em class="fab fa-sm fa-gripfire SR-SubColor" data-title="{{localize 'SR5.ExcludeSpecializationBonus'}}"></em>
+				  	<em class="fab fa-sm fa-gripfire SR-SubColor" data-tooltip="{{localize 'SR5.ExcludeSpecializationBonus'}}"></em>
 					{{else}}
-				  	<em class="fab fa-sm fa-gripfire" data-title="{{localize 'SR5.IncludeSpecializationBonus'}}"></em>
+				  	<em class="fab fa-sm fa-gripfire" data-tooltip="{{localize 'SR5.IncludeSpecializationBonus'}}"></em>
 					{{/if}}
 			  	</a>
 			  	<span data-helpTitle="{{localize 'SR5.HELP_MoreInfos'}}" data-helpMessage="{{localize 'SR5.HELP_MoreInfosMsg'}}">{{name}}{{#if system.isUsedAsMount}}{{localize 'SR5.VEHICLE_isLinkedToMount'}}{{/if}}</span>
@@ -54,7 +54,7 @@
 			<div class="col-1 SR-TextCenter"
 				data-helpTitle="{{localize 'SR5.DicePool'}}" data-helpMessage="{{localize 'SR5.HELP_CantRollTestInAstral'}}">
 			{{else}}
-			<div class="col-1 SR-TextCenter roll-logo {{#if (or (eq system.type 'grenadeLauncher') (eq system.type 'missileLauncher'))}}sr-rollGrenade{{else}}sr-roll{{/if}} }} " 
+			<div class="col-1 SR-TextCenter roll-logo {{#if (or (eq system.type 'grenadeLauncher') (eq system.type 'missileLauncher'))}}sr-rollGrenade{{else}}sr-roll{{/if}}" 
 				data-rolltype="weapon" data-helpTitle="{{localize 'SR5.DicePool'}}" data-helpMessage="{{localize 'SR5.HELP_AttackRollMsg'}}"
 				data-helpDetailsItem="system.weaponSkill"	data-helpItemId="{{_id}}">
 			{{/if}}
@@ -99,11 +99,11 @@
 					  {{#if (eq system.ammunition.casing 'internalMag')}}{{localize 'SR5.HELP_AmmoReloadMsgInternalMag'}}{{/if}}
 					  {{#if (eq system.ammunition.casing 'muzzle')}}{{localize 'SR5.HELP_AmmoReloadMsgMuzzle'}}{{/if}}
 					">
-						<a class="reload-ammo" data-title="{{localize 'SR5.ReloadWeapon'}}"><em class="fas fa-sm fa-sync"></em></a>
+						<a class="reload-ammo" data-tooltip="{{localize 'SR5.ReloadWeapon'}}"><em class="fas fa-sm fa-sync"></em></a>
 					</div>
 					<div class="col-6 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_EquipToggle' key=name}}" data-helpMessage="{{localize 'SR5.HELP_EquipToggleMsg'}}">
 						<a class="toggle-value" data-dtype="Boolean" data-item-id="{{_id}}" data-binding="system.isActive"
-						  data-title="{{#if system.isActive}}{{localize 'SR5.Unequip'}}{{else}}{{localize 'SR5.Equip'}}{{/if}}">
+						  data-tooltip="{{#if system.isActive}}{{localize 'SR5.Unequip'}}{{else}}{{localize 'SR5.Equip'}}{{/if}}">
 							<em class="fas fa-sm fa-thumbtack {{#if system.isActive}}SR-SubColor{{/if}}"></em>
 						</a>
 					</div>
@@ -125,12 +125,13 @@
 					>
 						{{#if system.isVintage}}
 						<!-- Vintage (Gun H(e)aven 3 p. 3): never wireless, the icon is not a switch -->
-						<em class="fas fa-sm fa-wifi SR-SubColor25" data-title="{{localize 'SR5.WARN_VintageNoWireless'}}"></em>
+						<em class="fas fa-sm fa-wifi SR-SubColor25" data-tooltip="{{localize 'SR5.WARN_VintageNoWireless'}}"></em>
 						{{else if system.wirelessTurnedOn}}
-						<a class="toggle-value" data-dtype="Boolean" data-item-id="{{_id}}" data-binding="system.wirelessTurnedOn" data-title="{{localize 'SR5.DisableWirelessMode'}}"><em class="fas fa-sm fa-wifi SR-SubColor"></em></a>
+						<a class="toggle-value" data-dtype="Boolean" data-item-id="{{_id}}" data-binding="system.wirelessTurnedOn" data-tooltip="{{localize 'SR5.DisableWirelessMode'}}"><em class="fas fa-sm fa-wifi SR-SubColor"></em></a>
 						{{else}}
-						<a class="toggle-value" data-dtype="Boolean" data-item-id="{{_id}}" data-binding="system.wirelessTurnedOn" data-title="{{localize 'SR5.EnableWirelessMode'}}"><em class="fas fa-sm fa-wifi"></em></a>
+						<a class="toggle-value" data-dtype="Boolean" data-item-id="{{_id}}" data-binding="system.wirelessTurnedOn" data-tooltip="{{localize 'SR5.EnableWirelessMode'}}"><em class="fas fa-sm fa-wifi"></em></a>
 						{{/if}}
+						{{~> systems/sr5/templates/actors/_partials/right-tabs/_common/device-silent.hbs deviceMode=(lookup @root.deviceModes _id) itemId=_id}}
 					</div>
 					{{/if}}
 					<div class="col-6 SR-TextRight">

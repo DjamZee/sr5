@@ -3,6 +3,12 @@ import {
   SR5_GrappleHelpers
 } from './rolls/roll-helpers/grapple.js'
 import {
+  SR5Conceal
+} from './interface/conceal.js'
+import {
+  onRenderSacrificeCard
+} from './system/blood-magic.js'
+import {
   sr5HookInit 
 } from './hooks/init.js'
 import {
@@ -37,6 +43,30 @@ import {
   registerAgilityZeroHooks
 } from './system/agility-zero.js'
 import {
+  registerIceHostHooks
+} from './system/ice-host.js'
+import {
+  registerInsectRaceHooks
+} from './entities/actors/insect-race-hooks.js'
+import {
+  registerCyberlimbNotice
+} from './system/cyberlimb-notice.js'
+import {
+  registerRiggerEjectionHooks
+} from './system/rigger-ejection.js'
+import {
+  registerChaseHooks
+} from './system/chase.js'
+import {
+  registerFactionsControl
+} from './interface/factions-app.js'
+import {
+  registerConControls
+} from './interface/con-app.js'
+import {
+  registerSwarmHooks
+} from './system/swarm.js'
+import {
   onBlightCreated, sweepBlight
 } from './system/blight-strikes.js'
 import {
@@ -52,8 +82,11 @@ import {
   sr5HookCloseCombatantConfig,
 } from './hooks/combat.js'
 import {
-  sr5HookCreateActor, sr5HookPreUpdateActor, sr5HookUpdateActor, sr5HookDeleteActor 
+  sr5HookCreateActor, sr5HookPreUpdateActor, sr5HookUpdateActor, sr5HookDeleteActor, sr5HookPreUpdateActorDeltaCreation
 } from './hooks/actor.js'
+import {
+  onCreationHeaderControls, stripCreationOnCreate
+} from './system/creation-actor.js'
 import {
   sr5HookPreUpdateItem, sr5HookCreateItem, sr5HookUpdateItem, sr5HookDeleteItem
 } from './hooks/item.js'
@@ -64,7 +97,7 @@ import {
   sr5HookCanvasReady, sr5HookCanvasReadyAreaEffects, sr5HookCanvasReadyVisionRanges, sr5HookDrawMeasuredTemplate, sr5HookDeleteMeasuredTemplate, sr5HookUpdateMeasuredTemplate, sr5HookCreateMeasuredTemplate, sr5HookUpdateScene 
 } from './hooks/canvas.js'
 import {
-  sr5HookRenderCompendium, sr5HookRenderCompendiumDirectory
+  sr5HookRenderCompendium, sr5HookRenderCompendiumDirectory, sr5HookCompendiumDocumentChanged
 } from './hooks/compendium.js'
 import {
   renderSceneIndicators, sr5HookUpdateSceneIndicators
@@ -81,6 +114,12 @@ import {
 import {
   sr5HookRenderTablePayout
 } from './interface/table-payout.js'
+import {
+  sr5HookRenderTableActions
+} from './interface/table-actions.js'
+import {
+  sr5HookCompendiumDrawContext, sr5HookCompendiumDrawHeader, sr5HookCompendiumDrawFolder
+} from './interface/table-from-compendium.js'
 import {
   sr5KeepSidebarSettingsLast
 } from './interface/sidebar-tab-order.js'
@@ -104,6 +143,9 @@ import {
   SR5ShopWindow
 } from './interface/shop-window.js'
 import {
+  SR5DealershipWindow
+} from './interface/dealership-window.js'
+import {
   SR5ShopVendor
 } from './interface/shop-vendor.js'
 import {
@@ -122,6 +164,15 @@ import {
 import {
   registerBoneAugmentationGuard
 } from './system/bone-augmentation-guard.js'
+import {
+  registerPanCrownHooks
+} from './canvas/pan-crown/pan-crown-layer.js'
+import {
+  registerCommcodeHooks
+} from './interface/commcode-traffic.js'
+import {
+  onDroneSlavedChange
+} from './system/slave-sync.js'
 
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
@@ -160,6 +211,8 @@ Hooks.on('createToken', sr5HookCreateToken)
 Hooks.on('updateToken', sr5HookUpdateToken)
 Hooks.on('preDeleteToken', sr5HookPreDeleteToken)
 Hooks.on('deleteToken', sr5HookDeleteToken)
+//Slaving (lot R5): the box "Appareil asservi" of a deployed drone puts its vehicle in the rigger's PAN list, or takes it out
+Hooks.on('updateActor', (...args) => onDroneSlavedChange(...args).catch(e => console.error(e)))
 Hooks.on('createCombatant', sr5HookCreateCombatant)
 Hooks.on('updateCombatant', sr5HookUpdateCombatant)
 Hooks.on('deleteCombat', sr5HookDeleteCombatCumulativeDefense)
@@ -171,6 +224,10 @@ Hooks.on('deleteCombat', clearRunning)
 //Sprint fatigue (SR5 p. 174): counted and resisted by the active GM from the Sprint test card
 Hooks.on('createChatMessage', message => onSprintCard(message).catch(e => console.error(e)))
 Hooks.on('renderChatMessageHTML', SR5_GrappleHelpers.onRenderHoldCard)
+//SR5 p. 422: the request of a search for hidden objects, resolved by the GM (conceal.js)
+Hooks.on('renderChatMessageHTML', SR5Conceal.onRenderSearchCard)
+//Sacrifice (Street Grimoire p. 90): the card of a melee wound, its points asked by the magician's owner (blood-magic.js)
+Hooks.on('renderChatMessageHTML', onRenderSacrificeCard)
 //An escape a player rolled frees her once the active GM has read its card again (grapple.js)
 Hooks.on('createChatMessage', message => SR5_GrappleHelpers.onEscapeCard(message))
 Hooks.on('updateChatMessage', message => SR5_GrappleHelpers.onEscapeCard(message))
@@ -191,16 +248,29 @@ Hooks.on('createActiveEffect', sr5HookCreateActiveEffect)
 Hooks.on('deleteActiveEffect', sr5HookDeleteActiveEffect)
 Hooks.on('renderCompendium', sr5HookRenderCompendium)
 Hooks.on('renderCompendiumDirectory', sr5HookRenderCompendiumDirectory)
+for (const hook of ['createItem', 'updateItem', 'deleteItem', 'createActor', 'updateActor', 'deleteActor']) {
+  Hooks.on(hook, sr5HookCompendiumDocumentChanged)
+}
 Hooks.on('renderRollTableSheet', sr5AddTableFormulaField)
 Hooks.on('renderTableResultConfig', sr5AddResultQuantityField)
 Hooks.on('renderChatMessageHTML', sr5HookRenderTablePayout)
+Hooks.on('renderChatMessageHTML', sr5HookRenderTableActions)
+// A compendium, or one of its folders, drawn as a table
+Hooks.on('getCompendiumContextOptions', sr5HookCompendiumDrawContext)
+Hooks.on('getHeaderControlsCompendium', sr5HookCompendiumDrawHeader)
+Hooks.on('getFolderContextOptions', sr5HookCompendiumDrawFolder)
 Hooks.on('renderSidebar', SR5ShopWindow.onRenderSidebar)
+Hooks.on('renderSidebar', SR5DealershipWindow.onRenderSidebar)
 // A sale or a restock on a vendor: its open shop window redraws
 for (const hook of ['createItem', 'updateItem', 'deleteItem', 'updateActor']) Hooks.on(hook, SR5ShopVendor.onVendorChanged)
 // A contact the gamemaster puts on a vendor searches for it
 Hooks.on('createItem', SR5ShopVendor.onContactAdded)
 Hooks.on('renderSidebar', sr5KeepSidebarSettingsLast)
 Hooks.on('getHeaderControlsDocumentSheetV2', SR5ShopStock.onHeaderControls)
+// A character in creation (lot C0): the gamemaster's switch, refused to a player
+Hooks.on('getHeaderControlsDocumentSheetV2', onCreationHeaderControls)
+Hooks.on('preCreateActor', stripCreationOnCreate)
+Hooks.on('preUpdateActorDelta', sr5HookPreUpdateActorDeltaCreation)
 Hooks.on('drawMeasuredTemplate', sr5HookDrawMeasuredTemplate)
 Hooks.on('deleteMeasuredTemplate', sr5HookDeleteMeasuredTemplate)
 Hooks.on('createMeasuredTemplate', sr5HookCreateMeasuredTemplate)
@@ -233,6 +303,28 @@ registerPreparationRegisterHooks()
 registerBoneAugmentationGuard()
 // Agility brought to 0: the "immobilized" status follows it (séance H, H8)
 registerAgilityZeroHooks()
+// An IC uses its host's matrix attributes (SR5 p. 249): prepared again once the host is, or when it changes
+registerIceHostHooks()
+registerInsectRaceHooks()
+// The cyberlimb enhancements raise the limb only: the active GM is told once which characters to check (SR5 p. 459)
+registerCyberlimbNotice()
+// A rigger ejected from his vehicle: it is out of control until the next Combat Turn, then on autopilot (SR5 p. 271)
+registerRiggerEjectionHooks()
+// Vehicle chases: the window in the token controls, and the turn that follows the encounter (R12)
+registerChaseHooks()
+// Faction Reputation: the gamemaster's window in the token controls too (lot 10)
+registerFactionsControl()
+// Cutting Aces social rules: the con tracker and the bartering window in the token controls (lot 21)
+registerConControls()
+// Drone swarms: a member that changes, enters or leaves the scene prepares its swarm again (Rigger 5.0 p. 35)
+registerSwarmHooks()
+// The crown of a PAN follows its token and its devices (couronne du PAN, lot 2)
+registerPanCrownHooks()
+// Messages and calls between commcodes (lot 14, SR5 p. 241): the register, the requests to the GM, the windows
+registerCommcodeHooks()
+// ...and the communication devices already in the world get their commcode (relecture djamz.13, arbitrage de DjamZ)
+Hooks.once('ready', () => import('./interface/commcode-default.js').then(m => m.fillMissingCommcodes())
+  .catch(e => console.error("SR5 | commcode", e)))
 // Blight strikes: sustained spells, active foci and astral fall (Better Than Bad p. 141)
 Hooks.on('createItem', onBlightCreated)
 // ...and an actor under Blight is put in order at the world's load, by the active GM (Clémence's review)

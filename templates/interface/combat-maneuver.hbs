@@ -1,0 +1,46 @@
+<div class="sr-maneuver-body">
+  <p class="sr-maneuver-skill">{{localize 'SR5.MANEUVER_Skill'}} <strong>{{skill}}</strong></p>
+  {{#if tacnet}}<p class="hint">{{tacnet}}</p>{{/if}}
+
+  <div class="form-group">
+    <label>{{localize 'SR5.MANEUVER_Maneuver'}}</label>
+    <select name="key">
+      {{#each groups as |g|}}
+      <optgroup label="{{g.label}}">
+        {{#each ../maneuvers}}{{#if (eq group g.key)}}<option value="{{key}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/if}}{{/each}}
+      </optgroup>
+      {{/each}}
+    </select>
+  </div>
+  <p class="sr-maneuver-description">{{description}} <span class="hint">({{page}})</span></p>
+
+  <div class="form-group">
+    <label>{{localize 'SR5.MANEUVER_Threshold'}}</label>
+    <input type="number" name="threshold" min="1" step="1" value="{{choice.threshold}}" placeholder="{{bookThreshold}}">
+  </div>
+  <p class="hint">{{#if bookThreshold}}{{localize 'SR5.MANEUVER_ThresholdHint'}}{{else}}{{localize 'SR5.MANEUVER_ThresholdNone'}}{{/if}}</p>
+  {{#if maneuver.detection}}
+  <div class="form-group">
+    <label>{{localize 'SR5.MANEUVER_Detected'}}</label>
+    <input type="checkbox" name="detected" {{checked choice.detected}}>
+  </div>
+  {{/if}}
+  {{#if maneuver.mapAndBinoculars}}
+  <div class="form-group">
+    <label>{{localize 'SR5.MANEUVER_MapAndBinoculars'}}</label>
+    <input type="checkbox" name="mapAndBinoculars" {{checked choice.mapAndBinoculars}}>
+  </div>
+  {{/if}}
+  <div class="form-group">
+    <label>{{instructionsLabel}}</label>
+    <input type="checkbox" name="instructions" {{checked choice.instructions}}>
+  </div>
+
+  <p class="sr-maneuver-threshold">{{#if threshold}}{{localize 'SR5.MANEUVER_FinalThreshold'}} <strong>{{threshold}}</strong>{{else}}{{localize 'SR5.MANEUVER_NeedThreshold'}}{{/if}}</p>
+  <p class="hint">{{localize 'SR5.MANEUVER_Steps'}}</p>
+
+  <div class="sr-maneuver-buttons">
+    <button type="button" data-action="launch"><i class="fas fa-people-group"></i> {{localize 'SR5.MANEUVER_Launch'}}</button>
+    <button type="button" data-action="simpleTest"><i class="fas fa-dice"></i> {{localize 'SR5.MANEUVER_SimpleTest'}}</button>
+  </div>
+</div>

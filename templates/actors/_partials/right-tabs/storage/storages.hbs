@@ -7,7 +7,7 @@
 			<div class="col-2 SR-TextRight">{{localize 'SR5.StorageValue'}}</div>
 			<div class="col-2 SR-TextCenter">{{localize 'SR5.StorageContents'}}</div>
 			<div class="col-1 SR-TextRight">
-				<a class="storage-view-toggle" data-title="{{#if storageViewIsGrid}}{{localize 'SR5.StorageViewList'}}{{else}}{{localize 'SR5.StorageViewGrid'}}{{/if}}">
+				<a class="storage-view-toggle" data-tooltip="{{#if storageViewIsGrid}}{{localize 'SR5.StorageViewList'}}{{else}}{{localize 'SR5.StorageViewGrid'}}{{/if}}">
 					<em class="fas fa-sm {{#if storageViewIsGrid}}fa-list{{else}}fa-th-large{{/if}}"></em>
 				</a>
 			</div>
@@ -15,7 +15,7 @@
 				{{#if owner}}
 				<p class="SR-TextRight add-item" data-helpTitle="{{localize 'SR5.HELP_ItemAdd' key=(findTranslation 'itemTypes' 'itemStorage')}}"
 				  data-helpMessage="{{localize 'SR5.HELP_ItemAddMsg'}}">
-					<a class="item-create" data-title="{{localize 'SR5.Add'}}" data-type="itemStorage"><em class="fas fa-plus"></em></a>
+					<a class="item-create" data-tooltip="{{localize 'SR5.Add'}}" data-type="itemStorage"><em class="fas fa-plus"></em></a>
 				</p>
 				{{/if}}
 			</div>
@@ -29,7 +29,7 @@
 				<div class="col-4 deplie" data-helpTitle="{{localize 'SR5.HELP_MoreInfos'}}" data-helpMessage="{{localize 'SR5.HELP_MoreInfosMsg'}}">
 					<em class="fas fa-sm {{storage.icon}} sr-storage-type-icon"></em>
 					{{storage.name}}
-					{{#if storage.isLocked}}<em class="fas fa-xs fa-lock SR-GreyColor" data-title="{{localize 'SR5.StorageLocked'}}"></em>{{/if}}
+					{{#if storage.isLocked}}<em class="fas fa-xs fa-lock SR-GreyColor" data-tooltip="{{localize 'SR5.StorageLocked'}}"></em>{{/if}}
 				</div>
 				<div class="col-2 SR-TextCenter SR-GreyColor">{{findTranslation 'storageTypes' storage.type}}</div>
 				<div class="col-2 SR-TextRight SR-GreyColor">{{#if storage.value}}{{nuyen storage.value}}{{/if}}</div>
@@ -40,13 +40,13 @@
 					{{#if ../owner}}
 					{{#if storage.isDeployable}}
 					{{#if storage.isDeployed}}
-					<a class="sidekickDestroy" data-item-id="{{storage._id}}" data-title="{{localize 'SR5.StoragePickUp'}}"
+					<a class="sidekickDestroy" data-item-id="{{storage._id}}" data-tooltip="{{localize 'SR5.StoragePickUp'}}"
 					  data-helpTitle="{{localize 'SR5.HELP_StoragePickUp' key=storage.name}}"
 					  data-helpMessage="{{localize 'SR5.HELP_StoragePickUpMsg'}}">
 						<em class="fas fa-sm fa-hand-back-fist SR-SubColor"></em>
 					</a>
 					{{else}}
-					<a class="sidekickCreate" data-item-id="{{storage._id}}" data-title="{{localize 'SR5.StorageDrop'}}"
+					<a class="sidekickCreate" data-item-id="{{storage._id}}" data-tooltip="{{localize 'SR5.StorageDrop'}}"
 					  data-helpTitle="{{localize 'SR5.HELP_StorageDrop' key=storage.name}}"
 					  data-helpMessage="{{localize 'SR5.HELP_StorageDropMsg'}}">
 						<em class="fas fa-sm fa-download"></em>
@@ -54,7 +54,7 @@
 					{{/if}}
 					{{/if}}
 					<a class="storage-put-in" data-storage-id="{{storage._id}}"
-					  data-title="{{#if (eq storage.type 'garage')}}{{localize 'SR5.StoragePutInVehicle'}}{{else}}{{localize 'SR5.StoragePutIn'}}{{/if}}">
+					  data-tooltip="{{#if (eq storage.type 'garage')}}{{localize 'SR5.StoragePutInVehicle'}}{{else}}{{localize 'SR5.StoragePutIn'}}{{/if}}">
 						<em class="fas fa-sm fa-plus"></em>
 					</a>
 					<a data-helpTitle="{{localize 'SR5.HELP_ItemManagement' key=storage.name}}" data-helpMessage="{{localize 'SR5.HELP_ItemManagementMsg'}}">
@@ -72,14 +72,14 @@
 			<!-- Grid: icons in cells, like a game inventory -->
 			<div class="sr-storage-grid">
 				{{#each storage.contents as |content|}}
-				<div class="item sr-storage-cell" data-item-id="{{content._id}}" draggable="true" data-title="{{content.name}}">
+				<div class="item sr-storage-cell" data-item-id="{{content._id}}" draggable="true" data-tooltip="{{content.name}}">
 					<img src="{{content.img}}" alt="" />
 					{{#if (gt content.system.quantity 1)}}
 					<span class="sr-storage-quantity">{{content.system.quantity}}</span>
 					{{/if}}
 					<span class="sr-storage-name">{{content.name}}</span>
 					{{#if ../../owner}}
-					<a class="storage-take-out" data-item-id="{{content._id}}" data-title="{{localize 'SR5.StorageTakeOut'}}">
+					<a class="storage-take-out" data-item-id="{{content._id}}" data-tooltip="{{localize 'SR5.StorageTakeOut'}}">
 						<em class="fas fa-xs fa-times"></em>
 					</a>
 					{{/if}}
@@ -99,7 +99,7 @@
 					<div class="col-1 SR-TextCenter">{{valueOrDash content.system.quantity}}</div>
 					<div class="col-1 grid SR-TextRight">
 						{{#if ../../owner}}
-						<a class="storage-take-out" data-item-id="{{content._id}}" data-title="{{localize 'SR5.StorageTakeOut'}}">
+						<a class="storage-take-out" data-item-id="{{content._id}}" data-tooltip="{{localize 'SR5.StorageTakeOut'}}">
 							<em class="fas fa-sm fa-times"></em>
 						</a>
 						{{/if}}

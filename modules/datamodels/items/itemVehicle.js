@@ -67,6 +67,10 @@ export class sr5ItemVehicleDataModel extends foundry.abstract.TypeDataModel {
           initial: 0
         }),
       }),
+      //The Y of Structure X(Y), the Modification Points a drone has left (Rigger 5.0 p. 126); empty: its Structure
+      modPoints: new fields.NumberField({
+        initial: null, nullable: true, integer: true, min: 0
+      }),
       modificationSlots: new fields.SchemaField({
         powerTrain: new fields.NumberField({
           initial: 0
@@ -111,6 +115,8 @@ export class sr5ItemVehicleDataModel extends foundry.abstract.TypeDataModel {
       armors: new fields.ArrayField(new fields.ObjectField()),
       decks: new fields.ArrayField(new fields.ObjectField()),
       vehiclesMod: new fields.ArrayField(new fields.ObjectField()),
+      //Vehicle equipment, which is not a mod (Rigger 5.0 p. 154-156): kits, scanners, jammers, commlinks
+      gears: new fields.ArrayField(new fields.ObjectField()),
       secondaryPropulsion: new fields.SchemaField({
         isSecondaryPropulsion: new fields.BooleanField({
           initial: false
@@ -143,6 +149,10 @@ export class sr5ItemVehicleDataModel extends foundry.abstract.TypeDataModel {
       }),
       slaved: new fields.BooleanField({
         initial: false
+      }),
+      //The swarm number the drone keeps between two deployments (Rigger 5.0 p. 35)
+      swarm: new fields.NumberField({
+        initial: 0, min: 0, integer: true
       }),
       conditionMonitors: new fields.SchemaField({
         condition: new fields.SchemaField({

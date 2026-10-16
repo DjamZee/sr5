@@ -33,10 +33,10 @@
 			</div>
 			<div class="col-4 SR-TextRight">
 				{{#if @root.owner}}
-				<a class="credstick-withdraw" data-item-id="{{_id}}" data-tooltip="{{localize 'SR5.CredstickWithdraw'}}">
+				<a class="credstick-withdraw" data-item-id="{{_id}}" data-tooltip="{{localize 'SR5.CredstickWithdraw'}}" aria-label="{{localize 'SR5.CredstickWithdraw'}}" role="button">
 					<em class="fas fa-arrow-down-to-line"></em>
 				</a>
-				<a class="credstick-deposit" data-item-id="{{_id}}" data-tooltip="{{localize 'SR5.CredstickDeposit'}}">
+				<a class="credstick-deposit" data-item-id="{{_id}}" data-tooltip="{{localize 'SR5.CredstickDeposit'}}" aria-label="{{localize 'SR5.CredstickDeposit'}}" role="button">
 					<em class="fas fa-arrow-up-from-line"></em>
 				</a>
 				{{/if}}
@@ -63,10 +63,10 @@
 			<div class="col-4 SR-TextCenter">{{#if arrived}}{{localize 'SR5.ShopOrderArrived'}}{{else}}{{dueLabel}}{{/if}}</div>
 			<div class="col-3 SR-TextRight">
 				{{#if gm}}
-				<a data-shop-order="deliver" data-tooltip="{{localize 'SR5.ShopOrderDeliverNow'}}"><em class="fas fa-box-open"></em></a>
+				<a data-shop-order="deliver" data-tooltip="{{localize 'SR5.ShopOrderDeliverNow'}}" aria-label="{{localize 'SR5.ShopOrderDeliverNow'}}" role="button"><em class="fas fa-box-open"></em></a>
 				{{/if}}
 				{{#if @root.owner}}
-				<a data-shop-order="cancel" data-tooltip="{{cancelLabel}}"><em class="fas fa-ban"></em></a>
+				<a data-shop-order="cancel" data-tooltip="{{cancelLabel}}" aria-label="{{cancelLabel}}" role="button"><em class="fas fa-ban"></em></a>
 				{{/if}}
 			</div>
 		</li>
@@ -85,7 +85,7 @@
 				{{#if owner}}
 				<p class="SR-TextRight add-item" data-helpTitle="{{localize 'SR5.HELP_ItemAdd' key=(localize 'SR5.NuyenGain_F')}}"
 				data-helpMessage="{{localize 'SR5.HELP_ItemAddMsg'}}">
-					<a class="item-create" data-title="{{localize 'SR5.Add'}}" data-type="itemNuyen" data-subtype="gain"><em class="fas fa-plus"></em></a>
+					<a class="item-create" data-tooltip="{{localize 'SR5.Add'}}" data-type="itemNuyen" data-subtype="gain"><em class="fas fa-plus"></em></a>
 				</p>
 				{{/if}}
 			</div>
@@ -126,7 +126,7 @@
 				{{#if owner}}
 				<p class="SR-TextRight add-item" data-helpTitle="{{localize 'SR5.HELP_ItemAdd' key=(localize 'SR5.NuyenLoss_F')}}"
 				data-helpMessage="{{localize 'SR5.HELP_ItemAddMsg'}}">
-					<a class="item-create" data-title="{{localize 'SR5.Add'}}" data-type="itemNuyen" data-subtype="loss"><em class="fas fa-plus"></em></a>
+					<a class="item-create" data-tooltip="{{localize 'SR5.Add'}}" data-type="itemNuyen" data-subtype="loss"><em class="fas fa-plus"></em></a>
 				</p>
 				{{/if}}
 			</div>

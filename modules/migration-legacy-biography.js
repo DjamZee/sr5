@@ -10,9 +10,12 @@ import {
 // (Bérénice's review: a gender emptied showed "female" again). The client never sees those keys (every document is
 // migrated as it is built), so this migration writes the biography as migrateData read it and unsets every legacy key,
 // once per world, on every actor that can carry them.
+// 2 (lot 44): the v12 sheet also wrote the description in system.characterDescription, which migrateData reads into
+// biography.description (datamodels/common/v12ImportMigration.js); the key is unset too, or a description emptied on
+// the sheet would come back from it.
 
 // Bump to run it again on every world.
-export const LEGACY_BIOGRAPHY_MIGRATION = 1
+export const LEGACY_BIOGRAPHY_MIGRATION = 2
 
 // The actor types whose data model reads the legacy keys (migrateLegacyBiographyKeys)
 const TYPES = ["actorPc", "actorGrunt"]
@@ -33,6 +36,25 @@ export function legacyBiographyUpdate(biography) {
 }
 
 /**
+ * The update of an actor: its whole system as migrateData read it, by a forced replacement of the system, with the
+ * legacy biography keys and characterDescription left out. Measured on the server (lot 44): "system.-=characterDescription"
+ * leaves the key in the database, "system.==biography" too; only "==system" removes it.
+ * @param {object} system  the source system, as migrateData left it
+ * @return {object}  update data
+ */
+export function legacySystemUpdate(system) {
+  const kept = {
+    ...(system ?? {
+    })
+  }
+  delete kept.characterDescription
+  if (kept.biography && typeof kept.biography === "object") kept.biography = legacyBiographyUpdate(kept.biography)["system.==biography"]
+  return {
+    "==system": kept
+  }
+}
+
+/**
  * The update of an unlinked token: the legacy keys unset in its delta, whose system the data model does not clean
  * (measured), and the current keys the delta holds kept as read; nothing more written over it (a delta holds only
  * what differs from its actor).
@@ -46,12 +68,13 @@ export function legacyDeltaUpdate(biography) {
     if (biography?.[currentKey] !== undefined) update[`delta.system.biography.${currentKey}`] = biography[currentKey]
     update[`delta.system.biography.-=${legacyKey}`] = null
   }
+  update["delta.system.-=characterDescription"] = null
   return update
 }
 
-/** Writes it on one actor, diff off: an unchanged biography would otherwise not be sent */
+/** Writes it on one actor, diff off: an unchanged system would otherwise not be sent */
 async function cleanActor(actor) {
-  await actor.update(legacyBiographyUpdate(actor._source.system?.biography), {
+  await actor.update(legacySystemUpdate(actor._source.system), {
     diff: false, render: false
   })
 }

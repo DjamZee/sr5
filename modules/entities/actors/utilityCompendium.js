@@ -10,6 +10,9 @@ import {
 import {
   isAlwaysActive
 } from "../items/always-active.js"
+import {
+  insectRacePowers
+} from "../items/insect-races.js"
 
 export class SR5_CompendiumUtility extends Actor {
 
@@ -19,6 +22,23 @@ export class SR5_CompendiumUtility extends Actor {
   static _warnedMissingCompendiums = new Set()
   static _compendiumCache = new Map()
   static _compendiumChoices = {
+  }
+  // The item compendiums that may be added after the main one (lot 9): every item pack, read at the time it is
+  // asked, so that a compendium created during the session can be chosen at once; a saved one since removed stays
+  static extraCompendiumChoices() {
+    const choices = {
+    }
+    for (const pack of game.packs?.filter(p => p.documentName === "Item") ?? []) {
+      choices[pack.collection] = `${pack.title} (${pack.collection})`
+    }
+    for (const categoryKey of Object.keys(SR5_CompendiumUtility.CATEGORIES)) {
+      for (const id of SR5_CompendiumUtility.getExtraCompendiumIds(categoryKey)) {
+        choices[id] ??= game.i18n.format("SR5.SETTINGS.CompendiumMissing", {
+          name: id
+        })
+      }
+    }
+    return choices
   }
 
   // Compendiums used to build actors: each one can be chosen by the GM in the system settings.
@@ -72,7 +92,33 @@ export class SR5_CompendiumUtility extends Actor {
         choices: SR5_CompendiumUtility._compendiumChoices,
         onChange: () => SR5_CompendiumUtility._compendiumCache.clear()
       })
+      // The "+": custom compendiums read after the main one (DjamZ, séance du 08/10). The first item found with a
+      // power key still wins, so a custom compendium adds powers and weapons without doubling the official ones
+      const fields = foundry.data.fields
+      game.settings.register("sr5", `${category.setting}Extra`, {
+        name: `SR5.SETTINGS_Compendium${label}Extra_T`,
+        hint: "SR5.SETTINGS_CompendiumExtra_D",
+        scope: "world",
+        config: true,
+        type: new fields.SetField(new fields.StringField({
+          required: true, blank: false, choices: () => SR5_CompendiumUtility.extraCompendiumChoices()
+        })),
+        default: [],
+        onChange: () => SR5_CompendiumUtility._compendiumCache.clear()
+      })
     }
+  }
+
+  // The extra compendiums of a category, as saved (a Set once read, an array before)
+  static getExtraCompendiumIds(categoryKey) {
+    const category = SR5_CompendiumUtility.CATEGORIES[categoryKey]
+    let value
+    try {
+      value = game.settings.get("sr5", `${category.setting}Extra`)
+    } catch (_err) {
+      return []
+    }
+    return [...(value ?? [])].filter(id => typeof id === "string" && id)
   }
 
   static refreshCompendiumChoices() {
@@ -91,8 +137,15 @@ export class SR5_CompendiumUtility extends Actor {
     }
   }
 
-  // The compendiums read for a category, in order: the first that provides a key wins
+  // The compendiums read for a category, in order: the first that provides a key wins. The main choice (or the
+  // official ones), then the extra compendiums added by the GM (lot 9)
   static getCompendiumIds(categoryKey) {
+    const ids = SR5_CompendiumUtility.getMainCompendiumIds(categoryKey)
+    for (const id of SR5_CompendiumUtility.getExtraCompendiumIds(categoryKey)) if (!ids.includes(id)) ids.push(id)
+    return ids
+  }
+
+  static getMainCompendiumIds(categoryKey) {
     const category = SR5_CompendiumUtility.CATEGORIES[categoryKey]
     const chosen = game.settings.get("sr5", category.setting)
     if (chosen && chosen !== "auto") return [chosen]
@@ -188,7 +241,7 @@ export class SR5_CompendiumUtility extends Actor {
   }
 
   //Get base items
-  static async getBaseItems(actorType, actorSubType, actorLevel) {
+  static async getBaseItems(actorType, actorSubType, actorLevel, insectRace) {
     let baseItems = []
 
     if (actorType === "actorPc" || actorType === "actorGrunt") {
@@ -203,7 +256,12 @@ export class SR5_CompendiumUtility extends Actor {
       const weaponType = SR5_SpiritTypes.baseType(actorSubType) || actorSubType
       baseItems = await SR5_CompendiumUtility.findBaseItemInCompendium(baseItems, weapons, weaponType)
       baseItems = await SR5_CompendiumUtility.findBaseSpiritPowersInCompendium(baseItems, powers, actorSubType)
+      // The race of an insect spirit gives powers and takes some away (Dark Terrors p. 22-34)
+      if (insectRace) baseItems = SR5_CompendiumUtility.applyInsectRacePowers(baseItems, powers, weaponType, insectRace)
       baseItems = await SR5_CompendiumUtility.modifyBaseSpiritWeapon(baseItems, actorLevel)
+      // The type's own items, after the Force was written into the inherited weapons: theirs follow the Force by
+      // themselves (weapon-ratings.js) and keep what the type says
+      baseItems = baseItems.concat(SR5_SpiritTypes.givenItems(actorSubType))
     }
 
     if (actorType === "actorSprite") {
@@ -300,6 +358,45 @@ export class SR5_CompendiumUtility extends Actor {
     }
 
     return baseItems
+  }
+
+  // The power items an insect race gives (flagged, so that a change of race takes them back), without those it
+  // takes away (Dark Terrors p. 22-34)
+  static insectRacePowerItems(compendium, baseType, insectRace) {
+    const {
+      added 
+    } = insectRacePowers(baseType, insectRace)
+    const items = []
+    for (const key of added) {
+      const found = compendium.find(i => Object.values(i.system.systemEffects ?? {
+      }).some(e => e.category === "spiritPower" && e.value === key))
+      if (!found) continue
+      const iObject = SR5_CompendiumUtility.givenItem(found)
+      iObject.flags = foundry.utils.mergeObject(iObject.flags ?? {
+      }, {
+        sr5: {
+          insectRace: insectRace
+        }
+      })
+      items.push(iObject)
+    }
+    return items
+  }
+
+  static spiritPowerKeys(item) {
+    return Object.values(item.system?.systemEffects ?? {
+    }).filter(e => e?.category === "spiritPower").map(e => e.value)
+  }
+
+  static applyInsectRacePowers(baseItems, compendium, baseType, insectRace) {
+    const {
+      removed 
+    } = insectRacePowers(baseType, insectRace)
+    const owned = new Set(baseItems.flatMap(i => SR5_CompendiumUtility.spiritPowerKeys(i)))
+    const kept = baseItems.filter(i => !SR5_CompendiumUtility.spiritPowerKeys(i).some(k => removed.includes(k)))
+    const added = SR5_CompendiumUtility.insectRacePowerItems(compendium, baseType, insectRace)
+      .filter(i => !SR5_CompendiumUtility.spiritPowerKeys(i).some(k => owned.has(k)))
+    return kept.concat(added)
   }
 
   //Add optional powers to an array of existing powers based on an itemSpirit

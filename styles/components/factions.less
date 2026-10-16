@@ -31,6 +31,24 @@
     align-items: center;
     margin: 0.2rem 0;
   }
+  // The characters of a movement: search, sort, and a list in a box of its own that scrolls (P1-36 ; R1, img 23)
+  .sr-faction-pick-tools {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    margin: 0.3rem 0;
+    .sr-faction-pick-search { flex: 1 1 12rem; min-width: 8rem; }
+    .sr-faction-pick-sort { flex: 0 0 auto; width: auto; }
+    .sr-faction-pick-count { flex: 0 0 auto; opacity: 0.75; font-size: 0.85em; }
+  }
+  .sr-faction-pick {
+    max-height: 12rem;
+    overflow-y: auto;
+    padding: 0.25rem;
+    border: 1px solid var(--srw-border);
+    background: var(--srw-field);
+    label[hidden] { display: none; }
+  }
   .sr-faction-tag {
     border: 1px solid var(--color-border-light-2, #8884);
     border-radius: 3px;

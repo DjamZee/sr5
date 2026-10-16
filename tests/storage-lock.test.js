@@ -154,6 +154,21 @@ describe('picking tests (SR5 p. 365)', () => {
       }
     }, 4, 3)).toBe(9)
   })
+  // Measured in game (lot 17a): Locksmith 1, Agility 4, wounded (-1), autopicker 3 picked with 7 dice, not 6
+  it('an autopicker replaces the rating only: the wound modifiers stay', () => {
+    expect(pickPool({
+      rating: {
+        value: 1
+      }, test: {
+        dicePool: 4
+      }
+    }, 4, 3)).toBe(6)
+    expect(pickPool({
+      rating: {
+        value: 0
+      }, canDefault: false
+    }, 4, 3, -2)).toBe(5)
+  })
   it('untrained, no dice unless the skill can be defaulted', () => {
     expect(pickPool({
       rating: {

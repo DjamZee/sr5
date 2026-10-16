@@ -57,3 +57,55 @@ export function reloadIsFree({
 }) {
   return !!houseRule && option !== "remove" && !!hasAmmo
 }
+
+//Rating an attribute would have without the augmentation cap: the kept rating plus what the cap took away
+//(its modifiers carry the cut as a negative value). For the Physical limit (forLimit), the modifiers marked
+//poolOnly stay out, as in limitAttributeValue (Attribute Boost, SR5 p. 312).
+export function uncappedRating(attribute, forLimit = false) {
+  const augmented = attribute?.augmented
+  if (!augmented) return 0
+  const modifiers = augmented.modifiers ?? []
+  if (forLimit && modifiers.some(m => m.poolOnly)) {
+    return (augmented.base ?? 0) + modifiers
+      .filter(m => !m.poolOnly && !m.isMultiplier && m.type !== "augmentationCap")
+      .reduce((sum, m) => sum + (Number(m.value) || 0), 0)
+  }
+  const cut = modifiers.filter(m => m.type === "augmentationCap").reduce((sum, m) => sum + (Number(m.value) || 0), 0)
+  return (augmented.value ?? 0) - cut
+}
+
+//Base of a limit (SR5 p. 52). rating(attribute) reads a mental or social rating, physical(attribute) a rating
+//for the Physical limit. An AI on a device (Data Trails p. 160): Data Processing can replace the Mental limit
+//and joins the Social limit. undefined for a key the formulas do not know.
+export function limitBase(key, {
+  attributes, essence, aiDataProcessing = null, rating, physical
+}) {
+  switch (key) {
+    case "astralLimit":
+      return Math.max(
+        Math.ceil((rating(attributes.logic) * 2 + rating(attributes.intuition) + rating(attributes.willpower)) / 3),
+        Math.ceil((rating(attributes.charisma) * 2 + rating(attributes.willpower) + essence) / 3)
+      )
+    case "mentalLimit": {
+      const base = Math.ceil((rating(attributes.logic) * 2 + rating(attributes.intuition) + rating(attributes.willpower)) / 3)
+      return aiDataProcessing !== null ? Math.max(base, aiDataProcessing) : base
+    }
+    case "physicalLimit":
+      return Math.ceil((physical(attributes.strength) * 2 + physical(attributes.body) + physical(attributes.reaction)) / 3)
+    case "socialLimit":
+      if (aiDataProcessing !== null) return Math.ceil((rating(attributes.charisma) + aiDataProcessing + rating(attributes.willpower) + essence) / 3)
+      return Math.ceil((rating(attributes.charisma) * 2 + rating(attributes.willpower) + essence) / 3)
+    default:
+      return undefined
+  }
+}
+
+//The limits whose help tells what the cap cost (arbitrage de DjamZ: Physical, Mental, Social), and only
+//when it did cost something: { kept, uncapped } or null.
+export const CAP_NOTE_LIMITS = ["physicalLimit", "mentalLimit", "socialLimit"]
+export function limitCapNote(kept, base, uncappedBase) {
+  if (!(uncappedBase > base)) return null
+  return {
+    kept, uncapped: kept + uncappedBase - base
+  }
+}

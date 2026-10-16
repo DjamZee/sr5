@@ -17,7 +17,7 @@
 				{{#if owner}}
 				<p class="SR-TextRight add-item" data-helpTitle="{{localize 'SR5.HELP_ItemAdd' key=(findTranslation 'itemTypes' 'itemRitual')}}" 
 				  data-helpMessage="{{localize 'SR5.HELP_ItemAddMsg'}}">
-					<a class="item-create" data-title="{{localize 'SR5.Add'}}" data-type="itemRitual"><em class="fas fa-plus"></em></a>
+					<a class="item-create" data-tooltip="{{localize 'SR5.Add'}}" data-type="itemRitual"><em class="fas fa-plus"></em></a>
 				</p>
 				{{/if}}
 			</div>
@@ -94,7 +94,7 @@
 			<div class="col-1 SR-TextCenter">
 				<p class="SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_RitualActivateToggle' key=name}}" data-helpMessage="{{localize 'SR5.HELP_RitualActivateToggleMsg'}}">
 					<a class="toggle-value" data-dtype="Boolean" data-item-id="{{_id}}" data-binding="system.isActive"
-						data-title="{{#if system.isActive}}{{localize 'SR5.Unequip'}}{{else}}{{localize 'SR5.Equip'}}{{/if}}">
+						data-tooltip="{{#if system.isActive}}{{localize 'SR5.Unequip'}}{{else}}{{localize 'SR5.Equip'}}{{/if}}">
 						<em class="fas fa-sm fa-thumbtack {{#if system.isActive}}SR-SubColor{{/if}}"></em></a>
 				</p>
 			</div>

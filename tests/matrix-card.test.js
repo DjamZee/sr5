@@ -9,7 +9,7 @@ import {
 
 const {
   cardHits, defenderNetHits, sameActor, standsFor, trustedHits, trustedMatrixAction, trustedDefenderDamage, cardStandsFor,
-  trustedComplexForm, complexFormSubType,
+  trustedComplexForm, complexFormSubType, rolledPool, sheetValue,
 } = await import('../modules/rolls/roll-helpers/matrix-card.js')
 
 const dice = (kept, rerolls = []) => ({
@@ -314,6 +314,88 @@ describe('trustedDefenderDamage', () => {
   })
 })
 
+// SR5 p. 249: a failed IC attack damages the IC. The button of a defense against an IC was refused, even to the GM
+// (false alarm in honest play, measured 08/10): the defense card is now read as trustedIceAttack reads the IC's
+describe('trustedDefenderDamage against an IC', () => {
+  const ice = actor('Actor.ice', 'actorDevice', {
+    matrix: {
+      deviceType: 'ice', deviceSubType: 'iceBlueGoo', attributes: {
+        attack: {
+          value: 4
+        }
+      }, ice: {
+        attackDicepool: 8, defenseFirstAttribute: 'logic', defenseSecondAttribute: 'firewall'
+      }
+    }
+  })
+  const decker = actor('Actor.dk', 'actorPc', {
+    attributes: {
+      logic: {
+        augmented: {
+          value: 5
+        }
+      }
+    }, matrix: {
+      attributes: {
+        firewall: {
+          value: 2
+        }
+      }
+    }, specialAttributes: {
+      edge: {
+        augmented: {
+          value: 0
+        }
+      }
+    }
+  }, ['Clo'])
+  const attack = {
+    id: 'ia', roller: ice, byGM: true, data: {
+      test: {
+        type: 'iceAttack', typeSub: 'iceBlueGoo'
+      }, roll: {
+        hits: 2
+      }
+    }
+  }
+  const defense = {
+    id: 'id', roller: decker, byGM: false, author: {
+      name: 'Clo'
+    }, data: {
+      test: {
+        type: 'iceDefense', typeSub: 'iceBlueGoo'
+      }, previousMessage: {
+        actorId: 'ice', messageId: 'ia'
+      }, roll: {
+        // Thirty hits claimed on eleven dice: seven fit the pool of 7 (Logic 5 + Firewall 2), five of them hits
+        hits: 30, r: dice([5, 5, 5, 5, 5, 1, 1, 6, 6, 6, 6])
+      }
+    }
+  }
+  it('takes the GM\'s defense card as written', async () => {
+    expect(await trustedDefenderDamage('id', 5, helpers({
+      id: {
+        ...defense, byGM: true
+      }
+    }))).toBe(5)
+  })
+  it('counts a player\'s defense again within its pool, against the IC attack card read again', async () => {
+    expect(await trustedDefenderDamage('id', 50, helpers({
+      ia: attack, id: defense
+    }))).toBe(3)
+  })
+  it('refuses a player\'s defense whose attack card is no IC attack', async () => {
+    expect(await trustedDefenderDamage('id', 50, helpers({
+      id: defense
+    }))).toBe(null)
+    expect(await trustedDefenderDamage('id', 50, helpers({
+      ia: {
+        ...attack, roller: decker
+      }, id: defense
+    }))).toBe(null)
+  })
+})
+
 describe('trustedComplexForm (lot 3)', () => {
   const spike = {
     id: 'cf', type: 'itemComplexForm', uuid: 'Actor.h.Item.cf', system: {
@@ -413,5 +495,78 @@ describe('cardStandsFor', () => {
     }))).toBe(true)
     expect(await cardStandsFor('x', npc, helpers({
     }))).toBe(false)
+  })
+})
+
+describe('the sheet dropped between the roll and the defense (Laurine, 08/10)', () => {
+  //Rolled with 12 dice, 7 hits; the deck switched off since: the sheet shows a pool of 0
+  const offline = actor('Actor.o', 'actorPc', {
+    ...hacker.system, matrix: {
+      actions: {
+        dataSpike: {
+          limit: {
+            linkedAttribute: 'attack', value: 0
+          }, test: {
+            dicePool: 0
+          }
+        }
+      }
+    }
+  }, ['Clo'])
+  const card = (kept, value, modifiers = []) => ({
+    id: 'a', roller: offline, byGM: false, author: {
+      name: 'Clo'
+    }, data: {
+      test: {
+        type: 'matrixAction', typeSub: 'dataSpike'
+      }, dicePool: {
+        value, modifiers
+      }, roll: {
+        r: dice(kept)
+      }
+    }
+  })
+  const read = (c, hits) => trustedMatrixAction({
+    owner: {
+      messageId: 'a'
+    }, roll: {
+      hits
+    }
+  }, {
+    ...helpers({
+      a: c
+    }), poolCap: (roller, path) => sheetValue(roller, path) + 2,
+  })
+  const honest = [5, 5, 5, 5, 5, 5, 5, 1, 2, 3, 4, 2]
+  it('counts the honest card within the pool it was rolled with: no cut, no alert', async () => {
+    const r = await read(card(honest, 12), 7)
+    expect(r.hits).toBe(7)
+    expect(r.overPool).toBe(null)
+  })
+  it('still tells and cuts dice past the pool the card was rolled with', async () => {
+    const r = await read(card([...honest, ...new Array(18).fill(5)], 12), 25)
+    expect(r.hits).toBe(7)
+    expect(r.overPool).toEqual({
+      dice: 30, cap: 14
+    })
+  })
+  it('leaves out of that pool the Edge of a push the GM did not grant', async () => {
+    expect(rolledPool({
+      dicePool: {
+        value: 14, modifiers: [{
+          type: 'edge', value: 2
+        }]
+      }
+    })).toBe(12)
+    expect(rolledPool({
+      dicePool: {
+        value: 14, modifiers: [{
+          type: 'pushTheLimit', value: 2
+        }, {
+          type: 'misc', value: 3
+        }]
+      }
+    })).toBe(12)
+    expect(rolledPool(undefined)).toBe(0)
   })
 })

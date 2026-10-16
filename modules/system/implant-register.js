@@ -16,6 +16,9 @@ import {
 import {
   updateLedger
 } from "./gm-ledger.js"
+import {
+  CREATION_FLAG, creationModeFor, actorInCreation, worldCreationMode
+} from "./creation-actor.js"
 
 export const IMPLANT_REGISTER = "sr5ImplantRegister"
 
@@ -126,16 +129,18 @@ export async function expectedAtCreation(doc, fields, {
 }
 
 /**
- * The values to expect of a document: the register's, or, for a document it does not know yet (saved before it
- * existed, created while no gamemaster was connected), what it holds when that is the default, else what the body
- * gives now. A field the register entry does not hold yet (one added to the reserved fields after the entry was made,
- * isAccessory or reversibleEssence) is taken as the document holds it at the gamemaster's first sight: an accessory
- * entered before is not unticked.
+ * The values to expect of a document: the register's, or, for a document it does not know yet, what it holds when
+ * that is the default, else what the body gives now. At the gamemaster's arrival (firstSight), a document the register
+ * does not know is taken as it stands, like its peak (PEAK_COST): a character the GM imported, or set up before the
+ * register existed, carries his own values, and an accessory must not be unticked (DjamZ's world, 07/10: ten
+ * accessories made to cost Essence at a reload). A field the register entry does not hold yet (one added to the
+ * reserved fields after the entry was made, isAccessory or reversibleEssence) is taken the same way.
  */
 export async function expectedValues(doc, fields, register, options = {
 }) {
   const current = reservedValues(doc.system, fields)
   const entry = register?.[doc.uuid]
+  if (!entry && options.firstSight) return current
   if (entry) {
     if (fields.every(f => f in entry)) return Object.fromEntries(fields.map(f => [f, entry[f]]))
     // At the GM's arrival (firstSight), the document as it stands; on a player's write, what the GM works out
@@ -147,7 +152,8 @@ export async function expectedValues(doc, fields, register, options = {
 }
 
 const isActiveGM = () => !!game.users?.activeGM?.isSelf
-const creationMode = () => game.settings.get("sr5", "sr5ShopCreationMode") === true
+// The world's creation mode, or the gamemaster's flag on the character the document is (or is on): lot C0
+const creationMode = doc => creationModeFor(doc?.documentName === "Actor" ? doc : doc?.parent)
 
 // The register is written by one client, the active GM, in its turn on its latest state (gm-ledger.js)
 function record(doc, values) {
@@ -192,8 +198,52 @@ export function nextPeak(entry, cost) {
  */
 export function essenceTaken(item, cost, register = readRegister()) {
   const now = Number(cost) || 0
-  if (item?.system?.reversibleEssence) return now
+  if (item?.system?.reversibleEssence || inCreation(item?.parent)) return now
   return Math.max(now, Number(register?.[item?.uuid]?.[PEAK_COST]) || 0)
+}
+
+/**
+ * A character in creation (lot C0) takes no peak: buying an implant at creation is no surgery, the cyber-surgery and
+ * its toll come "après sa création" (SR5 p. 454), and the Essence that "ne revient pas" (SR5 p. 53) is lost in play.
+ * At creation an implant takes its cost of now, whatever a module or the GM sets it to; the peak starts from that cost
+ * when the gamemaster ends the creation (creationEnded). A rule of the book, not a house rule.
+ */
+function inCreation(actor) {
+  try {
+    return !!actor && creationModeFor(actor)
+  } catch (_err) {
+    return false
+  }
+}
+
+/** updateActor: did this change take the actor out of creation (the flag unset, or no longer active)? */
+export function creationEnded(changes) {
+  const sr5 = changes?.flags?.sr5
+  if (!sr5) return false
+  if (`-=${CREATION_FLAG}` in sr5) return true
+  return CREATION_FLAG in sr5 && sr5[CREATION_FLAG]?.active !== true
+}
+
+/**
+ * The register once `actor` leaves creation: each implant's peak is its cost of now, whatever peak an earlier stay in
+ * play left; null when nothing changes. The hook runs once the character is prepared again without its flag, its cost
+ * already raised to that old peak (essenceTaken): the cost before the peak is read (relecture 70).
+ */
+export function peaksAtCreationEnd(register, actor) {
+  let changed = false
+  for (const item of actor?.items ?? []) {
+    if (item?.type !== "itemAugmentation" || item.system?.reversibleEssence) continue
+    const cost = item.system?.essenceCost ?? {
+    }
+    const peak = Math.round((Number(cost.withoutPeak ?? cost.value) || 0) * 100) / 100
+    if (register[item.uuid]?.[PEAK_COST] === peak) continue
+    register[item.uuid] = {
+      ...(register[item.uuid] ?? {
+      }), [PEAK_COST]: peak
+    }
+    changed = true
+  }
+  return changed ? register : null
 }
 
 function readRegister() {
@@ -246,6 +296,8 @@ export async function resetEssencePeak(item) {
 /** Notes the cost an implant has now, when it is the highest the active GM has seen for it. */
 function notePeak(doc) {
   if (doc?.type !== "itemAugmentation" || !(doc.parent instanceof Actor)) return
+  // At creation, no peak (inCreation)
+  if (creationMode(doc)) return
   const cost = doc.system?.essenceCost?.value
   if (nextPeak(game.settings.get("sr5", IMPLANT_REGISTER)?.[doc.uuid], cost) === null) return
   return updateLedger(IMPLANT_REGISTER, register => {
@@ -291,7 +343,7 @@ async function onCreate(doc, _options, userId) {
     return notePeak(doc)
   }
   const expected = await expectedAtCreation(doc, fields, {
-    creation: creationMode()
+    creation: creationMode(doc)
   })
   const mismatches = reservedMismatches(current, expected)
   await record(doc, expected)
@@ -302,7 +354,13 @@ async function onCreate(doc, _options, userId) {
 }
 
 /** updateItem / updateActor: a gamemaster's write is recorded; a player's change is put back. */
-async function onUpdate(doc, _changes, _options, userId) {
+async function onUpdate(doc, changes, _options, userId) {
+  // The gamemaster ends the creation: the peaks start from the costs of now (inCreation). Every client prepares the
+  // character again once they have arrived (onWorldCreationModeChange), or it shows an old peak until then
+  if (doc.documentName === "Actor" && creationEnded(changes) && !creationMode(doc)) {
+    endedPending.add(doc)
+    if (isActiveGM()) await updateLedger(IMPLANT_REGISTER, register => peaksAtCreationEnd(register, doc))
+  }
   const fields = reservedFieldsOf(doc)
   if (!fields.length || !isActiveGM()) return
   const current = reservedValues(doc.system, fields)
@@ -315,7 +373,7 @@ async function onUpdate(doc, _changes, _options, userId) {
     return notePeak(doc)
   }
   const expected = await expectedValues(doc, fields, register, {
-    creation: creationMode()
+    creation: creationMode(doc)
   })
   if (!register[doc.uuid] || !fields.every(f => f in register[doc.uuid])) await record(doc, expected)
   const mismatches = reservedMismatches(current, expected)
@@ -341,28 +399,30 @@ export async function reconcileImplantRegister() {
   if (!isActiveGM()) return
   const register = game.settings.get("sr5", IMPLANT_REGISTER) ?? {
   }
-  const options = {
-    creation: creationMode(), firstSight: true
-  }
   // The implants the register does not know yet, and the entries missing a field added since, are written in one go
   const unknown = {
   }
   const peaks = {
   }
   for (const actor of game.actors) {
+    const options = {
+      creation: creationMode(actor), firstSight: true
+    }
     for (const doc of [actor, ...actor.items]) {
       const fields = reservedFieldsOf(doc)
       if (!fields.length) continue
       const expected = await expectedValues(doc, fields, register, options)
       const entry = register[doc.uuid]
-      if ((!entry && doc.type === "itemAugmentation") || (entry && !fields.every(f => f in entry))) unknown[doc.uuid] = expected
+      // A document the register does not know is noted as it stands (expectedValues, firstSight): an implant always,
+      // anything else when it is off its defaults, so that a player's later write is checked against it
+      const atDefaults = Object.entries(expected).every(([f, v]) => v === RESERVED_DEFAULTS[f])
+      if ((!entry && (doc.type === "itemAugmentation" || !atDefaults)) || (entry && !fields.every(f => f in entry))) unknown[doc.uuid] = expected
+      // Only what differs from a value the register holds is put back
       const mismatches = reservedMismatches(reservedValues(doc.system, fields), expected)
-      // An implant unknown to the register was installed while no GM was there: nothing was "changed"
-      if (Object.keys(mismatches).length) await restore(doc, mismatches, null, {
-        created: !entry
-      })
+      if (Object.keys(mismatches).length) await restore(doc, mismatches, null)
       // The cost an implant has at the GM's arrival is the first one he sees (PEAK_COST)
-      if (doc.type === "itemAugmentation" && nextPeak(entry, doc.system?.essenceCost?.value) !== null) peaks[doc.uuid] = doc.system.essenceCost.value
+      // At creation, none (inCreation)
+      if (doc.type === "itemAugmentation" && !options.creation && nextPeak(entry, doc.system?.essenceCost?.value) !== null) peaks[doc.uuid] = doc.system.essenceCost.value
     }
   }
   if (Object.keys(unknown).length || Object.keys(peaks).length) await updateLedger(IMPLANT_REGISTER, latest => {
@@ -382,8 +442,83 @@ export async function reconcileImplantRegister() {
   })
 }
 
+/**
+ * The costs the implants of the world's characters take now, read while the world's creation mode is still in their
+ * prepared data (no peak then, inCreation): the peaks they start from when the gamemaster switches that mode off. A
+ * character the gamemaster flagged "in creation" stays so: its flag is not touched, its implants keep no peak.
+ */
+export function costsAtWorldCreationEnd(actors) {
+  const costs = {
+  }
+  for (const actor of actors ?? []) {
+    if (actorInCreation(actor)) continue
+    for (const item of actor?.items ?? []) {
+      if (item?.type !== "itemAugmentation" || item.system?.reversibleEssence) continue
+      costs[item.uuid] = Math.round((Number(item.system?.essenceCost?.value) || 0) * 100) / 100
+    }
+  }
+  return costs
+}
+
+/** The register with each implant's peak set to `costs`; null when nothing changes. */
+export function peaksFromCosts(register, costs) {
+  let changed = false
+  for (const [uuid, peak] of Object.entries(costs)) {
+    if (register[uuid]?.[PEAK_COST] === peak) continue
+    register[uuid] = {
+      ...(register[uuid] ?? {
+      }), [PEAK_COST]: peak
+    }
+    changed = true
+  }
+  return changed ? register : null
+}
+
+const withImplants = () => [...(game.actors ?? [])].filter(a => a.items?.some?.(i => i.type === "itemAugmentation"))
+// Every client prepares its characters again once the peaks the active GM writes at the end of the world's creation
+// mode have arrived (the register changed after the mode did)
+let peaksPending = false
+// The same, for the characters whose own creation flag the gamemaster just took off
+const endedPending = new Set()
+
+function prepareAgain() {
+  for (const actor of withImplants()) {
+    actor.reset()
+    if (actor.sheet?.rendered) actor.sheet.render()
+  }
+}
+
+/**
+ * updateSetting, on every client: the gamemaster switched the world's creation mode. Off, the peaks start from the
+ * costs of now at once (Clovis, réserve de la relecture 61), not at the next arrival of a GM: the active GM writes them,
+ * every client prepares its characters again. On, the characters are prepared again without their peaks.
+ */
+export async function onWorldCreationModeChange(setting) {
+  if (setting?.key === `sr5.${IMPLANT_REGISTER}`) {
+    if (peaksPending) {
+      peaksPending = false
+      prepareAgain()
+    }
+    for (const actor of endedPending) {
+      actor.reset()
+      if (actor.sheet?.rendered) actor.sheet.render()
+    }
+    endedPending.clear()
+    return
+  }
+  if (setting?.key !== "sr5.sr5ShopCreationMode") return
+  if (worldCreationMode()) return prepareAgain()
+  // Read before anything is prepared again: the prepared costs are still those of the creation mode
+  const costs = isActiveGM() ? costsAtWorldCreationEnd(game.actors) : null
+  peaksPending = true
+  prepareAgain()
+  if (costs) await updateLedger(IMPLANT_REGISTER, register => peaksFromCosts(register, costs))
+}
+
 export function registerImplantRegisterHooks() {
   const guard = fn => (...args) => Promise.resolve(fn(...args)).catch(e => console.error("SR5 | implant register", e))
+  Hooks.on("updateSetting", guard(onWorldCreationModeChange))
+  Hooks.on("createSetting", guard(onWorldCreationModeChange))
   Hooks.on("createItem", guard(onCreate))
   Hooks.on("updateItem", guard(onUpdate))
   Hooks.on("updateActor", guard(onUpdate))

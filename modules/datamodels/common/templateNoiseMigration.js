@@ -18,7 +18,8 @@ export function migrateTemplateNoise(source) {
   const system = source?.system
   if (source?.type !== "itemEffect" || system?.type !== "areaEffect" || !system.customEffects) return source
   const effects = Array.isArray(system.customEffects) ? system.customEffects : Object.values(system.customEffects)
-  const noises = effects.filter(e => e?.target === "system.matrix.noise" && Number(e.value) < 0)
+  //Decrease Noise (Street Grimoire p. 114) lowers the Noise: its effect is marked, and stays negative
+  const noises = effects.filter(e => e?.target === "system.matrix.noise" && Number(e.value) < 0 && !e.noiseSpell)
   if (!noises.length) return source
   for (const effect of noises) effect.value = -Number(effect.value)
   //The noise effect carries only its noise: its displayed value is that same rating

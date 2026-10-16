@@ -1,0 +1,72 @@
+<div class="sr-presets-config-body">
+  <div class="sr-presets-scroll">
+    <p class="hint">{{localize 'SR5.PRESETS_Intro'}}</p>
+
+    <fieldset>
+      <legend>{{localize 'SR5.PRESETS_Automation'}}</legend>
+      <div class="form-group sr-preset-choice">
+        <select data-preset="automation" aria-label="{{localize 'SR5.PRESETS_Automation'}}">
+          {{#each automation}}
+          <option value="{{key}}" {{#if selected}}selected{{/if}}>{{localize label}}</option>
+          {{/each}}
+        </select>
+      </div>
+      <ul class="sr-preset-hints">
+        {{#each automation}}{{#if key}}
+        <li class="{{#if selected}}active{{/if}}"><strong>{{localize label}}</strong> — {{localize hint}}</li>
+        {{/if}}{{/each}}
+      </ul>
+    </fieldset>
+
+    <fieldset>
+      <legend>{{localize 'SR5.PRESETS_Rules'}}</legend>
+      <div class="form-group sr-preset-choice">
+        <select data-preset="rules" aria-label="{{localize 'SR5.PRESETS_Rules'}}">
+          {{#each rules}}
+          <option value="{{key}}" {{#if selected}}selected{{/if}}>{{localize label}}</option>
+          {{/each}}
+        </select>
+      </div>
+      <ul class="sr-preset-hints">
+        {{#each rules}}{{#if key}}
+        <li class="{{#if selected}}active{{/if}}"><strong>{{localize label}}</strong> — {{localize hint}}</li>
+        {{/if}}{{/each}}
+      </ul>
+    </fieldset>
+
+    {{#if hasChoice}}
+    <fieldset class="sr-preset-preview">
+      <legend>{{localize 'SR5.PRESETS_Preview'}}</legend>
+      {{#if changes.length}}
+      <table>
+        <tbody>
+          {{#each changes}}
+          <tr>
+            <th scope="row">{{label}}</th>
+            <td class="from">{{from}}</td>
+            <td class="arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></td>
+            <td class="to">{{to}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+      {{else}}
+      <p class="hint">{{localize 'SR5.PRESETS_NoChange'}}</p>
+      {{/if}}
+    </fieldset>
+    {{/if}}
+
+    <fieldset class="sr-preset-mine">
+      <legend>{{localize 'SR5.PRESETS_Mine'}}</legend>
+      <p class="hint">{{#if saved}}{{saved}}{{else}}{{localize 'SR5.PRESETS_NothingSaved'}}{{/if}}</p>
+      <div class="sr-preset-mine-buttons">
+        <button type="button" data-action="saveMine"><i class="fas fa-floppy-disk"></i> {{localize 'SR5.PRESETS_Save'}}</button>
+        <button type="button" data-action="restoreMine" {{#unless saved}}disabled{{/unless}}><i class="fas fa-rotate-left"></i> {{localize 'SR5.PRESETS_Restore'}}</button>
+      </div>
+    </fieldset>
+  </div>
+
+  <footer class="form-footer">
+    <button type="submit" {{#unless hasChoice}}disabled{{/unless}}><i class="fas fa-check"></i> {{localize 'SR5.PRESETS_Apply'}}</button>
+  </footer>
+</div>

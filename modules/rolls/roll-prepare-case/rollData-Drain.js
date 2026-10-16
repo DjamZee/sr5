@@ -34,8 +34,9 @@ export default function drain(rollData, actor, chatData){
     // Archivist and Conjuring Specialist (Forbidden Arcana p. 32, 40): Magic counted higher to decide the drain type
     const masteries = actor.system.magic?.masteries
     const isConjuring = isSpiritForceDrain(chatData)
+    //Blood Magic Points spent on it count as Magic too (Street Grimoire p. 90)
     const drainTypeMagic = magicForDrainType(actor.system.specialAttributes.magic.augmented.value,
-      masteries?.archivist?.value, masteries?.conjuringSpecialist?.value, isConjuring)
+      masteries?.archivist?.value, masteries?.conjuringSpecialist?.value, isConjuring) + Math.max(0, Number(chatData.magic?.bloodMagic?.drainMagic) || 0)
     if (isConjuring){
       if (chatData.magic.force > drainTypeMagic) rollData.magic.drain.type = "physical"
       else rollData.magic.drain.type = "stun"

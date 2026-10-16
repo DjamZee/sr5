@@ -17,7 +17,7 @@
 				{{#if owner}}
 				<p class="SR-TextRight add-item" data-helpTitle="{{localize 'SR5.HELP_ItemAdd' key=(findTranslation 'itemTypes' 'itemComplexForm')}}" 
 				data-helpMessage="{{localize 'SR5.HELP_ItemAddMsg'}}">
-					<a class="item-create" data-title="{{localize 'SR5.Add'}}" data-type="itemComplexForm">
+					<a class="item-create" data-tooltip="{{localize 'SR5.Add'}}" data-type="itemComplexForm">
 						<em class="fas fa-plus"></em>
 					</a>
 				</p>
@@ -29,7 +29,7 @@
 			<div class="col-5 deplie" data-helpTitle="{{localize 'SR5.HELP_MoreInfos'}}" data-helpMessage="{{localize 'SR5.HELP_MoreInfosMsg'}}">
 				{{#if (missing system.target system.duration system.fadingValue)}}
 				<p class="incomplete"
-					data-title="{{localize 'SR5.UI_WarningMissingValues' type=(localize 'ITEM.TypeSort')}}">{{name}}</p>
+					data-tooltip="{{localize 'SR5.UI_WarningMissingValues' type=(localize 'ITEM.TypeSort')}}">{{name}}</p>
 				{{else}}
 				<p>{{name}}</p>
 				{{/if}}
@@ -55,17 +55,17 @@
 			</div>
 			<div class="col-2 SR-TextCenter">{{valueOrDash (findTranslation 'complexFormTargets' system.target)}}</div>
 			<div class="col-1">
-				<p class="SR-TextCenter" data-title="{{findTranslation 'spellDurations'system.duration}}">
+				<p class="SR-TextCenter" data-tooltip="{{findTranslation 'spellDurations'system.duration}}">
 					{{#if system.duration}}
 						{{#ife system.duration "sustained"}}
 							{{#if system.isActive}}
 							<a class="toggle-value" data-dtype="Boolean" data-item-id="{{_id}}" data-binding="system.isActive"
-								data-title="{{localize 'SR5.StopSustainingSpell'}}">
+								data-tooltip="{{localize 'SR5.StopSustainingSpell'}}">
 								<em class="fas fa-sm fa-praying-hands SR-SubColor"></em>
 							</a>
 							{{else}}
 							<a class="toggle-value" data-dtype="Boolean" data-item-id="{{_id}}" data-binding="system.isActive"
-								data-title="{{localize 'SR5.SustainSpell'}}">
+								data-tooltip="{{localize 'SR5.SustainSpell'}}">
 								<em class="fas fa-sm fa-praying-hands"></em>
 							</a>
 							{{/if}}

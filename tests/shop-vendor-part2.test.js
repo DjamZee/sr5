@@ -2,22 +2,22 @@ import {
   describe, it, expect, beforeEach, afterEach, vi
 } from 'vitest'
 import {
-  VENDOR_TEMPLATES, VENDOR_FAMILIES, templateBanners, templateShop, vendorTemplate, bannerFolderOf, MEGAPACK_BANNER_FOLDER
+  VENDOR_TEMPLATES, VENDOR_FAMILIES, templateBanners, templateShop, vendorTemplate, bannerFolderOf, defaultBannerFolder, MEGAPACK_BANNER_FOLDER
 } from '../modules/interface/shop-vendor-templates.js'
 import {
   SR5ShopCatalog
 } from '../modules/interface/shop-catalog.js'
 
 describe('vendor templates (shop lot C, part 2)', () => {
-  it('has one template per group of banners, 36, each in a known family, with known shelves', () => {
-    expect(VENDOR_TEMPLATES).toHaveLength(36)
+  it('has one template per group of banners, 37 with the information broker, each in a known family, with known shelves', () => {
+    expect(VENDOR_TEMPLATES).toHaveLength(37)
     const shelves = new Set(SR5ShopCatalog.SHELVES.map(shelf => shelf.key))
     for (const template of VENDOR_TEMPLATES) {
       expect(VENDOR_FAMILIES).toContain(template.family)
       for (const shelf of template.shelves) expect(shelves).toContain(shelf)
       for (const letter of template.legality) expect(['legal', 'R', 'F']).toContain(letter)
     }
-    expect(new Set(VENDOR_TEMPLATES.map(t => t.key)).size).toBe(36)
+    expect(new Set(VENDOR_TEMPLATES.map(t => t.key)).size).toBe(37)
     expect(VENDOR_TEMPLATES.filter(t => t.family === 'magic').length).toBe(6)
   })
 
@@ -39,6 +39,11 @@ describe('vendor templates (shop lot C, part 2)', () => {
     expect(bannerFolderOf(null, false)).toBe('')
     // The gamemaster's own folder always wins
     expect(bannerFolderOf(' mes/bannieres ', true)).toBe('mes/bannieres')
+  })
+
+  it('shows the Megapack folder as the default of the setting when the module is active (R9)', () => {
+    expect(defaultBannerFolder(true)).toBe(MEGAPACK_BANNER_FOLDER)
+    expect(defaultBannerFolder(false)).toBe('')
   })
 
   it('gives a new vendor the template settings and its accent', () => {

@@ -15,6 +15,15 @@ import {
 import {
   tacnetOfferFor
 } from "./tacnet.js"
+import {
+  maneuverOffersFor
+} from "./combat-maneuvers.js"
+import {
+  swarmOffersFor
+} from "./swarm.js"
+import {
+  targetDeviceBonus, targetDeviceOffer
+} from "../rolls/roll-helpers/electronic-warfare.js"
 
 export const INDIRECT_DISPLAY_SETTING = "sr5IndirectEffectDisplay"
 
@@ -33,6 +42,23 @@ export function registerIndirectEffectSetting() {
       hidden: "SR5.SETTINGS_IndirectDisplayHidden",
     },
   })
+}
+
+// The slaves of a rigger's PAN: the uuids its active master devices hold (pan-graph.js)
+function masterContentOf(riggerId){
+  const rigger = game.actors?.get(riggerId) ?? game.scenes?.viewed?.tokens?.get(riggerId)?.actor
+  if (!rigger) return []
+  return rigger.items.filter(i => i.type === "itemDevice" && i.system.isActive).flatMap(i => (Array.isArray(i.system.pan?.content) ? i.system.pan.content : []).map(e => e?.uuid))
+}
+
+function targetDeviceOfferFor(rollData, actor, targetActor){
+  if (!actor || !targetActor || targetActor === actor) return null
+  const bonus = targetDeviceBonus(targetActor.items, actor, {
+    weaponUuid: rollData.owner?.itemUuid, masterContentOf
+  })
+  return targetDeviceOffer(bonus, game.i18n.format("SR5.TargetDeviceBonus", {
+    name: bonus?.ownerName ?? ""
+  }))
 }
 
 function rollerToken(actor){
@@ -80,6 +106,14 @@ export function addIndirectEffects(rollData, actor){
   if (blindFire) offers.push(blindFire)
   const tacnet = tacnetOfferFor(rollData, actor)
   if (tacnet) offers.push(tacnet)
-  for (let offer of offers) applyOffer(rollData, offer)
+  //The combat maneuver he takes part in: its bonus, or his penalty out of place (Run & Gun p. 113)
+  offers.push(...maneuverOffersFor(rollData, actor))
+  //A swarm's action: the number of drones minus one, to the pool and the limit (Rigger 5.0 p. 35)
+  offers.push(...swarmOffersFor(rollData, actor))
+  //A device a rigger tracks for his slaved attackers (Rigger 5.0 p. 34)
+  const tracked = kinds.has("attack") ? targetDeviceOfferFor(rollData, actor, targetToken?.actor) : null
+  if (tracked) offers.push(tracked)
+  //An unticked box (a situational effect) is counted only once ticked in the dialog
+  for (let offer of offers) if (offer.checked !== false) applyOffer(rollData, offer)
   rollData.situational = (rollData.situational || []).concat(offers)
 }

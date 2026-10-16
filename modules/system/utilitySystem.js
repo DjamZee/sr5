@@ -2,14 +2,41 @@ import {
   SR5ShopConfig
 } from "../interface/shop-config.js"
 import {
+  SR5RuleLocksConfig
+} from "../interface/rule-locks-config.js"
+import {
+  SR5TokenDefaultsConfig
+} from "../interface/token-defaults-config.js"
+import {
+  TOKEN_DEFAULTS_MENU, TOKEN_DEFAULTS_SETTING
+} from "./token-defaults.js"
+import {
+  RULE_LOCK_PRESETS, presetLocks
+} from "./rule-locks.js"
+import {
   SR5FactionRegistry
 } from "../interface/faction-registry.js"
 import {
   SR5FactionsApp
 } from "../interface/factions-app.js"
 import {
+  SR5ConRegistry
+} from "../interface/con-registry.js"
+import {
+  SR5ConApp
+} from "../interface/con-app.js"
+import {
+  registerSocialSettings
+} from "./social-settings.js"
+import {
   SR5NegotiationRepair
 } from "../interface/negotiation-repair.js"
+import {
+  SR5Chase, ADVANCED_DRIVING_SETTING
+} from "./chase.js"
+import {
+  DRONE_MOD_SETTING, DRONE_MOD_RULES
+} from "./drone-mod-points.js"
 import {
   registerBBHealingSettings
 } from "./bb-healing-rules.js"
@@ -17,11 +44,32 @@ import {
   registerSpiritLedger
 } from "./spirit-ledger.js"
 import {
+  registerPanOpeningSettings
+} from "../canvas/pan-crown/pan-openings.js"
+import {
+  registerPanAmbienceSettings
+} from "../canvas/pan-crown/pan-ambience.js"
+import {
   registerImplantRegisterSetting
 } from "./implant-register.js"
 import {
   registerPreparationRegisterSetting
 } from "./preparation-register.js"
+import {
+  registerRGCombatSettings
+} from "./rg-combat-options.js"
+import {
+  PRESETS_MENU, registerPresetSettings
+} from "./settings-presets.js"
+import {
+  SR5PresetsConfig
+} from "../interface/presets-config.js"
+import {
+  defaultBannerFolder
+} from "../interface/shop-vendor-templates.js"
+import {
+  registerStarterKitSetting
+} from "./starter-kit.js"
 
 export class SR5_SystemHelpers {
 
@@ -67,6 +115,24 @@ export class SR5_SystemHelpers {
       config: false,
       type: Number,
       default: 0
+    })
+
+    // Head case Nanite Volume moved out of Resonance: done once per world, whatever its migration version
+    game.settings.register("sr5", "migrationHeadcaseNanite", {
+      name: "SR5.TEXT_TBD",
+      scope: "world",
+      config: false,
+      type: Boolean,
+      default: false
+    })
+
+    // Standard flashlight given its specialEffect ("flashLight") instead of being recognised by its name: once per world
+    game.settings.register("sr5", "migrationFlashlightEffect", {
+      name: "SR5.TEXT_TBD",
+      scope: "world",
+      config: false,
+      type: Boolean,
+      default: false
     })
 
     // Developper Extra Logging Toggle
@@ -133,12 +199,13 @@ export class SR5_SystemHelpers {
       type: Boolean,
     })
 
-    // SR5 p. 450: picking a lock takes a lockpick kit. On by default, as the book has it
+    // SR5 p. 450: picking a lock takes a lockpick kit. On by default, as the book has it. Edited from the
+    // rule locks menu since B13 (box "lockpick" of the "objects" family), which keeps it in step
     game.settings.register("sr5", "sr5LockpickRequiresKit", {
       name: "SR5.SETTINGS_LockpickRequiresKit_T",
       hint: "SR5.SETTINGS_LockpickRequiresKit_D",
       scope: "world",
-      config: true,
+      config: false,
       default: true,
       type: Boolean,
     })
@@ -155,12 +222,13 @@ export class SR5_SystemHelpers {
     })
 
     // SR5 p. 164-165: one free action, and two simple or one complex, per initiative pass. Off by default: an action
-    // the character no longer has still goes through, as before
+    // the character no longer has still goes through, as before. Edited from the rule locks menu since B13
+    // (family "actions"), which keeps it in step
     game.settings.register("sr5", "sr5BlockMissingActions", {
       name: "SR5.SETTINGS_BlockMissingActions_T",
       hint: "SR5.SETTINGS_BlockMissingActions_D",
       scope: "world",
-      config: true,
+      config: false,
       default: false,
       type: Boolean,
     })
@@ -170,6 +238,18 @@ export class SR5_SystemHelpers {
     game.settings.register("sr5", "sr5GMOnlyItemEffects", {
       name: "SR5.SETTINGS_GMOnlyItemEffects_T",
       hint: "SR5.SETTINGS_GMOnlyItemEffects_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+    })
+
+    // The GM's browser checks the rolls of the players: hits counted again on the dice, dice past the pool, alerts
+    // (socket-guard.js playerRollsChecked). Off by default (DjamZ, 08/10): a player's card on an actor she owns stands
+    // as written, as a GM's
+    game.settings.register("sr5", "sr5CheckPlayerRolls", {
+      name: "SR5.SETTINGS_CheckPlayerRolls_T",
+      hint: "SR5.SETTINGS_CheckPlayerRolls_D",
       scope: "world",
       config: true,
       default: false,
@@ -186,12 +266,13 @@ export class SR5_SystemHelpers {
     })
 
     // A garage is a lifestyle Asset with a minimum lifestyle (Run Faster
-    // p. 216). Tables that do not track lifestyles can switch the check off.
+    // p. 216). Tables that do not track lifestyles can switch the check off, from the rule locks menu since
+    // B13 (box "garage" of the "objects" family), which keeps it in step.
     game.settings.register("sr5", "sr5StorageCheckGarageLifestyle", {
       name: "SR5.SETTINGS_StorageCheckGarageLifestyle_T",
       hint: "SR5.SETTINGS_StorageCheckGarageLifestyle_D",
       scope: "world",
-      config: true,
+      config: false,
       default: true,
       type: Boolean,
     })
@@ -234,6 +315,18 @@ export class SR5_SystemHelpers {
       restricted: true,
     })
 
+    // Cutting Aces social rules (lot 21): the dialog's maneuvers and con steps, the con tracker (p. 153-164)
+    registerSocialSettings()
+    SR5ConRegistry.register()
+    game.settings.registerMenu("sr5", "sr5ConTrackerMenu", {
+      name: "SR5.CON_Title",
+      label: "SR5.CON_Open",
+      hint: "SR5.CON_MenuHint",
+      icon: "fas fa-masks-theater",
+      type: SR5ConApp,
+      restricted: true,
+    })
+
     // The Negotiation lost before the key fix: the gamemaster gives it back, once (negotiation-repair.js)
     SR5NegotiationRepair.register()
     game.settings.registerMenu("sr5", "sr5NegotiationRepairMenu", {
@@ -242,6 +335,70 @@ export class SR5_SystemHelpers {
       hint: "SR5.NEGO_REPAIR_MenuHint",
       icon: "fas fa-handshake",
       type: SR5NegotiationRepair,
+      restricted: true,
+    })
+
+    // Starting kit of a new player character (relecture djamz.13, R8, system/starter-kit.js)
+    registerStarterKitSetting()
+
+    // Presets (lot 10, system/settings-presets.js): automation and rules in one menu, at the head of the settings window
+    registerPresetSettings()
+    game.settings.registerMenu("sr5", PRESETS_MENU, {
+      name: "SR5.PRESETS_Menu_T",
+      label: "SR5.PRESETS_Menu_L",
+      hint: "SR5.PRESETS_Menu_D",
+      icon: "fas fa-wand-magic-sparkles",
+      type: SR5PresetsConfig,
+      restricted: true,
+    })
+
+    // Rule locks (B13, system/rule-locks.js): one box per family of rules, the book's by default. The three
+    // settings that were rule locks (actions, garage, lockpick) are edited from its menu now, and kept in step
+    game.settings.register("sr5", "sr5RuleLocks", {
+      scope: "world", config: false, default: presetLocks("book"), type: Object,
+    })
+    game.settings.register("sr5", "sr5RuleLocksPreset", {
+      scope: "world", config: false, default: "book", type: String,
+      choices: Object.fromEntries(RULE_LOCK_PRESETS.map(key => [key, `SR5.RULELOCKS_Preset_${key}`])),
+    })
+    // 0 until the three former settings are copied into the boxes, once per world (runRuleLocksMigration)
+    game.settings.register("sr5", "sr5RuleLocksMigration", {
+      scope: "world", config: false, default: 0, type: Number,
+    })
+    // "pending" in a new world until its gamemaster chose a preset (askNewWorldPreset), then "done"
+    game.settings.register("sr5", "sr5RuleLocksAsk", {
+      scope: "world", config: false, default: "", type: String,
+    })
+    // The gamemaster is never stopped by a rule lock (idea 11, lot 16b): the action goes and he reads why it would
+    // have been refused. Unchecked by default: he is refused like anyone, as before
+    game.settings.register("sr5", "sr5RuleLocksGMExempt", {
+      name: "SR5.SETTINGS_RuleLocksGMExempt_T",
+      hint: "SR5.SETTINGS_RuleLocksGMExempt_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+    })
+    game.settings.registerMenu("sr5", "sr5RuleLocksMenu", {
+      name: "SR5.RULELOCKS_Menu_T",
+      label: "SR5.RULELOCKS_Menu_L",
+      hint: "SR5.RULELOCKS_Menu_D",
+      icon: "fas fa-lock",
+      type: SR5RuleLocksConfig,
+      restricted: true,
+    })
+
+    // The token of what the system creates in play, family by family (lot 9, system/token-defaults.js): empty = as before
+    game.settings.register("sr5", TOKEN_DEFAULTS_SETTING, {
+      scope: "world", config: false, default: {
+      }, type: Object,
+    })
+    game.settings.registerMenu("sr5", TOKEN_DEFAULTS_MENU, {
+      name: "SR5.TOKENDEFAULTS_Menu_T",
+      label: "SR5.TOKENDEFAULTS_Menu_L",
+      hint: "SR5.TOKENDEFAULTS_Menu_D",
+      icon: "fas fa-chess-pawn",
+      type: SR5TokenDefaultsConfig,
       restricted: true,
     })
 
@@ -306,6 +463,14 @@ export class SR5_SystemHelpers {
       name: "SR5.SETTINGS_ShopCreationMaxRating_T",
       hint: "SR5.SETTINGS_ShopCreationMaxRating_D",
       scope: "world", config: true, default: 6, type: Number,
+    })
+
+    // Past the creation limits: refused by default, as the book (SR5 p. 66, p. 420); checked, the item is bought and
+    // marked on the sheet, for the gamemaster to see in the creation summary (Adrore's feedback C3, 08/10)
+    game.settings.register("sr5", "sr5ShopCreationOverLimit", {
+      name: "SR5.SETTINGS_ShopCreationOverLimit_T",
+      hint: "SR5.SETTINGS_ShopCreationOverLimit_D",
+      scope: "world", config: true, default: false, type: Boolean,
     })
 
     // What a bonus die costs on an availability test. SR5 p. 420 sells one
@@ -375,10 +540,12 @@ export class SR5_SystemHelpers {
     // (SR5 p. 420, the test is the search). A table may want it all the same.
     // Where the vendor banners are (lot C, part 2): never shipped with the system, the table
     // points at its own folder. Empty, vendors have the plain sign of part 1.
+    // Relecture djamz.13 (R9): the field shows the Megapack's folder by default when the module is active,
+    // instead of an empty field that read as "no banner" (an empty value still falls back on it, bannerFolderOf)
     game.settings.register("sr5", "sr5ShopBannerFolder", {
       name: "SR5.SETTINGS_ShopBannerFolder_T",
       hint: "SR5.SETTINGS_ShopBannerFolder_D",
-      scope: "world", config: true, default: "", type: String,
+      scope: "world", config: true, default: defaultBannerFolder(!!game.modules?.get("megapack-sr5-foundry-vtt")?.active), type: String,
       filePicker: "folder",
     })
 
@@ -396,7 +563,7 @@ export class SR5_SystemHelpers {
       hint: "SR5.SETTINGS_ShopDealerKeywords_D",
       scope: "world",
       config: true,
-      default: "fixer, intermediaire, intermédiaire, receleur, recéleur, fourgue, marchand, armurier, talismonger, talismancien, dealer, trafiquant, contrebandier, smuggler, arms dealer",
+      default: "fixer, intermediaire, intermédiaire, receleur, recéleur, fourgue, marchand, armurier, talismonger, marchand de talismans, dealer, trafiquant, contrebandier, smuggler, arms dealer",
       type: String,
     })
 
@@ -405,6 +572,18 @@ export class SR5_SystemHelpers {
       name: "SR5.SETTINGS_HelpActive_T",
       hint: "SR5.SETTINGS_HelpActive_D",
       scope: "client",
+      config: true,
+      default: true,
+      type: Boolean,
+      requiresReload: true
+    })
+
+    // Rule reminders (lot R2, DjamZ): the page references of the texts and the cap notes of the help bubble.
+    // Checked by default, as the system always showed them; read once the settings are, hence the reload
+    game.settings.register("sr5", "sr5RuleReminders", {
+      name: "SR5.SETTINGS_RuleReminders_T",
+      hint: "SR5.SETTINGS_RuleReminders_D",
+      scope: "world",
       config: true,
       default: true,
       type: Boolean,
@@ -462,6 +641,22 @@ export class SR5_SystemHelpers {
       default: false,
       type: Boolean,
       requiresReload: true
+    })
+
+    // Spell Shaping (SR5 p. 329): a one-metre bubble is too small to model on a
+    // battle grid, so the system approximates it as "one shaping point spares one
+    // character". The book gives no conversion, so the rate is a world setting
+    // (arbitrage de DjamZ, 24/09): never turn it into a constant.
+    game.settings.register("sr5", "sr5SpellShapingBubbleCost", {
+      name: "SR5.SETTINGS_SpellShapingBubbleCost_T",
+      hint: "SR5.SETTINGS_SpellShapingBubbleCost_D",
+      scope: "world",
+      config: true,
+      default: 1,
+      type: Number,
+      range: {
+        min: 1, max: 5, step: 1
+      },
     })
 
     // Run & Gun Rules
@@ -552,6 +747,38 @@ export class SR5_SystemHelpers {
       requiresReload: true
     })
 
+    // Vehicle chases (R12): the core book's chase by default (SR5 p. 204-205), Rigger 5.0's advanced driving rules
+    // (p. 175-185) when checked. Arbitrage de DjamZ (07/10) : la poursuite est automatisée, le défaut reste le livre.
+    game.settings.register("sr5", ADVANCED_DRIVING_SETTING, {
+      name: "SR5.SETTINGS_Rigger5AdvancedDriving_T",
+      hint: "SR5.SETTINGS_Rigger5AdvancedDriving_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+      onChange: () => foundry.applications.instances.get("sr5-chase")?.render(),
+    })
+    // The chase itself: the gamemaster's register (chase.js); its window opens from the token controls
+    SR5Chase.register()
+
+    // Drone mods (R13): the slots of the main rule by default (Rigger 5.0 p. 153), the optional Modification Points
+    // (p. 126-128) when chosen. Arbitrage de DjamZ (07/10, Q5) : les deux existent, le défaut reste la règle principale
+    game.settings.register("sr5", DRONE_MOD_SETTING, {
+      name: "SR5.SETTINGS_DroneModRules_T",
+      hint: "SR5.SETTINGS_DroneModRules_D",
+      scope: "world",
+      config: true,
+      default: "slots",
+      type: String,
+      choices: DRONE_MOD_RULES,
+      onChange: () => {
+        for (const actor of game.actors ?? []) if (actor.type === "actorDrone") {
+          actor.reset()
+          actor.sheet?.rendered && actor.sheet.render()
+        }
+      },
+    })
+
     // Hide the die and its face on a random table's chat card
     game.settings.register("sr5", "sr5HideTableRoll", {
       name: "SR5.SETTINGS_HideTableRoll_T",
@@ -573,6 +800,9 @@ export class SR5_SystemHelpers {
       default: false,
       type: Boolean,
     })
+
+    // The optional combat rules of Run & Gun, RG1 to RG6 (RG p. 121-125), off as the book has them (lot 10)
+    registerRGCombatSettings()
 
     // Data Trails p. 157: an AI outside any device defends with its Willpower or Intuition alone. The book does not
     // say which one stands in for Logic: the higher one by default. The same one resists matrix damage, which the book
@@ -697,6 +927,67 @@ export class SR5_SystemHelpers {
 
     // Indexes, reputation adjustment, spirit traits and banishing totals, written by the active GM alone
     registerSpiritLedger()
+
+    // What the players see of the PAN crowns (couronne du PAN, lot 3; decision of DjamZ, 07/10): the book's rules by
+    // default (SR5 p. 236-238), or the gamemaster decides, device by device. Read at each drawing of a crown.
+    game.settings.register("sr5", "panCrownVisibility", {
+      name: "SR5.SETTINGS_PanCrownVisibility_T",
+      hint: "SR5.SETTINGS_PanCrownVisibility_D",
+      scope: "world",
+      config: true,
+      default: "book",
+      type: String,
+      choices: {
+        book: "SR5.SETTINGS_PanCrownVisibility_book",
+        gm: "SR5.SETTINGS_PanCrownVisibility_gm",
+      },
+      onChange: () => canvas?.sr5PanCrown?.refresh()
+    })
+    // The gamemaster's reveal of a device (lot 3): to the whole table (Q4 of DjamZ, the default), or player by player
+    // (idea 10, lot 16b): he then ticks the characters it is revealed to
+    game.settings.register("sr5", "panCrownRevealScope", {
+      name: "SR5.SETTINGS_PanCrownRevealScope_T",
+      hint: "SR5.SETTINGS_PanCrownRevealScope_D",
+      scope: "world",
+      config: true,
+      default: "table",
+      type: String,
+      choices: {
+        table: "SR5.SETTINGS_PanCrownRevealScope_table",
+        player: "SR5.SETTINGS_PanCrownRevealScope_player",
+      },
+      onChange: () => canvas?.sr5PanCrown?.refresh()
+    })
+
+    // The Overwatch Score in the notice of a rise: the gamemaster's alone, as the book keeps it (SR5 p. 233; A7 of
+    // the API pour Matrice v1). The sheet already shows it to the gamemaster alone, or to the owner whose Baby Monitor runs
+    game.settings.register("sr5", "sr5OverwatchGMOnly", {
+      name: "SR5.SETTINGS_OverwatchGMOnly_T",
+      hint: "SR5.SETTINGS_OverwatchGMOnly_D",
+      scope: "world",
+      config: true,
+      default: true,
+      type: Boolean
+    })
+
+    // Hosts slaved to other hosts, « nodes » (host-nodes.js): off the book (SR5 p. 234 slaves no host), unchecked by
+    // default — arbitrage de DjamZ (09/10)
+    game.settings.register("sr5", "sr5HostNodes", {
+      name: "SR5.SETTINGS_HostNodes_T",
+      hint: "SR5.SETTINGS_HostNodes_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+      onChange: () => canvas?.sr5PanCrown?.refresh?.()
+    })
+
+    // How each user opens the PAN crowns (couronne du PAN, lot 8; Q8 of DjamZ, 07/10); its key is in init.js
+    registerPanOpeningSettings()
+
+    // The ambiences of the PAN crowns (couronne du PAN, lot 9; decision 7 of DjamZ, 07/10): each user's level, under
+    // the gamemaster's ceiling
+    registerPanAmbienceSettings()
   }
 
   /* Display Shadowrun Themed Log Entries Based on Logging Level
@@ -946,6 +1237,21 @@ export class SR5_UiModifications {
       if (!target)
         document.getElementById('pause').insertAdjacentHTML("afterend", html)
     }
+  }
+
+  // The help overlay sits right above the players list, at least as wide as it:
+  // a fixed bottom offset covered the list as soon as several players were connected
+  // (#players itself is only as wide as the scene controls: its lists are what shows)
+  static placeHelpWindow(target) {
+    const rects = [...(document.getElementById("players")?.children ?? [])]
+      .map(el => el.getBoundingClientRect()).filter(r => r.height)
+    if (!rects.length) return
+    const left = Math.min(...rects.map(r => r.left))
+    const top = Math.min(...rects.map(r => r.top))
+    const width = Math.max(...rects.map(r => r.right)) - left
+    target.style.left = `${left}px`
+    target.style.bottom = `${window.innerHeight - top + 6}px`
+    target.style.width = `${Math.max(width, 240)}px`
   }
 
 }

@@ -1,0 +1,309 @@
+// The dealership (lot R9 of the rigging plan): the shop's palette (.sr-shop-window), models on the left, the build
+// in the middle around the vehicle's picture and its slot gauges, the mods of the shelves on the right
+.sr-dealership {
+  .sr-dealer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .sr-dealer-bar {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+
+    // A fixed size, whatever the names the list holds: ticking « Équiper » lists every actor (lot 35)
+    label {
+      display: flex;
+      flex: none;
+      gap: 6px;
+      align-items: center;
+      white-space: nowrap;
+    }
+
+    select {
+      width: 260px;
+      flex: none;
+    }
+
+    .sr-dealer-balance {
+      flex: 1;
+      white-space: nowrap;
+    }
+
+    input[type="checkbox"] {
+      flex: none;
+      margin: 0;
+    }
+  }
+
+  // A figure changed by the mods fitted, the printed one struck out beside (lot 35)
+  .sr-dealer-changed {
+    color: var(--sr-shop-accent);
+  }
+
+  .sr-dealer-base {
+    font-weight: normal;
+    font-size: 11px;
+    color: var(--shop-muted);
+  }
+
+  .sr-dealer-body {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(180px, 280px) minmax(360px, 1fr) minmax(200px, 320px);
+    gap: 8px;
+  }
+
+  .sr-dealer-col,
+  .sr-dealer-center {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 0;
+    padding: 8px;
+    // A Concepteur frame (lot 36): panel, firm border, a rule on top
+    background: var(--srw-panel);
+    border: 1px solid var(--srw-border-strong);
+    border-top: 3px solid var(--srw-sel-border);
+    border-radius: 0;
+  }
+
+  .sr-dealer-center {
+    overflow-y: auto;
+  }
+
+  // The Concepteur's step heading: display face in capitals, a tinted line under it
+  h2,
+  h3 {
+    .srw-heading(var(--font-size-20, 20px));
+    margin: 0;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--srw-border);
+    background: linear-gradient(90deg, var(--srw-sel-bg), transparent 45%) bottom / 100% 2px no-repeat;
+  }
+
+  .sr-dealer-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+
+    li {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      column-gap: 6px;
+      padding: 3px 4px;
+      border-bottom: 1px solid var(--shop-line);
+      cursor: pointer;
+
+      &:hover,
+      &.is-selected {
+        background: var(--srw-sel-bg);
+        color: var(--srw-sel-text);
+      }
+
+      &.is-selected {
+        box-shadow: inset 3px 0 0 var(--srw-sel-border);
+      }
+
+      // The system's pictures are white drawings: a night tile keeps them readable on the light set
+      img {
+        grid-row: span 2;
+        width: 32px;
+        height: 32px;
+        border: none;
+        object-fit: contain;
+        background: var(--srw-header-bg);
+      }
+    }
+  }
+
+  .sr-dealer-models,
+  .sr-dealer-catalog {
+    flex: 1;
+  }
+
+  // The shelf's banner, low enough to leave the room to the showroom
+  .sr-dealer-banner img {
+    max-height: 90px;
+  }
+
+  // Vehicles and drones apart (Adrore's feedback C8), each shelf by category
+  .sr-dealer-shelves {
+    display: flex;
+    gap: 4px;
+
+    a {
+      flex: 1;
+      padding: 2px 6px;
+      text-align: center;
+      .srw-tab();
+      .srw-cut();
+
+      &.is-selected {
+        .srw-tab-active();
+      }
+    }
+  }
+
+  .sr-dealer-models li.sr-dealer-group {
+    display: block;
+    padding: 6px 4px 2px;
+    .srw-title();
+    border-bottom: 1px solid var(--srw-border);
+    cursor: default;
+
+    &:hover {
+      background: none;
+    }
+  }
+
+  .sr-dealer-models li img {
+    grid-row: span 3;
+  }
+
+  // The figures of a model, as the book prints them
+  .sr-dealer-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 8px;
+    font-size: 11px;
+    color: var(--shop-muted);
+  }
+
+  .sr-dealer-showcase {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    margin: 0;
+    text-align: center;
+
+    dt {
+      font-size: 11px;
+      color: var(--shop-muted);
+    }
+
+    dd {
+      margin: 0;
+      font-weight: bold;
+      font-family: var(--srw-font-num) !important;
+      color: var(--srw-heading);
+    }
+  }
+
+  .sr-dealer-name {
+    font-size: 13px;
+  }
+
+  .sr-dealer-figures,
+  small,
+  .hint {
+    color: var(--shop-muted);
+  }
+
+  // The middle column scrolls as a whole: the build is never clipped in a box of its own
+  .sr-dealer-build {
+    flex: none;
+    overflow: visible;
+  }
+
+  .sr-dealer-build li {
+    grid-template-columns: 1fr auto auto auto;
+    column-gap: 10px;
+    align-items: center;
+    cursor: default;
+
+    &.is-own {
+      color: var(--shop-muted);
+    }
+  }
+
+  .sr-dealer-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .sr5-workshop-image img {
+    max-width: 160px;
+    max-height: 160px;
+  }
+
+  .sr5-workshop-head {
+    grid-template-columns: minmax(110px, 1fr) 160px minmax(110px, 1fr);
+  }
+
+  // The gauges as the Concepteur's budget bars
+  .sr5-workshop-gauge .sr5-workshop-gauge-bar {
+    display: flex;
+    height: 6px;
+    border: none;
+    border-radius: 0;
+    background: var(--srw-track);
+  }
+
+  .sr5-workshop-gauge .sr5-workshop-gauge-fill {
+    background: var(--srw-accent);
+  }
+
+  .sr5-workshop-gauge-label {
+    font-family: var(--srw-font-num) !important;
+  }
+
+  // What the mods waiting to be installed will take: hatched after the fitted ones
+  .sr-dealer-gauge-pending {
+    height: 100%;
+    background: repeating-linear-gradient(45deg, var(--srw-accent) 0 3px, transparent 3px 6px);
+  }
+
+  .sr-dealer-price {
+    width: 100%;
+    border-collapse: collapse;
+
+    td {
+      padding: 2px 4px;
+      border: none;
+      border-bottom: 1px solid var(--srw-border);
+    }
+
+    td:last-child {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    td:last-child {
+      font-family: var(--srw-font-num) !important;
+    }
+
+    .sr-dealer-total td {
+      font-weight: bold;
+      font-size: 14px;
+      color: var(--srw-heading);
+    }
+  }
+
+  .sr-dealer-warn,
+  .sr-dealer-warn td {
+    color: var(--shop-prohibited);
+  }
+
+  .sr-dealer-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+
+    button {
+      width: auto;
+      padding: 0 0.9rem;
+      font-weight: bold;
+      .srw-cut();
+    }
+  }
+
+  .sr-dealer-empty {
+    margin: auto;
+  }
+}

@@ -81,6 +81,18 @@ export class matrixPartialModel extends foundry.abstract.TypeDataModel {
         initial: false
       }),
       test: dicePoolSchema(),
+      // SR5 p. 252: Compile, Register and Thread are limited by the level chosen (sprite or form), set at roll time
+      // (roll-test.js); this field only carries the effects on that limit (Kill Code p. 110, 114-115). No base: the
+      // level-based limit has no linked limit of the actor
+      limit: new fields.SchemaField({
+        base: new fields.StringField({
+          initial: "", blank: true
+        }),
+        value: new fields.NumberField({
+          initial: 0
+        }),
+        modifiers: new fields.ArrayField(new fields.ObjectField()),
+      }),
     })
 
     const resonanceLimitActionSchema = (actionType, increaseOverwatchScore, limitBase) => new fields.SchemaField({

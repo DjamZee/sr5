@@ -23,6 +23,9 @@ import {
   activateDrugCardListeners
 } from "../system/drug-clock.js"
 import {
+  SR5DrugDesigner
+} from "../interface/drug-designer.js"
+import {
   addExtendedClockButton
 } from "../system/extended-clock.js"
 import {
@@ -53,9 +56,23 @@ import {
   activateBleedCardListeners
 } from "../system/bb-healing.js"
 
+/**
+ * A card posted by the system or a module, as opposed to a line typed in the chat (/w): flags of its own,
+ * or markup that a typed message does not carry.
+ */
+export function isSystemCard(message) {
+  const flags = Object.keys(message.flags ?? {
+  }).filter(k => k !== "core")
+  if (flags.length) return true
+  return /<(div|section|table|button|header|h[1-6])\b/i.test(message.content ?? "")
+}
+
 export function sr5HookRenderChatMessageHTML(message, html, _data) {
+  // Arbitrage de DjamZ (relecture djamz.13) : no card shows the line of its recipients; a typed whisper keeps it
+  if (isSystemCard(message)) html.querySelectorAll(".whisper-to").forEach(el => el.remove())
+
   // A table draw is rendered by core and wears no SR5 header of its own
-  sr5DressTableDraw(html)
+  sr5DressTableDraw(html, message)
 
   // Apply SR5 custom styling for messages with SR5 roll data
   if (message.flags?.sr5data) {
@@ -88,10 +105,15 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   }) => SR5ShopVendor.chatListeners(html, message))
   // Ritual circle card: join and seal (SR5 p. 298-299)
   if (message.flags?.sr5?.ritualCircle) SR5_RitualCircle.activateListeners(html, message)
+  // Lot 37b: an explosion to resist (Run & Gun p. 188), a combat maneuver to join and roll (Run & Gun p. 113)
+  if (message.flags?.sr5?.explosion) import("../system/explosive-charge.js").then(m => m.activateExplosionListeners(html, message))
+  if (message.flags?.sr5?.combatManeuver) import("../system/combat-maneuvers.js").then(m => m.activateManeuverListeners(html, message))
   // Effects run out on the world clock: the GM removes them
   if (message.flags?.sr5?.effectExpiry) activateExpiryCardListeners(html, message)
   // Withdrawal tests and rent fall due: the GM acts
   if (message.flags?.sr5?.deadlines) activateDeadlineCardListeners(html, message)
+  // A drug a player designed: the GM reviews it (Chrome Flesh p. 194-196)
+  if (message.flags?.sr5?.drugDesign) SR5DrugDesigner.activateCardListeners(html, message)
   // Drugs whose effect or crash is over on the clock: the GM moves them on
   if (message.flags?.sr5?.drugClock) activateDrugCardListeners(html, message)
   // Wounds that bleed (Bullets & Bandages p. 14): the GM adds the box
@@ -106,6 +128,8 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   if (message.flags?.sr5?.infectionCard) activateInfectionListeners(html, message)
   // Treating CFD (Dark Terrors p. 87): the GM destroys the implants a NanoScrub glitch reached
   if (message.flags?.sr5?.cfdTreatment) activateCfdListeners(html, message)
+  // A player asks the GM for the commcode of his character (relecture djamz.13): Accept or Refuse, the active GM
+  if (message.flags?.sr5?.commcodeRequest) import("../interface/commcode-request.js").then(m => m.activateCommcodeRequestListeners(html, message))
   // Deactivation (Dark Terrors p. 90): the GM confirms a player's roll, then opens the technomancer's Fading test
   if (message.flags?.sr5?.deactivation || message.flags?.sr5?.deactivationRequest) activateDeactivationListeners(html, message)
   // Dissipation of an AI (Data Trails p. 161): the GM confirms the overflow and rolls the resistance

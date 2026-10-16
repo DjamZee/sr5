@@ -7,10 +7,38 @@
         </select>
     </div>
 </li>
+<li class="grid" data-helpTitle="{{localize 'SR5.VehicleModFactory'}}" data-helpMessage="{{localize 'SR5.HELP_VehicleModFactoryMsg'}}">
+    <div class="col-4">{{localize 'SR5.VehicleModFactory'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="checkbox" name="system.isFactory" data-dtype="Boolean" {{checked system.isFactory}} /></div>
+</li>
+<li class="grid" data-helpTitle="{{localize 'SR5.VehicleModEffectKind'}}" data-helpMessage="{{localize 'SR5.HELP_VehicleModEffectKindMsg'}}">
+    <div class="col-4">{{localize 'SR5.VehicleModEffectKind'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-8">
+        <select name="system.effectKind" data-dtype="String">
+            <option class="SR-LightGreyColor" value="">{{localize 'SR5.ChooseOne'}}</option>
+            {{selectOptions lists.vehicleModEffectKinds selected=system.effectKind localize=true}}
+        </select>
+    </div>
+</li>
 {{#if (eq system.type "weapons")}}
 <li class="grid">
     <div class="col-4">{{localize 'SR5.VEHICLE_WeaponMount_F'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-1"><input type="checkbox" name="system.isWeaponMounted" data-dtype="Boolean" {{checked system.isWeaponMounted}} /></div>
+</li>
+{{/if}}
+
+{{#if (eq system.type "body")}}
+<li class="grid" data-helpTitle="{{localize 'SR5.VehicleModDroneArm'}}" data-helpMessage="{{localize 'SR5.HELP_VehicleModDroneArmMsg'}}">
+    <div class="col-4">{{localize 'SR5.VehicleModDroneArm'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="checkbox" name="system.droneArm.isDroneArm" data-dtype="Boolean" {{checked system.droneArm.isDroneArm}} /></div>
+</li>
+{{/if}}
+{{#if system.droneArm.isDroneArm}}
+<li class="grid" data-helpTitle="{{localize 'SR5.VehicleModDroneArm'}}" data-helpMessage="{{localize 'SR5.HELP_VehicleModDroneArmMsg'}}">
+    <div class="col-4">{{localize 'SR5.Strength'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="number" data-dtype="Number" name="system.droneArm.strength" value="{{system.droneArm.strength}}" placeholder="0" min="0" onfocus="this.select()"/></div>
+    <div class="col-4">{{localize 'SR5.Agility'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-1"><input type="number" data-dtype="Number" name="system.droneArm.agility" value="{{system.droneArm.agility}}" placeholder="0" min="0" onfocus="this.select()"/></div>
 </li>
 {{/if}}
 

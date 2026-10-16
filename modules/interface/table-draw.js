@@ -40,8 +40,9 @@ function findTable(id) {
  * Give a table draw the header the SR5 cards wear, and hoist the icon its
  * results all share up into it.
  * @param {HTMLElement} html  the rendered chat message
+ * @param {ChatMessage} [message]
  */
-export function sr5DressTableDraw(html) {
+export function sr5DressTableDraw(html, message = null) {
   const draw = html.querySelector(".table-draw")
   if (!draw || draw.querySelector(".SR-TableHeader")) return
 
@@ -59,7 +60,8 @@ export function sr5DressTableDraw(html) {
   const drawings = images.map(img => img.getAttribute("src")).filter(src => !isPlaceholder(src))
 
   const table = findTable(draw.dataset.tableId)
-  const title = table?.name ?? ""
+  // A compendium drawn as a table (table-from-compendium.js) has no table to find: its card keeps the name
+  const title = table?.name ?? message?.getFlag?.("sr5", "tableName") ?? ""
   // The table's own drawing belongs beside the title. When the table has
   // none, a drawing that several results repeat is its drawing by another
   // name — but one that appears once is not: on a table that draws actors,

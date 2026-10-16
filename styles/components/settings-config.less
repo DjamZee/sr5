@@ -65,7 +65,8 @@
    checkbox each give a different gap. Two columns instead: the title and its hint
    stacked on the left, the control beside them on the right. The distance between
    a title and its hint is then a row gap, the same for every kind of setting. */
-#settings-config .main .form-group:not(.stacked) {
+#settings-config .main .form-group:not(.stacked),
+#sr5-settings-config .main .form-group:not(.stacked) {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas:
@@ -111,7 +112,8 @@
 }
 
 /* === Settings config window === */
-#settings-config {
+#settings-config,
+#sr5-settings-config {
   nav {
     button {
       padding: 0px 5px;
@@ -142,6 +144,513 @@
 
       &:hover {
         color: var(--sr-text-color-flash);
+      }
+    }
+  }
+}
+
+/* === Shadowrun settings window (B10) ===
+   Core sizes the fields of its own window by id (#settings-config): the same here.
+   Each setting may carry a label ("option du livre", "règle maison") and recalls its default. */
+#sr5-settings-config {
+  .main .form-fields {
+    flex: 1;
+  }
+
+  .main .form-fields > button {
+    flex-basis: 100%;
+  }
+
+  .sr5-settings-tag {
+    display: inline-block;
+    margin-left: 0.25rem;
+    padding: 0 0.35rem;
+    border: 1px solid var(--sr-ui-border-color-active);
+    border-radius: 3px;
+    font-size: 0.75em;
+    font-weight: normal;
+    line-height: 1.4;
+    text-transform: lowercase;
+    vertical-align: middle;
+    color: var(--sr-ui-border-color-active);
+
+    /* The theme's red: in both themes the accent above is the same as --sr-text-color-flash */
+    &.house {
+      border-color: var(--sr-logo-color, #931004);
+      color: var(--sr-logo-color, #931004);
+    }
+  }
+
+  .sr5-settings-default {
+    font-style: italic;
+    opacity: 0.85;
+  }
+
+  /* A choice list no longer squeezes its title and hint into a narrow column: it goes under them, at the end of
+     the row, as wide as its longest choice within the row */
+  .main .form-group:not(.stacked):has(> .form-fields select) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "label"
+      "hint"
+      "field";
+
+    > .form-fields {
+      max-width: 100%;
+      min-width: 0;
+      margin-top: 0.2rem;
+
+      /* The system's own dropdown (sr-dropdown) wraps the select */
+      > select,
+      > .sr-dropdown {
+        width: auto;
+        max-width: 100%;
+        min-width: 16rem;
+      }
+
+      /* A list of several choices (the "+" of the compendiums, lot 9): its tags above, the list to add one under
+         them, as wide as a single choice list */
+      > multi-select {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.25rem;
+        width: 100%;
+
+        > select,
+        > .sr-dropdown {
+          width: auto;
+          max-width: 100%;
+          min-width: 16rem;
+        }
+      }
+    }
+  }
+
+  .main .form-group:not(.stacked) {
+    .sr5-settings-row();
+
+    /* A number keeps to the width of a few digits, under the checkboxes' column */
+    > .form-fields > input[type="number"] {
+      flex: none;
+      width: 5rem;
+      text-align: center;
+    }
+  }
+}
+
+/* === One setting per row, the SR5 way (DjamZ, séance du 08/10 : « les cases devraient aller en bout de ligne
+   sur une seule colonne et une pastille ou un tiret devant chaque option ») ===
+   Shared by the Shadowrun settings window and the rule locks menu: a diamond before each title, a thin line
+   between two settings, the row lit on hover, and every checkbox the same size at the end of its row. */
+.sr5-settings-row() {
+  position: relative;
+  margin: 0;
+  padding: 0.45rem 0.35rem 0.45rem 1.1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--sr-ui-border-color-idle) 35%, transparent);
+  border-left: 2px solid transparent;
+  transition: background-color 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: color-mix(in srgb, var(--sr-ui-border-color-active) 7%, transparent);
+    border-left-color: var(--sr-ui-border-color-active);
+  }
+
+  > label::before {
+    content: "";
+    position: absolute;
+    left: 0.35rem;
+    top: 0.95rem;
+    width: 6px;
+    height: 6px;
+    background: var(--sr-ui-border-color-active);
+    transform: rotate(45deg);
+  }
+
+  > .form-fields > input[type="checkbox"],
+  > input[type="checkbox"] {
+    --checkbox-size: 18px;
+    .sr-checkbox-base();
+    .sr-checkbox-checked();
+    .sr-checkbox-focus();
+    .sr-checkbox-disabled();
+    flex: none;
+    margin: 0;
+    border-color: color-mix(in srgb, var(--sr-ui-border-color-active) 75%, transparent);
+
+    /* The tick in the accent: in the light theme the rule locks menu drew none, a checked box looked empty */
+    &:checked::after {
+      color: var(--sr-ui-border-color-active);
+      font-size: 0.75em;
+    }
+  }
+}
+
+/* === Rule locks menu (rule-locks-config.hbs) ===
+   Its window grew with its content and ran off the bottom of the screen, save button included: it now keeps to
+   the screen and its list scrolls, the save button staying in view. Each lock is a row like the settings above. */
+.application.sr-rule-locks-config {
+  max-height: calc(100vh - 1rem);
+
+  .window-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .sr-rule-locks-config-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    gap: 0.5rem;
+  }
+
+  .sr-rule-locks-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 0.35rem;
+  }
+
+  .sr-rule-locks-preset {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+
+    > label {
+      font-weight: bold;
+    }
+
+    /* The window's own text colour: the dark red fill of the controls left « Personnalisé » unreadable in the
+       dark theme */
+    > select {
+      width: 100%;
+      color: inherit;
+      background: color-mix(in srgb, currentColor 6%, transparent);
+      border: 1px solid var(--sr-ui-border-color-active);
+    }
+  }
+
+  fieldset {
+    margin: 0;
+    padding: 0.25rem 0.5rem 0.5rem;
+    border: 1px solid color-mix(in srgb, var(--sr-ui-border-color-active) 45%, transparent);
+    border-radius: 3px;
+
+    > legend {
+      padding: 0 0.4rem;
+      font-family: var(--sr-font-title);
+      text-transform: uppercase;
+      color: var(--sr-ui-border-color-active);
+    }
+  }
+
+  .form-group.sr-rule-lock {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "label field"
+      "hint  field";
+    align-items: center;
+    column-gap: 0.75rem;
+    row-gap: 0.2rem;
+    .sr5-settings-row();
+
+    > label {
+      grid-area: label;
+      font-weight: bold;
+      line-height: 1.3;
+    }
+
+    > input[type="checkbox"] {
+      grid-area: field;
+      justify-self: end;
+    }
+
+    > .hint {
+      grid-area: hint;
+      margin: 0;
+    }
+  }
+
+  /* A case under its family: a dash instead of the diamond, set back under the family's title */
+  .form-group.sr-rule-lock-case {
+    padding-left: 2.4rem;
+
+    > label {
+      font-weight: normal;
+    }
+
+    > label::before {
+      left: 1.55rem;
+      top: 1.05rem;
+      width: 0.55rem;
+      height: 2px;
+      transform: none;
+    }
+  }
+
+  /* The save button in the accent, as in the settings window (the light theme's rule in window.less wins there) */
+  .form-footer {
+    flex: none;
+
+    button {
+      color: var(--sr-ui-border-color-active);
+      border: 1px solid var(--sr-ui-border-color-active);
+      background: color-mix(in srgb, var(--sr-ui-border-color-active) 10%, transparent);
+
+      &:hover {
+        background: color-mix(in srgb, var(--sr-ui-border-color-active) 22%, transparent);
+      }
+    }
+  }
+}
+
+/* The note that sends the rule locks' former selector to the presets menu (lot 10) */
+.application.sr-rule-locks-config .sr-rule-locks-presets-note {
+  margin-bottom: 0.5rem;
+
+  > i {
+    color: var(--sr-ui-border-color-active);
+  }
+}
+
+/* === Presets menu (presets-config.hbs, lot 10) ===
+   Built as the rule locks menu: the list scrolls, the apply button stays in view. Each choice is a select in the
+   window's own text colour, its presets described under it (the chosen one in the accent), then what it would change,
+   setting by setting, and the settings the table saved. */
+.application.sr-presets-config {
+  max-height: calc(100vh - 1rem);
+
+  .window-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .sr-presets-config-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    gap: 0.5rem;
+  }
+
+  .sr-presets-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 0.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  fieldset {
+    margin: 0;
+    padding: 0.25rem 0.5rem 0.5rem;
+    border: 1px solid color-mix(in srgb, var(--sr-ui-border-color-active) 45%, transparent);
+    border-radius: 3px;
+
+    > legend {
+      padding: 0 0.4rem;
+      font-family: var(--sr-font-title);
+      text-transform: uppercase;
+      color: var(--sr-ui-border-color-active);
+    }
+  }
+
+  .sr-preset-choice > select {
+    width: 100%;
+    color: inherit;
+    background: color-mix(in srgb, currentColor 6%, transparent);
+    border: 1px solid var(--sr-ui-border-color-active);
+  }
+
+  .sr-preset-hints {
+    list-style: none;
+    margin: 0.35rem 0 0;
+    padding: 0;
+    font-size: var(--sr-font-size-small);
+    line-height: 1.35;
+
+    > li {
+      padding: 0.15rem 0.4rem;
+      border-left: 2px solid transparent;
+      opacity: 0.8;
+
+      &.active {
+        opacity: 1;
+        border-left-color: var(--sr-ui-border-color-active);
+        background: color-mix(in srgb, var(--sr-ui-border-color-active) 8%, transparent);
+      }
+    }
+  }
+
+  /* What the choice changes: the setting, its value now, an arrow, the new value in the accent */
+  .sr-preset-preview table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    border: none;
+    background: transparent !important;
+
+    tr,
+    th,
+    td {
+      background: transparent !important;
+      text-shadow: none;
+    }
+
+    tr + tr {
+      border-top: 1px solid color-mix(in srgb, var(--sr-ui-border-color-active) 25%, transparent);
+    }
+
+    /* The setting's name takes what the two values leave, so that it does not wrap into a narrow column */
+    th {
+      width: 100%;
+      text-align: left;
+      font-weight: normal;
+      padding: 0.2rem 0.3rem;
+    }
+
+    td {
+      padding: 0.2rem 0.3rem;
+      white-space: nowrap;
+    }
+
+    .from {
+      opacity: 0.7;
+    }
+
+    .arrow {
+      color: var(--sr-ui-border-color-active);
+    }
+
+    .to {
+      font-weight: bold;
+      color: var(--sr-ui-border-color-active);
+    }
+  }
+
+  .sr-preset-mine-buttons {
+    display: flex;
+    gap: 0.5rem;
+
+    > button {
+      flex: 1;
+    }
+  }
+
+  /* The buttons in the accent, as in the rule locks menu (the light theme's rule in window.less wins there) */
+  :is(.form-footer, .sr-preset-mine-buttons) button {
+    color: var(--sr-ui-border-color-active);
+    border: 1px solid var(--sr-ui-border-color-active);
+    background: color-mix(in srgb, var(--sr-ui-border-color-active) 10%, transparent);
+
+    &:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--sr-ui-border-color-active) 22%, transparent);
+    }
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+  }
+
+  .form-footer {
+    flex: none;
+  }
+}
+
+/* === Token of what the system creates (token-defaults-config.hbs, lot 9) ===
+   One row per family, one column per field; the controls take the window's own text colour, as the rule locks
+   do, so that they stay readable in both themes. */
+.application.sr-token-defaults-config {
+  max-height: calc(100vh - 1rem);
+
+  .window-content {
+    overflow: auto;
+  }
+
+  .sr-token-defaults-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .sr-token-defaults-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    border: none;
+    background: transparent !important;
+
+    /* Core and the theme paint table rows and headers: here they take the window's own colours */
+    thead,
+    tr,
+    th,
+    td {
+      background: transparent !important;
+      text-shadow: none;
+    }
+
+    th {
+      font-family: var(--sr-font-title);
+      text-transform: uppercase;
+      font-size: var(--sr-font-size-small);
+      color: var(--sr-ui-border-color-active) !important;
+      text-align: left;
+      padding: 0.2rem 0.3rem;
+      white-space: nowrap;
+    }
+
+    /* The family, at the head of its row: the text colour, bold */
+    tbody th {
+      color: inherit !important;
+      font-weight: bold;
+    }
+
+    td {
+      padding: 0.15rem 0.2rem;
+    }
+
+    tbody tr {
+      border-top: 1px solid color-mix(in srgb, var(--sr-ui-border-color-active) 30%, transparent);
+
+      &:hover {
+        background: color-mix(in srgb, var(--sr-ui-border-color-active) 8%, transparent) !important;
+      }
+    }
+
+    select,
+    input[type="number"] {
+      width: 100%;
+      min-width: 4.5rem;
+      color: inherit;
+      background: color-mix(in srgb, currentColor 6%, transparent);
+      border: 1px solid color-mix(in srgb, var(--sr-ui-border-color-active) 60%, transparent);
+    }
+  }
+
+  /* The two buttons side by side, in the accent, as in the rule locks menu */
+  .form-footer {
+    display: flex;
+    gap: 0.5rem;
+
+    button {
+      flex: 1;
+      color: var(--sr-ui-border-color-active);
+      border: 1px solid var(--sr-ui-border-color-active);
+      background: color-mix(in srgb, var(--sr-ui-border-color-active) 10%, transparent);
+
+      &:hover {
+        background: color-mix(in srgb, var(--sr-ui-border-color-active) 22%, transparent);
       }
     }
   }

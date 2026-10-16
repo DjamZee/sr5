@@ -98,7 +98,7 @@ function _characterDefaultLayout() {
         ]),
         _tab('Matrix', 'matrix', [
           _block('matrixDevicesList'), _block('matrixProgramsList'),
-          _block('matrixActionsList'),
+          _block('matrixFilesList'), _block('matrixActionsList'),
         ]),
         _tab('Social', 'social', [
           _block('contacts'), _block('lifestyles'),
@@ -152,14 +152,15 @@ function _spiritDefaultLayout() {
       _panel('SIDEBAR', 1, [
         _tab('Core', 'core', [
           _block('attributes'), _block('resistances'),
-          _block('defenses'), _block('initiatives'),
+          _block('defenses'), _block('initiatives'), _block('visions'),
         ]),
         _tab('Derived', 'derived', [
           _block('limits'), _block('derivedAttributes'),
           _block('essence'), _block('carrying'), _block('movement'),
         ]),
+        //Traits: the spirit's own (Elemental, Wild, Domain...) and its qualities (relecture djamz.13, img 17)
         _tab('Magic', 'magic', [
-          _block('astral'), _block('tradition'),
+          _block('astral'), _block('tradition'), _block('qualities'),
         ]),
       ]),
       _panel('MAIN', 2, [
@@ -174,7 +175,7 @@ function _spiritDefaultLayout() {
 }
 
 // ---------------------------------------------------------------------------
-//  Drone — 2 left tabs, 3 right tabs
+//  Drone — 2 left tabs, 4 right tabs
 // ---------------------------------------------------------------------------
 
 function _droneDefaultLayout() {
@@ -197,14 +198,22 @@ function _droneDefaultLayout() {
       _panel('MAIN', 2, [
         _tab('Combat', 'combat', [
           _block('droneRoll'), _block('activeSkills'),
-          _block('rangedWeapons'), _block('armors'),
+          _block('rangedWeapons'), _block('meleeWeapons'), _block('armors'),
           _block('ammunitions'), _block('externalEffects'),
         ]),
         _tab('Matrix', 'matrix', [
-          _block('matrixProgramsList'), _block('matrixActionsList'),
+          _block('matrixProgramsList'), _block('matrixFilesList'),
+          _block('matrixActionsList'),
         ]),
         _tab('Modifications', 'drone', [
-          _block('modifications'),
+          _block('modifications'), _block('variousGear'),
+        ]),
+        //The Chop Shop (Rigger 5.0 p. 153-156)
+        _tab('Workshop', 'workshop', [
+          _block('workshop'),
+        ]),
+        _tab('Bio', 'bio', [
+          _block('description'),
         ]),
       ]),
     ],
@@ -256,8 +265,8 @@ function _deviceDefaultLayout() {
       ]),
       _panel('MAIN', 2, [
         _tab('Matrix', 'matrix', [
-          _block('iceAttack'), _block('matrixActionsList'),
-          _block('externalEffects'),
+          _block('iceAttack'), _block('matrixFilesList'),
+          _block('matrixActionsList'), _block('externalEffects'),
         ]),
         _tab('Bio', 'bio', [
           _block('description'),
@@ -329,4 +338,29 @@ export function getDefaultLayout(actorType) {
     case 'SR5StorageSheet':   return _storageDefaultLayout()
     default:                  return _characterDefaultLayout()
   }
+}
+
+// ---------------------------------------------------------------------------
+//  Display names of the default panels and tabs (lot 34)
+// ---------------------------------------------------------------------------
+
+// The English names above stay the identifiers (searched by name in this file,
+// saved as is in the actors' custom layouts); only what is shown is translated.
+const DEFAULT_LABELS = [
+  'SIDEBAR', 'MAIN', 'Abilities', 'Augmentations', 'Bio', 'Combat', 'Contents', 'Core', 'Derived',
+  'Device', 'Gear', 'Magic', 'Magician', 'Matrix', 'Modifications', 'Qualities', 'Skills', 'Social',
+  'Storage', 'Technomancer', 'Workshop',
+]
+
+/**
+ * The name to show for a panel or tab of a layout. A default panel or tab (id `default-N`, built
+ * above, possibly saved in an actor's custom layout) shows its translated name; any other name —
+ * one the GM typed, or a panel added in the dialog — is shown as written.
+ * @param {{id?: string, label?: string}} entry
+ * @returns {string}
+ */
+export function layoutLabel(entry) {
+  const label = entry?.label ?? ''
+  if (!/^default-\d+$/.test(entry?.id ?? '') || !DEFAULT_LABELS.includes(label)) return label
+  return game.i18n.localize(`SR5.SheetConfig.Default.${label}`)
 }

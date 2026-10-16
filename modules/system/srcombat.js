@@ -1,4 +1,7 @@
 import {
+  refuseByRule
+} from "./rule-locks.js"
+import {
   SR5 
 } from "../config.js"
 import {
@@ -31,6 +34,12 @@ import {
 import {
   turnStepAllowed, passAllowed, initChangeAllowed
 } from "../rolls/roll-helpers/socket-senders.js"
+import {
+  vehiclePilotId
+} from "./rigging-rules.js"
+import {
+  rgOption, nextAlternativeTurn
+} from "./rg-combat-options.js"
 
 export class SR5Combat extends Combat {
   //Pass effects whose deletion is under way (see endOwnerPassEffects)
@@ -151,6 +160,14 @@ export class SR5Combat extends Combat {
     return
   }
 
+  //One update of the combatants still in the combat, read at the moment of writing (none: nothing written)
+  static async updatePresentCombatants(combat, changesOf){
+    const updates = combat.combatants.contents.map(combatant => ({
+      _id: combatant.id, ...changesOf(combatant)
+    }))
+    if (updates.length) await combat.updateEmbeddedDocuments("Combatant", updates)
+  }
+
   static async handleNextRound(combatId){
     //SR5_SystemHelpers.srLog(3, "New combat round");
     const combat = game.combats?.get(combatId)
@@ -158,12 +175,14 @@ export class SR5Combat extends Combat {
     //SR5 p. 164: a character runs until the end of the Combat Turn
     await clearRunning(combat)
     await combat.resetAll()
-    for (let combatant of combat.combatants) {
-      combatant.update({
-        "flags.sr5.seizeInitiative": false,
-        "flags.sr5.blitz": false,
-        "flags.sr5.hasPlayed": combatant.isDefeated,
-      })
+    await SR5Combat.updatePresentCombatants(combat, combatant => ({
+      "flags.sr5.seizeInitiative": false,
+      "flags.sr5.blitz": false,
+      "flags.sr5.hasPlayed": combatant.isDefeated,
+    }))
+    for (let combatant of [...combat.combatants]) {
+      //Deleted by a module during an earlier await: nothing to write on it
+      if (!combat.combatants.has(combatant.id)) continue
       await SR5Combat.decreaseInitiativePassEffects(combatant)
       await SR5Combat.manageTurnEnd(combatant)
       //Update actor's action: done here, on the gamemaster's side, whoever started the new round
@@ -181,10 +200,20 @@ export class SR5Combat extends Combat {
     await SR5Combat.endOwnerPassEffects(combat, combat.combatant)
   }
 
-  setupTurns(){
-    // Determine the turn order and the current turn
-    const turns = super.setupTurns()
-    return turns.sort(SR5Combat.sortByRERIC)
+  // Foundry's setupTurns sorts with this and reads the current combatant in that order: re-sorting its result
+  // afterwards left this.turn on another combatant ("not the action phase of…" on a second action). Called unbound
+  _sortCombatants(left, right){
+    return SR5Combat.sortByRERIC(left, right)
+  }
+
+  // The coin toss of a tie (SR5 p. 161, CRIP): the same for a combatant all the round, so that every sort agrees
+  static coinToss(combatant) {
+    //Not the combat's id: Foundry sorts a copy of the combat, without id, to find the current combatant again
+    //(Combatant._preUpdateOperation), and both sorts must agree
+    const key = `${combatant.parent?.round ?? 0}:${combatant.id ?? ""}`
+    let hash = 0
+    for (const char of key) hash = (hash * 31 + char.charCodeAt(0)) | 0
+    return (Math.abs(hash) % 2) + 1
   }
 
   static sortByRERIC(left, right) {
@@ -193,35 +222,36 @@ export class SR5Combat extends Combat {
     const rightSeizeInit = right.flags.sr5?.seizeInitiative
     if (leftSeizeInit === true && rightSeizeInit === false) return -1
     if (rightSeizeInit === true && leftSeizeInit === false) return 1
-    // First sort by initiative value if different
-    const leftInit = Number(left.flags.sr5?.baseCombatantInitiative)
-    const rightInit = Number(right.flags.sr5?.baseCombatantInitiative)
-    if (isNaN(leftInit)) return 1
-    if (isNaN(rightInit)) return -1
+    // First sort by initiative value if different; the score rolled when the base is not written yet
+    const initOf = c => Number(c.flags.sr5?.baseCombatantInitiative ?? c.initiative ?? NaN)
+    const leftInit = initOf(left)
+    const rightInit = initOf(right)
+    if (isNaN(leftInit) !== isNaN(rightInit)) return isNaN(leftInit) ? 1 : -1
     if (leftInit > rightInit) return -1
     if (leftInit < rightInit) return 1
 
     // now we sort by ERIC
-    const genData = (actor) => {
-      if (!actor) return [0, 0, 0, 0]
+    const genData = (combatant) => {
+      const actor = combatant.actor
       // edge, reaction, intuition, coinflip
       return [
-        actor.system.specialAttributes?.edge?.augmented.value,
-        actor.system.attributes?.reaction?.augmented.value,
-        actor.system.attributes?.intuition?.augmented.value,
-        Math.ceil(Math.random() * 2),
+        actor?.system.specialAttributes?.edge?.augmented.value ?? 0,
+        actor?.system.attributes?.reaction?.augmented.value ?? 0,
+        actor?.system.attributes?.intuition?.augmented.value ?? 0,
+        SR5Combat.coinToss(combatant),
       ]
     }
 
-    const leftData = genData(left.actor)
-    const rightData = genData(right.actor)
+    const leftData = genData(left)
+    const rightData = genData(right)
     // if we find a difference that isn't 0, return it
     for (let index = 0; index < leftData.length; index++) {
-      const diff = rightData[index] - leftData[index]
+      const diff = (Number(rightData[index]) || 0) - (Number(leftData[index]) || 0)
       if (diff !== 0) return diff
     }
 
-    return 0
+    // Same coin: the id decides, so that the order never depends on the order of the list
+    return String(left.id ?? "").localeCompare(String(right.id ?? ""))
   }
 
   /**
@@ -279,6 +309,15 @@ export class SR5Combat extends Combat {
     if (nextRound === 0 && initiativePass === 0) {
       await this.startCombat()
       return
+    }
+
+    //Run & Gun RG4 (RG p. 123, world setting): no passes, each phase costs 10 at once. The GM works it out; a player
+    //who ends her turn asks him, as for an ordinary turn
+    if (rgOption("initiative") && this.round > 0) {
+      if (game.user?.isGM) return this.stepAlternativeTurn()
+      return SR5_SocketHandler.emitForGM("rgAlternativeTurn", {
+        combatId: this.id, round: this.round, combatantId: this.current.combatantId,
+      })
     }
 
     // Just step from one combatant to the next!
@@ -344,6 +383,49 @@ export class SR5Combat extends Combat {
     await SR5Combat.endOwnerPassEffects(this, this.combatant)
   }
 
+  /**
+   * Run & Gun RG4 (RG p. 123): "Le personnage avec le score d'initiative le plus élevé agit en premier, puis retranche
+   * 10 à son score d'initiative. Le tour continue avec le personnage suivant dans l'ordre d'initiative", who may be the
+   * same one. The combatant who acted loses 10 (never below 0) and, still above 0, gets his actions back for his next
+   * phase; the highest score above 0 acts next; with none left, the Combat Turn ends. The pass counter stays where it
+   * is: this rule has no passes. Effects counted in passes lose one at each phase of the combatant who bears them.
+   * On the GM's browser.
+   */
+  async stepAlternativeTurn(){
+    const current = this.combatant
+    if (current) {
+      const initiative = SR5Combat.reduceIniResultAfterPass(Number(current.initiative))
+      await current.update({
+        initiative,
+        "flags.sr5.baseCombatantInitiative": initiative,
+        "flags.sr5.hasPlayed": initiative <= 0 || current.isDefeated,
+        "flags.sr5.delayedAction": false,
+      })
+      await SR5Combat.decreaseInitiativePassEffects(current)
+      if (initiative > 0) await SR5Combat.resetActionInCombat(current.actor?.isToken ? current.tokenId : current.actorId, current)
+    }
+    const next = nextAlternativeTurn(this.turns.map(c => ({
+      initiative: c.initiative, hasPlayed: c.flags.sr5?.hasPlayed, defeated: c.isDefeated
+    })), this.settings?.skipDefeated)
+    if (next < 0) return this.nextRound()
+    await this.update({
+      turn: next
+    })
+    await SR5Combat.endOwnerPassEffects(this, this.combatant)
+  }
+
+  //A player ends her phase under RG4: believed from the owner of the current combatant, for the phase still current
+  static async _socketAlternativeTurn(message, senderId){
+    const sender = game.users.get(senderId),
+      data = message?.data ?? {
+      },
+      combat = game.combats?.get(data.combatId)
+    if (!sender || !combat || !rgOption("initiative")) return SR5Combat.#refuse("rgAlternativeTurn", senderId, data)
+    if (data.round !== combat.round || data.combatantId !== combat.current?.combatantId || !SR5Combat.ownsCurrentTurn(combat, sender)) return SR5Combat.#refuse("rgAlternativeTurn", senderId, data)
+    await combat.stepAlternativeTurn()
+    return true
+  }
+
   /** Whether the sender is a GM or owns the combatant whose turn it is: the one who may end it */
   static ownsCurrentTurn(combat, sender){
     return !!sender && (sender.isGM || !!combat?.combatant?.testUserPermission?.(sender, "OWNER"))
@@ -388,9 +470,10 @@ export class SR5Combat extends Combat {
 
     // Let Foundry handle time and some other things.
     await super.nextRound()
-    for (let combatant of this.combatants){
-      await combatant.setFlag("sr5", "hasPlayed", combatant.isDefeated)
-    }
+    //One write, on the combatants still there: a module may delete one while the round turns (Anatolie)
+    await SR5Combat.updatePresentCombatants(this, combatant => ({
+      "flags.sr5.hasPlayed": combatant.isDefeated
+    }))
     await SR5Combat.handleNextRound(this.id)
   }
 
@@ -606,6 +689,15 @@ export class SR5Combat extends Combat {
     return combatant
   }
 
+  //Who spends the actions of a vehicle test: the vehicle when it is in the combat, else its driver, remote pilot or
+  //jumped in rigger when he is (the common case: the rigger has the initiative, not his car), else the vehicle
+  static vehicleFighter(vehicle){
+    if (!game.combat || !vehicle || SR5Combat.getCombatantFromActor(vehicle)) return vehicle
+    const pilotId = vehiclePilotId(vehicle.system)
+    const pilot = pilotId ? SR5_EntityHelpers.getRealActorFromID(pilotId) : null
+    return pilot && SR5Combat.getCombatantFromActor(pilot) ? pilot : vehicle
+  }
+
   //The id a change of initiative names a fighter by: an unlinked token's actor shares its base actor's id, so its token's
   static fighterIdOf(actor){
     return actor?.isToken ? actor.token?.id : actor?.id
@@ -614,7 +706,10 @@ export class SR5Combat extends Combat {
   //An actor update that can change the initiative of its fighter: the comparison with the combatant is harmless otherwise.
   //Items written through the actor (the sheet's toggles) count: wired reflexes switched on add Reaction and a die (SR5 p. 162)
   static updateMovesInitiative(data){
-    return !!(data?.system?.initiatives || data?.system?.conditionMonitors || data?.system?.matrix || data?.system?.attributes || Array.isArray(data?.items))
+    //A drone reads its controller's initiative from the copy of the rigger it keeps (vehicleOwner) and by its control
+    //mode: a change of either moves its initiative too (SR5 p. 162, measured in game, lot 17a)
+    return !!(data?.system?.initiatives || data?.system?.conditionMonitors || data?.system?.matrix || data?.system?.attributes ||
+      data?.system?.vehicleOwner || data?.system?.controlMode || Array.isArray(data?.items))
   }
 
   //The ids to compare again after an update of this actor: an unlinked token's own, or every fighter of a base actor,
@@ -788,11 +883,11 @@ export class SR5Combat extends Combat {
         action.value = -action.value
         let sign = action.value > 0 ? "+" : ""
         ui.notifications.info(`${game.i18n.format("SR5.INFO_TakeActionsManually", {
-          actor: actor.name, actionValue: action.value, actionType: game.i18n.localize(SR5.actionTypes[action.type]), sign: sign
+          actor: SR5_EntityHelpers.displayName(actor), actionValue: action.value, actionType: game.i18n.localize(SR5.actionTypes[action.type]), sign: sign
         })}`) 
       }
       else ui.notifications.info(`${game.i18n.format("SR5.INFO_TakeActions", {
-        actor: actor.name, actionValue: action.value, actionType: game.i18n.localize(SR5.actionTypes[action.type]), actionSource: game.i18n.localize(SR5.actionSources[action.source])
+        actor: SR5_EntityHelpers.displayName(actor), actionValue: action.value, actionType: game.i18n.localize(SR5.actionTypes[action.type]), actionSource: game.i18n.localize(SR5.actionSources[action.source])
       })}`) 
     }
     // SR5 p. 170: every interruption action of the list lowers the Initiative score by its own cost
@@ -837,27 +932,32 @@ export class SR5Combat extends Combat {
   //with a warning: nothing is spent (SR5 p. 164-165). Unchecked (default), or out of combat, every action goes through
   //A simple or complex action outside the character's phase, or with a score of 0 or less (SR5 p. 162 and 164), is
   //only a warning; with the setting checked, a score of 0 or less refuses it like a missing action
+  //B13: the setting is the "missing actions" box of the "actions" rule lock family; unchecked, the gamemaster is
+  //whispered what the book would have refused, once per round (system/rule-locks.js)
   static hasActionsLeft(actor, actions){
     if (!actor || !game.combat) return true
     let combatant = SR5Combat.getCombatantFromActor(actor)
     if (!combatant) return true
-    let block = game.settings.get("sr5", "sr5BlockMissingActions")
+    const lock = {
+      actor, lockCase: "missingActions"
+    }
     if (game.combat.started && combatant.initiative !== null && combatant.initiative !== undefined){
       let problem = SR5_MiscellaneousHelpers.actionPhaseProblem(actions, {
         initiative: combatant.initiative, isCurrent: game.combat.combatant?.id === combatant.id
       })
-      if (problem) ui.notifications.warn(game.i18n.format(problem === "noInitiative" ? "SR5.WARN_ActionNoInitiative" : "SR5.WARN_ActionOutOfPhase", {
-        actor: actor.name, initiative: combatant.initiative
-      }))
-      if (problem === "noInitiative" && block) return false
+      const data = {
+        actor: SR5_EntityHelpers.displayName(actor), initiative: combatant.initiative
+      }
+      if (problem === "outOfPhase") ui.notifications.warn(game.i18n.format("SR5.WARN_ActionOutOfPhase", data))
+      if (problem === "noInitiative" && refuseByRule("actions", "SR5.WARN_ActionNoInitiative", data, lock)) return false
     }
-    if (!block) return true
     let missing = SR5_MiscellaneousHelpers.missingAction(actions, actor.system.specialProperties?.actions)
     if (!missing) return true
-    ui.notifications.warn(game.i18n.format("SR5.WARN_NoActionLeft", {
-      actor: actor.name, value: missing.value, action: game.i18n.localize(SR5.actionTypes[missing.type]), current: missing.current
-    }))
-    return false
+    return !refuseByRule("actions", "SR5.WARN_NoActionLeft", {
+      actor: SR5_EntityHelpers.displayName(actor), value: missing.value, action: game.i18n.localize(SR5.actionTypes[missing.type]), current: missing.current
+    }, {
+      ...lock, liftedKey: "SR5.RULELOCKS_NoActionLeftLifted"
+    })
   }
 
   //Reset actions on actor
@@ -995,7 +1095,8 @@ export class SR5Combat extends Combat {
         //1 more point of armor until its DV reaches 0. The effect value is a text field: convert it before
         //subtracting, and store the reduced DV for the next turn
         let acidValue = Number(itemData.value) - 1
-        if (itemData.type === "acidDamage" && acidValue > 0) {
+        //Not once the effect is gone this very turn: the acid is cleaned off or evaporated (a spell's, after one turn)
+        if (itemData.type === "acidDamage" && acidValue > 0 && actor.items.get(item.id)) {
           let armor = actor.items.find((i) => i.type === "itemArmor" && i.system.isActive && !i.system.isAccessory)
           if (armor){
             //Only the effects, copied from the source: the prepared armor written back put its computed values in the source
@@ -1027,11 +1128,21 @@ export class SR5Combat extends Combat {
           damageInfo.damage.value = acidValue
           damageInfo.damage.type = "physical"
           damageInfo.damage.element = "acid"
+          //The same acid burning on: its damage never lays a new acid effect (entityActor-helpers.js, takeDamage)
+          damageInfo.damage.source = "acidLingering"
 
           actor.rollTest("resistanceCard", null, damageInfo)
           if (actor.items.get(item.id)) await item.update({
             "system.value": acidValue
           })
+        }
+
+        //Run & Gun p. 28: the second charge of a ShockNet, at the start of the next Combat Turn, on the one still caught
+        if (itemData.type === "shockNetCharge") {
+          const {
+            shockNetSecondCharge
+          } = await import("../rolls/roll-helpers/net.js")
+          await shockNetSecondCharge(actor, itemData, item.flags?.sr5?.shockNet)
         }
 
         //Apply Fire effect if any

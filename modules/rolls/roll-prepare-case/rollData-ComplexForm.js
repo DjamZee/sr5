@@ -4,6 +4,9 @@ import {
 import {
   SR5_MiscellaneousHelpers 
 } from "../roll-helpers/miscellaneous.js"
+import {
+  streamOf, streamFadingReduction
+} from "../../entities/actors/technomancer-streams.js"
 
 export default function complexForm(rollData, actor, item){
   //Determine title
@@ -18,6 +21,9 @@ export default function complexForm(rollData, actor, item){
   //Determine dicepool modififiers
   rollData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(rollData, actor.system.matrix.resonanceActions.threadComplexForm.test.modifiers)
 
+  //SR5 p. 252: Thread is limited by the form's level (roll-test.js); the effects on that limit add to it (Kill Code p. 114)
+  rollData.limit.modifiers = SR5_PrepareRollHelper.getLimitModifiers(rollData, actor.system.matrix.resonanceActions.threadComplexForm.limit?.modifiers ?? [])
+
   //Add others informations
   rollData.test.type = "complexForm"
   rollData.matrix.fading.type = "stun"
@@ -28,6 +34,13 @@ export default function complexForm(rollData, actor, item){
   rollData.matrix.fading.modifiers.complexForm = {
     value: item.system.fadingModifier,
     label: game.i18n.localize("SR5.FadingModifier"),
+  }
+  //The stream lowers the fading of the forms that aim at what it knows best (Kill Code p. 100-101, 145-146); the
+  //dialog keeps the floor of 2
+  const streamReduction = streamFadingReduction(streamOf(actor), item.system.target)
+  if (streamReduction) rollData.matrix.fading.modifiers.technomancerStream = {
+    value: -streamReduction,
+    label: game.i18n.localize("SR5.TechnomancerStream"),
   }
 
   //Manage actions

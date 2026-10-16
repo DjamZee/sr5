@@ -4,6 +4,9 @@ import {
 import {
   vendorPrice
 } from './shop-vendor-rules.js'
+import {
+  isDroneEntry
+} from '../system/drone-shelf.js'
 
 /**
  * The shop window's catalogue: shelves, filters, creation limits and the
@@ -22,6 +25,9 @@ export class SR5ShopCatalog {
   static INDEX_FIELDS = [
     'system.category', 'system.type', 'system.price', 'system.availability', 'system.legality',
     'system.essenceCost', 'system.grade', 'system.itemRating', 'system.deviceRating', 'flags.sr5.notForSale',
+    'system.weaponAccessory.priceMultiplier',
+    // A drone mod is told by its book and page (drone-shelf.js, lot R6)
+    'system.source', 'system.page',
   ]
 
   /**
@@ -57,7 +63,20 @@ export class SR5ShopCatalog {
       key: 'gear', label: 'SR5.ShopShelfGear', icon: 'fa-toolbox', types: ['itemGear']
     },
     {
-      key: 'vehicles', label: 'SR5.ShopShelfVehicles', icon: 'fa-car', types: ['itemVehicle', 'itemVehicleMod']
+      key: 'vehicles', label: 'SR5.ShopShelfVehicles', icon: 'fa-car', types: ['itemVehicle', 'itemVehicleMod'],
+      // The drones and their mods have a shelf of their own (relecture djamz.13, lot R6; Rigger 5.0 p. 126, 153)
+      match: entry => !isDroneEntry(entry),
+      // The vehicles apart from their mods: the workshop's button opens on the mods (Adrore's feedback C7c)
+      sub: {
+        field: 'type', options: 'itemTypes'
+      },
+    },
+    {
+      key: 'drones', label: 'SR5.ShopShelfDrones', icon: 'fa-helicopter', types: ['itemVehicle', 'itemVehicleMod'],
+      match: entry => isDroneEntry(entry),
+      sub: {
+        field: 'type', options: 'droneShelfSubs'
+      },
     },
     {
       key: 'drugs', label: 'SR5.ShopShelfDrugs', icon: 'fa-pills', types: ['itemDrug', 'itemToxin']
@@ -78,9 +97,35 @@ export class SR5ShopCatalog {
     for (const shelf of SR5ShopCatalog.SHELVES) {
       if (!shelf.types.includes(entry?.type)) continue
       if (shelf.augmentation && !shelf.augmentation.includes(entry.system?.type)) continue
+      if (shelf.match && !shelf.match(entry)) continue
       return shelf.key
     }
     return null
+  }
+
+  /**
+   * A vehicle mod has no price off a vehicle: the till prices it on the one it is bought for (R5 p. 156, its
+   * multipliers read the vehicle's attributes). The shop shows it, to be dragged onto a workshop, which buys it at
+   * that price (vehicle-workshop-apply.js); it never goes in the cart (Adrore's feedback C7c).
+   */
+  static pricedOnVehicle(entry) {
+    return entry?.type === 'itemVehicleMod' && !(Number(entry.system?.price?.value) > 0) && Number(entry.system?.price?.base) > 0
+  }
+
+  /**
+   * A weapon accessory priced as a multiple of its weapon's price (long barrel HT p. 180 and its table p. 183, ceramic /
+   * plasteel components HT p. 181, internal smartgun SR5 p. 435, extra clip slot SL p. 48) has no price of its own:
+   * the shop shows it, to be dragged onto the weapon's workshop, which prices it there (item-workshop-apply.js
+   * priceOnHost), as a vehicle mod. Off a weapon it would be sold for nothing.
+   */
+  static pricedOnWeapon(entry) {
+    return entry?.type === 'itemWeapon' && entry.system?.category === 'weaponAccessory' &&
+      Number(entry.system?.weaponAccessory?.priceMultiplier) > 0 && !(Number(entry.system?.price?.base) > 0)
+  }
+
+  /** The multiple of the weapon's price an accessory costs, for the shop's label; 0 when it has a price of its own */
+  static weaponPriceMultiplier(entry) {
+    return SR5ShopCatalog.pricedOnWeapon(entry) ? Number(entry.system.weaponAccessory.priceMultiplier) : 0
   }
 
   /** The sub-shelf value of an entry, `_none` when its shelf is split and the field is empty. */
@@ -153,6 +198,26 @@ export class SR5ShopCatalog {
     return null
   }
 
+  /**
+   * Why creation refuses a line, or null: a line past the limits goes through when the table allows it
+   * (sr5ShopCreationOverLimit, `limits.overLimit`), marked for the gamemaster (Adrore's feedback C3).
+   */
+  static creationRefusal(line, limits) {
+    return limits?.overLimit ? null : SR5ShopCatalog.creationBlock(line, limits)
+  }
+
+  /**
+   * The mark an item bought past the creation limits carries (flags.sr5.creationOverLimit), or null: what it
+   * passed, its value and the limit, read by the creation summary.
+   */
+  static overLimitMark(line, limits) {
+    const reason = limits?.overLimit ? SR5ShopCatalog.creationBlock(line, limits) : null
+    if (!reason) return null
+    return {
+      reason, value: Number(line[reason]) || 0, limit: Number(limits[reason]) || 0
+    }
+  }
+
   /* -------------------------------------------- */
   /*  A row                                       */
   /* -------------------------------------------- */
@@ -171,11 +236,36 @@ export class SR5ShopCatalog {
       category: system?.category,
       grade: system?.grade,
       legality: system?.legality,
+      // Book and page tell a drone mod from a vehicle mod (drone-shelf.js, lot R6)
+      ...(system?.page ? {
+        source: system.source, page: system.page
+      } : {
+      }),
       itemRating: Number(system?.itemRating) || 0,
       deviceRating: Number(system?.deviceRating) || 0,
-      price: system?.price === undefined ? undefined : pair(system.price),
+      price: system?.price === undefined ? undefined : {
+        ...pair(system.price),
+        // A vehicle mod priced on its vehicle's attribute (R5 p. 156): shown as « base × Structure » (lot R6)
+        ...(system.price.multiplier ? {
+          multiplier: String(system.price.multiplier)
+        } : {
+        }),
+      },
       availability: pair(system?.availability),
       essenceCost: pair(system?.essenceCost),
+      // A vehicle's figures, shown by the dealership's showroom (Adrore's feedback C8)
+      ...(typeof system?.attributes?.handling === 'number' ? {
+        attributes: Object.fromEntries(Object.entries(system.attributes).filter(([, v]) => typeof v === 'number')),
+        seating: Number(system.seating) || 0,
+      } : {
+      }),
+      // A weapon accessory priced on its weapon (pricedOnWeapon)
+      ...(Number(system?.weaponAccessory?.priceMultiplier) > 0 ? {
+        weaponAccessory: {
+          priceMultiplier: Number(system.weaponAccessory.priceMultiplier)
+        }
+      } : {
+      }),
     }
   }
 
@@ -234,7 +324,7 @@ export class SR5ShopCatalog {
    * @param {object} filters
    * @param {string} [filters.shelf] a shelf key, empty for all
    * @param {string} [filters.sub] a sub-shelf value
-   * @param {string} [filters.search] part of the name, accents and case ignored
+   * @param {string} [filters.search] part of the name or of the English name, accents and case ignored
    * @param {number|null} [filters.maxPrice]
    * @param {number|null} [filters.maxAvailability]
    * @param {string[]} [filters.legality] the letters let through: '' (legal), 'R', 'F'
@@ -251,16 +341,27 @@ export class SR5ShopCatalog {
       if (row.notForSale && !filters.prototypes) return false
       if (filters.shelf && row.shelf !== filters.shelf) return false
       if (filters.shelf && filters.sub && row.sub !== filters.sub) return false
-      if (search && !SR5ShopCatalog.normalize(row.name).includes(search)) return false
+      // By its French name or, when the compendium gives one, its English name (lot 12)
+      if (search && !SR5ShopCatalog.normalize(row.name).includes(search) &&
+        !SR5ShopCatalog.normalize(row.nameVO).includes(search)) return false
       if (Number.isFinite(filters.maxPrice) && row.price > filters.maxPrice) return false
       if (Number.isFinite(filters.maxAvailability) && row.availability > filters.maxAvailability) return false
       if (!legality.includes(row.legality)) return false
       if (filters.affordable) {
         if (Number.isFinite(filters.budget) && row.price > filters.budget) return false
-        if (SR5ShopCatalog.creationBlock(row, filters.creation)) return false
+        if (SR5ShopCatalog.creationRefusal(row, filters.creation)) return false
       }
       return true
     })
+  }
+
+  /**
+   * The English (VO) name of an item or index entry, from `flags.sr5.nameVO`
+   * (set on the Megapack's items), '' when it has none.
+   */
+  static nameVO(entry) {
+    const name = entry?.flags?.sr5?.nameVO
+    return typeof name === 'string' ? name.trim() : ''
   }
 
   /** Lowercase, accents removed: "Épée" is found by "epee". */

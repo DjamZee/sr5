@@ -1,0 +1,302 @@
+// Vehicle chase, the gamemaster's window (SR5 p. 204-205, Rigger 5.0 p. 175-185)
+// Lot 5 (séance de DjamZ, 08/10): the same cards as the chat (chat-cards.less), a colour per box, the rule set at the
+// top, the log in a scrolling box, the controls of one height
+// Lot 36 (14/10): the Concepteur's look (commons/window-tokens.less), light by default, dark under Foundry's dark
+// theme. Each box keeps a colour of its own, taken from the Concepteur's: amber turn, cyan vehicles, magenta ranges,
+// green log; the pursued in amber, the pursuers in red.
+@import "../commons/window-tokens.less";
+
+.sr-chase {
+  .srw-tokens();
+  --sr-chase-turn: var(--srw-left);
+  --sr-chase-vehicles: var(--srw-sel-border);
+  --sr-chase-ranges: var(--srw-essence);
+  --sr-chase-log: var(--srw-ok);
+  --sr-chase-pursued: var(--srw-left);
+  --sr-chase-pursuer: var(--srw-over);
+  --sr-chase-line: var(--srw-border);
+  --sr-chase-control: 28px;
+  .srw-window();
+
+  .window-content {
+    // The whole window scrolls when it is smaller than its content (relecture djamz.13, R1)
+    overflow-x: hidden;
+    overflow-y: auto;
+    min-height: 0;
+
+    button {
+      .srw-button();
+      .srw-cut();
+    }
+    :is(select, input[type="number"], input[type="text"], input:not([type])) {
+      .srw-field();
+    }
+    select option { color: var(--srw-text); background: var(--srw-panel); }
+    .hint { color: var(--srw-muted); }
+  }
+
+  .sr-chase-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  // The rule set: a switch of two, the world setting's
+  .sr-chase-rules {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.4rem 0.6rem;
+    .srw-box(var(--sr-chase-vehicles));
+  }
+  .sr-chase-rules-label {
+    font-weight: bold;
+    white-space: nowrap;
+  }
+  .sr-chase-switch {
+    display: flex;
+    margin-left: auto;
+    gap: 4px;
+    overflow: hidden;
+    label {
+      display: inline-flex;
+      align-items: center;
+      height: var(--sr-chase-control);
+      padding: 0 0.8rem;
+      cursor: pointer;
+      white-space: nowrap;
+      // The Concepteur's step tabs
+      .srw-tab();
+      .srw-cut();
+      &.active {
+        .srw-tab-active();
+      }
+    }
+    input[type="radio"] {
+      display: none;
+    }
+  }
+
+  // The boxes: all the window's width, a coloured edge and title
+  .sr-chase-card {
+    --sr-chase-accent: var(--sr-chase-vehicles);
+    // A fieldset grows to its content by default: the box keeps the window's width
+    min-width: 0;
+    margin: 0;
+    padding: 0.4rem 0.7rem 0.6rem;
+    // A Concepteur frame, its rule in the box's colour
+    .srw-box(var(--sr-chase-accent));
+    border-radius: 0;
+    legend {
+      padding: 0 0.4rem;
+      .srw-title();
+      font-size: 11px;
+      font-weight: bold;
+      color: var(--srw-heading);
+      background: var(--srw-panel);
+      i {
+        margin-right: 0.2rem;
+        color: var(--sr-chase-accent);
+      }
+    }
+    &.sr-chase-turn {
+      --sr-chase-accent: var(--sr-chase-turn);
+    }
+    &.sr-chase-ranges {
+      --sr-chase-accent: var(--sr-chase-ranges);
+    }
+    &.sr-chase-logbox {
+      --sr-chase-accent: var(--sr-chase-log);
+    }
+  }
+
+  .sr-chase-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+    margin: 0.2rem 0;
+    label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    // Foundry stretches a select to the full width: here it sits in a row
+    select {
+      width: auto;
+      flex: 0 0 auto;
+    }
+  }
+  // One height for every control of the window
+  :is(select, button, input[type="number"]) {
+    height: var(--sr-chase-control);
+    min-height: var(--sr-chase-control);
+  }
+  button {
+    white-space: nowrap;
+    width: auto;
+    line-height: 1;
+  }
+
+  // The turn: its two lists stacked under their name, the two buttons on the same line
+  .sr-chase-turn-row {
+    flex-wrap: nowrap;
+    align-items: flex-end;
+    .sr-chase-field {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.15rem;
+      font-size: var(--font-size-12, 0.75rem);
+      font-weight: bold;
+      select {
+        width: 12rem;
+        font-weight: normal;
+        font-size: var(--font-size-14, 0.875rem);
+      }
+      // The terrain takes what the buttons leave: its examples are cut in the closed list, whole in the open one
+      &.sr-chase-terrain {
+        flex: 1 1 auto;
+        min-width: 10rem;
+        select {
+          width: 100%;
+        }
+      }
+    }
+  }
+  .sr-chase-examples {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    margin: 0.4rem 0 0;
+    padding: 0.3rem 0.5rem;
+    border-left: 3px solid var(--sr-chase-turn);
+    background: color-mix(in srgb, var(--sr-chase-turn) 10%, transparent);
+    font-size: var(--font-size-12, 0.75rem);
+    font-style: italic;
+    strong {
+      font-style: normal;
+    }
+  }
+
+  .sr-chase-tools {
+    margin-left: auto;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .sr-chase-vehicle {
+    margin: 0.4rem 0;
+    padding: 0.3rem 0.5rem;
+    border: 1px solid var(--sr-chase-line);
+    border-left: 3px solid var(--sr-chase-role, var(--srw-border-strong));
+    border-radius: 0;
+    background: var(--srw-field);
+    &.role-pursued {
+      --sr-chase-role: var(--sr-chase-pursued);
+    }
+    &.role-pursuer {
+      --sr-chase-role: var(--sr-chase-pursuer);
+    }
+    header strong {
+      font-size: var(--font-size-16, 1rem);
+    }
+    // The system's pictures are white drawings: a night tile keeps them readable on the light set
+    img {
+      border: none;
+      object-fit: contain;
+      background: var(--srw-header-bg);
+    }
+    input[type="number"] {
+      width: 3.5rem;
+    }
+    &.warning .sr-chase-status {
+      color: var(--srw-over);
+    }
+  }
+  .sr-chase-act {
+    flex-wrap: nowrap;
+    padding-top: 0.3rem;
+    border-top: 1px dashed var(--sr-chase-line);
+    // The book's names are long: the lists keep a width, the open list shows them whole
+    select[name="chaseAction"] {
+      width: 17rem;
+    }
+    select[name="chaseTarget"] {
+      width: 13rem;
+    }
+    button {
+      margin-left: auto;
+    }
+  }
+  .sr-chase-vehicle > .sr-chase-row > .hint {
+    font-size: var(--font-size-12, 0.75rem);
+  }
+  .sr-chase-status {
+    font-weight: bold;
+  }
+  .sr-chase-tag {
+    border: 1px solid var(--sr-chase-line);
+    border-radius: 3px;
+    padding: 0 0.3rem;
+  }
+  .sr-chase-pair {
+    padding: 0.15rem 0;
+    & + .sr-chase-pair {
+      border-top: 1px solid var(--sr-chase-line);
+    }
+  }
+  .sr-chase-names {
+    min-width: 16rem;
+    font-weight: bold;
+  }
+
+  // The log: a box of its own that scrolls, the newest line first
+  .sr-chase-log {
+    list-style: none;
+    margin: 0;
+    padding: 0 0.3rem 0 0;
+    max-height: 13rem;
+    overflow-y: auto;
+    li {
+      display: flex;
+      gap: 0.5rem;
+      align-items: baseline;
+      padding: 0.2rem 0;
+      & + li {
+        border-top: 1px solid var(--sr-chase-line);
+      }
+    }
+  }
+  .sr-chase-log-turn {
+    flex: 0 0 auto;
+    padding: 0 0.35rem;
+    background: var(--srw-ok-bg);
+    color: var(--srw-ok);
+    font-family: var(--srw-font-num);
+    font-size: var(--font-size-11, 0.7rem);
+    font-weight: bold;
+    white-space: nowrap;
+  }
+
+  // Not the active gamemaster: read only
+  a[data-action].disabled {
+    pointer-events: none;
+    opacity: 0.4;
+  }
+  // The controls a player cannot use look it, in both themes (relecture 161: they had the look of the active ones)
+  :is(button, select, input):disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .sr-chase-switch:has(input:disabled) label {
+    cursor: default;
+  }
+}
+
+// The dark set under Foundry's dark theme, unless the window itself is light (as the Concepteur)
+&.theme-dark .sr-chase:not(.theme-light),
+.sr-chase.theme-dark {
+  .srw-tokens-dark();
+}

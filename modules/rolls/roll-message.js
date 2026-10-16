@@ -2,11 +2,23 @@ import {
   SR5Pickpocket
 } from "../interface/pickpocket.js"
 import {
+  SR5Conceal
+} from "../interface/conceal.js"
+import {
   reagentWorkUpdate
 } from "../system/reagents.js"
 import {
   mayDefend
 } from "../system/defense-once.js"
+import {
+  dropProneUnderFire, proneUnderSuppressiveFire
+} from "./roll-helpers/eat-dirt.js"
+import {
+  applyNet
+} from "./roll-helpers/net.js"
+import {
+  refuseByRule
+} from "../system/rule-locks.js"
 import {
   trustedDefenderDamage, cardStandsFor, damageReachable
 } from "./roll-helpers/matrix-card.js"
@@ -57,6 +69,15 @@ import {
 import {
   stabilizationLabelKey
 } from "../system/bb-healing-rules.js"
+import {
+  applyVehicleRepair
+} from "../system/vehicle-repair-apply.js"
+import {
+  applyVehicleModInstall
+} from "../system/vehicle-workshop-apply.js"
+import {
+  applyAccessoryInstall
+} from "../system/item-workshop-apply.js"
 import {
   SR5 
 } from "../config.js"
@@ -109,17 +130,29 @@ import {
   ritualDrainActorId
 } from "./roll-helpers/ritualTeam.js"
 import {
+  SR5_SpellShapingHelpers
+} from "./roll-helpers/spell-shaping.js"
+import {
   SR5_GrappleHelpers
 } from "./roll-helpers/grapple.js"
 import {
   SR5SharedVision
 } from "../interface/shared-vision.js"
 import {
+  choosePerceptionInfo
+} from "../canvas/pan-crown/pan-perception-card.js"
+import {
+  requestFileAction
+} from "./roll-helpers/file-actions.js"
+import {
   applyManaShift
 } from "../system/mana-shift.js"
 import {
   chatButtonAllowed
 } from "./roll-helpers/socket-senders.js"
+import {
+  blueGooToExplode
+} from "../system/blue-goo.js"
 
 // The button a card stores under this key; the template buttons are flags of their own (removeTemplate)
 export function storedButton(cardData, key) {
@@ -188,6 +221,18 @@ export class SR5_RollMessage {
       html.querySelectorAll(".ritualDrain").forEach(el => {
         if (!SR5_EntityHelpers.getRealActorFromID(ritualDrainActorId(el.dataset.type), message.flags?.sr5data?.actorUuids)?.isOwner) el.remove()
       })
+
+      // R12: a chase test is the button of its vehicle's owners only (system/chase-roll.js)
+      const chaseButtons = html.querySelectorAll(".chaseRoll")
+      if (chaseButtons.length) {
+        chaseButtons.forEach(el => el.style.display = "none")
+        import("../system/chase-roll.js").then(({
+          mayUseChaseButton, chaseButtonSpent
+        }) => chaseButtons.forEach(el => {
+          if (mayUseChaseButton(el.dataset.type, message.flags?.sr5data) && !chaseButtonSpent(el.dataset.type, message)) el.style.display = ""
+          else el.remove()
+        }))
+      }
 
       // v13: use message document directly instead of data.message
       // Hide if player is not owner of the message
@@ -312,13 +357,27 @@ export class SR5_RollMessage {
       return participant.rollTest("drain", null, messageData)
     }
 
+    //R12: the buttons of a chase action, opposed, followed up or applied, and its damage resisted (system/chase-roll.js)
+    if (type === "chaseApply" || ["chaseRoll_", "chaseDamage_", "chaseCrash_"].some(p => type?.startsWith?.(p))) {
+      const {
+        chaseButton
+      } = await import("../system/chase-roll.js")
+      return chaseButton(type, messageData, messageId)
+    }
+
     //Define actor for Opposed test or Non opposed tests
     if (action === "opposedTest") {
       actor = SR5_EntityHelpers.getRealActorFromID(opposedTestActorId(speaker))
-      //A matrix defense goes to the card's target, never to its author still selected (Anatole's matrix trial)
-      if (type === "matrixDefense") {
+      //A matrix defense goes to the card's target, never to its author still selected (Anatole's matrix trial); so does
+      //the defense against an IC: a player owning two personas defended her AI with her decker (lot 17b, M6)
+      if (type === "matrixDefense" || type === "iceDefense") {
         actor = SR5_EntityHelpers.getRealActorFromID(matrixDefenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids)
         if (!actor) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoMatrixDefender"))
+      }
+      //The clinched character defends, the card's target, never its author still selected (Run & Gun p. 133)
+      if (type === "grappleClinchDefense") {
+        actor = SR5_EntityHelpers.getRealActorFromID(matrixDefenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids)
+        if (!actor) return ui.notifications.warn(game.i18n.localize("SR5.WARN_NoClinchDefender"))
       }
       // Matrix support actions (Kill Code p. 43-44) go to the targeted tokens: no selected token needed
       let supportAction = (type === "iAmTheFirewall" || type === "intervene")
@@ -341,7 +400,12 @@ export class SR5_RollMessage {
       case "defenseRangedWeapon":
       case "defenseAstralCombat":
         actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids)
-        if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest("defense", null, messageData)
+        //SR5 p. 182: a prone character risks nothing from a suppressive fire, no test
+        if (await mayDefend(type, messageId, messageData, actor) && !(type === "defenseRangedWeapon" && await proneUnderSuppressiveFire(actor, messageData))) actor.rollTest("defense", null, messageData)
+        break
+      case "dropProneUnderFire":
+        actor = SR5_EntityHelpers.getRealActorFromID(defenseActorId(opposedTestActorId(speaker), messageData, id => SR5_EntityHelpers.getRealActorFromID(id, messageData.actorUuids)), messageData.actorUuids)
+        await dropProneUnderFire(actor, messageData, messageId)
         break
       case "defenseThroughAndInto": {
         //Through and Into (Run & Gun p. 131): the second target defends against the attack card itself, read again from
@@ -354,7 +418,8 @@ export class SR5_RollMessage {
       }
       case "matrixDefense":
         if (!await mayDefend(type, messageId, messageData, actor)) break
-        if ((messageData.test.typeSub === "dataSpike" || 
+        //The attacker chose the device on the crown of the PAN (lot 4, Q6): the defender has nothing left to choose
+        if (!messageData.target?.panPicked && (messageData.test.typeSub === "dataSpike" ||
                     messageData.test.typeSub === "controlDevice" ||
                     messageData.test.typeSub === "formatDevice" ||
                     messageData.test.typeSub === "hackOnTheFly" ||
@@ -405,12 +470,23 @@ export class SR5_RollMessage {
         //A defense among them: once per target and attack (system/defense-once.js)
         if (await mayDefend(type, messageId, messageData, actor)) actor.rollTest(type, null, messageData)
         break
+      //Run & Gun p. 25: the net lands on the defender of this card, once; then the netted character tries to get free
+      case "netEntangle":
+        await SR5_RollMessage.applyOnce(messageId, type, () => applyNet(actor, messageData))
+        await SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
+      case "netEscape":
+        actor.rollTest("netEscape", null, messageData)
+        break
       case "resistanceCardContinuousDamage":
         messageData.test.typeSub = "continuousDamage"
         actor.rollTest("resistanceCard", null, messageData)
         break
       case "bindingResistance":
-        if (actor.system.isBounded) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_SpiritAlreadyBounded")}`)
+        //The "magic" rule lock lifted (B13), the binding goes on and the gamemaster hears of it
+        if (actor.system.isBounded && refuseByRule("magic", "SR5.WARN_SpiritAlreadyBounded", null, {
+          actor
+        })) return
         actor.rollTest(type, null, messageData)
         break
       case "applyEffect":
@@ -432,10 +508,20 @@ export class SR5_RollMessage {
           break
         }
         if (!actor) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NoActor")}`)
+        //SR5 p. 329: a Spell Shaping bubble leaves its occupant untouched. These buttons post the effect with no test
+        //at all, so without this guard a spared character would dodge every roll and still take the effect
+        if (SR5_SpellShapingHelpers.skips(actor, messageData)) {
+          SR5_SpellShapingHelpers.announceSpared(actor)
+          break
+        }
         if (await SR5_RollMessage.applyOnce(messageId, type, () => actor.applyExternalEffect(messageData, "customEffects")) === false) break
         if (messageData.magic.spell.area < 1) SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "applyEffectOnItem":
+        if (SR5_SpellShapingHelpers.skips(actor, messageData)) {
+          SR5_SpellShapingHelpers.announceSpared(actor)
+          break
+        }
         if (await SR5_RollMessage.applyOnce(messageId, type, () => actor.applyExternalEffect(messageData, "itemEffects")) === false) break
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
@@ -477,7 +563,28 @@ export class SR5_RollMessage {
         })
         //Bullets & Bandages p. 18-19: one use of the medkit supplies per patient treated
         await useMedkitSupplies(messageData.test.bbMedkitUuid)
-        SR5_RollMessage.updateChatButtonHelper(messageId, type, healData.test.typeSub)
+        //Healed by the GM: the card says so once he has applied it (_socketHeal). Marked here, it read "1P Soigné"
+        //after the GM had declined, and nothing was healed (lot 17c)
+        if (healLocally) SR5_RollMessage.updateChatButtonHelper(messageId, type, healData.test.typeSub)
+        break
+      }
+      //Cutting Aces (lot 21, social-card.js, imported here to keep it out of this module's own imports): what a
+      //social maneuver carries, applied by the GM; the con step written in his tracker; the bartering window
+      case "maneuverApply":
+      case "conRecord": {
+        const social = await import("../system/social-card.js")
+        const done = type === "maneuverApply" ? await social.applyManeuver(messageData) : await social.recordConFromCard(messageData)
+        if (done) SR5_RollMessage.updateChatButtonHelper(messageId, type, done)
+        break
+      }
+      case "barterOpen": {
+        const {
+          SR5BarterApp
+        } = await import("../interface/barter-app.js")
+        const net = (Number(messageData.threshold?.value) || 0) - (Number(messageData.roll?.hits) || 0)
+        SR5BarterApp.open({
+          mode: messageData.test.typeSub === "intimidation" ? "intimidation" : "negotiation", net
+        })
         break
       }
       //Bullets & Bandages p. 14-15: the GM writes the stabilization and the diagnosis in his ledger
@@ -561,6 +668,11 @@ export class SR5_RollMessage {
       case "pickpocketTransfer":
         await SR5Pickpocket.transfer(messageData, messageId)
         break
+      //SR5 p. 422: the object hidden is taken out, its hidden state goes
+      case "concealTakeOut":
+        await SR5Conceal.takeOut(actor?.items.get(messageData.various.concealItemId))
+        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
       //Run & Gun p. 133: the clinched defender and the attacker enter the clinch, with the net hits of the test
       case "grappleClinchApply":
         await SR5_GrappleHelpers.startHold(messageData.previousMessage.actorId, SR5_GrappleHelpers.actorIdOf(actor), messageData.roll.netHits, "clinch", null, messageId)
@@ -584,6 +696,9 @@ export class SR5_RollMessage {
         await item.placeGabarit(messageId)
         break
       }
+      case "spellShapingSpare":
+        await SR5_RollMessage.spareWithSpellShaping(messageId, messageData)
+        break
       case "templateRemove":
         SR5_RollMessage.removeTemplate(messageId, messageData.owner.itemUuid, messageData.combat?.grenade?.templateId)
         break
@@ -688,9 +803,25 @@ export class SR5_RollMessage {
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       }
-      case "blueGooExplosion":
-        actor.rollTest("iceAttack", null, messageData)
+      case "blueGooExplosion": {
+        //From the IC's resistance card, the IC is the card's actor; from the defense of the avatar that hurt it, the
+        //attacker of that defense. Already down (its other button used), it explodes no more: this button goes
+        const {
+          goo, down
+        } = blueGooToExplode(actor, originalActionActor)
+        if (down) {
+          SR5_RollMessage.updateChatButtonHelper(messageId, type)
+          ui.notifications.info(game.i18n.localize("SR5.INFO_BlueGooAlreadyExploded"))
+          break
+        }
+        if (!goo) break
+        goo.rollTest("iceAttack", "blueGooExplosion", messageData)
+        //Kill Code p. 74: the IC is gone once it has exploded, it explodes only once
+        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        //"elle se désactive en explosant": down as an IC that crashes (SR5 p. 249), its combatant defeated
+        if (game.user?.isGM) await SR5_ActorHelper.createDeadEffect(goo.isToken ? goo.token.id : goo.id)
         break
+      }
       case "defenderDoBiofeedbackDamage": {
         //Biofeedback deals the defender's net hits (SR5 p. 232), counted again on both cards (matrix-card.js)
         const value = await trustedDefenderDamage(messageId, messageData.damage.value)
@@ -765,6 +896,17 @@ export class SR5_RollMessage {
         SR5_MatrixHelpers.rollOverwatchDefense(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      //Couronne du PAN, lot 5: the button stays until the gamemaster has answered
+      case "matrixPerceptionInfo":
+        //On a defense card it is the observer's button, taken below (attackerTest)
+        if (action === "nonOpposedTest") await choosePerceptionInfo(messageData, messageId)
+        break
+      //A file of the Matrix (SR5 p. 240-243): the active GM rolls the file's dice and writes it; the button stays until then
+      case "fileResolve":
+      case "fileEdit":
+      case "fileProtect":
+        if (action === "nonOpposedTest") await requestFileAction(messageData, messageId, type)
+        break
       case "matrixJamSignals":
         SR5_MatrixHelpers.jamSignals(messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
@@ -775,6 +917,18 @@ export class SR5_RollMessage {
         break
       case "haywire":
         SR5_MatrixHelpers.applyHaywireEffect(messageData, originalActionActor, actor)
+        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
+      //Rigger 5.0 p. 34-35: electronic warfare. The button stays when nothing was written
+      case "targetDevice":
+        if (await SR5_MatrixHelpers.applyTargetDeviceEffect(messageData, originalActionActor, actor)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
+      case "suppressNoise":
+        if (await SR5_MatrixHelpers.applyNoiseSuppressionEffect(messageData, actor)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
+      //The drone rolls from the defense card, which carries the net hits its threshold is read from
+      case "confusePilot":
+        actor.rollTest("autopilotUnforeseen", null, messageData)
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
       case "iAmTheFirewall":
@@ -815,6 +969,13 @@ export class SR5_RollMessage {
         break
       case "manaShift":
         if (await applyManaShift(messageData, messageId)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
+      case "bloodAddiction":
+        //Forbidden Arcana p. 130: the addiction test the sacrifice's points call for, rolled by the caster
+        if (actor?.isOwner) {
+          await (await import("../system/blood-magic.js")).bloodAddictionTest(actor, messageData.magic?.bloodMagic?.addictionThreshold ?? 2)
+          SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        }
         break
       case "killComplexFormResistance":
       case "dispellResistance":
@@ -865,6 +1026,23 @@ export class SR5_RollMessage {
         if (await SR5_ActorHelper.heal(messageData.owner.actorId, messageData) === false) return
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
+      //Rigger 5.0 p. 34: the repaired boxes leave the vehicle's monitor
+      case "repairVehicle":
+        if (await applyVehicleRepair(messageData.various?.vehicleRepair) === false) return
+        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
+      //Rigger 5.0 p. 153-154: the mod is fitted, taken off, or its parts are lost
+      case "installVehicleMod":
+      case "removeVehicleMod":
+      case "lostVehicleModParts":
+        if (await applyVehicleModInstall(messageData.various?.vehicleModInstall, type) === false) return
+        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
+      //RG p. 67: the weapon accessory works once installed
+      case "installAccessory":
+        if (await applyAccessoryInstall(messageData.various?.accessoryInstall) === false) return
+        SR5_RollMessage.updateChatButtonHelper(messageId, type)
+        break
       case "decreaseReach":
       case "decreaseAccuracy":
         //Only on the weapon of the actor the resistance was rolled for, from a card a GM or an owner wrote (matrix-card.js)
@@ -909,6 +1087,42 @@ export class SR5_RollMessage {
           if (await SR5SharedVision.startSnoop(snooped, messageData.previousMessage.actorId)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
           break
         }
+        //Lot 14: Snoop succeeded, the hacker intercepts the messages and calls of the target while his mark lasts. The
+        //GM checks the mark; a second click is harmless, so the button stays until he has written it
+        case "snoopComm": {
+          const {
+            requestCommcode
+          } = await import("../interface/commcode-traffic.js")
+          const done = await requestCommcode("snoop", {
+            targetId: messageData.owner.actorId, snooperId: messageData.previousMessage.actorId
+          })
+          if (done === true) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+          break
+        }
+        //SR5 p. 246: Trace Icon succeeded, the hacker learns where the target is (lot 14)
+        case "traceLocate": {
+          const {
+            locateTraced
+          } = await import("../interface/commcode-trace.js")
+          await locateTraced(SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId, messageData.actorUuids),
+            SR5_EntityHelpers.getRealActorFromID(messageData.previousMessage.actorId, messageData.actorUuids))
+          break
+        }
+        //SR5 p. 242: the silent icon was found, the observer chooses what she learns (couronne du PAN, lot 5)
+        case "matrixPerceptionInfo":
+          await choosePerceptionInfo(messageData, messageId)
+          break
+        //Rigger 5.0 p. 35: the hacker breaks the lock of the defender, written on himself
+        case "breakTargetLock": {
+          let hacker = SR5_EntityHelpers.getRealActorFromID(messageData.previousMessage.actorId, messageData.actorUuids)
+          let locker = SR5_EntityHelpers.getRealActorFromID(messageData.owner.actorId, messageData.actorUuids)
+          if (await SR5_MatrixHelpers.breakTargetLock(messageData, hacker, locker)) SR5_RollMessage.updateChatButtonHelper(messageId, type)
+          break
+        }
+        //SR5 p. 240: Edit File defended, the attacker applies it to the file (a bomb may go off, a protection refuse it)
+        case "fileApply":
+          await requestFileAction(messageData, messageId, type)
+          break
         default:
           SR5_SystemHelpers.srLog(1, `Unknown '${type}' type in chatButtonAction (attacker Test)`)
       }
@@ -1058,6 +1272,23 @@ export class SR5_RollMessage {
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.roll.netHits}${game.i18n.localize(SR5.damageTypesShort[messageData.test.typeSub])} ${game.i18n.localize("SR5.Healed")}`)
         messageData.extendedTest = false
         break
+      case "repairVehicle":
+        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.format("SR5.VehicleRepairDone", {
+          boxes: messageData.various?.vehicleRepair?.repaired ?? 0
+        }))
+        break
+      case "installVehicleMod":
+      case "removeVehicleMod":
+      case "lostVehicleModParts":
+        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.format(`SR5.VehicleModDone_${buttonToUpdate}`, {
+          mod: messageData.various?.vehicleModInstall?.modName ?? ""
+        }))
+        break
+      case "installAccessory":
+        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.format("SR5.ItemWorkshopInstalledCard", {
+          name: messageData.various?.accessoryInstall?.accessoryName ?? ""
+        }))
+        break
       case "firstAid":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",`${messageData.roll.netHits}${game.i18n.localize(SR5.damageTypesShort[firstOption])} ${game.i18n.localize("SR5.Healed")}`)
         break
@@ -1080,6 +1311,14 @@ export class SR5_RollMessage {
       case "createPreparation":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.PreparationCreateSuccessful"))
         break
+      case "matrixPerceptionInfo":
+        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.MatrixPerceptionInfoDone"))
+        break
+      case "fileResolve":
+      case "fileEdit":
+      case "fileApply":
+        messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.FileActionDone"))
+        break
       case "jackOutSuccess":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.MatrixActionJackOutSuccessFul"))
         break
@@ -1091,6 +1330,11 @@ export class SR5_RollMessage {
         break
       case "applyReagents":
         messageData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", game.i18n.localize("SR5.ReagentApplied"))
+        break
+      //Cutting Aces (lot 21): what the GM applied or wrote, said on the card
+      case "maneuverApply":
+      case "conRecord":
+        messageData.chatCard.buttons[`${buttonToUpdate}Done`] = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","", String(firstOption ?? ""))
         break
       //Bullets & Bandages p. 15: what the GM applied, marked done
       case "bbStabilize":
@@ -1153,6 +1397,75 @@ export class SR5_RollMessage {
   }
 
   //Return data for a chat button
+  //SR5 p. 329: the bubbles were paid for at casting; this names who stands in them.
+  //The tokens chosen are recorded on the card, and their defense and resistance are skipped
+  static async spareWithSpellShaping(messageId, messageData){
+    let spellData = messageData.magic.spell
+    let spared = Array.isArray(spellData.sparedActors) ? spellData.sparedActors : []
+    let allowed = spellData.sparedCount || 0
+    //Targets or selection, whichever the caster used. When the two disagree (targets persist, and a player nearly always
+    //has their own token selected), the caster ticks the tokens to spare. See SR5_SpellShapingHelpers.tokensToSpare
+    let targeted = [...(game.user.targets ?? [])], selected = [...(canvas.tokens?.controlled ?? [])]
+    let choice = SR5_SpellShapingHelpers.tokensToSpare(targeted, selected)
+    let chosen = choice.ambiguous ? await SR5_RollMessage._pickTokensToSpare(SR5_SpellShapingHelpers.candidates(targeted, selected), allowed - spared.length) : choice.tokens
+    if (chosen === null) return
+    if (!chosen.length) return ui.notifications.warn(`${game.i18n.localize("SR5.WARN_SpellShapingNoTokenSelected")}`)
+
+    let added = 0
+    for (let token of chosen){
+      if (spared.length >= allowed) {
+        ui.notifications.warn(`${game.i18n.format("SR5.WARN_SpellShapingNoBubbleLeft", {
+          number: allowed
+        })}`)
+        break
+      }
+      let key = SR5_SpellShapingHelpers.actorKey(token.actor)
+      if (!key || spared.some(alreadySpared => alreadySpared.id === key)) continue
+      spared.push({
+        id: key, name: token.name
+      })
+      added++
+    }
+    if (!added) return
+
+    spellData.sparedActors = spared
+    //Deleted when used up: updateRollCard removes from the flags a button the new card no longer has
+    if (spared.length >= allowed) delete messageData.chatCard.buttons.spellShapingSpare
+    else messageData.chatCard.buttons.spellShapingSpare = SR5_RollMessage.generateChatButton("nonOpposedTest", "spellShapingSpare", `${game.i18n.localize("SR5.SpellShapingSpare")} (${spared.length}/${allowed})`)
+
+    await SR5_RollMessage.updateRollCardHelper(messageId, messageData)
+  }
+
+  //The caster ticks the tokens to spare among those targeted or selected, at most the bubbles left.
+  //Returns null when the window is closed or cancelled.
+  static async _pickTokensToSpare(tokens, left){
+    const rows = tokens.map((token, index) => `<label class="checkbox"><input type="checkbox" name="spare" value="${index}"> ${Handlebars.escapeExpression(token.name)}</label>`).join("")
+    const content = `<p>${game.i18n.format("SR5.SpellShapingPickHint", {
+      number: left
+    })}</p>${rows}`
+    const result = await foundry.applications.api.DialogV2.wait({
+      window: {
+        title: game.i18n.localize("SR5.SpellShapingSpare")
+      },
+      content,
+      buttons: [
+        {
+          action: "ok",
+          label: game.i18n.localize("SR5.SpellShapingPickConfirm"),
+          default: true,
+          callback: (event, button, dialog) => [...dialog.element.querySelectorAll('input[name="spare"]:checked')].map(input => tokens[Number(input.value)]),
+        },
+        {
+          action: "cancel",
+          label: game.i18n.localize("SR5.Cancel"),
+          callback: () => null,
+        },
+      ],
+      rejectClose: false,
+    })
+    return Array.isArray(result) ? result : null
+  }
+
   static generateChatButton(testType, actionType, label, gmAction){
     if (gmAction) gmAction = "chat-button-gm"
     else gmAction = ""

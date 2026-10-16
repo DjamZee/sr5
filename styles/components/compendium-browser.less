@@ -21,8 +21,9 @@
   }
 
   /* ── Sidebar ────────────────────────────────────── */
+  // Wider, and the types fill its height (DjamZ, séance du 08/10, image 15)
   .sr-browser-sidebar {
-    flex: 0 0 300px;
+    flex: 0 0 340px;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -111,6 +112,8 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    flex: 1 1 0;
+    min-height: 140px;
 
     > label {
       margin-bottom: 4px;
@@ -121,9 +124,17 @@
     display: flex;
     flex-direction: column;
     gap: 1px;
-    max-height: 250px;
+    flex: 1 1 0;
+    min-height: 0;
     overflow-y: auto;
     padding-right: 4px;
+  }
+
+  .sr-browser-type-pending {
+    padding: 2px 4px;
+    font-size: var(--sr-font-size-small);
+    font-style: italic;
+    opacity: 0.7;
   }
 
   .sr-browser-type-item {
@@ -237,12 +248,22 @@
   }
 
   .sr-browser-count {
+    flex: 1;
+    text-align: center;
+    align-self: center;
+    font-family: var(--sr-font-title);
+    font-size: 11px;
+    color: var(--sr-text-color-dark);
     opacity: 0.7;
   }
 
+  // The column names over their columns: Name over the names (after the picture), Type over the badges
   .sr-browser-sort {
+    flex: 1;
     display: flex;
+    justify-content: space-between;
     gap: 10px;
+    padding-left: 28px;
 
     a {
       cursor: pointer;
@@ -394,15 +415,93 @@
     }
   }
 
-  // Buying moved to the shop's own window (lot B): the browser only links to it
-  button.sr-browser-open-shop {
-    .sr-button-footer();
-    width: auto !important;
-    height: auto !important;
-    min-height: unset !important;
-    padding: 2px 8px !important;
-    margin-left: auto;
+  // The shop (buying moved to its own window, lot B), a draw at random among what the filters show, or a table
+  // of it: one under the other in the left panel, above Clear
+  .sr-browser-list-actions {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    button {
+      .sr-button-footer();
+      width: 100% !important;
+      height: auto !important;
+      min-height: unset !important;
+      padding: 3px 8px !important;
+      font-size: 11px;
+    }
   }
+}
+
+// Lot 36: the Concepteur's look (window-skin.less lays the tokens); the theme's pictures and dark red give way. The
+// rules above paint with !important deep in their nesting, hence these
+.application.sr-compendium-browser {
+  .sr-browser-sidebar {
+    background-image: none !important;
+    background-color: var(--srw-panel) !important;
+    color: var(--srw-text) !important;
+    border-right: 1px solid var(--srw-border);
+
+    > label,
+    > .sr-browser-type-list > label,
+    > .sr-browser-filters > label {
+      .srw-title();
+      padding: 3px 0;
+      background-image: none;
+      color: var(--srw-heading) !important;
+    }
+
+    input[type="checkbox"] { border-color: var(--srw-border-strong) !important; }
+  }
+
+  .sr-browser-search {
+    border-bottom-color: var(--srw-border);
+    i { color: var(--srw-accent); }
+    input { border-bottom: 1px solid var(--srw-border-strong) !important; color: var(--srw-text) !important; }
+  }
+
+  .sr-browser-type-item {
+    color: var(--srw-text) !important;
+    &:hover { background: var(--srw-sel-bg); }
+    &.active { .srw-tab-active(); color: var(--srw-sel-text) !important; }
+  }
+  .sr-browser-type-count { color: var(--srw-muted); font-family: var(--srw-font-num); }
+  .sr-browser-filter-group label { color: var(--srw-muted) !important; }
+  :is(.sr-browser-filters, .sr-browser-sidebar-actions) { border-top-color: var(--srw-border); }
+
+  .sr-browser-results { background-image: none; }
+
+  // The column names: the Concepteur's window header
+  .sr-browser-results-header {
+    background: var(--srw-header-bg);
+    color: var(--srw-header-text);
+    font-family: var(--srw-font-num);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    border-bottom: 1px solid var(--srw-frame);
+  }
+  .sr-browser-sort a { color: var(--srw-header-text); }
+  .sr-browser-count { color: var(--srw-muted); font-family: var(--srw-font-num); }
+
+  .sr-browser-result {
+    border-bottom-color: var(--srw-border);
+    &:nth-child(even) { background-color: var(--srw-panel); }
+    &:hover, &:nth-child(even):hover { background-color: var(--srw-sel-bg); }
+  }
+  .sr-browser-result-img { background: var(--srw-header-bg); border-radius: 0; }
+  .sr-browser-result-name { color: var(--srw-text); }
+  .sr-browser-result-type {
+    color: var(--srw-sel-border);
+    border-color: var(--srw-sel-border);
+    border-radius: 0;
+    background: var(--srw-panel);
+    font-family: var(--srw-font-num);
+    font-size: 10px;
+  }
+  .sr-browser-result-info, .sr-browser-no-results { color: var(--srw-muted); }
+
+  .sr-browser-footer { background-image: none; border-top: 1px solid var(--srw-border); }
 }
 
 // Shop settings menu: shelves and buyers (lot A)

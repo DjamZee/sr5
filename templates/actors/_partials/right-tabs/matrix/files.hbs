@@ -1,0 +1,38 @@
+<!-- FILES (SR5 p. 228, 240, 243) -->
+<div class="SRBlockSheet">
+	<ul>
+		<li class="SR-LigneEnTete grid">
+			<div class="col-6"><p class="SR-TextUppercase">{{localize 'SR5.Files'}}</p></div>
+			<div class="col-2"><p class="SR-TextCenter" data-tooltip="{{localize 'SR5.FileProtection'}}">{{localize 'SR5.FileProtectionShort'}}</p></div>
+			<div class="col-2"><p class="SR-TextCenter" data-tooltip="{{localize 'SR5.FileDataBombHint'}}">{{localize 'SR5.FileDataBombShort'}}</p></div>
+			<div class="col-1"></div>
+			<div class="col-1">
+				{{#if owner}}
+					<p class="SR-TextRight add-item" data-helpTitle="{{localize 'SR5.HELP_ItemAdd' key=(findTranslation 'itemTypes' 'itemFile')}}"
+					data-helpMessage="{{localize 'SR5.HELP_ItemAddMsg'}}">
+						<a class="item-create" data-tooltip="{{localize 'SR5.Add'}}" data-type="itemFile"><em class="fas fa-plus"></em></a>
+					</p>
+				{{/if}}
+			</div>
+		</li>
+
+		{{#each actor.files}}
+		<li class="item grid" data-item-id="{{_id}}" draggable="true">
+			<div class="col-6 deplie" data-helpTitle="{{localize 'SR5.HELP_MoreInfos'}}" data-helpMessage="{{localize 'SR5.HELP_MoreInfosMsg'}}">
+				<p>{{name}}</p>
+			</div>
+			<div class="col-2"><p class="SR-TextCenter">{{valueOrDash system.protection}}</p></div>
+			<!-- A data bomb is no public knowledge: the gamemaster sees it, the others perceive it (SR5 p. 237, 243) -->
+			<div class="col-2"><p class="SR-TextCenter">{{#if @root.system.isGM}}{{valueOrDash system.dataBomb.rating}}{{else}}?{{/if}}</p></div>
+			<div class="col-1"></div>
+			<div class="col-1 SR-TextRight">
+				{{#if ../owner}}
+					<a data-helpTitle="{{localize 'SR5.HELP_ItemManagement' key=name}}" data-helpMessage="{{localize 'SR5.HELP_ItemManagementMsg'}}">
+						<em class="fas fa-sm fa-edit item-management"></em>
+					</a>
+				{{/if}}
+			</div>
+		</li>
+		{{/each}}
+	</ul>
+</div>

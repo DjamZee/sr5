@@ -41,11 +41,17 @@ export {
   default as grappleEscapeInfo
 } from "./test-GrappleEscape.js"
 export {
+  default as netEscapeInfo
+} from "./test-NetEscape.js"
+export {
   default as grappleClinchDefenseInfo
 } from "./test-GrappleClinchDefense.js"
 export {
   default as pickpocketInfo, pickpocketPerceptionInfo
 } from "./test-Pickpocket.js"
+export {
+  default as concealItemInfo
+} from "./test-ConcealItem.js"
 export {
   default as liftInfo
 } from "./test-Lift.js"
@@ -97,3 +103,12 @@ export {
 export {
   default as vehicleTestInfo
 } from "./test-VehicleTest.js"
+export {
+  default as vehicleRepairInfo
+} from "./test-VehicleRepair.js"
+export {
+  default as vehicleModInstallInfo
+} from "./test-VehicleModInstall.js"
+export {
+  default as accessoryInstallInfo
+} from "./test-AccessoryInstall.js"

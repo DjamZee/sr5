@@ -1,0 +1,170 @@
+// Lot 36, part 2: the Concepteur's look (commons/window-tokens.less) on the system's other own windows. One list of
+// classes, one dress; the windows keep their own layout files, and only what they paint in their own colours is
+// retouched there (con-tracker.less, commcode.less, compendium-browser.less). The shop, the dealership and the chase
+// dress themselves (shop-window.less, dealership.less, chase.less). The sheet layout window (sheet-config.less) stays
+// out: it shows the sheet's own panels, and the sheets stay red (Élise, 14/10); so do the dialogs (DialogV2), which share
+// the system's dialog style (dialog.less).
+@import "../commons/window-tokens.less";
+
+@srw-skinned: ~".sr-con, .sr-factions, .sr-shop-config, .sr-sell-dialog, .sr-drug-designer, .sr-negotiation-repair, .sr-presets-config, .sr-rule-locks-config, .sr-token-defaults-config, .sr-table-builder-window, .sr-compendium-browser, .sr-commcode, .sr-infobroker";
+// Lot 36b: the windows without the sr-application class take the theme's window dress (window.less, a long
+// :not() chain with !important): an id that no element carries (#srw-raise) lifts their selector above it, as :is()
+// counts its heaviest argument
+@srw-skinned-plain: ~".sr-combat-maneuver, .sr-explosive-charge, .sr-skin-dialog, #srw-raise";
+
+.application:is(@{srw-skinned}),
+.application:is(@{srw-skinned-plain}) {
+  .srw-tokens();
+  .srw-window();
+
+  > .window-content {
+    // The theme's light text on dark red: the window's own colours instead
+    :is(p, label, span, li, dt, dd, td, small, strong, b, em, div) { text-shadow: none; }
+    label { color: var(--srw-text); }
+    :is(.hint, .notes, .muted) { color: var(--srw-muted); }
+
+    // The headings: the Concepteur's display face in capitals
+    :is(h1, h2, h3) {
+      .srw-heading();
+      margin: 0.4rem 0;
+    }
+    h4 {
+      .srw-title();
+      margin: 0.5rem 0 0.25rem;
+    }
+
+    // The boxes: a Concepteur frame, the legend as a section title
+    fieldset {
+      .srw-box();
+      border-radius: 0;
+    }
+    fieldset > legend {
+      .srw-title();
+      padding: 0 0.4rem;
+      font-size: 11px;
+      font-weight: bold;
+      background: var(--srw-panel);
+    }
+
+    // The buttons: square, firm border; the theme's own (uppercase title face, dark red) give way
+    button:not(.header-control) {
+      .srw-button();
+      background: var(--srw-field) !important;
+      color: var(--srw-text) !important;
+      border: 1px solid var(--srw-border-strong) !important;
+      border-radius: 0 !important;
+      font-family: var(--srw-font-body) !important;
+      text-transform: none !important;
+      letter-spacing: normal !important;
+      text-shadow: none !important;
+      box-shadow: none !important;
+
+      &:hover:not(:disabled) { border-color: var(--srw-sel-border) !important; color: var(--srw-sel-text) !important; }
+    }
+    // The main action of a form, as the Concepteur's « Suivant »
+    button:is([type="submit"], .primary, .default) {
+      background: var(--srw-accent-fill) !important;
+      border-color: var(--srw-accent-fill) !important;
+      color: var(--srw-on-accent) !important;
+      font-weight: bold;
+      .srw-cut();
+    }
+
+    // The fields
+    :is(input[type="text"], input[type="number"], input[type="search"], input:not([type]), select, textarea) {
+      .srw-field();
+      background-color: var(--srw-field) !important;
+      color: var(--srw-text) !important;
+      border: 1px solid var(--srw-border-strong) !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+    }
+    select option { color: var(--srw-text); background: var(--srw-panel); }
+
+    // The tabs
+    nav.tabs, .sheet-tabs {
+      border-color: var(--srw-border);
+      > :is(a, .item) {
+        .srw-tab();
+        padding: 0.2rem 0.6rem;
+        &.active { .srw-tab-active(); }
+      }
+    }
+
+    // The tables keep the window's ground, their headers as the Concepteur's
+    :is(table, thead, tbody, tr, td) { background: transparent; border-color: var(--srw-border); color: var(--srw-text); }
+    th {
+      background: transparent;
+      color: var(--srw-heading);
+      font-family: var(--srw-font-num);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-shadow: none;
+      border-color: var(--srw-border);
+    }
+
+    a:not([class]) { color: var(--srw-sel-border); }
+  }
+
+  > .window-content > footer, > footer, .form-footer {
+    background: transparent;
+    border-top: 1px solid var(--srw-border);
+  }
+}
+
+// Relecture djamz.13, R1: the dialogs (DialogV2) in the Concepteur's look too (sr-skin-dialog, put on by the
+// renderDialogV2 hook, render-ui.js), the roll window aside. The white picture of dialog.less gives way to the
+// window's ground, the buttons keep one line and a modest size (img 04, img 21)
+.application.dialog.sr-skin-dialog:is(.sr-skin-dialog, #srw-raise) {
+  > .window-content {
+    overflow-x: hidden;
+    overflow-y: auto;
+    min-height: 0;
+    padding: 0.6rem 0.75rem;
+  }
+  .dialog-form, .dialog-content {
+    background: transparent !important;
+    background-image: none !important;
+    color: var(--srw-text);
+  }
+  .dialog-content { padding: 0 0 0.4rem; }
+  .form-footer {
+    gap: 0.4rem;
+    padding-top: 0.5rem;
+    button {
+      min-height: 30px;
+      height: auto;
+      padding: 0.25rem 0.6rem;
+      font-size: var(--font-size-13, 13px);
+      line-height: 1.2;
+      white-space: normal;
+    }
+    // Every DialogV2 button is a submit: only the default one (autofocus) is filled, the others as plain buttons
+    button[type="submit"]:not(.default, [autofocus]) {
+      background: var(--srw-field) !important;
+      border-color: var(--srw-border-strong) !important;
+      color: var(--srw-text) !important;
+      font-weight: normal;
+      clip-path: none;
+    }
+  }
+}
+
+// Relecture djamz.13, R1: the windows whose content is one long column scroll as a whole when the window is smaller
+// than it (the core gives .window-content overflow: hidden). The windows with scrolling panes of their own (shop,
+// commcode, compendium browser, broker) keep theirs.
+@srw-scrolling: ~".sr-con, .sr-factions, .sr-drug-designer, .sr-shop-config, .sr-combat-maneuver, .sr-explosive-charge, .sr-cipher-tool, #srw-raise";
+.application:is(@{srw-scrolling}) > .window-content {
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+// The dark set under Foundry's dark theme, unless the window itself is light (as the Concepteur)
+&.theme-dark .application:is(@{srw-skinned}):not(.theme-light),
+.application:is(@{srw-skinned}).theme-dark,
+&.theme-dark .application:is(@{srw-skinned-plain}):not(.theme-light),
+.application:is(@{srw-skinned-plain}).theme-dark {
+  .srw-tokens-dark();
+}

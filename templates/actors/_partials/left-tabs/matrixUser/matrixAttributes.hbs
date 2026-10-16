@@ -18,7 +18,7 @@
 		{{/if}}
 
 		<!-- Noise Reduction & Sharing -->
-		{{#if (eq system.matrix.deviceType "riggerCommandConsole")}}
+		{{#if actsAsRcc}}
 			{{> systems/sr5/templates/actors/_partials/left-tabs/matrixUser/attributes/noiseReduction.hbs}}
 			{{> systems/sr5/templates/actors/_partials/left-tabs/matrixUser/attributes/sharing.hbs}}
 		{{/if}}

@@ -1,4 +1,10 @@
 import {
+  overwatchScoreShownTo
+} from "../../rolls/roll-helpers/overwatch-notice.js"
+import {
+  tactileSensorsOn
+} from "../../system/vehicle-mods.js"
+import {
   SR5
 } from "../../config.js"
 import {
@@ -17,14 +23,20 @@ import {
   SR5_EntityHelpers 
 } from "../helpers.js"
 import {
-  ownsTarget, bounded, consumedKey
+  ownsTarget, bounded, consumedKey, chanceSpent, standsAsGM, playerRollsChecked
 } from "../../rolls/roll-helpers/socket-guard.js"
 import {
   vouch
 } from "../../rolls/roll-helpers/attack-card.js"
 import {
+  NAMED_BY_TYPE_TARGETS
+} from "../../rolls/roll-helpers/spell-aura.js"
+import {
   isStorable, isStoredAway 
 } from "../../interface/storage-rules.js"
+import {
+  refuseByRule, ruleLockActive, ruleLockBinds
+} from "../../system/rule-locks.js"
 import {
   SR5Combat 
 } from "../../system/srcombat.js"
@@ -59,6 +71,9 @@ import {
   _getSRStatusEffect
 } from "../../system/effectsList.js"
 import {
+  monitorFull
+} from "../../system/rigging-rules.js"
+import {
   SR5_SpiritTypes
 } from "../items/spirit-types.js"
 import {
@@ -73,6 +88,12 @@ import {
 import {
   isAreaSpellTemplateGone
 } from "../../system/areaEffectScene.js"
+import {
+  carriedGear
+} from "../../system/vehicle-factory.js"
+import {
+  syncDroneBox
+} from "../../system/slave-sync.js"
 
 export class SR5_ActorHelper {
     
@@ -107,7 +128,7 @@ export class SR5_ActorHelper {
           actorData.conditionMonitors.condition.actual.base += damage
           SR5_EntityHelpers.updateValue(actorData.conditionMonitors.condition.actual, 0)
           const applied = isMatrixDamage ? ` ${game.i18n.localize("SR5.AppliedMatrixDamage")}` : `${game.i18n.localize(SR5.damageTypesShort[damageType] ?? "")} ${game.i18n.localize("SR5.Applied")}`
-          ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${damage}${applied}.`)
+          ui.notifications.info(`${SR5_EntityHelpers.displayName(realActor)}${game.i18n.localize("SR5.Colons")} ${damage}${applied}.`)
           break
         }
         if (options.damage.matrix.value > 0) {
@@ -146,34 +167,39 @@ export class SR5_ActorHelper {
             realDamage = damage - (actorData.conditionMonitors.physical.actual.value - actorData.conditionMonitors.physical.value)
           } else realDamage = damage 
         }
-        if (realDamage > 0) ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${realDamage}${game.i18n.localize(SR5.damageTypesShort[damageType])} ${game.i18n.localize("SR5.Applied")}.`)
+        if (realDamage > 0) ui.notifications.info(`${SR5_EntityHelpers.displayName(realActor)}${game.i18n.localize("SR5.Colons")} ${realDamage}${game.i18n.localize(SR5.damageTypesShort[damageType])} ${game.i18n.localize("SR5.Applied")}.`)
         if (damageType === "physical" && realDamage > 0) SR5_ActorHelper.addAggravatedWounds(realActor, actorData.conditionMonitors.physical, realDamage, options)
 
         {
           const overflow = SR5_ActorHelper.carryMonitorOverflow(actorData.conditionMonitors, actor.type)
-          if (overflow.carriedDamage > 0) ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${overflow.carriedDamage}${game.i18n.localize(SR5.damageTypesShort.physical)} ${game.i18n.localize("SR5.Applied")}.`)
+          if (overflow.carriedDamage > 0) ui.notifications.info(`${SR5_EntityHelpers.displayName(realActor)}${game.i18n.localize("SR5.Colons")} ${overflow.carriedDamage}${game.i18n.localize(SR5.damageTypesShort.physical)} ${game.i18n.localize("SR5.Applied")}.`)
           isDead = overflow.isDead
         }
         break
       case "actorGrunt":
         actorData.conditionMonitors.condition.actual.base += damage
         SR5_EntityHelpers.updateValue(actorData.conditionMonitors.condition.actual, 0)
-        ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${damage}${game.i18n.localize(SR5.damageTypesShort[damageType])} ${game.i18n.localize("SR5.Applied")}.`)
+        ui.notifications.info(`${SR5_EntityHelpers.displayName(realActor)}${game.i18n.localize("SR5.Colons")} ${damage}${game.i18n.localize(SR5.damageTypesShort[damageType])} ${game.i18n.localize("SR5.Applied")}.`)
         if (damageType === "physical" && damage > 0) SR5_ActorHelper.addAggravatedWounds(realActor, actorData.conditionMonitors.condition, damage, options)
         break
       case "actorDrone":
         if (damageType === "physical") {
           actorData.conditionMonitors.condition.actual.base += damage
           SR5_EntityHelpers.updateValue(actorData.conditionMonitors.condition.actual, 0)
-          ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${damage}${game.i18n.localize(SR5.damageTypesShort[damageType])} ${game.i18n.localize("SR5.Applied")}.`)
+          ui.notifications.info(`${SR5_EntityHelpers.displayName(realActor)}${game.i18n.localize("SR5.Colons")} ${damage}${game.i18n.localize(SR5.damageTypesShort[damageType])} ${game.i18n.localize("SR5.Applied")}.`)
           if (actorData.controlMode === "rigging"){
             let controler = SR5_EntityHelpers.getRealActorFromID(actorData.vehicleOwner.id)
             let chatData = SR5_PrepareRollTest.getBaseRollData(null, controler)
             chatData.damage.resistanceType = "biofeedback"
             chatData.damage.value = Math.ceil(damage/2)
+            //Jumped in, the rigger is in VR even when his sheet says AR (SR5 p. 268)
+            chatData.jumpedIn = true
+            //Its tactile sensors make the rigger feel the hit: -2 to resist (Rigger 5.0 p. 170)
+            chatData.tactileSensors = tactileSensorsOn(actor.items, actorData.controlMode)
             chatData.owner.messageId = options.owner.messageId
-            //Worked out here for the rigger, not the card's actor: vouched for (attack-card.js, trustedResistanceCard)
-            controler.rollTest("resistanceCard", null, vouch(chatData))
+            //Worked out here for the rigger, not the card's actor: vouched for (attack-card.js, trustedResistanceCard);
+            //by the GM, sent to the rigger's player, whose browser trusts what the GM sends (_socketRollTest)
+            SR5_ActorHelper.rollForOwner(controler, "resistanceCard", vouch(chatData))
           }
         }
         // Drones short out (matrix damage); vehicles take the damage without side effect (SR5 p. 173)
@@ -181,7 +207,7 @@ export class SR5_ActorHelper {
         if (options.damage.matrix.value > 0) {
           actorData.conditionMonitors.matrix.actual.base += options.damage.matrix.value
           SR5_EntityHelpers.updateValue(actorData.conditionMonitors.matrix.actual, 0)
-          ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${options.damage.matrix.value} ${game.i18n.localize("SR5.AppliedMatrixDamage")}.`)
+          ui.notifications.info(`${SR5_EntityHelpers.displayName(realActor)}${game.i18n.localize("SR5.Colons")} ${options.damage.matrix.value} ${game.i18n.localize("SR5.AppliedMatrixDamage")}.`)
         }
         break
       case "actorAgent":
@@ -190,7 +216,7 @@ export class SR5_ActorHelper {
         if (options.damage.matrix.value > 0) {
           actorData.conditionMonitors.matrix.actual.base += options.damage.matrix.value
           SR5_EntityHelpers.updateValue(actorData.conditionMonitors.matrix.actual, 0)
-          ui.notifications.info(`${realActor.name}${game.i18n.localize("SR5.Colons")} ${options.damage.matrix.value} ${game.i18n.localize("SR5.AppliedMatrixDamage")}.`)
+          ui.notifications.info(`${SR5_EntityHelpers.displayName(realActor)}${game.i18n.localize("SR5.Colons")} ${options.damage.matrix.value} ${game.i18n.localize("SR5.AppliedMatrixDamage")}.`)
         }
         break
     }
@@ -201,8 +227,20 @@ export class SR5_ActorHelper {
     for (let [key, monitor] of Object.entries(actorData.conditionMonitors)) {
       // Boxes beyond the monitor are not kept: they would eat the next healing (SR5 p. 171, 381)
       if (monitor?.actual) monitorUpdates[`system.conditionMonitors.${key}.actual.base`] = Math.min(monitor.actual.base, monitor.value ?? monitor.actual.base)
+      // The aggravated boxes are damage taken too (Howling Shadows p. 213): written with the boxes they mark
+      if (monitor && "aggravated" in monitor) monitorUpdates[`system.conditionMonitors.${key}.aggravated`] = monitor.aggravated
     }
     await realActor.update(monitorUpdates)
+
+    //Sacrifice (Street Grimoire p. 90): a melee wound dealt by a blood magician offers him its points, which his owner
+    //asks for and the GM grants. Never in the way of the damage
+    if (damageType === "physical" && damage > 0 && (actor.type === "actorPc" || actor.type === "actorGrunt") && !singleMonitor) {
+      try {
+        await (await import("../../system/blood-magic.js")).offerSacrifice(realActor, options, damage)
+      } catch (e) {
+        console.error(e)
+      }
+    }
 
     //Status
     switch (actor.type){
@@ -237,9 +275,18 @@ export class SR5_ActorHelper {
         }
         else if (SR5_ActorHelper.knocksDown(damage, actorData.limits.physicalLimit.value, gelAmmo, options.damage.isAttack)){ await SR5_ActorHelper.createProneEffect(actorId, damage, gelAmmo)}
         break
-      case "actorDrone":
-        if (actorData.conditionMonitors.condition.actual.value >= actorData.conditionMonitors.condition.value) await SR5_ActorHelper.createDeadEffect(actorId)
+      case "actorDrone": {
+        const destroyed = actorData.conditionMonitors.condition.actual.value >= actorData.conditionMonitors.condition.value
+        if (destroyed) await SR5_ActorHelper.createDeadEffect(actorId)
+        //Destroyed or bricked with a rigger jumped in: he is ejected, dumpshock and loss of control (SR5 p. 268, 271)
+        if (actorData.controlMode === "rigging" && (destroyed || monitorFull(actorData.conditionMonitors.matrix))) {
+          const {
+            ejectFromDrone
+          } = await import("../../system/rigger-ejection.js")
+          await ejectFromDrone(realActor)
+        }
         break
+      }
       case "actorSprite":
       case "actorDevice":
         if (actorData.conditionMonitors.matrix.actual.value >= actorData.conditionMonitors.matrix.value) await SR5_ActorHelper.createDeadEffect(actorId)
@@ -250,10 +297,13 @@ export class SR5_ActorHelper {
     // A drone's side effect from electricity is the matrix damage above (SR5 p. 173), not the dice and Initiative penalty
     if (options.damage.element === "electricity" && actor.type !== "actorDrone") await SR5_ActorHelper.electricityDamageEffect(actorId)
     if (options.damage.element === "anticoagulant" && actor.type !== "actorDrone") await SR5_ActorHelper.anticoagulantDamageEffect(actorId)
-    if (options.damage.element === "acid") await SR5_ActorHelper.acidDamageEffect(actorId, damage, options.damage.source)
+    //The acid of a spell evaporates once the spell ends (SR5 p. 172): spells and preparations say "magical", never "spell";
+    //a weapon focus is a weapon. The burn the acid deals each turn (srcombat.js) never lays a new acid of its own
+    const acidSource = options.damage.source === "magical" && !options.damage.weaponFocus ? "spell" : options.damage.source
+    if (options.damage.element === "acid" && options.damage.source !== "acidLingering") await SR5_ActorHelper.acidDamageEffect(actorId, damage, acidSource)
     if (options.damage.element === "fire"){
       if (actorData.itemsProperties.armor.value <= 0) await SR5_ActorHelper.fireDamageEffect(actorId)
-      else await SR5_ActorHelper.checkIfCatchFire(actorId, options.threshold.value, options.damage.source, options.combat.armorPenetration)
+      else await SR5_ActorHelper.checkIfCatchFire(actorId, options.threshold.value, options)
     }
   }
 
@@ -372,16 +422,16 @@ export class SR5_ActorHelper {
     let statusEffect = await _getSRStatusEffect("prone")
     await actor.createEmbeddedDocuments('ActiveEffect', [statusEffect])
     await actor.createEmbeddedDocuments("Item", [effect])
-    if (damage >= 10) ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_DamageDropProneTen", {
+    if (damage >= 10) ui.notifications.info(`${SR5_EntityHelpers.displayName(actor)}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_DamageDropProneTen", {
       damage: damage
     })}`)
-    else if (gelAmmo < 0) ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_DamageDropProneGel", {
+    else if (gelAmmo < 0) ui.notifications.info(`${SR5_EntityHelpers.displayName(actor)}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_DamageDropProneGel", {
       damage: damage, limit: actorData.limits.physicalLimit.value
     })}`)
-    else if (damage > 0) ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_DamageDropProne", {
+    else if (damage > 0) ui.notifications.info(`${SR5_EntityHelpers.displayName(actor)}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_DamageDropProne", {
       damage: damage, limit: actorData.limits.physicalLimit.value
     })}`)
-    else ui.notifications.info(`${actor.name} ${game.i18n.format("SR5.INFO_DropProne")}`)
+    else ui.notifications.info(`${SR5_EntityHelpers.displayName(actor)} ${game.i18n.format("SR5.INFO_DropProne")}`)
   }
 
   //A player may not write on the actor that dies (an AI dissipated by matrix damage it was dealt): the GM does it
@@ -419,7 +469,11 @@ export class SR5_ActorHelper {
       }
     }
     await actor.createEmbeddedDocuments('ActiveEffect', [effect])
-    ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.INFO_DamageActorDead")}`)
+    //A grunt knocked out then finished off was both Unconscious and Dead: the knockout laid by the damage goes,
+    //never one the GM set by hand (same filter as clearDamageKnockout)
+    let knockouts = actor.effects.filter(e => e.origin === "unconscious" && e.statuses.has("unconscious")).map(e => e.id)
+    if (knockouts.length) await actor.deleteEmbeddedDocuments('ActiveEffect', knockouts)
+    ui.notifications.info(`${SR5_EntityHelpers.displayName(actor)}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.INFO_DamageActorDead")}`)
     await SR5_ActorHelper.dropSpoilsOnDeath(actor)
   }
 
@@ -465,7 +519,7 @@ export class SR5_ActorHelper {
     }
     let effect = await _getSRStatusEffect("unconscious")
     await actor.createEmbeddedDocuments('ActiveEffect', [effect])
-    ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.INFO_DamageActorKo")}`)
+    ui.notifications.info(`${SR5_EntityHelpers.displayName(actor)}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.INFO_DamageActorKo")}`)
   }
 
   /**
@@ -512,7 +566,7 @@ export class SR5_ActorHelper {
       await actor.updateEmbeddedDocuments("Item", [{
         _id: existingEffect.id, "system.duration": (Number(existingEffect.toObject().system.duration) || 0) + 1
       }])
-      ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${existingEffect.name} ${game.i18n.localize("SR5.INFO_DurationExtendOneRound")}.`)
+      ui.notifications.info(`${SR5_EntityHelpers.displayName(actor)}${game.i18n.localize("SR5.Colons")} ${existingEffect.name} ${game.i18n.localize("SR5.INFO_DurationExtendOneRound")}.`)
     } else {
       let effect = {
         name: `${game.i18n.localize("SR5.ElementalDamage")} (${game.i18n.localize("SR5.ElementalDamageElectricity")})`,
@@ -533,7 +587,7 @@ export class SR5_ActorHelper {
           }
         }
       }
-      ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${effect.name} ${game.i18n.localize("SR5.Applied")}.`)
+      ui.notifications.info(`${SR5_EntityHelpers.displayName(actor)}${game.i18n.localize("SR5.Colons")} ${effect.name} ${game.i18n.localize("SR5.Applied")}.`)
       await SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), -5)
       await actor.createEmbeddedDocuments("Item", [effect])
 
@@ -573,7 +627,7 @@ export class SR5_ActorHelper {
       }
     }
     await actor.createEmbeddedDocuments("Item", [effect])
-    ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${effect.name} ${game.i18n.localize("SR5.Applied")}.`)
+    ui.notifications.info(`${SR5_EntityHelpers.displayName(actor)}${game.i18n.localize("SR5.Colons")} ${effect.name} ${game.i18n.localize("SR5.Applied")}.`)
   }
 
   //Handle suppressive fire zone (SR5 p. 181): -hits dice to every action other than defending, until the end of the combat turn
@@ -603,7 +657,7 @@ export class SR5_ActorHelper {
       }
     }
     await actor.createEmbeddedDocuments("Item", [effect])
-    ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${effect.name} (${-hits}) ${game.i18n.localize("SR5.Applied")}.`)
+    ui.notifications.info(`${SR5_EntityHelpers.displayName(actor)}${game.i18n.localize("SR5.Colons")} ${effect.name} (${-hits}) ${game.i18n.localize("SR5.Applied")}.`)
   }
 
   //Handle Special Damage : Anticoagulant
@@ -624,7 +678,7 @@ export class SR5_ActorHelper {
       "system.gameEffect": game.i18n.localize("SR5.Anticoagulant_GE")
     }
 
-    ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${effect.name} ${game.i18n.localize("SR5.Applied")}.`)
+    ui.notifications.info(`${SR5_EntityHelpers.displayName(actor)}${game.i18n.localize("SR5.Colons")} ${effect.name} ${game.i18n.localize("SR5.Applied")}.`)
     await SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), -5)
     await actor.createEmbeddedDocuments("Item", [effect])
 
@@ -655,7 +709,7 @@ export class SR5_ActorHelper {
       await actor.updateEmbeddedDocuments("Item", [{
         _id: armor.id, "system.itemEffects": itemEffects
       }], systemEffectWrite())
-      ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_AcidReduceArmor", {
+      ui.notifications.info(`${SR5_EntityHelpers.displayName(actor)}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_AcidReduceArmor", {
         armor: armor.name
       })}`)
     }
@@ -673,7 +727,7 @@ export class SR5_ActorHelper {
       "system.duration": duration,
     }
 		
-    ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${effect.name} ${game.i18n.localize("SR5.Applied")}.`)
+    ui.notifications.info(`${SR5_EntityHelpers.displayName(actor)}${game.i18n.localize("SR5.Colons")} ${effect.name} ${game.i18n.localize("SR5.Applied")}.`)
     await SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), -5)
     await actor.createEmbeddedDocuments("Item", [effect])
 
@@ -696,18 +750,22 @@ export class SR5_ActorHelper {
       "system.durationType": "special",
       "system.duration": 0,
     }
-    ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${effect.name} ${game.i18n.localize("SR5.Applied")}.`)
+    ui.notifications.info(`${SR5_EntityHelpers.displayName(actor)}${game.i18n.localize("SR5.Colons")} ${effect.name} ${game.i18n.localize("SR5.Applied")}.`)
     await actor.createEmbeddedDocuments("Item", [effect])
 
     let statusEffect = await _getSRStatusEffect("fireDamage")
     await actor.createEmbeddedDocuments('ActiveEffect', [statusEffect])
   }
 
-  //Check if an actor catch fire
-  static async checkIfCatchFire (actorId, firethreshold, source, force){
+  //Check if an actor catch fire. SR5 p. 173: a fire spell's AP is -Force, a fire-based weapon's -6. A spell or a
+  //preparation says "magical", never "spell"; a weapon focus is a weapon. The card's AP is not the Force: the
+  //resistance capped it at the armor before the fire protection was counted
+  static async checkIfCatchFire (actorId, firethreshold, options){
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
-    let ap = (source === "spell") ? force : -6
-    let fireType = (source === "spell") ? "fireMagical" : "fire"
+    const isSpell = options.damage.source === "magical" && !options.damage.weaponFocus
+    const force = Number(options.magic?.force) || -(Number(options.combat?.armorPenetration) || 0)
+    let ap = isSpell ? -force : -6
+    let fireType = isSpell ? "fireMagical" : "fire"
         
     let rollInfo = SR5_PrepareRollTest.getBaseRollData(null, actor)
     rollInfo.threshold.type = fireType
@@ -722,19 +780,30 @@ export class SR5_ActorHelper {
   //DjamZ's ruling, 2026-10-06: "ce sont les débranchements d'urgence qui provoquent le choc". An AI (Depth active,
   //Data Trails p. 152) has no dumpshock, it is dissipated instead (decided by DjamZ, 04/10)
   //bricked: the deck threw the character out by bricking, Willpower alone resists (SR5 p. 231)
+  //jumpedIn: a rigger ejected from the vehicle he was jumped into, always in VR whatever his sheet says (SR5 p. 268, 271)
   static dumpshockIfInVR(actor, {
-    bricked = false
+    bricked = false, jumpedIn = false
   } = {
   }) {
     let userMode = actor?.system.matrix?.userMode
-    if (!userMode || userMode === "ar") return false
+    if (!userMode || (userMode === "ar" && !jumpedIn)) return false
     if ((actor.type === "actorPc" || actor.type === "actorGrunt") && actor.system.activeSpecialAttribute === "depth") return false
     //The resistance card reads owner and roll from the card it follows: a bare object crashed it (SR5 p. 229)
     let dumpshockData = SR5_PrepareRollTest.getBaseRollData(null, actor)
     dumpshockData.damage.resistanceType = "dumpshock"
     if (bricked) dumpshockData.damage.bricked = true
-    actor.rollTest("resistanceCard", null, dumpshockData)
+    SR5_ActorHelper.rollForOwner(actor, "resistanceCard", dumpshockData)
     return true
+  }
+
+  //Worked out by the GM (a destroyed drone, a brick he wrote, a drone hit under its rigger): the resistance is rolled
+  //by the player of the character when one is connected, as for an area spell (effectArea.js); here otherwise
+  static rollForOwner(actor, rollType, chatData) {
+    const user = game.user?.isGM && actor.hasPlayerOwner ? SR5_EntityHelpers.getUserOwner(actor) : null
+    if (user && !user.isGM && user.id !== game.user.id) return SR5_SocketHandler.emitForPlayer("actorRoll", {
+      actorId: actor.isToken ? actor.token.id : actor.id, rollType, rollKey: null, chatData,
+    }, user.id)
+    return actor.rollTest(rollType, null, chatData)
   }
 
   //Raise owerwatch score
@@ -752,7 +821,8 @@ export class SR5_ActorHelper {
       sr5OverwatchLower: "emulate"
     } : {
     })
-    ui.notifications.info(`${actor.name}, ${game.i18n.localize("SR5.OverwatchScoreActual")} ${actorData.matrix.overwatchScore}`)
+    //SR5 p. 233: the gamemaster keeps the score in secret; a player reads it only with Baby Monitor (sr5OverwatchGMOnly, A7)
+    if (overwatchScoreShownTo(actor)) ui.notifications.info(`${actor.name}, ${game.i18n.localize("SR5.OverwatchScoreActual")} ${actorData.matrix.overwatchScore}`)
   }
 
   //Socket for increasing overwatch score;
@@ -899,7 +969,11 @@ export class SR5_ActorHelper {
     else if (item.type === "itemContact") petType = "actorGrunt"
     else if (item.type === "itemStorage") petType = "actorStorage"
 
-    if (item.img === `systems/sr5/assets/img/items/${item.type}.svg`) img = `systems/sr5/assets/img/actors/${petType}.svg`
+    //The system's own item icon gives way to the actor's, drawn on a black square for the map. A drone bought at the
+    //dealer or built at the workshop carries the drone icon (vehicle-workshop.js): it lost its black square (lot R5, img 22)
+    const defaultIcons = [`systems/sr5/assets/img/items/${item.type}.svg`]
+    if (item.type === "itemVehicle") defaultIcons.push("systems/sr5/assets/img/items/itemDrone.svg")
+    if (defaultIcons.includes(item.img)) img = `systems/sr5/assets/img/actors/${petType}.svg`
     else img = item.img
 
     // Handle base data for Actor Creation
@@ -907,8 +981,8 @@ export class SR5_ActorHelper {
       "name": item.name,
       "type": petType,
       "img": img,
-      // The token picture picked on the item, or the portrait when left empty
-      "prototypeToken.texture.src": itemData.tokenImg || img,
+      // The token picture picked on the item, or the portrait when left empty (an item icon of the system counts as none)
+      "prototypeToken.texture.src": (!defaultIcons.includes(itemData.tokenImg) && itemData.tokenImg) || img,
     }
 
     // Give permission to player
@@ -921,7 +995,7 @@ export class SR5_ActorHelper {
 
     // Handle specific data for Actor creation
     if (item.type === "itemSpirit") {
-      let baseItems = await SR5_CompendiumUtility.getBaseItems("actorSpirit", itemData.type, itemData.itemRating)
+      let baseItems = await SR5_CompendiumUtility.getBaseItems("actorSpirit", itemData.type, itemData.itemRating, itemData.insectRace)
       baseItems = await SR5_CompendiumUtility.addOptionalSpiritPowersFromItem(baseItems, itemData.optionalPowers)
 
       for (let power of baseItems){
@@ -942,6 +1016,7 @@ export class SR5_ActorHelper {
       sideKickData = foundry.utils.mergeObject(sideKickData, {
         "system.sideKickPrototypeToken": itemData.sideKickPrototypeToken,
         "system.type": itemData.type,
+        "system.insectRace": itemData.insectRace,
         "system.force.base": itemData.itemRating,
         "system.isBounded": itemData.isBounded,
         "system.isElemental": itemData.isElemental,
@@ -1050,6 +1125,7 @@ export class SR5_ActorHelper {
       for (let weapon of itemData.weapons) baseItems.push(weapon)
       for (let armor of itemData.armors) baseItems.push(armor)
       for (let vehicleMod of itemData.vehiclesMod) baseItems.push(vehicleMod)
+      for (let gear of itemData.gears ?? []) baseItems.push(gear)
       for (let deck of itemData.decks) {
         deck.system.marks = []
         baseItems.push(deck)
@@ -1062,6 +1138,7 @@ export class SR5_ActorHelper {
         "system.creatorItemId": item._id,
         "system.type": itemData.type,
         "system.model": itemData.model,
+        "system.biography.description": itemData.description,
         "system.attributes.handling.natural.base": itemData.attributes.handling,
         "system.attributes.handlingOffRoad.natural.base": itemData.attributes.handlingOffRoad,
         "system.attributes.secondaryPropulsionHandling.natural.base": itemData.secondaryPropulsion.handling,
@@ -1085,6 +1162,7 @@ export class SR5_ActorHelper {
         "system.modificationSlots.body.base": itemData.modificationSlots.body,
         "system.modificationSlots.electromagnetic.base": itemData.modificationSlots.electromagnetic,
         "system.modificationSlots.cosmetic.base": itemData.modificationSlots.cosmetic,
+        "system.modPoints": itemData.modPoints ?? null,
         "system.conditionMonitors.condition.actual": itemData.conditionMonitors.condition.actual,
         "system.conditionMonitors.matrix.actual": itemData.conditionMonitors.matrix.actual,
         "system.isSecondaryPropulsion": itemData.secondaryPropulsion.isSecondaryPropulsion,
@@ -1095,6 +1173,7 @@ export class SR5_ActorHelper {
         "system.offRoadMode": itemData.offRoadMode,
         "system.price": itemData.price.base,
         "system.slaved": itemData.slaved,
+        "system.swarm": Number(itemData.swarm) || 0,
         "system.wirelessTurnedOn": itemData.wirelessTurnedOn,
         "system.isSlavedToPan": itemData.isSlavedToPan,
         "system.panMaster": itemData.panMaster,
@@ -1268,14 +1347,16 @@ export class SR5_ActorHelper {
 
   /**
    * Who may flip the wireless icon of a drone's sheet. Turning it off: anyone who holds the sheet (SR5 p. 424).
-   * Turning a switched-off drone back on is a GM shortcut (ruling of 2026-10-05): nobody can reach the drone
-   * wirelessly to ask it, so a player does not do it from her sheet (l. 845)
+   * Turning a switched-off drone back on: its owner too, at the book's action cost, since the drone may do it itself
+   * (p. 424) and its rigger reaches it by direct connection (p. 234). Arbitrage de DjamZ, 08/10 (Adrore's feedback
+   * C7b), which replaces the GM shortcut of 05/10 (N91). A wireless Matrix action on a switched-off drone stays refused.
    * @param {Boolean} isGM - whether the user is a GM
    * @param {Boolean} turningOn - true when the wireless would be switched on
+   * @param {Boolean} isOwner - whether the user owns the drone
    * @return {Boolean}
    */
-  static droneWirelessToggleAllowed(isGM, turningOn){
-    return !!isGM || !turningOn
+  static droneWirelessToggleAllowed(isGM, turningOn, isOwner = false){
+    return !!isGM || !turningOn || !!isOwner
   }
 
   /**
@@ -1466,6 +1547,8 @@ export class SR5_ActorHelper {
         armors = [],
         decks = [],
         vehiclesMod = []
+      //Its vehicle equipment comes back aboard (Rigger 5.0 p. 154-156)
+      const gears = carriedGear(actor.items)
       for (let a of actor.items){
         if (a.type === "itemProgram") autosoft.push(a)
         if (a.type === "itemWeapon") weapons.push(a)
@@ -1482,8 +1565,13 @@ export class SR5_ActorHelper {
       modifiedItem.system.armors = armors
       modifiedItem.system.decks = decks
       modifiedItem.system.vehiclesMod = vehiclesMod
+      modifiedItem.system.gears = gears
       modifiedItem.system.model = actor.system.model
+      //Written on the drone while it was out, the description comes back to the vehicle item. A drone deployed
+      //before the field existed has none: the item keeps its own
+      if (actor.system.biography?.description) modifiedItem.system.description = actor.system.biography.description
       modifiedItem.system.slaved = actor.system.slaved
+      modifiedItem.system.swarm = Number(actor.system.swarm) || 0
       //A drone deployed before the field existed carries null: the item keeps its own switch
       if (typeof actor.system.wirelessTurnedOn === "boolean") modifiedItem.system.wirelessTurnedOn = actor.system.wirelessTurnedOn
       modifiedItem.system.controlMode = actor.system.controlMode
@@ -1512,6 +1600,7 @@ export class SR5_ActorHelper {
       modifiedItem.system.modificationSlots.body = actor.system.modificationSlots.body.base
       modifiedItem.system.modificationSlots.electromagnetic = actor.system.modificationSlots.electromagnetic.base
       modifiedItem.system.modificationSlots.cosmetic = actor.system.modificationSlots.cosmetic.base
+      modifiedItem.system.modPoints = actor.system.modPoints ?? null
       modifiedItem.system.conditionMonitors.condition.actual = actor.system.conditionMonitors.condition.actual
       modifiedItem.system.conditionMonitors.matrix.actual = actor.system.conditionMonitors.matrix.actual
       modifiedItem.system.secondaryPropulsion.isSecondaryPropulsion = actor.system.isSecondaryPropulsion
@@ -1580,6 +1669,8 @@ export class SR5_ActorHelper {
 
     itemToAdd.system.isSlavedToPan = true
     itemToAdd.system.panMaster = actorId
+    //A vehicle in the PAN is slaved: its box "Appareil asservi" follows (lot R5, slave-sync.js)
+    if (item.type === "itemVehicle") itemToAdd.system.slaved = true
     await item.update({
       "system": itemToAdd.system
     })
@@ -1593,6 +1684,7 @@ export class SR5_ActorHelper {
     await deck.update({
       "system.pan": currentPan
     })
+    await syncDroneBox(item, actor, true)
   }
 
   //The PAN's owner slaves a device the dialog could offer her (SR5 p. 233): one of her own, or one of a
@@ -1609,7 +1701,8 @@ export class SR5_ActorHelper {
     const offered = SR5_ActorHelper.socketOwns(senderId, holder) ||
       (holder?.hasPlayerOwner && (holder.type === "actorPc" || (holder.type === "actorGrunt" && holder.prototypeToken?.actorLink)))
     const pan = master?.system?.matrix?.pan
-    const room = !pan || !(Number(pan.current) >= Number(pan.max))
+    //The "matrix" rule lock lifted (B13), a full PAN still has room: the player's sheet told the gamemaster already
+    const room = !pan || !(Number(pan.current) >= Number(pan.max)) || !ruleLockActive("matrix")
     if (!SR5_ActorHelper.socketOwns(senderId, master) || !listed || !offered || !room) return SR5_ActorHelper.refuseSocket("addItemToPan", senderId, data)
     await SR5_ActorHelper.addItemtoPan(data.targetItem, data.actorId)
   }
@@ -1626,6 +1719,7 @@ export class SR5_ActorHelper {
       let newItem = foundry.utils.duplicate(item.system)
       newItem.isSlavedToPan = false
       newItem.panMaster = ""
+      if (item.type === "itemVehicle") newItem.slaved = false
       await item.update({
         "system": newItem
       })
@@ -1651,6 +1745,8 @@ export class SR5_ActorHelper {
     await deck.update({
       "system.pan": currentPan
     })
+    //The list written, the drone's box follows (lot R5, slave-sync.js)
+    if (item) await syncDroneBox(item, actor, false)
   }
 
   //The PAN's owner takes a device out, or the device's owner takes hers back; the index is only believed when
@@ -1781,7 +1877,14 @@ export class SR5_ActorHelper {
   //Delete an itemEffect when the activeEffect is deleted
   static async deleteItemEffectLinkedToActiveEffect(actorId, itemId){
     let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
-    await actor.deleteEmbeddedDocuments("Item", [itemId])
+    // The item may be gone already (deleted with its status from the sheet): the server then threw
+    // « Item … does not exist » in the console (séance de DjamZ du 09/10, image 12)
+    if (!actor?.items.has(itemId)) return
+    try {
+      await actor.deleteEmbeddedDocuments("Item", [itemId])
+    } catch (err) {
+      if (actor.items.has(itemId)) throw err
+    }
   }
 
   //Keep Agent condition Monitor synchro with Owner deck
@@ -1838,6 +1941,17 @@ export class SR5_ActorHelper {
     return testType === "healing" && damageType === "physical" && (system?.conditionMonitors?.stun?.actual?.value || 0) > 0
   }
 
+  // The order above, at each place it refuses: true if the healing must stop. The "body" rule lock family lifted
+  // (B13, lot 4), the Physical damage heals and the gamemaster hears of it
+  static stunHealsFirstRefused(actor, testType, damageType){
+    if (!SR5_ActorHelper.stunBlocksNaturalHealing(actor?.system, testType, damageType)) return false
+    if (!ruleLockBinds("body")) return refuseByRule("body", "SR5.WARN_StunHealsFirst", null, {
+      actor
+    })
+    ui.notifications.warn(game.i18n.localize("SR5.WARN_StunHealsFirst"))
+    return true
+  }
+
   //Manage Healing
   static async heal(targetActorID, data){
     //A heal never deals damage: a negative count filled the monitor (Quitterie, measured from a player's console)
@@ -1846,12 +1960,25 @@ export class SR5_ActorHelper {
       targetActor = SR5_EntityHelpers.getRealActorFromID(targetActorID),
       actorData = foundry.utils.deepClone(targetActor)
     //The card may have been rolled before new Stun damage was taken
-    if (SR5_ActorHelper.stunBlocksNaturalHealing(targetActor.system, data.test.type, damageType)) {
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_StunHealsFirst"))
-      return false
-    }
+    if (SR5_ActorHelper.stunHealsFirstRefused(targetActor, data.test.type, damageType)) return false
 				
     actorData = actorData.toObject(false)
+    //Physical overflow boxes lie beyond the monitor (SR5 p. 171, 209): a heal takes them off first, as regenerate()
+    //does. Left in the source, they came back the next time the monitor filled up (8/8 + 5, healed 7: 1 instead of 6)
+    let overflow = damageType === "physical" ? actorData.system.conditionMonitors.overflow : null
+    if (overflow?.actual.value > 0 && damageToRemove > 0) {
+      let used = Math.min(damageToRemove, overflow.actual.value)
+      overflow.actual.base = Math.max(0, overflow.actual.base - used)
+      damageToRemove -= used
+      await SR5_EntityHelpers.updateValue(overflow.actual, 0)
+    } else overflow = null
+    //An overflow the preparation hides (Physical no longer full, utilityActor.js) but the source still holds is spent
+    //too, or it would come back with the next box of damage
+    if (damageType === "physical" && !overflow && targetActor._source?.system?.conditionMonitors?.overflow?.actual?.base > 0) overflow = {
+      actual: {
+        base: 0
+      }
+    }
     if (damageType === "physical" || damageType === "condition") SR5_ActorHelper.healMonitorBoxes(actorData.system.conditionMonitors[damageType], damageToRemove)
     else {
       actorData.system.conditionMonitors[damageType].actual.base -= damageToRemove
@@ -1859,7 +1986,11 @@ export class SR5_ActorHelper {
     }
     //Only the stored fields of the monitor: the whole prepared system written back put every computed value in the
     //source, and the next preparation added its modifiers again (fatigue resistance 7, then 14, then 21)
-    await targetActor.update(SR5_ActorHelper.monitorSourceUpdate(damageType, actorData.system.conditionMonitors[damageType]))
+    await targetActor.update({
+      ...SR5_ActorHelper.monitorSourceUpdate(damageType, actorData.system.conditionMonitors[damageType]),
+      ...(overflow ? SR5_ActorHelper.monitorSourceUpdate("overflow", overflow) : {
+      })
+    })
     await SR5_ActorHelper.clearDamageKnockout(targetActor)
   }
 
@@ -1993,6 +2124,13 @@ export class SR5_ActorHelper {
       recordTreatment, woundTotal
     } = await import("../../system/heal-ledger.js")
     await recordTreatment(patient.uuid, "firstAid", woundTotal(patient))
+    //The player's card is marked here, once healed: declined, it keeps its button (lot 17c)
+    if (game.messages?.get(data.messageId)) {
+      const {
+        SR5_RollMessage
+      } = await import("../../rolls/roll-message.js")
+      await SR5_RollMessage.updateChatButton(data.messageId, "firstAid", healData.test?.typeSub)
+    }
   }
 
   /**
@@ -2116,6 +2254,8 @@ export class SR5_ActorHelper {
     //(another player's resistance card) is rejected, the GM warned, and applied by hand
     if (!author || author.isGM || author.id === game.user?.id) return claimed
     const caster = SR5_EntityHelpers.getRealActorFromID(data.owner.actorId, data.actorUuids)
+    //The players' rolls not checked (world setting): the card of an owner of the caster stands as written
+    if (standsAsGM(author, !!caster && caster.testUserPermission?.(author, "OWNER"))) return claimed
     const isForm = item.type === "itemComplexForm"
     //The wounds taken since the roll (its Drain, typically) are given back to the pool (attack-card.js, woundAllowance)
     const pool = (Number(isForm ? caster?.system?.matrix?.resonanceActions?.threadComplexForm?.test?.dicePool :
@@ -2127,7 +2267,8 @@ export class SR5_ActorHelper {
       rollJSON: data.roll?.r, pool, edge: caster?.system?.specialAttributes?.edge?.augmented?.value ?? 0,
       force: isForm ? data.matrix?.level : data.magic?.force,
       magic: isForm ? caster?.system?.specialAttributes?.resonance?.augmented?.value : caster?.system?.specialAttributes?.magic?.augmented?.value,
-      claimedHits: claimed.hits, claimedNetHits: claimed.netHits,
+      claimedHits: claimed.hits, claimedNetHits: claimed.netHits, secondChance: chanceSpent(data, caster),
+      bonusForce: !isForm && caster?.system?.magic?.metamagics?.sacrifice ? Number(data.magic?.bloodMagic?.force) || 0 : 0,
     })
     if (!verdict.ok) {
       await ChatMessage.create({
@@ -2175,7 +2316,8 @@ export class SR5_ActorHelper {
   static async confirmUnresistedDamage(actor, item, key, value, data, effectType){
     if (!game.user?.isGM) return true
     const author = game.messages?.get(data.owner?.messageId)?.author
-    if (author && !author.isGM && readsRoll(item.system[effectType])) return true
+    //Its hits confirmed by checkEffectCard, unless the players' rolls are not checked: the GM still sees the boxes
+    if (author && !author.isGM && readsRoll(item.system[effectType]) && playerRollsChecked()) return true
     if (author?.isGM && !item.parent?.hasPlayerOwner) return true
     return foundry.applications.api.DialogV2.confirm({
       window: {
@@ -2220,6 +2362,53 @@ export class SR5_ActorHelper {
     else if (actor.type === "actorGrunt" && full(monitors.condition)) await SR5_ActorHelper.createKoEffect(actorId)
     else if (actor.type === "actorDrone" && full(monitors.condition)) await SR5_ActorHelper.createDeadEffect(actorId)
     else if ((actor.type === "actorSprite" || actor.type === "actorDevice") && full(monitors.matrix)) await SR5_ActorHelper.createDeadEffect(actorId)
+  }
+
+  /**
+   * An effect that raised Willpower or Body ends (Increase Attribute, a drug): the Stun or Physical monitor shrinks
+   * under the damage it holds. The preparation only clipped the excess, which the next damage then wrote away.
+   * It is carried as damage beyond a full monitor is (SR5 p. 171: half of the excess Stun, rounded down, goes to
+   * Physical; excess Physical fills a character's overflow, p. 172), and a full monitor knocks out as it would.
+   * Run by the user who deleted the effect, once the actor is prepared again.
+   */
+  static async settleMonitorExcess(actorId, actor){
+    if (actor?.type !== "actorPc" && actor?.type !== "actorSpirit") return false
+    const monitors = actor.toObject(false).system.conditionMonitors
+    if (!monitors?.stun?.actual || !monitors.physical?.actual) return false
+    const stored = actor._source?.system?.conditionMonitors ?? {
+    }
+    let excess = false
+    for (const key of ["stun", "physical"]) {
+      const base = Number(stored[key]?.actual?.base) || 0
+      if (base <= monitors[key].actual.base) continue
+      monitors[key].actual.base = base
+      SR5_EntityHelpers.updateValue(monitors[key].actual, 0)
+      if (monitors[key].actual.value > monitors[key].value) excess = true
+    }
+    if (!excess) return false
+    //The overflow the preparation hid while Physical was not full: what the source holds
+    if (monitors.overflow?.actual) {
+      monitors.overflow.actual.base = Math.max(monitors.overflow.actual.base, Number(stored.overflow?.actual?.base) || 0)
+      SR5_EntityHelpers.updateValue(monitors.overflow.actual, 0)
+    }
+    const {
+      isDead
+    } = SR5_ActorHelper.carryMonitorOverflow(monitors, actor.type)
+    const updates = {
+    }
+    for (const key of ["stun", "physical", "overflow"]) {
+      if (monitors[key]?.actual) updates[`system.conditionMonitors.${key}.actual.base`] = Math.min(monitors[key].actual.base, monitors[key].value ?? monitors[key].actual.base)
+    }
+    await actor.update(updates)
+    const full = m => m?.actual && m.actual.value >= m.value
+    if (full(monitors.physical)) {
+      if (isDead || actor.type === "actorSpirit") await SR5_ActorHelper.createDeadEffect(actorId)
+      else await SR5_ActorHelper.createKoEffect(actorId)
+    } else if (full(monitors.stun)) {
+      if (actor.type === "actorSpirit") await SR5_ActorHelper.createDeadEffect(actorId)
+      else await SR5_ActorHelper.createKoEffect(actorId)
+    }
+    return true
   }
 
   //The reference of an item a player's sheet carries: the compendium document it was taken from, else an item of the
@@ -2404,6 +2593,17 @@ export class SR5_ActorHelper {
         //Handle heal effect
         if (e.target.includes("removeDamage")){
           key = e.target.replace('.removeDamage','')
+          //Health spells affect "un organisme vivant" (SR5 p. 285): a drone's structure or an AI's core is no patient,
+          //as for first aid (cardRoller.js). Lot 17c: Heal brought a drone from 5 boxes to 0
+          const {
+            isLivingPatient
+          } = await import("../../rolls/roll-helpers/cardRoller.js")
+          if (!isLivingPatient(actor)) {
+            ui.notifications.warn(game.i18n.format("SR5.WARN_HealNotLiving", {
+              name: actor.name
+            }))
+            continue
+          }
           //A grunt has one condition monitor for its Physical damage (SR5 p. 381): Heal reaches it (Quitterie, S2)
           if (key === "physical" && !actor.system.conditionMonitors?.physical && actor.system.conditionMonitors?.condition) key = "condition"
           //A copy, as in heal(): an update made of actor.system itself wrote nothing, and the healing was only shown
@@ -2454,6 +2654,8 @@ export class SR5_ActorHelper {
           "system.ownerItem": data.owner.itemUuid,
           "system.duration": 0,
           "system.durationType": "sustained",
+          //The cast it comes from (its spell card): a template of another cast of the spell leaves it alone (effectArea.js)
+          "flags.sr5.castMessageId": data.castMessageId || data.previousMessage?.messageId || data.owner?.messageId || "",
           //The entry of the source item it comes from: dispelling lowers it only if that entry read the hits (dispel-rules.js)
           "flags.sr5.sourceEntry": entryKey,
           //The hits its value stands on, and the spell's hits then: dispelling works the value out again from them
@@ -2479,7 +2681,8 @@ export class SR5_ActorHelper {
               "0": {
                 "category": e.category,
                 "target": e.target,
-                "type": replaces ? "valueReplace" : "value",
+                //An element named by the effect's type (energy aura, Aura of [element]) keeps its type
+                "type": replaces ? "valueReplace" : (NAMED_BY_TYPE_TARGETS.includes(e.target) ? e.type : "value"),
                 "value": value,
                 "forceAdd": true,
                 //Attribute Boost (SR5 p. 312): dice pools only, see limitAttributeValue()
@@ -2744,6 +2947,8 @@ export class SR5_ActorHelper {
     const author = message?.author
     if (!data || !actor) return null
     if (!game.user?.isGM || !author || author.isGM || author.id === game.user.id) return data
+    //The players' rolls not checked (world setting): the card of an owner of the actor it lands on stands as written
+    if (standsAsGM(author, actor.testUserPermission?.(author, "OWNER"))) return data
     const {
       toxinCardPower, toxinCardVerdict, toxinVectors
     } = await import("../../rolls/roll-helpers/toxin-card.js")
@@ -2783,6 +2988,7 @@ export class SR5_ActorHelper {
       pool,
       edge: actor.system.specialAttributes?.edge?.augmented?.value,
       claimedHits: data.roll?.hits,
+      secondChance: chanceSpent(data, actor),
     })
     if (!verdict.ok) {
       await SR5_ActorHelper.whisperGM(game.i18n.format("SR5.ToxinCardRejected", {
@@ -2863,7 +3069,7 @@ export class SR5_ActorHelper {
       if (!actor.effects.find(e => e.origin === key.name)){
         status = await _getSRStatusEffect(key.name)
         statusEffects = statusEffects.concat(status)
-        ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${status.label} ${game.i18n.localize("SR5.Applied")}.`)
+        ui.notifications.info(`${SR5_EntityHelpers.displayName(actor)}${game.i18n.localize("SR5.Colons")} ${status.label} ${game.i18n.localize("SR5.Applied")}.`)
       }
     }
 	
@@ -2871,7 +3077,7 @@ export class SR5_ActorHelper {
       if (!actor.effects.find(e => e.origin === "weakSide") && (!statusEffects.find(s => s.origin === "weakSide")) ){
         status = await _getSRStatusEffect("weakSide")
         statusEffects = statusEffects.concat(status)
-        ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${status.label} ${game.i18n.localize("SR5.Applied")}.`)
+        ui.notifications.info(`${SR5_EntityHelpers.displayName(actor)}${game.i18n.localize("SR5.Colons")} ${status.label} ${game.i18n.localize("SR5.Applied")}.`)
       }
     }
 

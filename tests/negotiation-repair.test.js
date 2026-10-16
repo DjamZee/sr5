@@ -5,7 +5,7 @@ import {
   negotiationLooksLost, sourceNegotiation, compendiumSourceOf
 } from "../modules/interface/negotiation-repair-rules.js"
 import {
-  SR5NegotiationRepair
+  SR5NegotiationRepair, parseCompendiumUuid
 } from "../modules/interface/negotiation-repair.js"
 
 // Hugo's review: an actor or a contact imported before the key fix reads 0 for good. Its compendium
@@ -218,5 +218,81 @@ describe("The candidates of the repair window", () => {
       actors: [face], items: [], resolve, itemPacks: [frContacts], applied: {
       }
     })).toEqual([])
+  })
+})
+
+describe("The repair on a large world (Romuald, ~400 actors: nothing after 5 minutes)", () => {
+  it("cuts a compendium uuid, with or without its type and an embedded document", () => {
+    expect(parseCompendiumUuid("Compendium.mp.actors.Actor.face")).toEqual({
+      collection: "mp.actors", id: "face", embedded: null
+    })
+    expect(parseCompendiumUuid("Compendium.mp.actors.Actor.face.Item.c1")).toEqual({
+      collection: "mp.actors", id: "face", embedded: ["Item", "c1"]
+    })
+    expect(parseCompendiumUuid("Compendium.mp.actors.face")).toEqual({
+      collection: "mp.actors", id: "face", embedded: null
+    })
+    expect(parseCompendiumUuid("Actor.face")).toBe(null)
+    expect(parseCompendiumUuid("")).toBe(null)
+  })
+
+  // The index carries the Negotiation: an actor's source is never loaded alone, and the actors
+  // whose contacts are needed are loaded together
+  it("reads the sources off the index and loads the owners together", async () => {
+    const calls = {
+      getDocument: 0, getDocuments: 0, resolve: 0
+    }
+    const from = uuid => ({
+      _stats: {
+        compendiumSource: uuid
+      }
+    })
+    const entry = (id, type, name, base) => ({
+      _id: id, uuid: `Compendium.mp.actors.Actor.${id}`, type, name, system: negotiation(base)
+    })
+    const packContact = doc("Compendium.mp.actors.Actor.a1.Item.c1", "itemContact", "Fixer", negotiation(4))
+    const packOwner = doc("Compendium.mp.actors.Actor.a1", "actorPc", "Face", negotiation(5), {
+      items: collection([packContact])
+    })
+    const actorPack = {
+      collection: "mp.actors", documentName: "Actor", title: "Acteurs",
+      getIndex: async () => new Map([
+        ["a1", entry("a1", "actorPc", "Face", 5)],
+        ["a2", entry("a2", "actorPc", "Garde", 0)],
+      ]),
+      getDocument: async () => {
+        calls.getDocument++
+        return null
+      },
+      getDocuments: async ({
+        _id__in: ids
+      }) => {
+        calls.getDocuments++
+        return ids.includes("a1") ? [packOwner] : []
+      },
+    }
+    const packs = new Map([["mp.actors", actorPack]])
+    const contact = doc("Actor.w1.Item.c1", "itemContact", "Fixer", negotiation(0), from("Compendium.mp.actors.Actor.old.Item.zzz"))
+    const face = doc("Actor.w1", "actorPc", "Face", negotiation(0), {
+      ...from("Compendium.mp.actors.Actor.a1"), items: [contact]
+    })
+    const guard = doc("Actor.w2", "actorPc", "Garde", negotiation(0), from("Compendium.mp.actors.Actor.a2"))
+    const progress = []
+    const found = await SR5NegotiationRepair.findCandidates({
+      actors: [face, guard], items: [], itemPacks: [], packs, applied: {
+      },
+      resolve: async () => {
+        calls.resolve++
+        return null
+      },
+      onProgress: (done, total) => progress.push([done, total]),
+    })
+    expect(found.map(c => [c.uuid, c.value, c.source, c.from])).toEqual([
+      ["Actor.w1", 5, "Compendium.mp.actors.Actor.a1", "Acteurs"],
+      ["Actor.w1.Item.c1", 4, packContact.uuid, ""],
+    ])
+    expect(calls.getDocument).toBe(0)
+    expect(calls.getDocuments).toBe(1)
+    expect(progress.at(-1)).toEqual([3, 3])
   })
 })

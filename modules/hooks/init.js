@@ -5,11 +5,20 @@ import {
   initSpiritLedger
 } from "../system/spirit-ledger.js"
 import {
+  primaryLifestyle
+} from "../system/lifestyle-primary.js"
+import {
+  creationOverLimitItems
+} from "../system/creation-actor.js"
+import {
   registerIndirectEffectSetting
 } from "../system/indirect-effects.js"
 import {
   registerCalendarSettings
 } from "../system/calendar.js"
+import {
+  registerCalendarClockSettings
+} from "../interface/calendar-clock.js"
 import {
   registerDeadlineSettings
 } from "../system/deadlines.js"
@@ -22,6 +31,9 @@ import {
 import {
   registerAegisLedger
 } from "../system/aegis.js"
+import {
+  registerInfoBrokerLedger
+} from "../interface/info-broker.js"
 import {
   SR5_MiscellaneousHelpers
 } from "../rolls/roll-helpers/miscellaneous.js"
@@ -52,6 +64,9 @@ import {
 import {
   registerTacnetSetting
 } from "../system/tacnet.js"
+import {
+  registerManeuverSetting
+} from "../system/combat-maneuvers.js"
 import {
   SR5
 } from "../config.js"
@@ -130,8 +145,32 @@ import {
   SR5CompendiumBrowser
 } from "../interface/compendium-browser.js"
 import {
+  SR5TokenDefaultsApi
+} from "../system/token-defaults.js"
+import {
   SR5ShopWindow, SR5ShopWorldSource
 } from "../interface/shop-window.js"
+import {
+  vendorsApi
+} from "../interface/shop-vendor.js"
+import {
+  SR5DealershipWindow
+} from "../interface/dealership-window.js"
+import {
+  SR5FactionsApp
+} from "../interface/factions-app.js"
+import {
+  SR5PanCrown
+} from "../canvas/pan-crown/pan-crown.js"
+import {
+  SR5CombatApi
+} from "../system/combat-api.js"
+import {
+  SR5MatrixApi
+} from "../system/matrix-api.js"
+import {
+  SR5PanCrownLayer
+} from "../canvas/pan-crown/pan-crown-layer.js"
 
 // Item DataModels
 import {
@@ -231,11 +270,17 @@ import {
   sr5ItemSpiritTypeDataModel
 } from "../datamodels/items/itemSpiritType.js"
 import {
+  sr5ItemFileDataModel
+} from "../datamodels/items/itemFile.js"
+import {
   sr5ItemToxinDataModel
 } from "../datamodels/items/itemToxin.js"
 import {
   SR5_Toxins
 } from "../entities/items/toxins.js"
+import {
+  SR5DrugDesigner
+} from "../interface/drug-designer.js"
 import {
   sr5ItemSpriteDataModel
 } from "../datamodels/items/itemSprite.js"
@@ -302,9 +347,23 @@ import {
 import {
   activateAutomaticPowers
 } from "../entities/items/always-active-macro.js"
+import {
+  registerPanArKey
+} from "../canvas/pan-crown/pan-openings.js"
+import {
+  registerSettingsWindow
+} from "../interface/settings-window.js"
+import {
+  installRuleReminders
+} from "../system/rule-reminders.js"
 
 export async function sr5HookInit() {
   SR5_SystemHelpers.registerSystemSettings()
+  //"Rappel des règles" unchecked: the page references leave the texts, before the actors are prepared (their
+  //modifiers' labels are written then)
+  installRuleReminders()
+  //The key of the AR view: every PAN crown (couronne du PAN, lot 8)
+  registerPanArKey()
   SR5_CompendiumUtility.registerSettings()
   registerSheetSizeSetting()
   registerIndirectEffectSetting()
@@ -312,6 +371,8 @@ export async function sr5HookInit() {
   initSpiritLedger()
   //Sixth World calendar and 3 s per Combat Turn (SR5 p. 51)
   registerCalendarSettings()
+  //How each user shows the clock, and the GM's dated events
+  registerCalendarClockSettings()
   registerDeadlineSettings()
   registerOrderSettings()
   registerOrderLedger()
@@ -319,6 +380,8 @@ export async function sr5HookInit() {
   registerRetryLedger()
   //Aegis (Kill Code p. 112): the shield boxes, kept by the active GM
   registerAegisLedger()
+  //The information broker (Cutting Aces p. 148-149): the requests, kept by the active GM
+  registerInfoBrokerLedger()
   //The cards spent through the generic sockets, once per use and target (security lot)
   SR5_MiscellaneousHelpers.registerSettings()
   registerExtendedClockSetting()
@@ -336,6 +399,9 @@ export async function sr5HookInit() {
   registerIllusionSetting()
   registerHealLedger()
   registerTacnetSetting()
+  registerManeuverSetting()
+  //Every visible system setting moves into the settings window, by tab (B10): keep this after the last registration
+  registerSettingsWindow()
   //The grappling statuses exist only in a world that uses the grappling rules
   if (SR5_GrappleHelpers.isActive()) CONFIG.statusEffects.push(...SR5_GrappleHelpers.statusEffects())
   //Running (SR5 p. 163-164): the "running" status, "Course" and "Sprint" in the movement selector, a ruler colored by gait
@@ -363,6 +429,14 @@ export async function sr5HookInit() {
     rollMacro: macros.rollMacro,
     compendiumBrowser: SR5CompendiumBrowser,
     shop: SR5ShopWindow,
+    // The main lifestyle of an actor, the one the starting nuyen are rolled for (SR5 p. 97): read by the Concepteur
+    primaryLifestyle: actor => primaryLifestyle(actor?.items),
+    // The items bought past the creation limits where the table allows it: read by the Concepteur's summary (C3)
+    creationOverLimitItems,
+    // The dealership (lot R9): build a vehicle or a drone and buy it
+    dealership: SR5DealershipWindow,
+    // The factions window (lot 10), for the modules: topologie-sr5 opens it by game.sr5.factions.open() (lot 16b)
+    factions: SR5FactionsApp,
     // The shop against the till, item by item: should answer no difference
     shopAudit: () => SR5ShopWorldSource.audit(),
     // GM macro: old-style Mentor Spirit qualities -> quality linked to a mentor item (SR5 p. 76), and back
@@ -370,6 +444,16 @@ export async function sr5HookInit() {
     revertMentorConversion,
     // GM macro: switch on the always active powers of the sheets made before (SR5 p. 396, H39)
     activateAutomaticPowers,
+    // The crown of a PAN (lot 1: the graph and what the observer sees of it; lot 2: open and close it)
+    panCrown: SR5PanCrown,
+    // The combat for the modules: count an action (API pour Matrice v1, A4)
+    combat: SR5CombatApi,
+    // The Matrix for the modules: put marks, converge (API pour Matrice v1, A11, A12)
+    matrix: SR5MatrixApi,
+    // The GM's token of each family the system creates (lot 9): for a module that lays IC or sprites itself
+    tokenDefaults: SR5TokenDefaultsApi,
+    // The shop's vendors for the modules: the Concepteur's NPC generator creates one from a template (lot 43)
+    vendors: vendorsApi(),
   }
 
   // Register DataModels
@@ -395,6 +479,7 @@ export async function sr5HookInit() {
     itemDrug: sr5ItemDrugDataModel,
     itemEcho: sr5ItemEchoDataModel,
     itemEffect: sr5ItemEffectDataModel,
+    itemFile: sr5ItemFileDataModel,
     itemFocus: sr5ItemFocusDataModel,
     itemGear: sr5ItemGearDataModel,
     itemKarma: sr5ItemKarmaDataModel,
@@ -431,11 +516,17 @@ export async function sr5HookInit() {
   CONFIG.Actor.documentClass = SR5Actor
   CONFIG.Item.documentClass = SR5Item
   CONFIG.Combat.documentClass = SR5Combat
+  //Default turn marker: DjamZ's ouroboros (relecture djamz.13, R10); a marker chosen in Foundry's combat settings wins
+  CONFIG.Combat.fallbackTurnMarker = "systems/sr5/assets/img/ui/turn-marker-ouroboros.webp"
   CONFIG.RollTable.documentClass = SR5RollTable
   CONFIG.TableResult.documentClass = SR5TableResult
   CONFIG.ui.combat = SR5CombatTracker
   CONFIG.ui.items = SR5ItemDirectory
   CONFIG.Token.objectClass = SR5Token
+  // The crowns of PANs: a layer of their own, above the tokens and under the HTML HUD (couronne du PAN, lot 2)
+  CONFIG.Canvas.layers.sr5PanCrown = {
+    layerClass: SR5PanCrownLayer, group: "interface"
+  }
   SRVision.registerVisionModes()
 
   // ACTIVATE HOOKS DEBUG
@@ -505,6 +596,8 @@ export async function sr5HookInit() {
 
   //Book toxins button in the Items tab
   SR5_Toxins.registerHooks()
+  //Drug designer button in the Items tab (Chrome Flesh p. 194-196)
+  SR5DrugDesigner.registerHooks()
 
   // Patch creation dialog buttons with document-type icons
   const docTypes = ["Actor", "Item", "Scene", "JournalEntry", "RollTable", "Cards", "Playlist", "Macro"]

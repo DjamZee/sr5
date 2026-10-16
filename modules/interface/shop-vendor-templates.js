@@ -47,10 +47,10 @@ export const VENDOR_TEMPLATES = [
   // Vehicles and drones
   t('luxuryCars', 'vehicles', 'Concessionnaire-de-luxe', ['vehicles'], [L], 10, 12),
   t('ordinaryCars', 'vehicles', 'Concessionnaire-vehicules-ordinaires', ['vehicles'], [L], 0, 8),
-  t('milSpecVehicles', 'vehicles', 'Revendeur-de-vehicule-MilSpec', ['vehicles', 'weapons'], [L, R, F], 30, 20),
+  t('milSpecVehicles', 'vehicles', 'Revendeur-de-vehicule-MilSpec', ['vehicles', 'drones', 'weapons'], [L, R, F], 30, 20),
   t('tuner', 'vehicles', 'Preparateur-de-bolides', ['vehicles'], [L, R], 10, 12),
-  t('riggerShop', 'vehicles', 'Boutique-de-rigger', ['vehicles', 'electronics'], [L, R], 0, 12),
-  t('droneDealer', 'vehicles', 'Verndeur de Drones', ['vehicles'], [L, R], 0, 12),
+  t('riggerShop', 'vehicles', 'Boutique-de-rigger', ['vehicles', 'drones', 'electronics'], [L, R], 0, 12),
+  t('droneDealer', 'vehicles', 'Verndeur de Drones', ['drones'], [L, R], 0, 12),
   // Implants and care
   t('streetDoc', 'implants', 'Charcudoc', ['cyberware', 'bioware', 'augmentations'], [L, R, F], 20, 12),
   t('deltaClinic', 'implants', 'Clinique-delta', ['cyberware', 'bioware', 'augmentations'], [L, R], 50, 20),
@@ -84,6 +84,8 @@ export const VENDOR_TEMPLATES = [
   t('capsuleHotel', 'misc', 'Marchand-de-sommeil-capsules', ['gear'], [L], 0, 4),
   t('slumCoffinHotel', 'misc', 'Marchand-de-sommeil-taudis', ['gear', 'drugs'], [L, R], 0, 6),
   t('corporateCounter', 'misc', 'Comptoir corporatiste haut de gamme', ['weapons', 'armor', 'electronics', 'gear'], [L, R], 25, 14),
+  // Lot 37a: data, not goods (Cutting Aces p. 148-149): no shelf, its own window (info-broker.js)
+  t('infoBroker', 'misc', 'Courtier-en-informations', [], [L, R, F], 0, 0),
 ]
 
 /** A template by its key. */
@@ -108,6 +110,11 @@ export const MEGAPACK_BANNER_FOLDER = 'modules/megapack-sr5-foundry-vtt/assets/b
 export function bannerFolderOf(setting, megapackActive) {
   const folder = String(setting ?? '').trim()
   if (folder) return folder
+  return defaultBannerFolder(megapackActive)
+}
+
+/** The default of the "banner folder" setting: the Megapack's when it is active (the system ships none). */
+export function defaultBannerFolder(megapackActive) {
   return megapackActive ? MEGAPACK_BANNER_FOLDER : ''
 }
 
@@ -148,6 +155,7 @@ export function templateShop(template, {
     label,
     template: template.key,
     shelves: [...template.shelves],
+    dronesApart: true,
     legality: [...template.legality],
     margin: template.margin,
     maxAvailability: template.maxAvailability,

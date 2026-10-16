@@ -318,6 +318,21 @@ describe('First aid on a device (N42)', () => {
     expect(patientMonitors(dronePatient)).toEqual([])
   })
 
+  it('an AI core is no patient either (Data Trails p. 165: Medic or a device repair)', () => {
+    const core = {
+      type: 'actorPc', system: {
+        activeSpecialAttribute: 'depth', conditionMonitors: {
+          condition: {
+            value: 10, actual: {
+              value: 1
+            }
+          }
+        }
+      }
+    }
+    expect(patientMonitors(core)).toEqual([])
+  })
+
   it('the 1D3 button damages neither, and asks no damage type', async () => {
     for (const id of ['devicePatient', 'dronePatient']) {
       card = {

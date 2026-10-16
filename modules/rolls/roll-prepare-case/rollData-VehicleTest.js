@@ -4,6 +4,15 @@ import {
 import {
   SR5_MiscellaneousHelpers 
 } from "../roll-helpers/miscellaneous.js"
+import {
+  thresholdModifierOf, applyThresholdModifier
+} from "../roll-helpers/threshold.js"
+import {
+  applyInformationOverload
+} from "../roll-helpers/rigger-overload.js"
+import {
+  prepareChaseRoll, vehicleTestCostsAction, collisionControlThreshold
+} from "../../system/chase-roll-prepare.js"
 
 export default function vehicleTest(rollData, actor, chatData){
   //Determine title
@@ -17,6 +26,7 @@ export default function vehicleTest(rollData, actor, chatData){
 
   //Determine dicepool modififiers
   rollData.dicePool.modifiers = SR5_PrepareRollHelper.getDicepoolModifiers(rollData, actor.system.vehicleTest.test.modifiers.filter(mod => (mod.type !== "manual")))
+  applyInformationOverload(rollData, actor)
 
   //Determine base limit
   rollData.limit.base = SR5_PrepareRollHelper.getBaseLimit(actor.system.vehicleTest.limit.value, actor.system.vehicleTest.limit.modifiers)
@@ -26,20 +36,25 @@ export default function vehicleTest(rollData, actor, chatData){
   rollData.limit.type = "handling"
 
   //Add others informations
-  if (chatData) rollData.previousMessage.messageId = chatData.owner.messageId
+  if (chatData?.owner) rollData.previousMessage.messageId = chatData.owner.messageId
   rollData.test.type = "vehicleTest"
 
-  //Handle Actions
-  rollData.combat.actions = SR5_MiscellaneousHelpers.addActions(rollData.combat.actions, {
+  //Handle Actions: a chase or collision test the action of another imposes is free, as a defense (chase-roll-prepare.js)
+  if (vehicleTestCostsAction(chatData)) rollData.combat.actions = SR5_MiscellaneousHelpers.addActions(rollData.combat.actions, {
     type: "complex", value: 1, source: "vehicleTest"
   })
 
+  //A chase action of the chase window (R12): its threshold, limit and dice (system/chase-roll.js)
+  if (prepareChaseRoll(rollData, actor, chatData)) return rollData
+
   //Special, for ramming test
   if (chatData){
-    if (chatData.test.type === "rammingDefense") {rollData.threshold.value = 3}
-    if (chatData.test.type === "ramming") rollData.threshold.value = 2
+    const collision = collisionControlThreshold(chatData)
+    if (collision !== null) rollData.threshold.value = collision
     rollData.test.typeSub = chatData.test.type
-    rollData.test.title = `${game.i18n.localize("SR5.VehicleTest")} (${rollData.threshold.value})`
+    //The title shows the threshold once lowered by a jumped in rigger's control rig (SR5 p. 268), as the card does
+    const shown = applyThresholdModifier(rollData.threshold, thresholdModifierOf(actor.system, rollData.test)).value
+    rollData.test.title = `${game.i18n.localize("SR5.VehicleTest")} (${shown})`
   }
 
   return rollData

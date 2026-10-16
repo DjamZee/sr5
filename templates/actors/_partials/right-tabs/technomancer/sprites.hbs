@@ -11,7 +11,7 @@
 				{{#if owner}}
 				<p class="SR-TextRight add-item" data-helpTitle="{{localize 'SR5.HELP_ItemAdd' key=(findTranslation 'itemTypes' 'itemSprite')}}" 
 				data-helpMessage="{{localize 'SR5.HELP_ItemAddMsg'}}">
-					<a class="item-create" data-title="{{localize 'SR5.Add'}}" data-type="itemSprite">
+					<a class="item-create" data-tooltip="{{localize 'SR5.Add'}}" data-type="itemSprite">
 						<em class="fas fa-plus"></em>
 					</a>
 				</p>
@@ -23,7 +23,7 @@
 			<div class="col-5 deplie">
 				{{#if (missing system.type system.itemRating)}}
 				<p class="incomplete"
-					data-title="{{localize 'SR5.UI_WarningMissingValues' type=(localize 'ITEM.TypeSprite')}}">
+					data-tooltip="{{localize 'SR5.UI_WarningMissingValues' type=(localize 'ITEM.TypeSprite')}}">
 					{{findTranslation 'spriteTypes'system.type}} ({{name}})</p>
 				{{else}}
 				<p>{{findTranslation 'spriteTypes' system.type}} ({{name}})</p>

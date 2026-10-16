@@ -4,6 +4,9 @@ import {
 import {
   JAMMER_CONE_ANGLE, jammerRating, jammerReachInMeters
 } from "../system/jammerRules.js"
+import {
+  noiseSpellKind
+} from "../system/noise-spells.js"
 
 export default class SR5Template extends foundry.canvas.placeables.MeasuredTemplate {
   /**
@@ -38,7 +41,7 @@ export default class SR5Template extends foundry.canvas.placeables.MeasuredTempl
 	 * @return {AbilityTemplate|null}     The template object, or null if the item does not produce a template
 	 */
 
-  static fromItem(item, messageId) {
+  static fromItem(item, messageId, area = null) {
     let target = 0
     let flags = {
     }
@@ -64,13 +67,20 @@ export default class SR5Template extends foundry.canvas.placeables.MeasuredTempl
     }
 
     if ((item.type === "itemSpell" || item.type === "itemPreparation")) {
-      target = item.system.spellAreaOfEffect.value
+      //The area the card was cast with: the Force chosen and the metres of spell shaping (SR5 p. 329), where the item
+      //only knows its own Force. Without a card (or a card without area), the item's
+      const cardArea = Number(game.messages?.get(messageId)?.flags?.sr5data?.magic?.spell?.area)
+      target = cardArea > 0 ? cardArea : item.system.spellAreaOfEffect.value
       //if spell has a transferable effect, add item to canvas template
       for (let e of Object.values(item.system.customEffects)){
         if (e.transfer){
           flags.sr5.itemHasEffect = true
           continue
         }
+      }
+      //Increase / Decrease Noise (Street Grimoire p. 113): no effect of their own, the template gives the Noise of the
+      //cast (effectArea.js, noiseSpellRating). An empty environment makes the template one whose tokens are followed
+      if (noiseSpellKind(item) && !flags.sr5.itemHasEffect) flags.sr5.environmentalModifiers = {
       }
     }
 
@@ -81,6 +91,15 @@ export default class SR5Template extends foundry.canvas.placeables.MeasuredTempl
       angle = JAMMER_CONE_ANGLE
       target = jammerReachInMeters("directional", jammerRating(item.system))
       flags.sr5.jammerUuid = item.uuid
+    }
+
+    //An area the caller worked out itself: an explosive charge's blast, circular or a cone (Run & Gun p. 188)
+    if (area?.radius > 0) {
+      target = area.radius
+      if (area.angle) {
+        templateShape = "cone"
+        angle = area.angle
+      }
     }
 
     // target holds a radius taken from the books, in meters: a blast radius (SR5 p. 184) or an area spell's
@@ -100,7 +119,7 @@ export default class SR5Template extends foundry.canvas.placeables.MeasuredTempl
     // its own terms: a cap meant to keep the circle inside the map would bound the diameter.
     //
     // How large a radius can actually reach here: an area spell is its Force (plus the metres bought with
-    // spell shaping once #633 lands, which changes target a few lines above), and a detection spell is Force
+    // spell shaping, read from the card a few lines above), and a detection spell is Force
     // x augmented Magic, x10 again with extended range (see spellAreaOfEffect in utilityItem.js), so Force 6
     // for a Magic 6 mage reaches 360 m. The cap would have cut every one of those down to the smaller side
     // of the map. It never did in practice only because that Magic factor currently reads 0 -- a separate

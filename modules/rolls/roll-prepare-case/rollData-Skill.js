@@ -17,11 +17,33 @@ import {
   spendableStock, bindingCost
 } from "../../system/reagents.js"
 import {
-  prepareSkillAttribute, SKILL_ATTRIBUTE_FLAG, syncBackgroundCount, backgroundCountApplies, backgroundCountInModifiers
+  prepareSkillAttribute, SKILL_ATTRIBUTE_FLAG, syncBackgroundCount, backgroundCountApplies, backgroundCountInModifiers,
+  attributeValue
 } from "../roll-helpers/skillAttribute.js"
+import {
+  socialTraitsOf, traitAttribute, IGNORED_NEGATIVE_POINTS
+} from "../../system/social-traits.js"
 import {
   isSituationalType
 } from "../roll-helpers/situational.js"
+import {
+  SR5_SpiritTypes
+} from "../../entities/items/spirit-types.js"
+import {
+  wildReputationBonus
+} from "../../entities/items/spirit-bonds.js"
+import {
+  refuseByRule
+} from "../../system/rule-locks.js"
+import {
+  sensorSpottingMasking
+} from "../../system/vehicle-mods.js"
+import {
+  checkedConStep, conResistance
+} from "../../system/con-card.js"
+import {
+  carrySocialToResistance
+} from "../../system/social-card.js"
 
 //Add info for skill dicePool roll
 export default async function skill(rollData, rollType, rollKey, actor, chatData){
@@ -63,7 +85,10 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
 
     //SR5 p. 130: the attribute can be changed in the dialog, except on an opposed test whose pair the book sets
     if (actor.type !== "actorDrone" && !chatData?.test?.isOpposed){
+      //Cutting Aces p. 150: a trait offers Intuition or Logic in place of Charisma (social-traits.js)
+      const preferred = traitAttribute(rollKey, socialTraitsOf(actor.items), key => attributeValue(actor.system, key))
       rollData = prepareSkillAttribute(rollData, actor.system, actor.getFlag?.("sr5", SKILL_ATTRIBUTE_FLAG)?.[rollKey], {
+        preferred,
         flagKey: rollKey,
         linked: actor.system.skills[rollKey].linkedAttribute,
         titleBase: `${game.i18n.localize("SR5.SkillTest") + game.i18n.localize("SR5.Colons") + " " + game.i18n.localize(SR5.skills[rollKey])}`,
@@ -72,6 +97,12 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
         localize: k => game.i18n.localize(k),
       })
     }
+  }
+
+  //Cutting Aces p. 150, « Il a la classe et il le sait »: 2 points of negative social modifiers ignored, counted by
+  //the roll dialog as the modifiers are ticked (social-traits.js)
+  if (Object.hasOwn(SR5.socialSkills, rollKey) && socialTraitsOf(actor.items).has("socialIgnoreNegative")) {
+    rollData.dicePool.ignoreNegativeSocial = IGNORED_NEGATIVE_POINTS
   }
 
   //Determine base limit
@@ -132,7 +163,14 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
   }
 
   //Add force default
-  if (rollKey === "summoning") rollData.magic.force = 1
+  if (rollKey === "summoning") {
+    rollData.magic.force = 1
+    //A type the Summoning skill cannot call is not offered: the extraplanar entities, unless the gamemaster
+    //ticked the box (DjamZ's ruling, 2026-10-07)
+    rollData.lists.spiritTypes = SR5_SpiritTypes.summonableOnly(rollData.lists.spiritTypes)
+    if (rollData.magic.elements) rollData.magic.elements = Object.fromEntries(Object.entries(rollData.magic.elements)
+      .filter(([, type]) => SR5_SpiritTypes.isSummonable(type)))
+  }
 
   //Special case for Astral combat
   if (rollKey === "astralCombat"){
@@ -146,6 +184,15 @@ export default async function skill(rollData, rollType, rollKey, actor, chatData
     rollData.damage.value = actor.system.magic.astralDamage.value
     rollData.dialogSwitch.extended = false
     rollData.dialogSwitch.chooseDamageType = true
+  }
+
+  //Wild Reputation (Forbidden Arcana p. 170): its dice to call a wild spirit, or to deal with one by a social skill
+  if (rollData.target.hasTarget){
+    const wild = wildReputationBonus(rollKey, actor.system.magic?.wildReputation,
+      SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId, rollData.actorUuids))
+    if (wild > 0) rollData.dicePool.modifiers.push({
+      type: "wildReputation", label: game.i18n.localize("SR5.WildReputation"), value: wild,
+    })
   }
 
   //If roll has target, add special info to roll
@@ -179,7 +226,39 @@ function skillWithAttribute(actorData, skillKey, attributeKey, attributeLabel){
   }].concat(skillPart)
 }
 
-async function getTargetedData(rollData, rollKey, actor){
+// The target's pool against a con step (Cutting Aces p. 163-164, con-card.js)
+function conStepOpposition(rollData, chatData, con, actorData){
+  const step = chatData.test.con.step
+  const conPart = skillWithAttribute(actorData, "con", "intuition", "SR5.Intuition")
+  const conIntuition = conPart.reduce((sum, m) => sum + (Number(m.value) || 0), 0)
+  const opposition = conResistance(con, step, actorData, conIntuition)
+  rollData.test.con = {
+    id: con.id, step
+  }
+  if (opposition.pool === "judgeIntentions"){
+    // The derived test as the sheet rolls it (rollData-Derived.js): the Con skill's bonuses do not apply, the
+    // general penalties stay
+    const judge = actorData.derivedAttributes.judgeIntentions.modifiers
+    rollData.dicePool.composition = judge.filter(m => m.type === "skillRating" || m.type === "linkedAttribute" || m.type === "skillGroup")
+    rollData.dicePool.modifiers = rollData.dicePool.modifiers.filter(m => m.type?.startsWith("penalty"))
+    rollData.dicePool.modifiers.push(...judge.filter(m => !rollData.dicePool.composition.includes(m) && !m.type?.startsWith("penalty"))
+      .map(m => ({
+        type: m.type, label: m.source, value: m.value
+      })))
+    rollData.test.title = `${game.i18n.localize("SR5.OpposedTest") + game.i18n.localize("SR5.Colons") + " " + game.i18n.localize("SR5.JudgeIntentions") + " (" + chatData.roll.hits + ")"}`
+  } else {
+    rollData.dicePool.composition = conPart
+    rollData.test.title = `${game.i18n.localize("SR5.OpposedTest") + game.i18n.localize("SR5.Colons") + " " + game.i18n.localize(SR5.skills.con) + " + " + game.i18n.localize("SR5.Intuition") + " (" + chatData.roll.hits + ")"}`
+  }
+  rollData.dicePool.base = SR5_PrepareRollHelper.getBaseDicepool(rollData)
+  if (opposition.intelModifier) rollData.dicePool.modifiers.push({
+    type: "conIntel", label: game.i18n.localize("SR5.CON_Intel"), value: opposition.intelModifier
+  })
+  return rollData
+}
+
+//Exported for its tests (rule-locks-magic.test.js)
+export async function getTargetedData(rollData, rollKey, actor){
   let targetActor = SR5_EntityHelpers.getRealActorFromID(rollData.target.actorId, rollData.actorUuids)
 
   switch (rollKey){
@@ -194,10 +273,10 @@ async function getTargetedData(rollData, rollKey, actor){
         ui.notifications.warn(`${game.i18n.localize("SR5.WARN_NotASpirit")}`)
         return
       }
-      else if (targetActor.system.isBounded) {
-        ui.notifications.warn(`${game.i18n.localize("SR5.WARN_SpiritAlreadyBounded")}`)
-        return
-      }
+      //The "magic" rule lock lifted (B13), the binding goes on and the gamemaster hears of it
+      else if (targetActor.system.isBounded && refuseByRule("magic", "SR5.WARN_SpiritAlreadyBounded", null, {
+        actor
+      })) return
       else {
         rollData.limit.base = targetActor.system.force.value
         //SR5 p. 304: (Force x 25) drachms spent on the attempt. They do not change the limit
@@ -244,6 +323,18 @@ async function getTargetedData(rollData, rollKey, actor){
         }
       }
       break
+    case "perception": {
+      //Rigger 5.0 p. 169: the signature masking of a vehicle also penalizes whoever spots it through a Sensor test
+      const masking = sensorSpottingMasking(actor, targetActor)
+      if (masking) {
+        rollData.dialogSwitch.signatureMasking = masking.value
+        rollData.dialogSwitch.signatureMaskingChecked = masking.checked
+        if (masking.checked) rollData.dicePool.modifiers.push({
+          type: "signatureMasking", label: game.i18n.localize(SR5.dicePoolModTypes.signatureMasking), value: masking.value
+        })
+      }
+      break
+    }
   }
 
   return rollData
@@ -255,6 +346,8 @@ function getOpposedData(rollData, chatData, rollKey, actor){
   rollData.test.isOpposed = true
   rollData.test.isOpposedResistance = true
   rollData.threshold.value = chatData.roll.hits
+  // Cutting Aces: the maneuver, its author and an Intimidation's glitch follow to the resistance card (social-card.js)
+  rollData = carrySocialToResistance(rollData, chatData)
   // SR5 p. 141-143: the target keeps the limit of the skill it rolls
   // (Con, Leadership, Negotiation [Social]; Perception [Mental] against
   // Impersonation). Etiquette, Intimidation and Performance are set below.
@@ -298,6 +391,13 @@ function getOpposedData(rollData, chatData, rollKey, actor){
         source: game.i18n.localize("SR5.Charisma"), type: "linkedAttribute", value: actorData.attributes.charisma.augmented.value
       },
     ])
+  }
+
+  // Cutting Aces p. 163-164: a con step resisted with the higher of Judge Intentions or Con + Intuition
+  // (Judge Intentions alone to reinforce), less the Intel Level on the bait. Read from the gamemaster's registry
+  if (chatData.test.typeSub === "con" && chatData.test.con){
+    const con = checkedConStep(chatData.test.con, chatData.owner?.actorId)
+    if (con) return conStepOpposition(rollData, chatData, con, actorData)
   }
 
   if (chatData.test.typeSub === "impersonation") rollData.test.title = `${game.i18n.localize("SR5.OpposedTest") + game.i18n.localize("SR5.Colons") + " " + game.i18n.localize(SR5.skills[rollKey]) + " + " + game.i18n.localize(SR5.allAttributes[actorData.skills[rollKey].linkedAttribute])  + " (" + chatData.roll.hits + ")"}`

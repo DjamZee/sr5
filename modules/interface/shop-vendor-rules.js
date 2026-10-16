@@ -37,10 +37,15 @@ export function isShopStorage(item) {
 
 /** The shop's settings, the defaults filling what is missing. */
 export function shopSettings(storage) {
-  return {
+  const shop = {
     ...SHOP_DEFAULTS, ...(storage?.system?.shop ?? {
     })
   }
+  // A shop set before the Drones shelf (lot R6) sold the drones on its "vehicles" shelf: it still does
+  if (!shop.dronesApart && shop.shelves?.includes('vehicles') && !shop.shelves.includes('drones')) {
+    shop.shelves = [...shop.shelves, 'drones']
+  }
+  return shop
 }
 
 /**
@@ -182,6 +187,20 @@ export function vendorShopOfToken(token) {
   const actor = token?.actor
   if (!actor || actor.isOwner) return null
   const storage = actor.items?.find(item => isShopStorage(item) && shopSettings(item).isOpen)
+  return storage ? {
+    actor, storage
+  } : null
+}
+
+/**
+ * The shop a token's HUD opens (relecture djamz.13, lot R6): the gamemaster opens any shop the actor
+ * carries, the open one first; anyone else only an open shop of an actor they do not own.
+ */
+export function hudShopOfToken(token, isGM) {
+  if (!isGM) return vendorShopOfToken(token)
+  const actor = token?.actor
+  const shops = actor?.items?.filter(item => isShopStorage(item)) ?? []
+  const storage = shops.find(item => shopSettings(item).isOpen) ?? shops[0]
   return storage ? {
     actor, storage
   } : null

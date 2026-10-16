@@ -444,6 +444,23 @@
   /* Generic nav.tabs wraps; a vertical list must scroll instead of wrapping into a hidden column */
   nav.tabs.vertical {
     flex-wrap: nowrap;
+
+    /* Without the dark band of the tabs above, the light text of a tab stood on the window's own surface: white
+       on near white in the light theme (core's "Prototype token overrides", séance de DjamZ du 08/10) */
+    [data-tab] {
+      color: var(--sr-text-color-dark);
+      opacity: 0.85;
+
+      &:hover {
+        color: var(--sr-text-color-dark);
+        opacity: 1;
+      }
+
+      &.active {
+        color: var(--sr-text-color-flash);
+        opacity: 1;
+      }
+    }
   }
 
   /* === Roll Table sheet === */
@@ -863,4 +880,32 @@
       border-color: var(--sr-ui-border-color-active);
     }
   }
+}
+
+/* The system's own windows (sell counter, factions, shop settings, rule locks, presets, con tracker, barter, chase…)
+   had here their light theme fixes; since lot 36 they draw the Concepteur's light and dark sets themselves
+   (window-skin.less, chase.less) */
+
+/* The window to share a vision (shared-vision.js): a box per player, the flex row stretched it into a bar (Romuald) */
+.sr5-shared-vision-users label.flexrow {
+  align-items: center;
+  gap: 6px;
+
+  input[type="checkbox"] {
+    flex: none;
+  }
+}
+
+/* Resize handle (bottom right corner). Core inverts it to white in the dark theme, black otherwise, whatever the
+   window shows under it: white on a light journal page, black on the dark footer of our sheets in the light theme
+   (DjamZ's session of 08/10). A halo of the opposite colour keeps it visible on both. */
+.application .window-resize-handle {
+  filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff);
+}
+
+&.theme-dark .application .window-resize-handle,
+.themed.theme-dark .application .window-resize-handle,
+.themed.theme-dark.application .window-resize-handle,
+.application.image-popout .window-resize-handle {
+  filter: invert(1) drop-shadow(0 0 1px #000) drop-shadow(0 0 1px #000);
 }

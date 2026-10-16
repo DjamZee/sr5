@@ -16,6 +16,9 @@ import {
 import {
   SR5_CombatHelpers
 } from "../roll-helpers/combat.js"
+import {
+  electromancerInitiative
+} from "../../entities/items/magic-masteries.js"
 
 export default async function resistanceInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
@@ -91,8 +94,15 @@ export default async function resistanceInfo(cardData, actorId){
   //Handle continous damage
   if (cardData.damage.isContinuous && cardData.test.typeSub !== "continuousDamage") {
     cardData.chatCard.buttons.damage = SR5_RollMessage.generateChatButton("nonOpposedTest", "damage",`${game.i18n.localize("SR5.ApplyDamage")} ${cardData.damage.value}${game.i18n.localize(SR5.damageTypesShort[cardData.damage.type])}`)
-    let label = `${game.i18n.localize("SR5.TakeOnDamageContinuous")} ${game.i18n.localize("SR5.DamageValueShort")}${game.i18n.localize("SR5.Colons")} ${cardData.damage.originalValue}${game.i18n.localize(SR5.damageTypesShort[cardData.damage.type])}`
-    if (cardData.combat.armorPenetration) label += ` / ${game.i18n.localize("SR5.ArmorPenetrationShort")}${game.i18n.localize("SR5.Colons")} ${cardData.combat.armorPenetration}`
+    //The DV of the following phases is worked out again on the engulfing spirit when they are resisted
+    //(rollData-Resistance.js): the button shows that one, never the DV written on the card, or none when it is not found
+    const attackId = SR5_ActorHelper.engulfFirstPhase(cardData)?.attackId ?? await SR5_ActorHelper.engulfAttackFor(actor)
+    const engulf = attackId ? await SR5_ActorHelper.engulfDamageOf(attackId) : null
+    let label = game.i18n.localize("SR5.TakeOnDamageContinuous")
+    if (engulf) {
+      label += ` ${game.i18n.localize("SR5.DamageValueShort")}${game.i18n.localize("SR5.Colons")} ${engulf.value}${game.i18n.localize(SR5.damageTypesShort[engulf.type])}`
+      if (engulf.armorPenetration) label += ` / ${game.i18n.localize("SR5.ArmorPenetrationShort")}${game.i18n.localize("SR5.Colons")} ${engulf.armorPenetration}`
+    }
     cardData.chatCard.buttons.resistanceCard = SR5_RollMessage.generateChatButton("nonOpposedTest","resistanceCardContinuousDamage",label)
     cardData.damage.resistanceType = "physicalDamage"
     //Escape engulf
@@ -122,8 +132,26 @@ export default async function resistanceInfo(cardData, actorId){
   // SR5 p. 231: dumpshock also disorients the character, whatever the damage resisted
   if (cardData.test.typeSub === "dumpshock") await SR5_ActorHelper.dumpshockEffect(actorId)
 
+  //Electromancer (Forbidden Arcana p. 35): once the damage is resisted, a combat spell that hurts takes (caster's excess
+  //hits / 2, rounded up) off the target's Initiative. Excess hits: over the resistance for a direct spell, over the
+  //defense for an indirect one
+  if (cardData.magic?.electromancer && cardData.damage.value > 0) {
+    const direct = cardData.damage.resistanceType === "directSpellMana" || cardData.damage.resistanceType === "directSpellPhysical"
+    const excess = direct ? (Number(cardData.previousMessage.hits) || 0) - (Number(cardData.roll.hits) || 0) : cardData.previousMessage.attackerNetHits
+    const initiative = electromancerInitiative(excess)
+    if (initiative > 0) {
+      SR5Combat.changeInitInCombatHelper(SR5Combat.fighterIdOf(actor), -initiative)
+      ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_Electromancer", {
+        value: initiative
+      })}`)
+      cardData.chatCard.buttons.electromancer = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.format("SR5.INFO_Electromancer", {
+        value: initiative
+      }))
+    }
+  }
+
   //Normal damage
-  if (cardData.damage.value > 0) cardData.chatCard.buttons.damage = SR5_RollMessage.generateChatButton("nonOpposedTest", "damage",`${game.i18n.localize("SR5.ApplyDamage")} ${cardData.damage.value}${game.i18n.localize(SR5.damageTypesShort[cardData.damage.type])}`)		
+  if (cardData.damage.value > 0) cardData.chatCard.buttons.damage = SR5_RollMessage.generateChatButton("nonOpposedTest", "damage",`${game.i18n.localize("SR5.ApplyDamage")} ${cardData.damage.value}${game.i18n.localize(SR5.damageTypesShort[cardData.damage.type])}`)
 }
 
 
@@ -155,8 +183,12 @@ function handlePreviousButtons(cardData) {
 
 async function handleCalledShotResistanceInfo(cardData, actor, actorId){
   cardData.roll.netHits = cardData.previousMessage.hits - cardData.roll.hits
+  // Run & Gun p. 128 : l'effet exige des dommages « après son test de résistance », donc avant la
+  // limite de VD de la localisation. Sinon la limite 0 de la poignée de porte et du moteur de vitre
+  // (p. 129) effacerait toujours leur effet.
+  const damageAfterResistance = cardData.damage.value
 
-  //Handle specific target limit damage if any 
+  //Handle specific target limit damage if any
   // Run & Gun p. 129: door lock and window motor have a DV limit of 0 (the 0 elsewhere means "no limit")
   if (["doorLock", "windowMotor"].includes(cardData.combat.calledShot.location)) cardData.damage.value = 0
   if (cardData.combat.calledShot.limitDV !== 0) {
@@ -232,7 +264,7 @@ async function handleCalledShotResistanceInfo(cardData, actor, actorId){
   // Run & Gun p. 126 et 128 : les effets d'une localisation (personnage ou véhicule) et l'hémorragie
   // de Chair déchiquetée ne s'appliquent que si la cible subit des dommages après sa résistance
   const needsDamage = ['specificTarget', 'upTheAnte', 'shreddedFlesh'].includes(cardData.combat.calledShot.name)
-  if (needsDamage && cardData.damage.value <= 0 && cardData.combat.calledShot.effects.length) {
+  if (needsDamage && damageAfterResistance <= 0 &&cardData.combat.calledShot.effects.length) {
     cardData.combat.calledShot.effects = []
     ui.notifications.info(game.i18n.localize('SR5.INFO_CalledShotEffectsResisted'))
   }

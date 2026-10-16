@@ -1,4 +1,7 @@
 import {
+  refuseByRule, ruleLockBinds
+} from "../system/rule-locks.js"
+import {
   SR5_SystemHelpers 
 } from "../system/utilitySystem.js"
 import {
@@ -8,11 +11,21 @@ import {
   SR5_RollMessage 
 } from "./roll-message.js"
 import {
+  spendPending
+} from "../system/social-pending.js"
+import {
+  socialCardInfo
+} from "../system/social-card.js"
+import {
   SR5_RollTestHelper 
 } from "./roll-test-helper.js"
 import * as SR5_AddRollInfo from "./roll-test-case/index.js"
 
-const PICKPOCKET_TESTS = ["pickpocket", "pickpocketPerception"]
+//The fixed id of the roll window: one at a time (SR5_RollTest.dialogQueue)
+const ROLL_WINDOW_ID = "jet"
+
+//An object hidden on oneself is the GM's to know too, not the table's (SR5 p. 422)
+const PICKPOCKET_TESTS = ["pickpocket", "pickpocketPerception", "concealItem"]
 import {
   SR5Combat 
 } from "../system/srcombat.js"
@@ -21,11 +34,23 @@ import {
   testsLeash
 } from "../entities/items/spirit-bonds.js"
 import {
+  bloodSpending, martyrPoints, bloodAddictionThreshold, bloodDrain, bloodSpellUnpaid
+} from "../system/blood-magic-rules.js"
+import {
+  bloodPointsOf, spendBloodPoints, athamePointsOf, spendAthamePoints
+} from "../system/blood-magic.js"
+import {
   thresholdModifierOf, applyThresholdModifier, hasOwnThreshold
 } from "./roll-helpers/threshold.js"
 import {
   isStructuredSpell, pushedHits
 } from "./roll-helpers/arcana-metamagics.js"
+import {
+  refreshWoundModifiers
+} from "./roll-helpers/extended-wounds.js"
+import {
+  rapidFireAfterUse
+} from "../entities/items/magic-masteries.js"
 import {
   isRecoilCarriedOver, buildsProgressiveRecoil
 } from "./roll-helpers/recoil.js"
@@ -56,6 +81,50 @@ export class SR5_RollTest {
   //The roll window open now, if any: the next one waits for it (generateRollDialog)
   static dialogQueue = Promise.resolve()
 
+  //DialogV2.wait answers at the click of a button, before its window is closed: the next window of the same id,
+  //rendered meanwhile, neither opened nor answered, and held every later roll of the client until a reload (lot 17b,
+  //présentation de DjamZ du 08/10). The next one now waits for the window to be gone from Foundry's registry.
+  static rollWindowClosed({
+    step = 50, max = 5000
+  } = {
+  }){
+    const open = () => !!globalThis.foundry?.applications?.instances?.get?.(ROLL_WINDOW_ID)
+    return new Promise(resolve => {
+      const started = Date.now()
+      const check = () => (!open() || Date.now() - started >= max) ? resolve() : setTimeout(check, step)
+      check()
+    })
+  }
+
+  //The queue never holds the rolls of the client for good: a turn still pending with no roll window on screen for
+  //`quiet` ms is stale (a window that failed to open), and the next roll goes on
+  static queueSettled(queue, {
+    step = 250, quiet = 2000
+  } = {
+  }){
+    let settled = false
+    const done = queue.then(() => {
+      settled = true
+    }, () => {
+      settled = true
+    })
+    const stale = new Promise(resolve => {
+      let since = null
+      const check = () => {
+        if (settled) return resolve()
+        const open = !!globalThis.foundry?.applications?.instances?.get?.(ROLL_WINDOW_ID)
+        since = open ? null : since ?? Date.now()
+        if (since !== null && Date.now() - since >= quiet) {
+          SR5_SystemHelpers.srLog(1, "Roll window queue stale: the next roll goes on")
+          return resolve()
+        }
+        setTimeout(check, step)
+      }
+      setTimeout(check, step)
+    })
+    return Promise.race([done, stale])
+  }
+
   //Prepare the roll window
   static async generateRollDialog(dialogData, edge = false) {
     let actor = SR5_EntityHelpers.getRealActorFromID(dialogData.owner.actorId),
@@ -63,7 +132,8 @@ export class SR5_RollTest {
       template = "systems/sr5/templates/rolls/roll-dialog.hbs"
 
     //Handle Edge
-    dialogData.edge.canUseEdge = await SR5_RollTestHelper.canUseEdge(actor, dialogData)
+    //An Edge point already spent pushes the limit of the roll (a crazy stunt, chase-roll-prepare.js): no other one
+    dialogData.edge.canUseEdge = !(dialogData.edge.prepaidPush > 0) && await SR5_RollTestHelper.canUseEdge(actor, dialogData)
     let edgeActor = await SR5_RollTestHelper.determineEdgeActor(actor)
 
     // Capture final DOM values before dialog closes
@@ -101,7 +171,7 @@ export class SR5_RollTest {
     }
 
     //Threshold modifier of the character (Bliss, Purple Orchid), shown in the dialog and added once it closes
-    dialogData.thresholdModifier = hasOwnThreshold(dialogData.test) ? thresholdModifierOf(actorData) : {
+    dialogData.thresholdModifier = hasOwnThreshold(dialogData.test) ? thresholdModifierOf(actorData, dialogData.test) : {
       value: 0, sources: []
     }
 
@@ -109,11 +179,11 @@ export class SR5_RollTest {
     const dlg = await foundry.applications.handlebars.renderTemplate(template, dialogData)
     //One roll window at a time (its id is fixed): a second one asked meanwhile (two actors of the same user in the
     //area of a spell, M5 D3) opens once the first is closed, instead of being lost
-    const turn = SR5_RollTest.dialogQueue.then(() => foundry.applications.api.DialogV2.wait({
+    const turn = SR5_RollTest.queueSettled(SR5_RollTest.dialogQueue).then(() => SR5_RollTest.rollWindowClosed()).then(() => foundry.applications.api.DialogV2.wait({
       window: {
-        title: dialogData.test.title 
+        title: dialogData.test.title
       },
-      id: "jet",
+      id: ROLL_WINDOW_ID,
       position: {
         width: 450 
       },
@@ -126,12 +196,7 @@ export class SR5_RollTest {
         rollDialog.activateListeners(element)
         //An action the character no longer has keeps the dialog open, when the world setting asks for it
         element.querySelectorAll('button[data-action="roll"], button[data-action="edge"]').forEach(b => b.addEventListener("click", ev => {
-          //Suppressive fire and the flamethrower sweep need all their rounds (SR5 p. 179, Gun H(e)aven 3 p. 3)
-          const missingAmmo = dialogData.test.typeSub === "rangedWeapon" && SR5_ConverterHelpers.missingAmmo(dialogData.combat.firingMode.selected, dialogData.combat.ammo.value)
-          if (missingAmmo) ui.notifications.warn(game.i18n.format("SR5.WARN_FiringModeAmmo", {
-            needed: SR5_ConverterHelpers.firingModeToBullet(dialogData.combat.firingMode.selected), left: dialogData.combat.ammo.value ?? 0
-          }))
-          else if (SR5Combat.hasActionsLeft(actor, dialogData.combat.actions)) return
+          if (!SR5_RollTest.rollClickRefused(actor, dialogData)) return
           ev.preventDefault()
           ev.stopImmediatePropagation()
         }))
@@ -147,6 +212,13 @@ export class SR5_RollTest {
     if (result.action === "edge") {
       edge = true
       if (edgeActor) dialogData = await SR5_RollTestHelper.handleEdgeUse(edgeActor, dialogData)
+    } else if (dialogData.edge.prepaidPush > 0) {
+      //Its point was spent as the test was launched (R5 p. 182): the usual Edge dice, nothing more to spend
+      edge = true
+      dialogData.dicePool.modifiers.push({
+        type: "edge", label: game.i18n.localize("SR5.Edge"), value: dialogData.edge.prepaidPush,
+      })
+      dialogData.edge.canUseEdge = false
     }
 
     //Verify if reagents are used, if so, remove from actor
@@ -164,6 +236,12 @@ export class SR5_RollTest {
     } else dialogData.magic.hasUsedReagents = false
     if (result.harvestZone) dialogData.magic.reagentHarvestZone = result.harvestZone
 
+    //Rapid-Fire Caster (Forbidden Arcana p. 38): a reckless spell cast without the Drain increase uses one of the day
+    if (dialogData.magic.rapidFireCaster?.used && dialogData.magic.recklessCast) {
+      const record = dialogData.magic.rapidFireCaster.rest ? null : actor.getFlag("sr5", "rapidFireCaster")
+      await actor.setFlag("sr5", "rapidFireCaster", rapidFireAfterUse(record, game.time?.worldTime ?? 0))
+    }
+
     //Rename chatCard title for extended test
     if (dialogData.test.isExtended) dialogData.test.title = dialogData.test.title.replace("Test", game.i18n.localize("SR5.ExtendedTest"))
 
@@ -175,6 +253,30 @@ export class SR5_RollTest {
     if ((dialogData.test.type === "complexForm" || dialogData.test.typeSub === "compileSprite") && isNaN(dialogData.matrix.level)) {
       ui.notifications.warn(game.i18n.localize("SR5.WARN_NoLevel"))
       dialogData.matrix.level = actorData.specialAttributes.resonance.augmented.value
+    }
+
+    //Blood magic (Street Grimoire p. 90, Forbidden Arcana p. 130): the points spent, read again against those at hand.
+    //The Force they add calls for no Drain and may exceed twice the Magic; the martyr's wounds are taken now; the
+    //sacrifice's points call for an addiction test, offered on the card
+    const blood = dialogData.test.type === "spell" ? dialogData.magic.bloodMagic : null
+    if (blood) {
+      const martyr = martyrPoints(blood.martyrBoxes, blood.selfCost)
+      const spent = bloodSpending({
+        force: blood.force, drainMagic: blood.drainMagic, drain: blood.drain, martyr, athame: athamePointsOf(actor), pool: bloodPointsOf(actor)
+      })
+      Object.assign(blood, spent, {
+        martyrPoints: martyr
+      })
+      delete blood.woundModifier
+      delete dialogData.limit.modifiers.bloodMagic
+      if (spent.fromAthame > 0) await spendAthamePoints(actor, spent.fromAthame)
+      if (spent.fromPool > 0) await spendBloodPoints(actor, spent.fromPool)
+      //The athame's points come from sacrifices too: only the martyr's call for no test
+      if (spent.fromPool + spent.fromAthame > 0) {
+        blood.addictionThreshold = bloodAddictionThreshold(spent, actorData.specialAttributes?.magic?.augmented?.value)
+      }
+      dialogData.magic.force = (Number(dialogData.magic.force) || 0) + spent.force
+      if (blood.martyrBoxes > 0) await SR5_RollTest.martyrWounds(actor, blood.martyrBoxes)
     }
 
     //Add limit for force, reagents and level
@@ -207,7 +309,9 @@ export class SR5_RollTest {
           dialogData.magic.drain.modifiers.reagentTier = {
             value: -dialogData.magic.reagentDrainReduction, label: game.i18n.localize(TIER_LABELS[dialogData.magic.reagentTier]),
           }
-          dialogData.magic.drain.value = Math.max(dialogData.magic.drainFloor ?? 2, dialogData.magic.drain.value - dialogData.magic.reagentDrainReduction)
+          //Blood Magic Points come off after the floor, down to 0 (Street Grimoire p. 90)
+          const bloodOff = Math.max(0, -(Number(dialogData.magic.drain.modifiers.bloodMagic?.value) || 0))
+          dialogData.magic.drain.value = bloodDrain(Math.max(dialogData.magic.drainFloor ?? 2, dialogData.magic.drain.value + bloodOff - dialogData.magic.reagentDrainReduction), bloodOff)
         }
       }
     }
@@ -224,6 +328,13 @@ export class SR5_RollTest {
 
     //Add dice pool modifiers
     dialogData = await SR5_RollTestHelper.handleDicePoolModifiers(dialogData)
+
+    //Cutting Aces p. 153-154: what an earlier maneuver left is spent by this test (social-dialog.js); the card
+    //keeps no copy of the dialog's lists
+    if (dialogData.social?.ca) {
+      await spendPending(actor, dialogData.social.usedPending, dialogData.social.droppedPending)
+      delete dialogData.social.ca
+    }
 
     // SR5 p. 178: recoil builds up shot after shot until the character spends a simple or complex action on something other than firing
     // SR5 p. 180: single-shot (SS) and suppressive fire (SF) weapons neither build nor suffer progressive recoil,
@@ -274,12 +385,55 @@ export class SR5_RollTest {
 
     //Change actions in combat tracker
     if (game.combat && dialogData.combat.actions.length){
-      await SR5Combat.changeActionInCombat(dialogData.owner.actorId, dialogData.combat.actions)
+      const fighter = SR5_RollTest.actionsFighter(actor, dialogData)
+      await SR5Combat.changeActionInCombat(fighter === actor ? dialogData.owner.actorId : SR5Combat.fighterIdOf(fighter), dialogData.combat.actions)
     }
+  }
+
+  //The fighter whose actions a test spends: a vehicle test's (a chase action, Control a Vehicle) is the vehicle's
+  //when it is in the combat, else its driver's (SR5Combat.vehicleFighter)
+  static actionsFighter(actor, dialogData) {
+    return dialogData?.test?.type === "vehicleTest" ? SR5Combat.vehicleFighter(actor) : actor
   }
 
   //SR5 p. 305-306: aiding a test is a service of a bound spirit. The dice pool modifiers are a list, and an
   //update keyed 'data' (Foundry V9) is ignored: the service is written by its path
+  /**
+   * Must a click on "roll" keep the dialog open? Suppressive fire and the flamethrower sweep need all their rounds
+   * (SR5 p. 179, Gun H(e)aven 3 p. 3): refused by the "ammo" rule lock family. Lifted, the roll goes with the rounds
+   * left and the clip stops at 0 (roll-test-helper); the gamemaster hears of it only once the roll really goes,
+   * after the actions check (B13, lot 2)
+   */
+  //Martyr blood magic (Forbidden Arcana p. 130): the Physical damage the caster gives himself, unresisted
+  static async martyrWounds(actor, boxes){
+    const {
+      SR5_PrepareRollTest
+    } = await import("./roll-prepare.js")
+    const chatData = SR5_PrepareRollTest.getBaseRollData(null, actor)
+    chatData.damage.value = boxes
+    chatData.damage.type = "physical"
+    await actor.takeDamage(chatData)
+  }
+
+  static rollClickRefused(actor, dialogData) {
+    //A Blood spell is cast with at least one Blood Magic Point spent (Forbidden Arcana p. 122): the dialog stays open
+    if (bloodSpellUnpaid(dialogData.magic?.bloodMagic)) {
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_BloodSpellNeedsPoint"))
+      return true
+    }
+    const mode = dialogData.combat.firingMode.selected, left = dialogData.combat.ammo.value ?? 0
+    const missingAmmo = dialogData.test.typeSub === "rangedWeapon" && SR5_ConverterHelpers.missingAmmo(mode, left)
+    const refuse = () => refuseByRule("ammo", "SR5.WARN_FiringModeAmmo", {
+      needed: SR5_ConverterHelpers.firingModeToBullet(mode), left
+    }, {
+      actor
+    })
+    if (missingAmmo && ruleLockBinds("ammo")) return refuse()
+    if (!SR5Combat.hasActionsLeft(SR5_RollTest.actionsFighter(actor, dialogData), dialogData.combat.actions)) return true
+    if (missingAmmo) refuse()
+    return false
+  }
+
   static async spendSpiritAidService(dialogData) {
     if (!(dialogData.dicePool.modifiers.find(m => m.type === "spiritAid")?.value > 0)) return
     let spiritItem = await fromUuid(dialogData.magic.spiritAid.id)
@@ -386,11 +540,14 @@ export class SR5_RollTest {
   //Handle extended roll
   static async extendedRoll(message, actor){
     let messageData = message.flags.sr5data
-    //SR5 p. 207: the next roll of a natural Physical recovery waits for the Stun damage to be healed, as the first one
-    if (SR5_ActorHelper.stunBlocksNaturalHealing(actor?.system, messageData.test.type, messageData.test.typeSub)) {
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_StunHealsFirst"))
+    //A test whose healing was applied is over (SR5 p. 207): a new roll added its hits to those already healed, and the
+    //card offered to heal them all again (lot 17c: 4 boxes, then 6 more, from 6 hits)
+    if (messageData.extendedTest === false) {
+      ui.notifications.warn(game.i18n.localize("SR5.WARN_ExtendedTestOver"))
       return false
     }
+    //SR5 p. 207: the next roll of a natural Physical recovery waits for the Stun damage to be healed, as the first one
+    if (SR5_ActorHelper.stunHealsFirstRefused(actor, messageData.test.type, messageData.test.typeSub)) return false
 
     //Prepare new chat card: the base pool and its modifiers, minus one die per earlier roll (SR5 p. 50).
     //GM ruling (05/10): Push the limit joins the starting pool of an extended test, every roll keeps its Edge dice
@@ -399,6 +556,11 @@ export class SR5_RollTest {
     let newMessage = foundry.utils.duplicate(messageData)
     newMessage.test.extended.roll += 1
     SR5_EntityHelpers.removeElementFromArray(newMessage.dicePool.modifiers, 'type', "extendedTest")
+    //SR5 p. 50 and 171: each roll is made with the wounds the character has at that time, not those of the first roll
+    const skillKey = ["skill", "skillDicePool"].includes(newMessage.test.type) ? newMessage.test.typeSub : null
+    newMessage.dicePool.modifiers = refreshWoundModifiers(newMessage.dicePool.modifiers, actor.system?.penalties, {
+      sheetModifiers: skillKey ? actor.system?.skills?.[skillKey]?.test?.modifiers ?? null : null
+    })
     delete newMessage.originalModifiers
     let pushedTheLimit = !!messageData.edge.hasUsedPushTheLimit
     newMessage.edge.canUseEdge = false
@@ -454,15 +616,18 @@ export class SR5_RollTest {
   static async secondeChance(message, actor) {
     let messageData = message.flags.sr5data
     //GM ruling (05/10): during an extended test, Push the limit is the only use of Edge
-    if (SR5_RollTest.isExtendedTest(messageData)) {
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_EdgeExtendedTestPushOnly"))
-      return false
-    }
+    //B13: refused by the "actions" rule lock family; lifted, Second Chance goes and the gamemaster is whispered
+    if (SR5_RollTest.isExtendedTest(messageData) && refuseByRule("actions", "SR5.WARN_EdgeExtendedTestPushOnly", null, {
+      actor
+    })) return false
 
     //Re roll failed dices
     let rollDices = messageData.roll.rollDices
     let rollHits = messageData.roll.rollHits ?? messageData.roll.hits
-    let dicePool = rollDices ? rollDices.filter(d => d.result < 5).length : messageData.dicePool.value - messageData.roll.hits
+    //The dice that did not hit, counted on the dice themselves: the pool less the hits rerolled too many dice when the
+    //limit had cut the hits (séance de DjamZ du 09/10)
+    const rolled = rollDices ?? messageData.roll.dices
+    let dicePool = Array.isArray(rolled) ? rolled.filter(d => d.result < 5).length : messageData.dicePool.value - messageData.roll.hits
     if (dicePool < 0) dicePool = 0
     //SR5 p. 58: Second Chance has no effect on limits. A test whose hits already reached its limit gains nothing,
     //only a test without limit (value 0, or lifted by radical reagents) keeps every new hit
@@ -481,6 +646,9 @@ export class SR5_RollTest {
     newMessage.roll.hits = messageData.roll.hits + chanceHit
     newMessage.roll.dices = dicesKeeped.concat(chance.dices)
     if (rollDices) newMessage.roll.rollDices = rollDices.filter(d => d.result > 4).concat(chance.dices)
+    //The rerolled dice, kept apart on the roll the GM reads again (socket-guard.js recountHits): its own dice stay as rolled
+    if (typeof newMessage.roll.r === "string") newMessage.roll.r = JSON.parse(newMessage.roll.r)
+    if (newMessage.roll.r) newMessage.roll.r.secondChance = chance.r
     //Glitch status not read again: it stays the one of the initial roll. Second Chance cannot erase a glitch
     //(SR5 p. 58), and rerolled dice full of 1 do not create one (ruling of DjamZ, 2026-10-06, G5)
     newMessage.edge.hasUsedSecondChance = true
@@ -503,10 +671,11 @@ export class SR5_RollTest {
     let messageData = message.flags.sr5data
     let dicePool
     //GM ruling (05/10): Edge joins the starting pool of an extended test, once: not on a later roll
-    if (SR5_RollTest.isExtendedTest(messageData) && (messageData.test.extended?.roll > 1 || messageData.edge.hasUsedPushTheLimit)) {
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_EdgeExtendedTestStartOnly"))
-      return false
-    }
+    //B13: refused by the "actions" rule lock family; lifted, the push goes and the gamemaster is whispered
+    if (SR5_RollTest.isExtendedTest(messageData) && (messageData.test.extended?.roll > 1 || messageData.edge.hasUsedPushTheLimit) &&
+      refuseByRule("actions", "SR5.WARN_EdgeExtendedTestStartOnly", null, {
+        actor
+      })) return false
 
     //A spirit with no Edge left pushes the limit with its summoner's (SR5 p. 306)
     const edgeActor = await SR5_RollTestHelper.determineEdgeActor(actor)
@@ -735,6 +904,9 @@ export class SR5_RollTest {
       case "grappleEscape":
         await SR5_AddRollInfo.grappleEscapeInfo(cardData, actorId)
         break
+      case "netEscape":
+        await SR5_AddRollInfo.netEscapeInfo(cardData, actorId)
+        break
       case "grappleClinchDefense":
         await SR5_AddRollInfo.grappleClinchDefenseInfo(cardData)
         break
@@ -743,6 +915,9 @@ export class SR5_RollTest {
         break
       case "pickpocketPerception":
         await SR5_AddRollInfo.pickpocketPerceptionInfo(cardData)
+        break
+      case "concealItem":
+        await SR5_AddRollInfo.concealItemInfo(cardData)
         break
       case "lift":
         await SR5_AddRollInfo.liftInfo(cardData, actorId)
@@ -817,8 +992,22 @@ export class SR5_RollTest {
       case "vehicleTest":
         await SR5_AddRollInfo.vehicleTestInfo(cardData, actorId)
         break
+      case "vehicleRepair":
+        await SR5_AddRollInfo.vehicleRepairInfo(cardData)
+        break
+      case "vehicleModInstall":
+        await SR5_AddRollInfo.vehicleModInstallInfo(cardData)
+        break
+      case "accessoryInstall":
+        await SR5_AddRollInfo.accessoryInstallInfo(cardData)
+        break
       case "mentorDrawback":
         await SR5_AddRollInfo.mentorDrawbackInfo(cardData)
+        break
+      case "autopilotUnforeseen":
+        //Confused by a hacker, the threshold is known (Rigger 5.0 p. 34); otherwise the gamemaster compares the hits with
+        //the threshold of the situation (SR5 p. 271)
+        if (cardData.threshold.value > 0) cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize(cardData.roll.hits >= cardData.threshold.value ? "SR5.AutopilotKeepsControl" : "SR5.AutopilotConfused"))
         break
       case "attributeOnly":
       case "languageSkill":
@@ -834,5 +1023,8 @@ export class SR5_RollTest {
       default:
         SR5_SystemHelpers.srLog(1, `Unknown '${cardData.test.type}' type in addInfoToCard`)
     }
+
+    //Cutting Aces (lot 21): a social maneuver's outcome, the con step, the bartering window, on any card
+    socialCardInfo(cardData)
   }
 }

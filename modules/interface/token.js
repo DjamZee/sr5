@@ -8,6 +8,9 @@ import {
   SR5Pickpocket
 } from "./pickpocket.js"
 import {
+  playerMayOpenPan
+} from "../canvas/pan-crown/pan-crown.js"
+import {
   vendorShopOfToken
 } from "./shop-vendor-rules.js"
 
@@ -24,7 +27,9 @@ export class SR5Token extends foundry.canvas.placeables.Token {
     //The core's own guards, before its ownership test
     if (this.layer._draggedToken || !this.layer.active || this.isPreview) return false
     if (canvas.controls.ruler?.active || (CONFIG.Canvas.rulerClass.canMeasure && (event?.type === "pointerdown"))) return false
-    return SR5Pickpocket.canPickFrom(this.document)
+    // A player with a commlink, a deck or an RCC opens the crown of a token she sees (séance de DjamZ du 09/10)
+    // A vendor's open shop: the right-click goes to the counter (relecture djamz.13, lot R6)
+    return SR5Pickpocket.canPickFrom(this.document) || (!!canvas.sr5PanCrown && playerMayOpenPan(this)) || !!vendorShopOfToken(this.document)
   }
 
   /**
@@ -61,10 +66,31 @@ export class SR5Token extends foundry.canvas.placeables.Token {
    * @override
    */
   _onClickRight(event) {
-    if (this.document.isOwner || !this.layer.hud || !SR5Pickpocket.canPickFrom(this.document)) return super._onClickRight(event)
+    // The same for a player who reads the PAN of the target through her own token (séance de DjamZ du 09/10)
+    const foreign = SR5Pickpocket.canPickFrom(this.document) || (!!canvas.sr5PanCrown && playerMayOpenPan(this))
+    // A vendor's token with no HUD of hers to open: the right-click goes to the counter, as the
+    // double-click does (relecture djamz.13, lot R6). With a HUD, its shop button does it
+    const vendor = !this.document.isOwner && !foreign ? vendorShopOfToken(this.document) : null
+    if (vendor) {
+      import("./shop-vendor.js").then(({
+        SR5ShopVendor
+      }) => SR5ShopVendor.openShop(vendor.actor, vendor.storage))
+      return
+    }
+    if (this.document.isOwner || !this.layer.hud || !foreign) return super._onClickRight(event)
     if (this.hasActiveHUD) this.layer.hud.close()
     else this.layer.hud.bind(this)
     if (!this._propagateRightClick(event)) event.stopPropagation()
+  }
+
+  /**
+   * A double right-click targets. On a foreign token the first click of the pair has just opened the HUD
+   * (above): it is closed again, the player only wanted the target (lot R2, P1-14).
+   * @override
+   */
+  _onClickRight2(event) {
+    if (!this.document.isOwner && this.hasActiveHUD) this.layer.hud.close()
+    return super._onClickRight2(event)
   }
 
   /**

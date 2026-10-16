@@ -16,6 +16,9 @@ import {
 import {
   sr5HookUpdateActor
 } from "../modules/hooks/actor.js"
+import {
+  cancelVehicleOwnerSyncs
+} from "../modules/entities/actors/vehicle-owner-sync.js"
 
 // An attribute changed on the sheet (Reaction 0 -> 3, Intuition 0 -> 2) left the fighter at its initiative:
 // the updateActor hook only compared on initiatives, condition monitors or matrix, so the change waited for the
@@ -79,6 +82,8 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  //The updateActor hook schedules the copy of the rigger on its drones: none outlives a test
+  cancelVehicleOwnerSyncs()
   game.user = saved.user
   game.users = saved.users
   game.combat = saved.combat
@@ -141,6 +146,26 @@ describe("an attribute change moves the initiative at once", () => {
     await sr5HookCreateItem(item, {
     }, "other")
     expect(combatant.initiative).toBe(5)
+  })
+
+  // Measured in game (lot 17a): a jumped-in drone went from 12 to 10 when its rigger lost 2 Intuition, its fighter
+  // stayed at 22. The drone is only written its copy of the rigger (vehicleOwner), or its control mode
+  it("a drone's new copy of its rigger, or its control mode, adjusts the fighter", async () => {
+    await sr5HookUpdateActor(actor, {
+      system: {
+        vehicleOwner: {
+          system: {
+          }
+        }
+      }
+    }, {
+    }, "gm")
+    expect(combatant.initiative).toBe(7)
+    expect(SR5Combat.updateMovesInitiative({
+      system: {
+        controlMode: "rigging"
+      }
+    })).toBe(true)
   })
 
   it("an update that cannot change the initiative is not compared", () => {

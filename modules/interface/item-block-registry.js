@@ -26,6 +26,7 @@ export const ITEM_TAB_ICONS = {
   bio:      `${ICON_ROOT}/nav-bio.svg`,
   stat:     `${ICON_ROOT}/nav-configuration.svg`,
   effects:  `${ICON_ROOT}/nav-modifiers.svg`,
+  workshop: `${ICON_ROOT}/nav-configuration.svg`,
 }
 
 // ---------------------------------------------------------------------------
@@ -91,6 +92,10 @@ export const ITEM_BLOCK_REGISTRY = {
   contactSummary:      {
     partial: `${PARTIAL_ROOT}/blocks/contact/contact-summary.hbs`,           label: 'SR5.Summary', size: ITEM_BLOCK_SIZE.SINGLE 
   },
+  // The chips between the character and the contact (Run Faster p. 170-172, lot 37a)
+  contactFavors:       {
+    partial: `${PARTIAL_ROOT}/blocks/contact/contact-favors.hbs`,            label: 'SR5.FAVOR_Tab', size: ITEM_BLOCK_SIZE.DOUBLE
+  },
   lifestyleSummary:    {
     partial: `${PARTIAL_ROOT}/blocks/lifestyle/lifestyle-summary.hbs`,       label: 'SR5.Summary', size: ITEM_BLOCK_SIZE.SINGLE 
   },
@@ -141,6 +146,9 @@ export const ITEM_BLOCK_REGISTRY = {
   },
   echoSummary:         {
     partial: `${PARTIAL_ROOT}/blocks/echo/echo-summary.hbs`,                 label: 'SR5.Summary', size: ITEM_BLOCK_SIZE.SINGLE 
+  },
+  fileSummary:         {
+    partial: `${PARTIAL_ROOT}/blocks/file/file-summary.hbs`,                 label: 'SR5.Summary', size: ITEM_BLOCK_SIZE.SINGLE
   },
   markSummary:         {
     partial: `${PARTIAL_ROOT}/blocks/mark/mark-summary.hbs`,                 label: 'SR5.Summary', size: ITEM_BLOCK_SIZE.SINGLE 
@@ -234,6 +242,13 @@ export const ITEM_BLOCK_REGISTRY = {
   vehicleStat:         {
     partial: `${PARTIAL_ROOT}/blocks/vehicle/vehicle-stat.hbs`,              label: 'SR5.ItemConfiguration', size: ITEM_BLOCK_SIZE.DOUBLE 
   },
+  vehicleWorkshop:     {
+    partial: `systems/sr5/templates/actors/_partials/right-tabs/droneStuff/atelier.hbs`, label: 'SR5.VehicleModWorkshop', size: ITEM_BLOCK_SIZE.DOUBLE
+  },
+  // The workshop of a weapon, an armor, an implant or a piece of gear (lot 12, C9)
+  itemWorkshop:        {
+    partial: `${PARTIAL_ROOT}/blocks/workshop/item-workshop.hbs`, label: 'SR5.ItemWorkshop', size: ITEM_BLOCK_SIZE.DOUBLE
+  },
   vehicleModStat:      {
     partial: `${PARTIAL_ROOT}/blocks/vehicleMod/vehicleMod-stat.hbs`,       label: 'SR5.ItemConfiguration', size: ITEM_BLOCK_SIZE.DOUBLE 
   },
@@ -260,6 +275,9 @@ export const ITEM_BLOCK_REGISTRY = {
   },
   spritePowerStat:     {
     partial: `${PARTIAL_ROOT}/blocks/spritePower/spritePower-stat.hbs`,      label: 'SR5.ItemConfiguration', size: ITEM_BLOCK_SIZE.DOUBLE 
+  },
+  fileStat:            {
+    partial: `${PARTIAL_ROOT}/blocks/file/file-stat.hbs`,                    label: 'SR5.ItemConfiguration', size: ITEM_BLOCK_SIZE.DOUBLE
   },
   viergeStat:          {
     partial: `${PARTIAL_ROOT}/blocks/vierge/vierge-stat.hbs`,                label: 'SR5.ItemConfiguration', size: ITEM_BLOCK_SIZE.DOUBLE 

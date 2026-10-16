@@ -32,7 +32,7 @@ import {
   SR5_MiscellaneousHelpers
 } from "./miscellaneous.js"
 import {
-  recountHits, consumedKey
+  recountHits, consumedKey, chanceSpent, rolledPool, cardPoolCap
 } from "./socket-guard.js"
 import {
   originalStrainDevice
@@ -40,6 +40,16 @@ import {
 import {
   SR5_CharacterUtility
 } from "../../entities/actors/utilityActor.js"
+import {
+  TARGET_DEVICE_EFFECT, NOISE_SUPPRESSION_EFFECT, SENSOR_LOCK_EFFECT, netHitsOf, brokenLockValue, turnEffect, noiseSuppressionCustomEffects
+} from "./electronic-warfare.js"
+import {
+  refuseByRule
+} from "../../system/rule-locks.js"
+import {
+  linkLockStatusIds,
+  isLinkLockEffect
+} from "../../system/link-lock.js"
 
 //A warning, and false: nothing was written, the card's button stays
 function warned(key) {
@@ -94,8 +104,12 @@ export class SR5_MatrixHelpers {
         await targetActor.takeDamage(cardData)
         return true
       }
-      //No active device nor living persona item: the damage is written nowhere, the GM is told so (Anatole's matrix trial).
-      //A technomancer takes it as Stun (SR5 p. 230), to be written by hand
+      //A technomancer takes matrix damage as Stun, living persona item or not (SR5 p. 229-230): takeDamage converts it
+      if (targetActor.type === "actorPc" && targetActor.system.activeSpecialAttribute === "resonance") {
+        await targetActor.takeDamage(cardData)
+        return true
+      }
+      //No active device nor living persona item: the damage is written nowhere, the GM is told so (Anatole's matrix trial)
       const content = game.i18n.format("SR5.WARN_MatrixDamageNowhere", {
         name: targetActor.name, value: damageValue,
       })
@@ -134,8 +148,11 @@ export class SR5_MatrixHelpers {
     if (!swarm && newItem.system.conditionMonitors.matrix.actual.value >= monitorSize){
       //No dumpshock for an AI: it is dissipated instead (decided by DjamZ, 04/10)
       if (targetActor.system.activeSpecialAttribute === "depth") aiDissipated = true
-      //A bricked device throws a character in VR out of the Matrix, with dumpshock resisted by Willpower alone (SR5 p. 229, 231)
-      else if (targetItem.type === "itemDevice" && SR5_ActorHelper.dumpshockIfInVR(targetActor, {
+      //A bricked device throws a character in VR out of the Matrix, with dumpshock resisted by Willpower alone (SR5 p. 229, 231).
+      //Relayed, the GM's browser writes the brick and sends the dumpshock to the target's player (_socketUpdateItem):
+      //rolled here, its window opened on the attacker's screen
+      //A convergence already threw the character out by its reboot, with dumpshock (SR5 p. 233): not twice
+      else if (!relayed && !cardData.damage?.convergence && targetItem.type === "itemDevice" && SR5_ActorHelper.dumpshockIfInVR(targetActor, {
         bricked: true
       })){
         ui.notifications.info(`${targetActor.name} ${game.i18n.localize("SR5.INFO_IsDisconnected")}.`)
@@ -255,9 +272,9 @@ export class SR5_MatrixHelpers {
         },
         {
           action: "cancel",
-          label: "Cancel",
+          label: game.i18n.localize("SR5.Cancel"),
           callback: () => ({
-            action: "cancel" 
+            action: "cancel"
           }),
         },
       ],
@@ -301,9 +318,13 @@ export class SR5_MatrixHelpers {
       }
     }
     const action = card.roller?.system?.matrix?.actions?.jackOut
-    const pool = Math.max(0, Number(action?.test?.dicePool) || 0)
-    const withEdge = SR5_MiscellaneousHelpers.poolCap(card.roller, "matrix.actions.jackOut.test.dicePool")
-    const counted = recountHits(card.data.roll?.r, pool), countedWithEdge = recountHits(card.data.roll?.r, withEdge)
+    //The pool the card was rolled with counts when the sheet dropped since (socket-guard.js cardPoolCap)
+    const pool = Math.max(0, Number(action?.test?.dicePool) || 0, rolledPool(card.data))
+    const withEdge = cardPoolCap(card, SR5_MiscellaneousHelpers.poolCap(card.roller, "matrix.actions.jackOut.test.dicePool"))
+    const chance = {
+      secondChance: chanceSpent(card.data, card.roller)
+    }
+    const counted = recountHits(card.data.roll?.r, pool, chance), countedWithEdge = recountHits(card.data.roll?.r, withEdge, chance)
     if (counted === null || countedWithEdge === null) return null
     const limit = Number(action?.limit?.value) || 0
     return {
@@ -367,8 +388,7 @@ export class SR5_MatrixHelpers {
 
   //The link lock effects of an actor, one per icon that locked it
   static getLinkLocks(actor){
-    return actor.items.filter(i => i.type === "itemEffect" && Object.values(i.system.customEffects ?? {
-    }).some(e => e.target === "system.matrix.isLinkLocked"))
+    return actor.items.filter(isLinkLockEffect)
   }
 
   //Jack out (SR5 p. 244): free of the link lock, the character reboots the device used
@@ -377,8 +397,13 @@ export class SR5_MatrixHelpers {
     //Only the lock this card beat goes: each lock is beaten on its own (SR5 p. 246)
     let beaten = cardData.previousMessage.itemUuid
     if (beaten && actor.items.find(i => i.id === beaten)) await actor.deleteEmbeddedDocuments("Item", [beaten])
-    //While another lock holds, the character is not free and the device does not reboot
-    if (SR5_MatrixHelpers.getLinkLocks(actor).length) return
+    //While another lock holds, the character is not free and the device does not reboot. One status icon stands for
+    //all the locks: the extra ones an older version left (one per lock) go
+    if (SR5_MatrixHelpers.getLinkLocks(actor).length) {
+      const extra = linkLockStatusIds(actor).slice(1)
+      if (extra.length) await actor.deleteEmbeddedDocuments("ActiveEffect", extra)
+      return
+    }
     await SR5_EntityHelpers.deleteEffectOnActor(actor, "linkLock")
 
     //rebootDeck spends no action: the jack out has already paid for its own. It deals the dumpshock
@@ -464,8 +489,11 @@ export class SR5_MatrixHelpers {
       },
     }
     target.createEmbeddedDocuments("Item", [effect])
-    let statusEffect = await _getSRStatusEffect("linkLock")
-    await target.createEmbeddedDocuments('ActiveEffect', [statusEffect])
+    //One "Connexion verrouillée" status, however many icons lock the connection: each lock is its own effect item
+    if (!linkLockStatusIds(target).length) {
+      let statusEffect = await _getSRStatusEffect("linkLock")
+      await target.createEmbeddedDocuments('ActiveEffect', [statusEffect])
+    }
     ui.notifications.info(`${target.name}${game.i18n.format('SR5.Colons')} ${game.i18n.localize('SR5.INFO_IsLinkLocked')} ${attacker.name}`)
   }
 
@@ -537,6 +565,76 @@ export class SR5_MatrixHelpers {
   }
 
 
+  //An effect of the same kind and the same author on this actor is replaced, not stacked
+  static async _replaceTurnEffect(actor, effect){
+    let previous = actor.items.filter(i => i.type === "itemEffect" && i.system.type === effect["system.type"] && i.system.ownerID === effect["system.ownerID"]).map(i => i.id)
+    if (previous.length) await actor.deleteEmbeddedDocuments("Item", previous)
+    await actor.createEmbeddedDocuments("Item", [effect])
+  }
+
+  // Rigger 5.0 p. 34: Target Device. Until the end of the combat turn, the attackers slaved to the rigger add his net
+  // hits to their pool against this target (the box of the attack dialog, indirect-effects.js). Clicked on the
+  // defender's card, by whoever owns the target
+  static async applyTargetDeviceEffect(cardData, sourceActor, target){
+    if (!sourceActor || !target) return warned("SR5.WARN_NoActor")
+    let netHits = netHitsOf(cardData.previousMessage.hits, cardData.roll.hits)
+    let deviceName = await SR5_MatrixHelpers.targetDeviceName(cardData, target)
+    await SR5_MatrixHelpers._replaceTurnEffect(target, turnEffect({
+      name: `${game.i18n.localize("SR5.MatrixActionTargetDevice")} (${sourceActor.name})`,
+      type: TARGET_DEVICE_EFFECT, owner: sourceActor, value: netHits, target: deviceName,
+      gameEffect: game.i18n.localize("SR5.MatrixActionTargetDevice_GE"),
+    }))
+    ui.notifications.info(`${target.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.TargetDeviceApplied", {
+      name: sourceActor.name, hits: netHits
+    })}`)
+    return true
+  }
+
+  // Rigger 5.0 p. 35: Suppress Noise. The hits raise the noise reduction of the rigger until the end of the combat
+  // turn, with any other reduction. Clicked on his own card
+  static async applyNoiseSuppressionEffect(cardData, actor){
+    if (!actor) return warned("SR5.WARN_NoActor")
+    let hits = Math.max(0, Number(cardData.roll.hits) || 0)
+    await SR5_MatrixHelpers._replaceTurnEffect(actor, turnEffect({
+      name: game.i18n.localize("SR5.MatrixActionSuppressNoise"),
+      type: NOISE_SUPPRESSION_EFFECT, owner: actor, value: hits, target: game.i18n.localize("SR5.NoiseReduction"),
+      gameEffect: game.i18n.localize("SR5.MatrixActionSuppressNoise_GE"), customEffects: noiseSuppressionCustomEffects(hits),
+    }))
+    ui.notifications.info(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.NoiseSuppressionApplied", {
+      hits
+    })}`)
+    return true
+  }
+
+  // Rigger 5.0 p. 35: Break Target Lock. Each net hit lowers by one the lock the defender holds on the hacker
+  // (SR5 p. 186). Clicked by the hacker, who owns the lock written on him
+  static async breakTargetLock(cardData, hacker, locker){
+    if (!hacker || !locker) return warned("SR5.WARN_NoActor")
+    let lock = hacker.items.find(i => i.type === "itemEffect" && i.system.type === SENSOR_LOCK_EFFECT && i.system.ownerID === locker.id)
+    if (!lock) {
+      ui.notifications.warn(game.i18n.format("SR5.WARN_NoTargetLock", {
+        name: locker.name, target: hacker.name
+      }))
+      return false
+    }
+    let left = brokenLockValue(lock.system.value, netHitsOf(cardData.previousMessage.hits, cardData.roll.hits))
+    if (left === null) {
+      await hacker.deleteEmbeddedDocuments("Item", [lock.id])
+      if (!hacker.items.some(i => i.type === "itemEffect" && i.system.type === SENSOR_LOCK_EFFECT)) await SR5_EntityHelpers.deleteEffectOnActor(hacker, SENSOR_LOCK_EFFECT)
+      ui.notifications.info(`${hacker.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_TargetLockBroken", {
+        name: locker.name
+      })}`)
+    } else {
+      await lock.update({
+        "system.value": left
+      })
+      ui.notifications.info(`${hacker.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_TargetLockReduced", {
+        name: locker.name, value: -left
+      })}`)
+    }
+    return true
+  }
+
   //Create an effect on an ally, through the GM when the user does not own the ally.
   //A previous effect of the same kind from the same hacker is replaced, not stacked.
   static async _createEffectOnAlly(ally, effect, messageId){
@@ -581,9 +679,12 @@ export class SR5_MatrixHelpers {
     let allies = SR5_MatrixHelpers._getSupportedAllies(speaker)
     if (!allies.length) return
     let maxUsers = sourceActor.system.matrix?.attributes?.dataProcessing?.value || 0
-    if (allies.length > maxUsers) return ui.notifications.warn(game.i18n.format("SR5.WARN_IAmTheFirewallTooManyTargets", {
+    //The "matrix" rule lock lifted (B13), every ally gets the dice, and the gamemaster hears of it
+    if (allies.length > maxUsers && refuseByRule("matrix", "SR5.WARN_IAmTheFirewallTooManyTargets", {
       actor: sourceActor.name, max: maxUsers, count: allies.length,
-    }))
+    }, {
+      actor: sourceActor
+    })) return
 
     let effect = SR5_MatrixHelpers._defenseBonusEffect("SR5.MatrixActionIAmTheFirewall", "iAmTheFirewall", sourceActor, hits, 1, "initiativePass", "SR5.MatrixActionIAmTheFirewall_GE")
     for (let ally of allies){
@@ -597,16 +698,18 @@ export class SR5_MatrixHelpers {
     let hits = cardData.roll.hits
     let allies = SR5_MatrixHelpers._getSupportedAllies(speaker)
     if (!allies.length) return false
-    if (allies.length > 1) {
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_InterveneSingleTarget"))
-      return false
-    }
+    //The "matrix" rule lock lifted (B13), every ally gets the dice, and the gamemaster hears of it
+    if (allies.length > 1 && refuseByRule("matrix", "SR5.WARN_InterveneSingleTarget", null, {
+      actor: sourceActor
+    })) return false
 
     let effect = SR5_MatrixHelpers._defenseBonusEffect("SR5.MatrixActionIntervene", "intervene", sourceActor, hits, 1, "action", "SR5.MatrixActionIntervene_GE")
-    await SR5_MatrixHelpers._createEffectOnAlly(allies[0], effect, cardData.owner?.messageId)
-    ui.notifications.info(`${allies[0].name}${game.i18n.format('SR5.Colons')} ${game.i18n.format('SR5.MatrixActionInterveneEffectNotification', {
-      hits: hits
-    })}`)
+    for (let ally of allies){
+      await SR5_MatrixHelpers._createEffectOnAlly(ally, effect, cardData.owner?.messageId)
+      ui.notifications.info(`${ally.name}${game.i18n.format('SR5.Colons')} ${game.i18n.format('SR5.MatrixActionInterveneEffectNotification', {
+        hits: hits
+      })}`)
+    }
     return true
   }
   //create popup Effect
@@ -783,8 +886,10 @@ export class SR5_MatrixHelpers {
         let existingMark = await SR5_MarkHelpers.findMarkValue(item.system, ice.id)
         if (!target.system.matrix.isLinkLocked) 
           await SR5_MatrixHelpers.applylinkLockEffect(ice, target)
-        //The forced reboot deals the dumpshock in VR (rebootDeck, SR5 p. 244)
-        if (existingMark >= 2) {
+        //Kill Code p. 74: two marks disconnect, this hit's own counted while its button is still on the card, whatever
+        //the order of the clicks. The forced reboot deals the dumpshock in VR (rebootDeck, SR5 p. 244)
+        const pendingMark = cardData.chatCard?.buttons?.attackerPlaceMark ? (cardData.matrix?.mark ?? 0) : 0
+        if (existingMark + pendingMark >= 2) {
           let deck_iceFlicker = target.items.find((item) => item.type === "itemDevice" && item.system.isActive)
           target.rebootDeck(deck_iceFlicker)
         }

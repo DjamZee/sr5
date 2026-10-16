@@ -89,6 +89,10 @@ export class sr5ItemStorageDataModel extends foundry.abstract.TypeDataModel {
         shelves: new fields.ArrayField(new fields.StringField(), {
           initial: []
         }),
+        // Set once the shelves know the Drones shelf (lot R6): before, "vehicles" held the drones too
+        dronesApart: new fields.BooleanField({
+          initial: false
+        }),
         perShelf: new fields.NumberField({
           initial: 10, integer: true, min: 0
         }),

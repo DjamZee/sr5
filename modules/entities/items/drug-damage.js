@@ -4,6 +4,9 @@ import {
 import {
   distinctDrugs, drugCrashIsInstant, isSameDrug
 } from "./drug-stat.js"
+import {
+  CUSTOM_DRUG_KEY
+} from "./drug-designer.js"
 
 // The damage of the drugs: when it comes (on intake or at the crash) and how it is resisted, read off the drug key of
 // the item and the addictions of the actor, never off a value written on the item or on a card.
@@ -167,6 +170,11 @@ export function crashDamageOf(key, shot = {
   if (key === "longHaul" && shot?.longHaulSecondDose) crash = {
     value: LONG_HAUL_SECOND_DOSE_DAMAGE, resist: "none"
   }
+  //A drug made with the designer: the blocks' crashes, "non-résistés" (Chrome Flesh p. 196), worked out from its recipe
+  //when the dose was taken (utilityActor.handleDrugShots)
+  if (key === CUSTOM_DRUG_KEY && Number(shot?.customCrash) > 0) crash = {
+    value: Number(shot.customCrash), resist: "none"
+  }
   if (!crash) return null
   if (crash.implantsOnly && !hasImplants(items)) return null
   return {
@@ -178,7 +186,8 @@ export function crashDamageOf(key, shot = {
 // Does the drug deal damage at its crash, whoever takes it (used to know whether it has a crash at all)
 export function drugHasCrashDamage(key, shot = {
 }){
-  return !!(DRUG_DAMAGE[key]?.crash || (key === "longHaul" && shot?.longHaulSecondDose))
+  return !!(DRUG_DAMAGE[key]?.crash || (key === "longHaul" && shot?.longHaulSecondDose) ||
+    (key === CUSTOM_DRUG_KEY && Number(shot?.customCrash) > 0))
 }
 
 // What a dose of Long Haul is, counted for the actor and not for one item (SR5 p. 413): "second" when any Long Haul of
@@ -242,6 +251,27 @@ export function overdoseOf(item, consumer){
     key: drugKeyOf(item.system), value, type: "stun", resist: "bodyWill", phase: "overdose", itemId: id,
     drugs: [item.name, ...sharing.map(d => d.name)]
   }
+}
+
+//Chrome Flesh p. 186-187: "Si un second traitement au P4MO est pris alors que le premier fait encore effet, le personnage
+//fera une embolie, lui infligeant 15P (non-résistés)"
+export const SECOND_TREATMENT_DAMAGE = {
+  oxygenatedFluorocarbons: {
+    value: 15, type: "physical", resist: "none"
+  }
+}
+
+// The damage of a second treatment taken while another one of the same drug is in its rise, or null. `item`: the drug
+// being taken, left out of the count; `consumer`: the actor
+export function secondTreatmentOf(item, consumer){
+  const key = drugKeyOf(item?.system)
+  const damage = SECOND_TREATMENT_DAMAGE[key]
+  if (!damage) return null
+  const id = item.id ?? item._id
+  const first = [...(consumer?.items ?? [])].some(d => d?.type === "itemDrug" && (d.id ?? d._id) !== id && drugKeyOf(d.system) === key && d.system?.phase === "rise")
+  return first ? {
+    key, ...damage, phase: "intake", itemId: id
+  } : null
 }
 
 // The resistance test of a drug damage, called by the resistance card (rolls/roll-prepare-case/rollData-Resistance.js).

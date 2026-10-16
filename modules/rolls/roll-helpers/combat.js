@@ -213,6 +213,9 @@ export class SR5_CombatHelpers {
     if ((actor.visions.lowLight.isActive || weaponVision?.lowLight) && sceneLight > 0 && sceneLight <= 2) lightMod = 0
     const glareOffset = actorRow("glare") + Math.min(0, (Number(weaponVision?.glare) || 0) - Math.min(actorRow("glare"), 0))
     let glareMod = Math.min(Math.max(sceneRow("environModGlare") + row(areaEffect.glare) + glareOffset, 0), 4)
+    // Run & Gun p. 69: in the beam of a flashlight suited to one's vision, weak glare at least, less what compensates
+    // glare (flashlight-glare.js)
+    if (areaEffect.glareAtLeast) glareMod = Math.max(glareMod, Math.min(Math.max(row(areaEffect.glareAtLeast) + glareOffset, 0), 4))
     let windMod = Math.min(Math.max(sceneRow("environModWind") + row(areaEffect.wind) + actorRow("wind"), 0), 4)
 
     // SR5 p. 176: Light and Glare are a single column of the Environmental Modifiers table,
@@ -312,6 +315,13 @@ export class SR5_CombatHelpers {
   // Number of d6 in the deviation roll, from the Scatter table (SR5 p. 183): standard grenade 1D6,
   // aerodynamic grenade 2D6, grenade launcher 3D6, missile launcher 4D6, rocket launcher 5D6. An ammunition
   // that sets its own scatterDice takes precedence.
+  // Meters of scatter each hit takes off: 2 with an airburst link fired by its wireless link, the launcher's wireless
+  // on (SR5 p. 434), 1 otherwise (SR5 p. 183). The projectile's own wireless is the table's to check
+  static scatterMetersPerHit(itemData){
+    const airburst = (itemData?.accessory ?? []).some(a => a?.name === "airburstLink" && a.isActive !== false)
+    return airburst && itemData.wirelessTurnedOn ? 2 : 1
+  }
+
   static scatterDice(itemData, ammoEffects){
     if (ammoEffects?.scatterDice) return ammoEffects.scatterDice
     switch(itemData.ammunition?.type){
@@ -362,7 +372,9 @@ export class SR5_CombatHelpers {
       return false
     }
 
-    let distanceDice = isSpell ? 2 : SR5_CombatHelpers.scatterDice(actor.items.find(i => i.id === cardData.owner.itemId).system, cardData.combat.ammo.effects)
+    const weaponData = isSpell ? null : actor.items.find(i => i.id === cardData.owner.itemId).system
+    let distanceDice = isSpell ? 2 : SR5_CombatHelpers.scatterDice(weaponData, cardData.combat.ammo.effects)
+    if (!isSpell) distanceMod *= SR5_CombatHelpers.scatterMetersPerHit(weaponData)
 
     let directionRoll = new Roll(`2d6`)
     await directionRoll.evaluate()
@@ -422,7 +434,7 @@ export class SR5_CombatHelpers {
         },
         {
           action: "cancel",
-          label: "Cancel",
+          label: game.i18n.localize("SR5.Cancel"),
           callback: () => ({
             action: "cancel" 
           }),
@@ -455,7 +467,7 @@ export class SR5_CombatHelpers {
         },
         {
           action: "cancel",
-          label: "Cancel",
+          label: game.i18n.localize("SR5.Cancel"),
           callback: () => ({
             action: "cancel" 
           }),

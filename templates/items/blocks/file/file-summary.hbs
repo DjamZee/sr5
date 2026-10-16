@@ -1,0 +1,36 @@
+<ul>
+	{{> systems/sr5/templates/items/_partial/title/summary.hbs}}
+	<li class="grid">
+		<p>
+			<span class="col-auto">{{localize 'SR5.FileProtection'}}{{localize 'SR5.Colons'}}</span>
+			<span class="col-auto SR-GreyColor">{{#if system.protection}}{{system.protection}}{{else}}{{localize 'SR5.FileNotProtected'}}{{/if}}</span>
+		</p>
+	</li>
+	<!-- A file ciphered with a key (lot 39, a house rule): its content, ciphered, or in clear with the key -->
+	{{#if fileCipher.ciphered}}
+	<li class="grid">
+		<p>
+			<span class="col-auto">{{localize 'SR5.FileCipher'}}{{localize 'SR5.Colons'}}</span>
+			<span class="col-auto SR-GreyColor"><i class="fas {{#if (eq fileCipher.how 'ciphered')}}fa-lock{{else}}fa-lock-open{{/if}}"></i> {{localize (concat 'SR5.FileCipher_' fileCipher.how)}}</span>
+		</p>
+	</li>
+	{{#if fileCipher.html}}
+	<li class="sr-file-cipher-content {{fileCipher.how}}">{{{fileCipher.html}}}</li>
+	{{/if}}
+	{{/if}}
+	{{#if userIsGM}}
+	<li class="grid">
+		<p>
+			<span class="col-auto">{{localize 'SR5.FileDataBomb'}}{{localize 'SR5.Colons'}}</span>
+			<span class="col-auto SR-GreyColor">{{#if system.dataBomb.rating}}{{system.dataBomb.rating}}{{#if system.dataBomb.destroysFile}} ({{localize 'SR5.FileDataBombDestroysShort'}}){{/if}}{{else}}{{localize 'SR5.FileNoDataBomb'}}{{/if}}</span>
+		</p>
+	</li>
+	{{/if}}
+	<li class="grid">
+		<p>
+			<span class="col-auto">{{localize 'SR5.FileLastEdit'}}{{localize 'SR5.Colons'}}</span>
+			<span class="col-auto SR-GreyColor">{{fileLastEdit}}</span>
+		</p>
+	</li>
+	{{> systems/sr5/templates/items/_partial/summary/_common/source-summary.hbs}}
+</ul>

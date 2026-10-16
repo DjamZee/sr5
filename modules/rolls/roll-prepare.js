@@ -30,6 +30,9 @@ import {
   ritualAcceptsHelp
 } from "./roll-helpers/ritualTeam.js"
 import {
+  isTacticsKnowledge
+} from "./roll-helpers/tacnet.js"
+import {
   targetsWirelessOffDrone, isWirelessOffDrone
 } from "./roll-prepare-case/rollData-MatrixAction.js"
 import {
@@ -43,16 +46,49 @@ import {
   addIndirectEffects
 } from "../system/indirect-effects.js"
 import {
+  applyRiggerNoise
+} from "../system/rigger-noise.js"
+import {
   SR5
 } from "../config.js"
 import {
   SR5_Toxins
 } from "../entities/items/toxins.js"
+import {
+  refuseByRule
+} from "../system/rule-locks.js"
+import {
+  offerTestAttribute, offerVehicleAttribute
+} from "./roll-helpers/skillAttribute.js"
+import {
+  socialDialogData
+} from "./roll-helpers/social-dialog.js"
+
+// Cutting Aces social maneuvers, con steps and carried effects (lot 21): offered in the dialog when they apply
+function addSocialDialog(rollData, actor, test, chatData){
+  const ca = socialDialogData(actor, rollData, test, chatData)
+  if (ca) rollData.social = {
+    ...(rollData.social ?? {
+    }), ca
+  }
+  return rollData
+}
 
 // N91: matrix rolls aimed at a target besides matrixAction, which guards itself. Each refuses a drone
 // with its wireless off (SR5 p. 424)
 const WIRELESS_TARGETED_ROLLS = ["iceAttack", "complexForm", "resonanceAction"]
 const WIRELESS_DEFENSE_ROLLS = ["matrixDefense", "iceDefense", "complexFormDefense", "matrixResistance"]
+
+// A15, group A (inventory of Mélisande, arbitrage of Élise, 08/10): skill tests the system builds itself, where the
+// book's rule of p. 130 lets the attribute change (repair and mod installation have it through the skill test)
+export const ATTRIBUTE_CHOICE_TESTS = ["weapon", "vehicleTest", "ramming", "pickpocket", "concealItem", "sensorDefense", "sensorTarget",
+  "grappleClinch", "grappleEscape", "movement"]
+
+// The key the choice is kept under, per character: the test, and its movement or weapon type
+export function testAttributeFlagKey(rollType, rollKey, item){
+  let sub = rollType === "movement" && typeof rollKey === "string" ? rollKey : rollType === "weapon" ? item?.system?.type : ""
+  return `test-${rollType}${sub ? `-${String(sub).replace(/[^A-Za-z0-9]/g, "")}` : ""}`
+}
 
 export class SR5_PrepareRollTest {
 
@@ -73,16 +109,21 @@ export class SR5_PrepareRollTest {
     //resonance action included: only a direct connection does (p. 234), played by switching it on (N91)
     //A roll relaunched from a chat card (Blue Goo's explosion) also checks the target the card knows
     if (WIRELESS_TARGETED_ROLLS.includes(rollType) && (targetsWirelessOffDrone(actor) ||
-      (chatData?.target?.actorId && isWirelessOffDrone(SR5_EntityHelpers.getRealActorFromID(chatData.target.actorId, chatData.actorUuids), actor)))) {
-      return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetWirelessOff"))
-    }
+      (chatData?.target?.actorId && isWirelessOffDrone(SR5_EntityHelpers.getRealActorFromID(chatData.target.actorId, chatData.actorUuids), actor))) &&
+      refuseByRule("matrix", "SR5.WARN_TargetWirelessOff", null, {
+        actor
+      })) return
     //An attack launched with no target selected is defended from its card by the drone itself: not reached either
-    if (WIRELESS_DEFENSE_ROLLS.includes(rollType) && isWirelessOffDrone(actor, null)) {
-      return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetWirelessOff"))
-    }
+    //The "matrix" rule lock lifted (B13), the attack reached the drone, so the drone defends and resists it
+    if (WIRELESS_DEFENSE_ROLLS.includes(rollType) && isWirelessOffDrone(actor, null) && refuseByRule("matrix", "SR5.WARN_TargetWirelessOff", null, {
+      actor
+    })) return
 
     //Better Than Bad p. 141: cut from the manasphere by Blight, no magic of any kind (decisions G2 and H1 of DjamZ)
-    if (SR5_Toxins.blightBlocksRoll(actor, rollType, rollKey)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_BlightNoSpell"))
+    //The "magic" rule lock lifted (B13), the roll goes, on the values Blight leaves (Magic at 0), and the gamemaster hears of it
+    if (SR5_Toxins.blightBlocksRoll(actor, rollType, rollKey) && refuseByRule("magic", "SR5.WARN_BlightNoSpell", null, {
+      actor
+    })) return
 
     //Iterate through roll type and add data to rollData;
     switch (rollType){
@@ -131,6 +172,8 @@ export class SR5_PrepareRollTest {
         break
       case "derivedAttribute":
         rollData = await SR5_GetRollData.derived(rollData, rollKey, actor)
+        // Zanshin (Cutting Aces p. 154) is a Judge Intentions test
+        if (rollData && rollKey === "judgeIntentions") rollData = addSocialDialog(rollData, actor, rollKey, chatData)
         break
       case "drain":
         rollData = await SR5_GetRollData.drain(rollData, actor, chatData)
@@ -140,6 +183,9 @@ export class SR5_PrepareRollTest {
         break
       case "grappleEscape":
         rollData = await SR5_GetRollData.grappleEscape(rollData, actor)
+        break
+      case "netEscape":
+        rollData = await SR5_GetRollData.netEscape(rollData, actor)
         break
       case "grappleClinch":
         rollData = await SR5_GetRollData.grappleClinch(rollData, actor)
@@ -153,16 +199,19 @@ export class SR5_PrepareRollTest {
       case "pickpocketPerception":
         rollData = await SR5_GetRollData.pickpocketPerception(rollData, actor, chatData)
         break
+      case "concealItem":
+        rollData = await SR5_GetRollData.concealItem(rollData, actor, chatData)
+        break
       case "fading":
         rollData = await SR5_GetRollData.fading(rollData, actor, chatData)
         break
       case "healing":
-        if (SR5_ActorHelper.stunBlocksNaturalHealing(actor.system, "healing", rollKey)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_StunHealsFirst"))
+        if (SR5_ActorHelper.stunHealsFirstRefused(actor, "healing", rollKey)) return
         rollData = await SR5_GetRollData.healing(rollData, rollKey, actor)
         break
       case "iceAttack":
         if (game.user.targets.size) rollData = await SR5_PrepareRollHelper.getTargetData(rollData)
-        rollData = await SR5_GetRollData.iceAttack(rollData, actor)
+        rollData = await SR5_GetRollData.iceAttack(rollData, actor, rollKey)
         break
       case "iceDefense":
         rollData = await SR5_GetRollData.iceDefense(rollData, actor, chatData)
@@ -171,9 +220,16 @@ export class SR5_PrepareRollTest {
         rollData = await SR5_GetRollData.itemRoll(rollData, item)
         break
       case "knowledgeSkill":
-      case "languageSkill":
+      case "languageSkill": {
+        //Run & Gun p. 113: Small Unit Tactics opens the combat maneuver window; its plain test stays a click away there
+        const maneuvers = rollType === "knowledgeSkill" && isTacticsKnowledge(item.name) ? await import("../system/combat-maneuvers.js") : null
+        if (maneuvers && !chatData?.combatManeuver && !chatData?.combatManeuverSkip) return maneuvers.SR5CombatManeuverWindow.open(actor, item)
         rollData = await SR5_GetRollData.knowledgeSkill(rollData, rollType, item)
+        if (rollData && maneuvers && chatData?.combatManeuver) rollData = maneuvers.applyManeuverTeamwork(rollData, chatData.combatManeuver)
+        // Informed Opinion (Cutting Aces p. 153) is a Knowledge test
+        if (rollData && rollType === "knowledgeSkill") rollData = addSocialDialog(rollData, actor, "knowledge", chatData)
         break
+      }
       case "lift":
         rollData = await SR5_GetRollData.lift(rollData, rollKey, actor)
         break
@@ -185,7 +241,12 @@ export class SR5_PrepareRollTest {
         rollData = await SR5_GetRollData.martialArtsDefense(rollData, actor, chatData)
         break
       case "matrixAction":
-        if (game.user.targets.size) rollData = await SR5_PrepareRollHelper.getTargetData(rollData)
+        //Launched from the crown of a PAN (lot 4, Q6): the attacker already chose the token (targeted by
+        //rollMatrixActionOn, so that the checks on game.user.targets read it) and the device
+        if (chatData?.panTarget) rollData = SR5_PrepareRollHelper.getPanTargetData(rollData, chatData.panTarget)
+        else if (game.user.targets.size) rollData = await SR5_PrepareRollHelper.getTargetData(rollData)
+        //Lot 19: an action a module offers after another (the chained action of the module Matrice): no action spent
+        if (chatData?.offeredAction === true) rollData.matrix.offeredAction = true
         rollData = await SR5_GetRollData.matrixAction(rollData, rollKey, actor)
         break
       case "matrixDefense":
@@ -220,7 +281,9 @@ export class SR5_PrepareRollTest {
         break
       case "preparation":
         // SR5 p. 309: at 0 Potency the preparation is no longer magical, its spell is lost
-        if (!(Number(item.system?.potency) > 0)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_PreparationSpent"))
+        if (!(Number(item.system?.potency) > 0) && refuseByRule("magic", "SR5.WARN_PreparationSpent", null, {
+          actor
+        })) return
         rollData = await SR5_GetRollData.preparation(rollData, actor, item)
         break
       case "preparationFormula":
@@ -293,6 +356,7 @@ export class SR5_PrepareRollTest {
             attitude: faction.attitude
           }
         }
+        rollData = addSocialDialog(rollData, actor, rollKey, chatData)
         break
       case "spell":
         if (game.user.targets.size) rollData = await SR5_PrepareRollHelper.getTargetData(rollData)
@@ -319,11 +383,38 @@ export class SR5_PrepareRollTest {
       case "vehicleTest":
         rollData = await SR5_GetRollData.vehicleTest(rollData, actor, chatData)
         break
+      //Rigger 5.0 p. 33-34: the options come from the repair window of the drone sheet, in place of a roll key
+      case "vehicleRepair":
+        rollData = await SR5_GetRollData.vehicleRepair(rollData, actor, rollKey)
+        break
+      //Rigger 5.0 p. 153-154: the options come from the workshop of the drone sheet, in place of a roll key
+      case "vehicleModInstall":
+        rollData = await SR5_GetRollData.vehicleModInstall(rollData, actor, rollKey)
+        break
+      //RG p. 67: the options come from the weapon's Armurerie tab, in place of a roll key
+      case "accessoryInstall":
+        rollData = await SR5_GetRollData.accessoryInstall(rollData, actor, rollKey)
+        break
+      case "autopilotUnforeseen":
+        rollData = SR5_GetRollData.autopilotUnforeseen(rollData, actor, chatData)
+        break
       default:
         SR5_SystemHelpers.srLog(1, `Unknown ${rollType} roll type in 'actorRoll()'`)
     }
         
     if (rollData) {
+      //A15 (SR5 p. 130): the attribute menu, kept per character, on the skill tests the system builds itself; the
+      //default stays the pair of the test (arbitrage of Élise, 08/10)
+      if (ATTRIBUTE_CHOICE_TESTS.includes(rollType) && !rollData.skillAttribute) {
+        const choice = {
+          flagKey: testAttributeFlagKey(rollType, rollKey, item), labels: SR5.allAttributes, localize: k => game.i18n.localize(k),
+        }
+        //A driven vehicle rolls with its driver's skill and attribute
+        if (actor?.type === "actorDrone") rollData = offerVehicleAttribute(rollData, actor, {
+          ...choice, driver: game.actors.get(actor.system.vehicleOwner?.id) ?? null,
+        })
+        else rollData = offerTestAttribute(rollData, actor, choice)
+      }
       //Running (SR5 p. 164): the running box of the modifiers list, for the tests that have no box of their own
       const runningKind = runningModifierKind(rollData.test)
       rollData.dialogSwitch.running = (runningKind === "general" || runningKind === "defense") ? runningKind : false
@@ -334,6 +425,8 @@ export class SR5_PrepareRollTest {
       } = extractSituational(rollData, actor?.situationalEffects || [], rollAttributes(rollData.dicePool.composition, attributeLabels),
         actor?.system?.limits?.[rollData.limit?.type]?.modifiers)
       rollData.situational = offers
+      //A weapon held by a cyberlimb: the limb's enhancements are in its Agility already (cyberlimb.js)
+      if (rollData.various?.limbEnhancements?.length) rollData.situational = offers.filter(o => !(o.attribute && rollData.various.limbEnhancements.includes(o.label)))
       //Forbidden Arcana p. 90-95: the boxes of a spirit type, shown once the type is known (dialog, or the targeted spirit)
       if (rollData.test.type === "skillDicePool" && SPIRIT_TYPE_SKILLS.includes(rollData.test.typeSub)){
         rollData.situational = offers.concat(spiritTypeOffers(actor.system.skills[rollData.test.typeSub]?.spiritType, actor.situationalEffects || []))
@@ -351,6 +444,10 @@ export class SR5_PrepareRollTest {
       if (always.length) rollData.dicePool.modifiers = (rollData.dicePool.modifiers || []).concat(always)
       //Effects other actors carry on this roll: its target's, the auras around the roller (roll-helpers/indirect.js)
       addIndirectEffects(rollData, actor)
+      //SR5 p. 268: a drone's action suffers the noise of the distance to its wireless rigger (rigger-noise.js)
+      applyRiggerNoise(rollData, actor, {
+        resolve: id => SR5_EntityHelpers.getRealActorFromID(id), label: game.i18n.localize("SR5.RiggerNoise")
+      })
       //Bullets & Bandages p. 14-16: the dialog of First Aid and Medicine asks what the test is for
       if (underFireRules() && (rollData.test.typeSub === "firstAid" || rollData.test.typeSub === "medecine")) rollData.various.bbUnderFire = true
       //Bullets & Bandages p. 18: improvised supplies take the hits of an improvising roll off the -3
@@ -568,7 +665,7 @@ export class SR5_PrepareRollTest {
         characterSpecialDefensesDodge: actor.system.lists.characterSpecialDefensesDodge,
         characterSpecialDefenses: actor.system.lists.characterSpecialDefenses,
         chokeSettings: actor.system.lists.chokeSettings,
-        workingCondition: actor.system.lists.chokeSettings,
+        workingCondition: actor.system.lists.workingCondition,
         toolsAndParts: actor.system.lists.toolsAndParts,
         plansMaterial: actor.system.lists.plansMaterial,
         weaponRanges: actor.system.lists.weaponRanges,
@@ -596,6 +693,11 @@ export class SR5_PrepareRollTest {
           objectCanResist: false,
           range: 0,
           area: 0,
+          // Spell Shaping (SR5 p. 329): shaping points spent on widening the area,
+          // and points spent on bubbles that leave characters untouched.
+          areaShaping: 0,
+          sparedCount: 0,
+          sparedActors: [],
           type: "",
           // Death Sower (Forbidden Arcana p. 40): DV bonus of a combat spell
           damageBonus: 0,

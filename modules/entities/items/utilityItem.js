@@ -1,5 +1,5 @@
 import {
-  applyVintageWireless, vintageAccessoryPrice, hasWeaponTrait, osmiumProfile
+  applyVintageWireless, vintageAccessoryPrice, hasWeaponTrait, osmiumProfile, weaponDamageBonusApplies
 } from './weaponTraits.js'
 import {
   SR5, AUGMENTATION_GRADE_TABLE 
@@ -8,7 +8,7 @@ import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
-  implantEssenceEffects, roundImplantEssence, essenceSettingOn, AUGMENTATION_BUNDLE_SETTING
+  implantEssenceEffects, roundImplantEssence, essenceSettingOn, AUGMENTATION_BUNDLE_SETTING, takesBoneDamage
 } from "../../system/implant-essence.js"
 import {
   SR5_EntityHelpers 
@@ -17,14 +17,44 @@ import {
   WEAPON_ACCESSORY_CATALOG 
 } from "../../data/weaponAccessoryCatalog.js"
 import {
-  isAccessoryKind, ignoredRecoilAccessories, accessoryCapacity, capacityTaken
+  isAccessoryKind, ignoredRecoilAccessories, accessoryCapacity, capacityTaken, SMARTGUN_ACCURACY, triggerRemovalAccuracy
 } from "./weapon-accessory-rules.js"
 import {
   SR5_Toxins
 } from "./toxins.js"
 import {
+  lifestyleMetatypeSurcharge
+} from "./lifestyle-metatype.js"
+import {
+  purityStateArmorPenetration
+} from "./adept-powers-btb.js"
+import {
   deathSowerAdeptDamage
 } from "./magic-masteries.js"
+import {
+  weaponRatingModifiers
+} from "./weapon-ratings.js"
+import {
+  streamOf, streamFadingReduction, reducedFading
+} from "../actors/technomancer-streams.js"
+import {
+  rccAutosoftsForDrone, droneAutopilot, localAutosoftRating
+} from "../actors/rcc.js"
+import {
+  swarmTargetingRating
+} from "../../system/swarm.js"
+import {
+  dataProcessingCapModifier
+} from "../../system/rigging-rules.js"
+import {
+  weaponLimb, limbAttributes, weaponAttribute, withLimbAgility
+} from "../../system/cyberlimb.js"
+import {
+  isFactoryMod
+} from "../../system/vehicle-factory.js"
+import {
+  isMountedWeapon, vehicleMeleeStrength, vehicleMeleeSpeedBonus, vehicleWeaponSkill, droneArmProfile
+} from "../../system/vehicle-melee.js"
 
 // The implants whose unknown grade the gamemaster was told of, once each per session
 const unknownGradesTold = new Set()
@@ -65,6 +95,9 @@ export class SR5_UtilityItem extends Actor {
         break
       case "itemMark":
         displayName = game.i18n.localize("SR5.MarkNew")
+        break
+      case "itemFile":
+        displayName = game.i18n.localize("SR5.FileNew")
         break
       case "itemProgram":
         displayName = game.i18n.localize("SR5.ProgramNew")
@@ -333,6 +366,9 @@ export class SR5_UtilityItem extends Actor {
       default:
     }
     if (item.price.multiplier) SR5_EntityHelpers.updateModifier(item.price, game.i18n.localize(SR5.valueMultipliersAll[item.price.multiplier]), "multiplier", multiplier, true, false)
+    //A factory mod is paid with the vehicle (Rigger 5.0 p. 156)
+    //(a product of 0 is read as 1, hence the sum brought back to 0)
+    if (item.isFactory === true) SR5_EntityHelpers.updateModifier(item.price, game.i18n.localize("SR5.VehicleModFactory"), "factory", -((item.price.base || 0) + SR5_EntityHelpers.modifiersSum(item.price.modifiers)), false, false)
     SR5_EntityHelpers.updateValue(item.price, 0)
   }
 
@@ -435,44 +471,49 @@ export class SR5_UtilityItem extends Actor {
         let controlerData
         if (actor.system.vehicleOwner.id) controlerData = actor.system.vehicleOwner.system
         itemData.weaponSkill.base = 0
+        //Gunnery for a mounted weapon, the weapon's melee skill for a drone arm (SR5 p. 134, Rigger 5.0 p. 129)
+        const skillKey = vehicleWeaponSkill(itemData.category, isMountedWeapon(item.id, actor.items), itemData.weaponSkill.category)
+        const skillLabel = `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize(SR5.skills[skillKey] ?? 'SR5.SkillGunnery')})`
+        const controlerSkill = controlerData?.skills?.[skillKey]
 
         switch (actor.system.controlMode){
-          case "autopilot":
-            for (let i of actor.items) {
-              let iData = i.system
-              if (iData.model === item.name && i.type === "itemProgram" && iData.isActive) {
-                SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.VehicleStat_PilotShort'), "linkedAttribute", actor.system.attributes.pilot.augmented.value)
-                SR5_EntityHelpers.updateModifier(itemData.weaponSkill, i.name, "program", iData.itemRating)
-              }
+          case "autopilot": {
+            //Autopilot + Targeting [Weapon] (SR5 p. 272): the drone's own autosoft, capped by its autopilot (Rigger 5.0
+            //p. 131), or, when it runs none, the one its console shares; never both (SR5 p. 269)
+            const local = actor.items.find(i => i.type === "itemProgram" && i.system.isActive && i.system.model === item.name)
+            const shared = local ? null : rccAutosoftsForDrone(actor.system, actor.items).find(i => i.system.model === item.name)
+            //A melee weapon in a drone arm: the arm's Agility replaces the Pilot (Rigger 5.0 p. 129)
+            const arm = skillKey === "gunnery" ? null : droneArmProfile(actor.items, actor.system.attributes.body.augmented.value, actor.system.attributes.pilot.augmented.value)
+            //A swarm's member: the highest Targeting of the swarm and its console (Rigger 5.0 p. 35)
+            const usedTargeting = local ? localAutosoftRating(local.system.itemRating, droneAutopilot(actor.system, actor.items)) : (Number(shared?.system.itemRating) || 0)
+            const swarmTargeting = Math.max(0, swarmTargetingRating(actor, item.name) - usedTargeting)
+            if (local || shared || swarmTargeting) {
+              if (arm) SR5_EntityHelpers.updateModifier(itemData.weaponSkill, `${arm.name} (${game.i18n.localize('SR5.AgilityShort')})`, "linkedAttribute", arm.agility)
+              else SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.VehicleStat_PilotShort'), "linkedAttribute", actor.system.attributes.pilot.augmented.value)
             }
-            if (controlerData){
-              for (let i of actor.system.vehicleOwner.items) {
-                if (i.system.model === item.name && i.type === "itemProgram" && i.system.isActive) {
-                  SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.VehicleStat_PilotShort'), "linkedAttribute", actor.system.attributes.pilot.augmented.value)
-                  SR5_EntityHelpers.updateModifier(itemData.weaponSkill, i.name, "controlerProgram", i.system.itemRating)
-                }
-              }
-            }
+            if (local) SR5_EntityHelpers.updateModifier(itemData.weaponSkill, local.name, "program", localAutosoftRating(local.system.itemRating, droneAutopilot(actor.system, actor.items)))
+            if (shared) SR5_EntityHelpers.updateModifier(itemData.weaponSkill, shared.name, "controlerProgram", shared.system.itemRating)
+            if (swarmTargeting) SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.SwarmValue'), "swarm", swarmTargeting)
             itemData.weaponSkill.modifiers = itemData.weaponSkill.modifiers.concat(actor.system.penalties.special.actual.modifiers)
             if (actor.system.passiveTargeting) itemData.accuracy.base = actor.system.attributes.sensor.augmented.value
             break
+          }
           case "manual":
-            SR5_EntityHelpers.updateModifier(itemData.weaponSkill, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.SkillGunnery')})`, "controleMode", controlerData.skills.gunnery.test.dicePool)
+            SR5_EntityHelpers.updateModifier(itemData.weaponSkill, skillLabel, "controleMode", controlerSkill.test.dicePool)
             if (actor.system.passiveTargeting) itemData.accuracy.base = actor.system.attributes.sensor.augmented.value
             break
           case "remote":
-            SR5_EntityHelpers.updateModifier(itemData.weaponSkill, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.SkillGunnery')})`, "controleMode", controlerData.skills.gunnery.rating.value, false, true)
+            SR5_EntityHelpers.updateModifier(itemData.weaponSkill, skillLabel, "controleMode", controlerSkill.rating.value, false, true)
             SR5_EntityHelpers.updateModifier(itemData.weaponSkill, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.Logic')})`, "controleMode", controlerData.attributes.logic.augmented.value, false, true)
-            if (actor.system.passiveTargeting) {
-              if (actor.system.attributes.sensor.augmented.value > controlerData.matrix.attributes.dataProcessing.value) itemData.accuracy.base = controlerData.matrix.attributes.dataProcessing.value
-              else itemData.accuracy.base = actor.system.attributes.sensor.augmented.value
-            }
+            //The Data Processing cap on Accuracy is set once the Accuracy is final, in _generateWeaponDamage
+            if (actor.system.passiveTargeting) itemData.accuracy.base = actor.system.attributes.sensor.augmented.value
             break
           case "rigging":
-            SR5_EntityHelpers.updateModifier(itemData.weaponSkill, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.SkillGunnery')})`, "controleMode", controlerData.skills.gunnery.test.dicePool)
-            SR5_EntityHelpers.updateModifier(itemData.accuracy, game.i18n.localize('SR5.ControlRigging'), "controleMode", 1, false, true)
+            SR5_EntityHelpers.updateModifier(itemData.weaponSkill, skillLabel, "controleMode", controlerSkill.test.dicePool)
+            //Jumped in, the control rig rating adds to piloting skill tests, Gunnery among them (SR5 p. 149, 268, 455), and to the Accuracy of a mounted weapon (SR5 p. 268)
             if (controlerData.specialProperties.controlRig.value) {
-              SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)
+              //A melee weapon in a drone arm uses the controller's melee skill, not a piloting skill: no dice
+              if (skillKey === "gunnery") SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)
               SR5_EntityHelpers.updateModifier(itemData.accuracy, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)
             }
             if (controlerData.matrix.userMode === "hotsim") SR5_EntityHelpers.updateModifier(itemData.weaponSkill, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 1)
@@ -497,9 +538,13 @@ export class SR5_UtilityItem extends Actor {
           itemData.weaponSkill.base = 0
           if ((actor.system.initiatives.astralInit.isActive || itemData.isUsedAsFocus) && itemData.isLinkedToFocus) itemData.weaponSkill.modifiers = itemData.weaponSkill.modifiers.concat(actor.system.skills.astralCombat.test.modifiers)
           else itemData.weaponSkill.modifiers = itemData.weaponSkill.modifiers.concat(actor.system.skills[actorSkill].test.modifiers)
+          //A weapon held by a cyberlimb attacks with the limb's Agility (SR5 p. 459)
+          const limb = weaponLimb(itemData, actor.items)
+          if (limb) itemData.weaponSkill.modifiers = withLimbAgility(itemData.weaponSkill.modifiers, game.i18n.localize('SR5.Agility'), limbAttributes(limb, actor.items).agility.value)
           //Special case : bow
-          if (itemData.type === "bow" && (actor.system.attributes.strength.augmented.value < itemData.itemRating)){
-            let malus = (actor.system.attributes.strength.augmented.value - itemData.itemRating) * 3
+          const strength = weaponAttribute("strength", itemData, actor)
+          if (itemData.type === "bow" && (strength < itemData.itemRating)){
+            let malus = (strength - itemData.itemRating) * 3
             SR5_EntityHelpers.updateModifier(itemData.weaponSkill, `${game.i18n.localize('SR5.WeaponTypeBow')}`, "itemRating", malus, false, true)
           }
         }
@@ -508,19 +553,34 @@ export class SR5_UtilityItem extends Actor {
     SR5_EntityHelpers.updateDicePool(itemData.weaponSkill, 0)
   }
 
-  static _generateWeaponDamage(itemData, actor) {
+  static _generateWeaponDamage(itemData, actor, itemId) {
     if (actor) {
       if (itemData.accuracy.isPhysicalLimitBased) itemData.accuracy.base = actor.system.limits.physicalLimit.value
+      //A melee weapon of a drone: half its Body mounted, the Strength of its drone arm otherwise, and its Speed (Rigger 5.0 p. 129, 182)
+      if (actor.type === "actorDrone" && itemData.category === "meleeWeapon") {
+        const attributes = actor.system.attributes
+        const mounted = isMountedWeapon(itemId, actor.items)
+        const arm = mounted ? null : droneArmProfile(actor.items, attributes.body.augmented.value, attributes.pilot.augmented.value)
+        const label = arm ? `${arm.name} (${game.i18n.localize('SR5.StrengthShort')})` : game.i18n.localize('SR5.VehicleStat_BodyShort')
+        if (itemData.damageValue.isStrengthBased) SR5_EntityHelpers.updateModifier(itemData.damageValue, label, "linkedAttribute", vehicleMeleeStrength(attributes.body.augmented.value, mounted, arm?.strength))
+        const speed = vehicleMeleeSpeedBonus(attributes.speed.augmented.value)
+        if (speed) SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.VehicleStat_SpeedShort'), "linkedAttribute", speed)
+      }
       if (itemData.damageValue.isStrengthBased && actor.type !=="actorDrone") {
         if ((actor.system.initiatives.astralInit.isActive || itemData.isUsedAsFocus) && itemData.isLinkedToFocus) SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.Charisma'), "linkedAttribute", actor.system.attributes.charisma.augmented.value)
-        else SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.Strength'), "linkedAttribute", actor.system.attributes.strength.augmented.value)
+        else SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.Strength'), "linkedAttribute", weaponAttribute("strength", itemData, actor))
+      }
+      //A natural weapon or an engulf that follows the creature's ratings (SR5 p. 399, Howling Shadows p. 138)
+      const astral = (actor.system.initiatives?.astralInit?.isActive || itemData.isUsedAsFocus) && itemData.isLinkedToFocus
+      for (const modifier of weaponRatingModifiers(itemData, actor.system, astral)) {
+        SR5_EntityHelpers.updateModifier(itemData[modifier.target], game.i18n.localize(modifier.label), "linkedAttribute", modifier.value)
       }
       //Death Sower, adept side (Forbidden Arcana p. 40): +1 DV with the melee skills
       const deathSower = deathSowerAdeptDamage(actor.system.magic?.magicType, actor.system.magic?.masteries?.deathSower?.value, itemData.category)
       if (deathSower) SR5_EntityHelpers.updateModifier(itemData.damageValue, game.i18n.localize('SR5.MagicMasteryDeathSower'), "itemQuality", deathSower)
       //Osmium mace (The Complete Trog p. 177): the listed profile only holds for Strength 5-6
       if (hasWeaponTrait(itemData, "osmium") && actor.type !== "actorDrone") {
-        const profile = osmiumProfile(actor.system.attributes.strength.augmented.value)
+        const profile = osmiumProfile(weaponAttribute("strength", itemData, actor))
         if (profile) {
           const label = game.i18n.localize('SR5.AccessoryOsmium')
           SR5_EntityHelpers.updateModifier(itemData.accuracy, label, "weaponAccessory", profile.accuracy - (itemData.accuracy.base || 0), false, true)
@@ -532,12 +592,13 @@ export class SR5_UtilityItem extends Actor {
           if (modifier.details === itemData.weaponSkill.category) itemData.accuracy.modifiers = itemData.accuracy.modifiers.concat(modifier)
         }
         for (let modifier of actor.system.itemsProperties.weapon.damageValue.modifiers) {
-          if (modifier.details !== itemData.weaponSkill.category) continue
+          if (!weaponDamageBonusApplies(itemData, modifier.details)) continue
           if (!modifier.damageType) itemData.damageValue.modifiers = itemData.damageValue.modifiers.concat(modifier)
         }
         //The bone augmentations (SR5 p. 458 and 463) are not compatible with each other: should several be
-        //carried anyway, only the highest counts, as for any SR5 bonus. A weapon without a category takes none.
-        const bones = itemData.weaponSkill.category ? actor.system.itemsProperties.weapon.damageValue.modifiers
+        //carried anyway, only the highest counts, as for any SR5 bonus. They change the bare-handed damage alone: a
+        //weapon with its own Damage Value (retractable blades, SR5 p. 461) keeps it, and so does one without a category.
+        const bones = takesBoneDamage(itemData) ? actor.system.itemsProperties.weapon.damageValue.modifiers
           .filter(m => m.damageType && m.details === itemData.weaponSkill.category) : []
         if (bones.length) {
           const highest = bones.reduce((a, b) => (b.value > a.value ? b : a))
@@ -567,10 +628,29 @@ export class SR5_UtilityItem extends Actor {
       }
     }
 
+    //Purity State (Better Than Bad p. 143): the bare hands deal (Magic + Strength), "no further DV can be added",
+    //AP -(Magic x 0.5), Physical or Stun as the adept chooses
+    if (actor?.system?.specialProperties?.purityState && takesBoneDamage(itemData)) {
+      const magic = actor.system.specialAttributes?.magic?.augmented?.value || 0
+      const label = game.i18n.localize('SR5.AdeptPowerPurityState')
+      itemData.damageValue.modifiers = itemData.damageValue.modifiers.filter(m => m.type === "linkedAttribute")
+      SR5_EntityHelpers.updateModifier(itemData.damageValue, label, "adeptPower", magic)
+      SR5_EntityHelpers.updateModifier(itemData.armorPenetration, label, "adeptPower", purityStateArmorPenetration(magic))
+      itemData.damageType = actor.system.specialProperties.purityStateStun ? "stun" : "physical"
+    }
+
     SR5_EntityHelpers.updateValue(itemData.damageValue, 0)
     SR5_EntityHelpers.updateValue(itemData.armorPenetration)
     SR5_EntityHelpers.updateValue(itemData.recoilCompensation)
     SR5_EntityHelpers.updateValue(itemData.accuracy)
+    //Remote control: Accuracy capped by the controller's Data Processing (SR5 p. 239-240)
+    if (actor?.type === "actorDrone" && actor.system.controlMode === "remote" && actor.system.vehicleOwner.id) {
+      const mod = dataProcessingCapModifier(itemData.accuracy.value, actor.system.vehicleOwner.system.matrix.attributes.dataProcessing.value)
+      if (mod) {
+        SR5_EntityHelpers.updateModifier(itemData.accuracy, game.i18n.localize('SR5.DataProcessingLimit'), "controleMode", mod)
+        SR5_EntityHelpers.updateValue(itemData.accuracy)
+      }
+    }
   }
 
   // Apply effects from a linked itemAmmunitionType (custom ammo)
@@ -740,6 +820,8 @@ export class SR5_UtilityItem extends Actor {
       case "smokeThermalMini":
       case "gas":
       case "gasMini":
+      case "paint":
+        //Paint grenade (Run & Gun p. 116-117, errata p. 102: "10m radius"): no damage, splashes everyone in its blast
         damageType = ""
         blastRadius = 10
         break
@@ -833,7 +915,8 @@ export class SR5_UtilityItem extends Actor {
   static _generateWeaponRange(itemData, actor) {
     if (itemData.range.isStrengthBased) {
       if (actor !== undefined) {
-        let actorStrength = actor.system.attributes.strength.augmented.value
+        //Thrown by a cyberlimb: the limb's Strength (SR5 p. 459)
+        let actorStrength = weaponAttribute("strength", itemData, actor)
 
         SR5_EntityHelpers.updateModifier(itemData.range.short, game.i18n.localize('SR5.Strength'), "linkedAttribute", (actorStrength * itemData.range.short.base) - itemData.range.short.base)
         SR5_EntityHelpers.updateModifier(itemData.range.medium, game.i18n.localize('SR5.Strength'), "linkedAttribute", (actorStrength * itemData.range.medium.base) - itemData.range.medium.base)
@@ -850,6 +933,12 @@ export class SR5_UtilityItem extends Actor {
     if (actor !== undefined) {
       if (itemData.category === "meleeWeapon" && actor.system.reach) {
         itemData.reach.modifiers = itemData.reach.modifiers.concat(actor.system.reach.modifiers)
+      }
+      //"Weapons / Reach" effects: the melee weapons of a type (or the kicks), as the "Weapons / DV" ones
+      if (itemData.category === "meleeWeapon") {
+        for (let modifier of actor.system.itemsProperties?.weapon?.reach?.modifiers ?? []) {
+          if (weaponDamageBonusApplies(itemData, modifier.details)) itemData.reach.modifiers = itemData.reach.modifiers.concat(modifier)
+        }
       }
       if (itemData.systemEffects.length){
         for (let systemEffect of Object.values(itemData.systemEffects)){
@@ -943,6 +1032,13 @@ export class SR5_UtilityItem extends Actor {
         SR5_EntityHelpers.updateModifier(itemData.price, label, "weaponAccessory", a.price)
       }
     }
+
+    // Trigger removal (Hard Targets p. 182), once the other Accuracy bonuses are known: it adds to the smartgun's
+    const trigger = triggerRemovalAccuracy(itemData)
+    if (trigger) {
+      const label = trigger.accessory.system ? trigger.accessory.name : game.i18n.localize(SR5.weaponAccessories[trigger.accessory.name])
+      SR5_EntityHelpers.updateModifier(itemData.accuracy, label, "weaponAccessory", 1, false, trigger.cumulative)
+    }
   }
 
   /** Handle accessories with conditional / actor-dependent logic */
@@ -990,7 +1086,7 @@ export class SR5_UtilityItem extends Actor {
         if (accessory.isActive && actor !== undefined && actor.type !== "actorDrone") {
           let smartlink = actor.system.specialProperties.smartlink.value
           if (smartlink) {
-            SR5_EntityHelpers.updateModifier(itemData.accuracy, label, "weaponAccessory", 2, false, false)
+            SR5_EntityHelpers.updateModifier(itemData.accuracy, label, "weaponAccessory", 2, false, false, SMARTGUN_ACCURACY)
             if (itemData.wirelessTurnedOn) {
               SR5_EntityHelpers.updateModifier(itemData.weaponSkill, label, "weaponAccessory", smartlink >= 2 ? 2 : 1, false, false)
             }
@@ -1002,7 +1098,7 @@ export class SR5_UtilityItem extends Actor {
         if (accessory.isActive && actor !== undefined && actor.type !== "actorDrone") {
           let smartlink = actor.system.specialProperties.smartlink.value
           if (smartlink) {
-            SR5_EntityHelpers.updateModifier(itemData.accuracy, label, "weaponAccessory", 2, false, false)
+            SR5_EntityHelpers.updateModifier(itemData.accuracy, label, "weaponAccessory", 2, false, false, SMARTGUN_ACCURACY)
             if (itemData.wirelessTurnedOn) {
               SR5_EntityHelpers.updateModifier(itemData.weaponSkill, label, "weaponAccessory", smartlink >= 2 ? 2 : 1, false, false)
             }
@@ -1071,7 +1167,9 @@ export class SR5_UtilityItem extends Actor {
     if (!actor || !a._id) return
     const liveItem = actor.items?.get(a._id)
     if (!liveItem) return
-    a.isActive = liveItem.system.isActive
+    //An accessory waiting for its installation test works only once it is over (RG p. 67, item-workshop-apply.js)
+    a.isActive = liveItem.system.isActive && liveItem.flags?.sr5?.installPending !== true
+    a.installPending = liveItem.flags?.sr5?.installPending === true
     //Its Capacity and the vision enhancements mounted in it since it was put on the weapon (SR5 p. 434), for the sheets
     let mounted = liveItem.system.weaponAccessory?.visionEnhancements ?? []
     if (!Array.isArray(mounted)) mounted = Object.values(mounted)
@@ -1092,6 +1190,8 @@ export class SR5_UtilityItem extends Actor {
   //- a recoil system that does not stack with a better one on the weapon (Run & Gun p. 71)
   static _skipAccessoryEffect(a, effect, recoilIgnored) {
     if (effect.target === "system.accuracy" && isAccessoryKind(a, "redDotSight")) return true
+    //- the trigger removal's Accuracy, applied after the others (Hard Targets p. 182, triggerRemovalAccuracy)
+    if (effect.target === "system.accuracy" && isAccessoryKind(a, "triggerRemoval")) return true
     if (recoilIgnored && effect.target === "system.recoilCompensation") return true
     return false
   }
@@ -1134,12 +1234,7 @@ export class SR5_UtilityItem extends Actor {
     if (!a) return null
     if (!a.system) return WEAPON_ACCESSORY_CATALOG[a.name]?.systemEffects?.[0]?.value || null
     const effect = a.system.weaponAccessory?.specialEffect
-    if (effect) return effect
-    // The compendium's standard flashlight was generated while its catalog entry had no effect, so its
-    // specialEffect is empty and the sheet offers no way to set it: recognise it by its name.
-    const i18n = globalThis.game?.i18n
-    if (i18n && a.name && a.name === i18n.localize("SR5.AccessoryFlashLight")) return "flashLight"
-    return null
+    return effect || null
   }
 
   //Handle if an accessory gives environmental modifiers (actor-level effects)
@@ -1597,8 +1692,8 @@ export class SR5_UtilityItem extends Actor {
   //Handle complex form
   static _handleComplexForm(item, actor) {
     // Fading calculation
-    item.system.fadingValue = item.system.fadingModifier + (item.system.level || 0)
-    if (item.system.fadingValue < 2) item.system.fadingValue = 2
+    //Lowered by the technomancer's stream when the form aims at what it knows best (Kill Code p. 100-101, 145-146)
+    item.system.fadingValue = reducedFading(item.system.fadingModifier + (item.system.level || 0), streamFadingReduction(streamOf(actor), item.system.target))
 
     //Check if complex form is sustained by a sprite
     for (let i of actor.items){
@@ -1630,7 +1725,7 @@ export class SR5_UtilityItem extends Actor {
 
   ////////////////////// STYLE DE VIE  ///////////////////////
   // Calcul le loyer et les attributs des styles de vie
-  static _handleLifeStyle(itemData) {
+  static _handleLifeStyle(itemData, owner = null) {
     switch (itemData.type) {
       case "luxury":
         itemData.price.base = 100000
@@ -2258,11 +2353,19 @@ export class SR5_UtilityItem extends Actor {
     itemData.comforts.gameEffects = game.i18n.localize('SR5.LifestyleComforts_GE')
     itemData.security.gameEffects = game.i18n.localize('SR5.LifestyleSecurity_GE')
 
+    // The owner's metatype (SR5 p. 68), after the options and before the increases, Outings and Services (Hard Targets p. 141)
+    const metatype = owner?.system?.biography?.metatype || owner?.system?.biography?.characterMetatype
+    const surcharge = lifestyleMetatypeSurcharge(itemData.price.base, itemData.options, metatype)
+    if (surcharge) SR5_EntityHelpers.updateModifier(itemData.price, game.i18n.localize(SR5.metatypes[metatype]), 'metatype', surcharge)
+
   }
 
   ////////////////////// VEHICULES  ///////////////////////
   static _handleVehicle(itemData) {
     for (let vehicleMod of itemData.vehiclesMod){
+      //A factory mod is already in the vehicle's price (Rigger 5.0 p. 156)
+      //Taken off in the workshop, a factory mod stays paid with it (vehicle-workshop.js)
+      if (isFactoryMod(vehicleMod) || vehicleMod.flags?.sr5?.wasFactory === true) continue
       SR5_EntityHelpers.updateModifier(itemData.price, `${vehicleMod.name}`, 'vehicleMod', vehicleMod.system.price.value)
     }
 
@@ -2393,7 +2496,8 @@ export class SR5_UtilityItem extends Actor {
   static _generateWeaponMountWeaponList(itemData, actor) {
     let weaponList = []
     for (let i of actor.items) {
-      if (i.type === "itemWeapon" && i.system.category === "rangedWeapon") { 
+      //A melee weapon can be mounted on a vehicle too (Rigger 5.0 p. 182)
+      if (i.type === "itemWeapon" && (i.system.category === "rangedWeapon" || i.system.category === "meleeWeapon")) {
         if (i.system.systemEffects.length) continue
         let weapon = {
           "name": i.name,

@@ -1,0 +1,35 @@
+<div class="sr-table-builder-body">
+<div class="sr-table-builder">
+  <div class="form-group">
+    <label for="sr-table-builder-name">{{localize "SR5.TableBuilderName"}}</label>
+    <input id="sr-table-builder-name" type="text" name="name" value="{{name}}" required>
+  </div>
+  <p class="hint">{{localize "SR5.TableBuilderHint"}}</p>
+
+  <div class="sr-table-builder-tools">
+    <input type="search" class="sr-table-builder-filter" placeholder="{{localize 'SR5.TableBuilderFilter'}}" aria-label="{{localize 'SR5.TableBuilderFilter'}}" autocomplete="off">
+    <button type="button" data-action="excludeHidden" data-tooltip="SR5.TableBuilderExcludeHiddenHint">
+      <i class="fa-solid fa-filter-circle-xmark"></i> {{localize "SR5.TableBuilderExcludeHidden"}}
+    </button>
+    <button type="button" data-action="resetWeights">
+      <i class="fa-solid fa-rotate-left"></i> {{localize "SR5.TableBuilderReset"}}
+    </button>
+  </div>
+
+  <ol class="sr-table-builder-list">
+    {{#each entries}}
+    <li class="sr-table-builder-entry" data-search="{{this.search}}">
+      <img src="{{this.img}}" alt="">
+      <span class="sr-table-builder-entry-name">{{this.name}}</span>
+      <input type="number" data-weight="{{@index}}" value="1" min="0" step="1" aria-label="{{localize 'SR5.TableBuilderWeight'}} — {{this.name}}">
+    </li>
+    {{/each}}
+  </ol>
+</div>
+
+<footer class="form-footer">
+  <button type="submit">
+    <i class="fa-solid fa-table-list"></i> {{localize "SR5.TableBuilderCreate"}} (<span class="sr-table-builder-count">{{entries.length}}</span>)
+  </button>
+</footer>
+</div>

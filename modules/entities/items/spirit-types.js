@@ -25,6 +25,9 @@ export class SR5_SpiritTypes {
   /** @type {Map<string, object>} key -> registered entry */
   static registry = new Map()
 
+  /** Item types a spirit type does not give: they unfold into actors or define a type themselves. */
+  static NOT_GIVEN = ["itemSpiritType", "itemSpirit", "itemSprite", "itemVehicle", "itemContact", "itemStorage", "itemProgram"]
+
   /** Official keys, captured before anything is injected. */
   static _officialKeys = null
 
@@ -85,11 +88,11 @@ export class SR5_SpiritTypes {
       } catch {
         continue
       }
-      const ids = index.filter(e => e.type === "itemSpiritType").map(e => e._id)
-      for (const id of ids) {
-        const item = await pack.getDocument(id)
-        if (item) SR5_SpiritTypes._add(found, item)
-      }
+      if (!index.some(e => e.type === "itemSpiritType")) continue
+      // One request for all of them: the server answers each request by reading the whole pack (lot 34)
+      for (const item of await pack.getDocuments({
+        type: "itemSpiritType"
+      })) SR5_SpiritTypes._add(found, item)
     }
 
     SR5_SpiritTypes.registry = found
@@ -326,6 +329,11 @@ export class SR5_SpiritTypes {
     return custom.system.baseSkillsRatio || ""
   }
 
+  /** Astral Combat, Assensing or Perception keys the type does not have at all ("aucune"). */
+  static noBaseSkills(custom) {
+    return (custom.system.noBaseSkills ?? []).filter(key => key in SR5.spiritTypeBaseSkills)
+  }
+
   /** Physical initiative dice bonus, or null to keep the base type's. */
   static physicalDice(custom) {
     return custom.system.initiative?.physicalDice ?? null
@@ -339,6 +347,82 @@ export class SR5_SpiritTypes {
   /** Flat bonus added to astral initiative. */
   static astralBonus(custom) {
     return custom.system.initiative?.astralBonus ?? 0
+  }
+
+  /** Flat bonus added to physical initiative. */
+  static physicalBonus(custom) {
+    return custom.system.initiative?.physicalBonus ?? 0
+  }
+
+  /**
+	 * False for a type the Summoning skill cannot call: the extraplanar entities by default (DjamZ's ruling,
+	 * 2026-10-07), unless the gamemaster ticked the box. Official types are always summonable.
+	 * @param {string} type An actor's system.type
+	 */
+  static isSummonable(type) {
+    const custom = SR5_SpiritTypes.get(type)
+    return custom ? custom.system.summonable !== false : true
+  }
+
+  /** The same table, without the types the Summoning skill cannot call. */
+  static summonableOnly(table) {
+    const kept = {
+    }
+    for (const [key, value] of Object.entries(table ?? {
+    })) {
+      if (SR5_SpiritTypes.isSummonable(key)) kept[key] = value
+    }
+    return kept
+  }
+
+  /** Own Edge at this Force: P/2 rounded up, P, or null when the type has none of its own. */
+  static edgeRating(custom, force) {
+    switch (custom?.system.edge) {
+      case "half": return Math.ceil((Number(force) || 0) / 2)
+      case "full": return Number(force) || 0
+      default: return null
+    }
+  }
+
+  /** Added to the Essence, which is the Force. */
+  static essenceModifier(custom) {
+    return custom?.system.essenceModifier ?? 0
+  }
+
+  /**
+	 * (P x 4) / 3 rounded up when the type prints its limits so, null when they come from the attributes. The
+	 * shedim add to the Physical one: "Physique (P x 4)/3 + 1" (Dark Terrors p. 52).
+	 * @param {string} limit "physicalLimit", "mentalLimit", "socialLimit" or "astralLimit"
+	 */
+  static forceLimit(custom, force, limit = "") {
+    if (custom?.system.limits !== "force") return null
+    const bonus = limit === "physicalLimit" ? (custom.system.physicalLimitBonus || 0) : 0
+    return Math.ceil((Number(force) || 0) * 4 / 3) + bonus
+  }
+
+  /** The type's armor at this Force: {value, kind}, or null when it has none. */
+  static armor(custom, force) {
+    const armor = custom?.system.armor
+    if (!armor) return null
+    const value = (Number(force) || 0) * (armor.forceMultiplier || 0) + (armor.bonus || 0)
+    if (value <= 0) return null
+    return {
+      value, kind: armor.kind || ""
+    }
+  }
+
+  /**
+	 * Copies of the items a spirit of this type is given when it is created, without their ids: the actor
+	 * gives them new ones.
+	 * @param {string} type An actor's system.type
+	 */
+  static givenItems(type) {
+    const custom = SR5_SpiritTypes.get(type)
+    return (custom?.system.items ?? []).map(data => {
+      const copy = foundry.utils.deepClone(data)
+      delete copy._id
+      return copy
+    })
   }
 
   /** "standard", "single", or "" to keep the base type's monitors. */

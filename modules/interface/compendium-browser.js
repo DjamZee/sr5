@@ -13,6 +13,9 @@ import {
 import {
   SR5ShopWindow
 } from './shop-window.js'
+import {
+  sr5PromptDraw, SR5WeightedTableBuilder
+} from './table-from-compendium.js'
 
 const ALL_FILTERS = {
   ...BROWSER_FILTERS, ...ACTOR_BROWSER_FILTERS, ...OTHER_BROWSER_FILTERS
@@ -28,6 +31,43 @@ const ALL_FILTERS = {
 const SUBTYPE_FIELDS = [...new Set(
   Object.values(ALL_FILTERS).filter(def => def.subtypes).map(def => def.subtypes.field)
 )]
+
+/** The types the sidebar splits into subtypes (weapons, augmentations, vehicles, devices, spirits, sprites). */
+const SUBTYPED = new Map(Object.entries(ALL_FILTERS).filter(([, def]) => def.subtypes).map(([type, def]) => [type, def.subtypes.field]))
+
+const NOT_FOR_SALE = 'flags.sr5.notForSale'
+
+/**
+ * The fields a pack must still be asked for, its index in memory being what it is (lot 9).
+ *
+ * The light index (name, type, picture) comes with the world: it costs nothing. Each field asked beyond it makes
+ * the server read every document of the pack, and with all the active modules that is what kept the browser from
+ * opening on a big world. So a pack is asked only for what its own entries need and do not carry yet: the subtype
+ * field when it holds a weapon, an augmentation, a vehicle, a device, a spirit or a sprite; the prototype flag for
+ * a player (a gamemaster sees prototypes anyway). Nothing is asked of a pack of spells, qualities or journals.
+ * @param {{documentName: string, index: Iterable<object>}} pack
+ * @param {boolean} isGM
+ * @returns {string[]}
+ */
+export function browserIndexFields(pack, isGM) {
+  if (pack.documentName !== 'Item' && pack.documentName !== 'Actor') return []
+  const fields = new Set()
+  for (const entry of pack.index ?? []) {
+    const field = SUBTYPED.get(entry.type)
+    if (field && !foundry.utils.hasProperty(entry, field)) fields.add(field)
+    if (!isGM && pack.documentName === 'Item' && entry.flags === undefined) fields.add(NOT_FOR_SALE)
+  }
+  return [...fields]
+}
+
+/**
+ * What the browser knows of the compendiums, shared by every window and kept from one opening to the next:
+ * `entries` is the list, `complete` says the subtype fields have been read, `pending` the reading under way.
+ * Dropped by "Refresh" and by any change in a compendium.
+ */
+const browserIndex = {
+  entries: null, complete: false, pending: null, generation: 0
+}
 
 export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApplicationMixin(
   foundry.applications.api.ApplicationV2
@@ -60,7 +100,7 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
     id: 'sr5-compendium-browser',
     classes: ['sr5', 'sr-application', 'sr-compendium-browser'],
     position: {
-      width: 900, height: 700 
+      width: 960, height: 700
     },
     window: {
       title: 'SR5.CompendiumBrowser',
@@ -73,6 +113,8 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
       refreshIndex: SR5CompendiumBrowser.#onRefreshIndex,
       // The browser is for looking things up; buying happens in the shop's own window (lot B)
       openShop: () => SR5ShopWindow.open(),
+      drawAtRandom: SR5CompendiumBrowser.#onDrawAtRandom,
+      buildTable: SR5CompendiumBrowser.#onBuildTable,
     },
   }
 
@@ -100,40 +142,103 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
   /*  Data Loading                                */
   /* -------------------------------------------- */
 
-  async _loadAllIndices() {
-    const allEntries = []
+  /** The packs the browser lists: items, actors, and the other documents it has filters for. */
+  static _browsedPacks() {
+    const otherDocTypes = Object.keys(OTHER_BROWSER_FILTERS)
+    return game.packs.filter(p => p.documentName === 'Item' || p.documentName === 'Actor' || otherDocTypes.includes(p.documentName))
+  }
 
-    const indexPack = async (pack, docName, fields, useDocNameAsType) => {
-      try {
-        const index = await pack.getIndex({
-          fields 
+  /** The browser's entries, built from the indices in memory: no request to the server. */
+  static _entriesFromIndices() {
+    const allEntries = []
+    for (const pack of SR5CompendiumBrowser._browsedPacks()) {
+      const docName = pack.documentName
+      const useDocNameAsType = docName !== 'Item' && docName !== 'Actor'
+      for (const entry of pack.index) {
+        allEntries.push({
+          ...entry,
+          type: useDocNameAsType ? docName : entry.type,
+          docName,
+          uuid: `Compendium.${pack.collection}.${docName}.${entry._id}`,
+          packId: pack.collection,
+          packLabel: pack.metadata.label,
         })
-        for (const entry of index) {
-          allEntries.push({
-            ...entry,
-            type: useDocNameAsType ? docName : entry.type,
-            docName,
-            uuid: `Compendium.${pack.collection}.${docName}.${entry._id}`,
-            packId: pack.collection,
-            packLabel: pack.metadata.label,
-          })
-        }
+      }
+    }
+    return allEntries
+  }
+
+  /** Ask each pack for the fields it still lacks (browserIndexFields), then build the entries again. */
+  static async _completeIndex() {
+    const generation = browserIndex.generation
+    const started = performance.now()
+    const asked = SR5CompendiumBrowser._browsedPacks()
+      .map(pack => [pack, browserIndexFields(pack, game.user.isGM)])
+      .filter(([, fields]) => fields.length)
+    await Promise.all(asked.map(async ([pack, fields]) => {
+      try {
+        await pack.getIndex({
+          fields
+        })
       } catch (err) {
         console.warn(`SR5 Compendium Browser: Failed to index pack ${pack.collection}`, err)
       }
+    }))
+    // Dropped meanwhile ("Refresh", a compendium changed): the next opening starts again
+    if (generation !== browserIndex.generation) return
+    // The documents already read for the page shown are kept: they are not asked of the server again
+    const read = new Map((browserIndex.entries ?? []).filter(e => e._detailed && e.system).map(e => [e.uuid, e]))
+    browserIndex.entries = SR5CompendiumBrowser._entriesFromIndices().map(entry => {
+      const old = read.get(entry.uuid)
+      return old ? Object.assign(entry, {
+        system: old.system, flags: old.flags, _detailed: true
+      }) : entry
+    })
+    browserIndex.complete = true
+    console.log(`SR5 Compendium Browser | ${asked.length} compendium(s) asked for fields, in ${Math.round(performance.now() - started)} ms`)
+  }
+
+  /** Forget what was read: the next opening reads the compendiums again. */
+  static dropIndex() {
+    browserIndex.entries = null
+    browserIndex.complete = false
+    browserIndex.pending = null
+    browserIndex.generation++
+  }
+
+  /** A document of a compendium was created, changed or deleted: the list may be out of date. */
+  static onDocumentChanged(document) {
+    if (document?.pack) SR5CompendiumBrowser.dropIndex()
+  }
+
+  /**
+   * The entries, at once from the light index; the subtype fields are read behind it and the window shown again
+   * when they arrive. A player waits for them: the prototype flag must hide a prototype before it is ever shown.
+   */
+  async _loadAllIndices() {
+    browserIndex.entries ??= SR5CompendiumBrowser._entriesFromIndices()
+    if (!browserIndex.complete) {
+      if (!browserIndex.pending) {
+        const pending = SR5CompendiumBrowser._completeIndex().then(() => {
+          if (browserIndex.pending === pending) browserIndex.pending = null
+          const open = SR5CompendiumBrowser._instance
+          if (browserIndex.complete && open?.rendered) open.render()
+        })
+        browserIndex.pending = pending
+      }
+      if (!game.user.isGM) {
+        await browserIndex.pending
+        // Dropped while it was read: read again rather than show a list without the prototype flag
+        if (!browserIndex.complete) return this._loadAllIndices()
+      }
     }
+    this._indexCache = browserIndex.entries
+    return this._indexCache
+  }
 
-    const otherDocTypes = Object.keys(OTHER_BROWSER_FILTERS)
-    const promises = [
-      // The prototype flag rides in the index, so a player's lists and counts never see one (lot A)
-      ...game.packs.filter(p => p.documentName === 'Item').map(p => indexPack(p, 'Item', [...SUBTYPE_FIELDS, 'flags.sr5.notForSale'])),
-      ...game.packs.filter(p => p.documentName === 'Actor').map(p => indexPack(p, 'Actor', SUBTYPE_FIELDS)),
-      ...game.packs.filter(p => otherDocTypes.includes(p.documentName)).map(p => indexPack(p, p.documentName, [], true)),
-    ]
-
-    await Promise.all(promises)
-    this._indexCache = allEntries
-    return allEntries
+  /** Are the subtypes still being read? The sidebar says so. */
+  get _indexPending() {
+    return !browserIndex.complete
   }
 
   /**
@@ -252,6 +357,53 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
     return results
   }
 
+  /** The entries this user may see, indices loaded on first use. */
+  async _visibleEntries() {
+    // Asked each time: the shared index may have been completed or dropped since the last render
+    await this._loadAllIndices()
+    // A prototype is the gamemaster's (Élise's choice, 2026-10-05): a player never sees it, nor counts it
+    return game.user.isGM ? this._indexCache : this._indexCache.filter(e => e.flags?.sr5?.notForSale !== true)
+  }
+
+  /** What the filters let through of `entries`: the whole list, before it is cut into pages. */
+  async _applyFilters(entries) {
+    // A filter reading beyond the light index needs the documents themselves.
+    // Only the selected types can match it, so that is all we fetch.
+    if (this._needsDetails()) {
+      const selected = [...this._selectedTypes].map(sel => sel.includes(':') ? sel.split(':')[0] : sel)
+      await this._ensureDetails(selected.length ?
+        entries.filter(e => selected.includes(e.type)) :
+        entries)
+    }
+    return this._filterEntries(entries)
+  }
+
+  /** The filters, as a card keeps them to draw again from the same list (table-from-compendium.js). */
+  get filterState() {
+    return {
+      types: [...this._selectedTypes], search: this._searchText, filters: {
+        ...this._activeFilters
+      }
+    }
+  }
+
+  /**
+   * The entries a set of filters lets through, read anew: what "Relancer" draws from on a card drawn
+   * from the browser. The browser is built for it and never shown.
+   * @param {{types: string[], search: string, filters: object}} state
+   */
+  static async entriesFor(state) {
+    // The index read by the browser is shared (browserIndex): nothing is read again for a card
+    const browser = new SR5CompendiumBrowser()
+    browser._selectedTypes = new Set(state?.types ?? [])
+    browser._searchText = String(state?.search ?? '')
+    browser._activeFilters = {
+      ...(state?.filters ?? {
+      })
+    }
+    return browser._applyFilters(await browser._visibleEntries())
+  }
+
   /* -------------------------------------------- */
   /*  Context Preparation                         */
   /* -------------------------------------------- */
@@ -259,10 +411,7 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
   async _prepareContext(options) {
     const context = await super._prepareContext(options)
 
-    // Load indices if not cached
-    if (!this._indexCache) await this._loadAllIndices()
-    // A prototype is the gamemaster's (Élise's choice, 2026-10-05): a player never sees it, nor counts it
-    const allEntries = game.user.isGM ? this._indexCache : this._indexCache.filter(e => e.flags?.sr5?.notForSale !== true)
+    const allEntries = await this._visibleEntries()
 
     // Build type/subtype counts
     const typeCounts = {
@@ -283,6 +432,15 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
     const itemTypes = []
     for (const [key, def] of Object.entries(ALL_FILTERS)) {
       if (!typeCounts[key]) continue
+      // While the subtypes are read the type shows whole, and stays so as long as it is ticked whole
+      if (def.subtypes && (this._indexPending || this._selectedTypes.has(key))) itemTypes.push({
+        key,
+        label: game.i18n.localize(def.label),
+        icon: def.icon,
+        count: typeCounts[key],
+        selected: this._selectedTypes.has(key),
+      })
+      if (def.subtypes && this._indexPending) continue
       if (def.subtypes) {
         const optionsMap = SR5[def.subtypes.options] || {
         }
@@ -339,24 +497,21 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
       }
     }
 
-    // A filter reading beyond the light index needs the documents themselves.
-    // Only the selected types can match it, so that is all we fetch.
-    if (this._needsDetails()) {
-      const selected = [...this._selectedTypes].map(sel => sel.includes(':') ? sel.split(':')[0] : sel)
-      await this._ensureDetails(selected.length ?
-        allEntries.filter(e => selected.includes(e.type)) :
-        allEntries)
-    }
-
     // Filter entries
-    const filtered = this._filterEntries(allEntries)
+    const filtered = await this._applyFilters(allEntries)
     const totalCount = filtered.length
 
     // Paginate, then fetch the details of that page alone
     const lists = SR5_EntityHelpers.sortTranslations(SR5)
     const maxItems = (this._page + 1) * this._pageSize
     const page = filtered.slice(0, maxItems)
-    await this._ensureDetails(page)
+    // The window shows at once; the line under each name (read from the documents) follows when they arrive
+    if (page.some(e => !e._detailed) && !this._detailsPending) {
+      this._detailsPending = this._ensureDetails(page).finally(() => {
+        this._detailsPending = null
+        if (this.rendered) this.render()
+      })
+    }
     const results = page.map(e => {
       const def = ALL_FILTERS[e.type]
       let typeLabel = game.i18n.localize(def?.label || e.type)
@@ -374,6 +529,7 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
       }
     })
     context.itemTypes = itemTypes
+    context.indexPending = this._indexPending
     context.filterDefs = filterDefs
     context.results = results
     context.totalCount = totalCount
@@ -383,6 +539,7 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
     context.hasTypeFilter = this._selectedTypes.size > 0
     context.sortKey = this._sortKey
     context.sortDirection = this._sortDirection
+    context.canBuildTable = foundry.documents.RollTable.implementation.canUserCreate(game.user)
 
     return context
   }
@@ -506,8 +663,28 @@ export class SR5CompendiumBrowser extends foundry.applications.api.HandlebarsApp
   }
 
   static #onRefreshIndex() {
+    SR5CompendiumBrowser.dropIndex()
     this._indexCache = null
     this._page = 0
     this.render()
+  }
+
+  /** "Tirer au hasard": among everything the filters let through, every page included */
+  static async #onDrawAtRandom() {
+    const entries = await this._applyFilters(await this._visibleEntries())
+    const label = game.i18n.localize('SR5.CompendiumBrowser')
+    return sr5PromptDraw({
+      name: this._searchText ? `${label} — ${this._searchText}` : label,
+      entries,
+      source: {
+        kind: 'browser', state: this.filterState
+      }
+    })
+  }
+
+  /** "Créer une table pondérée": of everything the filters let through */
+  static async #onBuildTable() {
+    const entries = await this._applyFilters(await this._visibleEntries())
+    return SR5WeightedTableBuilder.open(this._searchText || game.i18n.localize('SR5.CompendiumBrowser'), entries)
   }
 }

@@ -12,6 +12,10 @@ export class wirelessPartialModel extends foundry.abstract.TypeDataModel {
       wirelessTurnedOn: new fields.BooleanField({
         initial: true
       }),
+      // The device's own silent mode, switched by its owner on the crown of the PAN (SR5 p. 236; couronne du PAN, lot 4)
+      isSilent: new fields.BooleanField({
+        initial: false
+      }),
       deviceRating: new fields.NumberField({
         initial: 0
       }),

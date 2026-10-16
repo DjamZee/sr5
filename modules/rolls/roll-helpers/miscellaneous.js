@@ -12,7 +12,7 @@ import {
 } from "../../system/gm-ledger.js"
 import {
   ownsTarget, cardTrusted, matrixDamageAllowed, deactivateAllowed, reduceAllowed, supportEffectAllowed,
-  serviceSpentAllowed, maglockAllowed, testAllowed, recountHits, consumedKey, REDUCER_POOLS, hitsUnderPush, edgeSpentOn
+  serviceSpentAllowed, maglockAllowed, testAllowed, recountHits, consumedKey, REDUCER_POOLS, hitsUnderPush, edgeSpentOn, chanceSpent, standsAsGM, cardPoolCap, rolledPool
 } from "./socket-guard.js"
 import {
   linkedEntryOf, effectHits
@@ -134,9 +134,12 @@ export class SR5_MiscellaneousHelpers {
     if (!data) return null
     const roller = SR5_EntityHelpers.getRealActorFromID(data.owner?.actorId, data.actorUuids)
     const author = message.author
-    if (!cardTrusted(author, !!roller && !!author && roller.testUserPermission(author, "OWNER"))) return null
+    const owned = !!roller && !!author && roller.testUserPermission(author, "OWNER")
+    if (!cardTrusted(author, owned)) return null
+    //byGM: the card stands as written, a player's too while the players' rolls are not checked (world setting,
+    //socket-guard.js standsAsGM). gm: a GM wrote it, for what a player's card never does (the GM's say in grant)
     return {
-      id: message.id, data, roller, author, byGM: !!author?.isGM
+      id: message.id, data, roller, author, byGM: standsAsGM(author, owned), gm: !!author?.isGM
     }
   }
 
@@ -148,14 +151,23 @@ export class SR5_MiscellaneousHelpers {
   }
 
   /** The hits of a card the GM stands by, the push of the limit counted only when the roller's sheet shows Edge spent
-   * (hitsUnderPush, SR5 p. 58): a GM's card as written. null when a player's card shows no dice. */
-  static pushAwareHits(card, path, limit = 0) {
+   * (hitsUnderPush, SR5 p. 58): a GM's card as written. null when a player's card shows no dice.
+   * `rolled`: the pool the card was rolled with (its dicePool.value) counts when larger than the sheet's: the dice the
+   * roll dialog added (miscellaneous, situational, often granted by the GM) are not on the sheet, and an honest card
+   * counted on the sheet alone lost its hits (Matrix Perception, Anselmine 07/10). */
+  static pushAwareHits(card, path, limit = 0, {
+    rolled = false
+  } = {
+  }) {
     if (card.byGM) return Math.max(0, Number(card.data.roll?.hits) || 0)
-    const pool = Number(foundry.utils.getProperty(card.roller?.system ?? {
+    const sheet = Number(foundry.utils.getProperty(card.roller?.system ?? {
     }, path)) || 0
+    //Without the Edge of a push, counted apart below (rolledPool)
+    const pool = rolled ? Math.max(sheet, rolledPool(card.data)) : sheet
     const pushed = !!card.data.edge?.hasUsedPushTheLimit && edgeSpentOn(card.roller)
     const counted = hitsUnderPush({
       rollJSON: card.data.roll?.r, pool, edge: Number(card.roller?.system?.specialAttributes?.edge?.augmented?.value) || 0, limit, pushed,
+      secondChance: chanceSpent(card.data, card.roller),
     })
     return counted === null ? null : Math.min(counted, Math.max(0, Number(card.data.roll?.hits) || 0))
   }
@@ -164,7 +176,9 @@ export class SR5_MiscellaneousHelpers {
    * within the pool at `path` (null when it shows no dice). */
   static hitsOf(card, path) {
     if (card.byGM) return Math.max(0, Number(card.data.roll?.hits) || 0)
-    return recountHits(card.data.roll?.r, path === null ? Infinity : SR5_MiscellaneousHelpers.poolCap(card.roller, path))
+    return recountHits(card.data.roll?.r, path === null ? Infinity : cardPoolCap(card, SR5_MiscellaneousHelpers.poolCap(card.roller, path)), {
+      secondChance: chanceSpent(card.data, card.roller)
+    })
   }
 
   static #refuse(kind, senderId, data) {
@@ -179,7 +193,8 @@ export class SR5_MiscellaneousHelpers {
    * @param {User} sender who asks
    */
   static async grant(use, sender) {
-    if (!use.card.byGM) {
+    //The GM's say stays on a player's card, checked rolls or not (gm: a GM wrote every card behind the use)
+    if (!(use.card.gm ?? use.card.byGM)) {
       let asked = SR5_MiscellaneousHelpers.#confirmations.get(use.card.id)
       if (!asked) {
         asked = SR5_MiscellaneousHelpers.confirmUse(use, sender)
@@ -282,6 +297,18 @@ export class SR5_MiscellaneousHelpers {
     await target.update({
       'system': changes
     })
+    //A brick a player dealt: the dumpshock of a character in VR goes to the target's player, not the attacker's (SR5 p. 231)
+    //(An AI has none, dumpshockIfInVR knows it)
+    //Not after a convergence, whose reboot already threw the character out with dumpshock (SR5 p. 233)
+    if (data.use === "matrixDamage" && changes.isActive === false && target.type === "itemDevice" && target.actor &&
+      !SR5_MiscellaneousHelpers.cardOf(data.messageId)?.data?.damage?.convergence) {
+      const {
+        SR5_ActorHelper
+      } = await import("../../entities/actors/entityActor-helpers.js")
+      if (SR5_ActorHelper.dumpshockIfInVR(target.actor, {
+        bricked: true
+      })) ui.notifications.info(`${target.actor.name} ${game.i18n.localize("SR5.INFO_IsDisconnected")}.`)
+    }
     //The button the player's browser left for the GM is spent once the damage is written (Hyacinthe's review, D5)
     if (data.use === "matrixDamage" && data.button) {
       const {
@@ -358,9 +385,14 @@ export class SR5_MiscellaneousHelpers {
       //shows Edge spent for, within the test's limit otherwise (D1, SR5 p. 58). The GM confirms the boxes after this
       const typeSub = attack.data.test?.typeSub
       if (attack.data.test?.type !== "matrixAction" || !typeSub || card.data.test?.typeSub !== typeSub) return 0
+      //The pools the cards were rolled with count when the sheets dropped since (Bérénice's review 137)
       const attackHits = SR5_MiscellaneousHelpers.pushAwareHits(attack, `matrix.actions.${typeSub}.test.dicePool`,
-        Number(attack.roller?.system?.matrix?.actions?.[typeSub]?.limit?.value) || 0)
-      const defenseHits = SR5_MiscellaneousHelpers.pushAwareHits(card, `matrix.actions.${typeSub}.defense.dicePool`, 0)
+        Number(attack.roller?.system?.matrix?.actions?.[typeSub]?.limit?.value) || 0, {
+          rolled: true
+        })
+      const defenseHits = SR5_MiscellaneousHelpers.pushAwareHits(card, `matrix.actions.${typeSub}.defense.dicePool`, 0, {
+        rolled: true
+      })
       if (attackHits === null || defenseHits === null) return 0
       return Math.min(claimed, Math.max(0, defenseHits - attackHits))
     }

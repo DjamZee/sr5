@@ -74,7 +74,7 @@ export class SR5_CalledShotHelpers {
         ok: {
           label: "Ok" 
         }, cancel: {
-          label: "Cancel" 
+          label: game.i18n.localize("SR5.Cancel") 
         } 
       },
     })
@@ -312,21 +312,13 @@ export class SR5_CalledShotHelpers {
         }
         break
       case "disarm": // Run & Gun p. 126: weapon kept, penalty equal to the net hits on the next action phase
+        //"pour utiliser cette arme": no global penalty, rollData-Weapon reads this effect on weapon attacks only
         if (!hasEffect){
           effect = foundry.utils.mergeObject(effect, {
             "system.target": game.i18n.localize("SR5.Penalty"),
             "system.value": effecType.value || -1,
             "system.duration": 1,
             "system.durationType": "action",
-            "system.customEffects": {
-              "0": {
-                "category": "penaltyTypes",
-                "target": "system.penalties.special.actual",
-                "type": "value",
-                "value": effecType.value || -1,
-                "forceAdd": true,
-              }
-            },
             "system.gameEffect": game.i18n.format("SR5.DisarmWeaponPenalty", {
               value: -(effecType.value || -1) 
             }),

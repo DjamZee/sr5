@@ -1,4 +1,7 @@
 import {
+  refuseByRule, capByRule
+} from "../system/rule-locks.js"
+import {
   halveCalledShot, firearmCommandIsFree
 } from '../entities/items/weaponTraits.js'
 import {
@@ -8,8 +11,20 @@ import {
   bbPatientEntry, advancedMedkitRules
 } from "../system/bb-healing.js"
 import {
+  guruBonus
+} from "../entities/items/magic-masteries.js"
+import {
+  noiseGridThreshold, actorNoiseModifier
+} from "../system/noise-spells.js"
+import {
+  bloodDrain, bloodSpending, martyrPoints
+} from "../system/blood-magic-rules.js"
+import {
   advancedMedkitDice, bbModeDiagnosisDice, improvisedSuppliesDice
 } from "../system/bb-healing-rules.js"
+import {
+  activateSocialDialog
+} from "./roll-helpers/social-dialog.js"
 import {
   SR5 
 } from "../config.js"
@@ -23,6 +38,9 @@ import {
   SR5_ConverterHelpers 
 } from "./roll-helpers/converter.js"
 import {
+  matrixTargetBand
+} from "./roll-helpers/matrix-distance.js"
+import {
   SR5_CombatHelpers 
 } from "./roll-helpers/combat.js"
 import {
@@ -31,6 +49,9 @@ import {
 import {
   SR5_CalledShotHelpers 
 } from "./roll-helpers/calledShot.js"
+import {
+  SR5_SpellShapingHelpers
+} from "./roll-helpers/spell-shaping.js"
 import {
   martialArtsLocationBonus
 } from "./roll-helpers/martialArtsLocation.js"
@@ -53,13 +74,20 @@ import {
   holdsTarget, isSubdued
 } from "./roll-helpers/grapple-rules.js"
 import {
+  netEffectOf
+} from "./roll-helpers/net-rules.js"
+import {
   isRunning, runningModifierValue
 } from "../system/running.js"
 import {
   attributeValue, swapLinkedAttribute, skillAttributeTitle, SKILL_ATTRIBUTE_FLAG, syncBackgroundCount, backgroundCountApplies, setDialogWindowTitle
 } from "./roll-helpers/skillAttribute.js"
 import {
-  rollAttributes, attributeTestsState, ROLL_TESTS_TYPE, situationalListShown, spiritTypeVisible, withoutSituationalMarkers
+  ignoredNegative
+} from "../system/social-traits.js"
+import {
+  rollAttributes, attributeTestsState, ROLL_TESTS_TYPE, situationalListShown, spiritTypeVisible, withoutSituationalMarkers,
+  spiritTypeSources
 } from "./roll-helpers/situational.js"
 import {
   normalizeTier, tierStock
@@ -70,6 +98,9 @@ import {
 import {
   redDotSightBonus
 } from "../entities/items/weapon-accessory-rules.js"
+import {
+  streamOf, streamSpriteDice, noiseIgnoredByStream
+} from "../entities/actors/technomancer-streams.js"
 
 export default class SR5_RollDialog {
 
@@ -88,6 +119,15 @@ export default class SR5_RollDialog {
   }
 
   updateDicePoolValue(html) {
+    //Cutting Aces p. 150, « Il a la classe et il le sait »: the negative social modifiers ticked, 2 points given back
+    const ignore = this.dialogData.dicePool.ignoreNegativeSocial
+    if (ignore && Array.isArray(this.dialogData.dicePool.modifiers)) {
+      SR5_MiscellaneousHelpers.removeElementFromArray(this.dialogData.dicePool.modifiers, 'type', 'socialIgnoreNegative')
+      const back = ignoredNegative(this.dialogData.dicePool.modifiers, ignore)
+      if (back) this.dialogData.dicePool.modifiers.push({
+        type: 'socialIgnoreNegative', label: game.i18n.localize('SR5.SOCIALTRAIT_IgnoreNegative'), value: back
+      })
+    }
     let dicePoolModifier = 0
     for (let key of Object.values(this.dialogData.dicePool.modifiers)){
       dicePoolModifier += key.value
@@ -143,18 +183,62 @@ export default class SR5_RollDialog {
     this.dialogData.magic.force = parseInt(html.querySelector('[name="force"]').value)
     if (html.querySelector('[name="drainValue"]')){
       let drainModifier = 0
-      for (let key of Object.values(this.dialogData.magic.drain.modifiers)){
-        drainModifier += key.value
+      for (let [key, modifier] of Object.entries(this.dialogData.magic.drain.modifiers)){
+        if (key !== "bloodMagic") drainModifier += modifier.value
       }
       let drainFinalValue = parseInt(html.querySelector('[name="force"]').value) + drainModifier
       //SR5 p. 284: never under 2; Structured Spellcasting (Forbidden Arcana p. 43): never under 1
       const drainFloor = this.dialogData.magic.drainFloor ?? 2
       if (drainFinalValue < drainFloor) drainFinalValue = drainFloor
+      //Blood Magic Points (Street Grimoire p. 90) lower the Drain "to a minimum of 0", below the floor
+      if (this.dialogData.magic.drain.modifiers.bloodMagic) drainFinalValue = bloodDrain(drainFinalValue, -this.dialogData.magic.drain.modifiers.bloodMagic.value)
       //Bullets & Bandages p. 15 (VO): the Drain of Stabilize follows the patient's wounds, not the Force
       if (Number.isFinite(this.dialogData.magic.bbStabilizeDrain)) drainFinalValue = this.dialogData.magic.bbStabilizeDrain
       html.querySelector('[name="drainValue"]').value = drainFinalValue
       this.dialogData.magic.drain.value = drainFinalValue
     }
+  }
+
+  //Blood magic (Street Grimoire p. 90, Forbidden Arcana p. 130): the points the caster spends, never more than he has
+  //(those of his own wounds, of his athame, of his sacrifices). Force without Drain raises the limit, the Drain lowered
+  //goes down to 0, and the wounds the caster gives himself let him ignore his wound modifiers for the spell
+  _updateBloodMagic(html, dialogData){
+    const blood = dialogData.magic.bloodMagic
+    if (!blood) return
+    const read = name => Math.max(0, parseInt(html.querySelector(`[name="${name}"]`)?.value) || 0)
+    blood.martyrBoxes = read("bloodMartyrBoxes")
+    const martyr = martyrPoints(blood.martyrBoxes, blood.selfCost)
+    const spent = bloodSpending({
+      force: read("bloodForce"), drainMagic: read("bloodDrainMagic"), drain: read("bloodDrain"), martyr, athame: blood.athame, pool: blood.available
+    })
+    blood.force = spent.force
+    blood.drainMagic = spent.drainMagic
+    blood.drain = spent.drain
+    for (const [name, value] of [["bloodMartyrBoxes", blood.martyrBoxes], ["bloodForce", spent.force], ["bloodDrainMagic", spent.drainMagic], ["bloodDrain", spent.drain]]) {
+      const el = html.querySelector(`[name="${name}"]`)
+      if (el) el.value = value
+    }
+    const left = html.querySelector('[name="bloodLeft"]')
+    if (left) left.value = martyr + blood.athame + blood.available - spent.force - spent.drainMagic - spent.drain
+    const label = game.i18n.localize("SR5.BloodMagicPoints")
+    if (spent.force) dialogData.limit.modifiers.bloodMagic = {
+      value: spent.force, label
+    }
+    else delete dialogData.limit.modifiers.bloodMagic
+    if (spent.drain) dialogData.magic.drain.modifiers.bloodMagic = {
+      value: -spent.drain, label
+    }
+    else delete dialogData.magic.drain.modifiers.bloodMagic
+    if (blood.martyrBoxes > 0) {
+      const index = dialogData.dicePool.modifiers.findIndex(m => m.type === "penaltycondition")
+      if (index >= 0) blood.woundModifier = dialogData.dicePool.modifiers.splice(index, 1)[0]
+    } else if (blood.woundModifier) {
+      dialogData.dicePool.modifiers.push(blood.woundModifier)
+      delete blood.woundModifier
+    }
+    this.updateDrainValue(html)
+    this.updateLimitValue(html)
+    this.updateDicePoolValue(html)
   }
 
   updateFadingValue(html) {
@@ -183,20 +267,24 @@ export default class SR5_RollDialog {
     let combatant = SR5Combat.getCombatantFromActor(actor)
     if (!combatant || combatant.initiative === null || combatant.initiative === undefined) return true
     if (combatant.initiative > cost) return true
-    ui.notifications.warn(game.i18n.format("SR5.WARN_NotEnoughInitiative", {
+    // B13: the "actions" rule lock family lifted, the interruption goes and the gamemaster is whispered
+    return !refuseByRule("actions", "SR5.WARN_NotEnoughInitiative", {
       actor: actor.name, initiative: combatant.initiative, cost: cost
-    }))
-    return false
+    }, {
+      actor
+    })
   }
 
   // SR5 p. 191-192: block needs Unarmed Combat and parry the weapon's skill; dodge is open to anyone
   static hasActiveDefenseSkill(actor, defenseMode){
     let skillKey = SR5_RollDialog.activeDefenseSkills[defenseMode]
     if (!skillKey || !actor || (actor.system?.skills?.[skillKey]?.rating.value || 0) > 0) return true
-    ui.notifications.warn(game.i18n.format("SR5.WARN_ActiveDefenseNoSkill", {
+    // B13: the "actions" rule lock family lifted, the parry or block goes and the gamemaster is whispered
+    return !refuseByRule("actions", "SR5.WARN_ActiveDefenseNoSkill", {
       actor: actor.name, skill: game.i18n.localize(SR5.skills[skillKey])
-    }))
-    return false
+    }, {
+      actor
+    })
   }
 
   static activeDefenseSkills = {
@@ -299,6 +387,16 @@ export default class SR5_RollDialog {
     if (bbModeSelect) this._selectModifiers({
       currentTarget: bbModeSelect, target: bbModeSelect
     }, element, dialogData)
+    //Matrix noise: the band of the distance to the targeted icon counts at once (SR5 p. 232); unmeasured, the list
+    //keeps its default and the user picks the band
+    const matrixRangeSelect = element.querySelector('.SR-ModSelect[data-modifier="matrixRange"]')
+    const matrixBand = matrixRangeSelect ? matrixTargetBand(actor) : null
+    if (matrixBand) {
+      matrixRangeSelect.value = matrixBand
+      this._selectModifiers({
+        currentTarget: matrixRangeSelect, target: matrixRangeSelect
+      }, element, dialogData)
+    }
     //Ramming: speeds and angle of the impact
     element.querySelectorAll('.SR-RammingInput').forEach(el => el.addEventListener('change', ev => this._updateRamming(element, dialogData, ev.target.name)))
     //Manage Threshold
@@ -308,6 +406,8 @@ export default class SR5_RollDialog {
     element.querySelectorAll('.SR-GrappleEscapeThreshold').forEach(el => el.addEventListener('change', ev => {
       dialogData.threshold.value = Math.max(parseInt(ev.target.value) || 0, 0)
     }))
+    //Cutting Aces: the con step, the social maneuver and what an earlier one left (social-dialog.js, lot 21)
+    activateSocialDialog(this, element, dialogData)
 
     // Reset Recoil
     element.querySelectorAll(".resetRecoil").forEach(el => el.addEventListener('click', ev => this._onResetRecoil(ev, element, dialogData, actor)))
@@ -332,11 +432,17 @@ export default class SR5_RollDialog {
     element.querySelectorAll('[name="emulateLegal"]').forEach(el => el.addEventListener('change', ev => {
       dialogData.matrix.emulateLegal = ev.target.checked
     }))
+    //Kill Code p. 102: a sprite of major form, compiled by a Technoshaman
+    element.querySelectorAll('[name="majorForm"]').forEach(el => el.addEventListener('change', ev => {
+      dialogData.matrix.majorForm = ev.target.checked
+    }))
     //Toggle hidden div
     element.querySelectorAll(".SR-DialogToggle").forEach(el => el.addEventListener('click', ev => this._toggleDiv(ev, element)))
     //Attribute paired with the skill (SR5 p. 130)
-    element.querySelectorAll(".SR-SkillAttribute").forEach(el => el.addEventListener('change', ev => this._onChangeSkillAttribute(ev.target.value, element, dialogData, actor)))
-    element.querySelectorAll(".SR-SkillAttributeKeep").forEach(el => el.addEventListener('change', ev => this._onKeepSkillAttribute(ev.target.checked, dialogData, actor)))
+    //A driven vehicle's test reads its driver's attributes, and keeps the choice on the driver's sheet (A15)
+    const holder = dialogData.skillAttribute?.holderUuid ? (fromUuidSync(dialogData.skillAttribute.holderUuid) ?? actor) : actor
+    element.querySelectorAll(".SR-SkillAttribute").forEach(el => el.addEventListener('change', ev => this._onChangeSkillAttribute(ev.target.value, element, dialogData, holder)))
+    element.querySelectorAll(".SR-SkillAttributeKeep").forEach(el => el.addEventListener('change', ev => this._onKeepSkillAttribute(ev.target.checked, dialogData, holder)))
   }
 
   // SR5 p. 130: another attribute replaces the linked one in the pool and the title; the limit stays the skill's
@@ -375,16 +481,16 @@ export default class SR5_RollDialog {
 
   // AI Emulate (Data Trails p. 159): rating capped by Depth, -(rating / 2) dice, the limit becomes the emulated rating.
   // Without a device the rating cannot drop below 1: there is no attribute to act with otherwise (Data Trails p. 157)
-  _applyEmulateRating(html, dialogData, value){
+  // The "matrix" rule lock lifted (B13), a rating past Depth is kept, the dice and the limit follow it, the gamemaster told
+  _applyEmulateRating(html, dialogData, value, actor = null){
     let max = dialogData.matrix.emulateMax || 0,
       min = dialogData.matrix.emulateRequired ? Math.min(1, max) : 0
     if (isNaN(value) || value < min) value = min
-    if (value > max) {
-      value = max
-      ui.notifications.warn(game.i18n.format('SR5.WARN_EmulateMaxDepth', {
-        depth: max
-      }))
-    }
+    value = capByRule("matrix", value, max, 'SR5.WARN_EmulateMaxDepth', {
+      depth: max
+    }, {
+      actor
+    })
     html.querySelector('[name="emulateRating"]').value = value
     dialogData.matrix.emulateRating = value
     SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "emulate")
@@ -537,8 +643,9 @@ export default class SR5_RollDialog {
   //The type's modifiers are copied without their markers, which the boxes stand for; boxes ticked
   //elsewhere in the dialog are kept
   _syncSpiritTypeOffers(html, dialogData, spiritType, typeModifiers){
-    //The Astral Reputation penalty (Street Grimoire p. 207) is the summoner's, whatever the type: kept too
-    const kept = (dialogData.dicePool.modifiers || []).filter(m => m.type?.startsWith?.("situational_") || m.type === "astralReputation")
+    //The Astral Reputation penalty (Street Grimoire p. 207) is the summoner's, whatever the type: kept too, and so is
+    //the Wild Reputation bonus of a call (Forbidden Arcana p. 170)
+    const kept = (dialogData.dicePool.modifiers || []).filter(m => m.type?.startsWith?.("situational_") || m.type === "astralReputation" || m.type === "wildReputation")
     dialogData.dicePool.modifiers = withoutSituationalMarkers(typeModifiers).concat(kept)
     const unticked = spiritTypeVisible(dialogData.situational, spiritType)
     dialogData.dicePool.modifiers = dialogData.dicePool.modifiers.filter(m => !unticked.includes(m.type))
@@ -550,6 +657,15 @@ export default class SR5_RollDialog {
       if (offer.hidden) box.checked = false
     })
     this._toggleSituationalList(html, dialogData)
+  }
+
+  //The line of the spirit type bears the names of what the type adds (a mentor's bonus), or "Spirit type"
+  _labelSpiritType(html, actor, spiritType){
+    const el = html.querySelector('.SR-SpiritTypeLabel')
+    const skill = actor?.system.skills.summoning
+    if (!el || !skill) return
+    const sources = spiritTypeSources(skill.spiritType[spiritType]?.modifiers, skill.test.modifiers)
+    el.textContent = `${sources.length ? sources.join(", ") : game.i18n.localize("SR5.SpiritType")}${game.i18n.localize("SR5.Colons")}`
   }
 
   //The list of situational boxes, and its separator, only shows when one box does
@@ -594,8 +710,10 @@ export default class SR5_RollDialog {
         return
       case "recklessSpellcasting":
         dialogData.combat.actions = []
+        dialogData.magic.recklessCast = isChecked
         if (isChecked) {
-          value = 3
+          //Rapid-Fire Caster (Forbidden Arcana p. 38): a use of the mastery takes the Drain increase away
+          value = dialogData.magic.rapidFireCaster?.used ? 0 : 3
           dialogData.combat.actions = SR5_MiscellaneousHelpers.addActions(dialogData.combat.actions, {
             type: "simple", value: 1, source: "castRecklessSpell"
           })
@@ -612,6 +730,16 @@ export default class SR5_RollDialog {
         this.drainModifier.recklessSpellcasting = value
         this.updateDrainValue(html)
         return
+      case "rapidFireCaster":
+      case "rapidFireCasterRest": {
+        //Rapid-Fire Caster (Forbidden Arcana p. 38): counted when the spell is cast, and only with reckless casting.
+        //With no use left, the box says the eight hours of full rest were taken: the uses come back, this one counts
+        dialogData.magic.rapidFireCaster.used = isChecked
+        dialogData.magic.rapidFireCaster.rest = isChecked && modifierName === "rapidFireCasterRest"
+        const reckless = html.querySelector('[data-modifier="recklessSpellcasting"]')
+        if (reckless?.checked) reckless.dispatchEvent(new Event("change"))
+        return
+      }
       case "mageHunter": {
         //Mage Hunter (Forbidden Arcana p. 34): the Drain is paid only when the trade is made
         const level = dialogData.magic.mageHunter?.level || 0
@@ -631,6 +759,9 @@ export default class SR5_RollDialog {
         break
       case "astralReputation":
         value = dialogData.magic.astralReputationMod || 0
+        break
+      case "signatureMasking":
+        value = dialogData.dialogSwitch.signatureMasking || 0
         break
       case "centering":
         value = actor.system.magic.metamagics.centeringValue.value
@@ -739,6 +870,16 @@ export default class SR5_RollDialog {
     }
   }
 
+  //The stream's +2 dice to compile two kinds of sprites (Kill Code p. 100-101, 145-146), following the type chosen
+  _syncStreamSpriteDice(html, dialogData, actor){
+    SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "technomancerStream")
+    const dice = streamSpriteDice(streamOf(actor), dialogData.matrix.spriteType)
+    if (dice) dialogData.dicePool.modifiers.push({
+      type: "technomancerStream", label: game.i18n.localize(SR5.dicePoolModTypes.technomancerStream), value: dice
+    })
+    this.updateDicePoolValue(html)
+  }
+
   //Uncheck a checkbox modifier and take its value off the dice pool
   _uncheckModifier(html, dialogData, modifierName){
     const checkbox = html.querySelector(`[data-modifier=${modifierName}]`)
@@ -777,6 +918,8 @@ export default class SR5_RollDialog {
       grappling = game.settings.get("sr5", "sr5GrapplingRules")
     //SR5 p. 195: a subdued character counts as prone for any attack against them (grappling rules only)
     if (grappling && isSubdued(actor.effects)) isProned = true
+    //Run & Gun p. 25: caught in a net, the character is subdued, so prone for any attack against them
+    if (netEffectOf(actor)) isProned = true
     //SR5 p. 164: the running status of the roller
     const running = isRunning(actor)
 
@@ -900,7 +1043,7 @@ export default class SR5_RollDialog {
 
     switch (target){
       case "emulateRating":
-        this._applyEmulateRating(html, dialogData, value)
+        this._applyEmulateRating(html, dialogData, value, actor)
         return
       case "force":
         this.updateDrainValue(html)
@@ -927,22 +1070,41 @@ export default class SR5_RollDialog {
       case "reagentsSpent":
         this._updateReagents(value, actor, html, dialogData)
         return
+      case "bloodMartyrBoxes":
+      case "bloodForce":
+      case "bloodDrainMagic":
+      case "bloodDrain":
+        this._updateBloodMagic(html, dialogData)
+        return
+      case "guruParticipants": {
+        //Guru (Forbidden Arcana p. 37): +1 die and +1 limit per (60 / Charisma) ordinary participants, at most the
+        //Ritual Spellcasting rank
+        const participants = Math.max(0, parseInt(value) || 0)
+        html.querySelector(name).value = participants
+        const bonus = guruBonus(participants, dialogData.magic.guru?.charisma, dialogData.magic.guru?.rank)
+        const label = `${game.i18n.localize("SR5.MagicMasteryGuru")} (${participants})`
+        SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "guru")
+        delete dialogData.limit.modifiers.guru
+        if (bonus > 0) {
+          dialogData.dicePool.modifiers.push({
+            type: "guru", label, value: bonus
+          })
+          dialogData.limit.modifiers.guru = {
+            value: bonus, label
+          }
+        }
+        this.updateDicePoolValue(html)
+        this.updateLimitValue(html)
+        return
+      }
       case "level":
         this.updateFadingValue(html)
         if (html.querySelector('#level')) html.querySelector('#level').value = value
         return
-      case "dicePoolModSpellShaping":
-        if (value > 0) {
-          ui.notifications.warn(game.i18n.format('SR5.WARN_SpellShapingMin'))
-          value = 0
-        } else if (-value > actor.system.magic.metamagics.spellShapingValue.value){
-          value = -actor.system.magic.metamagics.spellShapingValue.value
-          ui.notifications.warn(game.i18n.format('SR5.WARN_SpellShapingMaxMagic', {
-            magic: value
-          }))
-        }
-        dialogData.magic.spell.area = -value
-        break
+      case "spellShapingArea":
+      case "spellShapingSpared":
+        this._updateSpellShaping(html, dialogData, actor, target, value)
+        return
       case "toxinDoses": {
         //Several doses at once: +1 Power per extra dose (SR5 p. 410)
         let doses = Math.max(1, parseInt(html.querySelector('[name="toxinDoses"]').value) || 1)
@@ -995,6 +1157,46 @@ export default class SR5_RollDialog {
     this.updateDicePoolValue(html)
   }
 
+  //SR5 p. 329: each -1 die buys either one metre of radius or one bubble, and the total penalty may not exceed Magic
+  //(plus a Spell Shaping focus, SR5 p. 323). The "magic" rule lock lifted (B13), the values entered are kept, the dice
+  //pool follows them, and the gamemaster hears of it. A negative value is no shaping: it reads 0 either way
+  _updateSpellShaping(html, dialogData, actor, target, value){
+    const readInput = inputName => html.querySelector(`[name="${inputName}"]`)?.value ?? 0
+    const changed = (target === "spellShapingSpared") ? "spared" : "area"
+    const cap = actor.system.magic.metamagics.spellShapingValue.value
+    const asked = {
+      area: (changed === "area") ? value : readInput("spellShapingArea"),
+      spared: (changed === "spared") ? value : readInput("spellShapingSpared"),
+      bubbleCost: game.settings.get("sr5", "sr5SpellShapingBubbleCost"),
+      changed,
+    }
+    const unbounded = SR5_SpellShapingHelpers.share({
+      ...asked, max: Number.MAX_SAFE_INTEGER
+    })
+    let shaping = unbounded
+    if (unbounded.penalty > cap && refuseByRule("magic", 'SR5.WARN_SpellShapingMaxMagic', {
+      magic: cap
+    }, {
+      actor
+    })) shaping = SR5_SpellShapingHelpers.share({
+      ...asked, max: cap
+    })
+
+    if (html.querySelector('[name="spellShapingArea"]')) html.querySelector('[name="spellShapingArea"]').value = shaping.area
+    if (html.querySelector('[name="spellShapingSpared"]')) html.querySelector('[name="spellShapingSpared"]').value = shaping.spared
+
+    dialogData.magic.spell.areaShaping = shaping.area
+    dialogData.magic.spell.sparedCount = shaping.spared
+
+    SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "spellShaping")
+    if (shaping.penalty > 0) dialogData.dicePool.modifiers.push({
+      type: "spellShaping",
+      label: `${game.i18n.localize(SR5.dicePoolModTypes.spellShaping)} (${shaping.area} ${game.i18n.localize("SR5.MeterUnit")} / ${shaping.spared})`,
+      value: -shaping.penalty,
+    })
+    this.updateDicePoolValue(html)
+  }
+
   _filledInputModifier(ev, html, dialogData){
     if (ev.length === 0) return
     let modifierName, name, value
@@ -1016,8 +1218,9 @@ export default class SR5_RollDialog {
           else {
             let rangeMod = dialogData.matrix.noiseRangeValue || 0,
               sceneNoise = dialogData.matrix.noiseScene || 0,
-              actorNoise = dialogData.matrix.personalNoise || 0
-            value = actor.system.matrix.attributes.noiseReduction.value
+              actorNoise = actorNoiseModifier(dialogData.matrix.personalNoise, rangeMod, sceneNoise)
+            //Morphinae daemon: one point of noise ignored per submersion grade (Kill Code p. 145)
+            value = actor.system.matrix.attributes.noiseReduction.value + noiseIgnoredByStream(streamOf(actor), actor.system.matrix.submersionGrade)
             if (-value < rangeMod + sceneNoise + actorNoise) value = -(rangeMod + sceneNoise + actorNoise)
             if (rangeMod + sceneNoise + actorNoise === 0) value = 0
           }
@@ -1027,7 +1230,8 @@ export default class SR5_RollDialog {
           else value = 0
           break
         case "matrixActorNoise":
-          if (html.querySelector('[data-modifier="matrixRange"]').value !== "wired") value = dialogData.matrix.personalNoise
+          //A lowered Noise (Decrease Noise, Street Grimoire p. 114) only takes away the Noise of the range and the scene
+          if (html.querySelector('[data-modifier="matrixRange"]').value !== "wired") value = actorNoiseModifier(dialogData.matrix.personalNoise, dialogData.matrix.noiseRangeValue, dialogData.matrix.noiseScene)
           else value = 0
           break
         case "incomingPA": {
@@ -1150,7 +1354,7 @@ export default class SR5_RollDialog {
           break
         case "incomingFiringMode":
           value = SR5_ConverterHelpers.firingModeToDefenseMod(ev.target.value)
-          label = game.i18n.localize(SR5.dicePoolModTypes[modifierName])
+          label = SR5_ConverterHelpers.firingModeDefenseLabel(ev.target.value)
           break
         case "targetRange": {
           let baseRange = SR5_ConverterHelpers.rangeToEnvironmentalLine(ev.target.value)
@@ -1257,13 +1461,18 @@ export default class SR5_RollDialog {
           let usesSkill = ["dodge", "block", "parryClubs", "parryBlades"].includes(ev.target.value)
           // A test that already had a limit (a ramming defense) gets it back when the active defense is dropped
           dialogData.combat.activeDefenses.ownLimit ??= {
-            base: dialogData.limit.base || 0, type: dialogData.limit.type || ""
+            base: dialogData.limit.base || 0, type: dialogData.limit.type || "", unlimited: !!dialogData.limit.unlimited
           }
           let ownLimit = dialogData.combat.activeDefenses.ownLimit
           dialogData.limit.base = usesSkill ? (dialogData.combat.activeDefenses.limit || 0) : ownLimit.base
           dialogData.limit.type = usesSkill ? "physicalLimit" : ownLimit.type
+          // An effect may lift the limit of this active defense (system.defenses.<key>.unlimited): its hits are not limited
+          let unlimitedDefense = usesSkill && !!dialogData.combat.activeDefenses.unlimited?.[ev.target.value]
+          dialogData.limit.unlimited = unlimitedDefense || ownLimit.unlimited
           let limitRow = html.querySelector('#activeDefenseLimit')
-          if (limitRow) limitRow.style.display = usesSkill ? '' : 'none'
+          if (limitRow) limitRow.style.display = usesSkill && !unlimitedDefense ? '' : 'none'
+          let unlimitedRow = html.querySelector('#activeDefenseUnlimited')
+          if (unlimitedRow) unlimitedRow.style.display = unlimitedDefense ? '' : 'none'
           break
         }
         case "cover":
@@ -1296,7 +1505,8 @@ export default class SR5_RollDialog {
             if (matrixNoiseReductionEl) matrixNoiseReductionEl.style.display = ''
             const matrixTargetGridEl = html.querySelector('#matrixTargetGrid')
             if (matrixTargetGridEl) matrixTargetGridEl.style.display = ''
-            if (dialogData.target.grid !== actor.system.matrix.userGrid) {
+            //A complex form's dialog has no grid line: its noise is the distance alone
+            if (matrixTargetGridEl && dialogData.target.grid !== actor.system.matrix.userGrid) {
               html.querySelector('[name="dicePoolModTargetGrid"]').value = -2
               SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', "targetGrid")
               dialogData.dicePool.modifiers.push({
@@ -1306,7 +1516,7 @@ export default class SR5_RollDialog {
               })
               this.dicePoolModifier.targetGrid = -2
             }
-            if ((dialogData.matrix.personalNoise < 0) && (html.querySelector('#matrixNoiseActor'))) {
+            if ((dialogData.matrix.personalNoise !== 0) && (html.querySelector('#matrixNoiseActor'))) {
               const matrixNoiseActorEl = html.querySelector('#matrixNoiseActor')
               if (matrixNoiseActorEl) matrixNoiseActorEl.style.display = ''
             }
@@ -1319,7 +1529,8 @@ export default class SR5_RollDialog {
             if (matrixTargetGridEl) matrixTargetGridEl.style.display = 'none'
             const matrixNoiseActorEl = html.querySelector('#matrixNoiseActor')
             if (matrixNoiseActorEl) matrixNoiseActorEl.style.display = 'none'
-            html.querySelector('[name="dicePoolModTargetGrid"]').value = 0
+            const targetGridInput = html.querySelector('[name="dicePoolModTargetGrid"]')
+            if (targetGridInput) targetGridInput.value = 0
           }
           dialogData.matrix.noiseRangeValue = value
           dialogData.matrix.noiseRange = ev.target.value
@@ -1332,6 +1543,7 @@ export default class SR5_RollDialog {
           break
         case "spriteType":
           dialogData.matrix.spriteType = ev.target.value
+          this._syncStreamSpriteDice(html, dialogData, actor)
           return
         case "spiritType":
           if (ev.target.value !== ""){
@@ -1346,6 +1558,7 @@ export default class SR5_RollDialog {
                 }
               }, actor.system.skills.summoning.spiritType[ev.target.value].modifiers))
           }
+          this._labelSpiritType(html, actor, ev.target.value)
           dialogData.magic.spiritType = ev.target.value
           this.updateDicePoolValue(html)
           return
@@ -1415,6 +1628,12 @@ export default class SR5_RollDialog {
           value = SR5_ConverterHelpers.signatureToMod(ev.target.value)
           label = `${game.i18n.localize(SR5.dicePoolModTypes[modifierName])} (${game.i18n.localize(SR5.targetSignature[ev.target.value])})`
           break
+        case "noiseGrid":
+          value = noiseGridThreshold(ev.target.value)
+          dialogData.threshold.value = value
+          dialogData.magic.noiseSpell.grid = ev.target.value
+          html.querySelector(name).value = value
+          return
         case "searchType":
           value = SR5_ConverterHelpers.searchTypeToThreshold(ev.target.value)
           dialogData.threshold.value = value
@@ -1488,7 +1707,11 @@ export default class SR5_RollDialog {
                 dialogData.limit.modifiers.healingSupplies.label = game.i18n.localize(SR5.dicePoolModTypes[modifierName])
                 if (suppliesLimitInput) suppliesLimitInput.value = value
               } else {
-                ui.notifications.warn(game.i18n.format('SR5.WARN_NoMedkit'))
+                // No kit, no rating to read: 0 either way. The "body" rule lock family lifted (B13, lot 4), the
+                // player is not told off and the gamemaster hears of it; a kit the sheet lacks goes in "Various"
+                refuseByRule("body", 'SR5.WARN_NoMedkit', null, {
+                  actor
+                })
                 value = 0
               }
               break
@@ -1668,6 +1891,7 @@ export default class SR5_RollDialog {
         case "incomingFiringMode":
           selectValue = dialogData.combat.firingMode.selected
           inputValue = SR5_ConverterHelpers.firingModeToDefenseMod(selectValue)
+          label = SR5_ConverterHelpers.firingModeDefenseLabel(selectValue)
           break
         case "targetRange": {
           selectValue = dialogData.target.range
@@ -1721,11 +1945,13 @@ export default class SR5_RollDialog {
               dicePool: {
               }
             }, actor.system.skills.summoning.spiritType[selectValue].modifiers))
+          this._labelSpiritType(html, actor, selectValue)
           dialogData.magic.spiritType = selectValue
           this.updateDicePoolValue(html)
           continue
         case "spriteType":
           dialogData.matrix.spriteType = html.querySelector(name).value
+          this._syncStreamSpriteDice(html, dialogData, actor)
           continue
         case "preparationTrigger":
           inputValue = SR5_ConverterHelpers.triggerToMod(html.querySelector('[data-modifier="preparationTrigger"]').value)
@@ -1737,6 +1963,14 @@ export default class SR5_RollDialog {
           }
           this.drainModifier.preparationTrigger = inputValue
           this.updateDrainValue(html)
+          continue
+        case "noiseGrid":
+          //Increase / Decrease Noise (Street Grimoire p. 113): public grid 2, local 4, global 6
+          selectValue = html.querySelector(name).value
+          inputValue = noiseGridThreshold(selectValue)
+          dialogData.threshold.value = inputValue
+          dialogData.magic.noiseSpell.grid = selectValue
+          html.querySelector(targetInputName).value = inputValue
           continue
         case "searchType":
           selectValue = html.querySelector(name).value
@@ -1791,7 +2025,8 @@ export default class SR5_RollDialog {
       html.querySelector(name).value = selectValue
       dialogData.dicePool.modifiers.push({
         type: modifierName,
-        label: label,
+        // Every line of the card says where its modifier comes from: by default, the name of its line in the dialog
+        label: label ?? (SR5.dicePoolModTypes[modifierName] ? game.i18n.localize(SR5.dicePoolModTypes[modifierName]) : undefined),
         value: inputValue,
       })
       this.updateDicePoolValue(html)

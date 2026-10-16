@@ -1,6 +1,9 @@
 import {
-  SR5Combat 
+  SR5Combat
 } from "../system/srcombat.js"
+import {
+  rgOption
+} from "../system/rg-combat-options.js"
 
 // Custom Combat Tracker (v13 AppV2 — builds on Foundry's native rendering)
 export class SR5CombatTracker extends foundry.applications.sidebar.tabs.CombatTracker {
@@ -100,7 +103,10 @@ export class SR5CombatTracker extends foundry.applications.sidebar.tabs.CombatTr
       if (header && !header.querySelector('.sr5-initiative-pass')) {
         const passDisplay = document.createElement('div')
         passDisplay.classList.add('sr5-initiative-pass')
-        passDisplay.innerHTML = `<strong>${game.i18n.localize('SR5.InitiativePass')} ${this.viewed.initiativePass}</strong>`
+        //Run & Gun RG4 has no passes: the header says which rule turns the order, not a pass that never changes
+        passDisplay.innerHTML = rgOption("initiative") ?
+          `<strong>${game.i18n.localize('SR5.RG_AlternativeInitiativeHeader')}</strong>` :
+          `<strong>${game.i18n.localize('SR5.InitiativePass')} ${this.viewed.initiativePass}</strong>`
         header.appendChild(passDisplay)
       }
     }
@@ -138,6 +144,46 @@ export class SR5CombatTracker extends foundry.applications.sidebar.tabs.CombatTr
     // Bind action button click handlers
     this.element.querySelectorAll('.SR-action-control').forEach(el => {
       el.addEventListener('click', ev => this._editActions(ev))
+    })
+  }
+
+  /**
+   * Hovering a combatant highlights its token like Foundry does, but without the hoverToken hook:
+   * that hook opens the token's PAN crown when the crown opens on hover (lot R2, DjamZ: not wanted from the tracker)
+   * @override
+   */
+  _onCombatantHoverIn(event) {
+    const {
+      combatantId 
+    } = event.target.closest(".combatant[data-combatant-id]")?.dataset ?? {
+    }
+    if (!canvas.ready || !combatantId) return
+    const token = this.viewed?.combatants.get(combatantId)?.token?.object
+    if (!token || token === this._sr5Highlighted || !token._canHover(game.user, event) || !this._isTokenVisible(token)) return
+    this._sr5Unhighlight()
+    if (token.hover) return
+    token.hover = true
+    token.renderFlags.set({
+      refreshState: true
+    })
+    this._sr5Highlighted = token
+  }
+
+  /** @override */
+  _onCombatantHoverOut(event) {
+    // pointerout also fires when moving between children of the same row
+    const row = event.target.closest(".combatant[data-combatant-id]")
+    if (row && event.relatedTarget && row.contains(event.relatedTarget)) return
+    this._sr5Unhighlight()
+  }
+
+  _sr5Unhighlight() {
+    const token = this._sr5Highlighted
+    this._sr5Highlighted = null
+    if (!token || token.destroyed || !token.hover || token.layer?.hover === token) return
+    token.hover = false
+    token.renderFlags.set({
+      refreshState: true
     })
   }
 

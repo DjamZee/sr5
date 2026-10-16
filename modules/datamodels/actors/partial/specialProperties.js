@@ -14,6 +14,11 @@ export class specialPropertiesPartialModel extends foundry.abstract.TypeDataMode
         addictionResistance: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema()
         }),
+        // Dice on the addiction tests of drugs only, never when treating an addiction (Drug Tolerance, Chrome Flesh
+        // p. 58; renal shield, p. 116)
+        drugAddictionResistance: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema()
+        }),
         // Dice on every toxin resistance, whatever the vector (The Complete Trog p. 180)
         toxinResistance: new fields.SchemaField({
           ...sr5ModsPartialModel.defineSchema()
@@ -98,6 +103,13 @@ export class specialPropertiesPartialModel extends foundry.abstract.TypeDataMode
         energyAura: new fields.StringField({
           initial: ''
         }),
+        // Aura of [element] (Street Grimoire p. 114): its hits, and its element
+        spellAura: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema(),
+        }),
+        spellAuraElement: new fields.StringField({
+          initial: ''
+        }),
         regeneration: new fields.BooleanField({
           initial: false
         }),
@@ -112,6 +124,26 @@ export class specialPropertiesPartialModel extends foundry.abstract.TypeDataMode
         // Granite skin (Run Faster p. 80): the Hardened Armor gives only its automatic hits to damage resistance
         hardenedArmorHitsOnly: new fields.BooleanField({
           initial: false
+        }),
+        // Purity State (Better Than Bad p. 143): bare-handed DV (Magic + Strength), Physical unless the Stun one is set
+        purityState: new fields.BooleanField({
+          initial: false
+        }),
+        purityStateStun: new fields.BooleanField({
+          initial: false
+        }),
+        // Mystic Aptitude (Better Than Bad p. 143): level of the power on the Physical Attribute it stands in for
+        mysticAptitudeBody: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema()
+        }),
+        mysticAptitudeAgility: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema()
+        }),
+        mysticAptitudeReaction: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema()
+        }),
+        mysticAptitudeStrength: new fields.SchemaField({
+          ...sr5ModsPartialModel.defineSchema()
         }),
         essenceDrain: new fields.BooleanField({
           initial: false

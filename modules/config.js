@@ -192,7 +192,40 @@ SR5.drugs = {
   nanoScan                  : "SR5.DrugNanoScan",
   neostigmine               : "SR5.DrugNeostigmine",
   ondansetron               : "SR5.DrugOndansetron",
+  btl                       : "SR5.DrugBTL",
   kamiPlus                  : "SR5.DrugKamiPlus",
+  customDrug                : "SR5.DrugCustomDesigned",
+}
+
+// Drug designer (Chrome Flesh p. 194-196): bases, blocks and the qualities a block of level 3 gives
+SR5.drugDesignerBases = {
+  tank                      : "SR5.DrugBaseTank",
+  defender                  : "SR5.DrugBaseDefender",
+  genius                    : "SR5.DrugBaseGenius",
+  charmer                   : "SR5.DrugBaseCharmer",
+  warrior                   : "SR5.DrugBaseWarrior",
+}
+
+SR5.drugDesignerBlocks = {
+  brute                     : "SR5.DrugBlockBrute",
+  enduring                  : "SR5.DrugBlockEnduring",
+  strike                    : "SR5.DrugBlockStrike",
+  flash                     : "SR5.DrugBlockFlash",
+  einstein                  : "SR5.DrugBlockEinstein",
+  momentOfTruth             : "SR5.DrugBlockMomentOfTruth",
+  stoneWall                 : "SR5.DrugBlockStoneWall",
+  silverTongue              : "SR5.DrugBlockSilverTongue",
+  shockAndAwe               : "SR5.DrugBlockShockAndAwe",
+  sharpMind                 : "SR5.DrugBlockSharpMind",
+  general                   : "SR5.DrugBlockGeneral",
+  resistance                : "SR5.DrugBlockResistance",
+  speedDemon                : "SR5.DrugBlockSpeedDemon",
+}
+
+SR5.drugDesignerQualities = {
+  painSensitivity           : "SR5.DrugTraitPainSensitivity",
+  shakyHands                : "SR5.DrugTraitShakyHands",
+  uncouth                   : "SR5.DrugTraitUncouth",
 }
 
 // Drug qualities (Chrome Flesh p. 194)
@@ -411,6 +444,19 @@ SR5.tacnetLevels = {
   1                         : "SR5.TacnetLevel1",
   2                         : "SR5.TacnetLevel2",
   3                         : "SR5.TacnetLevel3",
+}
+// The explosives (Run & Gun p. 202-206, SR5 p. 438; rules in rolls/roll-helpers/explosives.js)
+SR5.explosiveTypes = {
+  commercial                : "SR5.EXPLOSIVE_commercial",
+  foam                      : "SR5.EXPLOSIVE_foam",
+  plastic                   : "SR5.EXPLOSIVE_plastic",
+  anfo                      : "SR5.EXPLOSIVE_anfo",
+  linearCharge              : "SR5.EXPLOSIVE_linearCharge",
+  dynamite                  : "SR5.EXPLOSIVE_dynamite",
+  liquid                    : "SR5.EXPLOSIVE_liquid",
+  ammoniumNitrate           : "SR5.EXPLOSIVE_ammoniumNitrate",
+  nitroglycerin             : "SR5.EXPLOSIVE_nitroglycerin",
+  tnt                       : "SR5.EXPLOSIVE_tnt",
 }
 
 // Special Skills
@@ -880,12 +926,15 @@ SR5.actionSources = {
   callSpirit 				  : "SR5.ActionSourceCallSpirit",
   callSprite 				  : "SR5.ActionSourceCallSprite",
   castRecklessSpell		  : "SR5.ActionSourceCastRecklessSpell",
+  combatManeuver            : "SR5.ActionSourceCombatManeuver",
   castSpell				  : "SR5.ActionSourceCastSpell",
+  concealItem				  : "SR5.ActionSourceConcealItem",
   changeChokeSettings       : "SR5.ActionSourceChangeChokeSettings",
   changeFiringMode		  : "SR5.ActionSourceChangeFiringMode",
   changeSilentMode		  : "SR5.ActionSourceChangeSilentMode",
   complexForm				  : "SR5.ActionSourceComplexForm",
   desactivateFocus		  : "SR5.ActionSourceDesactivateFocus",
+  dropProne				  : "SR5.ActionSourceDropProne",
   dismissSpirit			  : "SR5.ActionSourceDismissSpirit",
   dismissSprite			  : "SR5.ActionSourceDismissSprite",
   insertClip				  : "SR5.ActionSourceInsertClip",
@@ -894,6 +943,7 @@ SR5.actionSources = {
   loadProgram     		  : "SR5.ActionSourceLoadProgram",
   manual		     		  : "SR5.ActionSourceManual",
   matrixAction              : "SR5.ActionSourceMatrixAction",
+  netEscape				  : "SR5.ActionSourceNetEscape",
   ramming					  : "SR5.ActionSourceRamming",
   rebootDeck				  : "SR5.ActionSourceRebootDeck",
   replaceClip				  : "SR5.ActionSourceReplaceClip",
@@ -915,6 +965,7 @@ SR5.actionSources = {
   useCentering 			  : "SR5.ActionSourceUseCentering",
   usePreparation			  : "SR5.ActionSourceUsePreparation",
   useSkill				  : "SR5.ActionSourceUseSkill",
+  socialManeuver		  : "SR5.ActionSourceSocialManeuver",
   vehicleTest				  : "SR5.ActionSourceVehicleTest",
   astralTracking			  : "SR5.ActionSourceAstralTracking",
   createPreparation		  : "SR5.ActionSourceCreatePreparation",
@@ -1173,6 +1224,7 @@ SR5.grenadeTypes = {
   smokeThermal              : "SR5.GrenadeTypeSmokeThermal",
   gas                       : "SR5.GrenadeTypeGas",
   highlyExplosive           : "SR5.GrenadeTypeHighlyExplosive",
+  paint                     : "SR5.GrenadeTypePaint",
 }
 
 // Types de munitions d'arme de trait
@@ -1265,6 +1317,7 @@ SR5.weaponDamageTypes = {
 SR5.weaponEffectTargets = {
   accuracy                  : "SR5.Accuracy",
   damageValue               : "SR5.DamageValue",
+  reach                     : "SR5.WeaponReach",
 }
 
 // Accessoires pour armes à feu
@@ -1320,6 +1373,7 @@ SR5.weaponAccessories = {
   krimePack                 : "SR5.AccessoryKrimePack",
   krimeStunONet             : "SR5.AccessoryKrimeStunONet",
   laserSight                : "SR5.AccessoryLaserSight",
+  kick                      : "SR5.AccessoryKick",
   laserWeapon               : "SR5.AccessoryLaserWeapon",
   longbarrel                : "SR5.AccessoryLongbarrel",
   meleeHardening            : "SR5.AccessoryMeleeHardening",
@@ -1353,6 +1407,16 @@ SR5.weaponAccessories = {
   underbarrelLaser          : "SR5.AccessoryUnderbarrelLaser",
   underbarrelFlamethrower   : "SR5.AccessoryUnderbarrelFlamethrower",
   flamethrower              : "SR5.AccessoryFlamethrower",
+  deathInstrument           : "SR5.AccessoryDeathInstrument",
+  specialModDamage          : "SR5.AccessorySpecialModDamage",
+  specialModArmorPenetration : "SR5.AccessorySpecialModArmorPenetration",
+  specialModAccuracy        : "SR5.AccessorySpecialModAccuracy",
+  specialModRecoil          : "SR5.AccessorySpecialModRecoil",
+  specialModConcealment     : "SR5.AccessorySpecialModConcealment",
+  specialModReach           : "SR5.AccessorySpecialModReach",
+  net                       : "SR5.AccessoryNet",
+  netXL                     : "SR5.AccessoryNetXL",
+  shockNet                  : "SR5.AccessoryShockNet",
   osmium                    : "SR5.AccessoryOsmium",
   underbarrelGrappleGun     : "SR5.AccessoryUnderbarrelGrappleGun",
   underbarrelGrenadeLauncher : "SR5.AccessoryUnderbarrelGrenadeLauncher",
@@ -1377,6 +1441,24 @@ SR5.weaponAccessorySlots = {
   internal                  : "SR5.WeaponAccessorySlotInternal",
   barrel                    : "SR5.WeaponAccessorySlotBarrel",
   stock                     : "SR5.WeaponAccessorySlotStock",
+  //Hard Targets p. 183: two slots at once (system/item-workshop.js, accessorySlots)
+  "barrel+underneath"       : "SR5.WeaponAccessorySlotBarrelUnderneath",
+  "underneath+side"         : "SR5.WeaponAccessorySlotUnderneathSide",
+}
+
+//The special effects the system reads on a weapon accessory (weaponAccessory.specialEffect), chosen on its sheet
+SR5.weaponAccessorySpecialEffects = {
+  chameleonCoating          : "SR5.AccessoryChameleonCoating",
+  concealableHolster        : "SR5.AccessoryConcealableHolster",
+  flamethrower              : "SR5.AccessoryFlamethrower",
+  flashLight                : "SR5.AccessoryFlashLight",
+  flashLightInfrared        : "SR5.AccessoryFlashLightInfrared",
+  flashLightLowLight        : "SR5.AccessoryFlashLightLowLight",
+  imagingScope              : "SR5.AccessoryImagingScope",
+  overclocked               : "SR5.AccessoryOverclocked",
+  silencerSuppressor        : "SR5.AccessorySilencerSuppressor",
+  smartgunExternal          : "SR5.AccessorySmartgunSystemExternal",
+  smartgunInternal          : "SR5.AccessorySmartgunSystemInternal",
 }
 
 // Toxins
@@ -1715,6 +1797,7 @@ SR5.testLimits = {
   replaced                  : "SR5.LimitReplaced",
   level					  : "SR5.Level",
   handling				  : "SR5.VehicleStat_HandlingShort",
+  speed                     : "SR5.VehicleStat_SpeedShort",
 }
 
 //-----------------------------------//
@@ -1932,6 +2015,8 @@ SR5.traditionTypes = {
   toxic                     : "SR5.TraditionToxic",
   egyptian                  : "SR5.TraditionEgyptian",
   draconic                  : "SR5.TraditionDraconic",
+  // Dark Terrors p. 169: Drain CHA + WIL
+  darkMagic                 : "SR5.TraditionDarkMagic",
 }
 
 // Types de sorts
@@ -2080,6 +2165,8 @@ SR5.focusTypes = {
   power                     : "SR5.FocusPower",
   flexibleSignature         : "SR5.FocusFlexibleSignature",
   qi                        : "SR5.FocusQi",
+  // Street Grimoire p. 90: stores Blood Magic Points (blood-magic.js)
+  athame                    : "SR5.FocusAthame",
 }
 
 // Attributes for sprite powers
@@ -2127,6 +2214,15 @@ SR5.metamagics = {
   // Forbidden Arcana p. 43, 45
   structuredSpellcasting   : "SR5.MetamagicStructuredSpellcasting",
   harmoniousDefense        : "SR5.MetamagicHarmoniousDefense",
+  improvedAstralForm       : "SR5.MetamagicImprovedAstralForm",
+  astralnaut               : "SR5.MetamagicAstralnaut",
+  rapidNecroInvocation     : "SR5.MetamagicRapidNecroInvocation",
+  // Dark Terrors p. 169: recognised, not automated (the system keeps no stored Essence maximum, nor mist speed)
+  essenceExpansion         : "SR5.MetamagicEssenceExpansion",
+  improvedMistForm         : "SR5.MetamagicImprovedMistForm",
+  // Street Grimoire p. 89-90: blood magic (blood-magic.js)
+  sacrifice                : "SR5.MetamagicSacrifice",
+  cannibalize              : "SR5.MetamagicCannibalize",
 }
 
 //Magical masteries (Forbidden Arcana p. 30-41): level = quality rating
@@ -2138,6 +2234,10 @@ SR5.magicMasteries = {
   illusionist              : "SR5.MagicMasteryIllusionist",
   mageHunter               : "SR5.MagicMasteryMageHunter",
   masterManipulator        : "SR5.MagicMasteryMasterManipulator",
+  // Forbidden Arcana p. 35, 37, 38
+  electromancer            : "SR5.MagicMasteryElectromancer",
+  guru                     : "SR5.MagicMasteryGuru",
+  rapidFireCaster          : "SR5.MagicMasteryRapidFireCaster",
 }
 
 //-----------------------------------//
@@ -2493,6 +2593,7 @@ SR5.matrixGameEffects = {
 
 // Complex Form Targets
 SR5.complexFormTargets = {
+  cyberware                 : "SR5.ComplexFormTargetCyberware",
   device                    : "SR5.ComplexFormTargetDevice",
   file                      : "SR5.ComplexFormTargetFile",
   host                      : "SR5.ComplexFormTargetHost",
@@ -2599,6 +2700,7 @@ SR5.programTypes = {
   common                    : "SR5.ProgramTypeCommon",
   hacking                   : "SR5.ProgramTypeHacking",
   autosoft                  : "SR5.ProgramTypeAutosoft",
+  swarm                     : "SR5.ProgramTypeSwarm",
   agent                     : "SR5.ProgramTypeAgent",
   activesoft                : "SR5.ProgramTypeActivesoft",
   datasoft                  : "SR5.ProgramTypeDatasoft",
@@ -2646,6 +2748,7 @@ SR5.matrixSearchInfoType = {
   general                   :"SR5.MatrixSearchInfoTypeGeneral",
   limited                   :"SR5.MatrixSearchInfoTypeLimited",
   hidden                    :"SR5.MatrixSearchInfoTypeHidden",
+  host                      :"SR5.MatrixSearchInfoTypeHost",
 }
 
 //Matrix marks
@@ -2682,6 +2785,12 @@ SR5.vehicleAttributes = {
 SR5.vehicleTypes = {
   drone                     : "SR5.DroneFull",
   vehicle                   : "SR5.VehicleFull",
+}
+
+// Sous-rayons du rayon Drones de la boutique (relecture djamz.13, lot R6)
+SR5.droneShelfSubs = {
+  itemVehicle               : "SR5.DroneFull",
+  itemVehicleMod            : "SR5.ShopSubDroneMod",
 }
 
 // Types de drones et véhicules
@@ -2731,6 +2840,12 @@ SR5.WeaponMountSize = {
   light                   : "SR5.VEHICLE_WeaponMountSize_L",
   standard                : "SR5.VEHICLE_WeaponMountSize_S",
   heavy                   : "SR5.VEHICLE_WeaponMountSize_H",
+  //The drone mounts (R5 p. 128), counted under the Modification Points only (drone-mod-points.js)
+  micro                   : "SR5.VEHICLE_WeaponMountSize_Micro",
+  mini                    : "SR5.VEHICLE_WeaponMountSize_Mini",
+  small                   : "SR5.VEHICLE_WeaponMountSize_Small",
+  large                   : "SR5.VEHICLE_WeaponMountSize_Large",
+  huge                    : "SR5.VEHICLE_WeaponMountSize_Huge",
 }
 
 // Weapon Mount : Visibility
@@ -2815,6 +2930,19 @@ SR5.vehicleModType = {
   cosmetic                  : "SR5.VehicleModTypeCosmetic",
 }
 
+// What the system works out by code for a vehicle mod (system/vehicle-mods.js, Rigger 5.0 p. 153-173)
+SR5.vehicleModEffectKinds = {
+  autopilotReplacement      : "SR5.VehicleModEffectKind_autopilotReplacement",
+  sensorReplacement         : "SR5.VehicleModEffectKind_sensorReplacement",
+  armor                     : "SR5.VehicleModEffectKind_armor",
+  bullBar                   : "SR5.VehicleModEffectKind_bullBar",
+  passengerProtection       : "SR5.VehicleModEffectKind_passengerProtection",
+  riggerCocoon              : "SR5.VehicleModEffectKind_riggerCocoon",
+  tactileSensors            : "SR5.VehicleModEffectKind_tactileSensors",
+  signatureMasking          : "SR5.VehicleModEffectKind_signatureMasking",
+  metahumanAdaptation       : "SR5.VehicleModEffectKind_metahumanAdaptation",
+}
+
 // Type d'installation nécessaires
 SR5.vehicleModTools = {
   kit                       : "SR5.VehicleModToolsKit",
@@ -2893,10 +3021,42 @@ SR5.spiritTypeMonitors = {
 }
 
 // How a custom spirit type rates the skills every spirit gets
+// Own Edge of a spirit type that is not summoned (Howling Shadows p. 128 and following: CHC P/2 or P)
+SR5.spiritTypeEdges = {
+  ""                        : "SR5.SpiritTypeEdgeNone",
+  half                      : "SR5.SpiritTypeEdgeHalf",
+  full                      : "SR5.SpiritTypeEdgeFull",
+}
+
+// Limits of a spirit type: from its attributes, or (P x 4) / 3 as the entities print them (Howling Shadows p. 130)
+SR5.spiritTypeLimits = {
+  ""                        : "SR5.SpiritTypeLimitsAttributes",
+  force                     : "SR5.SpiritTypeLimitsForce",
+}
+
+// Armor of a spirit type: ordinary, hardened, or mystic and hardened (Howling Shadows p. 128 and following)
+SR5.spiritTypeArmorKinds = {
+  ""                        : "SR5.SpiritTypeArmorOrdinary",
+  hardened                  : "SR5.SpiritTypeArmorHardened",
+  mystic                    : "SR5.SpiritTypeArmorMystic",
+}
+
+// Rating that lowers a weapon's AP: "PA -FOR", "PA -Magie" (SR5 p. 399, Howling Shadows p. 138)
+SR5.weaponAPLinkedAttributes = {
+  strength                  : "SR5.Strength",
+  magic                     : "SR5.Magic",
+}
+
 SR5.spiritTypeSkillRatios = {
   ""                        : "SR5.SpiritTypeInherit",
   full                      : "SR5.SpiritTypeRatioFull",
   half                      : "SR5.SpiritTypeRatioHalf",
+}
+
+SR5.spiritTypeBaseSkills = {
+  astralCombat              : "SR5.SkillAstralCombat",
+  assensing                 : "SR5.SkillAssensing",
+  perception                : "SR5.SkillPerception",
 }
 
 SR5.spiritBasePowersabomination = {
@@ -3602,6 +3762,16 @@ SR5.deviceTypes = {
   maglock					  : "SR5.DEVICE_TYPE_Maglock",
 }
 
+// Host types (Kill Code p. 48-52); none = the attributes stay as entered
+SR5.hostTypes = {
+  data                      : "SR5.HostTypeData",
+  industrial                : "SR5.HostTypeIndustrial",
+  destination               : "SR5.HostTypeDestination",
+  obsolete                  : "SR5.HostTypeObsolete",
+  offline                   : "SR5.HostTypeOffline",
+  rogue                     : "SR5.HostTypeRogue",
+}
+
 // Ice types
 SR5.iceTypes = {
   iceAcid                   : "SR5.IceAcid",
@@ -3663,6 +3833,7 @@ SR5.effectTypes = {
   fireDamage                : "SR5.ElementalDamage",
   dumpshock                 : "SR5.Dumpshock",
   suppressiveFire           : "SR5.WeaponModeSF",
+  chaseOutOfControl         : "SR5.CHASE_EffectName",
   sensorLock                : "SR5.SensorTargetingActive",
   signalJam                 : "SR5.EffectSignalJam",
   signalJammed              : "SR5.EffectSignalJammed",
@@ -3712,6 +3883,8 @@ SR5.effectTypes = {
   backgroundCount			  : "SR5.SceneBackgroundCount",
   anticoagulantDamage       : "SR5.Anticoagulant",
   matrixAction              : "SR5.MatrixAction",
+  targetDevice              : "SR5.MatrixActionTargetDevice",
+  noiseSuppression          : "SR5.MatrixActionSuppressNoise",
 }
 
 SR5.effectDuration = {
@@ -3738,6 +3911,7 @@ SR5.radiationLevels = {
 
 SR5.specialProperties = {
   addictionResistance       : "SR5.AddictionResistance",
+  drugAddictionResistance   : "SR5.DrugAddictionResistance",
   toxinResistance           : "SR5.ToxinResistanceAll",
   concentration             : "SR5.Concentration",
   controlRig                : "SR5.ControlRig",
@@ -3749,12 +3923,14 @@ SR5.specialProperties = {
   antirad                   : "SR5.Antirad",
   streetCredDivisor         : "SR5.StreetCredDivisor",
   thresholdModifier         : "SR5.ThresholdModifier",
+  spellAura                 : "SR5.SpellAura",
 }
 
 SR5.specialPropertiesList = {
   streetCredDivisor         : "SR5.StreetCredDivisor",
   thresholdModifier         : "SR5.ThresholdModifier",
   addictionResistance       : "SR5.AddictionResistance",
+  drugAddictionResistance   : "SR5.DrugAddictionResistance",
   toxinResistance           : "SR5.ToxinResistanceAll",
   concentration             : "SR5.Concentration",
   controlRig                : "SR5.ControlRig",
@@ -3773,6 +3949,13 @@ SR5.specialPropertiesList = {
   naniteToxinResistance     : "SR5.NaniteToxinResistance",
   immunodeficiency          : "SR5.Immunodeficiency",
   hardenedArmorHitsOnly     : "SR5.HardenedArmorHitsOnly",
+  // Better Than Bad p. 143
+  purityState               : "SR5.AdeptPowerPurityState",
+  purityStateStun           : "SR5.AdeptPowerPurityStateStun",
+  mysticAptitudeBody        : "SR5.AdeptPowerMysticAptitudeBody",
+  mysticAptitudeAgility     : "SR5.AdeptPowerMysticAptitudeAgility",
+  mysticAptitudeReaction    : "SR5.AdeptPowerMysticAptitudeReaction",
+  mysticAptitudeStrength    : "SR5.AdeptPowerMysticAptitudeStrength",
 }
 
 SR5.transactionsTypes = {
@@ -3826,7 +4009,12 @@ SR5.dicePoolModTypes = {
   targetRange               : "SR5.Range",
   reach                     : "SR5.WeaponReach",
   environmentalSceneMod     : "SR5.EnvironmentalModifiers",
-  perceptionType            : "SR5.SkillPerceptionType",
+  // The optional rules of Run & Gun (RG p. 122-124, lot 10)
+  rgTargetSize              : "SR5.RG_TargetSize",
+  rgTargetMovement          : "SR5.RG_TargetMovement",
+  rgArmorPenalty            : "SR5.RG_ArmorPenalty",
+  rgOwnMovement             : "SR5.RG_OwnMovement",
+  perceptionType           : "SR5.SkillPerceptionType",
   cumulativeDefense         : "SR5.CumulativeDefense",
   defenseMode               : "SR5.ActiveDefense",
   fullDefense               : "SR5.FullDefense",
@@ -3836,7 +4024,8 @@ SR5.dicePoolModTypes = {
   matrixRange               : "SR5.MatrixNoise",
   matrixSceneNoise          : "SR5.SceneNoiseRating",
   matrixNoiseReduction      : "SR5.NoiseReduction",
-  matrixActorNoise 		  : "SR5.PersonalMatrixNoise",
+  technomancerStream        : "SR5.TechnomancerStream",
+  matrixActorNoise		  : "SR5.PersonalMatrixNoise",
   publicGrid                : "SR5.GridPublicOn",
   targetGrid                : "SR5.GridTargetDifferent",
   spiritAid                 : "SR5.SpiritAid",
@@ -3846,7 +4035,9 @@ SR5.dicePoolModTypes = {
   spiritType                : "SR5.SpiritTypeBonus",
   spellCategory             : "SR5.SpellCategoryBonus",
   sensorLockMod             : "SR5.SensorLockedTarget",
+  rccNoiseReduction         : "SR5.NoiseReduction",
   signatureSize             : "SR5.TargetSize",
+  signatureMasking          : "SR5.VehicleModEffectKind_signatureMasking",
   mark                      : "SR5.NumberOfWantedMarks",
   emulate                   : "SR5.MatrixActionEmulate",
   centering                 : "SR5.MetamagicCentering",
@@ -3899,9 +4090,12 @@ SR5.dicePoolModTypes = {
   socialFan                 : "SR5.SocialModFan",
   socialLacksKnowledge      : "SR5.SocialModLacksKnowledge",
   socialBlackmailed         : "SR5.SocialModBlackmailed",
+  socialIgnoreNegative      : "SR5.SOCIALTRAIT_IgnoreNegative",
   workingCondition          : "SR5.WorkingCondition",
   toolsAndParts             : "SR5.ToolsAndParts",
   plansMaterial             : "SR5.PlansMaterial",
+  missingParts              : "SR5.VehicleRepairMissingPartsShort",
+  nanomaintenance           : "SR5.Nanomaintenance",
   workingFromMemory         : "SR5.WorkingFromMemory",
   calledShot                : "SR5.CS_CalledShot",
   defenseInMelee 			  : "SR5.DefenseModInMeleeTargetedByRange",
@@ -4024,6 +4218,7 @@ SR5.itemTypes = {
   itemDrug                  : "TYPES.Item.itemDrug",
   itemEcho                  : "TYPES.Item.itemEcho",
   itemEffect                : "TYPES.Item.itemEffect",
+  itemFile                  : "TYPES.Item.itemFile",
   itemFocus                 : "TYPES.Item.itemFocus",
   itemGear                  : "TYPES.Item.itemGear",
   itemKarma                 : "TYPES.Item.itemKarma",
@@ -4100,6 +4295,7 @@ SR5.sourceList = {
   bulletsAndBandages        : "SOURCE.BulletsAndBandages",
   shadowSpells              : "SOURCE.ShadowSpells",
   lockdown 				  : "SOURCE.Lockdown",
+  aetherology               : "SOURCE.Aetherology",
 }
 
 //-----------------------------------//
@@ -4107,6 +4303,13 @@ SR5.sourceList = {
 //-----------------------------------//
 
 SR5.modifiersTypes = {
+  //Types written by the item computations (utilityItem.js), shown in an item sheet's calculation details
+  addComforts				  : "SR5.LifestyleComforts",
+  addNeighborhood			  : "SR5.LifestyleNeighborhood",
+  addSecurity				  : "SR5.LifestyleSecurity",
+  CustomCyberlimb			  : "SR5.AugmentationCyberlimbs",
+  factory					  : "SR5.VehicleModFactory",
+  swarm					  : "SR5.SwarmValue",
   adeptPower				  : "SR5.AdeptPower",
   ammunitionType 			  : "SR5.AmmunitionType",
   armor 					  : "SR5.Armor",
@@ -4158,6 +4361,7 @@ SR5.modifiersTypes = {
   spell 					  : "SR5.Spell",
   spiritType                : "SR5.SpiritType",
   spriteType 				  : "SR5.SpriteType",
+  hostType 				  : "SR5.HostType",
   vehicleMod				  : "SR5.VehicleMod",
   visionType				  : "SR5.VisionType",
   weaponAccessory 		  : "SR5.WeaponAccessory",

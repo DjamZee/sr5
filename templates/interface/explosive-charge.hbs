@@ -1,0 +1,71 @@
+<div class="sr-explosive-body">
+  <p class="sr-explosive-item"><strong>{{item.name}}</strong> — {{typeLabel}}, {{localize 'SR5.EXPLOSIVE_Rating'}} {{rating}}, {{quantity}} kg{{#if homemade}} ({{localize 'SR5.EXPLOSIVE_Homemade'}}){{/if}}</p>
+
+  <div class="form-group">
+    <label>{{localize 'SR5.EXPLOSIVE_Kilos'}}</label>
+    <input type="number" name="kilos" min="0" max="{{quantity}}" step="0.25" value="{{request.kilos}}">
+  </div>
+  <div class="form-group">
+    <label>{{localize 'SR5.EXPLOSIVE_Hits'}}</label>
+    <input type="number" name="hits" step="1" value="{{request.hits}}">
+  </div>
+  <p class="hint">{{localize 'SR5.EXPLOSIVE_HitsHint'}}</p>
+  <div class="form-group">
+    <label>{{localize 'SR5.EXPLOSIVE_Placement'}}</label>
+    <select name="placement" {{#if tamped}}disabled{{/if}}>
+      <option value="free" {{#if (eq request.placement 'free')}}selected{{/if}}>{{localize 'SR5.EXPLOSIVE_Placement_free'}}</option>
+      <option value="placed" {{#if (eq request.placement 'placed')}}selected{{/if}}>{{localize 'SR5.EXPLOSIVE_Placement_placed'}}</option>
+      <option value="tamped" {{#if (or tamped (eq request.placement 'tamped'))}}selected{{/if}}>{{localize 'SR5.EXPLOSIVE_Placement_tamped'}}</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>{{localize 'SR5.EXPLOSIVE_Shape'}}</label>
+    <select name="shape">
+      <option value="circular" {{#if (eq request.shape 'circular')}}selected{{/if}}>{{localize 'SR5.EXPLOSIVE_Shape_circular'}}</option>
+      <option value="directional" {{#if (eq request.shape 'directional')}}selected{{/if}}>{{localize 'SR5.EXPLOSIVE_Shape_directional'}}</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>{{localize 'SR5.EXPLOSIVE_GasLeak'}}</label>
+    <input type="checkbox" name="gasLeak" {{checked request.gasLeak}}>
+  </div>
+  <div class="form-group">
+    <label>{{localize 'SR5.EXPLOSIVE_Detonator'}}</label>
+    <select name="detonator">
+      <option value="0" {{#if (eq request.detonator 0)}}selected{{/if}}>{{localize 'SR5.EXPLOSIVE_Detonator_0'}}</option>
+      <option value="1" {{#if (eq request.detonator 1)}}selected{{/if}}>{{localize 'SR5.EXPLOSIVE_Detonator_1'}}</option>
+      <option value="2" {{#if (eq request.detonator 2)}}selected{{/if}}>{{localize 'SR5.EXPLOSIVE_Detonator_2'}}</option>
+      <option value="3" {{#if (eq request.detonator 3)}}selected{{/if}}>{{localize 'SR5.EXPLOSIVE_Detonator_3'}}</option>
+    </select>
+  </div>
+  {{#if isGM}}{{#if homemade}}
+  <div class="form-group sr-explosive-gm">
+    <label>{{localize 'SR5.EXPLOSIVE_GmOffset'}}</label>
+    <input type="number" name="gmOffset" min="-15" max="15" step="1" value="{{gmOffset}}">
+  </div>
+  <p class="hint">{{localize 'SR5.EXPLOSIVE_GmOffsetHint'}}</p>
+  {{/if}}{{/if}}
+
+  <div class="sr-explosive-result">
+    {{#if estimate}}<p class="hint">{{localize 'SR5.EXPLOSIVE_Estimate'}}</p>{{/if}}
+    {{#if out.dv}}
+    <p>{{localize 'SR5.EXPLOSIVE_Effective'}} {{out.effective}} — {{localize 'SR5.EXPLOSIVE_DV'}} <strong>{{out.dv}}P</strong>, {{localize 'SR5.ArmorPenetrationShort'}} {{out.ap}}, {{out.falloff}}/m, {{localize 'SR5.EXPLOSIVE_Radius'}} {{out.radius}} m</p>
+    {{#if (gt out.multiplier 1)}}<p>{{localize 'SR5.EXPLOSIVE_AgainstTarget'}} <strong>{{out.targetDV}}P</strong> (×{{out.multiplier}}), {{localize 'SR5.EXPLOSIVE_ArmorHalved'}}</p>{{/if}}
+    {{#if out.backgroundCount}}<p>{{localize 'SR5.EXPLOSIVE_Background'}} {{out.backgroundCount}} ({{out.backgroundRadius}} m)</p>{{/if}}
+    {{else}}
+    <p>{{localize 'SR5.EXPLOSIVE_Dud'}}</p>
+    {{/if}}
+  </div>
+
+  <div class="form-group">
+    <label>{{localize 'SR5.EXPLOSIVE_Target'}}</label>
+    <select name="target">
+      <option value="">—</option>
+      {{#each targets}}<option value="{{key}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+    </select>
+  </div>
+  {{#if threshold}}<p class="{{#if enough}}sr-explosive-ok{{else}}sr-explosive-short{{/if}}">{{#if enough}}{{localize 'SR5.EXPLOSIVE_Enough'}}{{else}}{{localize 'SR5.EXPLOSIVE_NotEnough'}}{{/if}} ({{out.targetDV}}P / {{threshold}}P)</p>{{/if}}
+  <p class="hint">{{localize 'SR5.EXPLOSIVE_TargetHint'}}</p>
+
+  <button type="button" data-action="detonate"><i class="fas fa-bomb"></i> {{localize 'SR5.EXPLOSIVE_Detonate'}}</button>
+</div>

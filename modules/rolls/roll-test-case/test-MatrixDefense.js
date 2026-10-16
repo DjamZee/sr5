@@ -16,6 +16,24 @@ import {
 import {
   activeHeadcase
 } from "../../system/monad-matrix.js"
+import {
+  PERCEPTION_BUTTON, requestForgetIntel
+} from "../../canvas/pan-crown/pan-perception-card.js"
+import {
+  confusePilotThreshold
+} from "../roll-helpers/electronic-warfare.js"
+import {
+  fileDefenseButton
+} from "../roll-helpers/file-actions.js"
+import {
+  isFile
+} from "../../system/matrix-files.js"
+import {
+  announceMatrixAction
+} from "../../system/matrix-api.js"
+
+//The actions whose success gives the attacker its marks (SR5 p. 240, 242; Kill Code p. 45)
+const MARKING_ACTIONS = ["hackOnTheFly", "bruteForce", "watchdog"]
 
 export default async function matrixDefenseInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId),
@@ -56,8 +74,9 @@ export default async function matrixDefenseInfo(cardData, actorId){
         })}`)
       }
     } else if (cardData.matrix.actionType === "sleaze") {
+      //SR5 p. 232: a failed Sleaze action gives the defender one mark, whatever the attacker chose (roll-message.js)
       cardData.chatCard.buttons.defenderPlaceMark = SR5_RollMessage.generateChatButton("nonOpposedTest", "defenderPlaceMark", `${game.i18n.format('SR5.DefenderPlaceMarkTo', {
-        key: cardData.matrix.mark, item: targetName, name: attacker.name
+        key: 1, item: targetName, name: attacker.name
       })}`)
     }
   }
@@ -85,7 +104,8 @@ export default async function matrixDefenseInfo(cardData, actorId){
         cardData.chatCard.buttons.attackerPlaceMark = SR5_RollMessage.generateChatButton("nonOpposedTest", "attackerPlaceMark", `${game.i18n.format('SR5.AttackerPlaceMarkTo', {
           key: cardData.matrix.mark, item: targetName, name: cardData.owner.speakerActor
         })}`)
-        if (actorData.matrix.deviceType !== "host") cardData.chatCard.buttons.matrixResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "matrixResistance", `${game.i18n.localize('SR5.TakeOnDamageMatrix')} (${cardData.damage.matrix.value})`)
+        //Neither a host nor a file can be damaged (SR5 p. 230)
+        if (actorData.matrix.deviceType !== "host" && !isFile(targetItem)) cardData.chatCard.buttons.matrixResistance = SR5_RollMessage.generateChatButton("nonOpposedTest", "matrixResistance", `${game.i18n.localize('SR5.TakeOnDamageMatrix')} (${cardData.damage.matrix.value})`)
         break
       case "dataSpike":
       case "iceBlueGoo":
@@ -109,13 +129,54 @@ export default async function matrixDefenseInfo(cardData, actorId){
       case "haywire":
         cardData.chatCard.buttons.haywire = SR5_RollMessage.generateChatButton("nonOpposedTest", "haywire", game.i18n.localize("SR5.ApplyEffect"))
         break
+      //Rigger 5.0 p. 34: the target is tracked for the rigger's slaved attackers until the end of the turn
+      case "targetDevice":
+        cardData.chatCard.buttons.targetDevice = SR5_RollMessage.generateChatButton("nonOpposedTest", "targetDevice", game.i18n.format("SR5.TargetDeviceApply", {
+          hits: netHits
+        }))
+        break
+      //Rigger 5.0 p. 34: the autopilot rolls its rating × 2 against half the net hits, rounded up
+      case "confusePilot":
+        cardData.chatCard.buttons.confusePilot = SR5_RollMessage.generateChatButton("nonOpposedTest", "confusePilot", game.i18n.format("SR5.ConfusePilotRoll", {
+          threshold: confusePilotThreshold(netHits)
+        }))
+        break
+      //Rigger 5.0 p. 35: the lock on the hacker goes down by the net hits. The lock is written on the hacker: his button
+      case "breakTargetLock":
+        cardData.chatCard.buttons.breakTargetLock = SR5_RollMessage.generateChatButton("attackerTest", "breakTargetLock", game.i18n.format("SR5.BreakTargetLockApply", {
+          hits: netHits
+        }))
+        break
       //SR5 p. 241: the hacker views the traffic of the target, as long as he keeps a mark on it.
       //The button is the hacker's: the card belongs to the defender, its other buttons to whoever owns it
       case "snoop":
         if (SHARED_VISION_ACTOR_TYPES.includes(actor.type)) cardData.chatCard.buttons.snoopVision = SR5_RollMessage.generateChatButton("attackerTest", "snoopVision", game.i18n.format("SR5.SharedVisionSeeThrough", {
           name: actor.name
         }))
-        else cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.DefenseFailure"))
+        //Lot 14: the messages and calls sent from or to the target, read in the hacker's commcode window
+        cardData.chatCard.buttons.snoopComm = SR5_RollMessage.generateChatButton("attackerTest", "snoopComm", game.i18n.format("SR5.COMMCODE_SnoopButton", {
+          name: actor.name
+        }))
+        break
+      //SR5 p. 246: the physical location of the target is found, and stays known while a mark stays (lot 14). The
+      //button is the hacker's, as Snoop's
+      case "traceIcon":
+        cardData.chatCard.buttons.traceLocate = SR5_RollMessage.generateChatButton("attackerTest", "traceLocate", game.i18n.format("SR5.COMMCODE_TraceButton", {
+          name: actor.name
+        }))
+        break
+      //SR5 p. 242: a silent icon found, the net hits go to information, the first one spotting it (couronne du PAN,
+      //lot 5). The button is the observer's, as Snoop's
+      case "matrixPerception":
+        cardData.chatCard.buttons[PERCEPTION_BUTTON] = SR5_RollMessage.generateChatButton("attackerTest", PERCEPTION_BUTTON, `${game.i18n.localize("SR5.MatrixPerceptionInfoButton")} (${netHits})`)
+        break
+      //SR5 p. 236: Hide beat the defender, who loses sight of the hider's icons. The defender rolled this card, on
+      //her own client
+      case "hide":
+        await requestForgetIntel({
+          holder: attacker?.uuid, observer: actor.uuid
+        })
+        cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.MatrixPerceptionLostSight"))
         break
       //A formatted Monad repairs its boot sector with as many Complex Actions as the hacker's net hits; rebooting
       //before that destroys it as an overflow on its Core would (Dark Terrors p. 88). Said on the card, the GM plays it
@@ -132,6 +193,17 @@ export default async function matrixDefenseInfo(cardData, actorId){
         cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.DefenseFailure"))
     }
   }
+
+  //Edit File on a file (SR5 p. 240): whatever the hits, the attacker applies it, as a bomb goes off at the try
+  await fileDefenseButton(cardData)
+
+  //A5: the modules hear of the action this defense resolves (matrix-api.js). The marks are those the card's button puts
+  const marks = Number(cardData.matrix.mark) || 0
+  announceMatrixAction({
+    actor: attacker, card: cardData, target: actor, successes: cardData.previousMessage.hits, netHits,
+    marksPlaced: netHits > 0 && MARKING_ACTIONS.includes(cardData.test.typeSub) ? marks : 0,
+    defenderMarks: netHits <= 0 && cardData.matrix.actionType === "sleaze" ? marks : 0,
+  })
 
   //Remove chat button from previous chat message
   if (cardData.previousMessage.messageId){

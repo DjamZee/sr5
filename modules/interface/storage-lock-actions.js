@@ -20,6 +20,9 @@ import {
 import {
   raisedThreshold
 } from "../rolls/roll-helpers/threshold.js"
+import {
+  refuseByRule, ruleLockActive
+} from "../system/rule-locks.js"
 
 // How close the picker must stand, in squares, centre to centre: beside it
 const PICK_REACH = 2
@@ -141,8 +144,13 @@ export class SR5StorageLock {
     const pickerToken = picker?.token ?? picker?.getActiveTokens(false, true)
       .find(t => t.parent?.id === storageToken?.parent?.id)
     // Said here, since the GM refuses it without a word
-    if (!(SR5StorageLock.squaresBetween(storageToken, pickerToken) <= PICK_REACH)) {
-      return ui.notifications.warn(game.i18n.localize("SR5.WARN_StorageLockTooFar"))
+    // The "ranges" rule lock lifted, the picker may work from afar; never from no token, or from another scene
+    const distance = SR5StorageLock.squaresBetween(storageToken, pickerToken)
+    if (!(distance <= PICK_REACH)) {
+      if (!Number.isFinite(distance)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_StorageLockTooFar"))
+      if (refuseByRule("ranges", "SR5.WARN_StorageLockTooFar", null, {
+        actor: picker
+      })) return
     }
     const data = {
       storageTokenUuid: storageToken.uuid, pickerTokenUuid: pickerToken.uuid, relock
@@ -155,9 +163,9 @@ export class SR5StorageLock {
    * who opens the lock once the action succeeds (SR5 p. 239-240). */
   static async requestHack(actor, picker) {
     const storage = SR5StorageLock.base(actor)
-    const content = game.i18n.format("SR5.StorageLockHackCard", {
+    const content = `<p>${game.i18n.format("SR5.StorageLockHackCard", {
       actor: picker?.name ?? game.user.name, storage: storage.name, rating: storage.system.lock.rating,
-    })
+    })}</p>`
     await ChatMessage.create({
       content, whisper: ChatMessage.getWhisperRecipients("GM").map(u => u.id).concat(game.user.id),
     })
@@ -180,23 +188,32 @@ export class SR5StorageLock {
     const picker = pickerToken?.actor
     const sender = game.users.get(senderId)
     const allowed = isPickRequestAllowed({
-      storage, picker, relock: !!data.relock, reach: PICK_REACH,
+      // Lifted, any distance on the same scene will do (squaresBetween is Infinity across scenes)
+      storage, picker, relock: !!data.relock, reach: ruleLockActive("ranges") ? PICK_REACH : Number.MAX_VALUE,
       distance: SR5StorageLock.squaresBetween(storageToken, pickerToken),
       senderOwns: actor => !!sender && actor.testUserPermission(sender, "OWNER"),
     })
     if (!allowed) return SR5_SystemHelpers.srLog(1, `Lock pick refused for user '${senderId}'`, data)
 
     const tools = lockTools(picker.items, item => isStoredAway(item, picker))
-    if (!tools.kit && game.settings.get("sr5", "sr5LockpickRequiresKit")) {
-      return SR5StorageLock.#card(picker, storage, {
+    // The "lockpick" box of the "objects" rule lock (formerly sr5LockpickRequiresKit): on, the card says a kit is
+    // needed, as before; lifted, the picker works bare-handed and the GM, whose browser this is, is told
+    if (!tools.kit) {
+      if (ruleLockActive("objects", "lockpick")) return SR5StorageLock.#card(picker, storage, {
         noKit: true
+      })
+      refuseByRule("objects", "SR5.StorageLockNoKit", null, {
+        actor: picker, lockCase: "lockpick"
       })
     }
 
     const lock = storage.system.lock
     const skill = picker.system.skills?.locksmith
     const autopicker = lock.type === "mechanical" ? tools.autopicker : 0
-    const pool = pickPool(skill, picker.system.attributes?.agility?.augmented?.value, autopicker)
+    const penalties = picker.system.penalties
+    //Wounds weigh on every test, and add up with the spells and other conditions (SR5 p. 171)
+    const penalty = ["condition", "magic", "special"].reduce((t, k) => t + (Number(penalties?.[k]?.actual?.value) || 0), 0)
+    const pool = pickPool(skill, picker.system.attributes?.agility?.augmented?.value, autopicker, penalty)
     const limit = pickLimit(skill?.limit?.value || picker.system.limits?.physicalLimit?.value, autopicker, lock.type)
     // No die, no test: Locksmith cannot be defaulted
     if (!pool) return SR5StorageLock.#card(picker, storage, {
@@ -258,10 +275,10 @@ export class SR5StorageLock {
     // alarm went off
     if (result.antiTamper) {
       await ChatMessage.create({
-        content: game.i18n.format(result.alarm ? "SR5.StorageLockAlarm" : "SR5.StorageLockAntiTamperHeld", {
+        content: `<p class="${result.alarm ? "sr5-notice-alert" : ""}">${game.i18n.format(result.alarm ? "SR5.StorageLockAlarm" : "SR5.StorageLockAntiTamperHeld", {
           actor: picker.name, storage: storage.name,
           hits: result.antiTamper.hits, threshold: result.antiTamper.threshold,
-        }),
+        })}</p>`,
         whisper: ChatMessage.getWhisperRecipients("GM").map(u => u.id),
       })
     }

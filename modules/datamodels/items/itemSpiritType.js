@@ -47,6 +47,8 @@ export class sr5ItemSpiritTypeDataModel extends foundry.abstract.TypeDataModel {
       baseSkillsRatio: new fields.StringField({
         initial: '', blank: true
       }),
+      // Those of the three the type does not have at all (Howling Shadows p. 130-155: the Chindi have no Assensing).
+      noBaseSkills: new fields.ArrayField(new fields.StringField()),
       // Skills the type grants, at Force and at half Force.
       skills: new fields.ArrayField(new fields.StringField()),
       halfSkills: new fields.ArrayField(new fields.StringField()),
@@ -60,7 +62,47 @@ export class sr5ItemSpiritTypeDataModel extends foundry.abstract.TypeDataModel {
         astralBonus: new fields.NumberField({
           initial: 0, integer: true
         }),
+        // Flat bonus on (REA + INT): "[(P x 2) + 1] + 2D6" when REA and INT stay at P (Howling Shadows p. 130)
+        physicalBonus: new fields.NumberField({
+          initial: 0, integer: true
+        }),
       }),
+      // Summoned by the Summoning skill. The extraplanar entities are not (DjamZ's ruling, 2026-10-07: the book
+      // gives no conjuring of them); the gamemaster ticks the box for an exception.
+      summonable: new fields.BooleanField({
+        initial: true
+      }),
+      // "" no Edge of its own (a summoned spirit borrows its summoner's, SR5 p. 306), "half" P/2, "full" P
+      edge: new fields.StringField({
+        initial: '', blank: true
+      }),
+      // Added to the Essence, which is the Force: "ESS P-2" (Howling Shadows p. 131)
+      essenceModifier: new fields.NumberField({
+        initial: 0, integer: true
+      }),
+      // "" from the attributes, "force" (P x 4) / 3 for the three limits (Howling Shadows p. 130)
+      limits: new fields.StringField({
+        initial: '', blank: true
+      }),
+      // Added to the Physical one of those: "Physique (P x 4)/3 + 1" (Dark Terrors p. 52)
+      physicalLimitBonus: new fields.NumberField({
+        initial: 0, integer: true
+      }),
+      // (P x forceMultiplier) + bonus; kind "" ordinary, "hardened", "mystic" (mystic and hardened)
+      armor: new fields.SchemaField({
+        forceMultiplier: new fields.NumberField({
+          initial: 0, integer: true, min: 0
+        }),
+        bonus: new fields.NumberField({
+          initial: 0, integer: true
+        }),
+        kind: new fields.StringField({
+          initial: '', blank: true
+        }),
+      }),
+      // Items a spirit of this type is given when it is created: natural weapons, powers the official list
+      // does not have, spells. Copies, dropped on the type's sheet.
+      items: new fields.ArrayField(new fields.ObjectField()),
       // "" inherits, "standard" gives Physical + Stun, "single" a lone monitor.
       conditionMonitor: new fields.StringField({
         initial: '', blank: true

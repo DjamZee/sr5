@@ -5,8 +5,12 @@ import {
   SR5_Toxins
 } from "../items/toxins.js"
 import {
+  prototypeChanges, tokenFamily
+} from "../../system/token-defaults.js"
+import {
   cleanCreatedSource
 } from "../../migration-source-modifiers.js"
+import Migration from "../../migration.js"
 import {
   GM_ONLY_FIELDS
 } from "../../system/implant-essence.js"
@@ -17,6 +21,9 @@ import {
   reservedChangedBy
 } from "../../system/reserved-fields.js"
 import {
+  stripTakenOut
+} from "../../rolls/roll-helpers/conceal-rules.js"
+import {
   SR5_EntityHelpers
 } from "../helpers.js"
 import {
@@ -26,14 +33,24 @@ import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
+  linkLockStatusIds,
+  isLinkLockEffect
+} from "../../system/link-lock.js"
+import {
+  bloodMetamagicKey
+} from "../../system/blood-magic-rules.js"
+import {
   applyDiseaseEffects
 } from "../../system/diseases.js"
 import {
   SR5_UtilityItem 
 } from "../items/utilityItem.js"
 import {
-  SR5_CharacterUtility 
+  SR5_CharacterUtility
 } from "./utilityActor.js"
+import {
+  personaMayBeSlaved, personaPanMax
+} from "./living-persona.js"
 import {
   SR5_CompendiumUtility 
 } from "./utilityCompendium.js"
@@ -59,6 +76,9 @@ import {
   SR5_MarkHelpers
 } from "../../rolls/roll-helpers/mark.js"
 import {
+  vouch
+} from "../../rolls/roll-helpers/attack-card.js"
+import {
   isStoredAway
 } from "../../interface/storage-rules.js"
 import {
@@ -77,8 +97,29 @@ import {
   migrateNegotiationSkill
 } from "../../datamodels/common/negotiationMigration.js"
 import {
-  missingBaseDevice
+  migrateLegacyImages, migrateLegacyDescription, migrateLocksmithLimit
+} from "../../datamodels/common/v12ImportMigration.js"
+import {
+  missingBaseDevice, hasBaseDevice
 } from "./base-device.js"
+import {
+  SR5_SpiritTypes
+} from "../items/spirit-types.js"
+import {
+  requestForgetIntel
+} from "../../canvas/pan-crown/pan-perception-card.js"
+import {
+  hasRiggerInterface
+} from "../../system/rigging-rules.js"
+import {
+  mayJumpIn
+} from "./technomancer-streams.js"
+import {
+  applySwarm
+} from "../../system/swarm.js"
+import {
+  giveStarterKit
+} from "../../system/starter-kit.js"
 
 /**
  * Extend the base Actor class to implement additional logic specialized for Shadowrun 5.
@@ -92,9 +133,23 @@ export class SR5Actor extends Actor {
     installLiveStatuses(this)
   }
 
+  //"Import Data" replaces the items with the file's: a player character gets back the starting kit it lacks
+  //(relecture djamz.13, R8, system/starter-kit.js; measured in game: the import had wiped it)
+  async importFromJSON(json) {
+    const result = await super.importFromJSON(json)
+    await giveStarterKit(this, {
+      again: true
+    })
+    return result
+  }
+
   //The Negotiation skill under its former key, on an actor imported after the world migration (datamodels/common/negotiationMigration.js)
   static migrateData(source) {
     migrateNegotiationSkill(source?.system)
+    //What an actor exported from V12 still carries, imported after the world migration (datamodels/common/v12ImportMigration.js)
+    migrateLegacyImages(source)
+    migrateLegacyDescription(source?.system)
+    migrateLocksmithLimit(source)
     return super.migrateData(source)
   }
 
@@ -211,6 +266,9 @@ export class SR5Actor extends Actor {
         const spiritType = spiritResult.element.querySelector("[name=spiritType]").value
         const spiritForce = spiritResult.element.querySelector("[name=spiritForce]").value
         baseItems = await SR5_CompendiumUtility.getBaseItems(data.type, spiritType, spiritForce)
+        // A custom type with a picture of its own lends it to the portrait and the token, an entity's above all
+        const typeImg = SR5_SpiritTypes.get(spiritType)?.img
+        if (typeImg && data.img === "systems/sr5/assets/img/actors/actorSpirit.svg" && !typeImg.endsWith("/itemSpiritType.svg") && !typeImg.endsWith("/itemSpirit.svg")) data.img = typeImg
         for (let baseItem of baseItems) {
           data.items.push(baseItem)
         }
@@ -306,6 +364,8 @@ export class SR5Actor extends Actor {
       ui.notifications?.warn(game.i18n.localize("SR5.WARN_GMOnlyField"))
       return false
     }
+    //SR5 p. 422: a hidden weapon made ready from the sheet is taken out, as through Item#_preUpdate
+    stripTakenOut(this, changes)
     return super._preUpdate(changes, options, user)
   }
 
@@ -313,8 +373,9 @@ export class SR5Actor extends Actor {
     await super._preCreate(data, options, user)
     // An actor exported prepared (the Mégapack actors) arrives without its computed modifiers
     cleanCreatedSource(this)
-    let createData = {
-    }
+    // A head case saved the old way (Nanite Volume in Resonance) and imported after the world's migration ran
+    // (a JSON file, another world, a module pack) is moved here, as the migration does (migration.js)
+    let createData = Migration.migrateHeadcaseNaniteData(this)
     foundry.utils.mergeObject(createData, {
       "prototypeToken.sight.enabled": true,
       "prototypeToken.sight.range": 0,
@@ -397,6 +458,10 @@ export class SR5Actor extends Actor {
         SR5_SystemHelpers.srLog(1, `Unknown '${this.type}' type in 'base _preCreate()'`)
     }
 
+    // The GM's token for this family (lot 9, system/token-defaults.js): nothing set, nothing changed
+    const family = tokenFamily(this.type, this.system?.matrix?.deviceType)
+    if (family) foundry.utils.mergeObject(createData, prototypeChanges(family))
+
     // A summoned actor wears the token kept when it was last dismissed. That
     // token may be empty or half written on older items, so never let it erase
     // the picture its item carries.
@@ -473,6 +538,9 @@ export class SR5Actor extends Actor {
         SR5_CharacterUtility.applyRacialModifers(actor)
         break
       case "actorDrone":
+        SR5_CharacterUtility.resetCalculatedValues(actor)
+        SR5_CharacterUtility.applyVehicleReplacements(actor)
+        break
       case "actorDevice":
       case "actorSprite":
       case "actorAgent":
@@ -499,11 +567,17 @@ export class SR5Actor extends Actor {
     }
     switch (actor.type) {
       case "actorDrone":
+        actor.system.hasRiggerInterface = hasRiggerInterface(actor.system)
+        //Jumping in takes a control rig, or the echo that stands for one (SR5 p. 243, 261, 267; Data Trails p. 63)
+        actor.system.canJumpIn = mayJumpIn(actor.system, actor.system.hasRiggerInterface)
         if (actor.system.vehicleOwner.items.length) SR5_CharacterUtility.applyAutosoftEffect(actor)
         SR5_CharacterUtility.updateAttributes(actor)
+        SR5_CharacterUtility.capVehicleArmor(actor)
         SR5_CharacterUtility.updateResistances(actor)
-        SR5_CharacterUtility.updateConditionMonitors(actor)        
-        SR5_CharacterUtility.updatePenalties(actor)  
+        SR5_CharacterUtility.updateConditionMonitors(actor)
+        //A swarm's ratings, once the monitors tell a wrecked drone, before the tests (Rigger 5.0 p. 35)
+        applySwarm(actor, (item, target) => SR5_CharacterUtility.applyCustomEffects(item, target))
+        SR5_CharacterUtility.updatePenalties(actor)
         SR5_CharacterUtility.updateDefenses(actor)
         SR5_CharacterUtility.updateRecoil(actor)      
         SR5_CharacterUtility.updateInitiativePhysical(actor)
@@ -647,6 +721,9 @@ export class SR5Actor extends Actor {
         case "itemMetamagic":
         case "itemEcho":
           if (iData.isActive && Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
+          //Sacrifice and Cannibalize (Street Grimoire p. 89-90) are known once learned, recognised by their name: the
+          //items copied into a world carry no effect. Nothing happens without a choice of their owner (blood-magic.js)
+          if (i.type === "itemMetamagic" && bloodMetamagicKey(i) && actor.system.magic?.metamagics) actor.system.magic.metamagics[bloodMetamagicKey(i)] = true
           break
 					
         case "itemPreparation":
@@ -693,6 +770,8 @@ export class SR5Actor extends Actor {
           i.prepareData()
           SR5_UtilityItem._handleAugmentation(iData, actor)
           // An implant improved or lowered in place keeps the highest Essence it took (Chrome Flesh p. 74, SR5 p. 53)
+          // The cost before that peak is kept: the end of creation starts the peak from it (peaksAtCreationEnd)
+          iData.essenceCost.withoutPeak = iData.essenceCost.value
           iData.essenceCost.value = essenceTaken(i, iData.essenceCost.value)
           if (!iData.isAccessory) SR5_EntityHelpers.updateModifier(actor.system.essence, `${i.name}`, `itemAugmentation`, -iData.essenceCost.value)
           if (iData.isActive && Object.keys(iData.customEffects).length) SR5_CharacterUtility.applyCustomEffects(i, actor)
@@ -855,6 +934,9 @@ export class SR5Actor extends Actor {
             case "sustaining":
               iData.spellChoices = SR5_UtilityItem._generateSustainFocusSpellList(iData, actor)
               break
+            //Street Grimoire p. 90: no bonus, it stores Blood Magic Points (blood-magic.js)
+            case "athame":
+              break
             default:
               SR5_SystemHelpers.srLog(1,`Unknown focus type '${iData.type}' in 'prepareEmbeddedDocuments()'`)
           }
@@ -922,6 +1004,7 @@ export class SR5Actor extends Actor {
         case "itemLanguage":
         case "itemKnowledge":
         case "itemMark":
+        case "itemFile":
         case "itemContact":
         case "itemSpritePower":
           break
@@ -960,9 +1043,14 @@ export class SR5Actor extends Actor {
               SR5_CharacterUtility.updateInitiativeMatrix(actor)
               // Drone data propagation is now handled by the updateActor hook
               if (iData.type === "livingPersona" || iData.type === "headcase") SR5_CharacterUtility.generateResonanceMatrix(actor)
-              iData.pan.max = actorData.matrix.deviceRating * 3
+              //A living persona is no device and takes no slave (SR5 p. 253), save with Fusion avec la matrice (KC p. 107)
+              iData.pan.max = iData.type === "livingPersona" ? personaPanMax(actor, actorData.matrix.deviceRating) : actorData.matrix.deviceRating * 3
             }
+            //Fusion avec la matrice at 2 or 10 Karma: the persona may join another PAN as a slave (Kill Code p. 107)
+            if (iData.type === "livingPersona" && personaMayBeSlaved(actor, i)) actorData.matrix.potentialPanObject.gears[i.uuid] = i.name
           } else if (actor.type === "actorDrone"){
+            //Its matrix is its base device's: a commlink carried aboard does not overwrite its marks (base-device.js)
+            if (iData.type !== "baseDevice" && hasBaseDevice(actor.items)) break
             SR5_CharacterUtility.generateVehicleMatrix(actor, iData)
             SR5_CharacterUtility.generateMatrixResistances(actor, i)
             SR5_CharacterUtility.generateMatrixActionsDefenses(actor)
@@ -1063,6 +1151,9 @@ export class SR5Actor extends Actor {
       } = await import("../../rolls/roll-helpers/grapple.js")
       chatData = data.rollType === "resistanceCard" ? SR5_GrappleHelpers.crushRollData(data.holderId, data.actorId, sender) : null
     } else if (!sender.isGM) chatData = null
+    //What the GM worked out for this player (a drone's biofeedback, dumpshock): vouched for as on his own browser,
+    //where the card behind it may be the drone's, which the rigger does not stand for (attack-card.js)
+    else vouch(chatData)
     if (!chatData) return SR5_SystemHelpers.srLog(1, `actorRoll refused from ${senderId}`, data)
     SR5_PrepareRollTest.rollTest(actor, data.rollType, data.rollKey, chatData)
   }
@@ -1104,6 +1195,11 @@ export class SR5Actor extends Actor {
   //A character in VR when the device reboots takes dumpshock (SR5 p. 244), whatever made it reboot
   async rebootDeck() {
     SR5_ActorHelper.dumpshockIfInVR(this)
+    //SR5 p. 236: whoever had spotted its icons loses sight of them, and it starts again without what it had spotted
+    //(couronne du PAN, lot 5)
+    await requestForgetIntel({
+      holder: this.uuid, clearOwn: true
+    })
     let actorId = (this.isToken ? this.token.id : this.id)
     let dataToUpdate = {
     }
@@ -1173,15 +1269,16 @@ export class SR5Actor extends Actor {
       sr5OverwatchLower: "reboot"
     })
 
-    //Delete effects from Deck
-    for (let i of this.items){
-      if (i.type === "itemEffect" && i.system.durationType === "reboot"){
-        await this.deleteEmbeddedDocuments("Item", [i.id])
-      }
-    }
+    //Delete effects from Deck. A reboot cuts the connection (SR5 p. 231, 250; Kill Code p. 74): every link lock goes
+    //with it, permanent as its effect is, and so does its status
+    const ended = this.items.filter(i => i.type === "itemEffect" && (i.system.durationType === "reboot" || isLinkLockEffect(i))).map(i => i.id)
+    if (ended.length) await this.deleteEmbeddedDocuments("Item", ended)
+    const lockStatuses = linkLockStatusIds(this)
+    if (lockStatuses.length) await this.deleteEmbeddedDocuments("ActiveEffect", lockStatuses)
 
-    //deviceName is prepared from the active device, the copy only holds the source
-    ui.notifications.info(`${this.system.matrix.deviceName} ${game.i18n.localize("SR5.Rebooted")}.`)
+    //deviceName is prepared from the active device, the copy only holds the source; empty when that device was just
+    //turned off: the persona's name then (Anatolie)
+    ui.notifications.info(`${this.system.matrix.deviceName || SR5_EntityHelpers.displayName(this)} ${game.i18n.localize("SR5.Rebooted")}.`)
   }
 
   //Reset Cumulative Recoil (SR5 p. 178)

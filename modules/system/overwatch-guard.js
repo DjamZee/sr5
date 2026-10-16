@@ -9,6 +9,10 @@
 // to a base actor with a lower score. So the guard never looks for the key in what is sent: it works out the score
 // the update would leave, and compares it.
 
+import {
+  playerRollsChecked
+} from "../rolls/roll-helpers/socket-guard.js"
+
 const PATH = "system.matrix.overwatchScore"
 /** The lowerings a player writes herself, named by the update's sr5OverwatchLower option */
 export const LOWER_REASONS = {
@@ -162,13 +166,22 @@ function isActiveGM(){
   return !!game.user?.isGM && game.users?.activeGM?.id === game.user.id
 }
 
+/**
+ * Whether the GMs hear of a lowering a player wrote. A reboot or an Emulate she announces is honest play: told only
+ * while the world checks the players' rolls (sr5CheckPlayerRolls, off by default, DjamZ 08/10); the jack out of every
+ * honest decker whispered « À toi d'arbitrer » (lot 17b, M6). An unannounced lowering is always told.
+ */
+export function dropTold(options, checked = playerRollsChecked()){
+  return !announced(options) || checked
+}
+
 // Every GM keeps the memory up to date, so that another GM who becomes the active one reads it fresh; the active GM
 // alone tells the GMs
 async function tellDrop(key, name, after, options, userId){
   if (!game.user?.isGM) return
   const writer = game.users?.get(userId)
   const drop = overwatchDrop(key, after, writer)
-  if (!drop || !isActiveGM()) return
+  if (!drop || !isActiveGM() || !dropTold(options)) return
   const escape = text => foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "")
   await ChatMessage.create({
     content: `<p>${game.i18n.format("SR5.WARN_OverwatchLoweredByPlayer", {

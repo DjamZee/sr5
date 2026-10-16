@@ -41,7 +41,8 @@ export function defenseActorId(selectedId, card, resolveActor) {
 
 // The actor defending against a matrix attack card: its target first, then the selected one; never
 // its author, still selected after the attack, whose deck the choice offered (Anatole's matrix trial).
-// Null when nobody may defend: the button refuses
+// Null when nobody may defend: the button refuses. The clinch (Run & Gun p. 133) follows it too: the gamemaster
+// still holding the attacker defended with the attacker's Reaction (manual, part 3)
 export function matrixDefenseActorId(selectedId, card, resolveActor) {
   const attacker = card?.owner?.speakerId ? resolveActor(card.owner.speakerId) : null
   const isAttacker = actor => !!attacker && actor?.uuid === attacker.uuid
@@ -95,13 +96,25 @@ export function firstAidPatient(hasTarget, targetActor, selectedActor) {
 // or a single condition monitor (grunt, AI core, homunculus and watcher, SR5 p. 301). Empty when it has neither.
 // SR5 p. 148: first aid is emergency medical care (no surgery, no implant repair); drones and vehicles are repaired with
 // the vehicle mechanic skills (p. 147): their condition monitor is structure, no patient, nor is a device with only a Matrix monitor
+// An AI's core is code, not flesh: it heals by the Medic program or a device repair (Data Trails p. 165), never by first aid
 export function patientMonitors(patient) {
   if (patient?.type === "actorDrone") return []
+  if (patient?.system?.activeSpecialAttribute === "depth") return []
   let monitors = patient?.system?.conditionMonitors ?? {
   }
   if (monitors.physical && monitors.stun) return ["physical", "stun"]
   if (monitors.condition) return ["condition"]
   return []
+}
+
+// Health spells affect "un organisme vivant" (SR5 p. 285): not a drone, nor an AI's core, nor what has no Physical
+// or single condition monitor to heal (a device, an agent, a sprite)
+export function isLivingPatient(patient) {
+  if (patient?.type === "actorDrone") return false
+  if (patient?.system?.activeSpecialAttribute === "depth") return false
+  const monitors = patient?.system?.conditionMonitors ?? {
+  }
+  return !!(monitors.physical || monitors.condition)
 }
 
 // True when the patient wears a full armor (SR5 p. 207): an active armor flagged as such

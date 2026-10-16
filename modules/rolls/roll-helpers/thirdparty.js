@@ -18,6 +18,9 @@ import {
   isActiveGM, readLedger, banishKey, banishCardSeen, setBanishTotal
 } from "../../system/spirit-ledger.js"
 import {
+  chanceSpent, playerRollsChecked
+} from "./socket-guard.js"
+import {
   SR5_ActorHelper
 } from "../../entities/actors/entityActor-helpers.js"
 import {
@@ -35,6 +38,9 @@ import {
 import {
   SR5_PrepareRollTest 
 } from "../roll-prepare.js"
+import {
+  MAJOR_FORM_POWERS
+} from "../../entities/actors/technomancer-streams.js"
 
 // The warning shown when the owner of a resistance card was deleted: the ritual names its leader,
 // every other resistance (summoning, compiling...) its author
@@ -94,6 +100,7 @@ export class SR5_ThirdPartyHelpers {
     //add roll info for Sprite resistance
     else if (cardData.test.typeSub === "compileSprite"){
       rollData.matrix.spriteType = cardData.matrix.spriteType
+      rollData.matrix.majorForm = !!cardData.matrix.majorForm
       rollData.matrix.level = cardData.matrix.level
       rollData.test.type = "compilingResistance"
       rollData.test.title = `${game.i18n.localize("SR5.CompilingResistance")} (${rollData.previousMessage.hits})`
@@ -272,7 +279,7 @@ export class SR5_ThirdPartyHelpers {
           },
           {
             action: "cancel",
-            label: "Cancel",
+            label: game.i18n.localize("SR5.Cancel"),
             callback: () => ({
               action: "cancel" 
             }),
@@ -348,8 +355,15 @@ export class SR5_ThirdPartyHelpers {
       astralLimit: banisher.system.limits?.astralLimit?.value,
       spiritRoll: cardData.roll?.r,
       force,
+      banisherChance: chanceSpent(banishingData, banisher), spiritChance: chanceSpent(cardData, spirit),
     })
     if (!verdict.ok) return reject(verdict.reason)
+    //The players' rolls not checked (world setting): the hits both cards announce
+    if (!playerRollsChecked()) {
+      verdict.banisherHits = Math.max(0, Number(banishingData.roll?.hits) || 0)
+      verdict.spiritHits = Math.max(0, Number(cardData.roll?.hits) || 0)
+      verdict.netHits = Math.max(0, verdict.banisherHits - verdict.spiritHits)
+    }
     const total = Number(ledger.banish?.[banishKey(spirit)]) || 0
     const confirmed = await foundry.applications.api.DialogV2.confirm({
       window: {
@@ -410,7 +424,9 @@ export class SR5_ThirdPartyHelpers {
     //Its skills and its powers: the card does not tell which test it was, and its type is the author's to write
     const largestPool = Math.max(0, ...Object.values(spirit.system.skills ?? {
     }).map(s => Number(s?.test?.dicePool) || 0), ...spirit.items.map(i => Number(i.system?.test?.dicePool) || 0))
-    const hits = recountHits(cardData.roll?.r, largestPool, spirit.system.specialAttributes?.edge?.augmented?.value)
+    //The players' rolls not checked (world setting): the hits the card announces
+    const hits = playerRollsChecked() ? recountHits(cardData.roll?.r, largestPool, spirit.system.specialAttributes?.edge?.augmented?.value, 0,
+      chanceSpent(cardData, spirit)) : Math.max(0, Number(cardData.roll?.hits) || 0)
     if (hits === null) return rejectLeash("dice")
     if (!testsLeash({
       hits, force, services: spirit.system.services.value
@@ -700,9 +716,13 @@ export class SR5_ThirdPartyHelpers {
         ui.notifications.info(`${actor.name} ${game.i18n.localize("SR5.INFO_SummonSpirit")} ${game.i18n.localize(SR5.spiritTypes[messageData.magic.spiritType])} (${messageData.magic.force})`)
         break
       }
-      case "compileSprite":
+      case "compileSprite": {
+        //Kill Code p. 102: a sprite of major form carries the power of its type, written in its name and description
+        const majorPower = messageData.matrix.majorForm ? MAJOR_FORM_POWERS[messageData.matrix.spriteType] : null
+        const majorName = majorPower ? `, ${game.i18n.localize("SR5.SpriteMajorForm")}` : ""
+        const majorText = majorPower ? `<h3>${game.i18n.localize("SR5.SpriteMajorForm")} : ${game.i18n.localize(`SR5.SpriteMajorPower_${majorPower}`)}</h3>${game.i18n.localize(`SR5.SpriteMajorPower_${majorPower}_D`)}<p>${game.i18n.localize("SR5.SpriteMajorFormUse")}</p>` : ""
         buildItem = {
-          name: `${game.i18n.localize("SR5.CompiledSprite")} (${game.i18n.localize(SR5.spriteTypes[messageData.matrix.spriteType])}, ${messageData.matrix.level})`,
+          name: `${game.i18n.localize("SR5.CompiledSprite")} (${game.i18n.localize(SR5.spriteTypes[messageData.matrix.spriteType])}, ${messageData.matrix.level}${majorName})`,
           type: "itemSprite",
           img: `systems/sr5/assets/img/items/itemSprite.svg`,
           ["system.type"]: messageData.matrix.spriteType,
@@ -710,11 +730,12 @@ export class SR5_ThirdPartyHelpers {
           ["system.tasks.max"]: messageData.previousMessage.hits - messageData.roll.hits,
           ["system.tasks.value"]: messageData.previousMessage.hits - messageData.roll.hits,
           ["system.compilerResonance"]: actorData.specialAttributes.resonance.augmented.value,
-          ["system.description"]: `${game.i18n.localize(SR5.spriteTypesDescription[messageData.matrix.spriteType])}`,
+          ["system.description"]: `${game.i18n.localize(SR5.spriteTypesDescription[messageData.matrix.spriteType])}${majorText}`,
           ["system.compiler"]: actor.id,
         }
-        ui.notifications.info(`${actor.name} ${game.i18n.localize("SR5.INFO_CompileSprite")} ${game.i18n.localize(SR5.spriteTypes[messageData.matrix.spriteType])} (${messageData.matrix.level})`)
+        ui.notifications.info(`${actor.name} ${game.i18n.localize("SR5.INFO_CompileSprite")} ${game.i18n.localize(SR5.spriteTypes[messageData.matrix.spriteType])} (${messageData.matrix.level}${majorName})`)
         break
+      }
       case "createPreparation": {
         let preparation = actor.items.find(i => i.uuid === messageData.owner.itemUuid)
         //A plain copy of the spell's data: the live model of the sheet's spell is never written, and the values of

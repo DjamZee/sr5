@@ -6,7 +6,7 @@
 			{{#if (and canReboot (or (eq actor.type 'actorPc') (eq actor.type 'actorGrunt') (eq actor.type 'actorDevice') (eq actor.type 'actorDrone')))}}
 			<div class="col-2 SR-TextCenter" data-helpTitle="{{localize 'SR5.DeviceReboot'}}"
 			  data-helpMessage="{{localize 'SR5.HELP_DeviceRebootMsg'}}">
-				<a class="reset-deck" data-title="{{localize 'SR5.DeviceReboot'}}"><em class="fas fa-sm fa-sync"></em></a>
+				<a class="reset-deck" data-tooltip="{{localize 'SR5.DeviceReboot'}}"><em class="fas fa-sm fa-sync"></em></a>
 			</div>
 			{{/if}}
 		</li>
@@ -25,9 +25,9 @@
 			<div class="col-10">{{localize 'SR5.WirelessMode'}}</div>
 			<div class="col-2 SR-TextCenter">
 				{{#if (ne system.wirelessTurnedOn false)}}
-				<a class="drone-wireless-toggle" data-title="{{localize 'SR5.DisableWirelessMode'}}"><em class="fas fa-sm fa-wifi SR-SubColor"></em></a>
+				<a class="drone-wireless-toggle" data-tooltip="{{localize 'SR5.DisableWirelessMode'}}"><em class="fas fa-sm fa-wifi SR-SubColor"></em></a>
 				{{else}}
-				<a class="drone-wireless-toggle" data-title="{{localize 'SR5.EnableWirelessMode'}}"><em class="fas fa-sm fa-wifi"></em></a>
+				<a class="drone-wireless-toggle" data-tooltip="{{localize 'SR5.EnableWirelessMode'}}"><em class="fas fa-sm fa-wifi"></em></a>
 				{{/if}}
 			</div>
 		</li>
@@ -61,6 +61,33 @@
 		</li>
 		{{/if}}
 
+		{{#if (and (eq actor.type 'actorDevice') panMasterOptions)}}
+		<li class="grid"
+		  data-helpTitle="{{localize 'SR5.DEVICE_PanMaster'}}"
+		  data-helpMessage="{{localize 'SR5.HELP_PanMasterMsg'}}"
+		>
+			<div class="col-5">{{localize 'SR5.DEVICE_PanMaster'}}</div>
+			<div class="col-7">
+				<select name="system.matrix.panMaster" data-dtype="String">
+					<option value="">{{localize 'SR5.DEVICE_PanMasterNone'}}</option>
+					{{#if panMasterOptions.unknown}}
+					<option value="{{panMasterOptions.unknown}}" selected>{{panMasterOptions.unknown}}</option>
+					{{/if}}
+					{{#if panMasterOptions.hosts.length}}
+					<optgroup label="{{localize 'SR5.DEVICE_PanMasterHosts'}}">
+						{{selectOptions panMasterOptions.hosts selected=system.matrix.panMaster valueAttr="value" labelAttr="label"}}
+					</optgroup>
+					{{/if}}
+					{{#if panMasterOptions.devices.length}}
+					<optgroup label="{{localize 'SR5.DEVICE_PanMasterDevices'}}">
+						{{selectOptions panMasterOptions.devices selected=system.matrix.panMaster valueAttr="value" labelAttr="label"}}
+					</optgroup>
+					{{/if}}
+				</select>
+			</div>
+		</li>
+		{{/if}}
+
 		{{#ife system.matrix.deviceType "ice"}}
 		<li class="grid" 
 		  data-helpTitle="{{localize 'SR5.IceType'}}"
@@ -71,6 +98,38 @@
 				{{selectOptions lists.iceTypes selected=system.matrix.deviceSubType localize=true}}
 			</select>
 		</li>
+		{{#if iceHostOptions}}
+		<li class="grid"
+		  data-helpTitle="{{localize 'SR5.DEVICE_IceHost'}}"
+		  data-helpMessage="{{localize 'SR5.HELP_IceHostMsg'}}"
+		>
+			<div class="col-5">{{localize 'SR5.DEVICE_IceHost'}}</div>
+			<div class="col-7">
+				<select name="system.matrix.hostUuid" data-dtype="String" {{#unless system.isGM}}disabled{{/unless}}>
+					<option value="">{{localize 'SR5.DEVICE_IceHostNone'}}</option>
+					{{#if iceHostOptions.unknown}}
+					<option value="{{iceHostOptions.unknown}}" selected>{{iceHostOptions.unknown}}</option>
+					{{/if}}
+					{{selectOptions iceHostOptions.hosts selected=system.matrix.hostUuid valueAttr="value" labelAttr="label"}}
+				</select>
+			</div>
+		</li>
+		{{/if}}
 		{{/ife}}
+
+		{{#if (and (eq actor.type 'actorDevice') (eq system.matrix.deviceType "host"))}}
+		<li class="grid"
+		  data-helpTitle="{{localize 'SR5.HostType'}}"
+		  data-helpMessage="{{localize 'SR5.HELP_HostTypeMsg'}}"
+		>
+			<div class="col-5">{{localize 'SR5.HostType'}}</div>
+			<div class="col-7">
+				<select name="system.matrix.hostType" data-dtype="String">
+					<option value="">{{localize 'SR5.HostTypeNone'}}</option>
+					{{selectOptions lists.hostTypes selected=system.matrix.hostType localize=true}}
+				</select>
+			</div>
+		</li>
+		{{/if}}
 	</ul>
 </div>

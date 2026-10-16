@@ -23,7 +23,7 @@
       set by mistake (implant-register.js) --}}
 {{#if essencePeak}}
 <li class="grid">
-    <div class="col-5" data-title="{{localize 'SR5.EssencePeakHint'}}">{{localize 'SR5.EssencePeak'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-5" data-tooltip="{{localize 'SR5.EssencePeakHint'}}">{{localize 'SR5.EssencePeak'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-2">{{essencePeak}}</div>
     <div class="col-5 SR-TextRight"><a data-action="resetEssencePeak"><em class="fas fa-sm fa-rotate-left"></em> {{localize 'SR5.EssencePeakReset'}}</a></div>
 </li>
@@ -33,25 +33,25 @@
 {{#unless system.isAccessory}}
 {{#if (or (eq system.type "cyberware") (eq system.type "nanocyber"))}}
 <li class="grid">
-    <div class="col-5" data-title="{{localize 'SR5.UnderAdapsineHint'}}">{{localize 'SR5.UnderAdapsine'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-5" data-tooltip="{{localize 'SR5.UnderAdapsineHint'}}">{{localize 'SR5.UnderAdapsine'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-1"><input type="checkbox" name="system.underAdapsine" data-dtype="Boolean" {{checked system.underAdapsine}} {{#if (or (not userIsGM) system.reversibleEssence)}}disabled{{/if}} /></div>
 </li>
 {{/if}}
 {{#if (or (eq system.type "bioware") (eq system.type "culturedBioware"))}}
 <li class="grid">
-    <div class="col-5" data-title="{{localize 'SR5.TranshumanGiftHint'}}">{{localize 'SR5.TranshumanGift'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-5" data-tooltip="{{localize 'SR5.TranshumanGiftHint'}}">{{localize 'SR5.TranshumanGift'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-1"><input type="checkbox" name="system.transhumanGift" data-dtype="Boolean" {{checked system.transhumanGift}} {{#unless userIsGM}}disabled{{/unless}} /></div>
 </li>
 {{/if}}
 {{#if augmentationBundleRule}}
 <li class="grid">
-    <div class="col-5" data-title="{{localize 'SR5.AugmentationBundleHint'}}">{{localize 'SR5.AugmentationBundle'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-5" data-tooltip="{{localize 'SR5.AugmentationBundleHint'}}">{{localize 'SR5.AugmentationBundle'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-1"><input type="checkbox" name="system.augmentationBundle" data-dtype="Boolean" {{checked system.augmentationBundle}} {{#unless userIsGM}}disabled{{/unless}} /></div>
 </li>
 {{/if}}
 {{!-- Better Than Bad p. 141: an Essence given back when the implant is removed (Tatouage de mana gris) --}}
 <li class="grid">
-    <div class="col-5" data-title="{{localize 'SR5.ReversibleEssenceHint'}}">{{localize 'SR5.ReversibleEssence'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-5" data-tooltip="{{localize 'SR5.ReversibleEssenceHint'}}">{{localize 'SR5.ReversibleEssence'}}{{localize 'SR5.Colons'}}</div>
     <div class="col-1"><input type="checkbox" name="system.reversibleEssence" data-dtype="Boolean" {{checked system.reversibleEssence}} {{#unless userIsGM}}disabled{{/unless}} /></div>
 </li>
 {{/unless}}

@@ -4,6 +4,9 @@ import {
 import {
   trustedAttackCard
 } from "../roll-helpers/attack-card.js"
+import {
+  defenseUnlimitedHits
+} from "../roll-helpers/limit.js"
 
 export default async function rammingDefense(rollData, actor, chatData){
   //The ramming card read again: its speeds bounded by the vehicles' sheets, its hits by the driver's pool (attack-card.js)
@@ -49,6 +52,7 @@ export default async function rammingDefense(rollData, actor, chatData){
     rollData.combat.activeDefenses.canDodge = true
     rollData.combat.activeDefenses.dodge = SR5_PrepareRollHelper.getActiveDefenseValue(actor.system, "dodge", "gymnastics")
     rollData.combat.activeDefenses.limit = actor.system.limits?.physicalLimit?.value || 0
+    rollData.combat.activeDefenses.unlimited = defenseUnlimitedHits(actor.system.defenses)
   }
   rollData.owner.speed = chatData.target.speed
   rollData.target.speed = chatData.owner.speed

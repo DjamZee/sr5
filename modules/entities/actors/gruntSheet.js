@@ -13,6 +13,9 @@ import {
 import {
   SR5_ActorHelper
 } from "./entityActor-helpers.js"
+import {
+  SHEET_ACTIONS_WITHOUT_TEST
+} from "../../system/matrix-ownership.js"
 
 /**
  * An Actor sheet for grunt type actors in the Shadowrun 5 system.
@@ -34,7 +37,7 @@ export class SR5GruntSheet extends ActorSheetSR5 {
   static DEFAULT_OPTIONS = {
     classes: ["app", "window-app", "sr5", "actor", "grunt"],
     position: {
-      width: 800, height: 618 
+      width: 900, height: 618 
     },
     window: {
       resizable: true 
@@ -105,6 +108,8 @@ export class SR5GruntSheet extends ActorSheetSR5 {
 			this._shownNonRollableMatrixActions)) {
         activeMatrixActions[key] = matrixAction
       }
+      //Lot 19: the actions with no test the sheet takes (owner's actions, Grid Hop), in the unfolded list
+      else if (this._shownNonRollableMatrixActions && SHEET_ACTIONS_WITHOUT_TEST.includes(key)) activeMatrixActions[key] = matrixAction
     }
     actor.system.matrix.actions = activeMatrixActions
   }
@@ -138,6 +143,7 @@ export class SR5GruntSheet extends ActorSheetSR5 {
     const traditions = []
     const mentorSpirits = []
     const rituals = []
+    const storages = []
 
     // Iterate through items, allocating to containers
     for (let i of actor.items) {
@@ -172,6 +178,7 @@ export class SR5GruntSheet extends ActorSheetSR5 {
       else if (i.type === "itemTradition") traditions.push(i)
       else if (i.type === "itemMentorSpirit") mentorSpirits.push(i)
       else if (i.type === "itemRitual") rituals.push(i)
+      else if (i.type === "itemStorage") storages.push(i)
     }
 
     actor.knowledges = knowledges
@@ -192,6 +199,8 @@ export class SR5GruntSheet extends ActorSheetSR5 {
     actor.gears = gears
     actor.cyberdecks = cyberdecks
     actor.programs = programs
+    // The files it stores (SR5 p. 228)
+    actor.files = Array.from(actor.items).filter(i => i.type === "itemFile")
     SR5_ActorHelper.markDeployedVehicles(vehicles, game.actors, SR5_ActorHelper.sidekickCreatorId(this.actor))
     actor.vehicles = vehicles
     actor.vehiclesMod = vehiclesMod
@@ -206,6 +215,8 @@ export class SR5GruntSheet extends ActorSheetSR5 {
     actor.mentorSpirits = mentorSpirits
     actor.mentorWarnings = mentorWarningLines(this.actor)
     actor.rituals = rituals
+    // A vendor is a Grunt: its shop and any storage added with the + are listed, as on a character
+    actor.storages = this._prepareStorages(actor, storages)
   }
 
   /** @override */

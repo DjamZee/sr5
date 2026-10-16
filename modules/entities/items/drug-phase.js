@@ -40,8 +40,13 @@ export function effectPhase(customEffect) {
   return customEffect.wifi ? "crash" : "rise"
 }
 
-export function drugEffectApplies(customEffect, phase) {
-  return !!phase && effectPhase(customEffect) === phase
+// `flags`: the sr5 flags of the drug. In a crash with a tail (system/drug-clock.js, crashParts), the effects marked
+// "tail" follow the tail and the others the crash: the part the GM ended (crashPartOver) no longer applies
+export function drugEffectApplies(customEffect, phase, flags) {
+  if (!phase || effectPhase(customEffect) !== phase) return false
+  const over = phase === "crash" ? flags?.crashPartOver : null
+  if (!over) return true
+  return customEffect.tail ? over !== "tail" : over !== "main"
 }
 
 // Can run any number of times. A rise or a crash already set wins over the flags; an empty phase does not:

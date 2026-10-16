@@ -2,6 +2,9 @@ import {
   drainShown
 } from "../roll-helpers/mentorMaskDrain.js"
 import {
+  spellAreaRadius
+} from "../roll-helpers/spell-area.js"
+import {
   SR5_EntityHelpers 
 } from "../../entities/helpers.js"
 import {
@@ -16,6 +19,12 @@ import {
 import {
   spellStabilizes, stabilizationLabelKey
 } from "../../system/bb-healing-rules.js"
+import {
+  noiseGridThreshold, noiseSpellValue, noiseOverwatchDice
+} from "../../system/noise-spells.js"
+import {
+  SR5
+} from "../../config.js"
 
 export default async function spellInfo(cardData){
   let actionType, label, item
@@ -43,6 +52,37 @@ export default async function spellInfo(cardData){
     game.i18n.format("SR5.MageHunterCounterspell", {
       value: 2 * (cardData.magic.mageHunter.level || 0)
     }))
+
+  //Blood magic (Street Grimoire p. 90, Forbidden Arcana p. 130): what the points were spent on, and the addiction test
+  //that the sacrifice's points call for (never the martyr's)
+  const blood = cardData.test.type === "spell" ? cardData.magic.bloodMagic : null
+  if (blood && (blood.force || blood.drainMagic || blood.drain)) {
+    cardData.chatCard.buttons.bloodMagic = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.format("SR5.BloodMagicSpent", {
+      force: blood.force || 0, drainMagic: blood.drainMagic || 0, drain: blood.drain || 0, martyr: blood.fromMartyr || 0
+    }))
+    if ((blood.fromPool || 0) + (blood.fromAthame || 0) > 0) cardData.chatCard.buttons.bloodAddiction = SR5_RollMessage.generateChatButton("nonOpposedTest", "bloodAddiction", game.i18n.format("SR5.BloodMagicAddictionTest", {
+      threshold: blood.addictionThreshold ?? 2
+    }))
+  }
+
+  //Increase / Decrease Noise (Street Grimoire p. 113-114): the net hits over the grid's threshold change the Noise of the
+  //area, given by the spell's template; beyond 4, the Overwatch Score of the hackers affected rises, for the GM
+  if (cardData.test.type === "spell" && cardData.magic.noiseSpell?.kind) {
+    const threshold = Math.max(Number(cardData.threshold?.value) || 0, noiseGridThreshold(cardData.magic.noiseSpell.grid))
+    const noise = noiseSpellValue(cardData.magic.noiseSpell.kind, cardData.roll.hits, threshold)
+    const grid = game.i18n.localize(SR5.gridTypes[cardData.magic.noiseSpell.grid] ?? SR5.gridTypes.public)
+    cardData.chatCard.buttons.noiseSpell = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", noise ?
+      game.i18n.format("SR5.NoiseSpellResult", {
+        noise: noise > 0 ? `+${noise}` : noise, grid, threshold
+      }) :
+      game.i18n.format("SR5.NoiseSpellNoEffect", {
+        grid, threshold
+      }))
+    const overwatch = noiseOverwatchDice(Math.abs(noise))
+    if (overwatch) cardData.chatCard.buttons.noiseOverwatch = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.format("SR5.NoiseSpellOverwatch", {
+      dice: overwatch
+    }))
+  }
 
   //Roll Succeed
   if (cardData.roll.hits > 0) {
@@ -98,11 +138,15 @@ export default async function spellInfo(cardData){
     // A preparation's area is read from the item, where its Potency and Force take the place of the caster's (SR5 p. 309)
     if (cardData.magic.spell.range === "area" && cardData.test.type === "preparation") cardData.magic.spell.area += item.system.spellAreaOfEffect.value
     else if (cardData.magic.spell.range === "area"){
-      cardData.magic.spell.area += cardData.magic.force
-      if (item.system.category === "detection") {
-        if (item.system.spellAreaExtended === true) cardData.magic.spell.area = cardData.magic.spell.area * actorData.specialAttributes.magic.augmented.value * 10
-        else cardData.magic.spell.area = cardData.magic.spell.area * actorData.specialAttributes.magic.augmented.value
-      }
+      //spell.areaShaping holds the metres of spell shaping chosen in the dialog: +1 m of radius per die given up (SR5 p. 329),
+      //added to the radius, never multiplied. Area: Force metres; detection: Force × Magic, × 10 at extended range
+      cardData.magic.spell.area = spellAreaRadius({
+        shaping: cardData.magic.spell.areaShaping, force: cardData.magic.force, detection: item.system.category === "detection",
+        magic: actorData.specialAttributes.magic.augmented.value, extended: item.system.spellAreaExtended === true
+      })
+      //Bubbles are declared at casting; which characters they cover is picked once the area is on the canvas, hence a
+      //button rather than a dialog list. How many characters one bubble spares is a world setting (an approximation)
+      if (cardData.magic.spell.sparedCount > 0) cardData.chatCard.buttons.spellShapingSpare = SR5_RollMessage.generateChatButton("nonOpposedTest", "spellShapingSpare", `${game.i18n.localize("SR5.SpellShapingSpare")} (0/${cardData.magic.spell.sparedCount})`)
     }
 
     //Bullets & Bandages p. 15-16: Stabilize (Force at least the boxes of bleeding and overflow) and Heal (out of the

@@ -1,0 +1,729 @@
+// Messaging by commcode (lot 14, commcode-window.js): an AR window, the Matrix greens of the crown of the PAN in the
+// dark theme, the same accents on a pale glass in the light one
+.sr-commcode {
+  --cc-accent: #39f3b1;
+  --cc-accent-2: #29c6ff;
+  --cc-alert: #ff4d6d;
+  --cc-warn: #ffc857;
+  --cc-bg: radial-gradient(120% 80% at 0% 0%, rgba(41, 198, 255, 0.10), transparent 60%),
+    radial-gradient(120% 90% at 100% 100%, rgba(57, 243, 177, 0.10), transparent 60%), rgba(4, 16, 18, 0.96);
+  --cc-panel: rgba(57, 243, 177, 0.05);
+  --cc-line: rgba(57, 243, 177, 0.28);
+  --cc-text: #d8fff4;
+  --cc-muted: rgba(216, 255, 244, 0.62);
+  --cc-mine: linear-gradient(135deg, rgba(41, 198, 255, 0.30), rgba(57, 243, 177, 0.22));
+  --cc-theirs: rgba(255, 255, 255, 0.07);
+  --cc-glow: 0 0 10px rgba(57, 243, 177, 0.35);
+  --cc-input: rgba(0, 0, 0, 0.35);
+
+  .window-content {
+    padding: 0;
+    background: var(--cc-bg);
+    color: var(--cc-text);
+    overflow: hidden;
+  }
+
+  .sr-commcode-shell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 0.4rem;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
+
+    // The faint scan of an AR overlay
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 3px);
+    }
+  }
+
+  button {
+    color: var(--cc-text);
+    background: var(--cc-panel);
+    border: 1px solid var(--cc-line);
+    border-radius: 6px;
+    line-height: 1.6;
+    cursor: pointer;
+    transition: box-shadow 0.15s, border-color 0.15s;
+
+    &:hover:not([disabled]) {
+      border-color: var(--cc-accent);
+      box-shadow: var(--cc-glow);
+    }
+
+    &[disabled] {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &.answer {
+      border-color: var(--cc-accent);
+      color: var(--cc-accent);
+    }
+
+    &.hangup {
+      border-color: var(--cc-alert);
+      color: var(--cc-alert);
+    }
+
+    &.inline {
+      display: inline-block;
+      width: auto;
+      padding: 0 0.3rem;
+      line-height: 1.2;
+    }
+  }
+
+  input[type="text"],
+  textarea {
+    color: var(--cc-text);
+    background: var(--cc-input);
+    border: 1px solid var(--cc-line);
+    border-radius: 6px;
+    padding: 0.25rem 0.45rem;
+
+    &:focus {
+      outline: none;
+      border-color: var(--cc-accent);
+      box-shadow: var(--cc-glow);
+    }
+
+    &::placeholder {
+      color: var(--cc-muted);
+    }
+  }
+
+  textarea {
+    resize: none;
+    font-family: inherit;
+  }
+
+  .sr-commcode-code {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: var(--cc-accent-2);
+    letter-spacing: 0.03em;
+  }
+
+  .sr-commcode-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--cc-line);
+
+    .sr-commcode-id {
+      display: flex;
+      align-items: baseline;
+      gap: 0.45rem;
+
+      i {
+        color: var(--cc-accent);
+        text-shadow: var(--cc-glow);
+      }
+
+      strong {
+        font-size: 1rem;
+        letter-spacing: 0.04em;
+      }
+
+      small {
+        color: var(--cc-muted);
+      }
+    }
+  }
+
+  .sr-commcode-state {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+
+    i {
+      font-size: 0.55rem;
+      vertical-align: middle;
+    }
+
+    &.online i {
+      color: var(--cc-accent);
+      filter: drop-shadow(0 0 4px var(--cc-accent));
+      animation: sr-commcode-pulse 2.4s ease-in-out infinite;
+    }
+
+    &.offline i,
+    &.bricked i {
+      color: var(--cc-alert);
+    }
+
+    &.jammed i {
+      color: var(--cc-warn);
+    }
+  }
+
+  .sr-commcode-tabs {
+    display: flex;
+    gap: 0.3rem;
+
+    button {
+      flex: none;
+      padding: 0 0.6rem;
+
+      &.active {
+        border-color: var(--cc-accent);
+        background: rgba(57, 243, 177, 0.16);
+      }
+    }
+  }
+
+  .sr-commcode-warning {
+    margin: 0;
+    padding: 0.25rem 0.5rem;
+    border-left: 3px solid var(--cc-warn);
+    background: rgba(255, 200, 87, 0.08);
+  }
+
+  .sr-commcode-hint {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--cc-muted);
+  }
+
+  .sr-commcode-main {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 34% 1fr;
+    gap: 0.5rem;
+  }
+
+  .sr-commcode-new {
+    display: flex;
+    gap: 0.3rem;
+    margin-bottom: 0.4rem;
+
+    input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    button {
+      flex: none;
+      padding: 0 0.5rem;
+    }
+  }
+
+  .sr-commcode-threads {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+
+    ul {
+      flex: 1;
+      overflow-y: auto;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    li {
+      padding: 0.35rem 0.45rem;
+      margin-bottom: 0.25rem;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: var(--cc-panel);
+      cursor: pointer;
+
+      &:hover,
+      &.active {
+        border-color: var(--cc-line);
+      }
+
+      &.active {
+        background: rgba(57, 243, 177, 0.13);
+        box-shadow: inset 3px 0 0 var(--cc-accent);
+      }
+
+      &.empty {
+        cursor: default;
+        color: var(--cc-muted);
+        background: none;
+      }
+    }
+
+    .sr-commcode-thread-name {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-weight: bold;
+
+      i {
+        color: var(--cc-accent-2);
+        font-size: 0.75rem;
+      }
+    }
+
+    .sr-commcode-thread-last {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      color: var(--cc-muted);
+
+      span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      time {
+        flex: none;
+      }
+    }
+  }
+
+  .sr-commcode-unread {
+    margin-left: auto;
+    min-width: 1.2rem;
+    padding: 0 0.3rem;
+    border-radius: 0.6rem;
+    text-align: center;
+    font-size: 0.7rem;
+    color: #031311;
+    background: var(--cc-accent);
+    box-shadow: var(--cc-glow);
+  }
+
+  .sr-commcode-thread {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    gap: 0.35rem;
+    padding-left: 0.5rem;
+    border-left: 1px solid var(--cc-line);
+  }
+
+  .sr-commcode-thread-head {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+
+    > div:first-child {
+      flex: 1;
+
+      small {
+        display: block;
+        color: var(--cc-muted);
+        font-family: monospace;
+      }
+    }
+
+    .sr-commcode-save {
+      display: flex;
+      gap: 0.25rem;
+
+      input {
+        width: 8rem;
+      }
+    }
+
+    button {
+      flex: none;
+      padding: 0 0.5rem;
+    }
+
+    .call {
+      color: var(--cc-accent);
+    }
+  }
+
+  .sr-commcode-bubbles,
+  .sr-commcode-lines {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0.25rem;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+
+    li {
+      max-width: 80%;
+      padding: 0.35rem 0.6rem;
+      border-radius: 12px;
+      overflow-wrap: anywhere;
+      animation: sr-commcode-in 0.18s ease-out;
+
+      // The text keeps its own line breaks, not the template's
+      .text {
+        white-space: pre-wrap;
+      }
+    }
+
+    .theirs,
+    li:not(.mine):not(.empty) {
+      align-self: flex-start;
+      background: var(--cc-theirs);
+      border-bottom-left-radius: 3px;
+    }
+
+    .mine {
+      align-self: flex-end;
+      background: var(--cc-mine);
+      border: 1px solid var(--cc-line);
+      border-bottom-right-radius: 3px;
+    }
+
+    .call {
+      align-self: center;
+      max-width: 90%;
+      font-size: 0.78rem;
+      background: none;
+      border: 1px dashed var(--cc-line);
+    }
+
+    .pending {
+      opacity: 0.65;
+    }
+
+    .empty {
+      align-self: center;
+      color: var(--cc-muted);
+      background: none;
+    }
+
+    footer {
+      margin-top: 0.15rem;
+      font-size: 0.68rem;
+      color: var(--cc-muted);
+      text-align: right;
+    }
+  }
+
+  .sr-commcode-lines {
+    max-height: 9rem;
+
+    li {
+      white-space: pre-wrap;
+    }
+  }
+
+  .sr-commcode-compose {
+    display: flex;
+    gap: 0.35rem;
+    align-items: stretch;
+
+    textarea {
+      flex: 1;
+    }
+
+    button {
+      flex: none;
+      padding: 0 0.7rem;
+      color: var(--cc-accent);
+    }
+  }
+
+  .sr-commcode-empty {
+    margin: auto;
+    color: var(--cc-muted);
+  }
+
+  // The cipher of the messages (lot 39): the key of the correspondent, the lock of the composer, a ciphered text
+  .sr-commcode-key {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--cc-muted);
+
+    input {
+      flex: 1;
+      font-family: monospace;
+    }
+
+    button {
+      flex: none;
+      padding: 0 0.5rem;
+    }
+  }
+
+  .sr-commcode-lock {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+    flex: none;
+    color: var(--cc-accent);
+    cursor: pointer;
+  }
+
+  .sr-commcode-bubbles li.locked .text,
+  .sr-commcode-intercepts .line.locked {
+    font-family: monospace;
+    letter-spacing: 0.04em;
+  }
+
+  .sr-commcode-cipher-state {
+    font-size: 0.72rem;
+    color: var(--cc-muted);
+
+    button.inline {
+      margin-left: 0.35rem;
+      padding: 0 0.4rem;
+      color: var(--cc-accent);
+    }
+  }
+
+  .sr-commcode-rating input {
+    width: 3.5rem;
+  }
+
+  // The gamemaster's cipher tool (commcode-cipher-tool.js)
+  .sr-cipher-tool-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    textarea,
+    input {
+      font-family: monospace;
+    }
+  }
+
+  .sr-commcode-call {
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--cc-accent);
+    border-radius: 8px;
+    background: rgba(57, 243, 177, 0.08);
+    box-shadow: var(--cc-glow);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+
+    &.ringing {
+      animation: sr-commcode-ring 1.2s ease-in-out infinite;
+    }
+
+    textarea {
+      height: 2.1rem;
+    }
+
+    .sr-commcode-call-head {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      > i {
+        color: var(--cc-accent);
+      }
+
+      span {
+        color: var(--cc-muted);
+      }
+    }
+  }
+
+  .sr-commcode-call-buttons {
+    display: flex;
+    gap: 0.35rem;
+    margin-left: auto;
+
+    button {
+      flex: none;
+      padding: 0 0.6rem;
+    }
+  }
+
+  .sr-commcode-contacts {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+
+    ul {
+      flex: 1;
+      overflow-y: auto;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.3rem 0.4rem;
+      border-bottom: 1px solid var(--cc-line);
+
+      .name {
+        flex: 1;
+      }
+
+      button {
+        flex: none;
+        padding: 0 0.45rem;
+      }
+
+      &.empty {
+        color: var(--cc-muted);
+        border: none;
+      }
+    }
+  }
+
+  .sr-commcode-intercepts,
+  .sr-commcode-log {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    article header {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin: 0.4rem 0 0.2rem;
+
+      button {
+        flex: none;
+        margin-left: auto;
+        padding: 0 0.5rem;
+      }
+    }
+
+    ol {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    li {
+      padding: 0.3rem 0.45rem;
+      margin-bottom: 0.25rem;
+      border-left: 2px solid var(--cc-line);
+      background: var(--cc-panel);
+
+      &.call {
+        border-left-color: var(--cc-accent-2);
+      }
+
+      &.pending {
+        opacity: 0.7;
+      }
+
+      &.open {
+        border-left-color: var(--cc-accent);
+        box-shadow: var(--cc-glow);
+      }
+
+      &.empty {
+        color: var(--cc-muted);
+        background: none;
+        border: none;
+      }
+
+      time {
+        color: var(--cc-muted);
+        font-size: 0.72rem;
+      }
+
+      em {
+        color: var(--cc-muted);
+      }
+
+      .line {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        padding-left: 0.6rem;
+      }
+
+      .sr-commcode-compose,
+      .sr-commcode-call-buttons {
+        margin-top: 0.3rem;
+      }
+    }
+  }
+
+  .sr-commcode-gm-compose {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.35rem;
+
+    textarea,
+    .sr-commcode-call-buttons,
+    .sr-commcode-hint {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
+// Lot 36: the Matrix greens give way to the Concepteur's colours (window-tokens.less, laid with their light and dark
+// sets by window-skin.less); the window keeps its own names, which read the tokens
+.application.sr-commcode {
+  --cc-accent: var(--srw-accent);
+  --cc-accent-2: var(--srw-essence);
+  --cc-alert: var(--srw-over);
+  --cc-warn: var(--srw-left);
+  --cc-bg: var(--srw-bg);
+  --cc-panel: var(--srw-panel);
+  --cc-line: var(--srw-border);
+  --cc-text: var(--srw-text);
+  --cc-muted: var(--srw-muted);
+  --cc-mine: var(--srw-sel-bg);
+  --cc-theirs: var(--srw-panel);
+  --cc-glow: var(--srw-glow);
+  --cc-input: var(--srw-field);
+
+  .sr-commcode-unread {
+    color: var(--srw-on-accent);
+  }
+}
+
+@keyframes sr-commcode-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+@keyframes sr-commcode-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes sr-commcode-ring {
+  0%, 100% { box-shadow: 0 0 4px rgba(57, 243, 177, 0.25); }
+  50% { box-shadow: 0 0 16px rgba(57, 243, 177, 0.7); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-commcode * {
+    animation: none !important;
+  }
+}
+
+// A ciphered text in the chat (lot 39): the cards of the cipher, and a riddle the gamemaster posts
+.sr-commcode-cipher-card .cipher {
+  font-family: monospace;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+}
+
+// The content of a file ciphered with a key, on its sheet (lot 39)
+.sr-file-cipher-content.ciphered {
+  font-family: monospace;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+}

@@ -675,3 +675,34 @@
     }
   }
 }
+
+
+// "Relancer" and "Partager" under a table draw (table-actions.js). Added at
+// render, never stored in the card; they wear the payout buttons' colours.
+.SR-TableActions {
+  display        : flex;
+  gap            : 6px;
+  justify-content: flex-end;
+  margin         : 4px 5px 0 5px;
+
+  .chat-message & button {
+    flex            : 0 0 auto;
+    line-height     : normal;
+    width           : auto;
+    background-color: var(--sr-text-color-dark);
+    border          : 0px;
+    border-radius   : 0px;
+    color           : var(--sr-text-color-light);
+    font-family     : var(--sr-font-body-bold);
+    text-transform  : uppercase;
+
+    &:hover:not(:disabled) {
+      color     : var(--sr-text-color-flash);
+      box-shadow: none;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+    }
+  }
+}

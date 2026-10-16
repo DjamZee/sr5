@@ -381,3 +381,32 @@ describe('the score the update would leave', () => {
     expect(ChatMessage.create).toHaveBeenCalledTimes(2)
   })
 })
+
+// Lot 17b (M6, mesuré sur le 30010) : chaque « Se débrancher » honnête chuchotait au MJ « À toi d'arbitrer », même avec
+// « Vérifier les jets des joueurs et joueuses » décoché (défaut, DjamZ 08/10)
+describe('Lot 17b: an announced lowering is honest play', () => {
+  it('is told only while the players\' rolls are checked', async () => {
+    const {
+      dropTold
+    } = await import('../modules/system/overwatch-guard.js')
+    expect(dropTold({
+      sr5OverwatchLower: 'reboot'
+    }, false)).toBe(false)
+    expect(dropTold({
+      sr5OverwatchLower: 'emulate'
+    }, false)).toBe(false)
+    expect(dropTold({
+      sr5OverwatchLower: 'reboot'
+    }, true)).toBe(true)
+  })
+  it('an unannounced lowering is always told', async () => {
+    const {
+      dropTold
+    } = await import('../modules/system/overwatch-guard.js')
+    expect(dropTold({
+    }, false)).toBe(true)
+    expect(dropTold({
+      sr5OverwatchLower: 'other'
+    }, false)).toBe(true)
+  })
+})

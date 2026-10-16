@@ -28,6 +28,15 @@ import {
 import {
   WEAPON_MATRIX_DAMAGE, weaponMatrixResistance
 } from "../roll-helpers/weapon-matrix-damage.js"
+import {
+  rgOption, defenselessDamageBonus
+} from "../../system/rg-combat-options.js"
+import {
+  netLands, netDamage
+} from "../roll-helpers/net-rules.js"
+import {
+  spellAuraOf, spellAuraBackfireType
+} from "../roll-helpers/spell-aura.js"
 
 export default async function defenseInfo(cardData, actorId){
   let actor = SR5_EntityHelpers.getRealActorFromID(actorId)
@@ -53,6 +62,8 @@ export default async function defenseInfo(cardData, actorId){
 
   //Handle Energetic Aura: only a successful attack burns the attacker (SR5 p. 397)
   if (actorData.specialProperties?.energyAura && cardData.test.typeSub === "meleeWeapon" && cardData.roll.netHits > 0) await handleEnergeticAura(cardData, actorData, actorId)
+  //Aura of [element] (Street Grimoire p. 114): the one whose attack succeeds takes the aura's damage
+  if (spellAuraOf(actorData) && cardData.test.typeSub === "meleeWeapon" && cardData.roll.netHits > 0) await handleSpellAura(cardData, actorData, actorId)
 
   //SR5 p. 196 (renforcer sa prise): no damage, the hold moves by the net hits, either way
   if (cardData.combat.calledShot.name === "strengthenHold") {
@@ -75,8 +86,26 @@ export default async function defenseInfo(cardData, actorId){
     return
   }
 
+  //Nets (Run & Gun p. 25): the net lands on a hit, a graze included. A net without DV deals nothing, and a graze only
+  //the electric charge of a ShockNet, a contact attack (SR5 p. 175-176)
+  let netGraze = false
+  if (cardData.combat.net && netLands(cardData.roll.netHits)) {
+    cardData.combat.net.threshold = cardData.roll.netHits
+    cardData.chatCard.buttons.netEntangle = SR5_RollMessage.generateChatButton("nonOpposedTest", "netEntangle", game.i18n.format("SR5.NetApply", {
+      threshold: cardData.roll.netHits
+    }))
+    const dv = netDamage({
+      base: cardData.damage.base, netHits: cardData.roll.netHits, electric: cardData.damage.element === "electricity"
+    })
+    if (!(dv > 0)) {
+      cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize("SR5.NetNoDamage"))
+      return
+    }
+    netGraze = cardData.roll.netHits === 0
+  }
+
   //If Defenser win, return
-  if (cardData.roll.netHits <= 0) {
+  if (cardData.roll.netHits <= 0 && !netGraze) {
     if (cardData.combat.calledShot.name === "throughAndInto") {
       let originalAttackMessage = foundry.utils.duplicate(game.messages.get(cardData.previousMessage.messageId))
       originalAttackMessage.flags.sr5data.combat.calledShot.name = ''
@@ -106,6 +135,17 @@ export default async function defenseInfo(cardData, actorId){
   if (cardData.combat.firingMode.selected === "SF") cardData.damage.value = cardData.damage.base
   else if (cardData.magic.spell.areaThreshold) cardData.damage.value = SR5_CombatHelpers.indirectAreaSpellDamage(cardData.damage.base, cardData.roll.netHits, cardData.magic.spell.areaThreshold)
   else cardData.damage.value = cardData.damage.base + cardData.roll.netHits
+
+  //Run & Gun RG6 (RG p. 125, world setting): a defense pool driven below 0 adds 1 DV per 2 dice past it
+  if (rgOption("defenseless") && (cardData.test.typeSub === "rangedWeapon" || cardData.test.typeSub === "meleeWeapon") && cardData.combat.firingMode.selected !== "SF") {
+    const bonus = defenselessDamageBonus(cardData.dicePool?.belowZero)
+    if (bonus) {
+      cardData.damage.value += bonus
+      ui.notifications.info(game.i18n.format("SR5.RG_DefenselessInfo", {
+        bonus, dice: -cardData.dicePool.belowZero
+      }))
+    }
+  }
 
   //A DSP weapon (Street Lethal p. 57): matrix damage, resisted with Device Rating + Firewall; no armor, no Body
   if (cardData.damage.type === WEAPON_MATRIX_DAMAGE) return weaponMatrixResistance(cardData, actor, SR5_RollMessage.generateChatButton)
@@ -177,6 +217,14 @@ export default async function defenseInfo(cardData, actorId){
       if (cardData.combat.armorPenetration) label += ` / ${game.i18n.localize("SR5.ArmorPenetrationShort")}${game.i18n.localize("SR5.Colons")} ${cardData.combat.armorPenetration}`
       cardData.chatCard.buttons.resistanceCard = SR5_RollMessage.generateChatButton("nonOpposedTest","resistanceCard",label)
     }
+  }
+
+  //The buttons show in the order they were added: the "Fatigued" resistance, added by the called shot, came before
+  //the main one
+  if (cardData.chatCard.buttons.fatiguedCard){
+    const fatiguedButton = cardData.chatCard.buttons.fatiguedCard
+    delete cardData.chatCard.buttons.fatiguedCard
+    cardData.chatCard.buttons.fatiguedCard = fatiguedButton
   }
 }
 
@@ -337,6 +385,30 @@ async function handleRamming(cardData, initiatorDamage, defenderIsVehicle, defen
 
   //Add vehicle test to defender chat Message: a pedestrian has nothing to pilot
   if (defenderIsVehicle) cardData.chatCard.buttons.vehicleTest = SR5_RollMessage.generateChatButton("nonOpposedTest", "vehicleTest", `${game.i18n.localize("SR5.VehicleTest")} (3)`)
+}
+
+async function handleSpellAura(cardData, actorData, defenderId){
+  const aura = spellAuraOf(actorData)
+  let attacker = SR5_EntityHelpers.getRealActorFromID(cardData.previousMessage.actorId, cardData.actorUuids)
+  let rollData = SR5_PrepareRollTest.getBaseRollData(null, attacker)
+  rollData.test.type = "falseTest"
+  rollData.test.typeSub = "spellAura"
+  rollData.test.title = game.i18n.localize("SR5.SpellAura")
+  //The attack and the defender this card stems from: the GM rebuilds it from them (attack-card.js, rebuildCrossCard)
+  rollData.previousMessage = {
+    ...rollData.previousMessage, messageId: cardData.previousMessage?.messageId, actorId: defenderId
+  }
+  rollData.damage.base = rollData.damage.value = aura.value
+  rollData.damage.type = spellAuraBackfireType(aura.element)
+  rollData.damage.element = aura.element
+  rollData.damage.resistanceType = "physicalDamage"
+  rollData.damage.source = "magical"
+  rollData.combat.armorPenetration = 0
+  rollData.chatCard.buttons.resistanceCard = SR5_RollMessage.generateChatButton("nonOpposedTest","resistanceCard", `${game.i18n.localize("SR5.TakeOnDamageShort")} ${game.i18n.localize("SR5.DamageValueShort")}${game.i18n.localize("SR5.Colons")} ${rollData.damage.value}${game.i18n.localize(SR5.damageTypesShort[rollData.damage.type])}`)
+  rollData.roll = await SR5_RollTest.rollDice({
+    dicePool: 0
+  })
+  SR5_RollTest.renderRollCard(rollData)
 }
 
 async function handleEnergeticAura(cardData, actorData, defenderId){

@@ -109,6 +109,8 @@ export default async function iceDefense(rollData, actor, chatData){
   //SR5 p. 250: the DV starts at the IC's Attack (+1 per net hit, +2 per mark, updateMatrixDamage); it was read on the
   //new roll data, 0, and the Attack was lost
   rollData.damage.matrix.base = Number(iceMatrix.attributes?.attack?.value) || 0
+  //Kill Code p. 74: the explosion of a Blue Goo, read on its own card, never on the button's copy
+  if (rollData.test.typeSub === "iceBlueGoo" && attack.card.data.various?.blueGooExplosion === true) rollData.various.blueGooExplosion = true
 
   return rollData
 }

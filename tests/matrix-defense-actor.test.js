@@ -82,11 +82,27 @@ describe('Matrix damage written nowhere', () => {
     expect(block).toMatch(/getWhisperRecipients\("GM"\)/)
     expect(block).toMatch(/escapeHTML/)
   })
+  it('writes a technomancer\'s matrix damage as Stun, living persona item or not (SR5 p. 229-230)', () => {
+    const block = source.match(/if \(!targetItem\) \{([\s\S]*?)\n {4}\}/)[1]
+    const tm = block.indexOf('activeSpecialAttribute === "resonance"')
+    expect(tm).toBeGreaterThan(-1)
+    expect(tm).toBeLessThan(block.indexOf('SR5.WARN_MatrixDamageNowhere'))
+    expect(block.slice(tm, tm + 120)).toMatch(/takeDamage\(cardData\)/)
+  })
   it('has the message in both languages', () => {
     for (const lang of ["en", "fr"]) {
       const json = JSON.parse(readFileSync(new URL(`../lang/${lang}.json`, import.meta.url), 'utf8'))
       expect(json["SR5.WARN_MatrixDamageNowhere"]).toMatch(/\{name\}[\s\S]*\{value\}/)
       expect(json["SR5.WARN_NoMatrixDefender"]).toBeTruthy()
     }
+  })
+})
+
+// Lot 17b (M6, mesuré sur le 30010) : une joueuse qui possède un decker et une IA défendait son IA, attaquée par une
+// CI, avec son decker (Logique 6 + Firewall 1 au lieu de l'Intuition seule de l'IA hors appareil, Data Trails p. 157)
+describe('Lot 17b: the defense against an IC goes to the card\'s target', () => {
+  const source = readFileSync(new URL('../modules/rolls/roll-message.js', import.meta.url), 'utf8')
+  it('routes iceDefense through matrixDefenseActorId, as matrixDefense', () => {
+    expect(source).toMatch(/if \(type === "matrixDefense" \|\| type === "iceDefense"\) \{\s*actor = SR5_EntityHelpers\.getRealActorFromID\(matrixDefenseActorId\(/)
   })
 })

@@ -7,6 +7,9 @@ import {
 import {
   addGreyManaResistance
 } from "../../system/grey-mana.js"
+import {
+  SR5_SpellShapingHelpers
+} from "../roll-helpers/spell-shaping.js"
 
 //The attributes a spell is resisted with: one or two, a blank one is skipped
 export function spellResistanceAttributes(spellData) {
@@ -15,6 +18,8 @@ export function spellResistanceAttributes(spellData) {
 
 export default async function spellResistance(rollData, actor, chatData){
   if (actor.type === "actorAgent" || actor.type === "actorSprite" || actor.type === "actorDevice") return
+  //SR5 p. 329: a Spell Shaping bubble leaves its occupant untouched; nothing to resist
+  if (SR5_SpellShapingHelpers.skips(actor, chatData)) return void SR5_SpellShapingHelpers.announceSpared(actor)
   let spellItem = await fromUuid(chatData.owner.itemUuid)
   let spellData = spellItem.system
 

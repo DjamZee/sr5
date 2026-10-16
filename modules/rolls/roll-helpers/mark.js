@@ -14,7 +14,7 @@ import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
-  ownsTarget, recountHits, consumedKey
+  ownsTarget, recountHits, consumedKey, chanceSpent, cardPoolCap
 } from "./socket-guard.js"
 import {
   MARK_DEFENSE_TESTS, attackerMarks, markPenalty, markOutcome, eraseWins
@@ -26,6 +26,18 @@ const hitsWritten = card => Math.max(0, Number(card.data.roll?.hits) || 0)
 const refuse = (kind, senderId, data) => {
   SR5_SystemHelpers.srLog(1, `Socket ${kind} refused from ${game.users.get(senderId)?.name ?? senderId}`, data)
   return false
+}
+
+/** Lot 19: the host an unlinked IC token marks for (its own system.matrix.hostUuid), or null for any other marker:
+ *  its copies launched in two hosts share one id, the host tells their marks apart */
+export function iceMarkHost(attacker){
+  if (attacker?.system?.matrix?.deviceType !== "ice" || !attacker.isToken) return null
+  return attacker.system.matrix.hostUuid || null
+}
+
+/** Whether a mark is the one this marker adds to: an IC's of the same host, or any mark with no host for the others */
+export function sameIceHost(mark, iceHost){
+  return (mark?.hostUuid || null) === (iceHost || null)
 }
 
 /** Kill Code p. 45: Initiative cost of the actions a Watchdog mark can turn into an Interruption action.
@@ -61,7 +73,9 @@ export class SR5_MarkHelpers {
       if (targetActor.system.activeSpecialAttribute === "depth") await SR5_MarkHelpers.markPersona(targetActor, attacker, attackerID, mark, isWatchdog)
       return
     }
-    if (item.parent.type === "actorDevice" && item.parent.isToken) item = targetActor.items.find(i => i.type === "itemDevice" && i.system.isActive)
+    //A file is marked itself, as any icon (SR5 p. 237), whatever carries it
+    const onFile = item.type === "itemFile"
+    if (!onFile && item.parent.type === "actorDevice" && item.parent.isToken) item = targetActor.items.find(i => i.type === "itemDevice" && i.system.isActive)
 
     let itemToMark = foundry.utils.duplicate(item.system)
 
@@ -69,9 +83,12 @@ export class SR5_MarkHelpers {
     if(attacker.system.matrix.deviceType === "ice" && attacker.isToken){
       realAttackerID = attacker.id
     }
+    //Lot 19: the copies of one IC launched in two hosts mark under the same id; the mark keeps the host of the copy
+    //that placed it, so that each host's marks stay its own (Sleuther, Kill Code p. 74)
+    const iceHost = iceMarkHost(attacker)
     // If item is already marked, increase marks
     for (let m of itemToMark.marks){
-      if (m.ownerId === realAttackerID) {
+      if (m.ownerId === realAttackerID && sameIceHost(m, iceHost)) {
         m.value += mark
         if (m.value > 3) m.value = 3
         if (isWatchdog) m.watchdog = true
@@ -86,6 +103,7 @@ export class SR5_MarkHelpers {
         "ownerName": attacker.name,
         "watchdog": isWatchdog,
       }
+      if (iceHost) newMark.hostUuid = iceHost
       itemToMark.marks.push(newMark)
     }
     await item.update({
@@ -108,7 +126,7 @@ export class SR5_MarkHelpers {
           messageId,
         })
       }
-      if (targetActor.system.matrix.deviceType === "host"){
+      if (!onFile && targetActor.system.matrix.deviceType === "host"){
         await SR5_SocketHandler.emitForGM("markSlavedDevice", {
           targetActorID: targetActorID
         })
@@ -116,7 +134,7 @@ export class SR5_MarkHelpers {
     } else {  
       await SR5_MarkHelpers.updateDeckMarkedItems(realAttackerID, item.uuid, mark)
       if (itemToMark.isSlavedToPan) await SR5_MarkHelpers.markPanMaster(itemToMark, realAttackerID, mark)
-      if (targetActor.system.matrix.deviceType === "host") await SR5_MarkHelpers.markSlavedDevice(targetActorID)
+      if (!onFile && targetActor.system.matrix.deviceType === "host") await SR5_MarkHelpers.markSlavedDevice(targetActorID)
     }
   }
 
@@ -128,9 +146,10 @@ export class SR5_MarkHelpers {
    * @param {Boolean} isWatchdog - Kill Code p. 45: the mark comes from a Watchdog action
    */
   static async markPersona(targetActor, attacker, attackerID, mark, isWatchdog = false) {
+    const iceHost = iceMarkHost(attacker)
     let realAttackerID = (attacker.system.matrix.deviceType === "ice" && attacker.isToken) ? attacker.id : attackerID,
       marks = foundry.utils.duplicate(targetActor.system.matrix.marks || []),
-      existing = marks.find(m => m.ownerId === realAttackerID)
+      existing = marks.find(m => m.ownerId === realAttackerID && sameIceHost(m, iceHost))
 
     if (existing) {
       existing.value = Math.min(existing.value + mark, 3)
@@ -140,6 +159,10 @@ export class SR5_MarkHelpers {
       "value": mark,
       "ownerName": attacker.name,
       "watchdog": isWatchdog,
+      ...(iceHost ? {
+        hostUuid: iceHost
+      } : {
+      }),
     })
     await targetActor.update({
       "system.matrix.marks": marks
@@ -199,7 +222,8 @@ export class SR5_MarkHelpers {
       pools.push(Number(foundry.utils.getProperty(master?.system ?? {
       }, `matrix.actions.${key}.defense.dicePool`)) || 0)
     }
-    return Math.max(...pools) + (Number(defense.roller?.system?.specialAttributes?.edge?.augmented?.value) || 0)
+    //The pool the card was rolled with, when the sheets dropped since (socket-guard.js cardPoolCap)
+    return cardPoolCap(defense, Math.max(...pools) + (Number(defense.roller?.system?.specialAttributes?.edge?.augmented?.value) || 0))
   }
 
   /** The defense card behind a mark request, the attack card it answers, and what they allow: null
@@ -214,8 +238,12 @@ export class SR5_MarkHelpers {
       marks = attackerMarks(typeSub, chosen)
     //The attacker's dice within its pool for this action, less the dice the marks cost
     const attackerHits = attack.byGM ? hitsWritten(attack) :
-      recountHits(attack.data.roll?.r, SR5_MiscellaneousHelpers.poolCap(attack.roller, `matrix.actions.${typeSub}.test.dicePool`) + markPenalty(marks))
-    const defenderHits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, await SR5_MarkHelpers.defenseCap(defense))
+      recountHits(attack.data.roll?.r, cardPoolCap(attack, SR5_MiscellaneousHelpers.poolCap(attack.roller, `matrix.actions.${typeSub}.test.dicePool`) + markPenalty(marks)), {
+        secondChance: chanceSpent(attack.data, attack.roller)
+      })
+    const defenderHits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, await SR5_MarkHelpers.defenseCap(defense), {
+      secondChance: chanceSpent(defense.data, defense.roller)
+    })
     //Sleaze or Attack is read on the attacker's sheet, not on a card: the limit of the action, as
     //rollData-MatrixAction.js writes it (its actionType is the length of the action, "complex")
     const actionType = attack.roller?.system?.matrix?.actions?.[typeSub]?.limit?.linkedAttribute
@@ -228,7 +256,7 @@ export class SR5_MarkHelpers {
       //The hits counted again that decided it, shown to the GM (not the number of marks: Jakob's review)
       hits: outcome.winner === "defender" ? defenderHits : attackerHits,
       card: {
-        id: defense.id, byGM: defense.byGM && attack.byGM
+        id: defense.id, byGM: defense.byGM && attack.byGM, gm: defense.gm && attack.gm
       },
     }
   }
@@ -247,7 +275,9 @@ export class SR5_MarkHelpers {
     const defense = SR5_MiscellaneousHelpers.cardOf(messageId)
     if (!defense || defense.data.test?.type !== "matrixDefense" || !defense.data.matrix?.overwatchScore) return null
     if (!sameActor(actor, SR5_EntityHelpers.getRealActorFromID(defense.data.previousMessage?.actorId, defense.data.actorUuids))) return null
-    const hits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, await SR5_MarkHelpers.defenseCap(defense))
+    const hits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, await SR5_MarkHelpers.defenseCap(defense), {
+      secondChance: chanceSpent(defense.data, defense.roller)
+    })
     if (!(hits > 0)) return null
     return {
       card: defense, key: consumedKey(defense.id, "overwatch"), label: "overwatch", target: actor.name, value: hits,
@@ -325,7 +355,7 @@ export class SR5_MarkHelpers {
     let targetActor = await SR5_EntityHelpers.getRealActorFromID(targetActorID),
       item = targetActor.items.find(i => i.type === "itemDevice" && i.system.isActive)
 
-    for (let token of canvas.tokens.placeables){
+    for (let token of canvas?.tokens?.placeables ?? []){
       if (token.actor.id === targetActorID) {
         let tokenDeck = token.actor.items.find(i => i.type === "itemDevice" && i.system.isActive)
         let tokenDeckData = foundry.utils.duplicate(tokenDeck.system)
@@ -380,7 +410,7 @@ export class SR5_MarkHelpers {
 
     //For host, update all unlinked token with same marked items
     if (owner.system.matrix.deviceType === "host"){
-      for (let token of canvas.tokens.placeables){
+      for (let token of canvas?.tokens?.placeables ?? []){
         if (token.actor.id === ownerID) {
           let tokenDeck = token.actor.items.find(i => i.type === "itemDevice" && i.system.isActive)
           let tokenDeckData = foundry.utils.duplicate(tokenDeck.system)
@@ -472,7 +502,7 @@ export class SR5_MarkHelpers {
         },
         {
           action: "cancel",
-          label: "Cancel",
+          label: game.i18n.localize("SR5.Cancel"),
           callback: () => ({
             action: "cancel" 
           }),
@@ -523,8 +553,12 @@ export class SR5_MarkHelpers {
     const action = SR5_MiscellaneousHelpers.cardOf(defense.data.previousMessage?.messageId)
     if (!action || action.data.test?.type !== "matrixAction" || action.data.test?.typeSub !== "eraseMark") return null
     const eraserHits = action.byGM ? hitsWritten(action) :
-      recountHits(action.data.roll?.r, SR5_MiscellaneousHelpers.poolCap(action.roller, "matrix.actions.eraseMark.test.dicePool"))
-    const defenderHits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, Infinity)
+      recountHits(action.data.roll?.r, cardPoolCap(action, SR5_MiscellaneousHelpers.poolCap(action.roller, "matrix.actions.eraseMark.test.dicePool")), {
+        secondChance: chanceSpent(action.data, action.roller)
+      })
+    const defenderHits = defense.byGM ? hitsWritten(defense) : recountHits(defense.data.roll?.r, Infinity, {
+      secondChance: chanceSpent(defense.data, defense.roller)
+    })
     if (!eraseWins(eraserHits, defenderHits)) return null
     //The item erased belongs to the actor the card names, and carries a mark of the defender
     const item = await fromUuid(defense.data.previousMessage?.itemUuid ?? "")
@@ -532,7 +566,7 @@ export class SR5_MarkHelpers {
     if (!item.system?.marks?.some(m => m.ownerId === defense.data.owner?.actorId && m.value > 0)) return null
     return {
       card: {
-        id: defense.id, byGM: defense.byGM && action.byGM
+        id: defense.id, byGM: defense.byGM && action.byGM, gm: defense.gm && action.gm
       },
       key: consumedKey(defense.id, "eraseMark", item.uuid), label: "eraseMark", target: item.name, value: eraserHits,
       cardData: defense.data,

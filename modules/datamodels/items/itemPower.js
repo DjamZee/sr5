@@ -59,6 +59,10 @@ export class sr5ItemPowerDataModel extends foundry.abstract.TypeDataModel {
         modifiers: new fields.ArrayField(new fields.ObjectField()),
       }),
       targetOfEffect: new fields.ArrayField(new fields.StringField()),
+      // Skill power (Aetherology p. 39): the active skill the spirit has in place of a power, at its Force
+      grantedSkill: new fields.StringField({
+        initial: '', blank: true
+      }),
     }
   }
 }

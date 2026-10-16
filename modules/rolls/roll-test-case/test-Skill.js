@@ -22,6 +22,9 @@ import {
 import {
   diagnosisBonus, stabilizedTreatmentBoxes, believedHits, believedStabilizationReduction, stabilizationLabelKey
 } from "../../system/bb-healing-rules.js"
+import {
+  cyberpsychosisReminder
+} from "../../system/cyberpsychosis.js"
 
 // Bullets & Bandages p. 14-15, world setting: the stabilization (extended) and the diagnosis of the targeted patient.
 // The GM applies the result (chat-button-gm): the ledger is his. Returns true when the card is one of those
@@ -78,6 +81,11 @@ export default async function skillInfo(cardData){
   let testType = cardData.target.hasTarget ? "nonOpposedTest" : "opposedTest"
 
   if (cardData.target.itemUuid) itemTarget = await fromUuid(cardData.target.itemUuid)
+
+  //Chrome Flesh p. 59: a reminder only, refreshed with the card (a Second Chance can take the glitch away)
+  const cyberpsychosis = cyberpsychosisReminder(actor, cardData.test.typeSub, cardData.roll)
+  if (cyberpsychosis) cardData.chatCard.buttons.cyberpsychosis = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", game.i18n.localize(cyberpsychosis))
+  else delete cardData.chatCard.buttons.cyberpsychosis
 
   switch (cardData.test.typeSub){
     case "astralCombat":

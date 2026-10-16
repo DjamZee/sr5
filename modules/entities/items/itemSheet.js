@@ -1,12 +1,33 @@
 import {
+  SR5_UiModifications
+} from "../../system/utilitySystem.js"
+import {
   SR5FactionRegistry
 } from "../../interface/faction-registry.js"
+import {
+  workshopContext, dropModOnWorkshop, removeModFromVehicleItem, openWorkshopShop
+} from "../../system/vehicle-workshop-apply.js"
+import {
+  itemWorkshopContext, vendorBanner, dropOnItemWorkshop, mountAccessory, removeAccessory, openItemWorkshopShop, openAccessoryInstall
+} from "../../system/item-workshop-apply.js"
+import {
+  WORKSHOP_FAMILIES, workshopFamily
+} from "../../system/item-workshop.js"
+import {
+  fileLastEditText
+} from "../../rolls/roll-helpers/file-actions.js"
+import {
+  CIPHER_SETTING, readFile, hasKey, sameKey
+} from "../../system/commcode-cipher.js"
 import {
   canEditItemEffects, clearTargetsOnCategoryChange, keepUnlistedEffectFields, lockEffectFields
 } from "../../system/effect-editor.js"
 import {
   SR5
 } from "../../config.js"
+import {
+  limbChoices, limbAttributes
+} from "../../system/cyberlimb.js"
 import {
   transhumanGift, itemHasEffect, IMPLANT_ESSENCE_EFFECTS, AUGMENTATION_BUNDLE_SETTING
 } from "../../system/implant-essence.js"
@@ -22,6 +43,12 @@ import {
 import {
   SR5_SpiritTypes
 } from "./spirit-types.js"
+import {
+  isInsectCaste, insectRaceOptions
+} from "./insect-races.js"
+import {
+  isSkillPower, grantableSkills
+} from "./spirit-skill-power.js"
 import {
   isMentorQuality
 } from "./mentor-link.js"
@@ -50,8 +77,26 @@ import {
   TACNET_COMBAT_SKILLS
 } from "../../rolls/roll-helpers/tacnet.js"
 import {
-  enhancementFits
+  enhancementRefused
 } from "./weapon-accessory-rules.js"
+import {
+  deviceModeSheetContext, switchDeviceMode
+} from "../../canvas/pan-crown/pan-device-switch.js"
+import {
+  rentDebitState
+} from "../../system/deadlines.js"
+import {
+  calendarStartYear, worldTimeToComponents
+} from "../../system/calendar.js"
+import {
+  dateTimeInputValue, parseDateTimeInput
+} from "../../interface/calendar-clock.js"
+import {
+  favorsContext, onFavorAction
+} from "../../interface/contact-favors.js"
+import {
+  tooltipsToHelp, fillHelpBubble
+} from "../../interface/help-tooltips.js"
 
 // Item types that include a footer (condition monitors, price/availability)
 const ITEM_FOOTER_TYPES = new Set([
@@ -111,6 +156,24 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       shopOpen: SR5ItemSheet._onShopAction,
       shopClientAdd: SR5ItemSheet._onShopAction,
       shopClientRemove: SR5ItemSheet._onShopAction,
+      // The chips between the character and the contact (Run Faster p. 170-172, contact-favors.js)
+      contactFavor: function (event, target) {
+        event.preventDefault()
+        return onFavorAction(this.document, target.dataset.favor)
+      },
+      // The owner switches the device's mode (pan-device-switch.js)
+      switchDeviceMode: function (event, target) {
+        event.preventDefault()
+        return switchDeviceMode(this.document, target.dataset.mode)
+      },
+      // The messaging of the device (lot 14, SR5 p. 241)
+      openCommcode: async function (event) {
+        event.preventDefault()
+        const {
+          SR5CommcodeWindow
+        } = await import("../../interface/commcode-window.js")
+        return SR5CommcodeWindow.openDevice(this.document.uuid)
+      },
     },
   }
 
@@ -370,6 +433,22 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
 	 */
   _computeSheetLayout() {
     const layout = computeItemLayout(this.item.type)
+    // The workshop tab (lot 12, C9): only on an item that takes accessories, with its family's name and icon
+    const family = workshopFamily(this.item)
+    const isWorkshop = tab => tab.sections.some(s => (s.blocks ?? s.columns?.flat() ?? []).some(b => b.id === 'itemWorkshop'))
+    for (const panel of layout.panels) {
+      if (!family) panel.tabs = panel.tabs.filter(tab => !isWorkshop(tab))
+      for (const tab of panel.tabs) {
+        if (family && isWorkshop(tab)) Object.assign(tab, {
+          faIcon: WORKSHOP_FAMILIES[family].icon, tooltip: game.i18n.localize(WORKSHOP_FAMILIES[family].label)
+        })
+        else if (this.item.type === 'itemVehicle' && tab.iconKey === 'workshop') tab.tooltip = game.i18n.localize('SR5.VehicleModWorkshop')
+        // The favors of a contact (Run Faster p. 170-172)
+        else if (tab.iconKey === 'favors') Object.assign(tab, {
+          faIcon: 'fa-handshake', tooltip: game.i18n.localize('SR5.FAVOR_Tab')
+        })
+      }
+    }
 
     // Sync Foundry's tabGroups — one independent group per panel
     for (const panel of layout.panels) {
@@ -404,8 +483,24 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     context.owner = this.document.isOwner
     context.lists = SR5_EntityHelpers.sortTranslations(SR5)
     context.isPlay = this.isPlayMode
+    // Read on the sheet, the description and the game effect show their links (@UUID to a journal, the Library)
+    // enriched, as on the chat card; the editor keeps the raw text
+    const enrich = text => foundry.applications.ux.TextEditor.implementation.enrichHTML(typeof text === "string" ? text : "", {
+      secrets: this.document.isOwner, relativeTo: item
+    })
+    context.enrichedDescription = await enrich(item.system.description)
+    context.enrichedGameEffect = await enrich(item.system.gameEffect)
+    // Race of an insect spirit (Dark Terrors p. 22-34), for the insect castes only
+    if (item.type === "itemSpirit" && isInsectCaste(SR5_SpiritTypes.baseType(item.system.type))) context.insectRaces = insectRaceOptions()
+    // Skill power (Aetherology p. 39): which active skill the spirit has
+    if (isSkillPower(item)) {
+      context.grantsSkill = true
+      context.grantableSkills = Object.fromEntries(Object.entries(grantableSkills(SR5.skills, SR5.resonanceSkills))
+        .map(([key, label]) => [key, game.i18n.localize(label)]).sort((a, b) => a[1].localeCompare(b[1])))
+    }
     // Faction of a contact (Cutting Aces p. 157), kept in the gamemaster's registry
     if (item.type === "itemContact") context.contactFaction = SR5FactionRegistry.factionOfContact(item.uuid)?.name ?? ""
+    if (item.type === "itemContact") context.favors = favorsContext(item.system)
     // Whom a custom drug can be made for (Chrome Flesh p. 194): the actors this user sees, and the one already named
     if (item.type === "itemDrug" && item.system.quality === "custom") {
       const recipients = Object.fromEntries((game.actors?.contents ?? []).filter(a => ["actorPc", "actorGrunt"].includes(a.type))
@@ -430,6 +525,8 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
         member.combat = actor?.getFlag?.("sr5", TACNET_COMBAT_FLAG) ?? ""
       }
     }
+    // The device's mode, switched by its owner (couronne du PAN, lot 6)
+    context.deviceMode = deviceModeSheetContext(item)
     // Items that unfold into an actor wear a second picture: their token's
     context.hasTokenImage = SR5ItemSheet.SIDEKICK_TYPES.includes(item.type)
     // What the rule asks of a garage holding this kind of vehicle
@@ -442,6 +539,15 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
         SR5ShopVendor
       } = await import("../../interface/shop-vendor.js")
       context.shop = SR5ShopVendor.sheetContext(item)
+    }
+
+    // Cyberlimbs (SR5 p. 459): the limb a weapon is held by, and a limb's Strength and Agility with its enhancements
+    if (item.type === 'itemWeapon' && item.actor) {
+      const choices = limbChoices(item.actor.items)
+      if (Object.keys(choices).length) context.weaponLimbChoices = choices
+    }
+    if (item.type === 'itemAugmentation' && item.system.category === "cyberlimbs") {
+      context.limbAttributes = limbAttributes(item, item.actor?.items)
     }
 
     // Custom ammunition type choices for weapon ammo dropdown
@@ -512,6 +618,25 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     if (item.type === "itemQuality") context.showMasteryOption = (item.system.customEffects || [])
       .some(e => e?.target === "system.magic.masteries.illusionist")
 
+    // A file of the Matrix: its content, the gamemaster's, and its last edit in words (SR5 p. 237, 240)
+    if (item.type === "itemFile") {
+      context.enrichedFileContent = await enrich(item.system.content)
+      context.fileLastEdit = fileLastEditText(item.system.lastEdit)
+      // Its content as the reader sees it: clear, protected, or ciphered with a key (lot 39, a house rule)
+      const cipherOn = game.settings.settings.has(`sr5.${CIPHER_SETTING}`) && game.settings.get("sr5", CIPHER_SETTING) === true
+      const reading = readFile(item, {
+        isGM: game.user.isGM, cipherOn
+      })
+      const key = item.system.cipher?.key ?? ""
+      context.fileCipher = {
+        on: cipherOn, how: reading.how, ciphered: reading.ciphered, html: reading.how === "gm" ? "" : await enrich(reading.html),
+        // The holder's player sets the key of a file that has none, or changes the one she knows; the gamemaster any
+        canSetKey: cipherOn && (game.user.isGM || !hasKey(key) || sameKey(item.system.cipher?.known, key)),
+      }
+    }
+    // A mentor spirit's drawback is HTML (Megapack data, the editor): shown read, never as tags (lot 34)
+    if (item.type === "itemMentorSpirit") context.enrichedDrawback = await enrich(item.system.drawback)
+
     // Custom spirit type: pickers, and labels for the read-only summary
     if (item.type === "itemSpiritType") {
       const official = {
@@ -537,6 +662,10 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       // Counted on the preview, so that inherited skills are included.
       context.spiritTypeSkillsCount = game.i18n.format("SR5.SpiritTypeSkillsCount",
         SR5_SpiritTypes.skillCounts(context.spiritTypePreview))
+      // Items given to every spirit of the type when it is created
+      context.spiritTypeItems = (item.system.items ?? []).map((given, index) => ({
+        index, name: given.name, img: given.img, typeLabel: `TYPES.Item.${given.type}`
+      }))
     }
 
     // Weapon focus: populate weapon choices from parent actor
@@ -564,6 +693,27 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       context.ammoBuiltinType = item.system.ammunitionTypeUuid ? '' : item.system.type
     }
 
+    // The vehicle's workshop (Chop Shop, Rigger 5.0 p. 153-156)
+    if (item.type === 'itemVehicle') context.workshop = {
+      ...workshopContext(item), banner: await vendorBanner('tuner')
+    }
+    // The workshop of a weapon, an armor, an implant or a piece of gear (lot 12, C9)
+    context.itemWorkshop = await itemWorkshopContext(item)
+
+    // The lifestyle's first (then next) debit: chosen by the player before the rent starts, corrected by the GM (lot 10)
+    if (item.type === 'itemLifestyle') {
+      const debit = rentDebitState(item.system.rent, {
+        isGM: game.user.isGM, isOwner: item.isOwner
+      })
+      if (debit) context.rentDebit = {
+        ...debit,
+        editable: debit.editable && this.isEditable,
+        input: debit.time === null ? "" : dateTimeInputValue(worldTimeToComponents(debit.time, calendarStartYear())),
+        label: game.i18n.localize(debit.started ? 'SR5.LifeStyleNextDebit' : 'SR5.LifeStyleFirstDebit'),
+        text: debit.time === null ? game.i18n.localize('SR5.LifeStyleDebitUnset') : game.time.calendar.format(debit.time),
+      }
+    }
+
     // Dynamic layout
     context.layout = this._computeSheetLayout()
     context.hasFooter = ITEM_FOOTER_TYPES.has(item.type)
@@ -585,6 +735,77 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       mentorDrop.addEventListener('dragover', ev => ev.preventDefault())
       mentorDrop.addEventListener('drop', ev => this.#onDropMentor(ev))
     }
+
+    // Vehicle workshop: the gamemaster fits a mod by dropping it, or takes one off (Q7 of DjamZ)
+    if (this.document.type === 'itemVehicle' && this.isEditable) {
+      for (const zone of el.querySelectorAll('.sr5-workshop-drop')) {
+        zone.addEventListener('dragover', ev => ev.preventDefault())
+        zone.addEventListener('drop', ev => {
+          ev.preventDefault()
+          ev.stopPropagation()
+          dropModOnWorkshop(this.document, foundry.applications.ux.TextEditor.implementation.getDragEventData(ev))
+        })
+      }
+      for (const remove of el.querySelectorAll('.workshop-item-remove')) {
+        remove.addEventListener('click', ev => removeModFromVehicleItem(this.document, Number(ev.currentTarget.closest('[data-index]').dataset.index)))
+      }
+      for (const shop of el.querySelectorAll('.workshop-shop')) shop.addEventListener('click', ev => {
+        ev.preventDefault()
+        openWorkshopShop(this.document)
+      })
+    }
+
+    // The workshop of a weapon, an armor, an implant or a piece of gear (lot 12, C9): drop to buy or put on, take off,
+    // put on from the inventory, the shop, the installation test of RG p. 67
+    if (context.itemWorkshop && this.isEditable) {
+      const item = this.document
+      const at = ev => Number(ev.currentTarget.closest('[data-index]').dataset.index)
+      for (const zone of el.querySelectorAll('.sr5-item-workshop-drop')) {
+        zone.addEventListener('dragover', ev => ev.preventDefault())
+        zone.addEventListener('drop', ev => {
+          ev.preventDefault()
+          ev.stopPropagation()
+          dropOnItemWorkshop(item, foundry.applications.ux.TextEditor.implementation.getDragEventData(ev))
+        })
+      }
+      for (const a of el.querySelectorAll('.item-workshop-remove')) a.addEventListener('click', ev => removeAccessory(item, at(ev)))
+      for (const a of el.querySelectorAll('.item-workshop-install')) a.addEventListener('click', ev => openAccessoryInstall(item, at(ev)))
+      for (const a of el.querySelectorAll('.item-workshop-mount')) a.addEventListener('click', ev => {
+        const accessory = item.actor?.items?.get(ev.currentTarget.closest('[data-id]').dataset.id)
+        if (accessory) mountAccessory(item, accessory)
+      })
+      for (const a of el.querySelectorAll('.item-workshop-shop')) a.addEventListener('click', ev => {
+        ev.preventDefault()
+        openItemWorkshopShop(item)
+      })
+      for (const a of el.querySelectorAll('.item-workshop-view')) a.addEventListener('click', ev => {
+        item.actor?.items?.get(ev.currentTarget.closest('[data-id]').dataset.id)?.sheet?.render(true)
+      })
+    }
+
+    // Spirit type: drop an item to give it to every spirit of the type, or take one back
+    const spiritTypeDrop = el.querySelector('.sr5-spirit-type-drop')
+    if (spiritTypeDrop && this.isEditable) {
+      spiritTypeDrop.addEventListener('dragover', ev => ev.preventDefault())
+      spiritTypeDrop.addEventListener('drop', ev => this.#onDropSpiritTypeItem(ev))
+      for (const remove of el.querySelectorAll('.sr5-spirit-type-item-remove')) {
+        remove.addEventListener('click', () => {
+          const items = [...(this.document.system.items ?? [])]
+          items.splice(Number(remove.dataset.index), 1)
+          this.document.update({
+            "system.items": items
+          })
+        })
+      }
+    }
+
+    // Lifestyle: the date of the first debit, written as world time (the input has no name: the form leaves it alone)
+    el.querySelector('.sr5-rent-first-debit')?.addEventListener('change', ev => {
+      ev.stopPropagation()
+      this.document.update({
+        "system.rent.firstDebit": parseDateTimeInput(ev.currentTarget.value, calendarStartYear())
+      })
+    })
 
     // Pathogen: the active GM infects the tokens he selected or targeted (system/diseases.js)
     el.querySelector('.sr5-pathogen-infect')?.addEventListener('click', () => infectWith(this.document))
@@ -700,7 +921,7 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     if (toggleBtn) {
       toggleBtn.classList.toggle("fa-lock", this.isPlayMode)
       toggleBtn.classList.toggle("fa-lock-open", this.isEditMode)
-      toggleBtn.dataset.tooltip = this.isPlayMode ? "SR5.SwitchToEdit" : "SR5.SwitchToPlay"
+      toggleBtn.dataset.tooltip = game.i18n.localize(this.isPlayMode ? "SR5.SwitchToEdit" : "SR5.SwitchToPlay")
     }
 
     // Disable form inputs in duplicate block instances to prevent FormDataExtended conflicts
@@ -764,7 +985,9 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       if (actor?.isOwner) await actor.setFlag("sr5", TACNET_COMBAT_FLAG, ev.target.value)
     }))
 
-    // Help Display (mouseover/mouseout — cannot use data-action)
+    // Help Display (mouseover/mouseout — cannot use data-action). The tooltips go into the bubble when it is on
+    // and free (help-tooltips.js)
+    tooltipsToHelp(el.querySelector(".window-content") ?? el, game.settings.get("sr5", "sr5Help.active"), text => game.i18n.localize(text))
     el.querySelectorAll("[data-helpTitle]").forEach(node => {
       node.addEventListener("mouseover", this._displayHelpText.bind(this))
       node.addEventListener("mouseout", this._hideHelpText.bind(this))
@@ -806,6 +1029,24 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
       })
       this._savedScrollPositions = null
     }
+  }
+
+  // A copy of the dropped item, kept on the spirit type: a spirit or a type cannot carry itself
+  async #onDropSpiritTypeItem(event) {
+    event.preventDefault()
+    event.stopPropagation()
+    const data = foundry.applications.ux.TextEditor.implementation.getDragEventData(event)
+    if (data?.type !== "Item") return
+    const dropped = await fromUuid(data.uuid)
+    if (!dropped || SR5_SpiritTypes.NOT_GIVEN.includes(dropped.type)) return
+    const copy = dropped.toObject()
+    delete copy._id
+    delete copy.folder
+    delete copy.sort
+    delete copy.ownership
+    return this.document.update({
+      "system.items": [...(this.document.system.items ?? []), copy]
+    })
   }
 
   async #onDropToxin(event) {
@@ -944,7 +1185,7 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
         },
         {
           action: "cancel",
-          label: "Cancel",
+          label: game.i18n.localize("SR5.Cancel"),
           callback: () => ({
             action: "cancel" 
           }),
@@ -1003,7 +1244,7 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
           }),
         },
         {
-          action: "cancel", label: "Cancel",
+          action: "cancel", label: game.i18n.localize("SR5.Cancel"),
           callback: () => ({
             action: "cancel"
           }),
@@ -1016,7 +1257,7 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     if (!gear) return
     //The prepared copy carries the Capacity the enhancement takes (a rated one: rating × its Capacity)
     const copy = gear.toObject(false)
-    if (!enhancementFits(this.item, copy)) return ui.notifications.warn(game.i18n.localize("SR5.WARN_AccessoryCapacityFull"))
+    if (enhancementRefused(this.item, copy, actor)) return
     let mounted = foundry.utils.deepClone(this.item._source.system.weaponAccessory?.visionEnhancements ?? [])
     if (!Array.isArray(mounted)) mounted = Object.values(mounted)
     mounted.push(copy)
@@ -1078,13 +1319,12 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
 
     {
       const el = event.currentTarget
-      if (helpTitle) helpTitle.innerHTML = el.dataset.helptitle || ""
-
-      if (el.dataset.helpmessage && helpMessage) helpMessage.innerHTML = "<div class='helpMessage'><em>" + el.dataset.helpmessage + "</em></div>"
+      fillHelpBubble(el, helpTitle, helpMessage)
 
       let details = el.dataset.helpdetails
       if (details) {
-        property = SR5_EntityHelpers.resolveObjectPath(`item.system.${details}`, this)
+        // The templates write the path from the item ("system.price"), as the actor sheet's do from the actor
+        property = SR5_EntityHelpers.resolveObjectPath(`item.${details.startsWith("system.") ? details : `system.${details}`}`, this)
       }
 
       if (property) {
@@ -1092,12 +1332,16 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
         if (property.modifiers && property.modifiers.length) {
           if (property.base) detailsHTML += `<li>${game.i18n.localize('SR5.HELP_CalculationBase')}${game.i18n.localize('SR5.Colons')} ${property.base}</li>`
           for (let modifier of Object.values(property.modifiers)) {
-            detailsHTML = detailsHTML + `<li>${modifier.source} [${modifier.type}]${game.i18n.localize('SR5.Colons')} ${(modifier.isMultiplier ? 'x' : (modifier.value >= 0 ? '+' : ''))}${modifier.value}</li>`
+            //The type's label, as on the actor sheet; a type the system does not list (already a label: ammunition's quantity) as is
+            const typeKey = SR5.modifierTypes[modifier.type]
+            const typeLabel = typeKey ? game.i18n.localize(typeKey) : modifier.type
+            detailsHTML = detailsHTML + `<li>${modifier.source} [${typeLabel}]${game.i18n.localize('SR5.Colons')} ${(modifier.isMultiplier ? 'x' : (modifier.value >= 0 ? '+' : ''))}${modifier.value}</li>`
           }
         }
         detailsHTML += `<li>${game.i18n.localize('SR5.HELP_CalculationTotal')}${game.i18n.localize('SR5.Colons')} ${property.value}</li></ul>`
         if (helpDetails) helpDetails.innerHTML = detailsHTML
       }
+      SR5_UiModifications.placeHelpWindow(target)
       target.classList.add("active")
     }
   }

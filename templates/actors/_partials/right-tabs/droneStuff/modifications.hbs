@@ -14,7 +14,7 @@
 						{{#if owner}}
 						<p class="SR-TextRight add-item" data-helpTitle="{{localize 'SR5.HELP_ItemAdd' key=(findTranslation 'itemTypes' 'itemVehicleMod')}}" 
 						  data-helpMessage="{{localize 'SR5.HELP_ItemAddMsg'}}">
-							<a class="item-create" data-title="{{localize 'SR5.Add'}}" data-type="itemVehicleMod">
+							<a class="item-create" data-tooltip="{{localize 'SR5.Add'}}" data-type="itemVehicleMod">
 								<em class="fas fa-plus"></em>
 							</a>
 						</p>
@@ -26,7 +26,7 @@
 	  	{{#each actor.vehiclesMod}}
 		<li class="item grid" data-item-id="{{_id}}" draggable="true">
 			<div class="col-6 deplie" data-helpTitle="{{localize 'SR5.HELP_MoreInfos'}}" data-helpMessage="{{localize 'SR5.HELP_MoreInfosMsg'}}">
-				{{name}}{{#if system.isWeaponMounted}}{{system.surname}}{{/if}}
+				{{name}}{{#if system.isWeaponMounted}}{{system.surname}}{{/if}}{{#if system.isFactory}} <span class="SR-LightGreyColor">({{localize 'SR5.VehicleModFactory'}})</span>{{/if}}
 			</div>
 			<div class="col-1 SR-TextCenter changeValueByClick" data-binding="system.itemRating"
 			data-helpTitle="{{localize 'SR5.HELP_Rating' key=name}}"
@@ -39,11 +39,11 @@
 				<div class="grid">
 						<div class="col-6 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_EquipToggle' key=name}}" data-helpMessage="{{localize 'SR5.HELP_EquipToggleMsg'}}">
 							{{#if system.isActive}}
-							<a class="toggle-value" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.isActive" data-title="{{localize 'SR5.Unequip'}}">
+							<a class="toggle-value" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.isActive" data-tooltip="{{localize 'SR5.Unequip'}}">
 								<em class="fas fa-sm fa-thumbtack SR-SubColor"></em>
 							</a>
 							{{else}}
-							<a class="toggle-value" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.isActive" data-title="{{localize 'SR5.Equip'}}">
+							<a class="toggle-value" data-dtype="Boolean" data-item-id="{{item._id}}" data-binding="system.isActive" data-tooltip="{{localize 'SR5.Equip'}}">
 								<em class="fas fa-sm fa-thumbtack"></em>
 							</a>
 							{{/if}}

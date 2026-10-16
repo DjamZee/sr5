@@ -8,6 +8,9 @@ export {
   default as attributeOnly
 } from "./rollData-AttributeOnly.js"
 export {
+  default as autopilotUnforeseen
+} from "./rollData-AutopilotUnforeseen.js"
+export {
   default as banishingResistance
 } from "./rollData-BanishingResistance.js"
 export {
@@ -62,6 +65,9 @@ export {
   default as grappleEscape
 } from "./rollData-GrappleEscape.js"
 export {
+  default as netEscape
+} from "./rollData-NetEscape.js"
+export {
   default as grappleClinch
 } from "./rollData-GrappleClinch.js"
 export {
@@ -73,6 +79,9 @@ export {
 export {
   default as pickpocketPerception
 } from "./rollData-PickpocketPerception.js"
+export {
+  default as concealItem
+} from "./rollData-ConcealItem.js"
 export {
   default as fading
 } from "./rollData-Fading.js"
@@ -187,6 +196,15 @@ export {
 export {
   default as vehicleTest
 } from "./rollData-VehicleTest.js"
+export {
+  default as vehicleRepair
+} from "./rollData-VehicleRepair.js"
+export {
+  default as vehicleModInstall
+} from "./rollData-VehicleModInstall.js"
+export {
+  default as accessoryInstall
+} from "./rollData-AccessoryInstall.js"
 export {
   default as weapon
 } from "./rollData-Weapon.js"
