@@ -177,3 +177,24 @@ describe("Arme électrique contre un appareil (SR5 p. 172-173)", () => {
     expect(infos).toContain("SR5.INFO_DeviceOnlyElectricity")
   })
 })
+
+// Lucas#2058, R3 : « Se défendre » contre une arme non électrique ne faisait rien, sans l'avis promis au MJ
+describe("une arme non électrique sur un appareil, au moment de se défendre", () => {
+  it("pas de test de défense, et l'avis au MJ", async () => {
+    const {
+      default: defense
+    } = await import("../modules/rolls/roll-prepare-case/rollData-Defense.js")
+    const {
+      isPlainHitOnDevice
+    } = await import("../modules/rolls/roll-helpers/electric-device.js")
+    expect(isPlainHitOnDevice(device(3), attack("none"))).toBe(true)
+    expect(isPlainHitOnDevice(device(3), attack("electricity"))).toBe(false)
+    expect(isPlainHitOnDevice({
+      type: "actorGrunt"
+    }, attack("none"))).toBe(false)
+    const data = rollData()
+    expect(await defense(data, device(3), attack("none"))).toBeUndefined()
+    expect(infos).toContain("SR5.INFO_DeviceOnlyElectricity")
+    expect(data.dicePool.base).toBeUndefined()
+  })
+})

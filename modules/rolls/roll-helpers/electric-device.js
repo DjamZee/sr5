@@ -15,6 +15,14 @@ export function isElectricHitOnDevice(actor, attack) {
 }
 
 /**
+ * Whether this hit on a device actor carries no electricity: the device has no defense to roll, the gamemaster is told
+ * that she rules on it (SR5.INFO_DeviceOnlyElectricity). « Se défendre » did nothing at all (Lucas#2058, R3).
+ */
+export function isPlainHitOnDevice(actor, attack) {
+  return actor?.type === "actorDevice" && attack?.damage?.element !== "electricity"
+}
+
+/**
  * The resistance card of a device hit by an electric weapon, from the attack card already read again
  * (trustedAttackCard): no defense, the DV and all the hits, always Physical. Not an attack card any more, so the
  * resistance does not read it again as one (attack-card.js, attackFamily).
