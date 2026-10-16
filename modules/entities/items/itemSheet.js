@@ -97,6 +97,9 @@ import {
 import {
   tooltipsToHelp, fillHelpBubble
 } from "../../interface/help-tooltips.js"
+import {
+  ActorPicker, actorEntries, actorFolders
+} from "../../interface/actor-picker.js"
 
 // Item types that include a footer (condition monitors, price/availability)
 const ITEM_FOOTER_TYPES = new Set([
@@ -723,6 +726,30 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     return context
   }
 
+  #drugPicker = null
+
+  #drugRecipients(el, context) {
+    const box = el.querySelector('.sr5-drug-recipients')
+    if (!box) return
+    this.#drugPicker ??= new ActorPicker({
+      name: 'system.preparedFor', noneLabel: game.i18n.localize('SR5.DrugPreparedForAnyone'),
+      onChange: values => this.document.update({
+        'system.preparedFor': values[0] ?? ''
+      })
+    })
+    // The item is the truth: an update from elsewhere shows at the next render
+    this.#drugPicker.clear()
+    if (this.document.system.preparedFor) this.#drugPicker.selected.add(this.document.system.preparedFor)
+    // Its own write, not the form's: the search typed must not submit the sheet
+    box.addEventListener('change', ev => ev.stopPropagation())
+    const actors = Object.keys(context.drugRecipients ?? {
+    }).map(id => game.actors?.get(id)).filter(Boolean)
+    this.#drugPicker.render(box, {
+      entries: actorEntries(actors), folders: actorFolders()
+    })
+    if (!this.isEditable) for (const input of box.querySelectorAll('input, select')) input.disabled = true
+  }
+
   _onRender(context, options) {
     super._onRender(context, options)
     const el = this.element
@@ -808,6 +835,9 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
         "system.rent.firstDebit": parseDateTimeInput(ev.currentTarget.value, calendarStartYear())
       })
     })
+
+    // Custom drug: whom it is made for, a searchable list by folder (actor-picker.js), written apart from the form
+    this.#drugRecipients(el, context)
 
     // Pathogen: the active GM infects the tokens he selected or targeted (system/diseases.js)
     el.querySelector('.sr5-pathogen-infect')?.addEventListener('click', () => infectWith(this.document))
