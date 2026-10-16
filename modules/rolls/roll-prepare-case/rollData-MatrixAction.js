@@ -15,6 +15,9 @@ import {
   matrixEffectiveMarks
 } from "../../system/matrix-hooks.js"
 import {
+  isFlickerDisconnected
+} from "../../system/flicker-disconnection.js"
+import {
   SR5_CharacterUtility
 } from "../../entities/actors/utilityActor.js"
 import {
@@ -210,6 +213,10 @@ export default async function matrixAction(rollData, rollKey, actor){
 // What every Matrix action checks and adds, its cost counted or offered
 async function finishMatrixAction(rollData, rollKey, actor){
   const matrixAction = actor.system.matrix.actions[rollKey]
+  //Kill Code p. 74: disconnected by a Flicker, the avatar is "incapable d'agir" until it vanishes or reconnects
+  if (isFlickerDisconnected(actor) && refuseByRule("matrix", "SR5.WARN_FlickerDisconnected", null, {
+    actor
+  })) return
   //Add public grid switch
   if (actor.system.matrix.userGrid === "public") rollData.dialogSwitch.publicGrid = true
     

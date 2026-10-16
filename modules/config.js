@@ -3838,6 +3838,7 @@ SR5.effectTypes = {
   signalJam                 : "SR5.EffectSignalJam",
   signalJammed              : "SR5.EffectSignalJammed",
   linkLock                  : "SR5.EffectLinkLockedConnection",
+  flickerDisconnection      : "SR5.EffectFlickerDisconnected",
   itemComplexForm           : "TYPES.Item.itemComplexForm",
   itemSpell                 : "TYPES.Item.itemSpell",
   itemAdeptPower            : "TYPES.Item.itemAdeptPower",

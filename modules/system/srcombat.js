@@ -1062,6 +1062,14 @@ export class SR5Combat extends Combat {
               effect: item.name
             })}`)
 
+            //Kill Code p. 74: the avatar a Flicker left inert vanishes at last; the full reboot, no second dumpshock
+            if (itemData.type === "flickerDisconnection") {
+              const {
+                endFlickerDisconnection
+              } = await import("./flicker-disconnection.js")
+              await endFlickerDisconnection(actor)
+            }
+
             //Head case Attribute Boost (Stolen Souls p. 201): Stun damage equal to the hits once the boost ends.
             //Applied straight to the monitor: this is not an attack, so no knockdown check
             if (itemData.type === "naniteAttributeBoost" && Number(itemData.value) > 0 && actor.system.conditionMonitors.stun) {

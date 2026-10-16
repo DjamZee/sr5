@@ -279,7 +279,8 @@ describe('Rebooting a deck (SR5 p. 244)', () => {
   })
 
   // An IC forces the reboot (SR5 p. 250): the link lock holds back the character, not the IC
-  it.each(['iceFlicker', 'iceScramble'])('lets %s reboot a link-locked deck', async typeSub => {
+  // (the Flicker disconnects without a reboot since 16/10: flicker-disconnection.test.js)
+  it.each(['iceScramble'])('lets %s reboot a link-locked deck', async typeSub => {
     hacker.system.matrix.isLinkLocked = true
     hacker.system.matrix.userMode = 'ar'
     activeDeck.uuid = 'Actor.hacker.Item.deck'
@@ -309,9 +310,11 @@ describe('Rebooting a deck (SR5 p. 244)', () => {
   })
 
   // Kill Code p. 74: the second mark disconnects, the hit's own counted while its button is still on the card. "Reboot"
-  // clicked before "Place the mark" used to leave the deck on with its two marks to come
-  it.each([[true, 1], [false, 0]])('Flicker on one mark, its own still to place: %s, reboots %s time(s)', async (pending, times) => {
+  // clicked before "Place the mark" used to leave the deck on with its two marks to come. Since 16/10 it disconnects
+  // without a reboot (flicker-disconnection.js)
+  it.each([[true, 1], [false, 0]])('Flicker on one mark, its own still to place: %s, disconnects %s time(s)', async (pending, times) => {
     hacker.system.matrix.userMode = 'ar'
+    hacker.createEmbeddedDocuments = vi.fn()
     activeDeck.uuid = 'Actor.hacker.Item.deck'
     activeDeck.system.marks = [{
       ownerId: 'ice', value: 1
@@ -339,8 +342,10 @@ describe('Rebooting a deck (SR5 p. 244)', () => {
     }, {
       id: 'ice', name: 'CI'
     }, hacker)
-    if (times) await reboot.mock.results[0].value
-    expect(reboot).toHaveBeenCalledTimes(times)
+    expect(reboot).not.toHaveBeenCalled()
+    const disconnections = hacker.createEmbeddedDocuments.mock.calls.filter(([kind, list]) => kind === 'Item' &&
+      list.some(d => d['system.type'] === 'flickerDisconnection'))
+    expect(disconnections).toHaveLength(times)
   })
 
   // A reboot forced by an IC (SR5 p. 250) is no action of the character's: only the sheet button spends one
@@ -716,8 +721,9 @@ describe('Every ejection from VR deals one dumpshock', () => {
     expect(dumpshocks()).toBe(1)
   })
 
-  it.each(['iceScramble', 'iceFlicker'])('%s forcing the reboot in VR deals exactly one dumpshock', async typeSub => {
+  it.each(['iceScramble', 'iceFlicker'])('%s forcing the ejection in VR deals exactly one dumpshock', async typeSub => {
     hacker.system.matrix.userMode = 'coldsim'
+    hacker.createEmbeddedDocuments = vi.fn()
     activeDeck.uuid = 'Actor.hacker.Item.deck'
     activeDeck.system.marks = [{
       ownerId: 'ice', value: 2
@@ -737,8 +743,21 @@ describe('Every ejection from VR deals one dumpshock', () => {
     }, {
       id: 'ice', name: 'CI'
     }, hacker)
-    await reboot.mock.results[0].value
+    if (reboot.mock.results[0]) await reboot.mock.results[0].value
     expect(dumpshocks()).toBe(1)
+  })
+
+  // Kill Code p. 74: reconnecting after a Flicker reboots, without a second dumpshock
+  it('a reboot after the Flicker disconnection deals no second dumpshock', async () => {
+    hacker.system.matrix.userMode = 'hotsim'
+    hacker.items.push({
+      id: 'flick', type: 'itemEffect', system: {
+        type: 'flickerDisconnection', durationType: 'round', duration: 2
+      }
+    })
+    await hacker.rebootDeck()
+    expect(dumpshocks()).toBe(0)
+    expect(hacker.deleteEmbeddedDocuments).toHaveBeenCalledWith('Item', expect.arrayContaining(['flick']))
   })
 
   it('an AI rebooting in VR takes no dumpshock (DjamZ, 04/10)', async () => {

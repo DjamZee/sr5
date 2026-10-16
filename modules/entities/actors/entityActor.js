@@ -8,6 +8,9 @@ import {
   HOST_CHANGED_HOOK, exitHostInPlace
 } from "../../system/matrix-host-presence.js"
 import {
+  FLICKER_DISCONNECTION, isFlickerDisconnected
+} from "../../system/flicker-disconnection.js"
+import {
   prototypeChanges, tokenFamily
 } from "../../system/token-defaults.js"
 import {
@@ -1195,10 +1198,12 @@ export class SR5Actor extends Actor {
   //Reboot deck = reset Overwatch score and delete any marks on or from the actor
   //A character in VR when the device reboots takes dumpshock (SR5 p. 244), whatever made it reboot
   async rebootDeck(_device = null, {
-    hostExitReason = "reboot"
+    hostExitReason = "reboot", dumpshock = true
   } = {
   }) {
-    SR5_ActorHelper.dumpshockIfInVR(this)
+    //A character a Flicker disconnected has had its dumpshock already: reconnecting reboots without a second one
+    //(Kill Code p. 74, flicker-disconnection.js)
+    if (dumpshock && !isFlickerDisconnected(this)) SR5_ActorHelper.dumpshockIfInVR(this)
     //SR5 p. 236: whoever had spotted its icons loses sight of them, and it starts again without what it had spotted
     //(couronne du PAN, lot 5)
     await requestForgetIntel({
@@ -1279,7 +1284,8 @@ export class SR5Actor extends Actor {
 
     //Delete effects from Deck. A reboot cuts the connection (SR5 p. 231, 250; Kill Code p. 74): every link lock goes
     //with it, permanent as its effect is, and so does its status
-    const ended = this.items.filter(i => i.type === "itemEffect" && (i.system.durationType === "reboot" || isLinkLockEffect(i))).map(i => i.id)
+    const ended = this.items.filter(i => i.type === "itemEffect" && (i.system.durationType === "reboot" || isLinkLockEffect(i) ||
+      i.system.type === FLICKER_DISCONNECTION)).map(i => i.id)
     if (ended.length) await this.deleteEmbeddedDocuments("Item", ended)
     const lockStatuses = linkLockStatusIds(this)
     if (lockStatuses.length) await this.deleteEmbeddedDocuments("ActiveEffect", lockStatuses)
