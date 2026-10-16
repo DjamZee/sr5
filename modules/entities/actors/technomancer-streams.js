@@ -213,8 +213,8 @@ export function machinistRccRatings(attributes){
 // Echo IRHM (Data Trails p. 63): jumps into a vehicle that has no rigger interface. Recognized by their name, like the
 // Aegis (aegis.js), or by a system effect of category specialCase
 const MACHINE_MIND = /possession de la machine|machine mind/i
-// Better Than Bad p. 145
-const RESONANT_DISSONANCE = /dissonance r[ée]sonante|resonant dissonance/i
+// Better Than Bad p. 145 (VO p. 161: « Resonant Discordance »)
+const RESONANT_DISSONANCE = /dissonance r[ée]sonante|resonant (dissonance|discordance)/i
 const HUMAN_MACHINE_INTERFACE = /\bIRHM\b|interface de r[ée]sonance homme.?machine|resonance man.?machine interface/i
 
 function echoHas(item, pattern, specialCase){
@@ -228,8 +228,11 @@ function echoHas(item, pattern, specialCase){
  * Écho Dissonance résonante (Better Than Bad p. 145): « Vous pouvez désormais entrer en RV cold-sim. […] vous conservez
  * le bonus de +2 dés à toutes les actions matricielles. Si vous choisissez d'utiliser la RV hot-sim, vous bénéficiez
  * également d'un bonus de +2 dés pour les tests impliquant les compétences de Résonance suivantes : Compilation,
- * Décompilation […] ». By its name, or by the system effect
+ * Décompilation et Filtrage de Formes complexes ». The VO (p. 161) reads « Compiling, Decompiling, and Threading complex
+ * forms »: the third is threading, the Software test (RESONANT_DISSONANCE_ACTIONS). By its name, or by the system effect
  */
+export const RESONANT_DISSONANCE_ACTIONS = ["compileSprite", "decompileSprite", "threadComplexForm"]
+
 export function hasResonantDissonance(holder){
   return itemsOf(holder).some(item => echoHas(item, RESONANT_DISSONANCE, "echoResonantDissonance"))
 }

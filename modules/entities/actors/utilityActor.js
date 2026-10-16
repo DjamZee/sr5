@@ -118,7 +118,7 @@ import {
 } from "./rcc.js"
 import {
   streamOf, firewallBonusOfStream, sleazeBonusOfStream, sourcererFreeSustain, resonanceRestoredByStream, machineMindRating,
-  hasResonantDissonance
+  hasResonantDissonance, RESONANT_DISSONANCE_ACTIONS
 } from "./technomancer-streams.js"
 import {
   VR_PILOTING_LIMIT_BONUS, controlRigThresholdModifier, dataProcessingCapModifier
@@ -4680,6 +4680,11 @@ export class SR5_CharacterUtility extends Actor {
         this.applyPenalty("special", resonanceActions[key].test, actor)
         if (matrix.userMode === "hotsim" && key === "eraseResonanceSignature") {
           SR5_EntityHelpers.updateModifier(resonanceActions[key].test, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 2)
+        }
+        //Écho Dissonance résonante (Better Than Bad p. 145, VO p. 161): in hot sim, +2 dice to compile and decompile a
+        //sprite and to thread a complex form
+        if (matrix.userMode === "hotsim" && RESONANT_DISSONANCE_ACTIONS.includes(key) && hasResonantDissonance(actor)) {
+          SR5_EntityHelpers.updateModifier(resonanceActions[key].test, game.i18n.localize('SR5.EchoResonantDissonance'), "echo", 2)
         }
         //test
         SR5_EntityHelpers.updateDicePool(resonanceActions[key].test)
