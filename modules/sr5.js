@@ -260,6 +260,8 @@ Hooks.on('getCompendiumContextOptions', sr5HookCompendiumDrawContext)
 Hooks.on('getHeaderControlsCompendium', sr5HookCompendiumDrawHeader)
 Hooks.on('getFolderContextOptions', sr5HookCompendiumDrawFolder)
 Hooks.on('renderSidebar', SR5ShopWindow.onRenderSidebar)
+// An availability card cashed: the buyer's open shop drops what it paid
+Hooks.on('updateChatMessage', SR5ShopWindow.onCardCashed)
 Hooks.on('renderSidebar', SR5DealershipWindow.onRenderSidebar)
 // A sale or a restock on a vendor: its open shop window redraws
 for (const hook of ['createItem', 'updateItem', 'deleteItem', 'updateActor']) Hooks.on(hook, SR5ShopVendor.onVendorChanged)
