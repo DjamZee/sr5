@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Annonce Discord d'une release GitHub, en embed « shadowtalk ».
 // Sert au système (DjamZee/sr5) et peut servir aux modules : tout se règle par variables d'environnement.
 //
