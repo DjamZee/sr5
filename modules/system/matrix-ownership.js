@@ -12,8 +12,9 @@
 //   the gamemaster is told (Élise, lot 19: no false alarm in honest play).
 
 // The actions with no test that the sheet takes all the same (lot 19): the owner's three (matrix-owner-actions.js) and
-// Grid Hop (matrix-grid-hop.js). They have no source, so the sheets' filter left them out of the unfolded list
-export const SHEET_ACTIONS_WITHOUT_TEST = ["changeIcon", "inviteMark", "switchInterfaceMode", "gridHop"]
+// Grid Hop (matrix-grid-hop.js), and Enter / Exit Host (S3, matrix-host-presence.js). They have no source, so the
+// sheets' filter left them out of the unfolded list
+export const SHEET_ACTIONS_WITHOUT_TEST = ["changeIcon", "inviteMark", "switchInterfaceMode", "gridHop", "enterOrExitHost"]
 
 export const OWNER = "owner"
 export const NOT_OWNER = "notOwner"

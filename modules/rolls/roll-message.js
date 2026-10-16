@@ -732,7 +732,9 @@ export class SR5_RollMessage {
       case "attackerPlaceMark": {
         // Kill Code p. 45: a mark placed by Watchdog is remembered as such, it opens the interruption actions
         let isWatchdog = messageData.test.typeSub === "watchdog"
-        await SR5_MarkHelpers.markItem(actor.id, messageData.previousMessage.actorId, messageData.matrix.mark, messageData.target.itemUuid, isWatchdog, messageId)
+        //An unlinked token is marked on its own actor: its token id reaches it, the actor id would mark the base actor,
+        //which every copy shares and no reboot of the token clears (S0, D4 of the in-game check of 16/10)
+        await SR5_MarkHelpers.markItem(actor.isToken ? actor.token.id : actor.id, messageData.previousMessage.actorId, messageData.matrix.mark, messageData.target.itemUuid, isWatchdog, messageId)
         // if defender is a drone and is slaved, add mark to master
         if (actor.type === "actorDrone" && actor.system.slaved){
           if (!game.user?.isGM) {

@@ -145,6 +145,13 @@ export class matrixPartialModel extends foundry.abstract.TypeDataModel {
       userGrid: new fields.StringField({
         initial: 'local'
       }),
+      // S3 (SR5 p. 240, 248): the uuid of the host's instance the persona is inside, and the grid it goes back to
+      currentHost: new fields.StringField({
+        initial: ''
+      }),
+      gridBeforeHost: new fields.StringField({
+        initial: ''
+      }),
       attributesCollection: new fields.SchemaField({
         value1: new fields.NumberField({
           initial: 0

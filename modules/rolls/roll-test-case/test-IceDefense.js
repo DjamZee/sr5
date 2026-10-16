@@ -83,7 +83,8 @@ export default async function iceDefenseInfo(cardData, actorId){
     //An AI outside any device is marked on its persona, cannot be link-locked
     //and has no device to reboot (Data Trails p. 157)
     devicelessAI = !targetItem && actorData.activeSpecialAttribute === "depth",
-    existingMark = await SR5_MarkHelpers.findMarkValue(targetItem?.system ?? actorData.matrix, originalActor.id),
+    //The IC counts the marks of its host and of the host's other ICs as its own (SR5 p. 249, D2 of 16/10)
+    existingMark = SR5_MarkHelpers.iceMarkValue(targetItem?.system ?? actorData.matrix, originalActor),
     targetName = targetItem?.name ?? actor.name
 
   cardData.attackerName = originalActor.name

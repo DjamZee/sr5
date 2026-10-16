@@ -256,7 +256,7 @@ function _deviceDefaultLayout() {
     panels: [
       _panel('SIDEBAR', 1, [
         _tab('Device', 'device', [
-          _block('matrixDevice'), _block('matrixMaglockType'),
+          _block('matrixDevice'), _block('matrixHostSlaves'), _block('matrixMaglockType'),
           _block('matrixAttributes'), _block('initiatives'),
           _block('matrixSilentMode'), _block('matrixGrid'),
           _block('matrixMarksControled'), _block('matrixMarks'),

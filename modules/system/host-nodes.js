@@ -23,8 +23,9 @@ export function hostNodesAllowed(read = () => globalThis.game?.settings?.get("sr
  * @return {Object[]}
  */
 export function hostMasterCandidates(host, hosts = [], resolve = () => null){
-  // The sheet hands the data copy of its actor (_id, no id), the world hands documents (id): read either
-  const idOf = actor => actor?.id ?? actor?._id
+  // The sheet hands the data copy of its actor (_id, no id), the world hands documents (id): read either. A document is
+  // known by its uuid first: two unlinked instances of one generic host share their id (S0, ticket 4)
+  const idOf = actor => actor?.uuid ?? actor?.id ?? actor?._id
   const hostId = idOf(host)
   const leadsTo = candidate => {
     const seen = new Set()

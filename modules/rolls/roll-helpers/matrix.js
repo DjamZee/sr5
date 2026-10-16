@@ -207,8 +207,9 @@ export class SR5_MatrixHelpers {
       mark = withMarks ? await SR5_MarkHelpers.findMarkValue(markHolder, attacker.id) : 0
 
     if (withMarks && attacker.type === "actorDevice"){
+      //An IC adds the marks of its host and of the host's other ICs (SR5 p. 249)
       if (attacker.system.matrix.deviceType === "ice"){
-        mark = await SR5_MarkHelpers.findMarkValue(markHolder, attacker.id)
+        mark = SR5_MarkHelpers.iceMarkValue(markHolder, attacker)
       }
     }
     cardData.damage.matrix.modifiers = {
@@ -410,7 +411,9 @@ export class SR5_MatrixHelpers {
 
     //rebootDeck spends no action: the jack out has already paid for its own. It deals the dumpshock
     //in VR, cold or hot sim, link lock or not (SR5 p. 231 and 244)
-    await actor.rebootDeck()
+    await actor.rebootDeck(null, {
+      hostExitReason: "jackOut"
+    })
   }
 
   //Jam Signals adds the hits to the Noise rating (SR5 p. 239). system.matrix.noise holds that rating as a
@@ -885,7 +888,7 @@ export class SR5_MatrixHelpers {
         let item = await fromUuid(cardData.target.itemUuid)
         //The device may have been deleted since the attack: warn, no Flicker effect
         if (!item?.system) return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetItemMissing"))
-        let existingMark = await SR5_MarkHelpers.findMarkValue(item.system, ice.id)
+        let existingMark = SR5_MarkHelpers.iceMarkValue(item.system, ice)
         if (!target.system.matrix.isLinkLocked) 
           await SR5_MatrixHelpers.applylinkLockEffect(ice, target)
         //Kill Code p. 74: two marks disconnect, this hit's own counted while its button is still on the card, whatever

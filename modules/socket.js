@@ -87,7 +87,6 @@ export class SR5_SocketHandler {
       "deleteMarkInfo": [SR5_ActorHelper._socketDeleteMarkInfo],
       "updateDeckMarkedItems": [SR5_MarkHelpers._socketUpdateDeckMarkedItems],
       "markPanMaster": [SR5_MarkHelpers._socketMarkPanMaster],
-      "markSlavedDevice": [SR5_MarkHelpers._socketMarkSlavedDevice],
       "markItem": [SR5_MarkHelpers._socketMarkItem],
       "eraseMark": [SR5_MarkHelpers._socketEraseMark],
       "overwatchIncrease": [SR5_ActorHelper._socketOverwatchIncrease],

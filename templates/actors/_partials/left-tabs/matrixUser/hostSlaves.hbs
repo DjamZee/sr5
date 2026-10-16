@@ -1,0 +1,36 @@
+{{!-- S2 (ticket 4 d'Adrore): the devices slaved to a host, and the gamemaster's ways to slave the scene's devices --}}
+{{#if hostSlaves}}
+<div class="SRBlockSheet" data-sr5-host-slaves-drop>
+	<ul>
+		<li class="grid SR-LigneEnTete"
+		  data-helpTitle="{{localize 'SR5.HostSlaves'}}"
+		  data-helpMessage="{{localize 'SR5.HELP_HostSlavesMsg'}}"
+		>
+			<div class="col-12 SR-TextUppercase">{{localize 'SR5.HostSlaves'}} ({{hostSlaves.slaves.length}})</div>
+		</li>
+		{{#each hostSlaves.slaves}}
+		<li class="grid">
+			<div class="col-10">{{this.name}}</div>
+			<div class="col-2 SR-TextCenter">
+				{{#if ../hostSlaves.isGM}}
+				<a data-sr5-host-slave-release="{{this.uuid}}" data-tooltip="{{localize 'SR5.HostSlaveRelease'}}"><i class="fas fa-unlink"></i></a>
+				{{/if}}
+			</div>
+		</li>
+		{{else}}
+		<li class="grid">
+			<div class="col-12 SR-LightGreyColor">{{localize 'SR5.HostSlavesNone'}}</div>
+		</li>
+		{{/each}}
+		{{#if hostSlaves.isGM}}
+		<li class="grid">
+			<div class="col-12 SR-TextCenter">
+				<button type="button" data-sr5-host-slave-scene>{{localize 'SR5.HostSlaveScene'}}</button>
+				<button type="button" data-sr5-host-slave-selected>{{localize 'SR5.HostSlaveSelected'}}</button>
+				<button type="button" data-sr5-host-slave-choose>{{localize 'SR5.HostSlaveChoose'}}</button>
+			</div>
+		</li>
+		{{/if}}
+	</ul>
+</div>
+{{/if}}
