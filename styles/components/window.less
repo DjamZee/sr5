@@ -2,8 +2,10 @@
 @import "../commons/button-mixin.less";
 @import "../commons/checkbox-mixin.less";
 
-.window-app:not(.actor):not(.SR-Item):not(.sidebar-popout),
-.application:not(.sr-application):not(.actor):not(.SR-Item):not(.sidebar-popout) {
+// Foundry's windows and the system's only: a module's window is marked sr-foreign-window (window-scope.js) and keeps
+// its own look (16/10, Agathe#2507 P1). :where() keeps the specificity the other files were written against.
+.window-app:not(.actor):not(.SR-Item):not(.sidebar-popout):where(:not(.sr-foreign-window)),
+.application:not(.sr-application):not(.actor):not(.SR-Item):not(.sidebar-popout):where(:not(.sr-foreign-window)) {
   .sr-block-window();
 
   .window-header {
@@ -797,7 +799,9 @@
   .window-content > footer,
   .window-content > .form-footer {
     grid-column: 1 / -1;
-    flex-basis: 100%;
+    /* Its own line in a wrapping row, its own height in a column (flex-basis: 100% took the whole column: a
+       button half the window high) */
+    flex: 0 0 auto;
     width: 100%;
   }
 
@@ -866,7 +870,7 @@
    Buttons without their own style in a light window (e.g. plain <button> added by modules)
    get dark text instead. :where() keeps the global specificity, so this file order wins over
    the global rule while any more specific system or module rule still applies. */
-:where(.window-app:not(.actor):not(.SR-Item):not(.sidebar-popout), .application:not(.sr-application):not(.actor):not(.SR-Item):not(.sidebar-popout)) :where(.window-content) {
+:where(.window-app:not(.actor):not(.SR-Item):not(.sidebar-popout):not(.sr-foreign-window), .application:not(.sr-application):not(.actor):not(.SR-Item):not(.sidebar-popout):not(.sr-foreign-window)) :where(.window-content) {
   button,
   input[type="button"],
   input[type="submit"] {

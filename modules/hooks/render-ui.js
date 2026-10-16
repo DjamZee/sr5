@@ -7,6 +7,9 @@ import {
 import {
   arrangePlayersPanel
 } from "../interface/scene-indicators.js"
+import {
+  isForeignWindow, windowElement
+} from "./window-scope.js"
 
 /** Merge aside footer buttons into a single full-width footer */
 function _promoteAsideFooter(html) {
@@ -81,7 +84,12 @@ export function sr5HookRenderFolderConfig(_app, html) {
   }
 }
 
-export function sr5HookRenderDialog(_app, html) {
+export function sr5HookRenderDialog(app, html) {
+  // renderDialog is a V1 hook: Foundry gives a jQuery object (16/10, error on every module dialog, P2)
+  html = windowElement(html)
+  if (!html?.querySelector) return
+  // A module's dialog keeps its fields as the module wrote them (no placeholder copied into the value)
+  if (isForeignWindow(app, windowElement(app?.element) ?? html)) return
   enhanceSelects(html)
   const input = html.querySelector(`input[type=text]`)
   if (input && !input.value) {

@@ -1,6 +1,6 @@
-/* SR5 dialog styling */
+/* SR5 dialog styling (a module's dialog with classes of its own is left alone: window-scope.js) */
 
-.dialog {
+.dialog:where(:not(.sr-foreign-window)) {
     .window-content {
         padding: 0;
     }

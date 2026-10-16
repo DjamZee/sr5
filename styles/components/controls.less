@@ -3,43 +3,46 @@
 @import "../commons/input-mixin.less";
 @import "../commons/checkbox-mixin.less";
 
+// The theme's buttons, lists and fields everywhere but in a module's window (sr-foreign-window, window-scope.js),
+// which keeps Foundry's own (16/10, Agathe#2507 P1: red buttons and tabs in Dice So Nice, Item Piles…)
+@nf: ~":where(:not(.sr-foreign-window *))";
 /* === Buttons === */
-  button,
-  a.button, a.ui-control,
-  input[type="button"],
-  input[type="submit"] {
+  button@{nf},
+  a.button@{nf}, a.ui-control@{nf},
+  input[type="button"]@{nf},
+  input[type="submit"]@{nf} {
     .sr-button-base();
   }
 
-  button:hover,
-  a.button:hover, a.ui-control:hover,
-  input[type="button"]:hover,
-  input[type="submit"]:hover {
+  button:hover@{nf},
+  a.button:hover@{nf}, a.ui-control:hover@{nf},
+  input[type="button"]:hover@{nf},
+  input[type="submit"]:hover@{nf} {
     .sr-button-hover();
   }
 
-  button.ui-control[aria-pressed=true],
-  a.ui-control[aria-pressed=true],
-  li.ui-control[aria-pressed=true],
-  .placeable-hud .control-icon[aria-pressed=true],
-  .placeable-hud input[aria-pressed=true] {
+  button.ui-control[aria-pressed=true]@{nf},
+  a.ui-control[aria-pressed=true]@{nf},
+  li.ui-control[aria-pressed=true]@{nf},
+  .placeable-hud .control-icon[aria-pressed=true]@{nf},
+  .placeable-hud input[aria-pressed=true]@{nf} {
     .sr-button-selected();
   }
 
-  button:active, button.active,
-  a.button:active,
-  input[type="button"]:active,
-  input[type="submit"]:active {
+  button:active@{nf}, button.active@{nf},
+  a.button:active@{nf},
+  input[type="button"]:active@{nf},
+  input[type="submit"]:active@{nf} {
     .sr-button-active();
   }
 
-  a:hover {
+  a:hover@{nf} {
     text-shadow: none;
   }
 
   /* === Icon buttons === */
-  button.icon,
-  a.button.icon {
+  button.icon@{nf},
+  a.button.icon@{nf} {
     font-family: var(--font-awesome);
 
     &:focus {
@@ -48,51 +51,51 @@
   }
 
   /* === Selects === */
-  select,
-  .standard-form select,
-  .form-group select {
+  select@{nf},
+  .standard-form select@{nf},
+  .form-group select@{nf} {
     .sr-select-base();
   }
 
-  select:focus,
-  .standard-form select:focus,
-  .form-group select:focus {
+  select:focus@{nf},
+  .standard-form select:focus@{nf},
+  .form-group select:focus@{nf} {
     .sr-select-focus();
   }
 
-  select option,
-  .standard-form select option,
-  .form-group select option {
+  select option@{nf},
+  .standard-form select option@{nf},
+  .form-group select option@{nf} {
     .sr-select-options();
   }
 
   /* === Inputs === */
-  input[type="text"],
-  input[type="number"],
-  input[type="password"],
-  input[type="date"],
-  input[type="time"],
-  input[type="search"],
-  input:not([type]),
-  .standard-form input,
-  .form-group input {
+  input[type="text"]@{nf},
+  input[type="number"]@{nf},
+  input[type="password"]@{nf},
+  input[type="date"]@{nf},
+  input[type="time"]@{nf},
+  input[type="search"]@{nf},
+  input:not([type])@{nf},
+  .standard-form input@{nf},
+  .form-group input@{nf} {
     .sr-input-base();
     .sr-input-placeholder();
   }
 
-  input:focus,
-  input[type="text"]:focus,
-  input[type="number"]:focus,
-  input[type="password"]:focus,
-  .standard-form input:focus,
-  .form-group input:focus {
+  input:focus@{nf},
+  input[type="text"]:focus@{nf},
+  input[type="number"]:focus@{nf},
+  input[type="password"]:focus@{nf},
+  .standard-form input:focus@{nf},
+  .form-group input:focus@{nf} {
     .sr-input-focus();
   }
 
   /* === Textareas === */
-  textarea,
-  .standard-form textarea,
-  .form-group textarea {
+  textarea@{nf},
+  .standard-form textarea@{nf},
+  .form-group textarea@{nf} {
     .sr-input-base();
     .sr-input-placeholder();
     resize: vertical;
@@ -100,14 +103,14 @@
     min-height: 4em;
   }
 
-  textarea:focus,
-  .standard-form textarea:focus,
-  .form-group textarea:focus {
+  textarea:focus@{nf},
+  .standard-form textarea:focus@{nf},
+  .form-group textarea:focus@{nf} {
     .sr-input-focus();
   }
 
   /* === Checkboxes === */
-  input[type="checkbox"] {
+  input[type="checkbox"]@{nf} {
     .sr-checkbox-base();
     .sr-checkbox-icon();
     .sr-checkbox-checked();
@@ -115,13 +118,13 @@
     .sr-checkbox-disabled();
   }
 
-  label.checkbox,
-  .form-group label.checkbox {
+  label.checkbox@{nf},
+  .form-group label.checkbox@{nf} {
     .sr-checkbox-label();
   }
 
   /* === Radio buttons === */
-  input[type="radio"] {
+  input[type="radio"]@{nf} {
     .sr-radio-base();
     .sr-radio-checked();
     .sr-radio-focus();
@@ -129,9 +132,9 @@
   }
 
   /* === Range inputs (sliders) === */
-  input[type="range"],
-  .form-group input[type="range"],
-  .standard-form input[type="range"] {
+  input[type="range"]@{nf},
+  .form-group input[type="range"]@{nf},
+  .standard-form input[type="range"]@{nf} {
     .sr-range-base();
   }
 
