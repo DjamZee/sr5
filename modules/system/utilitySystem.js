@@ -68,6 +68,9 @@ import {
   defaultBannerFolder
 } from "../interface/shop-vendor-templates.js"
 import {
+  activeMegapackId
+} from "./megapack.js"
+import {
   registerStarterKitSetting
 } from "./starter-kit.js"
 
@@ -545,7 +548,7 @@ export class SR5_SystemHelpers {
     game.settings.register("sr5", "sr5ShopBannerFolder", {
       name: "SR5.SETTINGS_ShopBannerFolder_T",
       hint: "SR5.SETTINGS_ShopBannerFolder_D",
-      scope: "world", config: true, default: defaultBannerFolder(!!game.modules?.get("megapack-sr5-foundry-vtt")?.active), type: String,
+      scope: "world", config: true, default: defaultBannerFolder(activeMegapackId()), type: String,
       filePicker: "folder",
     })
 

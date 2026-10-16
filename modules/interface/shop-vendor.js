@@ -14,6 +14,9 @@ import {
   SR5Shop
 } from './shop.js'
 import {
+  activeMegapackId
+} from '../system/megapack.js'
+import {
   IMPLANT_REJECTION_CONFIRMED
 } from '../system/implant-essence.js'
 import {
@@ -343,7 +346,7 @@ export class SR5ShopVendor {
     } catch {
       setting = ''
     }
-    return bannerFolderOf(setting, !!game.modules?.get('megapack-sr5-foundry-vtt')?.active)
+    return bannerFolderOf(setting, activeMegapackId())
   }
 
   /** The files of the banner folder, read once a session. */

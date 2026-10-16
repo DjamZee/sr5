@@ -12,6 +12,9 @@
  *
  * Pure data, no Foundry: the tests read it as it is.
  */
+import {
+  MEGAPACK_FULL_ID
+} from '../system/megapack.js'
 
 /** Families, in the order of the menu. */
 export const VENDOR_FAMILIES = ['weapons', 'vehicles', 'implants', 'electronics', 'drugs', 'magic', 'misc']
@@ -98,24 +101,27 @@ export function templateAccent(template) {
   return template?.accent ?? FAMILY_ACCENTS[template?.family] ?? ''
 }
 
-/** Where the Megapack ships the banners (megapack-sr5-foundry-vtt, assets/banners-shop). */
-export const MEGAPACK_BANNER_FOLDER = 'modules/megapack-sr5-foundry-vtt/assets/banners-shop'
+/** Where a Megapack ships the banners (assets/banners-shop): both editions keep the same layout. */
+export function megapackBannerFolder(megapackId) {
+  return `modules/${megapackId}/assets/banners-shop`
+}
+export const MEGAPACK_BANNER_FOLDER = megapackBannerFolder(MEGAPACK_FULL_ID)
 
 /**
- * The banner folder to read: the one the gamemaster set, else the Megapack's when it is active, else none.
+ * The banner folder to read: the one the gamemaster set, else the active Megapack's, else none.
  *
  * @param {string} setting the world setting "banner folder"
- * @param {boolean} megapackActive
+ * @param {string|null} megapackId the active Megapack (activeMegapackId), null when none is
  */
-export function bannerFolderOf(setting, megapackActive) {
+export function bannerFolderOf(setting, megapackId) {
   const folder = String(setting ?? '').trim()
   if (folder) return folder
-  return defaultBannerFolder(megapackActive)
+  return defaultBannerFolder(megapackId)
 }
 
-/** The default of the "banner folder" setting: the Megapack's when it is active (the system ships none). */
-export function defaultBannerFolder(megapackActive) {
-  return megapackActive ? MEGAPACK_BANNER_FOLDER : ''
+/** The default of the "banner folder" setting: the active Megapack's (the system ships none). */
+export function defaultBannerFolder(megapackId) {
+  return megapackId ? megapackBannerFolder(megapackId) : ''
 }
 
 /**
