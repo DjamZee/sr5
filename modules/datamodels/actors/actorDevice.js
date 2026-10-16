@@ -49,6 +49,17 @@ export class sr5ActorDeviceDataModel extends foundry.abstract.TypeDataModel {
             initial: ''
           }),
         }),
+        // The recipe of an IC put together from the effects of the book's IC (system/ice-design.js), written by a
+        // module: the IC whose defense it takes, and its blocks ("matrixDamage", "reduce:firewall"...). Empty, the IC
+        // is the book's IC of its type, as before. The system only reads it
+        iceDesign: new fields.SchemaField({
+          defense: new fields.StringField({
+            initial: ''
+          }),
+          blocks: new fields.ArrayField(new fields.StringField(), {
+            initial: []
+          }),
+        }),
       }),
       ...penaltiesPartialModel.defineSchema(),
       ...visionPartialModel.defineSchema(),
