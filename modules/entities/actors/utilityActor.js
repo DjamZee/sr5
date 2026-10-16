@@ -41,7 +41,7 @@ import {
   SR5_SpiritTypes
 } from "../items/spirit-types.js"
 import {
-  spriteTypeDefinition, spriteSkills, spriteMatrixModifiers, spriteInitiativeDice, SPRITE_MATRIX_KEYS
+  spriteTypeDefinition, spriteSkills, spriteMatrixModifiers, spriteInitiativeDice, spriteInitiativeBonus, SPRITE_MATRIX_KEYS
 } from "./sprite-types.js"
 import {
   fadingResistanceAttribute
@@ -5311,7 +5311,8 @@ export class SR5_CharacterUtility extends Actor {
     for (let key of SPRITE_MATRIX_KEYS) {
       if (typeModifiers[key]) SR5_EntityHelpers.updateModifier(matrixAttributes[key], label, "spriteType", typeModifiers[key])
     }
-    if (typeModifiers.initiative) SR5_EntityHelpers.updateModifier(actorData.initiatives.matrixInit, label, "spriteType", typeModifiers.initiative)
+    const initiativeBonus = spriteInitiativeBonus(actorData.type, actorData.level)
+    if (initiativeBonus) SR5_EntityHelpers.updateModifier(actorData.initiatives.matrixInit, label, "spriteType", initiativeBonus)
 
     //handle matrix attributes
     for (let key of Object.keys(SR5.matrixAttributes)) {

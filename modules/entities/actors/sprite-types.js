@@ -20,6 +20,8 @@ import {
  *   matrix: { attack: 0, sleaze: 3, dataProcessing: 1, firewall: 2, initiative: 0 },
  *                                     added to the Level (initiative: to the matrix initiative score),
  *   initiativeDice: 4,                matrix initiative dice (4 by default, SR5 p. 256),
+ *   initiativePerLevel: 0,            Level added once more to the initiative score per unit (0 by default:
+ *                                     the book's (Level x 2) + x comes from Level + Data Processing),
  *   powers: ["Compendium.….Item.…"]   optional: powers given at creation, besides the reference compendium's
  * }
  */
@@ -82,6 +84,7 @@ function normalize(def) {
     matrix,
     initiativeDice: def?.initiativeDice == null || !Number.isFinite(Number(def.initiativeDice)) ?
       DEFAULT_INITIATIVE_DICE : Number(def.initiativeDice),
+    initiativePerLevel: Number.isFinite(Number(def?.initiativePerLevel)) ? Number(def?.initiativePerLevel ?? 0) : 0,
     powers: Array.isArray(def?.powers) ? def.powers.filter(p => typeof p === "string") : [],
   }
 }
@@ -125,6 +128,13 @@ export function spriteSkills(type) {
 export function spriteMatrixModifiers(type) {
   return spriteTypeDefinition(type)?.matrix ?? {
   }
+}
+
+/** What its type adds to the matrix initiative score of a sprite of this Level. Unknown type: nothing. */
+export function spriteInitiativeBonus(type, level = 0) {
+  const def = spriteTypeDefinition(type)
+  if (!def) return 0
+  return (def.matrix.initiative ?? 0) + def.initiativePerLevel * (Number(level) || 0)
 }
 
 /** Its matrix initiative dice. Unknown type: the book's 4. */
