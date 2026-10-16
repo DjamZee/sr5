@@ -2,6 +2,9 @@ import {
   bbPenaltyReduction
 } from "../../system/bb-healing.js"
 import {
+  woundResolveHolds
+} from "../../system/wound-resolve.js"
+import {
   calledShotSkillsOf, calledShotEffectValue, isMartialArtsModifierTarget
 } from "../../rolls/roll-helpers/calledShotSkills.js"
 import {
@@ -114,7 +117,8 @@ import {
   actsAsRcc, fixedRccRatings, rccRatings, hasLocalAutosoftRunning, rccAutosoftsForDrone, autosoftFitsDrone, droneAutopilot, localAutosoftRating
 } from "./rcc.js"
 import {
-  streamOf, firewallBonusOfStream, sleazeBonusOfStream, sourcererFreeSustain, resonanceRestoredByStream, machineMindRating
+  streamOf, firewallBonusOfStream, sleazeBonusOfStream, sourcererFreeSustain, resonanceRestoredByStream, machineMindRating,
+  hasResonantDissonance
 } from "./technomancer-streams.js"
 import {
   VR_PILOTING_LIMIT_BONUS, controlRigThresholdModifier, dataProcessingCapModifier
@@ -867,6 +871,8 @@ export class SR5_CharacterUtility extends Actor {
             actorData.penalties[key].actual.base = -Math.floor((actorData.conditionMonitors[key].actual.value - actorData.penalties[key].boxReduction.value) / actorData.penalties[key].step.value)
             if (actorData.specialProperties.doublePenalties) actorData.penalties[key].actual.base = actorData.penalties[key].actual.base * 2
             if (actorData.penalties[key].actual.base > 0) actorData.penalties[key].actual.base = 0
+            //Deus vult ! / Mon pays (Manuel de l'assassin p. 14-15): « ignore tous les modificateurs de blessure »
+            if (woundResolveHolds(actor)) actorData.penalties[key].actual.base = 0
           }
           break
         case "matrix":
@@ -3434,6 +3440,10 @@ export class SR5_CharacterUtility extends Actor {
         this.applyPenalty("matrix", actorData.skills[key].test, actor)
         this.applyPenalty("magic", actorData.skills[key].test, actor)
         this.applyPenalty("special", actorData.skills[key].test, actor)
+        //Écho Dissonance résonante (Better Than Bad p. 145): in hot sim, +2 dice to Compiling and Decompiling
+        if ((key === "compiling" || key === "decompiling") && actorData.matrix?.userMode === "hotsim" && hasResonantDissonance(actor)) {
+          SR5_EntityHelpers.updateModifier(actorData.skills[key].test, game.i18n.localize('SR5.EchoResonantDissonance'), "echo", 2)
+        }
         SR5_EntityHelpers.updateDicePool(actorData.skills[key].test, 0)
 
         // limit calculation
@@ -4702,6 +4712,8 @@ export class SR5_CharacterUtility extends Actor {
   static generateMatrixActions(actor) {
     let actorData = actor.system, attributes = actorData.attributes, specialAttributes = actorData.specialAttributes, skills = actorData.skills,
       matrix = actorData.matrix, matrixAttributes = matrix.attributes, matrixActions = matrix.actions
+    //Écho Dissonance résonante (Better Than Bad p. 145): in cold sim, the +2 dice of hot sim kept on every matrix action
+    const coldSimBonus = matrix.userMode === "coldsim" && hasResonantDissonance(actor)
 
     SR5_EntityHelpers.updateModifier(matrixActions.jamSignals.test, game.i18n.localize('SR5.SkillElectronicWarfare'), "skillRating", skills.electronicWarfare.rating.value)
     SR5_EntityHelpers.updateModifier(matrixActions.jamSignals.test, game.i18n.localize('SR5.Logic'), "linkedAttribute", attributes.logic.augmented.value)
@@ -4818,6 +4830,7 @@ export class SR5_CharacterUtility extends Actor {
         if (matrix.userMode === "hotsim") {
           SR5_EntityHelpers.updateModifier(matrixActions[key].test, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 2)
         }
+        if (coldSimBonus) SR5_EntityHelpers.updateModifier(matrixActions[key].test, game.i18n.localize('SR5.EchoResonantDissonance'), "matrixUserMode", 2)
         if (matrixActions[key].specialization) {
           SR5_EntityHelpers.updateModifier(matrixActions[key].test, `${game.i18n.localize('SR5.Specialization')}`, "specialization", 2, false, true)
         }

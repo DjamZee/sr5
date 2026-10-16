@@ -1008,6 +1008,9 @@ export class SR5_RollTest {
       case "mentorDrawback":
         await SR5_AddRollInfo.mentorDrawbackInfo(cardData)
         break
+      case "woundResolve":
+        await SR5_AddRollInfo.woundResolveInfo(cardData)
+        break
       case "autopilotUnforeseen":
         //Confused by a hacker, the threshold is known (Rigger 5.0 p. 34); otherwise the gamemaster compares the hits with
         //the threshold of the situation (SR5 p. 271)

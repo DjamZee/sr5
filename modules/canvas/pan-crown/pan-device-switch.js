@@ -3,6 +3,9 @@
 // (SR5 p. 236, Q7), the wireless switch costs what it costs on the sheet (SR5 p. 165, 167 and 424).
 
 import {
+  bundleWirelessRefused
+} from "../../system/implant-essence.js"
+import {
   modeSwitchCost, modeUpdate
 } from "./pan-actions.js"
 import {
@@ -112,6 +115,8 @@ export async function switchDeviceMode(item, mode){
   // A deployed drone holds its own switches, on its sheet
   if (view.drone) return void ui.notifications.info(game.i18n.localize("SR5.WirelessHeldByDeployedDrone"))
   if (switching.has(item.uuid)) return
+  // Lots d'augmentations (Chrome Flesh p. 96): the wireless of a lot is never cut
+  if (mode === "offline" && view.own !== "offline" && bundleWirelessRefused(item, holder, false)) return
   const actions = modeSwitchCost(view.own, mode, turningOn => SR5_ActorHelper.wirelessSwitchActionType(turningOn,
     game.settings.get("sr5", "sr5WifiRequiresDNI"), holder.system?.hasDNI))
   if (!actions.length) return

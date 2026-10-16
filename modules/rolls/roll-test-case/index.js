@@ -29,6 +29,9 @@ export {
   default as mentorDrawbackInfo
 } from "./test-MentorDrawback.js"
 export {
+  default as woundResolveInfo
+} from "./test-WoundResolve.js"
+export {
   default as fireResistanceInfo
 } from "./test-FireResistance.js"
 export {

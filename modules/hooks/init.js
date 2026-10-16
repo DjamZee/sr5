@@ -68,6 +68,9 @@ import {
   registerManeuverSetting
 } from "../system/combat-maneuvers.js"
 import {
+  registerWoundResolveSetting
+} from "../system/wound-resolve.js"
+import {
   SR5
 } from "../config.js"
 import {
@@ -400,6 +403,7 @@ export async function sr5HookInit() {
   registerHealLedger()
   registerTacnetSetting()
   registerManeuverSetting()
+  registerWoundResolveSetting()
   //Every visible system setting moves into the settings window, by tab (B10): keep this after the last registration
   registerSettingsWindow()
   //The grappling statuses exist only in a world that uses the grappling rules
