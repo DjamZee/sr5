@@ -373,6 +373,8 @@ export class SR5_MatrixHelpers {
       let rollData = SR5_PrepareRollTest.getBaseRollData(null, actor)
       rollData.test.type = "jackOutDefense"
       rollData.test.title = `${game.i18n.localize("SR5.MatrixActionJackOutResistance")} (${hits})`
+      //The lock's dice: the card bears the name of the icon that locked, not the hacker's (Noé, 16/10)
+      if (lock.system.ownerName && rollData.owner) rollData.owner.speakerActor = lock.system.ownerName
       rollData.dicePool.base = dicePool
       rollData.dicePool.value = dicePool
       rollData.previousMessage.hits = hits
