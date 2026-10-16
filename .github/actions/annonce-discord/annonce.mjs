@@ -12,6 +12,9 @@
 //   DISCORD_WEBHOOK adresse du webhook (secret ; jamais affichée)
 //   GH_TOKEN        jeton pour lire la release (facultatif pour un dépôt public)
 //   RELEASE_JSON    chemin d'un fichier JSON de release déjà lu (essais hors ligne)
+//   TYPE            « system » (défaut) ou « module » : un module (dépôt privé) n'a aucun lien GitHub dans
+//                   l'annonce ; le manifeste et les dépendances viennent de son module.json au tag
+//   MODULE_JSON     chemin d'un module.json déjà lu (essais hors ligne ; sinon lu au tag par l'API)
 
 import {
   readFileSync 
@@ -87,7 +90,7 @@ function recoller(lignes) {
 // Coupe à une fin de ligne sous la limite, ferme un bloc de code resté ouvert et ajoute le renvoi.
 export function couper(texte, limite, lienSuite) {
   if (texte.length <= limite) return texte
-  const suite = `\n\n… [suite sur GitHub](${lienSuite})`
+  const suite = lienSuite ? `\n\n… [suite sur GitHub](${lienSuite})` : '\n\n… _(notes coupées)_'
   let garde = texte.slice(0, Math.max(0, limite - suite.length - 4))
   const finDeLigne = garde.lastIndexOf('\n')
   if (finDeLigne > 0) garde = garde.slice(0, finDeLigne)
@@ -168,6 +171,99 @@ export function construireMessage(release, options = {
   return message
 }
 
+const NOMS_SYSTEMES = {
+  sr5: 'Shadowrun 5'
+}
+
+// Une relation de module.json est une liste, parfois un objet seul.
+const enListe = valeur => (Array.isArray(valeur) ? valeur : valeur ? [valeur] : [])
+
+function decrireRelation(relation, nomDe = id => id) {
+  const minimum = relation.compatibility?.minimum
+  return `${nomDe(relation.id)}${minimum ? ` ≥ ${minimum}` : ''}`
+}
+
+// Annonce d'un module : son dépôt est privé, donc aucun lien GitHub ; on installe par le manifeste
+// (Dropbox) écrit dans son module.json au tag de la release.
+export function construireMessageModule(release, module, options = {
+}, hasard = Math.random) {
+  const tag = release.tag_name
+  if (!module?.manifest) throw new Error(`module.json sans « manifest » au tag ${tag}`)
+  const relations = module.relationships ?? {}
+
+  const systemes = enListe(relations.systems)
+    .map(s => decrireRelation(s, id => (NOMS_SYSTEMES[id] ? `${NOMS_SYSTEMES[id]} (${id})` : id)))
+  const requis = enListe(relations.requires).map(r => decrireRelation(r))
+  const recommandes = enListe(relations.recommends).map(r => decrireRelation(r))
+  const dependances = []
+  if (requis.length) dependances.push(`**Requis** : ${requis.join(', ')}`)
+  if (recommandes.length) dependances.push(`**Recommandés** : ${recommandes.join(', ')}`)
+
+  const fields = [
+    {
+      name: '📡 Installation', value: `Adresse du manifeste à coller dans Foundry :\n\`${module.manifest}\``
+    },
+    {
+      name: '🎲 Système requis', value: systemes.join('\n') || 'Aucun', inline: true
+    },
+    {
+      name: '🧩 Dépendances', value: dependances.join('\n') || 'Aucune', inline: true
+    },
+  ]
+  if (release.prerelease) {
+    fields.push({
+      name: '⚠️ Alpha', value: 'À tester avant une vraie partie : le joueur ou la joueuse sauvegarde son monde avant d\'installer.'
+    })
+  }
+
+  // Une version stable ne parle pas d'alpha, pas même dans l'accroche.
+  const accroches = release.prerelease ? ACCROCHES : ACCROCHES.filter(a => !/alpha/i.test(a))
+  const accroche = accroches[Math.floor(hasard() * accroches.length) % accroches.length]
+  const version = module.version || tag
+  const embed = {
+    title: `${module.title || module.id || options.repo} ${version}`.slice(0, 256),
+    color: MAGENTA,
+    fields,
+    footer: {
+      text: `${module.id || options.repo} · ${tag}`
+    },
+    timestamp: release.published_at ?? undefined,
+  }
+  if (options.thumbnailUrl) embed.thumbnail = {
+    url: options.thumbnailUrl
+  }
+
+  const signature = options.username ? `\n> — ${options.username}` : ''
+  const notes = versDiscord(release.body) || '_Pas de notes pour cette version._'
+  const corps = `> *${accroche}*${signature}\n\n${notes}`
+  const place = Math.min(LIMITE_DESCRIPTION, LIMITE_EMBED - tailleEmbed(embed) - 16)
+  embed.description = couper(corps, place, null)
+
+  const message = {
+    embeds: [embed], allowed_mentions: {
+      parse: []
+    }
+  }
+  if (options.username) message.username = options.username.slice(0, 80)
+  if (options.avatarUrl) message.avatar_url = options.avatarUrl
+  return message
+}
+
+async function lireModule(repo, tag, chemin) {
+  if (process.env.MODULE_JSON) return JSON.parse(readFileSync(process.env.MODULE_JSON, 'utf8').replace(/^\uFEFF/, ''))
+  const entetes = {
+    Accept: 'application/vnd.github.raw+json', 'User-Agent': 'annonce-discord'
+  }
+  if (process.env.GH_TOKEN) entetes.Authorization = `Bearer ${process.env.GH_TOKEN}`
+  const adresse = `https://api.github.com/repos/${repo}/contents/${chemin.split('/').map(encodeURIComponent).join('/')}?ref=${encodeURIComponent(tag)}`
+  const reponse = await fetch(adresse, {
+    headers: entetes
+  })
+  if (!reponse.ok) throw new Error(`${chemin} introuvable au tag ${tag} de ${repo} (HTTP ${reponse.status})`)
+  // Un module.json écrit par PowerShell 5.1 peut commencer par un BOM.
+  return JSON.parse((await reponse.text()).replace(/^\uFEFF/, ''))
+}
+
 async function lireRelease(repo, tag) {
   if (process.env.RELEASE_JSON) return JSON.parse(readFileSync(process.env.RELEASE_JSON, 'utf8'))
   const entetes = {
@@ -187,15 +283,18 @@ async function principal() {
   const tag = env.TAG
   if (!repo || !tag) throw new Error('REPO et TAG sont obligatoires')
   const release = await lireRelease(repo, tag)
+  const module = env.TYPE === 'module'
   const options = {
     repo,
-    manifest: env.MANIFEST || 'system.json',
+    manifest: env.MANIFEST || (module ? 'module.json' : 'system.json'),
     wikiUrl: env.WIKI_URL || undefined,
     username: env.USERNAME || undefined,
     avatarUrl: env.AVATAR_URL || undefined,
     thumbnailUrl: env.THUMBNAIL_URL || undefined,
   }
-  const message = construireMessage(release, options)
+  const message = module
+    ? construireMessageModule(release, await lireModule(repo, tag, options.manifest), options)
+    : construireMessage(release, options)
   if (env.DRY_RUN === 'true') {
     console.log(JSON.stringify(message, null, 2))
     console.log(`À blanc : rien n'est envoyé (description ${message.embeds[0].description.length} caractères).`)

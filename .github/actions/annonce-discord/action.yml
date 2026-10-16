@@ -1,10 +1,12 @@
 # Action composite réutilisable : annonce une release GitHub sur Discord (embed « shadowtalk »).
 # Depuis un autre dépôt (un module) :
-#   - uses: DjamZee/sr5/.github/actions/annonce-discord@<tag ou branche>
+#   - uses: DjamZee/sr5/.github/actions/annonce-discord@dev
 #     with:
 #       tag: ${{ github.event.release.tag_name }}
-#       manifest: module.json
+#       type: module
 #       webhook: ${{ secrets.DISCORD_WEBHOOK }}
+# Référence : la branche par défaut du fork, « dev » (voir la page de wiki « Annonces Discord »).
+# En type « module », aucun lien GitHub : le manifeste (Dropbox) et les dépendances viennent du module.json au tag.
 name: Annonce Discord d'une release
 description: Poste sur Discord un embed qui annonce une release GitHub, ou affiche le JSON en mode à blanc.
 inputs:
@@ -14,9 +16,12 @@ inputs:
   repo:
     description: Dépôt « propriétaire/nom » (défaut, le dépôt courant)
     default: ${{ github.repository }}
+  type:
+    description: « system » (défaut) ou « module »
+    default: system
   manifest:
-    description: Nom de l'asset manifeste (system.json ou module.json)
-    default: system.json
+    description: Système, nom de l'asset manifeste (défaut system.json) ; module, chemin du module.json dans le dépôt (défaut module.json)
+    default: ''
   wiki-url:
     description: Adresse du wiki (défaut, le wiki du dépôt)
     default: ''
@@ -46,6 +51,7 @@ runs:
       env:
         REPO: ${{ inputs.repo }}
         TAG: ${{ inputs.tag }}
+        TYPE: ${{ inputs.type }}
         MANIFEST: ${{ inputs.manifest }}
         WIKI_URL: ${{ inputs.wiki-url }}
         USERNAME: ${{ inputs.username }}
