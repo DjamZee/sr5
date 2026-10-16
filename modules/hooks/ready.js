@@ -6,6 +6,9 @@ import {
   runLegacyBiographyMigration
 } from "../migration-legacy-biography.js"
 import {
+  runMentorMigration
+} from "../entities/items/mentor-conversion.js"
+import {
   runRuleLocksMigration
 } from "../system/rule-locks.js"
 import {
@@ -174,6 +177,10 @@ export function sr5HookReady() {
 
   // The v12 biography keys the database still holds: unset once per world
   runLegacyBiographyMigration().catch(err => console.error("SR5 | legacy biography migration failed", err))
+
+  // The former mentor qualities « Esprit mentor (X) [variant] » of the world actors: the quality linked to the mentor item
+  // of the Megapack (DjamZ, 16/10), at each load, idempotent
+  runMentorMigration().catch(err => console.error("SR5 | mentor migration failed", err))
 
   // The three settings that were rule locks, copied into the boxes of the rule locks menu once per world (B13);
   // a world no migration ever ran in is new, and starts with the book
